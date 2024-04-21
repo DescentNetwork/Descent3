@@ -111,6 +111,8 @@ if(WIN32)
   endif()
 endif()
 
+add_compile_definitions($<$<CONFIG:Release>:RELEASE>)
+
 find_package(ZLIB REQUIRED)
 
 if(LOGGER)
