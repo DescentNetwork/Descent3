@@ -826,7 +826,7 @@
  *
  * $NoKeywords: $
  */
-
+#include <cmath>
 #include <cstdlib>
 #include <cstdio>
 
@@ -1833,12 +1833,12 @@ void ConvertAxisAmountToEuler(vector *n, float *w, vector *e) {
 }
 
 void bump_obj_against_fixed(object *obj, vector *collision_point, vector *collision_normal) {
-  ASSERT(_finite(obj->mtype.phys_info.rotvel.x) != 0);
-  ASSERT(_finite(obj->mtype.phys_info.rotvel.y) != 0);
-  ASSERT(_finite(obj->mtype.phys_info.rotvel.z) != 0);
-  ASSERT(_finite(obj->mtype.phys_info.velocity.x) != 0);
-  ASSERT(_finite(obj->mtype.phys_info.velocity.y) != 0);
-  ASSERT(_finite(obj->mtype.phys_info.velocity.z) != 0);
+  ASSERT(std::isfinite(obj->mtype.phys_info.rotvel.x));
+  ASSERT(std::isfinite(obj->mtype.phys_info.rotvel.y));
+  ASSERT(std::isfinite(obj->mtype.phys_info.rotvel.z));
+  ASSERT(std::isfinite(obj->mtype.phys_info.velocity.x));
+  ASSERT(std::isfinite(obj->mtype.phys_info.velocity.y));
+  ASSERT(std::isfinite(obj->mtype.phys_info.velocity.z));
 
   if (!IsOKToApplyForce(obj))
     return;
@@ -1916,12 +1916,12 @@ void bump_obj_against_fixed(object *obj, vector *collision_point, vector *collis
 
   obj->mtype.phys_info.rotvel += (txx1 * obj->orient);
 
-  ASSERT(_finite(obj->mtype.phys_info.rotvel.x) != 0);
-  ASSERT(_finite(obj->mtype.phys_info.rotvel.y) != 0);
-  ASSERT(_finite(obj->mtype.phys_info.rotvel.z) != 0);
-  ASSERT(_finite(obj->mtype.phys_info.velocity.x) != 0);
-  ASSERT(_finite(obj->mtype.phys_info.velocity.y) != 0);
-  ASSERT(_finite(obj->mtype.phys_info.velocity.z) != 0);
+  ASSERT(std::isfinite(obj->mtype.phys_info.rotvel.x));
+  ASSERT(std::isfinite(obj->mtype.phys_info.rotvel.y));
+  ASSERT(std::isfinite(obj->mtype.phys_info.rotvel.z));
+  ASSERT(std::isfinite(obj->mtype.phys_info.velocity.x));
+  ASSERT(std::isfinite(obj->mtype.phys_info.velocity.y));
+  ASSERT(std::isfinite(obj->mtype.phys_info.velocity.z));
 
   // hack rotvel
   /*	vector v = obj->mtype.phys_info.velocity;
@@ -2082,18 +2082,18 @@ void bump_two_objects(object *object0, object *object1, vector *collision_point,
   //	vector r_vel = object0->mtype.phys_info.velocity - object1->mtype.phys_info.velocity;
   // Add this back
 
-  ASSERT(_finite(object1->mtype.phys_info.rotvel.x) != 0);
-  ASSERT(_finite(object1->mtype.phys_info.rotvel.y) != 0);
-  ASSERT(_finite(object1->mtype.phys_info.rotvel.z) != 0);
-  ASSERT(_finite(object0->mtype.phys_info.rotvel.x) != 0);
-  ASSERT(_finite(object0->mtype.phys_info.rotvel.y) != 0);
-  ASSERT(_finite(object0->mtype.phys_info.rotvel.z) != 0);
-  ASSERT(_finite(object1->mtype.phys_info.velocity.x) != 0);
-  ASSERT(_finite(object1->mtype.phys_info.velocity.y) != 0);
-  ASSERT(_finite(object1->mtype.phys_info.velocity.z) != 0);
-  ASSERT(_finite(object0->mtype.phys_info.velocity.x) != 0);
-  ASSERT(_finite(object0->mtype.phys_info.velocity.y) != 0);
-  ASSERT(_finite(object0->mtype.phys_info.velocity.z) != 0);
+  ASSERT(std::isfinite(object1->mtype.phys_info.rotvel.x));
+  ASSERT(std::isfinite(object1->mtype.phys_info.rotvel.y));
+  ASSERT(std::isfinite(object1->mtype.phys_info.rotvel.z));
+  ASSERT(std::isfinite(object0->mtype.phys_info.rotvel.x));
+  ASSERT(std::isfinite(object0->mtype.phys_info.rotvel.y));
+  ASSERT(std::isfinite(object0->mtype.phys_info.rotvel.z));
+  ASSERT(std::isfinite(object1->mtype.phys_info.velocity.x));
+  ASSERT(std::isfinite(object1->mtype.phys_info.velocity.y));
+  ASSERT(std::isfinite(object1->mtype.phys_info.velocity.z));
+  ASSERT(std::isfinite(object0->mtype.phys_info.velocity.x));
+  ASSERT(std::isfinite(object0->mtype.phys_info.velocity.y));
+  ASSERT(std::isfinite(object0->mtype.phys_info.velocity.z));
 
   vector r1 = *collision_point - object0->pos;
   vector r2 = *collision_point - object1->pos;
@@ -2237,18 +2237,18 @@ void bump_two_objects(object *object0, object *object1, vector *collision_point,
   if (f_force_2)
     object1->mtype.phys_info.rotvel += (txx2 * object1->orient) * rotscale2;
 
-  ASSERT(_finite(object1->mtype.phys_info.rotvel.x) != 0);
-  ASSERT(_finite(object1->mtype.phys_info.rotvel.y) != 0);
-  ASSERT(_finite(object1->mtype.phys_info.rotvel.z) != 0);
-  ASSERT(_finite(object0->mtype.phys_info.rotvel.x) != 0);
-  ASSERT(_finite(object0->mtype.phys_info.rotvel.y) != 0);
-  ASSERT(_finite(object0->mtype.phys_info.rotvel.z) != 0);
-  ASSERT(_finite(object1->mtype.phys_info.velocity.x) != 0);
-  ASSERT(_finite(object1->mtype.phys_info.velocity.y) != 0);
-  ASSERT(_finite(object1->mtype.phys_info.velocity.z) != 0);
-  ASSERT(_finite(object0->mtype.phys_info.velocity.x) != 0);
-  ASSERT(_finite(object0->mtype.phys_info.velocity.y) != 0);
-  ASSERT(_finite(object0->mtype.phys_info.velocity.z) != 0);
+  ASSERT(std::isfinite(object1->mtype.phys_info.rotvel.x));
+  ASSERT(std::isfinite(object1->mtype.phys_info.rotvel.y));
+  ASSERT(std::isfinite(object1->mtype.phys_info.rotvel.z));
+  ASSERT(std::isfinite(object0->mtype.phys_info.rotvel.x));
+  ASSERT(std::isfinite(object0->mtype.phys_info.rotvel.y));
+  ASSERT(std::isfinite(object0->mtype.phys_info.rotvel.z));
+  ASSERT(std::isfinite(object1->mtype.phys_info.velocity.x));
+  ASSERT(std::isfinite(object1->mtype.phys_info.velocity.y));
+  ASSERT(std::isfinite(object1->mtype.phys_info.velocity.z));
+  ASSERT(std::isfinite(object0->mtype.phys_info.velocity.x));
+  ASSERT(std::isfinite(object0->mtype.phys_info.velocity.y));
+  ASSERT(std::isfinite(object0->mtype.phys_info.velocity.z));
 
   // Do ForceFeedback stuff for moving objects
   //-----------------------------------------
