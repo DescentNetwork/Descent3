@@ -491,7 +491,7 @@
 #include <ui/ui.h>
 #include <Descent3/render.h>
 #include <misc/pserror.h>
-#include "gr.h"
+#include <2dlib/gr.h>
 #include <ddebug/mono.h>
 #include <Descent3/init.h>
 #include <Descent3/game.h>

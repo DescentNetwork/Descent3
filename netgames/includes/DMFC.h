@@ -290,7 +290,7 @@
 
 #include <cstdio>
 #include <stdarg.h>
-#include <time.h>
+#include <ctime>
 #include "gamedll_header.h"
 #include "DMFCKeyCodes.h"
 

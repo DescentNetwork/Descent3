@@ -4,7 +4,7 @@
 #include <cstring>
 #include <io.h>
 #include <ctype.h>
-#include <time.h>
+#include <ctime>
 #include <sys/stat.h>
 #include <sys/utime.h>
 

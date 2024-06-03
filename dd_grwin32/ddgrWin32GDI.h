@@ -42,7 +42,7 @@
 #include <windows.h>
 
 #include <2dlib/ddgr.h>
-#include "ddraw.h"
+#include <DirectX/ddraw.h>
 
 class oeApplication;
 

@@ -64,7 +64,7 @@
  * $NoKeywords: $
  */
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <ddio/ddio.h>
 #include <misc/pserror.h>

@@ -19,7 +19,7 @@
 // WorldObjectsPowerupDialog.h : header file
 //
 
-#include "gr.h"
+#include <2dlib/gr.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CWorldObjectsPowerupDialog dialog

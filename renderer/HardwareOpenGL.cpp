@@ -19,6 +19,7 @@
 #include <lib/byteswap.h>
 #if defined(WIN32)
 #include <windows.h>
+#include <win32/winapp.h>
 #elif defined(__unix__)
 #include "lnxscreenmode.h"
 #include <linux/lnxapp.h>
@@ -48,7 +49,7 @@
 #include "dyna_gl.h"
 
 #if defined(WIN32)
-#include "win/arb_extensions.h"
+#include "arb_extensions.h"
 #endif
 
 #include <algorithm>

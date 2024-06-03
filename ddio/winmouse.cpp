@@ -21,13 +21,13 @@
 // ----------------------------------------------------------------------------
 
 #include <cstdlib>
-#include <math.h>
+#include <cmath>
 
 #include <misc/pserror.h>
 #include <ddebug/mono.h>
 #include <ddio/ddio.h>
 #include "ddio_win.h"
-#include <ddio/application.h>
+#include <win32/winapp.h>
 #include <misc/psclass.h>
 #include <misc/macros.h>
 

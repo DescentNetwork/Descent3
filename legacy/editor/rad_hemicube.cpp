@@ -22,7 +22,7 @@
 #include <renderer/3d.h>
 #include "radiosity.h"
 #include "hemicube.h"
-#include "gr.h"
+#include <2dlib/gr.h>
 #include "d3edit.h"
 #include <ddio/ddio.h>
 #include <mem/mem.h>

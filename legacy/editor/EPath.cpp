@@ -394,7 +394,7 @@ int GetFirstPath ()
 #include "editor/d3edit.h"
 #endif
 
-#include "gr.h"
+#include <2dlib/gr.h>
 
 void DrawAllPaths (grViewport *vp,vector *viewer_eye,matrix *viewer_orient,float zoom)
 {

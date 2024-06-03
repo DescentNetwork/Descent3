@@ -140,7 +140,7 @@
 
 #ifdef __unix__
 
-#include <SDL2/SDL_thread.h>
+#include <SDL_thread.h>
 
 inline void Sleep(int millis) {
   struct timeval tv;

@@ -60,7 +60,7 @@
 
 #include "d3edit.h"
 #include <misc/pserror.h>
-#include "gr.h"
+#include <2dlib/gr.h>
 
 
 

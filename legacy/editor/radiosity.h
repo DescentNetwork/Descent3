@@ -68,7 +68,7 @@
 #include <misc/pserror.h>
 #include <misc/pstypes.h>
 #include <renderer/3d.h>
-#include "gr.h"
+#include <2dlib/gr.h>
 
 // Shooting methods
 #define SM_HEMICUBE						0

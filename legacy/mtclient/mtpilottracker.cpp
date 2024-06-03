@@ -111,7 +111,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <math.h>
+#include <cmath>
 #include <cstring>
 #include <Descent3/game.h>
 #include <ddio/ddio.h>

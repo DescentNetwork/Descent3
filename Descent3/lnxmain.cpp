@@ -28,7 +28,7 @@
 #include <csignal>
 #include <unistd.h>
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include "program.h"
 #include "descent.h"

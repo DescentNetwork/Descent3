@@ -193,7 +193,7 @@ protected:
 #include <cstdio>
 #include <windows.h>
 #include <conio.h>
-#include <time.h>
+#include <ctime>
 
 #include "inetgetfile.h"
 

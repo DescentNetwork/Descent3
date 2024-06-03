@@ -19,7 +19,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <math.h>
+#include <cmath>
 #include <assert.h>
 #include <libacm/aencode.h>
 

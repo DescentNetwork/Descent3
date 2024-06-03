@@ -73,12 +73,13 @@
  * $NoKeywords: $
  */
 
-#include "ddgrWin32.h"
 #include "ddgrWin32GDI.h"
-#include <ddio/application.h>
+
+#include "ddgrWin32.h"
+#include <win32/winapp.h>
 #include <ddebug/mono.h>
 #include <misc/pserror.h>
-#include "gr.h"
+#include <2dlib/gr.h>
 
 /*	Global Library Data
  */

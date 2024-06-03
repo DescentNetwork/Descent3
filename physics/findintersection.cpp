@@ -856,7 +856,7 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <math.h>
+#include <cmath>
 #include <ddebug/mono.h>
 #include "findintersection.h"
 #include <misc/pserror.h>

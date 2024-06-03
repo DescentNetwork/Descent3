@@ -54,7 +54,7 @@
 #include <ddio/ddio.h>
 #include "config.h"
 #include <cstdlib>
-#include <math.h>
+#include <cmath>
 #include <memory.h>
 #include <misc/psrand.h>
 

@@ -68,7 +68,7 @@
  * $NoKeywords: $
  */
 
-#include "AppDatabase.h"
+#include <win32/windatabase.h>
 
 #include <windows.h>
 #include <assert.h>

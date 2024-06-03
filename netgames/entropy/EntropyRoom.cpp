@@ -49,7 +49,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctype.h>
-#include <math.h>
+#include <cmath>
 #include "idmfc.h"
 #include "Entropystr.h"
 #include "EntropyAux.h"

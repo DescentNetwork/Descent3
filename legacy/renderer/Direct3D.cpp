@@ -28,7 +28,7 @@
 #include "rend_d3d.h"
 #include "d3dtypes.h"
 #include "d3d.h"
-#include "ddraw.h"
+#include <DirectX/ddraw.h>
 #include <2dlib/grdefs.h>
 #include <module/module.h>
 #include <bitmap/bumpmap.h>

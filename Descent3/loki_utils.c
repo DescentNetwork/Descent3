@@ -24,7 +24,7 @@
 #include <sys/mount.h>
 #endif
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include "loki_utils.h"
 

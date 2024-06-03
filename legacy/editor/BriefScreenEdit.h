@@ -24,7 +24,7 @@
 #endif // _MSC_VER >= 1000
 // BriefScreenEdit.h : header file
 //
-#include "gr.h"
+#include <2dlib/gr.h>
 #include <misc/pstypes.h>
 /////////////////////////////////////////////////////////////////////////////
 // CBriefScreenEdit dialog

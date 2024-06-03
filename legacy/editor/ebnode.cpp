@@ -1342,7 +1342,7 @@ void EBNode_MakeFirstPass(void)
 #include <renderer/renderer.h>
 #endif
 
-#include "gr.h"
+#include <2dlib/gr.h>
 #include "epath.h"
 
 void EBNode_DrawRoom(int room, grViewport *vp,vector *viewer_eye,matrix *viewer_orient,float zoom, bool f_current_room = false)

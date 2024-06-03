@@ -19,7 +19,7 @@
 // WorldObjectsDoorDialog.h : header file
 //
 
-#include "gr.h"
+#include <2dlib/gr.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CWorldObjectsDoorDialog dialog

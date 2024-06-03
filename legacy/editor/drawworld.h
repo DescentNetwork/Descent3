@@ -52,7 +52,7 @@
  * $NoKeywords: $
  */
 
-#include "gr.h"
+#include <2dlib/gr.h>
 
 #include <vecmat/vecmat.h>
 

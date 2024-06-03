@@ -227,7 +227,7 @@
 #include <physics/findintersection.h>
 #include "config.h"
 #include <mem/mem.h>
-#include "gr.h"
+#include <2dlib/gr.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

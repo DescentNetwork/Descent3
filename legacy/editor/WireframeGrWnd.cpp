@@ -196,7 +196,7 @@
 #include "erooms.h"
 
 #include <assert.h>
-#include "gr.h"
+#include <2dlib/gr.h>
 #include <ddebug/mono.h>
 #include "macros.h"
 #include <ddio/ddio.h>

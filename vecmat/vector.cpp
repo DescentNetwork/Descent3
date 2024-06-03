@@ -148,7 +148,7 @@
 
 #include <cstring>
 #include <cstdlib>
-#include <math.h>
+#include <cmath>
 
 #include <vecmat/vecmat.h>
 #include <ddebug/mono.h>

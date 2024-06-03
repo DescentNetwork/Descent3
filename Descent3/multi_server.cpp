@@ -642,7 +642,7 @@
 // #define USE_DIRECTPLAY
 
 #ifdef USE_DIRECTPLAY
-#include "directplay.h"
+#include <networking/directplay.h>
 #endif
 
 #include "dedicated_server.h"

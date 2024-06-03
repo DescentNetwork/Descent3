@@ -45,7 +45,7 @@
 #ifndef PICTLISTBOX_H
 #define PICTLISTBOX_H
 
-#include "gr.h"
+#include <2dlib/gr.h>
 
 class editorPictListBox
 {

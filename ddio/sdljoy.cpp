@@ -68,7 +68,7 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <ddio/joystick.h>
 #include <misc/pserror.h>

@@ -55,7 +55,7 @@
 #include <mem/mem.h>
 #include <vecmat/vecmat.h>
 #include <renderer/3d.h>
-#include "gr.h"
+#include <2dlib/gr.h>
 
 #define EBDRAW_NONE                0
 #define EBDRAW_ROOM                1

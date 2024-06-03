@@ -21,7 +21,7 @@
 #include <cstdlib>
 #include <cstdarg>
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <misc/pserror.h>
 #include <ddebug/mono.h>

@@ -156,7 +156,7 @@
 #include "HTexture.h"
 #include "texture.h"
 #include <Descent3/gametexture.h>
-#include "gr.h"
+#include <2dlib/gr.h>
 #include <Descent3/descent.h>
 #include "erooms.h"
 #include <Descent3/room.h>

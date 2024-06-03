@@ -188,7 +188,7 @@
 #include <ddio/ddio.h>
 
 #ifndef RELEASE
-#include <time.h>
+#include <ctime>
 #endif
 
 #define CURRENT_TABLE_VERSION 22

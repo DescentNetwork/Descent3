@@ -19,7 +19,7 @@
 #ifndef __LINUX_DD_SOUND_H_
 #define __LINUX_DD_SOUND_H_
 
-#include <SDL2/SDL_audio.h>
+#include <SDL_audio.h>
 
 #include <sndlib/ssl_lib.h>
 #include "mixer.h"

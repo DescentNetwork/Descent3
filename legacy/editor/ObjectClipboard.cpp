@@ -29,7 +29,7 @@
 #include "editor.h"
 #include <Descent3/render.h>
 #include <manage/manage.h>
-#include "gr.h"	   
+#include <2dlib/gr.h>	   
 #include "gameloop.h"
 #include <Descent3/descent.h>
 #include <Descent3/terrain.h>
@@ -42,7 +42,7 @@
 
 #include <ddebug/mono.h>
 #include <renderer/3d.h>
-#include "gr.h"
+#include <2dlib/gr.h>
 #include "gamepath.h"
 #include "ObjectClipboard.h"
 #include "HObject.h"

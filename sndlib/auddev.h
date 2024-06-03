@@ -79,7 +79,7 @@
 
 #include <windows.h>
 #include <mmsystem.h>
-#include "dsound.h"
+#include <DirectX/dsound.h>
 #include "vmanpset.h"
 #include <misc/pstypes.h>
 #include <vecmat/vecmat.h>

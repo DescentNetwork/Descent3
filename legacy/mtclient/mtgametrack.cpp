@@ -132,7 +132,7 @@
 #include <lib/byteswap.h>
 
 
-#include <time.h>
+#include <ctime>
 
 #include "mt_net.h"
 

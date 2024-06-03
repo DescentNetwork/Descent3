@@ -21,7 +21,7 @@
 
 #include <renderer/3d.h>
 #include "radiosity.h"
-#include "gr.h"
+#include <2dlib/gr.h>
 
 struct rad_hemicube
 {

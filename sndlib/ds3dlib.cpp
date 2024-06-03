@@ -213,7 +213,7 @@
 #include <ddebug/mono.h>
 #include "soundload.h"
 #include <mem/mem.h>
-#include <ddio/application.h>
+#include <win32/winapp.h>
 #include "auddev.h"
 #include <misc/macros.h>
 #include <ddio/ddio.h>

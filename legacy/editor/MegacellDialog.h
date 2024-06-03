@@ -19,7 +19,7 @@
 // MegacellDialog.h : header file
 //
 
-#include "gr.h"
+#include <2dlib/gr.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CMegacellDialog dialog

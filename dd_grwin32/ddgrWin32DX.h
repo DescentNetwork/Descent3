@@ -42,7 +42,7 @@
 #include <windows.h>
 
 #include <2dlib/ddgr.h>
-#include "ddraw.h"
+#include <DirectX/ddraw.h>
 
 class oeApplication;
 
@@ -114,3 +114,4 @@ void ddgr_dx_surf_Clear(ddgr_surface *dsf, ddgr_color col, int l, int t, int w, 
 bool ddgr_dx_surf_Blt(ddgr_surface *dsf, int dx, int dy, ddgr_surface *ssf, int sx, int sy, int sw, int sh);
 
 #endif
+

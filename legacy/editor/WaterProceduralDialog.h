@@ -25,7 +25,7 @@
 // WaterProceduralDialog.h : header file
 //
 
-#include "gr.h"
+#include <2dlib/gr.h>
 #include <Descent3/gametexture.h>
 
 /////////////////////////////////////////////////////////////////////////////

@@ -28,7 +28,7 @@
 #include <misc/pstypes.h>
 #include "telcomefxstructs.h"
 #include "telcom.h"
-#include "gr.h"
+#include <2dlib/gr.h>
 #include "resource.h"
 
 /////////////////////////////////////////////////////////////////////////////

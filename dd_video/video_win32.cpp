@@ -50,7 +50,7 @@
 
 #include "ddvidlib.h"
 #include <misc/pserror.h>
-#include <ddio/application.h>
+#include <win32/winapp.h>
 
 #include <cstring>
 

@@ -19,8 +19,8 @@
 #ifndef OSIRIS_VECTOR_H
 #define OSIRIS_VECTOR_H
 
-#include <math.h>
-#include <time.h>
+#include <cmath>
+#include <ctime>
 
 #include <scripts/lib/vecmat_external.h>
 

@@ -18,7 +18,7 @@
 
 #if defined(WIN32)
 #include <windows.h>
-#include "ddraw.h"
+#include <DirectX/ddraw.h>
 #elif defined(__unix__)
 #include <linux/linux_fix.h>
 #include "lnxscreenmode.h"
@@ -46,6 +46,7 @@
 #include <cstring>
 
 #if defined(WIN32)
+
 #include "win/arb_extensions.h"
 #endif
 

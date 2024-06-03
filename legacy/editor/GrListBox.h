@@ -38,7 +38,7 @@
 #if !defined(AFX_GRLISTBOX_H__12166D61_1D56_11D1_BDA4_00A0C96ED595__INCLUDED_)
 #define AFX_GRLISTBOX_H__12166D61_1D56_11D1_BDA4_00A0C96ED595__INCLUDED_
 
-#include "gr.h"
+#include <2dlib/gr.h>
 
 #if _MSC_VER >= 1000
 #pragma once

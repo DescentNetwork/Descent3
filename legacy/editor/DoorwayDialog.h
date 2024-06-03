@@ -20,7 +20,7 @@
 //
 
 #include "KeypadDialog.h"
-#include "gr.h"
+#include <2dlib/gr.h>
 #include <Descent3/doorway.h>
 
 /////////////////////////////////////////////////////////////////////////////

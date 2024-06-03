@@ -284,6 +284,8 @@
  *
  */
 
+#include "networking.h"
+
 #ifdef WIN32
 #include <windows.h>
 #include <winsock.h>
@@ -312,8 +314,7 @@ typedef int socklen_t;
 #endif
 
 #ifdef WIN32
-#include "dplay.h"
-#include "dplobby.h"
+#include "directplay.h"
 #endif
 
 #include <Descent3/descent.h>
@@ -323,16 +324,12 @@ typedef int socklen_t;
 #include <misc/pstypes.h>
 #include <misc/pserror.h>
 #include <ddebug/mono.h>
-#include "networking.h"
 #include <ddio/ddio.h>
 #include <mem/mem.h>
 #include <Descent3/game.h>
 #include <Descent3/args.h>
 #include <lib/byteswap.h>
 
-#ifdef WIN32
-#include "directplay.h"
-#endif
 
 #include <misc/pstring.h>
 
@@ -2071,8 +2068,8 @@ static async_dns_lookup *lastaslu = NULL;
 
 #ifdef __unix__
 int CDECLCALL gethostbynameworker(void *parm);
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_thread.h>
+#include <SDL.h>
+#include <SDL_thread.h>
 
 // rcg06192000 use SDL threads.
 // #include <pthread.h>

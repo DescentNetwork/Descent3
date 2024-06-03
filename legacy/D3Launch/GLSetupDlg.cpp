@@ -40,7 +40,7 @@
 #include "d3launch.h"
 #include "GLSetupDlg.h"
 
-#include <time.h>
+#include <ctime>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

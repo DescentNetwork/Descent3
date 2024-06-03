@@ -677,7 +677,7 @@
 #endif
 
 #ifdef USE_DIRECTPLAY
-#include "directplay.h"
+#include <networking/directplay.h>
 #else
 bool Directplay_lobby_launched_game = false;
 #endif

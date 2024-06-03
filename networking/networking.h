@@ -162,6 +162,7 @@
 #if defined(WIN32)
 // Windows includes
 #include <winsock.h>
+#include <inaddr.h>
 
 // helper macros for working with SOCKADDR_IN to make it look nicer between windows and Linux
 static inline void INADDR_SET_SUN_SADDR(struct in_addr *st, uint32_t value) { st->S_un.S_addr = value; }
@@ -192,9 +193,9 @@ static inline void INADDR_GET_SUN_SUNB(struct in_addr *st, uint8_t *s_b1, uint8_
 #elif defined(__unix__)
 // Linux includes/defines
 
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <cstdio>
+#include <cerrno>
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -204,13 +205,12 @@ static inline void INADDR_GET_SUN_SUNB(struct in_addr *st, uint8_t *s_b1, uint8_
 #include <sys/uio.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
-#include <errno.h>
 #include <pthread.h>
 #include <fcntl.h>
 
 // rcg06212000 my SDL adds.
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_thread.h>
+#include <SDL.h>
+#include <SDL_thread.h>
 
 #include <linux/linux_fix.h>
 

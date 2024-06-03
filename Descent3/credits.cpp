@@ -91,7 +91,7 @@
 #include <d3music/musicapi.h>
 #include <sndlib/hlsoundlib.h>
 #include <cstring>
-#include <math.h>
+#include <cmath>
 #include <misc/psrand.h>
 
 #include <linux/linux_fix.h>

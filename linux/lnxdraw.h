@@ -22,7 +22,7 @@
 // #include "dyna_xwin.h"
 // #include "dyna_xext.h"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 struct LnxVideoDesc {
   //	Display *dDisplay;  // Which X-Windows Display to use

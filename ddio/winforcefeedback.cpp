@@ -95,7 +95,7 @@
 #include <cstdio>
 
 #include <cstdlib>
-#include <math.h>
+#include <cmath>
 
 #include <misc/pserror.h>
 #include <ddebug/mono.h>
@@ -104,7 +104,7 @@
 #include <ddio/application.h>
 #include "forcefeedback.h"
 #include <mem/mem.h>
-#include "dinput.h"
+#include <DirectX/dinput.h>
 
 //#include "iforce2.h"
 

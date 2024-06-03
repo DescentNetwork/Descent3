@@ -76,7 +76,7 @@
 #include "editor.h"
 #include "GrFontDialog.h"
 
-#include "gr.h"
+#include <2dlib/gr.h>
 #include <ddebug/mono.h>
 #include <bitmap/bitmap.h>
 #include <Descent3/gametexture.h>

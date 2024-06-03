@@ -44,8 +44,12 @@
 #ifndef _OUTRAGE_DIRECTPLAY_HEADER
 #define _OUTRAGE_DIRECTPLAY_HEADER
 
-#include "dplay.h"
-#include "dplobby.h"
+#include <cstdint>
+
+#include <DirectX/dplay.h>
+#include <DirectX/dplobby.h>
+
+#include "networking.h"
 
 struct modem_list {
   char name[200];

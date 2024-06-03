@@ -83,7 +83,7 @@
 #define DDIO_FF_MAXEFFECTS 30
 #if defined(WIN32)
 // WINDOWS
-#include "win/DirectX/dinput.h"
+#include <DirectX/dinput.h>
 #define FF_DEGREES DI_DEGREES
 #define FF_NOMINALMAX DI_FFNOMINALMAX
 #define FF_SECONDS DI_SECONDS

@@ -309,13 +309,12 @@
  * $NoKeywords: $
  */
 
-#include <ddio/controller.h>
+#include "wincontroller.h"
 
-#include <math.h>
+#include <cmath>
 
 #include <misc/pserror.h>
 #include <ddio/ddio.h>
-#include <ddio/joystick.h>
 #include <misc/macros.h>
 #include <cfile/inffile.h>
 

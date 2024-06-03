@@ -809,7 +809,7 @@
 #include <ddio/application.h>
 #include "AppDatabase.h"
 #include "program.h"
-#include "gr.h"
+#include <2dlib/gr.h>
 #include <Descent3/init.h>
 #include <ddebug/mono.h>
 #include "ds3dlib.h"

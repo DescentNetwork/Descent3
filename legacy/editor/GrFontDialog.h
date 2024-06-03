@@ -42,7 +42,7 @@
 
 // GrFontDialog.h : header file
 //
-#include "gr.h"
+#include <2dlib/gr.h>
 
 #define MAX_FONT_CHARS	256
 

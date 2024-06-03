@@ -20,8 +20,8 @@
 #ifndef _MVELIB_H_INCLUDED
 
 #include <mmsystem.h>
-#include "ddraw.h"
-#include "dsound.h"
+#include <DirectX/ddraw.h>
+#include <DirectX/dsound.h>
 
 #ifdef __cplusplus
 extern "C" {

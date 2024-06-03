@@ -31,7 +31,8 @@
 #include <windows.h>
 #include <mmsystem.h>
 #include <io.h>
-#include "dsound.h"
+#include <DirectX/dsound.h>
+#include <win32/winapp.h>
 #endif
 
 #include <fcntl.h>
@@ -41,7 +42,6 @@
 #include <libmve/mvelibw.h>
 #include <misc/pserror.h>
 #include <renderer/renderer.h>
-#include <ddio/application.h>
 #include <ddio/ddio.h>
 #include <dd_video/ddvid.h>
 #include <grtext/grtext.h>

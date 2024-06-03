@@ -847,7 +847,7 @@ struct msn_list {
 msn_list *FirstMsn, *CurrMsn, *TmpMsn;
 
 #ifdef WIN32
-#include "directplay.h"
+#include <networking/directplay.h>
 
 modem_list *DLLModems_found;
 int *DLLNum_modems_found;

@@ -104,10 +104,11 @@
 #ifndef _GR_H
 #define _GR_H
 
+#include <cstdint>
+
 #include "ddgr.h"
 #include <fix/fix.h>
 #include <misc/pserror.h>
-#include <misc/pstypes.h>
 
 class grMemorySurface;
 class grViewport;

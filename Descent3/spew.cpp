@@ -135,7 +135,7 @@
 
 //	ANSI C includes
 #include <cstdlib>
-#include <math.h>
+#include <cmath>
 #include <cstring>
 
 #include <misc/psrand.h>

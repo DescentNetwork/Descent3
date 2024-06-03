@@ -112,10 +112,10 @@
 #include <windows.h>
 
 #include <misc/pserror.h>
-#include <ddio/application.h>
+#include <win32/winapp.h>
 #include "ddio_win.h"
 #include <ddio/ddio.h>
-#include "dinput.h"
+#include <DirectX/dinput.h>
 
 #include "forcefeedback.h"
 

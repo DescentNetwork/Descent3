@@ -90,7 +90,7 @@
 
 #undef D3D_OVERLOADS
 #include "d3d.h"
-#include "ddraw.h"
+#include <DirectX/ddraw.h>
 
 card3d Cards[MAX_CARDS];
 int Num_cards = 0;

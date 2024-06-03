@@ -911,7 +911,7 @@
 
 #include <filesystem>
 #include <cstring>
-#include <time.h>
+#include <ctime>
 
 #include <ddebug/mono.h>
 #include <ddio/application.h>
@@ -994,7 +994,7 @@
 #include "editor\HFile.h"
 #include "editor\d3edit.h"
 #include "slew.h"
-#include "gr.h"
+#include <2dlib/gr.h>
 #define INIT_MESSAGE(c) SplashMessage c
 #else
 void IntroScreen();

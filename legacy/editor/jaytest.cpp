@@ -16,7 +16,7 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <time.h>
+#include <ctime>
 #include <renderer/3d.h>
 #include "texture.h"
 #include <Descent3/object.h>

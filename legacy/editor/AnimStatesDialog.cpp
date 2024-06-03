@@ -87,7 +87,7 @@
 #include "editor.h"
 #include "AnimStatesDialog.h"
 #include <model/polymodel.h>
-#include "gr.h"
+#include <2dlib/gr.h>
 #include "soundpage.h"
 #include <sndlib/soundload.h>
 

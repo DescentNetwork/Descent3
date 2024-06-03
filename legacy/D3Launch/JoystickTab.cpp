@@ -86,7 +86,7 @@
 #include <regstr.h>
 #include "D3Launch.h"
 #include "JoystickTab.h"
-#include "dinput.h"
+#include <DirectX/dinput.h>
 #include "OS_Config.h"
 
 #ifdef _DEBUG

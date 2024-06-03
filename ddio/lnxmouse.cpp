@@ -82,7 +82,7 @@
 // ----------------------------------------------------------------------------
 
 #include <cstring>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <misc/pserror.h>
 #include <misc/psclass.h>

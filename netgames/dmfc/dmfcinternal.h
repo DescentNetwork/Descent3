@@ -254,7 +254,7 @@
 
 #include <cstdio>
 #include <stdarg.h>
-#include <time.h>
+#include <ctime>
 #include "idmfc.h"
 #include "DMFC.h"
 #include "gamedll_header.h"

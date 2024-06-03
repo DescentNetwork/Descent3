@@ -6058,7 +6058,7 @@ $$END
 */
 float qMathPercentage(float f0, float f1) { return f0 * f1; }
 
-#include <math.h>
+#include <cmath>
 
 /*
 $$QUERY

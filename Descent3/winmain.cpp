@@ -23,8 +23,8 @@
 #include <ddebug/mono.h>
 #include "descent.h"
 //#include "texture.h"
-#include <ddio/application.h>
-#include <ddio/appdatabase.h>
+#include <win32/winapp.h>
+#include <win32/windatabase.h>
 #include <misc/pserror.h>
 #include "args.h"
 #include <Descent3/init.h>

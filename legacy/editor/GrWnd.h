@@ -45,7 +45,7 @@
 #ifndef M_GRWND_H
 #define M_GRWND_H
 
-#include "gr.h"
+#include <2dlib/gr.h>
 #include "stdafx.h"
 
 const DWORD GRWND_STYLE = WS_VISIBLE | WS_CHILD | WS_CAPTION | WS_CLIPSIBLINGS |
