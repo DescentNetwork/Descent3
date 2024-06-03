@@ -108,17 +108,10 @@
 #include <windows.h>
 #endif
 
-#include <cstdio>
 #include <cstdlib>
-#include <cmath>
 #include <cstring>
-#include <Descent3/game.h>
-#include <ddio/ddio.h>
-#include <Descent3/descent.h>
+
 #include <misc/pstypes.h>
-#include <misc/pserror.h>
-#include <mem/mem.h>
-#include <ddebug/mono.h>
 #include <networking/networking.h>
 #include "mt_net.h"
 #include <lib/byteswap.h>
@@ -244,7 +237,7 @@ int InitPilotTrackerClient() {
   D3WriteState = STATE_IDLE;
   D3ReadState = STATE_IDLE;
 
-  ReadD3Pilot = NULL;
+  ReadD3Pilot = nullptr;
   ValidState = VALID_STATE_IDLE;
 
   VersionState = VERSION_STATE_IDLE;
@@ -275,7 +268,7 @@ int SendD3PilotData(vmt_descent3_struct *d3_pilot) {
   // First check the network
   PollPTrackNet();
 
-  if (d3_pilot == NULL) {
+  if (d3_pilot == nullptr) {
     if (D3WriteState == STATE_IDLE) {
       return -3;
     }
@@ -349,7 +342,7 @@ int GetD3PilotData(vmt_descent3_struct *d3_pilot, char *pilot_name, char *tracke
   // First check the network
   PollPTrackNet();
 
-  if (d3_pilot == NULL) {
+  if (d3_pilot == nullptr) {
     if (D3ReadState == STATE_IDLE) {
       return -3;
     }
@@ -359,20 +352,20 @@ int GetD3PilotData(vmt_descent3_struct *d3_pilot, char *pilot_name, char *tracke
     if (D3ReadState == STATE_RECEIVED_PILOT) {
       // We got this pilot, and now we are about to inform the app, so back to idle
       D3ReadState = STATE_IDLE;
-      ReadD3Pilot = NULL;
+      ReadD3Pilot = nullptr;
 
       return 1;
     }
     if (D3ReadState == STATE_TIMED_OUT) {
       // We gave up on this pilot, and now we are about to inform the app, so back to idle
       D3ReadState = STATE_IDLE;
-      ReadD3Pilot = NULL;
+      ReadD3Pilot = nullptr;
       return -1;
     }
     if (D3ReadState == STATE_PILOT_NOT_FOUND) {
       // The tracker said this dude is not found.
       D3ReadState = STATE_IDLE;
-      ReadD3Pilot = NULL;
+      ReadD3Pilot = nullptr;
       return 3;
     }
 
@@ -479,7 +472,7 @@ void HandlePilotData(uint8_t *data, int len, network_address *from) {
           if ((inpacket.len - PACKED_HEADER_ONLY_SIZE) > Motd_maxlen)
             inpacket.len = PACKED_HEADER_ONLY_SIZE + Motd_maxlen - 1;
           strncpy(Motdptr, (char *)inpacket.data, inpacket.len - PACKED_HEADER_ONLY_SIZE);
-          Motdptr[inpacket.len - PACKED_HEADER_ONLY_SIZE] = NULL;
+          Motdptr[inpacket.len - PACKED_HEADER_ONLY_SIZE] = '\0';
         }
         MOTDState = STATE_HAVE_MOTD;
       }
@@ -722,7 +715,7 @@ int GetD3MOTD(char *szmotd, int maxlen) {
   // First check the network
   PollPTrackNet();
 
-  if (szmotd == NULL) {
+  if (szmotd == nullptr) {
     if (MOTDState == STATE_WAITING_MOTD) {
       return 0;
     }

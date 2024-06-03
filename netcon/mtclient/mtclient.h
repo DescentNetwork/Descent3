@@ -80,12 +80,10 @@
 
 #include <ui/ui.h>
 
-//#define uint8_t uint8_t
-
 #define TRACKER_MENU_W 256
 #define TRACKER_MENU_H 256
-#define TRACKER_MENU_X 320 - (TRACKER_MENU_W / 2)
-#define TRACKER_MENU_Y 240 - (TRACKER_MENU_H / 2)
+#define TRACKER_MENU_X (320 - (TRACKER_MENU_W / 2))
+#define TRACKER_MENU_Y (240 - (TRACKER_MENU_H / 2))
 
 #define MAXTEXTITEMS 100
 #define MAXNEWWINDOWS 5
