@@ -117,22 +117,13 @@
 #include <windows.h>
 #endif
 
-#include <cstdio>
 #include <cstring>
+#include <ctime>
 
-#include <Descent3/game.h>
-#include <ddio/ddio.h>
-#include <Descent3/descent.h>
 #include <misc/pstypes.h>
-#include <misc/pserror.h>
-#include <mem/mem.h>
-#include <ddebug/mono.h>
 #include <networking/networking.h>
 #include "mtgametrack.h"
 #include <lib/byteswap.h>
-
-#include <ctime>
-
 #include "mt_net.h"
 
 // extern float DLLtimer_GetTime(void);
@@ -140,13 +131,15 @@ typedef float (*timer_GetTime_fp)(void);
 
 extern timer_GetTime_fp DLLtimer_GetTime;
 
-typedef int (*nw_RegisterCallback_fp)(void *nfp, uint8_t id);
+typedef void (*HandleGamePacket_fp)(uint8_t *data, int len, network_address *from);
+
+typedef int (*nw_RegisterCallback_fp)(HandleGamePacket_fp, uint8_t id);
 extern nw_RegisterCallback_fp DLLnw_RegisterCallback;
 
 typedef int (*nw_DoReceiveCallbacks_fp)(void);
 extern nw_DoReceiveCallbacks_fp DLLnw_DoReceiveCallbacks;
 
-#if (defined(MONO) && (!defined(RELEASE)))
+#if (defined(LOGGER) && (!defined(RELEASE)))
 #define DLLmprintf(...) DLLDebug_ConsolePrintf(__VA_ARGS__)
 #else
 #define DLLmprintf(...)
@@ -321,20 +314,20 @@ game_list gl;
 
 game_list *GetGameList() {
   memset(&gl, 0, sizeof(gl));
-  for (int i = 0; i < MAX_GAME_BUFFERS; i++) {
-    if (GameBuffer[i].game_type != GT_UNUSED) {
-      memcpy(&gl, &GameBuffer[i], sizeof(gl));
-      GameBuffer[i].game_type = GT_UNUSED;
+  for (auto & i : GameBuffer) {
+    if (i.game_type != GT_UNUSED) {
+      memcpy(&gl, &i, sizeof(gl));
+      i.game_type = GT_UNUSED;
       return &gl;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 void RequestGameList() {
   // Zero out all games
-  for (int i = 0; i < MAX_GAME_BUFFERS; i++) {
-    memset(&GameBuffer[i], 0, sizeof(game_list));
+  for (auto & i : GameBuffer) {
+    memset(&i, 0, sizeof(game_list));
   }
 
   int len = strlen(DLLPXO_hosted_lobby_name) + 1;

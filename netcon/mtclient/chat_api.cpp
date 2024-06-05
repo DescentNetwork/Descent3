@@ -22,23 +22,17 @@
 
 #include <cstdio>
 #include <cstring>
-#include <memory.h>
-#include <ui/ui.h>
-#include <Descent3/newui.h>
-#include <2dlib/grdefs.h>
-#include <Descent3/player.h>
-#include <Descent3/game.h>
-#include <Descent3/pilot.h>
-#include <ddio/ddio_common.h>
-#include <networking/networking.h>
 
-#ifdef __unix__
+#ifdef __LINUX__
 #include <sys/time.h>
 #include <unistd.h>
 #endif
 
 #include "chat_api.h"
+#include <2dlib/grdefs.h>
 #include "mtstrings.h"
+#include <networking/networking.h>
+
 extern const char *GetString(int d);
 
 typedef void *(*mem_malloc_fp)(int size);
@@ -47,7 +41,7 @@ extern mem_malloc_fp DLLmem_malloc;
 typedef void (*mem_free_fp)(void *memblock);
 extern mem_free_fp DLLmem_free;
 
-typedef int (*nw_Asyncgethostbyname_fp)(uint32_t *ip, int command, char *hostname);
+typedef int (*nw_Asyncgethostbyname_fp)(uint32_t *ip, int command, const char *hostname);
 extern nw_Asyncgethostbyname_fp DLLnw_Asyncgethostbyname;
 
 typedef int (*PollUI_fp)(void);
@@ -94,20 +88,20 @@ Chat_channel *Firstchannel, *Currchannel;
 
 void ChatInit(void) {
   Socket_connecting = 0;
-  Nick_name[0];
-  Orignial_nick_name[0];
+  Nick_name[0] = '\0';
+  Orignial_nick_name[0] = '\0';
   Nick_variety = 0;
-  szChat_channel[0] = NULL;
-  Input_chat_buffer[0] = NULL;
+  szChat_channel[0] = '\0';
+  Input_chat_buffer[0] = '\0';
   Chat_tracker_id[0];
-  Getting_user_channel_info_for[0] = NULL;
-  Getting_user_tracker_info_for[0] = NULL;
+  Getting_user_channel_info_for[0] = '\0';
+  Getting_user_tracker_info_for[0] = '\0';
   Getting_user_channel_error = 0;
   Getting_user_tracker_error = 0;
-  User_req_tracker_id[0] = NULL;
-  User_req_channel[0] = NULL;
-  User_list = NULL;
-  Chan_list = NULL;
+  User_req_tracker_id[0] = '\0';
+  User_req_channel[0] = '\0';
+  User_list = nullptr;
+  Chan_list = nullptr;
   Socket_connected = 0;
   Chat_server_connected = 0;
   Joining_channel = 0;
@@ -126,10 +120,7 @@ void ChatInit(void) {
 // with 0. Keep calling it until it returns something other than 0
 // note: the nickname may be changed if someone with that name already
 // exists (Scourge1 for instance)
-int ConnectToChatServer(char *serveraddr, char *nickname, char *trackerid) {
-  int16_t chat_port;
-  char chat_server[50];
-  char *p;
+int ConnectToChatServer(const char *serveraddr, int16_t chat_port, char *nickname, char *trackerid) {
   char signon_str[100];
 
   // if(Socket_connected && ) return -2;
@@ -142,21 +133,12 @@ int ConnectToChatServer(char *serveraddr, char *nickname, char *trackerid) {
     strcpy(Orignial_nick_name, nickname);
     strcpy(Chat_tracker_id, trackerid);
 
-    Firstuser = NULL;
-    Firstcommand = NULL;
+    Firstuser = nullptr;
+    Firstcommand = nullptr;
     Chat_server_connected = 0;
     FlushChatCommandQueue();
 
-    p = strchr(serveraddr, ':');
-
-    if (NULL == p) {
-      // AfxMessageBox("Invalid chat server, must be host.com:port (ie. irc.dal.net:6667)");
-      return -1;
-    }
-    strncpy(chat_server, serveraddr, (p - serveraddr));
-    chat_server[p - serveraddr] = NULL;
-    chat_port = atoi(p + 1);
-    if (0 == chat_port) {
+    if (chat_port == 0) {
       // AfxMessageBox("Invalid chat port, must be host.com:port (ie. irc.dal.net:6667)");
       return -1;
     }
@@ -177,7 +159,12 @@ int ConnectToChatServer(char *serveraddr, char *nickname, char *trackerid) {
       return -1;
     }
 
-    make_nonblocking(Chatsock);
+#ifdef WIN32
+    unsigned long arg = 1;
+    ioctlsocket(Chatsock, FIONBIO, &arg);
+#else // WIN32
+    fcntl(Chatsock, F_SETFL, fcntl(Chatsock, F_GETFL, 0) | O_NONBLOCK);
+#endif
 
     /*
     HOSTENT *he;
@@ -195,18 +182,18 @@ int ConnectToChatServer(char *serveraddr, char *nickname, char *trackerid) {
     int rcode;
     uint32_t ip;
 
-    DLLnw_Asyncgethostbyname(&ip, NW_AGHBN_LOOKUP, chat_server);
+    DLLnw_Asyncgethostbyname(&ip, NW_AGHBN_LOOKUP, serveraddr);
     do {
-      rcode = DLLnw_Asyncgethostbyname(&ip, NW_AGHBN_READ, chat_server);
+      rcode = DLLnw_Asyncgethostbyname(&ip, NW_AGHBN_READ, serveraddr);
       if (99 == DLLPollUI()) {
         return 0;
       }
     } while (rcode == 0);
 
     if (rcode != 1) {
-      DLLmprintf(0, "Unable to gethostbyname(\"%s\").\n", chat_server);
+      DLLmprintf(0, "Unable to gethostbyname(\"%s\").\n", serveraddr);
       DLLmprintf(0, "WSAGetLastError() returned %d.\n", WSAGetLastError());
-      DLLnw_Asyncgethostbyname(NULL, NW_AGHBN_CANCEL, NULL);
+      DLLnw_Asyncgethostbyname(nullptr, NW_AGHBN_CANCEL, nullptr);
       return 0;
     }
     memcpy(&Chataddr.sin_addr.s_addr, &ip, 4);
@@ -258,7 +245,7 @@ int ConnectToChatServer(char *serveraddr, char *nickname, char *trackerid) {
       FD_ZERO(&write_fds);
       FD_SET(Chatsock, &write_fds);
       // Writable -- that means it's connected
-      if (select(Chatsock + 1, NULL, &write_fds, NULL, &timeout)) {
+      if (select(Chatsock + 1, nullptr, &write_fds, nullptr, &timeout)) {
         Socket_connected = 1;
         DLLmprintf(0, "Socket connected, sending user and nickname request\n");
         sprintf(signon_str, "/USER %s %s %s :%s", "user", "user", "user", Chat_tracker_id);
@@ -271,7 +258,7 @@ int ConnectToChatServer(char *serveraddr, char *nickname, char *trackerid) {
       FD_ZERO(&error_fds);
       FD_SET(Chatsock, &error_fds);
       // error -- that means it's not going to connect
-      if (select(Chatsock + 1, NULL, NULL, &error_fds, &timeout)) {
+      if (select(Chatsock + 1, nullptr, nullptr, &error_fds, &timeout)) {
         DLLmprintf(0, "Select returned an error!\n");
         return -1;
       }
@@ -311,16 +298,14 @@ void DisconnectFromChatServer() {
   RemoveAllChatUsers();
   FlushChatCommandQueue();
   FlushChannelList();
-
-  return;
 }
 
 // returns NULL if no line is there to print, otherwise returns a string to
 // print (all preformatted of course)
-char *GetChatText() {
+const char *GetChatText() {
 
   if (!Socket_connected)
-    return NULL;
+    return nullptr;
 
   // ChatGetString will do the formatting
   return ChatGetString();
@@ -332,7 +317,7 @@ char *SendChatString(char *line, int raw) {
   char szCmd[200];
   char szTarget[50];
   if (!Socket_connected)
-    return NULL;
+    return nullptr;
 
   if (line[0] == '/') {
 
@@ -342,30 +327,30 @@ char *SendChatString(char *line, int raw) {
       strcpy(szTarget, GetWordNum(1, line + 1));
       sprintf(szCmd, "PRIVMSG %s :%s\n\r", szTarget, line + strlen("/msg ") + strlen(szTarget) + 1);
       send(Chatsock, szCmd, strlen(szCmd), 0);
-      szCmd[strlen(szCmd) - 2] = NULL;
+      szCmd[strlen(szCmd) - 2] = '\0';
       return ParseIRCMessage(szCmd, MSG_LOCAL);
     }
     if (stricmp(szCmd, "me") == 0) {
       sprintf(szCmd, "PRIVMSG %s :\001ACTION %s\001\n\r", szChat_channel, line + strlen("/me "));
       send(Chatsock, szCmd, strlen(szCmd), 0);
-      szCmd[strlen(szCmd) - 2] = NULL;
+      szCmd[strlen(szCmd) - 2] = '\0';
       return ParseIRCMessage(szCmd, MSG_LOCAL);
     }
     if (stricmp(szCmd, "xyz") == 0) {
       // Special command to send raw irc commands
       sprintf(szCmd, "%s\n\r", line + strlen("/xyz "));
       send(Chatsock, szCmd, strlen(szCmd), 0);
-      return NULL;
+      return nullptr;
     }
     if (stricmp(szCmd, "list") == 0) {
       sprintf(szCmd, "%s\n\r", line + 1);
       send(Chatsock, szCmd, strlen(szCmd), 0);
-      return NULL;
+      return nullptr;
     }
     if (raw) {
       sprintf(szCmd, "%s\n\r", line + 1);
       send(Chatsock, szCmd, strlen(szCmd), 0);
-      return NULL;
+      return nullptr;
     }
     return "Unrecognized command";
 
@@ -373,12 +358,12 @@ char *SendChatString(char *line, int raw) {
     if (szChat_channel[0]) {
       sprintf(szCmd, "PRIVMSG %s :%s\n\r", szChat_channel, line);
       send(Chatsock, szCmd, strlen(szCmd), 0);
-      szCmd[strlen(szCmd) - 2] = NULL;
+      szCmd[strlen(szCmd) - 2] = '\0';
       return ParseIRCMessage(szCmd, MSG_LOCAL);
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 // Returns a structure which contains a command and possible some data (like
@@ -388,7 +373,7 @@ char *SendChatString(char *line, int raw) {
 // off the server for some reason.
 Chat_command *GetChatCommand() {
   if (!Socket_connected)
-    return NULL;
+    return nullptr;
   return GetChatCommandFromQueue();
 }
 
@@ -400,10 +385,10 @@ char *GetChatUserList() {
   ;
   if (User_list) {
     DLLmem_free(User_list);
-    User_list = NULL;
+    User_list = nullptr;
   }
   if (!Socket_connected)
-    return NULL;
+    return nullptr;
 
   Curruser = Firstuser;
   while (Curruser) {
@@ -479,18 +464,18 @@ const char *ChatGetString(void) {
       {
         DLLmprintf(0, "recv caused an error: %d\n", lerror);
       }
-      return NULL;
+      return nullptr;
     }
     if (bytesread) {
-      ch[1] = NULL;
+      ch[1] = '\0';
       // DLLmprintf(0,ch);
       if ((ch[0] == 0x0a) || (ch[0] == 0x0d)) {
         if (Input_chat_buffer[0] == '\0') {
           // Blank line, ignore it
-          return NULL;
+          return nullptr;
         }
         strcpy(return_string, Input_chat_buffer);
-        Input_chat_buffer[0] = NULL;
+        Input_chat_buffer[0] = '\0';
         // DLLmprintf(0,"->|%s\n",return_string);
         p = ParseIRCMessage(return_string, MSG_REMOTE);
 
@@ -500,8 +485,8 @@ const char *ChatGetString(void) {
     } else {
       // Select said we had read data, but 0 bytes read means disconnected
       DLLmprintf(0, "Disconnected! Doh!");
-      AddChatCommandToQueue(CC_DISCONNECTED, NULL, 0);
-      return NULL;
+      AddChatCommandToQueue(CC_DISCONNECTED, nullptr, 0);
+      return nullptr;
     }
   }
   return NULL;
@@ -590,7 +575,7 @@ int RemoveChatUser(char *nickname) {
 }
 
 void RemoveAllChatUsers(void) {
-  Chat_user *tmp_user = NULL;
+  Chat_user *tmp_user = nullptr;
   Curruser = Firstuser;
   while (Curruser) {
     tmp_user = Curruser->next;
@@ -598,7 +583,7 @@ void RemoveAllChatUsers(void) {
     DLLmem_free(Curruser);
     Curruser = tmp_user;
   }
-  Firstuser = NULL;
+  Firstuser = nullptr;
 }
 
 char *ParseIRCMessage(char *Line, int iMode) {
@@ -616,17 +601,17 @@ char *ParseIRCMessage(char *Line, int iMode) {
   int iNickLen;
   int iPrefixLen;
 
-  szPrefix[0] = NULL;
-  szNick[0] = NULL;
+  szPrefix[0] = '\0';
+  szNick[0] = '\0';
 
   if (strlen(Line) >= MAXLOCALSTRING) {
-    return NULL;
+    return nullptr;
   }
   // Nick included....
   if (iMode == MSG_REMOTE) {
     strcpy(szRemLine, Line);
     // Start by getting the prefix
-    szHackPrefix[0] = NULL;
+    szHackPrefix[0] = '\0';
     if (Line[0] == ':') {
       //
       pszTempStr = GetWordNum(0, Line + 1);
@@ -683,7 +668,7 @@ char *ParseIRCMessage(char *Line, int iMode) {
     if (szCTCPCmd[0] == 0x01) {
       // Handle ctcp message
       strcpy(szRemLine, Line + iPrefixLen + strlen(szCmd) + strlen(szTarget) + strlen(szCTCPCmd) + 6);
-      szRemLine[strlen(szRemLine) - 1] = NULL; // null out the ending 0x01
+      szRemLine[strlen(szRemLine) - 1] = '\0'; // null out the ending 0x01
       if (stricmp(szCTCPCmd + 1, "ACTION") == 0) {
         // Posture
         sprintf(szResponse, "\1\xff\x28\x28* %s %s", szNick, szRemLine);
@@ -691,7 +676,7 @@ char *ParseIRCMessage(char *Line, int iMode) {
       }
       if (iMode == MSG_LOCAL) {
         strcpy(szHackPrefix, Line + iPrefixLen + strlen(szCmd) + strlen(szTarget) + 4);
-        szRemLine[strlen(szRemLine) - 1] = NULL;
+        szRemLine[strlen(szRemLine) - 1] = '\0';
         sprintf(szResponse, "** CTCP %s %s %s", szTarget, szCTCPCmd + 1, szRemLine);
         return szResponse;
       }
@@ -699,18 +684,18 @@ char *ParseIRCMessage(char *Line, int iMode) {
         sprintf(szResponse, "/NOTICE %s :\001PING %s\001", szNick,
                 szRemLine); // Don't need the trailing \001 because szremline has it.
         SendChatString(szResponse, 1);
-        return NULL;
+        return nullptr;
       }
       if (stricmp(szCTCPCmd + 1, "VERSION") == 0) {
         // reply with a notice version & copyright
         // sprintf(szTempLine,"NOTICE %s :\001VERSION Copyright(c)\001\n",szNick);
 
-        return NULL;
+        return nullptr;
       }
       strcpy(szRemLine, 1 + GetWordNum(0, Line + iPrefixLen + strlen(szCmd) + strlen(szTarget) + 4));
-      szRemLine[strlen(szRemLine) - 1] = NULL;
+      szRemLine[strlen(szRemLine) - 1] = '\0';
       sprintf(szResponse, "** CTCP Message from %s (%s)", szNick, szRemLine);
-      return NULL; // szResponse;
+      return nullptr; // szResponse;
     }
     // differentiate between channel and private
     if ((szTarget[0] == '#') || (szTarget[0] == '+')) {
@@ -730,7 +715,7 @@ char *ParseIRCMessage(char *Line, int iMode) {
   }
   // don't handle any other messages locally.
   if (iMode == MSG_LOCAL) {
-    return NULL;
+    return nullptr;
   }
 
   if (stricmp(szCmd, "NOTICE") == 0) {
@@ -751,21 +736,21 @@ char *ParseIRCMessage(char *Line, int iMode) {
     if (szCTCPCmd[0] == 0x01) {
       // Handle ctcp message
       strcpy(szRemLine, Line + iPrefixLen + strlen(szCmd) + strlen(szTarget) + strlen(szCTCPCmd) + 6);
-      szRemLine[strlen(szRemLine) - 1] = NULL; // null out the ending 0x01
+      szRemLine[strlen(szRemLine) - 1] = '\0'; // null out the ending 0x01
       if (stricmp(szCTCPCmd + 1, "PING") == 0) {
         // This is a ping response, figure out time and print
         // sprintf(NewMsg.Message,"** Ping Response from %s: %ums",szNick,ulping);
-        return NULL;
+        return nullptr;
       }
 
       // Default message
       strcpy(szRemLine, 1 + GetWordNum(0, Line + iPrefixLen + strlen(szCmd) + strlen(szTarget) + 4));
-      szRemLine[strlen(szRemLine) - 1] = NULL;
+      szRemLine[strlen(szRemLine) - 1] = '\0';
       sprintf(szResponse, "** CTCP Message from %s (%s)", szNick, szRemLine);
-      return NULL; // szResponse;
+      return nullptr; // szResponse;
     }
     sprintf(szResponse, "%s", szRemLine);
-    return NULL;
+    return nullptr;
   }
   if (stricmp(szCmd, "JOIN") == 0) {
     // see if it is me!
@@ -793,7 +778,7 @@ char *ParseIRCMessage(char *Line, int iMode) {
 
     AddChatUser(szNick);
     sprintf(szResponse, "** %s has joined %s", szNick, szTarget);
-    return NULL; // szResponse;
+    return nullptr; // szResponse;
     // Add them to the userlist too!
   }
   if (stricmp(szCmd, "PART") == 0) {
@@ -808,7 +793,7 @@ char *ParseIRCMessage(char *Line, int iMode) {
     }
 
     RemoveChatUser(szNick);
-    return NULL;
+    return nullptr;
     // Remove them to the userlist too!
   }
   if (stricmp(szCmd, "KICK") == 0) {
@@ -820,15 +805,15 @@ char *ParseIRCMessage(char *Line, int iMode) {
     // see if it is me!
     if (stricmp(Nick_name, GetWordNum(1, szRemLine)) == 0) {
       // Yup, it's me!
-      szChat_channel[0] = NULL;
+      szChat_channel[0] = '\0';
       // bNewStatus=1;
-      AddChatCommandToQueue(CC_KICKED, NULL, 0);
+      AddChatCommandToQueue(CC_KICKED, nullptr, 0);
       RemoveAllChatUsers();
     }
     // sprintf(szResponse,"*** %s has kicked %s from channel %s (%s)",szNick,szHackPrefix,szTarget,pszTempStr);
     // Remove them to the userlist too!
     RemoveChatUser(szNick);
-    return NULL; // szResponse;
+    return nullptr; // szResponse;
   }
   if (stricmp(szCmd, "NICK") == 0) {
     // see if it is me!
@@ -842,17 +827,17 @@ char *ParseIRCMessage(char *Line, int iMode) {
     RemoveChatUser(szNick);
     AddChatUser(GetWordNum(0, szRemLine));
     // sprintf(szResponse,"*** %s is now known as %s",szNick,GetWordNum(0,szRemLine));
-    return NULL; // szResponse;
+    return nullptr; // szResponse;
   }
   if (stricmp(szCmd, "PING") == 0) {
     // respond with pong (GetWordNum(0,szRemLine))
     sprintf(szResponse, "/PONG :%s", GetWordNum(0, szRemLine));
     SendChatString(szResponse, 1);
-    return NULL;
+    return nullptr;
   }
   if (stricmp(szCmd, "MODE") == 0) {
     // Channel Mode info
-    return NULL;
+    return nullptr;
   }
 
   if (stricmp(szCmd, "401") == 0) {
@@ -873,7 +858,7 @@ char *ParseIRCMessage(char *Line, int iMode) {
     //{
     strcpy(User_req_tracker_id, GetWordNum(5, szRemLine));
     //}
-    return NULL;
+    return nullptr;
   }
   if (stricmp(szCmd, "319") == 0) {
     char szWhoisUser[33];
@@ -883,7 +868,7 @@ char *ParseIRCMessage(char *Line, int iMode) {
     //{
     strcpy(User_req_channel, GetWordNum(2, szRemLine));
     //}
-    return NULL;
+    return nullptr;
   }
 
   // End of whois and we didn't get a channel means they aren't in a channel.
@@ -897,7 +882,7 @@ char *ParseIRCMessage(char *Line, int iMode) {
     // start of channel list
     FlushChannelList();
     GettingChannelList = 1;
-    return NULL;
+    return nullptr;
   }
   if (stricmp(szCmd, "322") == 0) {
     // channel list data
@@ -908,16 +893,16 @@ char *ParseIRCMessage(char *Line, int iMode) {
       strcpy(channel_list_name, GetWordNum(1, szRemLine));
       AddChannel(channel_list_name, atoi(GetWordNum(2, szRemLine)), sztopic);
     }
-    return NULL;
+    return nullptr;
   }
   if (stricmp(szCmd, "323") == 0) {
     // end of channel list
     GettingChannelList = 2;
-    return NULL;
+    return nullptr;
   }
   if (stricmp(szCmd, "324") == 0) {
     // Channel Mode info
-    return NULL;
+    return nullptr;
   }
 
   if (stricmp(szCmd, "332") == 0) {
@@ -927,7 +912,7 @@ char *ParseIRCMessage(char *Line, int iMode) {
     }
     // sprintf(NewMsg.Message,"*** %s has changed the topic to: %s",szNick,GetWordNum(2,szRemLine));
 
-    return NULL;
+    return nullptr;
   }
   if (stricmp(szCmd, "TOPIC") == 0) {
     // Channel Topic, update status bar.
@@ -935,12 +920,12 @@ char *ParseIRCMessage(char *Line, int iMode) {
       // strncpy(szChanTopic,GetWordNum(1,szRemLine),70);
     }
     // sprintf(NewMsg.Message,"*** %s has changed the topic to: %s",szNick,GetWordNum(1,szRemLine));
-    return NULL;
+    return nullptr;
   }
   if (stricmp(szCmd, "QUIT") == 0) {
     // Remove the user!
     RemoveChatUser(szNick);
-    return NULL;
+    return nullptr;
   }
   if (stricmp(szCmd, "376") == 0) // end of motd, trigger autojoin...
   {
@@ -950,7 +935,7 @@ char *ParseIRCMessage(char *Line, int iMode) {
       // We want to make sure we know our nick. This is somewhat of a hack
       strcpy(Nick_name, GetWordNum(0, szRemLine + 1));
     }
-    return NULL;
+    return nullptr;
   }
   if ((stricmp(szCmd, "377") == 0) || (stricmp(szCmd, "372") == 0) || (stricmp(szCmd, "372") == 0)
 
@@ -975,7 +960,7 @@ char *ParseIRCMessage(char *Line, int iMode) {
   */
 
   {
-    return NULL;
+    return nullptr;
   }
   if (stricmp(szCmd, "353") == 0) {
 
@@ -992,9 +977,9 @@ char *ParseIRCMessage(char *Line, int iMode) {
       } else {
         AddChatUser(pszTempStr);
       }
-      pszTempStr = strtok(NULL, " ");
+      pszTempStr = strtok(nullptr, " ");
     }
-    return NULL;
+    return nullptr;
   }
   // MOTD Codes
   if ((stricmp(szCmd, "001") == 0) || (stricmp(szCmd, "002") == 0) || (stricmp(szCmd, "003") == 0) ||
@@ -1004,13 +989,13 @@ char *ParseIRCMessage(char *Line, int iMode) {
     // Stip the message, and display it.
     pszTempStr = GetWordNum(3, Line);
     strcpy(szResponse, pszTempStr);
-    return NULL;
+    return nullptr;
     // return szResponse;
   }
   if (stricmp(szCmd, "432") == 0) {
     // Channel Mode info
-    sprintf(szResponse, TXT_PXO_BADNICK);
-    AddChatCommandToQueue(CC_DISCONNECTED, NULL, 0);
+    sprintf(szResponse, "%s", TXT_PXO_BADNICK);
+    AddChatCommandToQueue(CC_DISCONNECTED, nullptr, 0);
     return szResponse;
   }
   if (stricmp(szCmd, "433") == 0) {
@@ -1021,20 +1006,20 @@ char *ParseIRCMessage(char *Line, int iMode) {
     Nick_variety++;
     sprintf(szResponse, "/NICK %s", new_nick);
     SendChatString(szResponse, 1);
-    return NULL;
+    return nullptr;
   }
   // Default print
   strcpy(szResponse, Line);
   // return szResponse;
-  return NULL;
+  return nullptr;
 }
 
 void AddChatCommandToQueue(int command, void *data, int len) {
   Currcommand = Firstcommand;
-  if (Firstcommand == NULL) {
+  if (Firstcommand == nullptr) {
     Firstcommand = (Chat_command *)DLLmem_malloc(sizeof(Chat_command));
     // ASSERT(Firstcommand);
-    Firstcommand->next = NULL;
+    Firstcommand->next = nullptr;
     Currcommand = Firstcommand;
   } else {
     while (Currcommand->next) {
@@ -1047,15 +1032,14 @@ void AddChatCommandToQueue(int command, void *data, int len) {
   Currcommand->command = command;
   if (len && data)
     memcpy(&Currcommand->data, data, len);
-  Currcommand->next = NULL;
-  return;
+  Currcommand->next = nullptr;
 }
 
-Chat_command *GetChatCommandFromQueue(void) {
+Chat_command *GetChatCommandFromQueue() {
   static Chat_command response_cmd;
   Chat_command *tmp_cmd;
   if (!Firstcommand)
-    return NULL;
+    return nullptr;
   Currcommand = Firstcommand;
   memcpy(&response_cmd, Currcommand, sizeof(Chat_command));
   tmp_cmd = Currcommand->next;
@@ -1064,7 +1048,7 @@ Chat_command *GetChatCommandFromQueue(void) {
   return &response_cmd;
 }
 
-void FlushChatCommandQueue(void) {
+void FlushChatCommandQueue() {
   Chat_command *tmp_cmd;
   Currcommand = Firstcommand;
 
@@ -1073,10 +1057,10 @@ void FlushChatCommandQueue(void) {
     DLLmem_free(Currcommand);
     Currcommand = tmp_cmd;
   }
-  Firstcommand = NULL;
+  Firstcommand = nullptr;
 }
 
-void FlushChannelList(void) {
+void FlushChannelList() {
   Chat_channel *tmp_chan;
   Currchannel = Firstchannel;
 
@@ -1085,20 +1069,20 @@ void FlushChannelList(void) {
     DLLmem_free(Currchannel);
     Currchannel = tmp_chan;
   }
-  Firstchannel = NULL;
+  Firstchannel = nullptr;
 }
-char *GetChannelList(void) {
+char *GetChannelList() {
   int ichan_list_length = 0;
   char sznumusers[10];
 
   if (GettingChannelList != 2)
-    return NULL;
+    return nullptr;
   if (!Socket_connected)
-    return NULL;
+    return nullptr;
 
   if (Chan_list) {
     DLLmem_free(Chan_list);
-    Chan_list = NULL;
+    Chan_list = nullptr;
   }
 
   Currchannel = Firstchannel;
@@ -1109,7 +1093,7 @@ char *GetChannelList(void) {
   }
   Currchannel = Firstchannel;
   Chan_list = (char *)DLLmem_malloc(ichan_list_length + 1);
-  Chan_list[0] = NULL;
+  Chan_list[0] = '\0';
   while (Currchannel) {
     strcat(Chan_list, "$");
     strcat(Chan_list, Currchannel->channel_name);
@@ -1127,13 +1111,13 @@ char *GetChannelList(void) {
 
 void AddChannel(char *channel, uint16_t numusers, char *topic) {
   Currchannel = Firstchannel;
-  if (Firstchannel == NULL) {
+  if (Firstchannel == nullptr) {
     Firstchannel = (Chat_channel *)DLLmem_malloc(sizeof(Chat_channel));
     // ASSERT(Firstchannel);
     strcpy(Firstchannel->channel_name, channel);
     strcpy(Firstchannel->topic, topic);
     Firstchannel->users = numusers;
-    Firstchannel->next = NULL;
+    Firstchannel->next = nullptr;
     Currchannel = Firstchannel;
   } else {
     while (Currchannel->next) {
@@ -1146,8 +1130,7 @@ void AddChannel(char *channel, uint16_t numusers, char *topic) {
     strcpy(Currchannel->topic, topic);
     Currchannel->users = numusers;
   }
-  Currchannel->next = NULL;
-  return;
+  Currchannel->next = nullptr;
 }
 
 char *GetTrackerIdByUser(char *nickname) {
@@ -1156,7 +1139,7 @@ char *GetTrackerIdByUser(char *nickname) {
   if (nickname == (char *)-1) {
     GettingUserTID = 0;
     Getting_user_tracker_error = 0;
-    return NULL;
+    return nullptr;
   } else if (GettingUserTID) {
     if (Getting_user_tracker_error) {
       Getting_user_tracker_error = 0;
@@ -1171,11 +1154,11 @@ char *GetTrackerIdByUser(char *nickname) {
   } else {
     strcpy(Getting_user_tracker_info_for, nickname);
     sprintf(szWhoisCmd, "/WHOIS %s", nickname);
-    User_req_tracker_id[0] = NULL;
+    User_req_tracker_id[0] = '\0';
     SendChatString(szWhoisCmd, 1);
     GettingUserTID = 1;
   }
-  return NULL;
+  return nullptr;
 }
 
 char *GetChannelByUser(char *nickname) {
@@ -1184,7 +1167,7 @@ char *GetChannelByUser(char *nickname) {
   if (nickname == (char *)-1) {
     GettingUserChannel = 0;
     Getting_user_channel_error = 0;
-    return NULL;
+    return nullptr;
   } else if (GettingUserChannel) {
     if (Getting_user_channel_error) {
       Getting_user_channel_error = 0;
@@ -1197,10 +1180,10 @@ char *GetChannelByUser(char *nickname) {
     }
   } else {
     strcpy(Getting_user_channel_info_for, nickname);
-    User_req_channel[0] = NULL;
+    User_req_channel[0] = '\0';
     sprintf(szWhoisCmd, "/WHOIS %s", nickname);
     SendChatString(szWhoisCmd, 1);
     GettingUserChannel = 1;
   }
-  return NULL;
+  return nullptr;
 }

@@ -74,7 +74,6 @@
 #endif
 
 #include <memory.h>
-#include <cstring>
 #include <misc/pstypes.h>
 #include <networking/networking.h>
 #include "mtgametrack.h"
@@ -142,7 +141,7 @@ typedef void (*Debug_ConsolePrintf_fp)(int n, const char *format, ...);
 
 extern Debug_ConsolePrintf_fp DLLDebug_ConsolePrintf;
 
-typedef int (*nw_Asyncgethostbyname_fp)(uint32_t *ip, int command, char *hostname);
+typedef int (*nw_Asyncgethostbyname_fp)(uint32_t *ip, int command, const char *hostname);
 extern nw_Asyncgethostbyname_fp DLLnw_Asyncgethostbyname;
 
 typedef int (*nw_SendWithID_fp)(uint8_t id, uint8_t *data, int len, network_address *who_to);
@@ -208,7 +207,7 @@ void InitMTSockets(void) {
     if (rcode != 1) {
       DLLmprintf(0, "Unable to gethostbyname(\"%s\").\n", GAMETRACKERNAME);
       DLLmprintf(0, "WSAGetLastError() returned %d.\n", WSAGetLastError());
-      DLLnw_Asyncgethostbyname(NULL, NW_AGHBN_CANCEL, NULL);
+      DLLnw_Asyncgethostbyname(nullptr, NW_AGHBN_CANCEL, nullptr);
       return;
     }
 
@@ -236,7 +235,7 @@ void InitMTSockets(void) {
     if (rcode != 1) {
       DLLmprintf(0, "Unable to gethostbyname(\"%s\").\n", PILOTTRACKERNAME);
       DLLmprintf(0, "WSAGetLastError() returned %d.\n", WSAGetLastError());
-      DLLnw_Asyncgethostbyname(NULL, NW_AGHBN_CANCEL, NULL);
+      DLLnw_Asyncgethostbyname(nullptr, NW_AGHBN_CANCEL, nullptr);
       return;
     }
     ptrackaddr.sin_family = AF_INET;

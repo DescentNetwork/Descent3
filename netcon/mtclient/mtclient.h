@@ -80,12 +80,14 @@
 
 #include <ui/ui.h>
 
-//#define uint8_t uint8_t
+// Chat tracker
+#define CHATTRACKERNAME "tracker.pxo.nottheeye.com"
+#define CHATPORT 7170
 
 #define TRACKER_MENU_W 256
 #define TRACKER_MENU_H 256
-#define TRACKER_MENU_X 320 - (TRACKER_MENU_W / 2)
-#define TRACKER_MENU_Y 240 - (TRACKER_MENU_H / 2)
+#define TRACKER_MENU_X (320 - (TRACKER_MENU_W / 2))
+#define TRACKER_MENU_Y (240 - (TRACKER_MENU_H / 2))
 
 #define MAXTEXTITEMS 100
 #define MAXNEWWINDOWS 5
@@ -103,7 +105,7 @@
 #define MAX_SCRIPT_LEN 40
 #define MAX_FORMAT_STRING 300
 
-struct s_pxo_game_list {
+typedef struct s_pxo_game_list {
   /*
   char name[MAX_GAME_NAME_LEN];
   network_address address;
