@@ -1,0 +1,3 @@
+[submodule "fizzy"]
+	path = fizzy
+	url = git@github.com:DescentNetwork/fizzy.git
