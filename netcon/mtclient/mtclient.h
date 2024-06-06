@@ -135,11 +135,11 @@ void MultiplayerOptionsMenu();
 void DoMTFrame(void);
 void DoMTGameOver(void);
 int MTVersionCheck(void);
-int JoinNewLobby(char *lobby);
-char *SendWhisper(char *name);
+int JoinNewLobby(const char *lobby);
+char *SendWhisper(const char *name);
 int JoinPrivateLobby(void);
 int FindPilot(void);
-int GetPilotStats(char *pilot);
+int GetPilotStats(const char *pilot);
 void AutoLoginAndJoinGame(void);
 int ShowMessageOfTheDay(void);
 #endif
