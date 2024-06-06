@@ -690,8 +690,8 @@ void D3DeferHandler(bool is_active) {
 //	this is called when you hit a debug break!
 //	---------------------------------------------------------------------------
 #ifndef RELEASE
-#include <ddebug/debug.h>
-#include <renderer/renderer.h>
+#include "debug.h"
+#include "renderer.h"
 extern int rend_initted; // from game.cpp
 
 void D3DebugStopHandler() {
