@@ -327,6 +327,7 @@ typedef int socklen_t;
 #include "game.h"
 #include "args.h"
 #include "byteswap.h"
+#include "ctlconfig.h"
 
 #ifndef WIN32
 bool Use_DirectPlay = false;
@@ -2269,21 +2270,14 @@ int nw_ReccomendPPS() {
   static char szconnspeed[100];
   int len = 99;
   strcpy(szconnspeed, "");
-  Database->read("ConnectionSpeed", szconnspeed, &len);
-  if (stricmp(szconnspeed, "28K") == 0)
-    return 5;
-  else if (stricmp(szconnspeed, "33K") == 0)
-    return 6;
-  else if (stricmp(szconnspeed, "56K") == 0)
-    return 7;
-  else if (stricmp(szconnspeed, "ISDN") == 0)
-    return 8;
-  else if (stricmp(szconnspeed, "Cable") == 0)
-    return 9;
-  else if (stricmp(szconnspeed, "Fast") == 0)
-    return 12;
-  else
-    return 7;
+  Database->read(CTLCONFIG_CONNECTION_SPEED_DB_KEY, szconnspeed, &len);
+
+  for (int i = 0; i < CTLCONFIG_CONNECTION_SPEED_LIST_SIZE; i++) {
+    if (stricmp(szconnspeed, Cfg_Connection_Speed_List[i].name) == 0)
+      return Cfg_Connection_Speed_List[i].pps;
+  }
+
+  return 8;
 }
 
 // Register the networking library to call your function back
