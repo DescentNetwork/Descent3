@@ -184,19 +184,19 @@ int sdlMouseMotionFilter(const SDL_Event *event);
 
 int SDLCALL d3SDLEventFilter(void *userdata, SDL_Event *event) {
   switch (event->type) {
-  case SDL_EVENT_KEY_UP:
-  case SDL_EVENT_KEY_DOWN:
+  case SDL_KEYUP:
+  case SDL_KEYDOWN:
     return (sdlKeyFilter(event));
-  case SDL_EVENT_JOYSTICK_BALL_MOTION:
-  case SDL_EVENT_MOUSE_MOTION:
+  case SDL_JOYBALLMOTION:
+  case SDL_MOUSEMOTION:
     return (sdlMouseMotionFilter(event));
-  case SDL_EVENT_MOUSE_BUTTON_UP:
+  case SDL_MOUSEBUTTONUP:
     return (sdlMouseButtonUpFilter(event));
-  case SDL_EVENT_MOUSE_BUTTON_DOWN:
+  case SDL_MOUSEBUTTONDOWN:
     return (sdlMouseButtonDownFilter(event));
-  case SDL_EVENT_MOUSE_WHEEL:
+  case SDL_MOUSEWHEEL:
     return (sdlMouseWheelFilter(event));
-  case SDL_EVENT_QUIT:
+  case SDL_QUIT:
     SDL_Quit();
     _exit(0);
     break;
@@ -266,7 +266,7 @@ int main(int argc, char *argv[]) {
       flags |= APPFLAG_NOMOUSECAPTURE;
     ddio_MouseSetGrab(false);
       }
-    SDL_SetRelativeMouseMode(ddio_MouseGetGrab() ? true : false);
+    SDL_SetRelativeMouseMode(ddio_MouseGetGrab() ? SDL_TRUE : SDL_FALSE);
 
     if (!FindArg("-sharedmemory")) {
       flags |= APPFLAG_NOSHAREDMEMORY;
