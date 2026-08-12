@@ -143,8 +143,7 @@ protected:
   int m_primary_frequency; // Set to the primary buffers frequency -- cmphack
   int m_primary_alignment;
 
-  SDL_AudioDeviceID sound_device = 0;
-  SDL_AudioStream* sound_stream = nullptr;
+  SDL_AudioDeviceID sound_device;
   bool in_at_exit;
   bool m_in_sound_frame;
   bool m_pending_actions;
