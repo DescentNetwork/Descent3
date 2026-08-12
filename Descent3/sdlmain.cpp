@@ -33,7 +33,7 @@
 #include <csignal>
 #endif
 
-#include <SDL3/SDL.h>
+#include <SDL.h>
 
 #include "appdatabase.h"
 #include "application.h"

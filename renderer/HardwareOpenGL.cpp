@@ -22,7 +22,7 @@
 #include <cstdio>
 #include <cstring>
 #include <optional>
-#include <SDL3/SDL.h>
+#include <SDL.h>
 
 #if defined(WIN32)
 #include <windows.h>

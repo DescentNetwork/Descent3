@@ -39,7 +39,7 @@
  */
 
 #include <cstdio>
-#include <SDL3/SDL_assert.h>
+#include <SDL_assert.h>
 
 #include "debug.h"
 
