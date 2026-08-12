@@ -24,5 +24,5 @@ target_include_directories(linux PUBLIC
 target_link_libraries(linux PRIVATE
   ddebug
   ddio
-  SDL3::SDL3
+  SDL2::SDL2
 )

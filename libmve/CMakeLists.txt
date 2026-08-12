@@ -16,7 +16,7 @@ set(CPPS
 add_library(libmve STATIC ${HEADERS} ${CPPS})
 target_link_libraries(libmve PRIVATE
   ddio
-  SDL3::SDL3
+  SDL2::SDL2
 )
 target_include_directories(libmve PUBLIC
   $<BUILD_INTERFACE:

@@ -28,7 +28,7 @@ set(CPPS
 )
 add_library(ddio STATIC ${HEADERS} ${CPPS})
 target_link_libraries(ddio PRIVATE
-  SDL3::SDL3
+  SDL2::SDL2
   ddebug
   logger
   mem

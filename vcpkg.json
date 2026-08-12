@@ -7,28 +7,28 @@
     "plog",
     "zlib",
     {
-      "name": "sdl3",
-      "version>=": "3.1.6-preview",
+      "name": "sdl2",
+      "version>=": "2.30.8",
       "features": ["x11", "wayland", "alsa"],
       "default-features": false,
       "platform": "linux & !native"
     },
     {
-      "name": "sdl3",
-      "version>=": "3.1.6-preview",
+      "name": "sdl2",
+      "version>=": "2.30.8",
       "features": ["x11","wayland", "alsa"],
       "platform": "linux & native"
     },
     {
-      "name": "sdl3",
-      "version>=": "3.1.6-preview",
+      "name": "sdl2",
+      "version>=": "2.30.8",
       "platform": "!linux"
     }
   ],
   "overrides": [
     {
-      "name": "sdl3",
-      "version": "3.1.6-preview"
+      "name": "sdl2",
+      "version": "2.30.8"
     }
   ]
 }
