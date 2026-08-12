@@ -20,7 +20,6 @@ target_include_directories(linux PUBLIC
   ${PROJECT_SOURCE_DIR}/linux
   >
   ${PROJECT_BINARY_DIR}/lib
-  ${SDL3_INCLUDE_DIRS}
 )
 target_link_libraries(linux PRIVATE
   ddebug

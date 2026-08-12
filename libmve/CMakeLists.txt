@@ -22,5 +22,4 @@ target_include_directories(libmve PUBLIC
   $<BUILD_INTERFACE:
     ${PROJECT_SOURCE_DIR}/libmve
   >
-  ${SDL3_INCLUDE_DIRS}
 )
