@@ -68,8 +68,6 @@
 
 #include "ddio.h"
 #include "pserror.h"
-#include "renderer.h"
-#include "config.h"
 
 
 extern volatile struct tLnxKeys {
@@ -345,7 +343,7 @@ bool sdlKeyFilter(const SDL_Event *event) {
   uint8_t kc = 0;
 
   if ((event->type != SDL_EVENT_KEY_UP) && (event->type != SDL_EVENT_KEY_DOWN))
-    return true;
+    return (1);
 
   switch (event->key.down) {
   case true:
@@ -358,15 +356,21 @@ bool sdlKeyFilter(const SDL_Event *event) {
         bool grab = !ddio_MouseGetGrab();
         ddio_MouseSetGrab(grab);
         SDL_SetWindowRelativeMouseMode(GSDLWindow, grab);
-        return false;
+        return 0;
       } // switch
     }   // if
 
     else if (event->key.mod & SDL_KMOD_ALT) {
       if ((kc == KEY_ENTER) || (kc == KEY_PADENTER)) {
-        Game_fullscreen = !Game_fullscreen;
-        rend_SetFullScreen(Game_fullscreen);
-        return false;
+        extern SDL_Window *GSDLWindow;
+        Uint32 flags = SDL_GetWindowFlags(GSDLWindow);
+        if (flags & SDL_WINDOW_FULLSCREEN) {
+          flags &= ~SDL_WINDOW_FULLSCREEN;
+        } else {
+          flags |= SDL_WINDOW_FULLSCREEN;
+        }
+        SDL_SetWindowFullscreen(GSDLWindow, flags);
+        return(0);
       } // if
     }   // else if
 
@@ -385,7 +389,7 @@ bool sdlKeyFilter(const SDL_Event *event) {
     break;
   } // switch
 
-  return false;
+  return (0);
 } // sdlKeyFilter
 
 bool ddio_sdl_InternalKeyInit(ddio_init_info *init_info) {
