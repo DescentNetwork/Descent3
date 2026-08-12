@@ -363,6 +363,13 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
     }
   }
 
+  bool fullscreen = true;
+
+  if (FindArgChar("-fullscreen", 'f')) {
+    fullscreen = true;
+  } else if (FindArgChar("-windowed", 'w')) {
+    fullscreen = false;
+  }
   if (!Already_loaded) {
     char gl_library[256];
     int arg;
@@ -410,6 +417,11 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  Uint32 flags = SDL_WINDOW_OPENGL;
+
+  if (fullscreen) {
+    flags |= SDL_WINDOW_FULLSCREEN;
+  }
 
   if (!GSDLWindow) {
     int display = 0;
@@ -434,7 +446,7 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_UNDEFINED_DISPLAY(display));
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, winw);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, winh);
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, SDL_WINDOW_OPENGL);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
     GSDLWindow = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
     if (!GSDLWindow) {
@@ -444,12 +456,10 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
     if (FindArgChar("-nomousegrab", 'm')) {
       SDL_SetWindowRelativeMouseMode(GSDLWindow, false);
     }
-    rend_SetFullScreen(Game_fullscreen);
-  } else if (!Game_fullscreen) {
+  } else {
     SDL_SetWindowSize(GSDLWindow, winw, winh);
+    SDL_SetWindowFullscreen(GSDLWindow, flags);
   }
-
-
 
   if (!GSDLGLContext) {
     GSDLGLContext = SDL_GL_CreateContext(GSDLWindow);
