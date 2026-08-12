@@ -828,10 +828,10 @@ struct video_menu {
 
     sheet->NewGroup(TXT_MONITOR, 0, 130);
     vsync = sheet->AddLongCheckBox(TXT_CFG_VSYNCENABLED, (Render_preferred_state.vsync_on != 0));
-
+#if !defined(POSIX)
     sheet->AddText("");
     sheet->AddLongButton(TXT_AUTO_GAMMA, IDV_AUTOGAMMA);
-
+#endif
     return sheet;
   };
 
@@ -871,6 +871,7 @@ struct video_menu {
 
   // process
   void process(int res) {
+#if !defined(POSIX)
     switch (res) {
     case IDV_CHANGE_RES_WINDOW: {
       // Resolution configuration window
@@ -917,6 +918,7 @@ struct video_menu {
       config_gamma();
       break;
     }
+#endif
   };
 };
 

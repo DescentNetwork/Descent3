@@ -136,7 +136,6 @@ struct Renderer {
     shader_.setUniform1f("u_fog_end", farz);
   }
 
-  void setGammaCorrection(float gamma) { shader_.setUniform1f("u_gamma", gamma); }
 
   void setFogColor(ddgr_color color) {
     shader_.setUniform4fv("u_fog_color", GR_COLOR_RED(color) / 255.0f, GR_COLOR_GREEN(color) / 255.0f,
@@ -1132,7 +1131,6 @@ void gpu_DrawFlatPolygon3D(g3Point **p, int nv) {
 // Sets the gamma correction value
 void rend_SetGammaValue(float val) {
   gpu_preferred_state.gamma = val;
-  gRenderer->setGammaCorrection(val);
   LOG_DEBUG.printf("Setting gamma to %f", val);
 }
 
