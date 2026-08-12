@@ -22,9 +22,6 @@
 #include <cstdio>
 #include <cstring>
 #include <optional>
-
-// TODO: Use SDL_FunctionPointer properly instead
-#define SDL_FUNCTION_POINTER_IS_VOID_POINTER
 #include <SDL3/SDL.h>
 
 #if defined(WIN32)

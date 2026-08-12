@@ -246,7 +246,7 @@ int main(int argc, char *argv[]) {
 #endif
 
   int rc = SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO);
-  if (!rc) {
+  if (rc != 0) {
     LOG_FATAL.printf("SDL: SDL_Init() failed: %d: %s!", rc, SDL_GetError());
     return (0);
   }
