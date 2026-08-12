@@ -417,7 +417,7 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
   Uint32 flags = SDL_WINDOW_OPENGL;
 
   if (fullscreen) {
-    flags |= SDL_WINDOW_FULLSCREEN;
+    flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
   }
 
   if (!GSDLWindow) {
@@ -427,8 +427,7 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
         LOG_WARNING << "No parameter for -display given";
       } else {
         int arg_index = atoi(arg_index_str);
-        int display_count = 0;
-        SDL_GetDisplays(&display_count);
+        int display_count = SDL_GetNumVideoDisplays();
         if ((arg_index < 0) || (arg_index >= display_count)) {
           LOG_WARNING.printf( "Parameter for -display must be in the range 0..%i", display_count-1 );
         } else {
@@ -436,22 +435,13 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
         }
       }
     }
-
-    SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "Descent 3");
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER,  SDL_WINDOWPOS_UNDEFINED_DISPLAY(display));
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_UNDEFINED_DISPLAY(display));
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, winw);
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, winh);
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
-    GSDLWindow = SDL_CreateWindowWithProperties(props);
-    SDL_DestroyProperties(props);
+    GSDLWindow = SDL_CreateWindow("Descent 3", SDL_WINDOWPOS_UNDEFINED_DISPLAY(display), SDL_WINDOWPOS_UNDEFINED_DISPLAY(display), winw, winh, flags);
     if (!GSDLWindow) {
       LOG_ERROR.printf("OpenGL: SDL window creation failed: %s", SDL_GetError());
       return 0;
     }
     if (FindArgChar("-nomousegrab", 'm')) {
-      SDL_SetWindowRelativeMouseMode(GSDLWindow, false);
+      SDL_SetWindowRelativeMouseMode(false);
     }
   } else {
     SDL_SetWindowSize(GSDLWindow, winw, winh);
@@ -1479,7 +1469,7 @@ void rend_Flip() {
   // if we're rendering to an FBO, scale to the window framebuffer!
   if (GOpenGLFBO != 0) {
     int w, h;
-    SDL_GetWindowSizeInPixels(GSDLWindow, &w, &h);
+    SDL_GL_GetDrawableSize(GSDLWindow, &w, &h);
 
     int scaledHeight, scaledWidth;
     if (w < h) {
