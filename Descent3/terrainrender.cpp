@@ -2870,7 +2870,7 @@ int DrawTerrainTrianglesSoftware(int index, int bm_handle, int upper_left, int l
                           }
                   }
           #endif
-  #endif//SDL_PLATFORM_LINUX
+  #endif//__LINUX__
           */
   return 0;
 }
