@@ -259,7 +259,7 @@ include_directories(
   "lib"     # TODO: Remove after untying all modules
   "linux"   # -*-
   "Descent3"
-  $<$<PLATFORM_ID:Windows>:"${PLATFORM_INCLUDES}">
+  ${PLATFORM_INCLUDES}
 )
 
 add_subdirectory(third_party)

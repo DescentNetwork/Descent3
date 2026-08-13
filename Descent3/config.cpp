@@ -359,10 +359,9 @@ void ConfigureDisplayResolutions() {
       return;
     }
     for (int modes_id = 0; modes_id < modes_count; modes_id++) {
-      SDL_DisplayMode *mode = SDL_GetDisplayMode(d, modes_id);
-      if (mode) {
-        resolutions.emplace(tVideoResolution{static_cast<uint16_t>(mode->w), static_cast<uint16_t>(mode->h)});
-      }
+      SDL_DisplayMode mode;
+      SDL_GetDisplayMode(d, modes_id, &mode);
+      resolutions.emplace(tVideoResolution{static_cast<uint16_t>(mode.w), static_cast<uint16_t>(mode.h)});
     }
   }
 
