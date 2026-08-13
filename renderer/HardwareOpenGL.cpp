@@ -1144,7 +1144,6 @@ void rend_SetGammaValue(float val) {
 void rend_SetFullScreen(bool fullscreen) {
   if (GSDLWindow) {
     SDL_SetWindowFullscreen(GSDLWindow, fullscreen);
-    SDL_SyncWindow(GSDLWindow);
   }
 
   if (fullscreen) {

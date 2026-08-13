@@ -306,7 +306,7 @@
 #include "gameloop.h"
 #include "args.h"
 
-#include <SDL3/SDL.h>
+#include <SDL.h>
 
 #include <algorithm>
 #include <vector>
@@ -347,27 +347,23 @@ bool Game_fullscreen = true;
 int Display_id = 0;
 
 void ConfigureDisplayResolutions() {
-  int display_count = 0;
-  SDL_DisplayID *displays = SDL_GetDisplays(&display_count);
-  if (!displays) {
+  int display_count = SDL_GetNumVideoDisplays();
+  if (display_count <= 0) {
     return;
   }
 
   std::set<tVideoResolution, tVideoResolution::tVideoResolutionCompare> resolutions;
   for (int d = 0; d < display_count; d++) {
-    SDL_DisplayID display_id = displays[d];
-
-    int modes_count = 0;
-    SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display_id, &modes_count);
-    if (!modes) {
+    int modes_count = SDL_GetNumDisplayModes(d);
+    if (modes_count <= 0) {
       return;
     }
     for (int modes_id = 0; modes_id < modes_count; modes_id++) {
-      SDL_DisplayMode *mode = modes[modes_id];
-      resolutions.emplace(tVideoResolution{static_cast<uint16_t>(mode->w), static_cast<uint16_t>(mode->h)});
+      SDL_DisplayMode *mode = SDL_GetDisplayMode(d, modes_id);
+      if (mode) {
+        resolutions.emplace(tVideoResolution{static_cast<uint16_t>(mode->w), static_cast<uint16_t>(mode->h)});
+      }
     }
-
-    SDL_free(modes);
   }
 
   // Take width and height argument into account
@@ -397,7 +393,7 @@ void ConfigureDisplayResolutions() {
     }
   }
 
-  Display_id = displays[display_num];
+  Display_id = display_num;
 
   // Use either the CLI-provided resolution or the current display resolution as default
   tVideoResolution current_resolution;
@@ -406,9 +402,10 @@ void ConfigureDisplayResolutions() {
     current_resolution.height = static_cast<unsigned short>(atoi(GameArgs[heightarg + 1]));
     resolutions.emplace(current_resolution);
   } else {
-    const SDL_DisplayMode *current_mode = SDL_GetCurrentDisplayMode(Display_id);
-    current_resolution.width = static_cast<unsigned short>(current_mode->w);
-    current_resolution.height = static_cast<unsigned short>(current_mode->h);
+    SDL_DisplayMode current_mode;
+    SDL_GetCurrentDisplayMode(Display_id, &current_mode);
+    current_resolution.width = static_cast<unsigned short>(current_mode.w);
+    current_resolution.height = static_cast<unsigned short>(current_mode.h);
   }
 
   // Fill in Video_res_list from the set of unique resolutions
@@ -418,7 +415,6 @@ void ConfigureDisplayResolutions() {
     return;
   }
   std::swap(resolutions_vec, Video_res_list);
-  SDL_free(displays);
 
   // Find the index of the current screen resolution in the list
   auto current_res_id = std::find(Video_res_list.begin(), Video_res_list.end(), current_resolution);
