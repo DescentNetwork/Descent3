@@ -9,9 +9,9 @@ set(CPPS
 add_library(inetfile STATIC ${HEADERS} ${CPPS})
 target_link_libraries(inetfile PRIVATE
   ddio
+  CURL::libcurl
 )
 target_link_libraries(inetfile PUBLIC
-  httplib # For some reason, linking it privately causes issues at runtime
   SDL3::SDL3
 )
 target_include_directories(inetfile PUBLIC

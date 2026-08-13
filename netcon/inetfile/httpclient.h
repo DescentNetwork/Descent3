@@ -18,25 +18,34 @@
 
 #pragma once
 
-#include <istream>
-#include <memory>
+#include <cstdint>
+#include <functional>
 #include <string>
-
-// Include httplib.h before windows.h
-#include <httplib.h>
-#ifdef WIN32
-#include <windows.h>
-#endif
 
 namespace D3 {
 
 class HttpClient {
 public:
-  using Progress = httplib::DownloadProgress;
-  // no way to test with macro; would have to do a cmake-level compile check
-  //#if httplib < 0.23
-  //using Progress = httplib::Progress;
-  //#endif
+  enum class Error {
+    Success = 0,
+    ConnectionError,
+    Timeout,
+    TooManyRedirects,
+    NetworkError,
+  };
+
+  using Progress = std::function<bool(uint64_t current, uint64_t total)>;
+  using ContentReceiver = std::function<bool(const char *data, size_t length)>;
+
+  struct Result {
+    Error err = Error::Success;
+    int status = 0;
+    std::string body;
+
+    Error error() const { return err; }
+
+    const Result *operator->() const { return this; }
+  };
 
   /**
    * Constructor for HttpClient
@@ -44,25 +53,30 @@ public:
    * Port can be specified with ":" (http://example.com:8080)
    */
   explicit HttpClient(const std::string &URL);
+  ~HttpClient();
 
-  httplib::Result Get(const std::string &URIPath);
+  Result Get(const std::string &URIPath);
 
   /**
    * Get data from URIPath
    * @param URIPath requested path (for example, "/some_dir/my_file.txt")
    * @return standard HTTP code. 200 means is OK.
    */
-  httplib::Result Get(const std::string &URIPath, const Progress &progress);
+  Result Get(const std::string &URIPath, const Progress &progress);
 
-  httplib::Result Get(const std::string &URIPath, const httplib::ContentReceiver &content_receiver);
+  Result Get(const std::string &URIPath, const ContentReceiver &content_receiver);
 
-  httplib::Result Get(const std::string &URIPath, const httplib::ContentReceiver &content_receiver,
-                      const Progress &progress);
+  Result Get(const std::string &URIPath, const ContentReceiver &content_receiver, const Progress &progress);
 
   void SetProxy(const std::string &proxy_host, uint16_t port);
 
+  static const char *StatusMessage(int status);
+
 private:
-  std::unique_ptr<httplib::Client> m_client;
+  Result perform(const std::string &URIPath, const ContentReceiver *content_receiver, const Progress *progress);
+
+  std::string m_base_url;
+  std::string m_proxy;
 };
 
 }

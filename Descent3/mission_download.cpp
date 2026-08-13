@@ -398,7 +398,7 @@ bool msn_DownloadWithStatus(const char *url, const std::filesystem::path &filena
     http_client.SetProxy(Proxy_server, Proxy_port);
   }
 
-  httplib::Result (D3::HttpClient::*hcg)(const std::string &, const httplib::ContentReceiver &,
+  D3::HttpClient::Result (D3::HttpClient::*hcg)(const std::string &, const D3::HttpClient::ContentReceiver &,
                                          const D3::HttpClient::Progress &) = &D3::HttpClient::Get;
   std::fstream in(qualfile, std::ios::binary | std::ios::trunc | std::ios::out);
   auto async_task = std::async(
@@ -422,7 +422,7 @@ bool msn_DownloadWithStatus(const char *url, const std::filesystem::path &filena
     // check result.error() in this case.
     if (received_bytes == total_bytes) {
       auto result = async_task.get();
-      if (result.error() == httplib::Error::Success) {
+      if (result.error() == D3::HttpClient::Error::Success) {
         if (result->status == 200) {
           LOG_INFO.printf("Successfully received the file (%d bytes)!", total_bytes);
           in.close();
@@ -437,7 +437,7 @@ bool msn_DownloadWithStatus(const char *url, const std::filesystem::path &filena
         } else {
           // File transfer Error!
           LOG_WARNING.printf("Couldn't download the file %s! Response from server: \"%s\" (%d)", url,
-                             httplib::status_message(result->status), result->status);
+                             D3::HttpClient::StatusMessage(result->status), result->status);
           in.close();
           std::filesystem::remove(qualfile);
 
@@ -447,7 +447,7 @@ bool msn_DownloadWithStatus(const char *url, const std::filesystem::path &filena
         }
       } else {
         // We failed, and this is not our fault!
-        LOG_WARNING << "Couldn't download the file! Error from httpclient: " << result.error();
+        LOG_WARNING << "Couldn't download the file! Error from httpclient: " << static_cast<int>(result.error());
         in.close();
         std::filesystem::remove(qualfile);
 

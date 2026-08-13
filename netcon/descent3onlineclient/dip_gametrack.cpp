@@ -17,9 +17,13 @@
  */
 
 #ifdef WIN32
+#include <winsock2.h>
 #include <windows.h>
+#else
+#include <arpa/inet.h>
 #endif
 
+#include <cstring>
 #include <string>
 #include <sstream>
 #include <thread>
