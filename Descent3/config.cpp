@@ -434,8 +434,8 @@ void ConfigureDisplayResolutions() {
     Current_video_resolution_id = Default_resolution_id;
   }
 
-  LOG_DEBUG("Resolution configured to w=%u h=%u (id %i)",
-            Video_res_list[Current_video_resolution_id].width
+  LOG_DEBUG("Resolution configured to w=%d h=%d (id %d)",
+            Video_res_list[Current_video_resolution_id].width,
             Video_res_list[Current_video_resolution_id].height,
             Current_video_resolution_id);
 }

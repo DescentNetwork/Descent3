@@ -447,7 +447,7 @@ bool msn_DownloadWithStatus(const char *url, const std::filesystem::path &filena
         }
       } else {
         // We failed, and this is not our fault!
-        LOG_WARNING("Couldn't download the file! Error from httpclient: %i", << static_cast<int>(result.error()));
+        LOG_WARNING("Couldn't download the file! Error from httpclient: %i", static_cast<int>(result.error()));
         in.close();
         std::filesystem::remove(qualfile);
 

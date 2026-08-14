@@ -35,19 +35,25 @@ enum class LogSeverity {
  * Initialize logger facility.
  * @param log_level desired log level
  * @param enable_filelog enable logging into Descent.log
- * @param enable_win_console enable console windows for WIN32 (no-op for POSIX systems)
  */
 #ifdef LOGGER
 void InitLog(LogSeverity log_level, bool enable_filelog, bool enable_win_console);
+void WriteLog(LogSeverity log_level, const char *fmt, ...);
+#define LOG_VERBOSE(...) WriteLog(LogSeverity::verbose, __VA_ARGS__)
+#define LOG_DEBUG(...) WriteLog(LogSeverity::debug, __VA_ARGS__)
+#define LOG_INFO(...) WriteLog(LogSeverity::info, __VA_ARGS__)
+#define LOG_WARNING(...) WriteLog(LogSeverity::warning, __VA_ARGS__)
+#define LOG_ERROR(...) WriteLog(LogSeverity::error, __VA_ARGS__)
+#define LOG_FATAL(...) WriteLog(LogSeverity::fatal, __VA_ARGS__)
+#define LOG_WARNING_IF(cond, ...) if(cond) { WriteLog(LogSeverity::warning, __VA_ARGS__); }
+#define LOG_DEBUG_IF(cond, ...) if(cond) { WriteLog(LogSeverity::debug, __VA_ARGS__); }
+#else
+#define LOG_VERBOSE(...) do{}while(false)
+#define LOG_DEBUG(...) do{}while(false)
+#define LOG_INFO(...) do{}while(false)
+#define LOG_WARNING(...) do{}while(false)
+#define LOG_ERROR(...) do{}while(false)
+#define LOG_FATAL(...) do{}while(false)
+#define LOG_WARNING_IF(cond, ...) do{}while(false)
+#define LOG_DEBUG_IF(cond, ...) do{}while(false)
 #endif
-
-
-#define LOG_VERBOSE(...) (void)0
-#define LOG_DEBUG(...) (void)0
-#define LOG_INFO(...) (void)0
-#define LOG_WARNING(...) (void)0
-#define LOG_ERROR(...) (void)0
-#define LOG_FATAL(...) (void)0
-#define LOG_WARNING_IF(cond, ...) (void)0
-#define LOG_DEBUG_IF(cond, ...) (void)0
-

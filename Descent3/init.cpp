@@ -1463,7 +1463,14 @@ void InitIOSystems(bool editor) {
     cf_AddBaseDirectory(exec_path);
   }
 
-  LOG_INFO("Base directories: %s", cf_LocateMultiplePaths("").string().c_str());
+  std::string base_dirs;
+  for (const auto &dir : cf_LocateMultiplePaths("")) {
+    if (!base_dirs.empty()) {
+      base_dirs += ", ";
+    }
+    base_dirs += dir.u8string();
+  }
+  LOG_INFO("Base directories: %s", base_dirs.c_str());
 
   Descent->set_defer_handler(D3DeferHandler);
 
