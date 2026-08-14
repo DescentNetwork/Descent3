@@ -47,6 +47,7 @@ option(ENABLE_MEM_RTL "Enable Real-time library memory management functions (dis
 option(FATAL_GL_ERRORS "Check OpenGL calls and raise exceptions on errors." OFF)
 option(FORCE_COLORED_OUTPUT "Always produce ANSI-colored compiler warnings/errors (GCC/Clang only; esp. useful with Ninja)." OFF)
 option(FORCE_PORTABLE_INSTALL "Install all files into local directory defined by CMAKE_INSTALL_PREFIX" ON)
+option(BUILD_QT_EDITOR "Build the Qt-based editor" OFF)
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   option(BUILD_EDITOR "Build internal editor" OFF)
 endif()
@@ -289,6 +290,10 @@ if(BUILD_EDITOR AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
   add_subdirectory(dd_grwin32)
   add_subdirectory(win32)
   add_subdirectory(editor)
+endif()
+
+if(BUILD_QT_EDITOR)
+  add_subdirectory(editor/qteditor)
 endif()
 
 add_subdirectory(Descent3)

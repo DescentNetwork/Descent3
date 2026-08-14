@@ -316,9 +316,11 @@ endif()
 
 file(GLOB_RECURSE INCS "../lib/*.h")
 
-add_executable(Descent3 WIN32 MACOSX_BUNDLE ${D3Icon} ${HEADERS} ${CPPS} ${INCS} ${MANIFEST} ${RC_FILE})
-target_link_libraries(Descent3 PRIVATE
-  SDL3::SDL3
+# Game core shared with the Qt editor. Excludes the entry point (sdlmain.cpp).
+set(Descent3_CORE_CPPS ${CPPS})
+list(REMOVE_ITEM Descent3_CORE_CPPS sdlmain.cpp)
+
+set(D3_SUPPORT_LIBS
   2dlib
   AudioEncode
   bitmap
@@ -330,7 +332,6 @@ target_link_libraries(Descent3 PRIVATE
   inetfile
   libmve
   libacm
-  linux
   logger
   manage
   mem
@@ -348,6 +349,17 @@ target_link_libraries(Descent3 PRIVATE
   ui
   unzip
   vecmat
+)
+
+add_library(Descent3Core STATIC ${HEADERS} ${Descent3_CORE_CPPS} ${INCS})
+target_include_directories(Descent3Core PRIVATE ${PROJECT_BINARY_DIR}/lib ${SDL3_INCLUDE_DIRS})
+target_link_libraries(Descent3Core PUBLIC SDL3::SDL3 ${D3_SUPPORT_LIBS})
+add_dependencies(Descent3Core get_git_hash)
+
+add_executable(Descent3 WIN32 MACOSX_BUNDLE ${D3Icon} sdlmain.cpp ${INCS} ${MANIFEST} ${RC_FILE})
+target_link_libraries(Descent3 PRIVATE
+  $<LINK_LIBRARY:WHOLE_ARCHIVE,Descent3Core>
+  linux
   ${PLATFORM_LIBS})
 target_include_directories(Descent3 PRIVATE ${PROJECT_BINARY_DIR}/lib ${SDL3_INCLUDE_DIRS})
 target_link_options(Descent3 PRIVATE $<$<PLATFORM_ID:Windows>:/DEBUG:FULL>)
