@@ -19,12 +19,15 @@ set(QTEDITOR_SOURCES
   customize_object_dialog.h
   d3_editor_init.cpp
   d3_editor_init.h
+  d3_editor_state.cpp
   dallas_prompt_dialogs.cpp
   dallas_prompt_dialogs.h
   death_dialog.cpp
   death_dialog.h
   editline_dialog.cpp
   editline_dialog.h
+  generic_death_dialog.cpp
+  generic_death_dialog.h
   hog_dialog.cpp
   hog_dialog.h
   keypad_dialog.cpp
@@ -42,10 +45,16 @@ set(QTEDITOR_SOURCES
   propai_dialog.h
   qteditor_dialog.cpp
   qteditor_dialog.h
+  selectrange_dialog.cpp
+  selectrange_dialog.h
+  sound_combo.cpp
+  sound_combo.h
   splash_dialog.cpp
   splash_dialog.h
   status_dialog.cpp
   status_dialog.h
+  terrain_sound_dialog.cpp
+  terrain_sound_dialog.h
   ui_loader.cpp
   ui_loader.h
   worldobjectslight_dialog.cpp
@@ -59,6 +68,7 @@ add_executable(Descent3EditorQt
 
 target_include_directories(Descent3EditorQt PRIVATE
   ${PROJECT_SOURCE_DIR}
+  ${PROJECT_SOURCE_DIR}/editor
   ${PROJECT_SOURCE_DIR}/lib
   ${PROJECT_SOURCE_DIR}/fix
   ${PROJECT_SOURCE_DIR}/Descent3
