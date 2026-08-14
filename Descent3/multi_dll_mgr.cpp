@@ -582,7 +582,7 @@ void FreeMultiDLL() {
   mod_FreeModule(&MultiDLLHandle);
   // Try deleting the file now!
   if (!std::filesystem::remove(Multi_conn_dll_name)) {
-    LOG_WARNING << "Couldn't delete the tmp dll";
+    LOG_WARNING("Couldn't delete the tmp dll");
   }
   DLLMultiCall = NULL;
   DLLMultiInit = NULL;
@@ -606,7 +606,7 @@ int LoadMultiDLL(const char *name) {
     std::error_code ec;
     std::filesystem::remove(path, ec);
     if (ec) {
-      LOG_ERROR.printf("Unable to remove temporary file %s: %s", path.u8string().c_str(), ec.message().c_str());
+      LOG_ERROR("Unable to remove temporary file %s: %s", path.u8string().c_str(), ec.message().c_str());
     }
   });
 
@@ -631,7 +631,7 @@ int LoadMultiDLL(const char *name) {
   }
   // Copy the DLL
   if (!cf_CopyFile(tmp_dll_name, dll_name)) {
-    LOG_WARNING << "DLL copy failed!";
+    LOG_WARNING("DLL copy failed!");
     return 0;
   }
   Multi_conn_dll_name = tmp_dll_name;
@@ -639,14 +639,14 @@ loaddll:
 
   if (!mod_LoadModule(&MultiDLLHandle, tmp_dll_name)) {
     mod_GetLastError();
-    LOG_WARNING.printf("You are missing the DLL %s!", name);
+    LOG_WARNING("You are missing the DLL %s!", name);
     return 0;
   }
 
   DLLMultiInit = (DLLMultiInit_fp)mod_GetSymbol(&MultiDLLHandle, "DLLMultiInit", 4);
   if (!DLLMultiInit) {
     mod_GetLastError();
-    LOG_FATAL << "Couldn't get a handle to the dll function DLLMultiInit!";
+    LOG_FATAL("Couldn't get a handle to the dll function DLLMultiInit!");
     Int3();
     FreeMultiDLL();
     return 0;
@@ -654,7 +654,7 @@ loaddll:
   DLLMultiCall = (DLLMultiCall_fp)mod_GetSymbol(&MultiDLLHandle, "DLLMultiCall", 4);
   if (!DLLMultiCall) {
     mod_GetLastError();
-    LOG_FATAL << "Couldn't get a handle to the dll function DLLMultiCall!";
+    LOG_FATAL("Couldn't get a handle to the dll function DLLMultiCall!");
     Int3();
     FreeMultiDLL();
     return 0;
@@ -662,7 +662,7 @@ loaddll:
   DLLMultiClose = (DLLMultiClose_fp)mod_GetSymbol(&MultiDLLHandle, "DLLMultiClose", 0);
   if (!DLLMultiClose) {
     mod_GetLastError();
-    LOG_FATAL << "Couldn't get a handle to the dll function DLLMultiClose!";
+    LOG_FATAL("Couldn't get a handle to the dll function DLLMultiClose!");
     Int3();
     FreeMultiDLL();
     return 0;
@@ -694,7 +694,7 @@ loaddll:
 
     if (!DLLMultiScoreCall) {
       mod_GetLastError();
-      LOG_FATAL << "Couldn't get a handle to the dll function DLLMultiScoreCall!";
+      LOG_FATAL("Couldn't get a handle to the dll function DLLMultiScoreCall!");
       Int3();
       Supports_score_api = false;
     }
@@ -760,7 +760,7 @@ const char *ListGetItem(UIListBox *item, int index) {
   if (ui_item)
     return ui_item->GetBuffer();
   else {
-    LOG_WARNING.printf("No listbox item found for index %d", index);
+    LOG_WARNING("No listbox item found for index %d", index);
     return "";
   }
 }
@@ -770,10 +770,10 @@ void DatabaseRead(const char *label, char *entry, int *entrylen) { Database->rea
 void DatabaseWrite(const char *label, const char *entry, int entrylen) { Database->write(label, entry, entrylen); }
 void DatabaseReadInt(const char *label, int *val) {
   Database->read_int(label, val);
-  LOG_DEBUG.printf("Read int: %s:%d", label, *val);
+  LOG_DEBUG("Read int: %s:%d", label, *val);
 }
 void DatabaseWriteInt(const char *label, int val) {
-  LOG_DEBUG.printf("Writing int: %s:%d", label, val);
+  LOG_DEBUG("Writing int: %s:%d", label, val);
   Database->write(label, val);
 }
 void DescentDefer(void) { Descent->defer(); }
@@ -939,7 +939,7 @@ const char *OldListGetItem(UIListBox *item, int index) {
   if (ti)
     return ti->GetBuffer();
   else {
-    LOG_WARNING.printf("No listbox item found for index %d", index);
+    LOG_WARNING("No listbox item found for index %d", index);
     return "";
   }
 }

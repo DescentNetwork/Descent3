@@ -975,7 +975,7 @@ void SetScreenMode(int sm, bool force_res_change) {
       if (rend_initted == -1) {
         // We're using the default, so change some values for the menus
         rend_initted = 1;
-        LOG_INFO << "Changing menu settings to default!";
+        LOG_INFO("Changing menu settings to default!");
         Current_video_resolution_id = Default_resolution_id;
         Render_preferred_state.bit_depth = 32;
         scr_width = 640;
@@ -989,13 +989,13 @@ void SetScreenMode(int sm, bool force_res_change) {
         Render_preferred_state.bit_depth = scr_bitdepth;
         Render_preferred_state.fullscreen = Game_fullscreen;
 
-        LOG_INFO.printf("Setting rend_width=%d height=%d", scr_width, scr_height);
+        LOG_INFO("Setting rend_width=%d height=%d", scr_width, scr_height);
         int retval = rend_SetPreferredState(&Render_preferred_state);
 
         if (retval == -1) {
           // We're using the default, so change some values for the menus
           rend_initted = 1;
-          LOG_INFO << "Changing menu settings to default!";
+          LOG_INFO("Changing menu settings to default!");
           Current_video_resolution_id = Default_resolution_id;
           Render_preferred_state.bit_depth = 32;
           scr_width = 640;
@@ -1031,7 +1031,7 @@ void SetScreenMode(int sm, bool force_res_change) {
     //	initialize ui system again
     ui_SetScreenMode(Max_window_w, Max_window_h);
 
-    LOG_INFO.printf("rend_width=%d height=%d", Max_window_w, Max_window_h);
+    LOG_INFO("rend_width=%d height=%d", Max_window_w, Max_window_h);
   }
 
   //	assign current screen mode
@@ -1074,7 +1074,7 @@ void SetScreenMode(int sm, bool force_res_change) {
   }
   }
 
-  LOG_INFO.printf("NEW rend_width=%d height=%d", Max_window_w, Max_window_h);
+  LOG_INFO("NEW rend_width=%d height=%d", Max_window_w, Max_window_h);
 
   //	mark res change as false.
 
@@ -1136,14 +1136,14 @@ void FramePush(int x1, int y1, int x2, int y2, bool clear) {
   FrameStackDepth++;
   // DAJ
   if (FrameStackDepth > 7) {
-    LOG_FATAL << "FrameStack Overflow";
+    LOG_FATAL("FrameStack Overflow");
     Int3();
   }
 }
 
 void FramePop(int *x1, int *y1, int *x2, int *y2, bool *clear) {
   if (!FrameStackRoot || !FrameStackPtr) {
-    LOG_FATAL << "StartFrame/EndFrame mismatch";
+    LOG_FATAL("StartFrame/EndFrame mismatch");
     Int3();
     *clear = true;
     *x1 = Game_window_x;
@@ -1263,7 +1263,7 @@ void DoScreenshot() {
   std::error_code ec;
   std::filesystem::create_directories(screenshots_path, ec);
   if (ec) {
-    LOG_ERROR << "Cannot create " << screenshots_path;
+    LOG_ERROR("Cannot create %s", screenshots_path);
     return;
   }
 

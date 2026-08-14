@@ -1231,7 +1231,7 @@ void FindPlayerStarts() {
       unique++;
     }
 
-  LOG_DEBUG.printf("There are %d unique start positions in this level", unique);
+  LOG_DEBUG("There are %d unique start positions in this level", unique);
 
   // Now create the extra players
   if (Game_mode & GM_MULTI) {
@@ -1300,7 +1300,7 @@ int PlayerGetRandomStartPosition(int slot) {
   if (Team_game) {
 
     int team = PlayerGetTeam(slot);
-    LOG_DEBUG.printf("Picking team start position, team=%d.", team);
+    LOG_DEBUG("Picking team start position, team=%d.", team);
     int num_avail = 0;
     int avail_array[MAX_PLAYERS];
 
@@ -1326,7 +1326,7 @@ int PlayerGetRandomStartPosition(int slot) {
   int num;
   int done = 0;
   int badcount = 0;
-  LOG_DEBUG << "Picking non-team start position.";
+  LOG_DEBUG("Picking non-team start position.");
   while (!done) {
     num = ps_rand() % (Highest_player_start + 1);
     if (Players[num].start_roomnum != -1) {
@@ -1348,7 +1348,7 @@ int PlayerGetRandomStartPosition(int slot) {
         badcount++;
         if (badcount >= 15) // give up after fifteen tries
         {
-          LOG_WARNING << "Stopping cuz I couldn't find a valid player position!";
+          LOG_WARNING("Stopping cuz I couldn't find a valid player position!");
           done = 1;
         }
       } else
@@ -1356,7 +1356,7 @@ int PlayerGetRandomStartPosition(int slot) {
     }
   }
 
-  LOG_DEBUG.printf("Picked index for start position %d", num);
+  LOG_DEBUG("Picked index for start position %d", num);
 
   return num;
 }
@@ -2040,13 +2040,13 @@ static tDeathSeq Death[MAX_NET_PLAYERS];
 
 void debug_deathtype(int slot, int damage) {
   if (Death[slot].fate == DEATH_INSTANT)
-    LOG_DEBUG << "INSTANT DEATH ";
+    LOG_DEBUG("INSTANT DEATH ");
   else if (Death[slot].fate == DEATH_FALL)
-    LOG_DEBUG << "FALLING DEATH ";
+    LOG_DEBUG("FALLING DEATH ");
   else if (Death[slot].fate == DEATH_BREAKUP)
-    LOG_DEBUG << "BREAKUP DEATH ";
+    LOG_DEBUG("BREAKUP DEATH ");
   else
-    LOG_DEBUG << "UNKNOWN DEATH ";
+    LOG_DEBUG("UNKNOWN DEATH ");
 }
 
 float MoveDeathCam(int slot, vector *vec, float distance);
@@ -2130,7 +2130,7 @@ void StartPlayerDeath(int slot, float damage, bool melee, int fate) {
   if (slot == Player_num) {
     objnum = ObjCreate(OBJ_CAMERA, 0, playerobj->roomnum, &playerobj->pos, &playerobj->orient);
     if (objnum == -1) {
-      LOG_FATAL << "Failed to create death cam.";
+      LOG_FATAL("Failed to create death cam.");
       Int3();
     } else {
       Death[slot].camera = &Objects[objnum];
@@ -2742,7 +2742,7 @@ void PlayerSpewGuidebot(object *parent, int type, int id) {
   objnum = ObjCreate(OBJ_DEBRIS, 0, parent->roomnum, &parent->pos, &parent->orient);
 
   if (objnum < 0 || objnum > Highest_object_index) {
-    LOG_WARNING.printf("WARNING: No object slots. Dead GB not created!");
+    LOG_WARNING("WARNING: No object slots. Dead GB not created!");
     return;
   }
 
@@ -2833,7 +2833,7 @@ int PlayerSpewObject(object *parent, int type, int id, int timed, void *sinfo) {
   int objnum = ObjCreate(type, id, parent->roomnum, &parent->pos, NULL, parent->handle);
 
   if (objnum < 0) {
-    LOG_DEBUG.printf("Couldn't spew object!");
+    LOG_DEBUG("Couldn't spew object!");
     return -1;
   }
 
@@ -3532,7 +3532,7 @@ void PlayerSwitchToObserver(int slot, int observer_mode, int piggy_objnum) {
     SetObjectControlType(obj, CT_NONE);
     Players[slot].piggy_objnum = piggy_objnum;
     Players[slot].piggy_sig = Objects[piggy_objnum].handle & HANDLE_COUNT_MASK;
-    LOG_DEBUG.printf("Object %d is observing object %d!", obj - Objects, piggy_objnum);
+    LOG_DEBUG("Object %d is observing object %d!", obj - Objects, piggy_objnum);
   }
 }
 
@@ -3656,7 +3656,7 @@ bool PlayerResetShipPermissions(int pnum, bool set_default) {
 
   int perm;
 
-  LOG_DEBUG << "Reseting ship permissions";
+  LOG_DEBUG("Reseting ship permissions");
 
   if (set_default)
     perm = Default_ship_permission;
@@ -3747,7 +3747,7 @@ void DoEnergyToShields(int pnum) {
 // Sets the start position that the player will respawn at
 void PlayerAddWaypoint(int index) {
   ASSERT(Players[index].start_roomnum != -1); // Invalid start position specified
-  LOG_DEBUG.printf("Current waypoint is now %d", index);
+  LOG_DEBUG("Current waypoint is now %d", index);
   Current_waypoint = index;
 
   // A manual waypoint blows away all auto-waypoints
@@ -3816,7 +3816,7 @@ void SetAutoWaypoint(object *objp) {
   if (!OBJECT_OUTSIDE(objp)) {
     // delete the next two lines
     if (pp->current_auto_waypoint_room != objp->roomnum) {
-      LOG_DEBUG.printf("Setting auto-waypoint in room %d", objp->roomnum);
+      LOG_DEBUG("Setting auto-waypoint in room %d", objp->roomnum);
     }
     pp->current_auto_waypoint_room = objp->roomnum;
   }
@@ -3843,7 +3843,7 @@ void MovePlayerToWaypoint(object *objp) {
   } else {
     ASSERT(Current_waypoint != -1);
 
-    LOG_DEBUG.printf("Resetting player ship to waypoint %d", Current_waypoint);
+    LOG_DEBUG("Resetting player ship to waypoint %d", Current_waypoint);
     ObjSetPos(objp, &Players[Current_waypoint].start_pos, Players[Current_waypoint].start_roomnum,
               &Players[Current_waypoint].start_orient, false);
   }

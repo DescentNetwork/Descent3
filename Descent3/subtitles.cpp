@@ -172,13 +172,13 @@ void SubtParseSubtitles(CFILE *file) {
     // starting frame number
     p = parse_int(p, &first_frame);
     if (!p) {
-      LOG_WARNING << "Couldn't parse first_frame";
+      LOG_WARNING("Couldn't parse first_frame");
       goto subt_parse_error;
     }
 
     p = parse_int(p, &last_frame);
     if (!p) {
-      LOG_WARNING << "Couldn't parse last_frame";
+      LOG_WARNING("Couldn't parse last_frame");
       goto subt_parse_error;
     }
 
@@ -197,7 +197,7 @@ void SubtParseSubtitles(CFILE *file) {
   }
   return;
 subt_parse_error:
-  LOG_WARNING << "Error Parsing SubTitle File!";
+  LOG_WARNING("Error Parsing SubTitle File!");
   SubtResetSubTitles();
 }
 
@@ -225,11 +225,11 @@ void SubtInitSubtitles(const std::filesystem::path &filename) {
   std::filesystem::path subtitle_path = std::filesystem::path(LocalArtDir) / "movies" / filename;
   subtitle_path.replace_extension(MOVIE_SUBTITLE_EXTENSION);
 
-  LOG_DEBUG << "Looking for the subtitle file " << subtitle_path;
+  LOG_DEBUG("Looking for the subtitle file %s", subtitle_path.string().c_str());
 
   CFILE *ifile = cfopen(subtitle_path, "rt");
   if (!ifile) {
-    LOG_WARNING << "Movie: Couldn't find subtitle file " << subtitle_path;
+    LOG_WARNING("Movie: Couldn't find subtitle file ", subtitle_path.string().c_str());
     return;
   }
 

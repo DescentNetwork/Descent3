@@ -147,14 +147,14 @@ bool SpewObjectNeedsEveryFrameUpdate(object *obj, int gunpoint);
 
 // Initializes the Spew system
 void SpewInit() {
-  LOG_INFO << "Initializing Spew System";
+  LOG_INFO("Initializing Spew System");
   int count;
   spew_count = 0;
 
   for (count = 0; count < MAX_SPEW_EFFECTS; count++) {
     SpewClearEvent(count, true);
   }
-  LOG_INFO << "Done Initializing Spew System";
+  LOG_INFO("Done Initializing Spew System");
 }
 
 // Creates a Spew effect
@@ -401,7 +401,7 @@ void SpewEmitAll(void) {
       } // end while
 
       if (num_spewed == 0) {
-        LOG_DEBUG.printf("Max spews per frame hit! Handle=%d Interval=%f Lifetime=%f Longevity=%f",
+        LOG_DEBUG("Max spews per frame hit! Handle=%d Interval=%f Lifetime=%f Longevity=%f",
                          spew->handle, spew->time_int, spew->lifetime, spew->longevity);
         spew->time_until_next_blob = spew->time_int;
       }

@@ -301,7 +301,7 @@ int InitTextures() {
 
   int i, tex;
 
-  LOG_INFO << "Initializing texture system.";
+  LOG_INFO("Initializing texture system.");
   for (i = 0; i < MAX_TEXTURES; i++)
     GameTextures[i].used = 0;
 
@@ -591,7 +591,7 @@ int LoadTextureImage(const char *filename, int *type, int texture_size, int mipp
     if (!pageable && (w != bm_w(bm_handle, 0) || h != bm_h(bm_handle, 0))) {
       int dest_bm;
 
-      LOG_WARNING.printf("WARNING: Resizing bitmap %s from %d x %d to %d x %d!",
+      LOG_WARNING("WARNING: Resizing bitmap %s from %d x %d to %d x %d!",
                          GameBitmaps[bm_handle].name, bm_w(bm_handle, 0), bm_h(bm_handle, 0), w, h);
 
       dest_bm = bm_AllocBitmap(w, h, mipped * ((w * h * 2) / 3));
@@ -695,8 +695,8 @@ void PageInTexture(int n, bool resize) {
 
         Total_memory_saved += saved;
 
-        LOG_DEBUG.printf("Low mem: Resizing bitmap %s to %d x %d!", GameBitmaps[bm_handle].name, w, h);
-        LOG_DEBUG.printf("Total memory saved=%d", Total_memory_saved);
+        LOG_DEBUG("Low mem: Resizing bitmap %s to %d x %d!", GameBitmaps[bm_handle].name, w, h);
+        LOG_DEBUG("Total memory saved=%d", Total_memory_saved);
 
         dest_bm = bm_AllocBitmap(w, h, mipped * ((w * h * 2) / 3));
         ASSERT(dest_bm >= 0);
@@ -742,7 +742,7 @@ void BuildTextureBumpmaps(int texhandle) {
   if (GameTextures[texhandle].flags & TF_ANIMATED)
     return; // No bumps for animated textures
 
-  LOG_DEBUG.printf("Calculating bumpmap for texture named %s.", GameTextures[texhandle].name);
+  LOG_DEBUG("Calculating bumpmap for texture named %s.", GameTextures[texhandle].name);
 
   // Make sure there is no bump already
   ASSERT(GameTextures[texhandle].bumpmap == -1);

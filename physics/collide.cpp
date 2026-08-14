@@ -2694,7 +2694,7 @@ bool collide_object_with_wall(object *A, float hitspeed, int hitseg, int hitwall
     break;
 
   default:
-    LOG_WARNING.printf("Unhandled collision of object type %d and wall\n", A->type);
+    LOG_WARNING("Unhandled collision of object type %d and wall\n", A->type);
     //		Error( "Unhandled object type hit wall in collide.c\n" );
   }
 

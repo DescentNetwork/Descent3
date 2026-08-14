@@ -529,7 +529,7 @@ static bool AIPathGetDPathSlot(int *slot, int handle) {
     }
   }
 
-  LOG_ERROR << "Out of dynamic paths";
+  LOG_ERROR("Out of dynamic paths");
   ASSERT(0); // -- get chris
   return false;
 }
@@ -566,7 +566,7 @@ static bool AIPathAddDPath(ai_path_info *aip, int handle) {
   bool status;
 
   if (aip->num_paths >= MAX_JOINED_PATHS) {
-    LOG_ERROR << "AI ERROR: Tried to join too many paths (Adding dpath)";
+    LOG_ERROR("AI ERROR: Tried to join too many paths (Adding dpath)");
     return false;
   }
 
@@ -591,7 +591,7 @@ static bool AIPathAddStaticPath(ai_path_info *aip, int path_id, int start_index,
   // chrishack -- validation code is needed
 
   if (aip->num_paths >= MAX_JOINED_PATHS) {
-    LOG_ERROR << "AI ERROR: Tried to join too many paths (Adding spath)";
+    LOG_ERROR("AI ERROR: Tried to join too many paths (Adding spath)");
     return false;
   }
 
@@ -982,7 +982,7 @@ bool AIPathAllocPath(object *obj, ai_frame *ai_info, void *goal_ptr, int *start_
   ai_path_info *aip = &ai_info->path;
 
   if (AI_debug_robot_do && OBJNUM(obj) == AI_debug_robot_index) {
-    LOG_DEBUG << "AI Note: In free path";
+    LOG_DEBUG("AI Note: In free path");
   }
   AIPathFreePath(aip);
 
@@ -1067,7 +1067,7 @@ bool AIPathAllocPath(object *obj, ai_frame *ai_info, void *goal_ptr, int *start_
             AIGenerateAltBOAPath(start_pos, end_pos, aip, &slot, &cur_node, handle);
 
           if (!f_path_exists) {
-            LOG_WARNING.printf("Warning Alt path from %d to %d failed.", *start_room, *end_room);
+            LOG_WARNING("Warning Alt path from %d to %d failed.", *start_room, *end_room);
           }
         }
       } else if (!f_bline_ok) {
@@ -1100,7 +1100,7 @@ bool AIPathAllocPath(object *obj, ai_frame *ai_info, void *goal_ptr, int *start_
       f_path_exists = false;
 
       if (AI_debug_robot_do && OBJNUM(obj) == AI_debug_robot_index) {
-        LOG_DEBUG.printf("AI Note: In free path");
+        LOG_DEBUG("AI Note: In free path");
       }
 
       AIPathFreePath(aip);
@@ -1108,12 +1108,12 @@ bool AIPathAllocPath(object *obj, ai_frame *ai_info, void *goal_ptr, int *start_
     }
   } else {
     f_path_exists = false;
-    LOG_DEBUG << "No dynamic paths left";
+    LOG_DEBUG("No dynamic paths left");
   }
 
   if (!f_path_exists) {
     if (AI_debug_robot_do && OBJNUM(obj) == AI_debug_robot_index) {
-      LOG_DEBUG << "AI Note: In free path";
+      LOG_DEBUG("AI Note: In free path");
     }
 
     AIPathFreePath(aip);
@@ -1129,7 +1129,7 @@ bool AIPathSetAsStaticPath(object *obj, void *goal_ptr, int path_id, int start_n
   ai_path_info *aip = &ai_info->path;
 
   if (AI_debug_robot_do && OBJNUM(obj) == AI_debug_robot_index) {
-    LOG_DEBUG << "AI Note: In free path";
+    LOG_DEBUG("AI Note: In free path");
   }
   AIPathFreePath(aip);
 

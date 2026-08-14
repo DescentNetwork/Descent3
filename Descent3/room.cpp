@@ -712,7 +712,7 @@ void FreeRoom(room *rp) {
 void FreeAllRooms() {
   int rn;
   room *rp;
-  LOG_DEBUG.printf("Freeing rooms... Higest_room_index %d", Highest_room_index);
+  LOG_DEBUG("Freeing rooms... Higest_room_index %d", Highest_room_index);
   for (rn = 0, rp = Rooms; rn <= Highest_room_index; rn++, rp++) {
     if (rp->used) {
       //			mprintf(2, "rn %d\n", rn);
@@ -802,7 +802,7 @@ bool ComputeFaceNormal(room *rp, int facenum) {
   ok = ComputeNormal(&fp->normal, fp->num_verts, fp->face_verts, rp->verts);
 
   if (!ok) {
-    LOG_WARNING.printf("Warning: Low precision normal for room:face = %d:%d", ROOMNUM(rp), facenum);
+    LOG_WARNING("Warning: Low precision normal for room:face = %d:%d", ROOMNUM(rp), facenum);
   }
 
   return ok;
@@ -838,7 +838,7 @@ bool ComputeNormal(vector *normal, int num_verts, short *vertnum_list, vector *v
   }
 
   if (largest_mag < MIN_NORMAL_MAG) {
-    LOG_WARNING.printf("Warning: Normal has low precision. mag = %f, norm =  %f,%f,%f",
+    LOG_WARNING("Warning: Normal has low precision. mag = %f, norm =  %f,%f,%f",
             largest_mag,
             normal->x(),
             normal->y(),
@@ -1239,7 +1239,7 @@ int FindFirstUsedRoom() {
 //	returns true on successs
 bool ChangeRoomFaceTexture(int room_num, int face_num, int texture) {
   if ((room_num < 0) || (room_num > Highest_room_index) || ROOMNUM_OUTSIDE(room_num) || (!Rooms[room_num].used)) {
-    LOG_FATAL << "Invalid room passed to ChangeRoomFaceTexture";
+    LOG_FATAL("Invalid room passed to ChangeRoomFaceTexture");
     Int3();
     return false;
   }
@@ -1247,7 +1247,7 @@ bool ChangeRoomFaceTexture(int room_num, int face_num, int texture) {
   room *rp = &Rooms[room_num];
 
   if (face_num < 0 || face_num >= rp->num_faces) {
-    LOG_FATAL.printf("Invalid face number passed to ChangeRoomFaceTexture."
+    LOG_FATAL("Invalid face number passed to ChangeRoomFaceTexture."
                "  Room=%d, you gave face #%d, there are only %d in the room",
              room_num, face_num, rp->num_faces);
     Int3();
@@ -1255,7 +1255,7 @@ bool ChangeRoomFaceTexture(int room_num, int face_num, int texture) {
   }
 
   if (texture == -1) {
-    LOG_FATAL << "not a valid texture, passed to ChangeRoomFaceTexture";
+    LOG_FATAL("not a valid texture, passed to ChangeRoomFaceTexture");
     Int3();
     return false;
   }

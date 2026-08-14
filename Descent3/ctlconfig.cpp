@@ -698,7 +698,7 @@ void wpnsel_cfg_screen::finish() {}
 void wpnsel_cfg_screen::process(int res) {
   int slot, i;
   bool is_secondary = false, do_swap_ui = false, do_disable_ui = false, update_buttons = false;
-  LOG_DEBUG.printf("res=%d", res);
+  LOG_DEBUG("res=%d", res);
   if (m_selection_status == -1) {
     if (res == UID_RESETDEFAULTS) {
       for (i = 0; i < MAX_PRIMARY_WEAPONS; i++)
@@ -737,7 +737,7 @@ void wpnsel_cfg_screen::process(int res) {
     is_secondary = true;
     do_disable_ui = true;
   }
-  LOG_DEBUG.printf("slot=%d", slot);
+  LOG_DEBUG("slot=%d", slot);
 
   // do different uis
   if (do_disable_ui) {
@@ -1303,7 +1303,7 @@ void net_settings_dialog() {
   int cfg_range = CFG_NETWORK_CLIENT_PPS_MAX - CFG_NETWORK_CLIENT_PPS_MIN;
   int nwRecommendPPS = nw_ReccomendPPS();
 
-  LOG_DEBUG.printf("Load network settings. PPS:%d.", nwRecommendPPS);
+  LOG_DEBUG("Load network settings. PPS:%d.", nwRecommendPPS);
 
   // Create window
   wnd.Create("Network Settings", 0, 0, 384, 256);
@@ -1339,7 +1339,7 @@ void net_settings_dialog() {
     // save changes
     nwRecommendPPS = CALC_SLIDER_INT_VALUE(*pps_client_current_t, CFG_NETWORK_CLIENT_PPS_MIN, CFG_NETWORK_CLIENT_PPS_MAX, cfg_range);
 
-    LOG_DEBUG.printf("Write network client pps %d.", nwRecommendPPS);
+    LOG_DEBUG("Write network client pps %d.", nwRecommendPPS);
 
     Database->write(CTLCONFIG_PPS_CLIENT_DB_KEY, nwRecommendPPS);
   }

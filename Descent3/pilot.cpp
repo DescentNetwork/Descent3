@@ -862,9 +862,9 @@ void PilotListSelectChangeCallback(int index) {
       Pilot->set_difficulty(difficulty);
       Pilot->set_audiotaunts(audiotaunts);
       PltWriteFile(&working_pilot);
-      LOG_INFO << "Pilot saved";
+      LOG_INFO("Pilot saved");
     } else {
-      LOG_INFO << "Skipping pilot save...has the old pilot been deleted?";
+      LOG_INFO("Skipping pilot save...has the old pilot been deleted?");
     }
 
     working_pilot.clean(true);
@@ -885,7 +885,7 @@ void PilotListSelectChangeCallback(int index) {
   if (in_edit)
     PilotChooseDialogInfo.edit->sheet->UpdateChanges();
   Pilot->get_name(name);
-  LOG_INFO.printf("Pilot has changed to: %s", name);
+  LOG_INFO("Pilot has changed to: %s", name);
 
   if (PilotChooseDialogInfo.edit->pilot_name) {
     strncpy(PilotChooseDialogInfo.edit->pilot_name, name, 63);
@@ -1002,11 +1002,11 @@ void PilotSelect() {
 
         char pname[PILOT_STRING_SIZE];
         Current_pilot.get_name(pname);
-        LOG_INFO.printf("Pilot To Use: %s", pname);
+        LOG_INFO("Pilot To Use: %s", pname);
 
         if (VerifyPilotData(&Current_pilot)) {
           // save out updated pilot since it had to be fixed
-          LOG_DEBUG.printf("PILOT: Saving out Pilot info due to bad data in pilot file");
+          LOG_DEBUG("PILOT: Saving out Pilot info due to bad data in pilot file");
           PltWriteFile(&Current_pilot);
         }
 
@@ -1041,10 +1041,10 @@ void PilotSelect() {
           char pname[PILOT_STRING_SIZE];
           Current_pilot.get_name(pname);
 
-          LOG_INFO.printf("Pilot To Use: %s", pname);
+          LOG_INFO("Pilot To Use: %s", pname);
           if (VerifyPilotData(&Current_pilot)) {
             // save out updated pilot since it had to be fixed
-            LOG_DEBUG.printf("PILOT: Saving out Pilot info due to bad data in pilot file");
+            LOG_DEBUG("PILOT: Saving out Pilot info due to bad data in pilot file");
             PltWriteFile(&Current_pilot);
           }
           done = true;
@@ -1227,7 +1227,7 @@ bool PilotCreate(pilot *Pilot, bool forceselection) {
         to_ret = false;
       }
     } else {
-      LOG_INFO << "Creating Pilot!";
+      LOG_INFO("Creating Pilot!");
 
       // call this to initialize pilot data for player.
       PilotInitData(Pilot);
@@ -1335,7 +1335,7 @@ void PilotCopyDefaultControls(pilot *Pilot) {
       if (cfexist(spfilename)) {
         PltCopyKeyConfig(&s_pil, Pilot);
       } else {
-        LOG_FATAL.printf("%s does not exist... not copying", spfilename.c_str());
+        LOG_FATAL("%s does not exist... not copying", spfilename.c_str());
         Int3();
       }
     }
@@ -1446,7 +1446,7 @@ void NewPltUpdate(newuiListBox *list, int selected, const std::string &filename)
 
     if (!filename.empty() && (cfexist(filename) != CFES_NOT_FOUND)) {
       // get the selected pilot from the filename
-      LOG_INFO.printf("Looking for Pilot: %s", filename.c_str());
+      LOG_INFO("Looking for Pilot: %s", filename.c_str());
       for (int d = 0; d < filecount; d++) {
         if (stricmp(filelist[d].c_str(), filename.c_str()) == 0) {
           // ok we found the filename that they want as the pilot
@@ -1473,7 +1473,7 @@ void CurrentPilotUpdateMissionStatus(bool just_add_data) {
   if (index == -1) {
 
     // this mission doesn't exist for the pilot yet, so add the mission to the pilot
-    LOG_INFO.printf("PILOT: New Mission being added to mission data (%s)", Current_mission.name);
+    LOG_INFO("PILOT: New Mission being added to mission data (%s)", Current_mission.name);
     mission_to_use.highest_level = 0;
     mission_to_use.finished = false;
     mission_to_use.num_restores = 0;
@@ -1489,7 +1489,7 @@ void CurrentPilotUpdateMissionStatus(bool just_add_data) {
 
   } else {
     // this pilot has flown this mission before, just update it
-    LOG_INFO.printf("PILOT: Updating previously flown mission data (%s)", Current_mission.name);
+    LOG_INFO("PILOT: Updating previously flown mission data (%s)", Current_mission.name);
 
     Current_pilot.get_mission_data(index, &mission_to_use);
   }
@@ -1644,7 +1644,7 @@ void PltReadFile(pilot *Pilot, bool keyconfig, bool missiondata) {
     filever = cf_ReadInt(file);
     cfclose(file);
   } catch (...) {
-    LOG_FATAL << "File exception has occurred";
+    LOG_FATAL("File exception has occurred");
     Int3();
     Error(TXT_MAJORPLTERROR);
     return;
@@ -1661,7 +1661,7 @@ void PltReadFile(pilot *Pilot, bool keyconfig, bool missiondata) {
     try {
       _ReadOldPilotFile(Pilot, keyconfig, missiondata);
     } catch (...) {
-      LOG_FATAL << "File exception has occurred";
+      LOG_FATAL("File exception has occurred");
       Int3();
       Error(TXT_MAJORPLTERROR);
       return;
@@ -1702,16 +1702,16 @@ std::vector<std::string> PltGetPilots(std::string ignore_filename, int display_d
     ddio_DoForeachFile(cf_GetWritableBaseDirectory(), wildcard, [&ignore_filename, &result](const std::filesystem::path &path) {
       std::string pilot = (const char*)path.filename().u8string().c_str();
       if (!ignore_filename.empty() && stricmp(ignore_filename.c_str(), pilot.c_str()) == 0) {
-        LOG_INFO.printf("Getting Pilots... found %s, but ignoring", pilot.c_str());
+        LOG_INFO("Getting Pilots... found %s, but ignoring", pilot.c_str());
       } else {
-        LOG_INFO.printf("Getting Pilots... found %s", pilot.c_str());
+        LOG_INFO("Getting Pilots... found %s", pilot.c_str());
         result.push_back(pilot);
         filecount++;
       }
     });
   }
 
-  LOG_INFO.printf("Found %d pilots", filecount);
+  LOG_INFO("Found %d pilots", filecount);
   return result;
 }
 
@@ -1905,7 +1905,7 @@ bool CreateCRCFileName(const std::filesystem::path &src, std::filesystem::path &
 
   uint32_t crc_value = cf_GetfileCRC(src);
   if (crc_value == 0) {
-    LOG_WARNING << "CRC WARNING: A CRC of 0 HAS BEEN GENERATED!";
+    LOG_WARNING("CRC WARNING: A CRC of 0 HAS BEEN GENERATED!");
   }
   char hex_string[10];
   snprintf(hex_string, sizeof(hex_string), "_%08X", crc_value);
@@ -1931,7 +1931,7 @@ bool CreateCRCFileName(const std::filesystem::path &src, std::filesystem::path &
 
   uint32_t crc_value = cf_GetfileCRC(src);
   if (crc_value == 0) {
-    LOG_WARNING << "CRC WARNING: A CRC of 0 HAS BEEN GENERATED!";
+    LOG_WARNING("CRC WARNING: A CRC of 0 HAS BEEN GENERATED!");
   }
   char hex_string[10];
   snprintf(hex_string, sizeof(hex_string), "_%08X", crc_value);
@@ -1951,7 +1951,7 @@ bool CreateCRCFileName(const std::filesystem::path &src, std::filesystem::path &
 bool ImportGraphic(const char *pathname, char *newfile) {
   ASSERT(pathname);
   if (cfexist(pathname) != CFES_ON_DISK) {
-    LOG_WARNING.printf("'%s' not found", pathname);
+    LOG_WARNING("'%s' not found", pathname);
     return false;
   }
 
@@ -1968,13 +1968,13 @@ bool ImportGraphic(const char *pathname, char *newfile) {
   if (tempfilename.empty()) {
     // there was an error trying to create a temporary filename
     bm_FreeBitmap(bm_handle);
-    LOG_WARNING << "Error creating temp filename";
+    LOG_WARNING("Error creating temp filename");
     return false;
   }
 
   // save out the file
   if (bm_SaveFileBitmap(tempfilename, bm_handle) == -1) {
-    LOG_WARNING << "Error importing";
+    LOG_WARNING("Error importing");
     bm_FreeBitmap(bm_handle);
     return false;
   }
@@ -1986,7 +1986,7 @@ bool ImportGraphic(const char *pathname, char *newfile) {
   std::filesystem::path p;
 
   if (!CreateCRCFileName(tempfilename, filename, p)) {
-    LOG_WARNING << "Error creating CRC File";
+    LOG_WARNING("Error creating CRC File");
     std::error_code ec;
     std::filesystem::remove(tempfilename, ec);
     return false;
@@ -2003,13 +2003,13 @@ bool ImportGraphic(const char *pathname, char *newfile) {
   // tempfilename contains old filename
   bm_handle = bm_AllocLoadFileBitmap(IGNORE_TABLE((const char*)tempfilename.u8string().c_str()), 0);
   if (bm_handle <= BAD_BITMAP_HANDLE) {
-    LOG_WARNING << "Error reloading bitmap for rename";
+    LOG_WARNING("Error reloading bitmap for rename");
     std::filesystem::remove(tempfilename, ec);
     return false;
   }
 
   if (bm_SaveFileBitmap(p, bm_handle) == -1) {
-    LOG_WARNING << "Error importing";
+    LOG_WARNING("Error importing");
     bm_FreeBitmap(bm_handle);
     std::filesystem::remove(tempfilename, ec);
     return false;
@@ -2401,7 +2401,7 @@ bool PltSelectShip(pilot *Pilot) {
       // find the ship in the page
       int index = FindShipName(DEFAULT_SHIP);
       if (index == -1) {
-        LOG_WARNING << "WARNING: CAN'T FIND DEFAULT SHIP IN TABLE";
+        LOG_WARNING("WARNING: CAN'T FIND DEFAULT SHIP IN TABLE");
       } else {
         // go through all the id's of the ships we found and find the ship (if FindShipName found it,
         // then we'll have it here somewhere.
@@ -2415,7 +2415,7 @@ bool PltSelectShip(pilot *Pilot) {
       } // end else
     } else {
       // NO SHIPS IN THE TABLE!!!
-      LOG_WARNING << "WARNING: NO SHIPS IN THE TABLE!?";
+      LOG_WARNING("WARNING: NO SHIPS IN THE TABLE!?");
     }
   }
 
@@ -2485,10 +2485,10 @@ bool PltSelectShip(pilot *Pilot) {
       char audio1[PAGENAME_LEN], audio2[PAGENAME_LEN], audio3[PAGENAME_LEN], audio4[PAGENAME_LEN];
 
       Pilot->get_multiplayer_data(nullptr, audio1, audio2, nullptr, audio3, audio4);
-      LOG_INFO.printf("Audio #1: '%s'", audio1);
-      LOG_INFO.printf("Audio #2: '%s'", audio2);
-      LOG_INFO.printf("Audio #3: '%s'", audio3);
-      LOG_INFO.printf("Audio #4: '%s'", audio4);
+      LOG_INFO("Audio #1: '%s'", audio1);
+      LOG_INFO("Audio #2: '%s'", audio2);
+      LOG_INFO("Audio #3: '%s'", audio3);
+      LOG_INFO("Audio #4: '%s'", audio4);
 
       ret = true;
       exit_menu = true;
@@ -2561,7 +2561,7 @@ bool PltSelectShip(pilot *Pilot) {
       int index = taunts_lists.taunt_a->GetCurrentIndex();
       if (index > 0 && !Audio_taunts.empty()) {
         std::filesystem::path path = LocalCustomSoundsDir / Audio_taunts[index - 1];
-        LOG_INFO.printf("Playing: %s", (const char*)path.u8string().c_str());
+        LOG_INFO("Playing: %s", (const char*)path.u8string().c_str());
         bool cenable = taunt_AreEnabled();
         taunt_Enable(true);
         taunt_PlayTauntFile((const char*)path.u8string().c_str());
@@ -2583,7 +2583,7 @@ bool PltSelectShip(pilot *Pilot) {
         std::filesystem::path tempfile = LocalCustomSoundsDir / filename;
 
         // import the sound
-        LOG_INFO.printf("Importing: '%s'->'%s'", (const char*)path.u8string().c_str(), (const char*)tempfile.u8string().c_str());
+        LOG_INFO("Importing: '%s'->'%s'", (const char*)path.u8string().c_str(), (const char*)tempfile.u8string().c_str());
         if (taunt_ImportWave((const char*)path.u8string().c_str(), (const char*)tempfile.u8string().c_str())) {
           // success
 
@@ -2723,7 +2723,7 @@ void CustomCallBack(int c) {
   if (c == 0) {
     // None selected
     custom_texture[0] = '\0';
-    LOG_INFO << "None selected";
+    LOG_INFO("None selected");
     bmpwindow->SetInfo(false, -1);
     GameTextures[ship_pos.texture_id].flags &= ~TF_ANIMATED;
     GameTextures[ship_pos.texture_id].flags &= ~TF_TEXTURE_32;
@@ -2751,7 +2751,7 @@ void CustomCallBack(int c) {
 
       bmpwindow->SetInfo(ship_pos.texture_type ? true : false, ship_pos.bm_handle);
 
-      LOG_INFO.printf("Loaded texture (%s). Type=%d, ID=%d",
+      LOG_INFO("Loaded texture (%s). Type=%d, ID=%d",
                       custom_texture, ship_pos.texture_type, ship_pos.texture_id);
     } else
       goto load_texture_err;
@@ -2766,7 +2766,7 @@ load_texture_err:
   GameTextures[ship_pos.texture_id].flags |= TF_TEXTURE_64;
   GameTextures[ship_pos.texture_id].bm_handle = BAD_BITMAP_HANDLE;
   strcpy(custom_texture, "");
-  LOG_INFO << "Unable to load texture";
+  LOG_INFO("Unable to load texture");
   bmpwindow->SetInfo(false, -1);
 }
 
@@ -2778,7 +2778,7 @@ void ShipSelectCallBack(int c) {
   float size;
   ship_model = Ships[lp_ship_info->idlist[c]].model_handle;
   if (ship_model == -1) {
-    LOG_FATAL << "ship_model is -1";
+    LOG_FATAL("ship_model is -1");
     Int3();
   }
 
@@ -2801,14 +2801,14 @@ void ShipSelectDeleteLogo(newuiListBox *lb) {
 
   // check for None selected
   if (selected_index == 0) {
-    LOG_INFO << "Listbox selected item is None";
+    LOG_INFO("Listbox selected item is None");
     return;
   }
 
   lb->GetItem(selected_index, custom_logoname, sizeof(custom_logoname));
 
   if ((selected_index - 1) >= (int)Custom_images.size()) {
-    LOG_FATAL << "Listbox selected item not found";
+    LOG_FATAL("Listbox selected item not found");
     Int3();
     return;
   }
@@ -2820,14 +2820,14 @@ void ShipSelectDeleteLogo(newuiListBox *lb) {
   char buffer[512];
   snprintf(buffer, sizeof(buffer), TXT_PLTOKDEL, custom_logoname);
   if (DoMessageBox(TXT_PLTDELCONF, buffer, MSGBOX_YESNO, UICOL_WINDOW_TITLE, UICOL_TEXT_NORMAL)) {
-    LOG_INFO.printf("Deleting pilot logo %s (%s)", custom_logoname, custom_filename.u8string().c_str());
+    LOG_INFO("Deleting pilot logo %s (%s)", custom_logoname, custom_filename.u8string().c_str());
 
     std::error_code ec;
     if (std::filesystem::remove(LocalCustomGraphicsDir / custom_filename, ec)) {
       // Update the list box, select none
       UpdateGraphicsListbox(lb);
     } else {
-      LOG_FATAL.printf("Unable to delete file %s", custom_filename.u8string().c_str());
+      LOG_FATAL("Unable to delete file %s", custom_filename.u8string().c_str());
       Int3();
     }
   }
@@ -2843,14 +2843,14 @@ void ShipSelectDeleteTaunt(pilot *Pilot, newuiComboBox *lb, tAudioTauntComboBoxe
 
   // check for None selected
   if (selected_index == 0) {
-    LOG_INFO << "Listbox selected item is None";
+    LOG_INFO("Listbox selected item is None");
     return;
   }
 
   lb->GetItem(selected_index, custom_logoname, sizeof(custom_logoname));
 
   if ((selected_index - 1) >= (int)Audio_taunts.size()) {
-    LOG_FATAL << "Listbox selected item not found";
+    LOG_FATAL("Listbox selected item not found");
     Int3();
     return;
   }
@@ -2862,7 +2862,7 @@ void ShipSelectDeleteTaunt(pilot *Pilot, newuiComboBox *lb, tAudioTauntComboBoxe
   char buffer[512];
   snprintf(buffer, sizeof(buffer), TXT_PLTOKDEL, custom_logoname);
   if (DoMessageBox(TXT_PLTDELCONF, buffer, MSGBOX_YESNO, UICOL_WINDOW_TITLE, UICOL_TEXT_NORMAL)) {
-    LOG_INFO.printf("Deleting audio taunt %s (%s)", custom_logoname, custom_filename.u8string().c_str());
+    LOG_INFO("Deleting audio taunt %s (%s)", custom_logoname, custom_filename.u8string().c_str());
 
     std::error_code ec;
     if (std::filesystem::remove(LocalCustomSoundsDir / custom_filename, ec)) {
@@ -2870,7 +2870,7 @@ void ShipSelectDeleteTaunt(pilot *Pilot, newuiComboBox *lb, tAudioTauntComboBoxe
       UpdateAudioTauntBoxes(taunt_boxes->taunt_a, taunt_boxes->taunt_b, taunt_boxes->taunt_c, taunt_boxes->taunt_d,
                             Pilot);
     } else {
-      LOG_FATAL.printf("Unable to delete file %s", custom_filename.u8string().c_str());
+      LOG_FATAL("Unable to delete file %s", custom_filename.u8string().c_str());
       Int3();
     }
   }
@@ -2891,7 +2891,7 @@ void UI3DWindow::OnDraw() {
   rend_SetFlatColor(0);
 
   if (ship_model == -1) {
-    LOG_WARNING << "Shipmodel is -1";
+    LOG_WARNING("Shipmodel is -1");
     return;
   }
 
@@ -3060,7 +3060,7 @@ void ShowPilotPicDialogListCallback(int index) {
     if (index <= PPicDlgInfo.size) {
       int handle = PPic_GetBitmapHandle(PPicDlgInfo.id_list[index - 1]);
       if (handle <= BAD_BITMAP_HANDLE) {
-        LOG_WARNING.printf("Couldn't get ID#%d's bitmap", PPicDlgInfo.id_list[index - 1]);
+        LOG_WARNING("Couldn't get ID#%d's bitmap", PPicDlgInfo.id_list[index - 1]);
         Int3();
         PPicDlgInfo.curr_bmp = PPicDlgInfo.blank_bmp;
         new_idx = 0;
@@ -3068,7 +3068,7 @@ void ShowPilotPicDialogListCallback(int index) {
         PPicDlgInfo.curr_bmp = handle;
       }
     } else {
-      LOG_FATAL << "Invalid index";
+      LOG_FATAL("Invalid index");
       Int3();
       PPicDlgInfo.curr_bmp = PPicDlgInfo.blank_bmp;
       new_idx = 0;
@@ -3103,7 +3103,7 @@ void ShowPilotPicDialog(pilot *Pilot) {
 
   // only display the dialog if there is a pilot to choose from
   if (num_pilots == 0) {
-    LOG_INFO.printf("No Pilot Pics available for %s", pname);
+    LOG_INFO("No Pilot Pics available for %s", pname);
     uint16_t pid;
     pid = PPIC_INVALID_ID;
     Pilot->set_multiplayer_data(nullptr, nullptr, nullptr, &pid);
@@ -3118,7 +3118,7 @@ void ShowPilotPicDialog(pilot *Pilot) {
     pid = PPIC_INVALID_ID;
     Pilot->set_multiplayer_data(nullptr, nullptr, nullptr, &pid);
 
-    LOG_WARNING << "Couldn't alloc bitmap";
+    LOG_WARNING("Couldn't alloc bitmap");
     DoMessageBox(TXT_ERROR, TXT_ERRCREATINGDIALOG, MSGBOX_OK, UICOL_WINDOW_TITLE, UICOL_TEXT_NORMAL);
     return;
   }
@@ -3159,7 +3159,7 @@ void ShowPilotPicDialog(pilot *Pilot) {
 
   if (!id_list) {
     // out of memory
-    LOG_ERROR << "Out of memory";
+    LOG_ERROR("Out of memory");
     goto clean_up;
   }
 

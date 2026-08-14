@@ -95,7 +95,7 @@ void cf_AddBaseDirectory(const std::filesystem::path &base_directory) {
   if (std::filesystem::exists(base_directory) && std::filesystem::is_directory(base_directory)) {
     Base_directories.push_back(base_directory);
   } else {
-    LOG_WARNING << "Ignoring nonexistent base directory: " << base_directory;
+    LOG_WARNING("Ignoring nonexistent base directory: %s", base_directory.string().c_str());
   }
 }
 
@@ -404,7 +404,7 @@ CFILE *cf_OpenFileInLibrary(const std::filesystem::path &filename, int libhandle
   } else {
     fp = fopen((const char*)lib->name.u8string().c_str(), "rb");
     if (!fp) {
-      LOG_ERROR.printf("Error opening library <%s> when opening file <%s>; errno=%d.", (const char*)lib->name.u8string().c_str(),
+      LOG_ERROR("Error opening library <%s> when opening file <%s>; errno=%d.", (const char*)lib->name.u8string().c_str(),
                        (const char*)filename.u8string().c_str(), errno);
       Int3();
       return nullptr;
@@ -457,7 +457,7 @@ CFILE *open_file_in_lib(const char *filename) {
       } else {
         fp = fopen((const char*)lib->name.u8string().c_str(), "rb");
         if (!fp) {
-          LOG_ERROR.printf("Error opening library <%s> when opening file <%s>; errno=%d.", (const char*)lib->name.u8string().c_str(),
+          LOG_ERROR("Error opening library <%s> when opening file <%s>; errno=%d.", (const char*)lib->name.u8string().c_str(),
                            filename, errno);
           Int3();
           return nullptr;
@@ -726,7 +726,7 @@ int cf_ReadBytes(uint8_t *buf, int count, CFILE *cfp) {
     if (!feof(cfp->file))
       error_msg = strerror(errno);
   }
-  LOG_ERROR.printf("Error reading %d bytes from position %d of file <%s>; errno=%d.", count, cfp->position, cfp->name,
+  LOG_ERROR("Error reading %d bytes from position %d of file <%s>; errno=%d.", count, cfp->position, cfp->name,
                    errno);
   return 0;
 }

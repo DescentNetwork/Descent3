@@ -7,7 +7,6 @@
     },
     "glm",
     "gtest",
-    "plog",
     {
       "name": "sdl3",
       "version>=": "3.2.6",

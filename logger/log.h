@@ -18,25 +18,36 @@
 
 #pragma once
 
-// This is interface header for chosen logger library. Currently, this is plog.
-#include <plog/Log.h>
+// Logging is currently disabled: the LOG_* macros below are no-ops. The call
+// sites are preserved as printf-style format strings so that a logging backend
+// can be reintroduced later by redefining the macros and implementing InitLog.
 
-/*
-In case of swapping to another solution here should be redefined following macros:
-
-#define LOG_VERBOSE                     PLOG(plog::verbose)
-#define LOG_DEBUG                       PLOG(plog::debug)
-#define LOG_INFO                        PLOG(plog::info)
-#define LOG_WARNING                     PLOG(plog::warning)
-#define LOG_ERROR                       PLOG(plog::error)
-#define LOG_FATAL                       PLOG(plog::fatal)
-
-*/
+enum class LogSeverity {
+  verbose,
+  debug,
+  info,
+  warning,
+  error,
+  fatal
+};
 
 /**
  * Initialize logger facility.
- * @param log_level desired log level (for example, plog::debug)
+ * @param log_level desired log level
  * @param enable_filelog enable logging into Descent.log
  * @param enable_win_console enable console windows for WIN32 (no-op for POSIX systems)
  */
-void InitLog(plog::Severity log_level, bool enable_filelog, bool enable_win_console);
+#ifdef LOGGER
+void InitLog(LogSeverity log_level, bool enable_filelog, bool enable_win_console);
+#endif
+
+
+#define LOG_VERBOSE(...) (void)0
+#define LOG_DEBUG(...) (void)0
+#define LOG_INFO(...) (void)0
+#define LOG_WARNING(...) (void)0
+#define LOG_ERROR(...) (void)0
+#define LOG_FATAL(...) (void)0
+#define LOG_WARNING_IF(cond, ...) (void)0
+#define LOG_DEBUG_IF(cond, ...) (void)0
+

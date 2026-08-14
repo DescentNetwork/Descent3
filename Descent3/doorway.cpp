@@ -175,7 +175,7 @@ void RemoveActiveDoorway(int adway) {
 
   Num_active_doorways--;
 
-  LOG_DEBUG.printf("ActiveDoorways = %d", Num_active_doorways);
+  LOG_DEBUG("ActiveDoorways = %d", Num_active_doorways);
 }
 
 void AddActiveDoorway(int roomnum) {
@@ -194,7 +194,7 @@ void AddActiveDoorway(int roomnum) {
     dp->activenum = Num_active_doorways++;
   }
 
-  LOG_DEBUG.printf("ActiveDoorways = %d", Num_active_doorways);
+  LOG_DEBUG("ActiveDoorways = %d", Num_active_doorways);
 }
 
 // Given an object handle, returns the doorway number

@@ -235,7 +235,7 @@ oeWin32Application::oeWin32Application(const char *name, unsigned flags, HInstan
 #endif
 
   if (!RegisterClass(&wc)) {
-    LOG_ERROR.printf("Failure to register window class (err:%x).", GetLastError());
+    LOG_ERROR("Failure to register window class (err:%x).", GetLastError());
     return;
   }
 
@@ -354,7 +354,7 @@ void oeWin32Application::init() {
 
   if (m_hWnd == NULL) {
     DWORD err = GetLastError();
-    LOG_ERROR.printf("Failed to create game window (err: %x)", err);
+    LOG_ERROR("Failed to create game window (err: %x)", err);
     return;
   }
 
@@ -402,7 +402,7 @@ int oeWin32Application::defer_block() {
       // QUIT APP.
       exit(1);
     } else if (msg.message == WM_MOVE) {
-      LOG_DEBUG << "move msg";
+      LOG_DEBUG("move msg");
     }
     TranslateMessage(&msg);
     DispatchMessage(&msg);
@@ -417,7 +417,7 @@ int oeWin32Application::defer_block() {
     if (this->active()) {
 #ifndef _DEBUG
       if (GetForegroundWindow() != (HWND)this->m_hWnd && !(m_Flags & OEAPP_CONSOLE)) {
-        LOG_DEBUG << "forcing this window into the foreground.";
+        LOG_DEBUG("forcing this window into the foreground.");
         SetForegroundWindow((HWND)this->m_hWnd);
       }
 #endif
@@ -467,11 +467,11 @@ void oeWin32Application::os_init() {
 
 #ifdef _DEBUG
     if (os == Win9x) {
-      LOG_DEBUG << "Win9x system";
+      LOG_DEBUG("Win9x system");
     } else if (os == WinNT) {
-      LOG_DEBUG.printf( "WinNT %d.%d.%d system", major, minor, build);
+      LOG_DEBUG( "WinNT %d.%d.%d system", major, minor, build);
     } else {
-      LOG_DEBUG << "Win32 non-standard operating system";
+      LOG_DEBUG("Win32 non-standard operating system");
     }
 #endif
 
@@ -679,7 +679,7 @@ LRESULT WINAPI MyWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     break;
 
   case WM_POWERBROADCAST: // Won't allow OS to suspend operation for now.
-    LOG_DEBUG.printf("WM_POWERBROADCAST=%u,%d", wParam, lParam);
+    LOG_DEBUG("WM_POWERBROADCAST=%u,%d", wParam, lParam);
     if (wParam == PBT_APMQUERYSUSPEND) {
       return BROADCAST_QUERY_DENY;
     }

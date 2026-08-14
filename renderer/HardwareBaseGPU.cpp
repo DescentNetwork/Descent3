@@ -345,7 +345,7 @@ int rend_SetPreferredState(renderer_preferred_state *pref_state, bool reinit) {
 
   gpu_preferred_state = *pref_state;
   if (gpu_state.initted) {
-    LOG_DEBUG << "Inside pref state!";
+    LOG_DEBUG("Inside pref state!");
 
     if (old_state.fullscreen != pref_state->fullscreen) {
       rend_SetFullScreen(pref_state->fullscreen);

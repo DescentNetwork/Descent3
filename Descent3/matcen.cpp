@@ -285,7 +285,7 @@ bool matcen::StartObjProd() {
     return false;
 
   if (m_max_prod <= m_num_prod && m_max_prod != -1) {
-    LOG_DEBUG << "MATCEN: Done";
+    LOG_DEBUG("MATCEN: Done");
     m_status |= MSTAT_DONE_PROD;
     return false;
   }
@@ -1056,7 +1056,7 @@ bool matcen::ComputeNextProdInfo() {
   m_status &= ~MSTAT_DONE_PROD;
 
   if (m_max_prod <= m_num_prod && m_max_prod != -1) {
-    LOG_DEBUG << "MATCEN: Done";
+    LOG_DEBUG("MATCEN: Done");
     m_status |= MSTAT_DONE_PROD;
     return false;
   }

@@ -253,7 +253,7 @@ static void LoadCockpitInfo(const char *ckt_file, tCockpitCfgInfo *info);
 void InitCockpit(int ship_index) {
   tCockpitCfgInfo cfginfo;
   int i;
-  LOG_INFO << "Initializing cockpit.";
+  LOG_INFO("Initializing cockpit.");
   LoadCockpitInfo(Ships[ship_index].cockpit_name, &cfginfo);
   // initialize special hud/cockpit images unique to this ship
   for (i = 0; i < NUM_SHIELD_GAUGE_FRAMES; i++) {
@@ -266,7 +266,7 @@ void InitCockpit(int ship_index) {
   HUD_resources.invpulse_bmp = bm_AllocLoadFileBitmap(IGNORE_TABLE(cfginfo.invpulseimg), 0);
   if (cfginfo.modelname[0] == 0) {
     Cockpit_info.model_num = -1;
-    LOG_WARNING << "No cockpit found for ship.";
+    LOG_WARNING("No cockpit found for ship.");
     return;
   }
   // initialize cockpit.
@@ -458,7 +458,7 @@ void RenderCockpit() {
   //	position cockpit correctly.
   bsp_info *viewer_subobj = CockpitGetMonitorSubmodel(SOF_VIEWER);
   if (!viewer_subobj) {
-    LOG_WARNING << "Cockpit missing viewer!";
+    LOG_WARNING("Cockpit missing viewer!");
     return;
   }
   view_z = viewer_subobj->offset.z() - Cockpit_info.buffet_vec.z() * Cockpit_info.buffet_amp * Cockpit_info.buffet_wave * 1.1f;

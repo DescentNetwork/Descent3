@@ -269,7 +269,7 @@ void mng_LoadNetGamefilePage(CFILE *infile, bool overlay) {
     int n = FindGamefileName(gamefilepage.gamefile_struct.name);
     if (n != -1) {
       if (overlay) {
-        LOG_DEBUG.printf("OVERLAYING GAMEFILE %s", gamefilepage.gamefile_struct.name);
+        LOG_DEBUG("OVERLAYING GAMEFILE %s", gamefilepage.gamefile_struct.name);
         mng_FreePagetypePrimitives(PAGETYPE_GAMEFILE, gamefilepage.gamefile_struct.name, 0);
         mng_AssignGamefilePageToGamefile(&gamefilepage, n);
       }
@@ -279,7 +279,7 @@ void mng_LoadNetGamefilePage(CFILE *infile, bool overlay) {
     int ret = mng_SetAndLoadGamefile(&gamefilepage);
     ASSERT(ret >= 0);
   } else {
-    LOG_ERROR.printf("Could not load gamefilepage named %s!", gamefilepage.gamefile_struct.name);
+    LOG_ERROR("Could not load gamefilepage named %s!", gamefilepage.gamefile_struct.name);
   }
 }
 
@@ -324,7 +324,7 @@ void mng_LoadLocalGamefilePage(CFILE *infile) {
           if (addon->Addon_tracklocks[tidx].pagetype == PAGETYPE_GAMEFILE &&
               !stricmp(addon->Addon_tracklocks[tidx].name, gamefilepage.gamefile_struct.name)) {
             // found it!!
-            LOG_DEBUG.printf("GamefilePage: %s previously loaded", gamefilepage.gamefile_struct.name);
+            LOG_DEBUG("GamefilePage: %s previously loaded", gamefilepage.gamefile_struct.name);
             need_to_load_page = false;
             break;
           }
@@ -382,6 +382,6 @@ void mng_LoadLocalGamefilePage(CFILE *infile) {
       mng_AllocTrackLock(gamefilepage.gamefile_struct.name, PAGETYPE_GAMEFILE);
 
   } else {
-    LOG_ERROR.printf("Could not load gamefilepage named %s!", gamefilepage.gamefile_struct.name);
+    LOG_ERROR("Could not load gamefilepage named %s!", gamefilepage.gamefile_struct.name);
   }
 }

@@ -604,7 +604,7 @@ void PaintPLRSinglePlayerText() {
 
   if (all_done_painting) {
     if (paint_in_sound_handle != -1) {
-      LOG_WARNING << "Stopping paint in sound";
+      LOG_WARNING("Stopping paint in sound");
       Sound_system.StopSoundImmediate(paint_in_sound_handle);
       paint_in_sound_handle = -1;
     }

@@ -554,7 +554,7 @@ void CloseGameModule(module *mod) {
   if (Multi_game_dll_name.empty()) {
     // Try deleting the file now!
     if (!std::filesystem::remove(Multi_game_dll_name)) {
-      LOG_WARNING << "Couldn't delete the tmp dll";
+      LOG_WARNING("Couldn't delete the tmp dll");
     }
   }
   mod->handle = NULL;
@@ -584,7 +584,7 @@ bool InitGameModule(const char *name, module *mod) {
   }
   // Copy the DLL
   if (!cf_CopyFile(tmp_dll_name, dll_name)) {
-    LOG_WARNING << "DLL copy failed!";
+    LOG_WARNING("DLL copy failed!");
     return false;
   }
   Multi_game_dll_name = tmp_dll_name;
@@ -593,7 +593,7 @@ loaddll:
   mod_GetLastError();
   if (!mod_LoadModule(mod, tmp_dll_name)) {
     mod_GetLastError();
-    LOG_WARNING.printf("You are missing the DLL %s!", name);
+    LOG_WARNING("You are missing the DLL %s!", name);
     return false;
   }
   return true;
@@ -632,7 +632,7 @@ int LoadGameDLL(const char *name, int num_teams_to_use) {
       num_teams_to_use = 1;
     }
   }
-  LOG_DEBUG.printf("Loading '%s', setting up for %d teams", name, num_teams_to_use);
+  LOG_DEBUG("Loading '%s', setting up for %d teams", name, num_teams_to_use);
   if (!InitGameModule(name, &GameDLLHandle))
     return 0;
 
@@ -641,7 +641,7 @@ int LoadGameDLL(const char *name, int num_teams_to_use) {
   DLLGameInit = (DLLGameInit_fp)mod_GetSymbol(&GameDLLHandle, "DLLGameInit", 12);
   if (!DLLGameInit) {
     mod_GetLastError();
-    LOG_FATAL << "Couldn't get a handle to the dll function DLLGameInit!";
+    LOG_FATAL("Couldn't get a handle to the dll function DLLGameInit!");
     Int3();
     FreeGameDLL();
     return 0;
@@ -651,7 +651,7 @@ int LoadGameDLL(const char *name, int num_teams_to_use) {
   DLLGameCall = (DLLGameCall_fp)mod_GetSymbol(&GameDLLHandle, "DLLGameCall", 8);
   if (!DLLGameCall) {
     mod_GetLastError();
-    LOG_FATAL << "Couldn't get a handle to the dll function DLLGameCall!";
+    LOG_FATAL("Couldn't get a handle to the dll function DLLGameCall!");
     Int3();
     FreeGameDLL();
     return 0;
@@ -661,7 +661,7 @@ int LoadGameDLL(const char *name, int num_teams_to_use) {
   DLLGameClose = (DLLGameClose_fp)mod_GetSymbol(&GameDLLHandle, "DLLGameClose", 0);
   if (!DLLGameClose) {
     mod_GetLastError();
-    LOG_FATAL << "Couldn't get a handle to the dll function DLLGameClose!";
+    LOG_FATAL("Couldn't get a handle to the dll function DLLGameClose!");
     Int3();
     FreeGameDLL();
     return 0;
@@ -671,7 +671,7 @@ int LoadGameDLL(const char *name, int num_teams_to_use) {
   DLLGetGameInfo = (DLLGetGameInfo_fp)mod_GetSymbol(&GameDLLHandle, "DLLGetGameInfo", 4);
   if (!DLLGetGameInfo) {
     mod_GetLastError();
-    LOG_FATAL << "Couldn't get a handle to the dll function DLLGetGameInfo!";
+    LOG_FATAL("Couldn't get a handle to the dll function DLLGetGameInfo!");
     Int3();
     FreeGameDLL();
     return 0;
@@ -690,7 +690,7 @@ int LoadGameDLL(const char *name, int num_teams_to_use) {
   DLLGameInit((int *)api_fp, &ok, num_teams_to_use);
   if (!ok) {
     // The DLL said no to the load
-    LOG_FATAL << "DLLGameInit returned false, couldn't init DLL";
+    LOG_FATAL("DLLGameInit returned false, couldn't init DLL");
     Int3();
     FreeGameDLL();
     return 0;
@@ -702,7 +702,7 @@ int LoadGameDLL(const char *name, int num_teams_to_use) {
 // If this function is called than the DLL is to be closed, because there was an error running it
 // if reason is not NULL than that is the reason why
 void DLLFatalError(const char *reason) {
-  LOG_FATAL.printf("DLL Fatal Error: %s", (reason) ? reason : "<No Reason Given>");
+  LOG_FATAL("DLL Fatal Error: %s", (reason) ? reason : "<No Reason Given>");
   Netgame.flags |= NF_EXIT_NOW;
   Int3();
 }
@@ -754,7 +754,7 @@ bool GetDLLGameInfo(const char *name, tDLLOptions *options) {
   modGetGameInfo = (DLLGetGameInfo_fp)mod_GetSymbol(&mod, "DLLGetGameInfo", 4);
   if (!modGetGameInfo) {
     mod_GetLastError();
-    LOG_FATAL << "Couldn't get a handle to the dll function DLLGetGameInfo!";
+    LOG_FATAL("Couldn't get a handle to the dll function DLLGetGameInfo!");
     Int3();
     CloseGameModule(&mod);
     return false;
@@ -770,7 +770,7 @@ int GetDLLRequirements(const char *name, char *requirements, int buflen) {
   ASSERT(requirements);
   tDLLOptions opt;
   if (!GetDLLGameInfo(name, &opt)) {
-    LOG_WARNING.printf("Unable to get %s's requirements", name);
+    LOG_WARNING("Unable to get %s's requirements", name);
     return -1;
   }
   strncpy(requirements, opt.requirements, buflen - 1);
@@ -778,7 +778,7 @@ int GetDLLRequirements(const char *name, char *requirements, int buflen) {
   uint32_t opt_req_len = strlen(opt.requirements);
   if (opt_req_len > strlen(requirements)) {
     // too small of a buffer!
-    LOG_FATAL.printf("Too small of a buffer to fill in all requirements!...need %d", opt_req_len + 1);
+    LOG_FATAL("Too small of a buffer to fill in all requirements!...need %d", opt_req_len + 1);
     Int3();
     // cut off last requirement (which is shortened)
     char *p = strrchr(requirements, ',');

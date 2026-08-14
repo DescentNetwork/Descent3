@@ -1780,7 +1780,7 @@ int check_vector_to_object(vector *intp, float *col_dist, vector *p0, vector *p1
 #ifdef _DEBUG
         if (Physics_player_verbose) {
           if (Player_object == &Objects[fvi_objnum]) {
-            LOG_DEBUG.printf("FVI: Earily exit on %d", OBJNUM(still_obj));
+            LOG_DEBUG("FVI: Earily exit on %d", OBJNUM(still_obj));
           }
         }
 #endif
@@ -1796,9 +1796,9 @@ int check_vector_to_object(vector *intp, float *col_dist, vector *p0, vector *p1
   if (total_size <= 0.0f) {
 #ifdef _DEBUG
     if (fvi_objnum >= 0)
-      LOG_DEBUG.printf("Get Chris: type %d and type %d are zero radius", still_obj->type, Objects[fvi_objnum].type);
+      LOG_DEBUG("Get Chris: type %d and type %d are zero radius", still_obj->type, Objects[fvi_objnum].type);
     else
-      LOG_DEBUG.printf("Get Chris: A non-object tried to hit a zero radii object of type %d", still_obj->type);
+      LOG_DEBUG("Get Chris: A non-object tried to hit a zero radii object of type %d", still_obj->type);
 #endif
     return 0;
   }
@@ -2617,7 +2617,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
 
 #ifndef NED_PHYSICS
   if (Tracking_FVI) {
-    LOG_DEBUG.printf("Track FVI - Ray %d, thisobjnum=%d, startroom=%d, rad=%f",
+    LOG_DEBUG("Track FVI - Ray %d, thisobjnum=%d, startroom=%d, rad=%f",
                      FVI_counter, fq->thisobjnum, fq->startroom, fq->rad);
   }
 #endif
@@ -3350,9 +3350,9 @@ void check_hit_obj(int objnum) {
 #ifdef _DEBUG
           if (Physics_player_verbose) {
             if (OBJNUM(Player_object) == objnum && m_obj_index != -1) {
-              LOG_DEBUG.printf("FVI: %d AABB with player", m_obj_index);
+              LOG_DEBUG("FVI: %d AABB with player", m_obj_index);
             } else if (Player_object == m_obj) {
-              LOG_DEBUG.printf("FVI: Player AABB with %d", objnum);
+              LOG_DEBUG("FVI: Player AABB with %d", objnum);
             }
           }
 #endif
@@ -3592,7 +3592,7 @@ void check_hit_obj(int objnum) {
               } break;
 
               default: {
-                LOG_WARNING.printf("Collision of type %d is not programmed yet", collision_type);
+                LOG_WARNING("Collision of type %d is not programmed yet", collision_type);
               } break;
               }
             } else {
@@ -3600,7 +3600,7 @@ void check_hit_obj(int objnum) {
 #ifdef _DEBUG
               if (Physics_player_verbose) {
                 if (OBJNUM(Player_object) == objnum || Player_object == m_obj) {
-                  LOG_DEBUG << "Related";
+                  LOG_DEBUG("Related");
                 }
               }
 #endif
@@ -3611,7 +3611,7 @@ void check_hit_obj(int objnum) {
 #ifdef _DEBUG
             if (Physics_player_verbose) {
               if (OBJNUM(Player_object) == objnum || Player_object == m_obj) {
-                LOG_DEBUG << "Ignore list";
+                LOG_DEBUG("Ignore list");
               }
             }
 #endif
@@ -3625,7 +3625,7 @@ void check_hit_obj(int objnum) {
       if (Physics_player_verbose) {
         if (objnum != m_obj_index) {
           if (OBJNUM(Player_object) == objnum || Player_object == m_obj) {
-            LOG_DEBUG.printf("Result nothing %d %d", objnum, m_obj_index);
+            LOG_DEBUG("Result nothing %d %d", objnum, m_obj_index);
           }
         }
       }
@@ -3637,7 +3637,7 @@ void check_hit_obj(int objnum) {
 #ifdef _DEBUG
     if (Physics_player_verbose) {
       if (OBJNUM(Player_object) == objnum || Player_object == m_obj) {
-        LOG_DEBUG.printf("Dead %d %d", objnum, m_obj_index);
+        LOG_DEBUG("Dead %d %d", objnum, m_obj_index);
       }
     }
 #endif

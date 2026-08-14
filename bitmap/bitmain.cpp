@@ -471,7 +471,7 @@ void bm_InitBitmaps() {
 }
 void bm_ShutdownBitmaps(void) {
   int i;
-  LOG_DEBUG << "Freeing all bitmap memory.";
+  LOG_DEBUG("Freeing all bitmap memory.");
   bm_FreeBitmapMain(0);
   for (i = 0; i < MAX_BITMAPS; i++) {
     while (GameBitmaps[i].used > 0)
@@ -512,7 +512,7 @@ int bm_AllocateMemoryForIndex(int n, int w, int h, int add_mem) {
 int bm_AllocBitmap(int w, int h, int add_mem) {
   int n = 0, i;
   if (!Bitmaps_initted) {
-    LOG_ERROR << "Bitmaps not initted!!!";
+    LOG_ERROR("Bitmaps not initted!!!");
     Int3();
     return -1;
   }
@@ -525,7 +525,7 @@ int bm_AllocBitmap(int w, int h, int add_mem) {
   }
   // If we can't find a free slot in which to alloc, bail out
   if (i == MAX_BITMAPS) {
-    LOG_ERROR << "ERROR! Couldn't find a free bitmap to alloc!";
+    LOG_ERROR("ERROR! Couldn't find a free bitmap to alloc!");
     Int3();
     return -1;
   }
@@ -541,7 +541,7 @@ int bm_AllocBitmap(int w, int h, int add_mem) {
 int bm_AllocNoMemBitmap(int w, int h) {
   int n = 0, i;
   if (!Bitmaps_initted) {
-    LOG_ERROR << "Bitmaps not initted!!!";
+    LOG_ERROR("Bitmaps not initted!!!");
     Int3();
     return -1;
   }
@@ -554,7 +554,7 @@ int bm_AllocNoMemBitmap(int w, int h) {
   }
   // If we can't find a free slot in which to alloc, bail out
   if (i == MAX_BITMAPS) {
-    LOG_ERROR << "Couldn't find a free bitmap to alloc!";
+    LOG_ERROR("Couldn't find a free bitmap to alloc!");
     Int3();
     return -1;
   }
@@ -587,7 +587,7 @@ int bm_FindBitmapName(const char *name) {
 // Given a handle, frees the bitmap memory and flags this bitmap as unused
 void bm_FreeBitmap(int handle) {
   if (!Bitmaps_initted) {
-    LOG_ERROR << "Bitmaps not initted!!!";
+    LOG_ERROR("Bitmaps not initted!!!");
     Int3();
     return;
   }
@@ -696,7 +696,7 @@ int bm_GetFileType(CFILE *infile, const char *dest) {
 int bm_AllocLoadFileBitmap(const char *fname, int mipped, int format) {
   CFILE *infile;
   if (!Bitmaps_initted) {
-    LOG_ERROR << "Bitmaps not initted!!!";
+    LOG_ERROR("Bitmaps not initted!!!");
     Int3();
     return -1;
   }
@@ -718,19 +718,19 @@ int bm_AllocLoadFileBitmap(const char *fname, int mipped, int format) {
     while ((end_ptr >= start_ptr) && (*end_ptr != '\\'))
       end_ptr--;
     if (end_ptr < start_ptr) {
-      LOG_ERROR.printf("Unable to find bitmap %s", fname);
+      LOG_ERROR("Unable to find bitmap %s", fname);
       return -1;
     }
     ASSERT(*end_ptr == '\\');
     end_ptr++;
     filename = end_ptr;
-    LOG_DEBUG.printf("Couldn't find %s, so gonna try %s", fname, filename);
+    LOG_DEBUG("Couldn't find %s, so gonna try %s", fname, filename);
   }
 
   // Check to see if this bitmap is already in memory, if so, just return that
   // bitmaps handle
   if ((n = bm_TestName(filename)) != -1) {
-    LOG_DEBUG.printf("Found duplicate bitmap %s.", GameBitmaps[n].name);
+    LOG_DEBUG("Found duplicate bitmap %s.", GameBitmaps[n].name);
     old_used = GameBitmaps[n].used;
     GameBitmaps[n].used = 1;
     bm_FreeBitmap(n);
@@ -744,13 +744,13 @@ int bm_AllocLoadFileBitmap(const char *fname, int mipped, int format) {
     strcpy(name, GameBitmaps[n].name);
   }
   if (strlen(name) > 33) {
-    LOG_FATAL << "This bitmaps name is too long, try shortening it and retry!";
+    LOG_FATAL("This bitmaps name is too long, try shortening it and retry!");
     return -1;
   }
   // Try to open the file.  If we can't load it from the network if possible
   infile = (CFILE *)cfopen(filename, "rb");
   if (!infile) {
-    LOG_ERROR.printf("bm_AllocLoadFileBitmap: Can't open file named %s.", filename);
+    LOG_ERROR("bm_AllocLoadFileBitmap: Can't open file named %s.", filename);
 
     return BAD_BITMAP_HANDLE; // return the bad texture
   }
@@ -776,7 +776,7 @@ int bm_AllocLoadFileBitmap(const char *fname, int mipped, int format) {
   }
   cfclose(infile);
   if (src_bm < 0) {
-    LOG_ERROR.printf("Couldn't load %s.", filename);
+    LOG_ERROR("Couldn't load %s.", filename);
     return -1;
   }
 
@@ -859,7 +859,7 @@ int bm_AllocLoadFileBitmap(const char *fname, int mipped, int format) {
 // Returns -1 if something is wrong
 int bm_AllocLoadFileNoMemBitmap(const char *fname, int mipped, int format) {
   if (!Bitmaps_initted) {
-    LOG_ERROR << "Bitmaps not initted!!!";
+    LOG_ERROR("Bitmaps not initted!!!");
     Int3();
     return -1;
   }
@@ -878,26 +878,26 @@ int bm_AllocLoadFileNoMemBitmap(const char *fname, int mipped, int format) {
     while ((end_ptr >= start_ptr) && (*end_ptr != '\\'))
       end_ptr--;
     if (end_ptr < start_ptr) {
-      LOG_ERROR.printf("Unable to find bitmap %s", fname);
+      LOG_ERROR("Unable to find bitmap %s", fname);
       return -1;
     }
     ASSERT(*end_ptr == '\\');
     end_ptr++;
     filename = end_ptr;
-    LOG_DEBUG.printf("Couldn't find %s, so gonna try %s", fname, filename);
+    LOG_DEBUG("Couldn't find %s, so gonna try %s", fname, filename);
   }
 
   // Check to see if this bitmap is already in memory, if so, just return that
   // bitmaps handle
   if ((n = bm_TestName(filename)) != -1) {
     GameBitmaps[n].used++;
-    LOG_DEBUG.printf("Found duplicate bitmap %s.", GameBitmaps[n].name);
+    LOG_DEBUG("Found duplicate bitmap %s.", GameBitmaps[n].name);
     return n;
   }
 
   bm_ChangeEndName(filename, name);
   if (strlen(name) > 33) {
-    LOG_ERROR << "This bitmaps name is too long, try shortening it and retry!";
+    LOG_ERROR("This bitmaps name is too long, try shortening it and retry!");
     return -1;
   }
   n = bm_AllocNoMemBitmap(1, 1);
@@ -917,7 +917,7 @@ int bm_AllocLoadBitmap(CFILE *infile, int mipped, int format) {
   char name[BITMAP_NAME_LEN];
   int n, src_bm;
   if (!Bitmaps_initted) {
-    LOG_ERROR << "Bitmaps not initted!!!";
+    LOG_ERROR("Bitmaps not initted!!!");
     Int3();
     return -1;
   }
@@ -926,7 +926,7 @@ int bm_AllocLoadBitmap(CFILE *infile, int mipped, int format) {
 
   src_bm = bm_tga_alloc_file(infile, name, format);
   if (src_bm < 0) {
-    LOG_ERROR.printf("Couldn't load %s.", name);
+    LOG_ERROR("Couldn't load %s.", name);
     return -1;
   }
 
@@ -995,9 +995,9 @@ int bm_SaveBitmap(CFILE *fp, int handle) {
   uint8_t dumbbyte = 0, image_type = OUTRAGE_1555_COMPRESSED_MIPPED, pixsize = 32, desc = 8 + 32;
   int i, done = 0;
   int num_mips;
-  LOG_DEBUG.printf("Saving bitmap %s...", GameBitmaps[handle].name);
+  LOG_DEBUG("Saving bitmap %s...", GameBitmaps[handle].name);
   if (!GameBitmaps[handle].used) {
-    LOG_ERROR << "bm_SaveBitmap: Trying to save a bitmap that isn't used!";
+    LOG_ERROR("bm_SaveBitmap: Trying to save a bitmap that isn't used!");
     Int3();
     return -1;
   }
@@ -1008,7 +1008,7 @@ int bm_SaveBitmap(CFILE *fp, int handle) {
   if (GameBitmaps[handle].format == BITMAP_FORMAT_4444)
     image_type = OUTRAGE_4444_COMPRESSED_MIPPED;
   if (!fp) {
-    LOG_ERROR << "bm_SaveBitmap: Trying to save a bitmap to a closed file!";
+    LOG_ERROR("bm_SaveBitmap: Trying to save a bitmap to a closed file!");
     Int3();
     return -1;
   }
@@ -1066,7 +1066,7 @@ int bm_MakeBitmapResident(int handle) {
       GameBitmaps[handle].flags &= ~BF_NOT_RESIDENT;
       GameBitmaps[handle].flags |= BF_CHANGED | BF_BRAND_NEW;
     } else {
-      LOG_ERROR.printf("Error paging in bitmap %s!", GameBitmaps[handle].name);
+      LOG_ERROR("Error paging in bitmap %s!", GameBitmaps[handle].name);
       return 0;
     }
   }
@@ -1078,7 +1078,7 @@ int bm_SaveFileBitmap(const std::filesystem::path &filename, int handle) {
   int ret;
   CFILE *fp;
   if (!GameBitmaps[handle].used) {
-    LOG_ERROR << "Trying to save a bitmap that isn't used!";
+    LOG_ERROR("Trying to save a bitmap that isn't used!");
     Int3();
     return -1;
   }
@@ -1087,13 +1087,13 @@ int bm_SaveFileBitmap(const std::filesystem::path &filename, int handle) {
     return -1;
   }
   if (!bm_MakeBitmapResident(handle)) {
-    LOG_ERROR << "There was a problem paging this bitmap in!";
+    LOG_ERROR("There was a problem paging this bitmap in!");
     return -1;
   }
   fp = (CFILE *)cfopen(filename, "wb");
 
   if (!fp) {
-    LOG_ERROR << "Trying to save a bitmap to a closed file!";
+    LOG_ERROR("Trying to save a bitmap to a closed file!");
     Int3();
     return -1;
   }

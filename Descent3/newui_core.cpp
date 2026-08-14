@@ -2890,7 +2890,7 @@ void newuiListBox::RemoveItem(const char *name) {
     }
   }
   if (found == -1) {
-    LOG_WARNING << "newuiListBox:: Didn't find item to remove!";
+    LOG_WARNING("newuiListBox:: Didn't find item to remove!");
     return;
   }
 
@@ -3047,7 +3047,7 @@ bool newuiListBox::SetCurrentItem(const char *name) {
   }
 
   if (!found) {
-    LOG_WARNING << "newuiListBox::SelectItem item not found!";
+    LOG_WARNING("newuiListBox::SelectItem item not found!");
     return false;
   }
 
@@ -3627,7 +3627,7 @@ void newuiComboBox::RemoveItem(const char *name) {
     }
   }
   if (found == -1) {
-    LOG_WARNING << "newuiComboBox:: Didn't find item to remove!";
+    LOG_WARNING("newuiComboBox:: Didn't find item to remove!");
     return;
   }
 
@@ -3754,7 +3754,7 @@ bool newuiComboBox::SetCurrentItem(const char *name) {
   }
 
   if (!found) {
-    LOG_WARNING << "newuiComboBox::SelectItem item not found!";
+    LOG_WARNING("newuiComboBox::SelectItem item not found!");
     return false;
   }
 

@@ -200,7 +200,7 @@ try_again:;
   srchandle = CreateFile(src.u8string().c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
   if (desthandle == INVALID_HANDLE_VALUE || srchandle == INVALID_HANDLE_VALUE) {
-    LOG_WARNING.printf("Couldn't copy file time for %s! Error=%d", dest.u8string().c_str(), GetLastError());
+    LOG_WARNING("Couldn't copy file time for %s! Error=%d", dest.u8string().c_str(), GetLastError());
 
     if (desthandle != INVALID_HANDLE_VALUE)
       CloseHandle(desthandle);

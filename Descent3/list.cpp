@@ -27,7 +27,7 @@ listnode *NewListNode(void) {
 
   node = mem_rmalloc<listnode>();
   if (node == NULL) {
-    LOG_FATAL << "Not enough memory for a new listnode!";
+    LOG_FATAL("Not enough memory for a new listnode!");
     Int3();
     return NULL;
   }
@@ -47,7 +47,7 @@ int AddListItem(listnode **listp, void *item) {
   newnode = NewListNode();
 
   if (newnode == NULL) {
-    LOG_FATAL << "There was a problem mallocing list node memory!";
+    LOG_FATAL("There was a problem mallocing list node memory!");
     Int3();
     return 0;
   }
@@ -89,7 +89,7 @@ int RemoveListItem(listnode **listp, void *item) {
   }
 
   if (!inlist) {
-    LOG_WARNING << "RemoveItem: Warning, item not found in list";
+    LOG_WARNING("RemoveItem: Warning, item not found in list");
     return 0;
   }
 

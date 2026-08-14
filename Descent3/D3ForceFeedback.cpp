@@ -143,12 +143,12 @@ void ForceInit(void) {
     D3Force_init = true;
     D3Force_pause = false;
 
-    LOG_INFO << "Force: High Level Force Feedback system initialized";
+    LOG_INFO("Force: High Level Force Feedback system initialized");
   } else {
     D3Force_init = false;
     D3Force_pause = false;
 
-    LOG_WARNING << "Force: Force Feedback System Not Found";
+    LOG_WARNING("Force: Force Feedback System Not Found");
   }
 
   for (int i = 0; i < DDIO_FF_MAXEFFECTS; i++) {
@@ -195,7 +195,7 @@ void ForceClose(void) {
   D3Force_pause = false;
   D3Force_init = false;
 
-  LOG_INFO << "Force: Shutting down high level force feedback";
+  LOG_INFO("Force: Shutting down high level force feedback");
   ForceEffectsClose();
 
   for (int i = 0; i < DDIO_FF_MAXEFFECTS; i++) {
@@ -214,7 +214,7 @@ void ForceShutdown(void) {
 
   ForceClose();
   if (D3Force_init) {
-    LOG_INFO << "Force: Shutting down Force Feedback System";
+    LOG_INFO("Force: Shutting down Force Feedback System");
     ddio_ffb_Pause(kJoy1);
   }
 }
@@ -229,7 +229,7 @@ void ForceRestart(void) {
   D3Force_pause = false;
 
   if (D3Force_init) {
-    LOG_INFO << "Force: Restarting Force Feedback System";
+    LOG_INFO("Force: Restarting Force Feedback System");
     ddio_ff_Acquire(kJoy1);
     ddio_ffb_Continue(kJoy1);
 
@@ -262,7 +262,7 @@ void ForceRestart(void) {
 // ------------------------------------------------------------------
 void ForceDisable(void) {
   if (D3Force_init) {
-    LOG_INFO << "Force: Disabling Force Feedback System";
+    LOG_INFO("Force: Disabling Force Feedback System");
     //@@ddio_ffb_Disable(kJoy1);
     D3Use_force_feedback = false;
   }
@@ -275,7 +275,7 @@ void ForceDisable(void) {
 // ------------------------------------------------------------------
 void ForceEnable(void) {
   if (D3Force_init) {
-    LOG_INFO << "Force: Enabling Force Feedback System";
+    LOG_INFO("Force: Enabling Force Feedback System");
     //@@ddio_ffb_Enable(kJoy1);
     D3Use_force_feedback = true;
   }

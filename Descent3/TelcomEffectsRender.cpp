@@ -620,7 +620,7 @@ void RenderBmpInvert(tceffect *tce, float frametime, int xoff, int yoff, bool ok
     k = 1.0;
     changed = false;
   } else if (k < 0) {
-    LOG_WARNING.printf("k<0 on inverse bitmap...bashing (%.2f/%.2f)", tce->age, tce->speed);
+    LOG_WARNING("k<0 on inverse bitmap...bashing (%.2f/%.2f)", tce->age, tce->speed);
     if (tce->age < 0)
       Int3();
     if (tce->speed < 0)
@@ -940,13 +940,13 @@ void RenderButton(tceffect *tce, float frametime, int xoff, int yoff, bool ok_to
           tce->buttoninfo.internal((int)(tce - TCEffects));
         break;
       default:
-        LOG_FATAL << "Button: Invalid Button Type";
+        LOG_FATAL("Button: Invalid Button Type");
         Int3(); // invalid button type
         // missing JUMP!!!!!!!!!!!!!!!!
       };
     } break;
     default: {
-      LOG_WARNING.printf("Button: Recv'd Evt %d", evt.id);
+      LOG_WARNING("Button: Recv'd Evt %d", evt.id);
     } break;
     };
   }

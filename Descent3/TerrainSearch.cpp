@@ -430,7 +430,7 @@ __inline void CheckCellOccupancy(int x, int y, int *ccount, uint8_t lod) {
   int n, simplemul, i;
 
   if (*ccount >= MAX_CELLS_TO_RENDER) {
-    LOG_WARNING.printf("Trying to render too many cells!  Cell limit=%d", MAX_CELLS_TO_RENDER);
+    LOG_WARNING("Trying to render too many cells!  Cell limit=%d", MAX_CELLS_TO_RENDER);
 #ifndef NEWEDITOR
     Detail_settings.Terrain_render_distance = 80.0 * TERRAIN_SIZE;
 #endif

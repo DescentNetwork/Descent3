@@ -569,7 +569,7 @@ static bool Osiris_level_script_loaded = false;
 //	Purpose:
 //		Closes down the OSIRIS module loader and handling system
 void Osiris_ShutdownModuleLoader(void) {
-  LOG_DEBUG << "OSIRIS: Shutting down module manager";
+  LOG_DEBUG("OSIRIS: Shutting down module manager");
   int i;
   for (i = 0; i < MAX_LOADED_MODULES; i++) {
     Osiris_FreeModule(i);
@@ -580,7 +580,7 @@ void Osiris_ShutdownModuleLoader(void) {
 //	Purpose:
 //		Initializes the OSIRIS module loader and handling system
 void Osiris_InitModuleLoader(void) {
-  LOG_DEBUG << "OSIRIS: Initializing module manager";
+  LOG_DEBUG("OSIRIS: Initializing module manager");
   int i;
   for (i = 0; i < MAX_LOADED_MODULES; i++) {
     OSIRIS_loaded_modules[i].flags = 0;
@@ -797,8 +797,9 @@ void Osiris_UnloadModule(int module_id) {
     return;
   if (OSIRIS_loaded_modules[module_id].flags & OSIMF_INUSE) {
     // the module is in use
-    LOG_DEBUG_IF(Show_osiris_debug)
-        .printf("OSIRIS: Decrementing reference count for module (%s)", OSIRIS_loaded_modules[module_id].module_name);
+    LOG_DEBUG_IF(Show_osiris_debug,
+                 "OSIRIS: Decrementing reference count for module (%s)",
+                 OSIRIS_loaded_modules[module_id].module_name);
     OSIRIS_loaded_modules[module_id].reference_count--;
 
     ASSERT(OSIRIS_loaded_modules[module_id].reference_count >= 0);
@@ -811,18 +812,18 @@ void Osiris_UnloadModule(int module_id) {
         ASSERT(!(OSIRIS_loaded_modules[module_id].flags & OSIMF_DLLELSEWHERE)); // mission modules cannot be set static
 
         // do not unload this module, due to the forced stay in memory
-        LOG_VERBOSE.printf("OSIRIS: Module (%s) staying in memory due to static flag",
+        LOG_VERBOSE("OSIRIS: Module (%s) staying in memory due to static flag",
                            OSIRIS_loaded_modules[module_id].module_name);
       } else {
         // time to unload this module
-        LOG_DEBUG_IF(Show_osiris_debug)
-            .printf("OSIRIS: Module (%s) reference count is at 0, unloading",
-                    OSIRIS_loaded_modules[module_id].module_name);
+        LOG_DEBUG_IF(Show_osiris_debug,
+                     "OSIRIS: Module (%s) reference count is at 0, unloading",
+                     OSIRIS_loaded_modules[module_id].module_name);
         Osiris_FreeModule(module_id);
       }
     }
   } else {
-    LOG_FATAL.printf("OSIRIS: Trying to unload a module (%d) that is not in use!", module_id);
+    LOG_FATAL("OSIRIS: Trying to unload a module (%d) that is not in use!", module_id);
     Int3();
   }
 }
@@ -865,7 +866,7 @@ void Osiris_UnloadLevelModule(void) {
 
     if (OSIRIS_loaded_modules[j].flags & OSIMF_INUSE && OSIRIS_loaded_modules[j].flags & OSIMF_NOUNLOAD) {
       // unload this module
-      LOG_DEBUG.printf("OSIRIS: Unloading static module (%s) due to level end\n", OSIRIS_loaded_modules[j].module_name);
+      LOG_DEBUG("OSIRIS: Unloading static module (%s) due to level end\n", OSIRIS_loaded_modules[j].module_name);
       Osiris_FreeModule(j);
     }
 
@@ -948,7 +949,7 @@ int Osiris_LoadLevelModule(const std::filesystem::path &module_name) {
 
   ASSERT(!tOSIRISCurrentLevel.level_loaded);
   if (tOSIRISCurrentLevel.level_loaded) {
-    LOG_DEBUG << "OSIRIS: Trying to load a level dll, when one has already been loaded";
+    LOG_DEBUG("OSIRIS: Trying to load a level dll, when one has already been loaded");
     return tOSIRISCurrentLevel.dll_id;
   }
 
@@ -957,9 +958,10 @@ int Osiris_LoadLevelModule(const std::filesystem::path &module_name) {
   if (loaded_id != -1) {
     // the module is already loaded
     OSIRIS_loaded_modules[loaded_id].reference_count++;
-    LOG_DEBUG_IF(Show_osiris_debug)
-        .printf("OSIRIS: Level Module (%s) reference count increased to %d", module_name.u8string().c_str(),
-                OSIRIS_loaded_modules[loaded_id].reference_count);
+    LOG_DEBUG_IF(Show_osiris_debug,
+                 "OSIRIS: Level Module (%s) reference count increased to %d",
+                 module_name.u8string().c_str(),
+                 OSIRIS_loaded_modules[loaded_id].reference_count);
     return loaded_id;
   }
 
@@ -973,7 +975,7 @@ int Osiris_LoadLevelModule(const std::filesystem::path &module_name) {
 
   if (loaded_id >= MAX_LOADED_MODULES) {
     // no slots available
-    LOG_FATAL.printf("OSIRIS: Osiris_LoadLevelModule(%s): No available slots\n", module_name.u8string().c_str());
+    LOG_FATAL("OSIRIS: Osiris_LoadLevelModule(%s): No available slots\n", module_name.u8string().c_str());
     Int3();
     return -4;
   }
@@ -985,7 +987,7 @@ int Osiris_LoadLevelModule(const std::filesystem::path &module_name) {
   switch (ret_val) {
   case -2:
     // the module does not exist
-    LOG_ERROR.printf("OSIRIS: Osiris_LoadLevelModule(%s): Module doesn't exist", module_name.u8string().c_str());
+    LOG_ERROR("OSIRIS: Osiris_LoadLevelModule(%s): Module doesn't exist", module_name.u8string().c_str());
     return -1;
     break;
   case -1:
@@ -993,7 +995,7 @@ int Osiris_LoadLevelModule(const std::filesystem::path &module_name) {
     break;
   default:
     // the module was an extracted file
-    LOG_DEBUG.printf("OSIRIS: Found module (%s) in a temp file (%s)", basename.u8string().c_str(),
+    LOG_DEBUG("OSIRIS: Found module (%s) in a temp file (%s)", basename.u8string().c_str(),
                      fullpath.u8string().c_str());
     OSIRIS_loaded_modules[loaded_id].flags |= OSIMF_INTEMPDIR;
     OSIRIS_loaded_modules[loaded_id].extracted_id = ret_val;
@@ -1003,7 +1005,7 @@ int Osiris_LoadLevelModule(const std::filesystem::path &module_name) {
   // the module exists, now attempt to load it
   if (!mod_LoadModule(&OSIRIS_loaded_modules[loaded_id].mod, fullpath)) {
     // there was an error trying to load the module
-    LOG_FATAL.printf("OSIRIS: Osiris_LoadLevelModule(%s): Unable to load module", module_name.u8string().c_str());
+    LOG_FATAL("OSIRIS: Osiris_LoadLevelModule(%s): Unable to load module", module_name.u8string().c_str());
     Int3();
     return -3;
   }
@@ -1047,7 +1049,7 @@ int Osiris_LoadLevelModule(const std::filesystem::path &module_name) {
       !osm->GetCOScriptList || !osm->CreateInstance || !osm->DestroyInstance || !osm->SaveRestoreState ||
       !osm->CallInstanceEvent) {
     // there was an error importing a function
-    LOG_ERROR.printf("OSIRIS: Osiris_LoadLevelModule(%s) couldn't import function.", (const char*)module_name.u8string().c_str());
+    LOG_ERROR("OSIRIS: Osiris_LoadLevelModule(%s) couldn't import function.", (const char*)module_name.u8string().c_str());
     Int3();
     osm->flags = 0;
     if (osm->module_name)
@@ -1066,7 +1068,7 @@ int Osiris_LoadLevelModule(const std::filesystem::path &module_name) {
     // there is a string table, load it up
     bool ret = CreateStringTable(stringtablename, &osm->string_table, &osm->strings_loaded);
     if (!ret) {
-      LOG_ERROR.printf("OSIRIS: Unable to load string table (%s) for (%s)", stringtablename,
+      LOG_ERROR("OSIRIS: Unable to load string table (%s) for (%s)", stringtablename,
                        basename.u8string().c_str());
       Int3();
       osm->string_table = NULL;
@@ -1086,7 +1088,7 @@ int Osiris_LoadLevelModule(const std::filesystem::path &module_name) {
   // when we get to this point we nearly have a loaded module, we just need to initialize it
   if (!osm->InitializeDLL(&Osiris_module_init)) {
     // there was an error initializing the module
-    LOG_ERROR.printf("OSIRIS: Osiris_LoadLevelModule(%s) error initializing module.", basename.u8string().c_str());
+    LOG_ERROR("OSIRIS: Osiris_LoadLevelModule(%s) error initializing module.", basename.u8string().c_str());
     if (osm->string_table) {
       DestroyStringTable(osm->string_table, osm->strings_loaded);
     }
@@ -1113,7 +1115,7 @@ int Osiris_LoadLevelModule(const std::filesystem::path &module_name) {
       // the trigger was found
       instance = osm->CreateInstance(script_id);
       if (!instance) {
-        LOG_ERROR.printf("OSIRIS: Unable to create instance for trigger script (%d)", i);
+        LOG_ERROR("OSIRIS: Unable to create instance for trigger script (%d)", i);
       } else {
         Triggers[i].osiris_script.script_id = script_id;
         Triggers[i].osiris_script.script_instance = instance;
@@ -1129,7 +1131,7 @@ int Osiris_LoadLevelModule(const std::filesystem::path &module_name) {
   tOSIRISCurrentLevel.instance =
       OSIRIS_loaded_modules[loaded_id].CreateInstance(0); // level scripts always have id of 0 in a level dll
 
-  LOG_INFO.printf("OSIRIS: Level Module (%s) loaded successfully (%d custom handles)", basename.u8string().c_str(),
+  LOG_INFO("OSIRIS: Level Module (%s) loaded successfully (%d custom handles)", basename.u8string().c_str(),
                   tOSIRISCurrentLevel.num_customs);
   Osiris_level_script_loaded = true;
   return loaded_id;
@@ -1153,7 +1155,7 @@ int Osiris_LoadGameModule(const std::filesystem::path &module_name) {
     // the module is already loaded
     OSIRIS_loaded_modules[loaded_id].reference_count++;
     if (Show_osiris_debug) {
-      LOG_DEBUG.printf("OSIRIS: Game Module (%s) reference count increased to %d", module_name.u8string().c_str(),
+      LOG_DEBUG("OSIRIS: Game Module (%s) reference count increased to %d", module_name.u8string().c_str(),
                        OSIRIS_loaded_modules[loaded_id].reference_count);
     }
     return loaded_id;
@@ -1169,7 +1171,7 @@ int Osiris_LoadGameModule(const std::filesystem::path &module_name) {
 
   if (loaded_id >= MAX_LOADED_MODULES) {
     // no slots available
-    LOG_FATAL.printf("OSIRIS: Osiris_LoadGameModule(%s): No available slots", module_name.u8string().c_str());
+    LOG_FATAL("OSIRIS: Osiris_LoadGameModule(%s): No available slots", module_name.u8string().c_str());
     Int3();
     return -4;
   }
@@ -1181,7 +1183,7 @@ int Osiris_LoadGameModule(const std::filesystem::path &module_name) {
   switch (ret_val) {
   case -2:
     // the module does not exist
-    LOG_WARNING.printf("OSIRIS: Osiris_LoadLevelModule(%s): Module doesn't exist", module_name.u8string().c_str());
+    LOG_WARNING("OSIRIS: Osiris_LoadLevelModule(%s): Module doesn't exist", module_name.u8string().c_str());
     return -1;
     break;
   case -1:
@@ -1189,7 +1191,7 @@ int Osiris_LoadGameModule(const std::filesystem::path &module_name) {
     break;
   default:
     // the module was an extracted file
-    LOG_INFO.printf("OSIRIS: Found module (%s) in a temp file", basename.u8string().c_str());
+    LOG_INFO("OSIRIS: Found module (%s) in a temp file", basename.u8string().c_str());
     OSIRIS_loaded_modules[loaded_id].flags |= OSIMF_INTEMPDIR;
     OSIRIS_loaded_modules[loaded_id].extracted_id = ret_val;
     break;
@@ -1198,7 +1200,7 @@ int Osiris_LoadGameModule(const std::filesystem::path &module_name) {
   // the module exists, now attempt to load it
   if (!mod_LoadModule(&OSIRIS_loaded_modules[loaded_id].mod, fullpath)) {
     // there was an error trying to load the module
-    LOG_FATAL.printf("OSIRIS: Osiris_LoadGameModule(%s): Unable to load module", module_name.u8string().c_str());
+    LOG_FATAL("OSIRIS: Osiris_LoadGameModule(%s): Unable to load module", module_name.u8string().c_str());
     Int3();
     return -3;
   }
@@ -1239,7 +1241,7 @@ int Osiris_LoadGameModule(const std::filesystem::path &module_name) {
   if (!osm->InitializeDLL || !osm->ShutdownDLL || !osm->GetGOScriptID || !osm->CreateInstance ||
       !osm->DestroyInstance || !osm->SaveRestoreState || !osm->CallInstanceEvent) {
     // there was an error importing a function
-    LOG_WARNING.printf("OSIRIS: Osiris_LoadGameModule(%s) couldn't import function.", basename.u8string().c_str());
+    LOG_WARNING("OSIRIS: Osiris_LoadGameModule(%s) couldn't import function.", basename.u8string().c_str());
     Int3();
     osm->flags = 0;
     if (osm->module_name)
@@ -1258,7 +1260,7 @@ int Osiris_LoadGameModule(const std::filesystem::path &module_name) {
     // there is a string table, load it up
     bool ret = CreateStringTable(stringtablename, &osm->string_table, &osm->strings_loaded);
     if (!ret) {
-      LOG_FATAL.printf("OSIRIS: Unable to load string table (%s) for (%s)", stringtablename,
+      LOG_FATAL("OSIRIS: Unable to load string table (%s) for (%s)", stringtablename,
                        (const char*)basename.u8string().c_str());
       Int3();
       osm->string_table = nullptr;
@@ -1277,7 +1279,7 @@ int Osiris_LoadGameModule(const std::filesystem::path &module_name) {
   // when we get to this point we nearly have a loaded module, we just need to initialize it
   if (!osm->InitializeDLL(&Osiris_module_init)) {
     // there was an error initializing the module
-    LOG_ERROR.printf("OSIRIS: Osiris_LoadGameModule(%s) error initializing module.", (const char*)basename.u8string().c_str());
+    LOG_ERROR("OSIRIS: Osiris_LoadGameModule(%s) error initializing module.", (const char*)basename.u8string().c_str());
     if (osm->string_table) {
       DestroyStringTable(osm->string_table, osm->strings_loaded);
     }
@@ -1293,12 +1295,12 @@ int Osiris_LoadGameModule(const std::filesystem::path &module_name) {
 
   if (Osiris_module_init.module_is_static) {
     // the module is requesting to be static
-    LOG_DEBUG.printf("OSIRIS: Module (%s) is requesting to be static", osm->module_name);
+    LOG_DEBUG("OSIRIS: Module (%s) is requesting to be static", osm->module_name);
     osm->flags |= OSIMF_NOUNLOAD;
   }
 
   // we have a successful module load
-  LOG_INFO.printf("OSIRIS: Game Module (%s) loaded successfully", basename.u8string().c_str());
+  LOG_INFO("OSIRIS: Game Module (%s) loaded successfully", basename.u8string().c_str());
   return loaded_id;
 }
 
@@ -1333,7 +1335,7 @@ int Osiris_LoadMissionModule(module *module_handle, const char *filename) {
 
   if (loaded_id >= MAX_LOADED_MODULES) {
     // no slots available
-    LOG_FATAL.printf("OSIRIS: Osiris_LoadMissionModule(%s): No available slots", filename);
+    LOG_FATAL("OSIRIS: Osiris_LoadMissionModule(%s): No available slots", filename);
     Int3();
     return -4;
   }
@@ -1341,7 +1343,7 @@ int Osiris_LoadMissionModule(module *module_handle, const char *filename) {
   // make sure the module exists so we can load it
   if (!module_handle->handle) {
     // the module does not exist
-    LOG_ERROR.printf("OSIRIS: Osiris_LoadMissionModule(%s): Module doesn't exist", filename);
+    LOG_ERROR("OSIRIS: Osiris_LoadMissionModule(%s): Module doesn't exist", filename);
     // Int3();
     return -1;
   }
@@ -1381,7 +1383,7 @@ int Osiris_LoadMissionModule(module *module_handle, const char *filename) {
   if (!osm->GetGOScriptID || !osm->CreateInstance || !osm->DestroyInstance || !osm->SaveRestoreState ||
       !osm->CallInstanceEvent) {
     // there was an error importing a function
-    LOG_FATAL.printf("OSIRIS: Osiris_LoadMissionModule(%s) couldn't import function.", filename);
+    LOG_FATAL("OSIRIS: Osiris_LoadMissionModule(%s) couldn't import function.", filename);
     osm->flags = 0;
     tOSIRISCurrentMission.mission_loaded = false;
     Int3();
@@ -1393,7 +1395,7 @@ int Osiris_LoadMissionModule(module *module_handle, const char *filename) {
   tOSIRISCurrentMission.mission_loaded = true;
   tOSIRISCurrentMission.dll_id = loaded_id;
   if (Show_osiris_debug) {
-    LOG_INFO.printf("OSIRIS: Mission Game Module (%s) loaded successfully", filename);
+    LOG_INFO("OSIRIS: Mission Game Module (%s) loaded successfully", filename);
   }
   return loaded_id;
 }
@@ -1494,13 +1496,13 @@ bool Osiris_BindScriptsToObject(object *obj) {
     // load up the dllname associated with the object and get the id
     dll_id = Osiris_LoadGameModule(default_module_name);
     if (dll_id < 0) {
-      LOG_ERROR.printf("OSIRIS: Unable to load module (%s) to bind to object (%s)", default_module_name, page_name);
+      LOG_ERROR("OSIRIS: Unable to load module (%s) to bind to object (%s)", default_module_name, page_name);
     } else {
       // allocate the memory for the object's scripts
       obj->osiris_script = mem_rmalloc<tOSIRISScript>();
       if (!obj->osiris_script) {
         // out of memory
-        LOG_ERROR << "OSIRIS: Out of memory trying to bind script";
+        LOG_ERROR("OSIRIS: Out of memory trying to bind script");
         return false;
       }
 
@@ -1515,7 +1517,7 @@ bool Osiris_BindScriptsToObject(object *obj) {
 
       if (gos_id == -1) {
         // the default script for this object does not exist in the dll set for it
-        LOG_FATAL.printf("OSIRIS: Unable to find GOS ID for (%s) in (%s)!", page_name, default_module_name);
+        LOG_FATAL("OSIRIS: Unable to find GOS ID for (%s) in (%s)!", page_name, default_module_name);
         Int3();
         Osiris_UnloadModule(dll_id);
       } else {
@@ -1525,7 +1527,7 @@ bool Osiris_BindScriptsToObject(object *obj) {
         gos_instance = OSIRIS_loaded_modules[dll_id].CreateInstance(gos_id);
         if (!gos_instance) {
           // we had an error obtaining the instance of the GOS...ugh
-          LOG_FATAL.printf("OSIRIS: Unable to create GOS instance for (%s)", page_name);
+          LOG_FATAL("OSIRIS: Unable to create GOS instance for (%s)", page_name);
           Int3();
           Osiris_UnloadModule(dll_id);
         } else {
@@ -1578,7 +1580,7 @@ bool Osiris_BindScriptsToObject(object *obj) {
             obj->osiris_script = mem_rmalloc<tOSIRISScript>();
             if (!obj->osiris_script) {
               // out of memory
-              LOG_ERROR << "OSIRIS: Out of memory trying to bind script";
+              LOG_ERROR("OSIRIS: Out of memory trying to bind script");
               return false;
             }
 
@@ -1593,7 +1595,7 @@ bool Osiris_BindScriptsToObject(object *obj) {
           gos_instance = OSIRIS_loaded_modules[dll_id].CreateInstance(gos_id);
           if (!gos_instance) {
             // we had an error obtaining the instance of the GOS...ick
-            LOG_FATAL.printf("OSIRIS: Unable to create GOS instance from level dll for (%s)", page_name);
+            LOG_FATAL("OSIRIS: Unable to create GOS instance from level dll for (%s)", page_name);
             Int3();
           } else {
             // ok, we got a valid instance
@@ -1635,7 +1637,7 @@ bool Osiris_BindScriptsToObject(object *obj) {
               obj->osiris_script = mem_rmalloc<tOSIRISScript>();
               if (!obj->osiris_script) {
                 // out of memory
-                LOG_ERROR << "OSIRIS: Out of memory trying to bind script";
+                LOG_ERROR("OSIRIS: Out of memory trying to bind script");
                 return false;
               }
 
@@ -1649,7 +1651,7 @@ bool Osiris_BindScriptsToObject(object *obj) {
             gos_instance = OSIRIS_loaded_modules[dll_id].CreateInstance(gos_id);
             if (!gos_instance) {
               // we had an error obtaining the instance of the COS...doh!
-              LOG_FATAL.printf("OSIRIS: Unable to create COS instance from level dll for (%s)",
+              LOG_FATAL("OSIRIS: Unable to create COS instance from level dll for (%s)",
                                (page_name) ? (page_name) : "<No Name>");
               Int3();
             } else {
@@ -1677,7 +1679,7 @@ bool Osiris_BindScriptsToObject(object *obj) {
 #endif
 
               if (iscustomonly) {
-                LOG_DEBUG.printf("OSIRIS: Attached custom script to 'custom only' object 0x%x", obj->handle);
+                LOG_DEBUG("OSIRIS: Attached custom script to 'custom only' object 0x%x", obj->handle);
               }
             }
           }
@@ -1705,7 +1707,7 @@ bool Osiris_BindScriptsToObject(object *obj) {
             obj->osiris_script = mem_rmalloc<tOSIRISScript>();
             if (!obj->osiris_script) {
               // out of memory
-              LOG_ERROR << "OSIRIS: Out of memory trying to bind script";
+              LOG_ERROR("OSIRIS: Out of memory trying to bind script");
               return false;
             }
 
@@ -1720,7 +1722,7 @@ bool Osiris_BindScriptsToObject(object *obj) {
           gos_instance = OSIRIS_loaded_modules[dll_id].CreateInstance(gos_id);
           if (!gos_instance) {
             // we had an error obtaining the instance of the GOS...ick
-            LOG_FATAL.printf("OSIRIS: Unable to create GOS instance from mission dll for (%s)", page_name);
+            LOG_FATAL("OSIRIS: Unable to create GOS instance from mission dll for (%s)", page_name);
             Int3();
           } else {
             // ok, we got a valid instance
@@ -2315,7 +2317,7 @@ void Osiris_ProcessTimers(void) {
               Osiris_CallEvent(obj, EVT_TIMERCANCEL, &ei);
           }
 
-          LOG_DEBUG.printf("OSIRIS TIMER: Cancelling Timer (%d/%d)", OsirisTimers[i].handle, i);
+          LOG_DEBUG("OSIRIS TIMER: Cancelling Timer (%d/%d)", OsirisTimers[i].handle, i);
           continue;
         }
       }
@@ -2662,7 +2664,7 @@ void Osiris_SaveSystemState(CFILE *file) {
 
   int save_end = cftell(file);
 
-  LOG_INFO.printf("Osiris: Save state, %d bytes written", save_end - save_start);
+  LOG_INFO("Osiris: Save state, %d bytes written", save_end - save_start);
 
   cfseek(file, checksum_pos, SEEK_SET);
   cf_WriteInt(file, save_end - save_start); // write out 'checksum'
@@ -2681,7 +2683,7 @@ bool Osiris_RestoreSystemState(CFILE *file) {
   cf_ReadString(tag, 256, file);
   if (strcmp(tag, "OSIRIS")) {
     // Things aren't right...our tag is not here
-    LOG_FATAL << "Missing OSIRIS tag";
+    LOG_FATAL("Missing OSIRIS tag");
     Int3();
     return false;
   }
@@ -2737,7 +2739,7 @@ bool Osiris_RestoreSystemState(CFILE *file) {
     // when the state was saved.  This means that things are not going to be restored exactly for
     // sure.  We'll skip over those that are not loaded.  We're int3 here because I want to know
     // when this happens.
-    LOG_ERROR.printf("OSIRIS: Restoring global state, the number of loaded modules is not the same as the restored "
+    LOG_ERROR("OSIRIS: Restoring global state, the number of loaded modules is not the same as the restored "
                      "count (%d vs. %d)",
                      loaded_module_count, read_module_count);
     if (Demo_flags != DF_PLAYBACK) {
@@ -2762,7 +2764,7 @@ bool Osiris_RestoreSystemState(CFILE *file) {
 
     module_handle = Osiris_FindLoadedModule(read_module_name);
     if (module_handle == -1) {
-      LOG_ERROR.printf("OSIRIS: The module (%s) was not found while trying to restore the state", read_module_name);
+      LOG_ERROR("OSIRIS: The module (%s) was not found while trying to restore the state", read_module_name);
       if (Demo_flags != DF_PLAYBACK) {
         Int3();
       }
@@ -2795,7 +2797,7 @@ bool Osiris_RestoreSystemState(CFILE *file) {
 
   int restore_end = cftell(file);
 
-  LOG_INFO.printf("Osiris: Restore state, %d bytes read", restore_end - restore_start);
+  LOG_INFO("Osiris: Restore state, %d bytes read", restore_end - restore_start);
 
   ASSERT(num_bytes_to_be_restored == (restore_end - restore_start));
   if (num_bytes_to_be_restored == (restore_end - restore_start))
@@ -3101,7 +3103,7 @@ int Osiris_ExtractScriptsFromHog(int library_handle, bool is_mission_hog) {
   if (library_handle == 0)
     return 0;
 
-  LOG_INFO << "OSIRIS: Extracting Scripts From Hog";
+  LOG_INFO("OSIRIS: Extracting Scripts From Hog");
 
   std::filesystem::path tempdir;
 
@@ -3112,7 +3114,7 @@ int Osiris_ExtractScriptsFromHog(int library_handle, bool is_mission_hog) {
     tempdir = OSIRIS_Extracted_script_dir;
   }
 
-  LOG_DEBUG << "Search started";
+  LOG_DEBUG("Search started");
 
   int count = cf_DoForeachFileInLibrary(
       library_handle, MODULE_EXT, [&tempdir, &is_mission_hog](const std::filesystem::path &filename) {
@@ -3135,14 +3137,14 @@ int Osiris_ExtractScriptsFromHog(int library_handle, bool is_mission_hog) {
             t.temp_filename = temp_filename.filename();
             OSIRIS_Extracted_scripts.insert_or_assign(temp_realname, t);
 
-            LOG_DEBUG.printf("Extracted %s as %s", temp_realname.c_str(), temp_filename.u8string().c_str());
+            LOG_DEBUG("Extracted %s as %s", temp_realname.c_str(), temp_filename.u8string().c_str());
           } else {
-            LOG_DEBUG.printf("Skipped %s (already extracted)", temp_realname.c_str());
+            LOG_DEBUG("Skipped %s (already extracted)", temp_realname.c_str());
           }
         }
       });
 
-  LOG_DEBUG.printf("Processed %d scripts", count);
+  LOG_DEBUG("Processed %d scripts", count);
 
   atexit(_clearextractedall);
 
@@ -3150,7 +3152,7 @@ int Osiris_ExtractScriptsFromHog(int library_handle, bool is_mission_hog) {
 }
 
 void Osiris_ClearExtractedScripts(bool mission_only) {
-  LOG_DEBUG << "OSIRIS: Removing Extracted DLLs";
+  LOG_DEBUG("OSIRIS: Removing Extracted DLLs");
 
   if (OSIRIS_Extracted_script_dir.empty()) {
     return;
@@ -3318,7 +3320,7 @@ void Osiris_InitOMMS(void) {
 }
 
 void Osiris_CloseOMMS(void) {
-  LOG_DEBUG << "OSIRIS: Reseting OMMS memory";
+  LOG_DEBUG("OSIRIS: Reseting OMMS memory");
 
   tOMMSHashNode *curr = OMMS_Hash_node_root;
 
@@ -3597,7 +3599,7 @@ free_mem:
   if (!node_to_free)
     return;
 
-  LOG_DEBUG.printf("OMMS: deleting uid 0x%x", node_to_free->unique_id);
+  LOG_DEBUG("OMMS: deleting uid 0x%x", node_to_free->unique_id);
   if (node_to_free->memory_ptr)
     mem_free(node_to_free->memory_ptr);
   mem_free(node_to_free);
@@ -3697,7 +3699,7 @@ OMMSHANDLE Osiris_OMMS_Malloc(size_t amount_of_memory, uint32_t unique_identifie
   node->size_of_memory = amount_of_memory;
   node->unique_id = unique_identifier;
 
-  LOG_DEBUG.printf("OMMS: malloc handle (0x%x%x) size = %d", hash->base_id, node->id, node->size_of_memory);
+  LOG_DEBUG("OMMS: malloc handle (0x%x%x) size = %d", hash->base_id, node->id, node->size_of_memory);
   return ((hash->base_id << 16) | (node->id));
 }
 

@@ -506,7 +506,7 @@ void Descent3() {
 
     // delete the lock file in the temp directory (as long as it belongs to us)
     if (!ddio_DeleteLockFile(std::filesystem::path(Descent3_temp_directory))) {
-      LOG_WARNING << "Cannot delete lock file in temp dir " << Descent3_temp_directory;
+      LOG_WARNING("Cannot delete lock file in temp dir %s", Descent3_temp_directory);
     };
 
     // Save settings to registry
@@ -637,7 +637,7 @@ void ShowStaticScreen(const char *bitmap_filename, bool timed, float delay_time)
 
     bm_DestroyChunkedBitmap(&splash_bm);
   } else {
-    LOG_WARNING << "Couldn't load " << bitmap_filename;
+    LOG_WARNING("Couldn't load %s", bitmap_filename);
   }
 
   ui_SetScreenMode(Max_window_w, Max_window_h);

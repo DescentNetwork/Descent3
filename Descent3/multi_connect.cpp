@@ -380,7 +380,7 @@ int TryToJoinServer(network_address *addr) {
       }
       return 0;
     } else
-      LOG_DEBUG  << "Server says it is ok to join!";
+      LOG_DEBUG("Server says it is ok to join!");
 
     nw_ConnectToServer(&sock, addr);
     if (sock != INVALID_SOCKET && sock != 0) {
@@ -395,14 +395,14 @@ int TryToJoinServer(network_address *addr) {
     {
       MultiSetServerAddress(addr);
     }
-    LOG_DEBUG << "Client mode set! Polling...";
+    LOG_DEBUG("Client mode set! Polling...");
 
     MultiPollForConnectionAccepted();
 
     if (NetPlayers[Player_num].flags & NPF_CONNECTED)
       return 1;
     else {
-      LOG_DEBUG << "Couldn't join game for some reason!";
+      LOG_DEBUG("Couldn't join game for some reason!");
 #ifdef USE_DIRECTPLAY
       if (!Use_DirectPlay)
 #endif
@@ -411,7 +411,7 @@ int TryToJoinServer(network_address *addr) {
       }
     }
   } else {
-    LOG_DEBUG << "nw_ConnectToServer says it can't find a good socket!";
+    LOG_DEBUG("nw_ConnectToServer says it can't find a good socket!");
   }
 
   return 0;
@@ -429,11 +429,11 @@ void MultiDoConnectionAccepted(uint8_t *data) {
   server_version = MultiGetShort(data, &count);
 
   if (server_version != MULTI_VERSION) {
-    LOG_DEBUG <<  "Client and server code versions don't match.  Do an update!";
+    LOG_DEBUG("Client and server code versions don't match.  Do an update!");
     return;
   } else {
     // Versions match, get info about the game and then connect!
-    LOG_DEBUG << "Client/server versions match.";
+    LOG_DEBUG("Client/server versions match.");
 
     // Check if we have the mission needed
     uint8_t len = MultiGetByte(data, &count);
@@ -441,9 +441,9 @@ void MultiDoConnectionAccepted(uint8_t *data) {
     count += len;
 
     if (!LoadMission(Netgame.mission)) {
-      LOG_DEBUG.printf("We don't have this mission: %s!", Netgame.mission);
+      LOG_DEBUG("We don't have this mission: %s!", Netgame.mission);
     } else
-      LOG_DEBUG.printf("Using mission %s...", Netgame.mission);
+      LOG_DEBUG("Using mission %s...", Netgame.mission);
 
     len = MultiGetByte(data, &count);
     memcpy(Netgame.name, &data[count], len);
@@ -464,14 +464,14 @@ void MultiDoConnectionAccepted(uint8_t *data) {
     memcpy(&tempplayer, &NetPlayers[Player_num], sizeof(netplayer));
 
     Player_num = player_num;
-    LOG_DEBUG.printf("Server tells me that my player num is %d!", Player_num);
+    LOG_DEBUG("Server tells me that my player num is %d!", Player_num);
     strcpy(Players[Player_num].callsign, name);
     memcpy(&NetPlayers[Player_num], &tempplayer, sizeof(netplayer));
     NetPlayers[Player_num].flags = NPF_CONNECTED; // Hurray! We're connected
 
     // Get packets per second
     Netgame.packets_per_second = MultiGetByte(data, &count);
-    LOG_DEBUG.printf("Server is sending %d packets per second", Netgame.packets_per_second);
+    LOG_DEBUG("Server is sending %d packets per second", Netgame.packets_per_second);
 
     // Get the secret code we will use to identify ourselves to the server
     uint32_t secret_code = MultiGetUint(data, &count);
@@ -479,9 +479,9 @@ void MultiDoConnectionAccepted(uint8_t *data) {
     // Get the peer-peer flag
     int flags = MultiGetInt(data, &count);
     if (flags & NF_PEER_PEER)
-      LOG_DEBUG << "Using Peer/Peer model";
+      LOG_DEBUG("Using Peer/Peer model");
     else
-      LOG_DEBUG << "Using Client/Server model";
+      LOG_DEBUG("Using Client/Server model");
 
     Netgame.flags = flags;
 
@@ -515,7 +515,7 @@ void MultiPollForConnectionAccepted() {
   }
 
   if (!connected) {
-    LOG_DEBUG << "Couldn't get a connection_accepted packet for some reason!";
+    LOG_DEBUG("Couldn't get a connection_accepted packet for some reason!");
   }
 }
 
@@ -528,7 +528,7 @@ void MultiSendConnectionAccepted(int slotnum, SOCKET sock, network_address *addr
   int count = 0;
   int size_offset;
 
-  LOG_DEBUG.printf("Sending connection accepted packet to slot %d!", slotnum);
+  LOG_DEBUG("Sending connection accepted packet to slot %d!", slotnum);
 
   NetPlayers[slotnum].reliable_socket = sock;
   memcpy(&NetPlayers[slotnum].addr, addr, sizeof(network_address));
@@ -554,7 +554,7 @@ void MultiSendConnectionAccepted(int slotnum, SOCKET sock, network_address *addr
   memcpy(&data[count], Netgame.mission, len);
   count += len;
 
-  LOG_DEBUG.printf("Sending netgame mission %s with length of %d!", Netgame.mission, len);
+  LOG_DEBUG("Sending netgame mission %s with length of %d!", Netgame.mission, len);
 
   len = strlen(Netgame.name) + 1;
   MultiAddByte(len, data, &count);
@@ -625,7 +625,7 @@ int MultiPollForLevelInfo() {
 
     while ((size = nw_Receive(data, &from_addr)) > 0) {
       if (data[0] == MP_HEARTBEAT) {
-        LOG_DEBUG << "Got a heart beat from the server.";
+        LOG_DEBUG("Got a heart beat from the server.");
         Got_heartbeat = true;
       }
     }
@@ -762,7 +762,7 @@ void MultiSendLevelInfo(int slot) {
     MultiAddByte(JOIN_ANSWER_NOT_SERVER, data, &count);
 
   // Do level number (of the mission)
-  LOG_DEBUG.printf("Sending current mission level %d!", Current_mission.cur_level);
+  LOG_DEBUG("Sending current mission level %d!", Current_mission.cur_level);
   MultiAddByte(Current_mission.cur_level, data, &count);
 
   // Send the difficulty
@@ -811,7 +811,7 @@ void MultiSendReadyForLevel() {
   int count = 0;
   int size_offset;
 
-  LOG_DEBUG << "Sending ready for level!";
+  LOG_DEBUG("Sending ready for level!");
 
   char pshipmodel[PAGENAME_LEN];
   Current_pilot.get_ship(pshipmodel);
@@ -840,10 +840,10 @@ extern int Multi_packet_tracking[];
 // Clears all connections
 // Server and Client
 void MultiCloseGame() {
-  LOG_DEBUG << "Multi close game!";
+  LOG_DEBUG("Multi close game!");
 
   if (!(Game_mode & GM_NETWORK)) {
-    LOG_DEBUG << "Not network game!";
+    LOG_DEBUG("Not network game!");
     return;
   }
 
@@ -852,7 +852,7 @@ void MultiCloseGame() {
   CFILE *outfile;
   outfile = cfopen("PacketTracking", "wt");
   if (!outfile) {
-    LOG_WARNING << "Couldn't open packet tracking file!";
+    LOG_WARNING("Couldn't open packet tracking file!");
   } else {
     for (int i = 0; i < 255; i++) {
       cfprintf(outfile, "Packet %d = %d\n", i, Multi_packet_tracking[i]);
@@ -972,6 +972,6 @@ void UpdateAndPackGameList(void) {
 
 // Sets whether or not the server answsers to a connection request
 void MultiSetAcceptState(bool state) {
-  LOG_DEBUG.printf("Setting multi_accept_state to %s.", state ? "true" : "false");
+  LOG_DEBUG("Setting multi_accept_state to %s.", state ? "true" : "false");
   Multi_accept_state = state;
 }

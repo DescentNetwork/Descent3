@@ -101,7 +101,7 @@ bool joy_Init() {
   //	reinitialize joystick if already initialized.
   joy_Close();
   if (!SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
-    LOG_ERROR << "Could not initialize Joystick";
+    LOG_ERROR("Could not initialize Joystick");
     return false;
   }
 
@@ -197,8 +197,8 @@ static bool joy_InitStick(tJoystick joy, char *server_adr) {
     }
     Joysticks[joy].caps = caps;
 
-    LOG_DEBUG.printf("JOYSTICK: Initialized stick named [%s].", caps.name);
-    LOG_DEBUG.printf("JOYSTICK: (%d) axes, (%d) hats, and (%d) buttons.", axes, hats, caps.num_btns);
+    LOG_DEBUG("JOYSTICK: Initialized stick named [%s].", caps.name);
+    LOG_DEBUG("JOYSTICK: (%d) axes, (%d) hats, and (%d) buttons.", axes, hats, caps.num_btns);
   }
 
   return (Joysticks[joy].handle != NULL);
@@ -336,7 +336,7 @@ static int joyGetNumDevs(void) {
     found = joyCount;
   }
 
-  LOG_INFO.printf("Joystick: Found %d joysticks.", found);
+  LOG_INFO("Joystick: Found %d joysticks.", found);
   SDL_free(joysticks);
   return found;
 }

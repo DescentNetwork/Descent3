@@ -182,7 +182,6 @@ find_package(SDL3 3.2.6 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
 find_package(glm REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(plog REQUIRED)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
   message("Building for Linux")

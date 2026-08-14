@@ -186,7 +186,7 @@ int LoadGameState(const std::filesystem::path &pathname);
 #define gs_WriteBool(_f, _b) cf_WriteByte(_f, _b)
 
 #define START_VERIFY_SAVEFILE(f) int cur_file_pos = cftell(f)
-#define END_VERIFY_SAVEFILE(f, s) LOG_DEBUG.printf("%s = %d bytes", s, cftell(f) - cur_file_pos)
+#define END_VERIFY_SAVEFILE(f, s) LOG_DEBUG("%s = %d bytes", s, cftell(f) - cur_file_pos)
 
 #define gs_ReadVector(_f, _v)                                                                                          \
   do {                                                                                                                 \

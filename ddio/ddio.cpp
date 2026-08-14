@@ -107,7 +107,7 @@ bool ddio_Init(ddio_init_info *init_info) {
   if (first_time) {
     atexit(ddio_Close);
   }
-  LOG_DEBUG << "DDIO system initializing...";
+  LOG_DEBUG("DDIO system initializing...");
   res = ddio_InternalInit(init_info);
   if (res) {
     if (first_time) { // initialize once and only once.
@@ -128,7 +128,7 @@ void ddio_Close() {
     ddio_MouseClose();
     ddio_KeyClose();
     ddio_InternalClose();
-    LOG_DEBUG << "DDIO system closed.";
+    LOG_DEBUG("DDIO system closed.");
     DDIO_initialized = false;
   }
 }

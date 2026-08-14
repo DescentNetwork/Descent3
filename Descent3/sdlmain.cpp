@@ -79,10 +79,10 @@ void fatal_signal_handler(int signum) {
   case SIGVTALRM:
   case SIGINT:
     if (already_tried_signal_cleanup)
-      LOG_WARNING << "Recursive signal cleanup! Hard exit! AHHGGGG!";
+      LOG_WARNING("Recursive signal cleanup! Hard exit! AHHGGGG!");
     else {
       already_tried_signal_cleanup = 1;
-      LOG_WARNING.printf("SIGNAL %d caught, aborting", signum);
+      LOG_WARNING("SIGNAL %d caught, aborting", signum);
       just_exit();
     } // else
     break;
@@ -99,7 +99,7 @@ void install_signal_handlers() {
   memset(&fact, 0, sizeof(fact));
   fact.sa_handler = fatal_signal_handler;
 
-  const std::map<int, std::string> signals = {
+  const std::map<int, std::string> sigs = {
       {SIGHUP, "SIGHUP"},
       {SIGABRT, "SIGABRT"},
       {SIGINT, "SIGINT"},
@@ -115,9 +115,9 @@ void install_signal_handlers() {
       {SIGTRAP, "SIGTRAP"},
   };
 
-  for (const auto &signal : signals) {
-    if (sigaction(signal.first, &fact, nullptr) != 0) {
-      LOG_WARNING << "SIG: Unable to install " << signal.second;
+  for (const auto& sig : sigs) {
+    if (sigaction(sig.first, &fact, nullptr) != 0) {
+      LOG_WARNING("SIG: Unable to install %s", sig.second);
     }
   }
 }
@@ -226,19 +226,33 @@ int main(int argc, char *argv[]) {
   orig_pwd = std::filesystem::current_path();
 
   /* Set up the logging system */
+#ifdef LOGGER
 #ifdef RELEASE
-  plog::Severity log_level = plog::info;
+  LogSeverity log_level = LogSeverity::info;
 #else
-  plog::Severity log_level = plog::debug;
+  LogSeverity log_level = LogSeverity::debug;
 #endif
 
   int loglevel_farg = FindArg("-loglevel");
   if (loglevel_farg) {
-    log_level = plog::severityFromString(GameArgs[loglevel_farg + 1]);
+    const char *level = GameArgs[loglevel_farg + 1];
+    if (!strcmp(level, "verbose")) {
+      log_level = LogSeverity::verbose;
+    } else if (!strcmp(level, "debug")) {
+      log_level = LogSeverity::debug;
+    } else if (!strcmp(level, "warning")) {
+      log_level = LogSeverity::warning;
+    } else if (!strcmp(level, "error")) {
+      log_level = LogSeverity::error;
+    } else if (!strcmp(level, "fatal")) {
+      log_level = LogSeverity::fatal;
+    }
   }
-  InitLog(log_level, FindArg("-logfile"), enable_winconsole);
 
-  LOG_INFO.printf("Welcome to Descent 3 v%d.%d.%d %s", D3_MAJORVER, D3_MINORVER, D3_BUILD, D3_GIT_HASH);
+  InitLog(log_level, FindArg("-logfile"), enable_winconsole);
+#endif
+
+  LOG_INFO("Welcome to Descent 3 v%d.%d.%d %s", D3_MAJORVER, D3_MINORVER, D3_BUILD, D3_GIT_HASH);
 
 #ifdef DEDICATED
   setenv("SDL_VIDEODRIVER", "dummy", 1);
@@ -246,7 +260,7 @@ int main(int argc, char *argv[]) {
 
   int rc = SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO);
   if (!rc) {
-    LOG_FATAL.printf("SDL: SDL_Init() failed: %d: %s!", rc, SDL_GetError());
+    LOG_FATAL("SDL: SDL_Init() failed: %d: %s!", rc, SDL_GetError());
     return (0);
   }
 
@@ -274,7 +288,7 @@ int main(int argc, char *argv[]) {
 
 
 #else
-    LOG_FATAL << "Error: \"--dedicated\" or \"-d\" flag required";
+    LOG_FATAL("Error: \"--dedicated\" or \"-d\" flag required");
     return 0;
 #endif
 
@@ -294,13 +308,13 @@ int main(int argc, char *argv[]) {
     run_d3 = false;
     pid_t np = fork();
     if (np == -1) {
-      LOG_WARNING << "Unable to fork process";
+      LOG_WARNING("Unable to fork process");
     }
     if (np == 0) {
       run_d3 = true;
       np = setsid();
       pid_t pp = getpid();
-      LOG_INFO.printf("Successfully forked process [new sid=%d pid=%d]", np, pp);
+      LOG_INFO("Successfully forked process [new sid=%d pid=%d]", np, pp);
     }
   }
 #endif

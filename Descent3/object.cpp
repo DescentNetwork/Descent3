@@ -1562,14 +1562,14 @@ int FreeObjectSlots(int num_used) {
   original_num_to_free = num_to_free;
 
   if (num_to_free > olind) {
-    LOG_DEBUG.printf("Warning: Asked to free %i objects, but can only free %i.", num_to_free, olind);
+    LOG_DEBUG("Warning: Asked to free %i objects, but can only free %i.", num_to_free, olind);
     num_to_free = olind;
   }
 
   for (i = 0; i < num_to_free; i++)
     if (Objects[obj_list[i]].type == OBJ_DEBRIS) {
       num_to_free--;
-      LOG_DEBUG.printf("Freeing DEBRIS object %3i", obj_list[i]);
+      LOG_DEBUG("Freeing DEBRIS object %3i", obj_list[i]);
       SetObjectDeadFlag(&Objects[obj_list[i]]);
     }
 
@@ -1591,7 +1591,7 @@ int FreeObjectSlots(int num_used) {
   for (i = 0; i < num_to_free; i++)
     if (Objects[obj_list[i]].type == OBJ_WEAPON) {
       num_to_free--;
-      LOG_DEBUG.printf("Freeing WEAPON object %3i", obj_list[i]);
+      LOG_DEBUG("Freeing WEAPON object %3i", obj_list[i]);
       SetObjectDeadFlag(&Objects[obj_list[i]]);
     }
 
@@ -1609,11 +1609,11 @@ int ObjAllocate(void) {
     int num_freed;
 
     num_freed = FreeObjectSlots(MAX_OBJECTS - 10);
-    LOG_DEBUG.printf(" *** Freed %i objects in frame %i", num_freed, FrameCount);
+    LOG_DEBUG(" *** Freed %i objects in frame %i", num_freed, FrameCount);
   }
 
   if (Num_objects >= MAX_OBJECTS) {
-    LOG_DEBUG.printf("Object creation failed - too many objects!");
+    LOG_DEBUG("Object creation failed - too many objects!");
     return -1;
   }
 
@@ -1623,7 +1623,7 @@ int ObjAllocate(void) {
     Highest_object_index = objnum;
     if (Highest_object_index > Highest_ever_object_index) {
       Highest_ever_object_index = Highest_object_index;
-      LOG_DEBUG.printf("Highest ever Object %d", Highest_ever_object_index);
+      LOG_DEBUG("Highest ever Object %d", Highest_ever_object_index);
     }
   }
 
@@ -1715,7 +1715,7 @@ int ObjCreate(uint8_t type, uint16_t id, int roomnum, vector *pos, const matrix 
   }
 
   if (print_object_info) {
-    LOG_DEBUG.printf("Created object %d of type %d", objnum, obj->type);
+    LOG_DEBUG("Created object %d of type %d", objnum, obj->type);
   }
 
   // Set the object's orietation
@@ -1832,7 +1832,7 @@ void ObjDelete(int objnum) {
     if (Netgame.local_role == LR_CLIENT && NetPlayers[Player_num].sequence > NETSEQ_OBJECTS &&
         NetPlayers[Player_num].sequence != NETSEQ_LEVEL_END) {
       if (!(obj->flags & OF_SERVER_SAYS_DELETE)) {
-        LOG_FATAL.printf("Illegally deleting server object! Objnum=%d type=%d id=%d", objnum, obj->type, obj->id);
+        LOG_FATAL("Illegally deleting server object! Objnum=%d type=%d id=%d", objnum, obj->type, obj->id);
         Int3();
         return;
       }
@@ -1882,14 +1882,14 @@ void ObjDelete(int objnum) {
     //??		obj_detach_all(obj);
 
   if (print_object_info) {
-    LOG_DEBUG.printf("Deleting object %d of type %d", objnum, Objects[objnum].type);
+    LOG_DEBUG("Deleting object %d of type %d", objnum, Objects[objnum].type);
   }
 
   if (obj->type == OBJ_WEAPON && obj->ctype.laser_info.parent_type == OBJ_PLAYER) {
     int pnum = Objects[(obj->parent_handle & HANDLE_OBJNUM_MASK)].id;
 
     if (Players[pnum].guided_obj == obj) {
-      LOG_DEBUG << "Deleting a guided missile!";
+      LOG_DEBUG("Deleting a guided missile!");
       Players[pnum].guided_obj = NULL;
     }
   }
@@ -1898,7 +1898,7 @@ void ObjDelete(int objnum) {
     int pnum = Objects[(obj->parent_handle & HANDLE_OBJNUM_MASK)].id;
 
     if (Players[pnum].user_timeout_obj == obj) {
-      LOG_DEBUG << "Deleting a timeout missile!";
+      LOG_DEBUG("Deleting a timeout missile!");
       Players[pnum].user_timeout_obj = NULL;
     }
   }
@@ -1918,7 +1918,7 @@ void ObjDelete(int objnum) {
               Gametime + (Netgame.respawn_time * Object_info[obj->id].respawn_scalar);
           Powerup_timer[Num_powerup_timer].id = obj->id;
           Num_powerup_timer++;
-          LOG_DEBUG.printf("Adding powerup id %d to respawn list! count=%d", obj->id, Num_powerup_timer);
+          LOG_DEBUG("Adding powerup id %d to respawn list! count=%d", obj->id, Num_powerup_timer);
         }
       }
     }
@@ -2121,7 +2121,7 @@ void DoCycledAnim(object *obj) {
   ASSERT(from <= to);
 
   if (obj->rtype.pobj_info.anim_frame < from || obj->rtype.pobj_info.anim_frame > to) {
-    LOG_DEBUG << "NonAI-Animation: Correcting for an incorrect frame number";
+    LOG_DEBUG("NonAI-Animation: Correcting for an incorrect frame number");
     obj->rtype.pobj_info.anim_frame = from;
   }
 
@@ -3211,7 +3211,7 @@ void ClearTransientObjects(int clear_all) {
         (objp->type == OBJ_FIREBALL) || (objp->type == OBJ_DEBRIS) || (objp->type == OBJ_SHARD) ||
         (objp->type == OBJ_SHOCKWAVE) || (objp->type == OBJ_PARTICLE) || (objp->type == OBJ_SPLINTER) ||
         ((objp->type != OBJ_NONE) && (objp->flags & OF_DYING))) {
-      LOG_DEBUG.printf("Clearing object %d type = %d", objnum, objp->type);
+      LOG_DEBUG("Clearing object %d type = %d", objnum, objp->type);
       ObjDelete(objnum);
     }
   }
@@ -3439,7 +3439,7 @@ void ObjSetTurretUpdate(uint16_t objnum, multi_turret *multi_turret_info) {
 
     p_info->multi_turret_info.flags = FMT_NEW_DATA;
   } else {
-    LOG_DEBUG << "Woops, no turret here to update!";
+    LOG_DEBUG("Woops, no turret here to update!");
   }
 }
 
@@ -3496,7 +3496,7 @@ void ObjUnGhostObject(int objnum) {
   //@@if(obj->flags&OF_INPLAYERINVENTORY)
   //@@	return;
   if (obj->flags & OF_INPLAYERINVENTORY) {
-    LOG_DEBUG << "UnGhosting Object in that is currently in a player's inventory!";
+    LOG_DEBUG("UnGhosting Object in that is currently in a player's inventory!");
   }
 
   obj->type = obj->dummy_type;

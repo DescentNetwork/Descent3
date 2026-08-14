@@ -217,7 +217,7 @@ bool AudioStream::ActivateStream(AudioStream *stream) {
       return true;
     }
   }
-  LOG_DEBUG << "AudioStream queue filled!";
+  LOG_DEBUG("AudioStream queue filled!");
   return false;
 }
 void AudioStream::DeactivateStream(AudioStream *stream) {
@@ -236,7 +236,7 @@ void AudioStream::Frame() {
     if (AudioStream::m_streams[t]) {
       AudioStream *strm = AudioStream::m_streams[t];
       if (strm->m_laststate != strm->m_state) {
-        LOG_DEBUG.printf("STRM[%d]:frame_state=%d", strm->m_curid, strm->m_state);
+        LOG_DEBUG("STRM[%d]:frame_state=%d", strm->m_curid, strm->m_state);
       }
       if (strm->m_state == STRM_PLAYING) {
         // see if the sound is still playing if it isn't then kill it (also if no more loops)
@@ -484,7 +484,7 @@ bool AudioStream::ReopenDigitalStream(uint8_t fbufidx, int nbufs) {
   //	clear out buffer list
   if (channels == 0 || channels > 2) {
     // weird, faulty osf
-    LOG_WARNING.printf("STRM[%d]: Illegal OSF (no channels?): %d.", m_curid, channels);
+    LOG_WARNING("STRM[%d]: Illegal OSF (no channels?): %d.", m_curid, channels);
     return false;
   }
 
@@ -498,7 +498,7 @@ bool AudioStream::ReopenDigitalStream(uint8_t fbufidx, int nbufs) {
       if (nbuffers == 0)
         nbuffers = 1;
     } else {
-      LOG_WARNING.printf("STRM[%d]: Bad stream length %d", m_curid, filelen);
+      LOG_WARNING("STRM[%d]: Bad stream length %d", m_curid, filelen);
       return false;
     }
   }
@@ -666,7 +666,7 @@ bool AudioStream::Play(bool start_on_frame) {
       }
       return true;
     } else {
-      LOG_ERROR << "STRMAUD:Eh? this should be reserved??";
+      LOG_ERROR("STRMAUD:Eh? this should be reserved??");
       Int3();
     }
   }
@@ -755,9 +755,9 @@ void *AudioStream::StreamCallback(int *size) {
   // adjust sound buffer to the next buffer
   if (m_state == STRM_STOPPING || m_state == STRM_STOPPED) {
     if (m_state == STRM_STOPPED) {
-      LOG_DEBUG.printf("STRM[%d]: Callback entered while stopping! Force stop.", m_curid);
+      LOG_DEBUG("STRM[%d]: Callback entered while stopping! Force stop.", m_curid);
     } else {
-      LOG_DEBUG.printf("STRM[%d]: Stopping softly", m_curid);
+      LOG_DEBUG("STRM[%d]: Stopping softly", m_curid);
     }
     // mark played buffer as unused.
     m_buffer[m_sbufidx].flags = 0;
@@ -766,7 +766,7 @@ void *AudioStream::StreamCallback(int *size) {
     return NULL;
   }
   if (!CHECK_FLAG(m_buffer[nextbuffer].flags, STRM_BUFF_USED)) {
-    LOG_DEBUG.printf("STRM[%d]: Playing onetime buffer?", m_curid);
+    LOG_DEBUG("STRM[%d]: Playing onetime buffer?", m_curid);
     m_state = STRM_STOPPED;
     *size = 0;
     return NULL;
@@ -799,12 +799,12 @@ void *AudioStream::StreamCallback(int *size) {
     if (m_stopnextmeasure) {
       m_state = STRM_STOPPING;
     }
-    LOG_DEBUG.printf("STRM[%d]: Start stopping softly", m_curid);
+    LOG_DEBUG("STRM[%d]: Start stopping softly", m_curid);
     //	*done = true;
   }
   if ((*size) == 0) {
     //	*done = true;
-    LOG_DEBUG.printf("STRM[%d]: Used buffer has 0 bytes!", m_curid);
+    LOG_DEBUG("STRM[%d]: Used buffer has 0 bytes!", m_curid);
     m_state = STRM_STOPPING;
     data = NULL;
   }

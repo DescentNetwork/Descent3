@@ -245,11 +245,11 @@ void MultiDoMSafeFunction(uint8_t *data) {
     mstruct->lifetime = MultiGetFloat(data, &count);
     mstruct->size = MultiGetFloat(data, &count);
     mstruct->speed = MultiGetFloat(data, &count);
-    LOG_DEBUG.printf("Got a START SPEW.  Index=%d", mstruct->id);
+    LOG_DEBUG("Got a START SPEW.  Index=%d", mstruct->id);
     break;
   case MSAFE_OBJECT_STOP_SPEW:
     mstruct->id = MultiGetUbyte(data, &count);
-    LOG_DEBUG.printf("Got STOP SPEW. index=%d", mstruct->id);
+    LOG_DEBUG("Got STOP SPEW. index=%d", mstruct->id);
     mstruct->id = Server_spew_list[mstruct->id];
     ASSERT(mstruct->id != 65535);
     break;
@@ -1087,7 +1087,7 @@ void MultiSendMSafeFunction(uint8_t type, msafe_struct *mstruct) {
     break;
 
   default:
-    LOG_FATAL.printf("Type %d is not handled in multisafe server...fix me!!", type);
+    LOG_FATAL("Type %d is not handled in multisafe server...fix me!!", type);
     Int3(); // Illegal type passed to multisafe function
     break;
   }
@@ -1155,7 +1155,7 @@ void MultiSendMSafePowerup(msafe_struct *mstruct) {
 
   size_offset = START_DATA(MP_MSAFE_POWERUP, data, &count);
 
-  LOG_DEBUG.printf("Sending powerup objnum of %d", mstruct->objhandle & HANDLE_OBJNUM_MASK);
+  LOG_DEBUG("Sending powerup objnum of %d", mstruct->objhandle & HANDLE_OBJNUM_MASK);
   MultiAddUshort(mstruct->objhandle & HANDLE_OBJNUM_MASK, data, &count);
   MultiAddUshort(mstruct->ithandle & HANDLE_OBJNUM_MASK, data, &count);
 

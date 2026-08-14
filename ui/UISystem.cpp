@@ -379,7 +379,7 @@ void ui_RemoveAllWindows() {
     ASSERT(count < 50);
   }
   if (count) {
-    LOG_DEBUG.printf("%d UI windows left open. Closed them!", count);
+    LOG_DEBUG("%d UI windows left open. Closed them!", count);
   }
 }
 //	removes a window from ui list.

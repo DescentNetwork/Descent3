@@ -77,13 +77,13 @@ int mve_PlayMovie(const std::filesystem::path &pMovieName, oeApplication *pApp) 
   // first, find that movie.
   std::filesystem::path real_name = cf_LocatePath("movies" / pMovieName);
   if (real_name.empty()) {
-    LOG_ERROR << "MOVIE: File " << pMovieName << " not found, skipping playback";
+    LOG_ERROR("MOVIE: File %s not found, skipping playback", pMovieName);
     return MVELIB_FILE_ERROR;
   }
   // open movie file.
   FILE *hFile = fopen((const char*)real_name.u8string().c_str(), "rb");
   if (hFile == nullptr) {
-    LOG_ERROR << "MOVIE: Unable to open " << pMovieName;
+    LOG_ERROR("MOVIE: Unable to open %s", pMovieName);
     return MVELIB_FILE_ERROR;
   }
 
@@ -96,14 +96,14 @@ int mve_PlayMovie(const std::filesystem::path &pMovieName, oeApplication *pApp) 
   Movie_bm_handle = -1;
 
   if (!mve_InitSound()) {
-    LOG_ERROR << "Failed to initialize sound";
+    LOG_ERROR("Failed to initialize sound");
     fclose(hFile);
     return MVELIB_INIT_ERROR;
   }
 
   MVESTREAM *mve = MVE_rmPrepMovie(hFile, -1, -1, 0);
   if (mve == nullptr) {
-    LOG_ERROR.printf("Failed to prepMovie %s", pMovieName.u8string().c_str());
+    LOG_ERROR("Failed to prepMovie %s", pMovieName.u8string().c_str());
     fclose(hFile);
     mve_CloseSound();
     return MVELIB_INIT_ERROR;
@@ -326,7 +326,7 @@ intptr_t mve_SequenceStart(const char *mvename, void *fhandle, oeApplication *ap
   fhandle = fopen((const char*)real_name.u8string().c_str(), "rb");
 
   if (fhandle == nullptr) {
-    LOG_WARNING.printf("MOVIE: Unable to open %s", (const char*)real_name.u8string().c_str());
+    LOG_WARNING("MOVIE: Unable to open %s", (const char*)real_name.u8string().c_str());
     return 0;
   }
 
@@ -344,7 +344,7 @@ intptr_t mve_SequenceStart(const char *mvename, void *fhandle, oeApplication *ap
 
   MVESTREAM *mve = MVE_rmPrepMovie(fhandle, -1, -1, 0);
   if (mve == nullptr) {
-    LOG_ERROR.printf("Failed to PrepMovie %s", mvename);
+    LOG_ERROR("Failed to PrepMovie %s", mvename);
     fclose((FILE *)fhandle);
     return MVELIB_INIT_ERROR;
   }

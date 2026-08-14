@@ -43,7 +43,7 @@ void lm_InitLightmaps() {
 }
 void lm_ShutdownLightmaps(void) {
   int i;
-  LOG_DEBUG << "Freeing all lightmap memory.";
+  LOG_DEBUG("Freeing all lightmap memory.");
   for (i = 0; i < MAX_LIGHTMAPS; i++) {
     while (GameLightmaps[i].used > 0)
       lm_FreeLightmap(i);
@@ -63,7 +63,7 @@ int lm_AllocLightmap(int w, int h) {
   memset(&GameLightmaps[n], 0, sizeof(bms_lightmap));
   GameLightmaps[n].data = (uint16_t *)mem_malloc((w * h * 2));
   if (!GameLightmaps[n].data) {
-    LOG_DEBUG << "NOT ENOUGH MEMORY FOR LIGHTMAP!";
+    LOG_DEBUG("NOT ENOUGH MEMORY FOR LIGHTMAP!");
     Int3();
     return BAD_LM_INDEX;
   }

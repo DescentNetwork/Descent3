@@ -159,7 +159,7 @@ bool ConfigItem::Create(NewUIGameWindow *parentwnd, int type, int flags, int x, 
     m_iType = type;
     break;
   default:
-    LOG_WARNING << "Bad config item type in Create";
+    LOG_WARNING("Bad config item type in Create");
     return false;
   }
   if (!label)
@@ -170,7 +170,7 @@ bool ConfigItem::Create(NewUIGameWindow *parentwnd, int type, int flags, int x, 
 
   if ((m_iFlags & CIF_USEGROUP) && (type != CIT_RADIOBUTTON)) {
     // only radiobutton items support the CIF_USEGROUP
-    LOG_DEBUG << "CONFIGITEM: Only CIT_RADIOBUTTON supports CIF_USEGROUP flag";
+    LOG_DEBUG("CONFIGITEM: Only CIT_RADIOBUTTON supports CIF_USEGROUP flag");
     m_iFlags &= ~CIF_USEGROUP;
     Int3();
   }
@@ -551,7 +551,7 @@ void ConfigItem::Update(int result) {
     UpdateCheckBox(index);
     break;
   default:
-    LOG_WARNING << "Bad ConfigItem Type in Update";
+    LOG_WARNING("Bad ConfigItem Type in Update");
   }
 }
 
@@ -1005,7 +1005,7 @@ void ConfigItem::Add(int count, ...) {
     m_rbList[m_iInitial]->Activate();
     break;
   default:
-    LOG_WARNING << "Bad ConfigItem Type in Add";
+    LOG_WARNING("Bad ConfigItem Type in Add");
   }
   va_end(marker);
 }

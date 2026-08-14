@@ -236,7 +236,7 @@ char *mng_CheckIfLockerPresent() {
 
   cf_ReadString(lockname, sizeof(lockname), infile);
 
-  LOG_WARNING.printf("%s has already got exclusive access to the table file.", lockname);
+  LOG_WARNING("%s has already got exclusive access to the table file.", lockname);
 
   cfclose(infile);
 
@@ -252,7 +252,7 @@ int TableVersionCurrent() {
 
   infile = (CFILE *)cfopen(VersionFile, "rb");
   if (!infile) {
-    LOG_ERROR << "Couldn't open the version file for querying!";
+    LOG_ERROR("Couldn't open the version file for querying!");
     return 0;
   }
 
@@ -302,7 +302,7 @@ int mng_MakeLocker() {
   outfile = (CFILE *)cfopen(LockerFile, "wb");
   if (!outfile) {
     OutrageMessageBox("Error opening the locker file!");
-    LOG_ERROR << "Couldn't open the locker file!";
+    LOG_ERROR("Couldn't open the locker file!");
     return 0;
   }
 #endif
@@ -471,7 +471,7 @@ int mng_ReadPagelock(CFILE *fp, mngs_Pagelock *pl) {
   pl->holder[PAGELOCK_NAME_LEN] = 0;
 
   if (pl->pagetype == PAGETYPE_POWERUP) {
-    LOG_DEBUG.printf("Powerup lock: %d, %s, %s", pl->pagetype, pl->name, pl->holder);
+    LOG_DEBUG("Powerup lock: %d, %s, %s", pl->pagetype, pl->name, pl->holder);
   }
 
   return 1;
@@ -555,7 +555,7 @@ int mng_DeletePagelock(char *name, int pagetype) {
   int done = 0, deleted = 0;
   mngs_Pagelock temp_pl;
 
-  LOG_DEBUG.printf("Deleting pagelock %s.", name);
+  LOG_DEBUG("Deleting pagelock %s.", name);
 
   infile = (CFILE *)cfopen(TableLockFilename, "rb");
   if (!infile) {
@@ -630,7 +630,7 @@ int mng_DeletePagelockSeries(char *names[], int num, int pagetype) {
         if (found == -1)
           mng_WritePagelock(outfile, &temp_pl);
         else
-          LOG_DEBUG.printf("Deleting pagelock %s.", names[found]);
+          LOG_DEBUG("Deleting pagelock %s.", names[found]);
       } else
         mng_WritePagelock(outfile, &temp_pl);
 
@@ -681,7 +681,7 @@ int mng_DeleteDuplicatePagelocks() {
       int found = -1;
       for (i = 0; i < num; i++) {
         if (temp_pl.pagetype == already_read[i].pagetype && !stricmp(temp_pl.name, already_read[i].name)) {
-          LOG_DEBUG.printf("Found duplicated %s", temp_pl.name);
+          LOG_DEBUG("Found duplicated %s", temp_pl.name);
           found = i;
           duplicates++;
         }
@@ -700,7 +700,7 @@ int mng_DeleteDuplicatePagelocks() {
   }
   cfclose(infile);
 
-  LOG_DEBUG.printf("Found %d duplicates!", duplicates);
+  LOG_DEBUG("Found %d duplicates!", duplicates);
   /*	cfclose (outfile);
 
           if (remove (TableLockFilename))
@@ -756,9 +756,9 @@ int mng_UnlockPagelockSeries(const char *names[], int *pagetypes, int num) {
       else {
         if (pagetypes[found] == temp_pl.pagetype) {
           if (already_done[found]) {
-            LOG_DEBUG.printf("Found duplicate=%s", names[found]);
+            LOG_DEBUG("Found duplicate=%s", names[found]);
           } else {
-            LOG_DEBUG.printf("Replacing pagelock %s to UNLOCKED.", names[found]);
+            LOG_DEBUG("Replacing pagelock %s to UNLOCKED.", names[found]);
             strcpy(temp_pl.holder, "UNLOCKED");
             mng_WritePagelock(outfile, &temp_pl);
             total++;
@@ -775,7 +775,7 @@ int mng_UnlockPagelockSeries(const char *names[], int *pagetypes, int num) {
   cfclose(infile);
   cfclose(outfile);
 
-  LOG_DEBUG.printf("Unlocked %d pages\n", total);
+  LOG_DEBUG("Unlocked %d pages\n", total);
 
   if (remove(TableLockFilename)) {
     snprintf(ErrorString, sizeof(ErrorString), "There was a problem deleting the temp file - errno %d", errno);

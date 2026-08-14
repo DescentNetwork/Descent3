@@ -105,19 +105,19 @@ FnPtr<Ret GLFUNCCALL(Args...)>::FnPtr(std::string_view name, bool optional) : fn
 }
 
 static module *LoadOpenGLDLL(const char *dllname) {
-  LOG_INFO << "Loading OpenGL dll...";
+  LOG_INFO("Loading OpenGL dll...");
   int rc = SDL_GL_LoadLibrary(dllname[0] ? dllname : nullptr);
 
   if (rc < 0) {
     const char *sdlErr = SDL_GetError();
-    LOG_ERROR.printf("OpenGL: Couldn't open library [%s]: SDL error [%s].",
+    LOG_ERROR("OpenGL: Couldn't open library [%s]: SDL error [%s].",
                      dllname[0] ? dllname : "system default", sdlErr);
     return NULL;
   }
 
   strcpy(loadedLibrary, dllname);
 
-  LOG_INFO << "OpenGL dll loading successful.";
+  LOG_INFO("OpenGL dll loading successful.");
 
   return &OpenGLDLLInst;
 }

@@ -72,7 +72,7 @@ oeLnxAppDatabase::oeLnxAppDatabase() {
 
   std::filesystem::path prefPath = ddio_GetPrefPath(D3_PREF_ORG, D3_PREF_APP);
   if (prefPath.empty()) {
-    LOG_FATAL << "Couldn't find preference directory!";
+    LOG_FATAL("Couldn't find preference directory!");
     exit(43);
   }
   std::filesystem::path fileName = prefPath / REGISTRY_FILENAME;
@@ -99,7 +99,7 @@ oeLnxAppDatabase::~oeLnxAppDatabase() {
     return;
   }
 
-  LOG_ERROR << "Can't Export Database Since It's Not There!";
+  LOG_ERROR("Can't Export Database Since It's Not There!");
 }
 
 CRegistry *oeLnxAppDatabase::GetSystemRegistry() { return database; }
@@ -114,7 +114,7 @@ bool oeLnxAppDatabase::create_record(const char *pathname) {
     database->CreateKey((char *)pathname);
     return true;
   }
-  LOG_ERROR << "Can't CreateKey because database NULL";
+  LOG_ERROR("Can't CreateKey because database NULL");
   return false;
 }
 
@@ -124,7 +124,7 @@ bool oeLnxAppDatabase::lookup_record(const char *pathname) {
   if (database) {
     return database->LookupKey((char *)pathname);
   }
-  LOG_ERROR << "Can't lookup key because database NULL";
+  LOG_ERROR("Can't lookup key because database NULL");
   return false;
 }
 
@@ -134,7 +134,7 @@ bool oeLnxAppDatabase::read(const char *label, char *entry, int *entrylen) {
   ASSERT(entry);
   ASSERT(entrylen);
   if (!database) {
-    LOG_ERROR << "Can't read record because database NULL";
+    LOG_ERROR("Can't read record because database NULL");
     return false;
   }
 
@@ -155,7 +155,7 @@ bool oeLnxAppDatabase::read(const char *label, void *entry, int wordsize) {
   ASSERT(label);
   ASSERT(entry);
   if (!database) {
-    LOG_ERROR << "Can't read record because Database NULL";
+    LOG_ERROR("Can't read record because Database NULL");
     return false;
   }
 
@@ -178,7 +178,7 @@ bool oeLnxAppDatabase::read(const char *label, void *entry, int wordsize) {
     *((uint32_t *)entry) = (uint32_t)data;
     break;
   default:
-    LOG_ERROR.printf("Unable to read key %s, unsupported size", label);
+    LOG_ERROR("Unable to read key %s, unsupported size", label);
     return false;
     break;
   }
@@ -199,7 +199,7 @@ bool oeLnxAppDatabase::write(const char *label, const char *entry, int entrylen)
   ASSERT(label);
   ASSERT(entry);
   if (!database) {
-    LOG_ERROR << "Can't write record because database NULL";
+    LOG_ERROR("Can't write record because database NULL");
     return false;
   }
 
@@ -209,7 +209,7 @@ bool oeLnxAppDatabase::write(const char *label, const char *entry, int entrylen)
 bool oeLnxAppDatabase::write(const char *label, int entry) {
   ASSERT(label);
   if (!database) {
-    LOG_ERROR << "Can't write record because database NULL";
+    LOG_ERROR("Can't write record because database NULL");
     return false;
   }
   return database->CreateRecord((char *)label, REGT_DWORD, &entry);

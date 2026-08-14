@@ -339,7 +339,7 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
       (image_type != 10 && image_type != 2 && image_type != OUTRAGE_TGA_TYPE && image_type != OUTRAGE_COMPRESSED_OGF &&
        image_type != OUTRAGE_COMPRESSED_MIPPED && image_type != OUTRAGE_NEW_COMPRESSED_MIPPED &&
        image_type != OUTRAGE_1555_COMPRESSED_MIPPED && image_type != OUTRAGE_4444_COMPRESSED_MIPPED)) {
-    LOG_ERROR << "bm_tga: Can't read this type of TGA.";
+    LOG_ERROR("bm_tga: Can't read this type of TGA.");
     return -1;
   }
 
@@ -375,13 +375,13 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
   pixsize = cf_ReadByte(infile);
 
   if (pixsize != 32 && pixsize != 24) {
-    LOG_ERROR.printf("bm_tga: This file has a pixsize of field of %d, it should be 32.", pixsize);
+    LOG_ERROR("bm_tga: This file has a pixsize of field of %d, it should be 32.", pixsize);
     return -1;
   }
 
   descriptor = cf_ReadByte(infile);
   if (((descriptor & 0x0F) != 8) && ((descriptor & 0x0F) != 0)) {
-    LOG_ERROR.printf("bm_tga: Descriptor field & 0x0F must be 8 or 0, but this is %d.", descriptor & 0x0F);
+    LOG_ERROR("bm_tga: Descriptor field & 0x0F must be 8 or 0, but this is %d.", descriptor & 0x0F);
     return -1;
   }
 
@@ -400,7 +400,7 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
     GameBitmaps[n].flags |= BF_MIPMAPPED;
 
   if (n < 0) {
-    LOG_ERROR << "bm_tga: Failed to allocate memory.";
+    LOG_ERROR("bm_tga: Failed to allocate memory.");
     Int3();
     return -1;
   }
@@ -548,7 +548,7 @@ int bm_page_in_file(int n) {
 
   infile = (CFILE *)cfopen(GameBitmaps[n].name, "rb");
   if (!infile) {
-    LOG_ERROR.printf("Couldn't page in bitmap %s!", GameBitmaps[n].name);
+    LOG_ERROR("Couldn't page in bitmap %s!", GameBitmaps[n].name);
     return 0;
   }
   // Used for progress bar when loading the level
@@ -562,7 +562,7 @@ int bm_page_in_file(int n) {
       (image_type != 10 && image_type != 2 && image_type != OUTRAGE_TGA_TYPE && image_type != OUTRAGE_COMPRESSED_OGF &&
        image_type != OUTRAGE_COMPRESSED_MIPPED && image_type != OUTRAGE_NEW_COMPRESSED_MIPPED &&
        image_type != OUTRAGE_1555_COMPRESSED_MIPPED && image_type != OUTRAGE_4444_COMPRESSED_MIPPED)) {
-    LOG_ERROR << "bm_tga: Can't read this type of TGA.";
+    LOG_ERROR("bm_tga: Can't read this type of TGA.");
     return -1;
   }
 
@@ -598,13 +598,13 @@ int bm_page_in_file(int n) {
   pixsize = cf_ReadByte(infile);
 
   if (pixsize != 32 && pixsize != 24) {
-    LOG_ERROR.printf("bm_tga: This file has a pixsize of field of %d, it should be 32. ", pixsize);
+    LOG_ERROR("bm_tga: This file has a pixsize of field of %d, it should be 32. ", pixsize);
     return 0;
   }
 
   descriptor = cf_ReadByte(infile);
   if (((descriptor & 0x0F) != 8) && ((descriptor & 0x0F) != 0)) {
-    LOG_ERROR.printf("bm_tga: Descriptor field & 0x0F must be 8 or 0, but this is %d.", descriptor & 0x0F);
+    LOG_ERROR("bm_tga: Descriptor field & 0x0F must be 8 or 0, but this is %d.", descriptor & 0x0F);
     return 0;
   }
 
@@ -617,7 +617,7 @@ int bm_page_in_file(int n) {
   int size = (width * height * 2) + (mipped * ((width * height * 2) / 3)) + 2;
   GameBitmaps[n].data16 = (uint16_t *)mem_malloc(size);
   if (!GameBitmaps[n].data16) {
-    LOG_ERROR << "Out of memory in bm_page_in_file!";
+    LOG_ERROR("Out of memory in bm_page_in_file!");
     return 0;
   }
 
@@ -638,7 +638,7 @@ int bm_page_in_file(int n) {
 
   strcpy(GameBitmaps[n].name, name);
 
-  LOG_DEBUG.printf("Paging in bitmap %s!", GameBitmaps[n].name);
+  LOG_DEBUG("Paging in bitmap %s!", GameBitmaps[n].name);
 
   if (file_mipped)
     GameBitmaps[n].flags |= BF_MIPMAPPED;

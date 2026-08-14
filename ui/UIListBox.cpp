@@ -407,7 +407,7 @@ void UIListBox::RemoveItem(const UIItem *item) {
     }
   }
   if (found == -1) {
-    LOG_DEBUG << "UIListBox:: Didn't find item to remove!";
+    LOG_DEBUG("UIListBox:: Didn't find item to remove!");
     return;
   }
 
@@ -471,7 +471,7 @@ void UIListBox::SelectItem(const UIItem *item) {
     }
   }
   if (!found) {
-    LOG_DEBUG << "UIListBox::SelectItem item not found!";
+    LOG_DEBUG("UIListBox::SelectItem item not found!");
   }
 }
 

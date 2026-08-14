@@ -216,7 +216,7 @@ void grFont::close_system() {
   }
 
   // we should free any fonts currently allocated here.
-  LOG_DEBUG << "Freeing cached fonts...";
+  LOG_DEBUG("Freeing cached fonts...");
   for (int i = 0; i < MAX_FONTS; i++) {
     gr_font_record *ft;
     if (grFont::m_FontList[i].references) {
@@ -442,7 +442,7 @@ void grFont::load(char *filename, int slot) {
 
   //	Then read in
   CLOSE_FONT(ff);
-  LOG_DEBUG.printf("%s font: <ht %d>::<min %d>::<max %d>::<base %d>::<proportional %d>::<color %d>",
+  LOG_DEBUG("%s font: <ht %d>::<min %d>::<max %d>::<base %d>::<proportional %d>::<color %d>",
                    grFont::m_FontList[slot].name, ft->height, ft->min_ascii, ft->max_ascii, ft->baseline,
                    ft->flags & FT_PROPORTIONAL, ft->flags & FT_COLOR);
 

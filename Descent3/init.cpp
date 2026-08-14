@@ -1081,7 +1081,7 @@ void PreInitD3Systems() {
   int iframelmtarg = FindArg("-limitframe");
   if (iframelmtarg) {
     Min_allowed_frametime = atoi(GameArgs[iframelmtarg + 1]);
-    LOG_INFO.printf("Using %d as a minimum frametime", Min_allowed_frametime);
+    LOG_INFO("Using %d as a minimum frametime", Min_allowed_frametime);
   } else {
     if (FindArg("-dedicated"))
       Min_allowed_frametime = 30;
@@ -1091,25 +1091,25 @@ void PreInitD3Systems() {
   iframelmtarg = FindArg("-framecap");
   if (iframelmtarg) {
     Min_allowed_frametime = ((float)1.0 / (float)atoi(GameArgs[iframelmtarg + 1])) * 1000;
-    LOG_INFO.printf("Using %d as a minimum frametime", Min_allowed_frametime);
+    LOG_INFO("Using %d as a minimum frametime", Min_allowed_frametime);
   } else {
     // Default to a framecap of 60
     Min_allowed_frametime = (1.0 / 60.0) * 1000;
-    LOG_INFO.printf("Using default framecap of 60");
+    LOG_INFO("Using default framecap of 60");
   }
 
   // Mouselook sensitivity!
   int msensearg = FindArg("-mlooksens");
   if (msensearg) {
     Mouselook_sensitivity = kAnglesPerDegree * atof(GameArgs[msensearg + 1]);
-    LOG_INFO.printf("Using mouselook sensitivity of %f", Mouselook_sensitivity);
+    LOG_INFO("Using mouselook sensitivity of %f", Mouselook_sensitivity);
   }
 
   // Mouse sensitivity (non-mouselook)
   msensearg = FindArg("-mousesens");
   if (msensearg) {
     Mouse_sensitivity = atof(GameArgs[msensearg + 1]);
-    LOG_INFO.printf("Using mouse sensitivity of %f", Mouse_sensitivity);
+    LOG_INFO("Using mouse sensitivity of %f", Mouse_sensitivity);
   }
 
   grtext_Init();
@@ -1308,7 +1308,7 @@ void LoadGameSettings() {
   if (tempint >= 0 && tempint < std::size(Video_res_list))
     Current_video_resolution_id = tempint;
   else
-    LOG_WARNING << "Game settings contain a display resolution index that is out of bounds. Starting with default resolution.";
+    LOG_WARNING("Game settings contain a display resolution index that is out of bounds. Starting with default resolution.");
 
   int tempval = 0;
   Database->read_int("RS_fov", &tempval);
@@ -1426,7 +1426,7 @@ void InitIOSystems(bool editor) {
   if (pref_path.empty()) {
     Error("Failed to get preference path!");
   }
-  LOG_INFO << "Setting writable preference path " << pref_path;
+  LOG_INFO("Setting writable preference path %s", pref_path.c_str());
   cf_AddBaseDirectory(pref_path);
 
   // Set the default base directories
@@ -1437,7 +1437,7 @@ void InitIOSystems(bool editor) {
   while (0 != (additionaldirarg = FindArg("-additionaldir", additionaldirarg))) {
     const auto dir_to_add = GetArg(additionaldirarg + 1);
     if (dir_to_add == nullptr) {
-      LOG_WARNING << "-additionaldir requires directory path as value.";
+      LOG_WARNING("-additionaldir requires directory path as value.");
       break;
     } else {
       cf_AddBaseDirectory(dir_to_add);
@@ -1458,12 +1458,12 @@ void InitIOSystems(bool editor) {
   std::filesystem::path exec_path = ddio_GetBasePath();
   // Populate exec_path with the executable path
   if (exec_path.empty() || exec_path == platform_dir) {
-    LOG_DEBUG << "Skipping adding executable path (empty or redundant path).";
+    LOG_DEBUG("Skipping adding executable path (empty or redundant path).");
   } else {
     cf_AddBaseDirectory(exec_path);
   }
 
-  LOG_INFO << "Base directories: " << cf_LocateMultiplePaths("");
+  LOG_INFO("Base directories: %s", cf_LocateMultiplePaths("").string().c_str());
 
   Descent->set_defer_handler(D3DeferHandler);
 
@@ -1498,7 +1498,7 @@ void InitIOSystems(bool editor) {
   // Setup temp directory
   INIT_MESSAGE(("Setting up temp directory."));
   SetupTempDirectory();
-  LOG_DEBUG << "Removing any temp files left over from last execution";
+  LOG_DEBUG("Removing any temp files left over from last execution");
   DeleteTempFiles();
 
   //	create directory system.
@@ -1576,7 +1576,7 @@ void InitStringTable() {
   if (string_count == 0)
     Error("Couldn't find the string table.");
   else
-    LOG_INFO.printf("%d strings loaded from the string tables", string_count);
+    LOG_INFO("%d strings loaded from the string tables", string_count);
 }
 
 void InitGraphics(bool editor) {
@@ -1753,7 +1753,7 @@ void IntroScreen() {
 #else
   int bm_handle = bm_AllocLoadFileBitmap("oemmenu.ogf", 0);
 #endif
-  LOG_INFO << "Intro screen!";
+  LOG_INFO("Intro screen!");
 
   if (bm_handle > -1) {
     if (!bm_CreateChunkedBitmap(bm_handle, &Title_bitmap))
@@ -1764,7 +1764,7 @@ void IntroScreen() {
     Title_bitmap_init = true;
     InitMessage(NULL);
   } else {
-    LOG_WARNING << "Unable to find d3.tga.";
+    LOG_WARNING("Unable to find d3.tga.");
   }
 }
 
@@ -1966,7 +1966,7 @@ void SetupTempDirectory(void) {
   // NOTE: No string tables are available at this point
   //--------------------------------------------------
 
-  LOG_INFO << "Setting up temp directory";
+  LOG_INFO("Setting up temp directory");
 
   int t_arg = FindArg("-tempdir");
   if (t_arg) {
@@ -1992,7 +1992,7 @@ void SetupTempDirectory(void) {
 
   // verify that we can write to the temp directory
   if (tempfilename.empty()) {
-    LOG_WARNING << "Unable to get temp file name";
+    LOG_WARNING("Unable to get temp file name");
     Error("Unable to set temporary directory to: \"%s\"", Descent3_temp_directory.u8string().c_str());
     exit(1);
   }
@@ -2001,7 +2001,7 @@ void SetupTempDirectory(void) {
   CFILE *file = cfopen(tempfilename, "wb");
   if (!file) {
     // unable to open file for writing
-    LOG_WARNING << "Unable to open temp file name for writing";
+    LOG_WARNING("Unable to open temp file name for writing");
     Error("Unable to set temporary directory to: \"%s\"", Descent3_temp_directory.u8string().c_str());
     exit(1);
   }
@@ -2013,7 +2013,7 @@ void SetupTempDirectory(void) {
   file = cfopen(tempfilename, "rb");
   if (!file) {
     // unable to open file for reading
-    LOG_WARNING << "Unable to open temp file name for reading";
+    LOG_WARNING("Unable to open temp file name for reading");
     std::filesystem::remove(tempfilename);
     Error("Unable to set temporary directory to: \"%s\"", Descent3_temp_directory.u8string().c_str());
     exit(1);
@@ -2021,7 +2021,7 @@ void SetupTempDirectory(void) {
 
   if (cf_ReadInt(file) != 0x56) {
     // verify failed
-    LOG_WARNING << "Temp file verify failed";
+    LOG_WARNING("Temp file verify failed");
     cfclose(file);
     std::filesystem::remove(tempfilename);
     Error("Unable to set temporary directory to: \"%s\"", Descent3_temp_directory.u8string().c_str());
@@ -2033,11 +2033,11 @@ void SetupTempDirectory(void) {
   // temp directory is valid!
   std::filesystem::remove(tempfilename);
 
-  LOG_INFO << "Temp directory set to: " << Descent3_temp_directory;
+  LOG_INFO("Temp directory set to: %s", Descent3_temp_directory.string().c_str());
 
   // Lock the directory
   if (!ddio_CreateLockFile(std::filesystem::path(Descent3_temp_directory))) {
-    LOG_WARNING << "Lock file NOT created in temp dir " << Descent3_temp_directory;
+    LOG_WARNING("Lock file NOT created in temp dir %s", Descent3_temp_directory);
     Error("Unable to set temporary directory to: \"%s\"\nUnable to create lock file",
           Descent3_temp_directory.u8string().c_str());
     exit(1);
@@ -2050,8 +2050,10 @@ void DeleteTempFiles() {
   ddio_DoForeachFile(Descent3_temp_directory, std::regex("d3[smocti].+\\.tmp"), [](const std::filesystem::path &path) {
     std::error_code ec;
     std::filesystem::remove(path, ec);
-    LOG_WARNING_IF(ec).printf("Unable to remove temporary file %s: %s\n", (const char*)path.u8string().c_str(),
-                              (const char*)ec.message().c_str());
+    LOG_WARNING_IF(ec,
+                   "Unable to remove temporary file %s: %s\n",
+                   (const char*)path.u8string().c_str(),
+                   (const char*)ec.message().c_str());
   });
 }
 
@@ -2073,7 +2075,7 @@ void ShutdownD3() {
   if (!Init_systems_init)
     return;
 
-  LOG_INFO << "Shutting down D3...";
+  LOG_INFO("Shutting down D3...");
 
   // Close forcefeedback effects
   ForceShutdown();
@@ -2119,7 +2121,7 @@ void RestartD3() {
   if (!Init_systems_init)
     return;
 
-  LOG_INFO << "Restarting D3...";
+  LOG_INFO("Restarting D3...");
 
   if (!FindArg("-windowed")) {
     if (Dedicated_server) {

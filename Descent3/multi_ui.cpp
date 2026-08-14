@@ -378,7 +378,7 @@ void DisplayNetDLLHelp(const char *topic);
 
 int MainMultiplayerMenu() {
 
-  LOG_INFO << "Entering MainMultiplayerMenu()";
+  LOG_INFO("Entering MainMultiplayerMenu()");
 
 #ifdef USE_DIRECTPLAY
   Num_directplay_games = 0;
@@ -1420,7 +1420,7 @@ void MultiGameOptionsMenu(int alloptions) {
                            MULTI_OPT_TOGGLES_X, pcs_y, 180, 30, UIF_FIT);
         Netgame.flags &= ~NF_PEER_PEER;
         Netgame.flags &= ~NF_PERMISSABLE;
-        LOG_INFO << "Using Client/Server model";
+        LOG_INFO("Using Client/Server model");
       } else if (res == PP_MODE_HS_ID) {
         cs_mode_hs.Destroy();
         pp_mode_hs.Destroy();
@@ -1435,7 +1435,7 @@ void MultiGameOptionsMenu(int alloptions) {
         Netgame.flags |= NF_PEER_PEER;
         Netgame.flags &= ~NF_PERMISSABLE;
 
-        LOG_INFO << "Using Peer/Peer model";
+        LOG_INFO("Using Peer/Peer model");
       } else if (res == PS_MODE_HS_ID) {
         cs_mode_hs.Destroy();
         pp_mode_hs.Destroy();
@@ -1450,7 +1450,7 @@ void MultiGameOptionsMenu(int alloptions) {
         Netgame.flags |= NF_PERMISSABLE;
         Netgame.flags &= ~NF_PEER_PEER;
 
-        LOG_INFO << "Using Permissable model";
+        LOG_INFO("Using Permissable model");
       } else if (res == ROT_VEL_HS_ID) {
         rot_vel_hs.Destroy();
 

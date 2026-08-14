@@ -318,12 +318,12 @@ bool msn_DownloadWithStatus(const char *url, const std::filesystem::path &filena
 
   std::vector<std::string> url_parts = StringSplit(url, "/");
   if (!(stricmp("http:", (const char*)url_parts.front().c_str()) == 0 || stricmp("https:", (const char*)url_parts.front().c_str()) == 0)) {
-    LOG_WARNING.printf("'%s' scheme is not supported, no download!", (const char*)url_parts.front().c_str());
+    LOG_WARNING("'%s' scheme is not supported, no download!", (const char*)url_parts.front().c_str());
     return false;
   }
   std::filesystem::path download_file = std::filesystem::path(url_parts.back());
   if (stricmp((const char*)download_file.extension().u8string().c_str(), ".zip") == 0) {
-    LOG_DEBUG << "We're downloading a zip file!!!";
+    LOG_DEBUG("We're downloading a zip file!!!");
     file_is_zip = true;
   }
 
@@ -424,7 +424,7 @@ bool msn_DownloadWithStatus(const char *url, const std::filesystem::path &filena
       auto result = async_task.get();
       if (result.error() == D3::HttpClient::Error::Success) {
         if (result->status == 200) {
-          LOG_INFO.printf("Successfully received the file (%d bytes)!", total_bytes);
+          LOG_INFO("Successfully received the file (%d bytes)!", total_bytes);
           in.close();
           exit_menu = true;
 
@@ -436,7 +436,7 @@ bool msn_DownloadWithStatus(const char *url, const std::filesystem::path &filena
           }
         } else {
           // File transfer Error!
-          LOG_WARNING.printf("Couldn't download the file %s! Response from server: \"%s\" (%d)", url,
+          LOG_WARNING("Couldn't download the file %s! Response from server: \"%s\" (%d)", url,
                              D3::HttpClient::StatusMessage(result->status), result->status);
           in.close();
           std::filesystem::remove(qualfile);
@@ -447,7 +447,7 @@ bool msn_DownloadWithStatus(const char *url, const std::filesystem::path &filena
         }
       } else {
         // We failed, and this is not our fault!
-        LOG_WARNING << "Couldn't download the file! Error from httpclient: " << static_cast<int>(result.error());
+        LOG_WARNING("Couldn't download the file! Error from httpclient: %i", << static_cast<int>(result.error()));
         in.close();
         std::filesystem::remove(qualfile);
 
@@ -611,7 +611,7 @@ int msn_CheckGetMission(network_address *net_addr, char *filename) {
     int sel = msn_ShowDownloadChoices(murls);
     if (sel != -1) {
       // Get the item that was selected!
-      LOG_DEBUG.printf("Downloading missions file from %s", murls->URL[sel]);
+      LOG_DEBUG("Downloading missions file from %s", murls->URL[sel]);
       if (msn_DownloadWithStatus(murls->URL[sel], filename)) {
         return 1;
       }
@@ -687,9 +687,9 @@ void _get_zipfilename(char *output, char *directory, char *zipfilename) {
 // return 1 on success
 int msn_ExtractZipFile(const std::filesystem::path &zipfilename, const std::filesystem::path &mn3name) {
 
-  LOG_DEBUG.printf("Extracting ZIP File (%s) to missions directory", zipfilename.u8string().c_str());
+  LOG_DEBUG("Extracting ZIP File (%s) to missions directory", zipfilename.u8string().c_str());
   if (!cfexist(zipfilename)) {
-    LOG_WARNING << "Zip file doesn't exist";
+    LOG_WARNING("Zip file doesn't exist");
     return 0;
   }
 
@@ -704,7 +704,7 @@ int msn_ExtractZipFile(const std::filesystem::path &zipfilename, const std::file
   zipentry *ze;
 
   if (!zfile.OpenZip((const char*)zipfilename.u8string().c_str())) {
-    LOG_WARNING << "Unable to open zip file";
+    LOG_WARNING("Unable to open zip file");
     return 0;
   }
 
@@ -726,7 +726,7 @@ int msn_ExtractZipFile(const std::filesystem::path &zipfilename, const std::file
     Descent->defer();
     process_file = true;
 
-    LOG_DEBUG.printf("Processing: %s", ze->name);
+    LOG_DEBUG("Processing: %s", ze->name);
 
     if (ze->compression_method == 0x0000 || ze->compression_method == 0x0008) {
       char *rfile = strrchr(ze->name, '/');
@@ -746,7 +746,7 @@ int msn_ExtractZipFile(const std::filesystem::path &zipfilename, const std::file
         snprintf(buffer, sizeof(buffer), "%s already exists. Overwrite?", output_filename);
         if (DoMessageBox("Confirm", buffer, MSGBOX_YESNO, UICOL_WINDOW_TITLE, UICOL_TEXT_NORMAL)) {
           // delete the file
-          LOG_DEBUG.printf("Deleting %s", zipfilename.u8string().c_str());
+          LOG_DEBUG("Deleting %s", zipfilename.u8string().c_str());
           if (!ddio_DeleteFile(output_filename)) {
             process_file = false;
             console.puts(GR_GREEN, "[Unable to Write] ");
@@ -768,10 +768,10 @@ int msn_ExtractZipFile(const std::filesystem::path &zipfilename, const std::file
         int ret = zfile.ExtractFile(ze, output_filename);
         if (ret < 0) {
           if (ret == -9) {
-            LOG_WARNING << " Error writing to file";
+            LOG_WARNING(" Error writing to file");
             snprintf(buffer, sizeof(buffer), "\nError writing to file (Out of space?)");
           } else {
-            LOG_WARNING.printf(" Error %d extracting file", ret);
+            LOG_WARNING(" Error %d extracting file", ret);
             snprintf(buffer, sizeof(buffer), "\nError %d extracting file", ret);
           }
           console.puts(GR_GREEN, buffer);
@@ -796,7 +796,7 @@ int msn_ExtractZipFile(const std::filesystem::path &zipfilename, const std::file
       }
 
     } else {
-      LOG_WARNING.printf("Unsupported compression for file (%s)", ze->name);
+      LOG_WARNING("Unsupported compression for file (%s)", ze->name);
       console.puts(GR_GREEN, "Unsupported compression!!");
     }
 
@@ -809,7 +809,7 @@ int msn_ExtractZipFile(const std::filesystem::path &zipfilename, const std::file
   if (DoMessageBox("Confirm", "Do you want to delete the zip file? It is no longer needed.", MSGBOX_YESNO,
                    UICOL_WINDOW_TITLE, UICOL_TEXT_NORMAL)) {
     // delete the file
-    LOG_DEBUG.printf("Deleting %s", zipfilename.u8string().c_str());
+    LOG_DEBUG("Deleting %s", zipfilename.u8string().c_str());
     std::error_code ec;
     std::filesystem::remove(zipfilename);
   }
@@ -854,7 +854,7 @@ int CheckGetD3M(char *d3m) {
   strcat(modurl, fixedd3m);
 
   lowurl = mem_strdup(_strlwr(modurl));
-  LOG_DEBUG.printf("Downloading mod file from %s", modurl);
+  LOG_DEBUG("Downloading mod file from %s", modurl);
 
   if (ModDownloadWithStatus(modurl, d3m)) {
     mem_free(fixedd3m);

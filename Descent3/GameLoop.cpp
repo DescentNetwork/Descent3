@@ -1120,12 +1120,12 @@ void ProcessButtons() {
     PollControls();
     if (Controller->get_joy_raw_values(&x, &y) || Controller->get_mouse_raw_values(&x, &y)) {
       // death.
-      LOG_DEBUG << "here?";
+      LOG_DEBUG("here?");
 
       if (Total_time_dead < DEATH_RESPAWN_TIME)
         return;
 
-      LOG_DEBUG.printf("Respawning joystick death. Death time=%f", Total_time_dead);
+      LOG_DEBUG("Respawning joystick death. Death time=%f", Total_time_dead);
 
       if (Game_mode & GM_MULTI)
         MultiSendEndPlayerDeath(); // couldn't this be called from withing EndPlayerDeath()?
@@ -1162,7 +1162,7 @@ void ProcessGuidebotKeys(int key) {
   object *buddy = ObjGet(Buddy_handle[Player_num]);
   if (!buddy || buddy->type != OBJ_ROBOT) {
     // not out of the ship
-    LOG_DEBUG << "Guidebot: mrmph mmrump..mrmph...LET ME OUT OF YOUR SHIP!";
+    LOG_DEBUG("Guidebot: mrmph mmrump..mrmph...LET ME OUT OF YOUR SHIP!");
     return;
   }
   int command_id = -1;
@@ -1305,7 +1305,7 @@ void ProcessNormalKey(int key) {
     if (Game_mode & GM_MULTI) {
       char str[80];
 
-      LOG_DEBUG.printf("Printing message %d!", index);
+      LOG_DEBUG("Printing message %d!", index);
 
       int save_do = Doing_input_message;
       int save_len = HudInputMessageLen;
@@ -1331,7 +1331,7 @@ void ProcessNormalKey(int key) {
 
   case KEY_PRINT_SCREEN:
   case KEY_SHIFTED + KEY_PRINT_SCREEN:
-    LOG_DEBUG << "Doing screenshot!";
+    LOG_DEBUG("Doing screenshot!");
     DoScreenshot();
     return;
 
@@ -1943,7 +1943,7 @@ void ProcessTestKeys(int key) {
     for (i = 0; i < MAX_OBJECTS; i++) {
       if (Objects[i].type == OBJ_DUMMY && Objects[i].dummy_type == OBJ_POWERUP && Objects[i].id == id) {
         // here's a betty
-        LOG_DEBUG << "Killing a betty";
+        LOG_DEBUG("Killing a betty");
         SetObjectDeadFlag(&Objects[i], true);
       }
     }
@@ -1959,64 +1959,64 @@ void ProcessTestKeys(int key) {
     Game_update_attach = 1 - Game_update_attach;
 
     if (Game_update_attach) {
-      LOG_DEBUG << "Update attach on";
+      LOG_DEBUG("Update attach on");
     } else {
-      LOG_DEBUG << "Update attach off";
+      LOG_DEBUG("Update attach off");
     }
   } break;
 
   case KEY_PAD1: {
     Game_do_flying_sim = 1 - Game_do_flying_sim;
     if (Game_do_flying_sim) {
-      LOG_DEBUG << "Game_do_flying_sim on";
+      LOG_DEBUG("Game_do_flying_sim on");
     } else {
-      LOG_DEBUG << "Game_do_flying_sim off";
+      LOG_DEBUG("Game_do_flying_sim off");
     }
   } break;
 
   case KEY_PAD2: {
     Game_do_walking_sim = 1 - Game_do_walking_sim;
     if (Game_do_walking_sim) {
-      LOG_DEBUG << "Game_do_walking_sim on";
+      LOG_DEBUG("Game_do_walking_sim on");
     } else {
-      LOG_DEBUG << "Game_do_walking_sim off";
+      LOG_DEBUG("Game_do_walking_sim off");
     }
   } break;
 
   case KEY_PAD3: {
     Game_do_vis_sim = 1 - Game_do_vis_sim;
     if (Game_do_vis_sim) {
-      LOG_DEBUG << "Game_do_vis_sim on";
+      LOG_DEBUG("Game_do_vis_sim on");
     } else {
-      LOG_DEBUG << "Game_do_vis_sim off";
+      LOG_DEBUG("Game_do_vis_sim off");
     }
   } break;
 
   case KEY_PAD4: {
     Game_do_ai_movement = 1 - Game_do_ai_movement;
     if (Game_do_ai_movement) {
-      LOG_DEBUG << "Game_do_ai_movement on";
+      LOG_DEBUG("Game_do_ai_movement on");
     } else {
-      LOG_DEBUG << "Game_do_ai_movement off";
+      LOG_DEBUG("Game_do_ai_movement off");
     }
   } break;
 
   case KEY_PAD5: {
     Game_do_ai_vis = 1 - Game_do_ai_vis;
     if (Game_do_ai_vis) {
-      LOG_DEBUG << "Game_do_ai_vis on";
+      LOG_DEBUG("Game_do_ai_vis on");
     } else {
-      LOG_DEBUG << "Game_do_ai_vis off";
+      LOG_DEBUG("Game_do_ai_vis off");
     }
   } break;
 
   case KEY_PAD6: {
     if (AI_debug_robot_do) {
       AI_debug_robot_do = false;
-      LOG_DEBUG << "AI Debug Info Off";
+      LOG_DEBUG("AI Debug Info Off");
     } else {
       AI_debug_robot_do = true;
-      LOG_DEBUG << "AI Debug Info On";
+      LOG_DEBUG("AI Debug Info On");
     }
   } break;
 
@@ -2049,7 +2049,7 @@ void ProcessTestKeys(int key) {
     if (!killed_something)
       AddHUDMessage("Nothing to kill!");
     else
-      LOG_DEBUG.printf("Killed %d objects of type %s!", killed_count, Object_info[Objects[i].id].name);
+      LOG_DEBUG("Killed %d objects of type %s!", killed_count, Object_info[Objects[i].id].name);
   } break;
     /*
     **************************************************
@@ -2159,25 +2159,25 @@ void ProcessTestKeys(int key) {
 
     switch (fate) {
     case HIT_NONE:
-      LOG_DEBUG << "Hit nothing";
+      LOG_DEBUG("Hit nothing");
       break;
     case HIT_WALL:
-      LOG_DEBUG << "Hit wall";
+      LOG_DEBUG("Hit wall");
       break;
     case HIT_OBJECT:
-      LOG_DEBUG.printf("Hit Object %d", hit_info.hit_object);
+      LOG_DEBUG("Hit Object %d", hit_info.hit_object);
       break;
     case HIT_TERRAIN:
-      LOG_DEBUG.printf("Hit Terrain %d", CELLNUM(hit_info.hit_room));
+      LOG_DEBUG("Hit Terrain %d", CELLNUM(hit_info.hit_room));
       break;
     case HIT_OUT_OF_TERRAIN_BOUNDS:
-      LOG_DEBUG << "Hit nothing: Leaving Terrain";
+      LOG_DEBUG("Hit nothing: Leaving Terrain");
       break;
     case HIT_SPHERE_2_POLY_OBJECT:
-      LOG_DEBUG << "Hit Poly_object";
+      LOG_DEBUG("Hit Poly_object");
       break;
     default:
-      LOG_DEBUG.printf("Hit %d not printed, add to list", fate);
+      LOG_DEBUG("Hit %d not printed, add to list", fate);
       break;
     }
 
@@ -2210,9 +2210,9 @@ void ProcessTestKeys(int key) {
   case KEY_F9: {
     vector vec = Player_object->pos + (Player_object->orient.fvec * 20);
     if (BSPRayOccluded(&Player_object->pos, &vec, MineBSP.root))
-      LOG_DEBUG << "Occluded!";
+      LOG_DEBUG("Occluded!");
     else
-      LOG_DEBUG << "NOT occluded!";
+      LOG_DEBUG("NOT occluded!");
   } break;
 
   case KEY_F10:
@@ -2264,7 +2264,7 @@ void ProcessTestKeys(int key) {
         float t = 5.0f;
         int m = 5;
 
-        LOG_DEBUG << "Matcen alive!";
+        LOG_DEBUG("Matcen alive!");
 
         vector centerPt = Player_object->pos + (Player_object->orient.fvec * 2.0f);
         Matcen[m_id]->SetAttachType(MT_ROOM);
@@ -2284,7 +2284,7 @@ void ProcessTestKeys(int key) {
 
         Matcen[m_id]->SetStatus(MSTAT_ACTIVE | MSTAT_RANDOM_PROD_ORDER, true);
       } else {
-        LOG_DEBUG << "Nope!";
+        LOG_DEBUG("Nope!");
       }
     }
     break;
@@ -2339,17 +2339,17 @@ void ProcessTestKeys(int key) {
 
       Game_show_portal_vis_pnts = 1 - Game_show_portal_vis_pnts;
 
-      LOG_DEBUG.printf("Vis info for room %d", Player_object->roomnum);
+      LOG_DEBUG("Vis info for room %d", Player_object->roomnum);
 
       for (i = 0; i <= Highest_room_index; i++) {
         if (BOA_IsVisible(i, Player_object->roomnum)) {
-          LOG_DEBUG.printf("%d can see you in %d", i, Player_object->roomnum);
+          LOG_DEBUG("%d can see you in %d", i, Player_object->roomnum);
         }
       }
 
       for (i = Highest_room_index + 1; i <= Highest_room_index + 8; i++) {
         if (BOA_IsVisible(i, Player_object->roomnum)) {
-          LOG_DEBUG.printf("Terrain %d can see you in %d", i - Highest_room_index - 1, Player_object->roomnum);
+          LOG_DEBUG("Terrain %d can see you in %d", i - Highest_room_index - 1, Player_object->roomnum);
         }
       }
     }
@@ -2746,10 +2746,10 @@ void CalcFrameTime(void) {
   last_timer = current_timer;
 
   if (Min_frametime > Frametime) {
-    LOG_DEBUG << "This was the fastest frame yet!";
+    LOG_DEBUG("This was the fastest frame yet!");
     Min_frametime = Frametime - Demo_frame_ofs;
   } else if (Max_frametime < Frametime) {
-    LOG_DEBUG << "This was the slowest frame yet!";
+    LOG_DEBUG("This was the slowest frame yet!");
     Max_frametime = Frametime - Demo_frame_ofs;
   }
   Frames_counted++;
@@ -2760,7 +2760,7 @@ void CalcFrameTime(void) {
 void InitFrameTime(void) {
 
   if (timer_paused) {
-    LOG_DEBUG << "Timer paused in InitFrameTime()";
+    LOG_DEBUG("Timer paused in InitFrameTime()");
   }
   last_timer = timer_GetMSTime();
   timer_paused = 0;
@@ -2768,7 +2768,7 @@ void InitFrameTime(void) {
 
 // Pauses game
 void PauseGame() {
-  LOG_INFO << "Game paused.";
+  LOG_INFO("Game paused.");
   Game_paused = true;
 
   D3MusicPause();
@@ -2782,7 +2782,7 @@ void ResumeGame() {
   Game_paused = false;
   Sound_system.ResumeSounds();
   D3MusicResume();
-  LOG_INFO << "Game resumed.";
+  LOG_INFO("Game resumed.");
 }
 
 // Data for terrain sound
@@ -2874,7 +2874,7 @@ void GameFrame(void) {
   bool is_game_idle = !Descent->active();
 
   if (Tracking_FVI) {
-    LOG_DEBUG << "Beginning frame!";
+    LOG_DEBUG("Beginning frame!");
   }
 
   // Begin Gameloop stuff
@@ -3132,7 +3132,7 @@ void GameFrame(void) {
 #endif
 
   if (Tracking_FVI) {
-    LOG_DEBUG << "Ending frame!";
+    LOG_DEBUG("Ending frame!");
   }
 
   if (!is_game_idle) {

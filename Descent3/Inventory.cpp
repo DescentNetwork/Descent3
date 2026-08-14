@@ -394,13 +394,13 @@ void Inventory::Reset(bool in_game, int reset_stage) {
 bool Inventory::AddObject(int object_handle, int flags, const char *description) {
   // make sure we can fit another object
   if (count >= MAX_UNIQUE_INVEN_ITEMS) {
-    LOG_DEBUG << "Max unique count hit on add to inventory";
+    LOG_DEBUG("Max unique count hit on add to inventory");
     return false;
   }
 
   object *obj = ObjGet(object_handle);
   if (!obj) {
-    LOG_DEBUG << "INVEN: Invalid object trying to be added";
+    LOG_DEBUG("INVEN: Invalid object trying to be added");
     return false;
   }
 
@@ -502,12 +502,12 @@ bool Inventory::AddObject(int object_handle, int flags, const char *description)
 bool Inventory::Add(int type, int id, object *parent, int aux_type, int aux_id, int flags, const char *description) {
   // make sure we can fit another object
   if (count >= MAX_UNIQUE_INVEN_ITEMS) {
-    LOG_WARNING << "Max unique count hit on add to inventory";
+    LOG_WARNING("Max unique count hit on add to inventory");
     return false;
   }
 
   if ((type < 0) || (type == OBJ_NONE)) {
-    LOG_WARNING << "Invalid type on add to inventory";
+    LOG_WARNING("Invalid type on add to inventory");
     return false;
   }
 
@@ -527,7 +527,7 @@ bool Inventory::Add(int type, int id, object *parent, int aux_type, int aux_id, 
 bool Inventory::AddCounterMeasure(int id, int aux_type, int aux_id, int flags, const char *description) {
   // make sure we can fit another object
   if (count >= MAX_UNIQUE_INVEN_ITEMS) {
-    LOG_WARNING << "Hit max unique in counter measure add";
+    LOG_WARNING("Hit max unique in counter measure add");
     return false;
   }
 
@@ -741,13 +741,13 @@ bool Inventory::Use(int type, int id, object *parent) {
 
   // if type is OBJ_WEAPON then it's a countermeasure
   if (type == OBJ_WEAPON) {
-    LOG_DEBUG << "CounterMeasures: Use";
+    LOG_DEBUG("CounterMeasures: Use");
     // countermeasure
     CreateCountermeasureFromObject(player, id);
     Remove(node->type, node->id);
     ret = true;
   } else {
-    LOG_DEBUG << "Inventory: Use";
+    LOG_DEBUG("Inventory: Use");
     // regular
     // recreate the object
     int objnum;
@@ -839,7 +839,7 @@ void Inventory::SendRequestToServerToUse(int type, int id) {
   if (node) {
     MultiSendClientInventoryUseItem(type, id);
   } else {
-    LOG_DEBUG << "Sorry couldn't find it in your inventory";
+    LOG_DEBUG("Sorry couldn't find it in your inventory");
   }
 }
 
@@ -895,7 +895,7 @@ bool Inventory::Remove(int type, int id) {
     RemoveNode(node);
   } else {
     node->count--;
-    LOG_DEBUG << "Inventory System: Remove";
+    LOG_DEBUG("Inventory System: Remove");
 
     if (node->count <= 0)
       RemoveNode(node);
@@ -1012,7 +1012,7 @@ int Inventory::SaveInventory(CFILE *file) {
         object *obj = ObjGet(curr->type);
         ASSERT(obj);
         if (!obj) {
-          LOG_DEBUG << "Invalid object saving inventory";
+          LOG_DEBUG("Invalid object saving inventory");
           curr = curr->next;
           num_items--;
           pos_count++;
@@ -1081,7 +1081,7 @@ int Inventory::ReadInventory(CFILE *file) {
         object *obj = ObjGet(t);
         ASSERT(obj);
         if (!obj) {
-          LOG_WARNING << "Invalid object restoring inventory";
+          LOG_WARNING("Invalid object restoring inventory");
           // skip this object
           cf_ReadInt(file);
           cf_ReadInt(file);
@@ -1527,7 +1527,7 @@ void InventoryRemoveObject(int objhandle) {
   for (int i = 0; i < MAX_PLAYERS; i++) {
     if (Players[i].inventory.CheckItem(objhandle, -1)) {
       // this player has it!!
-      LOG_DEBUG.printf("INVEN: Removing dead object from %d", i);
+      LOG_DEBUG("INVEN: Removing dead object from %d", i);
       Players[i].inventory.Remove(objhandle, -1);
       return;
     }

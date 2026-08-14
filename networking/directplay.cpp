@@ -117,7 +117,7 @@ dpconnections dpconns[MAX_DIRECTPLAY_CONNECTIONS];
 BOOL FAR PASCAL DirectPlayEnumConnectionsCallback(LPCGUID lpguidSP, LPVOID lpConnection, DWORD dwConnectionSize,
                                                   LPCDPNAME lpName, DWORD dwFlags, LPVOID lpContext) {
 
-  LOG_DEBUG.printf("Directplay connection found: %s", lpName->lpszShortNameA);
+  LOG_DEBUG("Directplay connection found: %s", lpName->lpszShortNameA);
   // Do something with the list of connections
   for (int i = 0; i < MAX_DIRECTPLAY_CONNECTIONS; i++) {
     if (dpconns[i].conn == NULL) {
@@ -127,7 +127,7 @@ BOOL FAR PASCAL DirectPlayEnumConnectionsCallback(LPCGUID lpguidSP, LPVOID lpCon
       return (TRUE);
     }
   }
-  LOG_WARNING << "No space for Directplay entry.";
+  LOG_WARNING("No space for Directplay entry.");
 
   return (TRUE);
 }
@@ -138,7 +138,7 @@ BOOL FAR PASCAL EnumSessionsCallback(LPCDPSESSIONDESC2 lpSessionDesc, LPDWORD lp
     return (FALSE);
 
   if (Num_directplay_games < MAX_DP_GAMES) {
-    LOG_DEBUG.printf("Found Directplay game[%d]: %s", Num_directplay_games, lpSessionDesc->lpszSessionNameA);
+    LOG_DEBUG("Found Directplay game[%d]: %s", Num_directplay_games, lpSessionDesc->lpszSessionNameA);
     memcpy(&Directplay_sessions[Num_directplay_games], lpSessionDesc, sizeof(DPSESSIONDESC2));
     strcpy(Directplay_session_desc[Num_directplay_games], lpSessionDesc->lpszSessionNameA);
     Directplay_sessions[Num_directplay_games].lpszSessionNameA = Directplay_session_desc[Num_directplay_games];
@@ -166,13 +166,13 @@ int dp_SelectDirectPlayConnection(char *name) {
     lpAddress = NULL;
     for (i = 0; i < MAX_DIRECTPLAY_CONNECTIONS; i++) {
       if (stricmp(dpconns[i].name, name) == 0) {
-        LOG_DEBUG.printf("Found DirectPlay connection: %s", name);
+        LOG_DEBUG("Found DirectPlay connection: %s", name);
         connection = dpconns[i].conn;
         break;
       }
     }
     if (!connection) {
-      LOG_WARNING.printf("Unable to find DirectPlay connection: %s", name);
+      LOG_WARNING("Unable to find DirectPlay connection: %s", name);
       return 0;
     }
   } else
@@ -191,7 +191,7 @@ int dp_SelectDirectPlayConnection(char *name) {
   }
 
   if (FAILED(hr)) {
-    LOG_ERROR.printf("lpDirectPlay4A->InitializeConnection() failed: error %d");
+    LOG_ERROR("lpDirectPlay4A->InitializeConnection() failed: error %d");
     return 0;
   }
   return 1;
@@ -231,19 +231,19 @@ int dp_InitDirectPlay(char *conn_name, void *parms, int num_elements) {
         hr = lpDirectPlayLobby3A->CreateCompoundAddress((LPDPCOMPOUNDADDRESSELEMENT)parms, num_elements, lpAddress,
                                                         &dwAddressSize);
         if (FAILED(hr)) {
-          LOG_ERROR << "lpDirectPlayLobby3A->CreateCompoundAddress() failed. DirectPlay *NOT* initialized!";
+          LOG_ERROR("lpDirectPlayLobby3A->CreateCompoundAddress() failed. DirectPlay *NOT* initialized!");
           return 0;
         } else {
-          LOG_INFO << "lpDirectPlayLobby3A->CreateCompoundAddress() succeeded!";
+          LOG_INFO("lpDirectPlayLobby3A->CreateCompoundAddress() succeeded!");
         }
       } else {
-        LOG_ERROR << "lpDirectPlayLobby3A->CreateCompoundAddress() buffer size request failed. DirectPlay *NOT* initialized!";
+        LOG_ERROR("lpDirectPlayLobby3A->CreateCompoundAddress() buffer size request failed. DirectPlay *NOT* initialized!");
       }
     }
   }
   if (dp_SelectDirectPlayConnection(conn)) {
     DP_active = TRUE;
-    LOG_INFO << "DirectPlay Initialized";
+    LOG_INFO("DirectPlay Initialized");
     return 1;
   }
   return 0;
@@ -251,7 +251,7 @@ int dp_InitDirectPlay(char *conn_name, void *parms, int num_elements) {
 
 // Everyone should call this when leaving the game.
 void dp_EndGame() {
-  LOG_INFO << "Ending DirectPlay game.";
+  LOG_INFO("Ending DirectPlay game.");
   if ((!DP_active) || (!lpDirectPlay4A))
     return;
   lpDirectPlay4A->Close();
@@ -265,10 +265,10 @@ int dp_StartGame(char *gamename) {
   DPNAME server_player;
   DPSESSIONDESC2 sessionDesc;
 
-  LOG_INFO.printf("Starting DirectPlay game: %s", gamename);
+  LOG_INFO("Starting DirectPlay game: %s", gamename);
 
   if ((!DP_active) || (!lpDirectPlay4A)) {
-    LOG_ERROR << "Can't start game because DirectPlay isn't initialized!";
+    LOG_ERROR("Can't start game because DirectPlay isn't initialized!");
     return 0;
   }
   // Host a new session.
@@ -301,7 +301,7 @@ int dp_StartGame(char *gamename) {
                                                       FALSE, // initial event reset
                                                       NULL); // no name
     if (NetPlayers[Player_num].hPlayerEvent == NULL) {
-      LOG_ERROR << "Failed to create directplay notification event!";
+      LOG_ERROR("Failed to create directplay notification event!");
       dp_EndGame();
       DP_active = false;
       return 0;
@@ -309,13 +309,13 @@ int dp_StartGame(char *gamename) {
     hres = lpDirectPlay4A->CreatePlayer(&NetPlayers[Player_num].dpidPlayer, &server_player,
                                         NetPlayers[Player_num].hPlayerEvent, NULL, 0, DPPLAYER_SERVERPLAYER);
     if (FAILED(hres)) {
-      LOG_ERROR.printf("Failed to create directplay player in dp_StartGame(): error %d", hres);
+      LOG_ERROR("Failed to create directplay player in dp_StartGame(): error %d", hres);
       return 0;
     }
     // Success
     return 1;
   } else {
-    LOG_ERROR.printf("Failed to create Directplay session: error %d", hres);
+    LOG_ERROR("Failed to create Directplay session: error %d", hres);
   }
   return 0;
 }
@@ -337,15 +337,15 @@ int dp_ListDirectPlayGames() {
   hr = lpDirectPlay4A->EnumSessions(&sessionDesc, 0, EnumSessionsCallback, 0,
                                     DPENUMSESSIONS_AVAILABLE | DPENUMSESSIONS_RETURNSTATUS | DPENUMSESSIONS_ASYNC);
   if (hr == DPERR_CONNECTING) {
-    LOG_DEBUG << "Waiting for EnumSessions() to connect.";
+    LOG_DEBUG("Waiting for EnumSessions() to connect.");
     return DPERR_CONNECTING;
   }
 
   if FAILED (hr) {
-    LOG_ERROR.printf("Unable to EnumSessions() for Directplay: error %d", hr);
+    LOG_ERROR("Unable to EnumSessions() for Directplay: error %d", hr);
     return DPERR_NOCONNECTION;
   }
-  LOG_DEBUG << "EnumSessions() returned DP_OK";
+  LOG_DEBUG("EnumSessions() returned DP_OK");
 
   return DP_OK;
 }
@@ -361,13 +361,13 @@ void dp_DirectPlayDispatch() {
   LPDPMSG_CREATEPLAYERORGROUP new_player_msg;
   // Put messages in the buffers
   if ((!DP_active) || (!lpDirectPlay4A)) {
-    LOG_ERROR << "Can't dispatch DirectPlay message because DirectPlay isn't active!";
+    LOG_ERROR("Can't dispatch DirectPlay message because DirectPlay isn't active!");
     return;
   }
 
   hr = lpDirectPlay4A->Receive(&idFrom, &idTo, DPRECEIVE_ALL, packet_data, &dwMsgBufferSize);
   if (FAILED(hr)) {
-    LOG_ERROR.printf("lpDirectPlay4A->Receive(): error %d", hr);
+    LOG_ERROR("lpDirectPlay4A->Receive(): error %d", hr);
   } else {
     // Now we have actual data -- do something with it.
     if (idFrom == DPID_SYSMSG) {
@@ -377,7 +377,7 @@ void dp_DirectPlayDispatch() {
       case DPSYS_CREATEPLAYERORGROUP:
         // New player joined the game
         {
-          LOG_DEBUG << "Got a DPSYS_CREATEPLAYERORGROUP packet!";
+          LOG_DEBUG("Got a DPSYS_CREATEPLAYERORGROUP packet!");
           new_player_msg = (LPDPMSG_CREATEPLAYERORGROUP)lpMsg;
           // Store this player's info
           for (int i = 0; i < MAX_PENDING_NEW_CONNECTIONS; i++) {
@@ -401,12 +401,12 @@ void dp_DirectPlayDispatch() {
       case DPSYS_SENDCOMPLETE:
         break;
       default:
-        LOG_FATAL.printf("Unknown system message from DirectPlay! %d", lpMsg->dwType);
+        LOG_FATAL("Unknown system message from DirectPlay! %d", lpMsg->dwType);
         Int3(); // Get Kevin
       }
     } else {
       if (dwMsgBufferSize >= MAX_PACKET_SIZE) {
-        LOG_ERROR << "Error: Packet too large for D3 to handle! Discarding!!!!!";
+        LOG_ERROR("Error: Packet too large for D3 to handle! Discarding!!!!!");
       } else {
         // Presumably this is from a player we know about...
         memset(&from_addr, 0, sizeof(network_address));
@@ -424,7 +424,7 @@ int dp_DirectPlaySend(network_address *who_to, uint8_t *data, int len, bool reli
   HRESULT hr;
   uint32_t send_flags;
   if ((!DP_active) || (!lpDirectPlay4A)) {
-    LOG_ERROR << "Can't send DirectPlay message because DirectPlay isn't active!";
+    LOG_ERROR("Can't send DirectPlay message because DirectPlay isn't active!");
     return 0;
   }
 
@@ -451,7 +451,7 @@ void dp_DirectPlayDestroyPlayer(DPID who) {
 
   hr = lpDirectPlay4A->DestroyPlayer(who);
   if (FAILED(hr)) {
-    LOG_ERROR.printf("lpDirectPlay4A->DestroyPlayer() returned error %d", hr);
+    LOG_ERROR("lpDirectPlay4A->DestroyPlayer() returned error %d", hr);
   }
 }
 
@@ -462,12 +462,12 @@ int dp_DirectPlayJoinGame(LPDPSESSIONDESC2 session) {
   do {
     hr = lpDirectPlay4A->Open(session, DPOPEN_JOIN | DPOPEN_RETURNSTATUS);
     if (DPERR_CONNECTING == hr) {
-      LOG_DEBUG << "Waiting for Directplay session to start(DPERR_CONNECTING)!";
+      LOG_DEBUG("Waiting for Directplay session to start(DPERR_CONNECTING)!");
       Sleep(50);
     }
   } while (DPERR_CONNECTING == hr);
   if (FAILED(hr)) {
-    LOG_ERROR.printf("Failed to create Directplay session: error %d", hr);
+    LOG_ERROR("Failed to create Directplay session: error %d", hr);
     // return 0;
   } else {
     HRESULT hres;
@@ -477,13 +477,13 @@ int dp_DirectPlayJoinGame(LPDPSESSIONDESC2 session) {
     client_player.lpszShortNameA = Players[Player_num].callsign;
     client_player.lpszLongNameA = NULL;
 
-    LOG_DEBUG << "Creating local player...";
+    LOG_DEBUG("Creating local player...");
     NetPlayers[Player_num].hPlayerEvent = CreateEvent(NULL,  // no security
                                                       FALSE, // auto reset
                                                       FALSE, // initial event reset
                                                       NULL); // no name
     if (NetPlayers[Player_num].hPlayerEvent == NULL) {
-      LOG_ERROR << "Failed to create directplay notification event!";
+      LOG_ERROR("Failed to create directplay notification event!");
       dp_EndGame();
       DP_active = false;
       return 0;
@@ -491,7 +491,7 @@ int dp_DirectPlayJoinGame(LPDPSESSIONDESC2 session) {
     hres = lpDirectPlay4A->CreatePlayer(&NetPlayers[Player_num].dpidPlayer, &client_player,
                                         NetPlayers[Player_num].hPlayerEvent, NULL, 0, 0);
     if (FAILED(hres)) {
-      LOG_ERROR.printf("Failed to create directplay player in dp_DirectPlayJoinGame(): error %d", hres);
+      LOG_ERROR("Failed to create directplay player in dp_DirectPlayJoinGame(): error %d", hres);
       return 0;
     }
     return 1;
@@ -501,7 +501,7 @@ int dp_DirectPlayJoinGame(LPDPSESSIONDESC2 session) {
 
 void dp_ShutdownDirectPlay() {
   int i;
-  LOG_DEBUG << "Freeing DirectPlay memory";
+  LOG_DEBUG("Freeing DirectPlay memory");
   for (i = 0; i < MAX_DIRECTPLAY_CONNECTIONS; i++) {
     if (dpconns[i].conn != NULL) {
       mem_free(dpconns[i].conn);
@@ -516,11 +516,11 @@ void dp_ShutdownDirectPlay() {
   lpAddress = NULL;
   lpdplconnection = NULL;
   // Delete any previous directplay instance
-  LOG_DEBUG << "Releasing DirectPlay COM object (lpDirectPlay4A)";
+  LOG_DEBUG("Releasing DirectPlay COM object (lpDirectPlay4A)");
   // if(lpDirectPlay4A)
   //	lpDirectPlay4A->Release();
   // lpDirectPlay4A = NULL;
-  LOG_INFO << "Done shutting down DirectPlay.";
+  LOG_INFO("Done shutting down DirectPlay.");
 }
 
 // ---------------------------------------------------------------------------
@@ -544,7 +544,7 @@ BOOL FAR PASCAL EnumModemAddress(REFGUID lpguidDataType, DWORD dwDataSize, LPCVO
   if (IsEqualGUID(lpguidDataType, DPAID_Modem)) {
     // loop over all strings in list
     while (strlen(lpszStr)) {
-      LOG_INFO.printf("Found modem: %s", lpszStr);
+      LOG_INFO("Found modem: %s", lpszStr);
       if (Num_modems_found < MAX_MODEMS) {
         // store modem name
         strcpy(Modems_found[Num_modems_found].name, lpszStr);
@@ -584,7 +584,7 @@ int dp_GetModemChoices(char *buffer, LPDWORD size) {
       }
     }
     if (!connection) {
-      LOG_ERROR << "Unable to find DirectPlay Modem connection.";
+      LOG_ERROR("Unable to find DirectPlay Modem connection.");
       return 0;
     }
 
@@ -601,7 +601,7 @@ int dp_GetModemChoices(char *buffer, LPDWORD size) {
     }
 
     if (FAILED(hr)) {
-      LOG_ERROR.printf("lpTempDP4->InitializeConnection() failed: error %d", hr);
+      LOG_ERROR("lpTempDP4->InitializeConnection() failed: error %d", hr);
       return 0;
     }
     lpTempDP4->GetPlayerAddress(0, buffer, size);
@@ -615,7 +615,7 @@ int dp_GetModemChoices(char *buffer, LPDWORD size) {
       if (SUCCEEDED(hr))
         lpDirectPlayLobby3A->EnumAddress(EnumModemAddress, buffer, *size, 0);
       else
-        LOG_ERROR << "Couldn't create IID_IDirectPlayLobby3A COM Instance!";
+        LOG_ERROR("Couldn't create IID_IDirectPlayLobby3A COM Instance!");
     }
 
     lpTempDP4->Release();
@@ -650,25 +650,25 @@ void dp_RegisterLobbyApplication(char *appname, char *exefile, char *exepath, ch
 
   HRESULT hr;
 
-  LOG_INFO << "Registering DirectPlay Lobby application:";
-  LOG_INFO.printf("AppDesc.lpszApplicationNameA = %s", appname);
-  LOG_INFO.printf("AppDesc.lpszFilenameA = %s", exefile);
-  LOG_INFO.printf("AppDesc.lpszCommandLineA = %s", arguments);
-  LOG_INFO.printf("AppDesc.lpszPathA = %s", exepath);
-  LOG_INFO.printf("AppDesc.lpszCurrentDirectoryA = %s", workingdir);
-  LOG_INFO.printf("AppDesc.lpszDescriptionA = %s", description);
+  LOG_INFO("Registering DirectPlay Lobby application:");
+  LOG_INFO("AppDesc.lpszApplicationNameA = %s", appname);
+  LOG_INFO("AppDesc.lpszFilenameA = %s", exefile);
+  LOG_INFO("AppDesc.lpszCommandLineA = %s", arguments);
+  LOG_INFO("AppDesc.lpszPathA = %s", exepath);
+  LOG_INFO("AppDesc.lpszCurrentDirectoryA = %s", workingdir);
+  LOG_INFO("AppDesc.lpszDescriptionA = %s", description);
 
   hr = CoCreateInstance(CLSID_DirectPlayLobby, NULL, CLSCTX_INPROC_SERVER, IID_IDirectPlayLobby3A,
                         (LPVOID *)&lpDirectPlayLobby3A);
   if (SUCCEEDED(hr)) {
     hr = lpDirectPlayLobby3A->RegisterApplication(0, &AppDesc);
     if (FAILED(hr)) {
-      LOG_ERROR.printf("IDirectPlayLobby3::RegisterApplication() failed: error %d", hr);
+      LOG_ERROR("IDirectPlayLobby3::RegisterApplication() failed: error %d", hr);
     } else {
-      LOG_INFO << "IDirectPlayLobby3::RegisterApplication() succeded.";
+      LOG_INFO("IDirectPlayLobby3::RegisterApplication() succeded.");
     }
   } else {
-    LOG_ERROR << "IDirectPlayLobby3 CoCreateInstance() failed.";
+    LOG_ERROR("IDirectPlayLobby3 CoCreateInstance() failed.");
     return;
   }
 
@@ -692,12 +692,12 @@ bool dp_DidLobbyLaunchGame() {
     hr = lpDirectPlayLobby3A->GetConnectionSettings(0, NULL, &buffersize);
     if (FAILED(hr)) {
       if (hr == DPERR_NOTLOBBIED) {
-        LOG_ERROR << "Application not started from a lobby.";
+        LOG_ERROR("Application not started from a lobby.");
         lpDirectPlayLobby3A->Release();
         lpDirectPlayLobby3A = NULL;
         return false;
       }
-      LOG_ERROR << "Unable to determine DirectPlay lobby connection info buffer size!!!";
+      LOG_ERROR("Unable to determine DirectPlay lobby connection info buffer size!!!");
       lpDirectPlayLobby3A->Release();
       lpDirectPlayLobby3A = NULL;
       return false;
@@ -707,21 +707,21 @@ bool dp_DidLobbyLaunchGame() {
     lpDirectPlayLobby3A->Release();
     lpDirectPlayLobby3A = NULL;
     if (FAILED(hr)) {
-      LOG_ERROR << "IDirectPlayLobby3::GetConnectionSettings() failed.";
+      LOG_ERROR("IDirectPlayLobby3::GetConnectionSettings() failed.");
       if (hr == DPERR_NOTLOBBIED) {
-        LOG_ERROR << "Application not started from a lobby.";
+        LOG_ERROR("Application not started from a lobby.");
         return false;
       } else {
-        LOG_ERROR << "Unknown error from IDirectPlayLobby3::GetConnectionSettings().";
+        LOG_ERROR("Unknown error from IDirectPlayLobby3::GetConnectionSettings().");
         return false;
       }
     } else {
-      LOG_INFO << "Application was started from a lobby.";
+      LOG_INFO("Application was started from a lobby.");
       Directplay_lobby_launched_game = true;
       return true;
     }
   } else {
-    LOG_ERROR << "IDirectPlayLobby3 CoCreateInstance() failed.";
+    LOG_ERROR("IDirectPlayLobby3 CoCreateInstance() failed.");
   }
   return false;
 }

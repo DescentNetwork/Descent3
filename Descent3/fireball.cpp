@@ -845,7 +845,7 @@ int CreateFireball(vector *pos, int fireball_num, int roomnum, int realtype) {
   else {
     objnum = ObjCreate(OBJ_FIREBALL, fireball_num, roomnum, pos, NULL);
     if (objnum < 0) {
-      LOG_WARNING << "Couldn't create fireball object!";
+      LOG_WARNING("Couldn't create fireball object!");
       return -1;
     }
     Objects[objnum].size = Fireballs[fireball_num].size;
@@ -867,7 +867,7 @@ int CreateCustomFireballObject(vector *pos, int fireball_num, int tex_handle, in
     return -1;
   objnum = ObjCreate(OBJ_FIREBALL, fireball_num, roomnum, pos, NULL);
   if (objnum < 0) {
-    LOG_WARNING << "Couldn't create fireball object!";
+    LOG_WARNING("Couldn't create fireball object!");
     return -1;
   }
   Objects[objnum].size = Fireballs[fireball_num].size;
@@ -898,7 +898,7 @@ object *CreateSubobjectDebrisDirected(object *parent, int subobj_num, vector *di
   objnum = ObjCreate(OBJ_DEBRIS, 0, parent->roomnum, &parent->pos, &parent->orient);
 
   if (objnum < 0 || objnum > Highest_object_index) {
-    LOG_WARNING << "WARNING: Debris not created!";
+    LOG_WARNING("WARNING: Debris not created!");
     return NULL;
   }
   obj = &Objects[objnum];
@@ -1087,7 +1087,7 @@ void CreateSplintersFromBody(object *obj, float explosion_mag, float lifetime) {
     // Now create splinter with that faces center position
     int s_objnum = ObjCreate(OBJ_SPLINTER, pm - Poly_models, obj->roomnum, &dest, NULL);
     if (s_objnum < 0) {
-      LOG_WARNING << "Couldn't create splinter object!";
+      LOG_WARNING("Couldn't create splinter object!");
       return;
     } else {
       // Fill in relevant info
@@ -1180,7 +1180,7 @@ void DoDeathSpew(object *parent) {
         int objnum = ObjCreate(type, id, parent->roomnum, &parent->pos, NULL);
         num_last_type++;
         if (objnum < 0) {
-          LOG_WARNING << "Couldn't spew object!";
+          LOG_WARNING("Couldn't spew object!");
           return;
         }
         object *obj = &Objects[objnum];
@@ -1272,7 +1272,7 @@ void CreateElectricalBolts(object *objp, int num_bolts) {
         vis->flags = VF_USES_LIFELEFT | VF_EXPAND | VF_ATTACHED;
       }
     } else {
-      LOG_WARNING.printf("VIS: Submodel %s has 0 vertices!!!", sm->name);
+      LOG_WARNING("VIS: Submodel %s has 0 vertices!!!", sm->name);
     }
   }
 }
@@ -1909,7 +1909,7 @@ void DoConcussiveForce(object *explode_obj_ptr, int parent_handle, float player_
               if (hit_obj_ptr->type == OBJ_PLAYER) {
                 if (Demo_flags != DF_PLAYBACK) {
                   ApplyDamageToPlayer(hit_obj_ptr, parent_obj, PD_CONCUSSIVE_FORCE, damage * player_scalar);
-                  LOG_DEBUG.printf("Applying %f damage to player from force.", damage);
+                  LOG_DEBUG("Applying %f damage to player from force.", damage);
                 }
 
                 //	 shake player cockpit if damage is pretty bad.
@@ -1940,7 +1940,7 @@ void CreateBlueBlastRing(vector *pos, int index, float lifetime, float max_size,
     objnum = ObjCreate(OBJ_FIREBALL, index, roomnum, pos, NULL);
     if (objnum < 0) // DAJ -1FIX
     {
-      LOG_WARNING << "Couldn't create blast object!";
+      LOG_WARNING("Couldn't create blast object!");
       return;
     }
     Objects[objnum].size = 1.0;
@@ -1996,7 +1996,7 @@ int CreateBlastRing(vector *pos, int index, float lifetime, float max_size, int 
 
   objnum = ObjCreate(OBJ_FIREBALL, index, roomnum, pos, NULL);
   if (objnum < 0) {
-    LOG_WARNING << "Couldn't create blast object!";
+    LOG_WARNING("Couldn't create blast object!");
     return -1;
   }
   Objects[objnum].size = max_size;
@@ -2029,7 +2029,7 @@ int CreateSmolderingObject(vector *pos, int index, float lifetime, float max_siz
 
   objnum = ObjCreate(OBJ_FIREBALL, index, roomnum, &new_pos, NULL);
   if (objnum < 0) {
-    LOG_WARNING << "Couldn't create blast object!";
+    LOG_WARNING("Couldn't create blast object!");
     return -1;
   }
   Objects[objnum].size = 1.0;

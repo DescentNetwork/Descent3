@@ -1542,7 +1542,7 @@ void ConvertObject(int *type, int *id) {
           ASSERT(object_convert[convert_to].id >= 0);
 
           if (object_convert[convert_to].id >= 0) {
-            LOG_DEBUG.printf("LEVELLOAD: Converting: '%s' -> '%s'", object_convert[i].name, object_convert[convert_to].name);
+            LOG_DEBUG("LEVELLOAD: Converting: '%s' -> '%s'", object_convert[i].name, object_convert[convert_to].name);
 
             new_id = object_convert[convert_to].id;
             new_type = object_convert[convert_to].type;
@@ -1787,7 +1787,7 @@ int ReadObject(CFILE *ifile, object *objp, int handle, int fileversion) {
     num_models = cf_ReadByte(ifile);
     if (pm->n_models != num_models) {
       model_changed = 1;
-      LOG_DEBUG.printf("Polymodel %s has changed since this level was lit!", pm->name);
+      LOG_DEBUG("Polymodel %s has changed since this level was lit!", pm->name);
     }
 
     if (!model_changed)
@@ -1876,7 +1876,7 @@ int ReadObject(CFILE *ifile, object *objp, int handle, int fileversion) {
     }
 
     if (clear_lightmaps) {
-      LOG_DEBUG.printf("Freeing lightmaps because model %s  has changed since this level was saved!\n", pm->name);
+      LOG_DEBUG("Freeing lightmaps because model %s  has changed since this level was saved!\n", pm->name);
       ClearObjectLightmaps(objp);
     }
   }
@@ -2202,7 +2202,7 @@ void RemoveDegenerateFaces(room *rp) {
     face *fp = &rp->faces[f];
 
     if ((fp->normal.x() == 0.0) && (fp->normal.y() == 0.0) && (fp->normal.z() == 0.0)) {
-      LOG_DEBUG.printf("Deleting face %d from room %d", f, ROOMNUM(rp));
+      LOG_DEBUG("Deleting face %d from room %d", f, ROOMNUM(rp));
       DeleteRoomFace(rp, f);
       n_degenerate_faces_removed++;
     }
@@ -2490,7 +2490,7 @@ int ReadRoom(CFILE *ifile, room *rp, int version) {
 
     // Check for bad normal
     if (!t) {
-      LOG_WARNING.printf("WARNING:  Room %d face %d has bad normal!", rp - Rooms, i);
+      LOG_WARNING("WARNING:  Room %d face %d has bad normal!", rp - Rooms, i);
     }
   }
 
@@ -2700,7 +2700,7 @@ void ReadNewLightmapChunk(CFILE *fp, int version) {
 
   nummaps = cf_ReadInt(fp);
 
-  LOG_DEBUG.printf("Reading %d unique lightmaps", nummaps);
+  LOG_DEBUG("Reading %d unique lightmaps", nummaps);
 
   for (i = 0; i < nummaps; i++) {
     int w, h;
@@ -3067,7 +3067,7 @@ void ReadBOAChunk(CFILE *fp, int version) {
   if (version < 62) {
     cfseek(fp, sizeof(int16_t) * max_rooms * max_rooms, SEEK_CUR);
 
-    LOG_DEBUG << "We will need to remake boa.  New cost structure added";
+    LOG_DEBUG("We will need to remake boa.  New cost structure added");
     BOA_AABB_checksum = BOA_mine_checksum = 0;
   } else {
     max_path_portals = cf_ReadInt(fp);
@@ -3082,7 +3082,7 @@ void ReadBOAChunk(CFILE *fp, int version) {
         cfseek(fp, max_rooms * sizeof(float), SEEK_CUR);
       }
 
-      LOG_DEBUG << "We will need to remake boa.  Data size changed";
+      LOG_DEBUG("We will need to remake boa.  Data size changed");
       BOA_AABB_checksum = BOA_mine_checksum = 0;
     } else {
       for (i = 0; i <= max_rooms; i++) {
@@ -3101,7 +3101,7 @@ void ReadBOAChunk(CFILE *fp, int version) {
       BOA_num_terrain_regions = cf_ReadInt(fp);
 
       if (version < 112) {
-        LOG_DEBUG << "We will need to remake boa.";
+        LOG_DEBUG("We will need to remake boa.");
         BOA_AABB_checksum = BOA_mine_checksum = 0;
       } else {
         for (i = 0; i < BOA_num_terrain_regions; i++) {
@@ -3620,7 +3620,7 @@ bool LoadLevelInfo(const std::filesystem::path &filename, level_info &info) {
   bool found = false;
 
   if (!ifile) {
-    LOG_ERROR.printf("Failed to open mission file %s", filename.u8string().c_str());
+    LOG_ERROR("Failed to open mission file %s", filename.u8string().c_str());
     return false;
   }
 
@@ -3631,12 +3631,12 @@ bool LoadLevelInfo(const std::filesystem::path &filename, level_info &info) {
     int version = ReadHeader(ifile);
 
     if (version > LEVEL_FILE_VERSION) {
-      LOG_ERROR.printf("Mission file too new (version %d)", version);
+      LOG_ERROR("Mission file too new (version %d)", version);
       cfclose(ifile);
       return false;
     }
     if (version < LEVEL_FILE_OLDEST_COMPATIBLE_VERSION) {
-      LOG_ERROR.printf("Mission file too old (version %d)", version);
+      LOG_ERROR("Mission file too old (version %d)", version);
       cfclose(ifile);
       return false;
     }
@@ -3658,7 +3658,7 @@ bool LoadLevelInfo(const std::filesystem::path &filename, level_info &info) {
     }
 
   } catch (cfile_error *cfe) {
-    LOG_FATAL.printf("Error reading: file = <%s>, error = \"%s\"", cfe->file->name, cfe->msg);
+    LOG_FATAL("Error reading: file = <%s>, error = \"%s\"", cfe->file->name, cfe->msg);
     ASSERT(cfe->read_write == CFE_READING);
     cfclose(ifile);
     return false;
@@ -3703,7 +3703,7 @@ int LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
 
     // Check for too new version
     if (version > LEVEL_FILE_VERSION) {
-      LOG_ERROR.printf("Mission file too new (version %d)", version);
+      LOG_ERROR("Mission file too new (version %d)", version);
       cfclose(ifile);
 #if (defined(EDITOR) || defined(NEWEDITOR))
       if (GetFunctionMode() == EDITOR_MODE)
@@ -3716,7 +3716,7 @@ int LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
 
     // Check for too-old version
     if (version < LEVEL_FILE_OLDEST_COMPATIBLE_VERSION) {
-      LOG_ERROR.printf("Mission file too old (version %d)", version);
+      LOG_ERROR("Mission file too old (version %d)", version);
       cfclose(ifile);
 #if (defined(EDITOR) || defined(NEWEDITOR))
       if (GetFunctionMode() == EDITOR_MODE)
@@ -3789,7 +3789,7 @@ int LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
       cf_ReadBytes((uint8_t *)chunk_name, 4, ifile);
       chunk_start = cftell(ifile);
       chunk_size = cf_ReadInt(ifile);
-      LOG_DEBUG.printf("Chunk: %c%c%c%c, size=%d",
+      LOG_DEBUG("Chunk: %c%c%c%c, size=%d",
                        chunk_name[0], chunk_name[1], chunk_name[2], chunk_name[3], chunk_size);
 
       if (ISCHUNK(CHUNK_TEXTURE_NAMES))
@@ -3830,7 +3830,7 @@ int LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
           roomnum = (version >= 96) ? cf_ReadShort(ifile) : i;
           ReadRoom(ifile, &Rooms[roomnum], version);
         }
-        LOG_DEBUG.printf("%d degenerate faces removed", n_degenerate_faces_removed);
+        LOG_DEBUG("%d degenerate faces removed", n_degenerate_faces_removed);
 
         Highest_room_index = roomnum;
         ASSERT(Highest_room_index < MAX_ROOMS);
@@ -3893,7 +3893,7 @@ int LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
             Objects[objnum].type = OBJ_NONE;                                 // kill the object
           } else {
             if (!ROOMNUM_OUTSIDE(roomnum) && Rooms[roomnum].flags & RF_EXTERNAL) {
-              LOG_ERROR.printf("Internal object %d linked to external room %d (type = %d)!!!",
+              LOG_ERROR("Internal object %d linked to external room %d (type = %d)!!!",
                                objnum, roomnum, Objects[objnum].type);
               if (Objects[objnum].type == OBJ_VIEWER)
                 Objects[objnum].type = OBJ_NONE; // kill the object
@@ -4088,7 +4088,7 @@ int LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
       }
 #endif       // ifdef EDITOR
       else { // unknown chunk
-        LOG_WARNING.printf("  Unknown chunk: %c%c%c%c, size=%d",
+        LOG_WARNING("  Unknown chunk: %c%c%c%c, size=%d",
                            chunk_name[0], chunk_name[1], chunk_name[2], chunk_name[3], chunk_size);
       }
 
@@ -4100,7 +4100,7 @@ int LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
 
   } // try
   catch (cfile_error *cfe) {
-    LOG_FATAL.printf("Error reading: file = <%s>, error = \"%s\"", cfe->file->name, cfe->msg);
+    LOG_FATAL("Error reading: file = <%s>, error = \"%s\"", cfe->file->name, cfe->msg);
     ASSERT(cfe->read_write == CFE_READING);
 #if (defined(EDITOR) || defined(NEWEDITOR))
     if (GetFunctionMode() == EDITOR_MODE)
@@ -4213,7 +4213,7 @@ end_loadlevel:
   }
 
   // Debug log the current sum
-  LOG_INFO.printf("End of load level checksum = %s", GetCurrentSumString());
+  LOG_INFO("End of load level checksum = %s", GetCurrentSumString());
   // Done
   return retval;
 }
@@ -4282,7 +4282,7 @@ int WriteObject(CFILE *ofile, object *objp) {
   // If there is lightmap data for this object, write it out.
   if (objp->lighting_render_type == LRT_LIGHTMAPS) {
     if (objp->lm_object.used == 0) {
-      LOG_WARNING.printf("Warning: Object %d is set for lightmaps but has no lightmap data!", objp - Objects);
+      LOG_WARNING("Warning: Object %d is set for lightmaps but has no lightmap data!", objp - Objects);
       cf_WriteByte(ofile, 0);
     } else {
       cf_WriteByte(ofile, 1);
@@ -4354,7 +4354,7 @@ int WriteFace(CFILE *ofile, face *fp) {
   if ((fp->flags & FF_LIGHTMAP) &&
       (fp->lmi_handle == BAD_LMI_INDEX || LightmapInfoRemap[fp->lmi_handle] == BAD_LMI_INDEX)) {
     fp->flags &= ~FF_LIGHTMAP;
-    LOG_DEBUG << "Almost saved a bogus lightmap!";
+    LOG_DEBUG("Almost saved a bogus lightmap!");
   }
 
   cf_WriteShort(ofile, fp->flags);
@@ -4375,7 +4375,7 @@ int WriteFace(CFILE *ofile, face *fp) {
 
   if (fp->light_multiple == 186) {
     fp->light_multiple = 4; // Get Jason, I'm looking for this bug!  Its safe to go past it, but I'm just on the lookout
-    LOG_DEBUG << "Bogus light multiple detected...bashing!";
+    LOG_DEBUG("Bogus light multiple detected...bashing!");
   }
 
   cf_WriteByte(ofile, fp->light_multiple);
@@ -5357,7 +5357,7 @@ int SaveLevel(char *filename, bool f_save_room_AABB) {
     EndChunk(ofile, chunk_start_pos);
 
   } catch (cfile_error *cfe) {
-    LOG_FATAL.printf("Error writing: file = <%s>, msg = \"%s\"", cfe->file->name, cfe->msg);
+    LOG_FATAL("Error writing: file = <%s>, msg = \"%s\"", cfe->file->name, cfe->msg);
     ASSERT(cfe->read_write == CFE_WRITING);
     EditorMessageBox("Error writing file %s: %s", cfe->file->name, cfe->msg);
     cfclose(ofile);
@@ -5796,7 +5796,7 @@ char *LocalizeLevelName(char *level) {
   Localization_SetLanguage(LANGUAGE_ENGLISH);
   // Save the current language, then bash it to english
   if (!CreateStringTable("level_names.str", &english_names, &num_english_names)) {
-    LOG_WARNING << "Couldn't open level_names stringtable!";
+    LOG_WARNING("Couldn't open level_names stringtable!");
     Localization_SetLanguage(save_lang);
     strcpy(local_name, level);
     return local_name;
@@ -5806,7 +5806,7 @@ char *LocalizeLevelName(char *level) {
   Localization_SetLanguage(save_lang);
 
   if (!CreateStringTable("level_names.str", &local_names, &num_local_names)) {
-    LOG_WARNING << "Couldn't open level_names stringtable!";
+    LOG_WARNING("Couldn't open level_names stringtable!");
     // destroy the english stringtable...
     DestroyStringTable(english_names, num_english_names);
 

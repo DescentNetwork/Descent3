@@ -156,7 +156,7 @@ static bool AttachPointPos(object *obj, int8_t ap, bool f_compute_pos, vector *a
   pm = &Poly_models[obj->rtype.pobj_info.model_num];
 
   if (ap < 0 || ap >= pm->n_attach) {
-    LOG_WARNING.printf("WARNING: No ap %d on object %d.", ap, OBJNUM(obj));
+    LOG_WARNING("WARNING: No ap %d on object %d.", ap, OBJNUM(obj));
     return false;
   }
 
@@ -468,12 +468,12 @@ bool AttachObject(object *parent, int8_t parent_ap, object *child, char child_ap
   poly_model *child_pm = &Poly_models[child->rtype.pobj_info.model_num];
 
   if (parent_ap < 0 || parent_ap >= parent_pm->n_attach) {
-    LOG_WARNING << "ATTACH: Parent AP invalid";
+    LOG_WARNING("ATTACH: Parent AP invalid");
     return false;
   }
 
   if (child->flags & OF_ATTACHED) {
-    LOG_WARNING << "ATTACH: Child already attached to someone";
+    LOG_WARNING("ATTACH: Child already attached to someone");
     return false;
   }
 
@@ -501,11 +501,11 @@ bool AttachObject(object *parent, int8_t parent_ap, object *child, char child_ap
       return true;
     }
 
-    LOG_WARNING << "ATTACH: AP attach failed";
+    LOG_WARNING("ATTACH: AP attach failed");
     return false;
   }
 
-  LOG_DEBUG.printf("ATTACH: Child AP (%d) - child only has %d attach points", child_ap, child_pm->n_attach);
+  LOG_DEBUG("ATTACH: Child AP (%d) - child only has %d attach points", child_ap, child_pm->n_attach);
   return false;
 }
 
@@ -518,12 +518,12 @@ bool AttachObject(object *parent, int8_t parent_ap, object *child, float percent
   poly_model *parent_pm = &Poly_models[parent->rtype.pobj_info.model_num];
 
   if (parent_ap < 0 || parent_ap >= parent_pm->n_attach) {
-    LOG_WARNING << "ATTACH: Parent AP invalid";
+    LOG_WARNING("ATTACH: Parent AP invalid");
     return false;
   }
 
   if (child->flags & OF_ATTACHED) {
-    LOG_WARNING << "ATTACH: Child already attached to someone";
+    LOG_WARNING("ATTACH: Child already attached to someone");
     return false;
   }
 
@@ -562,11 +562,11 @@ bool AttachObject(object *parent, int8_t parent_ap, object *child, float percent
       return true;
     }
 
-    LOG_WARNING << "ATTACH: RAD attach failed";
+    LOG_WARNING("ATTACH: RAD attach failed");
     return false;
   }
 
-  LOG_WARNING << "ATTACH: Child percent rad is invalid";
+  LOG_WARNING("ATTACH: Child percent rad is invalid");
   return false;
 }
 

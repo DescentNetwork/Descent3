@@ -215,7 +215,7 @@ static inline void SetDebugBreakHandlers(void (*stop)(), void (*resume)()) {
 // Does a DEBUG_BREAK() if debugging is turned on.
 #define Int3()                                                                                                         \
   do {                                                                                                                 \
-    LOG_ERROR.printf("Fatal error at %s:%d.", __FILE__, __LINE__);                                                     \
+    LOG_ERROR("Fatal error at %s:%d.", __FILE__, __LINE__);                                                     \
     DEBUG_BREAK();                                                                                                     \
   } while (0)
 
@@ -223,7 +223,7 @@ static inline void SetDebugBreakHandlers(void (*stop)(), void (*resume)()) {
 #define ASSERT(x)                                                                                                      \
   do {                                                                                                                 \
     if (!(x)) {                                                                                                        \
-      LOG_ERROR.printf("Assertion failed (%s) in %s:%d.", #x, __FILE__, __LINE__);                                     \
+      LOG_ERROR("Assertion failed (%s) in %s:%d.", #x, __FILE__, __LINE__);                                     \
       SDL_assert(x);                                                                                                   \
     }                                                                                                                  \
   } while (0)

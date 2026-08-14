@@ -1246,7 +1246,7 @@ int BOAGetMineChecksum() {
 
   total += BOA_VERSION << 24;
 
-  LOG_INFO.printf("Computed Checksum is %d", (int)total);
+  LOG_INFO("Computed Checksum is %d", (int)total);
   return total;
 }
 
@@ -1356,7 +1356,7 @@ void ValidateRoomPathPoint(int room, char *message, int len) {
   }
 
   if (!message)
-    LOG_WARNING.printf("Room %d has a bad center point", room);
+    LOG_WARNING("Room %d has a bad center point", room);
   else {
     char new_message[300];
     snprintf(new_message, sizeof(new_message), "Room %d has a bad center point\n", room);
@@ -1584,7 +1584,7 @@ void MakeBOAVisTable(bool from_lighting) {
   // Now compute all room to room visibility stuff
   int i, t, j;
 
-  LOG_DEBUG.printf("Computing visibility for %d rooms.", Highest_room_index);
+  LOG_DEBUG("Computing visibility for %d rooms.", Highest_room_index);
 
   for (i = 0; i <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS; i++) {
     for (t = 0; t <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS; t++) {
@@ -1963,7 +1963,7 @@ void find_small_portals() {
     }
   }
 
-  LOG_DEBUG.printf("   Found %d small portals...  :)\n", counter);
+  LOG_DEBUG("   Found %d small portals...  :)\n", counter);
 }
 
 void compute_robot_path_info() {
@@ -2035,46 +2035,46 @@ void MakeBOA(void) {
   BOA_mine_checksum = cur_check;
   BOA_f_making_boa = true;
 
-  LOG_INFO << "Making BOA and friends";
+  LOG_INFO("Making BOA and friends");
 
-  LOG_DEBUG << "Finding small portals";
+  LOG_DEBUG("Finding small portals");
   find_small_portals();
-  LOG_DEBUG << "Done Finding small portals";
+  LOG_DEBUG("Done Finding small portals");
 
-  LOG_DEBUG << "  Start computing path points.";
+  LOG_DEBUG("  Start computing path points.");
   BOA_ComputePathPoints();
-  LOG_DEBUG << "  Done computing path points.";
+  LOG_DEBUG("  Done computing path points.");
 
   clear_BOA();
   compute_costs();
 
-  LOG_DEBUG << "  Start computing mines.";
+  LOG_DEBUG("  Start computing mines.");
   compute_mine_info();
-  LOG_DEBUG.printf("  Done computing %d mines.", BOA_num_mines);
+  LOG_DEBUG("  Done computing %d mines.", BOA_num_mines);
 
-  LOG_DEBUG << "  Start computing terrain regions.";
+  LOG_DEBUG("  Start computing terrain regions.");
   compute_terrain_region_info();
-  LOG_DEBUG.printf("  Done computing %d terrain regions.", BOA_num_terrain_regions);
+  LOG_DEBUG("  Done computing %d terrain regions.", BOA_num_terrain_regions);
 
-  LOG_DEBUG << "  Making designers wait for no particular reason...";
+  LOG_DEBUG("  Making designers wait for no particular reason...");
   compute_next_segs();
-  LOG_DEBUG << "  Done with the sodomy...";
+  LOG_DEBUG("  Done with the sodomy...");
 
-  LOG_DEBUG << "  Start computing blockage info.";
+  LOG_DEBUG("  Start computing blockage info.");
   compute_blockage_info();
-  LOG_DEBUG << "  Done computing blockage info.";
+  LOG_DEBUG("  Done computing blockage info.");
 
-  LOG_DEBUG << "  Start computing sound prop.";
+  LOG_DEBUG("  Start computing sound prop.");
   compute_sound_dist_info();
-  LOG_DEBUG << "  Done computing sound prop.";
+  LOG_DEBUG("  Done computing sound prop.");
 
-  LOG_DEBUG << "  Start computing invalid robot path info.";
+  LOG_DEBUG("  Start computing invalid robot path info.");
   compute_robot_path_info();
-  LOG_DEBUG << "  Done computing invalid robot path info.";
+  LOG_DEBUG("  Done computing invalid robot path info.");
 
-  LOG_DEBUG << "  Verifying connections";
+  LOG_DEBUG("  Verifying connections");
   verify_connections();
-  LOG_DEBUG << "  Done with verification";
+  LOG_DEBUG("  Done with verification");
 
   //	{
   //		int cur_seg = 0;
@@ -2092,7 +2092,7 @@ void MakeBOA(void) {
   //	}
 
   BOA_f_making_boa = false;
-  LOG_INFO << "BOA is done";
+  LOG_INFO("BOA is done");
 }
 
 static int Current_sort_room;
@@ -2128,7 +2128,7 @@ void ComputeAABB(bool f_full) {
   int cur_check = BOAGetMineChecksum();
 
   if (cur_check == BOA_AABB_checksum && !f_full) {
-    LOG_DEBUG << "Computing AABB's (partial)!";
+    LOG_DEBUG("Computing AABB's (partial)!");
   } else {
     for (i = 0; i < MAX_ROOMS; i++) {
       if (Rooms[i].used) {
@@ -2155,7 +2155,7 @@ void ComputeAABB(bool f_full) {
     int16_t count;
 
     BOA_AABB_checksum = cur_check;
-    LOG_DEBUG << "Computing AABB's (full)!";
+    LOG_DEBUG("Computing AABB's (full)!");
 
     for (i = 0; i <= Highest_room_index; i++) {
       Current_sort_room = i;
@@ -3017,5 +3017,5 @@ void ComputeAABB(bool f_full) {
     }
   }
 
-  LOG_DEBUG << "Done Computing AABB's.";
+  LOG_DEBUG("Done Computing AABB's.");
 }

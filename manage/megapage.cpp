@@ -202,7 +202,7 @@ int mng_FindSpecificMegacellPage(char *name, mngs_megacell_page *megacellpage, i
   else
     infile = cfopen(TableFilename, "rb");
   if (!infile) {
-    LOG_ERROR << "Couldn't open table file to find megacell!";
+    LOG_ERROR("Couldn't open table file to find megacell!");
     Int3();
     return 0;
   }
@@ -294,7 +294,7 @@ void mng_LoadNetMegacellPage(CFILE *infile) {
     int ret = mng_SetAndLoadMegacell(&megacellpage);
     ASSERT(ret >= 0);
   } else
-    LOG_ERROR.printf("Could not load megacellpage named %s!", megacellpage.megacell_struct.name);
+    LOG_ERROR("Could not load megacellpage named %s!", megacellpage.megacell_struct.name);
 }
 // Reads a megacell page from a local table file.  It then allocs a megacell and
 // loads any images/models associated with that megacell
@@ -334,5 +334,5 @@ void mng_LoadLocalMegacellPage(CFILE *infile) {
     if (Loading_addon_table == -1)
       mng_AllocTrackLock(megacellpage.megacell_struct.name, PAGETYPE_MEGACELL);
   } else
-    LOG_ERROR.printf("Could not load megacellpage named %s!", megacellpage.megacell_struct.name);
+    LOG_ERROR("Could not load megacellpage named %s!", megacellpage.megacell_struct.name);
 }

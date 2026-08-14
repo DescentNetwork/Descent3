@@ -191,13 +191,13 @@ int bm_pcx_24bit_alloc_file(CFILE *infile) {
 
   if (temp[1] < 5) {
     // need at least version 5.0f
-    LOG_ERROR << "PCXLoad: PCX Not version 5.0 or greater";
+    LOG_ERROR("PCXLoad: PCX Not version 5.0 or greater");
     return -1;
   }
 
   if (temp[3] != 8) {
     // need 8 bits per pixel
-    LOG_ERROR << "PCXLoad: PCX Not 8 bpp";
+    LOG_ERROR("PCXLoad: PCX Not 8 bpp");
     return -1; // nope...bail
   }
 
@@ -212,7 +212,7 @@ int bm_pcx_24bit_alloc_file(CFILE *infile) {
 
   if (temp[65 - PCXHEADER_OFFSET] != 3) {
     // Must have 3 planes
-    LOG_ERROR << "PCXLoad: PCX Not 3 Planes for 24bit encoding";
+    LOG_ERROR("PCXLoad: PCX Not 3 Planes for 24bit encoding");
     return -1;
   }
 
@@ -229,7 +229,7 @@ int bm_pcx_24bit_alloc_file(CFILE *infile) {
 
   uint8_t *rawdata = (uint8_t *)mem_malloc(total * height);
   if (!rawdata) {
-    LOG_ERROR << "PCXLoad: Out of memory";
+    LOG_ERROR("PCXLoad: Out of memory");
     return -1; // no memory!
   }
 

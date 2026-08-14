@@ -112,7 +112,7 @@ int ddio_GetFileLength(FILE *filePtr) {
     fstat(filedes, &info);
     size = info.st_size;
   } else {
-    LOG_FATAL << "Tried getting length of NULL fileptr!";
+    LOG_FATAL("Tried getting length of NULL fileptr!");
     Int3();
   }
   return size;
@@ -269,7 +269,8 @@ int ddio_GetFileSysRoots(char **roots, int max_roots) {
 bool ddio_CheckProcess(int pid) {
   if (kill(pid, 0) == -1) {
     /* some other error, log it */
-    LOG_WARNING_IF(errno != ESRCH).printf("Error sending signal to PID for lock check (%d)", pid);
+    LOG_WARNING_IF(errno != ESRCH,
+                   "Error sending signal to PID for lock check (%d)", pid);
     return false;
   } else {
     /* process exists */

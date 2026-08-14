@@ -6,7 +6,6 @@ The build process uses [**CMake**](https://cmake.org/) and, by default, [**Ninja
 - [**SDL3**](https://wiki.libsdl.org/SDL3/FrontPage) which is used as the base to handle video, audio and input.
 - [**libcurl**](https://curl.se/libcurl/) as a HTTP client to download levels.
 - [**glm**](https://github.com/g-truc/glm) providing useful additions to OpenGL.
-- [**plog**](https://github.com/SergiusTheBest/plog) for logging
 - [**zlib**](https://www.zlib.net/) as a compression utility
 - [**gtest**](https://github.com/google/googletest) (optional) for testing.
 

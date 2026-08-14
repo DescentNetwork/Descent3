@@ -59,7 +59,7 @@ void UIObject::Move(int x, int y, int w, int h) {
   m_Y = y;
   m_W = w;
   m_H = h;
-  LOG_DEBUG.printf("new [%d,%d]", m_X, m_Y);
+  LOG_DEBUG("new [%d,%d]", m_X, m_Y);
 }
 
 //@@

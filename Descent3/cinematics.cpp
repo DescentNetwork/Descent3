@@ -89,7 +89,7 @@ bool PlayMovie(const std::filesystem::path &moviename) {
 
   bool retval = true;
   if (mveerr != MVELIB_NOERROR) {
-    LOG_ERROR.printf("Movie error %d.", mveerr);
+    LOG_ERROR("Movie error %d.", mveerr);
     retval = false;
   }
 

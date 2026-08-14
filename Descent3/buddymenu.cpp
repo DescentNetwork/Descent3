@@ -356,7 +356,7 @@ void MultiDoGuidebotMenuData(uint8_t *data) {
 
   Guidebot_data_download_status = 1;
   Multi_bail_ui_menu = true;
-  LOG_DEBUG << "Received Guidebot data from server";
+  LOG_DEBUG("Received Guidebot data from server");
 }
 
 // downloads data for the buddybot

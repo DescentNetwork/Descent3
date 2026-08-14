@@ -154,7 +154,7 @@ void InitProcedurals() {
 
   // Load easter egg bitmap
   Easter_egg_handle = bm_AllocLoadFileBitmap("FreakyEye.ogf", 0);
-  LOG_WARNING_IF(Easter_egg_handle == -1) << "Failed to load easter egg!";
+  LOG_WARNING_IF(Easter_egg_handle == -1, "Failed to load easter egg!");
   for (i = 0; i < MAX_PROC_ELEMENTS; i++) {
     DynamicProcElements[i].type = PROC_NONE;
     Proc_free_list[i] = i;
@@ -1342,7 +1342,7 @@ void EvaluateProcedural(int handle) {
 
   int dest_bitmap = procedural->procedural_bitmap;
   if (bm_w(dest_bitmap, 0) != PROC_SIZE) {
-    LOG_WARNING.printf("Couldn't evaluate procedural because it is not %d x %d!", PROC_SIZE, PROC_SIZE);
+    LOG_WARNING("Couldn't evaluate procedural because it is not %d x %d!", PROC_SIZE, PROC_SIZE);
     return;
   }
   if (GameTextures[handle].flags & TF_WATER_PROCEDURAL)

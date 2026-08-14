@@ -107,7 +107,7 @@ void rtp_WriteBufferLog() {
   CFILE *file = cfopen(std::filesystem::path(LocalD3Dir) / "D3Performance.txt", "wt");
 
   if (file) {
-    LOG_DEBUG << "RTP: Recording Log";
+    LOG_DEBUG("RTP: Recording Log");
 
     strcpy(buffer, "FrameNum,FrameTime,RenderFrameTime,MultiFrameTime,MusicFrameTime,AmbientSoundTime,WeatherFrameTime,"
                    "PlayerFrameTime,DoorwayFrameTime,LevelGoalFrameTime,MatCenFrameTime,ObjectFrameTime,AIFrameAllTime,"
@@ -202,7 +202,7 @@ void rtp_WriteBufferLog() {
     // Close the log file
     cfclose(file);
   } else
-    LOG_DEBUG << "RTP: Unable to open log for writing";
+    LOG_DEBUG("RTP: Unable to open log for writing");
 #endif
 }
 
@@ -256,7 +256,7 @@ void rtp_Init() {
   LARGE_INTEGER freq;
   if (!QueryPerformanceFrequency(&freq)) {
     // there is no hi-res clock available....ummmm
-    LOG_DEBUG << "RTP: No Hi-Resolution clock available on this system!!!!!!";
+    LOG_DEBUG("RTP: No Hi-Resolution clock available on this system!!!!!!");
     // well, this isn't good...what to do, what to do?
   }
 
@@ -307,7 +307,7 @@ void rtp_StartLog
 */
 void rtp_StartLog() {
 #ifdef USE_RTP
-  LOG_DEBUG << "RTP: Starting Log";
+  LOG_DEBUG("RTP: Starting Log");
   Runtime_performance_counter = 0;
   Runtime_performance_enabled = 1;
   memset(&RTP_SingleFrame, 0, sizeof(tRTFrameInfo));
@@ -322,8 +322,8 @@ void rtp_StopLog
 */
 void rtp_StopLog() {
 #ifdef USE_RTP
-  LOG_DEBUG.printf("Recorded performance for %f seconds", timer_GetTime() - rtp_startlog_time);
-  LOG_DEBUG << "RTP: Stopping Log";
+  LOG_DEBUG("Recorded performance for %f seconds", timer_GetTime() - rtp_startlog_time);
+  LOG_DEBUG("RTP: Stopping Log");
 
   // Save out the log now
   rtp_WriteBufferLog();
@@ -338,7 +338,7 @@ void rtp_PauseLog
 */
 void rtp_PauseLog() {
 #ifdef USE_RTP
-  LOG_DEBUG << "RTP: Pausing Log";
+  LOG_DEBUG("RTP: Pausing Log");
   Runtime_performance_enabled = 0;
 #endif
 }
@@ -349,7 +349,7 @@ void rtp_ResumeLog
 */
 void rtp_ResumeLog() {
 #ifdef USE_RTP
-  LOG_DEBUG << "RTP: Resuming Log";
+  LOG_DEBUG("RTP: Resuming Log");
   Runtime_performance_enabled = 1;
 #endif
 }

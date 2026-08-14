@@ -611,7 +611,7 @@ void InitControls() {
   Key_ramp.oz = Key_ramp.z = 0.0f;
 
   //	Initialize preemptive controller system for non-positonal data.
-  LOG_INFO << "Initialized control system.";
+  LOG_INFO("Initialized control system.");
 }
 
 void CloseControls() {
@@ -620,7 +620,7 @@ void CloseControls() {
   ResumeControls();
   DestroyController(Controller);
   Controller = NULL;
-  LOG_INFO << "Closing control system.";
+  LOG_INFO("Closing control system.");
   Control_system_init = false;
 }
 

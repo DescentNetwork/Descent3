@@ -395,14 +395,14 @@ bool DoPathFileDialog(bool save_dialog, std::filesystem::path &path, const char 
       }
     } break;
     default:
-      LOG_WARNING << "No operation in DoPathFileDialog()!";
+      LOG_WARNING("No operation in DoPathFileDialog()!");
     }
   }
 
   if (ret) {
-    LOG_DEBUG.printf("Selected Filename: %s", path.u8string().c_str());
+    LOG_DEBUG("Selected Filename: %s", path.u8string().c_str());
   } else {
-    LOG_DEBUG << "Cancel!";
+    LOG_DEBUG("Cancel!");
   }
 
   window.Close();
@@ -442,7 +442,7 @@ void UpdateFileList(newuiListBox *lb, const std::filesystem::path &path, const s
     }
   } catch (std::exception &e) {
     DoMessageBox(TXT_ERROR, TXT_ERRPATHNOTVALID, MSGBOX_OK);
-    LOG_ERROR.printf("Error iterating directory %s: %s", (const char*)path.u8string().c_str(), e.what());
+    LOG_ERROR("Error iterating directory %s: %s", (const char*)path.u8string().c_str(), e.what());
   }
 
   if (dirs.size() + files.size() == 0) {

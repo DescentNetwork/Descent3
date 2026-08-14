@@ -240,9 +240,9 @@ bool opengl_CheckExtension(std::string_view extName) {
 
 // Gets some specific information about this particular flavor of opengl
 void opengl_GetInformation() {
-  LOG_INFO.printf("OpenGL Vendor: %s", dglGetString(GL_VENDOR));
-  LOG_INFO.printf("OpenGL Renderer: %s", dglGetString(GL_RENDERER));
-  LOG_INFO.printf("OpenGL Version: %s", dglGetString(GL_VERSION));
+  LOG_INFO("OpenGL Vendor: %s", dglGetString(GL_VENDOR));
+  LOG_INFO("OpenGL Renderer: %s", dglGetString(GL_RENDERER));
+  LOG_INFO("OpenGL Version: %s", dglGetString(GL_VERSION));
 }
 
 int opengl_MakeTextureObject(int tn) {
@@ -302,7 +302,7 @@ int opengl_InitCache() {
 
 // Sets default states for our renderer
 void opengl_SetDefaults() {
-  LOG_INFO << "Setting states";
+  LOG_INFO("Setting states");
 
   gpu_state.cur_color = 0x00FFFFFF;
   gpu_state.cur_bilinear_state = -1;
@@ -374,7 +374,7 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
       gl_library[0] = 0;
     }
 
-    LOG_INFO.printf("OpenGL: Attempting to use \"%s\" for OpenGL",
+    LOG_INFO("OpenGL: Attempting to use \"%s\" for OpenGL",
                     gl_library[0] ? gl_library : "[system default library]");
 
     // ryan's adds. 04/18/2000...SDL stuff on 04/25/2000
@@ -420,7 +420,7 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
     // High-DPI support
     {
       float scale = SDL_GetDisplayContentScale(Display_id);
-      LOG_WARNING.printf("Using content scale %f", scale);
+      LOG_WARNING("Using content scale %f", scale);
       winw = std::floor(static_cast<float>(winw) * scale);
       winh = std::floor(static_cast<float>(winh) * scale);
     }
@@ -435,7 +435,7 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
     GSDLWindow = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
     if (!GSDLWindow) {
-      LOG_ERROR.printf("OpenGL: SDL window creation failed: %s", SDL_GetError());
+      LOG_ERROR("OpenGL: SDL window creation failed: %s", SDL_GetError());
       return 0;
     }
 
@@ -450,7 +450,7 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
   if (!GSDLGLContext) {
     GSDLGLContext = SDL_GL_CreateContext(GSDLWindow);
     if (!GSDLGLContext) {
-      LOG_ERROR.printf("OpenGL: OpenGL context creation failed: %s", SDL_GetError());
+      LOG_ERROR("OpenGL: OpenGL context creation failed: %s", SDL_GetError());
       SDL_DestroyWindow(GSDLWindow);
       GSDLWindow = nullptr;
       return 0;
@@ -465,7 +465,7 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
     GSDLGLContext = nullptr;
     SDL_DestroyWindow(GSDLWindow);
     GSDLWindow = nullptr;
-    LOG_ERROR.printf("Error loading opengl dll: %s", ex.what());
+    LOG_ERROR("Error loading opengl dll: %s", ex.what());
     mod_FreeModule(&OpenGLDLLInst);
     OpenGLDLLHandle = nullptr;
     return 0;
@@ -509,7 +509,7 @@ int opengl_Setup(oeApplication *app, const int *width, const int *height) {
   dglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, GOpenGLRBODepth);
 
   if (dglCheckFramebufferStatus(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
-    LOG_WARNING << "OpenGL: our framebuffer object is incomplete, giving up";
+    LOG_WARNING("OpenGL: our framebuffer object is incomplete, giving up");
     dglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, 0);
     dglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
     dglBindRenderbuffer(GL_RENDERBUFFER, 0);
@@ -542,7 +542,7 @@ int opengl_Init(oeApplication *app, renderer_preferred_state *pref_state) {
   int retval = 1;
   int i;
 
-  LOG_INFO << "Setting up opengl mode!";
+  LOG_INFO("Setting up opengl mode!");
 
   if (pref_state) {
     gpu_preferred_state = *pref_state;
@@ -586,7 +586,7 @@ int opengl_Init(oeApplication *app, renderer_preferred_state *pref_state) {
     ASSERT(opengl_packed_Translate_table);
     ASSERT(opengl_packed_4444_translate_table);
 
-    LOG_INFO << "Building packed OpenGL translate table...";
+    LOG_INFO("Building packed OpenGL translate table...");
 
     for (i = 0; i < 65536; i++) {
       int r = (i >> 10) & 0x1f;
@@ -633,7 +633,7 @@ int opengl_Init(oeApplication *app, renderer_preferred_state *pref_state) {
     ASSERT(opengl_Translate_table);
     ASSERT(opengl_4444_translate_table);
 
-    LOG_INFO << "Building OpenGL translate table...";
+    LOG_INFO("Building OpenGL translate table...");
 
     for (i = 0; i < 65536; i++) {
       uint32_t pix;
@@ -699,7 +699,7 @@ int opengl_Init(oeApplication *app, renderer_preferred_state *pref_state) {
 
   gpu_state.initted = 1;
 
-  LOG_INFO.printf("OpenGL initialization at %d x %d was successful.", width, height);
+  LOG_INFO("OpenGL initialization at %d x %d was successful.", width, height);
 
   return retval;
 }
@@ -967,7 +967,7 @@ int opengl_MakeBitmapCurrent(int handle, int map_type, int tn) {
   }
 
   if (w != h) {
-    LOG_WARNING << "Can't use non-square textures with OpenGL!";
+    LOG_WARNING("Can't use non-square textures with OpenGL!");
     return 0;
   }
 
@@ -1133,7 +1133,7 @@ void gpu_DrawFlatPolygon3D(g3Point **p, int nv) {
 void rend_SetGammaValue(float val) {
   gpu_preferred_state.gamma = val;
   gRenderer->setGammaCorrection(val);
-  LOG_DEBUG.printf("Setting gamma to %f", val);
+  LOG_DEBUG("Setting gamma to %f", val);
 }
 
 void rend_SetFullScreen(bool fullscreen) {
@@ -1143,9 +1143,9 @@ void rend_SetFullScreen(bool fullscreen) {
   }
 
   if (fullscreen) {
-    LOG_DEBUG.printf("Entering fullscreen mode");
+    LOG_DEBUG("Entering fullscreen mode");
   } else {
-    LOG_DEBUG.printf("Exiting fullscreen mode");
+    LOG_DEBUG("Exiting fullscreen mode");
   }
 }
 
@@ -1154,7 +1154,7 @@ bool rend_InitWindowMode() {
   int fsArg = FindArgChar("-fullscreen", 'f');
 
   if ((fsArg) && (winArg)) {
-    LOG_FATAL.printf("ERROR: %s AND %s specified!", GameArgs[winArg], GameArgs[fsArg]);
+    LOG_FATAL("ERROR: %s AND %s specified!", GameArgs[winArg], GameArgs[fsArg]);
     return false;
   } else if (winArg) {
     // Override default value from database
@@ -1291,7 +1291,7 @@ int rend_Init(renderer_type state, oeApplication *app, renderer_preferred_state 
     Renderer_initted = 1;
   }
 
-  LOG_DEBUG.printf("Renderer init is set to %d", Renderer_initted);
+  LOG_DEBUG("Renderer init is set to %d", Renderer_initted);
 
 #ifndef OEM_V3
   retval = opengl_Init(app, pref_state);
@@ -1303,7 +1303,7 @@ int rend_Init(renderer_type state, oeApplication *app, renderer_preferred_state 
 }
 
 void rend_Close() {
-  LOG_DEBUG.printf("CLOSE: Renderer init is set to %d", Renderer_initted);
+  LOG_DEBUG("CLOSE: Renderer init is set to %d", Renderer_initted);
   if (!Renderer_initted)
     return;
 
@@ -1359,7 +1359,7 @@ void rend_SetFogBorders(float nearz, float farz) { gRenderer->setFogBorders(near
 
 void rend_SetRendererType(renderer_type state) {
   Renderer_type = state;
-  LOG_DEBUG.printf("RendererType is set to %d.", state);
+  LOG_DEBUG("RendererType is set to %d.", state);
 }
 
 void rend_SetLighting(light_state state) {
@@ -1449,10 +1449,10 @@ void rend_Flip() {
   RTP_INCRVALUE(texture_uploads, OpenGL_uploads);
   RTP_INCRVALUE(polys_drawn, OpenGL_polys_drawn);
 
-  LOG_VERBOSE.printf("Uploads=%d    Polys=%d   Verts=%d", OpenGL_uploads, OpenGL_polys_drawn, OpenGL_verts_processed);
-  LOG_VERBOSE.printf("Sets= 0:%d   1:%d   2:%d   3:%d", OpenGL_sets_this_frame[0], OpenGL_sets_this_frame[1],
+  LOG_VERBOSE("Uploads=%d    Polys=%d   Verts=%d", OpenGL_uploads, OpenGL_polys_drawn, OpenGL_verts_processed);
+  LOG_VERBOSE("Sets= 0:%d   1:%d   2:%d   3:%d", OpenGL_sets_this_frame[0], OpenGL_sets_this_frame[1],
                      OpenGL_sets_this_frame[2], OpenGL_sets_this_frame[3]);
-  LOG_VERBOSE.printf("Sets= 4:%d   5:%d", OpenGL_sets_this_frame[4], OpenGL_sets_this_frame[5]);
+  LOG_VERBOSE("Sets= 4:%d   5:%d", OpenGL_sets_this_frame[4], OpenGL_sets_this_frame[5]);
   for (i = 0; i < 10; i++) {
     OpenGL_sets_this_frame[i] = 0;
   }
@@ -1539,7 +1539,7 @@ void rend_ClearZBuffer() { dglClear(GL_DEPTH_BUFFER_BIT); }
 
 // Clears the zbuffer for the screen
 void rend_ResetCache() {
-  LOG_DEBUG << "Resetting texture cache!";
+  LOG_DEBUG("Resetting texture cache!");
   opengl_ResetCache();
 }
 
@@ -1789,7 +1789,7 @@ int rend_InitOpenGLWindow(oeApplication *app, renderer_preferred_state *pref_sta
 // Shuts down OpenGL in a window
 void rend_CloseOpenGLWindow() {
   opengl_Close();
-  LOG_DEBUG << "SHUTTING DOWN WINDOWED OPENGL!";
+  LOG_DEBUG("SHUTTING DOWN WINDOWED OPENGL!");
 }
 
 // Sets the hardware bias level for coplanar polygons

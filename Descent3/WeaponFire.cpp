@@ -1237,7 +1237,7 @@ int CreateAndFireWeapon(vector *pos, vector *dir, object *parent, int weapon_num
 
   fate = fvi_FindIntersection(&fq, &hit_data);
   if (fate != HIT_NONE) {
-    LOG_WARNING.printf("Warning: Laser from parent=%d weapon point is in a wall or object, didn't fire!",
+    LOG_WARNING("Warning: Laser from parent=%d weapon point is in a wall or object, didn't fire!",
                        OBJNUM(parent));
     return -1;
   }
@@ -1245,7 +1245,7 @@ int CreateAndFireWeapon(vector *pos, vector *dir, object *parent, int weapon_num
   objnum = ObjCreate(OBJ_WEAPON, weapon_num, hit_data.hit_room, pos, NULL, parent->handle);
 
   if (objnum < 0) {
-    LOG_WARNING << "Can't create laser - Out of objects!";
+    LOG_WARNING("Can't create laser - Out of objects!");
     return -1;
   }
 
@@ -1743,7 +1743,7 @@ bool WeaponCalcGun(vector *gun_point, vector *gun_normal, object *obj, int gun_n
   pm = &Poly_models[obj->rtype.pobj_info.model_num];
 
   if (pm->n_guns == 0) {
-    LOG_WARNING.printf("WARNING: Object with no weapons is firing.", gun_num);
+    LOG_WARNING("WARNING: Object with no weapons is firing.", gun_num);
 
     if (gun_point)
       *gun_point = obj->pos;
@@ -1757,7 +1757,7 @@ bool WeaponCalcGun(vector *gun_point, vector *gun_normal, object *obj, int gun_n
   SetModelAnglesAndPos(pm, normalized_time);
 
   if (gun_num < 0 || gun_num >= pm->n_guns) {
-    LOG_WARNING.printf("WARNING: Bashing gun num %d to 0.", gun_num);
+    LOG_WARNING("WARNING: Bashing gun num %d to 0.", gun_num);
     if (gun_point)
       *gun_point = obj->pos;
     if (gun_normal)
@@ -1833,7 +1833,7 @@ int FireWeaponFromObject(object *obj, int weapon_num, int gun_num, bool f_force_
 
     if (gun_num >= pm->n_guns) {
       // We don't have a gun point for this gun!
-      LOG_WARNING.printf("Trying to fire from gun %d...we don't have that gun!", gun_num);
+      LOG_WARNING("Trying to fire from gun %d...we don't have that gun!", gun_num);
       laser_pos = obj->pos;
       laser_dir = obj->orient.fvec;
     } else {
@@ -3212,7 +3212,7 @@ void CreateRobotSpawnFromWeapon(object *obj) {
     return; // clients do not create robots without the servers permission
 
   if (wp->robot_spawn_handle == -1) {
-    LOG_WARNING << "Trying to create an invalid robot spawn!";
+    LOG_WARNING("Trying to create an invalid robot spawn!");
     return;
   }
   object *parent_obj = ObjGetUltimateParent(obj);

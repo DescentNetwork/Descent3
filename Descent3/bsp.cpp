@@ -168,7 +168,7 @@ bsppolygon *NewPolygon(int roomnum, int facenum, int numverts) {
   newpoly = mem_rmalloc<bsppolygon>();
 
   if (newpoly == NULL) {
-    LOG_ERROR << "NewPolygon: Couldn't allocate polygon";
+    LOG_ERROR("NewPolygon: Couldn't allocate polygon");
     return NULL;
   }
 
@@ -688,12 +688,12 @@ int BuildBSPNode(bspnode *tree, listnode **polylist, int numpolys) {
 
   if (frontlist != NULL) {
     if ((frontnode = NewBSPNode()) == NULL) {
-      LOG_ERROR << "BuildBSPNode: Error, can't allocate front node";
+      LOG_ERROR("BuildBSPNode: Error, can't allocate front node");
       return 0;
     }
 
     if (!BuildBSPNode((bspnode *)frontnode, &frontlist, numfront)) {
-      LOG_ERROR << "BuildBSPNode: Error building front node";
+      LOG_ERROR("BuildBSPNode: Error building front node");
       return 0;
     }
 
@@ -701,7 +701,7 @@ int BuildBSPNode(bspnode *tree, listnode **polylist, int numpolys) {
     DestroyList(&frontlist);
   } else {
     if ((frontnode = NewBSPNode()) == NULL) {
-      LOG_ERROR << "BuildBSPNode: Error, can't allocate front node";
+      LOG_ERROR("BuildBSPNode: Error, can't allocate front node");
       return 0;
     }
     frontnode->type = BSP_EMPTY_LEAF;
@@ -710,12 +710,12 @@ int BuildBSPNode(bspnode *tree, listnode **polylist, int numpolys) {
 
   if (backlist != NULL) {
     if ((backnode = NewBSPNode()) == NULL) {
-      LOG_ERROR << "BuildBSPNode: Error, can't allocate front node";
+      LOG_ERROR("BuildBSPNode: Error, can't allocate front node");
       return 0;
     }
 
     if (!BuildBSPNode((bspnode *)backnode, &backlist, numback)) {
-      LOG_ERROR << "BuildBSPNode: Error building back node";
+      LOG_ERROR("BuildBSPNode: Error building back node");
       return 0;
     }
 
@@ -723,7 +723,7 @@ int BuildBSPNode(bspnode *tree, listnode **polylist, int numpolys) {
     DestroyList(&backlist);
   } else {
     if ((backnode = NewBSPNode()) == NULL) {
-      LOG_ERROR << "BuildBSPNode: Error, can't allocate front node";
+      LOG_ERROR("BuildBSPNode: Error, can't allocate front node");
       return 0;
     }
 
@@ -760,7 +760,7 @@ void DestroyBSPTree(bsptree *tree) {
   if (BSP_initted == 0)
     return;
 
-  LOG_INFO << "Destroying bsptree!";
+  LOG_INFO("Destroying bsptree!");
   DestroyBSPNode(tree->root);
   BSP_initted = 0;
 }
@@ -785,7 +785,7 @@ void BuildBSPTree() {
   check = BSPGetMineChecksum();
 
   if (check == BSPChecksum) {
-    LOG_INFO << "BSP tree already built!";
+    LOG_INFO("BSP tree already built!");
     return; // The BSP tree has already been built for this mine
   }
 
@@ -797,9 +797,9 @@ void BuildBSPTree() {
   MineBSP.root = NewBSPNode();
   ASSERT(MineBSP.root);
 
-  LOG_INFO << "Building BSP Tree...";
+  LOG_INFO("Building BSP Tree...");
 
-  LOG_DEBUG << "Adding polygons to tree";
+  LOG_DEBUG("Adding polygons to tree");
 
   // Go through the whole mine and add each polygon to the possible BSP
   // partition list.  Don't include portals...
@@ -837,7 +837,7 @@ void BuildBSPTree() {
 
             newpoly = NewPolygon(i, t, sm->faces[j].nverts);
             if (!newpoly) {
-              LOG_FATAL << "Couldn't get a new polygon!";
+              LOG_FATAL("Couldn't get a new polygon!");
               Int3();
               return;
             }
@@ -886,7 +886,7 @@ void BuildBSPTree() {
       // Construct a new polygon
       newpoly = NewPolygon(i, t, Rooms[i].faces[t].num_verts);
       if (!newpoly) {
-        LOG_FATAL << "Couldn't get a new polygon!";
+        LOG_FATAL("Couldn't get a new polygon!");
         Int3();
         return;
       }
@@ -919,16 +919,16 @@ void BuildBSPTree() {
   Solids = 0;
   Empty = 0;
 
-  LOG_DEBUG.printf("%d polygons added, starting node building...", numpolys);
+  LOG_DEBUG("%d polygons added, starting node building...", numpolys);
 
   // Build the BSP tree!
   BuildBSPNode(MineBSP.root, &MineBSP.polylist, numpolys);
   DestroyList(&MineBSP.polylist);
 
   // Print some stats
-  LOG_DEBUG.printf("Total number of convex subspaces=%d", ConvexSubspaces);
-  LOG_DEBUG.printf("Total number of convex polys=%d", ConvexPolys);
-  LOG_DEBUG.printf("Solid=%d Empty=%d", Solids, Empty);
+  LOG_DEBUG("Total number of convex subspaces=%d", ConvexSubspaces);
+  LOG_DEBUG("Total number of convex polys=%d", ConvexPolys);
+  LOG_DEBUG("Solid=%d Empty=%d", Solids, Empty);
 }
 
 // Builds a bsp tree for a single room
@@ -945,7 +945,7 @@ void BuildSingleBSPTree(int roomnum) {
   MineBSP.root = NewBSPNode();
   ASSERT(MineBSP.root);
 
-  LOG_INFO << "Building BSP Tree...";
+  LOG_INFO("Building BSP Tree...");
 
   // Go through the whole mine and add each polygon to the possible BSP
   // partition list.  Don't include portals...
@@ -979,7 +979,7 @@ void BuildSingleBSPTree(int roomnum) {
           vector world_verts[64];
           newpoly = NewPolygon(i, t, sm->faces[j].nverts);
           if (!newpoly) {
-            LOG_FATAL << "Couldn't get a new polygon!";
+            LOG_FATAL("Couldn't get a new polygon!");
             Int3();
             return;
           }
@@ -1019,7 +1019,7 @@ void BuildSingleBSPTree(int roomnum) {
     // Construct a new polygon
     newpoly = NewPolygon(i, t, Rooms[i].faces[t].num_verts);
     if (!newpoly) {
-      LOG_FATAL << "Couldn't get a new polygon!";
+      LOG_FATAL("Couldn't get a new polygon!");
       Int3();
       return;
     }
@@ -1050,9 +1050,9 @@ void BuildSingleBSPTree(int roomnum) {
   DestroyList(&MineBSP.polylist);
 
   // Print some stats
-  LOG_DEBUG.printf("Total number of convex subspaces=%d", ConvexSubspaces);
-  LOG_DEBUG.printf("Total number of convex polys=%d", ConvexPolys);
-  LOG_DEBUG.printf("Solid=%d Empty=%d", Solids, Empty);
+  LOG_DEBUG("Total number of convex subspaces=%d", ConvexSubspaces);
+  LOG_DEBUG("Total number of convex polys=%d", ConvexPolys);
+  LOG_DEBUG("Solid=%d Empty=%d", Solids, Empty);
 
   BSPChecksum = -1;
 }

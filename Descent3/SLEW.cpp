@@ -388,7 +388,7 @@ int SlewFrame(object *obj, int movement_limitations) {
   if (ret_flags & SLEW_MOVE) { // Get the new room
     bool outside_mine = ((obj->flags & OF_OUTSIDE_MINE) != 0);
 
-    LOG_DEBUG << "SLEW: Moved";
+    LOG_DEBUG("SLEW: Moved");
 
 #ifdef EDITOR
     if (Editor_view_mode == VM_ROOM) {
@@ -404,7 +404,7 @@ int SlewFrame(object *obj, int movement_limitations) {
 
         if (new_room != -1) { // back in the mine
           outside_mine = 0;
-          LOG_DEBUG.printf("SLEW: Re-entered mine at room %d", new_room);
+          LOG_DEBUG("SLEW: Re-entered mine at room %d", new_room);
         } else // not back in the mine
           new_room = obj->roomnum;
       } else {
@@ -443,30 +443,30 @@ int SlewFrame(object *obj, int movement_limitations) {
         if (fate == HIT_WALL) {
           int t;
 
-          LOG_DEBUG << "SLEW: hit wall";
+          LOG_DEBUG("SLEW: hit wall");
 
           // Check if we're in a room
           t = FindPointRoom(&new_pos);
 
           if (t != -1) { // We're in a room
             new_room = t;
-            LOG_DEBUG.printf("SLEW: still in mine in room %d", new_room);
+            LOG_DEBUG("SLEW: still in mine in room %d", new_room);
           } else { // Not in a room.  Set a special flag
             outside_mine = 1;
-            LOG_DEBUG.printf("SLEW: left mine from room %d", new_room);
+            LOG_DEBUG("SLEW: left mine from room %d", new_room);
           }
         }
 
         if (new_room != obj->roomnum) { // if we've changed rooms, say so
           if (ROOMNUM_OUTSIDE(new_room))
             if (was_outside)
-              LOG_DEBUG.printf("SLEW: Moved to cell %d, BOA TR %d", CELLNUM(new_room), TERRAIN_REGION(new_room));
+              LOG_DEBUG("SLEW: Moved to cell %d, BOA TR %d", CELLNUM(new_room), TERRAIN_REGION(new_room));
             else
-              LOG_DEBUG.printf("SLEW: Moved outside to cell %d", CELLNUM(new_room));
+              LOG_DEBUG("SLEW: Moved outside to cell %d", CELLNUM(new_room));
           else if (was_outside)
-            LOG_DEBUG.printf("SLEW: Moved inside to room %d", new_room);
+            LOG_DEBUG("SLEW: Moved inside to room %d", new_room);
           else
-            LOG_DEBUG.printf("SLEW: Moved into room %d", new_room);
+            LOG_DEBUG("SLEW: Moved into room %d", new_room);
         }
       }
 

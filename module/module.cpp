@@ -187,18 +187,18 @@ bool mod_LoadModule(module *handle, const std::filesystem::path &imodfilename, i
     std::filesystem::path new_filename = cf_LocatePath(parent_path / modfilename.filename());
 
     if (new_filename.empty()) {
-      LOG_ERROR.printf("Module Load Err: %s", dlerror());
+      LOG_ERROR("Module Load Err: %s", dlerror());
       ModLastError = MODERR_MODNOTFOUND;
       return false;
     }
 
     // ok we have a different filename
-    LOG_DEBUG.printf("MOD: Attempting to open %s instead of %s", new_filename.u8string().c_str(),
+    LOG_DEBUG("MOD: Attempting to open %s instead of %s", new_filename.u8string().c_str(),
                      modfilename.u8string().c_str());
     modfilename = parent_path / new_filename;
     handle->handle = dlopen((const char*)modfilename.u8string().c_str(), f);
     if (!handle->handle) {
-      LOG_ERROR.printf("Module Load Err: %s", dlerror());
+      LOG_ERROR("Module Load Err: %s", dlerror());
       ModLastError = MODERR_MODNOTFOUND;
       return false;
     }

@@ -727,7 +727,7 @@ static void DrawNumber(int num, vector pos, float size, ddgr_color c1) {
   }
   int num_numbers = (int)(log10f((float)num) + 1);
   if (num_numbers > 10) {
-    LOG_FATAL << "Cannot represent a number with over 10 digits";
+    LOG_FATAL("Cannot represent a number with over 10 digits");
     Int3();
     return;
   }
@@ -1207,7 +1207,7 @@ void RenderObject(object *obj) {
   float normalized_time[MAX_SUBOBJECTS];
   bool render_it = false;
   if (obj->type == OBJ_NONE) {
-    LOG_FATAL.printf("ERROR!!! Bogus obj %d in room %d is rendering!", OBJNUM(obj), obj->roomnum);
+    LOG_FATAL("ERROR!!! Bogus obj %d in room %d is rendering!", OBJNUM(obj), obj->roomnum);
     Int3();
     return;
   }
@@ -1446,7 +1446,7 @@ void RenderObject(object *obj) {
     if (rend_GetPixel(TSearch_x, TSearch_y) != oldcolor) {
       TSearch_found_type = TSEARCH_FOUND_OBJECT;
       TSearch_seg = obj - Objects;
-      LOG_DEBUG.printf("TR:objnum=%d", obj - Objects);
+      LOG_DEBUG("TR:objnum=%d", obj - Objects);
     }
   }
 #endif

@@ -54,7 +54,7 @@ void FireOnOffWeapon(object *objp) {
   } else if (objp->ai_info) {
     int8_t wb_index = objp->ai_info->last_special_wb_firing;
     if (wb_index > MAX_WBS_PER_OBJ) { // DAJ
-      LOG_WARNING.printf("FireOnOffWeapon wb_index %d > MAX_WBS_PER_OBJ", wb_index);
+      LOG_WARNING("FireOnOffWeapon wb_index %d > MAX_WBS_PER_OBJ", wb_index);
       return;
     }
 

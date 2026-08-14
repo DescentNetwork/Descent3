@@ -150,7 +150,7 @@ static bool Credits_LoadCredits(const char *filename, std::vector<creditline> &c
   CFILE *infile = cfopen(filename, "rt");
 
   if (!infile) {
-    LOG_ERROR << "Couldn't open credit file to read credits!";
+    LOG_ERROR("Couldn't open credit file to read credits!");
     return false;
   }
 
@@ -182,7 +182,7 @@ static bool Credits_LoadCredits(const char *filename, std::vector<creditline> &c
 
         num_found = sscanf(curline, "*%d %d %d %d %f", &x1, &y1, &x2, &y2, &timedelay);
         if (num_found != 5) {
-          LOG_WARNING.printf("Bad movement data in credit text (%s)", curline);
+          LOG_WARNING("Bad movement data in credit text (%s)", curline);
           break;
         } else {
           cur_credit.startx = x1;
@@ -195,7 +195,7 @@ static bool Credits_LoadCredits(const char *filename, std::vector<creditline> &c
       case '!':
         // Heading
         cur_credit.text = &curline[1];
-        LOG_DEBUG.printf("Read header %s", curline);
+        LOG_DEBUG("Read header %s", curline);
         cur_credit.color = CreditHeadingColor;
         cur_credit.type = CLTYPE_HEADING;
         credit_lines.push_back(cur_credit);
@@ -204,7 +204,7 @@ static bool Credits_LoadCredits(const char *filename, std::vector<creditline> &c
         // Text color
         num_found = sscanf(curline, "$%d %d %d", &r, &g, &b);
         if (num_found != 3) {
-          LOG_WARNING.printf("Bad color in credit text (%s)", curline);
+          LOG_WARNING("Bad color in credit text (%s)", curline);
           break;
         } else {
           CreditTextColor = GR_RGB(r, g, b);
@@ -214,7 +214,7 @@ static bool Credits_LoadCredits(const char *filename, std::vector<creditline> &c
         // Heading color
         num_found = sscanf(curline, "^%d %d %d", &r, &g, &b);
         if (num_found != 3) {
-          LOG_WARNING.printf("Bad color in credit text (%s)", curline);
+          LOG_WARNING("Bad color in credit text (%s)", curline);
           break;
         } else {
           CreditHeadingColor = GR_RGB(r, g, b);
@@ -247,7 +247,7 @@ void Credits_Display() {
   int bm_handle = bm_AllocLoadFileBitmap("CreditsBackground.tga", 0);
 
   if (bm_handle < 0) {
-    LOG_WARNING << "Failed to load background credit screen!";
+    LOG_WARNING("Failed to load background credit screen!");
     return;
   }
 
@@ -261,7 +261,7 @@ void Credits_Display() {
   D3MusicStart("credits.omf");
   D3MusicSetRegion(CREDITS1_MUSIC_REGION);
 
-  LOG_INFO << "Chillin in credits";
+  LOG_INFO("Chillin in credits");
 
   std::vector<creditline> credit_lines;
 
@@ -274,7 +274,7 @@ void Credits_Display() {
 
   // Load our credits
   if (!Credits_LoadCredits("gamecredits.txt", credit_lines) || !Credits_LoadCredits("oscredits.txt", credit_lines)) {
-    LOG_WARNING << "There was an error loading game credits!";
+    LOG_WARNING("There was an error loading game credits!");
     // Free bitmaps
     bm_DestroyChunkedBitmap(&Credits_bm);
 

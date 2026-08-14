@@ -920,7 +920,7 @@ bool sdlgameController::enum_controllers() {
         m_ControlList[num_devs].sensmod[i] = 1.0f;
       }
       m_ControlList[num_devs].deadzone = JOY_DEADZONE;
-      LOG_DEBUG.printf("Controller %s found.\n", jc.name);
+      LOG_DEBUG("Controller %s found.\n", jc.name);
 
       // okay, now search for a "****.ctl" file in the current directory
       parse_ctl_file(num_devs, jc.name);
@@ -1104,7 +1104,7 @@ float sdlgameController::get_button_value(int8_t controller, ct_format format, u
     break;
 
   default:
-    LOG_WARNING << "gameController::button unsupported format for function";
+    LOG_WARNING("gameController::button unsupported format for function");
   }
 
   return val;
@@ -1206,7 +1206,7 @@ float sdlgameController::get_axis_value(int8_t controller, uint8_t axis, ct_form
     val = val - 1.0f;
   } else {
     val = 0.0f;
-    LOG_WARNING << "gameController::axis unsupported format for function.";
+    LOG_WARNING("gameController::axis unsupported format for function.");
   }
 
   ct_packet key_slide1, key_bank;
@@ -1339,7 +1339,7 @@ float sdlgameController::get_pov_value(int8_t controller, ct_format format, uint
     break;
 
   default:
-    LOG_WARNING << "gameController::pov unsupported format for function";
+    LOG_WARNING("gameController::pov unsupported format for function");
   }
 
   return val;
@@ -1367,7 +1367,7 @@ float sdlgameController::get_key_value(int key, ct_format format) {
     break;
 
   default:
-    LOG_WARNING << "gameController::key unsupported format for function";
+    LOG_WARNING("gameController::key unsupported format for function");
   }
 
   return val;

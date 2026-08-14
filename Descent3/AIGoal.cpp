@@ -565,7 +565,7 @@ void GoalClearGoal(object *obj, goal *cur_goal, int reason) {
   cur_goal->used = false;
 
   if (obj->ai_info->path.goal_uid == cur_goal->goal_uid) {
-    LOG_DEBUG_IF(AI_debug_robot_do && (OBJNUM(obj) == AI_debug_robot_index)) << "AI Note: In free path";
+    LOG_DEBUG_IF(AI_debug_robot_do && (OBJNUM(obj) == AI_debug_robot_index), "AI Note: In free path");
     AIPathFreePath(&ai_info->path);
   }
 
@@ -610,7 +610,7 @@ void GoalDoFrame(object *obj) {
 
   goal *cur_task_goal = GoalGetCurrentGoal(obj);
   if (ai_info->path.num_paths > 0 && (cur_task_goal == NULL || (cur_task_goal->goal_uid != ai_info->path.goal_uid))) {
-    LOG_DEBUG_IF(AI_debug_robot_do && (OBJNUM(obj) == AI_debug_robot_index)) << "AI Note: In free path";
+    LOG_DEBUG_IF(AI_debug_robot_do && (OBJNUM(obj) == AI_debug_robot_index), "AI Note: In free path");
     AIPathFreePath(&ai_info->path);
   }
 
@@ -770,7 +770,7 @@ void GoalDoFrame(object *obj) {
               fq.flags = FQ_CHECK_OBJS | FQ_NO_RELINK | FQ_IGNORE_NON_LIGHTMAP_OBJECTS;
 
               if (fvi_FindIntersection(&fq, &hit_info) == HIT_NONE) {
-                LOG_DEBUG.printf("AI OBJ Path: No need to update the path for obj %d", OBJNUM(obj));
+                LOG_DEBUG("AI OBJ Path: No need to update the path for obj %d", OBJNUM(obj));
                 f_make_path = false;
               }
             }
@@ -807,7 +807,7 @@ void GoalDoFrame(object *obj) {
             fq.flags = FQ_CHECK_OBJS | FQ_NO_RELINK | FQ_IGNORE_NON_LIGHTMAP_OBJECTS;
 
             if (fvi_FindIntersection(&fq, &hit_info) == HIT_NONE) {
-              LOG_DEBUG.printf("AI POS Path: No need to update the path for obj %d", OBJNUM(obj));
+              LOG_DEBUG("AI POS Path: No need to update the path for obj %d", OBJNUM(obj));
               f_make_path = false;
             }
           }
@@ -875,10 +875,10 @@ int GoalAllocSlot(object *obj, int level, float influence) {
   ASSERT((level >= 0 && level < NUM_ACTIVATION_LEVELS) || (level == ACTIVATION_BLEND_LEVEL));
 
   if (influence > MAX_INFLUENCE) {
-    LOG_DEBUG << "Goal added with too much influence -- bashing down";
+    LOG_DEBUG("Goal added with too much influence -- bashing down");
     influence = MAX_INFLUENCE;
   } else if (influence < 0.0f) {
-    LOG_DEBUG << "Goal added with negative influence -- bashing to zero";
+    LOG_DEBUG("Goal added with negative influence -- bashing to zero");
     influence = 0.0f;
   }
 
@@ -886,7 +886,7 @@ int GoalAllocSlot(object *obj, int level, float influence) {
     cur_slot = level;
 
     if (level < 0) {
-      LOG_DEBUG << "AI: Bashed an invalid activation level to zero";
+      LOG_DEBUG("AI: Bashed an invalid activation level to zero");
       level = 0;
     }
 
@@ -901,7 +901,7 @@ int GoalAllocSlot(object *obj, int level, float influence) {
     goal *cur_goal = &ai_info->goals[cur_slot];
 
     if (level != ACTIVATION_BLEND_LEVEL) {
-      LOG_DEBUG << "AI: Bashed an invalid activation blend level to blend level";
+      LOG_DEBUG("AI: Bashed an invalid activation blend level to blend level");
       level = ACTIVATION_BLEND_LEVEL;
     }
 
@@ -1070,7 +1070,7 @@ int GoalAddGoal(object *obj, uint32_t goal_type, void *arg_struct, int level, fl
   case AIG_FIRE_AT_OBJ: {
     gi_fire *attack_info = (gi_fire *)arg_struct;
     if (attack_info->cur_wb > MAX_WBS_PER_OBJ) { // DAJ
-      LOG_DEBUG.printf("GoalAddGoal wb_index %d > MAX_WBS_PER_OBJ", attack_info->cur_wb);
+      LOG_DEBUG("GoalAddGoal wb_index %d > MAX_WBS_PER_OBJ", attack_info->cur_wb);
       return 0;
     }
     if ((ai_info->animation_type == AS_ALERT && !(ai_info->next_animation_type == AS_FLINCH)) ||
@@ -1234,7 +1234,7 @@ int GoalAddEnabler(object *obj, int goal_index, uint8_t enabler_type, void *arg_
   int enabler_index = ai_info->goals[goal_index].num_enablers;
 
   if (ai_info->goals[goal_index].num_enablers >= MAX_ENABLERS_PER_GOAL) {
-    LOG_DEBUG.printf("Object %d with goal %d has to many enablers", OBJNUM(obj), goal_index);
+    LOG_DEBUG("Object %d with goal %d has to many enablers", OBJNUM(obj), goal_index);
     return AI_INVALID_INDEX;
   }
 

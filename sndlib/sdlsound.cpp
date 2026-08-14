@@ -103,7 +103,7 @@ int lnxsound::InitSoundLib(char mixer_type, oeApplication *sos, uint8_t max_soun
     return false;
   }
 
-  LOG_INFO << "Sound: Hardware configured. Kicking off stream thread...";
+  LOG_INFO("Sound: Hardware configured. Kicking off stream thread...");
   SDL_ResumeAudioDevice(sound_device);
 
   m_total_sounds_played = 0;
@@ -252,7 +252,7 @@ int16_t lnxsound::FindFreeSoundSlot(float volume, int priority)
     if (throw_out_slot > -1) {
       sb = &sound_cache[throw_out_slot];
       StopSound(sb->m_unique_id, SKT_HOLD_UNTIL_STOP);
-      LOG_DEBUG.printf("DDSNDLIB: Replace sound (p:%d) with sound (p:%d) in slot %d",
+      LOG_DEBUG("DDSNDLIB: Replace sound (p:%d) with sound (p:%d) in slot %d",
                        sb->play_info->priority, priority, throw_out_slot);
       return throw_out_slot;
     }
@@ -260,9 +260,9 @@ int16_t lnxsound::FindFreeSoundSlot(float volume, int priority)
 
 #ifdef _DEBUG
   if (sound_index > -1) {
-    LOG_DEBUG.printf("DDSNDLIB: Sound %s with priority (%d) too low.", Sounds[sound_index].name, priority);
+    LOG_DEBUG("DDSNDLIB: Sound %s with priority (%d) too low.", Sounds[sound_index].name, priority);
   } else {
-    LOG_DEBUG.printf("DDSNDLIB: Sound unknown with priority (%d) too low.", priority);
+    LOG_DEBUG("DDSNDLIB: Sound unknown with priority (%d) too low.", priority);
   }
 #endif
   return -1;
@@ -290,7 +290,7 @@ int lnxsound::PlaySound2d(play_information *play_info, int sound_index, float f_
 
   // do common processing.
   if (SoundFiles[Sounds[sound_index].sample_index].used == 0) {
-    LOG_DEBUG.printf("Tried to play %d sound, it DNE.", sound_index);
+    LOG_DEBUG("Tried to play %d sound, it DNE.", sound_index);
     return -1;
   }
 #ifdef _DEBUG
@@ -615,7 +615,7 @@ bool lnxsound::CheckAndForceSoundDataAlloc(int sound_index) {
   if (!result)
     return false;
 
-  LOG_DEBUG.printf("Sound %s loaded.", SoundFiles[sound_file_index].name);
+  LOG_DEBUG("Sound %s loaded.", SoundFiles[sound_file_index].name);
 
   return true;
 }
@@ -634,7 +634,7 @@ void lnxsound::SoundStartFrame() {
   // perform necessary functions if sound events are pending for frame, this doesn't have to do anything
   // if the mixer doesn't require such actions.  Aureal does though.
   if (m_pending_actions) {
-    LOG_DEBUG << "pending actions";
+    LOG_DEBUG("pending actions");
   }
 
   m_in_sound_frame = true;

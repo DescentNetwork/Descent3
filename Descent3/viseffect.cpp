@@ -521,7 +521,7 @@ void InitVisEffects() {
 // Returns the next free viseffect
 int VisEffectAllocate() {
   if (Num_vis_effects == max_vis_effects) {
-    LOG_WARNING << "Couldn't allocate vis effect!";
+    LOG_WARNING("Couldn't allocate vis effect!");
     return -1;
   }
 
@@ -2150,7 +2150,7 @@ void VisEffectMoveOne(vis_effect *vis) {
         if (cellnum >= 0 && cellnum < TERRAIN_WIDTH * TERRAIN_DEPTH)
           ApplyLightingToTerrain(&vis->pos, cellnum, vis->size * scalar * 3, r, g, b);
         else
-          LOG_WARNING << "Vis effect not in world!";
+          LOG_WARNING("Vis effect not in world!");
       } else {
         if (vis->roomnum >= 0 && vis->roomnum <= Highest_room_index && Rooms[vis->roomnum].used)
           ApplyLightingToRooms(&vis->pos, vis->roomnum, vis->size * scalar * 3, r, g, b);

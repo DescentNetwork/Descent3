@@ -752,7 +752,7 @@ void CheckFogPortalExtents(int roomnum, int portalnum) {
   if (found_room == -1) {
     // Couldn't find this room in our list, so make a new one
     if (Num_fogged_rooms_this_frame >= MAX_FOGGED_ROOMS_PER_FRAME) {
-      LOG_WARNING << "Too many fogged rooms in view cone!";
+      LOG_WARNING("Too many fogged rooms in view cone!");
       return;
     }
 
@@ -3625,7 +3625,7 @@ void SortStates(state_limited_element *state_array, int cellcount) {
 // Builds a list of mirror faces for each room and allocs memory accordingly
 void ConsolidateMineMirrors() {
   int i, t;
-  LOG_DEBUG << "Consolidating mine mirrors!";
+  LOG_DEBUG("Consolidating mine mirrors!");
   for (i = 0; i < MAX_ROOMS; i++) {
     room *rp = &Rooms[i];
     if (!rp->used)

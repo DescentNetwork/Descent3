@@ -1284,7 +1284,7 @@ int LGSObjects(CFILE *fp, int version) {
       poly_model *pm = &Poly_models[op->rtype.pobj_info.model_num];
 
       if (pm->n_attach) {
-        LOG_DEBUG.printf("*Object %d has %d attach points.", i, pm->n_attach);
+        LOG_DEBUG("*Object %d has %d attach points.", i, pm->n_attach);
       }
 
       polyobj_info *p_info = &op->rtype.pobj_info;
@@ -1387,7 +1387,7 @@ int LGSObjects(CFILE *fp, int version) {
       ObjLink(OBJNUM(op), newroom);
       ObjSetOrient(op, &objmat[i]);
       if (op->type == OBJ_ROOM) {
-        LOG_DEBUG.printf("Object %d is a room and Is%s a big object. Size=%f",
+        LOG_DEBUG("Object %d is a room and Is%s a big object. Size=%f",
                          i, (op->flags & OF_BIG_OBJECT) ? "" : "n't", op->size);
         if ((op->size >= ((TERRAIN_SIZE * (float)1))) && !(op->flags & OF_BIG_OBJECT)) {
           BigObjAdd(i);
@@ -1413,9 +1413,9 @@ int LGSObjects(CFILE *fp, int version) {
     }
     */
   }
-  LOG_DEBUG.printf("Objects[121].prev=%d", Objects[121].prev);
+  LOG_DEBUG("Objects[121].prev=%d", Objects[121].prev);
   ResetFreeObjects();
-  LOG_DEBUG.printf("highest obj index = %d, ", Highest_object_index);
+  LOG_DEBUG("highest obj index = %d, ", Highest_object_index);
   ObjReInitPositionHistory();
 
   END_VERIFY_SAVEFILE(fp, "Objects load");

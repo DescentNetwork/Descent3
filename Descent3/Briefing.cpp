@@ -349,7 +349,7 @@ bool ParseForHotTags(const char *src, char **dest) {
 
         if (!strnicmp(curr_ptr, HotTags[i].name, HotTags[i].length)) {
           // this is a hot tag!!!!!
-          LOG_DEBUG.printf("Found Embedded HotTag: %s", HotTags[i].name);
+          LOG_DEBUG("Found Embedded HotTag: %s", HotTags[i].name);
           is_hot_tag = i;
           ret = true;
           break;
@@ -478,7 +478,7 @@ void PBAddMovieEffect(TCMOVIEDESC* desc, char *description) {
 
 void PBAddBkgEffect(TCBKGDESC* desc, char *description) {
   if (IsMissionMaskOK(desc->mission_mask_set, desc->mission_mask_unset) && ok_to_parse_screen) {
-    LOG_DEBUG.printf("PB: Add Bkg");
+    LOG_DEBUG("PB: Add Bkg");
   }
 }
 

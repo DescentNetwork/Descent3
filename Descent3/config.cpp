@@ -375,10 +375,10 @@ void ConfigureDisplayResolutions() {
   int heightarg = FindArg("-Height");
 
   if (widtharg && !heightarg) {
-    LOG_ERROR << "Specify '-Height' argument when setting '-Width'";
+    LOG_ERROR("Specify '-Height' argument when setting '-Width'");
   }
   if (heightarg && !widtharg) {
-    LOG_ERROR << "Specify '-Width' argument when setting '-Height'";
+    LOG_ERROR("Specify '-Width' argument when setting '-Height'");
   }
 
   // Use the first display by default, or the one specified by "-display"
@@ -386,11 +386,11 @@ void ConfigureDisplayResolutions() {
   int display_num = 0;
   if (display_arg != 0) {
     if (const char *arg_index_str = GetArg(display_arg + 1); arg_index_str == nullptr) {
-      LOG_WARNING << "No parameter for -display given";
+      LOG_WARNING("No parameter for -display given");
     } else {
       int arg_index = atoi(arg_index_str);
       if ((arg_index < 0) || (arg_index >= display_count)) {
-        LOG_WARNING.printf("Parameter for -display must be in the range 0..%i", display_count - 1);
+        LOG_WARNING("Parameter for -display must be in the range 0..%i", display_count - 1);
       } else {
         display_num = arg_index;
       }
@@ -434,9 +434,10 @@ void ConfigureDisplayResolutions() {
     Current_video_resolution_id = Default_resolution_id;
   }
 
-  LOG_DEBUG << "Resolution configured to w=" << Video_res_list[Current_video_resolution_id].width
-            << "h=" << Video_res_list[Current_video_resolution_id].height << " (id " << Current_video_resolution_id
-            << ")";
+  LOG_DEBUG("Resolution configured to w=%u h=%u (id %i)",
+            Video_res_list[Current_video_resolution_id].width
+            Video_res_list[Current_video_resolution_id].height,
+            Current_video_resolution_id);
 }
 
 tDetailSettings Detail_settings;
@@ -1055,7 +1056,7 @@ struct sound_menu {
     D3MusicSetVolume((*musicvolume) / 10.0f);
 
     if (fxquantity) {
-      LOG_DEBUG.printf("oldquant %d newquant %d", old_fxquantity, *fxquantity);
+      LOG_DEBUG("oldquant %d newquant %d", old_fxquantity, *fxquantity);
       if (old_fxquantity != (*fxquantity)) {
         Sound_system.SetLLSoundQuantity((*fxquantity) + MIN_SOUNDS_MIXED);
       }
@@ -1523,7 +1524,7 @@ void OptionsMenu() {
   while (state != 2) {
     if (state == 1) {
       // enter controller config menu
-      LOG_DEBUG << "CONTROLLER CONFIG MENU HERE!";
+      LOG_DEBUG("CONTROLLER CONFIG MENU HERE!");
       CtlConfig(CTLCONFIG_KEYBOARD);
       state = 0; // goto options menu.
     } else {

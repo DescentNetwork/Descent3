@@ -72,7 +72,7 @@ void GatherArgs(const char *str) {
   TotalArgs = curarg;
 
   for (int q = 0; q < TotalArgs; q++)
-    LOG_DEBUG.printf("GatherArgs: Arg (%d) is [%s].", q, GameArgs[q]);
+    LOG_DEBUG("GatherArgs: Arg (%d) is [%s].", q, GameArgs[q]);
 }
 
 void GatherArgs(char **argv) {
@@ -84,7 +84,7 @@ void GatherArgs(char **argv) {
   } // for
 
   for (int q = 0; q < TotalArgs; q++)
-    LOG_DEBUG.printf("GatherArgs: Arg (%d) is [%s].", q, GameArgs[q]);
+    LOG_DEBUG("GatherArgs: Arg (%d) is [%s].", q, GameArgs[q]);
 } // GatherArgs
 
 // Strip '-', '--', and '+' flag prefix, so --foo, -foo, +foo => foo, but pass through - -- + ++
@@ -114,15 +114,15 @@ int FindArg(const char *which, int start) {
 
   for (int i = start; i <= TotalArgs; i++) {
     if (which_matches(GameArgs[i])) {
-      LOG_INFO.printf("FindArg: Found [%s] at argument index (%d).", which, i);
+      LOG_INFO("FindArg: Found [%s] at argument index (%d).", which, i);
       return i;
     }
   }
 
   if (start == 1) {
-    LOG_VERBOSE.printf("FindArg: Did not find [%s] on command line.", which);
+    LOG_VERBOSE("FindArg: Did not find [%s] on command line.", which);
   } else {
-    LOG_VERBOSE.printf("FindArg: Did not find [%s] on command line at index %i or after index %i.", which, start, start);
+    LOG_VERBOSE("FindArg: Did not find [%s] on command line at index %i or after index %i.", which, start, start);
   }
   return 0;
 }
@@ -132,7 +132,7 @@ int FindArgChar(const char *which, char singleCharArg) {
   for (int i = 1; i <= TotalArgs; i++) {
     char *str = GameArgs[i];
     if (str[0] == '-' && str[1] == singleCharArg && str[2] == '\0') {
-      LOG_INFO.printf("FindArg: Found [-%c] at argument index (%d).", singleCharArg, i);
+      LOG_INFO("FindArg: Found [-%c] at argument index (%d).", singleCharArg, i);
       return i;
     }
   }

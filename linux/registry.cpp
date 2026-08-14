@@ -236,10 +236,10 @@ bool CRegistry::Import() {
   char *ptr;
   file = fopen(name, "rt");
   if (!file) {
-    LOG_ERROR.printf("REGISTRY: Unable to import %s", name);
+    LOG_ERROR("REGISTRY: Unable to import %s", name);
     return false;
   }
-  LOG_INFO.printf("REGISTRY: Importing %s", name);
+  LOG_INFO("REGISTRY: Importing %s", name);
   Destroy();
 
   bool oktocreate;

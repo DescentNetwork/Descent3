@@ -724,7 +724,7 @@ static inline std::filesystem::path MN3_TO_MSN_NAME(const std::filesystem::path 
 //	High level mission stuff
 ///////////////////////////////////////////////////////////////////////////////
 void InitMission() {
-  LOG_INFO << "In InitMission()";
+  LOG_INFO("In InitMission()");
   Current_mission.num_levels = 0;
   Current_mission.cur_level = 0;
   memset(Current_mission.desc, 0, sizeof(Current_mission.desc));
@@ -757,7 +757,7 @@ void InitDefaultMissionFromCLI() {
     if (level_arg > 0) {
       int level{std::atoi(GameArgs[level_arg + 1])};
       if (level <= 0 || level > Current_mission.num_levels) {
-        LOG_WARNING << "Invalid level selection, resetting to 1";
+        LOG_WARNING("Invalid level selection, resetting to 1");
         level = 1;
       }
       Current_mission.cur_level = level;
@@ -767,7 +767,7 @@ void InitDefaultMissionFromCLI() {
 
 //	reset all states for a mission
 void ResetMission() {
-  LOG_INFO << "In ResetMission()";
+  LOG_INFO("In ResetMission()");
   FreeMission();
   Current_mission.num_levels = 0;
   Current_mission.cur_level = 0;
@@ -904,7 +904,7 @@ bool DemoMission(int mode = 0) {
 
 bool LoadMission(const char *mssn) {
   Times_game_restored = 0;
-  LOG_INFO << "In LoadMission()";
+  LOG_INFO("In LoadMission()");
 #if (defined(OEM) || defined(DEMO))
 #ifdef OEM
   if (stricmp(mssn, "d3oem.mn3") == 0)
@@ -1025,7 +1025,7 @@ bool LoadMission(const char *mssn) {
             if (url[0] == '\0') {
               strncpy(url, operand, MAX_MISSION_URL_LEN - 1);
               url[MAX_MISSION_URL_LEN - 1] = '\0';
-              LOG_INFO.printf("Found a Mission URL: %s", operand);
+              LOG_INFO("Found a Mission URL: %s", operand);
               break;
             }
           }
@@ -1041,7 +1041,7 @@ bool LoadMission(const char *mssn) {
             // ok the ship exists, make this guy the new default ship
             PlayerResetShipPermissions(-1, false);
             PlayerSetShipPermission(-1, operand, true);
-            LOG_INFO.printf("MAKING %s THE NEW DEFAULT SHIP!", operand);
+            LOG_INFO("MAKING %s THE NEW DEFAULT SHIP!", operand);
           } else {
             Int3();
           }
@@ -1373,7 +1373,7 @@ void LoadLevelProgress(int step, float percent, const char *chunk) {
     }
     lvl_percent_loaded = 1.0f;
     pag_percent_loaded = 1.0f;
-    LOG_INFO << "Prepare for Descent goes here...";
+    LOG_INFO("Prepare for Descent goes here...");
     // ShowProgressScreen(TXT_PREPARE_FOR_DESCENT,NULL,true);
     // return;
     break;
@@ -1390,7 +1390,7 @@ void LoadLevelProgress(int step, float percent, const char *chunk) {
     return;
   } break;
   default:
-    LOG_FATAL << "Unknown step in LoadLevelProgress()";
+    LOG_FATAL("Unknown step in LoadLevelProgress()");
     Int3();
   }
   if (Dedicated_server) {
@@ -1640,7 +1640,7 @@ extern bool FirstGame;
 //	 play movie
 void DoMissionMovie(const char *movie) {
   if (PROGRAM(windowed)) {
-    LOG_WARNING << "Skipping movie...can't do in windowed mode!";
+    LOG_WARNING("Skipping movie...can't do in windowed mode!");
     return;
   }
 
@@ -1715,7 +1715,7 @@ bool GetMissionInfo(const std::filesystem::path &msnfile, tMissionInfo *msn) {
   }
   CFILE *fp = cfopen(msnfile, "rt");
   if (!fp) {
-    LOG_WARNING.printf("Failed to open mission file %s in GetMissionInfo.", msnfile.u8string().c_str());
+    LOG_WARNING("Failed to open mission file %s in GetMissionInfo.", msnfile.u8string().c_str());
     return false;
   }
   msn->multi = true;
@@ -1778,7 +1778,7 @@ const char *GetMissionName(const char *mission) {
   if (GetMissionInfo(mission, &msninfo)) {
     strcpy(msnname, msninfo.name);
   } else {
-    LOG_WARNING << "MISSION: GetMissionName failed from call to GetMissionInfo";
+    LOG_WARNING("MISSION: GetMissionName failed from call to GetMissionInfo");
   }
   return msnname;
 }
@@ -1841,7 +1841,7 @@ bool mn3_GetInfo(const std::filesystem::path &mn3file, tMissionInfo *msn) {
   pathname = std::filesystem::path(std::filesystem::path("missions")) / mn3file;
   handle = cf_OpenLibrary(pathname);
   if (handle == 0) {
-    LOG_ERROR << "MISSION: MN3 failed to open.";
+    LOG_ERROR("MISSION: MN3 failed to open.");
     return false;
   }
   filename = MN3_TO_MSN_NAME(mn3file);
@@ -1893,7 +1893,7 @@ int MissionGetKeywords(const char *mission, char *keywords) {
 
   memset(msn_keywords, 0, sizeof(msn_keywords));
   memset(mod_keywords, 0, sizeof(mod_keywords));
-  LOG_DEBUG.printf("MissionGetKeywords(%s,%s)", mission, keywords);
+  LOG_DEBUG("MissionGetKeywords(%s,%s)", mission, keywords);
   if (!GetMissionInfo(mission, &msn_info)) {
     return -1;
   }
@@ -1956,7 +1956,7 @@ int MissionGetKeywords(const char *mission, char *keywords) {
       }
       // We never found one we needed, so return -1;
       if (!found_keyword) {
-        LOG_WARNING.printf("%s keyword needed in %s not found!", mod_keyword, mission);
+        LOG_WARNING("%s keyword needed in %s not found!", mod_keyword, mission);
         return -1;
       }
     }
@@ -1965,11 +1965,11 @@ int MissionGetKeywords(const char *mission, char *keywords) {
     teams = goals;
   }
   if (teams < goalsneeded) {
-    LOG_WARNING << "Not enough goals in this level!";
+    LOG_WARNING("Not enough goals in this level!");
     teams = -1;
   }
   if (goals < goalsneeded) {
-    LOG_WARNING << "Not enough goals in this level!";
+    LOG_WARNING("Not enough goals in this level!");
     teams = -1;
   }
   return teams;

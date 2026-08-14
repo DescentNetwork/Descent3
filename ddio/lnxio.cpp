@@ -78,21 +78,21 @@ oeLnxApplication *Lnx_app_obj = NULL;
 // ----------------------------------------------------------------------------
 
 bool ddio_InternalInit(ddio_init_info *init_info) {
-  LOG_DEBUG << "DDIO: ddio_InternalInit() called.";
+  LOG_DEBUG("DDIO: ddio_InternalInit() called.");
   Lnx_app_obj = (oeLnxApplication *)init_info->obj;
   DDIO_init = true;
   return true;
 }
 
 void ddio_InternalClose() {
-  LOG_DEBUG << "DDIO: ddio_InternalClose() called.";
+  LOG_DEBUG("DDIO: ddio_InternalClose() called.");
 
   if (DDIO_init) {
     DDIO_init = false;
     Lnx_app_obj = NULL;
   } // if
 
-  LOG_DEBUG << "DDIO: ddio_InternalClose() returning.";
+  LOG_DEBUG("DDIO: ddio_InternalClose() returning.");
 }
 
 void ddio_DebugMessage(unsigned err, char *fmt, ...) {
@@ -103,19 +103,19 @@ void ddio_DebugMessage(unsigned err, char *fmt, ...) {
   std::vsnprintf(buf, sizeof(buf), fmt, arglist);
   va_end(arglist);
 
-  LOG_DEBUG << buf;
+  LOG_DEBUG(buf);
 }
 
 bool ddio_GetBinaryPath(char *exec_path, size_t len) {
 #ifdef MACOSX
   if (exec_path == NULL || len == 0) {
-    LOG_ERROR << "Invalid arguments";
+    LOG_ERROR("Invalid arguments");
     return false;
   }
 
   uint32_t size = (uint32_t)len;
   if (_NSGetExecutablePath(exec_path, &size) != 0) {
-    LOG_ERROR.printf("Buffer too small; need size %u", size);
+    LOG_ERROR("Buffer too small; need size %u", size);
     return false;
   }
 #elif defined(__LINUX__)
@@ -126,7 +126,7 @@ bool ddio_GetBinaryPath(char *exec_path, size_t len) {
 #else
   if (GetModuleFileName(NULL, exec_path, len) == 0) {
     DWORD error = GetLastError();
-    LOG_ERROR << "GetModuleFileName failed!";
+    LOG_ERROR("GetModuleFileName failed!");
     return false;
   }
   exec_path[len - 1] = '\0';

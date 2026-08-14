@@ -362,7 +362,7 @@ void DemoToggleRecording() {
     std::error_code ec;
     std::filesystem::create_directories(demo_directory, ec);
     if (ec) {
-      LOG_ERROR << "Failed to create " << demo_directory << " directory. Unable to create demo file!";
+      LOG_ERROR("Failed to create %s directory. Unable to create demo file!", demo_directory);
       AddBlinkingHUDMessage(TXT_DEMOCANTCREATE);
       Demo_fname.clear();
       return;
@@ -371,12 +371,12 @@ void DemoToggleRecording() {
     Demo_fname = demo_directory / szfile;
     Demo_fname.replace_extension(".dem");
 
-    LOG_INFO << "Saving demo to file " << Demo_fname;
+    LOG_INFO("Saving demo to file %s", Demo_fname);
     // Try to create the file
     Demo_cfp = cfopen(Demo_fname, "wb");
     if (!Demo_cfp) {
       // cfopen failed
-      LOG_ERROR << "Unable to create demo file!";
+      LOG_ERROR("Unable to create demo file!");
       AddBlinkingHUDMessage(TXT_DEMOCANTCREATE);
       Demo_fname.clear();
       return;
@@ -706,7 +706,7 @@ int DemoFrameCount = 0;
 
 int DemoPlaybackFile(const std::filesystem::path &filename) {
   is_multi_demo = false;
-  LOG_INFO << "Playing back demo file!";
+  LOG_INFO("Playing back demo file!");
   MultiBuildMatchTables();
   if (FindArg("-makemovie")) {
     Demo_make_movie = true;
@@ -749,14 +749,14 @@ int DemoReadHeader() {
   int level_num;
   int frame_count;
   float demo_gametime;
-  LOG_DEBUG << "Reading demo header...";
+  LOG_DEBUG("Reading demo header...");
   ASSERT(Demo_flags == DF_PLAYBACK);
   cf_ReadString((char *)szsig, 10, Demo_cfp);
   ver = cf_ReadShort(Demo_cfp);
 
   if (strcmp(szsig, D3_DEMO_SIG) != 0) {
     if (strcmp(szsig, D3_DEMO_SIG_NEW) != 0) {
-      LOG_WARNING << "Bad demo header signature!";
+      LOG_WARNING("Bad demo header signature!");
       return 0;
     }
   }
@@ -779,12 +779,12 @@ int DemoReadHeader() {
 
     SetCurrentLevel(level_num);
     if (!LoadAndStartCurrentLevel()) {
-      LOG_WARNING << "Couldn't start new level to play back the demo!";
+      LOG_WARNING("Couldn't start new level to play back the demo!");
       Osiris_EnableCreateEvents();
       return 0;
     }
   } else {
-    LOG_WARNING << "Couldn't load the level to play back the demo!";
+    LOG_WARNING("Couldn't load the level to play back the demo!");
     Osiris_EnableCreateEvents();
     return 0;
   }
@@ -828,7 +828,7 @@ int DemoReadHeader() {
     LGSSpew(Demo_cfp);
 
     if (!Osiris_RestoreSystemState(Demo_cfp)) {
-      LOG_ERROR << "Error restoring Osiris";
+      LOG_ERROR("Error restoring Osiris");
       return 0;
     }
 
@@ -851,7 +851,7 @@ int DemoReadHeader() {
     Camera_view_mode[0] = Camera_view_mode[2] = 0; //(0==CV_NONE)  Force reinitialization
     RestoreCameraRearviews();
   } catch (...) {
-    LOG_ERROR << "Someone threw an exception while reading the demo header!";
+    LOG_ERROR("Someone threw an exception while reading the demo header!");
     return 0;
   }
 
@@ -1010,7 +1010,7 @@ void DemoReadWeaponFire() {
   }
   Objects[new_weap_objnum].ctype.laser_info.src_gun_num = gunnum;
 
-  LOG_DEBUG.printf("Player %d Firing weapon (%d) -- using objnum %d (old num = %d)",
+  LOG_DEBUG("Player %d Firing weapon (%d) -- using objnum %d (old num = %d)",
                    obj->id, weaponnum, new_weap_objnum, weapobjnum);
 
   Demo_obj_map[weapobjnum] = new_weap_objnum;
@@ -1193,7 +1193,7 @@ void DemoFrame() {
       opcode = cf_ReadByte(Demo_cfp);
     } catch (...) {
       // End of file, so we're done playing the demo
-      LOG_INFO << "End of demo file!";
+      LOG_INFO("End of demo file!");
       Old_demo_fname = Demo_fname;
       DemoAbort();
       // Do some cool stuff here, like end of demo stats or exit to the main menu
@@ -1286,7 +1286,7 @@ void DemoFrame() {
       DemoReadObjLifeLeft();
       break;
     default:
-      LOG_ERROR.printf("ERROR! Unknown opcode in demo file!(%d) last code: %d", opcode, DemoLastOpcode);
+      LOG_ERROR("ERROR! Unknown opcode in demo file!(%d) last code: %d", opcode, DemoLastOpcode);
       DemoAbort();
       if (Demo_looping) {
         Game_interface_mode = GAME_DEMO_LOOP;
@@ -1303,7 +1303,7 @@ void DemoFrame() {
 void DemoWriteCinematics(uint8_t *data, uint16_t len) {
   cf_WriteByte(Demo_cfp, DT_CINEMATICS);
   // Write a bunch of data
-  LOG_INFO.printf("Writing Cinematic data (%d bytes) to demo file.", len);
+  LOG_INFO("Writing Cinematic data (%d bytes) to demo file.", len);
   cf_WriteShort(Demo_cfp, len);
   cf_WriteBytes(data, len, Demo_cfp);
 }
@@ -1312,7 +1312,7 @@ void DemoReadCinematics() {
   uint8_t buffer[1500];
   uint16_t len = cf_ReadShort(Demo_cfp);
   cf_ReadBytes(buffer, len, Demo_cfp);
-  LOG_INFO << "Reading Cinematic data from demo file.";
+  LOG_INFO("Reading Cinematic data from demo file.");
   Cinematic_DoDemoFileData(buffer);
 }
 
@@ -1377,7 +1377,7 @@ void DemoReadCollidePlayerWeapon(void) {
     collide_player_and_weapon(&Objects[plr_objnum], &Objects[real_weapnum], &collision_p, &collision_n,
                               f_reverse_normal, NULL);
   } else {
-    LOG_WARNING << "Unable to map weapon number for collision in demo playback!";
+    LOG_WARNING("Unable to map weapon number for collision in demo playback!");
   }
 }
 
@@ -1408,7 +1408,7 @@ void DemoReadCollideGenericWeapon(void) {
     collide_generic_and_weapon(&Objects[gen_objnum], &Objects[real_weapnum], &collision_p, &collision_n,
                                f_reverse_normal, NULL);
   } else {
-    LOG_WARNING << "Unable to map weapon number for collision in demo playback!";
+    LOG_WARNING("Unable to map weapon number for collision in demo playback!");
   }
 }
 
@@ -1614,7 +1614,7 @@ void DemoWritePlayerInfo(void) {
 
       if ((a >= 0) && (obj->type != OBJ_NONE) && (obj->type != OBJ_WEAPON) && (obj->flags & OF_POLYGON_OBJECT) &&
           (p_info->multi_turret_info.num_turrets)) {
-        LOG_DEBUG.printf("Turret %d updated!", a);
+        LOG_DEBUG("Turret %d updated!", a);
         multi_turret_info.keyframes = (float *)&turret_holder;
         ObjGetTurretUpdate(a, &multi_turret_info);
 

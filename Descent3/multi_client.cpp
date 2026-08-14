@@ -162,7 +162,7 @@ void MultiSendMyInfo() {
   uint8_t data[MAX_GAME_DATA_SIZE];
   int count = 0;
 
-  LOG_DEBUG << "Sending my info";
+  LOG_DEBUG("Sending my info");
   char pshipmodel[PAGENAME_LEN];
   Current_pilot.get_ship(pshipmodel);
 
@@ -227,7 +227,7 @@ void MultiSendRequestForPlayers() {
   uint8_t data[MAX_GAME_DATA_SIZE];
   int count = 0;
 
-  LOG_DEBUG << "Sending request for players";
+  LOG_DEBUG("Sending request for players");
 
   size = START_DATA(MP_REQUEST_PLAYERS, data, &count);
   MultiAddByte(Player_num, data, &count);
@@ -242,7 +242,7 @@ void MultiSendRequestForBuildings() {
   uint8_t data[MAX_GAME_DATA_SIZE];
   int count = 0;
 
-  LOG_DEBUG << "Sending request for buildings";
+  LOG_DEBUG("Sending request for buildings");
 
   size = START_DATA(MP_REQUEST_BUILDINGS, data, &count);
   MultiAddByte(Player_num, data, &count);
@@ -257,7 +257,7 @@ void MultiSendRequestForWorldStates() {
   uint8_t data[MAX_GAME_DATA_SIZE];
   int count = 0;
 
-  LOG_DEBUG << "Sending request for world states";
+  LOG_DEBUG("Sending request for world states");
 
   size = START_DATA(MP_REQUEST_WORLD_STATES, data, &count);
   MultiAddByte(Player_num, data, &count);
@@ -278,7 +278,7 @@ void MultiSendRequestForObjects() {
   uint8_t data[MAX_GAME_DATA_SIZE];
   int count = 0;
 
-  LOG_DEBUG << "Sending request for objects";
+  LOG_DEBUG("Sending request for objects");
 
   size = START_DATA(MP_REQUEST_OBJECTS, data, &count);
   MultiAddByte(Player_num, data, &count);
@@ -296,7 +296,7 @@ int ServerTimedOut() {
     return 0;
 
   if (!nw_CheckReliableSocket(NetPlayers[Player_num].reliable_socket)) {
-    LOG_WARNING << "Reliable connection to the server was broken. Disconnecting.";
+    LOG_WARNING("Reliable connection to the server was broken. Disconnecting.");
     ShowProgressScreen(TXT_RELIABLE_OVERRUN);
     D3::ChronoTimer::SleepMS(1000);
     return 1;
@@ -343,7 +343,7 @@ void MultiDoClientFrame() {
       // Wait for server response
       if ((timer_GetTime() - First_gametime_req) > NET_CLIENT_GAMETIME_REQ_TIMEOUT) {
         // Giving up, we waited too long.
-        LOG_DEBUG << "Server disconnected while waiting for gametime!";
+        LOG_DEBUG("Server disconnected while waiting for gametime!");
         MultiLeaveGame();
         ShowProgressScreen(TXT_MLTDISCFRMSERV);
         D3::ChronoTimer::SleepMS(2000);
@@ -483,7 +483,7 @@ void MultiDoClientFrame() {
     }
 
     if (ServerTimedOut()) {
-      LOG_DEBUG << "Server disconnected!";
+      LOG_DEBUG("Server disconnected!");
       MultiLeaveGame();
       ShowProgressScreen(TXT_MLTDISCFRMSERV);
       D3::ChronoTimer::SleepMS(2000);

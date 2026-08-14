@@ -426,10 +426,10 @@ static inline void verify_percentranage(PercentageRange *range) {
 //	this would do what's needed.
 void Cinematic_PerformFake(void) {
   Cinematic_fake_queued = false;
-  LOG_DEBUG << "Cinematics: Faking Cinematic";
+  LOG_DEBUG("Cinematics: Faking Cinematic");
   object *target = ObjGet(Cinematic_fake_info.target_objhandle);
   if (!target) {
-    LOG_WARNING << "Cinematics: Invalid target...can't fake";
+    LOG_WARNING("Cinematics: Invalid target...can't fake");
     return;
   }
 
@@ -573,7 +573,7 @@ bool Cinematic_StartCine(tGameCinematic *info, const char *text_string, int came
   if (c) {
     objnum = OBJNUM(c);
   } else {
-    LOG_WARNING << "Unable to create camera";
+    LOG_WARNING("Unable to create camera");
     return false;
   }
 
@@ -586,13 +586,13 @@ bool Cinematic_StartCine(tGameCinematic *info, const char *text_string, int came
   } else {
     GameCinema.pathnum = info->pathid;
     if (GameCinema.pathnum == -1) {
-      LOG_WARNING << "Invalid Path given";
+      LOG_WARNING("Invalid Path given");
       return false;
     }
     // Abort if not a good path
     if (((info->flags & GCF_CAMERAPLACEMENT) == GCF_USEPOINT)) {
       if (GamePaths[GameCinema.pathnum].num_nodes < 2) {
-        LOG_WARNING << "Not a good path passed to Cinematic_Start";
+        LOG_WARNING("Not a good path passed to Cinematic_Start");
         return false;
       }
     }
@@ -657,7 +657,7 @@ bool Cinematic_StartCine(tGameCinematic *info, const char *text_string, int came
 
   // The structs are setup, time to setup the camera and objects
 
-  LOG_INFO << "Cinematic_Start";
+  LOG_INFO("Cinematic_Start");
 
   Player_object->flags &= ~OF_DESTROYABLE;
   Players[Player_num].flags &= ~PLAYER_FLAGS_AFTERBURN_ON;
@@ -837,13 +837,13 @@ bool Cinematic_StartCine(tGameCinematic *info, const char *text_string, int came
       vm_NormalizeVector(&turn_to);
 
       if (turn_to == vector{}) {
-        LOG_WARNING << "Cine: No turn_to or less than 1 degree off goal";
+        LOG_WARNING("Cine: No turn_to or less than 1 degree off goal");
         goto continue_start;
       }
 
       goal_angle = vm_DeltaAngVecNorm(&camera->orient.fvec, &turn_to, &u_axis);
       if (goal_angle == 0) {
-        LOG_WARNING << "Cine: Goal angle is zero";
+        LOG_WARNING("Cine: Goal angle is zero");
         goto continue_start;
       }
 
@@ -910,7 +910,7 @@ void Cinematic_Stop(void) {
   // reset things back to normal, anything that might be messed up
   bool dont_restore_viewer = false;
   if (GameCinema.flags & GCF_DONTRESTOREVIEWER) {
-    LOG_DEBUG << "********NOT RESTORING VIEW TO PLAYER*************";
+    LOG_DEBUG("********NOT RESTORING VIEW TO PLAYER*************");
     dont_restore_viewer = true;
   }
 
@@ -1114,13 +1114,13 @@ void Cinematic_Frame(void) {
     vm_NormalizeVector(&turn_to);
 
     if (turn_to == vector{}) {
-      LOG_WARNING << "Cine: No turn_to or less than 1 degree off goal";
+      LOG_WARNING("Cine: No turn_to or less than 1 degree off goal");
       goto continue_frame;
     }
 
     goal_angle = vm_DeltaAngVecNorm(&camera->orient.fvec, &turn_to, &u_axis);
     if (goal_angle == 0) {
-      LOG_WARNING << "Cine: Goal angle is zero";
+      LOG_WARNING("Cine: Goal angle is zero");
       goto continue_frame;
     }
 
@@ -1682,7 +1682,7 @@ void CannedCinematicIntroCallback(int type) {
   switch (type) {
   case GCCT_START: {
     // start the player on the path
-    LOG_INFO << "START PLAYER ON PATH";
+    LOG_INFO("START PLAYER ON PATH");
 
     // determine how fast they need to travel
     int pathnum = CannedCinematicIntro.player_path;
@@ -1707,7 +1707,7 @@ void CannedCinematicIntroCallback(int type) {
     int next_node;
 
     if (pathnum == -1) {
-      LOG_WARNING << "ILLEGAL PATH FOR PLAYER";
+      LOG_WARNING("ILLEGAL PATH FOR PLAYER");
       break;
     }
 
@@ -1721,19 +1721,19 @@ void CannedCinematicIntroCallback(int type) {
         if (fabs(vm_VectorDistance(&GamePaths[pathnum].pathnodes[1].pos, &GamePaths[pathnum].pathnodes[0].pos)) >
             30.0f) {
           CannedCinematicIntro.should_thrust = true;
-          LOG_WARNING << "Player should thrust";
+          LOG_WARNING("Player should thrust");
         } else {
           CannedCinematicIntro.should_thrust = false;
-          LOG_WARNING << "Player should NOT thrust";
+          LOG_WARNING("Player should NOT thrust");
         }
       } else {
         CannedCinematicIntro.should_thrust = true;
-        LOG_WARNING << "Player should thrust";
+        LOG_WARNING("Player should thrust");
       }
     } else {
       next_node = 0;
       CannedCinematicIntro.should_thrust = false;
-      LOG_WARNING << "Player should NOT thrust";
+      LOG_WARNING("Player should NOT thrust");
       vm_VectorToMatrix(&orient, &GamePaths[pathnum].pathnodes[0].fvec, &GamePaths[pathnum].pathnodes[0].uvec, NULL);
     }
     pos = GamePaths[pathnum].pathnodes[0].pos;
@@ -1755,7 +1755,7 @@ void CannedCinematicIntroCallback(int type) {
   } break;
   case GCCT_STOP: {
     // stop the player on the path
-    LOG_DEBUG << "STOP PLAYER ON PATH";
+    LOG_DEBUG("STOP PLAYER ON PATH");
     ResetPlayerControlType(Player_num);
     ResumeControls();
 
@@ -1814,7 +1814,7 @@ void CannedCinematicEndLevelCallback(int type) {
     // if the player is dead, bring them back from the dead
     if ((Players[Player_num].flags & PLAYER_FLAGS_DYING) || (Players[Player_num].flags & PLAYER_FLAGS_DEAD)) {
       // the player is currently dead
-      LOG_INFO << "Bringing player back from the dead";
+      LOG_INFO("Bringing player back from the dead");
       Players[Player_num].flags &= ~(PLAYER_FLAGS_DYING | PLAYER_FLAGS_DEAD);
       Player_object->shields = 1.0f;
     }
@@ -1823,13 +1823,13 @@ void CannedCinematicEndLevelCallback(int type) {
     MakePlayerInvulnerable(Player_num, CannedCinematicEndLevel.cinematic_time, false);
 
     // start the player on the path
-    LOG_INFO << "START PLAYER ON PATH";
+    LOG_INFO("START PLAYER ON PATH");
 
     // determine how fast they need to travel
     int pathnum = CannedCinematicEndLevel.player_path;
 
     if (pathnum == -1) {
-      LOG_WARNING << "ILLEGAL PATH FOR PLAYER";
+      LOG_WARNING("ILLEGAL PATH FOR PLAYER");
       break;
     }
 
@@ -1892,7 +1892,7 @@ void CannedCinematicEndLevelCallback(int type) {
   } break;
   case GCCT_STOP: {
     // stop the player on the path
-    LOG_INFO << "STOP PLAYER ON PATH";
+    LOG_INFO("STOP PLAYER ON PATH");
     ResetPlayerControlType(Player_num);
     ResumeControls();
 
@@ -2170,7 +2170,7 @@ void Cinematic_StartCanned(tCannedCinematicInfo *info, int camera_handle) {
       CannedCinematic_EndLevelPoint(&cam->pos, cam->roomnum, info->text_to_display, info->target_pathid, info->time,
                                     camera_handle);
     } else {
-      LOG_WARNING << "Passed in object handle for canned cinematic (level end) for camera position does not exist";
+      LOG_WARNING("Passed in object handle for canned cinematic (level end) for camera position does not exist");
       Cinematic_DeleteCamera(camera_handle);
       SetGameState(GAMESTATE_LVLEND);
     }
@@ -2178,7 +2178,7 @@ void Cinematic_StartCanned(tCannedCinematicInfo *info, int camera_handle) {
   case CANNED_MOVE_PLAYER_FADE: {
     object *player = ObjGet(info->target_objhandle);
     if (!player || player->type != OBJ_PLAYER) {
-      LOG_INFO << "Invalid player passed to CANNED_MOVE_PLAYER_FADE";
+      LOG_INFO("Invalid player passed to CANNED_MOVE_PLAYER_FADE");
       Cinematic_DeleteCamera(camera_handle);
       return;
     }

@@ -112,7 +112,7 @@ void DoPhysLinkedFrame(object *obj) {
     mn = obj->mtype.obj_link_info.sobj_index;
 
     if (mn < 0 || mn >= pm->n_models) {
-      LOG_WARNING << "Caught physics link bug!";
+      LOG_WARNING("Caught physics link bug!");
       SetObjectDeadFlag(obj);
       return;
     }
@@ -174,7 +174,7 @@ bool PhysCalcGround(vector *ground_point, vector *ground_normal, object *obj, in
   pm = &Poly_models[obj->rtype.pobj_info.model_num];
 
   if (pm->n_ground == 0) {
-    LOG_WARNING.printf("Object %d with no weapons is firing.", ground_num);
+    LOG_WARNING("Object %d with no weapons is firing.", ground_num);
 
     if (ground_point)
       *ground_point = obj->pos;
@@ -189,7 +189,7 @@ bool PhysCalcGround(vector *ground_point, vector *ground_normal, object *obj, in
   SetModelAnglesAndPos(pm, normalized_time);
 
   if (ground_num < 0 || ground_num >= pm->n_ground) {
-    LOG_WARNING.printf("Bashing ground num %d to 0.", ground_num);
+    LOG_WARNING("Bashing ground num %d to 0.", ground_num);
     ground_num = 0;
     f_good_gp = false;
   }
@@ -673,7 +673,7 @@ void PhysicsDoSimLinear(const object &obj, const vector &pos, const vector &forc
 
 #ifdef _DEBUG
   if (Physics_player_verbose && obj.type == OBJ_PLAYER) {
-    LOG_DEBUG.printf("Player Velocity = %f(%f)", vm_GetMagnitude(&velocity), vm_GetMagnitude(&movementVec) / simTime);
+    LOG_DEBUG("Player Velocity = %f(%f)", vm_GetMagnitude(&velocity), vm_GetMagnitude(&movementVec) / simTime);
   }
 #endif
 }
@@ -1099,12 +1099,12 @@ void do_physics_sim(object *obj) {
         if (obj == Player_object) {
           if (fate == HIT_OBJECT || fate == HIT_SPHERE_2_POLY_OBJECT) {
             if (Objects[hit_info.hit_object[0]].flags & OF_BIG_OBJECT) {
-              LOG_DEBUG.printf("Fate = %d for player - Big object", fate);
+              LOG_DEBUG("Fate = %d for player - Big object", fate);
             } else {
-              LOG_DEBUG.printf("Fate = %d for player - Small object", fate);
+              LOG_DEBUG("Fate = %d for player - Small object", fate);
             }
           } else {
-            LOG_DEBUG.printf("Fate = %d for player - non-object", fate);
+            LOG_DEBUG("Fate = %d for player - non-object", fate);
           }
         }
       }
@@ -1334,7 +1334,7 @@ void do_physics_sim(object *obj) {
                   if (obj->type != OBJ_PLAYER)
                     SetObjectDeadFlag(obj);
                   else
-                    LOG_WARNING << "Got a ship that was set for bounce!!! BAD!!!";
+                    LOG_WARNING("Got a ship that was set for bounce!!! BAD!!!");
                 }
               }
               obj->mtype.phys_info.num_bounces--;
@@ -1431,7 +1431,7 @@ void do_physics_sim(object *obj) {
                 fabs(obj->mtype.phys_info.velocity.z()) < MAX_OBJECT_VEL)) {
             scalar mag = vm_NormalizeVector(&obj->mtype.phys_info.velocity);
 
-            LOG_DEBUG.printf("Bashing vel for Obj %d of type %d with %f velocity", objnum, obj->type, mag);
+            LOG_DEBUG("Bashing vel for Obj %d of type %d with %f velocity", objnum, obj->type, mag);
             obj->mtype.phys_info.velocity *= MAX_OBJECT_VEL * 0.1f;
           }
 
@@ -1567,12 +1567,12 @@ void do_physics_sim(object *obj) {
     } break;
 
     case HIT_BAD_P0:
-      LOG_ERROR << "Bad p0 in physics!!!";
+      LOG_ERROR("Bad p0 in physics!!!");
       Int3(); // Unexpected collision type: start point not in specified segment.
       break;
 
     default:
-      LOG_ERROR << "Unknown and unhandled hit type returned from FVI";
+      LOG_ERROR("Unknown and unhandled hit type returned from FVI");
       Int3();
       break;
     }
@@ -1587,7 +1587,7 @@ void do_physics_sim(object *obj) {
   // NOTE: These numbers limit the max collisions an object can have in a single frame
   if (count >= sim_loop_limit) {
     if (obj->type == OBJ_PLAYER) {
-      LOG_WARNING << "Too many collisions for player!";
+      LOG_WARNING("Too many collisions for player!");
       obj->mtype.phys_info.velocity = vector{};
     }
   }
@@ -1751,7 +1751,7 @@ bool PhysComputeWalkerPosOrient(object *obj, vector *pos, matrix *orient) {
     fate = PhysCastWalkRay(obj, &obj->pos, &foot_pnt, &hp);
 
     if (fate == HIT_NONE) {
-      LOG_WARNING.printf("Walking object %d should be falling", OBJNUM(obj));
+      LOG_WARNING("Walking object %d should be falling", OBJNUM(obj));
       //			SetObjectDeadFlag(obj);
       f_ok = false;
     } else {
@@ -2134,7 +2134,7 @@ void do_walking_sim(object *obj) {
 
       goto end_of_sim;
     } else if (fate == HIT_OUT_OF_TERRAIN_BOUNDS) {
-      LOG_WARNING << "Walker exited terrain";
+      LOG_WARNING("Walker exited terrain");
       SetObjectDeadFlag(obj);
       obj->last_pos = init_pos;
 
@@ -2164,7 +2164,7 @@ void do_walking_sim(object *obj) {
       // moved backwards
       if (fate == HIT_WALL && vm_Dot3Product(moved_vec_n, movement_vec) < -0.000001 && actual_dist != 0.0) {
 
-        LOG_WARNING.printf("Obj %d Walked backwards!", OBJNUM(obj));
+        LOG_WARNING("Obj %d Walked backwards!", OBJNUM(obj));
         /*
                 mprintf(0, "PHYSICS NOTE: (%f, %f, %f) to (%f, %f, %f)\n",
                         XYZ(&start_pos),
@@ -2189,7 +2189,7 @@ void do_walking_sim(object *obj) {
 
         // chrishack -- negative simulation time pasted for this sim frame
         if (sim_time_remaining > old_sim_time_remaining) {
-          LOG_WARNING.printf(
+          LOG_WARNING(
                   "Bogus sim_time_remaining = %15.13f, old = %15.13f; Attempted d = %15.13f, actual = %15.13f",
                   sim_time_remaining, old_sim_time_remaining, attempted_dist, actual_dist);
           // Int3();
@@ -2313,7 +2313,7 @@ void do_walking_sim(object *obj) {
                 fabs(obj->mtype.phys_info.velocity.z()) < MAX_OBJECT_VEL)) {
             scalar mag = vm_NormalizeVector(&obj->mtype.phys_info.velocity);
 
-            LOG_WARNING.printf("Bashing vel for Obj %d of type %d with %f velocity", objnum, obj->type, mag);
+            LOG_WARNING("Bashing vel for Obj %d of type %d with %f velocity", objnum, obj->type, mag);
             obj->mtype.phys_info.velocity *= MAX_OBJECT_VEL * 0.1f;
           }
 
@@ -2382,12 +2382,12 @@ void do_walking_sim(object *obj) {
     } break;
 
     case HIT_BAD_P0:
-      LOG_ERROR << "Bad p0 in physics!!!";
+      LOG_ERROR("Bad p0 in physics!!!");
       Int3(); // Unexpected collision type: start point not in specified segment.
       break;
 
     default:
-      LOG_ERROR << "Unknown and unhandled hit type returned from FVI";
+      LOG_ERROR("Unknown and unhandled hit type returned from FVI");
       Int3();
       break;
     }
@@ -2402,7 +2402,7 @@ void do_walking_sim(object *obj) {
   // NOTE: These numbers limit the max collisions an object can have in a single frame
   if (count >= sim_loop_limit) {
     if (obj->type == OBJ_PLAYER) {
-      LOG_WARNING << "PHYSICS NOTE: Too many collisions for player!";
+      LOG_WARNING("PHYSICS NOTE: Too many collisions for player!");
     }
   }
 
@@ -2577,7 +2577,8 @@ void phys_apply_force(object *obj, vector *force_vec, int16_t weapon_index) {
       ForceEffectsPlay(FORCE_TEST_FORCE, &scale, &local_norm);
     }
 
-    LOG_DEBUG_IF(weapon_index != -1) << "Force from weapon";
+    LOG_DEBUG_IF(weapon_index != -1,
+                 "Force from weapon");
 
     // mprintf(0,"Force: Magnitude = %f   Scale = %1.3f\n",magnitude,scale);
   }

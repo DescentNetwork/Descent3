@@ -130,7 +130,7 @@ int gspy_Init() {
 
   if (SOCKET_ERROR == gspy_socket) {
     int lerror = WSAGetLastError();
-    LOG_WARNING.printf("Unable to init gamespy socket! (%d)", lerror);
+    LOG_WARNING("Unable to init gamespy socket! (%d)", lerror);
     return 0;
   }
   SOCKADDR_IN sock_addr{};
@@ -147,17 +147,17 @@ int gspy_Init() {
   } else {
     gspy_listenport = GAMESPY_LISTENPORT;
   }
-  LOG_INFO.printf("Using port %d for gamespy requests.", gspy_listenport);
+  LOG_INFO("Using port %d for gamespy requests.", gspy_listenport);
   sock_addr.sin_port = htons(gspy_listenport);
   if (bind(gspy_socket, (SOCKADDR *)&sock_addr, sizeof(sock_addr)) == SOCKET_ERROR) {
-    LOG_WARNING.printf("Couldn't bind gamespy socket (%d)!", WSAGetLastError());
+    LOG_WARNING("Couldn't bind gamespy socket (%d)!", WSAGetLastError());
     return 0;
   }
   // make the socket non-blocking
   make_nonblocking(gspy_socket);
   CFILE *cfp = cfopen(cfgpath, "rt");
   if (cfp) {
-    LOG_INFO << "Found a gamespy config file!";
+    LOG_INFO("Found a gamespy config file!");
     char hostn[MAX_HOSTNAMELEN];
 
     for (auto &server : gspy_server) {
@@ -188,10 +188,10 @@ int gspy_Init() {
         if (INADDR_NONE == inet_addr(hostn)) {
           // This is a name we must resolve
           HOSTENT *he;
-          LOG_DEBUG.printf("Resolving hostname for gamespy: %s", hostn);
+          LOG_DEBUG("Resolving hostname for gamespy: %s", hostn);
           he = gethostbyname(hostn);
           if (!he) {
-            LOG_WARNING.printf("Unable to resolve %s", hostn);
+            LOG_WARNING("Unable to resolve %s", hostn);
             // gspy_server[i].sin_addr.S_un.S_addr = INADDR_NONE;
             INADDR_SET_SUN_SADDR(&server.sin_addr, INADDR_NONE);
           } else {
@@ -206,7 +206,7 @@ int gspy_Init() {
       uint32_t resolved_addr;
       INADDR_GET_SUN_SADDR(&server.sin_addr, &resolved_addr);
       if (resolved_addr != INADDR_NONE) {
-        LOG_INFO.printf("Sending gamespy heartbeats to %s:%d", inet_ntoa(server.sin_addr), htons(server.sin_port));
+        LOG_INFO("Sending gamespy heartbeats to %s:%d", inet_ntoa(server.sin_addr), htons(server.sin_port));
       }
     }
 
@@ -251,7 +251,7 @@ void gspy_DoFrame() {
       uint32_t resolved_addr;
       INADDR_GET_SUN_SADDR(&server.sin_addr, &resolved_addr);
       if (resolved_addr != INADDR_NONE) {
-        LOG_DEBUG.printf("Sending heartbeat to %s:%d", inet_ntoa(server.sin_addr), htons(server.sin_port));
+        LOG_DEBUG("Sending heartbeat to %s:%d", inet_ntoa(server.sin_addr), htons(server.sin_port));
         gspy_DoHeartbeat(&server);
       }
     }
@@ -262,12 +262,12 @@ void gspy_DoFrame() {
     bytesin = (int)recvfrom(gspy_socket, inbuffer, MAX_GAMESPY_BUFFER, 0, (SOCKADDR *)&fromaddr, &fromsize);
     if (bytesin > 0) {
       *(inbuffer + bytesin) = '\0';
-      LOG_DEBUG.printf("GSPYIN: %s", inbuffer);
+      LOG_DEBUG("GSPYIN: %s", inbuffer);
       gspy_ParseReq(inbuffer, &fromaddr);
     } else if (bytesin == SOCKET_ERROR) {
       int lerror = WSAGetLastError();
       if (lerror != WSAEWOULDBLOCK) {
-        LOG_WARNING.printf("recvfrom failed for gamespy! (%d)", lerror);
+        LOG_WARNING("recvfrom failed for gamespy! (%d)", lerror);
       }
     }
   } while (bytesin > 0);
@@ -289,7 +289,7 @@ int gspy_SendPacket(SOCKADDR_IN *addr) {
   snprintf(keyvalue, sizeof(keyvalue), "\\queryid\\%d.%d", gspy_queryid, gspy_packetnumber);
   strcat(gspy_outgoingbuffer, keyvalue);
 
-  LOG_DEBUG.printf("GSPYOUT: %s", gspy_outgoingbuffer);
+  LOG_DEBUG("GSPYOUT: %s", gspy_outgoingbuffer);
   sendto(gspy_socket, gspy_outgoingbuffer, strlen(gspy_outgoingbuffer) + 1, 0, (SOCKADDR *)addr, sizeof(SOCKADDR_IN));
   *gspy_outgoingbuffer = '\0';
   return 0;
@@ -392,7 +392,7 @@ int gspy_DoEcho(SOCKADDR_IN *addr, char *msg) {
   strcpy(buf, msg);
   char *p = strstr(buf, "\\echo\\");
   if (!p) {
-    LOG_FATAL << "Couldn't find 'echo' keyword in gamespy query, this is a wacky bug that should never happen!";
+    LOG_FATAL("Couldn't find 'echo' keyword in gamespy query, this is a wacky bug that should never happen!");
     Int3();
     return 0;
   }
@@ -406,17 +406,17 @@ int gspy_DoBasic(SOCKADDR_IN *addr) {
   char buf[MAX_GAMESPY_BUFFER];
 
   snprintf(buf, sizeof(buf), "\\gamename\\%s", THISGAMENAME);
-  LOG_DEBUG.printf("Sending to gamespy: %s", buf);
+  LOG_DEBUG("Sending to gamespy: %s", buf);
   gspy_AddToBuffer(addr, buf);
 
   // sprintf(buf,"\\gamever\\%d.%d",Program_version.major,Program_version.minor);
   snprintf(buf, sizeof(buf), "\\gamever\\%s %.1d.%.1d.%.1d", THISGAMEVER, Program_version.major, Program_version.minor,
           Program_version.build);
-  LOG_DEBUG.printf("Sending to gamespy: %s", buf);
+  LOG_DEBUG("Sending to gamespy: %s", buf);
   gspy_AddToBuffer(addr, buf);
 
   snprintf(buf, sizeof(buf), "\\location\\%d", gspy_region);
-  LOG_DEBUG.printf("Sending to gamespy: %s", buf);
+  LOG_DEBUG("Sending to gamespy: %s", buf);
   gspy_AddToBuffer(addr, buf);
 
   return 0;
@@ -510,7 +510,7 @@ int gspy_DoGameInfo(SOCKADDR_IN *addr) {
 int gspy_DoHeartbeat(SOCKADDR_IN *addr) {
   char buf[MAX_GAMESPY_BUFFER];
   snprintf(buf, sizeof(buf), "\\heartbeat\\%d\\gamename\\%s", gspy_listenport, THISGAMENAME);
-  LOG_DEBUG.printf("GSPYOUT: %s", buf);
+  LOG_DEBUG("GSPYOUT: %s", buf);
   sendto(gspy_socket, buf, strlen(buf) + 1, 0, (SOCKADDR *)addr, sizeof(SOCKADDR_IN));
 
   return 0;

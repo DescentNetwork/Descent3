@@ -753,7 +753,7 @@ bool DoEditDialog(const char *title, char *buffer, int buflen, bool showcancel) 
   if (res != UID_CANCEL && res != NEWUIRES_FORCEQUIT) {
     if (strcmp(edit, NEWUI_EDIT_CANCELED_STR) != 0) {
       strcpy(buffer, edit);
-      LOG_DEBUG.printf("editdialog=%s", buffer);
+      LOG_DEBUG("editdialog=%s", buffer);
     } else {
       res = UID_CANCEL;
     }

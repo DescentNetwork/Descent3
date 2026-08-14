@@ -1782,7 +1782,7 @@ int mng_FindSpecificGenericPage(char *name, mngs_generic_page *genericpage, int 
   }
 
   if (!infile) {
-    LOG_ERROR << "Couldn't open table file to find generic!";
+    LOG_ERROR("Couldn't open table file to find generic!");
     Int3();
     return 0;
   }
@@ -1955,7 +1955,7 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page *genericpage, int n, CFILE 
   img_handle = LoadPolyModel(genericpage->image_name, 1);
 
   if (img_handle < 0) {
-    LOG_ERROR.printf("Couldn't load file '%s' in AssignGenericPage...", genericpage->image_name);
+    LOG_ERROR("Couldn't load file '%s' in AssignGenericPage...", genericpage->image_name);
     objinfopointer->render_handle = -1;
     return 0;
   } else
@@ -1965,7 +1965,7 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page *genericpage, int n, CFILE 
     img_handle = LoadPolyModel(genericpage->med_image_name, 1);
 
     if (img_handle < 0) {
-      LOG_ERROR.printf("Couldn't load file '%s' in AssignGenericPage...", genericpage->med_image_name);
+      LOG_ERROR("Couldn't load file '%s' in AssignGenericPage...", genericpage->med_image_name);
       objinfopointer->med_render_handle = -1;
       return 0;
     } else
@@ -1977,7 +1977,7 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page *genericpage, int n, CFILE 
     img_handle = LoadPolyModel(genericpage->lo_image_name, 1);
 
     if (img_handle < 0) {
-      LOG_ERROR.printf("Couldn't load file '%s' in AssignGenericPage...", genericpage->lo_image_name);
+      LOG_ERROR("Couldn't load file '%s' in AssignGenericPage...", genericpage->lo_image_name);
       objinfopointer->lo_render_handle = -1;
       return 0;
     } else
@@ -1991,7 +1991,7 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page *genericpage, int n, CFILE 
       int sound_handle = mng_GetGuaranteedSoundPage(genericpage->sound_name[i]);
 
       if (sound_handle < 0) {
-        LOG_WARNING.printf("Couldn't load sound file '%s' in AssignPowPage %s...", genericpage->sound_name[i],
+        LOG_WARNING("Couldn't load sound file '%s' in AssignPowPage %s...", genericpage->sound_name[i],
                          genericpage->objinfo_struct.name);
         objinfopointer->sounds[i] = SOUND_NONE_INDEX;
       } else
@@ -2025,7 +2025,7 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page *genericpage, int n, CFILE 
         int sound_handle = mng_GetGuaranteedSoundPage(genericpage->ai_sound_name[i]);
 
         if (sound_handle < 0) {
-          LOG_ERROR.printf("Couldn't load ai sound file '%s' in AssignPowPage %s...", genericpage->ai_sound_name[i],
+          LOG_ERROR("Couldn't load ai sound file '%s' in AssignPowPage %s...", genericpage->ai_sound_name[i],
                            genericpage->objinfo_struct.name);
           objinfopointer->ai_info->sound[i] = SOUND_NONE_INDEX;
         } else
@@ -2043,7 +2043,7 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page *genericpage, int n, CFILE 
           int weapon_handle = mng_GetGuaranteedWeaponPage(genericpage->weapon_name[i][j]);
 
           if (weapon_handle < 0) {
-            LOG_ERROR.printf("Couldn't load weapon file '%s' in AssignPowPage %s...", genericpage->weapon_name[i][j],
+            LOG_ERROR("Couldn't load weapon file '%s' in AssignPowPage %s...", genericpage->weapon_name[i][j],
                     genericpage->objinfo_struct.name);
             objinfopointer->static_wb[i].gp_weapon_index[j] = LASER_INDEX;
           } else
@@ -2060,7 +2060,7 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page *genericpage, int n, CFILE 
           int fire_sound_handle = mng_GetGuaranteedSoundPage(genericpage->fire_sound_name[i][j]);
 
           if (fire_sound_handle < 0) {
-            LOG_ERROR.printf("Couldn't load fire sound file '%s' in AssignPowPage %s...",
+            LOG_ERROR("Couldn't load fire sound file '%s' in AssignPowPage %s...",
                              genericpage->fire_sound_name[i][j], genericpage->objinfo_struct.name);
             objinfopointer->static_wb[i].fm_fire_sound_index[j] = SOUND_NONE_INDEX;
           } else
@@ -2079,7 +2079,7 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page *genericpage, int n, CFILE 
           int anim_sound_handle = mng_GetGuaranteedSoundPage(genericpage->anim_sound_name[i][j]);
 
           if (anim_sound_handle < 0) {
-            LOG_ERROR.printf("Couldn't load anim sound file '%s' in AssignPowPage %s...",
+            LOG_ERROR("Couldn't load anim sound file '%s' in AssignPowPage %s...",
                              genericpage->anim_sound_name[i][j], genericpage->objinfo_struct.name);
             objinfopointer->anim[i].elem[j].anim_sound_index = SOUND_NONE_INDEX;
           } else
@@ -2198,7 +2198,7 @@ void mng_LoadNetGenericPage(CFILE *infile, bool overlay) {
     int n = FindObjectIDName(genericpage.objinfo_struct.name);
     if (n != -1) {
       if (overlay) {
-        LOG_DEBUG.printf("OVERLAYING GENERIC %s", genericpage.objinfo_struct.name);
+        LOG_DEBUG("OVERLAYING GENERIC %s", genericpage.objinfo_struct.name);
         mng_FreePagetypePrimitives(PAGETYPE_GENERIC, genericpage.objinfo_struct.name, 0);
         mng_AssignGenericPageToObjInfo(&genericpage, n);
       }
@@ -2218,7 +2218,7 @@ void mng_LoadNetGenericPage(CFILE *infile, bool overlay) {
       genericpage.objinfo_struct.description = nullptr;
     }
   } else
-    LOG_ERROR.printf("Could not load genericpage named %s!", genericpage.objinfo_struct.name);
+    LOG_ERROR("Could not load genericpage named %s!", genericpage.objinfo_struct.name);
 }
 
 // Reads a generic page from a local table file.  It then allocs a generic and
@@ -2262,7 +2262,7 @@ void mng_LoadLocalGenericPage(CFILE *infile) {
           if (addon->Addon_tracklocks[tidx].pagetype == PAGETYPE_GENERIC &&
               !stricmp(addon->Addon_tracklocks[tidx].name, genericpage.objinfo_struct.name)) {
             // found it!!
-            LOG_DEBUG.printf("GenericPage: %s previously loaded", genericpage.objinfo_struct.name);
+            LOG_DEBUG("GenericPage: %s previously loaded", genericpage.objinfo_struct.name);
             need_to_load_page = false;
             break;
           }
@@ -2319,7 +2319,7 @@ void mng_LoadLocalGenericPage(CFILE *infile) {
     if (Loading_addon_table == -1)
       mng_AllocTrackLock(genericpage.objinfo_struct.name, PAGETYPE_GENERIC);
   } else {
-    LOG_ERROR.printf("Could not load genericpage named %s!", genericpage.objinfo_struct.name);
+    LOG_ERROR("Could not load genericpage named %s!", genericpage.objinfo_struct.name);
   }
 }
 

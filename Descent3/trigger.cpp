@@ -237,7 +237,7 @@ void CheckTrigger(int roomnum, int facenum, object *objp, int event_type) {
 
     // Check if this object is a valid activator for this trigger
     if (tp->activator & type) {
-      LOG_DEBUG.printf("Hit trigger %d", tp - Triggers);
+      LOG_DEBUG("Hit trigger %d", tp - Triggers);
 
       // Execute this trigger's script
       tOSIRISEventInfo ei;

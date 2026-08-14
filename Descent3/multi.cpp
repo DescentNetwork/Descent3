@@ -1963,7 +1963,7 @@ void DoNextPlayerFile(int playernum) {
   NetPlayers[playernum].custom_file_seq++;
   if (NetPlayers[playernum].custom_file_seq > NETFILE_ID_LAST_FILE) {
     NetPlayers[playernum].custom_file_seq = NETFILE_ID_DONE;
-    LOG_INFO.printf("Setting %s's custom ship logo to %s",
+    LOG_INFO("Setting %s's custom ship logo to %s",
                     Players[playernum].callsign, NetPlayers[playernum].ship_logo);
     PlayerSetCustomTexture(playernum, NetPlayers[playernum].ship_logo);
     // If we are the server, we need to tell everyone about this guy's custom data
@@ -2273,7 +2273,7 @@ void MultiDoMyInfo(uint8_t *data) {
 
   uint8_t slot = MultiGetByte(data, &count);
   if (!(NetPlayers[slot].flags & NPF_CONNECTED)) {
-    LOG_FATAL << "ERROR!  We got a MY_INFO packet from a disconnected player!";
+    LOG_FATAL("ERROR!  We got a MY_INFO packet from a disconnected player!");
     Int3(); // Get Jason
     return;
   }
@@ -2330,8 +2330,8 @@ void MultiDoMyInfo(uint8_t *data) {
 
     if (mt_sig != MASTER_TRACKER_SIG) {
       NetPlayers[slot].flags &= ~NPF_CONNECTED;
-      LOG_WARNING << "Invalid master tracker signature! "
-                  << "Someone tried to join a master tracker game through the local net screen!";
+      LOG_WARNING("Invalid master tracker signature! "
+                  "Someone tried to join a master tracker game through the local net screen!");
     }
     NetPlayers[slot].flags |= NPF_MT_READING_PILOT;
     len = MultiGetByte(data, &count);
@@ -2347,7 +2347,7 @@ void MultiDoMyInfo(uint8_t *data) {
   int ser = 0;
   ser = MultiGetInt(data, &count);
   if (ser) {
-    LOG_INFO.printf("Serialized user joining game: %d", ser);
+    LOG_INFO("Serialized user joining game: %d", ser);
   }
 
   // Get packets per second for this player
@@ -2382,7 +2382,7 @@ void MultiDoMyInfo(uint8_t *data) {
 
   NetPlayers[slot].sequence = NETSEQ_NEED_GAMETIME;
 
-  LOG_DEBUG.printf("Got a myinfo packet from %s len=%d!", Players[slot].callsign, len);
+  LOG_DEBUG("Got a myinfo packet from %s len=%d!", Players[slot].callsign, len);
 }
 
 // Tell a client about the players connected
@@ -2395,7 +2395,7 @@ void MultiDoRequestPlayers(uint8_t *data) {
 
   uint8_t slot = MultiGetByte(data, &count);
   if (!(NetPlayers[slot].flags & NPF_CONNECTED)) {
-    LOG_FATAL << "ERROR!  We got a MY_INFO packet from a disconnected player!";
+    LOG_FATAL("ERROR!  We got a MY_INFO packet from a disconnected player!");
     Int3(); // Get Jason
     return;
   }
@@ -2413,7 +2413,7 @@ void MultiDoRequestBuildings(uint8_t *data) {
 
   uint8_t slot = MultiGetByte(data, &count);
   if (!(NetPlayers[slot].flags & NPF_CONNECTED)) {
-    LOG_FATAL << "ERROR!  We got a request buildings packet from a disconnected player!";
+    LOG_FATAL("ERROR!  We got a request buildings packet from a disconnected player!");
     Int3(); // Get Jason
     return;
   }
@@ -2431,7 +2431,7 @@ void MultiDoRequestObjects(uint8_t *data) {
 
   uint8_t slot = MultiGetByte(data, &count);
   if (!(NetPlayers[slot].flags & NPF_CONNECTED)) {
-    LOG_FATAL << "ERROR!  We got a request object packet from a disconnected player!";
+    LOG_FATAL("ERROR!  We got a request object packet from a disconnected player!");
     Int3(); // Get Jason
     return;
   }
@@ -2478,7 +2478,7 @@ void MultiDoRequestWorldStates(uint8_t *data) {
     }
   }
   if (!(NetPlayers[slot].flags & NPF_CONNECTED)) {
-    LOG_FATAL << "ERROR!  We got a request world states packet from a disconnected player!";
+    LOG_FATAL("ERROR!  We got a request world states packet from a disconnected player!");
     Int3(); // Get Jason
     return;
   }
@@ -2492,7 +2492,7 @@ void MultiDoPlayer(uint8_t *data) {
   int count = 0;
   char ship_name[PAGENAME_LEN];
 
-  LOG_DEBUG << "Got player packet!";
+  LOG_DEBUG("Got player packet!");
 
   // Skip header stuff
   SKIP_HEADER(data, &count);
@@ -2565,7 +2565,7 @@ void MultiDoPlayer(uint8_t *data) {
   memcpy(&NetPlayers[slot].addr, data + count, sizeof(network_address));
   char dbg_output[50];
   nw_GetNumbersFromHostAddress(&NetPlayers[slot].addr, dbg_output);
-  LOG_DEBUG.printf("Got player address of: %s", dbg_output);
+  LOG_DEBUG("Got player address of: %s", dbg_output);
 
   count += sizeof(network_address);
 
@@ -2598,10 +2598,10 @@ void MultiDoPlayer(uint8_t *data) {
   if (slot != Player_num) {
     obj->shields = shields;
     if (Players[slot].flags & PLAYER_FLAGS_DEAD) {
-      LOG_DEBUG.printf("Incoming %d player is dead!", slot);
+      LOG_DEBUG("Incoming %d player is dead!", slot);
       MultiMakePlayerGhost(slot);
     } else if (Players[slot].flags & PLAYER_FLAGS_DYING) {
-      LOG_DEBUG.printf("Incoming %d player is dying!", slot);
+      LOG_DEBUG("Incoming %d player is dying!", slot);
       int save_flags = Players[slot].flags;
       Players[slot].flags &= ~(PLAYER_FLAGS_DEAD | PLAYER_FLAGS_DYING);
       InitiatePlayerDeath(&Objects[Players[slot].objnum], false, 0);
@@ -2629,7 +2629,7 @@ void MultiDoPlayerEnteredGame(uint8_t *data) {
   char ship_name[PAGENAME_LEN];
   int length;
 
-  LOG_DEBUG << "Got player entered game packet!";
+  LOG_DEBUG("Got player entered game packet!");
 
   // Skip header stuff
   SKIP_HEADER(data, &count);
@@ -2796,7 +2796,7 @@ void MultiDoEnteringGame(uint8_t *data) {
     return;
   }
 
-  LOG_DEBUG.printf("Client %d (%s) entering game.", slot, Players[slot].callsign);
+  LOG_DEBUG("Client %d (%s) entering game.", slot, Players[slot].callsign);
 
   MultiSendPlayerEnteredGame(slot);
 
@@ -2831,7 +2831,7 @@ void MultiSendEnteringGame() {
   uint8_t data[MAX_GAME_DATA_SIZE];
   int count = 0;
 
-  LOG_DEBUG << "Sending entering game";
+  LOG_DEBUG("Sending entering game");
 
   size = START_DATA(MP_ENTERING_GAME, data, &count);
   MultiAddByte(Player_num, data, &count);
@@ -2932,7 +2932,7 @@ void MultiDoDonePlayers(uint8_t *data) {
 
   uint8_t num = MultiGetByte(data, &count);
   if (MultiCountPlayers() != num) {
-    LOG_FATAL << "ERROR!  We don't have the correct number of players!";
+    LOG_FATAL("ERROR!  We don't have the correct number of players!");
     Int3(); // Get Jason
     return;
   }
@@ -3224,7 +3224,7 @@ void MultiDoRobotPos(uint8_t *data) {
   uint16_t server_objnum = MultiGetUshort(data, &count);
   uint16_t objectnum = Server_object_list[server_objnum];
   if (objectnum == 65535 || !(Objects[objectnum].flags & OF_SERVER_OBJECT)) {
-    LOG_WARNING << "Bad robotposition object number!";
+    LOG_WARNING("Bad robotposition object number!");
     return;
   }
   object *obj = &Objects[objectnum];
@@ -3365,7 +3365,7 @@ void MultiDoFirePlayerWB(uint8_t *data) {
     // Check to see if this player is firing a weapon he doesn't have
     player *playp = &Players[pnum];
     if (!(playp->weapon_flags & (1 << wb_index))) {
-      LOG_WARNING.printf("Can't fire client weapon...flags=%d wb_index=%d", playp->weapon_flags, wb_index);
+      LOG_WARNING("Can't fire client weapon...flags=%d wb_index=%d", playp->weapon_flags, wb_index);
       ok_to_fire = 0;
     }
 
@@ -3406,7 +3406,7 @@ void MultiSendLeaveGame() {
   int count = 0;
   int size_offset;
 
-  LOG_DEBUG << "Sending leave game!";
+  LOG_DEBUG("Sending leave game!");
 
   if (Netgame.local_role == LR_SERVER) {
     size_offset = START_DATA(MP_SERVER_QUIT, data, &count, 1);
@@ -3429,7 +3429,7 @@ void MultiSendLeaveGame() {
 
 // Called whenever I want to leave the game
 void MultiLeaveGame() {
-  LOG_DEBUG << "I'm leaving the netgame!";
+  LOG_DEBUG("I'm leaving the netgame!");
 
   CallGameDLL(EVT_GAME_DISCONNECTED, &DLLInfo);
 
@@ -3477,7 +3477,7 @@ void MultiSendReleaseTimeoutMissile() {
 
   ASSERT(Players[Player_num].user_timeout_obj != NULL);
 
-  LOG_DEBUG << "Sending timeout weapon packet!";
+  LOG_DEBUG("Sending timeout weapon packet!");
 
   size_offset = START_DATA(MP_TIMEOUT_WEAPON, data, &count);
   MultiAddByte(Player_num, data, &count);
@@ -3556,7 +3556,7 @@ void MultiDoLevelEnded(uint8_t *data) {
   if (Multi_next_level < 1 || Multi_next_level > Current_mission.num_levels)
     Multi_next_level = -1;
 
-  LOG_DEBUG.printf("Doing level ended!  Next level=%d", Multi_next_level);
+  LOG_DEBUG("Doing level ended!  Next level=%d", Multi_next_level);
 
   if (success)
     SetGameState(GAMESTATE_LVLEND);
@@ -3580,7 +3580,7 @@ void MultiSendLevelEnded(int success, int next_level) {
   int count = 0;
   int size_offset;
 
-  LOG_DEBUG << "Sending level ended!";
+  LOG_DEBUG("Sending level ended!");
 
   size_offset = START_DATA(MP_LEVEL_ENDED, data, &count, 1);
   MultiAddByte(success, data, &count);
@@ -3618,7 +3618,7 @@ extern void MultiClearPlayerMarkers(int slot);
 void MultiDoLeaveGame(uint8_t *data) {
   int count = 0;
 
-  LOG_DEBUG << "In MultiDoLeaveGame!";
+  LOG_DEBUG("In MultiDoLeaveGame!");
 
   // Skip header stuff
   SKIP_HEADER(data, &count);
@@ -3634,7 +3634,7 @@ void MultiDoLeaveGame(uint8_t *data) {
     NetPlayers[slot].flags &= ~NPF_CONNECTED;
     NetPlayers[slot].secret_net_id = 0;
   } else
-    LOG_DEBUG << "Got a leave game from a non-connected player!";
+    LOG_DEBUG("Got a leave game from a non-connected player!");
 
   // Now clear any files this guy might be receiving
   if (NetPlayers[slot].file_xfer_flags != NETFILE_NONE) {
@@ -3691,7 +3691,7 @@ void MultiDoServerQuit(uint8_t *data) {
       NetPlayers[i].custom_file_seq = NETFILE_ID_NOFILE;
     }
   }
-  LOG_DEBUG << "Server quitting!";
+  LOG_DEBUG("Server quitting!");
   MultiLeaveGame();
   D3::ChronoTimer::SleepMS(2000);
 }
@@ -3725,7 +3725,7 @@ void MultiDoDisconnect(uint8_t *data) {
     NetPlayers[slot].flags &= ~NPF_CONNECTED;
     NetPlayers[slot].secret_net_id = 0;
   } else
-    LOG_DEBUG << "Got a disconnect from a non-connected player!";
+    LOG_DEBUG("Got a disconnect from a non-connected player!");
 
   ScoreAPIPlayerLeft(slot);
 }
@@ -3788,7 +3788,7 @@ void MultiDoAskToJoin(uint8_t *data, network_address *from_addr) {
         MULTI_ASSERT(slot > 0, "FindFreeSlot returned -1!");
 
         if (Players[slot].start_roomnum != -1) {
-          LOG_DEBUG << "Sending OK to join!";
+          LOG_DEBUG("Sending OK to join!");
           MultiAddByte(JOIN_ANSWER_OK, outdata, &count);
         } else {
           MultiAddByte(JOIN_ANSWER_NO_ROOM, outdata, &count);
@@ -4145,7 +4145,7 @@ void MultiDoBuilding(uint8_t *data) {
   for (int i = 0; i < num; i++) {
     uint16_t objnum = MultiGetUshort(data, &count);
     if (Objects[objnum].type != OBJ_BUILDING) {
-      LOG_WARNING.printf("Error! Server says objnum %d is a building and it is not!", objnum);
+      LOG_WARNING("Error! Server says objnum %d is a building and it is not!", objnum);
     } else {
       Multi_building_states[objnum] = 1;
 
@@ -4173,7 +4173,7 @@ void MultiDoWorldStates(uint8_t *data) {
 
   SKIP_HEADER(data, &count);
 
-  LOG_DEBUG << "Got a world state packet!";
+  LOG_DEBUG("Got a world state packet!");
 
   while ((world_type = MultiGetByte(data, &count)) != WS_END) {
     switch (world_type) {
@@ -4185,7 +4185,7 @@ void MultiDoWorldStates(uint8_t *data) {
       Rooms[roomnum].wind.y() = MultiGetFloat(data, &count);
       Rooms[roomnum].wind.z() = MultiGetFloat(data, &count);
 
-      LOG_DEBUG.printf("Got room wind packet! Room=%d wind=%f %f %f",
+      LOG_DEBUG("Got room wind packet! Room=%d wind=%f %f %f",
               roomnum,
               Rooms[roomnum].wind.x(),
               Rooms[roomnum].wind.y(),
@@ -4402,7 +4402,7 @@ void MultiDoWorldStates(uint8_t *data) {
       int flags = MultiGetInt(data, &count);
       int temp = 0xFFFFFFFF;
 
-      LOG_DEBUG.printf("Received Level Goal World State: %d", goal_index);
+      LOG_DEBUG("Received Level Goal World State: %d", goal_index);
       Level_goals.GoalSetName(goal_index, name);
       Level_goals.GoalStatus(goal_index, LO_CLEAR_SPECIFIED, &temp);
       Level_goals.GoalStatus(goal_index, LO_SET_SPECIFIED, &flags, false);
@@ -4412,7 +4412,7 @@ void MultiDoWorldStates(uint8_t *data) {
     }
     case WS_SPEW: {
       spewinfo spew;
-      LOG_DEBUG << "Got a spew packet!";
+      LOG_DEBUG("Got a spew packet!");
 
       uint16_t spewnum = MultiGetShort(data, &count);
 
@@ -4461,7 +4461,7 @@ void MultiDoWorldStates(uint8_t *data) {
       ASSERT(local_spewnum != -1); // DAJ -1FIX
       local_spewnum &= 0xFF;       // Adjust for handle
       Server_spew_list[spewnum] = local_spewnum;
-      LOG_DEBUG.printf("Got spew of type %d. Server=%d local=%d", spew.effect_type, spewnum, local_spewnum);
+      LOG_DEBUG("Got spew of type %d. Server=%d local=%d", spew.effect_type, spewnum, local_spewnum);
 
       break;
     }
@@ -4534,7 +4534,7 @@ void MultiDoJoinDemoObjects(uint8_t *data) {
   int local_objnum;
 
   Multi_Expect_demo_object_flags = true;
-  LOG_DEBUG << "Processing DoJoinDemoObjects...";
+  LOG_DEBUG("Processing DoJoinDemoObjects...");
 
   for (int i = 0; i < num_demo_objects; i++) {
     objnum = MultiGetUshort(data, &count);
@@ -4557,7 +4557,7 @@ void MultiDoJoinObjects(uint8_t *data) {
   SKIP_HEADER(data, &count);
   uint8_t num_objects = MultiGetByte(data, &count);
 
-  LOG_DEBUG.printf("Got join object packet. Num objects=%d", num_objects);
+  LOG_DEBUG("Got join object packet. Num objects=%d", num_objects);
 
   for (int i = 0; i < num_objects; i++) {
     bool obj_is_dummy = false;
@@ -4597,7 +4597,7 @@ void MultiDoJoinObjects(uint8_t *data) {
       id = MultiMatchGeneric(checksum);
 
       if (id == -1) {
-        LOG_ERROR << "Server data doesn't match client data!";
+        LOG_ERROR("Server data doesn't match client data!");
         ASSERT(1);
         // Error ("Server data doesn't match client data!");
         MultiMatchGeneric(checksum);
@@ -4715,7 +4715,7 @@ void MultiSendPlayerDead(int slot, uint8_t fate) {
   MultiSendReliablyToAllExcept(Player_num, data, count, NETSEQ_PLAYERS);
   MultiDoPlayerDead(data);
   if (Game_is_master_tracker_game) {
-    LOG_DEBUG.printf("Adding kill and death to player stats. Killer = %d Killee = %d",
+    LOG_DEBUG("Adding kill and death to player stats. Killer = %d Killee = %d",
                      Objects[Players[slot].killer_objnum].id, slot);
     if (Objects[Players[slot].killer_objnum].id == slot) {
       Players[slot].suicides++;
@@ -4756,7 +4756,7 @@ void MultiDoRenewPlayer(uint8_t *data) {
 
   // add guidebot if needed
   if (add_guidebot) {
-    LOG_DEBUG.printf("MULTI: Adding guidebot to respawned player (%s)", Players[slot].callsign);
+    LOG_DEBUG("MULTI: Adding guidebot to respawned player (%s)", Players[slot].callsign);
     if (!Players[slot].inventory.CheckItem(OBJ_ROBOT, ROBOT_GUIDEBOT))
       Players[slot].inventory.Add(OBJ_ROBOT, ROBOT_GUIDEBOT);
   }
@@ -4823,7 +4823,7 @@ void GetServerGameTime() {
   uint8_t outdata[MAX_GAME_DATA_SIZE];
   int count = 0;
   int size;
-  LOG_DEBUG << "Requesting gametime from server";
+  LOG_DEBUG("Requesting gametime from server");
   Got_new_game_time = 0;
   size = START_DATA(MP_GET_GAMETIME, outdata, &count);
   MultiAddFloat(timer_GetTime(), outdata, &count);
@@ -4837,7 +4837,7 @@ void MultiDoGameTimeReq(uint8_t *data, network_address *from_addr) {
   int size;
 
   MULTI_ASSERT_NOMESSAGE(Netgame.local_role == LR_SERVER);
-  LOG_DEBUG << "Processing request for gametime";
+  LOG_DEBUG("Processing request for gametime");
   SKIP_HEADER(data, &incount);
   float client_time = MultiGetFloat(data, &incount);
 
@@ -4855,7 +4855,7 @@ void MultiDoSetGameTime(uint8_t *data) {
   float server_latency;
   float server_game_time;
   int count = 0;
-  LOG_DEBUG << "Processing and setting new for gametime";
+  LOG_DEBUG("Processing and setting new for gametime");
   MULTI_ASSERT_NOMESSAGE(Netgame.local_role != LR_SERVER);
   // Now get the latency. We calculate this by comparing the current timer to the time we got back
   // Which was the time that we sent the request.
@@ -4865,10 +4865,10 @@ void MultiDoSetGameTime(uint8_t *data) {
 
   // Half of the ping time is the latency
   server_latency = (timer_GetTime() - req_time) / 2;
-  LOG_DEBUG.printf("Server Latency = %f", server_latency);
+  LOG_DEBUG("Server Latency = %f", server_latency);
 
   Gametime = (server_game_time + server_latency);
-  LOG_DEBUG.printf("New gametime = %f", Gametime);
+  LOG_DEBUG("New gametime = %f", Gametime);
   Got_new_game_time = 1;
 }
 
@@ -4878,7 +4878,7 @@ void MultiSendEndPlayerDeath() {
   uint8_t data[MAX_GAME_DATA_SIZE];
   int size_offset;
 
-  LOG_DEBUG << "Sending end player death packet!";
+  LOG_DEBUG("Sending end player death packet!");
 
   size_offset = START_DATA(MP_END_PLAYER_DEATH, data, &count);
 
@@ -5082,7 +5082,7 @@ void MultiDoExecuteDLL(uint8_t *data) {
   else {
     local_me_objnum = Server_object_list[me_objnum];
     if (local_me_objnum == 65535) {
-      LOG_FATAL << "Invalid object in DoExecuteDLL";
+      LOG_FATAL("Invalid object in DoExecuteDLL");
       Int3();
       return;
     }
@@ -5093,7 +5093,7 @@ void MultiDoExecuteDLL(uint8_t *data) {
   else {
     local_it_objnum = Server_object_list[it_objnum];
     if (local_it_objnum == 65535) {
-      LOG_FATAL << "Invalid object in DoExecuteDLL!";
+      LOG_FATAL("Invalid object in DoExecuteDLL!");
       Int3();
       return;
     }
@@ -5169,7 +5169,7 @@ void MultiDoObject(uint8_t *data) {
     id = MultiMatchGeneric(checksum);
 
   if (id == -1) {
-    LOG_ERROR << "Server data doesn't match!";
+    LOG_ERROR("Server data doesn't match!");
     MULTI_ASSERT(id != -1, "Server data doesn't match!");
 
     if (type == OBJ_WEAPON)
@@ -5234,7 +5234,7 @@ void MultiDoObject(uint8_t *data) {
   }
 
   if (local_objnum < 0) {
-    LOG_FATAL << "Ran out of objects!";
+    LOG_FATAL("Ran out of objects!");
     Int3(); // Get Jason
     return;
   }
@@ -5294,7 +5294,7 @@ void MultiDoObject(uint8_t *data) {
     obj->flags |= OF_CLIENTDEMOOBJECT;
 
     if (Demo_flags == DF_RECORDING) {
-      LOG_DEBUG << "Recording object created on server";
+      LOG_DEBUG("Recording object created on server");
       // DemoWriteObjCreate(obj->type,obj->id,obj->roomnum,&obj->pos,&obj->orient,obj->parent_handle,obj);
     }
   }
@@ -5509,7 +5509,7 @@ void MultiDoMissileRelease(int slot, uint8_t *data) {
   if (Netgame.local_role == LR_SERVER) {
     // verify that slot and player match up
     if (pnum_release != slot) {
-      LOG_DEBUG.printf("%s Release: Packet pnum does not match real pnum", (is_guided) ? "Guided" : "Timeout");
+      LOG_DEBUG("%s Release: Packet pnum does not match real pnum", (is_guided) ? "Guided" : "Timeout");
       return;
     }
 
@@ -5524,7 +5524,7 @@ void MultiDoMissileRelease(int slot, uint8_t *data) {
   } else {
     // make sure we got this packet from the server
     if (slot != 0) {
-      LOG_WARNING.printf("%s Release: got packet from non-server!?!", (is_guided) ? "Guided" : "Timeout");
+      LOG_WARNING("%s Release: got packet from non-server!?!", (is_guided) ? "Guided" : "Timeout");
       return;
     }
 
@@ -5659,13 +5659,13 @@ void MultiDoRemoveObject(uint8_t *data) {
 
   int local_objnum = Server_object_list[server_objnum];
   if (local_objnum == 65535) {
-    LOG_WARNING << "Client/Server object lists don't match. Something is wrong!";
+    LOG_WARNING("Client/Server object lists don't match. Something is wrong!");
     // Error ("Bad object 1");
     return;
   }
 
   if (!(Objects[local_objnum].flags & OF_SERVER_OBJECT)) {
-    LOG_FATAL << "Client/Server object lists don't match. Something is wrong!";
+    LOG_FATAL("Client/Server object lists don't match. Something is wrong!");
     ASSERT(1);
     Objects[local_objnum].flags |= OF_SERVER_OBJECT;
   }
@@ -5675,7 +5675,7 @@ void MultiDoRemoveObject(uint8_t *data) {
 
   if (Objects[local_objnum].flags & OF_CLIENTDEMOOBJECT) {
     if (Demo_flags == DF_RECORDING) {
-      LOG_DEBUG << "Recording object deleted on server";
+      LOG_DEBUG("Recording object deleted on server");
       DemoWriteSetObjDead(&Objects[local_objnum]);
     }
   }
@@ -5892,7 +5892,7 @@ void MultiSendAdditionalDamage(int slot, int type, float amount) {
 
   END_DATA(count, data, size_offset);
 
-  LOG_DEBUG.printf("Sending additional damage packet of type=%d amount=%f!", type, amount);
+  LOG_DEBUG("Sending additional damage packet of type=%d amount=%f!", type, amount);
 
   MultiSendReliablyToAllExcept(Player_num, data, count, NETSEQ_PLAYING, false);
 }
@@ -6010,7 +6010,7 @@ void MultiDoRequestDamage(uint8_t *data) {
 void MultiDoRequestCountermeasure(uint8_t *data) {
   int count = 0;
 
-  LOG_DEBUG << "Got request for countermeasure!";
+  LOG_DEBUG("Got request for countermeasure!");
 
   SKIP_HEADER(data, &count);
 
@@ -6026,7 +6026,7 @@ void MultiDoRequestCountermeasure(uint8_t *data) {
   int id = MultiMatchWeapon(checksum);
 
   if (id == -1) {
-    LOG_FATAL << "Server data doesn't match!";
+    LOG_FATAL("Server data doesn't match!");
     Int3();
     MultiMatchWeapon(checksum);
 
@@ -6061,7 +6061,7 @@ void MultiSendRequestCountermeasure(int16_t objnum, int weapon_index) {
   else
     MultiDoRequestCountermeasure(data);
 
-  LOG_DEBUG << "Sending out request for countermeasure!";
+  LOG_DEBUG("Sending out request for countermeasure!");
 }
 
 // Server is telling us about a player who is changing his observer mode
@@ -6101,7 +6101,7 @@ void MultiDoRequestToObserve(uint8_t *data) {
   int count = 0;
   int objnum;
 
-  LOG_DEBUG << "Got request to observe!";
+  LOG_DEBUG("Got request to observe!");
 
   MULTI_ASSERT_NOMESSAGE(Netgame.local_role == LR_SERVER);
 
@@ -6268,7 +6268,7 @@ void MultiSendRequestPeerDamage(object *killer, int weapon_id, int damage_type, 
   if (Netgame.local_role == LR_SERVER)
     return;
 
-  LOG_DEBUG.printf("Sending request peer damage of %f", amount);
+  LOG_DEBUG("Sending request peer damage of %f", amount);
 
   size = START_DATA(MP_REQUEST_PEER_DAMAGE, data, &count);
   MultiAddByte(Player_num, data, &count);
@@ -6299,7 +6299,7 @@ void MultiMassageAllObjects(int kill_powerups, int kill_robots) {
   Num_powerup_timer = 0;
   Num_client_lm_objects = 0;
   Num_server_lm_objects = 0;
-  LOG_DEBUG << "Massaging all objects!";
+  LOG_DEBUG("Massaging all objects!");
 
   for (i = 0; i <= Highest_object_index; i++) {
     // If client, delete all robots and powerups
@@ -6583,7 +6583,7 @@ int MultiMatchWeapon(uint32_t unique_id) {
 void MultiBuildMatchTables() {
   int i;
 
-  LOG_DEBUG << "Building match tables for multiplayer.";
+  LOG_DEBUG("Building match tables for multiplayer.");
 
   memset(Multi_generic_match_table, 0, MAX_OBJECT_IDS * sizeof(int));
   memset(Multi_weapon_match_table, 0, MAX_WEAPONS * sizeof(int));
@@ -6597,7 +6597,7 @@ void MultiBuildMatchTables() {
       // See if there is a hash collision.  If so, increment the value and retry
       while ((MultiMatchGeneric(val)) != -1) {
 
-        LOG_FATAL << "Match collision!";
+        LOG_FATAL("Match collision!");
         Int3();
         val++;
       }
@@ -6614,7 +6614,7 @@ void MultiBuildMatchTables() {
 
       // See if there is a hash collision.  If so, increment the value and retry
       while ((MultiMatchWeapon(val)) != -1) {
-        LOG_FATAL << "Match collision!";
+        LOG_FATAL("Match collision!");
         Int3();
         val++;
       }
@@ -6718,7 +6718,7 @@ void MultiDoRobotExplode(uint8_t *data) {
   hit_objnum = Server_object_list[MultiGetUshort(data, &count)];
 
   if (hit_objnum == 65535) {
-    LOG_FATAL.printf("Bad hit_objnum(%d) MultiDoRobotExplode", hit_objnum);
+    LOG_FATAL("Bad hit_objnum(%d) MultiDoRobotExplode", hit_objnum);
     ASSERT(1);
     return;
   }
@@ -6729,7 +6729,7 @@ void MultiDoRobotExplode(uint8_t *data) {
     killer_objnum = Server_object_list[killer_objnum];
 
     if (killer_objnum == 65535) {
-      LOG_WARNING.printf("Bad killer_objnum(%d) in MultiDoRobotExplode()", killer_objnum);
+      LOG_WARNING("Bad killer_objnum(%d) in MultiDoRobotExplode()", killer_objnum);
     }
   }
 
@@ -6787,7 +6787,7 @@ void MultiDoRobotDamage(uint8_t *data) {
 
   if (hit_objnum == 65535 || killer_objnum == 65535 || !(Objects[hit_objnum].flags & OF_SERVER_OBJECT) ||
       !(Objects[killer_objnum].flags & OF_SERVER_OBJECT)) {
-    LOG_WARNING.printf("Bad hit_objnum(%d) or killer_objnum(%d) in MultiDoRobotDamage()", hit_objnum, killer_objnum);
+    LOG_WARNING("Bad hit_objnum(%d) or killer_objnum(%d) in MultiDoRobotDamage()", hit_objnum, killer_objnum);
     return;
   }
 
@@ -6875,7 +6875,7 @@ void MultiDoObjAnimUpdate(uint8_t *data) {
   multi_anim_info.anim_sound_index = MultiGetShort(data, &count);
 
   if (objnum == 65535) {
-    LOG_WARNING.printf("bad objnum in MultiDoObjAnimUpdate() server=%d", serverobjnum);
+    LOG_WARNING("bad objnum in MultiDoObjAnimUpdate() server=%d", serverobjnum);
     return;
   }
 
@@ -6898,7 +6898,7 @@ void MultiDoPlay3dSound(uint8_t *data) {
   uint8_t priority = MultiGetByte(data, &count);
 
   if (objnum == 65535 || !(Objects[objnum].flags & OF_SERVER_OBJECT)) {
-    LOG_WARNING.printf("Bad server objnum(%d) in MultiDoPlay3dSound().", serverobjnum);
+    LOG_WARNING("Bad server objnum(%d) in MultiDoPlay3dSound().", serverobjnum);
     return;
   }
 
@@ -6977,7 +6977,7 @@ void MultiDoRobotFireSound(uint8_t *data) {
   soundidx = MultiGetShort(data, &count);
 
   if (objnum == 65535 || !(Objects[objnum].flags & OF_SERVER_OBJECT)) {
-    LOG_WARNING.printf("Bad server objnum(%d) in MultiDoRobotFireSound().Objnum = %d", serverobjnum, objnum);
+    LOG_WARNING("Bad server objnum(%d) in MultiDoRobotFireSound().Objnum = %d", serverobjnum, objnum);
     return;
   }
   Sound_system.Play3dSound(soundidx, &Objects[objnum]);
@@ -7060,7 +7060,7 @@ void MultiDoTurretUpdate(uint8_t *data) {
   objnum = Server_object_list[serverobjnum];
 
   if (objnum == 65535 || !(Objects[objnum].flags & OF_SERVER_OBJECT)) {
-    LOG_WARNING.printf("Bad server objnum(%d) in MultiDoTurretUpdate().", serverobjnum);
+    LOG_WARNING("Bad server objnum(%d) in MultiDoTurretUpdate().", serverobjnum);
     return;
   }
 
@@ -7080,9 +7080,9 @@ void MultiDoTurretUpdate(uint8_t *data) {
 
 void MultiSendClientInventoryUseItem(int type, int id) {
   if (id == -1) {
-    LOG_DEBUG.printf("Asking server to use objnum %d", OBJNUM(ObjGet(type)));
+    LOG_DEBUG("Asking server to use objnum %d", OBJNUM(ObjGet(type)));
   } else {
-    LOG_DEBUG.printf("Asking server to use T=%d ID=%d", type, id);
+    LOG_DEBUG("Asking server to use T=%d ID=%d", type, id);
   }
 
   int size = 0;
@@ -7110,7 +7110,7 @@ void MultiSendClientInventoryUseItem(int type, int id) {
       int server_objnum = Local_object_list[OBJNUM(local_obj)];
       ASSERT(server_objnum != 65535);
 
-      LOG_DEBUG.printf("Inven Use: Requesting to use server objnum %d.  T=%d i=%d",
+      LOG_DEBUG("Inven Use: Requesting to use server objnum %d.  T=%d i=%d",
               server_objnum,
               local_obj->type,
               local_obj->id);
@@ -7144,13 +7144,13 @@ void MultiDoClientInventoryUseItem(int slot, uint8_t *data) {
     int server_objnum;
     server_objnum = type;
 
-    LOG_DEBUG.printf("Inven: use request objnum %d", server_objnum);
+    LOG_DEBUG("Inven: use request objnum %d", server_objnum);
 
     // the objnum coming in better be in our object list
     ASSERT(server_objnum >= 0 && server_objnum < MAX_OBJECTS);
     ASSERT(Objects[server_objnum].type != OBJ_NONE);
 
-    LOG_DEBUG.printf("Client is asking me to use objnum %d", server_objnum);
+    LOG_DEBUG("Client is asking me to use objnum %d", server_objnum);
 
     // convert type to objhandle
     type = Objects[server_objnum].handle;
@@ -7164,25 +7164,25 @@ void MultiDoClientInventoryUseItem(int slot, uint8_t *data) {
       id = MultiMatchGeneric(hash);
     }
 
-    LOG_DEBUG.printf("Client is asking me to use T=%d ID=%d", type, id);
+    LOG_DEBUG("Client is asking me to use T=%d ID=%d", type, id);
   }
 
   if (is_counter_measure) {
     if (Players[slot].counter_measures.FindPos(type, id)) {
-      LOG_DEBUG << "I found it, so I'm going to use it";
+      LOG_DEBUG("I found it, so I'm going to use it");
       if (Players[slot].counter_measures.UsePos(&Objects[Players[slot].objnum])) {
         // Tell clients to remove this item
         MultiSendInventoryRemoveItem(slot, type, id);
       }
     } else {
-      LOG_DEBUG << "But I couldn't find it in my copy of his inventory";
+      LOG_DEBUG("But I couldn't find it in my copy of his inventory");
     }
   } else {
     if (Players[slot].inventory.FindPos(type, id)) {
       if (id == -1) {
-        LOG_DEBUG.printf("I found it, so I'm going to use it, type=%d id=%d", type, id);
+        LOG_DEBUG("I found it, so I'm going to use it, type=%d id=%d", type, id);
       } else {
-        LOG_DEBUG.printf("I found it, so I'm going to use it, handle=0x%x id=%d", type, id);
+        LOG_DEBUG("I found it, so I'm going to use it, handle=0x%x id=%d", type, id);
       }
 
       if (Players[slot].inventory.UsePos(&Objects[Players[slot].objnum])) {
@@ -7190,7 +7190,7 @@ void MultiDoClientInventoryUseItem(int slot, uint8_t *data) {
         MultiSendInventoryRemoveItem(slot, type, id);
       }
     } else {
-      LOG_DEBUG << "But I couldn't find it in my copy of his inventory";
+      LOG_DEBUG("But I couldn't find it in my copy of his inventory");
     }
   }
 }
@@ -7222,7 +7222,7 @@ void MultiDoClientInventoryRemoveItem(int slot, uint8_t *data) {
     ASSERT(type >= 0 && type < MAX_OBJECTS);
     ASSERT(Objects[type].type != OBJ_NONE);
 
-    LOG_DEBUG.printf("Server is telling me to remove objnum %d", type);
+    LOG_DEBUG("Server is telling me to remove objnum %d", type);
 
     // convert type to objhandle
     type = Objects[type].handle;
@@ -7233,11 +7233,11 @@ void MultiDoClientInventoryRemoveItem(int slot, uint8_t *data) {
 
     if (type == OBJ_WEAPON) {
       id = MultiMatchWeapon(hash);
-      LOG_DEBUG.printf("Server is telling me to remove T=%d ID=%d from %d", type, id, pnum);
+      LOG_DEBUG("Server is telling me to remove T=%d ID=%d from %d", type, id, pnum);
       Players[pnum].counter_measures.Remove(type, id);
     } else {
       id = MultiMatchGeneric(hash);
-      LOG_DEBUG.printf("Server is telling me to remove T=%d ID=%d from %d", type, id, pnum);
+      LOG_DEBUG("Server is telling me to remove T=%d ID=%d from %d", type, id, pnum);
       Players[pnum].inventory.Remove(type, id);
     }
   }
@@ -7246,9 +7246,9 @@ void MultiDoClientInventoryRemoveItem(int slot, uint8_t *data) {
 // Tell the clients to remove an item from a player's inventory
 void MultiSendInventoryRemoveItem(int slot, int type, int id) {
   if (id == -1) {
-    LOG_DEBUG.printf("Telling clients to remove objnum %d from %d", OBJNUM(ObjGet(type)), slot);
+    LOG_DEBUG("Telling clients to remove objnum %d from %d", OBJNUM(ObjGet(type)), slot);
   } else {
-    LOG_DEBUG.printf("Telling clients to remove inven item T=%d ID=%d from %d", type, id, slot);
+    LOG_DEBUG("Telling clients to remove inven item T=%d ID=%d from %d", type, id, slot);
   }
 
   int size = 0;
@@ -7472,7 +7472,7 @@ void MultiSendPPSSet(int pps) {
   MULTI_ASSERT_NOMESSAGE(Netgame.local_role != LR_SERVER);
   size = START_DATA(MP_CLIENT_SET_PPS, data, &count, 1);
   MultiAddByte(pps, data, &count);
-  LOG_DEBUG.printf("Telling the server we want a PPS of %d", pps);
+  LOG_DEBUG("Telling the server we want a PPS of %d", pps);
   END_DATA(count, data, size);
   nw_SendReliable(NetPlayers[Player_num].reliable_socket, data, count, false);
 }
@@ -7481,7 +7481,7 @@ void MultiDoPPSSet(uint8_t *data, int slot) {
   int count = 0;
   SKIP_HEADER(data, &count);
   NetPlayers[slot].pps = MultiGetByte(data, &count);
-  LOG_DEBUG.printf("%s changed his PPS to %d", Players[slot].callsign, NetPlayers[slot].pps);
+  LOG_DEBUG("%s changed his PPS to %d", Players[slot].callsign, NetPlayers[slot].pps);
 }
 
 void MultiSendGreetings(uint32_t id) {
@@ -7492,7 +7492,7 @@ void MultiSendGreetings(uint32_t id) {
   MULTI_ASSERT_NOMESSAGE(Netgame.local_role != LR_SERVER);
   size = START_DATA(MP_GREETINGS_FROM_CLIENT, data, &count);
   MultiAddUint(id, data, &count);
-  LOG_DEBUG << "Saying hello to the server";
+  LOG_DEBUG("Saying hello to the server");
   END_DATA(count, data, size);
   nw_Send(&Netgame.server_address, data, count, 0);
 }
@@ -7521,12 +7521,12 @@ void MultiAskForFile(uint16_t file_id, uint16_t file_who, uint16_t who) {
   uint8_t data[MAX_GAME_DATA_SIZE];
   int count = 0;
   if (NetPlayers[who].file_xfer_flags != NETFILE_NONE) {
-    LOG_FATAL << "File already in progress, can't start another one!";
+    LOG_FATAL("File already in progress, can't start another one!");
     Int3();
     return; // Make sure a file isn't in progress
   }
   if (who == Player_num) {
-    LOG_WARNING << "Can't send a file to myself!";
+    LOG_WARNING("Can't send a file to myself!");
     return;
   }
   // Check to see if this file exists already
@@ -7542,18 +7542,18 @@ void MultiAskForFile(uint16_t file_id, uint16_t file_who, uint16_t who) {
       snprintf(szcrc, sizeof(szcrc), "_%.8x", cf_GetfileCRC(p));
       // See if the the CRC is already in the filename
       if (strnicmp(szcrc, file + (strlen(file) - 9), 9) != 0) {
-        LOG_WARNING.printf("Bad CRC on file %s! It must be corrupt! File will not be used, and is being deleted!", p);
+        LOG_WARNING("Bad CRC on file %s! It must be corrupt! File will not be used, and is being deleted!", p);
         ddio_DeleteFile(p);
       } else {
         // Hey hey, we already have this file
-        LOG_DEBUG.printf("Using existing file: %s", p);
+        LOG_DEBUG("Using existing file: %s", p);
         DoNextPlayerFile(file_who);
         return;
       }
     }
   } else {
     // No file
-    LOG_WARNING.printf("No custom file %d for player %d", file_id, file_who);
+    LOG_WARNING("No custom file %d for player %d", file_id, file_who);
     DoNextPlayerFile(file_who);
     return;
   }
@@ -7565,7 +7565,7 @@ void MultiAskForFile(uint16_t file_id, uint16_t file_who, uint16_t who) {
   END_DATA(count, data, size);
   if (Netgame.local_role == LR_SERVER) {
     // If we are a server, send a request to the client asking for a file of theirs
-    LOG_DEBUG.printf("Asking client %d for a file.", who);
+    LOG_DEBUG("Asking client %d for a file.", who);
     nw_SendReliable(NetPlayers[who].reliable_socket, data, count);
     NetPlayers[who].file_xfer_flags = NETFILE_ASKING;
     NetPlayers[who].file_xfer_pos = 0;
@@ -7573,7 +7573,7 @@ void MultiAskForFile(uint16_t file_id, uint16_t file_who, uint16_t who) {
     NetPlayers[who].file_xfer_who = file_who;
   } else {
     // If we are a client, ask the server for a file
-    LOG_DEBUG << "Asking server for a file.";
+    LOG_DEBUG("Asking server for a file.");
     nw_SendReliable(NetPlayers[Player_num].reliable_socket, data, count);
     NetPlayers[file_who].file_xfer_flags = NETFILE_ASKING;
     NetPlayers[file_who].file_xfer_pos = 0;
@@ -7596,28 +7596,28 @@ void MultiDoFileReq(uint8_t *data) {
     char filewithpath[_MAX_PATH * 2];
     strcpy(filewithpath, GetFileNameFromPlayerAndID(filewho, filenum));
     if (filewithpath[0] == 0) {
-      LOG_DEBUG.printf("Got a file request for a file that doesn't exist (%s).", filewithpath);
+      LOG_DEBUG("Got a file request for a file that doesn't exist (%s).", filewithpath);
       DenyFile(playernum, filenum, NetPlayers[playernum].file_xfer_who);
     } else {
       cfp = cfopen(filewithpath, "rb");
       if (!cfp) {
-        LOG_WARNING.printf("Couldn't open a file (%s) for transfer.", filewithpath);
+        LOG_WARNING("Couldn't open a file (%s) for transfer.", filewithpath);
         DenyFile(playernum, filenum, NetPlayers[playernum].file_xfer_who);
         return;
         // We couldn't create the file, so cancel the attempt to transfer it.
       }
-      LOG_DEBUG << "Sending first data chunk!";
+      LOG_DEBUG("Sending first data chunk!");
       NetPlayers[playernum].file_xfer_who = filewho;
       NetPlayers[playernum].file_xfer_cfile = cfp;
       NetPlayers[playernum].file_xfer_pos = 0;
       NetPlayers[playernum].file_xfer_flags = NETFILE_SENDING;
       NetPlayers[playernum].file_xfer_total_len = cfp->size;
       NetPlayers[playernum].file_xfer_id = filenum;
-      LOG_DEBUG.printf("File size = %d", cfp->size);
+      LOG_DEBUG("File size = %d", cfp->size);
       SendDataChunk(playernum);
     }
   } else {
-    LOG_WARNING.printf("Got a file request while one was already in progress!");
+    LOG_WARNING("Got a file request while one was already in progress!");
     DenyFile(playernum, filenum, NetPlayers[playernum].file_xfer_who);
   }
 }
@@ -7669,7 +7669,7 @@ void MultiDoFileDenied(uint8_t *data) {
   /* uint16_t filenum = */ MultiGetUshort(data, &count);
   uint16_t playernum = MultiGetUshort(data, &count);
   uint16_t filewho = MultiGetUshort(data, &count);
-  LOG_DEBUG.printf("Got a file denied packet from %d", playernum);
+  LOG_DEBUG("Got a file denied packet from %d", playernum);
 
   DoNextPlayerFile(filewho);
 }
@@ -7699,7 +7699,7 @@ void MultiDoFileData(uint8_t *data) {
 
     // Find out if this is the first packet of this file. if so, create and open the file
     if (NetPlayers[playernum].file_xfer_pos == 0) {
-      LOG_DEBUG << "Creating file...";
+      LOG_DEBUG("Creating file...");
       CFILE *cfp;
       // char filename[_MAX_PATH];
       char filewithpath[_MAX_PATH * 2];
@@ -7707,7 +7707,7 @@ void MultiDoFileData(uint8_t *data) {
 
       cfp = cfopen(filewithpath, "wb");
       if (!cfp) {
-        LOG_WARNING.printf("Can't create file %s", filewithpath);
+        LOG_WARNING("Can't create file %s", filewithpath);
         // We couldn't create the file, so cancel the attempt to transfer it.
         MultiCancelFile(playernum, file_id, NetPlayers[playernum].file_xfer_who);
         return;
@@ -7720,7 +7720,7 @@ void MultiDoFileData(uint8_t *data) {
     // Write the data to the file
     int data_wrote = cf_WriteBytes(data + count, data_len, NetPlayers[playernum].file_xfer_cfile);
     if (data_wrote != data_len) {
-      LOG_FATAL.printf("cf_WriteBytes() should have written %d bytes, but only wrote %d!", data_len, data_wrote);
+      LOG_FATAL("cf_WriteBytes() should have written %d bytes, but only wrote %d!", data_len, data_wrote);
       Int3();
     }
 
@@ -7732,7 +7732,7 @@ void MultiDoFileData(uint8_t *data) {
       NetPlayers[playernum].file_xfer_cfile = NULL;
       NetPlayers[playernum].file_xfer_pos = 0;
       DoNextPlayerFile(playernum);
-      LOG_DEBUG << "Finished downloading file!";
+      LOG_DEBUG("Finished downloading file!");
       return; // Don't ack the last packet
     }
     // Ack the sender
@@ -7746,7 +7746,7 @@ void MultiDoFileData(uint8_t *data) {
       nw_SendReliable(NetPlayers[Player_num].reliable_socket, outdata, outcount, true);
     }
   } else {
-    LOG_WARNING << "Received file transfer data from someone who we aren't expecting data from!";
+    LOG_WARNING("Received file transfer data from someone who we aren't expecting data from!");
   }
 }
 
@@ -7766,7 +7766,7 @@ void MultiDoFileAck(uint8_t *data) {
       Int3(); // This shouldn't happen because the reliable network code should handle it
     }
   } else {
-    LOG_WARNING << "Received an ACK from someone we weren't sending a file to!";
+    LOG_WARNING("Received an ACK from someone we weren't sending a file to!");
   }
 }
 
@@ -7782,7 +7782,7 @@ void SendDataChunk(int playernum) {
       (uint32_t)NetPlayers[playernum].file_xfer_cfile->size) {
     dataread = NetPlayers[playernum].file_xfer_cfile->size - NetPlayers[playernum].file_xfer_pos;
     // This is the end of the file
-    LOG_WARNING << "End of file detected!";
+    LOG_WARNING("End of file detected!");
     done = 1;
   } else {
     dataread = DATA_CHUNK_SIZE;
@@ -7833,7 +7833,7 @@ void MultiDoFileCancelled(uint8_t *data) {
   SKIP_HEADER(data, &count);
   playernum = MultiGetUshort(data, &count);
   filewho = MultiGetUshort(data, &count);
-  LOG_DEBUG.printf("Got a cancelled packet from %d for %d", playernum, filewho);
+  LOG_DEBUG("Got a cancelled packet from %d for %d", playernum, filewho);
   if (NetPlayers[filewho].file_xfer_cfile) {
     char delfile[_MAX_PATH * 2];
     strcpy(delfile, NetPlayers[filewho].file_xfer_cfile->name);
@@ -7947,12 +7947,12 @@ void MultiDoCustomPlayerData(uint8_t *data) {
   playernum = MultiGetUshort(data, &count);
   if (playernum == Player_num)
     return;
-  LOG_DEBUG << "Got custom data in MultiDoCustomPlayerData()";
+  LOG_DEBUG("Got custom data in MultiDoCustomPlayerData()");
   NetPlayers[playernum].custom_file_seq = NETFILE_ID_SHIP_TEX; // First in the sequence of files we will request
   int16_t logo_len = MultiGetUshort(data, &count);
   memcpy(NetPlayers[playernum].ship_logo, data + count, logo_len);
   count += logo_len;
-  LOG_DEBUG.printf("%s uses custom ship logo %s", Players[playernum].callsign, NetPlayers[playernum].ship_logo);
+  LOG_DEBUG("%s uses custom ship logo %s", Players[playernum].callsign, NetPlayers[playernum].ship_logo);
 
   for (int t = 0; t < 4; t++) {
     char *filename;
@@ -7985,11 +7985,11 @@ char *GetFileNameFromPlayerAndID(int16_t playernum, int16_t id) {
   rval[0] = '\0';
 
   if (playernum >= MAX_NET_PLAYERS) {
-    LOG_WARNING.printf("Invalid playernum (%d) passed to GetFileNameFromPlayerAndID()", playernum);
+    LOG_WARNING("Invalid playernum (%d) passed to GetFileNameFromPlayerAndID()", playernum);
     return rval;
   }
   if (id > NETFILE_ID_LAST_FILE) {
-    LOG_WARNING.printf("Invalid file id (%d) passed to GetFileNameFromPlayerAndID()", id);
+    LOG_WARNING("Invalid file id (%d) passed to GetFileNameFromPlayerAndID()", id);
     return rval;
   }
   switch (id) {
@@ -8017,7 +8017,7 @@ char *GetFileNameFromPlayerAndID(int16_t playernum, int16_t id) {
       ddio_MakePath(rval, (const char*)cf_GetWritableBaseDirectory().u8string().c_str(), "custom", "sounds", NetPlayers[playernum].voice_taunt4, NULL);
     break;
   default:
-    LOG_FATAL.printf("Unknown id (%d) passed to GetFileNameFromPlayerAndID()", id);
+    LOG_FATAL("Unknown id (%d) passed to GetFileNameFromPlayerAndID()", id);
     Int3();
     break;
   }
@@ -8025,10 +8025,10 @@ char *GetFileNameFromPlayerAndID(int16_t playernum, int16_t id) {
     CFILE *cfp;
     cfp = cfopen(rval, "rb");
     if (!cfp) {
-      LOG_WARNING.printf("Multiplayer file xfer File does not exist, not using file %d for player %d!", id, playernum);
+      LOG_WARNING("Multiplayer file xfer File does not exist, not using file %d for player %d!", id, playernum);
       // rval[0] = '\0';
     } else if (32768 < cfilelength(cfp)) {
-      LOG_WARNING.printf("Multiplayer file xfer File to long, not using file %d for player %d!", id, playernum);
+      LOG_WARNING("Multiplayer file xfer File to long, not using file %d for player %d!", id, playernum);
       rval[0] = '\0';
     }
     if (cfp)
@@ -8219,7 +8219,7 @@ void MultiSendRequestPlayTaunt(int index) {
   }
 
   if (!cfexist(audio_file)) {
-    LOG_DEBUG << "Ignoring request to play audio taunt...it does not exist";
+    LOG_DEBUG("Ignoring request to play audio taunt...it does not exist");
     return;
   }
 
@@ -8259,10 +8259,10 @@ void MultiDoTypeIcon(uint8_t *data) {
   bit = bit << pnum;
 
   if (typing) {
-    LOG_DEBUG.printf("%s is typing", Players[pnum].callsign);
+    LOG_DEBUG("%s is typing", Players[pnum].callsign);
     Players_typing |= bit;
   } else {
-    LOG_DEBUG.printf("%s is done typing", Players[pnum].callsign);
+    LOG_DEBUG("%s is done typing", Players[pnum].callsign);
     Players_typing &= ~bit;
   }
 }
@@ -8336,7 +8336,7 @@ void MultiDoAiWeaponFlags(uint8_t *data) {
   flags = MultiGetInt(data, &count);
   wb_index = MultiGetByte(data, &count);
   if (obj_num == 65535) {
-    LOG_FATAL.printf("Client/Server object lists don't match! (Server num %d)", obj_num);
+    LOG_FATAL("Client/Server object lists don't match! (Server num %d)", obj_num);
     Int3();
     return;
   }
@@ -8385,12 +8385,12 @@ void MultiDoAttach(uint8_t *data) {
   f_aligned = MultiGetByte(data, &count) ? true : false;
 
   if (parent_num == 65535) {
-    LOG_FATAL.printf("Client/Server object lists don't match! (Server num %d)", parent_num);
+    LOG_FATAL("Client/Server object lists don't match! (Server num %d)", parent_num);
     Int3();
     return;
   }
   if (child_num == 65535) {
-    LOG_FATAL.printf("Client/Server object lists don't match! (Server num %d)", child_num);
+    LOG_FATAL("Client/Server object lists don't match! (Server num %d)", child_num);
     Int3();
     return;
   }
@@ -8432,12 +8432,12 @@ void MultiDoAttachRad(uint8_t *data) {
   child = &Objects[child_num];
 
   if (parent_num == 65535) {
-    LOG_FATAL.printf("Client/Server object lists don't match! (Server num %d)", parent_num);
+    LOG_FATAL("Client/Server object lists don't match! (Server num %d)", parent_num);
     Int3();
     return;
   }
   if (child_num == 65535) {
-    LOG_FATAL.printf("Client/Server object lists don't match! (Server num %d)", child_num);
+    LOG_FATAL("Client/Server object lists don't match! (Server num %d)", child_num);
     Int3();
     return;
   }
@@ -8471,7 +8471,7 @@ void MultiDoUnattach(uint8_t *data) {
   uint16_t child_num = Server_object_list[server_objnum];
   child = &Objects[child_num];
   if (child_num == 65535) {
-    LOG_FATAL.printf("Client/Server object lists don't match! (Server num %d)", child_num);
+    LOG_FATAL("Client/Server object lists don't match! (Server num %d)", child_num);
     Int3();
     return;
   }
@@ -8505,7 +8505,7 @@ void MultiDoThiefSteal(uint8_t *data) {
 // Sets whether or not we want the logos to be displayed on ships
 void MultiSetLogoState(bool state) {
   Multi_logo_state = state;
-  LOG_DEBUG.printf("Setting multi_logo_state to %d", state);
+  LOG_DEBUG("Setting multi_logo_state to %d", state);
 }
 
 void MultiDoPermissionToFire(uint8_t *data) {
@@ -8955,7 +8955,7 @@ void MultiDoRequestToMove(uint8_t *data) {
 
   // If there is too much client error then adjust
   if (client_error) {
-    LOG_DEBUG.printf("Correcting, deltatime=%f dist=%f", delta_time, vm_VectorDistance(&pos, &obj->pos));
+    LOG_DEBUG("Correcting, deltatime=%f dist=%f", delta_time, vm_VectorDistance(&pos, &obj->pos));
     MultiSendAdjustPosition(slot, timestamp);
     Last_update_time[slot] = Gametime;
   }
@@ -9096,7 +9096,7 @@ void MultiDoStripPlayer(int slot, uint8_t *data) {
     return;
   }
 
-  LOG_DEBUG.printf("I'm stripping %d bare! (of weapons)", slot);
+  LOG_DEBUG("I'm stripping %d bare! (of weapons)", slot);
 
   object *pobj = &Objects[Players[slot].objnum];
 
@@ -9183,7 +9183,7 @@ void MultiDoInitialRank(uint8_t *data) {
   int pnum = MultiGetByte(data, &count);
   float rank = MultiGetFloat(data, &count);
 
-  LOG_DEBUG.printf("Got initial rank for player %d (%f)", pnum, rank);
+  LOG_DEBUG("Got initial rank for player %d (%f)", pnum, rank);
 
   Players[pnum].rank = rank;
 }
@@ -9199,7 +9199,7 @@ void MultiSendInitialRank(int pnum) {
   MultiAddByte(pnum, data, &count);
   MultiAddFloat(Players[pnum].rank, data, &count);
 
-  LOG_DEBUG.printf("Sending initial rank for player %d", pnum);
+  LOG_DEBUG("Sending initial rank for player %d", pnum);
 
   END_DATA(count, data, size_offset);
 
@@ -9253,7 +9253,7 @@ void MultiClearGuidebot(int slot) {
   int size_offset;
   uint8_t data[MAX_GAME_DATA_SIZE];
 
-  LOG_DEBUG.printf("Sending Buddy_handle update to clients for Buddy#%d", slot);
+  LOG_DEBUG("Sending Buddy_handle update to clients for Buddy#%d", slot);
 
   size_offset = START_DATA(MP_WORLD_STATES, data, &count);
 
@@ -9314,7 +9314,7 @@ bool Multi_got_player_list = false;
 void DoPlayerListData(uint8_t *data, int len) {
   int count = 0;
   if (Multi_recieved_player_list == NULL) {
-    LOG_DEBUG << "Received a player list packet when we weren't expecting one. Ignoring.";
+    LOG_DEBUG("Received a player list packet when we weren't expecting one. Ignoring.");
     return;
   }
   SKIP_HEADER(data, &count);
@@ -9357,7 +9357,7 @@ void MultiDoBashPlayerShip(uint8_t *data) {
   AddHUDMessage("Switching to %s", Ships[ship_index].name);
 
   PlayerChangeShip(Player_num, ship_index);
-  LOG_DEBUG.printf("Server told us to switch ships to the %s", (char *)data + count);
+  LOG_DEBUG("Server told us to switch ships to the %s", (char *)data + count);
 
   FreeCockpit();
   CloseShipHUD();
@@ -9393,10 +9393,10 @@ void MultiSendHeartbeat() {
 
     if (Netgame.local_role == LR_SERVER) {
 
-      LOG_DEBUG << "Server sending heartbeat.";
+      LOG_DEBUG("Server sending heartbeat.");
       MultiSendToAllExcept(Player_num, outdata, count, -1);
     } else {
-      LOG_DEBUG << "Client sending heartbeat.";
+      LOG_DEBUG("Client sending heartbeat.");
       nw_Send(&Netgame.server_address, outdata, count, 0);
     }
 
@@ -9828,9 +9828,9 @@ void MultiProcessData(uint8_t *data, int len, int slot, network_address *from_ad
   case MP_HEARTBEAT:
     if (Netgame.local_role == LR_CLIENT) {
       Got_heartbeat = true;
-      LOG_DEBUG << "Got heartbeat from server.";
+      LOG_DEBUG("Got heartbeat from server.");
     } else
-      LOG_DEBUG.printf("Got heartbeat from slot %d.", slot);
+      LOG_DEBUG("Got heartbeat from slot %d.", slot);
     break;
   case MP_INITIAL_RANK:
     MultiDoInitialRank(data);
@@ -9847,7 +9847,7 @@ void MultiProcessData(uint8_t *data, int len, int slot, network_address *from_ad
     ACCEPT_CONDITION(-1, -1);
     MultiDoServerRejectedChecksum(data);
   default:
-    LOG_FATAL.printf("Invalid packet type %d!", type);
+    LOG_FATAL("Invalid packet type %d!", type);
     Int3(); // Invalid packet type!!!!
     break;
   }
@@ -9877,7 +9877,7 @@ void MultiProcessBigData(uint8_t *buf, int len, network_address *from_addr) {
         // We aren't going to process this packet because otherwise they
         // might try to join which wouldn't work and they would be credited
         // with sending a packet and the server wouldn't disconnect them.
-        LOG_DEBUG.printf("Ignoring game info request from a currently connected user (%s)", Players[slot].callsign);
+        LOG_DEBUG("Ignoring game info request from a currently connected user (%s)", Players[slot].callsign);
         return;
       }
     }
@@ -9888,13 +9888,13 @@ void MultiProcessBigData(uint8_t *buf, int len, network_address *from_addr) {
     sub_len = INTEL_SHORT((*(int16_t *)(buf + bytes_processed + 1)));
 
     if (sub_len < 3 || type == 0 || (len - bytes_processed) < 2) {
-      LOG_FATAL << "Got a corrupted packet!";
+      LOG_FATAL("Got a corrupted packet!");
       Int3();
       return; // just throw the rest out
     }
 
     if ((bytes_processed + sub_len) > len) {
-      LOG_FATAL.printf("multi_process_bigdata: packet type %d too int16_t (%d>%d)!",
+      LOG_FATAL("multi_process_bigdata: packet type %d too int16_t (%d>%d)!",
                        type, (bytes_processed + sub_len), len);
       Int3();
       return;

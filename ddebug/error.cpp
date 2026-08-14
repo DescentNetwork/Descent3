@@ -121,7 +121,7 @@ void Error(const char *fmt, ...) {
   va_end(arglist);
 
   snprintf(Exit_title_str, sizeof(Exit_title_str), "%s Error", App_title);
-  LOG_ERROR.printf("%s", Exit_message);
+  LOG_ERROR("%s", Exit_message);
 
 #ifdef _DEBUG
   int answer = IDOK;

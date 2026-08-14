@@ -198,7 +198,7 @@ static void CollideSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
               fvi_hit_param = vm_Dot3Product((newp - *fvi_query_ptr->p0), x);
 
               if (!(fvi_hit_param > -10000000.0 && fvi_hit_param < 10000000.0)) {
-                LOG_WARNING << "FVI Warning: fvi_hit_param seems yucky!";
+                LOG_WARNING("FVI Warning: fvi_hit_param seems yucky!");
               }
 
               fvi_collision_dist = col_dist;

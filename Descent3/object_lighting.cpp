@@ -380,7 +380,7 @@ void DoObjectLight(object *obj) {
       int factor = li->flicker_distance;
 
       if (factor == 0) {
-        LOG_WARNING << "You have a flicker_slightly light that has a flicker factor of zero!";
+        LOG_WARNING("You have a flicker_slightly light that has a flicker factor of zero!");
         return;
       }
 

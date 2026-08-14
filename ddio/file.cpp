@@ -197,7 +197,7 @@ std::filesystem::path ddio_GetTmpFileName(const std::filesystem::path &basedir, 
 std::filesystem::path ddio_GetPrefPath(const char *org, const char *app) {
   char *pref_path = SDL_GetPrefPath(org, app);
   if (!pref_path) {
-    LOG_ERROR << "Failed to get writable preference path!";
+    LOG_ERROR("Failed to get writable preference path!");
     return {};
   }
   std::filesystem::path result = std::filesystem::canonical(pref_path);
@@ -208,7 +208,7 @@ std::filesystem::path ddio_GetPrefPath(const char *org, const char *app) {
 std::filesystem::path ddio_GetBasePath() {
   const char *exe_path = SDL_GetBasePath();
   if (!exe_path) {
-    LOG_ERROR << "Failed to get parent path of executable!";
+    LOG_ERROR("Failed to get parent path of executable!");
     return {};
   }
   std::filesystem::path result = std::filesystem::canonical(exe_path);

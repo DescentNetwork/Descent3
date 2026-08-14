@@ -265,7 +265,7 @@ int MultiLoadSettings(const std::filesystem::path &filename) {
       if ((Netgame.difficulty > 4) || (Netgame.difficulty < 0))
         Netgame.difficulty = 0;
     } else {
-      LOG_WARNING.printf("Unknown line in multiplayer config file %s\t%s", toklabel, tokval);
+      LOG_WARNING("Unknown line in multiplayer config file %s\t%s", toklabel, tokval);
     }
   };
   return 1;
