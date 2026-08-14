@@ -1037,6 +1037,7 @@ extern int Min_allowed_frametime;
 
 extern bool Render_powerup_sparkles;
 extern int Use_file_xfer;
+extern int rend_initted;
 
 static const float kDefaultMouselookSensitivity = 9.102f;
 static const float kAnglesPerDegree = 65536.0f / 360.0f;
@@ -1677,7 +1678,7 @@ void InitMessage(const char *c, float progress) {
     return;
   }
 
-  if (!Graphics_init)
+  if (!Graphics_init || !rend_initted)
     return;
 
   StartFrame();
