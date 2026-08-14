@@ -80,7 +80,7 @@ void ait_Init() {
 static void ait_terrain_clean() {
   int i;
 
-  assert(ai_num_segs_checked >= 0 && ai_num_segs_checked <= AI_MAX_SEGS_CHECKED);
+  ASSERT(ai_num_segs_checked >= 0 && ai_num_segs_checked <= AI_MAX_SEGS_CHECKED);
 
   for (i = 0; i < ai_num_segs_checked; i++) {
     ASSERT((CELLNUM(ai_segs_checked[i]) >= 0) && (CELLNUM(ai_segs_checked[i]) < TERRAIN_WIDTH * TERRAIN_DEPTH));
