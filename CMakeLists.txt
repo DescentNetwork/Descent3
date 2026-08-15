@@ -293,7 +293,7 @@ if(BUILD_EDITOR AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 if(BUILD_QT_EDITOR)
-  add_subdirectory(editor/qteditor)
+  add_subdirectory(qteditor)
 endif()
 
 add_subdirectory(Descent3)

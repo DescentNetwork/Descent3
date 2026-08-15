@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<RCC>
+  <qresource>
+    <file>ui/aboutbox.ui</file>
+    <file>ui/addscript.ui</file>
+    <file>ui/ai.ui</file>
+    <file>ui/ambientsoundelement.ui</file>
+    <file>ui/ambientsoundpatterns.ui</file>
+    <file>ui/animstates.ui</file>
+    <file>ui/brief_addbitmap.ui</file>
+    <file>ui/brief_addbutton.ui</file>
+    <file>ui/brief_addmovie.ui</file>
+    <file>ui/brief_addscreen.ui</file>
+    <file>ui/brief_addsound.ui</file>
+    <file>ui/brief_addtext.ui</file>
+    <file>ui/brief_main.ui</file>
+    <file>ui/brief_manage.ui</file>
+    <file>ui/briefmissionflags.ui</file>
+    <file>ui/compileall.ui</file>
+    <file>ui/configcompiler.ui</file>
+    <file>ui/createscript.ui</file>
+    <file>ui/custdefscript.ui</file>
+    <file>ui/customize_object.ui</file>
+    <file>ui/d3splash.ui</file>
+    <file>ui/dallas_flag_dialog.ui</file>
+    <file>ui/dallas_generic_prompt_dialog.ui</file>
+    <file>ui/dallas_import_dialog.ui</file>
+    <file>ui/dallas_main_dialog.ui</file>
+    <file>ui/dallas_sound_dialog.ui</file>
+    <file>ui/dallas_strm_audio_dialog.ui</file>
+    <file>ui/dallas_texture_dialog.ui</file>
+    <file>ui/dallas_usertypes_dialog.ui</file>
+    <file>ui/dallas_vector_dialog.ui</file>
+    <file>ui/death_dialog.ui</file>
+    <file>ui/doorwaykeypad.ui</file>
+    <file>ui/editlinedlg.ui</file>
+    <file>ui/filepage.ui</file>
+    <file>ui/filepageadd.ui</file>
+    <file>ui/floating_keypad.ui</file>
+    <file>ui/font_dialog.ui</file>
+    <file>ui/generic_deaths.ui</file>
+    <file>ui/genericlight.ui</file>
+    <file>ui/hogdialog.ui</file>
+    <file>ui/keypad_dlgbar.ui</file>
+    <file>ui/level_info.ui</file>
+    <file>ui/levelkeypad.ui</file>
+    <file>ui/levelkeypad_layout.ui</file>
+    <file>ui/levelproperties.ui</file>
+    <file>ui/lightingkeypad.ui</file>
+    <file>ui/lightingstatus.ui</file>
+    <file>ui/localizescript.ui</file>
+    <file>ui/matcenkeypad.ui</file>
+    <file>ui/megacell.ui</file>
+    <file>ui/megakeypad.ui</file>
+    <file>ui/multicheck.ui</file>
+    <file>ui/objectkeypad.ui</file>
+    <file>ui/objectproperties.ui</file>
+    <file>ui/objtreedlg.ui</file>
+    <file>ui/orphan.ui</file>
+    <file>ui/osiris_status.ui</file>
+    <file>ui/pathkeypad.ui</file>
+    <file>ui/physics.ui</file>
+    <file>ui/player_weapons.ui</file>
+    <file>ui/powprop_dialog.ui</file>
+    <file>ui/preferences.ui</file>
+    <file>ui/procedural_dialog.ui</file>
+    <file>ui/propai.ui</file>
+    <file>ui/propphysics.ui</file>
+    <file>ui/propscript.ui</file>
+    <file>ui/quickcompile.ui</file>
+    <file>ui/robot_weapon_dialog.ui</file>
+    <file>ui/roomkeypad.ui</file>
+    <file>ui/scripteditor.ui</file>
+    <file>ui/scriptinterface.ui</file>
+    <file>ui/scriptparms.ui</file>
+    <file>ui/scriptselect.ui</file>
+    <file>ui/scriptstudio.ui</file>
+    <file>ui/scriptwiz.ui</file>
+    <file>ui/selectrange_dialog.ui</file>
+    <file>ui/soundsource_dialog.ui</file>
+    <file>ui/status.ui</file>
+    <file>ui/statusdlg.ui</file>
+    <file>ui/syncscripts.ui</file>
+    <file>ui/table_file_editor.ui</file>
+    <file>ui/table_file_filter.ui</file>
+    <file>ui/tablefilefilter_addpage_dlg.ui</file>
+    <file>ui/terrain_sound_dialog.ui</file>
+    <file>ui/terrainkeypad.ui</file>
+    <file>ui/texturekeypad.ui</file>
+    <file>ui/triggerkeypad.ui</file>
+    <file>ui/viewer_dialog.ui</file>
+    <file>ui/water_procedural.ui</file>
+    <file>ui/worldobjectsdoor.ui</file>
+    <file>ui/worldobjectsgeneric.ui</file>
+    <file>ui/worldobjectslight.ui</file>
+    <file>ui/worldobjectsplayer.ui</file>
+    <file>ui/worldsounds.ui</file>
+    <file>ui/worldtextures.ui</file>
+    <file>ui/worldweapons.ui</file>
+    <file alias="IDR_MAINFRAME">images/editor.ico</file>
+    <file alias="IDR_EDITORTYPE">images/editorDoc.ico</file>
+    <file alias="IDR_MAINFRAME">images/Toolbar.png</file>
+    <file alias="IDR_SRVR_INPLACE">images/IToolbar.png</file>
+    <file alias="IDB_MATTHEAD">images/Matt2.png</file>
+    <file alias="IDB_D3SPLASH">images/D3.png</file>
+    <file alias="IDB_NORTH">images/north.png</file>
+    <file alias="IDB_EAST">images/east.png</file>
+    <file alias="IDB_SOUTH">images/south.png</file>
+    <file alias="IDB_WEST">images/west.png</file>
+    <file alias="IDB_ROTATELEFT">images/rotleft.png</file>
+    <file alias="IDB_ROTATERIGHT">images/rotright.png</file>
+    <file alias="IDB_OUTARROW">images/outarrow.png</file>
+    <file alias="IDB_INARROW">images/inarrow.png</file>
+    <file alias="IDB_DALLAS_TREE_ICONS_BITMAP">images/DallasTreeIcons.png</file>
+    <file alias="IDB_ORPHREMOVE">images/orphremo.png</file>
+  </qresource>
+</RCC>

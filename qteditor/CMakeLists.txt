@@ -2,7 +2,7 @@ set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5 5.15 REQUIRED COMPONENTS Widgets UiTools)
 
-qt5_add_resources(QTEDITOR_RESOURCES ../editor.qrc)
+qt5_add_resources(QTEDITOR_RESOURCES resources.qrc)
 
 set(QTEDITOR_SOURCES
   about_dialog.cpp
@@ -69,6 +69,8 @@ set(QTEDITOR_SOURCES
   viewer_prop_dialog.h
   world_objects_door_dialog.cpp
   world_objects_door_dialog.h
+  world_objects_generic_dialog.cpp
+  world_objects_generic_dialog.h
   world_objects_player_dialog.cpp
   world_objects_player_dialog.h
   worldobjectslight_dialog.cpp
