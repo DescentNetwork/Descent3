@@ -89,8 +89,7 @@ void MainWindow::buildMenus() {
   connect(action("ID_FILE_LEVELPROPS"), &QAction::triggered, this,
           [this]() { showNotPorted("LevelProperties"); });
 
-  // ------------------------------------------------------------------ View
-  QMenu *viewMenu = addMenu("&View");
+  // ------------------------------------------------------------------ View  QMenu *viewMenu = addMenu("&View");
   viewMenu->addAction(action("ID_VIEW_VIEWPROP"));
   viewMenu->addSeparator();
   viewMenu->addAction(action("ID_VIEW_NEWVIEWER"));
@@ -137,9 +136,9 @@ void MainWindow::buildMenus() {
   connect(action("ID_TOOLS_WORLD_OBJECTS_POWERUPS"), &QAction::triggered, this,
           [this]() { showNotPorted("WorldObjectsPowerup"); });
   connect(action("ID_TOOLS_WORLD_OBJECTS_BUILDINGS"), &QAction::triggered, this,
-          [this]() { showNotPorted("WorldObjectsGeneric"); });
+          [this]() { showGenericObject(OBJ_BUILDING, D3EditState.current_building); });
   connect(action("ID_TOOLS_WORLD_OBJECTS_CLUTTER"), &QAction::triggered, this,
-          [this]() { showNotPorted("WorldObjectsGeneric"); });
+          [this]() { showGenericObject(OBJ_CLUTTER, D3EditState.current_clutter); });
   connect(action("ID_TOOLS_WORLD_OBJECTS_PLAYER"), &QAction::triggered, this,
           &MainWindow::showWorldObjectsPlayer);
   connect(action("ID_TOOLS_WORLD_WEAPONS"), &QAction::triggered, this, [this]() { showNotPorted("WorldWeapons"); });
