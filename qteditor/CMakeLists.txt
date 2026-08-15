@@ -24,6 +24,8 @@ set(QTEDITOR_SOURCES
   dallas_prompt_dialogs.h
   death_dialog.cpp
   death_dialog.h
+  dialog_test.cpp
+  dialog_test.h
   doorway_keypad.cpp
   doorway_keypad.h
   editline_dialog.cpp

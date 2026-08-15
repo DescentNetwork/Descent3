@@ -16,34 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <filesystem>
+#pragma once
 
-#include <QApplication>
-#include <cstring>
+#include <QObject>
 
-#include "d3_editor_init.h"
-#include "dialog_test.h"
-#include "main_window.h"
+namespace QtEditor {
 
-std::filesystem::path orig_pwd;
+// Constructs every implemented dialog (the code paths that previously crashed)
+// and reports pass/fail to stderr. Used with --dialog-test.
+int runDialogTest();
 
-int main(int argc, char *argv[]) {
-  QApplication app(argc, argv);
-  app.setApplicationName("Descent 3 Editor");
-  app.setOrganizationName("DescentDevelopers");
-
-  for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "--dialog-test") == 0) {
-      QtEditor::initD3Core(argc, argv);
-      return QtEditor::runDialogTest();
-    }
-  }
-
-  QtEditor::MainWindow window;
-  window.show();
-  QCoreApplication::processEvents();
-
-  QtEditor::initD3Core(argc, argv);
-
-  return app.exec();
 }

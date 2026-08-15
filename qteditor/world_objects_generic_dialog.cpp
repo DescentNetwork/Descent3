@@ -106,7 +106,7 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int current, Q
   if (QPushButton *b = find<QPushButton>("IDC_NOLOD"))
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onNolod);
 
-  if (QComboBox *combo = find<QComboBox>("IDC_GENERIC_NAME_PULLDOWN"))
+  if (QComboBox *combo = find<QComboBox>("IDC_NAME_PULLDOWN"))
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &WorldObjectsGenericDialog::onNamePulldownChanged);
   if (QComboBox *combo = find<QComboBox>("IDC_DEATH_POWERUP1_PULLDOWN"))
@@ -263,7 +263,7 @@ int WorldObjectsGenericDialog::countLockedItems() {
 }
 
 void WorldObjectsGenericDialog::enableDisableAll(bool flag) {
-  const char *names[] = {"IDC_GENERIC_NEXT",        "IDC_GENERIC_PREV", "IDC_GENERIC_NAME_PULLDOWN",
+  const char *names[] = {"IDC_GENERIC_NEXT",        "IDC_GENERIC_PREV", "IDC_NAME_PULLDOWN",
                          "IDC_GENERIC_SIZE_EDIT",   "IDC_GENERIC_COPY", "IDC_GENERIC_DELETE",
                          "IDC_GENERIC_LOCK",        "IDC_GENERIC_CHECKIN", "IDC_GENERIC_UNDO_LOCK",
                          "IDC_GENERIC_CHANGE_NAME", "IDC_GENERIC_CHANGE_MODEL", "IDC_GENERIC_EDIT_PHYSICS",
@@ -472,7 +472,7 @@ void WorldObjectsGenericDialog::updateDialog() {
   if (QPushButton *addnew = find<QPushButton>("IDC_GENERIC_ADD_NEW"))
     addnew->setEnabled(Network_up);
 
-  if (QComboBox *combo = find<QComboBox>("IDC_GENERIC_NAME_PULLDOWN")) {
+  if (QComboBox *combo = find<QComboBox>("IDC_NAME_PULLDOWN")) {
     QSignalBlocker blocker(combo);
     combo->clear();
     const int first = GetObjectID(m_type);
@@ -831,7 +831,7 @@ void WorldObjectsGenericDialog::onPrev() {
 }
 
 void WorldObjectsGenericDialog::onNamePulldownChanged() {
-  QComboBox *combo = find<QComboBox>("IDC_GENERIC_NAME_PULLDOWN");
+  QComboBox *combo = find<QComboBox>("IDC_NAME_PULLDOWN");
   const int i = FindObjectIDName(combo->currentText().toLocal8Bit().constData());
   if (i == -1)
     return;

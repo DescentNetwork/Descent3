@@ -37,7 +37,7 @@ public:
 
   template <typename T = QWidget>
   T *find(const QString &objectName) const {
-    return m_widget->findChild<T *>(objectName, Qt::FindDirectChildrenOnly);
+    return m_widget->findChild<T *>(objectName);
   }
 
   QWidget *operator[](const QString &objectName) const;

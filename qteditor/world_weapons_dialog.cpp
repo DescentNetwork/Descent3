@@ -134,7 +134,7 @@ void WorldWeaponsDialog::bindEdits() {
       {"IDC_WEAPON_ALPHA_EDIT", &weapon::alpha},
       {"IDC_WEAPON_BLOB_SIZE_EDIT", &weapon::size},
       {"IDC_WEAPON_LIFE_TIME_EDIT", &weapon::life_time},
-      {"IDC_WEAPON_THRUST_EDIT", &weapon::thrust_time},
+      {"IDC_WEAPON_THRUST_TIME_EDIT", &weapon::thrust_time},
       {"IDC_WEAPON_IMPACT_SIZE_EDIT", &weapon::impact_size},
       {"IDC_WEAPON_IMPACT_TIME_EDIT2", &weapon::impact_time},
       {"IDC_WEAPON_IMPACT_DAMAGE_EDIT", &weapon::impact_player_damage},
@@ -270,7 +270,7 @@ void WorldWeaponsDialog::updateDialog() {
     edit->setText(QString::number(Weapons[n].size));
   if (QLineEdit *edit = find<QLineEdit>("IDC_WEAPON_LIFE_TIME_EDIT"))
     edit->setText(QString::number(Weapons[n].life_time));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_WEAPON_THRUST_EDIT"))
+  if (QLineEdit *edit = find<QLineEdit>("IDC_WEAPON_THRUST_TIME_EDIT"))
     edit->setText(QString::number(Weapons[n].thrust_time));
   if (QLineEdit *edit = find<QLineEdit>("IDC_WEAPON_IMPACT_SIZE_EDIT"))
     edit->setText(QString::number(Weapons[n].impact_size));

@@ -79,6 +79,8 @@ ViewerPropDialog::ViewerPropDialog(QWidget *parent) : Dialog(":/ui/viewer_dialog
 ViewerPropDialog::~ViewerPropDialog() = default;
 
 void ViewerPropDialog::updateOrientation() {
+  if (Viewer_object == nullptr)
+    return;
   angvec angs;
   vm_ExtractAnglesFromMatrix(&angs, &Viewer_object->orient);
 
@@ -91,6 +93,8 @@ void ViewerPropDialog::updateOrientation() {
 }
 
 void ViewerPropDialog::updatePosition() {
+  if (Viewer_object == nullptr)
+    return;
   if (QLineEdit *edit = find<QLineEdit>("IDC_XPOS_EDIT"))
     edit->setText(QString::number((double)Viewer_object->pos.x(), 'f', 2));
   if (QLineEdit *edit = find<QLineEdit>("IDC_YPOS_EDIT"))
