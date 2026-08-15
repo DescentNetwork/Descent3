@@ -27,6 +27,7 @@ class QWidget;
 namespace QtEditor {
 
 class Dialog;
+class KeypadBar;
 class SplashDialog;
 class ViewerPropDialog;
 
@@ -41,9 +42,11 @@ private:
   // host (falling back to a stub action if the identifier is missing).
   QAction *action(const QString &id);
   void buildMenus();
+  void buildKeypadBar();
   QMenu *addMenu(const QString &title);
 
   void showSplash();
+  void toggleKeypadBar();
   void showAboutBox();
   void showNotPorted(const QString &name);
   void showLevelInfo();
@@ -62,6 +65,8 @@ private:
 
   // Host widget that owns the QAction definitions loaded from a .ui resource.
   QWidget *m_actionsHost = nullptr;
+  QDockWidget *m_keypadDock = nullptr;
+  KeypadBar *m_keypadBar = nullptr;
   SplashDialog *m_splash = nullptr;
   Dialog *m_aboutBox = nullptr;
   ViewerPropDialog *m_viewerProps = nullptr;

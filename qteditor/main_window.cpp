@@ -20,6 +20,7 @@
 
 #include <QAction>
 #include <QMenu>
+#include <QDockWidget>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QStatusBar>
@@ -28,7 +29,9 @@
 #include "about_dialog.h"
 #include "d3edit.h"
 #include "hog_dialog.h"
+#include "keypad_dialog.h"
 #include "level_info_dialog.h"
+#include "megacell_keypad.h"
 #include "preferences_dialog.h"
 #include "qteditor_dialog.h"
 #include "selectrange_dialog.h"
@@ -57,6 +60,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   // actions so the menus below can reference them by identifier.
   m_actionsHost = UiLoader::load(":/ui/table_file_editor.ui", this);
 
+  buildKeypadBar();
   buildMenus();
   showSplash();
 }
@@ -96,11 +100,13 @@ void MainWindow::buildMenus() {
 
   // ------------------------------------------------------------------ View
   QMenu *viewMenu = addMenu("&View");
+  viewMenu->addAction(action("ID_VIEW_KEYPAD_TOGGLE"));
   viewMenu->addAction(action("ID_VIEW_VIEWPROP"));
   viewMenu->addSeparator();
   viewMenu->addAction(action("ID_VIEW_NEWVIEWER"));
   viewMenu->addAction(action("ID_VIEW_DELETEVIEWER"));
 
+  connect(action("ID_VIEW_KEYPAD_TOGGLE"), &QAction::triggered, this, &MainWindow::toggleKeypadBar);
   connect(action("ID_VIEW_VIEWPROP"), &QAction::triggered, this, &MainWindow::toggleViewerProps);
   connect(action("ID_VIEW_NEWVIEWER"), &QAction::triggered, this, [this]() { showNotPorted("NewViewer"); });
   connect(action("ID_VIEW_DELETEVIEWER"), &QAction::triggered, this, [this]() { showNotPorted("DeleteViewer"); });
@@ -221,6 +227,21 @@ void MainWindow::showLevelInfo() {
 void MainWindow::showPreferences() {
   PreferencesDialog dlg(this);
   dlg.exec();
+}
+
+void MainWindow::buildKeypadBar() {
+  m_keypadDock = new QDockWidget("Keypad", this);
+  m_keypadDock->setObjectName("KeypadDock");
+  m_keypadBar = new KeypadBar(m_keypadDock);
+  m_keypadBar->addTab(new MegacellKeypad(m_keypadBar->handle()), "Megacells");
+  m_keypadDock->setWidget(m_keypadBar->handle());
+  addDockWidget(Qt::RightDockWidgetArea, m_keypadDock);
+  m_keypadDock->hide();
+}
+
+void MainWindow::toggleKeypadBar() {
+  if (m_keypadDock != nullptr)
+    m_keypadDock->setVisible(!m_keypadDock->isVisible());
 }
 
 void MainWindow::toggleViewerProps() {

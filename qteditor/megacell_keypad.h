@@ -16,27 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "keypad_dialog.h"
+#pragma once
 
-#include <QTabWidget>
+#include "keypad_dialog.h"
 
 namespace QtEditor {
 
-bool Keypad::m_active = true;
+// Port of CMegacellKeypad (IDD_MEGACELL): terrain megacell navigation and
+// granularity settings.
+class MegacellKeypad : public Keypad {
+  Q_OBJECT
+public:
+  explicit MegacellKeypad(QWidget *parent = nullptr);
+  ~MegacellKeypad() override;
 
-Keypad::Keypad(const QString &uiResource, QWidget *parent) : Widget(uiResource, parent) {}
+private slots:
+  void onNextMegaSet();
+  void onPrevMegaSet();
+  void onRandomizeToggled(bool checked);
+  void onXGranularEdited();
+  void onYGranularEdited();
 
-Keypad::~Keypad() = default;
+private:
+  void updateDialog();
 
-KeypadBar::KeypadBar(QWidget *parent) : Widget(":/ui/keypad_dlgbar.ui", parent) {
-  m_tabs = find<QTabWidget>("IDC_KEYPADS");
-}
-
-KeypadBar::~KeypadBar() = default;
-
-void KeypadBar::addTab(Keypad *keypad, const QString &title) {
-  if (m_tabs != nullptr && keypad != nullptr)
-    m_tabs->addTab(keypad->handle(), title);
-}
+  int m_xgran = 1;
+  int m_ygran = 1;
+};
 
 }

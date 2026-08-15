@@ -32,6 +32,8 @@ set(QTEDITOR_SOURCES
   hog_dialog.h
   keypad_dialog.cpp
   keypad_dialog.h
+  megacell_keypad.cpp
+  megacell_keypad.h
   level_info_dialog.cpp
   level_info_dialog.h
   main.cpp
