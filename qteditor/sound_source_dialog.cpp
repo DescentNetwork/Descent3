@@ -31,7 +31,7 @@
 namespace QtEditor {
 
 SoundSourceDialog::SoundSourceDialog(soundsource_info_s *data, QWidget *parent)
-    : Dialog(":/editor/soundsource_dialog.ui", parent), m_data(data) {
+    : Dialog(":/ui/soundsource_dialog.ui", parent), m_data(data) {
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
     disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &SoundSourceDialog::onOk);

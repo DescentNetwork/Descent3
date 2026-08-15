@@ -36,7 +36,7 @@ constexpr int kAnglesPerDegree = 65536 / 360;
 constexpr int kDegreesPerAngle = 360 / 65536;
 } // namespace
 
-ViewerPropDialog::ViewerPropDialog(QWidget *parent) : Dialog(":/editor/viewer_dialog.ui", parent) {
+ViewerPropDialog::ViewerPropDialog(QWidget *parent) : Dialog(":/ui/viewer_dialog.ui", parent) {
   if (QCheckBox *cb = find<QCheckBox>("IDC_XMOVE_CHECK")) {
     cb->setChecked(true);
     connect(cb, &QCheckBox::toggled, this, &ViewerPropDialog::onXMoveToggled);

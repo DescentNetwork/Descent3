@@ -34,7 +34,7 @@ extern bool Cinematics_enabled;
 
 namespace QtEditor {
 
-PreferencesDialog::PreferencesDialog(QWidget *parent) : Dialog(":/editor/preferences.ui", parent) {
+PreferencesDialog::PreferencesDialog(QWidget *parent) : Dialog(":/ui/preferences.ui", parent) {
   if (QRadioButton *rb = find<QRadioButton>("IDC_WINDOWED")) {
     rb->setChecked(D3EditState.game_render_mode == GM_WINDOWED);
     connect(rb, &QRadioButton::clicked, this, &PreferencesDialog::onWindowed);

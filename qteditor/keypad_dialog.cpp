@@ -28,7 +28,7 @@ Keypad::Keypad(const QString &uiResource, QWidget *parent) : Widget(uiResource, 
 
 Keypad::~Keypad() = default;
 
-KeypadBar::KeypadBar(QWidget *parent) : Widget(":/editor/keypad_dlgbar.ui", parent) {
+KeypadBar::KeypadBar(QWidget *parent) : Widget(":/ui/keypad_dlgbar.ui", parent) {
   m_tabs = find<QTabWidget>("IDC_KEYPADS");
 }
 

@@ -24,7 +24,7 @@
 namespace QtEditor {
 
 DallasGenericPromptDialog::DallasGenericPromptDialog(QWidget *parent)
-    : Dialog(":/editor/dallas_generic_prompt_dialog.ui", parent) {}
+    : Dialog(":/ui/dallas_generic_prompt_dialog.ui", parent) {}
 
 DallasGenericPromptDialog::~DallasGenericPromptDialog() = default;
 
@@ -60,7 +60,7 @@ QString DallasGenericPromptDialog::promptData() const {
 }
 
 DallasVectorPromptDialog::DallasVectorPromptDialog(QWidget *parent)
-    : Dialog(":/editor/dallas_vector_dialog.ui", parent) {}
+    : Dialog(":/ui/dallas_vector_dialog.ui", parent) {}
 
 DallasVectorPromptDialog::~DallasVectorPromptDialog() = default;
 

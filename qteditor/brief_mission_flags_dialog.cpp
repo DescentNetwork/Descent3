@@ -26,7 +26,7 @@ namespace QtEditor {
 
 BriefMissionFlagsDialog::BriefMissionFlagsDialog(uint32_t setflags, uint32_t unsetflags,
                                                  QWidget *parent)
-    : Dialog(":/editor/briefmissionflags.ui", parent), m_set(setflags), m_unset(unsetflags) {
+    : Dialog(":/ui/briefmissionflags.ui", parent), m_set(setflags), m_unset(unsetflags) {
   uint32_t bit = 0x1;
   for (int i = 0; i < 32; i++, bit <<= 1) {
     auto *d = find<QRadioButton>(QString("IDC_D_FLAG%1").arg(i + 1));

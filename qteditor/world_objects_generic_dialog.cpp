@@ -60,7 +60,7 @@ bool Copy_object_used = false;
 } // namespace
 
 WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int current, QWidget *parent)
-    : Dialog(":/editor/worldobjectsgeneric.ui", parent), m_type(objType), m_current(current) {
+    : Dialog(":/ui/worldobjectsgeneric.ui", parent), m_type(objType), m_current(current) {
   if (QPushButton *b = find<QPushButton>("IDC_GENERIC_EDIT_AI"))
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onEditAI);
   if (QPushButton *b = find<QPushButton>("IDC_GENERIC_EDIT_PHYSICS"))

@@ -24,7 +24,7 @@
 
 namespace QtEditor {
 
-HogDialog::HogDialog(QWidget *parent) : Dialog(":/editor/hogdialog.ui", parent) {
+HogDialog::HogDialog(QWidget *parent) : Dialog(":/ui/hogdialog.ui", parent) {
   m_table = find<QTableWidget>("IDC_HOGLIST");
   if (m_table) {
     m_table->setColumnCount(4);

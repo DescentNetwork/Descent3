@@ -45,7 +45,7 @@ void setEditFloat(QWidget *w, float value) {
 } // namespace
 
 PhysicsDialog::PhysicsDialog(physics_info *physInfo, QWidget *parent)
-    : Dialog(":/editor/physics.ui", parent), m_physInfo(physInfo), m_gravityFlag(0) {
+    : Dialog(":/ui/physics.ui", parent), m_physInfo(physInfo), m_gravityFlag(0) {
   setPhysicsData(physInfo);
 
   if (QPushButton *ok = find<QPushButton>("IDOK")) {

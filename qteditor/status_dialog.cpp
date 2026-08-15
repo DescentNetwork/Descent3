@@ -23,7 +23,7 @@
 
 namespace QtEditor {
 
-StatusDialog::StatusDialog(QWidget *parent) : Dialog(":/editor/statusdlg.ui", parent) {}
+StatusDialog::StatusDialog(QWidget *parent) : Dialog(":/ui/statusdlg.ui", parent) {}
 
 StatusDialog::~StatusDialog() = default;
 

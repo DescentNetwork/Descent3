@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <RCC>
-  <qresource prefix="/editor">
+  <qresource prefix="/ui">
     <file alias="aboutbox.ui">ui/aboutbox.ui</file>
     <file alias="addscript.ui">ui/addscript.ui</file>
     <file alias="ai.ui">ui/ai.ui</file>

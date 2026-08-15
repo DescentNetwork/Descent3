@@ -32,7 +32,7 @@ bool Paste_data_used = false;
 } // namespace
 
 DeathDialog::DeathDialog(death_info *info, QWidget *parent)
-    : Dialog(":/editor/death_dialog.ui", parent), m_info(info), m_flags(info->flags),
+    : Dialog(":/ui/death_dialog.ui", parent), m_info(info), m_flags(info->flags),
       m_delayMin(info->delay_min), m_delayMax(info->delay_max) {
   auto *delayMax = find<QLineEdit>("IDC_DEATH_DELAY_MAX");
   auto *delayMin = find<QLineEdit>("IDC_DEATH_DELAY_MIN");

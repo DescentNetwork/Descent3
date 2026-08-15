@@ -26,7 +26,7 @@
 namespace QtEditor {
 
 CreateNewScriptDialog::CreateNewScriptDialog(QWidget *parent)
-    : Dialog(":/editor/createscript.ui", parent) {
+    : Dialog(":/ui/createscript.ui", parent) {
   if (auto *level = find<QRadioButton>("IDC_LEVEL"))
     level->setChecked(true);
 

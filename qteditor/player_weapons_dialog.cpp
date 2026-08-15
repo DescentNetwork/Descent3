@@ -39,7 +39,7 @@ const char *const *weaponListText() { return Static_weapon_names; }
 } // namespace
 
 PlayerWeaponsDialog::PlayerWeaponsDialog(int current_ship, QWidget *parent)
-    : Dialog(":/editor/player_weapons.ui", parent), m_current_ship(current_ship) {
+    : Dialog(":/ui/player_weapons.ui", parent), m_current_ship(current_ship) {
   if (QPushButton *b = find<QPushButton>("IDC_EDIT_WB_BUTTON"))
     connect(b, &QPushButton::clicked, this, &PlayerWeaponsDialog::onEditWbButton);
   if (QComboBox *combo = find<QComboBox>("IDC_CURRENT_WEAPON_BATTERY_COMBO"))

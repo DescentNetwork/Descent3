@@ -112,7 +112,7 @@ void radioToEffectType(int effectType, TCTEXTDESC *desc) {
 
 BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const char *text_buffer,
                                          int id, QWidget *parent)
-    : Dialog(":/editor/brief_addtext.ui", parent), m_screen(currScreen), m_text(""), m_id(id),
+    : Dialog(":/ui/brief_addtext.ui", parent), m_screen(currScreen), m_text(""), m_id(id),
       m_effectType(0), m_richEdit(nullptr) {
   std::memset(&m_desc, 0, sizeof(TCTEXTDESC));
   m_desc.type = TC_TEXT_STATIC;

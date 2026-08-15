@@ -21,7 +21,7 @@
 namespace QtEditor {
 
 WorldObjectsLightDialog::WorldObjectsLightDialog(QWidget *parent)
-    : Dialog(":/editor/worldobjectslight.ui", parent) {}
+    : Dialog(":/ui/worldobjectslight.ui", parent) {}
 
 WorldObjectsLightDialog::~WorldObjectsLightDialog() = default;
 

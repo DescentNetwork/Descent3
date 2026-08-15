@@ -21,7 +21,7 @@
 namespace QtEditor {
 
 PowerupPropDialog::PowerupPropDialog(QWidget *parent)
-    : Dialog(":/editor/powprop_dialog.ui", parent) {}
+    : Dialog(":/ui/powprop_dialog.ui", parent) {}
 
 PowerupPropDialog::~PowerupPropDialog() = default;
 

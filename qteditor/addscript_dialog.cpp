@@ -23,7 +23,7 @@
 
 namespace QtEditor {
 
-AddScriptDialog::AddScriptDialog(QWidget *parent) : Dialog(":/editor/addscript.ui", parent) {
+AddScriptDialog::AddScriptDialog(QWidget *parent) : Dialog(":/ui/addscript.ui", parent) {
   if (auto *cbox = find<QComboBox>("IDC_TYPESEL")) {
     cbox->addItem("object");
     cbox->addItem("trigger");

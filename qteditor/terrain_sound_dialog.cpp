@@ -32,7 +32,7 @@
 
 namespace QtEditor {
 
-TerrainSoundDialog::TerrainSoundDialog(QWidget *parent) : Dialog(":/editor/terrain_sound_dialog.ui", parent) {
+TerrainSoundDialog::TerrainSoundDialog(QWidget *parent) : Dialog(":/ui/terrain_sound_dialog.ui", parent) {
   for (int b = 0; b < NUM_TERRAIN_SOUND_BANDS; b++)
     m_bands[b] = Terrain_sound_bands[b];
 

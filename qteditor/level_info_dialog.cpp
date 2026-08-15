@@ -26,7 +26,7 @@
 namespace QtEditor {
 
 LevelInfoDialog::LevelInfoDialog(level_info *li, QWidget *parent)
-    : Dialog(":/editor/level_info.ui", parent), m_levelInfo(li) {
+    : Dialog(":/ui/level_info.ui", parent), m_levelInfo(li) {
   if (auto *edit = find<QLineEdit>("IDC_LEVEL_NAME"))
     edit->setText(li->name);
   if (auto *edit = find<QLineEdit>("IDC_DESIGNER"))

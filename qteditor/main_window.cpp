@@ -40,6 +40,7 @@
 #include "world_objects_generic_dialog.h"
 #include "world_objects_player_dialog.h"
 #include "worldobjectslight_dialog.h"
+#include "world_sounds_dialog.h"
 
 namespace QtEditor {
 
@@ -52,7 +53,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   // The .ui files define all of the editor's menu actions (the original
   // ID_* identifiers, labels and shortcuts). Load one of them to own those
   // actions so the menus below can reference them by identifier.
-  m_actionsHost = UiLoader::load(":/editor/table_file_editor.ui", this);
+  m_actionsHost = UiLoader::load(":/ui/table_file_editor.ui", this);
 
   buildMenus();
   showSplash();
@@ -147,7 +148,7 @@ void MainWindow::buildMenus() {
   connect(action("ID_TOOLS_WORLD_WEAPONS"), &QAction::triggered, this, [this]() { showNotPorted("WorldWeapons"); });
   connect(action("ID_TOOLS_WORLD_OBJECTS_DOOR"), &QAction::triggered, this, &MainWindow::showWorldObjectsDoor);
   connect(action("ID_TOOLS_WORLD_OBJECTS_SOUND"), &QAction::triggered, this,
-          [this]() { showNotPorted("WorldSounds"); });
+          &MainWindow::showWorldObjectsSound);
   connect(action("ID_TOOLS_WORLD_OBJECTS_LIGHTS"), &QAction::triggered, this,
           &MainWindow::showWorldObjectsLight);
   connect(action("ID_EDITORS_AMBIENTSOUNDS"), &QAction::triggered, this,
@@ -258,6 +259,11 @@ void MainWindow::showWorldObjectsPlayer() {
 
 void MainWindow::showWorldObjectsLight() {
   WorldObjectsLightDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showWorldObjectsSound() {
+  WorldSoundsDialog dlg(this);
   dlg.exec();
 }
 

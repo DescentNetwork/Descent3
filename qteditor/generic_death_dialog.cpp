@@ -27,7 +27,7 @@
 namespace QtEditor {
 
 GenericDeathDialog::GenericDeathDialog(object_info *objinfo, QWidget *parent)
-    : Dialog(":/editor/generic_deaths.ui", parent), m_objinfo(objinfo) {
+    : Dialog(":/ui/generic_deaths.ui", parent), m_objinfo(objinfo) {
   for (int i = 0; i < MAX_DEATH_TYPES; i++) {
     m_death_types[i] = objinfo->death_types[i];
     m_prob[i] = objinfo->death_probabilities[i];

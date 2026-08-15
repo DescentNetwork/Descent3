@@ -107,7 +107,7 @@ bool verifyDoorModel(int handle) {
 } // namespace
 
 WorldObjectsDoorDialog::WorldObjectsDoorDialog(QWidget *parent)
-    : Dialog(":/editor/worldobjectsdoor.ui", parent) {
+    : Dialog(":/ui/worldobjectsdoor.ui", parent) {
   if (QPushButton *b = find<QPushButton>("IDC_ADD_DOOR"))
     connect(b, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onAddDoor);
   if (QPushButton *b = find<QPushButton>("IDC_DELETE_DOOR"))

@@ -28,7 +28,7 @@ namespace QtEditor {
 
 EditLineDialog::EditLineDialog(const QString &title, const QString &caption,
                                const QString &initial, bool numeric, QWidget *parent)
-    : Dialog(":/editor/editlinedlg.ui", parent) {
+    : Dialog(":/ui/editlinedlg.ui", parent) {
   m_dialog->setWindowTitle(title);
   if (auto *prompt = find<QLabel>("IDC_PROMPT"))
     prompt->setText(caption);

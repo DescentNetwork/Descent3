@@ -30,7 +30,7 @@
 
 namespace QtEditor {
 
-SelectRangeDialog::SelectRangeDialog(QWidget *parent) : Dialog(":/editor/selectrange_dialog.ui", parent) {
+SelectRangeDialog::SelectRangeDialog(QWidget *parent) : Dialog(":/ui/selectrange_dialog.ui", parent) {
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
     disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &SelectRangeDialog::onOk);

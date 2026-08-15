@@ -21,7 +21,7 @@
 namespace QtEditor {
 
 PropertyAIDialog::PropertyAIDialog(QWidget *parent)
-    : Dialog(":/editor/propai.ui", parent) {}
+    : Dialog(":/ui/propai.ui", parent) {}
 
 PropertyAIDialog::~PropertyAIDialog() = default;
 

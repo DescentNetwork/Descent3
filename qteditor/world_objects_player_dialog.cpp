@@ -42,7 +42,7 @@ extern char Current_model_dir[_MAX_PATH];
 
 namespace QtEditor {
 
-WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent) : Dialog(":/editor/worldobjectsplayer.ui", parent) {
+WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent) : Dialog(":/ui/worldobjectsplayer.ui", parent) {
   if (QPushButton *b = find<QPushButton>("IDC_ADD_PSHIP"))
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onAddPship);
   if (QPushButton *b = find<QPushButton>("IDC_PSHIP_DELETE"))

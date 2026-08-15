@@ -75,7 +75,7 @@ QCheckBox *checkBox(Widget *w, const QString &name) { return w->find<QCheckBox>(
 } // namespace
 
 RobotEditWeaponsDialog::RobotEditWeaponsDialog(otype_wb_info *static_wb, poly_model *pm, QWidget *parent)
-    : Dialog(":/editor/robot_weapon_dialog.ui", parent), m_wb(static_wb), m_pm(pm) {
+    : Dialog(":/ui/robot_weapon_dialog.ui", parent), m_wb(static_wb), m_pm(pm) {
   // Barrel weapon combos: list used weapons.
   for (int gp = 0; gp < MAX_WB_GUNPOINTS; gp++) {
     if (QComboBox *combo = find<QComboBox>(kBarrelCombo[gp])) {

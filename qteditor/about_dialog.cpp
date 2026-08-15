@@ -20,7 +20,7 @@
 
 namespace QtEditor {
 
-AboutDialog::AboutDialog(QWidget *parent) : Dialog(":/editor/aboutbox.ui", parent) {}
+AboutDialog::AboutDialog(QWidget *parent) : Dialog(":/ui/aboutbox.ui", parent) {}
 
 AboutDialog::~AboutDialog() = default;
 

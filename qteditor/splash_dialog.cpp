@@ -26,7 +26,7 @@ namespace QtEditor {
 
 SplashDialog *D3_splash_screen = nullptr;
 
-SplashDialog::SplashDialog(QWidget *parent) : Dialog(":/editor/d3splash.ui", parent), m_curLine(0) {
+SplashDialog::SplashDialog(QWidget *parent) : Dialog(":/ui/d3splash.ui", parent), m_curLine(0) {
   m_textLines[0][0] = 0;
   m_textLines[1][0] = 0;
   m_textLines[2][0] = 0;
@@ -34,7 +34,7 @@ SplashDialog::SplashDialog(QWidget *parent) : Dialog(":/editor/d3splash.ui", par
   QLabel *image = new QLabel(handle());
   image->setObjectName("SplashImage");
   image->setAlignment(Qt::AlignCenter);
-  QPixmap splash(":/editor/IDB_D3SPLASH");
+  QPixmap splash(":/ui/IDB_D3SPLASH");
   if (!splash.isNull()) {
     image->setPixmap(splash.scaled(handle()->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
   }

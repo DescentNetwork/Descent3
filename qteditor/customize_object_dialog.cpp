@@ -21,7 +21,7 @@
 namespace QtEditor {
 
 CustomObjectDialog::CustomObjectDialog(QWidget *parent)
-    : Dialog(":/editor/customize_object.ui", parent) {}
+    : Dialog(":/ui/customize_object.ui", parent) {}
 
 CustomObjectDialog::~CustomObjectDialog() = default;
 

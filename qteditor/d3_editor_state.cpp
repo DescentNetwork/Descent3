@@ -54,6 +54,7 @@ void SlewControlInit() {}
 // Network_up) come from manage.cpp; only the editor-only file-dialog dirs need
 // defining here.
 char Current_model_dir[_MAX_PATH] = "";
+char Current_sounds_dir[_MAX_PATH] = "";
 
 // Editor-only object helpers guarded by EDITOR in object.cpp/objinfo.cpp; the
 // D3 core is compiled without that define, so provide them here.
