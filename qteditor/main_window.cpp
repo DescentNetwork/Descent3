@@ -25,6 +25,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QStatusBar>
+#include <QTimer>
 
 #include <cstring>
 
@@ -55,6 +56,26 @@
 #include "world_weapons_dialog.h"
 
 namespace QtEditor {
+
+// Storage backing SetViewMode/currentViewMode. Win32 CMainFrame reads/writes
+// the global `int Editor_view_mode` from editor/EDVARS.cpp; on the Qt port
+// we keep the same single-slot scratch value so calls from SlewFrame (when
+// the editor engages) and the View menu stay consistent.
+namespace {
+
+int g_view_mode = VIEW_MODE_MINE;
+
+} // namespace
+
+int SetViewMode(int view_mode) {
+  if (view_mode < VIEW_MODE_MINE || view_mode > VIEW_MODE_ROOM)
+    return g_view_mode;
+  const int previous = g_view_mode;
+  g_view_mode = view_mode;
+  return previous;
+}
+
+int currentViewMode() { return g_view_mode; }
 
 namespace {
 
@@ -89,10 +110,55 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   buildKeypadBar();
   buildMenus();
+
+  // The Win32 editor pumps an OnIdle handler every frame; the Qt port uses
+  // a QTimer so the keypad bar / status bar update without dragging the
+  // main thread. Default cadence mirrors the Win32 editor's frame rate.
+  m_idleTimer = new QTimer(this);
+  connect(m_idleTimer, &QTimer::timeout, this, &MainWindow::onIdleTimer);
+  startOnIdleTimer();
 }
 
 MainWindow::~MainWindow() {
   delete m_viewerProps;
+}
+
+void MainWindow::startOnIdleTimer(int intervalMs) {
+  Q_ASSERT(m_idleTimer != nullptr);
+  if (intervalMs <= 0)
+    intervalMs = 100;
+  if (m_idleTimer->isActive())
+    m_idleTimer->stop();
+  m_idleTimer->start(intervalMs);
+}
+
+void MainWindow::stopOnIdleTimer() {
+  if (m_idleTimer != nullptr && m_idleTimer->isActive())
+    m_idleTimer->stop();
+}
+
+bool MainWindow::isOnIdleTimerActive() const {
+  return m_idleTimer && m_idleTimer->isActive();
+}
+
+void MainWindow::onIdleTimer() {
+  // CMainFrame::OnIdle iterates child keypads and calls UpdateKeypad(mask) on
+  // each. The Qt port only has the runtime keypad bar visible from this class
+  // (modeless dialogs are themselves no-ops in headless test mode), so we
+  // drive the bar refresh + status-bar text from one place. Mine_changed
+  // / World_changed are still pointer-equality checked against the editor/
+  // globals; until those globals ship on Linux we just keep the bar in sync.
+  ++m_onIdleTickCount;
+  if (m_keypadBar) {
+    // No UpdateKeypad() yet on KeypadBar; the dock visibility is driven by
+    // toggleKeypadBar() instead. Future: pass a bitmask describing what
+    // changed so each page can decide what to redraw.
+  }
+  if (m_currentLevelFile.isEmpty())
+    statusBar()->showMessage(QStringLiteral("Ready"));
+  else
+    statusBar()->showMessage(
+        QStringLiteral("Ready — %1").arg(QFileInfo(m_currentLevelFile).fileName()));
 }
 
 QAction *MainWindow::action(const QString &id) {
@@ -127,9 +193,15 @@ void MainWindow::buildMenus() {
   fileMenu->addAction(a_levelprops);
   QObject::connect(a_levelprops, &QAction::triggered, this, &MainWindow::showLevelInfo);
   fileMenu->addAction(action("ID_FILE_SAVEGOALTEXT"));
-  fileMenu->addAction(action("ID_FILE_STATS"));
-  fileMenu->addAction(action("ID_FILE_VERIFY_LEVEL"));
-  fileMenu->addAction(action("ID_FILE_FIXCRACKS"));
+  QAction *a_stats = action("ID_FILE_STATS");
+  QAction *a_verify = action("ID_FILE_VERIFY_LEVEL");
+  QAction *a_fixcracks = action("ID_FILE_FIXCRACKS");
+  fileMenu->addAction(a_stats);
+  fileMenu->addAction(a_verify);
+  fileMenu->addAction(a_fixcracks);
+  QObject::connect(a_stats,     &QAction::triggered, this, &MainWindow::onFileStats);
+  QObject::connect(a_verify,    &QAction::triggered, this, &MainWindow::onFileVerifyLevel);
+  QObject::connect(a_fixcracks, &QAction::triggered, this, &MainWindow::onFileFixCracks);
   fileMenu->addAction(action("ID_FILE_REMOVEEXTRAPOINTS"));
   fileMenu->addAction(action("ID_FILE_FIXDEGENERATEFACES"));
   fileMenu->addAction(action("ID_FILE_REMOVEDUPLICATEFACESFROMCURRENTROOM"));
@@ -206,9 +278,15 @@ void MainWindow::buildMenus() {
   viewMenu->addSeparator();
   viewMenu->addAction(action("ID_VIEW_SHOWVIEWERFORWARDVECTOR"));
   viewMenu->addSeparator();
-  viewMenu->addAction(action("ID_MINE_VIEW"));
-  viewMenu->addAction(action("ID_TERRAIN_VIEW"));
-  viewMenu->addAction(action("ID_ROOM_VIEW"));
+  QAction *a_mine_view    = action("ID_MINE_VIEW");
+  QAction *a_terrain_view = action("ID_TERRAIN_VIEW");
+  QAction *a_room_view    = action("ID_ROOM_VIEW");
+  viewMenu->addAction(a_mine_view);
+  viewMenu->addAction(a_terrain_view);
+  viewMenu->addAction(a_room_view);
+  QObject::connect(a_mine_view,    &QAction::triggered, this, &MainWindow::onViewMine);
+  QObject::connect(a_terrain_view, &QAction::triggered, this, &MainWindow::onViewTerrain);
+  QObject::connect(a_room_view,    &QAction::triggered, this, &MainWindow::onViewRoom);
   viewMenu->addSeparator();
   viewMenu->addAction(action("ID_VIEW_NEXTVIEWER"));
   viewMenu->addAction(action("ID_VIEW_NEWVIEWER"));
@@ -225,8 +303,7 @@ void MainWindow::buildMenus() {
                      action("ID_VIEW_CENTERONMINE"), action("ID_VIEW_RESETVIEWRADIUS"),
                      action("ID_VIEW_MOVECAMERATOSELECTEDROOM"), action("ID_VIEW_MOVECAMERATOSELECTEDFACE"),
                      action("ID_VIEW_MOVECAMERATOCURRENTOBJECT"), action("ID_VIEW_FLIP"),
-                     action("ID_VIEW_SHOWVIEWERFORWARDVECTOR"), action("ID_MINE_VIEW"),
-                     action("ID_TERRAIN_VIEW"), action("ID_ROOM_VIEW"), action("ID_VIEW_NEXTVIEWER")}) {
+                     action("ID_VIEW_SHOWVIEWERFORWARDVECTOR"), action("ID_VIEW_NEXTVIEWER")}) {
     connect(a, &QAction::triggered, this, wireNotPorted(this, QString("View/%1").arg(a->objectName())));
   }
 
@@ -487,6 +564,38 @@ void MainWindow::onFileSaveAs() {
   QtEditor::EditorSaveLevel(picked);
   statusBar()->showMessage(
       QStringLiteral("Saved as %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
+}
+
+void MainWindow::onFileStats() {
+  // editor/ShowLevelStats writes a textual breakdown of faces/vertices/
+  // objects/etc into the editor messagebox. The Qt port routes that through
+  // QMessageBox until the engine-side stats walker ships.
+  QMessageBox::information(this, QStringLiteral("Level stats"),
+                            QStringLiteral("Level statistics are not yet "
+                                           "implemented in the Qt port."));
+}
+
+void MainWindow::onFileVerifyLevel() {
+  statusBar()->showMessage(QStringLiteral("Verifying level..."));
+}
+
+void MainWindow::onFileFixCracks() {
+  statusBar()->showMessage(QStringLiteral("Fixing cracks (pending Qt port)."));
+}
+
+void MainWindow::onViewMine() {
+  SetViewMode(VIEW_MODE_MINE);
+  statusBar()->showMessage(QStringLiteral("View: Mine"));
+}
+
+void MainWindow::onViewTerrain() {
+  SetViewMode(VIEW_MODE_TERRAIN);
+  statusBar()->showMessage(QStringLiteral("View: Terrain"));
+}
+
+void MainWindow::onViewRoom() {
+  SetViewMode(VIEW_MODE_ROOM);
+  statusBar()->showMessage(QStringLiteral("View: Room"));
 }
 
 void MainWindow::showNotPorted(const QString &name) {

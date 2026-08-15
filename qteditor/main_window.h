@@ -22,9 +22,26 @@
 
 class QAction;
 class QMenu;
+class QTimer;
 class QWidget;
 
 namespace QtEditor {
+
+// Constant set for the editor's view mode. Mirrors the Win32 enum in
+// editor/d3edit.h (VM_MINE, VM_TERRAIN, VM_ROOM). Used by SetViewMode and
+// the View menu's ID_MINE_VIEW / ID_TERRAIN_VIEW / ID_ROOM_VIEW handlers.
+enum {
+  VIEW_MODE_MINE = 0,
+  VIEW_MODE_TERRAIN = 1,
+  VIEW_MODE_ROOM = 2,
+};
+
+// Qt port of CMainFrame::SetViewMode() and the global "int Editor_view_mode"
+// from editor/EDVARS.cpp. Updates the in-process view mode used by the
+// renderer, status bar, and SlewFrame logic. Returns the previous mode so
+// callers can save/restore when toggling temporarily.
+int SetViewMode(int view_mode);
+int currentViewMode();
 
 class Dialog;
 class KeypadBar;
@@ -39,6 +56,21 @@ public:
   // Generic "this feature is not yet ported" prompt used by the menu handlers
   // for items whose dialog has not been reimplemented for Qt.
   void showNotPorted(const QString &name);
+
+  // CMainFrame OnIdle equivalent. The Qt port uses a QTimer so it ticks when
+  // the application is idle without spinning a CPU. Default interval is
+  // 100ms — matches the Win32 editor's frame cadence for keypad state sync.
+  void startOnIdleTimer(int intervalMs = 100);
+  void stopOnIdleTimer();
+  bool isOnIdleTimerActive() const;
+
+  // Number of times the on-idle timer has fired since the window was
+  // created. Exposed for tests so we can verify the timer is actually
+  // running without having to observe status-bar side effects.
+  int onIdleTickCount() const { return m_onIdleTickCount; }
+
+private slots:
+  void onIdleTimer();
 
 private:
   // Looks up a menu action by its ID_* identifier in the .ui-loaded action
@@ -74,6 +106,20 @@ private:
   void onFileOpen();
   void onFileSave();
   void onFileSaveAs();
+  // ID_FILE_STATS / ID_FILE_VERIFY_LEVEL / ID_FILE_FIXCRACKS map to the
+  // editor/ShowLevelStats / level verification / crack-fixing routines in
+  // HFile.cpp. The Qt port routes them via level_io helpers + status
+  // messages; the real implementations will land once the engine-side
+  // level walker ships.
+  void onFileStats();
+  void onFileVerifyLevel();
+  void onFileFixCracks();
+
+  // View-menu slots for ID_MINE_VIEW / ID_TERRAIN_VIEW / ID_ROOM_VIEW macros
+  // call SetViewMode(). Toggle on the docked keypad bar, mirror Win32.
+  void onViewMine();
+  void onViewTerrain();
+  void onViewRoom();
 
   // Host widget that owns the QAction definitions loaded from a .ui resource.
   QWidget *m_actionsHost = nullptr;
@@ -81,10 +127,14 @@ private:
   KeypadBar *m_keypadBar = nullptr;
   Dialog *m_aboutBox = nullptr;
   ViewerPropDialog *m_viewerProps = nullptr;
+  QTimer *m_idleTimer = nullptr;
 
   // Path of the currently open .d3l, or empty if none / untitled. Updated by
   // onFileOpen / onFileSaveAs and cleared by onFileNew.
   QString m_currentLevelFile;
+
+  // Drives the on-idle tick counter for tests.
+  int m_onIdleTickCount = 0;
 };
 
 }

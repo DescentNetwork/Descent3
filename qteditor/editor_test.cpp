@@ -26,6 +26,8 @@
 #include <QAbstractButton>
 #include <QAction>
 #include <QComboBox>
+#include <QElapsedTimer>
+#include <QEventLoop>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
@@ -621,6 +623,43 @@ private slots:
 
     QFile::remove(ini_path);
     QSettings::setDefaultFormat(previous);
+    errno = 0;
+  }
+
+  // Verifies CMainFrame's OnIdle equivalent. The constructor starts a
+  // QTimer that fires onIdleTimer(); the slot bumps a counter the test reads
+  // back, so we can verify the timer is alive without driving an actual
+  // frame. We also exercise QtEditor::SetViewMode() (the global helper
+  // corresponding to CMainFrame::SetViewMode and Editor_view_mode).
+  void testMainFrameOnIdleTicks() {
+    QtEditor::MainWindow win;
+    QVERIFY(win.isOnIdleTimerActive());
+    QCOMPARE(win.onIdleTickCount(), 0);
+
+    // Spin the event loop for a few beats. With a 30ms timeout value the
+    // tick counter should easily exceed three ticks in 200ms.
+    win.startOnIdleTimer(30);
+    const int start = win.onIdleTickCount();
+    QElapsedTimer elapsed;
+    elapsed.start();
+    while (win.onIdleTickCount() < start + 3 && elapsed.elapsed() < 1000) {
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+    }
+    QVERIFY2(win.onIdleTickCount() >= start + 3,
+             qPrintable(QStringLiteral("only %1 ticks in %2ms")
+                            .arg(win.onIdleTickCount() - start)
+                            .arg(elapsed.elapsed())));
+
+    // SetViewMode round-trip: out-of-range values are clipped. Valid values
+    // update the global and return the previous mode.
+    QCOMPARE(QtEditor::SetViewMode(QtEditor::VIEW_MODE_TERRAIN),
+             QtEditor::currentViewMode());
+    QCOMPARE(QtEditor::currentViewMode(), int(QtEditor::VIEW_MODE_TERRAIN));
+    QCOMPARE(QtEditor::SetViewMode(QtEditor::VIEW_MODE_ROOM),
+             int(QtEditor::VIEW_MODE_TERRAIN));
+    QCOMPARE(QtEditor::SetViewMode(99), int(QtEditor::VIEW_MODE_ROOM));
+    // Reset for subsequent tests.
+    QtEditor::SetViewMode(QtEditor::VIEW_MODE_MINE);
     errno = 0;
   }
 
