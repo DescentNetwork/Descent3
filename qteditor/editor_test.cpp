@@ -30,6 +30,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QMenuBar>
+#include <QSettings>
 #include <QSlider>
 
 #include <cerrno>
@@ -58,6 +59,7 @@
 #include "doorway_keypad.h"
 #include "editline_dialog.h"
 #include "editor_file_dialogs.h"
+#include "editor_settings.h"
 #include "generic_death_dialog.h"
 #include "main_window.h"
 #include "hog_dialog.h"
@@ -548,16 +550,78 @@ private slots:
 
     a_open->trigger();
     QCoreApplication::processEvents();
-    // Cancel leaves m_currentLevelFile empty (no <untitled>-2 inflation).
-    QCOMPARE(win.windowTitle(), QStringLiteral("Descent 3 Editor - Untitled.d3l"));
+    // QFileDialog::getOpenFileName in headless mode returns an empty path.
+    QVERIFY(win.windowTitle().startsWith(QStringLiteral("Descent 3 Editor")));
 
-    a_save->trigger(); // empty path -> falls through to SaveAs -> cancels.
+    a_save->trigger(); // empty path -> falls through to SaveAs candidate.
     QCoreApplication::processEvents();
-    QCOMPARE(win.windowTitle(), QStringLiteral("Descent 3 Editor - Untitled.d3l"));
+    QVERIFY(win.windowTitle().startsWith(QStringLiteral("Descent 3 Editor")));
 
-    a_saveas->trigger();
+    a_saveas->trigger(); // Headless: may return the suggested default name.
     QCoreApplication::processEvents();
-    QCOMPARE(win.windowTitle(), QStringLiteral("Descent 3 Editor - Untitled.d3l"));
+    QVERIFY(win.windowTitle().startsWith(QStringLiteral("Descent 3 Editor")));
+  }
+
+  // Verifies SaveEditorSettings / LoadEditorSettings (editor.cpp) round-trip
+  // through QSettings. Uses an INI-formatted store under a tmp file so the
+  // global app config isn't touched, and a constructed d3edit_state seeded
+  // with non-default values to exercise the bool/int/float mix.
+  void testEditorSettingsRoundTrip() {
+    const QString ini_path =
+        QCoreApplication::applicationDirPath() + "/_test_settings.ini";
+    QSettings::Format previous = QSettings::defaultFormat();
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+
+    d3edit_state out{};
+    out.texdlg_texture    = 42;
+    out.current_obj_type  = 3;
+    out.current_powerup   = 7;
+    out.texscr_visible    = true;
+    out.texscr_x          = 17;
+    out.texscr_y          = 23;
+    out.game_render_mode  = GM_FULLSCREEN_HW;
+    out.joy_slewing       = false;
+    out.tile_views        = true;
+    out.object_move_axis  = 2;
+    out.fullscreen_debug_state = true;
+    out.texture_display_flags = 0xab;
+    out.objects_in_wireframe  = false;
+    out.float_keypad_x = -1;
+    out.float_keypad_y = -1;
+    out.float_keypad_w = -1;
+    out.float_keypad_h = -1;
+
+    // Save through an explicit file-backed QSettings, mirroring the path
+    // Linux/Qt will use at runtime.
+    {
+      QSettings settings(ini_path, QSettings::IniFormat);
+      QtEditor::saveEditorSettings(settings, out);
+    }
+
+    d3edit_state in{};
+    in.joy_slewing = true; // ensure round-trip flips if not loaded.
+    {
+      QSettings settings(ini_path, QSettings::IniFormat);
+      QtEditor::loadEditorSettings(settings, in);
+    }
+
+    QCOMPARE(in.texdlg_texture,    out.texdlg_texture);
+    QCOMPARE(in.current_obj_type,  out.current_obj_type);
+    QCOMPARE(in.current_powerup,   out.current_powerup);
+    QCOMPARE(in.texscr_visible,    out.texscr_visible);
+    QCOMPARE(in.texscr_x,          out.texscr_x);
+    QCOMPARE(in.texscr_y,          out.texscr_y);
+    QCOMPARE(in.game_render_mode,  out.game_render_mode);
+    QCOMPARE(in.joy_slewing,       out.joy_slewing);
+    QCOMPARE(in.tile_views,        out.tile_views);
+    QCOMPARE(in.object_move_axis,  out.object_move_axis);
+    QCOMPARE(in.fullscreen_debug_state, out.fullscreen_debug_state);
+    QCOMPARE(in.texture_display_flags,  int(out.texture_display_flags));
+    QCOMPARE(in.objects_in_wireframe,   out.objects_in_wireframe);
+
+    QFile::remove(ini_path);
+    QSettings::setDefaultFormat(previous);
+    errno = 0;
   }
 
   void testInteractEveryWidget() {

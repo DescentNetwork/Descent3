@@ -22,9 +22,11 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QSettings>
 #include <QSlider>
 
 #include "d3edit.h"
+#include "editor_settings.h"
 #include "game.h"
 #include "pilot.h"
 #include "renderer.h"
@@ -167,6 +169,9 @@ void PreferencesDialog::onOk() {
   }
 
   Slew_key_speed = (find<QSlider>("IDC_SLEWSLIDER")->value() * 0.5f) + 0.5f;
+
+  QSettings settings;
+  QtEditor::saveEditorSettings(settings, D3EditState);
 
   m_dialog->accept();
 }

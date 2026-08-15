@@ -32,6 +32,8 @@ set(QTEDITOR_SOURCES
   editline_dialog.h
   editor_file_dialogs.cpp
   editor_file_dialogs.h
+  editor_settings.cpp
+  editor_settings.h
   editor_test.cpp
   generic_death_dialog.cpp
   generic_death_dialog.h

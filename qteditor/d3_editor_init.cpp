@@ -24,11 +24,15 @@ std::filesystem::path orig_pwd;
 
 #include <SDL3/SDL.h>
 
+#include <QSettings>
+
 #include "appdatabase.h"
 #include "application.h"
 #include "args.h"
 #include "d3_version.h"
+#include "d3edit.h"
 #include "descent.h"
+#include "editor_settings.h"
 #include "init.h"
 #include "lnxapp.h"
 #include "program.h"
@@ -61,6 +65,14 @@ void initD3Core(int argc, char *argv[]) {
 
   InitD3Systems1(true);
   InitD3Systems2(true);
+
+  // Pull the user's saved UI state on top of the zero defaults so Preferences
+  // (and the texture/wireframe/keypad visibility flags) reflect what they
+  // closed the editor with. Only loads keys that exist; an empty store is a
+  // no-op equivalent to the Win32 "registry is empty" path.
+  QSettings settings;
+  QtEditor::loadEditorSettings(settings, D3EditState);
+
   errno = 0; // clear any errno states
 }
 
