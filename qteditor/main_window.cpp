@@ -31,7 +31,9 @@
 #include "hog_dialog.h"
 #include "keypad_dialog.h"
 #include "level_info_dialog.h"
+#include "doorway_keypad.h"
 #include "megacell_keypad.h"
+#include "trigger_keypad.h"
 #include "preferences_dialog.h"
 #include "qteditor_dialog.h"
 #include "selectrange_dialog.h"
@@ -234,6 +236,8 @@ void MainWindow::buildKeypadBar() {
   m_keypadDock->setObjectName("KeypadDock");
   m_keypadBar = new KeypadBar(m_keypadDock);
   m_keypadBar->addTab(new MegacellKeypad(m_keypadBar->handle()), "Megacells");
+  m_keypadBar->addTab(new DoorwayKeypad(m_keypadBar->handle()), "Doorways");
+  m_keypadBar->addTab(new TriggerKeypad(m_keypadBar->handle()), "Triggers");
   m_keypadDock->setWidget(m_keypadBar->handle());
   addDockWidget(Qt::RightDockWidgetArea, m_keypadDock);
   m_keypadDock->hide();

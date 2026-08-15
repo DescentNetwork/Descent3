@@ -24,6 +24,8 @@ set(QTEDITOR_SOURCES
   dallas_prompt_dialogs.h
   death_dialog.cpp
   death_dialog.h
+  doorway_keypad.cpp
+  doorway_keypad.h
   editline_dialog.cpp
   editline_dialog.h
   generic_death_dialog.cpp
@@ -65,6 +67,8 @@ set(QTEDITOR_SOURCES
   status_dialog.h
   terrain_sound_dialog.cpp
   terrain_sound_dialog.h
+  trigger_keypad.cpp
+  trigger_keypad.h
   ui_loader.cpp
   ui_loader.h
   viewer_prop_dialog.cpp

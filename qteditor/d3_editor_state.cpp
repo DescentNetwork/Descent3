@@ -46,6 +46,12 @@ int New_mine = 0;
 // Slew movement limitations flag (defined in the MFC editor's editor.cpp).
 int Slew_limitations = 0;
 
+// Editor room/face/portal editing context (defined in the MFC editor).
+room *Curroomp = nullptr;
+int Curface = -1;
+int Curportal = -1;
+int Current_trigger = -1;
+
 // SLEW.cpp guards SlewControlInit() with EDITOR; the Qt port has no controller
 // integration, so provide a stub.
 void SlewControlInit() {}
