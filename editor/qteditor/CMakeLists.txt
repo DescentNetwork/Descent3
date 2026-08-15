@@ -39,6 +39,8 @@ set(QTEDITOR_SOURCES
   main_window.h
   physics_dialog.cpp
   physics_dialog.h
+  player_weapons_dialog.cpp
+  player_weapons_dialog.h
   powprop_dialog.cpp
   powprop_dialog.h
   preferences_dialog.cpp
@@ -47,6 +49,8 @@ set(QTEDITOR_SOURCES
   propai_dialog.h
   qteditor_dialog.cpp
   qteditor_dialog.h
+  robot_weapons_dialog.cpp
+  robot_weapons_dialog.h
   selectrange_dialog.cpp
   selectrange_dialog.h
   sound_combo.cpp
@@ -65,6 +69,8 @@ set(QTEDITOR_SOURCES
   viewer_prop_dialog.h
   world_objects_door_dialog.cpp
   world_objects_door_dialog.h
+  world_objects_player_dialog.cpp
+  world_objects_player_dialog.h
   worldobjectslight_dialog.cpp
   worldobjectslight_dialog.h
 )
