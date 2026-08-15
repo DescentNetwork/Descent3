@@ -52,6 +52,12 @@
 #include "editline_dialog.h"
 #include "generic_death_dialog.h"
 #include "hog_dialog.h"
+#include "hog2_format.h"
+#include "posix_stream.h"
+
+#include <cstdio>
+#include <cstring>
+#include <fstream>
 #include "level_info_dialog.h"
 #include "megacell_keypad.h"
 #include "path_keypad.h"
@@ -68,6 +74,7 @@
 #include "trigger_keypad.h"
 
 #include <QFile>
+#include <QDir>
 #include <QLabel>
 #include "viewer_prop_dialog.h"
 #include "world_objects_door_dialog.h"
@@ -177,6 +184,44 @@ private slots:
     }
     const QString text = dlg.handle()->findChild<QLabel *>(QStringLiteral("IDC_STATUSTEXT"))->text();
     QVERIFY(text.contains("entries") || text.contains("Loaded"));
+  }
+
+  // Round-trips a hog2::archive_t through the new D3::hog2_format file table.
+// The Win32 CHogDialog had open_hogfile / write_hogfile / copy_file_to_hog
+// commented out because they did not compile; the editor now uses the
+// descar/ hog reader/writer pair so the dialog can fill the IDC_HOGLIST
+// without going through cfile/hogfile.h.
+  void testHogFormatRoundTrip() {
+    const QString tmpDir = QCoreApplication::applicationDirPath() + "/_test_hog";
+    QDir().mkpath(tmpDir);
+    const QString out = tmpDir + "/roundtrip.hog";
+    QFile::remove(out);
+
+    hog2::archive_t table;
+    hog2::entry_t alpha;
+    std::copy(std::begin("alpha.txt"), std::end("alpha.txt"), std::begin(alpha.name));
+    alpha.flags = 0;
+    alpha.len = 5;
+    alpha.timestamp = 0;
+    table.addEntry(alpha);
+    QCOMPARE(static_cast<int>(std::distance(table.begin(), table.end())), 1);
+
+    posix_ostream output;
+    QVERIFY(output.open(out.toStdString(),
+                        std::ios_base::out | std::ios_base::binary | std::ios_base::trunc));
+    output << table;
+    QVERIFY(output.good());
+    output.close();
+
+    posix_istream input;
+    QVERIFY(input.open(out.toStdString(), std::ios_base::in | std::ios_base::binary));
+    hog2::archive_t read;
+    input >> read;
+    QCOMPARE(static_cast<int>(std::distance(read.begin(), read.end())), 1);
+    QCOMPARE(read.begin()->name.string(), std::string("alpha.txt"));
+
+    QFile::remove(out);
+    QDir().rmdir(tmpDir);
   }
 
   void testDialogsConstruct() {

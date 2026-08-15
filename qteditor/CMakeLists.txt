@@ -35,6 +35,8 @@ set(QTEDITOR_SOURCES
   generic_death_dialog.h
   hog_dialog.cpp
   hog_dialog.h
+  ${PROJECT_SOURCE_DIR}/descar/utils/posix_stream.cpp
+  ${PROJECT_SOURCE_DIR}/descar/src/hog2_format.cpp
   keypad_dialog.cpp
   keypad_dialog.h
   megacell_keypad.cpp
@@ -122,6 +124,8 @@ target_include_directories(Descent3EditorQt PRIVATE
   ${PROJECT_SOURCE_DIR}/grtext
   ${PROJECT_SOURCE_DIR}/bitmap
   ${PROJECT_SOURCE_DIR}/sndlib
+  ${PROJECT_SOURCE_DIR}/descar/utils
+  ${PROJECT_SOURCE_DIR}/descar/src
   ${PROJECT_BINARY_DIR}/lib
   ${SDL3_INCLUDE_DIRS}
 )
@@ -158,6 +162,8 @@ target_include_directories(Descent3EditorTests PRIVATE
   ${PROJECT_SOURCE_DIR}/grtext
   ${PROJECT_SOURCE_DIR}/bitmap
   ${PROJECT_SOURCE_DIR}/sndlib
+  ${PROJECT_SOURCE_DIR}/descar/utils
+  ${PROJECT_SOURCE_DIR}/descar/src
   ${PROJECT_BINARY_DIR}/lib
   ${SDL3_INCLUDE_DIRS}
 )

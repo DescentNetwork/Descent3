@@ -19,7 +19,6 @@
 #include "hog_dialog.h"
 
 #include <cstdio>
-#include <cstring>
 #include <ctime>
 
 #include <QFile>
@@ -28,18 +27,17 @@
 #include <QProgressBar>
 #include <QTableWidget>
 
-#include "hogfile.h"
+#include "posix_stream.h"
+#include "hog2_format.h"
 
 namespace QtEditor {
 
 namespace {
 
-// Formats the tHogFileEntry::timestamp (DOS-style 32-bit seconds since
-// 1980-01-01 in some hog builds, unix seconds elsewhere - we accept both) as
-// a yyyy-MM-dd HH:mm:ss string for the dialog's Date column.
+// hog2::archive_t's entry_t::timestamp is unix seconds in newer hogs and
+// DOS-seconds-since-1980 in older ones; render both as yyyy-MM-dd HH:mm:ss
+// in the Date column.
 QString formatTimestamp(uint32_t ts) {
-  // Some hog writers store a DOS-style date+time stamp. Detect by range:
-  // anything before 1990-01-01 unix seconds is much more likely DOS time.
   const qint64 unix_seconds = (ts < 7300U * 24U * 3600U)
                                   ? static_cast<qint64>(ts) + 315532800LL
                                   : static_cast<qint64>(ts);
@@ -70,35 +68,38 @@ bool HogDialog::loadHogFile(const QString &hogname) {
   if (hogname.isEmpty())
     return false;
 
-  FILE *fp = std::fopen(hogname.toLocal8Bit().constData(), "rb");
-  if (fp == nullptr) {
+  const std::string path = hogname.toStdString();
+  posix_istream input;
+  if (!input.open(path, std::ios_base::in | std::ios_base::binary)) {
     setStatusText(QString("Failed to open %1").arg(hogname));
     return false;
   }
 
-  tHogHeader header{};
-  bool ok = ReadHogHeader(fp, &header);
-  if (!ok || std::memcmp(header.magic, HOG_TAG_STR, HOG_TAG_LEN) != 0) {
-    std::fclose(fp);
+  hog2::archive_t archive;
+  try {
+    input >> archive;
+  } catch (const std::invalid_argument &) {
     setStatusText(QString("Not a hog file: %1").arg(hogname));
     return false;
   }
+  if (!input.good()) {
+    setStatusText(QString("Read error: %1").arg(hogname));
+    return false;
+  }
 
-  setStatusText(
-      QString("Loaded %1 (%2 entries)").arg(QFileInfo(hogname).fileName()).arg(header.nfiles));
-  const uint32_t total = header.nfiles;
-  for (uint32_t i = 0; i < total; ++i) {
-    tHogFileEntry entry{};
-    if (!ReadHogEntry(fp, &entry))
-      break;
-    QString name = QString::fromLatin1(entry.name, strnlen(entry.name, HOG_FILENAME_LEN));
-    QString date = (entry.timestamp != 0) ? formatTimestamp(entry.timestamp) : QStringLiteral("-");
-    addFile(name, date, entry.len, QString::number(entry.flags));
+  const std::size_t total = std::distance(archive.begin(), archive.end());
+  setStatusText(QString("Loaded %1 (%2 entries)")
+                    .arg(QFileInfo(hogname).fileName())
+                    .arg(static_cast<qulonglong>(total)));
+  std::size_t i = 0;
+  for (auto it = archive.begin(); it != archive.end(); ++it, ++i) {
+    const QString name = QString::fromStdString(std::string(it->name.string()));
+    const QString date =
+        (it->timestamp != 0) ? formatTimestamp(it->timestamp) : QStringLiteral("-");
+    addFile(name, date, it->len, QString::number(it->flags));
     if (total > 0)
       setProgress(static_cast<int>((i + 1) * 100 / total));
   }
-
-  std::fclose(fp);
   if (total > 0)
     setProgress(100);
   return true;
