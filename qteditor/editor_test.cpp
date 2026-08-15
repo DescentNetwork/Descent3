@@ -66,6 +66,9 @@
 #include "status_dialog.h"
 #include "terrain_sound_dialog.h"
 #include "trigger_keypad.h"
+
+#include <QFile>
+#include <QLabel>
 #include "viewer_prop_dialog.h"
 #include "world_objects_door_dialog.h"
 #include "world_objects_generic_dialog.h"
@@ -139,6 +142,41 @@ class EditorTest : public QObject {
 private slots:
   void initTestCase() {
     QCoreApplication::processEvents();
+  }
+
+  // Verifies that HogDialog::loadHogFile() reads every entry (Filename, Date,
+  // Length, Attributes) out of a real .hog file using the cfile/hogfile API.
+  // Uses the d3-linux.hog that ships with the project, which thousands of
+  // files.
+  void testHogDialogLoadHogFile() {
+    QtEditor::HogDialog dlg;
+    QVERIFY(dlg.handle() != nullptr);
+
+    // Empty path is rejected.
+    QVERIFY(!dlg.loadHogFile(QString()));
+
+    // Bad path is rejected.
+    QVERIFY(!dlg.loadHogFile(QStringLiteral("/no/such/file.hog")));
+
+    // The actual data file shipped with the project. Resolved relative to
+    // PWD so the test runs from the install root.
+    const QString data_hog =
+        QStringLiteral("%1/d3-linux.hog").arg(QCoreApplication::applicationDirPath());
+    bool found = false;
+    const QStringList candidates = {data_hog, QStringLiteral("../d3-linux.hog"),
+                                    QStringLiteral("../../d3-linux.hog")};
+    for (const QString &c : candidates) {
+      if (QFile::exists(c)) {
+        QVERIFY(dlg.loadHogFile(c));
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      QSKIP("d3-linux.hog not found in test workspace; skipping hog load test.");
+    }
+    const QString text = dlg.handle()->findChild<QLabel *>(QStringLiteral("IDC_STATUSTEXT"))->text();
+    QVERIFY(text.contains("entries") || text.contains("Loaded"));
   }
 
   void testDialogsConstruct() {

@@ -18,20 +18,30 @@
 
 #pragma once
 
+#include <QString>
+
 #include "qteditor_dialog.h"
 
 class QTableWidget;
 
 namespace QtEditor {
 
-// Port of CHogDialog (IDD_HOGDIALOG): displays the contents of a hog file.
-// The MFC original's hogfile helpers are commented out; this currently sets up
-// the file table (Filename/Date/Length/Attributes columns).
+// Port of CHogDialog (IDD_HOGDIALOG): shows a .hog file's table of contents.
+// Mirrors the Win32 dialog, which sets up Filename / Date / Length /
+// Attributes columns and displays the entries of an opened hog file. The
+// higher-level hog library helpers are not part of this dialog - they were
+// intentionally left commented out in the Win32 source and the column widget
+// is read-only. Callers can drive the table incrementally via addFile() /
+// clearFiles(), or load an entire hog file in one shot via loadHogFile().
 class HogDialog : public Dialog {
   Q_OBJECT
 public:
   explicit HogDialog(QWidget *parent = nullptr);
   ~HogDialog() override;
+
+  // Returns true if loadHogFile() was able to read the header and at least
+  // the first entry from the file. False on open / format / read errors.
+  bool loadHogFile(const QString &hogname);
 
   void addFile(const QString &filename, const QString &date, qint64 length,
                const QString &attributes);
