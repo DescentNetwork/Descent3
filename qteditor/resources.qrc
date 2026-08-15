@@ -97,8 +97,8 @@
     <file>ui/worldsounds.ui</file>
     <file>ui/worldtextures.ui</file>
     <file>ui/worldweapons.ui</file>
-    <file alias="IDR_MAINFRAME">images/editor.ico</file>
-    <file alias="IDR_EDITORTYPE">images/editorDoc.ico</file>
+    <file alias="IDR_MAINFRAME">images/editor.png</file>
+    <file alias="IDR_EDITORTYPE">images/editorDoc.png</file>
     <file alias="IDR_MAINFRAME">images/Toolbar.png</file>
     <file alias="IDR_SRVR_INPLACE">images/IToolbar.png</file>
     <file alias="IDB_MATTHEAD">images/Matt2.png</file>

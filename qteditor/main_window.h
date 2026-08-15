@@ -55,6 +55,7 @@ private:
   void showWorldObjectsDoor();
   void showWorldObjectsPlayer();
   void showWorldObjectsLight();
+  void showGenericObject(int objType, int current);
 
   // Host widget that owns the QAction definitions loaded from a .ui resource.
   QWidget *m_actionsHost = nullptr;

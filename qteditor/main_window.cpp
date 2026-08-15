@@ -26,6 +26,7 @@
 #include <QTimer>
 
 #include "about_dialog.h"
+#include "d3edit.h"
 #include "hog_dialog.h"
 #include "level_info_dialog.h"
 #include "preferences_dialog.h"
@@ -36,6 +37,7 @@
 #include "ui_loader.h"
 #include "viewer_prop_dialog.h"
 #include "world_objects_door_dialog.h"
+#include "world_objects_generic_dialog.h"
 #include "world_objects_player_dialog.h"
 #include "worldobjectslight_dialog.h"
 
@@ -89,7 +91,8 @@ void MainWindow::buildMenus() {
   connect(action("ID_FILE_LEVELPROPS"), &QAction::triggered, this,
           [this]() { showNotPorted("LevelProperties"); });
 
-  // ------------------------------------------------------------------ View  QMenu *viewMenu = addMenu("&View");
+  // ------------------------------------------------------------------ View
+  QMenu *viewMenu = addMenu("&View");
   viewMenu->addAction(action("ID_VIEW_VIEWPROP"));
   viewMenu->addSeparator();
   viewMenu->addAction(action("ID_VIEW_NEWVIEWER"));
@@ -256,6 +259,15 @@ void MainWindow::showWorldObjectsPlayer() {
 void MainWindow::showWorldObjectsLight() {
   WorldObjectsLightDialog dlg(this);
   dlg.exec();
+}
+
+void MainWindow::showGenericObject(int objType, int current) {
+  WorldObjectsGenericDialog dlg(objType, current, this);
+  dlg.exec();
+  if (objType == OBJ_BUILDING)
+    D3EditState.current_building = dlg.current();
+  else if (objType == OBJ_CLUTTER)
+    D3EditState.current_clutter = dlg.current();
 }
 
 }
