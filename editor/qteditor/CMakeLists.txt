@@ -63,6 +63,8 @@ set(QTEDITOR_SOURCES
   ui_loader.h
   viewer_prop_dialog.cpp
   viewer_prop_dialog.h
+  world_objects_door_dialog.cpp
+  world_objects_door_dialog.h
   worldobjectslight_dialog.cpp
   worldobjectslight_dialog.h
 )

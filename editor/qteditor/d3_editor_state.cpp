@@ -22,6 +22,9 @@
 #include "d3edit.h"
 #include "terrain.h"
 #include "slew.h"
+#include "manage.h"
+#include "crossplat.h"
+#include <filesystem>
 
 d3edit_state D3EditState;
 int World_changed = 0;
@@ -44,3 +47,8 @@ int Slew_limitations = 0;
 // SLEW.cpp guards SlewControlInit() with EDITOR; the Qt port has no controller
 // integration, so provide a stub.
 void SlewControlInit() {}
+
+// Manage-system dirs/network globals (LocalModelsDir, NetModelsDir, TableUser,
+// Network_up) come from manage.cpp; only the editor-only file-dialog dirs need
+// defining here.
+char Current_model_dir[_MAX_PATH] = "";
