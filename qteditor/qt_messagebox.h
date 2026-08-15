@@ -22,8 +22,13 @@
 // Linux calls SDL_TriggerBreakpoint() - unusable inside the Qt editor. Provide
 // a Qt equivalent and redirect OutrageMessageBox() calls to it.
 //
-// This header must be included before pserror.h so that pserror's
-// OutrageMessageBox() declarations expand to the QtEditor overloads.
+// pserror.h also transitively pulls into some Qt editor sources (gamepath.h
+// includes it). The silent pserror.h declarations of `void OutrageMessageBox
+// (const char*, ...)` / `int OutrageMessageBox(int, const char*, ...)` are
+// captured by the macro below and routed into QtEditor::outrageMessageBox,
+// whose inline definitions match the pserror.h signatures so the two are
+// compatible. The MBOX_* flags below are guarded so they survive either
+// order.
 
 #include <cstdarg>
 #include <cstdio>
@@ -33,14 +38,26 @@
 
 namespace QtEditor {
 
-inline int outrageMessageBox(const char *fmt, ...) {
+#ifndef MBOX_OK
+#define MBOX_OK 1
+#endif
+#ifndef MBOX_YESNO
+#define MBOX_YESNO 2
+#endif
+#ifndef MBOX_YESNOCANCEL
+#define MBOX_YESNOCANCEL 3
+#endif
+#ifndef MBOX_ABORTRETRYIGNORE
+#define MBOX_ABORTRETRYIGNORE 4
+#endif
+
+inline void outrageMessageBox(const char *fmt, ...) {
   char buf[2048];
   va_list ap;
   va_start(ap, fmt);
   vsnprintf(buf, sizeof(buf), fmt, ap);
   va_end(ap);
   QMessageBox::information(nullptr, "Descent 3 Editor", QString::fromUtf8(buf));
-  return 0;
 }
 
 inline int outrageMessageBox(int type, const char *fmt, ...) {
@@ -49,7 +66,7 @@ inline int outrageMessageBox(int type, const char *fmt, ...) {
   va_start(ap, fmt);
   vsnprintf(buf, sizeof(buf), fmt, ap);
   va_end(ap);
-  if (type != 0) {
+  if (type == MBOX_YESNO) {
     QMessageBox box(QMessageBox::Information, "Descent 3 Editor", QString::fromUtf8(buf),
                     QMessageBox::Yes | QMessageBox::No);
     return box.exec() == QMessageBox::Yes ? 1 : 0;
@@ -60,4 +77,12 @@ inline int outrageMessageBox(int type, const char *fmt, ...) {
 
 } // namespace QtEditor
 
+// Redirect OutrageMessageBox() calls into QtEditor::outrageMessageBox(). The
+// strong override in qt_messagebox.cpp also defines the global namespace
+// OutrageMessageBox symbols (which the D3 core resolves at link time thanks
+// to the weak attribute in ddebug/error.cpp). This macro only affects tokens
+// expanded after the include - so don't include this header from the .cpp
+// file that defines the global overrides.
+#ifndef QTEDITOR_NO_OUTRAGE_REDIRECT
 #define OutrageMessageBox(...) QtEditor::outrageMessageBox(__VA_ARGS__)
+#endif

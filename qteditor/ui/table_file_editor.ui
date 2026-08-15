@@ -1026,6 +1026,16 @@
         <string>Save as...</string>
       </property>
     </action>
+    <action name="ID_TERRAIN_SELECT_RANGE">
+      <property name="text">
+        <string>Select Range...</string>
+      </property>
+    </action>
+    <action name="ID_TERRAIN_SOUNDS">
+      <property name="text">
+        <string>Sounds...</string>
+      </property>
+    </action>
     <action name="ID_TERRAIN_VIEW">
       <property name="text">
         <string>Terrain View</string>

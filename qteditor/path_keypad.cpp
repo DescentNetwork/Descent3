@@ -29,7 +29,6 @@
 #include "qt_messagebox.h"
 #include "d3edit.h"
 #include "gamepath.h"
-#include "pserror.h"
 #include "vecmat.h"
 
 // Editor-side path helpers provided in d3_editor_state.cpp.

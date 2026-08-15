@@ -24,7 +24,6 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QStatusBar>
-#include <QTimer>
 
 #include "about_dialog.h"
 #include "d3edit.h"
@@ -38,7 +37,6 @@
 #include "preferences_dialog.h"
 #include "qteditor_dialog.h"
 #include "selectrange_dialog.h"
-#include "splash_dialog.h"
 #include "terrain_sound_dialog.h"
 #include "ui_loader.h"
 #include "viewer_prop_dialog.h"
@@ -52,6 +50,25 @@
 
 namespace QtEditor {
 
+namespace {
+
+// Forward-declare helper from showNotPorted() so we can use it freely without
+// an instance method.
+struct MenuEntry {
+  const char *id;
+  const char *label;
+  const char *notPortedName;
+};
+
+// Connects a menu item to a not-yet-ported notification when the feature is
+// not yet implemented in the Qt port. The handler is a lambda that ignores the
+// checked state argument.
+auto wireNotPorted = [](MainWindow *self, const QString &name) {
+  return [self, name]() { self->showNotPorted(name); };
+};
+
+} // namespace
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   setWindowTitle("Descent 3 Editor");
   resize(1024, 768);
@@ -59,18 +76,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   statusBar()->showMessage("Ready");
 
   // The .ui files define all of the editor's menu actions (the original
-  // ID_* identifiers, labels and shortcuts). Load one of them to own those
-  // actions so the menus below can reference them by identifier.
+  // ID_* identifiers, labels and shortcuts). Loading the table editor .ui here
+  // hosts the shared action set so the menus below can reference them by
+  // identifier without each menu owning its own copy.
   m_actionsHost = UiLoader::load(":/ui/table_file_editor.ui", this);
 
   buildKeypadBar();
   buildMenus();
-  showSplash();
 }
 
 MainWindow::~MainWindow() {
   delete m_viewerProps;
-  delete m_splash;
 }
 
 QAction *MainWindow::action(const QString &id) {
@@ -86,35 +102,200 @@ QAction *MainWindow::action(const QString &id) {
 QMenu *MainWindow::addMenu(const QString &title) { return menuBar()->addMenu(title); }
 
 void MainWindow::buildMenus() {
-  // ------------------------------------------------------------------ File
+  // ----------------------------------------------------------------- File
   QMenu *fileMenu = addMenu("&File");
+  fileMenu->addAction(action("ID_FILE_NEW"));
+  fileMenu->addAction(action("ID_FILE_OPEN"));
+  fileMenu->addAction(action("ID_FILE_SAVE"));
+  fileMenu->addAction(action("ID_FILE_SAVE_AS"));
+  fileMenu->addSeparator();
   fileMenu->addAction(action("ID_FILE_LEVEL_INFO"));
-  fileMenu->addAction(action("ID_FILE_LEVELPROPS"));
-  fileMenu->addSeparator();
-  fileMenu->addAction(action("ID_FILE_PREFERENCES"));
-  fileMenu->addSeparator();
-  fileMenu->addAction(action("ID_APP_EXIT"));
-
   connect(action("ID_FILE_LEVEL_INFO"), &QAction::triggered, this, &MainWindow::showLevelInfo);
-  connect(action("ID_FILE_PREFERENCES"), &QAction::triggered, this, &MainWindow::showPreferences);
-  connect(action("ID_APP_EXIT"), &QAction::triggered, this, &QWidget::close);
+  fileMenu->addAction(action("ID_FILE_SAVEGOALTEXT"));
+  fileMenu->addAction(action("ID_FILE_STATS"));
+  fileMenu->addAction(action("ID_FILE_VERIFY_LEVEL"));
+  fileMenu->addAction(action("ID_FILE_FIXCRACKS"));
+  fileMenu->addAction(action("ID_FILE_REMOVEEXTRAPOINTS"));
+  fileMenu->addAction(action("ID_FILE_FIXDEGENERATEFACES"));
+  fileMenu->addAction(action("ID_FILE_REMOVEDUPLICATEFACESFROMCURRENTROOM"));
+  fileMenu->addAction(action("ID_FILE_LEVELPROPS"));
   connect(action("ID_FILE_LEVELPROPS"), &QAction::triggered, this,
           [this]() { showNotPorted("LevelProperties"); });
+  fileMenu->addSeparator();
+  fileMenu->addAction(action("ID_FILE_IMPORT_ROOM"));
+  fileMenu->addSeparator();
+  fileMenu->addAction(action("ID_FILE_PLAY640X480"));
+  fileMenu->addAction(action("ID_FILE_LEAVE_EDITOR"));
+  fileMenu->addSeparator();
+  fileMenu->addAction(action("ID_FILE_AUTOSAVE"));
+  fileMenu->addAction(action("ID_FILE_RESTOREGAMESTATE"));
+  fileMenu->addAction(action("ID_FILE_INFORMATION"));
+  fileMenu->addAction(action("ID_FILE_CHECKMINE"));
+  fileMenu->addSeparator();
+  fileMenu->addAction(action("ID_FILE_PRINT"));
+  fileMenu->addAction(action("ID_FILE_PRINT_PREVIEW"));
+  fileMenu->addAction(action("ID_FILE_PRINT_SETUP"));
+  fileMenu->addSeparator();
+  fileMenu->addAction(action("ID_FILE_PREFERENCES"));
+  connect(action("ID_FILE_PREFERENCES"), &QAction::triggered, this, &MainWindow::showPreferences);
+  fileMenu->addSeparator();
+  fileMenu->addAction(action("ID_FILE_MRU_FILE1"));
+  fileMenu->addSeparator();
+  fileMenu->addAction(action("ID_APP_EXIT"));
+  connect(action("ID_APP_EXIT"), &QAction::triggered, this, &QWidget::close);
 
-  // ------------------------------------------------------------------ View
+  // ----------------------------------------------------------------- Edit
+  QMenu *editMenu = addMenu("&Edit");
+  editMenu->addAction(action("ID_EDIT_UNDO"));
+  editMenu->addSeparator();
+  editMenu->addAction(action("ID_EDIT_CUT"));
+  editMenu->addAction(action("ID_EDIT_COPY"));
+  editMenu->addAction(action("ID_EDIT_PLACE"));
+  editMenu->addAction(action("ID_EDIT_PLACE_TERRAIN"));
+  editMenu->addAction(action("ID_EDIT_ATTACH"));
+  editMenu->addAction(action("ID_EDIT_DELETE"));
+  editMenu->addSeparator();
+  editMenu->addAction(action("ID_EDIT_LOADSCRAP"));
+  editMenu->addAction(action("ID_EDIT_SAVESCRAP"));
+  editMenu->addSeparator();
+  editMenu->addAction(action("ID_EDIT_ADDSELECT"));
+  editMenu->addAction(action("ID_EDIT_REMOVESELECT"));
+  editMenu->addAction(action("ID_EDIT_SELECTATTACHED"));
+  editMenu->addAction(action("ID_EDIT_CLEARSELECTED"));
+  for (QAction *a : {action("ID_EDIT_UNDO"), action("ID_EDIT_CUT"), action("ID_EDIT_COPY"),
+                     action("ID_EDIT_PLACE"), action("ID_EDIT_PLACE_TERRAIN"), action("ID_EDIT_ATTACH"),
+                     action("ID_EDIT_DELETE"), action("ID_EDIT_LOADSCRAP"), action("ID_EDIT_SAVESCRAP"),
+                     action("ID_EDIT_ADDSELECT"), action("ID_EDIT_REMOVESELECT"),
+                     action("ID_EDIT_SELECTATTACHED"), action("ID_EDIT_CLEARSELECTED")}) {
+    connect(a, &QAction::triggered, this, wireNotPorted(this, QString("Edit/%1").arg(a->objectName())));
+  }
+
+  // ----------------------------------------------------------------- View
   QMenu *viewMenu = addMenu("&View");
+  viewMenu->addAction(action("ID_VIEW_TOOLBAR"));
   viewMenu->addAction(action("ID_VIEW_KEYPAD_TOGGLE"));
-  viewMenu->addAction(action("ID_VIEW_VIEWPROP"));
-  viewMenu->addSeparator();
-  viewMenu->addAction(action("ID_VIEW_NEWVIEWER"));
-  viewMenu->addAction(action("ID_VIEW_DELETEVIEWER"));
-
   connect(action("ID_VIEW_KEYPAD_TOGGLE"), &QAction::triggered, this, &MainWindow::toggleKeypadBar);
-  connect(action("ID_VIEW_VIEWPROP"), &QAction::triggered, this, &MainWindow::toggleViewerProps);
+  viewMenu->addAction(action("ID_VIEW_TEXTUREMINE"));
+  viewMenu->addAction(action("ID_VIEW_WIREFRAMEMINE"));
+  viewMenu->addAction(action("ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW"));
+  viewMenu->addSeparator();
+  viewMenu->addAction(action("ID_VIEW_CENTERONCUBE"));
+  viewMenu->addAction(action("ID_VIEW_CENTERONOBJECT"));
+  viewMenu->addAction(action("ID_VIEW_CENTERONMINE"));
+  viewMenu->addAction(action("ID_VIEW_RESETVIEWRADIUS"));
+  viewMenu->addSeparator();
+  viewMenu->addAction(action("ID_VIEW_MOVECAMERATOSELECTEDROOM"));
+  viewMenu->addAction(action("ID_VIEW_MOVECAMERATOSELECTEDFACE"));
+  viewMenu->addAction(action("ID_VIEW_MOVECAMERATOCURRENTOBJECT"));
+  viewMenu->addAction(action("ID_VIEW_FLIP"));
+  viewMenu->addSeparator();
+  viewMenu->addAction(action("ID_VIEW_SHOWVIEWERFORWARDVECTOR"));
+  viewMenu->addSeparator();
+  viewMenu->addAction(action("ID_MINE_VIEW"));
+  viewMenu->addAction(action("ID_TERRAIN_VIEW"));
+  viewMenu->addAction(action("ID_ROOM_VIEW"));
+  viewMenu->addSeparator();
+  viewMenu->addAction(action("ID_VIEW_NEXTVIEWER"));
+  viewMenu->addAction(action("ID_VIEW_NEWVIEWER"));
   connect(action("ID_VIEW_NEWVIEWER"), &QAction::triggered, this, [this]() { showNotPorted("NewViewer"); });
+  viewMenu->addAction(action("ID_VIEW_DELETEVIEWER"));
   connect(action("ID_VIEW_DELETEVIEWER"), &QAction::triggered, this, [this]() { showNotPorted("DeleteViewer"); });
+  viewMenu->addSeparator();
+  viewMenu->addAction(action("ID_VIEW_VIEWPROP"));
+  connect(action("ID_VIEW_VIEWPROP"), &QAction::triggered, this, &MainWindow::toggleViewerProps);
 
-  // --------------------------------------------------------------- Editors
+  for (QAction *a : {action("ID_VIEW_TOOLBAR"), action("ID_VIEW_TEXTUREMINE"),
+                     action("ID_VIEW_WIREFRAMEMINE"), action("ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW"),
+                     action("ID_VIEW_CENTERONCUBE"), action("ID_VIEW_CENTERONOBJECT"),
+                     action("ID_VIEW_CENTERONMINE"), action("ID_VIEW_RESETVIEWRADIUS"),
+                     action("ID_VIEW_MOVECAMERATOSELECTEDROOM"), action("ID_VIEW_MOVECAMERATOSELECTEDFACE"),
+                     action("ID_VIEW_MOVECAMERATOCURRENTOBJECT"), action("ID_VIEW_FLIP"),
+                     action("ID_VIEW_SHOWVIEWERFORWARDVECTOR"), action("ID_MINE_VIEW"),
+                     action("ID_TERRAIN_VIEW"), action("ID_ROOM_VIEW"), action("ID_VIEW_NEXTVIEWER")}) {
+    connect(a, &QAction::triggered, this, wireNotPorted(this, QString("View/%1").arg(a->objectName())));
+  }
+
+  // ----------------------------------------------------------------- Room
+  QMenu *roomMenu = addMenu("&Room");
+  roomMenu->addAction(action("ID_ROOM_ADD"));
+  roomMenu->addSeparator();
+  roomMenu->addAction(action("ID_ROOM_DELETE"));
+  roomMenu->addAction(action("ID_ROOM_DELETEFACE"));
+  roomMenu->addAction(action("ID_ROOM_DELETEPORTAL"));
+  roomMenu->addAction(action("ID_ROOM_DELETEVERT"));
+  roomMenu->addAction(action("ID_ROOM_DELETECONNECTEDFACES"));
+  roomMenu->addSeparator();
+  roomMenu->addAction(action("ID_ROOM_PLACEROOM"));
+  roomMenu->addAction(action("ID_ROOM_PLACETERRAINROOM"));
+  roomMenu->addAction(action("ID_ROOM_ROTATEPLACEDROOM45DEGREES"));
+  roomMenu->addAction(action("ID_ROOM_SNAPPLACEDROOM"));
+  roomMenu->addAction(action("ID_ROOM_ATTACHROOM"));
+  roomMenu->addAction(action("ID_ROOM_UNPLACEROOM"));
+  roomMenu->addAction(action("ID_ROOM_DROPROOM"));
+  roomMenu->addSeparator();
+  roomMenu->addAction(action("ID_ROOM_MARK"));
+  roomMenu->addAction(action("ID_ROOM_SWAPMAKEDANDCURRENTROOMFACE"));
+  roomMenu->addSeparator();
+  roomMenu->addAction(action("ID_ROOM_SELECTBYNUMBER"));
+  roomMenu->addSeparator();
+  roomMenu->addAction(action("ID_ROOM_SAVECURRENTROOM"));
+  roomMenu->addAction(action("ID_ROOM_RENAMEROOM"));
+  roomMenu->addSeparator();
+  roomMenu->addAction(action("ID_ROOM_BUILDBRIDGE"));
+  roomMenu->addAction(action("ID_ROOM_BUILDSMOOTHBRIDGE"));
+  roomMenu->addAction(action("ID_ROOM_JOINROOMS"));
+  roomMenu->addAction(action("ID_ROOM_JOINROOMSEXACT"));
+  roomMenu->addAction(action("ID_ROOM_JOIN_ADJACENT_FACES"));
+  roomMenu->addAction(action("ID_ROOM_COMBINE"));
+  roomMenu->addAction(action("ID_ROOM_LINKTONEWEXTERNAL"));
+  roomMenu->addAction(action("ID_ROOM_MERGEOBJECTINTOROOM"));
+  roomMenu->addSeparator();
+  roomMenu->addAction(action("ID_ROOM_STARTNEWFACE"));
+  roomMenu->addAction(action("ID_ROOM_ADDVERTTONEWFACE"));
+  roomMenu->addAction(action("ID_ROOM_FINISHNEWFACE"));
+  roomMenu->addSeparator();
+  roomMenu->addAction(action("ID_ROOM_SNAPPOINTTOEDGE"));
+  roomMenu->addAction(action("ID_ROOM_SNAPPOINTTOPOINT"));
+  roomMenu->addAction(action("ID_ROOM_SNAPPOINTTOFACE"));
+  roomMenu->addAction(action("ID_ROOM_UNDOSNAP"));
+  QMenu *faceSub = roomMenu->addMenu("Face Editing");
+  faceSub->addAction(action("ID_ROOM_FACE_ADDVERTTOEDGE"));
+  faceSub->addAction(action("ID_ROOM_FACE_DELETEVERTONEDGE"));
+  faceSub->addAction(action("ID_ROOM_FACE_MOVEVERTONEDGE"));
+  faceSub->addAction(action("ID_ROOM_FACE_SPLITFACE"));
+  faceSub->addAction(action("ID_ROOM_SPLITFACE"));
+  roomMenu->addSeparator();
+  roomMenu->addAction(action("ID_ROOM_GRABTEXTURE"));
+  roomMenu->addAction(action("ID_ROOM_PROPAGATETOALL"));
+  roomMenu->addAction(action("ID_ROOM_PROPAGATETOADJACENTCOPLANARFACES"));
+
+  for (QAction *a : roomMenu->actions()) {
+    if (a->isSeparator())
+      continue;
+    connect(a, &QAction::triggered, this, wireNotPorted(this, QString("Room/%1").arg(a->objectName())));
+  }
+  for (QAction *a : faceSub->actions()) {
+    connect(a, &QAction::triggered, this, wireNotPorted(this, QString("Room/Face/%1").arg(a->objectName())));
+  }
+
+  // ---------------------------------------------------------------- Object
+  QMenu *objectMenu = addMenu("&Object");
+  objectMenu->addAction(action("ID_OBJECT_PLACEOBJECT"));
+  objectMenu->addAction(action("ID_OBJECT_DELETEOBJECT"));
+  objectMenu->addAction(action("ID_OBJECT_MOVEPLAYER"));
+  objectMenu->addAction(action("ID_OBJECT_PLACECAMERAATVIEWER"));
+  objectMenu->addAction(action("ID_OBJECT_PLACECAMERAATCURRENTFACE"));
+  objectMenu->addAction(action("ID_OBJECT_SETCAMERAFROMVIEWER"));
+  objectMenu->addAction(action("ID_OBJECT_SETVIEWERFROMCAMERA"));
+  objectMenu->addAction(action("ID_OBJECT_SELECTBYNUMBER"));
+  objectMenu->addAction(action("ID_OBJECT_PLACESOUNDSOURCEATVIEWER"));
+  objectMenu->addAction(action("ID_OBJECT_PLACEWAYPOINTATVIEWER"));
+
+  for (QAction *a : objectMenu->actions()) {
+    connect(a, &QAction::triggered, this, wireNotPorted(this, QString("Object/%1").arg(a->objectName())));
+  }
+
+  // -------------------------------------------------------------- Editors
   // Mirrors the original "Editors" menu (editor.rc). Ported dialogs are wired
   // by their ID_* action; the rest open a "not yet ported" notice.
   QMenu *editorsMenu = addMenu("Edi&tors");
@@ -134,7 +315,12 @@ void MainWindow::buildMenus() {
   editorsMenu->addAction(action("ID_EDITORS_FILES"));
   editorsMenu->addAction(action("ID_EDITORS_AIPROPERTIES"));
   editorsMenu->addSeparator();
+  editorsMenu->addAction(action("IDD_REORDER_PAGES"));
+  editorsMenu->addAction(action("IDD_SHOW_ALL_CHECKED_OUT"));
   editorsMenu->addAction(action("IDD_ORPHANHUNTER"));
+  editorsMenu->addSeparator();
+  editorsMenu->addAction(action("IDM_IMPORT_BITMAP"));
+  editorsMenu->addAction(action("ID_HOTSPOT_TGA"));
   editorsMenu->addSeparator();
   editorsMenu->addAction(action("ID_BRIEFING_EDITOR"));
   editorsMenu->addAction(action("ID_SUBEDITORS_FONT"));
@@ -143,33 +329,36 @@ void MainWindow::buildMenus() {
   editorsMenu->addAction(action("ID_SUBEDITORS_TABLEFILEFILTER"));
   editorsMenu->addAction(action("ID_EDITORS_DALLAS"));
 
-  connect(action("ID_TOOLS_WORLD_TEXTURES"), &QAction::triggered, this,
-          &MainWindow::showWorldTextures);
+  connect(action("ID_TOOLS_WORLD_TEXTURES"), &QAction::triggered, this, &MainWindow::showWorldTextures);
   connect(action("ID_EDITORS_MEGACELLS"), &QAction::triggered, this, [this]() { showNotPorted("Megacells"); });
   connect(action("ID_TOOLS_WORLD_OBJECTS_ROBOTS"), &QAction::triggered, this,
           [this]() { showNotPorted("WorldObjectsRobot"); });
   connect(action("ID_TOOLS_WORLD_OBJECTS_POWERUPS"), &QAction::triggered, this,
           [this]() { showNotPorted("WorldObjectsPowerup"); });
   connect(action("ID_TOOLS_WORLD_OBJECTS_BUILDINGS"), &QAction::triggered, this,
-          [this]() { showGenericObject(OBJ_BUILDING, D3EditState.current_building); });
+          [this]() {
+            showGenericObject(OBJ_BUILDING, D3EditState.current_building);
+          });
   connect(action("ID_TOOLS_WORLD_OBJECTS_CLUTTER"), &QAction::triggered, this,
           [this]() { showGenericObject(OBJ_CLUTTER, D3EditState.current_clutter); });
   connect(action("ID_TOOLS_WORLD_OBJECTS_PLAYER"), &QAction::triggered, this,
           &MainWindow::showWorldObjectsPlayer);
   connect(action("ID_TOOLS_WORLD_WEAPONS"), &QAction::triggered, this, &MainWindow::showWorldWeapons);
   connect(action("ID_TOOLS_WORLD_OBJECTS_DOOR"), &QAction::triggered, this, &MainWindow::showWorldObjectsDoor);
-  connect(action("ID_TOOLS_WORLD_OBJECTS_SOUND"), &QAction::triggered, this,
-          &MainWindow::showWorldObjectsSound);
-  connect(action("ID_TOOLS_WORLD_OBJECTS_LIGHTS"), &QAction::triggered, this,
-          &MainWindow::showWorldObjectsLight);
+  connect(action("ID_TOOLS_WORLD_OBJECTS_SOUND"), &QAction::triggered, this, &MainWindow::showWorldObjectsSound);
+  connect(action("ID_TOOLS_WORLD_OBJECTS_LIGHTS"), &QAction::triggered, this, &MainWindow::showWorldObjectsLight);
   connect(action("ID_EDITORS_AMBIENTSOUNDS"), &QAction::triggered, this,
           [this]() { showNotPorted("AmbientSounds"); });
   connect(action("ID_SCRIPT_LEVEL_INTERFACE"), &QAction::triggered, this,
           [this]() { showNotPorted("ScriptLevelInterface"); });
   connect(action("ID_EDITORS_FILES"), &QAction::triggered, this, [this]() { showNotPorted("FilePage"); });
-  connect(action("ID_EDITORS_AIPROPERTIES"), &QAction::triggered, this,
-          [this]() { showNotPorted("AISettings"); });
+  connect(action("ID_EDITORS_AIPROPERTIES"), &QAction::triggered, this, [this]() { showNotPorted("AISettings"); });
+  connect(action("IDD_REORDER_PAGES"), &QAction::triggered, this, [this]() { showNotPorted("ReorderPages"); });
+  connect(action("IDD_SHOW_ALL_CHECKED_OUT"), &QAction::triggered, this,
+          [this]() { showNotPorted("ShowAllCheckedOut"); });
   connect(action("IDD_ORPHANHUNTER"), &QAction::triggered, this, [this]() { showNotPorted("OrphanRemove"); });
+  connect(action("IDM_IMPORT_BITMAP"), &QAction::triggered, this, [this]() { showNotPorted("BitmapImporter"); });
+  connect(action("ID_HOTSPOT_TGA"), &QAction::triggered, this, [this]() { showNotPorted("HotSpotTGA"); });
   connect(action("ID_BRIEFING_EDITOR"), &QAction::triggered, this, [this]() { showNotPorted("BriefEdit"); });
   connect(action("ID_SUBEDITORS_FONT"), &QAction::triggered, this, [this]() { showNotPorted("GrFont"); });
   connect(action("ID_SUBEDITORS_HOGMAKER"), &QAction::triggered, this, &MainWindow::showHogMaker);
@@ -179,39 +368,44 @@ void MainWindow::buildMenus() {
           [this]() { showNotPorted("TableFileFilter"); });
   connect(action("ID_EDITORS_DALLAS"), &QAction::triggered, this, [this]() { showNotPorted("DallasMain"); });
 
-  // -------------------------------------------------------------- Terrain
+  // --------------------------------------------------------------- Terrain
   QMenu *terrainMenu = addMenu("&Terrain");
   terrainMenu->addAction(action("ID_TERRAIN_SELECT_RANGE"));
   terrainMenu->addAction(action("ID_TERRAIN_SOUNDS"));
-
   connect(action("ID_TERRAIN_SELECT_RANGE"), &QAction::triggered, this, &MainWindow::showSelectRange);
   connect(action("ID_TERRAIN_SOUNDS"), &QAction::triggered, this, &MainWindow::showTerrainSound);
+
+  // ---------------------------------------------------------------- Window
+  QMenu *windowMenu = addMenu("&Window");
+  windowMenu->addAction(action("ID_WINDOW_TILE"));
+  windowMenu->addAction(action("ID_WINDOW_CASCADE"));
+  for (auto *a : {action("ID_WINDOW_TILE"), action("ID_WINDOW_CASCADE")}) {
+    connect(a, &QAction::triggered, this, wireNotPorted(this, QString("Window/%1").arg(a->objectName())));
+  }
 
   // ----------------------------------------------------------------- Help
   QMenu *helpMenu = addMenu("&Help");
   helpMenu->addAction(action("ID_D3HELP"));
   helpMenu->addAction(action("ID_APP_ABOUT"));
-
   connect(action("ID_D3HELP"), &QAction::triggered, this, [this]() { showNotPorted("Help"); });
   connect(action("ID_APP_ABOUT"), &QAction::triggered, this, &MainWindow::showAboutBox);
+
+  // ------------------------------------------------------------------ Test
+  // The legacy Win32 editor reserved a Test menu for in-development features.
+  // The Qt port keeps it as an explicit placeholders for diagnostics wired
+  // up later.
+  QMenu *testMenu = addMenu("&Test");
+  testMenu->addAction(action("ID_TEST_TEST1"));
+  testMenu->addAction(action("ID_TEST_TEST2"));
+  testMenu->addAction(action("ID_TEST_TEST3"));
+  for (auto *a : {action("ID_TEST_TEST1"), action("ID_TEST_TEST2"), action("ID_TEST_TEST3")}) {
+    connect(a, &QAction::triggered, this, wireNotPorted(this, QString("Test/%1").arg(a->objectName())));
+  }
 }
 
 void MainWindow::showNotPorted(const QString &name) {
   QMessageBox::information(this, "Not yet ported",
-                           QString("The %1 dialog has not been ported to Qt yet.").arg(name));
-}
-
-void MainWindow::showSplash() {
-  m_splash = new SplashDialog(this);
-  m_splash->putText("Loading...");
-  m_splash->show();
-
-  QTimer::singleShot(2500, this, [this]() {
-    if (m_splash != nullptr) {
-      delete m_splash;
-      m_splash = nullptr;
-    }
-  });
+                            QString("The %1 dialog has not been ported to Qt yet.").arg(name));
 }
 
 void MainWindow::showAboutBox() {
@@ -315,4 +509,4 @@ void MainWindow::showGenericObject(int objType, int current) {
     D3EditState.current_clutter = dlg.current();
 }
 
-}
+} // namespace QtEditor

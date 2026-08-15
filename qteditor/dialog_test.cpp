@@ -43,7 +43,6 @@
 #include "robot_weapons_dialog.h"
 #include "selectrange_dialog.h"
 #include "sound_source_dialog.h"
-#include "splash_dialog.h"
 #include "status_dialog.h"
 #include "terrain_sound_dialog.h"
 #include "trigger_keypad.h"
@@ -136,7 +135,6 @@ int runDialogTest() {
     SoundSourceDialog dlg(&ssi);
     check("sound_source", dlg.handle() != nullptr);
   }
-  construct<SplashDialog>("splash", nullptr);
   construct<StatusDialog>("status", nullptr);
   construct<TerrainSoundDialog>("terrain_sound", nullptr);
   construct<ViewerPropDialog>("viewer_prop", nullptr);

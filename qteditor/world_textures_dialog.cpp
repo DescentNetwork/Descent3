@@ -33,7 +33,7 @@
 #include "ddio.h"
 #include "gametexture.h"
 #include "manage.h"
-#include "pserror.h"
+#include "qt_debug.h"
 #include "sound_combo.h"
 #include "ssl_lib.h"
 #include "texpage.h"
@@ -181,6 +181,13 @@ void WorldTexturesDialog::updateDialog() {
     next->setEnabled(Num_textures >= 1);
   if (QPushButton *prev = find<QPushButton>("IDC_PREVIOUS"))
     prev->setEnabled(Num_textures >= 1);
+  if (!Network_up) {
+    for (const char *name : {"IDC_LOCK", "IDC_CHECKIN", "IDC_OVERRIDE"}) {
+      if (auto *w = find<QPushButton>(name))
+        w->setEnabled(false);
+    }
+    return;
+  }
   if (Num_textures < 1)
     return;
 

@@ -45,7 +45,7 @@
 #include "object.h"
 #include "physics_dialog.h"
 #include "polymodel.h"
-#include "pserror.h"
+#include "qt_debug.h"
 #include "robotfire.h"
 #include "sound_combo.h"
 #include "vclip.h"
@@ -280,7 +280,22 @@ void WorldObjectsGenericDialog::updateDialog() {
     enableDisableAll(false);
     if (QPushButton *paste = find<QPushButton>("IDC_GENERIC_PASTE"))
       paste->setEnabled(Network_up && Copy_object_used);
+    if (!Network_up) {
+      for (const char *name : {"IDC_GENERIC_LOCK", "IDC_GENERIC_CHECKIN", "IDC_GENERIC_UNDO_LOCK",
+                               "IDC_GENERIC_CHECKED_OUT", "IDC_OVERRIDE"}) {
+        if (auto *w = find<QPushButton>(name))
+          w->setEnabled(false);
+      }
+    }
     return;
+  }
+
+  if (!Network_up) {
+    for (const char *name : {"IDC_GENERIC_LOCK", "IDC_GENERIC_CHECKIN", "IDC_GENERIC_UNDO_LOCK",
+                             "IDC_GENERIC_CHECKED_OUT", "IDC_OVERRIDE"}) {
+      if (auto *w = find<QPushButton>(name))
+        w->setEnabled(false);
+    }
   }
 
   enableDisableAll(true);

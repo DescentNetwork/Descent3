@@ -19,6 +19,8 @@
 #include <filesystem>
 
 #include <QApplication>
+#include <QPixmap>
+#include <QSplashScreen>
 #include <cstring>
 
 #include "d3_editor_init.h"
@@ -38,11 +40,22 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  QtEditor::MainWindow window;
-  window.show();
-  QCoreApplication::processEvents();
+  // Construct the splash BEFORE the MainWindow so the user gets immediate
+  // feedback while the D3 core initialises. QSplashScreen::finish() closes
+  // the splash automatically once the main window becomes the active window.
+  QPixmap pixmap(":/IDB_D3SPLASH");
+  QSplashScreen splash(pixmap);
+  splash.show();
+  splash.showMessage("Loading...", Qt::AlignBottom | Qt::AlignHCenter, Qt::white);
+  app.processEvents();
 
   QtEditor::initD3Core(argc, argv);
+  splash.showMessage("Initialising editor...", Qt::AlignBottom | Qt::AlignHCenter, Qt::white);
+  app.processEvents();
+
+  QtEditor::MainWindow window;
+  window.show();
+  splash.finish(&window);
 
   return app.exec();
 }

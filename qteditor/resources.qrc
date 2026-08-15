@@ -20,7 +20,6 @@
         <file alias="createscript.ui">ui/createscript.ui</file>
         <file alias="custdefscript.ui">ui/custdefscript.ui</file>
         <file alias="customize_object.ui">ui/customize_object.ui</file>
-        <file alias="d3splash.ui">ui/d3splash.ui</file>
         <file alias="dallas_flag_dialog.ui">ui/dallas_flag_dialog.ui</file>
         <file alias="dallas_generic_prompt_dialog.ui">ui/dallas_generic_prompt_dialog.ui</file>
         <file alias="dallas_import_dialog.ui">ui/dallas_import_dialog.ui</file>

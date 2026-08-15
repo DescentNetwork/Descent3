@@ -228,8 +228,17 @@ void SetMessageBoxTitle(const char *title) { strncpy(Messagebox_title, title, si
 
 #define BUF_LEN 1024
 
-// Pops up a dialog box to display a message
+// Pops up a dialog box to display a message.
+//
+// These are weak symbols so the Qt editor (and any other host) can provide a
+// strong override at link time that routes messages through a Qt dialog
+// instead of the SDL_TriggerBreakpoint() path that the Linux
+// Debug_MessageBox() implementation takes.
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak)) void OutrageMessageBox(const char *str, ...) {
+#else
 void OutrageMessageBox(const char *str, ...) {
+#endif
   char buf[BUF_LEN];
   std::va_list arglist;
   int nchars;
@@ -245,7 +254,11 @@ void OutrageMessageBox(const char *str, ...) {
   Debug_MessageBox(OSMBOX_OK, Messagebox_title, buf);
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak)) int OutrageMessageBox(int type, const char *str, ...) {
+#else
 int OutrageMessageBox(int type, const char *str, ...) {
+#endif
   char buf[BUF_LEN];
   std::va_list arglist;
   int os_flags = 0;

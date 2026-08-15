@@ -32,7 +32,7 @@
 #include "manage.h"
 #include "physics_dialog.h"
 #include "polymodel.h"
-#include "pserror.h"
+#include "qt_debug.h"
 #include "sound_combo.h"
 #include "ssl_lib.h"
 #include "weapon.h"
@@ -254,6 +254,13 @@ void WorldWeaponsDialog::updateDialog() {
     next->setEnabled(Num_weapons >= 1);
   if (QPushButton *prev = find<QPushButton>("IDC_PREV_WEAPON"))
     prev->setEnabled(Num_weapons >= 1);
+  if (!Network_up) {
+    for (const char *name : {"IDC_LOCK_WEAPON", "IDC_CHECKIN_WEAPON", "IDC_OVERRIDE"}) {
+      if (auto *w = find<QPushButton>(name))
+        w->setEnabled(false);
+    }
+    return;
+  }
   if (Num_weapons < 1)
     return;
 

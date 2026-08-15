@@ -34,7 +34,7 @@
 #include "manage.h"
 #include "physics_dialog.h"
 #include "polymodel.h"
-#include "pserror.h"
+#include "qt_debug.h"
 #include "robotfire.h"
 #include "ship.h"
 #include "shippage.h"
@@ -131,6 +131,13 @@ void WorldObjectsPlayerDialog::updateDialog() {
     prev->setEnabled(Num_ships >= 1);
   if (QPushButton *cockpit = find<QPushButton>("IDC_PSHIP_COCKPIT"))
     cockpit->setEnabled(Num_ships >= 1);
+  if (!Network_up) {
+    for (const char *name : {"IDC_PSHIP_LOCK", "IDC_PSHIP_CHECKIN", "IDC_OVERRIDE"}) {
+      if (auto *w = find<QPushButton>(name))
+        w->setEnabled(false);
+    }
+    return;
+  }
   if (Num_ships < 1)
     return;
 

@@ -25,8 +25,8 @@
 #include "manage.h"
 #include "crossplat.h"
 #include "objinfo.h"
-#include "pserror.h"
 #include "gamepath.h"
+#include "qt_debug.h"
 #include <cstring>
 #include <filesystem>
 

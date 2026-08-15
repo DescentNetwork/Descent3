@@ -34,7 +34,7 @@
 #include "ddio.h"
 #include "hlsoundlib.h"
 #include "manage.h"
-#include "pserror.h"
+#include "qt_debug.h"
 #include "soundpage.h"
 #include "soundload.h"
 #include "ssl_lib.h"
@@ -184,6 +184,13 @@ void WorldSoundsDialog::updateDialog() {
     next->setEnabled(Num_sounds >= 1);
   if (QPushButton *prev = find<QPushButton>("IDC_PREV_SOUND"))
     prev->setEnabled(Num_sounds >= 1);
+  if (!Network_up) {
+    for (const char *name : {"IDC_LOCK_SOUND", "IDC_CHECKIN_SOUND", "IDC_OVERRIDE"}) {
+      if (auto *w = find<QPushButton>(name))
+        w->setEnabled(false);
+    }
+    return;
+  }
   if (Num_sounds < 1)
     return;
 

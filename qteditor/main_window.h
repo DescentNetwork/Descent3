@@ -28,7 +28,6 @@ namespace QtEditor {
 
 class Dialog;
 class KeypadBar;
-class SplashDialog;
 class ViewerPropDialog;
 
 class MainWindow : public QMainWindow {
@@ -36,6 +35,10 @@ class MainWindow : public QMainWindow {
 public:
   explicit MainWindow(QWidget *parent = nullptr);
   ~MainWindow() override;
+
+  // Generic "this feature is not yet ported" prompt used by the menu handlers
+  // for items whose dialog has not been reimplemented for Qt.
+  void showNotPorted(const QString &name);
 
 private:
   // Looks up a menu action by its ID_* identifier in the .ui-loaded action
@@ -45,10 +48,8 @@ private:
   void buildKeypadBar();
   QMenu *addMenu(const QString &title);
 
-  void showSplash();
   void toggleKeypadBar();
   void showAboutBox();
-  void showNotPorted(const QString &name);
   void showLevelInfo();
   void showPreferences();
   void toggleViewerProps();
@@ -67,7 +68,6 @@ private:
   QWidget *m_actionsHost = nullptr;
   QDockWidget *m_keypadDock = nullptr;
   KeypadBar *m_keypadBar = nullptr;
-  SplashDialog *m_splash = nullptr;
   Dialog *m_aboutBox = nullptr;
   ViewerPropDialog *m_viewerProps = nullptr;
 };

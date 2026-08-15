@@ -21,6 +21,8 @@ set(QTEDITOR_SOURCES
   d3_editor_init.h
   d3_editor_state.cpp
   dallas_prompt_dialogs.cpp
+  dialog_test.cpp
+  dialog_test.h
   dallas_prompt_dialogs.h
   death_dialog.cpp
   death_dialog.h
@@ -54,6 +56,7 @@ set(QTEDITOR_SOURCES
   preferences_dialog.h
   propai_dialog.cpp
   propai_dialog.h
+  qt_messagebox.cpp
   qteditor_dialog.cpp
   qteditor_dialog.h
   robot_weapons_dialog.cpp
@@ -64,8 +67,6 @@ set(QTEDITOR_SOURCES
   sound_combo.h
   sound_source_dialog.cpp
   sound_source_dialog.h
-  splash_dialog.cpp
-  splash_dialog.h
   status_dialog.cpp
   status_dialog.h
   terrain_sound_dialog.cpp
@@ -92,8 +93,17 @@ set(QTEDITOR_SOURCES
   worldobjectslight_dialog.h
 )
 
+# The GUI editor excludes the QTest test driver (which has its own main()).
+set(QTEDITOR_APP_SOURCES ${QTEDITOR_SOURCES})
+list(FILTER QTEDITOR_APP_SOURCES EXCLUDE REGEX "editor_test\.cpp$")
+
+# The test build excludes the editor's own main.cpp (the test driver supplies
+# its own main()) but otherwise uses the same sources as the app.
+set(QTEDITOR_TEST_SOURCES ${QTEDITOR_SOURCES})
+list(FILTER QTEDITOR_TEST_SOURCES EXCLUDE REGEX "main\.cpp$")
+
 add_executable(Descent3EditorQt
-  ${QTEDITOR_SOURCES}
+  ${QTEDITOR_APP_SOURCES}
   ${QTEDITOR_RESOURCES}
 )
 
@@ -128,11 +138,9 @@ target_link_libraries(Descent3EditorQt PRIVATE
 
 set_target_properties(Descent3EditorQt PROPERTIES OUTPUT_NAME "Descent3EditorQt")
 
-# QTest based editor tester (exercises every dialog/widget). Excludes the
-# editor's own main.cpp (it provides its own test main).
-list(FILTER QTEDITOR_SOURCES EXCLUDE REGEX "main\.cpp$")
+# QTest based editor tester (exercises every dialog/widget).
 add_executable(Descent3EditorTests
-  ${QTEDITOR_SOURCES}
+  ${QTEDITOR_TEST_SOURCES}
   ${QTEDITOR_RESOURCES}
 )
 target_include_directories(Descent3EditorTests PRIVATE

@@ -34,7 +34,7 @@
 #include "doorpage.h"
 #include "manage.h"
 #include "polymodel.h"
-#include "pserror.h"
+#include "qt_debug.h"
 #include "room.h"
 #include "sound_combo.h"
 #include "ssl_lib.h"
@@ -178,6 +178,16 @@ void WorldObjectsDoorDialog::updateDialog() {
     next->setEnabled(Num_doors >= 1);
   if (QPushButton *prev = find<QPushButton>("IDC_DOOR_PREV"))
     prev->setEnabled(Num_doors >= 1);
+  // The Win32 editor unconditionally disabled the lock/checkin/out operations
+  // when the network was down. The Qt port must do the same so the table
+  // editors are non-functional without a network connection.
+  if (!Network_up) {
+    for (const char *name : {"IDC_LOCK_DOOR", "IDC_CHECKIN_DOOR", "IDC_DOORS_OUT"}) {
+      if (auto *w = find<QPushButton>(name))
+        w->setEnabled(false);
+    }
+    return;
+  }
   if (Num_doors < 1)
     return;
 
