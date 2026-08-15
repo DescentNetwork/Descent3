@@ -45,6 +45,8 @@ set(QTEDITOR_SOURCES
   megacell_keypad.h
   level_info_dialog.cpp
   level_info_dialog.h
+  level_io.cpp
+  level_io.h
   main.cpp
   main_window.cpp
   main_window.h

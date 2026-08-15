@@ -19,15 +19,21 @@
 #include "main_window.h"
 
 #include <QAction>
+#include <QFileInfo>
 #include <QMenu>
 #include <QDockWidget>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QStatusBar>
 
+#include <cstring>
+
 #include "about_dialog.h"
+#include "crossplat.h"
 #include "d3edit.h"
+#include "editor_file_dialogs.h"
 #include "hog_dialog.h"
+#include "level_io.h"
 #include "keypad_dialog.h"
 #include "level_info_dialog.h"
 #include "doorway_keypad.h"
@@ -102,15 +108,24 @@ QAction *MainWindow::action(const QString &id) {
 QMenu *MainWindow::addMenu(const QString &title) { return menuBar()->addMenu(title); }
 
 void MainWindow::buildMenus() {
-  // ----------------------------------------------------------------- File
+// ----------------------------------------------------------------- File
   QMenu *fileMenu = addMenu("&File");
-  fileMenu->addAction(action("ID_FILE_NEW"));
-  fileMenu->addAction(action("ID_FILE_OPEN"));
-  fileMenu->addAction(action("ID_FILE_SAVE"));
-  fileMenu->addAction(action("ID_FILE_SAVE_AS"));
+  QAction *a_new    = action("ID_FILE_NEW");
+  QAction *a_open   = action("ID_FILE_OPEN");
+  QAction *a_save   = action("ID_FILE_SAVE");
+  QAction *a_saveas = action("ID_FILE_SAVE_AS");
+  fileMenu->addAction(a_new);
+  fileMenu->addAction(a_open);
+  fileMenu->addAction(a_save);
+  fileMenu->addAction(a_saveas);
+  QObject::connect(a_new,    &QAction::triggered, this, &MainWindow::onFileNew);
+  QObject::connect(a_open,   &QAction::triggered, this, &MainWindow::onFileOpen);
+  QObject::connect(a_save,   &QAction::triggered, this, &MainWindow::onFileSave);
+  QObject::connect(a_saveas, &QAction::triggered, this, &MainWindow::onFileSaveAs);
   fileMenu->addSeparator();
-  fileMenu->addAction(action("ID_FILE_LEVEL_INFO"));
-  connect(action("ID_FILE_LEVEL_INFO"), &QAction::triggered, this, &MainWindow::showLevelInfo);
+  QAction *a_levelprops = action("ID_FILE_LEVEL_INFO");
+  fileMenu->addAction(a_levelprops);
+  QObject::connect(a_levelprops, &QAction::triggered, this, &MainWindow::showLevelInfo);
   fileMenu->addAction(action("ID_FILE_SAVEGOALTEXT"));
   fileMenu->addAction(action("ID_FILE_STATS"));
   fileMenu->addAction(action("ID_FILE_VERIFY_LEVEL"));
@@ -401,6 +416,77 @@ void MainWindow::buildMenus() {
   for (auto *a : {action("ID_TEST_TEST1"), action("ID_TEST_TEST2"), action("ID_TEST_TEST3")}) {
     connect(a, &QAction::triggered, this, wireNotPorted(this, QString("Test/%1").arg(a->objectName())));
   }
+}
+
+void MainWindow::onFileNew() {
+  // Win32 editor.cpp::CEditorDoc::OnNewDocument calls CreateNewMine() and
+  // clears Dallas-side Untitled.* scratch files; the Qt port does the same
+  // mine creation but the Dallas side is not yet wired (Dallas is GUI-only).
+  QtEditor::CreateNewMine();
+  setWindowTitle(QStringLiteral("Descent 3 Editor - Untitled.d3l"));
+  m_currentLevelFile.clear();
+  statusBar()->showMessage(QStringLiteral("Created new level."));
+}
+
+void MainWindow::onFileOpen() {
+  // Use the editor's LocalLevelsDir rather than the install root so the file
+  // dialog opens where the user actually keeps their .d3l files.
+  static char initial_dir[_MAX_PATH];
+  if (m_currentLevelFile.isEmpty()) {
+    std::strncpy(initial_dir, LocalLevelsDir, sizeof(initial_dir) - 1);
+    initial_dir[sizeof(initial_dir) - 1] = '\0';
+  } else {
+    const QByteArray current = QFileInfo(m_currentLevelFile).absolutePath().toLatin1();
+    std::strncpy(initial_dir, current.constData(), sizeof(initial_dir) - 1);
+    initial_dir[sizeof(initial_dir) - 1] = '\0';
+  }
+  char picked[_MAX_PATH] = "";
+  const char *filter = "Outrage Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
+  if (!QtEditor::OpenFileDialog(this, filter, picked, initial_dir,
+                                int {sizeof(initial_dir)})) {
+    statusBar()->showMessage(QStringLiteral("Open cancelled."));
+    return;
+  }
+  m_currentLevelFile = QString::fromLatin1(picked);
+  setWindowTitle(QStringLiteral("Descent 3 Editor - %1").arg(m_currentLevelFile));
+  QtEditor::EditorLoadLevel(picked);
+  statusBar()->showMessage(
+      QStringLiteral("Opened %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
+}
+
+void MainWindow::onFileSave() {
+  if (m_currentLevelFile.isEmpty()) {
+    onFileSaveAs();
+    return;
+  }
+  const QByteArray path = m_currentLevelFile.toLatin1();
+  QtEditor::EditorSaveLevel(path.constData());
+  statusBar()->showMessage(
+      QStringLiteral("Saved %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
+}
+
+void MainWindow::onFileSaveAs() {
+  static char initial_dir[_MAX_PATH];
+  if (m_currentLevelFile.isEmpty()) {
+    std::strncpy(initial_dir, LocalLevelsDir, sizeof(initial_dir) - 1);
+    initial_dir[sizeof(initial_dir) - 1] = '\0';
+  } else {
+    const QByteArray current = QFileInfo(m_currentLevelFile).absolutePath().toLatin1();
+    std::strncpy(initial_dir, current.constData(), sizeof(initial_dir) - 1);
+    initial_dir[sizeof(initial_dir) - 1] = '\0';
+  }
+  char picked[_MAX_PATH] = "";
+  const char *filter = "Outrage Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
+  if (!QtEditor::SaveFileDialog(this, filter, picked, initial_dir,
+                                int {sizeof(initial_dir)})) {
+    statusBar()->showMessage(QStringLiteral("Save As cancelled."));
+    return;
+  }
+  m_currentLevelFile = QString::fromLatin1(picked);
+  setWindowTitle(QStringLiteral("Descent 3 Editor - %1").arg(m_currentLevelFile));
+  QtEditor::EditorSaveLevel(picked);
+  statusBar()->showMessage(
+      QStringLiteral("Saved as %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
 }
 
 void MainWindow::showNotPorted(const QString &name) {

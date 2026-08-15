@@ -64,12 +64,27 @@ private:
   void showWorldTextures();
   void showGenericObject(int objType, int current);
 
+  // File-menu slots driven by ID_FILE_NEW / ID_FILE_OPEN / ID_FILE_SAVE /
+  // ID_FILE_SAVE_AS. They go through OpenFileDialog / SaveFileDialog and
+  // remember the resulting path so subsequent Save calls write to it without
+  // re-prompting. The actual level I/O still delegates to editor/HFile.cpp
+  // BringUpLevel / SaveLevel etc.; the Qt port tracks the path that those
+  // will be passed.
+  void onFileNew();
+  void onFileOpen();
+  void onFileSave();
+  void onFileSaveAs();
+
   // Host widget that owns the QAction definitions loaded from a .ui resource.
   QWidget *m_actionsHost = nullptr;
   QDockWidget *m_keypadDock = nullptr;
   KeypadBar *m_keypadBar = nullptr;
   Dialog *m_aboutBox = nullptr;
   ViewerPropDialog *m_viewerProps = nullptr;
+
+  // Path of the currently open .d3l, or empty if none / untitled. Updated by
+  // onFileOpen / onFileSaveAs and cleared by onFileNew.
+  QString m_currentLevelFile;
 };
 
 }

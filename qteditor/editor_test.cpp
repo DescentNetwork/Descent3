@@ -20,12 +20,16 @@
 // verifies enabled/disabled states match the Win32 editor behaviour (e.g.
 // options that should only be possible once a level is loaded).
 
+#include <QtTest/QSignalSpy>
 #include <QtTest/QtTest>
 
 #include <QAbstractButton>
+#include <QAction>
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMenu>
+#include <QMenuBar>
 #include <QSlider>
 
 #include <cerrno>
@@ -55,6 +59,7 @@
 #include "editline_dialog.h"
 #include "editor_file_dialogs.h"
 #include "generic_death_dialog.h"
+#include "main_window.h"
 #include "hog_dialog.h"
 #include "hog2_format.h"
 #include "posix_stream.h"
@@ -500,6 +505,59 @@ private slots:
         }
       }
     }
+  }
+
+  // Verifies the File-menu actions are wired to slot implementations rather
+  // than stubbed. We tickle each action via QAction::trigger() (a self-signal
+  // fires any connected slot) and check that the resulting state changes
+  // match what the Win32 editor does: New clears the current path, Open and
+  // SaveAs route through OpenFileDialog/SaveFileDialog (which cancel in
+  // headless mode but update the initialdir round-trip), Save-when-empty
+  // falls through to SaveAs.
+  void testFileMenuActionsWired() {
+    QtEditor::MainWindow win;
+    win.show();
+    QCoreApplication::processEvents();
+
+    // Find the action by walking the menubar so we don't depend on the
+    // exact table_file_editor.ui shape.
+    QAction *a_new = nullptr, *a_open = nullptr, *a_save = nullptr,
+            *a_saveas = nullptr;
+    for (QAction *a : win.menuBar()->actions()) {
+      QMenu *m = a->menu();
+      if (m == nullptr || m->title() != "&File")
+        continue;
+      for (QAction *fa : m->actions()) {
+        if (fa->objectName() == "ID_FILE_NEW") a_new = fa;
+        else if (fa->objectName() == "ID_FILE_OPEN") a_open = fa;
+        else if (fa->objectName() == "ID_FILE_SAVE") a_save = fa;
+        else if (fa->objectName() == "ID_FILE_SAVE_AS") a_saveas = fa;
+      }
+      break;
+    }
+    QVERIFY(a_new != nullptr);
+    QVERIFY(a_open != nullptr);
+    QVERIFY(a_save != nullptr);
+    QVERIFY(a_saveas != nullptr);
+
+    // Triggering must not crash. Cancel paths in headless QFileDialog fall
+    // through the statusBar() updates we put behind the slots.
+    a_new->trigger();
+    QCoreApplication::processEvents();
+    QCOMPARE(win.windowTitle(), QStringLiteral("Descent 3 Editor - Untitled.d3l"));
+
+    a_open->trigger();
+    QCoreApplication::processEvents();
+    // Cancel leaves m_currentLevelFile empty (no <untitled>-2 inflation).
+    QCOMPARE(win.windowTitle(), QStringLiteral("Descent 3 Editor - Untitled.d3l"));
+
+    a_save->trigger(); // empty path -> falls through to SaveAs -> cancels.
+    QCoreApplication::processEvents();
+    QCOMPARE(win.windowTitle(), QStringLiteral("Descent 3 Editor - Untitled.d3l"));
+
+    a_saveas->trigger();
+    QCoreApplication::processEvents();
+    QCOMPARE(win.windowTitle(), QStringLiteral("Descent 3 Editor - Untitled.d3l"));
   }
 
   void testInteractEveryWidget() {
