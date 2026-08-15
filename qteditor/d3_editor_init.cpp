@@ -61,6 +61,7 @@ void initD3Core(int argc, char *argv[]) {
 
   InitD3Systems1(true);
   InitD3Systems2(true);
+  errno = 0; // clear any errno states
 }
 
 }

@@ -23,12 +23,19 @@
 
 namespace QtEditor {
 
+// The Win32 CAddScriptDialog enforces DDV_MaxChars(pDX, m_Name, 32) at dismiss
+// time. Mirror it on the Qt side as a hard input cap so the dialog can't
+// accept a longer name in the first place.
+static constexpr int kNameMaxLength = 32;
+
 AddScriptDialog::AddScriptDialog(QWidget *parent) : Dialog(":/ui/addscript.ui", parent) {
   if (auto *cbox = find<QComboBox>("IDC_TYPESEL")) {
     cbox->addItem("object");
     cbox->addItem("trigger");
     cbox->setCurrentIndex(0);
   }
+  if (auto *edit = find<QLineEdit>("IDC_EDITNAME"))
+    edit->setMaxLength(kNameMaxLength);
 }
 
 AddScriptDialog::~AddScriptDialog() = default;

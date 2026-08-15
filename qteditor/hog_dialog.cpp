@@ -70,6 +70,7 @@ bool HogDialog::loadHogFile(const QString &hogname) {
 
   const std::string path = hogname.toStdString();
   posix_istream input;
+  errno = 0;
   if (!input.open(path, std::ios_base::in | std::ios_base::binary)) {
     setStatusText(QString("Failed to open %1").arg(hogname));
     return false;
@@ -82,12 +83,12 @@ bool HogDialog::loadHogFile(const QString &hogname) {
     setStatusText(QString("Not a hog file: %1").arg(hogname));
     return false;
   }
-  if (!input.good()) {
-    setStatusText(QString("Read error: %1").arg(hogname));
-    return false;
-  }
 
   const std::size_t total = std::distance(archive.begin(), archive.end());
+  if (total == 0) {
+    setStatusText(QString("Empty hog file: %1").arg(hogname));
+    return false;
+  }
   setStatusText(QString("Loaded %1 (%2 entries)")
                     .arg(QFileInfo(hogname).fileName())
                     .arg(static_cast<qulonglong>(total)));

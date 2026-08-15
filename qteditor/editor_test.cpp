@@ -27,6 +27,8 @@
 #include <QLineEdit>
 #include <QSlider>
 
+#include <cerrno>
+
 #include "d3_editor_init.h"
 #include "d3edit.h"
 #include "door.h"
@@ -151,6 +153,37 @@ private slots:
     QCoreApplication::processEvents();
   }
 
+  // CAddScriptDialog (IDD_ADDSCRIPT) gates the name length at 32 chars via
+  // DDV_MaxChars in Win32 and via setMaxLength on the Qt line edit here. It
+  // also always-defaults IDC_TYPESEL to "object" before "trigger". This test
+  // pins both behaviours so the Win32 contract survives the port.
+  void testAddScriptDialogContract() {
+    QtEditor::AddScriptDialog dlg;
+    QVERIFY(dlg.handle() != nullptr);
+
+    auto *name_edit = dlg.handle()->findChild<QLineEdit *>(QStringLiteral("IDC_EDITNAME"));
+    QVERIFY(name_edit != nullptr);
+    QCOMPARE(int(name_edit->maxLength()), 32);
+
+    auto *type_combo = dlg.handle()->findChild<QComboBox *>(QStringLiteral("IDC_TYPESEL"));
+    QVERIFY(type_combo != nullptr);
+    QCOMPARE(type_combo->count(), 2);
+    QCOMPARE(type_combo->itemText(0), QStringLiteral("object"));
+    QCOMPARE(type_combo->itemText(1), QStringLiteral("trigger"));
+    QCOMPARE(type_combo->currentText(), QStringLiteral("object"));
+
+    // Trying to type past the cap leaves the extra characters trimmed.
+    name_edit->setText(QStringLiteral("01234567890123456789012345678901234567890"));
+    QCOMPARE(name_edit->text().size(), 32);
+
+    // Accessors reflect whatever is in the controls.
+    QCOMPARE(dlg.name(), name_edit->text());
+    QCOMPARE(dlg.typeName(), QStringLiteral("object"));
+
+    type_combo->setCurrentIndex(1);
+    QCOMPARE(dlg.typeName(), QStringLiteral("trigger"));
+  }
+
   // Verifies that HogDialog::loadHogFile() reads every entry (Filename, Date,
   // Length, Attributes) out of a real .hog file using the cfile/hogfile API.
   // Uses the d3-linux.hog that ships with the project, which thousands of
@@ -165,14 +198,22 @@ private slots:
     // Bad path is rejected.
     QVERIFY(!dlg.loadHogFile(QStringLiteral("/no/such/file.hog")));
 
-    // The actual data file shipped with the project. Resolved relative to
-    // PWD so the test runs from the install root.
+    // The actual data file shipped with the project. Search in the binary's
+    // directory, the install root PWD (./), the install-root symlink (which
+    // PWD-d TestC run resolves), and a couple of relatives.
     const QString data_hog =
         QStringLiteral("%1/d3-linux.hog").arg(QCoreApplication::applicationDirPath());
+    const QString parent_hog =
+        QStringLiteral("%1/d3-linux.hog").arg(QCoreApplication::applicationDirPath() + "/..");
     bool found = false;
-    const QStringList candidates = {data_hog, QStringLiteral("../d3-linux.hog"),
+    const QStringList candidates = {data_hog, parent_hog,
+                                    QStringLiteral("./d3-linux.hog"),
+                                    QStringLiteral("./d3-linux.hog.original"),
+                                    QStringLiteral("../d3-linux.hog"),
                                     QStringLiteral("../../d3-linux.hog")};
+    QStringList seen_paths;
     for (const QString &c : candidates) {
+      seen_paths << c;
       if (QFile::exists(c)) {
         QVERIFY(dlg.loadHogFile(c));
         found = true;
@@ -180,6 +221,8 @@ private slots:
       }
     }
     if (!found) {
+      qWarning("d3-linux.hog not found; tried: %s",
+               qPrintable(seen_paths.join(QStringLiteral(", "))));
       QSKIP("d3-linux.hog not found in test workspace; skipping hog load test.");
     }
     const QString text = dlg.handle()->findChild<QLabel *>(QStringLiteral("IDC_STATUSTEXT"))->text();
@@ -193,9 +236,11 @@ private slots:
 // without going through cfile/hogfile.h.
   void testHogFormatRoundTrip() {
     const QString tmpDir = QCoreApplication::applicationDirPath() + "/_test_hog";
-    QDir().mkpath(tmpDir);
+    QDir::current().mkpath(tmpDir);
+
     const QString out = tmpDir + "/roundtrip.hog";
     QFile::remove(out);
+    errno = 0;
 
     hog2::archive_t table;
     hog2::entry_t alpha;
@@ -206,12 +251,19 @@ private slots:
     table.addEntry(alpha);
     QCOMPARE(static_cast<int>(std::distance(table.begin(), table.end())), 1);
 
+    assert(errno == 0);
     posix_ostream output;
     QVERIFY(output.open(out.toStdString(),
                         std::ios_base::out | std::ios_base::binary | std::ios_base::trunc));
     output << table;
-    QVERIFY(output.good());
+    // posix_ostream::write tracks bytes_written vs length, so output.good()
+    // is reliable here. The same logic doesn't apply on the read side
+    // because posix_istream::read doesn't update m_code.
+    QVERIFY2(output.good(), qPrintable(QString("write errc=%1").arg(int(output.error()))));
     output.close();
+
+    // Verify the on-disk file actually contains the archive header + entry.
+    QCOMPARE(QFileInfo(out).size(), qsizetype(116));
 
     posix_istream input;
     QVERIFY(input.open(out.toStdString(), std::ios_base::in | std::ios_base::binary));
@@ -221,7 +273,8 @@ private slots:
     QCOMPARE(read.begin()->name.string(), std::string("alpha.txt"));
 
     QFile::remove(out);
-    QDir().rmdir(tmpDir);
+    QDir::current().rmdir(tmpDir);
+    errno = 0;
   }
 
   void testDialogsConstruct() {
@@ -473,6 +526,7 @@ int main(int argc, char *argv[]) {
   QApplication app(argc, argv);
   QtEditor::initD3Core(argc, argv);
   EditorTest tc;
+  assert(errno == 0);
   return QTest::qExec(&tc, argc, argv);
 }
 #include "editor_test.moc"

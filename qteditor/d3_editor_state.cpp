@@ -55,7 +55,10 @@ int Curportal = -1;
 int Current_trigger = -1;
 
 // SLEW.cpp guards SlewControlInit() with EDITOR; the Qt port has no controller
-// integration, so provide a stub.
+// integration, so provide a stub. The non-EDITOR branch of slew.h turns
+// SlewControlInit into a no-arg function-like macro with an empty replacement
+// list, so undef it before defining the real function body.
+#undef SlewControlInit
 void SlewControlInit() {}
 
 // Manage-system dirs/network globals (LocalModelsDir, NetModelsDir, TableUser,

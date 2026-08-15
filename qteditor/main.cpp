@@ -22,13 +22,16 @@
 #include <QPixmap>
 #include <QSplashScreen>
 #include <cstring>
+#include <cerrno>
 
 #include "d3_editor_init.h"
 #include "dialog_test.h"
 #include "main_window.h"
 
 
+
 int main(int argc, char *argv[]) {
+  errno = 0;
   QApplication app(argc, argv);
   app.setApplicationName("Descent 3 Editor");
   app.setOrganizationName("DescentDevelopers");
