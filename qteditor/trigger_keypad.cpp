@@ -56,7 +56,14 @@ TriggerKeypad::TriggerKeypad(QWidget *parent) : Keypad(":/ui/triggerkeypad.ui", 
 TriggerKeypad::~TriggerKeypad() = default;
 
 void TriggerKeypad::updateDialog() {
-  if (Current_trigger < 0 || Current_trigger >= Num_triggers)
+  // Win32 disables trigger editing when there is no current trigger (which
+  // requires a loaded level with triggers).
+  const bool active = (Current_trigger >= 0 && Current_trigger < Num_triggers);
+  const QList<QWidget *> all = m_widget->findChildren<QWidget *>();
+  for (QWidget *w : all)
+    if (w->objectName().startsWith("IDC_TRIG"))
+      w->setEnabled(active);
+  if (!active)
     return;
   trigger *tp = &Triggers[Current_trigger];
 

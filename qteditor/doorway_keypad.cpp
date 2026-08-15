@@ -71,6 +71,13 @@ doorway *currentDoorway() {
 
 void DoorwayKeypad::updateDialog() {
   doorway *dp = currentDoorway();
+  // Win32 disables the doorway editing controls when no room is current.
+  const bool active = (dp != nullptr);
+  const QList<QWidget *> all = m_widget->findChildren<QWidget *>();
+  for (QWidget *w : all) {
+    if (w->objectName().startsWith("IDC_KEY") || w->objectName().startsWith("IDC_DOORWAY"))
+      w->setEnabled(active);
+  }
   if (dp == nullptr)
     return;
 

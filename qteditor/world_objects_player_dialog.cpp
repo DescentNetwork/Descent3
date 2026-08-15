@@ -28,6 +28,7 @@
 #include <QRadioButton>
 
 #include "cfile.h"
+#include "qt_messagebox.h"
 #include "d3edit.h"
 #include "ddio.h"
 #include "manage.h"

@@ -18,39 +18,36 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
-#include "vecmat.h"
+#include "keypad_dialog.h"
 
 namespace QtEditor {
 
-// Port of CViewerPropDlg (IDD_VIEWER_DIALOG): a modeless dialog for editing
-// the viewer's position and orientation.
-class ViewerPropDialog : public Dialog {
+// Port of CPathPadDialog (IDD_PATHKEYPAD): path and AI-node editing.
+class PathKeypad : public Keypad {
   Q_OBJECT
 public:
-  explicit ViewerPropDialog(QWidget *parent = nullptr);
-  ~ViewerPropDialog() override;
-
-  void updatePosition();
-  void updateOrientation();
+  explicit PathKeypad(QWidget *parent = nullptr);
+  ~PathKeypad() override;
 
 private slots:
-  void onAlignUpYpos();
-  void onAlignXneg();
-  void onAlignXpos();
-  void onAlignYneg();
-  void onAlignYpos();
-  void onAlignZneg();
-  void onAlignZpos();
-  void onOrientCommit();
-  void onPosCommit();
-  void onXMoveToggled(bool checked);
-  void onYMoveToggled(bool checked);
-  void onZMoveToggled(bool checked);
+  void onAddPath();
+  void onDeletePath();
+  void onPathPulldownChanged();
+  void onNextNode();
+  void onPrevNode();
+  void onCurrentNodeEdited();
+  void onInsertNode();
+  void onDeleteNode();
+  void onMoveNode();
+  void onShowNodesToggled(bool checked);
+  void onIncEdited();
 
 private:
-  void setOrientation(matrix &m);
-  bool ensureViewer();
+  void updateDialog();
+  int currentPath();
+  int currentNode();
+
+  float m_inc = 10.0f;
 };
 
 }

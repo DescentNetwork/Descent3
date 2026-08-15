@@ -27,6 +27,7 @@
 #include <QPushButton>
 
 #include "cfile.h"
+#include "qt_messagebox.h"
 #include "d3edit.h"
 #include "ddio.h"
 #include "door.h"

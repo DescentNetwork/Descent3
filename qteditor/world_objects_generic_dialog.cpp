@@ -32,6 +32,7 @@
 
 #include "bitmap.h"
 #include "cfile.h"
+#include "qt_messagebox.h"
 #include "d3edit.h"
 #include "ddio.h"
 #include "gametexture.h"

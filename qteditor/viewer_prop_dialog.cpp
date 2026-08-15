@@ -53,6 +53,15 @@ ViewerPropDialog::ViewerPropDialog(QWidget *parent) : Dialog(":/ui/viewer_dialog
   updatePosition();
   updateOrientation();
 
+  // Without a viewer (no level loaded) the editing controls are inert, so
+  // disable them to match the "needs a level" gating.
+  if (Viewer_object == nullptr) {
+    const QList<QWidget *> all = m_widget->findChildren<QWidget *>();
+    for (QWidget *w : all)
+      if (w->objectName().startsWith("IDC_"))
+        w->setEnabled(false);
+  }
+
   if (QPushButton *b = find<QPushButton>("IDC_POS_COMMIT_BUTTON"))
     b->setEnabled(false);
 
@@ -79,8 +88,11 @@ ViewerPropDialog::ViewerPropDialog(QWidget *parent) : Dialog(":/ui/viewer_dialog
 ViewerPropDialog::~ViewerPropDialog() = default;
 
 void ViewerPropDialog::updateOrientation() {
-  if (Viewer_object == nullptr)
+  if (Viewer_object == nullptr) {
+    if (QWidget *w = find<QWidget>("IDC_PITCH_EDIT"))
+      w->setEnabled(false);
     return;
+  }
   angvec angs;
   vm_ExtractAnglesFromMatrix(&angs, &Viewer_object->orient);
 
@@ -93,22 +105,34 @@ void ViewerPropDialog::updateOrientation() {
 }
 
 void ViewerPropDialog::updatePosition() {
-  if (Viewer_object == nullptr)
+  const bool hasViewer = (Viewer_object != nullptr);
+  if (Viewer_object == nullptr) {
+    // Win32 gates the whole dialog on the viewer existing.
+    if (QWidget *w = find<QWidget>("IDC_XPOS_EDIT"))
+      w->setEnabled(false);
     return;
+  }
   if (QLineEdit *edit = find<QLineEdit>("IDC_XPOS_EDIT"))
     edit->setText(QString::number((double)Viewer_object->pos.x(), 'f', 2));
   if (QLineEdit *edit = find<QLineEdit>("IDC_YPOS_EDIT"))
     edit->setText(QString::number((double)Viewer_object->pos.y(), 'f', 2));
   if (QLineEdit *edit = find<QLineEdit>("IDC_ZPOS_EDIT"))
     edit->setText(QString::number((double)Viewer_object->pos.z(), 'f', 2));
+  (void)hasViewer;
 }
 
+bool ViewerPropDialog::ensureViewer() { return Viewer_object != nullptr; }
+
 void ViewerPropDialog::setOrientation(matrix &m) {
+  if (Viewer_object == nullptr)
+    return;
   vm_Orthogonalize(&m);
   Viewer_moved = 1;
 }
 
 void ViewerPropDialog::onAlignUpYpos() {
+  if (Viewer_object == nullptr)
+    return;
   matrix *m = &Viewer_object->orient;
   m->rvec.y() = m->fvec.y() = m->uvec.x() = m->uvec.z() = 0;
   m->uvec.y() = 1.0;
@@ -116,6 +140,8 @@ void ViewerPropDialog::onAlignUpYpos() {
 }
 
 void ViewerPropDialog::onAlignXneg() {
+  if (Viewer_object == nullptr)
+    return;
   matrix *m = &Viewer_object->orient;
   m->fvec.x() = -1.0;
   m->fvec.y() = m->fvec.z() = 0;
@@ -127,6 +153,8 @@ void ViewerPropDialog::onAlignXneg() {
 }
 
 void ViewerPropDialog::onAlignXpos() {
+  if (Viewer_object == nullptr)
+    return;
   matrix *m = &Viewer_object->orient;
   m->fvec.x() = 1.0;
   m->fvec.y() = m->fvec.z() = 0;
@@ -138,6 +166,8 @@ void ViewerPropDialog::onAlignXpos() {
 }
 
 void ViewerPropDialog::onAlignYneg() {
+  if (Viewer_object == nullptr)
+    return;
   matrix *m = &Viewer_object->orient;
   m->fvec.y() = -1.0;
   m->fvec.x() = m->fvec.z() = 0;
@@ -149,6 +179,8 @@ void ViewerPropDialog::onAlignYneg() {
 }
 
 void ViewerPropDialog::onAlignYpos() {
+  if (Viewer_object == nullptr)
+    return;
   matrix *m = &Viewer_object->orient;
   m->fvec.y() = 1.0;
   m->fvec.x() = m->fvec.z() = 0;
@@ -160,6 +192,8 @@ void ViewerPropDialog::onAlignYpos() {
 }
 
 void ViewerPropDialog::onAlignZneg() {
+  if (Viewer_object == nullptr)
+    return;
   matrix *m = &Viewer_object->orient;
   m->fvec.z() = -1.0;
   m->fvec.x() = m->fvec.y() = 0;
@@ -171,6 +205,8 @@ void ViewerPropDialog::onAlignZneg() {
 }
 
 void ViewerPropDialog::onAlignZpos() {
+  if (Viewer_object == nullptr)
+    return;
   matrix *m = &Viewer_object->orient;
   m->fvec.z() = 1.0;
   m->fvec.x() = m->fvec.y() = 0;
@@ -182,6 +218,8 @@ void ViewerPropDialog::onAlignZpos() {
 }
 
 void ViewerPropDialog::onOrientCommit() {
+  if (Viewer_object == nullptr)
+    return;
   const int pitch = find<QLineEdit>("IDC_PITCH_EDIT")->text().toInt();
   const int heading = find<QLineEdit>("IDC_HEADING_EDIT")->text().toInt();
   const int bank = find<QLineEdit>("IDC_BANK_EDIT")->text().toInt();

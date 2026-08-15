@@ -25,7 +25,6 @@
 #include "dialog_test.h"
 #include "main_window.h"
 
-std::filesystem::path orig_pwd;
 
 int main(int argc, char *argv[]) {
   QApplication app(argc, argv);

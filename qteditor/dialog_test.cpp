@@ -34,6 +34,7 @@
 #include "hog_dialog.h"
 #include "level_info_dialog.h"
 #include "megacell_keypad.h"
+#include "path_keypad.h"
 #include "physics_dialog.h"
 #include "player_weapons_dialog.h"
 #include "powprop_dialog.h"
@@ -154,6 +155,7 @@ int runDialogTest() {
   construct<MegacellKeypad>("keypad_megacell", nullptr);
   construct<DoorwayKeypad>("keypad_doorway", nullptr);
   construct<TriggerKeypad>("keypad_trigger", nullptr);
+  construct<PathKeypad>("keypad_path", nullptr);
 
   fprintf(stderr, "DIALOG-TEST total=%d failures=%d\n", total, failures);
   return failures;

@@ -20,6 +20,8 @@
 
 #include <filesystem>
 
+std::filesystem::path orig_pwd;
+
 #include <SDL3/SDL.h>
 
 #include "appdatabase.h"

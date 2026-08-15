@@ -27,6 +27,7 @@
 #include <QPushButton>
 #include <QRadioButton>
 
+#include "qt_messagebox.h"
 #include "d3edit.h"
 #include "manage.h"
 #include "physics_dialog.h"

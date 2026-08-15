@@ -26,6 +26,8 @@
 #include "crossplat.h"
 #include "objinfo.h"
 #include "pserror.h"
+#include "gamepath.h"
+#include <cstring>
 #include <filesystem>
 
 d3edit_state D3EditState;
@@ -120,4 +122,62 @@ int GetPrevObjectID(int n) {
     if (Object_info[i].type == Object_info[n].type)
       return i;
   return n;
+}
+
+// Path editing helpers (editor/EPath.cpp in the MFC editor). The full version
+// does line-of-sight checks against the viewer; simplified here.
+int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector pos, matrix orient) {
+  if (GamePaths[pathnum].num_nodes >= MAX_NODES_PER_PATH) {
+    OutrageMessageBox("Error: Path already has its maximum amount of nodes.");
+    return -1;
+  }
+  for (int i = GamePaths[pathnum].num_nodes - 1; i > nodenum; i--)
+    memcpy(&GamePaths[pathnum].pathnodes[i + 1], &GamePaths[pathnum].pathnodes[i], sizeof(node));
+  const int newnode = nodenum + 1;
+  GamePaths[pathnum].pathnodes[newnode].pos = pos;
+  GamePaths[pathnum].pathnodes[newnode].roomnum = roomnum;
+  GamePaths[pathnum].pathnodes[newnode].flags = flags;
+  GamePaths[pathnum].pathnodes[newnode].fvec = orient.fvec;
+  GamePaths[pathnum].pathnodes[newnode].uvec = orient.uvec;
+  GamePaths[pathnum].num_nodes++;
+  return newnode;
+}
+
+void DeleteNodeFromPath(int pathnum, int nodenum) {
+  for (int i = nodenum; i < GamePaths[pathnum].num_nodes - 1; i++)
+    memcpy(&GamePaths[pathnum].pathnodes[i], &GamePaths[pathnum].pathnodes[i + 1], sizeof(node));
+  GamePaths[pathnum].num_nodes--;
+}
+
+int GetNextPath(int n) {
+  ASSERT(n >= 0 && n < MAX_GAME_PATHS);
+  if (Num_game_paths == 0)
+    return -1;
+  for (int i = n + 1; i < MAX_GAME_PATHS; i++)
+    if (GamePaths[i].used)
+      return i;
+  for (int i = 0; i < n; i++)
+    if (GamePaths[i].used)
+      return i;
+  return n;
+}
+
+int GetPrevPath(int n) {
+  ASSERT(n >= 0 && n < MAX_GAME_PATHS);
+  if (Num_game_paths == 0)
+    return -1;
+  for (int i = n - 1; i >= 0; i--)
+    if (GamePaths[i].used)
+      return i;
+  for (int i = MAX_GAME_PATHS - 1; i > n; i--)
+    if (GamePaths[i].used)
+      return i;
+  return n;
+}
+
+int GetFirstPath() {
+  for (int i = 0; i < MAX_GAME_PATHS; i++)
+    if (GamePaths[i].used)
+      return i;
+  return -1;
 }
