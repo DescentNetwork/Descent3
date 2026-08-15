@@ -41,6 +41,8 @@ set(QTEDITOR_SOURCES
   physics_dialog.h
   powprop_dialog.cpp
   powprop_dialog.h
+  preferences_dialog.cpp
+  preferences_dialog.h
   propai_dialog.cpp
   propai_dialog.h
   qteditor_dialog.cpp
@@ -49,6 +51,8 @@ set(QTEDITOR_SOURCES
   selectrange_dialog.h
   sound_combo.cpp
   sound_combo.h
+  sound_source_dialog.cpp
+  sound_source_dialog.h
   splash_dialog.cpp
   splash_dialog.h
   status_dialog.cpp
@@ -57,6 +61,8 @@ set(QTEDITOR_SOURCES
   terrain_sound_dialog.h
   ui_loader.cpp
   ui_loader.h
+  viewer_prop_dialog.cpp
+  viewer_prop_dialog.h
   worldobjectslight_dialog.cpp
   worldobjectslight_dialog.h
 )

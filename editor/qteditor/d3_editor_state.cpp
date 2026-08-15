@@ -21,6 +21,7 @@
 // here for the Qt port.
 #include "d3edit.h"
 #include "terrain.h"
+#include "slew.h"
 
 d3edit_state D3EditState;
 int World_changed = 0;
@@ -29,3 +30,17 @@ int World_changed = 0;
 // compiled without that define, so provide them here.
 uint8_t TerrainSelected[TERRAIN_WIDTH * TERRAIN_DEPTH];
 int Num_terrain_selected = 0;
+
+// Editor-only state flags declared in d3edit.h (defined in the MFC editor's
+// editor.cpp/EDVARS.cpp).
+int State_changed = 0;
+int Viewer_moved = 0;
+int Object_moved = 0;
+int New_mine = 0;
+
+// Slew movement limitations flag (defined in the MFC editor's editor.cpp).
+int Slew_limitations = 0;
+
+// SLEW.cpp guards SlewControlInit() with EDITOR; the Qt port has no controller
+// integration, so provide a stub.
+void SlewControlInit() {}
