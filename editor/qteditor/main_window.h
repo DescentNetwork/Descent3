@@ -20,10 +20,15 @@
 
 #include <QMainWindow>
 
+class QAction;
+class QMenu;
+class QWidget;
+
 namespace QtEditor {
 
 class Dialog;
 class SplashDialog;
+class ViewerPropDialog;
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -32,11 +37,30 @@ public:
   ~MainWindow() override;
 
 private:
+  // Looks up a menu action by its ID_* identifier in the .ui-loaded action
+  // host (falling back to a stub action if the identifier is missing).
+  QAction *action(const QString &id);
+  void buildMenus();
+  QMenu *addMenu(const QString &title);
+
   void showSplash();
   void showAboutBox();
+  void showNotPorted(const QString &name);
+  void showLevelInfo();
+  void showPreferences();
+  void toggleViewerProps();
+  void showHogMaker();
+  void showSelectRange();
+  void showTerrainSound();
+  void showWorldObjectsDoor();
+  void showWorldObjectsPlayer();
+  void showWorldObjectsLight();
 
+  // Host widget that owns the QAction definitions loaded from a .ui resource.
+  QWidget *m_actionsHost = nullptr;
   SplashDialog *m_splash = nullptr;
   Dialog *m_aboutBox = nullptr;
+  ViewerPropDialog *m_viewerProps = nullptr;
 };
 
 }
