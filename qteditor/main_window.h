@@ -56,6 +56,7 @@ private:
   void showWorldObjectsPlayer();
   void showWorldObjectsLight();
   void showWorldObjectsSound();
+  void showWorldWeapons();
   void showGenericObject(int objType, int current);
 
   // Host widget that owns the QAction definitions loaded from a .ui resource.

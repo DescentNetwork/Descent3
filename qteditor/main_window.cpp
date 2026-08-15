@@ -41,6 +41,7 @@
 #include "world_objects_player_dialog.h"
 #include "worldobjectslight_dialog.h"
 #include "world_sounds_dialog.h"
+#include "world_weapons_dialog.h"
 
 namespace QtEditor {
 
@@ -145,7 +146,7 @@ void MainWindow::buildMenus() {
           [this]() { showGenericObject(OBJ_CLUTTER, D3EditState.current_clutter); });
   connect(action("ID_TOOLS_WORLD_OBJECTS_PLAYER"), &QAction::triggered, this,
           &MainWindow::showWorldObjectsPlayer);
-  connect(action("ID_TOOLS_WORLD_WEAPONS"), &QAction::triggered, this, [this]() { showNotPorted("WorldWeapons"); });
+  connect(action("ID_TOOLS_WORLD_WEAPONS"), &QAction::triggered, this, &MainWindow::showWorldWeapons);
   connect(action("ID_TOOLS_WORLD_OBJECTS_DOOR"), &QAction::triggered, this, &MainWindow::showWorldObjectsDoor);
   connect(action("ID_TOOLS_WORLD_OBJECTS_SOUND"), &QAction::triggered, this,
           &MainWindow::showWorldObjectsSound);
@@ -264,6 +265,11 @@ void MainWindow::showWorldObjectsLight() {
 
 void MainWindow::showWorldObjectsSound() {
   WorldSoundsDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showWorldWeapons() {
+  WorldWeaponsDialog dlg(this);
   dlg.exec();
 }
 

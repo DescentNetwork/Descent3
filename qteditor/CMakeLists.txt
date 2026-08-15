@@ -75,6 +75,8 @@ set(QTEDITOR_SOURCES
   world_objects_player_dialog.h
   world_sounds_dialog.cpp
   world_sounds_dialog.h
+  world_weapons_dialog.cpp
+  world_weapons_dialog.h
   worldobjectslight_dialog.cpp
   worldobjectslight_dialog.h
 )
