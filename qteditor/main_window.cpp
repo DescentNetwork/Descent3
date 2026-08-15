@@ -41,6 +41,7 @@
 #include "world_objects_player_dialog.h"
 #include "worldobjectslight_dialog.h"
 #include "world_sounds_dialog.h"
+#include "world_textures_dialog.h"
 #include "world_weapons_dialog.h"
 
 namespace QtEditor {
@@ -134,7 +135,7 @@ void MainWindow::buildMenus() {
   editorsMenu->addAction(action("ID_EDITORS_DALLAS"));
 
   connect(action("ID_TOOLS_WORLD_TEXTURES"), &QAction::triggered, this,
-          [this]() { showNotPorted("WorldTextures"); });
+          &MainWindow::showWorldTextures);
   connect(action("ID_EDITORS_MEGACELLS"), &QAction::triggered, this, [this]() { showNotPorted("Megacells"); });
   connect(action("ID_TOOLS_WORLD_OBJECTS_ROBOTS"), &QAction::triggered, this,
           [this]() { showNotPorted("WorldObjectsRobot"); });
@@ -270,6 +271,11 @@ void MainWindow::showWorldObjectsSound() {
 
 void MainWindow::showWorldWeapons() {
   WorldWeaponsDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showWorldTextures() {
+  WorldTexturesDialog dlg(this);
   dlg.exec();
 }
 
