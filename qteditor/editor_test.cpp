@@ -89,8 +89,10 @@
 #include <cstring>
 #include <fstream>
 #include "level_info_dialog.h"
+#include "megacell_dialog.h"
 #include "megacell_keypad.h"
 #include "object_keypad.h"
+#include "object_properties_dialog.h"
 #include "path_keypad.h"
 #include "room_keypad.h"
 #include "physics_dialog.h"

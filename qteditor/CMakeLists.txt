@@ -54,6 +54,8 @@ set(QTEDITOR_SOURCES
   level_keypad.h
   lighting_keypad.cpp
   lighting_keypad.h
+  megacell_dialog.cpp
+  megacell_dialog.h
   megacell_keypad.cpp
   megacell_keypad.h
   level_info_dialog.cpp
@@ -71,6 +73,8 @@ set(QTEDITOR_SOURCES
   path_keypad.h
   object_keypad.cpp
   object_keypad.h
+  object_properties_dialog.cpp
+  object_properties_dialog.h
   physics_dialog.cpp
   physics_dialog.h
   player_weapons_dialog.cpp

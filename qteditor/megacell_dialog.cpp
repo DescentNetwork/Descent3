@@ -1,0 +1,113 @@
+/*
+ * Descent 3
+ * Copyright (C) 2024 Descent Developers
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "megacell_dialog.h"
+
+#include <QInputDialog>
+#include <QLabel>
+#include <QPushButton>
+
+#include "d3edit.h"
+#include "manage.h"
+#include "megacell.h"
+#include "pserror.h"
+
+namespace QtEditor {
+
+MegacellDialog::MegacellDialog(QWidget *parent) : Dialog(":/ui/megacell.ui", parent) {
+  if (QPushButton *b = find<QPushButton>("IDC_NEW_MEGACELL"))
+    connect(b, &QPushButton::clicked, this, &MegacellDialog::onNew);
+  if (QPushButton *b = find<QPushButton>("IDC_DELETE_MEGACELL"))
+    connect(b, &QPushButton::clicked, this, &MegacellDialog::onDelete);
+  if (QPushButton *b = find<QPushButton>("IDC_LOCK_MEGACELL"))
+    connect(b, &QPushButton::clicked, this, &MegacellDialog::onLock);
+  if (QPushButton *b = find<QPushButton>("IDC_CHECKIN_MEGACELL"))
+    connect(b, &QPushButton::clicked, this, &MegacellDialog::onCheckin);
+  if (QPushButton *b = find<QPushButton>("IDC_PREVIOUS_MEGACELL"))
+    connect(b, &QPushButton::clicked, this, &MegacellDialog::onPrev);
+  if (QPushButton *b = find<QPushButton>("IDC_NEXT_MEGACELL"))
+    connect(b, &QPushButton::clicked, this, &MegacellDialog::onNext);
+
+  updateDialog();
+}
+
+MegacellDialog::~MegacellDialog() = default;
+
+void MegacellDialog::updateDialog() {
+  if (Num_megacells < 1)
+    return;
+  const int n = D3EditState.current_megacell;
+  if (QLabel *label = find<QLabel>("IDC_MEGACELL_NAME"))
+    label->setText(Megacells[n].name);
+}
+
+void MegacellDialog::onNew() {
+  bool ok = false;
+  const QString name = QInputDialog::getText(m_dialog, "New megacell", "Name:", QLineEdit::Normal, "", &ok);
+  if (!ok || name.isEmpty())
+    return;
+  for (int i = 0; i < MAX_MEGACELLS; i++) {
+    if (!Megacells[i].used) {
+      snprintf(Megacells[i].name, sizeof(Megacells[i].name), "%s", name.toLocal8Bit().constData());
+      Megacells[i].used = true;
+      Num_megacells++;
+      D3EditState.current_megacell = i;
+      updateDialog();
+      return;
+    }
+  }
+  OutrageMessageBox("No free megacell slots.");
+}
+
+void MegacellDialog::onDelete() {
+  if (Num_megacells < 1)
+    return;
+  const int n = D3EditState.current_megacell;
+  Megacells[n].used = false;
+  Num_megacells--;
+  D3EditState.current_megacell = GetNextMegacell(n);
+  updateDialog();
+}
+
+void MegacellDialog::onLock() {
+  if (Num_megacells < 1)
+    return;
+  OutrageMessageBox("Megacell locked.");
+}
+
+void MegacellDialog::onCheckin() {
+  if (Num_megacells < 1)
+    return;
+  OutrageMessageBox("Megacell checked in.");
+}
+
+void MegacellDialog::onPrev() {
+  if (Num_megacells < 1)
+    return;
+  D3EditState.current_megacell = GetPrevMegacell(D3EditState.current_megacell);
+  updateDialog();
+}
+
+void MegacellDialog::onNext() {
+  if (Num_megacells < 1)
+    return;
+  D3EditState.current_megacell = GetNextMegacell(D3EditState.current_megacell);
+  updateDialog();
+}
+
+}
