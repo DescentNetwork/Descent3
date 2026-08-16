@@ -62,6 +62,8 @@ set(QTEDITOR_SOURCES
   level_io.h
   main.cpp
   main_window.cpp
+  multicheck_dialog.cpp
+  multicheck_dialog.h
   matcen_keypad.cpp
   matcen_keypad.h
   main_window.h
@@ -83,11 +85,19 @@ set(QTEDITOR_SOURCES
   procedural_dialog.h
   preferences_dialog.cpp
   preferences_dialog.h
+  propscript_dialog.cpp
+  propscript_dialog.h
   propai_dialog.cpp
   propai_dialog.h
+  property_physics_dialog.cpp
+  property_physics_dialog.h
+  propscript_dialog.cpp
+  propscript_dialog.h
   qt_messagebox.cpp
   qteditor_dialog.cpp
   qteditor_dialog.h
+  quickcompile_dialog.cpp
+  quickcompile_dialog.h
   robot_weapons_dialog.cpp
   robot_weapons_dialog.h
   room_keypad.cpp
