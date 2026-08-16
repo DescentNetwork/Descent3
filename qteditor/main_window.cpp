@@ -24,6 +24,7 @@
 #include <QDockWidget>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QSettings>
 #include <QStatusBar>
 #include <QTimer>
 
@@ -110,6 +111,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   buildKeypadBar();
   buildMenus();
+
+  // Pull geometry / dock state saved by an earlier session so docked
+  // keypads are where the user left them (CMainFrame equivalent of the
+  // ShowWindow calls around OnCreateClient / OnDestroy).
+  restoreWindowState();
 
   // The Win32 editor pumps an OnIdle handler every frame; the Qt port uses
   // a QTimer so the keypad bar / status bar update without dragging the
@@ -278,6 +284,14 @@ void MainWindow::buildMenus() {
   viewMenu->addSeparator();
   viewMenu->addAction(action("ID_VIEW_SHOWVIEWERFORWARDVECTOR"));
   viewMenu->addSeparator();
+  QAction *a_toolbar = action("ID_VIEW_TOOLBAR");
+  QAction *a_showobjs = action("ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW");
+  viewMenu->addAction(a_toolbar);
+  viewMenu->addAction(a_showobjs);
+  QObject::connect(a_toolbar, &QAction::triggered, this, &MainWindow::onViewToolbar);
+  QObject::connect(a_showobjs, &QAction::triggered, this,
+                   &MainWindow::onViewShowObjectsInWireframe);
+  viewMenu->addSeparator();
   QAction *a_mine_view    = action("ID_MINE_VIEW");
   QAction *a_terrain_view = action("ID_TERRAIN_VIEW");
   QAction *a_room_view    = action("ID_ROOM_VIEW");
@@ -297,8 +311,8 @@ void MainWindow::buildMenus() {
   viewMenu->addAction(action("ID_VIEW_VIEWPROP"));
   connect(action("ID_VIEW_VIEWPROP"), &QAction::triggered, this, &MainWindow::toggleViewerProps);
 
-  for (QAction *a : {action("ID_VIEW_TOOLBAR"), action("ID_VIEW_TEXTUREMINE"),
-                     action("ID_VIEW_WIREFRAMEMINE"), action("ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW"),
+  for (QAction *a : {action("ID_VIEW_TEXTUREMINE"),
+                     action("ID_VIEW_WIREFRAMEMINE"),
                      action("ID_VIEW_CENTERONCUBE"), action("ID_VIEW_CENTERONOBJECT"),
                      action("ID_VIEW_CENTERONMINE"), action("ID_VIEW_RESETVIEWRADIUS"),
                      action("ID_VIEW_MOVECAMERATOSELECTEDROOM"), action("ID_VIEW_MOVECAMERATOSELECTEDFACE"),
@@ -596,6 +610,39 @@ void MainWindow::onViewTerrain() {
 void MainWindow::onViewRoom() {
   SetViewMode(VIEW_MODE_ROOM);
   statusBar()->showMessage(QStringLiteral("View: Room"));
+}
+
+void MainWindow::onViewToolbar() {
+  // Win32 "toolbar" toggles CMainFrame::m_wndToolBar; the Qt port routes the
+  // toggle through the keypad dock (the only dockable widget currently in
+  // the main window). Future port: replace with a real QToolBar so denizens
+  // of the editor.rc toolbar can land without piggy-backing on the keypad.
+  toggleKeypadBar();
+}
+
+void MainWindow::onViewShowObjectsInWireframe() {
+  D3EditState.objects_in_wireframe = !D3EditState.objects_in_wireframe;
+  statusBar()->showMessage(
+      QStringLiteral("Objects in wireframe: %1")
+          .arg(D3EditState.objects_in_wireframe
+                   ? QStringLiteral("on")
+                   : QStringLiteral("off")));
+}
+
+void MainWindow::saveWindowState() {
+  QSettings settings;
+  settings.setValue(QStringLiteral("mainwindow/geometry"), saveGeometry());
+  settings.setValue(QStringLiteral("mainwindow/dock_state"), saveState());
+}
+
+void MainWindow::restoreWindowState() {
+  QSettings settings;
+  const QByteArray geom = settings.value(QStringLiteral("mainwindow/geometry")).toByteArray();
+  const QByteArray dock = settings.value(QStringLiteral("mainwindow/dock_state")).toByteArray();
+  if (!geom.isEmpty())
+    restoreGeometry(geom);
+  if (!dock.isEmpty())
+    restoreState(dock);
 }
 
 void MainWindow::showNotPorted(const QString &name) {

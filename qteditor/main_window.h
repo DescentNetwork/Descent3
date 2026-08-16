@@ -64,6 +64,13 @@ public:
   void stopOnIdleTimer();
   bool isOnIdleTimerActive() const;
 
+  // Save / restore dock state and main-window geometry to QSettings so the
+  // editor reopens with the same docked keypads / window size the user
+  // closed with. Mirrors the Win32 CMainFrame's ShowWindow/RestoreWindow
+  // paths around OnDestroy / OnCreateClient.
+  void saveWindowState();
+  void restoreWindowState();
+
   // Number of times the on-idle timer has fired since the window was
   // created. Exposed for tests so we can verify the timer is actually
   // running without having to observe status-bar side effects.
@@ -120,8 +127,13 @@ private:
   void onViewMine();
   void onViewTerrain();
   void onViewRoom();
-
-  // Host widget that owns the QAction definitions loaded from a .ui resource.
+  // ID_VIEW_TOOLBAR toggles the keypad dock (Win32's "toolbar" maps to the
+  // keypad dialogbar in the Qt port — there is no separate toolbar widget
+  // yet). ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW mirrors D3EditState.objects_in_wireframe
+  // — toggling it changes the wireframe redraw behaviour without rebuilding
+  // geometry.
+  void onViewToolbar();
+  void onViewShowObjectsInWireframe();
   QWidget *m_actionsHost = nullptr;
   QDockWidget *m_keypadDock = nullptr;
   KeypadBar *m_keypadBar = nullptr;

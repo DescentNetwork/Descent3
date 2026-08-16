@@ -26,6 +26,7 @@
 #include <QAbstractButton>
 #include <QAction>
 #include <QComboBox>
+#include <QDockWidget>
 #include <QElapsedTimer>
 #include <QEventLoop>
 #include <QLabel>
@@ -660,6 +661,111 @@ private slots:
     QCOMPARE(QtEditor::SetViewMode(99), int(QtEditor::VIEW_MODE_ROOM));
     // Reset for subsequent tests.
     QtEditor::SetViewMode(QtEditor::VIEW_MODE_MINE);
+  }
+
+  // Verifies CMainFrame's view toggles routed through the Qt menu:
+  // ID_VIEW_TOOLBAR -> keypad dock visibility; ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW
+  // -> D3EditState.objects_in_wireframe flip (which the editor settings
+  // round-trip already covers). Save/restore geometry round-trip pins the
+  // CMainFrame OnCreateClient / OnDestroy side.
+  void testMainFrameViewSubActions() {
+    QtEditor::MainWindow win;
+    win.show();
+    QCoreApplication::processEvents();
+
+    // Use the menuBar walk as in testFileMenuActionsWired.
+    QAction *a_toolbar = nullptr, *a_showobjs = nullptr,
+            *a_mine = nullptr, *a_terrain = nullptr, *a_room = nullptr;
+    for (QAction *a : win.menuBar()->actions()) {
+      QMenu *m = a->menu();
+      if (m == nullptr || m->title() != "&View")
+        continue;
+      for (QAction *va : m->actions()) {
+        const QString n = va->objectName();
+        if (n == "ID_VIEW_TOOLBAR") a_toolbar = va;
+        else if (n == "ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW") a_showobjs = va;
+        else if (n == "ID_MINE_VIEW") a_mine = va;
+        else if (n == "ID_TERRAIN_VIEW") a_terrain = va;
+        else if (n == "ID_ROOM_VIEW") a_room = va;
+      }
+      break;
+    }
+    QVERIFY(a_toolbar != nullptr);
+    QVERIFY(a_showobjs != nullptr);
+    QVERIFY(a_mine != nullptr);
+    QVERIFY(a_terrain != nullptr);
+    QVERIFY(a_room != nullptr);
+
+    // ID_VIEW_TOOLBAR flips the keypad dock. Start visible, toggle, expect
+    // hidden, toggle again, expect visible.
+    QDockWidget *dock = win.findChild<QDockWidget *>();
+    QVERIFY(dock != nullptr);
+    const bool before = dock->isVisible();
+    a_toolbar->trigger();
+    QCoreApplication::processEvents();
+    QCOMPARE(dock->isVisible(), !before);
+    a_toolbar->trigger();
+    QCoreApplication::processEvents();
+    QCOMPARE(dock->isVisible(), before);
+
+    // ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW flips the flag captured by the
+    // QSettings round-trip.
+    const bool objs_before = D3EditState.objects_in_wireframe;
+    a_showobjs->trigger();
+    QCoreApplication::processEvents();
+    QCOMPARE(D3EditState.objects_in_wireframe, !objs_before);
+    a_showobjs->trigger();
+    QCoreApplication::processEvents();
+    QCOMPARE(D3EditState.objects_in_wireframe, objs_before);
+
+    // View-mode handlers update both SetViewMode() and the status bar.
+    a_mine->trigger();
+    QCoreApplication::processEvents();
+    QCOMPARE(QtEditor::currentViewMode(), int(QtEditor::VIEW_MODE_MINE));
+    a_terrain->trigger();
+    QCoreApplication::processEvents();
+    QCOMPARE(QtEditor::currentViewMode(), int(QtEditor::VIEW_MODE_TERRAIN));
+    a_room->trigger();
+    QCoreApplication::processEvents();
+    QCOMPARE(QtEditor::currentViewMode(), int(QtEditor::VIEW_MODE_ROOM));
+    QtEditor::SetViewMode(QtEditor::VIEW_MODE_MINE);
+  }
+
+  // Verifies saveWindowState()/restoreWindowState() persists geometry through
+  // QSettings so an editor reopening under the same QApplication picks the
+  // same window dimensions. Mirrors CMainFrame::OnCreateClient / OnDestroy
+  // forwarding into the registry; the Qt port uses QSettings for the same.
+  void testMainFrameGeometryPersisted() {
+    QByteArray saved_geom;
+    QRect saved_geom_rect;
+    {
+      QtEditor::MainWindow win;
+      win.resize(987, 654);
+      win.show();
+      QCoreApplication::processEvents();
+      saved_geom_rect = win.geometry();
+      win.saveWindowState();
+      QSettings settings;
+      saved_geom =
+          settings.value(QStringLiteral("mainwindow/geometry")).toByteArray();
+    }
+    QVERIFY(!saved_geom.isEmpty());
+
+    {
+      QtEditor::MainWindow win;
+      win.restoreWindowState();
+      win.show();
+      QCoreApplication::processEvents();
+      const QRect g = win.geometry();
+      // Don't compare full geometry directly because the OS may apply DPI /
+      // frame adjustments after restore; the size is the stable signal.
+      QCOMPARE(g.size(), saved_geom_rect.size());
+    }
+
+    // Cleanup: clear settings so a future run isn't polluted.
+    QSettings settings;
+    settings.remove(QStringLiteral("mainwindow/geometry"));
+    settings.remove(QStringLiteral("mainwindow/dock_state"));
     errno = 0;
   }
 
