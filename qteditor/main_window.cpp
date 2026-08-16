@@ -47,6 +47,7 @@
 #include "doorway_keypad.h"
 #include "megacell_keypad.h"
 #include "path_keypad.h"
+#include "room_keypad.h"
 #include "terrain_keypad.h"
 #include "texture_keypad.h"
 #include "trigger_keypad.h"
@@ -916,6 +917,7 @@ void MainWindow::buildKeypadBar() {
   m_keypadBar->addTab(new DoorwayKeypad(m_keypadBar->handle()), "Doorways");
   m_keypadBar->addTab(new TriggerKeypad(m_keypadBar->handle()), "Triggers");
   m_keypadBar->addTab(new PathKeypad(m_keypadBar->handle()), "Paths");
+  m_keypadBar->addTab(new RoomKeypad(m_keypadBar->handle()), "Rooms");
   m_keypadBar->addTab(new TerrainKeypad(m_keypadBar->handle()), "Terrain");
   m_keypadBar->addTab(new TextureKeypad(m_keypadBar->handle()), "Textures");
   m_keypadDock->setWidget(m_keypadBar->handle());
