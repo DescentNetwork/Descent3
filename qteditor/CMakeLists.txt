@@ -11,6 +11,20 @@ set(QTEDITOR_SOURCES
   addscript_dialog.h
   brief_mission_flags_dialog.cpp
   brief_mission_flags_dialog.h
+  brief_bitmap_dialog.cpp
+  brief_bitmap_dialog.h
+  brief_button_dialog.cpp
+  brief_button_dialog.h
+  brief_movie_dialog.cpp
+  brief_movie_dialog.h
+  brief_sound_dialog.cpp
+  brief_sound_dialog.h
+  brief_main_dialog.cpp
+  brief_main_dialog.h
+  brief_manage_dialog.cpp
+  brief_manage_dialog.h
+  brief_screen_dialog.cpp
+  brief_screen_dialog.h
   brief_text_edit_dialog.cpp
   brief_text_edit_dialog.h
   createscript_dialog.cpp
