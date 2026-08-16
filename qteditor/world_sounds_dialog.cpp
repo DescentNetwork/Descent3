@@ -34,7 +34,6 @@
 #include "ddio.h"
 #include "hlsoundlib.h"
 #include "manage.h"
-#include "qt_debug.h"
 #include "soundpage.h"
 #include "soundload.h"
 #include "ssl_lib.h"
@@ -508,10 +507,10 @@ void WorldSoundsDialog::onCheckinSound() {
       OutrageMessageBox(ErrorString);
     else {
       OutrageMessageBox("Sound checked in.");
-      ASSERT(mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 1) == 1);
+      Q_ASSERT(mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 1) == 1);
       mng_EraseLocker();
       const int p = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
-      ASSERT(p != -1);
+      Q_ASSERT(p != -1);
       mng_FreeTrackLock(p);
     }
   }

@@ -33,7 +33,6 @@
 #include "ddio.h"
 #include "gametexture.h"
 #include "manage.h"
-#include "qt_debug.h"
 #include "sound_combo.h"
 #include "ssl_lib.h"
 #include "texpage.h"
@@ -396,10 +395,10 @@ void WorldTexturesDialog::onCheckin() {
       OutrageMessageBox(ErrorString);
     else {
       OutrageMessageBox("Texture checked in.");
-      ASSERT(mng_DeletePage(GameTextures[n].name, PAGETYPE_TEXTURE, 1) == 1);
+      Q_ASSERT(mng_DeletePage(GameTextures[n].name, PAGETYPE_TEXTURE, 1) == 1);
       mng_EraseLocker();
       const int p = mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE);
-      ASSERT(p != -1);
+      Q_ASSERT(p != -1);
       mng_FreeTrackLock(p);
     }
   }

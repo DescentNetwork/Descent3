@@ -54,4 +54,22 @@ void MovePlayerToCurrentRoom();
 void SelectNextObject(int from);
 void SelectPrevObject(int from);
 
+// Win32 OnViewNewviewer / OnViewDeleteviewer / OnViewNextviewer.
+// CreateNewViewer falls through ObjCreate; on Linux we mark the menu
+// item's handler so the menu wiring has a slot to point at.
+void CreateNewViewer();
+
+// Pick the next OBJ_VIEWER slot and copy the viewer's pose onto it.
+// Returns the new objnum or -1 on failure.
+int SpawnNewViewer();
+
+// Walk Objects[] for an OBJ_VIEWER with a different id than the
+// current and select it. Returns the new objnum or -1 if no other
+// viewer exists.
+int SelectNextViewer();
+
+// Drop the current Viewer_object from Objects and resync
+// Viewer_object to the next available viewer.
+void DeleteCurrentViewer();
+
 } // namespace QtEditor

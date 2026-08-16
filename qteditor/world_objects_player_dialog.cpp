@@ -34,7 +34,6 @@
 #include "manage.h"
 #include "physics_dialog.h"
 #include "polymodel.h"
-#include "qt_debug.h"
 #include "robotfire.h"
 #include "ship.h"
 #include "shippage.h"
@@ -416,11 +415,11 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
 
       OutrageMessageBox("Ship checked in.");
 
-      ASSERT(mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 1) == 1);
+      Q_ASSERT(mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 1) == 1);
       mng_EraseLocker();
 
       const int p = mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP);
-      ASSERT(p != -1);
+      Q_ASSERT(p != -1);
       mng_FreeTrackLock(p);
       updateDialog();
     }

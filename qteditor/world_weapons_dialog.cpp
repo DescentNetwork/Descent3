@@ -32,7 +32,6 @@
 #include "manage.h"
 #include "physics_dialog.h"
 #include "polymodel.h"
-#include "qt_debug.h"
 #include "sound_combo.h"
 #include "ssl_lib.h"
 #include "weapon.h"
@@ -523,10 +522,10 @@ void WorldWeaponsDialog::onCheckinWeapon() {
       OutrageMessageBox(ErrorString);
     else {
       OutrageMessageBox("Weapon checked in.");
-      ASSERT(mng_DeletePage(Weapons[n].name, PAGETYPE_WEAPON, 1) == 1);
+      Q_ASSERT(mng_DeletePage(Weapons[n].name, PAGETYPE_WEAPON, 1) == 1);
       mng_EraseLocker();
       const int p = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON);
-      ASSERT(p != -1);
+      Q_ASSERT(p != -1);
       mng_FreeTrackLock(p);
     }
   }

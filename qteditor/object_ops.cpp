@@ -181,4 +181,105 @@ void SelectPrevObject(int from) {
   Cur_object_index = (Highest_object_index >= 0) ? Highest_object_index : -1;
 }
 
+void CreateNewViewer() {
+  // Editor_viewer_id tracks the next available viewer id. We don't call
+  // ObjCreate on Linux; the menu slot is wired so the user can still
+  // reach the Win32 entry point symbolically, but the actual spawn
+  // happens through SpawnNewViewer() which writes a duplicate of the
+  // current viewer instead of bootstrapping a fresh OBJ_VIEWER via the
+  // engine's ObjCreate path.
+  std::fprintf(stderr,
+               "[object_ops] CreateNewViewer: pending editor/ObjCreate\n");
+}
+
+int SpawnNewViewer() {
+  if (Viewer_object == nullptr || Viewer_object->type != OBJ_VIEWER)
+    return -1;
+  // Walk Objects[] to find the first unused slot, then copy the current
+  // viewer's pose/orient/roomnum into a fresh OBJ_VIEWER slot. We don't
+  // touch ObjCreate because the engine-side path is gated on MFC code
+  // paths in editor/HView.cpp; this Qt-stub is honest about that.
+  int slot = -1;
+  for (int i = 0; i < MAX_OBJECTS; ++i) {
+    if (Objects[i].type == OBJ_NONE) {
+      slot = i;
+      break;
+    }
+  }
+  if (slot < 0)
+    return -1;
+  Objects[slot].type = OBJ_VIEWER;
+  Objects[slot].render_type = RT_POLYOBJ;
+  Objects[slot].orient = Viewer_object->orient;
+  Editor_viewer_id = (Editor_viewer_id < 0) ? 0 : Editor_viewer_id + 1;
+  Objects[slot].id = Editor_viewer_id;
+  ObjSetPos(&Objects[slot], &Viewer_object->pos, Viewer_object->roomnum,
+            &Viewer_object->orient, false);
+  if (slot > Highest_object_index)
+    Highest_object_index = slot;
+  Mine_changed = 1;
+  New_mine = 1;
+  std::fprintf(stderr,
+               "[object_ops] SpawnNewViewer -> object %d (id %d)\n", slot,
+               Editor_viewer_id);
+  return slot;
+}
+
+int SelectNextViewer() {
+  // Win32 SelectNextViewer != SelectNextObject: it walks the OBJ_VIEWER
+  // slots (not OBJ_NONE ones) and swaps Viewer_object to the next one
+  // so the user can flip through multiple cameras without choosing
+  // world objects. We do the same here.
+  if (Viewer_object == nullptr)
+    return -1;
+  const int cur_id = Viewer_object->id;
+  int best = -1;
+  for (int i = 0; i < MAX_OBJECTS; ++i) {
+    if (Objects[i].type != OBJ_VIEWER)
+      continue;
+    if (Objects[i].id == cur_id)
+      continue;
+    best = i;
+    break;
+  }
+  if (best < 0)
+    return -1;
+  Viewer_object = &Objects[best];
+  Editor_viewer_id = Viewer_object->id;
+  State_changed = Viewer_moved = 1;
+  std::fprintf(stderr, "[object_ops] SelectNextViewer -> object %d (id %d)\n",
+               best, Editor_viewer_id);
+  return best;
+}
+
+void DeleteCurrentViewer() {
+  if (Viewer_object == nullptr || Viewer_object->type != OBJ_VIEWER)
+    return;
+  // Mark the current viewer's slot freed and resync to the next
+  // available OBJ_VIEWER (or clear Viewer_object if none).
+  int cur_slot = -1;
+  // Find Viewer_object's slot lookup: Viewer_object - Objects.
+  if (Viewer_object >= Objects && Viewer_object <= &Objects[MAX_OBJECTS - 1]) {
+    cur_slot = static_cast<int>(Viewer_object - Objects);
+  }
+  if (cur_slot >= 0) {
+    Objects[cur_slot].type = OBJ_NONE;
+    Objects[cur_slot].id = -1;
+  }
+  // Auto-pick the remaining OBJ_VIEWER if any.
+  for (int i = 0; i < MAX_OBJECTS; ++i) {
+    if (Objects[i].type == OBJ_VIEWER) {
+      Viewer_object = &Objects[i];
+      Editor_viewer_id = Objects[i].id;
+      std::fprintf(stderr,
+                   "[object_ops] DeleteCurrentViewer: resync to %d (id %d)\n",
+                   i, Editor_viewer_id);
+      return;
+    }
+  }
+  Viewer_object = nullptr;
+  std::fprintf(stderr,
+               "[object_ops] DeleteCurrentViewer: no viewers left\n");
+}
+
 } // namespace QtEditor

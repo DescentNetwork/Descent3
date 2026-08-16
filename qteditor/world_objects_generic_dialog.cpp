@@ -45,7 +45,6 @@
 #include "object.h"
 #include "physics_dialog.h"
 #include "polymodel.h"
-#include "qt_debug.h"
 #include "robotfire.h"
 #include "sound_combo.h"
 #include "vclip.h"
@@ -692,10 +691,10 @@ void WorldObjectsGenericDialog::onCheckIn() {
         cf_CopyFile(destname, srcname);
       }
       OutrageMessageBox("Object checked in.");
-      ASSERT(mng_DeletePage(Object_info[m_current].name, PAGETYPE_GENERIC, 1) == 1);
+      Q_ASSERT(mng_DeletePage(Object_info[m_current].name, PAGETYPE_GENERIC, 1) == 1);
       mng_EraseLocker();
       const int p = mng_FindTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC);
-      ASSERT(p != -1);
+      Q_ASSERT(p != -1);
       mng_FreeTrackLock(p);
     }
   }

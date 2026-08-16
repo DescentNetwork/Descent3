@@ -1090,7 +1090,7 @@ private slots:
 
     // DeleteCurrentObject / MovePlayerToCurrentRoom are exercised the same
     // way; left as comments so the contract intent is on record without
-    // triggering ObjLink's debug ASSERT on Objects[0].next.
+    // triggering ObjLink's debug Q_ASSERT on Objects[0].next.
     // Cur_object_index = camera1;
     // QtEditor::DeleteCurrentObject();
     // QCOMPARE(Objects[camera1].type, OBJ_NONE);
@@ -1196,6 +1196,50 @@ private slots:
     QCoreApplication::processEvents();
   }
 
+  // Verifies the Qt implementations of editor/MainFrm.cpp's viewer
+  // management (OnViewNewviewer / OnViewNextviewer / OnViewDeleteviewer).
+  // We rebuild the viewer/objects table so that's deterministic.
+  void testViewerSpawnSelectDelete() {
+    // Tear down any pre-existing object state.
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    Highest_object_index = -1;
+    Editor_viewer_id = -1;
+    Viewer_object = nullptr;
+
+    int viewer1 = -1;
+    for (int i = 0; i < MAX_OBJECTS; ++i) {
+      if (i == 0) {
+        Objects[i].type = OBJ_VIEWER;
+        Objects[i].render_type = RT_POLYOBJ;
+        Objects[i].id = 0;
+        Viewer_object = &Objects[i];
+        viewer1 = i;
+      } else {
+        break;
+      }
+    }
+    Highest_object_index = viewer1;
+    Editor_viewer_id = 0;
+
+    // SpawnNewViewer allocates a slot adjacent to Viewer_object.
+    const int viewer2 = QtEditor::SpawnNewViewer();
+    QVERIFY(viewer2 > 0);
+    QCOMPARE(int(Objects[viewer2].type), OBJ_VIEWER);
+    QCOMPARE(int(Editor_viewer_id >= 1), 1);
+
+    // SelectNextViewer swings Viewer_object to a different OBJ_VIEWER.
+    const int moved = QtEditor::SelectNextViewer();
+    QVERIFY(moved >= 0);
+    QVERIFY(Viewer_object == &Objects[moved]);
+
+    // DeleteCurrentViewer drops the current viewer and resyncs.
+    Objects[viewer1].type = OBJ_VIEWER;
+    Viewer_object = &Objects[viewer1];
+    QtEditor::DeleteCurrentViewer();
+    QVERIFY(Viewer_object != &Objects[viewer1]);
+  }
+
   void testInteractEveryWidget()
   {
     int clicks = 0;
@@ -1288,7 +1332,7 @@ int main(int argc, char *argv[])
   QApplication app(argc, argv);
   QtEditor::initD3Core(argc, argv);
   EditorTest tc;
-  assert(errno == 0);
+  Q_ASSERT(errno == 0);
   return QTest::qExec(&tc, argc, argv);
 }
 #include "editor_test.moc"

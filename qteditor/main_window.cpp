@@ -337,11 +337,29 @@ void MainWindow::buildMenus() {
   QObject::connect(a_terrain_view, &QAction::triggered, this, &MainWindow::onViewTerrain);
   QObject::connect(a_room_view,    &QAction::triggered, this, &MainWindow::onViewRoom);
   viewMenu->addSeparator();
-  viewMenu->addAction(action("ID_VIEW_NEXTVIEWER"));
-  viewMenu->addAction(action("ID_VIEW_NEWVIEWER"));
-  connect(action("ID_VIEW_NEWVIEWER"), &QAction::triggered, this, [this]() { showNotPorted("NewViewer"); });
-  viewMenu->addAction(action("ID_VIEW_DELETEVIEWER"));
-  connect(action("ID_VIEW_DELETEVIEWER"), &QAction::triggered, this, [this]() { showNotPorted("DeleteViewer"); });
+  QAction *a_nextview = action("ID_VIEW_NEXTVIEWER");
+  QAction *a_newview = action("ID_VIEW_NEWVIEWER");
+  QAction *a_delview = action("ID_VIEW_DELETEVIEWER");
+  viewMenu->addAction(a_nextview);
+  viewMenu->addAction(a_newview);
+  viewMenu->addAction(a_delview);
+  // The Win32 MaintainFrame callbacks for new/delete/next viewer are in
+  // editor/MainFrm.cpp; the Qt port routes them through object_ops' new
+  // viewer-group helpers so the menu has real signal handlers.
+  connect(a_newview, &QAction::triggered, this, [this]() {
+    if (QtEditor::SpawnNewViewer() >= 0 && m_editorView != nullptr)
+      m_editorView->requestRedraw();
+  });
+  connect(a_delview, &QAction::triggered, this, [this]() {
+    QtEditor::DeleteCurrentViewer();
+    if (m_editorView != nullptr)
+      m_editorView->requestRedraw();
+  });
+  connect(a_nextview, &QAction::triggered, this, [this]() {
+    QtEditor::SelectNextViewer();
+    if (m_editorView != nullptr)
+      m_editorView->requestRedraw();
+  });
   viewMenu->addSeparator();
   viewMenu->addAction(action("ID_VIEW_VIEWPROP"));
   connect(action("ID_VIEW_VIEWPROP"), &QAction::triggered, this, &MainWindow::toggleViewerProps);
@@ -349,9 +367,11 @@ void MainWindow::buildMenus() {
   for (QAction *a : {action("ID_VIEW_TEXTUREMINE"),
                      action("ID_VIEW_WIREFRAMEMINE"),
                      action("ID_VIEW_CENTERONCUBE"),
-                     action("ID_VIEW_MOVECAMERATOSELECTEDFACE"),
-                     action("ID_VIEW_MOVECAMERATOCURRENTOBJECT"), action("ID_VIEW_FLIP"),
-                     action("ID_VIEW_SHOWVIEWERFORWARDVECTOR"), action("ID_VIEW_NEXTVIEWER")}) {
+                     action("ID_VIEW_MOVECAMERATOSELECTEDFACE")}) {
+    connect(a, &QAction::triggered, this, wireNotPorted(this, QString("View/%1").arg(a->objectName())));
+  }
+  for (QAction *a : {action("ID_VIEW_MOVECAMERATOCURRENTOBJECT"), action("ID_VIEW_FLIP"),
+                     action("ID_VIEW_SHOWVIEWERFORWARDVECTOR")}) {
     connect(a, &QAction::triggered, this, wireNotPorted(this, QString("View/%1").arg(a->objectName())));
   }
 

@@ -27,9 +27,9 @@
 #include "crossplat.h"
 #include "objinfo.h"
 #include "gamepath.h"
-#include "qt_debug.h"
 #include <cstring>
 #include <filesystem>
+#include <QtGlobal>
 
 d3edit_state D3EditState;
 int World_changed = 0;
@@ -114,7 +114,7 @@ char *Object_type_names[MAX_OBJECT_TYPES] = {
 
 int GetNextObjectID(int n) {
   int type = Object_info[n].type;
-  ASSERT(n >= 0 && n < MAX_OBJECT_IDS);
+  Q_ASSERT(n >= 0 && n < MAX_OBJECT_IDS);
   if (Num_object_ids[type] == 0)
     return -1;
   for (int i = n + 1; i < MAX_OBJECT_IDS; i++)
@@ -128,7 +128,7 @@ int GetNextObjectID(int n) {
 
 int GetPrevObjectID(int n) {
   int type = Object_info[n].type;
-  ASSERT(n >= 0 && n < MAX_OBJECT_IDS);
+  Q_ASSERT(n >= 0 && n < MAX_OBJECT_IDS);
   if (Num_object_ids[type] == 0)
     return -1;
   for (int i = n - 1; i >= 0; i--)
@@ -166,7 +166,7 @@ void DeleteNodeFromPath(int pathnum, int nodenum) {
 }
 
 int GetNextPath(int n) {
-  ASSERT(n >= 0 && n < MAX_GAME_PATHS);
+  Q_ASSERT(n >= 0 && n < MAX_GAME_PATHS);
   if (Num_game_paths == 0)
     return -1;
   for (int i = n + 1; i < MAX_GAME_PATHS; i++)
@@ -179,7 +179,7 @@ int GetNextPath(int n) {
 }
 
 int GetPrevPath(int n) {
-  ASSERT(n >= 0 && n < MAX_GAME_PATHS);
+  Q_ASSERT(n >= 0 && n < MAX_GAME_PATHS);
   if (Num_game_paths == 0)
     return -1;
   for (int i = n - 1; i >= 0; i--)

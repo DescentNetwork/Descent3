@@ -34,7 +34,6 @@
 #include "doorpage.h"
 #include "manage.h"
 #include "polymodel.h"
-#include "qt_debug.h"
 #include "room.h"
 #include "sound_combo.h"
 #include "ssl_lib.h"
@@ -437,11 +436,11 @@ void WorldObjectsDoorDialog::onCheckinDoor() {
         OutrageMessageBox("Door checked in.");
 
         const int dret = mng_DeletePage(Doors[n].name, PAGETYPE_DOOR, 1);
-        ASSERT(dret == 1);
+        Q_ASSERT(dret == 1);
         mng_EraseLocker();
 
         const int p = mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR);
-        ASSERT(p != -1);
+        Q_ASSERT(p != -1);
         mng_FreeTrackLock(p);
         updateDialog();
       }
