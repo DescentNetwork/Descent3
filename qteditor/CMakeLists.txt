@@ -71,6 +71,8 @@ set(QTEDITOR_SOURCES
   qteditor_dialog.h
   robot_weapons_dialog.cpp
   robot_weapons_dialog.h
+  room_ops.cpp
+  room_ops.h
   selectrange_dialog.cpp
   selectrange_dialog.h
   sound_combo.cpp

@@ -37,6 +37,7 @@
 #include "editor_view.h"
 #include "hog_dialog.h"
 #include "level_io.h"
+#include "room_ops.h"
 #include "keypad_dialog.h"
 #include "level_info_dialog.h"
 #include "doorway_keypad.h"
@@ -331,9 +332,19 @@ void MainWindow::buildMenus() {
 
   // ----------------------------------------------------------------- Room
   QMenu *roomMenu = addMenu("&Room");
-  roomMenu->addAction(action("ID_ROOM_ADD"));
+  QAction *a_room_add = action("ID_ROOM_ADD");
+  QAction *a_room_delete = action("ID_ROOM_DELETE");
+  roomMenu->addAction(a_room_add);
+  roomMenu->addAction(a_room_delete);
+  connect(a_room_add, &QAction::triggered, this, [this]() {
+    if (QtEditor::AddRoom() && m_editorView != nullptr)
+      m_editorView->requestRedraw();
+  });
+  connect(a_room_delete, &QAction::triggered, this, [this]() {
+    if (QtEditor::DeleteRoom() && m_editorView != nullptr)
+      m_editorView->requestRedraw();
+  });
   roomMenu->addSeparator();
-  roomMenu->addAction(action("ID_ROOM_DELETE"));
   roomMenu->addAction(action("ID_ROOM_DELETEFACE"));
   roomMenu->addAction(action("ID_ROOM_DELETEPORTAL"));
   roomMenu->addAction(action("ID_ROOM_DELETEVERT"));
@@ -347,13 +358,29 @@ void MainWindow::buildMenus() {
   roomMenu->addAction(action("ID_ROOM_UNPLACEROOM"));
   roomMenu->addAction(action("ID_ROOM_DROPROOM"));
   roomMenu->addSeparator();
-  roomMenu->addAction(action("ID_ROOM_MARK"));
+  QAction *a_room_mark = action("ID_ROOM_MARK");
+  roomMenu->addAction(a_room_mark);
+  connect(a_room_mark, &QAction::triggered, this, [this]() {
+    QtEditor::MarkRoom();
+  });
   roomMenu->addAction(action("ID_ROOM_SWAPMAKEDANDCURRENTROOMFACE"));
   roomMenu->addSeparator();
-  roomMenu->addAction(action("ID_ROOM_SELECTBYNUMBER"));
+  QAction *a_room_selbynum = action("ID_ROOM_SELECTBYNUMBER");
+  roomMenu->addAction(a_room_selbynum);
+  connect(a_room_selbynum, &QAction::triggered, this, [this]() {
+    QtEditor::SelectRoomByNumber();
+  });
   roomMenu->addSeparator();
-  roomMenu->addAction(action("ID_ROOM_SAVECURRENTROOM"));
-  roomMenu->addAction(action("ID_ROOM_RENAMEROOM"));
+  QAction *a_room_save = action("ID_ROOM_SAVECURRENTROOM");
+  QAction *a_room_rename = action("ID_ROOM_RENAMEROOM");
+  roomMenu->addAction(a_room_save);
+  roomMenu->addAction(a_room_rename);
+  connect(a_room_save, &QAction::triggered, this, [this]() {
+    QtEditor::SaveCurrentRoom();
+  });
+  connect(a_room_rename, &QAction::triggered, this, [this]() {
+    QtEditor::RenameRoom();
+  });
   roomMenu->addSeparator();
   roomMenu->addAction(action("ID_ROOM_BUILDBRIDGE"));
   roomMenu->addAction(action("ID_ROOM_BUILDSMOOTHBRIDGE"));
@@ -386,6 +413,9 @@ void MainWindow::buildMenus() {
   for (QAction *a : roomMenu->actions()) {
     if (a->isSeparator())
       continue;
+    if (a == a_room_add || a == a_room_delete || a == a_room_mark ||
+        a == a_room_selbynum || a == a_room_save || a == a_room_rename)
+      continue; // already wired above
     connect(a, &QAction::triggered, this, wireNotPorted(this, QString("Room/%1").arg(a->objectName())));
   }
   for (QAction *a : faceSub->actions()) {
@@ -558,6 +588,10 @@ void MainWindow::onFileOpen() {
     m_editorView->requestRedraw();
   statusBar()->showMessage(
       QStringLiteral("Opened %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
+}
+
+void MainWindow::onRoomSelectByNumber() {
+  QtEditor::SelectRoomByNumber();
 }
 
 void MainWindow::onFileSave() {

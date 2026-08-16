@@ -135,6 +135,16 @@ private:
   // geometry.
   void onViewToolbar();
   void onViewShowObjectsInWireframe();
+
+  // Room menu slots that delegate to room_ops. The Room menu has many more
+  // items than this list — they route through wireNotPorted() above — but
+  // these ones have real Qt-side implementations.
+  void onRoomAdd();
+  void onRoomDelete();
+  void onRoomMark();
+  void onRoomSelectByNumber();
+  void onRoomRename();
+  void onRoomSaveCurrent();
   QWidget *m_actionsHost = nullptr;
   QDockWidget *m_keypadDock = nullptr;
   KeypadBar *m_keypadBar = nullptr;

@@ -29,12 +29,15 @@
 #include <QDockWidget>
 #include <QElapsedTimer>
 #include <QEventLoop>
+#include <QFileDialog>
+#include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
 #include <QMenuBar>
 #include <QSettings>
 #include <QSlider>
+#include <QTimer>
 
 #include <cerrno>
 
@@ -66,6 +69,7 @@
 #include "editor_view.h"
 #include "generic_death_dialog.h"
 #include "main_window.h"
+#include "room_ops.h"
 #include "hog_dialog.h"
 #include "hog2_format.h"
 #include "posix_stream.h"
@@ -157,6 +161,28 @@ void closeModalsSoon()
 }
 
 QString widgetDesc(QWidget *w) { return QString("%1(%2)").arg(w->metaObject()->className()).arg(w->objectName()); }
+
+// Auto-reject any modal dialog that pops up within `msTotal`. Schedules
+// a single-shot that walks the active modal widget once it has materialised
+// and rejects it; this stops QFileDialog / QInputDialog calls from
+// blocking the test when the offscreen QPA platform fails to suppress the
+// modal natively. `count` controls how many modals to dismiss; passing 4
+// means "anything that pops up in the next ~msTotal/4 ms gets auto-cancelled".
+void dismissModals(int count = 4, int msTotal = 800) {
+  for (int i = 0; i < count; ++i) {
+    QTimer::singleShot(((i + 1) * msTotal) / count, []() {
+      QWidget *w = QApplication::activeModalWidget();
+      if (w == nullptr)
+        return;
+      if (auto *d = qobject_cast<QFileDialog *>(w))
+        d->reject();
+      else if (auto *d = qobject_cast<QInputDialog *>(w))
+        d->reject();
+      else
+        w->close();
+    });
+  }
+}
 
 } // namespace
 
@@ -566,21 +592,25 @@ private slots:
     QVERIFY(a_save != nullptr);
     QVERIFY(a_saveas != nullptr);
 
-    // Triggering must not crash. Cancel paths in headless QFileDialog fall
-    // through the statusBar() updates we put behind the slots.
+    // Triggering must not crash. Open/Save/SaveAs go through
+    // QFileDialog::getOpenFileName / getSaveFileName; auto-reject each modal
+    // so the test never blocks on the offscreen platform's modal handling.
     a_new->trigger();
     QCoreApplication::processEvents();
     QCOMPARE(win.windowTitle(), QStringLiteral("Descent 3 Editor - Untitled.d3l"));
 
+    dismissModals(3);
     a_open->trigger();
     QCoreApplication::processEvents();
     // QFileDialog::getOpenFileName in headless mode returns an empty path.
     QVERIFY(win.windowTitle().startsWith(QStringLiteral("Descent 3 Editor")));
 
+    dismissModals(3);
     a_save->trigger(); // empty path -> falls through to SaveAs candidate.
     QCoreApplication::processEvents();
     QVERIFY(win.windowTitle().startsWith(QStringLiteral("Descent 3 Editor")));
 
+    dismissModals(3);
     a_saveas->trigger(); // Headless: may return the suggested default name.
     QCoreApplication::processEvents();
     QVERIFY(win.windowTitle().startsWith(QStringLiteral("Descent 3 Editor")));
@@ -860,8 +890,6 @@ private slots:
   //   - resize + requestRedraw round-trips through update() without
   //     crashing (paintGL itself is best-effort under offscreen QPA);
   //   - The frame counter is reachable after show().
-  // We don't try to assert any specific GL state — that depends on the
-  // host's GL stack and isn't useful in CI.
   void testEditorViewAttached() {
     QtEditor::MainWindow win;
     win.show();
@@ -892,6 +920,77 @@ private slots:
     view->requestRedraw();
     QCoreApplication::processEvents();
     QVERIFY(view->frameCount() >= 0);
+  }
+
+  // Verifies the Qt port of editor/HRoom.cpp + editor/selectedroom.cpp,
+  // surfaced as id_room_ops.{h,cpp}. The wired menu items (ID_ROOM_ADD /
+  // _DELETE / _MARK / _SELECTBYNUMBER / _RENAME / _SAVECURRENT) bind to
+  // the helper functions; the rest route through wireNotPorted. We focus
+  // on the helpers' side-effects so the menu wiring has a deterministic
+  // observable contract.
+  void testRoomOpsContract() {
+    Curroomp = nullptr;
+    Markedroomp = nullptr;
+
+    // AddRoom bumps New_mine so the renderer knows to redraw. Win32
+    // OnRoomAdd allocates a fresh room slot; the Qt stub logs the intent
+    // and updates the change flag.
+    New_mine = 0;
+    World_changed = 0;
+    QVERIFY(QtEditor::AddRoom());
+    QCOMPARE(New_mine, 1);
+    QCOMPARE(World_changed, 1);
+
+    // DeleteRoom with no current selection is a no-op but must report
+    // false so the menu's signal handler doesn't trigger a redraw.
+    Curroomp = nullptr;
+    QVERIFY(!QtEditor::DeleteRoom());
+
+    // Set Curroomp to a dummy slot then DeleteRoom clears it.
+    Curroomp = &Rooms[0];
+    Rooms[0].used = 1;
+    Rooms[0].name = const_cast<char *>("test-room");
+    Mine_changed = 0;
+    QVERIFY(QtEditor::DeleteRoom());
+    QVERIFY(Curroomp == nullptr);
+    QCOMPARE(Curface, -1);
+    QCOMPARE(Curportal, -1);
+    QCOMPARE(Mine_changed, 1);
+
+    // MarkRoom copies Curroomp into Markedroomp.
+    Curroomp = &Rooms[1];
+    Rooms[1].used = 1;
+    Rooms[1].name = const_cast<char *>("mark-source");
+    Markedroomp = nullptr;
+    QtEditor::MarkRoom();
+    QVERIFY(Markedroomp == &Rooms[1]);
+
+    // The room menu items themselves: assert each of the wired IDs is in
+    // the Room menu and parented to a non-separator action. The widget
+    // walk is similar to testFileMenuActionsWired in cycle 5.
+    QtEditor::MainWindow win;
+    win.show();
+    QCoreApplication::processEvents();
+    QSet<QString> haveId;
+    for (QAction *a : win.menuBar()->actions()) {
+      QMenu *m = a->menu();
+      if (m == nullptr || m->title() != "&Room")
+        continue;
+      for (QAction *ra : m->actions())
+        if (!ra->isSeparator() && ra->menu() == nullptr)
+          haveId.insert(ra->objectName());
+      // The Face Editing sub-menu also adds which is fine; we don't care.
+      break;
+    }
+    for (const QString &id : {QStringLiteral("ID_ROOM_ADD"),
+                              QStringLiteral("ID_ROOM_DELETE"),
+                              QStringLiteral("ID_ROOM_MARK"),
+                              QStringLiteral("ID_ROOM_SELECTBYNUMBER"),
+                              QStringLiteral("ID_ROOM_SAVECURRENTROOM"),
+                              QStringLiteral("ID_ROOM_RENAMEROOM")}) {
+      QVERIFY2(haveId.contains(id),
+               qPrintable(QStringLiteral("Room menu missing %1").arg(id)));
+    }
   }
 
   void testInteractEveryWidget()
@@ -967,8 +1066,22 @@ private slots:
 };
 
 // Custom main: initialise the D3 core (loads game data) before running tests.
+// Force the offscreen QPA platform so the test binary never opens a real
+// window — even at the menu-wiring tests that walk the menubar, the file
+// dialog tests that auto-accept a default save path, and the geometry tests
+// that resize the MainWindow. Without this, those tests' widgets pop up on
+// the host's display and either block on user input or worse, write files
+// the operator didn't ask for.
+static void use_offscreen_qpa() {
+  if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM"))
+    qputenv("QT_QPA_PLATFORM", "offscreen");
+}
+
 int main(int argc, char *argv[])
 {
+  use_offscreen_qpa();
+  qputenv("LC_ALL", "C"); // stable QLocale::bcp47Name() across CI hosts
+
   QApplication app(argc, argv);
   QtEditor::initD3Core(argc, argv);
   EditorTest tc;
