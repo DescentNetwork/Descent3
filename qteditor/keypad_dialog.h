@@ -53,7 +53,7 @@ public:
   ~KeypadBar() override;
 
   QTabWidget *tabWidget() const { return m_tabs; }
-  void addTab(Keypad *keypad, const QString &title);
+  void addTab(Widget *keypad, const QString &title);
 
 private:
   QTabWidget *m_tabs;

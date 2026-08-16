@@ -16,27 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include "keypad_dialog.h"
 
-#include <QTabWidget>
+class QTabWidget;
 
 namespace QtEditor {
 
-bool Keypad::m_active = true;
+// Port of CFloatingKeypadDialog (IDD_FLOATING_KEYPAD): a floating window
+// hosting the keypad panels as tabs, independent of the docked keypad bar.
+class FloatingKeypad : public Widget {
+  Q_OBJECT
+public:
+  explicit FloatingKeypad(QWidget *parent = nullptr);
+  ~FloatingKeypad() override;
 
-Keypad::Keypad(const QString &uiResource, QWidget *parent) : Widget(uiResource, parent) {}
+  QTabWidget *tabWidget() const { return m_tabs; }
+  void addTab(Keypad *keypad, const QString &title);
 
-Keypad::~Keypad() = default;
-
-KeypadBar::KeypadBar(QWidget *parent) : Widget(":/ui/keypad_dlgbar.ui", parent) {
-  m_tabs = find<QTabWidget>("IDC_KEYPADS");
-}
-
-KeypadBar::~KeypadBar() = default;
-
-void KeypadBar::addTab(Widget *keypad, const QString &title) {
-  if (m_tabs != nullptr && keypad != nullptr)
-    m_tabs->addTab(keypad->handle(), title);
-}
+private:
+  QTabWidget *m_tabs;
+};
 
 }

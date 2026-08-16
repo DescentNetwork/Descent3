@@ -30,6 +30,8 @@ set(QTEDITOR_SOURCES
   doorway_keypad.h
   editline_dialog.cpp
   editline_dialog.h
+  floating_keypad.cpp
+  floating_keypad.h
   editor_file_dialogs.cpp
   editor_file_dialogs.h
   editor_room_state.h
@@ -46,6 +48,8 @@ set(QTEDITOR_SOURCES
   ${PROJECT_SOURCE_DIR}/descar/src/hog2_format.cpp
   keypad_dialog.cpp
   keypad_dialog.h
+  level_keypad.cpp
+  level_keypad.h
   megacell_keypad.cpp
   megacell_keypad.h
   level_info_dialog.cpp

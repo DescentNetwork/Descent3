@@ -16,27 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "keypad_dialog.h"
+#pragma once
 
-#include <QTabWidget>
+#include "keypad_dialog.h"
 
 namespace QtEditor {
 
-bool Keypad::m_active = true;
+// Port of CLevelDialog (IDD_LEVELKEYPAD): global level physics settings
+// (gravity, ceiling height, damage-per-second, default weapon). The Win32
+// original is a passive display, so this binds the editable fields to the
+// level globals.
+class LevelKeypad : public Keypad {
+  Q_OBJECT
+public:
+  explicit LevelKeypad(QWidget *parent = nullptr);
+  ~LevelKeypad() override;
 
-Keypad::Keypad(const QString &uiResource, QWidget *parent) : Widget(uiResource, parent) {}
+private slots:
+  void onGravityEdited();
+  void onCeilingEdited();
 
-Keypad::~Keypad() = default;
-
-KeypadBar::KeypadBar(QWidget *parent) : Widget(":/ui/keypad_dlgbar.ui", parent) {
-  m_tabs = find<QTabWidget>("IDC_KEYPADS");
-}
-
-KeypadBar::~KeypadBar() = default;
-
-void KeypadBar::addTab(Widget *keypad, const QString &title) {
-  if (m_tabs != nullptr && keypad != nullptr)
-    m_tabs->addTab(keypad->handle(), title);
-}
+private:
+  void updateDialog();
+};
 
 }

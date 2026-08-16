@@ -43,8 +43,10 @@
 #include "room_ops.h"
 #include "viewer_ops.h"
 #include "keypad_dialog.h"
+#include "level_keypad.h"
 #include "level_info_dialog.h"
 #include "doorway_keypad.h"
+#include "floating_keypad.h"
 #include "megacell_keypad.h"
 #include "object_keypad.h"
 #include "path_keypad.h"
@@ -724,6 +726,7 @@ void MainWindow::buildMenus() {
   // The legacy Win32 editor reserved a Test menu for in-development features.
   // The Qt port keeps it as an explicit placeholders for diagnostics wired
   // up later.
+  /*
   QMenu *testMenu = addMenu("&Test");
   testMenu->addAction(action("ID_TEST_TEST1"));
   testMenu->addAction(action("ID_TEST_TEST2"));
@@ -731,6 +734,7 @@ void MainWindow::buildMenus() {
   for (auto *a : {action("ID_TEST_TEST1"), action("ID_TEST_TEST2"), action("ID_TEST_TEST3")}) {
     connect(a, &QAction::triggered, this, wireNotPorted(this, QString("Test/%1").arg(a->objectName())));
   }
+*/
 }
 
 void MainWindow::onFileNew() {
@@ -920,6 +924,8 @@ void MainWindow::buildKeypadBar() {
   m_keypadBar->addTab(new PathKeypad(m_keypadBar->handle()), "Paths");
   m_keypadBar->addTab(new RoomKeypad(m_keypadBar->handle()), "Rooms");
   m_keypadBar->addTab(new ObjectKeypad(m_keypadBar->handle()), "Objects");
+  m_keypadBar->addTab(new LevelKeypad(m_keypadBar->handle()), "Level");
+  m_keypadBar->addTab(new FloatingKeypad(m_keypadBar->handle()), "Floating");
   m_keypadBar->addTab(new TerrainKeypad(m_keypadBar->handle()), "Terrain");
   m_keypadBar->addTab(new TextureKeypad(m_keypadBar->handle()), "Textures");
   m_keypadDock->setWidget(m_keypadBar->handle());
