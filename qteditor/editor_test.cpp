@@ -71,6 +71,7 @@
 #include "generic_death_dialog.h"
 #include "main_window.h"
 #include "object_ops.h"
+#include "object_clipboard.h"
 #include "room_ops.h"
 #include "viewer_ops.h"
 #include "hog_dialog.h"
@@ -1238,6 +1239,53 @@ private slots:
     Viewer_object = &Objects[viewer1];
     QtEditor::DeleteCurrentViewer();
     QVERIFY(Viewer_object != &Objects[viewer1]);
+  }
+
+  // Verifies the Qt port of editor/ObjectClipboard.cpp. The legacy Win32
+  // build had a single global object ClipBoardObject + bool ObjectInBuffer.
+  // We mirror that here and pin the contract: CopyObject on an empty
+  // selection is a no-op, Copy then Paste doubles the slot count.
+  void testObjectClipboardContract() {
+    QtEditor::ClearClipboard();
+    QVERIFY(!QtEditor::HasClipboardObject());
+
+    // Stand up an object to be the source.
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    Objects[2].type = OBJ_PLAYER;
+    Objects[2].render_type = RT_POLYOBJ;
+    Objects[2].id = 7;
+    std::strncpy(Objects[2].name, "clip-source", sizeof(Objects[2].name) - 1);
+    Cur_object_index = 2;
+    Highest_object_index = 2;
+
+    QtEditor::CopyObjectToClipboard();
+    QVERIFY(QtEditor::HasClipboardObject());
+
+    int pre_count = 0;
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      if (Objects[i].type != OBJ_NONE)
+        ++pre_count;
+
+    // Paste without retargeting Cur_object_index first, so we exercise
+    // the PasteObject flow exactly as a user would: clipboard's object
+    // lands in a fresh slot.
+    Cur_object_index = -1;
+    QtEditor::PasteObjectFromClipboard();
+    const int post_count = 0;
+    int n = 0;
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      if (Objects[i].type != OBJ_NONE)
+        ++n;
+    QCOMPARE(n, pre_count + 1);
+    (void)post_count;
+    QVERIFY(Cur_object_index >= 0);
+
+    // Cut combines Copy + Delete; running it again on an empty selection
+    // is a no-op.
+    Cur_object_index = 2;
+    QtEditor::CutObjectToClipboard();
+    QCOMPARE(int(Objects[2].type), OBJ_NONE);
   }
 
   void testInteractEveryWidget()

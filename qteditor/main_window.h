@@ -18,10 +18,10 @@
 
 #pragma once
 
+#include <QAction>
+#include <QMenu>
 #include <QMainWindow>
 
-class QAction;
-class QMenu;
 class QTimer;
 class QWidget;
 

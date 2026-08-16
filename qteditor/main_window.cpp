@@ -37,6 +37,7 @@
 #include "editor_view.h"
 #include "hog_dialog.h"
 #include "level_io.h"
+#include "object_clipboard.h"
 #include "object_ops.h"
 #include "room_ops.h"
 #include "viewer_ops.h"
@@ -250,29 +251,66 @@ void MainWindow::buildMenus() {
 
   // ----------------------------------------------------------------- Edit
   QMenu *editMenu = addMenu("&Edit");
-  editMenu->addAction(action("ID_EDIT_UNDO"));
+  QAction *a_edit_undo = action("ID_EDIT_UNDO");
+  QAction *a_edit_cut = action("ID_EDIT_CUT");
+  QAction *a_edit_copy = action("ID_EDIT_COPY");
+  QAction *a_edit_paste = action("ID_EDIT_PLACE");
+  QAction *a_edit_placeterrain = action("ID_EDIT_PLACE_TERRAIN");
+  QAction *a_edit_attach = action("ID_EDIT_ATTACH");
+  QAction *a_edit_delete = action("ID_EDIT_DELETE");
+  QAction *a_edit_loadscrap = action("ID_EDIT_LOADSCRAP");
+  QAction *a_edit_savescrap = action("ID_EDIT_SAVESCRAP");
+  QAction *a_edit_addselect = action("ID_EDIT_ADDSELECT");
+  QAction *a_edit_removeselect = action("ID_EDIT_REMOVESELECT");
+  QAction *a_edit_selectattached = action("ID_EDIT_SELECTATTACHED");
+  QAction *a_edit_clearselected = action("ID_EDIT_CLEARSELECTED");
+  editMenu->addAction(a_edit_undo);
   editMenu->addSeparator();
-  editMenu->addAction(action("ID_EDIT_CUT"));
-  editMenu->addAction(action("ID_EDIT_COPY"));
-  editMenu->addAction(action("ID_EDIT_PLACE"));
-  editMenu->addAction(action("ID_EDIT_PLACE_TERRAIN"));
-  editMenu->addAction(action("ID_EDIT_ATTACH"));
-  editMenu->addAction(action("ID_EDIT_DELETE"));
+  editMenu->addAction(a_edit_cut);
+  editMenu->addAction(a_edit_copy);
+  editMenu->addAction(a_edit_paste);
+  editMenu->addAction(a_edit_placeterrain);
+  editMenu->addAction(a_edit_attach);
+  editMenu->addAction(a_edit_delete);
   editMenu->addSeparator();
-  editMenu->addAction(action("ID_EDIT_LOADSCRAP"));
-  editMenu->addAction(action("ID_EDIT_SAVESCRAP"));
+  editMenu->addAction(a_edit_loadscrap);
+  editMenu->addAction(a_edit_savescrap);
   editMenu->addSeparator();
-  editMenu->addAction(action("ID_EDIT_ADDSELECT"));
-  editMenu->addAction(action("ID_EDIT_REMOVESELECT"));
-  editMenu->addAction(action("ID_EDIT_SELECTATTACHED"));
-  editMenu->addAction(action("ID_EDIT_CLEARSELECTED"));
-  for (QAction *a : {action("ID_EDIT_UNDO"), action("ID_EDIT_CUT"), action("ID_EDIT_COPY"),
-                     action("ID_EDIT_PLACE"), action("ID_EDIT_PLACE_TERRAIN"), action("ID_EDIT_ATTACH"),
-                     action("ID_EDIT_DELETE"), action("ID_EDIT_LOADSCRAP"), action("ID_EDIT_SAVESCRAP"),
-                     action("ID_EDIT_ADDSELECT"), action("ID_EDIT_REMOVESELECT"),
-                     action("ID_EDIT_SELECTATTACHED"), action("ID_EDIT_CLEARSELECTED")}) {
+  editMenu->addAction(a_edit_addselect);
+  editMenu->addAction(a_edit_removeselect);
+  editMenu->addAction(a_edit_selectattached);
+  editMenu->addAction(a_edit_clearselected);
+
+  // Undo / Place / PlaceTerrain / Attach / LoadScrap / SaveScrap /
+  // AddSelect / RemoveSelect / SelectAttached / ClearSelected stay on the
+  // wireNotPorted bus because their data paths run through MFC-only
+  // helpers; the menu wiring is now real but the handlers are
+  // stubs-of-progress.
+  for (QAction *a : {a_edit_undo, a_edit_paste, a_edit_placeterrain,
+                     a_edit_attach, a_edit_loadscrap, a_edit_savescrap,
+                     a_edit_addselect, a_edit_removeselect,
+                     a_edit_selectattached, a_edit_clearselected}) {
     connect(a, &QAction::triggered, this, wireNotPorted(this, QString("Edit/%1").arg(a->objectName())));
   }
+
+  Q_UNUSED(editMenu);
+  connect(a_edit_cut, &QAction::triggered, this, [this]() {
+    QtEditor::CutObjectToClipboard();
+    if (m_editorView != nullptr) m_editorView->requestRedraw();
+  });
+  connect(a_edit_copy, &QAction::triggered, this, [this]() {
+    QtEditor::CopyObjectToClipboard();
+  });
+  connect(a_edit_paste, &QAction::triggered, this, [this]() {
+    QtEditor::PasteObjectFromClipboard();
+    if (m_editorView != nullptr) m_editorView->requestRedraw();
+  });
+  connect(a_edit_delete, &QAction::triggered, this, [this]() {
+    QtEditor::DeleteCurrentObject();
+    if (m_editorView != nullptr) m_editorView->requestRedraw();
+  });
+  // Undo / Place / PlaceTerrain / Attach / LoadScrap / SaveScrap /
+  // AddSelect / RemoveSelect / SelectAttached / ClearSelected stay on the
 
   // ----------------------------------------------------------------- View
   QMenu *viewMenu = addMenu("&View");
