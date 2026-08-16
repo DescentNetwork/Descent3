@@ -20,6 +20,7 @@
 // The D3 core is compiled without the EDITOR define, so this is re-provided
 // here for the Qt port.
 #include "d3edit.h"
+#include "editor_room_state.h"
 #include "terrain.h"
 #include "slew.h"
 #include "manage.h"
@@ -56,6 +57,9 @@ int Curvert = 0;
 int Curportal = -1;
 int Current_trigger = -1;
 room *Markedroomp = nullptr;
+int Markedface = 0;
+int Markededge = 0;
+int Markedvert = 0;
 int Placed_room = -1;
 group *Placed_group = nullptr;
 int Mine_changed = 0;
@@ -194,9 +198,11 @@ int GetFirstPath() {
 }
 
 // Editor-only room/face helpers (defined in editor/Erooms.cpp /
-// editor/selectedroom.cpp). Linux stubs satisfy the level_io.cpp port of
-// editor/HFile.cpp until those files port to Qt; they preserve the public
-// signatures so qteditor links cleanly.
+// editor/selectedroom.cpp). The Qt port's level_io.cpp + room_ops.cpp use
+// these to construct / tear down rooms with full geometry; they preserve
+// the public signatures so qteditor links cleanly.
+namespace QtEditor {
+
 room *CreateNewRoom(int nverts, int nfaces, bool palette_room) {
   (void)palette_room;
   room *rp = new room();
@@ -209,12 +215,43 @@ room *CreateNewRoom(int nverts, int nfaces, bool palette_room) {
   return rp;
 }
 
+// Counterpart of CreateNewRoom() that releases the per-room vectors/faces
+// array and marks the slot free. The full Win32 path also walks the
+// portal list, recycles to the free list, and detaches from the marked
+// room; the Qt port stops at "free the slot" because Curroomp tracking
+// lives at the qteditor level, not in Descent3Core.
+void DestroyRoom(int roomnum) {
+  if (roomnum < 0 || roomnum >= MAX_ROOMS)
+    return;
+  room *rp = &Rooms[roomnum];
+  if (!rp->used)
+    return;
+  if (rp->verts != nullptr) {
+    delete[] rp->verts;
+    rp->verts = nullptr;
+  }
+  if (rp->faces != nullptr) {
+    delete[] rp->faces;
+    rp->faces = nullptr;
+  }
+  if (rp->portals != nullptr) {
+    delete[] rp->portals;
+    rp->portals = nullptr;
+  }
+  rp->used = 0;
+  rp->num_verts = 0;
+  rp->num_faces = 0;
+  rp->num_portals = 0;
+}
+
 void AssignDefaultUVsToRoomFace(room *rp, int facenum) {
   (void)rp;
   (void)facenum;
 }
 
 void ClearRoomSelectedList() {}
+
+} // namespace QtEditor
 
 // SaveLevel lives in Descent3/LoadLevel.cpp but its definition #includes
 // "editor/ebnode.h" mid-file; Descent3Core doesn't have editor/ in its

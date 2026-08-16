@@ -65,6 +65,7 @@
 #include "doorway_keypad.h"
 #include "editline_dialog.h"
 #include "editor_file_dialogs.h"
+#include "editor_room_state.h"
 #include "editor_settings.h"
 #include "editor_view.h"
 #include "generic_death_dialog.h"
@@ -932,14 +933,60 @@ private slots:
     Curroomp = nullptr;
     Markedroomp = nullptr;
 
-    // AddRoom bumps New_mine so the renderer knows to redraw. Win32
-    // OnRoomAdd allocates a fresh room slot; the Qt stub logs the intent
-    // and updates the change flag.
+    // AddRoom provisions a brand-new room at the first free slot by
+    // extruding the current face outward. Build a minimal current room
+    // first (4 verts, 5 faces — one quad face with a portal-able normal)
+    // so AddRoom has something to extrude from.
+    for (int i = 0; i < MAX_ROOMS; ++i)
+      Rooms[i].used = 0;
+    Highest_room_index = -1;
+
+    // Manually drop the created room into slot 0 so we have a current
+    // room to extrude from.
+    {
+      room *rp = QtEditor::CreateNewRoom(8, 3, false);
+      QVERIFY(rp != nullptr);
+      Rooms[0] = *rp;
+      rp->verts = nullptr;
+      rp->faces = nullptr;
+      rp->portals = nullptr;
+      delete rp;
+      Rooms[0].used = 1;
+      Rooms[0].num_verts = 8;
+      Rooms[0].num_faces = 3;
+      // Initialise vertex 0..3 as a unit quad; we only need a non-degenerate
+      // face->normal geometry so AddRoom's extrusion produces a valid
+      // room.
+      vector corners[] = {
+        {0, 0, 0}, {4, 0, 0}, {4, 0, 4}, {0, 0, 4},
+      };
+      for (int i = 0; i < 8; ++i)
+        Rooms[0].verts[i] = corners[i & 3];
+      for (int i = 0; i < 3; ++i)
+
+        InitRoomFace(&Rooms[0].faces[i], i == 2 ? 4 : 3);
+      Rooms[0].faces[2].face_verts[0] = 0;
+      Rooms[0].faces[2].face_verts[1] = 1;
+      Rooms[0].faces[2].face_verts[2] = 2;
+      Rooms[0].faces[2].face_verts[3] = 3;
+      Highest_room_index = 0;
+    }
+    Curroomp = &Rooms[0];
+    Curface = 2;
+    Curedge = Curvert = Curportal = 0;
+
     New_mine = 0;
-    World_changed = 0;
+    Mine_changed = 0;
     QVERIFY(QtEditor::AddRoom());
     QCOMPARE(New_mine, 1);
-    QCOMPARE(World_changed, 1);
+    QCOMPARE(Mine_changed, 1);
+    // AddRoom wrote a fresh room into Rooms[] at a slot >0 and made it
+    // the current selection.
+    QVERIFY(Curroomp != nullptr);
+    QVERIFY(Curroomp != &Rooms[0]);
+    QVERIFY(Curroomp->used);
+    QVERIFY(Curroomp->num_verts >= 8); // 4 (cnv) * 2 verts
+    QVERIFY(Curroomp->num_faces == 6); // cnv + 2
 
     // DeleteRoom with no current selection is a no-op but must report
     // false so the menu's signal handler doesn't trigger a redraw.
