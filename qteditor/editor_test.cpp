@@ -95,6 +95,7 @@
 #include "selectrange_dialog.h"
 #include "sound_source_dialog.h"
 #include "status_dialog.h"
+#include "terrain_keypad.h"
 #include "terrain_sound_dialog.h"
 #include "trigger_keypad.h"
 
