@@ -356,6 +356,7 @@
         <set>Qt::AlignLeft</set>
       </property>
     </widget>
+<!--
     <widget class="QMenuBar" name="menubar">
       <property name="geometry">
         <rect>
@@ -1325,5 +1326,6 @@
         <string>ID_ZBUTTON</string>
       </property>
     </action>
+-->
   </widget>
 </ui>

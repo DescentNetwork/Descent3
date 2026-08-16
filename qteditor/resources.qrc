@@ -34,7 +34,6 @@
         <file alias="editlinedlg.ui">ui/editlinedlg.ui</file>
         <file alias="filepage.ui">ui/filepage.ui</file>
         <file alias="filepageadd.ui">ui/filepageadd.ui</file>
-        <file alias="floating_keypad.ui">ui/floating_keypad.ui</file>
         <file alias="font_dialog.ui">ui/font_dialog.ui</file>
         <file alias="generic_deaths.ui">ui/generic_deaths.ui</file>
         <file alias="genericlight.ui">ui/genericlight.ui</file>
@@ -42,6 +41,7 @@
         <file alias="keypad_dlgbar.ui">ui/keypad_dlgbar.ui</file>
         <file alias="level_info.ui">ui/level_info.ui</file>
         <file alias="levelkeypad.ui">ui/levelkeypad.ui</file>
+        <file alias="mainwindow.ui">ui/mainwindow.ui</file>
         <file alias="levelkeypad_layout.ui">ui/levelkeypad_layout.ui</file>
         <file alias="levelproperties.ui">ui/levelproperties.ui</file>
         <file alias="lightingkeypad.ui">ui/lightingkeypad.ui</file>
@@ -94,9 +94,8 @@
         <file alias="worldsounds.ui">ui/worldsounds.ui</file>
         <file alias="worldtextures.ui">ui/worldtextures.ui</file>
         <file alias="worldweapons.ui">ui/worldweapons.ui</file>
-        <file alias="IDR_MAINFRAME">images/editor.png</file>
+        <file alias="IDR_MAINFRAME_ICON">images/editor.png</file>
         <file alias="IDR_EDITORTYPE">images/editorDoc.png</file>
-        <file alias="IDR_MAINFRAME">images/Toolbar.png</file>
         <file alias="IDR_SRVR_INPLACE">images/IToolbar.png</file>
         <file alias="IDB_MATTHEAD">images/Matt2.png</file>
         <file alias="IDB_D3SPLASH">images/D3.png</file>

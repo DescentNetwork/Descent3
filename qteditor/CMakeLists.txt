@@ -1,4 +1,5 @@
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
 
 find_package(Qt5 5.15 REQUIRED COMPONENTS Widgets UiTools Test)
 
@@ -46,8 +47,6 @@ set(QTEDITOR_SOURCES
   editline_dialog.h
   file_page_dialog.cpp
   file_page_dialog.h
-  floating_keypad.cpp
-  floating_keypad.h
   font_dialog.cpp
   font_dialog.h
   editor_file_dialogs.cpp
@@ -148,8 +147,8 @@ set(QTEDITOR_SOURCES
   terrain_sound_dialog.h
   trigger_keypad.cpp
   trigger_keypad.h
-  ui_loader.cpp
-  ui_loader.h
+  qt_ui_loader.cpp
+  qt_ui_loader.h
   viewer_prop_dialog.cpp
   viewer_prop_dialog.h
   water_procedural_dialog.cpp
@@ -231,13 +230,112 @@ set(QTEDITOR_SOURCES
   table_file_filter_dialog.cpp
   table_file_filter_dialog.h
 )
+
+set(QTEDITOR_UI_FILES
+  ui/propai.ui
+  ui/brief_main.ui
+  ui/scriptstudio.ui
+  ui/ai.ui
+  ui/brief_manage.ui
+  ui/brief_addsound.ui
+  ui/worldobjectsplayer.ui
+  ui/filepageadd.ui
+  ui/ambientsoundpatterns.ui
+  ui/objectkeypad.ui
+  ui/dallas_usertypes_dialog.ui
+  ui/worldobjectsdoor.ui
+  ui/levelkeypad_layout.ui
+  ui/table_file_filter.ui
+  ui/animstates.ui
+  ui/powprop_dialog.ui
+  ui/tablefilefilter_addpage_dlg.ui
+  ui/aboutbox.ui
+  ui/player_weapons.ui
+  ui/brief_addbitmap.ui
+  ui/worldsounds.ui
+  ui/robot_weapon_dialog.ui
+  ui/orphan.ui
+  ui/genericlight.ui
+  ui/statusdlg.ui
+  ui/status.ui
+  ui/quickcompile.ui
+  ui/ambientsoundelement.ui
+  ui/soundsource_dialog.ui
+  ui/worldobjectsgeneric.ui
+  ui/terrainkeypad.ui
+  ui/configcompiler.ui
+  ui/brief_addbutton.ui
+  ui/hogdialog.ui
+  ui/physics.ui
+  ui/preferences.ui
+  ui/propphysics.ui
+  ui/compileall.ui
+  ui/level_info.ui
+  ui/worldweapons.ui
+  ui/briefmissionflags.ui
+  ui/scriptwiz.ui
+  ui/pathkeypad.ui
+  ui/viewer_dialog.ui
+  ui/table_file_editor.ui
+  ui/dallas_strm_audio_dialog.ui
+  ui/roomkeypad.ui
+  ui/worldtextures.ui
+  ui/custdefscript.ui
+  ui/scriptinterface.ui
+  ui/lightingstatus.ui
+  ui/brief_addmovie.ui
+  ui/doorwaykeypad.ui
+  ui/addscript.ui
+  ui/mainwindow.ui
+  ui/filepage.ui
+  ui/objectproperties.ui
+  ui/syncscripts.ui
+  ui/dallas_texture_dialog.ui
+  ui/worldobjectslight.ui
+  ui/propscript.ui
+  ui/selectrange_dialog.ui
+  ui/megacell.ui
+  ui/scriptparms.ui
+  ui/brief_addtext.ui
+  ui/dallas_generic_prompt_dialog.ui
+  ui/water_procedural.ui
+  ui/dallas_import_dialog.ui
+  ui/generic_deaths.ui
+  ui/multicheck.ui
+  ui/objtreedlg.ui
+  ui/procedural_dialog.ui
+  ui/terrain_sound_dialog.ui
+  ui/megakeypad.ui
+  ui/levelkeypad.ui
+  ui/death_dialog.ui
+  ui/levelproperties.ui
+  ui/dallas_flag_dialog.ui
+  ui/createscript.ui
+  ui/triggerkeypad.ui
+  ui/osiris_status.ui
+  ui/lightingkeypad.ui
+  ui/keypad_dlgbar.ui
+  ui/brief_addscreen.ui
+  ui/font_dialog.ui
+  ui/texturekeypad.ui
+  ui/matcenkeypad.ui
+  ui/editlinedlg.ui
+  ui/customize_object.ui
+  ui/dallas_sound_dialog.ui
+  ui/scripteditor.ui
+  ui/dallas_vector_dialog.ui
+  ui/dallas_main_dialog.ui
+  ui/localizescript.ui
+  ui/scriptselect.ui
+)
+
 # The GUI editor excludes the QTest test driver (which has its own main()).
-set(QTEDITOR_APP_SOURCES ${QTEDITOR_SOURCES})
+set(QTEDITOR_APP_SOURCES ${QTEDITOR_SOURCES} ${QTEDITOR_UI_FILES})
 list(FILTER QTEDITOR_APP_SOURCES EXCLUDE REGEX "editor_test\.cpp$")
 
 # The test build excludes the editor's own main.cpp (the test driver supplies
 # its own main()) but otherwise uses the same sources as the app.
-set(QTEDITOR_TEST_SOURCES ${QTEDITOR_SOURCES})
+set(QTEDITOR_TEST_SOURCES ${QTEDITOR_SOURCES} ${QTEDITOR_UI_FILES})
 list(FILTER QTEDITOR_TEST_SOURCES EXCLUDE REGEX "main\.cpp$")
 add_executable(Descent3EditorQt
   ${QTEDITOR_APP_SOURCES}
@@ -275,7 +373,9 @@ target_link_libraries(Descent3EditorQt PRIVATE
   ${PLATFORM_LIBS}
 )
 
-set_target_properties(Descent3EditorQt PROPERTIES OUTPUT_NAME "Descent3EditorQt")
+set_target_properties(Descent3EditorQt PROPERTIES
+  AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
+  OUTPUT_NAME "Descent3EditorQt")
 
 # QTest based editor tester (exercises every dialog/widget).
 add_executable(Descent3EditorTests
@@ -309,4 +409,6 @@ target_link_libraries(Descent3EditorTests PRIVATE
   Qt5::Test
   ${PLATFORM_LIBS}
 )
-set_target_properties(Descent3EditorTests PROPERTIES OUTPUT_NAME "Descent3EditorTests")
+set_target_properties(Descent3EditorTests PROPERTIES
+  AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
+  OUTPUT_NAME "Descent3EditorTests")

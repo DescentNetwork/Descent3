@@ -20,7 +20,7 @@
 
 #include <QPushButton>
 
-#include "ui_loader.h"
+#include "qt_ui_loader.h"
 
 namespace QtEditor {
 

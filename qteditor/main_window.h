@@ -25,6 +25,11 @@
 class QTimer;
 class QWidget;
 
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
+
 namespace QtEditor {
 
 // Constant set for the editor's view mode. Mirrors the Win32 enum in
@@ -81,12 +86,14 @@ private slots:
   void onIdleTimer();
 
 private:
+#ifdef BAD_UI_IMPLEMENTATION
   // Looks up a menu action by its ID_* identifier in the .ui-loaded action
   // host (falling back to a stub action if the identifier is missing).
   QAction *action(const QString &id);
   void buildMenus();
-  void buildKeypadBar();
   QMenu *addMenu(const QString &title);
+#endif
+  void buildKeypadBar();
 
   void toggleKeypadBar();
   void showAboutBox();
@@ -161,7 +168,7 @@ private:
   void onRoomSelectByNumber();
   void onRoomRename();
   void onRoomSaveCurrent();
-  QWidget *m_actionsHost = nullptr;
+  QMenuBar *m_menuBar = nullptr;
   QDockWidget *m_keypadDock = nullptr;
   KeypadBar *m_keypadBar = nullptr;
   Dialog *m_aboutBox = nullptr;
@@ -175,6 +182,8 @@ private:
 
   // Drives the on-idle tick counter for tests.
   int m_onIdleTickCount = 0;
+
+  Ui::MainWindow *ui;
 };
 
 }

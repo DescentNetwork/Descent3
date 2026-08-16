@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ui_loader.h"
+#include "qt_ui_loader.h"
 
 #include <QFile>
 #include <QUiLoader>
