@@ -22,6 +22,8 @@
 #include <QObject>
 #include <QString>
 
+#include "ddebug/pserror.h"
+
 namespace QtEditor {
 
 // Base class for any UI loaded at runtime from a .ui resource via QUiLoader.
