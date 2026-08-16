@@ -58,6 +58,11 @@
 
 #include "about_dialog.h"
 #include "ai_settings_dialog.h"
+#include "file_page_add_dialog.h"
+#include "level_keypad_layout.h"
+#include "level_properties_dialog.h"
+#include "lighting_status_dialog.h"
+#include "status_panel_dialog.h"
 #include "ambient_sound_element_dialog.h"
 #include "ambient_sound_patterns_dialog.h"
 #include "anim_states_dialog.h"

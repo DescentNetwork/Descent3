@@ -65,7 +65,6 @@
         <file alias="propai.ui">ui/propai.ui</file>
         <file alias="propphysics.ui">ui/propphysics.ui</file>
         <file alias="propscript.ui">ui/propscript.ui</file>
-        <file alias="quickcompile.ui">ui/quickcompile.ui</file>
         <file alias="robot_weapon_dialog.ui">ui/robot_weapon_dialog.ui</file>
         <file alias="roomkeypad.ui">ui/roomkeypad.ui</file>
         <file alias="scripteditor.ui">ui/scripteditor.ui</file>
