@@ -57,6 +57,8 @@ set(QTEDITOR_SOURCES
   main_window.h
   path_keypad.cpp
   path_keypad.h
+  object_keypad.cpp
+  object_keypad.h
   physics_dialog.cpp
   physics_dialog.h
   player_weapons_dialog.cpp
