@@ -92,6 +92,8 @@ set(QTEDITOR_SOURCES
   ui_loader.h
   viewer_prop_dialog.cpp
   viewer_prop_dialog.h
+  viewer_ops.cpp
+  viewer_ops.h
   world_objects_door_dialog.cpp
   world_objects_door_dialog.h
   world_objects_generic_dialog.cpp

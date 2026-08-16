@@ -39,6 +39,7 @@
 #include "level_io.h"
 #include "object_ops.h"
 #include "room_ops.h"
+#include "viewer_ops.h"
 #include "keypad_dialog.h"
 #include "level_info_dialog.h"
 #include "doorway_keypad.h"
@@ -293,6 +294,30 @@ void MainWindow::buildMenus() {
   viewMenu->addAction(action("ID_VIEW_FLIP"));
   viewMenu->addSeparator();
   viewMenu->addAction(action("ID_VIEW_SHOWVIEWERFORWARDVECTOR"));
+  QAction *a_center_mine = action("ID_VIEW_CENTERONMINE");
+  QAction *a_center_obj = action("ID_VIEW_CENTERONOBJECT");
+  QAction *a_reset_radius = action("ID_VIEW_RESETVIEWRADIUS");
+  QAction *a_move_to_room = action("ID_VIEW_MOVECAMERATOSELECTEDROOM");
+  viewMenu->addAction(a_center_mine);
+  viewMenu->addAction(a_center_obj);
+  QObject::connect(a_center_mine, &QAction::triggered, this, [this]() {
+    QtEditor::CenterViewOnMine();
+    if (m_editorView != nullptr) m_editorView->requestRedraw();
+  });
+  QObject::connect(a_center_obj, &QAction::triggered, this, [this]() {
+    QtEditor::CenterViewOnObject();
+    if (m_editorView != nullptr) m_editorView->requestRedraw();
+  });
+  viewMenu->addAction(a_reset_radius);
+  QObject::connect(a_reset_radius, &QAction::triggered, this, [this]() {
+    QtEditor::ResetViewRadius();
+  });
+  viewMenu->addAction(a_move_to_room);
+  QObject::connect(a_move_to_room, &QAction::triggered, this, [this]() {
+    QtEditor::MoveViewToSelectedRoom();
+    if (m_editorView != nullptr) m_editorView->requestRedraw();
+  });
+
   viewMenu->addSeparator();
   QAction *a_toolbar = action("ID_VIEW_TOOLBAR");
   QAction *a_showobjs = action("ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW");
@@ -323,9 +348,8 @@ void MainWindow::buildMenus() {
 
   for (QAction *a : {action("ID_VIEW_TEXTUREMINE"),
                      action("ID_VIEW_WIREFRAMEMINE"),
-                     action("ID_VIEW_CENTERONCUBE"), action("ID_VIEW_CENTERONOBJECT"),
-                     action("ID_VIEW_CENTERONMINE"), action("ID_VIEW_RESETVIEWRADIUS"),
-                     action("ID_VIEW_MOVECAMERATOSELECTEDROOM"), action("ID_VIEW_MOVECAMERATOSELECTEDFACE"),
+                     action("ID_VIEW_CENTERONCUBE"),
+                     action("ID_VIEW_MOVECAMERATOSELECTEDFACE"),
                      action("ID_VIEW_MOVECAMERATOCURRENTOBJECT"), action("ID_VIEW_FLIP"),
                      action("ID_VIEW_SHOWVIEWERFORWARDVECTOR"), action("ID_VIEW_NEXTVIEWER")}) {
     connect(a, &QAction::triggered, this, wireNotPorted(this, QString("View/%1").arg(a->objectName())));
