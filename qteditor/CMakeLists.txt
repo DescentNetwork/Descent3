@@ -42,6 +42,8 @@ set(QTEDITOR_SOURCES
   editor_view.h
   generic_death_dialog.cpp
   generic_death_dialog.h
+  generic_light_dialog.cpp
+  generic_light_dialog.h
   hog_dialog.cpp
   hog_dialog.h
   ${PROJECT_SOURCE_DIR}/descar/utils/posix_stream.cpp

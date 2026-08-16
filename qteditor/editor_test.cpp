@@ -75,6 +75,7 @@
 #include "editor_settings.h"
 #include "editor_view.h"
 #include "generic_death_dialog.h"
+#include "generic_light_dialog.h"
 #include "main_window.h"
 #include "object_ops.h"
 #include "object_clipboard.h"
