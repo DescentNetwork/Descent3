@@ -66,6 +66,7 @@
 #include "death_dialog.h"
 #include "doorway_keypad.h"
 #include "editline_dialog.h"
+#include "file_page_dialog.h"
 #include "floating_keypad.h"
 #include "level_keypad.h"
 #include "lighting_keypad.h"

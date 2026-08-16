@@ -30,6 +30,8 @@ set(QTEDITOR_SOURCES
   doorway_keypad.h
   editline_dialog.cpp
   editline_dialog.h
+  file_page_dialog.cpp
+  file_page_dialog.h
   floating_keypad.cpp
   floating_keypad.h
   editor_file_dialogs.cpp
