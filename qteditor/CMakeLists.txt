@@ -88,6 +88,8 @@ set(QTEDITOR_SOURCES
   status_dialog.h
   terrain_keypad.cpp
   terrain_keypad.h
+  texture_keypad.cpp
+  texture_keypad.h
   terrain_sound_dialog.cpp
   terrain_sound_dialog.h
   trigger_keypad.cpp
