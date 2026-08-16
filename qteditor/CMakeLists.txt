@@ -112,6 +112,12 @@ set(QTEDITOR_SOURCES
   room_keypad.h
   room_ops.cpp
   room_ops.h
+  script_editor_dialog.cpp
+  script_editor_dialog.h
+  script_parm_dialog.cpp
+  script_parm_dialog.h
+  script_select_dialog.cpp
+  script_select_dialog.h
   selectrange_dialog.cpp
   selectrange_dialog.h
   sound_combo.cpp
