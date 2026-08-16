@@ -68,6 +68,8 @@
 #include "editline_dialog.h"
 #include "floating_keypad.h"
 #include "level_keypad.h"
+#include "lighting_keypad.h"
+#include "matcen_keypad.h"
 #include "editor_file_dialogs.h"
 #include "editor_room_state.h"
 #include "editor_settings.h"

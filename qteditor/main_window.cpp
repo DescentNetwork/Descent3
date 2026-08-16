@@ -43,7 +43,9 @@
 #include "room_ops.h"
 #include "viewer_ops.h"
 #include "keypad_dialog.h"
+#include "lighting_keypad.h"
 #include "level_keypad.h"
+#include "matcen_keypad.h"
 #include "level_info_dialog.h"
 #include "doorway_keypad.h"
 #include "floating_keypad.h"
@@ -925,6 +927,8 @@ void MainWindow::buildKeypadBar() {
   m_keypadBar->addTab(new RoomKeypad(m_keypadBar->handle()), "Rooms");
   m_keypadBar->addTab(new ObjectKeypad(m_keypadBar->handle()), "Objects");
   m_keypadBar->addTab(new LevelKeypad(m_keypadBar->handle()), "Level");
+  m_keypadBar->addTab(new LightingKeypad(m_keypadBar->handle()), "Lighting");
+  m_keypadBar->addTab(new MatcenKeypad(m_keypadBar->handle()), "Matcens");
   m_keypadBar->addTab(new FloatingKeypad(m_keypadBar->handle()), "Floating");
   m_keypadBar->addTab(new TerrainKeypad(m_keypadBar->handle()), "Terrain");
   m_keypadBar->addTab(new TextureKeypad(m_keypadBar->handle()), "Textures");

@@ -50,6 +50,8 @@ set(QTEDITOR_SOURCES
   keypad_dialog.h
   level_keypad.cpp
   level_keypad.h
+  lighting_keypad.cpp
+  lighting_keypad.h
   megacell_keypad.cpp
   megacell_keypad.h
   level_info_dialog.cpp
@@ -58,6 +60,8 @@ set(QTEDITOR_SOURCES
   level_io.h
   main.cpp
   main_window.cpp
+  matcen_keypad.cpp
+  matcen_keypad.h
   main_window.h
   path_keypad.cpp
   path_keypad.h

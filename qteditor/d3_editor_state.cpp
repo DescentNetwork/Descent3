@@ -49,6 +49,10 @@ int New_mine = 0;
 // Slew movement limitations flag (defined in the MFC editor's editor.cpp).
 int Slew_limitations = 0;
 
+// Editor-side lighting globals (editor_lighting.cpp / rad_init.cpp in MFC).
+int BestFit = 0;
+int Shoot_from_patch = 1;
+
 // Editor room/face/portal editing context (defined in the MFC editor).
 room *Curroomp = nullptr;
 int Curface = -1;
