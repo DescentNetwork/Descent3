@@ -98,10 +98,12 @@
 #include "world_textures_dialog.h"
 #include "world_weapons_dialog.h"
 #include "worldobjectslight_dialog.h"
+#include "level_io.h"
 
 namespace {
 
-struct DialogInstance {
+struct DialogInstance
+{
   QString name;
   QWidget *handle;
 };
@@ -110,7 +112,8 @@ QList<DialogInstance> g_dialogs;
 
 void addDialog(const char *name, QWidget *handle) { g_dialogs.append({name, handle}); }
 
-void collectInteractive(QWidget *root, QList<QWidget *> *out) {
+void collectInteractive(QWidget *root, QList<QWidget *> *out)
+{
   const QList<QWidget *> all = root->findChildren<QWidget *>();
   for (QWidget *w : all) {
     if (qobject_cast<QAbstractButton *>(w) || qobject_cast<QLineEdit *>(w) || qobject_cast<QComboBox *>(w) ||
@@ -121,55 +124,54 @@ void collectInteractive(QWidget *root, QList<QWidget *> *out) {
 }
 
 // Schedules any modal dialog that appears to be closed shortly after a
-  // click, so interaction tests don't deadlock on exec() calls. The timer
-  // keeps closing modal widgets until none remain visible, then cleans up.
-  void closeModalsSoon() {
-    static int s_id = 0;
-    const int id = ++s_id;
-    auto *timer = new QTimer();
-    timer->setInterval(5);
-    auto closeFn = [timer, id]() {
-      if (id != s_id) {
-        timer->stop();
-        timer->deleteLater();
-        return;
+// click, so interaction tests don't deadlock on exec() calls. The timer
+// keeps closing modal widgets until none remain visible, then cleans up.
+void closeModalsSoon()
+{
+  static int s_id = 0;
+  const int id = ++s_id;
+  auto *timer = new QTimer();
+  timer->setInterval(5);
+  auto closeFn = [timer, id]() {
+    if (id != s_id) {
+      timer->stop();
+      timer->deleteLater();
+      return;
+    }
+    bool any = false;
+    const auto widgets = QApplication::topLevelWidgets();
+    for (QWidget *w : widgets) {
+      if (w->isModal() && w->isVisible()) {
+        w->close();
+        any = true;
       }
-      bool any = false;
-      const auto widgets = QApplication::topLevelWidgets();
-      for (QWidget *w : widgets) {
-        if (w->isModal() && w->isVisible()) {
-          w->close();
-          any = true;
-        }
-      }
-      if (!any) {
-        timer->stop();
-        timer->deleteLater();
-      }
-    };
-    timer->callOnTimeout(closeFn);
-    timer->start();
-  }
-
-QString widgetDesc(QWidget *w) {
-  return QString("%1(%2)").arg(w->metaObject()->className()).arg(w->objectName());
+    }
+    if (!any) {
+      timer->stop();
+      timer->deleteLater();
+    }
+  };
+  timer->callOnTimeout(closeFn);
+  timer->start();
 }
+
+QString widgetDesc(QWidget *w) { return QString("%1(%2)").arg(w->metaObject()->className()).arg(w->objectName()); }
 
 } // namespace
 
-class EditorTest : public QObject {
+class EditorTest : public QObject
+{
   Q_OBJECT
 
 private slots:
-  void initTestCase() {
-    QCoreApplication::processEvents();
-  }
+  void initTestCase() { QCoreApplication::processEvents(); }
 
   // CAddScriptDialog (IDD_ADDSCRIPT) gates the name length at 32 chars via
   // DDV_MaxChars in Win32 and via setMaxLength on the Qt line edit here. It
   // also always-defaults IDC_TYPESEL to "object" before "trigger". This test
   // pins both behaviours so the Win32 contract survives the port.
-  void testAddScriptDialogContract() {
+  void testAddScriptDialogContract()
+  {
     QtEditor::AddScriptDialog dlg;
     QVERIFY(dlg.handle() != nullptr);
 
@@ -200,7 +202,8 @@ private slots:
   // Length, Attributes) out of a real .hog file using the cfile/hogfile API.
   // Uses the d3-linux.hog that ships with the project, which thousands of
   // files.
-  void testHogDialogLoadHogFile() {
+  void testHogDialogLoadHogFile()
+  {
     QtEditor::HogDialog dlg;
     QVERIFY(dlg.handle() != nullptr);
 
@@ -213,28 +216,29 @@ private slots:
     // The actual data file shipped with the project. Search in the binary's
     // directory, the install root PWD (./), the install-root symlink (which
     // PWD-d TestC run resolves), and a couple of relatives.
-    const QString data_hog =
-        QStringLiteral("%1/d3-linux.hog").arg(QCoreApplication::applicationDirPath());
-    const QString parent_hog =
-        QStringLiteral("%1/d3-linux.hog").arg(QCoreApplication::applicationDirPath() + "/..");
+    const QString data_hog = QStringLiteral("%1/d3-linux.hog").arg(QCoreApplication::applicationDirPath());
+    const QString parent_hog = QStringLiteral("%1/d3-linux.hog").arg(QCoreApplication::applicationDirPath() + "/..");
     bool found = false;
-    const QStringList candidates = {data_hog, parent_hog,
+    const QStringList candidates = {data_hog,
+                                    parent_hog,
                                     QStringLiteral("./d3-linux.hog"),
                                     QStringLiteral("./d3-linux.hog.original"),
                                     QStringLiteral("../d3-linux.hog"),
                                     QStringLiteral("../../d3-linux.hog")};
     QStringList seen_paths;
-    for (const QString &c : candidates) {
+    for (const QString &c : candidates)
+    {
       seen_paths << c;
-      if (QFile::exists(c)) {
+      if (QFile::exists(c))
+      {
         QVERIFY(dlg.loadHogFile(c));
         found = true;
         break;
       }
     }
-    if (!found) {
-      qWarning("d3-linux.hog not found; tried: %s",
-               qPrintable(seen_paths.join(QStringLiteral(", "))));
+    if (!found)
+    {
+      qWarning("d3-linux.hog not found; tried: %s", qPrintable(seen_paths.join(QStringLiteral(", "))));
       QSKIP("d3-linux.hog not found in test workspace; skipping hog load test.");
     }
     const QString text = dlg.handle()->findChild<QLabel *>(QStringLiteral("IDC_STATUSTEXT"))->text();
@@ -242,11 +246,12 @@ private slots:
   }
 
   // Round-trips a hog2::archive_t through the new D3::hog2_format file table.
-// The Win32 CHogDialog had open_hogfile / write_hogfile / copy_file_to_hog
-// commented out because they did not compile; the editor now uses the
-// descar/ hog reader/writer pair so the dialog can fill the IDC_HOGLIST
-// without going through cfile/hogfile.h.
-  void testHogFormatRoundTrip() {
+  // The Win32 CHogDialog had open_hogfile / write_hogfile / copy_file_to_hog
+  // commented out because they did not compile; the editor now uses the
+  // descar/ hog reader/writer pair so the dialog can fill the IDC_HOGLIST
+  // without going through cfile/hogfile.h.
+  void testHogFormatRoundTrip()
+  {
     const QString tmpDir = QCoreApplication::applicationDirPath() + "/_test_hog";
     QDir::current().mkpath(tmpDir);
 
@@ -265,8 +270,7 @@ private slots:
 
     assert(errno == 0);
     posix_ostream output;
-    QVERIFY(output.open(out.toStdString(),
-                        std::ios_base::out | std::ios_base::binary | std::ios_base::trunc));
+    QVERIFY(output.open(out.toStdString(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc));
     output << table;
     // posix_ostream::write tracks bytes_written vs length, so output.good()
     // is reliable here. The same logic doesn't apply on the read side
@@ -294,7 +298,8 @@ private slots:
   // editor_file_dialogs.{h,cpp}; this test pins the MFC->Qt filter conversion
   // and the PrintToDlgItem-by-objectName lookup that legacy callers in
   // editor/ rely on.
-  void testEditorFileDialogContract() {
+  void testEditorFileDialogContract()
+  {
     // The mfcFilterToQt helper isn't exported, but we can exercise it via the
     // signature of the OpenFileDialog / SaveFileDialog helpers (they need to
     // accept the legacy filter strings verbatim). Verify the format the
@@ -304,7 +309,7 @@ private slots:
 
     // 1. Filename buffer overflow is bounded. Even if the user picks some
     //    very long path, OpenFileDialog must truncate safely.
-    const char *filter_single = "Outrage Level Files (*.d3l)|*.d3l||";
+    const char *filter_single = "Descent 3 Level Files (*.d3l)|*.d3l||";
     char path[_MAX_PATH] = "";
     char initial[_MAX_PATH];
     std::strcpy(initial, "/tmp");
@@ -321,8 +326,7 @@ private slots:
     QtEditor::AddScriptDialog adlg;
     QLabel *name_lbl = new QLabel(adlg.handle());
     name_lbl->setObjectName(QStringLiteral("IDC_TEST_LABEL"));
-    QtEditor::PrintToDlgItem(adlg.handle(), "IDC_TEST_LABEL",
-                              "Current Matcen: %d", 7);
+    QtEditor::PrintToDlgItem(adlg.handle(), "IDC_TEST_LABEL", "Current Matcen: %d", 7);
     QCOMPARE(name_lbl->text(), QStringLiteral("Current Matcen: 7"));
 
     // 3. PrintToDlgItem is no-op for unknown IDs (idempotent on the win32
@@ -332,7 +336,8 @@ private slots:
     QCOMPARE(name_lbl->text(), QStringLiteral("untouched"));
   }
 
-  void testDialogsConstruct() {
+  void testDialogsConstruct()
+  {
     death_info di{};
     object_info oi{};
     soundsource_info_s ssi{};
@@ -413,64 +418,73 @@ private slots:
 
   // The Win32 editor only enables room/object/viewer editing once a level is
   // loaded. This test runs with no level, so those controls must be disabled.
-  void testLevelGatedEnabledStates() {
+  void testLevelGatedEnabledStates()
+  {
     const bool levelLoaded = (Curroomp != nullptr);
 
-    for (const DialogInstance &d : g_dialogs) {
-      if (d.name.startsWith("keypad_doorway")) {
+    for (const DialogInstance &d : g_dialogs)
+    {
+      if (d.name.startsWith("keypad_doorway"))
+      {
         QList<QWidget *> ws;
         collectInteractive(d.handle, &ws);
-        for (QWidget *w : ws) {
+        for (QWidget *w : ws)
+        {
           const QString oname = w->objectName();
           const bool editing = oname.startsWith("IDC_KEY") || oname.startsWith("IDC_DOORWAY");
           if (editing)
-            QVERIFY2(w->isEnabled() == levelLoaded,
-                     qPrintable(QString("doorway %1 enabled=%2 levelLoaded=%3")
-                                    .arg(widgetDesc(w))
-                                    .arg(w->isEnabled())
-                                    .arg(levelLoaded)));
+          {
+            QVERIFY2(w->isEnabled() == levelLoaded, qPrintable(QString("doorway %1 enabled=%2 levelLoaded=%3")
+                                                                   .arg(widgetDesc(w))
+                                                                   .arg(w->isEnabled())
+                                                                   .arg(levelLoaded)));
+          }
         }
       }
 
-      if (d.name.startsWith("keypad_trigger")) {
+      if (d.name.startsWith("keypad_trigger"))
+      {
         QList<QWidget *> ws;
         collectInteractive(d.handle, &ws);
         const bool hasTriggers = Num_triggers > 0 && levelLoaded;
-        for (QWidget *w : ws) {
+        for (QWidget *w : ws)
+        {
           if (w->objectName().startsWith("IDC_TRIG"))
-            QVERIFY2(w->isEnabled() == hasTriggers,
-                     qPrintable(QString("trigger %1 enabled=%2 hasTriggers=%3")
-                                    .arg(widgetDesc(w))
-                                    .arg(w->isEnabled())
-                                    .arg(hasTriggers)));
+          {
+            QVERIFY2(w->isEnabled() == hasTriggers, qPrintable(QString("trigger %1 enabled=%2 hasTriggers=%3")
+                                                                   .arg(widgetDesc(w))
+                                                                   .arg(w->isEnabled())
+                                                                   .arg(hasTriggers)));
+          }
         }
       }
 
-      if (d.name.startsWith("keypad_path")) {
+      if (d.name.startsWith("keypad_path"))
+      {
         QList<QWidget *> ws;
         collectInteractive(d.handle, &ws);
         const bool hasPaths = Num_game_paths > 0 && levelLoaded;
         for (QWidget *w : ws) {
           if (w->objectName().startsWith("IDC_PATHPAD") || w->objectName().startsWith("IDC_DELETE_PATH"))
-            QVERIFY2(w->isEnabled() == hasPaths,
-                     qPrintable(QString("path %1 enabled=%2 hasPaths=%3")
-                                    .arg(widgetDesc(w))
-                                    .arg(w->isEnabled())
-                                    .arg(hasPaths)));
+            QVERIFY2(
+                w->isEnabled() == hasPaths,
+                qPrintable(
+                    QString("path %1 enabled=%2 hasPaths=%3").arg(widgetDesc(w)).arg(w->isEnabled()).arg(hasPaths)));
         }
       }
 
-      if (d.name.startsWith("viewer_prop")) {
+      if (d.name.startsWith("viewer_prop"))
+      {
         QList<QWidget *> ws;
         collectInteractive(d.handle, &ws);
         const bool hasViewer = (Viewer_object != nullptr);
-        for (QWidget *w : ws) {
+        for (QWidget *w : ws)
+        {
           if (w->objectName().startsWith("IDC_"))
-            QVERIFY2(w->isEnabled() == hasViewer,
-                     qPrintable(QString("viewer %1 enabled=%2 hasViewer=%3")
-                                    .arg(widgetDesc(w))
-                                    .arg(w->isEnabled())
-                                    .arg(hasViewer)));
+            QVERIFY2(w->isEnabled() == hasViewer, qPrintable(QString("viewer %1 enabled=%2 hasViewer=%3")
+                                                                 .arg(widgetDesc(w))
+                                                                 .arg(w->isEnabled())
+                                                                 .arg(hasViewer)));
         }
       }
     }
@@ -480,7 +494,8 @@ private slots:
   // network; without a level they are also gated on the lock state. Add buttons
   // vary per dialog (some are enabled and just error out), so only assert the
   // operations the Win32 code disables unconditionally when Network_up is 0.
-  void testTableEnabledStates() {
+  void testTableEnabledStates()
+  {
     const bool net = Network_up != 0;
 
     // The Win32 table editors gate lock/checkin/undo/override operations on
@@ -497,16 +512,15 @@ private slots:
         const bool isLock = oname.contains("_LOCK", Qt::CaseSensitive) || oname.endsWith("LOCK", Qt::CaseSensitive);
         const bool isCheckin = oname.contains("CHECKIN", Qt::CaseSensitive);
         const bool isUndoLock = oname.contains("UNDO_LOCK", Qt::CaseSensitive);
-        const bool isOverride = oname == QStringLiteral("IDC_OVERRIDE") ||
-                                oname.endsWith("_OVERRIDE", Qt::CaseSensitive);
-        const bool isCheckedOut = oname.contains("CHECKED_OUT", Qt::CaseSensitive) ||
-                                  oname.endsWith("CHECKOUT", Qt::CaseSensitive);
+        const bool isOverride =
+            oname == QStringLiteral("IDC_OVERRIDE") || oname.endsWith("_OVERRIDE", Qt::CaseSensitive);
+        const bool isCheckedOut =
+            oname.contains("CHECKED_OUT", Qt::CaseSensitive) || oname.endsWith("CHECKOUT", Qt::CaseSensitive);
         const bool networkOp = isLock || isCheckin || isUndoLock || isOverride || isCheckedOut;
         if (networkOp) {
           if (!net)
-            QVERIFY2(!w->isEnabled(), qPrintable(QString("%1 %2 should be disabled (no network)")
-                                                     .arg(d.name)
-                                                     .arg(widgetDesc(w))));
+            QVERIFY2(!w->isEnabled(),
+                     qPrintable(QString("%1 %2 should be disabled (no network)").arg(d.name).arg(widgetDesc(w))));
         }
       }
     }
@@ -519,24 +533,30 @@ private slots:
   // SaveAs route through OpenFileDialog/SaveFileDialog (which cancel in
   // headless mode but update the initialdir round-trip), Save-when-empty
   // falls through to SaveAs.
-  void testFileMenuActionsWired() {
+  void testFileMenuActionsWired()
+  {
     QtEditor::MainWindow win;
     win.show();
     QCoreApplication::processEvents();
 
     // Find the action by walking the menubar so we don't depend on the
     // exact table_file_editor.ui shape.
-    QAction *a_new = nullptr, *a_open = nullptr, *a_save = nullptr,
-            *a_saveas = nullptr;
-    for (QAction *a : win.menuBar()->actions()) {
+    QAction *a_new = nullptr, *a_open = nullptr, *a_save = nullptr, *a_saveas = nullptr;
+    for (QAction *a : win.menuBar()->actions())
+    {
       QMenu *m = a->menu();
       if (m == nullptr || m->title() != "&File")
         continue;
-      for (QAction *fa : m->actions()) {
-        if (fa->objectName() == "ID_FILE_NEW") a_new = fa;
-        else if (fa->objectName() == "ID_FILE_OPEN") a_open = fa;
-        else if (fa->objectName() == "ID_FILE_SAVE") a_save = fa;
-        else if (fa->objectName() == "ID_FILE_SAVE_AS") a_saveas = fa;
+      for (QAction *fa : m->actions())
+      {
+        if (fa->objectName() == "ID_FILE_NEW")
+          a_new = fa;
+        else if (fa->objectName() == "ID_FILE_OPEN")
+          a_open = fa;
+        else if (fa->objectName() == "ID_FILE_SAVE")
+          a_save = fa;
+        else if (fa->objectName() == "ID_FILE_SAVE_AS")
+          a_saveas = fa;
       }
       break;
     }
@@ -569,26 +589,26 @@ private slots:
   // through QSettings. Uses an INI-formatted store under a tmp file so the
   // global app config isn't touched, and a constructed d3edit_state seeded
   // with non-default values to exercise the bool/int/float mix.
-  void testEditorSettingsRoundTrip() {
-    const QString ini_path =
-        QCoreApplication::applicationDirPath() + "/_test_settings.ini";
+  void testEditorSettingsRoundTrip()
+  {
+    const QString ini_path = QCoreApplication::applicationDirPath() + "/_test_settings.ini";
     QSettings::Format previous = QSettings::defaultFormat();
     QSettings::setDefaultFormat(QSettings::IniFormat);
 
     d3edit_state out{};
-    out.texdlg_texture    = 42;
-    out.current_obj_type  = 3;
-    out.current_powerup   = 7;
-    out.texscr_visible    = true;
-    out.texscr_x          = 17;
-    out.texscr_y          = 23;
-    out.game_render_mode  = GM_FULLSCREEN_HW;
-    out.joy_slewing       = false;
-    out.tile_views        = true;
-    out.object_move_axis  = 2;
+    out.texdlg_texture = 42;
+    out.current_obj_type = 3;
+    out.current_powerup = 7;
+    out.texscr_visible = true;
+    out.texscr_x = 17;
+    out.texscr_y = 23;
+    out.game_render_mode = GM_FULLSCREEN_HW;
+    out.joy_slewing = false;
+    out.tile_views = true;
+    out.object_move_axis = 2;
     out.fullscreen_debug_state = true;
     out.texture_display_flags = 0xab;
-    out.objects_in_wireframe  = false;
+    out.objects_in_wireframe = false;
     out.float_keypad_x = -1;
     out.float_keypad_y = -1;
     out.float_keypad_w = -1;
@@ -608,19 +628,19 @@ private slots:
       QtEditor::loadEditorSettings(settings, in);
     }
 
-    QCOMPARE(in.texdlg_texture,    out.texdlg_texture);
-    QCOMPARE(in.current_obj_type,  out.current_obj_type);
-    QCOMPARE(in.current_powerup,   out.current_powerup);
-    QCOMPARE(in.texscr_visible,    out.texscr_visible);
-    QCOMPARE(in.texscr_x,          out.texscr_x);
-    QCOMPARE(in.texscr_y,          out.texscr_y);
-    QCOMPARE(in.game_render_mode,  out.game_render_mode);
-    QCOMPARE(in.joy_slewing,       out.joy_slewing);
-    QCOMPARE(in.tile_views,        out.tile_views);
-    QCOMPARE(in.object_move_axis,  out.object_move_axis);
+    QCOMPARE(in.texdlg_texture, out.texdlg_texture);
+    QCOMPARE(in.current_obj_type, out.current_obj_type);
+    QCOMPARE(in.current_powerup, out.current_powerup);
+    QCOMPARE(in.texscr_visible, out.texscr_visible);
+    QCOMPARE(in.texscr_x, out.texscr_x);
+    QCOMPARE(in.texscr_y, out.texscr_y);
+    QCOMPARE(in.game_render_mode, out.game_render_mode);
+    QCOMPARE(in.joy_slewing, out.joy_slewing);
+    QCOMPARE(in.tile_views, out.tile_views);
+    QCOMPARE(in.object_move_axis, out.object_move_axis);
     QCOMPARE(in.fullscreen_debug_state, out.fullscreen_debug_state);
-    QCOMPARE(in.texture_display_flags,  int(out.texture_display_flags));
-    QCOMPARE(in.objects_in_wireframe,   out.objects_in_wireframe);
+    QCOMPARE(in.texture_display_flags, int(out.texture_display_flags));
+    QCOMPARE(in.objects_in_wireframe, out.objects_in_wireframe);
 
     QFile::remove(ini_path);
     QSettings::setDefaultFormat(previous);
@@ -632,7 +652,8 @@ private slots:
   // back, so we can verify the timer is alive without driving an actual
   // frame. We also exercise QtEditor::SetViewMode() (the global helper
   // corresponding to CMainFrame::SetViewMode and Editor_view_mode).
-  void testMainFrameOnIdleTicks() {
+  void testMainFrameOnIdleTicks()
+  {
     QtEditor::MainWindow win;
     QVERIFY(win.isOnIdleTimerActive());
     QCOMPARE(win.onIdleTickCount(), 0);
@@ -643,50 +664,110 @@ private slots:
     const int start = win.onIdleTickCount();
     QElapsedTimer elapsed;
     elapsed.start();
-    while (win.onIdleTickCount() < start + 3 && elapsed.elapsed() < 1000) {
+    while (win.onIdleTickCount() < start + 3 && elapsed.elapsed() < 1000)
+    {
       QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
     }
-    QVERIFY2(win.onIdleTickCount() >= start + 3,
-             qPrintable(QStringLiteral("only %1 ticks in %2ms")
-                            .arg(win.onIdleTickCount() - start)
-                            .arg(elapsed.elapsed())));
+    QVERIFY2(
+        win.onIdleTickCount() >= start + 3,
+        qPrintable(QStringLiteral("only %1 ticks in %2ms").arg(win.onIdleTickCount() - start).arg(elapsed.elapsed())));
 
     // SetViewMode round-trip: out-of-range values are clipped. Valid values
     // update the global and return the previous mode.
-    QCOMPARE(QtEditor::SetViewMode(QtEditor::VIEW_MODE_TERRAIN),
-             QtEditor::currentViewMode());
+    QCOMPARE(QtEditor::SetViewMode(QtEditor::VIEW_MODE_TERRAIN), QtEditor::currentViewMode());
     QCOMPARE(QtEditor::currentViewMode(), int(QtEditor::VIEW_MODE_TERRAIN));
-    QCOMPARE(QtEditor::SetViewMode(QtEditor::VIEW_MODE_ROOM),
-             int(QtEditor::VIEW_MODE_TERRAIN));
+    QCOMPARE(QtEditor::SetViewMode(QtEditor::VIEW_MODE_ROOM), int(QtEditor::VIEW_MODE_TERRAIN));
     QCOMPARE(QtEditor::SetViewMode(99), int(QtEditor::VIEW_MODE_ROOM));
     // Reset for subsequent tests.
     QtEditor::SetViewMode(QtEditor::VIEW_MODE_MINE);
   }
 
-  // Verifies CMainFrame's view toggles routed through the Qt menu:
-  // ID_VIEW_TOOLBAR -> keypad dock visibility; ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW
-  // -> D3EditState.objects_in_wireframe flip (which the editor settings
-  // round-trip already covers). Save/restore geometry round-trip pins the
-  // CMainFrame OnCreateClient / OnDestroy side.
-  void testMainFrameViewSubActions() {
+  // Verifies the Qt port of editor/HFile.cpp:
+  //   - StripLeadingTrailingSpaces trims both ends and flips back the
+  //     "stripped" return value.
+  //   - CreateNewMine resets the editor-only globals exposed in
+  //     qteditor/d3_editor_state.cpp (Curface, Num_triggers, …) and calls
+  //     FreeAllRooms / FreeAllObjects on Descent3Core without exploding.
+  //   - RenderLevelStats returns a non-empty buffer whose first three lines
+  //     are the "Level Stats:" header the Win32 EditorMessageBox got.
+  // We can't read EditorSaveLevel's return meaningfully in headless test
+  // mode because SaveLevel itself is a stub (see d3_editor_state.cpp); the
+  // smoke test pins it doesn't crash instead.
+  void testLevelIoHFilePort()
+  {
+    char buf[] = "  hi  ";
+    QVERIFY(QtEditor::StripLeadingTrailingSpaces(buf));
+    QCOMPARE(QString::fromLatin1(buf), QStringLiteral("hi"));
+
+    char already[] = "tight";
+    QVERIFY(!QtEditor::StripLeadingTrailingSpaces(already));
+    QCOMPARE(QString::fromLatin1(already), QStringLiteral("tight"));
+
+    // Capture the editor-only globals CreateNewMine() is supposed to reset,
+    // seed them to sentinel values, then run the function and confirm they
+    // came back to the documented defaults.
+    Curface = 99;
+    Curedge = 99;
+    Curvert = 99;
+    Curportal = 42;
+    Num_triggers = 7;
+    Current_trigger = 9;
+    Editor_view_mode = 2;
+    Editor_viewer_id = 5;
+    New_mine = 0;
+    World_changed = 1;
+    QtEditor::CreateNewMine();
+    QCOMPARE(Curface, 0);
+    QCOMPARE(Curportal, -1);
+    QCOMPARE(Num_triggers, 0);
+    QCOMPARE(Current_trigger, -1);
+    QCOMPARE(Editor_view_mode, int(VM_MINE));
+    QCOMPARE(Editor_viewer_id, -1);
+    QCOMPARE(New_mine, 1);
+    QCOMPARE(World_changed, 0);
+
+    // RenderLevelStats exercises the same Rooms[]/Objects[]/LightmapInfo[]
+    // iteration as the Win32 ShowLevelStats and returns a heap buffer the
+    // caller owns. We only assert the header line because the rest of the
+    // body depends on whatever level is currently loaded.
+    char *text = QtEditor::RenderLevelStats();
+    QVERIFY(text != nullptr);
+    QVERIFY(QString::fromUtf8(text).startsWith(QStringLiteral("Level Stats:")));
+    delete[] text;
+
+    // EditorLoadLevel/EditorSaveLevel smoke-test: passing nullptr returns
+    // false/0 without touching any state.
+    QVERIFY(!QtEditor::EditorLoadLevel(nullptr));
+    QCOMPARE(QtEditor::EditorSaveLevel(nullptr), 0);
+    errno = 0;
+  }
+
+  void testMainFrameViewSubActions()
+  {
     QtEditor::MainWindow win;
     win.show();
     QCoreApplication::processEvents();
 
     // Use the menuBar walk as in testFileMenuActionsWired.
-    QAction *a_toolbar = nullptr, *a_showobjs = nullptr,
-            *a_mine = nullptr, *a_terrain = nullptr, *a_room = nullptr;
-    for (QAction *a : win.menuBar()->actions()) {
+    QAction *a_toolbar = nullptr, *a_showobjs = nullptr, *a_mine = nullptr, *a_terrain = nullptr, *a_room = nullptr;
+    for (QAction *a : win.menuBar()->actions())
+    {
       QMenu *m = a->menu();
       if (m == nullptr || m->title() != "&View")
         continue;
-      for (QAction *va : m->actions()) {
+      for (QAction *va : m->actions())
+      {
         const QString n = va->objectName();
-        if (n == "ID_VIEW_TOOLBAR") a_toolbar = va;
-        else if (n == "ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW") a_showobjs = va;
-        else if (n == "ID_MINE_VIEW") a_mine = va;
-        else if (n == "ID_TERRAIN_VIEW") a_terrain = va;
-        else if (n == "ID_ROOM_VIEW") a_room = va;
+        if (n == "ID_VIEW_TOOLBAR")
+          a_toolbar = va;
+        else if (n == "ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW")
+          a_showobjs = va;
+        else if (n == "ID_MINE_VIEW")
+          a_mine = va;
+        else if (n == "ID_TERRAIN_VIEW")
+          a_terrain = va;
+        else if (n == "ID_ROOM_VIEW")
+          a_room = va;
       }
       break;
     }
@@ -735,7 +816,8 @@ private slots:
   // QSettings so an editor reopening under the same QApplication picks the
   // same window dimensions. Mirrors CMainFrame::OnCreateClient / OnDestroy
   // forwarding into the registry; the Qt port uses QSettings for the same.
-  void testMainFrameGeometryPersisted() {
+  void testMainFrameGeometryPersisted()
+  {
     QByteArray saved_geom;
     QRect saved_geom_rect;
     {
@@ -746,8 +828,7 @@ private slots:
       saved_geom_rect = win.geometry();
       win.saveWindowState();
       QSettings settings;
-      saved_geom =
-          settings.value(QStringLiteral("mainwindow/geometry")).toByteArray();
+      saved_geom = settings.value(QStringLiteral("mainwindow/geometry")).toByteArray();
     }
     QVERIFY(!saved_geom.isEmpty());
 
@@ -769,7 +850,9 @@ private slots:
     errno = 0;
   }
 
-  void testInteractEveryWidget() {
+
+  void testInteractEveryWidget()
+  {
     int clicks = 0;
     int edits = 0;
     // Buttons that need the network or a locked/checked-out page (the Win32
@@ -795,7 +878,8 @@ private slots:
       return false;
     };
 
-    for (const DialogInstance &d : g_dialogs) {
+    for (const DialogInstance &d : g_dialogs)
+    {
       QList<QWidget *> ws;
       collectInteractive(d.handle, &ws);
       for (QWidget *w : ws) {
@@ -803,8 +887,10 @@ private slots:
         if (name.isEmpty())
           continue;
 
-        if (QAbstractButton *b = qobject_cast<QAbstractButton *>(w)) {
-          if (skipNetworkButton(name)) {
+        if (QAbstractButton *b = qobject_cast<QAbstractButton *>(w))
+        {
+          if (skipNetworkButton(name))
+          {
             qInfo() << "skip" << d.name << name << "(network op)";
             continue;
           }
@@ -814,12 +900,16 @@ private slots:
           QCoreApplication::processEvents();
           QCoreApplication::processEvents();
           clicks++;
-        } else if (QLineEdit *e = qobject_cast<QLineEdit *>(w)) {
+        }
+        else if (QLineEdit *e = qobject_cast<QLineEdit *>(w))
+        {
           qInfo() << "edit" << d.name << name;
           QTest::keyClicks(e, "1");
           QTest::keyClick(e, Qt::Key_Return);
           edits++;
-        } else if (QComboBox *c = qobject_cast<QComboBox *>(w)) {
+        }
+        else if (QComboBox *c = qobject_cast<QComboBox *>(w))
+        {
           qInfo() << "combo" << d.name << name;
           if (c->count() > 0)
             c->setCurrentIndex(0);
@@ -834,7 +924,8 @@ private slots:
 };
 
 // Custom main: initialise the D3 core (loads game data) before running tests.
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   QApplication app(argc, argv);
   QtEditor::initD3Core(argc, argv);
   EditorTest tc;

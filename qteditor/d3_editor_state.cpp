@@ -51,8 +51,16 @@ int Slew_limitations = 0;
 // Editor room/face/portal editing context (defined in the MFC editor).
 room *Curroomp = nullptr;
 int Curface = -1;
+int Curedge = 0;
+int Curvert = 0;
 int Curportal = -1;
 int Current_trigger = -1;
+room *Markedroomp = nullptr;
+int Placed_room = -1;
+group *Placed_group = nullptr;
+int Mine_changed = 0;
+int Editor_view_mode = 0; // VM_MINE
+int Editor_viewer_id = -1;
 
 // SLEW.cpp guards SlewControlInit() with EDITOR; the Qt port has no controller
 // integration, so provide a stub. The non-EDITOR branch of slew.h turns
@@ -183,4 +191,42 @@ int GetFirstPath() {
     if (GamePaths[i].used)
       return i;
   return -1;
+}
+
+// Editor-only room/face helpers (defined in editor/Erooms.cpp /
+// editor/selectedroom.cpp). Linux stubs satisfy the level_io.cpp port of
+// editor/HFile.cpp until those files port to Qt; they preserve the public
+// signatures so qteditor links cleanly.
+room *CreateNewRoom(int nverts, int nfaces, bool palette_room) {
+  (void)palette_room;
+  room *rp = new room();
+  memset(rp, 0, sizeof(room));
+  rp->used = 1;
+  rp->num_verts = nverts;
+  rp->num_faces = nfaces;
+  rp->verts = new vector[nverts]();
+  rp->faces = new face[nfaces]();
+  return rp;
+}
+
+void AssignDefaultUVsToRoomFace(room *rp, int facenum) {
+  (void)rp;
+  (void)facenum;
+}
+
+void ClearRoomSelectedList() {}
+
+// SaveLevel lives in Descent3/LoadLevel.cpp but its definition #includes
+// "editor/ebnode.h" mid-file; Descent3Core doesn't have editor/ in its
+// include path, so the symbol never makes it into libDescent3Core.a. We
+// stub it at editor-side scope so the Qt port's level_io.cpp can keep
+// EditorSaveLevel's contract (success → 1) until the engine path lands.
+int SaveLevel(char *filename, bool f_save_room_AABB) {
+  (void)f_save_room_AABB;
+  // The stub refuses to scribble anything to disk: writing a stale or empty
+  // .d3l would mask real bugs during development. The Qt port will swap
+  // this for the real implementation once editor/ebnode.h's MFC deps
+  // (EditorMessageBox, etc.) have a Linux equivalent.
+  (void)filename;
+  return 0;
 }

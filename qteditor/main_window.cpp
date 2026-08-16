@@ -532,7 +532,7 @@ void MainWindow::onFileOpen() {
     initial_dir[sizeof(initial_dir) - 1] = '\0';
   }
   char picked[_MAX_PATH] = "";
-  const char *filter = "Outrage Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
+  const char *filter = "Descent 3 Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
   if (!QtEditor::OpenFileDialog(this, filter, picked, initial_dir,
                                 int {sizeof(initial_dir)})) {
     statusBar()->showMessage(QStringLiteral("Open cancelled."));
@@ -567,7 +567,7 @@ void MainWindow::onFileSaveAs() {
     initial_dir[sizeof(initial_dir) - 1] = '\0';
   }
   char picked[_MAX_PATH] = "";
-  const char *filter = "Outrage Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
+  const char *filter = "Descent 3 Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
   if (!QtEditor::SaveFileDialog(this, filter, picked, initial_dir,
                                 int {sizeof(initial_dir)})) {
     statusBar()->showMessage(QStringLiteral("Save As cancelled."));
@@ -581,12 +581,19 @@ void MainWindow::onFileSaveAs() {
 }
 
 void MainWindow::onFileStats() {
-  // editor/ShowLevelStats writes a textual breakdown of faces/vertices/
-  // objects/etc into the editor messagebox. The Qt port routes that through
-  // QMessageBox until the engine-side stats walker ships.
+  // ShowLevelStats -> RenderLevelStats in the Qt port. The render function
+  // is built on top of the same Rooms[]/Objects[] iteration the Win32
+  // entry point did; the dialog surface just got swapped from
+  // OutrageMessageBox to QMessageBox::information.
+  char *text = QtEditor::RenderLevelStats();
+  if (text == nullptr) {
+    QMessageBox::information(this, QStringLiteral("Level stats"),
+                              QStringLiteral("Level stats unavailable."));
+    return;
+  }
   QMessageBox::information(this, QStringLiteral("Level stats"),
-                            QStringLiteral("Level statistics are not yet "
-                                           "implemented in the Qt port."));
+                            QString::fromUtf8(text));
+  delete[] text;
 }
 
 void MainWindow::onFileVerifyLevel() {
