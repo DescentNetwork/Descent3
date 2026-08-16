@@ -34,6 +34,8 @@ set(QTEDITOR_SOURCES
   file_page_dialog.h
   floating_keypad.cpp
   floating_keypad.h
+  font_dialog.cpp
+  font_dialog.h
   editor_file_dialogs.cpp
   editor_file_dialogs.h
   editor_room_state.h
