@@ -114,6 +114,7 @@
 #include "editor_view.h"
 #include "level_io.h"
 #include "viewer_prop_dialog.h"
+#include "water_procedural_dialog.h"
 #include "world_objects_door_dialog.h"
 #include "world_objects_generic_dialog.h"
 #include "world_objects_player_dialog.h"
