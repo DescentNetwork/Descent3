@@ -61,6 +61,8 @@ set(QTEDITOR_SOURCES
   physics_dialog.h
   player_weapons_dialog.cpp
   player_weapons_dialog.h
+  object_ops.cpp
+  object_ops.h
   powprop_dialog.cpp
   powprop_dialog.h
   preferences_dialog.cpp

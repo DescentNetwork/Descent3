@@ -37,6 +37,7 @@
 #include "editor_view.h"
 #include "hog_dialog.h"
 #include "level_io.h"
+#include "object_ops.h"
 #include "room_ops.h"
 #include "keypad_dialog.h"
 #include "level_info_dialog.h"
@@ -424,18 +425,52 @@ void MainWindow::buildMenus() {
 
   // ---------------------------------------------------------------- Object
   QMenu *objectMenu = addMenu("&Object");
+  QAction *a_obj_delete = action("ID_OBJECT_DELETEOBJECT");
+  QAction *a_obj_moveplayer = action("ID_OBJECT_MOVEPLAYER");
+  QAction *a_obj_plcamera = action("ID_OBJECT_PLACECAMERAATVIEWER");
+  QAction *a_obj_setcam = action("ID_OBJECT_SETCAMERAFROMVIEWER");
+  QAction *a_obj_setview = action("ID_OBJECT_SETVIEWERFROMCAMERA");
   objectMenu->addAction(action("ID_OBJECT_PLACEOBJECT"));
-  objectMenu->addAction(action("ID_OBJECT_DELETEOBJECT"));
-  objectMenu->addAction(action("ID_OBJECT_MOVEPLAYER"));
-  objectMenu->addAction(action("ID_OBJECT_PLACECAMERAATVIEWER"));
+  objectMenu->addAction(a_obj_delete);
+  objectMenu->addAction(a_obj_moveplayer);
+  objectMenu->addAction(a_obj_plcamera);
   objectMenu->addAction(action("ID_OBJECT_PLACECAMERAATCURRENTFACE"));
-  objectMenu->addAction(action("ID_OBJECT_SETCAMERAFROMVIEWER"));
-  objectMenu->addAction(action("ID_OBJECT_SETVIEWERFROMCAMERA"));
+  objectMenu->addAction(a_obj_setcam);
+  objectMenu->addAction(a_obj_setview);
   objectMenu->addAction(action("ID_OBJECT_SELECTBYNUMBER"));
   objectMenu->addAction(action("ID_OBJECT_PLACESOUNDSOURCEATVIEWER"));
   objectMenu->addAction(action("ID_OBJECT_PLACEWAYPOINTATVIEWER"));
 
+  connect(a_obj_delete, &QAction::triggered, this, [this]() {
+    QtEditor::DeleteCurrentObject();
+    if (m_editorView != nullptr)
+      m_editorView->requestRedraw();
+  });
+  connect(a_obj_moveplayer, &QAction::triggered, this, [this]() {
+    QtEditor::MovePlayerToCurrentRoom();
+    if (m_editorView != nullptr)
+      m_editorView->requestRedraw();
+  });
+  connect(a_obj_plcamera, &QAction::triggered, this, [this]() {
+    QtEditor::PlaceCameraAtViewer();
+    if (m_editorView != nullptr)
+      m_editorView->requestRedraw();
+  });
+  connect(a_obj_setcam, &QAction::triggered, this, [this]() {
+    QtEditor::SetCameraFromViewer();
+    if (m_editorView != nullptr)
+      m_editorView->requestRedraw();
+  });
+  connect(a_obj_setview, &QAction::triggered, this, [this]() {
+    QtEditor::SetViewerFromCamera();
+    if (m_editorView != nullptr)
+      m_editorView->requestRedraw();
+  });
+
   for (QAction *a : objectMenu->actions()) {
+    if (a == a_obj_delete || a == a_obj_moveplayer ||
+        a == a_obj_plcamera || a == a_obj_setcam || a == a_obj_setview)
+      continue;
     connect(a, &QAction::triggered, this, wireNotPorted(this, QString("Object/%1").arg(a->objectName())));
   }
 

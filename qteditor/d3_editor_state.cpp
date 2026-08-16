@@ -56,6 +56,7 @@ int Curedge = 0;
 int Curvert = 0;
 int Curportal = -1;
 int Current_trigger = -1;
+int Cur_object_index = -1;
 room *Markedroomp = nullptr;
 int Markedface = 0;
 int Markededge = 0;
