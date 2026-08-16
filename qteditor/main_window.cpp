@@ -34,6 +34,7 @@
 #include "crossplat.h"
 #include "d3edit.h"
 #include "editor_file_dialogs.h"
+#include "editor_view.h"
 #include "hog_dialog.h"
 #include "level_io.h"
 #include "keypad_dialog.h"
@@ -102,6 +103,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   resize(1024, 768);
 
   statusBar()->showMessage("Ready");
+
+  // Win32 MainFrame's central split pane hosted two CWnd-derived render
+  // surfaces (CTextureGrWnd, CWireframeGrWnd) plus a CKeypadDialog tab. The
+  // Qt port uses an EditorView QOpenGLWidget as the central widget and
+  // parks the keypad bar as a QDockWidget so it can be docked/undocked.
+  m_editorView = new EditorView(this);
+  setCentralWidget(m_editorView);
 
   // The .ui files define all of the editor's menu actions (the original
   // ID_* identifiers, labels and shortcuts). Loading the table editor .ui here
@@ -516,6 +524,11 @@ void MainWindow::onFileNew() {
   QtEditor::CreateNewMine();
   setWindowTitle(QStringLiteral("Descent 3 Editor - Untitled.d3l"));
   m_currentLevelFile.clear();
+  // CMainFrame::OnCreateClient marked the world "changed" so the texture &
+  // wireframe views repainted. The Qt port routes that via EditorView's
+  // update() until the engine-side paintGL draws the new mine.
+  if (m_editorView != nullptr)
+    m_editorView->requestRedraw();
   statusBar()->showMessage(QStringLiteral("Created new level."));
 }
 
@@ -541,6 +554,8 @@ void MainWindow::onFileOpen() {
   m_currentLevelFile = QString::fromLatin1(picked);
   setWindowTitle(QStringLiteral("Descent 3 Editor - %1").arg(m_currentLevelFile));
   QtEditor::EditorLoadLevel(picked);
+  if (m_editorView != nullptr)
+    m_editorView->requestRedraw();
   statusBar()->showMessage(
       QStringLiteral("Opened %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
 }

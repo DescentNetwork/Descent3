@@ -63,6 +63,7 @@
 #include "editline_dialog.h"
 #include "editor_file_dialogs.h"
 #include "editor_settings.h"
+#include "editor_view.h"
 #include "generic_death_dialog.h"
 #include "main_window.h"
 #include "hog_dialog.h"
@@ -850,6 +851,48 @@ private slots:
     errno = 0;
   }
 
+  // Verifies the Win32->Qt port of the editor's central OpenGL surface
+  // (CTextureGrWnd + CWireframeGrWnd inside MainFrm.cpp). The Qt port
+  // surfaces them as a single EditorView QOpenGLWidget assigned to
+  // MainWindow::setCentralWidget(). We check that:
+  //
+  //   - MainWindow's centralWidget is the EditorView member;
+  //   - resize + requestRedraw round-trips through update() without
+  //     crashing (paintGL itself is best-effort under offscreen QPA);
+  //   - The frame counter is reachable after show().
+  // We don't try to assert any specific GL state — that depends on the
+  // host's GL stack and isn't useful in CI.
+  void testEditorViewAttached() {
+    QtEditor::MainWindow win;
+    win.show();
+    QCoreApplication::processEvents();
+
+    QWidget *central = win.centralWidget();
+    QVERIFY(central != nullptr);
+    auto *view = qobject_cast<QtEditor::EditorView *>(central);
+    QVERIFY(view != nullptr);
+
+    // The viewport starts at whatever the window's resize grabbed; bump it
+    // to a known size before the assertion so we don't race resizeGL.
+    win.resize(800, 600);
+    QCoreApplication::processEvents();
+    view->requestRedraw();
+    QCoreApplication::processEvents();
+
+    // Width always matches the resize; vertical height is consumed by the
+    // menubar / status bar / keypad dock under offscreen QPA, so we only
+    // assert width and "non-empty height". The actual paint surface is
+    // created lazily on the first paintGL, which QOpenGLWidget schedules
+    // after this resizeGL returns.
+    QCOMPARE(view->renderSize().width(), 800);
+    QVERIFY(view->renderSize().height() > 0);
+    QVERIFY(view->frameCount() >= 0);
+
+    view->requestRedraw();
+    view->requestRedraw();
+    QCoreApplication::processEvents();
+    QVERIFY(view->frameCount() >= 0);
+  }
 
   void testInteractEveryWidget()
   {

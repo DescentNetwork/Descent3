@@ -35,6 +35,8 @@ set(QTEDITOR_SOURCES
   editor_settings.cpp
   editor_settings.h
   editor_test.cpp
+  editor_view.cpp
+  editor_view.h
   generic_death_dialog.cpp
   generic_death_dialog.h
   hog_dialog.cpp

@@ -46,6 +46,7 @@ int currentViewMode();
 class Dialog;
 class KeypadBar;
 class ViewerPropDialog;
+class EditorView;
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -139,6 +140,7 @@ private:
   KeypadBar *m_keypadBar = nullptr;
   Dialog *m_aboutBox = nullptr;
   ViewerPropDialog *m_viewerProps = nullptr;
+  EditorView *m_editorView = nullptr;
   QTimer *m_idleTimer = nullptr;
 
   // Path of the currently open .d3l, or empty if none / untitled. Updated by
