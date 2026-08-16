@@ -23,6 +23,9 @@
 #include "player.h"
 #include "room.h"
 
+#include <QInputDialog>
+#include <QString>
+
 #include <cstdio>
 
 namespace QtEditor {
@@ -280,6 +283,31 @@ void DeleteCurrentViewer() {
   Viewer_object = nullptr;
   std::fprintf(stderr,
                "[object_ops] DeleteCurrentViewer: no viewers left\n");
+}
+
+int SelectObjectByNumber() {
+  bool ok = false;
+  const int value = QInputDialog::getInt(
+      nullptr, QStringLiteral("Select Object"),
+      QStringLiteral("Enter object number to select:"), 0, 0, MAX_OBJECTS, 1,
+      &ok);
+  if (!ok)
+    return -1;
+  if (value < 0 || value > Highest_object_index || Objects[value].type == OBJ_NONE) {
+    std::fprintf(stderr,
+                 "[object_ops] SelectObjectByNumber: %d is invalid\n", value);
+    return -1;
+  }
+  Cur_object_index = value;
+  return value;
+}
+
+void SelectObject(int objnum) {
+  if (objnum < 0 || objnum > Highest_object_index)
+    return;
+  if (Objects[objnum].type == OBJ_NONE)
+    return;
+  Cur_object_index = objnum;
 }
 
 } // namespace QtEditor

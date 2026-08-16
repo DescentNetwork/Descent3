@@ -1255,35 +1255,34 @@ private slots:
     Objects[2].type = OBJ_PLAYER;
     Objects[2].render_type = RT_POLYOBJ;
     Objects[2].id = 7;
-    std::strncpy(Objects[2].name, "clip-source", sizeof(Objects[2].name) - 1);
+    std::strncpy(Objects[2].name, const_cast<char *>("clip-source"),
+                 sizeof(Objects[2].name) - 1);
     Cur_object_index = 2;
     Highest_object_index = 2;
 
     QtEditor::CopyObjectToClipboard();
     QVERIFY(QtEditor::HasClipboardObject());
+    QVERIFY(Cur_object_index == 2);
 
     int pre_count = 0;
     for (int i = 0; i < MAX_OBJECTS; ++i)
       if (Objects[i].type != OBJ_NONE)
         ++pre_count;
 
-    // Paste without retargeting Cur_object_index first, so we exercise
-    // the PasteObject flow exactly as a user would: clipboard's object
-    // lands in a fresh slot.
-    Cur_object_index = -1;
+    // PasteObject allocates a fresh slot and stamps Cur_object_index
+    // on it. We pin the slot count and ensure Objects[2] (the source) is
+    // untouched.
     QtEditor::PasteObjectFromClipboard();
-    const int post_count = 0;
     int n = 0;
     for (int i = 0; i < MAX_OBJECTS; ++i)
       if (Objects[i].type != OBJ_NONE)
         ++n;
     QCOMPARE(n, pre_count + 1);
-    (void)post_count;
+    QCOMPARE(int(Objects[2].type), OBJ_PLAYER);
     QVERIFY(Cur_object_index >= 0);
 
     // Cut combines Copy + Delete; running it again on an empty selection
     // is a no-op.
-    Cur_object_index = 2;
     QtEditor::CutObjectToClipboard();
     QCOMPARE(int(Objects[2].type), OBJ_NONE);
   }

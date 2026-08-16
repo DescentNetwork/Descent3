@@ -72,4 +72,16 @@ int SelectNextViewer();
 // Viewer_object to the next available viewer.
 void DeleteCurrentViewer();
 
+// Win32 MainFrm::OnObjectSelectByNumber runs a QInputDialog getInt
+// (analogous to Room>Select Room By Number) and sets Cur_object_index.
+// Returns the picked object index, or -1 if the dialog was cancelled or
+// the index is invalid.
+int SelectObjectByNumber();
+
+// Win32 OnObjectMovePlayer moves the player to the current room.
+// The Qt port already implements this on the Object menu; we expose a
+// second name (SelectObject via the user's command router) so it's
+// discoverable alongside SelectNextObject / SelectPrevObject.
+void SelectObject(int objnum);
+
 } // namespace QtEditor

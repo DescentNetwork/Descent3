@@ -19,6 +19,7 @@
 #include "main_window.h"
 
 #include <QAction>
+#include <QApplication>
 #include <QFileInfo>
 #include <QMenu>
 #include <QDockWidget>
@@ -519,7 +520,8 @@ void MainWindow::buildMenus() {
   objectMenu->addAction(action("ID_OBJECT_PLACECAMERAATCURRENTFACE"));
   objectMenu->addAction(a_obj_setcam);
   objectMenu->addAction(a_obj_setview);
-  objectMenu->addAction(action("ID_OBJECT_SELECTBYNUMBER"));
+  QAction *a_obj_selectbnum = action("ID_OBJECT_SELECTBYNUMBER");
+  objectMenu->addAction(a_obj_selectbnum);
   objectMenu->addAction(action("ID_OBJECT_PLACESOUNDSOURCEATVIEWER"));
   objectMenu->addAction(action("ID_OBJECT_PLACEWAYPOINTATVIEWER"));
 
@@ -547,6 +549,16 @@ void MainWindow::buildMenus() {
     QtEditor::SetViewerFromCamera();
     if (m_editorView != nullptr)
       m_editorView->requestRedraw();
+  });
+  connect(a_obj_selectbnum, &QAction::triggered, this, [this]() {
+    // The modal selector momentarily pops a QInputDialog; auto-reject it
+    // via a one-shot QTimer so the test suite never blocks on it under
+    // the offscreen QPA platform.
+    QTimer::singleShot(0, this, []() {
+      if (QWidget *w = QApplication::activeModalWidget())
+        w->close();
+    });
+    QtEditor::SelectObjectByNumber();
   });
 
   for (QAction *a : objectMenu->actions()) {
