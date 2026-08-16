@@ -18,43 +18,76 @@
 
 #pragma once
 
+#include <QHash>
 #include <QOpenGLWidget>
+#include <QPoint>
+#include <QVector3D>
+
+#include "vecmat.h"
 
 namespace QtEditor {
 
-// EditorView is the Qt port of the Win32 editor's CTextureGrWnd:
-// a QOpenGLWidget that hosts the renderer and repaints the current mine
-// whenever the level state changes. The Win32 class was driven directly by
-// MFC's OnPaint message; the Qt port uses QOpenGLWidget's
-// initializeGL/resizeGL/paintGL trio and renders inside paintGL() via the
-// Qt-side proxy of editor/gameeditor.cpp's StartEditorFrame/EndEditorFrame.
+// EditorView is the Qt port of the Win32 editor's CTextureGrWnd /
+// CWireframeGrWnd: a QOpenGLWidget that renders the current mine.
+// The D3 renderer (renderer/HardwareOpenGL.cpp) owns its own SDL window and
+// is not used here; instead the mine geometry is projected with the vecmat
+// math and drawn directly with OpenGL, giving a correct textured/wireframe
+// view of the loaded level.
 class EditorView : public QOpenGLWidget {
   Q_OBJECT
 public:
   explicit EditorView(QWidget *parent = nullptr);
   ~EditorView() override;
 
-  // Number of frames the view has actually painted. Exposed so tests can
-  // verify the widget is alive and ticking without driving a full GL
-  // pipeline (tests run in offscreen mode where paintGL fires once only).
   int frameCount() const { return m_frameCount; }
 
-  // Forces a redraw. Mirrors the Win32 ::InvalidateRect() the legacy
-  // CMainFrame triggers from its OnIdle loop. Trade in a small bit of
-  // paint traffic for predictable cross-platform behaviour.
+  // Forces a redraw (the Win32 InvalidateRect equivalent).
   void requestRedraw();
 
-  // Size in device pixels, exposed for status-bar reporting ("500×400"
-  // replacement for the Win32 GetClientRect path MainFrm::OnSize walked).
   QSize renderSize() const;
+
+  bool isWireframe() const { return m_wireframe; }
+  void setWireframe(bool wireframe);
+
+  // Renders the mine from the viewer; used by tests to grab the projected
+  // geometry without needing a GL context.
+  struct ProjectedVertex {
+    float x, y; // normalized screen coords (0..1)
+    float z;    // camera depth (positive = in front)
+  };
+  void projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const;
 
 protected:
   void initializeGL() override;
   void resizeGL(int w, int h) override;
   void paintGL() override;
 
+  void mousePressEvent(QMouseEvent *event) override;
+  void mouseMoveEvent(QMouseEvent *event) override;
+  void wheelEvent(QWheelEvent *event) override;
+
 private:
+  bool projectVertex(const vector &world, float *sx, float *sy) const;
+  void updateCamera();
+  void renderRooms();
+
+  vector m_eye;
+  matrix m_orient;
+  bool m_cameraValid = false;
+
+  bool m_wireframe = false;
   int m_frameCount = 0;
+
+  // Orbit camera state used when no viewer object exists.
+  QPoint m_lastMouse;
+  float m_yaw = 0.0f;
+  float m_pitch = -0.4f;
+  float m_dist = 500.0f;
+  vector m_target;
+
+  // Cached OpenGL textures, keyed by D3 bitmap handle.
+  mutable QHash<int, GLuint> m_textures;
+  void ensureTexture(int bmHandle);
 };
 
 } // namespace QtEditor

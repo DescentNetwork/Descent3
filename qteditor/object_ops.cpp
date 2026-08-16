@@ -216,10 +216,12 @@ int SpawnNewViewer() {
   Objects[slot].orient = Viewer_object->orient;
   Editor_viewer_id = (Editor_viewer_id < 0) ? 0 : Editor_viewer_id + 1;
   Objects[slot].id = Editor_viewer_id;
-  ObjSetPos(&Objects[slot], &Viewer_object->pos, Viewer_object->roomnum,
-            &Viewer_object->orient, false);
+  // ObjSetPos relinks the object into its room, and ObjRelink asserts that
+  // objnum <= Highest_object_index, so bump it before positioning the object.
   if (slot > Highest_object_index)
     Highest_object_index = slot;
+  ObjSetPos(&Objects[slot], &Viewer_object->pos, Viewer_object->roomnum,
+            &Viewer_object->orient, false);
   Mine_changed = 1;
   New_mine = 1;
   std::fprintf(stderr,

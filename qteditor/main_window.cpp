@@ -403,9 +403,17 @@ void MainWindow::buildMenus() {
   viewMenu->addAction(action("ID_VIEW_VIEWPROP"));
   connect(action("ID_VIEW_VIEWPROP"), &QAction::triggered, this, &MainWindow::toggleViewerProps);
 
-  for (QAction *a : {action("ID_VIEW_TEXTUREMINE"),
-                     action("ID_VIEW_WIREFRAMEMINE"),
-                     action("ID_VIEW_CENTERONCUBE"),
+  QAction *a_texview = action("ID_VIEW_TEXTUREMINE");
+  QAction *a_wireview = action("ID_VIEW_WIREFRAMEMINE");
+  connect(a_texview, &QAction::triggered, this, [this]() {
+    if (m_editorView != nullptr)
+      m_editorView->setWireframe(false);
+  });
+  connect(a_wireview, &QAction::triggered, this, [this]() {
+    if (m_editorView != nullptr)
+      m_editorView->setWireframe(true);
+  });
+  for (QAction *a : {action("ID_VIEW_CENTERONCUBE"),
                      action("ID_VIEW_MOVECAMERATOSELECTEDFACE")}) {
     connect(a, &QAction::triggered, this, wireNotPorted(this, QString("View/%1").arg(a->objectName())));
   }
