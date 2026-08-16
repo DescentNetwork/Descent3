@@ -1166,6 +1166,36 @@ private slots:
     // helpers let us start/stop the linked-list hooks cleanly.
   }
 
+  // Verifies the Window menu's Tile / Cascade entries from Win32
+  // MainFrm.cpp::OnWindowTile/OnWindowCascade. Both use findChildren to
+  // enumerate dock widgets and float each one at a specific geometry; the
+  // test confirms the action exists and the call doesn't crash on a
+  // dock-less window (idempotent on empty windows).
+  void testWindowMenuTileCascadeWired() {
+    QtEditor::MainWindow win;
+    win.show();
+    QCoreApplication::processEvents();
+
+    QAction *a_tile = nullptr, *a_cascade = nullptr;
+    for (QAction *a : win.menuBar()->actions()) {
+      QMenu *m = a->menu();
+      if (m == nullptr || m->title() != "&Window")
+        continue;
+      for (QAction *wa : m->actions()) {
+        if (wa->objectName() == "ID_WINDOW_TILE") a_tile = wa;
+        if (wa->objectName() == "ID_WINDOW_CASCADE") a_cascade = wa;
+      }
+      break;
+    }
+    QVERIFY(a_tile != nullptr);
+    QVERIFY(a_cascade != nullptr);
+
+    a_tile->trigger();
+    QCoreApplication::processEvents();
+    a_cascade->trigger();
+    QCoreApplication::processEvents();
+  }
+
   void testInteractEveryWidget()
   {
     int clicks = 0;

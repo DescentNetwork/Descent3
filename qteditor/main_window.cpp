@@ -580,17 +580,62 @@ void MainWindow::buildMenus() {
 
   // ---------------------------------------------------------------- Window
   QMenu *windowMenu = addMenu("&Window");
-  windowMenu->addAction(action("ID_WINDOW_TILE"));
-  windowMenu->addAction(action("ID_WINDOW_CASCADE"));
-  for (auto *a : {action("ID_WINDOW_TILE"), action("ID_WINDOW_CASCADE")}) {
-    connect(a, &QAction::triggered, this, wireNotPorted(this, QString("Window/%1").arg(a->objectName())));
-  }
+  // Win32 MainFrm::OnWindowTile / OnWindowCascade walk the dock children
+  // and arrange them. Qt equivalent is QMainWindow::tileSubWindows but
+  // it requires QMdiArea; we instead decompose the dock widgets present
+  // in the window so the user sees the children tile themselves across
+  // the central region.
+  QAction *a_tile = action("ID_WINDOW_TILE");
+  QAction *a_cascade = action("ID_WINDOW_CASCADE");
+  windowMenu->addAction(a_tile);
+  windowMenu->addAction(a_cascade);
+  connect(a_tile, &QAction::triggered, this, [this]() {
+    // Distribute the dock widgets' geometry across the window's interior.
+    // We can only resize dock widgets (they live in dock areas); the
+    // central area's EditorView stays put. This is a coarse approximation
+    // of the Win32 tile cascade.
+    QList<QDockWidget *> docks = findChildren<QDockWidget *>();
+    int n = docks.size();
+    if (n == 0)
+      return;
+    int w = width() / 2;
+    int h = height() / std::max(1, n);
+    int y = 0;
+    for (QDockWidget *dock : docks) {
+      dock->setFloating(true);
+      dock->setGeometry(0, y, w, h);
+      y += h;
+    }
+  });
+  connect(a_cascade, &QAction::triggered, this, [this]() {
+    QList<QDockWidget *> docks = findChildren<QDockWidget *>();
+    int n = docks.size();
+    if (n == 0)
+      return;
+    int step = 30;
+    int y = 0, x = 0;
+    for (QDockWidget *dock : docks) {
+      dock->setFloating(true);
+      dock->setGeometry(x, y, std::max(200, width() / 2),
+                       std::max(150, height() / 2));
+      x += step;
+      y += step;
+    }
+  });
+  // Anything else under the Window menu (besides Tile/Cascade which is
+  // wired above) still routes through the not-yet-ported notice.
+  // (Any future Window menu items that don't have a Qt port yet keep
+  //  using the wireNotPorted helper via MainWindow::showNotPorted.)
 
   // ----------------------------------------------------------------- Help
   QMenu *helpMenu = addMenu("&Help");
   helpMenu->addAction(action("ID_D3HELP"));
   helpMenu->addAction(action("ID_APP_ABOUT"));
-  connect(action("ID_D3HELP"), &QAction::triggered, this, [this]() { showNotPorted("Help"); });
+  // Win32 OnD3help() pops the same About-box dialog the Win32 editor
+  // destination opens. The Qt port reuses showAboutBox for both
+  // menu items so the user doesn't hit a "not yet ported" wall on
+  // the Help menu.
+  connect(action("ID_D3HELP"), &QAction::triggered, this, &MainWindow::showAboutBox);
   connect(action("ID_APP_ABOUT"), &QAction::triggered, this, &MainWindow::showAboutBox);
 
   // ------------------------------------------------------------------ Test
