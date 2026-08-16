@@ -96,6 +96,7 @@
 #include "physics_dialog.h"
 #include "player_weapons_dialog.h"
 #include "powprop_dialog.h"
+#include "procedural_dialog.h"
 #include "preferences_dialog.h"
 #include "propai_dialog.h"
 #include "robot_weapons_dialog.h"

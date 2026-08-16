@@ -79,6 +79,8 @@ set(QTEDITOR_SOURCES
   object_clipboard.h
   powprop_dialog.cpp
   powprop_dialog.h
+  procedural_dialog.cpp
+  procedural_dialog.h
   preferences_dialog.cpp
   preferences_dialog.h
   propai_dialog.cpp
