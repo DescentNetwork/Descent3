@@ -103,6 +103,22 @@ private:
   void showWorldWeapons();
   void showWorldTextures();
   void showGenericObject(int objType, int current);
+  void showLevelProperties();
+  void showMegacells();
+  void showAmbientSounds();
+  void showScriptInterface();
+  void showFilePage();
+  void showAISettings();
+  void showOrphanHunter();
+  void showBriefingEditor();
+  void showFontEditor();
+  void showTableFileEdit();
+  void showTableFileFilter();
+  void showDallas();
+  void showReorderPages();
+  void showAllCheckedOut();
+  void showBitmapImporter();
+  void showHotSpotTGA();
 
   // File-menu slots driven by ID_FILE_NEW / ID_FILE_OPEN / ID_FILE_SAVE /
   // ID_FILE_SAVE_AS. They go through OpenFileDialog / SaveFileDialog and

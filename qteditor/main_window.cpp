@@ -24,6 +24,7 @@
 #include <QMenu>
 #include <QDockWidget>
 #include <QMenuBar>
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QSettings>
 #include <QStatusBar>
@@ -43,6 +44,19 @@
 #include "room_ops.h"
 #include "viewer_ops.h"
 #include "keypad_dialog.h"
+#include "ai_settings_dialog.h"
+#include "ambient_sound_patterns_dialog.h"
+#include "brief_main_dialog.h"
+#include "dallas_main_dialog.h"
+#include "file_page_dialog.h"
+#include "font_dialog.h"
+#include "level_properties_dialog.h"
+#include "megacell_dialog.h"
+#include "orphan_remove_dialog.h"
+#include "script_interface_dialog.h"
+#include "table_file_edit_dialog.h"
+#include "table_file_filter_dialog.h"
+
 #include "lighting_keypad.h"
 #include "level_keypad.h"
 #include "matcen_keypad.h"
@@ -193,6 +207,7 @@ QAction *MainWindow::action(const QString &id) {
     if (QAction *a = m_actionsHost->findChild<QAction *>(id))
       return a;
   }
+  LOG_ERROR("Missing menu item from .ui file: %s", id.toLatin1().data());
   QAction *a = new QAction(id, this);
   a->setText(id);
   return a;
@@ -233,8 +248,7 @@ void MainWindow::buildMenus() {
   fileMenu->addAction(action("ID_FILE_FIXDEGENERATEFACES"));
   fileMenu->addAction(action("ID_FILE_REMOVEDUPLICATEFACESFROMCURRENTROOM"));
   fileMenu->addAction(action("ID_FILE_LEVELPROPS"));
-  connect(action("ID_FILE_LEVELPROPS"), &QAction::triggered, this,
-          [this]() { showNotPorted("LevelProperties"); });
+  connect(action("ID_FILE_LEVELPROPS"), &QAction::triggered, this, &MainWindow::showLevelProperties);
   fileMenu->addSeparator();
   fileMenu->addAction(action("ID_FILE_IMPORT_ROOM"));
   fileMenu->addSeparator();
@@ -619,11 +633,11 @@ void MainWindow::buildMenus() {
   editorsMenu->addAction(action("ID_EDITORS_DALLAS"));
 
   connect(action("ID_TOOLS_WORLD_TEXTURES"), &QAction::triggered, this, &MainWindow::showWorldTextures);
-  connect(action("ID_EDITORS_MEGACELLS"), &QAction::triggered, this, [this]() { showNotPorted("Megacells"); });
+  connect(action("ID_EDITORS_MEGACELLS"), &QAction::triggered, this, &MainWindow::showMegacells);
   connect(action("ID_TOOLS_WORLD_OBJECTS_ROBOTS"), &QAction::triggered, this,
-          [this]() { showNotPorted("WorldObjectsRobot"); });
+          [this]() { showGenericObject(OBJ_ROBOT, D3EditState.current_robot); });
   connect(action("ID_TOOLS_WORLD_OBJECTS_POWERUPS"), &QAction::triggered, this,
-          [this]() { showNotPorted("WorldObjectsPowerup"); });
+          [this]() { showGenericObject(OBJ_POWERUP, D3EditState.current_powerup); });
   connect(action("ID_TOOLS_WORLD_OBJECTS_BUILDINGS"), &QAction::triggered, this,
           [this]() {
             showGenericObject(OBJ_BUILDING, D3EditState.current_building);
@@ -637,25 +651,25 @@ void MainWindow::buildMenus() {
   connect(action("ID_TOOLS_WORLD_OBJECTS_SOUND"), &QAction::triggered, this, &MainWindow::showWorldObjectsSound);
   connect(action("ID_TOOLS_WORLD_OBJECTS_LIGHTS"), &QAction::triggered, this, &MainWindow::showWorldObjectsLight);
   connect(action("ID_EDITORS_AMBIENTSOUNDS"), &QAction::triggered, this,
-          [this]() { showNotPorted("AmbientSounds"); });
+          &MainWindow::showAmbientSounds);
   connect(action("ID_SCRIPT_LEVEL_INTERFACE"), &QAction::triggered, this,
-          [this]() { showNotPorted("ScriptLevelInterface"); });
-  connect(action("ID_EDITORS_FILES"), &QAction::triggered, this, [this]() { showNotPorted("FilePage"); });
-  connect(action("ID_EDITORS_AIPROPERTIES"), &QAction::triggered, this, [this]() { showNotPorted("AISettings"); });
-  connect(action("IDD_REORDER_PAGES"), &QAction::triggered, this, [this]() { showNotPorted("ReorderPages"); });
+          &MainWindow::showScriptInterface);
+  connect(action("ID_EDITORS_FILES"), &QAction::triggered, this, &MainWindow::showFilePage);
+  connect(action("ID_EDITORS_AIPROPERTIES"), &QAction::triggered, this, &MainWindow::showAISettings);
+  connect(action("IDD_REORDER_PAGES"), &QAction::triggered, this, &MainWindow::showReorderPages);
   connect(action("IDD_SHOW_ALL_CHECKED_OUT"), &QAction::triggered, this,
-          [this]() { showNotPorted("ShowAllCheckedOut"); });
-  connect(action("IDD_ORPHANHUNTER"), &QAction::triggered, this, [this]() { showNotPorted("OrphanRemove"); });
-  connect(action("IDM_IMPORT_BITMAP"), &QAction::triggered, this, [this]() { showNotPorted("BitmapImporter"); });
-  connect(action("ID_HOTSPOT_TGA"), &QAction::triggered, this, [this]() { showNotPorted("HotSpotTGA"); });
-  connect(action("ID_BRIEFING_EDITOR"), &QAction::triggered, this, [this]() { showNotPorted("BriefEdit"); });
-  connect(action("ID_SUBEDITORS_FONT"), &QAction::triggered, this, [this]() { showNotPorted("GrFont"); });
+          &MainWindow::showAllCheckedOut);
+  connect(action("IDD_ORPHANHUNTER"), &QAction::triggered, this, &MainWindow::showOrphanHunter);
+  connect(action("IDM_IMPORT_BITMAP"), &QAction::triggered, this, &MainWindow::showBitmapImporter);
+  connect(action("ID_HOTSPOT_TGA"), &QAction::triggered, this, &MainWindow::showHotSpotTGA);
+  connect(action("ID_BRIEFING_EDITOR"), &QAction::triggered, this, &MainWindow::showBriefingEditor);
+  connect(action("ID_SUBEDITORS_FONT"), &QAction::triggered, this, &MainWindow::showFontEditor);
   connect(action("ID_SUBEDITORS_HOGMAKER"), &QAction::triggered, this, &MainWindow::showHogMaker);
   connect(action("ID_SUBEDITORS_TABLEFILEEDIT"), &QAction::triggered, this,
-          [this]() { showNotPorted("TableFileEdit"); });
+          &MainWindow::showTableFileEdit);
   connect(action("ID_SUBEDITORS_TABLEFILEFILTER"), &QAction::triggered, this,
-          [this]() { showNotPorted("TableFileFilter"); });
-  connect(action("ID_EDITORS_DALLAS"), &QAction::triggered, this, [this]() { showNotPorted("DallasMain"); });
+          &MainWindow::showTableFileFilter);
+  connect(action("ID_EDITORS_DALLAS"), &QAction::triggered, this, &MainWindow::showDallas);
 
   // --------------------------------------------------------------- Terrain
   QMenu *terrainMenu = addMenu("&Terrain");
@@ -1005,6 +1019,114 @@ void MainWindow::showGenericObject(int objType, int current) {
     D3EditState.current_building = dlg.current();
   else if (objType == OBJ_CLUTTER)
     D3EditState.current_clutter = dlg.current();
+}
+
+void MainWindow::showLevelProperties() {
+  LevelPropertiesDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showMegacells() {
+  MegacellDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showAmbientSounds() {
+  AmbientSoundPatternsDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showScriptInterface() {
+  ScriptInterfaceDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showFilePage() {
+  FilePageDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showAISettings() {
+  AISettingsDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showOrphanHunter() {
+  OrphanRemoveDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showBriefingEditor() {
+  BriefMainDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showFontEditor() {
+  FontDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showTableFileEdit() {
+  TableFileEditDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showTableFileFilter() {
+  TableFileFilterDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showDallas() {
+  DallasMainDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::showReorderPages() {
+  // The Win32 editor lets the user reorder the net pagefile. Without a live
+  // net connection, surface the current pagelock order.
+  QString text;
+  for (int i = 0; i < MAX_TRACKLOCKS; i++)
+    if (GlobalTrackLocks[i].used)
+      text += QString("%1  %2\n").arg(i).arg(GlobalTrackLocks[i].name);
+  if (text.isEmpty())
+    text = QStringLiteral("No pages checked out.");
+  QMessageBox::information(this, QStringLiteral("Reorder Net Pages"), text);
+}
+
+void MainWindow::showAllCheckedOut() {
+  QString text = QStringLiteral("Pages checked out by %1:\n\n").arg(TableUser);
+  int total = 0;
+  for (int i = 0; i < MAX_TRACKLOCKS; i++)
+    if (GlobalTrackLocks[i].used) {
+      text += QString("%1\n").arg(GlobalTrackLocks[i].name);
+      total++;
+    }
+  if (total == 0)
+    text = QStringLiteral("No pages are checked out.");
+  QMessageBox::information(this, QStringLiteral("All Pages Checked Out"), text);
+}
+
+void MainWindow::showBitmapImporter() {
+  // Bitmap/animation converter: pick a texture image and load it into the
+  // texture table via the engine.
+  const QString path = QFileDialog::getOpenFileName(this, QStringLiteral("Import Bitmap"),
+                                                    Current_bitmap_dir,
+                                                    QStringLiteral("Images (*.pcx *.tga *.bm)"));
+  if (path.isEmpty())
+    return;
+  const QByteArray pathBytes = path.toLocal8Bit();
+  const int bm = LoadTextureImage(pathBytes.constData(), nullptr, 0, 0);
+  if (bm < 0) {
+    QMessageBox::warning(this, QStringLiteral("Import Bitmap"), QStringLiteral("Could not load %1.").arg(path));
+    return;
+  }
+  QMessageBox::information(this, QStringLiteral("Import Bitmap"),
+                           QStringLiteral("Imported bitmap %1.").arg(QFileInfo(path).fileName()));
+}
+
+void MainWindow::showHotSpotTGA() {
+  QMessageBox::information(this, QStringLiteral("HotSpot TGA Extractor"),
+                           QStringLiteral("HotSpot TGA extraction is not implemented yet."));
 }
 
 } // namespace QtEditor

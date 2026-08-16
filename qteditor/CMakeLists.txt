@@ -170,8 +170,67 @@ set(QTEDITOR_SOURCES
   world_weapons_dialog.h
   worldobjectslight_dialog.cpp
   worldobjectslight_dialog.h
+  ai_settings_dialog.cpp
+  ai_settings_dialog.h
+  ambient_sound_element_dialog.cpp
+  ambient_sound_element_dialog.h
+  ambient_sound_patterns_dialog.cpp
+  ambient_sound_patterns_dialog.h
+  anim_states_dialog.cpp
+  anim_states_dialog.h
+  compile_all_dialog.cpp
+  compile_all_dialog.h
+  config_compiler_dialog.cpp
+  config_compiler_dialog.h
+  cust_default_script_dialog.cpp
+  cust_default_script_dialog.h
+  dallas_flag_dialog.cpp
+  dallas_flag_dialog.h
+  dallas_import_dialog.cpp
+  dallas_import_dialog.h
+  dallas_main_dialog.cpp
+  dallas_main_dialog.h
+  dallas_sound_dialog.cpp
+  dallas_sound_dialog.h
+  dallas_strm_audio_dialog.cpp
+  dallas_strm_audio_dialog.h
+  dallas_texture_dialog.cpp
+  dallas_texture_dialog.h
+  dallas_usertypes_dialog.cpp
+  dallas_usertypes_dialog.h
+  file_page_add_dialog.cpp
+  file_page_add_dialog.h
+  level_keypad_layout.cpp
+  level_keypad_layout.h
+  level_properties_dialog.cpp
+  level_properties_dialog.h
+  lighting_status_dialog.cpp
+  lighting_status_dialog.h
+  localize_script_dialog.cpp
+  localize_script_dialog.h
+  object_tree_dialog.cpp
+  object_tree_dialog.h
+  orphan_remove_dialog.cpp
+  orphan_remove_dialog.h
+  osiris_status_dialog.cpp
+  osiris_status_dialog.h
+  script_interface_dialog.cpp
+  script_interface_dialog.h
+  script_studio_dialog.cpp
+  script_studio_dialog.h
+  script_sync_dialog.cpp
+  script_sync_dialog.h
+  script_wizard_dialog.cpp
+  script_wizard_dialog.h
+  status_panel_dialog.cpp
+  status_panel_dialog.h
+  table_file_edit_dialog.cpp
+  table_file_edit_dialog.h
+  table_file_filter_add_dialog.cpp
+  table_file_filter_add_dialog.h
+  table_file_filter_dialog.cpp
+  table_file_filter_dialog.h
 )
-
 # The GUI editor excludes the QTest test driver (which has its own main()).
 set(QTEDITOR_APP_SOURCES ${QTEDITOR_SOURCES})
 list(FILTER QTEDITOR_APP_SOURCES EXCLUDE REGEX "editor_test\.cpp$")
@@ -180,7 +239,6 @@ list(FILTER QTEDITOR_APP_SOURCES EXCLUDE REGEX "editor_test\.cpp$")
 # its own main()) but otherwise uses the same sources as the app.
 set(QTEDITOR_TEST_SOURCES ${QTEDITOR_SOURCES})
 list(FILTER QTEDITOR_TEST_SOURCES EXCLUDE REGEX "main\.cpp$")
-
 add_executable(Descent3EditorQt
   ${QTEDITOR_APP_SOURCES}
   ${QTEDITOR_RESOURCES}

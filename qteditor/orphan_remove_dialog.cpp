@@ -22,6 +22,7 @@
 #include <QListWidget>
 #include <QMessageBox>
 
+#include "objinfo.h"
 #include "object.h"
 
 namespace QtEditor {
