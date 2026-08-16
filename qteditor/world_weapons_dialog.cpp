@@ -392,7 +392,7 @@ void WorldWeaponsDialog::onAddWeapon() {
   }
   bool ok = false;
   const QString name =
-      QInputDialog::getText(m_dialog, "Weapon", "Enter a name for your weapon:", QLineEdit::Normal, "", &ok);
+      QInputDialog::getText(this, "Weapon", "Enter a name for your weapon:", QLineEdit::Normal, "", &ok);
   if (!ok || name.isEmpty())
     return;
   if (FindWeaponName(name.toLocal8Bit().constData()) != -1) {
@@ -420,7 +420,7 @@ void WorldWeaponsDialog::onDeleteWeapon() {
     OutrageMessageBox("This weapon is not yours to delete.  Lock first.");
     return;
   }
-  if (QMessageBox::question(m_dialog, "Delete weapon",
+  if (QMessageBox::question(this, "Delete weapon",
                             QString("Are you sure you want to delete this weapon? %1").arg(Weapons[n].name)) !=
       QMessageBox::Yes)
     return;
@@ -464,7 +464,7 @@ void WorldWeaponsDialog::onLockWeapon() {
                           "'Unlocked'? (Select NO if you don't know what you're doing)") == 1) {
       snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
-        QMessageBox::critical(m_dialog, "Error!", ErrorString);
+        QMessageBox::critical(this, "Error!", ErrorString);
     }
   } else if (r < 0) {
     OutrageMessageBox(ErrorString);
@@ -473,7 +473,7 @@ void WorldWeaponsDialog::onLockWeapon() {
   } else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(m_dialog, "Error!", ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
     }
@@ -514,7 +514,7 @@ void WorldWeaponsDialog::onCheckinWeapon() {
   else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(m_dialog, "Error!", ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
     }
@@ -544,7 +544,7 @@ void WorldWeaponsDialog::onWeaponsOut() {
     }
   }
   if (total != 0)
-    QMessageBox::information(m_dialog, "Weapons", str);
+    QMessageBox::information(this, "Weapons", str);
 }
 
 void WorldWeaponsDialog::onNextWeapon() {
@@ -591,7 +591,7 @@ void WorldWeaponsDialog::onChangeName() {
     return;
   }
   bool ok = false;
-  const QString name = QInputDialog::getText(m_dialog, "Weapon name", "Enter a new name for this weapon:",
+  const QString name = QInputDialog::getText(this, "Weapon name", "Enter a new name for this weapon:",
                                              QLineEdit::Normal, Weapons[n].name, &ok);
   if (!ok || name.isEmpty())
     return;
@@ -608,7 +608,7 @@ void WorldWeaponsDialog::onChangeName() {
 
 void WorldWeaponsDialog::onEditPhysics() {
   const int n = D3EditState.current_weapon;
-  PhysicsDialog dlg(&Weapons[n].phys_info, m_dialog);
+  PhysicsDialog dlg(&Weapons[n].phys_info, this);
   dlg.exec();
 }
 

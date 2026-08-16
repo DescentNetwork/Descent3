@@ -86,7 +86,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) : Dialog(":/ui/preferences
   }
 
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &PreferencesDialog::onOk);
   }
 
@@ -173,7 +173,7 @@ void PreferencesDialog::onOk() {
   QSettings settings;
   QtEditor::saveEditorSettings(settings, D3EditState);
 
-  m_dialog->accept();
+  accept();
 }
 
 }

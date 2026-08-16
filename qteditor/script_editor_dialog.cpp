@@ -40,9 +40,9 @@ ScriptEditorDialog::~ScriptEditorDialog() = default;
 void ScriptEditorDialog::onCompile() {
   // The OSIRIS script compiler is invoked through the module build step;
   // report success and close like the Win32 dialog.
-  QMessageBox::information(m_dialog, "Compile",
+  QMessageBox::information(this, "Compile",
                            m_module.isEmpty() ? "Script compiled successfully." : QString("Compiled %1.").arg(m_module));
-  m_dialog->accept();
+  accept();
 }
 
 }

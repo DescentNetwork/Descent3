@@ -56,7 +56,7 @@ ViewerPropDialog::ViewerPropDialog(QWidget *parent) : Dialog(":/ui/viewer_dialog
   // Without a viewer (no level loaded) the editing controls are inert, so
   // disable them to match the "needs a level" gating.
   if (Viewer_object == nullptr) {
-    const QList<QWidget *> all = m_widget->findChildren<QWidget *>();
+    const QList<QWidget *> all = this->findChildren<QWidget *>();
     for (QWidget *w : all)
       if (w->objectName().startsWith("IDC_"))
         w->setEnabled(false);

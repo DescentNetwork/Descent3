@@ -47,7 +47,7 @@ void DallasUserTypesDialog::updateDialog() {
 
 void DallasUserTypesDialog::onAdd() {
   bool ok = false;
-  const QString name = QInputDialog::getText(m_dialog, "Add value", "Value name:", QLineEdit::Normal, "", &ok);
+  const QString name = QInputDialog::getText(this, "Add value", "Value name:", QLineEdit::Normal, "", &ok);
   if (ok && !name.isEmpty() && m_list != nullptr)
     m_list->addItem(name);
 }
@@ -56,7 +56,7 @@ void DallasUserTypesDialog::onChange() {
   if (m_list == nullptr || m_list->currentItem() == nullptr)
     return;
   bool ok = false;
-  const QString name = QInputDialog::getText(m_dialog, "Change value", "Value name:", QLineEdit::Normal,
+  const QString name = QInputDialog::getText(this, "Change value", "Value name:", QLineEdit::Normal,
                                              m_list->currentItem()->text(), &ok);
   if (ok && !name.isEmpty())
     m_list->currentItem()->setText(name);

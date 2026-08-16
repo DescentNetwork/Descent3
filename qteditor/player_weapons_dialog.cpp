@@ -157,7 +157,7 @@ void PlayerWeaponsDialog::onEditWbButton() {
   const int i = currentWBIndex();
   extern void editRobotWeapons(otype_wb_info *wb, poly_model *pm, QWidget *parent);
   editRobotWeapons(&Ships[m_current_ship].static_wb[i], GetPolymodelPointer(Ships[m_current_ship].model_handle),
-                   m_dialog);
+                   this);
 }
 
 void PlayerWeaponsDialog::onCurrentWeaponChanged() {

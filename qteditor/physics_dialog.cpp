@@ -49,7 +49,7 @@ PhysicsDialog::PhysicsDialog(physics_info *physInfo, QWidget *parent)
   setPhysicsData(physInfo);
 
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &PhysicsDialog::onOk);
   }
   if (QPushButton *copy = find<QPushButton>("IDC_PHYSICS_COPY"))
@@ -292,7 +292,7 @@ void PhysicsDialog::onPaste() {
 
 void PhysicsDialog::onOk() {
   getPhysicsData(m_physInfo);
-  m_dialog->accept();
+  accept();
 }
 
 }

@@ -224,7 +224,7 @@ void WorldObjectsPlayerDialog::onAddPship() {
   }
 
   const QString pathname =
-      QFileDialog::getOpenFileName(m_dialog, "Select ship model", Current_model_dir, "Descent III files (*.pof *.oof)");
+      QFileDialog::getOpenFileName(this, "Select ship model", Current_model_dir, "Descent III files (*.pof *.oof)");
   if (pathname.isEmpty())
     return;
 
@@ -276,7 +276,7 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
     return;
   }
 
-  if (QMessageBox::question(m_dialog, "Delete ship", QString("Are you sure you want to delete this ship? %1").arg(Ships[n].name)) !=
+  if (QMessageBox::question(this, "Delete ship", QString("Are you sure you want to delete this ship? %1").arg(Ships[n].name)) !=
       QMessageBox::Yes)
     return;
 
@@ -331,7 +331,7 @@ void WorldObjectsPlayerDialog::onPshipLock() {
                           "'Unlocked'? (Select NO if you don't know what you're doing)") == 1) {
       snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
-        QMessageBox::critical(m_dialog, "Error!", ErrorString);
+        QMessageBox::critical(this, "Error!", ErrorString);
     }
   } else if (r < 0) {
     OutrageMessageBox(ErrorString);
@@ -340,7 +340,7 @@ void WorldObjectsPlayerDialog::onPshipLock() {
   } else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(m_dialog, "Error!", ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
     } else if (mng_FindSpecificShipPage(temp_pl.name, &shippage)) {
@@ -383,7 +383,7 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
   else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(m_dialog, "Error!", ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
     } else if (!mng_ReplacePage(Ships[n].name, Ships[n].name, n, PAGETYPE_SHIP, 0)) {
@@ -438,7 +438,7 @@ void WorldObjectsPlayerDialog::onPshipsOut() {
     }
   }
   if (total != 0)
-    QMessageBox::information(m_dialog, "Ships", str);
+    QMessageBox::information(this, "Ships", str);
 }
 
 void WorldObjectsPlayerDialog::onPshipNext() {
@@ -466,7 +466,7 @@ void WorldObjectsPlayerDialog::onPshipPulldownChanged() {
 
 void WorldObjectsPlayerDialog::onPshipLoadModel() {
   const QString pathname =
-      QFileDialog::getOpenFileName(m_dialog, "Select ship model", Current_model_dir, "Descent III files (*.pof *.oof)");
+      QFileDialog::getOpenFileName(this, "Select ship model", Current_model_dir, "Descent III files (*.pof *.oof)");
   if (pathname.isEmpty())
     return;
 
@@ -503,7 +503,7 @@ void WorldObjectsPlayerDialog::onPshipLoadModel() {
 
 void WorldObjectsPlayerDialog::onPshipDyingModel() {
   const QString pathname =
-      QFileDialog::getOpenFileName(m_dialog, "Select dying model", Current_model_dir, "Descent III files (*.pof *.oof)");
+      QFileDialog::getOpenFileName(this, "Select dying model", Current_model_dir, "Descent III files (*.pof *.oof)");
   if (pathname.isEmpty())
     return;
 
@@ -530,12 +530,12 @@ void WorldObjectsPlayerDialog::onNullDying() {
 void WorldObjectsPlayerDialog::onEditWeapons() {
   // Ported in the player_weapons_dialog module (PlayerWeaponsDialog).
   extern void editPlayerWeapons(int shipHandle, QWidget *parent);
-  editPlayerWeapons(D3EditState.current_ship, m_dialog);
+  editPlayerWeapons(D3EditState.current_ship, this);
 }
 
 void WorldObjectsPlayerDialog::onPshipCockpit() {
   const QString pathname =
-      QFileDialog::getOpenFileName(m_dialog, "Select cockpit file", {}, "Descent III files (*.inf)");
+      QFileDialog::getOpenFileName(this, "Select cockpit file", {}, "Descent III files (*.inf)");
   if (pathname.isEmpty())
     return;
 
@@ -554,7 +554,7 @@ void WorldObjectsPlayerDialog::onPshipCockpit() {
 
 void WorldObjectsPlayerDialog::onPshipEditPhysics() {
   const int n = D3EditState.current_ship;
-  PhysicsDialog dlg(&Ships[n].phys_info, m_dialog);
+  PhysicsDialog dlg(&Ships[n].phys_info, this);
   dlg.exec();
 }
 
@@ -669,7 +669,7 @@ void WorldObjectsPlayerDialog::onLoresRadio() {
 void WorldObjectsPlayerDialog::onNolod() {
   const int n = D3EditState.current_ship;
   if (m_lod == 0) {
-    QMessageBox::warning(m_dialog, "No LOD", "You must have a hi-res model.");
+    QMessageBox::warning(this, "No LOD", "You must have a hi-res model.");
     return;
   }
   if (m_lod == 1) {

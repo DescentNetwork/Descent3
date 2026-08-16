@@ -31,7 +31,7 @@ CreateNewScriptDialog::CreateNewScriptDialog(QWidget *parent)
     level->setChecked(true);
 
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &CreateNewScriptDialog::onOk);
   }
 }
@@ -54,7 +54,7 @@ void CreateNewScriptDialog::onOk() {
   if (auto *edit = find<QLineEdit>("IDC_FILENAME")) {
     QString name = edit->text();
     if (name.isEmpty()) {
-      QMessageBox::warning(m_dialog, "Error", "You must specify a filename");
+      QMessageBox::warning(this, "Error", "You must specify a filename");
       return;
     }
     if (name.length() <= 4 || !name.endsWith(".cpp", Qt::CaseInsensitive)) {
@@ -62,7 +62,7 @@ void CreateNewScriptDialog::onOk() {
       edit->setText(name);
     }
   }
-  m_dialog->accept();
+  accept();
 }
 
 }

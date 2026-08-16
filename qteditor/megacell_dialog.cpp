@@ -58,7 +58,7 @@ void MegacellDialog::updateDialog() {
 
 void MegacellDialog::onNew() {
   bool ok = false;
-  const QString name = QInputDialog::getText(m_dialog, "New megacell", "Name:", QLineEdit::Normal, "", &ok);
+  const QString name = QInputDialog::getText(this, "New megacell", "Name:", QLineEdit::Normal, "", &ok);
   if (!ok || name.isEmpty())
     return;
   for (int i = 0; i < MAX_MEGACELLS; i++) {

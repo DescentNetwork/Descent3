@@ -37,7 +37,7 @@ TerrainSoundDialog::TerrainSoundDialog(QWidget *parent) : Dialog(":/ui/terrain_s
     m_bands[b] = Terrain_sound_bands[b];
 
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &TerrainSoundDialog::onOk);
   }
   if (QPushButton *next = find<QPushButton>("IDC_TERRAIN_SOUND_NEXT"))
@@ -109,7 +109,7 @@ bool TerrainSoundDialog::copyFromControls() {
     m_bands[m_current].sound_index = soundComboSelected(combo);
 
   if (m_bands[m_current].low_alt > m_bands[m_current].high_alt) {
-    QMessageBox::warning(m_dialog, "Terrain Sound", "High elevation must be greater than or equal to low elevation.");
+    QMessageBox::warning(this, "Terrain Sound", "High elevation must be greater than or equal to low elevation.");
     return false;
   }
   return true;
@@ -148,7 +148,7 @@ void TerrainSoundDialog::onOk() {
     Terrain_sound_bands[b] = m_bands[b];
 
   World_changed = 1;
-  m_dialog->accept();
+  accept();
 }
 
 }

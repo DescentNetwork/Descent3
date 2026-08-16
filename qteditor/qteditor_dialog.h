@@ -19,51 +19,63 @@
 #pragma once
 
 #include <QDialog>
-#include <QObject>
 #include <QString>
+#include <QWidget>
 
 #include "ddebug/pserror.h"
 
 namespace QtEditor {
 
+// adoptUi copies the loaded .ui root's properties (title/geometry/enabled)
+// into `self` and reparents the root's direct children, then deletes the
+// temporary root widget. Used by both Widget and Dialog.
+void adoptUi(QWidget *self, QWidget *loaded);
+
 // Base class for any UI loaded at runtime from a .ui resource via QUiLoader.
-// Controls are looked up by their objectName (the converted IDC_*/IDD_*
-// identifiers) with find<T>() / operator[].
-class Widget : public QObject {
-  Q_OBJECT
+// Widget IS the widget: the loaded .ui's children are reparented into this and
+// its root properties are copied over, so the class behaves as a normal
+// QWidget. Controls are looked up by their objectName (the converted
+// IDC_*/IDD_* identifiers) with find<T>() / operator[].
+class Widget : public QWidget {
 public:
   explicit Widget(const QString &uiResource, QWidget *parent = nullptr);
   ~Widget() override;
 
-  QWidget *handle() const { return m_widget; }
+  QWidget *handle() { return this; }
 
   template <typename T = QWidget>
   T *find(const QString &objectName) const {
-    return m_widget->findChild<T *>(objectName);
+    return findChild<T *>(objectName);
   }
 
-  QWidget *operator[](const QString &objectName) const;
-
-  void show() const;
+  QWidget *operator[](const QString &objectName) const { return find(objectName); }
 
 protected:
-  QWidget *m_widget;
+  void loadUi(const QString &uiResource);
 };
 
-// Base class for modal/modeless dialogs: a Widget whose root is a QDialog.
-// IDOK/IDCANCEL buttons are auto-wired to accept()/reject().
-class Dialog : public Widget {
-  Q_OBJECT
+// Base class for modal/modeless dialogs: Widget is a QDialog. IDOK/IDCANCEL
+// buttons are auto-wired to accept()/reject().
+class Dialog : public QDialog {
 public:
   explicit Dialog(const QString &uiResource, QWidget *parent = nullptr);
   ~Dialog() override;
 
-  QDialog *dialog() const { return m_dialog; }
+  QDialog *dialog() { return this; }
 
-  int exec() const;
+  int exec() { return QDialog::exec(); }
+
+  QWidget *handle() { return this; }
+
+  template <typename T = QWidget>
+  T *find(const QString &objectName) const {
+    return findChild<T *>(objectName);
+  }
+
+  QWidget *operator[](const QString &objectName) const { return find(objectName); }
 
 protected:
-  QDialog *m_dialog;
+  void loadUi(const QString &uiResource);
 };
 
 }

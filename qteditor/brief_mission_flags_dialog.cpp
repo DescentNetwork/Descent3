@@ -47,7 +47,7 @@ BriefMissionFlagsDialog::BriefMissionFlagsDialog(uint32_t setflags, uint32_t uns
   }
 
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &BriefMissionFlagsDialog::onOk);
   }
 }
@@ -66,7 +66,7 @@ void BriefMissionFlagsDialog::onOk() {
     else if (n && n->isChecked())
       m_unset |= bit;
   }
-  m_dialog->accept();
+  accept();
 }
 
 }

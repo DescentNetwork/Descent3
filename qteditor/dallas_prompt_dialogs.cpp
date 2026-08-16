@@ -30,7 +30,7 @@ DallasGenericPromptDialog::~DallasGenericPromptDialog() = default;
 
 void DallasGenericPromptDialog::setDialogTitle(const QString &title) {
   if (!title.isEmpty())
-    m_dialog->setWindowTitle(title);
+    this->setWindowTitle(title);
 }
 
 void DallasGenericPromptDialog::setPromptText(const QString &text) {

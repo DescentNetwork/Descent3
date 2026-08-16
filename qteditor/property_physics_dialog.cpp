@@ -48,7 +48,7 @@ PropertyPhysicsDialog::PropertyPhysicsDialog(physics_info *physInfo, QWidget *pa
       connect(cb, &QCheckBox::toggled, this, &PropertyPhysicsDialog::onFlagToggled);
 
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &PropertyPhysicsDialog::onOk);
   }
 
@@ -132,7 +132,7 @@ void PropertyPhysicsDialog::onOk() {
   for (const auto &f : fields)
     if (QLineEdit *e = find<QLineEdit>(f.name))
       m_physInfo->*f.field = e->text().toFloat();
-  m_dialog->accept();
+  accept();
 }
 
 }

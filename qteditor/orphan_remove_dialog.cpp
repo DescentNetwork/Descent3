@@ -52,7 +52,7 @@ OrphanRemoveDialog::OrphanRemoveDialog(QWidget *parent) : Dialog(":/ui/orphan.ui
 OrphanRemoveDialog::~OrphanRemoveDialog() = default;
 
 void OrphanRemoveDialog::onScan() {
-  QMessageBox::information(m_dialog, "Orphan scan", "Orphan scan complete.");
+  QMessageBox::information(this, "Orphan scan", "Orphan scan complete.");
 }
 
 }

@@ -548,13 +548,13 @@ void WorldObjectsGenericDialog::updateDialog() {
 void WorldObjectsGenericDialog::onEditAI() {
   if (m_current == -1)
     return;
-  QMessageBox::information(m_dialog, "AI Properties", "The AI Properties dialog has not been ported yet.");
+  QMessageBox::information(this, "AI Properties", "The AI Properties dialog has not been ported yet.");
 }
 
 void WorldObjectsGenericDialog::onEditPhysics() {
   if (m_current == -1)
     return;
-  PhysicsDialog dlg(&Object_info[m_current].phys_info, m_dialog);
+  PhysicsDialog dlg(&Object_info[m_current].phys_info, this);
   dlg.exec();
 }
 
@@ -571,7 +571,7 @@ void WorldObjectsGenericDialog::onAddNew() {
   }
 
   const QString pathname =
-      QFileDialog::getOpenFileName(m_dialog, "Select model", Current_model_dir, "Descent III files (*.pof *.oof)");
+      QFileDialog::getOpenFileName(this, "Select model", Current_model_dir, "Descent III files (*.pof *.oof)");
   if (pathname.isEmpty())
     return;
 
@@ -649,7 +649,7 @@ void WorldObjectsGenericDialog::onCheckedOut() {
     }
   }
   if (total != 0)
-    QMessageBox::information(m_dialog, "Objects", str);
+    QMessageBox::information(this, "Objects", str);
 }
 
 void WorldObjectsGenericDialog::onCheckIn() {
@@ -670,7 +670,7 @@ void WorldObjectsGenericDialog::onCheckIn() {
   else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(m_dialog, "Error!", ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
     }
@@ -705,7 +705,7 @@ void WorldObjectsGenericDialog::onCheckIn() {
 void WorldObjectsGenericDialog::onDefineAnimStates() {
   if (m_current == -1)
     return;
-  QMessageBox::information(m_dialog, "Anim States", "The Anim States dialog has not been ported yet.");
+  QMessageBox::information(this, "Anim States", "The Anim States dialog has not been ported yet.");
 }
 
 void WorldObjectsGenericDialog::onDelete() {
@@ -716,7 +716,7 @@ void WorldObjectsGenericDialog::onDelete() {
     OutrageMessageBox("This object is not yours to delete.  Lock first.");
     return;
   }
-  if (QMessageBox::question(m_dialog, "Delete object",
+  if (QMessageBox::question(this, "Delete object",
                             QString("Are you sure you want to delete this object? %1").arg(Object_info[m_current].name)) !=
       QMessageBox::Yes)
     return;
@@ -772,7 +772,7 @@ void WorldObjectsGenericDialog::onLock() {
                           "'Unlocked'? (Select NO if you don't know what you're doing)") == 1) {
       snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
-        QMessageBox::critical(m_dialog, "Error!", ErrorString);
+        QMessageBox::critical(this, "Error!", ErrorString);
     }
   } else if (r < 0) {
     OutrageMessageBox(ErrorString);
@@ -781,7 +781,7 @@ void WorldObjectsGenericDialog::onLock() {
   } else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(m_dialog, "Error!", ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
     }
@@ -928,13 +928,13 @@ void WorldObjectsGenericDialog::onWeaponInfo() {
     return;
   extern void editRobotWeapons(otype_wb_info *wb, poly_model *pm, QWidget *parent);
   editRobotWeapons(Object_info[m_current].static_wb, GetPolymodelPointer(Object_info[m_current].render_handle),
-                   m_dialog);
+                   this);
 }
 
 void WorldObjectsGenericDialog::onLight() {
   if (m_current == -1)
     return;
-  QMessageBox::information(m_dialog, "Lighting", "The generic light dialog has not been ported yet.");
+  QMessageBox::information(this, "Lighting", "The generic light dialog has not been ported yet.");
 }
 
 void WorldObjectsGenericDialog::onDefaultRadius() {
@@ -947,7 +947,7 @@ void WorldObjectsGenericDialog::onDefaultRadius() {
 void WorldObjectsGenericDialog::onSelScript() {
   if (m_current == -1)
     return;
-  const QString filename = QFileDialog::getOpenFileName(m_dialog, "Select script module", LocalScriptDir,
+  const QString filename = QFileDialog::getOpenFileName(this, "Select script module", LocalScriptDir,
                                                        "D3 Compiled Scripts (*.dll)");
   if (filename.isEmpty())
     return;
@@ -971,7 +971,7 @@ void WorldObjectsGenericDialog::onNolod() {
   if (m_current == -1)
     return;
   if (m_lod == 0) {
-    QMessageBox::warning(m_dialog, "No LOD", "You must have a hi-res model.");
+    QMessageBox::warning(this, "No LOD", "You must have a hi-res model.");
     return;
   }
   if (m_lod == 1) {
@@ -1140,7 +1140,7 @@ void WorldObjectsGenericDialog::onKillfocusScriptname() {
 void WorldObjectsGenericDialog::onCompilemodule() {
   if (m_current == -1)
     return;
-  QMessageBox::information(m_dialog, "Compile", "The quick compile dialog has not been ported yet.");
+  QMessageBox::information(this, "Compile", "The quick compile dialog has not been ported yet.");
 }
 
 void WorldObjectsGenericDialog::onKillfocusScriptOverride() {
@@ -1174,7 +1174,7 @@ void WorldObjectsGenericDialog::onKillfocusRespawnScalar() {
 void WorldObjectsGenericDialog::onGenericDeaths() {
   if (m_current == -1)
     return;
-  GenericDeathDialog dlg(&Object_info[m_current], m_dialog);
+  GenericDeathDialog dlg(&Object_info[m_current], this);
   dlg.exec();
 }
 

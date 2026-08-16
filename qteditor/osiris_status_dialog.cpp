@@ -26,7 +26,7 @@ namespace QtEditor {
 
 OsirisStatusDialog::OsirisStatusDialog(QWidget *parent) : Dialog(":/ui/osiris_status.ui", parent) {
   if (QPushButton *done = find<QPushButton>("IDC_OSIRIS_DONE"))
-    connect(done, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    connect(done, &QPushButton::clicked, this, &QDialog::accept);
   if (QLabel *progress = find<QLabel>("IDC_OSIRIS_PROGRESS"))
     progress->setText("Idle");
   if (QTextEdit *err = find<QTextEdit>("IDC_OSIRIS_ERROR"))

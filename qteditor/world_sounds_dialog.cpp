@@ -318,7 +318,7 @@ void WorldSoundsDialog::onAddSound() {
   }
 
   const QString pathname =
-      QFileDialog::getOpenFileName(m_dialog, "Select sound", Current_sounds_dir, "Descent III files (*.wav)");
+      QFileDialog::getOpenFileName(this, "Select sound", Current_sounds_dir, "Descent III files (*.wav)");
   if (pathname.isEmpty())
     return;
 
@@ -365,7 +365,7 @@ void WorldSoundsDialog::onLoadSound() {
   if (!Network_up)
     return;
   const QString pathname =
-      QFileDialog::getOpenFileName(m_dialog, "Load sound", Current_sounds_dir, "Descent III files (*.wav)");
+      QFileDialog::getOpenFileName(this, "Load sound", Current_sounds_dir, "Descent III files (*.wav)");
   if (pathname.isEmpty())
     return;
   const int n = D3EditState.current_sound;
@@ -398,7 +398,7 @@ void WorldSoundsDialog::onDeleteSound() {
     OutrageMessageBox("This sound is not yours to delete.  Lock first.");
     return;
   }
-  if (QMessageBox::question(m_dialog, "Delete sound",
+  if (QMessageBox::question(this, "Delete sound",
                             QString("Are you sure you want to delete this sound? %1").arg(Sounds[n].name)) !=
       QMessageBox::Yes)
     return;
@@ -447,7 +447,7 @@ void WorldSoundsDialog::onLockSound() {
                           "'Unlocked'? (Select NO if you don't know what you're doing)") == 1) {
       snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
-        QMessageBox::critical(m_dialog, "Error!", ErrorString);
+        QMessageBox::critical(this, "Error!", ErrorString);
     }
   } else if (r < 0) {
     OutrageMessageBox(ErrorString);
@@ -456,7 +456,7 @@ void WorldSoundsDialog::onLockSound() {
   } else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(m_dialog, "Error!", ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
     }
@@ -499,7 +499,7 @@ void WorldSoundsDialog::onCheckinSound() {
   else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(m_dialog, "Error!", ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
     }
@@ -528,7 +528,7 @@ void WorldSoundsDialog::onPlaysound() {
 }
 
 void WorldSoundsDialog::onKillsounds() {
-  QMessageBox::information(m_dialog, "Kill sounds", "All sounds have been killed.");
+  QMessageBox::information(this, "Kill sounds", "All sounds have been killed.");
   // The MFC original simply calls Sound_system.StopAllSounds(); the Qt port
   // stops any currently playing sound object.
   Sound_system.StopAllSounds();
@@ -550,7 +550,7 @@ void WorldSoundsDialog::onChangeName() {
     return;
   }
   bool ok = false;
-  QString name = QInputDialog::getText(m_dialog, "Sound name", "Enter a new name for this sound:",
+  QString name = QInputDialog::getText(this, "Sound name", "Enter a new name for this sound:",
                                        QLineEdit::Normal, Sounds[n].name, &ok);
   if (!ok)
     return;

@@ -83,7 +83,7 @@ void MatcenKeypad::onNext() {
 
 void MatcenKeypad::onNew() {
   bool ok = false;
-  const QString name = QInputDialog::getText(m_widget, "New Matcen",
+  const QString name = QInputDialog::getText(this, "New Matcen",
                                              "Enter a name for the new matcen:", QLineEdit::Normal, "", &ok);
   if (!ok || name.isEmpty())
     return;
@@ -107,11 +107,11 @@ void MatcenKeypad::onDelete() {
 void MatcenKeypad::onCopy() {
   if (Num_matcens <= 0)
     return;
-  QMessageBox::information(m_widget, "Matcen", "Matcen copied.");
+  QMessageBox::information(this, "Matcen", "Matcen copied.");
 }
 
 void MatcenKeypad::onPaste() {
-  QMessageBox::information(m_widget, "Matcen", "Matcen pasted.");
+  QMessageBox::information(this, "Matcen", "Matcen pasted.");
 }
 
 }

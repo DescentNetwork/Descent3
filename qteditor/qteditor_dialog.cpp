@@ -18,52 +18,52 @@
 
 #include "qteditor_dialog.h"
 
-#include <QDebug>
 #include <QPushButton>
 
 #include "ui_loader.h"
 
 namespace QtEditor {
 
-Widget::Widget(const QString &uiResource, QWidget *parent) : m_widget(nullptr) {
-  m_widget = UiLoader::load(uiResource, parent);
-  if (m_widget == nullptr) {
-    qWarning() << "Failed to load UI from" << uiResource;
-  }
-}
-
-Widget::~Widget() { delete m_widget; }
-
-QWidget *Widget::operator[](const QString &objectName) const { return find(objectName); }
-
-void Widget::show() const {
-  if (m_widget != nullptr) {
-    m_widget->show();
-  }
-}
-
-Dialog::Dialog(const QString &uiResource, QWidget *parent) : Widget(uiResource, parent) {
-  m_dialog = qobject_cast<QDialog *>(m_widget);
-  if (m_dialog == nullptr) {
-    qWarning() << "UI is not a dialog:" << uiResource;
+void adoptUi(QWidget *self, QWidget *loaded) {
+  if (loaded == nullptr)
     return;
-  }
 
-  if (QPushButton *ok = m_dialog->findChild<QPushButton *>("IDOK")) {
-    connect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
-  }
-  if (QPushButton *cancel = m_dialog->findChild<QPushButton *>("IDCANCEL")) {
-    connect(cancel, &QPushButton::clicked, m_dialog, &QDialog::reject);
-  }
+  self->setWindowTitle(loaded->windowTitle());
+  self->setWindowFlags(loaded->windowFlags());
+  self->setEnabled(loaded->isEnabled());
+  self->setMinimumSize(loaded->minimumSize());
+  self->setMaximumSize(loaded->maximumSize());
+  self->setGeometry(loaded->geometry());
+
+  const QList<QWidget *> children = loaded->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly);
+  for (QWidget *child : children)
+    child->setParent(self);
+
+  delete loaded;
+}
+
+Widget::Widget(const QString &uiResource, QWidget *parent) : QWidget(parent) {
+  loadUi(uiResource);
+}
+
+Widget::~Widget() = default;
+
+void Widget::loadUi(const QString &uiResource) {
+  adoptUi(this, UiLoader::load(uiResource));
+}
+
+Dialog::Dialog(const QString &uiResource, QWidget *parent) : QDialog(parent) {
+  loadUi(uiResource);
+  if (QPushButton *ok = findChild<QPushButton *>("IDOK"))
+    connect(ok, &QPushButton::clicked, this, &QDialog::accept);
+  if (QPushButton *cancel = findChild<QPushButton *>("IDCANCEL"))
+    connect(cancel, &QPushButton::clicked, this, &QDialog::reject);
 }
 
 Dialog::~Dialog() = default;
 
-int Dialog::exec() const {
-  if (m_dialog != nullptr) {
-    return m_dialog->exec();
-  }
-  return QDialog::Rejected;
+void Dialog::loadUi(const QString &uiResource) {
+  adoptUi(this, UiLoader::load(uiResource));
 }
 
 }

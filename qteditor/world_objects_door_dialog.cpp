@@ -256,7 +256,7 @@ void WorldObjectsDoorDialog::onAddDoor() {
   }
 
   const QString pathname =
-      QFileDialog::getOpenFileName(m_dialog, "Select door model", Current_model_dir, "Descent III files (*.pof *.oof)");
+      QFileDialog::getOpenFileName(this, "Select door model", Current_model_dir, "Descent III files (*.pof *.oof)");
   if (pathname.isEmpty())
     return;
 
@@ -315,7 +315,7 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
     return;
   }
 
-  if (QMessageBox::question(m_dialog, "Delete door", QString("Are you sure you want to delete this door? %1").arg(Doors[n].name)) !=
+  if (QMessageBox::question(this, "Delete door", QString("Are you sure you want to delete this door? %1").arg(Doors[n].name)) !=
       QMessageBox::Yes)
     return;
 
@@ -367,7 +367,7 @@ void WorldObjectsDoorDialog::onLockDoor() {
                           "'Unlocked'? (Select NO if you don't know what you're doing)") == 1) {
       snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
-        QMessageBox::critical(m_dialog, "Error!", ErrorString);
+        QMessageBox::critical(this, "Error!", ErrorString);
     }
   } else if (r < 0) {
     OutrageMessageBox(ErrorString);
@@ -376,7 +376,7 @@ void WorldObjectsDoorDialog::onLockDoor() {
   } else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(m_dialog, "Error!", ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
     } else {
@@ -422,7 +422,7 @@ void WorldObjectsDoorDialog::onCheckinDoor() {
   else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(m_dialog, "Error!", ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
     } else {
@@ -461,7 +461,7 @@ void WorldObjectsDoorDialog::onDoorsOut() {
     }
   }
   if (total != 0)
-    QMessageBox::information(m_dialog, "Doors", str);
+    QMessageBox::information(this, "Doors", str);
 }
 
 void WorldObjectsDoorDialog::onDoorNext() {
@@ -539,7 +539,7 @@ void WorldObjectsDoorDialog::onCloseSoundChanged() {
 void WorldObjectsDoorDialog::onBrowse() {
   // The MFC original opens a script module picker; the Qt port just lets the
   // user type/select a module name.
-  const QString name = QFileDialog::getOpenFileName(m_dialog, "Select script module", {}, "Modules (*.dll)");
+  const QString name = QFileDialog::getOpenFileName(this, "Select script module", {}, "Modules (*.dll)");
   if (name.isEmpty())
     return;
   if (QLineEdit *edit = find<QLineEdit>("IDC_SCRIPTNAME"))

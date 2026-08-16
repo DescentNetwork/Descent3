@@ -267,7 +267,7 @@ void WorldTexturesDialog::onAddNew() {
     return;
   }
   const QString pathname =
-      QFileDialog::getOpenFileName(m_dialog, "Load bitmap", Current_bitmap_dir, "Images (*.pcx *.tga *.bm)");
+      QFileDialog::getOpenFileName(this, "Load bitmap", Current_bitmap_dir, "Images (*.pcx *.tga *.bm)");
   if (pathname.isEmpty())
     return;
   const QByteArray pathBytes = pathname.toLocal8Bit();
@@ -298,7 +298,7 @@ void WorldTexturesDialog::onDelete() {
     OutrageMessageBox("This texture is not yours to delete.  Lock first.");
     return;
   }
-  if (QMessageBox::question(m_dialog, "Delete texture",
+  if (QMessageBox::question(this, "Delete texture",
                             QString("Are you sure you want to delete this texture? %1").arg(GameTextures[n].name)) !=
       QMessageBox::Yes)
     return;
@@ -339,7 +339,7 @@ void WorldTexturesDialog::onLock() {
                           "'Unlocked'? (Select NO if you don't know what you're doing)") == 1) {
       snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
-        QMessageBox::critical(m_dialog, "Error!", ErrorString);
+        QMessageBox::critical(this, "Error!", ErrorString);
     }
   } else if (r < 0) {
     OutrageMessageBox(ErrorString);
@@ -348,7 +348,7 @@ void WorldTexturesDialog::onLock() {
   } else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(m_dialog, "Error!", ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
     }
@@ -387,7 +387,7 @@ void WorldTexturesDialog::onCheckin() {
   else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(m_dialog, "Error!", ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
     }
@@ -417,7 +417,7 @@ void WorldTexturesDialog::onCheckedOut() {
     }
   }
   if (total != 0)
-    QMessageBox::information(m_dialog, "Textures", str);
+    QMessageBox::information(this, "Textures", str);
 }
 
 void WorldTexturesDialog::onOverride() {
@@ -436,7 +436,7 @@ void WorldTexturesDialog::onChangeName() {
     return;
   }
   bool ok = false;
-  const QString name = QInputDialog::getText(m_dialog, "Texture name", "Enter a new name for this texture:",
+  const QString name = QInputDialog::getText(this, "Texture name", "Enter a new name for this texture:",
                                              QLineEdit::Normal, GameTextures[n].name, &ok);
   if (!ok || name.isEmpty())
     return;
@@ -453,7 +453,7 @@ void WorldTexturesDialog::onChangeName() {
 void WorldTexturesDialog::onLoadBitmap() {
   const int n = D3EditState.texdlg_texture;
   const QString pathname =
-      QFileDialog::getOpenFileName(m_dialog, "Load bitmap", Current_bitmap_dir, "Images (*.pcx *.tga *.bm)");
+      QFileDialog::getOpenFileName(this, "Load bitmap", Current_bitmap_dir, "Images (*.pcx *.tga *.bm)");
   if (pathname.isEmpty())
     return;
   const QByteArray pathBytes = pathname.toLocal8Bit();

@@ -96,7 +96,7 @@ void PathKeypad::updateDialog() {
   // loaded level with paths).
   const bool active = (D3EditState.current_path >= 0 && D3EditState.current_path < MAX_GAME_PATHS &&
                        GamePaths[D3EditState.current_path].used);
-  const QList<QWidget *> all = m_widget->findChildren<QWidget *>();
+  const QList<QWidget *> all = this->findChildren<QWidget *>();
   for (QWidget *w : all) {
     if (w->objectName().startsWith("IDC_PATHPAD") || w->objectName().startsWith("IDC_DELETE_PATH") ||
         w->objectName().startsWith("IDC_CURRENT_NODE_EDIT") || w->objectName().startsWith("IDC_SHOW_NODES_CHECK"))
@@ -131,7 +131,7 @@ void PathKeypad::updateDialog() {
 
 void PathKeypad::onAddPath() {
   bool ok = false;
-  const QString name = QInputDialog::getText(m_widget, "Add path", "Enter a name for the path:", QLineEdit::Normal, "",
+  const QString name = QInputDialog::getText(this, "Add path", "Enter a name for the path:", QLineEdit::Normal, "",
                                              &ok);
   if (!ok || name.isEmpty())
     return;

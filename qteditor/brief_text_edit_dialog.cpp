@@ -190,8 +190,8 @@ BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const ch
   // The .ui has a QLabel placeholder (IDC_RICHFRAME); overlay a text editor on
   // top of it, mirroring the MFC CRichEditCtrl placement.
   if (auto *frame = find<QLabel>("IDC_RICHFRAME")) {
-    const QRect rect = QRect(frame->mapTo(m_dialog, QPoint(0, 0)), frame->size()).adjusted(2, 2, -2, -2);
-    m_richEdit = new QPlainTextEdit(m_dialog);
+    const QRect rect = QRect(frame->mapTo(this, QPoint(0, 0)), frame->size()).adjusted(2, 2, -2, -2);
+    m_richEdit = new QPlainTextEdit(this);
     m_richEdit->setObjectName("IDC_SCRIPTVIEW");
     m_richEdit->setGeometry(rect);
     m_richEdit->setFont(QFont("Courier"));
@@ -211,7 +211,7 @@ BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const ch
   if (auto *btn = find<QPushButton>("IDC_MISSIONFLAGS"))
     connect(btn, &QPushButton::clicked, this, &BriefTextEditDialog::onMissionFlags);
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &BriefTextEditDialog::onOk);
   }
 }
@@ -266,7 +266,7 @@ void BriefTextEditDialog::onColorPal() {
   auto *green = find<QLineEdit>("IDC_BRIEF_COLOR_G");
   auto *blue = find<QLineEdit>("IDC_BRIEF_COLOR_B");
   QColor color(red->text().toInt(), green->text().toInt(), blue->text().toInt());
-  const QColor chosen = QColorDialog::getColor(color, m_dialog);
+  const QColor chosen = QColorDialog::getColor(color, this);
   if (chosen.isValid()) {
     red->setText(QString::number(chosen.red()));
     green->setText(QString::number(chosen.green()));
@@ -275,7 +275,7 @@ void BriefTextEditDialog::onColorPal() {
 }
 
 void BriefTextEditDialog::onMissionFlags() {
-  BriefMissionFlagsDialog dlg(m_desc.mission_mask_set, m_desc.mission_mask_unset, m_dialog);
+  BriefMissionFlagsDialog dlg(m_desc.mission_mask_set, m_desc.mission_mask_unset, this);
   if (dlg.exec() == QDialog::Accepted) {
     m_desc.mission_mask_set = dlg.setFlags();
     m_desc.mission_mask_unset = dlg.unsetFlags();
@@ -314,7 +314,7 @@ void BriefTextEditDialog::onOk() {
 
   if (m_richEdit)
     m_text = m_richEdit->toPlainText();
-  m_dialog->accept();
+  accept();
 }
 
 }

@@ -29,11 +29,11 @@ namespace QtEditor {
 
 FontDialog::FontDialog(QWidget *parent) : Dialog(":/ui/font_dialog.ui", parent) {
   if (QPushButton *b = find<QPushButton>("IDC_NEW"))
-    connect(b, &QPushButton::clicked, m_dialog, [this]() {
+    connect(b, &QPushButton::clicked, this, [this]() {
       OutrageMessageBox("New font: not implemented (font engine pending).");
     });
   if (QPushButton *b = find<QPushButton>("IDC_OPEN"))
-    connect(b, &QPushButton::clicked, m_dialog, [this]() {
+    connect(b, &QPushButton::clicked, this, [this]() {
       OutrageMessageBox("Open font: not implemented (font engine pending).");
     });
   if (QPushButton *save = find<QPushButton>("IDC_SAVE"))
@@ -41,7 +41,7 @@ FontDialog::FontDialog(QWidget *parent) : Dialog(":/ui/font_dialog.ui", parent) 
   if (QPushButton *saveAs = find<QPushButton>("IDC_SAVEAS"))
     connect(saveAs, &QPushButton::clicked, this, &FontDialog::onOk);
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &FontDialog::onOk);
   }
 
@@ -59,6 +59,6 @@ void FontDialog::updateDialog() {
     e->setText("(no font)");
 }
 
-void FontDialog::onOk() { m_dialog->accept(); }
+void FontDialog::onOk() { accept(); }
 
 }

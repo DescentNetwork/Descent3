@@ -947,7 +947,7 @@ void MainWindow::toggleViewerProps() {
     m_viewerProps = new ViewerPropDialog(this);
     m_viewerProps->show();
   } else {
-    m_viewerProps->dialog()->close();
+    m_viewerProps->close();
     delete m_viewerProps;
     m_viewerProps = nullptr;
   }

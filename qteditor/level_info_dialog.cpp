@@ -37,7 +37,7 @@ LevelInfoDialog::LevelInfoDialog(level_info *li, QWidget *parent)
     edit->setPlainText(li->notes);
 
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &LevelInfoDialog::onOk);
   }
 }
@@ -53,7 +53,7 @@ void LevelInfoDialog::getLevelInfo(level_info *li) {
 
 void LevelInfoDialog::onOk() {
   getLevelInfo(m_levelInfo);
-  m_dialog->accept();
+  accept();
 }
 
 }

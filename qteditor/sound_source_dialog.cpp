@@ -33,7 +33,7 @@ namespace QtEditor {
 SoundSourceDialog::SoundSourceDialog(soundsource_info_s *data, QWidget *parent)
     : Dialog(":/ui/soundsource_dialog.ui", parent), m_data(data) {
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &SoundSourceDialog::onOk);
   }
   if (QPushButton *select = find<QPushButton>("IDC_SELECT"))
@@ -55,7 +55,7 @@ void SoundSourceDialog::onSelect() {
   if (combo == nullptr)
     return;
 
-  QDialog picker(m_dialog);
+  QDialog picker(this);
   picker.setWindowTitle("Select Sound");
   auto *layout = new QVBoxLayout(&picker);
   auto *pickCombo = new QComboBox(&picker);
@@ -73,7 +73,7 @@ void SoundSourceDialog::onSelect() {
 void SoundSourceDialog::onOk() {
   m_data->volume = find<QLineEdit>("IDC_VOLUME")->text().toFloat();
   m_data->sound_index = soundComboSelected(find<QComboBox>("IDC_SOUND_COMBO"));
-  m_dialog->accept();
+  accept();
 }
 
 }

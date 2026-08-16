@@ -90,7 +90,7 @@ DeathDialog::DeathDialog(death_info *info, QWidget *parent)
   connect(delayMin, &QLineEdit::textEdited, this, [this] { updateDialog(); });
 
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &DeathDialog::onOk);
   }
   auto connectCommon = [this](const char *name, void (DeathDialog::*slot)()) {
@@ -261,13 +261,13 @@ void DeathDialog::onPaste() {
 
 void DeathDialog::onOk() {
   if (m_delayMax < m_delayMin) {
-    QMessageBox::warning(m_dialog, "Error", "Max delay must be greater than or equal to min delay.");
+    QMessageBox::warning(this, "Error", "Max delay must be greater than or equal to min delay.");
     return;
   }
   m_info->flags = m_flags;
   m_info->delay_min = m_delayMin;
   m_info->delay_max = m_delayMax;
-  m_dialog->accept();
+  accept();
 }
 
 }

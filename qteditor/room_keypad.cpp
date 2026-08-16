@@ -121,7 +121,7 @@ void RoomKeypad::setFlag(uint32_t flag, const char *checkName, bool checked) {
 void RoomKeypad::updateDialog() {
   // Win32 disables the room editing controls when no room is current.
   const bool active = (Curroomp != nullptr && Curroomp->used);
-  const QList<QWidget *> all = m_widget->findChildren<QWidget *>();
+  const QList<QWidget *> all = this->findChildren<QWidget *>();
   for (QWidget *w : all)
     if (w->objectName().startsWith("IDC_"))
       w->setEnabled(active);

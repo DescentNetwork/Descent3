@@ -50,8 +50,8 @@ ProceduralDialog::ProceduralDialog(QWidget *parent) : Dialog(":/ui/procedural_di
   }
 
   if (QPushButton *b = find<QPushButton>("IDC_CLEAR_PROCEDURALS")) {
-    connect(b, &QPushButton::clicked, m_dialog, [this]() {
-      if (QMessageBox::question(m_dialog, "Clear procedurals", "Clear all procedural textures?") ==
+    connect(b, &QPushButton::clicked, this, [this]() {
+      if (QMessageBox::question(this, "Clear procedurals", "Clear all procedural textures?") ==
           QMessageBox::Yes) {
         for (int i = 0; i < MAX_TEXTURES; i++)
           if (GameTextures[i].used && GameTextures[i].flags & TF_PROCEDURAL)

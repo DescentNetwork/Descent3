@@ -135,7 +135,7 @@ void TextureKeypad::updateDialog() {
   // Editing a face's texture requires a current room + face.
   const bool active = (Curroomp != nullptr && Curroomp->used && Curface >= 0 &&
                        Curface < Curroomp->num_faces);
-  const QList<QWidget *> all = m_widget->findChildren<QWidget *>();
+  const QList<QWidget *> all = this->findChildren<QWidget *>();
   for (QWidget *w : all)
     if (w->objectName().startsWith("IDC_TEXPAD") || w->objectName().startsWith("IDC_FACE_MAP"))
       w->setEnabled(active);

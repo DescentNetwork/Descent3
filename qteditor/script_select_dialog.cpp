@@ -56,19 +56,19 @@ QString ScriptSelectDialog::scriptName() const {
 }
 
 void ScriptSelectDialog::onAdd() {
-  QMessageBox::information(m_dialog, "Add script", "Use a script wizard to create a new script module.");
+  QMessageBox::information(this, "Add script", "Use a script wizard to create a new script module.");
 }
 
 void ScriptSelectDialog::onEdit() {
   if (scriptName().isEmpty())
     return;
-  QMessageBox::information(m_dialog, "Edit script", "Open the script editor for " + scriptName());
+  QMessageBox::information(this, "Edit script", "Open the script editor for " + scriptName());
 }
 
 void ScriptSelectDialog::onParameters() {
   if (scriptName().isEmpty())
     return;
-  QMessageBox::information(m_dialog, "Parameters", "Edit parameters for " + scriptName());
+  QMessageBox::information(this, "Parameters", "Edit parameters for " + scriptName());
 }
 
 }

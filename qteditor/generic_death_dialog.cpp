@@ -41,7 +41,7 @@ GenericDeathDialog::GenericDeathDialog(object_info *objinfo, QWidget *parent)
   }
 
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &GenericDeathDialog::onOk);
   }
   if (QPushButton *b = find<QPushButton>("IDC_GENERIC_DEATH_EDIT1"))
@@ -57,19 +57,19 @@ GenericDeathDialog::GenericDeathDialog(object_info *objinfo, QWidget *parent)
 GenericDeathDialog::~GenericDeathDialog() = default;
 
 void GenericDeathDialog::onEdit1() {
-  DeathDialog dlg(&m_death_types[0], m_dialog);
+  DeathDialog dlg(&m_death_types[0], this);
   dlg.exec();
 }
 void GenericDeathDialog::onEdit2() {
-  DeathDialog dlg(&m_death_types[1], m_dialog);
+  DeathDialog dlg(&m_death_types[1], this);
   dlg.exec();
 }
 void GenericDeathDialog::onEdit3() {
-  DeathDialog dlg(&m_death_types[2], m_dialog);
+  DeathDialog dlg(&m_death_types[2], this);
   dlg.exec();
 }
 void GenericDeathDialog::onEdit4() {
-  DeathDialog dlg(&m_death_types[3], m_dialog);
+  DeathDialog dlg(&m_death_types[3], this);
   dlg.exec();
 }
 
@@ -83,7 +83,7 @@ void GenericDeathDialog::onOk() {
   }
 
   if (total_prob != 100 && total_prob != 0) {
-    QMessageBox::warning(m_dialog, "Generic Death", "The total of all death probabilities must be 100 or 0.");
+    QMessageBox::warning(this, "Generic Death", "The total of all death probabilities must be 100 or 0.");
     return;
   }
 
@@ -92,7 +92,7 @@ void GenericDeathDialog::onOk() {
     m_objinfo->death_probabilities[i] = m_prob[i];
   }
 
-  m_dialog->accept();
+  accept();
 }
 
 }

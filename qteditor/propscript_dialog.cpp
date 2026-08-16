@@ -47,11 +47,11 @@ PropScriptDialog::PropScriptDialog(QWidget *parent) : Dialog(":/ui/propscript.ui
 PropScriptDialog::~PropScriptDialog() = default;
 
 void PropScriptDialog::onParameters() {
-  QMessageBox::information(m_dialog, "Script parameters", "The script parameter editor has not been ported yet.");
+  QMessageBox::information(this, "Script parameters", "The script parameter editor has not been ported yet.");
 }
 
 void PropScriptDialog::onScriptWizard() {
-  QMessageBox::information(m_dialog, "Script wizard", "The script wizard has not been ported yet.");
+  QMessageBox::information(this, "Script wizard", "The script wizard has not been ported yet.");
 }
 
 }

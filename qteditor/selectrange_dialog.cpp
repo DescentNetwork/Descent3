@@ -32,7 +32,7 @@ namespace QtEditor {
 
 SelectRangeDialog::SelectRangeDialog(QWidget *parent) : Dialog(":/ui/selectrange_dialog.ui", parent) {
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
     connect(ok, &QPushButton::clicked, this, &SelectRangeDialog::onOk);
   }
   if (auto *edit = find<QLineEdit>("IDC_LOWER_BOUND_EDIT"))
@@ -79,7 +79,7 @@ void SelectRangeDialog::runSelection() {
   const bool cur_texture = find<QCheckBox>("IDC_SELECT_CUR_TEXTURE_CHECK")->isChecked();
 
   if (m_upperBound < m_lowerBound) {
-    QMessageBox::warning(m_dialog, "Select Range", "Lower bound must be less than upper bound!");
+    QMessageBox::warning(this, "Select Range", "Lower bound must be less than upper bound!");
     return;
   }
 
@@ -150,7 +150,7 @@ void SelectRangeDialog::onOk() {
   clampAndStore("IDC_UPPER_BOUND_EDIT", &m_upperBound);
   clampAndStore("IDC_SLOPE_EDIT", &m_slopeAngle);
   runSelection();
-  m_dialog->accept();
+  accept();
 }
 
 }

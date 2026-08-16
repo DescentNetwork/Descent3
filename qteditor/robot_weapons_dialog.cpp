@@ -70,8 +70,8 @@ const char *kQuadCheck[MAX_WB_GUNPOINTS] = {
 
 QString maskCheckName(int mask, int gp) { return QString("IDC_GP_MASK_%1_%2").arg(mask).arg(gp); }
 
-QLineEdit *lineEdit(Widget *w, const QString &name) { return w->find<QLineEdit>(name); }
-QCheckBox *checkBox(Widget *w, const QString &name) { return w->find<QCheckBox>(name); }
+QLineEdit *lineEdit(QWidget *w, const QString &name) { return w->findChild<QLineEdit *>(name); }
+QCheckBox *checkBox(QWidget *w, const QString &name) { return w->findChild<QCheckBox *>(name); }
 } // namespace
 
 RobotEditWeaponsDialog::RobotEditWeaponsDialog(otype_wb_info *static_wb, poly_model *pm, QWidget *parent)
@@ -92,10 +92,10 @@ RobotEditWeaponsDialog::RobotEditWeaponsDialog(otype_wb_info *static_wb, poly_mo
   loadData();
 
   if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, m_dialog, &QDialog::accept);
-    connect(ok, &QPushButton::clicked, m_dialog, [this]() {
+    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
+    connect(ok, &QPushButton::clicked, this, [this]() {
       getData();
-      m_dialog->accept();
+      accept();
     });
   }
 }

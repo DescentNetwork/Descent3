@@ -63,7 +63,7 @@ void FilePageDialog::onAddFile() {
     OutrageMessageBox("Sorry babe, the network is down.  This action is a no-no.\n");
     return;
   }
-  QMessageBox::information(m_dialog, "Add file", "Select a table file to add (file browser not yet ported).");
+  QMessageBox::information(this, "Add file", "Select a table file to add (file browser not yet ported).");
 }
 
 void FilePageDialog::onDeleteFile() { updateDialog(); }
@@ -74,7 +74,7 @@ void FilePageDialog::onFilesOut() {
   for (int i = 0; i < MAX_TRACKLOCKS; i++)
     if (GlobalTrackLocks[i].used)
       str += QString("  %1\n").arg(GlobalTrackLocks[i].name);
-  QMessageBox::information(m_dialog, "Files out", str);
+  QMessageBox::information(this, "Files out", str);
 }
 void FilePageDialog::onOverride() { updateDialog(); }
 
