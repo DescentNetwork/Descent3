@@ -17,6 +17,7 @@
  */
 
 #include "megacell_keypad.h"
+#include "ui_megakeypad.h"
 
 #include <QCheckBox>
 #include <QLabel>
@@ -26,26 +27,28 @@
 #include "d3edit.h"
 #include "megacell.h"
 
-namespace QtEditor {
 
-MegacellKeypad::MegacellKeypad(QWidget *parent) : Keypad(":/ui/megakeypad.ui", parent) {
-  if (QPushButton *b = find<QPushButton>("IDC_NEXT_MEGA_SET"))
+MegacellKeypad::MegacellKeypad(QWidget *parent)
+    : QDialog(parent), ui(new Ui::MegacellKeypad)
+{
+  ui->setupUi(this);
+  if (QPushButton *b = ui->IDC_NEXT_MEGA_SET)
     connect(b, &QPushButton::clicked, this, &MegacellKeypad::onNextMegaSet);
-  if (QPushButton *b = find<QPushButton>("IDC_PREV_MEGA_SET"))
+  if (QPushButton *b = ui->IDC_PREV_MEGA_SET)
     connect(b, &QPushButton::clicked, this, &MegacellKeypad::onPrevMegaSet);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_RANDOMIZE_MEGACELL_CHECK")) {
+  if (QCheckBox *cb = ui->IDC_RANDOMIZE_MEGACELL_CHECK) {
     cb->setChecked(D3EditState.randomize_megacell);
     connect(cb, &QCheckBox::toggled, this, &MegacellKeypad::onRandomizeToggled);
   }
-  if (QLineEdit *edit = find<QLineEdit>("IDC_X_GRANULAR_EDIT"))
+  if (QLineEdit *edit = ui->IDC_X_GRANULAR_EDIT)
     connect(edit, &QLineEdit::editingFinished, this, &MegacellKeypad::onXGranularEdited);
-  if (QLineEdit *edit = find<QLineEdit>("IDC_Y_GRANULAR_EDIT"))
+  if (QLineEdit *edit = ui->IDC_Y_GRANULAR_EDIT)
     connect(edit, &QLineEdit::editingFinished, this, &MegacellKeypad::onYGranularEdited);
 
   updateDialog();
 }
 
-MegacellKeypad::~MegacellKeypad() = default;
+MegacellKeypad::~MegacellKeypad() { delete ui; }
 
 void MegacellKeypad::updateDialog() {
   if (Num_megacells < 1)
@@ -55,15 +58,15 @@ void MegacellKeypad::updateDialog() {
     n = GetNextMegacell(n);
     D3EditState.current_megacell = n;
   }
-  if (QLabel *label = find<QLabel>("IDC_MEGACELL_NAME_STATIC"))
+  if (QLabel *label = ui->IDC_MEGACELL_NAME_STATIC)
     label->setText(QString("Megacell name: %1").arg(Megacells[n].name));
-  if (QLabel *label = find<QLabel>("IDC_MEGA_WIDTH_STATIC"))
+  if (QLabel *label = ui->IDC_MEGA_WIDTH_STATIC)
     label->setText(QString("Width: %1").arg(Megacells[n].width));
-  if (QLabel *label = find<QLabel>("IDC_MEGA_HEIGHT_STATIC"))
+  if (QLabel *label = ui->IDC_MEGA_HEIGHT_STATIC)
     label->setText(QString("Height: %1").arg(Megacells[n].height));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_X_GRANULAR_EDIT"))
+  if (QLineEdit *edit = ui->IDC_X_GRANULAR_EDIT)
     edit->setText(QString::number(m_xgran));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_Y_GRANULAR_EDIT"))
+  if (QLineEdit *edit = ui->IDC_Y_GRANULAR_EDIT)
     edit->setText(QString::number(m_ygran));
 }
 
@@ -83,7 +86,7 @@ void MegacellKeypad::onRandomizeToggled(bool checked) { D3EditState.randomize_me
 
 void MegacellKeypad::onXGranularEdited() {
   const int n = D3EditState.current_megacell;
-  int val = find<QLineEdit>("IDC_X_GRANULAR_EDIT")->text().toInt();
+  int val = ui->IDC_X_GRANULAR_EDIT->text().toInt();
   if (val < 1)
     val = 1;
   if (val > Megacells[n].width)
@@ -94,7 +97,7 @@ void MegacellKeypad::onXGranularEdited() {
 
 void MegacellKeypad::onYGranularEdited() {
   const int n = D3EditState.current_megacell;
-  int val = find<QLineEdit>("IDC_Y_GRANULAR_EDIT")->text().toInt();
+  int val = ui->IDC_Y_GRANULAR_EDIT->text().toInt();
   if (val < 1)
     val = 1;
   if (val > Megacells[n].height)
@@ -103,4 +106,3 @@ void MegacellKeypad::onYGranularEdited() {
   updateDialog();
 }
 
-}

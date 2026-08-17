@@ -18,22 +18,25 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class QuickCompileDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CQuickCompile (IDD_QUICKCOMPILE): reports the result of compiling a
 // script module.
-class QuickCompileDialog : public Dialog {
+class QuickCompileDialog : public QDialog {
   Q_OBJECT
 public:
   explicit QuickCompileDialog(const QString &scriptName, QWidget *parent = nullptr);
-  ~QuickCompileDialog() override;
+  ~QuickCompileDialog();
 
   int resultValue() const { return m_result; }
 
 private:
+  Ui::QuickCompileDialog *ui;
   int m_result = 0;
 };
 
-}

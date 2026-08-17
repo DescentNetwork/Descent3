@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>AISettingsDialog</class>
   <widget class="QDialog" name="IDD_AI">
     <property name="geometry">
       <rect>
@@ -938,9 +938,6 @@
             <height>20</height>
           </rect>
         </property>
-        <property name="text">
-          <string>Slider1</string>
-        </property>
         <property name="visible">
           <bool>true</bool>
         </property>
@@ -1779,9 +1776,6 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider2</string>
-      </property>
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -1825,9 +1819,6 @@
           <width>120</width>
           <height>20</height>
         </rect>
-      </property>
-      <property name="text">
-        <string>Slider2</string>
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -1873,9 +1864,6 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider2</string>
-      </property>
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -1920,9 +1908,6 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider2</string>
-      </property>
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -1966,9 +1951,6 @@
           <width>120</width>
           <height>20</height>
         </rect>
-      </property>
-      <property name="text">
-        <string>Slider2</string>
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -2017,9 +1999,6 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider2</string>
-      </property>
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -2063,9 +2042,6 @@
           <width>120</width>
           <height>20</height>
         </rect>
-      </property>
-      <property name="text">
-        <string>Slider2</string>
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -2111,9 +2087,6 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider2</string>
-      </property>
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -2157,9 +2130,6 @@
           <width>120</width>
           <height>20</height>
         </rect>
-      </property>
-      <property name="text">
-        <string>Slider2</string>
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -2205,9 +2175,6 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider2</string>
-      </property>
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -2251,9 +2218,6 @@
           <width>120</width>
           <height>20</height>
         </rect>
-      </property>
-      <property name="text">
-        <string>Slider2</string>
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -2299,9 +2263,6 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider2</string>
-      </property>
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -2345,9 +2306,6 @@
           <width>120</width>
           <height>20</height>
         </rect>
-      </property>
-      <property name="text">
-        <string>Slider2</string>
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -2393,9 +2351,6 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider2</string>
-      </property>
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -2440,9 +2395,6 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider2</string>
-      </property>
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -2486,9 +2438,6 @@
           <width>120</width>
           <height>20</height>
         </rect>
-      </property>
-      <property name="text">
-        <string>Slider2</string>
       </property>
       <property name="visible">
         <bool>true</bool>

@@ -18,16 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class PropAIDialog; }
+QT_END_NAMESPACE
+
 
 // Stub port of CPropertyAIDlg (IDD_PROPAI).
-class PropertyAIDialog : public Dialog {
+class PropertyAIDialog : public QDialog {
   Q_OBJECT
 public:
   explicit PropertyAIDialog(QWidget *parent = nullptr);
-  ~PropertyAIDialog() override;
+  ~PropertyAIDialog();
+private:
+  Ui::PropAIDialog *ui;
 };
 
-}

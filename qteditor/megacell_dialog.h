@@ -18,19 +18,22 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
 class QLabel;
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class MegacellDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CMegacellDialog (IDD_MEGACELL): the megacell table editor
 // (new/delete/lock/checkin/prev/next, import).
-class MegacellDialog : public Dialog {
+class MegacellDialog : public QDialog {
   Q_OBJECT
 public:
   explicit MegacellDialog(QWidget *parent = nullptr);
-  ~MegacellDialog() override;
+  ~MegacellDialog();
 
 private slots:
   void onNew();
@@ -42,6 +45,7 @@ private slots:
 
 private:
   void updateDialog();
+private:
+  Ui::MegacellDialog *ui;
 };
 
-}

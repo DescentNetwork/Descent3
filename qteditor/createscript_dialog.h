@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class CreateScriptDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CCreateNewScriptDlg (IDD_CREATESCRIPT): enters a script filename and
 // picks the script type (level or game).
-class CreateNewScriptDialog : public Dialog {
+class CreateNewScriptDialog : public QDialog {
   Q_OBJECT
 public:
   explicit CreateNewScriptDialog(QWidget *parent = nullptr);
-  ~CreateNewScriptDialog() override;
+  ~CreateNewScriptDialog();
 
   QString filename() const;
   // 0 = level script, 1 = game script
@@ -36,6 +39,7 @@ public:
 
 private slots:
   void onOk();
+private:
+  Ui::CreateScriptDialog *ui;
 };
 
-}

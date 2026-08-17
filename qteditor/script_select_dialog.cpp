@@ -17,6 +17,7 @@
  */
 
 #include "script_select_dialog.h"
+#include "ui_scriptselect.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -26,20 +27,22 @@
 
 #include "manage.h"
 
-namespace QtEditor {
 
-ScriptSelectDialog::ScriptSelectDialog(QWidget *parent) : Dialog(":/ui/scriptselect.ui", parent), m_list(nullptr) {
-  m_list = find<QListWidget>("IDC_SCRIPTSEL_LISTBOX");
+ScriptSelectDialog::ScriptSelectDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::ScriptSelectDialog), m_list(nullptr)
+{
+  ui->setupUi(this);
+  m_list = ui->IDC_SCRIPTSEL_LISTBOX;
   populate();
-  if (QPushButton *b = find<QPushButton>("IDC_SCRIPTSEL_ADD"))
+  if (QPushButton *b = ui->IDC_SCRIPTSEL_ADD)
     connect(b, &QPushButton::clicked, this, &ScriptSelectDialog::onAdd);
-  if (QPushButton *b = find<QPushButton>("IDC_EDITSCRIPT"))
+  if (QPushButton *b = ui->IDC_EDITSCRIPT)
     connect(b, &QPushButton::clicked, this, &ScriptSelectDialog::onEdit);
-  if (QPushButton *b = find<QPushButton>("IDC_PARAMETERS"))
+  if (QPushButton *b = ui->IDC_PARAMETERS)
     connect(b, &QPushButton::clicked, this, &ScriptSelectDialog::onParameters);
 }
 
-ScriptSelectDialog::~ScriptSelectDialog() = default;
+ScriptSelectDialog::~ScriptSelectDialog() { delete ui; }
 
 void ScriptSelectDialog::populate() {
   if (m_list == nullptr)
@@ -71,4 +74,3 @@ void ScriptSelectDialog::onParameters() {
   QMessageBox::information(this, "Parameters", "Edit parameters for " + scriptName());
 }
 
-}

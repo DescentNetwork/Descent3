@@ -1,5 +1,8 @@
 #include "dallas_import_dialog.h"
-namespace QtEditor {
-DallasImportDialog::DallasImportDialog(QWidget *parent) : Dialog(":/ui/dallas_import_dialog.ui", parent) {}
-DallasImportDialog::~DallasImportDialog() = default;
+#include "ui_dallas_import_dialog.h"
+DallasImportDialog::DallasImportDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::DallasImportDialog)
+{
+  ui->setupUi(this);
 }
+DallasImportDialog::~DallasImportDialog() { delete ui; }

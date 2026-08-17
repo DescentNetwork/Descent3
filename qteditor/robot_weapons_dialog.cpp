@@ -17,6 +17,7 @@
  */
 
 #include "robot_weapons_dialog.h"
+#include "ui_robot_weapon_dialog.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -34,7 +35,6 @@
 #include "ssl_lib.h"
 #include "weapon.h"
 
-namespace QtEditor {
 
 namespace {
 const char *kNumMasksEdit = "IDC_GB_NUM_MASKS_EDIT";
@@ -70,15 +70,17 @@ const char *kQuadCheck[MAX_WB_GUNPOINTS] = {
 
 QString maskCheckName(int mask, int gp) { return QString("IDC_GP_MASK_%1_%2").arg(mask).arg(gp); }
 
-QLineEdit *lineEdit(QWidget *w, const QString &name) { return w->findChild<QLineEdit *>(name); }
-QCheckBox *checkBox(QWidget *w, const QString &name) { return w->findChild<QCheckBox *>(name); }
+QLineEdit *lineEdit(QDialog *w, const QString &name) { return w->findChild<QLineEdit *>(name); }
+QCheckBox *checkBox(QDialog *w, const QString &name) { return w->findChild<QCheckBox *>(name); }
 } // namespace
 
 RobotEditWeaponsDialog::RobotEditWeaponsDialog(otype_wb_info *static_wb, poly_model *pm, QWidget *parent)
-    : Dialog(":/ui/robot_weapon_dialog.ui", parent), m_wb(static_wb), m_pm(pm) {
+    : QDialog(parent), ui(new Ui::RobotWeaponsDialog), m_wb(static_wb), m_pm(pm)
+{
+  ui->setupUi(this);
   // Barrel weapon combos: list used weapons.
   for (int gp = 0; gp < MAX_WB_GUNPOINTS; gp++) {
-    if (QComboBox *combo = find<QComboBox>(kBarrelCombo[gp])) {
+    if (QComboBox *combo = findChild<QComboBox*>(kBarrelCombo[gp])) {
       for (int i = 0; i < MAX_WEAPONS; i++)
         if (Weapons[i].used)
           combo->addItem(Weapons[i].name, i);
@@ -87,20 +89,14 @@ RobotEditWeaponsDialog::RobotEditWeaponsDialog(otype_wb_info *static_wb, poly_mo
 
   // Fire sound combos.
   for (int m = 0; m < MAX_WB_FIRING_MASKS; m++)
-    populateSoundCombo(find<QComboBox>(kFireSoundCombo[m]), -1);
+    populateSoundCombo(findChild<QComboBox*>(kFireSoundCombo[m]), -1);
 
   loadData();
 
-  if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
-    connect(ok, &QPushButton::clicked, this, [this]() {
-      getData();
-      accept();
-    });
-  }
+  connect(this, &QDialog::accept, this, [this]() { getData(); accept(); });
 }
 
-RobotEditWeaponsDialog::~RobotEditWeaponsDialog() = default;
+RobotEditWeaponsDialog::~RobotEditWeaponsDialog() { delete ui; }
 
 void RobotEditWeaponsDialog::loadData() {
   otype_wb_info *wb = m_wb;
@@ -119,7 +115,7 @@ void RobotEditWeaponsDialog::loadData() {
       edit->setText(QString::number(wb->anim_end_frame[m]));
     if (QLineEdit *edit = lineEdit(this, kCycleTimeEdit[m]))
       edit->setText(QString::number(wb->anim_time[m]));
-    if (QComboBox *combo = find<QComboBox>(kFireSoundCombo[m]))
+    if (QComboBox *combo = findChild<QComboBox*>(kFireSoundCombo[m]))
       setSoundComboSelected(combo, wb->fm_fire_sound_index[m]);
 
     for (int gp = 0; gp < MAX_WB_GUNPOINTS; gp++) {
@@ -129,55 +125,55 @@ void RobotEditWeaponsDialog::loadData() {
   }
 
   for (int gp = 0; gp < MAX_WB_GUNPOINTS; gp++) {
-    if (QComboBox *combo = find<QComboBox>(kBarrelCombo[gp]))
+    if (QComboBox *combo = findChild<QComboBox*>(kBarrelCombo[gp]))
       combo->setCurrentIndex(combo->findData(wb->gp_weapon_index[gp]));
     if (QCheckBox *cb = checkBox(this, kQuadCheck[gp]))
       cb->setChecked((wb->gp_quad_fire_mask & (1 << gp)) != 0);
-    if (QRadioButton *radio = find<QRadioButton>(kBarrelRadio[gp]))
+    if (QRadioButton *radio = findChild<QRadioButton*>(kBarrelRadio[gp]))
       radio->setChecked(wb->aiming_gp_index == gp);
   }
 
   const float view_cone = wb->aiming_3d_dot > 1.0f ? 0.0f : acos(wb->aiming_3d_dot) * (360.0 / PI);
   const float xz_angle = wb->aiming_XZ_dot > 1.0f ? 0.0f : acos(wb->aiming_XZ_dot) * (360.0 / PI);
-  if (QLineEdit *edit = lineEdit(this, "IDC_VIEW_CONE_ANGLE_EDIT"))
+  if (QLineEdit *edit = ui->IDC_VIEW_CONE_ANGLE_EDIT)
     edit->setText(QString::number(view_cone));
-  if (QLineEdit *edit = lineEdit(this, "IDC_MAX_DISTANCE_EDIT"))
+  if (QLineEdit *edit = ui->IDC_MAX_DISTANCE_EDIT)
     edit->setText(QString::number(wb->aiming_3d_dist));
-  if (QLineEdit *edit = lineEdit(this, "IDC_XZ_PLANE_ANGLE_EDIT"))
+  if (QLineEdit *edit = ui->IDC_XZ_PLANE_ANGLE_EDIT)
     edit->setText(QString::number(xz_angle));
 
-  if (QLineEdit *edit = lineEdit(this, "IDC_ENERGY_USAGE_EDIT"))
+  if (QLineEdit *edit = ui->IDC_ENERGY_USAGE_EDIT)
     edit->setText(QString::number(wb->energy_usage));
-  if (QLineEdit *edit = lineEdit(this, "IDC_AMMO_USAGE_EDIT"))
+  if (QLineEdit *edit = ui->IDC_AMMO_USAGE_EDIT)
     edit->setText(QString::number(wb->ammo_usage));
 
-  if (QCheckBox *cb = checkBox(this, "IDC_SPRAY_CHECK"))
+  if (QCheckBox *cb = ui->IDC_SPRAY_CHECK)
     cb->setChecked(wb->flags & WBF_SPRAY);
-  if (QCheckBox *cb = checkBox(this, "IDC_GUIDED_CHECK"))
+  if (QCheckBox *cb = ui->IDC_GUIDED_CHECK)
     cb->setChecked(wb->flags & WBF_GUIDED);
-  if (QCheckBox *cb = checkBox(this, "IDC_ONOFF_CHECK"))
+  if (QCheckBox *cb = ui->IDC_ONOFF_CHECK)
     cb->setChecked(wb->flags & WBF_ON_OFF);
-  if (QCheckBox *cb = checkBox(this, "IDC_WB_RANDOM_CHECK"))
+  if (QCheckBox *cb = ui->IDC_WB_RANDOM_CHECK)
     cb->setChecked(wb->flags & WBF_RANDOM_FIRE_ORDER);
-  if (QCheckBox *cb = checkBox(this, "IDC_USER_TIMEOUT_CHECK"))
+  if (QCheckBox *cb = ui->IDC_USER_TIMEOUT_CHECK)
     cb->setChecked(wb->flags & WBF_USER_TIMEOUT);
-  if (QCheckBox *cb = checkBox(this, "IDC_FORCE_TO_FVEC_CHECK"))
+  if (QCheckBox *cb = ui->IDC_FORCE_TO_FVEC_CHECK)
     cb->setChecked(wb->flags & WBF_FIRE_FVEC);
-  if (QCheckBox *cb = checkBox(this, "IDC_FORCE_TO_TARGET_CHECK"))
+  if (QCheckBox *cb = ui->IDC_FORCE_TO_TARGET_CHECK)
     cb->setChecked(wb->flags & WBF_FIRE_TARGET);
-  if (QCheckBox *cb = checkBox(this, "IDC_WBAIMFORWARD_CHECK"))
+  if (QCheckBox *cb = ui->IDC_WBAIMFORWARD_CHECK)
     cb->setChecked(wb->flags & WBF_AIM_FVEC);
-  if (QCheckBox *cb = checkBox(this, "IDC_VIEW_CONE_ANGLE_CHECK"))
+  if (QCheckBox *cb = ui->IDC_VIEW_CONE_ANGLE_CHECK)
     cb->setChecked(wb->flags & WBF_USE_CUSTOM_FOV);
-  if (QCheckBox *cb = checkBox(this, "IDC_MAX_DISTANCE_CHECK"))
+  if (QCheckBox *cb = ui->IDC_MAX_DISTANCE_CHECK)
     cb->setChecked(wb->flags & WBF_USE_CUSTOM_MAX_DIST);
 
   const int anim_type = wb->flags & WBF_ANIM_MASKS;
-  if (QRadioButton *radio = find<QRadioButton>("IDC_WB_NO_ANIM_RADIO"))
+  if (QRadioButton *radio = ui->IDC_WB_NO_ANIM_RADIO)
     radio->setChecked(anim_type == 0);
-  if (QRadioButton *radio = find<QRadioButton>("IDC_WB_LOCAL_ANIM_RADIO"))
+  if (QRadioButton *radio = ui->IDC_WB_LOCAL_ANIM_RADIO)
     radio->setChecked(anim_type == WBF_ANIM_LOCAL);
-  if (QRadioButton *radio = find<QRadioButton>("IDC_WB_MODEL_ANIM_RADIO"))
+  if (QRadioButton *radio = ui->IDC_WB_MODEL_ANIM_RADIO)
     radio->setChecked(anim_type == WBF_ANIM_FULL);
 
   updateDialog();
@@ -196,39 +192,39 @@ void RobotEditWeaponsDialog::updateDialog() {
       if (QCheckBox *cb = checkBox(this, maskCheckName(m, gp)))
         cb->setEnabled(m < num_masks && gp < num_gps);
     }
-    if (QWidget *w = find<QWidget>(kMaskLatencyEdit[m]))
+    if (QWidget *w = findChild<QWidget*>(kMaskLatencyEdit[m]))
       w->setEnabled(m < num_masks);
   }
 
   for (int gp = 0; gp < MAX_WB_GUNPOINTS; gp++) {
     const bool has_gp = gp < num_gps;
-    if (QWidget *w = find<QWidget>(kBarrelCombo[gp]))
+    if (QWidget *w = findChild<QWidget*>(kBarrelCombo[gp]))
       w->setEnabled(has_gp);
-    if (QWidget *w = find<QWidget>(kBarrelRadio[gp]))
+    if (QWidget *w = findChild<QWidget*>(kBarrelRadio[gp]))
       w->setEnabled(has_gp);
     if (QCheckBox *cb = checkBox(this, kQuadCheck[gp]))
       cb->setEnabled(has_gp);
   }
 
-  const bool custom_fov = checkBox(this, "IDC_VIEW_CONE_ANGLE_CHECK")->isChecked();
-  const bool custom_dist = checkBox(this, "IDC_MAX_DISTANCE_CHECK")->isChecked();
-  if (QWidget *w = find<QWidget>("IDC_VIEW_CONE_ANGLE_EDIT"))
+  const bool custom_fov = ui->IDC_VIEW_CONE_ANGLE_CHECK->isChecked();
+  const bool custom_dist = ui->IDC_MAX_DISTANCE_CHECK->isChecked();
+  if (QWidget *w = ui->IDC_VIEW_CONE_ANGLE_EDIT)
     w->setEnabled(custom_fov);
-  if (QWidget *w = find<QWidget>("IDC_XZ_PLANE_ANGLE_EDIT"))
+  if (QWidget *w = ui->IDC_XZ_PLANE_ANGLE_EDIT)
     w->setEnabled(custom_fov);
-  if (QWidget *w = find<QWidget>("IDC_MAX_DISTANCE_EDIT"))
+  if (QWidget *w = ui->IDC_MAX_DISTANCE_EDIT)
     w->setEnabled(custom_dist);
 
   // Turret info (static read-only display).
   if (m_pm != nullptr && m_pm->num_wbs > 0 && m_pm->poly_wb[0].num_turrets > 0) {
     const int turret = m_pm->poly_wb[0].turret_index[0];
-    if (QLabel *label = find<QLabel>("IDC_TURRET_SOBJ_STATIC"))
+    if (QLabel *label = ui->IDC_TURRET_SOBJ_STATIC)
       label->setText(QString::number(turret));
-    if (QLabel *label = find<QLabel>("IDC_TURRET_FOV_STATIC"))
+    if (QLabel *label = ui->IDC_TURRET_FOV_STATIC)
       label->setText(QString::number(m_pm->submodel[turret].fov * 720.0));
-    if (QLabel *label = find<QLabel>("IDC_TURRET_REACTION_TIME_STATIC"))
+    if (QLabel *label = ui->IDC_TURRET_REACTION_TIME_STATIC)
       label->setText(QString::number(m_pm->submodel[turret].think_interval, 'f', 2));
-    if (QLabel *label = find<QLabel>("IDC_TURRET_SPR_STATIC"))
+    if (QLabel *label = ui->IDC_TURRET_SPR_STATIC)
       label->setText(QString::number(1.0f / m_pm->submodel[turret].rps, 'f', 2));
   }
 
@@ -250,7 +246,7 @@ void RobotEditWeaponsDialog::getData() {
     wb->anim_fire_frame[m] = lineEdit(this, kFireTickEdit[m])->text().toFloat();
     wb->anim_end_frame[m] = lineEdit(this, kEndTickEdit[m])->text().toFloat();
     wb->anim_time[m] = lineEdit(this, kCycleTimeEdit[m])->text().toFloat();
-    wb->fm_fire_sound_index[m] = soundComboSelected(find<QComboBox>(kFireSoundCombo[m]));
+    wb->fm_fire_sound_index[m] = soundComboSelected(findChild<QComboBox*>(kFireSoundCombo[m]));
 
     wb->gp_fire_masks[m] = 0;
     for (int gp = 0; gp < MAX_WB_GUNPOINTS; gp++)
@@ -262,25 +258,25 @@ void RobotEditWeaponsDialog::getData() {
   for (int gp = 0; gp < MAX_WB_GUNPOINTS; gp++) {
     if (checkBox(this, kQuadCheck[gp])->isChecked())
       wb->gp_quad_fire_mask |= (1 << gp);
-    if (QComboBox *combo = find<QComboBox>(kBarrelCombo[gp]))
+    if (QComboBox *combo = findChild<QComboBox*>(kBarrelCombo[gp]))
       wb->gp_weapon_index[gp] = combo->currentData().toInt();
   }
 
   for (int gp = 0; gp < MAX_WB_GUNPOINTS; gp++)
-    if (find<QRadioButton>(kBarrelRadio[gp])->isChecked())
+    if (findChild<QRadioButton*>(kBarrelRadio[gp])->isChecked())
       wb->aiming_gp_index = gp;
 
-  wb->aiming_3d_dot = cos(lineEdit(this, "IDC_VIEW_CONE_ANGLE_EDIT")->text().toFloat() * PI / 360.0);
-  wb->aiming_3d_dist = lineEdit(this, "IDC_MAX_DISTANCE_EDIT")->text().toFloat();
-  wb->aiming_XZ_dot = cos(lineEdit(this, "IDC_XZ_PLANE_ANGLE_EDIT")->text().toFloat() * PI / 360.0);
+  wb->aiming_3d_dot = cos(ui->IDC_VIEW_CONE_ANGLE_EDIT->text().toFloat() * PI / 360.0);
+  wb->aiming_3d_dist = ui->IDC_MAX_DISTANCE_EDIT->text().toFloat();
+  wb->aiming_XZ_dot = cos(ui->IDC_XZ_PLANE_ANGLE_EDIT->text().toFloat() * PI / 360.0);
 
-  wb->energy_usage = lineEdit(this, "IDC_ENERGY_USAGE_EDIT")->text().toFloat();
-  wb->ammo_usage = lineEdit(this, "IDC_AMMO_USAGE_EDIT")->text().toFloat();
+  wb->energy_usage = ui->IDC_ENERGY_USAGE_EDIT->text().toFloat();
+  wb->ammo_usage = ui->IDC_AMMO_USAGE_EDIT->text().toFloat();
 
   wb->flags &= ~WBF_ANIM_MASKS;
-  if (find<QRadioButton>("IDC_WB_LOCAL_ANIM_RADIO")->isChecked())
+  if (ui->IDC_WB_LOCAL_ANIM_RADIO->isChecked())
     wb->flags |= WBF_ANIM_LOCAL;
-  else if (find<QRadioButton>("IDC_WB_MODEL_ANIM_RADIO")->isChecked())
+  else if (ui->IDC_WB_MODEL_ANIM_RADIO->isChecked())
     wb->flags |= WBF_ANIM_FULL;
 
   auto setFlag2 = [this, wb](uint16_t flag, const QString &name) {
@@ -306,4 +302,3 @@ void editRobotWeapons(otype_wb_info *wb, poly_model *pm, QWidget *parent) {
   dlg.exec();
 }
 
-}

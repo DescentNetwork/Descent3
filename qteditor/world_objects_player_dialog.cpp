@@ -17,6 +17,7 @@
  */
 
 #include "world_objects_player_dialog.h"
+#include "ui_worldobjectsplayer.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -30,6 +31,7 @@
 #include "cfile.h"
 #include "qt_messagebox.h"
 #include "d3edit.h"
+
 #include "ddio.h"
 #include "manage.h"
 #include "physics_dialog.h"
@@ -37,58 +39,58 @@
 #include "robotfire.h"
 #include "ship.h"
 #include "shippage.h"
+#include "d3edit.h"
 
-extern char Current_model_dir[_MAX_PATH];
-
-namespace QtEditor {
-
-WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent) : Dialog(":/ui/worldobjectsplayer.ui", parent) {
-  if (QPushButton *b = find<QPushButton>("IDC_ADD_PSHIP"))
+WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::WorldObjectsPlayerDialog)
+{
+  ui->setupUi(this);
+  if (QPushButton *b = ui->IDC_ADD_PSHIP)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onAddPship);
-  if (QPushButton *b = find<QPushButton>("IDC_PSHIP_DELETE"))
+  if (QPushButton *b = ui->IDC_PSHIP_DELETE)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipDelete);
-  if (QPushButton *b = find<QPushButton>("IDC_PSHIP_LOCK"))
+  if (QPushButton *b = ui->IDC_PSHIP_LOCK)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipLock);
-  if (QPushButton *b = find<QPushButton>("IDC_PSHIP_CHECKIN"))
+  if (QPushButton *b = ui->IDC_PSHIP_CHECKIN)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipCheckin);
-  if (QPushButton *b = find<QPushButton>("IDC_PSHIPS_OUT"))
+  if (QPushButton *b = ui->IDC_PSHIPS_OUT)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipsOut);
-  if (QPushButton *b = find<QPushButton>("IDC_PSHIP_NEXT"))
+  if (QPushButton *b = ui->IDC_PSHIP_NEXT)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipNext);
-  if (QPushButton *b = find<QPushButton>("IDC_PSHIP_PREV"))
+  if (QPushButton *b = ui->IDC_PSHIP_PREV)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipPrev);
-  if (QPushButton *b = find<QPushButton>("IDC_PSHIP_LOAD_MODEL"))
+  if (QPushButton *b = ui->IDC_PSHIP_LOAD_MODEL)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipLoadModel);
-  if (QPushButton *b = find<QPushButton>("IDC_PSHIP_DYING_MODEL"))
+  if (QPushButton *b = ui->IDC_PSHIP_DYING_MODEL)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipDyingModel);
-  if (QPushButton *b = find<QPushButton>("IDC_NULL_DYING"))
+  if (QPushButton *b = ui->IDC_NULL_DYING)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onNullDying);
-  if (QPushButton *b = find<QPushButton>("IDC_EDIT_WEAPONS"))
+  if (QPushButton *b = ui->IDC_EDIT_WEAPONS)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onEditWeapons);
-  if (QPushButton *b = find<QPushButton>("IDC_PSHIP_COCKPIT"))
+  if (QPushButton *b = ui->IDC_PSHIP_COCKPIT)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipCockpit);
-  if (QPushButton *b = find<QPushButton>("IDC_PSHIP_EDIT_PHYSICS"))
+  if (QPushButton *b = ui->IDC_PSHIP_EDIT_PHYSICS)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipEditPhysics);
-  if (QPushButton *b = find<QPushButton>("IDC_NOLOD"))
+  if (QPushButton *b = ui->IDC_NOLOD)
     connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onNolod);
 
-  if (QComboBox *combo = find<QComboBox>("IDC_PSHIP_PULLDOWN"))
+  if (QComboBox *combo = ui->IDC_PSHIP_PULLDOWN)
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &WorldObjectsPlayerDialog::onPshipPulldownChanged);
 
   const char *edits[] = {"IDC_PSHIP_NAME_EDIT", "IDC_PSHIP_COCKPIT_EDIT", "IDC_SHIP_ARMOR_EDIT",
                          "IDC_LOD_DISTANCE_EDIT"};
   for (const char *name : edits) {
-    if (QLineEdit *edit = find<QLineEdit>(name))
+    if (QLineEdit *edit = findChild<QLineEdit*>(name))
       connect(edit, &QLineEdit::editingFinished, this, [this, name]() {
         const int n = D3EditState.current_ship;
         if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
           return;
         if (QString::compare(name, "IDC_PSHIP_COCKPIT_EDIT") == 0)
           snprintf(Ships[n].cockpit_name, sizeof(Ships[n].cockpit_name), "%s",
-                   find<QLineEdit>(name)->text().toLocal8Bit().constData());
+                   findChild<QLineEdit*>(name)->text().toLocal8Bit().constData());
         else if (QString::compare(name, "IDC_SHIP_ARMOR_EDIT") == 0) {
-          float val = find<QLineEdit>(name)->text().toFloat();
+          float val = findChild<QLineEdit*>(name)->text().toFloat();
           if (val < .05f)
             val = .05f;
           if (val > 10)
@@ -96,7 +98,7 @@ WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent) : Dialog(":/
           Ships[n].armor_scalar = val;
           updateDialog();
         } else if (QString::compare(name, "IDC_LOD_DISTANCE_EDIT") == 0) {
-          const float dist = find<QLineEdit>(name)->text().toFloat();
+          const float dist = findChild<QLineEdit*>(name)->text().toFloat();
           if (dist < 0)
             return;
           if (m_lod == 1)
@@ -107,32 +109,32 @@ WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent) : Dialog(":/
       });
   }
 
-  if (QCheckBox *cb = find<QCheckBox>("IDC_DEFAULTALLOW"))
+  if (QCheckBox *cb = ui->IDC_DEFAULTALLOW)
     connect(cb, &QCheckBox::toggled, this, &WorldObjectsPlayerDialog::onDefaultAllowToggled);
 
-  if (QRadioButton *rb = find<QRadioButton>("IDC_HIRES_RADIO"))
+  if (QRadioButton *rb = ui->IDC_HIRES_RADIO)
     connect(rb, &QRadioButton::clicked, this, &WorldObjectsPlayerDialog::onHiresRadio);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_MEDRES_RADIO"))
+  if (QRadioButton *rb = ui->IDC_MEDRES_RADIO)
     connect(rb, &QRadioButton::clicked, this, &WorldObjectsPlayerDialog::onMedresRadio);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_LORES_RADIO"))
+  if (QRadioButton *rb = ui->IDC_LORES_RADIO)
     connect(rb, &QRadioButton::clicked, this, &WorldObjectsPlayerDialog::onLoresRadio);
 
   m_lod = 0;
   updateDialog();
 }
 
-WorldObjectsPlayerDialog::~WorldObjectsPlayerDialog() = default;
+WorldObjectsPlayerDialog::~WorldObjectsPlayerDialog() { delete ui; }
 
 void WorldObjectsPlayerDialog::updateDialog() {
-  if (QPushButton *next = find<QPushButton>("IDC_PSHIP_NEXT"))
+  if (QPushButton *next = ui->IDC_PSHIP_NEXT)
     next->setEnabled(Num_ships >= 1);
-  if (QPushButton *prev = find<QPushButton>("IDC_PSHIP_PREV"))
+  if (QPushButton *prev = ui->IDC_PSHIP_PREV)
     prev->setEnabled(Num_ships >= 1);
-  if (QPushButton *cockpit = find<QPushButton>("IDC_PSHIP_COCKPIT"))
+  if (QPushButton *cockpit = ui->IDC_PSHIP_COCKPIT)
     cockpit->setEnabled(Num_ships >= 1);
   if (!Network_up) {
     for (const char *name : {"IDC_PSHIP_LOCK", "IDC_PSHIP_CHECKIN", "IDC_OVERRIDE"}) {
-      if (auto *w = find<QPushButton>(name))
+      if (auto *w = findChild<QPushButton*>(name))
         w->setEnabled(false);
     }
     return;
@@ -144,10 +146,10 @@ void WorldObjectsPlayerDialog::updateDialog() {
   if (!Ships[n].used)
     n = D3EditState.current_ship = GetNextShip(n);
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_PSHIP_NAME_EDIT"))
+  if (QLineEdit *edit = ui->IDC_PSHIP_NAME_EDIT)
     edit->setText(Ships[n].name);
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_PSHIP_MODEL_NAME_EDIT")) {
+  if (QLineEdit *edit = ui->IDC_PSHIP_MODEL_NAME_EDIT) {
     if (m_lod == 0)
       edit->setText(Poly_models[Ships[n].model_handle].name);
     else if (m_lod == 1) {
@@ -159,7 +161,7 @@ void WorldObjectsPlayerDialog::updateDialog() {
     }
   }
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_LOD_DISTANCE_EDIT")) {
+  if (QLineEdit *edit = ui->IDC_LOD_DISTANCE_EDIT) {
     if (m_lod == 0)
       edit->setText("0");
     else if (m_lod == 1)
@@ -168,30 +170,30 @@ void WorldObjectsPlayerDialog::updateDialog() {
       edit->setText(QString::number(Ships[n].lo_lod_distance));
   }
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_PSHIP_DYING_MODEL_NAME_EDIT"))
+  if (QLineEdit *edit = ui->IDC_PSHIP_DYING_MODEL_NAME_EDIT)
     edit->setText(Ships[n].dying_model_handle == -1 ? "<none>"
                                                     : Poly_models[Ships[n].dying_model_handle].name);
-  if (QLineEdit *edit = find<QLineEdit>("IDC_PSHIP_COCKPIT_EDIT"))
+  if (QLineEdit *edit = ui->IDC_PSHIP_COCKPIT_EDIT)
     edit->setText(Ships[n].cockpit_name);
-  if (QLineEdit *edit = find<QLineEdit>("IDC_SHIP_ARMOR_EDIT"))
+  if (QLineEdit *edit = ui->IDC_SHIP_ARMOR_EDIT)
     edit->setText(QString::number(Ships[n].armor_scalar));
 
-  if (QPushButton *checkin = find<QPushButton>("IDC_PSHIP_CHECKIN")) {
+  if (QPushButton *checkin = ui->IDC_PSHIP_CHECKIN) {
     if (mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP) == -1) {
       checkin->setEnabled(false);
-      if (QPushButton *lock = find<QPushButton>("IDC_PSHIP_LOCK"))
+      if (QPushButton *lock = ui->IDC_PSHIP_LOCK)
         lock->setEnabled(true);
     } else {
       checkin->setEnabled(true);
-      if (QPushButton *lock = find<QPushButton>("IDC_PSHIP_LOCK"))
+      if (QPushButton *lock = ui->IDC_PSHIP_LOCK)
         lock->setEnabled(false);
     }
   }
 
-  if (QCheckBox *cb = find<QCheckBox>("IDC_DEFAULTALLOW"))
+  if (QCheckBox *cb = ui->IDC_DEFAULTALLOW)
     cb->setChecked(Ships[n].flags & SF_DEFAULT_ALLOW);
 
-  if (QComboBox *combo = find<QComboBox>("IDC_PSHIP_PULLDOWN")) {
+  if (QComboBox *combo = ui->IDC_PSHIP_PULLDOWN) {
     QSignalBlocker blocker(combo);
     combo->clear();
     for (int i = 0; i < MAX_SHIPS; i++)
@@ -200,7 +202,7 @@ void WorldObjectsPlayerDialog::updateDialog() {
     combo->setCurrentText(Ships[n].name);
   }
 
-  if (QPushButton *nolod = find<QPushButton>("IDC_NOLOD")) {
+  if (QPushButton *nolod = ui->IDC_NOLOD) {
     if (m_lod == 0)
       nolod->setEnabled(false);
     else if (m_lod == 1)
@@ -209,11 +211,11 @@ void WorldObjectsPlayerDialog::updateDialog() {
       nolod->setEnabled(Ships[n].lo_render_handle != -1);
   }
 
-  if (QRadioButton *rb = find<QRadioButton>("IDC_HIRES_RADIO"))
+  if (QRadioButton *rb = ui->IDC_HIRES_RADIO)
     rb->setChecked(m_lod == 0);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_MEDRES_RADIO"))
+  if (QRadioButton *rb = ui->IDC_MEDRES_RADIO)
     rb->setChecked(m_lod == 1);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_LORES_RADIO"))
+  if (QRadioButton *rb = ui->IDC_LORES_RADIO)
     rb->setChecked(m_lod == 2);
 }
 
@@ -223,6 +225,7 @@ void WorldObjectsPlayerDialog::onAddPship() {
     return;
   }
 
+  QString Current_model_dir; // get from settings
   const QString pathname =
       QFileDialog::getOpenFileName(this, "Select ship model", Current_model_dir, "Descent III files (*.pof *.oof)");
   if (pathname.isEmpty())
@@ -289,9 +292,7 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
 
   if (mng_CheckIfPageOwned(&pl, TableUser) != 1) {
     mng_FreeTrackLock(tl);
-    if (!mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 1)) {
-      Int3();
-    }
+    Q_ASSERT(mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 1));
   } else {
     mng_FreeTrackLock(tl);
     mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 0);
@@ -454,7 +455,7 @@ void WorldObjectsPlayerDialog::onPshipPrev() {
 }
 
 void WorldObjectsPlayerDialog::onPshipPulldownChanged() {
-  QComboBox *combo = find<QComboBox>("IDC_PSHIP_PULLDOWN");
+  QComboBox *combo = ui->IDC_PSHIP_PULLDOWN;
   if (combo == nullptr)
     return;
   const int i = FindShipName(combo->currentText().toLocal8Bit().constData());
@@ -465,6 +466,7 @@ void WorldObjectsPlayerDialog::onPshipPulldownChanged() {
 }
 
 void WorldObjectsPlayerDialog::onPshipLoadModel() {
+  QString Current_model_dir; // get from settings
   const QString pathname =
       QFileDialog::getOpenFileName(this, "Select ship model", Current_model_dir, "Descent III files (*.pof *.oof)");
   if (pathname.isEmpty())
@@ -502,6 +504,7 @@ void WorldObjectsPlayerDialog::onPshipLoadModel() {
 }
 
 void WorldObjectsPlayerDialog::onPshipDyingModel() {
+  QString Current_model_dir; // get from settings
   const QString pathname =
       QFileDialog::getOpenFileName(this, "Select dying model", Current_model_dir, "Descent III files (*.pof *.oof)");
   if (pathname.isEmpty())
@@ -533,7 +536,8 @@ void WorldObjectsPlayerDialog::onEditWeapons() {
   editPlayerWeapons(D3EditState.current_ship, this);
 }
 
-void WorldObjectsPlayerDialog::onPshipCockpit() {
+void WorldObjectsPlayerDialog::onPshipCockpit()
+{
   const QString pathname =
       QFileDialog::getOpenFileName(this, "Select cockpit file", {}, "Descent III files (*.inf)");
   if (pathname.isEmpty())
@@ -560,7 +564,7 @@ void WorldObjectsPlayerDialog::onPshipEditPhysics() {
 
 void WorldObjectsPlayerDialog::onKillfocusName() {
   const int n = D3EditState.current_ship;
-  QLineEdit *edit = find<QLineEdit>("IDC_PSHIP_NAME_EDIT");
+  QLineEdit *edit = ui->IDC_PSHIP_NAME_EDIT;
   if (edit == nullptr)
     return;
 
@@ -611,14 +615,14 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
 
 void WorldObjectsPlayerDialog::onKillfocusCockpit() {
   const int n = D3EditState.current_ship;
-  if (QLineEdit *edit = find<QLineEdit>("IDC_PSHIP_COCKPIT_EDIT"))
+  if (QLineEdit *edit = ui->IDC_PSHIP_COCKPIT_EDIT)
     snprintf(Ships[n].cockpit_name, sizeof(Ships[n].cockpit_name), "%s",
              edit->text().toLocal8Bit().constData());
 }
 
 void WorldObjectsPlayerDialog::onKillfocusArmor() {
   const int n = D3EditState.current_ship;
-  if (QLineEdit *edit = find<QLineEdit>("IDC_SHIP_ARMOR_EDIT")) {
+  if (QLineEdit *edit = ui->IDC_SHIP_ARMOR_EDIT) {
     float val = edit->text().toFloat();
     if (val < .05f)
       val = .05f;
@@ -631,7 +635,7 @@ void WorldObjectsPlayerDialog::onKillfocusArmor() {
 
 void WorldObjectsPlayerDialog::onKillfocusLodDistance() {
   const int n = D3EditState.current_ship;
-  if (QLineEdit *edit = find<QLineEdit>("IDC_LOD_DISTANCE_EDIT")) {
+  if (QLineEdit *edit = ui->IDC_LOD_DISTANCE_EDIT) {
     const float dist = edit->text().toFloat();
     if (dist < 0)
       return;
@@ -682,4 +686,3 @@ void WorldObjectsPlayerDialog::onNolod() {
   updateDialog();
 }
 
-}

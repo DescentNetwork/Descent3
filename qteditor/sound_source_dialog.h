@@ -18,26 +18,29 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
 struct soundsource_info_s;
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class SoundSourceDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CSoundSourceDialog (IDD_SOUNDSOURCE_DIALOG): picks the sound and
 // volume for a sound-source object.
-class SoundSourceDialog : public Dialog {
+class SoundSourceDialog : public QDialog {
   Q_OBJECT
 public:
   explicit SoundSourceDialog(soundsource_info_s *data, QWidget *parent = nullptr);
-  ~SoundSourceDialog() override;
+  ~SoundSourceDialog();
 
 private slots:
   void onSelect();
   void onOk();
 
 private:
+  Ui::SoundSourceDialog *ui;
   soundsource_info_s *m_data;
 };
 
-}

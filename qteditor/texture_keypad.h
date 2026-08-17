@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "keypad_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class TextureKeypad; }
+QT_END_NAMESPACE
+
 
 // Port of CTextureDialog (IDD_TEXTUREKEYPAD): face texture UV manipulation
 // (slide/rotate/flip/expand/contract) plus texture selection filters.
-class TextureKeypad : public Keypad {
+class TextureKeypad : public QDialog {
   Q_OBJECT
 public:
   explicit TextureKeypad(QWidget *parent = nullptr);
-  ~TextureKeypad() override;
+  ~TextureKeypad();
 
 private slots:
   void onSlideLeft();
@@ -54,6 +57,10 @@ private slots:
 
 private:
   void updateDialog();
+
+  template <typename T>
+  T *find(const QString &name) const { return findChild<T *>(name); }
+
+  Ui::TextureKeypad *ui;
 };
 
-}

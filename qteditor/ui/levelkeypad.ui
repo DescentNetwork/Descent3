@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>LevelKeypad</class>
   <widget class="QDialog" name="IDD_LEVELKEYPAD">
     <property name="geometry">
       <rect>

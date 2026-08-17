@@ -18,17 +18,21 @@
 
 #pragma once
 
-#include "keypad_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class MatcenKeypad; }
+QT_END_NAMESPACE
+
 
 // Port of the matcen keypad (IDD_MATCENKEYPAD): materialization center
 // navigation (prev/next/new/copy/paste/delete) and display.
-class MatcenKeypad : public Keypad {
+class MatcenKeypad : public QDialog
+{
   Q_OBJECT
 public:
   explicit MatcenKeypad(QWidget *parent = nullptr);
-  ~MatcenKeypad() override;
+  ~MatcenKeypad();
 
 private slots:
   void onPrev();
@@ -41,7 +45,7 @@ private slots:
 private:
   void updateDialog();
 
+  Ui::MatcenKeypad *ui;
   int m_matcenId = 0;
 };
 
-}

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>LevelKeypadLayout</class>
   <widget class="QDialog" name="IDD_LEVELKEYPAD">
     <property name="geometry">
       <rect>
@@ -975,7 +975,7 @@
       <property name="margin">
         <number>0</number>
       </property>
-      <item alignment="Qt::AlignLeft">
+      <item>
         <widget class="QGroupBox" name="IDC_STATIC">
           <property name="title">
             <string>World Properties</string>
@@ -996,7 +996,7 @@
             <property name="margin">
               <number>0</number>
             </property>
-            <item alignment="Qt::AlignLeft">
+            <item>
               <layout class="QGridLayout" name="layout_2">
                 <property name="spacing">
                   <number>6</number>
@@ -1181,7 +1181,7 @@
           </property>
         </widget>
       </item>
-      <item alignment="Qt::AlignLeft">
+      <item>
         <widget class="QGroupBox" name="IDC_STATIC_4">
           <property name="title">
             <string>Special Forcefields and bounce factors</string>
@@ -1358,7 +1358,7 @@
           </property>
         </widget>
       </item>
-      <item alignment="Qt::AlignLeft">
+      <item>
         <widget class="QGroupBox" name="IDC_STATIC_5">
           <property name="title">
             <string>Sound Overrides</string>
@@ -1500,7 +1500,7 @@
           </property>
         </widget>
       </item>
-      <item alignment="Qt::AlignLeft">
+      <item>
         <widget class="QGroupBox" name="IDC_STATIC_8">
           <property name="title">
             <string>Goal Information</string>
@@ -1655,7 +1655,7 @@
                 </item>
               </layout>
             </item>
-            <item alignment="Qt::AlignLeft">
+            <item>
               <layout class="QGridLayout" name="layout_10">
                 <property name="spacing">
                   <number>6</number>
@@ -1721,7 +1721,7 @@
                 </item>
               </layout>
             </item>
-            <item alignment="Qt::AlignLeft">
+            <item>
               <widget class="QLabel" name="IDC_STATIC_9">
                 <property name="text">
                   <string>Goal name (I.e.  Destroy the reactor)</string>
@@ -1771,7 +1771,7 @@
                 </property>
               </widget>
             </item>
-            <item alignment="Qt::AlignLeft">
+            <item>
               <widget class="QLabel" name="IDC_STATIC_10">
                 <property name="text">
                   <string>Location/Object name (I.e. Reactor Core)</string>
@@ -2044,7 +2044,7 @@
                 </item>
               </layout>
             </item>
-            <item alignment="Qt::AlignLeft">
+            <item>
               <layout class="QGridLayout" name="layout_13">
                 <property name="spacing">
                   <number>6</number>
@@ -2867,7 +2867,7 @@
                 </item>
               </layout>
             </item>
-            <item alignment="Qt::AlignLeft">
+            <item>
               <widget class="QLabel" name="IDC_STATIC_17">
                 <property name="text">
                   <string>Objective and Goal List</string>
@@ -2941,7 +2941,7 @@
           </property>
         </widget>
       </item>
-      <item alignment="Qt::AlignLeft">
+      <item>
         <widget class="QGroupBox" name="IDC_STATIC_18">
           <property name="title">
             <string>Ambient creatures</string>
@@ -2962,7 +2962,7 @@
             <property name="margin">
               <number>0</number>
             </property>
-            <item alignment="Qt::AlignHCenter">
+            <item>
               <layout class="QGridLayout" name="layout_18">
                 <property name="spacing">
                   <number>6</number>

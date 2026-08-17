@@ -17,30 +17,32 @@
  */
 
 #include "brief_manage_dialog.h"
+#include "ui_brief_manage.h"
 
 #include <QInputDialog>
 #include <QListWidget>
 #include <QPushButton>
 
 
-namespace QtEditor {
 
-BriefManageDialog::BriefManageDialog(QWidget *parent) : Dialog(":/ui/brief_manage.ui", parent), m_list(nullptr) {
-  m_list = find<QListWidget>("IDC_LIST");
+BriefManageDialog::BriefManageDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::BriefManageDialog), m_list(nullptr)
+{
+  ui->setupUi(this);
+  m_list = ui->IDC_LIST;
   if (m_list != nullptr) {
     // Briefing screens are managed by the briefing editor; start with a
     // default screen entry.
     m_list->addItem("Screen 1");
   }
-  if (QPushButton *b = find<QPushButton>("IDC_ADD"))
-    connect(b, &QPushButton::clicked, this, &BriefManageDialog::onAdd);
+
+  connect(ui->IDC_ADD, &QPushButton::clicked, this, &BriefManageDialog::onAdd);
 }
 
-BriefManageDialog::~BriefManageDialog() = default;
+BriefManageDialog::~BriefManageDialog() { delete ui; }
 
 void BriefManageDialog::onAdd() {
   if (m_list != nullptr)
     m_list->addItem(QString("Screen %1").arg(m_list->count() + 1));
 }
 
-}

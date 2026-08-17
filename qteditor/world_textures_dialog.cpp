@@ -17,6 +17,7 @@
  */
 
 #include "world_textures_dialog.h"
+#include "ui_worldtextures.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -29,51 +30,51 @@
 #include <QRadioButton>
 
 #include "qt_messagebox.h"
-#include "d3edit.h"
+
 #include "ddio.h"
 #include "gametexture.h"
 #include "manage.h"
 #include "sound_combo.h"
 #include "ssl_lib.h"
 #include "texpage.h"
+#include "d3edit.h"
 
-extern char Current_bitmap_dir[_MAX_PATH];
-
-namespace QtEditor {
-
-WorldTexturesDialog::WorldTexturesDialog(QWidget *parent) : Dialog(":/ui/worldtextures.ui", parent) {
-  if (QPushButton *b = find<QPushButton>("IDC_ADD_NEW_HUGE"))
+WorldTexturesDialog::WorldTexturesDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::WorldTexturesDialog)
+{
+  ui->setupUi(this);
+  if (QPushButton *b = ui->IDC_ADD_NEW_HUGE)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onAddNew);
-  if (QPushButton *b = find<QPushButton>("IDC_ADD_NEW_SMALL"))
+  if (QPushButton *b = ui->IDC_ADD_NEW_SMALL)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onAddNew);
-  if (QPushButton *b = find<QPushButton>("IDC_ADD_NEW_TINY"))
+  if (QPushButton *b = ui->IDC_ADD_NEW_TINY)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onAddNew);
-  if (QPushButton *b = find<QPushButton>("IDC_WTEXDLG_ADDNEW"))
+  if (QPushButton *b = ui->IDC_WTEXDLG_ADDNEW)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onAddNew);
-  if (QPushButton *b = find<QPushButton>("IDC_DELETE"))
+  if (QPushButton *b = ui->IDC_DELETE)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onDelete);
-  if (QPushButton *b = find<QPushButton>("IDC_LOCK"))
+  if (QPushButton *b = ui->IDC_LOCK)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onLock);
-  if (QPushButton *b = find<QPushButton>("IDC_CHECKIN"))
+  if (QPushButton *b = ui->IDC_CHECKIN)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onCheckin);
-  if (QPushButton *b = find<QPushButton>("IDC_RCS_STATUS"))
+  if (QPushButton *b = ui->IDC_RCS_STATUS)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onCheckedOut);
-  if (QPushButton *b = find<QPushButton>("IDC_OVERRIDE"))
+  if (QPushButton *b = ui->IDC_OVERRIDE)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onOverride);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXTURE_CHANGE_NAME"))
+  if (QPushButton *b = ui->IDC_TEXTURE_CHANGE_NAME)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onChangeName);
-  if (QPushButton *b = find<QPushButton>("IDC_LOAD_BITMAP"))
+  if (QPushButton *b = ui->IDC_LOAD_BITMAP)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onLoadBitmap);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXTURE_CURRENT"))
+  if (QPushButton *b = ui->IDC_TEXTURE_CURRENT)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onCurrent);
-  if (QPushButton *b = find<QPushButton>("IDC_NEXT"))
+  if (QPushButton *b = ui->IDC_NEXT)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onNext);
-  if (QPushButton *b = find<QPushButton>("IDC_PREVIOUS"))
+  if (QPushButton *b = ui->IDC_PREVIOUS)
     connect(b, &QPushButton::clicked, this, &WorldTexturesDialog::onPrev);
 
-  if (QComboBox *combo = find<QComboBox>("IDC_TEX_LIST"))
+  if (QComboBox *combo = ui->IDC_TEX_LIST)
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldTexturesDialog::onTexListChanged);
-  if (QComboBox *combo = find<QComboBox>("IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN"))
+  if (QComboBox *combo = ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN)
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &WorldTexturesDialog::onAmbientSoundChanged);
 
@@ -93,19 +94,19 @@ WorldTexturesDialog::WorldTexturesDialog(QWidget *parent) : Dialog(":/ui/worldte
       {"IDC_TEXTURE_AMBIENT_SOUND_VOLUME", &texture::sound_volume},
   };
   for (const auto &f : fields) {
-    if (QLineEdit *edit = find<QLineEdit>(f.name))
+    if (QLineEdit *edit = findChild<QLineEdit*>(f.name))
       connect(edit, &QLineEdit::editingFinished, this, [this, f]() {
         const int n = D3EditState.texdlg_texture;
         if (n >= 0 && n < MAX_TEXTURES && GameTextures[n].used)
-          GameTextures[n].*f.field = find<QLineEdit>(f.name)->text().toFloat();
+          GameTextures[n].*f.field = findChild<QLineEdit*>(f.name)->text().toFloat();
       });
   }
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_DAMAGE"))
+  if (QLineEdit *edit = ui->IDC_DAMAGE)
     connect(edit, &QLineEdit::editingFinished, this, [this]() {
       const int n = D3EditState.texdlg_texture;
       if (n >= 0 && n < MAX_TEXTURES && GameTextures[n].used)
-        GameTextures[n].damage = find<QLineEdit>("IDC_DAMAGE")->text().toInt();
+        GameTextures[n].damage = ui->IDC_DAMAGE->text().toInt();
     });
 
   // Flag checkboxes.
@@ -157,7 +158,7 @@ void WorldTexturesDialog::saveTexturesOnClose() {
 }
 
 void WorldTexturesDialog::bindFlag(const char *checkName, uint32_t flag) {
-  if (QCheckBox *cb = find<QCheckBox>(checkName))
+  if (QCheckBox *cb = findChild<QCheckBox*>(checkName))
     connect(cb, &QCheckBox::toggled, this, [this, flag, checkName](bool checked) {
       setFlag(flag, checkName, checked);
     });
@@ -176,13 +177,13 @@ void WorldTexturesDialog::setFlag(uint32_t flag, const char *checkName, bool che
 void WorldTexturesDialog::updateDialog() {
   const int n = D3EditState.texdlg_texture;
 
-  if (QPushButton *next = find<QPushButton>("IDC_NEXT"))
+  if (QPushButton *next = ui->IDC_NEXT)
     next->setEnabled(Num_textures >= 1);
-  if (QPushButton *prev = find<QPushButton>("IDC_PREVIOUS"))
+  if (QPushButton *prev = ui->IDC_PREVIOUS)
     prev->setEnabled(Num_textures >= 1);
   if (!Network_up) {
     for (const char *name : {"IDC_LOCK", "IDC_CHECKIN", "IDC_OVERRIDE"}) {
-      if (auto *w = find<QPushButton>(name))
+      if (auto *w = findChild<QPushButton*>(name))
         w->setEnabled(false);
     }
     return;
@@ -190,8 +191,8 @@ void WorldTexturesDialog::updateDialog() {
   if (Num_textures < 1)
     return;
 
-  if (QLabel *label = find<QLabel>("IDC_TEX_NUM"))
-    label->setText(QString::number(n));
+
+  ui->IDC_TEX_NUM->setText(QString::number(n));
 
   const struct {
     const char *name;
@@ -208,7 +209,7 @@ void WorldTexturesDialog::updateDialog() {
       {"IDC_TEXTURE_AMBIENT_SOUND_VOLUME", &texture::sound_volume},
   };
   for (const auto &f : fields)
-    if (QLineEdit *edit = find<QLineEdit>(f.name))
+    if (QLineEdit *edit = findChild<QLineEdit*>(f.name))
       edit->setText(QString::number(GameTextures[n].*f.field));
 
   const struct {
@@ -228,28 +229,28 @@ void WorldTexturesDialog::updateDialog() {
       {"IDC_RUBBLE_CHECKBOX", TF_RUBBLE},     {"IDC_SMOOTH_SPEC_CHECK", (uint32_t)TF_SMOOTH_SPECULAR},
   };
   for (const auto &c : flags)
-    if (QCheckBox *cb = find<QCheckBox>(c.name))
+    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
       cb->setChecked(GameTextures[n].flags & c.flag);
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_BITMAP_NAME")) {
+  if (QLineEdit *edit = ui->IDC_BITMAP_NAME) {
     const int bm = GameTextures[n].bm_handle;
     if (bm >= 0)
       edit->setText(GameBitmaps[bm].name);
   }
 
-  if (QPushButton *checkin = find<QPushButton>("IDC_CHECKIN")) {
+  if (QPushButton *checkin = ui->IDC_CHECKIN) {
     if (mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE) == -1) {
       checkin->setEnabled(false);
-      if (QPushButton *lock = find<QPushButton>("IDC_LOCK"))
+      if (QPushButton *lock = ui->IDC_LOCK)
         lock->setEnabled(true);
     } else {
       checkin->setEnabled(true);
-      if (QPushButton *lock = find<QPushButton>("IDC_LOCK"))
+      if (QPushButton *lock = ui->IDC_LOCK)
         lock->setEnabled(false);
     }
   }
 
-  if (QComboBox *combo = find<QComboBox>("IDC_TEX_LIST")) {
+  if (QComboBox *combo = ui->IDC_TEX_LIST) {
     QSignalBlocker blocker(combo);
     combo->clear();
     for (int i = 0; i < MAX_TEXTURES; i++)
@@ -258,7 +259,7 @@ void WorldTexturesDialog::updateDialog() {
     combo->setCurrentText(GameTextures[n].name);
   }
 
-  populateSoundCombo(find<QComboBox>("IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN"), GameTextures[n].sound);
+  populateSoundCombo(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN, GameTextures[n].sound);
 }
 
 void WorldTexturesDialog::onAddNew() {
@@ -266,8 +267,11 @@ void WorldTexturesDialog::onAddNew() {
     OutrageMessageBox("Sorry babe, the network is down.  This action is a no-no.\n");
     return;
   }
+
+  QString Current_bitmap_dir; // get from settings
+
   const QString pathname =
-      QFileDialog::getOpenFileName(this, "Load bitmap", Current_bitmap_dir, "Images (*.pcx *.tga *.bm)");
+      QFileDialog::getOpenFileName(this, "Load bitmap", Current_bitmap_dir, "Images (*.pcx *.tga *.bmp)");
   if (pathname.isEmpty())
     return;
   const QByteArray pathBytes = pathname.toLocal8Bit();
@@ -309,8 +313,7 @@ void WorldTexturesDialog::onDelete() {
   pl.pagetype = PAGETYPE_TEXTURE;
   if (mng_CheckIfPageOwned(&pl, TableUser) != 1) {
     mng_FreeTrackLock(tl);
-    if (!mng_DeletePage(GameTextures[n].name, PAGETYPE_TEXTURE, 1))
-      Int3();
+    Q_ASSERT(mng_DeletePage(GameTextures[n].name, PAGETYPE_TEXTURE, 1));
   } else {
     mng_FreeTrackLock(tl);
     mng_DeletePage(GameTextures[n].name, PAGETYPE_TEXTURE, 1);
@@ -452,8 +455,9 @@ void WorldTexturesDialog::onChangeName() {
 
 void WorldTexturesDialog::onLoadBitmap() {
   const int n = D3EditState.texdlg_texture;
+  QString Current_bitmap_dir; // get from settings
   const QString pathname =
-      QFileDialog::getOpenFileName(this, "Load bitmap", Current_bitmap_dir, "Images (*.pcx *.tga *.bm)");
+      QFileDialog::getOpenFileName(this, "Load bitmap", Current_bitmap_dir, "Images (*.pcx *.tga *.bmp)");
   if (pathname.isEmpty())
     return;
   const QByteArray pathBytes = pathname.toLocal8Bit();
@@ -479,7 +483,7 @@ void WorldTexturesDialog::onPrev() {
 }
 
 void WorldTexturesDialog::onTexListChanged() {
-  QComboBox *combo = find<QComboBox>("IDC_TEX_LIST");
+  QComboBox *combo = ui->IDC_TEX_LIST;
   const int i = FindTextureName(combo->currentText().toLocal8Bit().constData());
   if (i == -1)
     return;
@@ -489,7 +493,6 @@ void WorldTexturesDialog::onTexListChanged() {
 
 void WorldTexturesDialog::onAmbientSoundChanged() {
   const int n = D3EditState.texdlg_texture;
-  GameTextures[n].sound = soundComboSelected(find<QComboBox>("IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN"));
+  GameTextures[n].sound = soundComboSelected(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN);
 }
 
-}

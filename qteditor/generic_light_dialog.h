@@ -19,17 +19,20 @@
 #pragma once
 
 #include "object_external_struct.h"
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class GenericLightDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CGenericLightDialog (IDD_GENERICLIGHT): object lighting settings
 // (colors, distance, pulse/flicker/timebits, render type).
-class GenericLightDialog : public Dialog {
+class GenericLightDialog : public QDialog {
   Q_OBJECT
 public:
   explicit GenericLightDialog(light_info *lightinfo, QWidget *parent = nullptr);
-  ~GenericLightDialog() override;
+  ~GenericLightDialog();
 
 private slots:
   void onFlickerRadio();
@@ -50,7 +53,7 @@ private:
   void updateDialog();
   void setFlag(int32_t flag, const char *checkName, bool checked);
 
+  Ui::GenericLightDialog *ui;
   light_info *m_lightinfo;
 };
 
-}

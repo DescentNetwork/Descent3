@@ -18,19 +18,22 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
 class QListWidget;
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class ScriptSelectDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CScriptSelect (IDD_SCRIPTSELECT): choose a script module and edit
 // its parameters.
-class ScriptSelectDialog : public Dialog {
+class ScriptSelectDialog : public QDialog {
   Q_OBJECT
 public:
   explicit ScriptSelectDialog(QWidget *parent = nullptr);
-  ~ScriptSelectDialog() override;
+  ~ScriptSelectDialog();
 
   QString scriptName() const;
 
@@ -41,7 +44,7 @@ private slots:
 
 private:
   void populate();
+  Ui::ScriptSelectDialog *ui;
   QListWidget *m_list;
 };
 
-}

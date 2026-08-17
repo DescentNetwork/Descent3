@@ -17,6 +17,7 @@
  */
 
 #include "object_keypad.h"
+#include "ui_objectkeypad.h"
 
 #include <QComboBox>
 #include <QLabel>
@@ -27,36 +28,26 @@
 #include "object.h"
 #include "room.h"
 
-namespace QtEditor {
 
-ObjectKeypad::ObjectKeypad(QWidget *parent) : Keypad(":/ui/objectkeypad.ui", parent) {
-  if (QPushButton *b = find<QPushButton>("IDC_OBJPAD_PLACEOBJ"))
-    connect(b, &QPushButton::clicked, this, &ObjectKeypad::onPlaceObject);
-  if (QPushButton *b = find<QPushButton>("IDC_OBJ_DELOBJ"))
-    connect(b, &QPushButton::clicked, this, &ObjectKeypad::onDeleteObject);
-  if (QPushButton *b = find<QPushButton>("IDC_OBJPAD_NEXTOBJ"))
-    connect(b, &QPushButton::clicked, this, &ObjectKeypad::onNextObject);
-  if (QPushButton *b = find<QPushButton>("IDC_OBJPAD_FLIPOBJ"))
-    connect(b, &QPushButton::clicked, this, &ObjectKeypad::onFlipObject);
-  if (QPushButton *b = find<QPushButton>("IDC_RESET_OBJECTS"))
-    connect(b, &QPushButton::clicked, this, &ObjectKeypad::onResetObjects);
-  if (QPushButton *b = find<QPushButton>("IDC_OBJMOVEX"))
-    connect(b, &QPushButton::clicked, this, &ObjectKeypad::onAxisX);
-  if (QPushButton *b = find<QPushButton>("IDC_OBJMOVEY"))
-    connect(b, &QPushButton::clicked, this, &ObjectKeypad::onAxisY);
-  if (QPushButton *b = find<QPushButton>("IDC_OBJMOVEZ"))
-    connect(b, &QPushButton::clicked, this, &ObjectKeypad::onAxisZ);
-  if (QPushButton *b = find<QPushButton>("IDC_OBJMOVEP"))
-    connect(b, &QPushButton::clicked, this, &ObjectKeypad::onAxisP);
-  if (QPushButton *b = find<QPushButton>("IDC_OBJMOVEH"))
-    connect(b, &QPushButton::clicked, this, &ObjectKeypad::onAxisH);
-  if (QPushButton *b = find<QPushButton>("IDC_OBJMOVEB"))
-    connect(b, &QPushButton::clicked, this, &ObjectKeypad::onAxisB);
+ObjectKeypad::ObjectKeypad(QWidget *parent) : QDialog(parent), ui(new Ui::ObjectKeypad)
+{
+  ui->setupUi(this);
+    connect(ui->IDC_OBJPAD_PLACEOBJ, &QPushButton::clicked, this, &ObjectKeypad::onPlaceObject);
+    connect(ui->IDC_OBJ_DELOBJ, &QPushButton::clicked, this, &ObjectKeypad::onDeleteObject);
+    connect(ui->IDC_OBJPAD_NEXTOBJ, &QPushButton::clicked, this, &ObjectKeypad::onNextObject);
+    connect(ui->IDC_OBJPAD_FLIPOBJ, &QPushButton::clicked, this, &ObjectKeypad::onFlipObject);
+    connect(ui->IDC_RESET_OBJECTS, &QPushButton::clicked, this, &ObjectKeypad::onResetObjects);
+    connect(ui->IDC_OBJMOVEX, &QPushButton::clicked, this, &ObjectKeypad::onAxisX);
+    connect(ui->IDC_OBJMOVEY, &QPushButton::clicked, this, &ObjectKeypad::onAxisY);
+    connect(ui->IDC_OBJMOVEZ, &QPushButton::clicked, this, &ObjectKeypad::onAxisZ);
+    connect(ui->IDC_OBJMOVEP, &QPushButton::clicked, this, &ObjectKeypad::onAxisP);
+    connect(ui->IDC_OBJMOVEH, &QPushButton::clicked, this, &ObjectKeypad::onAxisH);
+    connect(ui->IDC_OBJMOVEB, &QPushButton::clicked, this, &ObjectKeypad::onAxisB);
 
   updateDialog();
 }
 
-ObjectKeypad::~ObjectKeypad() = default;
+ObjectKeypad::~ObjectKeypad() { delete ui; }
 
 void ObjectKeypad::setMoveAxis(int axis) {
   D3EditState.object_move_axis = axis;
@@ -68,7 +59,7 @@ void ObjectKeypad::updateDialog() {
                           Objects[Cur_object_index].type != OBJ_NONE);
   const char *names[] = {"IDC_OBJPAD_FLIPOBJ", "IDC_OBJ_DELOBJ", "IDC_OBJPAD_NEXTOBJ"};
   for (const char *name : names)
-    if (QWidget *w = find<QWidget>(name))
+    if (QWidget *w = findChild<QWidget*>(name))
       w->setEnabled(hasObject);
 
   // Move axis buttons reflect the current selection axis.
@@ -78,7 +69,7 @@ void ObjectKeypad::updateDialog() {
   } axes[] = {{"IDC_OBJMOVEX", 0}, {"IDC_OBJMOVEY", 1}, {"IDC_OBJMOVEZ", 2},
               {"IDC_OBJMOVEP", 3}, {"IDC_OBJMOVEH", 4}, {"IDC_OBJMOVEB", 5}};
   for (const auto &a : axes)
-    if (QPushButton *b = find<QPushButton>(a.name))
+    if (QPushButton *b = findChild<QPushButton*>(a.name))
       b->setChecked(D3EditState.object_move_axis == a.axis);
 }
 
@@ -150,4 +141,3 @@ void ObjectKeypad::onAxisP() { setMoveAxis(3); }
 void ObjectKeypad::onAxisH() { setMoveAxis(4); }
 void ObjectKeypad::onAxisB() { setMoveAxis(5); }
 
-}

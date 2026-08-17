@@ -17,6 +17,7 @@
  */
 
 #include "viewer_prop_dialog.h"
+#include "ui_viewer_dialog.h"
 
 #include <QCheckBox>
 #include <QLineEdit>
@@ -29,23 +30,25 @@
 
 extern int Slew_limitations;
 
-namespace QtEditor {
 
 namespace {
 constexpr int kAnglesPerDegree = 65536 / 360;
 constexpr int kDegreesPerAngle = 360 / 65536;
 } // namespace
 
-ViewerPropDialog::ViewerPropDialog(QWidget *parent) : Dialog(":/ui/viewer_dialog.ui", parent) {
-  if (QCheckBox *cb = find<QCheckBox>("IDC_XMOVE_CHECK")) {
+ViewerPropDialog::ViewerPropDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::ViewerPropDialog)
+{
+  ui->setupUi(this);
+  if (QCheckBox *cb = ui->IDC_XMOVE_CHECK) {
     cb->setChecked(true);
     connect(cb, &QCheckBox::toggled, this, &ViewerPropDialog::onXMoveToggled);
   }
-  if (QCheckBox *cb = find<QCheckBox>("IDC_YMOVE_CHECK")) {
+  if (QCheckBox *cb = ui->IDC_YMOVE_CHECK) {
     cb->setChecked(true);
     connect(cb, &QCheckBox::toggled, this, &ViewerPropDialog::onYMoveToggled);
   }
-  if (QCheckBox *cb = find<QCheckBox>("IDC_ZMOVE_CHECK")) {
+  if (QCheckBox *cb = ui->IDC_ZMOVE_CHECK) {
     cb->setChecked(true);
     connect(cb, &QCheckBox::toggled, this, &ViewerPropDialog::onZMoveToggled);
   }
@@ -62,45 +65,45 @@ ViewerPropDialog::ViewerPropDialog(QWidget *parent) : Dialog(":/ui/viewer_dialog
         w->setEnabled(false);
   }
 
-  if (QPushButton *b = find<QPushButton>("IDC_POS_COMMIT_BUTTON"))
+  if (QPushButton *b = ui->IDC_POS_COMMIT_BUTTON)
     b->setEnabled(false);
 
-  if (QPushButton *b = find<QPushButton>("IDC_ALIGN_UPYPOS_BUTTON"))
+  if (QPushButton *b = ui->IDC_ALIGN_UPYPOS_BUTTON)
     connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignUpYpos);
-  if (QPushButton *b = find<QPushButton>("IDC_ALIGN_XNEG_BUTTON"))
+  if (QPushButton *b = ui->IDC_ALIGN_XNEG_BUTTON)
     connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignXneg);
-  if (QPushButton *b = find<QPushButton>("IDC_ALIGN_XPOS_BUTTON"))
+  if (QPushButton *b = ui->IDC_ALIGN_XPOS_BUTTON)
     connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignXpos);
-  if (QPushButton *b = find<QPushButton>("IDC_ALIGN_YNEG_BUTTON"))
+  if (QPushButton *b = ui->IDC_ALIGN_YNEG_BUTTON)
     connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignYneg);
-  if (QPushButton *b = find<QPushButton>("IDC_ALIGN_YPOS_BUTTON"))
+  if (QPushButton *b = ui->IDC_ALIGN_YPOS_BUTTON)
     connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignYpos);
-  if (QPushButton *b = find<QPushButton>("IDC_ALIGN_ZNEG_BUTTON"))
+  if (QPushButton *b = ui->IDC_ALIGN_ZNEG_BUTTON)
     connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignZneg);
-  if (QPushButton *b = find<QPushButton>("IDC_ALIGN_ZPOS_BUTTON"))
+  if (QPushButton *b = ui->IDC_ALIGN_ZPOS_BUTTON)
     connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignZpos);
-  if (QPushButton *b = find<QPushButton>("IDC_ORIENT_COMMIT_BUTTON"))
+  if (QPushButton *b = ui->IDC_ORIENT_COMMIT_BUTTON)
     connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onOrientCommit);
-  if (QPushButton *b = find<QPushButton>("IDC_POS_COMMIT_BUTTON"))
+  if (QPushButton *b = ui->IDC_POS_COMMIT_BUTTON)
     connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onPosCommit);
 }
 
-ViewerPropDialog::~ViewerPropDialog() = default;
+ViewerPropDialog::~ViewerPropDialog() { delete ui; }
 
 void ViewerPropDialog::updateOrientation() {
   if (Viewer_object == nullptr) {
-    if (QWidget *w = find<QWidget>("IDC_PITCH_EDIT"))
+    if (QWidget *w = ui->IDC_PITCH_EDIT)
       w->setEnabled(false);
     return;
   }
   angvec angs;
   vm_ExtractAnglesFromMatrix(&angs, &Viewer_object->orient);
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_PITCH_EDIT"))
+  if (QLineEdit *edit = ui->IDC_PITCH_EDIT)
     edit->setText(QString::number((int)angs.p() * kDegreesPerAngle));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_HEADING_EDIT"))
+  if (QLineEdit *edit = ui->IDC_HEADING_EDIT)
     edit->setText(QString::number((int)angs.h() * kDegreesPerAngle));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_BANK_EDIT"))
+  if (QLineEdit *edit = ui->IDC_BANK_EDIT)
     edit->setText(QString::number((int)angs.b() * kDegreesPerAngle));
 }
 
@@ -108,15 +111,15 @@ void ViewerPropDialog::updatePosition() {
   const bool hasViewer = (Viewer_object != nullptr);
   if (Viewer_object == nullptr) {
     // Win32 gates the whole dialog on the viewer existing.
-    if (QWidget *w = find<QWidget>("IDC_XPOS_EDIT"))
+    if (QWidget *w = ui->IDC_XPOS_EDIT)
       w->setEnabled(false);
     return;
   }
-  if (QLineEdit *edit = find<QLineEdit>("IDC_XPOS_EDIT"))
+  if (QLineEdit *edit = ui->IDC_XPOS_EDIT)
     edit->setText(QString::number((double)Viewer_object->pos.x(), 'f', 2));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_YPOS_EDIT"))
+  if (QLineEdit *edit = ui->IDC_YPOS_EDIT)
     edit->setText(QString::number((double)Viewer_object->pos.y(), 'f', 2));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_ZPOS_EDIT"))
+  if (QLineEdit *edit = ui->IDC_ZPOS_EDIT)
     edit->setText(QString::number((double)Viewer_object->pos.z(), 'f', 2));
   (void)hasViewer;
 }
@@ -220,9 +223,9 @@ void ViewerPropDialog::onAlignZpos() {
 void ViewerPropDialog::onOrientCommit() {
   if (Viewer_object == nullptr)
     return;
-  const int pitch = find<QLineEdit>("IDC_PITCH_EDIT")->text().toInt();
-  const int heading = find<QLineEdit>("IDC_HEADING_EDIT")->text().toInt();
-  const int bank = find<QLineEdit>("IDC_BANK_EDIT")->text().toInt();
+  const int pitch = ui->IDC_PITCH_EDIT->text().toInt();
+  const int heading = ui->IDC_HEADING_EDIT->text().toInt();
+  const int bank = ui->IDC_BANK_EDIT->text().toInt();
 
   vm_AnglesToMatrix(&Viewer_object->orient, pitch * kAnglesPerDegree, heading * kAnglesPerDegree,
                     bank * kAnglesPerDegree);
@@ -233,9 +236,9 @@ void ViewerPropDialog::onOrientCommit() {
 void ViewerPropDialog::onPosCommit() {
   if (Viewer_object == nullptr)
     return;
-  Viewer_object->pos.x() = find<QLineEdit>("IDC_XPOS_EDIT")->text().toFloat();
-  Viewer_object->pos.y() = find<QLineEdit>("IDC_YPOS_EDIT")->text().toFloat();
-  Viewer_object->pos.z() = find<QLineEdit>("IDC_ZPOS_EDIT")->text().toFloat();
+  Viewer_object->pos.x() = ui->IDC_XPOS_EDIT->text().toFloat();
+  Viewer_object->pos.y() = ui->IDC_YPOS_EDIT->text().toFloat();
+  Viewer_object->pos.z() = ui->IDC_ZPOS_EDIT->text().toFloat();
   Viewer_moved = 1;
 }
 
@@ -260,4 +263,3 @@ void ViewerPropDialog::onZMoveToggled(bool checked) {
     Slew_limitations |= 4;
 }
 
-}

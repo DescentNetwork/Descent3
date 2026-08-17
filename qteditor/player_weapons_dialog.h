@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class PlayerWeaponsDialog; }
+QT_END_NAMESPACE
+
 
 // Port of the MFC PlayerWeaponsDialog (IDD_PLAYER_WEAPONS): edits the weapon
 // batteries of a player ship.
-class PlayerWeaponsDialog : public Dialog {
+class PlayerWeaponsDialog : public QDialog {
   Q_OBJECT
 public:
   explicit PlayerWeaponsDialog(int current_ship, QWidget *parent = nullptr);
-  ~PlayerWeaponsDialog() override;
+  ~PlayerWeaponsDialog();
 
 private slots:
   void onEditWbButton();
@@ -48,6 +51,7 @@ private:
   int currentWBIndex() const;
   void updateDialog();
 
+  Ui::PlayerWeaponsDialog *ui;
   int m_current_ship;
   QString m_current_wb_text;
 };
@@ -56,4 +60,3 @@ private:
 // player dialog's "Edit weapons" button).
 void editPlayerWeapons(int shipHandle, QWidget *parent);
 
-}

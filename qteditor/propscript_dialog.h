@@ -18,26 +18,29 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
 class QListWidget;
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class PropScriptDialog; }
+QT_END_NAMESPACE
+
 
 // Port of the object script selection dialog (IDD_PROPScript): choose a
 // script module and open the parameter editor.
-class PropScriptDialog : public Dialog {
+class PropScriptDialog : public QDialog {
   Q_OBJECT
 public:
   explicit PropScriptDialog(QWidget *parent = nullptr);
-  ~PropScriptDialog() override;
+  ~PropScriptDialog();
 
 private slots:
   void onParameters();
   void onScriptWizard();
 
 private:
+  Ui::PropScriptDialog *ui;
   QListWidget *m_list;
 };
 
-}

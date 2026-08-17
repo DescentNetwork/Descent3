@@ -19,11 +19,14 @@
 #pragma once
 
 #include "TelComEfxStructs.h"
-#include "qteditor_dialog.h"
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class BriefTextDialog; }
+QT_END_NAMESPACE
 
 class QPlainTextEdit;
 
-namespace QtEditor {
 
 // Mirror of the editor's briefing layout globals (set by the briefing editor).
 constexpr int kMaxTelcomScreens = 20;
@@ -57,13 +60,13 @@ extern int *PBnum_layouts;
 extern BriefScreen Briefing_screens[kMaxTelcomScreens];
 
 // Port of CBriefTextEdit (IDD_BRIEF_ADDTEXT): edits a briefing text effect.
-class BriefTextEditDialog : public Dialog {
+class BriefTextEditDialog : public QDialog {
   Q_OBJECT
 public:
   explicit BriefTextEditDialog(int currScreen, TCTEXTDESC *desc = nullptr,
                                const char *text = nullptr, int id = 0,
                                QWidget *parent = nullptr);
-  ~BriefTextEditDialog() override;
+  ~BriefTextEditDialog();
 
   TCTEXTDESC result() const { return m_desc; }
 
@@ -74,6 +77,8 @@ private slots:
   void onMissionFlags();
 
 private:
+  Ui::BriefTextDialog *ui;
+
   void populatePredefs();
   int m_screen;
   TCTEXTDESC m_desc;
@@ -83,4 +88,3 @@ private:
   QPlainTextEdit *m_richEdit;
 };
 
-}

@@ -255,6 +255,37 @@
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
+  <widget class="QToolBar" name="maintoolbar">
+   <property name="windowTitle">
+    <string>Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="ID_FILE_NEW"/>
+   <addaction name="ID_FILE_OPEN"/>
+   <addaction name="ID_FILE_SAVE"/>
+   <addaction name="separator"/>
+   <addaction name="ID_EDIT_CUT"/>
+   <addaction name="ID_EDIT_COPY"/>
+   <addaction name="ID_EDIT_PLACE"/>
+   <addaction name="separator"/>
+   <addaction name="ID_APP_ABOUT"/>
+   <addaction name="separator"/>
+   <addaction name="ID_FILE_PLAY640X480"/>
+   <addaction name="separator"/>
+   <addaction name="ID_BUTTON_OUTLINE"/>
+   <addaction name="ID_BUTTON_WINDOWSELECTION"/>
+   <addaction name="ID_BUTTON_LIGHTING"/>
+   <addaction name="ID_ZBUTTON"/>
+   <addaction name="separator"/>
+   <addaction name="ID_OBJBUTTON"/>
+   <addaction name="ID_REINIT_OPENGL"/>
+   <addaction name="ID_OSIRISCOMPILE"/>
+  </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="IDD_ORPHANHUNTER">
    <property name="text">
@@ -277,6 +308,11 @@
    </property>
   </action>
   <action name="ID_APP_ABOUT">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/6.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;About editor...</string>
    </property>
@@ -295,16 +331,31 @@
    </property>
   </action>
   <action name="ID_BUTTON_LIGHTING">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/10.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>ID_BUTTON_LIGHTING</string>
    </property>
   </action>
   <action name="ID_BUTTON_OUTLINE">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/8.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>ID_BUTTON_OUTLINE</string>
    </property>
   </action>
   <action name="ID_BUTTON_WINDOWSELECTION">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/9.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>ID_BUTTON_WINDOWSELECTION</string>
    </property>
@@ -355,6 +406,11 @@
    </property>
   </action>
   <action name="ID_EDIT_COPY">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/4.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Copy</string>
    </property>
@@ -363,6 +419,11 @@
    </property>
   </action>
   <action name="ID_EDIT_CUT">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/3.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>Cu&amp;t</string>
    </property>
@@ -389,10 +450,15 @@
    </property>
   </action>
   <action name="ID_EDIT_PLACE">
+    <property name="icon">
+     <iconset>
+      <normaloff>:/ui/images/Toolbar/5.png</normaloff>
+     </iconset>
+    </property>
     <property name="text">
      <string>&amp;Place in Mine</string>
     </property>
-   </action>
+    </action>
   <action name="ID_EDIT_PLACE_TERRAIN">
    <property name="text">
     <string>&amp;Place on Terrain</string>
@@ -481,6 +547,11 @@
    </property>
   </action>
   <action name="ID_FILE_NEW">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/0.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;New</string>
    </property>
@@ -489,6 +560,11 @@
    </property>
   </action>
   <action name="ID_FILE_OPEN">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/1.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Open...</string>
    </property>
@@ -497,6 +573,11 @@
    </property>
   </action>
   <action name="ID_FILE_PLAY640X480">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/7.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Play in 640 x 480</string>
    </property>
@@ -543,6 +624,11 @@
    </property>
   </action>
   <action name="ID_FILE_SAVE">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/2.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -597,6 +683,11 @@
    </property>
   </action>
   <action name="ID_OBJBUTTON">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/12.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>ID_OBJBUTTON</string>
    </property>
@@ -658,11 +749,21 @@
    </property>
   </action>
   <action name="ID_OSIRISCOMPILE">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/14.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>ID_OSIRISCOMPILE</string>
    </property>
   </action>
   <action name="ID_REINIT_OPENGL">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/13.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>ID_REINIT_OPENGL</string>
    </property>
@@ -1189,6 +1290,11 @@
    </property>
   </action>
   <action name="ID_ZBUTTON">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/ui/images/Toolbar/11.png</normaloff>
+    </iconset>
+   </property>
    <property name="text">
     <string>ID_ZBUTTON</string>
    </property>

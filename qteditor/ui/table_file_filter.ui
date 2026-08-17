@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>TableFileFilterDialog</class>
   <widget class="QDialog" name="IDD_TABLE_FILE_FILTER">
     <property name="geometry">
       <rect>
@@ -220,9 +220,6 @@
           <width>448</width>
           <height>209</height>
         </rect>
-      </property>
-      <property name="text">
-        <string>List1</string>
       </property>
       <property name="visible">
         <bool>true</bool>

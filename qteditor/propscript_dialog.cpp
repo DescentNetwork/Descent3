@@ -17,6 +17,7 @@
  */
 
 #include "propscript_dialog.h"
+#include "ui_propscript.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -26,10 +27,12 @@
 
 #include "manage.h"
 
-namespace QtEditor {
 
-PropScriptDialog::PropScriptDialog(QWidget *parent) : Dialog(":/ui/propscript.ui", parent), m_list(nullptr) {
-  m_list = find<QListWidget>("IDC_SCRIPTSEL_LISTBOX");
+PropScriptDialog::PropScriptDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::PropScriptDialog), m_list(nullptr)
+{
+  ui->setupUi(this);
+  m_list = ui->IDC_SCRIPTSEL_LISTBOX;
   if (m_list != nullptr) {
     // Scripts are loaded through the OSIRIS module system; list compiled
     // modules present in the local scripts directory.
@@ -38,13 +41,13 @@ PropScriptDialog::PropScriptDialog(QWidget *parent) : Dialog(":/ui/propscript.ui
     for (const QString &n : names)
       m_list->addItem(QFileInfo(n).completeBaseName());
   }
-  if (QPushButton *b = find<QPushButton>("IDC_PARAMETERS"))
+  if (QPushButton *b = ui->IDC_PARAMETERS)
     connect(b, &QPushButton::clicked, this, &PropScriptDialog::onParameters);
-  if (QPushButton *b = find<QPushButton>("IDC_SCRIPTSEL_SCRIPT_WIZ"))
+  if (QPushButton *b = ui->IDC_SCRIPTSEL_SCRIPT_WIZ)
     connect(b, &QPushButton::clicked, this, &PropScriptDialog::onScriptWizard);
 }
 
-PropScriptDialog::~PropScriptDialog() = default;
+PropScriptDialog::~PropScriptDialog() { delete ui; }
 
 void PropScriptDialog::onParameters() {
   QMessageBox::information(this, "Script parameters", "The script parameter editor has not been ported yet.");
@@ -54,4 +57,3 @@ void PropScriptDialog::onScriptWizard() {
   QMessageBox::information(this, "Script wizard", "The script wizard has not been ported yet.");
 }
 
-}

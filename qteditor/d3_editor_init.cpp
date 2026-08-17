@@ -30,18 +30,19 @@ std::filesystem::path orig_pwd;
 #include "application.h"
 #include "args.h"
 #include "d3_version.h"
-#include "d3edit.h"
+
 #include "descent.h"
 #include "editor_settings.h"
 #include "init.h"
 #include "lnxapp.h"
 #include "program.h"
 
+#include "d3edit.h"
+
 #ifdef LOGGER
 #include "log.h"
 #endif
 
-namespace QtEditor {
 
 void initD3Core(int argc, char *argv[]) {
   GatherArgs(argv);
@@ -71,9 +72,8 @@ void initD3Core(int argc, char *argv[]) {
   // closed the editor with. Only loads keys that exist; an empty store is a
   // no-op equivalent to the Win32 "registry is empty" path.
   QSettings settings;
-  QtEditor::loadEditorSettings(settings, D3EditState);
+  loadEditorSettings(settings, D3EditState);
 
   errno = 0; // clear any errno states
 }
 
-}

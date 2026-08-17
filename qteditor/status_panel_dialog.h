@@ -1,11 +1,17 @@
 #pragma once
-#include "qteditor_dialog.h"
-namespace QtEditor {
+
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class StatusPanelDialog; }
+QT_END_NAMESPACE
+
 // Port of the status dialog (IDD_STATUS).
-class StatusPanelDialog : public Dialog {
+class StatusPanelDialog : public QDialog {
   Q_OBJECT
 public:
   explicit StatusPanelDialog(QWidget *parent = nullptr);
-  ~StatusPanelDialog() override;
+  ~StatusPanelDialog();
+private:
+  Ui::StatusPanelDialog *ui;
 };
-}

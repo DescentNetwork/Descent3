@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>LevelInfoDialog</class>
   <widget class="QDialog" name="IDD_LEVEL_INFO">
     <property name="geometry">
       <rect>

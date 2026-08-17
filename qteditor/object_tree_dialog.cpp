@@ -1,5 +1,7 @@
 #include "object_tree_dialog.h"
-namespace QtEditor {
-ObjectTreeDialog::ObjectTreeDialog(QWidget *parent) : Dialog(":/ui/objtreedlg.ui", parent) {}
-ObjectTreeDialog::~ObjectTreeDialog() = default;
+#include "ui_objtreedlg.h"
+ObjectTreeDialog::ObjectTreeDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::ObjectTreeDialog) {
+  ui->setupUi(this);
 }
+ObjectTreeDialog::~ObjectTreeDialog() { delete ui; }

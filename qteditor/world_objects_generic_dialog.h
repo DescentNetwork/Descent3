@@ -18,19 +18,22 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class WorldObjectsGenericDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CWorldObjectsGenericDialog (IDD_WORLDOBJECTSGENERIC): the
 // "intelligent object" editor shared by buildings, clutter, robots and
 // powerups. Edits the object type table (model + LODs, physics/AI, death
 // spew, sounds, inventory, script module, destroyable/score/ammo).
-class WorldObjectsGenericDialog : public Dialog {
+class WorldObjectsGenericDialog : public QDialog {
   Q_OBJECT
 public:
   explicit WorldObjectsGenericDialog(int objType, int current, QWidget *parent = nullptr);
-  ~WorldObjectsGenericDialog() override;
+  ~WorldObjectsGenericDialog();
 
   int current() const { return m_current; }
 
@@ -108,6 +111,7 @@ private:
   void setCurrent(int id);
   void saveGenericsOnClose();
 
+  Ui::WorldObjectsGenericDialog *ui;
   int m_type;
   int m_current;
   int m_lod = 0;
@@ -118,4 +122,3 @@ private:
 // original MainFrm handlers) and returns the resulting current id.
 int editGenericObject(int objType, int initialCurrent, QWidget *parent);
 
-}

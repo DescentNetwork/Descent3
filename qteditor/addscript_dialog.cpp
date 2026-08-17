@@ -17,39 +17,41 @@
  */
 
 #include "addscript_dialog.h"
+#include "ui_addscript.h"
 
 #include <QComboBox>
 #include <QLineEdit>
 
-namespace QtEditor {
 
 // The Win32 CAddScriptDialog enforces DDV_MaxChars(pDX, m_Name, 32) at dismiss
 // time. Mirror it on the Qt side as a hard input cap so the dialog can't
 // accept a longer name in the first place.
 static constexpr int kNameMaxLength = 32;
 
-AddScriptDialog::AddScriptDialog(QWidget *parent) : Dialog(":/ui/addscript.ui", parent) {
-  if (auto *cbox = find<QComboBox>("IDC_TYPESEL")) {
+AddScriptDialog::AddScriptDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::AddScriptDialog)
+{
+  ui->setupUi(this);
+  if (auto *cbox = ui->IDC_TYPESEL) {
     cbox->addItem("object");
     cbox->addItem("trigger");
     cbox->setCurrentIndex(0);
   }
-  if (auto *edit = find<QLineEdit>("IDC_EDITNAME"))
+  if (auto *edit = ui->IDC_EDITNAME)
     edit->setMaxLength(kNameMaxLength);
 }
 
-AddScriptDialog::~AddScriptDialog() = default;
+AddScriptDialog::~AddScriptDialog() { delete ui; }
 
 QString AddScriptDialog::name() const {
-  if (auto *edit = find<QLineEdit>("IDC_EDITNAME"))
+  if (auto *edit = ui->IDC_EDITNAME)
     return edit->text();
   return QString();
 }
 
 QString AddScriptDialog::typeName() const {
-  if (auto *cbox = find<QComboBox>("IDC_TYPESEL"))
+  if (auto *cbox = ui->IDC_TYPESEL)
     return cbox->currentText();
   return QString();
 }
 
-}

@@ -1,5 +1,8 @@
 #include "ambient_sound_element_dialog.h"
-namespace QtEditor {
-AmbientSoundElementDialog::AmbientSoundElementDialog(QWidget *parent) : Dialog(":/ui/ambientsoundelement.ui", parent) {}
-AmbientSoundElementDialog::~AmbientSoundElementDialog() = default;
+#include "ui_ambientsoundelement.h"
+AmbientSoundElementDialog::AmbientSoundElementDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::AmbientSoundElementDialog)
+{
+  ui->setupUi(this);
 }
+AmbientSoundElementDialog::~AmbientSoundElementDialog() { delete ui; }

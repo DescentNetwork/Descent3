@@ -1,5 +1,7 @@
 #include "table_file_filter_dialog.h"
-namespace QtEditor {
-TableFileFilterDialog::TableFileFilterDialog(QWidget *parent) : Dialog(":/ui/table_file_filter.ui", parent) {}
-TableFileFilterDialog::~TableFileFilterDialog() = default;
+#include "ui_table_file_filter.h"
+TableFileFilterDialog::TableFileFilterDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::TableFileFilterDialog) {
+  ui->setupUi(this);
 }
+TableFileFilterDialog::~TableFileFilterDialog() { delete ui; }

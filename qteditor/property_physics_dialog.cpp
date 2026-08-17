@@ -17,6 +17,7 @@
  */
 
 #include "property_physics_dialog.h"
+#include "ui_propphysics.h"
 
 #include <QCheckBox>
 #include <QLineEdit>
@@ -25,7 +26,6 @@
 #include "object_external_struct.h"
 #include "physics.h"
 
-namespace QtEditor {
 
 namespace {
 const struct {
@@ -42,15 +42,14 @@ const struct {
 } // namespace
 
 PropertyPhysicsDialog::PropertyPhysicsDialog(physics_info *physInfo, QWidget *parent)
-    : Dialog(":/ui/propphysics.ui", parent), m_physInfo(physInfo) {
+    : QDialog(parent), ui(new Ui::PropertyPhysicsDialog), m_physInfo(physInfo)
+{
+  ui->setupUi(this);
   for (const auto &c : kFlagChecks)
-    if (QCheckBox *cb = find<QCheckBox>(c.name))
+    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
       connect(cb, &QCheckBox::toggled, this, &PropertyPhysicsDialog::onFlagToggled);
 
-  if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
-    connect(ok, &QPushButton::clicked, this, &PropertyPhysicsDialog::onOk);
-  }
+  connect(this, &QDialog::accept, this, &PropertyPhysicsDialog::onOk);
 
   const struct {
     const char *name;
@@ -67,15 +66,15 @@ PropertyPhysicsDialog::PropertyPhysicsDialog(physics_info *physInfo, QWidget *pa
       {"IDC_PWIGGLES_PER_SECOND", &physics_info::wiggles_per_sec},
   };
   for (const auto &f : fields)
-    if (QLineEdit *e = find<QLineEdit>(f.name))
+    if (QLineEdit *e = findChild<QLineEdit*>(f.name))
       connect(e, &QLineEdit::editingFinished, this, [this, f]() {
-        m_physInfo->*f.field = find<QLineEdit>(f.name)->text().toFloat();
+        m_physInfo->*f.field = findChild<QLineEdit*>(f.name)->text().toFloat();
       });
 
   updateDialog();
 }
 
-PropertyPhysicsDialog::~PropertyPhysicsDialog() = default;
+PropertyPhysicsDialog::~PropertyPhysicsDialog() { delete ui; }
 
 void PropertyPhysicsDialog::setFlag(uint32_t flag, const char *checkName, bool checked) {
   if (checked)
@@ -86,7 +85,7 @@ void PropertyPhysicsDialog::setFlag(uint32_t flag, const char *checkName, bool c
 
 void PropertyPhysicsDialog::updateDialog() {
   for (const auto &c : kFlagChecks)
-    if (QCheckBox *cb = find<QCheckBox>(c.name))
+    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
       cb->setChecked(m_physInfo->flags & c.flag);
   const struct {
     const char *name;
@@ -103,7 +102,7 @@ void PropertyPhysicsDialog::updateDialog() {
       {"IDC_PWIGGLES_PER_SECOND", &physics_info::wiggles_per_sec},
   };
   for (const auto &f : fields)
-    if (QLineEdit *e = find<QLineEdit>(f.name))
+    if (QLineEdit *e = findChild<QLineEdit*>(f.name))
       e->setText(QString::number(m_physInfo->*f.field));
 }
 
@@ -130,9 +129,8 @@ void PropertyPhysicsDialog::onOk() {
       {"IDC_PWIGGLES_PER_SECOND", &physics_info::wiggles_per_sec},
   };
   for (const auto &f : fields)
-    if (QLineEdit *e = find<QLineEdit>(f.name))
+    if (QLineEdit *e = findChild<QLineEdit*>(f.name))
       m_physInfo->*f.field = e->text().toFloat();
   accept();
 }
 
-}

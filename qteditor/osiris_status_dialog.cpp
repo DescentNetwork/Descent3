@@ -17,37 +17,39 @@
  */
 
 #include "osiris_status_dialog.h"
+#include "ui_osiris_status.h"
 
 #include <QLabel>
 #include <QPushButton>
 #include <QTextEdit>
 
-namespace QtEditor {
 
-OsirisStatusDialog::OsirisStatusDialog(QWidget *parent) : Dialog(":/ui/osiris_status.ui", parent) {
-  if (QPushButton *done = find<QPushButton>("IDC_OSIRIS_DONE"))
+OsirisStatusDialog::OsirisStatusDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::OsirisStatusDialog)
+{
+  ui->setupUi(this);
+  if (QPushButton *done = ui->IDC_OSIRIS_DONE)
     connect(done, &QPushButton::clicked, this, &QDialog::accept);
-  if (QLabel *progress = find<QLabel>("IDC_OSIRIS_PROGRESS"))
+  if (QLabel *progress = ui->IDC_OSIRIS_PROGRESS)
     progress->setText("Idle");
-  if (QTextEdit *err = find<QTextEdit>("IDC_OSIRIS_ERROR"))
+  if (QTextEdit *err = ui->IDC_OSIRIS_ERROR)
     err->setReadOnly(true);
 }
 
-OsirisStatusDialog::~OsirisStatusDialog() = default;
+OsirisStatusDialog::~OsirisStatusDialog() { delete ui; }
 
 void OsirisStatusDialog::setProgress(const QString &text) {
-  if (QLabel *progress = find<QLabel>("IDC_OSIRIS_PROGRESS"))
+  if (QLabel *progress = ui->IDC_OSIRIS_PROGRESS)
     progress->setText(text);
 }
 
 void OsirisStatusDialog::appendError(const QString &text) {
-  if (QTextEdit *err = find<QTextEdit>("IDC_OSIRIS_ERROR"))
+  if (QTextEdit *err = ui->IDC_OSIRIS_ERROR)
     err->append(text);
 }
 
 void OsirisStatusDialog::done() {
-  if (QLabel *progress = find<QLabel>("IDC_OSIRIS_PROGRESS"))
+  if (QLabel *progress = ui->IDC_OSIRIS_PROGRESS)
     progress->setText("Done");
 }
 
-}

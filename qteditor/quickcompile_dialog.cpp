@@ -17,14 +17,16 @@
  */
 
 #include "quickcompile_dialog.h"
+#include "ui_quickcompile.h"
 
 #include <QTextEdit>
 
-namespace QtEditor {
 
 QuickCompileDialog::QuickCompileDialog(const QString &scriptName, QWidget *parent)
-    : Dialog(":/ui/quickcompile.ui", parent), m_result(0) {
-  if (QTextEdit *text = find<QTextEdit>("IDC_TEXT")) {
+    : QDialog(parent), ui(new Ui::QuickCompileDialog), m_result(0)
+{
+  ui->setupUi(this);
+  if (QTextEdit *text = ui->IDC_TEXT) {
     text->setReadOnly(true);
     if (scriptName.isEmpty())
       text->setPlainText("No script module specified.");
@@ -33,6 +35,5 @@ QuickCompileDialog::QuickCompileDialog(const QString &scriptName, QWidget *paren
   }
 }
 
-QuickCompileDialog::~QuickCompileDialog() = default;
+QuickCompileDialog::~QuickCompileDialog() { delete ui; }
 
-}

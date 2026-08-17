@@ -17,41 +17,40 @@
  */
 
 #include "createscript_dialog.h"
+#include "ui_createscript.h"
 
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
 
-namespace QtEditor {
 
 CreateNewScriptDialog::CreateNewScriptDialog(QWidget *parent)
-    : Dialog(":/ui/createscript.ui", parent) {
-  if (auto *level = find<QRadioButton>("IDC_LEVEL"))
+    : QDialog(parent), ui(new Ui::CreateScriptDialog)
+{
+  ui->setupUi(this);
+  if (auto *level = ui->IDC_LEVEL)
     level->setChecked(true);
 
-  if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
-    connect(ok, &QPushButton::clicked, this, &CreateNewScriptDialog::onOk);
-  }
+  connect(this, &QDialog::accept, this, &CreateNewScriptDialog::onOk);
 }
 
-CreateNewScriptDialog::~CreateNewScriptDialog() = default;
+CreateNewScriptDialog::~CreateNewScriptDialog() { delete ui; }
 
 QString CreateNewScriptDialog::filename() const {
-  if (auto *edit = find<QLineEdit>("IDC_FILENAME"))
+  if (auto *edit = ui->IDC_FILENAME)
     return edit->text();
   return QString();
 }
 
 int CreateNewScriptDialog::scriptType() const {
-  if (auto *level = find<QRadioButton>("IDC_LEVEL"))
+  if (auto *level = ui->IDC_LEVEL)
     return level->isChecked() ? 0 : 1;
   return 0;
 }
 
 void CreateNewScriptDialog::onOk() {
-  if (auto *edit = find<QLineEdit>("IDC_FILENAME")) {
+  if (auto *edit = ui->IDC_FILENAME) {
     QString name = edit->text();
     if (name.isEmpty()) {
       QMessageBox::warning(this, "Error", "You must specify a filename");
@@ -65,4 +64,3 @@ void CreateNewScriptDialog::onOk() {
   accept();
 }
 
-}

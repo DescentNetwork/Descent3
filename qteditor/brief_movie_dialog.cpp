@@ -1,5 +1,8 @@
 #include "brief_movie_dialog.h"
-namespace QtEditor {
-BriefMovieDialog::BriefMovieDialog(QWidget *parent) : Dialog(":/ui/brief_addmovie.ui", parent) {}
-BriefMovieDialog::~BriefMovieDialog() = default;
+#include "ui_brief_addmovie.h"
+BriefMovieDialog::BriefMovieDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::BriefMovieDialog)
+{
+  ui->setupUi(this);
 }
+BriefMovieDialog::~BriefMovieDialog() { delete ui; }

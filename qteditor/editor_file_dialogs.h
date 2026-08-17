@@ -20,7 +20,6 @@
 
 class QWidget;
 
-namespace QtEditor {
 
 // Qt port of the Win32 OpenFileDialog / SaveFileDialog helpers from
 // editor/editor.h.
@@ -45,4 +44,3 @@ bool SaveFileDialog(QWidget *parent, const char *filter, char *pathname,
 // QLabel / QLineEdit child.
 void PrintToDlgItem(QWidget *dlg, const char *id_name, const char *fmt, ...);
 
-} // namespace QtEditor

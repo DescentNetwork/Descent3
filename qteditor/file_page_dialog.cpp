@@ -17,6 +17,7 @@
  */
 
 #include "file_page_dialog.h"
+#include "ui_filepage.h"
 
 #include <QListWidget>
 #include <QMessageBox>
@@ -25,27 +26,29 @@
 #include "manage.h"
 #include "pserror.h"
 
-namespace QtEditor {
 
-FilePageDialog::FilePageDialog(QWidget *parent) : Dialog(":/ui/filepage.ui", parent), m_files(nullptr) {
-  m_files = find<QListWidget>("IDC_FILELIST");
-  if (QPushButton *b = find<QPushButton>("IDC_ADD_FILE"))
+FilePageDialog::FilePageDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::FilePageDialog), m_files(nullptr)
+{
+  ui->setupUi(this);
+  m_files = ui->IDC_FILELIST;
+  if (QPushButton *b = ui->IDC_ADD_FILE)
     connect(b, &QPushButton::clicked, this, &FilePageDialog::onAddFile);
-  if (QPushButton *b = find<QPushButton>("IDC_DELETE_FILE"))
+  if (QPushButton *b = ui->IDC_DELETE_FILE)
     connect(b, &QPushButton::clicked, this, &FilePageDialog::onDeleteFile);
-  if (QPushButton *b = find<QPushButton>("IDC_LOCK_FILE"))
+  if (QPushButton *b = ui->IDC_LOCK_FILE)
     connect(b, &QPushButton::clicked, this, &FilePageDialog::onLockFile);
-  if (QPushButton *b = find<QPushButton>("IDC_CHECKIN_FILE"))
+  if (QPushButton *b = ui->IDC_CHECKIN_FILE)
     connect(b, &QPushButton::clicked, this, &FilePageDialog::onCheckinFile);
-  if (QPushButton *b = find<QPushButton>("IDC_FILES_OUT"))
+  if (QPushButton *b = ui->IDC_FILES_OUT)
     connect(b, &QPushButton::clicked, this, &FilePageDialog::onFilesOut);
-  if (QPushButton *b = find<QPushButton>("IDC_OVERRIDE"))
+  if (QPushButton *b = ui->IDC_OVERRIDE)
     connect(b, &QPushButton::clicked, this, &FilePageDialog::onOverride);
 
   updateDialog();
 }
 
-FilePageDialog::~FilePageDialog() = default;
+FilePageDialog::~FilePageDialog() { delete ui; }
 
 void FilePageDialog::updateDialog() {
   if (m_files == nullptr)
@@ -78,4 +81,3 @@ void FilePageDialog::onFilesOut() {
 }
 void FilePageDialog::onOverride() { updateDialog(); }
 
-}

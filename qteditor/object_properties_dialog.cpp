@@ -17,6 +17,7 @@
  */
 
 #include "object_properties_dialog.h"
+#include "ui_objectproperties.h"
 
 #include <QTabWidget>
 
@@ -25,11 +26,12 @@
 #include "physics_dialog.h"
 #include "property_physics_dialog.h"
 
-namespace QtEditor {
 
 ObjectPropertiesDialog::ObjectPropertiesDialog(int objIndex, QWidget *parent)
-    : Dialog(":/ui/objectproperties.ui", parent), m_objIndex(objIndex) {
-  QTabWidget *tabs = find<QTabWidget>("IDC_PROPERTYTAB");
+    : QDialog(parent), ui(new Ui::ObjectPropertiesDialog), m_objIndex(objIndex)
+{
+  ui->setupUi(this);
+  QTabWidget *tabs = ui->IDC_PROPERTYTAB;
   if (tabs == nullptr || m_objIndex < 0 || m_objIndex > Highest_object_index)
     return;
 
@@ -41,10 +43,9 @@ ObjectPropertiesDialog::ObjectPropertiesDialog(int objIndex, QWidget *parent)
   // instances reference their type's physics; use it when available.
   if (obj->id >= 0 && obj->id < MAX_OBJECT_IDS && Object_info[obj->id].type != OBJ_NONE) {
     PropertyPhysicsDialog *physics = new PropertyPhysicsDialog(&Object_info[obj->id].phys_info, tabs);
-    tabs->addTab(physics->handle(), "Physics");
+    tabs->addTab(physics, "Physics");
   }
 }
 
-ObjectPropertiesDialog::~ObjectPropertiesDialog() = default;
+ObjectPropertiesDialog::~ObjectPropertiesDialog() { delete ui; }
 
-}

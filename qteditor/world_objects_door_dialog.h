@@ -18,18 +18,21 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class WorldObjectsDoorDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CWorldObjectsDoorDialog (IDD_WORLDOBJECTSDOOR): edits the predefined
 // door table (open/stay/close times, transparency, blastability, hit points,
 // open/close sounds and script module).
-class WorldObjectsDoorDialog : public Dialog {
+class WorldObjectsDoorDialog : public QDialog {
   Q_OBJECT
 public:
   explicit WorldObjectsDoorDialog(QWidget *parent = nullptr);
-  ~WorldObjectsDoorDialog() override;
+  ~WorldObjectsDoorDialog();
 
 private slots:
   void onAddDoor();
@@ -54,6 +57,6 @@ private slots:
 
 private:
   void updateDialog();
+  Ui::WorldObjectsDoorDialog *ui;
 };
 
-}

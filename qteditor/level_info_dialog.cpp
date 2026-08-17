@@ -17,38 +17,37 @@
  */
 
 #include "level_info_dialog.h"
+#include "ui_level_info.h"
 
 #include <QLineEdit>
 #include <QPushButton>
 #include <QTextEdit>
 #include <cstring>
 
-namespace QtEditor {
 
 LevelInfoDialog::LevelInfoDialog(level_info *li, QWidget *parent)
-    : Dialog(":/ui/level_info.ui", parent), m_levelInfo(li) {
-  if (auto *edit = find<QLineEdit>("IDC_LEVEL_NAME"))
+    : QDialog(parent), ui(new Ui::LevelInfoDialog), m_levelInfo(li)
+{
+  ui->setupUi(this);
+  if (auto *edit = ui->IDC_LEVEL_NAME)
     edit->setText(li->name);
-  if (auto *edit = find<QLineEdit>("IDC_DESIGNER"))
+  if (auto *edit = ui->IDC_DESIGNER)
     edit->setText(li->designer);
-  if (auto *edit = find<QLineEdit>("IDC_COPYRIGHT"))
+  if (auto *edit = ui->IDC_COPYRIGHT)
     edit->setText(li->copyright);
-  if (auto *edit = find<QTextEdit>("IDC_NOTES"))
+  if (auto *edit = ui->IDC_NOTES)
     edit->setPlainText(li->notes);
 
-  if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
-    connect(ok, &QPushButton::clicked, this, &LevelInfoDialog::onOk);
-  }
+  connect(this, &QDialog::accept, this, &LevelInfoDialog::onOk);
 }
 
-LevelInfoDialog::~LevelInfoDialog() = default;
+LevelInfoDialog::~LevelInfoDialog() { delete ui; }
 
 void LevelInfoDialog::getLevelInfo(level_info *li) {
-  std::strcpy(li->name, find<QLineEdit>("IDC_LEVEL_NAME")->text().toLocal8Bit().constData());
-  std::strcpy(li->designer, find<QLineEdit>("IDC_DESIGNER")->text().toLocal8Bit().constData());
-  std::strcpy(li->copyright, find<QLineEdit>("IDC_COPYRIGHT")->text().toLocal8Bit().constData());
-  std::strcpy(li->notes, find<QTextEdit>("IDC_NOTES")->toPlainText().toLocal8Bit().constData());
+  std::strcpy(li->name, ui->IDC_LEVEL_NAME->text().toLocal8Bit().constData());
+  std::strcpy(li->designer, ui->IDC_DESIGNER->text().toLocal8Bit().constData());
+  std::strcpy(li->copyright, ui->IDC_COPYRIGHT->text().toLocal8Bit().constData());
+  std::strcpy(li->notes, ui->IDC_NOTES->toPlainText().toLocal8Bit().constData());
 }
 
 void LevelInfoDialog::onOk() {
@@ -56,4 +55,3 @@ void LevelInfoDialog::onOk() {
   accept();
 }
 
-}

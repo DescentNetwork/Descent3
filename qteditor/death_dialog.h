@@ -19,17 +19,20 @@
 #pragma once
 
 #include "objinfo.h"
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class DeathDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CDeathDialog (IDD_DEATH_DIALOG): edits a death_info struct (death
 // flags and delay range) for an object type.
-class DeathDialog : public Dialog {
+class DeathDialog : public QDialog {
   Q_OBJECT
 public:
   explicit DeathDialog(death_info *info, QWidget *parent = nullptr);
-  ~DeathDialog() override;
+  ~DeathDialog();
 
 private slots:
   void onOk();
@@ -47,10 +50,10 @@ private slots:
 private:
   void updateDialog();
 
+  Ui::DeathDialog *ui;
   death_info *m_info;
   uint32_t m_flags;
   float m_delayMin;
   float m_delayMax;
 };
 
-}

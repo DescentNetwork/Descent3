@@ -19,7 +19,6 @@
 // Editor-wide state that the original MFC editor keeps in EDVARS.cpp/editor.cpp.
 // The D3 core is compiled without the EDITOR define, so this is re-provided
 // here for the Qt port.
-#include "d3edit.h"
 #include "editor_room_state.h"
 #include "terrain.h"
 #include "slew.h"
@@ -30,6 +29,8 @@
 #include <cstring>
 #include <filesystem>
 #include <QtGlobal>
+
+#include "d3edit.h"
 
 d3edit_state D3EditState;
 int World_changed = 0;
@@ -78,16 +79,10 @@ int Editor_viewer_id = -1;
 #undef SlewControlInit
 void SlewControlInit() {}
 
-// Manage-system dirs/network globals (LocalModelsDir, NetModelsDir, TableUser,
-// Network_up) come from manage.cpp; only the editor-only file-dialog dirs need
-// defining here.
-char Current_model_dir[_MAX_PATH] = "";
-char Current_sounds_dir[_MAX_PATH] = "";
-char Current_bitmap_dir[_MAX_PATH] = "";
 
 // Editor-only object helpers guarded by EDITOR in object.cpp/objinfo.cpp; the
 // D3 core is compiled without that define, so provide them here.
-char *Object_type_names[MAX_OBJECT_TYPES] = {
+const char *Object_type_names[MAX_OBJECT_TYPES] = {
     "WALL",        // OBJ_WALL         0
     "FIREBALL",    // OBJ_FIREBALL     1
     "ROBOT",       // OBJ_ROBOT        2
@@ -206,7 +201,6 @@ int GetFirstPath() {
 // editor/selectedroom.cpp). The Qt port's level_io.cpp + room_ops.cpp use
 // these to construct / tear down rooms with full geometry; they preserve
 // the public signatures so qteditor links cleanly.
-namespace QtEditor {
 
 room *CreateNewRoom(int nverts, int nfaces, bool palette_room) {
   (void)palette_room;
@@ -256,7 +250,6 @@ void AssignDefaultUVsToRoomFace(room *rp, int facenum) {
 
 void ClearRoomSelectedList() {}
 
-} // namespace QtEditor
 
 // SaveLevel lives in Descent3/LoadLevel.cpp but its definition #includes
 // "editor/ebnode.h" mid-file; Descent3Core doesn't have editor/ in its

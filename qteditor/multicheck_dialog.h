@@ -18,25 +18,28 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MulticheckDialog; }
+QT_END_NAMESPACE
 
 class QListWidget;
 
-namespace QtEditor {
 
 // Port of the multi-check dialog (IDD_MULTICHECK): a generic multi-select
 // list used to pick several items at once.
-class MultiCheckDialog : public Dialog {
+class MultiCheckDialog : public QDialog {
   Q_OBJECT
 public:
   explicit MultiCheckDialog(const QString &message, const QStringList &items,
                             const QStringList &checked = {}, QWidget *parent = nullptr);
-  ~MultiCheckDialog() override;
+  ~MultiCheckDialog();
 
   QStringList checkedItems() const;
 
 private:
+  Ui::MulticheckDialog *ui;
   QListWidget *m_list;
 };
 
-}

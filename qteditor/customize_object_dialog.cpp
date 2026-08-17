@@ -17,12 +17,14 @@
  */
 
 #include "customize_object_dialog.h"
+#include "ui_customize_object.h"
 
-namespace QtEditor {
 
 CustomObjectDialog::CustomObjectDialog(QWidget *parent)
-    : Dialog(":/ui/customize_object.ui", parent) {}
-
-CustomObjectDialog::~CustomObjectDialog() = default;
-
+    : QDialog(parent), ui(new Ui::CustomizeObjectDialog)
+{
+  ui->setupUi(this);
 }
+
+CustomObjectDialog::~CustomObjectDialog() { delete ui; }
+

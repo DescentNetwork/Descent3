@@ -17,32 +17,35 @@
  */
 
 #include "water_procedural_dialog.h"
+#include "ui_water_procedural.h"
 
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
 #include <QSlider>
 
-#include "d3edit.h"
+
 #include "gametexture.h"
 
-namespace QtEditor {
 
-WaterProceduralDialog::WaterProceduralDialog(QWidget *parent) : Dialog(":/ui/water_procedural.ui", parent) {
+WaterProceduralDialog::WaterProceduralDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::WaterProceduralDialog)
+{
+  ui->setupUi(this);
   const char *sliders[] = {"IDC_WP_THICKNESS_SLIDER", "IDC_WP_LIGHT_SLIDER", "IDC_WP_HEIGHT_SLIDER",
                            "IDC_WP_FREQUENCY_SLIDER", "IDC_WP_SIZE_SLIDER"};
   for (const char *name : sliders)
-    if (QSlider *s = find<QSlider>(name)) {
+    if (QSlider *s = findChild<QSlider*>(name)) {
       s->setRange(0, 255);
       connect(s, &QSlider::valueChanged, this, &WaterProceduralDialog::onParamChanged);
     }
 
   const char *fields[] = {"IDC_PROC_EVAL_TIME_EDIT", "IDC_PROC_OSC_TIME_EDIT", "IDC_PROC_OSC_VALUE_EDIT"};
   for (const char *name : fields)
-    if (QLineEdit *e = find<QLineEdit>(name))
+    if (QLineEdit *e = findChild<QLineEdit*>(name))
       connect(e, &QLineEdit::editingFinished, this, &WaterProceduralDialog::onFieldEdited);
 
-  if (QComboBox *combo = find<QComboBox>("IDC_PROCEDURAL_PULLDOWN")) {
+  if (QComboBox *combo = ui->IDC_PROCEDURAL_PULLDOWN) {
     combo->addItem("Water");
     combo->addItem("Procedural");
   }
@@ -50,36 +53,35 @@ WaterProceduralDialog::WaterProceduralDialog(QWidget *parent) : Dialog(":/ui/wat
   updateDialog();
 }
 
-WaterProceduralDialog::~WaterProceduralDialog() = default;
+WaterProceduralDialog::~WaterProceduralDialog() { delete ui; }
 
 void WaterProceduralDialog::updateDialog() {
-  if (QSlider *s = find<QSlider>("IDC_WP_THICKNESS_SLIDER"))
+  if (QSlider *s = ui->IDC_WP_THICKNESS_SLIDER)
     s->setValue(128);
-  if (QSlider *s = find<QSlider>("IDC_WP_LIGHT_SLIDER"))
+  if (QSlider *s = ui->IDC_WP_LIGHT_SLIDER)
     s->setValue(128);
-  if (QSlider *s = find<QSlider>("IDC_WP_HEIGHT_SLIDER"))
+  if (QSlider *s = ui->IDC_WP_HEIGHT_SLIDER)
     s->setValue(64);
-  if (QSlider *s = find<QSlider>("IDC_WP_FREQUENCY_SLIDER"))
+  if (QSlider *s = ui->IDC_WP_FREQUENCY_SLIDER)
     s->setValue(64);
-  if (QSlider *s = find<QSlider>("IDC_WP_SIZE_SLIDER"))
+  if (QSlider *s = ui->IDC_WP_SIZE_SLIDER)
     s->setValue(255);
 }
 
 void WaterProceduralDialog::onParamChanged() {
-  if (QLabel *l = find<QLabel>("IDC_THICKNESS_TEXT"))
-    l->setText(QString("Thickness: %1").arg(find<QSlider>("IDC_WP_THICKNESS_SLIDER")->value()));
-  if (QLabel *l = find<QLabel>("IDC_LIGHT_TEXT"))
-    l->setText(QString("Light: %1").arg(find<QSlider>("IDC_WP_LIGHT_SLIDER")->value()));
-  if (QLabel *l = find<QLabel>("IDC_HEIGHT_TEXT"))
-    l->setText(QString("Height: %1").arg(find<QSlider>("IDC_WP_HEIGHT_SLIDER")->value()));
-  if (QLabel *l = find<QLabel>("IDC_FREQ_TEXT"))
-    l->setText(QString("Freq: %1").arg(find<QSlider>("IDC_WP_FREQUENCY_SLIDER")->value()));
-  if (QLabel *l = find<QLabel>("IDC_SIZE_TEXT"))
-    l->setText(QString("Size: %1").arg(find<QSlider>("IDC_WP_SIZE_SLIDER")->value()));
+  if (QLabel *l = ui->IDC_THICKNESS_TEXT)
+    l->setText(QString("Thickness: %1").arg(ui->IDC_WP_THICKNESS_SLIDER->value()));
+  if (QLabel *l = ui->IDC_LIGHT_TEXT)
+    l->setText(QString("Light: %1").arg(ui->IDC_WP_LIGHT_SLIDER->value()));
+  if (QLabel *l = ui->IDC_HEIGHT_TEXT)
+    l->setText(QString("Height: %1").arg(ui->IDC_WP_HEIGHT_SLIDER->value()));
+  if (QLabel *l = ui->IDC_FREQ_TEXT)
+    l->setText(QString("Freq: %1").arg(ui->IDC_WP_FREQUENCY_SLIDER->value()));
+  if (QLabel *l = ui->IDC_SIZE_TEXT)
+    l->setText(QString("Size: %1").arg(ui->IDC_WP_SIZE_SLIDER->value()));
 }
 
 void WaterProceduralDialog::onFieldEdited() {
   // Eval/osc times feed the procedural animation; stored on the dialog only.
 }
 
-}

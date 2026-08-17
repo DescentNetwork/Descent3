@@ -1,5 +1,8 @@
 #include "brief_sound_dialog.h"
-namespace QtEditor {
-BriefSoundDialog::BriefSoundDialog(QWidget *parent) : Dialog(":/ui/brief_addsound.ui", parent) {}
-BriefSoundDialog::~BriefSoundDialog() = default;
+#include "ui_brief_addsound.h"
+BriefSoundDialog::BriefSoundDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::BriefSoundDialog)
+{
+  ui->setupUi(this);
 }
+BriefSoundDialog::~BriefSoundDialog() { delete ui; }

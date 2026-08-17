@@ -1,11 +1,17 @@
 #pragma once
-#include "qteditor_dialog.h"
-namespace QtEditor {
+
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class ScriptWizardDialog; }
+QT_END_NAMESPACE
+
 // Port of the scriptwiz dialog.
-class ScriptWizardDialog : public Dialog {
+class ScriptWizardDialog : public QDialog {
   Q_OBJECT
 public:
   explicit ScriptWizardDialog(QWidget *parent = nullptr);
-  ~ScriptWizardDialog() override;
+  ~ScriptWizardDialog();
+private:
+  Ui::ScriptWizardDialog *ui;
 };
-}

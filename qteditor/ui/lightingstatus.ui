@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>LightingStatusDialog</class>
   <widget class="QDialog" name="IDD_LIGHTINGSTATUS">
     <property name="geometry">
       <rect>

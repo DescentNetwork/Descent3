@@ -17,18 +17,21 @@
  */
 
 #include "status_dialog.h"
+#include "ui_statusdlg.h"
 
 #include <QLabel>
 #include <QProgressBar>
 
-namespace QtEditor {
 
-StatusDialog::StatusDialog(QWidget *parent) : Dialog(":/ui/statusdlg.ui", parent) {}
+StatusDialog::StatusDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::StatusDialog) {
+  ui->setupUi(this);
+}
 
-StatusDialog::~StatusDialog() = default;
+StatusDialog::~StatusDialog() { delete ui; }
 
 int StatusDialog::step() {
-  QProgressBar *progress = find<QProgressBar>("IDC_STATUSPROGRESS");
+  QProgressBar *progress = ui->IDC_STATUSPROGRESS;
   if (!progress)
     return 0;
   const int value = progress->value();
@@ -37,7 +40,7 @@ int StatusDialog::step() {
 }
 
 void StatusDialog::init(int min, int max, int delta) {
-  if (QProgressBar *progress = find<QProgressBar>("IDC_STATUSPROGRESS")) {
+  if (QProgressBar *progress = ui->IDC_STATUSPROGRESS) {
     progress->setRange(min, max);
     progress->setValue(min);
     m_step = delta;
@@ -45,12 +48,12 @@ void StatusDialog::init(int min, int max, int delta) {
 }
 
 void StatusDialog::text(const QString &string) {
-  if (auto *label = find<QLabel>("IDC_STATUSTEXT"))
+  if (auto *label = ui->IDC_STATUSTEXT)
     label->setText(string);
 }
 
 void StatusDialog::setTo(int value) {
-  if (QProgressBar *progress = find<QProgressBar>("IDC_STATUSPROGRESS"))
+  if (QProgressBar *progress = ui->IDC_STATUSPROGRESS)
     progress->setValue(value);
 }
 
@@ -118,4 +121,3 @@ void Progress::setProgressPercentage(float percent) {
   m_statusDlg->setTo(m_Min + (int)(percent * (m_Max - m_Min)));
 }
 
-}

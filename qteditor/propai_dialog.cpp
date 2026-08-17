@@ -17,12 +17,14 @@
  */
 
 #include "propai_dialog.h"
+#include "ui_propai.h"
 
-namespace QtEditor {
 
 PropertyAIDialog::PropertyAIDialog(QWidget *parent)
-    : Dialog(":/ui/propai.ui", parent) {}
-
-PropertyAIDialog::~PropertyAIDialog() = default;
-
+    : QDialog(parent), ui(new Ui::PropAIDialog)
+{
+  ui->setupUi(this);
 }
+
+PropertyAIDialog::~PropertyAIDialog() { delete ui; }
+

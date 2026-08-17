@@ -17,6 +17,7 @@
  */
 
 #include "texture_keypad.h"
+#include "ui_texturekeypad.h"
 
 #include <QLabel>
 #include <QLineEdit>
@@ -27,7 +28,6 @@
 #include "d3edit.h"
 #include "room_external.h"
 
-namespace QtEditor {
 
 namespace {
 
@@ -81,55 +81,58 @@ void uvScaleV(face *fp, float factor) {
 
 } // namespace
 
-TextureKeypad::TextureKeypad(QWidget *parent) : Keypad(":/ui/texturekeypad.ui", parent) {
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_SLIDELEFT"))
+TextureKeypad::TextureKeypad(QWidget *parent)
+    : QDialog(parent), ui(new Ui::TextureKeypad)
+{
+  ui->setupUi(this);
+  if (QPushButton *b = ui->IDC_TEXPAD_SLIDELEFT)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onSlideLeft);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_SLIDERIGHT"))
+  if (QPushButton *b = ui->IDC_TEXPAD_SLIDERIGHT)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onSlideRight);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_SLIDEUP"))
+  if (QPushButton *b = ui->IDC_TEXPAD_SLIDEUP)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onSlideUp);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_SLIDEDOWN"))
+  if (QPushButton *b = ui->IDC_TEXPAD_SLIDEDOWN)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onSlideDown);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_ROTLEFT"))
+  if (QPushButton *b = ui->IDC_TEXPAD_ROTLEFT)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onRotLeft);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_ROTRIGHT"))
+  if (QPushButton *b = ui->IDC_TEXPAD_ROTRIGHT)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onRotRight);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_ROTATE90"))
+  if (QPushButton *b = ui->IDC_TEXPAD_ROTATE90)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onRotate90);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_FLIPX"))
+  if (QPushButton *b = ui->IDC_TEXPAD_FLIPX)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onFlipX);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_FLIPY"))
+  if (QPushButton *b = ui->IDC_TEXPAD_FLIPY)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onFlipY);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_EXPAND_U"))
+  if (QPushButton *b = ui->IDC_TEXPAD_EXPAND_U)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onExpandU);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_CONTRACT_U"))
+  if (QPushButton *b = ui->IDC_TEXPAD_CONTRACT_U)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onContractU);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_EXPAND_V"))
+  if (QPushButton *b = ui->IDC_TEXPAD_EXPAND_V)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onExpandV);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_CONTRACT_V"))
+  if (QPushButton *b = ui->IDC_TEXPAD_CONTRACT_V)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onContractV);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_STRETCHLESS"))
+  if (QPushButton *b = ui->IDC_TEXPAD_STRETCHLESS)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onStretchLess);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_STRETCHMORE"))
+  if (QPushButton *b = ui->IDC_TEXPAD_STRETCHMORE)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onStretchMore);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_SETDEFAULT"))
+  if (QPushButton *b = ui->IDC_TEXPAD_SETDEFAULT)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onSetDefault);
-  if (QPushButton *b = find<QPushButton>("IDC_TEXPAD_GRAB"))
+  if (QPushButton *b = ui->IDC_TEXPAD_GRAB)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onGrab);
-  if (QPushButton *b = find<QPushButton>("IDC_REPLACE_TEXTURE"))
+  if (QPushButton *b = ui->IDC_REPLACE_TEXTURE)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onReplace);
-  if (QPushButton *b = find<QPushButton>("IDC_FACE_MAP"))
+  if (QPushButton *b = ui->IDC_FACE_MAP)
     connect(b, &QPushButton::clicked, this, &TextureKeypad::onFaceMap);
-  if (QLineEdit *edit = find<QLineEdit>("IDC_TEXSCALE_EDIT"))
+  if (QLineEdit *edit = ui->IDC_TEXSCALE_EDIT)
     connect(edit, &QLineEdit::editingFinished, this, &TextureKeypad::onTexScaleEdited);
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_TEXSCALE_EDIT"))
+  if (QLineEdit *edit = ui->IDC_TEXSCALE_EDIT)
     edit->setText(QString::number(D3EditState.texscale));
 
   updateDialog();
 }
 
-TextureKeypad::~TextureKeypad() = default;
+TextureKeypad::~TextureKeypad() { delete ui; }
 
 void TextureKeypad::updateDialog() {
   // Editing a face's texture requires a current room + face.
@@ -139,7 +142,7 @@ void TextureKeypad::updateDialog() {
   for (QWidget *w : all)
     if (w->objectName().startsWith("IDC_TEXPAD") || w->objectName().startsWith("IDC_FACE_MAP"))
       w->setEnabled(active);
-  if (QLabel *label = find<QLabel>("IDC_CURRENT_TEXTURE_NAME")) {
+  if (QLabel *label = ui->IDC_CURRENT_TEXTURE_NAME) {
     if (active) {
       const int tmap = Curroomp->faces[Curface].tmap;
       label->setText(QString("Texture %1").arg(tmap));
@@ -195,12 +198,11 @@ void TextureKeypad::onReplace() {
 void TextureKeypad::onFaceMap() { onSetDefault(); }
 
 void TextureKeypad::onTexScaleEdited() {
-  if (QLineEdit *edit = find<QLineEdit>("IDC_TEXSCALE_EDIT")) {
+  if (QLineEdit *edit = ui->IDC_TEXSCALE_EDIT) {
     D3EditState.texscale = edit->text().toFloat();
     if (D3EditState.texscale <= 0)
       D3EditState.texscale = 1.0f;
   }
 }
 
-}
 

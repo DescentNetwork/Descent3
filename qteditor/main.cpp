@@ -36,13 +36,6 @@ int main(int argc, char *argv[]) {
   app.setApplicationName("Descent 3 Editor");
   app.setOrganizationName("DescentDevelopers");
 
-  for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "--dialog-test") == 0) {
-      QtEditor::initD3Core(argc, argv);
-      return QtEditor::runDialogTest();
-    }
-  }
-
   // Construct the splash BEFORE the MainWindow so the user gets immediate
   // feedback while the D3 core initialises. QSplashScreen::finish() closes
   // the splash automatically once the main window becomes the active window.
@@ -52,11 +45,11 @@ int main(int argc, char *argv[]) {
   splash.showMessage("Loading...", Qt::AlignBottom | Qt::AlignHCenter, Qt::white);
   app.processEvents();
 
-  QtEditor::initD3Core(argc, argv);
+  initD3Core(argc, argv);
   splash.showMessage("Initialising editor...", Qt::AlignBottom | Qt::AlignHCenter, Qt::white);
   app.processEvents();
 
-  QtEditor::MainWindow window;
+  MainWindow window;
   window.show();
   splash.finish(&window);
 

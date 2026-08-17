@@ -17,6 +17,7 @@
  */
 
 #include "dallas_sound_dialog.h"
+#include "ui_dallas_sound_dialog.h"
 
 #include <QListWidget>
 #include <QPushButton>
@@ -24,22 +25,24 @@
 #include "hlsoundlib.h"
 #include "ssl_lib.h"
 
-namespace QtEditor {
 
-DallasSoundDialog::DallasSoundDialog(QWidget *parent) : Dialog(":/ui/dallas_sound_dialog.ui", parent), m_list(nullptr) {
-  m_list = find<QListWidget>("IDC_SOUND_LIST");
+DallasSoundDialog::DallasSoundDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::DallasSoundDialog), m_list(nullptr)
+{
+  ui->setupUi(this);
+  m_list = ui->IDC_SOUND_LIST;
   if (m_list != nullptr) {
     for (int i = 0; i < MAX_SOUNDS; i++)
       if (Sounds[i].used)
         m_list->addItem(Sounds[i].name);
   }
-  if (QPushButton *b = find<QPushButton>("IDC_PLAY_SOUND_BUTTON"))
+  if (QPushButton *b = ui->IDC_PLAY_SOUND_BUTTON)
     connect(b, &QPushButton::clicked, this, &DallasSoundDialog::onPlay);
-  if (QPushButton *b = find<QPushButton>("IDC_STOP_SOUNDS_BUTTON"))
+  if (QPushButton *b = ui->IDC_STOP_SOUNDS_BUTTON)
     connect(b, &QPushButton::clicked, this, &DallasSoundDialog::onStop);
 }
 
-DallasSoundDialog::~DallasSoundDialog() = default;
+DallasSoundDialog::~DallasSoundDialog() { delete ui; }
 
 int DallasSoundDialog::selectedSound() const {
   if (m_list == nullptr || m_list->currentRow() < 0)
@@ -70,4 +73,3 @@ void DallasSoundDialog::onStop() {
   Sound_system.EndSoundFrame();
 }
 
-}

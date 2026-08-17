@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>AmbientSoundPatternsDialog</class>
   <widget class="QDialog" name="IDD_AMBIENTSOUNDPATTERNS">
     <property name="geometry">
       <rect>

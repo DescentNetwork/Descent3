@@ -18,16 +18,19 @@
 
 #pragma once
 
-#include "keypad_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class PathKeypad; }
+QT_END_NAMESPACE
+
 
 // Port of CPathPadDialog (IDD_PATHKEYPAD): path and AI-node editing.
-class PathKeypad : public Keypad {
+class PathKeypad : public QDialog {
   Q_OBJECT
 public:
   explicit PathKeypad(QWidget *parent = nullptr);
-  ~PathKeypad() override;
+  ~PathKeypad();
 
 private slots:
   void onAddPath();
@@ -48,6 +51,10 @@ private:
   int currentNode();
 
   float m_inc = 10.0f;
+
+  template <typename T>
+  T *find(const QString &name) const { return findChild<T *>(name); }
+
+  Ui::PathKeypad *ui;
 };
 
-}

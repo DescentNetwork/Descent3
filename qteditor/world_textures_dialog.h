@@ -18,19 +18,22 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
 struct texture;
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class WorldTexturesDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CWorldTexturesDialog (IDD_WORLDTEXTURES): edits the texture table
 // (lighting, damage, slide, alpha, material/type flags, ambient sound, etc.).
-class WorldTexturesDialog : public Dialog {
+class WorldTexturesDialog : public QDialog {
   Q_OBJECT
 public:
   explicit WorldTexturesDialog(QWidget *parent = nullptr);
-  ~WorldTexturesDialog() override;
+  ~WorldTexturesDialog();
 
 private slots:
   void onAddNew();
@@ -53,6 +56,7 @@ private:
   void setFlag(uint32_t flag, const char *checkName, bool checked);
   void bindFlag(const char *checkName, uint32_t flag);
   void bindEdit(const char *name, float texture::*field);
+private:
+  Ui::WorldTexturesDialog *ui;
 };
 
-}

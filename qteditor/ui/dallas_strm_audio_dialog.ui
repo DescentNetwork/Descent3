@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>DallasStrmAudioDialog</class>
   <widget class="QDialog" name="IDD_DALLAS_STRM_AUDIO_DIALOG">
     <property name="geometry">
       <rect>

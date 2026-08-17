@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>TerrainSoundDialog</class>
   <widget class="QDialog" name="IDD_TERRAIN_SOUND_DIALOG">
     <property name="geometry">
       <rect>

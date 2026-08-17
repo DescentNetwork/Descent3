@@ -17,26 +17,29 @@
  */
 
 #include "dallas_usertypes_dialog.h"
+#include "ui_dallas_usertypes_dialog.h"
 
 #include <QInputDialog>
 #include <QListWidget>
 #include <QPushButton>
 
-namespace QtEditor {
 
-DallasUserTypesDialog::DallasUserTypesDialog(QWidget *parent) : Dialog(":/ui/dallas_usertypes_dialog.ui", parent) {
-  m_list = find<QListWidget>("IDC_VALUES_LIST");
-  if (QPushButton *b = find<QPushButton>("IDC_ADD_BUTTON"))
+DallasUserTypesDialog::DallasUserTypesDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::DallasUserTypesDialog)
+{
+  ui->setupUi(this);
+  m_list = ui->IDC_VALUES_LIST;
+  if (QPushButton *b = ui->IDC_ADD_BUTTON)
     connect(b, &QPushButton::clicked, this, &DallasUserTypesDialog::onAdd);
-  if (QPushButton *b = find<QPushButton>("IDC_CHANGE_BUTTON"))
+  if (QPushButton *b = ui->IDC_CHANGE_BUTTON)
     connect(b, &QPushButton::clicked, this, &DallasUserTypesDialog::onChange);
-  if (QPushButton *b = find<QPushButton>("IDC_DELETE_BUTTON"))
+  if (QPushButton *b = ui->IDC_DELETE_BUTTON)
     connect(b, &QPushButton::clicked, this, &DallasUserTypesDialog::onDelete);
 
   updateDialog();
 }
 
-DallasUserTypesDialog::~DallasUserTypesDialog() = default;
+DallasUserTypesDialog::~DallasUserTypesDialog() { delete ui; }
 
 void DallasUserTypesDialog::updateDialog() {
   if (m_list == nullptr)
@@ -67,4 +70,3 @@ void DallasUserTypesDialog::onDelete() {
     delete m_list->takeItem(m_list->currentRow());
 }
 
-}

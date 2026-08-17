@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>PreferencesDialog</class>
   <widget class="QDialog" name="IDD_PREFERENCES">
     <property name="geometry">
       <rect>
@@ -208,9 +208,7 @@
             <height>20</height>
           </rect>
         </property>
-        <property name="text">
-          <string>Slider1</string>
-        </property>
+
         <property name="visible">
           <bool>true</bool>
         </property>

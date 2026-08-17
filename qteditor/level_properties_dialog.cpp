@@ -1,5 +1,9 @@
 #include "level_properties_dialog.h"
-namespace QtEditor {
-LevelPropertiesDialog::LevelPropertiesDialog(QWidget *parent) : Dialog(":/ui/levelproperties.ui", parent) {}
-LevelPropertiesDialog::~LevelPropertiesDialog() = default;
+#include "ui_levelproperties.h"
+LevelPropertiesDialog::LevelPropertiesDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::LevelPropertiesDialog)
+{
+  ui->setupUi(this);
 }
+
+LevelPropertiesDialog::~LevelPropertiesDialog() { delete ui; }

@@ -1,5 +1,8 @@
 #include "brief_bitmap_dialog.h"
-namespace QtEditor {
-BriefBitmapDialog::BriefBitmapDialog(QWidget *parent) : Dialog(":/ui/brief_addbitmap.ui", parent) {}
-BriefBitmapDialog::~BriefBitmapDialog() = default;
+#include "ui_brief_addbitmap.h"
+BriefBitmapDialog::BriefBitmapDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::BriefBitmapDialog)
+{
+  ui->setupUi(this);
 }
+BriefBitmapDialog::~BriefBitmapDialog() { delete ui; }

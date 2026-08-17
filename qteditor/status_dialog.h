@@ -21,17 +21,20 @@
 #include <cstdint>
 
 #include "fix/fix.h"
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class StatusDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CStatusDlg (IDD_STATUSDLG): modal-style progress dialog with a
 // progress bar and status text.
-class StatusDialog : public Dialog {
+class StatusDialog : public QDialog {
   Q_OBJECT
 public:
   explicit StatusDialog(QWidget *parent = nullptr);
-  ~StatusDialog() override;
+  ~StatusDialog();
 
   int step();
   void init(int min, int max, int delta);
@@ -39,6 +42,7 @@ public:
   void setTo(int value);
 
 private:
+  Ui::StatusDialog *ui;
   int m_step = 1;
 };
 
@@ -62,4 +66,3 @@ private:
   StatusDialog *m_statusDlg = nullptr;
 };
 
-}

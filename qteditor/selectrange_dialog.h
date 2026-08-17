@@ -18,18 +18,18 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class SelectRangeDialog; }
+QT_END_NAMESPACE
 
-// Port of SelectRangeDialog (IDD_SELECTRANGE_DIALOG): selects terrain cells by
-// elevation range, optionally combined with slope, random, texture-grid
-// position or the current texture.
-class SelectRangeDialog : public Dialog {
+
+class SelectRangeDialog : public QDialog {
   Q_OBJECT
 public:
   explicit SelectRangeDialog(QWidget *parent = nullptr);
-  ~SelectRangeDialog() override;
+  ~SelectRangeDialog();
 
 private slots:
   void onLowerBoundChanged();
@@ -42,9 +42,9 @@ private:
   void clampAndStore(const char *editName, int *target);
   void runSelection();
 
+  Ui::SelectRangeDialog *ui;
   int m_lowerBound = 0;
   int m_upperBound = 0;
   int m_slopeAngle = 0;
 };
 
-}

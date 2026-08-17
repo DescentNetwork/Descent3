@@ -1,11 +1,17 @@
 #pragma once
-#include "qteditor_dialog.h"
-namespace QtEditor {
+
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class AmbientSoundPatternsDialog; }
+QT_END_NAMESPACE
+
 // Port of the ambient sound dialog (IDD_AMBIENTSOUNDPATTERNS).
-class AmbientSoundPatternsDialog : public Dialog {
+class AmbientSoundPatternsDialog : public QDialog {
   Q_OBJECT
 public:
   explicit AmbientSoundPatternsDialog(QWidget *parent = nullptr);
-  ~AmbientSoundPatternsDialog() override;
+  ~AmbientSoundPatternsDialog();
+private:
+  Ui::AmbientSoundPatternsDialog *ui;
 };
-}

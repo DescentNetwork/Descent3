@@ -18,23 +18,26 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class OsirisStatusDialog; }
+QT_END_NAMESPACE
+
 
 // Port of COsirisStatusDlg (IDD_OSIRIS_STATUS): reports Osiris script
 // compilation progress and errors.
-class OsirisStatusDialog : public Dialog {
+class OsirisStatusDialog : public QDialog {
   Q_OBJECT
 public:
   explicit OsirisStatusDialog(QWidget *parent = nullptr);
-  ~OsirisStatusDialog() override;
+  ~OsirisStatusDialog();
 
   void setProgress(const QString &text);
   void appendError(const QString &text);
   void done();
 
 private:
+  Ui::OsirisStatusDialog *ui;
 };
 
-}

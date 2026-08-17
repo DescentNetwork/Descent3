@@ -1,14 +1,13 @@
 #include "brief_main_dialog.h"
+#include "ui_brief_main.h"
 
-#include <QLineEdit>
 
-namespace QtEditor {
 
-BriefMainDialog::BriefMainDialog(QWidget *parent) : Dialog(":/ui/brief_main.ui", parent) {
-  if (QLineEdit *edit = find<QLineEdit>("IDC_BRIEF_TITLE"))
-    edit->setText("Untitled Briefing");
+BriefMainDialog::BriefMainDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::BriefMainDialog)
+{
+  ui->setupUi(this);
 }
 
-BriefMainDialog::~BriefMainDialog() = default;
+BriefMainDialog::~BriefMainDialog() { delete ui; }
 
-}

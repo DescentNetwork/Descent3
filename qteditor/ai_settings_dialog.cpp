@@ -1,5 +1,10 @@
 #include "ai_settings_dialog.h"
-namespace QtEditor {
-AISettingsDialog::AISettingsDialog(QWidget *parent) : Dialog(":/ui/ai.ui", parent) {}
-AISettingsDialog::~AISettingsDialog() = default;
+#include "ui_ai.h"
+
+AISettingsDialog::AISettingsDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::AISettingsDialog)
+{
+  ui->setupUi(this);
 }
+
+AISettingsDialog::~AISettingsDialog() { delete ui; }

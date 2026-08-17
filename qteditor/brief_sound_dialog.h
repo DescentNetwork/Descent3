@@ -1,11 +1,17 @@
 #pragma once
-#include "qteditor_dialog.h"
-namespace QtEditor {
+
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class BriefSoundDialog; }
+QT_END_NAMESPACE
+
 // Port of the briefing element dialog (IDD_BRIEF_ADDSOUND).
-class BriefSoundDialog : public Dialog {
+class BriefSoundDialog : public QDialog {
   Q_OBJECT
 public:
   explicit BriefSoundDialog(QWidget *parent = nullptr);
-  ~BriefSoundDialog() override;
+  ~BriefSoundDialog();
+private:
+  Ui::BriefSoundDialog *ui;
 };
-}

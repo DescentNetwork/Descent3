@@ -1,5 +1,8 @@
 #include "localize_script_dialog.h"
-namespace QtEditor {
-LocalizeScriptDialog::LocalizeScriptDialog(QWidget *parent) : Dialog(":/ui/localizescript.ui", parent) {}
-LocalizeScriptDialog::~LocalizeScriptDialog() = default;
+#include "ui_localizescript.h"
+LocalizeScriptDialog::LocalizeScriptDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::LocalizeScriptDialog)
+{
+  ui->setupUi(this);
 }
+LocalizeScriptDialog::~LocalizeScriptDialog() { delete ui; }

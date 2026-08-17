@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class WorldSoundsDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CWorldSoundsDialog (IDD_WORLDSOUNDS): edits the sound table
 // (sample, distances, cone, loop points, flags, pagelock operations).
-class WorldSoundsDialog : public Dialog {
+class WorldSoundsDialog : public QDialog {
   Q_OBJECT
 public:
   explicit WorldSoundsDialog(QWidget *parent = nullptr);
-  ~WorldSoundsDialog() override;
+  ~WorldSoundsDialog();
 
 private slots:
   void onAddSound();
@@ -77,6 +80,7 @@ private:
   void setFlag(uint32_t flag, const char *checkName, bool checked);
   void setConeLink(int value);
   void setConeDir(int value);
+private:
+  Ui::WorldSoundsDialog *ui;
 };
 
-}

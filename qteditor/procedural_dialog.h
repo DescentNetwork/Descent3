@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class ProceduralDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CProceduralDialog (IDD_PROCEDURAL_DIALOG): procedural texture
 // parameters (proc type, heat/size/speed/frequency) with copy/clear/update.
-class ProceduralDialog : public Dialog {
+class ProceduralDialog : public QDialog {
   Q_OBJECT
 public:
   explicit ProceduralDialog(QWidget *parent = nullptr);
-  ~ProceduralDialog() override;
+  ~ProceduralDialog();
 
 private slots:
   void onProcTypeChanged();
@@ -36,6 +39,7 @@ private slots:
 
 private:
   void updateDialog();
+private:
+  Ui::ProceduralDialog *ui;
 };
 
-}

@@ -26,13 +26,12 @@
 #include <cmath>
 
 #include "bitmap.h"
-#include "d3edit.h"
+
 #include "gametexture.h"
 #include "object.h"
 #include "pserror.h"
 #include "room_external.h"
 
-namespace QtEditor {
 
 namespace {
 
@@ -367,4 +366,3 @@ void EditorView::wheelEvent(QWheelEvent *event) {
   update();
 }
 
-} // namespace QtEditor

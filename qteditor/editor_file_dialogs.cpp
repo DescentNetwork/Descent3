@@ -30,7 +30,6 @@
 #include <QLineEdit>
 #include <QWidget>
 
-namespace QtEditor {
 
 namespace {
 
@@ -158,4 +157,3 @@ void PrintToDlgItem(QWidget *dlg, const char *id_name, const char *fmt, ...) {
     w->setProperty("text", text);
 }
 
-} // namespace QtEditor

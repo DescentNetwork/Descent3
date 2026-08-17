@@ -44,7 +44,7 @@ void OutrageMessageBox(const char *str, ...) {
   va_start(ap, str);
   formatInto(ap, buf, sizeof(buf), str);
   va_end(ap);
-  QtEditor::outrageMessageBox("%s", buf);
+  outrageMessageBox("%s", buf);
 }
 
 int OutrageMessageBox(int type, const char *str, ...) {
@@ -53,5 +53,5 @@ int OutrageMessageBox(int type, const char *str, ...) {
   va_start(ap, str);
   formatInto(ap, buf, sizeof(buf), str);
   va_end(ap);
-  return QtEditor::outrageMessageBox(type, "%s", buf);
+  return outrageMessageBox(type, "%s", buf);
 }

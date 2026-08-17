@@ -55,7 +55,6 @@
 #include "world_weapons_dialog.h"
 #include "worldobjectslight_dialog.h"
 
-namespace QtEditor {
 
 namespace {
 
@@ -72,8 +71,8 @@ void check(const char *name, bool ok) {
 template <typename T>
 void construct(const char *name, QWidget *parent) {
   try {
-    T dlg(parent);
-    check(name, dlg.handle() != nullptr);
+    T* dlg = new T(parent);
+    check(name, static_cast<QWidget *>(dlg) != nullptr);
   } catch (...) {
     check(name, false);
   }
@@ -91,57 +90,57 @@ int runDialogTest() {
   construct<AboutDialog>("about", nullptr);
   construct<AddScriptDialog>("addscript", nullptr);
   {
-    BriefMissionFlagsDialog dlg(0, 0);
-    check("brief_mission_flags", dlg.handle() != nullptr);
+    BriefMissionFlagsDialog* dlg = new BriefMissionFlagsDialog(0, 0);
+    check("brief_mission_flags", dlg != nullptr);
   }
   {
-    BriefTextEditDialog dlg(0, nullptr, 0);
-    check("brief_text_edit", dlg.handle() != nullptr);
+    BriefTextEditDialog* dlg = new BriefTextEditDialog(0, nullptr, 0);
+    check("brief_text_edit", dlg != nullptr);
   }
   construct<CreateNewScriptDialog>("createscript", nullptr);
   construct<CustomObjectDialog>("customize_object", nullptr);
   construct<DallasGenericPromptDialog>("dallas_generic_prompt", nullptr);
   construct<DallasVectorPromptDialog>("dallas_vector_prompt", nullptr);
   {
-    DeathDialog dlg(&di);
-    check("death", dlg.handle() != nullptr);
+    DeathDialog* dlg = new DeathDialog(&di);
+    check("death", dlg != nullptr);
   }
   {
-    EditLineDialog dlg("Test", nullptr);
-    check("editline", dlg.handle() != nullptr);
+    EditLineDialog* dlg = new EditLineDialog("Test", nullptr);
+    check("editline", dlg != nullptr);
   }
   {
-    GenericDeathDialog dlg(&oi);
-    check("generic_death", dlg.handle() != nullptr);
+    GenericDeathDialog* dlg = new GenericDeathDialog(&oi);
+    check("generic_death", dlg != nullptr);
   }
   construct<HogDialog>("hog", nullptr);
   {
-    LevelInfoDialog dlg(&li);
-    check("level_info", dlg.handle() != nullptr);
+    LevelInfoDialog* dlg = new LevelInfoDialog(&li);
+    check("level_info", dlg != nullptr);
   }
   {
-    PhysicsDialog dlg(&pi);
-    check("physics", dlg.handle() != nullptr);
+    PhysicsDialog* dlg = new PhysicsDialog(&pi);
+    check("physics", dlg != nullptr);
   }
   {
-    PlayerWeaponsDialog dlg(0);
-    check("player_weapons", dlg.handle() != nullptr);
+    PlayerWeaponsDialog* dlg = new PlayerWeaponsDialog(0);
+    check("player_weapons", dlg != nullptr);
   }
   construct<PowerupPropDialog>("powprop", nullptr);
   construct<PreferencesDialog>("preferences", nullptr);
   construct<PropertyAIDialog>("propai", nullptr);
   construct<SelectRangeDialog>("selectrange", nullptr);
   {
-    SoundSourceDialog dlg(&ssi);
-    check("sound_source", dlg.handle() != nullptr);
+    SoundSourceDialog* dlg = new SoundSourceDialog(&ssi);
+    check("sound_source", dlg != nullptr);
   }
   construct<StatusDialog>("status", nullptr);
   construct<TerrainSoundDialog>("terrain_sound", nullptr);
   construct<ViewerPropDialog>("viewer_prop", nullptr);
   construct<WorldObjectsDoorDialog>("world_objects_door", nullptr);
   {
-    WorldObjectsGenericDialog dlg(OBJ_BUILDING, 0);
-    check("world_objects_generic", dlg.handle() != nullptr);
+    WorldObjectsGenericDialog* dlg = new WorldObjectsGenericDialog(OBJ_BUILDING, 0);
+    check("world_objects_generic", dlg != nullptr);
   }
   construct<WorldObjectsPlayerDialog>("world_objects_player", nullptr);
   construct<WorldSoundsDialog>("world_sounds", nullptr);
@@ -159,4 +158,3 @@ int runDialogTest() {
   return failures;
 }
 
-}

@@ -18,18 +18,21 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 #include "vecmat.h"
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class ViewerPropDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CViewerPropDlg (IDD_VIEWER_DIALOG): a modeless dialog for editing
 // the viewer's position and orientation.
-class ViewerPropDialog : public Dialog {
+class ViewerPropDialog : public QDialog {
   Q_OBJECT
 public:
   explicit ViewerPropDialog(QWidget *parent = nullptr);
-  ~ViewerPropDialog() override;
+  ~ViewerPropDialog();
 
   void updatePosition();
   void updateOrientation();
@@ -51,6 +54,6 @@ private slots:
 private:
   void setOrientation(matrix &m);
   bool ensureViewer();
+  Ui::ViewerPropDialog *ui;
 };
 
-}

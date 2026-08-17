@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>ObjectPropertiesDialog</class>
   <widget class="QDialog" name="IDD_OBJECTPROPERTIES">
     <property name="geometry">
       <rect>
@@ -47,9 +47,6 @@
           <width>345</width>
           <height>412</height>
         </rect>
-      </property>
-      <property name="text">
-        <string>Tab1</string>
       </property>
       <property name="visible">
         <bool>true</bool>

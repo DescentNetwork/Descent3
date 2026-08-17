@@ -18,23 +18,26 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class ScriptEditorDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CScriptEditorDlg (IDD_SCRIPTEDITOR): edit a script module's source
 // and compile it.
-class ScriptEditorDialog : public Dialog {
+class ScriptEditorDialog : public QDialog {
   Q_OBJECT
 public:
   explicit ScriptEditorDialog(const QString &module, QWidget *parent = nullptr);
-  ~ScriptEditorDialog() override;
+  ~ScriptEditorDialog();
 
 private slots:
   void onCompile();
 
 private:
+  Ui::ScriptEditorDialog *ui;
   QString m_module;
 };
 
-}

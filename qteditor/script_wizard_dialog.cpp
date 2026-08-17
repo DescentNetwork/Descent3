@@ -1,5 +1,7 @@
 #include "script_wizard_dialog.h"
-namespace QtEditor {
-ScriptWizardDialog::ScriptWizardDialog(QWidget *parent) : Dialog(":/ui/scriptwiz.ui", parent) {}
-ScriptWizardDialog::~ScriptWizardDialog() = default;
+#include "ui_scriptwiz.h"
+ScriptWizardDialog::ScriptWizardDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::ScriptWizardDialog) {
+  ui->setupUi(this);
 }
+ScriptWizardDialog::~ScriptWizardDialog() { delete ui; }

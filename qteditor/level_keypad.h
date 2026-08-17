@@ -18,19 +18,22 @@
 
 #pragma once
 
-#include "keypad_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class LevelKeypad; }
+QT_END_NAMESPACE
+
 
 // Port of CLevelDialog (IDD_LEVELKEYPAD): global level physics settings
 // (gravity, ceiling height, damage-per-second, default weapon). The Win32
 // original is a passive display, so this binds the editable fields to the
 // level globals.
-class LevelKeypad : public Keypad {
+class LevelKeypad : public QDialog {
   Q_OBJECT
 public:
   explicit LevelKeypad(QWidget *parent = nullptr);
-  ~LevelKeypad() override;
+  ~LevelKeypad();
 
 private slots:
   void onGravityEdited();
@@ -38,6 +41,10 @@ private slots:
 
 private:
   void updateDialog();
+
+  template <typename T>
+  T *find(const QString &name) const { return findChild<T *>(name); }
+
+  Ui::LevelKeypad *ui;
 };
 
-}

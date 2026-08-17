@@ -1,11 +1,17 @@
 #pragma once
-#include "qteditor_dialog.h"
-namespace QtEditor {
+
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class FilePageAddDialog; }
+QT_END_NAMESPACE
+
 // Port of the filepageadd dialog.
-class FilePageAddDialog : public Dialog {
+class FilePageAddDialog : public QDialog {
   Q_OBJECT
 public:
   explicit FilePageAddDialog(QWidget *parent = nullptr);
-  ~FilePageAddDialog() override;
+  ~FilePageAddDialog();
+private:
+  Ui::FilePageAddDialog *ui;
 };
-}

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>DallasMainDialog</class>
   <widget class="QDialog" name="IDD_DALLAS_MAIN_DIALOG">
     <property name="geometry">
       <rect>
@@ -387,9 +387,6 @@
           <width>431</width>
           <height>562</height>
         </rect>
-      </property>
-      <property name="text">
-        <string>Tree1</string>
       </property>
       <property name="visible">
         <bool>true</bool>

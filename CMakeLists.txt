@@ -48,6 +48,8 @@ option(FATAL_GL_ERRORS "Check OpenGL calls and raise exceptions on errors." OFF)
 option(FORCE_COLORED_OUTPUT "Always produce ANSI-colored compiler warnings/errors (GCC/Clang only; esp. useful with Ninja)." OFF)
 option(FORCE_PORTABLE_INSTALL "Install all files into local directory defined by CMAKE_INSTALL_PREFIX" ON)
 option(BUILD_QT_EDITOR "Build the Qt-based editor" OFF)
+option(BUILD_QT_EDITOR_TEST "Build the Qt-based editor automated tests" OFF)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   option(BUILD_EDITOR "Build internal editor" OFF)
 endif()

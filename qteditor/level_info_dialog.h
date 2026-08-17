@@ -19,24 +19,28 @@
 #pragma once
 
 #include "Mission.h"
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class LevelInfoDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CLevelInfoDialog (IDD_LEVEL_INFO): edits the level's name, designer,
 // copyright and notes.
-class LevelInfoDialog : public Dialog {
+class LevelInfoDialog : public QDialog {
   Q_OBJECT
 public:
   explicit LevelInfoDialog(level_info *li, QWidget *parent = nullptr);
-  ~LevelInfoDialog() override;
+  ~LevelInfoDialog();
 
 private slots:
   void onOk();
 
 private:
   void getLevelInfo(level_info *li);
+
+  Ui::LevelInfoDialog *ui;
   level_info *m_levelInfo;
 };
 
-}

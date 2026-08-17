@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "keypad_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class RoomKeypad; }
+QT_END_NAMESPACE
+
 
 // Port of CRoomKeypadDialog (IDD_ROOMKEYPAD): current room info, flags,
 // expand/contract geometry and damage settings.
-class RoomKeypad : public Keypad {
+class RoomKeypad : public QDialog {
   Q_OBJECT
 public:
   explicit RoomKeypad(QWidget *parent = nullptr);
-  ~RoomKeypad() override;
+  ~RoomKeypad();
 
 private slots:
   void onMarkRoom();
@@ -44,6 +47,10 @@ private:
   void updateDialog();
   void setFlag(uint32_t flag, const char *checkName, bool checked);
   void expandGeometry(float scale);
+
+  template <typename T>
+  T *find(const QString &name) const { return findChild<T *>(name); }
+
+  Ui::RoomKeypad *ui;
 };
 
-}

@@ -17,12 +17,14 @@
  */
 
 #include "powprop_dialog.h"
+#include "ui_powprop_dialog.h"
 
-namespace QtEditor {
 
 PowerupPropDialog::PowerupPropDialog(QWidget *parent)
-    : Dialog(":/ui/powprop_dialog.ui", parent) {}
-
-PowerupPropDialog::~PowerupPropDialog() = default;
-
+    : QDialog(parent), ui(new Ui::PowpropDialog)
+{
+  ui->setupUi(this);
 }
+
+PowerupPropDialog::~PowerupPropDialog() { delete ui; }
+

@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class WorldObjectsPlayerDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CWorldObjectsPlayerDialog (IDD_WORLDOBJECTSPLAYER): edits the player
 // ship table (model + LODs, dying model, cockpit, armor, physics, weapons).
-class WorldObjectsPlayerDialog : public Dialog {
+class WorldObjectsPlayerDialog : public QDialog {
   Q_OBJECT
 public:
   explicit WorldObjectsPlayerDialog(QWidget *parent = nullptr);
-  ~WorldObjectsPlayerDialog() override;
+  ~WorldObjectsPlayerDialog();
 
 private slots:
   void onAddPship();
@@ -58,7 +61,7 @@ private slots:
 private:
   void updateDialog();
 
+  Ui::WorldObjectsPlayerDialog *ui;
   int m_lod = 0;
 };
 
-}

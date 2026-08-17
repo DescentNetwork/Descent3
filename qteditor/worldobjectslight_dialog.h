@@ -18,16 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class WorldObjectsLightDialog; }
+QT_END_NAMESPACE
+
 
 // Stub port of CWorldObjectsLightDialog (IDD_WORLDOBJECTSLIGHT).
-class WorldObjectsLightDialog : public Dialog {
+class WorldObjectsLightDialog : public QDialog {
   Q_OBJECT
 public:
   explicit WorldObjectsLightDialog(QWidget *parent = nullptr);
-  ~WorldObjectsLightDialog() override;
+  ~WorldObjectsLightDialog();
+private:
+  Ui::WorldObjectsLightDialog *ui;
 };
 
-}

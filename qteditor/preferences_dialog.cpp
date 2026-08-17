@@ -17,6 +17,7 @@
  */
 
 #include "preferences_dialog.h"
+#include "ui_preferences.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -34,46 +35,48 @@
 
 extern bool Cinematics_enabled;
 
-namespace QtEditor {
 
-PreferencesDialog::PreferencesDialog(QWidget *parent) : Dialog(":/ui/preferences.ui", parent) {
-  if (QRadioButton *rb = find<QRadioButton>("IDC_WINDOWED")) {
+PreferencesDialog::PreferencesDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::PreferencesDialog)
+{
+  ui->setupUi(this);
+  if (QRadioButton *rb = ui->IDC_WINDOWED) {
     rb->setChecked(D3EditState.game_render_mode == GM_WINDOWED);
     connect(rb, &QRadioButton::clicked, this, &PreferencesDialog::onWindowed);
   }
-  if (QRadioButton *rb = find<QRadioButton>("IDC_FULLSCREEN_SW")) {
+  if (QRadioButton *rb = ui->IDC_FULLSCREEN_SW) {
     rb->setChecked(D3EditState.game_render_mode == GM_FULLSCREEN_SW);
     connect(rb, &QRadioButton::clicked, this, &PreferencesDialog::onFullScreenSW);
   }
-  if (QRadioButton *rb = find<QRadioButton>("IDC_FULLSCREEN_HW")) {
+  if (QRadioButton *rb = ui->IDC_FULLSCREEN_HW) {
     rb->setChecked(D3EditState.game_render_mode == GM_FULLSCREEN_HW);
     connect(rb, &QRadioButton::clicked, this, &PreferencesDialog::onFullScreenHW);
   }
-  if (QCheckBox *cb = find<QCheckBox>("IDC_DEBUG_CHECK"))
+  if (QCheckBox *cb = ui->IDC_DEBUG_CHECK)
     cb->setChecked(D3EditState.fullscreen_debug_state);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_USE_OPENGL"))
+  if (QRadioButton *rb = ui->IDC_USE_OPENGL)
     rb->setChecked(PreferredRenderer == RENDERER_OPENGL);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_USE_GLIDE"))
+  if (QRadioButton *rb = ui->IDC_USE_GLIDE)
     rb->setChecked(PreferredRenderer == RENDERER_GLIDE);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_USE_D3D"))
+  if (QRadioButton *rb = ui->IDC_USE_D3D)
     rb->setChecked(PreferredRenderer == RENDERER_DIRECT3D);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_BILINEAR_CHECK"))
+  if (QCheckBox *cb = ui->IDC_BILINEAR_CHECK)
     cb->setChecked(Render_preferred_state.filtering != 0);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_MIPPING_CHECK"))
+  if (QCheckBox *cb = ui->IDC_MIPPING_CHECK)
     cb->setChecked(Render_preferred_state.mipping != 0);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_JOYENABLE"))
+  if (QCheckBox *cb = ui->IDC_JOYENABLE)
     cb->setChecked(D3EditState.joy_slewing);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_IGC_ENABLED")) {
+  if (QCheckBox *cb = ui->IDC_IGC_ENABLED) {
     cb->setChecked(Cinematics_enabled);
     connect(cb, &QCheckBox::toggled, this, &PreferencesDialog::onIgcToggled);
   }
 
-  if (QSlider *slider = find<QSlider>("IDC_SLEWSLIDER")) {
+  if (QSlider *slider = ui->IDC_SLEWSLIDER) {
     slider->setRange(0, 3);
     slider->setValue((int)((Slew_key_speed - 0.5) / 0.5));
   }
 
-  if (QComboBox *combo = find<QComboBox>("IDC_DEFAULT_PILOT")) {
+  if (QComboBox *combo = ui->IDC_DEFAULT_PILOT) {
     const std::vector<std::string> pilotlist = PltGetPilots();
     for (const auto &pilot : pilotlist)
       combo->addItem(QString::fromStdString(pilot));
@@ -85,10 +88,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) : Dialog(":/ui/preferences
     PltClearList();
   }
 
-  if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
-    connect(ok, &QPushButton::clicked, this, &PreferencesDialog::onOk);
-  }
+  connect(this, &QDialog::accept, this, &PreferencesDialog::onOk);
 
   if (D3EditState.game_render_mode == GM_FULLSCREEN_HW)
     enableHardwareOptions();
@@ -96,38 +96,38 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) : Dialog(":/ui/preferences
     disableHardwareOptions();
 }
 
-PreferencesDialog::~PreferencesDialog() = default;
+PreferencesDialog::~PreferencesDialog() { delete ui; }
 
 void PreferencesDialog::disableHardwareOptions() {
   const char *names[] = {"IDC_HARDWARE_ACC", "IDC_USE_OPENGL", "IDC_USE_GLIDE", "IDC_USE_D3D",
                          "IDC_BILINEAR_CHECK", "IDC_MIPPING_CHECK"};
   for (const char *name : names)
-    find<QWidget>(name)->setEnabled(false);
+    findChild<QWidget*>(name)->setEnabled(false);
 }
 
 void PreferencesDialog::enableHardwareOptions() {
   const char *names[] = {"IDC_HARDWARE_ACC", "IDC_USE_OPENGL", "IDC_USE_GLIDE", "IDC_USE_D3D",
                          "IDC_BILINEAR_CHECK", "IDC_MIPPING_CHECK"};
   for (const char *name : names)
-    find<QWidget>(name)->setEnabled(true);
+    findChild<QWidget*>(name)->setEnabled(true);
 }
 
 void PreferencesDialog::onWindowed() {
-  if (find<QRadioButton>("IDC_WINDOWED")->isChecked())
+  if (ui->IDC_WINDOWED->isChecked())
     disableHardwareOptions();
   else
     enableHardwareOptions();
 }
 
 void PreferencesDialog::onFullScreenSW() {
-  if (find<QRadioButton>("IDC_FULLSCREEN_SW")->isChecked())
+  if (ui->IDC_FULLSCREEN_SW->isChecked())
     disableHardwareOptions();
   else
     enableHardwareOptions();
 }
 
 void PreferencesDialog::onFullScreenHW() {
-  if (find<QRadioButton>("IDC_FULLSCREEN_HW")->isChecked())
+  if (ui->IDC_FULLSCREEN_HW->isChecked())
     disableHardwareOptions();
   else
     enableHardwareOptions();
@@ -136,44 +136,43 @@ void PreferencesDialog::onFullScreenHW() {
 void PreferencesDialog::onIgcToggled(bool checked) { Cinematics_enabled = checked; }
 
 void PreferencesDialog::onOk() {
-  if (find<QRadioButton>("IDC_WINDOWED")->isChecked())
+  if (ui->IDC_WINDOWED->isChecked())
     D3EditState.game_render_mode = GM_WINDOWED;
-  else if (find<QRadioButton>("IDC_FULLSCREEN_SW")->isChecked())
+  else if (ui->IDC_FULLSCREEN_SW->isChecked())
     D3EditState.game_render_mode = GM_FULLSCREEN_SW;
-  else if (find<QRadioButton>("IDC_FULLSCREEN_HW")->isChecked())
+  else if (ui->IDC_FULLSCREEN_HW->isChecked())
     D3EditState.game_render_mode = GM_FULLSCREEN_HW;
 
-  D3EditState.fullscreen_debug_state = find<QCheckBox>("IDC_DEBUG_CHECK")->isChecked();
+  D3EditState.fullscreen_debug_state = ui->IDC_DEBUG_CHECK->isChecked();
 
-  if (find<QRadioButton>("IDC_USE_OPENGL")->isChecked())
+  if (ui->IDC_USE_OPENGL->isChecked())
     PreferredRenderer = RENDERER_OPENGL;
-  else if (find<QRadioButton>("IDC_USE_GLIDE")->isChecked())
+  else if (ui->IDC_USE_GLIDE->isChecked())
     PreferredRenderer = RENDERER_GLIDE;
-  else if (find<QRadioButton>("IDC_USE_D3D")->isChecked())
+  else if (ui->IDC_USE_D3D->isChecked())
     PreferredRenderer = RENDERER_DIRECT3D;
 
-  const bool joyslew = find<QCheckBox>("IDC_JOYENABLE")->isChecked();
+  const bool joyslew = ui->IDC_JOYENABLE->isChecked();
   if (joyslew != D3EditState.joy_slewing) {
     D3EditState.joy_slewing = joyslew;
     SlewControlInit();
   }
 
-  Render_preferred_state.filtering = find<QCheckBox>("IDC_BILINEAR_CHECK")->isChecked() ? 1 : 0;
-  Render_preferred_state.mipping = find<QCheckBox>("IDC_MIPPING_CHECK")->isChecked() ? 1 : 0;
+  Render_preferred_state.filtering = ui->IDC_BILINEAR_CHECK->isChecked() ? 1 : 0;
+  Render_preferred_state.mipping = ui->IDC_MIPPING_CHECK->isChecked() ? 1 : 0;
 
-  if (QComboBox *combo = find<QComboBox>("IDC_DEFAULT_PILOT")) {
+  if (QComboBox *combo = ui->IDC_DEFAULT_PILOT) {
     if (combo->count())
       Default_pilot = combo->currentText().toStdString();
     else
       Default_pilot = " ";
   }
 
-  Slew_key_speed = (find<QSlider>("IDC_SLEWSLIDER")->value() * 0.5f) + 0.5f;
+  Slew_key_speed = (ui->IDC_SLEWSLIDER->value() * 0.5f) + 0.5f;
 
   QSettings settings;
-  QtEditor::saveEditorSettings(settings, D3EditState);
+  saveEditorSettings(settings, D3EditState);
 
   accept();
 }
 
-}

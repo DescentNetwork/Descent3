@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>ObjectTreeDialog</class>
   <widget class="QDialog" name="IDD_OBJTREEDLG">
     <property name="geometry">
       <rect>
@@ -47,9 +47,6 @@
           <width>281</width>
           <height>251</height>
         </rect>
-      </property>
-      <property name="text">
-        <string>Tree1</string>
       </property>
       <property name="visible">
         <bool>true</bool>

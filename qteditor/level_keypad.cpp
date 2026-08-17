@@ -17,6 +17,7 @@
  */
 
 #include "level_keypad.h"
+#include "ui_levelkeypad.h"
 
 #include <QLineEdit>
 
@@ -24,7 +25,6 @@
 #include "physics.h"
 #include "room_external.h"
 
-namespace QtEditor {
 
 namespace {
 // Level ceiling height lives in the rooms; report the max ceiling of used rooms.
@@ -46,26 +46,29 @@ float levelCeiling() {
 }
 } // namespace
 
-LevelKeypad::LevelKeypad(QWidget *parent) : Keypad(":/ui/levelkeypad.ui", parent) {
-  if (QLineEdit *edit = find<QLineEdit>("IDC_LEVEL_GRAVITY_EDIT"))
+LevelKeypad::LevelKeypad(QWidget *parent)
+    : QDialog(parent), ui(new Ui::LevelKeypad)
+{
+  ui->setupUi(this);
+  if (QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT)
     connect(edit, &QLineEdit::editingFinished, this, &LevelKeypad::onGravityEdited);
-  if (QLineEdit *edit = find<QLineEdit>("IDC_LEVEL_CEILING_EDIT"))
+  if (QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT)
     connect(edit, &QLineEdit::editingFinished, this, &LevelKeypad::onCeilingEdited);
 
   updateDialog();
 }
 
-LevelKeypad::~LevelKeypad() = default;
+LevelKeypad::~LevelKeypad() { delete ui; }
 
 void LevelKeypad::updateDialog() {
-  if (QLineEdit *edit = find<QLineEdit>("IDC_LEVEL_GRAVITY_EDIT"))
+  if (QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT)
     edit->setText(QString::number(Gravity_strength));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_LEVEL_CEILING_EDIT"))
+  if (QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT)
     edit->setText(QString::number(levelCeiling()));
 }
 
 void LevelKeypad::onGravityEdited() {
-  if (QLineEdit *edit = find<QLineEdit>("IDC_LEVEL_GRAVITY_EDIT"))
+  if (QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT)
     Gravity_strength = edit->text().toFloat();
   World_changed = 1;
 }
@@ -73,7 +76,7 @@ void LevelKeypad::onGravityEdited() {
 void LevelKeypad::onCeilingEdited() {
   // Setting the ceiling shifts all rooms' vertices so their max Y equals the
   // entered value (a simple uniform fit; the Win32 editor did per-room).
-  if (QLineEdit *edit = find<QLineEdit>("IDC_LEVEL_CEILING_EDIT")) {
+  if (QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT) {
     const float target = edit->text().toFloat();
     const float cur = levelCeiling();
     const float delta = target - cur;
@@ -88,4 +91,3 @@ void LevelKeypad::onCeilingEdited() {
   }
 }
 
-}

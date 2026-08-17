@@ -18,17 +18,21 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class ScriptParmDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CScriptParmDialog (IDD_SCRIPTPARMS): edit up to seven script
 // parameters.
-class ScriptParmDialog : public Dialog {
+class ScriptParmDialog : public QDialog {
   Q_OBJECT
 public:
   explicit ScriptParmDialog(QWidget *parent = nullptr);
-  ~ScriptParmDialog() override;
+  ~ScriptParmDialog();
+private:
+  Ui::ScriptParmDialog *ui;
 };
 
-}

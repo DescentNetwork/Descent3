@@ -17,6 +17,7 @@
  */
 
 #include "trigger_keypad.h"
+#include "ui_triggerkeypad.h"
 
 #include <QCheckBox>
 #include <QLabel>
@@ -26,34 +27,36 @@
 #include "room_external.h"
 #include "trigger.h"
 
-namespace QtEditor {
 
-TriggerKeypad::TriggerKeypad(QWidget *parent) : Keypad(":/ui/triggerkeypad.ui", parent) {
-  if (QPushButton *b = find<QPushButton>("IDC_TRIG_DELETE"))
+TriggerKeypad::TriggerKeypad(QWidget *parent)
+    : QDialog(parent), ui(new Ui::TriggerKeypad)
+{
+  ui->setupUi(this);
+  if (QPushButton *b = ui->IDC_TRIG_DELETE)
     connect(b, &QPushButton::clicked, this, &TriggerKeypad::onDelete);
-  if (QPushButton *b = find<QPushButton>("IDC_TRIG_PREV_IN_MINE"))
+  if (QPushButton *b = ui->IDC_TRIG_PREV_IN_MINE)
     connect(b, &QPushButton::clicked, this, &TriggerKeypad::onPrevInMine);
-  if (QPushButton *b = find<QPushButton>("IDC_TRIG_NEXT_IN_MINE"))
+  if (QPushButton *b = ui->IDC_TRIG_NEXT_IN_MINE)
     connect(b, &QPushButton::clicked, this, &TriggerKeypad::onNextInMine);
-  if (QPushButton *b = find<QPushButton>("IDC_TRIG_PREV_IN_ROOM"))
+  if (QPushButton *b = ui->IDC_TRIG_PREV_IN_ROOM)
     connect(b, &QPushButton::clicked, this, &TriggerKeypad::onPrevInRoom);
-  if (QPushButton *b = find<QPushButton>("IDC_TRIG_NEXT_IN_ROOM"))
+  if (QPushButton *b = ui->IDC_TRIG_NEXT_IN_ROOM)
     connect(b, &QPushButton::clicked, this, &TriggerKeypad::onNextInRoom);
-  if (QPushButton *b = find<QPushButton>("IDC_TRIG_NEXT_PORTAL"))
+  if (QPushButton *b = ui->IDC_TRIG_NEXT_PORTAL)
     connect(b, &QPushButton::clicked, this, &TriggerKeypad::onNextPortal);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_TRIG_ONESHOT"))
+  if (QCheckBox *cb = ui->IDC_TRIG_ONESHOT)
     connect(cb, &QCheckBox::toggled, this, &TriggerKeypad::onOneshotToggled);
 
   const char *activators[] = {"IDC_TRIG_ACTIV_PLAYER", "IDC_TRIG_ACTIV_PLAYER_WEAPONS",
                               "IDC_TRIG_ACTIV_ROBOTS", "IDC_TRIG_ACTIV_ROBOT_WEAPONS", "IDC_TRIG_ACTIV_CLUTTER"};
   for (const char *name : activators)
-    if (QCheckBox *cb = find<QCheckBox>(name))
+    if (QCheckBox *cb = findChild<QCheckBox*>(name))
       connect(cb, &QCheckBox::toggled, this, &TriggerKeypad::onActivatorToggled);
 
   updateDialog();
 }
 
-TriggerKeypad::~TriggerKeypad() = default;
+TriggerKeypad::~TriggerKeypad() { delete ui; }
 
 void TriggerKeypad::updateDialog() {
   // Win32 disables trigger editing when there is no current trigger (which
@@ -67,16 +70,16 @@ void TriggerKeypad::updateDialog() {
     return;
   trigger *tp = &Triggers[Current_trigger];
 
-  if (QLabel *label = find<QLabel>("IDC_TRIG_CURRENT_NAME"))
+  if (QLabel *label = ui->IDC_TRIG_CURRENT_NAME)
     label->setText(tp->name);
-  if (QLabel *label = find<QLabel>("IDC_TRIG_CURRENT_NUM"))
+  if (QLabel *label = ui->IDC_TRIG_CURRENT_NUM)
     label->setText(QString::number(Current_trigger));
-  if (QLabel *label = find<QLabel>("IDC_TRIG_CURRENT_ROOM"))
+  if (QLabel *label = ui->IDC_TRIG_CURRENT_ROOM)
     label->setText(QString::number(tp->roomnum));
-  if (QLabel *label = find<QLabel>("IDC_TRIG_CURRENT_FACE"))
+  if (QLabel *label = ui->IDC_TRIG_CURRENT_FACE)
     label->setText(QString::number(tp->facenum));
 
-  if (QCheckBox *cb = find<QCheckBox>("IDC_TRIG_ONESHOT"))
+  if (QCheckBox *cb = ui->IDC_TRIG_ONESHOT)
     cb->setChecked(tp->flags & TF_ONESHOT);
 
   const struct {
@@ -90,7 +93,7 @@ void TriggerKeypad::updateDialog() {
       {"IDC_TRIG_ACTIV_CLUTTER", AF_CLUTTER},
   };
   for (const auto &a : act)
-    if (QCheckBox *cb = find<QCheckBox>(a.name))
+    if (QCheckBox *cb = findChild<QCheckBox*>(a.name))
       cb->setChecked(tp->activator & a.flag);
 }
 
@@ -124,7 +127,7 @@ void TriggerKeypad::onActivatorToggled() {
       {"IDC_TRIG_ACTIV_CLUTTER", AF_CLUTTER},
   };
   for (const auto &a : act)
-    if (QCheckBox *cb = find<QCheckBox>(a.name))
+    if (QCheckBox *cb = findChild<QCheckBox*>(a.name))
       setActivator(a.flag, a.name, cb->isChecked());
 }
 
@@ -198,4 +201,3 @@ void TriggerKeypad::onNextPortal() {
   updateDialog();
 }
 
-}

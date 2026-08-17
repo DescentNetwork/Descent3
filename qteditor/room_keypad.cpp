@@ -17,6 +17,7 @@
  */
 
 #include "room_keypad.h"
+#include "ui_roomkeypad.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -29,7 +30,6 @@
 #include "room_external.h"
 #include "room.h"
 
-namespace QtEditor {
 
 namespace {
 const char *kFlagChecks[][2] = {
@@ -84,30 +84,33 @@ uint32_t flagFor(const char *name) {
 
 } // namespace
 
-RoomKeypad::RoomKeypad(QWidget *parent) : Keypad(":/ui/roomkeypad.ui", parent) {
-  if (QPushButton *b = find<QPushButton>("IDC_MARK_ROOM"))
+RoomKeypad::RoomKeypad(QWidget *parent)
+    : QDialog(parent), ui(new Ui::RoomKeypad)
+{
+  ui->setupUi(this);
+  if (QPushButton *b = ui->IDC_MARK_ROOM)
     connect(b, &QPushButton::clicked, this, &RoomKeypad::onMarkRoom);
-  if (QPushButton *b = find<QPushButton>("IDC_ROOMPAD_EXPAND_EDGE"))
+  if (QPushButton *b = ui->IDC_ROOMPAD_EXPAND_EDGE)
     connect(b, &QPushButton::clicked, this, &RoomKeypad::onExpandEdge);
-  if (QPushButton *b = find<QPushButton>("IDC_ROOMPAD_CONTRACT_EDGE"))
+  if (QPushButton *b = ui->IDC_ROOMPAD_CONTRACT_EDGE)
     connect(b, &QPushButton::clicked, this, &RoomKeypad::onContractEdge);
-  if (QPushButton *b = find<QPushButton>("IDC_ROOMPAD_EXPAND_FACE"))
+  if (QPushButton *b = ui->IDC_ROOMPAD_EXPAND_FACE)
     connect(b, &QPushButton::clicked, this, &RoomKeypad::onExpandFace);
-  if (QPushButton *b = find<QPushButton>("IDC_ROOMPAD_CONTRACT_FACE"))
+  if (QPushButton *b = ui->IDC_ROOMPAD_CONTRACT_FACE)
     connect(b, &QPushButton::clicked, this, &RoomKeypad::onContractFace);
-  if (QPushButton *b = find<QPushButton>("IDC_ROOMPAD_EXPAND_ROOM"))
+  if (QPushButton *b = ui->IDC_ROOMPAD_EXPAND_ROOM)
     connect(b, &QPushButton::clicked, this, &RoomKeypad::onExpandRoom);
-  if (QPushButton *b = find<QPushButton>("IDC_ROOMPAD_CONTRACT_ROOM"))
+  if (QPushButton *b = ui->IDC_ROOMPAD_CONTRACT_ROOM)
     connect(b, &QPushButton::clicked, this, &RoomKeypad::onContractRoom);
 
   for (const auto &c : kFlagChecks)
-    if (QCheckBox *cb = find<QCheckBox>(c[0]))
+    if (QCheckBox *cb = findChild<QCheckBox*>(c[0]))
       connect(cb, &QCheckBox::toggled, this, &RoomKeypad::onFlagToggled);
 
   updateDialog();
 }
 
-RoomKeypad::~RoomKeypad() = default;
+RoomKeypad::~RoomKeypad() { delete ui; }
 
 void RoomKeypad::setFlag(uint32_t flag, const char *checkName, bool checked) {
   if (Curroomp == nullptr)
@@ -129,17 +132,17 @@ void RoomKeypad::updateDialog() {
     return;
 
   room *rp = Curroomp;
-  if (QLabel *label = find<QLabel>("IDC_ROOM_NAME"))
+  if (QLabel *label = ui->IDC_ROOM_NAME)
     label->setText(rp->name ? rp->name : QString("<room %1>").arg(ROOMNUM(rp)));
-  if (QLabel *label = find<QLabel>("IDC_VERTEX_COUNT"))
+  if (QLabel *label = ui->IDC_VERTEX_COUNT)
     label->setText(QString("Verts: %1").arg(rp->num_verts));
-  if (QLabel *label = find<QLabel>("IDC_FACE_COUNT"))
+  if (QLabel *label = ui->IDC_FACE_COUNT)
     label->setText(QString("Faces: %1").arg(rp->num_faces));
-  if (QLabel *label = find<QLabel>("IDC_PORTAL_COUNT"))
+  if (QLabel *label = ui->IDC_PORTAL_COUNT)
     label->setText(QString("Portals: %1").arg(rp->num_portals));
 
   for (const auto &c : kFlagChecks) {
-    if (QCheckBox *cb = find<QCheckBox>(c[0]))
+    if (QCheckBox *cb = findChild<QCheckBox*>(c[0]))
       cb->setChecked(rp->flags & flagFor(c[0]));
   }
 }
@@ -174,4 +177,3 @@ void RoomKeypad::onContractFace() { expandGeometry(1.0f / 1.05f); }
 void RoomKeypad::onExpandRoom() { expandGeometry(1.1f); }
 void RoomKeypad::onContractRoom() { expandGeometry(1.0f / 1.1f); }
 
-}

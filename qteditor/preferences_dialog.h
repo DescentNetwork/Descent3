@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class PreferencesDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CPreferencesDialog (IDD_PREFERENCES): editor/game preferences such
 // as render mode, renderer, slew speed, joystick and default pilot.
-class PreferencesDialog : public Dialog {
+class PreferencesDialog : public QDialog {
   Q_OBJECT
 public:
   explicit PreferencesDialog(QWidget *parent = nullptr);
-  ~PreferencesDialog() override;
+  ~PreferencesDialog();
 
 private slots:
   void onWindowed();
@@ -40,6 +43,7 @@ private slots:
 private:
   void enableHardwareOptions();
   void disableHardwareOptions();
+private:
+  Ui::PreferencesDialog *ui;
 };
 
-}

@@ -18,19 +18,22 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
 class QListWidget;
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class FilePageDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CFilePageDialog (IDD_FILEPAGE): manages the level's table files
 // (add/lock/checkin/delete/override).
-class FilePageDialog : public Dialog {
+class FilePageDialog : public QDialog {
   Q_OBJECT
 public:
   explicit FilePageDialog(QWidget *parent = nullptr);
-  ~FilePageDialog() override;
+  ~FilePageDialog();
 
 private slots:
   void onAddFile();
@@ -42,7 +45,7 @@ private slots:
 
 private:
   void updateDialog();
+  Ui::FilePageDialog *ui;
   QListWidget *m_files;
 };
 
-}

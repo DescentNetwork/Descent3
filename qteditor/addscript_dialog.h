@@ -18,20 +18,24 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class AddScriptDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CAddScriptDialog (IDD_ADDSCRIPT): names a new script and selects its
 // type ("object" or "trigger").
-class AddScriptDialog : public Dialog {
+class AddScriptDialog : public QDialog {
   Q_OBJECT
 public:
   explicit AddScriptDialog(QWidget *parent = nullptr);
-  ~AddScriptDialog() override;
+  ~AddScriptDialog();
 
   QString name() const;
   QString typeName() const;
+private:
+  Ui::AddScriptDialog *ui;
 };
 
-}

@@ -21,16 +21,15 @@
 #include <QAction>
 #include <QMenu>
 #include <QMainWindow>
-
-class QTimer;
-class QWidget;
+#include <QDialog>
+#include <QWidget>
+#include <QTimer>
 
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-namespace QtEditor {
 
 // Constant set for the editor's view mode. Mirrors the Win32 enum in
 // editor/d3edit.h (VM_MINE, VM_TERRAIN, VM_ROOM). Used by SetViewMode and
@@ -48,7 +47,6 @@ enum {
 int SetViewMode(int view_mode);
 int currentViewMode();
 
-class Dialog;
 class KeypadBar;
 class ViewerPropDialog;
 class EditorView;
@@ -57,18 +55,11 @@ class MainWindow : public QMainWindow {
   Q_OBJECT
 public:
   explicit MainWindow(QWidget *parent = nullptr);
-  ~MainWindow() override;
+  ~MainWindow();
 
   // Generic "this feature is not yet ported" prompt used by the menu handlers
   // for items whose dialog has not been reimplemented for Qt.
   void showNotPorted(const QString &name);
-
-  // CMainFrame OnIdle equivalent. The Qt port uses a QTimer so it ticks when
-  // the application is idle without spinning a CPU. Default interval is
-  // 100ms — matches the Win32 editor's frame cadence for keypad state sync.
-  void startOnIdleTimer(int intervalMs = 100);
-  void stopOnIdleTimer();
-  bool isOnIdleTimerActive() const;
 
   // Save / restore dock state and main-window geometry to QSettings so the
   // editor reopens with the same docked keypads / window size the user
@@ -77,22 +68,8 @@ public:
   void saveWindowState();
   void restoreWindowState();
 
-  // Number of times the on-idle timer has fired since the window was
-  // created. Exposed for tests so we can verify the timer is actually
-  // running without having to observe status-bar side effects.
-  int onIdleTickCount() const { return m_onIdleTickCount; }
-
-private slots:
-  void onIdleTimer();
 
 private:
-#ifdef BAD_UI_IMPLEMENTATION
-  // Looks up a menu action by its ID_* identifier in the .ui-loaded action
-  // host (falling back to a stub action if the identifier is missing).
-  QAction *action(const QString &id);
-  void buildMenus();
-  QMenu *addMenu(const QString &title);
-#endif
   void buildKeypadBar();
 
   void toggleKeypadBar();
@@ -151,13 +128,11 @@ private:
   void onViewMine();
   void onViewTerrain();
   void onViewRoom();
-  // ID_VIEW_TOOLBAR toggles the keypad dock (Win32's "toolbar" maps to the
-  // keypad dialogbar in the Qt port — there is no separate toolbar widget
-  // yet). ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW mirrors D3EditState.objects_in_wireframe
-  // — toggling it changes the wireframe redraw behaviour without rebuilding
-  // geometry.
+  // ID_VIEW_TOOLBAR toggles the main toolbar. ID_VIEW_KEYPAD_TOGGLE
+  // toggles the keypad dock.
   void onViewToolbar();
   void onViewShowObjectsInWireframe();
+  void onButtonOutline();
 
   // Room menu slots that delegate to room_ops. The Room menu has many more
   // items than this list — they route through wireNotPorted() above — but
@@ -168,22 +143,56 @@ private:
   void onRoomSelectByNumber();
   void onRoomRename();
   void onRoomSaveCurrent();
+
+  // ====== VIEWER OPERATIONS ======
+  void onCenterViewOnMine();
+  void onCenterViewOnObject();
+  void onResetViewRadius();
+  void onMoveViewToSelectedRoom();
+
+  // ====== OBJECT OPERATIONS ======
+  int onPlaceCameraAtViewer();
+  void onSetViewerFromCamera();
+  void onSetCameraFromViewer();
+  void onDeleteCurrentObject();
+  void onMovePlayerToCurrentRoom();
+  void onSelectNextObject(int from);
+  void onSelectPrevObject(int from);
+  void onCreateNewViewer();
+  int onSpawnNewViewer();
+  int onSelectNextViewer();
+  void onDeleteCurrentViewer();
+  int onSelectObjectByNumber();
+  void onSelectObject(int objnum);
+
+  // ====== CLIPBOARD OPERATIONS ======
+  void onCopyObjectToClipboard();
+  void onCutObjectToClipboard();
+  void onPasteObjectFromClipboard();
+  bool HasClipboardObject();
+  void ClearClipboard();
+
+  // ====== ROOM OPERATIONS ======
+  bool onAddRoom();
+  bool onDeleteRoom();
+  void onMarkRoom();
+  int onSelectRoomByNumber();
+  bool onRenameRoom();
+  bool onSaveCurrentRoom();
+
+private:
+  // Vars
+  Ui::MainWindow *ui;
+
   QMenuBar *m_menuBar = nullptr;
   QDockWidget *m_keypadDock = nullptr;
-  KeypadBar *m_keypadBar = nullptr;
-  Dialog *m_aboutBox = nullptr;
+  QTabWidget *m_keypadTabs = nullptr;
+  QDialog *m_aboutBox = nullptr;
   ViewerPropDialog *m_viewerProps = nullptr;
   EditorView *m_editorView = nullptr;
-  QTimer *m_idleTimer = nullptr;
 
   // Path of the currently open .d3l, or empty if none / untitled. Updated by
   // onFileOpen / onFileSaveAs and cleared by onFileNew.
   QString m_currentLevelFile;
-
-  // Drives the on-idle tick counter for tests.
-  int m_onIdleTickCount = 0;
-
-  Ui::MainWindow *ui;
 };
 
-}

@@ -19,16 +19,19 @@
 #pragma once
 
 #include "object.h"
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class PhysicsDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CPhysicsDlg (IDD_PHYSICS): edits a physics_info struct.
-class PhysicsDialog : public Dialog {
+class PhysicsDialog : public QDialog {
   Q_OBJECT
 public:
   explicit PhysicsDialog(physics_info *physInfo, QWidget *parent = nullptr);
-  ~PhysicsDialog() override;
+  ~PhysicsDialog();
 
 private slots:
   void onOk();
@@ -55,8 +58,8 @@ private:
   void setPhysicsData(const physics_info *physInfo);
   void getPhysicsData(physics_info *physInfo) const;
 
+  Ui::PhysicsDialog *ui;
   physics_info *m_physInfo;
   int m_gravityFlag;
 };
 
-}

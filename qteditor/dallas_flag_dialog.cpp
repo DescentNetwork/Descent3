@@ -17,18 +17,20 @@
  */
 
 #include "dallas_flag_dialog.h"
+#include "ui_dallas_flag_dialog.h"
 
 #include <QLabel>
 #include <QListWidget>
 
-namespace QtEditor {
 
 DallasFlagDialog::DallasFlagDialog(const QString &prompt, const QStringList &flags, const QStringList &checked,
                                    QWidget *parent)
-    : Dialog(":/ui/dallas_flag_dialog.ui", parent), m_list(nullptr) {
-  if (QLabel *label = find<QLabel>("IDC_FLAG_PROMPT_STATIC"))
+    : QDialog(parent), ui(new Ui::DallasFlagDialog), m_list(nullptr)
+{
+  ui->setupUi(this);
+  if (QLabel *label = ui->IDC_FLAG_PROMPT_STATIC)
     label->setText(prompt);
-  m_list = find<QListWidget>("IDC_FLAG_LIST");
+  m_list = ui->IDC_FLAG_LIST;
   if (m_list != nullptr) {
     m_list->addItems(flags);
     m_list->setSelectionMode(QAbstractItemView::MultiSelection);
@@ -38,7 +40,7 @@ DallasFlagDialog::DallasFlagDialog(const QString &prompt, const QStringList &fla
   }
 }
 
-DallasFlagDialog::~DallasFlagDialog() = default;
+DallasFlagDialog::~DallasFlagDialog() { delete ui; }
 
 QStringList DallasFlagDialog::checkedFlags() const {
   QStringList out;
@@ -48,4 +50,3 @@ QStringList DallasFlagDialog::checkedFlags() const {
   return out;
 }
 
-}

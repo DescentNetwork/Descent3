@@ -19,18 +19,21 @@
 #pragma once
 
 #include "game.h"
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class TerrainSoundDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CTerrainSoundDialog (IDD_TERRAIN_SOUND_DIALOG): edits the five
 // terrain sound bands (sound, low/high altitude, low/high volume) for the
 // current level.
-class TerrainSoundDialog : public Dialog {
+class TerrainSoundDialog : public QDialog {
   Q_OBJECT
 public:
   explicit TerrainSoundDialog(QWidget *parent = nullptr);
-  ~TerrainSoundDialog() override;
+  ~TerrainSoundDialog();
 
 private slots:
   void onNext();
@@ -43,8 +46,8 @@ private:
   void copyToControls();
   bool copyFromControls();
 
+  Ui::TerrainSoundDialog *ui;
   terrain_sound_band m_bands[NUM_TERRAIN_SOUND_BANDS];
   int m_current = 0;
 };
 
-}

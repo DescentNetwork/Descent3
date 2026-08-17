@@ -19,19 +19,21 @@
 #pragma once
 
 #include <cstdint>
+#include <QDialog>
 
-#include "qteditor_dialog.h"
+QT_BEGIN_NAMESPACE
+namespace Ui { class BriefMissionFlagsDialog; }
+QT_END_NAMESPACE
 
-namespace QtEditor {
 
 // Port of CBriefMissionFlagsDlg (IDD_BRIEFMISSIONFLAGS): picks which of the 32
 // mission-flag bits must be set / must be unset / are irrelevant.
-class BriefMissionFlagsDialog : public Dialog {
+class BriefMissionFlagsDialog : public QDialog {
   Q_OBJECT
 public:
   explicit BriefMissionFlagsDialog(uint32_t setflags, uint32_t unsetflags,
                                    QWidget *parent = nullptr);
-  ~BriefMissionFlagsDialog() override;
+  ~BriefMissionFlagsDialog();
 
   uint32_t setFlags() const { return m_set; }
   uint32_t unsetFlags() const { return m_unset; }
@@ -40,8 +42,9 @@ private slots:
   void onOk();
 
 private:
+  Ui::BriefMissionFlagsDialog *ui;
+
   uint32_t m_set;
   uint32_t m_unset;
 };
 
-}

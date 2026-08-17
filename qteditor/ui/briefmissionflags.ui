@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>BriefMissionFlagsDialog</class>
   <widget class="QDialog" name="IDD_BRIEFMISSIONFLAGS">
     <property name="geometry">
       <rect>

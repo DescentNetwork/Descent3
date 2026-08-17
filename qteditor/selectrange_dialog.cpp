@@ -17,6 +17,7 @@
  */
 
 #include "selectrange_dialog.h"
+#include "ui_selectrange_dialog.h"
 
 #include <cstdlib>
 
@@ -28,29 +29,24 @@
 #include "d3edit.h"
 #include "terrain.h"
 
-namespace QtEditor {
 
-SelectRangeDialog::SelectRangeDialog(QWidget *parent) : Dialog(":/ui/selectrange_dialog.ui", parent) {
-  if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
-    connect(ok, &QPushButton::clicked, this, &SelectRangeDialog::onOk);
-  }
-  if (auto *edit = find<QLineEdit>("IDC_LOWER_BOUND_EDIT"))
-    connect(edit, &QLineEdit::editingFinished, this, &SelectRangeDialog::onLowerBoundChanged);
-  if (auto *edit = find<QLineEdit>("IDC_UPPER_BOUND_EDIT"))
-    connect(edit, &QLineEdit::editingFinished, this, &SelectRangeDialog::onUpperBoundChanged);
-  if (auto *edit = find<QLineEdit>("IDC_SLOPE_EDIT"))
-    connect(edit, &QLineEdit::editingFinished, this, &SelectRangeDialog::onSlopeChanged);
-  if (auto *cb = find<QCheckBox>("IDC_SELECT_SLOPE_CHECK"))
-    connect(cb, &QCheckBox::toggled, this, &SelectRangeDialog::onSelectSlopeToggled);
-  if (auto *edit = find<QLineEdit>("IDC_SLOPE_EDIT"))
-    edit->setEnabled(find<QCheckBox>("IDC_SELECT_SLOPE_CHECK")->isChecked());
+SelectRangeDialog::SelectRangeDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::SelectRangeDialog)
+{
+  ui->setupUi(this);
+
+  connect(this, &QDialog::accept, this, &SelectRangeDialog::onOk);
+  connect(ui->IDC_LOWER_BOUND_EDIT, &QLineEdit::editingFinished, this, &SelectRangeDialog::onLowerBoundChanged);
+  connect(ui->IDC_UPPER_BOUND_EDIT, &QLineEdit::editingFinished, this, &SelectRangeDialog::onUpperBoundChanged);
+  connect(ui->IDC_SLOPE_EDIT, &QLineEdit::editingFinished, this, &SelectRangeDialog::onSlopeChanged);
+  connect(ui->IDC_SELECT_SLOPE_CHECK, &QCheckBox::toggled, this, &SelectRangeDialog::onSelectSlopeToggled);
+  ui->IDC_SLOPE_EDIT->setEnabled(ui->IDC_SELECT_SLOPE_CHECK->isChecked());
 }
 
-SelectRangeDialog::~SelectRangeDialog() = default;
+SelectRangeDialog::~SelectRangeDialog() { delete ui; }
 
 void SelectRangeDialog::clampAndStore(const char *editName, int *target) {
-  QLineEdit *edit = find<QLineEdit>(editName);
+  QLineEdit *edit = findChild<QLineEdit *>(editName);
   if (edit == nullptr)
     return;
   int num = edit->text().toInt();
@@ -67,16 +63,15 @@ void SelectRangeDialog::onUpperBoundChanged() { clampAndStore("IDC_UPPER_BOUND_E
 void SelectRangeDialog::onSlopeChanged() { clampAndStore("IDC_SLOPE_EDIT", &m_slopeAngle); }
 
 void SelectRangeDialog::onSelectSlopeToggled(bool enabled) {
-  if (QWidget *edit = find<QWidget>("IDC_SLOPE_EDIT"))
-    edit->setEnabled(enabled);
+  ui->IDC_SLOPE_EDIT->setEnabled(enabled);
 }
 
 void SelectRangeDialog::runSelection() {
-  const bool use_slope = find<QCheckBox>("IDC_SELECT_SLOPE_CHECK")->isChecked();
-  const bool inverted = find<QCheckBox>("IDC_INVERSE_CHECK")->isChecked();
-  const bool texgrid = find<QCheckBox>("IDC_TEXTURE_GRID_CHECK")->isChecked();
-  const bool random = find<QCheckBox>("IDC_RANDOM_CHECK")->isChecked();
-  const bool cur_texture = find<QCheckBox>("IDC_SELECT_CUR_TEXTURE_CHECK")->isChecked();
+  const bool use_slope = ui->IDC_SELECT_SLOPE_CHECK->isChecked();
+  const bool inverted = ui->IDC_INVERSE_CHECK->isChecked();
+  const bool texgrid = ui->IDC_TEXTURE_GRID_CHECK->isChecked();
+  const bool random = ui->IDC_RANDOM_CHECK->isChecked();
+  const bool cur_texture = ui->IDC_SELECT_CUR_TEXTURE_CHECK->isChecked();
 
   if (m_upperBound < m_lowerBound) {
     QMessageBox::warning(this, "Select Range", "Lower bound must be less than upper bound!");
@@ -153,4 +148,3 @@ void SelectRangeDialog::onOk() {
   accept();
 }
 
-}

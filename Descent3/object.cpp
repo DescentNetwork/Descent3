@@ -1216,7 +1216,7 @@ int print_object_info = 0;
 
 #ifdef EDITOR
 // This array matches the object types in object.h
-char *Object_type_names[MAX_OBJECT_TYPES] = {
+const char *Object_type_names[MAX_OBJECT_TYPES] = {
     "WALL",        // OBJ_WALL				0
     "FIREBALL",    // OBJ_FIREBALL			1
     "ROBOT",       // OBJ_ROBOT				2

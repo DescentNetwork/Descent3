@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>StatusDialog</class>
   <widget class="QDialog" name="IDD_STATUSDLG">
     <property name="geometry">
       <rect>
@@ -66,9 +66,6 @@
           <width>419</width>
           <height>42</height>
         </rect>
-      </property>
-      <property name="text">
-        <string>Progress1</string>
       </property>
       <property name="visible">
         <bool>true</bool>

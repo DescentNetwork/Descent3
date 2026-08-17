@@ -18,23 +18,26 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class FontDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CGrFontDialog (IDD_FONT_DIALOG): font editor (ASCII range, mono/
 // bitmapped, brightness, name, open/save/checkin/delete).
-class FontDialog : public Dialog {
+class FontDialog : public QDialog {
   Q_OBJECT
 public:
   explicit FontDialog(QWidget *parent = nullptr);
-  ~FontDialog() override;
+  ~FontDialog();
 
 private slots:
   void onOk();
 
 private:
   void updateDialog();
+  Ui::FontDialog *ui;
 };
 
-}

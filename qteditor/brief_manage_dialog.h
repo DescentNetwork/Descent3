@@ -18,24 +18,27 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
 class QListWidget;
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class BriefManageDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CBriefManage (IDD_BRIEF_MANAGE): manage briefing pages/screens.
-class BriefManageDialog : public Dialog {
+class BriefManageDialog : public QDialog {
   Q_OBJECT
 public:
   explicit BriefManageDialog(QWidget *parent = nullptr);
-  ~BriefManageDialog() override;
+  ~BriefManageDialog();
 
 private slots:
   void onAdd();
 
 private:
+  Ui::BriefManageDialog *ui;
   QListWidget *m_list;
 };
 
-}

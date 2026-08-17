@@ -18,25 +18,28 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class DallasFlagDialog; }
+QT_END_NAMESPACE
 
 class QListWidget;
 
-namespace QtEditor {
 
 // Port of CDallasFlagDlg (IDD_DALLAS_FLAG_DIALOG): multi-select a set of
 // flags for a Dallas (script) value.
-class DallasFlagDialog : public Dialog {
+class DallasFlagDialog : public QDialog {
   Q_OBJECT
 public:
   explicit DallasFlagDialog(const QString &prompt, const QStringList &flags,
                             const QStringList &checked = {}, QWidget *parent = nullptr);
-  ~DallasFlagDialog() override;
+  ~DallasFlagDialog();
 
   QStringList checkedFlags() const;
 
 private:
+  Ui::DallasFlagDialog *ui;
   QListWidget *m_list;
 };
 
-}

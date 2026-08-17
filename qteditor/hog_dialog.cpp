@@ -17,6 +17,7 @@
  */
 
 #include "hog_dialog.h"
+#include "ui_hogdialog.h"
 
 #include <cstdio>
 #include <ctime>
@@ -30,7 +31,6 @@
 #include "posix_stream.h"
 #include "hog2_format.h"
 
-namespace QtEditor {
 
 namespace {
 
@@ -51,15 +51,18 @@ QString formatTimestamp(uint32_t ts) {
 
 } // namespace
 
-HogDialog::HogDialog(QWidget *parent) : Dialog(":/ui/hogdialog.ui", parent) {
-  m_table = find<QTableWidget>("IDC_HOGLIST");
+HogDialog::HogDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::HogDialog)
+{
+  ui->setupUi(this);
+  m_table = ui->IDC_HOGLIST;
   if (m_table) {
     m_table->setColumnCount(4);
     m_table->setHorizontalHeaderLabels({"Filename", "Date", "Length", "Attributes"});
   }
 }
 
-HogDialog::~HogDialog() = default;
+HogDialog::~HogDialog() { delete ui; }
 
 bool HogDialog::loadHogFile(const QString &hogname) {
   if (m_table == nullptr)
@@ -118,19 +121,19 @@ void HogDialog::addFile(const QString &filename, const QString &date, qint64 len
   m_table->setItem(row, 3, new QTableWidgetItem(attributes));
 }
 
-void HogDialog::clearFiles() {
+void HogDialog::clearFiles()
+{
   if (m_table)
     m_table->setRowCount(0);
 }
 
-void HogDialog::setProgress(int percent) {
-  if (auto *bar = find<QProgressBar>("IDC_HOGPROGRESS"))
-    bar->setValue(percent);
+void HogDialog::setProgress(int percent)
+{
+    ui->IDC_HOGPROGRESS->setValue(percent);
 }
 
-void HogDialog::setStatusText(const QString &text) {
-  if (auto *label = find<QLabel>("IDC_STATUSTEXT"))
-    label->setText(text);
+void HogDialog::setStatusText(const QString &text)
+{
+  ui->IDC_STATUSTEXT->setText(text);
 }
 
-}

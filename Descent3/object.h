@@ -650,7 +650,7 @@
 #define LRT_GOURAUD 1
 #define LRT_LIGHTMAPS 2
 
-extern char *Object_type_names[MAX_OBJECT_TYPES];
+extern const char *Object_type_names[MAX_OBJECT_TYPES];
 
 // stuctures for different kinds of weapon simulation (for precompution)
 

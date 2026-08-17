@@ -17,12 +17,13 @@
  */
 
 #include "worldobjectslight_dialog.h"
+#include "ui_worldobjectslight.h"
 
-namespace QtEditor {
 
 WorldObjectsLightDialog::WorldObjectsLightDialog(QWidget *parent)
-    : Dialog(":/ui/worldobjectslight.ui", parent) {}
-
-WorldObjectsLightDialog::~WorldObjectsLightDialog() = default;
-
+    : QDialog(parent), ui(new Ui::WorldObjectsLightDialog) {
+  ui->setupUi(this);
 }
+
+WorldObjectsLightDialog::~WorldObjectsLightDialog() { delete ui; }
+

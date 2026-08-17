@@ -17,6 +17,7 @@
  */
 
 #include "terrain_keypad.h"
+#include "ui_terrainkeypad.h"
 
 #include <QCheckBox>
 #include <QLabel>
@@ -27,40 +28,42 @@
 #include "config.h"
 #include "terrain.h"
 
-namespace QtEditor {
 
-TerrainKeypad::TerrainKeypad(QWidget *parent) : Keypad(":/ui/terrainkeypad.ui", parent) {
-  if (QPushButton *b = find<QPushButton>("IDC_TERRPAD_MOVE_UP"))
+TerrainKeypad::TerrainKeypad(QWidget *parent)
+    : QDialog(parent), ui(new Ui::TerrainKeypad)
+{
+  ui->setupUi(this);
+  if (QPushButton *b = ui->IDC_TERRPAD_MOVE_UP)
     connect(b, &QPushButton::clicked, this, &TerrainKeypad::onMoveUp);
-  if (QPushButton *b = find<QPushButton>("IDC_TERRPAD_MOVE_DOWN"))
+  if (QPushButton *b = ui->IDC_TERRPAD_MOVE_DOWN)
     connect(b, &QPushButton::clicked, this, &TerrainKeypad::onMoveDown);
-  if (QPushButton *b = find<QPushButton>("IDC_TERRPAD_RAISE10"))
+  if (QPushButton *b = ui->IDC_TERRPAD_RAISE10)
     connect(b, &QPushButton::clicked, this, &TerrainKeypad::onRaise10);
-  if (QPushButton *b = find<QPushButton>("IDC_TERRPAD_LOWER10"))
+  if (QPushButton *b = ui->IDC_TERRPAD_LOWER10)
     connect(b, &QPushButton::clicked, this, &TerrainKeypad::onLower10);
-  if (QPushButton *b = find<QPushButton>("IDC_TERRPAD_SELECT_NONE"))
+  if (QPushButton *b = ui->IDC_TERRPAD_SELECT_NONE)
     connect(b, &QPushButton::clicked, this, &TerrainKeypad::onSelectNone);
-  if (QPushButton *b = find<QPushButton>("IDC_TERR_SELECT_ALL"))
+  if (QPushButton *b = ui->IDC_TERR_SELECT_ALL)
     connect(b, &QPushButton::clicked, this, &TerrainKeypad::onSelectAll);
-  if (QPushButton *b = find<QPushButton>("IDC_TERRPAD_MAKE_MAX"))
+  if (QPushButton *b = ui->IDC_TERRPAD_MAKE_MAX)
     connect(b, &QPushButton::clicked, this, &TerrainKeypad::onMakeMax);
-  if (QPushButton *b = find<QPushButton>("IDC_TERRPAD_MAKE_MIN"))
+  if (QPushButton *b = ui->IDC_TERRPAD_MAKE_MIN)
     connect(b, &QPushButton::clicked, this, &TerrainKeypad::onMakeMin);
-  if (QPushButton *b = find<QPushButton>("IDC_TERRPAD_MAKE_ZERO"))
+  if (QPushButton *b = ui->IDC_TERRPAD_MAKE_ZERO)
     connect(b, &QPushButton::clicked, this, &TerrainKeypad::onMakeZero);
-  if (QPushButton *b = find<QPushButton>("IDC_TERRPAD_FILL_AREA"))
+  if (QPushButton *b = ui->IDC_TERRPAD_FILL_AREA)
     connect(b, &QPushButton::clicked, this, &TerrainKeypad::onFillArea);
-  if (QPushButton *b = find<QPushButton>("IDC_TERR_MORE_MOONS"))
+  if (QPushButton *b = ui->IDC_TERR_MORE_MOONS)
     connect(b, &QPushButton::clicked, this, &TerrainKeypad::onMoreMoons);
-  if (QPushButton *b = find<QPushButton>("IDC_TERR_LESS_MOONS"))
+  if (QPushButton *b = ui->IDC_TERR_LESS_MOONS)
     connect(b, &QPushButton::clicked, this, &TerrainKeypad::onLessMoons);
-  if (QLineEdit *edit = find<QLineEdit>("IDC_FOG_DISTANCE_EDIT"))
+  if (QLineEdit *edit = ui->IDC_FOG_DISTANCE_EDIT)
     connect(edit, &QLineEdit::editingFinished, this, &TerrainKeypad::onFogDistanceEdited);
 
   updateDialog();
 }
 
-TerrainKeypad::~TerrainKeypad() = default;
+TerrainKeypad::~TerrainKeypad() { delete ui; }
 
 void TerrainKeypad::updateDialog() {
   const bool hasTerrain = (Num_terrain_selected > 0);
@@ -68,10 +71,10 @@ void TerrainKeypad::updateDialog() {
                          "IDC_TERRPAD_LOWER10",    "IDC_TERRPAD_MAKE_MAX",  "IDC_TERRPAD_MAKE_MIN",
                          "IDC_TERRPAD_MAKE_ZERO",  "IDC_TERRPAD_FILL_AREA"};
   for (const char *name : names)
-    if (QWidget *w = find<QWidget>(name))
+    if (QWidget *w = findChild<QWidget*>(name))
       w->setEnabled(hasTerrain);
 
-  if (QLabel *label = find<QLabel>("IDC_NUM_MOONS_STATIC"))
+  if (QLabel *label = ui->IDC_NUM_MOONS_STATIC)
     label->setText(QString("Moons: %1").arg(Terrain_sky.num_satellites));
 }
 
@@ -148,7 +151,7 @@ void TerrainKeypad::onLessMoons() {
   updateDialog();
 }
 void TerrainKeypad::onFogDistanceEdited() {
-  if (QLineEdit *edit = find<QLineEdit>("IDC_FOG_DISTANCE_EDIT")) {
+  if (QLineEdit *edit = ui->IDC_FOG_DISTANCE_EDIT) {
     float predist = edit->text().toFloat();
     if (predist < 20)
       predist = 20;
@@ -159,4 +162,3 @@ void TerrainKeypad::onFogDistanceEdited() {
   }
 }
 
-}

@@ -18,15 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class AboutDialog; }
+QT_END_NAMESPACE
 
-class AboutDialog : public Dialog {
+
+class AboutDialog : public QDialog {
   Q_OBJECT
 public:
   explicit AboutDialog(QWidget *parent = nullptr);
-  ~AboutDialog() override;
+  ~AboutDialog();
+
+private:
+  Ui::AboutDialog *ui;
 };
 
-}

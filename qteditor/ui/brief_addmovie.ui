@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>BriefMovieDialog</class>
   <widget class="QDialog" name="IDD_BRIEF_ADDMOVIE">
     <property name="geometry">
       <rect>

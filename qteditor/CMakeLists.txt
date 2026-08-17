@@ -1,7 +1,7 @@
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 5.15 REQUIRED COMPONENTS Widgets UiTools Test)
+find_package(Qt5 5.15 REQUIRED COMPONENTS Widgets UiTools)
 
 qt5_add_resources(QTEDITOR_RESOURCES resources.qrc)
 
@@ -36,8 +36,6 @@ set(QTEDITOR_SOURCES
   d3_editor_init.h
   d3_editor_state.cpp
   dallas_prompt_dialogs.cpp
-  dialog_test.cpp
-  dialog_test.h
   dallas_prompt_dialogs.h
   death_dialog.cpp
   death_dialog.h
@@ -54,7 +52,6 @@ set(QTEDITOR_SOURCES
   editor_room_state.h
   editor_settings.cpp
   editor_settings.h
-  editor_test.cpp
   editor_view.cpp
   editor_view.h
   generic_death_dialog.cpp
@@ -79,7 +76,6 @@ set(QTEDITOR_SOURCES
   level_info_dialog.h
   level_io.cpp
   level_io.h
-  main.cpp
   main_window.cpp
   multicheck_dialog.cpp
   multicheck_dialog.h
@@ -96,10 +92,6 @@ set(QTEDITOR_SOURCES
   physics_dialog.h
   player_weapons_dialog.cpp
   player_weapons_dialog.h
-  object_ops.cpp
-  object_ops.h
-  object_clipboard.cpp
-  object_clipboard.h
   powprop_dialog.cpp
   powprop_dialog.h
   procedural_dialog.cpp
@@ -115,16 +107,12 @@ set(QTEDITOR_SOURCES
   propscript_dialog.cpp
   propscript_dialog.h
   qt_messagebox.cpp
-  qteditor_dialog.cpp
-  qteditor_dialog.h
   quickcompile_dialog.cpp
   quickcompile_dialog.h
   robot_weapons_dialog.cpp
   robot_weapons_dialog.h
   room_keypad.cpp
   room_keypad.h
-  room_ops.cpp
-  room_ops.h
   script_editor_dialog.cpp
   script_editor_dialog.h
   script_parm_dialog.cpp
@@ -147,14 +135,10 @@ set(QTEDITOR_SOURCES
   terrain_sound_dialog.h
   trigger_keypad.cpp
   trigger_keypad.h
-  qt_ui_loader.cpp
-  qt_ui_loader.h
   viewer_prop_dialog.cpp
   viewer_prop_dialog.h
   water_procedural_dialog.cpp
   water_procedural_dialog.h
-  viewer_ops.cpp
-  viewer_ops.h
   world_objects_door_dialog.cpp
   world_objects_door_dialog.h
   world_objects_generic_dialog.cpp
@@ -326,23 +310,19 @@ set(QTEDITOR_UI_FILES
   ui/dallas_vector_dialog.ui
   ui/dallas_main_dialog.ui
   ui/localizescript.ui
+  ui/keypads.ui
   ui/scriptselect.ui
 )
 
-# The GUI editor excludes the QTest test driver (which has its own main()).
-set(QTEDITOR_APP_SOURCES ${QTEDITOR_SOURCES} ${QTEDITOR_UI_FILES})
-list(FILTER QTEDITOR_APP_SOURCES EXCLUDE REGEX "editor_test\.cpp$")
-
-# The test build excludes the editor's own main.cpp (the test driver supplies
-# its own main()) but otherwise uses the same sources as the app.
-set(QTEDITOR_TEST_SOURCES ${QTEDITOR_SOURCES} ${QTEDITOR_UI_FILES})
-list(FILTER QTEDITOR_TEST_SOURCES EXCLUDE REGEX "main\.cpp$")
 add_executable(Descent3EditorQt
-  ${QTEDITOR_APP_SOURCES}
+  main.cpp
+  ${QTEDITOR_SOURCES}
+  ${QTEDITOR_UI_FILES}
   ${QTEDITOR_RESOURCES}
 )
 
 target_include_directories(Descent3EditorQt PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}
   ${PROJECT_SOURCE_DIR}
   ${PROJECT_SOURCE_DIR}/editor
   ${PROJECT_SOURCE_DIR}/lib
@@ -379,36 +359,45 @@ set_target_properties(Descent3EditorQt PROPERTIES
 
 # QTest based editor tester (exercises every dialog/widget).
 add_executable(Descent3EditorTests
-  ${QTEDITOR_TEST_SOURCES}
+  editor_test.cpp
+  dialog_test.cpp
+  dialog_test.h
+  ${QTEDITOR_SOURCES}
+  ${QTEDITOR_UI_FILES}
   ${QTEDITOR_RESOURCES}
 )
-target_include_directories(Descent3EditorTests PRIVATE
-  ${PROJECT_SOURCE_DIR}
-  ${PROJECT_SOURCE_DIR}/editor
-  ${PROJECT_SOURCE_DIR}/lib
-  ${PROJECT_SOURCE_DIR}/fix
-  ${PROJECT_SOURCE_DIR}/Descent3
-  ${PROJECT_SOURCE_DIR}/cfile
-  ${PROJECT_SOURCE_DIR}/manage
-  ${PROJECT_SOURCE_DIR}/renderer
-  ${PROJECT_SOURCE_DIR}/linux
-  ${PROJECT_SOURCE_DIR}/vecmat
-  ${PROJECT_SOURCE_DIR}/physics
-  ${PROJECT_SOURCE_DIR}/grtext
-  ${PROJECT_SOURCE_DIR}/bitmap
-  ${PROJECT_SOURCE_DIR}/sndlib
-  ${PROJECT_SOURCE_DIR}/descar/utils
-  ${PROJECT_SOURCE_DIR}/descar/src
-  ${PROJECT_BINARY_DIR}/lib
-  ${SDL3_INCLUDE_DIRS}
-)
-target_link_libraries(Descent3EditorTests PRIVATE
-  $<LINK_LIBRARY:WHOLE_ARCHIVE,Descent3Core,linux>
-  Qt5::Widgets
-  Qt5::UiTools
-  Qt5::Test
-  ${PLATFORM_LIBS}
-)
-set_target_properties(Descent3EditorTests PROPERTIES
-  AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
-  OUTPUT_NAME "Descent3EditorTests")
+
+if(BUILD_QT_EDITOR_TEST)
+  find_package(Qt5 5.15 REQUIRED COMPONENTS Widgets UiTools Test)
+  target_include_directories(Descent3EditorTests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/editor
+    ${PROJECT_SOURCE_DIR}/lib
+    ${PROJECT_SOURCE_DIR}/fix
+    ${PROJECT_SOURCE_DIR}/Descent3
+    ${PROJECT_SOURCE_DIR}/cfile
+    ${PROJECT_SOURCE_DIR}/manage
+    ${PROJECT_SOURCE_DIR}/renderer
+    ${PROJECT_SOURCE_DIR}/linux
+    ${PROJECT_SOURCE_DIR}/vecmat
+    ${PROJECT_SOURCE_DIR}/physics
+    ${PROJECT_SOURCE_DIR}/grtext
+    ${PROJECT_SOURCE_DIR}/bitmap
+    ${PROJECT_SOURCE_DIR}/sndlib
+    ${PROJECT_SOURCE_DIR}/descar/utils
+    ${PROJECT_SOURCE_DIR}/descar/src
+    ${PROJECT_BINARY_DIR}/lib
+    ${SDL3_INCLUDE_DIRS}
+  )
+  target_link_libraries(Descent3EditorTests PRIVATE
+    $<LINK_LIBRARY:WHOLE_ARCHIVE,Descent3Core,linux>
+    Qt5::Widgets
+    Qt5::UiTools
+    Qt5::Test
+    ${PLATFORM_LIBS}
+  )
+  set_target_properties(Descent3EditorTests PROPERTIES
+    AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
+    OUTPUT_NAME "Descent3EditorTests")
+endif()

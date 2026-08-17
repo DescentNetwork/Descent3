@@ -19,12 +19,14 @@
 #pragma once
 
 #include <QString>
-
-#include "qteditor_dialog.h"
+#include <QDialog>
 
 class QTableWidget;
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class HogDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CHogDialog (IDD_HOGDIALOG): shows a .hog file's table of contents.
 // Mirrors the Win32 dialog, which sets up Filename / Date / Length /
@@ -33,11 +35,11 @@ namespace QtEditor {
 // intentionally left commented out in the Win32 source and the column widget
 // is read-only. Callers can drive the table incrementally via addFile() /
 // clearFiles(), or load an entire hog file in one shot via loadHogFile().
-class HogDialog : public Dialog {
+class HogDialog : public QDialog {
   Q_OBJECT
 public:
   explicit HogDialog(QWidget *parent = nullptr);
-  ~HogDialog() override;
+  ~HogDialog();
 
   // Returns true if loadHogFile() was able to read the header and at least
   // the first entry from the file. False on open / format / read errors.
@@ -50,7 +52,7 @@ public:
   void setStatusText(const QString &text);
 
 private:
+  Ui::HogDialog *ui;
   QTableWidget *m_table;
 };
 
-}

@@ -17,6 +17,7 @@
  */
 
 #include "megacell_dialog.h"
+#include "ui_megacell.h"
 
 #include <QInputDialog>
 #include <QLabel>
@@ -27,32 +28,34 @@
 #include "megacell.h"
 #include "pserror.h"
 
-namespace QtEditor {
 
-MegacellDialog::MegacellDialog(QWidget *parent) : Dialog(":/ui/megacell.ui", parent) {
-  if (QPushButton *b = find<QPushButton>("IDC_NEW_MEGACELL"))
+MegacellDialog::MegacellDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::MegacellDialog)
+{
+  ui->setupUi(this);
+  if (QPushButton *b = ui->IDC_NEW_MEGACELL)
     connect(b, &QPushButton::clicked, this, &MegacellDialog::onNew);
-  if (QPushButton *b = find<QPushButton>("IDC_DELETE_MEGACELL"))
+  if (QPushButton *b = ui->IDC_DELETE_MEGACELL)
     connect(b, &QPushButton::clicked, this, &MegacellDialog::onDelete);
-  if (QPushButton *b = find<QPushButton>("IDC_LOCK_MEGACELL"))
+  if (QPushButton *b = ui->IDC_LOCK_MEGACELL)
     connect(b, &QPushButton::clicked, this, &MegacellDialog::onLock);
-  if (QPushButton *b = find<QPushButton>("IDC_CHECKIN_MEGACELL"))
+  if (QPushButton *b = ui->IDC_CHECKIN_MEGACELL)
     connect(b, &QPushButton::clicked, this, &MegacellDialog::onCheckin);
-  if (QPushButton *b = find<QPushButton>("IDC_PREVIOUS_MEGACELL"))
+  if (QPushButton *b = ui->IDC_PREVIOUS_MEGACELL)
     connect(b, &QPushButton::clicked, this, &MegacellDialog::onPrev);
-  if (QPushButton *b = find<QPushButton>("IDC_NEXT_MEGACELL"))
+  if (QPushButton *b = ui->IDC_NEXT_MEGACELL)
     connect(b, &QPushButton::clicked, this, &MegacellDialog::onNext);
 
   updateDialog();
 }
 
-MegacellDialog::~MegacellDialog() = default;
+MegacellDialog::~MegacellDialog() { delete ui; }
 
 void MegacellDialog::updateDialog() {
   if (Num_megacells < 1)
     return;
   const int n = D3EditState.current_megacell;
-  if (QLabel *label = find<QLabel>("IDC_MEGACELL_NAME"))
+  if (auto *label = ui->IDC_MEGACELL_NAME_EDIT)
     label->setText(Megacells[n].name);
 }
 
@@ -110,4 +113,3 @@ void MegacellDialog::onNext() {
   updateDialog();
 }
 
-}

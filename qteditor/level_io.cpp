@@ -31,10 +31,9 @@
 #include "BOA.h"
 #include "bnode.h"
 #include "crossplat.h"
-#include "d3x.h"
 #include "ddio.h"
 #include "doorway.h"
-#include "Erooms.h"
+//#include "Erooms.h"
 #include "findintersection.h"
 #include "game.h"
 #include "gametexture.h"
@@ -48,14 +47,14 @@
 #include "manage.h"
 #include "matcen.h"
 #include "mem.h"
-#include "moveworld.h"
+//#include "moveworld.h"
 #include "object.h"
 #include "osiris_predefs.h"
 #include "player.h"
 #include "polymodel.h"
 #include "renderer.h"
 #include "room.h"
-#include "selectedroom.h"
+//#include "selectedroom.h"
 #include "special_face.h"
 #include "terrain.h"
 #include "trigger.h"
@@ -63,7 +62,6 @@
 #include <cstdio>
 #include <cstring>
 
-namespace QtEditor {
 
 // Trim leading and trailing spaces in-place; returns whether anything was
 // stripped. Verbatim from editor/HFile.cpp and free of game-state deps so
@@ -366,4 +364,3 @@ char *RenderLevelStats() {
   return text_buf;
 }
 
-} // namespace QtEditor

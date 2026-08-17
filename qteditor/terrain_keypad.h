@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "keypad_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class TerrainKeypad; }
+QT_END_NAMESPACE
+
 
 // Port of CTerrainDialog (IDD_TERRAINKEYPAD): terrain height editing,
 // selection, sky and moon controls.
-class TerrainKeypad : public Keypad {
+class TerrainKeypad : public QDialog {
   Q_OBJECT
 public:
   explicit TerrainKeypad(QWidget *parent = nullptr);
-  ~TerrainKeypad() override;
+  ~TerrainKeypad();
 
 private slots:
   void onMoveUp();
@@ -48,6 +51,10 @@ private slots:
 private:
   void updateDialog();
   void changeSelectedHeights(int delta, bool toAbsolute = false, int absoluteValue = 0);
+
+  template <typename T>
+  T *find(const QString &name) const { return findChild<T *>(name); }
+
+  Ui::TerrainKeypad *ui;
 };
 
-}

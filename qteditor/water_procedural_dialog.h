@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class WaterProceduralDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CWaterProceduralDialog (IDD_WATER_PROCEDURAL): water procedural
 // texture parameters (thickness/light/height/frequency/size, osc/eval times).
-class WaterProceduralDialog : public Dialog {
+class WaterProceduralDialog : public QDialog {
   Q_OBJECT
 public:
   explicit WaterProceduralDialog(QWidget *parent = nullptr);
-  ~WaterProceduralDialog() override;
+  ~WaterProceduralDialog();
 
 private slots:
   void onParamChanged();
@@ -36,6 +39,6 @@ private slots:
 
 private:
   void updateDialog();
+  Ui::WaterProceduralDialog *ui;
 };
 
-}

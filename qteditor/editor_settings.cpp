@@ -23,7 +23,6 @@
 
 #include <QSettings>
 
-namespace QtEditor {
 
 namespace {
 
@@ -186,4 +185,3 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state) {
   settings.endGroup();
 }
 
-} // namespace QtEditor

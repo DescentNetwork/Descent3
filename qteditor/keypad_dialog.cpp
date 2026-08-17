@@ -15,28 +15,3 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include "keypad_dialog.h"
-
-#include <QTabWidget>
-
-namespace QtEditor {
-
-bool Keypad::m_active = true;
-
-Keypad::Keypad(const QString &uiResource, QWidget *parent) : Widget(uiResource, parent) {}
-
-Keypad::~Keypad() = default;
-
-KeypadBar::KeypadBar(QWidget *parent) : Widget(":/ui/keypad_dlgbar.ui", parent) {
-  m_tabs = find<QTabWidget>("IDC_KEYPADS");
-}
-
-KeypadBar::~KeypadBar() = default;
-
-void KeypadBar::addTab(Widget *keypad, const QString &title) {
-  if (m_tabs != nullptr && keypad != nullptr)
-    m_tabs->addTab(keypad->handle(), title);
-}
-
-}

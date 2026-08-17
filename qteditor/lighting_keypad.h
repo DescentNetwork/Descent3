@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "keypad_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class LightingKeypad; }
+QT_END_NAMESPACE
+
 
 // Port of CLightingDialog (IDD_LIGHTINGKEYPAD): lightmap/radiosity settings
 // for the lighting pass.
-class LightingKeypad : public Keypad {
+class LightingKeypad : public QDialog {
   Q_OBJECT
 public:
   explicit LightingKeypad(QWidget *parent = nullptr);
-  ~LightingKeypad() override;
+  ~LightingKeypad();
 
 private slots:
   void onShowLightmaps(bool checked);
@@ -41,6 +44,10 @@ private slots:
 
 private:
   void updateDialog();
+
+  template <typename T>
+  T *find(const QString &name) const { return findChild<T *>(name); }
+
+  Ui::LightingKeypad *ui;
 };
 
-}

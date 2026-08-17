@@ -1,5 +1,9 @@
 #include "status_panel_dialog.h"
-namespace QtEditor {
-StatusPanelDialog::StatusPanelDialog(QWidget *parent) : Dialog(":/ui/status.ui", parent) {}
-StatusPanelDialog::~StatusPanelDialog() = default;
+#include "ui_status.h"
+StatusPanelDialog::StatusPanelDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::StatusPanelDialog)
+{
+  ui->setupUi(this);
 }
+
+StatusPanelDialog::~StatusPanelDialog() { delete ui; }

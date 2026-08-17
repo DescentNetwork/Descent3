@@ -18,16 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class CustomizeObjectDialog; }
+QT_END_NAMESPACE
+
 
 // Stub port of CCustomObjectDialog (IDD_CUSTOMIZE_OBJECT).
-class CustomObjectDialog : public Dialog {
+class CustomObjectDialog : public QDialog {
   Q_OBJECT
 public:
   explicit CustomObjectDialog(QWidget *parent = nullptr);
-  ~CustomObjectDialog() override;
+  ~CustomObjectDialog();
+private:
+  Ui::CustomizeObjectDialog *ui;
 };
 
-}

@@ -18,19 +18,22 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
 class QListWidget;
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class DallasSoundDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CDallasSoundDlg (IDD_DALLAS_SOUND_DIALOG): pick a game sound, with
 // play/stop preview.
-class DallasSoundDialog : public Dialog {
+class DallasSoundDialog : public QDialog {
   Q_OBJECT
 public:
   explicit DallasSoundDialog(QWidget *parent = nullptr);
-  ~DallasSoundDialog() override;
+  ~DallasSoundDialog();
 
   int selectedSound() const;
 
@@ -39,7 +42,7 @@ private slots:
   void onStop();
 
 private:
+  Ui::DallasSoundDialog *ui;
   QListWidget *m_list;
 };
 
-}

@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "keypad_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class TriggerKeypad; }
+QT_END_NAMESPACE
+
 
 // Port of CTriggerDialog (IDD_TRIGGERKEYPAD): trigger keypad editing the
 // current trigger (activators, one-shot, navigation).
-class TriggerKeypad : public Keypad {
+class TriggerKeypad : public QDialog {
   Q_OBJECT
 public:
   explicit TriggerKeypad(QWidget *parent = nullptr);
-  ~TriggerKeypad() override;
+  ~TriggerKeypad();
 
 private slots:
   void onDelete();
@@ -43,6 +46,10 @@ private slots:
 private:
   void updateDialog();
   void setActivator(uint16_t flag, const char *checkName, bool checked);
+
+  template <typename T>
+  T *find(const QString &name) const { return findChild<T *>(name); }
+
+  Ui::TriggerKeypad *ui;
 };
 
-}

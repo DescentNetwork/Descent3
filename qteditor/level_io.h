@@ -29,7 +29,6 @@
 // safe symbol that lets the editor link on Linux. The Qt port will replace
 // these with the real engine-side level reader once that lands.
 
-namespace QtEditor {
 
 // Trim leading and trailing spaces from a C string in place. Mirrors the
 // Win32 helper in editor/HFile.cpp; exposed for tests so the contract
@@ -60,4 +59,3 @@ void CheckLevelNames();
 // stats walker ships.
 char *RenderLevelStats();
 
-} // namespace QtEditor

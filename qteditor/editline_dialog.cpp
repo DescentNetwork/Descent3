@@ -17,6 +17,7 @@
  */
 
 #include "editline_dialog.h"
+#include "ui_editlinedlg.h"
 
 #include <QLabel>
 #include <QLineEdit>
@@ -24,15 +25,16 @@
 #include <cstdio>
 #include <cstring>
 
-namespace QtEditor {
 
 EditLineDialog::EditLineDialog(const QString &title, const QString &caption,
                                const QString &initial, bool numeric, QWidget *parent)
-    : Dialog(":/ui/editlinedlg.ui", parent) {
+    : QDialog(parent), ui(new Ui::EditlineDialog)
+{
+  ui->setupUi(this);
   this->setWindowTitle(title);
-  if (auto *prompt = find<QLabel>("IDC_PROMPT"))
+  if (auto *prompt = ui->IDC_PROMPT)
     prompt->setText(caption);
-  if (auto *edit = find<QLineEdit>("IDC_EDIT")) {
+  if (auto *edit = ui->IDC_EDIT) {
     if (!initial.isEmpty())
       edit->setText(initial);
     if (numeric)
@@ -41,12 +43,14 @@ EditLineDialog::EditLineDialog(const QString &title, const QString &caption,
 }
 
 EditLineDialog::EditLineDialog(const QString &caption, QWidget *parent)
-    : EditLineDialog(caption, caption, QString(), false, parent) {}
+    : EditLineDialog(caption, caption, QString(), false, parent)
+{
+}
 
-EditLineDialog::~EditLineDialog() = default;
+EditLineDialog::~EditLineDialog() { delete ui; }
 
 QString EditLineDialog::text() const {
-  if (auto *edit = find<QLineEdit>("IDC_EDIT"))
+  if (auto *edit = ui->IDC_EDIT)
     return edit->text();
   return QString();
 }
@@ -71,4 +75,3 @@ bool InputNumber(int *n, const char *title, const char *prompt, QWidget *wnd) {
   return false;
 }
 
-}

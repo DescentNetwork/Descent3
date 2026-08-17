@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>WaterProceduralDialog</class>
   <widget class="QDialog" name="IDD_WATER_PROCEDURAL">
     <property name="geometry">
       <rect>
@@ -152,9 +152,6 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider1</string>
-      </property>
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -218,9 +215,7 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider1</string>
-      </property>
+
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -382,9 +377,7 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider1</string>
-      </property>
+
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -448,9 +441,7 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider1</string>
-      </property>
+
       <property name="visible">
         <bool>true</bool>
       </property>
@@ -514,9 +505,7 @@
           <height>20</height>
         </rect>
       </property>
-      <property name="text">
-        <string>Slider1</string>
-      </property>
+
       <property name="visible">
         <bool>true</bool>
       </property>

@@ -1,11 +1,17 @@
 #pragma once
-#include "qteditor_dialog.h"
-namespace QtEditor {
+
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class BriefBitmapDialog; }
+QT_END_NAMESPACE
+
 // Port of the briefing element dialog (IDD_BRIEF_ADDBITMAP).
-class BriefBitmapDialog : public Dialog {
+class BriefBitmapDialog : public QDialog {
   Q_OBJECT
 public:
   explicit BriefBitmapDialog(QWidget *parent = nullptr);
-  ~BriefBitmapDialog() override;
+  ~BriefBitmapDialog();
+private:
+  Ui::BriefBitmapDialog *ui;
 };
-}

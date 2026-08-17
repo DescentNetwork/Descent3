@@ -19,17 +19,20 @@
 #pragma once
 
 #include "objinfo.h"
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class GenericDeathDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CGenericDeathDialog (IDD_GENERIC_DEATHS): edits an object type's
 // four death behaviors and their probabilities.
-class GenericDeathDialog : public Dialog {
+class GenericDeathDialog : public QDialog {
   Q_OBJECT
 public:
   explicit GenericDeathDialog(object_info *objinfo, QWidget *parent = nullptr);
-  ~GenericDeathDialog() override;
+  ~GenericDeathDialog();
 
 private slots:
   void onEdit1();
@@ -39,9 +42,9 @@ private slots:
   void onOk();
 
 private:
+  Ui::GenericDeathDialog *ui;
   object_info *m_objinfo;
   death_info m_death_types[MAX_DEATH_TYPES];
   int m_prob[MAX_DEATH_TYPES];
 };
 
-}

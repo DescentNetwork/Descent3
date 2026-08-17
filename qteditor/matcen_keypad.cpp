@@ -17,6 +17,7 @@
  */
 
 #include "matcen_keypad.h"
+#include "ui_matcenkeypad.h"
 
 #include <QInputDialog>
 #include <QLabel>
@@ -25,29 +26,31 @@
 #include <QPushButton>
 #include <QInputDialog>
 
-#include "d3edit.h"
+
 #include "matcen.h"
 
-namespace QtEditor {
 
-MatcenKeypad::MatcenKeypad(QWidget *parent) : Keypad(":/ui/matcenkeypad.ui", parent) {
-  if (QPushButton *b = find<QPushButton>("IDC_MAT_PREV_BUTTON"))
+MatcenKeypad::MatcenKeypad(QWidget *parent)
+    : QDialog(parent), ui(new Ui::MatcenKeypad)
+{
+  ui->setupUi(this);
+  if (QPushButton *b = ui->IDC_MAT_PREV_BUTTON)
     connect(b, &QPushButton::clicked, this, &MatcenKeypad::onPrev);
-  if (QPushButton *b = find<QPushButton>("IDC_MAT_NEXT_BUTTON"))
+  if (QPushButton *b = ui->IDC_MAT_NEXT_BUTTON)
     connect(b, &QPushButton::clicked, this, &MatcenKeypad::onNext);
-  if (QPushButton *b = find<QPushButton>("IDC_MAT_NEW_BUTTON"))
+  if (QPushButton *b = ui->IDC_MAT_NEW_BUTTON)
     connect(b, &QPushButton::clicked, this, &MatcenKeypad::onNew);
-  if (QPushButton *b = find<QPushButton>("IDC_MAT_DELETE_BUTTON"))
+  if (QPushButton *b = ui->IDC_MAT_DELETE_BUTTON)
     connect(b, &QPushButton::clicked, this, &MatcenKeypad::onDelete);
-  if (QPushButton *b = find<QPushButton>("IDC_MAT_COPY_BUTTON"))
+  if (QPushButton *b = ui->IDC_MAT_COPY_BUTTON)
     connect(b, &QPushButton::clicked, this, &MatcenKeypad::onCopy);
-  if (QPushButton *b = find<QPushButton>("IDC_MAT_PASTE_BUTTON"))
+  if (QPushButton *b = ui->IDC_MAT_PASTE_BUTTON)
     connect(b, &QPushButton::clicked, this, &MatcenKeypad::onPaste);
 
   updateDialog();
 }
 
-MatcenKeypad::~MatcenKeypad() = default;
+MatcenKeypad::~MatcenKeypad() { delete ui; }
 
 void MatcenKeypad::updateDialog() {
   if (Num_matcens <= 0 || m_matcenId >= Num_matcens)
@@ -55,16 +58,20 @@ void MatcenKeypad::updateDialog() {
   matcen *mc = Matcen[m_matcenId];
   char name[MAX_MATCEN_NAME_LEN] = "";
   mc->GetName(name);
-  if (QLabel *label = find<QLabel>("IDC_MAT_CUR_STATIC"))
+  if (QLabel *label = ui->IDC_MAT_CUR_STATIC)
     label->setText(QString("Current Matcen: %1").arg(m_matcenId + 1));
-  if (QLabel *label = find<QLabel>("IDC_MAT_NUM_STATIC"))
+  if (QLabel *label = ui->IDC_MAT_NUM_STATIC)
     label->setText(QString("Number of Matcens: %1").arg(Num_matcens));
-  if (QLabel *label = find<QLabel>("IDC_MAT_NAME_STATIC"))
+
+  assert(false);
+  /*
+  if (QLabel *label = ui->IDC_MAT_NAME_STATIC)
     label->setText(name);
-  if (QLabel *label = find<QLabel>("IDC_MAT_SPAWNS_STATIC"))
+  if (QLabel *label = ui->IDC_MAT_SPAWNS_STATIC)
     label->setText(QString("Spawn points: %1").arg((int)mc->GetNumSpawnPnts()));
-  if (QLabel *label = find<QLabel>("IDC_MAT_PROD_STATIC"))
+  if (QLabel *label = ui->IDC_MAT_PROD_STATIC)
     label->setText(QString("Prod types: %1").arg((int)mc->GetNumProdTypes()));
+*/
 }
 
 void MatcenKeypad::onPrev() {
@@ -114,4 +121,3 @@ void MatcenKeypad::onPaste() {
   QMessageBox::information(this, "Matcen", "Matcen pasted.");
 }
 
-}

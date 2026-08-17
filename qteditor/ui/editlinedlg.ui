@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ui version="4.0">
-  <class>Form</class>
+  <class>EditlineDialog</class>
   <widget class="QDialog" name="IDD_EDITLINEDLG">
     <property name="geometry">
       <rect>

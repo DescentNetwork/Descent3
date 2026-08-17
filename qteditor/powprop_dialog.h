@@ -18,16 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class PowpropDialog; }
+QT_END_NAMESPACE
+
 
 // Stub port of CPowerupPropDialog (IDD_POWPROP_DIALOG).
-class PowerupPropDialog : public Dialog {
+class PowerupPropDialog : public QDialog {
   Q_OBJECT
 public:
   explicit PowerupPropDialog(QWidget *parent = nullptr);
-  ~PowerupPropDialog() override;
+  ~PowerupPropDialog();
+private:
+  Ui::PowpropDialog *ui;
 };
 
-}

@@ -25,7 +25,6 @@
 
 #include "vecmat.h"
 
-namespace QtEditor {
 
 // EditorView is the Qt port of the Win32 editor's CTextureGrWnd /
 // CWireframeGrWnd: a QOpenGLWidget that renders the current mine.
@@ -47,6 +46,8 @@ public:
   QSize renderSize() const;
 
   bool isWireframe() const { return m_wireframe; }
+  void enableWireframeMode(void) { setWireframe(true); }
+  void disableWireframeMode(void) { setWireframe(true); }
   void setWireframe(bool wireframe);
 
   // Renders the mine from the viewer; used by tests to grab the projected
@@ -90,4 +91,3 @@ private:
   void ensureTexture(int bmHandle);
 };
 
-} // namespace QtEditor

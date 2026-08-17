@@ -20,7 +20,6 @@
 
 class QComboBox;
 
-namespace QtEditor {
 
 // Port of the original CSoundListCombo: fills a QComboBox with a leading
 // "<none>" item (user data -1) followed by every currently-used game sound
@@ -33,4 +32,3 @@ void setSoundComboSelected(QComboBox *combo, int selected);
 // Returns the user data of the current item (-1 for "<none>").
 int soundComboSelected(QComboBox *combo);
 
-}

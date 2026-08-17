@@ -1,11 +1,17 @@
 #pragma once
-#include "qteditor_dialog.h"
-namespace QtEditor {
+
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class LocalizeScriptDialog; }
+QT_END_NAMESPACE
+
 // Port of the localizescript dialog.
-class LocalizeScriptDialog : public Dialog {
+class LocalizeScriptDialog : public QDialog {
   Q_OBJECT
 public:
   explicit LocalizeScriptDialog(QWidget *parent = nullptr);
-  ~LocalizeScriptDialog() override;
+  ~LocalizeScriptDialog();
+private:
+  Ui::LocalizeScriptDialog *ui;
 };
-}

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>KeypadsTabWidget</class>
+ <widget class="QTabWidget" name="keypadTabs">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>302</width>
+    <height>712</height>
+   </rect>
+  </property>
+  <property name="currentIndex">
+   <number>0</number>
+  </property>
+  <widget class="MegacellKeypad" name="tab_megacell">
+   <attribute name="title">
+    <string>Megacells</string>
+   </attribute>
+  </widget>
+  <widget class="DoorwayKeypad" name="tab_doorway">
+   <attribute name="title">
+    <string>Doorways</string>
+   </attribute>
+  </widget>
+  <widget class="TriggerKeypad" name="tab_trigger">
+   <attribute name="title">
+    <string>Triggers</string>
+   </attribute>
+  </widget>
+  <widget class="PathKeypad" name="tab_path">
+   <attribute name="title">
+    <string>Paths</string>
+   </attribute>
+  </widget>
+  <widget class="RoomKeypad" name="tab_room">
+   <attribute name="title">
+    <string>Rooms</string>
+   </attribute>
+  </widget>
+  <widget class="ObjectKeypad" name="tab_object">
+   <attribute name="title">
+    <string>Objects</string>
+   </attribute>
+  </widget>
+  <widget class="LevelKeypad" name="tab_level">
+   <attribute name="title">
+    <string>Level</string>
+   </attribute>
+  </widget>
+  <widget class="LightingKeypad" name="tab_lighting">
+   <attribute name="title">
+    <string>Lighting</string>
+   </attribute>
+  </widget>
+  <widget class="MatcenKeypad" name="tab_matcen">
+   <attribute name="title">
+    <string>Matcens</string>
+   </attribute>
+  </widget>
+  <widget class="TerrainKeypad" name="tab_terrain">
+   <attribute name="title">
+    <string>Terrain</string>
+   </attribute>
+  </widget>
+  <widget class="TextureKeypad" name="tab_texture">
+   <attribute name="title">
+    <string>Textures</string>
+   </attribute>
+  </widget>
+
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MegacellKeypad</class>
+
+   <header>megacell_keypad.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
+   <class>DoorwayKeypad</class>
+
+   <header>doorway_keypad.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
+   <class>TriggerKeypad</class>
+
+   <header>trigger_keypad.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
+   <class>PathKeypad</class>
+
+   <header>path_keypad.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
+   <class>RoomKeypad</class>
+
+   <header>room_keypad.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
+   <class>ObjectKeypad</class>
+
+   <header>object_keypad.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
+   <class>LevelKeypad</class>
+
+   <header>level_keypad.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
+   <class>LightingKeypad</class>
+
+   <header>lighting_keypad.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
+   <class>MatcenKeypad</class>
+
+   <header>matcen_keypad.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
+   <class>TerrainKeypad</class>
+
+   <header>terrain_keypad.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
+   <class>TextureKeypad</class>
+
+   <header>texture_keypad.h</header>
+   <container>0</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

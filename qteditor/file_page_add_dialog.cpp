@@ -1,5 +1,8 @@
 #include "file_page_add_dialog.h"
-namespace QtEditor {
-FilePageAddDialog::FilePageAddDialog(QWidget *parent) : Dialog(":/ui/filepageadd.ui", parent) {}
-FilePageAddDialog::~FilePageAddDialog() = default;
+#include "ui_filepageadd.h"
+FilePageAddDialog::FilePageAddDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::FilePageAddDialog)
+{
+  ui->setupUi(this);
 }
+FilePageAddDialog::~FilePageAddDialog() { delete ui; }

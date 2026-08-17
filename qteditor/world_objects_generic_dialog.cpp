@@ -17,6 +17,7 @@
  */
 
 #include "world_objects_generic_dialog.h"
+#include "ui_worldobjectsgeneric.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -33,7 +34,7 @@
 #include "bitmap.h"
 #include "cfile.h"
 #include "qt_messagebox.h"
-#include "d3edit.h"
+
 #include "ddio.h"
 #include "gametexture.h"
 #include "generic_death_dialog.h"
@@ -49,10 +50,6 @@
 #include "sound_combo.h"
 #include "vclip.h"
 
-extern char Current_model_dir[_MAX_PATH];
-
-namespace QtEditor {
-
 namespace {
 // The object being copied (file-local in the original MFC dialog too).
 object_info Copy_object;
@@ -60,65 +57,67 @@ bool Copy_object_used = false;
 } // namespace
 
 WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int current, QWidget *parent)
-    : Dialog(":/ui/worldobjectsgeneric.ui", parent), m_type(objType), m_current(current) {
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_EDIT_AI"))
+    : QDialog(parent), ui(new Ui::WorldObjectsGenericDialog), m_type(objType), m_current(current)
+{
+  ui->setupUi(this);
+  if (QPushButton *b = ui->IDC_GENERIC_EDIT_AI)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onEditAI);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_EDIT_PHYSICS"))
+  if (QPushButton *b = ui->IDC_GENERIC_EDIT_PHYSICS)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onEditPhysics);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_ADD_NEW"))
+  if (QPushButton *b = ui->IDC_GENERIC_ADD_NEW)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onAddNew);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_CHECKED_OUT"))
+  if (QPushButton *b = ui->IDC_GENERIC_CHECKED_OUT)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onCheckedOut);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_CHECKIN"))
+  if (QPushButton *b = ui->IDC_GENERIC_CHECKIN)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onCheckIn);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_DEFINE_ANIMSTATES"))
+  if (QPushButton *b = ui->IDC_GENERIC_DEFINE_ANIMSTATES)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onDefineAnimStates);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_DELETE"))
+  if (QPushButton *b = ui->IDC_GENERIC_DELETE)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onDelete);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_LOCK"))
+  if (QPushButton *b = ui->IDC_GENERIC_LOCK)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onLock);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_UNDO_LOCK"))
+  if (QPushButton *b = ui->IDC_GENERIC_UNDO_LOCK)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onUndoLock);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_NEXT"))
+  if (QPushButton *b = ui->IDC_GENERIC_NEXT)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onNext);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_PREV"))
+  if (QPushButton *b = ui->IDC_GENERIC_PREV)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onPrev);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_CHANGE_MODEL"))
+  if (QPushButton *b = ui->IDC_GENERIC_CHANGE_MODEL)
     connect(b, &QPushButton::clicked, this, [this]() { onAddNew(); });
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_COPY"))
+  if (QPushButton *b = ui->IDC_GENERIC_COPY)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onCopy);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_PASTE"))
+  if (QPushButton *b = ui->IDC_GENERIC_PASTE)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onPaste);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_WEAPON_INFO_BUTTON"))
+  if (QPushButton *b = ui->IDC_GENERIC_WEAPON_INFO_BUTTON)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onWeaponInfo);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_LIGHT_BUTTON"))
+  if (QPushButton *b = ui->IDC_GENERIC_LIGHT_BUTTON)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onLight);
-  if (QPushButton *b = find<QPushButton>("IDC_DEFAULT_RADIUS_BUTTON"))
+  if (QPushButton *b = ui->IDC_DEFAULT_RADIUS_BUTTON)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onDefaultRadius);
-  if (QPushButton *b = find<QPushButton>("IDC_SELSCRIPT"))
+  if (QPushButton *b = ui->IDC_SELSCRIPT)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onSelScript);
-  if (QPushButton *b = find<QPushButton>("IDC_COMPILEMODULE"))
+  if (QPushButton *b = ui->IDC_COMPILEMODULE)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onCompilemodule);
-  if (QPushButton *b = find<QPushButton>("IDC_GENERIC_DEATHS"))
+  if (QPushButton *b = ui->IDC_GENERIC_DEATHS)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onGenericDeaths);
-  if (QPushButton *b = find<QPushButton>("IDC_OVERRIDE"))
+  if (QPushButton *b = ui->IDC_OVERRIDE)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onOverride);
-  if (QPushButton *b = find<QPushButton>("IDC_NOLOD"))
+  if (QPushButton *b = ui->IDC_NOLOD)
     connect(b, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onNolod);
 
-  if (QComboBox *combo = find<QComboBox>("IDC_NAME_PULLDOWN"))
+  if (QComboBox *combo = ui->IDC_NAME_PULLDOWN)
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &WorldObjectsGenericDialog::onNamePulldownChanged);
-  if (QComboBox *combo = find<QComboBox>("IDC_DEATH_POWERUP1_PULLDOWN"))
+  if (QComboBox *combo = ui->IDC_DEATH_POWERUP1_PULLDOWN)
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &WorldObjectsGenericDialog::onDeathPowerup1Changed);
-  if (QComboBox *combo = find<QComboBox>("IDC_DEATH_POWERUP2_PULLDOWN"))
+  if (QComboBox *combo = ui->IDC_DEATH_POWERUP2_PULLDOWN)
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &WorldObjectsGenericDialog::onDeathPowerup2Changed);
-  if (QComboBox *combo = find<QComboBox>("IDC_GENERIC_EXPLOSION_SOUND_COMBO"))
+  if (QComboBox *combo = ui->IDC_GENERIC_EXPLOSION_SOUND_COMBO)
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &WorldObjectsGenericDialog::onExplosionSoundChanged);
-  if (QComboBox *combo = find<QComboBox>("IDC_GENERIC_AMBIENT_SOUND_COMBO"))
+  if (QComboBox *combo = ui->IDC_GENERIC_AMBIENT_SOUND_COMBO)
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &WorldObjectsGenericDialog::onAmbientSoundChanged);
 
@@ -129,21 +128,21 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int current, Q
                          "IDC_DEATH_POWERUP2_PERCENT_EDIT", "IDC_SCRIPTNAME", "IDC_SCRIPT_OVERRIDE",
                          "IDC_RESPAWN_SCALAR_EDIT", "IDC_GENERIC_SCORE_EDIT", "IDC_GENERIC_AMMO_EDIT"};
   for (const char *name : edits) {
-    if (QLineEdit *edit = find<QLineEdit>(name))
+    if (QLineEdit *edit = findChild<QLineEdit*>(name))
       connect(edit, &QLineEdit::editingFinished, this, [this, name]() {
         if (m_current == -1)
           return;
         object_info *oi = &Object_info[m_current];
         if (QString::compare(name, "IDC_GENERIC_SIZE_EDIT") == 0)
-          oi->size = find<QLineEdit>(name)->text().toFloat();
+          oi->size = findChild<QLineEdit*>(name)->text().toFloat();
         else if (QString::compare(name, "IDC_GENERIC_HITPOINT_EDIT") == 0)
-          oi->hit_points = find<QLineEdit>(name)->text().toInt();
+          oi->hit_points = findChild<QLineEdit*>(name)->text().toInt();
         else if (QString::compare(name, "IDC_GENERIC_IMPACT_DAMAGE_EDIT") == 0)
-          oi->damage = find<QLineEdit>(name)->text().toFloat();
+          oi->damage = findChild<QLineEdit*>(name)->text().toFloat();
         else if (QString::compare(name, "IDC_GENERIC_IMPACT_SIZE_EDIT") == 0)
-          oi->impact_size = find<QLineEdit>(name)->text().toFloat();
+          oi->impact_size = findChild<QLineEdit*>(name)->text().toFloat();
         else if (QString::compare(name, "IDC_GENERIC_IMPACT_TIME_EDIT") == 0)
-          oi->impact_time = find<QLineEdit>(name)->text().toFloat();
+          oi->impact_time = findChild<QLineEdit*>(name)->text().toFloat();
         else if (QString::compare(name, "IDC_GENERIC_INVEN_DESCRIPTION") == 0)
           onKillfocusInvenDescription();
         else if (QString::compare(name, "IDC_GENERIC_INVEN_ICONNAME") == 0)
@@ -151,13 +150,13 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int current, Q
         else if (QString::compare(name, "IDC_LOD_DISTANCE_EDIT") == 0)
           onKillfocusLodDistance();
         else if (QString::compare(name, "IDC_DEATH_POWERUP1_NUM_EDIT") == 0)
-          oi->dspew_number[0] = find<QLineEdit>(name)->text().toInt();
+          oi->dspew_number[0] = findChild<QLineEdit*>(name)->text().toInt();
         else if (QString::compare(name, "IDC_DEATH_POWERUP1_PERCENT_EDIT") == 0)
-          oi->dspew_percent[0] = find<QLineEdit>(name)->text().toFloat() / 100.0f;
+          oi->dspew_percent[0] = findChild<QLineEdit*>(name)->text().toFloat() / 100.0f;
         else if (QString::compare(name, "IDC_DEATH_POWERUP2_NUM_EDIT") == 0)
-          oi->dspew_number[1] = find<QLineEdit>(name)->text().toInt();
+          oi->dspew_number[1] = findChild<QLineEdit*>(name)->text().toInt();
         else if (QString::compare(name, "IDC_DEATH_POWERUP2_PERCENT_EDIT") == 0)
-          oi->dspew_percent[1] = find<QLineEdit>(name)->text().toFloat() / 100.0f;
+          oi->dspew_percent[1] = findChild<QLineEdit*>(name)->text().toFloat() / 100.0f;
         else if (QString::compare(name, "IDC_SCRIPTNAME") == 0)
           onKillfocusScriptname();
         else if (QString::compare(name, "IDC_SCRIPT_OVERRIDE") == 0)
@@ -165,9 +164,9 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int current, Q
         else if (QString::compare(name, "IDC_RESPAWN_SCALAR_EDIT") == 0)
           onKillfocusRespawnScalar();
         else if (QString::compare(name, "IDC_GENERIC_SCORE_EDIT") == 0)
-          oi->score = find<QLineEdit>(name)->text().toInt();
+          oi->score = findChild<QLineEdit*>(name)->text().toInt();
         else if (QString::compare(name, "IDC_GENERIC_AMMO_EDIT") == 0)
-          oi->ammo_count = find<QLineEdit>(name)->text().toInt();
+          oi->ammo_count = findChild<QLineEdit*>(name)->text().toInt();
       });
   }
 
@@ -185,26 +184,26 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int current, Q
       {"IDC_INVEN_VISWHENUSED", OIF_INVEN_VISWHENUSED},
   };
   for (const auto &c : checks) {
-    if (QCheckBox *cb = find<QCheckBox>(c.name))
+    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
       connect(cb, &QCheckBox::toggled, this, [this, c](bool checked) { setFlag(c.flag, c.name, checked); });
   }
-  if (QCheckBox *cb = find<QCheckBox>("IDC_DEATH_POWERUP_USE2_IF_HAVE1_CHECK"))
+  if (QCheckBox *cb = ui->IDC_DEATH_POWERUP_USE2_IF_HAVE1_CHECK)
     connect(cb, &QCheckBox::toggled, this, &WorldObjectsGenericDialog::onDeathPowerupUse2);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_GENERIC_DEATH_SPEW_2_IF_ZERO_1"))
+  if (QCheckBox *cb = ui->IDC_GENERIC_DEATH_SPEW_2_IF_ZERO_1)
     connect(cb, &QCheckBox::toggled, this, &WorldObjectsGenericDialog::onDeathSpew2IfZero1);
 
-  if (QRadioButton *rb = find<QRadioButton>("IDC_HIRES_RADIO"))
+  if (QRadioButton *rb = ui->IDC_HIRES_RADIO)
     connect(rb, &QRadioButton::clicked, this, &WorldObjectsGenericDialog::onHiresRadio);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_MEDRES_RADIO"))
+  if (QRadioButton *rb = ui->IDC_MEDRES_RADIO)
     connect(rb, &QRadioButton::clicked, this, &WorldObjectsGenericDialog::onMedresRadio);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_LORES_RADIO"))
+  if (QRadioButton *rb = ui->IDC_LORES_RADIO)
     connect(rb, &QRadioButton::clicked, this, &WorldObjectsGenericDialog::onLoresRadio);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_INVTYPE_GAME"))
+  if (QRadioButton *rb = ui->IDC_INVTYPE_GAME)
     connect(rb, &QRadioButton::clicked, this, &WorldObjectsGenericDialog::onInvtypeGame);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_INVTYPE_MISSION"))
+  if (QRadioButton *rb = ui->IDC_INVTYPE_MISSION)
     connect(rb, &QRadioButton::clicked, this, &WorldObjectsGenericDialog::onInvtypeMission);
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_TYPE_NAME"))
+  if (QLineEdit *edit = ui->IDC_GENERIC_TYPE_NAME)
     edit->setText(Object_type_names[m_type]);
 
   m_locked_count = countLockedItems();
@@ -231,15 +230,15 @@ void WorldObjectsGenericDialog::setFlag(uint32_t flag, const char *checkName, bo
     Object_info[m_current].flags &= ~flag;
 
   if (QString::compare(checkName, "IDC_GENERIC_USES_AI") == 0) {
-    if (QWidget *w = find<QWidget>("IDC_GENERIC_EDIT_AI"))
+    if (QWidget *w = ui->IDC_GENERIC_EDIT_AI)
       w->setEnabled(checked);
   } else if (QString::compare(checkName, "IDC_GENERIC_USES_PHYSICS") == 0) {
-    if (QWidget *w = find<QWidget>("IDC_GENERIC_EDIT_PHYSICS"))
+    if (QWidget *w = ui->IDC_GENERIC_EDIT_PHYSICS)
       w->setEnabled(checked);
   } else if (QString::compare(checkName, "IDC_GENERIC_DESTROYABLE") == 0) {
-    if (QWidget *w = find<QWidget>("IDC_GENERIC_HITPOINT_EDIT"))
+    if (QWidget *w = ui->IDC_GENERIC_HITPOINT_EDIT)
       w->setEnabled(checked);
-    if (QWidget *w = find<QWidget>("IDC_GENERIC_SCORE_EDIT"))
+    if (QWidget *w = ui->IDC_GENERIC_SCORE_EDIT)
       w->setEnabled(checked);
   }
 }
@@ -270,19 +269,19 @@ void WorldObjectsGenericDialog::enableDisableAll(bool flag) {
                          "IDC_GENERIC_EDIT_AI",     "IDC_GENERIC_DEATHS", "IDC_GENERIC_WEAPON_INFO_BUTTON",
                          "IDC_GENERIC_LIGHT_BUTTON", "IDC_DEFAULT_RADIUS_BUTTON", "IDC_GENERIC_DEFINE_ANIMSTATES"};
   for (const char *name : names)
-    if (QWidget *w = find<QWidget>(name))
+    if (QWidget *w = findChild<QWidget*>(name))
       w->setEnabled(flag);
 }
 
 void WorldObjectsGenericDialog::updateDialog() {
   if (m_current == -1) {
     enableDisableAll(false);
-    if (QPushButton *paste = find<QPushButton>("IDC_GENERIC_PASTE"))
+    if (QPushButton *paste = ui->IDC_GENERIC_PASTE)
       paste->setEnabled(Network_up && Copy_object_used);
     if (!Network_up) {
       for (const char *name : {"IDC_GENERIC_LOCK", "IDC_GENERIC_CHECKIN", "IDC_GENERIC_UNDO_LOCK",
                                "IDC_GENERIC_CHECKED_OUT", "IDC_OVERRIDE"}) {
-        if (auto *w = find<QPushButton>(name))
+        if (auto *w = findChild<QPushButton*>(name))
           w->setEnabled(false);
       }
     }
@@ -292,7 +291,7 @@ void WorldObjectsGenericDialog::updateDialog() {
   if (!Network_up) {
     for (const char *name : {"IDC_GENERIC_LOCK", "IDC_GENERIC_CHECKIN", "IDC_GENERIC_UNDO_LOCK",
                              "IDC_GENERIC_CHECKED_OUT", "IDC_OVERRIDE"}) {
-      if (auto *w = find<QPushButton>(name))
+      if (auto *w = findChild<QPushButton*>(name))
         w->setEnabled(false);
     }
   }
@@ -304,7 +303,7 @@ void WorldObjectsGenericDialog::updateDialog() {
   char txt[256];
 
   PageInPolymodel(oi->render_handle);
-  if (QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_MODEL_NAME_EDIT")) {
+  if (QLineEdit *edit = ui->IDC_GENERIC_MODEL_NAME_EDIT) {
     if (m_lod == 0)
       edit->setText(Poly_models[oi->render_handle].name);
     else if (m_lod == 1)
@@ -313,7 +312,7 @@ void WorldObjectsGenericDialog::updateDialog() {
       edit->setText(oi->lo_render_handle == -1 ? "No model defined" : Poly_models[oi->lo_render_handle].name);
   }
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_LOD_DISTANCE_EDIT")) {
+  if (QLineEdit *edit = ui->IDC_LOD_DISTANCE_EDIT) {
     if (m_lod == 0)
       edit->setText("0");
     else if (m_lod == 1)
@@ -324,7 +323,7 @@ void WorldObjectsGenericDialog::updateDialog() {
 
   const int poly_handle =
       m_lod == 0 ? oi->render_handle : (m_lod == 1 ? oi->med_render_handle : oi->lo_render_handle);
-  if (QLabel *label = find<QLabel>("IDC_NUM_POLYS")) {
+  if (QLabel *label = ui->IDC_NUM_POLYS) {
     if (poly_handle == -1)
       label->setText("Num polys: NA");
     else {
@@ -332,7 +331,7 @@ void WorldObjectsGenericDialog::updateDialog() {
       label->setText(QString("Num polys: %1").arg(CountFacesInPolymodel(&Poly_models[poly_handle])));
     }
   }
-  if (QLabel *label = find<QLabel>("IDC_TEXTURE_RAM_TEXT")) {
+  if (QLabel *label = ui->IDC_TEXTURE_RAM_TEXT) {
     if (poly_handle == -1)
       label->setText("Texture RAM: NA");
     else {
@@ -377,41 +376,41 @@ void WorldObjectsGenericDialog::updateDialog() {
     }
   }
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_RESPAWN_SCALAR_EDIT"))
+  if (QLineEdit *edit = ui->IDC_RESPAWN_SCALAR_EDIT)
     edit->setText(QString::number(oi->respawn_scalar));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_IMPACT_SIZE_EDIT"))
+  if (QLineEdit *edit = ui->IDC_GENERIC_IMPACT_SIZE_EDIT)
     edit->setText(QString::number(oi->impact_size));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_IMPACT_TIME_EDIT"))
+  if (QLineEdit *edit = ui->IDC_GENERIC_IMPACT_TIME_EDIT)
     edit->setText(QString::number(oi->impact_time));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_IMPACT_DAMAGE_EDIT"))
+  if (QLineEdit *edit = ui->IDC_GENERIC_IMPACT_DAMAGE_EDIT)
     edit->setText(QString::number(oi->damage));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_DEATH_POWERUP1_NUM_EDIT"))
+  if (QLineEdit *edit = ui->IDC_DEATH_POWERUP1_NUM_EDIT)
     edit->setText(QString::number(oi->dspew_number[0]));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_DEATH_POWERUP2_NUM_EDIT"))
+  if (QLineEdit *edit = ui->IDC_DEATH_POWERUP2_NUM_EDIT)
     edit->setText(QString::number(oi->dspew_number[1]));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_DEATH_POWERUP1_PERCENT_EDIT"))
+  if (QLineEdit *edit = ui->IDC_DEATH_POWERUP1_PERCENT_EDIT)
     edit->setText(QString::number(oi->dspew_percent[0] * 100.0f));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_DEATH_POWERUP2_PERCENT_EDIT"))
+  if (QLineEdit *edit = ui->IDC_DEATH_POWERUP2_PERCENT_EDIT)
     edit->setText(QString::number(oi->dspew_percent[1] * 100.0f));
 
-  if (QCheckBox *cb = find<QCheckBox>("IDC_GENERIC_USES_PHYSICS"))
+  if (QCheckBox *cb = ui->IDC_GENERIC_USES_PHYSICS)
     cb->setChecked(oi->flags & OIF_USES_PHYSICS);
-  if (QWidget *w = find<QWidget>("IDC_GENERIC_EDIT_PHYSICS"))
+  if (QWidget *w = ui->IDC_GENERIC_EDIT_PHYSICS)
     w->setEnabled(oi->flags & OIF_USES_PHYSICS);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_GENERIC_USES_AI"))
+  if (QCheckBox *cb = ui->IDC_GENERIC_USES_AI)
     cb->setChecked(oi->flags & OIF_CONTROL_AI);
-  if (QWidget *w = find<QWidget>("IDC_GENERIC_EDIT_AI"))
+  if (QWidget *w = ui->IDC_GENERIC_EDIT_AI)
     w->setEnabled(oi->flags & OIF_CONTROL_AI);
 
-  if (QCheckBox *cb = find<QCheckBox>("IDC_DEATH_POWERUP_USE2_IF_HAVE1_CHECK"))
+  if (QCheckBox *cb = ui->IDC_DEATH_POWERUP_USE2_IF_HAVE1_CHECK)
     cb->setChecked(oi->f_dspew & DSF_ONLY_IF_PLAYER_HAS_OBJ_1);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_GENERIC_DEATH_SPEW_2_IF_ZERO_1"))
+  if (QCheckBox *cb = ui->IDC_GENERIC_DEATH_SPEW_2_IF_ZERO_1)
     cb->setChecked(oi->f_dspew & DSF_ONLY_IF_NO_1);
 
-  setSoundComboSelected(find<QComboBox>("IDC_GENERIC_EXPLOSION_SOUND_COMBO"), oi->sounds[GSI_EXPLODE]);
-  setSoundComboSelected(find<QComboBox>("IDC_GENERIC_AMBIENT_SOUND_COMBO"), oi->sounds[GSI_AMBIENT]);
+  setSoundComboSelected(ui->IDC_GENERIC_EXPLOSION_SOUND_COMBO, oi->sounds[GSI_EXPLODE]);
+  setSoundComboSelected(ui->IDC_GENERIC_AMBIENT_SOUND_COMBO, oi->sounds[GSI_AMBIENT]);
 
-  if (QComboBox *combo = find<QComboBox>("IDC_DEATH_POWERUP1_PULLDOWN")) {
+  if (QComboBox *combo = ui->IDC_DEATH_POWERUP1_PULLDOWN) {
     QSignalBlocker blocker(combo);
     combo->clear();
     combo->addItem("<none>", -1);
@@ -421,7 +420,7 @@ void WorldObjectsGenericDialog::updateDialog() {
     const int sp1 = oi->dspew[0];
     combo->setCurrentIndex(combo->findData(sp1 >= 0 && sp1 < MAX_OBJECT_IDS ? sp1 : -1));
   }
-  if (QComboBox *combo = find<QComboBox>("IDC_DEATH_POWERUP2_PULLDOWN")) {
+  if (QComboBox *combo = ui->IDC_DEATH_POWERUP2_PULLDOWN) {
     QSignalBlocker blocker(combo);
     combo->clear();
     combo->addItem("<none>", -1);
@@ -432,62 +431,62 @@ void WorldObjectsGenericDialog::updateDialog() {
     combo->setCurrentIndex(combo->findData(sp2 >= 0 && sp2 < MAX_OBJECT_IDS ? sp2 : -1));
   }
 
-  if (QWidget *w = find<QWidget>("IDC_GENERIC_WEAPON_INFO_BUTTON"))
+  if (QWidget *w = ui->IDC_GENERIC_WEAPON_INFO_BUTTON)
     w->setEnabled(Poly_models[oi->render_handle].num_wbs > 0);
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_SIZE_EDIT"))
+  if (QLineEdit *edit = ui->IDC_GENERIC_SIZE_EDIT)
     edit->setText(QString::number(oi->size, 'f', 2));
 
-  if (QCheckBox *cb = find<QCheckBox>("IDC_GENERIC_DESTROYABLE"))
+  if (QCheckBox *cb = ui->IDC_GENERIC_DESTROYABLE)
     cb->setChecked(oi->flags & OIF_DESTROYABLE);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_GENERIC_AI_SCRIPTED_DEATH"))
+  if (QCheckBox *cb = ui->IDC_GENERIC_AI_SCRIPTED_DEATH)
     cb->setChecked(oi->flags & OIF_AI_SCRIPTED_DEATH);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_OBJ_CEILING_CHECK"))
+  if (QCheckBox *cb = ui->IDC_OBJ_CEILING_CHECK)
     cb->setChecked(oi->flags & OIF_DO_CEILING_CHECK);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_OBJECT_FLY_THROUGH_RENDERED_PORTALS"))
+  if (QCheckBox *cb = ui->IDC_OBJECT_FLY_THROUGH_RENDERED_PORTALS)
     cb->setChecked(oi->flags & OIF_IGNORE_FORCEFIELDS_AND_GLASS);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_NSC_BUTTON"))
+  if (QCheckBox *cb = ui->IDC_NSC_BUTTON)
     cb->setChecked(oi->flags & OIF_NO_DIFF_SCALE_DAMAGE);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_DSMPBD_CHECK"))
+  if (QCheckBox *cb = ui->IDC_DSMPBD_CHECK)
     cb->setChecked(oi->flags & OIF_NO_DIFF_SCALE_MOVE);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_GENERIC_AMBIENT"))
+  if (QCheckBox *cb = ui->IDC_GENERIC_AMBIENT)
     cb->setChecked(oi->flags & OIF_AMBIENT_OBJECT);
 
   const bool destroyable = (oi->flags & OIF_DESTROYABLE) != 0;
-  if (QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_HITPOINT_EDIT")) {
+  if (QLineEdit *edit = ui->IDC_GENERIC_HITPOINT_EDIT) {
     edit->setText(destroyable ? QString::number(oi->hit_points) : "");
     edit->setEnabled(destroyable);
   }
-  if (QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_SCORE_EDIT")) {
+  if (QLineEdit *edit = ui->IDC_GENERIC_SCORE_EDIT) {
     edit->setText(destroyable ? QString::number(oi->score) : "");
     edit->setEnabled(destroyable);
   }
-  if (QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_AMMO_EDIT"))
+  if (QLineEdit *edit = ui->IDC_GENERIC_AMMO_EDIT)
     edit->setText(QString::number(oi->ammo_count));
-  if (QWidget *w = find<QWidget>("IDC_GENERIC_AMMO_EDIT"))
+  if (QWidget *w = ui->IDC_GENERIC_AMMO_EDIT)
     w->setEnabled(oi->type == OBJ_POWERUP);
-  if (QWidget *w = find<QWidget>("IDC_GENERIC_AMMO_TEXT"))
+  if (QWidget *w = ui->IDC_GENERIC_AMMO_TEXT)
     w->setEnabled(oi->type == OBJ_POWERUP);
 
-  if (QPushButton *checkedOut = find<QPushButton>("IDC_GENERIC_CHECKED_OUT"))
+  if (QPushButton *checkedOut = ui->IDC_GENERIC_CHECKED_OUT)
     checkedOut->setEnabled(m_locked_count > 0);
-  if (QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_ID_EDIT"))
+  if (QLineEdit *edit = ui->IDC_GENERIC_ID_EDIT)
     edit->setText(QString::number(m_current));
 
-  if (QPushButton *paste = find<QPushButton>("IDC_GENERIC_PASTE"))
+  if (QPushButton *paste = ui->IDC_GENERIC_PASTE)
     paste->setEnabled(Network_up && Copy_object_used);
-  if (QPushButton *del = find<QPushButton>("IDC_GENERIC_DELETE"))
+  if (QPushButton *del = ui->IDC_GENERIC_DELETE)
     del->setEnabled(isLocked(m_current));
-  if (QPushButton *lock = find<QPushButton>("IDC_GENERIC_LOCK"))
+  if (QPushButton *lock = ui->IDC_GENERIC_LOCK)
     lock->setEnabled(Network_up && !isLocked(m_current));
-  if (QPushButton *checkin = find<QPushButton>("IDC_GENERIC_CHECKIN"))
+  if (QPushButton *checkin = ui->IDC_GENERIC_CHECKIN)
     checkin->setEnabled(Network_up && isLocked(m_current));
-  if (QPushButton *undolock = find<QPushButton>("IDC_GENERIC_UNDO_LOCK"))
+  if (QPushButton *undolock = ui->IDC_GENERIC_UNDO_LOCK)
     undolock->setEnabled(Network_up && isLocked(m_current));
-  if (QPushButton *addnew = find<QPushButton>("IDC_GENERIC_ADD_NEW"))
+  if (QPushButton *addnew = ui->IDC_GENERIC_ADD_NEW)
     addnew->setEnabled(Network_up);
 
-  if (QComboBox *combo = find<QComboBox>("IDC_NAME_PULLDOWN")) {
+  if (QComboBox *combo = ui->IDC_NAME_PULLDOWN) {
     QSignalBlocker blocker(combo);
     combo->clear();
     const int first = GetObjectID(m_type);
@@ -501,32 +500,32 @@ void WorldObjectsGenericDialog::updateDialog() {
     }
   }
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_SCRIPTNAME"))
+  if (QLineEdit *edit = ui->IDC_SCRIPTNAME)
     edit->setText(oi->module_name[0] ? oi->module_name : "null");
-  if (QLineEdit *edit = find<QLineEdit>("IDC_SCRIPT_OVERRIDE"))
+  if (QLineEdit *edit = ui->IDC_SCRIPT_OVERRIDE)
     edit->setText(oi->script_name_override[0] ? oi->script_name_override : "null");
 
-  if (QCheckBox *cb = find<QCheckBox>("IDC_GENERIC_INVEN_SELECTABLE"))
+  if (QCheckBox *cb = ui->IDC_GENERIC_INVEN_SELECTABLE)
     cb->setChecked(oi->flags & OIF_INVEN_SELECTABLE);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_GENERIC_INVEN_NONUSEABLE"))
+  if (QCheckBox *cb = ui->IDC_GENERIC_INVEN_NONUSEABLE)
     cb->setChecked(oi->flags & OIF_INVEN_NONUSEABLE);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_INVEN_NOREMOVE"))
+  if (QCheckBox *cb = ui->IDC_INVEN_NOREMOVE)
     cb->setChecked(oi->flags & OIF_INVEN_NOREMOVE);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_INVEN_VISWHENUSED"))
+  if (QCheckBox *cb = ui->IDC_INVEN_VISWHENUSED)
     cb->setChecked(oi->flags & OIF_INVEN_VISWHENUSED);
 
   const bool mission = (oi->flags & OIF_INVEN_TYPE_MISSION) != 0;
-  if (QRadioButton *rb = find<QRadioButton>("IDC_INVTYPE_MISSION"))
+  if (QRadioButton *rb = ui->IDC_INVTYPE_MISSION)
     rb->setChecked(mission);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_INVTYPE_GAME"))
+  if (QRadioButton *rb = ui->IDC_INVTYPE_GAME)
     rb->setChecked(!mission);
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_INVEN_DESCRIPTION"))
+  if (auto *edit = ui->IDC_GENERIC_INVEN_DESCRIPTION)
     edit->setText(oi->description ? oi->description : "<no description>");
-  if (QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_INVEN_ICONNAME"))
+  if (QLineEdit *edit = ui->IDC_GENERIC_INVEN_ICONNAME)
     edit->setText(oi->icon_name[0] ? oi->icon_name : "<no icon>");
 
-  if (QPushButton *nolod = find<QPushButton>("IDC_NOLOD")) {
+  if (QPushButton *nolod = ui->IDC_NOLOD) {
     if (m_lod == 0)
       nolod->setEnabled(false);
     else if (m_lod == 1)
@@ -534,11 +533,11 @@ void WorldObjectsGenericDialog::updateDialog() {
     else
       nolod->setEnabled(oi->lo_render_handle != -1);
   }
-  if (QRadioButton *rb = find<QRadioButton>("IDC_HIRES_RADIO"))
+  if (QRadioButton *rb = ui->IDC_HIRES_RADIO)
     rb->setChecked(m_lod == 0);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_MEDRES_RADIO"))
+  if (QRadioButton *rb = ui->IDC_MEDRES_RADIO)
     rb->setChecked(m_lod == 1);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_LORES_RADIO"))
+  if (QRadioButton *rb = ui->IDC_LORES_RADIO)
     rb->setChecked(m_lod == 2);
 
   (void)txt;
@@ -570,6 +569,7 @@ void WorldObjectsGenericDialog::onAddNew() {
     return;
   }
 
+  QString Current_model_dir; // get from settings
   const QString pathname =
       QFileDialog::getOpenFileName(this, "Select model", Current_model_dir, "Descent III files (*.pof *.oof)");
   if (pathname.isEmpty())
@@ -729,8 +729,7 @@ void WorldObjectsGenericDialog::onDelete() {
 
   if (mng_CheckIfPageOwned(&pl, TableUser) != 1) {
     mng_FreeTrackLock(tl);
-    if (!mng_DeletePage(Object_info[m_current].name, PAGETYPE_GENERIC, 1))
-      Int3();
+    Q_ASSERT(mng_DeletePage(Object_info[m_current].name, PAGETYPE_GENERIC, 1));
   } else {
     mng_FreeTrackLock(tl);
     mng_DeletePage(Object_info[m_current].name, PAGETYPE_GENERIC, 0);
@@ -823,12 +822,9 @@ void WorldObjectsGenericDialog::onUndoLock() {
   pl.pagetype = PAGETYPE_GENERIC;
 
   mng_FreeTrackLock(tl);
-  if (!mng_DeletePage(Object_info[m_current].name, PAGETYPE_GENERIC, 1))
-    Int3();
-  if (!mng_FindSpecificGenericPage(pl.name, &page))
-    Int3();
-  if (!mng_AssignGenericPageToObjInfo(&page, m_current))
-    Int3();
+  Q_ASSERT(mng_DeletePage(Object_info[m_current].name, PAGETYPE_GENERIC, 1));
+  Q_ASSERT(mng_FindSpecificGenericPage(pl.name, &page));
+  Q_ASSERT(mng_AssignGenericPageToObjInfo(&page, m_current));
   mng_EraseLocker();
   updateDialog();
 }
@@ -846,7 +842,7 @@ void WorldObjectsGenericDialog::onPrev() {
 }
 
 void WorldObjectsGenericDialog::onNamePulldownChanged() {
-  QComboBox *combo = find<QComboBox>("IDC_NAME_PULLDOWN");
+  QComboBox *combo = ui->IDC_NAME_PULLDOWN;
   const int i = FindObjectIDName(combo->currentText().toLocal8Bit().constData());
   if (i == -1)
     return;
@@ -856,7 +852,7 @@ void WorldObjectsGenericDialog::onNamePulldownChanged() {
 
 void WorldObjectsGenericDialog::onKillfocusSize() {
   if (m_current != -1)
-    Object_info[m_current].size = find<QLineEdit>("IDC_GENERIC_SIZE_EDIT")->text().toFloat();
+    Object_info[m_current].size = ui->IDC_GENERIC_SIZE_EDIT->text().toFloat();
 }
 
 void WorldObjectsGenericDialog::onCopy() {
@@ -920,7 +916,7 @@ void WorldObjectsGenericDialog::onDestroyableToggled(bool checked) {
 
 void WorldObjectsGenericDialog::onKillfocusHitpoints() {
   if (m_current != -1)
-    Object_info[m_current].hit_points = find<QLineEdit>("IDC_GENERIC_HITPOINT_EDIT")->text().toInt();
+    Object_info[m_current].hit_points = ui->IDC_GENERIC_HITPOINT_EDIT->text().toInt();
 }
 
 void WorldObjectsGenericDialog::onWeaponInfo() {
@@ -959,12 +955,12 @@ void WorldObjectsGenericDialog::onSelScript() {
 
 void WorldObjectsGenericDialog::onKillfocusImpactDamage() {
   if (m_current != -1)
-    Object_info[m_current].damage = find<QLineEdit>("IDC_GENERIC_IMPACT_DAMAGE_EDIT")->text().toFloat();
+    Object_info[m_current].damage = ui->IDC_GENERIC_IMPACT_DAMAGE_EDIT->text().toFloat();
 }
 
 void WorldObjectsGenericDialog::onKillfocusImpactSize() {
   if (m_current != -1)
-    Object_info[m_current].impact_size = find<QLineEdit>("IDC_GENERIC_IMPACT_SIZE_EDIT")->text().toFloat();
+    Object_info[m_current].impact_size = ui->IDC_GENERIC_IMPACT_SIZE_EDIT->text().toFloat();
 }
 
 void WorldObjectsGenericDialog::onNolod() {
@@ -999,24 +995,24 @@ void WorldObjectsGenericDialog::onLoresRadio() {
 
 void WorldObjectsGenericDialog::onKillfocusImpactTime() {
   if (m_current != -1)
-    Object_info[m_current].impact_time = find<QLineEdit>("IDC_GENERIC_IMPACT_TIME_EDIT")->text().toFloat();
+    Object_info[m_current].impact_time = ui->IDC_GENERIC_IMPACT_TIME_EDIT->text().toFloat();
 }
 
 void WorldObjectsGenericDialog::onExplosionSoundChanged() {
   if (m_current != -1)
-    Object_info[m_current].sounds[GSI_EXPLODE] = soundComboSelected(find<QComboBox>("IDC_GENERIC_EXPLOSION_SOUND_COMBO"));
+    Object_info[m_current].sounds[GSI_EXPLODE] = soundComboSelected(ui->IDC_GENERIC_EXPLOSION_SOUND_COMBO);
 }
 
 void WorldObjectsGenericDialog::onAmbientSoundChanged() {
   if (m_current != -1)
-    Object_info[m_current].sounds[GSI_AMBIENT] = soundComboSelected(find<QComboBox>("IDC_GENERIC_AMBIENT_SOUND_COMBO"));
+    Object_info[m_current].sounds[GSI_AMBIENT] = soundComboSelected(ui->IDC_GENERIC_AMBIENT_SOUND_COMBO);
 }
 
 void WorldObjectsGenericDialog::onKillfocusInvenDescription() {
   if (m_current == -1)
     return;
-  QLineEdit *edit = find<QLineEdit>("IDC_GENERIC_INVEN_DESCRIPTION");
-  const QByteArray text = edit->text().toLocal8Bit();
+  auto *edit = ui->IDC_GENERIC_INVEN_DESCRIPTION;
+  const QByteArray text = edit->toPlainText().toLocal8Bit();
   if (Object_info[m_current].description) {
     mem_free(Object_info[m_current].description);
     Object_info[m_current].description = nullptr;
@@ -1031,7 +1027,7 @@ void WorldObjectsGenericDialog::onKillfocusInvenDescription() {
 void WorldObjectsGenericDialog::onKillfocusInvenIconname() {
   if (m_current == -1)
     return;
-  const QByteArray text = find<QLineEdit>("IDC_GENERIC_INVEN_ICONNAME")->text().toLocal8Bit();
+  const QByteArray text = ui->IDC_GENERIC_INVEN_ICONNAME->text().toLocal8Bit();
   snprintf(Object_info[m_current].icon_name, sizeof(Object_info[m_current].icon_name), "%s", text.constData());
 }
 
@@ -1054,7 +1050,7 @@ void WorldObjectsGenericDialog::onInvenNonuseable(bool checked) {
 void WorldObjectsGenericDialog::onKillfocusLodDistance() {
   if (m_current == -1)
     return;
-  const float dist = find<QLineEdit>("IDC_LOD_DISTANCE_EDIT")->text().toFloat();
+  const float dist = ui->IDC_LOD_DISTANCE_EDIT->text().toFloat();
   if (dist < 0)
     return;
   if (m_lod == 1)
@@ -1084,30 +1080,30 @@ void WorldObjectsGenericDialog::onInvenViswhenused(bool checked) {
 void WorldObjectsGenericDialog::onDeathPowerup1Changed() {
   if (m_current != -1)
     Object_info[m_current].dspew[0] =
-        find<QComboBox>("IDC_DEATH_POWERUP1_PULLDOWN")->currentData().toInt();
+        ui->IDC_DEATH_POWERUP1_PULLDOWN->currentData().toInt();
 }
 void WorldObjectsGenericDialog::onDeathPowerup1NumEdited() {
   if (m_current != -1)
-    Object_info[m_current].dspew_number[0] = find<QLineEdit>("IDC_DEATH_POWERUP1_NUM_EDIT")->text().toInt();
+    Object_info[m_current].dspew_number[0] = ui->IDC_DEATH_POWERUP1_NUM_EDIT->text().toInt();
 }
 void WorldObjectsGenericDialog::onDeathPowerup1PercentEdited() {
   if (m_current != -1)
     Object_info[m_current].dspew_percent[0] =
-        find<QLineEdit>("IDC_DEATH_POWERUP1_PERCENT_EDIT")->text().toFloat() / 100.0f;
+        ui->IDC_DEATH_POWERUP1_PERCENT_EDIT->text().toFloat() / 100.0f;
 }
 void WorldObjectsGenericDialog::onDeathPowerup2Changed() {
   if (m_current != -1)
     Object_info[m_current].dspew[1] =
-        find<QComboBox>("IDC_DEATH_POWERUP2_PULLDOWN")->currentData().toInt();
+        ui->IDC_DEATH_POWERUP2_PULLDOWN->currentData().toInt();
 }
 void WorldObjectsGenericDialog::onDeathPowerup2NumEdited() {
   if (m_current != -1)
-    Object_info[m_current].dspew_number[1] = find<QLineEdit>("IDC_DEATH_POWERUP2_NUM_EDIT")->text().toInt();
+    Object_info[m_current].dspew_number[1] = ui->IDC_DEATH_POWERUP2_NUM_EDIT->text().toInt();
 }
 void WorldObjectsGenericDialog::onDeathPowerup2PercentEdited() {
   if (m_current != -1)
     Object_info[m_current].dspew_percent[1] =
-        find<QLineEdit>("IDC_DEATH_POWERUP2_PERCENT_EDIT")->text().toFloat() / 100.0f;
+        ui->IDC_DEATH_POWERUP2_PERCENT_EDIT->text().toFloat() / 100.0f;
 }
 void WorldObjectsGenericDialog::onDeathPowerupUse2(bool checked) {
   if (m_current == -1)
@@ -1129,7 +1125,7 @@ void WorldObjectsGenericDialog::onDeathSpew2IfZero1(bool checked) {
 void WorldObjectsGenericDialog::onKillfocusScriptname() {
   if (m_current == -1)
     return;
-  const QByteArray text = find<QLineEdit>("IDC_SCRIPTNAME")->text().toLocal8Bit();
+  const QByteArray text = ui->IDC_SCRIPTNAME->text().toLocal8Bit();
   if (strcmp(text.constData(), "null") == 0)
     Object_info[m_current].module_name[0] = '\0';
   else
@@ -1146,7 +1142,7 @@ void WorldObjectsGenericDialog::onCompilemodule() {
 void WorldObjectsGenericDialog::onKillfocusScriptOverride() {
   if (m_current == -1)
     return;
-  const QByteArray text = find<QLineEdit>("IDC_SCRIPT_OVERRIDE")->text().toLocal8Bit();
+  const QByteArray text = ui->IDC_SCRIPT_OVERRIDE->text().toLocal8Bit();
   if (strcmp(text.constData(), "null") == 0)
     Object_info[m_current].script_name_override[0] = '\0';
   else
@@ -1162,7 +1158,7 @@ void WorldObjectsGenericDialog::onAiScriptedDeath(bool checked) {
 void WorldObjectsGenericDialog::onKillfocusRespawnScalar() {
   if (m_current == -1)
     return;
-  float val = find<QLineEdit>("IDC_RESPAWN_SCALAR_EDIT")->text().toFloat();
+  float val = ui->IDC_RESPAWN_SCALAR_EDIT->text().toFloat();
   if (val < -1)
     val = -1;
   if (val > 10000)
@@ -1180,11 +1176,11 @@ void WorldObjectsGenericDialog::onGenericDeaths() {
 
 void WorldObjectsGenericDialog::onKillfocusScore() {
   if (m_current != -1)
-    Object_info[m_current].score = find<QLineEdit>("IDC_GENERIC_SCORE_EDIT")->text().toInt();
+    Object_info[m_current].score = ui->IDC_GENERIC_SCORE_EDIT->text().toInt();
 }
 void WorldObjectsGenericDialog::onKillfocusAmmo() {
   if (m_current != -1)
-    Object_info[m_current].ammo_count = find<QLineEdit>("IDC_GENERIC_AMMO_EDIT")->text().toInt();
+    Object_info[m_current].ammo_count = ui->IDC_GENERIC_AMMO_EDIT->text().toInt();
 }
 void WorldObjectsGenericDialog::onObjCeiling(bool checked) {
   setFlag(OIF_DO_CEILING_CHECK, "IDC_OBJ_CEILING_CHECK", checked);
@@ -1221,4 +1217,3 @@ int editGenericObject(int objType, int initialCurrent, QWidget *parent) {
   return dlg.current();
 }
 
-}

@@ -1,11 +1,17 @@
 #pragma once
-#include "qteditor_dialog.h"
-namespace QtEditor {
+
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class TableFileEditDialog; }
+QT_END_NAMESPACE
+
 // Port of the table_file_editor dialog.
-class TableFileEditDialog : public Dialog {
+class TableFileEditDialog : public QDialog {
   Q_OBJECT
 public:
   explicit TableFileEditDialog(QWidget *parent = nullptr);
-  ~TableFileEditDialog() override;
+  ~TableFileEditDialog();
+private:
+  Ui::TableFileEditDialog *ui;
 };
-}

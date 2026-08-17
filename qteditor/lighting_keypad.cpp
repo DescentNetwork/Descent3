@@ -17,6 +17,7 @@
  */
 
 #include "lighting_keypad.h"
+#include "ui_lightingkeypad.h"
 
 #include <QCheckBox>
 
@@ -29,37 +30,39 @@ extern bool Outline_lightmaps;
 extern int BestFit;
 extern int Shoot_from_patch;
 
-namespace QtEditor {
 
-LightingKeypad::LightingKeypad(QWidget *parent) : Keypad(":/ui/lightingkeypad.ui", parent) {
-  if (QCheckBox *cb = find<QCheckBox>("IDC_SHOW_LIGHTMAPS"))
+LightingKeypad::LightingKeypad(QWidget *parent)
+    : QDialog(parent), ui(new Ui::LightingKeypad)
+{
+  ui->setupUi(this);
+  if (QCheckBox *cb = ui->IDC_SHOW_LIGHTMAPS)
     connect(cb, &QCheckBox::toggled, this, &LightingKeypad::onShowLightmaps);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_BESTFIT_CHECK"))
+  if (QCheckBox *cb = ui->IDC_BESTFIT_CHECK)
     connect(cb, &QCheckBox::toggled, this, &LightingKeypad::onBestFit);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_HEMICUBE_CHECK"))
+  if (QCheckBox *cb = ui->IDC_HEMICUBE_CHECK)
     connect(cb, &QCheckBox::toggled, this, &LightingKeypad::onHemicube);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_ELEMENT_CHECK"))
+  if (QCheckBox *cb = ui->IDC_ELEMENT_CHECK)
     connect(cb, &QCheckBox::toggled, this, &LightingKeypad::onElement);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_IGNORE_TERRAIN"))
+  if (QCheckBox *cb = ui->IDC_IGNORE_TERRAIN)
     connect(cb, &QCheckBox::toggled, this, &LightingKeypad::onIgnoreTerrain);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_IGNORE_SATELLITES"))
+  if (QCheckBox *cb = ui->IDC_IGNORE_SATELLITES)
     connect(cb, &QCheckBox::toggled, this, &LightingKeypad::onIgnoreSatellites);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_USE_BSP_CHECK"))
+  if (QCheckBox *cb = ui->IDC_USE_BSP_CHECK)
     connect(cb, &QCheckBox::toggled, this, &LightingKeypad::onUseBsp);
 
   updateDialog();
 }
 
-LightingKeypad::~LightingKeypad() = default;
+LightingKeypad::~LightingKeypad() { delete ui; }
 
 void LightingKeypad::updateDialog() {
-  if (QCheckBox *cb = find<QCheckBox>("IDC_SHOW_LIGHTMAPS"))
+  if (QCheckBox *cb = ui->IDC_SHOW_LIGHTMAPS)
     cb->setChecked(Outline_lightmaps != 0);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_BESTFIT_CHECK"))
+  if (QCheckBox *cb = ui->IDC_BESTFIT_CHECK)
     cb->setChecked(BestFit != 0);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_HEMICUBE_CHECK"))
+  if (QCheckBox *cb = ui->IDC_HEMICUBE_CHECK)
     cb->setChecked(D3EditState.hemicube_radiosity != 0);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_ELEMENT_CHECK"))
+  if (QCheckBox *cb = ui->IDC_ELEMENT_CHECK)
     cb->setChecked(Shoot_from_patch == 0);
 }
 
@@ -80,4 +83,3 @@ void LightingKeypad::onIgnoreTerrain(bool) {}
 void LightingKeypad::onIgnoreSatellites(bool) {}
 void LightingKeypad::onUseBsp(bool) {}
 
-}

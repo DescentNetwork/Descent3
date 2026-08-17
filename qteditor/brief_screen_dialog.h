@@ -18,17 +18,21 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class BriefScreenDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CBriefScreenEdit (IDD_BRIEF_ADDS): add a briefing screen (picture,
 // layout, description, mission flags).
-class BriefScreenDialog : public Dialog {
+class BriefScreenDialog : public QDialog {
   Q_OBJECT
 public:
   explicit BriefScreenDialog(QWidget *parent = nullptr);
-  ~BriefScreenDialog() override;
+  ~BriefScreenDialog();
+private:
+  Ui::BriefScreenDialog *ui;
 };
 
-}

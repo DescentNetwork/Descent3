@@ -18,20 +18,23 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class ObjectPropertiesDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CObjectPropertiesDialog (IDD_OBJECTPROPERTIES): a tabbed dialog
 // hosting the object's physics and AI property editors.
-class ObjectPropertiesDialog : public Dialog {
+class ObjectPropertiesDialog : public QDialog {
   Q_OBJECT
 public:
   explicit ObjectPropertiesDialog(int objIndex, QWidget *parent = nullptr);
-  ~ObjectPropertiesDialog() override;
+  ~ObjectPropertiesDialog();
 
 private:
+  Ui::ObjectPropertiesDialog *ui;
   int m_objIndex;
 };
 
-}

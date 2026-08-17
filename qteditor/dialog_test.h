@@ -20,10 +20,8 @@
 
 #include <QObject>
 
-namespace QtEditor {
 
 // Constructs every implemented dialog (the code paths that previously crashed)
 // and reports pass/fail to stderr. Used with --dialog-test.
 int runDialogTest();
 
-}

@@ -18,20 +18,23 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
 struct otype_wb_info;
 struct poly_model;
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class RobotWeaponsDialog; }
+QT_END_NAMESPACE
+
 
 // Port of RobotEditWeaponsDialog (IDD_ROBOT_WEAPON_DIALOG): edits a gun
 // battery (firing masks, gun points, aiming, anim and usage).
-class RobotEditWeaponsDialog : public Dialog {
+class RobotEditWeaponsDialog : public QDialog {
   Q_OBJECT
 public:
   explicit RobotEditWeaponsDialog(otype_wb_info *static_wb, poly_model *pm, QWidget *parent = nullptr);
-  ~RobotEditWeaponsDialog() override;
+  ~RobotEditWeaponsDialog();
 
   void getData();
 
@@ -39,6 +42,7 @@ private:
   void loadData();
   void updateDialog();
 
+  Ui::RobotWeaponsDialog *ui;
   otype_wb_info *m_wb;
   poly_model *m_pm;
 };
@@ -47,4 +51,3 @@ private:
 // weapons dialog).
 void editRobotWeapons(otype_wb_info *wb, poly_model *pm, QWidget *parent);
 
-}

@@ -17,6 +17,7 @@
  */
 
 #include "doorway_keypad.h"
+#include "ui_doorwaykeypad.h"
 
 #include <QCheckBox>
 #include <QLabel>
@@ -28,40 +29,42 @@
 #include "door.h"
 #include "doorway.h"
 #include "room_external.h"
-
-namespace QtEditor {
+#include "d3edit.h"
 
 namespace {
 const char *kKeyCheck[8] = {"IDC_KEY1_CHECK", "IDC_KEY2_CHECK", "IDC_KEY3_CHECK", "IDC_KEY4_CHECK",
                             "IDC_KEY5_CHECK", "IDC_KEY6_CHECK", "IDC_KEY7_CHECK", "IDC_KEY8_CHECK"};
 } // namespace
 
-DoorwayKeypad::DoorwayKeypad(QWidget *parent) : Keypad(":/ui/doorwaykeypad.ui", parent) {
-  if (QPushButton *b = find<QPushButton>("IDC_NEXT_DOOR"))
+DoorwayKeypad::DoorwayKeypad(QWidget *parent)
+    : QDialog(parent), ui(new Ui::DoorwayKeypad)
+{
+  ui->setupUi(this);
+  if (QPushButton *b = ui->IDC_NEXT_DOOR)
     connect(b, &QPushButton::clicked, this, &DoorwayKeypad::onNextDoor);
-  if (QPushButton *b = find<QPushButton>("IDC_PREV_DOOR"))
+  if (QPushButton *b = ui->IDC_PREV_DOOR)
     connect(b, &QPushButton::clicked, this, &DoorwayKeypad::onPrevDoor);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_DOORWAY_LOCKED"))
+  if (QCheckBox *cb = ui->IDC_DOORWAY_LOCKED)
     connect(cb, &QCheckBox::toggled, this, &DoorwayKeypad::onLockedToggled);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_DOORWAY_AUTO"))
+  if (QCheckBox *cb = ui->IDC_DOORWAY_AUTO)
     connect(cb, &QCheckBox::toggled, this, &DoorwayKeypad::onAutoToggled);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_DOORWAY_GB_IGNORE_LOCKED"))
+  if (QCheckBox *cb = ui->IDC_DOORWAY_GB_IGNORE_LOCKED)
     connect(cb, &QCheckBox::toggled, this, &DoorwayKeypad::onIgnoreLockedToggled);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_DOORWAY_KEY_ALL"))
+  if (QRadioButton *rb = ui->IDC_DOORWAY_KEY_ALL)
     connect(rb, &QRadioButton::clicked, this, &DoorwayKeypad::onKeyAll);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_DOORWAY_KEY_ONLY_ONE"))
+  if (QRadioButton *rb = ui->IDC_DOORWAY_KEY_ONLY_ONE)
     connect(rb, &QRadioButton::clicked, this, &DoorwayKeypad::onKeyOnlyOne);
-  if (QLineEdit *edit = find<QLineEdit>("IDC_DOORWAY_POS_EDIT"))
+  if (QLineEdit *edit = ui->IDC_DOORWAY_POS_EDIT)
     connect(edit, &QLineEdit::editingFinished, this, &DoorwayKeypad::onPosEdited);
 
   for (const char *name : kKeyCheck)
-    if (QCheckBox *cb = find<QCheckBox>(name))
+    if (QCheckBox *cb = findChild<QCheckBox*>(name))
       connect(cb, &QCheckBox::toggled, this, &DoorwayKeypad::onKeyToggled);
 
   updateDialog();
 }
 
-DoorwayKeypad::~DoorwayKeypad() = default;
+DoorwayKeypad::~DoorwayKeypad() { delete ui; }
 
 doorway *currentDoorway() {
   if (Curroomp == nullptr)
@@ -81,27 +84,27 @@ void DoorwayKeypad::updateDialog() {
   if (dp == nullptr)
     return;
 
-  if (QCheckBox *cb = find<QCheckBox>("IDC_DOORWAY_LOCKED"))
+  if (QCheckBox *cb = ui->IDC_DOORWAY_LOCKED)
     cb->setChecked(dp->flags & DF_LOCKED);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_DOORWAY_AUTO"))
+  if (QCheckBox *cb = ui->IDC_DOORWAY_AUTO)
     cb->setChecked(dp->flags & DF_AUTO);
-  if (QCheckBox *cb = find<QCheckBox>("IDC_DOORWAY_GB_IGNORE_LOCKED"))
+  if (QCheckBox *cb = ui->IDC_DOORWAY_GB_IGNORE_LOCKED)
     cb->setChecked(dp->flags & DF_GB_IGNORE_LOCKED);
-  if (QRadioButton *rb = find<QRadioButton>("IDC_DOORWAY_KEY_ALL"))
+  if (QRadioButton *rb = ui->IDC_DOORWAY_KEY_ALL)
     rb->setChecked(!(dp->flags & DF_KEY_ONLY_ONE));
-  if (QRadioButton *rb = find<QRadioButton>("IDC_DOORWAY_KEY_ONLY_ONE"))
+  if (QRadioButton *rb = ui->IDC_DOORWAY_KEY_ONLY_ONE)
     rb->setChecked(dp->flags & DF_KEY_ONLY_ONE);
 
   for (int k = 0; k < 8; k++)
-    if (QCheckBox *cb = find<QCheckBox>(kKeyCheck[k]))
+    if (QCheckBox *cb = findChild<QCheckBox*>(kKeyCheck[k]))
       cb->setChecked((dp->keys_needed & (1 << k)) != 0);
 
-  if (QLineEdit *edit = find<QLineEdit>("IDC_DOORWAY_POS_EDIT"))
+  if (QLineEdit *edit = ui->IDC_DOORWAY_POS_EDIT)
     edit->setText(QString::number(dp->position));
 
-  if (QLabel *label = find<QLabel>("IDC_DOORWAY_ID"))
+  if (QLabel *label = ui->IDC_DOORWAY_ID)
     label->setText(QString::number(dp->doornum));
-  if (QLineEdit *edit = find<QLineEdit>("IDC_DOORWAYSELEDIT")) {
+  if (QLineEdit *edit = ui->IDC_DOORWAYSELEDIT) {
     if (dp->doornum >= 0 && dp->doornum < MAX_DOORS && Doors[dp->doornum].used)
       edit->setText(Doors[dp->doornum].name);
   }
@@ -154,7 +157,7 @@ void DoorwayKeypad::onKeyToggled() {
     return;
   uint8_t keys = 0;
   for (int k = 0; k < 8; k++)
-    if (QCheckBox *cb = find<QCheckBox>(kKeyCheck[k]))
+    if (QCheckBox *cb = findChild<QCheckBox*>(kKeyCheck[k]))
       if (cb->isChecked())
         keys |= (1 << k);
   dp->keys_needed = keys;
@@ -165,7 +168,7 @@ void DoorwayKeypad::onKeyAll() {
   if (dp == nullptr)
     return;
   for (int k = 0; k < 8; k++)
-    if (QCheckBox *cb = find<QCheckBox>(kKeyCheck[k]))
+    if (QCheckBox *cb = findChild<QCheckBox*>(kKeyCheck[k]))
       cb->setChecked(true);
   dp->keys_needed = 0xFF;
   dp->flags &= ~DF_KEY_ONLY_ONE;
@@ -176,9 +179,9 @@ void DoorwayKeypad::onKeyOnlyOne() {
   if (dp == nullptr)
     return;
   for (int k = 1; k < 8; k++)
-    if (QCheckBox *cb = find<QCheckBox>(kKeyCheck[k]))
+    if (QCheckBox *cb = findChild<QCheckBox*>(kKeyCheck[k]))
       cb->setChecked(false);
-  if (QCheckBox *cb = find<QCheckBox>(kKeyCheck[0]))
+  if (QCheckBox *cb = findChild<QCheckBox*>(kKeyCheck[0]))
     cb->setChecked(true);
   dp->keys_needed = 1;
   dp->flags |= DF_KEY_ONLY_ONE;
@@ -186,8 +189,7 @@ void DoorwayKeypad::onKeyOnlyOne() {
 
 void DoorwayKeypad::onPosEdited() {
   if (doorway *dp = currentDoorway())
-    if (QLineEdit *edit = find<QLineEdit>("IDC_DOORWAY_POS_EDIT"))
+    if (QLineEdit *edit = ui->IDC_DOORWAY_POS_EDIT)
       dp->position = edit->text().toFloat();
 }
 
-}

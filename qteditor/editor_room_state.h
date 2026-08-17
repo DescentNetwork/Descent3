@@ -20,7 +20,6 @@
 
 struct room;
 
-namespace QtEditor {
 
 // Allocate / free an editor room slot. CreateNewRoom allocates the per-
 // room verts[]/faces[]/portals[] arrays via new[] (DestroyRoom restores
@@ -34,4 +33,3 @@ void DestroyRoom(int roomnum);
 // texture records which we don't have on Linux yet.
 void AssignDefaultUVsToRoomFace(room *rp, int facenum);
 
-} // namespace QtEditor

@@ -18,35 +18,45 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class DallasGenericPromptDialog; }
+QT_END_NAMESPACE
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class DallasVectorPromptDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CDallasGenericPromptDlg (IDD_DALLAS_GENERIC_PROMPT_DIALOG): a
 // one-line text prompt with an optional max length.
-class DallasGenericPromptDialog : public Dialog {
+class DallasGenericPromptDialog : public QDialog {
   Q_OBJECT
 public:
   explicit DallasGenericPromptDialog(QWidget *parent = nullptr);
-  ~DallasGenericPromptDialog() override;
+  ~DallasGenericPromptDialog();
 
   void setDialogTitle(const QString &title);
   void setPromptText(const QString &text);
   void setPromptData(const QString &data);
   void setMaxDataLength(int length);
   QString promptData() const;
+private:
+  Ui::DallasGenericPromptDialog *ui;
 };
 
 // Port of CDallasVectorPromptDialog (IDD_DALLAS_VECTOR_DIALOG): three float
 // fields.
-class DallasVectorPromptDialog : public Dialog {
+class DallasVectorPromptDialog : public QDialog {
   Q_OBJECT
 public:
   explicit DallasVectorPromptDialog(QWidget *parent = nullptr);
-  ~DallasVectorPromptDialog() override;
+  ~DallasVectorPromptDialog();
 
   void setPromptData(float v1, float v2, float v3);
   void getPromptData(float *v1, float *v2, float *v3);
+private:
+  Ui::DallasVectorPromptDialog *ui;
 };
 
-}

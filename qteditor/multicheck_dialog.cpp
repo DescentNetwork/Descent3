@@ -17,18 +17,20 @@
  */
 
 #include "multicheck_dialog.h"
+#include "ui_multicheck.h"
 
 #include <QLabel>
 #include <QListWidget>
 
-namespace QtEditor {
 
 MultiCheckDialog::MultiCheckDialog(const QString &message, const QStringList &items, const QStringList &checked,
                                    QWidget *parent)
-    : Dialog(":/ui/multicheck.ui", parent), m_list(nullptr) {
-  if (QLabel *label = find<QLabel>("IDC_DIRECTIONS_TEXT"))
+    : QDialog(parent), ui(new Ui::MulticheckDialog), m_list(nullptr)
+{
+  ui->setupUi(this);
+  if (QLabel *label = ui->IDC_DIRECTIONS_TEXT)
     label->setText(message);
-  m_list = find<QListWidget>("IDC_MULTICHECKIN_LISTBOX");
+  m_list = ui->IDC_MULTICHECKIN_LISTBOX;
   if (m_list != nullptr) {
     m_list->addItems(items);
     for (int i = 0; i < m_list->count(); i++)
@@ -38,7 +40,7 @@ MultiCheckDialog::MultiCheckDialog(const QString &message, const QStringList &it
   }
 }
 
-MultiCheckDialog::~MultiCheckDialog() = default;
+MultiCheckDialog::~MultiCheckDialog() { delete ui; }
 
 QStringList MultiCheckDialog::checkedItems() const {
   QStringList out;
@@ -48,4 +50,3 @@ QStringList MultiCheckDialog::checkedItems() const {
   return out;
 }
 
-}

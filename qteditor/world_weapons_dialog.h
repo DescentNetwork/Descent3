@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class WorldWeaponsDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CWorldWeaponsDialog (IDD_WORLDWEAPONS): edits the weapon table
 // (damage, size, life, sounds, flags, spawns, particles, gravity, etc.).
-class WorldWeaponsDialog : public Dialog {
+class WorldWeaponsDialog : public QDialog {
   Q_OBJECT
 public:
   explicit WorldWeaponsDialog(QWidget *parent = nullptr);
-  ~WorldWeaponsDialog() override;
+  ~WorldWeaponsDialog();
 
 private slots:
   void onAddWeapon();
@@ -66,6 +69,7 @@ private:
   void bindEdits();
   void bindChecks();
   void bindCombos();
+private:
+  Ui::WorldWeaponsDialog *ui;
 };
 
-}

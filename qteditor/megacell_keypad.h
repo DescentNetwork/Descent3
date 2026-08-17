@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "keypad_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class MegacellKeypad; }
+QT_END_NAMESPACE
+
 
 // Port of CMegacellKeypad (IDD_MEGACELL): terrain megacell navigation and
 // granularity settings.
-class MegacellKeypad : public Keypad {
+class MegacellKeypad : public QDialog {
   Q_OBJECT
 public:
   explicit MegacellKeypad(QWidget *parent = nullptr);
-  ~MegacellKeypad() override;
+  ~MegacellKeypad();
 
 private slots:
   void onNextMegaSet();
@@ -42,6 +45,10 @@ private:
 
   int m_xgran = 1;
   int m_ygran = 1;
+
+  template <typename T>
+  T *find(const QString &name) const { return findChild<T *>(name); }
+
+  Ui::MegacellKeypad *ui;
 };
 
-}

@@ -18,20 +18,26 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class EditlineDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CEditLineDialog (IDD_EDITLINEDLG): a single-line text/number prompt.
-class EditLineDialog : public Dialog {
+class EditLineDialog : public QDialog {
   Q_OBJECT
 public:
   EditLineDialog(const QString &title, const QString &caption,
                  const QString &initial, bool numeric, QWidget *parent = nullptr);
   EditLineDialog(const QString &caption, QWidget *parent = nullptr);
-  ~EditLineDialog() override;
+  ~EditLineDialog();
 
   QString text() const;
+
+private:
+  Ui::EditlineDialog *ui;
 };
 
 // Free-function helpers matching InputString()/InputNumber().
@@ -39,4 +45,3 @@ bool InputString(char *buf, int maxsize, const char *title, const char *prompt,
                  QWidget *wnd = nullptr);
 bool InputNumber(int *n, const char *title, const char *prompt, QWidget *wnd = nullptr);
 
-}

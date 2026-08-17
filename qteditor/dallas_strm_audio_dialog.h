@@ -1,11 +1,17 @@
 #pragma once
-#include "qteditor_dialog.h"
-namespace QtEditor {
+
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class DallasStrmAudioDialog; }
+QT_END_NAMESPACE
+
 // Port of the Dallas dialog (IDD_DALLAS_STRM_AUDIO_DIALOG).
-class DallasStrmAudioDialog : public Dialog {
+class DallasStrmAudioDialog : public QDialog {
   Q_OBJECT
 public:
   explicit DallasStrmAudioDialog(QWidget *parent = nullptr);
-  ~DallasStrmAudioDialog() override;
+  ~DallasStrmAudioDialog();
+private:
+  Ui::DallasStrmAudioDialog *ui;
 };
-}

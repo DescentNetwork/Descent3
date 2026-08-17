@@ -18,17 +18,19 @@
 
 #pragma once
 
-#include "keypad_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class DoorwayKeypad; }
+QT_END_NAMESPACE
 
 // Port of CDoorwayDialog (IDD_DOORWAYKEYPAD): doorway keypad editing the
 // current room face's doorway (keys, locked, auto, position, hit points).
-class DoorwayKeypad : public Keypad {
+class DoorwayKeypad : public QDialog {
   Q_OBJECT
 public:
   explicit DoorwayKeypad(QWidget *parent = nullptr);
-  ~DoorwayKeypad() override;
+  ~DoorwayKeypad();
 
 private slots:
   void onNextDoor();
@@ -44,6 +46,10 @@ private slots:
 private:
   void updateDialog();
   void setKeyBit(int bit, bool checked);
+
+  template <typename T>
+  T *find(const QString &name) const { return findChild<T *>(name); }
+
+  Ui::DoorwayKeypad *ui;
 };
 
-}

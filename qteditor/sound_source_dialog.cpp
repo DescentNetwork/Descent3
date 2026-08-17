@@ -17,6 +17,7 @@
  */
 
 #include "sound_source_dialog.h"
+#include "ui_soundsource_dialog.h"
 
 #include <QComboBox>
 #include <QDialogButtonBox>
@@ -28,30 +29,30 @@
 #include "object_external_struct.h"
 #include "sound_combo.h"
 
-namespace QtEditor {
 
 SoundSourceDialog::SoundSourceDialog(soundsource_info_s *data, QWidget *parent)
-    : Dialog(":/ui/soundsource_dialog.ui", parent), m_data(data) {
-  if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
-    connect(ok, &QPushButton::clicked, this, &SoundSourceDialog::onOk);
-  }
-  if (QPushButton *select = find<QPushButton>("IDC_SELECT"))
+    : QDialog(parent), ui(new Ui::SoundSourceDialog), m_data(data)
+{
+  ui->setupUi(this);
+
+  connect(this, &QDialog::accept, this, &SoundSourceDialog::onOk);
+
+  if (QPushButton *select = ui->IDC_SELECT)
     connect(select, &QPushButton::clicked, this, &SoundSourceDialog::onSelect);
-  if (QLineEdit *edit = find<QLineEdit>("IDC_VOLUME"))
+  if (QLineEdit *edit = ui->IDC_VOLUME)
     edit->setValidator(new QDoubleValidator(0.0, 1.0, 2, edit));
 
-  populateSoundCombo(find<QComboBox>("IDC_SOUND_COMBO"), m_data->sound_index);
-  if (QLineEdit *edit = find<QLineEdit>("IDC_VOLUME"))
+  populateSoundCombo(ui->IDC_SOUND_COMBO, m_data->sound_index);
+  if (QLineEdit *edit = ui->IDC_VOLUME)
     edit->setText(QString::number(m_data->volume));
 }
 
-SoundSourceDialog::~SoundSourceDialog() = default;
+SoundSourceDialog::~SoundSourceDialog() { delete ui; }
 
 void SoundSourceDialog::onSelect() {
   // The MFC original opens CDallasSoundDlg; until that tree is ported, offer
   // the same game-sound list in a compact picker.
-  QComboBox *combo = find<QComboBox>("IDC_SOUND_COMBO");
+  QComboBox *combo = ui->IDC_SOUND_COMBO;
   if (combo == nullptr)
     return;
 
@@ -71,9 +72,8 @@ void SoundSourceDialog::onSelect() {
 }
 
 void SoundSourceDialog::onOk() {
-  m_data->volume = find<QLineEdit>("IDC_VOLUME")->text().toFloat();
-  m_data->sound_index = soundComboSelected(find<QComboBox>("IDC_SOUND_COMBO"));
+  m_data->volume = ui->IDC_VOLUME->text().toFloat();
+  m_data->sound_index = soundComboSelected(ui->IDC_SOUND_COMBO);
   accept();
 }
 
-}

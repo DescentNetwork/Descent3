@@ -1,11 +1,17 @@
 #pragma once
-#include "qteditor_dialog.h"
-namespace QtEditor {
+
+#include <QDialog>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class LevelKeypadLayout; }
+QT_END_NAMESPACE
+
 // Port of the levelkeypad_layout dialog.
-class LevelKeypadLayout : public Dialog {
+class LevelKeypadLayout : public QDialog {
   Q_OBJECT
 public:
   explicit LevelKeypadLayout(QWidget *parent = nullptr);
-  ~LevelKeypadLayout() override;
+  ~LevelKeypadLayout();
+private:
+  Ui::LevelKeypadLayout *ui;
 };
-}

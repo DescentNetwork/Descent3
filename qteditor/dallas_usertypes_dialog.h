@@ -18,19 +18,22 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
 class QListWidget;
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class DallasUserTypesDialog; }
+QT_END_NAMESPACE
+
 
 // Port of CDallasUserTypesDlg (IDD_DALLAS_USERTYPES_DIALOG): manage Dallas
 // user type enum values (add/change/delete).
-class DallasUserTypesDialog : public Dialog {
+class DallasUserTypesDialog : public QDialog {
   Q_OBJECT
 public:
   explicit DallasUserTypesDialog(QWidget *parent = nullptr);
-  ~DallasUserTypesDialog() override;
+  ~DallasUserTypesDialog();
 
 private slots:
   void onAdd();
@@ -39,7 +42,7 @@ private slots:
 
 private:
   void updateDialog();
+  Ui::DallasUserTypesDialog *ui;
   QListWidget *m_list;
 };
 
-}

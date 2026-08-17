@@ -22,7 +22,6 @@ class QSettings;
 
 struct d3edit_state;
 
-namespace QtEditor {
 
 // Qt port of editor.cpp::SaveEditorSettings / LoadEditorSettings. The Win32
 // helpers wrote every D3EditState field to the Windows registry via
@@ -39,4 +38,3 @@ namespace QtEditor {
 void saveEditorSettings(QSettings &settings, const d3edit_state &state);
 void loadEditorSettings(QSettings &settings, d3edit_state &state);
 
-} // namespace QtEditor

@@ -18,25 +18,28 @@
 
 #pragma once
 
-#include "qteditor_dialog.h"
+#include <QDialog>
 
 class QListWidget;
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class OrphanRemoveDialog; }
+QT_END_NAMESPACE
+
 
 // Port of COrphanRemoveDlg (IDD_ORPHANHUNTER): scans objects for orphans
 // (references to missing object types) and lists them.
-class OrphanRemoveDialog : public Dialog {
+class OrphanRemoveDialog : public QDialog {
   Q_OBJECT
 public:
   explicit OrphanRemoveDialog(QWidget *parent = nullptr);
-  ~OrphanRemoveDialog() override;
+  ~OrphanRemoveDialog();
 
 private slots:
   void onScan();
 
 private:
+  Ui::OrphanRemoveDialog *ui;
   QListWidget *m_list;
 };
 
-}

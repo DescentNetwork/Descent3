@@ -17,48 +17,48 @@
  */
 
 #include "font_dialog.h"
+#include "ui_font_dialog.h"
 
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
 
-#include "d3edit.h"
+
 #include "pserror.h"
 
-namespace QtEditor {
 
-FontDialog::FontDialog(QWidget *parent) : Dialog(":/ui/font_dialog.ui", parent) {
-  if (QPushButton *b = find<QPushButton>("IDC_NEW"))
+FontDialog::FontDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::FontDialog)
+{
+  ui->setupUi(this);
+  if (QPushButton *b = ui->IDC_NEW)
     connect(b, &QPushButton::clicked, this, [this]() {
       OutrageMessageBox("New font: not implemented (font engine pending).");
     });
-  if (QPushButton *b = find<QPushButton>("IDC_OPEN"))
+  if (QPushButton *b = ui->IDC_OPEN)
     connect(b, &QPushButton::clicked, this, [this]() {
       OutrageMessageBox("Open font: not implemented (font engine pending).");
     });
-  if (QPushButton *save = find<QPushButton>("IDC_SAVE"))
+  if (QPushButton *save = ui->IDC_SAVE)
     connect(save, &QPushButton::clicked, this, &FontDialog::onOk);
-  if (QPushButton *saveAs = find<QPushButton>("IDC_SAVEAS"))
+  if (QPushButton *saveAs = ui->IDC_SAVEAS)
     connect(saveAs, &QPushButton::clicked, this, &FontDialog::onOk);
-  if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
-    connect(ok, &QPushButton::clicked, this, &FontDialog::onOk);
-  }
+
+  connect(this, &QDialog::accept, this, &FontDialog::onOk);
 
   updateDialog();
 }
 
-FontDialog::~FontDialog() = default;
+FontDialog::~FontDialog() { delete ui; }
 
 void FontDialog::updateDialog() {
-  if (QLineEdit *e = find<QLineEdit>("IDC_EDIT_MINASCII"))
+  if (QLineEdit *e = ui->IDC_EDIT_MINASCII)
     e->setText("32");
-  if (QLineEdit *e = find<QLineEdit>("IDC_BRIGHTNESS"))
+  if (QLineEdit *e = ui->IDC_BRIGHTNESS)
     e->setText("1.0");
-  if (QLineEdit *e = find<QLineEdit>("IDC_EDIT_FONTNAME"))
+  if (QLineEdit *e = ui->IDC_EDIT_FONTNAME)
     e->setText("(no font)");
 }
 
 void FontDialog::onOk() { accept(); }
 
-}

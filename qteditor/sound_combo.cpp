@@ -22,7 +22,6 @@
 
 #include "ssl_lib.h"
 
-namespace QtEditor {
 
 void populateSoundCombo(QComboBox *combo, int selected) {
   if (combo == nullptr)
@@ -56,4 +55,3 @@ int soundComboSelected(QComboBox *combo) {
   return combo->currentData().toInt();
 }
 
-}

@@ -17,11 +17,14 @@
  */
 
 #include "script_parm_dialog.h"
+#include "ui_scriptparms.h"
 
-namespace QtEditor {
 
-ScriptParmDialog::ScriptParmDialog(QWidget *parent) : Dialog(":/ui/scriptparms.ui", parent) {}
-
-ScriptParmDialog::~ScriptParmDialog() = default;
-
+ScriptParmDialog::ScriptParmDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::ScriptParmDialog)
+{
+  ui->setupUi(this);
 }
+
+ScriptParmDialog::~ScriptParmDialog() { delete ui; }
+

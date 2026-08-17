@@ -17,6 +17,7 @@
  */
 
 #include "orphan_remove_dialog.h"
+#include "ui_orphan.h"
 
 #include <QLabel>
 #include <QListWidget>
@@ -25,10 +26,12 @@
 #include "objinfo.h"
 #include "object.h"
 
-namespace QtEditor {
 
-OrphanRemoveDialog::OrphanRemoveDialog(QWidget *parent) : Dialog(":/ui/orphan.ui", parent), m_list(nullptr) {
-  m_list = find<QListWidget>("IDC_LIST");
+OrphanRemoveDialog::OrphanRemoveDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::OrphanRemoveDialog), m_list(nullptr)
+{
+  ui->setupUi(this);
+  m_list = ui->IDC_LIST;
   if (m_list != nullptr) {
     m_list->addItem("Scanning for orphan objects...");
     m_list->clear();
@@ -45,15 +48,14 @@ OrphanRemoveDialog::OrphanRemoveDialog(QWidget *parent) : Dialog(":/ui/orphan.ui
     }
     if (orphans == 0)
       m_list->addItem("No orphans found.");
-    if (QLabel *label = find<QLabel>("IDC_STATUS"))
+    if (QLabel *label = ui->IDC_STATUS)
       label->setText(QString("Scanned %1 objects; %2 orphans.").arg(Highest_object_index + 1).arg(orphans));
   }
 }
 
-OrphanRemoveDialog::~OrphanRemoveDialog() = default;
+OrphanRemoveDialog::~OrphanRemoveDialog() { delete ui; }
 
 void OrphanRemoveDialog::onScan() {
   QMessageBox::information(this, "Orphan scan", "Orphan scan complete.");
 }
 
-}

@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include "keypad_dialog.h"
+#include <QDialog>
 
-namespace QtEditor {
+QT_BEGIN_NAMESPACE
+namespace Ui { class ObjectKeypad; }
+QT_END_NAMESPACE
+
 
 // Port of CObjectDialog (IDD_OBJECTKEYPAD): object placement/movement axes,
 // flip, delete, next-object selection and default-reset.
-class ObjectKeypad : public Keypad {
+class ObjectKeypad : public QDialog {
   Q_OBJECT
 public:
   explicit ObjectKeypad(QWidget *parent = nullptr);
-  ~ObjectKeypad() override;
+  ~ObjectKeypad();
 
 private slots:
   void onPlaceObject();
@@ -47,6 +50,10 @@ private slots:
 private:
   void updateDialog();
   void setMoveAxis(int axis);
+
+  template <typename T>
+  T *find(const QString &name) const { return findChild<T *>(name); }
+
+  Ui::ObjectKeypad *ui;
 };
 
-}

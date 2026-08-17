@@ -17,6 +17,7 @@
  */
 
 #include "death_dialog.h"
+#include "ui_death_dialog.h"
 
 #include <QCheckBox>
 #include <QLineEdit>
@@ -24,7 +25,6 @@
 #include <QPushButton>
 #include <QRadioButton>
 
-namespace QtEditor {
 
 namespace {
 death_info Paste_data{};
@@ -32,10 +32,12 @@ bool Paste_data_used = false;
 } // namespace
 
 DeathDialog::DeathDialog(death_info *info, QWidget *parent)
-    : Dialog(":/ui/death_dialog.ui", parent), m_info(info), m_flags(info->flags),
-      m_delayMin(info->delay_min), m_delayMax(info->delay_max) {
-  auto *delayMax = find<QLineEdit>("IDC_DEATH_DELAY_MAX");
-  auto *delayMin = find<QLineEdit>("IDC_DEATH_DELAY_MIN");
+    : QDialog(parent), ui(new Ui::DeathDialog), m_info(info), m_flags(info->flags),
+      m_delayMin(info->delay_min), m_delayMax(info->delay_max)
+{
+  ui->setupUi(this);
+  auto *delayMax = ui->IDC_DEATH_DELAY_MAX;
+  auto *delayMin = ui->IDC_DEATH_DELAY_MIN;
   delayMax->setText(QString::number(m_delayMax));
   delayMin->setText(QString::number(m_delayMin));
 
@@ -69,7 +71,7 @@ DeathDialog::DeathDialog(death_info *info, QWidget *parent)
       {"IDC_DEATH_DEBRIS_CONTACT_REMAINS", DF_DEBRIS_REMAINS},
   };
   for (const FlagBox &box : flagBoxes) {
-    if (auto *cb = find<QCheckBox>(box.name))
+    if (auto *cb = findChild<QCheckBox*>(box.name))
       connect(cb, &QCheckBox::clicked, this, [this, box](bool checked) {
         if (checked)
           m_flags |= box.flag;
@@ -79,22 +81,19 @@ DeathDialog::DeathDialog(death_info *info, QWidget *parent)
       });
   }
 
-  if (auto *rb = find<QRadioButton>("IDC_DEATH_EXPLOSION_SMALL"))
+  if (auto *rb = ui->IDC_DEATH_EXPLOSION_SMALL)
     connect(rb, &QRadioButton::clicked, this, &DeathDialog::onExplosionSmall);
-  if (auto *rb = find<QRadioButton>("IDC_DEATH_EXPLOSION_MEDIUM"))
+  if (auto *rb = ui->IDC_DEATH_EXPLOSION_MEDIUM)
     connect(rb, &QRadioButton::clicked, this, &DeathDialog::onExplosionMedium);
-  if (auto *rb = find<QRadioButton>("IDC_DEATH_EXPLOSION_LARGE"))
+  if (auto *rb = ui->IDC_DEATH_EXPLOSION_LARGE)
     connect(rb, &QRadioButton::clicked, this, &DeathDialog::onExplosionLarge);
 
   connect(delayMax, &QLineEdit::textEdited, this, [this] { updateDialog(); });
   connect(delayMin, &QLineEdit::textEdited, this, [this] { updateDialog(); });
 
-  if (QPushButton *ok = find<QPushButton>("IDOK")) {
-    disconnect(ok, &QPushButton::clicked, this, &QDialog::accept);
-    connect(ok, &QPushButton::clicked, this, &DeathDialog::onOk);
-  }
+  connect(this, &QDialog::accept, this, &DeathDialog::onOk);
   auto connectCommon = [this](const char *name, void (DeathDialog::*slot)()) {
-    if (auto *btn = find<QPushButton>(name))
+    if (auto *btn = findChild<QPushButton*>(name))
       connect(btn, &QPushButton::clicked, this, slot);
   };
   connectCommon("IDC_DEATH_COMMON_DESCENT", &DeathDialog::onCommonDescent);
@@ -108,16 +107,16 @@ DeathDialog::DeathDialog(death_info *info, QWidget *parent)
   updateDialog();
 }
 
-DeathDialog::~DeathDialog() = default;
+DeathDialog::~DeathDialog() { delete ui; }
 
 void DeathDialog::updateDialog() {
-  m_delayMin = find<QLineEdit>("IDC_DEATH_DELAY_MIN")->text().toFloat();
-  m_delayMax = find<QLineEdit>("IDC_DEATH_DELAY_MAX")->text().toFloat();
+  m_delayMin = ui->IDC_DEATH_DELAY_MIN->text().toFloat();
+  m_delayMax = ui->IDC_DEATH_DELAY_MAX->text().toFloat();
 
   const int explSize = (m_flags & DF_EXPL_SIZE_MASK) >> DF_EXPL_SIZE_SHIFT;
-  find<QRadioButton>("IDC_DEATH_EXPLOSION_SMALL")->setChecked(explSize == 0);
-  find<QRadioButton>("IDC_DEATH_EXPLOSION_MEDIUM")->setChecked(explSize == 1);
-  find<QRadioButton>("IDC_DEATH_EXPLOSION_LARGE")->setChecked(explSize == 2);
+  ui->IDC_DEATH_EXPLOSION_SMALL->setChecked(explSize == 0);
+  ui->IDC_DEATH_EXPLOSION_MEDIUM->setChecked(explSize == 1);
+  ui->IDC_DEATH_EXPLOSION_LARGE->setChecked(explSize == 2);
 
   struct FlagBox {
     const char *name;
@@ -149,7 +148,7 @@ void DeathDialog::updateDialog() {
       {"IDC_DEATH_DEBRIS_CONTACT_REMAINS", DF_DEBRIS_REMAINS},
   };
   for (const FlagBox &box : boxes)
-    find<QCheckBox>(box.name)->setChecked((m_flags & box.flag) != 0);
+    findChild<QCheckBox*>(box.name)->setChecked((m_flags & box.flag) != 0);
 
   const bool delay = (m_flags & DF_DELAY_FROM_ANIM) != 0 || m_delayMin != 0.0f || m_delayMax != 0.0f;
   const char *delayWidgets[] = {"IDC_DEATH_DELAY_GROUP", "IDC_DEATH_DELAY_LOSES_ANTIGRAV",
@@ -158,26 +157,26 @@ void DeathDialog::updateDialog() {
                                 "IDC_DEATH_DELAY_FADE_AWAY", "IDC_DEATH_DELAY_SOUND",
                                 "IDC_DEATH_DELAY_NO_TUMBLE"};
   for (const char *name : delayWidgets)
-    find(name)->setEnabled(delay);
-  find("IDC_DEATH_DELAY_NO_TUMBLE")->setEnabled(delay && (m_flags & DF_DELAY_FLYING) != 0);
+    findChild<QWidget*>(name)->setEnabled(delay);
+  ui->IDC_DEATH_DELAY_NO_TUMBLE->setEnabled(delay && (m_flags & DF_DELAY_FLYING) != 0);
 
   const bool userDelay = (m_flags & DF_DELAY_FROM_ANIM) == 0;
-  find("IDC_DEATH_DELAY_MIN")->setEnabled(userDelay);
-  find("IDC_DEATH_DELAY_MAX")->setEnabled(userDelay);
-  find("IDC_DEATH_DELAY_MIN_LABEL")->setEnabled(userDelay);
-  find("IDC_DEATH_DELAY_MAX_LABEL")->setEnabled(userDelay);
+  ui->IDC_DEATH_DELAY_MIN->setEnabled(userDelay);
+  ui->IDC_DEATH_DELAY_MAX->setEnabled(userDelay);
+  ui->IDC_DEATH_DELAY_MIN_LABEL->setEnabled(userDelay);
+  ui->IDC_DEATH_DELAY_MAX_LABEL->setEnabled(userDelay);
 
   const char *contactWidgets[] = {"IDC_DEATH_CONTACT_FIREBALL", "IDC_DEATH_CONTACT_BREAKS_APART",
                                   "IDC_DEATH_CONTACT_BLAST_RING", "IDC_DEATH_CONTACT_REMAINS",
                                   "IDC_DEATH_CONTACT_GROUP"};
   for (const char *name : contactWidgets)
-    find(name)->setEnabled(delay);
+    findChild<QWidget*>(name)->setEnabled(delay);
 
   const bool explodes = (m_flags & DF_FIREBALL) != 0;
   const char *explosionWidgets[] = {"IDC_DEATH_EXPLOSION_SMALL", "IDC_DEATH_EXPLOSION_MEDIUM",
                                     "IDC_DEATH_EXPLOSION_LARGE", "IDC_DEATH_EXPLOSION_OPTIONS_GROUP"};
   for (const char *name : explosionWidgets)
-    find(name)->setEnabled(explodes);
+    findChild<QWidget*>(name)->setEnabled(explodes);
 
   const bool breaksApart = (m_flags & DF_BREAKS_APART) != 0;
   const char *debrisWidgets[] = {"IDC_DEATH_DEBRIS_CONTACT_FIREBALL",
@@ -185,9 +184,9 @@ void DeathDialog::updateDialog() {
                                  "IDC_DEATH_DEBRIS_CONTACT_REMAINS", "IDC_DEATH_DEBRIS_CONTACT_GROUP",
                                  "IDC_DEATH_DEBRIS_SMOKES", "IDC_DEATH_DEBRIS_OPTIONS_GROUP"};
   for (const char *name : debrisWidgets)
-    find(name)->setEnabled(breaksApart);
+    findChild<QWidget*>(name)->setEnabled(breaksApart);
 
-  if (QPushButton *paste = find<QPushButton>("IDC_DEATH_PASTE"))
+  if (QPushButton *paste = ui->IDC_DEATH_PASTE)
     paste->setEnabled(Paste_data_used);
 }
 
@@ -207,38 +206,38 @@ void DeathDialog::onExplosionLarge() {
 void DeathDialog::onCommonDescent() {
   m_flags = DF_DELAY_FIREBALL + DF_FIREBALL + DF_BREAKS_APART + DF_DEBRIS_FIREBALL + DF_EXPL_MEDIUM;
   m_delayMin = m_delayMax = 2.0f;
-  find<QLineEdit>("IDC_DEATH_DELAY_MIN")->setText("2");
-  find<QLineEdit>("IDC_DEATH_DELAY_MAX")->setText("2");
+  ui->IDC_DEATH_DELAY_MIN->setText("2");
+  ui->IDC_DEATH_DELAY_MAX->setText("2");
   updateDialog();
 }
 void DeathDialog::onCommonQuickExplosion() {
   m_flags = DF_FIREBALL + DF_BREAKS_APART + DF_DEBRIS_FIREBALL + DF_EXPL_MEDIUM;
   m_delayMin = m_delayMax = 0.0f;
-  find<QLineEdit>("IDC_DEATH_DELAY_MIN")->setText("0");
-  find<QLineEdit>("IDC_DEATH_DELAY_MAX")->setText("0");
+  ui->IDC_DEATH_DELAY_MIN->setText("0");
+  ui->IDC_DEATH_DELAY_MAX->setText("0");
   updateDialog();
 }
 void DeathDialog::onCommonShootUp() {
   m_flags = DF_DELAY_FLYING + DF_FIREBALL + DF_BREAKS_APART + DF_DEBRIS_FIREBALL + DF_EXPL_MEDIUM;
   m_delayMin = 1.0f;
   m_delayMax = 3.0f;
-  find<QLineEdit>("IDC_DEATH_DELAY_MIN")->setText("1");
-  find<QLineEdit>("IDC_DEATH_DELAY_MAX")->setText("3");
+  ui->IDC_DEATH_DELAY_MIN->setText("1");
+  ui->IDC_DEATH_DELAY_MAX->setText("3");
   updateDialog();
 }
 void DeathDialog::onCommonR2D2() {
   m_flags = DF_DELAY_SPARKS + DF_FIREBALL + DF_BREAKS_APART + DF_DEBRIS_FIREBALL + DF_EXPL_MEDIUM;
   m_delayMin = 2.0f;
   m_delayMax = 4.0f;
-  find<QLineEdit>("IDC_DEATH_DELAY_MIN")->setText("2");
-  find<QLineEdit>("IDC_DEATH_DELAY_MAX")->setText("4");
+  ui->IDC_DEATH_DELAY_MIN->setText("2");
+  ui->IDC_DEATH_DELAY_MAX->setText("4");
   updateDialog();
 }
 void DeathDialog::onCommonAnimal() {
   m_flags = DF_CONTACT_REMAINS;
   m_delayMin = m_delayMax = 0.0f;
-  find<QLineEdit>("IDC_DEATH_DELAY_MIN")->setText("0");
-  find<QLineEdit>("IDC_DEATH_DELAY_MAX")->setText("0");
+  ui->IDC_DEATH_DELAY_MIN->setText("0");
+  ui->IDC_DEATH_DELAY_MAX->setText("0");
   updateDialog();
 }
 
@@ -254,8 +253,8 @@ void DeathDialog::onPaste() {
   m_flags = Paste_data.flags;
   m_delayMin = Paste_data.delay_min;
   m_delayMax = Paste_data.delay_max;
-  find<QLineEdit>("IDC_DEATH_DELAY_MIN")->setText(QString::number(m_delayMin));
-  find<QLineEdit>("IDC_DEATH_DELAY_MAX")->setText(QString::number(m_delayMax));
+  ui->IDC_DEATH_DELAY_MIN->setText(QString::number(m_delayMin));
+  ui->IDC_DEATH_DELAY_MAX->setText(QString::number(m_delayMax));
   updateDialog();
 }
 
@@ -270,4 +269,3 @@ void DeathDialog::onOk() {
   accept();
 }
 
-}

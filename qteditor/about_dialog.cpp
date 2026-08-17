@@ -17,11 +17,14 @@
  */
 
 #include "about_dialog.h"
+#include "ui_aboutbox.h"
 
-namespace QtEditor {
 
-AboutDialog::AboutDialog(QWidget *parent) : Dialog(":/ui/aboutbox.ui", parent) {}
-
-AboutDialog::~AboutDialog() = default;
-
+AboutDialog::AboutDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::AboutDialog)
+{
+  ui->setupUi(this);
 }
+
+AboutDialog::~AboutDialog() { delete ui; }
+

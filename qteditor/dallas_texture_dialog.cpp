@@ -1,5 +1,8 @@
 #include "dallas_texture_dialog.h"
-namespace QtEditor {
-DallasTextureDialog::DallasTextureDialog(QWidget *parent) : Dialog(":/ui/dallas_texture_dialog.ui", parent) {}
-DallasTextureDialog::~DallasTextureDialog() = default;
+#include "ui_dallas_texture_dialog.h"
+DallasTextureDialog::DallasTextureDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::DallasTextureDialog)
+{
+  ui->setupUi(this);
 }
+DallasTextureDialog::~DallasTextureDialog() { delete ui; }
