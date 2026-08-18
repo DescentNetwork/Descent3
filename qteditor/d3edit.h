@@ -103,7 +103,7 @@ extern d3edit_state D3EditState;
 extern grSurface *Desktop_surf;
 
 // flags for the textured views changed
-extern int TV_changed;
+extern bool TV_changed;
 
 // Set this flag if a new world is loaded/created
 extern bool New_mine;
