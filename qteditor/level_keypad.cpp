@@ -70,7 +70,7 @@ void LevelKeypad::updateDialog() {
 void LevelKeypad::onGravityEdited() {
   if (QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT)
     Gravity_strength = edit->text().toFloat();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void LevelKeypad::onCeilingEdited() {
@@ -87,7 +87,7 @@ void LevelKeypad::onCeilingEdited() {
       for (int v = 0; v < rp->num_verts; v++)
         rp->verts[v].y() += delta;
     }
-    World_changed = 1;
+    World_changed = true;
   }
 }
 

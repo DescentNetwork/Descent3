@@ -33,7 +33,7 @@
 #include "d3edit.h"
 
 d3edit_state D3EditState;
-int World_changed = 0;
+bool World_changed = false;
 
 // Editor-only terrain globals guarded by EDITOR in terrain.cpp; the D3 core is
 // compiled without that define, so provide them here.
@@ -42,10 +42,10 @@ int Num_terrain_selected = 0;
 
 // Editor-only state flags declared in d3edit.h (defined in the MFC editor's
 // editor.cpp/EDVARS.cpp).
-int State_changed = 0;
-int Viewer_moved = 0;
-int Object_moved = 0;
-int New_mine = 0;
+bool State_changed = false;
+bool Viewer_moved = false;
+bool Object_moved = false;
+bool New_mine = false;
 
 // Slew movement limitations flag (defined in the MFC editor's editor.cpp).
 int Slew_limitations = 0;
@@ -68,7 +68,7 @@ int Markededge = 0;
 int Markedvert = 0;
 int Placed_room = -1;
 group *Placed_group = nullptr;
-int Mine_changed = 0;
+bool Mine_changed = false;
 int Editor_view_mode = 0; // VM_MINE
 int Editor_viewer_id = -1;
 
@@ -255,13 +255,13 @@ void ClearRoomSelectedList() {}
 // "editor/ebnode.h" mid-file; Descent3Core doesn't have editor/ in its
 // include path, so the symbol never makes it into libDescent3Core.a. We
 // stub it at editor-side scope so the Qt port's level_io.cpp can keep
-// EditorSaveLevel's contract (success → 1) until the engine path lands.
-int SaveLevel(char *filename, bool f_save_room_AABB) {
+// EditorSaveLevel's contract (success → true) until the engine path lands.
+bool SaveLevel(char *filename, bool f_save_room_AABB) {
   (void)f_save_room_AABB;
   // The stub refuses to scribble anything to disk: writing a stale or empty
   // .d3l would mask real bugs during development. The Qt port will swap
   // this for the real implementation once editor/ebnode.h's MFC deps
   // (EditorMessageBox, etc.) have a Linux equivalent.
   (void)filename;
-  return 0;
+  return false;
 }

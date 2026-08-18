@@ -95,7 +95,7 @@ void TerrainKeypad::changeSelectedHeights(int delta, bool toAbsolute, int absolu
     Terrain_seg[i].ypos = newY;
     Terrain_seg[i].y = (float)(newY * TERRAIN_HEIGHT_INCREMENT);
   }
-  World_changed = 1;
+  World_changed = true;
 }
 
 void TerrainKeypad::onMoveUp() { changeSelectedHeights(1); }
@@ -138,7 +138,7 @@ void TerrainKeypad::onFillArea() {
   for (int i = 0; i < count; i++)
     if (TerrainSelected[i])
       Terrain_tex_seg[Terrain_seg[i].texseg_index].tex_index = D3EditState.texdlg_texture;
-  World_changed = 1;
+  World_changed = true;
 }
 void TerrainKeypad::onMoreMoons() {
   if (Terrain_sky.num_satellites < 5)
@@ -158,7 +158,7 @@ void TerrainKeypad::onFogDistanceEdited() {
     if (predist > 200)
       predist = 200;
     Detail_settings.Terrain_render_distance = predist * TERRAIN_SIZE;
-    World_changed = 1;
+    World_changed = true;
   }
 }
 

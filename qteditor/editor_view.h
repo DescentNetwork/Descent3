@@ -43,11 +43,15 @@ public:
   // Forces a redraw (the Win32 InvalidateRect equivalent).
   void requestRedraw();
 
+  // Resets orbit camera distance/target so the next paint recomputes
+  // from the mine bounds (call after level load / new).
+  void resetCamera() { m_targetInitialized = false; }
+
   QSize renderSize() const;
 
   bool isWireframe() const { return m_wireframe; }
   void enableWireframeMode(void) { setWireframe(true); }
-  void disableWireframeMode(void) { setWireframe(true); }
+  void disableWireframeMode(void) { setWireframe(false); }
   void setWireframe(bool wireframe);
 
   // Renders the mine from the viewer; used by tests to grab the projected
@@ -58,6 +62,23 @@ public:
   };
   void projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const;
 
+  // Picking result returned by pickAt().
+  struct PickResult {
+    int roomIndex = -1;
+    int faceIndex = -1;
+    int objectIndex = -1;
+    float depth = 1e30f;
+  };
+
+  // Identifies what is under the given screen pixel (left-hand origin).
+  PickResult pickAt(int screenX, int screenY) const;
+
+signals:
+  void faceSelected(int roomIndex, int faceIndex);
+  void objectSelected(int objIndex);
+  void selectionCleared();
+  void objectContextMenuRequested(const QPoint &globalPos, int objIndex);
+
 protected:
   void initializeGL() override;
   void resizeGL(int w, int h) override;
@@ -65,12 +86,16 @@ protected:
 
   void mousePressEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
+  void mouseReleaseEvent(QMouseEvent *event) override;
   void wheelEvent(QWheelEvent *event) override;
 
 private:
   bool projectVertex(const vector &world, float *sx, float *sy) const;
+  bool projectVertexDepth(const vector &world, float *sx, float *sy, float *depth) const;
   void updateCamera();
   void renderRooms();
+
+  static bool pointInPolygon(float px, float py, const float *sx, const float *sy, int n);
 
   vector m_eye;
   matrix m_orient;
@@ -85,6 +110,12 @@ private:
   float m_pitch = -0.4f;
   float m_dist = 500.0f;
   vector m_target;
+  bool m_targetInitialized = false;
+
+  // Click vs drag tracking.
+  bool m_mouseDown = false;
+  bool m_dragged = false;
+  QPoint m_pressPos;
 
   // Cached OpenGL textures, keyed by D3 bitmap handle.
   mutable QHash<int, GLuint> m_textures;

@@ -44,7 +44,7 @@ void CreateNewMine();
 bool EditorLoadLevel(const char *filename);
 
 // Replace CEditorDoc::OnSaveDocument. Returns true on success (1) or 0.
-int EditorSaveLevel(const char *filename);
+bool EditorSaveLevel(const char *filename);
 
 // Verify that every named object/trigger/room in the current mine has a
 // unique, well-formed name (no leading/trailing spaces). Calls from

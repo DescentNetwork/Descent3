@@ -147,7 +147,7 @@ void TerrainSoundDialog::onOk() {
   for (int b = 0; b < NUM_TERRAIN_SOUND_BANDS; b++)
     Terrain_sound_bands[b] = m_bands[b];
 
-  World_changed = 1;
+  World_changed = true;
   accept();
 }
 

@@ -68,15 +68,15 @@ void LightingKeypad::updateDialog() {
 
 void LightingKeypad::onShowLightmaps(bool checked) {
   Outline_lightmaps = checked ? 1 : 0;
-  State_changed = 1;
+  State_changed = true;
 }
 void LightingKeypad::onBestFit(bool checked) {
   BestFit = checked ? 1 : 0;
-  State_changed = 1;
+  State_changed = true;
 }
 void LightingKeypad::onHemicube(bool checked) {
   D3EditState.hemicube_radiosity = checked ? 1 : 0;
-  State_changed = 1;
+  State_changed = true;
 }
 void LightingKeypad::onElement(bool checked) { Shoot_from_patch = checked ? 0 : 1; }
 void LightingKeypad::onIgnoreTerrain(bool) {}

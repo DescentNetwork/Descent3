@@ -27,6 +27,7 @@
 
 #include "bitmap.h"
 
+#include "d3edit.h"
 #include "gametexture.h"
 #include "object.h"
 #include "pserror.h"
@@ -124,8 +125,12 @@ void EditorView::resizeGL(int w, int h) {
 }
 
 bool EditorView::projectVertex(const vector &world, float *sx, float *sy) const {
+  float dummy;
+  return projectVertexDepth(world, sx, sy, &dummy);
+}
+
+bool EditorView::projectVertexDepth(const vector &world, float *sx, float *sy, float *depth) const {
   vector d = world - m_eye;
-  // Camera space: dot with the camera basis vectors.
   vector c;
   c.x() = d.x() * m_orient.rvec.x() + d.y() * m_orient.rvec.y() + d.z() * m_orient.rvec.z();
   c.y() = d.x() * m_orient.uvec.x() + d.y() * m_orient.uvec.y() + d.z() * m_orient.uvec.z();
@@ -138,6 +143,8 @@ bool EditorView::projectVertex(const vector &world, float *sx, float *sy) const 
   const float focal = (h * 0.5f) / std::tan(kFovY * 0.5f);
   *sx = w * 0.5f + (c.x() / c.z()) * focal;
   *sy = h * 0.5f - (c.y() / c.z()) * focal;
+  if (depth != nullptr)
+    *depth = c.z();
   return true;
 }
 
@@ -146,7 +153,19 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
     return;
   const_cast<EditorView *>(this)->updateCamera();
   outFaces->clear();
-  for (int r = 0; r <= Highest_room_index; r++) {
+
+  int projStart = 0;
+  int projEnd = Highest_room_index;
+  if (Editor_view_mode == VM_ROOM) {
+    if (D3EditState.current_room >= 0 && D3EditState.current_room <= Highest_room_index) {
+      projStart = D3EditState.current_room;
+      projEnd = D3EditState.current_room;
+    }
+  }
+  if (Editor_view_mode == VM_TERRAIN)
+    return;
+
+  for (int r = projStart; r <= projEnd; r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
       continue;
@@ -181,23 +200,40 @@ void EditorView::ensureTexture(int bmHandle) {
   if (w <= 0 || h <= 0)
     return;
 
-  QVector<uchar> rgb(w * h * 3);
+  QVector<uchar> rgba(w * h * 4);
   const uint16_t *data = bm_data(bmHandle, 0);
   if (data == nullptr) {
     // 8-bit palettized bitmaps are read through bm_data only when the
     // palette is applied; fall back to a magenta placeholder.
-    memset(rgb.data(), 255, rgb.size());
-    for (int i = 0; i < w * h; i++)
-      rgb[3 * i] = 0;
+    memset(rgba.data(), 0, rgba.size());
+    for (int i = 0; i < w * h; i++) {
+      rgba[4 * i + 0] = 255; // R
+      rgba[4 * i + 1] = 0;   // G
+      rgba[4 * i + 2] = 255; // B
+      rgba[4 * i + 3] = 255; // A
+    }
   } else {
+    // D3 bitmaps are 1555: bit 15 = opaque flag, bits 14-10 = R,
+    // bits 9-5 = G, bits 4-0 = B.  Expand to 8-bit RGBA to match
+    // the legacy renderer's non-packed-pixel path
+    // (HardwareOpenGL.cpp opengl_Translate_table).
     for (int i = 0; i < w * h; i++) {
       const uint16_t p = data[i];
-      const int r5 = (p >> 11) & 0x1F;
-      const int g6 = (p >> 5) & 0x3F;
-      const int b5 = p & 0x1F;
-      rgb[3 * i + 0] = (r5 << 3) | (r5 >> 2);
-      rgb[3 * i + 1] = (g6 << 2) | (g6 >> 4);
-      rgb[3 * i + 2] = (b5 << 3) | (b5 >> 2);
+      if (!(p & 0x8000)) {
+        // Transparent pixel.
+        rgba[4 * i + 0] = 0;
+        rgba[4 * i + 1] = 0;
+        rgba[4 * i + 2] = 0;
+        rgba[4 * i + 3] = 0;
+      } else {
+        const int r5 = (p >> 10) & 0x1F;
+        const int g5 = (p >> 5) & 0x1F;
+        const int b5 = p & 0x1F;
+        rgba[4 * i + 0] = (r5 * 255) / 31; // R
+        rgba[4 * i + 1] = (g5 * 255) / 31; // G
+        rgba[4 * i + 2] = (b5 * 255) / 31; // B
+        rgba[4 * i + 3] = 255;              // A (opaque)
+      }
     }
   }
 
@@ -208,7 +244,7 @@ void EditorView::ensureTexture(int bmHandle) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, rgb.constData());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba.constData());
   m_textures.insert(bmHandle, tex);
 }
 
@@ -217,7 +253,23 @@ void EditorView::renderRooms() {
   if (f == nullptr)
     return;
 
-  for (int r = 0; r <= Highest_room_index; r++) {
+  // Determine which rooms to render based on view mode.
+  // VM_MINE: All rooms. VM_ROOM: Single palette room. VM_TERRAIN: None.
+  if (Editor_view_mode == VM_TERRAIN)
+    return;
+
+  int renderStart = 0;
+  int renderEnd = Highest_room_index;
+  if (Editor_view_mode == VM_ROOM) {
+    if (D3EditState.current_room < 0 || D3EditState.current_room > Highest_room_index)
+      return;
+    if (!Rooms[D3EditState.current_room].used)
+      return;
+    renderStart = D3EditState.current_room;
+    renderEnd = D3EditState.current_room;
+  }
+
+  for (int r = renderStart; r <= renderEnd; r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
       continue;
@@ -306,13 +358,16 @@ void EditorView::updateCamera() {
   vector min, max;
   computeMineBounds(&min, &max);
   m_target = (min + max) * 0.5f;
-  vector extent = max - min;
-  float radius = extent.x() > extent.y() ? extent.x() : extent.y();
-  if (extent.z() > radius)
-    radius = extent.z();
-  if (radius < 1.0f)
-    radius = 1.0f;
-  m_dist = radius * 2.5f;
+  if (!m_targetInitialized) {
+    vector extent = max - min;
+    float radius = extent.x() > extent.y() ? extent.x() : extent.y();
+    if (extent.z() > radius)
+      radius = extent.z();
+    if (radius < 1.0f)
+      radius = 1.0f;
+    m_dist = radius * 2.5f;
+    m_targetInitialized = true;
+  }
 
   vm_AnglesToMatrix(&m_orient, 0, m_yaw * 65536.0f / 360.0f, m_pitch * 65536.0f / 360.0f);
   m_eye = m_target - m_orient.fvec * m_dist;
@@ -323,6 +378,14 @@ void EditorView::paintGL() {
   QOpenGLFunctions *f = context() ? context()->functions() : nullptr;
   if (f == nullptr)
     return;
+
+  // Distinct background per view mode.
+  if (Editor_view_mode == VM_TERRAIN)
+    glClearColor(0.05f, 0.10f, 0.25f, 1.0f); // dark blue for terrain
+  else if (Editor_view_mode == VM_ROOM)
+    glClearColor(0.14f, 0.12f, 0.10f, 1.0f); // warm grey for room
+  else
+    glClearColor(0.10f, 0.12f, 0.18f, 1.0f); // default mine
 
   glViewport(0, 0, width(), height());
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -341,10 +404,25 @@ void EditorView::paintGL() {
 
 void EditorView::mousePressEvent(QMouseEvent *event) {
   m_lastMouse = event->pos();
+  if (event->button() == Qt::LeftButton) {
+    m_mouseDown = true;
+    m_dragged = false;
+    m_pressPos = event->pos();
+  } else if (event->button() == Qt::RightButton) {
+    updateCamera();
+    PickResult pick = pickAt(event->pos().x(), event->pos().y());
+    if (pick.objectIndex >= 0) {
+      emit objectContextMenuRequested(event->globalPos(), pick.objectIndex);
+    }
+  }
 }
 
 void EditorView::mouseMoveEvent(QMouseEvent *event) {
-  if (Viewer_object != nullptr)
+  if (m_mouseDown) {
+    if ((event->pos() - m_pressPos).manhattanLength() > 4)
+      m_dragged = true;
+  }
+  if (!m_dragged && Viewer_object != nullptr)
     return;
   const QPoint delta = event->pos() - m_lastMouse;
   m_lastMouse = event->pos();
@@ -357,6 +435,24 @@ void EditorView::mouseMoveEvent(QMouseEvent *event) {
   update();
 }
 
+void EditorView::mouseReleaseEvent(QMouseEvent *event) {
+  if (event->button() == Qt::LeftButton && m_mouseDown && !m_dragged) {
+    updateCamera();
+    PickResult pick = pickAt(event->pos().x(), event->pos().y());
+    if (pick.objectIndex >= 0) {
+      emit objectSelected(pick.objectIndex);
+    } else if (pick.roomIndex >= 0 && pick.faceIndex >= 0) {
+      emit faceSelected(pick.roomIndex, pick.faceIndex);
+    } else {
+      emit selectionCleared();
+    }
+  }
+  if (event->button() == Qt::LeftButton) {
+    m_mouseDown = false;
+    m_dragged = false;
+  }
+}
+
 void EditorView::wheelEvent(QWheelEvent *event) {
   if (Viewer_object != nullptr)
     return;
@@ -364,5 +460,102 @@ void EditorView::wheelEvent(QWheelEvent *event) {
   if (m_dist < 1.0f)
     m_dist = 1.0f;
   update();
+}
+
+bool EditorView::pointInPolygon(float px, float py, const float *sx, const float *sy, int n) {
+  bool inside = false;
+  for (int i = 0, j = n - 1; i < n; j = i++) {
+    if (((sy[i] > py) != (sy[j] > py)) &&
+        (px < (sx[j] - sx[i]) * (py - sy[i]) / (sy[j] - sy[i]) + sx[i]))
+      inside = !inside;
+  }
+  return inside;
+}
+
+EditorView::PickResult EditorView::pickAt(int screenX, int screenY) const {
+  PickResult best;
+
+  const_cast<EditorView *>(this)->updateCamera();
+  if (!m_cameraValid)
+    return best;
+
+  // In terrain mode, no room picking (terrain not rendered).
+  // In room mode, only pick from the current palette room.
+  int pickStart = 0;
+  int pickEnd = Highest_room_index;
+  if (Editor_view_mode == VM_TERRAIN)
+    return best;
+  if (Editor_view_mode == VM_ROOM) {
+    if (D3EditState.current_room < 0 || D3EditState.current_room > Highest_room_index)
+      return best;
+    pickStart = D3EditState.current_room;
+    pickEnd = D3EditState.current_room;
+  }
+
+  for (int r = pickStart; r <= pickEnd; r++) {
+    room *rp = &Rooms[r];
+    if (!rp->used)
+      continue;
+    for (int f = 0; f < rp->num_faces; f++) {
+      face *fp = &rp->faces[f];
+      int nv = fp->num_verts;
+      if (nv < 3 || nv > MAX_VERTS_PER_FACE)
+        continue;
+
+      float sx[64], sy[64], sz[64];
+      bool allInFront = true;
+      for (int v = 0; v < nv; v++) {
+        if (!projectVertexDepth(rp->verts[fp->face_verts[v]], &sx[v], &sy[v], &sz[v])) {
+          allInFront = false;
+          break;
+        }
+      }
+      if (!allInFront)
+        continue;
+
+      if (!pointInPolygon(static_cast<float>(screenX), static_cast<float>(screenY), sx, sy, nv))
+        continue;
+
+      float avgDepth = 0.0f;
+      for (int v = 0; v < nv; v++)
+        avgDepth += sz[v];
+      avgDepth /= nv;
+
+      if (avgDepth < best.depth) {
+        best.roomIndex = r;
+        best.faceIndex = f;
+        best.depth = avgDepth;
+      }
+    }
+  }
+
+  for (int i = 0; i <= Highest_object_index; i++) {
+    object *obj = &Objects[i];
+    if (obj->type == OBJ_NONE)
+      continue;
+
+    float ox, oy, oz;
+    if (!projectVertexDepth(obj->pos, &ox, &oy, &oz))
+      continue;
+
+    const float h = height() > 0 ? static_cast<float>(height()) : 1.0f;
+    const float focal = (h * 0.5f) / std::tan(kFovY * 0.5f);
+    float screenRadius = (obj->size * focal) / oz;
+    if (screenRadius < 6.0f)
+      screenRadius = 6.0f;
+
+    float dx = static_cast<float>(screenX) - ox;
+    float dy = static_cast<float>(screenY) - oy;
+    float dist = std::sqrt(dx * dx + dy * dy);
+
+    if (dist <= screenRadius) {
+      if (best.objectIndex < 0 || oz < best.depth) {
+        best.objectIndex = i;
+        best.depth = oz;
+      }
+    }
+  }
+
+  return best;
 }
 

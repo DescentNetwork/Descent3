@@ -158,7 +158,7 @@ void RoomKeypad::onFlagToggled() {
     return;
   setFlag(flagFor(cb->objectName().toLatin1().constData()),
           cb->objectName().toLatin1().constData(), cb->isChecked());
-  World_changed = 1;
+  World_changed = true;
 }
 
 void RoomKeypad::expandGeometry(float scale) {
@@ -167,7 +167,7 @@ void RoomKeypad::expandGeometry(float scale) {
   room *rp = Curroomp;
   for (int v = 0; v < rp->num_verts; v++)
     rp->verts[v] *= scale;
-  World_changed = 1;
+  World_changed = true;
 }
 
 void RoomKeypad::onExpandEdge() { expandGeometry(1.02f); }

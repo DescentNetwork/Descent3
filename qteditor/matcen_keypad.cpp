@@ -63,15 +63,13 @@ void MatcenKeypad::updateDialog() {
   if (QLabel *label = ui->IDC_MAT_NUM_STATIC)
     label->setText(QString("Number of Matcens: %1").arg(Num_matcens));
 
-  assert(false);
-  /*
-  if (QLabel *label = ui->IDC_MAT_NAME_STATIC)
-    label->setText(name);
-  if (QLabel *label = ui->IDC_MAT_SPAWNS_STATIC)
-    label->setText(QString("Spawn points: %1").arg((int)mc->GetNumSpawnPnts()));
-  if (QLabel *label = ui->IDC_MAT_PROD_STATIC)
-    label->setText(QString("Prod types: %1").arg((int)mc->GetNumProdTypes()));
-*/
+  // TODO: Once matcen API is fully ported, populate these labels.
+  // if (QLabel *label = ui->IDC_MAT_NAME_STATIC)
+  //   label->setText(name);
+  // if (QLabel *label = ui->IDC_MAT_SPAWNS_STATIC)
+  //   label->setText(QString("Spawn points: %1").arg((int)mc->GetNumSpawnPnts()));
+  // if (QLabel *label = ui->IDC_MAT_PROD_STATIC)
+  //   label->setText(QString("Prod types: %1").arg((int)mc->GetNumProdTypes()));
 }
 
 void MatcenKeypad::onPrev() {

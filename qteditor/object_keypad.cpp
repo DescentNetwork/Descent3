@@ -78,7 +78,7 @@ void ObjectKeypad::onPlaceObject() {
   // PlaceObject equivalent operates on Cur_object_index.
   if (Curroomp == nullptr)
     return;
-  Mine_changed = 1;
+  Mine_changed = true;
 }
 
 void ObjectKeypad::onDeleteObject() {
@@ -88,7 +88,7 @@ void ObjectKeypad::onDeleteObject() {
     return;
   ObjDelete(Cur_object_index);
   Cur_object_index = -1;
-  Mine_changed = 1;
+  Mine_changed = true;
 }
 
 void ObjectKeypad::onNextObject() {
@@ -115,8 +115,8 @@ void ObjectKeypad::onFlipObject() {
   matrix m = obj->orient;
   obj->orient.rvec = -m.rvec;
   obj->orient.uvec = -m.uvec;
-  Viewer_moved = 1;
-  Mine_changed = 1;
+  Viewer_moved = true;
+  Mine_changed = true;
 }
 
 void ObjectKeypad::onResetObjects() {
@@ -130,7 +130,7 @@ void ObjectKeypad::onResetObjects() {
     Objects[i].flags = Object_info[type].flags;
     Objects[i].size = Object_info[type].size;
   }
-  Mine_changed = 1;
+  Mine_changed = true;
 }
 
 void ObjectKeypad::onMoveAxis() { updateDialog(); }

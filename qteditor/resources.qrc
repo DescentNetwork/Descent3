@@ -109,12 +109,6 @@
         <file alias="IDB_INARROW">images/inarrow.png</file>
         <file alias="IDB_DALLAS_TREE_ICONS_BITMAP">images/DallasTreeIcons.png</file>
         <file alias="IDB_ORPHREMOVE">images/orphremo.png</file>
-        <file>images/Toolbar/0.png</file>
-        <file>images/Toolbar/1.png</file>
-        <file>images/Toolbar/2.png</file>
-        <file>images/Toolbar/3.png</file>
-        <file>images/Toolbar/4.png</file>
-        <file>images/Toolbar/5.png</file>
         <file>images/Toolbar/6.png</file>
         <file>images/Toolbar/7.png</file>
         <file>images/Toolbar/8.png</file>

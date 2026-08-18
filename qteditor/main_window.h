@@ -24,7 +24,8 @@
 #include <QDialog>
 #include <QWidget>
 #include <QTimer>
-
+#include <DockManager.h>
+#include <DockWidget.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -34,18 +35,13 @@ QT_END_NAMESPACE
 // Constant set for the editor's view mode. Mirrors the Win32 enum in
 // editor/d3edit.h (VM_MINE, VM_TERRAIN, VM_ROOM). Used by SetViewMode and
 // the View menu's ID_MINE_VIEW / ID_TERRAIN_VIEW / ID_ROOM_VIEW handlers.
-enum {
+enum class view_mode_t
+{
   VIEW_MODE_MINE = 0,
-  VIEW_MODE_TERRAIN = 1,
-  VIEW_MODE_ROOM = 2,
+  VIEW_MODE_TERRAIN,
+  VIEW_MODE_ROOM,
 };
 
-// Qt port of CMainFrame::SetViewMode() and the global "int Editor_view_mode"
-// from editor/EDVARS.cpp. Updates the in-process view mode used by the
-// renderer, status bar, and SlewFrame logic. Returns the previous mode so
-// callers can save/restore when toggling temporarily.
-int SetViewMode(int view_mode);
-int currentViewMode();
 
 class KeypadBar;
 class ViewerPropDialog;
@@ -185,11 +181,13 @@ private:
   Ui::MainWindow *ui;
 
   QMenuBar *m_menuBar = nullptr;
-  QDockWidget *m_keypadDock = nullptr;
+  ads::CDockManager* m_dockManager = nullptr;
+  ads::CDockWidget* m_keypadDock = nullptr;
   QTabWidget *m_keypadTabs = nullptr;
   QDialog *m_aboutBox = nullptr;
   ViewerPropDialog *m_viewerProps = nullptr;
   EditorView *m_editorView = nullptr;
+  view_mode_t m_view_mode = view_mode_t::VIEW_MODE_MINE;
 
   // Path of the currently open .d3l, or empty if none / untitled. Updated by
   // onFileOpen / onFileSaveAs and cleared by onFileNew.

@@ -330,36 +330,45 @@
     <string>Briefing Editor...</string>
    </property>
   </action>
-  <action name="ID_BUTTON_LIGHTING">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/ui/images/Toolbar/10.png</normaloff>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>ID_BUTTON_LIGHTING</string>
-   </property>
-  </action>
-  <action name="ID_BUTTON_OUTLINE">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/ui/images/Toolbar/8.png</normaloff>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>ID_BUTTON_OUTLINE</string>
-   </property>
-  </action>
-  <action name="ID_BUTTON_WINDOWSELECTION">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/ui/images/Toolbar/9.png</normaloff>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>ID_BUTTON_WINDOWSELECTION</string>
-   </property>
-  </action>
+   <action name="ID_BUTTON_LIGHTING">
+    <property name="icon">
+     <iconset>
+      <normaloff>:/ui/images/Toolbar/10.png</normaloff>
+     </iconset>
+    </property>
+    <property name="text">
+     <string>Toggle Lighting</string>
+    </property>
+    <property name="toolTip">
+     <string>Toggle lighting</string>
+    </property>
+   </action>
+   <action name="ID_BUTTON_OUTLINE">
+    <property name="icon">
+     <iconset>
+      <normaloff>:/ui/images/Toolbar/8.png</normaloff>
+     </iconset>
+    </property>
+    <property name="text">
+     <string>Toggle Outline</string>
+    </property>
+    <property name="toolTip">
+     <string>Toggle Outline mode in the Texture-mapped view</string>
+    </property>
+   </action>
+   <action name="ID_BUTTON_WINDOWSELECTION">
+    <property name="icon">
+     <iconset>
+      <normaloff>:/ui/images/Toolbar/9.png</normaloff>
+     </iconset>
+    </property>
+    <property name="text">
+     <string>Toggle Box Selection</string>
+    </property>
+    <property name="toolTip">
+     <string>Toggle box selection between IN WINDOW and ACROSS EDGE</string>
+    </property>
+   </action>
   <action name="ID_D3HELP">
    <property name="text">
     <string>Help on D3 Editor</string>
@@ -405,32 +414,22 @@
     <string>Clear Selected List</string>
    </property>
   </action>
-  <action name="ID_EDIT_COPY">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/ui/images/Toolbar/4.png</normaloff>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Copy</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Ins</string>
-   </property>
-  </action>
-  <action name="ID_EDIT_CUT">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/ui/images/Toolbar/3.png</normaloff>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>Cu&amp;t</string>
-   </property>
-   <property name="shortcut">
-    <string>Shift+Del</string>
-   </property>
-  </action>
+   <action name="ID_EDIT_COPY">
+    <property name="text">
+     <string>&amp;Copy</string>
+    </property>
+    <property name="shortcut">
+     <string>Ctrl+Ins</string>
+    </property>
+   </action>
+   <action name="ID_EDIT_CUT">
+    <property name="text">
+     <string>Cu&amp;t</string>
+    </property>
+    <property name="shortcut">
+     <string>Shift+Del</string>
+    </property>
+   </action>
   <action name="ID_EDIT_DELETE">
    <property name="text">
     <string>&amp;Delete</string>
@@ -449,16 +448,11 @@
     <string>Shift+Ins</string>
    </property>
   </action>
-  <action name="ID_EDIT_PLACE">
-    <property name="icon">
-     <iconset>
-      <normaloff>:/ui/images/Toolbar/5.png</normaloff>
-     </iconset>
-    </property>
-    <property name="text">
-     <string>&amp;Place in Mine</string>
-    </property>
-    </action>
+   <action name="ID_EDIT_PLACE">
+     <property name="text">
+      <string>&amp;Place in Mine</string>
+     </property>
+     </action>
   <action name="ID_EDIT_PLACE_TERRAIN">
    <property name="text">
     <string>&amp;Place on Terrain</string>
@@ -546,32 +540,22 @@
     <bool>false</bool>
    </property>
   </action>
-  <action name="ID_FILE_NEW">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/ui/images/Toolbar/0.png</normaloff>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>&amp;New</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+N</string>
-   </property>
-  </action>
-  <action name="ID_FILE_OPEN">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/ui/images/Toolbar/1.png</normaloff>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Open...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+O</string>
-   </property>
-  </action>
+   <action name="ID_FILE_NEW">
+    <property name="text">
+     <string>&amp;New</string>
+    </property>
+    <property name="shortcut">
+     <string>Ctrl+N</string>
+    </property>
+   </action>
+   <action name="ID_FILE_OPEN">
+    <property name="text">
+     <string>&amp;Open...</string>
+    </property>
+    <property name="shortcut">
+     <string>Ctrl+O</string>
+    </property>
+   </action>
   <action name="ID_FILE_PLAY640X480">
    <property name="icon">
     <iconset>
@@ -623,19 +607,14 @@
     <string>Restore Gamestate</string>
    </property>
   </action>
-  <action name="ID_FILE_SAVE">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/ui/images/Toolbar/2.png</normaloff>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Save</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
-   </property>
-  </action>
+   <action name="ID_FILE_SAVE">
+    <property name="text">
+     <string>&amp;Save</string>
+    </property>
+    <property name="shortcut">
+     <string>Ctrl+S</string>
+    </property>
+   </action>
   <action name="ID_FILE_SAVEGOALTEXT">
    <property name="text">
     <string>Save Goal Text to File</string>
@@ -682,16 +661,19 @@
     <string>F2</string>
    </property>
   </action>
-  <action name="ID_OBJBUTTON">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/ui/images/Toolbar/12.png</normaloff>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>ID_OBJBUTTON</string>
-   </property>
-  </action>
+   <action name="ID_OBJBUTTON">
+    <property name="icon">
+     <iconset>
+      <normaloff>:/ui/images/Toolbar/12.png</normaloff>
+     </iconset>
+    </property>
+    <property name="text">
+     <string>Object List</string>
+    </property>
+    <property name="toolTip">
+     <string>Display object list</string>
+    </property>
+   </action>
   <action name="ID_OBJECT_DELETEOBJECT">
    <property name="text">
     <string>Delete Object</string>
@@ -748,26 +730,32 @@
     <string>Move Viewer to Camera</string>
    </property>
   </action>
-  <action name="ID_OSIRISCOMPILE">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/ui/images/Toolbar/14.png</normaloff>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>ID_OSIRISCOMPILE</string>
-   </property>
-  </action>
-  <action name="ID_REINIT_OPENGL">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/ui/images/Toolbar/13.png</normaloff>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>ID_REINIT_OPENGL</string>
-   </property>
-  </action>
+   <action name="ID_OSIRISCOMPILE">
+    <property name="icon">
+     <iconset>
+      <normaloff>:/ui/images/Toolbar/14.png</normaloff>
+     </iconset>
+    </property>
+    <property name="text">
+     <string>Compile Scripts</string>
+    </property>
+    <property name="toolTip">
+     <string>Compile level scripts</string>
+    </property>
+   </action>
+   <action name="ID_REINIT_OPENGL">
+    <property name="icon">
+     <iconset>
+      <normaloff>:/ui/images/Toolbar/13.png</normaloff>
+     </iconset>
+    </property>
+    <property name="text">
+     <string>Reinit OpenGL</string>
+    </property>
+    <property name="toolTip">
+     <string>Reinitialize OpenGL renderer</string>
+    </property>
+   </action>
   <action name="ID_ROOM_ADD">
    <property name="text">
     <string>&amp;Add Room at Current Face</string>
@@ -1289,16 +1277,19 @@
     <string>&amp;Tile</string>
    </property>
   </action>
-  <action name="ID_ZBUTTON">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/ui/images/Toolbar/11.png</normaloff>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>ID_ZBUTTON</string>
-   </property>
-  </action>
+   <action name="ID_ZBUTTON">
+    <property name="icon">
+     <iconset>
+      <normaloff>:/ui/images/Toolbar/11.png</normaloff>
+     </iconset>
+    </property>
+    <property name="text">
+     <string>Toggle Z-Buffer</string>
+    </property>
+    <property name="toolTip">
+     <string>Toggle software Z-Buffer mode</string>
+    </property>
+   </action>
  </widget>
  <resources/>
  <connections/>

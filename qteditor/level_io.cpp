@@ -116,13 +116,17 @@ void CreateNewMine() {
   Current_trigger = -1;
   Editor_view_mode = VM_MINE;
   Editor_viewer_id = -1;
-  New_mine = 1;
-  World_changed = 0;
+  New_mine = true;
+  World_changed = false;
 
   // Tear down any pre-existing mine. FreeAllRooms / FreeAllObjects come from
-  // Descent3Core.
+  // Descent3Core.  FreeAllObjects → ObjDelete redirects Viewer_object to
+  // Player_object, but Player_object is also freed, leaving Viewer_object
+  // dangling.  Null it so updateCamera() falls back to orbit mode.
   FreeAllRooms();
   FreeAllObjects();
+  Viewer_object = nullptr;
+  Player_object = nullptr;
 
   // Stamp default metadata onto Level_info so Save As writes sane defaults.
   std::strcpy(Level_info.name, "Unnamed");
@@ -194,23 +198,26 @@ bool EditorLoadLevel(const char *filename) {
   // progress UI yet, so pass nullptr and call the engine.
   if (!LoadLevel(const_cast<char *>(filename), nullptr))
     return false;
+  // LoadLevel → FreeAllObjects leaves Viewer_object dangling (see comment
+  // in CreateNewMine).  Null it so updateCamera() uses orbit fallback.
+  Viewer_object = nullptr;
   CheckLevelNames();
-  New_mine = 1;
+  New_mine = true;
   return true;
 }
 
-int EditorSaveLevel(const char *filename) {
+bool EditorSaveLevel(const char *filename) {
   if (filename == nullptr)
-    return 0;
+    return false;
   // SaveLevel lives in Descent3/LoadLevel.cpp behind an
   // "#include editor/ebnode.h" mid-file; Descent3Core doesn't compile that
   // path on Linux (editor/) so we report success/0 honestly. The Qt port
   // will replace this once editor/ebnode.h's MFC deps (EditorMessageBox)
   // have a Linux equivalent.
   if (!SaveLevel(const_cast<char *>(filename), true))
-    return 0;
-  Mine_changed = 0;
-  return 1;
+    return false;
+  Mine_changed = false;
+  return true;
 }
 
 // Compose the multi-line "Level Stats:" report described in
