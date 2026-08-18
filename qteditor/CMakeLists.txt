@@ -1,17 +1,27 @@
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 5.15 REQUIRED COMPONENTS Widgets UiTools)
+find_package(Qt6 COMPONENTS Widgets UiTools)
+if(Qt6_FOUND)
+  set(QT_VERSION_MAJOR ${Qt6Core_VERSION_MAJOR} CACHE STRING "Major version of Qt" FORCE)
+  set(QT_VERSION_MINOR ${Qt6Core_VERSION_MINOR} CACHE STRING "Minor version of Qt" FORCE)
+  set(ADS_TARGET qtadvanceddocking-qt6)
+else()
+  find_package(Qt5 REQUIRED COMPONENTS Widgets UiTools)
+  set(QT_VERSION_MAJOR ${Qt5Core_VERSION_MAJOR} CACHE STRING "Major version of Qt" FORCE)
+  set(QT_VERSION_MINOR ${Qt5Core_VERSION_MINOR} CACHE STRING "Minor version of Qt" FORCE)
+  set(ADS_TARGET qtadvanceddocking-qt5)
+endif()
 
-if(TARGET Qt5::Gui)
-    get_target_property(_gui_include_dirs Qt5::Gui INTERFACE_INCLUDE_DIRECTORIES)
+if(TARGET Qt6::Gui)
+    get_target_property(_gui_include_dirs Qt::Gui INTERFACE_INCLUDE_DIRECTORIES)
     # Some older/custom Qt5 builds need explicit private include roots added:
     # (Usually handles /usr/include/x86_64-linux-gnu/qt5/QtGui/5.15.x etc.)
     foreach(_dir ${_gui_include_dirs})
-        if(EXISTS "${_dir}/${Qt5Gui_VERSION}/QtGui")
+        if(EXISTS "${_dir}/${Qt6Gui_VERSION}/QtGui")
             include_directories(
-                "${_dir}/${Qt5Gui_VERSION}"
-                "${_dir}/${Qt5Gui_VERSION}/QtGui"
+                "${_dir}/${Qt6Gui_VERSION}"
+                "${_dir}/${Qt6Gui_VERSION}/QtGui"
             )
         endif()
     endforeach()
@@ -24,7 +34,7 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "Build the examples" FORCE)
 # build ads
 add_subdirectory(adsdock)
 
-qt5_add_resources(QTEDITOR_RESOURCES resources.qrc)
+qt_add_resources(QTEDITOR_RESOURCES resources.qrc)
 
 set(QTEDITOR_SOURCES
   about_dialog.cpp
@@ -369,9 +379,9 @@ set(PLATFORM_LIBS m ${CMAKE_DL_LIBS})
 
 target_link_libraries(Descent3EditorQt PRIVATE
   $<LINK_LIBRARY:WHOLE_ARCHIVE,Descent3Core,linux>
-  Qt5::Widgets
-  Qt5::UiTools
-  qtadvanceddocking-qt5
+  Qt::Widgets
+  Qt::UiTools
+   ${ADS_TARGET}
   ${PLATFORM_LIBS}
 )
 
@@ -390,7 +400,10 @@ add_executable(Descent3EditorTests
 )
 
 if(BUILD_QT_EDITOR_TEST)
-  find_package(Qt5 5.15 REQUIRED COMPONENTS Widgets UiTools Test)
+  find_package(Qt6 COMPONENTS Widgets UiTools Test)
+  if(NOT Qt6_FOUND)
+      find_package(Qt5 REQUIRED COMPONENTS Widgets UiTools Test)
+  endif()
   target_include_directories(Descent3EditorTests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}
@@ -414,10 +427,10 @@ if(BUILD_QT_EDITOR_TEST)
   )
   target_link_libraries(Descent3EditorTests PRIVATE
     $<LINK_LIBRARY:WHOLE_ARCHIVE,Descent3Core,linux>
-    Qt5::Widgets
-    Qt5::UiTools
-    Qt5::Test
-    qtadvanceddocking-qt5
+    Qt::Widgets
+    Qt::UiTools
+    Qt::Test
+    ${ADS_TARGET}
     ${PLATFORM_LIBS}
   )
   set_target_properties(Descent3EditorTests PROPERTIES
