@@ -421,7 +421,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
 
   Cur_object_index = objnum;
 
-  World_changed = 1;
+  World_changed = true;
 
   return 1;
 }
@@ -471,7 +471,7 @@ void ResetGroundObject(object *objp) {
   ObjSetPos(objp, &pos, objp->roomnum, &object_orient, false);
 
   // Set flag
-  World_changed = 1;
+  World_changed = true;
 }
 
 void HObjectMove(int objnum, float dx, float dy, float dz) {
@@ -497,7 +497,7 @@ void HObjectMove(int objnum, float dx, float dy, float dz) {
   // Move the object
   MoveObject(obj, &newpos);
 
-  Object_moved = 1;
+  Object_moved = true;
 }
 
 void HObjectIncreaseBank() { RotateObject(Cur_object_index, 0, 0, Object_move_rotation); }
@@ -535,7 +535,7 @@ void HObjectDelete() {
     if (objnum == Cur_object_index)
       Cur_object_index = -1;
 
-    World_changed = 1;
+    World_changed = true;
   }
 }
 
@@ -546,7 +546,7 @@ void HObjectSetDefault() {
 
     ObjSetOrient(&Objects[objnum], &Identity_matrix);
 
-    World_changed = 1;
+    World_changed = true;
   }
 }
 
@@ -562,7 +562,7 @@ void HObjectMoveToViewer(object *objp) {
   pos = Viewer_object->pos + Viewer_object->orient.fvec * OBJECT_PLACE_DIST;
   MoveObject(objp, &pos);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 #define MOVE_EPSILON 0.1
@@ -619,7 +619,7 @@ bool RotateObject(int objnum, angle p, angle h, angle b) {
   vm_Orthogonalize(&obj->orient);
   ObjSetOrient(obj, &obj->orient);
 
-  Object_moved = 1;
+  Object_moved = true;
 
   return 1;
 }
@@ -631,5 +631,5 @@ void HObjectFlip() {
   m->uvec = -m->uvec;
   m->rvec = -m->rvec;
 
-  World_changed = 1;
+  World_changed = true;
 }

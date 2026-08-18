@@ -420,7 +420,7 @@ void SetMarkedRoom() {
   Markededge = Curedge;
   Markedvert = Curvert;
 
-  State_changed = 1;
+  State_changed = true;
 
   EditorStatus("Marked room:face set to %d:%d", ROOMNUM(Markedroomp), Markedface);
 }
@@ -429,14 +429,14 @@ void SetMarkedRoom() {
 void SelectNextFace() {
   if (++Curface >= Curroomp->num_faces)
     Curface = 0;
-  State_changed = 1;
+  State_changed = true;
 }
 
 // Select previous face on current room
 void SelectPrevFace() {
   if (--Curface < 0)
     Curface = Curroomp->num_faces - 1;
-  State_changed = 1;
+  State_changed = true;
 }
 
 #define DEFAULT_ROOM_LENGTH (scalar)20.0
@@ -534,7 +534,7 @@ void AddRoom() {
 #endif
 
   // Set the flag
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Computes the orientation matrix for the placed room
@@ -612,7 +612,7 @@ void PlaceRoom(room *baseroomp, int baseface, int placed_room, int placed_room_f
   ComputePlacedRoomMatrix();
 
   // Set the flag
-  State_changed = 1;
+  State_changed = true;
 }
 
 // Lined up a placed room.  Moves the placed room so the closest vert to basevert lines up exactly,
@@ -696,7 +696,7 @@ void SnapRoom(int basevert) {
   Placed_room_attachpoint += *bvp - v0;
 
   // Update view
-  State_changed = 1;
+  State_changed = true;
 }
 
 // Attach an already-placed room
@@ -791,7 +791,7 @@ void AttachRoom() {
   Placed_room = -1;
 
   // Flag the world as changed
-  World_changed = 1;
+  World_changed = true;
 }
 
 // structure for keeping track of vertices inserted in edges (from clipping)
@@ -1094,7 +1094,7 @@ void DeletePointFromFace(room *rp, int facenum, int vertindex) {
   }
 
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
 #endif
 }
 
@@ -1367,7 +1367,7 @@ void BuildBridge(room *attroomp, int attface, room *baseroomp, int baseface) {
   LinkRoomsSimple(Rooms, ROOMNUM(baseroomp), baseface, ROOMNUM(newroomp), 1);
 
   // Set Changed flag
-  World_changed = 1;
+  World_changed = true;
 }
 
 #define JOIN_EPSILON 0.01
@@ -1509,7 +1509,7 @@ no_move_points:;
   LinkRoomsSimple(Rooms, ROOMNUM(baseroomp), baseface, ROOMNUM(attroomp), attface);
 
   // Set Changed flag
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Connects two rooms if they already match up exactly
@@ -1539,7 +1539,7 @@ void JoinRoomsExact(room *attroomp, int attface, room *baseroomp, int baseface) 
   LinkRoomsSimple(Rooms, ROOMNUM(baseroomp), baseface, ROOMNUM(attroomp), attface);
 
   // Set Changed flag
-  World_changed = 1;
+  World_changed = true;
 }
 
 bool FaceIsPlanar(int nv, int16_t *face_verts, vector *normal, vector *verts);
@@ -1659,7 +1659,7 @@ bool CombineFaces(room *rp, int face0, int face1) {
   DeleteRoomFace(rp, face1);
 
   // Set flag
-  World_changed = 1;
+  World_changed = true;
 
   // Everything's ok
   return 1;
@@ -1834,7 +1834,7 @@ void DropRoom(room *baseroomp, int baseface, int droproom_num) {
 #endif
 
   // We're done
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Place a room on the terrain for orientation before attachment
@@ -1879,7 +1879,7 @@ void PlaceExternalRoom(int cellnum, int placed_room, int placed_room_face, bool 
   ComputePlacedRoomMatrix();
 
   // Set the flag
-  State_changed = 1;
+  State_changed = true;
 }
 
 // Find all the matching faces between two rooms and join them
@@ -2036,7 +2036,7 @@ void JoinAllAdjacentFaces(room *rp0, room *rp1) {
   else
     join_count = JoinAllMatchingFaces(rp0, rp1);
 
-  World_changed = 1;
+  World_changed = true;
 
   OutrageMessageBox("%d new portals created.\n", join_count);
 }
@@ -2087,7 +2087,7 @@ void PropagateToAllFaces(room *rp, int facenum, bool matching_faces_only) {
   PropagateFromFace(rp, facenum, face_flags, matching_faces_only);
 
   // Set flag
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Splits a face unto triangles, by fanning
@@ -2178,7 +2178,7 @@ void TriangulateFace(room *rp, int facenum, int vertnum) {
   // We're done
   EditorStatus("Face %d replace by %d new faces", facenum, num_new_faces);
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
 #endif
 }
 
@@ -2205,7 +2205,7 @@ void DeletePortalPair(room *rp, int portalnum) {
 
   EditorStatus("Deleted room %d portal %d and room %d portal %d", roomnum, portalnum, croom, cportal);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Flips a face
@@ -2229,7 +2229,7 @@ void FlipFace(room *rp, int facenum) {
     Int3(); // Bad!  Get Matt!
 
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
   EditorStatus("Room %d face %d flipped.", ROOMNUM(rp), facenum);
 #else
   if (ROOMNUM(rp) < MAX_ROOMS)
@@ -2348,7 +2348,7 @@ void FixCracks() {
                     "    %d T-joints fixed",
                     points_added, tjoints_fixed);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Variables for undoing a snap
@@ -2378,7 +2378,7 @@ void SnapPointToEdge(room *rp, int vertnum, vector *v0, vector *v1) {
 
   // Done
   EditorStatus("Room %d point %d snapped.", Snap_roomnum, Snap_vertnum);
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Moves a vertex to be conincident with another vertex
@@ -2397,7 +2397,7 @@ void SnapPointToPoint(room *rp, int vertnum, room *snapto_rp, int snapto_vertnum
 
   // Done
   EditorStatus("Room %d point %d snapped.", Snap_roomnum, Snap_vertnum);
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Moves a vertex to lie on a specified plane
@@ -2419,7 +2419,7 @@ void SnapPointToFace(room *rp, int vertnum, vector *v0, vector *normal) {
 
   // Done
   EditorStatus("Room %d point %d snapped.", Snap_roomnum, Snap_vertnum);
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Undoes the most recently-performed snap
@@ -2432,7 +2432,7 @@ void UndoSnap() {
 
     if ((vp->x() == Snap_new_point.x()) && (vp->y() == Snap_new_point.y()) && (vp->z() == Snap_new_point.z())) {
       *vp = Snap_old_point;
-      World_changed = 1;
+      World_changed = true;
       return;
     }
   }
@@ -2636,7 +2636,7 @@ void BuildSmoothBridge(room *rp0, int facenum0, room *rp1, int facenum1) {
 #endif
 
   // Set the flag
-  World_changed = 1;
+  World_changed = true;
 }
 
 int16_t New_face_verts[MAX_VERTS_PER_FACE];
@@ -2707,7 +2707,7 @@ void EndNewFace() {
 
   New_face_num_verts = -1;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void ObjRelink(int objnum, int newroomnum);
@@ -2830,7 +2830,7 @@ bool CombineRooms(room *base_rp, room *att_rp) {
   RemoveDuplicatePoints(base_rp);
 
   // Done!
-  World_changed = 1;
+  World_changed = true;
   return 1;
 }
 
@@ -2887,7 +2887,7 @@ void LinkToExternalRoom(room *rp, int nfaces, int *facenums) {
 
   AssignDefaultUVsToRoom(newrp);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 extern bool Disable_editor_rendering;
@@ -2991,7 +2991,7 @@ void SplitFace(room *rp, int facenum, int v0, int v1) {
   Disable_editor_rendering = 0;
 
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
 #endif
 }
 
@@ -3008,7 +3008,7 @@ void SplitEdge(room *rp, int facenum, int edgenum, float position) {
 
   AddPointToAllEdges(rp, fp->face_verts[edgenum], fp->face_verts[vert1], &newv);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 #define MIN_NORMAL_MAG 0.035
@@ -3053,7 +3053,7 @@ void DeleteVert(room *rp, int facenum, int vertnum) {
   DeletePointFromFace(rp, f0, v2);
 
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
 #endif
 }
 
@@ -3082,7 +3082,7 @@ void MoveVert(room *rp, int facenum, int vertnum, float new_position) {
 
   rp->verts[fp->face_verts[vertnum]] = newv;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 #include "polymodel.h"
@@ -3160,7 +3160,7 @@ bool MergeObjectIntoRoom(room *rp, int objnum) {
   ObjDelete(objnum);
 
   // Done!
-  World_changed = 1;
+  World_changed = true;
   return 1;
 }
 
@@ -3200,7 +3200,7 @@ void DeleteAllConnectedFaces(room *rp, int facenum) {
   }
 
   // Done
-  World_changed = 1;
+  World_changed = true;
 }
 
 // returns the number of faces changed
@@ -3250,5 +3250,5 @@ void PropagateToConnectedFaces(room *rp, int facenum) {
   EditorStatus("%d faces were retextured.", n_changed);
 
   if (n_changed)
-    World_changed = 1;
+    World_changed = true;
 }

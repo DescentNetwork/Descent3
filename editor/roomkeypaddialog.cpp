@@ -450,7 +450,7 @@ void CRoomKeypadDialog::OnLoadRoom() {
   SetViewMode(VM_ROOM);
 
   // Force window updates
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CRoomKeypadDialog::OnSaveRoomLocally() {
@@ -495,7 +495,7 @@ void CRoomKeypadDialog::OnSelendokRoomPulldown() {
   ResetRoomViewer();
 
   // Force window updates
-  State_changed = 1;
+  State_changed = true;
 }
 
 #define NULL_NAME "<none>"
@@ -882,7 +882,7 @@ void CRoomKeypadDialog::OnRoompadNextEdge() {
 
   EditorStatus("Edge %d selected.", Curedge);
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadNextVertex() {
@@ -891,7 +891,7 @@ void CRoomKeypadDialog::OnRoompadNextVertex() {
 
   EditorStatus("Vertex %d (%d) selected.", Curvert, Curroomp->faces[Curface].face_verts[Curvert]);
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadExpandRoom() {
@@ -899,7 +899,7 @@ void CRoomKeypadDialog::OnRoompadExpandRoom() {
     return;
 
   SizeRoomVertices(Curroomp, 1.05f);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadContractRoom() {
@@ -907,7 +907,7 @@ void CRoomKeypadDialog::OnRoompadContractRoom() {
     return;
 
   SizeRoomVertices(Curroomp, .95f);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadExpandFace() {
@@ -915,7 +915,7 @@ void CRoomKeypadDialog::OnRoompadExpandFace() {
     return;
 
   SizeFaceVertices(Curroomp, Curface, 1.05f);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadContractFace() {
@@ -923,7 +923,7 @@ void CRoomKeypadDialog::OnRoompadContractFace() {
     return;
 
   SizeFaceVertices(Curroomp, Curface, .95f);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadExpandEdge() {
@@ -932,7 +932,7 @@ void CRoomKeypadDialog::OnRoompadExpandEdge() {
     return;
 
   SizeFaceEdge(Curroomp, Curface, Curedge, 1.05f);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadContractEdge() {
@@ -940,37 +940,37 @@ void CRoomKeypadDialog::OnRoompadContractEdge() {
     return;
 
   SizeFaceEdge(Curroomp, Curface, Curedge, .95f);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadMoveForward() {
   MoveRoomFace(Curroomp, Curface, 0, 0, 1);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadMoveBackward() {
   MoveRoomFace(Curroomp, Curface, 0, 0, -1);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadMoveRight() {
   MoveRoomFace(Curroomp, Curface, 1, 0, 0);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadMoveLeft() {
   MoveRoomFace(Curroomp, Curface, -1, 0, 0);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadMoveUp() {
   MoveRoomFace(Curroomp, Curface, 0, 1, 0);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadMoveDown() {
   MoveRoomFace(Curroomp, Curface, 0, -1, 0);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnRoompadCombineFaces() {
@@ -1010,7 +1010,7 @@ void CRoomKeypadDialog::OnRoompadNextPortal() {
     portal *pp = &Curroomp->portals[Curportal];
     Curface = pp->portal_face;
     EditorStatus("Portal %d selected.  Face %d selected.", Curportal, Curface);
-    State_changed = 1;
+    State_changed = true;
     UpdateDialog();
   }
 }
@@ -1062,7 +1062,7 @@ void CRoomKeypadDialog::OnRenderPortalFaces() {
   else
     pp->flags &= ~PF_RENDER_FACES;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1078,7 +1078,7 @@ void CRoomKeypadDialog::OnEnablePortalFlythrough() {
   else
     pp->flags &= ~PF_RENDERED_FLYTHROUGH;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnExternalRoom() {
@@ -1092,7 +1092,7 @@ void CRoomKeypadDialog::OnExternalRoom() {
   else
     Curroomp->flags &= ~RF_EXTERNAL;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1107,7 +1107,7 @@ void CRoomKeypadDialog::OnRoompadRefuelingCenter() {
   else
     Curroomp->flags &= ~RF_FUELCEN;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1122,7 +1122,7 @@ void CRoomKeypadDialog::OnRoompadGoal1() {
   else
     Curroomp->flags &= ~RF_GOAL1;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1137,7 +1137,7 @@ void CRoomKeypadDialog::OnRoompadGoal2() {
   else
     Curroomp->flags &= ~RF_GOAL2;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1152,7 +1152,7 @@ void CRoomKeypadDialog::OnRenderExternalRooms() {
   else
     Render_all_external_rooms = 0;
 
-  State_changed = 1;
+  State_changed = true;
 
   UpdateDialog();
 }
@@ -1164,7 +1164,7 @@ void CRoomKeypadDialog::OnNextFace() {
   EditorStatus("Face %d selected.", Curface);
   UpdateDialog();
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CRoomKeypadDialog::OnTouchesOutside() {
@@ -1177,7 +1177,7 @@ void CRoomKeypadDialog::OnTouchesOutside() {
   else
     Curroomp->flags &= ~RF_TOUCHES_TERRAIN;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1192,7 +1192,7 @@ void CRoomKeypadDialog::OnRoompadGoal3() {
   else
     Curroomp->flags &= ~RF_GOAL3;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1207,7 +1207,7 @@ void CRoomKeypadDialog::OnRoompadGoal4() {
   else
     Curroomp->flags &= ~RF_GOAL4;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1226,7 +1226,7 @@ void CRoomKeypadDialog::OnGoalfaceCheck() {
   } else
     Curroomp->faces[Curface].flags &= ~FF_GOALFACE;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1241,7 +1241,7 @@ void CRoomKeypadDialog::OnSpecial1() {
   else
     Curroomp->flags &= ~RF_SPECIAL1;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1256,7 +1256,7 @@ void CRoomKeypadDialog::OnSpecial2() {
   else
     Curroomp->flags &= ~RF_SPECIAL2;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1271,7 +1271,7 @@ void CRoomKeypadDialog::OnSpecial3() {
   else
     Curroomp->flags &= ~RF_SPECIAL3;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1286,7 +1286,7 @@ void CRoomKeypadDialog::OnSpecial4() {
   else
     Curroomp->flags &= ~RF_SPECIAL4;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1301,7 +1301,7 @@ void CRoomKeypadDialog::OnSpecial5() {
   else
     Curroomp->flags &= ~RF_SPECIAL5;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1316,7 +1316,7 @@ void CRoomKeypadDialog::OnSpecial6() {
   else
     Curroomp->flags &= ~RF_SPECIAL6;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1339,7 +1339,7 @@ void CRoomKeypadDialog::OnSelendokRoomAmbient() {
 
   Curroomp->ambient_sound = FindAmbientSoundPattern(name);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnMirrorButton() {
@@ -1376,7 +1376,7 @@ void CRoomKeypadDialog::OnRoompadNoDrawTerrain() {
 
   Render_inside_only = (btn->GetCheck() != 0);
 
-  State_changed = 1;
+  State_changed = true;
 
   UpdateDialog();
 }
@@ -1386,7 +1386,7 @@ void CRoomKeypadDialog::OnRoompadOneRoomOnly() {
 
   Render_one_room_only = (btn->GetCheck() != 0);
 
-  State_changed = 1;
+  State_changed = true;
 
   UpdateDialog();
 }
@@ -1401,7 +1401,7 @@ void CRoomKeypadDialog::OnTriangulate() {
   else
     Curroomp->flags &= ~RF_TRIANGULATE;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1440,7 +1440,7 @@ void CRoomKeypadDialog::OnKillfocusRoompadDamage() {
 
   Curroomp->damage = atof(buf);
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1454,7 +1454,7 @@ void CRoomKeypadDialog::OnSelchangeRoompadDamageType() {
 void CRoomKeypadDialog::OnRenderShell() {
   Shell_render_flag ^= SRF_NO_SHELL;
 
-  State_changed = 1;
+  State_changed = true;
 
   UpdateDialog();
 }
@@ -1462,7 +1462,7 @@ void CRoomKeypadDialog::OnRenderShell() {
 void CRoomKeypadDialog::OnRenderNonShell() {
   Shell_render_flag ^= SRF_NO_NON_SHELL;
 
-  State_changed = 1;
+  State_changed = true;
 
   UpdateDialog();
 }
@@ -1477,7 +1477,7 @@ void CRoomKeypadDialog::OnSecretCheck() {
   else
     Curroomp->flags &= ~RF_SECRET;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1498,7 +1498,7 @@ void CRoomKeypadDialog::OnPortalBlockedCheck() {
     np->flags &= ~PF_BLOCK;
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnPortalBlockedCanGoAwayCheck() {
@@ -1512,7 +1512,7 @@ void CRoomKeypadDialog::OnPortalBlockedCanGoAwayCheck() {
   else
     pp->flags &= ~PF_BLOCK_REMOVABLE;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CRoomKeypadDialog::OnBadCenterpoints() {
@@ -1534,6 +1534,6 @@ void CRoomKeypadDialog::OnRoomSkipLighting() {
     Curroomp->flags &= ~RF_NO_LIGHT;
   }
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }

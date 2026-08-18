@@ -148,25 +148,25 @@ room *Placed_baseroomp;
 int Placed_baseface;
 
 // flags for the wireframe and textured views changed
-int TV_changed = 1;
+bool TV_changed = true;
 
 // Set this flag if a new world is loaded/created
-int New_mine = 1; // init to 1 for initial redraw
+bool New_mine = true; // init to 1 for initial redraw
 
 // Set this when the mine has changed
-int World_changed = 0;
+bool World_changed = false;
 
 // Set this when the editor state (but not the world itself) has changed
-int State_changed = 0;
+bool State_changed = false;
 
 // Set this when the viewer (i.e., player) has moved
-int Viewer_moved = 0;
+bool Viewer_moved = false;
 
 // Set this when the editor viewpoint has changed
-int Edview_changed = 0;
+bool Edview_changed = false;
 
 // Set this when an object has moved
-int Object_moved = 0;
+bool Object_moved = false;
 
 // Vars for the list of selected rooms
 int N_selected_rooms = 0;

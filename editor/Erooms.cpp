@@ -2293,7 +2293,7 @@ void RemoveDuplicateFaces(room *rp) {
 
   if (removed) {
     OutrageMessageBox("%d duplicate faces have been removed from room %d.", removed, r);
-    World_changed = 1;
+    World_changed = true;
   } else
     OutrageMessageBox("There are no duplicate faces in room %d.", r);
 }
@@ -2957,7 +2957,7 @@ void RemoveAllDuplicateAndUnusedPoints() {
                     n_unused, n_duplicate, n_duplicate_face);
 
   if (n_unused || n_duplicate || n_duplicate_face)
-    World_changed = 1;
+    World_changed = true;
 }
 
 // Returns the number fixed
@@ -3007,7 +3007,7 @@ void FixDegenerateFaces() {
   OutrageMessageBox("%d Degenerate faces fixed\n%d Degenerate faces deleted", fixed, deleted);
 
   if (fixed || deleted)
-    World_changed = 1;
+    World_changed = true;
 }
 
 // Finda a face that connects to the specified face

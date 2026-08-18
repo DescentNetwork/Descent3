@@ -510,7 +510,7 @@ void CTerrainDialog::OnTerrpadMoveUp() {
       if (cury <= 254) {
         Terrain_seg[i].ypos++;
         Terrain_seg[i].y += (float)(TERRAIN_HEIGHT_INCREMENT);
-        TV_changed++;
+        TV_changed = true;
       }
     }
   }
@@ -523,7 +523,7 @@ void CTerrainDialog::OnTerrpadMoveDown() {
       if (cury > 0) {
         Terrain_seg[i].ypos--;
         Terrain_seg[i].y -= (float)(TERRAIN_HEIGHT_INCREMENT);
-        TV_changed++;
+        TV_changed = true;
       }
     }
   }
@@ -558,7 +558,7 @@ void CTerrainDialog::OnTerrpadRenormalize() {
   Terrain_checksum = -1;
   BuildMinMaxTerrain();
   BuildTerrainNormals();
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CTerrainDialog::OnTerrpadRaise10() {
@@ -568,7 +568,7 @@ void CTerrainDialog::OnTerrpadRaise10() {
       if (cury < 255 - 10) {
         Terrain_seg[i].ypos += 10;
         Terrain_seg[i].y += (float)(10 * (TERRAIN_HEIGHT_INCREMENT));
-        TV_changed++;
+        TV_changed = true;
       }
     }
   }
@@ -582,19 +582,19 @@ void CTerrainDialog::OnTerrpadLower10() {
       if (cury > 9) {
         Terrain_seg[i].ypos -= 10;
         Terrain_seg[i].y -= (float)(10 * (TERRAIN_HEIGHT_INCREMENT));
-        TV_changed++;
+        TV_changed = true;
       }
     }
   }
 }
 
-void CTerrainDialog::OnSkyTexture() { TV_changed = 1; }
+void CTerrainDialog::OnSkyTexture() { TV_changed = true; }
 
 void CTerrainDialog::OnTerrpadSelectNone() {
   for (int i = 0; i < TERRAIN_WIDTH * TERRAIN_DEPTH; i++)
     TerrainSelected[i] = 0;
   Num_terrain_selected = 0;
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTerrainDialog::OnTerrpadRotTexture() {
@@ -615,8 +615,8 @@ void CTerrainDialog::OnTerrpadRotTexture() {
     }
   }
 
-  World_changed = 1;
-  TV_changed = 1;
+  World_changed = true;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnSkyNearer() {
@@ -624,13 +624,13 @@ void CTerrainDialog::OnSkyNearer() {
   if (Terrain_sky.radius > 500) {
 
     SetupSky(Terrain_sky.radius - 500, Terrain_sky.flags);
-    TV_changed = 1;
+    TV_changed = true;
   }
 }
 
 void CTerrainDialog::OnSkyFarther() {
   SetupSky(Terrain_sky.radius + 500, Terrain_sky.flags);
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnStarsCheck() {
@@ -641,7 +641,7 @@ void CTerrainDialog::OnStarsCheck() {
   else
     Terrain_sky.flags &= ~TF_STARS;
 
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnFastTerrainCheck() {
@@ -652,7 +652,7 @@ void CTerrainDialog::OnFastTerrainCheck() {
   else
     Fast_terrain = 0;
 
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnTerrpadFillArea() {
@@ -662,10 +662,10 @@ void CTerrainDialog::OnTerrpadFillArea() {
     if (TerrainSelected[i])
       Terrain_tex_seg[Terrain_seg[i].texseg_index].tex_index = D3EditState.texdlg_texture;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
-void CTerrainDialog::OnTerrpadRedoTopmap() { World_changed = 1; }
+void CTerrainDialog::OnTerrpadRedoTopmap() { World_changed = true; }
 
 void CTerrainDialog::OnTerrpadMakeMax() {
   int max_so_far = 0, i;
@@ -684,7 +684,7 @@ void CTerrainDialog::OnTerrpadMakeMax() {
     }
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTerrainDialog::OnTerrpadMakeMin() {
@@ -704,7 +704,7 @@ void CTerrainDialog::OnTerrpadMakeMin() {
     }
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTerrainDialog::OnTerrpadMakeZero() {
@@ -717,7 +717,7 @@ void CTerrainDialog::OnTerrpadMakeZero() {
     }
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Makes a pyramid out of the selected region
@@ -843,7 +843,7 @@ void CTerrainDialog::OnTerrpadPyramid() {
     }
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTerrainDialog::OnTerrpadHill() {}
@@ -970,7 +970,7 @@ void CTerrainDialog::OnTerrpadPancakes() {
     }
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTerrainDialog::OnTerrMoveMoon() {
@@ -978,12 +978,12 @@ void CTerrainDialog::OnTerrMoveMoon() {
 
   Terrain_sky.satellite_size[n] *= 1.1f;
 
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnTerrRandomizeSky() {
   SetupSky(Terrain_sky.radius, Terrain_sky.flags, 1);
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnPaint() {
@@ -998,7 +998,7 @@ void CTerrainDialog::OnTerrMoreMoons() {
   if (Terrain_sky.num_satellites < 5)
     Terrain_sky.num_satellites++;
 
-  TV_changed = 1;
+  TV_changed = true;
 
   UpdateDialog();
 }
@@ -1007,7 +1007,7 @@ void CTerrainDialog::OnTerrLessMoons() {
   if (Terrain_sky.num_satellites > 0)
     Terrain_sky.num_satellites--;
 
-  TV_changed = 1;
+  TV_changed = true;
 
   UpdateDialog();
 }
@@ -1033,7 +1033,7 @@ void CTerrainDialog::OnShowTerrain() {
 
   D3EditState.terrain_dots = (c != 0);
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CTerrainDialog::OnFlatShadeTerrainCheck() {
@@ -1049,7 +1049,7 @@ void CTerrainDialog::OnFlatShadeTerrainCheck() {
     Detail_settings.Terrain_render_distance = DEFAULT_VISIBLE_TERRAIN_DISTANCE;
   }
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 BOOL CTerrainDialog::OnHelpInfo(HELPINFO *pHelpInfo) {
@@ -1067,7 +1067,7 @@ void CTerrainDialog::OnTerrSelectAll() {
     TerrainSelected[i] = 1;
 
   Num_terrain_selected = TERRAIN_WIDTH * TERRAIN_DEPTH;
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTerrainDialog::OnTerrain2d() {
@@ -1079,7 +1079,7 @@ void CTerrainDialog::OnTerrain2d() {
     Flat_terrain = 0;
   }
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CTerrainDialog::SetCurrentMoon(int n) {
@@ -1091,7 +1091,7 @@ void CTerrainDialog::OnTextureSky() {
   int c = IsDlgButtonChecked(IDC_TEXTURE_SKY);
   Terrain_sky.textured = c;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTerrainDialog::OnKillfocusSkyRedEdit() {
@@ -1138,7 +1138,7 @@ void CTerrainDialog::OnKillfocusSkyRedEdit() {
     Terrain_sky.satellite_r[Current_satellite] = fv;
   }
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -1186,7 +1186,7 @@ void CTerrainDialog::OnKillfocusSkyGreenEdit() {
     Terrain_sky.satellite_g[Current_satellite] = fv;
   }
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -1234,7 +1234,7 @@ void CTerrainDialog::OnKillfocusSkyBlueEdit() {
     Terrain_sky.satellite_b[Current_satellite] = fv;
   }
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -1244,7 +1244,7 @@ void CTerrainDialog::OnNoLodEngine() {
 
   Editor_LOD_engine_off = c;
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CTerrainDialog::OnKillfocusFogDistanceEdit() {
@@ -1267,7 +1267,7 @@ void CTerrainDialog::OnKillfocusFogDistanceEdit() {
 
   Detail_settings.Terrain_render_distance = dist;
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -1287,7 +1287,7 @@ void CTerrainDialog::OnKillfocusPixelErrorEdit() {
 
   Detail_settings.Pixel_error = err;
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -1296,7 +1296,7 @@ void CTerrainDialog::OnTerrpadSelectrange() {
 
   theApp.pause();
   dlg.DoModal();
-  World_changed = 1;
+  World_changed = true;
   theApp.resume();
 }
 
@@ -1342,7 +1342,7 @@ void CTerrainDialog::OnToggleVisibility() {
       else
         Terrain_seg[i].flags |= TF_INVISIBLE;
 
-      World_changed = 1;
+      World_changed = true;
     }
   }
 
@@ -1355,7 +1355,7 @@ void CTerrainDialog::OnShowInvisible() {
 
   Show_invisible_terrain = c;
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CTerrainDialog::OnTerrMoveMoonAway() {
@@ -1363,7 +1363,7 @@ void CTerrainDialog::OnTerrMoveMoonAway() {
 
   Terrain_sky.satellite_size[n] *= .9f;
 
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::MoveSat(int pitch, int heading) {
@@ -1385,22 +1385,22 @@ void CTerrainDialog::MoveSat(int pitch, int heading) {
 
 void CTerrainDialog::OnMoveSatUp() {
   MoveSat(1500, 0);
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnMoveSatDown() {
   MoveSat(64000, 0);
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnMoveSatLeft() {
   MoveSat(0, 64000);
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnMoveSatRight() {
   MoveSat(0, 1500);
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnSatelliteCheck() {
@@ -1411,7 +1411,7 @@ void CTerrainDialog::OnSatelliteCheck() {
   else
     Terrain_sky.flags &= ~TF_SATELLITES;
 
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnSmoothTerrain() {
@@ -1501,7 +1501,7 @@ void CTerrainDialog::OnSmoothTerrain() {
   mem_free(src_data);
   BuildMinMaxTerrain();
   OutrageMessageBox("Terrain smoothed!");
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTerrainDialog::OnUseFog() {
@@ -1512,7 +1512,7 @@ void CTerrainDialog::OnUseFog() {
   else
     Terrain_sky.flags &= ~TF_FOG;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTerrainDialog::OnUseHalo() {
@@ -1524,7 +1524,7 @@ void CTerrainDialog::OnUseHalo() {
   else
     Terrain_sky.satellite_flags[n] &= ~TSF_HALO;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTerrainDialog::OnUseAtmosphere() {
@@ -1536,7 +1536,7 @@ void CTerrainDialog::OnUseAtmosphere() {
   else
     Terrain_sky.satellite_flags[n] &= ~TSF_ATMOSPHERE;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 #include "gamepath.h"
@@ -1609,7 +1609,7 @@ get_height:;
 
   // Done
   EditorStatus("Terrain moved by by %d to %d", delta_height, desired_height);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTerrainDialog::OnSaveAsPcx() {
@@ -1954,7 +1954,7 @@ void CTerrainDialog::OnForceVisible() {
 
       if (c) {
         Terrain_seg[i].flags &= ~TF_INVISIBLE;
-        World_changed = 1;
+        World_changed = true;
       }
     }
   }
@@ -1979,7 +1979,7 @@ void CTerrainDialog::OnKillfocusDamagePerSecEdit() {
 
   Terrain_sky.damage_per_second = err;
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -1999,7 +1999,7 @@ void CTerrainDialog::OnKillfocusFogScalarEdit() {
 
   Terrain_sky.fog_scalar = err;
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -2011,7 +2011,7 @@ void CTerrainDialog::OnRotateStars() {
   else
     Terrain_sky.flags &= ~TF_ROTATE_STARS;
 
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnRotateSky() {
@@ -2022,7 +2022,7 @@ void CTerrainDialog::OnRotateSky() {
   else
     Terrain_sky.flags &= ~TF_ROTATE_SKY;
 
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnKillfocusRotateSpeedEdit() {
@@ -2041,7 +2041,7 @@ void CTerrainDialog::OnKillfocusRotateSpeedEdit() {
 
   Terrain_sky.rotate_rate = err;
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -2066,8 +2066,8 @@ void CTerrainDialog::OnTileMore() {
     }
   }
 
-  World_changed = 1;
-  TV_changed = 1;
+  World_changed = true;
+  TV_changed = true;
 }
 
 void CTerrainDialog::OnTileLess() {
@@ -2091,8 +2091,8 @@ void CTerrainDialog::OnTileLess() {
     }
   }
 
-  World_changed = 1;
-  TV_changed = 1;
+  World_changed = true;
+  TV_changed = true;
 }
 
 #include "TerrainSoundDialog.h"

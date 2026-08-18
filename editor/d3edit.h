@@ -405,25 +405,25 @@ extern d3edit_state D3EditState;
 extern grSurface *Desktop_surf;
 
 // flags for the textured views changed
-extern int TV_changed;
+extern bool TV_changed;
 
 // Set this flag if a new world is loaded/created
-extern int New_mine;
+extern bool New_mine;
 
 // Set this when the mine has changed
-extern int World_changed;
+extern bool World_changed;
 
 // Set this when the editor state (but not the world itself) has changed
-extern int State_changed;
+extern bool State_changed;
 
 // Set this when the viewer (i.e., player) has moved
-extern int Viewer_moved;
+extern bool Viewer_moved;
 
 // Set this when an object has moved
-extern int Object_moved;
+extern bool Object_moved;
 
 // Set this when the editor viewpoint has changed
-extern int Edview_changed;
+extern bool Edview_changed;
 
 // Current room & face
 extern room *Curroomp;

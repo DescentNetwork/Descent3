@@ -427,7 +427,7 @@ void SetCurroomFromTrigger() {
   if (Curroomp->faces[Curface].portal_num != -1)
     Curportal = Curroomp->faces[Curface].portal_num;
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CTriggerDialog::OnTrigGoto() {
@@ -473,7 +473,7 @@ void CTriggerDialog::OnTrigDelete() {
 
   UpdateDialog();
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTriggerDialog::OnTrigAddToCurportal() {
@@ -586,7 +586,7 @@ void CTriggerDialog::OnTrigAddFloating() {
 
 void CTriggerDialog::OnTrigRenderFloating() {
   Render_floating_triggers = (((CButton *)GetDlgItem(IDC_TRIG_RENDER_FLOATING))->GetCheck() != 0);
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CTriggerDialog::OnTrigActivPlayer() {
@@ -597,7 +597,7 @@ void CTriggerDialog::OnTrigActivPlayer() {
   else
     tp->activator &= ~AF_PLAYER;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTriggerDialog::OnTrigActivPlayerWeapons() {
@@ -608,7 +608,7 @@ void CTriggerDialog::OnTrigActivPlayerWeapons() {
   else
     tp->activator &= ~AF_PLAYER_WEAPON;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTriggerDialog::OnTrigActivRobotWeapons() {
@@ -619,7 +619,7 @@ void CTriggerDialog::OnTrigActivRobotWeapons() {
   else
     tp->activator &= ~AF_ROBOT_WEAPON;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTriggerDialog::OnTrigActivRobots() {
@@ -630,7 +630,7 @@ void CTriggerDialog::OnTrigActivRobots() {
   else
     tp->activator &= ~AF_ROBOT;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void ScaleFloatingTrigEdge(int roomnum, int facenum, int v0, int v1, float delta) {
@@ -667,7 +667,7 @@ void CTriggerDialog::OnTrigFloatNarrower() {
   ScaleFloatingTrigEdge(tp->roomnum, tp->facenum, 0, 1, -SCALE_DELTA);
   ScaleFloatingTrigEdge(tp->roomnum, tp->facenum, 2, 3, -SCALE_DELTA);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTriggerDialog::OnTrigFloatShorter() {
@@ -678,7 +678,7 @@ void CTriggerDialog::OnTrigFloatShorter() {
   ScaleFloatingTrigEdge(tp->roomnum, tp->facenum, 1, 2, -SCALE_DELTA);
   ScaleFloatingTrigEdge(tp->roomnum, tp->facenum, 3, 0, -SCALE_DELTA);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTriggerDialog::OnTrigFloatTaller() {
@@ -689,7 +689,7 @@ void CTriggerDialog::OnTrigFloatTaller() {
   ScaleFloatingTrigEdge(tp->roomnum, tp->facenum, 1, 2, SCALE_DELTA);
   ScaleFloatingTrigEdge(tp->roomnum, tp->facenum, 3, 0, SCALE_DELTA);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTriggerDialog::OnTrigFloatWider() {
@@ -700,7 +700,7 @@ void CTriggerDialog::OnTrigFloatWider() {
   ScaleFloatingTrigEdge(tp->roomnum, tp->facenum, 0, 1, SCALE_DELTA);
   ScaleFloatingTrigEdge(tp->roomnum, tp->facenum, 2, 3, SCALE_DELTA);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTriggerDialog::OnTrigOneShot() {
@@ -711,13 +711,13 @@ void CTriggerDialog::OnTrigOneShot() {
   else
     tp->flags &= ~TF_ONESHOT;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTriggerDialog::OnTrigNextPortal() {
   if (Curroomp->num_portals) {
     Curportal = (Curportal + 1) % Curroomp->num_portals;
-    State_changed = 1;
+    State_changed = true;
     UpdateDialog();
   }
 }
@@ -823,5 +823,5 @@ void CTriggerDialog::OnTrigActivClutter() {
   else
     tp->activator &= ~AF_CLUTTER;
 
-  World_changed = 1;
+  World_changed = true;
 }

@@ -700,7 +700,7 @@ void CTextureGrWnd::Render() {
       pos.y() = yval;
       Viewer_object->pos = pos;
       ObjSetOrient(Viewer_object, &Identity_matrix);
-      World_changed = 1;
+      World_changed = true;
     }
   } else // Mine view
   {
@@ -943,7 +943,7 @@ void CTextureGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
     if (TSearch_found_type == TSEARCH_FOUND_MINE) {
       Current_faces[TSearch_seg - FIRST_PALETTE_ROOM] = TSearch_face;
       EditorStatus("Face %d selected.", TSearch_face);
-      State_changed = 1;
+      State_changed = true;
       return;
     }
   } else if (Editor_view_mode == VM_TERRAIN) {
@@ -974,8 +974,8 @@ void CTextureGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
         if (nFlags & MK_SHIFT) {
           Terrain_sky.dome_texture = D3EditState.texdlg_texture;
 
-          World_changed = 1;
-          TV_changed = 1;
+          World_changed = true;
+          TV_changed = true;
         }
       }
 
@@ -984,8 +984,8 @@ void CTextureGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
         if (nFlags & MK_SHIFT) {
           Terrain_sky.satellite_texture[TSearch_seg] = D3EditState.texdlg_texture;
           theApp.main_frame->m_TerrainDialog->SetCurrentMoon(TSearch_seg);
-          World_changed = 1;
-          TV_changed = 1;
+          World_changed = true;
+          TV_changed = true;
         }
 
         else {
@@ -1008,13 +1008,13 @@ void CTextureGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
           Terrain_tex_seg[Terrain_seg[TSearch_seg].texseg_index].rotation &= ~0x0F;
           Terrain_tex_seg[Terrain_seg[TSearch_seg].texseg_index].rotation |= val;
 
-          TV_changed = 1;
+          TV_changed = true;
         }
 
         if (nFlags & MK_SHIFT) {
 
           Terrain_tex_seg[Terrain_seg[TSearch_seg].texseg_index].tex_index = D3EditState.texdlg_texture;
-          TV_changed = 1;
+          TV_changed = true;
         } else if (nFlags & MK_CONTROL) {
           if (TerrainSelected[TSearch_seg]) {
             TerrainSelected[TSearch_seg] = 0;
@@ -1023,7 +1023,7 @@ void CTextureGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
             TerrainSelected[TSearch_seg] = 1;
             Num_terrain_selected++;
           }
-          TV_changed = 1;
+          TV_changed = true;
         } else {
           memset(TerrainSelected, 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
           EditorStatus("Cell %d selected. Light=%d Height=%.2f (%d).  Texture=%s", TSearch_seg,
@@ -1031,7 +1031,7 @@ void CTextureGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
                        GameTextures[Terrain_tex_seg[Terrain_seg[TSearch_seg].texseg_index].tex_index].name);
           TerrainSelected[TSearch_seg]++;
           Num_terrain_selected = 1;
-          TV_changed = 1;
+          TV_changed = true;
         }
       }
     }
@@ -1063,7 +1063,7 @@ void CTextureGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
       if (nFlags & MK_SHIFT) { // apply current texture to face
         HTextureApplyToRoomFace(&Rooms[TSearch_seg], TSearch_face, D3EditState.texdlg_texture);
         EditorStatus("Texture %d applied to room %d face %d\n", D3EditState.texdlg_texture, TSearch_seg, TSearch_face);
-        World_changed = 1;
+        World_changed = true;
       } else if (KEY_STATE(KEY_J)) // apply texture, scaling UVs based on texture size
       {
         int old_width = bm_w(GetTextureBitmap(Rooms[TSearch_seg].faces[TSearch_face].tmap, 0), 0);
@@ -1071,14 +1071,14 @@ void CTextureGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
         HTextureApplyToRoomFace(&Rooms[TSearch_seg], TSearch_face, D3EditState.texdlg_texture);
         ScaleFaceUVs(&Rooms[TSearch_seg], TSearch_face, (float)old_width / new_width);
         EditorStatus("Texture %d applied to room %d face %d\n", D3EditState.texdlg_texture, TSearch_seg, TSearch_face);
-        World_changed = 1;
+        World_changed = true;
       } else if (KEY_STATE(KEY_P)) {
         // P + Click = Propagate from current face
         if ((TSearch_seg == ROOMNUM(Curroomp)) && (TSearch_face == Curface))
           EditorStatus("Cannot propagate from a face to itself.");
         else if (HTexturePropagateToFace(&Rooms[roomnum], facenum, Curroomp, Curface)) {
           EditorStatus("Texture propagated from %d:%d to %d:%d\n", ROOMNUM(Curroomp), Curface, roomnum, facenum);
-          World_changed = 1;
+          World_changed = true;
         } else {
           OutrageMessageBox("Room:face %d:%d is not adjacent to Current room:face (%d:%d)", roomnum, facenum,
                             ROOMNUM(Curroomp), Curface);
@@ -1114,7 +1114,7 @@ void CTextureGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
             EditorStatus("Texture & UVs copied from %d:%d to %d:%d (rotation = %d/%d)\n", ROOMNUM(Markedroomp),
                          Markedface, roomnum, facenum, count % Markedroomp->faces[Markedface].num_verts,
                          Markedroomp->faces[Markedface].num_verts);
-            World_changed = 1;
+            World_changed = true;
           } else
             EditorStatus("Can't copy UVs: faces don't have the same number of vertices.");
         }
@@ -1140,7 +1140,7 @@ void CTextureGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
 
         mprintf(0, "Answer 2 is %d\n", answer);
       } else { // Just change curface
-        State_changed = 1;
+        State_changed = true;
         EditorStatus("Current room:face set to %d:%d", roomnum, facenum);
       }
 
@@ -1202,7 +1202,7 @@ void CTextureGrWnd::OnRButtonDown(UINT nFlags, CPoint point) {
               my = i;
             }
 
-            TV_changed = 1;
+            TV_changed = true;
           }
         }
       }
@@ -1552,7 +1552,7 @@ BOOL CTextureGrWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
         strcpy(curobj->name, tempname);
       }
 
-      World_changed = 1;
+      World_changed = true;
 
       break;
     }
@@ -1598,7 +1598,7 @@ BOOL CTextureGrWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
         }
       }
 
-      World_changed = 1; //?
+      World_changed = true; //?
 
     } break;
 
@@ -1678,5 +1678,5 @@ void ShowRadView() {
   tview->Invalidate();
   tview->SendMessage(WM_PAINT);
 
-  World_changed = 1;
+  World_changed = true;
 }

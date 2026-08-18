@@ -141,8 +141,8 @@ void ObjectMoveManager::End() {
   //@@	SetCursor(hOldCursor);
   //@@	ClipCursor(NULL);
   m_DragState = 0;
-  Object_moved = 0;
-  World_changed = 1;
+  Object_moved = false;
+  World_changed = true;
 }
 
 #define ROTATE_SCALE (256.0f * 20.0f / ((obj->size < 10.0f) ? 10.0f : obj->size))
@@ -157,7 +157,7 @@ void ObjectMoveManager::Defer() {
     int x, y, dsx, dsy;
     float dx, dy;
 
-    Object_moved = 0;
+    Object_moved = false;
 
     if (ddio_MouseGetState(&x, &y, &dsx, &dsy) & MOUSE_LB) {
       object *obj = &Objects[m_ObjNum];
@@ -226,7 +226,7 @@ void ObjectMoveManager::Defer() {
       this->End();
     }
   } else {
-    Object_moved = 0;
+    Object_moved = false;
   }
 }
 

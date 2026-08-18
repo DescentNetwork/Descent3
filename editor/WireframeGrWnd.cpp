@@ -404,12 +404,12 @@ void CWireframeGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
       ComputeTerrainSegmentCenter(&pos, cellnum);
       ObjSetPos(Viewer_object, &pos, MAKE_ROOMNUM(cellnum), NULL, false);
 
-      State_changed = 1;
+      State_changed = true;
     } else if (KEY_STATE(KEY_LSHIFT)) {
       int seg = GetCellFromPoint(point.x, point.y);
 
       Terrain_tex_seg[Terrain_seg[seg].texseg_index].tex_index = D3EditState.texdlg_texture;
-      World_changed = 1;
+      World_changed = true;
 
     } else
       SelManager.StartSelection(this, EndWireframeSel, point.x, point.y);
@@ -432,7 +432,7 @@ void CWireframeGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
       if (KEY_STATE(KEY_LSHIFT) || KEY_STATE(KEY_RSHIFT)) { // ctrl + click means toggle select state
         int newstate;
         newstate = ToggleRoomSelectedState(found_segnum);
-        State_changed = 1;
+        State_changed = true;
         EditorStatus("Room %d %s", found_segnum, newstate ? "selected" : "deselected");
       } else {
         if (Editor_view_mode == VM_ROOM) {
@@ -446,7 +446,7 @@ void CWireframeGrWnd::OnLButtonDown(UINT nFlags, CPoint point) {
           Curportal = -1;
           EditorStatus("Current room:face set to %d:%d", ROOMNUM(Curroomp), Curface);
         }
-        State_changed = 1;
+        State_changed = true;
       }
     } else if (find_mode == FM_NEXT) {
       find_mode = FM_CLOSEST;
@@ -538,7 +538,7 @@ void EndWireframeSel(editorSelectorManager *esm) {
       theApp.wireframe_view->SetMagCoords(left, (TERRAIN_DEPTH - 1) - top, right, (TERRAIN_DEPTH - 1) - bot);
     }
 
-    World_changed = 1;
+    World_changed = true;
   } else {
     if (!(KEY_STATE(KEY_LCTRL) || KEY_STATE(KEY_RCTRL))) // ctrl + select means add to list
       ClearRoomSelectedList();
@@ -836,7 +836,7 @@ void CWireframeGrWnd::OnRButtonDown(UINT nFlags, CPoint point) {
     m_x2 = TERRAIN_WIDTH;
     m_y2 = TERRAIN_DEPTH;
 
-    State_changed = 1;
+    State_changed = true;
   }
   CWnd::OnRButtonDown(nFlags, point);
 }

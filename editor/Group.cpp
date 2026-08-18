@@ -389,7 +389,7 @@ void DeleteGroup(int nrooms, int *roomnums) {
   Disable_editor_rendering = save_disable_flag;
 
   // We're done!  Update flags and leave
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Place the given group at the specified room face
@@ -424,7 +424,7 @@ void PlaceGroup(room *destroomp, int destface, group *g) {
   ComputePlacedRoomMatrix();
 
   // Set the flag
-  State_changed = 1;
+  State_changed = true;
 }
 
 #include "terrain.h"
@@ -458,7 +458,7 @@ void PlaceGroupTerrain(int cellnum, group *g, bool align_to_terrain) {
   ComputePlacedRoomMatrix();
 
   // Set the flag
-  State_changed = 1;
+  State_changed = true;
 }
 
 // Attach the already-placed group
@@ -617,7 +617,7 @@ void AttachGroup() {
   Placed_group = NULL;
 
   // We're done!  Update flags and leave
-  World_changed = 1;
+  World_changed = true;
 }
 
 #define GROUP_FILE_TAG "D3GP"

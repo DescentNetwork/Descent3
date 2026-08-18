@@ -798,7 +798,7 @@ void SelectObject(int objnum) {
   else
     EditorStatus("Object %d selected. Type = %s,  Name = %s", objnum, type_name, obj_name);
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CObjectDialog::OnObjpadNextobj() {
@@ -1054,7 +1054,7 @@ void CObjectDialog::OnJumpToStartPos() {
     OutrageMessageBox(str);
   } else {
     MoveViewer(&Objects[found_obj].pos, Objects[found_obj].roomnum, &Objects[found_obj].orient);
-    TV_changed = 1;
+    TV_changed = true;
   }
 }
 
@@ -1168,7 +1168,7 @@ void CObjectDialog::OnObjectSwapButton() {
     }
   }
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -1224,7 +1224,7 @@ void CObjectDialog::OnRegroundButton() {
               obj->pos -= diff * obj->orient.uvec;
               ObjSetPos(obj, &obj->pos, obj->roomnum, NULL, false);
 
-              World_changed = 1;
+              World_changed = true;
             }
           }
         }
@@ -1308,5 +1308,5 @@ void CObjectDialog::OnObjpadDeleteAll() {
   }
 
   EditorStatus("%d objects deleted.", count);
-  World_changed = 1;
+  World_changed = true;
 }

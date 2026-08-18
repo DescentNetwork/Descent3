@@ -179,7 +179,7 @@ void RotateRooms(angle p, angle h, angle b) {
   // CalcFloatUVs(&Segments[baseseg],baseside);
 
   // Set flags
-  World_changed = 1;
+  World_changed = true;
 
   return;
 }
@@ -279,7 +279,7 @@ void MoveFloatSegment(float dx,float dy)
         CalcFloatUVs(&Segments[baseseg],baseside);
 
         //Set flags
-        World_changed = 1;
+        World_changed = true;
 
         return;
 }
@@ -340,7 +340,7 @@ int RotateSegment(segment *seg, angle p, angle h, angle b)
         WarnIfConcaveSegment(seg);
 
 //	Set flags
-        World_changed = 1;
+        World_changed = true;
 
         return 0;
 }

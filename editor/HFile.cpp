@@ -459,7 +459,7 @@ void CreateNewMine() {
   Curportal = -1;
 
   // Say that this is a new mine
-  New_mine = 1;
+  New_mine = true;
 
   // Reset the view position, etc. for the wireframe view
   ResetWireframeView();
@@ -617,7 +617,7 @@ bool EditorLoadLevel(char *filename) {
     // Check for duplicate names in the level
     CheckLevelNames();
 
-    New_mine = 1; // say that this is a new mine
+    New_mine = true; // say that this is a new mine
 
     // Set viewer object
     SetEditorViewer();

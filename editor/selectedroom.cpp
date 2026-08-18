@@ -92,7 +92,7 @@ int IsRoomSelected(int roomnum) {
 void AddRoomToSelectedList(int roomnum) {
   if (!IsRoomSelected(roomnum)) {
     Selected_rooms[N_selected_rooms++] = roomnum;
-    State_changed = 1;
+    State_changed = true;
   }
 }
 
@@ -106,7 +106,7 @@ void RemoveRoomFromSelectedList(int roomnum) {
       for (j = i; j < N_selected_rooms - 1; j++)
         Selected_rooms[j] = Selected_rooms[j + 1];
       N_selected_rooms--;
-      State_changed = 1;
+      State_changed = true;
       return;
     }
 }
@@ -114,7 +114,7 @@ void RemoveRoomFromSelectedList(int roomnum) {
 // Empties the selected list
 void ClearRoomSelectedList() {
   N_selected_rooms = 0;
-  State_changed = 1;
+  State_changed = true;
 }
 
 // Adds to selected list if not already in there, else removes from list
@@ -122,7 +122,7 @@ void ClearRoomSelectedList() {
 int ToggleRoomSelectedState(int roomnum) {
   int i;
 
-  State_changed = 1;
+  State_changed = true;
 
   for (i = 0; i < N_selected_rooms; i++)
     if (Selected_rooms[i] == roomnum) {
@@ -153,7 +153,7 @@ int SelectConnectedRooms(int roomnum) {
   Selected_rooms[N_selected_rooms++] = roomnum;
   count = 1;
 
-  State_changed = 1;
+  State_changed = true;
 
   // Now add this room's children
   for (s = 0; s < Rooms[roomnum].num_portals; s++) {

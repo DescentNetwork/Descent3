@@ -211,5 +211,5 @@ void ScaleFaceUVs(room *rp, int facenum, float scale) {
     fp->face_uvls[i].v = midv + (fp->face_uvls[i].v - midv) * scale;
   }
 
-  World_changed = 1;
+  World_changed = true;
 }

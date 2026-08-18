@@ -480,7 +480,7 @@ void CTextureDialog::OnResetAllTextures() {
 
   AssignDefaultUVsToRoom(Curroomp);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -641,7 +641,7 @@ void CTextureDialog::OnReplaceTexture() {
   EditorStatus("Texture %d replaced with texture %d on %d faces.", selected_texture, D3EditState.texdlg_texture,
                n_changes);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTextureDialog::DrawSwatch(int handle, float r, float g, float b) {
@@ -716,7 +716,7 @@ void CTextureDialog::OnTexpadExpandU() {
     fp->face_uvls[i].u = mid + diff;
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTextureDialog::OnTexpadExpandV() {
@@ -741,7 +741,7 @@ void CTextureDialog::OnTexpadExpandV() {
     fp->face_uvls[i].v = mid + diff;
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTextureDialog::OnTexpadContractU() {
@@ -766,7 +766,7 @@ void CTextureDialog::OnTexpadContractU() {
     fp->face_uvls[i].u = mid + diff;
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTextureDialog::OnTexpadContractV() {
@@ -791,7 +791,7 @@ void CTextureDialog::OnTexpadContractV() {
     fp->face_uvls[i].v = mid + diff;
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTextureDialog::OnFaceMap() {
@@ -819,7 +819,7 @@ void CTextureDialog::OnFaceMap() {
   fp->face_uvls[3].u = 0.0;
   fp->face_uvls[3].v = 1.0;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CTextureDialog::OnCurrentUsed() {

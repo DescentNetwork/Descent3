@@ -663,7 +663,7 @@ BOOL CEditorApp::OnIdle(LONG lCount) {
           ComputePlacedRoomMatrix();
         }
 
-        State_changed = 1;
+        State_changed = true;
       }
     } else {
       MoveWorld();
@@ -676,7 +676,7 @@ BOOL CEditorApp::OnIdle(LONG lCount) {
   int slew_flags = SlewFrame(Viewer_object, Slew_limitations);
 
   if (slew_flags & SLEW_MOVE) {
-    Viewer_moved = 1;
+    Viewer_moved = true;
 
     if (OBJECT_OUTSIDE(Viewer_object) && !was_outside)
       SetViewMode(VM_TERRAIN);
@@ -737,7 +737,7 @@ BOOL CEditorApp::OnIdle(LONG lCount) {
 
   // See if there's a new mine, and set/clear flags as appropriate
   if (New_mine) {
-    World_changed = 1; // force redraws
+    World_changed = true; // force redraws
     Mine_changed = 0;  // clear global changed flag
   }
 
@@ -750,7 +750,7 @@ BOOL CEditorApp::OnIdle(LONG lCount) {
   int suppress_wireframe_redraw = 0;
 
   if (TV_changed) {
-    World_changed = 1;
+    World_changed = true;
     suppress_wireframe_redraw = 1;
   }
 
@@ -790,7 +790,7 @@ BOOL CEditorApp::OnIdle(LONG lCount) {
     main_frame->OnIdle();
 
   // Reset all flags
-  World_changed = State_changed = Viewer_moved = Edview_changed = New_mine = TV_changed = 0;
+  World_changed = State_changed = Viewer_moved = Edview_changed = New_mine = TV_changed = false;
 
   // Compute Frame_time
   CalcFrameTime();

@@ -178,7 +178,7 @@ void CPathPadDialog::OnPathpadAddPath() {
 
   D3EditState.current_path = pathnum;
   D3EditState.current_node = curnode;
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -196,7 +196,7 @@ void CPathPadDialog::OnPathpadInsertNode() {
     return;
 
   D3EditState.current_node = curnode;
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -220,7 +220,7 @@ void CPathPadDialog::OnPathpadDeleteNode() {
   if (curnode == GamePaths[curpath].num_nodes)
     D3EditState.current_node = curnode - 1;
 
-  State_changed = 1;
+  State_changed = true;
   UpdateDialog();
 }
 
@@ -237,7 +237,7 @@ void CPathPadDialog::OnPathpadMoveForward() {
 
   MovePathNode(p, n, &delta_movement);
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -254,7 +254,7 @@ void CPathPadDialog::OnPathpadMoveBackward() {
 
   MovePathNode(p, n, &delta_movement);
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -271,7 +271,7 @@ void CPathPadDialog::OnPathpadMoveLeft() {
 
   MovePathNode(p, n, &delta_movement);
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -288,7 +288,7 @@ void CPathPadDialog::OnPathpadMoveRight() {
 
   MovePathNode(p, n, &delta_movement);
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -304,7 +304,7 @@ void CPathPadDialog::OnSelendokPathpadPulldown() {
   D3EditState.current_path = i;
   D3EditState.current_node = 0;
 
-  State_changed = 1;
+  State_changed = true;
   UpdateDialog();
 }
 
@@ -342,7 +342,7 @@ void CPathPadDialog::OnPathpadCenterView() {
 
   ObjSetPos(Viewer_object, &hit_info.hit_pnt, hit_info.hit_room, NULL, false);
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -359,7 +359,7 @@ void CPathPadDialog::OnPathpadMoveDown() {
 
   MovePathNode(p, n, &delta_movement);
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -376,7 +376,7 @@ void CPathPadDialog::OnPathpadMoveUp() {
 
   MovePathNode(p, n, &delta_movement);
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -394,7 +394,7 @@ void CPathPadDialog::OnPathpadPrevNode() {
 
   D3EditState.current_node = n;
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -410,7 +410,7 @@ void CPathPadDialog::OnPathpadNextNode() {
   n %= GamePaths[p].num_nodes;
   D3EditState.current_node = n;
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -465,7 +465,7 @@ void CPathPadDialog::OnDeletePath() {
   FreeGamePath(n);
 
   D3EditState.current_path = GetNextPath(n);
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -477,7 +477,7 @@ void CPathPadDialog::OnShowNodesCheck() {
   else
     Show_paths = 0;
 
-  TV_changed = 1;
+  TV_changed = true;
 }
 
 BOOL CPathPadDialog::OnHelpInfo(HELPINFO *pHelpInfo) {
@@ -507,7 +507,7 @@ void CPathPadDialog::OnPathMoveObjectButton() {
     vm_VectorToMatrix(&node_orient, &gp->pathnodes[n].fvec, &gp->pathnodes[n].uvec, NULL);
     ObjSetOrient(&Objects[Cur_object_index], &node_orient);
 
-    World_changed = 1;
+    World_changed = true;
   }
 }
 
@@ -527,7 +527,7 @@ void CPathPadDialog::OnPathReorientViewerButton() {
   vm_VectorToMatrix(&node_orient, &gp->pathnodes[n].fvec, &gp->pathnodes[n].uvec, NULL);
   ObjSetOrient(Viewer_object, &node_orient);
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -568,7 +568,7 @@ void CPathPadDialog::OnPathMoveNodeToCurrentObject() {
     game_path *gp = &GamePaths[p];
     MovePathNodeToPos(p, n, &Objects[Cur_object_index].pos);
 
-    World_changed = 1;
+    World_changed = true;
     UpdateDialog();
   }
 }
@@ -591,7 +591,7 @@ void CPathPadDialog::OnPathMoveObjNoOrient() {
 
     // matrix node_orient;
 
-    World_changed = 1;
+    World_changed = true;
     UpdateDialog();
   }
 }
@@ -608,21 +608,21 @@ float BNode_move_amount = 1.0f;
 void CPathPadDialog::OnAinAutoEdgeNode() {
   EBNode_AutoEdgeNode(BNode_current_id, BNode_current_room);
   EBNode_VerifyGraph();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAinBack() {
   vector diff = -Viewer_object->orient.fvec * BNode_move_amount;
 
   EBNode_Move(true, BNode_current_room, BNode_current_id, &diff);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAinCreateNodeAtViewer() {
   int node = EBNode_AddNode(Viewer_object->roomnum, &Viewer_object->pos, true, true);
 
   if (node != -1) {
-    World_changed = 1;
+    World_changed = true;
   }
 
   //	EBNode_VerifyGraph();
@@ -631,7 +631,7 @@ void CPathPadDialog::OnAinCreateNodeAtViewer() {
 void CPathPadDialog::OnAinCreateNodes() {
   MakeBOA();
   EBNode_MakeFirstPass();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnSelendokAinCurrentNode() {
@@ -651,14 +651,14 @@ void CPathPadDialog::OnSelendokAinCurrentNode() {
 
 void CPathPadDialog::OnAinDeleteEdge() {
   EBNode_RemoveEdge(BNode_current_id, BNode_current_room, BNode_other_id, BNode_other_room);
-  World_changed = 1;
+  World_changed = true;
 
   EBNode_VerifyGraph();
 }
 
 void CPathPadDialog::OnAinDeleteNode() {
   EBNode_RemoveNode(BNode_current_room, BNode_current_id);
-  World_changed = 1;
+  World_changed = true;
 
   EBNode_VerifyGraph();
 }
@@ -667,33 +667,33 @@ void CPathPadDialog::OnAinDown() {
   vector diff = -Viewer_object->orient.uvec * BNode_move_amount;
 
   EBNode_Move(true, BNode_current_room, BNode_current_id, &diff);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAinForward() {
   vector diff = Viewer_object->orient.fvec * BNode_move_amount;
 
   EBNode_Move(true, BNode_current_room, BNode_current_id, &diff);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAinInsertNodeOnEdge() {
   EBNode_InsertNodeOnEdge(BNode_current_id, BNode_current_room, BNode_other_id, BNode_other_room);
   EBNode_VerifyGraph();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAinLeft() {
   vector diff = -Viewer_object->orient.rvec * BNode_move_amount;
 
   EBNode_Move(true, BNode_current_room, BNode_current_id, &diff);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAinMakeEdge() {
   EBNode_AddEdge(BNode_current_id, BNode_current_room, BNode_other_id, BNode_other_room);
   EBNode_VerifyGraph();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnKillfocusAinMoveAmount() {
@@ -711,7 +711,7 @@ void CPathPadDialog::OnAinMoveNodeToViewer() {
   vector diff = Viewer_object->pos;
 
   EBNode_Move(false, BNode_current_room, BNode_current_id, &diff);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAinMpns() {
@@ -742,7 +742,7 @@ void CPathPadDialog::OnAinRight() {
   vector diff = Viewer_object->orient.rvec * BNode_move_amount;
 
   EBNode_Move(true, BNode_current_room, BNode_current_id, &diff);
-  World_changed = 1;
+  World_changed = true;
 }
 
 #define EBVIEW_ROOM 1
@@ -773,34 +773,34 @@ void CPathPadDialog::OnAinUp() {
   vector diff = Viewer_object->orient.uvec * BNode_move_amount;
 
   EBNode_Move(true, BNode_current_room, BNode_current_id, &diff);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAinVerifyLevel() { EBNode_VerifyGraph(); }
 
 void CPathPadDialog::OnAinVerifyRoom() {
   EBNode_ClearLevel();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAinViewAllNodes() {
   EBN_draw_type = EBDRAW_LEVEL;
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAinViewNone() {
   EBN_draw_type = EBDRAW_NONE;
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAinViewRoom() {
   EBN_draw_type = EBDRAW_ROOM;
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAinViewRoomAndNextRooms() {
   EBN_draw_type = EBDRAW_ROOM_AND_NEXT_ROOMS;
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::ResetNodesForComboBox(int handle, char selection_type) {
@@ -912,7 +912,7 @@ void CPathPadDialog::OnIenavButton() {
     vector diff = Viewer_object->pos;
 
     EBNode_Move(false, BNode_current_room, node, &diff);
-    World_changed = 1;
+    World_changed = true;
   }
 }
 
@@ -935,7 +935,7 @@ void CPathPadDialog::OnMvtnButton() {
   BNode_current_id,
 
       ObjSetPos(Viewer_object, &pos, roomnum, NULL, false);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnAerButton() {
@@ -948,7 +948,7 @@ void CPathPadDialog::OnAerButton() {
   }
 
   EBNode_VerifyGraph();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CPathPadDialog::OnOntvgpButton() {
@@ -968,7 +968,7 @@ void CPathPadDialog::OnOntvgpButton() {
     gp->pathnodes[n].fvec = Viewer_object->orient.fvec;
     gp->pathnodes[n].uvec = Viewer_object->orient.uvec;
 
-    World_changed = 1;
+    World_changed = true;
     UpdateDialog();
   }
 }

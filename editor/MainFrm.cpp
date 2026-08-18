@@ -2438,7 +2438,7 @@ void ResetObjectOntoTerrain() {
       EditorStatus("Object %d (\"%s\") moved to cell %d", OBJNUM(objp), objp->name ? objp->name : "<no name>",
                    CELLNUM(roomnum));
 
-      World_changed = 1;
+      World_changed = true;
     } else
       EditorStatus("Object %d (\"%s\") already outside (on cell %d)", OBJNUM(objp),
                    objp->name ? objp->name : "<no name>", CELLNUM(objp->roomnum));
@@ -2471,7 +2471,7 @@ void ResetObjectsIntoMine() {
 
   OutrageMessageBox("%d objects were moved from the terrain to the mine.", count);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void DeleteAllFacesWithTexture1(room *rp) {
@@ -2493,7 +2493,7 @@ void DeleteAllFacesWithTexture1(room *rp) {
 
   Curface = Curedge = Curvert = 0;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Put test code here.  Feel free to delete any old code.
@@ -2704,7 +2704,7 @@ void MoveEntireMine() {
     }
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void ScaleEntireMine() {
@@ -2728,7 +2728,7 @@ void ScaleEntireMine() {
     }
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 int CountSpecularFaces() {
@@ -2925,7 +2925,7 @@ void CMainFrame::OnFileImportRoom() {
 
   if (n >= 0) {
     D3EditState.current_room = n;
-    State_changed = 1;
+    State_changed = true;
 
     OutrageMessageBox("Room imported and saved locally.\n\nPress OK to check room validity.");
     VerifyRoom(&Rooms[n]);
@@ -3252,7 +3252,7 @@ void CMainFrame::OnObjectSetCameraFromViewer() {
 
   EditorStatus("Camera object %d moved to viewer", Cur_object_index);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CMainFrame::OnObjectPlaceCameraAtViewer() {
@@ -3267,7 +3267,7 @@ void CMainFrame::OnObjectPlaceCameraAtViewer() {
 
   EditorStatus("Camera created as object %d\n", objnum);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CMainFrame::OnObjectPlaceCameraAtCurrentFace() {
@@ -3294,7 +3294,7 @@ void CMainFrame::OnObjectPlaceCameraAtCurrentFace() {
 
   EditorStatus("Camera created as object %d\n", objnum);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CMainFrame::OnObjectSetViewerFromCamera() {
@@ -3309,7 +3309,7 @@ void CMainFrame::OnObjectSetViewerFromCamera() {
 
   EditorStatus("Viewer moved to object %d", Cur_object_index);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 #include "LevelInfoDialog.h"
@@ -3367,7 +3367,7 @@ void CMainFrame::OnSubeditorsTablefilefilter() {
 void CMainFrame::OnViewShowObjectsInWireframeView() {
   D3EditState.objects_in_wireframe = !D3EditState.objects_in_wireframe;
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CMainFrame::OnUpdateViewShowObjectsInWireframeView(CCmdUI *pCmdUI) {
@@ -3500,7 +3500,7 @@ void CMainFrame::OnObjectPlaceSoundSourceAtViewer() {
 
   EditorStatus("SoundSource created as object %d\n", objnum);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 #include "OrphanRemoveDlg.h"
@@ -3547,7 +3547,7 @@ void CMainFrame::OnObjectPlaceWaypointAtViewer() {
 
   EditorStatus("Waypoint created as object %d\n", objnum);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 #include "levelgoal.h"
@@ -3689,5 +3689,5 @@ void CMainFrame::OnAccelNextVertex() {
 
   EditorStatus("Vertex %d (%d) selected.", Curvert, Curroomp->faces[Curface].face_verts[Curvert]);
 
-  State_changed = 1;
+  State_changed = true;
 }

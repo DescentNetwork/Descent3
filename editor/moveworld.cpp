@@ -132,20 +132,20 @@ void MoveWorld() {
       GetMouseRotation(dx, dy, &rotmat);
       tempm = Wireframe_view->orient * rotmat;
       Wireframe_view->orient = tempm;
-      Edview_changed = 1;
+      Edview_changed = true;
     }
 
     if ((KEY_STATE(KEY_LCTRL) || KEY_STATE(KEY_RCTRL)) && (KEY_STATE(KEY_LSHIFT) || KEY_STATE(KEY_RSHIFT))) {
       Wireframe_view->target += Wireframe_view->orient.rvec * -dx * MOVE_SCALE;
       Wireframe_view->target += Wireframe_view->orient.uvec * dy * MOVE_SCALE;
-      Edview_changed = 1;
+      Edview_changed = true;
     }
 
     if (KEY_STATE(KEY_Z) && !(KEY_STATE(KEY_LSHIFT) || KEY_STATE(KEY_RSHIFT))) {
       Wireframe_view->dist += dy * ZOOM_SCALE;
       if (Wireframe_view->dist < 0)
         Wireframe_view->dist = 0;
-      Edview_changed = 1;
+      Edview_changed = true;
     }
 
     if (KEY_STATE(KEY_Z) && (KEY_STATE(KEY_LSHIFT) || KEY_STATE(KEY_RSHIFT))) {
@@ -153,7 +153,7 @@ void MoveWorld() {
       if (Wireframe_view->rad < 0)
         Wireframe_view->rad = 0;
       EditorStatus("View radius = %.0f", Wireframe_view->rad);
-      Edview_changed = 1;
+      Edview_changed = true;
     }
   }
 }
@@ -168,13 +168,13 @@ void ResetWireframeView() {
 
   Wireframe_view->target = Mine_origin;
 
-  Edview_changed = 1;
+  Edview_changed = true;
 }
 
 // Reset the view radius of the wireframe view
 void ResetWireframeViewRad() {
   Wireframe_view->rad = DEFAULT_VIEW_RAD;
-  Edview_changed = 1;
+  Edview_changed = true;
 }
 
 // Set the wireframe view target to a specific location
@@ -182,5 +182,5 @@ void ResetWireframeViewRad() {
 void SetWireframeView(vector *pos) {
   Wireframe_view->target = *pos;
 
-  Edview_changed = 1;
+  Edview_changed = true;
 }

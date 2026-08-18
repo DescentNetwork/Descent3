@@ -429,7 +429,7 @@ void CDoorwayDialog::OnDoorwayPlaceDoorway() {
 
   UpdateDialog();
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 /*BOOL CDoorwayDialog::OnHelpInfo(HELPINFO* pHelpInfo)
@@ -555,7 +555,7 @@ void CDoorwayDialog::OnKillfocusDoorwayPosEdit() {
 
   DoorwayUpdateAnimation(&Rooms[Current_door_room]);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CDoorwayDialog::OnKillfocusDoorwayHitpointEdit() {
@@ -575,7 +575,7 @@ void CDoorwayDialog::OnKillfocusDoorwayHitpointEdit() {
 
   Objects[Cur_object_index].shields = atof(str);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CDoorwayDialog::OnDoorwayKeyAll() {
@@ -591,7 +591,7 @@ void CDoorwayDialog::OnDoorwayKeyAll() {
   else
     dp->flags |= DF_KEY_ONLY_ONE;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }
@@ -609,7 +609,7 @@ void CDoorwayDialog::OnDoorwayKeyOnlyOne() {
   else
     dp->flags &= ~DF_KEY_ONLY_ONE;
 
-  World_changed = 1;
+  World_changed = true;
 
   UpdateDialog();
 }

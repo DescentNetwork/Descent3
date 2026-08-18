@@ -787,7 +787,7 @@ void levelkeypad::OnLevelGoalGotoItemButton() {
 
     if (valid) {
       ObjSetPos(Viewer_object, &pnt, roomnum, NULL, false);
-      Viewer_moved = 1;
+      Viewer_moved = true;
     } else {
       OutrageMessageBox(MBOX_OK, "Cannot move viewer: This item is not valid.");
     }

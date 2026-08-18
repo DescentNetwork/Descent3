@@ -264,7 +264,7 @@ int HTextureCopyUVsToFace(room *destrp, int destface, room *srcrp, int srcface, 
 
   // Success!
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
 #endif
   return 1;
 }
@@ -297,7 +297,7 @@ void HTextureFlipX() {
   }
 
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
 #endif
 }
 
@@ -327,7 +327,7 @@ void HTextureFlipY() {
   }
 
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
 #endif
 }
 
@@ -364,7 +364,7 @@ void HTextureSlide(room *rp, int facenum, float right, float up) {
   }
 
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
 #endif
 }
 
@@ -393,7 +393,7 @@ void HTextureRotate(room *roomp, int facenum, angle ang) {
   }
 
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
 #endif
 }
 
@@ -421,7 +421,7 @@ void HTextureSetDefault(room *rp, int face) {
         Terrain_tex_seg[index].rotation = 0;
       }
     }
-    World_changed = 1;
+    World_changed = true;
   } else if (Editor_view_mode == VM_ROOM) {
     //@@Stretch_scale_x = (float)1.0;
     //@@Stretch_scale_y = (float)1.0;
@@ -451,7 +451,7 @@ void HTextureSetDefault(room *rp, int face) {
   }
 
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
 #endif
 }
 
@@ -467,7 +467,7 @@ void HTextureNextEdge() {
       Curedge = 0;
   }
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 //	---------------------------------------------------------------------------
@@ -506,7 +506,7 @@ void HTextureRoomStretch(room *rp, int facenum, int edge, int direction) {
   }
 
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
 #endif
 }
 
@@ -517,7 +517,7 @@ void HTextureTerrainStretch(int edge, int direction) {
   }
 
 #ifndef NEWEDITOR
-  World_changed = 1;
+  World_changed = true;
 #endif
 }
 

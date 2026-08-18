@@ -953,7 +953,7 @@ void matcenkeypad::OnMatMoveViewerButton() {
     }
 
     ObjSetPos(Viewer_object, &c_pnt, roomnum, NULL, false);
-    Viewer_moved = 1;
+    Viewer_moved = true;
   } else {
     OutrageMessageBox(MBOX_OK,
                       "Cannot move viewer: This Matcen is either unassigned or linked to an invalid room/object.");

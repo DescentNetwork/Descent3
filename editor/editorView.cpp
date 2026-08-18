@@ -630,7 +630,7 @@ void CEditorView::OnButtonOutline() {
 
   //	Outline_mode ^= OM_ON;
   //	EditorStatus("Outline mode turned %s",OUTLINE_ON(0)?"ON":"OFF");
-  //	State_changed = 1;
+  //	State_changed = true;
 }
 
 void CEditorView::OnUpdateButtonOutline(CCmdUI *pCmdUI) { pCmdUI->SetCheck(OUTLINE_ON(0)); }
@@ -741,7 +741,7 @@ void CEditorView::OnUpdateButtonWindowSelection(CCmdUI *pCmdUI) {
 void CEditorView::OnButtonLighting() {
   Lighting_on = !Lighting_on;
   EditorStatus("Lighting turned %s", Lighting_on ? "ON" : "OFF");
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CEditorView::OnUpdateButtonLighting(CCmdUI *pCmdUI) { pCmdUI->SetCheck(Lighting_on); }
@@ -800,7 +800,7 @@ void CEditorView::OnRoomDelete() {
 
   DeleteRoomFromMine(Curroomp);
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CEditorView::OnRoomGrabTexture() { theApp.main_frame->m_TextureDialog->OnTexpadGrab(); }
@@ -833,7 +833,7 @@ void CEditorView::OnRoomSelectByNumber() {
 
     EditorStatus("Room %d selected.", n);
 
-    State_changed = 1;
+    State_changed = true;
   }
 }
 
@@ -894,7 +894,7 @@ void CEditorView::OnRoomUnPlaceRoom() {
   Placed_room = -1;
   Placed_group = NULL;
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CEditorView::OnUpdateRoomUnPlaceRoom(CCmdUI *pCmdUI) {
@@ -923,7 +923,7 @@ void CEditorView::OnRoomSelectFaceByNumber() {
 
     EditorStatus("Face %d selected.", Curface);
 
-    State_changed = 1;
+    State_changed = true;
   }
 }
 
@@ -933,7 +933,7 @@ void CEditorView::OnZbutton() {
   // TODO: Add your command handler code here
   Use_software_zbuffer = !Use_software_zbuffer;
   // tex_SetZBufferState (Use_software_zbuffer); // LGT: not defined
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CEditorView::OnUpdateZbutton(CCmdUI *pCmdUI) {
@@ -1006,7 +1006,7 @@ void CEditorView::OnRoomSwapMarkedAndCurrentRoomFace() {
   Curedge = tedge;
   Curvert = tvert;
 
-  State_changed = 1;
+  State_changed = true;
 
   EditorStatus("Current room:face set to %d:%d; marked room:face set to %d:%d", ROOMNUM(Curroomp), Curface,
                ROOMNUM(Markedroomp), Markedface);
@@ -1037,7 +1037,7 @@ void CEditorView::OnRoomDeleteFace() {
   if (Markedface == Curroomp->num_faces)
     Markedface--;
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CEditorView::OnRoomSnapPlacedRoom() {
@@ -1273,7 +1273,7 @@ try_again:;
     strcpy(Curroomp->name, tempname);
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CEditorView::OnRoomRenameRoom() { RenameRoom(); }
@@ -1295,7 +1295,7 @@ void CEditorView::OnRoomSetCenterFromViewer() {
 
   EditorStatus("Center point set for room %d", ROOMNUM(Curroomp));
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CEditorView::OnUpdateRoomClearCenterPoint(CCmdUI *pCmdUI) {
@@ -1309,7 +1309,7 @@ void CEditorView::OnRoomClearCenterPoint() {
 
   EditorStatus("Center point cleared for room %d", ROOMNUM(Curroomp));
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CEditorView::OnRoomCombine() {
@@ -1445,7 +1445,7 @@ void CEditorView::OnRoomRotatePlacedRoom45Degrees() {
 
   ComputePlacedRoomMatrix();
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CEditorView::OnRoomPropagateToAdjacentCoplanarFaces() {
@@ -1458,7 +1458,7 @@ void CEditorView::OnViewFlip() {
   Viewer_object->orient.fvec = -Viewer_object->orient.fvec;
   Viewer_object->orient.rvec = -Viewer_object->orient.rvec;
 
-  Viewer_moved = 1;
+  Viewer_moved = true;
 }
 
 void CEditorView::OnFileRemoveDuplicateFacesFromCurrentRoom() { RemoveDuplicateFaces(Curroomp); }

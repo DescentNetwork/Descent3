@@ -205,7 +205,7 @@ void SetViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
   if (outside_mine)
     Viewer_object->flags |= OF_OUTSIDE_MINE;
 
-  Viewer_moved = 1;
+  Viewer_moved = true;
 }
 
 // max viewers for each type
@@ -327,7 +327,7 @@ void SetViewer(int objnum) {
   if ((Editor_view_mode == VM_TERRAIN) && !(OBJECT_OUTSIDE(Viewer_object)))
     SetViewMode(VM_MINE);
 
-  State_changed = Viewer_moved = 1;
+  State_changed = Viewer_moved = true;
 }
 
 // Creates a new viewer object.  Copies position & orientation from the current viewer
@@ -347,7 +347,7 @@ void CreateNewViewer() {
 
   EditorStatus("Viewer %d created.", GetViewerNum());
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Select next viewer
@@ -402,7 +402,7 @@ void DeleteViewer() {
 
   EditorStatus("Viewer %d deleted.  Viewer %d selected.", old_num, GetViewerNum());
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 // Sets the viewer object for the editor, creating if not already in mine

@@ -393,7 +393,7 @@ void CObjectListDialog::OnGoto() {
     }
     ObjSetPos(Viewer_object, &obj->pos, obj->roomnum, &obj->orient, false);
     EditorStatus("Viewer moved to object %d", OBJNUM(obj));
-    Viewer_moved = 1;
+    Viewer_moved = true;
   }
 }
 
@@ -433,7 +433,7 @@ void CObjectListDialog::OnClear() {
     if (Objects[i].type != OBJ_NONE)
       ObjDelete(i);
   }
-  World_changed = 1;
+  World_changed = true;
   Cur_object_index = -1;
 
   Refresh();

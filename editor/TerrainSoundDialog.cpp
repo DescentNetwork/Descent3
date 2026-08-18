@@ -176,7 +176,7 @@ void CTerrainSoundDialog::OnOK() {
         Terrain_sound_bands[b] = m_bands[b];
 
       // It's possible that nothing has changed, but we'll assume something has
-      World_changed = 1;
+      World_changed = true;
     }
   }
 }

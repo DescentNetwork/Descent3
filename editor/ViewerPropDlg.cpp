@@ -142,7 +142,7 @@ void CViewerPropDlg::OnAlignUpWithYposButton() {
 
   vm_Orthogonalize(m);
 
-  Viewer_moved = 1;
+  Viewer_moved = true;
 }
 
 void CViewerPropDlg::OnAlignXnegButton() {
@@ -155,7 +155,7 @@ void CViewerPropDlg::OnAlignXnegButton() {
   m->rvec.z() = 1.0;
   m->rvec.x() = m->rvec.y() = 0;
 
-  Viewer_moved = 1;
+  Viewer_moved = true;
 }
 
 void CViewerPropDlg::OnAlignXposButton() {
@@ -168,7 +168,7 @@ void CViewerPropDlg::OnAlignXposButton() {
   m->rvec.z() = -1.0;
   m->rvec.x() = m->rvec.y() = 0;
 
-  Viewer_moved = 1;
+  Viewer_moved = true;
 }
 
 void CViewerPropDlg::OnAlignYnegButton() {
@@ -181,7 +181,7 @@ void CViewerPropDlg::OnAlignYnegButton() {
   m->rvec.x() = 1.0;
   m->rvec.y() = m->rvec.z() = 0;
 
-  Viewer_moved = 1;
+  Viewer_moved = true;
 }
 
 void CViewerPropDlg::OnAlignYposButton() {
@@ -194,7 +194,7 @@ void CViewerPropDlg::OnAlignYposButton() {
   m->rvec.x() = 1.0;
   m->rvec.y() = m->rvec.z() = 0;
 
-  Viewer_moved = 1;
+  Viewer_moved = true;
 }
 
 void CViewerPropDlg::OnAlignZnegButton() {
@@ -207,7 +207,7 @@ void CViewerPropDlg::OnAlignZnegButton() {
   m->rvec.x() = -1.0;
   m->rvec.y() = m->rvec.z() = 0;
 
-  Viewer_moved = 1;
+  Viewer_moved = true;
 }
 
 void CViewerPropDlg::OnAlignZposButton() {
@@ -220,7 +220,7 @@ void CViewerPropDlg::OnAlignZposButton() {
   m->rvec.x() = 1.0;
   m->rvec.y() = m->rvec.z() = 0;
 
-  Viewer_moved = 1;
+  Viewer_moved = true;
 }
 
 void CViewerPropDlg::OnOrientCommitButton() {
@@ -240,7 +240,7 @@ void CViewerPropDlg::OnOrientCommitButton() {
 
   vm_AnglesToMatrix(&Viewer_object->orient, p, h, b);
 
-  State_changed = Viewer_moved = 1;
+  State_changed = Viewer_moved = true;
 }
 
 #include "findintersection.h"

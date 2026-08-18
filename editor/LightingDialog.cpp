@@ -391,7 +391,7 @@ void CLightingDialog::OnLitepadSetdefault() {
   else
     Curroomp->faces[Curface].flags &= ~FF_VERTEX_ALPHA;
 
-  World_changed = 1;
+  World_changed = true;
   UpdateDialog();
 }
 
@@ -406,7 +406,7 @@ void CLightingDialog::OnLitepadSmoothall() {
              "Message", MB_OK);
 
   DoRadiosityForRooms();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CLightingDialog::OnKillfocusLightIterationEdit() {
@@ -452,7 +452,7 @@ void CLightingDialog::OnLitepadTerrainRadiosity() {
              "key during the calculations",
              "Message", MB_OK);
   DoRadiosityForTerrain();
-  World_changed = 1;
+  World_changed = true;
 
   Sound_system.InitSoundLib(Descent, Sound_mixer, Sound_quality, false);
 }
@@ -523,7 +523,7 @@ void CLightingDialog::OnLitepadNextvertex() {
   EditorStatus("Vertex %d selected.", Curvert);
   UpdateDialog();
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 extern float GlobalMultiplier;
@@ -707,7 +707,7 @@ void CLightingDialog::OnKillfocusAlphaEdit() {
     Curroomp->faces[Curface].flags &= ~FF_VERTEX_ALPHA;
 
   UpdateDialog();
-  World_changed = 1;
+  World_changed = true;
 }
 
 extern bool Outline_lightmaps;
@@ -719,7 +719,7 @@ void CLightingDialog::OnShowLightmaps() {
   else
     Outline_lightmaps = 0;
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CLightingDialog::OnKillfocusHemicubeResEdit() {
@@ -768,7 +768,7 @@ void CLightingDialog::OnBestfitCheck() {
 
   BestFit = c;
 
-  State_changed = 1;
+  State_changed = true;
 }
 
 void CLightingDialog::UpdateKeypad(int mask) {
@@ -894,7 +894,7 @@ void CLightingDialog::OnCreateVolumeCone() {
       fp->face_uvls[t].alpha = Float_to_ubyte(norm * m_start_alpha);
     }
   }
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CLightingDialog::OnClearVolumetricRoom() {
@@ -909,7 +909,7 @@ StartOver:
     }
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CLightingDialog::OnFillVolumeTexture() {
@@ -921,7 +921,7 @@ void CLightingDialog::OnFillVolumeTexture() {
       Curroomp->faces[i].tmap = D3EditState.texdlg_texture;
   }
 
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CLightingDialog::OnKillfocusAngleEdit() {
@@ -1129,7 +1129,7 @@ void CLightingDialog::OnEdgeVolumetric() {
       fp->face_uvls[3].alpha = Float_to_ubyte(norm * m_start_alpha);
     }
   }
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CLightingDialog::OnKillfocusFalloffEdit() {
@@ -1310,7 +1310,7 @@ void CLightingDialog::OnCurroomRadiosity() {
              "Message", MB_OK);
 
   DoRadiosityForCurrentRoom(Curroomp);
-  World_changed = 1;
+  World_changed = true;
 }
 
 void DoTerrainDynamicTable();
@@ -1485,7 +1485,7 @@ void CLightingDialog::OnKillfocusPulseTimeEdit() {
   Curroomp->pulse_time = aval;
 
   UpdateDialog();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CLightingDialog::OnKillfocusPulseOffsetEdit() {
@@ -1505,7 +1505,7 @@ void CLightingDialog::OnKillfocusPulseOffsetEdit() {
   Curroomp->pulse_offset = aval;
 
   UpdateDialog();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CLightingDialog::OnPulseRoom() {
@@ -1514,7 +1514,7 @@ void CLightingDialog::OnPulseRoom() {
 
   SetRoomPulse(Curroomp, ptime, poffset);
   UpdateDialog();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CLightingDialog::OnResetMultiples() {
@@ -1681,7 +1681,7 @@ void CLightingDialog::OnKillfocusFogDensity() {
   Curroomp->fog_depth = aval;
 
   UpdateDialog();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CLightingDialog::OnKillfocusFogRed() {
@@ -1701,7 +1701,7 @@ void CLightingDialog::OnKillfocusFogRed() {
   Curroomp->fog_r = aval;
 
   UpdateDialog();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CLightingDialog::OnKillfocusFogGreen() {
@@ -1721,7 +1721,7 @@ void CLightingDialog::OnKillfocusFogGreen() {
   Curroomp->fog_g = aval;
 
   UpdateDialog();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CLightingDialog::OnKillfocusFogBlue() {
@@ -1741,7 +1741,7 @@ void CLightingDialog::OnKillfocusFogBlue() {
   Curroomp->fog_b = aval;
 
   UpdateDialog();
-  World_changed = 1;
+  World_changed = true;
 }
 
 void CLightingDialog::OnRoomCoronas() {
@@ -1776,7 +1776,7 @@ void CLightingDialog::OnRoomCoronas() {
       Curroomp->faces[i].flags |= FF_CORONA;
   }
 
-  World_changed = 1;
+  World_changed = true;
 
   OutrageMessageBox("Operation complete!");
   UpdateDialog();
@@ -1822,7 +1822,7 @@ void CLightingDialog::OnMineCoronas() {
     }
   }
 
-  World_changed = 1;
+  World_changed = true;
 
   OutrageMessageBox("Operation complete!");
   UpdateDialog();
@@ -1991,7 +1991,7 @@ void CopyFaceLightMultiple(room *rp, int facenum) {
 
   if (n_changed) {
     EditorStatus("The light multiple has been changed for %d faces.", n_changed);
-    World_changed = 1;
+    World_changed = true;
   } else
     EditorStatus("No faces had the same texture as face %d.", facenum);
 }

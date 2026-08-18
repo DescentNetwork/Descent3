@@ -72,7 +72,7 @@ bool EditorLoadLevel(char *filename);
 
 // Save the current level
 // Returns 1 if level saved sucessfully
-int EditorSaveLevel(char *filename);
+bool EditorSaveLevel(char *filename);
 
 // Shows the stats for a level in a messagebox, and copies to the clipboard
 void ShowLevelStats();
