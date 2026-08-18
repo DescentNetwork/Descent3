@@ -318,7 +318,7 @@ int AddTrigger(char *name, int roomnum, int facenum, int activator, const char *
   Num_triggers++;
 
   // Update flag
-  World_changed = 1;
+  World_changed = true;
 
   // Everything ok
   return Num_triggers - 1;

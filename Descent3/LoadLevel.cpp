@@ -3674,9 +3674,10 @@ extern bool Disable_editor_rendering;
 #define LEVEL_LOADED_PCT_CALC (filelen) ? (float)(chunk_size + chunk_start) / (float)filelen : 0.0f
 // Load a level file
 // Returns 1 if file read ok, else 0
-int LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
+bool LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
   CFILE *ifile;
-  int n, i, retval = 1;
+  int n, i;
+  bool retval = true;
 
   int version;
   bool f_read_AABB = false;
@@ -3691,7 +3692,7 @@ int LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
 
   ifile = cfopen(filename, "rb");
   if (!ifile) {
-    retval = 0;
+    retval = false;
     goto end_loadlevel;
   }
 
@@ -3710,7 +3711,7 @@ int LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
         EditorMessageBox("Can't load level file \"%s\": Its version (%d) is newer than current version (%d).", filename,
                          version, LEVEL_FILE_VERSION);
 #endif
-      retval = 0;
+      retval = false;
       goto end_loadlevel;
     }
 
@@ -3724,7 +3725,7 @@ int LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
             "Can't load level file \"%s\": Its version (%d) is older than the oldest compatible version (%d).",
             filename, version, LEVEL_FILE_OLDEST_COMPATIBLE_VERSION);
 #endif
-      retval = 0;
+      retval = false;
       goto end_loadlevel;
     }
 
@@ -4107,7 +4108,7 @@ int LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
       EditorMessageBox("Error reading file \"%s\": %s", cfe->file->name, cfe->msg);
 #endif
     cfclose(ifile);
-    return 0;
+    return false;
   }
 
   // Close the file

@@ -867,7 +867,7 @@ int LoadPCXTerrain(char *filename) {
 #if (defined(EDITOR) || defined(NEWEDITOR))
   memset(TerrainSelected, 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
   Num_terrain_selected = 0;
-  World_changed = 1;
+  World_changed = true;
 #endif
 
   return (1);
