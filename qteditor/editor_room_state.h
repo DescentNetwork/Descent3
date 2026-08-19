@@ -20,6 +20,9 @@
 
 struct room;
 
+// Returns true if roomnum is in the selected-room list.
+int IsRoomSelected(int roomnum);
+
 
 // Allocate / free an editor room slot. CreateNewRoom allocates the per-
 // room verts[]/faces[]/portals[] arrays via new[] (DestroyRoom restores

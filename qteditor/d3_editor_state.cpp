@@ -49,6 +49,10 @@ bool Viewer_moved = false;
 bool Object_moved = false;
 bool New_mine = false;
 
+// Room selection list (defined in the MFC editor's EDVARS.cpp).
+int N_selected_rooms = 0;
+int Selected_rooms[MAX_ROOMS];
+
 // Slew movement limitations flag (defined in the MFC editor's editor.cpp).
 int Slew_limitations = 0;
 
@@ -197,6 +201,14 @@ int GetFirstPath() {
     if (GamePaths[i].used)
       return i;
   return -1;
+}
+
+// Editor-only room selection helper (defined in editor/selectedroom.cpp).
+int IsRoomSelected(int roomnum) {
+  for (int i = 0; i < N_selected_rooms; i++)
+    if (Selected_rooms[i] == roomnum)
+      return 1;
+  return 0;
 }
 
 // Editor-only room/face helpers (defined in editor/Erooms.cpp /

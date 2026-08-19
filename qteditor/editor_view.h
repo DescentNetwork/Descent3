@@ -111,6 +111,7 @@ private:
   float m_yaw = 0.0f;
   float m_pitch = -0.4f;
   float m_dist = 500.0f;
+  float m_rad = 5000.0f; // wireframe render radius
   vector m_target;
   bool m_targetInitialized = false;
 
@@ -118,6 +119,7 @@ private:
   bool m_mouseDown = false;
   bool m_dragged = false;
   QPoint m_pressPos;
+  bool m_panMode = false; // Shift held at press → pan instead of rotate
 
   // Cached OpenGL textures, keyed by D3 bitmap handle.
   mutable QHash<int, GLuint> m_textures;

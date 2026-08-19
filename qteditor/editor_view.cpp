@@ -28,6 +28,7 @@
 #include "bitmap.h"
 
 #include "d3edit.h"
+#include "editor_room_state.h"
 #include "gametexture.h"
 #include "object.h"
 #include "pserror.h"
@@ -37,8 +38,81 @@
 
 namespace {
 
+// Wireframe color palette matching the Win32 editor (editor/drawworld.cpp).
+const float kWfFacingColor[3] = {198.0f / 255, 198.0f / 255, 198.0f / 255};
+const float kWfNotFacingColor[3] = {125.0f / 255, 125.0f / 255, 125.0f / 255};
+const float kWfSelectedColor[3] = {1.0f, 166.0f / 255, 0.0f};
+const float kWfPortalColor[3] = {0.0f, 0.0f, 5.0f / 255};
+const float kWfCurRoomColor[3] = {1.0f, 1.0f, 1.0f};
+const float kWfCurFaceColor[3] = {1.0f, 1.0f, 0.0f};
+const float kWfCurEdgeColor[3] = {0.0f, 1.0f, 0.0f};
+const float kWfMarkedFaceColor[3] = {0.0f, 1.0f, 1.0f};
+const float kWfCurPortalColor[3] = {200.0f / 255, 150.0f / 255, 1.0f};
+const float kWfFloatTrigColor[3] = {1.0f, 100.0f / 255, 100.0f / 255};
+
+// Edge types for the deduplication hash table.
+enum EdgeType { ET_FACING = 0, ET_NOTFACING = 1, ET_PORTAL = 2, ET_EMPTY = 255 };
+
+struct WireEdge {
+  int16_t v0, v1; // normalized so v0 < v1
+  uint8_t type;   // EdgeType
+  float sx0, sy0, sx1, sy1; // screen coords for both endpoints
+};
+
+constexpr int kMaxEdges = 8192;
+WireEdge s_edgeTable[kMaxEdges];
+int s_nUsed = 0;
+
+void resetEdgeTable() {
+  for (int i = 0; i < kMaxEdges; i++)
+    s_edgeTable[i].type = ET_EMPTY;
+  s_nUsed = 0;
+}
+
+void addEdge(int v0, int v1, uint8_t type,
+             float sx0, float sy0, float sx1, float sy1) {
+  if (v0 > v1) {
+    int t = v0; v0 = v1; v1 = t;
+    float st = sx0; sx0 = sx1; sx1 = st;
+    st = sy0; sy0 = sy1; sy1 = st;
+  }
+  int key = ((v0 * 7 + v1 * 13) & 0x7FFF) % kMaxEdges;
+  for (int probe = 0; probe < kMaxEdges; probe++) {
+    int idx = (key + probe) % kMaxEdges;
+    if (s_edgeTable[idx].type == ET_EMPTY) {
+      s_edgeTable[idx] = {static_cast<int16_t>(v0), static_cast<int16_t>(v1), type,
+                          sx0, sy0, sx1, sy1};
+      s_nUsed++;
+      return;
+    }
+    if (s_edgeTable[idx].v0 == v0 && s_edgeTable[idx].v1 == v1) {
+      if (type < s_edgeTable[idx].type)
+        s_edgeTable[idx].type = type;
+      return;
+    }
+  }
+}
+
+void drawEdgesFromTable(const float *color) {
+  glColor3fv(color);
+  glLineWidth(1.0f);
+  glBegin(GL_LINES);
+  for (int i = 0; i < s_nUsed; i++) {
+    WireEdge &e = s_edgeTable[i];
+    if (e.type == ET_EMPTY)
+      continue;
+    glVertex2f(e.sx0, e.sy0);
+    glVertex2f(e.sx1, e.sy1);
+  }
+  glEnd();
+}
+
+} // anonymous namespace
+
 // Vertical field of view in radians (matches the editor's default zoom).
 constexpr float kFovY = 0.5445f;
+
+namespace {
 
 void computeMineBounds(vector *min, vector *max) {
   min->x() = min->y() = min->z() = 1e30f;
@@ -255,7 +329,6 @@ void EditorView::renderRooms() {
     return;
 
   // Determine which rooms to render based on view mode.
-  // VM_MINE: All rooms. VM_ROOM: Single palette room. VM_TERRAIN: None.
   if (Editor_view_mode == VM_TERRAIN)
     return;
 
@@ -270,45 +343,143 @@ void EditorView::renderRooms() {
     renderEnd = D3EditState.current_room;
   }
 
+  // ---- Pass 1: render room geometry (textured or wireframe) ----
   for (int r = renderStart; r <= renderEnd; r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
       continue;
-    for (int i = 0; i < rp->num_faces; i++) {
-      face *fp = &rp->faces[i];
 
-      float sx[16], sy[16];
-      int nv = fp->num_verts;
-      if (nv > 16)
-        nv = 16;
-      bool behind = false;
+    if (m_wireframe) {
+      // Wireframe: use edge deduplication with backface-aware coloring,
+      // matching the Win32 editor's drawworld.cpp DrawRoom().
+      resetEdgeTable();
+
+      // Build screen-space coords for every vertex in this room.
+      const int nv = rp->num_verts;
+      QVector<float> sxv(nv), syv(nv);
       for (int v = 0; v < nv; v++) {
-        const vector &world = rp->verts[fp->face_verts[v]];
-        if (!projectVertex(world, &sx[v], &sy[v])) {
-          behind = true;
-          break;
+        if (!projectVertex(rp->verts[v], &sxv[v], &syv[v])) {
+          sxv[v] = syv[v] = -9999.0f;
         }
       }
-      if (behind)
-        continue;
 
-      // Face shading from a fixed world light direction.
-      vector ld{0.4f, 0.7f, 0.6f};
-      float len = vm_NormalizeVector(&ld);
-      if (len < 0.001f)
-        ld = vector{0, 1, 0};
-      float diff = (fp->normal.x() * ld.x() + fp->normal.y() * ld.y() + fp->normal.z() * ld.z());
-      float shade = 0.35f + 0.65f * (diff < 0 ? -diff : diff);
-      if (shade > 1.0f)
-        shade = 1.0f;
+      // Determine the room's overlay color (selected = orange, else default).
+      const bool selected = IsRoomSelected(r);
+      const bool isCurRoom = (rp == Curroomp);
 
-      if (m_wireframe) {
-        glColor3f(shade, shade, shade);
-        glBegin(GL_LINE_LOOP);
-        for (int v = 0; v < nv; v++)
-          glVertex2f(sx[v], sy[v]);
-        glEnd();
-      } else {
+      for (int i = 0; i < rp->num_faces; i++) {
+        face *fp = &rp->faces[i];
+        int fnv = fp->num_verts;
+        if (fnv > 16)
+          fnv = 16;
+
+        // Skip faces with any behind-camera vertex.
+        bool behind = false;
+        for (int v = 0; v < fnv; v++) {
+          if (sxv[fp->face_verts[v]] < -9000.0f) {
+            behind = true;
+            break;
+          }
+        }
+        if (behind)
+          continue;
+
+        // Floating trigger: draw edges directly in red.
+        if (fp->flags & FF_FLOATING_TRIG) {
+          glColor3fv(kWfFloatTrigColor);
+          glLineWidth(1.0f);
+          glBegin(GL_LINE_LOOP);
+          for (int v = 0; v < fnv; v++) {
+            int vi = fp->face_verts[v];
+            glVertex2f(sxv[vi], syv[vi]);
+          }
+          glEnd();
+          continue;
+        }
+
+        // Check if face is portal or wall.
+        const bool isPortal = (fp->portal_num != -1);
+
+        // Determine facing: face normal dot view direction.
+        // A face is "facing" the camera if its normal points toward us.
+        vector faceCenter = rp->verts[fp->face_verts[0]];
+        for (int v = 1; v < fnv; v++)
+          faceCenter += rp->verts[fp->face_verts[v]];
+        faceCenter /= float(fnv);
+        vector toCamera = m_eye - faceCenter;
+        float facingDot = fp->normal.x() * toCamera.x() +
+                          fp->normal.y() * toCamera.y() +
+                          fp->normal.z() * toCamera.z();
+        const bool facing = (facingDot > 0.0f);
+
+        // Add edges to deduplication table.
+        uint8_t edgeType;
+        if (isPortal)
+          edgeType = ET_PORTAL;
+        else if (facing)
+          edgeType = ET_FACING;
+        else
+          edgeType = ET_NOTFACING;
+
+        for (int v = 0; v < fnv; v++) {
+          int v0 = fp->face_verts[v];
+          int v1 = fp->face_verts[(v + 1) % fnv];
+          addEdge(v0, v1, edgeType, sxv[v0], syv[v0], sxv[v1], syv[v1]);
+        }
+      }
+
+      // Draw edges: non-facing first (dark), then facing (light), then portals.
+      drawEdgesFromTable(kWfNotFacingColor);
+      drawEdgesFromTable(kWfFacingColor);
+      drawEdgesFromTable(kWfPortalColor);
+
+      // Override all edges with orange if this is a selected room.
+      if (selected && !isCurRoom) {
+        resetEdgeTable();
+        for (int i = 0; i < rp->num_faces; i++) {
+          face *fp = &rp->faces[i];
+          int fnv = fp->num_verts;
+          if (fnv > 16)
+            fnv = 16;
+          for (int v = 0; v < fnv; v++) {
+            int v0 = fp->face_verts[v];
+            int v1 = fp->face_verts[(v + 1) % fnv];
+            if (sxv[v0] > -9000.0f && sxv[v1] > -9000.0f)
+              addEdge(v0, v1, ET_FACING, sxv[v0], syv[v0], sxv[v1], syv[v1]);
+          }
+        }
+        drawEdgesFromTable(kWfSelectedColor);
+      }
+    } else {
+      // Textured / solid mode.
+      for (int i = 0; i < rp->num_faces; i++) {
+        face *fp = &rp->faces[i];
+
+        float sx[16], sy[16];
+        int nv = fp->num_verts;
+        if (nv > 16)
+          nv = 16;
+        bool behind = false;
+        for (int v = 0; v < nv; v++) {
+          const vector &world = rp->verts[fp->face_verts[v]];
+          if (!projectVertex(world, &sx[v], &sy[v])) {
+            behind = true;
+            break;
+          }
+        }
+        if (behind)
+          continue;
+
+        // Face shading from a fixed world light direction.
+        vector ld{0.4f, 0.7f, 0.6f};
+        float len = vm_NormalizeVector(&ld);
+        if (len < 0.001f)
+          ld = vector{0, 1, 0};
+        float diff = (fp->normal.x() * ld.x() + fp->normal.y() * ld.y() + fp->normal.z() * ld.z());
+        float shade = 0.35f + 0.65f * (diff < 0 ? -diff : diff);
+        if (shade > 1.0f)
+          shade = 1.0f;
+
         // Texture the face if possible.
         int bm = -1;
         if (fp->tmap >= 0 && fp->tmap < MAX_TEXTURES && GameTextures[fp->tmap].used)
@@ -347,16 +518,12 @@ void EditorView::renderRooms() {
     }
   }
 
-  // ---- Selection highlights ----
-  // Draw wireframe overlays for the current room/face/edge and marked
-  // room/face so the user gets visual feedback after clicking.
+  // ---- Pass 2: selection highlights (always on top) ----
   if (Curroomp != nullptr && Curroomp->used) {
     const int curRoom = ROOMNUM(Curroomp);
-
-    // Only highlight if this room is in the rendered set.
     if (curRoom >= renderStart && curRoom <= renderEnd) {
-      // Draw all edges of the current room in white.
-      glColor3f(1.0f, 1.0f, 1.0f);
+      // Current room wireframe in white.
+      glColor3fv(kWfCurRoomColor);
       glLineWidth(1.0f);
       for (int i = 0; i < Curroomp->num_faces; i++) {
         face *fp = &Curroomp->faces[i];
@@ -379,7 +546,7 @@ void EditorView::renderRooms() {
         glEnd();
       }
 
-      // Draw the current face in yellow (thicker).
+      // Current face in yellow.
       if (Curface >= 0 && Curface < Curroomp->num_faces) {
         face *fp = &Curroomp->faces[Curface];
         float sx[16], sy[16];
@@ -394,34 +561,75 @@ void EditorView::renderRooms() {
           }
         }
         if (ok) {
-          glColor3f(1.0f, 1.0f, 0.0f);
+          glColor3fv(kWfCurFaceColor);
           glLineWidth(2.0f);
           glBegin(GL_LINE_LOOP);
           for (int v = 0; v < nv; v++)
             glVertex2f(sx[v], sy[v]);
           glEnd();
 
-          // Draw the current edge in green.
+          // Current edge in green.
           if (Curedge >= 0 && Curedge < nv) {
             int next = (Curedge + 1) % nv;
-            glColor3f(0.0f, 1.0f, 0.0f);
+            glColor3fv(kWfCurEdgeColor);
             glLineWidth(3.0f);
             glBegin(GL_LINES);
             glVertex2f(sx[Curedge], sy[Curedge]);
             glVertex2f(sx[next], sy[next]);
             glEnd();
           }
+
+          // Vertex markers on the current face: small filled squares.
+          glColor3fv(kWfCurFaceColor);
           glLineWidth(1.0f);
+          for (int v = 0; v < nv; v++) {
+            const float sz = 3.0f;
+            glBegin(GL_QUADS);
+            glVertex2f(sx[v] - sz, sy[v] - sz);
+            glVertex2f(sx[v] + sz, sy[v] - sz);
+            glVertex2f(sx[v] + sz, sy[v] + sz);
+            glVertex2f(sx[v] - sz, sy[v] + sz);
+            glEnd();
+          }
+
+          glLineWidth(1.0f);
+        }
+      }
+
+      // Current portal face in purple.
+      if (Curportal >= 0 && Curportal < Curroomp->num_portals) {
+        int faceIdx = Curroomp->portals[Curportal].portal_face;
+        if (faceIdx >= 0 && faceIdx < Curroomp->num_faces) {
+          face *fp = &Curroomp->faces[faceIdx];
+          float sx[16], sy[16];
+          int nv = fp->num_verts;
+          if (nv > 16)
+            nv = 16;
+          bool ok = true;
+          for (int v = 0; v < nv; v++) {
+            if (!projectVertex(Curroomp->verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+              ok = false;
+              break;
+            }
+          }
+          if (ok) {
+            glColor3fv(kWfCurPortalColor);
+            glLineWidth(2.0f);
+            glBegin(GL_LINE_LOOP);
+            for (int v = 0; v < nv; v++)
+              glVertex2f(sx[v], sy[v]);
+            glEnd();
+            glLineWidth(1.0f);
+          }
         }
       }
     }
   }
 
-  // Draw the marked room/face in cyan if different from current.
+  // Marked room/face in cyan.
   if (Markedroomp != nullptr && Markedroomp->used) {
     const int markedRoom = ROOMNUM(Markedroomp);
     if (markedRoom >= renderStart && markedRoom <= renderEnd) {
-      // Marked face outline.
       if (Markedface >= 0 && Markedface < Markedroomp->num_faces) {
         face *fp = &Markedroomp->faces[Markedface];
         float sx[16], sy[16];
@@ -436,7 +644,7 @@ void EditorView::renderRooms() {
           }
         }
         if (ok) {
-          glColor3f(0.0f, 1.0f, 1.0f);
+          glColor3fv(kWfMarkedFaceColor);
           glLineWidth(2.0f);
           glBegin(GL_LINE_LOOP);
           for (int v = 0; v < nv; v++)
@@ -726,6 +934,7 @@ void EditorView::mousePressEvent(QMouseEvent *event) {
     m_mouseDown = true;
     m_dragged = false;
     m_pressPos = event->pos();
+    m_panMode = (event->modifiers() & Qt::ShiftModifier) != 0;
   } else if (event->button() == Qt::RightButton) {
     updateCamera();
     PickResult pick = pickAt(event->pos().x(), event->pos().y());
@@ -742,14 +951,24 @@ void EditorView::mouseMoveEvent(QMouseEvent *event) {
   }
   if (!m_dragged && Viewer_object != nullptr)
     return;
+
   const QPoint delta = event->pos() - m_lastMouse;
   m_lastMouse = event->pos();
-  m_yaw += delta.x() * 0.5f;
-  m_pitch += delta.y() * 0.5f;
-  if (m_pitch > 1.5f)
-    m_pitch = 1.5f;
-  if (m_pitch < -1.5f)
-    m_pitch = -1.5f;
+
+  if (m_mouseDown && m_panMode) {
+    // Shift+drag: pan (translate the look-at target).
+    const float panScale = m_dist * 0.002f;
+    m_target += m_orient.rvec * (-delta.x() * panScale);
+    m_target += m_orient.uvec * (delta.y() * panScale);
+  } else if (m_mouseDown || Viewer_object == nullptr) {
+    // Left drag (or hover in orbit mode): rotate.
+    m_yaw += delta.x() * 0.5f;
+    m_pitch += delta.y() * 0.5f;
+    if (m_pitch > 1.5f)
+      m_pitch = 1.5f;
+    if (m_pitch < -1.5f)
+      m_pitch = -1.5f;
+  }
   update();
 }
 
@@ -774,9 +993,18 @@ void EditorView::mouseReleaseEvent(QMouseEvent *event) {
 void EditorView::wheelEvent(QWheelEvent *event) {
   if (Viewer_object != nullptr)
     return;
-  m_dist *= (event->angleDelta().y() > 0) ? 0.9f : 1.1f;
-  if (m_dist < 1.0f)
-    m_dist = 1.0f;
+  const float dy = event->angleDelta().y();
+  if (event->modifiers() & Qt::ShiftModifier) {
+    // Shift+wheel: change wireframe render radius.
+    m_rad *= (dy > 0) ? 1.1f : 0.9f;
+    if (m_rad < 10.0f)
+      m_rad = 10.0f;
+  } else {
+    // Normal wheel: zoom distance.
+    m_dist *= (dy > 0) ? 0.9f : 1.1f;
+    if (m_dist < 1.0f)
+      m_dist = 1.0f;
+  }
   update();
 }
 
