@@ -49,6 +49,7 @@
 #include "editor_view.h"
 #include "hog_dialog.h"
 #include "level_io.h"
+#include "object.h"
 #include "ai_settings_dialog.h"
 #include "ambient_sound_patterns_dialog.h"
 #include "brief_main_dialog.h"
@@ -116,11 +117,18 @@ MainWindow::MainWindow(QWidget *parent)
     Curedge = Curvert = 0;
     Curportal = -1;
     State_changed = true;
+    statusBar()->showMessage(
+        QStringLiteral("Face selected: room %1, face %2").arg(r).arg(f));
     m_editorView->requestRedraw();
   });
   connect(m_editorView, &EditorView::objectSelected, this, [this](int idx) {
     Cur_object_index = idx;
     State_changed = true;
+    const char *name = (idx >= 0 && idx <= Highest_object_index && Objects[idx].name)
+                           ? Objects[idx].name
+                           : "";
+    statusBar()->showMessage(
+        QStringLiteral("Object %1 selected (%2)").arg(idx).arg(name));
     m_editorView->requestRedraw();
   });
   connect(m_editorView, &EditorView::selectionCleared, this, [this]() {
@@ -128,6 +136,7 @@ MainWindow::MainWindow(QWidget *parent)
     Curface = -1;
     Cur_object_index = -1;
     State_changed = true;
+    statusBar()->showMessage(QStringLiteral("Selection cleared."));
     m_editorView->requestRedraw();
   });
   connect(m_editorView, &EditorView::objectContextMenuRequested, this,
@@ -298,6 +307,7 @@ MainWindow::MainWindow(QWidget *parent)
     showNotPorted("OSIRIS Compile");
   });
 
+  setCentralWidget(m_editorView);
   buildKeypadBar();
 
   // The EditorView is now the central dock widget inside the dock manager.
@@ -519,24 +529,44 @@ void MainWindow::showPreferences() {
 
 void MainWindow::buildKeypadBar()
 {
-
+#if 0
   // 1. Initialize the Dock Manager, passing the main window as parent.
   //    The CDockManager constructor calls QMainWindow::setCentralWidget(this),
   //    replacing whatever was set before. This is by design in ADS.
-  ads::CDockManager::setConfigFlags(ads::CDockManager::DefaultOpaqueConfig);
+  ads::CDockManager::setConfigFlags(ads::CDockManager::DefaultNonOpaqueConfig);
+  ads::CDockManager::setConfigFlag(ads::CDockManager::DragPreviewShowsContentPixmap, false);
+  ads::CDockManager::setConfigFlag(ads::CDockManager::DragPreviewIsDynamic, false);
+
   m_dockManager = new ads::CDockManager(this);
+
+  //m_dockManager->setConfigFlags(ads::CDockManager::DefaultNonOpaqueConfig);
+  //m_dockManager->setConfigFlag(ads::CDockManager::OpaqueUndocking, false);
 
   // 2. Embed EditorView as the dock manager's central (non-removable) widget.
   //    This must be done before adding any other dock widgets.
   auto *centralDock = new ads::CDockWidget(m_dockManager, "EditorView");
   centralDock->setWidget(m_editorView);
   m_dockManager->setCentralWidget(centralDock);
+  m_dockManager->setStyleSheet("");
 
   auto make_keypad = [this](QString name, auto* widget)
   {
     auto* keypad = new ads::CDockWidget(m_dockManager, name);
     keypad->setWidget(widget);
-    m_dockManager->addDockWidget(ads::RightDockWidgetArea, keypad);
+    keypad->setFeature(ads::CDockWidget::DockWidgetMovable, false);
+    m_dockManager->addDockWidgetTab(ads::RightDockWidgetArea, keypad);
+  };
+#endif
+
+  m_keypadDock = new QDockWidget("Keypad", this);
+  m_keypadDock->setObjectName("KeypadDock");
+  m_keypadTabs = new QTabWidget(m_keypadDock);
+
+  m_keypadTabs->setTabPosition(QTabWidget::West);
+
+  auto make_keypad = [this](QString name, auto* widget)
+  {
+    m_keypadTabs->addTab(widget, name);
   };
 
   make_keypad("Megacells", new MegacellKeypad());
@@ -551,7 +581,18 @@ void MainWindow::buildKeypadBar()
   make_keypad("Terrain", new TerrainKeypad());
   make_keypad("Textures", new TextureKeypad());
 
+  auto font = m_keypadTabs->font();
+  font.setPointSize(9);
+  m_keypadTabs->setFont(font);
 
+
+  m_keypadDock->setWidget(m_keypadTabs);
+  m_keypadDock->setMinimumWidth(325);
+  m_keypadDock->setMaximumWidth(325);
+  m_keypadDock->setMinimumHeight(900);
+
+  addDockWidget(Qt::RightDockWidgetArea, m_keypadDock);
+  //m_keypadDock->hide();
 
 /*
   m_keypadDock = new QDockWidget("Keypad", this);
@@ -565,7 +606,10 @@ void MainWindow::buildKeypadBar()
 */
 }
 
-void MainWindow::toggleKeypadBar() {
+void MainWindow::toggleKeypadBar()
+{
+  m_keypadDock->setVisible(!m_keypadDock->isVisible());
+  /*
   if (m_dockManager == nullptr)
     return;
   // Toggle visibility of keypad dock widgets (exclude the central EditorView).
@@ -581,6 +625,7 @@ void MainWindow::toggleKeypadBar() {
     if (dock != nullptr && dock->widget() != m_editorView)
       dock->toggleView(!anyVisible);
   }
+*/
 }
 
 void MainWindow::toggleViewerProps() {

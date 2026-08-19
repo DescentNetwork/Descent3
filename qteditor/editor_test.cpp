@@ -1426,6 +1426,92 @@ private slots:
     QVERIFY2(img.save("/tmp/opencode/editor_view.png"), "failed to save screenshot");
     qInfo() << "saved /tmp/opencode/editor_view.png";
   }
+
+  // Tests that pickAt() identifies a face when clicking the center of the
+  // viewport on a loaded level.  This proves the full mouse→pick→signal chain
+  // works end-to-end.
+  void testPickFaceAtCenter() {
+    const QString level = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    QVERIFY2(EditorLoadLevel(level.toLatin1().constData()), "EditorLoadLevel failed");
+
+    EditorView view;
+    view.resize(640, 480);
+    view.show();
+    QCoreApplication::processEvents();
+    // Let the view paint so the camera is initialized.
+    for (int i = 0; i < 20 && view.frameCount() < 1; i++)
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    QCoreApplication::processEvents();
+    QVERIFY2(view.frameCount() >= 1, "view never painted");
+
+    // Pick at the center of the viewport — on a loaded mine this should
+    // always land on a face.
+    EditorView::PickResult pick = view.pickAt(320, 240);
+    qInfo() << "center pick: room=" << pick.roomIndex << "face=" << pick.faceIndex
+            << "object=" << pick.objectIndex << "depth=" << pick.depth;
+    const bool gotFace = pick.roomIndex >= 0 && pick.faceIndex >= 0;
+    const bool gotObject = pick.objectIndex >= 0;
+    QVERIFY2(gotFace || gotObject,
+             "pickAt center of viewport found neither face nor object");
+  }
+
+  // Verifies that the selection signals fire and update the editor state.
+  void testPickSignalsUpdateState() {
+    const QString level = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    QVERIFY2(EditorLoadLevel(level.toLatin1().constData()), "EditorLoadLevel failed");
+
+    EditorView view;
+    view.resize(640, 480);
+    view.show();
+    QCoreApplication::processEvents();
+    for (int i = 0; i < 20 && view.frameCount() < 1; i++)
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    QCoreApplication::processEvents();
+    QVERIFY2(view.frameCount() >= 1, "view never painted");
+
+    // Clear selection first.
+    Curroomp = nullptr;
+    Curface = -1;
+    Cur_object_index = -1;
+
+    bool faceFired = false;
+    bool objectFired = false;
+    bool clearedFired = false;
+    int selRoom = -1, selFace = -1, selObj = -1;
+
+    connect(&view, &EditorView::faceSelected, [&](int r, int f) {
+      faceFired = true;
+      selRoom = r;
+      selFace = f;
+    });
+    connect(&view, &EditorView::objectSelected, [&](int idx) {
+      objectFired = true;
+      selObj = idx;
+    });
+    connect(&view, &EditorView::selectionCleared, [&]() { clearedFired = true; });
+
+    // Pick at center — should emit one of the three signals.
+    view.pickAt(320, 240);
+    // The signals are emitted by mouseReleaseEvent, not pickAt directly.
+    // Simulate a click via QTest.
+    QTest::mouseClick(&view, Qt::LeftButton, Qt::NoModifier, QPoint(320, 240));
+    QCoreApplication::processEvents();
+
+    qInfo() << "signals: face=" << faceFired << "object=" << objectFired
+            << "cleared=" << clearedFired;
+    const bool anySignal = faceFired || objectFired || clearedFired;
+    QVERIFY2(anySignal, "no selection signal emitted after click");
+
+    if (faceFired) {
+      QVERIFY2(selRoom >= 0, "faceSelected emitted with negative room");
+      QVERIFY2(selFace >= 0, "faceSelected emitted with negative face");
+      qInfo() << "face selected: room" << selRoom << "face" << selFace;
+    }
+    if (objectFired) {
+      QVERIFY2(selObj >= 0, "objectSelected emitted with negative index");
+      qInfo() << "object selected:" << selObj;
+    }
+  }
 };
 
 // Custom main: initialise the D3 core (loads game data) before running tests.

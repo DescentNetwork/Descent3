@@ -94,6 +94,8 @@ private:
   bool projectVertexDepth(const vector &world, float *sx, float *sy, float *depth) const;
   void updateCamera();
   void renderRooms();
+  void renderTerrain();
+  void renderObjects();
 
   static bool pointInPolygon(float px, float py, const float *sx, const float *sy, int n);
 

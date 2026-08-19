@@ -24,8 +24,8 @@
 #include <QDialog>
 #include <QWidget>
 #include <QTimer>
-#include <DockManager.h>
-#include <DockWidget.h>
+//#include <DockManager.h>
+//#include <DockWidget.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -181,8 +181,10 @@ private:
   Ui::MainWindow *ui;
 
   QMenuBar *m_menuBar = nullptr;
-  ads::CDockManager* m_dockManager = nullptr;
-  ads::CDockWidget* m_keypadDock = nullptr;
+  //ads::CDockManager* m_dockManager = nullptr;
+  //ads::CDockAreaWidget* m_dockArea = nullptr;
+  //ads::CDockWidget* m_keypadDock = nullptr;
+  QDockWidget* m_keypadDock = nullptr;
   QTabWidget *m_keypadTabs = nullptr;
   QDialog *m_aboutBox = nullptr;
   ViewerPropDialog *m_viewerProps = nullptr;

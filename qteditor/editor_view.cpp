@@ -31,7 +31,8 @@
 #include "gametexture.h"
 #include "object.h"
 #include "pserror.h"
-#include "room_external.h"
+#include "room.h"
+#include "terrain.h"
 
 
 namespace {
@@ -345,6 +346,312 @@ void EditorView::renderRooms() {
       }
     }
   }
+
+  // ---- Selection highlights ----
+  // Draw wireframe overlays for the current room/face/edge and marked
+  // room/face so the user gets visual feedback after clicking.
+  if (Curroomp != nullptr && Curroomp->used) {
+    const int curRoom = ROOMNUM(Curroomp);
+
+    // Only highlight if this room is in the rendered set.
+    if (curRoom >= renderStart && curRoom <= renderEnd) {
+      // Draw all edges of the current room in white.
+      glColor3f(1.0f, 1.0f, 1.0f);
+      glLineWidth(1.0f);
+      for (int i = 0; i < Curroomp->num_faces; i++) {
+        face *fp = &Curroomp->faces[i];
+        float sx[16], sy[16];
+        int nv = fp->num_verts;
+        if (nv > 16)
+          nv = 16;
+        bool ok = true;
+        for (int v = 0; v < nv; v++) {
+          if (!projectVertex(Curroomp->verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+            ok = false;
+            break;
+          }
+        }
+        if (!ok)
+          continue;
+        glBegin(GL_LINE_LOOP);
+        for (int v = 0; v < nv; v++)
+          glVertex2f(sx[v], sy[v]);
+        glEnd();
+      }
+
+      // Draw the current face in yellow (thicker).
+      if (Curface >= 0 && Curface < Curroomp->num_faces) {
+        face *fp = &Curroomp->faces[Curface];
+        float sx[16], sy[16];
+        int nv = fp->num_verts;
+        if (nv > 16)
+          nv = 16;
+        bool ok = true;
+        for (int v = 0; v < nv; v++) {
+          if (!projectVertex(Curroomp->verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+            ok = false;
+            break;
+          }
+        }
+        if (ok) {
+          glColor3f(1.0f, 1.0f, 0.0f);
+          glLineWidth(2.0f);
+          glBegin(GL_LINE_LOOP);
+          for (int v = 0; v < nv; v++)
+            glVertex2f(sx[v], sy[v]);
+          glEnd();
+
+          // Draw the current edge in green.
+          if (Curedge >= 0 && Curedge < nv) {
+            int next = (Curedge + 1) % nv;
+            glColor3f(0.0f, 1.0f, 0.0f);
+            glLineWidth(3.0f);
+            glBegin(GL_LINES);
+            glVertex2f(sx[Curedge], sy[Curedge]);
+            glVertex2f(sx[next], sy[next]);
+            glEnd();
+          }
+          glLineWidth(1.0f);
+        }
+      }
+    }
+  }
+
+  // Draw the marked room/face in cyan if different from current.
+  if (Markedroomp != nullptr && Markedroomp->used) {
+    const int markedRoom = ROOMNUM(Markedroomp);
+    if (markedRoom >= renderStart && markedRoom <= renderEnd) {
+      // Marked face outline.
+      if (Markedface >= 0 && Markedface < Markedroomp->num_faces) {
+        face *fp = &Markedroomp->faces[Markedface];
+        float sx[16], sy[16];
+        int nv = fp->num_verts;
+        if (nv > 16)
+          nv = 16;
+        bool ok = true;
+        for (int v = 0; v < nv; v++) {
+          if (!projectVertex(Markedroomp->verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+            ok = false;
+            break;
+          }
+        }
+        if (ok) {
+          glColor3f(0.0f, 1.0f, 1.0f);
+          glLineWidth(2.0f);
+          glBegin(GL_LINE_LOOP);
+          for (int v = 0; v < nv; v++)
+            glVertex2f(sx[v], sy[v]);
+          glEnd();
+          glLineWidth(1.0f);
+        }
+      }
+    }
+  }
+}
+
+void EditorView::renderTerrain() {
+  QOpenGLFunctions *f = context() ? context()->functions() : nullptr;
+  if (f == nullptr)
+    return;
+
+  // Compute visible cell range based on camera position.
+  const int camCellX = static_cast<int>(std::round(m_eye.x() / TERRAIN_SIZE));
+  const int camCellZ = static_cast<int>(std::round(m_eye.z() / TERRAIN_SIZE));
+
+  constexpr int kViewRadius = 48;
+  const int startX = std::max(0, camCellX - kViewRadius);
+  const int endX = std::min(TERRAIN_WIDTH - 1, camCellX + kViewRadius);
+  const int startZ = std::max(0, camCellZ - kViewRadius);
+  const int endZ = std::min(TERRAIN_DEPTH - 1, camCellZ + kViewRadius);
+
+  for (int z = startZ; z <= endZ; z++) {
+    for (int x = startX; x <= endX; x++) {
+      const int idx00 = z * (TERRAIN_WIDTH + 1) + x;
+      const int idx10 = z * (TERRAIN_WIDTH + 1) + (x + 1);
+      const int idx01 = (z + 1) * (TERRAIN_WIDTH + 1) + x;
+      const int idx11 = (z + 1) * (TERRAIN_WIDTH + 1) + (x + 1);
+
+      const vector v00{float(x * TERRAIN_SIZE), Terrain_seg[idx00].y,
+                       float(z * TERRAIN_SIZE)};
+      const vector v10{float((x + 1) * TERRAIN_SIZE), Terrain_seg[idx10].y,
+                       float(z * TERRAIN_SIZE)};
+      const vector v01{float(x * TERRAIN_SIZE), Terrain_seg[idx01].y,
+                       float((z + 1) * TERRAIN_SIZE)};
+      const vector v11{float((x + 1) * TERRAIN_SIZE), Terrain_seg[idx11].y,
+                       float((z + 1) * TERRAIN_SIZE)};
+
+      float sx[4], sy[4];
+      if (!projectVertex(v00, &sx[0], &sy[0]))
+        continue;
+      if (!projectVertex(v10, &sx[1], &sy[1]))
+        continue;
+      if (!projectVertex(v01, &sx[2], &sy[2]))
+        continue;
+      if (!projectVertex(v11, &sx[3], &sy[3]))
+        continue;
+
+      if (m_wireframe) {
+        const float height = Terrain_seg[idx00].y / MAX_TERRAIN_HEIGHT;
+        glColor3f(0.3f + height * 0.5f, 0.5f + height * 0.4f,
+                  0.3f + height * 0.5f);
+        glBegin(GL_LINES);
+        // Cell edges.
+        glVertex2f(sx[0], sy[0]);
+        glVertex2f(sx[1], sy[1]);
+        glVertex2f(sx[1], sy[1]);
+        glVertex2f(sx[3], sy[3]);
+        glVertex2f(sx[3], sy[3]);
+        glVertex2f(sx[2], sy[2]);
+        glVertex2f(sx[2], sy[2]);
+        glVertex2f(sx[0], sy[0]);
+        // Diagonals.
+        glVertex2f(sx[0], sy[0]);
+        glVertex2f(sx[3], sy[3]);
+        glVertex2f(sx[1], sy[1]);
+        glVertex2f(sx[2], sy[2]);
+        glEnd();
+        continue;
+      }
+
+      // Textured / flat-shaded mode.
+      const int texsegIdx = Terrain_seg[idx00].texseg_index;
+      int bm = -1;
+      if (texsegIdx >= 0 && texsegIdx < TERRAIN_TEX_WIDTH * TERRAIN_TEX_DEPTH) {
+        const int texIdx = Terrain_tex_seg[texsegIdx].tex_index;
+        if (texIdx >= 0 && texIdx < MAX_TEXTURES && GameTextures[texIdx].used)
+          bm = GameTextures[texIdx].bm_handle;
+      }
+
+      // Cell lighting.
+      const float light =
+          Terrain_seg[idx00].l / 255.0f;
+      const float shade = 0.35f + 0.65f * (light < 0 ? -light : light);
+
+      if (bm >= 0) {
+        ensureTexture(bm);
+        auto it = m_textures.constFind(bm);
+        if (it != m_textures.constEnd()) {
+          glEnable(GL_TEXTURE_2D);
+          glBindTexture(GL_TEXTURE_2D, it.value());
+          glColor3f(shade, shade, shade);
+
+          // Triangle 1: top-left, top-right, bottom-left.
+          glBegin(GL_TRIANGLES);
+          glTexCoord2f(0.0f, 0.0f);
+          glVertex2f(sx[0], sy[0]);
+          glTexCoord2f(1.0f, 0.0f);
+          glVertex2f(sx[1], sy[1]);
+          glTexCoord2f(0.0f, 1.0f);
+          glVertex2f(sx[2], sy[2]);
+          glEnd();
+
+          // Triangle 2: top-right, bottom-right, bottom-left.
+          glBegin(GL_TRIANGLES);
+          glTexCoord2f(1.0f, 0.0f);
+          glVertex2f(sx[1], sy[1]);
+          glTexCoord2f(1.0f, 1.0f);
+          glVertex2f(sx[3], sy[3]);
+          glTexCoord2f(0.0f, 1.0f);
+          glVertex2f(sx[2], sy[2]);
+          glEnd();
+
+          glDisable(GL_TEXTURE_2D);
+          continue;
+        }
+      }
+
+      // No texture: flat shade with a terrain-tinted green.
+      glColor3f(shade * 0.4f, shade * 0.7f, shade * 0.4f);
+      glBegin(GL_TRIANGLES);
+      glVertex2f(sx[0], sy[0]);
+      glVertex2f(sx[1], sy[1]);
+      glVertex2f(sx[2], sy[2]);
+      glEnd();
+      glBegin(GL_TRIANGLES);
+      glVertex2f(sx[1], sy[1]);
+      glVertex2f(sx[3], sy[3]);
+      glVertex2f(sx[2], sy[2]);
+      glEnd();
+    }
+  }
+}
+
+void EditorView::renderObjects() {
+  if (Editor_view_mode == VM_TERRAIN)
+    return;
+
+  for (int i = 0; i <= Highest_object_index; i++) {
+    object *obj = &Objects[i];
+    if (obj->type == OBJ_NONE)
+      continue;
+
+    float ox, oy, oz;
+    if (!projectVertexDepth(obj->pos, &ox, &oy, &oz))
+      continue;
+
+    const float h = height() > 0 ? static_cast<float>(height()) : 1.0f;
+    const float focal = (h * 0.5f) / std::tan(kFovY * 0.5f);
+    float screenRadius = (obj->size * focal) / oz;
+    if (screenRadius < 4.0f)
+      screenRadius = 4.0f;
+
+    // Color by object type.
+    switch (obj->type) {
+    case OBJ_PLAYER:
+      glColor3f(0.0f, 1.0f, 0.0f);
+      break; // green
+    case OBJ_ROBOT:
+      glColor3f(1.0f, 0.2f, 0.2f);
+      break; // red
+    case OBJ_WEAPON:
+      glColor3f(1.0f, 1.0f, 0.0f);
+      break; // yellow
+    case OBJ_POWERUP:
+      glColor3f(0.3f, 0.5f, 1.0f);
+      break; // blue
+    case OBJ_VIEWER:
+      glColor3f(1.0f, 0.0f, 1.0f);
+      break; // magenta
+    case OBJ_CAMERA:
+      glColor3f(1.0f, 1.0f, 0.5f);
+      break; // yellow-green
+    case OBJ_BUILDING:
+      glColor3f(1.0f, 0.6f, 0.0f);
+      break; // orange
+    case OBJ_DOOR:
+      glColor3f(0.0f, 1.0f, 1.0f);
+      break; // cyan
+    default:
+      glColor3f(0.7f, 0.7f, 0.7f);
+      break; // grey
+    }
+
+    // Highlight the currently selected object.
+    if (i == Cur_object_index) {
+      glLineWidth(2.0f);
+      glColor3f(1.0f, 1.0f, 1.0f);
+    }
+
+    // Draw a diamond marker around the object.
+    const float r = screenRadius;
+    glBegin(GL_LINE_LOOP);
+    glVertex2f(ox, oy - r);
+    glVertex2f(ox + r, oy);
+    glVertex2f(ox, oy + r);
+    glVertex2f(ox - r, oy);
+    glEnd();
+
+    // Cross inside the diamond.
+    glBegin(GL_LINES);
+    glVertex2f(ox - r * 0.5f, oy);
+    glVertex2f(ox + r * 0.5f, oy);
+    glVertex2f(ox, oy - r * 0.5f);
+    glVertex2f(ox, oy + r * 0.5f);
+    glEnd();
+
+    if (i == Cur_object_index)
+      glLineWidth(1.0f);
+  }
 }
 
 void EditorView::updateCamera() {
@@ -356,7 +663,13 @@ void EditorView::updateCamera() {
     return;
   }
   vector min, max;
-  computeMineBounds(&min, &max);
+  if (Editor_view_mode == VM_TERRAIN) {
+    min = vector{0, 0, 0};
+    max = vector{float(TERRAIN_WIDTH * TERRAIN_SIZE), float(MAX_TERRAIN_HEIGHT),
+                 float(TERRAIN_DEPTH * TERRAIN_SIZE)};
+  } else {
+    computeMineBounds(&min, &max);
+  }
   m_target = (min + max) * 0.5f;
   if (!m_targetInitialized) {
     vector extent = max - min;
@@ -398,7 +711,12 @@ void EditorView::paintGL() {
 
   updateCamera();
 
-  renderRooms();
+  if (Editor_view_mode == VM_TERRAIN)
+    renderTerrain();
+  else
+    renderRooms();
+
+  renderObjects();
   ++m_frameCount;
 }
 

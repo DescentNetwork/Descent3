@@ -1,7 +1,11 @@
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 COMPONENTS Widgets UiTools)
+if(NOT FORCE_QT5_EDITOR)
+  message(STATUS "USING Qt 6!")
+  find_package(Qt6 COMPONENTS Widgets UiTools)
+endif()
+
 if(Qt6_FOUND)
   set(QT_VERSION_MAJOR ${Qt6Core_VERSION_MAJOR} CACHE STRING "Major version of Qt" FORCE)
   set(QT_VERSION_MINOR ${Qt6Core_VERSION_MINOR} CACHE STRING "Minor version of Qt" FORCE)
@@ -13,18 +17,30 @@ else()
   set(ADS_TARGET qtadvanceddocking-qt5)
 endif()
 
+
 if(TARGET Qt6::Gui)
-    get_target_property(_gui_include_dirs Qt::Gui INTERFACE_INCLUDE_DIRECTORIES)
-    # Some older/custom Qt5 builds need explicit private include roots added:
-    # (Usually handles /usr/include/x86_64-linux-gnu/qt5/QtGui/5.15.x etc.)
-    foreach(_dir ${_gui_include_dirs})
-        if(EXISTS "${_dir}/${Qt6Gui_VERSION}/QtGui")
-            include_directories(
-                "${_dir}/${Qt6Gui_VERSION}"
-                "${_dir}/${Qt6Gui_VERSION}/QtGui"
-            )
-        endif()
-    endforeach()
+  message(STATUS "USING Qt 6!")
+  get_target_property(_gui_include_dirs Qt6::Gui INTERFACE_INCLUDE_DIRECTORIES)
+  foreach(_dir ${_gui_include_dirs})
+      if(EXISTS "${_dir}/${Qt6Gui_VERSION}/QtGui")
+          include_directories(
+              "${_dir}/${Qt6Gui_VERSION}"
+              "${_dir}/${Qt6Gui_VERSION}/QtGui"
+          )
+      endif()
+  endforeach()
+else()
+  message(STATUS "USING Qt 5!")
+  get_target_property(_gui_include_dirs Qt5::Gui INTERFACE_INCLUDE_DIRECTORIES)
+  foreach(_dir ${_gui_include_dirs})
+      if(EXISTS "${_dir}/${Qt5Gui_VERSION}/QtGui")
+          include_directories(
+              "${_dir}/${Qt5Gui_VERSION}"
+              "${_dir}/${Qt5Gui_VERSION}/QtGui"
+          )
+      endif()
+  endforeach()
+
 endif()
 
 # ads options
@@ -381,7 +397,7 @@ target_link_libraries(Descent3EditorQt PRIVATE
   $<LINK_LIBRARY:WHOLE_ARCHIVE,Descent3Core,linux>
   Qt::Widgets
   Qt::UiTools
-   ${ADS_TARGET}
+  ${ADS_TARGET}
   ${PLATFORM_LIBS}
 )
 
@@ -400,7 +416,9 @@ add_executable(Descent3EditorTests
 )
 
 if(BUILD_QT_EDITOR_TEST)
-  find_package(Qt6 COMPONENTS Widgets UiTools Test)
+  if(NOT FORCE_QT5_EDITOR)
+    find_package(Qt6 COMPONENTS Widgets UiTools Test)
+  endif()
   if(NOT Qt6_FOUND)
       find_package(Qt5 REQUIRED COMPONENTS Widgets UiTools Test)
   endif()

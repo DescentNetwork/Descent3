@@ -30,8 +30,9 @@
 
 
 
-int main(int argc, char *argv[]) {
-  errno = 0;
+int main(int argc, char *argv[])
+{
+  QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
   QApplication app(argc, argv);
   app.setApplicationName("Descent 3 Editor");
   app.setOrganizationName("DescentDevelopers");

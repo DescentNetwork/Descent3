@@ -167,7 +167,7 @@ void CheckLevelNames() {
   }
   trigger *tp;
   for (i = 0, tp = Triggers; i < Num_triggers; i++, tp++) {
-    if (tp->name != nullptr) {
+    if (tp != nullptr && tp->name[0] != '\0') {
       const int n = osipf_FindTriggerName(tp->name);
       if (n != i)
         std::fprintf(stderr, "[level_io] duplicate trigger name \"%s\"\n",
