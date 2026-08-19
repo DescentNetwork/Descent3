@@ -34,7 +34,9 @@
 #include "ddio.h"
 #include "doorway.h"
 //#include "Erooms.h"
+#include "editor_room_state.h"
 #include "findintersection.h"
+#include "selectedroom.h"
 #include "game.h"
 #include "gametexture.h"
 #include "gameevent.h"
@@ -58,6 +60,7 @@
 #include "special_face.h"
 #include "terrain.h"
 #include "trigger.h"
+#include "vecmat.h"
 
 #include <cstdio>
 #include <cstring>
@@ -96,54 +99,144 @@ char *IntSpacing(int i) {
 }
 
 
-// Build a fresh empty mine. The renderer-coupled callers from the Win32
-// entry point (ResetWireframeView, SetEditorViewer, …) stay in qteditor; on
-// Linux we seed the editor-only globals (Curroomp, Curface, Markedroomp…),
-// call FreeAllRooms / FreeAllObjects from Descent3Core, then leave the cube
-// construction until the engine-side room walker ships. The full Win32
-// version's CreateDefaultRoom() (16-vertex / 10-face cube at Mine_origin)
-// is left as a comment block below for reference.
-void CreateNewMine() {
-  // Reset selection / viewer globals. These live in qteditor/d3_editor_state.cpp
-  // because the Win32 editor's EDVARS.cpp lives behind MFC and doesn't link.
-  Curface = Curedge = Curvert = 0;
-  Curportal = -1;
-  Curroomp = nullptr;
-  Markedroomp = nullptr;
-  Placed_room = -1;
-  Placed_group = nullptr;
-  Num_triggers = 0;
-  Current_trigger = -1;
-  Editor_view_mode = VM_MINE;
-  Editor_viewer_id = -1;
-  New_mine = true;
-  World_changed = false;
+// ---- Default room geometry (from editor/HFile.cpp) ----
+// Vertices for the octagonal prism created by CreateNewMine().
+static vector default_room_verts[] = {
+    {-10, 8, 20},  {-5, 10, 20},  {5, 10, 20},    {10, 8, 20},
+    {10, -8, 20},  {5, -10, 20},  {-5, -10, 20},  {-10, -8, 20},
+    {-10, 8, -20}, {-5, 10, -20}, {5, 10, -20},   {10, 8, -20},
+    {10, -8, -20}, {5, -10, -20}, {-5, -10, -20}, {-10, -8, -20}};
 
-  // Tear down any pre-existing mine. FreeAllRooms / FreeAllObjects come from
-  // Descent3Core.  FreeAllObjects → ObjDelete redirects Viewer_object to
-  // Player_object, but Player_object is also freed, leaving Viewer_object
-  // dangling.  Null it so updateCamera() falls back to orbit mode.
+// Center of the mine world, matching editor/HFile.cpp.
+static vector Mine_origin = {float(TERRAIN_WIDTH * (TERRAIN_SIZE / 2)),
+                             -100,
+                             float(TERRAIN_DEPTH * (TERRAIN_SIZE / 2))};
+
+// Find the first unused slot in Rooms[]. Returns -1 if all slots are in use.
+static int GetEditorFreeRoom() {
+  for (int i = 0; i < MAX_ROOMS; i++)
+    if (!Rooms[i].used)
+      return i;
+  return -1;
+}
+
+// Create a default octagonal prism room for a new mine.
+// Port of editor/HFile.cpp:CreateDefaultRoom().
+static room *CreateDefaultRoom() {
+  const int slot = GetEditorFreeRoom();
+  if (slot < 0)
+    return nullptr;
+
+  room *rp = &Rooms[slot];
+  InitRoom(rp, 16, 10, 0);
+
+  // Set the 16 vertices, offset to Mine_origin.
+  for (int i = 0; i < 16; i++)
+    rp->verts[i] = default_room_verts[i] + Mine_origin;
+
+  // Face 0: front octagonal cap (verts 0..7).
+  InitRoomFace(&rp->faces[0], 8);
+  for (int i = 0; i < 8; i++)
+    rp->faces[0].face_verts[i] = i;
+
+  // Face 1: back octagonal cap (verts 15..8, reversed).
+  InitRoomFace(&rp->faces[1], 8);
+  for (int i = 0; i < 8; i++)
+    rp->faces[1].face_verts[i] = 15 - i;
+
+  // Faces 2..9: eight side quads connecting front and back edges.
+  for (int i = 0; i < 8; i++) {
+    InitRoomFace(&rp->faces[i + 2], 4);
+    rp->faces[i + 2].face_verts[0] = i;
+    rp->faces[i + 2].face_verts[1] = i + 8;
+    rp->faces[i + 2].face_verts[2] = ((i + 1) % 8) + 8;
+    rp->faces[i + 2].face_verts[3] = (i + 1) % 8;
+  }
+
+  // Compute normals, assign textures and UVs for every face.
+  for (int i = 0; i < 10; i++) {
+    ComputeFaceNormal(rp, i);
+    rp->faces[i].tmap = i + 1;
+    AssignDefaultUVsToRoomFace(rp, i);
+  }
+
+  if (slot > Highest_room_index)
+    Highest_room_index = slot;
+
+  return rp;
+}
+
+// Build a fresh empty mine.
+// Port of editor/HFile.cpp:CreateNewMine().
+void CreateNewMine() {
+  // Tear down any pre-existing mine.
   FreeAllRooms();
   FreeAllObjects();
   Viewer_object = nullptr;
   Player_object = nullptr;
 
-  // Stamp default metadata onto Level_info so Save As writes sane defaults.
+  // Create the default room (octagonal prism at Mine_origin).
+  Curroomp = CreateDefaultRoom();
+
+  // Reset selection / viewer globals.
+  Curface = Curedge = Curvert = 0;
+  Curportal = -1;
+  New_mine = true;
+
+  // Reset the view position for the orbit camera.
+  Editor_view_mode = VM_MINE;
+  Editor_viewer_id = -1;
+
+  // Clear the marked room and selected segments.
+  Markedroomp = nullptr;
+  ClearRoomSelectedList();
+
+  // Clear the placed room & group.
+  Placed_room = -1;
+  Placed_group = nullptr;
+
+  // Reset triggers.
+  Num_triggers = 0;
+  Current_trigger = -1;
+
+  // Reset terrain.
+  ResetTerrain(1);
+  ClearTerrainSound();
+
+  // Clear game events and paths.
+  ClearAllEvents();
+  InitGamePaths();
+
+  // Reset matcens and ambient life.
+  DestroyAllMatcens();
+  a_life.ALReset();
+  Level_goals.CleanupAfterLevel();
+
+  // Reset BNode and physics globals.
+  BNode_ClearBNodeInfo();
+  FVI_always_check_ceiling = false;
+  Ceiling_height = MAX_TERRAIN_HEIGHT;
+
+  // Reset sound overrides and force field bounces.
+  sound_override_force_field = -1;
+  sound_override_glass_breaking = -1;
+  for (int i = 0; i < MAX_FORCE_FIELD_BOUNCE_TEXTURES; i++) {
+    force_field_bounce_texture[i] = -1;
+    force_field_bounce_multiplier[i] = 1.0f;
+  }
+  Level_powerups_ignore_wind = false;
+
+  // BOA checksums.
+  BOA_AABB_checksum = BOA_mine_checksum = 0;
+  for (int i = 0; i < MAX_ROOMS; i++)
+    BOA_AABB_ROOM_checksum[i] = 0;
+
+  // Init level info.
   std::strcpy(Level_info.name, "Unnamed");
   std::strcpy(Level_info.designer, "Anonymous");
   std::strcpy(Level_info.copyright,
               "Copyright (c) 1999 Outrage Entertainment, Inc.");
   std::strcpy(Level_info.notes, "");
-
-  // ==== Win32 CreateDefaultRoom portion (descent3/room.cpp + editor/Erooms.cpp)
-  //      is gated behind ATL/MFC callers until qteditor links them. The body
-  //      below is the verbatim geometry from HFile.cpp; restore it once
-  //      Erooms.cpp ports.
-  /*
-  vector default_room_verts[] = {...};
-  vector Mine_origin = {...};
-  room *CreateDefaultRoom() { rp = CreateNewRoom(16, 10, 0); ... }
-  */
 }
 
 // Walk the level's named entities (objects, triggers, rooms) and surface

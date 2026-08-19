@@ -28,8 +28,7 @@ struct room;
 room *CreateNewRoom(int nverts, int nfaces, bool palette_room = false);
 void DestroyRoom(int roomnum);
 
-// Defensive stub for editor/Erooms.cpp::AssignDefaultUVsToRoomFace; the
-// real implementation lives in editor/Erooms.cpp and reads page-locked
-// texture records which we don't have on Linux yet.
+// Port of editor/Erooms.cpp:AssignDefaultUVsToRoomFace — projects each
+// vertex onto the face's normal plane and assigns UVs with a 1/20.0 scale.
 void AssignDefaultUVsToRoomFace(room *rp, int facenum);
 

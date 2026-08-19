@@ -26,6 +26,8 @@
 #include "crossplat.h"
 #include "objinfo.h"
 #include "gamepath.h"
+#include "room.h"
+#include "vecmat.h"
 #include <cstring>
 #include <filesystem>
 #include <QtGlobal>
@@ -244,8 +246,71 @@ void DestroyRoom(int roomnum) {
 }
 
 void AssignDefaultUVsToRoomFace(room *rp, int facenum) {
-  (void)rp;
-  (void)facenum;
+  if (rp == nullptr || !rp->used)
+    return;
+  if (facenum < 0 || facenum >= rp->num_faces)
+    return;
+  face *fp = &rp->faces[facenum];
+  if (fp->num_verts < 3)
+    return;
+
+  // Port of editor/Erooms.cpp:GetUVLForRoomPoint — projects each vertex onto
+  // the face's normal plane and assigns UVs with a 1/20.0 world-to-UV scale.
+  matrix face_matrix, trans_matrix;
+  vector fvec;
+  vector avg_vert;
+  vector verts[MAX_VERTS_PER_FACE];
+  vector rot_vert;
+
+  // Find the center point of this face.
+  vm_MakeZero(&avg_vert);
+  int i;
+  for (i = 0; i < fp->num_verts; i++)
+    avg_vert += rp->verts[fp->face_verts[i]];
+  avg_vert /= static_cast<float>(i);
+
+  // Make the orientation matrix (reverse the normal: looking "at" the face).
+  fvec = -fp->normal;
+  vm_VectorToMatrix(&face_matrix, &fvec, nullptr, nullptr);
+
+  // Extract angles and rebuild a pure-rotation matrix.
+  angvec avec;
+  vm_ExtractAnglesFromMatrix(&avec, &face_matrix);
+  vm_AnglesToMatrix(&trans_matrix, avec.p(), avec.h(), avec.b());
+
+  // Rotate all vertices into face-local space.
+  for (i = 0; i < fp->num_verts; i++) {
+    vector vert = rp->verts[fp->face_verts[i]];
+    vert -= avg_vert;
+    vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
+    verts[i] = rot_vert;
+  }
+
+  // Find leftmost, topmost, rightmost, bottommost vertices.
+  int leftmost = 0, topmost = 0, rightmost = 0, bottommost = 0;
+  for (i = 1; i < fp->num_verts; i++) {
+    if (verts[i].x() < verts[leftmost].x())
+      leftmost = i;
+    if (verts[i].y() > verts[topmost].y())
+      topmost = i;
+    if (verts[i].x() > verts[rightmost].x())
+      rightmost = i;
+    if (verts[i].y() < verts[bottommost].y())
+      bottommost = i;
+  }
+
+  // Base vector: (leftmost x, topmost y, 0).
+  vector base_vector;
+  base_vector.x() = verts[leftmost].x();
+  base_vector.y() = verts[topmost].y();
+  base_vector.z() = 0;
+
+  // Assign UVs with 1/20.0 scale, matching the Win32 editor.
+  for (i = 0; i < fp->num_verts; i++) {
+    fp->face_uvls[i].u = (verts[i].x() - base_vector.x()) / 20.0f;
+    fp->face_uvls[i].v = (base_vector.y() - verts[i].y()) / 20.0f;
+    fp->face_uvls[i].alpha = 255;
+  }
 }
 
 void ClearRoomSelectedList() {}
