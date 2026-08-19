@@ -325,7 +325,92 @@ void AssignDefaultUVsToRoomFace(room *rp, int facenum) {
   }
 }
 
-void ClearRoomSelectedList() {}
+// Editor-only room selection list (editor/selectedroom.cpp in Win32).
+void ClearRoomSelectedList() {
+  N_selected_rooms = 0;
+  State_changed = true;
+}
+
+void AddRoomToSelectedList(int roomnum) {
+  if (!IsRoomSelected(roomnum)) {
+    Selected_rooms[N_selected_rooms++] = roomnum;
+    State_changed = true;
+  }
+}
+
+void RemoveRoomFromSelectedList(int roomnum) {
+  for (int i = 0; i < N_selected_rooms; i++) {
+    if (Selected_rooms[i] == roomnum) {
+      for (int j = i; j < N_selected_rooms - 1; j++)
+        Selected_rooms[j] = Selected_rooms[j + 1];
+      N_selected_rooms--;
+      State_changed = true;
+      return;
+    }
+  }
+}
+
+int ToggleRoomSelectedState(int roomnum) {
+  State_changed = true;
+  for (int i = 0; i < N_selected_rooms; i++) {
+    if (Selected_rooms[i] == roomnum) {
+      for (int j = i; j < N_selected_rooms - 1; j++)
+        Selected_rooms[j] = Selected_rooms[j + 1];
+      N_selected_rooms--;
+      return 0;
+    }
+  }
+  Selected_rooms[N_selected_rooms++] = roomnum;
+  return 1;
+}
+
+int SelectConnectedRooms(int roomnum) {
+  if (IsRoomSelected(roomnum))
+    return 0;
+
+  Selected_rooms[N_selected_rooms++] = roomnum;
+  int count = 1;
+  State_changed = true;
+
+  for (int s = 0; s < Rooms[roomnum].num_portals; s++) {
+    if (Rooms[roomnum].portals[s].croom != -1)
+      count += SelectConnectedRooms(Rooms[roomnum].portals[s].croom);
+  }
+  return count;
+}
+
+static int *Save_selected_rooms = nullptr;
+static int N_save_selected_rooms = -1;
+
+void SaveRoomSelectedList() {
+  if (N_save_selected_rooms != -1)
+    return;
+
+  N_save_selected_rooms = N_selected_rooms;
+  if (!N_save_selected_rooms)
+    return;
+
+  Save_selected_rooms = new int[N_save_selected_rooms];
+  for (int i = 0; i < N_selected_rooms; i++)
+    Save_selected_rooms[i] = Selected_rooms[i];
+}
+
+void RestoreRoomSelectedList() {
+  if (N_save_selected_rooms == -1)
+    return;
+
+  N_selected_rooms = N_save_selected_rooms;
+  N_save_selected_rooms = -1;
+
+  if (!N_selected_rooms)
+    return;
+
+  for (int i = 0; i < N_selected_rooms; i++)
+    Selected_rooms[i] = Save_selected_rooms[i];
+
+  delete[] Save_selected_rooms;
+  Save_selected_rooms = nullptr;
+}
 
 
 // SaveLevel lives in Descent3/LoadLevel.cpp but its definition #includes

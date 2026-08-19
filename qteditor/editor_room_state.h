@@ -20,8 +20,15 @@
 
 struct room;
 
-// Returns true if roomnum is in the selected-room list.
+// Room selection list (editor/selectedroom.cpp in Win32).
 int IsRoomSelected(int roomnum);
+void AddRoomToSelectedList(int roomnum);
+void RemoveRoomFromSelectedList(int roomnum);
+void ClearRoomSelectedList();
+int ToggleRoomSelectedState(int roomnum);
+int SelectConnectedRooms(int roomnum);
+void SaveRoomSelectedList();
+void RestoreRoomSelectedList();
 
 
 // Allocate / free an editor room slot. CreateNewRoom allocates the per-
