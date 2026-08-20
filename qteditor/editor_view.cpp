@@ -97,7 +97,7 @@ void drawEdgesFromTable(const float *color) {
   glColor3fv(color);
   glLineWidth(1.0f);
   glBegin(GL_LINES);
-  for (int i = 0; i < s_nUsed; i++) {
+  for (int i = 0; i < kMaxEdges; i++) {
     WireEdge &e = s_edgeTable[i];
     if (e.type == ET_EMPTY)
       continue;
