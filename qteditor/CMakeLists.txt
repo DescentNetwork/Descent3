@@ -216,6 +216,11 @@ set(QTEDITOR_SOURCES
   orphan_remove_dialog.h
   osiris_status_dialog.cpp
   osiris_status_dialog.h
+#  rad_cast.cpp
+#  rad_cast.h
+#  rad_hemicube.cpp
+#  rad_init.cpp
+#  radiosity.h
   script_interface_dialog.cpp
   script_interface_dialog.h
   script_studio_dialog.cpp
