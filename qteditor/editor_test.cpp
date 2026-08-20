@@ -896,8 +896,7 @@ private slots:
   }
 
   // Verifies the Win32->Qt port of the editor's central OpenGL surface
-  // (CTextureGrWnd + CWireframeGrWnd inside MainFrm.cpp). The Qt port
-  // embeds EditorView inside the ads::CDockManager's central dock area.
+  // (CTextureGrWnd + CWireframeGrWnd inside MainFrm.cpp).
   // We check that:
   //
   //   - MainWindow has an EditorView descendant;

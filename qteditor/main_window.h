@@ -186,9 +186,6 @@ private:
   Ui::MainWindow *ui;
 
   QMenuBar *m_menuBar = nullptr;
-  //ads::CDockManager* m_dockManager = nullptr;
-  //ads::CDockAreaWidget* m_dockArea = nullptr;
-  //ads::CDockWidget* m_keypadDock = nullptr;
   QDockWidget* m_keypadDock = nullptr;
   QTabWidget *m_keypadTabs = nullptr;
   QDialog *m_aboutBox = nullptr;

@@ -2,53 +2,17 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT FORCE_QT5_EDITOR)
-  message(STATUS "USING Qt 6!")
   find_package(Qt6 COMPONENTS Widgets UiTools)
 endif()
 
 if(Qt6_FOUND)
   set(QT_VERSION_MAJOR ${Qt6Core_VERSION_MAJOR} CACHE STRING "Major version of Qt" FORCE)
   set(QT_VERSION_MINOR ${Qt6Core_VERSION_MINOR} CACHE STRING "Minor version of Qt" FORCE)
-  set(ADS_TARGET qtadvanceddocking-qt6)
 else()
   find_package(Qt5 REQUIRED COMPONENTS Widgets UiTools)
   set(QT_VERSION_MAJOR ${Qt5Core_VERSION_MAJOR} CACHE STRING "Major version of Qt" FORCE)
   set(QT_VERSION_MINOR ${Qt5Core_VERSION_MINOR} CACHE STRING "Minor version of Qt" FORCE)
-  set(ADS_TARGET qtadvanceddocking-qt5)
 endif()
-
-
-if(TARGET Qt6::Gui)
-  message(STATUS "USING Qt 6!")
-  get_target_property(_gui_include_dirs Qt6::Gui INTERFACE_INCLUDE_DIRECTORIES)
-  foreach(_dir ${_gui_include_dirs})
-      if(EXISTS "${_dir}/${Qt6Gui_VERSION}/QtGui")
-          include_directories(
-              "${_dir}/${Qt6Gui_VERSION}"
-              "${_dir}/${Qt6Gui_VERSION}/QtGui"
-          )
-      endif()
-  endforeach()
-else()
-  message(STATUS "USING Qt 5!")
-  get_target_property(_gui_include_dirs Qt5::Gui INTERFACE_INCLUDE_DIRECTORIES)
-  foreach(_dir ${_gui_include_dirs})
-      if(EXISTS "${_dir}/${Qt5Gui_VERSION}/QtGui")
-          include_directories(
-              "${_dir}/${Qt5Gui_VERSION}"
-              "${_dir}/${Qt5Gui_VERSION}/QtGui"
-          )
-      endif()
-  endforeach()
-
-endif()
-
-# ads options
-set(BUILD_STATIC ON CACHE BOOL "Build the static library" FORCE)
-set(BUILD_EXAMPLES OFF CACHE BOOL "Build the examples" FORCE)
-
-# build ads
-add_subdirectory(adsdock)
 
 qt_add_resources(QTEDITOR_RESOURCES resources.qrc)
 
@@ -125,6 +89,7 @@ set(QTEDITOR_SOURCES
   level_io.h
   main_window.cpp
   room_ops.cpp
+  object_ops.cpp
   multicheck_dialog.cpp
   multicheck_dialog.h
   matcen_keypad.cpp
@@ -404,7 +369,6 @@ target_link_libraries(Descent3EditorQt PRIVATE
   $<LINK_LIBRARY:WHOLE_ARCHIVE,Descent3Core,linux>
   Qt::Widgets
   Qt::UiTools
-  ${ADS_TARGET}
   ${PLATFORM_LIBS}
 )
 
@@ -455,7 +419,6 @@ if(BUILD_QT_EDITOR_TEST)
     Qt::Widgets
     Qt::UiTools
     Qt::Test
-    ${ADS_TARGET}
     ${PLATFORM_LIBS}
   )
   set_target_properties(Descent3EditorTests PROPERTIES
