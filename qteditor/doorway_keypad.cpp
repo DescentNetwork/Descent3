@@ -28,6 +28,8 @@
 #include "d3edit.h"
 #include "door.h"
 #include "doorway.h"
+#include "editor_room_state.h"
+#include "qt_messagebox.h"
 #include "room_external.h"
 #include "d3edit.h"
 
@@ -44,6 +46,10 @@ DoorwayKeypad::DoorwayKeypad(QWidget *parent)
     connect(b, &QPushButton::clicked, this, &DoorwayKeypad::onNextDoor);
   if (QPushButton *b = ui->IDC_PREV_DOOR)
     connect(b, &QPushButton::clicked, this, &DoorwayKeypad::onPrevDoor);
+  if (QPushButton *b = ui->IDC_DOORWAY_PLACEDOOR)
+    connect(b, &QPushButton::clicked, this, &DoorwayKeypad::onPlaceDoor);
+  if (QPushButton *b = ui->IDC_DOORWAY_ATTACHDOOR)
+    connect(b, &QPushButton::clicked, this, &DoorwayKeypad::onAttachDoor);
   if (QCheckBox *cb = ui->IDC_DOORWAY_LOCKED)
     connect(cb, &QCheckBox::toggled, this, &DoorwayKeypad::onLockedToggled);
   if (QCheckBox *cb = ui->IDC_DOORWAY_AUTO)
@@ -191,5 +197,35 @@ void DoorwayKeypad::onPosEdited() {
   if (doorway *dp = currentDoorway())
     if (QLineEdit *edit = ui->IDC_DOORWAY_POS_EDIT)
       dp->position = edit->text().toFloat();
+}
+
+void DoorwayKeypad::onPlaceDoor() {
+  if (Curroomp == nullptr) {
+    OutrageMessageBox("No current room.");
+    return;
+  }
+  if (Curface < 0 || Curface >= Curroomp->num_faces) {
+    OutrageMessageBox("No current face.");
+    return;
+  }
+  if (Curroomp->faces[Curface].portal_num != -1) {
+    OutrageMessageBox("Cannot place a door on a portal face.");
+    return;
+  }
+  if (D3EditState.current_door < 0 || !Doors[D3EditState.current_door].used) {
+    OutrageMessageBox("No door selected. Use the World Objects Door dialog first.");
+    return;
+  }
+  PlaceDoor(Curroomp, Curface, D3EditState.current_door);
+  updateDialog();
+}
+
+void DoorwayKeypad::onAttachDoor() {
+  if (Placed_room == -1) {
+    OutrageMessageBox("No door placed. Use Place Door first.");
+    return;
+  }
+  AttachRoom();
+  updateDialog();
 }
 

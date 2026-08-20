@@ -42,6 +42,8 @@ private slots:
   void onKeyAll();
   void onKeyOnlyOne();
   void onPosEdited();
+  void onPlaceDoor();
+  void onAttachDoor();
 
 private:
   void updateDialog();

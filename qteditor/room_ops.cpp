@@ -27,10 +27,12 @@
 
 #include "crossplat.h"
 #include "d3edit.h"
+#include "door.h"
 #include "doorway.h"
 #include "mem.h"
 #include "mono.h"
 #include "object.h"
+#include "polymodel.h"
 #include "pserror.h"
 #include "room.h"
 #include "special_face.h"
@@ -1661,4 +1663,155 @@ void HTextureApplyToRoomFace(room *rp, int facenum, int tnum) {
   if (!rp || !rp->used)
     return;
   rp->faces[facenum].tmap = tnum;
+}
+
+// ============================================================================
+// PlaceRoom / ComputePlacedRoomMatrix / PlaceDoor
+// Port of editor/HRoom.cpp:540-616 and editor/edoors.cpp:36-129.
+//
+// PlaceRoom sets up the Placed_* globals for interactive room placement.
+// ComputePlacedRoomMatrix computes the rotation matrix for the placed room.
+// PlaceDoor creates a room from a door polymodel and calls PlaceRoom.
+// ============================================================================
+
+void ComputePlacedRoomMatrix() {
+  room *placedroomp;
+  int placedface;
+  matrix srcmat;
+  vector t;
+
+  if (Placed_room != -1) {
+    placedroomp = &Rooms[Placed_room];
+    placedface = Placed_room_face;
+  } else {
+    placedroomp = &Rooms[Placed_room];
+    placedface = Placed_room_face;
+  }
+
+  t = -placedroomp->faces[placedface].normal;
+  vm_VectorToMatrix(&srcmat, &t, NULL, NULL);
+  vm_VectorAngleToMatrix(&Placed_room_orient, &Placed_room_orient.fvec, Placed_room_angle);
+
+  vm_Orthogonalize(&srcmat);
+  vm_Orthogonalize(&Placed_room_orient);
+
+  vm_MatrixMulTMatrix(&Placed_room_rotmat, &srcmat, &Placed_room_orient);
+  vm_Orthogonalize(&Placed_room_rotmat);
+}
+
+// PlaceRoom — editor/HRoom.cpp:585
+// Sets up globals for interactive room placement.
+void PlaceRoom(room *baseroomp, int baseface, int placed_room, int placed_room_face, int placed_room_door) {
+  ASSERT(baseroomp->faces[baseface].portal_num == -1);
+
+  room *placedroomp = &Rooms[placed_room];
+
+  Placed_room = placed_room;
+  Placed_room_face = placed_room_face;
+  Placed_room_orient.fvec = baseroomp->faces[baseface].normal;
+  Placed_room_angle = 0;
+  Placed_baseroomp = baseroomp;
+  Placed_baseface = baseface;
+  Placed_door = placed_room_door;
+
+  ComputeCenterPointOnFace(&Placed_room_attachpoint, baseroomp, baseface);
+  ComputeCenterPointOnFace(&Placed_room_origin, placedroomp, placed_room_face);
+
+  ComputePlacedRoomMatrix();
+}
+
+// PlaceDoor — editor/edoors.cpp:36
+// Creates a room from a door polymodel (shell + front face submodels) and
+// places it for interactive positioning.
+void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
+  poly_model *po = GetPolymodelPointer(GetDoorImage(placed_door));
+  if (po == nullptr)
+    return;
+
+  int num_faces = 0, num_verts = 0;
+  int got_shell = 0, got_front = 0;
+  bsp_info *front_sm = nullptr, *shell_sm = nullptr;
+
+  for (int i = 0; i < po->n_models; i++) {
+    bsp_info *sm = &po->submodel[i];
+    if (sm->flags & SOF_SHELL) {
+      got_shell = 1;
+      num_verts += sm->nverts;
+      num_faces += sm->num_faces;
+      shell_sm = sm;
+    }
+    if (sm->flags & SOF_FRONTFACE) {
+      got_front = 1;
+      num_verts += sm->nverts;
+      num_faces++; // front face is always one face
+      front_sm = sm;
+    }
+  }
+
+  if (!got_shell || !got_front || shell_sm == nullptr || front_sm == nullptr) {
+    OutrageMessageBox("This door is not properly specified (missing shell or front face).");
+    return;
+  }
+
+  int total_verts = num_verts;
+  int total_faces = num_faces;
+
+  room *rp = CreateNewRoom(total_verts, total_faces);
+  ASSERT(rp != nullptr);
+
+  int index = 0;
+
+  // Copy shell vertices
+  for (int i = 0; i < shell_sm->nverts; i++, index++) {
+    rp->verts[index] = shell_sm->verts[i];
+  }
+  // Copy front face vertices
+  for (int i = 0; i < front_sm->nverts; i++, index++) {
+    rp->verts[index] = front_sm->verts[i];
+  }
+
+  // Create faces from shell
+  index = 0;
+  for (int i = 0; i < shell_sm->num_faces; i++, index++) {
+    InitRoomFace(&rp->faces[index], shell_sm->faces[i].nverts);
+    rp->faces[index].tmap = D3EditState.texdlg_texture;
+    for (int t = 0; t < rp->faces[index].num_verts; t++)
+      rp->faces[index].face_verts[t] = shell_sm->faces[i].vertnums[t];
+  }
+
+  // Create the front face (always one face)
+  int front_face_index = index;
+  ASSERT(front_sm->num_faces == 1);
+  InitRoomFace(&rp->faces[index], front_sm->faces[0].nverts);
+  rp->faces[index].tmap = D3EditState.texdlg_texture;
+
+  // Remap front face vertices to match the shell
+  int front_remap[30];
+  for (int i = 0; i < front_sm->nverts; i++)
+    front_remap[i] = -1;
+
+  vector diff_vec = front_sm->offset - shell_sm->offset;
+
+  for (int i = 0; i < shell_sm->nverts; i++) {
+    for (int t = 0; t < front_sm->nverts; t++) {
+      vector testvec = front_sm->verts[t] + diff_vec;
+      if (PointsAreSame(&shell_sm->verts[i], &testvec))
+        front_remap[t] = i;
+    }
+  }
+
+  for (int i = 0; i < front_sm->nverts; i++)
+    ASSERT(front_remap[i] != -1);
+
+  for (int t = 0; t < rp->faces[front_face_index].num_verts; t++)
+    rp->faces[front_face_index].face_verts[t] = front_remap[front_sm->faces[0].vertnums[t]];
+
+  // Compute normals and UVs
+  if (!ResetRoomFaceNormals(rp))
+    ASSERT(0);
+
+  AssignDefaultUVsToRoom(rp);
+
+  // Now call PlaceRoom to set up interactive placement
+  PlaceRoom(baseroomp, baseface, ROOMNUM(rp), front_face_index, placed_door);
 }

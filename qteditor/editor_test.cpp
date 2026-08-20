@@ -2002,6 +2002,89 @@ private slots:
       qInfo() << "object selected:" << selObj;
     }
   }
+
+  void testPlaceRoomSetsGlobals() {
+    room *base = &Rooms[0];
+    room *att = &Rooms[1];
+    memset(base, 0, sizeof(room));
+    memset(att, 0, sizeof(room));
+    InitRoom(base, 4, 1, 0);
+    InitRoom(att, 4, 1, 0);
+
+    base->verts[0] = vector{(float)0, (float)0, (float)0};
+    base->verts[1] = vector{(float)10, (float)0, (float)0};
+    base->verts[2] = vector{(float)10, (float)0, (float)-10};
+    base->verts[3] = vector{(float)0, (float)0, (float)-10};
+    InitRoomFace(&base->faces[0], 4);
+    for (int i = 0; i < 4; i++) base->faces[0].face_verts[i] = i;
+    ComputeFaceNormal(base, 0);
+    base->used = true;
+
+    att->verts[0] = vector{(float)0, (float)0, (float)0};
+    att->verts[1] = vector{(float)10, (float)0, (float)0};
+    att->verts[2] = vector{(float)10, (float)0, (float)-10};
+    att->verts[3] = vector{(float)0, (float)0, (float)-10};
+    InitRoomFace(&att->faces[0], 4);
+    att->faces[0].face_verts[0] = 0;
+    att->faces[0].face_verts[1] = 3;
+    att->faces[0].face_verts[2] = 2;
+    att->faces[0].face_verts[3] = 1;
+    ComputeFaceNormal(att, 0);
+    att->used = true;
+
+    PlaceRoom(base, 0, 1, 0, -1);
+
+    QCOMPARE(Placed_room, 1);
+    QCOMPARE(Placed_room_face, 0);
+    QCOMPARE(Placed_baseroomp, base);
+    QCOMPARE(Placed_baseface, 0);
+    QCOMPARE(Placed_door, -1);
+    QCOMPARE(Placed_room_angle, 0.0f);
+
+    // Placed_room_orient.fvec should match base face normal
+    {
+      vector diff = Placed_room_orient.fvec - base->faces[0].normal;
+      float dist = vm_GetMagnitude(&diff);
+      QVERIFY(dist < 0.01f);
+    }
+
+    Placed_room = -1;
+    Placed_baseroomp = nullptr;
+    FreeRoom(base);
+    FreeRoom(att);
+  }
+
+  void testComputePlacedRoomMatrixIdentity() {
+    room *rp = &Rooms[0];
+    memset(rp, 0, sizeof(room));
+    InitRoom(rp, 4, 1, 0);
+    rp->verts[0] = vector{(float)0, (float)0, (float)0};
+    rp->verts[1] = vector{(float)10, (float)0, (float)0};
+    rp->verts[2] = vector{(float)10, (float)0, (float)-10};
+    rp->verts[3] = vector{(float)0, (float)0, (float)-10};
+    InitRoomFace(&rp->faces[0], 4);
+    for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
+    ComputeFaceNormal(rp, 0);
+    rp->used = true;
+
+    Placed_room = 0;
+    Placed_room_face = 0;
+    Placed_room_angle = 0;
+    vm_MakeIdentity(&Placed_room_orient);
+
+    ComputePlacedRoomMatrix();
+
+    // rotmat should be a valid orthogonal matrix (fvec magnitude ~1)
+    float fmag = vm_GetMagnitude(&Placed_room_rotmat.fvec);
+    float rmag = vm_GetMagnitude(&Placed_room_rotmat.rvec);
+    float umag = vm_GetMagnitude(&Placed_room_rotmat.uvec);
+    QVERIFY(fmag > 0.9f && fmag < 1.1f);
+    QVERIFY(rmag > 0.9f && rmag < 1.1f);
+    QVERIFY(umag > 0.9f && umag < 1.1f);
+
+    Placed_room = -1;
+    FreeRoom(rp);
+  }
 };
 
 // Custom main: initialise the D3 core (loads game data) before running tests.
