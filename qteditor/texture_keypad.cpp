@@ -26,58 +26,11 @@
 #include <cmath>
 
 #include "d3edit.h"
+#include "editor_room_state.h"
 #include "room_external.h"
 
 
 namespace {
-
-// Slide all UVs by (right, up) in 1/128th texture units.
-void uvSlide(face *fp, float right, float up) {
-  for (int i = 0; i < fp->num_verts; i++) {
-    fp->face_uvls[i].u -= right / 128.0f;
-    fp->face_uvls[i].v += up / 128.0f;
-  }
-}
-
-void uvRotate(face *fp, float angle) {
-  if (fp->num_verts <= 0)
-    return;
-  float cu = 0, cv = 0;
-  for (int i = 0; i < fp->num_verts; i++) {
-    cu += fp->face_uvls[i].u;
-    cv += fp->face_uvls[i].v;
-  }
-  cu /= fp->num_verts;
-  cv /= fp->num_verts;
-  const float c = std::cos(angle);
-  const float s = std::sin(angle);
-  for (int i = 0; i < fp->num_verts; i++) {
-    const float du = fp->face_uvls[i].u - cu;
-    const float dv = fp->face_uvls[i].v - cv;
-    fp->face_uvls[i].u = cu + du * c - dv * s;
-    fp->face_uvls[i].v = cv + du * s + dv * c;
-  }
-}
-
-void uvFlipX(face *fp) {
-  for (int i = 0; i < fp->num_verts; i++)
-    fp->face_uvls[i].u = -fp->face_uvls[i].u;
-}
-
-void uvFlipY(face *fp) {
-  for (int i = 0; i < fp->num_verts; i++)
-    fp->face_uvls[i].v = -fp->face_uvls[i].v;
-}
-
-void uvScaleU(face *fp, float factor) {
-  for (int i = 0; i < fp->num_verts; i++)
-    fp->face_uvls[i].u *= factor;
-}
-
-void uvScaleV(face *fp, float factor) {
-  for (int i = 0; i < fp->num_verts; i++)
-    fp->face_uvls[i].v *= factor;
-}
 
 } // namespace
 
@@ -152,38 +105,27 @@ void TextureKeypad::updateDialog() {
   }
 }
 
-void TextureKeypad::onSlideLeft() { uvSlide(&Curroomp->faces[Curface], -1.0f * D3EditState.texscale, 0); }
-void TextureKeypad::onSlideRight() { uvSlide(&Curroomp->faces[Curface], 1.0f * D3EditState.texscale, 0); }
-void TextureKeypad::onSlideUp() { uvSlide(&Curroomp->faces[Curface], 0, 1.0f * D3EditState.texscale); }
-void TextureKeypad::onSlideDown() { uvSlide(&Curroomp->faces[Curface], 0, -1.0f * D3EditState.texscale); }
+void TextureKeypad::onSlideLeft() { HTextureSlide(Curroomp, Curface, -1.0f * D3EditState.texscale, 0); }
+void TextureKeypad::onSlideRight() { HTextureSlide(Curroomp, Curface, 1.0f * D3EditState.texscale, 0); }
+void TextureKeypad::onSlideUp() { HTextureSlide(Curroomp, Curface, 0, 1.0f * D3EditState.texscale); }
+void TextureKeypad::onSlideDown() { HTextureSlide(Curroomp, Curface, 0, -1.0f * D3EditState.texscale); }
 void TextureKeypad::onRotLeft() {
-  uvRotate(&Curroomp->faces[Curface], -0.1f * D3EditState.texscale);
+  HTextureRotate(Curroomp, Curface, -0.1f * D3EditState.texscale);
 }
 void TextureKeypad::onRotRight() {
-  uvRotate(&Curroomp->faces[Curface], 0.1f * D3EditState.texscale);
+  HTextureRotate(Curroomp, Curface, 0.1f * D3EditState.texscale);
 }
-void TextureKeypad::onRotate90() { uvRotate(&Curroomp->faces[Curface], 3.14159f / 2.0f); }
-void TextureKeypad::onFlipX() { uvFlipX(&Curroomp->faces[Curface]); }
-void TextureKeypad::onFlipY() { uvFlipY(&Curroomp->faces[Curface]); }
-void TextureKeypad::onExpandU() { uvScaleU(&Curroomp->faces[Curface], 1.1f); }
-void TextureKeypad::onContractU() { uvScaleU(&Curroomp->faces[Curface], 1.0f / 1.1f); }
-void TextureKeypad::onExpandV() { uvScaleV(&Curroomp->faces[Curface], 1.1f); }
-void TextureKeypad::onContractV() { uvScaleV(&Curroomp->faces[Curface], 1.0f / 1.1f); }
-void TextureKeypad::onStretchLess() { uvScaleU(&Curroomp->faces[Curface], 1.0f / 1.1f); }
-void TextureKeypad::onStretchMore() { uvScaleU(&Curroomp->faces[Curface], 1.1f); }
+void TextureKeypad::onRotate90() { HTextureRotate(Curroomp, Curface, 3.14159f / 2.0f); }
+void TextureKeypad::onFlipX() { HTextureFlipX(Curroomp, Curface); }
+void TextureKeypad::onFlipY() { HTextureFlipY(Curroomp, Curface); }
+void TextureKeypad::onExpandU() { ScaleFaceUVs(Curroomp, Curface, 1.1f); }
+void TextureKeypad::onContractU() { ScaleFaceUVs(Curroomp, Curface, 1.0f / 1.1f); }
+void TextureKeypad::onExpandV() { ScaleFaceUVs(Curroomp, Curface, 1.1f); }
+void TextureKeypad::onContractV() { ScaleFaceUVs(Curroomp, Curface, 1.0f / 1.1f); }
+void TextureKeypad::onStretchLess() { HTextureStretchLess(Curroomp, Curface, Curedge, D3EditState.texscale); }
+void TextureKeypad::onStretchMore() { HTextureStretchMore(Curroomp, Curface, Curedge, D3EditState.texscale); }
 
-void TextureKeypad::onSetDefault() {
-  // Face-map the texture to the face's world extents (simple planar map).
-  face *fp = &Curroomp->faces[Curface];
-  vector minv = fp->min_xyz, maxv = fp->max_xyz;
-  const float du = (maxv.x() - minv.x()) > 0.001f ? (maxv.x() - minv.x()) : 1.0f;
-  const float dv = (maxv.y() - minv.y()) > 0.001f ? (maxv.y() - minv.y()) : 1.0f;
-  for (int i = 0; i < fp->num_verts; i++) {
-    const vector &p = Curroomp->verts[fp->face_verts[i]];
-    fp->face_uvls[i].u = (p.x() - minv.x()) / du;
-    fp->face_uvls[i].v = (p.y() - minv.y()) / dv;
-  }
-}
+void TextureKeypad::onSetDefault() { HTextureSetDefault(Curroomp, Curface); }
 
 void TextureKeypad::onGrab() {
   if (Curroomp != nullptr && Curface >= 0)

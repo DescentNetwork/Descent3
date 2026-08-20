@@ -75,3 +75,19 @@ void ConnectPortal(room *rp, int portal_num, int dest_room);
 void DetachPortal(room *rp, int portal_num);
 void AttachRoom();
 
+// Port of editor/RoomUVs.cpp and editor/HTexture.cpp — UV manipulation.
+void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl);
+void StretchRoomUVs(room *rp, int facenum, int edge);
+void ScaleFaceUVs(room *rp, int facenum, float scale);
+void HTextureSlide(room *rp, int facenum, float right, float up);
+void HTextureRotate(room *rp, int facenum, float angle_rad);
+void HTextureFlipX(room *rp, int facenum);
+void HTextureFlipY(room *rp, int facenum);
+void HTextureRoomStretch(room *rp, int facenum, int edge, int direction);
+void HTextureStretchMore(room *rp, int facenum, int edge, float texscale);
+void HTextureStretchLess(room *rp, int facenum, int edge, float texscale);
+void HTextureSetDefault(room *rp, int facenum);
+int HTexturePropagateToFace(room *destrp, int destface, room *srcrp, int srcface, bool tex = true);
+int HTextureCopyUVsToFace(room *destrp, int destface, room *srcrp, int srcface, int offset);
+void HTextureApplyToRoomFace(room *rp, int facenum, int tnum);
+

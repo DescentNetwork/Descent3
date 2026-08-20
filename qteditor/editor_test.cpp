@@ -1580,6 +1580,124 @@ private slots:
     Markedroomp = nullptr;
   }
 
+  void testUVSlide() {
+    room *rp = &Rooms[0];
+    memset(rp, 0, sizeof(room));
+    InitRoom(rp, 4, 1, 0);
+    rp->verts[0] = vector{(float)0, (float)0, (float)0};
+    rp->verts[1] = vector{(float)10, (float)0, (float)0};
+    rp->verts[2] = vector{(float)10, (float)0, (float)-10};
+    rp->verts[3] = vector{(float)0, (float)0, (float)-10};
+    InitRoomFace(&rp->faces[0], 4);
+    for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
+    ComputeFaceNormal(rp, 0);
+    rp->used = true;
+
+    rp->faces[0].face_uvls[0].u = 0.0f;
+    rp->faces[0].face_uvls[0].v = 0.0f;
+    rp->faces[0].face_uvls[1].u = 1.0f;
+    rp->faces[0].face_uvls[1].v = 0.0f;
+    rp->faces[0].face_uvls[2].u = 1.0f;
+    rp->faces[0].face_uvls[2].v = 1.0f;
+    rp->faces[0].face_uvls[3].u = 0.0f;
+    rp->faces[0].face_uvls[3].v = 1.0f;
+
+    float orig_u0 = rp->faces[0].face_uvls[0].u;
+    float orig_v0 = rp->faces[0].face_uvls[0].v;
+
+    HTextureSlide(rp, 0, 12.8f, 0);
+    QCOMPARE(rp->faces[0].face_uvls[0].u, orig_u0 - 0.1f);
+
+    HTextureSlide(rp, 0, 0, -12.8f);
+    QCOMPARE(rp->faces[0].face_uvls[0].v, orig_v0 - 0.1f);
+
+    FreeRoom(rp);
+  }
+
+  void testUVFlip() {
+    room *rp = &Rooms[0];
+    memset(rp, 0, sizeof(room));
+    InitRoom(rp, 4, 1, 0);
+    rp->verts[0] = vector{(float)0, (float)0, (float)0};
+    rp->verts[1] = vector{(float)10, (float)0, (float)0};
+    rp->verts[2] = vector{(float)10, (float)0, (float)-10};
+    rp->verts[3] = vector{(float)0, (float)0, (float)-10};
+    InitRoomFace(&rp->faces[0], 4);
+    for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
+    ComputeFaceNormal(rp, 0);
+    rp->used = true;
+
+    rp->faces[0].face_uvls[0].u = 0.2f;
+    rp->faces[0].face_uvls[0].v = 0.3f;
+
+    HTextureFlipX(rp, 0);
+    QCOMPARE(rp->faces[0].face_uvls[0].u, 0.8f);
+
+    HTextureFlipY(rp, 0);
+    QCOMPARE(rp->faces[0].face_uvls[0].v, 0.7f);
+
+    FreeRoom(rp);
+  }
+
+  void testUVScaleFromCenter() {
+    room *rp = &Rooms[0];
+    memset(rp, 0, sizeof(room));
+    InitRoom(rp, 4, 1, 0);
+    rp->verts[0] = vector{(float)0, (float)0, (float)0};
+    rp->verts[1] = vector{(float)10, (float)0, (float)0};
+    rp->verts[2] = vector{(float)10, (float)0, (float)-10};
+    rp->verts[3] = vector{(float)0, (float)0, (float)-10};
+    InitRoomFace(&rp->faces[0], 4);
+    for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
+    ComputeFaceNormal(rp, 0);
+    rp->used = true;
+
+    rp->faces[0].face_uvls[0].u = 0.0f;
+    rp->faces[0].face_uvls[0].v = 0.0f;
+    rp->faces[0].face_uvls[1].u = 1.0f;
+    rp->faces[0].face_uvls[1].v = 0.0f;
+    rp->faces[0].face_uvls[2].u = 1.0f;
+    rp->faces[0].face_uvls[2].v = 1.0f;
+    rp->faces[0].face_uvls[3].u = 0.0f;
+    rp->faces[0].face_uvls[3].v = 1.0f;
+
+    ScaleFaceUVs(rp, 0, 2.0f);
+    float center_u = 0.5f;
+    QCOMPARE(rp->faces[0].face_uvls[0].u, center_u + (0.0f - center_u) * 2.0f);
+    QCOMPARE(rp->faces[0].face_uvls[1].u, center_u + (1.0f - center_u) * 2.0f);
+
+    ScaleFaceUVs(rp, 0, 0.5f);
+    QCOMPARE(rp->faces[0].face_uvls[0].u, 0.0f);
+    QCOMPARE(rp->faces[0].face_uvls[1].u, 1.0f);
+
+    FreeRoom(rp);
+  }
+
+  void testSetDefaultUVs() {
+    room *rp = &Rooms[0];
+    memset(rp, 0, sizeof(room));
+    InitRoom(rp, 4, 1, 0);
+    rp->verts[0] = vector{(float)0, (float)10, (float)0};
+    rp->verts[1] = vector{(float)10, (float)10, (float)0};
+    rp->verts[2] = vector{(float)10, (float)0, (float)0};
+    rp->verts[3] = vector{(float)0, (float)0, (float)0};
+    InitRoomFace(&rp->faces[0], 4);
+    for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
+    ComputeFaceNormal(rp, 0);
+    rp->used = true;
+
+    rp->faces[0].face_uvls[0].u = 99.0f;
+    rp->faces[0].face_uvls[0].v = 99.0f;
+
+    HTextureSetDefault(rp, 0);
+    QVERIFY(rp->faces[0].face_uvls[0].u >= -1.0f);
+    QVERIFY(rp->faces[0].face_uvls[0].u <= 1.0f);
+    QVERIFY(rp->faces[0].face_uvls[0].v >= -1.0f);
+    QVERIFY(rp->faces[0].face_uvls[0].v <= 1.0f);
+
+    FreeRoom(rp);
+  }
+
 #if 0
   // Calls private MainWindow members (onSpawnNewViewer, onSelectNextViewer,
   // onDeleteCurrentViewer).

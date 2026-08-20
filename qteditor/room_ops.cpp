@@ -39,6 +39,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 
@@ -1402,4 +1403,262 @@ void AttachRoom() {
   Placed_room = -1;
 
   World_changed = true;
+}
+
+// ============================================================================
+// UV manipulation functions — editor/RoomUVs.cpp and editor/HTexture.cpp
+// ============================================================================
+
+// GetUVLForRoomPoint — editor/Erooms.cpp:640
+// Given a room, face, and vertex index, compute the default UV coordinates.
+void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
+  room *rp = &Rooms[roomnum];
+  face *fp = &rp->faces[facenum];
+  int nv = fp->num_verts;
+
+  matrix face_matrix, trans_matrix;
+  vector fvec, avg_vert, rot_vert;
+  vector verts[MAX_VERTS_PER_FACE];
+
+  // find the center point of this face
+  vm_MakeZero(&avg_vert);
+  int i;
+  for (i = 0; i < nv; i++)
+    avg_vert += rp->verts[fp->face_verts[i]];
+  avg_vert /= static_cast<float>(i);
+
+  // Make the orientation matrix (reverse the normal: looking "at" the face)
+  fvec = -fp->normal;
+  vm_VectorToMatrix(&face_matrix, &fvec, nullptr, nullptr);
+
+  angvec avec;
+  vm_ExtractAnglesFromMatrix(&avec, &face_matrix);
+  vm_AnglesToMatrix(&trans_matrix, avec.p(), avec.h(), avec.b());
+
+  // Rotate all the points
+  for (i = 0; i < nv; i++) {
+    vector vert = rp->verts[fp->face_verts[i]];
+    vert -= avg_vert;
+    vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
+    verts[i] = rot_vert;
+  }
+
+  // Find left most point
+  int leftmost_point = 0;
+  float leftmost_x = verts[0].x();
+  for (i = 1; i < nv; i++) {
+    if (verts[i].x() < leftmost_x) {
+      leftmost_point = i;
+      leftmost_x = verts[i].x();
+    }
+  }
+
+  // Find top most point
+  int topmost_point = 0;
+  float topmost_y = verts[0].y();
+  for (i = 1; i < nv; i++) {
+    if (verts[i].y() > topmost_y) {
+      topmost_point = i;
+      topmost_y = verts[i].y();
+    }
+  }
+
+  // now set the base vertex
+  vector base_vector;
+  base_vector.x() = verts[leftmost_point].x();
+  base_vector.y() = verts[topmost_point].y();
+  base_vector.z() = 0;
+
+  // now actually find the uv of our specified point
+  uvl->u = (verts[vertnum].x() - base_vector.x()) / 20.0f;
+  uvl->v = (base_vector.y() - verts[vertnum].y()) / 20.0f;
+}
+
+// StretchRoomUVs — editor/RoomUVs.cpp:168
+// Stretches the UVs of a face along the selected edge.
+// Edge is the vertex index — the edge is (edge, edge+1).
+void StretchRoomUVs(room *rp, int facenum, int edge) {
+  face *fp = &rp->faces[facenum];
+  int nv = fp->num_verts;
+  int v0 = edge;
+  int v1 = (v0 + 1) % nv;
+
+  roomUVL uv0 = fp->face_uvls[v0];
+  roomUVL uv1 = fp->face_uvls[v1];
+
+  AssignUVsToFace(rp, facenum, &uv0, &uv1, v0, v1);
+}
+
+// ScaleFaceUVs — editor/RoomUVs.cpp:195
+// Scale all UV values in a face from the center point (average of u,v).
+void ScaleFaceUVs(room *rp, int facenum, float scale) {
+  face *fp = &rp->faces[facenum];
+  int nv = fp->num_verts;
+
+  float midu = 0, midv = 0;
+  for (int i = 0; i < nv; i++) {
+    midu += fp->face_uvls[i].u;
+    midv += fp->face_uvls[i].v;
+  }
+  midu /= nv;
+  midv /= nv;
+
+  for (int i = 0; i < nv; i++) {
+    fp->face_uvls[i].u = midu + (fp->face_uvls[i].u - midu) * scale;
+    fp->face_uvls[i].v = midv + (fp->face_uvls[i].v - midv) * scale;
+  }
+}
+
+// HTextureSlide — editor/HTexture.cpp:334
+// Slide all UVs on a face by (right, up) in 1/128th texture units.
+void HTextureSlide(room *rp, int facenum, float right, float up) {
+  if (!rp || !rp->used)
+    return;
+  for (int i = 0; i < rp->faces[facenum].num_verts; i++) {
+    rp->faces[facenum].face_uvls[i].u -= right / 128.0f;
+    rp->faces[facenum].face_uvls[i].v += up / 128.0f;
+  }
+}
+
+// HTextureRotate — editor/HTexture.cpp:371
+// Rotate all UVs on a face by the given angle (in radians).
+void HTextureRotate(room *rp, int facenum, float angle_rad) {
+  if (!rp || !rp->used)
+    return;
+  face *fp = &rp->faces[facenum];
+  int nv = fp->num_verts;
+  if (nv <= 0)
+    return;
+
+  float cu = 0, cv = 0;
+  for (int i = 0; i < nv; i++) {
+    cu += fp->face_uvls[i].u;
+    cv += fp->face_uvls[i].v;
+  }
+  cu /= nv;
+  cv /= nv;
+
+  float c = std::cos(angle_rad);
+  float s = std::sin(angle_rad);
+
+  for (int i = 0; i < nv; i++) {
+    float du = fp->face_uvls[i].u - cu;
+    float dv = fp->face_uvls[i].v - cv;
+    fp->face_uvls[i].u = cu + du * c - dv * s;
+    fp->face_uvls[i].v = cv + du * s + dv * c;
+  }
+}
+
+// HTextureFlipX — editor/HTexture.cpp:274
+// Flip the U coordinate: u = 1 - u.
+void HTextureFlipX(room *rp, int facenum) {
+  if (!rp || !rp->used)
+    return;
+  for (int i = 0; i < rp->faces[facenum].num_verts; i++)
+    rp->faces[facenum].face_uvls[i].u = 1 - rp->faces[facenum].face_uvls[i].u;
+}
+
+// HTextureFlipY — editor/HTexture.cpp:304
+// Flip the V coordinate: v = 1 - v.
+void HTextureFlipY(room *rp, int facenum) {
+  if (!rp || !rp->used)
+    return;
+  for (int i = 0; i < rp->faces[facenum].num_verts; i++)
+    rp->faces[facenum].face_uvls[i].v = 1 - rp->faces[facenum].face_uvls[i].v;
+}
+
+// HTextureRoomStretch — editor/HTexture.cpp:480
+// Stretch UVs perpendicular to the selected edge. direction = +1 or -1.
+void HTextureRoomStretch(room *rp, int facenum, int edge, int direction) {
+  face *fp = &rp->faces[facenum];
+  int nv = fp->num_verts;
+  int next_edge = (edge + 1) % nv;
+
+  float du = fp->face_uvls[next_edge].u - fp->face_uvls[edge].u;
+  float dv = fp->face_uvls[next_edge].v - fp->face_uvls[edge].v;
+
+  float nu = -dv;
+  float nv_uv = du;
+  float mag = sqrt(nv_uv * nv_uv + nu * nu);
+  if (mag < 0.001f)
+    return;
+  nv_uv /= mag;
+  nu /= mag;
+  nv_uv /= 64.0f;
+  nu /= 64.0f;
+
+  for (int i = 0; i < nv; i++) {
+    if (i == edge || i == next_edge)
+      continue;
+    fp->face_uvls[i].u -= nu * direction;
+    fp->face_uvls[i].v -= nv_uv * direction;
+  }
+}
+
+// HTextureStretchMore — editor/HTexture.cpp:400
+void HTextureStretchMore(room *rp, int facenum, int edge, float texscale) {
+  HTextureRoomStretch(rp, facenum, edge, (int)(1 * texscale));
+}
+
+// HTextureStretchLess — editor/HTexture.cpp:408
+void HTextureStretchLess(room *rp, int facenum, int edge, float texscale) {
+  HTextureRoomStretch(rp, facenum, edge, (int)(-1 * texscale));
+}
+
+// HTextureSetDefault — editor/HTexture.cpp:416
+// Reset UVs to defaults using GetUVLForRoomPoint.
+void HTextureSetDefault(room *rp, int facenum) {
+  if (!rp || !rp->used)
+    return;
+  for (int i = 0; i < rp->faces[facenum].num_verts; i++) {
+    float saveu2 = rp->faces[facenum].face_uvls[i].u2;
+    float savev2 = rp->faces[facenum].face_uvls[i].v2;
+    GetUVLForRoomPoint(ROOMNUM(rp), facenum, i, &rp->faces[facenum].face_uvls[i]);
+    rp->faces[facenum].face_uvls[i].u2 = saveu2;
+    rp->faces[facenum].face_uvls[i].v2 = savev2;
+  }
+}
+
+// HTexturePropagateToFace — editor/HTexture.cpp:215
+// Copy texture from current face to adjacent face, tiling UVs.
+// tex = true also copies the texture assignment.
+int HTexturePropagateToFace(room *destrp, int destface, room *srcrp, int srcface, bool tex) {
+  face *dfp = &destrp->faces[destface];
+  face *sfp = &srcrp->faces[srcface];
+  int v0, v1;
+
+  if (!FindSharedEdge(dfp, sfp, &v0, &v1))
+    return 0;
+
+  if (tex)
+    dfp->tmap = sfp->tmap;
+
+  AssignUVsToFace(destrp, destface, &sfp->face_uvls[(v1 + 1) % sfp->num_verts], &sfp->face_uvls[v1], v0,
+                  (v0 + 1) % dfp->num_verts);
+
+  return 1;
+}
+
+// HTextureCopyUVsToFace — editor/HTexture.cpp:251
+// Copy texture UVs from one face to another with offset.
+int HTextureCopyUVsToFace(room *destrp, int destface, room *srcrp, int srcface, int offset) {
+  face *dfp = &destrp->faces[destface];
+  face *sfp = &srcrp->faces[srcface];
+
+  if (dfp->num_verts != sfp->num_verts)
+    return 0;
+
+  for (int i = 0; i < dfp->num_verts; i++) {
+    dfp->face_uvls[(i + offset) % dfp->num_verts].u = sfp->face_uvls[i].u;
+    dfp->face_uvls[(i + offset) % dfp->num_verts].v = sfp->face_uvls[i].v;
+  }
+
+  return 1;
+}
+
+// HTextureApplyToRoomFace — editor/HTexture.cpp:198
+void HTextureApplyToRoomFace(room *rp, int facenum, int tnum) {
+  if (!rp || !rp->used)
+    return;
+  rp->faces[facenum].tmap = tnum;
 }
