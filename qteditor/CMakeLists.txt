@@ -124,6 +124,7 @@ set(QTEDITOR_SOURCES
   level_io.cpp
   level_io.h
   main_window.cpp
+  room_ops.cpp
   multicheck_dialog.cpp
   multicheck_dialog.h
   matcen_keypad.cpp

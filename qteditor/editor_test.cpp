@@ -1208,6 +1208,378 @@ private slots:
     a_cascade->trigger();
     QCoreApplication::processEvents();
   }
+  // ------------------------------------------------------------------
+  // Room operations tests (room_ops.cpp)
+  // ------------------------------------------------------------------
+  void testCopyFace() {
+    face src, dst;
+    memset(&src, 0, sizeof(src));
+    InitRoomFace(&src, 4);
+    src.flags = FF_GOALFACE;
+    src.portal_num = 5;
+    src.tmap = 42;
+    src.light_multiple = 3;
+    src.normal = vector{(float)1, (float)2, (float)3};
+    for (int i = 0; i < 4; i++) {
+      src.face_verts[i] = i * 10;
+      src.face_uvls[i].u = i * 0.5f;
+      src.face_uvls[i].v = i * 1.2f;
+      src.face_uvls[i].alpha = 128;
+    }
+
+    CopyFace(&dst, &src);
+
+    QCOMPARE(dst.num_verts, 4);
+    QCOMPARE(dst.tmap, 42);
+    QCOMPARE(dst.light_multiple, 3);
+    QCOMPARE(dst.portal_num, -1);  // always cleared
+    QVERIFY(dst.flags & FF_GOALFACE);
+    QVERIFY(!(dst.flags & FF_LIGHTMAP));   // cleared
+    QVERIFY(!(dst.flags & FF_HAS_TRIGGER)); // cleared
+    for (int i = 0; i < 4; i++) {
+      QCOMPARE(dst.face_verts[i], src.face_verts[i]);
+      QCOMPARE(dst.face_uvls[i].u, src.face_uvls[i].u);
+      QCOMPARE(dst.face_uvls[i].v, src.face_uvls[i].v);
+    }
+    FreeRoomFace(&dst);
+    FreeRoomFace(&src);
+  }
+
+  void testCopyRoom() {
+    room src;
+    memset(&src, 0, sizeof(src));
+    src.used = 1;
+    src.num_verts = 4;
+    src.num_faces = 2;
+    src.num_portals = 0;
+    src.verts = new vector[4];
+    src.faces = new face[2];
+    src.verts[0] = vector{(float)10, (float)20, (float)30};
+    src.verts[1] = vector{(float)40, (float)50, (float)60};
+    src.verts[2] = vector{(float)70, (float)80, (float)90};
+    src.verts[3] = vector{(float)100, (float)110, (float)120};
+    InitRoomFace(&src.faces[0], 3);
+    src.faces[0].face_verts[0] = 0;
+    src.faces[0].face_verts[1] = 1;
+    src.faces[0].face_verts[2] = 2;
+    src.faces[0].tmap = 5;
+    src.faces[0].normal = vector{(float)0, (float)0, (float)1};
+    InitRoomFace(&src.faces[1], 3);
+    src.faces[1].face_verts[0] = 1;
+    src.faces[1].face_verts[1] = 2;
+    src.faces[1].face_verts[2] = 3;
+    src.faces[1].tmap = 6;
+    src.faces[1].normal = vector{(float)0, (float)1, (float)0};
+    src.flags = RF_EXTERNAL;
+
+    room dst;
+    memset(&dst, 0, sizeof(dst));
+    CopyRoom(&dst, &src);
+
+    QCOMPARE(dst.num_verts, 4);
+    QCOMPARE(dst.num_faces, 2);
+    QCOMPARE(dst.num_portals, 0);
+    QCOMPARE(dst.flags, (uint32_t)RF_EXTERNAL);
+    QCOMPARE(dst.verts[2].x(), 70.0f);
+    QCOMPARE(dst.faces[0].tmap, 5);
+    QCOMPARE(dst.faces[1].tmap, 6);
+
+    FreeRoomFace(&dst.faces[0]);
+    FreeRoomFace(&dst.faces[1]);
+    delete[] dst.verts;
+    delete[] dst.faces;
+    FreeRoomFace(&src.faces[0]);
+    FreeRoomFace(&src.faces[1]);
+    delete[] src.verts;
+    delete[] src.faces;
+  }
+
+  void testLinkRoomsAndDeletePortal() {
+    // Create two rooms with single 4-vert quad faces
+    room *r0 = &Rooms[0];
+    room *r1 = &Rooms[1];
+    memset(r0, 0, sizeof(room));
+    memset(r1, 0, sizeof(room));
+    InitRoom(r0, 4, 1, 0);
+    InitRoom(r1, 4, 1, 0);
+    r0->verts[0] = vector{(float)0, (float)0, (float)0};
+    r0->verts[1] = vector{(float)10, (float)0, (float)0};
+    r0->verts[2] = vector{(float)10, (float)0, (float)-10};
+    r0->verts[3] = vector{(float)0, (float)0, (float)-10};
+    r1->verts[0] = vector{(float)10, (float)0, (float)0};
+    r1->verts[1] = vector{(float)20, (float)0, (float)0};
+    r1->verts[2] = vector{(float)20, (float)0, (float)-10};
+    r1->verts[3] = vector{(float)10, (float)0, (float)-10};
+    InitRoomFace(&r0->faces[0], 4);
+    InitRoomFace(&r1->faces[0], 4);
+    for (int i = 0; i < 4; i++) {
+      r0->faces[0].face_verts[i] = i;
+      r1->faces[0].face_verts[i] = i;
+    }
+
+    // Link rooms
+    LinkRooms(Rooms, 0, 0, 1, 0);
+    QCOMPARE(r0->num_portals, 1);
+    QCOMPARE(r1->num_portals, 1);
+    QCOMPARE(r0->portals[0].croom, 1);
+    QCOMPARE(r1->portals[0].croom, 0);
+    QCOMPARE(r0->faces[0].portal_num, 0);
+    QCOMPARE(r1->faces[0].portal_num, 0);
+
+    // Delete the portal pair
+    DeletePortalPair(r0, 0);
+    QCOMPARE(r0->num_portals, 0);
+    QCOMPARE(r1->num_portals, 0);
+    QCOMPARE(r0->faces[0].portal_num, -1);
+    QCOMPARE(r1->faces[0].portal_num, -1);
+
+    FreeRoom(r0);
+    FreeRoom(r1);
+  }
+
+  void testFlipFace() {
+    room *rp = &Rooms[0];
+    memset(rp, 0, sizeof(room));
+    InitRoom(rp, 3, 1, 0);
+    rp->verts[0] = vector{(float)0, (float)0, (float)0};
+    rp->verts[1] = vector{(float)10, (float)0, (float)0};
+    rp->verts[2] = vector{(float)0, (float)10, (float)0};
+    InitRoomFace(&rp->faces[0], 3);
+    rp->faces[0].face_verts[0] = 0;
+    rp->faces[0].face_verts[1] = 1;
+    rp->faces[0].face_verts[2] = 2;
+    rp->faces[0].portal_num = -1;
+    ComputeFaceNormal(rp, 0);
+    vector origNormal = rp->faces[0].normal;
+
+    FlipFace(rp, 0);
+
+    // After flip, winding is reversed, so normal should be negated
+    QVERIFY(rp->faces[0].normal.x() == -origNormal.x());
+    QVERIFY(rp->faces[0].normal.y() == -origNormal.y());
+    QVERIFY(rp->faces[0].normal.z() == -origNormal.z());
+    QCOMPARE(rp->faces[0].face_verts[0], (int16_t)2);
+    QCOMPARE(rp->faces[0].face_verts[2], (int16_t)0);
+
+    FreeRoom(rp);
+  }
+
+  void testCombineFacesCoplanar() {
+    // Create a room with two adjacent coplanar triangles sharing edge 1-2
+    room *rp = &Rooms[0];
+    memset(rp, 0, sizeof(room));
+    InitRoom(rp, 4, 2, 0);
+    rp->verts[0] = vector{(float)0, (float)0, (float)0};
+    rp->verts[1] = vector{(float)10, (float)0, (float)0};
+    rp->verts[2] = vector{(float)10, (float)10, (float)0};
+    rp->verts[3] = vector{(float)0, (float)10, (float)0};
+
+    InitRoomFace(&rp->faces[0], 3);
+    rp->faces[0].face_verts[0] = 0;
+    rp->faces[0].face_verts[1] = 1;
+    rp->faces[0].face_verts[2] = 2;
+    ComputeFaceNormal(rp, 0);
+    AssignDefaultUVsToRoomFace(rp, 0);
+
+    InitRoomFace(&rp->faces[1], 3);
+    rp->faces[1].face_verts[0] = 0;
+    rp->faces[1].face_verts[1] = 2;
+    rp->faces[1].face_verts[2] = 3;
+    ComputeFaceNormal(rp, 1);
+    AssignDefaultUVsToRoomFace(rp, 1);
+
+    bool ok = CombineFaces(rp, 0, 1);
+    QVERIFY(ok);
+    QCOMPARE(rp->num_faces, 1);
+    QCOMPARE(rp->faces[0].num_verts, 4);
+
+    FreeRoomFace(&rp->faces[0]);
+    mem_free(rp->faces);
+    rp->faces = nullptr;
+    rp->num_faces = 0;
+    delete[] rp->verts;
+    rp->verts = nullptr;
+    rp->num_verts = 0;
+    rp->used = 0;
+  }
+
+  void testRotateRooms() {
+    room *r0 = &Rooms[0];
+    room *r1 = &Rooms[1];
+    memset(r0, 0, sizeof(room));
+    memset(r1, 0, sizeof(room));
+    InitRoom(r0, 8, 2, 0);
+    InitRoom(r1, 4, 1, 0);
+
+    // room0 face 0 = portal face (verts 0-3)
+    r0->verts[0] = vector{(float)0, (float)0, (float)0};
+    r0->verts[1] = vector{(float)10, (float)0, (float)0};
+    r0->verts[2] = vector{(float)10, (float)0, (float)-10};
+    r0->verts[3] = vector{(float)0, (float)0, (float)-10};
+    InitRoomFace(&r0->faces[0], 4);
+    for (int i = 0; i < 4; i++) r0->faces[0].face_verts[i] = i;
+    ComputeFaceNormal(r0, 0);
+    AssignDefaultUVsToRoomFace(r0, 0);
+
+    // room0 face 1 = non-portal face (verts 4-7, offset in +y direction)
+    r0->verts[4] = vector{(float)0, (float)0, (float)-10};
+    r0->verts[5] = vector{(float)10, (float)0, (float)-10};
+    r0->verts[6] = vector{(float)10, (float)10, (float)-10};
+    r0->verts[7] = vector{(float)0, (float)10, (float)-10};
+    InitRoomFace(&r0->faces[1], 4);
+    r0->faces[1].face_verts[0] = 4;
+    r0->faces[1].face_verts[1] = 5;
+    r0->faces[1].face_verts[2] = 6;
+    r0->faces[1].face_verts[3] = 7;
+    ComputeFaceNormal(r0, 1);
+    AssignDefaultUVsToRoomFace(r0, 1);
+
+    // room1: adjacent quad
+    r1->verts[0] = vector{(float)10, (float)0, (float)0};
+    r1->verts[1] = vector{(float)20, (float)0, (float)0};
+    r1->verts[2] = vector{(float)20, (float)0, (float)-10};
+    r1->verts[3] = vector{(float)10, (float)0, (float)-10};
+    InitRoomFace(&r1->faces[0], 4);
+    for (int i = 0; i < 4; i++) r1->faces[0].face_verts[i] = i;
+    ComputeFaceNormal(r1, 0);
+    AssignDefaultUVsToRoomFace(r1, 0);
+
+    LinkRooms(Rooms, 0, 0, 1, 0);
+
+    Curroomp = r0;
+    Curface = 0;
+    Markedroomp = r1;
+    Markedface = 0;
+
+    vector orig = r0->verts[6];
+
+    RotateRooms(8192, 0, 0);
+
+    // Non-portal verts (4-7) should have moved; portal verts (0-3) are skipped
+    bool moved = (r0->verts[6].x() != orig.x()) || (r0->verts[6].y() != orig.y()) || (r0->verts[6].z() != orig.z());
+    QVERIFY(moved);
+    // Portal verts should be unchanged
+    QCOMPARE(r0->verts[0].x(), 0.0f);
+
+    DeletePortalPair(r0, 0);
+    FreeRoom(r0);
+    FreeRoom(r1);
+    Curroomp = nullptr;
+    Markedroomp = nullptr;
+  }
+
+  void testAttachRoomTerrain() {
+    // AttachRoom to terrain (baseroomp == NULL) — simplest path
+    room *r0 = &Rooms[0];
+    memset(r0, 0, sizeof(room));
+    InitRoom(r0, 4, 1, 0);
+    r0->verts[0] = vector{(float)100, (float)100, (float)0};
+    r0->verts[1] = vector{(float)200, (float)100, (float)0};
+    r0->verts[2] = vector{(float)200, (float)200, (float)0};
+    r0->verts[3] = vector{(float)100, (float)200, (float)0};
+    InitRoomFace(&r0->faces[0], 4);
+    for (int i = 0; i < 4; i++) r0->faces[0].face_verts[i] = i;
+    ComputeFaceNormal(r0, 0);
+    r0->faces[0].tmap = 0;
+    r0->used = true;
+
+    // Set up as a "placed room" for terrain attachment
+    Placed_room = 0;
+    Placed_baseroomp = nullptr;
+    Placed_baseface = -1;
+    Placed_room_face = 0;
+    Placed_room_origin = vector{(float)150, (float)150, (float)0};
+    Placed_room_attachpoint = vector{(float)0, (float)0, (float)0};
+    vm_MakeIdentity(&Placed_room_rotmat);
+    Placed_door = -1;
+
+    AttachRoom();
+
+    // Find the new room — should be in a used slot != 0
+    int newroom = -1;
+    for (int i = 0; i < MAX_ROOMS; i++) {
+      if (Rooms[i].used && i != 0) {
+        newroom = i;
+        break;
+      }
+    }
+    QVERIFY(newroom != -1);
+    QVERIFY(Rooms[newroom].num_verts > 0);
+    QVERIFY(Rooms[newroom].flags & RF_EXTERNAL);
+
+    FreeRoom(&Rooms[newroom]);
+    FreeRoom(r0);
+    Placed_room = -1;
+  }
+
+  void testAttachRoomMine() {
+    // AttachRoom to a mine room with portal clipping.
+    // The attach face must have opposite winding to the base face.
+    room *base = &Rooms[0];
+    room *att = &Rooms[1];
+    memset(base, 0, sizeof(room));
+    memset(att, 0, sizeof(room));
+    InitRoom(base, 4, 1, 0);
+    InitRoom(att, 4, 1, 0);
+
+    // base: quad at z=0, normal points -Y
+    base->verts[0] = vector{(float)0, (float)0, (float)0};
+    base->verts[1] = vector{(float)10, (float)0, (float)0};
+    base->verts[2] = vector{(float)10, (float)0, (float)-10};
+    base->verts[3] = vector{(float)0, (float)0, (float)-10};
+    InitRoomFace(&base->faces[0], 4);
+    for (int i = 0; i < 4; i++) base->faces[0].face_verts[i] = i;
+    ComputeFaceNormal(base, 0);
+    base->faces[0].tmap = 0;
+    base->used = true;
+
+    // att: REVERSE winding so the attach face faces the opposite direction
+    att->verts[0] = vector{(float)0, (float)0, (float)0};
+    att->verts[1] = vector{(float)10, (float)0, (float)0};
+    att->verts[2] = vector{(float)10, (float)0, (float)-10};
+    att->verts[3] = vector{(float)0, (float)0, (float)-10};
+    InitRoomFace(&att->faces[0], 4);
+    att->faces[0].face_verts[0] = 0;
+    att->faces[0].face_verts[1] = 3;
+    att->faces[0].face_verts[2] = 2;
+    att->faces[0].face_verts[3] = 1;
+    ComputeFaceNormal(att, 0);
+    att->faces[0].tmap = 0;
+    att->used = true;
+
+    // Place att so its face overlaps with the base face
+    Placed_room = 1;
+    Placed_baseroomp = base;
+    Placed_baseface = 0;
+    Placed_room_face = 0;
+    Placed_room_origin = vector{(float)5, (float)0, (float)-5};
+    Placed_room_attachpoint = vector{(float)5, (float)0, (float)-5};
+    vm_MakeIdentity(&Placed_room_rotmat);
+    Placed_door = -1;
+
+    AttachRoom();
+
+    // Find the new room
+    int newroom = -1;
+    for (int i = 0; i < MAX_ROOMS; i++) {
+      if (Rooms[i].used && i != 0 && i != 1) {
+        newroom = i;
+        break;
+      }
+    }
+    QVERIFY(newroom != -1);
+    QVERIFY(Rooms[newroom].num_portals > 0);
+
+    // Clean up portals before freeing
+    DeletePortalPair(&Rooms[newroom], 0);
+    FreeRoom(&Rooms[newroom]);
+    FreeRoom(base);
+    FreeRoom(att);
+    Placed_room = -1;
+    Curroomp = nullptr;
+    Markedroomp = nullptr;
+  }
+
 #if 0
   // Calls private MainWindow members (onSpawnNewViewer, onSelectNextViewer,
   // onDeleteCurrentViewer).

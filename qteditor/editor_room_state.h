@@ -18,7 +18,12 @@
 
 #pragma once
 
+#include "fix.h"
+#include "vecmat.h"
+
+struct face;
 struct room;
+struct roomUVL;
 
 // Room selection list (editor/selectedroom.cpp in Win32).
 int IsRoomSelected(int roomnum);
@@ -41,4 +46,32 @@ void DestroyRoom(int roomnum);
 // Port of editor/Erooms.cpp:AssignDefaultUVsToRoomFace — projects each
 // vertex onto the face's normal plane and assigns UVs with a 1/20.0 scale.
 void AssignDefaultUVsToRoomFace(room *rp, int facenum);
+
+// Port of editor/Erooms.cpp — room operations.
+void CopyFace(face *dfp, face *sfp);
+void CopyFaceFlags(face *dfp, face *sfp);
+void CopyRoom(room *destp, room *srcp);
+void ReInitRoomFace(face *fp, int nverts);
+int RoomAddVertices(room *rp, int num_new_verts);
+int RoomAddFaces(room *rp, int num_new_faces);
+bool ResetRoomFaceNormals(room *rp);
+bool FaceIsPlanar(int nv, int16_t *face_verts, vector *normal, vector *verts);
+int CheckFaceConcavity(int num_verts, int16_t *face_verts, vector *normal, vector *verts);
+bool FindSharedEdge(face *fp0, face *fp1, int *vn0, int *vn1);
+void DeleteRoomFace(room *rp, int facenum);
+void DeleteRoomPortal(room *rp, int portalnum);
+int AddPortal(room *rp);
+void LinkRooms(room *roomlist, int room0, int face0, int room1, int face1);
+void AssignUVsToFace(room *rp, int facenum, roomUVL *uva, roomUVL *uvb, int va, int vb);
+void AssignDefaultUVsToRoom(room *rp);
+void FixConcaveFaces(room *rp, int *facelist, int facecount);
+void FlipFace(room *rp, int facenum);
+
+// Port of editor/HRoom.cpp — room operations.
+bool CombineFaces(room *rp, int face0, int face1);
+void DeletePortalPair(room *rp, int portalnum);
+void RotateRooms(angle p, angle h, angle b);
+void ConnectPortal(room *rp, int portal_num, int dest_room);
+void DetachPortal(room *rp, int portal_num);
+void AttachRoom();
 

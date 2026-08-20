@@ -196,6 +196,11 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->ID_ROOM_SELECTBYNUMBER, &QAction::triggered, this, &MainWindow::onSelectRoomByNumber);
   connect(ui->ID_ROOM_SAVECURRENTROOM, &QAction::triggered, this, &MainWindow::onSaveCurrentRoom);
   connect(ui->ID_ROOM_RENAMEROOM, &QAction::triggered, this, &MainWindow::onRenameRoom);
+  connect(ui->ID_ROOM_DELETEFACE, &QAction::triggered, this, &MainWindow::onRoomDeleteFace);
+  connect(ui->ID_ROOM_DELETEPORTAL, &QAction::triggered, this, &MainWindow::onRoomDeletePortal);
+  connect(ui->ID_ROOM_COMBINE, &QAction::triggered, this, &MainWindow::onRoomCombine);
+  connect(ui->ID_ROOM_ROTATEPLACEDROOM45DEGREES, &QAction::triggered, this, &MainWindow::onRoomRotatePlaced45);
+  connect(ui->ID_ROOM_ATTACHROOM, &QAction::triggered, this, &MainWindow::onRoomAttach);
 
   // -------------------------------------------------------------- Object
   connect(ui->ID_OBJECT_DELETEOBJECT, &QAction::triggered, this, &MainWindow::onDeleteCurrentObject);
@@ -1588,12 +1593,68 @@ bool MainWindow::onRenameRoom() {
 bool MainWindow::onSaveCurrentRoom() {
   if (Curroomp == nullptr)
     return false;
-  // editor/HRoom.cpp::SaveRoom writes a single-room .orf snippet under the
-  // current .d3l filename. The Qt port doesn't yet drive that binary path;
-  // mark the mine as changed so the next Save writes it once the engine
-  // bridge lands.
   Mine_changed = true;
   std::fprintf(stderr,
                "[room_ops] SaveCurrentRoom: deferred to EditorSaveLevel\n");
   return true;
+}
+
+void MainWindow::onRoomDeleteFace() {
+  if (Curroomp == nullptr || Curface < 0 || Curface >= Curroomp->num_faces)
+    return;
+  if (Curroomp->faces[Curface].portal_num != -1) {
+    onRoomDeletePortal();
+    return;
+  }
+  DeleteRoomFace(Curroomp, Curface);
+  if (Curface >= Curroomp->num_faces)
+    Curface = Curroomp->num_faces - 1;
+  Mine_changed = true;
+}
+
+void MainWindow::onRoomDeletePortal() {
+  if (Curroomp == nullptr || Curface < 0 || Curface >= Curroomp->num_faces)
+    return;
+  int pn = Curroomp->faces[Curface].portal_num;
+  if (pn == -1) {
+    EditorStatus("Current face is not a portal.");
+    return;
+  }
+  DeletePortalPair(Curroomp, pn);
+  Mine_changed = true;
+}
+
+void MainWindow::onRoomCombine() {
+  if (Curroomp == nullptr)
+    return;
+  if (Markedroomp != Curroomp) {
+    EditorStatus("Mark and current must be the same room to combine.");
+    return;
+  }
+  if (Curface == Markedface) {
+    EditorStatus("Marked and current face must be different.");
+    return;
+  }
+  if (CombineFaces(Curroomp, Markedface, Curface)) {
+    Mine_changed = true;
+    EditorStatus("Faces combined.");
+  }
+}
+
+void MainWindow::onRoomRotatePlaced45() {
+  if (Curroomp == nullptr || Markedroomp == nullptr) {
+    EditorStatus("No marked room.");
+    return;
+  }
+  RotateRooms(8192, 0, 0);
+  Mine_changed = true;
+}
+
+void MainWindow::onRoomAttach() {
+  if (Placed_room == -1) {
+    EditorStatus("No room placed. Use Place Room first.");
+    return;
+  }
+  AttachRoom();
+  Mine_changed = true;
 }

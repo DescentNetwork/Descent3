@@ -135,10 +135,15 @@ private:
   // these ones have real Qt-side implementations.
   void onRoomAdd();
   void onRoomDelete();
+  void onRoomDeleteFace();
+  void onRoomDeletePortal();
   void onRoomMark();
   void onRoomSelectByNumber();
   void onRoomRename();
   void onRoomSaveCurrent();
+  void onRoomCombine();
+  void onRoomRotatePlaced45();
+  void onRoomAttach();
 
   // ====== VIEWER OPERATIONS ======
   void onCenterViewOnMine();

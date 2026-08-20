@@ -28,6 +28,7 @@
 #include "gamepath.h"
 #include "room.h"
 #include "vecmat.h"
+#include <cstdarg>
 #include <cstring>
 #include <filesystem>
 #include <QtGlobal>
@@ -74,6 +75,15 @@ int Markededge = 0;
 int Markedvert = 0;
 int Placed_room = -1;
 group *Placed_group = nullptr;
+int Placed_room_face = 0;
+int Placed_door = -1;
+float Placed_room_angle = 0;
+vector Placed_room_origin = {0, 0, 0};
+matrix Placed_room_orient = IDENTITY_MATRIX;
+vector Placed_room_attachpoint = {0, 0, 0};
+matrix Placed_room_rotmat = IDENTITY_MATRIX;
+room *Placed_baseroomp = nullptr;
+int Placed_baseface = 0;
 bool Mine_changed = false;
 int Editor_view_mode = 0; // VM_MINE
 int Editor_viewer_id = -1;
@@ -418,6 +428,26 @@ void RestoreRoomSelectedList() {
 // include path, so the symbol never makes it into libDescent3Core.a. We
 // stub it at editor-side scope so the Qt port's level_io.cpp can keep
 // EditorSaveLevel's contract (success → true) until the engine path lands.
+// EditorStatus/SetErrorMessage/GetErrorMessage live in editor/MainFrm.cpp which
+// is not linked into the Qt port.  Provide lightweight implementations here.
+static char Editor_error_message[512] = "";
+
+void EditorStatus(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  vsnprintf(Editor_error_message, sizeof(Editor_error_message), format, args);
+  va_end(args);
+}
+
+void SetErrorMessage(const char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(Editor_error_message, sizeof(Editor_error_message), fmt, args);
+  va_end(args);
+}
+
+const char *GetErrorMessage() { return Editor_error_message; }
+
 bool SaveLevel(char *filename, bool f_save_room_AABB) {
   (void)f_save_room_AABB;
   // The stub refuses to scribble anything to disk: writing a stale or empty
