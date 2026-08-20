@@ -134,6 +134,8 @@ set(QTEDITOR_SOURCES
   path_keypad.h
   object_keypad.cpp
   object_keypad.h
+  object_list_combo.cpp
+  object_list_combo.h
   object_properties_dialog.cpp
   object_properties_dialog.h
   physics_dialog.cpp
@@ -159,6 +161,8 @@ set(QTEDITOR_SOURCES
   quickcompile_dialog.h
   robot_weapons_dialog.cpp
   robot_weapons_dialog.h
+  room_list_combo.cpp
+  room_list_combo.h
   room_keypad.cpp
   room_keypad.h
   script_editor_dialog.cpp
@@ -181,6 +185,8 @@ set(QTEDITOR_SOURCES
   texture_keypad.h
   terrain_sound_dialog.cpp
   terrain_sound_dialog.h
+  trigger_list_combo.cpp
+  trigger_list_combo.h
   trigger_keypad.cpp
   trigger_keypad.h
   viewer_prop_dialog.cpp
