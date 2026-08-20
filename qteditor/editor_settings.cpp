@@ -62,6 +62,7 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
 
   writeInt(settings, "texdlg_texture",        state.texdlg_texture);
   writeInt(settings, "current_obj_type",     state.current_obj_type);
+  writeInt(settings, "current_obj_id",       state.current_obj_id);
   writeInt(settings, "current_powerup",      state.current_powerup);
   writeInt(settings, "current_door",         state.current_door);
   writeInt(settings, "current_robot",        state.current_robot);
@@ -128,6 +129,7 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state) {
 
   state.texdlg_texture    = readInt(settings,  "texdlg_texture",    0);
   state.current_obj_type  = readInt(settings,  "current_obj_type",  0);
+  state.current_obj_id    = readInt(settings,  "current_obj_id",    0);
   state.current_powerup   = readInt(settings,  "current_powerup",   0);
   state.current_door      = readInt(settings,  "current_door",      0);
   state.current_robot     = readInt(settings,  "current_robot",     0);

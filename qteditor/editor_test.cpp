@@ -33,6 +33,7 @@
 #include <QEventLoop>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QMessageBox>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
@@ -50,6 +51,7 @@
 #include "gamepath.h"
 #include "manage.h"
 #include "object.h"
+#include "object_ops.h"
 #include "room_external.h"
 #include "ship.h"
 #include "ssl_lib.h"
@@ -2083,6 +2085,317 @@ private slots:
 
     Placed_room = -1;
     FreeRoom(rp);
+  }
+
+  void testRotateObjectIdentity() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Objects[0].type = OBJ_POWERUP;
+    Objects[0].orient = IDENTITY_MATRIX;
+    Highest_object_index = 0;
+
+    bool result = RotateObject(0, 0, 0, 0);
+    QVERIFY(result);
+
+    float fmag = vm_GetMagnitude(&Objects[0].orient.fvec);
+    float rmag = vm_GetMagnitude(&Objects[0].orient.rvec);
+    float umag = vm_GetMagnitude(&Objects[0].orient.uvec);
+    QVERIFY(fmag > 0.9f && fmag < 1.1f);
+    QVERIFY(rmag > 0.9f && rmag < 1.1f);
+    QVERIFY(umag > 0.9f && umag < 1.1f);
+
+    Objects[0].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+  }
+
+  void testRotateObjectChangesOrientation() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Objects[0].type = OBJ_POWERUP;
+    Objects[0].orient = IDENTITY_MATRIX;
+    Highest_object_index = 0;
+
+    matrix before = Objects[0].orient;
+
+    bool result = RotateObject(0, 4096, 0, 0);
+    QVERIFY(result);
+
+    bool changed = false;
+    if (Objects[0].orient.fvec.x() != before.fvec.x() ||
+        Objects[0].orient.fvec.y() != before.fvec.y() ||
+        Objects[0].orient.fvec.z() != before.fvec.z())
+      changed = true;
+    QVERIFY(changed);
+
+    float fmag = vm_GetMagnitude(&Objects[0].orient.fvec);
+    float rmag = vm_GetMagnitude(&Objects[0].orient.rvec);
+    float umag = vm_GetMagnitude(&Objects[0].orient.uvec);
+    QVERIFY(fmag > 0.9f && fmag < 1.1f);
+    QVERIFY(rmag > 0.9f && rmag < 1.1f);
+    QVERIFY(umag > 0.9f && umag < 1.1f);
+
+    Objects[0].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+  }
+
+  void testHObjectSetDefault() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Objects[0].type = OBJ_POWERUP;
+    matrix rotated{};
+    vm_AnglesToMatrix(&rotated, 4096, 2048, 1024);
+    Objects[0].orient = rotated;
+    Highest_object_index = 0;
+
+    Cur_object_index = 0;
+
+    HObjectSetDefault();
+
+    QCOMPARE(Objects[0].orient.fvec.x(), IDENTITY_MATRIX.fvec.x());
+    QCOMPARE(Objects[0].orient.fvec.y(), IDENTITY_MATRIX.fvec.y());
+    QCOMPARE(Objects[0].orient.fvec.z(), IDENTITY_MATRIX.fvec.z());
+    QCOMPARE(Objects[0].orient.rvec.x(), IDENTITY_MATRIX.rvec.x());
+    QCOMPARE(Objects[0].orient.uvec.y(), IDENTITY_MATRIX.uvec.y());
+
+    Cur_object_index = -1;
+    Objects[0].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+  }
+
+  void testHObjectSetDefaultNoopWhenNoSelection() {
+    Cur_object_index = -1;
+    matrix before{};
+    vm_MakeIdentity(&before);
+
+    HObjectSetDefault();
+
+    QCOMPARE(Cur_object_index, -1);
+  }
+
+  void testHObjectFlip() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Objects[0].type = OBJ_POWERUP;
+    Objects[0].orient = IDENTITY_MATRIX;
+    Highest_object_index = 0;
+    Cur_object_index = 0;
+
+    vector fvec_before = Objects[0].orient.fvec;
+    vector rvec_before = Objects[0].orient.rvec;
+    vector uvec_before = Objects[0].orient.uvec;
+
+    HObjectFlip();
+
+    QCOMPARE(Objects[0].orient.fvec.x(), fvec_before.x());
+    QCOMPARE(Objects[0].orient.fvec.y(), fvec_before.y());
+    QCOMPARE(Objects[0].orient.fvec.z(), fvec_before.z());
+
+    QCOMPARE(Objects[0].orient.rvec.x(), -rvec_before.x());
+    QCOMPARE(Objects[0].orient.rvec.y(), -rvec_before.y());
+    QCOMPARE(Objects[0].orient.rvec.z(), -rvec_before.z());
+
+    QCOMPARE(Objects[0].orient.uvec.x(), -uvec_before.x());
+    QCOMPARE(Objects[0].orient.uvec.y(), -uvec_before.y());
+    QCOMPARE(Objects[0].orient.uvec.z(), -uvec_before.z());
+
+    Cur_object_index = -1;
+    Objects[0].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+  }
+
+  void testHObjectDeleteNonPlayer() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Objects[0].type = OBJ_VIEWER;
+    Objects[0].render_type = RT_POLYOBJ;
+    Viewer_object = &Objects[0];
+
+    Objects[1].type = OBJ_POWERUP;
+    Objects[1].render_type = RT_POLYOBJ;
+    Highest_object_index = 1;
+
+    Cur_object_index = 1;
+
+    HObjectDelete();
+
+    QCOMPARE(Objects[1].type, OBJ_NONE);
+    QCOMPARE(Cur_object_index, -1);
+
+    Objects[0].type = OBJ_NONE;
+    Viewer_object = nullptr;
+    Cur_object_index = -1;
+    ResetObjectList();
+    Highest_object_index = -1;
+  }
+
+  void testHObjectDeleteNoopWhenNoSelection() {
+    Cur_object_index = -1;
+    HObjectDelete();
+    QCOMPARE(Cur_object_index, -1);
+  }
+
+  void testHObjectDeletePlayerBlocked() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Objects[0].type = OBJ_VIEWER;
+    Objects[0].render_type = RT_POLYOBJ;
+    Viewer_object = &Objects[0];
+
+    Objects[1].type = OBJ_PLAYER;
+    Objects[1].render_type = RT_POLYOBJ;
+    Player_object = &Objects[1];
+    Highest_object_index = 1;
+
+    Cur_object_index = 1;
+
+    QTimer::singleShot(100, []() {
+      if (auto *mb = qobject_cast<QMessageBox *>(QApplication::activeModalWidget()))
+        mb->accept();
+    });
+
+    HObjectDelete();
+
+    QCOMPARE(Objects[1].type, OBJ_PLAYER);
+
+    Cur_object_index = -1;
+    Objects[0].type = OBJ_NONE;
+    Objects[1].type = OBJ_NONE;
+    Viewer_object = nullptr;
+    Player_object = nullptr;
+    ResetObjectList();
+    Highest_object_index = -1;
+  }
+
+  void testMoveObjectBasic() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Rooms[0].verts = nullptr;
+    Rooms[0].faces = nullptr;
+    Rooms[0].portals = nullptr;
+    {
+      room *rp = CreateNewRoom(8, 1, false);
+      Rooms[0] = *rp;
+      rp->verts = nullptr;
+      rp->faces = nullptr;
+      rp->portals = nullptr;
+      delete rp;
+      Rooms[0].used = 1;
+      Rooms[0].num_verts = 8;
+      Rooms[0].num_faces = 1;
+      for (int v = 0; v < 8; ++v)
+        Rooms[0].verts[v] = vector{};
+      ComputeFaceNormal(&Rooms[0], 0);
+    }
+    Highest_room_index = 0;
+
+    Objects[0].type = OBJ_VIEWER;
+    Objects[0].render_type = RT_POLYOBJ;
+    Viewer_object = &Objects[0];
+
+    Objects[1].type = OBJ_POWERUP;
+    Objects[1].render_type = RT_POLYOBJ;
+    Objects[1].movement_type = MT_NONE;
+    Objects[1].size = 1.0f;
+    Highest_object_index = 1;
+
+    vector origin{};
+    ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
+
+    vector newpos{(float)5, (float)0, (float)0};
+    bool moved = MoveObject(&Objects[1], &newpos);
+
+    QVERIFY(moved);
+    QVERIFY(Objects[1].pos.x() > -100.0f);
+
+    Objects[0].type = OBJ_NONE;
+    Objects[1].type = OBJ_NONE;
+    Viewer_object = nullptr;
+    Cur_object_index = -1;
+    ResetObjectList();
+    Highest_object_index = -1;
+    FreeRoom(&Rooms[0]);
+  }
+
+  void testHObjectMove() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Rooms[0].verts = nullptr;
+    Rooms[0].faces = nullptr;
+    Rooms[0].portals = nullptr;
+    {
+      room *rp = CreateNewRoom(8, 1, false);
+      Rooms[0] = *rp;
+      rp->verts = nullptr;
+      rp->faces = nullptr;
+      rp->portals = nullptr;
+      delete rp;
+      Rooms[0].used = 1;
+      Rooms[0].num_verts = 8;
+      Rooms[0].num_faces = 1;
+      for (int v = 0; v < 8; ++v)
+        Rooms[0].verts[v] = vector{};
+      ComputeFaceNormal(&Rooms[0], 0);
+    }
+    Highest_room_index = 0;
+
+    Objects[0].type = OBJ_VIEWER;
+    Objects[0].render_type = RT_POLYOBJ;
+    Objects[0].orient = IDENTITY_MATRIX;
+    Viewer_object = &Objects[0];
+
+    Objects[1].type = OBJ_POWERUP;
+    Objects[1].render_type = RT_POLYOBJ;
+    Objects[1].movement_type = MT_NONE;
+    Objects[1].orient = IDENTITY_MATRIX;
+    Objects[1].size = 1.0f;
+    Highest_object_index = 1;
+
+    vector origin{};
+    ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
+
+    Cur_object_index = 1;
+    D3EditState.object_move_mode = REL_OBJECT;
+    Object_moved = false;
+
+    HObjectMove(1, 1.0f, 0.0f, 0.0f);
+
+    QVERIFY(Object_moved);
+
+    Cur_object_index = -1;
+    Objects[0].type = OBJ_NONE;
+    Objects[1].type = OBJ_NONE;
+    Viewer_object = nullptr;
+    ResetObjectList();
+    Highest_object_index = -1;
+    FreeRoom(&Rooms[0]);
   }
 };
 

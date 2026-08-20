@@ -39,6 +39,10 @@ private slots:
   void onNextObject();
   void onFlipObject();
   void onResetObjects();
+  void onSetDefault();
+  void onRot90();
+  void onDeleteAll();
+  void onPushThroughWalls(bool checked);
   void onMoveAxis();
   void onAxisX();
   void onAxisY();

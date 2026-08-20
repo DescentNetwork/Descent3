@@ -19,30 +19,43 @@
 #include "object_keypad.h"
 #include "ui_objectkeypad.h"
 
+#include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
 #include <QPushButton>
 
 #include "d3edit.h"
+#include "debug.h"
 #include "objinfo.h"
 #include "object.h"
+#include "object_ops.h"
+#include "qt_messagebox.h"
 #include "room.h"
 
+extern bool f_allow_objects_to_be_pushed_through_walls;
 
 ObjectKeypad::ObjectKeypad(QWidget *parent) : QDialog(parent), ui(new Ui::ObjectKeypad)
 {
   ui->setupUi(this);
-    connect(ui->IDC_OBJPAD_PLACEOBJ, &QPushButton::clicked, this, &ObjectKeypad::onPlaceObject);
-    connect(ui->IDC_OBJ_DELOBJ, &QPushButton::clicked, this, &ObjectKeypad::onDeleteObject);
-    connect(ui->IDC_OBJPAD_NEXTOBJ, &QPushButton::clicked, this, &ObjectKeypad::onNextObject);
-    connect(ui->IDC_OBJPAD_FLIPOBJ, &QPushButton::clicked, this, &ObjectKeypad::onFlipObject);
-    connect(ui->IDC_RESET_OBJECTS, &QPushButton::clicked, this, &ObjectKeypad::onResetObjects);
-    connect(ui->IDC_OBJMOVEX, &QPushButton::clicked, this, &ObjectKeypad::onAxisX);
-    connect(ui->IDC_OBJMOVEY, &QPushButton::clicked, this, &ObjectKeypad::onAxisY);
-    connect(ui->IDC_OBJMOVEZ, &QPushButton::clicked, this, &ObjectKeypad::onAxisZ);
-    connect(ui->IDC_OBJMOVEP, &QPushButton::clicked, this, &ObjectKeypad::onAxisP);
-    connect(ui->IDC_OBJMOVEH, &QPushButton::clicked, this, &ObjectKeypad::onAxisH);
-    connect(ui->IDC_OBJMOVEB, &QPushButton::clicked, this, &ObjectKeypad::onAxisB);
+  connect(ui->IDC_OBJPAD_PLACEOBJ, &QPushButton::clicked, this, &ObjectKeypad::onPlaceObject);
+  connect(ui->IDC_OBJ_DELOBJ, &QPushButton::clicked, this, &ObjectKeypad::onDeleteObject);
+  connect(ui->IDC_OBJPAD_NEXTOBJ, &QPushButton::clicked, this, &ObjectKeypad::onNextObject);
+  connect(ui->IDC_OBJPAD_FLIPOBJ, &QPushButton::clicked, this, &ObjectKeypad::onFlipObject);
+  connect(ui->IDC_RESET_OBJECTS, &QPushButton::clicked, this, &ObjectKeypad::onResetObjects);
+  connect(ui->IDC_OBJPAD_SETDEFAULT, &QPushButton::clicked, this, &ObjectKeypad::onSetDefault);
+  connect(ui->IDC_OBJ_ROT90, &QPushButton::clicked, this, &ObjectKeypad::onRot90);
+  connect(ui->IDC_OBJPAD_DELETEALL, &QPushButton::clicked, this, &ObjectKeypad::onDeleteAll);
+  if (QCheckBox *cb = ui->IDC_OBJECT_PUSHTHROUGHWALLS)
+    connect(cb, &QCheckBox::toggled, this, &ObjectKeypad::onPushThroughWalls);
+  connect(ui->IDC_OBJMOVEX, &QPushButton::clicked, this, &ObjectKeypad::onAxisX);
+  connect(ui->IDC_OBJMOVEY, &QPushButton::clicked, this, &ObjectKeypad::onAxisY);
+  connect(ui->IDC_OBJMOVEZ, &QPushButton::clicked, this, &ObjectKeypad::onAxisZ);
+  connect(ui->IDC_OBJMOVEP, &QPushButton::clicked, this, &ObjectKeypad::onAxisP);
+  connect(ui->IDC_OBJMOVEH, &QPushButton::clicked, this, &ObjectKeypad::onAxisH);
+  connect(ui->IDC_OBJMOVEB, &QPushButton::clicked, this, &ObjectKeypad::onAxisB);
+
+  if (QCheckBox *cb = ui->IDC_OBJECT_PUSHTHROUGHWALLS)
+    cb->setChecked(f_allow_objects_to_be_pushed_through_walls);
 
   updateDialog();
 }
@@ -57,12 +70,12 @@ void ObjectKeypad::setMoveAxis(int axis) {
 void ObjectKeypad::updateDialog() {
   const bool hasObject = (Cur_object_index >= 0 && Cur_object_index <= Highest_object_index &&
                           Objects[Cur_object_index].type != OBJ_NONE);
-  const char *names[] = {"IDC_OBJPAD_FLIPOBJ", "IDC_OBJ_DELOBJ", "IDC_OBJPAD_NEXTOBJ"};
+  const char *names[] = {"IDC_OBJPAD_FLIPOBJ", "IDC_OBJ_DELOBJ", "IDC_OBJPAD_NEXTOBJ",
+                         "IDC_OBJPAD_SETDEFAULT", "IDC_OBJ_ROT90"};
   for (const char *name : names)
     if (QWidget *w = findChild<QWidget*>(name))
       w->setEnabled(hasObject);
 
-  // Move axis buttons reflect the current selection axis.
   const struct {
     const char *name;
     int axis;
@@ -74,11 +87,11 @@ void ObjectKeypad::updateDialog() {
 }
 
 void ObjectKeypad::onPlaceObject() {
-  // Object placement requires a current room (or terrain); the engine's
-  // PlaceObject equivalent operates on Cur_object_index.
-  if (Curroomp == nullptr)
-    return;
-  Mine_changed = true;
+  // HObjectPlace handles all the validation internally.
+  if (HObjectPlace(D3EditState.current_obj_type, D3EditState.current_obj_id)) {
+    Mine_changed = true;
+    updateDialog();
+  }
 }
 
 void ObjectKeypad::onDeleteObject() {
@@ -86,9 +99,8 @@ void ObjectKeypad::onDeleteObject() {
     return;
   if (Objects[Cur_object_index].type == OBJ_NONE)
     return;
-  ObjDelete(Cur_object_index);
-  Cur_object_index = -1;
-  Mine_changed = true;
+  HObjectDelete();
+  updateDialog();
 }
 
 void ObjectKeypad::onNextObject() {
@@ -97,12 +109,14 @@ void ObjectKeypad::onNextObject() {
   for (int i = Cur_object_index + 1; i <= Highest_object_index; i++) {
     if (Objects[i].type != OBJ_NONE && Objects[i].type != OBJ_ROOM) {
       Cur_object_index = i;
+      updateDialog();
       return;
     }
   }
   for (int i = 0; i <= Cur_object_index; i++) {
     if (Objects[i].type != OBJ_NONE && Objects[i].type != OBJ_ROOM) {
       Cur_object_index = i;
+      updateDialog();
       return;
     }
   }
@@ -111,16 +125,13 @@ void ObjectKeypad::onNextObject() {
 void ObjectKeypad::onFlipObject() {
   if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
     return;
-  object *obj = &Objects[Cur_object_index];
-  matrix m = obj->orient;
-  obj->orient.rvec = -m.rvec;
-  obj->orient.uvec = -m.uvec;
-  Viewer_moved = true;
-  Mine_changed = true;
+  if (Objects[Cur_object_index].type == OBJ_NONE)
+    return;
+  HObjectFlip();
+  updateDialog();
 }
 
 void ObjectKeypad::onResetObjects() {
-  // Reset all object heights/flags to their type defaults.
   for (int i = 0; i <= Highest_object_index; i++) {
     if (Objects[i].type == OBJ_NONE)
       continue;
@@ -133,6 +144,44 @@ void ObjectKeypad::onResetObjects() {
   Mine_changed = true;
 }
 
+void ObjectKeypad::onSetDefault() {
+  HObjectSetDefault();
+  updateDialog();
+}
+
+void ObjectKeypad::onRot90() {
+  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+    return;
+  if (Objects[Cur_object_index].type == OBJ_NONE)
+    return;
+  // Rotate 90 degrees (PI/2 radians = 8192 angle units in D3).
+  RotateObject(Cur_object_index, 8192, 0, 0);
+  World_changed = true;
+  updateDialog();
+}
+
+void ObjectKeypad::onDeleteAll() {
+  if (OutrageMessageBox(MBOX_YESNO, "Delete all objects except the player?") != IDYES)
+    return;
+
+  for (int i = 0; i <= Highest_object_index; i++) {
+    if (Objects[i].type == OBJ_NONE || Objects[i].type == OBJ_ROOM)
+      continue;
+    if (&Objects[i] == Player_object)
+      continue;
+    if (Objects[i].type == OBJ_PLAYER)
+      continue;
+    ObjDelete(i);
+  }
+  Cur_object_index = -1;
+  World_changed = true;
+  updateDialog();
+}
+
+void ObjectKeypad::onPushThroughWalls(bool checked) {
+  f_allow_objects_to_be_pushed_through_walls = checked;
+}
+
 void ObjectKeypad::onMoveAxis() { updateDialog(); }
 void ObjectKeypad::onAxisX() { setMoveAxis(0); }
 void ObjectKeypad::onAxisY() { setMoveAxis(1); }
@@ -140,4 +189,3 @@ void ObjectKeypad::onAxisZ() { setMoveAxis(2); }
 void ObjectKeypad::onAxisP() { setMoveAxis(3); }
 void ObjectKeypad::onAxisH() { setMoveAxis(4); }
 void ObjectKeypad::onAxisB() { setMoveAxis(5); }
-
