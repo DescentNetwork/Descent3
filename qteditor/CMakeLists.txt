@@ -60,6 +60,9 @@ set(QTEDITOR_SOURCES
   font_dialog.h
   editor_file_dialogs.cpp
   editor_file_dialogs.h
+  editor_lighting.cpp
+  editor_lighting.h
+  editor_object_lighting.cpp
   editor_room_state.h
   editor_settings.cpp
   editor_settings.h
@@ -216,11 +219,12 @@ set(QTEDITOR_SOURCES
   orphan_remove_dialog.h
   osiris_status_dialog.cpp
   osiris_status_dialog.h
-#  rad_cast.cpp
-#  rad_cast.h
-#  rad_hemicube.cpp
-#  rad_init.cpp
-#  radiosity.h
+  rad_cast.cpp
+  rad_cast.h
+  rad_hemicube.cpp
+  rad_init.cpp
+  radiosity.h
+  rad_stubs.cpp
   script_interface_dialog.cpp
   script_interface_dialog.h
   script_studio_dialog.cpp

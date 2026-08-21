@@ -198,7 +198,7 @@
  *
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include "radiosity.h"
 #include "rad_cast.h"
 #include "terrain.h"

@@ -26,7 +26,7 @@
 #include "ddio.h"
 #include "mem.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <algorithm>
 
 #define TOP_FACE 0

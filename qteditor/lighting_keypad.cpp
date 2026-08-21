@@ -23,6 +23,8 @@
 
 #include "d3edit.h"
 #include "lighting.h"
+#include "radiosity.h"
+#include "bsp.h"
 
 // Editor-side lighting globals. Outline_lightmaps is a bool in Descent3Core
 // (render.cpp); the others are provided in d3_editor_state.cpp.
@@ -64,6 +66,12 @@ void LightingKeypad::updateDialog() {
     cb->setChecked(D3EditState.hemicube_radiosity != 0);
   if (QCheckBox *cb = ui->IDC_ELEMENT_CHECK)
     cb->setChecked(Shoot_from_patch == 0);
+  if (QCheckBox *cb = ui->IDC_IGNORE_TERRAIN)
+    cb->setChecked(Ignore_terrain != 0);
+  if (QCheckBox *cb = ui->IDC_IGNORE_SATELLITES)
+    cb->setChecked(Ignore_satellites != 0);
+  if (QCheckBox *cb = ui->IDC_USE_BSP_CHECK)
+    cb->setChecked(UseBSP != 0);
 }
 
 void LightingKeypad::onShowLightmaps(bool checked) {
@@ -79,7 +87,16 @@ void LightingKeypad::onHemicube(bool checked) {
   State_changed = true;
 }
 void LightingKeypad::onElement(bool checked) { Shoot_from_patch = checked ? 0 : 1; }
-void LightingKeypad::onIgnoreTerrain(bool) {}
-void LightingKeypad::onIgnoreSatellites(bool) {}
-void LightingKeypad::onUseBsp(bool) {}
+void LightingKeypad::onIgnoreTerrain(bool checked) {
+  Ignore_terrain = checked ? 1 : 0;
+  State_changed = true;
+}
+void LightingKeypad::onIgnoreSatellites(bool checked) {
+  Ignore_satellites = checked ? 1 : 0;
+  State_changed = true;
+}
+void LightingKeypad::onUseBsp(bool checked) {
+  UseBSP = checked ? 1 : 0;
+  State_changed = true;
+}
 

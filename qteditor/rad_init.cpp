@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "editor.h"
-#include "LightingStatus.h"
+#include "d3edit.h"
+#include "lighting_status_dialog.h"
 #include "radiosity.h"
 #include "pserror.h"
 #include "findintersection.h"
@@ -26,7 +26,7 @@
 #include "rad_cast.h"
 #include "ddio.h"
 #include "vecmat.h"
-#include <stdlib.h>
+#include <cstdlib>
 #include "mem.h"
 #include "mono.h"
 
@@ -65,10 +65,7 @@ int Do_volume_lighting = 0;
 
 volume_element *Volume_elements[MAX_VOLUME_ELEMENTS];
 
-// Shoot_from_patch tells us whether or not we're shooting from the center of
-// a surface or if we must shoot from the center of each of its individual elements
-// Shoot_from_patch=1 is much faster
-int Shoot_from_patch = 1;
+extern int Shoot_from_patch;
 
 int DoRadiosityRun(int method, rad_surface *light_surfaces, int count) {
   float start_time;
@@ -85,13 +82,13 @@ int DoRadiosityRun(int method, rad_surface *light_surfaces, int count) {
   InitRadiosityRun();
 
   // Setup our window
-  CLightingStatus dlg;
+  LightingStatusDialog dlg;
 
-  dlg.Create(IDD_LIGHTINGSTATUS);
+  dlg.show();
 
   CalculateRadiosity();
 
-  dlg.DestroyWindow();
+  dlg.close();
   CloseRadiosityRun();
 
   // Print time taken
@@ -358,7 +355,7 @@ void NormalizeExitance() {
 
   for (i = 0; i < rad_NumSurfaces; i++) {
     rad_surface *surf = &rad_Surfaces[i];
-    spectra *emit = &surf->emittance;
+    spectra *emittance = &surf->emittance;
 
     for (t = 0; t < surf->xresolution * surf->yresolution; t++) {
       rad_element *ep = &surf->elements[t];
@@ -367,9 +364,9 @@ void NormalizeExitance() {
         continue;
 
       if (Shoot_from_patch) {
-        ep->exitance.r += emit->r;
-        ep->exitance.g += emit->g;
-        ep->exitance.b += emit->b;
+        ep->exitance.r += emittance->r;
+        ep->exitance.g += emittance->g;
+        ep->exitance.b += emittance->b;
       }
 
       /*			if (ep->exitance.r>1)
