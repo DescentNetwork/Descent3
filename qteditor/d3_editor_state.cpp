@@ -20,12 +20,14 @@
 // The D3 core is compiled without the EDITOR define, so this is re-provided
 // here for the Qt port.
 #include "editor_room_state.h"
+#include "mem.h"
 #include "terrain.h"
 #include "slew.h"
 #include "manage.h"
 #include "crossplat.h"
 #include "objinfo.h"
 #include "gamepath.h"
+#include "findintersection.h"
 #include "room.h"
 #include "vecmat.h"
 #include <cstdarg>
@@ -155,8 +157,9 @@ int GetPrevObjectID(int n) {
   return n;
 }
 
-// Path editing helpers (editor/EPath.cpp in the MFC editor). The full version
-// does line-of-sight checks against the viewer; simplified here.
+// Path editing helpers (editor/EPath.cpp in the MFC editor).
+uint8_t Show_paths = 1;
+
 int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector pos, matrix orient) {
   if (GamePaths[pathnum].num_nodes >= MAX_NODES_PER_PATH) {
     OutrageMessageBox("Error: Path already has its maximum amount of nodes.");
@@ -178,6 +181,79 @@ void DeleteNodeFromPath(int pathnum, int nodenum) {
   for (int i = nodenum; i < GamePaths[pathnum].num_nodes - 1; i++)
     memcpy(&GamePaths[pathnum].pathnodes[i], &GamePaths[pathnum].pathnodes[i + 1], sizeof(node));
   GamePaths[pathnum].num_nodes--;
+}
+
+int AllocGamePath() {
+  for (int i = 0; i < MAX_GAME_PATHS; i++) {
+    if (GamePaths[i].used == 0) {
+      GamePaths[i].used = 1;
+      GamePaths[i].name[0] = 0;
+      GamePaths[i].num_nodes = 0;
+      GamePaths[i].flags = 0;
+      GamePaths[i].pathnodes = mem_rmalloc<node>(MAX_NODES_PER_PATH);
+      Num_game_paths++;
+      return i;
+    }
+  }
+  OutrageMessageBox("ERROR: Too many paths to add another.");
+  return -1;
+}
+
+int MovePathNodeToPos(int pathnum, int nodenum, vector *attempted_pos) {
+  fvi_query fq;
+  fvi_info hit_info;
+
+  fq.p0 = &GamePaths[pathnum].pathnodes[nodenum].pos;
+  fq.startroom = GamePaths[pathnum].pathnodes[nodenum].roomnum;
+  fq.p1 = attempted_pos;
+  fq.rad = 0.0f;
+  fq.thisobjnum = -1;
+  fq.ignore_obj_list = NULL;
+  fq.flags = FQ_TRANSPOINT | FQ_IGNORE_RENDER_THROUGH_PORTALS;
+  fvi_FindIntersection(&fq, &hit_info);
+
+  if (nodenum >= 1) {
+    fvi_query fq1;
+    fvi_info hit_info1;
+    fq1.p0 = &GamePaths[pathnum].pathnodes[nodenum - 1].pos;
+    fq1.startroom = GamePaths[pathnum].pathnodes[nodenum - 1].roomnum;
+    fq1.p1 = &hit_info.hit_pnt;
+    fq1.rad = 0.0f;
+    fq1.thisobjnum = -1;
+    fq1.ignore_obj_list = NULL;
+    fq1.flags = FQ_TRANSPOINT | FQ_IGNORE_RENDER_THROUGH_PORTALS;
+    fvi_FindIntersection(&fq1, &hit_info1);
+    if (vm_VectorDistance(&hit_info.hit_pnt, &hit_info1.hit_pnt) > .005) {
+      OutrageMessageBox("Cannot move point.  No line of sight from the previous node to the new position.");
+      return -1;
+    }
+  }
+
+  if (nodenum < GamePaths[pathnum].num_nodes - 1) {
+    fvi_query fq1;
+    fvi_info hit_info1;
+    fq1.p0 = &GamePaths[pathnum].pathnodes[nodenum + 1].pos;
+    fq1.startroom = GamePaths[pathnum].pathnodes[nodenum + 1].roomnum;
+    fq1.p1 = &hit_info.hit_pnt;
+    fq1.rad = 0.0f;
+    fq1.thisobjnum = -1;
+    fq1.ignore_obj_list = NULL;
+    fq1.flags = FQ_TRANSPOINT | FQ_IGNORE_RENDER_THROUGH_PORTALS;
+    fvi_FindIntersection(&fq1, &hit_info1);
+    if (vm_VectorDistance(&hit_info.hit_pnt, &hit_info1.hit_pnt) > .005) {
+      OutrageMessageBox("Cannot move point.  No line of sight from the next node to the new position.");
+      return -1;
+    }
+  }
+
+  GamePaths[pathnum].pathnodes[nodenum].pos = hit_info.hit_pnt;
+  GamePaths[pathnum].pathnodes[nodenum].roomnum = hit_info.hit_room;
+  return 0;
+}
+
+int MovePathNode(int pathnum, int nodenum, vector *delta_pos) {
+  vector attempted_pos = GamePaths[pathnum].pathnodes[nodenum].pos + *delta_pos;
+  return MovePathNodeToPos(pathnum, nodenum, &attempted_pos);
 }
 
 int GetNextPath(int n) {

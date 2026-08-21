@@ -53,6 +53,11 @@
 #include "object.h"
 #include "object_ops.h"
 #include "obj_move_manager.h"
+
+int AllocGamePath();
+void FreeGamePath(int n);
+int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector pos, matrix orient);
+void DeleteNodeFromPath(int pathnum, int nodenum);
 #include "room_external.h"
 #include "ship.h"
 #include "ssl_lib.h"
@@ -2523,6 +2528,45 @@ private slots:
     ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_Y);
     ObjMoveManager.End();
     QVERIFY(!ObjMoveManager.IsMoving());
+  }
+
+  void testAllocFreeGamePath() {
+    int saved_num = Num_game_paths;
+    int idx = AllocGamePath();
+    QVERIFY(idx >= 0);
+    QVERIFY(GamePaths[idx].used);
+    QVERIFY(GamePaths[idx].num_nodes == 0);
+    QCOMPARE(Num_game_paths, saved_num + 1);
+
+    FreeGamePath(idx);
+    QVERIFY(!GamePaths[idx].used);
+    QCOMPARE(Num_game_paths, saved_num);
+  }
+
+  void testInsertAndDeleteNode() {
+    int saved_num = Num_game_paths;
+    int idx = AllocGamePath();
+    QVERIFY(idx >= 0);
+
+    int s0 = D3EditState.current_path;
+    D3EditState.current_path = idx;
+
+    matrix orient = IDENTITY_MATRIX;
+    vector pos{10.0f, 20.0f, 30.0f};
+    int n0 = InsertNodeIntoPath(idx, -1, 0, 0, pos, orient);
+    QVERIFY(n0 >= 0);
+    QCOMPARE(GamePaths[idx].num_nodes, 1);
+
+    vector pos2{40.0f, 50.0f, 60.0f};
+    int n1 = InsertNodeIntoPath(idx, 0, 0, 0, pos2, orient);
+    QVERIFY(n1 == 1);
+    QCOMPARE(GamePaths[idx].num_nodes, 2);
+
+    DeleteNodeFromPath(idx, 0);
+    QCOMPARE(GamePaths[idx].num_nodes, 1);
+
+    D3EditState.current_path = s0;
+    FreeGamePath(idx);
   }
 };
 // Force the offscreen QPA platform so the test binary never opens a real

@@ -30,6 +30,7 @@
 #include "d3edit.h"
 #include "editor_room_state.h"
 #include "gametexture.h"
+#include "gamepath.h"
 #include "obj_move_manager.h"
 #include "object.h"
 #include "pserror.h"
@@ -863,6 +864,102 @@ void EditorView::renderObjects() {
   }
 }
 
+extern uint8_t Show_paths;
+int GetFirstPath();
+int GetNextPath(int n);
+
+void EditorView::renderPaths() {
+  if (!Show_paths)
+    return;
+  if (Editor_view_mode == VM_TERRAIN)
+    return;
+
+  glLineWidth(1.5f);
+
+  int current_path_index = GetFirstPath();
+  if (current_path_index < 0)
+    return;
+
+  const float h = height() > 0 ? static_cast<float>(height()) : 1.0f;
+  const float focal = (h * 0.5f) / std::tan(kFovY * 0.5f);
+
+  for (int i = 0; i < Num_game_paths; i++, current_path_index = GetNextPath(current_path_index)) {
+    game_path *gp = &GamePaths[current_path_index];
+    if (!gp->used || gp->num_nodes == 0)
+      continue;
+
+    bool isCurrent = (current_path_index == D3EditState.current_path);
+
+    for (int t = 0; t < gp->num_nodes - 1; t++) {
+      float ax, ay, az, bx, by, bz;
+      if (!projectVertexDepth(gp->pathnodes[t].pos, &ax, &ay, &az))
+        continue;
+      if (!projectVertexDepth(gp->pathnodes[t + 1].pos, &bx, &by, &bz))
+        continue;
+
+      glColor3f(0.14f, 0.39f, 0.93f);
+      if (isCurrent)
+        glColor3f(1.0f, 1.0f, 1.0f);
+      glBegin(GL_LINES);
+      glVertex2f(ax, ay);
+      glVertex2f(bx, by);
+      glEnd();
+    }
+
+    for (int t = 0; t < gp->num_nodes; t++) {
+      float nx, ny, nz;
+      if (!projectVertexDepth(gp->pathnodes[t].pos, &nx, &ny, &nz))
+        continue;
+
+      float size = (focal * 1.2f) / nz;
+      if (size < 3.0f)
+        size = 3.0f;
+
+      bool isNodeCurrent = isCurrent && (t == D3EditState.current_node);
+      if (isNodeCurrent)
+        glColor3f(0.39f, 0.50f, 1.0f);
+      else
+        glColor3f(0.0f, 0.50f, 0.63f);
+
+      float hs = size * 0.5f;
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(nx, ny - hs);
+      glVertex2f(nx + hs, ny);
+      glVertex2f(nx, ny + hs);
+      glVertex2f(nx - hs, ny);
+      glEnd();
+
+      float fex = gp->pathnodes[t].pos.x() + gp->pathnodes[t].fvec.x() * (size * 0.4f);
+      float fey = gp->pathnodes[t].pos.y() + gp->pathnodes[t].fvec.y() * (size * 0.4f);
+      float fez = gp->pathnodes[t].pos.z() + gp->pathnodes[t].fvec.z() * (size * 0.4f);
+      vector fepos{fex, fey, fez};
+      float fx, fy, fdep;
+      if (projectVertexDepth(fepos, &fx, &fy, &fdep)) {
+        glColor3f(0.0f, 1.0f, 0.0f);
+        glBegin(GL_LINES);
+        glVertex2f(nx, ny);
+        glVertex2f(fx, fy);
+        glEnd();
+      }
+
+      float uex = gp->pathnodes[t].pos.x() + gp->pathnodes[t].uvec.x() * (size * 0.4f);
+      float uey = gp->pathnodes[t].pos.y() + gp->pathnodes[t].uvec.y() * (size * 0.4f);
+      float uez = gp->pathnodes[t].pos.z() + gp->pathnodes[t].uvec.z() * (size * 0.4f);
+      vector uepos{uex, uey, uez};
+      float ux, uy, udep;
+      if (projectVertexDepth(uepos, &ux, &uy, &udep)) {
+        glColor3f(0.0f, 0.0f, 1.0f);
+        glBegin(GL_LINES);
+        glVertex2f(nx, ny);
+        glVertex2f(ux, uy);
+        glEnd();
+      }
+    }
+  }
+
+  glLineWidth(1.0f);
+}
+
 void EditorView::updateCamera() {
   m_cameraValid = false;
   if (Viewer_object != nullptr) {
@@ -926,6 +1023,7 @@ void EditorView::paintGL() {
     renderRooms();
 
   renderObjects();
+  renderPaths();
   ++m_frameCount;
 }
 

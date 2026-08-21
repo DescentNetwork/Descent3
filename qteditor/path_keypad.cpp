@@ -33,6 +33,8 @@
 #include "vecmat.h"
 
 // Editor-side path helpers provided in d3_editor_state.cpp.
+int AllocGamePath();
+void FreeGamePath(int n);
 int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector pos, matrix orient);
 void DeleteNodeFromPath(int pathnum, int nodenum);
 int GetNextPath(int n);
@@ -138,22 +140,11 @@ void PathKeypad::onAddPath() {
                                              &ok);
   if (!ok || name.isEmpty())
     return;
-  int pathnum = -1;
-  for (int i = 0; i < MAX_GAME_PATHS; i++) {
-    if (!GamePaths[i].used) {
-      pathnum = i;
-      break;
-    }
-  }
-  if (pathnum == -1) {
-    OutrageMessageBox("Error: Too many paths in the level.");
+  int pathnum = AllocGamePath();
+  if (pathnum == -1)
     return;
-  }
   snprintf(GamePaths[pathnum].name, sizeof(GamePaths[pathnum].name), "%s",
            name.toLocal8Bit().constData());
-  GamePaths[pathnum].used = true;
-  GamePaths[pathnum].num_nodes = 0;
-  Num_game_paths++;
   D3EditState.current_path = pathnum;
   D3EditState.current_node = 0;
   updateDialog();
@@ -163,13 +154,7 @@ void PathKeypad::onDeletePath() {
   const int p = currentPath();
   if (p < 0)
     return;
-  if (GamePaths[p].num_nodes > 0) {
-    mem_free(GamePaths[p].pathnodes);
-    GamePaths[p].pathnodes = nullptr;
-  }
-  GamePaths[p].used = false;
-  GamePaths[p].num_nodes = 0;
-  Num_game_paths--;
+  FreeGamePath(p);
   D3EditState.current_path = GetNextPath(p);
   D3EditState.current_node = 0;
   updateDialog();
