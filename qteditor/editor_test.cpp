@@ -52,6 +52,7 @@
 #include "manage.h"
 #include "object.h"
 #include "object_ops.h"
+#include "obj_move_manager.h"
 #include "room_external.h"
 #include "ship.h"
 #include "ssl_lib.h"
@@ -2397,9 +2398,133 @@ private slots:
     Highest_object_index = -1;
     FreeRoom(&Rooms[0]);
   }
-};
 
-// Custom main: initialise the D3 core (loads game data) before running tests.
+  void testObjMoveManagerStartEnd() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Rooms[0].verts = nullptr;
+    Rooms[0].faces = nullptr;
+    Rooms[0].portals = nullptr;
+    {
+      room *rp = CreateNewRoom(8, 1, false);
+      Rooms[0] = *rp;
+      rp->verts = nullptr;
+      rp->faces = nullptr;
+      rp->portals = nullptr;
+      delete rp;
+      Rooms[0].used = 1;
+      Rooms[0].num_verts = 8;
+      Rooms[0].num_faces = 1;
+      for (int v = 0; v < 8; ++v)
+        Rooms[0].verts[v] = vector{};
+      ComputeFaceNormal(&Rooms[0], 0);
+    }
+    Highest_room_index = 0;
+
+    Objects[0].type = OBJ_VIEWER;
+    Objects[0].render_type = RT_POLYOBJ;
+    Objects[0].orient = IDENTITY_MATRIX;
+    Viewer_object = &Objects[0];
+
+    Objects[1].type = OBJ_POWERUP;
+    Objects[1].render_type = RT_POLYOBJ;
+    Objects[1].movement_type = MT_NONE;
+    Objects[1].orient = IDENTITY_MATRIX;
+    Objects[1].size = 1.0f;
+    Highest_object_index = 1;
+
+    vector origin{};
+    ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
+
+    Cur_object_index = 1;
+
+    QVERIFY(!ObjMoveManager.IsMoving());
+
+    matrix viewMat = IDENTITY_MATRIX;
+    vector viewPos{};
+    ObjMoveManager.Start(800, 600, &viewPos, &viewMat, 400, 300);
+
+    QVERIFY(ObjMoveManager.IsMoving());
+
+    ObjMoveManager.End();
+
+    QVERIFY(!ObjMoveManager.IsMoving());
+
+    Cur_object_index = -1;
+    Objects[0].type = OBJ_NONE;
+    Objects[1].type = OBJ_NONE;
+    Viewer_object = nullptr;
+    ResetObjectList();
+    Highest_object_index = -1;
+    FreeRoom(&Rooms[0]);
+  }
+
+  void testObjMoveManagerSkipsDoor() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Rooms[0].verts = nullptr;
+    Rooms[0].faces = nullptr;
+    Rooms[0].portals = nullptr;
+    {
+      room *rp = CreateNewRoom(8, 1, false);
+      Rooms[0] = *rp;
+      rp->verts = nullptr;
+      rp->faces = nullptr;
+      rp->portals = nullptr;
+      delete rp;
+      Rooms[0].used = 1;
+      Rooms[0].num_verts = 8;
+      Rooms[0].num_faces = 1;
+      for (int v = 0; v < 8; ++v)
+        Rooms[0].verts[v] = vector{};
+      ComputeFaceNormal(&Rooms[0], 0);
+    }
+    Highest_room_index = 0;
+
+    Objects[0].type = OBJ_VIEWER;
+    Objects[0].render_type = RT_POLYOBJ;
+    Objects[0].orient = IDENTITY_MATRIX;
+    Viewer_object = &Objects[0];
+
+    Objects[1].type = OBJ_DOOR;
+    Objects[1].render_type = RT_POLYOBJ;
+    Objects[1].movement_type = MT_NONE;
+    Objects[1].orient = IDENTITY_MATRIX;
+    Objects[1].size = 1.0f;
+    Highest_object_index = 1;
+
+    vector origin{};
+    ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
+
+    Cur_object_index = 1;
+
+    matrix viewMat = IDENTITY_MATRIX;
+    vector viewPos{};
+    ObjMoveManager.Start(800, 600, &viewPos, &viewMat, 400, 300);
+
+    QVERIFY(!ObjMoveManager.IsMoving());
+
+    Cur_object_index = -1;
+    Objects[0].type = OBJ_NONE;
+    Objects[1].type = OBJ_NONE;
+    Viewer_object = nullptr;
+    ResetObjectList();
+    Highest_object_index = -1;
+    FreeRoom(&Rooms[0]);
+  }
+
+  void testObjMoveManagerSetAxis() {
+    ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_Y);
+    ObjMoveManager.End();
+    QVERIFY(!ObjMoveManager.IsMoving());
+  }
+};
 // Force the offscreen QPA platform so the test binary never opens a real
 // window — even at the menu-wiring tests that walk the menubar, the file
 // dialog tests that auto-accept a default save path, and the geometry tests

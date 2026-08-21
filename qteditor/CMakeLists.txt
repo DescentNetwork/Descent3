@@ -93,6 +93,8 @@ set(QTEDITOR_SOURCES
   main_window.cpp
   room_ops.cpp
   object_ops.cpp
+  obj_move_manager.cpp
+  obj_move_manager.h
   multicheck_dialog.cpp
   multicheck_dialog.h
   matcen_keypad.cpp

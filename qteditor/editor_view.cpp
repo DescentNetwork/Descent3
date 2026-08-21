@@ -30,6 +30,7 @@
 #include "d3edit.h"
 #include "editor_room_state.h"
 #include "gametexture.h"
+#include "obj_move_manager.h"
 #include "object.h"
 #include "pserror.h"
 #include "room.h"
@@ -935,6 +936,16 @@ void EditorView::mousePressEvent(QMouseEvent *event) {
     m_dragged = false;
     m_pressPos = event->pos();
     m_panMode = (event->modifiers() & Qt::ShiftModifier) != 0;
+
+    if (!m_panMode) {
+      updateCamera();
+      PickResult pick = pickAt(event->pos().x(), event->pos().y());
+      if (pick.objectIndex >= 0) {
+        Cur_object_index = pick.objectIndex;
+        emit objectSelected(pick.objectIndex);
+        ObjMoveManager.Start(width(), height(), &m_eye, &m_orient, event->pos().x(), event->pos().y());
+      }
+    }
   } else if (event->button() == Qt::RightButton) {
     updateCamera();
     PickResult pick = pickAt(event->pos().x(), event->pos().y());
@@ -949,6 +960,14 @@ void EditorView::mouseMoveEvent(QMouseEvent *event) {
     if ((event->pos() - m_pressPos).manhattanLength() > 4)
       m_dragged = true;
   }
+
+  if (ObjMoveManager.IsMoving()) {
+    ObjMoveManager.Defer();
+    if (ObjMoveManager.IsMoving())
+      update();
+    return;
+  }
+
   if (!m_dragged && Viewer_object != nullptr)
     return;
 
@@ -956,12 +975,10 @@ void EditorView::mouseMoveEvent(QMouseEvent *event) {
   m_lastMouse = event->pos();
 
   if (m_mouseDown && m_panMode) {
-    // Shift+drag: pan (translate the look-at target).
     const float panScale = m_dist * 0.002f;
     m_target += m_orient.rvec * (-delta.x() * panScale);
     m_target += m_orient.uvec * (delta.y() * panScale);
   } else if (m_mouseDown || Viewer_object == nullptr) {
-    // Left drag (or hover in orbit mode): rotate.
     m_yaw += delta.x() * 0.5f;
     m_pitch += delta.y() * 0.5f;
     if (m_pitch > 1.5f)
@@ -973,18 +990,20 @@ void EditorView::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void EditorView::mouseReleaseEvent(QMouseEvent *event) {
-  if (event->button() == Qt::LeftButton && m_mouseDown && !m_dragged) {
-    updateCamera();
-    PickResult pick = pickAt(event->pos().x(), event->pos().y());
-    if (pick.objectIndex >= 0) {
-      emit objectSelected(pick.objectIndex);
-    } else if (pick.roomIndex >= 0 && pick.faceIndex >= 0) {
-      emit faceSelected(pick.roomIndex, pick.faceIndex);
-    } else {
-      emit selectionCleared();
-    }
-  }
   if (event->button() == Qt::LeftButton) {
+    if (ObjMoveManager.IsMoving()) {
+      ObjMoveManager.End();
+    } else if (m_mouseDown && !m_dragged) {
+      updateCamera();
+      PickResult pick = pickAt(event->pos().x(), event->pos().y());
+      if (pick.objectIndex >= 0) {
+        emit objectSelected(pick.objectIndex);
+      } else if (pick.roomIndex >= 0 && pick.faceIndex >= 0) {
+        emit faceSelected(pick.roomIndex, pick.faceIndex);
+      } else {
+        emit selectionCleared();
+      }
+    }
     m_mouseDown = false;
     m_dragged = false;
   }
