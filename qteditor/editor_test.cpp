@@ -58,6 +58,8 @@ int AllocGamePath();
 void FreeGamePath(int n);
 int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector pos, matrix orient);
 void DeleteNodeFromPath(int pathnum, int nodenum);
+void EBNode_ClearLevel();
+bool EBNode_VerifyGraph();
 #include "room_external.h"
 #include "ship.h"
 #include "ssl_lib.h"
@@ -2567,6 +2569,14 @@ private slots:
 
     D3EditState.current_path = s0;
     FreeGamePath(idx);
+  }
+
+  void testEBNodeClearLevel() {
+    BNode_allocated = false;
+    BNode_verified = false;
+    EBNode_ClearLevel();
+    QVERIFY(!BNode_allocated);
+    QVERIFY(!BNode_verified);
   }
 };
 // Force the offscreen QPA platform so the test binary never opens a real

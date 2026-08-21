@@ -27,6 +27,7 @@
 
 #include "bitmap.h"
 
+#include "ebnode.h"
 #include "d3edit.h"
 #include "editor_room_state.h"
 #include "gametexture.h"
@@ -960,6 +961,90 @@ void EditorView::renderPaths() {
   glLineWidth(1.0f);
 }
 
+extern char EBN_draw_type;
+
+void EditorView::renderBNodes() {
+  if (EBN_draw_type == EBDRAW_NONE)
+    return;
+  if (Editor_view_mode == VM_TERRAIN)
+    return;
+
+  glLineWidth(1.5f);
+
+  const float h = height() > 0 ? static_cast<float>(height()) : 1.0f;
+  const float focal = (h * 0.5f) / std::tan(kFovY * 0.5f);
+
+  int room_start = 0;
+  int room_end = Highest_room_index;
+
+  if (EBN_draw_type == EBDRAW_ROOM || EBDRAW_ROOM_AND_NEXT_ROOMS) {
+    if (Viewer_object != nullptr)
+      room_start = room_end = Viewer_object->roomnum;
+  }
+
+  for (int roomnum = room_start; roomnum <= room_end; roomnum++) {
+    if (!Rooms[roomnum].used || (Rooms[roomnum].flags & RF_EXTERNAL))
+      continue;
+    if (EBN_draw_type == EBDRAW_ROOM && roomnum != room_start)
+      continue;
+
+    bn_list *nlist = BNode_GetBNListPtr(roomnum);
+    if (!nlist || nlist->num_nodes == 0)
+      continue;
+
+    bool is_current_room = (Viewer_object != nullptr && roomnum == Viewer_object->roomnum);
+
+    for (int i = 0; i < nlist->num_nodes; i++) {
+      for (int e = 0; e < nlist->nodes[i].num_edges; e++) {
+        int eroom = nlist->nodes[i].edges[e].end_room;
+        int eidx = nlist->nodes[i].edges[e].end_index;
+        bn_list *enlist = BNode_GetBNListPtr(eroom);
+        if (!enlist)
+          continue;
+        if (eidx < 0 || eidx >= enlist->num_nodes)
+          continue;
+
+        float ax, ay, az, bx, by, bz;
+        if (!projectVertexDepth(nlist->nodes[i].pos, &ax, &ay, &az))
+          continue;
+        if (!projectVertexDepth(enlist->nodes[eidx].pos, &bx, &by, &bz))
+          continue;
+
+        glColor3f(1.0f, 0.0f, 0.0f);
+        glBegin(GL_LINES);
+        glVertex2f(ax, ay);
+        glVertex2f(bx, by);
+        glEnd();
+      }
+    }
+
+    for (int i = 0; i < nlist->num_nodes; i++) {
+      float nx, ny, nz;
+      if (!projectVertexDepth(nlist->nodes[i].pos, &nx, &ny, &nz))
+        continue;
+
+      float size = (focal * 0.7f) / nz;
+      if (size < 2.0f)
+        size = 2.0f;
+
+      if (is_current_room)
+        glColor3f(0.0f, 0.5f, 0.63f);
+      else
+        glColor3f(0.0f, 0.25f, 0.31f);
+
+      float hs = size * 0.5f;
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(nx, ny - hs);
+      glVertex2f(nx + hs, ny);
+      glVertex2f(nx, ny + hs);
+      glVertex2f(nx - hs, ny);
+      glEnd();
+    }
+  }
+
+  glLineWidth(1.0f);
+}
+
 void EditorView::updateCamera() {
   m_cameraValid = false;
   if (Viewer_object != nullptr) {
@@ -1024,6 +1109,7 @@ void EditorView::paintGL() {
 
   renderObjects();
   renderPaths();
+  renderBNodes();
   ++m_frameCount;
 }
 

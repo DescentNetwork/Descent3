@@ -95,6 +95,8 @@ set(QTEDITOR_SOURCES
   object_ops.cpp
   obj_move_manager.cpp
   obj_move_manager.h
+  ebnode.cpp
+  ebnode.h
   multicheck_dialog.cpp
   multicheck_dialog.h
   matcen_keypad.cpp

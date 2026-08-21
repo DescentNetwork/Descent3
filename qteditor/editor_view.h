@@ -97,6 +97,7 @@ private:
   void renderTerrain();
   void renderObjects();
   void renderPaths();
+  void renderBNodes();
 
   static bool pointInPolygon(float px, float py, const float *sx, const float *sy, int n);
 
