@@ -34,7 +34,7 @@
 #include "gamepath.h"
 #include "obj_move_manager.h"
 #include "object.h"
-#include "pserror.h"
+
 #include "room.h"
 #include "terrain.h"
 

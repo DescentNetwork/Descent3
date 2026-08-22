@@ -395,8 +395,8 @@ private slots:
     // 1. Filename buffer overflow is bounded. Even if the user picks some
     //    very long path, OpenFileDialog must truncate safely.
     const char *filter_single = "Descent 3 Level Files (*.d3l)|*.d3l||";
-    char path[_MAX_PATH] = "";
-    char initial[_MAX_PATH];
+    char path[PATH_MAX] = "";
+    char initial[PATH_MAX];
     std::strcpy(initial, "/tmp");
     // Verify the function entry doesn't crash and follows Win32 contract:
     //   - pathname==nullptr returns false without writing.

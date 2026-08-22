@@ -43,7 +43,7 @@
 
 
 #include "about_dialog.h"
-#include "crossplat.h"
+
 
 #include "editor_file_dialogs.h"
 #include "editor_view.h"
@@ -348,7 +348,7 @@ void MainWindow::onFileNew() {
 void MainWindow::onFileOpen() {
   // Use the editor's LocalLevelsDir rather than the install root so the file
   // dialog opens where the user actually keeps their .d3l files.
-  static char initial_dir[_MAX_PATH];
+  static char initial_dir[PATH_MAX];
   if (m_currentLevelFile.isEmpty()) {
     std::strncpy(initial_dir, LocalLevelsDir, sizeof(initial_dir) - 1);
     initial_dir[sizeof(initial_dir) - 1] = '\0';
@@ -357,7 +357,7 @@ void MainWindow::onFileOpen() {
     std::strncpy(initial_dir, current.constData(), sizeof(initial_dir) - 1);
     initial_dir[sizeof(initial_dir) - 1] = '\0';
   }
-  char picked[_MAX_PATH] = "";
+  char picked[PATH_MAX] = "";
   const char *filter = "Descent 3 Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
   if (!OpenFileDialog(this, filter, picked, initial_dir,
                                 int {sizeof(initial_dir)})) {
@@ -391,7 +391,7 @@ void MainWindow::onFileSave() {
 }
 
 void MainWindow::onFileSaveAs() {
-  static char initial_dir[_MAX_PATH];
+  static char initial_dir[PATH_MAX];
   if (m_currentLevelFile.isEmpty()) {
     std::strncpy(initial_dir, LocalLevelsDir, sizeof(initial_dir) - 1);
     initial_dir[sizeof(initial_dir) - 1] = '\0';
@@ -400,7 +400,7 @@ void MainWindow::onFileSaveAs() {
     std::strncpy(initial_dir, current.constData(), sizeof(initial_dir) - 1);
     initial_dir[sizeof(initial_dir) - 1] = '\0';
   }
-  char picked[_MAX_PATH] = "";
+  char picked[PATH_MAX] = "";
   const char *filter = "Descent 3 Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
   if (!SaveFileDialog(this, filter, picked, initial_dir,
                                 int {sizeof(initial_dir)})) {

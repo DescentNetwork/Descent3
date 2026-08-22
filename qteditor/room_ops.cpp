@@ -25,15 +25,18 @@
 
 #include "editor_room_state.h"
 
-#include "crossplat.h"
+#include <QtGlobal>
+#include "qt_messagebox.h"
+#include "logger/log.h"
+
 #include "d3edit.h"
 #include "door.h"
 #include "doorway.h"
 #include "mem.h"
-#include "mono.h"
+
 #include "object.h"
 #include "polymodel.h"
-#include "pserror.h"
+
 #include "room.h"
 #include "special_face.h"
 #include "trigger.h"
@@ -89,7 +92,7 @@ static inline bool NormalsAreSame(const vector *n0, const vector *n1) {
 // face_uvls arrays.
 // ============================================================================
 void ReInitRoomFace(face *fp, int nverts) {
-  ASSERT(nverts != 0);
+  Q_ASSERT(nverts != 0);
 
   fp->num_verts = nverts;
 
@@ -97,9 +100,9 @@ void ReInitRoomFace(face *fp, int nverts) {
   mem_free(fp->face_uvls);
 
   fp->face_verts = (int16_t *)mem_malloc(nverts * sizeof(*fp->face_verts));
-  ASSERT(fp->face_verts != NULL);
+  Q_ASSERT(fp->face_verts != NULL);
   fp->face_uvls = mem_rmalloc<roomUVL>(nverts);
-  ASSERT(fp->face_uvls != NULL);
+  Q_ASSERT(fp->face_uvls != NULL);
 }
 
 // ============================================================================
@@ -111,7 +114,7 @@ int RoomAddVertices(room *rp, int num_new_verts) {
     return 0;
 
   auto newverts = mem_rmalloc<vector>(rp->num_verts + num_new_verts);
-  ASSERT(newverts != NULL);
+  Q_ASSERT(newverts != NULL);
 
   for (int i = 0; i < rp->num_verts; i++)
     newverts[i] = rp->verts[i];
@@ -132,7 +135,7 @@ int RoomAddFaces(room *rp, int num_new_faces) {
     return 0;
 
   auto newfaces = mem_rmalloc<face>(rp->num_faces + num_new_faces);
-  ASSERT(newfaces != NULL);
+  Q_ASSERT(newfaces != NULL);
 
   for (int i = 0; i < rp->num_faces; i++)
     newfaces[i] = rp->faces[i];
@@ -166,7 +169,7 @@ bool ResetRoomFaceNormals(room *rp) {
       bad_normals++;
 
   if (bad_normals > 0) {
-    mprintf(1, "Warning: Room %d has %d bad or low-precision normals\n", ROOMNUM(rp), bad_normals);
+    LOG_WARNING("Warning: Room %d has %d bad or low-precision normals\n", ROOMNUM(rp), bad_normals);
     return false;
   }
   return true;
@@ -319,7 +322,7 @@ void DeleteRoomFace(room *rp, int facenum) {
 
   for (int p = 0; p < rp->num_portals; p++) {
     portal *pp = &rp->portals[p];
-    ASSERT(pp->portal_face != facenum);
+    Q_ASSERT(pp->portal_face != facenum);
     if (pp->portal_face > facenum)
       pp->portal_face--;
   }
@@ -327,14 +330,14 @@ void DeleteRoomFace(room *rp, int facenum) {
   for (t = 0; t < Num_triggers; t++) {
     trigger *tp = &Triggers[t];
     if (tp->roomnum == ROOMNUM(rp)) {
-      ASSERT(tp->facenum != facenum);
+      Q_ASSERT(tp->facenum != facenum);
       if (tp->facenum > facenum)
         tp->facenum--;
     }
   }
 
   face *newfaces = mem_rmalloc<face>(rp->num_faces - 1);
-  ASSERT(newfaces != NULL);
+  Q_ASSERT(newfaces != NULL);
 
   for (f = 0; f < facenum; f++)
     newfaces[f] = rp->faces[f];
@@ -373,12 +376,12 @@ void DeleteRoomPortal(room *rp, int portalnum) {
   portal *pp = &rp->portals[portalnum];
   face *fp = &rp->faces[pp->portal_face];
 
-  ASSERT(fp->portal_num == portalnum);
+  Q_ASSERT(fp->portal_num == portalnum);
   fp->portal_num = -1;
 
   for (int p = portalnum + 1; p < rp->num_portals; p++) {
     portal *tp = &rp->portals[p];
-    ASSERT(rp->faces[tp->portal_face].portal_num == p);
+    Q_ASSERT(rp->faces[tp->portal_face].portal_num == p);
     rp->faces[tp->portal_face].portal_num--;
     if (tp->croom != -1)
       Rooms[tp->croom].portals[tp->cportal].cportal--;
@@ -389,7 +392,7 @@ void DeleteRoomPortal(room *rp, int portalnum) {
     newportals = NULL;
   else {
     newportals = mem_rmalloc<portal>(rp->num_portals - 1);
-    ASSERT(newportals != NULL);
+    Q_ASSERT(newportals != NULL);
   }
 
   for (int p = 0; p < portalnum; p++)
@@ -430,8 +433,8 @@ void LinkRooms(room *roomlist, int room0, int face0, int room1, int face1) {
   room *rp0 = &roomlist[room0];
   room *rp1 = &roomlist[room1];
 
-  ASSERT(rp0->faces[face0].portal_num == -1);
-  ASSERT(rp1->faces[face1].portal_num == -1);
+  Q_ASSERT(rp0->faces[face0].portal_num == -1);
+  Q_ASSERT(rp1->faces[face1].portal_num == -1);
 
   int pn0 = AddPortal(rp0);
   int pn1 = AddPortal(rp1);
@@ -482,7 +485,7 @@ void DeletePortalPair(room *rp, int portalnum) {
 void FlipFace(room *rp, int facenum) {
   face *fp = &rp->faces[facenum];
 
-  ASSERT(fp->portal_num == -1);
+  Q_ASSERT(fp->portal_num == -1);
 
   for (int i = 0; i < fp->num_verts / 2; i++) {
     int v = fp->face_verts[i];
@@ -495,7 +498,7 @@ void FlipFace(room *rp, int facenum) {
   }
 
   if (!ComputeFaceNormal(rp, facenum))
-    Int3();
+    Q_ASSERT(false);
 
   World_changed = true;
   EditorStatus("Room %d face %d flipped.", ROOMNUM(rp), facenum);
@@ -513,8 +516,8 @@ void AssignUVsToFace(room *rp, int facenum, roomUVL *uva, roomUVL *uvb, int va, 
   roomUVL ruvmag, fuvmag, uvlo, uvhi;
   float fmag, mag01;
 
-  ASSERT((va < nv) && (vb < nv));
-  ASSERT((abs(va - vb) == 1) || (abs(va - vb) == nv - 1));
+  Q_ASSERT((va < nv) && (vb < nv));
+  Q_ASSERT((abs(va - vb) == 1) || (abs(va - vb) == nv - 1));
 
   if (va == ((vb + 1) % nv)) {
     vlo = vb;
@@ -528,7 +531,7 @@ void AssignUVsToFace(room *rp, int facenum, roomUVL *uva, roomUVL *uvb, int va, 
     uvhi = *uvb;
   }
 
-  ASSERT(((vlo + 1) % nv) == vhi);
+  Q_ASSERT(((vlo + 1) % nv) == vhi);
   fp->face_uvls[vlo] = uvlo;
   fp->face_uvls[vhi] = uvhi;
 
@@ -597,7 +600,7 @@ void FixConcaveFaces(room *rp, int *facelist, int facecount) {
       int concave_count = rp->faces[facelist[i]].num_verts;
       int old_tmap = rp->faces[facelist[i]].tmap;
       int num_new_faces = concave_count - 3;
-      ASSERT(num_new_faces > 0);
+      Q_ASSERT(num_new_faces > 0);
 
       for (int t = 0; t < concave_count; t++)
         concave_verts[t] = rp->faces[facelist[i]].face_verts[t];
@@ -606,7 +609,7 @@ void FixConcaveFaces(room *rp, int *facelist, int facecount) {
       int nfaces = rp->num_faces + num_new_faces;
 
       face *newfaces = mem_rmalloc<face>(nfaces);
-      ASSERT(newfaces != NULL);
+      Q_ASSERT(newfaces != NULL);
 
       for (int t = 0; t < rp->num_faces; t++) {
         if (t != facelist[i]) {
@@ -640,7 +643,7 @@ void FixConcaveFaces(room *rp, int *facelist, int facecount) {
           }
 
           if (!ComputeFaceNormal(rp, t))
-            Int3();
+            Q_ASSERT(false);
           newfaces[t].normal = rp->faces[t].normal;
         }
       }
@@ -670,7 +673,7 @@ void FixConcaveFaces(room *rp, int *facelist, int facecount) {
         rp->faces[old_num_faces + t].tmap = old_tmap;
 
         if (!ComputeFaceNormal(rp, old_num_faces + t))
-          Int3();
+          Q_ASSERT(false);
 
         AssignDefaultUVsToRoomFace(rp, old_num_faces + t);
       }
@@ -678,7 +681,7 @@ void FixConcaveFaces(room *rp, int *facelist, int facecount) {
   }
 
   if (!ResetRoomFaceNormals(rp))
-    Int3();
+    Q_ASSERT(false);
 }
 
 // ============================================================================
@@ -693,7 +696,7 @@ bool CombineFaces(room *rp, int face0, int face1) {
   roomUVL uvllist[MAX_VERTS_PER_FACE];
   int nv;
 
-  ASSERT(face0 != face1);
+  Q_ASSERT(face0 != face1);
 
   if ((fp0->portal_num != -1) || (fp1->portal_num != -1)) {
     SetErrorMessage("You cannot combine portal faces.");
@@ -976,14 +979,14 @@ static void ClipEdge(const vector *normal, const clip_vertex *v0, const clip_ver
             ((vv1[jj] - vv0[jj]) * (vv3[ii] - vv2[ii]) - (vv1[ii] - vv0[ii]) * (vv3[jj] - vv2[jj]));
 
   if (k < 0.0f) {
-    ASSERT((vm_VectorDistance(&v1->vec, &v0->vec) * -k) < POINT_TO_EDGE_EPSILON);
+    Q_ASSERT((vm_VectorDistance(&v1->vec, &v0->vec) * -k) < POINT_TO_EDGE_EPSILON);
     k = 0.0f;
   }
   if (k > 1.0f) {
-    ASSERT((vm_VectorDistance(&v1->vec, &v0->vec) * (k - 1.0f)) < POINT_TO_EDGE_EPSILON);
+    Q_ASSERT((vm_VectorDistance(&v1->vec, &v0->vec) * (k - 1.0f)) < POINT_TO_EDGE_EPSILON);
     k = 1.0f;
   }
-  ASSERT((k >= 0) && (k <= 1.0f));
+  Q_ASSERT((k >= 0) && (k <= 1.0f));
 
   newv->vec = v0->vec + (v1->vec - v0->vec) * k;
   newv->uvl.u = v0->uvl.u + (v1->uvl.u - v0->uvl.u) * k;
@@ -1109,7 +1112,7 @@ static void ClipAgainstEdge(int nv, int16_t *vertnums, clip_vertex *vertices, in
         *op++ = *ip++ = (*num_vertices)++;
       }
     } else {
-      ASSERT(check == 1);
+      Q_ASSERT(check == 1);
       *ip++ = vertnums[i];
       inside_points++;
     }
@@ -1184,7 +1187,7 @@ static bool ClipFace(room *arp, int afacenum, room *brp, int bfacenum) {
     afp->face_uvls[i] = newverts[src[i]].uvl;
   }
   if (!ComputeFaceNormal(arp, afacenum))
-    ASSERT(0);
+    Q_ASSERT(0);
 
   int first_new_face = RoomAddFaces(arp, num_newfaces);
 
@@ -1196,7 +1199,7 @@ static bool ClipFace(room *arp, int afacenum, room *brp, int bfacenum) {
       fp->face_uvls[j] = newverts[newface_verts[i][j]].uvl;
     }
     if (!ComputeFaceNormal(arp, first_new_face + i))
-      ASSERT(0);
+      Q_ASSERT(0);
     fp->tmap = arp->faces[afacenum].tmap;
     CopyFaceFlags(fp, &arp->faces[afacenum]);
   }
@@ -1240,7 +1243,7 @@ check_faces:;
   }
   if (i >= fp0->num_verts) {
     if (!check_only)
-      ASSERT(0);
+      Q_ASSERT(0);
     return 0;
   }
 
@@ -1275,7 +1278,7 @@ check_faces:;
         if (CheckPointAgainstEdge(v1, prev_v0, v0, &fp0->normal)) {
           if (check_only)
             return 0;
-          ASSERT(0);
+          Q_ASSERT(0);
         } else {
           if (!check_only) {
             AddPointToAllEdges(rp0, prev_vn0, vn0, v1);
@@ -1289,7 +1292,7 @@ check_faces:;
         if (CheckPointAgainstEdge(v0, prev_v1, v1, &fp1->normal)) {
           if (check_only)
             return 0;
-          ASSERT(0);
+          Q_ASSERT(0);
         } else {
           if (!check_only) {
             AddPointToAllEdges(rp1, prev_vn1, vn1, v0);
@@ -1312,7 +1315,7 @@ check_faces:;
   if (check_only)
     return 1;
 
-  ASSERT(fp0->num_verts == fp1->num_verts);
+  Q_ASSERT(fp0->num_verts == fp1->num_verts);
   return points_added;
 }
 
@@ -1324,7 +1327,7 @@ check_faces:;
 // and Placed_room_rotmat to be set by the caller.
 // ============================================================================
 void AttachRoom() {
-  ASSERT(Placed_room != -1);
+  Q_ASSERT(Placed_room != -1);
 
   room *baseroomp = Placed_baseroomp;
   int baseface = Placed_baseface;
@@ -1362,7 +1365,7 @@ void AttachRoom() {
 
   // Recompute normals
   if (!ResetRoomFaceNormals(newroomp))
-    ASSERT(0);
+    Q_ASSERT(0);
 
   // Copy other room values
   newroomp->flags = attroomp->flags;
@@ -1702,7 +1705,7 @@ void ComputePlacedRoomMatrix() {
 // PlaceRoom — editor/HRoom.cpp:585
 // Sets up globals for interactive room placement.
 void PlaceRoom(room *baseroomp, int baseface, int placed_room, int placed_room_face, int placed_room_door) {
-  ASSERT(baseroomp->faces[baseface].portal_num == -1);
+  Q_ASSERT(baseroomp->faces[baseface].portal_num == -1);
 
   room *placedroomp = &Rooms[placed_room];
 
@@ -1757,7 +1760,7 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
   int total_faces = num_faces;
 
   room *rp = CreateNewRoom(total_verts, total_faces);
-  ASSERT(rp != nullptr);
+  Q_ASSERT(rp != nullptr);
 
   int index = 0;
 
@@ -1781,7 +1784,7 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
 
   // Create the front face (always one face)
   int front_face_index = index;
-  ASSERT(front_sm->num_faces == 1);
+  Q_ASSERT(front_sm->num_faces == 1);
   InitRoomFace(&rp->faces[index], front_sm->faces[0].nverts);
   rp->faces[index].tmap = D3EditState.texdlg_texture;
 
@@ -1801,14 +1804,14 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
   }
 
   for (int i = 0; i < front_sm->nverts; i++)
-    ASSERT(front_remap[i] != -1);
+    Q_ASSERT(front_remap[i] != -1);
 
   for (int t = 0; t < rp->faces[front_face_index].num_verts; t++)
     rp->faces[front_face_index].face_verts[t] = front_remap[front_sm->faces[0].vertnums[t]];
 
   // Compute normals and UVs
   if (!ResetRoomFaceNormals(rp))
-    ASSERT(0);
+    Q_ASSERT(0);
 
   AssignDefaultUVsToRoom(rp);
 

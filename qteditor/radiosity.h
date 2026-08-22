@@ -65,7 +65,7 @@
 #ifndef RADIOSITY_H
 #define RADIOSITY_H
 
-#include "pserror.h"
+
 #include "pstypes.h"
 #include "3d.h"
 #include "gr.h"

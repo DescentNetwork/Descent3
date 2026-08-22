@@ -22,14 +22,15 @@
 
 #include "object_ops.h"
 
+#include "logger/log.h"
 #include "d3edit.h"
 #include "findintersection.h"
-#include "mono.h"
+
 #include "object.h"
 #include "physics.h"
 #include "player.h"
 #include "polymodel.h"
-#include "pserror.h"
+
 #include "qt_messagebox.h"
 #include "ship.h"
 #include "terrain.h"
@@ -285,7 +286,7 @@ void ResetGroundObject(object *objp) {
 // ============================================================================
 void HObjectMove(int objnum, float dx, float dy, float dz) {
   if (objnum == -1) {
-    mprintf(0, "HObjectMove:No current object.\n");
+    LOG_INFO("HObjectMove:No current object.\n");
     return;
   }
 
@@ -325,8 +326,8 @@ void HObjectDelete() {
   }
 
   if (Objects[objnum].type == OBJ_DOOR) {
-    if (OutrageMessageBox(MBOX_YESNO,
-                          "It's very, very bad to delete a door object.  Are you sure you want to do this?") != IDYES)
+    if (!OutrageMessageBox(MBOX_YESNO,
+                          "It's very, very bad to delete a door object.  Are you sure you want to do this?"))
       return;
   }
 

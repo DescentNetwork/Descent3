@@ -24,6 +24,10 @@
  * $NoKeywords: $
  */
 
+#include <QtGlobal>
+#include <limits.h>
+#include "logger/log.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -48,7 +52,7 @@
 #include "special_face.h"
 #include "BOA.h"
 #include "mem.h"
-#include "mono.h"
+
 
 struct spec_vertex {
   float x, y;
@@ -119,9 +123,9 @@ int FindEmptyMaskSpot(int w, int h, int *dest_x, int *dest_y) {
 void CopySqueezeBodyAndEdges(uint16_t *dest_data, uint16_t *src_data, int w, int h, int dest_x, int dest_y) {
   int i, t;
 
-  ASSERT(w + dest_x <= 126);
-  ASSERT(h + dest_y <= 126);
-  ASSERT(dest_x >= 0 && dest_y >= 0);
+  Q_ASSERT(w + dest_x <= 126);
+  Q_ASSERT(h + dest_y <= 126);
+  Q_ASSERT(dest_x >= 0 && dest_y >= 0);
 
   // First copy the main body
   for (i = 0; i < h; i++) {
@@ -218,7 +222,7 @@ void CopySqueezeDataForRooms(int roomnum, int facenum, uint16_t *dest_data, int 
     }
   }
 
-  ASSERT(rp->faces[facenum].lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(rp->faces[facenum].lmi_handle != BAD_LMI_INDEX);
 
   Lmi_spoken_for[rp->faces[facenum].lmi_handle] = 1;
 
@@ -286,7 +290,7 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, uint16_t *de
     }
   }
 
-  ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
   Lmi_spoken_for[fp->lmi_handle] = 1;
 
   // Free our old lightmap
@@ -323,7 +327,7 @@ void CheckCombinePortals(int terrain) {
   ClearCombinePortals(terrain);
 
   int combine_count = 0;
-  mprintf(0, "Combining portals...");
+  LOG_INFO("Combining portals...");
 
   for (int i = 0; i <= Highest_room_index; i++) {
     room *rp = &Rooms[i];
@@ -414,20 +418,20 @@ void CheckCombinePortals(int terrain) {
     }
   }
 
-  mprintf(0, "%d portals combined.\n", combine_count);
+  LOG_INFO("%d portals combined.\n", combine_count);
 }
 
 // Squeezes all the lightmaps down into as few 128x128s as possible
 void SqueezeLightmaps(int external, int target_roomnum) {
   int i, t, k;
-  mprintf(0, "Squeezing %s lightmaps, please wait...\n", external ? "external" : "internal");
+  LOG_INFO("Squeezing %s lightmaps, please wait...\n", external ? "external" : "internal");
 
   Lmi_spoken_for = mem_rmalloc<uint8_t>(MAX_LIGHTMAP_INFOS);
   Lightmap_mask = (uint8_t *)mem_malloc(128 * 128);
   Squeeze_lightmap_handle = -1;
 
-  ASSERT(Lightmap_mask);
-  ASSERT(Lmi_spoken_for);
+  Q_ASSERT(Lightmap_mask);
+  Q_ASSERT(Lmi_spoken_for);
   memset(Lmi_spoken_for, 0, MAX_LIGHTMAP_INFOS);
   memset(Lightmap_mask, 0, 128 * 128);
 
@@ -503,8 +507,8 @@ void SqueezeLightmaps(int external, int target_roomnum) {
         }
 
         // Now, allocate a new lightmap and start over
-        ASSERT(Squeeze_lightmap_handle != -1);
-        ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
+        Q_ASSERT(Squeeze_lightmap_handle != -1);
+        Q_ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
         GameLightmaps[Squeeze_lightmap_handle].used--;
 
         memset(Lightmap_mask, 0, 128 * 128);
@@ -512,12 +516,12 @@ void SqueezeLightmaps(int external, int target_roomnum) {
         uint16_t *fill_data = (uint16_t *)lm_data(Squeeze_lightmap_handle);
         memset(fill_data, 0, 128 * 128 * 2);
 
-        ASSERT(Lmi_spoken_for[lmi_handle] == 0);
+        Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
 
         if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
           CopySqueezeDataForRooms(i, t, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
         } else {
-          Int3(); // Get Jason, how did this happen????
+          Q_ASSERT(false); // Get Jason, how did this happen????
         }
       }
     }
@@ -592,8 +596,8 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             }
 
             // Now, allocate a new lightmap and start over
-            ASSERT(Squeeze_lightmap_handle != -1);
-            ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
+            Q_ASSERT(Squeeze_lightmap_handle != -1);
+            Q_ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
             GameLightmaps[Squeeze_lightmap_handle].used--;
 
             memset(Lightmap_mask, 0, 128 * 128);
@@ -601,12 +605,12 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             uint16_t *fill_data = (uint16_t *)lm_data(Squeeze_lightmap_handle);
             memset(fill_data, 0, 128 * 128 * 2);
 
-            ASSERT(Lmi_spoken_for[lmi_handle] == 0);
+            Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
 
             if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
               CopySqueezeDataForObject(obj, t, j, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
             } else {
-              Int3(); // Get Jason, how did this happen????
+              Q_ASSERT(false); // Get Jason, how did this happen????
             }
           }
         }
@@ -615,7 +619,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
   }
 
   if (Squeeze_lightmap_handle != -1) {
-    ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
+    Q_ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
     GameLightmaps[Squeeze_lightmap_handle].used--;
   }
 
@@ -696,8 +700,8 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             }
 
             // Now, allocate a new lightmap and start over
-            ASSERT(Squeeze_lightmap_handle != -1);
-            ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
+            Q_ASSERT(Squeeze_lightmap_handle != -1);
+            Q_ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
             GameLightmaps[Squeeze_lightmap_handle].used--;
 
             memset(Lightmap_mask, 0, 128 * 128);
@@ -705,12 +709,12 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             uint16_t *fill_data = (uint16_t *)lm_data(Squeeze_lightmap_handle);
             memset(fill_data, 0, 128 * 128 * 2);
 
-            ASSERT(Lmi_spoken_for[lmi_handle] == 0);
+            Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
 
             if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
               CopySqueezeDataForObject(obj, t, k, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
             } else {
-              Int3(); // Get Jason, how did this happen????
+              Q_ASSERT(false); // Get Jason, how did this happen????
             }
           }
         }
@@ -718,14 +722,14 @@ void SqueezeLightmaps(int external, int target_roomnum) {
     }
 
     if (Squeeze_lightmap_handle != -1) {
-      ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
+      Q_ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
       GameLightmaps[Squeeze_lightmap_handle].used--;
     }
   }
 
   mem_free(Lightmap_mask);
   mem_free(Lmi_spoken_for);
-  mprintf(0, "Done squeezing lightmaps.\n");
+  LOG_INFO("Done squeezing lightmaps.\n");
 }
 
 void ComputeSurfaceRes(rad_surface *surf, room *rp, int facenum) {
@@ -773,15 +777,15 @@ void ComputeSurfaceRes(rad_surface *surf, room *rp, int facenum) {
   if (((left_result) - (float)surf->x1) > .99)
     surf->x1++;
 
-  ASSERT((surf->x1 + surf->xresolution) <= lw);
-  ASSERT((surf->y1 + surf->yresolution) <= lh);
+  Q_ASSERT((surf->x1 + surf->xresolution) <= lw);
+  Q_ASSERT((surf->y1 + surf->yresolution) <= lh);
 }
 
 // Take the computed volume spectra of a room and save it in the room struct
 void AssignVolumeSpectraToRoom(int roomnum) {
-  ASSERT(Rooms[roomnum].used);
-  ASSERT(!(Rooms[roomnum].flags & RF_EXTERNAL));
-  ASSERT(!(Rooms[roomnum].flags & RF_NO_LIGHT));
+  Q_ASSERT(Rooms[roomnum].used);
+  Q_ASSERT(!(Rooms[roomnum].flags & RF_EXTERNAL));
+  Q_ASSERT(!(Rooms[roomnum].flags & RF_NO_LIGHT));
 
   room *rp = &Rooms[roomnum];
 
@@ -796,7 +800,7 @@ void AssignVolumeSpectraToRoom(int roomnum) {
         spectra *this_spectra = &Volume_elements[roomnum][(i * w * h) + (t * w) + j].color;
 
         if (this_spectra->r < 0) {
-          Int3(); // Shouldn't hit this
+          Q_ASSERT(false); // Shouldn't hit this
           rp->volume_lights[(i * w * h) + (t * w) + j] = INVISIBLE_VOLUME_ELEMENT;
         } else {
           float rmax = GetMaxColor(this_spectra);
@@ -869,14 +873,14 @@ void DoRadiosityForRooms() {
   BuildBSPTree();
 
   if (save_after_bsp) {
-    char filename[_MAX_PATH];
+    char filename[PATH_MAX];
     ddio_MakePath(filename, cf_GetWritableBaseDirectory().u8string().c_str(), "BSPSave.D3L", NULL);
 
     // Save the level to
     SaveLevel(filename, true);
   }
 
-  mprintf(0, "Setting up...\n");
+  LOG_INFO("Setting up...\n");
 
   Lightmaps_for_rad = 0;
 
@@ -901,10 +905,10 @@ void DoRadiosityForRooms() {
       Rooms[roomnum].volume_depth = vd;
 
       Rooms[roomnum].volume_lights = (uint8_t *)mem_malloc(vw * vh * vd);
-      ASSERT(Rooms[roomnum].volume_lights);
+      Q_ASSERT(Rooms[roomnum].volume_lights);
 
       Volume_elements[roomnum] = mem_rmalloc<volume_element>(vw * vh * vd);
-      ASSERT(Volume_elements[roomnum]);
+      Q_ASSERT(Volume_elements[roomnum]);
 
       // Now go through and find all the valid spectra points
       float cur_z = Rooms[roomnum].min_xyz.z() + .1;
@@ -950,7 +954,7 @@ void DoRadiosityForRooms() {
   // Allocate enough memory to hold all surfaces
 
   Light_surfaces = mem_rmalloc<rad_surface>(facecount);
-  ASSERT(Light_surfaces != NULL);
+  Q_ASSERT(Light_surfaces != NULL);
 
   // Set initial surface properties
   max_index = surface_index = 0;
@@ -966,20 +970,20 @@ void DoRadiosityForRooms() {
 
         if (Rooms[i].faces[t].num_verts) {
           Light_surfaces[surface_index].verts = mem_rmalloc<vector>(Rooms[i].faces[t].num_verts);
-          ASSERT(Light_surfaces[surface_index].verts != NULL);
+          Q_ASSERT(Light_surfaces[surface_index].verts != NULL);
         } else {
           Light_surfaces[surface_index].verts = NULL;
-          mprintf(0, "Room=%d Face %d has no verts!\n", i, t);
+          LOG_INFO("Room=%d Face %d has no verts!\n", i, t);
         }
 
         if (Light_surfaces[surface_index].xresolution * Light_surfaces[surface_index].yresolution) {
           Light_surfaces[surface_index].elements =
                mem_rmalloc<rad_element>(Light_surfaces[surface_index].xresolution *
                                         Light_surfaces[surface_index].yresolution);
-          ASSERT(Light_surfaces[surface_index].elements != NULL);
+          Q_ASSERT(Light_surfaces[surface_index].elements != NULL);
         } else {
           Light_surfaces[surface_index].elements = NULL;
-          mprintf(0, "Room=%d Face %d is slivered!\n", i, t);
+          LOG_INFO("Room=%d Face %d is slivered!\n", i, t);
         }
 
         Light_surfaces[surface_index].flags = 0;
@@ -1036,13 +1040,13 @@ void DoRadiosityForRooms() {
   // Setup satellites
   for (i = 0; i < Terrain_sky.num_satellites; i++, surface_index++) {
     Light_surfaces[surface_index].verts = mem_rmalloc<vector>(3);
-    ASSERT(Light_surfaces[surface_index].verts != NULL);
+    Q_ASSERT(Light_surfaces[surface_index].verts != NULL);
 
     Light_surfaces[surface_index].elements = mem_rmalloc<rad_element>();
-    ASSERT(Light_surfaces[surface_index].elements != NULL);
+    Q_ASSERT(Light_surfaces[surface_index].elements != NULL);
 
     Light_surfaces[surface_index].elements[0].verts = mem_rmalloc<vector>(3);
-    ASSERT(Light_surfaces[surface_index].elements[0].verts);
+    Q_ASSERT(Light_surfaces[surface_index].elements[0].verts);
 
     Light_surfaces[surface_index].surface_type = ST_SATELLITE;
     Light_surfaces[surface_index].emittance.r = Terrain_sky.satellite_r[i];
@@ -1074,13 +1078,13 @@ void DoRadiosityForRooms() {
   // Setup Objects
   ComputeSurfacesForObjects(surface_index, 0);
 
-  mprintf(0, "This radiosity run is using %d lightmaps.\n", Lightmaps_for_rad);
-  mprintf(0, "Solving radiosity equation (press tilde key to stop)...\n");
+  LOG_INFO("This radiosity run is using %d lightmaps.\n", Lightmaps_for_rad);
+  LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
   if (D3EditState.hemicube_radiosity)
     DoRadiosityRun(SM_HEMICUBE, Light_surfaces, facecount);
   else
     DoRadiosityRun(SM_RAYCAST, Light_surfaces, facecount);
-  mprintf(0, "Done solving radiosity - cleaning up...\n");
+  LOG_INFO("Done solving radiosity - cleaning up...\n");
 
   surface_index = 0;
 
@@ -1136,7 +1140,7 @@ void DoRadiosityForRooms() {
   // Finally, squeeze the lightmaps
   SqueezeLightmaps(0, -1);
 
-  char filename[_MAX_PATH + 1];
+  char filename[PATH_MAX + 1];
   ddio_MakePath(filename, cf_GetWritableBaseDirectory().u8string().c_str(), "LightSave.D3L", NULL);
 
   // Save the level to disk
@@ -1157,10 +1161,10 @@ void DoRadiosityForCurrentRoom(room *rp) {
     return;
   }
 
-  mprintf(0, "Setting up...\n");
+  LOG_INFO("Setting up...\n");
 
-  ASSERT(rp != NULL);
-  ASSERT(rp->used);
+  Q_ASSERT(rp != NULL);
+  Q_ASSERT(rp->used);
 
   if (rp->flags & RF_EXTERNAL) {
     OutrageMessageBox("You cannot run single room radiosity on external rooms!");
@@ -1203,7 +1207,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
   // Allocate enough memory to hold all surfaces
 
   Light_surfaces = mem_rmalloc<rad_surface>(facecount);
-  ASSERT(Light_surfaces != NULL);
+  Q_ASSERT(Light_surfaces != NULL);
 
   // Set initial surface properties
   max_index = surface_index = 0;
@@ -1213,19 +1217,19 @@ void DoRadiosityForCurrentRoom(room *rp) {
 
     if (rp->faces[t].num_verts) {
       Light_surfaces[surface_index].verts = mem_rmalloc<vector>(rp->faces[t].num_verts);
-      ASSERT(Light_surfaces[surface_index].verts != NULL);
+      Q_ASSERT(Light_surfaces[surface_index].verts != NULL);
     } else {
       Light_surfaces[surface_index].verts = NULL;
-      mprintf(0, "Room=%d Face %d has no verts!\n", rp - Rooms, t);
+      LOG_INFO("Room=%d Face %d has no verts!\n", rp - Rooms, t);
     }
 
     if (Light_surfaces[surface_index].xresolution * Light_surfaces[surface_index].yresolution) {
       Light_surfaces[surface_index].elements = mem_rmalloc<rad_element>(
           Light_surfaces[surface_index].xresolution * Light_surfaces[surface_index].yresolution);
-      ASSERT(Light_surfaces[surface_index].elements != NULL);
+      Q_ASSERT(Light_surfaces[surface_index].elements != NULL);
     } else {
       Light_surfaces[surface_index].elements = NULL;
-      mprintf(0, "Room=%d Face %d is slivered!\n", rp - Rooms, t);
+      LOG_INFO("Room=%d Face %d is slivered!\n", rp - Rooms, t);
     }
 
     if (rp->faces[t].portal_num != -1 && (((rp->portals[rp->faces[t].portal_num].flags & PF_RENDER_FACES) == 0) ||
@@ -1260,12 +1264,12 @@ void DoRadiosityForCurrentRoom(room *rp) {
   // Setup Objects
   ComputeSurfacesForObjectsForSingleRoom(surface_index, rp - Rooms);
 
-  mprintf(0, "Solving radiosity equation (press tilde key to stop)...\n");
+  LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
   if (D3EditState.hemicube_radiosity)
     DoRadiosityRun(SM_HEMICUBE, Light_surfaces, facecount);
   else
     DoRadiosityRun(SM_RAYCAST, Light_surfaces, facecount);
-  mprintf(0, "Done solving radiosity - cleaning up...\n");
+  LOG_INFO("Done solving radiosity - cleaning up...\n");
 
   surface_index = 0;
 
@@ -1317,17 +1321,17 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
   xres = sp->xresolution;
   yres = sp->yresolution;
 
-  ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
   lmi_handle = fp->lmi_handle;
 
   lw = lmi_w(lmi_handle);
   lh = lmi_h(lmi_handle);
 
-  ASSERT((xres + x1) <= lw);
-  ASSERT((yres + y1) <= lh);
+  Q_ASSERT((xres + x1) <= lw);
+  Q_ASSERT((yres + y1) <= lh);
 
-  ASSERT(lw >= 2);
-  ASSERT(lh >= 2);
+  Q_ASSERT(lw >= 2);
+  Q_ASSERT(lh >= 2);
 
   uint16_t *dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
 
@@ -1403,9 +1407,9 @@ void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf) {
   xres = surf->xresolution;
   yres = surf->yresolution;
 
-  ASSERT(Rooms[roomnum].used);
-  ASSERT(Rooms[roomnum].faces[facenum].num_verts >= 3);
-  ASSERT(Rooms[roomnum].faces[facenum].lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(Rooms[roomnum].used);
+  Q_ASSERT(Rooms[roomnum].faces[facenum].num_verts >= 3);
+  Q_ASSERT(Rooms[roomnum].faces[facenum].lmi_handle != BAD_LMI_INDEX);
 
   lmi_handle = Rooms[roomnum].faces[facenum].lmi_handle;
   avg_vert = ScratchCenters[lmi_handle];
@@ -1521,7 +1525,7 @@ void ClipSurfaceElement(vector *surf_verts, rad_element *ep, vector *clip_verts,
   uint8_t or_val = 0;
   int i;
 
-  ASSERT(nv < 50);
+  Q_ASSERT(nv < 50);
 
   ep->flags = 0;
 
@@ -1556,7 +1560,7 @@ void ClipSurfaceElement(vector *surf_verts, rad_element *ep, vector *clip_verts,
     ep->flags |= EF_IGNORE;
   else {
     ep->verts = mem_rmalloc<vector>(nnv);
-    ASSERT(ep->verts);
+    Q_ASSERT(ep->verts);
 
     for (i = 0; i < nnv; i++) {
       ep->verts[i] = dlist[i].pos;
@@ -1580,7 +1584,7 @@ int ClipRadPointList(rad_point **src, rad_point **dest, int *nv, int code) {
       *nv = ClipRadToPlane(plane, *src, *dest, *nv);
       if (*nv == 0)
         return 0;
-      ASSERT(*nv >= 3);
+      Q_ASSERT(*nv >= 3);
 
       t = *dest;
       *dest = *src;
@@ -1600,7 +1604,7 @@ int ClipRadPointList(rad_point **src, rad_point **dest, int *nv, int code) {
 int ClipRadToPlane(int plane, rad_point *src, rad_point *dest, int nv) {
   int i, num = 0, limit = nv - 1, ppoint, npoint;
 
-  ASSERT(nv >= 3);
+  Q_ASSERT(nv >= 3);
 
   for (i = 0; i < nv; i++) {
     if (i == limit)
@@ -1731,8 +1735,8 @@ void DoTerrainDynamicTable() {
 
   maxrays = AREA_X * AREA_Z * 8 * Terrain_sky.num_satellites;
 
-  mprintf(0, "Calculating dynamic light table for %d points...\n", maxrays);
-  mprintf(0, "Press tilde key to abort!\n");
+  LOG_INFO("Calculating dynamic light table for %d points...\n", maxrays);
+  LOG_INFO("Press tilde key to abort!\n");
 
   memset(Terrain_dynamic_table, 0, (TERRAIN_DEPTH * TERRAIN_WIDTH));
 
@@ -1781,7 +1785,7 @@ void DoTerrainDynamicTable() {
 void ComputeTerrainSpeedTable() {
   int i, t, j, raynum = 0;
 
-  mprintf(0, "Precomputing terrain speed table...(%d rays)\n", AREA_X * AREA_Z);
+  LOG_INFO("Precomputing terrain speed table...(%d rays)\n", AREA_X * AREA_Z);
   for (i = 0; i < AREA_Z; i++) {
     for (t = 0; t < AREA_X; t++) {
       int tseg = i * TERRAIN_WIDTH + t;
@@ -1821,7 +1825,7 @@ void DoRadiosityForTerrain() {
 
   for (i = 0; i < Terrain_sky.num_satellites; i++) {
     TerrainLightSpeedup[i] = (uint8_t *)mem_malloc(TERRAIN_WIDTH * TERRAIN_DEPTH);
-    ASSERT(TerrainLightSpeedup[i]);
+    Q_ASSERT(TerrainLightSpeedup[i]);
   }
 
   if (OutrageMessageBox(MBOX_YESNO,
@@ -1855,10 +1859,10 @@ void DoRadiosityForTerrain() {
   // Allocate memory
   terrain_sums[0] = mem_rmalloc<spectra>(TERRAIN_WIDTH * TERRAIN_DEPTH);
   terrain_sums[1] = mem_rmalloc<spectra>(TERRAIN_WIDTH * TERRAIN_DEPTH);
-  ASSERT(terrain_sums[0] && terrain_sums[1]);
+  Q_ASSERT(terrain_sums[0] && terrain_sums[1]);
 
   Light_surfaces = mem_rmalloc<rad_surface>(total_surfaces);
-  ASSERT(Light_surfaces != NULL);
+  Q_ASSERT(Light_surfaces != NULL);
 
   // Setup radiosity surfaces
   if (!Ignore_terrain) {
@@ -1892,13 +1896,13 @@ void DoRadiosityForTerrain() {
 
       // Do upper left triangle
       Light_surfaces[i * 2].elements = mem_rmalloc<rad_element>();
-      ASSERT(Light_surfaces[i * 2].elements != NULL);
+      Q_ASSERT(Light_surfaces[i * 2].elements != NULL);
 
       Light_surfaces[i * 2].elements[0].verts = mem_rmalloc<vector>(3);
-      ASSERT(Light_surfaces[i * 2].elements[0].verts);
+      Q_ASSERT(Light_surfaces[i * 2].elements[0].verts);
 
       Light_surfaces[i * 2].verts = mem_rmalloc<vector>(3);
-      ASSERT(Light_surfaces[i * 2].verts != NULL);
+      Q_ASSERT(Light_surfaces[i * 2].verts != NULL);
 
       Light_surfaces[i * 2].normal = TerrainNormals[MAX_TERRAIN_LOD - 1][seg].normal1;
 
@@ -1932,13 +1936,13 @@ void DoRadiosityForTerrain() {
       // Now do lower right
 
       Light_surfaces[i * 2 + 1].elements = mem_rmalloc<rad_element>();
-      ASSERT(Light_surfaces[i * 2 + 1].elements != NULL);
+      Q_ASSERT(Light_surfaces[i * 2 + 1].elements != NULL);
 
       Light_surfaces[i * 2 + 1].elements[0].verts = mem_rmalloc<vector>(3);
-      ASSERT(Light_surfaces[i * 2 + 1].elements[0].verts);
+      Q_ASSERT(Light_surfaces[i * 2 + 1].elements[0].verts);
 
       Light_surfaces[i * 2 + 1].verts = mem_rmalloc<vector>(3);
-      ASSERT(Light_surfaces[i * 2 + 1].verts != NULL);
+      Q_ASSERT(Light_surfaces[i * 2 + 1].verts != NULL);
 
       Light_surfaces[i * 2 + 1].normal = TerrainNormals[MAX_TERRAIN_LOD - 1][seg].normal2;
 
@@ -1974,13 +1978,13 @@ void DoRadiosityForTerrain() {
   // Setup satellites
   for (i = 0; i < Terrain_sky.num_satellites; i++, surf_index++) {
     Light_surfaces[surf_index].verts = mem_rmalloc<vector>(3);
-    ASSERT(Light_surfaces[surf_index].verts != NULL);
+    Q_ASSERT(Light_surfaces[surf_index].verts != NULL);
 
     Light_surfaces[surf_index].elements = mem_rmalloc<rad_element>();
-    ASSERT(Light_surfaces[surf_index].elements != NULL);
+    Q_ASSERT(Light_surfaces[surf_index].elements != NULL);
 
     Light_surfaces[surf_index].elements[0].verts = mem_rmalloc<vector>(3);
-    ASSERT(Light_surfaces[surf_index].elements[0].verts);
+    Q_ASSERT(Light_surfaces[surf_index].elements[0].verts);
 
     Light_surfaces[surf_index].surface_type = ST_SATELLITE;
     Light_surfaces[surf_index].emittance.r = Terrain_sky.satellite_r[i];
@@ -2022,11 +2026,11 @@ void DoRadiosityForTerrain() {
         ComputeSurfaceRes(&Light_surfaces[surf_index], &Rooms[i], t);
 
         Light_surfaces[surf_index].verts = mem_rmalloc<vector>(Rooms[i].faces[t].num_verts);
-        ASSERT(Light_surfaces[surf_index].verts != NULL);
+        Q_ASSERT(Light_surfaces[surf_index].verts != NULL);
 
         Light_surfaces[surf_index].elements = mem_rmalloc<rad_element>(
             Light_surfaces[surf_index].xresolution * Light_surfaces[surf_index].yresolution);
-        ASSERT(Light_surfaces[surf_index].elements != NULL);
+        Q_ASSERT(Light_surfaces[surf_index].elements != NULL);
 
         if (Rooms[i].faces[t].portal_num != -1 &&
             !(Rooms[i].portals[Rooms[i].faces[t].portal_num].flags & PF_RENDER_FACES))
@@ -2068,7 +2072,7 @@ void DoRadiosityForTerrain() {
   obj_surf_start = surf_index;
   ComputeSurfacesForObjects(surf_index, 1);
 
-  mprintf(0, "Solving radiosity equation (press tilde key to stop)...\n");
+  LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
 
   if (D3EditState.hemicube_radiosity)
     DoRadiosityRun(SM_SWITCH_AFTER_SATELLITES, Light_surfaces, total_surfaces);
@@ -2228,7 +2232,7 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
 
         // Malloc some memory
         exitance=(spectra *)mem_malloc (TERRAIN_DEPTH*TERRAIN_WIDTH*sizeof(spectra));
-        ASSERT (exitance!=NULL);
+        Q_ASSERT (exitance!=NULL);
 
         for (i=0;i<TERRAIN_DEPTH*TERRAIN_WIDTH;i++)
         {
@@ -2410,7 +2414,7 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector *lightma
     }
   }
 
-  ASSERT(leftmost_point != -1);
+  Q_ASSERT(leftmost_point != -1);
 
   // Find top most point
   int topmost_point = -1;
@@ -2423,7 +2427,7 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector *lightma
     }
   }
 
-  ASSERT(topmost_point != -1);
+  Q_ASSERT(topmost_point != -1);
 
   // Find right most point
   int rightmost_point = -1;
@@ -2436,7 +2440,7 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector *lightma
     }
   }
 
-  ASSERT(rightmost_point != -1);
+  Q_ASSERT(rightmost_point != -1);
 
   // Find bottom most point
   int bottommost_point = -1;
@@ -2449,7 +2453,7 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector *lightma
     }
   }
 
-  ASSERT(bottommost_point != -1);
+  Q_ASSERT(bottommost_point != -1);
 
   // now set the base vertex, which is where we base uv 0,0 on
 
@@ -2525,8 +2529,8 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector *lightma
   else
     lmi_handle = AllocLightmapInfo(lightmap_x_res, lightmap_y_res, LMI_ROOM);
 
-  ASSERT(lmi_handle != BAD_LMI_INDEX);
-  ASSERT(lmi_handle >= 0 && lmi_handle <= MAX_LIGHTMAP_INFOS);
+  Q_ASSERT(lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(lmi_handle >= 0 && lmi_handle <= MAX_LIGHTMAP_INFOS);
   Lightmaps_for_rad++;
 
   // Now do best fit spacing
@@ -2568,8 +2572,8 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector *lightma
       if (fp->face_uvls[t].v2 < 0)
         fp->face_uvls[t].v2 = 0;
 
-      ASSERT(fp->face_uvls[t].u2 >= 0 && fp->face_uvls[t].u2 <= 1.0);
-      ASSERT(fp->face_uvls[t].v2 >= 0 && fp->face_uvls[t].v2 <= 1.0);
+      Q_ASSERT(fp->face_uvls[t].u2 >= 0 && fp->face_uvls[t].u2 <= 1.0);
+      Q_ASSERT(fp->face_uvls[t].v2 >= 0 && fp->face_uvls[t].v2 <= 1.0);
     }
   }
 
@@ -2603,8 +2607,8 @@ int CombineLightFaces( vector *dest_verts,vector *averts, int nva, vector *norma
         if (dp < LM_ADJACENT_FACE_THRESHOLD)
                 return 0;
 
-        ASSERT (nva > 2 );
-        ASSERT (nvb > 2 );
+        Q_ASSERT (nva > 2 );
+        Q_ASSERT (nvb > 2 );
 
         // Go through each vertex and get a match
 
@@ -2625,19 +2629,19 @@ int CombineLightFaces( vector *dest_verts,vector *averts, int nva, vector *norma
 
                                 for (i=1; i<nva; i++ )
                                 {
-                                        ASSERT(dnv < MAX_VERTS_PER_FACE*5);
+                                        Q_ASSERT(dnv < MAX_VERTS_PER_FACE*5);
                                         dest_verts[dnv] = averts[(starta+i)%nva];
                                         va = dest_verts[dnv];
                                         dnv++;
                                 }
 
                                 if ( (PointsAreSame(&va,&bverts[(startb+2)%nvb])))
-                                        mprintf(0, "WARNING!!! Faces were combined that caused the loss of a
+                                        LOG_INFO("WARNING!!! Faces were combined that caused the loss of a
 vertex!\n");
 
                                 for (i=1; i<nvb; i++ )
                                 {
-                                        ASSERT(dnv < MAX_VERTS_PER_FACE*5 );
+                                        Q_ASSERT(dnv < MAX_VERTS_PER_FACE*5 );
                                         if ( (i==1) && (PointsAreSame(&va,&bverts[(startb+i+1)%nvb])))
                                                 continue;
                                         else if ( (i==2) && (PointsAreSame(&va,&bverts[(startb+i)%nvb])))
@@ -2649,7 +2653,7 @@ vertex!\n");
 
                                         }
                                 }
-                                ASSERT( dnv > 2 );
+                                Q_ASSERT( dnv > 2 );
 
                                 return dnv;
                         }
@@ -2697,14 +2701,14 @@ vertex!\n");
                 {
                         dest_verts[dnv] = averts[i];
                         dnv++;
-                        ASSERT(dnv < MAX_VERTS_PER_FACE * 5);
+                        Q_ASSERT(dnv < MAX_VERTS_PER_FACE * 5);
                 }
 
                 for (i=0; i<nvb; i++ )
                 {
                         dest_verts[dnv] = bverts[i];
                         dnv++;
-                        ASSERT(dnv < MAX_VERTS_PER_FACE * 5);
+                        Q_ASSERT(dnv < MAX_VERTS_PER_FACE * 5);
                 }
 
                 return dnv;
@@ -2726,8 +2730,8 @@ int CombineLightFaces(vector *dest_verts, vector *averts, int nva, vector *norma
   if (dp < LM_ADJACENT_FACE_THRESHOLD)
     return 0;
 
-  ASSERT(nva > 2);
-  ASSERT(nvb > 2);
+  Q_ASSERT(nva > 2);
+  Q_ASSERT(nvb > 2);
 
   // Go through each vertex and get a match
 
@@ -2758,13 +2762,13 @@ int CombineLightFaces(vector *dest_verts, vector *averts, int nva, vector *norma
     for (i = 0; i < nva; i++) {
       dest_verts[dnv] = averts[i];
       dnv++;
-      ASSERT(dnv < MAX_VERTS_PER_FACE * 5);
+      Q_ASSERT(dnv < MAX_VERTS_PER_FACE * 5);
     }
 
     for (i = 0; i < nvb; i++) {
       dest_verts[dnv] = bverts[i];
       dnv++;
-      ASSERT(dnv < MAX_VERTS_PER_FACE * 5);
+      Q_ASSERT(dnv < MAX_VERTS_PER_FACE * 5);
     }
 
     return dnv;
@@ -2788,7 +2792,7 @@ int TestLightAdjacency(int roomnum, int facenum, int external) {
   int face_combine_list[MAX_COMBINES];
   int room_combine_list[MAX_COMBINES];
 
-  ASSERT(roomnum >= 0 && roomnum < MAX_ROOMS);
+  Q_ASSERT(roomnum >= 0 && roomnum < MAX_ROOMS);
 
   if (!AllowCombining)
     return 0;
@@ -2903,7 +2907,7 @@ void ComputeAllRoomLightmapUVs(int external) {
         continue;
 
       RoomsAlreadyCombined[i] = mem_rmalloc<uint8_t>(Rooms[i].num_faces);
-      ASSERT(RoomsAlreadyCombined[i]);
+      Q_ASSERT(RoomsAlreadyCombined[i]);
       for (k = 0; k < Rooms[i].num_faces; k++)
         RoomsAlreadyCombined[i][k] = 0;
     }
@@ -2956,7 +2960,7 @@ void ComputeAllRoomLightmapUVs(int external) {
     }
   }
 
-  mprintf(0, "%d faces couldn't be combined!\n", not_combined);
+  LOG_INFO("%d faces couldn't be combined!\n", not_combined);
 
   // Free memory
   for (i = 0; i < MAX_ROOMS; i++) {
@@ -3069,7 +3073,7 @@ void CreateNormalMapForFace (room *rp,face *fp)
         vm_VectorToMatrix(&facematrix,&fvec,NULL,NULL);
 
         sfp->normal_map=(uint8_t *)mem_malloc (w*h*3);
-        ASSERT (sfp->normal_map);
+        Q_ASSERT (sfp->normal_map);
 
         for (int i=0;i<(w*h);i++)
         {
@@ -3199,7 +3203,7 @@ void CleanupSpecularLighting(int external) {
       for (t = 0; t < rp->num_faces; t++) {
         face *fp = &rp->faces[t];
         if (GameTextures[fp->tmap].flags & TF_SPECULAR) {
-          ASSERT(fp->special_handle != BAD_SPECIAL_FACE_INDEX);
+          Q_ASSERT(fp->special_handle != BAD_SPECIAL_FACE_INDEX);
           int j, k, l;
 
           if (SpecialFaces[fp->special_handle].spec_instance[0].bright_color == 0) {
@@ -3288,7 +3292,7 @@ void SetupSpecularLighting(int external) {
 
       // Calculate vertex normals for this room
       vector *vertnorms = mem_rmalloc<vector>(rp->num_verts);
-      ASSERT(vertnorms);
+      Q_ASSERT(vertnorms);
       for (t = 0; t < rp->num_verts; t++) {
         int total = 0;
         vector normal;
@@ -3312,14 +3316,14 @@ void SetupSpecularLighting(int external) {
 
       for (t = 0; t < 4; t++) {
         Room_strongest_value[i][t] = mem_rmalloc<float>(rp->num_faces);
-        ASSERT(Room_strongest_value[i][t]);
+        Q_ASSERT(Room_strongest_value[i][t]);
         memset(Room_strongest_value[i][t], 0, sizeof(float) * rp->num_faces);
       }
 
       for (t = 0; t < rp->num_faces; t++) {
         face *fp = &rp->faces[t];
         if (GameTextures[fp->tmap].flags & TF_SPECULAR) {
-          ASSERT(fp->special_handle == BAD_SPECIAL_FACE_INDEX);
+          Q_ASSERT(fp->special_handle == BAD_SPECIAL_FACE_INDEX);
 
           int n;
           if (GameTextures[fp->tmap].flags & TF_SMOOTH_SPECULAR)
@@ -3357,7 +3361,7 @@ void SetupSpecularLighting(int external) {
         int not_combined=0;
 
         RoomsAlreadyCombined[roomnum]=(uint8_t *)mem_malloc (Rooms[roomnum].num_faces);
-        ASSERT (RoomsAlreadyCombined[roomnum]);
+        Q_ASSERT (RoomsAlreadyCombined[roomnum]);
         for (k=0;k<Rooms[roomnum].num_faces;k++)
                 RoomsAlreadyCombined[roomnum][k]=0;
 

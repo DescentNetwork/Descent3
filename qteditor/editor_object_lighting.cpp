@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "logger/log.h"
+#include <QtGlobal>
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -31,7 +33,7 @@
 #include "lightmap_info.h"
 #include "object_lighting.h"
 #include "mem.h"
-#include "mono.h"
+
 
 void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int facenum) {
   int i;
@@ -90,17 +92,17 @@ void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surf
   xres = sp->xresolution;
   yres = sp->yresolution;
 
-  ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
   lmi_handle = fp->lmi_handle;
 
   lw = lmi_w(lmi_handle);
   lh = lmi_h(lmi_handle);
 
-  ASSERT((xres + x1) <= lw);
-  ASSERT((yres + y1) <= lh);
+  Q_ASSERT((xres + x1) <= lw);
+  Q_ASSERT((yres + y1) <= lh);
 
-  ASSERT(lw >= 2);
-  ASSERT(lh >= 2);
+  Q_ASSERT(lw >= 2);
+  Q_ASSERT(lh >= 2);
 
   uint16_t *dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
 
@@ -316,7 +318,7 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
 
           if (sm->faces[j].nverts > 0) {
             Light_surfaces[surface_index].verts = mem_rmalloc<vector>(sm->faces[j].nverts);
-            ASSERT(Light_surfaces[surface_index].verts != NULL);
+            Q_ASSERT(Light_surfaces[surface_index].verts != NULL);
           } else
             Light_surfaces[surface_index].verts = NULL;
 
@@ -324,7 +326,7 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
             Light_surfaces[surface_index].elements =
                 mem_rmalloc<rad_element>(Light_surfaces[surface_index].xresolution *
                                          Light_surfaces[surface_index].yresolution);
-            ASSERT(Light_surfaces[surface_index].elements != NULL);
+            Q_ASSERT(Light_surfaces[surface_index].elements != NULL);
           } else
             Light_surfaces[surface_index].elements = NULL;
 
@@ -402,7 +404,7 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
 
           if (sm->faces[j].nverts > 0) {
             Light_surfaces[surface_index].verts = mem_rmalloc<vector>(sm->faces[j].nverts);
-            ASSERT(Light_surfaces[surface_index].verts != NULL);
+            Q_ASSERT(Light_surfaces[surface_index].verts != NULL);
           } else
             Light_surfaces[surface_index].verts = NULL;
 
@@ -410,7 +412,7 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
             Light_surfaces[surface_index].elements =
                 mem_rmalloc<rad_element>(Light_surfaces[surface_index].xresolution *
                                          Light_surfaces[surface_index].yresolution);
-            ASSERT(Light_surfaces[surface_index].elements != NULL);
+            Q_ASSERT(Light_surfaces[surface_index].elements != NULL);
           } else
             Light_surfaces[surface_index].elements = NULL;
 
@@ -551,7 +553,7 @@ void BuildObjectLightmapUVs(object *obj, int *sublist, int *facelist, int count,
     }
   }
 
-  ASSERT(leftmost_point != -1);
+  Q_ASSERT(leftmost_point != -1);
 
   // Find top most point
   int topmost_point = -1;
@@ -564,7 +566,7 @@ void BuildObjectLightmapUVs(object *obj, int *sublist, int *facelist, int count,
     }
   }
 
-  ASSERT(topmost_point != -1);
+  Q_ASSERT(topmost_point != -1);
 
   // Find right most point
   int rightmost_point = -1;
@@ -577,7 +579,7 @@ void BuildObjectLightmapUVs(object *obj, int *sublist, int *facelist, int count,
     }
   }
 
-  ASSERT(rightmost_point != -1);
+  Q_ASSERT(rightmost_point != -1);
 
   // Find bottom most point
   int bottommost_point = -1;
@@ -590,7 +592,7 @@ void BuildObjectLightmapUVs(object *obj, int *sublist, int *facelist, int count,
     }
   }
 
-  ASSERT(bottommost_point != -1);
+  Q_ASSERT(bottommost_point != -1);
 
   // now set the base vertex, which is where we base uv 0,0 on
 
@@ -665,7 +667,7 @@ void BuildObjectLightmapUVs(object *obj, int *sublist, int *facelist, int count,
           }*/
 
   lmi_handle = AllocLightmapInfo(lightmap_x_res, lightmap_y_res, lm_type);
-  ASSERT(lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(lmi_handle != BAD_LMI_INDEX);
 
   // Now do best fit spacing
   if (BestFit) {
@@ -705,8 +707,8 @@ void BuildObjectLightmapUVs(object *obj, int *sublist, int *facelist, int count,
       lfp->u2[t] = (facevert.x() - verts[leftmost_point].x()) / (float)(lightmap_x_res * xspace_int);
       lfp->v2[t] = fabs((verts[topmost_point].y() - facevert.y())) / (float)(lightmap_y_res * yspace_int);
 
-      ASSERT(lfp->u2[t] >= 0 && lfp->u2[t] <= 1.0);
-      ASSERT(lfp->v2[t] >= 0 && lfp->v2[t] <= 1.0);
+      Q_ASSERT(lfp->u2[t] >= 0 && lfp->u2[t] <= 1.0);
+      Q_ASSERT(lfp->v2[t] >= 0 && lfp->v2[t] <= 1.0);
     }
   }
 
@@ -742,11 +744,11 @@ void BuildElementListForObjectFace(int objnum, int subnum, int facenum, rad_surf
   xres = surf->xresolution;
   yres = surf->yresolution;
 
-  ASSERT(pm->used);
-  ASSERT(fp->nverts >= 3);
-  ASSERT(Objects[objnum].lm_object.lightmap_faces[subnum][facenum].lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(pm->used);
+  Q_ASSERT(fp->nverts >= 3);
+  Q_ASSERT(Objects[objnum].lm_object.lightmap_faces[subnum][facenum].lmi_handle != BAD_LMI_INDEX);
 
-  ASSERT(fp->nverts < 32);
+  Q_ASSERT(fp->nverts < 32);
 
   for (i = 0; i < fp->nverts; i++)
     GetObjectPointInWorld(&world_verts[i], &Objects[objnum], subnum, fp->vertnums[i]);
@@ -949,7 +951,7 @@ void CombineObjectLightmapUVs(object *obj, int lmi_type) {
   int not_combined = 0;
 
   poly_model *pm = &Poly_models[obj->rtype.pobj_info.model_num];
-  ASSERT(obj->lm_object.used);
+  Q_ASSERT(obj->lm_object.used);
 
   for (i = 0; i < pm->n_models; i++) {
     bsp_info *sm = &pm->submodel[i];
@@ -958,7 +960,7 @@ void CombineObjectLightmapUVs(object *obj, int lmi_type) {
       continue;
 
     ObjectsAlreadyCombined[i] = mem_rmalloc<uint8_t>(sm->num_faces);
-    ASSERT(ObjectsAlreadyCombined[i]);
+    Q_ASSERT(ObjectsAlreadyCombined[i]);
     for (k = 0; k < sm->num_faces; k++)
       ObjectsAlreadyCombined[i][k] = 0;
   }
@@ -998,7 +1000,7 @@ void CombineObjectLightmapUVs(object *obj, int lmi_type) {
     }
   }
 
-  mprintf(0, "%d %s faces couldn't be combined!\n", not_combined, pm->name);
+  LOG_INFO("%d %s faces couldn't be combined!\n", not_combined, pm->name);
 
   // Free memory
   for (i = 0; i < pm->n_models; i++) {

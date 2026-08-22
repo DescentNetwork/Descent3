@@ -19,6 +19,8 @@
 #include "terrain_keypad.h"
 #include "ui_terrainkeypad.h"
 
+#include "logger/log.h"
+
 #include <algorithm>
 
 #include <QCheckBox>
@@ -35,8 +37,8 @@
 #include "room.h"
 #include "gamepath.h"
 #include "mem.h"
-#include "mono.h"
-#include "pserror.h"
+
+
 #include "editline_dialog.h"
 #include "selectrange_dialog.h"
 
@@ -334,7 +336,7 @@ void TerrainKeypad::onMoveMoonFarther() {
 }
 
 void TerrainKeypad::onRenormalize() {
-  mprintf(0, "Building terrain normals...\n");
+  LOG_INFO("Building terrain normals...\n");
   Terrain_checksum = -1;
   BuildMinMaxTerrain();
   BuildTerrainNormals();

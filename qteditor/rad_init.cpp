@@ -16,10 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "logger/log.h"
 #include "d3edit.h"
 #include "lighting_status_dialog.h"
 #include "radiosity.h"
-#include "pserror.h"
+
 #include "findintersection.h"
 #include "hemicube.h"
 #include "descent.h"
@@ -28,7 +29,7 @@
 #include "vecmat.h"
 #include <cstdlib>
 #include "mem.h"
-#include "mono.h"
+
 
 // Some radiosity globals
 int Shoot_method = SM_HEMICUBE;
@@ -70,7 +71,7 @@ extern int Shoot_from_patch;
 int DoRadiosityRun(int method, rad_surface *light_surfaces, int count) {
   float start_time;
 
-  mprintf(0, "Calculating radiosity on %d faces.\n", count);
+  LOG_INFO("Calculating radiosity on %d faces.\n", count);
 
   rad_Surfaces = light_surfaces;
   rad_NumSurfaces = count;
@@ -92,7 +93,7 @@ int DoRadiosityRun(int method, rad_surface *light_surfaces, int count) {
   CloseRadiosityRun();
 
   // Print time taken
-  mprintf(0, "\nLighting took %.4f seconds.\n", timer_GetTime() - start_time);
+  LOG_INFO("\nLighting took %.4f seconds.\n", timer_GetTime() - start_time);
 
   return 1;
 }
@@ -119,10 +120,10 @@ void InitRadiosityRun() {
 
 // Initalizes memory for form factors
 void SetupFormFactors() {
-  ASSERT(rad_NumElements > 0);
+  Q_ASSERT(rad_NumElements > 0);
 
   rad_FormFactors = mem_rmalloc<float>(rad_NumElements);
-  ASSERT(rad_FormFactors != NULL);
+  Q_ASSERT(rad_FormFactors != NULL);
 }
 
 void CalculateAreaForSurface(rad_surface *sp) {
@@ -197,7 +198,7 @@ void CountElements() {
 
     rad_NumElements += (surf->xresolution * surf->yresolution);
   }
-  mprintf(0, "Number of elements=%d\n", rad_NumElements);
+  LOG_INFO("Number of elements=%d\n", rad_NumElements);
 }
 
 // Initializes the exitances for all surfaces
@@ -274,7 +275,7 @@ void UpdateUnsentValues() {
     rad_Convergence = 0.0;
 
   if (timer_GetTime() - last_report_time > 10.0) {
-    mprintf(0, "Percentage left=%f\n", rad_Convergence);
+    LOG_INFO("Percentage left=%f\n", rad_Convergence);
     last_report_time = timer_GetTime();
   }
 

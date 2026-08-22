@@ -198,6 +198,9 @@
  *
  */
 
+#include <QtGlobal>
+#include "logger/log.h"
+
 #include <cstdlib>
 #include "radiosity.h"
 #include "rad_cast.h"
@@ -208,7 +211,7 @@
 #include "special_face.h"
 #include "bsp.h"
 #include "BOA.h"
-#include "mono.h"
+
 
 // A ray must contribute at least this amount to be accepted (currently .5%)
 #define DEFAULT_IGNORE_LIMIT .005f
@@ -379,7 +382,7 @@ int ShootRayFromPoint(vector *src, vector *dest, rad_surface *src_surf, rad_surf
 
       if (src_cell < 0) {
         src_cell = 0;
-        Int3(); // Get Jason, satellite clipped off terrain?
+        Q_ASSERT(false); // Get Jason, satellite clipped off terrain?
       }
 
       src_surf->roomnum = MAKE_ROOMNUM(src_cell);
@@ -448,7 +451,7 @@ float GetFormFactorForElementAndSatellite(rad_surface *dest_surf, rad_element *d
 
     // If this surface is a terrain surface, use the terrain speedup table
     if (dest_surf->surface_type == ST_TERRAIN) {
-      ASSERT(ROOMNUM_OUTSIDE(dest_surf->roomnum));
+      Q_ASSERT(ROOMNUM_OUTSIDE(dest_surf->roomnum));
       int cellnum = CELLNUM(dest_surf->roomnum);
       if (dest_surf->facenum == 0) {
         if (j == 1)
@@ -484,7 +487,7 @@ float GetFormFactorForElementAndSatellite(rad_surface *dest_surf, rad_element *d
   form_factor /= dest_element->num_verts;
 
   if (form_factor > 1)
-    mprintf(0, "form factor >1!\n");
+    LOG_INFO("form factor >1!\n");
 
   return form_factor;
 }
@@ -645,7 +648,7 @@ float GetFormFactorForElement(rad_surface *dest_surf, rad_element *dest_element,
            ((3.14 * ray_length * ray_length) + ray_area);
 
       if (ff > 1)
-        mprintf(0, "ff >1!\n");
+        LOG_INFO("ff >1!\n");
 
       if (ff > 0)
         temp_factor += ff;
@@ -680,7 +683,7 @@ float GetFormFactorForElement(rad_surface *dest_surf, rad_element *dest_element,
     form_factor += temp_factor;
 
     if (form_factor > 1)
-      mprintf(0, "form factor >1! val=%f\n", form_factor);
+      LOG_INFO("form factor >1! val=%f\n", form_factor);
   }
 
   if (ignored > 0)
@@ -759,7 +762,7 @@ float GetFormFactorForElementSuperDetail(rad_surface *dest_surf, rad_element *de
          ((3.14 * ray_length * ray_length) + ray_area);
 
     if (ff > 1)
-      mprintf(0, "ff >1!\n");
+      LOG_INFO("ff >1!\n");
 
     if (ff > 0)
       temp_factor += ff;
@@ -790,7 +793,7 @@ float GetFormFactorForElementSuperDetail(rad_surface *dest_surf, rad_element *de
   form_factor += temp_factor;
 
   if (form_factor > 1)
-    mprintf(0, "form factor >1! val=%f\n", form_factor);
+    LOG_INFO("form factor >1! val=%f\n", form_factor);
 
   return form_factor;
 }

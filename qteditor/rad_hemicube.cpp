@@ -18,6 +18,7 @@
 
 // rad_scan
 
+#include <QtGlobal>
 #include "vecmat.h"
 #include "3d.h"
 #include "radiosity.h"
@@ -230,7 +231,7 @@ void CalculateFormFactorsHemiCube() {
 
 void InitHemicube(int resolution) {
   // Make sure resolution is even
-  ASSERT(resolution % 2 == 0);
+  Q_ASSERT(resolution % 2 == 0);
 
   rad_Drawing = 1;
 
@@ -238,14 +239,14 @@ void InitHemicube(int resolution) {
   rad_Hemicube.grid_dim = resolution / 2;
 
   rad_Hemicube.id_grid = (int *)mem_malloc(rad_Hemicube.ff_res * rad_Hemicube.ff_res * sizeof(int));
-  ASSERT(rad_Hemicube.id_grid != NULL);
+  Q_ASSERT(rad_Hemicube.id_grid != NULL);
   rad_Hemicube.depth_grid = (float *)mem_malloc(rad_Hemicube.ff_res * rad_Hemicube.ff_res * sizeof(float));
-  ASSERT(rad_Hemicube.depth_grid != NULL);
+  Q_ASSERT(rad_Hemicube.depth_grid != NULL);
 
   rad_Hemicube.top_array = (float *)mem_malloc(rad_Hemicube.grid_dim * rad_Hemicube.grid_dim * sizeof(float));
-  ASSERT(rad_Hemicube.top_array != NULL);
+  Q_ASSERT(rad_Hemicube.top_array != NULL);
   rad_Hemicube.side_array = (float *)mem_malloc(rad_Hemicube.grid_dim * rad_Hemicube.grid_dim * sizeof(float));
-  ASSERT(rad_Hemicube.side_array != NULL);
+  Q_ASSERT(rad_Hemicube.side_array != NULL);
 
   CalculateDeltaFormFactors();
 
@@ -461,7 +462,7 @@ void UpdateView(int face_id) {
     nn = (rad_Hemicube.head_matrix.rvec * -1);
     break;
   default:
-    Int3();
+    Q_ASSERT(false);
     break;
   }
 
@@ -475,7 +476,7 @@ void DrawRadiosityPoly(int nv, g3Point **pointlist, int id) {
   bool was_clipped = 0;
   int triangulate = 1;
 
-  ASSERT(id >= 0 && id <= rad_NumElements);
+  Q_ASSERT(id >= 0 && id <= rad_NumElements);
 
   if (triangulate) {
     if (nv > 3) {
@@ -747,7 +748,7 @@ void ScanRadiosityPoly(g3Point **pl, int nv, int element_id) {
     next_break_right = cp[vrb].sy;
   };
 
-  ASSERT(element_id >= 0 && element_id <= rad_NumElements);
+  Q_ASSERT(element_id >= 0 && element_id <= rad_NumElements);
 
   for (i = 0; i < nv; i++) {
     g3Point p;

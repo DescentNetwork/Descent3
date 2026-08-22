@@ -22,12 +22,13 @@
 // editor/rad_hemicube.cpp (ShowRadView), and the ddgr surface layer.
 // For the Qt port these are no-ops that let the code link.
 
+#include "logger/log.h"
 #include "3d.h"
 #include "vecmat.h"
 #include "gr.h"
 #include "Ddgr.h"
 #include "BOA.h"
-#include "mono.h"
+
 
 void StartEditorFrame(grViewport *vp, vector *view_vec, matrix *id_mat, float zoom) {}
 
@@ -40,7 +41,7 @@ void MakeBOAVisTable(bool from_lighting) {
   BOA_vis_valid = 1;
   BOA_vis_checksum = BOA_mine_checksum;
   if (!from_lighting)
-    mprintf(0, "BOA vis table computed (stub).\n");
+    LOG_INFO("BOA vis table computed (stub).\n");
 }
 
 bool ddgr_surf_InitVideo(ddgr_surface *sf) { return false; }

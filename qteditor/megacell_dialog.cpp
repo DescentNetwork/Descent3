@@ -26,7 +26,7 @@
 #include "d3edit.h"
 #include "manage.h"
 #include "megacell.h"
-#include "pserror.h"
+#include "qt_messagebox.h"
 
 
 MegacellDialog::MegacellDialog(QWidget *parent)

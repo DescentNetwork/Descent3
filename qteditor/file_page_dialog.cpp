@@ -24,7 +24,8 @@
 #include <QPushButton>
 
 #include "manage.h"
-#include "pserror.h"
+#include "qt_messagebox.h"
+
 
 
 FilePageDialog::FilePageDialog(QWidget *parent)

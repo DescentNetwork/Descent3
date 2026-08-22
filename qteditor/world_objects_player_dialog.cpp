@@ -544,7 +544,7 @@ void WorldObjectsPlayerDialog::onPshipCockpit()
     return;
 
   const QByteArray pathBytes = pathname.toLocal8Bit();
-  char curname[_MAX_PATH];
+  char curname[PATH_MAX];
   char ext[32];
   ddio_SplitPath(pathBytes.constData(), nullptr, curname, ext);
 

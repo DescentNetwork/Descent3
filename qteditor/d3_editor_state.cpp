@@ -24,7 +24,7 @@
 #include "terrain.h"
 #include "slew.h"
 #include "manage.h"
-#include "crossplat.h"
+
 #include "objinfo.h"
 #include "gamepath.h"
 #include "findintersection.h"

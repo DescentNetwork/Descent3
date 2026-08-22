@@ -30,7 +30,7 @@
 #include "aiambient.h"
 #include "BOA.h"
 #include "bnode.h"
-#include "crossplat.h"
+
 #include "ddio.h"
 #include "doorway.h"
 //#include "Erooms.h"

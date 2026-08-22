@@ -23,8 +23,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 
-
-#include "pserror.h"
+#include "qt_messagebox.h"
 
 
 FontDialog::FontDialog(QWidget *parent)

@@ -23,7 +23,7 @@
 #include <cstring>
 #include <cstdlib>
 
-#include "crossplat.h"
+
 
 #include <QFileDialog>
 #include <QLabel>
@@ -109,7 +109,7 @@ bool openOrSave(bool save, QWidget *parent, const char *filter, char *pathname,
   }
 
   const QByteArray path_bytes = picked.toLatin1();
-  const int n = qMin(int {_MAX_PATH - 1}, path_bytes.size());
+  const int n = qMin(int {PATH_MAX - 1}, path_bytes.size());
   std::memcpy(pathname, path_bytes.constData(), n);
   pathname[n] = '\0';
 
