@@ -19,17 +19,15 @@
 #include "object_properties_dialog.h"
 #include "ui_objectproperties.h"
 
+#include <QLabel>
 #include <QTabWidget>
 
 #include "objinfo.h"
 #include "object.h"
-#include "physics_dialog.h"
 #include "property_physics_dialog.h"
 
-
 ObjectPropertiesDialog::ObjectPropertiesDialog(int objIndex, QWidget *parent)
-    : QDialog(parent), ui(new Ui::ObjectPropertiesDialog), m_objIndex(objIndex)
-{
+    : QDialog(parent), ui(new Ui::ObjectPropertiesDialog), m_objIndex(objIndex) {
   ui->setupUi(this);
   QTabWidget *tabs = ui->IDC_PROPERTYTAB;
   if (tabs == nullptr || m_objIndex < 0 || m_objIndex > Highest_object_index)
@@ -39,13 +37,19 @@ ObjectPropertiesDialog::ObjectPropertiesDialog(int objIndex, QWidget *parent)
   if (obj->type == OBJ_NONE)
     return;
 
-  // The Win32 dialog hosts the physics and AI editors as tabs. Object
-  // instances reference their type's physics; use it when available.
   if (obj->id >= 0 && obj->id < MAX_OBJECT_IDS && Object_info[obj->id].type != OBJ_NONE) {
     PropertyPhysicsDialog *physics = new PropertyPhysicsDialog(&Object_info[obj->id].phys_info, tabs);
     tabs->addTab(physics, "Physics");
+
+    QLabel *aiPlaceholder = new QLabel("AI properties not yet implemented.", tabs);
+    aiPlaceholder->setAlignment(Qt::AlignCenter);
+    tabs->addTab(aiPlaceholder, "AI");
   }
+
+  if (auto *okBtn = findChild<QPushButton *>(QStringLiteral("IDOK")))
+    connect(okBtn, &QPushButton::clicked, this, &QDialog::accept);
+  if (auto *cancelBtn = findChild<QPushButton *>(QStringLiteral("IDCANCEL")))
+    connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
 }
 
 ObjectPropertiesDialog::~ObjectPropertiesDialog() { delete ui; }
-

@@ -44,9 +44,12 @@ bool World_changed = false;
 // compiled without that define, so provide them here.
 uint8_t TerrainSelected[TERRAIN_WIDTH * TERRAIN_DEPTH];
 int Num_terrain_selected = 0;
+int Editor_LOD_engine_off = 1;
+bool Terrain_render_ext_room_objs = true;
 
 // Editor-only state flags declared in d3edit.h (defined in the MFC editor's
 // editor.cpp/EDVARS.cpp).
+bool TV_changed = false;
 bool State_changed = false;
 bool Viewer_moved = false;
 bool Object_moved = false;

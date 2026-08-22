@@ -24,9 +24,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class TerrainKeypad; }
 QT_END_NAMESPACE
 
+class QLabel;
 
-// Port of CTerrainDialog (IDD_TERRAINKEYPAD): terrain height editing,
-// selection, sky and moon controls.
 class TerrainKeypad : public QDialog {
   Q_OBJECT
 public:
@@ -46,15 +45,68 @@ private slots:
   void onFillArea();
   void onMoreMoons();
   void onLessMoons();
+  void onNextMoon();
+  void onPrevMoon();
+  void onMoveSatUp();
+  void onMoveSatDown();
+  void onMoveSatLeft();
+  void onMoveSatRight();
+  void onMoveMoonCloser();
+  void onMoveMoonFarther();
+  void onRenormalize();
+  void onRotTexture();
+  void onPyramid();
+  void onPancakes();
+  void onSmoothTerrain();
+  void onDropTerrain();
+  void onRandomizeSky();
+  void onSkyNearer();
+  void onSkyFarther();
+  void onTileMore();
+  void onTileLess();
+  void onRedoTopmap();
+  void onTerrainOcclusion();
+  void onToggleVisibility();
+
+  void onSkyRadio();
+  void onHorizonRadio();
+  void onFogRadio();
+  void onSatelliteRadio();
+  void onSkyRedEdited();
+  void onSkyGreenEdited();
+  void onSkyBlueEdited();
   void onFogDistanceEdited();
+  void onPixelErrorEdited();
+  void onFogScalarEdited();
+  void onDamagePerSecEdited();
+  void onRotateSpeedEdited();
+
+  void onStarsToggled(bool checked);
+  void onSatelliteToggled(bool checked);
+  void onTexturedSkyToggled(bool checked);
+  void onUseFogToggled(bool checked);
+  void onUseHaloToggled(bool checked);
+  void onUseAtmosphereToggled(bool checked);
+  void onRotateStarsToggled(bool checked);
+  void onRotateSkyToggled(bool checked);
+  void onFastTerrainToggled(bool checked);
+  void onShowTerrainToggled(bool checked);
+  void onFlatShadeToggled(bool checked);
+  void onNoLodToggled(bool checked);
+  void onTerrain2dToggled(bool checked);
+  void onShowInvisibleToggled(bool checked);
+  void onNoExtRoomsObjsToggled(bool checked);
 
 private:
   void updateDialog();
   void changeSelectedHeights(int delta, bool toAbsolute = false, int absoluteValue = 0);
+  void moveSat(int pitch, int heading);
+  int currentSat() const;
 
   template <typename T>
-  T *find(const QString &name) const { return findChild<T *>(name); }
+  T *findChild_(const QString &name) const { return findChild<T *>(name); }
 
   Ui::TerrainKeypad *ui;
+  int m_currentSatellite = 0;
+  int m_ccMode = 0; // 0=sky, 1=horizon, 2=fog, 3=satellite
 };
-

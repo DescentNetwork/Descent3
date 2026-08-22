@@ -21,6 +21,7 @@
 #include <QHash>
 #include <QOpenGLWidget>
 #include <QPoint>
+#include <QRect>
 #include <QVector3D>
 
 #include "vecmat.h"
@@ -78,6 +79,14 @@ signals:
   void objectSelected(int objIndex);
   void selectionCleared();
   void objectContextMenuRequested(const QPoint &globalPos, int objIndex);
+  void rectSelectionFinished(const QRect &rect);
+
+  // Rectangle selection (rubber band / SelManager equivalent).
+public:
+  void startRectSelection();
+  bool isRectSelecting() const { return m_rectSelecting; }
+  QRect selectedRect() const { return m_selectedRect; }
+  void getSelectedRect(int *l, int *t, int *r, int *b) const;
 
 protected:
   void initializeGL() override;
@@ -122,6 +131,11 @@ private:
   bool m_dragged = false;
   QPoint m_pressPos;
   bool m_panMode = false; // Shift held at press → pan instead of rotate
+
+  // Rectangle selection (SelManager equivalent).
+  bool m_rectSelecting = false;
+  QRect m_selectedRect;
+  void endRectSelection();
 
   // Cached OpenGL textures, keyed by D3 bitmap handle.
   mutable QHash<int, GLuint> m_textures;

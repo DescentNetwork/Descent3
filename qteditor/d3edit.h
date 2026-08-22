@@ -106,6 +106,10 @@ extern grSurface *Desktop_surf;
 // flags for the textured views changed
 extern bool TV_changed;
 
+// Editor-only terrain globals (declared in terrain.h behind #ifdef EDITOR)
+extern int Editor_LOD_engine_off;
+extern bool Terrain_render_ext_room_objs;
+
 // Set this flag if a new world is loaded/created
 extern bool New_mine;
 

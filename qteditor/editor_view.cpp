@@ -1308,3 +1308,24 @@ EditorView::PickResult EditorView::pickAt(int screenX, int screenY) const {
   return best;
 }
 
+void EditorView::startRectSelection() {
+  m_rectSelecting = true;
+  m_selectedRect = QRect();
+}
+
+void EditorView::endRectSelection() {
+  m_rectSelecting = false;
+  if (!m_selectedRect.isNull()) {
+    m_selectedRect = m_selectedRect.normalized();
+    emit rectSelectionFinished(m_selectedRect);
+  }
+}
+
+void EditorView::getSelectedRect(int *l, int *t, int *r, int *b) const {
+  QRect norm = m_selectedRect.normalized();
+  *l = norm.left();
+  *t = norm.top();
+  *r = norm.right();
+  *b = norm.bottom();
+}
+

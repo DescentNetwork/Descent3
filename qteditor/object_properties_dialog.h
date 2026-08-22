@@ -24,9 +24,6 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class ObjectPropertiesDialog; }
 QT_END_NAMESPACE
 
-
-// Port of CObjectPropertiesDialog (IDD_OBJECTPROPERTIES): a tabbed dialog
-// hosting the object's physics and AI property editors.
 class ObjectPropertiesDialog : public QDialog {
   Q_OBJECT
 public:
@@ -37,4 +34,3 @@ private:
   Ui::ObjectPropertiesDialog *ui;
   int m_objIndex;
 };
-
