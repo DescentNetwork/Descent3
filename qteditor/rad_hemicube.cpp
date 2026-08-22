@@ -24,7 +24,6 @@
 #include "radiosity.h"
 #include "hemicube.h"
 #include "d3edit.h"
-#include "ddio.h"
 #include "mem.h"
 
 #include <cstdlib>
@@ -362,7 +361,6 @@ void EndHemicubeDrawing(int face) {
 
   if (Show_rad_progress) {
     int i, t;
-    int key;
 
     if (first) {
       for (i = 0; i < 9000; i++) {
@@ -376,8 +374,7 @@ void EndHemicubeDrawing(int face) {
       first = 0;
     }
 
-    while ((key = ddio_KeyInKey()) != 0)
-      ;
+    // Qt handles keyboard events natively - key polling removed
 
     uint16_t surfval[90000];
     int ff_index = 0;
@@ -424,9 +421,7 @@ void EndHemicubeDrawing(int face) {
 
     ShowRadView();
 
-    while ((key = ddio_KeyInKey()) == 0) {
-      ;
-    }
+    // Qt handles keyboard events natively - key wait removed
   }
 }
 

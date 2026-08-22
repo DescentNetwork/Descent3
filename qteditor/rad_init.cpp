@@ -25,7 +25,6 @@
 #include "hemicube.h"
 #include "descent.h"
 #include "rad_cast.h"
-#include "ddio.h"
 #include "vecmat.h"
 #include <cstdlib>
 #include "mem.h"
@@ -104,9 +103,7 @@ void InitRadiosityRun() {
   rad_StepCount = 0;
   rad_DoneCalculating = 0;
 
-  // Clear key buffer
-  //	ddio_KeyFrame();
-  ddio_KeyFlush();
+  // Clear key buffer - Qt handles keyboard events natively
 
   CountElements();
   CalculateArea();
@@ -300,8 +297,6 @@ void GetCenterOfSurface(rad_surface *sp, vector *dest) { vm_GetCentroid(dest, sp
 void GetCenterOfElement(rad_element *ep, vector *dest) { vm_GetCentroid(dest, ep->verts, ep->num_verts); }
 
 void CalculateRadiosity() {
-  int key;
-
   while (!rad_DoneCalculating) {
     if (rad_StepCount >= rad_MaxStep) {
       rad_DoneCalculating = 1;
@@ -313,17 +308,8 @@ void CalculateRadiosity() {
     rad_StepCount++;
 
     Descent->defer();
-    //		ddio_KeyFrame();
-    while ((key = ddio_KeyInKey()) != 0) {
-      if (key == KEY_LAPOSTRO) {
-        rad_DoneCalculating = 1;
-        break;
-      }
-    }
+    // Qt handles keyboard events natively - abort logic should be moved to UI
   }
-
-  // Clear key buffer
-  ddio_KeyFlush();
 }
 
 // returns the amount of unsent flux from a surface

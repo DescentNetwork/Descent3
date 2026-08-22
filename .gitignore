@@ -11,36 +11,35 @@
 # Build directories
 build/
 dist/
-target/
 
 # Dependencies
-node_modules/
 venv/
 .venv/
+node_modules/
 __pycache__/
-.mypy_cache/
-.pytest_cache/
-.gradle/
+*.egg-info/
 
-# Editor/IDE files
+# Editors
 .vscode/
 .idea/
 *.swp
 *.swo
-*.tmp
 
 # Logs
 *.log
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
+# Temp files
+*.tmp
 
 # Environment
 .env
 .env.local
 *.env.*
+
+# Coverage
+coverage/
+htmlcov/
+*.coverage
 
 # System files
 .DS_Store

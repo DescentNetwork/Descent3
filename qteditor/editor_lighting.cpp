@@ -34,6 +34,7 @@
 #include <cmath>
 #include <cstring>
 #include <cstdlib>
+#include <filesystem>
 
 #include "3d.h"
 #include "gametexture.h"
@@ -49,7 +50,6 @@
 #include "lightmap_info.h"
 #include "object_lighting.h"
 #include "d3edit.h"
-#include "ddio.h"
 #include "bsp.h"
 #include "special_face.h"
 #include "BOA.h"
@@ -875,11 +875,10 @@ void DoRadiosityForRooms() {
   BuildBSPTree();
 
   if (save_after_bsp) {
-    char filename[PATH_MAX];
-    ddio_MakePath(filename, cf_GetWritableBaseDirectory().u8string().c_str(), "BSPSave.D3L", NULL);
+    std::filesystem::path filename = cf_GetWritableBaseDirectory() / "BSPSave.D3L";
 
     // Save the level to
-    SaveLevel(filename, true);
+    SaveLevel(const_cast<char*>(filename.u8string().c_str()), true);
   }
 
   LOG_INFO("Setting up...\n");
@@ -1142,11 +1141,10 @@ void DoRadiosityForRooms() {
   // Finally, squeeze the lightmaps
   SqueezeLightmaps(0, -1);
 
-  char filename[PATH_MAX + 1];
-  ddio_MakePath(filename, cf_GetWritableBaseDirectory().u8string().c_str(), "LightSave.D3L", NULL);
+  std::filesystem::path filename = cf_GetWritableBaseDirectory() / "LightSave.D3L";
 
   // Save the level to disk
-  SaveLevel(filename, true);
+  SaveLevel(const_cast<char*>(filename.u8string().c_str()), true);
 
   QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Mine radiosity complete!");
 }
@@ -1743,19 +1741,7 @@ void DoTerrainDynamicTable() {
   memset(Terrain_dynamic_table, 0, (TERRAIN_DEPTH * TERRAIN_WIDTH));
 
   for (i = 0; i < AREA_Z; i++) {
-    //	ddio_KeyFrame();
-    while ((key = ddio_KeyInKey()) != 0) {
-      if (key == KEY_LAPOSTRO) {
-        for (; i < AREA_Z; i++) {
-          for (t = 0; t < AREA_X; t++) {
-            int tseg = i * TERRAIN_WIDTH + t;
-            Terrain_dynamic_table[tseg] = 255;
-          }
-        }
-
-        return;
-      }
-    }
+    // Qt handles keyboard events natively - abort logic should be moved to UI
 
     for (t = 0; t < AREA_X; t++) {
       int tseg = i * TERRAIN_WIDTH + t;
