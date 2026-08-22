@@ -28,11 +28,12 @@
 #include <QPushButton>
 #include <QRadioButton>
 
+#include <QFileInfo>
+
 #include "cfile.h"
 
 #include "d3edit.h"
 
-#include "ddio.h"
 #include "manage.h"
 #include "physics_dialog.h"
 #include "polymodel.h"
@@ -231,9 +232,9 @@ void WorldObjectsPlayerDialog::onAddPship() {
   if (pathname.isEmpty())
     return;
 
+  QFileInfo fileInfo(pathname);
   const QByteArray pathBytes = pathname.toLocal8Bit();
-  char dir[260], fname[260], ext[32];
-  ddio_SplitPath(pathBytes.constData(), dir, fname, ext);
+  const char *fname = fileInfo.baseName().toLocal8Bit().constData();
 
   const int img_handle = LoadShipImage(pathBytes.constData());
   if (img_handle < 0) {
@@ -543,10 +544,10 @@ void WorldObjectsPlayerDialog::onPshipCockpit()
   if (pathname.isEmpty())
     return;
 
+  QFileInfo fileInfo(pathname);
   const QByteArray pathBytes = pathname.toLocal8Bit();
-  char curname[PATH_MAX];
-  char ext[32];
-  ddio_SplitPath(pathBytes.constData(), nullptr, curname, ext);
+  const char *curname = fileInfo.baseName().toLocal8Bit().constData();
+  const char *ext = fileInfo.suffix().isEmpty() ? "" : ("." + fileInfo.suffix()).toLocal8Bit().constData();
 
   snprintf(Ships[D3EditState.current_ship].cockpit_name, sizeof(Ships[D3EditState.current_ship].cockpit_name), "%s%s",
            curname, ext);

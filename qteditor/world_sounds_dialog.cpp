@@ -29,11 +29,12 @@
 #include <QPushButton>
 #include <QRadioButton>
 
+#include <QFileInfo>
+
 #include "cfile.h"
 
 #include "d3edit.h"
 
-#include "ddio.h"
 #include "hlsoundlib.h"
 #include "manage.h"
 #include "soundpage.h"
@@ -325,9 +326,9 @@ void WorldSoundsDialog::onAddSound() {
   if (pathname.isEmpty())
     return;
 
+  QFileInfo fileInfo(pathname);
   const QByteArray pathBytes = pathname.toLocal8Bit();
-  char dir[260], fname[128], ext[32];
-  ddio_SplitPath(pathBytes.constData(), dir, fname, ext);
+  const char *fname = fileInfo.baseName().toLocal8Bit().constData();
 
   const int raw_handle = LoadSoundFile(pathBytes.constData(), 1.0f, true);
   if (raw_handle < 0) {

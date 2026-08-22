@@ -32,11 +32,12 @@
 #include <cmath>
 #include <cstring>
 
+#include <QFileInfo>
+
 #include "bitmap.h"
 #include "cfile.h"
 
 
-#include "ddio.h"
 #include "gametexture.h"
 #include "generic_death_dialog.h"
 #include "genericpage.h"
@@ -576,9 +577,9 @@ void WorldObjectsGenericDialog::onAddNew() {
   if (pathname.isEmpty())
     return;
 
+  QFileInfo fileInfo(pathname);
   const QByteArray pathBytes = pathname.toLocal8Bit();
-  char dir[260], fname[260], ext[32];
-  ddio_SplitPath(pathBytes.constData(), dir, fname, ext);
+  const char *fname = fileInfo.baseName().toLocal8Bit().constData();
 
   std::filesystem::path tmp = ChangePolyModelName(pathname.toStdString());
   if (FindPolyModelName(fname) != -1) {
