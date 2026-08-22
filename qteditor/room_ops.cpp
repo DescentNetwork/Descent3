@@ -26,7 +26,8 @@
 #include "editor_room_state.h"
 
 #include <QtGlobal>
-#include "qt_messagebox.h"
+#include <QMessageBox>
+
 #include "logger/log.h"
 
 #include "d3edit.h"
@@ -461,12 +462,12 @@ void DeletePortalPair(room *rp, int portalnum) {
   int croom = pp->croom, cportal = pp->cportal;
 
   if ((Rooms[croom].portals[cportal].croom != roomnum) || (Rooms[croom].portals[cportal].cportal != portalnum)) {
-    OutrageMessageBox("Cannot delete this portal: the connecting portal does not point back at it.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot delete this portal: the connecting portal does not point back at it.");
     return;
   }
 
   if (rp->faces[pp->portal_face].portal_num != portalnum) {
-    OutrageMessageBox("Cannot delete this portal: its face does not point back at it.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot delete this portal: its face does not point back at it.");
     return;
   }
 
@@ -555,7 +556,7 @@ void AssignUVsToFace(room *rp, int facenum, roomUVL *uva, roomUVL *uvb, int va, 
   mag01 = vm_NormalizeVector(&fvec);
 
   if (mag01 < 0.001f) {
-    OutrageMessageBox("U, V bogosity in room #%i, probably on face #%i.", ROOMNUM(rp), facenum);
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "U, V bogosity in room #%i, probably on face #%i.", ROOMNUM(rp), facenum);
     return;
   }
 
@@ -783,7 +784,7 @@ void RotateRooms(angle p, angle h, angle b) {
   int cur_portalnum = -1;
 
   if (Curroomp == Markedroomp || Markedroomp == NULL) {
-    OutrageMessageBox("You do not have a valid room marked.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You do not have a valid room marked.");
     return;
   }
 
@@ -795,7 +796,7 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   if (marked_portalnum == -1) {
-    OutrageMessageBox("The marked room is not connected to the current room!");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "The marked room is not connected to the current room!");
     return;
   }
 
@@ -807,7 +808,7 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   if (cur_portalnum == -1) {
-    OutrageMessageBox("The marked room is not connected to the current room!");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "The marked room is not connected to the current room!");
     return;
   }
 
@@ -819,7 +820,7 @@ void RotateRooms(angle p, angle h, angle b) {
 
   if (IsRoomSelected(Markedroomp - Rooms)) {
     RestoreRoomSelectedList();
-    OutrageMessageBox("Cannot rotate: rooms connect back to base room.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot rotate: rooms connect back to base room.");
     return;
   }
 
@@ -886,7 +887,7 @@ void RotateRooms(angle p, angle h, angle b) {
 // ============================================================================
 void ConnectPortal(room *rp, int portal_num, int dest_room) {
   if (portal_num < 0 || portal_num >= rp->num_portals) {
-    OutrageMessageBox("Invalid portal number.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid portal number.");
     return;
   }
 
@@ -894,13 +895,13 @@ void ConnectPortal(room *rp, int portal_num, int dest_room) {
   int dest_face = pp->portal_face;
 
   if (pp->croom != -1) {
-    OutrageMessageBox("This portal is already connected.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This portal is already connected.");
     return;
   }
 
   room *destp = &Rooms[dest_room];
   if (destp->faces[dest_face].portal_num != -1) {
-    OutrageMessageBox("Destination face is already a portal.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Destination face is already a portal.");
     return;
   }
 
@@ -915,13 +916,13 @@ void ConnectPortal(room *rp, int portal_num, int dest_room) {
 // ============================================================================
 void DetachPortal(room *rp, int portal_num) {
   if (portal_num < 0 || portal_num >= rp->num_portals) {
-    OutrageMessageBox("Invalid portal number.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid portal number.");
     return;
   }
 
   portal *pp = &rp->portals[portal_num];
   if (pp->croom == -1) {
-    OutrageMessageBox("This portal is not connected.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This portal is not connected.");
     return;
   }
 
@@ -1345,7 +1346,7 @@ void AttachRoom() {
     }
   }
   if (slot == -1) {
-    OutrageMessageBox("Cannot attach room: No free rooms.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot attach room: No free rooms.");
     return;
   }
 
@@ -1378,7 +1379,7 @@ void AttachRoom() {
   } else {
     // Mine room — clip the connecting faces against each other
     if (!ClipFacePair(newroomp, attface, baseroomp, baseface)) {
-      OutrageMessageBox("Error making portal -- faces probably don't overlap.");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Error making portal -- faces probably don't overlap.");
       FreeRoom(newroomp);
       return;
     }
@@ -1752,7 +1753,7 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
   }
 
   if (!got_shell || !got_front || shell_sm == nullptr || front_sm == nullptr) {
-    OutrageMessageBox("This door is not properly specified (missing shell or front face).");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This door is not properly specified (missing shell or front face).");
     return;
   }
 

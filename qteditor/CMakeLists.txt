@@ -128,7 +128,6 @@ set(QTEDITOR_SOURCES
   property_physics_dialog.h
   propscript_dialog.cpp
   propscript_dialog.h
-  qt_messagebox.cpp
   quickcompile_dialog.cpp
   quickcompile_dialog.h
   robot_weapons_dialog.cpp

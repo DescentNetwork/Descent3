@@ -22,6 +22,7 @@
 
 #include "object_ops.h"
 
+#include <QMessageBox>
 #include "logger/log.h"
 #include "d3edit.h"
 #include "findintersection.h"
@@ -31,7 +32,7 @@
 #include "player.h"
 #include "polymodel.h"
 
-#include "qt_messagebox.h"
+
 #include "ship.h"
 #include "terrain.h"
 #include "vecmat.h"
@@ -133,13 +134,13 @@ bool HObjectPlace(int obj_type, int obj_id) {
   // Special stuff for player ship
   if (obj_type == OBJ_PLAYER) {
     if (!Num_ships) {
-      OutrageMessageBox("Cannot place a player: There are no player ships.");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place a player: There are no player ships.");
       return false;
     }
 
     int ship_num = D3EditState.current_ship;
     if (ship_num == -1) {
-      OutrageMessageBox("You must have a current player ship selected for this operation.");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have a current player ship selected for this operation.");
       return false;
     }
 
@@ -167,12 +168,12 @@ bool HObjectPlace(int obj_type, int obj_id) {
     if (Editor_view_mode == VM_TERRAIN) {
       int cellnum = GetSelectedTerrainCell();
       if (cellnum == -1) {
-        OutrageMessageBox("You must have a terrain cell selected to place an object.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have a terrain cell selected to place an object.");
         ObjDelete(objnum);
         return false;
       }
       if (cellnum == -2) {
-        OutrageMessageBox("You must have only one cell selected to place an object.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have only one cell selected to place an object.");
         ObjDelete(objnum);
         return false;
       }
@@ -211,7 +212,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
 
     if (Viewer_object->flags & OF_OUTSIDE_MINE) {
       ObjDelete(objnum);
-      OutrageMessageBox("Cannot place the object here: the viewer is outside the mine.");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place the object here: the viewer is outside the mine.");
       return false;
     }
 
@@ -223,7 +224,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
 
     if (!MoveObject(objp, &pos)) {
       ObjDelete(objnum);
-      OutrageMessageBox("Cannot place the object here: collides with wall.");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place the object here: collides with wall.");
       return false;
     }
   }
@@ -321,13 +322,12 @@ void HObjectDelete() {
   int objnum = Cur_object_index;
 
   if (&Objects[objnum] == Player_object) {
-    OutrageMessageBox("Can't delete Player object");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Can't delete Player object");
     return;
   }
 
   if (Objects[objnum].type == OBJ_DOOR) {
-    if (!OutrageMessageBox(MBOX_YESNO,
-                          "It's very, very bad to delete a door object.  Are you sure you want to do this?"))
+    if (QMessageBox::question(nullptr, "Are you sure?", "It's very, very bad to delete a door object.  Are you sure you want to do this?") == QMessageBox::No)
       return;
   }
 

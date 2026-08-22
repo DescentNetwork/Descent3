@@ -19,6 +19,7 @@
 #include "world_objects_door_dialog.h"
 #include "ui_worldobjectsdoor.h"
 
+#include <QMessageBox>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFileDialog>
@@ -28,7 +29,7 @@
 #include <QPushButton>
 
 #include "cfile.h"
-#include "qt_messagebox.h"
+
 #include "d3edit.h"
 
 #include "ddio.h"
@@ -54,11 +55,11 @@ bool verifyDoorModel(int handle) {
 
     if (sm->flags & SOF_FRONTFACE) {
       if (sm->num_faces != 1) {
-        OutrageMessageBox("Invalid door model: Frontface has %d faces; must have 1.", sm->num_faces);
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("Invalid door model: Frontface has %1 faces; must have 1.").arg(sm->num_faces));
         return false;
       }
       if (sm->num_children != 0) {
-        OutrageMessageBox("Invalid door model: Frontface cannot have submodels.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid door model: Frontface cannot have submodels.");
         return false;
       }
       found_frontface = true;
@@ -66,7 +67,7 @@ bool verifyDoorModel(int handle) {
 
     if (sm->flags & SOF_SHELL) {
       if (sm->num_children != 0) {
-        OutrageMessageBox("Invalid door model: Shell cannot have submodels.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid door model: Shell cannot have submodels.");
         return false;
       }
 
@@ -83,7 +84,7 @@ bool verifyDoorModel(int handle) {
         check_face.face_verts = polyface->vertnums;
 
         if (!ComputeFaceNormal(&check_room, 0)) {
-          OutrageMessageBox("Invalid door model: Face %d in shell has bad normal.", f);
+          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("Invalid door model: Face %1 in shell has bad normal.").arg(f));
           return false;
         }
       }
@@ -93,11 +94,11 @@ bool verifyDoorModel(int handle) {
   }
 
   if (!found_frontface) {
-    OutrageMessageBox("Invalid door model: Missing Frontface.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid door model: Missing Frontface.");
     return false;
   }
   if (!found_shell) {
-    OutrageMessageBox("Invalid door model: Missing Shell.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid door model: Missing Shell.");
     return false;
   }
   return true;
@@ -252,7 +253,7 @@ void WorldObjectsDoorDialog::updateDialog() {
 
 void WorldObjectsDoorDialog::onAddDoor() {
   if (!Network_up) {
-    OutrageMessageBox("Sorry babe, the network is down.  This action is a no-no.\n");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sorry babe, the network is down.  This action is a no-no.\n");
     return;
   }
 
@@ -270,7 +271,7 @@ void WorldObjectsDoorDialog::onAddDoor() {
   ddio_SplitPath(pathBytes.constData(), dir, filename, ext);
 
   if (img_handle < 0) {
-    OutrageMessageBox("Couldn't open that model file.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't open that model file.");
     return;
   }
   if (!verifyDoorModel(img_handle)) {
@@ -313,7 +314,7 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
 
   int tl = mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR);
   if (tl == -1) {
-    OutrageMessageBox("This door is not yours to delete.  Lock first.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This door is not yours to delete.  Lock first.");
     return;
   }
 
@@ -344,7 +345,7 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
   FreeDoor(n);
   mng_EraseLocker();
 
-  OutrageMessageBox("Door deleted.");
+  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Door deleted.");
   updateDialog();
 }
 
@@ -362,17 +363,17 @@ void WorldObjectsDoorDialog::onLockDoor() {
 
   const int r = mng_CheckIfPageLocked(&temp_pl);
   if (r == 2) {
-    if (OutrageMessageBox(MBOX_YESNO,
+    if (QMessageBox::question(this, "Are you sure?",
                           "This page is not even in the table file, or the database maybe corrupt.  Override to "
-                          "'Unlocked'? (Select NO if you don't know what you're doing)") == 1) {
+                              "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
       snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
         QMessageBox::critical(this, "Error!", ErrorString);
     }
   } else if (r < 0) {
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   } else if (r == 1) {
-    OutrageMessageBox(InfoString);
+    QMessageBox::information(this, "Information", InfoString);
   } else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
@@ -384,18 +385,18 @@ void WorldObjectsDoorDialog::onLockDoor() {
       if (mng_FindSpecificDoorPage(temp_pl.name, &doorpage)) {
         if (mng_AssignDoorPageToDoor(&doorpage, n)) {
           if (!mng_ReplacePage(Doors[n].name, Doors[n].name, n, PAGETYPE_DOOR, 1)) {
-            OutrageMessageBox("There was problem writing that page locally!");
+            QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
             mng_EraseLocker();
             return;
           }
-          OutrageMessageBox("Door locked.");
+          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Door locked.");
         } else {
-          OutrageMessageBox("There was a problem loading this door.  You might encounter problems in dealing with it.");
+          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this door.  You might encounter problems in dealing with it.");
         }
         mng_AllocTrackLock(Doors[n].name, PAGETYPE_DOOR);
         updateDialog();
       } else {
-        OutrageMessageBox("Couldn't find that door in the table file!");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that door in the table file!");
       }
     }
   }
@@ -416,9 +417,9 @@ void WorldObjectsDoorDialog::onCheckinDoor() {
 
   const int r = mng_CheckIfPageOwned(&temp_pl, TableUser);
   if (r < 0)
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   else if (r == 0)
-    OutrageMessageBox(InfoString);
+    QMessageBox::information(this, "Information", InfoString);
   else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
@@ -427,13 +428,13 @@ void WorldObjectsDoorDialog::onCheckinDoor() {
       return;
     } else {
       if (!mng_ReplacePage(Doors[n].name, Doors[n].name, n, PAGETYPE_DOOR, 0))
-        OutrageMessageBox(ErrorString);
+        QMessageBox::critical(this, "Error!", ErrorString);
       else {
         std::filesystem::path srcname = LocalModelsDir / Poly_models[Doors[n].model_handle].name;
         std::filesystem::path destname = NetModelsDir / Poly_models[Doors[n].model_handle].name;
         cf_CopyFile(destname, srcname);
 
-        OutrageMessageBox("Door checked in.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Door checked in.");
 
         const int dret = mng_DeletePage(Doors[n].name, PAGETYPE_DOOR, 1);
         Q_ASSERT(dret == 1);

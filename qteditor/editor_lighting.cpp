@@ -25,6 +25,8 @@
  */
 
 #include <QtGlobal>
+#include <QMessageBox>
+
 #include <limits.h>
 #include "logger/log.h"
 
@@ -859,7 +861,7 @@ void DoRadiosityForRooms() {
   int save_after_bsp = 0;
 
   if (!CheckForBadFaces(-1)) {
-    OutrageMessageBox("You have bad faces in your level.  Please do a Verify Level.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You have bad faces in your level.  Please execute 'Verify Level'.");
     return;
   }
 
@@ -1146,7 +1148,7 @@ void DoRadiosityForRooms() {
   // Save the level to disk
   SaveLevel(filename, true);
 
-  OutrageMessageBox("Mine radiosity complete!");
+  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Mine radiosity complete!");
 }
 
 // Calculates radiosity and sets lightmaps for indoor faces only
@@ -1157,7 +1159,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
   int max_index;
 
   if (!CheckForBadFaces(rp - Rooms)) {
-    OutrageMessageBox("You have bad faces in your level.  Please do a Verify Level.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You have bad faces in your level.  Please execute 'Verify Level'.");
     return;
   }
 
@@ -1167,12 +1169,12 @@ void DoRadiosityForCurrentRoom(room *rp) {
   Q_ASSERT(rp->used);
 
   if (rp->flags & RF_EXTERNAL) {
-    OutrageMessageBox("You cannot run single room radiosity on external rooms!");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You cannot run single room radiosity on external rooms!");
     return;
   }
 
   if (rp->flags & RF_NO_LIGHT) {
-    OutrageMessageBox("You cannot run single room radiosity on a room marked not to light!");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You cannot run single room radiosity on a room marked not to light!");
     return;
   }
 
@@ -1303,7 +1305,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
   // Finally, squeeze the lightmaps
   SqueezeLightmaps(0, rp - Rooms);
 
-  OutrageMessageBox("Room radiosity complete!");
+  QMessageBox::information(nullptr, "Success", "Room radiosity complete!");
 }
 
 // Allocates and sets a lightmap based on the surface elements given
@@ -1819,7 +1821,7 @@ void DoRadiosityForTerrain() {
   }
 
   if (!lit) {
-    OutrageMessageBox("No moons/suns cast light so there is no point in running terrain radiosity!");
+    QMessageBox::information(nullptr, "Action cancelled", "No moons/suns cast light so there is no point in running terrain radiosity!");
     return;
   }
 
@@ -1828,9 +1830,10 @@ void DoRadiosityForTerrain() {
     Q_ASSERT(TerrainLightSpeedup[i]);
   }
 
-  if (OutrageMessageBox(MBOX_YESNO,
-                  "Do you wish to calculate dynamic terrain lighting when radiosity is completed? (Note: Dynamic "
-                  "lighting takes a long time)"))
+  if (QMessageBox::warning(nullptr,
+      "High computational complexity",
+      "Do you wish to calculate dynamic terrain lighting when radiosity is completed? (Note: Dynamic lighting takes a long time)",
+                           QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
     do_dynamic = 1;
 
   if (!Ignore_terrain)
@@ -2197,8 +2200,7 @@ void DoRadiosityForTerrain() {
   if (do_dynamic)
     DoTerrainDynamicTable();
 
-  OutrageMessageBox(
-      "Terrain radiosity complete!\nIt is recommended you save the level so you won't have to rerun this operation.");
+  QMessageBox::information(nullptr, "Success", "Terrain radiosity complete!\nIt is recommended you save the level so you won't have to rerun this operation.");
 }
 /*
 void DoRadiosityForTerrain ()
@@ -2222,7 +2224,7 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
 
         if (!lit)
         {
-                OutrageMessageBox ("No moons/suns cast light so there is no point in running terrain radiosity!");
+                QMessageBox::information(nullptr, "Action cancelled", "No moons/suns cast light so there is no point in running terrain radiosity!");
                 return;
         }
 
@@ -2360,8 +2362,7 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
                 DoTerrainDynamicTable();
 
         UpdateTerrainLightmaps();
-        OutrageMessageBox ("Terrain radiosity complete!\nIt is recommended you save the level so you won't have to rerun
-this operation.");
+        QMessageBox::information(nullptr, "Success", "Terrain radiosity complete!\nIt is recommended you save the level so you won't have to rerun this operation.");
 
 }*/
 

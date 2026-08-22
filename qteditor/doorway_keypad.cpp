@@ -19,6 +19,7 @@
 #include "doorway_keypad.h"
 #include "ui_doorwaykeypad.h"
 
+#include <QMessageBox>
 #include <QCheckBox>
 #include <QLabel>
 #include <QLineEdit>
@@ -29,7 +30,6 @@
 #include "door.h"
 #include "doorway.h"
 #include "editor_room_state.h"
-#include "qt_messagebox.h"
 #include "room_external.h"
 #include "d3edit.h"
 
@@ -201,19 +201,19 @@ void DoorwayKeypad::onPosEdited() {
 
 void DoorwayKeypad::onPlaceDoor() {
   if (Curroomp == nullptr) {
-    OutrageMessageBox("No current room.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No current room.");
     return;
   }
   if (Curface < 0 || Curface >= Curroomp->num_faces) {
-    OutrageMessageBox("No current face.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No current face.");
     return;
   }
   if (Curroomp->faces[Curface].portal_num != -1) {
-    OutrageMessageBox("Cannot place a door on a portal face.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place a door on a portal face.");
     return;
   }
   if (D3EditState.current_door < 0 || !Doors[D3EditState.current_door].used) {
-    OutrageMessageBox("No door selected. Use the World Objects Door dialog first.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No door selected. Use the World Objects Door dialog first.");
     return;
   }
   PlaceDoor(Curroomp, Curface, D3EditState.current_door);
@@ -222,7 +222,7 @@ void DoorwayKeypad::onPlaceDoor() {
 
 void DoorwayKeypad::onAttachDoor() {
   if (Placed_room == -1) {
-    OutrageMessageBox("No door placed. Use Place Door first.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No door placed. Use Place Door first.");
     return;
   }
   AttachRoom();

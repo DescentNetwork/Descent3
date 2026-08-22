@@ -30,7 +30,7 @@
 #include <QRadioButton>
 
 #include "cfile.h"
-#include "qt_messagebox.h"
+
 #include "d3edit.h"
 
 #include "ddio.h"
@@ -314,7 +314,7 @@ void WorldSoundsDialog::updateDialog() {
 
 void WorldSoundsDialog::onAddSound() {
   if (!Network_up) {
-    OutrageMessageBox("Sorry babe, the network is down.  This action is a no-no.\n");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sorry babe, the network is down.  This action is a no-no.\n");
     return;
   }
 
@@ -331,7 +331,7 @@ void WorldSoundsDialog::onAddSound() {
 
   const int raw_handle = LoadSoundFile(pathBytes.constData(), 1.0f, true);
   if (raw_handle < 0) {
-    OutrageMessageBox("Invalid sound file.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid sound file.");
     return;
   }
 
@@ -399,7 +399,7 @@ void WorldSoundsDialog::onDeleteSound() {
     return;
   const int tl = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
   if (tl == -1) {
-    OutrageMessageBox("This sound is not yours to delete.  Lock first.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This sound is not yours to delete.  Lock first.");
     return;
   }
   if (QMessageBox::question(this, "Delete sound",
@@ -426,7 +426,7 @@ void WorldSoundsDialog::onDeleteSound() {
   D3EditState.current_sound = GetNextSound(n);
   FreeSound(n);
   mng_EraseLocker();
-  OutrageMessageBox("Sound deleted.");
+  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound deleted.");
   RemapSounds();
   updateDialog();
 }
@@ -445,17 +445,17 @@ void WorldSoundsDialog::onLockSound() {
 
   const int r = mng_CheckIfPageLocked(&temp_pl);
   if (r == 2) {
-    if (OutrageMessageBox(MBOX_YESNO,
+    if (QMessageBox::question(this, "Are you sure?",
                           "This page is not even in the table file, or the database maybe corrupt.  Override to "
-                          "'Unlocked'? (Select NO if you don't know what you're doing)") == 1) {
+                          "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
       snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
         QMessageBox::critical(this, "Error!", ErrorString);
     }
   } else if (r < 0) {
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   } else if (r == 1) {
-    OutrageMessageBox(InfoString);
+    QMessageBox::information(this, "Information", InfoString);
   } else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
@@ -466,17 +466,17 @@ void WorldSoundsDialog::onLockSound() {
     if (mng_FindSpecificSoundPage(temp_pl.name, &soundpage)) {
       if (mng_AssignSoundPageToSound(&soundpage, n)) {
         if (!mng_ReplacePage(Sounds[n].name, Sounds[n].name, n, PAGETYPE_SOUND, 1)) {
-          OutrageMessageBox("There was problem writing that page locally!");
+          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
           mng_EraseLocker();
           return;
         }
-        OutrageMessageBox("Sound locked.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound locked.");
       } else {
-        OutrageMessageBox("There was a problem loading this sound.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this sound.");
       }
       mng_AllocTrackLock(Sounds[n].name, PAGETYPE_SOUND);
     } else {
-      OutrageMessageBox("Couldn't find that sound in the table file!");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that sound in the table file!");
     }
   }
   mng_EraseLocker();
@@ -496,9 +496,9 @@ void WorldSoundsDialog::onCheckinSound() {
 
   const int r = mng_CheckIfPageOwned(&temp_pl, TableUser);
   if (r < 0)
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   else if (r == 0)
-    OutrageMessageBox(InfoString);
+    QMessageBox::information(this, "Information", InfoString);
   else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
@@ -507,9 +507,9 @@ void WorldSoundsDialog::onCheckinSound() {
       return;
     }
     if (!mng_ReplacePage(Sounds[n].name, Sounds[n].name, n, PAGETYPE_SOUND, 0))
-      OutrageMessageBox(ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
     else {
-      OutrageMessageBox("Sound checked in.");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound checked in.");
       Q_ASSERT(mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 1) == 1);
       mng_EraseLocker();
       const int p = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
@@ -549,7 +549,7 @@ void WorldSoundsDialog::onChangeName() {
   const int n = D3EditState.current_sound;
   const int p = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
   if (p == -1) {
-    OutrageMessageBox("You must lock this sound if you wish to change its name.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this sound if you wish to change its name.");
     return;
   }
   bool ok = false;
@@ -558,7 +558,7 @@ void WorldSoundsDialog::onChangeName() {
   if (!ok)
     return;
   if (FindSoundName(name.toLocal8Bit().constData()) != -1) {
-    OutrageMessageBox("That name is taken, please choose another.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
   if (!mng_MakeLocker())
@@ -571,14 +571,14 @@ void WorldSoundsDialog::onChangeName() {
   snprintf(newNameBuf, sizeof(newNameBuf), "%s", newName.constData());
   const int ret = mng_CheckIfPageOwned(&pl, TableUser);
   if (ret < 0)
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   else if (ret == 1)
     mng_RenamePage(Sounds[n].name, newNameBuf, PAGETYPE_SOUND);
   else if (ret == 2) {
     snprintf(GlobalTrackLocks[p].name, sizeof(GlobalTrackLocks[p].name), "%s", newName.constData());
     mng_ReplacePage(GlobalTrackLocks[p].name, newNameBuf, n, PAGETYPE_SOUND, 1);
   } else if (ret == 0) {
-    OutrageMessageBox("You don't own this page.  Get Jason now!");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You don't own this page.  Get Jason now!");
     mng_FreeTrackLock(p);
     mng_EraseLocker();
     return;

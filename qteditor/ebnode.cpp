@@ -21,7 +21,8 @@
 // BNode rendering is handled by EditorView::renderBNodes() in OpenGL.
 
 #include <QtGlobal>
-#include "qt_messagebox.h"
+#include <QMessageBox>
+
 #include <limits.h>
 #include "logger/log.h"
 
@@ -499,7 +500,7 @@ int EBNode_AddNode(int roomnum, vector *pnt, bool f_from_editor, bool f_check_fo
   BNode_verified = false;
 
   if (nlist->num_nodes >= MAX_BNODES_PER_ROOM) {
-    OutrageMessageBox("Too many BOA Nodes for this room/region.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Too many BOA Nodes for this room/region.");
     return -1;
   }
 
@@ -515,7 +516,7 @@ int EBNode_AddNode(int roomnum, vector *pnt, bool f_from_editor, bool f_check_fo
 
     if (f_really_close_neighbor) {
       if (f_from_editor)
-        OutrageMessageBox("This node is really close to another one and isn't needed.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This node is really close to another one and isn't needed.");
       return -1;
     }
   }
@@ -780,7 +781,7 @@ static void EBNode_MakeDefaultTerrainNodes(int region) {
 
 void EBNode_MakeFirstPass() {
   if (BNode_allocated) {
-    OutrageMessageBox("The BNode system is already made.\nUse the other functions to modify the graph.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "The BNode system is already made.\nUse the other functions to modify the graph.");
     return;
   }
 
@@ -866,7 +867,7 @@ int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom) {
     fate = fvi_FindIntersection(&fq, &hit_info);
 
     if (fate != HIT_NONE) {
-      OutrageMessageBox("You can only do this function if the 2 nodes can\nsee each other or are in the same room.\n");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You can only do this function if the 2 nodes can\nsee each other or are in the same room.\n");
       return -1;
     }
   }

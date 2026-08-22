@@ -19,6 +19,7 @@
 #include "megacell_dialog.h"
 #include "ui_megacell.h"
 
+#include <QMessageBox>
 #include <QInputDialog>
 #include <QLabel>
 #include <QPushButton>
@@ -26,7 +27,7 @@
 #include "d3edit.h"
 #include "manage.h"
 #include "megacell.h"
-#include "qt_messagebox.h"
+
 
 
 MegacellDialog::MegacellDialog(QWidget *parent)
@@ -74,7 +75,7 @@ void MegacellDialog::onNew() {
       return;
     }
   }
-  OutrageMessageBox("No free megacell slots.");
+  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No free megacell slots.");
 }
 
 void MegacellDialog::onDelete() {
@@ -90,13 +91,13 @@ void MegacellDialog::onDelete() {
 void MegacellDialog::onLock() {
   if (Num_megacells < 1)
     return;
-  OutrageMessageBox("Megacell locked.");
+  QMessageBox::information(this, "Success", "Megacell locked.");
 }
 
 void MegacellDialog::onCheckin() {
   if (Num_megacells < 1)
     return;
-  OutrageMessageBox("Megacell checked in.");
+  QMessageBox::information(this, "Success", "Megacell checked in.");
 }
 
 void MegacellDialog::onPrev() {

@@ -19,6 +19,7 @@
 #include "world_objects_generic_dialog.h"
 #include "ui_worldobjectsgeneric.h"
 
+#include <QMessageBox>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFileDialog>
@@ -33,7 +34,7 @@
 
 #include "bitmap.h"
 #include "cfile.h"
-#include "qt_messagebox.h"
+
 
 #include "ddio.h"
 #include "gametexture.h"
@@ -565,7 +566,7 @@ void WorldObjectsGenericDialog::onUsesPhysics(bool checked) {
 
 void WorldObjectsGenericDialog::onAddNew() {
   if (!Network_up) {
-    OutrageMessageBox("Sorry babe, the network is down.  This action is a no-no.\n");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sorry babe, the network is down.  This action is a no-no.\n");
     return;
   }
 
@@ -581,13 +582,13 @@ void WorldObjectsGenericDialog::onAddNew() {
 
   std::filesystem::path tmp = ChangePolyModelName(pathname.toStdString());
   if (FindPolyModelName(fname) != -1) {
-    OutrageMessageBox("You must rename your model to something else because there is already a model with that name!");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must rename your model to something else because there is already a model with that name!");
     return;
   }
 
   const int img_handle = LoadPolyModel(pathname.toStdString(), 0);
   if (img_handle < 0) {
-    OutrageMessageBox("Couldn't open that model file.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't open that model file.");
     return;
   }
 
@@ -605,13 +606,13 @@ void WorldObjectsGenericDialog::onAddNew() {
   cur_name[0] = toupper(cur_name[0]);
 
   if (FindObjectIDName(cur_name) != -1) {
-    OutrageMessageBox("That name is taken, please choose another.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
 
   const int object_handle = AllocObjectID(m_type, true, true, true);
   if (object_handle == -1) {
-    OutrageMessageBox("Cannot add object: There are no free object slots.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot add object: There are no free object slots.");
     return;
   }
 
@@ -664,9 +665,9 @@ void WorldObjectsGenericDialog::onCheckIn() {
 
   const int r = mng_CheckIfPageOwned(&temp_pl, TableUser);
   if (r < 0)
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   else if (r == 0)
-    OutrageMessageBox(InfoString);
+    QMessageBox::information(this, "Information", InfoString);
   else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
@@ -675,7 +676,7 @@ void WorldObjectsGenericDialog::onCheckIn() {
       return;
     }
     if (!mng_ReplacePage(Object_info[m_current].name, Object_info[m_current].name, m_current, PAGETYPE_GENERIC, 0)) {
-      OutrageMessageBox(ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
     } else {
       std::filesystem::path srcname = LocalModelsDir / Poly_models[Object_info[m_current].render_handle].name;
       std::filesystem::path destname = NetModelsDir / Poly_models[Object_info[m_current].render_handle].name;
@@ -690,7 +691,7 @@ void WorldObjectsGenericDialog::onCheckIn() {
         destname = NetModelsDir / Poly_models[Object_info[m_current].lo_render_handle].name;
         cf_CopyFile(destname, srcname);
       }
-      OutrageMessageBox("Object checked in.");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object checked in.");
       Q_ASSERT(mng_DeletePage(Object_info[m_current].name, PAGETYPE_GENERIC, 1) == 1);
       mng_EraseLocker();
       const int p = mng_FindTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC);
@@ -713,7 +714,7 @@ void WorldObjectsGenericDialog::onDelete() {
     return;
   const int tl = mng_FindTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC);
   if (tl == -1) {
-    OutrageMessageBox("This object is not yours to delete.  Lock first.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This object is not yours to delete.  Lock first.");
     return;
   }
   if (QMessageBox::question(this, "Delete object",
@@ -748,7 +749,7 @@ void WorldObjectsGenericDialog::onDelete() {
     FreePolyModel(Object_info[old_current].lo_render_handle);
   FreeObjectID(old_current);
   mng_EraseLocker();
-  OutrageMessageBox("Object deleted.");
+  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object deleted.");
   RemapStaticIDs();
   updateDialog();
 }
@@ -766,17 +767,17 @@ void WorldObjectsGenericDialog::onLock() {
 
   const int r = mng_CheckIfPageLocked(&temp_pl);
   if (r == 2) {
-    if (OutrageMessageBox(MBOX_YESNO,
+    if (QMessageBox::question(this, "Are you sure?",
                           "This page is not even in the table file, or the database maybe corrupt.  Override to "
-                          "'Unlocked'? (Select NO if you don't know what you're doing)") == 1) {
+                              "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
       snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
         QMessageBox::critical(this, "Error!", ErrorString);
     }
   } else if (r < 0) {
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   } else if (r == 1) {
-    OutrageMessageBox(InfoString);
+    QMessageBox::information(this, "Information", InfoString);
   } else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
@@ -787,17 +788,17 @@ void WorldObjectsGenericDialog::onLock() {
     if (mng_FindSpecificGenericPage(temp_pl.name, &page)) {
       if (mng_AssignGenericPageToObjInfo(&page, m_current)) {
         if (!mng_ReplacePage(Object_info[m_current].name, Object_info[m_current].name, m_current, PAGETYPE_GENERIC, 1)) {
-          OutrageMessageBox("There was problem writing that page locally!");
+          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
           mng_EraseLocker();
           return;
         }
-        OutrageMessageBox("Object locked.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object locked.");
       } else {
-        OutrageMessageBox("There was a problem loading this object.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this object.");
       }
       mng_AllocTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC);
     } else {
-      OutrageMessageBox("Couldn't find that object in the table file!");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that object in the table file!");
     }
   }
   mng_EraseLocker();
@@ -810,8 +811,8 @@ void WorldObjectsGenericDialog::onUndoLock() {
   const int tl = mng_FindTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC);
   if (tl == -1)
     return;
-  if (OutrageMessageBox(MBOX_YESNO,
-                        "Are you sure you want to undo your lock and lose any changes you may have made?") != 1)
+  if (QMessageBox::question(this, "Are you sure?",
+                            "Are you sure you want to undo your lock and lose any changes you may have made?") == QMessageBox::No)
     return;
   if (!mng_MakeLocker())
     return;
@@ -873,8 +874,8 @@ void WorldObjectsGenericDialog::onPaste() {
   if (!Network_up || !Copy_object_used)
     return;
   if (Copy_object.type != m_type) {
-    if (OutrageMessageBox(MBOX_YESNO, "You are about to paste a %s object as a %s.  Is this OK?",
-                          Object_type_names[Copy_object.type], Object_type_names[m_type]) != 1)
+    if (QMessageBox::question(this, "Are you sure?", "You are about to paste a %s object as a %s.  Is this OK?",
+                              Object_type_names[Copy_object.type], Object_type_names[m_type]) == QMessageBox::No)
       return;
   }
 
@@ -889,7 +890,7 @@ void WorldObjectsGenericDialog::onPaste() {
 
   const int n = AllocObjectID(m_type, true, true, true);
   if (n == -1) {
-    OutrageMessageBox("Cannot paste object: There are no free object slots.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot paste object: There are no free object slots.");
     return;
   }
 

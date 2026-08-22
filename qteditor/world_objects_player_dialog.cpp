@@ -29,7 +29,7 @@
 #include <QRadioButton>
 
 #include "cfile.h"
-#include "qt_messagebox.h"
+
 #include "d3edit.h"
 
 #include "ddio.h"
@@ -221,7 +221,7 @@ void WorldObjectsPlayerDialog::updateDialog() {
 
 void WorldObjectsPlayerDialog::onAddPship() {
   if (!Network_up) {
-    OutrageMessageBox("Sorry babe, the network is down.  This action is a no-no.\n");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sorry babe, the network is down.  This action is a no-no.\n");
     return;
   }
 
@@ -237,7 +237,7 @@ void WorldObjectsPlayerDialog::onAddPship() {
 
   const int img_handle = LoadShipImage(pathBytes.constData());
   if (img_handle < 0) {
-    OutrageMessageBox("Couldn't open that model file.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't open that model file.");
     return;
   }
 
@@ -275,7 +275,7 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
 
   const int tl = mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP);
   if (tl == -1) {
-    OutrageMessageBox("This ship is not yours to delete.  Lock first.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This ship is not yours to delete.  Lock first.");
     return;
   }
 
@@ -307,7 +307,7 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
   FreeShip(n);
   mng_EraseLocker();
 
-  OutrageMessageBox("Ship deleted.");
+  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Ship deleted.");
   RemapShips();
   updateDialog();
 }
@@ -327,17 +327,17 @@ void WorldObjectsPlayerDialog::onPshipLock() {
 
   const int r = mng_CheckIfPageLocked(&temp_pl);
   if (r == 2) {
-    if (OutrageMessageBox(MBOX_YESNO,
+    if (QMessageBox::question(this, "Are you sure?",
                           "This page is not even in the table file, or the database maybe corrupt.  Override to "
-                          "'Unlocked'? (Select NO if you don't know what you're doing)") == 1) {
+                              "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
       snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
         QMessageBox::critical(this, "Error!", ErrorString);
     }
   } else if (r < 0) {
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   } else if (r == 1) {
-    OutrageMessageBox(InfoString);
+    QMessageBox::information(this, "Information", InfoString);
   } else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
@@ -347,18 +347,18 @@ void WorldObjectsPlayerDialog::onPshipLock() {
     } else if (mng_FindSpecificShipPage(temp_pl.name, &shippage)) {
       if (mng_AssignShipPageToShip(&shippage, n)) {
         if (!mng_ReplacePage(Ships[n].name, Ships[n].name, n, PAGETYPE_SHIP, 1)) {
-          OutrageMessageBox("There was problem writing that page locally!");
+          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
           mng_EraseLocker();
           return;
         }
-        OutrageMessageBox("Ship locked.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Ship locked.");
       } else {
-        OutrageMessageBox("There was a problem loading this ship.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this ship.");
       }
       mng_AllocTrackLock(Ships[n].name, PAGETYPE_SHIP);
       updateDialog();
     } else {
-      OutrageMessageBox("Couldn't find that ship in the table file!");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that ship in the table file!");
     }
   }
   mng_EraseLocker();
@@ -378,9 +378,9 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
 
   const int r = mng_CheckIfPageOwned(&temp_pl, TableUser);
   if (r < 0)
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   else if (r == 0)
-    OutrageMessageBox(InfoString);
+    QMessageBox::information(this, "Information", InfoString);
   else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
@@ -388,7 +388,7 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
       mng_EraseLocker();
       return;
     } else if (!mng_ReplacePage(Ships[n].name, Ships[n].name, n, PAGETYPE_SHIP, 0)) {
-      OutrageMessageBox(ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
     } else {
       std::filesystem::path srcname = LocalModelsDir / Poly_models[Ships[n].model_handle].name;
       std::filesystem::path destname = NetModelsDir / Poly_models[Ships[n].model_handle].name;
@@ -414,7 +414,7 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
         cf_CopyFile(destname, srcname);
       }
 
-      OutrageMessageBox("Ship checked in.");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Ship checked in.");
 
       Q_ASSERT(mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 1) == 1);
       mng_EraseLocker();
@@ -475,7 +475,7 @@ void WorldObjectsPlayerDialog::onPshipLoadModel() {
   const QByteArray pathBytes = pathname.toLocal8Bit();
   const int img_handle = LoadPolyModel(std::filesystem::path(pathBytes.constData()), 0);
   if (img_handle < 0) {
-    OutrageMessageBox("Couldn't open that animation/model file.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't open that animation/model file.");
     return;
   }
 
@@ -494,7 +494,7 @@ void WorldObjectsPlayerDialog::onPshipLoadModel() {
     Ships[ship_handle].lo_render_handle = img_handle;
   }
 
-  if (OutrageMessageBox(MBOX_YESNO, "Would you like to clear the weapon battery info?") == 1) {
+  if (QMessageBox::question(this, "Are you sure?", "Would you like to clear the weapon battery info?") == QMessageBox::Yes) {
     WBClearInfo(Ships[ship_handle].static_wb);
   }
 
@@ -513,7 +513,7 @@ void WorldObjectsPlayerDialog::onPshipDyingModel() {
   const QByteArray pathBytes = pathname.toLocal8Bit();
   const int img_handle = LoadShipImage(pathBytes.constData());
   if (img_handle < 0) {
-    OutrageMessageBox("Couldn't open that animation/model file.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't open that animation/model file.");
     return;
   }
 
@@ -570,7 +570,7 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
 
   const int p = mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP);
   if (p == -1) {
-    OutrageMessageBox("You must lock this ship if you wish to change its name.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this ship if you wish to change its name.");
     edit->setText(Ships[n].name);
     return;
   }
@@ -578,7 +578,7 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
   char name[PAGENAME_LEN];
   snprintf(name, sizeof(name), "%s", edit->text().toLocal8Bit().constData());
   if (FindShipName(name) != -1) {
-    OutrageMessageBox("There already is a ship with that name...choose another name.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There already is a ship with that name...choose another name.");
     edit->setText(Ships[n].name);
     return;
   }
@@ -592,7 +592,7 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
 
   const int ret = mng_CheckIfPageOwned(&pl, TableUser);
   if (ret < 0)
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   else if (ret == 1)
     mng_RenamePage(Ships[n].name, name, PAGETYPE_SHIP);
   else if (ret == 2) {
@@ -601,7 +601,7 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
     snprintf(Ships[n].name, sizeof(Ships[n].name), "%s", name);
     mng_ReplacePage(oldname, Ships[n].name, n, PAGETYPE_SHIP, 1);
   } else if (ret == 0) {
-    OutrageMessageBox("You don't own this page.  Get Jason now!");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You don't own this page.  Get Jason now!");
     mng_FreeTrackLock(p);
     return;
   }

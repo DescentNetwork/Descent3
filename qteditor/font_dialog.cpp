@@ -23,8 +23,6 @@
 #include <QMessageBox>
 #include <QPushButton>
 
-#include "qt_messagebox.h"
-
 
 FontDialog::FontDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::FontDialog)
@@ -32,11 +30,11 @@ FontDialog::FontDialog(QWidget *parent)
   ui->setupUi(this);
   if (QPushButton *b = ui->IDC_NEW)
     connect(b, &QPushButton::clicked, this, [this]() {
-      OutrageMessageBox("New font: not implemented (font engine pending).");
+      QMessageBox::critical(this, "Unimplemented functionality", "New font: not implemented (font engine pending).");
     });
   if (QPushButton *b = ui->IDC_OPEN)
     connect(b, &QPushButton::clicked, this, [this]() {
-      OutrageMessageBox("Open font: not implemented (font engine pending).");
+      QMessageBox::critical(this, "Unimplemented functionality", "Open font: not implemented (font engine pending).");
     });
   if (QPushButton *save = ui->IDC_SAVE)
     connect(save, &QPushButton::clicked, this, &FontDialog::onOk);

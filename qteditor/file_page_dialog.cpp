@@ -24,7 +24,6 @@
 #include <QPushButton>
 
 #include "manage.h"
-#include "qt_messagebox.h"
 
 
 
@@ -63,10 +62,6 @@ void FilePageDialog::updateDialog() {
 }
 
 void FilePageDialog::onAddFile() {
-  if (!Network_up) {
-    OutrageMessageBox("Sorry babe, the network is down.  This action is a no-no.\n");
-    return;
-  }
   QMessageBox::information(this, "Add file", "Select a table file to add (file browser not yet ported).");
 }
 

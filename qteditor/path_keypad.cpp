@@ -19,6 +19,7 @@
 #include "path_keypad.h"
 #include "ui_pathkeypad.h"
 
+#include <QMessageBox>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QInputDialog>
@@ -27,7 +28,7 @@
 #include <QPushButton>
 #include <QRadioButton>
 
-#include "qt_messagebox.h"
+
 #include "d3edit.h"
 #include "gamepath.h"
 #include "vecmat.h"
@@ -225,7 +226,7 @@ void PathKeypad::onDeleteNode() {
   if (p < 0 || n < 0)
     return;
   if (GamePaths[p].num_nodes == 1) {
-    OutrageMessageBox("Cannot delete the only node in a path.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot delete the only node in a path.");
     return;
   }
   DeleteNodeFromPath(p, n);

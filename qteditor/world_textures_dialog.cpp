@@ -19,6 +19,7 @@
 #include "world_textures_dialog.h"
 #include "ui_worldtextures.h"
 
+#include <QMessageBox>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFileDialog>
@@ -29,7 +30,7 @@
 #include <QPushButton>
 #include <QRadioButton>
 
-#include "qt_messagebox.h"
+
 
 #include "ddio.h"
 #include "gametexture.h"
@@ -264,7 +265,7 @@ void WorldTexturesDialog::updateDialog() {
 
 void WorldTexturesDialog::onAddNew() {
   if (!Network_up) {
-    OutrageMessageBox("Sorry babe, the network is down.  This action is a no-no.\n");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sorry babe, the network is down.  This action is a no-no.\n");
     return;
   }
 
@@ -277,7 +278,7 @@ void WorldTexturesDialog::onAddNew() {
   const QByteArray pathBytes = pathname.toLocal8Bit();
   const int bm = LoadTextureImage(pathBytes.constData(), 0, 0, 0);
   if (bm < 0) {
-    OutrageMessageBox("Couldn't load that bitmap.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't load that bitmap.");
     return;
   }
   char fname[128];
@@ -285,7 +286,7 @@ void WorldTexturesDialog::onAddNew() {
   ddio_SplitPath(pathBytes.constData(), dir, fname, ext);
   const int handle = AllocTexture();
   if (handle == -1) {
-    OutrageMessageBox("Cannot add texture: no free slots.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot add texture: no free slots.");
     return;
   }
   snprintf(GameTextures[handle].name, sizeof(GameTextures[handle].name), "%s", fname);
@@ -299,7 +300,7 @@ void WorldTexturesDialog::onDelete() {
   const int n = D3EditState.texdlg_texture;
   const int tl = mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE);
   if (tl == -1) {
-    OutrageMessageBox("This texture is not yours to delete.  Lock first.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This texture is not yours to delete.  Lock first.");
     return;
   }
   if (QMessageBox::question(this, "Delete texture",
@@ -323,7 +324,7 @@ void WorldTexturesDialog::onDelete() {
   D3EditState.texdlg_texture = GetNextTexture(n);
   FreeTexture(n);
   mng_EraseLocker();
-  OutrageMessageBox("Texture deleted.");
+  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Texture deleted.");
   updateDialog();
 }
 
@@ -337,17 +338,17 @@ void WorldTexturesDialog::onLock() {
   temp_pl.pagetype = PAGETYPE_TEXTURE;
   const int r = mng_CheckIfPageLocked(&temp_pl);
   if (r == 2) {
-    if (OutrageMessageBox(MBOX_YESNO,
+    if (QMessageBox::question(this, "Are you sure?",
                           "This page is not even in the table file, or the database maybe corrupt.  Override to "
-                          "'Unlocked'? (Select NO if you don't know what you're doing)") == 1) {
+                              "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
       snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
         QMessageBox::critical(this, "Error!", ErrorString);
     }
   } else if (r < 0) {
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   } else if (r == 1) {
-    OutrageMessageBox(InfoString);
+    QMessageBox::information(this, "Information", InfoString);
   } else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
@@ -358,17 +359,17 @@ void WorldTexturesDialog::onLock() {
     if (mng_FindSpecificTexPage(temp_pl.name, &texturepage)) {
       if (mng_AssignTexPageToTexture(&texturepage, n)) {
         if (!mng_ReplacePage(GameTextures[n].name, GameTextures[n].name, n, PAGETYPE_TEXTURE, 1)) {
-          OutrageMessageBox("There was problem writing that page locally!");
+          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
           mng_EraseLocker();
           return;
         }
-        OutrageMessageBox("Texture locked.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Texture locked.");
       } else {
-        OutrageMessageBox("There was a problem loading this texture.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this texture.");
       }
       mng_AllocTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE);
     } else {
-      OutrageMessageBox("Couldn't find that texture in the table file!");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that texture in the table file!");
     }
   }
   mng_EraseLocker();
@@ -384,9 +385,9 @@ void WorldTexturesDialog::onCheckin() {
   temp_pl.pagetype = PAGETYPE_TEXTURE;
   const int r = mng_CheckIfPageOwned(&temp_pl, TableUser);
   if (r < 0)
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   else if (r == 0)
-    OutrageMessageBox(InfoString);
+    QMessageBox::information(this, "Information", InfoString);
   else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
@@ -395,9 +396,9 @@ void WorldTexturesDialog::onCheckin() {
       return;
     }
     if (!mng_ReplacePage(GameTextures[n].name, GameTextures[n].name, n, PAGETYPE_TEXTURE, 0))
-      OutrageMessageBox(ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
     else {
-      OutrageMessageBox("Texture checked in.");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Texture checked in.");
       Q_ASSERT(mng_DeletePage(GameTextures[n].name, PAGETYPE_TEXTURE, 1) == 1);
       mng_EraseLocker();
       const int p = mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE);
@@ -435,7 +436,7 @@ void WorldTexturesDialog::onChangeName() {
   const int n = D3EditState.texdlg_texture;
   const int p = mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE);
   if (p == -1) {
-    OutrageMessageBox("You must lock this texture if you wish to change its name.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this texture if you wish to change its name.");
     return;
   }
   bool ok = false;
@@ -444,7 +445,7 @@ void WorldTexturesDialog::onChangeName() {
   if (!ok || name.isEmpty())
     return;
   if (FindTextureName(name.toLocal8Bit().constData()) != -1) {
-    OutrageMessageBox("That name is taken, please choose another.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
   const QByteArray newName = name.toLocal8Bit();

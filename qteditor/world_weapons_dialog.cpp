@@ -28,7 +28,7 @@
 #include <QPushButton>
 #include <QRadioButton>
 
-#include "qt_messagebox.h"
+
 
 #include "manage.h"
 #include "physics_dialog.h"
@@ -389,7 +389,7 @@ void WorldWeaponsDialog::updateDialog() {
 
 void WorldWeaponsDialog::onAddWeapon() {
   if (!Network_up) {
-    OutrageMessageBox("Sorry babe, the network is down.  This action is a no-no.\n");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sorry babe, the network is down.  This action is a no-no.\n");
     return;
   }
   bool ok = false;
@@ -398,12 +398,12 @@ void WorldWeaponsDialog::onAddWeapon() {
   if (!ok || name.isEmpty())
     return;
   if (FindWeaponName(name.toLocal8Bit().constData()) != -1) {
-    OutrageMessageBox("There is already a weapon with that name.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There is already a weapon with that name.");
     return;
   }
   const int handle = AllocWeapon();
   if (handle == -1) {
-    OutrageMessageBox("Cannot add weapon: There are no free weapon slots.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot add weapon: There are no free weapon slots.");
     return;
   }
   snprintf(Weapons[handle].name, sizeof(Weapons[handle].name), "%s", name.toLocal8Bit().constData());
@@ -419,7 +419,7 @@ void WorldWeaponsDialog::onDeleteWeapon() {
     return;
   const int tl = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON);
   if (tl == -1) {
-    OutrageMessageBox("This weapon is not yours to delete.  Lock first.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This weapon is not yours to delete.  Lock first.");
     return;
   }
   if (QMessageBox::question(this, "Delete weapon",
@@ -443,7 +443,7 @@ void WorldWeaponsDialog::onDeleteWeapon() {
   D3EditState.current_weapon = GetNextWeapon(n);
   FreeWeapon(n);
   mng_EraseLocker();
-  OutrageMessageBox("Weapon deleted.");
+  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Weapon deleted.");
   RemapWeapons();
   updateDialog();
 }
@@ -460,17 +460,17 @@ void WorldWeaponsDialog::onLockWeapon() {
   temp_pl.pagetype = PAGETYPE_WEAPON;
   const int r = mng_CheckIfPageLocked(&temp_pl);
   if (r == 2) {
-    if (OutrageMessageBox(MBOX_YESNO,
+    if (QMessageBox::question(this, "Are you sure?",
                           "This page is not even in the table file, or the database maybe corrupt.  Override to "
-                          "'Unlocked'? (Select NO if you don't know what you're doing)") == 1) {
+                              "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
       snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
         QMessageBox::critical(this, "Error!", ErrorString);
     }
   } else if (r < 0) {
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   } else if (r == 1) {
-    OutrageMessageBox(InfoString);
+    QMessageBox::information(this, "Information", InfoString);
   } else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
@@ -481,17 +481,17 @@ void WorldWeaponsDialog::onLockWeapon() {
     if (mng_FindSpecificWeaponPage(temp_pl.name, &weaponpage, 0)) {
       if (mng_AssignWeaponPageToWeapon(&weaponpage, n)) {
         if (!mng_ReplacePage(Weapons[n].name, Weapons[n].name, n, PAGETYPE_WEAPON, 1)) {
-          OutrageMessageBox("There was problem writing that page locally!");
+          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
           mng_EraseLocker();
           return;
         }
-        OutrageMessageBox("Weapon locked.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Weapon locked.");
       } else {
-        OutrageMessageBox("There was a problem loading this weapon.");
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this weapon.");
       }
       mng_AllocTrackLock(Weapons[n].name, PAGETYPE_WEAPON);
     } else {
-      OutrageMessageBox("Couldn't find that weapon in the table file!");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that weapon in the table file!");
     }
   }
   mng_EraseLocker();
@@ -509,9 +509,9 @@ void WorldWeaponsDialog::onCheckinWeapon() {
   temp_pl.pagetype = PAGETYPE_WEAPON;
   const int r = mng_CheckIfPageOwned(&temp_pl, TableUser);
   if (r < 0)
-    OutrageMessageBox(ErrorString);
+    QMessageBox::critical(this, "Error!", ErrorString);
   else if (r == 0)
-    OutrageMessageBox(InfoString);
+    QMessageBox::information(this, "Information", InfoString);
   else {
     snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
@@ -520,9 +520,9 @@ void WorldWeaponsDialog::onCheckinWeapon() {
       return;
     }
     if (!mng_ReplacePage(Weapons[n].name, Weapons[n].name, n, PAGETYPE_WEAPON, 0))
-      OutrageMessageBox(ErrorString);
+      QMessageBox::critical(this, "Error!", ErrorString);
     else {
-      OutrageMessageBox("Weapon checked in.");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Weapon checked in.");
       Q_ASSERT(mng_DeletePage(Weapons[n].name, PAGETYPE_WEAPON, 1) == 1);
       mng_EraseLocker();
       const int p = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON);
@@ -576,19 +576,19 @@ void WorldWeaponsDialog::onOverride() {
 
 void WorldWeaponsDialog::onCopy() {
   if (mng_FindTrackLock(Weapons[D3EditState.current_weapon].name, PAGETYPE_WEAPON) == -1) {
-    OutrageMessageBox("You must lock this weapon before you can copy it.");
+    QMessageBox::warning(this, "Unable to copy", "You must lock this weapon before you can copy it.");
     return;
   }
-  OutrageMessageBox("Weapon copied.");
+  QMessageBox::information(this, "Success", "Weapon copied.");
 }
 
-void WorldWeaponsDialog::onPaste() { OutrageMessageBox("Weapon pasted."); }
+void WorldWeaponsDialog::onPaste() { QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Weapon pasted."); }
 
 void WorldWeaponsDialog::onChangeName() {
   const int n = D3EditState.current_weapon;
   const int p = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON);
   if (p == -1) {
-    OutrageMessageBox("You must lock this weapon if you wish to change its name.");
+    QMessageBox::warning(this, "Unable to rename", "You must lock this weapon if you wish to change its name.");
     return;
   }
   bool ok = false;
@@ -597,7 +597,7 @@ void WorldWeaponsDialog::onChangeName() {
   if (!ok || name.isEmpty())
     return;
   if (FindWeaponName(name.toLocal8Bit().constData()) != -1) {
-    OutrageMessageBox("That name is taken, please choose another.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
   snprintf(Weapons[n].name, sizeof(Weapons[n].name), "%s", name.toLocal8Bit().constData());

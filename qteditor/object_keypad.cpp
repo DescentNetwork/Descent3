@@ -19,6 +19,7 @@
 #include "object_keypad.h"
 #include "ui_objectkeypad.h"
 
+#include <QMessageBox>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
@@ -29,7 +30,7 @@
 #include "objinfo.h"
 #include "object.h"
 #include "object_ops.h"
-#include "qt_messagebox.h"
+
 #include "room.h"
 
 extern bool f_allow_objects_to_be_pushed_through_walls;
@@ -160,22 +161,23 @@ void ObjectKeypad::onRot90() {
   updateDialog();
 }
 
-void ObjectKeypad::onDeleteAll() {
-  if (OutrageMessageBox(MBOX_YESNO, "Delete all objects except the player?") != IDYES)
-    return;
-
-  for (int i = 0; i <= Highest_object_index; i++) {
-    if (Objects[i].type == OBJ_NONE || Objects[i].type == OBJ_ROOM)
-      continue;
-    if (&Objects[i] == Player_object)
-      continue;
-    if (Objects[i].type == OBJ_PLAYER)
-      continue;
-    ObjDelete(i);
+void ObjectKeypad::onDeleteAll()
+{
+  if(QMessageBox::question(this, "Are you sure?", "Delete all objects except the player?") == QMessageBox::Yes)
+  {
+    for (int i = 0; i <= Highest_object_index; i++) {
+      if (Objects[i].type == OBJ_NONE || Objects[i].type == OBJ_ROOM)
+        continue;
+      if (&Objects[i] == Player_object)
+        continue;
+      if (Objects[i].type == OBJ_PLAYER)
+        continue;
+      ObjDelete(i);
+    }
+    Cur_object_index = -1;
+    World_changed = true;
+    updateDialog();
   }
-  Cur_object_index = -1;
-  World_changed = true;
-  updateDialog();
 }
 
 void ObjectKeypad::onPushThroughWalls(bool checked) {

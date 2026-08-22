@@ -1493,7 +1493,7 @@ void MainWindow::onMarkRoom() {
 // Mark-by-number: prompts the user for a room index and updates Curroomp.
 // Returns the number entered or -1 if the dialog was cancelled.
 int MainWindow::onSelectRoomByNumber() {
-  // Use the MFC-equivalent of OutrageMessageBox("Select room number", "...").
+  // Use the MFC-equivalent of QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Select room number", "...").
   // QInputDialog::getInt is the natural Qt analogue; the test suite
   // dismisses it via dismissModals() so headless runs auto-cancel.
   bool ok = false;

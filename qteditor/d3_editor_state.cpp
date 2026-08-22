@@ -34,6 +34,8 @@
 #include <cstring>
 #include <filesystem>
 #include <QtGlobal>
+#include <QMessageBox>
+#include <QApplication>
 
 #include "d3edit.h"
 
@@ -165,7 +167,7 @@ uint8_t Show_paths = 1;
 
 int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector pos, matrix orient) {
   if (GamePaths[pathnum].num_nodes >= MAX_NODES_PER_PATH) {
-    OutrageMessageBox("Error: Path already has its maximum amount of nodes.");
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Path already has its maximum amount of nodes.");
     return -1;
   }
   for (int i = GamePaths[pathnum].num_nodes - 1; i > nodenum; i--)
@@ -198,7 +200,7 @@ int AllocGamePath() {
       return i;
     }
   }
-  OutrageMessageBox("ERROR: Too many paths to add another.");
+  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Too many paths to add another.");
   return -1;
 }
 
@@ -227,7 +229,7 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector *attempted_pos) {
     fq1.flags = FQ_TRANSPOINT | FQ_IGNORE_RENDER_THROUGH_PORTALS;
     fvi_FindIntersection(&fq1, &hit_info1);
     if (vm_VectorDistance(&hit_info.hit_pnt, &hit_info1.hit_pnt) > .005) {
-      OutrageMessageBox("Cannot move point.  No line of sight from the previous node to the new position.");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot move point.  No line of sight from the previous node to the new position.");
       return -1;
     }
   }
@@ -244,7 +246,7 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector *attempted_pos) {
     fq1.flags = FQ_TRANSPOINT | FQ_IGNORE_RENDER_THROUGH_PORTALS;
     fvi_FindIntersection(&fq1, &hit_info1);
     if (vm_VectorDistance(&hit_info.hit_pnt, &hit_info1.hit_pnt) > .005) {
-      OutrageMessageBox("Cannot move point.  No line of sight from the next node to the new position.");
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot move point.  No line of sight from the next node to the new position.");
       return -1;
     }
   }

@@ -27,11 +27,9 @@ void LightingStatusDialog::onTimer() {
 }
 
 void LightingStatusDialog::onStopClicked() {
-  auto reply = QMessageBox::question(this, "Light Question", "Are you sure you wish to stop lighting?",
-                                     QMessageBox::Yes | QMessageBox::No);
-  if (reply == QMessageBox::No)
-    return;
-
-  OutrageMessageBox("Lighting will stop at the next iteration, this might take a minute...");
-  rad_DoneCalculating = 1;
+  if(QMessageBox::question(this, "Light Question", "Are you sure you wish to stop lighting?") == QMessageBox::Yes)
+  {
+    QMessageBox::information(this, "Please wait", "Lighting will stop at the next iteration, this might take a minute...");
+    rad_DoneCalculating = 1;
+  }
 }

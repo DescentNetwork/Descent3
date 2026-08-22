@@ -23,6 +23,7 @@
 
 #include <algorithm>
 
+#include <QMessageBox>
 #include <QCheckBox>
 #include <QLabel>
 #include <QLineEdit>
@@ -476,7 +477,7 @@ void TerrainKeypad::onSmoothTerrain() {
 
   mem_free(src);
   BuildMinMaxTerrain();
-  OutrageMessageBox("Terrain smoothed!");
+  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Terrain smoothed!");
   World_changed = true;
 }
 

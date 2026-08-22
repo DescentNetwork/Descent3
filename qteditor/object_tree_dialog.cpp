@@ -165,27 +165,23 @@ void ObjectTreeDialog::onDelete() {
   Refresh();
 }
 
-void ObjectTreeDialog::onClearAll() {
-  QMessageBox::StandardButton reply =
-      QMessageBox::question(this, "Clear All Objects",
-                            "Will delete ALL objects except doors.  Are you sure?",
-                            QMessageBox::Yes | QMessageBox::No);
+void ObjectTreeDialog::onClearAll()
+{
+  if(QMessageBox::question(this, "Clear All Objects", "This will delete ALL objects except doors.  Are you sure?") == QMessageBox::Yes)
+  {
+    for (int i = 0; i <= Highest_object_index; i++) {
+      if (&Objects[i] == Player_object)
+        continue;
+      if (&Objects[i] == Viewer_object)
+        continue;
+      if (Objects[i].type == OBJ_DOOR)
+        continue;
+      if (Objects[i].type != OBJ_NONE)
+        ObjDelete(i);
+    }
 
-  if (reply != QMessageBox::Yes)
-    return;
-
-  for (int i = 0; i <= Highest_object_index; i++) {
-    if (&Objects[i] == Player_object)
-      continue;
-    if (&Objects[i] == Viewer_object)
-      continue;
-    if (Objects[i].type == OBJ_DOOR)
-      continue;
-    if (Objects[i].type != OBJ_NONE)
-      ObjDelete(i);
+    World_changed = true;
+    Cur_object_index = -1;
+    Refresh();
   }
-
-  World_changed = true;
-  Cur_object_index = -1;
-  Refresh();
 }
