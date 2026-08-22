@@ -30,9 +30,8 @@
 #include <QPushButton>
 #include <QRadioButton>
 
+#include <QFileInfo>
 
-
-#include "ddio.h"
 #include "gametexture.h"
 #include "manage.h"
 #include "sound_combo.h"
@@ -281,15 +280,13 @@ void WorldTexturesDialog::onAddNew() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't load that bitmap.");
     return;
   }
-  char fname[128];
-  char dir[128], ext[32];
-  ddio_SplitPath(pathBytes.constData(), dir, fname, ext);
+  QFileInfo fileInfo(pathname);
   const int handle = AllocTexture();
   if (handle == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot add texture: no free slots.");
     return;
   }
-  snprintf(GameTextures[handle].name, sizeof(GameTextures[handle].name), "%s", fname);
+  snprintf(GameTextures[handle].name, sizeof(GameTextures[handle].name), "%s", fileInfo.baseName().toLocal8Bit().constData());
   GameTextures[handle].bm_handle = bm;
   mng_AllocTrackLock(GameTextures[handle].name, PAGETYPE_TEXTURE);
   D3EditState.texdlg_texture = handle;
