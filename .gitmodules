@@ -1,4 +1,0 @@
-[submodule "descar"]
-	path = descar
-	url = https://github.com/DescentNetwork/descar.git
-#	url = git@github.com:DescentNetwork/descar.git
