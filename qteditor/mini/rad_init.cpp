@@ -27,7 +27,7 @@
 #include "rad_cast.h"
 #include "vecmat.h"
 #include <cstdlib>
-#include "mem.h"
+#include "mem/mem.h"
 
 
 // Some radiosity globals

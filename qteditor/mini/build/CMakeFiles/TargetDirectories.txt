@@ -1,0 +1,4 @@
+/workspace/qteditor/mini/build/CMakeFiles/qteditor_mini.dir
+/workspace/qteditor/mini/build/CMakeFiles/edit_cache.dir
+/workspace/qteditor/mini/build/CMakeFiles/rebuild_cache.dir
+/workspace/qteditor/mini/build/CMakeFiles/qteditor_mini_autogen.dir

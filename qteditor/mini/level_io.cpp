@@ -47,7 +47,7 @@
 #include "LoadLevel.h"
 #include "manage.h"
 #include "matcen.h"
-#include "mem.h"
+#include "mem/mem.h"
 //#include "moveworld.h"
 #include "object.h"
 #include "osiris_predefs.h"

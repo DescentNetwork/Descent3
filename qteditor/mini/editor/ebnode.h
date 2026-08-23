@@ -52,7 +52,7 @@
 
 #include "bnode.h"
 #include "room.h"
-#include "mem.h"
+#include "mem/mem.h"
 #include "vecmat.h"
 #include "3d.h"
 #include "gr.h"

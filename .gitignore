@@ -1,44 +1,52 @@
 ```
-# Build artifacts and compiled files
-*.o
-*.obj
-*.exe
-*.dll
-*.so
-*.a
-*.out
-*.pyc
-__pycache__/
+# CMake build artifacts
+qteditor/mini/build/
 
-# Dependencies and virtual environments
-node_modules/
-venv/
-.venv/
-.env
-.env.local
-*.env.*
+# Qt auto-generated files
+qteditor/mini/*/moc_*
+qteditor/mini/*/ui_*
 
-# Editor/IDE files
+# IDE files
 .vscode/
 .idea/
-*.swp
-*.swo
-*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
 
 # Logs
 *.log
 
-# CMake build directories
-build/
-cmake-build-*/
+# Temp files
+*.tmp
+*.swp
 
-# Qt build artifacts
-*.qm
-*.moc
-*.ui
-*.qrc
+# Environment files
+.env
+.env.local
+*.env.*
 
-# Compressed archives
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build outputs
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+*.a
+*.lib
+
+# Compressed files
 *.zip
 *.gz
 *.tar

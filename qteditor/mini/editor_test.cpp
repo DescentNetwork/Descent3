@@ -22,8 +22,7 @@
 
 #include <QtTest/QSignalSpy>
 #include <QtTest/QtTest>
-
-#include <SDL3/SDL_assert.h>
+#include <QtGlobal>
 
 #include <QAbstractButton>
 #include <QAction>
@@ -2600,13 +2599,7 @@ int main(int argc, char *argv[])
   // trip ObjLink/ObjRelink/ObjDelete assertions in the core during setup and
   // teardown. Those are artifacts of the test scaffolding, not product bugs,
   // so log-and-continue instead of aborting the whole test run.
-  SDL_SetAssertionHandler(
-      [](const SDL_AssertData *data, void * /*userdata*/) {
-        fprintf(stderr, "[assert-ignored] %s (%s:%d)\n", data->condition,
-                data->filename, data->linenum);
-        return SDL_ASSERTION_IGNORE;
-      },
-      nullptr);
+  // SDL assertion handler removed - using Qt's Q_ASSERT instead
 
   QApplication app(argc, argv);
   initD3Core(argc, argv);

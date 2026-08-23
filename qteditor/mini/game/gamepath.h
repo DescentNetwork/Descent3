@@ -42,7 +42,7 @@
 
 #include "3d.h"
 #include "manage.h"
-#include "mem.h"
+#include "mem/mem.h"
 #include "pstypes.h"
 #include "pserror.h"
 #include "vecmat.h"

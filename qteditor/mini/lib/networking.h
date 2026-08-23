@@ -158,10 +158,10 @@
 
 #include "pstypes.h"
 #include <cstdint>
+#include "win32_types_stub.h"
 
 #if defined(WIN32)
 // Windows includes
-#include <winsock.h>
 
 // helper macros for working with SOCKADDR_IN to make it look nicer between windows and Linux
 static inline void INADDR_SET_SUN_SADDR(struct in_addr *st, uint32_t value) { st->S_un.S_addr = value; }

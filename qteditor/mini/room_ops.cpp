@@ -33,7 +33,7 @@
 #include "d3edit.h"
 #include "door.h"
 #include "doorway.h"
-#include "mem.h"
+#include "mem/mem.h"
 
 #include "object.h"
 #include "polymodel.h"

@@ -24,7 +24,7 @@
 #include "radiosity.h"
 #include "hemicube.h"
 #include "d3edit.h"
-#include "mem.h"
+#include "mem/mem.h"
 
 #include <cstdlib>
 #include <algorithm>

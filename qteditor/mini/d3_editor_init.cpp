@@ -22,7 +22,7 @@
 
 std::filesystem::path orig_pwd;
 
-#include <SDL3/SDL.h>
+#include <SDL2/SDL.h>
 
 #include <QSettings>
 

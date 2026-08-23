@@ -32,7 +32,7 @@
 #include "radiosity.h"
 #include "lightmap_info.h"
 #include "object_lighting.h"
-#include "mem.h"
+#include "mem/mem.h"
 
 
 void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int facenum) {

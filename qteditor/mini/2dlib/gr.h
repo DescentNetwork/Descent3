@@ -105,6 +105,7 @@
 #define _GR_H
 
 #include "Ddgr.h"
+#include <QtGlobal>
 #include "fix.h"
 #include "pserror.h"
 
@@ -220,15 +221,15 @@ public: // Accessor functions
       return m_FontList[m_FontHandle].name;
   };
   int min_ascii() const {
-    ASSERT(m_FontHandle > -1);
+    Q_ASSERT(m_FontHandle > -1);
     return m_FontList[m_FontHandle].font.min_ascii;
   };
   int max_ascii() const {
-    ASSERT(m_FontHandle > -1);
+    Q_ASSERT(m_FontHandle > -1);
     return m_FontList[m_FontHandle].font.max_ascii;
   };
   int height() const {
-    ASSERT(m_FontHandle > -1);
+    Q_ASSERT(m_FontHandle > -1);
     return m_FontList[m_FontHandle].font.height;
   };
   int get_char_info(int ch, int *width);
@@ -305,28 +306,28 @@ public:
   void free(); // non-dynamic version
 
   int width() const {
-    ASSERT(m_SurfInit);
+    Q_ASSERT(m_SurfInit);
     return ddsfObj.w;
   };
   int height() const {
-    ASSERT(m_SurfInit);
+    Q_ASSERT(m_SurfInit);
     return ddsfObj.h;
   };
   int bpp() const {
-    ASSERT(m_SurfInit);
+    Q_ASSERT(m_SurfInit);
     return ddsfObj.bpp;
   };
   unsigned flags() const {
-    ASSERT(m_SurfInit);
+    Q_ASSERT(m_SurfInit);
     return ddsfObj.flags;
   };
 
   int rowsize() const {
-    ASSERT(m_SurfInit);
+    Q_ASSERT(m_SurfInit);
     return m_DataRowsize;
   };
   char *data() const {
-    ASSERT(m_SurfInit);
+    Q_ASSERT(m_SurfInit);
     return m_DataPtr;
   };
 

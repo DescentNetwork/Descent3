@@ -37,7 +37,7 @@
 #include "object.h"
 #include "room.h"
 #include "gamepath.h"
-#include "mem.h"
+#include "mem/mem.h"
 
 
 #include "editline_dialog.h"

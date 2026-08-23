@@ -42,7 +42,7 @@
 #include "generic_death_dialog.h"
 #include "genericpage.h"
 #include "manage.h"
-#include "mem.h"
+#include "mem/mem.h"
 #include "objinfo.h"
 #include "objinit.h"
 #include "object.h"

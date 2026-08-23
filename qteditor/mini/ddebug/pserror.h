@@ -90,7 +90,7 @@
  * Got debug callbacks working when you hit an Int3.
  *
  * 5     2/20/98 12:11p Matt
- * Changed ASSERT() to print its own mono message and call debug_break
+ * Changed Q_ASSERT() to print its own mono message and call debug_break
  * directly, instead of using Int3().
  *
  * 4     12/01/97 2:12p Samir
@@ -180,14 +180,14 @@ void DumpTextToClipboard(char *text);
 //////////////////////////////////////////////////////////////////////////////
 //	development debugging functions
 //	adds a function to be called when a debug break occurs.
-//	undefine any ASSERT macro previously defined.
-#ifdef ASSERT
-#undef ASSERT
+//	undefine any Q_ASSERT macro previously defined.
+#ifdef Q_ASSERT
+#undef Q_ASSERT
 #endif
 
 //	this callback is invoked when a DEBUG_BREAK macro is used.
 //		arguments
-//			style = 1 if ASSERT
+//			style = 1 if Q_ASSERT
 //					= 0 if Int3 debugger break.
 extern void (*DebugBreak_callback_stop)();
 extern void (*DebugBreak_callback_resume)();
@@ -220,7 +220,7 @@ static inline void SetDebugBreakHandlers(void (*stop)(), void (*resume)()) {
   } while (0)
 
 // Like the standard C assert(), but if the condition failed and debugging on does a SDL_assert() with debug window.
-#define ASSERT(x)                                                                                                      \
+#define Q_ASSERT(x)                                                                                                      \
   do {                                                                                                                 \
     if (!(x)) {                                                                                                        \
       LOG_ERROR("Assertion failed (%s) in %s:%d.", #x, __FILE__, __LINE__);                                     \
@@ -230,7 +230,7 @@ static inline void SetDebugBreakHandlers(void (*stop)(), void (*resume)()) {
 
 #else
 #define DEBUG_BREAK()
-#define ASSERT(x)
+#define Q_ASSERT(x)
 #define Int3()
 #endif
 #endif

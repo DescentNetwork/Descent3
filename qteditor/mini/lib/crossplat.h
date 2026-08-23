@@ -28,7 +28,7 @@
 #include <cstdlib> // _MAX_PATH, _MAX_FNAME, _MAX_EXT for WIN32
 #include <io.h>    // _chmod
 
-#elif defined(POSIX)
+#elif defined(POSIX) || defined(__linux__) || defined(__APPLE__) || defined(__unix__)
 
 #include <cctype>      // tolower, toupper
 #include <cstring>     // strcasecmp, strncasecmp

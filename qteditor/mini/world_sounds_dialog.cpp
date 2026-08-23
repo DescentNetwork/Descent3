@@ -35,7 +35,7 @@
 
 #include "d3edit.h"
 
-#include "hlsoundlib.h"
+#include "sndlib/hlsoundlib.h"
 #include "manage.h"
 #include "soundpage.h"
 #include "soundload.h"

@@ -19,7 +19,7 @@
 #include "editor_settings.h"
 
 #include "d3edit.h"
-#include "slew.h"
+#include "lib/slew.h"
 
 #include <QSettings>
 

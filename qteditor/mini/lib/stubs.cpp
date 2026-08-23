@@ -45,3 +45,12 @@ void AI_Frame(void) {}
 // Multiplayer stubs  
 int MultiInit(void) { return 0; }
 void MultiClose(void) {}
+
+// Stub implementation of FindPointRoom for editor_lighting.cpp
+int FindPointRoom(vector *pnt) {
+  // Simplified stub - returns room 0 for any point
+  // Full implementation would check all rooms
+  if (pnt == NULL)
+    return -1;
+  return 0;
+}

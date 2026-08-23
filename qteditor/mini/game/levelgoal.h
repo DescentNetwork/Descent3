@@ -23,7 +23,7 @@
 #include "object.h"
 #include "cfile.h"
 #include <cstdlib>
-#include "mem.h"
+#include "mem/mem.h"
 #include "levelgoal_external.h"
 
 class litem {

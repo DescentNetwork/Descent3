@@ -20,7 +20,7 @@
 // The D3 core is compiled without the EDITOR define, so this is re-provided
 // here for the Qt port.
 #include "editor_room_state.h"
-#include "mem.h"
+#include "mem/mem.h"
 #include "terrain.h"
 #include "slew.h"
 #include "manage.h"
@@ -31,6 +31,7 @@
 #include "room.h"
 #include "vecmat.h"
 #include <cstdarg>
+#include <atomic>
 #include <cstring>
 #include <filesystem>
 #include <QtGlobal>

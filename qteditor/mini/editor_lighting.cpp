@@ -42,6 +42,7 @@
 #include "descent.h"
 #include "room.h"
 #include "lightmap.h"
+#include "room_external.h"
 #include "polymodel.h"
 #include "terrain.h"
 #include "radiosity.h"
@@ -53,7 +54,7 @@
 #include "bsp.h"
 #include "special_face.h"
 #include "BOA.h"
-#include "mem.h"
+#include "mem/mem.h"
 
 
 struct spec_vertex {

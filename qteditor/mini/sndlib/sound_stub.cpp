@@ -1,6 +1,6 @@
 // Stub implementations for sound library functions
 
-#include "hlsoundlib.h"
+#include "sndlib/hlsoundlib.h"
 #include "mixer.h"
 
 // Initialize sound system (stub)

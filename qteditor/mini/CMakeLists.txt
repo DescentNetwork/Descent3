@@ -43,54 +43,34 @@ include_directories(
     ${OPENGL_INCLUDE_DIR}
 )
 
-# Source files from qteditor directory
-set(QTEDITOR_SOURCES
-    main.cpp
-    main_window.cpp
-    d3_editor_init.cpp
-    d3_editor_state.cpp
-    editor_file_dialogs.cpp
-    editor_lighting.cpp
-    editor_object_lighting.cpp
-    editor_settings.cpp
-    editor_view.cpp
-    level_io.cpp
-    obj_move_manager.cpp
-    object_ops.cpp
-    room_ops.cpp
-    rad_cast.cpp
-    rad_hemicube.cpp
-    rad_init.cpp
-    rad_stubs.cpp
-    terrain_keypad.cpp
-    # Add more source files as needed
+# Collect all source files from root and subdirectories
+file(GLOB QTEDITOR_SOURCES 
+    "*.cpp"
+    "lib/*.cpp"
+    "editor/*.cpp"
+    "game/*.cpp"
+    "2dlib/*.cpp"
+    "mem/*.cpp"
+    "sndlib/*.cpp"
 )
-
-# Header files
-set(QTEDITOR_HEADERS
-    d3edit.h
-    main_window.h
-    d3_editor_init.h
-    editor_lighting.h
-    editor_room_state.h
-    editor_settings.h
-    editor_view.h
-    level_io.h
-    obj_move_manager.h
-    object_ops.h
-    radiosity.h
-    # Add more header files as needed
+file(GLOB QTEDITOR_HEADERS 
+    "*.h"
+    "lib/*.h"
+    "editor/*.h"
+    "game/*.h"
+    "2dlib/*.h"
+    "mem/*.h"
+    "sndlib/*.h"
 )
-
-# UI files
-set(QTEDITOR_UI
-    # Add .ui files here if any
-)
+file(GLOB QTEDITOR_UI "ui/*.ui")
 
 # Resources
 set(QTEDITOR_RESOURCES
     resources.qrc
 )
+
+# Set UIC search path for UI files
+set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
 
 # Create executable
 add_executable(qteditor_mini
