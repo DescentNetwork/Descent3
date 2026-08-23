@@ -14532,6 +14532,8 @@ CMakeFiles/qteditor_mini.dir/editor_lighting.cpp.o: /workspace/qteditor/mini/edi
   /usr/include/x86_64-linux-gnu/qt5/QtGui/qcursor.h \
   /usr/include/x86_64-linux-gnu/qt5/QtGui/qkeysequence.h \
   /workspace/qteditor/mini/logger/log.h \
+  /workspace/qteditor/mini/lib/pserror.h \
+  /workspace/qteditor/mini/lib/debug.h \
   /usr/include/c++/12/cmath \
   /usr/include/math.h \
   /usr/include/x86_64-linux-gnu/bits/math-vector.h \
@@ -14628,7 +14630,6 @@ CMakeFiles/qteditor_mini.dir/editor_lighting.cpp.o: /workspace/qteditor/mini/edi
   /workspace/qteditor/mini/lib/Ddgr.h \
   /workspace/qteditor/mini/lib/Macros.h \
   /workspace/qteditor/mini/lib/pserror.h \
-  /workspace/qteditor/mini/lib/debug.h \
   /workspace/qteditor/mini/lib/room.h \
   /workspace/qteditor/mini/lib/gametexture.h \
   /workspace/qteditor/mini/lib/room_external.h \
@@ -14649,6 +14650,7 @@ CMakeFiles/qteditor_mini.dir/editor_lighting.cpp.o: /workspace/qteditor/mini/edi
   /workspace/qteditor/mini/game/lnxapp.h \
   /workspace/qteditor/mini/lib/crossplat.h \
   /workspace/qteditor/mini/lib/lightmap.h \
+  /workspace/qteditor/mini/lib/room_external.h \
   /workspace/qteditor/mini/lib/polymodel.h \
   /workspace/qteditor/mini/lib/3d.h \
   /workspace/qteditor/mini/lib/terrain.h \
@@ -14667,7 +14669,6 @@ CMakeFiles/qteditor_mini.dir/editor_lighting.cpp.o: /workspace/qteditor/mini/edi
 
 CMakeFiles/qteditor_mini.dir/editor_object_lighting.cpp.o: /workspace/qteditor/mini/editor_object_lighting.cpp \
   /usr/include/stdc-predef.h \
-  /workspace/qteditor/mini/logger/log.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/QtGlobal \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qglobal.h \
   /usr/include/c++/12/type_traits \
@@ -14779,6 +14780,9 @@ CMakeFiles/qteditor_mini.dir/editor_object_lighting.cpp.o: /workspace/qteditor/m
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qglobalstatic.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qnumeric.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qversiontagging.h \
+  /workspace/qteditor/mini/logger/log.h \
+  /workspace/qteditor/mini/lib/pserror.h \
+  /workspace/qteditor/mini/lib/debug.h \
   /usr/include/c++/12/cmath \
   /usr/include/math.h \
   /usr/include/x86_64-linux-gnu/bits/math-vector.h \
@@ -14999,7 +15003,6 @@ CMakeFiles/qteditor_mini.dir/editor_object_lighting.cpp.o: /workspace/qteditor/m
   /workspace/qteditor/mini/lib/Ddgr.h \
   /workspace/qteditor/mini/lib/Macros.h \
   /workspace/qteditor/mini/lib/pserror.h \
-  /workspace/qteditor/mini/lib/debug.h \
   /workspace/qteditor/mini/lib/room.h \
   /workspace/qteditor/mini/lib/gametexture.h \
   /workspace/qteditor/mini/lib/room_external.h \
@@ -15024,9 +15027,9 @@ CMakeFiles/qteditor_mini.dir/editor_object_lighting.cpp.o: /workspace/qteditor/m
 CMakeFiles/qteditor_mini.dir/editor_settings.cpp.o: /workspace/qteditor/mini/editor_settings.cpp \
   /usr/include/stdc-predef.h \
   /workspace/qteditor/mini/editor_settings.h \
-  /workspace/qteditor/mini/d3edit.h \
-  /workspace/qteditor/mini/lib/vecmat.h \
-  /usr/include/c++/12/cmath \
+  /workspace/qteditor/mini/lib/slew.h \
+  /workspace/qteditor/mini/lib/object.h \
+  /usr/include/c++/12/cstdint \
   /usr/include/x86_64-linux-gnu/c++/12/bits/c++config.h \
   /usr/include/x86_64-linux-gnu/c++/12/bits/os_defines.h \
   /usr/include/features.h \
@@ -15039,13 +15042,22 @@ CMakeFiles/qteditor_mini.dir/editor_settings.cpp.o: /workspace/qteditor/mini/edi
   /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
   /usr/include/x86_64-linux-gnu/c++/12/bits/cpu_defines.h \
   /usr/include/c++/12/pstl/pstl_config.h \
-  /usr/include/c++/12/bits/cpp_type_traits.h \
-  /usr/include/c++/12/ext/type_traits.h \
-  /usr/include/math.h \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/stdint.h \
+  /usr/include/stdint.h \
   /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
   /usr/include/x86_64-linux-gnu/bits/types.h \
   /usr/include/x86_64-linux-gnu/bits/typesizes.h \
   /usr/include/x86_64-linux-gnu/bits/time64.h \
+  /usr/include/x86_64-linux-gnu/bits/wchar.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+  /workspace/qteditor/mini/lib/object_external_struct.h \
+  /workspace/qteditor/mini/lib/vecmat_external.h \
+  /workspace/qteditor/mini/fix/fix.h \
+  /usr/include/c++/12/cmath \
+  /usr/include/c++/12/bits/cpp_type_traits.h \
+  /usr/include/c++/12/ext/type_traits.h \
+  /usr/include/math.h \
   /usr/include/x86_64-linux-gnu/bits/math-vector.h \
   /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
   /usr/include/x86_64-linux-gnu/bits/floatn.h \
@@ -15069,7 +15081,6 @@ CMakeFiles/qteditor_mini.dir/editor_settings.cpp.o: /workspace/qteditor/mini/edi
   /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/time_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/timer_t.h \
-  /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
   /usr/include/endian.h \
   /usr/include/x86_64-linux-gnu/bits/endian.h \
   /usr/include/x86_64-linux-gnu/bits/endianness.h \
@@ -15119,13 +15130,6 @@ CMakeFiles/qteditor_mini.dir/editor_settings.cpp.o: /workspace/qteditor/mini/edi
   /usr/include/c++/12/tr1/poly_hermite.tcc \
   /usr/include/c++/12/tr1/poly_laguerre.tcc \
   /usr/include/c++/12/tr1/riemann_zeta.tcc \
-  /workspace/qteditor/mini/lib/vecmat_external.h \
-  /workspace/qteditor/mini/fix/fix.h \
-  /usr/include/c++/12/cstdint \
-  /usr/lib/gcc/x86_64-linux-gnu/12/include/stdint.h \
-  /usr/include/stdint.h \
-  /usr/include/x86_64-linux-gnu/bits/wchar.h \
-  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
   /usr/include/c++/12/algorithm \
   /usr/include/c++/12/bits/stl_algo.h \
   /usr/include/c++/12/bits/algorithmfwd.h \
@@ -15176,8 +15180,164 @@ CMakeFiles/qteditor_mini.dir/editor_settings.cpp.o: /workspace/qteditor/mini/edi
   /usr/include/c++/12/bits/stl_numeric.h \
   /usr/include/c++/12/bit \
   /usr/include/c++/12/pstl/glue_numeric_defs.h \
+  /workspace/qteditor/mini/lib/robotfirestruct.h \
+  /workspace/qteditor/mini/lib/robotfirestruct_external.h \
+  /workspace/qteditor/mini/lib/vecmat.h \
+  /workspace/qteditor/mini/lib/polymodel_external.h \
+  /workspace/qteditor/mini/lib/grdefs.h \
+  /workspace/qteditor/mini/lib/manage_external.h \
+  /workspace/qteditor/mini/lib/aistruct.h \
+  /workspace/qteditor/mini/lib/pstypes.h \
+  /workspace/qteditor/mini/lib/aistruct_external.h \
+  /workspace/qteditor/mini/lib/room.h \
+  /workspace/qteditor/mini/lib/gametexture.h \
+  /workspace/qteditor/mini/lib/manage.h \
+  /usr/include/c++/12/cstdio \
+  /usr/include/stdio.h \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/stdarg.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h \
+  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
+  /usr/include/c++/12/filesystem \
+  /usr/include/c++/12/bits/fs_fwd.h \
+  /usr/include/c++/12/system_error \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/error_constants.h \
+  /usr/include/c++/12/cerrno \
+  /usr/include/errno.h \
+  /usr/include/x86_64-linux-gnu/bits/errno.h \
+  /usr/include/linux/errno.h \
+  /usr/include/x86_64-linux-gnu/asm/errno.h \
+  /usr/include/asm-generic/errno.h \
+  /usr/include/asm-generic/errno-base.h \
+  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
+  /usr/include/c++/12/iosfwd \
+  /usr/include/c++/12/bits/stringfwd.h \
+  /usr/include/c++/12/bits/postypes.h \
+  /usr/include/c++/12/cwchar \
+  /usr/include/wchar.h \
+  /usr/include/x86_64-linux-gnu/bits/types/wint_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h \
+  /usr/include/c++/12/stdexcept \
+  /usr/include/c++/12/exception \
+  /usr/include/c++/12/bits/exception_ptr.h \
+  /usr/include/c++/12/bits/cxxabi_init_exception.h \
+  /usr/include/c++/12/bits/nested_exception.h \
+  /usr/include/c++/12/string \
+  /usr/include/c++/12/bits/char_traits.h \
+  /usr/include/c++/12/bits/localefwd.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/c++locale.h \
+  /usr/include/c++/12/clocale \
+  /usr/include/locale.h \
+  /usr/include/x86_64-linux-gnu/bits/locale.h \
+  /usr/include/c++/12/cctype \
+  /usr/include/ctype.h \
+  /usr/include/c++/12/bits/ostream_insert.h \
+  /usr/include/c++/12/bits/cxxabi_forced.h \
+  /usr/include/c++/12/bits/basic_string.h \
+  /usr/include/c++/12/string_view \
+  /usr/include/c++/12/bits/string_view.tcc \
+  /usr/include/c++/12/ext/string_conversions.h \
+  /usr/include/c++/12/bits/charconv.h \
+  /usr/include/c++/12/bits/basic_string.tcc \
+  /usr/include/c++/12/bits/chrono.h \
+  /usr/include/c++/12/ratio \
+  /usr/include/c++/12/ctime \
+  /usr/include/time.h \
+  /usr/include/x86_64-linux-gnu/bits/time.h \
+  /usr/include/x86_64-linux-gnu/bits/timex.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h \
+  /usr/include/c++/12/bits/parse_numbers.h \
+  /usr/include/c++/12/bits/fs_path.h \
+  /usr/include/c++/12/locale \
+  /usr/include/c++/12/bits/locale_classes.h \
+  /usr/include/c++/12/ext/atomicity.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/gthr.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/gthr-default.h \
+  /usr/include/pthread.h \
+  /usr/include/sched.h \
+  /usr/include/x86_64-linux-gnu/bits/sched.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h \
+  /usr/include/x86_64-linux-gnu/bits/cpu-set.h \
+  /usr/include/x86_64-linux-gnu/bits/setjmp.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
+  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/atomic_word.h \
+  /usr/include/x86_64-linux-gnu/sys/single_threaded.h \
+  /usr/include/c++/12/bits/locale_classes.tcc \
+  /usr/include/c++/12/bits/locale_facets.h \
+  /usr/include/c++/12/cwctype \
+  /usr/include/wctype.h \
+  /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/ctype_base.h \
+  /usr/include/c++/12/bits/ios_base.h \
+  /usr/include/c++/12/streambuf \
+  /usr/include/c++/12/bits/streambuf.tcc \
+  /usr/include/c++/12/bits/streambuf_iterator.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/ctype_inline.h \
+  /usr/include/c++/12/bits/locale_facets.tcc \
+  /usr/include/c++/12/bits/locale_facets_nonio.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/time_members.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/messages_members.h \
+  /usr/include/libintl.h \
+  /usr/include/c++/12/bits/codecvt.h \
+  /usr/include/c++/12/bits/locale_facets_nonio.tcc \
+  /usr/include/c++/12/bits/locale_conv.h \
+  /usr/include/c++/12/iomanip \
+  /usr/include/c++/12/bits/quoted_string.h \
+  /usr/include/c++/12/sstream \
+  /usr/include/c++/12/istream \
+  /usr/include/c++/12/ios \
+  /usr/include/c++/12/bits/basic_ios.h \
+  /usr/include/c++/12/bits/basic_ios.tcc \
+  /usr/include/c++/12/ostream \
+  /usr/include/c++/12/bits/ostream.tcc \
+  /usr/include/c++/12/bits/istream.tcc \
+  /usr/include/c++/12/bits/sstream.tcc \
+  /usr/include/c++/12/codecvt \
+  /usr/include/c++/12/ext/concurrence.h \
+  /usr/include/c++/12/bits/shared_ptr.h \
+  /usr/include/c++/12/bits/shared_ptr_base.h \
+  /usr/include/c++/12/bits/allocated_ptr.h \
+  /usr/include/c++/12/bits/unique_ptr.h \
+  /usr/include/c++/12/bits/fs_dir.h \
+  /usr/include/c++/12/bits/fs_ops.h \
+  /workspace/qteditor/mini/lib/cfile.h \
+  /workspace/qteditor/mini/lib/bitmap.h \
+  /workspace/qteditor/mini/lib/crossplat.h \
+  /usr/include/c++/12/cstring \
+  /usr/include/string.h \
+  /usr/include/strings.h \
+  /usr/include/x86_64-linux-gnu/sys/stat.h \
+  /usr/include/x86_64-linux-gnu/bits/stat.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_stat.h \
+  /usr/include/x86_64-linux-gnu/bits/statx.h \
+  /usr/include/linux/stat.h \
+  /usr/include/linux/types.h \
+  /usr/include/x86_64-linux-gnu/asm/types.h \
+  /usr/include/asm-generic/types.h \
+  /usr/include/asm-generic/int-ll64.h \
+  /usr/include/x86_64-linux-gnu/asm/bitsperlong.h \
+  /usr/include/asm-generic/bitsperlong.h \
+  /usr/include/linux/posix_types.h \
+  /usr/include/linux/stddef.h \
+  /usr/include/x86_64-linux-gnu/asm/posix_types.h \
+  /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
+  /usr/include/asm-generic/posix_types.h \
+  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
+  /workspace/qteditor/mini/lib/room_external.h \
+  /workspace/qteditor/mini/game/bnode.h \
+  /workspace/qteditor/mini/lib/object_external.h \
+  /workspace/qteditor/mini/d3edit.h \
+  /workspace/qteditor/mini/lib/vecmat.h \
   /usr/include/c++/12/stdlib.h \
-  /workspace/qteditor/mini/lib/slew.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/QSettings \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qsettings.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qobject.h \
@@ -15213,11 +15373,173 @@ CMakeFiles/qteditor_mini.dir/editor_settings.cpp.o: /workspace/qteditor/mini/edi
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearray.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qrefcount.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qarraydata.h \
+  /usr/include/c++/12/iterator \
+  /usr/include/c++/12/bits/stream_iterator.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringliteral.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringalgorithms.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringview.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qlist.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qalgorithms.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qiterator.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qhashfunctions.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qpair.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qvector.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcontainertools_impl.h \
+  /usr/include/c++/12/list \
+  /usr/include/c++/12/bits/stl_list.h \
+  /usr/include/c++/12/bits/list.tcc \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/limits.h \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/syslimits.h \
+  /usr/include/limits.h \
+  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/local_lim.h \
+  /usr/include/linux/limits.h \
+  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearraylist.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringlist.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qregexp.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringmatcher.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qscopedpointer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmetatype.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qvarlengtharray.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcontainerfwd.h \
+  /usr/include/c++/12/map \
+  /usr/include/c++/12/bits/stl_tree.h \
+  /usr/include/c++/12/bits/stl_map.h \
+  /usr/include/c++/12/bits/stl_multimap.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qobject_impl.h \
+  /usr/include/c++/12/chrono \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qvariant.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmap.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qhash.h \
+  /usr/include/c++/12/variant
+
+CMakeFiles/qteditor_mini.dir/editor_test.cpp.o: /workspace/qteditor/mini/editor_test.cpp \
+  /usr/include/stdc-predef.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/QSignalSpy \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qsignalspy.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearray.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qrefcount.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qatomic.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qglobal.h \
+  /usr/include/c++/12/type_traits \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/c++config.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/os_defines.h \
+  /usr/include/features.h \
+  /usr/include/features-time64.h \
+  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+  /usr/include/x86_64-linux-gnu/bits/timesize.h \
+  /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+  /usr/include/x86_64-linux-gnu/bits/long-double.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/cpu_defines.h \
+  /usr/include/c++/12/pstl/pstl_config.h \
+  /usr/include/c++/12/cstddef \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/stddef.h \
+  /usr/include/c++/12/utility \
+  /usr/include/c++/12/bits/stl_relops.h \
+  /usr/include/c++/12/bits/stl_pair.h \
+  /usr/include/c++/12/bits/move.h \
+  /usr/include/c++/12/bits/utility.h \
+  /usr/include/c++/12/initializer_list \
+  /usr/include/assert.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qconfig.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtcore-config.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsystemdetection.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qprocessordetection.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcompilerdetection.h \
+  /usr/include/c++/12/algorithm \
+  /usr/include/c++/12/bits/stl_algobase.h \
+  /usr/include/c++/12/bits/functexcept.h \
+  /usr/include/c++/12/bits/exception_defines.h \
+  /usr/include/c++/12/bits/cpp_type_traits.h \
+  /usr/include/c++/12/ext/type_traits.h \
+  /usr/include/c++/12/ext/numeric_traits.h \
+  /usr/include/c++/12/bits/stl_iterator_base_types.h \
+  /usr/include/c++/12/bits/stl_iterator_base_funcs.h \
+  /usr/include/c++/12/bits/concept_check.h \
+  /usr/include/c++/12/debug/assertions.h \
+  /usr/include/c++/12/bits/stl_iterator.h \
+  /usr/include/c++/12/bits/ptr_traits.h \
+  /usr/include/c++/12/debug/debug.h \
+  /usr/include/c++/12/bits/predefined_ops.h \
+  /usr/include/c++/12/bits/stl_algo.h \
+  /usr/include/c++/12/bits/algorithmfwd.h \
+  /usr/include/c++/12/bits/stl_heap.h \
+  /usr/include/c++/12/bits/stl_tempbuf.h \
+  /usr/include/c++/12/bits/stl_construct.h \
+  /usr/include/c++/12/new \
+  /usr/include/c++/12/bits/exception.h \
+  /usr/include/c++/12/bits/uniform_int_dist.h \
+  /usr/include/c++/12/cstdlib \
+  /usr/include/stdlib.h \
+  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
+  /usr/include/x86_64-linux-gnu/bits/waitflags.h \
+  /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
+  /usr/include/x86_64-linux-gnu/bits/floatn.h \
+  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
+  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
+  /usr/include/x86_64-linux-gnu/sys/types.h \
+  /usr/include/x86_64-linux-gnu/bits/types.h \
+  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
+  /usr/include/x86_64-linux-gnu/bits/time64.h \
+  /usr/include/x86_64-linux-gnu/bits/types/clock_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/time_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/timer_t.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
+  /usr/include/endian.h \
+  /usr/include/x86_64-linux-gnu/bits/endian.h \
+  /usr/include/x86_64-linux-gnu/bits/endianness.h \
+  /usr/include/x86_64-linux-gnu/bits/byteswap.h \
+  /usr/include/x86_64-linux-gnu/bits/uintn-identity.h \
+  /usr/include/x86_64-linux-gnu/sys/select.h \
+  /usr/include/x86_64-linux-gnu/bits/select.h \
+  /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
+  /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h \
+  /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h \
+  /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h \
+  /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h \
+  /usr/include/alloca.h \
+  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
+  /usr/include/c++/12/bits/std_abs.h \
+  /usr/include/c++/12/pstl/glue_algorithm_defs.h \
+  /usr/include/c++/12/pstl/execution_defs.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtypeinfo.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsysinfo.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qlogging.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qflags.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbasicatomic.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qatomic_cxx11.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qgenericatomic.h \
+  /usr/include/c++/12/atomic \
+  /usr/include/c++/12/bits/atomic_base.h \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/stdint.h \
+  /usr/include/stdint.h \
+  /usr/include/x86_64-linux-gnu/bits/wchar.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+  /usr/include/c++/12/bits/atomic_lockfree_defines.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qglobalstatic.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qnumeric.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qversiontagging.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qnamespace.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qarraydata.h \
   /usr/include/string.h \
   /usr/include/strings.h \
+  /usr/include/c++/12/stdlib.h \
   /usr/lib/gcc/x86_64-linux-gnu/12/include/stdarg.h \
   /usr/include/c++/12/string \
   /usr/include/c++/12/bits/stringfwd.h \
+  /usr/include/c++/12/bits/memoryfwd.h \
   /usr/include/c++/12/bits/char_traits.h \
   /usr/include/c++/12/bits/postypes.h \
   /usr/include/c++/12/cwchar \
@@ -15227,6 +15549,10 @@ CMakeFiles/qteditor_mini.dir/editor_settings.cpp.o: /workspace/qteditor/mini/edi
   /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/__FILE.h \
   /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
+  /usr/include/c++/12/cstdint \
+  /usr/include/c++/12/bits/allocator.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/c++allocator.h \
+  /usr/include/c++/12/bits/new_allocator.h \
   /usr/include/c++/12/bits/localefwd.h \
   /usr/include/x86_64-linux-gnu/c++/12/bits/c++locale.h \
   /usr/include/c++/12/clocale \
@@ -15237,8 +15563,17 @@ CMakeFiles/qteditor_mini.dir/editor_settings.cpp.o: /workspace/qteditor/mini/edi
   /usr/include/ctype.h \
   /usr/include/c++/12/bits/ostream_insert.h \
   /usr/include/c++/12/bits/cxxabi_forced.h \
+  /usr/include/c++/12/bits/stl_function.h \
+  /usr/include/c++/12/backward/binders.h \
+  /usr/include/c++/12/bits/refwrap.h \
+  /usr/include/c++/12/bits/invoke.h \
+  /usr/include/c++/12/bits/range_access.h \
   /usr/include/c++/12/bits/basic_string.h \
+  /usr/include/c++/12/ext/alloc_traits.h \
+  /usr/include/c++/12/bits/alloc_traits.h \
   /usr/include/c++/12/string_view \
+  /usr/include/c++/12/bits/functional_hash.h \
+  /usr/include/c++/12/bits/hash_bytes.h \
   /usr/include/c++/12/bits/string_view.tcc \
   /usr/include/c++/12/ext/string_conversions.h \
   /usr/include/c++/12/cstdio \
@@ -15289,16 +15624,42 @@ CMakeFiles/qteditor_mini.dir/editor_settings.cpp.o: /workspace/qteditor/mini/edi
   /usr/include/c++/12/exception \
   /usr/include/c++/12/bits/exception_ptr.h \
   /usr/include/c++/12/bits/cxxabi_init_exception.h \
+  /usr/include/c++/12/typeinfo \
   /usr/include/c++/12/bits/nested_exception.h \
   /usr/include/c++/12/bits/streambuf.tcc \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringliteral.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringalgorithms.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringview.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qlist.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qalgorithms.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qiterator.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qhashfunctions.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstring.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qchar.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringliteral.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringalgorithms.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringview.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qpair.h \
+  /usr/include/c++/12/numeric \
+  /usr/include/c++/12/bits/stl_numeric.h \
+  /usr/include/c++/12/bit \
+  /usr/include/c++/12/pstl/glue_numeric_defs.h \
+  /usr/include/c++/12/functional \
+  /usr/include/c++/12/tuple \
+  /usr/include/c++/12/bits/uses_allocator.h \
+  /usr/include/c++/12/bits/std_function.h \
+  /usr/include/c++/12/unordered_map \
+  /usr/include/c++/12/ext/aligned_buffer.h \
+  /usr/include/c++/12/bits/hashtable.h \
+  /usr/include/c++/12/bits/hashtable_policy.h \
+  /usr/include/c++/12/bits/enable_special_members.h \
+  /usr/include/c++/12/bits/node_handle.h \
+  /usr/include/c++/12/bits/unordered_map.h \
+  /usr/include/c++/12/bits/erase_if.h \
+  /usr/include/c++/12/vector \
+  /usr/include/c++/12/bits/stl_uninitialized.h \
+  /usr/include/c++/12/bits/stl_vector.h \
+  /usr/include/c++/12/bits/stl_bvector.h \
+  /usr/include/c++/12/bits/vector.tcc \
+  /usr/include/c++/12/array \
+  /usr/include/c++/12/compare \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qvector.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qcontainertools_impl.h \
   /usr/include/c++/12/list \
@@ -15318,6 +15679,9 @@ CMakeFiles/qteditor_mini.dir/editor_settings.cpp.o: /workspace/qteditor/mini/edi
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringlist.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qregexp.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringmatcher.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qobject.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs_impl.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qscopedpointer.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qmetatype.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qvarlengtharray.h \
@@ -15330,12 +15694,711 @@ CMakeFiles/qteditor_mini.dir/editor_settings.cpp.o: /workspace/qteditor/mini/edi
   /usr/include/c++/12/chrono \
   /usr/include/c++/12/bits/chrono.h \
   /usr/include/c++/12/ratio \
+  /usr/include/c++/12/limits \
   /usr/include/c++/12/ctime \
   /usr/include/c++/12/bits/parse_numbers.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmetaobject.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qvariant.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qmap.h \
   /usr/include/x86_64-linux-gnu/qt5/QtCore/qhash.h \
-  /usr/include/c++/12/variant
+  /usr/include/c++/12/variant \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtesteventloop.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qttestglobal.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qttestlib-config.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcoreapplication.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcoreevent.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qeventloop.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qpointer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsharedpointer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qshareddata.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsharedpointer_impl.h \
+  /usr/include/c++/12/memory \
+  /usr/include/c++/12/bits/stl_raw_storage_iter.h \
+  /usr/include/c++/12/bits/align.h \
+  /usr/include/c++/12/bits/unique_ptr.h \
+  /usr/include/c++/12/bits/shared_ptr.h \
+  /usr/include/c++/12/bits/shared_ptr_base.h \
+  /usr/include/c++/12/ext/concurrence.h \
+  /usr/include/c++/12/bits/shared_ptr_atomic.h \
+  /usr/include/c++/12/backward/auto_ptr.h \
+  /usr/include/c++/12/pstl/glue_memory_defs.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qthread.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qdeadlinetimer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qelapsedtimer.h \
+  /usr/include/c++/12/future \
+  /usr/include/c++/12/mutex \
+  /usr/include/c++/12/bits/std_mutex.h \
+  /usr/include/c++/12/bits/unique_lock.h \
+  /usr/include/c++/12/condition_variable \
+  /usr/include/c++/12/bits/atomic_futex.h \
+  /usr/include/c++/12/bits/std_thread.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/QtTest \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/QtTestDepends \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QtCore \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QtCoreDepends \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qglobal.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractanimation.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstracteventdispatcher.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractitemmodel.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractnativeeventfilter.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractproxymodel.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractitemmodel.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractstate.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstracttransition.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qalgorithms.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qanimationgroup.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractanimation.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qarraydata.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qarraydataops.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qarraydatapointer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qarraydataops.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qatomic.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbasictimer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbitarray.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbuffer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qiodevice.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearray.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearraylist.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearraymatcher.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcache.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcalendar.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qlocale.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcborarray.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcborvalue.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qdatetime.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcborcommon.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qdebug.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtextstream.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qset.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcontiguouscache.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qregularexpression.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qurl.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/quuid.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcborcommon.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcbormap.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcborstream.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcborstreamreader.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfloat16.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcborstreamwriter.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcborstreamreader.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcborstreamwriter.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcborvalue.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qchar.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcollator.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcommandlineoption.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcommandlineparser.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcommandlineoption.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcompilerdetection.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qconcatenatetablesproxymodel.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcontainerfwd.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcontiguouscache.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcoreapplication.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcoreevent.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcryptographichash.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qdatastream.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qdatetime.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qdeadlinetimer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qdebug.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qdir.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfileinfo.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfile.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfiledevice.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qdiriterator.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qdir.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qeasingcurve.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qelapsedtimer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qendian.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qeventloop.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qeventtransition.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstracttransition.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qexception.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfactoryinterface.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfile.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfiledevice.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfileinfo.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfileselector.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QObject \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qobject.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QStringList \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringlist.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfilesystemwatcher.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfinalstate.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractstate.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qflags.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfuture.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfutureinterface.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qrunnable.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmutex.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qexception.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qresultstore.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfutureinterface.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfuturesynchronizer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfuture.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qfuturewatcher.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qgenericatomic.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qglobalstatic.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qhash.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qhashfunctions.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qhistorystate.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qidentityproxymodel.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractproxymodel.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qiodevice.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qisenum.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qitemselectionmodel.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qiterator.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qjsonarray.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qjsonvalue.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qjsondocument.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qjsonobject.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qjsonvalue.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qlibrary.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qlibraryinfo.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qversionnumber.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qline.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qpoint.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qlinkedlist.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qdatastream.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qlist.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qlocale.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qlockfile.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qloggingcategory.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmap.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmargins.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmath.h \
+  /usr/include/c++/12/cmath \
+  /usr/include/math.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
+  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
+  /usr/include/c++/12/bits/specfun.h \
+  /usr/include/c++/12/tr1/gamma.tcc \
+  /usr/include/c++/12/tr1/special_function_util.h \
+  /usr/include/c++/12/tr1/bessel_function.tcc \
+  /usr/include/c++/12/tr1/beta_function.tcc \
+  /usr/include/c++/12/tr1/ell_integral.tcc \
+  /usr/include/c++/12/tr1/exp_integral.tcc \
+  /usr/include/c++/12/tr1/hypergeometric.tcc \
+  /usr/include/c++/12/tr1/legendre_function.tcc \
+  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
+  /usr/include/c++/12/tr1/poly_hermite.tcc \
+  /usr/include/c++/12/tr1/poly_laguerre.tcc \
+  /usr/include/c++/12/tr1/riemann_zeta.tcc \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmessageauthenticationcode.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcryptographichash.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmetaobject.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmetatype.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmimedata.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmimedatabase.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmimetype.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmimetype.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmutex.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qnamespace.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qnumeric.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectcleanuphandler.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qoperatingsystemversion.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qpair.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qparallelanimationgroup.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qanimationgroup.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qpauseanimation.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qplugin.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qjsonobject.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qpluginloader.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qlibrary.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qplugin.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qpoint.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qpointer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qprocess.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qprocessordetection.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qpropertyanimation.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qvariantanimation.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qeasingcurve.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qqueue.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qrandom.h \
+  /usr/include/c++/12/random \
+  /usr/include/c++/12/bits/random.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/opt_random.h \
+  /usr/include/c++/12/bits/random.tcc \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qreadwritelock.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qrect.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmargins.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsize.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qrefcount.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qregexp.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qregularexpression.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qresource.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qresultstore.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qrunnable.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsavefile.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qscopedpointer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qscopedvaluerollback.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qscopeguard.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsemaphore.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsequentialanimationgroup.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qset.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsettings.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qshareddata.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsharedmemory.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsharedpointer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsignalmapper.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsignaltransition.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsize.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsocketnotifier.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsortfilterproxymodel.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstack.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstandardpaths.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstate.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstatemachine.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstate.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstorageinfo.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstring.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringalgorithms.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringbuilder.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringlistmodel.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringliteral.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringmatcher.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringview.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsysinfo.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsystemdetection.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qsystemsemaphore.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtemporarydir.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtemporaryfile.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtextboundaryfinder.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtextcodec.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtextstream.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qthread.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qthreadpool.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qthreadstorage.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtimeline.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtimer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbasictimer.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtimezone.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtranslator.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtransposeproxymodel.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtypeinfo.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtypetraits.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qurl.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qurlquery.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/quuid.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qvariant.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qvariantanimation.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qvarlengtharray.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qvector.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qversionnumber.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qversiontagging.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qwaitcondition.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QDeadlineTimer \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qwineventnotifier.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qxmlstream.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtcoreversion.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qttestglobal.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qabstractitemmodeltester.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QAbstractItemModel \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QVariant \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/QFont \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qfont.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qtguiglobal.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qtgui-config.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qwindowdefs.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/QColor \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qcolor.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qrgb.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qrgba64.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/QBrush \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qbrush.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qcolor.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qmatrix.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qpolygon.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qrect.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qregion.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qline.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qtransform.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qimage.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qpaintdevice.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qpixelformat.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qpixmap.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/QPixmap \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qpixmap.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/QImage \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qimage.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/QIcon \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qicon.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qbenchmark.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qbenchmarkmetric.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qbenchmarkmetric.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtest.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtestcase.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtemporarydir.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtestdata.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qbenchmark.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbitarray.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtestsystem.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtestsupport_core.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qtestsupport_gui.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtestsupport_widgets.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtwidgetsglobal.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtwidgets-config.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtest_widgets.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtest_gui.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtestassert.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtest.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtestevent.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtestkeyboard.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtestspontaneevent.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qguiapplication.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qinputmethod.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qwindow.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QEvent \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QMargins \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QRect \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qsurface.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qsurfaceformat.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qicon.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qcursor.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qevent.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qkeysequence.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qvector2d.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qtouchdevice.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qwidget.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qpalette.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qbrush.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qfont.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qfontmetrics.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qfontinfo.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qsizepolicy.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qapplication.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtestmouse.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QDebug \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtesttouch.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qvector3d.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qvector4d.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QSizePolicy \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qsizepolicy.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QMetaEnum \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtestassert.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtestcase.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtestdata.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtesteventloop.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qtestsystem.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtTest/qttestversion.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QtGlobal \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QAbstractButton \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractbutton.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QAction \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qaction.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qactiongroup.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qaction.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QComboBox \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qcombobox.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractitemdelegate.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qstyleoption.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractspinbox.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qvalidator.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qslider.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractslider.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qstyle.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtabbar.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtabwidget.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qrubberband.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qframe.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QDockWidget \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qdockwidget.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QElapsedTimer \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QEventLoop \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QFileDialog \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qfiledialog.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qdialog.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QInputDialog \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qinputdialog.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qlineedit.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qtextcursor.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qtextformat.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qpen.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qtextoption.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QMessageBox \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qmessagebox.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QLabel \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qlabel.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QLineEdit \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qlineedit.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QMenu \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qmenu.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QMenuBar \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qmenubar.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qmenu.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QSettings \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QSlider \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qslider.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QTimer \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QToolBar \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtoolbar.h \
+  /workspace/qteditor/mini/d3_editor_init.h \
+  /workspace/qteditor/mini/lib/door.h \
+  /workspace/qteditor/mini/lib/pstypes.h \
+  /workspace/qteditor/mini/lib/manage.h \
+  /usr/include/c++/12/filesystem \
+  /usr/include/c++/12/bits/fs_fwd.h \
+  /usr/include/c++/12/bits/fs_path.h \
+  /usr/include/c++/12/locale \
+  /usr/include/c++/12/bits/locale_facets.h \
+  /usr/include/c++/12/cwctype \
+  /usr/include/wctype.h \
+  /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/ctype_base.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/ctype_inline.h \
+  /usr/include/c++/12/bits/locale_facets.tcc \
+  /usr/include/c++/12/bits/locale_facets_nonio.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/time_members.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/messages_members.h \
+  /usr/include/libintl.h \
+  /usr/include/c++/12/bits/codecvt.h \
+  /usr/include/c++/12/bits/locale_facets_nonio.tcc \
+  /usr/include/c++/12/bits/locale_conv.h \
+  /usr/include/c++/12/iomanip \
+  /usr/include/c++/12/bits/quoted_string.h \
+  /usr/include/c++/12/sstream \
+  /usr/include/c++/12/istream \
+  /usr/include/c++/12/ios \
+  /usr/include/c++/12/bits/basic_ios.h \
+  /usr/include/c++/12/bits/basic_ios.tcc \
+  /usr/include/c++/12/ostream \
+  /usr/include/c++/12/bits/ostream.tcc \
+  /usr/include/c++/12/bits/istream.tcc \
+  /usr/include/c++/12/bits/sstream.tcc \
+  /usr/include/c++/12/codecvt \
+  /usr/include/c++/12/bits/fs_dir.h \
+  /usr/include/c++/12/bits/fs_ops.h \
+  /workspace/qteditor/mini/lib/cfile.h \
+  /workspace/qteditor/mini/lib/bitmap.h \
+  /workspace/qteditor/mini/lib/crossplat.h \
+  /usr/include/c++/12/cstring \
+  /usr/include/x86_64-linux-gnu/sys/stat.h \
+  /usr/include/x86_64-linux-gnu/bits/stat.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_stat.h \
+  /usr/include/x86_64-linux-gnu/bits/statx.h \
+  /usr/include/linux/stat.h \
+  /usr/include/linux/types.h \
+  /usr/include/x86_64-linux-gnu/asm/types.h \
+  /usr/include/asm-generic/types.h \
+  /usr/include/asm-generic/int-ll64.h \
+  /usr/include/x86_64-linux-gnu/asm/bitsperlong.h \
+  /usr/include/asm-generic/bitsperlong.h \
+  /usr/include/linux/posix_types.h \
+  /usr/include/linux/stddef.h \
+  /usr/include/x86_64-linux-gnu/asm/posix_types.h \
+  /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
+  /usr/include/asm-generic/posix_types.h \
+  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
+  /workspace/qteditor/mini/lib/manage_external.h \
+  /workspace/qteditor/mini/lib/object.h \
+  /workspace/qteditor/mini/lib/object_external_struct.h \
+  /workspace/qteditor/mini/lib/vecmat_external.h \
+  /workspace/qteditor/mini/fix/fix.h \
+  /workspace/qteditor/mini/lib/robotfirestruct.h \
+  /workspace/qteditor/mini/lib/robotfirestruct_external.h \
+  /workspace/qteditor/mini/lib/vecmat.h \
+  /workspace/qteditor/mini/lib/polymodel_external.h \
+  /workspace/qteditor/mini/lib/grdefs.h \
+  /workspace/qteditor/mini/lib/aistruct.h \
+  /workspace/qteditor/mini/lib/aistruct_external.h \
+  /workspace/qteditor/mini/lib/room.h \
+  /workspace/qteditor/mini/lib/gametexture.h \
+  /workspace/qteditor/mini/lib/room_external.h \
+  /workspace/qteditor/mini/game/bnode.h \
+  /workspace/qteditor/mini/lib/object_external.h \
+  /workspace/qteditor/mini/game/gamepath.h \
+  /workspace/qteditor/mini/lib/3d.h \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/float.h \
+  /workspace/qteditor/mini/lib/manage.h \
+  /workspace/qteditor/mini/mem/mem.h \
+  /workspace/qteditor/mini/lib/pstypes.h \
+  /workspace/qteditor/mini/lib/pserror.h \
+  /workspace/qteditor/mini/lib/debug.h \
+  /workspace/qteditor/mini/lib/log.h \
+  /workspace/qteditor/mini/lib/vecmat.h \
+  /workspace/qteditor/mini/lib/object.h \
+  /workspace/qteditor/mini/object_ops.h \
+  /workspace/qteditor/mini/obj_move_manager.h \
+  /workspace/qteditor/mini/lib/room_external.h \
+  /workspace/qteditor/mini/lib/ship.h \
+  /workspace/qteditor/mini/lib/player.h \
+  /workspace/qteditor/mini/lib/Inventory.h \
+  /workspace/qteditor/mini/lib/player_external_struct.h \
+  /workspace/qteditor/mini/lib/multi_external.h \
+  /workspace/qteditor/mini/lib/networking.h \
+  /workspace/qteditor/mini/lib/win32_types_stub.h \
+  /workspace/qteditor/mini/game/descent.h \
+  /workspace/qteditor/mini/lib/application.h \
+  /workspace/qteditor/mini/game/lnxapp.h \
+  /workspace/qteditor/mini/lib/crossplat.h \
+  /workspace/qteditor/mini/lib/byteswap.h \
+  /usr/include/c++/12/cassert \
+  /workspace/qteditor/mini/lib/player_external.h \
+  /workspace/qteditor/mini/lib/ssl_lib.h \
+  /workspace/qteditor/mini/lib/terrain.h \
+  /workspace/qteditor/mini/lib/3d.h \
+  /workspace/qteditor/mini/lib/trigger.h \
+  /workspace/qteditor/mini/lib/ObjScript.h \
+  /workspace/qteditor/mini/lib/d3x_op.h \
+  /workspace/qteditor/mini/lib/weapon.h \
+  /workspace/qteditor/mini/lib/objinfo.h \
+  /workspace/qteditor/mini/lib/DeathInfo.h \
+  /workspace/qteditor/mini/lib/deathinfo_external.h \
+  /workspace/qteditor/mini/lib/weapon_external.h \
+  /workspace/qteditor/mini/about_dialog.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QDialog \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qdialog.h \
+  /workspace/qteditor/mini/ai_settings_dialog.h \
+  /workspace/qteditor/mini/file_page_add_dialog.h \
+  /workspace/qteditor/mini/level_keypad_layout.h \
+  /workspace/qteditor/mini/level_properties_dialog.h \
+  /workspace/qteditor/mini/lighting_status_dialog.h \
+  /workspace/qteditor/mini/status_panel_dialog.h \
+  /workspace/qteditor/mini/ambient_sound_element_dialog.h \
+  /workspace/qteditor/mini/ambient_sound_patterns_dialog.h \
+  /workspace/qteditor/mini/anim_states_dialog.h \
+  /workspace/qteditor/mini/compile_all_dialog.h \
+  /workspace/qteditor/mini/config_compiler_dialog.h \
+  /workspace/qteditor/mini/cust_default_script_dialog.h \
+  /workspace/qteditor/mini/dallas_main_dialog.h \
+  /workspace/qteditor/mini/localize_script_dialog.h \
+  /workspace/qteditor/mini/object_tree_dialog.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QTreeWidget \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtreewidget.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtreeview.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractitemview.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractscrollarea.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/qitemselectionmodel.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtreewidgetitemiterator.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QTreeWidgetItem \
+  /workspace/qteditor/mini/script_interface_dialog.h \
+  /workspace/qteditor/mini/script_studio_dialog.h \
+  /workspace/qteditor/mini/script_sync_dialog.h \
+  /workspace/qteditor/mini/script_wizard_dialog.h \
+  /workspace/qteditor/mini/table_file_edit_dialog.h \
+  /workspace/qteditor/mini/table_file_filter_add_dialog.h \
+  /workspace/qteditor/mini/table_file_filter_dialog.h \
+  /workspace/qteditor/mini/addscript_dialog.h \
+  /workspace/qteditor/mini/brief_mission_flags_dialog.h \
+  /workspace/qteditor/mini/brief_bitmap_dialog.h \
+  /workspace/qteditor/mini/brief_button_dialog.h \
+  /workspace/qteditor/mini/brief_movie_dialog.h \
+  /workspace/qteditor/mini/brief_sound_dialog.h \
+  /workspace/qteditor/mini/brief_main_dialog.h \
+  /workspace/qteditor/mini/brief_manage_dialog.h \
+  /workspace/qteditor/mini/brief_screen_dialog.h \
+  /workspace/qteditor/mini/brief_text_edit_dialog.h \
+  /workspace/qteditor/mini/game/TelComEfxStructs.h \
+  /workspace/qteditor/mini/grdefs.h \
+  /workspace/qteditor/mini/createscript_dialog.h \
+  /workspace/qteditor/mini/customize_object_dialog.h \
+  /workspace/qteditor/mini/dallas_flag_dialog.h \
+  /workspace/qteditor/mini/dallas_import_dialog.h \
+  /workspace/qteditor/mini/dallas_strm_audio_dialog.h \
+  /workspace/qteditor/mini/dallas_texture_dialog.h \
+  /workspace/qteditor/mini/dallas_prompt_dialogs.h \
+  /workspace/qteditor/mini/dallas_sound_dialog.h \
+  /workspace/qteditor/mini/dallas_usertypes_dialog.h \
+  /workspace/qteditor/mini/death_dialog.h \
+  /workspace/qteditor/mini/lib/objinfo.h \
+  /workspace/qteditor/mini/doorway_keypad.h \
+  /workspace/qteditor/mini/editline_dialog.h \
+  /workspace/qteditor/mini/file_page_dialog.h \
+  /workspace/qteditor/mini/font_dialog.h \
+  /workspace/qteditor/mini/orphan_remove_dialog.h \
+  /workspace/qteditor/mini/osiris_status_dialog.h \
+  /workspace/qteditor/mini/level_keypad.h \
+  /workspace/qteditor/mini/lighting_keypad.h \
+  /workspace/qteditor/mini/matcen_keypad.h \
+  /workspace/qteditor/mini/editor_file_dialogs.h \
+  /workspace/qteditor/mini/editor_room_state.h \
+  /workspace/qteditor/mini/editor_settings.h \
+  /workspace/qteditor/mini/editor_view.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QHash \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QOpenGLWidget \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qopenglwidget.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QWidget \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qwidget.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/QSurfaceFormat \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qsurfaceformat.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qopengl.h \
+  /usr/include/GL/gl.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qopenglext.h \
+  /usr/include/inttypes.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QPoint \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QRect \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/QVector3D \
+  /usr/include/x86_64-linux-gnu/qt5/QtGui/qvector3d.h \
+  /workspace/qteditor/mini/generic_death_dialog.h \
+  /workspace/qteditor/mini/generic_light_dialog.h \
+  /workspace/qteditor/mini/lib/object_external_struct.h \
+  /workspace/qteditor/mini/main_window.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QMainWindow \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qmainwindow.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/QWidget \
+  /workspace/qteditor/mini/hog_dialog.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QString \
+  /workspace/qteditor/mini/game/hog2_format.h \
+  /workspace/qteditor/mini/lib/posix_stream.h \
+  /usr/include/c++/12/fstream \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/basic_file.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/c++io.h \
+  /usr/include/c++/12/bits/fstream.tcc \
+  /workspace/qteditor/mini/level_info_dialog.h \
+  /workspace/qteditor/mini/game/Mission.h \
+  /workspace/qteditor/mini/game/descent.h \
+  /workspace/qteditor/mini/megacell_dialog.h \
+  /workspace/qteditor/mini/megacell_keypad.h \
+  /workspace/qteditor/mini/object_keypad.h \
+  /workspace/qteditor/mini/object_properties_dialog.h \
+  /workspace/qteditor/mini/path_keypad.h \
+  /workspace/qteditor/mini/room_keypad.h \
+  /workspace/qteditor/mini/physics_dialog.h \
+  /workspace/qteditor/mini/player_weapons_dialog.h \
+  /workspace/qteditor/mini/powprop_dialog.h \
+  /workspace/qteditor/mini/procedural_dialog.h \
+  /workspace/qteditor/mini/multicheck_dialog.h \
+  /workspace/qteditor/mini/preferences_dialog.h \
+  /workspace/qteditor/mini/property_physics_dialog.h \
+  /workspace/qteditor/mini/propscript_dialog.h \
+  /workspace/qteditor/mini/quickcompile_dialog.h \
+  /workspace/qteditor/mini/propai_dialog.h \
+  /workspace/qteditor/mini/robot_weapons_dialog.h \
+  /workspace/qteditor/mini/script_editor_dialog.h \
+  /workspace/qteditor/mini/script_parm_dialog.h \
+  /workspace/qteditor/mini/script_select_dialog.h \
+  /workspace/qteditor/mini/selectrange_dialog.h \
+  /workspace/qteditor/mini/sound_source_dialog.h \
+  /workspace/qteditor/mini/status_dialog.h \
+  /workspace/qteditor/mini/fix/fix.h \
+  /workspace/qteditor/mini/terrain_keypad.h \
+  /workspace/qteditor/mini/texture_keypad.h \
+  /workspace/qteditor/mini/terrain_sound_dialog.h \
+  /workspace/qteditor/mini/lib/game.h \
+  /workspace/qteditor/mini/lib/renderer.h \
+  /workspace/qteditor/mini/trigger_keypad.h \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QFile \
+  /usr/include/x86_64-linux-gnu/qt5/QtCore/QDir \
+  /workspace/qteditor/mini/level_io.h \
+  /workspace/qteditor/mini/viewer_prop_dialog.h \
+  /workspace/qteditor/mini/water_procedural_dialog.h \
+  /workspace/qteditor/mini/world_objects_door_dialog.h \
+  /workspace/qteditor/mini/world_objects_generic_dialog.h \
+  /workspace/qteditor/mini/world_objects_player_dialog.h \
+  /workspace/qteditor/mini/world_sounds_dialog.h \
+  /workspace/qteditor/mini/world_textures_dialog.h \
+  /workspace/qteditor/mini/world_weapons_dialog.h \
+  /workspace/qteditor/mini/worldobjectslight_dialog.h \
+  /workspace/qteditor/mini/d3edit.h \
+  qteditor_mini_autogen/include/editor_test.moc
 
 CMakeFiles/qteditor_mini.dir/qteditor_mini_autogen/mocs_compilation.cpp.o: qteditor_mini_autogen/mocs_compilation.cpp \
   /usr/include/stdc-predef.h \
@@ -16028,2018 +17091,2420 @@ CMakeFiles/qteditor_mini.dir/qteditor_mini_autogen/mocs_compilation.cpp.o: qtedi
   /workspace/qteditor/mini/worldobjectslight_dialog.h
 
 
-qteditor_mini_autogen/EWIEGA46WW/moc_water_procedural_dialog.cpp:
+qteditor_mini_autogen/EWIEGA46WW/moc_worldobjectslight_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_world_textures_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_world_sounds_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_world_objects_generic_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_world_objects_door_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_viewer_prop_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_trigger_keypad.cpp:
 
-/workspace/qteditor/mini/terrain_keypad.h:
+qteditor_mini_autogen/EWIEGA46WW/moc_terrain_sound_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_terrain_keypad.cpp:
 
-/workspace/qteditor/mini/table_file_filter_dialog.h:
-
-/workspace/qteditor/mini/table_file_filter_add_dialog.h:
+qteditor_mini_autogen/EWIEGA46WW/moc_table_file_filter_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_table_file_filter_add_dialog.cpp:
 
-/workspace/qteditor/mini/script_wizard_dialog.h:
+qteditor_mini_autogen/EWIEGA46WW/moc_table_file_edit_dialog.cpp:
 
-/workspace/qteditor/mini/script_sync_dialog.h:
+qteditor_mini_autogen/EWIEGA46WW/moc_status_panel_dialog.cpp:
 
-/workspace/qteditor/mini/script_studio_dialog.h:
+qteditor_mini_autogen/EWIEGA46WW/moc_status_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_sound_source_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_script_wizard_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_script_sync_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_script_studio_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_script_select_dialog.cpp:
 
-/workspace/qteditor/mini/script_interface_dialog.h:
+qteditor_mini_autogen/EWIEGA46WW/moc_script_parm_dialog.cpp:
 
-/workspace/qteditor/mini/script_editor_dialog.h:
+qteditor_mini_autogen/EWIEGA46WW/moc_script_interface_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_script_editor_dialog.cpp:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_robot_weapons_dialog.cpp:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_propscript_dialog.cpp:
-
-/workspace/qteditor/mini/property_physics_dialog.h:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_property_physics_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_propai_dialog.cpp:
 
-/workspace/qteditor/mini/procedural_dialog.h:
+qteditor_mini_autogen/EWIEGA46WW/moc_procedural_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_player_weapons_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_physics_dialog.cpp:
 
-/workspace/qteditor/mini/object_tree_dialog.h:
+qteditor_mini_autogen/EWIEGA46WW/moc_path_keypad.cpp:
 
-/workspace/qteditor/mini/multicheck_dialog.h:
+qteditor_mini_autogen/EWIEGA46WW/moc_osiris_status_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_orphan_remove_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_object_tree_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_multicheck_dialog.cpp:
 
-qteditor_mini_autogen/EWIEGA46WW/moc_megacell_keypad.cpp:
-
-/workspace/qteditor/mini/matcen_keypad.h:
-
 qteditor_mini_autogen/EWIEGA46WW/moc_matcen_keypad.cpp:
 
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QMainWindow:
+qteditor_mini_autogen/EWIEGA46WW/moc_main_window.cpp:
 
-qteditor_mini_autogen/EWIEGA46WW/moc_world_sounds_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QMenu:
-
-/workspace/qteditor/mini/localize_script_dialog.h:
-
-/workspace/qteditor/mini/lighting_status_dialog.h:
-
-/workspace/qteditor/mini/table_file_edit_dialog.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_level_properties_dialog.cpp:
-
-/workspace/qteditor/mini/level_keypad_layout.h:
-
-/workspace/qteditor/mini/level_keypad.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_level_keypad.cpp:
-
-/workspace/qteditor/mini/generic_light_dialog.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_generic_death_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qopenglext.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qsurfaceformat.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/QSurfaceFormat:
-
-/usr/include/GL/gl.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qopenglwidget.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/QHash:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_editline_dialog.cpp:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_death_dialog.cpp:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_quickcompile_dialog.cpp:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_dallas_usertypes_dialog.cpp:
+qteditor_mini_autogen/EWIEGA46WW/moc_lighting_status_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_lighting_keypad.cpp:
 
+qteditor_mini_autogen/EWIEGA46WW/moc_level_keypad_layout.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_level_keypad.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_generic_light_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_editor_view.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_editline_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_doorway_keypad.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_death_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_dallas_usertypes_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_level_info_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_dallas_texture_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_dallas_prompt_dialogs.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_dallas_main_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_dallas_import_dialog.cpp:
+
 qteditor_mini_autogen/EWIEGA46WW/moc_customize_object_dialog.cpp:
 
-qteditor_mini_autogen/EWIEGA46WW/moc_powprop_dialog.cpp:
+qteditor_mini_autogen/EWIEGA46WW/moc_cust_default_script_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_dallas_sound_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_createscript_dialog.cpp:
 
+qteditor_mini_autogen/EWIEGA46WW/moc_config_compiler_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_compile_all_dialog.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_brief_text_edit_dialog.cpp:
+
 qteditor_mini_autogen/EWIEGA46WW/moc_brief_sound_dialog.cpp:
 
-qteditor_mini_autogen/EWIEGA46WW/moc_brief_screen_dialog.cpp:
+qteditor_mini_autogen/EWIEGA46WW/moc_brief_mission_flags_dialog.cpp:
 
-qteditor_mini_autogen/EWIEGA46WW/moc_brief_main_dialog.cpp:
+qteditor_mini_autogen/EWIEGA46WW/moc_brief_manage_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_brief_button_dialog.cpp:
 
-qteditor_mini_autogen/EWIEGA46WW/moc_brief_bitmap_dialog.cpp:
+qteditor_mini_autogen/EWIEGA46WW/moc_anim_states_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_ambient_sound_patterns_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_ambient_sound_element_dialog.cpp:
 
-qteditor_mini_autogen/EWIEGA46WW/moc_about_dialog.cpp:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_level_keypad_layout.cpp:
-
-/workspace/qteditor/mini/editor_object_lighting.cpp:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_script_sync_dialog.cpp:
-
-/workspace/qteditor/mini/lib/lighting.h:
-
-/workspace/qteditor/mini/lib/polymodel.h:
-
-/workspace/qteditor/mini/lib/lightmap.h:
-
-/workspace/qteditor/mini/radiosity.h:
-
-/workspace/qteditor/mini/editor_lighting.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_level_info_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QWidget:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qfileinfo.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qdir.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QOpenGLWidget:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qfiledialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/QTimer:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QFileDialog:
-
-/workspace/qteditor/mini/editor_file_dialogs.h:
-
-qteditor_mini_autogen/include/ui_editlinedlg.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_cust_default_script_dialog.cpp:
-
-/workspace/qteditor/mini/lib/player_external.h:
-
-/workspace/qteditor/mini/lib/networking.h:
-
-/workspace/qteditor/mini/lib/multi_external.h:
-
-/workspace/qteditor/mini/lib/player_external_struct.h:
-
-/workspace/qteditor/mini/lib/Inventory.h:
-
-/workspace/qteditor/mini/lib/player.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_lighting_status_dialog.cpp:
-
-/workspace/qteditor/mini/editline_dialog.cpp:
-
-/workspace/qteditor/mini/game/BOA.h:
-
-/workspace/qteditor/mini/game/doorway.h:
-
-/workspace/qteditor/mini/doorway_keypad.cpp:
-
-/workspace/qteditor/mini/worldobjectslight_dialog.h:
-
-/workspace/qteditor/mini/world_weapons_dialog.h:
-
-/workspace/qteditor/mini/world_sounds_dialog.h:
-
-/workspace/qteditor/mini/world_objects_player_dialog.h:
-
-/workspace/qteditor/mini/trigger_keypad.h:
-
-/workspace/qteditor/mini/status_dialog.h:
-
-/workspace/qteditor/mini/preferences_dialog.h:
-
-/workspace/qteditor/mini/powprop_dialog.h:
-
-/workspace/qteditor/mini/status_panel_dialog.h:
-
-/workspace/qteditor/mini/player_weapons_dialog.h:
-
-/workspace/qteditor/mini/path_keypad.h:
-
-/workspace/qteditor/mini/megacell_keypad.h:
-
-/workspace/qteditor/mini/level_info_dialog.h:
-
-/workspace/qteditor/mini/dialog_test.h:
-
-qteditor_mini_autogen/include/ui_death_dialog.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_world_objects_door_dialog.cpp:
-
-/workspace/qteditor/mini/death_dialog.cpp:
-
-qteditor_mini_autogen/include/ui_dallas_usertypes_dialog.h:
-
-qteditor_mini_autogen/include/ui_dallas_texture_dialog.h:
-
-/workspace/qteditor/mini/dallas_texture_dialog.h:
-
-/workspace/qteditor/mini/lib/bsp.h:
-
-/workspace/qteditor/mini/dallas_strm_audio_dialog.h:
-
-/workspace/qteditor/mini/lib/ssl_lib.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_compile_all_dialog.cpp:
-
-qteditor_mini_autogen/include/ui_dallas_sound_dialog.h:
-
-/workspace/qteditor/mini/dallas_sound_dialog.h:
-
-/workspace/qteditor/mini/dallas_sound_dialog.cpp:
-
-qteditor_mini_autogen/include/ui_dallas_generic_prompt_dialog.h:
-
-qteditor_mini_autogen/include/ui_dallas_vector_dialog.h:
-
-/workspace/qteditor/mini/dallas_prompt_dialogs.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtreewidgetitemiterator.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtreeview.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qheaderview.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QHeaderView:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_dallas_import_dialog.cpp:
-
-qteditor_mini_autogen/include/ui_dallas_flag_dialog.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_object_properties_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/QtGlobal:
-
-/workspace/qteditor/mini/lib/debug.h:
-
-/workspace/qteditor/mini/lib/pserror.h:
-
-/workspace/qteditor/mini/lib/DeathInfo.h:
-
-/workspace/qteditor/mini/lib/objinfo.h:
-
-/workspace/qteditor/mini/dallas_flag_dialog.h:
-
-/workspace/qteditor/mini/game/bnode.h:
-
-/workspace/qteditor/mini/lib/cfile.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/QRect:
-
-/workspace/qteditor/mini/lib/manage.h:
-
-/workspace/qteditor/mini/lib/gametexture.h:
-
-/workspace/qteditor/mini/lib/aistruct.h:
-
-/workspace/qteditor/mini/lib/manage_external.h:
-
-/workspace/qteditor/mini/lib/robotfirestruct_external.h:
-
-/workspace/qteditor/mini/lib/robotfirestruct.h:
-
-/workspace/qteditor/mini/mem/mem.h:
-
-/workspace/qteditor/mini/editor_room_state.h:
-
-/workspace/qteditor/mini/d3_editor_state.cpp:
-
-/workspace/qteditor/mini/fix/fix.h:
-
-/workspace/qteditor/mini/lib/vecmat.h:
-
-/workspace/qteditor/mini/d3edit.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_statx.h:
-
-/usr/include/asm-generic/posix_types.h:
-
-/usr/include/linux/stddef.h:
-
-/usr/include/linux/posix_types.h:
-
-/usr/include/asm-generic/bitsperlong.h:
-
-/usr/include/asm-generic/types.h:
-
-/usr/include/x86_64-linux-gnu/asm/types.h:
-
-/usr/include/linux/types.h:
-
-/usr/include/linux/stat.h:
-
-/usr/include/x86_64-linux-gnu/bits/statx.h:
-
-/usr/include/c++/12/cstdarg:
-
-/workspace/qteditor/mini/editor_settings.h:
-
-/usr/include/x86_64-linux-gnu/sys/stat.h:
-
-/workspace/qteditor/mini/lib/crossplat.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_status_panel_dialog.cpp:
-
-/workspace/qteditor/mini/lib/args.h:
-
-/workspace/qteditor/mini/game/lnxapp.h:
-
-/workspace/qteditor/mini/lib/application.h:
-
-/workspace/qteditor/mini/lib/Macros.h:
-
-/workspace/qteditor/mini/lib/linux/lnxdatabase.h:
-
-/workspace/qteditor/mini/lib/pstypes.h:
-
-/workspace/qteditor/mini/lib/appdatabase.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qsettings.h:
-
-/usr/include/SDL2/SDL_misc.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/QString:
-
-/usr/include/SDL2/SDL_version.h:
-
-/usr/include/SDL2/SDL_shape.h:
-
-/usr/include/SDL2/SDL_render.h:
-
-/usr/include/SDL2/SDL_power.h:
-
-/usr/include/SDL2/SDL_metal.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/QObject:
-
-/usr/include/SDL2/SDL_hints.h:
-
-/workspace/qteditor/mini/dallas_import_dialog.cpp:
-
-/usr/include/SDL2/SDL_hidapi.h:
-
-/usr/include/SDL2/SDL_haptic.h:
-
-/usr/include/SDL2/SDL_touch.h:
-
-/usr/include/SDL2/SDL_sensor.h:
-
-/usr/include/SDL2/SDL_joystick.h:
-
-/usr/include/SDL2/SDL_mouse.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_world_weapons_dialog.cpp:
-
-/usr/include/SDL2/SDL_scancode.h:
-
-/workspace/qteditor/mini/propscript_dialog.h:
-
-/usr/include/SDL2/SDL_keycode.h:
-
-qteditor_mini_autogen/mocs_compilation.cpp:
-
-/usr/include/SDL2/SDL_keyboard.h:
-
-/workspace/qteditor/mini/lib/byteswap.h:
-
-/usr/include/SDL2/SDL_blendmode.h:
-
-/usr/include/SDL2/SDL_video.h:
-
-/usr/include/SDL2/SDL_events.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_terrain_sound_dialog.cpp:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/keylockerintrin.h:
-
-/workspace/qteditor/mini/game/lightmap_info.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/prfchwintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/amxbf16intrin.h:
-
-/usr/include/asm-generic/int-ll64.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/amxtileintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512bf16intrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/vaesintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/gfniintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/f16cintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/fmaintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vp2intersectvlintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vp2intersectintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512bitalgintrin.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_editor_view.cpp:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vpopcntdqvlintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vnnivlintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vnniintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx5124vnniwintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vbmivlintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512ifmavlintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vlbwintrin.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_worldobjectslight_dialog.cpp:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vlintrin.h:
-
-/workspace/qteditor/mini/terrain_sound_dialog.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512cdintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512pfintrin.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_script_wizard_dialog.cpp:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512erintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx2intrin.h:
-
-/workspace/qteditor/mini/lib/deathinfo_external.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avxvnniintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avxintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/wmmintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/smmintrin.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_script_interface_dialog.cpp:
-
-/workspace/qteditor/mini/dallas_import_dialog.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/pmmintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/emmintrin.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_status_dialog.cpp:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/mm_malloc.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/mmintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/hresetintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/xsavesintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/wbnoinvdintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/waitpkgintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/tbmintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/serializeintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/rtmintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/pkuintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/popcntintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/pconfigintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/mwaitxintrin.h:
-
-/workspace/qteditor/mini/lib/program.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/mwaitintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/lzcntintrin.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_dallas_texture_dialog.cpp:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/enqcmdintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/clzerointrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/clflushoptintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/cldemoteintrin.h:
-
-/workspace/qteditor/mini/room_keypad.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/cetintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/bmi2intrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/bmiintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/ia32intrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/x86gprintrin.h:
-
-/usr/include/SDL2/SDL_cpuinfo.h:
-
-/workspace/qteditor/mini/lib/log.h:
-
-/usr/include/SDL2/SDL_clipboard.h:
-
-qteditor_mini_autogen/include/ui_dallas_import_dialog.h:
-
-/usr/include/SDL2/SDL_thread.h:
-
-/usr/include/SDL2/SDL_endian.h:
-
-/usr/include/SDL2/SDL_error.h:
-
-/usr/include/SDL2/SDL_atomic.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/float.h:
-
-/usr/include/c++/12/list:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qmenu.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_brief_movie_dialog.cpp:
-
-/usr/include/c++/12/filesystem:
-
-/usr/include/c++/12/compare:
-
-/workspace/qteditor/mini/game/special_face.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qobject.h:
-
-qteditor_mini_autogen/include/ui_brief_addscreen.h:
-
-/usr/include/c++/12/array:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_object_keypad.cpp:
-
-qteditor_mini_autogen/include/ui_configcompiler.h:
-
-/usr/include/c++/12/bits/stl_vector.h:
-
-/workspace/qteditor/mini/viewer_prop_dialog.h:
-
-/usr/include/c++/12/bits/unordered_map.h:
-
-/usr/include/SDL2/SDL_assert.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qbasicatomic.h:
-
-/usr/include/SDL2/SDL_gesture.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qstring.h:
-
-/usr/include/c++/12/bits/enable_special_members.h:
-
-/workspace/qteditor/mini/hog_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qsystemdetection.h:
-
-/usr/include/c++/12/unordered_map:
-
-/usr/include/c++/12/tuple:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qtextoption.h:
-
-/workspace/qteditor/mini/font_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qpair.h:
-
-/usr/include/SDL2/SDL_log.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qatomic_cxx11.h:
-
-/usr/include/c++/12/bits/atomic_base.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/ctype_base.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QTreeWidgetItem:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qiterator.h:
-
-/workspace/qteditor/mini/sound_source_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qalgorithms.h:
-
-/workspace/qteditor/mini/lib/object_external.h:
-
-/workspace/qteditor/mini/lib/terrain.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/movdirintrin.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qstringalgorithms.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/immintrin.h:
-
-/usr/include/c++/12/typeinfo:
-
-/usr/include/c++/12/math.h:
-
-/workspace/qteditor/mini/robot_weapons_dialog.h:
-
-/usr/include/c++/12/bits/exception_ptr.h:
-
-/usr/include/c++/12/exception:
-
-/usr/include/c++/12/system_error:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512fintrin.h:
-
-/usr/include/c++/12/bits/locale_classes.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/clockid_t.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qrawfont.h:
-
-/usr/include/x86_64-linux-gnu/bits/time.h:
-
-/usr/include/x86_64-linux-gnu/bits/select.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/QPoint:
-
-/usr/include/asm-generic/errno.h:
-
-/usr/include/x86_64-linux-gnu/bits/sched.h:
-
-/usr/include/sched.h:
-
-/usr/include/wctype.h:
-
-/usr/include/pthread.h:
-
-/workspace/qteditor/mini/sndlib/hlsoundlib.h:
-
-/usr/include/c++/12/bits/stl_iterator_base_funcs.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx5124fmapsintrin.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qstringmatcher.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_dallas_sound_dialog.cpp:
-
-/workspace/qteditor/mini/lib/object.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qsizepolicy.h:
-
-/usr/include/c++/12/bits/ios_base.h:
-
-/usr/include/c++/12/streambuf:
-
-/usr/include/x86_64-linux-gnu/sys/cdefs.h:
-
-/usr/include/c++/12/numeric:
-
-/usr/include/SDL2/SDL_quit.h:
-
-/workspace/qteditor/mini/brief_button_dialog.h:
-
-/usr/include/c++/12/bits/streambuf_iterator.h:
-
-/usr/include/c++/12/bits/stream_iterator.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_main_window.cpp:
-
-/workspace/qteditor/mini/brief_button_dialog.cpp:
-
-/usr/include/c++/12/ios:
-
-/usr/include/c++/12/bits/basic_string.tcc:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_world_objects_player_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h:
-
-/usr/include/linux/errno.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/error_constants.h:
-
-/workspace/qteditor/mini/about_dialog.h:
-
-/workspace/qteditor/mini/selectrange_dialog.h:
-
-/usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h:
-
-/usr/include/time.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_hog_dialog.cpp:
-
-/workspace/qteditor/mini/lib/polymodel_external.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h:
-
-/usr/include/c++/12/ext/string_conversions.h:
-
-/workspace/qteditor/mini/lighting_keypad.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qabstracttextdocumentlayout.h:
-
-/usr/include/stdio.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_brief_text_edit_dialog.cpp:
-
-/usr/include/c++/12/bits/alloc_traits.h:
-
-/usr/include/c++/12/bits/functional_hash.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qlist.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qpalette.h:
-
-qteditor_mini_autogen/include/ui_aboutbox.h:
-
-/usr/include/c++/12/bits/range_access.h:
-
-/usr/include/c++/12/backward/binders.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qsharedpointer_impl.h:
-
-/usr/include/c++/12/bits/std_function.h:
-
-/workspace/qteditor/mini/lib/findintersection_external.h:
-
-/usr/include/c++/12/bits/stl_function.h:
-
-/usr/include/ctype.h:
-
-/usr/include/c++/12/bits/charconv.h:
-
-/usr/include/c++/12/cstring:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_tm.h:
-
-/usr/include/c++/12/bits/localefwd.h:
-
-/usr/include/c++/12/pstl/glue_algorithm_defs.h:
-
-/usr/include/c++/12/bits/allocator.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/c++locale.h:
-
-/usr/include/c++/12/bits/nested_exception.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/__FILE.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qcontainertools_impl.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QRadioButton:
-
-/usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qvector.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qcompilerdetection.h:
-
-/usr/include/c++/12/bits/ptr_traits.h:
-
-/usr/include/c++/12/bits/uniform_int_dist.h:
-
-/workspace/qteditor/mini/propai_dialog.h:
-
-/usr/include/c++/12/cwchar:
-
-/usr/include/c++/12/bits/cxxabi_init_exception.h:
-
-/usr/include/c++/12/bits/memoryfwd.h:
-
-/usr/include/c++/12/bits/stl_pair.h:
-
-/workspace/qteditor/mini/file_page_add_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qfile.h:
-
-/usr/include/SDL2/SDL_filesystem.h:
-
-/usr/include/c++/12/bits/stringfwd.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_megacell_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/bits/cpu-set.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qtouchdevice.h:
+qteditor_mini_autogen/EWIEGA46WW/moc_addscript_dialog.cpp:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_file_page_add_dialog.cpp:
 
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qsharedpointer.h:
+qteditor_mini_autogen/EWIEGA46WW/moc_about_dialog.cpp:
 
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qarraydata.h:
-
-/workspace/qteditor/mini/world_objects_generic_dialog.h:
-
-/usr/include/c++/12/bits/stl_construct.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QPushButton:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qtimer.h:
-
-/usr/include/c++/12/bits/stl_heap.h:
-
-/usr/include/c++/12/bits/fs_ops.h:
-
-/usr/include/c++/12/debug/debug.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qrect.h:
-
-/usr/include/c++/12/bits/stl_algobase.h:
-
-/usr/include/c++/12/pstl/execution_defs.h:
-
-/workspace/qteditor/mini/lib/aistruct_external.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h:
-
-qteditor_mini_autogen/include/ui_brief_addmovie.h:
-
-/usr/include/c++/12/algorithm:
-
-/usr/include/c++/12/bits/string_view.tcc:
-
-/workspace/qteditor/mini/dallas_prompt_dialogs.cpp:
-
-/usr/include/stdint.h:
-
-/usr/include/c++/12/ext/aligned_buffer.h:
-
-/usr/include/stdlib.h:
-
-/usr/include/c++/12/tr1/modified_bessel_func.tcc:
-
-/usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
-
-/usr/include/c++/12/cassert:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtwidgets-config.h:
-
-/usr/include/x86_64-linux-gnu/bits/endianness.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/lwpintrin.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qmargins.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_script_parm_dialog.cpp:
-
-/usr/include/c++/12/bits/stl_iterator_base_types.h:
-
-/workspace/qteditor/mini/dallas_main_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qprocessordetection.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
-
-/usr/include/c++/12/ext/numeric_traits.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_texture_keypad.cpp:
-
-/usr/include/c++/12/bits/erase_if.h:
-
-/workspace/qteditor/mini/lib/init.h:
-
-/usr/include/c++/12/bits/hashtable_policy.h:
-
-/workspace/qteditor/mini/dialog_test.cpp:
-
-/usr/include/c++/12/vector:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qinputdialog.h:
-
-/usr/include/limits.h:
-
-/usr/include/c++/12/new:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtreewidget.h:
-
-/usr/include/features.h:
-
-/usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qrgba64.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/os_defines.h:
-
-/workspace/qteditor/mini/texture_keypad.h:
-
-/workspace/qteditor/mini/orphan_remove_dialog.h:
-
-/usr/include/c++/12/bits/concept_check.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/c++config.h:
-
-/usr/include/c++/12/bits/cpp_type_traits.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/QSettings:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qcoreevent.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512bwintrin.h:
-
-/usr/include/c++/12/bits/codecvt.h:
-
-/usr/include/x86_64-linux-gnu/bits/wordsize.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/messages_members.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qtguiglobal.h:
-
-/usr/include/assert.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qstringliteral.h:
-
-/usr/include/asm-generic/errno-base.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/stddef.h:
-
-/usr/include/SDL2/SDL_pixels.h:
-
-/usr/include/features-time64.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/locale_t.h:
-
-/workspace/qteditor/mini/game/Mission.h:
-
-/usr/include/x86_64-linux-gnu/sys/single_threaded.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_table_file_edit_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QDialog:
-
-/workspace/qteditor/mini/object_keypad.h:
-
-/workspace/qteditor/mini/editor_settings.cpp:
-
-/workspace/qteditor/mini/cust_default_script_dialog.h:
+qteditor_mini_autogen/include/editor_test.moc:
 
 /workspace/qteditor/mini/water_procedural_dialog.h:
 
-/usr/include/c++/12/bits/algorithmfwd.h:
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QDir:
 
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qglobal.h:
-
-/usr/include/x86_64-linux-gnu/bits/locale.h:
-
-/usr/include/x86_64-linux-gnu/bits/posix1_lim.h:
-
-/usr/include/c++/12/ext/type_traits.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_brief_manage_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qitemselectionmodel.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtwidgetsglobal.h:
-
-/workspace/qteditor/mini/main_window.h:
-
-/usr/include/alloca.h:
-
-/usr/include/c++/12/bits/exception_defines.h:
-
-/usr/include/c++/12/bits/invoke.h:
-
-/usr/include/c++/12/bits/utility.h:
-
-/usr/include/c++/12/bits/functexcept.h:
-
-/usr/include/c++/12/bits/uses_allocator.h:
-
-/workspace/qteditor/mini/editor_view.h:
-
-/workspace/qteditor/mini/brief_bitmap_dialog.cpp:
-
-/usr/include/c++/12/memory:
-
-/usr/include/c++/12/type_traits:
-
-/usr/include/x86_64-linux-gnu/bits/local_lim.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
-
-/usr/include/x86_64-linux-gnu/bits/wchar.h:
-
-/workspace/qteditor/mini/world_textures_dialog.h:
-
-/usr/include/c++/12/cstdlib:
-
-/workspace/qteditor/mini/lib/list.h:
-
-/usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
-
-/usr/include/x86_64-linux-gnu/bits/statx-generic.h:
-
-/usr/include/wchar.h:
-
-/usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_generic_light_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/gthr.h:
-
-/workspace/qteditor/mini/about_dialog.cpp:
-
-/usr/include/c++/12/istream:
-
-/usr/include/c++/12/bits/locale_classes.tcc:
-
-/usr/include/SDL2/SDL_messagebox.h:
-
-/workspace/qteditor/mini/createscript_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractspinbox.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qpushbutton.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/limits.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qdatastream.h:
-
-/usr/include/c++/12/bits/exception.h:
-
-/usr/include/c++/12/bits/locale_facets_nonio.h:
-
-/usr/include/c++/12/bits/stl_iterator.h:
-
-/workspace/qteditor/mini/death_dialog.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/FILE.h:
-
-/workspace/qteditor/mini/brief_mission_flags_dialog.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/time_t.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QTreeWidget:
-
-qteditor_mini_autogen/include/ui_dallas_main_dialog.h:
-
-/usr/include/locale.h:
-
-/usr/include/c++/12/bits/fs_path.h:
-
-/usr/include/x86_64-linux-gnu/bits/setjmp.h:
-
-/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
-
-/usr/include/c++/12/iosfwd:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QInputDialog:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qdialog.h:
-
-/workspace/qteditor/mini/lib/3d.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h:
-
-/usr/include/c++/12/tr1/ell_integral.tcc:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qwidget.h:
-
-/usr/include/c++/12/bits/stl_numeric.h:
-
-/usr/include/c++/12/pstl/glue_numeric_defs.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qpaintdevice.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_dallas_strm_audio_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/asm/errno.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qbasictimer.h:
-
-/workspace/qteditor/mini/editor_lighting.cpp:
-
-/usr/include/SDL2/SDL_mutex.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/ctype_inline.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qtypeinfo.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/fxsrintrin.h:
-
-/usr/include/c++/12/tr1/poly_laguerre.tcc:
-
-/usr/include/c++/12/bits/allocated_ptr.h:
-
-/workspace/qteditor/mini/config_compiler_dialog.cpp:
-
-/usr/include/c++/12/pstl/pstl_config.h:
-
-/workspace/qteditor/mini/ambient_sound_element_dialog.cpp:
-
-/usr/include/c++/12/stdexcept:
-
-/usr/include/c++/12/string_view:
-
-/usr/include/c++/12/bits/locale_facets.h:
-
-/usr/include/SDL2/SDL_locale.h:
-
-/usr/include/c++/12/cctype:
-
-/workspace/qteditor/mini/ebnode.cpp:
-
-/usr/include/x86_64-linux-gnu/bits/errno.h:
-
-/usr/include/c++/12/bits/new_allocator.h:
-
-/usr/include/c++/12/cstddef:
-
-/usr/include/c++/12/cerrno:
-
-/workspace/qteditor/mini/megacell_dialog.h:
-
-/usr/include/SDL2/SDL_system.h:
-
-/usr/include/c++/12/bits/refwrap.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/rdseedintrin.h:
-
-/usr/include/c++/12/bits/move.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/atomic_word.h:
-
-/usr/include/c++/12/utility:
-
-/usr/include/x86_64-linux-gnu/bits/long-double.h:
-
-/usr/include/x86_64-linux-gnu/bits/byteswap.h:
-
-/workspace/qteditor/mini/compile_all_dialog.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h:
-
-/workspace/qteditor/mini/brief_main_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qtextdocument.h:
-
-/usr/include/c++/12/cmath:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_orphan_remove_dialog.cpp:
-
-/usr/include/c++/12/ext/atomicity.h:
-
-/usr/include/SDL2/SDL_timer.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qglobalstatic.h:
-
-/usr/include/c++/12/cstdint:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qicon.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_dallas_flag_dialog.cpp:
-
-/usr/include/c++/12/bits/stl_relops.h:
-
-/usr/include/c++/12/bits/predefined_ops.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qvalidator.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/xsaveoptintrin.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qnamespace.h:
-
-/usr/include/c++/12/initializer_list:
-
-/usr/include/x86_64-linux-gnu/asm/posix_types_64.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearraylist.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/tsxldtrkintrin.h:
-
-/usr/include/c++/12/clocale:
-
-/workspace/qteditor/mini/dallas_flag_dialog.cpp:
-
-/usr/include/SDL2/SDL_rwops.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qradiobutton.h:
-
-/workspace/qteditor/mini/dallas_main_dialog.cpp:
-
-/usr/include/string.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/stdarg.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/xtestintrin.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qvariant.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qlistwidget.h:
-
-/workspace/qteditor/mini/lib/room_external.h:
-
-/usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
-
-/usr/include/x86_64-linux-gnu/bits/floatn-common.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qslider.h:
-
-/workspace/qteditor/mini/logger/log.h:
-
-/workspace/qteditor/mini/cust_default_script_dialog.cpp:
-
-/workspace/qteditor/mini/ambient_sound_patterns_dialog.h:
-
-/usr/include/c++/12/chrono:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qpixmap.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qcheckbox.h:
-
-/usr/include/x86_64-linux-gnu/bits/stat.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/clwbintrin.h:
-
-/usr/include/x86_64-linux-gnu/bits/waitstatus.h:
-
-/workspace/qteditor/mini/brief_screen_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qhashfunctions.h:
-
-/usr/include/c++/12/iterator:
-
-/usr/include/c++/12/bits/unique_ptr.h:
-
-/workspace/qteditor/mini/generic_death_dialog.h:
-
-/usr/include/x86_64-linux-gnu/bits/struct_stat.h:
-
-/workspace/qteditor/mini/lib/d3_version.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/wint_t.h:
-
-/usr/include/x86_64-linux-gnu/bits/typesizes.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtabbar.h:
-
-/usr/include/x86_64-linux-gnu/sys/types.h:
-
-/usr/include/linux/limits.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_selectrange_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs_impl.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_procedural_dialog.cpp:
-
-/workspace/qteditor/mini/game/gamepath.h:
-
-/usr/include/c++/12/bits/atomic_lockfree_defines.h:
-
-/usr/include/x86_64-linux-gnu/bits/time64.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/timer_t.h:
-
-/usr/include/c++/12/bits/hashtable.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_addscript_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/bits/types.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qplaintextedit.h:
-
-/usr/include/c++/12/debug/assertions.h:
-
-/workspace/qteditor/mini/script_select_dialog.h:
-
-qteditor_mini_autogen/include/ui_compileall.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h:
-
-/usr/include/x86_64-linux-gnu/bits/stdint-uintn.h:
-
-/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h:
-
-/usr/include/c++/12/string:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_path_keypad.cpp:
-
-/workspace/qteditor/mini/lib/findintersection.h:
-
-/usr/include/strings.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qhash.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qlogging.h:
-
-/workspace/qteditor/mini/script_parm_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qlistview.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qflags.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qopengl.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qatomic.h:
-
-/usr/include/c++/12/bits/stl_algo.h:
-
-/usr/include/c++/12/atomic:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_dallas_main_dialog.cpp:
-
-/usr/include/c++/12/bits/postypes.h:
-
-/usr/include/c++/12/bits/stl_tempbuf.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/stdint.h:
-
-/usr/include/c++/12/ratio:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/QIntValidator:
-
-/workspace/qteditor/mini/lib/renderer.h:
-
-/usr/include/x86_64-linux-gnu/sys/select.h:
-
-/usr/include/x86_64-linux-gnu/bits/struct_mutex.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/shaintrin.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qwindowdefs.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qversiontagging.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs.h:
-
-/workspace/qteditor/mini/quickcompile_dialog.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_localize_script_dialog.cpp:
-
-/usr/include/c++/12/bits/stl_uninitialized.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qchar.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_world_objects_generic_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/asm/posix_types.h:
-
-/workspace/qteditor/mini/game/TelComEfxStructs.h:
-
-/usr/include/c++/12/bits/stl_list.h:
-
-/usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h:
-
-/usr/include/c++/12/bits/list.tcc:
-
-/usr/include/x86_64-linux-gnu/bits/posix2_lim.h:
-
-qteditor_mini_autogen/include/ui_brief_addtext.h:
-
-/usr/include/x86_64-linux-gnu/bits/uio_lim.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vbmi2intrin.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qstringlist.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/xsaveintrin.h:
-
-/usr/include/c++/12/functional:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qtextformat.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vbmi2vlintrin.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/gthr-default.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/cpu_defines.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qregexp.h:
-
-/workspace/qteditor/mini/game/AIMain.h:
-
-/workspace/qteditor/mini/lib/slew.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512bf16vlintrin.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qfiledevice.h:
-
-/usr/include/c++/12/sstream:
-
-/workspace/qteditor/mini/brief_bitmap_dialog.h:
-
-/usr/include/x86_64-linux-gnu/bits/waitflags.h:
-
-/usr/include/c++/12/bits/basic_ios.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qline.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qscopedpointer.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qcoreapplication.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qvector2d.h:
-
-/workspace/qteditor/mini/ebnode.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qmetatype.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qrefcount.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QApplication:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qvarlengtharray.h:
-
-/workspace/qteditor/mini/d3_editor_init.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qsysinfo.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qcontainerfwd.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_doorway_keypad.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QTextEdit:
-
-/workspace/qteditor/mini/dallas_usertypes_dialog.cpp:
-
-/usr/include/c++/12/bits/stl_tree.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtabwidget.h:
-
-/usr/include/c++/12/bits/stl_multimap.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512fp16vlintrin.h:
-
-/usr/include/c++/12/map:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qobject_impl.h:
-
-/workspace/qteditor/mini/lib/Ddgr.h:
-
-/workspace/qteditor/mini/lib/win32_types_stub.h:
-
-qteditor_mini_autogen/include/ui_brief_addbutton.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_table_file_filter_dialog.cpp:
-
-/usr/include/c++/12/limits:
-
-/usr/include/c++/12/ctime:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qurl.h:
-
-/workspace/qteditor/mini/game/descent.h:
-
-/usr/include/c++/12/bits/parse_numbers.h:
-
-/workspace/qteditor/mini/lib/gamefont.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qsize.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qregularexpression.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qpoint.h:
-
-/workspace/qteditor/mini/editor_file_dialogs.cpp:
-
-qteditor_mini_autogen/include/ui_brief_addbitmap.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_room_keypad.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qcolor.h:
-
-/workspace/qteditor/mini/file_page_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qrgb.h:
-
-/workspace/qteditor/mini/anim_states_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qbrush.h:
-
-/workspace/qteditor/mini/level_properties_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qmatrix.h:
-
-/usr/include/SDL2/SDL_gamecontroller.h:
-
-/usr/include/c++/12/tr1/gamma.tcc:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_preferences_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qpolygon.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qkeysequence.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/c++allocator.h:
-
-/usr/include/x86_64-linux-gnu/bits/math-vector.h:
-
-/usr/include/c++/12/iomanip:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/syslimits.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qregion.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qiodevice.h:
-
-/workspace/qteditor/mini/gr.h:
-
-qteditor_mini_autogen/include/ui_dallas_strm_audio_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qtransform.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_sound_source_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qpixelformat.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qshareddata.h:
-
-/workspace/qteditor/mini/world_objects_door_dialog.h:
-
-/usr/include/c++/12/bits/stl_raw_storage_iter.h:
-
-/usr/include/c++/12/bits/align.h:
-
-/usr/include/x86_64-linux-gnu/bits/wctype-wchar.h:
-
-/usr/include/c++/12/tr1/bessel_function.tcc:
-
-/usr/include/c++/12/bits/shared_ptr.h:
-
-qteditor_mini_autogen/include/ui_brief_main.h:
-
-/usr/include/c++/12/bits/istream.tcc:
-
-/usr/include/c++/12/bits/shared_ptr_base.h:
-
-/usr/include/c++/12/bits/shared_ptr_atomic.h:
-
-/workspace/qteditor/mini/physics_dialog.h:
-
-/usr/include/c++/12/backward/auto_ptr.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qimage.h:
-
-/usr/include/SDL2/SDL_main.h:
-
-/usr/include/c++/12/bits/stl_map.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qfont.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_dallas_prompt_dialogs.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qfontmetrics.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qfontinfo.h:
-
-/usr/include/c++/12/bits/node_handle.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qcursor.h:
-
-/usr/include/c++/12/variant:
-
-/usr/include/SDL2/SDL_guid.h:
-
-/usr/include/c++/12/bits/std_abs.h:
-
-/usr/include/c++/12/bits/char_traits.h:
-
-/usr/include/x86_64-linux-gnu/bits/floatn.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qeventloop.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qguiapplication.h:
-
-/usr/include/c++/12/bits/ostream_insert.h:
-
-/workspace/qteditor/mini/addscript_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qinputmethod.h:
-
-/usr/include/x86_64-linux-gnu/bits/endian.h:
-
-/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
-
-/usr/include/endian.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qlocale.h:
-
-/workspace/qteditor/mini/customize_object_dialog.h:
-
-/usr/include/x86_64-linux-gnu/bits/stdio_lim.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/QVariant:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QLabel:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/vpclmulqdqintrin.h:
-
-/workspace/qteditor/mini/brief_movie_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qlabel.h:
-
-/usr/include/x86_64-linux-gnu/bits/timex.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QButtonGroup:
-
-/workspace/qteditor/mini/lib/vecmat_external.h:
-
-/usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qframe.h:
-
-/usr/include/x86_64-linux-gnu/asm/bitsperlong.h:
-
-/workspace/qteditor/mini/addscript_dialog.h:
-
-/usr/include/c++/12/bits/stl_bvector.h:
-
-/usr/include/c++/12/bits/streambuf.tcc:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qactiongroup.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QAction:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vpopcntdqintrin.h:
-
-/usr/include/c++/12/bits/locale_conv.h:
-
-/usr/include/x86_64-linux-gnu/bits/iscanonical.h:
-
-/workspace/qteditor/mini/lib/object_external_struct.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qapplication.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qaction.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QComboBox:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/QStringList:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qcombobox.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qstyleoption.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qstyle.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractitemmodel.h:
-
-/workspace/qteditor/mini/dallas_usertypes_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QLineEdit:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearray.h:
-
-/usr/include/c++/12/bits/fs_dir.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qlineedit.h:
-
-/usr/include/x86_64-linux-gnu/bits/timesize.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractscrollarea.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractitemdelegate.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qtextcursor.h:
-
-/usr/include/c++/12/cstdio:
-
-/workspace/qteditor/mini/brief_sound_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qpen.h:
-
-/workspace/qteditor/mini/ai_settings_dialog.cpp:
-
-/workspace/qteditor/mini/ai_settings_dialog.h:
-
-qteditor_mini_autogen/include/ui_ai.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/amxint8intrin.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QCheckBox:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_config_compiler_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QGroupBox:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qgroupbox.h:
-
-/usr/include/c++/12/bits/cxxabi_forced.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractbutton.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qbuttongroup.h:
-
-/usr/include/SDL2/SDL_surface.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QSlider:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_file_page_dialog.cpp:
-
-/workspace/qteditor/mini/doorway_keypad.h:
-
-qteditor_mini_autogen/include/ui_ambientsoundelement.h:
-
-/workspace/qteditor/mini/ambient_sound_patterns_dialog.cpp:
-
-/workspace/qteditor/mini/dallas_strm_audio_dialog.cpp:
-
-qteditor_mini_autogen/include/ui_ambientsoundpatterns.h:
-
-/usr/include/SDL2/SDL_config.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QListWidget:
-
-qteditor_mini_autogen/include/ui_custdefscript.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractitemview.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512fp16intrin.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qset.h:
-
-/workspace/qteditor/mini/anim_states_dialog.h:
-
-qteditor_mini_autogen/include/ui_animstates.h:
-
-/workspace/qteditor/mini/lib/bitmap.h:
-
-/usr/include/c++/12/bits/hash_bytes.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qnumeric.h:
-
-/workspace/qteditor/mini/brief_mission_flags_dialog.cpp:
-
-/workspace/qteditor/mini/osiris_status_dialog.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qgenericatomic.h:
-
-/usr/include/c++/12/ext/concurrence.h:
-
-/workspace/qteditor/mini/brief_main_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qmainwindow.h:
-
-/workspace/qteditor/mini/brief_manage_dialog.cpp:
-
-/usr/include/SDL2/SDL_loadso.h:
-
-/workspace/qteditor/mini/brief_manage_dialog.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_world_textures_dialog.cpp:
-
-/workspace/qteditor/mini/lib/door.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vbmiintrin.h:
-
-qteditor_mini_autogen/include/ui_brief_manage.h:
-
-/usr/include/c++/12/ostream:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_object_tree_dialog.cpp:
-
-/workspace/qteditor/mini/lib/game.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qtgui-config.h:
-
-qteditor_mini_autogen/include/ui_briefmissionflags.h:
-
-/workspace/qteditor/mini/brief_movie_dialog.cpp:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_brief_mission_flags_dialog.cpp:
-
-/usr/include/math.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
-
-/workspace/qteditor/mini/brief_screen_dialog.cpp:
-
-/workspace/qteditor/mini/brief_sound_dialog.cpp:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_player_weapons_dialog.cpp:
-
-/usr/include/c++/12/pstl/glue_memory_defs.h:
-
-qteditor_mini_autogen/include/ui_brief_addsound.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_osiris_status_dialog.cpp:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/adxintrin.h:
-
-/workspace/qteditor/mini/createscript_dialog.cpp:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_anim_states_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qconfig.h:
-
-/usr/include/c++/12/bit:
-
-/workspace/qteditor/mini/brief_text_edit_dialog.cpp:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/xsavecintrin.h:
-
-/workspace/qteditor/mini/brief_text_edit_dialog.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/error_t.h:
-
-/workspace/qteditor/mini/grdefs.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/QVector3D:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QColorDialog:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qmap.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qcolordialog.h:
-
-/usr/include/c++/12/stdlib.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QPlainTextEdit:
-
-/workspace/qteditor/mini/object_properties_dialog.h:
-
-/workspace/qteditor/mini/dallas_texture_dialog.cpp:
-
-/workspace/qteditor/mini/d3_editor_init.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qtextlayout.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qevent.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qglyphrun.h:
-
-/workspace/qteditor/mini/editor/object_lighting.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/tmmintrin.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qfontdatabase.h:
-
-/usr/include/c++/12/bits/basic_string.h:
-
-/usr/include/stdc-predef.h:
-
-/workspace/qteditor/mini/lib/grtext.h:
-
-/workspace/qteditor/mini/ambient_sound_element_dialog.h:
-
-/workspace/qteditor/mini/lib/grdefs.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/sgxintrin.h:
-
-/workspace/qteditor/mini/config_compiler_dialog.h:
-
-qteditor_mini_autogen/EWIEGA46WW/moc_ai_settings_dialog.cpp:
-
-qteditor_mini_autogen/include/ui_createscript.h:
-
-/workspace/qteditor/mini/compile_all_dialog.cpp:
-
-/usr/include/c++/12/bits/fs_fwd.h:
-
-/usr/include/x86_64-linux-gnu/bits/flt-eval-method.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QMessageBox:
-
-/usr/include/SDL2/SDL_rect.h:
-
-/usr/include/c++/12/tr1/poly_hermite.tcc:
-
-/usr/include/x86_64-linux-gnu/gnu/stubs.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qmessagebox.h:
-
-/workspace/qteditor/mini/customize_object_dialog.cpp:
-
-/usr/include/x86_64-linux-gnu/qt5/QtGui/qvector3d.h:
-
-qteditor_mini_autogen/include/ui_customize_object.h:
-
-/usr/include/c++/12/locale:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qrubberband.h:
-
-/usr/include/x86_64-linux-gnu/bits/xopen_lim.h:
-
-/usr/include/c++/12/cwctype:
-
-/usr/include/c++/12/bits/vector.tcc:
-
-/usr/include/c++/12/tr1/hypergeometric.tcc:
-
-/usr/include/c++/12/bits/locale_facets.tcc:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512dqintrin.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/time_members.h:
-
-/usr/include/x86_64-linux-gnu/bits/thread-shared-types.h:
-
-/usr/include/libintl.h:
-
-/usr/include/c++/12/bits/sstream.tcc:
-
-/usr/include/SDL2/SDL_audio.h:
-
-/usr/include/c++/12/bits/locale_facets_nonio.tcc:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512ifmaintrin.h:
-
-/usr/include/c++/12/bits/quoted_string.h:
-
-/usr/include/SDL2/SDL_stdinc.h:
-
-/usr/include/c++/12/bits/basic_ios.tcc:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vldqintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/xmmintrin.h:
-
-/usr/include/c++/12/tr1/riemann_zeta.tcc:
-
-/workspace/qteditor/mini/editline_dialog.h:
-
-/usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h:
-
-/usr/include/c++/12/bits/ostream.tcc:
-
-/usr/include/c++/12/codecvt:
-
-/usr/include/SDL2/SDL.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractslider.h:
-
-/usr/include/SDL2/SDL_platform.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qstringview.h:
-
-/usr/include/SDL2/begin_code.h:
-
-/usr/include/errno.h:
-
-/usr/include/SDL2/close_code.h:
-
-/usr/include/inttypes.h:
-
-qteditor_mini_autogen/include/ui_addscript.h:
-
-/usr/include/x86_64-linux-gnu/bits/fp-logb.h:
-
-/usr/include/x86_64-linux-gnu/bits/fp-fast.h:
-
-/workspace/qteditor/mini/lib/room.h:
-
-/usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h:
-
-/usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
-
-/usr/include/x86_64-linux-gnu/qt5/QtCore/qtcore-config.h:
-
-/usr/include/c++/12/bits/specfun.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/12/include/uintrintrin.h:
-
-/usr/include/c++/12/ext/alloc_traits.h:
-
-/usr/include/c++/12/tr1/special_function_util.h:
-
-/usr/include/c++/12/tr1/beta_function.tcc:
-
-qteditor_mini_autogen/include/ui_doorwaykeypad.h:
+/usr/include/c++/12/tr1/legendre_function.tcc:
 
 /usr/include/c++/12/bits/chrono.h:
 
-/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtextedit.h:
+qteditor_mini_autogen/include/ui_doorwaykeypad.h:
 
-/usr/include/c++/12/tr1/exp_integral.tcc:
+qteditor_mini_autogen/EWIEGA46WW/moc_megacell_keypad.cpp:
+
+/usr/include/c++/12/tr1/beta_function.tcc:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstorageinfo.h:
+
+/usr/include/c++/12/ext/alloc_traits.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtcore-config.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
+
+/usr/include/x86_64-linux-gnu/bits/fp-logb.h:
+
+qteditor_mini_autogen/include/ui_addscript.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qmimetype.h:
+
+/usr/include/inttypes.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractslider.h:
+
+/usr/include/c++/12/codecvt:
+
+/usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h:
+
+/workspace/qteditor/mini/editline_dialog.h:
+
+/usr/include/c++/12/tr1/riemann_zeta.tcc:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/xmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vldqintrin.h:
+
+/usr/include/c++/12/bits/basic_ios.tcc:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_dallas_strm_audio_dialog.cpp:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/uintrintrin.h:
+
+/usr/include/SDL2/SDL_stdinc.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qprocess.h:
+
+/usr/include/c++/12/bits/quoted_string.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512ifmaintrin.h:
+
+/usr/include/c++/12/bits/locale_facets_nonio.tcc:
+
+/usr/include/SDL2/SDL_audio.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512dqintrin.h:
+
+/usr/include/c++/12/bits/locale_facets.tcc:
+
+/usr/include/c++/12/bits/vector.tcc:
+
+/usr/include/x86_64-linux-gnu/bits/xopen_lim.h:
+
+/usr/include/c++/12/locale:
+
+qteditor_mini_autogen/include/ui_customize_object.h:
+
+/usr/include/x86_64-linux-gnu/bits/fp-fast.h:
+
+/usr/include/x86_64-linux-gnu/gnu/stubs.h:
+
+/usr/include/c++/12/tr1/poly_hermite.tcc:
+
+/usr/include/SDL2/SDL_rect.h:
+
+/usr/include/c++/12/bits/fs_fwd.h:
+
+/workspace/qteditor/mini/compile_all_dialog.cpp:
+
+qteditor_mini_autogen/include/ui_createscript.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qresultstore.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/sgxintrin.h:
+
+/workspace/qteditor/mini/ambient_sound_element_dialog.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_robot_weapons_dialog.cpp:
+
+/workspace/qteditor/mini/lib/grtext.h:
+
+/usr/include/stdc-predef.h:
+
+/usr/include/c++/12/bits/basic_string.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/tmmintrin.h:
+
+/workspace/qteditor/mini/editor/object_lighting.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qreadwritelock.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qevent.h:
+
+/workspace/qteditor/mini/d3_editor_init.h:
+
+/workspace/qteditor/mini/dallas_texture_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QPlainTextEdit:
+
+/usr/include/c++/12/stdlib.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qcolordialog.h:
+
+/workspace/qteditor/mini/grdefs.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/error_t.h:
+
+/workspace/qteditor/mini/brief_text_edit_dialog.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/xsavecintrin.h:
+
+/workspace/qteditor/mini/brief_text_edit_dialog.cpp:
+
+/usr/include/c++/12/bit:
+
+/workspace/qteditor/mini/createscript_dialog.cpp:
+
+/usr/include/c++/12/pstl/glue_memory_defs.h:
+
+/usr/include/math.h:
+
+/workspace/qteditor/mini/brief_movie_dialog.cpp:
+
+qteditor_mini_autogen/include/ui_briefmissionflags.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qtgui-config.h:
+
+/workspace/qteditor/mini/lib/game.h:
+
+/usr/include/c++/12/ostream:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vbmiintrin.h:
+
+/workspace/qteditor/mini/brief_manage_dialog.h:
+
+/usr/include/SDL2/SDL_loadso.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_ai_settings_dialog.cpp:
+
+/workspace/qteditor/mini/brief_manage_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qmainwindow.h:
+
+/workspace/qteditor/mini/brief_main_dialog.cpp:
+
+/workspace/qteditor/mini/osiris_status_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qnumeric.h:
+
+/workspace/qteditor/mini/lib/bitmap.h:
+
+qteditor_mini_autogen/include/ui_animstates.h:
+
+/workspace/qteditor/mini/anim_states_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qset.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_propscript_dialog.cpp:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512fp16intrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QAbstractButton:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/time_members.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractitemview.h:
+
+qteditor_mini_autogen/include/ui_custdefscript.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QListWidget:
+
+/usr/include/SDL2/SDL_config.h:
+
+/workspace/qteditor/mini/dallas_strm_audio_dialog.cpp:
+
+/workspace/qteditor/mini/ambient_sound_patterns_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qendian.h:
 
 qteditor_mini_autogen/EWIEGA46WW/moc_font_dialog.cpp:
 
-/usr/include/c++/12/tr1/legendre_function.tcc:
+/workspace/qteditor/mini/doorway_keypad.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QSlider:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qbuttongroup.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractbutton.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_quickcompile_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qgroupbox.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_texture_keypad.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsignalmapper.h:
+
+/usr/include/c++/12/tr1/exp_integral.tcc:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstringview.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QCheckBox:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/amxint8intrin.h:
+
+qteditor_mini_autogen/include/ui_ai.h:
+
+/workspace/qteditor/mini/ai_settings_dialog.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_megacell_dialog.cpp:
+
+/workspace/qteditor/mini/ai_settings_dialog.cpp:
+
+/usr/include/c++/12/cstdio:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qttestversion.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qtextcursor.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractitemdelegate.h:
+
+/usr/include/x86_64-linux-gnu/bits/timesize.h:
+
+/usr/include/c++/12/bits/fs_dir.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearray.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractitemmodel.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qhistorystate.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qstyle.h:
+
+/usr/include/x86_64-linux-gnu/bits/iscanonical.h:
+
+/usr/include/c++/12/bits/locale_conv.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vpopcntdqintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QAction:
+
+/usr/include/c++/12/bits/streambuf.tcc:
+
+/usr/include/c++/12/bits/stl_bvector.h:
+
+/workspace/qteditor/mini/addscript_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QButtonGroup:
+
+/workspace/qteditor/mini/brief_movie_dialog.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/vpclmulqdqintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QLabel:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QVariant:
+
+/workspace/qteditor/mini/customize_object_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qlocale.h:
+
+/usr/include/endian.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
+
+/usr/include/x86_64-linux-gnu/bits/endian.h:
+
+/workspace/qteditor/mini/addscript_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qguiapplication.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qeventloop.h:
+
+/usr/include/x86_64-linux-gnu/bits/floatn.h:
+
+/usr/include/c++/12/bits/char_traits.h:
+
+/usr/include/SDL2/SDL_guid.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QtCore:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcontiguouscache.h:
+
+/usr/include/c++/12/variant:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qcursor.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qfontinfo.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qdockwidget.h:
+
+/usr/include/c++/12/bits/specfun.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qfont.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qimage.h:
+
+/usr/include/c++/12/backward/auto_ptr.h:
+
+qteditor_mini_autogen/include/ui_brief_main.h:
+
+/usr/include/c++/12/tr1/bessel_function.tcc:
+
+/usr/include/x86_64-linux-gnu/bits/wctype-wchar.h:
+
+/usr/include/c++/12/bits/align.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qoperatingsystemversion.h:
+
+/usr/include/c++/12/bits/stl_raw_storage_iter.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qpixelformat.h:
+
+qteditor_mini_autogen/include/ui_dallas_strm_audio_dialog.h:
+
+/workspace/qteditor/mini/gr.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qiodevice.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qregion.h:
+
+/usr/include/c++/12/iomanip:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/QVector3D:
+
+/usr/include/x86_64-linux-gnu/bits/math-vector.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qkeysequence.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qpolygon.h:
+
+/usr/include/c++/12/tr1/gamma.tcc:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qmatrix.h:
+
+/workspace/qteditor/mini/level_properties_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qbrush.h:
+
+/workspace/qteditor/mini/anim_states_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qrgb.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qcolor.h:
+
+qteditor_mini_autogen/mocs_compilation.cpp:
+
+qteditor_mini_autogen/include/ui_brief_addbitmap.h:
+
+/workspace/qteditor/mini/editor_file_dialogs.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qpoint.h:
+
+/workspace/qteditor/mini/lib/ObjScript.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qregularexpression.h:
+
+/workspace/qteditor/mini/lib/gamefont.h:
+
+/usr/include/c++/12/bits/parse_numbers.h:
+
+/usr/include/c++/12/limits:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtest_gui.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qobject_impl.h:
+
+/usr/include/c++/12/map:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512fp16vlintrin.h:
+
+/usr/include/c++/12/future:
+
+/usr/include/c++/12/bits/stl_multimap.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qgenericatomic.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtabwidget.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcache.h:
+
+/usr/include/c++/12/bits/stl_tree.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QTextEdit:
+
+/usr/include/x86_64-linux-gnu/bits/flt-eval-method.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsysinfo.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QApplication:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qrefcount.h:
+
+/usr/include/c++/12/bits/ostream.tcc:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtextboundaryfinder.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qmetatype.h:
+
+/workspace/qteditor/mini/ebnode.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qvector2d.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcoreapplication.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qscopedpointer.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qpen.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qline.h:
+
+/usr/include/x86_64-linux-gnu/bits/waitflags.h:
+
+/workspace/qteditor/mini/brief_bitmap_dialog.h:
+
+/usr/include/c++/12/sstream:
+
+/workspace/qteditor/mini/lib/ship.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qfiledevice.h:
+
+/workspace/qteditor/mini/lib/slew.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qregexp.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/cpu_defines.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vbmi2vlintrin.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
+
+/usr/include/c++/12/functional:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/xsaveintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstringlist.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vbmi2intrin.h:
+
+qteditor_mini_autogen/include/ui_brief_addsound.h:
+
+qteditor_mini_autogen/include/ui_brief_addtext.h:
+
+/usr/include/c++/12/bits/list.tcc:
+
+/usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h:
+
+/usr/include/c++/12/bits/stl_list.h:
+
+/workspace/qteditor/mini/game/TelComEfxStructs.h:
+
+/usr/include/x86_64-linux-gnu/asm/posix_types.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qchar.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qvarlengtharray.h:
+
+/workspace/qteditor/mini/quickcompile_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qversiontagging.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qwindowdefs.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/shaintrin.h:
+
+/usr/include/x86_64-linux-gnu/bits/struct_mutex.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/QIntValidator:
+
+/usr/include/c++/12/bits/stl_tempbuf.h:
+
+/usr/include/c++/12/bits/postypes.h:
+
+/usr/include/c++/12/atomic:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearraymatcher.h:
+
+/usr/include/c++/12/bits/stl_algo.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qflags.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qlistview.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qlogging.h:
+
+/usr/include/strings.h:
+
+/workspace/qteditor/mini/lib/findintersection.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcontainerfwd.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstringlistmodel.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdint-uintn.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h:
+
+qteditor_mini_autogen/include/ui_compileall.h:
+
+/workspace/qteditor/mini/script_select_dialog.h:
+
+/usr/include/c++/12/debug/assertions.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qresource.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h:
+
+/usr/include/x86_64-linux-gnu/bits/types.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/adxintrin.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/timer_t.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_brief_bitmap_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/bits/time64.h:
+
+/workspace/qteditor/mini/game/gamepath.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs_impl.h:
+
+/usr/include/linux/limits.h:
+
+/usr/include/x86_64-linux-gnu/sys/types.h:
+
+/usr/include/errno.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtabbar.h:
+
+/usr/include/x86_64-linux-gnu/bits/typesizes.h:
+
+/usr/include/x86_64-linux-gnu/bits/struct_stat.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_object_properties_dialog.cpp:
+
+/workspace/qteditor/mini/generic_death_dialog.h:
+
+/usr/include/c++/12/bits/unique_ptr.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qidentityproxymodel.h:
+
+/usr/include/c++/12/iterator:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qhashfunctions.h:
+
+/workspace/qteditor/mini/brief_screen_dialog.h:
+
+/usr/include/c++/12/condition_variable:
+
+/usr/include/c++/12/bits/sstream.tcc:
+
+/usr/include/x86_64-linux-gnu/bits/stat.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qbenchmark.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qglyphrun.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qcheckbox.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qpixmap.h:
+
+/usr/include/c++/12/chrono:
+
+/usr/include/x86_64-linux-gnu/bits/stdio_lim.h:
+
+/workspace/qteditor/mini/ambient_sound_patterns_dialog.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_object_keypad.cpp:
+
+/workspace/qteditor/mini/cust_default_script_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/c++allocator.h:
+
+/workspace/qteditor/mini/logger/log.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qtextlayout.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qabstracttransition.h:
+
+/usr/include/x86_64-linux-gnu/bits/floatn-common.h:
+
+/workspace/qteditor/mini/lib/room_external.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qvariantanimation.h:
+
+/usr/include/c++/12/bits/fstream.tcc:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/xtestintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/stdarg.h:
+
+/workspace/qteditor/mini/dallas_main_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qtransform.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qradiobutton.h:
+
+/usr/include/SDL2/SDL_rwops.h:
+
+/workspace/qteditor/mini/dallas_flag_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qfuturesynchronizer.h:
+
+/usr/include/c++/12/clocale:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/tsxldtrkintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qconfig.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qinputmethod.h:
+
+/usr/include/x86_64-linux-gnu/asm/posix_types_64.h:
+
+/usr/include/c++/12/initializer_list:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qnamespace.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/xsaveoptintrin.h:
+
+/usr/include/c++/12/bits/predefined_ops.h:
+
+/usr/include/c++/12/bits/stl_relops.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qicon.h:
+
+/usr/include/c++/12/tr1/hypergeometric.tcc:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qglobalstatic.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_selectrange_dialog.cpp:
+
+/usr/include/SDL2/SDL_timer.h:
+
+/usr/include/c++/12/cmath:
+
+/workspace/qteditor/mini/lib/win32_types_stub.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qtextdocument.h:
+
+/workspace/qteditor/mini/brief_main_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QtCoreDepends:
+
+/usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h:
+
+/workspace/qteditor/mini/compile_all_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qfutureinterface.h:
+
+/usr/include/x86_64-linux-gnu/bits/byteswap.h:
+
+/usr/include/libintl.h:
+
+/usr/include/x86_64-linux-gnu/bits/long-double.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/atomic_word.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/rdseedintrin.h:
+
+/usr/include/c++/12/bits/refwrap.h:
+
+/usr/include/SDL2/SDL_system.h:
+
+/workspace/qteditor/mini/megacell_dialog.h:
+
+/workspace/qteditor/mini/customize_object_dialog.cpp:
+
+/usr/include/c++/12/cerrno:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearraylist.h:
+
+/usr/include/c++/12/bits/new_allocator.h:
+
+/usr/include/c++/12/bits/shared_ptr_base.h:
+
+/usr/include/x86_64-linux-gnu/bits/errno.h:
+
+/workspace/qteditor/mini/ebnode.cpp:
+
+/usr/include/c++/12/cctype:
+
+/usr/include/SDL2/SDL_locale.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qmimedata.h:
+
+/usr/include/c++/12/string_view:
+
+/usr/include/c++/12/bits/hashtable.h:
+
+/usr/include/c++/12/stdexcept:
+
+/workspace/qteditor/mini/config_compiler_dialog.cpp:
+
+/usr/include/c++/12/tr1/poly_laguerre.tcc:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/fxsrintrin.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/ctype_inline.h:
+
+/usr/include/SDL2/SDL_mutex.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qbasictimer.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtypetraits.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qpaintdevice.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qmessageauthenticationcode.h:
+
+/usr/include/c++/12/pstl/glue_numeric_defs.h:
+
+/usr/include/c++/12/bits/stl_numeric.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qwidget.h:
+
+/usr/include/c++/12/tr1/ell_integral.tcc:
+
+/workspace/qteditor/mini/lib/3d.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qdialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QInputDialog:
+
+/usr/include/c++/12/iosfwd:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QStringList:
+
+/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
+
+/usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
+
+/usr/include/x86_64-linux-gnu/bits/setjmp.h:
+
+/usr/include/c++/12/bits/fs_path.h:
+
+/usr/include/locale.h:
+
+qteditor_mini_autogen/include/ui_dallas_main_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QTreeWidget:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qlabel.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/time_t.h:
+
+/workspace/qteditor/mini/brief_mission_flags_dialog.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/FILE.h:
+
+/workspace/qteditor/mini/death_dialog.h:
+
+/usr/include/c++/12/bits/stl_iterator.h:
+
+/usr/include/c++/12/tr1/special_function_util.h:
+
+/usr/include/c++/12/bits/locale_facets_nonio.h:
+
+/usr/include/c++/12/bits/exception.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/limits.h:
+
+/workspace/qteditor/mini/object_properties_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qpushbutton.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractspinbox.h:
+
+/workspace/qteditor/mini/createscript_dialog.h:
+
+/usr/include/SDL2/SDL_messagebox.h:
+
+/usr/include/c++/12/bits/cxxabi_forced.h:
+
+/usr/include/c++/12/bits/locale_classes.tcc:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/stdint.h:
+
+/usr/include/c++/12/istream:
+
+/workspace/qteditor/mini/about_dialog.cpp:
+
+/workspace/qteditor/mini/dallas_usertypes_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/gthr.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
+
+/usr/include/wchar.h:
+
+/usr/include/x86_64-linux-gnu/bits/statx-generic.h:
+
+/usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
+
+/workspace/qteditor/mini/lib/list.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcborarray.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qlineedit.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtimezone.h:
+
+/workspace/qteditor/mini/world_textures_dialog.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qsurface.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtranslator.h:
+
+/usr/include/c++/12/cstddef:
+
+/usr/include/c++/12/type_traits:
+
+/workspace/qteditor/mini/brief_bitmap_dialog.cpp:
+
+/workspace/qteditor/mini/editor_view.h:
+
+/usr/include/c++/12/bits/exception_defines.h:
+
+qteditor_mini_autogen/include/ui_brief_manage.h:
+
+/usr/include/alloca.h:
+
+/workspace/qteditor/mini/main_window.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtwidgetsglobal.h:
+
+/usr/include/x86_64-linux-gnu/asm/errno.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qurlquery.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qrubberband.h:
+
+/usr/include/c++/12/ext/type_traits.h:
+
+/usr/include/x86_64-linux-gnu/bits/posix1_lim.h:
+
+/workspace/qteditor/mini/lib/d3_version.h:
+
+/usr/include/x86_64-linux-gnu/bits/locale.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qglobal.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/wint_t.h:
+
+/usr/include/c++/12/bits/algorithmfwd.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QMessageBox:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qvalidator.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qconcatenatetablesproxymodel.h:
+
+/usr/include/SDL2/begin_code.h:
+
+/workspace/qteditor/mini/cust_default_script_dialog.h:
+
+/usr/include/c++/12/string:
+
+/workspace/qteditor/mini/editor_settings.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qrunnable.h:
+
+/workspace/qteditor/mini/object_keypad.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QDialog:
+
+/usr/include/SDL2/SDL_platform.h:
+
+/usr/include/x86_64-linux-gnu/sys/single_threaded.h:
+
+/workspace/qteditor/mini/game/Mission.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/locale_t.h:
+
+/usr/include/features-time64.h:
+
+/workspace/qteditor/mini/lib/door.h:
+
+/usr/include/SDL2/SDL_pixels.h:
+
+/usr/include/asm-generic/errno-base.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qfileselector.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstringliteral.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qtguiglobal.h:
+
+/workspace/qteditor/mini/config_compiler_dialog.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/messages_members.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_dallas_flag_dialog.cpp:
+
+/usr/include/c++/12/bits/node_handle.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcborstreamwriter.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtestsystem.h:
+
+/usr/include/x86_64-linux-gnu/bits/wordsize.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512bwintrin.h:
+
+qteditor_mini_autogen/include/ui_ambientsoundelement.h:
+
+/usr/include/SDL2/SDL_gamecontroller.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcoreevent.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QSettings:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qfontmetrics.h:
+
+/usr/include/c++/12/bits/cpp_type_traits.h:
+
+/workspace/qteditor/mini/texture_keypad.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/os_defines.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtestkeyboard.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qrgba64.h:
+
+/usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
+
+/usr/include/features.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtreewidget.h:
+
+/usr/include/limits.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qinputdialog.h:
+
+/usr/include/c++/12/pstl/pstl_config.h:
+
+/usr/include/c++/12/vector:
+
+/workspace/qteditor/mini/dialog_test.cpp:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_world_weapons_dialog.cpp:
+
+/usr/include/c++/12/bits/erase_if.h:
+
+/usr/include/c++/12/ext/numeric_traits.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcommandlineparser.h:
+
+/usr/include/c++/12/bits/std_abs.h:
+
+/workspace/qteditor/mini/dallas_main_dialog.h:
+
+/usr/include/c++/12/bits/stl_iterator_base_types.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qmargins.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/lwpintrin.h:
+
+/usr/include/x86_64-linux-gnu/bits/timex.h:
+
+/usr/include/x86_64-linux-gnu/bits/endianness.h:
+
+/usr/include/c++/12/bits/functexcept.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtwidgets-config.h:
+
+/usr/include/x86_64-linux-gnu/bits/thread-shared-types.h:
+
+/usr/include/c++/12/cassert:
+
+/usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
+
+/usr/include/c++/12/tr1/modified_bessel_func.tcc:
+
+/usr/include/stdlib.h:
+
+/usr/include/c++/12/bits/istream.tcc:
+
+/usr/include/c++/12/bits/allocated_ptr.h:
+
+/usr/include/stdint.h:
+
+/workspace/qteditor/mini/dallas_prompt_dialogs.cpp:
+
+/usr/include/c++/12/bits/shared_ptr.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractnativeeventfilter.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qlistwidget.h:
+
+/usr/include/c++/12/algorithm:
+
+qteditor_mini_autogen/include/ui_brief_addmovie.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h:
+
+/workspace/qteditor/mini/lib/aistruct_external.h:
+
+/usr/include/c++/12/pstl/execution_defs.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qrect.h:
+
+/usr/include/c++/12/debug/debug.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtimer.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QPushButton:
+
+/usr/include/c++/12/bits/stl_construct.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qarraydata.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsharedpointer.h:
+
+/usr/include/c++/12/bits/stringfwd.h:
+
+/usr/include/SDL2/SDL_filesystem.h:
+
+/workspace/qteditor/mini/file_page_add_dialog.h:
+
+/workspace/qteditor/mini/game/AIMain.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtestassert.h:
+
+/usr/include/c++/12/bits/stl_pair.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qjsondocument.h:
+
+/usr/include/c++/12/bits/memoryfwd.h:
+
+/usr/include/c++/12/bits/cxxabi_init_exception.h:
+
+/usr/include/c++/12/cwchar:
+
+/workspace/qteditor/mini/propai_dialog.h:
+
+/usr/include/c++/12/bits/uniform_int_dist.h:
+
+/usr/include/c++/12/bits/ptr_traits.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcompilerdetection.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qvector.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QRadioButton:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcontainertools_impl.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__FILE.h:
+
+/workspace/qteditor/mini/brief_mission_flags_dialog.cpp:
+
+/usr/include/c++/12/bits/nested_exception.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/c++locale.h:
+
+/workspace/qteditor/mini/lib/init.h:
+
+/usr/include/c++/12/pstl/glue_algorithm_defs.h:
+
+/usr/include/c++/12/bits/localefwd.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_tm.h:
+
+/usr/include/c++/12/cstring:
+
+/usr/include/c++/12/bits/charconv.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_generic_death_dialog.cpp:
+
+/usr/include/c++/12/ext/atomicity.h:
+
+/usr/include/ctype.h:
+
+/usr/include/c++/12/bits/stl_function.h:
+
+/workspace/qteditor/mini/lib/findintersection_external.h:
+
+/usr/include/c++/12/bits/std_function.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsharedpointer_impl.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qarraydataops.h:
+
+/usr/include/c++/12/backward/binders.h:
+
+/usr/include/c++/12/bits/range_access.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qstyleoption.h:
+
+qteditor_mini_autogen/include/ui_aboutbox.h:
+
+/usr/include/c++/12/bits/stl_map.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qpalette.h:
+
+/workspace/qteditor/mini/lib/grdefs.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QComboBox:
+
+/usr/include/c++/12/bits/functional_hash.h:
+
+/usr/include/c++/12/bits/alloc_traits.h:
+
+/usr/include/stdio.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qabstracttextdocumentlayout.h:
+
+/workspace/qteditor/mini/lib/weapon_external.h:
+
+/workspace/qteditor/mini/lighting_keypad.h:
+
+/usr/include/c++/12/ext/string_conversions.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qframe.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qjsonobject.h:
+
+/usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h:
+
+/workspace/qteditor/mini/about_dialog.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:
+
+/usr/include/linux/errno.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QLineEdit:
+
+/usr/include/c++/12/bits/basic_string.tcc:
+
+/usr/include/c++/12/ios:
+
+/workspace/qteditor/mini/brief_button_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtextstream.h:
+
+/usr/include/c++/12/bits/stream_iterator.h:
+
+/usr/include/c++/12/bits/streambuf_iterator.h:
+
+/usr/include/c++/12/bits/atomic_lockfree_defines.h:
+
+/workspace/qteditor/mini/brief_button_dialog.h:
+
+/usr/include/SDL2/SDL_quit.h:
+
+/usr/include/c++/12/numeric:
+
+/usr/include/c++/12/new:
+
+/usr/include/x86_64-linux-gnu/sys/cdefs.h:
+
+/usr/include/c++/12/streambuf:
+
+/usr/include/c++/12/bits/ios_base.h:
+
+/usr/include/x86_64-linux-gnu/bits/uio_lim.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qsizepolicy.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qopengl.h:
+
+/workspace/qteditor/mini/lib/object.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx5124fmapsintrin.h:
+
+/usr/include/c++/12/bits/stl_iterator_base_funcs.h:
+
+/workspace/qteditor/mini/sndlib/hlsoundlib.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_localize_script_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qlist.h:
+
+/usr/include/pthread.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_brief_movie_dialog.cpp:
+
+/usr/include/wctype.h:
+
+/usr/include/x86_64-linux-gnu/bits/sched.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QPoint:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_brief_main_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/bits/select.h:
+
+/usr/include/x86_64-linux-gnu/bits/time.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qrawfont.h:
+
+/usr/include/SDL2/close_code.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/clockid_t.h:
+
+/usr/include/c++/12/bits/invoke.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h:
+
+/usr/include/c++/12/bits/locale_classes.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512fintrin.h:
+
+/usr/include/c++/12/system_error:
+
+/usr/include/c++/12/exception:
+
+/usr/include/c++/12/bits/exception_ptr.h:
+
+/workspace/qteditor/mini/robot_weapons_dialog.h:
+
+/usr/include/c++/12/math.h:
+
+/usr/include/c++/12/typeinfo:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/immintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstringalgorithms.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/movdirintrin.h:
+
+/workspace/qteditor/mini/lib/terrain.h:
+
+/workspace/qteditor/mini/lib/object_external.h:
+
+/workspace/qteditor/mini/sound_source_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qbenchmarkmetric.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qiterator.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QTreeWidgetItem:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/ctype_base.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qatomic_cxx11.h:
+
+/usr/include/SDL2/SDL_log.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512bf16vlintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qpair.h:
+
+/workspace/qteditor/mini/font_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qtextoption.h:
+
+/usr/include/c++/12/tuple:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/clwbintrin.h:
+
+/usr/include/c++/12/unordered_map:
+
+/workspace/qteditor/mini/lib/polymodel_external.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsystemdetection.h:
+
+/workspace/qteditor/mini/hog_dialog.h:
+
+/workspace/qteditor/mini/physics_dialog.h:
+
+/usr/include/SDL2/SDL_gesture.h:
+
+/workspace/qteditor/mini/orphan_remove_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcborvalue.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qbasicatomic.h:
+
+/workspace/qteditor/mini/brief_sound_dialog.h:
+
+/usr/include/SDL2/SDL_assert.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/QColor:
+
+/usr/include/c++/12/bits/unordered_map.h:
+
+/workspace/qteditor/mini/viewer_prop_dialog.h:
+
+/usr/include/c++/12/bits/stl_vector.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtestcase.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qactiongroup.h:
+
+qteditor_mini_autogen/include/ui_configcompiler.h:
+
+qteditor_mini_autogen/include/ui_brief_addscreen.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qpluginloader.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qobject.h:
+
+/workspace/qteditor/mini/game/special_face.h:
+
+/usr/include/SDL2/SDL_surface.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qjsonvalue.h:
+
+/workspace/qteditor/mini/selectrange_dialog.h:
+
+/usr/include/c++/12/compare:
+
+/usr/include/c++/12/filesystem:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qmenu.h:
+
+/usr/include/c++/12/list:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/float.h:
+
+/usr/include/SDL2/SDL_atomic.h:
+
+/usr/include/SDL2/SDL_error.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qcombobox.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qaction.h:
+
+/usr/include/SDL2/SDL_endian.h:
+
+/usr/include/asm-generic/errno.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qeventtransition.h:
+
+/usr/include/c++/12/bits/shared_ptr_atomic.h:
+
+/usr/include/c++/12/ratio:
+
+/usr/include/SDL2/SDL_thread.h:
+
+qteditor_mini_autogen/include/ui_dallas_import_dialog.h:
+
+/usr/include/SDL2/SDL_clipboard.h:
+
+/workspace/qteditor/mini/lib/log.h:
+
+/usr/include/SDL2/SDL_cpuinfo.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/x86gprintrin.h:
+
+/usr/include/c++/12/cwctype:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/ia32intrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qloggingcategory.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/bmiintrin.h:
+
+/usr/include/c++/12/bits/fs_ops.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/bmi2intrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsize.h:
+
+/workspace/qteditor/mini/room_keypad.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/cldemoteintrin.h:
+
+/workspace/qteditor/mini/lib/vecmat_external.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/clflushoptintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/clzerointrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/enqcmdintrin.h:
+
+/workspace/qteditor/mini/file_page_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QElapsedTimer:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/lzcntintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/mwaitintrin.h:
+
+/workspace/qteditor/mini/lib/program.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_preferences_dialog.cpp:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/syslimits.h:
+
+/workspace/qteditor/mini/world_objects_generic_dialog.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/popcntintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/pkuintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qlinkedlist.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qfontdatabase.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/tbmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/waitpkgintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/xsavesintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/hresetintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QDebug:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QToolBar:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/mmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/mm_malloc.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/emmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/pmmintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QColorDialog:
+
+/workspace/qteditor/mini/dallas_import_dialog.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/wmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avxintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avxvnniintrin.h:
+
+/workspace/qteditor/mini/lib/deathinfo_external.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtextcodec.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/basic_file.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx2intrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512erintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512pfintrin.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/gthr-default.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtcoreversion.h:
+
+/usr/include/x86_64-linux-gnu/sys/select.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512cdintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qitemselectionmodel.h:
+
+/workspace/qteditor/mini/terrain_sound_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qqueue.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vlintrin.h:
+
+/workspace/qteditor/mini/lib/renderer.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vlbwintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qscopeguard.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vbmivlintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/cetintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx5124vnniwintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vnniintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vnnivlintrin.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_room_keypad.cpp:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vpopcntdqvlintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512bitalgintrin.h:
+
+/usr/include/string.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vp2intersectintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vp2intersectvlintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/fmaintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractanimation.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qttestglobal.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsharedmemory.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/f16cintrin.h:
+
+/usr/include/x86_64-linux-gnu/bits/wchar.h:
+
+/usr/include/c++/12/bits/string_view.tcc:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/gfniintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qrandom.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qfile.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/vaesintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512bf16intrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/amxtileintrin.h:
+
+/usr/include/asm-generic/int-ll64.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/amxbf16intrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractstate.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/prfchwintrin.h:
+
+/usr/include/c++/12/bits/allocator.h:
+
+/workspace/qteditor/mini/game/lightmap_info.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/keylockerintrin.h:
+
+/usr/include/SDL2/SDL_events.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qatomic.h:
+
+/usr/include/SDL2/SDL_video.h:
+
+/usr/include/SDL2/SDL_blendmode.h:
+
+/workspace/qteditor/mini/lib/byteswap.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtypeinfo.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcbormap.h:
+
+/workspace/qteditor/mini/world_objects_door_dialog.h:
+
+/usr/include/SDL2/SDL_keyboard.h:
+
+/usr/include/SDL2/SDL_keycode.h:
+
+/workspace/qteditor/mini/propscript_dialog.h:
+
+/workspace/qteditor/mini/lib/room.h:
+
+/usr/include/SDL2/SDL_scancode.h:
+
+/usr/include/SDL2/SDL_mouse.h:
+
+/usr/include/SDL2/SDL_joystick.h:
+
+/usr/include/SDL2/SDL_sensor.h:
+
+/usr/include/SDL2/SDL_touch.h:
+
+/usr/include/SDL2/SDL_haptic.h:
+
+/usr/include/SDL2/SDL_hidapi.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/opt_random.h:
+
+/workspace/qteditor/mini/dallas_import_dialog.cpp:
+
+/usr/include/SDL2/SDL_hints.h:
+
+/usr/include/SDL2/SDL_metal.h:
+
+/usr/include/c++/12/random:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qabstractitemmodeltester.h:
+
+/usr/include/time.h:
+
+/usr/include/SDL2/SDL_power.h:
+
+/usr/include/SDL2/SDL_render.h:
+
+/usr/include/c++/12/bits/stl_uninitialized.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qversionnumber.h:
+
+/usr/include/SDL2/SDL_shape.h:
+
+/workspace/qteditor/mini/ambient_sound_element_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcollator.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qplaintextedit.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qexception.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qvariant.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/stddef.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qfinalstate.h:
+
+/usr/include/c++/12/ctime:
+
+/usr/include/SDL2/SDL_version.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QFile:
+
+/usr/include/SDL2/SDL_misc.h:
+
+/usr/include/c++/12/bits/basic_ios.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsettings.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtoolbar.h:
+
+/workspace/qteditor/mini/lib/appdatabase.h:
+
+/usr/include/c++/12/bits/stl_algobase.h:
+
+/workspace/qteditor/mini/lib/pstypes.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_hog_dialog.cpp:
+
+/workspace/qteditor/mini/lib/linux/lnxdatabase.h:
+
+/workspace/qteditor/mini/lib/Macros.h:
+
+/workspace/qteditor/mini/lib/application.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qfilesystemwatcher.h:
+
+/workspace/qteditor/mini/game/lnxapp.h:
+
+/workspace/qteditor/mini/lib/args.h:
+
+/workspace/qteditor/mini/lib/crossplat.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_powprop_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/sys/stat.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_file_page_dialog.cpp:
+
+/workspace/qteditor/mini/editor_settings.h:
+
+/usr/include/c++/12/cstdarg:
+
+/usr/include/x86_64-linux-gnu/bits/statx.h:
+
+/usr/include/linux/stat.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/QPixmap:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qmetaobject.h:
+
+/usr/include/linux/types.h:
+
+/usr/include/c++/12/bits/move.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/smmintrin.h:
+
+/usr/include/asm-generic/types.h:
+
+/usr/include/asm-generic/bitsperlong.h:
+
+/usr/include/linux/posix_types.h:
+
+/workspace/qteditor/mini/brief_screen_dialog.cpp:
+
+/usr/include/linux/stddef.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qslider.h:
+
+/usr/include/c++/12/bits/codecvt.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/QImage:
+
+/usr/include/asm-generic/posix_types.h:
+
+/usr/include/sched.h:
+
+/workspace/qteditor/mini/lib/vecmat.h:
+
+/workspace/qteditor/mini/fix/fix.h:
+
+/workspace/qteditor/mini/d3_editor_state.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qabstracteventdispatcher.h:
+
+/workspace/qteditor/mini/editor_room_state.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/pconfigintrin.h:
+
+/workspace/qteditor/mini/mem/mem.h:
+
+/workspace/qteditor/mini/editor_lighting.cpp:
+
+/workspace/qteditor/mini/lib/robotfirestruct.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qdatastream.h:
+
+/workspace/qteditor/mini/lib/robotfirestruct_external.h:
+
+/workspace/qteditor/mini/lib/manage_external.h:
+
+/workspace/qteditor/mini/lib/aistruct.h:
+
+/workspace/qteditor/mini/lib/gametexture.h:
+
+/workspace/qteditor/mini/script_parm_dialog.h:
+
+/workspace/qteditor/mini/lib/manage.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QRect:
+
+/workspace/qteditor/mini/lib/cfile.h:
+
+/usr/include/c++/12/cstdlib:
+
+/workspace/qteditor/mini/game/bnode.h:
+
+/usr/include/assert.h:
+
+/workspace/qteditor/mini/dallas_flag_dialog.h:
+
+/workspace/qteditor/mini/lib/objinfo.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_world_objects_player_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcborcommon.h:
+
+qteditor_mini_autogen/include/ui_ambientsoundpatterns.h:
+
+/workspace/qteditor/mini/lib/DeathInfo.h:
+
+/usr/include/c++/12/bits/concept_check.h:
+
+/workspace/qteditor/mini/lib/pserror.h:
+
+/workspace/qteditor/mini/lib/debug.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QtGlobal:
+
+qteditor_mini_autogen/include/ui_brief_addbutton.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qfactoryinterface.h:
+
+/usr/include/SDL2/SDL_main.h:
+
+qteditor_mini_autogen/include/ui_dallas_flag_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtest.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QHeaderView:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtestspontaneevent.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtreeview.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtreewidgetitemiterator.h:
+
+/workspace/qteditor/mini/dallas_prompt_dialogs.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstring.h:
+
+qteditor_mini_autogen/include/ui_dallas_generic_prompt_dialog.h:
+
+/workspace/qteditor/mini/dallas_sound_dialog.cpp:
+
+/workspace/qteditor/mini/dallas_sound_dialog.h:
+
+qteditor_mini_autogen/include/ui_dallas_sound_dialog.h:
+
+/workspace/qteditor/mini/lib/ssl_lib.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_statx.h:
+
+/workspace/qteditor/mini/dallas_strm_audio_dialog.h:
+
+/usr/include/c++/12/bits/atomic_base.h:
+
+/workspace/qteditor/mini/d3edit.h:
+
+/workspace/qteditor/mini/lib/bsp.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/serializeintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qthread.h:
+
+/workspace/qteditor/mini/dallas_texture_dialog.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/mwaitxintrin.h:
+
+qteditor_mini_autogen/include/ui_dallas_texture_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qdatetime.h:
+
+qteditor_mini_autogen/include/ui_dallas_usertypes_dialog.h:
+
+/workspace/qteditor/mini/death_dialog.cpp:
+
+/usr/include/c++/12/memory:
+
+/workspace/qteditor/mini/dialog_test.h:
+
+/workspace/qteditor/mini/level_info_dialog.h:
+
+/workspace/qteditor/mini/path_keypad.h:
+
+/workspace/qteditor/mini/player_weapons_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qmap.h:
+
+/usr/include/c++/12/bits/std_mutex.h:
+
+/workspace/qteditor/mini/status_panel_dialog.h:
+
+/workspace/qteditor/mini/powprop_dialog.h:
+
+/workspace/qteditor/mini/game/descent.h:
+
+/workspace/qteditor/mini/preferences_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtestdata.h:
+
+/workspace/qteditor/mini/status_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qtextformat.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QDockWidget:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/rtmintrin.h:
+
+/workspace/qteditor/mini/trigger_keypad.h:
+
+/workspace/qteditor/mini/world_objects_player_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qpointer.h:
+
+/usr/include/c++/12/bits/hashtable_policy.h:
+
+/workspace/qteditor/mini/world_sounds_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qalgorithms.h:
+
+/workspace/qteditor/mini/world_weapons_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstringbuilder.h:
+
+/workspace/qteditor/mini/worldobjectslight_dialog.h:
+
+/workspace/qteditor/mini/doorway_keypad.cpp:
+
+/workspace/qteditor/mini/game/doorway.h:
+
+/workspace/qteditor/mini/game/BOA.h:
+
+/workspace/qteditor/mini/editline_dialog.cpp:
+
+/workspace/qteditor/mini/lib/player.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/QFont:
+
+/workspace/qteditor/mini/lib/Inventory.h:
+
+/workspace/qteditor/mini/lib/player_external_struct.h:
+
+/workspace/qteditor/mini/lib/multi_external.h:
+
+/workspace/qteditor/mini/lib/networking.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/avx512ifmavlintrin.h:
+
+/workspace/qteditor/mini/lib/player_external.h:
+
+qteditor_mini_autogen/include/ui_editlinedlg.h:
+
+/workspace/qteditor/mini/editor_file_dialogs.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QFileDialog:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QTimer:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qfiledialog.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/c++config.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qabstractproxymodel.h:
+
+/usr/include/c++/12/bits/hash_bytes.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qshareddata.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qbitarray.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QOpenGLWidget:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qfileinfo.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstringmatcher.h:
+
+/workspace/qteditor/mini/editor_lighting.h:
+
+/usr/include/x86_64-linux-gnu/bits/cpu-set.h:
+
+/workspace/qteditor/mini/radiosity.h:
+
+/workspace/qteditor/mini/lib/lightmap.h:
+
+/workspace/qteditor/mini/lib/polymodel.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qmutex.h:
+
+/workspace/qteditor/mini/lib/lighting.h:
+
+/usr/include/c++/12/bits/enable_special_members.h:
+
+/workspace/qteditor/mini/editor_object_lighting.cpp:
+
+/workspace/qteditor/mini/editor_test.cpp:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/QSignalSpy:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qsignalspy.h:
+
+/workspace/qteditor/mini/object_tree_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qttestlib-config.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_level_properties_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qdeadlinetimer.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qelapsedtimer.h:
+
+/usr/include/c++/12/mutex:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtestsupport_widgets.h:
+
+/usr/include/c++/12/bits/unique_lock.h:
+
+/usr/include/c++/12/bits/std_thread.h:
+
+/usr/include/c++/12/bits/ostream_insert.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/QtTest:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/QtTestDepends:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qvector3d.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qmath.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qanimationgroup.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qarraydatapointer.h:
+
+/usr/include/c++/12/cstdint:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qbuffer.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qmessagebox.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcalendar.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qdebug.h:
+
+/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/quuid.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qdir.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcborstream.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_brief_screen_dialog.cpp:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcborstreamreader.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QEvent:
+
+/usr/include/c++/12/bits/atomic_futex.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qfloat16.h:
+
+/workspace/qteditor/mini/dallas_usertypes_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcommandlineoption.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qtextedit.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qcryptographichash.h:
+
+/usr/include/c++/12/ext/concurrence.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qeasingcurve.h:
+
+/usr/include/x86_64-linux-gnu/asm/types.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qfuturewatcher.h:
+
+/usr/include/c++/12/bits/locale_facets.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qisenum.h:
+
+/workspace/qteditor/mini/lib/Ddgr.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qjsonarray.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qlibrary.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qprocessordetection.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtesteventloop.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qlibraryinfo.h:
+
+qteditor_mini_autogen/EWIEGA46WW/moc_water_procedural_dialog.cpp:
+
+qteditor_mini_autogen/include/ui_dallas_vector_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qlockfile.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qfuture.h:
+
+/usr/include/x86_64-linux-gnu/bits/waitstatus.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qtouchdevice.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qmimedatabase.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectcleanuphandler.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qparallelanimationgroup.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qhash.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qplugin.h:
+
+/usr/include/c++/12/bits/random.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qpropertyanimation.h:
+
+/usr/include/c++/12/bits/random.tcc:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsavefile.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qscopedvaluerollback.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsemaphore.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsequentialanimationgroup.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsignaltransition.h:
+
+/usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsocketnotifier.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/wbnoinvdintrin.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsortfilterproxymodel.h:
+
+/usr/include/c++/12/bits/uses_allocator.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstack.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/error_constants.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstandardpaths.h:
+
+/workspace/qteditor/mini/level_keypad_layout.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qsystemsemaphore.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtemporarydir.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QEventLoop:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtemporaryfile.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qthreadpool.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qthreadstorage.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qvector4d.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtimeline.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtransposeproxymodel.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qwaitcondition.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QDeadlineTimer:
+
+/usr/include/x86_64-linux-gnu/bits/posix2_lim.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qwineventnotifier.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qxmlstream.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qheaderview.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QAbstractItemModel:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/QBrush:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/QIcon:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qtestsupport_core.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qtestsupport_gui.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtest_widgets.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtestevent.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qwindow.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QObject:
+
+/workspace/qteditor/mini/object_ops.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QMargins:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qsurfaceformat.h:
+
+/usr/include/c++/12/bits/stl_heap.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtestmouse.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtTest/qtesttouch.h:
+
+/usr/include/x86_64-linux-gnu/asm/bitsperlong.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QSizePolicy:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QMetaEnum:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QMenu:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QGroupBox:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QMenuBar:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstate.h:
+
+/workspace/qteditor/mini/obj_move_manager.h:
+
+/workspace/qteditor/mini/lib/trigger.h:
+
+/workspace/qteditor/mini/brief_sound_dialog.cpp:
+
+/workspace/qteditor/mini/lib/weapon.h:
+
+/workspace/qteditor/mini/d3_editor_init.cpp:
+
+/usr/include/c++/12/array:
+
+/workspace/qteditor/mini/lighting_status_dialog.h:
+
+/workspace/qteditor/mini/localize_script_dialog.h:
+
+/workspace/qteditor/mini/lib/posix_stream.h:
+
+/workspace/qteditor/mini/script_interface_dialog.h:
+
+/workspace/qteditor/mini/script_studio_dialog.h:
+
+/workspace/qteditor/mini/script_sync_dialog.h:
+
+/workspace/qteditor/mini/script_wizard_dialog.h:
+
+/workspace/qteditor/mini/table_file_edit_dialog.h:
+
+/workspace/qteditor/mini/table_file_filter_add_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qabstractscrollarea.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qdiriterator.h:
+
+/workspace/qteditor/mini/table_file_filter_dialog.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qurl.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QWidget:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qmenubar.h:
+
+/workspace/qteditor/mini/level_keypad.h:
+
+/workspace/qteditor/mini/matcen_keypad.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QHash:
+
+/workspace/qteditor/mini/level_io.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qpauseanimation.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qopenglwidget.h:
+
+/usr/include/GL/gl.h:
+
+/workspace/qteditor/mini/lib/object_external_struct.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/QSurfaceFormat:
+
+/workspace/qteditor/mini/lib/d3x_op.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtGui/qopenglext.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h:
+
+/workspace/qteditor/mini/generic_light_dialog.h:
+
+/usr/include/c++/12/utility:
+
+/usr/include/c++/12/bits/utility.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/qstatemachine.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/QMainWindow:
+
+/usr/include/x86_64-linux-gnu/qt5/QtWidgets/qapplication.h:
+
+/workspace/qteditor/mini/game/hog2_format.h:
+
+/usr/include/c++/12/fstream:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/c++io.h:
+
+/workspace/qteditor/mini/procedural_dialog.h:
+
+/workspace/qteditor/mini/multicheck_dialog.h:
+
+/usr/include/SDL2/SDL.h:
+
+/usr/include/x86_64-linux-gnu/qt5/QtCore/QString:
+
+/workspace/qteditor/mini/megacell_keypad.h:
+
+/workspace/qteditor/mini/property_physics_dialog.h:
+
+/usr/include/x86_64-linux-gnu/bits/local_lim.h:
+
+qteditor_mini_autogen/include/ui_death_dialog.h:
+
+/workspace/qteditor/mini/script_editor_dialog.h:
+
+/usr/include/c++/12/ext/aligned_buffer.h:
+
+/workspace/qteditor/mini/terrain_keypad.h:

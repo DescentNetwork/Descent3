@@ -1875,6 +1875,12 @@
 			null
 		],
 		[
+			"/workspace/qteditor/mini/lib/posix_stream.h",
+			"MU",
+			"ZJOKMXDKB7/moc_posix_stream.cpp",
+			null
+		],
+		[
 			"/workspace/qteditor/mini/lib/powerup.h",
 			"MU",
 			"ZJOKMXDKB7/moc_powerup.cpp",
@@ -2593,6 +2599,7 @@
 		[ "/workspace/qteditor/mini/path_keypad.cpp", "MU", null ],
 		[ "/workspace/qteditor/mini/physics_dialog.cpp", "MU", null ],
 		[ "/workspace/qteditor/mini/player_weapons_dialog.cpp", "MU", null ],
+		[ "/workspace/qteditor/mini/posix_stream_stub.cpp", "MU", null ],
 		[ "/workspace/qteditor/mini/powprop_dialog.cpp", "MU", null ],
 		[ "/workspace/qteditor/mini/preferences_dialog.cpp", "MU", null ],
 		[ "/workspace/qteditor/mini/procedural_dialog.cpp", "MU", null ],

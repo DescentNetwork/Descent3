@@ -83,6 +83,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/workspace/qteditor/mini/path_keypad.cpp" "CMakeFiles/qteditor_mini.dir/path_keypad.cpp.o" "gcc" "CMakeFiles/qteditor_mini.dir/path_keypad.cpp.o.d"
   "/workspace/qteditor/mini/physics_dialog.cpp" "CMakeFiles/qteditor_mini.dir/physics_dialog.cpp.o" "gcc" "CMakeFiles/qteditor_mini.dir/physics_dialog.cpp.o.d"
   "/workspace/qteditor/mini/player_weapons_dialog.cpp" "CMakeFiles/qteditor_mini.dir/player_weapons_dialog.cpp.o" "gcc" "CMakeFiles/qteditor_mini.dir/player_weapons_dialog.cpp.o.d"
+  "/workspace/qteditor/mini/posix_stream_stub.cpp" "CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o" "gcc" "CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o.d"
   "/workspace/qteditor/mini/powprop_dialog.cpp" "CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o" "gcc" "CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o.d"
   "/workspace/qteditor/mini/preferences_dialog.cpp" "CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o" "gcc" "CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o.d"
   "/workspace/qteditor/mini/procedural_dialog.cpp" "CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.o" "gcc" "CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.o.d"

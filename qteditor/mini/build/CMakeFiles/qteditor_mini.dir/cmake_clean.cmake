@@ -152,6 +152,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/qteditor_mini.dir/physics_dialog.cpp.o.d"
   "CMakeFiles/qteditor_mini.dir/player_weapons_dialog.cpp.o"
   "CMakeFiles/qteditor_mini.dir/player_weapons_dialog.cpp.o.d"
+  "CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o"
+  "CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o.d"
   "CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o"
   "CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o.d"
   "CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o"

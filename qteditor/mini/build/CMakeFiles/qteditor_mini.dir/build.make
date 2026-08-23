@@ -1281,10 +1281,24 @@ CMakeFiles/qteditor_mini.dir/player_weapons_dialog.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/qteditor_mini.dir/player_weapons_dialog.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /workspace/qteditor/mini/player_weapons_dialog.cpp -o CMakeFiles/qteditor_mini.dir/player_weapons_dialog.cpp.s
 
+CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
+CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o: /workspace/qteditor/mini/posix_stream_stub.cpp
+CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_78) "Building CXX object CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o -MF CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o.d -o CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o -c /workspace/qteditor/mini/posix_stream_stub.cpp
+
+CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /workspace/qteditor/mini/posix_stream_stub.cpp > CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.i
+
+CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /workspace/qteditor/mini/posix_stream_stub.cpp -o CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.s
+
 CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o: /workspace/qteditor/mini/powprop_dialog.cpp
 CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_78) "Building CXX object CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_79) "Building CXX object CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o -c /workspace/qteditor/mini/powprop_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.i: cmake_force
@@ -1298,7 +1312,7 @@ CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o: /workspace/qteditor/mini/preferences_dialog.cpp
 CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_79) "Building CXX object CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_80) "Building CXX object CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o -c /workspace/qteditor/mini/preferences_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.i: cmake_force
@@ -1312,7 +1326,7 @@ CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.o: /workspace/qteditor/mini/procedural_dialog.cpp
 CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_80) "Building CXX object CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_81) "Building CXX object CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.o -c /workspace/qteditor/mini/procedural_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.i: cmake_force
@@ -1326,7 +1340,7 @@ CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/propai_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/propai_dialog.cpp.o: /workspace/qteditor/mini/propai_dialog.cpp
 CMakeFiles/qteditor_mini.dir/propai_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_81) "Building CXX object CMakeFiles/qteditor_mini.dir/propai_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_82) "Building CXX object CMakeFiles/qteditor_mini.dir/propai_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/propai_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/propai_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/propai_dialog.cpp.o -c /workspace/qteditor/mini/propai_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/propai_dialog.cpp.i: cmake_force
@@ -1340,7 +1354,7 @@ CMakeFiles/qteditor_mini.dir/propai_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/property_physics_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/property_physics_dialog.cpp.o: /workspace/qteditor/mini/property_physics_dialog.cpp
 CMakeFiles/qteditor_mini.dir/property_physics_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_82) "Building CXX object CMakeFiles/qteditor_mini.dir/property_physics_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_83) "Building CXX object CMakeFiles/qteditor_mini.dir/property_physics_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/property_physics_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/property_physics_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/property_physics_dialog.cpp.o -c /workspace/qteditor/mini/property_physics_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/property_physics_dialog.cpp.i: cmake_force
@@ -1354,7 +1368,7 @@ CMakeFiles/qteditor_mini.dir/property_physics_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/propscript_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/propscript_dialog.cpp.o: /workspace/qteditor/mini/propscript_dialog.cpp
 CMakeFiles/qteditor_mini.dir/propscript_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_83) "Building CXX object CMakeFiles/qteditor_mini.dir/propscript_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_84) "Building CXX object CMakeFiles/qteditor_mini.dir/propscript_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/propscript_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/propscript_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/propscript_dialog.cpp.o -c /workspace/qteditor/mini/propscript_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/propscript_dialog.cpp.i: cmake_force
@@ -1368,7 +1382,7 @@ CMakeFiles/qteditor_mini.dir/propscript_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/quickcompile_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/quickcompile_dialog.cpp.o: /workspace/qteditor/mini/quickcompile_dialog.cpp
 CMakeFiles/qteditor_mini.dir/quickcompile_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_84) "Building CXX object CMakeFiles/qteditor_mini.dir/quickcompile_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_85) "Building CXX object CMakeFiles/qteditor_mini.dir/quickcompile_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/quickcompile_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/quickcompile_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/quickcompile_dialog.cpp.o -c /workspace/qteditor/mini/quickcompile_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/quickcompile_dialog.cpp.i: cmake_force
@@ -1382,7 +1396,7 @@ CMakeFiles/qteditor_mini.dir/quickcompile_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/rad_cast.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/rad_cast.cpp.o: /workspace/qteditor/mini/rad_cast.cpp
 CMakeFiles/qteditor_mini.dir/rad_cast.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_85) "Building CXX object CMakeFiles/qteditor_mini.dir/rad_cast.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_86) "Building CXX object CMakeFiles/qteditor_mini.dir/rad_cast.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/rad_cast.cpp.o -MF CMakeFiles/qteditor_mini.dir/rad_cast.cpp.o.d -o CMakeFiles/qteditor_mini.dir/rad_cast.cpp.o -c /workspace/qteditor/mini/rad_cast.cpp
 
 CMakeFiles/qteditor_mini.dir/rad_cast.cpp.i: cmake_force
@@ -1396,7 +1410,7 @@ CMakeFiles/qteditor_mini.dir/rad_cast.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/rad_hemicube.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/rad_hemicube.cpp.o: /workspace/qteditor/mini/rad_hemicube.cpp
 CMakeFiles/qteditor_mini.dir/rad_hemicube.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_86) "Building CXX object CMakeFiles/qteditor_mini.dir/rad_hemicube.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_87) "Building CXX object CMakeFiles/qteditor_mini.dir/rad_hemicube.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/rad_hemicube.cpp.o -MF CMakeFiles/qteditor_mini.dir/rad_hemicube.cpp.o.d -o CMakeFiles/qteditor_mini.dir/rad_hemicube.cpp.o -c /workspace/qteditor/mini/rad_hemicube.cpp
 
 CMakeFiles/qteditor_mini.dir/rad_hemicube.cpp.i: cmake_force
@@ -1410,7 +1424,7 @@ CMakeFiles/qteditor_mini.dir/rad_hemicube.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/rad_init.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/rad_init.cpp.o: /workspace/qteditor/mini/rad_init.cpp
 CMakeFiles/qteditor_mini.dir/rad_init.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_87) "Building CXX object CMakeFiles/qteditor_mini.dir/rad_init.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_88) "Building CXX object CMakeFiles/qteditor_mini.dir/rad_init.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/rad_init.cpp.o -MF CMakeFiles/qteditor_mini.dir/rad_init.cpp.o.d -o CMakeFiles/qteditor_mini.dir/rad_init.cpp.o -c /workspace/qteditor/mini/rad_init.cpp
 
 CMakeFiles/qteditor_mini.dir/rad_init.cpp.i: cmake_force
@@ -1424,7 +1438,7 @@ CMakeFiles/qteditor_mini.dir/rad_init.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/rad_stubs.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/rad_stubs.cpp.o: /workspace/qteditor/mini/rad_stubs.cpp
 CMakeFiles/qteditor_mini.dir/rad_stubs.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_88) "Building CXX object CMakeFiles/qteditor_mini.dir/rad_stubs.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_89) "Building CXX object CMakeFiles/qteditor_mini.dir/rad_stubs.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/rad_stubs.cpp.o -MF CMakeFiles/qteditor_mini.dir/rad_stubs.cpp.o.d -o CMakeFiles/qteditor_mini.dir/rad_stubs.cpp.o -c /workspace/qteditor/mini/rad_stubs.cpp
 
 CMakeFiles/qteditor_mini.dir/rad_stubs.cpp.i: cmake_force
@@ -1438,7 +1452,7 @@ CMakeFiles/qteditor_mini.dir/rad_stubs.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/robot_weapons_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/robot_weapons_dialog.cpp.o: /workspace/qteditor/mini/robot_weapons_dialog.cpp
 CMakeFiles/qteditor_mini.dir/robot_weapons_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_89) "Building CXX object CMakeFiles/qteditor_mini.dir/robot_weapons_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_90) "Building CXX object CMakeFiles/qteditor_mini.dir/robot_weapons_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/robot_weapons_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/robot_weapons_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/robot_weapons_dialog.cpp.o -c /workspace/qteditor/mini/robot_weapons_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/robot_weapons_dialog.cpp.i: cmake_force
@@ -1452,7 +1466,7 @@ CMakeFiles/qteditor_mini.dir/robot_weapons_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/room_keypad.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/room_keypad.cpp.o: /workspace/qteditor/mini/room_keypad.cpp
 CMakeFiles/qteditor_mini.dir/room_keypad.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_90) "Building CXX object CMakeFiles/qteditor_mini.dir/room_keypad.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_91) "Building CXX object CMakeFiles/qteditor_mini.dir/room_keypad.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/room_keypad.cpp.o -MF CMakeFiles/qteditor_mini.dir/room_keypad.cpp.o.d -o CMakeFiles/qteditor_mini.dir/room_keypad.cpp.o -c /workspace/qteditor/mini/room_keypad.cpp
 
 CMakeFiles/qteditor_mini.dir/room_keypad.cpp.i: cmake_force
@@ -1466,7 +1480,7 @@ CMakeFiles/qteditor_mini.dir/room_keypad.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/room_list_combo.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/room_list_combo.cpp.o: /workspace/qteditor/mini/room_list_combo.cpp
 CMakeFiles/qteditor_mini.dir/room_list_combo.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_91) "Building CXX object CMakeFiles/qteditor_mini.dir/room_list_combo.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_92) "Building CXX object CMakeFiles/qteditor_mini.dir/room_list_combo.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/room_list_combo.cpp.o -MF CMakeFiles/qteditor_mini.dir/room_list_combo.cpp.o.d -o CMakeFiles/qteditor_mini.dir/room_list_combo.cpp.o -c /workspace/qteditor/mini/room_list_combo.cpp
 
 CMakeFiles/qteditor_mini.dir/room_list_combo.cpp.i: cmake_force
@@ -1480,7 +1494,7 @@ CMakeFiles/qteditor_mini.dir/room_list_combo.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/room_ops.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/room_ops.cpp.o: /workspace/qteditor/mini/room_ops.cpp
 CMakeFiles/qteditor_mini.dir/room_ops.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_92) "Building CXX object CMakeFiles/qteditor_mini.dir/room_ops.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_93) "Building CXX object CMakeFiles/qteditor_mini.dir/room_ops.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/room_ops.cpp.o -MF CMakeFiles/qteditor_mini.dir/room_ops.cpp.o.d -o CMakeFiles/qteditor_mini.dir/room_ops.cpp.o -c /workspace/qteditor/mini/room_ops.cpp
 
 CMakeFiles/qteditor_mini.dir/room_ops.cpp.i: cmake_force
@@ -1494,7 +1508,7 @@ CMakeFiles/qteditor_mini.dir/room_ops.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/script_editor_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/script_editor_dialog.cpp.o: /workspace/qteditor/mini/script_editor_dialog.cpp
 CMakeFiles/qteditor_mini.dir/script_editor_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_93) "Building CXX object CMakeFiles/qteditor_mini.dir/script_editor_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_94) "Building CXX object CMakeFiles/qteditor_mini.dir/script_editor_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/script_editor_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/script_editor_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/script_editor_dialog.cpp.o -c /workspace/qteditor/mini/script_editor_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/script_editor_dialog.cpp.i: cmake_force
@@ -1508,7 +1522,7 @@ CMakeFiles/qteditor_mini.dir/script_editor_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/script_interface_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/script_interface_dialog.cpp.o: /workspace/qteditor/mini/script_interface_dialog.cpp
 CMakeFiles/qteditor_mini.dir/script_interface_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_94) "Building CXX object CMakeFiles/qteditor_mini.dir/script_interface_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_95) "Building CXX object CMakeFiles/qteditor_mini.dir/script_interface_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/script_interface_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/script_interface_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/script_interface_dialog.cpp.o -c /workspace/qteditor/mini/script_interface_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/script_interface_dialog.cpp.i: cmake_force
@@ -1522,7 +1536,7 @@ CMakeFiles/qteditor_mini.dir/script_interface_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/script_parm_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/script_parm_dialog.cpp.o: /workspace/qteditor/mini/script_parm_dialog.cpp
 CMakeFiles/qteditor_mini.dir/script_parm_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_95) "Building CXX object CMakeFiles/qteditor_mini.dir/script_parm_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_96) "Building CXX object CMakeFiles/qteditor_mini.dir/script_parm_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/script_parm_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/script_parm_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/script_parm_dialog.cpp.o -c /workspace/qteditor/mini/script_parm_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/script_parm_dialog.cpp.i: cmake_force
@@ -1536,7 +1550,7 @@ CMakeFiles/qteditor_mini.dir/script_parm_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/script_select_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/script_select_dialog.cpp.o: /workspace/qteditor/mini/script_select_dialog.cpp
 CMakeFiles/qteditor_mini.dir/script_select_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_96) "Building CXX object CMakeFiles/qteditor_mini.dir/script_select_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_97) "Building CXX object CMakeFiles/qteditor_mini.dir/script_select_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/script_select_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/script_select_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/script_select_dialog.cpp.o -c /workspace/qteditor/mini/script_select_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/script_select_dialog.cpp.i: cmake_force
@@ -1550,7 +1564,7 @@ CMakeFiles/qteditor_mini.dir/script_select_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/script_studio_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/script_studio_dialog.cpp.o: /workspace/qteditor/mini/script_studio_dialog.cpp
 CMakeFiles/qteditor_mini.dir/script_studio_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_97) "Building CXX object CMakeFiles/qteditor_mini.dir/script_studio_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_98) "Building CXX object CMakeFiles/qteditor_mini.dir/script_studio_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/script_studio_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/script_studio_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/script_studio_dialog.cpp.o -c /workspace/qteditor/mini/script_studio_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/script_studio_dialog.cpp.i: cmake_force
@@ -1564,7 +1578,7 @@ CMakeFiles/qteditor_mini.dir/script_studio_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/script_sync_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/script_sync_dialog.cpp.o: /workspace/qteditor/mini/script_sync_dialog.cpp
 CMakeFiles/qteditor_mini.dir/script_sync_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_98) "Building CXX object CMakeFiles/qteditor_mini.dir/script_sync_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_99) "Building CXX object CMakeFiles/qteditor_mini.dir/script_sync_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/script_sync_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/script_sync_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/script_sync_dialog.cpp.o -c /workspace/qteditor/mini/script_sync_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/script_sync_dialog.cpp.i: cmake_force
@@ -1578,7 +1592,7 @@ CMakeFiles/qteditor_mini.dir/script_sync_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/script_wizard_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/script_wizard_dialog.cpp.o: /workspace/qteditor/mini/script_wizard_dialog.cpp
 CMakeFiles/qteditor_mini.dir/script_wizard_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_99) "Building CXX object CMakeFiles/qteditor_mini.dir/script_wizard_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_100) "Building CXX object CMakeFiles/qteditor_mini.dir/script_wizard_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/script_wizard_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/script_wizard_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/script_wizard_dialog.cpp.o -c /workspace/qteditor/mini/script_wizard_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/script_wizard_dialog.cpp.i: cmake_force
@@ -1592,7 +1606,7 @@ CMakeFiles/qteditor_mini.dir/script_wizard_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/selectrange_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/selectrange_dialog.cpp.o: /workspace/qteditor/mini/selectrange_dialog.cpp
 CMakeFiles/qteditor_mini.dir/selectrange_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_100) "Building CXX object CMakeFiles/qteditor_mini.dir/selectrange_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_101) "Building CXX object CMakeFiles/qteditor_mini.dir/selectrange_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/selectrange_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/selectrange_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/selectrange_dialog.cpp.o -c /workspace/qteditor/mini/selectrange_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/selectrange_dialog.cpp.i: cmake_force
@@ -1606,7 +1620,7 @@ CMakeFiles/qteditor_mini.dir/selectrange_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/sndlib/sound_stub.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/sndlib/sound_stub.cpp.o: /workspace/qteditor/mini/sndlib/sound_stub.cpp
 CMakeFiles/qteditor_mini.dir/sndlib/sound_stub.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_101) "Building CXX object CMakeFiles/qteditor_mini.dir/sndlib/sound_stub.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_102) "Building CXX object CMakeFiles/qteditor_mini.dir/sndlib/sound_stub.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/sndlib/sound_stub.cpp.o -MF CMakeFiles/qteditor_mini.dir/sndlib/sound_stub.cpp.o.d -o CMakeFiles/qteditor_mini.dir/sndlib/sound_stub.cpp.o -c /workspace/qteditor/mini/sndlib/sound_stub.cpp
 
 CMakeFiles/qteditor_mini.dir/sndlib/sound_stub.cpp.i: cmake_force
@@ -1620,7 +1634,7 @@ CMakeFiles/qteditor_mini.dir/sndlib/sound_stub.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/sound_combo.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/sound_combo.cpp.o: /workspace/qteditor/mini/sound_combo.cpp
 CMakeFiles/qteditor_mini.dir/sound_combo.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_102) "Building CXX object CMakeFiles/qteditor_mini.dir/sound_combo.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_103) "Building CXX object CMakeFiles/qteditor_mini.dir/sound_combo.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/sound_combo.cpp.o -MF CMakeFiles/qteditor_mini.dir/sound_combo.cpp.o.d -o CMakeFiles/qteditor_mini.dir/sound_combo.cpp.o -c /workspace/qteditor/mini/sound_combo.cpp
 
 CMakeFiles/qteditor_mini.dir/sound_combo.cpp.i: cmake_force
@@ -1634,7 +1648,7 @@ CMakeFiles/qteditor_mini.dir/sound_combo.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/sound_source_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/sound_source_dialog.cpp.o: /workspace/qteditor/mini/sound_source_dialog.cpp
 CMakeFiles/qteditor_mini.dir/sound_source_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_103) "Building CXX object CMakeFiles/qteditor_mini.dir/sound_source_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_104) "Building CXX object CMakeFiles/qteditor_mini.dir/sound_source_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/sound_source_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/sound_source_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/sound_source_dialog.cpp.o -c /workspace/qteditor/mini/sound_source_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/sound_source_dialog.cpp.i: cmake_force
@@ -1648,7 +1662,7 @@ CMakeFiles/qteditor_mini.dir/sound_source_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/status_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/status_dialog.cpp.o: /workspace/qteditor/mini/status_dialog.cpp
 CMakeFiles/qteditor_mini.dir/status_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_104) "Building CXX object CMakeFiles/qteditor_mini.dir/status_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_105) "Building CXX object CMakeFiles/qteditor_mini.dir/status_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/status_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/status_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/status_dialog.cpp.o -c /workspace/qteditor/mini/status_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/status_dialog.cpp.i: cmake_force
@@ -1662,7 +1676,7 @@ CMakeFiles/qteditor_mini.dir/status_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/status_panel_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/status_panel_dialog.cpp.o: /workspace/qteditor/mini/status_panel_dialog.cpp
 CMakeFiles/qteditor_mini.dir/status_panel_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_105) "Building CXX object CMakeFiles/qteditor_mini.dir/status_panel_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_106) "Building CXX object CMakeFiles/qteditor_mini.dir/status_panel_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/status_panel_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/status_panel_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/status_panel_dialog.cpp.o -c /workspace/qteditor/mini/status_panel_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/status_panel_dialog.cpp.i: cmake_force
@@ -1676,7 +1690,7 @@ CMakeFiles/qteditor_mini.dir/status_panel_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/table_file_edit_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/table_file_edit_dialog.cpp.o: /workspace/qteditor/mini/table_file_edit_dialog.cpp
 CMakeFiles/qteditor_mini.dir/table_file_edit_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_106) "Building CXX object CMakeFiles/qteditor_mini.dir/table_file_edit_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_107) "Building CXX object CMakeFiles/qteditor_mini.dir/table_file_edit_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/table_file_edit_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/table_file_edit_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/table_file_edit_dialog.cpp.o -c /workspace/qteditor/mini/table_file_edit_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/table_file_edit_dialog.cpp.i: cmake_force
@@ -1690,7 +1704,7 @@ CMakeFiles/qteditor_mini.dir/table_file_edit_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/table_file_filter_add_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/table_file_filter_add_dialog.cpp.o: /workspace/qteditor/mini/table_file_filter_add_dialog.cpp
 CMakeFiles/qteditor_mini.dir/table_file_filter_add_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_107) "Building CXX object CMakeFiles/qteditor_mini.dir/table_file_filter_add_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_108) "Building CXX object CMakeFiles/qteditor_mini.dir/table_file_filter_add_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/table_file_filter_add_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/table_file_filter_add_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/table_file_filter_add_dialog.cpp.o -c /workspace/qteditor/mini/table_file_filter_add_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/table_file_filter_add_dialog.cpp.i: cmake_force
@@ -1704,7 +1718,7 @@ CMakeFiles/qteditor_mini.dir/table_file_filter_add_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/table_file_filter_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/table_file_filter_dialog.cpp.o: /workspace/qteditor/mini/table_file_filter_dialog.cpp
 CMakeFiles/qteditor_mini.dir/table_file_filter_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_108) "Building CXX object CMakeFiles/qteditor_mini.dir/table_file_filter_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_109) "Building CXX object CMakeFiles/qteditor_mini.dir/table_file_filter_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/table_file_filter_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/table_file_filter_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/table_file_filter_dialog.cpp.o -c /workspace/qteditor/mini/table_file_filter_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/table_file_filter_dialog.cpp.i: cmake_force
@@ -1718,7 +1732,7 @@ CMakeFiles/qteditor_mini.dir/table_file_filter_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/terrain_keypad.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/terrain_keypad.cpp.o: /workspace/qteditor/mini/terrain_keypad.cpp
 CMakeFiles/qteditor_mini.dir/terrain_keypad.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_109) "Building CXX object CMakeFiles/qteditor_mini.dir/terrain_keypad.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_110) "Building CXX object CMakeFiles/qteditor_mini.dir/terrain_keypad.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/terrain_keypad.cpp.o -MF CMakeFiles/qteditor_mini.dir/terrain_keypad.cpp.o.d -o CMakeFiles/qteditor_mini.dir/terrain_keypad.cpp.o -c /workspace/qteditor/mini/terrain_keypad.cpp
 
 CMakeFiles/qteditor_mini.dir/terrain_keypad.cpp.i: cmake_force
@@ -1732,7 +1746,7 @@ CMakeFiles/qteditor_mini.dir/terrain_keypad.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/terrain_sound_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/terrain_sound_dialog.cpp.o: /workspace/qteditor/mini/terrain_sound_dialog.cpp
 CMakeFiles/qteditor_mini.dir/terrain_sound_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_110) "Building CXX object CMakeFiles/qteditor_mini.dir/terrain_sound_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_111) "Building CXX object CMakeFiles/qteditor_mini.dir/terrain_sound_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/terrain_sound_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/terrain_sound_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/terrain_sound_dialog.cpp.o -c /workspace/qteditor/mini/terrain_sound_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/terrain_sound_dialog.cpp.i: cmake_force
@@ -1746,7 +1760,7 @@ CMakeFiles/qteditor_mini.dir/terrain_sound_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/texture_keypad.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/texture_keypad.cpp.o: /workspace/qteditor/mini/texture_keypad.cpp
 CMakeFiles/qteditor_mini.dir/texture_keypad.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_111) "Building CXX object CMakeFiles/qteditor_mini.dir/texture_keypad.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_112) "Building CXX object CMakeFiles/qteditor_mini.dir/texture_keypad.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/texture_keypad.cpp.o -MF CMakeFiles/qteditor_mini.dir/texture_keypad.cpp.o.d -o CMakeFiles/qteditor_mini.dir/texture_keypad.cpp.o -c /workspace/qteditor/mini/texture_keypad.cpp
 
 CMakeFiles/qteditor_mini.dir/texture_keypad.cpp.i: cmake_force
@@ -1760,7 +1774,7 @@ CMakeFiles/qteditor_mini.dir/texture_keypad.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/trigger_keypad.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/trigger_keypad.cpp.o: /workspace/qteditor/mini/trigger_keypad.cpp
 CMakeFiles/qteditor_mini.dir/trigger_keypad.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_112) "Building CXX object CMakeFiles/qteditor_mini.dir/trigger_keypad.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_113) "Building CXX object CMakeFiles/qteditor_mini.dir/trigger_keypad.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/trigger_keypad.cpp.o -MF CMakeFiles/qteditor_mini.dir/trigger_keypad.cpp.o.d -o CMakeFiles/qteditor_mini.dir/trigger_keypad.cpp.o -c /workspace/qteditor/mini/trigger_keypad.cpp
 
 CMakeFiles/qteditor_mini.dir/trigger_keypad.cpp.i: cmake_force
@@ -1774,7 +1788,7 @@ CMakeFiles/qteditor_mini.dir/trigger_keypad.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/trigger_list_combo.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/trigger_list_combo.cpp.o: /workspace/qteditor/mini/trigger_list_combo.cpp
 CMakeFiles/qteditor_mini.dir/trigger_list_combo.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_113) "Building CXX object CMakeFiles/qteditor_mini.dir/trigger_list_combo.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_114) "Building CXX object CMakeFiles/qteditor_mini.dir/trigger_list_combo.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/trigger_list_combo.cpp.o -MF CMakeFiles/qteditor_mini.dir/trigger_list_combo.cpp.o.d -o CMakeFiles/qteditor_mini.dir/trigger_list_combo.cpp.o -c /workspace/qteditor/mini/trigger_list_combo.cpp
 
 CMakeFiles/qteditor_mini.dir/trigger_list_combo.cpp.i: cmake_force
@@ -1788,7 +1802,7 @@ CMakeFiles/qteditor_mini.dir/trigger_list_combo.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/viewer_prop_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/viewer_prop_dialog.cpp.o: /workspace/qteditor/mini/viewer_prop_dialog.cpp
 CMakeFiles/qteditor_mini.dir/viewer_prop_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_114) "Building CXX object CMakeFiles/qteditor_mini.dir/viewer_prop_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_115) "Building CXX object CMakeFiles/qteditor_mini.dir/viewer_prop_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/viewer_prop_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/viewer_prop_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/viewer_prop_dialog.cpp.o -c /workspace/qteditor/mini/viewer_prop_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/viewer_prop_dialog.cpp.i: cmake_force
@@ -1802,7 +1816,7 @@ CMakeFiles/qteditor_mini.dir/viewer_prop_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/water_procedural_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/water_procedural_dialog.cpp.o: /workspace/qteditor/mini/water_procedural_dialog.cpp
 CMakeFiles/qteditor_mini.dir/water_procedural_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_115) "Building CXX object CMakeFiles/qteditor_mini.dir/water_procedural_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_116) "Building CXX object CMakeFiles/qteditor_mini.dir/water_procedural_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/water_procedural_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/water_procedural_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/water_procedural_dialog.cpp.o -c /workspace/qteditor/mini/water_procedural_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/water_procedural_dialog.cpp.i: cmake_force
@@ -1816,7 +1830,7 @@ CMakeFiles/qteditor_mini.dir/water_procedural_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/world_objects_door_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/world_objects_door_dialog.cpp.o: /workspace/qteditor/mini/world_objects_door_dialog.cpp
 CMakeFiles/qteditor_mini.dir/world_objects_door_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_116) "Building CXX object CMakeFiles/qteditor_mini.dir/world_objects_door_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_117) "Building CXX object CMakeFiles/qteditor_mini.dir/world_objects_door_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/world_objects_door_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/world_objects_door_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/world_objects_door_dialog.cpp.o -c /workspace/qteditor/mini/world_objects_door_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/world_objects_door_dialog.cpp.i: cmake_force
@@ -1830,7 +1844,7 @@ CMakeFiles/qteditor_mini.dir/world_objects_door_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/world_objects_generic_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/world_objects_generic_dialog.cpp.o: /workspace/qteditor/mini/world_objects_generic_dialog.cpp
 CMakeFiles/qteditor_mini.dir/world_objects_generic_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_117) "Building CXX object CMakeFiles/qteditor_mini.dir/world_objects_generic_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_118) "Building CXX object CMakeFiles/qteditor_mini.dir/world_objects_generic_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/world_objects_generic_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/world_objects_generic_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/world_objects_generic_dialog.cpp.o -c /workspace/qteditor/mini/world_objects_generic_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/world_objects_generic_dialog.cpp.i: cmake_force
@@ -1844,7 +1858,7 @@ CMakeFiles/qteditor_mini.dir/world_objects_generic_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/world_objects_player_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/world_objects_player_dialog.cpp.o: /workspace/qteditor/mini/world_objects_player_dialog.cpp
 CMakeFiles/qteditor_mini.dir/world_objects_player_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_118) "Building CXX object CMakeFiles/qteditor_mini.dir/world_objects_player_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_119) "Building CXX object CMakeFiles/qteditor_mini.dir/world_objects_player_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/world_objects_player_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/world_objects_player_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/world_objects_player_dialog.cpp.o -c /workspace/qteditor/mini/world_objects_player_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/world_objects_player_dialog.cpp.i: cmake_force
@@ -1858,7 +1872,7 @@ CMakeFiles/qteditor_mini.dir/world_objects_player_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/world_sounds_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/world_sounds_dialog.cpp.o: /workspace/qteditor/mini/world_sounds_dialog.cpp
 CMakeFiles/qteditor_mini.dir/world_sounds_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_119) "Building CXX object CMakeFiles/qteditor_mini.dir/world_sounds_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_120) "Building CXX object CMakeFiles/qteditor_mini.dir/world_sounds_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/world_sounds_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/world_sounds_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/world_sounds_dialog.cpp.o -c /workspace/qteditor/mini/world_sounds_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/world_sounds_dialog.cpp.i: cmake_force
@@ -1872,7 +1886,7 @@ CMakeFiles/qteditor_mini.dir/world_sounds_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/world_textures_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/world_textures_dialog.cpp.o: /workspace/qteditor/mini/world_textures_dialog.cpp
 CMakeFiles/qteditor_mini.dir/world_textures_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_120) "Building CXX object CMakeFiles/qteditor_mini.dir/world_textures_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_121) "Building CXX object CMakeFiles/qteditor_mini.dir/world_textures_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/world_textures_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/world_textures_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/world_textures_dialog.cpp.o -c /workspace/qteditor/mini/world_textures_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/world_textures_dialog.cpp.i: cmake_force
@@ -1886,7 +1900,7 @@ CMakeFiles/qteditor_mini.dir/world_textures_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/world_weapons_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/world_weapons_dialog.cpp.o: /workspace/qteditor/mini/world_weapons_dialog.cpp
 CMakeFiles/qteditor_mini.dir/world_weapons_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_121) "Building CXX object CMakeFiles/qteditor_mini.dir/world_weapons_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_122) "Building CXX object CMakeFiles/qteditor_mini.dir/world_weapons_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/world_weapons_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/world_weapons_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/world_weapons_dialog.cpp.o -c /workspace/qteditor/mini/world_weapons_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/world_weapons_dialog.cpp.i: cmake_force
@@ -1900,7 +1914,7 @@ CMakeFiles/qteditor_mini.dir/world_weapons_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/worldobjectslight_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/worldobjectslight_dialog.cpp.o: /workspace/qteditor/mini/worldobjectslight_dialog.cpp
 CMakeFiles/qteditor_mini.dir/worldobjectslight_dialog.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_122) "Building CXX object CMakeFiles/qteditor_mini.dir/worldobjectslight_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_123) "Building CXX object CMakeFiles/qteditor_mini.dir/worldobjectslight_dialog.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/worldobjectslight_dialog.cpp.o -MF CMakeFiles/qteditor_mini.dir/worldobjectslight_dialog.cpp.o.d -o CMakeFiles/qteditor_mini.dir/worldobjectslight_dialog.cpp.o -c /workspace/qteditor/mini/worldobjectslight_dialog.cpp
 
 CMakeFiles/qteditor_mini.dir/worldobjectslight_dialog.cpp.i: cmake_force
@@ -1914,7 +1928,7 @@ CMakeFiles/qteditor_mini.dir/worldobjectslight_dialog.cpp.s: cmake_force
 CMakeFiles/qteditor_mini.dir/qteditor_mini_autogen/EWIEGA46WW/qrc_resources.cpp.o: CMakeFiles/qteditor_mini.dir/flags.make
 CMakeFiles/qteditor_mini.dir/qteditor_mini_autogen/EWIEGA46WW/qrc_resources.cpp.o: qteditor_mini_autogen/EWIEGA46WW/qrc_resources.cpp
 CMakeFiles/qteditor_mini.dir/qteditor_mini_autogen/EWIEGA46WW/qrc_resources.cpp.o: CMakeFiles/qteditor_mini.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_123) "Building CXX object CMakeFiles/qteditor_mini.dir/qteditor_mini_autogen/EWIEGA46WW/qrc_resources.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_124) "Building CXX object CMakeFiles/qteditor_mini.dir/qteditor_mini_autogen/EWIEGA46WW/qrc_resources.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/qteditor_mini.dir/qteditor_mini_autogen/EWIEGA46WW/qrc_resources.cpp.o -MF CMakeFiles/qteditor_mini.dir/qteditor_mini_autogen/EWIEGA46WW/qrc_resources.cpp.o.d -o CMakeFiles/qteditor_mini.dir/qteditor_mini_autogen/EWIEGA46WW/qrc_resources.cpp.o -c /workspace/qteditor/mini/build/qteditor_mini_autogen/EWIEGA46WW/qrc_resources.cpp
 
 CMakeFiles/qteditor_mini.dir/qteditor_mini_autogen/EWIEGA46WW/qrc_resources.cpp.i: cmake_force
@@ -2003,6 +2017,7 @@ qteditor_mini_OBJECTS = \
 "CMakeFiles/qteditor_mini.dir/path_keypad.cpp.o" \
 "CMakeFiles/qteditor_mini.dir/physics_dialog.cpp.o" \
 "CMakeFiles/qteditor_mini.dir/player_weapons_dialog.cpp.o" \
+"CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o" \
 "CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o" \
 "CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o" \
 "CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.o" \
@@ -2129,6 +2144,7 @@ qteditor_mini: CMakeFiles/qteditor_mini.dir/osiris_status_dialog.cpp.o
 qteditor_mini: CMakeFiles/qteditor_mini.dir/path_keypad.cpp.o
 qteditor_mini: CMakeFiles/qteditor_mini.dir/physics_dialog.cpp.o
 qteditor_mini: CMakeFiles/qteditor_mini.dir/player_weapons_dialog.cpp.o
+qteditor_mini: CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o
 qteditor_mini: CMakeFiles/qteditor_mini.dir/powprop_dialog.cpp.o
 qteditor_mini: CMakeFiles/qteditor_mini.dir/preferences_dialog.cpp.o
 qteditor_mini: CMakeFiles/qteditor_mini.dir/procedural_dialog.cpp.o
@@ -2184,7 +2200,7 @@ qteditor_mini: /usr/lib/x86_64-linux-gnu/libQt5Core.so.5.15.8
 qteditor_mini: /usr/lib/x86_64-linux-gnu/libGLX.so
 qteditor_mini: /usr/lib/x86_64-linux-gnu/libOpenGL.so
 qteditor_mini: CMakeFiles/qteditor_mini.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_124) "Linking CXX executable qteditor_mini"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/workspace/qteditor/mini/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_125) "Linking CXX executable qteditor_mini"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/qteditor_mini.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

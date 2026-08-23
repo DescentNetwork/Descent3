@@ -726,6 +726,7 @@
   /workspace/qteditor/mini/lib/3d.h \
   /workspace/qteditor/mini/lib/DeathInfo.h \
   /workspace/qteditor/mini/lib/Inventory.h \
+  /workspace/qteditor/mini/lib/ObjScript.h \
   /workspace/qteditor/mini/lib/aistruct.h \
   /workspace/qteditor/mini/lib/aistruct_external.h \
   /workspace/qteditor/mini/lib/application.h \
@@ -733,6 +734,7 @@
   /workspace/qteditor/mini/lib/byteswap.h \
   /workspace/qteditor/mini/lib/cfile.h \
   /workspace/qteditor/mini/lib/crossplat.h \
+  /workspace/qteditor/mini/lib/d3x_op.h \
   /workspace/qteditor/mini/lib/deathinfo_external.h \
   /workspace/qteditor/mini/lib/debug.h \
   /workspace/qteditor/mini/lib/door.h \
@@ -752,6 +754,7 @@
   /workspace/qteditor/mini/lib/player_external.h \
   /workspace/qteditor/mini/lib/player_external_struct.h \
   /workspace/qteditor/mini/lib/polymodel_external.h \
+  /workspace/qteditor/mini/lib/posix_stream.h \
   /workspace/qteditor/mini/lib/pserror.h \
   /workspace/qteditor/mini/lib/pstypes.h \
   /workspace/qteditor/mini/lib/renderer.h \
@@ -766,6 +769,7 @@
   /workspace/qteditor/mini/lib/vecmat.h \
   /workspace/qteditor/mini/lib/vecmat_external.h \
   /workspace/qteditor/mini/lib/weapon.h \
+  /workspace/qteditor/mini/lib/weapon_external.h \
   /workspace/qteditor/mini/lib/win32_types_stub.h \
   /workspace/qteditor/mini/lighting_keypad.h \
   /workspace/qteditor/mini/lighting_status_dialog.h \

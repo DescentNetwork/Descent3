@@ -1,6 +1,6 @@
 CMakeFiles/qteditor_mini.dir/editor_object_lighting.cpp.o: \
  /workspace/qteditor/mini/editor_object_lighting.cpp \
- /usr/include/stdc-predef.h /workspace/qteditor/mini/logger/log.h \
+ /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/QtGlobal \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/qglobal.h \
  /usr/include/c++/12/type_traits \
@@ -98,8 +98,10 @@ CMakeFiles/qteditor_mini.dir/editor_object_lighting.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/qglobalstatic.h \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/qnumeric.h \
  /usr/include/x86_64-linux-gnu/qt5/QtCore/qversiontagging.h \
- /usr/include/c++/12/cmath /usr/include/math.h \
- /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+ /workspace/qteditor/mini/logger/log.h \
+ /workspace/qteditor/mini/lib/pserror.h \
+ /workspace/qteditor/mini/lib/debug.h /usr/include/c++/12/cmath \
+ /usr/include/math.h /usr/include/x86_64-linux-gnu/bits/math-vector.h \
  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
@@ -267,7 +269,7 @@ CMakeFiles/qteditor_mini.dir/editor_object_lighting.cpp.o: \
  /workspace/qteditor/mini/lib/Ddgr.h \
  /workspace/qteditor/mini/lib/Macros.h \
  /workspace/qteditor/mini/lib/pserror.h \
- /workspace/qteditor/mini/lib/debug.h /workspace/qteditor/mini/lib/room.h \
+ /workspace/qteditor/mini/lib/room.h \
  /workspace/qteditor/mini/lib/gametexture.h \
  /workspace/qteditor/mini/lib/room_external.h \
  /workspace/qteditor/mini/game/bnode.h \

@@ -281,7 +281,9 @@ CMakeFiles/qteditor_mini.dir/editor_lighting.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt5/QtWidgets/qsizepolicy.h \
  /usr/include/x86_64-linux-gnu/qt5/QtGui/qcursor.h \
  /usr/include/x86_64-linux-gnu/qt5/QtGui/qkeysequence.h \
- /workspace/qteditor/mini/logger/log.h /usr/include/c++/12/cmath \
+ /workspace/qteditor/mini/logger/log.h \
+ /workspace/qteditor/mini/lib/pserror.h \
+ /workspace/qteditor/mini/lib/debug.h /usr/include/c++/12/cmath \
  /usr/include/math.h /usr/include/x86_64-linux-gnu/bits/math-vector.h \
  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
@@ -356,7 +358,7 @@ CMakeFiles/qteditor_mini.dir/editor_lighting.cpp.o: \
  /workspace/qteditor/mini/lib/Ddgr.h \
  /workspace/qteditor/mini/lib/Macros.h \
  /workspace/qteditor/mini/lib/pserror.h \
- /workspace/qteditor/mini/lib/debug.h /workspace/qteditor/mini/lib/room.h \
+ /workspace/qteditor/mini/lib/room.h \
  /workspace/qteditor/mini/lib/gametexture.h \
  /workspace/qteditor/mini/lib/room_external.h \
  /workspace/qteditor/mini/game/bnode.h \

@@ -1942,6 +1942,30 @@ player_weapons_dialog.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/qteditor_mini.dir/build.make CMakeFiles/qteditor_mini.dir/player_weapons_dialog.cpp.s
 .PHONY : player_weapons_dialog.cpp.s
 
+posix_stream_stub.o: posix_stream_stub.cpp.o
+.PHONY : posix_stream_stub.o
+
+# target to build an object file
+posix_stream_stub.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/qteditor_mini.dir/build.make CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.o
+.PHONY : posix_stream_stub.cpp.o
+
+posix_stream_stub.i: posix_stream_stub.cpp.i
+.PHONY : posix_stream_stub.i
+
+# target to preprocess a source file
+posix_stream_stub.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/qteditor_mini.dir/build.make CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.i
+.PHONY : posix_stream_stub.cpp.i
+
+posix_stream_stub.s: posix_stream_stub.cpp.s
+.PHONY : posix_stream_stub.s
+
+# target to generate assembly for a file
+posix_stream_stub.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/qteditor_mini.dir/build.make CMakeFiles/qteditor_mini.dir/posix_stream_stub.cpp.s
+.PHONY : posix_stream_stub.cpp.s
+
 powprop_dialog.o: powprop_dialog.cpp.o
 .PHONY : powprop_dialog.o
 
@@ -3305,6 +3329,9 @@ help:
 	@echo "... player_weapons_dialog.o"
 	@echo "... player_weapons_dialog.i"
 	@echo "... player_weapons_dialog.s"
+	@echo "... posix_stream_stub.o"
+	@echo "... posix_stream_stub.i"
+	@echo "... posix_stream_stub.s"
 	@echo "... powprop_dialog.o"
 	@echo "... powprop_dialog.i"
 	@echo "... powprop_dialog.s"

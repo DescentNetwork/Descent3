@@ -15,13 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include "logger/log.h"
 #include <QtGlobal>
+#include "logger/log.h"
+#include "lib/pserror.h"
 #include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <cstdlib>
+
 
 #include "3d.h"
 #include "gametexture.h"

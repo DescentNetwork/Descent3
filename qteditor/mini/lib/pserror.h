@@ -180,10 +180,7 @@ void DumpTextToClipboard(char *text);
 //////////////////////////////////////////////////////////////////////////////
 //	development debugging functions
 //	adds a function to be called when a debug break occurs.
-//	undefine any Q_ASSERT macro previously defined.
-#ifdef Q_ASSERT
-#undef Q_ASSERT
-#endif
+//      Do NOT undefine Q_ASSERT - we want to use Qt's Q_ASSERT from <QtGlobal>
 
 //	this callback is invoked when a DEBUG_BREAK macro is used.
 //		arguments

@@ -6,5 +6,5 @@ CXX_DEFINES = -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_WIDG
 
 CXX_INCLUDES = -I/workspace/qteditor/mini/build/qteditor_mini_autogen/include -I/workspace/qteditor/mini -I/workspace/qteditor/mini/lib -I/workspace/qteditor/mini/editor -I/workspace/qteditor/mini/game -I/workspace/qteditor/mini/fix -I/workspace/qteditor/mini/logger -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL -isystem /usr/include/SDL2
 
-CXX_FLAGS = -fPIC -std=gnu++17
+CXX_FLAGS =  -DEDITOR -fPIC -std=gnu++17
 

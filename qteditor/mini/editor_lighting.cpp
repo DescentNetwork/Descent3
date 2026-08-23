@@ -30,6 +30,8 @@
 #include <limits.h>
 #include "logger/log.h"
 
+#include "lib/pserror.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstring>
