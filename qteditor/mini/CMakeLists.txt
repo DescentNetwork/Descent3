@@ -24,9 +24,8 @@ else()
   message(STATUS "Using Qt5")
 endif()
 
-# Find required packages
+# Find required packages (SDL2 removed - using Qt for windowing/input)
 find_package(OpenGL REQUIRED)
-find_package(SDL2 REQUIRED)
 
 # Include directories
 include_directories(
@@ -40,7 +39,6 @@ include_directories(
     ${Qt5Gui_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS}
     ${Qt5OpenGL_INCLUDE_DIRS}
-    ${SDL2_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
 )
 
@@ -88,7 +86,6 @@ if(Qt6_FOUND)
     Qt6::Gui
     Qt6::Widgets
     OpenGL::GL
-    SDL2::SDL2
   )
   target_compile_definitions(qteditor_mini PRIVATE
     QT_CORE_LIB
@@ -102,7 +99,6 @@ else()
     Qt5::Widgets
     Qt5::OpenGL
     OpenGL::GL
-    SDL2::SDL2
   )
   target_compile_definitions(qteditor_mini PRIVATE
     QT_CORE_LIB

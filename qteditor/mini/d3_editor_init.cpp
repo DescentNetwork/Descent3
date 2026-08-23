@@ -22,8 +22,6 @@
 
 std::filesystem::path orig_pwd;
 
-#include <SDL2/SDL.h>
-
 #include <QSettings>
 
 #include "appdatabase.h"
@@ -53,8 +51,7 @@ void initD3Core(int argc, char *argv[]) {
   InitLog(LogSeverity::debug, false, false);
 #endif
 
-  SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO);
-
+  // SDL initialization removed - using Qt for window management
   PreInitD3Systems();
 
   tLnxAppInfo appinfo{};

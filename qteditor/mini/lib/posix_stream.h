@@ -12,12 +12,8 @@
 #include <vector>
 
 namespace hog2 {
-  struct entry_t {
-    char name[36];
-    uint32_t flags;
-    uint32_t len;
-    uint32_t timestamp;
-  };
+  // entry_t removed - duplicate definition with game/hog2_format.h
+  // Only archive_entry_t and archive_t are used in editor code
   
   struct archive_entry_t {
     std::string name;
@@ -30,15 +26,7 @@ namespace hog2 {
   struct archive_t {
     std::vector<archive_entry_t> entries;
 
-    void addEntry(const entry_t& entry) {
-      archive_entry_t ae;
-      ae.name = std::string(entry.name);
-      ae.offset = 0;
-      ae.length = entry.len;
-      ae.timestamp = entry.timestamp;
-      ae.flags = entry.flags;
-      entries.push_back(ae);
-    }
+    // addEntry(entry_t) removed along with entry_t struct
     
     void addEntry(const archive_entry_t& entry) {
       entries.push_back(entry);

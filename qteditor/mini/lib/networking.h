@@ -208,10 +208,7 @@ static inline void INADDR_GET_SUN_SUNB(struct in_addr *st, uint8_t *s_b1, uint8_
 #include <pthread.h>
 #include <fcntl.h>
 
-// rcg06212000 my SDL adds.
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_thread.h>
-
+// SDL removed - using pthread directly for threading
 #define SOCKET int
 #define BOOL bool
 #define SOCKADDR_IN sockaddr_in
@@ -469,7 +466,7 @@ struct async_dns_lookup {
 
   // rcg06212000 added to let us join the thread at completion...
 #if defined(POSIX)
-  SDL_Thread *threadId;
+  pthread_t threadId;
 #endif
 };
 

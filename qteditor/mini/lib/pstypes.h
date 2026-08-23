@@ -26,7 +26,7 @@
 // terminating NULL, so a buffer to hold a filename needs to be PSFILENAME_LEN+1 bytes long.
 #define PSFILENAME_LEN 35
 
-#if !defined(SDL_PLATFORM_APPLE)
+#if !defined(__APPLE__)
 #define HOST_BIGENDIAN @HOST_BIGENDIAN @
 #else
 #if defined(__BIG_ENDIAN__)

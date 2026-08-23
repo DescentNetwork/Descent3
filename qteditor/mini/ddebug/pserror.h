@@ -149,8 +149,7 @@
 #ifndef PSERROR_H
 #define PSERROR_H
 
-#include <SDL3/SDL_assert.h>
-
+// SDL removed - using Qt's assertion mechanism
 #include "debug.h"
 #include "log.h"
 
@@ -201,13 +200,14 @@ static inline void SetDebugBreakHandlers(void (*stop)(), void (*resume)()) {
 #ifndef RELEASE
 
 #include <cstdlib>
+#include <QtGlobal>
 
-// Calls the SDL_assert(false) macro surrounded by calls to the debug callbacks (to turn off & on graphics)
+// Calls the Q_ASSERT(false) macro surrounded by calls to the debug callbacks (to turn off & on graphics)
 #define DEBUG_BREAK()                                                                                                  \
   do {                                                                                                                 \
     if (DebugBreak_callback_stop)                                                                                      \
       (*DebugBreak_callback_stop)();                                                                                   \
-    SDL_assert(false);                                                                                                 \
+    Q_ASSERT(false);                                                                                                 \
     if (DebugBreak_callback_resume)                                                                                    \
       (*DebugBreak_callback_resume)();                                                                                 \
   } while (0)
@@ -219,12 +219,12 @@ static inline void SetDebugBreakHandlers(void (*stop)(), void (*resume)()) {
     DEBUG_BREAK();                                                                                                     \
   } while (0)
 
-// Like the standard C assert(), but if the condition failed and debugging on does a SDL_assert() with debug window.
+// Like the standard C assert(), but if the condition failed and debugging on does a Q_ASSERT() with debug window.
 #define Q_ASSERT(x)                                                                                                      \
   do {                                                                                                                 \
     if (!(x)) {                                                                                                        \
       LOG_ERROR("Assertion failed (%s) in %s:%d.", #x, __FILE__, __LINE__);                                     \
-      SDL_assert(x);                                                                                                   \
+      ::q_assert_fail(#x, __FILE__, __LINE__, Q_FUNC_INFO);                                                                                                   \
     }                                                                                                                  \
   } while (0)
 

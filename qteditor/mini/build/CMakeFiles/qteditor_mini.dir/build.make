@@ -2193,7 +2193,6 @@ qteditor_mini: CMakeFiles/qteditor_mini.dir/worldobjectslight_dialog.cpp.o
 qteditor_mini: CMakeFiles/qteditor_mini.dir/qteditor_mini_autogen/EWIEGA46WW/qrc_resources.cpp.o
 qteditor_mini: CMakeFiles/qteditor_mini.dir/build.make
 qteditor_mini: /usr/lib/x86_64-linux-gnu/libQt5OpenGL.so.5.15.8
-qteditor_mini: /usr/lib/x86_64-linux-gnu/libSDL2.so
 qteditor_mini: /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.15.8
 qteditor_mini: /usr/lib/x86_64-linux-gnu/libQt5Gui.so.5.15.8
 qteditor_mini: /usr/lib/x86_64-linux-gnu/libQt5Core.so.5.15.8

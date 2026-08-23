@@ -243,9 +243,6 @@ Qt5_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5
 //The directory containing a CMake configuration file for Qt6.
 Qt6_DIR:PATH=Qt6_DIR-NOTFOUND
 
-//The directory containing a CMake configuration file for SDL2.
-SDL2_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/SDL2
-
 //Value Computed by CMake
 qteditor_mini_BINARY_DIR:STATIC=/workspace/qteditor/mini/build
 
