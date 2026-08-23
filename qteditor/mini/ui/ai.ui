@@ -1,0 +1,3673 @@
+<?xml version="1.0"?>
+<ui version="4.0">
+  <class>AISettingsDialog</class>
+  <widget class="QDialog" name="IDD_AI">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>894</width>
+        <height>771</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>AI Settings</string>
+    </property>
+    <property name="font">
+      <font>
+        <family>Liberation Sans</family>
+        <pointsize>8</pointsize>
+        <bold>false</bold>
+        <italic>false</italic>
+      </font>
+    </property>
+    <property name="enabled">
+      <bool>true</bool>
+    </property>
+    <property name="windowFlags">
+      <set>Qt::Dialog|Qt::WindowCloseButtonHint</set>
+    </property>
+    <property name="minimumSize">
+      <size>
+        <width>894</width>
+        <height>771</height>
+      </size>
+    </property>
+    <property name="maximumSize">
+      <size>
+        <width>894</width>
+        <height>771</height>
+      </size>
+    </property>
+    <widget class="QGroupBox" name="IDC_STATIC">
+      <property name="geometry">
+        <rect>
+          <x>8</x>
+          <y>8</y>
+          <width>216</width>
+          <height>121</height>
+        </rect>
+      </property>
+      <property name="title">
+        <string>AI Information</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="flat">
+        <bool>false</bool>
+      </property>
+      <widget class="QLabel" name="IDC_STATIC_2">
+        <property name="geometry">
+          <rect>
+            <x>9</x>
+            <y>30</y>
+            <width>88</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>AI Class</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QComboBox" name="IDC_AI_CLASS_COMBO">
+        <property name="maxVisibleItems">
+          <number>4</number>
+        </property>
+        <property name="geometry">
+          <rect>
+            <x>105</x>
+            <y>30</y>
+            <width>104</width>
+            <height>22</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="editable">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_3">
+        <property name="geometry">
+          <rect>
+            <x>9</x>
+            <y>55</y>
+            <width>88</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>AI Type</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QComboBox" name="IDC_AI_TYPE_COMBO">
+        <property name="maxVisibleItems">
+          <number>3</number>
+        </property>
+        <property name="geometry">
+          <rect>
+            <x>105</x>
+            <y>55</y>
+            <width>104</width>
+            <height>22</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="editable">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_4">
+        <property name="geometry">
+          <rect>
+            <x>9</x>
+            <y>79</y>
+            <width>88</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>AI Initial Action</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>false</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QComboBox" name="IDC_AI_INITIAL_ACTION_COMBO">
+        <property name="maxVisibleItems">
+          <number>3</number>
+        </property>
+        <property name="geometry">
+          <rect>
+            <x>105</x>
+            <y>79</y>
+            <width>104</width>
+            <height>22</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>false</bool>
+        </property>
+        <property name="editable">
+          <bool>true</bool>
+        </property>
+      </widget>
+    </widget>
+    <widget class="QGroupBox" name="IDC_STATIC_5">
+      <property name="geometry">
+        <rect>
+          <x>232</x>
+          <y>8</y>
+          <width>240</width>
+          <height>373</height>
+        </rect>
+      </property>
+      <property name="title">
+        <string>Movement Information</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="flat">
+        <bool>false</bool>
+      </property>
+      <widget class="QLabel" name="IDC_STATIC_6">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>30</y>
+            <width>88</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Movement Type</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QComboBox" name="IDC_AI_MOVEMENT_TYPE_COMBO">
+        <property name="maxVisibleItems">
+          <number>4</number>
+        </property>
+        <property name="geometry">
+          <rect>
+            <x>128</x>
+            <y>30</y>
+            <width>104</width>
+            <height>22</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="editable">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_7">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>55</y>
+            <width>112</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Movement Subtype</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QComboBox" name="IDC_AI_MOVEMENT_SUBTYPE_COMBO">
+        <property name="maxVisibleItems">
+          <number>5</number>
+        </property>
+        <property name="geometry">
+          <rect>
+            <x>128</x>
+            <y>55</y>
+            <width>104</width>
+            <height>22</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="editable">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_8">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>87</y>
+            <width>80</width>
+            <height>13</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Max Velocity</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_MAX_VELOCITY_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>128</x>
+            <y>87</y>
+            <width>64</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_9">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>115</y>
+            <width>104</width>
+            <height>13</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Max Velocity Time</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_MAX_VEL_TIME_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>128</x>
+            <y>115</y>
+            <width>64</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_10">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>140</y>
+            <width>80</width>
+            <height>13</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Max Turn Rate</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_MAX_TURN_RATE_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>128</x>
+            <y>140</y>
+            <width>64</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_11">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>166</y>
+            <width>120</width>
+            <height>13</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Max Turn Rate Time</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_MAX_TURN_RATE_TIME_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>128</x>
+            <y>166</y>
+            <width>64</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_12">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>193</y>
+            <width>104</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Dodge Velocity %</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_DODGE_VEL_PER_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>128</x>
+            <y>193</y>
+            <width>64</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_13">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>219</y>
+            <width>112</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Attack Velocity %</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_ATTACK_VEL_PER_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>128</x>
+            <y>219</y>
+            <width>64</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_14">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>246</y>
+            <width>112</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Flee Velocity %</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_FLEE_VEL_PER_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>128</x>
+            <y>246</y>
+            <width>64</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_CIRCLE_DISTANCE_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>128</x>
+            <y>272</y>
+            <width>64</width>
+            <height>24</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_15">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>280</y>
+            <width>104</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Circle Distance</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_FLUCTUATE_PROPERTIES">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>313</y>
+            <width>216</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Fluctuate Speed Properties +/- 5%</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_USES_THRUST_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>333</y>
+            <width>208</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Use Physics for movement (Thrusts)</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>false</bool>
+        </property>
+      </widget>
+    </widget>
+    <widget class="QGroupBox" name="IDC_STATIC_16">
+      <property name="geometry">
+        <rect>
+          <x>481</x>
+          <y>8</y>
+          <width>401</width>
+          <height>272</height>
+        </rect>
+      </property>
+      <property name="title">
+        <string>Other Information</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="flat">
+        <bool>false</bool>
+      </property>
+      <widget class="QLabel" name="IDC_STATIC_17">
+        <property name="geometry">
+          <rect>
+            <x>104</x>
+            <y>22</y>
+            <width>56</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Damage</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_18">
+        <property name="geometry">
+          <rect>
+            <x>176</x>
+            <y>22</y>
+            <width>51</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Latency</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_BFH_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>248</x>
+            <y>22</y>
+            <width>128</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Biased Flight Height</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_MELEE_1_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>42</y>
+            <width>88</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Use Melee 1</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_MELEE1_DIST_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>104</x>
+            <y>42</y>
+            <width>56</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_MELEE1_LATENCY_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>168</x>
+            <y>42</y>
+            <width>56</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_19">
+        <property name="geometry">
+          <rect>
+            <x>248</x>
+            <y>42</y>
+            <width>72</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Min Height</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_BFHMIN_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>329</x>
+            <y>42</y>
+            <width>48</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_20">
+        <property name="geometry">
+          <rect>
+            <x>248</x>
+            <y>70</y>
+            <width>80</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Max Height</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_BFHMAX_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>329</x>
+            <y>70</y>
+            <width>48</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_MELEE_2_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>82</y>
+            <width>88</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Use Melee 2</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_MELEE2_DIST_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>104</x>
+            <y>82</y>
+            <width>56</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_MELEE2_LATENCY_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>168</x>
+            <y>82</y>
+            <width>56</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_21">
+        <property name="geometry">
+          <rect>
+            <x>248</x>
+            <y>104</y>
+            <width>64</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Importance:</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QSlider" name="IDC_BFHI_SLIDER">
+        <property name="geometry">
+          <rect>
+            <x>313</x>
+            <y>104</y>
+            <width>72</width>
+            <height>20</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="tickPosition">
+          <enum>QSlider::NoTicks</enum>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_AIM_WITH_UVEC">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>134</y>
+            <width>321</width>
+            <height>24</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>FOV from Upward Vector (not Foward Vector)  -- FOR TURRETS</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_TARGET_BY_DIST_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>248</x>
+            <y>134</y>
+            <width>144</width>
+            <height>32</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Target by Distance - not FOV</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AIM_FOV_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>167</y>
+            <width>215</width>
+            <height>24</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>FOV from first weapon battery's aiming point</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_FIRE_WEAPON_2_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>248</x>
+            <y>167</y>
+            <width>120</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Fires weapon 2</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>false</bool>
+        </property>
+      </widget>
+      <widget class="QRadioButton" name="IDC_AI_PTMC_RADIO">
+        <property name="geometry">
+          <rect>
+            <x>248</x>
+            <y>191</y>
+            <width>120</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>PTMC Aligned</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_22">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>211</y>
+            <width>75</width>
+            <height>13</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Field of View</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_FOV_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>168</x>
+            <y>211</y>
+            <width>56</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QRadioButton" name="IDC_AI_REBEL_RADIO">
+        <property name="geometry">
+          <rect>
+            <x>248</x>
+            <y>211</y>
+            <width>120</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Rebel Aligned</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="IDC_STATIC_23">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>231</y>
+            <width>104</width>
+            <height>16</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Dodge Percentage</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="alignment">
+          <set>Qt::AlignLeft</set>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AI_DODGE_PER_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>168</x>
+            <y>231</y>
+            <width>56</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QRadioButton" name="IDC_AI_HOSTILE_RADIO">
+        <property name="geometry">
+          <rect>
+            <x>248</x>
+            <y>231</y>
+            <width>120</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Hostile</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_XZ_TARGET_DIST">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>253</y>
+            <width>208</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Ignore Height diff. for distances</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QRadioButton" name="IDC_AI_NEUTRAL_RADIO">
+        <property name="geometry">
+          <rect>
+            <x>248</x>
+            <y>253</y>
+            <width>120</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Neutral</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+    </widget>
+    <widget class="QGroupBox" name="IDC_STATIC_24">
+      <property name="geometry">
+        <rect>
+          <x>8</x>
+          <y>187</y>
+          <width>216</width>
+          <height>73</height>
+        </rect>
+      </property>
+      <property name="title">
+        <string>Default Types</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="flat">
+        <bool>false</bool>
+      </property>
+      <widget class="QPushButton" name="IDC_AI_FLYER_BUTTON">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>22</y>
+            <width>88</width>
+            <height>22</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Default Flyer</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="default">
+          <bool>true</bool>
+        </property>
+        <property name="autoDefault">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QPushButton" name="IDC_AI_TURRET_BUTTON">
+        <property name="geometry">
+          <rect>
+            <x>112</x>
+            <y>22</y>
+            <width>88</width>
+            <height>22</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Default Turret</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="default">
+          <bool>true</bool>
+        </property>
+        <property name="autoDefault">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QPushButton" name="IDC_AI_MELEE_BUTTON">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>47</y>
+            <width>88</width>
+            <height>22</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Default Melee</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="default">
+          <bool>true</bool>
+        </property>
+        <property name="autoDefault">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QPushButton" name="IDC_AI_WALKER_BUTTON">
+        <property name="geometry">
+          <rect>
+            <x>112</x>
+            <y>47</y>
+            <width>88</width>
+            <height>22</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Defualt Walker</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="default">
+          <bool>true</bool>
+        </property>
+        <property name="autoDefault">
+          <bool>true</bool>
+        </property>
+      </widget>
+    </widget>
+    <widget class="QGroupBox" name="IDC_STATIC_25">
+      <property name="geometry">
+        <rect>
+          <x>8</x>
+          <y>305</y>
+          <width>216</width>
+          <height>162</height>
+        </rect>
+      </property>
+      <property name="title">
+        <string>Default Actions</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="flat">
+        <bool>false</bool>
+      </property>
+      <widget class="QCheckBox" name="IDC_AI_DODGE_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>30</y>
+            <width>144</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Auto Dodge Weapons</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_RETARGET_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>50</y>
+            <width>168</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Auto Aquire Targets</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_AVOIDWALLS_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>70</y>
+            <width>152</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Auto Avoid Walls</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AUTO_TURRETCONTROL_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>90</y>
+            <width>184</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Auto Turret Control and Aiming</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_FIREATTARGET_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>110</y>
+            <width>168</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Auto Firing Control</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_AVOID_FRIENDS_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>130</y>
+            <width>123</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Auto Avoid Friends</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="IDC_AVOID_FRIENDS_DIST_EDIT">
+        <property name="geometry">
+          <rect>
+            <x>152</x>
+            <y>130</y>
+            <width>56</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+    </widget>
+    <widget class="QGroupBox" name="IDC_STATIC_26">
+      <property name="geometry">
+        <rect>
+          <x>481</x>
+          <y>305</y>
+          <width>160</width>
+          <height>162</height>
+        </rect>
+      </property>
+      <property name="title">
+        <string>Default Notifications</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="flat">
+        <bool>false</bool>
+      </property>
+      <widget class="QCheckBox" name="IDC_AI_NOTIFY_SEEPLAYER_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>30</y>
+            <width>136</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>See Target</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_NOTIFY_NEARWALL_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>50</y>
+            <width>136</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Near Wall</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_NOTIFY_HITBYWEAPON_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>70</y>
+            <width>136</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Hit by weapon</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_NOTIFY_OBJFIRED_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>90</y>
+            <width>136</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Player Fired</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_NOTIFY_WEAPONHITPLAYER_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>110</y>
+            <width>136</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Weapon Hit Player</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_HEARS_NOISE_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>130</y>
+            <width>88</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Hears noise</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+    </widget>
+    <widget class="QGroupBox" name="IDC_STATIC_27">
+      <property name="geometry">
+        <rect>
+          <x>650</x>
+          <y>305</y>
+          <width>232</width>
+          <height>162</height>
+        </rect>
+      </property>
+      <property name="title">
+        <string>Behavioral options</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="flat">
+        <bool>false</bool>
+      </property>
+      <widget class="QCheckBox" name="IDC_TAUNTATDEATH_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>30</y>
+            <width>168</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Taunts Only At Target Death</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_STAY_IN_OUT_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>50</y>
+            <width>160</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Stays In/Out </string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_PERSISTANT_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>70</y>
+            <width>128</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Persistant</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_ORDERED_WB_FIRING_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>90</y>
+            <width>120</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Ordered WB Firing</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_ORIENT_VEL_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>110</y>
+            <width>192</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Always Orientate to Velocity</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QCheckBox" name="IDC_AI_FLINCH_CHECK">
+        <property name="geometry">
+          <rect>
+            <x>8</x>
+            <y>130</y>
+            <width>208</width>
+            <height>19</height>
+          </rect>
+        </property>
+        <property name="text">
+          <string>Flinches when hurt (needs anim)</string>
+        </property>
+        <property name="visible">
+          <bool>true</bool>
+        </property>
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+      </widget>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_28">
+      <property name="geometry">
+        <rect>
+          <x>8</x>
+          <y>555</y>
+          <width>72</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Night Vision</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_NV_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>80</x>
+          <y>555</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_29">
+      <property name="geometry">
+        <rect>
+          <x>208</x>
+          <y>555</y>
+          <width>104</width>
+          <height>13</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Infighting with team</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_FIGHT_TEAM_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>313</x>
+          <y>555</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_30">
+      <property name="geometry">
+        <rect>
+          <x>441</x>
+          <y>555</y>
+          <width>136</width>
+          <height>13</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Target Leading Accuracy</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_TLA_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>578</x>
+          <y>555</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_31">
+      <property name="geometry">
+        <rect>
+          <x>706</x>
+          <y>555</y>
+          <width>51</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Hearing</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_HEARING_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>762</x>
+          <y>555</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_32">
+      <property name="geometry">
+        <rect>
+          <x>8</x>
+          <y>587</y>
+          <width>72</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Fog Vision</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_FV_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>80</x>
+          <y>587</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_33">
+      <property name="wordWrap">
+        <bool>true</bool>
+      </property>
+      <property name="geometry">
+        <rect>
+          <x>208</x>
+          <y>587</y>
+          <width>104</width>
+          <height>26</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Infighting with same type</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_FIGHT_SAME_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>313</x>
+          <y>587</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_34">
+      <property name="geometry">
+        <rect>
+          <x>441</x>
+          <y>587</y>
+          <width>128</width>
+          <height>13</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Target Leading Varience</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_TLV_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>578</x>
+          <y>587</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_35">
+      <property name="geometry">
+        <rect>
+          <x>706</x>
+          <y>587</y>
+          <width>56</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Frustration</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_FRUSTRATION_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>762</x>
+          <y>587</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_36">
+      <property name="geometry">
+        <rect>
+          <x>8</x>
+          <y>619</y>
+          <width>56</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Curiousity</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_CURIOUSITY_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>80</x>
+          <y>619</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_37">
+      <property name="geometry">
+        <rect>
+          <x>208</x>
+          <y>619</y>
+          <width>64</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Agression</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_AGRESSION_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>313</x>
+          <y>619</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_38">
+      <property name="geometry">
+        <rect>
+          <x>441</x>
+          <y>619</y>
+          <width>112</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Fire Spread Variance</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_FIRE_SPREAD_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>578</x>
+          <y>619</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_39">
+      <property name="geometry">
+        <rect>
+          <x>706</x>
+          <y>619</y>
+          <width>51</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Roaming</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_ROAMING_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>762</x>
+          <y>619</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_40">
+      <property name="geometry">
+        <rect>
+          <x>674</x>
+          <y>651</y>
+          <width>88</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Life Perservation</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_LIFE_PRESERVATION_SLIDER">
+      <property name="geometry">
+        <rect>
+          <x>762</x>
+          <y>651</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_41">
+      <property name="geometry">
+        <rect>
+          <x>8</x>
+          <y>658</y>
+          <width>64</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Coop Same</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_CURIOUSITY_SLIDER2">
+      <property name="geometry">
+        <rect>
+          <x>80</x>
+          <y>658</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_42">
+      <property name="geometry">
+        <rect>
+          <x>208</x>
+          <y>658</y>
+          <width>56</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Leadership</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_CURIOUSITY_SLIDER3">
+      <property name="geometry">
+        <rect>
+          <x>313</x>
+          <y>658</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_43">
+      <property name="geometry">
+        <rect>
+          <x>8</x>
+          <y>688</y>
+          <width>64</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Coop Team</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QSlider" name="IDC_AI_CURIOUSITY_SLIDER4">
+      <property name="geometry">
+        <rect>
+          <x>80</x>
+          <y>688</y>
+          <width>120</width>
+          <height>20</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+      </property>
+    </widget>
+    <widget class="QComboBox" name="IDC_AI_TURRET_SOUND_COMBO">
+      <property name="maxVisibleItems">
+        <number>8</number>
+      </property>
+      <property name="geometry">
+        <rect>
+          <x>417</x>
+          <y>716</y>
+          <width>167</width>
+          <height>22</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="editable">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_44">
+      <property name="geometry">
+        <rect>
+          <x>309</x>
+          <y>721</y>
+          <width>67</width>
+          <height>13</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Turret Sound</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_45">
+      <property name="geometry">
+        <rect>
+          <x>11</x>
+          <y>723</y>
+          <width>70</width>
+          <height>13</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Attack Sound</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_46">
+      <property name="geometry">
+        <rect>
+          <x>615</x>
+          <y>723</y>
+          <width>59</width>
+          <height>13</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Flee Sound</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QComboBox" name="IDC_AI_FLEE_SOUND_COMBO">
+      <property name="maxVisibleItems">
+        <number>2</number>
+      </property>
+      <property name="geometry">
+        <rect>
+          <x>717</x>
+          <y>723</y>
+          <width>167</width>
+          <height>22</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="editable">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <widget class="QComboBox" name="IDC_AI_ATTACK_SOUND_COMBO">
+      <property name="maxVisibleItems">
+        <number>2</number>
+      </property>
+      <property name="geometry">
+        <rect>
+          <x>120</x>
+          <y>724</y>
+          <width>167</width>
+          <height>22</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="editable">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <widget class="QPushButton" name="IDOK">
+      <property name="geometry">
+        <rect>
+          <x>361</x>
+          <y>745</y>
+          <width>80</width>
+          <height>22</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>OK</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="default">
+        <bool>true</bool>
+      </property>
+      <property name="autoDefault">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <widget class="QPushButton" name="IDCANCEL">
+      <property name="geometry">
+        <rect>
+          <x>457</x>
+          <y>745</y>
+          <width>80</width>
+          <height>22</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Cancel</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="default">
+        <bool>false</bool>
+      </property>
+      <property name="autoDefault">
+        <bool>false</bool>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_47">
+      <property name="geometry">
+        <rect>
+          <x>11</x>
+          <y>749</y>
+          <width>57</width>
+          <height>13</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>See Sound</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QComboBox" name="IDC_AI_SEE_SOUND_COMBO">
+      <property name="maxVisibleItems">
+        <number>2</number>
+      </property>
+      <property name="geometry">
+        <rect>
+          <x>120</x>
+          <y>749</y>
+          <width>167</width>
+          <height>22</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="editable">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_48">
+      <property name="geometry">
+        <rect>
+          <x>615</x>
+          <y>749</y>
+          <width>67</width>
+          <height>13</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Angry Sound</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QComboBox" name="IDC_AI_ANGRY_SOUND_COMBO">
+      <property name="maxVisibleItems">
+        <number>2</number>
+      </property>
+      <property name="geometry">
+        <rect>
+          <x>717</x>
+          <y>749</y>
+          <width>167</width>
+          <height>22</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="editable">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <action name="IDD_ORPHANHUNTER">
+      <property name="text">
+        <string>Orphan Hunter</string>
+      </property>
+    </action>
+    <action name="IDD_REORDER_PAGES">
+      <property name="text">
+        <string>Reorder Net Pages</string>
+      </property>
+    </action>
+    <action name="IDD_SHOW_ALL_CHECKED_OUT">
+      <property name="text">
+        <string>Show All Pages Checked Out</string>
+      </property>
+    </action>
+    <action name="IDM_IMPORT_BITMAP">
+      <property name="text">
+        <string>Bitmap/Animation Converter...</string>
+      </property>
+    </action>
+    <action name="ID_APP_ABOUT">
+      <property name="text">
+        <string>&amp;About editor...</string>
+      </property>
+    </action>
+    <action name="ID_APP_EXIT">
+      <property name="text">
+        <string>E&amp;xit</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+X</string>
+      </property>
+    </action>
+    <action name="ID_BRIEFING_EDITOR">
+      <property name="text">
+        <string>Briefing Editor...</string>
+      </property>
+    </action>
+    <action name="ID_BUTTON_LIGHTING">
+      <property name="text">
+        <string>ID_BUTTON_LIGHTING</string>
+      </property>
+    </action>
+    <action name="ID_BUTTON_OUTLINE">
+      <property name="text">
+        <string>ID_BUTTON_OUTLINE</string>
+      </property>
+    </action>
+    <action name="ID_BUTTON_WINDOWSELECTION">
+      <property name="text">
+        <string>ID_BUTTON_WINDOWSELECTION</string>
+      </property>
+    </action>
+    <action name="ID_D3HELP">
+      <property name="text">
+        <string>Help on D3 Editor</string>
+      </property>
+    </action>
+    <action name="ID_EDITORS_AIPROPERTIES">
+      <property name="text">
+        <string>AI Properties...</string>
+      </property>
+    </action>
+    <action name="ID_EDITORS_AMBIENTSOUNDS">
+      <property name="text">
+        <string>Ambient Sounds...</string>
+      </property>
+    </action>
+    <action name="ID_EDITORS_DALLAS">
+      <property name="text">
+        <string>Dallas Graphical Script Editor...</string>
+      </property>
+    </action>
+    <action name="ID_EDITORS_FILES">
+      <property name="text">
+        <string>Files...</string>
+      </property>
+    </action>
+    <action name="ID_EDITORS_MEGACELLS">
+      <property name="text">
+        <string>Megacells...</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_ADDSELECT">
+      <property name="text">
+        <string>Add Current Room to Selected List</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_ATTACH">
+      <property name="text">
+        <string>&amp;Attach</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_CLEARSELECTED">
+      <property name="text">
+        <string>Clear Selected List</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_COPY">
+      <property name="text">
+        <string>&amp;Copy</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Ins</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_CUT">
+      <property name="text">
+        <string>Cu&amp;t</string>
+      </property>
+      <property name="shortcut">
+        <string>Shift+Del</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_DELETE">
+      <property name="text">
+        <string>&amp;Delete</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_LOADSCRAP">
+      <property name="text">
+        <string>Load Scrap from Disk</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_PASTE">
+      <property name="text">
+        <string>&amp;Paste</string>
+      </property>
+      <property name="shortcut">
+        <string>Shift+Ins</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_PLACE">
+      <property name="text">
+        <string>&amp;Place in Mine</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_PLACE_TERRAIN">
+      <property name="text">
+        <string>&amp;Place on Terrain</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_REMOVESELECT">
+      <property name="text">
+        <string>Remove Current Room from Selected List</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_SAVESCRAP">
+      <property name="text">
+        <string>Save Scrap to Disk</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_SELECTATTACHED">
+      <property name="text">
+        <string>Select All Rooms Attached to Current Room</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_UNDO">
+      <property name="text">
+        <string>&amp;Undo</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+Backspace</string>
+      </property>
+    </action>
+    <action name="ID_FILE_AUTOSAVE">
+      <property name="text">
+        <string>Autosave</string>
+      </property>
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
+    </action>
+    <action name="ID_FILE_CHECKMINE">
+      <property name="text">
+        <string>&amp;Check Mine</string>
+      </property>
+    </action>
+    <action name="ID_FILE_FIXCRACKS">
+      <property name="text">
+        <string>Fix Level Cracks</string>
+      </property>
+    </action>
+    <action name="ID_FILE_FIXDEGENERATEFACES">
+      <property name="text">
+        <string>Fix/Remove Degenerate Faces</string>
+      </property>
+    </action>
+    <action name="ID_FILE_IMPORT_ROOM">
+      <property name="text">
+        <string>Import 3DSMax Room</string>
+      </property>
+    </action>
+    <action name="ID_FILE_INFORMATION">
+      <property name="text">
+        <string>&amp;Information</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+I</string>
+      </property>
+    </action>
+    <action name="ID_FILE_LEAVE_EDITOR">
+      <property name="text">
+        <string>Go to main menu...</string>
+      </property>
+    </action>
+    <action name="ID_FILE_LEVELPROPS">
+      <property name="text">
+        <string>Set Selected Room(s) Properties</string>
+      </property>
+    </action>
+    <action name="ID_FILE_LEVEL_INFO">
+      <property name="text">
+        <string>Edit Level Info...</string>
+      </property>
+    </action>
+    <action name="ID_FILE_MRU_FILE1">
+      <property name="text">
+        <string>Recent File</string>
+      </property>
+      <property name="enabled">
+        <bool>false</bool>
+      </property>
+    </action>
+    <action name="ID_FILE_NEW">
+      <property name="text">
+        <string>&amp;New</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+N</string>
+      </property>
+    </action>
+    <action name="ID_FILE_OPEN">
+      <property name="text">
+        <string>&amp;Open...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+O</string>
+      </property>
+    </action>
+    <action name="ID_FILE_PLAY640X480">
+      <property name="text">
+        <string>&amp;Play in 640 x 480</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+P</string>
+      </property>
+    </action>
+    <action name="ID_FILE_PREFERENCES">
+      <property name="text">
+        <string>Preferences</string>
+      </property>
+    </action>
+    <action name="ID_FILE_PRINT">
+      <property name="text">
+        <string>&amp;Print...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+P</string>
+      </property>
+    </action>
+    <action name="ID_FILE_PRINT_PREVIEW">
+      <property name="text">
+        <string>Print Pre&amp;view</string>
+      </property>
+    </action>
+    <action name="ID_FILE_PRINT_SETUP">
+      <property name="text">
+        <string>P&amp;rint Setup...</string>
+      </property>
+    </action>
+    <action name="ID_FILE_REMOVEDUPLICATEFACESFROMCURRENTROOM">
+      <property name="text">
+        <string>Remove Duplicate Faces from Current Room</string>
+      </property>
+    </action>
+    <action name="ID_FILE_REMOVEEXTRAPOINTS">
+      <property name="text">
+        <string>Remove Extra Points</string>
+      </property>
+    </action>
+    <action name="ID_FILE_RESTOREGAMESTATE">
+      <property name="text">
+        <string>Restore Gamestate</string>
+      </property>
+    </action>
+    <action name="ID_FILE_SAVE">
+      <property name="text">
+        <string>&amp;Save</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+S</string>
+      </property>
+    </action>
+    <action name="ID_FILE_SAVEGOALTEXT">
+      <property name="text">
+        <string>Save Goal Text to File</string>
+      </property>
+    </action>
+    <action name="ID_FILE_SAVE_AS">
+      <property name="text">
+        <string>Save &amp;As...</string>
+      </property>
+    </action>
+    <action name="ID_FILE_SAVE_COPY_AS">
+      <property name="text">
+        <string>Save Copy &amp;As...</string>
+      </property>
+    </action>
+    <action name="ID_FILE_STATS">
+      <property name="text">
+        <string>Show Level Stats</string>
+      </property>
+    </action>
+    <action name="ID_FILE_UPDATE">
+      <property name="text">
+        <string>&amp;Update</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+S</string>
+      </property>
+    </action>
+    <action name="ID_FILE_VERIFY_LEVEL">
+      <property name="text">
+        <string>Verify Level</string>
+      </property>
+    </action>
+    <action name="ID_HOTSPOT_TGA">
+      <property name="text">
+        <string>HotSpot TGA Extractor...</string>
+      </property>
+    </action>
+    <action name="ID_MINE_VIEW">
+      <property name="text">
+        <string>Mine View</string>
+      </property>
+      <property name="shortcut">
+        <string>F2</string>
+      </property>
+    </action>
+    <action name="ID_OBJBUTTON">
+      <property name="text">
+        <string>ID_OBJBUTTON</string>
+      </property>
+    </action>
+    <action name="ID_OBJECT_DELETEOBJECT">
+      <property name="text">
+        <string>Delete Object</string>
+      </property>
+      <property name="shortcut">
+        <string>Del</string>
+      </property>
+    </action>
+    <action name="ID_OBJECT_MOVEPLAYER">
+      <property name="text">
+        <string>Move Player 0 to Viewer</string>
+      </property>
+    </action>
+    <action name="ID_OBJECT_PLACECAMERAATCURRENTFACE">
+      <property name="text">
+        <string>Create New Camera at Current Face</string>
+      </property>
+    </action>
+    <action name="ID_OBJECT_PLACECAMERAATVIEWER">
+      <property name="text">
+        <string>Create New Camera at Viewer</string>
+      </property>
+    </action>
+    <action name="ID_OBJECT_PLACEOBJECT">
+      <property name="text">
+        <string>Place Object</string>
+      </property>
+      <property name="shortcut">
+        <string>Ins</string>
+      </property>
+    </action>
+    <action name="ID_OBJECT_PLACESOUNDSOURCEATVIEWER">
+      <property name="text">
+        <string>Create SoundSource at Viewer</string>
+      </property>
+    </action>
+    <action name="ID_OBJECT_PLACEWAYPOINTATVIEWER">
+      <property name="text">
+        <string>Place Waypoint at Viewer</string>
+      </property>
+    </action>
+    <action name="ID_OBJECT_SELECTBYNUMBER">
+      <property name="text">
+        <string>Select Object By Number</string>
+      </property>
+    </action>
+    <action name="ID_OBJECT_SETCAMERAFROMVIEWER">
+      <property name="text">
+        <string>Move Camera to Viewer</string>
+      </property>
+    </action>
+    <action name="ID_OBJECT_SETVIEWERFROMCAMERA">
+      <property name="text">
+        <string>Move Viewer to Camera</string>
+      </property>
+    </action>
+    <action name="ID_OSIRISCOMPILE">
+      <property name="text">
+        <string>ID_OSIRISCOMPILE</string>
+      </property>
+    </action>
+    <action name="ID_REINIT_OPENGL">
+      <property name="text">
+        <string>ID_REINIT_OPENGL</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_ADD">
+      <property name="text">
+        <string>&amp;Add Room at Current Face</string>
+      </property>
+      <property name="shortcut">
+        <string>Shift+A</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_ADDVERTTONEWFACE">
+      <property name="text">
+        <string>Add Vert to New Face</string>
+      </property>
+      <property name="shortcut">
+        <string>Shift+V</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_ATTACHROOM">
+      <property name="text">
+        <string>Attach Room</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_BUILDBRIDGE">
+      <property name="text">
+        <string>&amp;Build Bridge</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_BUILDSMOOTHBRIDGE">
+      <property name="text">
+        <string>Build Smooth Bridge</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+B</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_CLEARCENTERPOINT">
+      <property name="text">
+        <string>Clear Center Point</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_COMBINE">
+      <property name="text">
+        <string>Combine Rooms</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_DELETE">
+      <property name="text">
+        <string>Delete Current Room</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_DELETECONNECTEDFACES">
+      <property name="text">
+        <string>Delete Connected Faces</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_DELETEFACE">
+      <property name="text">
+        <string>Delete Current Face</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_DELETEPORTAL">
+      <property name="text">
+        <string>Delete Current Portal</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_DELETEVERT">
+      <property name="text">
+        <string>Delete Current Vert From Face</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_DROPROOM">
+      <property name="text">
+        <string>Drop Room</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_FACE_ADDVERTTOEDGE">
+      <property name="text">
+        <string>Add Vert To Edge</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_FACE_DELETEVERTONEDGE">
+      <property name="text">
+        <string>Delete Vert on Edge</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_FACE_MOVEVERTONEDGE">
+      <property name="text">
+        <string>Move Vert on Edge</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_FACE_SPLITFACE">
+      <property name="text">
+        <string>Split Face</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_FINISHNEWFACE">
+      <property name="text">
+        <string>Add Last Point to New Face (Finish Face)</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_GRABTEXTURE">
+      <property name="text">
+        <string>Grab Texture</string>
+      </property>
+      <property name="shortcut">
+        <string>G</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_JOINROOMS">
+      <property name="text">
+        <string>Join Rooms</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_JOINROOMSEXACT">
+      <property name="text">
+        <string>Join Rooms Exact</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_JOIN_ADJACENT_FACES">
+      <property name="text">
+        <string>Join Adjacent Faces</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_LINKTONEWEXTERNAL">
+      <property name="text">
+        <string>Link Room to New External Room</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_MARK">
+      <property name="text">
+        <string>&amp;Mark Room/Face</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+M</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_MERGEOBJECTINTOROOM">
+      <property name="text">
+        <string>Merge Object into Room</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_NEXTFACE">
+      <property name="text">
+        <string>Next Face</string>
+      </property>
+      <property name="shortcut">
+        <string>F</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_PLACEROOM">
+      <property name="text">
+        <string>Place Room at Current Room</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_PLACETERRAINROOM">
+      <property name="text">
+        <string>Place Room at Current Terrain Cell</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_PREVIOUSFACE">
+      <property name="text">
+        <string>Previous Face</string>
+      </property>
+      <property name="shortcut">
+        <string>Shift+F</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_PROPAGATETOADJACENTCOPLANARFACES">
+      <property name="text">
+        <string>Propagate to Adjacent Coplanar Faces</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+F</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_PROPAGATETOALL">
+      <property name="text">
+        <string>Propagate to All Faces in Room</string>
+      </property>
+      <property name="shortcut">
+        <string>Shift+R</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_RENAMEROOM">
+      <property name="text">
+        <string>Rename Room</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+R</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_ROTATEPLACEDROOM45DEGREES">
+      <property name="text">
+        <string>Rotate Placed Room 45 Degrees</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_SAVECURRENTROOM">
+      <property name="text">
+        <string>Save Current Room</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_SELECTBYNUMBER">
+      <property name="text">
+        <string>Select Room by Number</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_SELECTFACEBYNUMBER">
+      <property name="text">
+        <string>Select Face by Number</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_SETCENTERFROMVIEWER">
+      <property name="text">
+        <string>Set Room Center from Viewer</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_SNAPPLACEDROOM">
+      <property name="text">
+        <string>Snap Placed Room</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_SNAPPOINTTOEDGE">
+      <property name="text">
+        <string>Snap Point to Edge</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_SNAPPOINTTOFACE">
+      <property name="text">
+        <string>Snap Point to Face</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_SNAPPOINTTOPOINT">
+      <property name="text">
+        <string>Snap Point to Point</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_SPLITFACE">
+      <property name="text">
+        <string>Triangulate face</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_STARTNEWFACE">
+      <property name="text">
+        <string>Add First Point to New Face (Start Face)</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_SWAPMAKEDANDCURRENTROOMFACE">
+      <property name="text">
+        <string>Swap Marked and Current Room/Face</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_UNDOSNAP">
+      <property name="text">
+        <string>Undo Snap</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_UNPLACEROOM">
+      <property name="text">
+        <string>Un-place Room/Group/Door</string>
+      </property>
+    </action>
+    <action name="ID_ROOM_VIEW">
+      <property name="text">
+        <string>Room View</string>
+      </property>
+      <property name="shortcut">
+        <string>F4</string>
+      </property>
+    </action>
+    <action name="ID_SCRIPT_LEVEL_INTERFACE">
+      <property name="text">
+        <string>Levels and Scripts...</string>
+      </property>
+    </action>
+    <action name="ID_SUBEDITORS_FONT">
+      <property name="text">
+        <string>Font Editor...</string>
+      </property>
+    </action>
+    <action name="ID_SUBEDITORS_HOGMAKER">
+      <property name="text">
+        <string>Hog Maker...</string>
+      </property>
+    </action>
+    <action name="ID_SUBEDITORS_TABLEFILEEDIT">
+      <property name="text">
+        <string>Table File Text Editor...</string>
+      </property>
+    </action>
+    <action name="ID_SUBEDITORS_TABLEFILEFILTER">
+      <property name="text">
+        <string>Table File Filter...</string>
+      </property>
+    </action>
+    <action name="ID_TABLEEDIT_FILE_EXIT">
+      <property name="text">
+        <string>&amp;Exit</string>
+      </property>
+    </action>
+    <action name="ID_TABLEEDIT_FILE_LOAD">
+      <property name="text">
+        <string>&amp;Load...</string>
+      </property>
+    </action>
+    <action name="ID_TABLEEDIT_FILE_SAVE">
+      <property name="text">
+        <string>&amp;Save</string>
+      </property>
+    </action>
+    <action name="ID_TABLEEDIT_FILE_SAVE_AS">
+      <property name="text">
+        <string>S&amp;ave as...</string>
+      </property>
+    </action>
+    <action name="ID_TABLEFILTER_FILE_EXIT">
+      <property name="text">
+        <string>Exit</string>
+      </property>
+    </action>
+    <action name="ID_TABLEFILTER_FILE_LOAD">
+      <property name="text">
+        <string>Load...</string>
+      </property>
+    </action>
+    <action name="ID_TABLEFILTER_FILE_NEW">
+      <property name="text">
+        <string>New</string>
+      </property>
+    </action>
+    <action name="ID_TABLEFILTER_FILE_SAVE">
+      <property name="text">
+        <string>Save</string>
+      </property>
+    </action>
+    <action name="ID_TABLEFILTER_FILE_SAVEAS">
+      <property name="text">
+        <string>Save as...</string>
+      </property>
+    </action>
+    <action name="ID_TERRAIN_VIEW">
+      <property name="text">
+        <string>Terrain View</string>
+      </property>
+      <property name="shortcut">
+        <string>F3</string>
+      </property>
+    </action>
+    <action name="ID_TEST_TEST1">
+      <property name="text">
+        <string>Test function 1</string>
+      </property>
+    </action>
+    <action name="ID_TEST_TEST2">
+      <property name="text">
+        <string>Test function 2</string>
+      </property>
+    </action>
+    <action name="ID_TEST_TEST3">
+      <property name="text">
+        <string>Test function 3</string>
+      </property>
+    </action>
+    <action name="ID_TOOLS_WORLD_OBJECTS_BUILDINGS">
+      <property name="text">
+        <string>Buildings...</string>
+      </property>
+    </action>
+    <action name="ID_TOOLS_WORLD_OBJECTS_CLUTTER">
+      <property name="text">
+        <string>Clutter...</string>
+      </property>
+    </action>
+    <action name="ID_TOOLS_WORLD_OBJECTS_DOOR">
+      <property name="text">
+        <string>Doors...</string>
+      </property>
+    </action>
+    <action name="ID_TOOLS_WORLD_OBJECTS_LIGHTS">
+      <property name="text">
+        <string>Lights...</string>
+      </property>
+    </action>
+    <action name="ID_TOOLS_WORLD_OBJECTS_PLAYER">
+      <property name="text">
+        <string>Player Ships...</string>
+      </property>
+    </action>
+    <action name="ID_TOOLS_WORLD_OBJECTS_POWERUPS">
+      <property name="text">
+        <string>Powerups...</string>
+      </property>
+    </action>
+    <action name="ID_TOOLS_WORLD_OBJECTS_ROBOTS">
+      <property name="text">
+        <string>Robots...</string>
+      </property>
+    </action>
+    <action name="ID_TOOLS_WORLD_OBJECTS_SOUND">
+      <property name="text">
+        <string>Sounds...</string>
+      </property>
+    </action>
+    <action name="ID_TOOLS_WORLD_TEXTURES">
+      <property name="text">
+        <string>Textures...</string>
+      </property>
+    </action>
+    <action name="ID_TOOLS_WORLD_WEAPONS">
+      <property name="text">
+        <string>Weapons...</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_CENTERONCUBE">
+      <property name="text">
+        <string>Center on Current &amp;Room</string>
+      </property>
+      <property name="shortcut">
+        <string>Home</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_CENTERONMINE">
+      <property name="text">
+        <string>Center on &amp;Mine Origin</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_CENTERONOBJECT">
+      <property name="text">
+        <string>Center on Current &amp;Object</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_DELETEVIEWER">
+      <property name="text">
+        <string>Delete Viewer</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_FLIP">
+      <property name="text">
+        <string>Flip Viewer</string>
+      </property>
+      <property name="shortcut">
+        <string>/</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_KEYPAD_TOGGLE">
+      <property name="text">
+        <string>Keypad</string>
+      </property>
+      <property name="shortcut">
+        <string>F10</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_MOVECAMERATOCURRENTOBJECT">
+      <property name="text">
+        <string>Move camera to Current Object</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_MOVECAMERATOSELECTEDFACE">
+      <property name="text">
+        <string>Move camera to &amp;Current Face</string>
+      </property>
+      <property name="shortcut">
+        <string>Shift+C</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_MOVECAMERATOSELECTEDROOM">
+      <property name="text">
+        <string>Move camera to &amp;Current Room</string>
+      </property>
+      <property name="shortcut">
+        <string>C</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_NEWVIEWER">
+      <property name="text">
+        <string>New Viewer</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_NEXTVIEWER">
+      <property name="text">
+        <string>Next Viewer</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_RESETVIEWRADIUS">
+      <property name="text">
+        <string>Reset View Radius</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW">
+      <property name="text">
+        <string>Show objects in Wireframe view</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_SHOWVIEWERFORWARDVECTOR">
+      <property name="text">
+        <string>Show Viewer Forward Vector</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_STATUS_BAR">
+      <property name="text">
+        <string>&amp;Status Bar</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_TEXTUREMINE">
+      <property name="text">
+        <string>Te&amp;xtured view</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_TOOLBAR">
+      <property name="text">
+        <string>&amp;Toolbar</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_VIEWPROP">
+      <property name="text">
+        <string>Display Viewer Properties</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_WIREFRAMEMINE">
+      <property name="text">
+        <string>&amp;Wireframe view</string>
+      </property>
+    </action>
+    <action name="ID_WINDOW_CASCADE">
+      <property name="text">
+        <string>&amp;Cascade</string>
+      </property>
+    </action>
+    <action name="ID_WINDOW_TILE">
+      <property name="text">
+        <string>&amp;Tile</string>
+      </property>
+    </action>
+    <action name="ID_ZBUTTON">
+      <property name="text">
+        <string>ID_ZBUTTON</string>
+      </property>
+    </action>
+  </widget>
+</ui>

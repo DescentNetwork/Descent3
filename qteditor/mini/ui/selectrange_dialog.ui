@@ -1,0 +1,277 @@
+<?xml version="1.0"?>
+<ui version="4.0">
+  <class>SelectRangeDialog</class>
+  <widget class="QDialog" name="SelectRangeDialog">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>298</width>
+        <height>165</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Select Range</string>
+    </property>
+    <property name="font">
+      <font>
+        <family>Liberation Sans</family>
+        <pointsize>8</pointsize>
+        <bold>false</bold>
+        <italic>false</italic>
+      </font>
+    </property>
+    <property name="enabled">
+      <bool>true</bool>
+    </property>
+    <property name="windowFlags">
+      <set>Qt::Dialog|Qt::WindowCloseButtonHint</set>
+    </property>
+    <property name="minimumSize">
+      <size>
+        <width>298</width>
+        <height>165</height>
+      </size>
+    </property>
+    <property name="maximumSize">
+      <size>
+        <width>298</width>
+        <height>165</height>
+      </size>
+    </property>
+    <widget class="QLabel" name="IDC_STATIC">
+      <property name="geometry">
+        <rect>
+          <x>8</x>
+          <y>8</y>
+          <width>72</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Lower bound:</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QLineEdit" name="IDC_LOWER_BOUND_EDIT">
+      <property name="geometry">
+        <rect>
+          <x>80</x>
+          <y>8</y>
+          <width>88</width>
+          <height>21</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <widget class="QPushButton" name="IDOK">
+      <property name="geometry">
+        <rect>
+          <x>207</x>
+          <y>11</y>
+          <width>80</width>
+          <height>22</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>OK</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="default">
+        <bool>true</bool>
+      </property>
+      <property name="autoDefault">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_2">
+      <property name="geometry">
+        <rect>
+          <x>8</x>
+          <y>34</y>
+          <width>72</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Upper bound:</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QLineEdit" name="IDC_UPPER_BOUND_EDIT">
+      <property name="geometry">
+        <rect>
+          <x>80</x>
+          <y>34</y>
+          <width>88</width>
+          <height>21</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <widget class="QCheckBox" name="IDC_SELECT_SLOPE_CHECK">
+      <property name="geometry">
+        <rect>
+          <x>8</x>
+          <y>69</y>
+          <width>149</width>
+          <height>19</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Select by height change</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <widget class="QCheckBox" name="IDC_INVERSE_CHECK">
+      <property name="geometry">
+        <rect>
+          <x>160</x>
+          <y>69</y>
+          <width>104</width>
+          <height>19</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Invert selection</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <widget class="QCheckBox" name="IDC_TEXTURE_GRID_CHECK">
+      <property name="geometry">
+        <rect>
+          <x>160</x>
+          <y>93</y>
+          <width>128</width>
+          <height>19</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Select by texture grid</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <widget class="QLabel" name="IDC_STATIC_3">
+      <property name="geometry">
+        <rect>
+          <x>8</x>
+          <y>110</y>
+          <width>64</width>
+          <height>16</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Change</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+      <property name="alignment">
+        <set>Qt::AlignLeft</set>
+      </property>
+    </widget>
+    <widget class="QLineEdit" name="IDC_SLOPE_EDIT">
+      <property name="geometry">
+        <rect>
+          <x>72</x>
+          <y>110</y>
+          <width>48</width>
+          <height>21</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>false</bool>
+      </property>
+    </widget>
+    <widget class="QCheckBox" name="IDC_RANDOM_CHECK">
+      <property name="geometry">
+        <rect>
+          <x>160</x>
+          <y>124</y>
+          <width>96</width>
+          <height>19</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Random</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+    </widget>
+    <widget class="QCheckBox" name="IDC_SELECT_CUR_TEXTURE_CHECK">
+      <property name="geometry">
+        <rect>
+          <x>160</x>
+          <y>146</y>
+          <width>136</width>
+          <height>19</height>
+        </rect>
+      </property>
+      <property name="text">
+        <string>Select only cur texture</string>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+    </widget>
+  </widget>
+</ui>
