@@ -27,6 +27,7 @@
 #include "descent.h"
 #include "rad_cast.h"
 #include "vecmat.h"
+#include "ddio.h"
 #include <cstdlib>
 #include "mem/mem.h"
 

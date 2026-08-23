@@ -185,63 +185,12 @@
 #include <string>
 #include <vector>
 
-#include "pilot_class.h"
-
-//	PilotSelect
-//
-//	Brings up a window where you can select a pilot to use
-void PilotSelect();
-
-// creates a new pilot (and pilot file)
-// Returns: true on success
-// Pilot: pointer to pilot structure to be filled in with name and filename (should then configure the rest)
-bool PilotCreate(pilot *Pilot, bool dontallowcancel);
-
-// Write a Pilot out to file
-// Pilot - Pilot to write (filename field is root of filename extension .plt)
-//			Make sure both filename and name are filled in before calling
-// newpilot - Whether it is supposed to create a new file
-//				false = overwrite existing file
-//				true = don't overwrite any existing file, returns error if so
-// Returns: PLT_FILE_*
-int PltWriteFile(pilot *Pilot, bool newpilot = false);
-
-// Reads a Pilot from file
-// Pilot - pointer to structure to fill in...
-//			MAKE SURE filename field is filled in with correct filename to read in before calling!!
-// keyconfig - whether to set the controls on load
-void PltReadFile(pilot *Pilot, bool keyconfig = false, bool missiondata = false);
-
-// Given a string it will make a valid filename out of it
-void PltMakeFNValid(char *name);
-
-void PilotInit();
+// pilot_class.h excluded - pulls in controls.h which is not needed by the editor.
+// Only PltGetPilots, PltClearList, Default_pilot are used.
 
 void PltClearList();
 std::vector<std::string> PltGetPilots(std::string ignore_filename = {}, int display_default_configs = 0);
 
-// VerifyPilotData
-//
-//	Call this function to check the data that is in the given pilot struct...it will verify that all files
-//	listed are available, if they are not, then it will set them to defaults. Returns true if it had to
-//	fix the data (you may want to save the pilot immediatly)
-bool VerifyPilotData(pilot *Pilot);
-
-// updates the current pilot's information (level played, mission played, etc)
-//	call after every successful mission completion (by passing false)
-//  call when a mission is loaded (pass true)
-void CurrentPilotUpdateMissionStatus(bool just_add_data = false);
-
-// gets highest level flown for mission
-int PilotGetHighestLevelAchieved(pilot *Pilot, char *mission_name);
-int GetPilotShipPermissions(pilot *Pilot, const char *mission_name);
-
-extern pilot Current_pilot;
 extern std::string Default_pilot;
-
-// "Current Pilot" access functions
-void dCurrentPilotName(char *buffer);
-
-void IncrementPilotRestoredGamesForMission(pilot *Pilot, const char *mission_name);
 
 #endif

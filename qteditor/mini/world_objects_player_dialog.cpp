@@ -546,15 +546,15 @@ void WorldObjectsPlayerDialog::onPshipCockpit()
     return;
 
   QFileInfo fileInfo(pathname);
-  const QByteArray pathBytes = pathname.toLocal8Bit();
-  const char *curname = fileInfo.baseName().toLocal8Bit().constData();
-  const char *ext = fileInfo.suffix().isEmpty() ? "" : ("." + fileInfo.suffix()).toLocal8Bit().constData();
+  QByteArray baseBytes = fileInfo.baseName().toLocal8Bit();
+  QByteArray extBytes = fileInfo.suffix().isEmpty() ? QByteArray("") : ("." + fileInfo.suffix()).toLocal8Bit();
 
   snprintf(Ships[D3EditState.current_ship].cockpit_name, sizeof(Ships[D3EditState.current_ship].cockpit_name), "%s%s",
-           curname, ext);
+           baseBytes.constData(), extBytes.constData());
+  char curname[256];
   snprintf(curname, sizeof(curname), "%s/%s", LocalMiscDir.u8string().c_str(),
            Ships[D3EditState.current_ship].cockpit_name);
-  cf_CopyFile(curname, std::filesystem::path(pathBytes.constData()));
+  cf_CopyFile(curname, std::filesystem::path(pathname.toLocal8Bit().constData()));
   updateDialog();
 }
 

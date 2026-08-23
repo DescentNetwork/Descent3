@@ -195,8 +195,8 @@
 #if (defined(_DEBUG) || defined(EDITOR))
 
 #ifdef EDITOR
-#include "editor\mainfrm.h"
-#include "editor\d3edit.h"
+#include "editor/mainfrm.h"
+#include "editor/d3edit.h"
 #include "pserror.h"
 #endif
 

@@ -66,7 +66,7 @@ ViewerPropDialog::ViewerPropDialog(QWidget *parent)
   }
 
   if (QPushButton *b = ui->IDC_POS_COMMIT_BUTTON)
-    b->setEnabled(false);
+    b->setEnabled(Viewer_object != nullptr);
 
   if (QPushButton *b = ui->IDC_ALIGN_UPYPOS_BUTTON)
     connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignUpYpos);

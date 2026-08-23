@@ -96,12 +96,7 @@ bool Mine_changed = false;
 int Editor_view_mode = 0; // VM_MINE
 int Editor_viewer_id = -1;
 
-// SLEW.cpp guards SlewControlInit() with EDITOR; the Qt port has no controller
-// integration, so provide a stub. The non-EDITOR branch of slew.h turns
-// SlewControlInit into a no-arg function-like macro with an empty replacement
-// list, so undef it before defining the real function body.
-#undef SlewControlInit
-void SlewControlInit() {}
+// SLEW.cpp guards SlewControlInit() with EDITOR; slew.cpp provides it.
 
 
 // Editor-only object helpers guarded by EDITOR in object.cpp/objinfo.cpp; the

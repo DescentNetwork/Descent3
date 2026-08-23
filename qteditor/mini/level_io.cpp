@@ -50,7 +50,10 @@
 #include "mem/mem.h"
 //#include "moveworld.h"
 #include "object.h"
-#include "osiris_predefs.h"
+// osipf functions forward-declared to avoid pulling in osiris_dll.h -> module.h chain
+extern int osipf_FindObjectName(const char *name);
+extern int osipf_FindTriggerName(const char *name);
+extern int osipf_FindRoomName(const char *name);
 #include "player.h"
 #include "polymodel.h"
 #include "renderer.h"
@@ -181,6 +184,7 @@ void CreateNewMine() {
   Curface = Curedge = Curvert = 0;
   Curportal = -1;
   New_mine = true;
+  World_changed = false;
 
   // Reset the view position for the orbit camera.
   Editor_view_mode = VM_MINE;
