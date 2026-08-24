@@ -471,13 +471,3 @@ void SetErrorMessage(const char *fmt, ...) {
 }
 
 const char *GetErrorMessage() { return Editor_error_message; }
-
-bool SaveLevel(char *filename, bool f_save_room_AABB) {
-  (void)f_save_room_AABB;
-  // The stub refuses to scribble anything to disk: writing a stale or empty
-  // .d3l would mask real bugs during development. The Qt port will swap
-  // this for the real implementation once editor/ebnode.h's MFC deps
-  // (EditorMessageBox, etc.) have a Linux equivalent.
-  (void)filename;
-  return false;
-}

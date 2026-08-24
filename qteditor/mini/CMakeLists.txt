@@ -44,6 +44,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/bitmap
     ${CMAKE_CURRENT_SOURCE_DIR}/grtext
     ${CMAKE_CURRENT_SOURCE_DIR}/module
+    ${CMAKE_CURRENT_SOURCE_DIR}/cfile
+    ${CMAKE_CURRENT_SOURCE_DIR}/manage
     ${PROJECT_SOURCE_DIR}/../../descar/src
     ${PROJECT_SOURCE_DIR}/../../descar/utils
     ${Qt5Core_INCLUDE_DIRS}
@@ -63,6 +65,9 @@ file(GLOB QTEDITOR_SOURCES
     "mem/*.cpp"
     "sndlib/*.cpp"
     "md5/*.cpp"
+    "cfile/*.cpp"
+    "manage/*.cpp"
+    "bitmap/*.cpp"
 )
 # Exclude test files from main build
 list(FILTER QTEDITOR_SOURCES EXCLUDE REGEX "editor_test\\.cpp$")

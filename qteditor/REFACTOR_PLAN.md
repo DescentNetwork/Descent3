@@ -30,11 +30,40 @@ The refactor is **substantially complete**. A standalone build tree exists at `q
 
 ### Gap vs Success Criteria
 - Criterion #1 (`qteditor/` compiles independently) is met by `mini/` but the top-level `qteditor/CMakeLists.txt` still links `Descent3Core,linux` (the coupled build). `mini/` is the decoupled target.
-- Automated tests (criterion in AGENTS.md: "All new functionality should have new automated testing") are written and, as of 2026-08-23, build and run in a standalone `qteditor_mini_tests` target. 20/23 tests pass.
+- Automated tests (criterion in AGENTS.md) build and run in a standalone `qteditor_mini_tests` target. As of 2026-08-23 the suite is **28/30 green** in under 6s (was not buildable at all before this work).
 
-### Gap vs Success Criteria
-- Criterion #1 (`qteditor/` compiles independently) is met by `mini/` but the top-level `qteditor/CMakeLists.txt` still links `Descent3Core,linux` (the coupled build). `mini/` is the decoupled target.
-- Automated tests (criterion in AGENTS.md) build and run in a standalone `qteditor_mini_tests` target. As of 2026-08-23 the suite is **26/28 green** in under 5s (was not buildable at all before this work).
+### Gamedata loading (d3.hog / Table.gam) — added 2026-08-23
+Before this work, `initD3Core` called only empty stub functions, so the editor
+could not access gamedata that an opened level needs. Implemented:
+- **cfile** (`mini/cfile/cfile.cpp` + `hogfile.*`) — a read-only, HOG-capable port
+  of the engine's cfile layer: base-directory path resolution, HOG2 library open
+  (`cf_OpenLibrary`), and `cfopen`/`cf_Read*`/`cfseek`/`cfclose` to read files
+  (e.g. `Table.gam`) inside `d3.hog`. Replaces the previous `cf_*` stubs.
+- **manage table loader** (`mini/manage/gamedata_loader.cpp` + `.h`) — ports the
+  engine's page readers (`mng_ReadNewGenericPage`, `_NewShipPage`, `_NewWeaponPage`,
+  `_NewTexturePage`, `_NewSoundPage`, `_NewDoorPage`, `_NewMegacellPage` and the
+  physics/weapon-battery chunk readers) and populates the editor's global metadata
+  arrays from `Table.gam`: `Object_info`, `Ships`, `Weapons`, `Sounds`,
+  `GameTextures`, `Doors`, `Megacells` plus their `Num_*` counters.
+- **bitmap / texture loading** (`mini/bitmap/iff.cpp`, `mini/lib/bitmap.h`, plus
+  functional `bm_AllocBitmap`/`bm_w`/`bm_h`/`bm_data`/`bm_mipped` in `stubs.cpp`)
+  — ports the engine's OGF/IFF and TGA decoders and loads each texture's image
+  from d3.hog, setting `GameTextures[i].bm_handle` to a resident bitmap with real
+  dimensions + 16-bit pixel data (mip levels supported). ~2960/3043 textures
+  decode; the renderer's `bm_w`/`bm_h` now return real sizes so faces texture.
+- **level load/save** (`mini/level_loader.cpp`) — chunk-based port of
+  `LoadLevel`/`SaveLevel` reading/writing ROOM/RWND/OBJS/TRIG/INFO (+ TXNM
+  texture-name remap so real levels' face textures resolve to `GameTextures[]`).
+  Replaces the `void LoadLevel` stub (wrong signature) and the `SaveLevel` stub.
+- **args** (`GatherArgs`/`FindArg`/`GetArg`) implemented so the editor accepts
+  `-datadir <path>` to locate the game data directory.
+- **initD3Core** now locates `d3.hog` (via `-datadir` or common install paths)
+  and calls `loadGameDataTable()` during startup, before a level can open.
+
+Verified by tests: `testCfileReadsHogGamedata`, `testGamedataTableLoads`,
+`testBitmapDecoder`, `testLoadRealLevelPopulatesRooms` (a real `thecore.d3l`
+loads 18 rooms / 1510 faces, all texture-resolving), and
+`testLevelLoadSaveRoundTrip`.
 
 ### Summary of work done 2026-08-23
 - Added a standalone QTest executable target `qteditor_mini_tests` to `mini/CMakeLists.txt` (Phase 5), using a copy of the source list with `main.cpp` removed (`editor_test.cpp` provides its own `main()`).
@@ -61,8 +90,11 @@ The refactor is **substantially complete**. A standalone build tree exists at `q
 ### Remaining work (ordered)
 1. (Optional) Make `testEditorViewAttached` tolerant of dock-managed width, and harden
    `testInteractEveryWidget` cleanup so full-suite order is irrelevant.
-2. Update main project references if `mini/` becomes the primary editor build.
-3. Code review and merge.
+2. Gamedata loader now loads texture bitmaps (IFF/OGF/TGA, mips) from d3.hog;
+   model/procedural-image loading is still intentionally skipped (metadata/name only —
+   the Qt viewport renders its own).
+3. Update main project references if `mini/` becomes the primary editor build.
+4. Code review and merge.
 
 **Goal**: Create a standalone `qteditor/mini/` directory containing only the minimal necessary code and headers required for the editor to function, with all external dependencies either:
 1. Copied and trimmed to include only what's needed
@@ -737,4 +769,4 @@ The refactor is considered successful when:
 
 ---
 
-*Status: In Progress — Phases 1-5 complete (tests 26/28, standalone build working), Phase 6 partially complete (cleanup + docs done); remaining: 2 test-env failures, main-project references, review, merge (audited 2026-08-23)*
+*Status: In Progress — Phases 1-5 complete (tests 31/33, standalone build working), Phase 6 partially complete (cleanup + docs done); gamedata loading (d3.hog -> Table.gam), level load/save, and texture bitmap decoding all implemented (levels render); remaining: 2 test-env failures, model/procedural-image loading, main-project refs, review, merge (audited 2026-08-23)*

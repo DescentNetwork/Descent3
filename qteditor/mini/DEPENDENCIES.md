@@ -12,6 +12,13 @@ This document lists the external dependencies required by `qteditor/mini/`.
 | Qt Test | Test framework | Only for `qteditor_mini_tests` |
 | `descar` submodule | HOG archive read/write | Under `repo/descar/`, explicitly excluded from decoupling |
 
+## Game data (runtime, not a build dependency)
+
+To open and edit levels the editor must read gamedata from the game's `d3.hog`
+(its `Table.gam`). The editor locates it at startup via the `-datadir <path>`
+command-line argument, or falls back to a set of common install paths. The
+root directory in the repo is not a requirement; only a Descent 3 install is.
+
 ## Deliberate non-dependencies
 
 The decoupling removes the following from the build so the editor can compile
@@ -20,7 +27,10 @@ independently:
 - **Descent3Core** / any other repo directory
 - **SDL** — windowing/input handled by Qt
 - **sound**, **networking**, **multiplayer** runtime code — stubbed
-- **cfile / hogfile** — HOG I/O routed through `descar`
+- **cfile / hogfile** — a read-only HOG-capable cfile is ported in `mini/cfile/`
+
+The game's gamedata tables are parsed from `d3.hog`'s `Table.gam` by
+`mini/manage/gamedata_loader.cpp`, which populates the editor's metadata arrays.
 
 ## Replaced with stubs
 

@@ -13,6 +13,7 @@
 #include "lightmap_info.h"
 #include "cfile.h"
 #include "3d.h"
+#include "grtext.h"
 #include "findintersection.h"
 #include "Mission.h"
 #include "aiambient.h"
@@ -51,6 +52,7 @@
 #include "object_external_struct.h"
 #include "joystick.h"
 #include "chrono_timer.h"
+#include "args.h"
 
 #include <cstdint>
 #include <cstring>
@@ -60,9 +62,18 @@
 #include <cstdarg>
 #include <cmath>
 
+#include <QDebug>
+#include <QtGlobal>
+#include <cstdio>
+#include <cstdlib>
+
+#include "default_base_directories.h"
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+
+#define PRINT_STUB(x) qDebug() << "Function \"" << __FUNCTION__ << "\" is a stub!"
 
 // ==================== Vecmat ====================
 const matrix Identity_matrix = matrix::id();
@@ -363,32 +374,32 @@ matrix operator*(const matrix &a, const matrix &b) {
 matrix operator*=(matrix &a, const matrix &b) { return (a = a * b); }
 
 // ==================== 3D functions (exact signatures from 3d.h) ====================
-uint8_t g3_RotatePoint(g3Point *dest, vector *src) { return 0; }
-void g3_ProjectPoint(g3Point *point) {}
-bool g3_CheckNormalFacing(vector *v, vector *norm) { return false; }
-g3Point **g3_ClipPolygon(g3Point **pointlist, int *nv, g3Codes *cc) { return pointlist; }
-void g3_FreeTempPoints(g3Point **pointlist, int nv) {}
+uint8_t g3_RotatePoint(g3Point *dest, vector *src) { PRINT_STUB(__FUNCTION__); return 0; }
+void g3_ProjectPoint(g3Point *point) { PRINT_STUB(__FUNCTION__); }
+bool g3_CheckNormalFacing(vector *v, vector *norm) { PRINT_STUB(__FUNCTION__); return false; }
+g3Point **g3_ClipPolygon(g3Point **pointlist, int *nv, g3Codes *cc) { PRINT_STUB(__FUNCTION__); return pointlist; }
+void g3_FreeTempPoints(g3Point **pointlist, int nv) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== grSurface / grViewport / grHardwareSurface ====================
-grSurface::grSurface() {}
-grSurface::~grSurface() {}
-void grSurface::free() {}
-grViewport::grViewport(grSurface *s) {}
-grViewport::~grViewport() {}
+grSurface::grSurface() { PRINT_STUB(__FUNCTION__); }
+grSurface::~grSurface() { PRINT_STUB(__FUNCTION__); }
+void grSurface::free() { PRINT_STUB(__FUNCTION__); }
+grViewport::grViewport(grSurface *s) { PRINT_STUB(__FUNCTION__); }
+grViewport::~grViewport() { PRINT_STUB(__FUNCTION__); }
 // grHardwareSurface::create returns bool, takes (int, int, int, unsigned, const char*)
-bool grHardwareSurface::create(int w, int h, int bpp, unsigned flags, const char *name) { return false; }
-float Float_to_ubyte(float f) { return f; }
+bool grHardwareSurface::create(int w, int h, int bpp, unsigned flags, const char *name) { PRINT_STUB(__FUNCTION__); return false; }
+float Float_to_ubyte(float f) { PRINT_STUB(__FUNCTION__); return f; }
 
 // ==================== Object ====================
-void ObjSetPos(object *obj, vector *pos, int roomnum, matrix *orient, bool f_relink) {}
-void ObjDelete(int objnum) {}
-int ObjCreate(uint8_t type, uint16_t id, int roomnum, vector *pos, const matrix *orient, int parent_handle) { return -1; }
-void ObjSetOrient(object *obj, const matrix *orient) {}
-object *ObjGet(int objnum) { return nullptr; }
-void ObjReInitAll() {}
-void FreeAllObjects() {}
-void ResetObjectList() {}
-void GetObjectPointInWorld(vector *dest, object *obj, int gun_num, int animated_frame) { *dest = {}; }
+void ObjSetPos(object *obj, vector *pos, int roomnum, matrix *orient, bool f_relink) { PRINT_STUB(__FUNCTION__); }
+void ObjDelete(int objnum) { PRINT_STUB(__FUNCTION__); }
+int ObjCreate(uint8_t type, uint16_t id, int roomnum, vector *pos, const matrix *orient, int parent_handle) { PRINT_STUB(__FUNCTION__); return -1; }
+void ObjSetOrient(object *obj, const matrix *orient) { PRINT_STUB(__FUNCTION__); }
+object *ObjGet(int objnum) { PRINT_STUB(__FUNCTION__); return nullptr; }
+void ObjReInitAll() { PRINT_STUB(__FUNCTION__); }
+void FreeAllObjects() { PRINT_STUB(__FUNCTION__); }
+void ResetObjectList() { PRINT_STUB(__FUNCTION__); }
+void GetObjectPointInWorld(vector *dest, object *obj, int gun_num, int animated_frame) { PRINT_STUB(__FUNCTION__); *dest = {}; }
 
 object Objects[MAX_OBJECTS];
 int Highest_object_index = -1;
@@ -410,23 +421,23 @@ uint8_t Fast_terrain = 0;
 uint8_t Flat_terrain = 0;
 uint8_t Show_invisible_terrain = 0;
 
-int GetTerrainRoomFromPos(vector *pos) { return -1; }
-void ComputeTerrainSegmentCenter(vector *center, int seg) { *center = {}; }
-float GetTerrainGroundPoint(vector *in, vector *out) { *out = *in; return 0; }
-void BuildMinMaxTerrain() {}
-void BuildTerrainNormals() {}
-void ResetTerrain(int terrain_size) {}
-void SetupSky(float t, int tmap, unsigned char layer) {}
-void UpdateTerrainLightmaps() {}
-int TERRAIN_REGION(int x) { return 0; }
-void ClearTerrainSound() {}
+int GetTerrainRoomFromPos(vector *pos) { PRINT_STUB(__FUNCTION__); return -1; }
+void ComputeTerrainSegmentCenter(vector *center, int seg) { PRINT_STUB(__FUNCTION__); *center = {}; }
+float GetTerrainGroundPoint(vector *in, vector *out) { PRINT_STUB(__FUNCTION__); *out = *in; return 0; }
+void BuildMinMaxTerrain() { PRINT_STUB(__FUNCTION__); }
+void BuildTerrainNormals() { PRINT_STUB(__FUNCTION__); }
+void ResetTerrain(int terrain_size) { PRINT_STUB(__FUNCTION__); }
+void SetupSky(float t, int tmap, unsigned char layer) { PRINT_STUB(__FUNCTION__); }
+void UpdateTerrainLightmaps() { PRINT_STUB(__FUNCTION__); }
+int TERRAIN_REGION(int x) { PRINT_STUB(__FUNCTION__); return 0; }
+void ClearTerrainSound() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== BNode ====================
 bool BNode_allocated = false;
 bool BNode_verified = false;
-bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level) { return nullptr; }
-bool BNode_FindPath(int start_room, int i, int j, float rad) { return false; }
-void BNode_ClearBNodeInfo() {}
+bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level) { PRINT_STUB(__FUNCTION__); return nullptr; }
+bool BNode_FindPath(int start_room, int i, int j, float rad) { PRINT_STUB(__FUNCTION__);return false; }
+void BNode_ClearBNodeInfo() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== BOA ====================
 int BOA_num_terrain_regions = 0;
@@ -437,16 +448,16 @@ int BOA_AABB_ROOM_checksum[MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS] = {};
 int BOA_mine_checksum = 0;
 int BOA_vis_checksum = 0;
 bool BOA_vis_valid = false;
-void MakeBOA() {}
-bool BOA_IsVisible(int start_room, int end_room) { return false; }
+void MakeBOA() { PRINT_STUB(__FUNCTION__); }
+bool BOA_IsVisible(int start_room, int end_room) { PRINT_STUB(__FUNCTION__); return false; }
 
 // ==================== BSP ====================
-void InitBSP() {}
-int BSPRayOccluded(vector *a, vector *b, bspnode *n) { return 0; }
+void InitBSP() { PRINT_STUB(__FUNCTION__); }
+int BSPRayOccluded(vector *a, vector *b, bspnode *n) { PRINT_STUB(__FUNCTION__); return 0; }
 bsptree MineBSP = {};
 uint8_t UseBSP = 0;
-void BuildBSPTree() {}
-void BuildSingleBSPTree(int n) {}
+void BuildBSPTree() { PRINT_STUB(__FUNCTION__); }
+void BuildSingleBSPTree(int n) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Game globals ====================
 int Num_textures = 0;
@@ -455,6 +466,7 @@ int Num_weapons = 0;
 int Num_doors = 0;
 int Num_ships = 0;
 int Num_megacells = 0;
+int Num_objects = 0;
 int Num_triggers = 0;
 int Num_game_paths = 0;
 int Num_matcens = 0;
@@ -497,9 +509,9 @@ special_face SpecialFaces[MAX_SPECIAL_FACES];
 
 // ==================== Sound ====================
 hlsSystem Sound_system;
-void hlsSystem::BeginSoundFrame(bool f_force) {}
-void hlsSystem::EndSoundFrame() {}
-void hlsSystem::StopAllSounds() {}
+void hlsSystem::BeginSoundFrame(bool f_force) { PRINT_STUB(__FUNCTION__); }
+void hlsSystem::EndSoundFrame() { PRINT_STUB(__FUNCTION__); }
+void hlsSystem::StopAllSounds() { PRINT_STUB(__FUNCTION__); }
 sound_info Sounds[MAX_SOUNDS] = {};
 sound_file_info SoundFiles[MAX_SOUND_FILES] = {};
 
@@ -509,22 +521,29 @@ lightmap_info *LightmapInfo = LightmapInfoStore;
 int Num_of_lightmap_info = 0;
 int Num_lightmap_infos_read = 0;
 int Outline_lightmaps = 0;
-void InitLightmapInfo() { memset(LightmapInfoStore, 0, sizeof(LightmapInfoStore)); Num_of_lightmap_info = 0; }
-void FreeLightmapMemory() {}
-void ClearAllObjectLightmaps(int n) {}
-void ClearObjectLightmaps(object *obj) {}
-void BlurLightmapInfos(int n) {}
-void ShadeLightmapInfoEdges(int n) {}
-void EnableLightmapGen() {}
-int lm_AllocLightmap(int w, int h) { return -1; }
-void lm_FreeLightmap(int n) {}
-uint16_t *lm_data(int handle) { return nullptr; }
-int lm_w(int n) { return 0; }
-int lm_h(int n) { return 0; }
-int lmi_h(int n) { return 0; }
-int lmi_w(int n) { return 0; }
-void SetupObjectLightmapMemory(object *obj) {}
-void ClearAllVolumeLights() {}
+void InitLightmapInfo(int nummaps) {
+  if (nummaps > 0 && nummaps < MAX_LIGHTMAP_INFOS) {
+    memset(LightmapInfoStore, 0, sizeof(lightmap_info) * nummaps);
+  } else {
+    memset(LightmapInfoStore, 0, sizeof(LightmapInfoStore));
+  }
+  Num_of_lightmap_info = 0;
+}
+void FreeLightmapMemory() { PRINT_STUB(__FUNCTION__); }
+void ClearAllObjectLightmaps(int n) { PRINT_STUB(__FUNCTION__); }
+void ClearObjectLightmaps(object *obj) { PRINT_STUB(__FUNCTION__); }
+void BlurLightmapInfos(int n) { PRINT_STUB(__FUNCTION__); }
+void ShadeLightmapInfoEdges(int n) { PRINT_STUB(__FUNCTION__); }
+void EnableLightmapGen() { PRINT_STUB(__FUNCTION__); }
+int lm_AllocLightmap(int w, int h) { PRINT_STUB(__FUNCTION__); return -1; }
+void lm_FreeLightmap(int n) { PRINT_STUB(__FUNCTION__); }
+uint16_t *lm_data(int handle) { PRINT_STUB(__FUNCTION__); return nullptr; }
+int lm_w(int n) { PRINT_STUB(__FUNCTION__); return 0; }
+int lm_h(int n) { PRINT_STUB(__FUNCTION__); return 0; }
+int lmi_h(int n) { PRINT_STUB(__FUNCTION__); return 0; }
+int lmi_w(int n) { PRINT_STUB(__FUNCTION__); return 0; }
+void SetupObjectLightmapMemory(object *obj) { PRINT_STUB(__FUNCTION__); }
+void ClearAllVolumeLights() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Player/ship ====================
 player Players[MAX_PLAYERS] = {};
@@ -533,14 +552,14 @@ ship Ships[MAX_SHIPS] = {};
 
 // ==================== Door ====================
 door Doors[MAX_DOORS];
-doorway *DoorwayAdd(room *rp, int doornum) { return nullptr; }
+doorway *DoorwayAdd(room *rp, int doornum) { PRINT_STUB(__FUNCTION__); return nullptr; }
 
 // ==================== Weapon ====================
 weapon Weapons[MAX_WEAPONS] = {};
 // Sentinel-terminated list (empty) so callers strcmp("", name[i]) cleanly.
 const char *const Static_weapon_names[] = {""};
 const int Static_weapon_names_msg[] = {0};
-void WBClearInfo(otype_wb_info *wb) {}
+void WBClearInfo(otype_wb_info *wb) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Megacell ====================
 megacell Megacells[MAX_MEGACELLS] = {};
@@ -551,43 +570,41 @@ matcen *Matcen[MAX_MATCENS] = {};
 // ==================== Level ====================
 levelgoals Level_goals;
 level_info Level_info;
-void levelgoals::CleanupAfterLevel() {}
+void levelgoals::CleanupAfterLevel() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Ambient ====================
 ambient_life a_life;
-void ambient_life::ALReset() {}
+void ambient_life::ALReset() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Manage ====================
 mngs_track_lock GlobalTrackLocks[] = {};
-int mng_AllocTrackLock(char *a, int b) { return -1; }
-void mng_FreeTrackLock(int n) {}
-int mng_FindTrackLock(char *a, int b) { return -1; }
-int mng_CheckIfPageLocked(mngs_Pagelock *p) { return 0; }
-int mng_CheckIfPageOwned(mngs_Pagelock *p, char *a) { return 0; }
-int mng_DeletePage(char *a, int b, int c) { return 0; }
-int mng_DeletePagelock(char *a, int b) { return 0; }
-void mng_EraseLocker() {}
-int mng_MakeLocker() { return 0; }
-void mng_OverrideToUnlocked(mngs_Pagelock *p) {}
-int mng_RenamePage(char *a, char *b, int c) { return 0; }
-int mng_ReplacePage(char *a, char *b, int c, int d, int e) { return 0; }
-int mng_ReplacePagelock(char *a, mngs_Pagelock *b) { return 0; }
-int mng_FindSpecificDoorPage(char *a, mngs_door_page *b, int c) { return 0; }
-int mng_FindSpecificGenericPage(char *a, mngs_generic_page *b, int c) { return 0; }
-int mng_FindSpecificShipPage(char *a, mngs_ship_page *b, int c) { return 0; }
-int mng_FindSpecificSoundPage(char *a, mngs_sound_page *b, int c) { return 0; }
-int mng_FindSpecificTexPage(char *a, mngs_texture_page *b, int c) { return 0; }
-int mng_FindSpecificWeaponPage(char *a, mngs_weapon_page *b, int c) { return 0; }
-int mng_AssignDoorPageToDoor(mngs_door_page *a, int b) { return 0; }
-int mng_AssignGenericPageToObjInfo(mngs_generic_page *a, int b, CFILE *c) { return 0; }
-int mng_AssignShipPageToShip(mngs_ship_page *a, int b, CFILE *c) { return 0; }
-int mng_AssignSoundPageToSound(mngs_sound_page *a, int b) { return 0; }
-int mng_AssignTexPageToTexture(mngs_texture_page *a, int b, CFILE *c) { return 0; }
-int mng_AssignWeaponPageToWeapon(mngs_weapon_page *a, int b, CFILE *c) { return 0; }
+int mng_AllocTrackLock(char *a, int b) { PRINT_STUB(__FUNCTION__); return -1; }
+void mng_FreeTrackLock(int n) { PRINT_STUB(__FUNCTION__); }
+int mng_FindTrackLock(char *a, int b) { PRINT_STUB(__FUNCTION__); return -1; }
+int mng_CheckIfPageLocked(mngs_Pagelock *p) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_CheckIfPageOwned(mngs_Pagelock *p, char *a) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_DeletePage(char *a, int b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_DeletePagelock(char *a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
+void mng_EraseLocker() { PRINT_STUB(__FUNCTION__); }
+int mng_MakeLocker() { PRINT_STUB(__FUNCTION__); return 0; }
+void mng_OverrideToUnlocked(mngs_Pagelock *p) { PRINT_STUB(__FUNCTION__); }
+int mng_RenamePage(char *a, char *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_ReplacePage(char *a, char *b, int c, int d, int e) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_ReplacePagelock(char *a, mngs_Pagelock *b) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_FindSpecificDoorPage(char *a, mngs_door_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_FindSpecificGenericPage(char *a, mngs_generic_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_FindSpecificShipPage(char *a, mngs_ship_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_FindSpecificSoundPage(char *a, mngs_sound_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_FindSpecificTexPage(char *a, mngs_texture_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_FindSpecificWeaponPage(char *a, mngs_weapon_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_AssignDoorPageToDoor(mngs_door_page *a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_AssignGenericPageToObjInfo(mngs_generic_page *a, int b, CFILE *c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_AssignShipPageToShip(mngs_ship_page *a, int b, CFILE *c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_AssignSoundPageToSound(mngs_sound_page *a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_AssignTexPageToTexture(mngs_texture_page *a, int b, CFILE *c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_AssignWeaponPageToWeapon(mngs_weapon_page *a, int b, CFILE *c) { PRINT_STUB(__FUNCTION__); return 0; }
 
-// ==================== CFILE ====================
-bool cf_CopyFile(const std::filesystem::path &dst, const std::filesystem::path &src, int b) { return false; }
-std::filesystem::path cf_GetWritableBaseDirectory() { return "/tmp"; }
+// ==================== CFILE (implemented in cfile/cfile.cpp) ====================
 
 // ==================== Mem ====================
 void *mem_malloc_sub(int size, const char *fn, int line) {
@@ -796,176 +813,419 @@ void FreeAllRooms() {
       FreeRoom(&Rooms[i]);
   }
 }
-void ClearAllRoomLightmaps(int n) {}
-void ClearRoomLightmaps(int n) {}
-void ClearAllRoomSpecmaps(int n) {}
+void ClearAllRoomLightmaps(int n) { PRINT_STUB(__FUNCTION__); }
+void ClearRoomLightmaps(int n) { PRINT_STUB(__FUNCTION__); }
+void ClearAllRoomSpecmaps(int n) { PRINT_STUB(__FUNCTION__); }
 
 room Rooms[MAX_ROOMS] = {};
 int Highest_room_index = -1;
 
+// Zeroes the whole room table and selection globals used by the editor.
+void InitRooms() {
+  for (int i = 0; i < MAX_ROOMS; i++) {
+    if (Rooms[i].used) {
+      FreeRoom(&Rooms[i]);
+    }
+  }
+  Highest_room_index = -1;
+  Curroomp = nullptr;
+  Markedroomp = nullptr;
+  Markedface = -1;
+  Curface = -1;
+  Curvert = -1;
+  Curedge = -1;
+  Curportal = -1;
+}
+
 // ==================== DDIO ====================
-void ddio_SplitPath(const char *path, char *dir, char *fname, char *ext) { if (dir) dir[0] = 0; if (fname) fname[0] = 0; if (ext) ext[0] = 0; }
-int ddio_MouseGetState(int *x, int *y, int *dx, int *dy, int *l, int *r) { if (x) *x = 0; if (y) *y = 0; if (dx) *dx = 0; if (dy) *dy = 0; if (l) *l = 0; if (r) *r = 0; return 0; }
-float ddio_KeyDownTime(int key) { return 0; }
-void joy_GetPos(tJoystick joy, tJoyPos *pos) { if (pos) { pos->x = 0; pos->y = 0; pos->z = 0; } }
-bool joy_IsValid(tJoystick id) { return false; }
+void ddio_SplitPath(const char *path, char *dir, char *fname, char *ext) { PRINT_STUB(__FUNCTION__); if (dir) dir[0] = 0; if (fname) fname[0] = 0; if (ext) ext[0] = 0; }
+int ddio_MouseGetState(int *x, int *y, int *dx, int *dy, int *l, int *r) { PRINT_STUB(__FUNCTION__); if (x) *x = 0; if (y) *y = 0; if (dx) *dx = 0; if (dy) *dy = 0; if (l) *l = 0; if (r) *r = 0; return 0; }
+float ddio_KeyDownTime(int key) { PRINT_STUB(__FUNCTION__); return 0; }
+int ddio_GetFileLength(FILE *filePtr) {
+  if (filePtr == nullptr)
+    return 0;
+  long cur = ftell(filePtr);
+  fseek(filePtr, 0, SEEK_END);
+  long len = ftell(filePtr);
+  fseek(filePtr, cur, SEEK_SET);
+  return (int)len;
+}
+void joy_GetPos(tJoystick joy, tJoyPos *pos) { PRINT_STUB(__FUNCTION__); if (pos) { pos->x = 0; pos->y = 0; pos->z = 0; } }
+bool joy_IsValid(tJoystick id) { PRINT_STUB(__FUNCTION__); return false; }
+bool ddio_FileDiff(const std::filesystem::path &a, const std::filesystem::path &b) {
+  if (a == b)
+    return false;
+  if (!std::filesystem::exists(a) || !std::filesystem::exists(b))
+    return true;
+  return std::filesystem::file_size(a) != std::filesystem::file_size(b);
+}
+void ddio_CopyFileTime(const std::filesystem::path &dest, const std::filesystem::path &src) { PRINT_STUB(__FUNCTION__); (void)dest; (void)src; }
+
+// ==================== pserror ====================
+namespace D3 {
+const std::vector<std::filesystem::path> Default_read_only_base_directories;
+}
+
+void Error(const char *fmt, ...) {
+  char buf[1024];
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buf, sizeof(buf), fmt, args);
+  va_end(args);
+  qCritical("%s", buf);
+  std::abort();
+}
 
 // ==================== ChronoTimer ====================
-float D3::ChronoTimer::GetTime() { return 0; }
-void D3::ChronoTimer::Initialize() {}
+float D3::ChronoTimer::GetTime() { PRINT_STUB(__FUNCTION__); return 0; }
+void D3::ChronoTimer::Initialize() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Init ====================
-void GatherArgs(char **argv) {}
-void PreInitD3Systems() {}
-void InitD3Systems1(bool b) {}
-void InitD3Systems2(bool b) {}
-void InitGamePaths() {}
-void ProgramVersion(int a, unsigned char b, unsigned char c, unsigned char d) {}
+// Command-line argument store. GatherArgs collects the argv tokens (including
+// argv[0] as index 0) so FindArg/GetArg can be used to pass options such as
+// "-datadir <path>" to locate the game data files.
+char GameArgs[MAX_ARGS][MAX_CHARS_PER_ARG] = {};
+
+void GatherArgs(char **argv) {
+  if (argv == nullptr)
+    return;
+  int n = 0;
+  for (int i = 0; argv[i] && i < MAX_ARGS; i++) {
+    std::strncpy(GameArgs[n++], argv[i], MAX_CHARS_PER_ARG - 1);
+    GameArgs[n - 1][MAX_CHARS_PER_ARG - 1] = '\0';
+  }
+}
+
+void GatherArgs(const char *str) {
+  if (str == nullptr)
+    return;
+  int n = 0;
+  const char *p = str;
+  while (*p && n < MAX_ARGS) {
+    while (*p == ' ')
+      p++;
+    if (!*p)
+      break;
+    int len = 0;
+    while (p[len] && p[len] != ' ' && len < MAX_CHARS_PER_ARG - 1)
+      len++;
+    std::memcpy(GameArgs[n], p, len);
+    GameArgs[n][len] = '\0';
+    n++;
+    p += len;
+  }
+}
+
+int FindArg(const char *which, int start) {
+  if (which == nullptr)
+    return 0;
+  for (int i = start; i < MAX_ARGS; i++) {
+    if (GameArgs[i][0] && stricmp(GameArgs[i], which) == 0)
+      return i;
+  }
+  return 0;
+}
+
+int FindArgChar(const char *which, char singleCharArg) { return FindArg(which); }
+
+const char *GetArg(int index) {
+  if (index < 0 || index >= MAX_ARGS)
+    return "";
+  return GameArgs[index];
+}
+
+// Minimal pre-init: establish the memory and error subsystems that the
+// ported engine code relies on before anything else runs.
+void PreInitD3Systems() {
+  if (FindArg("-lowmem") || FindArg("-dedicated"))
+    Mem_low_memory_mode = true;
+  if (FindArg("-superlowmem")) {
+    Mem_low_memory_mode = true;
+    Mem_superlow_memory_mode = true;
+  }
+  if (FindArg("-himem")) {
+    Mem_low_memory_mode = false;
+    Mem_superlow_memory_mode = false;
+  }
+  mem_Init();
+  error_Init(false, "Descent 3 Editor");
+  grtext_Init();
+}
+
+// First-phase system init. The decoupled editor replaces the full game's I/O,
+// graphics, sound and network stacks with Qt + OpenGL and a HOG-capable
+// cfile; here we initialise the data structures the editor core uses.
+void InitD3Systems1(bool /*editor*/) {
+  InitLightmapInfo();
+  InitRooms();
+  ResetObjectList();
+}
+
+// Second-phase system init. In the Win32 editor this is where the gamedata
+// table files are loaded (mng_LoadTableFiles) so levels opened later can
+// reference object/ship/weapon/sound/texture data. The decoupled editor does
+// the same in initD3Core via loadGameDataTable() (the data dir must be
+// resolved there first); this hook preserves the original two-phase shape.
+void InitD3Systems2(bool /*editor*/) { PRINT_STUB(__FUNCTION__); }
+void InitGamePaths() { PRINT_STUB(__FUNCTION__); }
+void ProgramVersion(int a, unsigned char b, unsigned char c, unsigned char d) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Application ====================
 static tLnxAppInfo _default_app_info;
-oeLnxApplication::oeLnxApplication(tLnxAppInfo *info) {}
-oeLnxApplication::~oeLnxApplication() {}
-void oeLnxApplication::init() {}
-void oeLnxApplication::get_info(void *appinfo) {}
-unsigned oeLnxApplication::defer() { return 0; }
-const char *oeLnxApplication::get_window_name() { return "D3Editor"; }
-void oeLnxApplication::clear_window() {}
-void oeLnxApplication::set_defer_handler(void (*func)(bool isactive)) {}
-void oeLnxApplication::delay(float secs) {}
-int oeLnxApplication::flags() const { return 0; }
 
-oeLnxAppDatabase::oeLnxAppDatabase() {}
-oeLnxAppDatabase::~oeLnxAppDatabase() {}
-bool oeLnxAppDatabase::create_record(const char *pathname) { return false; }
-bool oeLnxAppDatabase::lookup_record(const char *pathname) { return false; }
-bool oeLnxAppDatabase::read(const char *label, char *entry, int *entrylen) { return false; }
-bool oeLnxAppDatabase::read(const char *label, void *entry, int wordsize) { return false; }
-bool oeLnxAppDatabase::read(const char *label, bool *entry) { return false; }
-bool oeLnxAppDatabase::write(const char *label, const char *entry, int entrylen) { return false; }
-bool oeLnxAppDatabase::write(const char *label, int entry) { return false; }
-void oeLnxAppDatabase::get_user_name(char *buffer, size_t *size) { if (buffer) buffer[0] = 0; }
+// ==================== Mem ====================
+bool Mem_low_memory_mode = false;
+bool Mem_superlow_memory_mode = false;
+void mem_Init() { PRINT_STUB(__FUNCTION__); }
+void mem_Shutdown() { PRINT_STUB(__FUNCTION__); }
+int mem_GetTotalMemoryUsed() { PRINT_STUB(__FUNCTION__); return 0; }
+
+// ==================== pserror ====================
+static char EditorMessageBoxTitle[128] = "Descent 3 Editor";
+void SetMessageBoxTitle(const char *title) {
+  if (title)
+    std::strncpy(EditorMessageBoxTitle, title, sizeof(EditorMessageBoxTitle) - 1);
+}
+bool error_Init(bool debugger, const char *app_title) {
+  SetMessageBoxTitle(app_title ? app_title : "Descent 3 Editor");
+  return true;
+}
+
+// ==================== grtext ====================
+void grtext_Init() { PRINT_STUB(__FUNCTION__); }
+
+// ==================== Application ====================
+oeLnxApplication::oeLnxApplication(tLnxAppInfo *info) { PRINT_STUB(__FUNCTION__); }
+oeLnxApplication::~oeLnxApplication() { PRINT_STUB(__FUNCTION__); }
+void oeLnxApplication::init() { PRINT_STUB(__FUNCTION__); }
+void oeLnxApplication::get_info(void *appinfo) { PRINT_STUB(__FUNCTION__); }
+unsigned oeLnxApplication::defer() { PRINT_STUB(__FUNCTION__); return 0; }
+const char *oeLnxApplication::get_window_name() { PRINT_STUB(__FUNCTION__); return "D3Editor"; }
+void oeLnxApplication::clear_window() { PRINT_STUB(__FUNCTION__); }
+void oeLnxApplication::set_defer_handler(void (*func)(bool isactive)) { PRINT_STUB(__FUNCTION__); }
+void oeLnxApplication::delay(float secs) { PRINT_STUB(__FUNCTION__); }
+int oeLnxApplication::flags() const { PRINT_STUB(__FUNCTION__); return 0; }
+
+oeLnxAppDatabase::oeLnxAppDatabase() { PRINT_STUB(__FUNCTION__); }
+oeLnxAppDatabase::~oeLnxAppDatabase() { PRINT_STUB(__FUNCTION__); }
+bool oeLnxAppDatabase::create_record(const char *pathname) { PRINT_STUB(__FUNCTION__); return false; }
+bool oeLnxAppDatabase::lookup_record(const char *pathname) { PRINT_STUB(__FUNCTION__); return false; }
+bool oeLnxAppDatabase::read(const char *label, char *entry, int *entrylen) { PRINT_STUB(__FUNCTION__); return false; }
+bool oeLnxAppDatabase::read(const char *label, void *entry, int wordsize) { PRINT_STUB(__FUNCTION__); return false; }
+bool oeLnxAppDatabase::read(const char *label, bool *entry) { PRINT_STUB(__FUNCTION__); return false; }
+bool oeLnxAppDatabase::write(const char *label, const char *entry, int entrylen) { PRINT_STUB(__FUNCTION__); return false; }
+bool oeLnxAppDatabase::write(const char *label, int entry) { PRINT_STUB(__FUNCTION__); return false; }
+void oeLnxAppDatabase::get_user_name(char *buffer, size_t *size) { PRINT_STUB(__FUNCTION__); if (buffer) buffer[0] = 0; }
 
 oeApplication *Descent = nullptr;
 oeAppDatabase *Database = nullptr;
 
 // ==================== Find* ====================
-int FindDoorName(const char *name) { return -1; }
-int FindGamePathName(const char *name) { return -1; }
-int FindObjectIDName(const char *name) { return -1; }
-int FindShipName(const char *name) { return -1; }
-int FindSoundName(const char *name) { return -1; }
-int FindTextureName(const char *name) { return -1; }
-int FindWeaponName(const char *name) { return -1; }
+int FindDoorName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
+int FindGamePathName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
+int FindObjectIDName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
+int FindShipName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
+int FindSoundName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
+// FindTextureName: look up a texture by name in the loaded GameTextures table.
+// Returns the global texture index or -1 if absent.  Used by the level loader's
+// TXNM texture remap and by gamedata cross-references.
+int FindTextureName(const char *name) {
+  if (name == nullptr)
+    return -1;
+  for (int i = 0; i < Num_textures; i++) {
+    if (GameTextures[i].name[0] && stricmp(GameTextures[i].name, name) == 0)
+      return i;
+  }
+  return -1;
+}
+int FindWeaponName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Alloc/Free ====================
-int AllocDoor() { return -1; }
-void FreeDoor(int n) {}
-int AllocObjectID(int id, bool a, bool b, bool c) { return -1; }
-void FreeObjectID(int n) {}
-int GetObjectID(int n) { return -1; }
-int AllocShip() { return -1; }
-void FreeShip(int n) {}
-int AllocSound() { return -1; }
-void FreeSound(int n) {}
-int AllocSpecialFace(int a, int b, bool c, int d) { return -1; }
-void FreeSpecialFace(int n) {}
-int AllocTexture() { return -1; }
-void FreeTexture(int n) {}
-int AllocWeapon() { return -1; }
-void FreeWeapon(int n) {}
-int AllocLightmapInfo(int a, int b, int c, bool d) { return -1; }
+int AllocDoor() { PRINT_STUB(__FUNCTION__); return -1; }
+void FreeDoor(int n) { PRINT_STUB(__FUNCTION__);}
+int AllocObjectID(int id, bool a, bool b, bool c) { PRINT_STUB(__FUNCTION__); return -1; }
+void FreeObjectID(int n) { PRINT_STUB(__FUNCTION__); }
+int GetObjectID(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int AllocShip() { PRINT_STUB(__FUNCTION__); return -1; }
+void FreeShip(int n) { PRINT_STUB(__FUNCTION__); }
+int AllocSound() { PRINT_STUB(__FUNCTION__); return -1; }
+void FreeSound(int n) { PRINT_STUB(__FUNCTION__); }
+int AllocSpecialFace(int a, int b, bool c, int d) { PRINT_STUB(__FUNCTION__); return -1; }
+void FreeSpecialFace(int n) { PRINT_STUB(__FUNCTION__); }
+int AllocTexture() {  PRINT_STUB(__FUNCTION__); return -1; }
+void FreeTexture(int n) { PRINT_STUB(__FUNCTION__); }
+int AllocWeapon() { PRINT_STUB(__FUNCTION__); return -1; }
+void FreeWeapon(int n) { PRINT_STUB(__FUNCTION__); }
+int AllocLightmapInfo(int a, int b, int c, bool d) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== GetNext/Prev ====================
-int GetNextDoor(int n) { return -1; }
-int GetPrevDoor(int n) { return -1; }
-int GetNextMegacell(int n) { return -1; }
-int GetPrevMegacell(int n) { return -1; }
-int GetNextShip(int n) { return -1; }
-int GetPrevShip(int n) { return -1; }
-int GetNextSound(int n) { return -1; }
-int GetPrevSound(int n) { return -1; }
-int GetNextTexture(int n) { return -1; }
-int GetPreviousTexture(int n) { return -1; }
-int GetNextWeapon(int n) { return -1; }
-int GetPrevWeapon(int n) { return -1; }
+int GetNextDoor(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetPrevDoor(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetNextMegacell(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetPrevMegacell(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetNextShip(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetPrevShip(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetNextSound(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetPrevSound(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetNextTexture(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetPreviousTexture(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetNextWeapon(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetPrevWeapon(int n) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Remap ====================
-void RemapShips() {}
-void RemapSounds() {}
-void RemapStaticIDs() {}
-void RemapWeapons() {}
+void RemapShips() { PRINT_STUB(__FUNCTION__); }
+void RemapSounds() { PRINT_STUB(__FUNCTION__); }
+void RemapStaticIDs() { PRINT_STUB(__FUNCTION__); }
+void RemapWeapons() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Load ====================
-int LoadDoorImage(const char *name, int n) { return -1; }
-void LoadLevel(char *name, void (*cb)(const char *, int, int)) {}
-int LoadPolyModel(const std::filesystem::path &name, int f_module) { return -1; }
-int LoadShipImage(const char *name) { return -1; }
-int LoadSoundFile(const char *name, float vol, bool b) { return -1; }
-int LoadTextureImage(const char *name, int *handle, int a, int b, int c, int d) { return -1; }
-int GetDoorImage(int n) { return -1; }
+int LoadDoorImage(const char *name, int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int LoadPolyModel(const std::filesystem::path &name, int f_module) { PRINT_STUB(__FUNCTION__); return -1; }
+int LoadShipImage(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
+int LoadSoundFile(const char *name, float vol, bool b) { PRINT_STUB(__FUNCTION__); return -1; }
+int LoadTextureImage(const char *name, int *handle, int a, int b, int c, int d) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetDoorImage(int n) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Polymodel ====================
-poly_model *GetPolymodelPointer(int n) { return nullptr; }
-int CountFacesInPolymodel(poly_model *pm) { return 0; }
-float ComputeDefaultSize(int type, int handle, float *size) { return 0; }
-void PageInPolymodel(int model_num, int f_damage, float *size) {}
-void SetModelAnglesAndPos(poly_model *pm, float *anim, unsigned int flags) {}
-int IsNonRenderableSubmodel(poly_model *pm, int index) { return 0; }
-void ChangeOldModelsForObjects(int a, int b) {}
-std::filesystem::path ChangePolyModelName(const std::filesystem::path &name) { return name; }
-void GenerateLODDeltas() {}
-int FindPolyModelName(const std::filesystem::path &name) { return -1; }
-void FreePolyModel(int n) {}
+poly_model *GetPolymodelPointer(int n) { PRINT_STUB(__FUNCTION__); return nullptr; }
+int CountFacesInPolymodel(poly_model *pm) { PRINT_STUB(__FUNCTION__); return 0; }
+float ComputeDefaultSize(int type, int handle, float *size) { PRINT_STUB(__FUNCTION__); return 0; }
+void PageInPolymodel(int model_num, int f_damage, float *size) { PRINT_STUB(__FUNCTION__); }
+void SetModelAnglesAndPos(poly_model *pm, float *anim, unsigned int flags) { PRINT_STUB(__FUNCTION__); }
+int IsNonRenderableSubmodel(poly_model *pm, int index) { PRINT_STUB(__FUNCTION__); return 0; }
+void ChangeOldModelsForObjects(int a, int b) { PRINT_STUB(__FUNCTION__); }
+std::filesystem::path ChangePolyModelName(const std::filesystem::path &name) { PRINT_STUB(__FUNCTION__); return name; }
+void GenerateLODDeltas() { PRINT_STUB(__FUNCTION__); }
+int FindPolyModelName(const std::filesystem::path &name) { PRINT_STUB(__FUNCTION__); return -1; }
+void FreePolyModel(int n) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Misc ====================
-int CreateMatcen(const char *name, bool *flag) { return -1; }
-void DestroyAllMatcens() {}
-void FreeAllGamePaths() {}
-void FreeGamePath(int n) {}
-int FindPointRoom(vector *pnt) { return -1; }
-int GetTerrainRoomFromPos_ret(vector *pos) { return -1; }
-int AIMakeNextRoomList(int roomnum, int *next_rooms, int max_rooms) { return 0; }
-bool PhysCalcGround(vector *ground_point, vector *ground_normal, object *obj, int ground_num) { return false; }
-void ClearAllEvents() {}
+int CreateMatcen(const char *name, bool *flag) { PRINT_STUB(__FUNCTION__); return -1; }
+void DestroyAllMatcens() { PRINT_STUB(__FUNCTION__); }
+void FreeAllGamePaths() { PRINT_STUB(__FUNCTION__); }
+void FreeGamePath(int n) { PRINT_STUB(__FUNCTION__); }
+int FindPointRoom(vector *pnt) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetTerrainRoomFromPos_ret(vector *pos) { PRINT_STUB(__FUNCTION__); return -1; }
+int AIMakeNextRoomList(int roomnum, int *next_rooms, int max_rooms) { PRINT_STUB(__FUNCTION__); return 0; }
+bool PhysCalcGround(vector *ground_point, vector *ground_normal, object *obj, int ground_num) { PRINT_STUB(__FUNCTION__); return false; }
+void ClearAllEvents() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== FVI ====================
 int fvi_FindIntersection(fvi_query *q, fvi_info *info, bool b) { memset(info, 0, sizeof(fvi_info)); return 0; }
-int fvi_QuickDistFaceList(int init_room_index, vector *pos, float rad, fvi_face_room_list *quick_fr_list, int max_elements) { return 0; }
+int fvi_QuickDistFaceList(int init_room_index, vector *pos, float rad, fvi_face_room_list *quick_fr_list, int max_elements) { PRINT_STUB(__FUNCTION__); return 0; }
 bool FVI_always_check_ceiling = false;
 
 // ==================== OSIRIS ====================
-int osipf_FindObjectName(const char *name) { return -1; }
-int osipf_FindRoomName(const char *name) { return -1; }
-int osipf_FindTriggerName(const char *name) { return -1; }
+int osipf_FindObjectName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
+int osipf_FindRoomName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
+int osipf_FindTriggerName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Pilot ====================
-void PltClearList() {}
+void PltClearList() { PRINT_STUB(__FUNCTION__); }
 std::vector<std::string> PltGetPilots(std::string ignore, int display) { return {}; }
 
 // ==================== OutrageMessageBox ====================
-void OutrageMessageBox(const char *fmt, ...) {}
+void OutrageMessageBox(const char *fmt, ...) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Bitmap ====================
-uint16_t *bm_data(int handle, int miplevel) { return nullptr; }
-int bm_w(int handle, int miplevel) { return 0; }
-int bm_h(int handle, int miplevel) { return 0; }
-int bm_mipped(int handle) { return 0; }
+// The mini tree has no InitBitmaps()/Bitmaps_initted global; GameBitmaps is a
+// zero-initialised static array so allocation is always considered ready.
+
+// Allocs a bitmap of w x h size and sets the data16 buffer (16-bit pixels).
+// Returns bitmap handle if successful, -1 otherwise.
+int bm_AllocBitmap(int w, int h, int add_mem) {
+  int n = -1;
+  for (int i = 0; i < MAX_BITMAPS; i++) {
+    if (GameBitmaps[i].used == 0) {
+      n = i;
+      break;
+    }
+  }
+  if (n == -1)
+    return -1;
+
+  memset(&GameBitmaps[n], 0, sizeof(bms_bitmap));
+  GameBitmaps[n].width = (uint16_t)w;
+  GameBitmaps[n].height = (uint16_t)h;
+  GameBitmaps[n].format = BITMAP_FORMAT_STANDARD;
+  GameBitmaps[n].flags = BF_CHANGED | BF_BRAND_NEW;
+  GameBitmaps[n].cache_slot = -1;
+
+  if (w > 0 && h > 0) {
+    // add_mem is the extra space for mip levels (approx (w*h*2)/3 each when
+    // mipped). Allocate the base level plus that padding so the mipped OGF
+    // decoder can write level 0 and each half-size level into consecutive
+    // memory, matching how bm_data(handle, m) computes its offset.
+    size_t base = (size_t)w * (size_t)h * 2;
+    size_t extra = (add_mem > 0) ? (size_t)add_mem : 0;
+    GameBitmaps[n].data16 = (uint16_t *)mem_malloc(base + extra);
+    if (!GameBitmaps[n].data16) {
+      GameBitmaps[n].used = 0;
+      return -1;
+    }
+    memset(GameBitmaps[n].data16, 0, base + extra);
+    if (add_mem > 0)
+      GameBitmaps[n].mip_levels = 1; // marked mipped; actual count set by caller
+  } else {
+    GameBitmaps[n].data16 = nullptr;
+  }
+
+  GameBitmaps[n].used = 1;
+  return n;
+}
+
+uint16_t *bm_data(int handle, int miplevel) {
+  if (handle < 0 || handle >= MAX_BITMAPS)
+    return nullptr;
+  const bms_bitmap &b = GameBitmaps[handle];
+  if (b.data16 == nullptr)
+    return nullptr;
+  int offset = 0, w = b.width, h = b.height;
+  for (int m = 0; m < miplevel; m++) {
+    offset += w * h;
+    if (w > 1) w >>= 1;
+    if (h > 1) h >>= 1;
+  }
+  return b.data16 + offset;
+}
+int bm_w(int handle, int miplevel) {
+  if (handle < 0 || handle >= MAX_BITMAPS)
+    return 0;
+  int w = GameBitmaps[handle].width;
+  for (int m = 0; m < miplevel; m++) {
+    if (w > 1) w >>= 1;
+  }
+  return w;
+}
+int bm_h(int handle, int miplevel) {
+  if (handle < 0 || handle >= MAX_BITMAPS)
+    return 0;
+  int h = GameBitmaps[handle].height;
+  for (int m = 0; m < miplevel; m++) {
+    if (h > 1) h >>= 1;
+  }
+  return h;
+}
+int bm_mipped(int handle) {
+  if (handle < 0 || handle >= MAX_BITMAPS)
+    return 0;
+  return GameBitmaps[handle].mip_levels > 1 ? 1 : 0;
+}
 
 // ==================== Inventory ====================
-Inventory::Inventory() {}
-Inventory::~Inventory() {}
+Inventory::Inventory() { PRINT_STUB(__FUNCTION__); }
+Inventory::~Inventory() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== grFont ====================
-grFont::grFont() {}
-grFont::~grFont() {}
+grFont::grFont() { PRINT_STUB(__FUNCTION__); }
+grFont::~grFont() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== hlsSystem ====================
-hlsSystem::hlsSystem() {}
-void hlsSystem::KillSoundLib(bool f_kill_sound_list) {}
-int hlsSystem::Play2dSound(int sound_index, float volume, float pan, unsigned short flags) { return 0; }
-bool hlsSystem::CheckAndForceSoundDataAlloc(int sound_file_index) { return false; }
+hlsSystem::hlsSystem() { PRINT_STUB(__FUNCTION__); }
+void hlsSystem::KillSoundLib(bool f_kill_sound_list) { PRINT_STUB(__FUNCTION__); }
+int hlsSystem::Play2dSound(int sound_index, float volume, float pan, unsigned short flags) { PRINT_STUB(__FUNCTION__); return 0; }
+bool hlsSystem::CheckAndForceSoundDataAlloc(int sound_file_index) { PRINT_STUB(__FUNCTION__); return false; }
 
 // ==================== matcen methods ====================
-void matcen::GetName(char *buf) { if (buf) buf[0] = 0; }
-bool matcen::SetName(const char *name) { return false; }
+void matcen::GetName(char *buf) { PRINT_STUB(__FUNCTION__); if (buf) buf[0] = 0; }
+bool matcen::SetName(const char *name) { PRINT_STUB(__FUNCTION__); return false; }
