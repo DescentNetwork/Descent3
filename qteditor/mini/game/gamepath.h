@@ -44,7 +44,6 @@
 #include "manage.h"
 #include "mem/mem.h"
 #include "pstypes.h"
-#include "pserror.h"
 #include "vecmat.h"
 
 // chrishack -- this could be dynamically allocated at the beginning of a level

@@ -22,7 +22,7 @@
 #include <QListWidget>
 #include <QPushButton>
 
-#include "hlsoundlib.h"
+#include "sndlib/hlsoundlib.h"
 #include "ssl_lib.h"
 
 

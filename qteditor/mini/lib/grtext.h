@@ -265,7 +265,6 @@ int grfont_GetTracking(int font);
 /////////////////////////////////////////////////////////////////////
 
 // Init functions -- call before anything is rendered!
-void grtext_Init();
 
 #ifndef RELEASE
 void grfont_Spew(int font, int x, int y);

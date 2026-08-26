@@ -30,6 +30,9 @@
 
 #include <QFileInfo>
 
+#include <cstring>
+#include <filesystem>
+
 #include "cfile.h"
 
 #include "d3edit.h"
@@ -544,16 +547,22 @@ void WorldObjectsPlayerDialog::onPshipCockpit()
   if (pathname.isEmpty())
     return;
 
-  QFileInfo fileInfo(pathname);
-  const QByteArray pathBytes = pathname.toLocal8Bit();
-  const char *curname = fileInfo.baseName().toLocal8Bit().constData();
-  const char *ext = fileInfo.suffix().isEmpty() ? "" : ("." + fileInfo.suffix()).toLocal8Bit().constData();
+  // Keep only the file name (drop the source directory) so the cockpit is
+  // referenced relative to the local misc dir, matching the Win32 editor.
+  const std::filesystem::path picked{pathname.toStdString()};
+  const std::string cockpitFile = picked.filename().string();
+  if (cockpitFile.empty())
+    return;
 
-  snprintf(Ships[D3EditState.current_ship].cockpit_name, sizeof(Ships[D3EditState.current_ship].cockpit_name), "%s%s",
-           curname, ext);
-  snprintf(curname, sizeof(curname), "%s/%s", LocalMiscDir.u8string().c_str(),
-           Ships[D3EditState.current_ship].cockpit_name);
-  cf_CopyFile(curname, std::filesystem::path(pathBytes.constData()));
+  ship &shp = Ships[D3EditState.current_ship];
+  // Store the relative file name into the fixed-size cockpit_name buffer.
+  std::strncpy(shp.cockpit_name, cockpitFile.c_str(), sizeof(shp.cockpit_name) - 1);
+  shp.cockpit_name[sizeof(shp.cockpit_name) - 1] = '\0';
+
+  // Copy the picked file into the local misc dir under its relative name.
+  const std::filesystem::path dest = LocalMiscDir / shp.cockpit_name;
+  std::filesystem::copy_file(picked, dest, std::filesystem::copy_options::overwrite_existing);
+
   updateDialog();
 }
 

@@ -7,6 +7,9 @@
 struct object;
 struct CFILE;
 
-#include "osiris_share.h"
+struct tOSIRISEventInfo;
+struct ray_info{};
+
+//#include "osiris_share.h"
 
 #endif

@@ -1,3 +1,4 @@
+#include <QtGlobal>
 /*
  * Descent 3
  * Copyright (C) 2024 Descent Developers
@@ -35,7 +36,7 @@
 
 #include "d3edit.h"
 
-#include "hlsoundlib.h"
+#include "sndlib/hlsoundlib.h"
 #include "manage.h"
 #include "soundpage.h"
 #include "soundload.h"

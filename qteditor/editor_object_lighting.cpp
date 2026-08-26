@@ -15,13 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include "logger/log.h"
 #include <QtGlobal>
+#include "logger/log.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <cstdlib>
+
 
 #include "3d.h"
 #include "gametexture.h"
@@ -32,7 +33,7 @@
 #include "radiosity.h"
 #include "lightmap_info.h"
 #include "object_lighting.h"
-#include "mem.h"
+#include "mem/mem.h"
 
 
 void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int facenum) {

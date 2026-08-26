@@ -620,6 +620,7 @@ void *mem_realloc_sub(void *ptr, int size) {
     throw std::bad_alloc();
   return p;
 }
+
 char *mem_strdup_sub(const char *s, const char *fn, int line) {
   if (s == nullptr)
     return nullptr;
@@ -861,7 +862,7 @@ bool ddio_FileDiff(const std::filesystem::path &a, const std::filesystem::path &
 }
 void ddio_CopyFileTime(const std::filesystem::path &dest, const std::filesystem::path &src) { PRINT_STUB(__FUNCTION__); (void)dest; (void)src; }
 
-// ==================== pserror ====================
+
 namespace D3 {
 const std::vector<std::filesystem::path> Default_read_only_base_directories;
 }
@@ -947,9 +948,6 @@ void PreInitD3Systems() {
     Mem_low_memory_mode = false;
     Mem_superlow_memory_mode = false;
   }
-  mem_Init();
-  error_Init(false, "Descent 3 Editor");
-  grtext_Init();
 }
 
 // First-phase system init. The decoupled editor replaces the full game's I/O,
@@ -980,16 +978,7 @@ void mem_Init() { PRINT_STUB(__FUNCTION__); }
 void mem_Shutdown() { PRINT_STUB(__FUNCTION__); }
 int mem_GetTotalMemoryUsed() { PRINT_STUB(__FUNCTION__); return 0; }
 
-// ==================== pserror ====================
-static char EditorMessageBoxTitle[128] = "Descent 3 Editor";
-void SetMessageBoxTitle(const char *title) {
-  if (title)
-    std::strncpy(EditorMessageBoxTitle, title, sizeof(EditorMessageBoxTitle) - 1);
-}
-bool error_Init(bool debugger, const char *app_title) {
-  SetMessageBoxTitle(app_title ? app_title : "Descent 3 Editor");
-  return true;
-}
+
 
 // ==================== grtext ====================
 void grtext_Init() { PRINT_STUB(__FUNCTION__); }
@@ -1124,8 +1113,6 @@ int osipf_FindTriggerName(const char *name) { PRINT_STUB(__FUNCTION__); return -
 void PltClearList() { PRINT_STUB(__FUNCTION__); }
 std::vector<std::string> PltGetPilots(std::string ignore, int display) { return {}; }
 
-// ==================== OutrageMessageBox ====================
-void OutrageMessageBox(const char *fmt, ...) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Bitmap ====================
 // The mini tree has no InitBitmaps()/Bitmaps_initted global; GameBitmaps is a

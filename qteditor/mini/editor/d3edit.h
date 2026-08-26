@@ -300,10 +300,6 @@
 
 #include <stdlib.h>
 
-// For putting up editor messageboxes in the main body (& should be in the editor code too, probably)
-#ifdef EDITOR
-#define EditorMessageBox OutrageMessageBox
-#endif
 
 // Define group & room structs so we don't have to include group.h & room.h
 struct group;

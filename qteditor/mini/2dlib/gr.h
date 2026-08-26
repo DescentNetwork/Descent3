@@ -107,7 +107,6 @@
 #include "Ddgr.h"
 #include <QtGlobal>
 #include "fix.h"
-#include "pserror.h"
 
 class grMemorySurface;
 class grViewport;

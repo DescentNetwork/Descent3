@@ -1,3 +1,4 @@
+#include <QtGlobal>
 /*
  * Descent 3
  * Copyright (C) 2024 Parallax Software
@@ -27,7 +28,9 @@
 #include "rad_cast.h"
 #include "vecmat.h"
 #include <cstdlib>
-#include "mem.h"
+#include "mem/mem.h"
+
+#include "ddio.h"
 
 
 // Some radiosity globals

@@ -36,7 +36,6 @@
 #include "hogfile.h" //info about library file
 #include "log.h"
 #include "mem.h"
-#include "pserror.h"
 #include "cfile_compat.h"
 
 // Library structures
@@ -156,14 +155,14 @@ std::filesystem::path cf_LocatePathCaseInsensitiveHelper(const std::filesystem::
 
 std::vector<std::filesystem::path> cf_LocatePathMultiplePathsHelper(const std::filesystem::path &relative_path,
                                                                     bool stop_after_first_result) {
-  ASSERT(("realative_path should be a relative path.", relative_path.is_relative()));
+  Q_ASSERT(("realative_path should be a relative path.", relative_path.is_relative()));
   std::vector<std::filesystem::path> return_value = { };
   for (auto base_directories_iterator = Base_directories.rbegin();
        base_directories_iterator != Base_directories.rend();
        ++base_directories_iterator) {
-    ASSERT(("base_directory should be an absolute path.", base_directories_iterator->is_absolute()));
+    Q_ASSERT(("base_directory should be an absolute path.", base_directories_iterator->is_absolute()));
     auto to_append = cf_LocatePathCaseInsensitiveHelper(relative_path, *base_directories_iterator);
-    ASSERT(("to_append should be either empty or an absolute path.", to_append.empty() || to_append.is_absolute()));
+    Q_ASSERT(("to_append should be either empty or an absolute path.", to_append.empty() || to_append.is_absolute()));
     if (std::filesystem::exists(to_append)) {
       return_value.push_back(to_append);
       if (stop_after_first_result) {
@@ -276,7 +275,7 @@ int cf_OpenLibrary(const std::filesystem::path &libname) {
       return 0;
     }
     // Make sure files are in order
-    ASSERT((i == 0) || (stricmp(entry.name, lib->entries[i - 1]->name) >= 0));
+    Q_ASSERT((i == 0) || (stricmp(entry.name, lib->entries[i - 1]->name) >= 0));
     // Copy into table
     std::unique_ptr<library_entry> lib_entry = std::make_unique<library_entry>();
     strcpy(lib_entry->name, entry.name);
@@ -407,7 +406,7 @@ CFILE *cf_OpenFileInLibrary(const std::filesystem::path &filename, int libhandle
     if (!fp) {
       LOG_ERROR("Error opening library <%s> when opening file <%s>; errno=%d.", (const char*)lib->name.u8string().c_str(),
                        (const char*)filename.u8string().c_str(), errno);
-      Int3();
+      Q_ASSERT(false);
       return nullptr;
     }
   }
@@ -422,7 +421,7 @@ CFILE *cf_OpenFileInLibrary(const std::filesystem::path &filename, int libhandle
   cfile->position = 0;
   cfile->flags = 0;
   r = fseek(fp, cfile->lib_offset, SEEK_SET);
-  ASSERT(r == 0);
+  Q_ASSERT(r == 0);
   return cfile;
 }
 
@@ -460,7 +459,7 @@ CFILE *open_file_in_lib(const char *filename) {
         if (!fp) {
           LOG_ERROR("Error opening library <%s> when opening file <%s>; errno=%d.", (const char*)lib->name.u8string().c_str(),
                            filename, errno);
-          Int3();
+          Q_ASSERT(false);
           return nullptr;
         }
       }
@@ -475,7 +474,7 @@ CFILE *open_file_in_lib(const char *filename) {
       cfile->position = 0;
       cfile->flags = 0;
       r = fseek(fp, cfile->lib_offset, SEEK_SET);
-      ASSERT(r == 0);
+      Q_ASSERT(r == 0);
       return cfile;
     }
     lib = lib->next;
@@ -546,8 +545,8 @@ CFILE *cfopen(const std::filesystem::path &filename, const char *mode) {
   CFILE *cfile;
 
   // Check for valid mode
-  ASSERT((mode[0] == 'r') || (mode[0] == 'w'));
-  ASSERT((mode[1] == 'b') || (mode[1] == 't'));
+  Q_ASSERT((mode[0] == 'r') || (mode[0] == 'w'));
+  Q_ASSERT((mode[1] == 'b') || (mode[1] == 't'));
   // get the parts of the pathname
   std::filesystem::path path = filename.parent_path();
   std::filesystem::path fname = filename.stem();
@@ -716,7 +715,7 @@ int cfexist(const std::filesystem::path &filename) {
 int cf_ReadBytes(uint8_t *buf, int count, CFILE *cfp) {
   int i;
   const char *error_msg = eof_error; // default error
-  ASSERT(!(cfp->flags & CFF_TEXT));
+  Q_ASSERT(!(cfp->flags & CFF_TEXT));
   if (cfp->position + count <= cfp->size) {
     i = fread(buf, 1, count, cfp->file);
     if (i == count) {
@@ -813,7 +812,7 @@ int cf_WriteBytes(const uint8_t *buf, int count, CFILE *cfp) {
   int i;
   if (!(cfp->flags & CFF_WRITING))
     return 0;
-  ASSERT(count > 0);
+  Q_ASSERT(count > 0);
   i = fwrite(buf, 1, count, cfp->file);
   cfp->position += i;
   if (i != count)
@@ -944,7 +943,7 @@ void cf_CopyFileTime(const std::filesystem::path &dest, const std::filesystem::p
 void cf_Rewind(CFILE *fp) {
   if (fp->lib_offset) {
     int r = fseek(fp->file, fp->lib_offset, SEEK_SET);
-    ASSERT(r == 0);
+    Q_ASSERT(r == 0);
   } else {
     rewind(fp->file);
   }
@@ -989,7 +988,7 @@ uint32_t cf_CalculateFileCRC(CFILE *infile) {
       readlen = CRC_BUFFER_SIZE;
     if (!cf_ReadBytes(crcbuf, readlen, infile)) {
       // Doh, error time!
-      Int3();
+      Q_ASSERT(false);
       return 0xFFFFFFFF;
     }
     for (uint32_t a = 0; a < readlen; a++) {

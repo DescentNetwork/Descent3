@@ -41,16 +41,15 @@
 #include "iff.h"
 #include "byteswap.h"
 #include "cfile.h"
-#include "pserror.h"
 #include "pstypes.h"
 #include "bitmap.h"
 #include "log.h"
 #include "grdefs.h"
 
-// The mini tree only defines ASSERT inside cfile/cfile_compat.h.  Provide a
+// The mini tree only defines Q_ASSERT inside cfile/cfile_compat.h.  Provide a
 // local fallback so the ported readers compile regardless of include order.
-#ifndef ASSERT
-#define ASSERT(cond) Q_ASSERT(cond)
+#ifndef Q_ASSERT
+#define Q_ASSERT(cond) Q_ASSERT(cond)
 #endif
 
 // Compression types
@@ -317,7 +316,7 @@ int bm_iff_parse_delta(CFILE *ifile, int len, iff_bitmap_header *bmheader) {
     cf_ReadByte(ifile);
 
   if (cftell(ifile) != chunk_end) {
-    Int3();
+    Q_ASSERT(false);
     return IFF_CORRUPT;
   }
 
@@ -364,7 +363,7 @@ int bm_iff_parse_file(CFILE *ifile, iff_bitmap_header *bmheader, iff_bitmap_head
     case IFF_SIG_ANHD: {
 
       if (!prev_bm) {
-        Int3();
+        Q_ASSERT(false);
         return IFF_CORRUPT;
       }
 
@@ -596,7 +595,7 @@ static int bm_tga_read_outrage_compressed16(CFILE *infile, int n, int num_mips, 
     dest_data = (uint16_t *)bm_data(n, m);
 
     while (count != total) {
-      ASSERT(count < total);
+      Q_ASSERT(count < total);
 
       uint8_t command = tga_read_byte();
 
@@ -652,7 +651,7 @@ static int bm_tga_read_outrage_compressed16(CFILE *infile, int n, int num_mips, 
           count++;
         }
       } else
-        Int3(); // bad compression run
+        Q_ASSERT(false); // bad compression run
     }
   }
 
@@ -737,7 +736,7 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
 
   if (n < 0) {
     LOG_ERROR("bm_tga: Failed to allocate memory.");
-    Int3();
+    Q_ASSERT(false);
     return -1;
   }
 
@@ -840,7 +839,7 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
     cfseek(infile, savepos, SEEK_SET);
 
     Tga_file_data = mem_rmalloc<char>(numleft);
-    ASSERT(Tga_file_data != NULL);
+    Q_ASSERT(Tga_file_data != NULL);
     Fake_pos = 0;
     Bad_tga = 0;
     Fake_file_size = numleft;
@@ -851,7 +850,7 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
   }
 
   else
-    Int3(); // Get Jason
+    Q_ASSERT(false); // Get Jason
 
   if (Tga_file_data != NULL) {
     mem_free(Tga_file_data);

@@ -20,7 +20,7 @@
 // The D3 core is compiled without the EDITOR define, so this is re-provided
 // here for the Qt port.
 #include "editor_room_state.h"
-#include "mem.h"
+#include "mem/mem.h"
 #include "terrain.h"
 #include "slew.h"
 #include "manage.h"
@@ -31,6 +31,7 @@
 #include "room.h"
 #include "vecmat.h"
 #include <cstdarg>
+#include <atomic>
 #include <cstring>
 #include <filesystem>
 #include <QtGlobal>
@@ -95,12 +96,7 @@ bool Mine_changed = false;
 int Editor_view_mode = 0; // VM_MINE
 int Editor_viewer_id = -1;
 
-// SLEW.cpp guards SlewControlInit() with EDITOR; the Qt port has no controller
-// integration, so provide a stub. The non-EDITOR branch of slew.h turns
-// SlewControlInit into a no-arg function-like macro with an empty replacement
-// list, so undef it before defining the real function body.
-#undef SlewControlInit
-void SlewControlInit() {}
+// SLEW.cpp guards SlewControlInit() with EDITOR; slew.cpp provides it.
 
 
 // Editor-only object helpers guarded by EDITOR in object.cpp/objinfo.cpp; the
@@ -475,13 +471,3 @@ void SetErrorMessage(const char *fmt, ...) {
 }
 
 const char *GetErrorMessage() { return Editor_error_message; }
-
-bool SaveLevel(char *filename, bool f_save_room_AABB) {
-  (void)f_save_room_AABB;
-  // The stub refuses to scribble anything to disk: writing a stale or empty
-  // .d3l would mask real bugs during development. The Qt port will swap
-  // this for the real implementation once editor/ebnode.h's MFC deps
-  // (EditorMessageBox, etc.) have a Linux equivalent.
-  (void)filename;
-  return false;
-}

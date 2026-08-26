@@ -192,25 +192,21 @@
  * $NoKeywords: $
  */
 
-#if (defined(_DEBUG) || defined(EDITOR))
-
-#ifdef EDITOR
 #include "editor/mainfrm.h"
 #include "editor/d3edit.h"
-#include "pserror.h"
-#endif
 
 #include <cstdlib>
+#include <QMessageBox>
 
 #include "slew.h"
 #include "vecmat.h"
-#include "ddio.h"
 #include "object.h"
 #include "log.h"
 #include "game.h"
 #include "joystick.h"
 #include "findintersection.h"
 #include "room.h"
+#include "ddio.h"
 
 // variables for slew system
 
@@ -223,7 +219,6 @@ int Joystick_active = -1;
 
 // -------------------------------------------------------------------
 
-#ifdef EDITOR
 void SlewControlInit() {
   Joystick_active = -1;
 
@@ -238,10 +233,9 @@ void SlewControlInit() {
     joy_GetPos((tJoystick)Joystick_active, &joystate); // get all the stick values
 
     if ((abs(joystate.x) > 32) || (abs(joystate.y) > 32))
-      EditorMessageBox("Warning: Your joystick is not centered.  You should either center it now or recalibrate.");
+      QMessageBox::warning(nullptr, QString("%1 warning").arg(__func__), "Warning: Your joystick is not centered.  You should either center it now or recalibrate.");
   }
 }
-#endif
 
 int SlewStop(object *obj) {
   if (!obj)
@@ -321,7 +315,7 @@ int SlewFrame(object *obj, int movement_limitations) {
   rotang.b() = (int16_t)(65536.0 * rottime.z() * ROT_SPEED * Slew_key_speed);
 
 // joystick movement
-#ifdef EDITOR
+
   if (Joystick_active != -1) {
     int joy_x, joy_y, btns;
     tJoyPos joystate;
@@ -358,7 +352,7 @@ int SlewFrame(object *obj, int movement_limitations) {
     if (joyy_moved)
       old_joy_y = joy_y;
   }
-#endif
+
 
   vm_AnglesToMatrix(&rotmat, rotang.p(), rotang.h(), rotang.b());
 
@@ -390,12 +384,12 @@ int SlewFrame(object *obj, int movement_limitations) {
 
     LOG_DEBUG("SLEW: Moved");
 
-#ifdef EDITOR
+
     if (Editor_view_mode == VM_ROOM) {
       // Room number is bogus in room view, so don't update it
       new_room = obj->roomnum;
     } else
-#endif
+
       // NOTE LINK TO ABOVE IF
       if (outside_mine) { // starting outside the mine?
 
@@ -484,5 +478,3 @@ int SlewFrame(object *obj, int movement_limitations) {
 
   return ret_flags;
 }
-
-#endif

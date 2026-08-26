@@ -34,7 +34,6 @@
 #include "crossplat.h" // stricmp
 #include "aistruct.h"  // t_ai_info
 #include "aistruct_external.h"
-#include "pserror.h" // Int3
 #include "mem.h"     // mem_rmalloc
 #include "log.h"     // LOG_ERROR
 #include "objinfo.h"
@@ -53,12 +52,6 @@
 #include "megacell.h"
 #include "iff.h"
 #include "bitmap.h"
-
-// The mini tree only defines ASSERT inside cfile/cfile_compat.h.  Provide a
-// local fallback so the ported readers compile regardless of include order.
-#ifndef ASSERT
-#define ASSERT(cond) Q_ASSERT(cond)
-#endif
 
 // Old delay types (originally #defined locally in the full-engine generic.cpp)
 #ifndef OLD_DF_DELAY_MIN_MAX
@@ -260,7 +253,7 @@ static void GenericPageSetPowerupDefaultAmmo(object_info *ip) {
 int mng_ReadNewGenericPage(CFILE *infile, mngs_generic_page *genericpage) {
   int i, j;
 
-  ASSERT(infile != NULL);
+  Q_ASSERT(infile != NULL);
   mng_InitGenericPage(genericpage);
 
   int version = cf_ReadShort(infile);
@@ -320,7 +313,7 @@ int mng_ReadNewGenericPage(CFILE *infile, mngs_generic_page *genericpage) {
     size_t slen = strlen(tempbuf) + 1;
 
     genericpage->objinfo_struct.description = mem_rmalloc<char>(slen);
-    ASSERT(genericpage->objinfo_struct.description);
+    Q_ASSERT(genericpage->objinfo_struct.description);
     strcpy(genericpage->objinfo_struct.description, tempbuf);
   } else
     genericpage->objinfo_struct.description = NULL;
@@ -449,7 +442,7 @@ int mng_ReadNewGenericPage(CFILE *infile, mngs_generic_page *genericpage) {
   }
 
   // read sounds
-  ASSERT(MAX_OBJ_SOUNDS == 2);
+  Q_ASSERT(MAX_OBJ_SOUNDS == 2);
   for (i = 0; i < MAX_OBJ_SOUNDS; i++)
     cf_ReadString(genericpage->sound_name[i], PAGENAME_LEN, infile);
   if (version < 26) { // used to be three sounds
@@ -481,7 +474,7 @@ int mng_ReadNewGenericPage(CFILE *infile, mngs_generic_page *genericpage) {
     for (i = 0; i < n_death_types; i++) {
       int flags = cf_ReadInt(infile);
       if (version == 22) { // translate death flags
-        Int3();            // this version no longer supported
+        Q_ASSERT(false);            // this version no longer supported
       }
 
       genericpage->objinfo_struct.death_types[i].flags = flags;
@@ -508,7 +501,7 @@ int mng_ReadNewGenericPage(CFILE *infile, mngs_generic_page *genericpage) {
         genericpage->objinfo_struct.score = 3 * genericpage->objinfo_struct.hit_points;
   }
 
-  ASSERT(genericpage->objinfo_struct.type != OBJ_NONE);
+  Q_ASSERT(genericpage->objinfo_struct.type != OBJ_NONE);
 
   return 1; // successfully read
 }
@@ -712,7 +705,7 @@ static void mng_InitTexturePage(mngs_texture_page *texpage) {
 int mng_ReadNewTexturePage(CFILE *infile, mngs_texture_page *texpage) {
   int i;
 
-  ASSERT(infile != NULL);
+  Q_ASSERT(infile != NULL);
   mng_InitTexturePage(texpage);
 
   int version = cf_ReadShort(infile);
@@ -756,7 +749,7 @@ int mng_ReadNewTexturePage(CFILE *infile, mngs_texture_page *texpage) {
 
     if (texpage->num_proc_elements > MAX_PROC_ELEMENTS) {
       LOG_ERROR("Warning! Too many procedural elements!");
-      Int3();
+      Q_ASSERT(false);
     }
 
     for (i = 0; i < texpage->num_proc_elements; i++) {
@@ -812,7 +805,7 @@ int mng_ReadTexturePage(CFILE *infile, mngs_texture_page *texpage) {
 //-----------------------------------------------------------------------------
 
 int mng_ReadNewSoundPage(CFILE *infile, mngs_sound_page *soundpage) {
-  ASSERT(infile != NULL);
+  Q_ASSERT(infile != NULL);
   /* int version = */ cf_ReadShort(infile);
   // read in name,rawfile name
   cf_ReadString(soundpage->sound_struct.name, PAGENAME_LEN, infile);
@@ -846,7 +839,7 @@ int mng_ReadSoundPage(CFILE *infile, mngs_sound_page *soundpage) {
 //-----------------------------------------------------------------------------
 
 int mng_ReadNewDoorPage(CFILE *infile, mngs_door_page *doorpage) {
-  ASSERT(infile != NULL);
+  Q_ASSERT(infile != NULL);
 
   int version = cf_ReadShort(infile);
 
@@ -890,7 +883,7 @@ int mng_ReadDoorPage(CFILE *infile, mngs_door_page *doorpage) {
 
 int mng_ReadNewMegacellPage(CFILE *infile, mngs_megacell_page *megacellpage) {
   int i;
-  ASSERT(infile != NULL);
+  Q_ASSERT(infile != NULL);
   memset(megacellpage, 0, sizeof(mngs_megacell_page));
   /* int version = */ cf_ReadShort(infile);
 
@@ -920,7 +913,7 @@ int mng_ReadMegacellPage(CFILE *infile, mngs_megacell_page *megacellpage) {
 int mng_ReadNewShipPage(CFILE *infile, mngs_ship_page *shippage) {
   int i, j;
 
-  ASSERT(infile != NULL);
+  Q_ASSERT(infile != NULL);
 
   // Defaults
   memset(shippage, 0, sizeof(mngs_ship_page));

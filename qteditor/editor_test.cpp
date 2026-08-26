@@ -22,8 +22,7 @@
 
 #include <QtTest/QSignalSpy>
 #include <QtTest/QtTest>
-
-#include <SDL3/SDL_assert.h>
+#include <QtGlobal>
 
 #include <QAbstractButton>
 #include <QAction>
@@ -167,6 +166,15 @@ bool EBNode_VerifyGraph();
 #include <QFile>
 #include <QDir>
 #include <QLabel>
+
+#ifdef MINI_EDITOR
+// ---- Decoupled-mini-only includes (cfile/gamedata level-loading) ----
+#include <filesystem>
+
+#include "cfile.h"
+#include "gamedata_loader.h"
+#endif // MINI_EDITOR
+
 #include "editor_view.h"
 #include "level_io.h"
 #include "viewer_prop_dialog.h"
@@ -179,6 +187,9 @@ bool EBNode_VerifyGraph();
 #include "world_weapons_dialog.h"
 #include "worldobjectslight_dialog.h"
 #include "level_io.h"
+#ifdef MINI_EDITOR
+#include "LoadLevel.h"
+#endif // MINI_EDITOR
 #include "d3edit.h"
 
 namespace {
@@ -268,6 +279,202 @@ class EditorTest : public QObject
 
 private slots:
   void initTestCase() { QCoreApplication::processEvents(); }
+
+#ifdef MINI_EDITOR
+  // Round-trips a tiny hand-built world (rooms, objects, triggers, wind,
+  // level info) through SaveLevel -> LoadLevel and verifies the key geometry
+  // and object/trigger counts reproduce.
+  void testLevelLoadSaveRoundTrip()
+  {
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      std::memset(&Objects[i], 0, sizeof(Objects[i]));
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Num_triggers = 0;
+
+    // Room 0: single 4-vert quad.
+    room *r0 = &Rooms[0];
+    std::memset(r0, 0, sizeof(room));
+    InitRoom(r0, 4, 1, 0);
+    r0->verts[0] = vector{(float)10, (float)0, (float)-10};
+    r0->verts[1] = vector{(float)0, (float)0, (float)-10};
+    r0->verts[2] = vector{(float)0, (float)0, (float)10};
+    r0->verts[3] = vector{(float)10, (float)0, (float)10};
+    InitRoomFace(&r0->faces[0], 4);
+    for (int i = 0; i < 4; i++)
+      r0->faces[0].face_verts[i] = (int16_t)i;
+    r0->faces[0].tmap = 2;
+    r0->faces[0].face_uvls[0].u = 0.5f;
+    r0->wind = vector{(float)1, (float)0, (float)0};
+    r0->name = nullptr;
+
+    // Room 1: triangle.
+    room *r1 = &Rooms[1];
+    std::memset(r1, 0, sizeof(room));
+    InitRoom(r1, 3, 1, 0);
+    r1->verts[0] = vector{(float)20, (float)0, (float)-10};
+    r1->verts[1] = vector{(float)30, (float)0, (float)-10};
+    r1->verts[2] = vector{(float)25, (float)0, (float)10};
+    InitRoomFace(&r1->faces[0], 3);
+    for (int i = 0; i < 3; i++)
+      r1->faces[0].face_verts[i] = (int16_t)i;
+    r1->faces[0].tmap = 3;
+    Highest_room_index = 1;
+
+    // Objects.
+    Objects[0].type = OBJ_POWERUP;
+    Objects[0].id = 1;
+    Objects[0].roomnum = 0;
+    Objects[0].pos = vector{(float)5, (float)1, (float)-5};
+    Objects[0].orient.rvec = vector{(float)1, 0, 0};
+    Objects[0].orient.uvec = vector{(float)0, (float)1, 0};
+    Objects[0].orient.fvec = vector{0, 0, (float)1};
+    Objects[1].type = OBJ_ROBOT;
+    Objects[1].id = 7;
+    Objects[1].roomnum = 1;
+    Objects[1].pos = vector{(float)25, (float)2, (float)0};
+    Highest_object_index = 1;
+
+    // Trigger.
+    Num_triggers = 1;
+    std::strcpy(Triggers[0].name, "trig0");
+    Triggers[0].roomnum = 0;
+    Triggers[0].facenum = 0;
+    Triggers[0].flags = TF_ONESHOT;
+    Triggers[0].activator = AF_PLAYER;
+
+    // Level info.
+    std::strcpy(Level_info.name, "RoundTrip");
+    std::strcpy(Level_info.designer, "Tester");
+    std::strcpy(Level_info.copyright, "Test (c)");
+    std::strcpy(Level_info.notes, "round-trip notes");
+
+    const QString tmp = QDir::tempPath() + "/_test_level_roundtrip";
+    QDir::current().mkpath(tmp);
+    const QString file = tmp + "/roundtrip.d3l";
+    QFile::remove(file);
+
+    QVERIFY2(SaveLevel(const_cast<char *>(file.toLatin1().constData()), true),
+             qPrintable("SaveLevel failed"));
+
+    // Tear down the in-memory world so LoadLevel must rebuild it from disk.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      std::memset(&Objects[i], 0, sizeof(Objects[i]));
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Num_triggers = 0;
+
+    QVERIFY2(LoadLevel(const_cast<char *>(file.toLatin1().constData()), nullptr),
+             qPrintable("LoadLevel failed"));
+
+    QVERIFY(Highest_room_index >= 1);
+    QVERIFY(Rooms[0].used);
+    QVERIFY(Rooms[1].used);
+    QCOMPARE(Rooms[0].num_verts, 4);
+    QCOMPARE(Rooms[0].num_faces, 1);
+    QCOMPARE(Rooms[1].num_verts, 3);
+    QCOMPARE(Rooms[1].num_faces, 1);
+    QCOMPARE(Rooms[0].verts[0].x(), 10.0f);
+    QCOMPARE(Rooms[0].verts[3].z(), 10.0f);
+    QCOMPARE(Rooms[0].faces[0].face_verts[0], 0);
+    QCOMPARE(Rooms[0].faces[0].tmap, 2);
+    QCOMPARE(Rooms[0].wind.x(), 1.0f);
+
+    QVERIFY(Highest_object_index >= 1);
+    QCOMPARE(int(Objects[0].type), int(OBJ_POWERUP));
+    QCOMPARE(int(Objects[0].id), 1);
+    QCOMPARE(Objects[0].roomnum, 0);
+    QCOMPARE(Objects[0].pos.x(), 5.0f);
+    QCOMPARE(int(Objects[1].type), int(OBJ_ROBOT));
+    QCOMPARE(Objects[1].roomnum, 1);
+
+    QCOMPARE(Num_triggers, 1);
+    QVERIFY(std::strcmp(Triggers[0].name, "trig0") == 0);
+    QVERIFY(std::strcmp(Level_info.name, "RoundTrip") == 0);
+
+    // Clean teardown so later tests see pristine globals.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      std::memset(&Objects[i], 0, sizeof(Objects[i]));
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    std::memset(Level_info.name, 0, sizeof(Level_info.name));
+
+    QFile::remove(file);
+    QDir::current().rmdir(tmp);
+  }
+
+  // Loads a real Descent 3 level shipped in the repo and verifies the room
+  // geometry populated into Rooms[] — the data EditorView::renderRooms()
+  // draws. This is the end-to-end check that a real .d3l (versioned, with
+  // textures/portals) loads into the renderer's tables, not just synthetic
+  // test data. Skips if the demo level isn't present.
+  void testLoadRealLevelPopulatesRooms()
+  {
+    const std::filesystem::path lvl = "/home/gravis/project/D3rebuild/repo/scripts/data/demohog/thecore.d3l";
+    if (!std::filesystem::exists(lvl)) {
+      QSKIP("thecore.d3l not found; skipping real level load test.");
+      return;
+    }
+
+    Highest_room_index = -1;
+    QVERIFY(LoadLevel(const_cast<char *>(lvl.string().c_str()), nullptr));
+
+    // Load gamedata so GameTextures[].bm_handle has real loaded bitmaps
+    // (the decoder populates dimensions/pixels from d3.hog).
+    const std::filesystem::path hog = "/mnt/media/games/pc/Descent 3/d3.hog";
+    if (std::filesystem::exists(hog)) {
+      loadGameDataTable(hog);
+    }
+
+    // A real mission level has many rooms with faces; confirm we actually
+    // read geometry (not an empty table) so renderRooms() has something to draw.
+    QVERIFY(Highest_room_index > 0);
+    int usedRooms = 0, totalFaces = 0;
+    for (int i = 0; i <= Highest_room_index && i < MAX_ROOMS; i++) {
+      if (Rooms[i].used) {
+        usedRooms++;
+        totalFaces += Rooms[i].num_faces;
+      }
+    }
+    QVERIFY(usedRooms > 0);
+    QVERIFY(totalFaces > 0);
+
+    // The renderer draws textured faces via GameBitmaps[face.tmap].bm_handle;
+    // verify at least one loaded face references a texture that now has real pixel
+    // dimensions (the ported OGF/TGA decoder) rather than a 0-sized stub.
+    int texturedFaces = 0;
+    for (int r = 0; r <= Highest_room_index && r < MAX_ROOMS; r++) {
+      if (!Rooms[r].used) continue;
+      for (int f = 0; f < Rooms[r].num_faces; f++) {
+        const int bm = GameTextures[Rooms[r].faces[f].tmap].bm_handle;
+        if (bm >= 0 && bm_w(bm, 0) > 0 && bm_h(bm, 0) > 0) ++texturedFaces;
+      }
+    }
+    QVERIFY(texturedFaces > 0);
+
+    // Spot-check a few loaded rooms have non-degenerate verts so they'd project.
+    for (int i = 0; i <= Highest_room_index && i < MAX_ROOMS; i++) {
+      if (Rooms[i].used && Rooms[i].num_verts > 0) {
+        QVERIFY(std::isfinite(Rooms[i].verts[0].x()) && std::isfinite(Rooms[i].verts[0].z()));
+        break;
+      }
+    }
+
+    // Clean teardown.
+    FreeAllRooms();
+    Highest_room_index = -1;
+    errno = 0;
+  }
+#endif // MINI_EDITOR
 
   // CAddScriptDialog (IDD_ADDSCRIPT) gates the name length at 32 chars via
   // DDV_MaxChars in Win32 and via setMaxLength on the Qt line edit here. It
@@ -377,6 +584,107 @@ private slots:
     QDir::current().rmdir(tmpDir);
     errno = 0;
   }
+
+#ifdef MINI_EDITOR
+  // Verifies the decoupled cfile layer can open the real d3.hog, locate and
+  // open the Table.gam gamedata file inside it, and read bytes from it. This
+  // is the foundation for loading gamedata before a level is opened. Skips if
+  // the game data directory isn't present on the host.
+  void testCfileReadsHogGamedata()
+  {
+    const std::filesystem::path hog_dir = "/mnt/media/games/pc/Descent 3";
+    const std::filesystem::path hog = hog_dir / "d3.hog";
+    if (!std::filesystem::exists(hog)) {
+      QSKIP("d3.hog not found; skipping cfile gamedata test.");
+      return;
+    }
+
+    cf_AddBaseDirectory(hog_dir);
+    int hid = cf_OpenLibrary("d3.hog");
+    QVERIFY(hid > 0);
+
+    CFILE *table = cfopen("table.gam", "rb");
+    QVERIFY(table != nullptr);
+    QVERIFY(cfilelength(table) > 0);
+
+    // The first byte of Table.gam is a page-type tag; it must be a value the
+    // manage loader recognises (1..10) rather than an error/EOF sentinel.
+    int8_t first = cf_ReadByte(table);
+    QVERIFY(first > 0);
+
+    cfclose(table);
+    cf_CloseLibrary(hid);
+    errno = 0;
+  }
+
+  // Verifies the game-data loader parses d3.hog's Table.gam into the editor's
+  // metadata arrays. This is what initD3Core must do before a level opens so
+  // object/ship/weapon/sound/texture dialogs can list the game's data.
+  void testGamedataTableLoads()
+  {
+    const std::filesystem::path hog = "/mnt/media/games/pc/Descent 3/d3.hog";
+    if (!std::filesystem::exists(hog)) {
+      QSKIP("d3.hog not found; skipping gamedata table load test.");
+      return;
+    }
+
+    QVERIFY(loadGameDataTable(hog));
+
+    extern int Num_objects;
+    extern int Num_sounds;
+
+    // The real game ships thousands of table records; sanity-check that each
+    // editor-critical array was populated with more than a trivially empty set.
+    QVERIFY(Num_textures > 100);
+    QVERIFY(Num_objects > 50);
+    QVERIFY(Num_ships > 0);
+    QVERIFY(Num_weapons > 0);
+    QVERIFY(Num_sounds > 0);
+    QVERIFY(Num_doors > 0);
+
+    // Megacells are optional in newer table files; don't hard-fail on them.
+    QVERIFY(Num_megacells >= 0);
+
+    // Spot-check a name field is non-empty (data was actually read, not zeroed).
+    QVERIFY(Object_info[0].name[0] != '\0');
+    QVERIFY(Ships[0].name[0] != '\0');
+    errno = 0;
+  }
+
+  // Verifies the OGF/IFF + TGA bitmap decoder populates GameBitmaps[] from the
+  // real d3.hog texture files, so textured faces render with real pixel data.
+  // This is the thing that was previously broken (bitmap stubs returned 0).
+  void testBitmapDecoder()
+  {
+    const std::filesystem::path hog = "/mnt/media/games/pc/Descent 3/d3.hog";
+    if (!std::filesystem::exists(hog)) {
+      QSKIP("d3.hog not found; skipping bitmap decoder test.");
+      return;
+    }
+
+    QVERIFY(loadGameDataTable(hog));
+
+    // Metadata must be populated before we can inspect texture bitmaps.
+    QVERIFY(Num_textures > 0);
+
+    // A nonzero fraction of textures must have a real, resident bitmap whose
+    // dimensions are known (bm_w/bm_h > 0).  The stub decoder returned 0 for
+    // everything, so a healthy count proves the ported decoder works.
+    int withBitmap = 0, nonProcedural = 0;
+    for (int i = 0; i < Num_textures; i++) {
+      const int bm = GameTextures[i].bm_handle;
+      if (GameTextures[i].flags & TF_PROCEDURAL) { nonProcedural++; continue; }
+      nonProcedural++;
+      if (bm >= 0 && bm_w(bm, 0) > 0 && bm_h(bm, 0) > 0) withBitmap++;
+    }
+    QVERIFY(nonProcedural > 0);
+    // The decoder returns a resident bitmap with known dimensions.  The stubs
+    // returned 0 for everything, so a healthy fraction proves the ported decoder works.
+    QVERIFY(withBitmap > nonProcedural / 2);
+
+    errno = 0;
+  }
+#endif // MINI_EDITOR
 
   // Win32 editor.cpp exposes OpenFileDialog/SaveFileDialog/PrintToDlgItem so
   // every dialog can drive file picking and status text. The Qt port lives in
@@ -2600,13 +2908,7 @@ int main(int argc, char *argv[])
   // trip ObjLink/ObjRelink/ObjDelete assertions in the core during setup and
   // teardown. Those are artifacts of the test scaffolding, not product bugs,
   // so log-and-continue instead of aborting the whole test run.
-  SDL_SetAssertionHandler(
-      [](const SDL_AssertData *data, void * /*userdata*/) {
-        fprintf(stderr, "[assert-ignored] %s (%s:%d)\n", data->condition,
-                data->filename, data->linenum);
-        return SDL_ASSERTION_IGNORE;
-      },
-      nullptr);
+  // SDL assertion handler removed - using Qt's Q_ASSERT instead
 
   QApplication app(argc, argv);
   initD3Core(argc, argv);

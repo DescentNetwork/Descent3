@@ -24,7 +24,7 @@
 #include "radiosity.h"
 #include "hemicube.h"
 #include "d3edit.h"
-#include "mem.h"
+#include "mem/mem.h"
 
 #include <cstdlib>
 #include <algorithm>
@@ -50,7 +50,9 @@ int Cracks_this_frame, Cracks_this_side;
 
 float Highest_top_delta, Highest_side_delta;
 
+#ifndef PI
 #define PI 3.141592654
+#endif
 
 // Calculates delta form factors
 void CalculateDeltaFormFactors() {

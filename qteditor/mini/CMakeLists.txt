@@ -4,6 +4,12 @@ project(qteditor_mini VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEDITOR")
+# Mini-specific build flag: marks code/tests that only make sense in the
+# decoupled mini build (gated with #ifdef MINI_EDITOR in the shared sources so
+# the original qteditor build omits them). Set as a target compile definition
+# (not just CMAKE_CXX_FLAGS) so AUTOMOC's moc invocation also sees it and
+# registers the gated Q_OBJECT test slots.
+add_compile_definitions(MINI_EDITOR)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -30,6 +36,7 @@ find_package(OpenGL REQUIRED)
 # Include directories
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/lib
     ${CMAKE_CURRENT_SOURCE_DIR}/editor
     ${CMAKE_CURRENT_SOURCE_DIR}/game
@@ -46,6 +53,11 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/module
     ${CMAKE_CURRENT_SOURCE_DIR}/cfile
     ${CMAKE_CURRENT_SOURCE_DIR}/manage
+    ${CMAKE_CURRENT_SOURCE_DIR}/ddebug
+    ${CMAKE_CURRENT_SOURCE_DIR}/misc
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer
+    ${CMAKE_CURRENT_SOURCE_DIR}/scripts
+    ${CMAKE_CURRENT_SOURCE_DIR}/unzip
     ${PROJECT_SOURCE_DIR}/../../descar/src
     ${PROJECT_SOURCE_DIR}/../../descar/utils
     ${Qt5Core_INCLUDE_DIRS}
@@ -55,9 +67,44 @@ include_directories(
     ${OPENGL_INCLUDE_DIR}
 )
 
-# Collect all source files from root and subdirectories
-file(GLOB QTEDITOR_SOURCES 
-    "*.cpp"
+# ---------------------------------------------------------------------------
+# Source collection.
+#
+# The mini build compiles the ORIGINAL qteditor root sources (parent dir) so we
+# don't keep duplicate copies in mini/.  The only root sources that remain in
+# mini/ are:
+#   - the decoupled overrides (modified to build against the mini engine
+#     replacement instead of SDL / Descent3Core), and
+#   - mini-only sources with no parent counterpart (stubs.cpp, level_loader.cpp).
+# The mini engine-replacement subdirs (lib/, editor/, game/, cfile/, manage/,
+# bitmap/, mem/, etc.) still come from mini/.
+# ---------------------------------------------------------------------------
+set(ORIGINAL_QTEDITOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
+
+# Root .cpp files that were decoupled in mini/ and therefore must NOT be taken
+# from the original qteditor dir; the mini copies take precedence.
+set(DECOUPLED_OVERRIDES
+)
+
+# All original root .cpp sources from the parent qteditor dir...
+file(GLOB QTEDITOR_ORIGINAL_SOURCES "${ORIGINAL_QTEDITOR_DIR}/*.cpp")
+# ...minus the decoupled ones (they are supplied from mini below).
+
+# Mini root overrides (decoupled files) + mini-only root sources.
+set(QTEDITOR_MINI_ROOT_SOURCES "")
+foreach(f IN LISTS DECOUPLED_OVERRIDES)
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${f}")
+    list(APPEND QTEDITOR_MINI_ROOT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${f}")
+  endif()
+endforeach()
+foreach(f stubs.cpp level_loader.cpp)
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${f}")
+    list(APPEND QTEDITOR_MINI_ROOT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${f}")
+  endif()
+endforeach()
+
+# Mini engine-replacement subdir sources.
+file(GLOB QTEDITOR_SUBDIR_SOURCES
     "lib/*.cpp"
     "editor/*.cpp"
     "game/*.cpp"
@@ -68,6 +115,12 @@ file(GLOB QTEDITOR_SOURCES
     "cfile/*.cpp"
     "manage/*.cpp"
     "bitmap/*.cpp"
+)
+
+set(QTEDITOR_SOURCES
+    ${QTEDITOR_ORIGINAL_SOURCES}
+    ${QTEDITOR_MINI_ROOT_SOURCES}
+    ${QTEDITOR_SUBDIR_SOURCES}
 )
 # Exclude test files from main build
 list(FILTER QTEDITOR_SOURCES EXCLUDE REGEX "editor_test\\.cpp$")
@@ -81,7 +134,8 @@ set(DESCAR_SOURCES
     ${PROJECT_SOURCE_DIR}/../../descar/src/hog2_format.cpp
     ${PROJECT_SOURCE_DIR}/../../descar/utils/posix_stream.cpp
 )
-file(GLOB QTEDITOR_HEADERS 
+file(GLOB QTEDITOR_HEADERS
+    "${ORIGINAL_QTEDITOR_DIR}/*.h"
     "*.h"
     "lib/*.h"
     "editor/*.h"
@@ -156,9 +210,9 @@ if(BUILD_EDITOR_TESTS)
   endif()
 
   add_executable(qteditor_mini_tests
-    editor_test.cpp
-    dialog_test.cpp
-    dialog_test.h
+    ${ORIGINAL_QTEDITOR_DIR}/editor_test.cpp
+    ${ORIGINAL_QTEDITOR_DIR}/dialog_test.cpp
+    ${ORIGINAL_QTEDITOR_DIR}/dialog_test.h
     ${QTEDITOR_TEST_SOURCES}
     ${DESCAR_SOURCES}
     ${QTEDITOR_HEADERS}
