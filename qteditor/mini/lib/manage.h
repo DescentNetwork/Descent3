@@ -23,6 +23,7 @@
 #include <filesystem>
 
 #include "cfile.h"
+#include <posix_stream.h>
 #include "bitmap.h"
 #include "manage_external.h"
 
@@ -260,14 +261,14 @@ struct physics_info;
 struct otype_wb_info;
 
 // Reads a physics chunk in from the table file
-void mng_ReadPhysicsChunk(physics_info *phys_info, CFILE *infile);
+void mng_ReadPhysicsChunk(physics_info *phys_info, posix_istream &infile);
 void mng_WritePhysicsChunk(physics_info *phys_info, CFILE *outfile);
 
 // Writes out weapon battery info
 void mng_WriteWeaponBatteryChunk(otype_wb_info *static_wb, CFILE *outfile);
 
 // Reads in weapon battery info
-void mng_ReadWeaponBatteryChunk(otype_wb_info *static_wb, CFILE *infile, int version);
+void mng_ReadWeaponBatteryChunk(otype_wb_info *static_wb, posix_istream &infile, int version);
 
 // Given a texture handle, searches the table file and replaces the texture with the same name
 // If local=1, then does it to the users local copy

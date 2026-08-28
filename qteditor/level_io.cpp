@@ -181,6 +181,7 @@ void CreateNewMine() {
   Curface = Curedge = Curvert = 0;
   Curportal = -1;
   New_mine = true;
+  World_changed = false;
 
   // Reset the view position for the orbit camera.
   Editor_view_mode = VM_MINE;

@@ -33,10 +33,11 @@
 #include "cfile.h"
 #include "default_base_directories.h"
 #include "ddio.h"
-#include "hogfile.h" //info about library file
 #include "log.h"
 #include "mem.h"
 #include "cfile_compat.h"
+#include <posix_stream.h>
+#include <hog2_format.h>
 
 // Library structures
 struct library_entry {
@@ -234,51 +235,50 @@ static CFILE *open_file_in_lib(const char *filename);
 // 			must not change.
 // Returns: 0 if error, else library handle that can be used to close the library
 int cf_OpenLibrary(const std::filesystem::path &libname) {
-  FILE *fp;
   int i;
-  uint32_t offset;
   static int first_time = 1;
-  tHogHeader header{};
-  tHogFileEntry entry{};
 
   // allocation library structure
   std::shared_ptr<library> lib = std::make_shared<library>();
   lib->name = cf_LocatePath(libname);
-  fp = fopen((const char*)lib->name.u8string().c_str(), "rb");
-  if (fp == nullptr) {
-    return 0; // CF_NO_FILE;
+  if (lib->name.empty())
+    return 0;
+
+  // Read the HOG2 archive table (header + all entries) via posix_stream /
+  // hog2::archive_t. This replaces the legacy ReadHogHeader/ReadHogEntry.
+  posix_istream hog;
+  if (!hog.open(lib->name, std::ios_base::in)) {
+    return 0; // CF_NO_FILE
   }
-  // check if this if first library opened
+  hog2::archive_t archive;
+  try {
+    hog >> archive;
+  } catch (const std::invalid_argument &) {
+    hog.close();
+    return 0; // CF_BAD_LIB (bad HOG2 magic)
+  }
+  hog.close();
+
+  // check if this is the first library opened
   if (first_time) {
     atexit(cf_Close);
     first_time = 0;
   }
-  //	read HOG header
-  if (!ReadHogHeader(fp, &header)) {
-    fclose(fp);
-    return 0; // CF_BAD_LIB;
-  }
-  lib->nfiles = header.nfiles;
-  //	allocate CFILE hog info.
+
+  lib->nfiles = (uint32_t)static_cast<std::size_t>(std::distance(archive.begin(), archive.end()));
   lib->entries.reserve(lib->nfiles);
   lib->next = Libraries;
   Libraries = lib;
-  // set data offset of first file
-  offset = header.file_data_offset;
-  // Go to index start
-  fseek(fp, HOG_HDR_SIZE, SEEK_SET);
 
-  // read in index table
-  for (i = 0; i < lib->nfiles; i++) {
-    if (!ReadHogEntry(fp, &entry)) {
-      fclose(fp);
-      return 0;
-    }
-    // Make sure files are in order
-    Q_ASSERT((i == 0) || (stricmp(entry.name, lib->entries[i - 1]->name) >= 0));
-    // Copy into table
+  // The entries were read from the file, so archive.fileOffset(iter) computes
+  // each payload's byte offset in file order (matching the legacy cumulative
+  // offset logic). Copy them into the library table.
+  uint32_t offset = archive.fileOffset(archive.begin());
+  for (const hog2::entry_t &entry : archive) {
     std::unique_ptr<library_entry> lib_entry = std::make_unique<library_entry>();
-    strcpy(lib_entry->name, entry.name);
+    std::string name = entry.name.string();
+    std::strncpy(lib_entry->name, name.c_str(), sizeof(lib_entry->name) - 1);
+    lib_entry->name[sizeof(lib_entry->name) - 1] = '\0';
     lib_entry->flags = entry.flags;
     lib_entry->length = entry.len;
     lib_entry->offset = offset;
@@ -286,12 +286,13 @@ int cf_OpenLibrary(const std::filesystem::path &libname) {
     lib->entries.push_back(std::move(lib_entry));
 
     offset += entry.len;
+    (void)i;
   }
+
   // assign a handle
   lib->handle = ++lib_handle;
-  // Save the file pointer
-  lib->file = fp;
-  // Success.  Return the handle
+  // Success.  Return the handle (the library file stays closed; each subsequent
+  // cfopen-in-lib opens the HOG and seeks to the recorded offset).
   return lib->handle;
 }
 

@@ -23,6 +23,7 @@
 #include "manage.h"
 #include "weapon.h"
 #include "cfile.h"
+#include <posix_stream.h>
 #include "pstypes.h"
 
 struct mngs_weapon_page {
@@ -47,13 +48,13 @@ struct mngs_weapon_page {
 void mng_WriteWeaponPage(CFILE *outfile, mngs_weapon_page *weaponpage);
 
 // Reads a weapon page from an open file.  Returns 0 on error.
-int mng_ReadWeaponPage(CFILE *infile, mngs_weapon_page *weaponpage);
+int mng_ReadWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage);
 
 // Given an open file pointer and a weapon_page struct, writes that weaponpage out
 void mng_WriteNewWeaponPage(CFILE *outfile, mngs_weapon_page *weaponpage);
 
 // Reads a weapon page from an open file.  Returns 0 on error.
-int mng_ReadNewWeaponPage(CFILE *infile, mngs_weapon_page *weaponpage);
+int mng_ReadNewWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage);
 
 // Reads in the weaponpage named "name" into weaponpage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

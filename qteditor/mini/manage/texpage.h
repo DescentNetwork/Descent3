@@ -23,11 +23,12 @@
 #include "cfile.h"
 #include "pstypes.h"
 #include "procedurals.h"
+#include <string>
 
 struct mngs_texture_page {
-  char bitmap_name[PAGENAME_LEN];  // filename for the bitmap associated with this texture
-  char destroy_name[PAGENAME_LEN]; // filename for the destroyed bitmap
-  char sound_name[PAGENAME_LEN];   // filename for the destroyed bitmap
+  std::string bitmap_name;  // filename for the bitmap associated with this texture
+  std::string destroy_name; // filename for the destroyed bitmap
+  std::string sound_name;   // filename for the sound
   texture tex_struct;
 
   int num_proc_elements;

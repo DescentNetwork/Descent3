@@ -34,8 +34,11 @@
 #include <cstring>
 #include <cstdint>
 #include <filesystem>
+#include <vector>
 
 #include <QtGlobal>
+
+#include <posix_stream.h>
 
 #include "mem.h"
 #include "iff.h"
@@ -51,6 +54,36 @@
 #ifndef Q_ASSERT
 #define Q_ASSERT(cond) Q_ASSERT(cond)
 #endif
+
+// Byte-oriented readers over an in-memory posix_istream (fmemopen).  These
+// mirror the legacy CFILE read helpers exactly: the 2-arg IFF variants use
+// BIG-endian shorts/ints (classic IFF storage), while the TGA/OGF path uses
+// little-endian.  The `>>` operators already convert LE->native; big-endian
+// values are byte-swapped explicitly via D3::convert_be, matching the old
+// cf_ReadShort(f, false) / cf_ReadInt(f, false) behaviour.
+namespace {
+inline int8_t rdByte(posix_istream &in) { return (int8_t)in.get(); }
+inline int16_t rdShortLE(posix_istream &in) {
+  int16_t v = 0;
+  in >> v;
+  return v;
+}
+inline int32_t rdIntLE(posix_istream &in) {
+  int32_t v = 0;
+  in >> v;
+  return v;
+}
+inline int16_t rdShortBE(posix_istream &in) {
+  int16_t v = 0;
+  in.read(&v, sizeof(v));
+  return D3::convert_be(v);
+}
+inline int32_t rdIntBE(posix_istream &in) {
+  int32_t v = 0;
+  in.read(&v, sizeof(v));
+  return D3::convert_be(v);
+}
+} // namespace
 
 // Compression types
 #define cmpNone 0
@@ -97,20 +130,20 @@ int16_t iff_has_transparency; // 0=no transparency, 1=iff_transparent_color is v
 #define IFF_SIG_DELTA 9
 #define IFF_SIG_ANHD 10
 
-static int bm_iff_get_sig(CFILE *f);
-static int bm_iff_parse_bmhd(CFILE *ifile, uint32_t len, iff_bitmap_header *bmheader);
-static int bm_iff_parse_body(CFILE *ifile, int len, iff_bitmap_header *bmheader);
-static void bm_iff_skip_chunk(CFILE *ifile, uint32_t len);
-static int bm_iff_parse_delta(CFILE *ifile, int len, iff_bitmap_header *bmheader);
-static int bm_iff_parse_file(CFILE *ifile, iff_bitmap_header *bmheader, iff_bitmap_header *prev_bm);
+static int bm_iff_get_sig(posix_istream &f);
+static int bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_header *bmheader);
+static int bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bmheader);
+static void bm_iff_skip_chunk(posix_istream &ifile, uint32_t len);
+static int bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheader);
+static int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header *bmheader, iff_bitmap_header *prev_bm);
 static void bm_iff_convert_8_to_16(int dest_bm, iff_bitmap_header *iffbm);
 
-int bm_iff_get_sig(CFILE *f) {
+int bm_iff_get_sig(posix_istream &f) {
   char s[4];
   int i;
 
   for (i = 0; i < 4; i++)
-    s[i] = cf_ReadByte(f);
+    s[i] = (char)rdByte(f);
 
   if (!strncmp("ILBM", s, 4))
     return IFF_SIG_ILBM;
@@ -133,25 +166,25 @@ int bm_iff_get_sig(CFILE *f) {
 
   return (IFF_SIG_UNKNOWN);
 }
-int bm_iff_parse_bmhd(CFILE *ifile, uint32_t len, iff_bitmap_header *bmheader) {
+int bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_header *bmheader) {
   len = len;
 
-  bmheader->w = cf_ReadShort(ifile, false);
-  bmheader->h = cf_ReadShort(ifile, false);
-  bmheader->x = cf_ReadShort(ifile, false);
-  bmheader->y = cf_ReadShort(ifile, false);
+  bmheader->w = rdShortBE(ifile);
+  bmheader->h = rdShortBE(ifile);
+  bmheader->x = rdShortBE(ifile);
+  bmheader->y = rdShortBE(ifile);
 
-  bmheader->nplanes = cf_ReadByte(ifile);
-  bmheader->masking = cf_ReadByte(ifile);
-  bmheader->compression = cf_ReadByte(ifile);
-  cf_ReadByte(ifile); /* skip pad */
+  bmheader->nplanes = rdByte(ifile);
+  bmheader->masking = rdByte(ifile);
+  bmheader->compression = rdByte(ifile);
+  rdByte(ifile); /* skip pad */
 
-  bmheader->transparentcolor = cf_ReadShort(ifile, false);
-  bmheader->xaspect = cf_ReadByte(ifile);
-  bmheader->yaspect = cf_ReadByte(ifile);
+  bmheader->transparentcolor = rdShortBE(ifile);
+  bmheader->xaspect = rdByte(ifile);
+  bmheader->yaspect = rdByte(ifile);
 
-  bmheader->pagewidth = cf_ReadShort(ifile, false);
-  bmheader->pageheight = cf_ReadShort(ifile, false);
+  bmheader->pagewidth = rdShortBE(ifile);
+  bmheader->pageheight = rdShortBE(ifile);
 
   iff_transparent_color = bmheader->transparentcolor;
 
@@ -167,7 +200,7 @@ int bm_iff_parse_bmhd(CFILE *ifile, uint32_t len, iff_bitmap_header *bmheader) {
 }
 
 //  the buffer pointed to by raw_data is stuffed with a pointer to decompressed pixel data
-int bm_iff_parse_body(CFILE *ifile, int len, iff_bitmap_header *bmheader) {
+int bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bmheader) {
   uint8_t *p = bmheader->raw_data;
   int width = 0, depth = 0, done = 0;
 
@@ -185,15 +218,15 @@ int bm_iff_parse_body(CFILE *ifile, int len, iff_bitmap_header *bmheader) {
       int x;
 
       for (x = 0; x < width * depth; x++)
-        *p++ = cf_ReadByte(ifile);
+        *p++ = rdByte(ifile);
 
       if (bmheader->masking == mskHasMask) {
         for (int i = 0; i < width; i++)
-          cf_ReadByte(ifile); // skip mask!
+          rdByte(ifile); // skip mask!
       }
 
       if (bmheader->w & 1)
-        cf_ReadByte(ifile);
+        rdByte(ifile);
     }
 
   } else if (bmheader->compression == cmpByteRun1) // compression
@@ -222,24 +255,24 @@ int bm_iff_parse_body(CFILE *ifile, int len, iff_bitmap_header *bmheader) {
         cur_width = 0;
       }
 
-      command = cf_ReadByte(ifile);
+      command = rdByte(ifile);
       if (command >= 0 && command <= 127) {
         if (!skip_mask) {
           for (int i = 0; i < command + 1; i++)
-            *p++ = cf_ReadByte(ifile);
+            *p++ = rdByte(ifile);
         } else {
           for (int i = 0; i < (command + 1); i++)
-            cf_ReadByte(ifile);
+            rdByte(ifile);
         }
 
         cur_width += (command + 1);
       } else if (command >= -127 && command < 0) {
         int run = (-command) + 1;
-        int repeat_byte = cf_ReadByte(ifile);
+        int repeat_byte = rdByte(ifile);
 
         if (!skip_mask) {
           for (int i = 0; i < run; i++)
-            *p++ = repeat_byte;
+            *p++ = (uint8_t)repeat_byte;
         }
 
         cur_width += run;
@@ -251,36 +284,36 @@ int bm_iff_parse_body(CFILE *ifile, int len, iff_bitmap_header *bmheader) {
 }
 
 //  the buffer pointed to by raw_data is stuffed with a pointer to bitplane pixel data
-void bm_iff_skip_chunk(CFILE *ifile, uint32_t len) {
+void bm_iff_skip_chunk(posix_istream &ifile, uint32_t len) {
   uint32_t i;
 
   for (i = 0; i < len; i++)
-    cf_ReadByte(ifile);
+    rdByte(ifile);
 }
 
 // modify passed bitmap
-int bm_iff_parse_delta(CFILE *ifile, int len, iff_bitmap_header *bmheader) {
+int bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheader) {
   uint8_t *p = bmheader->raw_data;
   int y;
-  int32_t chunk_end = cftell(ifile) + len;
+  int32_t chunk_end = (int32_t)ifile.tell() + len;
 
-  cf_ReadInt(ifile); // longword, seems to be equal to 4.  Don't know what it is
+  rdIntLE(ifile); // longword, seems to be equal to 4.  Don't know what it is
 
   for (y = 0; y < bmheader->h; y++) {
     uint8_t n_items;
     int cnt = bmheader->w;
     uint8_t code;
 
-    n_items = cf_ReadByte(ifile);
+    n_items = (uint8_t)rdByte(ifile);
 
     while (n_items--) {
-      code = cf_ReadByte(ifile);
+      code = (uint8_t)rdByte(ifile);
 
       if (code == 0) {
         uint8_t rep, val;
 
-        rep = cf_ReadByte(ifile);
-        val = cf_ReadByte(ifile);
+        rep = (uint8_t)rdByte(ifile);
+        val = (uint8_t)rdByte(ifile);
 
         cnt -= rep;
         if (cnt == -1)
@@ -298,10 +331,10 @@ int bm_iff_parse_delta(CFILE *ifile, int len, iff_bitmap_header *bmheader) {
           code--;
 
         while (code--)
-          *p++ = cf_ReadByte(ifile);
+          *p++ = (uint8_t)rdByte(ifile);
 
         if (cnt == -1)
-          cf_ReadByte(ifile);
+          rdByte(ifile);
       }
     }
 
@@ -312,10 +345,10 @@ int bm_iff_parse_delta(CFILE *ifile, int len, iff_bitmap_header *bmheader) {
       return IFF_CORRUPT;
   }
 
-  if (cftell(ifile) == chunk_end - 1) // pad
-    cf_ReadByte(ifile);
+  if ((int32_t)ifile.tell() == chunk_end - 1) // pad
+    rdByte(ifile);
 
-  if (cftell(ifile) != chunk_end) {
+  if ((int32_t)ifile.tell() != chunk_end) {
     Q_ASSERT(false);
     return IFF_CORRUPT;
   }
@@ -326,19 +359,19 @@ int bm_iff_parse_delta(CFILE *ifile, int len, iff_bitmap_header *bmheader) {
 
 // read an PBM
 // Pass pointer to opened file, and to empty bitmap_header structure, and form length
-int bm_iff_parse_file(CFILE *ifile, iff_bitmap_header *bmheader, iff_bitmap_header *prev_bm) {
+int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header *bmheader, iff_bitmap_header *prev_bm) {
   uint32_t sig, len;
   int done = 0;
 
   while (!done) {
-    if (cfeof(ifile)) {
+    if (ifile.eof()) {
       done = 1;
       continue;
     }
 
     sig = bm_iff_get_sig(ifile);
 
-    len = cf_ReadInt(ifile, false);
+    len = (uint32_t)rdIntBE(ifile);
 
     switch (sig) {
     case IFF_SIG_FORM: {
@@ -389,9 +422,9 @@ int bm_iff_parse_file(CFILE *ifile, iff_bitmap_header *bmheader, iff_bitmap_head
       uint8_t r, g, b;
 
       for (cnum = 0; cnum < ncolors; cnum++) {
-        r = cf_ReadByte(ifile);
-        g = cf_ReadByte(ifile);
-        b = cf_ReadByte(ifile);
+        r = (uint8_t)rdByte(ifile);
+        g = (uint8_t)rdByte(ifile);
+        b = (uint8_t)rdByte(ifile);
         r >>= 2;
         bmheader->palette[cnum].r = r;
         g >>= 2;
@@ -400,7 +433,7 @@ int bm_iff_parse_file(CFILE *ifile, iff_bitmap_header *bmheader, iff_bitmap_head
         bmheader->palette[cnum].b = b;
       }
       if (len & 1)
-        cf_ReadByte(ifile);
+        rdByte(ifile);
 
     } break;
 
@@ -456,19 +489,19 @@ void bm_iff_convert_8_to_16(int dest_bm, iff_bitmap_header *iffbm) {
 // Loads an iff into a structure, allocs bitmap memory and converts 8 bit iff file into
 // 16bit bitmap
 // Returns bitmap handle on success, or -1 if failed
-int bm_iff_alloc_file(CFILE *ifile) {
+int bm_iff_alloc_file(posix_istream &ifile) {
   int ret; // return code
   iff_bitmap_header bmheader;
   int src_bm;
   char cur_sig[4];
 
   // Ignore FORM and form length
-  cf_ReadInt(ifile);
-  cf_ReadInt(ifile);
+  rdIntLE(ifile);
+  rdIntLE(ifile);
 
   // check if this an ILBM
   for (int i = 0; i < 4; i++)
-    cur_sig[i] = cf_ReadByte(ifile);
+    cur_sig[i] = (char)rdByte(ifile);
 
   if (strncmp("PBM ", cur_sig, 4)) {
     LOG_ERROR("IFF file isn't a PBM...aborting.");
@@ -578,7 +611,7 @@ uint16_t bm_tga_translate_pixel(int pixel, int format) {
   return newpix;
 }
 
-static int bm_tga_read_outrage_compressed16(CFILE *infile, int n, int num_mips, int type) {
+static int bm_tga_read_outrage_compressed16(int n, int num_mips, int type) {
   uint16_t *dest_data;
   uint16_t pixel;
   int width, height;
@@ -659,7 +692,7 @@ static int bm_tga_read_outrage_compressed16(CFILE *infile, int n, int num_mips, 
 }
 
 // Loads a tga or ogf file into a bitmap...returns handle to bm or -1 on error
-int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
+int bm_tga_alloc_file(posix_istream &infile, char *name, int format) {
   uint8_t image_id_len, color_map_type, image_type, pixsize, descriptor;
   uint8_t upside_down = 0;
   uint16_t width, height;
@@ -669,9 +702,9 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
   int num_mips = 1;
   int read_ok = 1;
 
-  image_id_len = cf_ReadByte(infile);
-  color_map_type = cf_ReadByte(infile);
-  image_type = cf_ReadByte(infile);
+  image_id_len = (uint8_t)rdByte(infile);
+  color_map_type = (uint8_t)rdByte(infile);
+  image_type = (uint8_t)rdByte(infile);
 
   if (color_map_type != 0 ||
       (image_type != 10 && image_type != 2 && image_type != OUTRAGE_TGA_TYPE && image_type != OUTRAGE_COMPRESSED_OGF &&
@@ -687,14 +720,22 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
       image_type == OUTRAGE_COMPRESSED_OGF_8BIT) {
     if (image_type == OUTRAGE_4444_COMPRESSED_MIPPED || image_type == OUTRAGE_NEW_COMPRESSED_MIPPED ||
         image_type == OUTRAGE_1555_COMPRESSED_MIPPED) {
-      cf_ReadString(name, BITMAP_NAME_LEN - 1, infile);
+      // cf_ReadString(name, BITMAP_NAME_LEN - 1, infile): read until NUL/EOF.
+      size_t idx = 0;
+      while (idx < (size_t)(BITMAP_NAME_LEN - 1)) {
+        uint8_t c = infile.get();
+        if (infile.eof() || c == 0)
+          break;
+        name[idx++] = (char)c;
+      }
+      name[idx] = 0;
     } else {
       for (i = 0; i < BITMAP_NAME_LEN; i++)
-        name[i] = cf_ReadByte(infile);
+        name[i] = (char)rdByte(infile);
     }
     if (image_type == OUTRAGE_4444_COMPRESSED_MIPPED || image_type == OUTRAGE_1555_COMPRESSED_MIPPED ||
         image_type == OUTRAGE_COMPRESSED_MIPPED || image_type == OUTRAGE_NEW_COMPRESSED_MIPPED)
-      num_mips = cf_ReadByte(infile);
+      num_mips = rdByte(infile);
     else
       num_mips = 1;
 
@@ -703,25 +744,25 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
   }
 
   for (i = 0; i < 9; i++) // ingore next 9 bytes
-    cf_ReadByte(infile);
+    rdByte(infile);
 
-  width = cf_ReadShort(infile);
-  height = cf_ReadShort(infile);
-  pixsize = cf_ReadByte(infile);
+  width = (uint16_t)rdShortLE(infile);
+  height = (uint16_t)rdShortLE(infile);
+  pixsize = (uint8_t)rdByte(infile);
 
   if (pixsize != 32 && pixsize != 24) {
     LOG_ERROR("bm_tga: This file has a pixsize of field of %d, it should be 32.", pixsize);
     return -1;
   }
 
-  descriptor = cf_ReadByte(infile);
+  descriptor = (uint8_t)rdByte(infile);
   if (((descriptor & 0x0F) != 8) && ((descriptor & 0x0F) != 0)) {
     LOG_ERROR("bm_tga: Descriptor field & 0x0F must be 8 or 0, but this is %d.", descriptor & 0x0F);
     return -1;
   }
 
   for (i = 0; i < image_id_len; i++)
-    cf_ReadByte(infile);
+    rdByte(infile);
 
   n = bm_AllocBitmap(width, height, mipped * ((width * height * 2) / 3));
 
@@ -752,18 +793,18 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
       int total = 0;
 
       while (total < (height * width)) {
-        uint8_t command = cf_ReadByte(infile);
+        uint8_t command = (uint8_t)rdByte(infile);
         uint8_t len = (command & 127) + 1;
 
         if (command & 128) // rle chunk
         {
           if (pixsize == 32)
-            pixel = cf_ReadInt(infile);
+            pixel = (uint32_t)rdIntLE(infile);
           else {
             int r, g, b;
-            r = cf_ReadByte(infile);
-            g = cf_ReadByte(infile);
-            b = cf_ReadByte(infile);
+            r = (uint8_t)rdByte(infile);
+            g = (uint8_t)rdByte(infile);
+            b = (uint8_t)rdByte(infile);
             pixel = (255 << 24) | (r << 16) | (g << 8) | b;
           }
 
@@ -782,12 +823,12 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
         {
           for (int k = 0; k < len; k++, total++) {
             if (pixsize == 32)
-              pixel = cf_ReadInt(infile);
+              pixel = (uint32_t)rdIntLE(infile);
             else {
               int r, g, b;
-              b = (uint8_t)cf_ReadByte(infile);
-              g = (uint8_t)cf_ReadByte(infile);
-              r = (uint8_t)cf_ReadByte(infile);
+              b = (uint8_t)rdByte(infile);
+              g = (uint8_t)rdByte(infile);
+              r = (uint8_t)rdByte(infile);
               pixel = (255 << 24) | (r << 16) | (g << 8) | b;
             }
             uint16_t newpix = bm_tga_translate_pixel(pixel, format);
@@ -807,12 +848,12 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
       for (i = 0; i < height; i++) {
         for (t = 0; t < width; t++) {
           if (pixsize == 32)
-            pixel = cf_ReadInt(infile);
+            pixel = (uint32_t)rdIntLE(infile);
           else {
             int r, g, b;
-            b = (uint8_t)cf_ReadByte(infile);
-            g = (uint8_t)cf_ReadByte(infile);
-            r = (uint8_t)cf_ReadByte(infile);
+            b = (uint8_t)rdByte(infile);
+            g = (uint8_t)rdByte(infile);
+            r = (uint8_t)rdByte(infile);
             pixel = (255 << 24) | (r << 16) | (g << 8) | b;
           }
 
@@ -831,12 +872,12 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
   {
     // read this ogf in all at once (much faster)
 
-    savepos = cftell(infile);
-    cfseek(infile, 0, SEEK_END);
-    int lastpos = cftell(infile);
+    savepos = (int)infile.tell();
+    infile.seek(0, std::ios_base::end);
+    int lastpos = (int)infile.tell();
     int numleft = lastpos - savepos;
 
-    cfseek(infile, savepos, SEEK_SET);
+    infile.seek(savepos, std::ios_base::beg);
 
     Tga_file_data = mem_rmalloc<char>(numleft);
     Q_ASSERT(Tga_file_data != NULL);
@@ -844,9 +885,9 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
     Bad_tga = 0;
     Fake_file_size = numleft;
 
-    cf_ReadBytes((uint8_t *)Tga_file_data, numleft, infile);
+    infile.read(Tga_file_data, numleft);
 
-    read_ok = bm_tga_read_outrage_compressed16(infile, n, num_mips, image_type);
+    read_ok = bm_tga_read_outrage_compressed16(n, num_mips, image_type);
   }
 
   else
@@ -855,7 +896,7 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
   if (Tga_file_data != NULL) {
     mem_free(Tga_file_data);
     Tga_file_data = NULL;
-    cfseek(infile, savepos + Fake_pos, SEEK_SET);
+    infile.seek(savepos + Fake_pos, std::ios_base::beg);
   }
 
   if (!read_ok)
@@ -874,7 +915,7 @@ int bm_tga_alloc_file(CFILE *infile, char *name, int format) {
 #define BM_FILETYPE_IFF 1
 #define BM_FILETYPE_TGA 2
 
-static int bm_GetFileType(CFILE *infile, const char *dest) {
+static int bm_GetFileType(posix_istream &infile, const char *dest) {
   char iffcheck[4];
   int i;
   // First, check if it is a PCX
@@ -884,24 +925,26 @@ static int bm_GetFileType(CFILE *infile, const char *dest) {
     return BM_FILETYPE_PCX;
   // How about an IFF?
   for (i = 0; i < 4; i++)
-    iffcheck[i] = cf_ReadByte(infile);
-  cfseek(infile, 0, SEEK_SET);
+    iffcheck[i] = (char)rdByte(infile);
+  infile.seek(0, std::ios_base::beg);
   if (!strncmp("FORM", iffcheck, 4))
     return BM_FILETYPE_IFF;
   // Lastly, just default to possible TGA or OGF
   return BM_FILETYPE_TGA;
 }
 
-// Allocs and loads a bitmap from an open file.
+// Allocs and loads a bitmap from a full in-memory payload (a HOG entry or a
+// file read from disk).  `data`/`size` is wrapped in an fmemopen posix_istream
+// so all the decoders above read from memory instead of cfopen()/CFILE.
 // Returns the handle of the loaded bitmap, or -1 if something is wrong.
-// The file is opened with cfopen() (resolving inside any open HOG libraries).
-int bm_AllocLoadFileBitmap(const char *fname, int mipped, int format) {
-  CFILE *infile = cfopen(fname, "rb");
-  if (!infile) {
-    LOG_ERROR("bm_AllocLoadFileBitmap: Can't open file named %s.", fname);
+int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname, int format, int mipped) {
+  posix_istream infile(const_cast<uint8_t *>(data), size, std::ios_base::in);
+  if (!infile.is_open()) {
+    LOG_ERROR("bm_LoadBitmapFromMemory: Can't open in-memory stream for %s.", fname);
     return -1;
   }
 
+  (void)mipped;
   char name[BITMAP_NAME_LEN];
   name[0] = 0;
 
@@ -918,11 +961,10 @@ int bm_AllocLoadFileBitmap(const char *fname, int mipped, int format) {
     break;
   case BM_FILETYPE_PCX:
   default:
-    LOG_ERROR("bm_AllocLoadFileBitmap: PCX or unknown file type not supported for %s.", fname);
+    LOG_ERROR("bm_LoadBitmapFromMemory: PCX or unknown file type not supported for %s.", fname);
     src_bm = -1;
     break;
   }
-  cfclose(infile);
   if (src_bm < 0) {
     LOG_ERROR("Couldn't load %s.", fname);
     return -1;

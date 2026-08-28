@@ -118,6 +118,7 @@
 #include "object.h"
 #include "robotfirestruct.h"
 #include "player.h"
+#include <string>
 
 #define MAX_SHIPS 30
 
@@ -143,7 +144,7 @@
 #define SF_DEFAULT_ALLOW 1 // Allowed by default
 
 struct ship {
-  char name[PAGENAME_LEN];
+  char name[PAGENAME_LEN]; // name of this ship (kept as a fixed buffer; used by the manage API)
   float size;
   physics_info phys_info; // the physics data for this obj type.
   int model_handle;       //  a polygon model
@@ -164,8 +165,8 @@ struct ship {
 
   int spew_powerup[MAX_PLAYER_WEAPONS]; // which powerup to spew for each weapon
 
-  char cockpit_name[PAGENAME_LEN];    // name of cockpit.inf file
-  char hud_config_name[PAGENAME_LEN]; // name of hud configuration file
+  std::string cockpit_name;    // name of cockpit.inf file
+  std::string hud_config_name; // name of hud configuration file
 
   float armor_scalar;
 

@@ -28,7 +28,12 @@
 #include <cstdint>
 #include <cstring>
 #include <filesystem>
+#include <string>
+#include <vector>
 #include <QtGlobal>
+
+#include "posix_helpers.h"
+#include <hog2_format.h>
 
 #include "manage.h"
 #include "crossplat.h" // stricmp
@@ -70,74 +75,92 @@ int Old_table_method = 0;
 // but no header declares the count; declare it here so the loader can track it.
 extern int Num_objects;
 
+// Reads a variable-length, NUL-terminated string field into a fixed char array
+// (mirrors cf_ReadString writing through a caller buffer).  `dest_size` is the
+// span of the destination array, so at most dest_size-1 bytes are copied and the
+// copy is always NUL-terminated.
+static void readStringField(posix_istream &infile, char *dest, size_t dest_size) {
+  std::string s;
+  psReadString(infile, s, dest_size - 1);
+  std::strncpy(dest, s.c_str(), dest_size - 1);
+  dest[dest_size - 1] = '\0';
+}
+
 //-----------------------------------------------------------------------------
 // Chunk readers (used by the generic + weapon + ship readers).  Pure data.
 //-----------------------------------------------------------------------------
 
-void mng_ReadPhysicsChunk(physics_info *phys_info, CFILE *infile) {
-  phys_info->mass = cf_ReadFloat(infile);
-  phys_info->drag = cf_ReadFloat(infile);
-  phys_info->full_thrust = cf_ReadFloat(infile);
-  phys_info->flags = cf_ReadInt(infile);
-  phys_info->rotdrag = cf_ReadFloat(infile);
-  phys_info->full_rotthrust = cf_ReadFloat(infile);
-  phys_info->num_bounces = cf_ReadInt(infile);
-  phys_info->velocity.z() = cf_ReadFloat(infile);
-  phys_info->rotvel = {cf_ReadFloat(infile), cf_ReadFloat(infile), cf_ReadFloat(infile)};
-  phys_info->wiggle_amplitude = cf_ReadFloat(infile);
-  phys_info->wiggles_per_sec = cf_ReadFloat(infile);
-  phys_info->coeff_restitution = cf_ReadFloat(infile);
-  phys_info->hit_die_dot = cf_ReadFloat(infile);
-  phys_info->max_turnroll_rate = cf_ReadFloat(infile);
-  phys_info->turnroll_ratio = cf_ReadFloat(infile);
+void mng_ReadPhysicsChunk(physics_info *phys_info, posix_istream &infile) {
+  infile >> phys_info->mass;
+  infile >> phys_info->drag;
+  infile >> phys_info->full_thrust;
+  infile >> phys_info->flags;
+  infile >> phys_info->rotdrag;
+  infile >> phys_info->full_rotthrust;
+  infile >> phys_info->num_bounces;
+  infile >> phys_info->velocity.z();
+  {
+    float a, b, c;
+    infile >> a >> b >> c;
+    phys_info->rotvel = {a, b, c};
+  }
+  infile >> phys_info->wiggle_amplitude;
+  infile >> phys_info->wiggles_per_sec;
+  infile >> phys_info->coeff_restitution;
+  infile >> phys_info->hit_die_dot;
+  infile >> phys_info->max_turnroll_rate;
+  infile >> phys_info->turnroll_ratio;
 }
 
-void mng_ReadWeaponBatteryChunk(otype_wb_info *static_wb, CFILE *infile, int version) {
+void mng_ReadWeaponBatteryChunk(otype_wb_info *static_wb, posix_istream &infile, int version) {
   int j;
 
-  static_wb->energy_usage = cf_ReadFloat(infile);
-  static_wb->ammo_usage = cf_ReadFloat(infile);
+  infile >> static_wb->energy_usage;
+  infile >> static_wb->ammo_usage;
 
   for (j = 0; j < MAX_WB_GUNPOINTS; j++) {
-    static_wb->gp_weapon_index[j] = cf_ReadShort(infile);
+    infile >> static_wb->gp_weapon_index[j];
   }
 
   for (j = 0; j < MAX_WB_FIRING_MASKS; j++) {
-    static_wb->gp_fire_masks[j] = cf_ReadByte(infile);
-    static_wb->gp_fire_wait[j] = cf_ReadFloat(infile);
-    static_wb->anim_time[j] = cf_ReadFloat(infile);
-    static_wb->anim_start_frame[j] = cf_ReadFloat(infile);
-    static_wb->anim_fire_frame[j] = cf_ReadFloat(infile);
-    static_wb->anim_end_frame[j] = cf_ReadFloat(infile);
+    infile >> static_wb->gp_fire_masks[j];
+    infile >> static_wb->gp_fire_wait[j];
+    infile >> static_wb->anim_time[j];
+    infile >> static_wb->anim_start_frame[j];
+    infile >> static_wb->anim_fire_frame[j];
+    infile >> static_wb->anim_end_frame[j];
   }
-  static_wb->num_masks = cf_ReadByte(infile);
-  static_wb->aiming_gp_index = cf_ReadShort(infile);
-  static_wb->aiming_flags = cf_ReadByte(infile);
-  static_wb->aiming_3d_dot = cf_ReadFloat(infile);
-  static_wb->aiming_3d_dist = cf_ReadFloat(infile);
-  static_wb->aiming_XZ_dot = cf_ReadFloat(infile);
+  infile >> static_wb->num_masks;
+  infile >> static_wb->aiming_gp_index;
+  infile >> static_wb->aiming_flags;
+  infile >> static_wb->aiming_3d_dot;
+  infile >> static_wb->aiming_3d_dist;
+  infile >> static_wb->aiming_XZ_dot;
   if (version >= 2)
-    static_wb->flags = cf_ReadShort(infile);
-  else
-    static_wb->flags = cf_ReadByte(infile);
-  static_wb->gp_quad_fire_mask = cf_ReadByte(infile);
+    infile >> static_wb->flags;
+  else {
+    uint8_t b = 0;
+    infile >> b;
+    static_wb->flags = b;
+  }
+  infile >> static_wb->gp_quad_fire_mask;
 }
 
-static void mng_ReadLightingChunk(light_info *lighting_info, CFILE *infile) {
-  lighting_info->light_distance = cf_ReadFloat(infile);
-  lighting_info->red_light1 = cf_ReadFloat(infile);
-  lighting_info->green_light1 = cf_ReadFloat(infile);
-  lighting_info->blue_light1 = cf_ReadFloat(infile);
-  lighting_info->time_interval = cf_ReadFloat(infile);
-  lighting_info->flicker_distance = cf_ReadFloat(infile);
-  lighting_info->directional_dot = cf_ReadFloat(infile);
-  lighting_info->red_light2 = cf_ReadFloat(infile);
-  lighting_info->green_light2 = cf_ReadFloat(infile);
-  lighting_info->blue_light2 = cf_ReadFloat(infile);
-  lighting_info->flags = cf_ReadInt(infile);
-  lighting_info->timebits = cf_ReadInt(infile);
-  lighting_info->angle = cf_ReadByte(infile);
-  lighting_info->lighting_render_type = cf_ReadByte(infile);
+static void mng_ReadLightingChunk(light_info *lighting_info, posix_istream &infile) {
+  infile >> lighting_info->light_distance;
+  infile >> lighting_info->red_light1;
+  infile >> lighting_info->green_light1;
+  infile >> lighting_info->blue_light1;
+  infile >> lighting_info->time_interval;
+  infile >> lighting_info->flicker_distance;
+  infile >> lighting_info->directional_dot;
+  infile >> lighting_info->red_light2;
+  infile >> lighting_info->green_light2;
+  infile >> lighting_info->blue_light2;
+  infile >> lighting_info->flags;
+  infile >> lighting_info->timebits;
+  infile >> lighting_info->angle;
+  infile >> lighting_info->lighting_render_type;
 }
 
 //-----------------------------------------------------------------------------
@@ -250,66 +273,83 @@ static void GenericPageSetPowerupDefaultAmmo(object_info *ip) {
 }
 
 // Reads a generic page from an open file.  Returns 0 on error.
-int mng_ReadNewGenericPage(CFILE *infile, mngs_generic_page *genericpage) {
+int mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage) {
   int i, j;
 
-  Q_ASSERT(infile != NULL);
   mng_InitGenericPage(genericpage);
 
-  int version = cf_ReadShort(infile);
+  int16_t version_tmp = 0;
+  infile >> version_tmp;
+  int version = version_tmp;
 
-  genericpage->objinfo_struct.type = cf_ReadByte(infile);
+  {
+    uint8_t b = 0;
+    infile >> b;
+    genericpage->objinfo_struct.type = b;
+  }
 
   // Read object name
-  cf_ReadString(genericpage->objinfo_struct.name, PAGENAME_LEN, infile);
+  readStringField(infile, genericpage->objinfo_struct.name, sizeof(genericpage->objinfo_struct.name));
 
   // Read model names
-  cf_ReadString(genericpage->image_name, PAGENAME_LEN, infile);
-  cf_ReadString(genericpage->med_image_name, PAGENAME_LEN, infile);
-  cf_ReadString(genericpage->lo_image_name, PAGENAME_LEN, infile);
+  readStringField(infile, genericpage->image_name, sizeof(genericpage->image_name));
+  readStringField(infile, genericpage->med_image_name, sizeof(genericpage->med_image_name));
+  readStringField(infile, genericpage->lo_image_name, sizeof(genericpage->lo_image_name));
 
   // Read out impact data
-  genericpage->objinfo_struct.impact_size = cf_ReadFloat(infile);
-  genericpage->objinfo_struct.impact_time = cf_ReadFloat(infile);
-  genericpage->objinfo_struct.damage = cf_ReadFloat(infile);
+  infile >> genericpage->objinfo_struct.impact_size;
+  infile >> genericpage->objinfo_struct.impact_time;
+  infile >> genericpage->objinfo_struct.damage;
 
   // Read score
-  if (version >= 24)
-    genericpage->objinfo_struct.score = cf_ReadShort(infile);
-  else
-    genericpage->objinfo_struct.score = cf_ReadByte(infile);
+  if (version >= 24) {
+    int16_t s = 0;
+    infile >> s;
+    genericpage->objinfo_struct.score = s;
+  } else {
+    uint8_t b = 0;
+    infile >> b;
+    genericpage->objinfo_struct.score = b;
+  }
 
   // Read ammo
   if (genericpage->objinfo_struct.type == OBJ_POWERUP) {
-    if (version >= 25)
-      genericpage->objinfo_struct.ammo_count = cf_ReadShort(infile);
-    else
+    if (version >= 25) {
+      int16_t a = 0;
+      infile >> a;
+      genericpage->objinfo_struct.ammo_count = a;
+    } else
       GenericPageSetPowerupDefaultAmmo(&genericpage->objinfo_struct);
   } else
     genericpage->objinfo_struct.ammo_count = 0;
 
   // Read script name
   char dummy[256];
-  cf_ReadString(dummy, PAGENAME_LEN, infile); // genericpage->objinfo_struct.script_name
+  readStringField(infile, dummy, sizeof(dummy)); // genericpage->objinfo_struct.script_name
 
   if (version >= 18) {
-    cf_ReadString(genericpage->objinfo_struct.module_name, MAX_MODULENAME_LEN, infile);
+    readStringField(infile, genericpage->objinfo_struct.module_name, sizeof(genericpage->objinfo_struct.module_name));
   } else {
     genericpage->objinfo_struct.module_name[0] = '\0';
   }
 
   if (version >= 19) {
-    cf_ReadString(genericpage->objinfo_struct.script_name_override, PAGENAME_LEN, infile);
+    readStringField(infile, genericpage->objinfo_struct.script_name_override, sizeof(genericpage->objinfo_struct.script_name_override));
   } else {
     genericpage->objinfo_struct.script_name_override[0] = '\0';
   }
 
-  int desc = cf_ReadByte(infile);
+  int desc = 0;
+  {
+    uint8_t db = 0;
+    infile >> db;
+    desc = db;
+  }
   if (desc) {
     // Read description if there is one
     char tempbuf[1024];
 
-    cf_ReadString(tempbuf, 1024, infile);
+    readStringField(infile, tempbuf, sizeof(tempbuf));
     size_t slen = strlen(tempbuf) + 1;
 
     genericpage->objinfo_struct.description = mem_rmalloc<char>(slen);
@@ -319,71 +359,87 @@ int mng_ReadNewGenericPage(CFILE *infile, mngs_generic_page *genericpage) {
     genericpage->objinfo_struct.description = NULL;
 
   // Read icon name
-  cf_ReadString(genericpage->objinfo_struct.icon_name, PAGENAME_LEN, infile);
+  readStringField(infile, genericpage->objinfo_struct.icon_name, sizeof(genericpage->objinfo_struct.icon_name));
 
   // Read LOD distances
-  genericpage->objinfo_struct.med_lod_distance = cf_ReadFloat(infile);
-  genericpage->objinfo_struct.lo_lod_distance = cf_ReadFloat(infile);
+  infile >> genericpage->objinfo_struct.med_lod_distance;
+  infile >> genericpage->objinfo_struct.lo_lod_distance;
 
   // Read physics stuff
   mng_ReadPhysicsChunk(&genericpage->objinfo_struct.phys_info, infile);
 
   // Read size
-  genericpage->objinfo_struct.size = cf_ReadFloat(infile);
+  infile >> genericpage->objinfo_struct.size;
 
   // Read light info
   mng_ReadLightingChunk(&genericpage->objinfo_struct.lighting_info, infile);
 
   // Read hit points
-  genericpage->objinfo_struct.hit_points = cf_ReadInt(infile);
+  infile >> genericpage->objinfo_struct.hit_points;
 
   // Read flags
-  genericpage->objinfo_struct.flags = cf_ReadInt(infile);
+  infile >> genericpage->objinfo_struct.flags;
 
   // Read AI info
-  genericpage->ai_info.flags = cf_ReadInt(infile);
-  genericpage->ai_info.ai_class = cf_ReadByte(infile);
-  genericpage->ai_info.ai_type = cf_ReadByte(infile);
-  genericpage->ai_info.movement_type = cf_ReadByte(infile);
-  genericpage->ai_info.movement_subtype = cf_ReadByte(infile);
-  genericpage->ai_info.fov = cf_ReadFloat(infile);
+  infile >> genericpage->ai_info.flags;
+  {
+    int8_t b = 0;
+    infile >> b;
+    genericpage->ai_info.ai_class = b;
+  }
+  {
+    int8_t b = 0;
+    infile >> b;
+    genericpage->ai_info.ai_type = b;
+  }
+  {
+    int8_t b = 0;
+    infile >> b;
+    genericpage->ai_info.movement_type = b;
+  }
+  {
+    int8_t b = 0;
+    infile >> b;
+    genericpage->ai_info.movement_subtype = b;
+  }
+  infile >> genericpage->ai_info.fov;
 
-  genericpage->ai_info.max_velocity = cf_ReadFloat(infile);
-  genericpage->ai_info.max_delta_velocity = cf_ReadFloat(infile);
-  genericpage->ai_info.max_turn_rate = cf_ReadFloat(infile);
+  infile >> genericpage->ai_info.max_velocity;
+  infile >> genericpage->ai_info.max_delta_velocity;
+  infile >> genericpage->ai_info.max_turn_rate;
 
   // Makes sure there are no bugs as things are added and removed  -- ask chris
   genericpage->ai_info.notify_flags &= ~AI_NOTIFIES_ALWAYS_ON;
-  genericpage->ai_info.notify_flags = cf_ReadInt(infile);
+  infile >> genericpage->ai_info.notify_flags;
   genericpage->ai_info.notify_flags |= AI_NOTIFIES_ALWAYS_ON;
 
-  genericpage->ai_info.max_delta_turn_rate = cf_ReadFloat(infile);
-  genericpage->ai_info.circle_distance = cf_ReadFloat(infile);
-  genericpage->ai_info.attack_vel_percent = cf_ReadFloat(infile);
-  genericpage->ai_info.dodge_percent = cf_ReadFloat(infile);
-  genericpage->ai_info.dodge_vel_percent = cf_ReadFloat(infile);
-  genericpage->ai_info.flee_vel_percent = cf_ReadFloat(infile);
-  genericpage->ai_info.melee_damage[0] = cf_ReadFloat(infile);
-  genericpage->ai_info.melee_damage[1] = cf_ReadFloat(infile);
-  genericpage->ai_info.melee_latency[0] = cf_ReadFloat(infile);
-  genericpage->ai_info.melee_latency[1] = cf_ReadFloat(infile);
+  infile >> genericpage->ai_info.max_delta_turn_rate;
+  infile >> genericpage->ai_info.circle_distance;
+  infile >> genericpage->ai_info.attack_vel_percent;
+  infile >> genericpage->ai_info.dodge_percent;
+  infile >> genericpage->ai_info.dodge_vel_percent;
+  infile >> genericpage->ai_info.flee_vel_percent;
+  infile >> genericpage->ai_info.melee_damage[0];
+  infile >> genericpage->ai_info.melee_damage[1];
+  infile >> genericpage->ai_info.melee_latency[0];
+  infile >> genericpage->ai_info.melee_latency[1];
 
-  genericpage->ai_info.curiousity = cf_ReadFloat(infile);
-  genericpage->ai_info.night_vision = cf_ReadFloat(infile);
-  genericpage->ai_info.fog_vision = cf_ReadFloat(infile);
-  genericpage->ai_info.lead_accuracy = cf_ReadFloat(infile);
-  genericpage->ai_info.lead_varience = cf_ReadFloat(infile);
-  genericpage->ai_info.fire_spread = cf_ReadFloat(infile);
-  genericpage->ai_info.fight_team = cf_ReadFloat(infile);
-  genericpage->ai_info.fight_same = cf_ReadFloat(infile);
-  genericpage->ai_info.aggression = cf_ReadFloat(infile);
-  genericpage->ai_info.hearing = cf_ReadFloat(infile);
-  genericpage->ai_info.frustration = cf_ReadFloat(infile);
-  genericpage->ai_info.roaming = cf_ReadFloat(infile);
-  genericpage->ai_info.life_preservation = cf_ReadFloat(infile);
+  infile >> genericpage->ai_info.curiousity;
+  infile >> genericpage->ai_info.night_vision;
+  infile >> genericpage->ai_info.fog_vision;
+  infile >> genericpage->ai_info.lead_accuracy;
+  infile >> genericpage->ai_info.lead_varience;
+  infile >> genericpage->ai_info.fire_spread;
+  infile >> genericpage->ai_info.fight_team;
+  infile >> genericpage->ai_info.fight_same;
+  infile >> genericpage->ai_info.aggression;
+  infile >> genericpage->ai_info.hearing;
+  infile >> genericpage->ai_info.frustration;
+  infile >> genericpage->ai_info.roaming;
+  infile >> genericpage->ai_info.life_preservation;
 
   if (version >= 16) {
-    genericpage->ai_info.avoid_friends_distance = cf_ReadFloat(infile);
+    infile >> genericpage->ai_info.avoid_friends_distance;
   } else if ((genericpage->objinfo_struct.flags | OIF_USES_PHYSICS) && genericpage->ai_info.max_velocity > 0.0f) {
     genericpage->ai_info.flags |= AIF_AUTO_AVOID_FRIENDS;
     genericpage->ai_info.avoid_friends_distance = genericpage->ai_info.circle_distance / 10.f;
@@ -394,9 +450,9 @@ int mng_ReadNewGenericPage(CFILE *infile, mngs_generic_page *genericpage) {
   }
 
   if (version >= 17) {
-    genericpage->ai_info.biased_flight_importance = cf_ReadFloat(infile);
-    genericpage->ai_info.biased_flight_min = cf_ReadFloat(infile);
-    genericpage->ai_info.biased_flight_max = cf_ReadFloat(infile);
+    infile >> genericpage->ai_info.biased_flight_importance;
+    infile >> genericpage->ai_info.biased_flight_min;
+    infile >> genericpage->ai_info.biased_flight_max;
   } else {
     genericpage->ai_info.biased_flight_importance = .5f;
     genericpage->ai_info.biased_flight_min = 10.0f;
@@ -405,25 +461,31 @@ int mng_ReadNewGenericPage(CFILE *infile, mngs_generic_page *genericpage) {
 
   // Read out objects spewed
   for (i = 0; i < MAX_DSPEW_TYPES; i++) {
-    genericpage->objinfo_struct.f_dspew = cf_ReadByte(infile);
-    genericpage->objinfo_struct.dspew_percent[i] = cf_ReadFloat(infile);
-    genericpage->objinfo_struct.dspew_number[i] = cf_ReadShort(infile);
+    infile >> genericpage->objinfo_struct.f_dspew;
+    infile >> genericpage->objinfo_struct.dspew_percent[i];
+    infile >> genericpage->objinfo_struct.dspew_number[i];
 
     // Read spew name
-    cf_ReadString(genericpage->dspew_name[i], PAGENAME_LEN, infile);
+    readStringField(infile, genericpage->dspew_name[i], sizeof(genericpage->dspew_name[i]));
   }
 
   // Read out animation info
   for (i = 0; i < NUM_MOVEMENT_CLASSES; i++) {
     for (j = 0; j < NUM_ANIMS_PER_CLASS; j++) {
       if (version < 20) {
-        genericpage->anim[i].elem[j].from = cf_ReadByte(infile);
-        genericpage->anim[i].elem[j].to = cf_ReadByte(infile);
+        uint8_t f = 0, t = 0;
+        infile >> f;
+        infile >> t;
+        genericpage->anim[i].elem[j].from = f;
+        genericpage->anim[i].elem[j].to = t;
       } else {
-        genericpage->anim[i].elem[j].from = cf_ReadShort(infile);
-        genericpage->anim[i].elem[j].to = cf_ReadShort(infile);
+        int16_t f = 0, t = 0;
+        infile >> f;
+        infile >> t;
+        genericpage->anim[i].elem[j].from = f;
+        genericpage->anim[i].elem[j].to = t;
       }
-      genericpage->anim[i].elem[j].spc = cf_ReadFloat(infile);
+      infile >> genericpage->anim[i].elem[j].spc;
     }
   }
 
@@ -438,49 +500,52 @@ int mng_ReadNewGenericPage(CFILE *infile, mngs_generic_page *genericpage) {
   // read weapon names
   for (i = 0; i < MAX_WBS_PER_OBJ; i++) {
     for (j = 0; j < MAX_WB_GUNPOINTS; j++)
-      cf_ReadString(genericpage->weapon_name[i][j], PAGENAME_LEN, infile);
+      readStringField(infile, genericpage->weapon_name[i][j], sizeof(genericpage->weapon_name[i][j]));
   }
 
   // read sounds
   Q_ASSERT(MAX_OBJ_SOUNDS == 2);
   for (i = 0; i < MAX_OBJ_SOUNDS; i++)
-    cf_ReadString(genericpage->sound_name[i], PAGENAME_LEN, infile);
+    readStringField(infile, genericpage->sound_name[i], sizeof(genericpage->sound_name[i]));
   if (version < 26) { // used to be three sounds
     char temp_sound_name[PAGENAME_LEN];
-    cf_ReadString(temp_sound_name, PAGENAME_LEN, infile);
+    readStringField(infile, temp_sound_name, sizeof(temp_sound_name));
   }
 
   for (i = 0; i < MAX_AI_SOUNDS; i++)
-    cf_ReadString(genericpage->ai_sound_name[i], PAGENAME_LEN, infile);
+    readStringField(infile, genericpage->ai_sound_name[i], sizeof(genericpage->ai_sound_name[i]));
 
   for (i = 0; i < MAX_WBS_PER_OBJ; i++) {
     for (j = 0; j < MAX_WB_FIRING_MASKS; j++)
-      cf_ReadString(genericpage->fire_sound_name[i][j], PAGENAME_LEN, infile);
+      readStringField(infile, genericpage->fire_sound_name[i][j], sizeof(genericpage->fire_sound_name[i][j]));
   }
 
   for (i = 0; i < NUM_MOVEMENT_CLASSES; i++) {
     for (j = 0; j < NUM_ANIMS_PER_CLASS; j++)
-      cf_ReadString(genericpage->anim_sound_name[i][j], PAGENAME_LEN, infile);
+      readStringField(infile, genericpage->anim_sound_name[i][j], sizeof(genericpage->anim_sound_name[i][j]));
   }
 
   // Read respawn scalar
   if (version >= 21)
-    genericpage->objinfo_struct.respawn_scalar = cf_ReadFloat(infile);
+    infile >> genericpage->objinfo_struct.respawn_scalar;
   else
     genericpage->objinfo_struct.respawn_scalar = 1.0;
 
   if (version >= 22) {
-    int n_death_types = cf_ReadShort(infile);
+    int16_t n = 0;
+    infile >> n;
+    int n_death_types = n;
     for (i = 0; i < n_death_types; i++) {
-      int flags = cf_ReadInt(infile);
+      int flags = 0;
+      infile >> flags;
       if (version == 22) { // translate death flags
         Q_ASSERT(false);            // this version no longer supported
       }
 
       genericpage->objinfo_struct.death_types[i].flags = flags;
-      genericpage->objinfo_struct.death_types[i].delay_min = cf_ReadFloat(infile);
-      genericpage->objinfo_struct.death_types[i].delay_max = cf_ReadFloat(infile);
-      genericpage->objinfo_struct.death_probabilities[i] = cf_ReadByte(infile);
+      infile >> genericpage->objinfo_struct.death_types[i].delay_min;
+      infile >> genericpage->objinfo_struct.death_types[i].delay_max;
+      infile >> genericpage->objinfo_struct.death_probabilities[i];
 
       // Fix up for changed flags
       if (version < 27) {
@@ -507,7 +572,7 @@ int mng_ReadNewGenericPage(CFILE *infile, mngs_generic_page *genericpage) {
 }
 
 // Reads a generic page from an open file.  Returns 0 on error.
-int mng_ReadGenericPage(CFILE *infile, mngs_generic_page *genericpage) {
+int mng_ReadGenericPage(posix_istream &infile, mngs_generic_page *genericpage) {
   if (!Old_table_method)
     return mng_ReadNewGenericPage(infile, genericpage);
   return 0; // old command-based table method not supported in mini build
@@ -550,109 +615,110 @@ static void mng_InitWeaponPage(mngs_weapon_page *weaponpage) {
     strcpy(weaponpage->sound_name[i], "");
 }
 
-int mng_ReadNewWeaponPage(CFILE *infile, mngs_weapon_page *weaponpage) {
+int mng_ReadNewWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) {
   int i;
 
   mng_InitWeaponPage(weaponpage);
 
-  int version = cf_ReadShort(infile);
+  int16_t version = 0;
+  infile >> version;
 
-  cf_ReadString(weaponpage->weapon_struct.name, PAGENAME_LEN, infile);
+  readStringField(infile, weaponpage->weapon_struct.name, sizeof(weaponpage->weapon_struct.name));
 
   // Read hud image name
-  cf_ReadString(weaponpage->hud_image_name, PAGENAME_LEN, infile);
+  readStringField(infile, weaponpage->hud_image_name, sizeof(weaponpage->hud_image_name));
 
   // Read fire image
-  cf_ReadString(weaponpage->fire_image_name, PAGENAME_LEN, infile);
+  readStringField(infile, weaponpage->fire_image_name, sizeof(weaponpage->fire_image_name));
 
   // Read particle data
-  cf_ReadString(weaponpage->particle_name, PAGENAME_LEN, infile);
+  readStringField(infile, weaponpage->particle_name, sizeof(weaponpage->particle_name));
 
-  weaponpage->weapon_struct.particle_count = cf_ReadByte(infile);
-  weaponpage->weapon_struct.particle_life = cf_ReadFloat(infile);
-  weaponpage->weapon_struct.particle_size = cf_ReadFloat(infile);
+  infile >> weaponpage->weapon_struct.particle_count;
+  infile >> weaponpage->weapon_struct.particle_life;
+  infile >> weaponpage->weapon_struct.particle_size;
 
   // Read flags
-  weaponpage->weapon_struct.flags = cf_ReadInt(infile);
+  infile >> weaponpage->weapon_struct.flags;
 
   // Read spawn data
-  cf_ReadString(weaponpage->spawn_name, PAGENAME_LEN, infile);
-  weaponpage->weapon_struct.spawn_count = cf_ReadByte(infile);
+  readStringField(infile, weaponpage->spawn_name, sizeof(weaponpage->spawn_name));
+  infile >> weaponpage->weapon_struct.spawn_count;
 
-  cf_ReadString(weaponpage->robot_spawn_name, PAGENAME_LEN, infile);
-  cf_ReadString(weaponpage->alternate_spawn_name, PAGENAME_LEN, infile);
+  readStringField(infile, weaponpage->robot_spawn_name, sizeof(weaponpage->robot_spawn_name));
+  readStringField(infile, weaponpage->alternate_spawn_name, sizeof(weaponpage->alternate_spawn_name));
 
-  weaponpage->weapon_struct.alternate_chance = cf_ReadByte(infile);
+  infile >> weaponpage->weapon_struct.alternate_chance;
 
   // Read gravity stuff
-  weaponpage->weapon_struct.gravity_time = cf_ReadFloat(infile);
-  weaponpage->weapon_struct.gravity_size = cf_ReadFloat(infile);
+  infile >> weaponpage->weapon_struct.gravity_time;
+  infile >> weaponpage->weapon_struct.gravity_size;
 
   // Read size and homing data
-  weaponpage->weapon_struct.homing_fov = cf_ReadFloat(infile);
-  weaponpage->weapon_struct.custom_size = cf_ReadFloat(infile);
-  weaponpage->weapon_struct.size = cf_ReadFloat(infile);
-  weaponpage->weapon_struct.thrust_time = cf_ReadFloat(infile);
+  infile >> weaponpage->weapon_struct.homing_fov;
+  infile >> weaponpage->weapon_struct.custom_size;
+  infile >> weaponpage->weapon_struct.size;
+  infile >> weaponpage->weapon_struct.thrust_time;
 
   // Read physics info
   mng_ReadPhysicsChunk(&weaponpage->weapon_struct.phys_info, infile);
 
   // Read terrain damage
-  weaponpage->weapon_struct.terrain_damage_size = cf_ReadFloat(infile);
-  weaponpage->weapon_struct.terrain_damage_depth = cf_ReadByte(infile);
+  infile >> weaponpage->weapon_struct.terrain_damage_size;
+  infile >> weaponpage->weapon_struct.terrain_damage_depth;
 
   // Read alpha
-  weaponpage->weapon_struct.alpha = cf_ReadFloat(infile);
+  infile >> weaponpage->weapon_struct.alpha;
 
   // Read explosion data
-  cf_ReadString(weaponpage->explode_image_name, PAGENAME_LEN, infile);
-  weaponpage->weapon_struct.explode_time = cf_ReadFloat(infile);
-  weaponpage->weapon_struct.explode_size = cf_ReadFloat(infile);
+  readStringField(infile, weaponpage->explode_image_name, sizeof(weaponpage->explode_image_name));
+  infile >> weaponpage->weapon_struct.explode_time;
+  infile >> weaponpage->weapon_struct.explode_size;
 
   // Read damage data
-  weaponpage->weapon_struct.player_damage = cf_ReadFloat(infile);
+  infile >> weaponpage->weapon_struct.player_damage;
 
   if (version >= 7)
-    weaponpage->weapon_struct.generic_damage = cf_ReadFloat(infile);
+    infile >> weaponpage->weapon_struct.generic_damage;
   else
     weaponpage->weapon_struct.generic_damage = weaponpage->weapon_struct.player_damage;
 
-  weaponpage->weapon_struct.impact_size = cf_ReadFloat(infile);
-  weaponpage->weapon_struct.impact_time = cf_ReadFloat(infile);
-  weaponpage->weapon_struct.impact_player_damage = cf_ReadFloat(infile);
+  infile >> weaponpage->weapon_struct.impact_size;
+  infile >> weaponpage->weapon_struct.impact_time;
+  infile >> weaponpage->weapon_struct.impact_player_damage;
 
   if (version >= 7)
-    weaponpage->weapon_struct.impact_generic_damage = cf_ReadFloat(infile);
+    infile >> weaponpage->weapon_struct.impact_generic_damage;
   else
     weaponpage->weapon_struct.impact_generic_damage = weaponpage->weapon_struct.impact_player_damage;
 
-  weaponpage->weapon_struct.impact_force = cf_ReadFloat(infile);
+  infile >> weaponpage->weapon_struct.impact_force;
 
   // Read lifetime
-  weaponpage->weapon_struct.life_time = cf_ReadFloat(infile);
+  infile >> weaponpage->weapon_struct.life_time;
 
   // read lighting
   mng_ReadLightingChunk(&weaponpage->weapon_struct.lighting_info, infile);
 
   // read recoil force
   if (version >= 8)
-    weaponpage->weapon_struct.recoil_force = cf_ReadFloat(infile);
+    infile >> weaponpage->weapon_struct.recoil_force;
   else
     weaponpage->weapon_struct.recoil_force = 0.0f;
 
   // Read its sound names
   for (i = 0; i < MAX_WEAPON_SOUNDS; i++)
-    cf_ReadString(weaponpage->sound_name[i], PAGENAME_LEN, infile);
+    readStringField(infile, weaponpage->sound_name[i], sizeof(weaponpage->sound_name[i]));
 
   // Read smoke name
-  cf_ReadString(weaponpage->smoke_image_name, PAGENAME_LEN, infile);
+  readStringField(infile, weaponpage->smoke_image_name, sizeof(weaponpage->smoke_image_name));
 
   // Read scorch data
-  cf_ReadString(weaponpage->scorch_image_name, PAGENAME_LEN, infile);
-  weaponpage->weapon_struct.scorch_size = cf_ReadFloat(infile);
+  readStringField(infile, weaponpage->scorch_image_name, sizeof(weaponpage->scorch_image_name));
+  infile >> weaponpage->weapon_struct.scorch_size;
 
   // Read icon name
-  cf_ReadString(weaponpage->icon_name, PAGENAME_LEN, infile);
+  readStringField(infile, weaponpage->icon_name, sizeof(weaponpage->icon_name));
 
   weaponpage->weapon_struct.used = 1;
 
@@ -666,7 +732,7 @@ int mng_ReadNewWeaponPage(CFILE *infile, mngs_weapon_page *weaponpage) {
 }
 
 // Reads a weapon page from an open file.  Returns 0 on error.
-int mng_ReadWeaponPage(CFILE *infile, mngs_weapon_page *weaponpage) {
+int mng_ReadWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) {
   if (!Old_table_method)
     return mng_ReadNewWeaponPage(infile, weaponpage);
   return 0; // old command-based method not supported in mini build
@@ -677,7 +743,9 @@ int mng_ReadWeaponPage(CFILE *infile, mngs_weapon_page *weaponpage) {
 //-----------------------------------------------------------------------------
 
 static void mng_InitTexturePage(mngs_texture_page *texpage) {
-  memset(texpage, 0, sizeof(mngs_texture_page));
+  // Member-wise reset (NOT memset — the struct now holds std::string members
+  // that memset would corrupt).
+  *texpage = mngs_texture_page{};
   texpage->proc_thickness = 4;
   texpage->proc_heat = 200;
   texpage->proc_light = 1;
@@ -696,56 +764,59 @@ static void mng_InitTexturePage(mngs_texture_page *texpage) {
   texpage->tex_struct.sound = -1;
   texpage->tex_struct.sound_volume = 1.0;
 
-  strcpy(texpage->bitmap_name, "");
-  strcpy(texpage->destroy_name, "");
-  strcpy(texpage->sound_name, "");
+  texpage->bitmap_name.clear();
+  texpage->destroy_name.clear();
+  texpage->sound_name.clear();
 }
 
 // Reads a texture page from an open file.  Returns 0 on error.
-int mng_ReadNewTexturePage(CFILE *infile, mngs_texture_page *texpage) {
+int mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
   int i;
 
-  Q_ASSERT(infile != NULL);
   mng_InitTexturePage(texpage);
 
-  int version = cf_ReadShort(infile);
+  int16_t version = 0;
+  infile >> version;
 
-  cf_ReadString(texpage->tex_struct.name, PAGENAME_LEN, infile);
-  cf_ReadString(texpage->bitmap_name, PAGENAME_LEN, infile);
-  cf_ReadString(texpage->destroy_name, PAGENAME_LEN, infile);
+  readStringField(infile, texpage->tex_struct.name, sizeof(texpage->tex_struct.name));
+  psReadString(infile, texpage->bitmap_name, PAGENAME_LEN - 1);
+  psReadString(infile, texpage->destroy_name, PAGENAME_LEN - 1);
 
-  texpage->tex_struct.r = cf_ReadFloat(infile);
-  texpage->tex_struct.g = cf_ReadFloat(infile);
-  texpage->tex_struct.b = cf_ReadFloat(infile);
-  texpage->tex_struct.alpha = cf_ReadFloat(infile);
+  infile >> texpage->tex_struct.r;
+  infile >> texpage->tex_struct.g;
+  infile >> texpage->tex_struct.b;
+  infile >> texpage->tex_struct.alpha;
 
-  texpage->tex_struct.speed = cf_ReadFloat(infile);
+  infile >> texpage->tex_struct.speed;
 
-  texpage->tex_struct.slide_u = cf_ReadFloat(infile);
-  texpage->tex_struct.slide_v = cf_ReadFloat(infile);
-  texpage->tex_struct.reflectivity = cf_ReadFloat(infile);
+  infile >> texpage->tex_struct.slide_u;
+  infile >> texpage->tex_struct.slide_v;
+  infile >> texpage->tex_struct.reflectivity;
 
-  texpage->tex_struct.corona_type = cf_ReadByte(infile);
-  texpage->tex_struct.damage = cf_ReadInt(infile);
-  texpage->tex_struct.flags = cf_ReadInt(infile);
+  infile >> texpage->tex_struct.corona_type;
+  infile >> texpage->tex_struct.damage;
+  infile >> texpage->tex_struct.flags;
 
   if (texpage->tex_struct.flags & TF_PROCEDURAL) {
     for (i = 0; i < 255; i++) {
-      uint16_t val = cf_ReadShort(infile);
+      uint16_t val = 0;
+      infile >> val;
       texpage->proc_palette[i] = val;
     }
 
-    texpage->proc_heat = cf_ReadByte(infile);
-    texpage->proc_light = cf_ReadByte(infile);
-    texpage->proc_thickness = cf_ReadByte(infile);
-    texpage->proc_evaluation_time = cf_ReadFloat(infile);
+    infile >> texpage->proc_heat;
+    infile >> texpage->proc_light;
+    infile >> texpage->proc_thickness;
+    infile >> texpage->proc_evaluation_time;
 
     if (version >= 6) {
-      texpage->osc_time = cf_ReadFloat(infile);
-      texpage->osc_value = cf_ReadByte(infile);
+      infile >> texpage->osc_time;
+      infile >> texpage->osc_value;
     }
 
-    texpage->num_proc_elements = cf_ReadShort(infile);
+    int16_t npe = 0;
+    infile >> npe;
+    texpage->num_proc_elements = npe;
 
     if (texpage->num_proc_elements > MAX_PROC_ELEMENTS) {
       LOG_ERROR("Warning! Too many procedural elements!");
@@ -753,15 +824,15 @@ int mng_ReadNewTexturePage(CFILE *infile, mngs_texture_page *texpage) {
     }
 
     for (i = 0; i < texpage->num_proc_elements; i++) {
-      texpage->proc_type[i] = cf_ReadByte(infile);
-      texpage->proc_frequency[i] = cf_ReadByte(infile);
-      texpage->proc_speed[i] = cf_ReadByte(infile);
-      texpage->proc_size[i] = cf_ReadByte(infile);
-      texpage->proc_x1[i] = cf_ReadByte(infile);
-      texpage->proc_y1[i] = cf_ReadByte(infile);
+      infile >> texpage->proc_type[i];
+      infile >> texpage->proc_frequency[i];
+      infile >> texpage->proc_speed[i];
+      infile >> texpage->proc_size[i];
+      infile >> texpage->proc_x1[i];
+      infile >> texpage->proc_y1[i];
 
-      texpage->proc_x2[i] = cf_ReadByte(infile);
-      texpage->proc_y2[i] = cf_ReadByte(infile);
+      infile >> texpage->proc_x2[i];
+      infile >> texpage->proc_y2[i];
     }
   }
 
@@ -770,20 +841,22 @@ int mng_ReadNewTexturePage(CFILE *infile, mngs_texture_page *texpage) {
       texpage->tex_struct.flags &= ~TF_PROCEDURAL;
   }
 
-  if (!strnicmp(texpage->destroy_name, "INVALID", 7))
-    strcpy(texpage->destroy_name, "");
+  if (!strnicmp(texpage->destroy_name.c_str(), "INVALID", 7))
+    texpage->destroy_name.clear();
 
   if (version >= 5) {
 
     if (version < 7) {
       // Kill buggy version of sound resolving code
-      texpage->tex_struct.sound = cf_ReadInt(infile);
+      int s;
+      infile >> s;
+      texpage->tex_struct.sound = s;
       texpage->tex_struct.sound = -1;
-      strcpy(texpage->sound_name, "");
+      texpage->sound_name.clear();
     } else
-      cf_ReadString(texpage->sound_name, PAGENAME_LEN, infile);
+      psReadString(infile, texpage->sound_name, PAGENAME_LEN - 1);
 
-    texpage->tex_struct.sound_volume = cf_ReadFloat(infile);
+    infile >> texpage->tex_struct.sound_volume;
   } else {
     texpage->tex_struct.sound = -1;
     texpage->tex_struct.sound_volume = 1.0;
@@ -794,7 +867,7 @@ int mng_ReadNewTexturePage(CFILE *infile, mngs_texture_page *texpage) {
   return 1; // successfully read
 }
 
-int mng_ReadTexturePage(CFILE *infile, mngs_texture_page *texpage) {
+int mng_ReadTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
   if (!Old_table_method)
     return mng_ReadNewTexturePage(infile, texpage);
   return 0; // old command-based table not supported in mini build
@@ -804,22 +877,21 @@ int mng_ReadTexturePage(CFILE *infile, mngs_texture_page *texpage) {
 // Sound page (ported from soundpage.cpp : 222-255)
 //-----------------------------------------------------------------------------
 
-int mng_ReadNewSoundPage(CFILE *infile, mngs_sound_page *soundpage) {
-  Q_ASSERT(infile != NULL);
-  /* int version = */ cf_ReadShort(infile);
+int mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
+  /* int version = */ int16_t v; infile >> v;
   // read in name,rawfile name
-  cf_ReadString(soundpage->sound_struct.name, PAGENAME_LEN, infile);
-  cf_ReadString(soundpage->raw_name, PAGENAME_LEN, infile);
-  soundpage->sound_struct.flags = cf_ReadInt(infile);
+  readStringField(infile, soundpage->sound_struct.name, sizeof(soundpage->sound_struct.name));
+  readStringField(infile, soundpage->raw_name, sizeof(soundpage->raw_name));
+  infile >> soundpage->sound_struct.flags;
 
-  soundpage->sound_struct.loop_start = cf_ReadInt(infile);
-  soundpage->sound_struct.loop_end = cf_ReadInt(infile);
-  soundpage->sound_struct.outer_cone_volume = cf_ReadFloat(infile);
-  soundpage->sound_struct.inner_cone_angle = cf_ReadInt(infile);
-  soundpage->sound_struct.outer_cone_angle = cf_ReadInt(infile);
-  soundpage->sound_struct.max_distance = cf_ReadFloat(infile);
-  soundpage->sound_struct.min_distance = cf_ReadFloat(infile);
-  soundpage->sound_struct.import_volume = cf_ReadFloat(infile);
+  infile >> soundpage->sound_struct.loop_start;
+  infile >> soundpage->sound_struct.loop_end;
+  infile >> soundpage->sound_struct.outer_cone_volume;
+  infile >> soundpage->sound_struct.inner_cone_angle;
+  infile >> soundpage->sound_struct.outer_cone_angle;
+  infile >> soundpage->sound_struct.max_distance;
+  infile >> soundpage->sound_struct.min_distance;
+  infile >> soundpage->sound_struct.import_volume;
   // The full engine has a DEMO-only import_volume adjustment block here; it is
   // compiled out unless DEMO is defined (never in the mini build).
 
@@ -828,7 +900,7 @@ int mng_ReadNewSoundPage(CFILE *infile, mngs_sound_page *soundpage) {
   return 1; // successfully read
 }
 
-int mng_ReadSoundPage(CFILE *infile, mngs_sound_page *soundpage) {
+int mng_ReadSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
   if (!Old_table_method)
     return mng_ReadNewSoundPage(infile, soundpage);
   return 0; // old command-based table not supported in mini build
@@ -838,30 +910,29 @@ int mng_ReadSoundPage(CFILE *infile, mngs_sound_page *soundpage) {
 // Door page (ported from doorpage.cpp : 261-292)
 //-----------------------------------------------------------------------------
 
-int mng_ReadNewDoorPage(CFILE *infile, mngs_door_page *doorpage) {
-  Q_ASSERT(infile != NULL);
+int mng_ReadNewDoorPage(posix_istream &infile, mngs_door_page *doorpage) {
+  int16_t version = 0;
+  infile >> version;
 
-  int version = cf_ReadShort(infile);
+  readStringField(infile, doorpage->door_struct.name, sizeof(doorpage->door_struct.name));
+  readStringField(infile, doorpage->image_name, sizeof(doorpage->image_name));
 
-  cf_ReadString(doorpage->door_struct.name, PAGENAME_LEN, infile);
-  cf_ReadString(doorpage->image_name, PAGENAME_LEN, infile);
+  infile >> doorpage->door_struct.total_open_time;
+  infile >> doorpage->door_struct.total_close_time;
+  infile >> doorpage->door_struct.total_time_open;
 
-  doorpage->door_struct.total_open_time = cf_ReadFloat(infile);
-  doorpage->door_struct.total_close_time = cf_ReadFloat(infile);
-  doorpage->door_struct.total_time_open = cf_ReadFloat(infile);
-
-  doorpage->door_struct.flags = cf_ReadByte(infile);
+  infile >> doorpage->door_struct.flags;
 
   if (version >= 3)
-    doorpage->door_struct.hit_points = cf_ReadShort(infile);
+    infile >> doorpage->door_struct.hit_points;
   else
     doorpage->door_struct.hit_points = 0;
 
-  cf_ReadString(doorpage->open_sound_name, PAGENAME_LEN, infile);
-  cf_ReadString(doorpage->close_sound_name, PAGENAME_LEN, infile);
+  readStringField(infile, doorpage->open_sound_name, sizeof(doorpage->open_sound_name));
+  readStringField(infile, doorpage->close_sound_name, sizeof(doorpage->close_sound_name));
 
   if (version >= 2)
-    cf_ReadString(doorpage->door_struct.module_name, MAX_MODULENAME_LEN, infile);
+    readStringField(infile, doorpage->door_struct.module_name, sizeof(doorpage->door_struct.module_name));
   else
     doorpage->door_struct.module_name[0] = '\0';
 
@@ -871,7 +942,7 @@ int mng_ReadNewDoorPage(CFILE *infile, mngs_door_page *doorpage) {
   return 1; // successfully read
 }
 
-int mng_ReadDoorPage(CFILE *infile, mngs_door_page *doorpage) {
+int mng_ReadDoorPage(posix_istream &infile, mngs_door_page *doorpage) {
   if (!Old_table_method)
     return mng_ReadNewDoorPage(infile, doorpage);
   return 0; // old command-based table not supported in mini build
@@ -881,26 +952,25 @@ int mng_ReadDoorPage(CFILE *infile, mngs_door_page *doorpage) {
 // Megacell page (ported from megapage.cpp : 175-192)
 //-----------------------------------------------------------------------------
 
-int mng_ReadNewMegacellPage(CFILE *infile, mngs_megacell_page *megacellpage) {
+int mng_ReadNewMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage) {
   int i;
-  Q_ASSERT(infile != NULL);
   memset(megacellpage, 0, sizeof(mngs_megacell_page));
-  /* int version = */ cf_ReadShort(infile);
+  /* int version = */ int16_t v; infile >> v;
 
-  cf_ReadString(megacellpage->megacell_struct.name, PAGENAME_LEN, infile);
+  readStringField(infile, megacellpage->megacell_struct.name, sizeof(megacellpage->megacell_struct.name));
 
   // Write out its cell names
   for (i = 0; i < MAX_MEGACELL_WIDTH * MAX_MEGACELL_HEIGHT; i++)
-    cf_ReadString(megacellpage->cellname[i], PAGENAME_LEN, infile);
+    readStringField(infile, megacellpage->cellname[i], sizeof(megacellpage->cellname[i]));
 
-  megacellpage->megacell_struct.width = cf_ReadByte(infile);
-  megacellpage->megacell_struct.height = cf_ReadByte(infile);
+  infile >> megacellpage->megacell_struct.width;
+  infile >> megacellpage->megacell_struct.height;
   // This is a valid new page
   megacellpage->megacell_struct.used = 1;
   return 1; // successfully read
 }
 
-int mng_ReadMegacellPage(CFILE *infile, mngs_megacell_page *megacellpage) {
+int mng_ReadMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage) {
   if (!Old_table_method)
     return mng_ReadNewMegacellPage(infile, megacellpage);
   return 0; // old command-based table not supported in mini build
@@ -910,44 +980,50 @@ int mng_ReadMegacellPage(CFILE *infile, mngs_megacell_page *megacellpage) {
 // Ship page (ported from shippage.cpp : 539-611)
 //-----------------------------------------------------------------------------
 
-int mng_ReadNewShipPage(CFILE *infile, mngs_ship_page *shippage) {
+int mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage) {
   int i, j;
 
-  Q_ASSERT(infile != NULL);
+  // Clear the page record.  The embedded ship holds std::string members, so
+  // use member-wise reset rather than memset (which would corrupt them).
+  *shippage = mngs_ship_page{};
 
-  // Defaults
-  memset(shippage, 0, sizeof(mngs_ship_page));
+  int16_t version = 0;
+  infile >> version;
 
-  int version = cf_ReadShort(infile);
-
-  // Read In misc names
-  cf_ReadString(shippage->ship_struct.name, PAGENAME_LEN, infile);
-  cf_ReadString(shippage->ship_struct.cockpit_name, PAGENAME_LEN, infile);
-  cf_ReadString(shippage->ship_struct.hud_config_name, PAGENAME_LEN, infile);
+  // Read misc names.  name is a fixed char buffer (used by the manage API);
+  // cockpit_name / hud_config_name are std::string members, so the psReadString
+  // read stores into a caller std::string which is then assigned.
+  readStringField(infile, shippage->ship_struct.name, sizeof(shippage->ship_struct.name));
+  std::string cockpit_buf;
+  psReadString(infile, cockpit_buf, PAGENAME_LEN);
+  std::string hud_buf;
+  psReadString(infile, hud_buf, PAGENAME_LEN);
+  shippage->ship_struct.cockpit_name = cockpit_buf;
+  shippage->ship_struct.hud_config_name = hud_buf;
 
   // Read in model names
-  cf_ReadString(shippage->image_name, PAGENAME_LEN, infile);
-  cf_ReadString(shippage->dying_image_name, PAGENAME_LEN, infile);
-  cf_ReadString(shippage->med_image_name, PAGENAME_LEN, infile);
-  cf_ReadString(shippage->lo_image_name, PAGENAME_LEN, infile);
+  readStringField(infile, shippage->image_name, sizeof(shippage->image_name));
+  readStringField(infile, shippage->dying_image_name, sizeof(shippage->dying_image_name));
+  readStringField(infile, shippage->med_image_name, sizeof(shippage->med_image_name));
+  readStringField(infile, shippage->lo_image_name, sizeof(shippage->lo_image_name));
 
   // read lod distance
-  shippage->ship_struct.med_lod_distance = cf_ReadFloat(infile);
-  shippage->ship_struct.lo_lod_distance = cf_ReadFloat(infile);
+  infile >> shippage->ship_struct.med_lod_distance;
+  infile >> shippage->ship_struct.lo_lod_distance;
 
   // Read physics
   mng_ReadPhysicsChunk(&shippage->ship_struct.phys_info, infile);
 
-  shippage->ship_struct.size = cf_ReadFloat(infile);
-  shippage->ship_struct.armor_scalar = cf_ReadFloat(infile);
-  shippage->ship_struct.flags = cf_ReadInt(infile);
+  infile >> shippage->ship_struct.size;
+  infile >> shippage->ship_struct.armor_scalar;
+  infile >> shippage->ship_struct.flags;
 
   for (i = 0; i < MAX_PLAYER_WEAPONS; i++) {
-    shippage->ship_struct.fire_flags[i] = cf_ReadByte(infile);
-    cf_ReadString(shippage->firing_sound_name[i], PAGENAME_LEN, infile);
-    cf_ReadString(shippage->release_sound_name[i], PAGENAME_LEN, infile);
-    cf_ReadString(shippage->spew_powerup_name[i], PAGENAME_LEN, infile);
-    shippage->ship_struct.max_ammo[i] = cf_ReadInt(infile);
+    infile >> shippage->ship_struct.fire_flags[i];
+    readStringField(infile, shippage->firing_sound_name[i], sizeof(shippage->firing_sound_name[i]));
+    readStringField(infile, shippage->release_sound_name[i], sizeof(shippage->release_sound_name[i]));
+    readStringField(infile, shippage->spew_powerup_name[i], sizeof(shippage->spew_powerup_name[i]));
+    infile >> shippage->ship_struct.max_ammo[i];
 
     if (version >= 6)
       mng_ReadWeaponBatteryChunk(&shippage->ship_struct.static_wb[i], infile, 2);
@@ -955,10 +1031,10 @@ int mng_ReadNewShipPage(CFILE *infile, mngs_ship_page *shippage) {
       mng_ReadWeaponBatteryChunk(&shippage->ship_struct.static_wb[i], infile, 1);
 
     for (j = 0; j < MAX_WB_GUNPOINTS; j++)
-      cf_ReadString(shippage->fire_sound_name[i][j], PAGENAME_LEN, infile);
+      readStringField(infile, shippage->fire_sound_name[i][j], sizeof(shippage->fire_sound_name[i][j]));
 
     for (j = 0; j < MAX_WB_FIRING_MASKS; j++)
-      cf_ReadString(shippage->weapon_name[i][j], PAGENAME_LEN, infile);
+      readStringField(infile, shippage->weapon_name[i][j], sizeof(shippage->weapon_name[i][j]));
   }
 
   // Mark the newly filled structure as used
@@ -984,7 +1060,7 @@ int mng_ReadNewShipPage(CFILE *infile, mngs_ship_page *shippage) {
   return 1; // successfully read
 }
 
-int mng_ReadShipPage(CFILE *infile, mngs_ship_page *shippage) {
+int mng_ReadShipPage(posix_istream &infile, mngs_ship_page *shippage) {
   if (!Old_table_method)
     return mng_ReadNewShipPage(infile, shippage);
   return 0; // old command-based table not supported in mini build
@@ -997,28 +1073,85 @@ int mng_ReadShipPage(CFILE *infile, mngs_ship_page *shippage) {
 // Discards exactly `count` bytes from an open page file (used to skip pages
 // whose bodies are not consumed by a reader, e.g. game-only ROBOT/POWERUP
 // pages or pages that overflow a global array).
-static void discardBytes(CFILE *infile, int count) {
+static void discardBytes(posix_istream &infile, int count) {
   uint8_t buf[4096];
   while (count > 0) {
     int take = count > (int)sizeof(buf) ? (int)sizeof(buf) : count;
-    if (cf_ReadBytes(buf, take, infile) < take)
+    infile.read(buf, take);
+    if (infile.eof())
       break;
     count -= take;
   }
 }
 
-bool loadGameDataTable(const std::filesystem::path &d3HogPath) {
-  // Point cfile at the directory that holds d3.hog, then open the hog.
-  cf_AddBaseDirectory(d3HogPath.parent_path());
-  int hog = cf_OpenLibrary(d3HogPath.filename());
-  if (!hog)
-    return false;
+// Locates `img` inside the open HOG `archive`, reads its full payload from the
+// still-open HOG stream `hogin`, and hands the bytes to the decoder via
+// bm_LoadBitmapFromMemory (fmemopen posix_istream).  Returns the bitmap handle,
+// or -1 if the image is not in the Hog or fails to decode.
+static int loadTextureFromArchive(hog2::archive_t &archive, posix_istream &hogin, const char *img, int format) {
+  auto entry = archive.end();
+  const std::string needle = lowercase(std::string(img));
+  for (auto it = archive.begin(); it != archive.end(); ++it) {
+    if (lowercase(it->name.string()) == needle) {
+      entry = it;
+      break;
+    }
+  }
+  if (entry == archive.end())
+    return -1;
 
-  CFILE *infile = cfopen("table.gam", "rb");
-  if (!infile) {
-    cf_CloseLibrary(hog);
+  const size_t off = archive.fileOffset(entry);
+  const size_t len = entry->len;
+  std::vector<uint8_t> buf(len);
+  hogin.seek(off, std::ios_base::beg);
+  hogin.read(buf.data(), len);
+
+  return bm_LoadBitmapFromMemory(buf.data(), buf.size(), img, format, 0);
+}
+
+bool loadGameDataTable(const std::filesystem::path &d3HogPath) {
+  // Table.gam and every texture image are pulled straight from the HOG payload
+  // below using posix_istream + hog2::archive_t (independent of CFILE/cfopen).
+
+  // Read the whole HOG into memory via posix_stream.
+  posix_istream hogin;
+  if (!hogin.open(d3HogPath, std::ios_base::in)) {
     return false;
   }
+
+  hog2::archive_t archive;
+  try {
+    hogin >> archive;
+  } catch (const std::invalid_argument &) {
+    hogin.close();
+    return false;
+  }
+
+  // Locate the table.gam entry so its payload offset/length can be computed.
+  auto entry = archive.end();
+  for (auto it = archive.begin(); it != archive.end(); ++it) {
+    if (lowercase(std::string(it->name.string())) == "table.gam") {
+      entry = it;
+      break;
+    }
+  }
+  if (entry == archive.end()) {
+    hogin.close();
+    return false;
+  }
+
+  const size_t payload_offset = archive.fileOffset(entry);
+  const size_t payload_len = entry->len;
+
+  // Read the whole Table.gam payload into memory, then wrap it in an in-memory
+  // posix_istream (fmemopen) so the page loop below can reuse the same readers.
+  // The HOG stream `hogin` is kept open so texture images can be looked up in
+  // `archive` and seeked/read per-texture during the page loop.
+  std::vector<uint8_t> payload(payload_len);
+  hogin.seek(payload_offset, std::ios_base::beg);
+  hogin.read(payload.data(), payload_len);
+
+  posix_istream infile(payload.data(), payload.size(), std::ios_base::in);
 
   // Always read new-style (net) pages.
   Old_table_method = 0;
@@ -1033,9 +1166,11 @@ bool loadGameDataTable(const std::filesystem::path &d3HogPath) {
   mngs_megacell_page megacellpage;
 
   bool ok = true;
-  while (!cfeof(infile)) {
-    uint8_t pagetype = cf_ReadByte(infile);
-    int32_t len = cf_ReadInt(infile);
+  while (!infile.eof()) {
+    uint8_t pagetype = 0;
+    int32_t len = 0;
+    infile >> pagetype;
+    infile >> len;
 
     switch (pagetype) {
     case PAGETYPE_TEXTURE:
@@ -1044,12 +1179,11 @@ bool loadGameDataTable(const std::filesystem::path &d3HogPath) {
           ok = false;
         GameTextures[Num_textures] = texpage.tex_struct;
         strcpy(GameTextures[Num_textures].name, texpage.tex_struct.name);
-        // Load the texture's image so textured faces render: resolves inside the
-        // open d3.hog library (which cfopen sees while loadGameDataTable runs).
+        // Load the texture's image so textured faces render: the payload is
+        // read straight out of the open d3.hog archive and decoded from memory.
         GameTextures[Num_textures].bm_handle = -1;
-        const char *img = texpage.bitmap_name;
-        if (img && img[0] != '\0') {
-          int bm = bm_AllocLoadFileBitmap(img, 0, BITMAP_FORMAT_1555);
+        if (!texpage.bitmap_name.empty()) {
+          int bm = loadTextureFromArchive(archive, hogin, texpage.bitmap_name.c_str(), BITMAP_FORMAT_1555);
           if (bm >= 0)
             GameTextures[Num_textures].bm_handle = bm;
         }
@@ -1141,8 +1275,7 @@ bool loadGameDataTable(const std::filesystem::path &d3HogPath) {
       break;
   }
 
-  cfclose(infile);
-  cf_CloseLibrary(hog);
+  hogin.close();
 
   return ok;
 }

@@ -586,34 +586,52 @@ private slots:
   }
 
 #ifdef MINI_EDITOR
-  // Verifies the decoupled cfile layer can open the real d3.hog, locate and
-  // open the Table.gam gamedata file inside it, and read bytes from it. This
-  // is the foundation for loading gamedata before a level is opened. Skips if
-  // the game data directory isn't present on the host.
-  void testCfileReadsHogGamedata()
+  // Verifies the posix_stream + hog2::archive_t layer can open the real d3.hog,
+  // locate and open the Table.gam gamedata file inside it, and read bytes from
+  // it. This is the foundation for loading gamedata before a level is opened
+  // (replaces the legacy cfile/hogfile API). Skips if the game data directory
+  // isn't present on the host.
+  void testPosixReadsHogGamedata()
   {
-    const std::filesystem::path hog_dir = "/mnt/media/games/pc/Descent 3";
-    const std::filesystem::path hog = hog_dir / "d3.hog";
+    const std::filesystem::path hog = "/mnt/media/games/pc/Descent 3/d3.hog";
     if (!std::filesystem::exists(hog)) {
-      QSKIP("d3.hog not found; skipping cfile gamedata test.");
+      QSKIP("d3.hog not found; skipping posix gamedata test.");
       return;
     }
 
-    cf_AddBaseDirectory(hog_dir);
-    int hid = cf_OpenLibrary("d3.hog");
-    QVERIFY(hid > 0);
+    posix_istream in;
+    QVERIFY(in.open(hog, std::ios_base::in));
 
-    CFILE *table = cfopen("table.gam", "rb");
-    QVERIFY(table != nullptr);
-    QVERIFY(cfilelength(table) > 0);
+    hog2::archive_t archive;
+    try {
+      in >> archive;
+    } catch (const std::invalid_argument &) {
+      QFAIL("d3.hog is not a valid HOG2 archive.");
+    }
 
-    // The first byte of Table.gam is a page-type tag; it must be a value the
-    // manage loader recognises (1..10) rather than an error/EOF sentinel.
-    int8_t first = cf_ReadByte(table);
+    // Find table.gam in the archive and confirm its payload size is nonzero.
+    bool found = false;
+    uint32_t tableLen = 0;
+    size_t tableOffset = 0;
+    for (auto it = archive.begin(); it != archive.end(); ++it) {
+      if (lowercase(it->name.string()) == "table.gam") {
+        found = true;
+        tableLen = it->len;
+        tableOffset = archive.fileOffset(it);
+        break;
+      }
+    }
+    QVERIFY(found);
+    QVERIFY(tableLen > 0);
+
+    // Seek to table.gam's payload and read its first byte: it is the page-type
+    // tag, which must be a value the manage loader recognises (1..10).
+    in.seek(tableOffset, std::ios_base::beg);
+    QCOMPARE(tableOffset, (size_t)in.tell());
+    uint8_t first = in.get();
     QVERIFY(first > 0);
 
-    cfclose(table);
-    cf_CloseLibrary(hid);
+    in.close();
     errno = 0;
   }
 

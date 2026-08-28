@@ -23,7 +23,7 @@
 
 #include "manage.h"
 #include "megacell.h"
-#include "cfile.h"
+#include <posix_stream.h>
 
 // The mini tree does not ship megapage.h (the full-engine megacell page
 // container struct).  Provide it here so that the megacell page readers and
@@ -34,10 +34,10 @@ struct mngs_megacell_page {
 };
 
 // Reads a megacell page from an open file.  Returns 0 on error.
-int mng_ReadMegacellPage(CFILE *infile, mngs_megacell_page *megacellpage);
+int mng_ReadMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage);
 
 // Reads a (new-style, net table) megacell page from an open file.  Returns 0 on error.
-int mng_ReadNewMegacellPage(CFILE *infile, mngs_megacell_page *megacellpage);
+int mng_ReadNewMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage);
 
 // Parses Table.gam from the given d3.hog into the global metadata arrays
 // (Object_info / Ships / Weapons / Sounds / GameTextures / Doors / Megacells)

@@ -60,7 +60,7 @@ could not access gamedata that an opened level needs. Implemented:
 - **initD3Core** now locates `d3.hog` (via `-datadir` or common install paths)
   and calls `loadGameDataTable()` during startup, before a level can open.
 
-Verified by tests: `testCfileReadsHogGamedata`, `testGamedataTableLoads`,
+Verified by tests: `testPosixReadsHogGamedata`, `testGamedataTableLoads`,
 `testBitmapDecoder`, `testLoadRealLevelPopulatesRooms` (a real `thecore.d3l`
 loads 18 rooms / 1510 faces, all texture-resolving), and
 `testLevelLoadSaveRoundTrip`.

@@ -22,6 +22,7 @@
 #include "manage.h"
 #include "ship.h"
 #include "cfile.h"
+#include <posix_stream.h>
 #include "pstypes.h"
 
 struct mngs_ship_page {
@@ -44,13 +45,13 @@ struct mngs_ship_page {
 void mng_WriteShipPage(CFILE *outfile, mngs_ship_page *shippage);
 
 // Reads a ship page from an open file.  Returns 0 on error.
-int mng_ReadShipPage(CFILE *infile, mngs_ship_page *shippage);
+int mng_ReadShipPage(posix_istream &infile, mngs_ship_page *shippage);
 
 // Given an open file pointer and a ship_page struct, writes that shippage out
 void mng_WriteNewShipPage(CFILE *outfile, mngs_ship_page *shippage);
 
 // Reads a ship page from an open file.  Returns 0 on error.
-int mng_ReadNewShipPage(CFILE *infile, mngs_ship_page *shippage);
+int mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage);
 
 // Reads in the shippage named "name" into shippage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

@@ -22,6 +22,7 @@
 #include "manage.h"
 #include "soundload.h"
 #include "cfile.h"
+#include <posix_stream.h>
 #include "pstypes.h"
 
 struct mngs_sound_page {
@@ -36,12 +37,12 @@ struct mngs_sound_page {
 void mng_WriteSoundPage(CFILE *outfile, mngs_sound_page *soundpage);
 
 // Reads a sound page from an open file.  Returns 0 on error.
-int mng_ReadSoundPage(CFILE *infile, mngs_sound_page *soundpage);
+int mng_ReadSoundPage(posix_istream &infile, mngs_sound_page *soundpage);
 // Given an open file pointer and a sound_page struct, writes that soundpage out
 void mng_WriteNewSoundPage(CFILE *outfile, mngs_sound_page *soundpage);
 
 // Reads a sound page from an open file.  Returns 0 on error.
-int mng_ReadNewSoundPage(CFILE *infile, mngs_sound_page *soundpage);
+int mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage);
 
 // Reads in the soundpage named "name" into soundpage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

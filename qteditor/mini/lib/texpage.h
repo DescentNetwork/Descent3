@@ -21,13 +21,15 @@
 
 #include "manage.h"
 #include "cfile.h"
+#include <posix_stream.h>
 #include "pstypes.h"
 #include "procedurals.h"
+#include <string>
 
 struct mngs_texture_page {
-  char bitmap_name[PAGENAME_LEN];  // filename for the bitmap associated with this texture
-  char destroy_name[PAGENAME_LEN]; // filename for the destroyed bitmap
-  char sound_name[PAGENAME_LEN];   // filename for the destroyed bitmap
+  std::string bitmap_name;  // filename for the bitmap associated with this texture
+  std::string destroy_name; // filename for the destroyed bitmap
+  std::string sound_name;   // filename for the sound
   texture tex_struct;
 
   int num_proc_elements;
@@ -56,14 +58,14 @@ struct mngs_texture_page {
 
 // Reads a texture page from an open file.  Returns 0 on error.
 
-int mng_ReadTexturePage(CFILE *infile, mngs_texture_page *texpage);
+int mng_ReadTexturePage(posix_istream &infile, mngs_texture_page *texpage);
 
 // Given an open file pointer and a texture handle, writes that texture page out
 void mng_WriteTexturePage(CFILE *outfile, mngs_texture_page *texpage);
 
 // Reads a texture page from an open file.  Returns 0 on error.
 
-int mng_ReadNewTexturePage(CFILE *infile, mngs_texture_page *texpage);
+int mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage);
 
 // Given an open file pointer and a texture handle, writes that texture page out
 void mng_WriteNewTexturePage(CFILE *outfile, mngs_texture_page *texpage);

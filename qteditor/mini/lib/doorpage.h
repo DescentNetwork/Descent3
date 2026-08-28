@@ -22,6 +22,7 @@
 #include "manage.h"
 #include "door.h"
 #include "cfile.h"
+#include <posix_stream.h>
 #include "pstypes.h"
 
 struct mngs_door_page {
@@ -38,13 +39,13 @@ struct mngs_door_page {
 void mng_WriteDoorPage(CFILE *outfile, mngs_door_page *doorpage);
 
 // Reads a door page from an open file.  Returns 0 on error.
-int mng_ReadDoorPage(CFILE *infile, mngs_door_page *doorpage);
+int mng_ReadDoorPage(posix_istream &infile, mngs_door_page *doorpage);
 
 // Given an open file pointer and a door_page struct, writes that doorpage out
 void mng_WriteNewDoorPage(CFILE *outfile, mngs_door_page *doorpage);
 
 // Reads a door page from an open file.  Returns 0 on error.
-int mng_ReadNewDoorPage(CFILE *infile, mngs_door_page *doorpage);
+int mng_ReadNewDoorPage(posix_istream &infile, mngs_door_page *doorpage);
 
 // Reads in the doorpage named "name" into doorpage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

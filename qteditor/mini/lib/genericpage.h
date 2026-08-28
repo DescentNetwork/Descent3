@@ -21,6 +21,7 @@
 
 #include "manage.h"
 #include "cfile.h"
+#include <posix_stream.h>
 #include "pstypes.h"
 #include "objinfo.h"
 #include "robotfirestruct.h"
@@ -48,13 +49,13 @@ struct mngs_generic_page {
 void mng_WriteGenericPage(CFILE *outfile, mngs_generic_page *genericpage);
 
 // Reads a generic page from an open file.  Returns 0 on error.
-int mng_ReadGenericPage(CFILE *infile, mngs_generic_page *genericpage);
+int mng_ReadGenericPage(posix_istream &infile, mngs_generic_page *genericpage);
 
 // Given an open file pointer and a generic_page struct, writes that genericpage out
 void mng_WriteNewGenericPage(CFILE *outfile, mngs_generic_page *genericpage);
 
 // Reads a generic page from an open file.  Returns 0 on error.
-int mng_ReadNewGenericPage(CFILE *infile, mngs_generic_page *genericpage);
+int mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage);
 
 // Reads in the genericpage named "name" into genericpage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

@@ -21,6 +21,7 @@
 
 #include "manage.h"
 #include "cfile.h"
+#include <posix_stream.h>
 #include "pstypes.h"
 #include "gamefile.h"
 
@@ -35,13 +36,13 @@ struct mngs_gamefile_page {
 void mng_WriteGamefilePage(CFILE *outfile, mngs_gamefile_page *gamefilepage);
 
 // Reads a gamefile page from an open file.  Returns 0 on error.
-int mng_ReadGamefilePage(CFILE *infile, mngs_gamefile_page *gamefilepage);
+int mng_ReadGamefilePage(posix_istream &infile, mngs_gamefile_page *gamefilepage);
 
 // Given an open file pointer and a gamefile_page struct, writes that gamefile page out
 void mng_WriteNewGamefilePage(CFILE *outfile, mngs_gamefile_page *gamefilepage);
 
 // Reads a gamefile page from an open file.  Returns 0 on error.
-int mng_ReadNewGamefilePage(CFILE *infile, mngs_gamefile_page *gamefilepage);
+int mng_ReadNewGamefilePage(posix_istream &infile, mngs_gamefile_page *gamefilepage);
 
 // Reads in the gamefilepage named "name" into gamefilepage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

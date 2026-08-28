@@ -19,7 +19,10 @@
 #ifndef _IFF_H
 #define _IFF_H
 
-#include "cfile.h"
+#include <cstddef>
+#include <cstdint>
+#include <posix_stream.h>
+#include "bitmap.h"
 
 // Error codes for read & write routines
 
@@ -42,10 +45,14 @@
 #define TYPE_ILBM 1
 
 // Loads an IFF file, returning bitmap handle or -1 if error
-int bm_iff_alloc_file(CFILE *);
+int bm_iff_alloc_file(posix_istream &ifile);
 
 // Loads a tga or ogf file into a bitmap...returns handle to bm or -1 on error
-int bm_tga_alloc_file(CFILE *infile, char *name, int format = 0);
+int bm_tga_alloc_file(posix_istream &infile, char *name, int format = 0);
+
+// Allocs and loads a bitmap from a fully-resident in-memory payload.
+// Returns the handle of the loaded bitmap, or -1 on error.
+int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname, int format, int mipped);
 
 // Loads a pcx file and converts it to 16 bit.  Returns bitmap handle or -1 on error
 int bm_pcx_alloc_file(CFILE *infile);

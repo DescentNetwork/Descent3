@@ -91,8 +91,7 @@ WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent)
         if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
           return;
         if (QString::compare(name, "IDC_PSHIP_COCKPIT_EDIT") == 0)
-          snprintf(Ships[n].cockpit_name, sizeof(Ships[n].cockpit_name), "%s",
-                   findChild<QLineEdit*>(name)->text().toLocal8Bit().constData());
+          Ships[n].cockpit_name = findChild<QLineEdit*>(name)->text().toStdString();
         else if (QString::compare(name, "IDC_SHIP_ARMOR_EDIT") == 0) {
           float val = findChild<QLineEdit*>(name)->text().toFloat();
           if (val < .05f)
@@ -178,7 +177,7 @@ void WorldObjectsPlayerDialog::updateDialog() {
     edit->setText(Ships[n].dying_model_handle == -1 ? "<none>"
                                                     : Poly_models[Ships[n].dying_model_handle].name);
   if (QLineEdit *edit = ui->IDC_PSHIP_COCKPIT_EDIT)
-    edit->setText(Ships[n].cockpit_name);
+    edit->setText(QString::fromStdString(Ships[n].cockpit_name));
   if (QLineEdit *edit = ui->IDC_SHIP_ARMOR_EDIT)
     edit->setText(QString::number(Ships[n].armor_scalar));
 
@@ -412,7 +411,7 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
         destname = NetModelsDir / Poly_models[Ships[n].lo_render_handle].name;
         cf_CopyFile(destname, srcname);
       }
-      if (Ships[n].cockpit_name[0]) {
+      if (!Ships[n].cockpit_name.empty()) {
         srcname = LocalMiscDir / Ships[n].cockpit_name;
         destname = NetMiscDir / Ships[n].cockpit_name;
         cf_CopyFile(destname, srcname);
@@ -555,12 +554,10 @@ void WorldObjectsPlayerDialog::onPshipCockpit()
     return;
 
   ship &shp = Ships[D3EditState.current_ship];
-  // Store the relative file name into the fixed-size cockpit_name buffer.
-  std::strncpy(shp.cockpit_name, cockpitFile.c_str(), sizeof(shp.cockpit_name) - 1);
-  shp.cockpit_name[sizeof(shp.cockpit_name) - 1] = '\0';
+  shp.cockpit_name = cockpitFile;
 
   // Copy the picked file into the local misc dir under its relative name.
-  const std::filesystem::path dest = LocalMiscDir / shp.cockpit_name;
+  const std::filesystem::path dest = LocalMiscDir / cockpitFile;
   std::filesystem::copy_file(picked, dest, std::filesystem::copy_options::overwrite_existing);
 
   updateDialog();
@@ -626,8 +623,7 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
 void WorldObjectsPlayerDialog::onKillfocusCockpit() {
   const int n = D3EditState.current_ship;
   if (QLineEdit *edit = ui->IDC_PSHIP_COCKPIT_EDIT)
-    snprintf(Ships[n].cockpit_name, sizeof(Ships[n].cockpit_name), "%s",
-             edit->text().toLocal8Bit().constData());
+    Ships[n].cockpit_name = edit->text().toStdString();
 }
 
 void WorldObjectsPlayerDialog::onKillfocusArmor() {

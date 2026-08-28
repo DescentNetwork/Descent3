@@ -85,11 +85,13 @@ void bm_ShutdownBitmaps(void);
 int bm_AllocBitmap(int w, int h, int add_mem);
 // Given a handle, frees the bitmap memory and flags this bitmap as unused
 void bm_FreeBitmap(int handle);
-// Allocs and loads a bitmap
-// Loads either regular TGAs or OUTRAGE_TGA_TYPEs
-// Returns the handle of the loaded bitmap
-// Returns -1 if something is wrong
-int bm_AllocLoadFileBitmap(const char *filename, int mipped, int format = BITMAP_FORMAT_1555);
+// Allocs and loads a bitmap from a fully-resident in-memory payload (a HOG
+// entry or a disk file read into a buffer), wrapped in an fmemopen
+// posix_istream by bm_LoadBitmapFromMemory.  This replaces the old CFILE-based
+// bm_AllocLoadFileBitmap which resolved files via cfopen()/open HOGs.
+// Returns the handle of the loaded bitmap, or -1 if something is wrong
+int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname, int format = BITMAP_FORMAT_1555,
+                            int mipped = 0);
 // Allocs and loads a bitmap from an open file
 // Returns the handle of the loaded bitmap
 // Returns -1 if something is wrong
