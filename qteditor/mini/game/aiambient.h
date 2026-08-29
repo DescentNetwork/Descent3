@@ -59,8 +59,8 @@ public:
 
   void GetALValue(int8_t index, char field, void *ptr);
   void SetALValue(int8_t index, char field, void *ptr);
-  void SaveData(CFILE *fptr);
-  void LoadData(CFILE *fptr);
+  void SaveData(struct CFILE* fptr);
+  void LoadData(struct CFILE* fptr);
 
   void DoFrame();
   void InitForLevel(void);

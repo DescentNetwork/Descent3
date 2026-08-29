@@ -120,7 +120,6 @@ bool EBNode_VerifyGraph();
 #include "level_keypad.h"
 #include "lighting_keypad.h"
 #include "matcen_keypad.h"
-#include "editor_file_dialogs.h"
 #include "editor_room_state.h"
 #include "editor_settings.h"
 #include "editor_view.h"
@@ -288,7 +287,7 @@ private slots:
   {
     InitRooms();
     for (int i = 0; i < MAX_OBJECTS; i++) {
-      std::memset(&Objects[i], 0, sizeof(Objects[i]));
+      Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
     }
@@ -297,7 +296,7 @@ private slots:
 
     // Room 0: single 4-vert quad.
     room *r0 = &Rooms[0];
-    std::memset(r0, 0, sizeof(room));
+    *(r0) = room{};
     InitRoom(r0, 4, 1, 0);
     r0->verts[0] = vector{(float)10, (float)0, (float)-10};
     r0->verts[1] = vector{(float)0, (float)0, (float)-10};
@@ -309,11 +308,11 @@ private slots:
     r0->faces[0].tmap = 2;
     r0->faces[0].face_uvls[0].u = 0.5f;
     r0->wind = vector{(float)1, (float)0, (float)0};
-    r0->name = nullptr;
+    r0->name.clear();
 
     // Room 1: triangle.
     room *r1 = &Rooms[1];
-    std::memset(r1, 0, sizeof(room));
+    *(r1) = room{};
     InitRoom(r1, 3, 1, 0);
     r1->verts[0] = vector{(float)20, (float)0, (float)-10};
     r1->verts[1] = vector{(float)30, (float)0, (float)-10};
@@ -340,36 +339,38 @@ private slots:
 
     // Trigger.
     Num_triggers = 1;
-    std::strcpy(Triggers[0].name, "trig0");
+    Triggers[0].name = "trig0";
     Triggers[0].roomnum = 0;
     Triggers[0].facenum = 0;
-    Triggers[0].flags = TF_ONESHOT;
-    Triggers[0].activator = AF_PLAYER;
+    Triggers[0].flags = trigger_flags_t{};
+    Triggers[0].flags.oneshot = true;
+    Triggers[0].activator = activator_flags_t{};
+    Triggers[0].activator.player = true;
 
     // Level info.
-    std::strcpy(Level_info.name, "RoundTrip");
-    std::strcpy(Level_info.designer, "Tester");
-    std::strcpy(Level_info.copyright, "Test (c)");
-    std::strcpy(Level_info.notes, "round-trip notes");
+    Level_info.name = "RoundTrip";
+    Level_info.designer = "Tester";
+    Level_info.copyright = "Test (c)";
+    Level_info.notes = "round-trip notes";
 
     const QString tmp = QDir::tempPath() + "/_test_level_roundtrip";
     QDir::current().mkpath(tmp);
     const QString file = tmp + "/roundtrip.d3l";
     QFile::remove(file);
 
-    QVERIFY2(SaveLevel(const_cast<char *>(file.toLatin1().constData()), true),
+    QVERIFY2(SaveLevel(std::filesystem::path(file.toStdString()), true),
              qPrintable("SaveLevel failed"));
 
     // Tear down the in-memory world so LoadLevel must rebuild it from disk.
     InitRooms();
     for (int i = 0; i < MAX_OBJECTS; i++) {
-      std::memset(&Objects[i], 0, sizeof(Objects[i]));
+      Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
     Num_triggers = 0;
 
-    QVERIFY2(LoadLevel(const_cast<char *>(file.toLatin1().constData()), nullptr),
+    QVERIFY2(LoadLevel(std::filesystem::path(file.toStdString()), nullptr),
              qPrintable("LoadLevel failed"));
 
     QVERIFY(Highest_room_index >= 1);
@@ -394,19 +395,19 @@ private slots:
     QCOMPARE(Objects[1].roomnum, 1);
 
     QCOMPARE(Num_triggers, 1);
-    QVERIFY(std::strcmp(Triggers[0].name, "trig0") == 0);
-    QVERIFY(std::strcmp(Level_info.name, "RoundTrip") == 0);
+    QVERIFY(Triggers[0].name == "trig0");
+    QVERIFY(Level_info.name == "RoundTrip");
 
     // Clean teardown so later tests see pristine globals.
     InitRooms();
     for (int i = 0; i < MAX_OBJECTS; i++) {
-      std::memset(&Objects[i], 0, sizeof(Objects[i]));
+      Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
     Highest_room_index = -1;
     Num_triggers = 0;
-    std::memset(Level_info.name, 0, sizeof(Level_info.name));
+    Level_info.name.clear();
 
     QFile::remove(file);
     QDir::current().rmdir(tmp);
@@ -426,7 +427,7 @@ private slots:
     }
 
     Highest_room_index = -1;
-    QVERIFY(LoadLevel(const_cast<char *>(lvl.string().c_str()), nullptr));
+    QVERIFY(LoadLevel(lvl, nullptr));
 
     // Load gamedata so GameTextures[].bm_handle has real loaded bitmaps
     // (the decoder populates dimensions/pixels from d3.hog).
@@ -578,7 +579,9 @@ private slots:
     hog2::archive_t read;
     input >> read;
     QCOMPARE(static_cast<int>(std::distance(read.begin(), read.end())), 1);
-    QCOMPARE(read.begin()->name.string(), std::string("alpha.txt"));
+    // fixed_string_t converts transparently to std::string (no .string()).
+    const std::string entryName = read.begin()->name;
+    QCOMPARE(entryName, std::string("alpha.txt"));
 
     QFile::remove(out);
     QDir::current().rmdir(tmpDir);
@@ -691,7 +694,7 @@ private slots:
     int withBitmap = 0, nonProcedural = 0;
     for (int i = 0; i < Num_textures; i++) {
       const int bm = GameTextures[i].bm_handle;
-      if (GameTextures[i].flags & TF_PROCEDURAL) { nonProcedural++; continue; }
+      if (GameTextures[i].flags.procedural) { nonProcedural++; continue; }
       nonProcedural++;
       if (bm >= 0 && bm_w(bm, 0) > 0 && bm_h(bm, 0) > 0) withBitmap++;
     }
@@ -704,48 +707,6 @@ private slots:
   }
 #endif // MINI_EDITOR
 
-  // Win32 editor.cpp exposes OpenFileDialog/SaveFileDialog/PrintToDlgItem so
-  // every dialog can drive file picking and status text. The Qt port lives in
-  // editor_file_dialogs.{h,cpp}; this test pins the MFC->Qt filter conversion
-  // and the PrintToDlgItem-by-objectName lookup that legacy callers in
-  // editor/ rely on.
-  void testEditorFileDialogContract()
-  {
-    // The mfcFilterToQt helper isn't exported, but we can exercise it via the
-    // signature of the OpenFileDialog / SaveFileDialog helpers (they need to
-    // accept the legacy filter strings verbatim). Verify the format the
-    // common call sites use round-trips through the Qt dialog system without
-    // crashing. We don't pop a modal dialog in test mode; just call the
-    // cancellation path through `pathname`-length checks.
-
-    // 1. Filename buffer overflow is bounded. Even if the user picks some
-    //    very long path, OpenFileDialog must truncate safely.
-    const char *filter_single = "Descent 3 Level Files (*.d3l)|*.d3l||";
-    char path[PATH_MAX] = "";
-    char initial[PATH_MAX];
-    std::strcpy(initial, "/tmp");
-    // Verify the function entry doesn't crash and follows Win32 contract:
-    //   - pathname==nullptr returns false without writing.
-    //   - non-destructive cancel (user dismissed) leaves pathname untouched.
-    //   - The function reports false when QFileDialog returns an empty
-    //     selection (no UI means precisely "no selection", same as cancel).
-    QVERIFY(!OpenFileDialog(nullptr, filter_single, nullptr));
-    QVERIFY(path[0] == '\0');
-
-    // 2. PrintToDlgItem writes a formatted string into a QLabel whose
-    //    objectName matches the Win32 resource ID alias.
-    AddScriptDialog adlg;
-    QLabel *name_lbl = new QLabel(&adlg);
-    name_lbl->setObjectName(QStringLiteral("IDC_TEST_LABEL"));
-    PrintToDlgItem(&adlg, "IDC_TEST_LABEL", "Current Matcen: %d", 7);
-    QCOMPARE(name_lbl->text(), QStringLiteral("Current Matcen: 7"));
-
-    // 3. PrintToDlgItem is no-op for unknown IDs (idempotent on the win32
-    //    code path's missing-handle fatal).
-    name_lbl->setText(QStringLiteral("untouched"));
-    PrintToDlgItem(&adlg, "IDC_NONEXISTENT", "x=%d", 99);
-    QCOMPARE(name_lbl->text(), QStringLiteral("untouched"));
-  }
 
   void testDialogsConstruct()
   {
@@ -1064,8 +1025,6 @@ private slots:
 
 
   // Verifies the Qt port of editor/HFile.cpp:
-  //   - StripLeadingTrailingSpaces trims both ends and flips back the
-  //     "stripped" return value.
   //   - CreateNewMine resets the editor-only globals exposed in
   //     qteditor/d3_editor_state.cpp (Curface, Num_triggers, …) and calls
   //     FreeAllRooms / FreeAllObjects on Descent3Core without exploding.
@@ -1076,14 +1035,6 @@ private slots:
   // smoke test pins it doesn't crash instead.
   void testLevelIoHFilePort()
   {
-    char buf[] = "  hi  ";
-    QVERIFY(StripLeadingTrailingSpaces(buf));
-    QCOMPARE(QString::fromLatin1(buf), QStringLiteral("hi"));
-
-    char already[] = "tight";
-    QVERIFY(!StripLeadingTrailingSpaces(already));
-    QCOMPARE(QString::fromLatin1(already), QStringLiteral("tight"));
-
     // Capture the editor-only globals CreateNewMine() is supposed to reset,
     // seed them to sentinel values, then run the function and confirm they
     // came back to the documented defaults.
@@ -1111,15 +1062,14 @@ private slots:
     // iteration as the Win32 ShowLevelStats and returns a heap buffer the
     // caller owns. We only assert the header line because the rest of the
     // body depends on whatever level is currently loaded.
-    char *text = RenderLevelStats();
-    QVERIFY(text != nullptr);
-    QVERIFY(QString::fromUtf8(text).startsWith(QStringLiteral("Level Stats:")));
-    delete[] text;
+    const std::string text = RenderLevelStats();
+    QVERIFY(!text.empty());
+    QVERIFY(QString::fromStdString(text).startsWith(QStringLiteral("Level Stats:")));
 
-    // EditorLoadLevel/EditorSaveLevel smoke-test: passing nullptr returns
-    // false/0 without touching any state.
-    QVERIFY(!EditorLoadLevel(nullptr));
-    QCOMPARE(EditorSaveLevel(nullptr), false);
+    // EditorLoadLevel/EditorSaveLevel smoke-test: passing an empty path
+    // returns false/0 without touching any state.
+    QVERIFY(!EditorLoadLevel(std::filesystem::path{}));
+    QCOMPARE(EditorSaveLevel(std::filesystem::path{}), false);
     errno = 0;
   }
 
@@ -1582,7 +1532,7 @@ private slots:
 
   void testCopyRoom() {
     room src;
-    memset(&src, 0, sizeof(src));
+    src = room{};
     src.used = 1;
     src.num_verts = 4;
     src.num_faces = 2;
@@ -1605,16 +1555,16 @@ private slots:
     src.faces[1].face_verts[2] = 3;
     src.faces[1].tmap = 6;
     src.faces[1].normal = vector{(float)0, (float)1, (float)0};
-    src.flags = RF_EXTERNAL;
+    src.flags.external = 1;
 
     room dst;
-    memset(&dst, 0, sizeof(dst));
+    dst = room{};
     CopyRoom(&dst, &src);
 
     QCOMPARE(dst.num_verts, 4);
     QCOMPARE(dst.num_faces, 2);
     QCOMPARE(dst.num_portals, 0);
-    QCOMPARE(dst.flags, (uint32_t)RF_EXTERNAL);
+    QCOMPARE(dst.flags.external, 1);
     QCOMPARE(dst.verts[2].x(), 70.0f);
     QCOMPARE(dst.faces[0].tmap, 5);
     QCOMPARE(dst.faces[1].tmap, 6);
@@ -1633,8 +1583,8 @@ private slots:
     // Create two rooms with single 4-vert quad faces
     room *r0 = &Rooms[0];
     room *r1 = &Rooms[1];
-    memset(r0, 0, sizeof(room));
-    memset(r1, 0, sizeof(room));
+    *(r0) = room{};
+    *(r1) = room{};
     InitRoom(r0, 4, 1, 0);
     InitRoom(r1, 4, 1, 0);
     r0->verts[0] = vector{(float)0, (float)0, (float)0};
@@ -1674,7 +1624,7 @@ private slots:
 
   void testFlipFace() {
     room *rp = &Rooms[0];
-    memset(rp, 0, sizeof(room));
+    *(rp) = room{};
     InitRoom(rp, 3, 1, 0);
     rp->verts[0] = vector{(float)0, (float)0, (float)0};
     rp->verts[1] = vector{(float)10, (float)0, (float)0};
@@ -1702,7 +1652,7 @@ private slots:
   void testCombineFacesCoplanar() {
     // Create a room with two adjacent coplanar triangles sharing edge 1-2
     room *rp = &Rooms[0];
-    memset(rp, 0, sizeof(room));
+    *(rp) = room{};
     InitRoom(rp, 4, 2, 0);
     rp->verts[0] = vector{(float)0, (float)0, (float)0};
     rp->verts[1] = vector{(float)10, (float)0, (float)0};
@@ -1741,8 +1691,8 @@ private slots:
   void testRotateRooms() {
     room *r0 = &Rooms[0];
     room *r1 = &Rooms[1];
-    memset(r0, 0, sizeof(room));
-    memset(r1, 0, sizeof(room));
+    *(r0) = room{};
+    *(r1) = room{};
     InitRoom(r0, 8, 2, 0);
     InitRoom(r1, 4, 1, 0);
 
@@ -1806,7 +1756,7 @@ private slots:
   void testAttachRoomTerrain() {
     // AttachRoom to terrain (baseroomp == NULL) — simplest path
     room *r0 = &Rooms[0];
-    memset(r0, 0, sizeof(room));
+    *(r0) = room{};
     InitRoom(r0, 4, 1, 0);
     r0->verts[0] = vector{(float)100, (float)100, (float)0};
     r0->verts[1] = vector{(float)200, (float)100, (float)0};
@@ -1840,7 +1790,7 @@ private slots:
     }
     QVERIFY(newroom != -1);
     QVERIFY(Rooms[newroom].num_verts > 0);
-    QVERIFY(Rooms[newroom].flags & RF_EXTERNAL);
+    QVERIFY(Rooms[newroom].flags.external);
 
     FreeRoom(&Rooms[newroom]);
     FreeRoom(r0);
@@ -1852,8 +1802,8 @@ private slots:
     // The attach face must have opposite winding to the base face.
     room *base = &Rooms[0];
     room *att = &Rooms[1];
-    memset(base, 0, sizeof(room));
-    memset(att, 0, sizeof(room));
+    *(base) = room{};
+    *(att) = room{};
     InitRoom(base, 4, 1, 0);
     InitRoom(att, 4, 1, 0);
 
@@ -1917,7 +1867,7 @@ private slots:
 
   void testUVSlide() {
     room *rp = &Rooms[0];
-    memset(rp, 0, sizeof(room));
+    *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
     rp->verts[0] = vector{(float)0, (float)0, (float)0};
     rp->verts[1] = vector{(float)10, (float)0, (float)0};
@@ -1951,7 +1901,7 @@ private slots:
 
   void testUVFlip() {
     room *rp = &Rooms[0];
-    memset(rp, 0, sizeof(room));
+    *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
     rp->verts[0] = vector{(float)0, (float)0, (float)0};
     rp->verts[1] = vector{(float)10, (float)0, (float)0};
@@ -1976,7 +1926,7 @@ private slots:
 
   void testUVScaleFromCenter() {
     room *rp = &Rooms[0];
-    memset(rp, 0, sizeof(room));
+    *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
     rp->verts[0] = vector{(float)0, (float)0, (float)0};
     rp->verts[1] = vector{(float)10, (float)0, (float)0};
@@ -2010,7 +1960,7 @@ private slots:
 
   void testSetDefaultUVs() {
     room *rp = &Rooms[0];
-    memset(rp, 0, sizeof(room));
+    *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
     rp->verts[0] = vector{(float)0, (float)10, (float)0};
     rp->verts[1] = vector{(float)10, (float)10, (float)0};
@@ -2195,7 +2145,7 @@ private slots:
   void testLevelDisplay() {
     const QString level = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
     QVERIFY2(QFile::exists(level), qPrintable("test level missing: " + level));
-    QVERIFY2(EditorLoadLevel(level.toLatin1().constData()), "EditorLoadLevel failed");
+    QVERIFY2(EditorLoadLevel(std::filesystem::path(level.toStdString())), "EditorLoadLevel failed");
 
     int nRooms = 0, nFaces = 0;
     for (int r = 0; r <= Highest_room_index; r++) {
@@ -2222,7 +2172,7 @@ private slots:
   // verifies the framebuffer actually contains geometry (not just the clear).
   void testLevelRender() {
     const QString level = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
-    EditorLoadLevel(level.toLatin1().constData());
+    EditorLoadLevel(std::filesystem::path(level.toStdString()));
 
     EditorView view;
     view.resize(640, 480);
@@ -2257,7 +2207,7 @@ private slots:
   // works end-to-end.
   void testPickFaceAtCenter() {
     const QString level = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
-    QVERIFY2(EditorLoadLevel(level.toLatin1().constData()), "EditorLoadLevel failed");
+    QVERIFY2(EditorLoadLevel(std::filesystem::path(level.toStdString())), "EditorLoadLevel failed");
 
     EditorView view;
     view.resize(640, 480);
@@ -2283,7 +2233,7 @@ private slots:
   // Verifies that the selection signals fire and update the editor state.
   void testPickSignalsUpdateState() {
     const QString level = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
-    QVERIFY2(EditorLoadLevel(level.toLatin1().constData()), "EditorLoadLevel failed");
+    QVERIFY2(EditorLoadLevel(std::filesystem::path(level.toStdString())), "EditorLoadLevel failed");
 
     EditorView view;
     view.resize(640, 480);
@@ -2341,8 +2291,8 @@ private slots:
   void testPlaceRoomSetsGlobals() {
     room *base = &Rooms[0];
     room *att = &Rooms[1];
-    memset(base, 0, sizeof(room));
-    memset(att, 0, sizeof(room));
+    *(base) = room{};
+    *(att) = room{};
     InitRoom(base, 4, 1, 0);
     InitRoom(att, 4, 1, 0);
 
@@ -2391,7 +2341,7 @@ private slots:
 
   void testComputePlacedRoomMatrixIdentity() {
     room *rp = &Rooms[0];
-    memset(rp, 0, sizeof(room));
+    *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
     rp->verts[0] = vector{(float)0, (float)0, (float)0};
     rp->verts[1] = vector{(float)10, (float)0, (float)0};

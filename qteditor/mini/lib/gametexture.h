@@ -283,9 +283,82 @@ struct proc_struct {
   int last_procedural_frame; // last frame a procedural was calculated for this texture
 };
 
+struct [[gnu::packed]] texture_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t smooth_specular : 1;
+  uint32_t rubble : 1;
+  uint32_t lava : 1;
+  uint32_t texture_256 : 1;
+  uint32_t saturate_lightmap : 1;
+  uint32_t force_lightmap : 1;
+  uint32_t water_procedural : 1;
+  uint32_t procedural : 1;
+  uint32_t dontuse : 1;
+  uint32_t alpha : 1;
+  uint32_t saturate : 1;
+  uint32_t breakable : 1;           // Breakable (as in glass)
+  uint32_t light : 1;
+  uint32_t ping_pong : 1;
+  uint32_t pass_thru : 1;
+  uint32_t fly_thru : 1;
+  uint32_t texture_32 : 1;
+  uint32_t tmap2 : 1;
+  uint32_t texture_64 : 1;
+  uint32_t object : 1;
+  uint32_t terrain : 1;
+  uint32_t mine : 1;
+  uint32_t hud_cockpit : 1;
+  uint32_t effect : 1;
+  uint32_t destroyable : 1;
+  uint32_t animated : 1;
+  uint32_t forcefield : 1;
+  uint32_t plastic : 1;             // Shines like plastic
+  uint32_t marble : 1;              // Shines like marble
+  uint32_t metal : 1;               // Shines like metal
+  uint32_t water : 1;
+  uint32_t volatile_flag : 1;
+#else
+  uint32_t volatile_flag : 1;
+  uint32_t water : 1;
+  uint32_t metal : 1;               // Shines like metal
+  uint32_t marble : 1;              // Shines like marble
+  uint32_t plastic : 1;             // Shines like plastic
+  uint32_t forcefield : 1;
+  uint32_t animated : 1;
+  uint32_t destroyable : 1;
+  uint32_t effect : 1;
+  uint32_t hud_cockpit : 1;
+  uint32_t mine : 1;
+  uint32_t terrain : 1;
+  uint32_t object : 1;
+  uint32_t texture_64 : 1;
+  uint32_t tmap2 : 1;
+  uint32_t texture_32 : 1;
+  uint32_t fly_thru : 1;
+  uint32_t pass_thru : 1;
+  uint32_t ping_pong : 1;
+  uint32_t light : 1;
+  uint32_t breakable : 1;           // Breakable (as in glass)
+  uint32_t saturate : 1;
+  uint32_t alpha : 1;
+  uint32_t dontuse : 1;
+  uint32_t procedural : 1;
+  uint32_t water_procedural : 1;
+  uint32_t force_lightmap : 1;
+  uint32_t saturate_lightmap : 1;
+  uint32_t texture_256 : 1;
+  uint32_t lava : 1;
+  uint32_t rubble : 1;
+  uint32_t smooth_specular : 1;
+#endif
+};
+static_assert(sizeof(texture_flags_t) == sizeof(uint32_t));
+
+
 struct texture {
-  char name[PAGENAME_LEN]; // this textures name
-  int flags;               // values defined above
+  std::string name; // this textures name
+  texture_flags_t flags;   // values defined above
   int bm_handle;           // handle which shows what this texture looks like
   int destroy_handle;      // handle which denotes the destroyed image
 
@@ -328,11 +401,11 @@ int GetPreviousTexture(int n);
 
 // Searches thru all textures for a specific name, returns -1 if not found
 // or index of texture with name
-int FindTextureName(const char *name);
+int FindTextureName(const std::string &name);
 
 // Searches thru all textures for a bitmap of a specific name, returns -1 if not found
 // or index of texture with name
-int FindTextureBitmapName(const char *name);
+int FindTextureBitmapName(const std::string& name);
 
 // Given a texture handle, returns that textures bitmap
 // If the texture is animated, returns framenum mod num_of_frames in the animation
@@ -340,7 +413,7 @@ int GetTextureBitmap(int handle, int framenum, bool force = false);
 
 // Given a filename, loads either the bitmap or vclip found in that file.  If type
 // is not NULL, sets it to 1 if file is animation, otherwise sets it to zero
-int LoadTextureImage(const char *filename, int *type, int texture_size, int mipped, int pageable = 0, int format = 0);
+int LoadTextureImage(const std::filesystem::path &filename, int *type, int texture_size, int mipped, int pageable = 0, int format = 0);
 
 // Goes through and marks a texture as a tmap2 if its bitmap(s) have transparency
 bool CheckIfTextureIsTmap2(int texnum);

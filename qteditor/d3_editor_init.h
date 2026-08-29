@@ -17,7 +17,13 @@
  */
 
 #pragma once
+#include <filesystem>
 
+static inline std::filesystem::path original_pwd(void)
+{
+  extern std::filesystem::path orig_pwd;
+  return orig_pwd;
+}
 
 // Initializes the Descent 3 core in editor mode, mirroring the original MFC
 // editor's startup sequence (CMainFrame::OnCreateClient). Must be called once

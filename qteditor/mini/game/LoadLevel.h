@@ -642,37 +642,39 @@
  * @param info resulted info
  * @return true on success
  */
-bool LoadLevelInfo(const std::filesystem::path &filename, level_info &info);
+bool LoadLevelInfo(const std::filesystem::path& filename, level_info &info);
 
 // Load a level file
 // Returns 1 if file read ok, else 0
 // cb_fn returns current chunk, parm1 = # bytes in chunk, parm2 = number of bytes in file
 //	parm1 = -1, for 1st just opened level
 //	parm2 = -2, for done loading.
-bool LoadLevel(char *filename, void (*cb_fn)(const char *, int, int) = NULL);
+//bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *, int, int) = NULL);
+bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *, int, int) = NULL);
 
 // Save a level file
 // Returns 1 if file saved ok, else 0
-bool SaveLevel(char *filename, bool f_save_room_AABB = true);
+//bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB = true);
+bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB = true);
 
 // Reads a room from a disk file
 // Parameters:	ifile - file to read from
 //					rp - room to read
 //					version - version number of file
 // Returns:		1 if read ok, else 0
-int ReadRoom(CFILE *ifile, room *rp, int version);
+int ReadRoom(struct CFILE* ifile, room *rp, int version);
 
 // Writes a room to a disk file
 // Parameters:	ofile - file to write to
 //					rp - room to write
 // Returns:		1 if written ok, else 0
-int WriteRoom(CFILE *ofile, room *rp);
+int WriteRoom(struct CFILE* ofile, room *rp);
 
 // Write the texture names for remapping when level is loaded
-void WriteTextureList(CFILE *ofile);
+void WriteTextureList(struct CFILE* ofile);
 
 // Read the texture names & build the xlate table
-void ReadTextureList(CFILE *ifile);
+void ReadTextureList(struct CFILE* ifile);
 
 // Primarily for multiplayer, makes sure the client and server levels are the same
 

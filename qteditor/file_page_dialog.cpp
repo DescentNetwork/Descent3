@@ -57,7 +57,7 @@ void FilePageDialog::updateDialog() {
   // List the local table files managed by the pagelock system.
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
     if (GlobalTrackLocks[i].used)
-      m_files->addItem(GlobalTrackLocks[i].name);
+      m_files->addItem(QString::fromStdString(GlobalTrackLocks[i].name));
   }
 }
 
@@ -72,7 +72,7 @@ void FilePageDialog::onFilesOut() {
   QString str = "Files held locally:\n";
   for (int i = 0; i < MAX_TRACKLOCKS; i++)
     if (GlobalTrackLocks[i].used)
-      str += QString("  %1\n").arg(GlobalTrackLocks[i].name);
+      str += QString("  %1\n").arg(QString::fromStdString(GlobalTrackLocks[i].name));
   QMessageBox::information(this, "Files out", str);
 }
 void FilePageDialog::onOverride() { updateDialog(); }

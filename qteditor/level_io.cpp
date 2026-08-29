@@ -63,38 +63,17 @@
 
 #include <cstdio>
 #include <cstring>
+#include <sstream>
 
-
-// Trim leading and trailing spaces in-place; returns whether anything was
-// stripped. Verbatim from editor/HFile.cpp and free of game-state deps so
-// the Qt port's level_io.cpp can re-export it for tests.
-bool StripLeadingTrailingSpaces(char *s) {
-  if (s == nullptr)
-    return false;
-  bool stripped = false;
-  char *t = s;
-  while (*t == ' ')
-    t++;
-  if (t != s) {
-    std::strcpy(s, t);
-    stripped = true;
-  }
-  for (t = s + std::strlen(s) - 1; t >= s && *t == ' '; t--) {
-    *t = 0;
-    stripped = true;
-  }
-  return stripped;
-}
 
 // Number of leading spaces needed to right-justify a numeric column in
 // RenderLevelStats; same trick as the Win32 IntSpacing helper.
-char *IntSpacing(int i) {
-  static char spaces[] = "               ";
+std::string IntSpacing(int i) {
   i = std::abs(i);
   int n;
   for (n = 1; i >= 10; n++)
     i /= 10;
-  return spaces + n * 2 + n / 2;
+  return std::string(2 * n + n / 2, ' ');
 }
 
 
@@ -232,11 +211,10 @@ void CreateNewMine() {
     BOA_AABB_ROOM_checksum[i] = 0;
 
   // Init level info.
-  std::strcpy(Level_info.name, "Unnamed");
-  std::strcpy(Level_info.designer, "Anonymous");
-  std::strcpy(Level_info.copyright,
-              "Copyright (c) 1999 Outrage Entertainment, Inc.");
-  std::strcpy(Level_info.notes, "");
+  Level_info.name = "Unnamed";
+  Level_info.designer = "Anonymous";
+  Level_info.copyright = "Copyright (c) 1999 Outrage Entertainment, Inc.";
+  Level_info.notes.clear();
 }
 
 // Walk the level's named entities (objects, triggers, rooms) and surface
@@ -248,48 +226,39 @@ void CheckLevelNames() {
   int i;
   object *objp;
   for (i = 0, objp = Objects; i <= Highest_object_index; i++, objp++) {
-    if (objp->type != OBJ_NONE && objp->name != nullptr) {
+    if (objp->type != OBJ_NONE && !objp->name.empty()) {
       const int handle = osipf_FindObjectName(objp->name);
       if (handle != objp->handle)
         std::fprintf(stderr, "[level_io] duplicate object name \"%s\"\n",
                      objp->name);
-      if (StripLeadingTrailingSpaces(objp->name))
-        std::fprintf(stderr,
-                     "[level_io] stripped spaces from object %d name\n", i);
     }
   }
   trigger *tp;
   for (i = 0, tp = Triggers; i < Num_triggers; i++, tp++) {
-    if (tp != nullptr && tp->name[0] != '\0') {
+    if (tp != nullptr && !tp->name.empty()) {
       const int n = osipf_FindTriggerName(tp->name);
       if (n != i)
         std::fprintf(stderr, "[level_io] duplicate trigger name \"%s\"\n",
-                     tp->name);
-      if (StripLeadingTrailingSpaces(tp->name))
-        std::fprintf(stderr,
-                     "[level_io] stripped spaces from trigger %d name\n", i);
+                     tp->name.c_str());
     }
   }
   room *rp;
   for (i = 0, rp = Rooms; i <= Highest_room_index; i++, rp++) {
-    if (rp->used && rp->name != nullptr) {
+    if (rp->used && !rp->name.empty()) {
       const int n = osipf_FindRoomName(rp->name);
       if (n != i)
         std::fprintf(stderr, "[level_io] duplicate room name \"%s\"\n",
                      rp->name);
-      if (StripLeadingTrailingSpaces(rp->name))
-        std::fprintf(stderr,
-                     "[level_io] stripped spaces from room %d name\n", i);
     }
   }
 }
 
-bool EditorLoadLevel(const char *filename) {
-  if (filename == nullptr)
+bool EditorLoadLevel(const std::filesystem::path& filename) {
+  if (filename.empty())
     return false;
   // LoadLevel takes an optional progress callback; we don't surface the
   // progress UI yet, so pass nullptr and call the engine.
-  if (!LoadLevel(const_cast<char *>(filename), nullptr))
+  if (!LoadLevel(filename, nullptr))
     return false;
   // LoadLevel → FreeAllObjects leaves Viewer_object dangling (see comment
   // in CreateNewMine).  Null it so updateCamera() uses orbit fallback.
@@ -299,26 +268,24 @@ bool EditorLoadLevel(const char *filename) {
   return true;
 }
 
-bool EditorSaveLevel(const char *filename) {
-  if (filename == nullptr)
+bool EditorSaveLevel(const std::filesystem::path& filename) {
+  if (filename.empty())
     return false;
   // SaveLevel lives in Descent3/LoadLevel.cpp behind an
   // "#include editor/ebnode.h" mid-file; Descent3Core doesn't compile that
   // path on Linux (editor/) so we report success/0 honestly. The Qt port
   // will replace this once editor/ebnode.h's MFC deps (EditorMessageBox)
   // have a Linux equivalent.
-  if (!SaveLevel(const_cast<char *>(filename), true))
+  if (!SaveLevel(filename, true))
     return false;
   Mine_changed = false;
   return true;
 }
 
 // Compose the multi-line "Level Stats:" report described in
-// editor/HFile.cpp::ShowLevelStats(). Returns a heap buffer owned by the
-// caller; delete[] when done.
-char *RenderLevelStats() {
-  static constexpr int BUF_LEN = 5000;
-  char *text_buf = new char[BUF_LEN];
+// editor/HFile.cpp::ShowLevelStats(). Returns the report as a std::string.
+std::string RenderLevelStats() {
+  std::ostringstream oss;
 
   int n_rooms = 0, n_rooms_external = 0, n_faces = 0, n_verts = 0;
   int n_objects = 0, n_portals = 0, n_doors = 0, n_objects_outside = 0;
@@ -340,7 +307,7 @@ char *RenderLevelStats() {
     n_verts += rp->num_verts;
     n_faces += rp->num_faces;
     n_portals += rp->num_portals;
-    if (rp->flags & RF_EXTERNAL)
+    if (rp->flags.external)
       n_rooms_external++;
     else
       total_volume_bytes += GetVolumeSizeOfRoom(rp);
@@ -348,31 +315,32 @@ char *RenderLevelStats() {
     for (int t = 0; t < rp->num_faces; t++) {
       face *fp = &rp->faces[t];
       if (fp->special_handle != BAD_SPECIAL_FACE_INDEX &&
-          GameTextures[fp->tmap].flags & TF_SPECULAR &&
+          (GameTextures[fp->tmap].flags.metal || GameTextures[fp->tmap].flags.marble ||
+           GameTextures[fp->tmap].flags.plastic) &&
           fp->lmi_handle != BAD_LMI_INDEX)
         spec_faces++;
     }
-    if (rp->flags & RF_DOOR)
+    if (rp->flags.door)
       n_doors++;
-    if (rp->flags & RF_SPECIAL1)
+    if (rp->flags.special1)
       num_sp1++;
-    if (rp->flags & RF_SPECIAL2)
+    if (rp->flags.special2)
       num_sp2++;
-    if (rp->flags & RF_SPECIAL3)
+    if (rp->flags.special3)
       num_sp3++;
-    if (rp->flags & RF_SPECIAL4)
+    if (rp->flags.special4)
       num_sp4++;
-    if (rp->flags & RF_SPECIAL5)
+    if (rp->flags.special5)
       num_sp5++;
-    if (rp->flags & RF_SPECIAL6)
+    if (rp->flags.special6)
       num_sp6++;
-    if (rp->flags & RF_GOAL1)
+    if (rp->flags.goal1)
       num_redgoals++;
-    if (rp->flags & RF_GOAL2)
+    if (rp->flags.goal2)
       num_bluegoals++;
-    if (rp->flags & RF_GOAL3)
+    if (rp->flags.goal3)
       num_greengoals++;
-    if (rp->flags & RF_GOAL4)
+    if (rp->flags.goal4)
       num_yellowgoals++;
   }
   object *objp;
@@ -418,49 +386,39 @@ char *RenderLevelStats() {
     }
   }
 
-  std::snprintf(text_buf, BUF_LEN,
-                "Level Stats:\n"
-                "\n"
-                "%s%d   Rooms (%d external)\n"
-                "%s%d   Faces\n"
-                "%s%d   Vertices\n"
-                "\n"
-                "%s%d   Portals\n"
-                "%s%d   Doors\n"
-                "\n"
-                "%s%d   Polygon Objects (%d inside, %d outside)\n"
-                "%s%d   Object Faces (%d with lightmaps)\n"
-                "\n"
-                "%s%d   Total lightmap faces\n"
-                "%d	Total volume bytes\n"
-                "%d   Total bytes in lightmaps\n"
-                "%d   Total specular faces\n"
-                "%d   Bytes wasted in lightmaps\n"
-                "\n"
-                "%d Red Goals\n"
-                "%d Blue Goals\n"
-                "%d Green Goals\n"
-                "%d Yellow Goals\n"
-                "%d Special 1 Rooms\n"
-                "%d Special 2 Rooms\n"
-                "%d Special 3 Rooms\n"
-                "%d Special 4 Rooms\n"
-                "%d Special 5 Rooms\n"
-                "%d Special 6 Rooms\n",
-                IntSpacing(n_rooms), n_rooms, n_rooms_external,
-                IntSpacing(n_faces), n_faces,
-                IntSpacing(n_verts), n_verts,
-                IntSpacing(n_portals / 2), n_portals / 2,
-                IntSpacing(n_doors), n_doors,
-                IntSpacing(n_objects), n_objects,
-                n_objects - n_objects_outside, n_objects_outside,
-                IntSpacing(n_object_faces), n_object_faces,
-                n_object_lightmap_faces,
-                IntSpacing(n_faces + n_object_lightmap_faces),
-                n_faces + n_object_lightmap_faces,
-                total_volume_bytes, lm_bytes, spec_faces, bytes_wasted,
-                num_redgoals, num_bluegoals, num_greengoals, num_yellowgoals,
-                num_sp1, num_sp2, num_sp3, num_sp4, num_sp5, num_sp6);
-  return text_buf;
+  oss << "Level Stats:\n"
+      << "\n"
+      << IntSpacing(n_rooms) << n_rooms << "   Rooms (" << n_rooms_external
+      << " external)\n"
+      << IntSpacing(n_faces) << n_faces << "   Faces\n"
+      << IntSpacing(n_verts) << n_verts << "   Vertices\n"
+      << "\n"
+      << IntSpacing(n_portals / 2) << n_portals / 2 << "   Portals\n"
+      << IntSpacing(n_doors) << n_doors << "   Doors\n"
+      << "\n"
+      << IntSpacing(n_objects) << n_objects << "   Polygon Objects ("
+      << n_objects - n_objects_outside << " inside, " << n_objects_outside
+      << " outside)\n"
+      << IntSpacing(n_object_faces) << n_object_faces << "   Object Faces ("
+      << n_object_lightmap_faces << " with lightmaps)\n"
+      << "\n"
+      << IntSpacing(n_faces + n_object_lightmap_faces)
+      << n_faces + n_object_lightmap_faces << "   Total lightmap faces\n"
+      << total_volume_bytes << "\tTotal volume bytes\n"
+      << lm_bytes << "   Total bytes in lightmaps\n"
+      << spec_faces << "   Total specular faces\n"
+      << bytes_wasted << "   Bytes wasted in lightmaps\n"
+      << "\n"
+      << num_redgoals << " Red Goals\n"
+      << num_bluegoals << " Blue Goals\n"
+      << num_greengoals << " Green Goals\n"
+      << num_yellowgoals << " Yellow Goals\n"
+      << num_sp1 << " Special 1 Rooms\n"
+      << num_sp2 << " Special 2 Rooms\n"
+      << num_sp3 << " Special 3 Rooms\n"
+      << num_sp4 << " Special 4 Rooms\n"
+      << num_sp5 << " Special 5 Rooms\n"
+      << num_sp6 << " Special 6 Rooms\n";
+  return oss.str();
 }
 

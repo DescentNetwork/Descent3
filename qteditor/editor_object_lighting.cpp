@@ -331,7 +331,8 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
           } else
             Light_surfaces[surface_index].elements = NULL;
 
-          Light_surfaces[surface_index].flags = 0;
+          Light_surfaces[surface_index].flags.lightsource = 0;
+          Light_surfaces[surface_index].flags.touches_terrain = 0;
 
           if (sm->faces[j].texnum == -1) {
             Light_surfaces[surface_index].emittance.r = 0;
@@ -344,7 +345,7 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
             Light_surfaces[surface_index].emittance.b = (float)GameTextures[po->textures[sm->faces[j].texnum]].b;
             Light_surfaces[surface_index].reflectivity = GameTextures[po->textures[sm->faces[j].texnum]].reflectivity;
             if ((GetMaxColor(&Light_surfaces[surface_index].emittance)) > .005)
-              Light_surfaces[surface_index].flags |= SF_LIGHTSOURCE;
+              Light_surfaces[surface_index].flags.lightsource = 1;
           }
 
           if (terrain)
@@ -357,13 +358,13 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
           Light_surfaces[surface_index].roomnum = Objects[i].roomnum;
 
           if (Light_surfaces[surface_index].surface_type == ST_ROOM_OBJECT) {
-            if (Rooms[Objects[i].roomnum].flags & RF_TOUCHES_TERRAIN)
-              Light_surfaces[surface_index].flags |= SF_TOUCHES_TERRAIN;
+            if (Rooms[Objects[i].roomnum].flags.touches_terrain)
+              Light_surfaces[surface_index].flags.touches_terrain = 1;
 
             for (int k = 0; k < Rooms[Objects[i].roomnum].num_portals; k++) {
               if (Rooms[Objects[i].roomnum].portals[k].croom == -1 ||
-                  (Rooms[Rooms[Objects[i].roomnum].portals[k].croom].flags & RF_EXTERNAL))
-                Light_surfaces[surface_index].flags |= SF_TOUCHES_TERRAIN;
+                  Rooms[Rooms[Objects[i].roomnum].portals[k].croom].flags.external)
+                Light_surfaces[surface_index].flags.touches_terrain = 1;
             }
           }
 

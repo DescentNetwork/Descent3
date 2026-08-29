@@ -313,6 +313,7 @@
 #include "object.h"
 #include "manage.h"
 #include "DeathInfo.h"
+#include <fixed_string.h>
 
 #ifdef NEWEDITOR
 #include "..\neweditor\ned_Object.h"
@@ -322,6 +323,7 @@
 // max sizes for inventory information in the objinfo
 #define MAX_INVEN_DESC_SIZE 180
 #define MAX_INVEN_ICON_SIZE 30
+
 
 // How many object ids in the array
 #define MAX_OBJECT_IDS 910
@@ -449,13 +451,51 @@ struct t_ai_info {
 
 #ifndef NEWEDITOR
 
+
+struct object_info_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 18;                    // Unused padding to complete 32 bits
+  uint32_t ambient_object : 1;              // this object is just for show, & can be removed to improve performance
+  uint32_t no_diff_scale_move : 1;
+  uint32_t no_diff_scale_damage : 1;
+  uint32_t ignore_forcefields_and_glass : 1;
+  uint32_t do_ceiling_check : 1;
+  uint32_t ai_scripted_death : 1;
+  uint32_t inven_viswhenused : 1;          // this object will not have it contol type, movement type and render types
+  uint32_t inven_noremove : 1;              // this object should NOT be removed from the inventory when used
+  uint32_t inven_type_mission : 1;          // this object is for Mission objectives
+  uint32_t inven_nonuseable : 1;            // this object can not be used by pressing ENTER during the game
+  uint32_t inven_selectable : 1;            // this object can be selected in the inventory
+  uint32_t destroyable : 1;                 // this object can be destroyed
+  uint32_t uses_physics : 1;                // this object uses physics
+  uint32_t control_ai : 1;                  // this object uses AI
+#else
+  uint32_t control_ai : 1;                  // this object uses AI
+  uint32_t uses_physics : 1;                // this object uses physics
+  uint32_t destroyable : 1;                 // this object can be destroyed
+  uint32_t inven_selectable : 1;            // this object can be selected in the inventory
+  uint32_t inven_nonuseable : 1;            // this object can not be used by pressing ENTER during the game
+  uint32_t inven_type_mission : 1;          // this object is for Mission objectives
+  uint32_t inven_noremove : 1;              // this object should NOT be removed from the inventory when used
+  uint32_t inven_viswhenused : 1;          // this object will not have it contol type, movement type and render types
+  uint32_t ai_scripted_death : 1;
+  uint32_t do_ceiling_check : 1;
+  uint32_t ignore_forcefields_and_glass : 1;
+  uint32_t no_diff_scale_damage : 1;
+  uint32_t no_diff_scale_move : 1;
+  uint32_t ambient_object : 1;              // this object is just for show, & can be removed to improve performance
+  uint32_t padding : 18;                    // Unused padding to complete 32 bits
+#endif
+};
+
 // Info for robots, powerups, debris, etc.
 struct object_info {
-  char name[PAGENAME_LEN]; // the name on the page
+  std::string name; // the name on the page
 
   int type;   // what type of object this is
   float size; // size
-  int flags;  // misc flags.  See above.
+  object_info_flags_t flags; // misc flags.  See above.
 
   //	int	render_type;			//set RT_ defines in object.h
   int render_handle;     // handle for bitmap/polygon model(hi-res)
@@ -475,7 +515,7 @@ struct object_info {
   int ammo_count; // if a powerup, how much ammo it has
 
   char *description;                   // used for inventory
-  char icon_name[MAX_INVEN_ICON_SIZE]; // used for inventory
+  std::string icon_name; // used for inventory
 
   int16_t sounds[MAX_OBJ_SOUNDS]; // list of sound handles
   int16_t dspew[MAX_DSPEW_TYPES];
@@ -495,8 +535,8 @@ struct object_info {
   bool multi_allowed;
 
   // OSIRIS information
-  char module_name[MAX_MODULENAME_LEN];
-  char script_name_override[PAGENAME_LEN];
+  std::string module_name;
+  std::string script_name_override;
 
   // Death information
   death_info death_types[MAX_DEATH_TYPES];    // the ways this object can die
@@ -544,7 +584,7 @@ int GetPrevObjectID(int n);
 
 // Searches thru all object ids for a specific name
 // Returns the found id, or -1 if not found
-int FindObjectIDName(const char *name);
+int FindObjectIDName(const std::string &name);
 
 // Given an object handle, returns an index to that object's model
 int GetObjectImage(int handle);

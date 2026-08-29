@@ -1314,7 +1314,7 @@ public:
   ///////////////////////////////////
   void InitCustomScriptStorage(void);
   void ClearCustomScriptStorage(void);
-  int CountCustomScriptLines(CFILE *infile);
+  int CountCustomScriptLines(struct CFILE* infile);
   int ParseCustomScriptFile(char *filename, bool show_errors = TRUE);
   void WriteCustomScriptBlock(void);
 

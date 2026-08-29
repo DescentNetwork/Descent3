@@ -33,13 +33,13 @@ struct mngs_gamefile_page {
 //---------------------------------------------------------------
 
 // Given an open file pointer and a gamefile_page struct, writes that gamefile page out
-void mng_WriteGamefilePage(CFILE *outfile, mngs_gamefile_page *gamefilepage);
+void mng_WriteGamefilePage(struct CFILE* outfile, mngs_gamefile_page *gamefilepage);
 
 // Reads a gamefile page from an open file.  Returns 0 on error.
 int mng_ReadGamefilePage(posix_istream &infile, mngs_gamefile_page *gamefilepage);
 
 // Given an open file pointer and a gamefile_page struct, writes that gamefile page out
-void mng_WriteNewGamefilePage(CFILE *outfile, mngs_gamefile_page *gamefilepage);
+void mng_WriteNewGamefilePage(struct CFILE* outfile, mngs_gamefile_page *gamefilepage);
 
 // Reads a gamefile page from an open file.  Returns 0 on error.
 int mng_ReadNewGamefilePage(posix_istream &infile, mngs_gamefile_page *gamefilepage);
@@ -62,9 +62,9 @@ void mng_AssignGamefileToGamefilePage(int n, mngs_gamefile_page *gamefilepage);
 
 // Reads in a gamefile page from the local table file, superseding any gamefile
 // already in RAM with that same name
-void mng_LoadLocalGamefilePage(CFILE *);
+void mng_LoadLocalGamefilePage(struct CFILE* );
 
 // Reads in a page off the net
-void mng_LoadNetGamefilePage(CFILE *, bool overlay = false);
+void mng_LoadNetGamefilePage(struct CFILE* , bool overlay = false);
 
 #endif

@@ -29,8 +29,8 @@
 
 // void mprintf(int n, const char *format, ... );
 // prints a debug message out to the monochrome monitor
-typedef void (*mprintf_fp)(int n, const char *format, ...);
-OSIRISEXTERN mprintf_fp mprintf;
+//typedef void (*mprintf_fp)(int n, const char *format, ...);
+//OSIRISEXTERN mprintf_fp mprintf;
 
 // The main calling function for multisafe functions
 typedef void (*MSafe_CallFunction_fp)(int type, msafe_struct *mstruct);
@@ -577,16 +577,16 @@ typedef void (*Cine_Stop_fp)(void);
 OSIRISEXTERN Cine_Stop_fp Cine_Stop;
 
 // Looks up the id's of the sound, room, trigger, object, ect. based on the name
-typedef int (*Scrpt_FindSoundName_fp)(const char *name);
+typedef int (*Scrpt_FindSoundName_fp)(const std::string& name);
 OSIRISEXTERN Scrpt_FindSoundName_fp Scrpt_FindSoundName;
 
-typedef int (*Scrpt_FindRoomName_fp)(const char *name);
+typedef int (*Scrpt_FindRoomName_fp)(const std::string& name);
 OSIRISEXTERN Scrpt_FindRoomName_fp Scrpt_FindRoomName;
 
-typedef int (*Scrpt_FindTriggerName_fp)(const char *name);
+typedef int (*Scrpt_FindTriggerName_fp)(const std::string& name);
 OSIRISEXTERN Scrpt_FindTriggerName_fp Scrpt_FindTriggerName;
 
-typedef int (*Scrpt_FindObjectName_fp)(const char *name);
+typedef int (*Scrpt_FindObjectName_fp)(const std::string& name);
 OSIRISEXTERN Scrpt_FindObjectName_fp Scrpt_FindObjectName;
 
 typedef int (*Scrpt_GetTriggerRoom_fp)(int trigger_id);
@@ -595,10 +595,10 @@ OSIRISEXTERN Scrpt_GetTriggerRoom_fp Scrpt_GetTriggerRoom;
 typedef int (*Scrpt_GetTriggerFace_fp)(int trigger_id);
 OSIRISEXTERN Scrpt_GetTriggerFace_fp Scrpt_GetTriggerFace;
 
-typedef int (*Scrpt_FindDoorName_fp)(const char *name);
+typedef int (*Scrpt_FindDoorName_fp)(const std::string& name);
 OSIRISEXTERN Scrpt_FindDoorName_fp Scrpt_FindDoorName;
 
-typedef int (*Scrpt_FindTextureName_fp)(const char *name);
+typedef int (*Scrpt_FindTextureName_fp)(const std::string& name);
 OSIRISEXTERN Scrpt_FindTextureName_fp Scrpt_FindTextureName;
 
 typedef void (*Game_CreateRandomSparks_fp)(int num_sparks, vector *pos, int roomnum, int which_index,
@@ -636,13 +636,13 @@ static inline bool Path_GetInformation(int pathid, int point, vector *pos = NULL
 typedef void (*Cine_StartCanned_fp)(tCannedCinematicInfo *info);
 OSIRISEXTERN Cine_StartCanned_fp Cine_StartCanned;
 
-typedef int (*Scrpt_FindMatcenName_fp)(const char *name);
+typedef int (*Scrpt_FindMatcenName_fp)(const std::string& name);
 OSIRISEXTERN Scrpt_FindMatcenName_fp Scrpt_FindMatcenName;
 
-typedef int (*Scrpt_FindPathName_fp)(const char *name);
+typedef int (*Scrpt_FindPathName_fp)(const std::string& name);
 OSIRISEXTERN Scrpt_FindPathName_fp Scrpt_FindPathName;
 
-typedef int (*Scrpt_FindLevelGoalName_fp)(const char *name);
+typedef int (*Scrpt_FindLevelGoalName_fp)(const std::string& name);
 OSIRISEXTERN Scrpt_FindLevelGoalName_fp Scrpt_FindLevelGoalName;
 
 typedef void (*LGoal_Value_fp)(char op, char vtype, void *ptr, int g_index, int i_index);

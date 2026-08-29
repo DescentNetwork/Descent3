@@ -113,13 +113,53 @@ struct tOSIRISTriggerScript {
 
 #define TRIG_NAME_LEN 19
 
+struct [[gnu::packed]] trigger_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint16_t padding : 11;
+  uint16_t inform_activate_to_lg : 1; // This trigger is involved in the level goal system
+  uint16_t oneshot : 1;                // This trigger only works once
+  uint16_t dead : 1;                   // This trigger has been tripped and is now dead
+  uint16_t disabled : 1;               // This trigger is currently not active
+  uint16_t unused : 1;
+#else
+  uint16_t unused : 1;
+  uint16_t disabled : 1;               // This trigger is currently not active
+  uint16_t dead : 1;                   // This trigger has been tripped and is now dead
+  uint16_t oneshot : 1;                // This trigger only works once
+  uint16_t inform_activate_to_lg : 1; // This trigger is involved in the level goal system
+  uint16_t padding : 11;
+#endif
+};
+static_assert(sizeof(trigger_flags_t) == sizeof(uint16_t));
+
+struct [[gnu::packed]] activator_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint16_t padding : 11;
+  uint16_t clutter : 1;       // A piece of clutter
+  uint16_t robot_weapon : 1;  // A robot's weapon can activate this trigger
+  uint16_t robot : 1;         // A robot can activate this trigger
+  uint16_t player_weapon : 1; // The player's weapons can activate this trigger
+  uint16_t player : 1;        // The player can activate this trigger
+#else
+  uint16_t player : 1;        // The player can activate this trigger
+  uint16_t player_weapon : 1; // The player's weapons can activate this trigger
+  uint16_t robot : 1;         // A robot can activate this trigger
+  uint16_t robot_weapon : 1;  // A robot's weapon can activate this trigger
+  uint16_t clutter : 1;       // A piece of clutter
+  uint16_t padding : 11;
+#endif
+};
+static_assert(sizeof(activator_flags_t) == sizeof(uint16_t));
+
 // The trigger structure
 struct trigger {
-  char name[TRIG_NAME_LEN + 1]; // the name of this trigger
+  std::string name; // the name of this trigger
   int roomnum;                  // the room this trigger is in
   int facenum;                  // the face to which this trigger is attched
-  int16_t flags;                  // flags for this trigger
-  int16_t activator;              // flags for what can activate this trigger
+  trigger_flags_t flags;              // flags for this trigger
+  activator_flags_t activator;        // flags for what can activate this trigger
   // This is allocated when the level is started
   tOSIRISTriggerScript osiris_script;
 };

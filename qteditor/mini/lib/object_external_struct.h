@@ -397,6 +397,8 @@ struct tOSIRISScript {
   tOSIRISScriptNode default_script;
 };
 
+
+
 // The data for an object
 struct object {
   uint8_t type;       // what type of object this is... robot, weapon, hostage, powerup, fireball
@@ -404,7 +406,7 @@ struct object {
   uint16_t id;        // which form of object...which powerup, robot, etc.
   uint32_t flags;
 
-  char *name; // the name of this object, or NULL
+  std::string name; // the name of this object, or NULL
 
   int32_t handle;       //  unique handle for this object.  See defines above
   int16_t next, prev;   // id of next and previous connected object in Objects, -1 = no connection

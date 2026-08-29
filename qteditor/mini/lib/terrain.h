@@ -30,7 +30,7 @@
 
 #define TERRAIN_WIDTH 256 // How many cells across
 #define TERRAIN_DEPTH 256 // How many cells down
-#define TERRAIN_SIZE 16.0 // The size of each segment, must be a power of 2
+#define TERRAIN_SIZE 16.0f // The size of each segment, must be a power of 2
 #define TERRAIN_TEX_WIDTH 32
 #define TERRAIN_TEX_DEPTH 32
 
@@ -75,7 +75,28 @@
 #define TF_SPECIAL_MINE 8  // This segment has a mine attached to it
 #define TF_INVISIBLE 16    // This segment is invisible
 #define TFM_REGION_MASK (32 + 64 + 128)
-// NOTE: 32 64 and 128 are reserved for AI stuff  (terrain region partitioning)
+
+
+struct [[gnu::packed]] terrain_segment_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t ai_region : 3;        // AI stuff (terrain region partitioning)
+  uint8_t invisible : 1;        // TF_INVISIBLE (16)
+  uint8_t special_mine : 1;     // TF_SPECIAL_MINE (8)
+  uint8_t special_water : 1;    // TF_SPECIAL_WATER (4)
+  uint8_t padding : 1;          // Unused padding for bit 2 (value 2)
+  uint8_t dynamic : 1;          // TF_DYNAMIC (1)
+#else
+  uint8_t dynamic : 1;          // TF_DYNAMIC (1)
+  uint8_t padding : 1;          // Unused padding for bit 2 (value 2)
+  uint8_t special_water : 1;    // TF_SPECIAL_WATER (4)
+  uint8_t special_mine : 1;     // TF_SPECIAL_MINE (8)
+  uint8_t invisible : 1;        // TF_INVISIBLE (16)
+  uint8_t ai_region : 3;        // AI stuff (terrain region partitioning)
+#endif
+};
+static_assert(sizeof(terrain_segment_flags_t) == sizeof(uint8_t));
+
 
 // Terrain cells are on a fixed grid so they have no x and z positions.  If you want the x and z
 // positions you must calculate them yourself: gridx*TERRAIN_SIZE and gridz*TERRAIN_SIZE
@@ -108,6 +129,40 @@ struct lodoff {
   float save_delta[MAX_TERRAIN_LOD];
 };
 
+struct [[gnu::packed]] terrain_sky_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 27;
+  uint32_t rotate_sky : 1;     // TF_ROTATE_SKY (16)
+  uint32_t rotate_stars : 1;   // TF_ROTATE_STARS (8)
+  uint32_t fog : 1;            // TF_FOG (4)
+  uint32_t satellites : 1;     // TF_SATELLITES (2)
+  uint32_t stars : 1;          // TF_STARS (1)
+#else
+  uint32_t stars : 1;          // TF_STARS (1)
+  uint32_t satellites : 1;     // TF_SATELLITES (2)
+  uint32_t fog : 1;            // TF_FOG (4)
+  uint32_t rotate_stars : 1;   // TF_ROTATE_STARS (8)
+  uint32_t rotate_sky : 1;     // TF_ROTATE_SKY (16)
+  uint32_t padding : 27;
+#endif
+};
+static_assert(sizeof(terrain_sky_flags_t) == sizeof(uint32_t));
+
+struct [[gnu::packed]] terrain_satellite_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 6;
+  uint8_t atmosphere : 1; // TSF_ATMOSPHERE (2)
+  uint8_t halo : 1;       // TSF_HALO (1)
+#else
+  uint8_t halo : 1;       // TSF_HALO (1)
+  uint8_t atmosphere : 1; // TSF_ATMOSPHERE (2)
+  uint8_t padding : 6;
+#endif
+};
+static_assert(sizeof(terrain_satellite_flags_t) == sizeof(uint8_t));
+
 // Data for the sky spherical map
 struct terrain_sky {
   int textured; // 1=use textures, 0=use gouraud shaded polygon
@@ -132,7 +187,7 @@ struct terrain_sky {
 
   vector star_vectors[MAX_STARS];
   vector satellite_vectors[MAX_SATELLITES];
-  uint8_t satellite_flags[MAX_SATELLITES];
+  terrain_satellite_flags_t satellite_flags[MAX_SATELLITES];
   float satellite_size[MAX_SATELLITES];
 
   uint8_t num_satellites;
@@ -147,7 +202,7 @@ struct terrain_sky {
   float fog_scalar;
 
   int star_color[MAX_STARS];
-  int flags;
+  terrain_sky_flags_t flags;
 };
 
 struct link_tile {

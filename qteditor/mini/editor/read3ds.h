@@ -43,6 +43,6 @@ int Read3DSMaxFile(char *filename);
 void ConvertHandiness(vector *v);
 
 // Parses a chunk of a 3dsmax file - this function calls itself
-void Parse3DSMaxChunk(CFILE *fp, int size);
+void Parse3DSMaxChunk(struct CFILE* fp, int size);
 
 #endif

@@ -629,6 +629,7 @@
 #define _OBJECT_H
 
 #include <cstdint>
+#include <fixed_string.h>
 
 #include "object_external_struct.h"
 #include "object_external.h"
@@ -677,7 +678,7 @@ extern const char *Object_type_names[MAX_OBJECT_TYPES];
 #define OLF_NO_SPECULARITY 64 // Object does not have specular light cast on it
 
 // OSIRIS defines
-#define MAX_MODULENAME_LEN 32
+
 
 // How long an object name can be
 #define OBJ_NAME_LEN 19 // max length for object name

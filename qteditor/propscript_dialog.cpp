@@ -36,7 +36,7 @@ PropScriptDialog::PropScriptDialog(QWidget *parent)
   if (m_list != nullptr) {
     // Scripts are loaded through the OSIRIS module system; list compiled
     // modules present in the local scripts directory.
-    QDir dir(LocalScriptDir);
+    QDir dir(QString::fromStdString(LocalScriptDir.string()));
     const QStringList names = dir.entryList(QStringList() << "*.dll", QDir::Files);
     for (const QString &n : names)
       m_list->addItem(QFileInfo(n).completeBaseName());

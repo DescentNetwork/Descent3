@@ -168,7 +168,7 @@ struct Shader {
   }
 
   GLuint id() const {
-    ASSERT(id_ != 0);
+    Q_ASSERT(id_ != 0);
     return id_;
   }
 

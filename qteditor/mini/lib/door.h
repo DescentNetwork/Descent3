@@ -122,7 +122,7 @@
 //	DOOR STRUCTURES
 
 struct door {
-  char name[PAGENAME_LEN]; // name of the door
+  std::string name; // name of the door
   uint8_t used;              // if this door is in use
   uint8_t flags;             // flags for this door
   uint8_t pad;               // keep alignment (pagename is 35 chars long)
@@ -135,7 +135,7 @@ struct door {
   int close_sound;         // sound to play when closing
 
   // OSIRIS information
-  char module_name[MAX_MODULENAME_LEN];
+  std::string module_name;
 
 };
 
@@ -159,10 +159,10 @@ int GetNextDoor(int n);
 int GetPrevDoor(int n);
 // Searches thru all doors for a specific name, returns -1 if not found
 // or index of door with name
-int FindDoorName(const char *name);
+int FindDoorName(const std::string &name);
 
 // Given a filename, loads the model found in that file
-int LoadDoorImage(const char *filename, int pageable = 1);
+int LoadDoorImage(const std::filesystem::path &filename, int pageable = 1);
 // Given a door handle, returns an index to that doors model
 int GetDoorImage(int handle);
 

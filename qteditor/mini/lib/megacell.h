@@ -32,7 +32,7 @@
 #define MAX_MEGACELL_HEIGHT 8
 
 struct megacell {
-  char name[PAGENAME_LEN];
+  std::string name;
   int8_t width;
   int8_t height;
 

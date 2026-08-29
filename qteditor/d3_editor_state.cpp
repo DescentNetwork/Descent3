@@ -305,8 +305,9 @@ int IsRoomSelected(int roomnum) {
 
 room *CreateNewRoom(int nverts, int nfaces, bool palette_room) {
   (void)palette_room;
+  // `new room()` value-initialises (zeroing PODs, default-constructing the
+  // std::string name).  No memset — memset would corrupt the std::string.
   room *rp = new room();
-  memset(rp, 0, sizeof(room));
   rp->used = 1;
   rp->num_verts = nverts;
   rp->num_faces = nfaces;

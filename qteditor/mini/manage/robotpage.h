@@ -28,14 +28,14 @@
 
 struct mngs_robot_page {
   object_info robot_struct;
-  char image_name[PAGENAME_LEN];
+  std::string image_name;
 };
 
 // Robot page functions
 //---------------------------------------------------------------
 
 // Given an open file pointer and a robot_page struct, writes that robotpage out
-void mng_WriteRobotPage(CFILE *outfile, mngs_robot_page *robotpage);
+void mng_WriteRobotPage(struct CFILE* outfile, mngs_robot_page *robotpage);
 
 // Reads a robot page from an open file.  Returns 0 on error.
 int mng_ReadRobotPage(posix_istream &infile, mngs_robot_page *robotpage);
@@ -67,9 +67,9 @@ void mng_AssignRobotToRobotPage(int n, mngs_robot_page *robotpage);
 
 // Reads in a robot page from the local table file, superseding any robot
 // already in RAM with that same name
-void mng_LoadLocalRobotPage(CFILE *);
+void mng_LoadLocalRobotPage(struct CFILE* );
 
 // Reads in a page off the net
-void mng_LoadNetRobotPage(CFILE *);
+void mng_LoadNetRobotPage(struct CFILE* );
 
 #endif

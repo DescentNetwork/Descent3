@@ -983,7 +983,7 @@ void EditorView::renderBNodes() {
   }
 
   for (int roomnum = room_start; roomnum <= room_end; roomnum++) {
-    if (!Rooms[roomnum].used || (Rooms[roomnum].flags & RF_EXTERNAL))
+    if (!Rooms[roomnum].used || (Rooms[roomnum].flags.external))
       continue;
     if (EBN_draw_type == EBDRAW_ROOM && roomnum != room_start)
       continue;

@@ -41,7 +41,7 @@
 #define STATE_NOCOMPILER 6
 
 struct tFileInfo {
-  char filename[PAGENAME_LEN];
+  std::string filename;
   int state;
 };
 

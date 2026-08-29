@@ -30,6 +30,22 @@ static inline void psReadString(posix_istream &in, std::string &out, size_t maxL
   }
 }
 
+
+inline byte_istream& operator >>(byte_istream& input, std::string& data)
+{
+  data.clear();
+  for(uint8_t c = input.get(); c; c = input.get())
+    data.push_back(static_cast<char>(c));
+  return input;
+}
+
+inline byte_ostream& operator <<(byte_ostream& output, const std::string& data)
+{
+  output.write(data.data(), data.size());
+  output.put(0);
+  return output;
+}
+
 // Write a variable-length, NUL-terminated string (binary mode).  Mirrors
 // cf_WriteString (writes the bytes then a NUL terminator).
 static inline void psWriteString(posix_ostream &out, const std::string &s) {

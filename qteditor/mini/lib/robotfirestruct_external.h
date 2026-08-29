@@ -38,6 +38,7 @@
 #define WBF_AIM_FVEC 1024
 #define WBF_FIRE_TARGET 2048
 
+
 #define MAX_WB_UPGRADES 5
 
 #define DWBF_ENABLED 1

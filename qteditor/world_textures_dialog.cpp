@@ -111,35 +111,36 @@ WorldTexturesDialog::WorldTexturesDialog(QWidget *parent)
     });
 
   // Flag checkboxes.
-  const struct {
-    const char *name;
-    uint32_t flag;
-  } flags[] = {
-      {"IDC_MINE_TEXTURE", TF_MINE},
-      {"IDC_OBJECT_TEXTURE", TF_OBJECT},
-      {"IDC_TERRAIN_TEXTURE", TF_TERRAIN},
-      {"IDC_EFFECT_TEXTURE", TF_EFFECT},
-      {"IDC_HUD_COCKPIT_TEXTURE", TF_HUD_COCKPIT},
-      {"IDC_LIGHT_TEXTURE", TF_LIGHT},
-      {"IDC_WATER", TF_WATER},
-      {"IDC_VOLATILE", TF_VOLATILE},
-      {"IDC_SATURATE", TF_SATURATE},
-      {"IDC_MARBLE_CHECK", TF_MARBLE},
-      {"IDC_TEXTURE_FLY_THRU_CHECK", TF_FLY_THRU},
-      {"IDC_FORCEFIELD", TF_FORCEFIELD},
-      {"IDC_METAL_CHECK", TF_METAL},
-      {"IDC_PLASTIC_CHECK", TF_PLASTIC},
-      {"IDC_CHECK_ANIMATE", TF_ANIMATED},
-      {"IDC_PING_PONG", TF_PING_PONG},
-      {"IDC_CHECK_TMAP2", TF_TMAP2},
-      {"IDC_CHECK_DESTROY", TF_DESTROYABLE},
-      {"IDC_CHECK_BREAKABLE", TF_BREAKABLE},
-      {"IDC_LAVA_CHECKBOX", TF_LAVA},
-      {"IDC_RUBBLE_CHECKBOX", TF_RUBBLE},
-      {"IDC_SMOOTH_SPEC_CHECK", (uint32_t)TF_SMOOTH_SPECULAR},
-  };
-  for (const auto &c : flags)
-    bindFlag(c.name, c.flag);
+  #define CONNECT_TEXTURE_FLAG(IDC, MEMBER)                                                        \
+    connect(ui->IDC, &QCheckBox::toggled, this, [this](bool checked) {                            \
+      const int n = D3EditState.texdlg_texture;                                                   \
+      if (n < 0 || n >= MAX_TEXTURES || !GameTextures[n].used)                                     \
+        return;                                                                                    \
+      GameTextures[n].flags.MEMBER = checked;                                                      \
+    });
+  CONNECT_TEXTURE_FLAG(IDC_MINE_TEXTURE, mine);
+  CONNECT_TEXTURE_FLAG(IDC_OBJECT_TEXTURE, object);
+  CONNECT_TEXTURE_FLAG(IDC_TERRAIN_TEXTURE, terrain);
+  CONNECT_TEXTURE_FLAG(IDC_EFFECT_TEXTURE, effect);
+  CONNECT_TEXTURE_FLAG(IDC_HUD_COCKPIT_TEXTURE, hud_cockpit);
+  CONNECT_TEXTURE_FLAG(IDC_LIGHT_TEXTURE, light);
+  CONNECT_TEXTURE_FLAG(IDC_WATER, water);
+  CONNECT_TEXTURE_FLAG(IDC_VOLATILE, volatile_flag);
+  CONNECT_TEXTURE_FLAG(IDC_SATURATE, saturate);
+  CONNECT_TEXTURE_FLAG(IDC_MARBLE_CHECK, marble);
+  CONNECT_TEXTURE_FLAG(IDC_TEXTURE_FLY_THRU_CHECK, fly_thru);
+  CONNECT_TEXTURE_FLAG(IDC_FORCEFIELD, forcefield);
+  CONNECT_TEXTURE_FLAG(IDC_METAL_CHECK, metal);
+  CONNECT_TEXTURE_FLAG(IDC_PLASTIC_CHECK, plastic);
+  CONNECT_TEXTURE_FLAG(IDC_CHECK_ANIMATE, animated);
+  CONNECT_TEXTURE_FLAG(IDC_PING_PONG, ping_pong);
+  CONNECT_TEXTURE_FLAG(IDC_CHECK_TMAP2, tmap2);
+  CONNECT_TEXTURE_FLAG(IDC_CHECK_DESTROY, destroyable);
+  CONNECT_TEXTURE_FLAG(IDC_CHECK_BREAKABLE, breakable);
+  CONNECT_TEXTURE_FLAG(IDC_LAVA_CHECKBOX, lava);
+  CONNECT_TEXTURE_FLAG(IDC_RUBBLE_CHECKBOX, rubble);
+  CONNECT_TEXTURE_FLAG(IDC_SMOOTH_SPEC_CHECK, smooth_specular);
+  #undef CONNECT_TEXTURE_FLAG
 
   updateDialog();
 }
@@ -156,23 +157,6 @@ void WorldTexturesDialog::saveTexturesOnClose() {
         mng_ReplacePage(GameTextures[t].name, GameTextures[t].name, t, PAGETYPE_TEXTURE, 1);
     }
   }
-}
-
-void WorldTexturesDialog::bindFlag(const char *checkName, uint32_t flag) {
-  if (QCheckBox *cb = findChild<QCheckBox*>(checkName))
-    connect(cb, &QCheckBox::toggled, this, [this, flag, checkName](bool checked) {
-      setFlag(flag, checkName, checked);
-    });
-}
-
-void WorldTexturesDialog::setFlag(uint32_t flag, const char *checkName, bool checked) {
-  const int n = D3EditState.texdlg_texture;
-  if (n < 0 || n >= MAX_TEXTURES || !GameTextures[n].used)
-    return;
-  if (checked)
-    GameTextures[n].flags |= flag;
-  else
-    GameTextures[n].flags &= ~flag;
 }
 
 void WorldTexturesDialog::updateDialog() {
@@ -213,30 +197,35 @@ void WorldTexturesDialog::updateDialog() {
     if (QLineEdit *edit = findChild<QLineEdit*>(f.name))
       edit->setText(QString::number(GameTextures[n].*f.field));
 
-  const struct {
-    const char *name;
-    uint32_t flag;
-  } flags[] = {
-      {"IDC_MINE_TEXTURE", TF_MINE},          {"IDC_OBJECT_TEXTURE", TF_OBJECT},
-      {"IDC_TERRAIN_TEXTURE", TF_TERRAIN},    {"IDC_EFFECT_TEXTURE", TF_EFFECT},
-      {"IDC_HUD_COCKPIT_TEXTURE", TF_HUD_COCKPIT}, {"IDC_LIGHT_TEXTURE", TF_LIGHT},
-      {"IDC_WATER", TF_WATER},                {"IDC_VOLATILE", TF_VOLATILE},
-      {"IDC_SATURATE", TF_SATURATE},          {"IDC_MARBLE_CHECK", TF_MARBLE},
-      {"IDC_TEXTURE_FLY_THRU_CHECK", TF_FLY_THRU}, {"IDC_FORCEFIELD", TF_FORCEFIELD},
-      {"IDC_METAL_CHECK", TF_METAL},          {"IDC_PLASTIC_CHECK", TF_PLASTIC},
-      {"IDC_CHECK_ANIMATE", TF_ANIMATED},     {"IDC_PING_PONG", TF_PING_PONG},
-      {"IDC_CHECK_TMAP2", TF_TMAP2},          {"IDC_CHECK_DESTROY", TF_DESTROYABLE},
-      {"IDC_CHECK_BREAKABLE", TF_BREAKABLE},  {"IDC_LAVA_CHECKBOX", TF_LAVA},
-      {"IDC_RUBBLE_CHECKBOX", TF_RUBBLE},     {"IDC_SMOOTH_SPEC_CHECK", (uint32_t)TF_SMOOTH_SPECULAR},
-  };
-  for (const auto &c : flags)
-    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
-      cb->setChecked(GameTextures[n].flags & c.flag);
+  #define SET_CHECK(IDC, MEMBER) ui->IDC->setChecked(GameTextures[n].flags.MEMBER);
+  SET_CHECK(IDC_MINE_TEXTURE, mine);
+  SET_CHECK(IDC_OBJECT_TEXTURE, object);
+  SET_CHECK(IDC_TERRAIN_TEXTURE, terrain);
+  SET_CHECK(IDC_EFFECT_TEXTURE, effect);
+  SET_CHECK(IDC_HUD_COCKPIT_TEXTURE, hud_cockpit);
+  SET_CHECK(IDC_LIGHT_TEXTURE, light);
+  SET_CHECK(IDC_WATER, water);
+  SET_CHECK(IDC_VOLATILE, volatile_flag);
+  SET_CHECK(IDC_SATURATE, saturate);
+  SET_CHECK(IDC_MARBLE_CHECK, marble);
+  SET_CHECK(IDC_TEXTURE_FLY_THRU_CHECK, fly_thru);
+  SET_CHECK(IDC_FORCEFIELD, forcefield);
+  SET_CHECK(IDC_METAL_CHECK, metal);
+  SET_CHECK(IDC_PLASTIC_CHECK, plastic);
+  SET_CHECK(IDC_CHECK_ANIMATE, animated);
+  SET_CHECK(IDC_PING_PONG, ping_pong);
+  SET_CHECK(IDC_CHECK_TMAP2, tmap2);
+  SET_CHECK(IDC_CHECK_DESTROY, destroyable);
+  SET_CHECK(IDC_CHECK_BREAKABLE, breakable);
+  SET_CHECK(IDC_LAVA_CHECKBOX, lava);
+  SET_CHECK(IDC_RUBBLE_CHECKBOX, rubble);
+  SET_CHECK(IDC_SMOOTH_SPEC_CHECK, smooth_specular);
+  #undef SET_CHECK
 
   if (QLineEdit *edit = ui->IDC_BITMAP_NAME) {
     const int bm = GameTextures[n].bm_handle;
     if (bm >= 0)
-      edit->setText(GameBitmaps[bm].name);
+      edit->setText(QString::fromStdString(GameBitmaps[bm].name));
   }
 
   if (QPushButton *checkin = ui->IDC_CHECKIN) {
@@ -256,8 +245,8 @@ void WorldTexturesDialog::updateDialog() {
     combo->clear();
     for (int i = 0; i < MAX_TEXTURES; i++)
       if (GameTextures[i].used)
-        combo->addItem(GameTextures[i].name);
-    combo->setCurrentText(GameTextures[n].name);
+        combo->addItem(QString::fromStdString(GameTextures[i].name));
+    combo->setCurrentText(QString::fromStdString(GameTextures[n].name));
   }
 
   populateSoundCombo(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN, GameTextures[n].sound);
@@ -275,8 +264,8 @@ void WorldTexturesDialog::onAddNew() {
       QFileDialog::getOpenFileName(this, "Load bitmap", Current_bitmap_dir, "Images (*.pcx *.tga *.bmp)");
   if (pathname.isEmpty())
     return;
-  const QByteArray pathBytes = pathname.toLocal8Bit();
-  const int bm = LoadTextureImage(pathBytes.constData(), 0, 0, 0);
+  const std::filesystem::path pathFs(pathname.toStdString());
+  const int bm = LoadTextureImage(pathFs, 0, 0, 0);
   if (bm < 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't load that bitmap.");
     return;
@@ -287,7 +276,7 @@ void WorldTexturesDialog::onAddNew() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot add texture: no free slots.");
     return;
   }
-  snprintf(GameTextures[handle].name, sizeof(GameTextures[handle].name), "%s", fileInfo.baseName().toLocal8Bit().constData());
+  GameTextures[handle].name = fileInfo.baseName().toStdString();
   GameTextures[handle].bm_handle = bm;
   mng_AllocTrackLock(GameTextures[handle].name, PAGETYPE_TEXTURE);
   D3EditState.texdlg_texture = handle;
@@ -302,15 +291,15 @@ void WorldTexturesDialog::onDelete() {
     return;
   }
   if (QMessageBox::question(this, "Delete texture",
-                            QString("Are you sure you want to delete this texture? %1").arg(GameTextures[n].name)) !=
+                            QString("Are you sure you want to delete this texture? %1").arg(QString::fromStdString(GameTextures[n].name))) !=
       QMessageBox::Yes)
     return;
   if (!mng_MakeLocker())
     return;
   mngs_Pagelock pl;
-  snprintf(pl.name, sizeof(pl.name), "%s", GameTextures[n].name);
+  pl.name = GameTextures[n].name;
   pl.pagetype = PAGETYPE_TEXTURE;
-  if (mng_CheckIfPageOwned(&pl, TableUser) != 1) {
+  if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
     mng_FreeTrackLock(tl);
     Q_ASSERT(mng_DeletePage(GameTextures[n].name, PAGETYPE_TEXTURE, 1));
   } else {
@@ -332,14 +321,14 @@ void WorldTexturesDialog::onLock() {
     return;
   mngs_Pagelock temp_pl;
   mngs_texture_page texturepage;
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", GameTextures[n].name);
+  temp_pl.name = GameTextures[n].name;
   temp_pl.pagetype = PAGETYPE_TEXTURE;
   const int r = mng_CheckIfPageLocked(&temp_pl);
   if (r == 2) {
     if (QMessageBox::question(this, "Are you sure?",
                           "This page is not even in the table file, or the database maybe corrupt.  Override to "
                               "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
-      snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
+      temp_pl.holder = "UNLOCKED";
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
         QMessageBox::critical(this, "Error!", ErrorString);
     }
@@ -348,7 +337,7 @@ void WorldTexturesDialog::onLock() {
   } else if (r == 1) {
     QMessageBox::information(this, "Information", InfoString);
   } else {
-    snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
+    temp_pl.holder = TableUser.toStdString();
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
       QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
@@ -379,15 +368,15 @@ void WorldTexturesDialog::onCheckin() {
   if (!mng_MakeLocker())
     return;
   mngs_Pagelock temp_pl;
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", GameTextures[n].name);
+  temp_pl.name = GameTextures[n].name;
   temp_pl.pagetype = PAGETYPE_TEXTURE;
-  const int r = mng_CheckIfPageOwned(&temp_pl, TableUser);
+  const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
   if (r < 0)
     QMessageBox::critical(this, "Error!", ErrorString);
   else if (r == 0)
     QMessageBox::information(this, "Information", InfoString);
   else {
-    snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
+    temp_pl.holder = "UNLOCKED";
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
       QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
@@ -413,7 +402,7 @@ void WorldTexturesDialog::onCheckedOut() {
   int total = 0;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
     if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == PAGETYPE_TEXTURE) {
-      str += GlobalTrackLocks[i].name;
+      str += QString::fromStdString(GlobalTrackLocks[i].name);
       str += "\n";
       total++;
     }
@@ -425,7 +414,7 @@ void WorldTexturesDialog::onCheckedOut() {
 void WorldTexturesDialog::onOverride() {
   const int n = D3EditState.texdlg_texture;
   mngs_Pagelock temp_pl;
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", GameTextures[n].name);
+  temp_pl.name = GameTextures[n].name;
   temp_pl.pagetype = PAGETYPE_TEXTURE;
   mng_OverrideToUnlocked(&temp_pl);
 }
@@ -439,16 +428,16 @@ void WorldTexturesDialog::onChangeName() {
   }
   bool ok = false;
   const QString name = QInputDialog::getText(this, "Texture name", "Enter a new name for this texture:",
-                                             QLineEdit::Normal, GameTextures[n].name, &ok);
+                                             QLineEdit::Normal, QString::fromStdString(GameTextures[n].name), &ok);
   if (!ok || name.isEmpty())
     return;
-  if (FindTextureName(name.toLocal8Bit().constData()) != -1) {
+  if (FindTextureName(name.toStdString()) != -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
-  const QByteArray newName = name.toLocal8Bit();
-  snprintf(GlobalTrackLocks[p].name, sizeof(GlobalTrackLocks[p].name), "%s", newName.constData());
-  snprintf(GameTextures[n].name, sizeof(GameTextures[n].name), "%s", newName.constData());
+  const std::string newName = name.toStdString();
+  GlobalTrackLocks[p].name = newName;
+  GameTextures[n].name = newName;
   updateDialog();
 }
 
@@ -459,8 +448,8 @@ void WorldTexturesDialog::onLoadBitmap() {
       QFileDialog::getOpenFileName(this, "Load bitmap", Current_bitmap_dir, "Images (*.pcx *.tga *.bmp)");
   if (pathname.isEmpty())
     return;
-  const QByteArray pathBytes = pathname.toLocal8Bit();
-  const int bm = LoadTextureImage(pathBytes.constData(), 0, 0, 0);
+  const std::filesystem::path pathFs(pathname.toStdString());
+  const int bm = LoadTextureImage(pathFs, 0, 0, 0);
   if (bm < 0)
     return;
   GameTextures[n].bm_handle = bm;
@@ -483,7 +472,7 @@ void WorldTexturesDialog::onPrev() {
 
 void WorldTexturesDialog::onTexListChanged() {
   QComboBox *combo = ui->IDC_TEX_LIST;
-  const int i = FindTextureName(combo->currentText().toLocal8Bit().constData());
+  const int i = FindTextureName(combo->currentText().toStdString());
   if (i == -1)
     return;
   D3EditState.texdlg_texture = i;

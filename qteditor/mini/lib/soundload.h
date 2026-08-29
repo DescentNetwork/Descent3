@@ -7,7 +7,7 @@ int AllocSound();
 void FreeSound(int n);
 int GetNextSound(int n);
 int GetPrevSound(int n);
-int FindSoundName(const char *name);
+int FindSoundName(const std::string &name);
 void RemapSounds();
 int LoadSoundFile(const char *filename, float import_volume, bool f_get_data = false);
 

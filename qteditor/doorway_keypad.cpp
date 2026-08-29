@@ -112,7 +112,7 @@ void DoorwayKeypad::updateDialog() {
     label->setText(QString::number(dp->doornum));
   if (QLineEdit *edit = ui->IDC_DOORWAYSELEDIT) {
     if (dp->doornum >= 0 && dp->doornum < MAX_DOORS && Doors[dp->doornum].used)
-      edit->setText(Doors[dp->doornum].name);
+      edit->setText(QString::fromStdString(Doors[dp->doornum].name));
   }
 }
 

@@ -62,11 +62,11 @@ private:
 
 public:
   HogFileEntry() = default;
-  explicit HogFileEntry(const std::filesystem::path &input);
+  explicit HogFileEntry(const std::filesystem::path& input);
   explicit HogFileEntry(std::string name, uint32_t flags = 0, uint32_t len = 0, uint32_t timestamp = 0);
 
   std::filesystem::path GetRealPath() const { return m_real_path; }
-  void SetRealPath(const std::filesystem::path &input);
+  void SetRealPath(const std::filesystem::path& input);
 
   std::string GetName() const { return {m_name.data()}; };
 

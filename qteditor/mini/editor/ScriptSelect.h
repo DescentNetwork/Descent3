@@ -103,7 +103,7 @@ inline void RETURN_SCRIPTSELECT_OBJECT(object *obj, CScriptSelect &sel) {
 		obj->script.set_name(sel.m_ScriptName);
 	obj->script.is_custom = (sel.m_CustomType==CUSTOM_SCRIPT_MASK) ? 1 : 0;
 
-	mprintf((0, "Script [%s:custom=%d] assigned.\n", sel.m_ScriptName, obj->script.is_custom));
+  LOG_INFO("Script [%s:custom=%d] assigned.\n", sel.m_ScriptName, obj->script.is_custom));
 #endif
 }
 

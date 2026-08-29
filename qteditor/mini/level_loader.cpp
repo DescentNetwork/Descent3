@@ -54,6 +54,13 @@
 
 #define LL_TAG "D3LV"
 
+template<typename T>
+static inline T lowercase(T s)
+{
+  std::transform(std::begin(s), std::end(s), std::begin(s), [](unsigned char c) { return std::tolower(c); });
+  return s;
+}
+
 static bool IsChunk(const char *chunk_name, const char *id) { return chunk_name[0] == id[0] && chunk_name[1] == id[1] && chunk_name[2] == id[2] && chunk_name[3] == id[3]; }
 
 // A level's faces reference textures by an index into the level's own
@@ -63,15 +70,15 @@ static bool IsChunk(const char *chunk_name, const char *id) { return chunk_name[
 // TXNM list is present (e.g. our own saved files).
 static int texture_xlate[MAX_TEXTURES];
 
-static int LL_FindTextureName(const char *name) {
-  if (name == nullptr)
-    return -1;
+static int LL_FindTextureName(const std::string& name) {
+  auto l_name = lowercase(name);
   for (int i = 0; i < Num_textures; i++) {
-    if (stricmp(GameTextures[i].name, name) == 0)
+    if (lowercase(GameTextures[i].name) == l_name)
       return i;
   }
   return -1;
 }
+
 
 // Reads a TXNM chunk: an int32 count, then that many null-terminated texture
 // names.  Builds texture_xlate[] so faces can map level-texture-index → global
@@ -82,11 +89,9 @@ static void LL_ReadTextureList(posix_istream &ifile, int chunk_size) {
   int n = n32;
   long end = ifile.tell() + (chunk_size - 4);
   for (int i = 0; i < n; i++) {
-    char name[PAGENAME_LEN];
+    std::string name;
     std::string s;
-    psReadString(ifile, s, sizeof(name) - 1);
-    std::strncpy(name, s.c_str(), sizeof(name) - 1);
-    name[sizeof(name) - 1] = '\0';
+    ifile >> name;
     int g = LL_FindTextureName(name);
     if (g < 0)
       g = 0;
@@ -443,15 +448,11 @@ static int LL_ReadRoom(posix_istream &ifile, room *rp, int version) {
   int i;
   InitRoom(rp, nverts, nfaces, nportals);
 
-  rp->name = nullptr;
+  rp->name.clear();
   if (version >= 96) {
-    char tempname[ROOM_NAME_LEN + 1];
     std::string s;
-    psReadString(ifile, s, sizeof(tempname) - 1);
-    std::strncpy(tempname, s.c_str(), sizeof(tempname) - 1);
-    tempname[sizeof(tempname) - 1] = '\0';
-    if (std::strlen(tempname))
-      rp->name = mem_strdup(tempname);
+    psReadString(ifile, s, ROOM_NAME_LEN);
+    rp->name = s;
   }
 
   if (version >= 63)
@@ -479,7 +480,7 @@ static int LL_ReadRoom(posix_istream &ifile, room *rp, int version) {
   for (i = 0; i < rp->num_portals; i++)
     LL_ReadPortal(ifile, &rp->portals[i], version);
 
-  ifile >> rp->flags;
+  ifile.read(&rp->flags, sizeof(uint32_t));
   if (version < 29) {
     float trash;
     ifile >> trash;
@@ -495,7 +496,7 @@ static int LL_ReadRoom(posix_istream &ifile, room *rp, int version) {
   else
     rp->mirror_face = -1;
 
-  if (rp->flags & RF_DOOR) {
+  if (rp->flags.door) {
     // The mini does not model 3d doors, but we must consume the bytes so the
     // rest of the chunk stays aligned. (Engine writes these as:
     // flags(byte) keys(byte) doornum(int) position(float) for version >= 106.)
@@ -564,8 +565,8 @@ static int LL_WriteRoom(posix_ostream &ofile, room *rp) {
   ofile << rp->num_verts;
   ofile << rp->num_faces;
   ofile << rp->num_portals;
+  ofile << rp->name;
 
-  psWriteString(ofile, std::string(rp->name ? rp->name : ""));
   LL_WriteVector(ofile, rp->path_pnt);
 
   for (i = 0; i < rp->num_verts; i++)
@@ -577,14 +578,14 @@ static int LL_WriteRoom(posix_ostream &ofile, room *rp) {
   for (i = 0; i < rp->num_portals; i++)
     LL_WritePortal(ofile, &rp->portals[i]);
 
-  ofile << rp->flags;
+  ofile.write(&rp->flags, sizeof(uint32_t));
 
   ofile << rp->pulse_time;
   ofile << rp->pulse_offset;
 
   ofile << rp->mirror_face;
 
-  if (rp->flags & RF_DOOR) {
+  if (rp->flags.door) {
     // No doorway data in the mini; write neutral values the reader consumes.
     ofile.put(0);  // flags
     ofile.put(0);  // keys
@@ -609,7 +610,7 @@ static int LL_WriteRoom(posix_ostream &ofile, room *rp) {
   ofile << rp->fog_g;
   ofile << rp->fog_b;
 
-  psWriteString(ofile, std::string("")); // ambient sound name (unused in mini)
+  ofile << std::string(""); // ambient sound name (unused in mini)
 
   ofile << rp->env_reverb;
 
@@ -620,24 +621,15 @@ static int LL_WriteRoom(posix_ostream &ofile, room *rp) {
 }
 
 static void LL_ReadInfo(posix_istream &ifile, int version) {
-  std::strcpy(Level_info.name, "Unnamed");
-  std::strcpy(Level_info.designer, "Anonymous");
-  std::strcpy(Level_info.copyright, "");
-  std::strcpy(Level_info.notes, "");
+  Level_info.name =  "Unnamed";
+  Level_info.designer = "Anonymous";
+  Level_info.copyright.clear();
+  Level_info.notes.clear();
 
-  std::string s;
-  psReadString(ifile, s, sizeof(Level_info.name) - 1);
-  std::strncpy(Level_info.name, s.c_str(), sizeof(Level_info.name) - 1);
-  Level_info.name[sizeof(Level_info.name) - 1] = '\0';
-  psReadString(ifile, s, sizeof(Level_info.designer) - 1);
-  std::strncpy(Level_info.designer, s.c_str(), sizeof(Level_info.designer) - 1);
-  Level_info.designer[sizeof(Level_info.designer) - 1] = '\0';
-  psReadString(ifile, s, sizeof(Level_info.copyright) - 1);
-  std::strncpy(Level_info.copyright, s.c_str(), sizeof(Level_info.copyright) - 1);
-  Level_info.copyright[sizeof(Level_info.copyright) - 1] = '\0';
-  psReadString(ifile, s, sizeof(Level_info.notes) - 1);
-  std::strncpy(Level_info.notes, s.c_str(), sizeof(Level_info.notes) - 1);
-  Level_info.notes[sizeof(Level_info.notes) - 1] = '\0';
+  ifile >> Level_info.name;
+  ifile >> Level_info.designer;
+  ifile >> Level_info.copyright;
+  ifile >> Level_info.notes;
 
   if (version >= 83)
     ifile >> Gravity_strength;
@@ -665,10 +657,11 @@ static void LL_ReadInfo(posix_istream &ifile, int version) {
 }
 
 static void LL_WriteInfo(posix_ostream &ofile) {
-  psWriteString(ofile, std::string(Level_info.name));
-  psWriteString(ofile, std::string(Level_info.designer));
-  psWriteString(ofile, std::string(Level_info.copyright));
-  psWriteString(ofile, std::string(Level_info.notes));
+  ofile << Level_info.name;
+  ofile << Level_info.designer;
+  ofile << Level_info.copyright;
+  ofile << Level_info.notes;
+
   ofile << Gravity_strength;
   int32_t check = (int)FVI_always_check_ceiling;
   ofile << check;
@@ -679,7 +672,7 @@ static void LL_WriteInfo(posix_ostream &ofile) {
 // Public API
 // ---------------------------------------------------------------------------
 
-bool LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
+bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *, int, int)) {
   posix_istream ifile;
   if (!ifile.open(filename, std::ios_base::in))
     return false;
@@ -693,7 +686,7 @@ bool LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
 
   // Reset the object table.
   for (int i = 0; i < MAX_OBJECTS; i++) {
-    std::memset(&Objects[i], 0, sizeof(object));
+    Objects[i] = object{};
     Objects[i].type = OBJ_NONE;
     Objects[i].handle = i;
   }
@@ -773,7 +766,8 @@ bool LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
           if (objnum < 0 || objnum >= MAX_OBJECTS)
             continue;
           object *obj = &Objects[objnum];
-          std::memset(obj, 0, sizeof(object));
+          // Value-initialise (NOT memset: object contains a std::string name).
+          *obj = object{};
           int8_t ty = 0;
           ifile >> ty;
           obj->type = ty;
@@ -792,19 +786,21 @@ bool LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
           Num_triggers = 500;
         for (int i = 0; i < Num_triggers; i++) {
           trigger *tp = &Triggers[i];
-          std::memset(tp, 0, sizeof(trigger));
-          std::string s;
-          psReadString(ifile, s, sizeof(tp->name) - 1);
-          std::strncpy(tp->name, s.c_str(), sizeof(tp->name) - 1);
-          tp->name[sizeof(tp->name) - 1] = '\0';
+          // Value-initialise (NOT memset: trigger contains a std::string name).
+          *tp = trigger{};
+          ifile >> tp->name;
           int16_t room = 0;
           ifile >> room;
           tp->roomnum = room;
           int16_t face = 0;
           ifile >> face;
           tp->facenum = face;
-          ifile >> tp->flags;
-          ifile >> tp->activator;
+          uint16_t flags_raw = 0;
+          ifile >> flags_raw;
+          std::memcpy(&tp->flags, &flags_raw, sizeof(flags_raw));
+          uint16_t activator_raw = 0;
+          ifile >> activator_raw;
+          std::memcpy(&tp->activator, &activator_raw, sizeof(activator_raw));
         }
       } else if (IsChunk(chunk_name, "INFO")) {
         LL_ReadInfo(ifile, version);
@@ -839,7 +835,7 @@ bool LoadLevel(char *filename, void (*cb_fn)(const char *, int, int)) {
   return true;
 }
 
-bool SaveLevel(char *filename, bool f_save_room_AABB) {
+bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
   (void)f_save_room_AABB;
   posix_ostream out;
   if (!out.open(filename, std::ios_base::out | std::ios_base::trunc))
@@ -934,13 +930,17 @@ bool SaveLevel(char *filename, bool f_save_room_AABB) {
       int start = LL_StartChunk(out, CHUNK_TRIGGERS);
       out << Num_triggers;
       for (int i = 0; i < Num_triggers; i++) {
-        psWriteString(out, std::string(Triggers[i].name));
+        out << Triggers[i].name;
         int16_t room = (int16_t)Triggers[i].roomnum;
         out << room;
         int16_t face = (int16_t)Triggers[i].facenum;
         out << face;
-        out << Triggers[i].flags;
-        out << Triggers[i].activator;
+        uint16_t flags_raw = 0;
+        std::memcpy(&flags_raw, &Triggers[i].flags, sizeof(flags_raw));
+        out << flags_raw;
+        uint16_t activator_raw = 0;
+        std::memcpy(&activator_raw, &Triggers[i].activator, sizeof(activator_raw));
+        out << activator_raw;
       }
       LL_EndChunk(out, start);
     }

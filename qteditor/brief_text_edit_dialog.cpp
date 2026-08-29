@@ -28,6 +28,8 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QStringList>
+
+#include <array>
 #include <cstdio>
 #include <cstring>
 
@@ -43,6 +45,10 @@ BriefScreen Briefing_screens[kMaxTelcomScreens]{
 
 namespace {
 constexpr int kMaxTabStops = 10;
+
+static const std::array<const char *, 8> effectRadios = { "IDC_BRIEF_T_STATIC", "IDC_BRIEF_T_FLASH", "IDC_BRIEF_T_FADEIN",
+                                                         "IDC_BRIEF_T_FADEOUT", "IDC_BRIEF_T_SL2R", "IDC_BRIEF_T_SR2L",
+                                                         "IDC_BRIEF_T_ST2B", "IDC_BRIEF_T_SB2T"};
 
 int effectTypeToRadio(TCTEXTDESC *desc) {
   switch (desc->type) {
@@ -171,13 +177,9 @@ BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const ch
   if (auto *edit = ui->IDC_BRIEF_T_DESC)
     edit->setText(m_desc.caps ? "" : "");
 
-  const char *effectRadios[] = {"IDC_BRIEF_T_STATIC", "IDC_BRIEF_T_FLASH", "IDC_BRIEF_T_FADEIN",
-                                "IDC_BRIEF_T_FADEOUT", "IDC_BRIEF_T_SL2R", "IDC_BRIEF_T_SR2L",
-                                "IDC_BRIEF_T_ST2B", "IDC_BRIEF_T_SB2T"};
-  if (m_effectType >= 0 && m_effectType < 8) {
+  if (m_effectType >= 0 && m_effectType < (int)effectRadios.size())
     if (auto *rb = findChild<QRadioButton*>(effectRadios[m_effectType]))
       rb->setChecked(true);
-  }
 
   ui->IDC_TABSTOP->setChecked((m_desc.caps & TCTD_TABSTOP) != 0);
   ui->IDC_BRIEF_COLOR_R->setText(QString::number((m_desc.color >> 16) & 0xff));
@@ -302,9 +304,6 @@ void BriefTextEditDialog::onOk() {
   m_desc.font = (combo && combo->currentIndex() == 1) ? BBRIEF_FONT_INDEX : BRIEF_FONT_INDEX;
 
   int effectType = 0;
-  const char *effectRadios[] = {"IDC_BRIEF_T_STATIC", "IDC_BRIEF_T_FLASH", "IDC_BRIEF_T_FADEIN",
-                                "IDC_BRIEF_T_FADEOUT", "IDC_BRIEF_T_SL2R", "IDC_BRIEF_T_SR2L",
-                                "IDC_BRIEF_T_ST2B", "IDC_BRIEF_T_SB2T"};
   for (int i = 0; i < 8; i++) {
     if (auto *rb = findChild<QRadioButton*>(effectRadios[i]); rb && rb->isChecked()) {
       effectType = i;

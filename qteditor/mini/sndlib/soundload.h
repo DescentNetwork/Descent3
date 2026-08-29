@@ -38,7 +38,7 @@ int GetPrevSoundFile(int n);
 
 // Searches thru all sounds for a specific name, returns -1 if not found
 // or index of sound with name
-int FindSoundFileName(const char *name);
+int FindSoundFileName(const std::string& name);
 
 // Given a filename, loads the sound file.
 int LoadSoundFile(const char *filename, float import_volume, bool f_get_data = false);
@@ -60,7 +60,7 @@ int GetPrevSound(int n);
 
 // Searches thru all sounds for a specific name, returns -1 if not found
 // or index of sound with name
-int FindSoundName(const char *name);
+int FindSoundName(const std::string& name);
 
 // Given a filename, loads the sound.
 int LoadSound(const char *filename);

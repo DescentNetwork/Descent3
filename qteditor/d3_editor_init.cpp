@@ -18,7 +18,6 @@
 
 #include "d3_editor_init.h"
 
-#include <filesystem>
 #include <QSettings>
 
 #include "appdatabase.h"

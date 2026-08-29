@@ -57,7 +57,7 @@ void MegacellDialog::updateDialog() {
     return;
   const int n = D3EditState.current_megacell;
   if (auto *label = ui->IDC_MEGACELL_NAME_EDIT)
-    label->setText(Megacells[n].name);
+    label->setText(QString::fromStdString(Megacells[n].name));
 }
 
 void MegacellDialog::onNew() {
@@ -67,7 +67,7 @@ void MegacellDialog::onNew() {
     return;
   for (int i = 0; i < MAX_MEGACELLS; i++) {
     if (!Megacells[i].used) {
-      snprintf(Megacells[i].name, sizeof(Megacells[i].name), "%s", name.toLocal8Bit().constData());
+      Megacells[i].name = name.toStdString();
       Megacells[i].used = true;
       Num_megacells++;
       D3EditState.current_megacell = i;

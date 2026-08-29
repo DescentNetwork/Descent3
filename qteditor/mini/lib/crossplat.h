@@ -61,7 +61,6 @@ inline char *_strupr(char *string) {
 // __stdcall replacement
 #define __stdcall __attribute__((stdcall))
 
-#define stricmp(a, b) strcasecmp(a, b)
 #define strnicmp(a, b, c) strncasecmp(a, b, c)
 #define _chmod(a, b) chmod(a, b)
 

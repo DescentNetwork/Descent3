@@ -155,8 +155,8 @@ public:
 
   int GetNumGoals();
 
-  bool SaveLevelGoalInfo(CFILE *fptr);
-  bool LoadLevelGoalInfo(CFILE *fptr);
+  bool SaveLevelGoalInfo(struct CFILE* fptr);
+  bool LoadLevelGoalInfo(struct CFILE* fptr);
 
   bool LGStatus(char operation, int *value);
 

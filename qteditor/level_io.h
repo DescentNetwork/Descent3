@@ -17,6 +17,8 @@
  */
 
 #pragma once
+#include <filesystem>
+#include <string>
 
 // Cross-platform Qt-side replacements for the Win32 editor's
 // CreateNewMine / EditorLoadLevel / EditorSaveLevel helpers from
@@ -30,21 +32,16 @@
 // these with the real engine-side level reader once that lands.
 
 
-// Trim leading and trailing spaces from a C string in place. Mirrors the
-// Win32 helper in editor/HFile.cpp; exposed for tests so the contract
-// (returns true iff anything was stripped) is pinned independently of
-// EditorLoadLevel's pass-through call sites.
-bool StripLeadingTrailingSpaces(char *s);
 
 // Replace CEditorDoc::OnNewDocument. Win32: calls CreateNewMine() which
 // wipes Rooms[], Terrain_segs[], etc. and seeds a single boot segment.
 void CreateNewMine();
 
 // Replace CEditorDoc::OnOpenDocument. Returns true on success.
-bool EditorLoadLevel(const char *filename);
+bool EditorLoadLevel(const std::filesystem::path& filename);
 
 // Replace CEditorDoc::OnSaveDocument. Returns true on success (1) or 0.
-bool EditorSaveLevel(const char *filename);
+bool EditorSaveLevel(const std::filesystem::path& filename);
 
 // Verify that every named object/trigger/room in the current mine has a
 // unique, well-formed name (no leading/trailing spaces). Calls from
@@ -53,9 +50,6 @@ bool EditorSaveLevel(const char *filename);
 void CheckLevelNames();
 
 // Build the multi-line "Level Stats:" text block described in
-// editor/HFile.cpp::ShowLevelStats(). Returns a heap-allocated buffer owned
-// by the caller; delete[] when done. The Qt port hands this string to
-// QMessageBox::information / a clipboard helper once the engine-side
-// stats walker ships.
-char *RenderLevelStats();
+// editor/HFile.cpp::ShowLevelStats(). Returns the report as a std::string.
+std::string RenderLevelStats();
 

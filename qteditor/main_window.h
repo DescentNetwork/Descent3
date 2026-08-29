@@ -24,6 +24,7 @@
 #include <QDialog>
 #include <QWidget>
 #include <QTimer>
+#include <QFileInfo>
 //#include <DockManager.h>
 //#include <DockWidget.h>
 

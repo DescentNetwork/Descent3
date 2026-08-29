@@ -144,7 +144,7 @@
 #define SF_DEFAULT_ALLOW 1 // Allowed by default
 
 struct ship {
-  char name[PAGENAME_LEN]; // name of this ship (kept as a fixed buffer; used by the manage API)
+  std::string name; // name of this ship (variable-length on disk)
   float size;
   physics_info phys_info; // the physics data for this obj type.
   int model_handle;       //  a polygon model
@@ -196,11 +196,11 @@ int GetPrevShip(int n);
 
 // Searches thru all ships for a specific name, returns -1 if not found
 // or index of ship with name
-int FindShipName(const char *name);
+int FindShipName(const std::string &name);
 
 // Given a filename, loads either the model or vclip found in that file.  If type
 // is not NULL, sets it to 1 if file is model, otherwise sets it to zero
-int LoadShipImage(const char *filename);
+int LoadShipImage(const std::filesystem::path &filename);
 
 // Given a ship handle, returns that ships image for framenum
 int GetShipImage(int handle);

@@ -556,7 +556,7 @@ void AssignUVsToFace(room *rp, int facenum, roomUVL *uva, roomUVL *uvb, int va, 
   mag01 = vm_NormalizeVector(&fvec);
 
   if (mag01 < 0.001f) {
-    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "U, V bogosity in room #%i, probably on face #%i.", ROOMNUM(rp), facenum);
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("U, V bogosity in room #%1, probably on face #%2.").arg(ROOMNUM(rp)).arg(facenum));
     return;
   }
 
@@ -1350,9 +1350,10 @@ void AttachRoom() {
     return;
   }
 
-  // Initialize the room directly in the slot (avoids heap alloc + copy)
+  // Initialize the room directly in the slot (avoids heap alloc + copy).
+  // InitRoom fully initialises the room (including std::string members), so no
+  // memset is done here (memset would corrupt the std::string members).
   room *newroomp = &Rooms[slot];
-  memset(newroomp, 0, sizeof(room));
   InitRoom(newroomp, attroomp->num_verts, attroomp->num_faces, 0);
 
   // Rotate verts, copying into new room
@@ -1374,7 +1375,7 @@ void AttachRoom() {
 
   if (baseroomp == NULL) {
     // Terrain room — flag as external and delete the attach face
-    newroomp->flags |= RF_EXTERNAL;
+    newroomp->flags.external = 1;
     DeleteRoomFace(newroomp, attface);
   } else {
     // Mine room — clip the connecting faces against each other

@@ -58,8 +58,6 @@ set(QTEDITOR_SOURCES
   file_page_dialog.h
   font_dialog.cpp
   font_dialog.h
-  editor_file_dialogs.cpp
-  editor_file_dialogs.h
   editor_lighting.cpp
   editor_lighting.h
   editor_object_lighting.cpp

@@ -56,6 +56,8 @@
 #include "BOA.h"
 #include "mem/mem.h"
 
+#include "d3_editor_init.h"
+
 
 struct spec_vertex {
   float x, y;
@@ -312,10 +314,10 @@ void ClearCombinePortals(int terrain) {
     if (!rp->used)
       continue;
 
-    if (terrain && !(rp->flags & RF_EXTERNAL))
+    if (terrain && !rp->flags.external)
       continue;
 
-    if (!terrain && (rp->flags & RF_EXTERNAL))
+    if (!terrain && rp->flags.external)
       continue;
 
     for (int t = 0; t < rp->num_portals; t++) {
@@ -338,10 +340,10 @@ void CheckCombinePortals(int terrain) {
     if (!rp->used)
       continue;
 
-    if (terrain && !(rp->flags & RF_EXTERNAL))
+    if (terrain && !rp->flags.external)
       continue;
 
-    if (!terrain && (rp->flags & RF_EXTERNAL))
+    if (!terrain && rp->flags.external)
       continue;
 
     for (int t = 0; t < rp->num_portals; t++) {
@@ -352,7 +354,7 @@ void CheckCombinePortals(int terrain) {
         continue;
 
       // Don't combine if face is breakable
-      if (GameTextures[face_a->tmap].flags & TF_BREAKABLE)
+      if (GameTextures[face_a->tmap].flags.breakable)
         continue;
 
       float dist_a = vm_DotProduct(&rp->verts[face_a->face_verts[0]], &face_a->normal);
@@ -369,7 +371,7 @@ void CheckCombinePortals(int terrain) {
           continue;
 
         // Don't combine if face is breakable
-        if (GameTextures[face_b->tmap].flags & TF_BREAKABLE)
+        if (GameTextures[face_b->tmap].flags.breakable)
           continue;
 
         if (t == k)
@@ -443,14 +445,14 @@ void SqueezeLightmaps(int external, int target_roomnum) {
     room *rp = &Rooms[i];
     if (!rp->used)
       continue;
-    if (rp->flags & RF_NO_LIGHT)
+    if (rp->flags.no_light)
       continue;
 
     if (external) {
-      if (!(rp->flags & RF_EXTERNAL))
+      if (!rp->flags.external)
         continue;
     } else {
-      if ((rp->flags & RF_EXTERNAL))
+      if (rp->flags.external)
         continue;
 
       if (target_roomnum != -1 && target_roomnum != i)
@@ -787,8 +789,8 @@ void ComputeSurfaceRes(rad_surface *surf, room *rp, int facenum) {
 // Take the computed volume spectra of a room and save it in the room struct
 void AssignVolumeSpectraToRoom(int roomnum) {
   Q_ASSERT(Rooms[roomnum].used);
-  Q_ASSERT(!(Rooms[roomnum].flags & RF_EXTERNAL));
-  Q_ASSERT(!(Rooms[roomnum].flags & RF_NO_LIGHT));
+  Q_ASSERT(!Rooms[roomnum].flags.external);
+  Q_ASSERT(!Rooms[roomnum].flags.no_light);
 
   room *rp = &Rooms[roomnum];
 
@@ -876,10 +878,10 @@ void DoRadiosityForRooms() {
   BuildBSPTree();
 
   if (save_after_bsp) {
-    std::filesystem::path filename = cf_GetWritableBaseDirectory() / "BSPSave.D3L";
+    std::filesystem::path filename = original_pwd() / "BSPSave.D3L";
 
     // Save the level to
-    SaveLevel(const_cast<char*>(filename.u8string().c_str()), true);
+    SaveLevel(filename, true);
   }
 
   LOG_INFO("Setting up...\n");
@@ -899,7 +901,7 @@ void DoRadiosityForRooms() {
   for (int roomnum = 0; roomnum < MAX_ROOMS; roomnum++) {
     Volume_elements[roomnum] = NULL;
 
-    if (Rooms[roomnum].used && !(Rooms[roomnum].flags & RF_EXTERNAL) && !(Rooms[roomnum].flags & RF_NO_LIGHT)) {
+    if (Rooms[roomnum].used && !Rooms[roomnum].flags.external && !Rooms[roomnum].flags.no_light) {
       int num_bytes = GetVolumeSizeOfRoom(&Rooms[roomnum], &vw, &vh, &vd);
 
       Rooms[roomnum].volume_width = vw;
@@ -939,7 +941,7 @@ void DoRadiosityForRooms() {
 
   // First count how many faces we'll need
   for (i = 0; i < MAX_ROOMS; i++) {
-    if (Rooms[i].used && !(Rooms[i].flags & RF_EXTERNAL) && !(Rooms[i].flags & RF_NO_LIGHT)) {
+    if (Rooms[i].used && !Rooms[i].flags.external && !Rooms[i].flags.no_light) {
       facecount += Rooms[i].num_faces;
     }
   }
@@ -963,7 +965,7 @@ void DoRadiosityForRooms() {
 
   for (i = 0; i < MAX_ROOMS; i++) {
     if (Rooms[i].used) {
-      if ((Rooms[i].flags & RF_EXTERNAL) || (Rooms[i].flags & RF_NO_LIGHT))
+      if (Rooms[i].flags.external || Rooms[i].flags.no_light)
         continue;
 
       for (t = 0; t < Rooms[i].num_faces; t++, surface_index++, max_index++) {
@@ -988,12 +990,13 @@ void DoRadiosityForRooms() {
           LOG_INFO("Room=%d Face %d is slivered!\n", i, t);
         }
 
-        Light_surfaces[surface_index].flags = 0;
+        Light_surfaces[surface_index].flags.lightsource = 0;
+        Light_surfaces[surface_index].flags.touches_terrain = 0;
 
         if (Rooms[i].faces[t].portal_num != -1 &&
             (((Rooms[i].portals[Rooms[i].faces[t].portal_num].flags & PF_RENDER_FACES) == 0) ||
              ((Rooms[i].portals[Rooms[i].faces[t].portal_num].flags & PF_RENDER_FACES) &&
-              (GameTextures[Rooms[i].faces[t].tmap].flags & TF_TMAP2))))
+              (GameTextures[Rooms[i].faces[t].tmap].flags.tmap2))))
 
         {
           Light_surfaces[surface_index].surface_type = ST_PORTAL;
@@ -1013,19 +1016,19 @@ void DoRadiosityForRooms() {
           Light_surfaces[surface_index].surface_type = ST_ROOM;
 
           if ((GetMaxColor(&Light_surfaces[surface_index].emittance)) > .005)
-            Light_surfaces[surface_index].flags |= SF_LIGHTSOURCE;
+            Light_surfaces[surface_index].flags.lightsource = 1;
         }
 
         Light_surfaces[surface_index].normal = LightmapInfo[Rooms[i].faces[t].lmi_handle].normal;
         Light_surfaces[surface_index].roomnum = i;
         Light_surfaces[surface_index].facenum = t;
 
-        if (Rooms[i].flags & RF_TOUCHES_TERRAIN)
-          Light_surfaces[surface_index].flags |= SF_TOUCHES_TERRAIN;
+        if (Rooms[i].flags.touches_terrain)
+          Light_surfaces[surface_index].flags.touches_terrain = 1;
 
         for (int k = 0; k < Rooms[i].num_portals; k++) {
-          if (Rooms[i].portals[k].croom == -1 || (Rooms[Rooms[i].portals[k].croom].flags & RF_EXTERNAL))
-            Light_surfaces[surface_index].flags |= SF_TOUCHES_TERRAIN;
+          if (Rooms[i].portals[k].croom == -1 || (Rooms[Rooms[i].portals[k].croom].flags.external))
+            Light_surfaces[surface_index].flags.touches_terrain = 1;
         }
 
         Light_surfaces[surface_index].reflectivity = GameTextures[Rooms[i].faces[t].tmap].reflectivity;
@@ -1093,7 +1096,7 @@ void DoRadiosityForRooms() {
   // Assign lightap properties
   for (i = 0; i < MAX_ROOMS; i++) {
     if (Rooms[i].used) {
-      if ((Rooms[i].flags & RF_EXTERNAL) || (Rooms[i].flags & RF_NO_LIGHT))
+      if (Rooms[i].flags.external || Rooms[i].flags.no_light)
         continue;
 
       for (t = 0; t < Rooms[i].num_faces; t++, surface_index++) {
@@ -1142,10 +1145,10 @@ void DoRadiosityForRooms() {
   // Finally, squeeze the lightmaps
   SqueezeLightmaps(0, -1);
 
-  std::filesystem::path filename = cf_GetWritableBaseDirectory() / "LightSave.D3L";
+  std::filesystem::path filename = original_pwd() / "LightSave.D3L";
 
   // Save the level to disk
-  SaveLevel(const_cast<char*>(filename.u8string().c_str()), true);
+  SaveLevel(filename, true);
 
   QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Mine radiosity complete!");
 }
@@ -1167,12 +1170,12 @@ void DoRadiosityForCurrentRoom(room *rp) {
   Q_ASSERT(rp != NULL);
   Q_ASSERT(rp->used);
 
-  if (rp->flags & RF_EXTERNAL) {
+  if (rp->flags.external) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You cannot run single room radiosity on external rooms!");
     return;
   }
 
-  if (rp->flags & RF_NO_LIGHT) {
+  if (rp->flags.no_light) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You cannot run single room radiosity on a room marked not to light!");
     return;
   }
@@ -1235,7 +1238,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
 
     if (rp->faces[t].portal_num != -1 && (((rp->portals[rp->faces[t].portal_num].flags & PF_RENDER_FACES) == 0) ||
                                           ((rp->portals[rp->faces[t].portal_num].flags & PF_RENDER_FACES) &&
-                                           (GameTextures[rp->faces[t].tmap].flags & TF_TMAP2)))) {
+                                           (GameTextures[rp->faces[t].tmap].flags.tmap2)))) {
       Light_surfaces[surface_index].surface_type = ST_PORTAL;
       Light_surfaces[surface_index].emittance.r = 0;
       Light_surfaces[surface_index].emittance.g = 0;
@@ -1337,9 +1340,9 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
   uint16_t *dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
 
   // Set face pointer
-  if (GameTextures[fp->tmap].flags & TF_ALPHA)
+  if (GameTextures[fp->tmap].flags.alpha)
     use_lightmap = 0;
-  if (GameTextures[fp->tmap].flags & (TF_FORCE_LIGHTMAP | TF_SATURATE_LIGHTMAP))
+  if (GameTextures[fp->tmap].flags.force_lightmap || GameTextures[fp->tmap].flags.saturate_lightmap)
     use_lightmap = 1;
 
   if (use_lightmap)
@@ -1778,7 +1781,7 @@ void ComputeTerrainSpeedTable() {
   for (i = 0; i < AREA_Z; i++) {
     for (t = 0; t < AREA_X; t++) {
       int tseg = i * TERRAIN_WIDTH + t;
-      vector pos = { (t * TERRAIN_SIZE), (Terrain_seg[tseg].y) + .001, (i * TERRAIN_SIZE) };
+      vector pos = { (t * TERRAIN_SIZE), (Terrain_seg[tseg].y) + 0.001f, (i * TERRAIN_SIZE) };
       raynum++;
 
       for (j = 0; j < Terrain_sky.num_satellites; j++)
@@ -1835,7 +1838,7 @@ void DoRadiosityForTerrain() {
 
   // count how many faces we'll need
   for (i = 0; i < MAX_ROOMS; i++) {
-    if (Rooms[i].used && (Rooms[i].flags & RF_EXTERNAL))
+    if (Rooms[i].used && Rooms[i].flags.external)
       extra_surfaces += Rooms[i].num_faces;
   }
 
@@ -2008,7 +2011,7 @@ void DoRadiosityForTerrain() {
   room_surf_start = surf_index;
   for (i = 0; i < MAX_ROOMS; i++) {
     if (Rooms[i].used) {
-      if (!(Rooms[i].flags & RF_EXTERNAL))
+      if (!Rooms[i].flags.external)
         continue;
 
       for (t = 0; t < Rooms[i].num_faces; t++, surf_index++) {
@@ -2142,7 +2145,7 @@ void DoRadiosityForTerrain() {
   // Assign lightmaps to external rooms
   for (i = 0; i < MAX_ROOMS; i++) {
     if (Rooms[i].used) {
-      if (!(Rooms[i].flags & RF_EXTERNAL))
+      if (!Rooms[i].flags.external)
         continue;
 
       for (t = 0; t < Rooms[i].num_faces; t++, room_surf_start++) {
@@ -2810,13 +2813,13 @@ StartOver:
     if (!Rooms[i].used)
       continue;
 
-    if (Rooms[i].flags & RF_NO_LIGHT)
+    if (Rooms[i].flags.no_light)
       continue;
 
-    if (external && !(Rooms[i].flags & RF_EXTERNAL))
+    if (external && !Rooms[i].flags.external)
       continue;
 
-    if (!external && (Rooms[i].flags & RF_EXTERNAL))
+    if (!external && Rooms[i].flags.external)
       continue;
 
     /*if (i!=roomnum) // Only combine faces in the same room
@@ -2885,13 +2888,13 @@ void ComputeAllRoomLightmapUVs(int external) {
 
   for (i = 0; i < MAX_ROOMS; i++) {
     if (Rooms[i].used) {
-      if (Rooms[i].flags & RF_NO_LIGHT)
+      if (Rooms[i].flags.no_light)
         continue;
 
-      if (external && !(Rooms[i].flags & RF_EXTERNAL))
+      if (external && !Rooms[i].flags.external)
         continue;
 
-      if (!external && (Rooms[i].flags & RF_EXTERNAL))
+      if (!external && Rooms[i].flags.external)
         continue;
 
       RoomsAlreadyCombined[i] = mem_rmalloc<uint8_t>(Rooms[i].num_faces);
@@ -2903,13 +2906,13 @@ void ComputeAllRoomLightmapUVs(int external) {
 
   for (i = 0; i < MAX_ROOMS; i++) {
     if (Rooms[i].used) {
-      if (Rooms[i].flags & RF_NO_LIGHT)
+      if (Rooms[i].flags.no_light)
         continue;
 
-      if (external && !(Rooms[i].flags & RF_EXTERNAL))
+      if (external && !Rooms[i].flags.external)
         continue;
 
-      if (!external && (Rooms[i].flags & RF_EXTERNAL))
+      if (!external && Rooms[i].flags.external)
         continue;
 
       for (t = 0; t < Rooms[i].num_faces; t++) {
@@ -2922,13 +2925,13 @@ void ComputeAllRoomLightmapUVs(int external) {
   // Now build lightmaps for any faces that couldn't be combined
   for (i = 0; i < MAX_ROOMS; i++) {
     if (Rooms[i].used) {
-      if (Rooms[i].flags & RF_NO_LIGHT)
+      if (Rooms[i].flags.no_light)
         continue;
 
-      if (external && !(Rooms[i].flags & RF_EXTERNAL))
+      if (external && !Rooms[i].flags.external)
         continue;
 
-      if (!external && (Rooms[i].flags & RF_EXTERNAL))
+      if (!external && Rooms[i].flags.external)
         continue;
 
       for (t = 0; t < Rooms[i].num_faces; t++) {
@@ -2953,13 +2956,13 @@ void ComputeAllRoomLightmapUVs(int external) {
   // Free memory
   for (i = 0; i < MAX_ROOMS; i++) {
     if (Rooms[i].used) {
-      if (Rooms[i].flags & RF_NO_LIGHT)
+      if (Rooms[i].flags.no_light)
         continue;
 
-      if (external && !(Rooms[i].flags & RF_EXTERNAL))
+      if (external && !Rooms[i].flags.external)
         continue;
 
-      if (!external && (Rooms[i].flags & RF_EXTERNAL))
+      if (!external && Rooms[i].flags.external)
         continue;
 
       mem_free(RoomsAlreadyCombined[i]);
@@ -3173,13 +3176,13 @@ void CleanupSpecularLighting(int external) {
 
   for (i = 0; i < MAX_ROOMS; i++) {
     if (Rooms[i].used) {
-      if (Rooms[i].flags & RF_NO_LIGHT)
+      if (Rooms[i].flags.no_light)
         continue;
 
-      if ((Rooms[i].flags & RF_EXTERNAL) && !external)
+      if (Rooms[i].flags.external && !external)
         continue;
 
-      if (!(Rooms[i].flags & RF_EXTERNAL) && external)
+      if (!Rooms[i].flags.external && external)
         continue;
 
       room *rp = &Rooms[i];
@@ -3190,7 +3193,8 @@ void CleanupSpecularLighting(int external) {
 
       for (t = 0; t < rp->num_faces; t++) {
         face *fp = &rp->faces[t];
-        if (GameTextures[fp->tmap].flags & TF_SPECULAR) {
+        if (GameTextures[fp->tmap].flags.metal || GameTextures[fp->tmap].flags.marble ||
+            GameTextures[fp->tmap].flags.plastic) {
           Q_ASSERT(fp->special_handle != BAD_SPECIAL_FACE_INDEX);
           int j, k, l;
 
@@ -3219,7 +3223,7 @@ void CleanupSpecularLighting(int external) {
                 if (SpecialFaces[this_fp->special_handle].spec_instance[0].bright_color == 0)
                   continue; // Don't do dark ones
 
-                if (GameTextures[fp->tmap].flags & TF_SMOOTH_SPECULAR)
+                if (GameTextures[fp->tmap].flags.smooth_specular)
                   continue; // Don't do smooth shades
 
                 for (k = 0; k < this_fp->num_verts; k++) {
@@ -3267,13 +3271,13 @@ void SetupSpecularLighting(int external) {
 
   for (i = 0; i < MAX_ROOMS; i++) {
     if (Rooms[i].used) {
-      if (Rooms[i].flags & RF_NO_LIGHT)
+      if (Rooms[i].flags.no_light)
         continue;
 
-      if ((Rooms[i].flags & RF_EXTERNAL) && !external)
+      if (Rooms[i].flags.external && !external)
         continue;
 
-      if (!(Rooms[i].flags & RF_EXTERNAL) && external)
+      if (!Rooms[i].flags.external && external)
         continue;
 
       room *rp = &Rooms[i];
@@ -3310,11 +3314,12 @@ void SetupSpecularLighting(int external) {
 
       for (t = 0; t < rp->num_faces; t++) {
         face *fp = &rp->faces[t];
-        if (GameTextures[fp->tmap].flags & TF_SPECULAR) {
+        if (GameTextures[fp->tmap].flags.metal || GameTextures[fp->tmap].flags.marble ||
+            GameTextures[fp->tmap].flags.plastic) {
           Q_ASSERT(fp->special_handle == BAD_SPECIAL_FACE_INDEX);
 
           int n;
-          if (GameTextures[fp->tmap].flags & TF_SMOOTH_SPECULAR)
+          if (GameTextures[fp->tmap].flags.smooth_specular)
             n = AllocSpecialFace(SFT_SPECULAR, 4, true, fp->num_verts);
           else
             n = AllocSpecialFace(SFT_SPECULAR, 4);
@@ -3327,7 +3332,7 @@ void SetupSpecularLighting(int external) {
           }
 
           // Get vertex normals for this punk
-          if (GameTextures[fp->tmap].flags & TF_SMOOTH_SPECULAR) {
+          if (GameTextures[fp->tmap].flags.smooth_specular) {
             for (int k = 0; k < fp->num_verts; k++) {
               SpecialFaces[n].vertnorms[k] = vertnorms[fp->face_verts[k]];
             }

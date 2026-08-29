@@ -21,6 +21,8 @@
 
 #include <cstdio>
 #include <filesystem>
+#include <string>
+#include <QString>
 
 #include "cfile.h"
 #include <posix_stream.h>
@@ -37,7 +39,6 @@
 //			Tracklocks are for keeping track of what pages the local user is working on or has locked
 
 #define PAGELOCK_NAME_LEN 30
-#define TABLE_NAME_LEN _MAX_PATH
 #define INFO_STRING_LEN 100
 #define MAX_PAGELOCKS 1000
 #define MAX_TRACKLOCKS 5000
@@ -56,8 +57,8 @@
 
 struct mngs_Pagelock {
   uint8_t pagetype; // of type PAGETYPE above
-  char name[PAGENAME_LEN];
-  char holder[PAGENAME_LEN];
+  std::string name;
+  std::string holder;
 };
 
 struct mngs_track_lock {
@@ -67,7 +68,7 @@ struct mngs_track_lock {
   uint8_t __pad;
   int stack_filepos; // file position of this page in the tablefile (the value we are
                      // pushing, for addon tables)
-  char name[PAGENAME_LEN];
+  std::string name;
 };
 
 // For addon data
@@ -75,7 +76,7 @@ struct mngs_track_lock {
 #define MAX_ADDON_TABLES 2
 
 struct AddOnTablefile {
-  char AddOnTableFilename[TABLE_NAME_LEN];
+  std::string AddOnTableFilename;
   int Num_addon_tracklocks;
   mngs_track_lock *Addon_tracklocks;
 };
@@ -90,7 +91,7 @@ void mng_ClearAddonTables();
 
 // Push the given table file as an addon table file
 // returns true on success
-bool mng_SetAddonTable(const char *name);
+bool mng_SetAddonTable(const std::string& name);
 
 // Pushes an addon pack onto the stack so we can keep track of it
 void mng_PushAddonPage(int pagetype, char *name, int overlay);
@@ -104,13 +105,13 @@ extern int Network_up, Stand_alone;
 // Starting editor?
 extern int Starting_editor, Loading_locals, Loading_addon_table;
 
-extern char LocalD3Dir[];
-extern char NetD3Dir[];
-extern char TableFilename[];
+extern std::filesystem::path LocalD3Dir;
+extern std::filesystem::path NetD3Dir;
+extern std::filesystem::path TableFilename;
 extern std::filesystem::path TableLockFilename;
-extern char LocalTableFilename[];
-extern char LocalTempTableFilename[];
-extern char LocalLevelsDir[];
+extern std::filesystem::path LocalTableFilename;
+extern std::filesystem::path LocalTempTableFilename;
+extern std::filesystem::path LocalLevelsDir;
 extern std::filesystem::path ManageGraphicsDir;
 extern std::filesystem::path LocalManageGraphicsDir;
 extern std::filesystem::path LocalModelsDir;
@@ -124,19 +125,19 @@ extern std::filesystem::path NetMiscDir;
 extern std::filesystem::path LocalMiscDir;
 extern std::filesystem::path NetMusicDir;
 extern std::filesystem::path LocalMusicDir;
-extern char NetScriptDir[];
-extern char LocalScriptDir[];
+extern std::filesystem::path NetScriptDir;
+extern std::filesystem::path LocalScriptDir;
 extern std::filesystem::path NetArtDir;
 extern std::filesystem::path LocalArtDir;
 
 extern std::filesystem::path LocalCustomGraphicsDir;
 extern std::filesystem::path LocalCustomSoundsDir;
 
-extern char TempTableFilename[];
-extern char TempTableLockFilename[];
-extern char ErrorString[INFO_STRING_LEN];
-extern char InfoString[INFO_STRING_LEN];
-extern char TableUser[];
+extern std::filesystem::path TempTableFilename;
+extern std::filesystem::path TempTableLockFilename;
+extern QString ErrorString;
+extern QString InfoString;
+extern QString TableUser;
 extern std::filesystem::path LockerFile;
 extern std::filesystem::path VersionFile;
 extern mngs_Pagelock GlobalPagelocks[];
@@ -158,11 +159,11 @@ void mng_CheckToCreateNetTables();
 void mng_InitLocalDirectories();
 void mng_InitNetDirectories();
 
-void mng_ReadDummyPage(CFILE *infile, uint8_t pagetype);
-void mng_ReadWriteDummyPage(CFILE *infile, CFILE *outfile, uint8_t pagetype);
+void mng_ReadDummyPage(struct CFILE* infile, uint8_t pagetype);
+void mng_ReadWriteDummyPage(struct CFILE* infile, struct CFILE* outfile, uint8_t pagetype);
 
 // Function for writing out "undefined" page...useful for placeholding
-void mng_WriteUnknownPage(CFILE *outfile);
+void mng_WriteUnknownPage(struct CFILE* outfile);
 
 // Lock functions
 //-----------------------------------------------
@@ -171,10 +172,10 @@ void mng_WriteUnknownPage(CFILE *outfile);
 void mng_InitPagelocks();
 
 // Writes a pagelock to an open file
-void mng_WritePagelock(CFILE *fp, mngs_Pagelock *pl);
+void mng_WritePagelock(struct CFILE* fp, mngs_Pagelock *pl);
 
 // Reads a pagelock from the fp file.  Returns 1 if successfully read, 0 if eof was encountered.
-int mng_ReadPagelock(CFILE *, mngs_Pagelock *);
+int mng_ReadPagelock(struct CFILE* , mngs_Pagelock *);
 
 // Given a page name, checks to see if it is locked.
 // Returns 1 if locked, 0 if not.
@@ -182,16 +183,16 @@ int mng_CheckIfPageLocked(mngs_Pagelock *);
 
 // Given a page name, checks to see if it is locked by owner.
 // Returns 1 if locked, 0 if not.
-int mng_CheckIfPageOwned(mngs_Pagelock *, char *owner);
+int mng_CheckIfPageOwned(mngs_Pagelock *, const std::string &owner);
 
-// Given a pagelock, replaces the one already inside the lock file, or if not present, adds it to
+// Given a pagelock, replaces the one already inside the file, or if not present, adds it to
 // the lock file.  Returns 0 on error, or 1 if successful.
-int mng_ReplacePagelock(char *, mngs_Pagelock *);
+int mng_ReplacePagelock(const std::string &name, mngs_Pagelock *);
 
 int mng_GetListOfLocks(mngs_Pagelock *pl, int max, char *who);
 
 // Given a name and a pagetype, deletes the one already inside the lock file
-int mng_DeletePagelock(char *name, int pagetype);
+int mng_DeletePagelock(const std::string &name, int pagetype);
 
 // Call this before any chokepoint functions are executed.
 // Locks the whole table system for our exclusive use
@@ -215,11 +216,11 @@ void mng_InitTrackLocks();
 
 // Given a name, returns the index of the tracklock with that name
 // -1 indicates that it wasn't found
-int mng_FindTrackLock(char *name, int pagetype);
+int mng_FindTrackLock(const std::string &name, int pagetype);
 
 // Searches through global array of tracklocks and returns first free one
 // returns -1 if none free
-int mng_AllocTrackLock(char *name, int pagetype);
+int mng_AllocTrackLock(const std::string &name, int pagetype);
 
 // Frees a tracklock
 void mng_FreeTrackLock(int n);
@@ -230,11 +231,11 @@ void mng_FreeTrackLock(int n);
 void mng_DisplayLockList(char *name);
 
 // Renames a page on the network
-int mng_RenamePage(char *oldname, char *newname, int pagetype);
+int mng_RenamePage(const std::string &oldname, const std::string &newname, int pagetype);
 
 // Removes a file, then renames another file to be the removed file. Get it?
 // Returns 1 on success, else 0 on fail
-int SwitcherooFiles(const char *name, char *tempname);
+int SwitcherooFiles(const std::string& name, char *tempname);
 
 // Returns true if the passed in pagelock is in the LockList, else false
 bool InLockList(mngs_Pagelock *pl);
@@ -248,36 +249,40 @@ bool IsPrimitiveOld(char *name);
 // Updates a primitive if needed
 // Localname = local version of the primname (with path)
 // Netname = Network version of the primname (with path)
-void UpdatePrimitive(const std::filesystem::path &localname, const std::filesystem::path &netname, char *primname,
+void UpdatePrimitive(const std::filesystem::path& localname, const std::filesystem::path& netname, char *primname,
                      int pagetype, char *pagename);
 
 // Writes a chunk header.  Writes chunk id & placeholder length.  Returns chunk start pos
-int StartManagePage(CFILE *ofile, uint8_t pagetype);
+int StartManagePage(struct CFILE* ofile, uint8_t pagetype);
 
 // Fill in page length when done writing
-void EndManagePage(CFILE *ofile, int chunk_start_pos);
+void EndManagePage(struct CFILE* ofile, int chunk_start_pos);
 
+struct light_info;
 struct physics_info;
 struct otype_wb_info;
 
 // Reads a physics chunk in from the table file
 void mng_ReadPhysicsChunk(physics_info *phys_info, posix_istream &infile);
-void mng_WritePhysicsChunk(physics_info *phys_info, CFILE *outfile);
+void mng_WritePhysicsChunk(physics_info *phys_info, struct CFILE* outfile);
 
 // Writes out weapon battery info
-void mng_WriteWeaponBatteryChunk(otype_wb_info *static_wb, CFILE *outfile);
+void mng_WriteWeaponBatteryChunk(otype_wb_info *static_wb, struct CFILE* outfile);
 
 // Reads in weapon battery info
 void mng_ReadWeaponBatteryChunk(otype_wb_info *static_wb, posix_istream &infile, int version);
 
+// Reads in lighting info (used by the generic + weapon page readers)
+void mng_ReadLightingChunk(light_info *lighting_info, posix_istream &infile);
+
 // Given a texture handle, searches the table file and replaces the texture with the same name
 // If local=1, then does it to the users local copy
 // Returns 0 on error, else 1 if all is good
-int mng_ReplacePage(char *srcname, char *destname, int handle, int dest_pagetype, int local);
+int mng_ReplacePage(const std::string &srcname, const std::string &destname, int handle, int dest_pagetype, int local);
 
 // Given a texture name, finds it in the table file and deletes it
 // If local is 1, deletes from the local table file
-int mng_DeletePage(char *name, int dest_pagetype, int local);
+int mng_DeletePage(const std::string &name, int dest_pagetype, int local);
 
 void mng_FreePagetypePrimitives(int pagetype, char *name, int freetype);
 

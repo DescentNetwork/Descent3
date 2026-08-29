@@ -397,7 +397,7 @@ void Calculate() {
   rad_MaxSurface->exitance.r = 0;
   rad_MaxSurface->exitance.g = 0;
   rad_MaxSurface->exitance.b = 0;
-  rad_MaxSurface->flags &= ~SF_LIGHTSOURCE;
+  rad_MaxSurface->flags.lightsource = 0;
 }
 
 // Does one iteration of ray-casting radiosity

@@ -86,7 +86,7 @@ bool EBNode_VerifyGraph() {
 
     if (i >= 0 && i <= Highest_room_index && !Rooms[i].used)
       continue;
-    if (i <= Highest_room_index && (Rooms[i].flags & RF_EXTERNAL))
+    if (i <= Highest_room_index && Rooms[i].flags.external)
       continue;
 
     nlist = BNode_GetBNListPtr(i);
@@ -105,7 +105,7 @@ bool EBNode_VerifyGraph() {
   for (int i = 0; i <= Highest_room_index; i++) {
     if (Rooms[i].used) {
       room *rp = &Rooms[i];
-      if (Rooms[i].flags & RF_EXTERNAL)
+      if (Rooms[i].flags.external)
         continue;
 
       for (int j = 0; j < Rooms[i].num_portals; j++) {
@@ -120,7 +120,8 @@ bool EBNode_VerifyGraph() {
           }
 
           if ((rp->portals[j].flags & PF_RENDER_FACES) && !(rp->portals[j].flags & PF_RENDERED_FLYTHROUGH)) {
-            if (!(GameTextures[rp->faces[rp->portals[j].portal_face].tmap].flags & (TF_BREAKABLE | TF_FORCEFIELD))) {
+            if (!(GameTextures[rp->faces[rp->portals[j].portal_face].tmap].flags.breakable ||
+              GameTextures[rp->faces[rp->portals[j].portal_face].tmap].flags.forcefield)) {
               f_add = false;
             }
           }
@@ -151,7 +152,7 @@ bool EBNode_VerifyGraph() {
 
       int external_room = rp->portals[p].croom;
       int external_portal = rp->portals[p].cportal;
-      Q_ASSERT(Rooms[external_room].flags & RF_EXTERNAL);
+      Q_ASSERT(Rooms[external_room].flags.external);
 
       if (Rooms[external_room].portals[external_portal].bnode_index < 0) {
         Rooms[external_room].portals[external_portal].bnode_index =
@@ -166,7 +167,7 @@ bool EBNode_VerifyGraph() {
   for (int i = 0; i <= Highest_room_index; i++) {
     if (Rooms[i].used) {
       room *rp = &Rooms[i];
-      if (Rooms[i].flags & RF_EXTERNAL)
+      if (Rooms[i].flags.external)
         continue;
 
       for (int j = 0; j < Rooms[i].num_portals; j++) {
@@ -179,8 +180,8 @@ bool EBNode_VerifyGraph() {
         }
 
         if ((Rooms[i].portals[j].flags & PF_RENDER_FACES) && !(Rooms[i].portals[j].flags & PF_RENDERED_FLYTHROUGH)) {
-          if (!(GameTextures[Rooms[i].faces[Rooms[i].portals[j].portal_face].tmap].flags &
-                (TF_BREAKABLE | TF_FORCEFIELD))) {
+          if (!(GameTextures[Rooms[i].faces[Rooms[i].portals[j].portal_face].tmap].flags.breakable ||
+                GameTextures[Rooms[i].faces[Rooms[i].portals[j].portal_face].tmap].flags.forcefield)) {
             if (Rooms[i].portals[j].bnode_index >= 0) {
               LOG_INFO("EBNode Verify: Removed a node.\n");
               EBNode_RemoveNode(i, Rooms[i].portals[j].bnode_index);
@@ -198,11 +199,11 @@ bool EBNode_VerifyGraph() {
         }
 
         if (Rooms[i].portals[j].bnode_index < 0) {
-          if (rp->flags & RF_EXTERNAL) {
+          if (rp->flags.external) {
             int cr = rp->portals[j].croom;
             int ci = Rooms[cr].portals[rp->portals[j].cportal].bnode_index;
 
-            if (Rooms[cr].flags & RF_EXTERNAL)
+            if (Rooms[cr].flags.external)
               continue;
 
             vector pos;
@@ -245,7 +246,7 @@ bool EBNode_VerifyGraph() {
             if (ci < 0)
               continue;
 
-            if (Rooms[cr].flags & RF_EXTERNAL) {
+            if (Rooms[cr].flags.external) {
               vector pos;
               pos = rp->portals[j].path_pnt - rp->faces[rp->portals[j].portal_face].normal * 0.75f;
               int roomnum = BOA_INDEX(GetTerrainRoomFromPos(&pos));
@@ -265,7 +266,7 @@ bool EBNode_VerifyGraph() {
 
     if (i >= 0 && i <= Highest_room_index && !Rooms[i].used)
       continue;
-    if (i >= 0 && i <= Highest_room_index && (Rooms[i].flags & RF_EXTERNAL))
+    if (i >= 0 && i <= Highest_room_index && Rooms[i].flags.external)
       continue;
 
     nlist = BNode_GetBNListPtr(i);
@@ -295,7 +296,7 @@ bool EBNode_VerifyGraph() {
 
     if (i >= 0 && i <= Highest_room_index && !Rooms[i].used)
       continue;
-    if (i >= 0 && i <= Highest_room_index && (Rooms[i].flags & RF_EXTERNAL))
+    if (i >= 0 && i <= Highest_room_index && Rooms[i].flags.external)
       continue;
 
     nlist = BNode_GetBNListPtr(i);
@@ -314,7 +315,7 @@ bool EBNode_VerifyGraph() {
   for (int i = 0; i <= Highest_room_index + BOA_num_terrain_regions; i++) {
     if (i >= 0 && i <= Highest_room_index && !Rooms[i].used)
       continue;
-    if (i >= 0 && i <= Highest_room_index && (Rooms[i].flags & RF_EXTERNAL))
+    if (i >= 0 && i <= Highest_room_index && Rooms[i].flags.external)
       continue;
 
     bn_list *nlist = BNode_GetBNListPtr(i);
@@ -713,11 +714,11 @@ void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
 void EBNode_MakeDefaultInterRoomEdges(int roomnum) {
   for (int i = 0; i < Rooms[roomnum].num_portals; i++) {
     if (Rooms[roomnum].portals[i].cportal >= 0 && Rooms[roomnum].portals[i].croom > roomnum &&
-        !(Rooms[Rooms[roomnum].portals[i].croom].flags & RF_EXTERNAL)) {
+        !(Rooms[Rooms[roomnum].portals[i].croom].flags.external)) {
       if ((Rooms[roomnum].portals[i].flags & PF_RENDER_FACES) &&
           !(Rooms[roomnum].portals[i].flags & PF_RENDERED_FLYTHROUGH)) {
-        if (!(GameTextures[Rooms[roomnum].faces[Rooms[roomnum].portals[i].portal_face].tmap].flags &
-              (TF_BREAKABLE | TF_FORCEFIELD)))
+        if (!(GameTextures[Rooms[roomnum].faces[Rooms[roomnum].portals[i].portal_face].tmap].flags.breakable ||
+              GameTextures[Rooms[roomnum].faces[Rooms[roomnum].portals[i].portal_face].tmap].flags.forcefield))
           continue;
       }
 
@@ -737,8 +738,8 @@ static void EBNode_RemoveNodesAtUnopenablePortals(int roomnum) {
 
     if ((Rooms[roomnum].portals[i].flags & PF_RENDER_FACES) &&
         !(Rooms[roomnum].portals[i].flags & PF_RENDERED_FLYTHROUGH)) {
-      if (!(GameTextures[Rooms[roomnum].faces[Rooms[roomnum].portals[i].portal_face].tmap].flags &
-            (TF_BREAKABLE | TF_FORCEFIELD))) {
+      if (!(GameTextures[Rooms[roomnum].faces[Rooms[roomnum].portals[i].portal_face].tmap].flags.breakable ||
+            GameTextures[Rooms[roomnum].faces[Rooms[roomnum].portals[i].portal_face].tmap].flags.forcefield)) {
         EBNode_RemoveNode(roomnum, i);
         continue;
       }
@@ -766,7 +767,7 @@ static void EBNode_MakeDefaultTerrainNodes(int region) {
 
     int external_room = rp->portals[p].croom;
     int external_portal = rp->portals[p].cportal;
-    Q_ASSERT(Rooms[external_room].flags & RF_EXTERNAL);
+    Q_ASSERT(Rooms[external_room].flags.external);
     Rooms[external_room].portals[external_portal].bnode_index = i;
 
     EBNode_AddNode(Highest_room_index + region + 1, &pos, false, false);
@@ -787,7 +788,7 @@ void EBNode_MakeFirstPass() {
 
   for (int i = 0; i <= Highest_room_index; i++) {
     Q_ASSERT(Rooms[i].bn_info.num_nodes == 0);
-    if (Rooms[i].used && !(Rooms[i].flags & RF_EXTERNAL))
+    if (Rooms[i].used && !Rooms[i].flags.external)
       EBNode_MakeDefaultIntraRoomNodes(i);
   }
 
@@ -797,12 +798,12 @@ void EBNode_MakeFirstPass() {
   }
 
   for (int i = 0; i <= Highest_room_index; i++) {
-    if (Rooms[i].used && !(Rooms[i].flags & RF_EXTERNAL))
+    if (Rooms[i].used && !Rooms[i].flags.external)
       EBNode_MakeDefaultInterRoomEdges(i);
   }
 
   for (int i = 0; i <= Highest_room_index; i++) {
-    if (Rooms[i].used && !(Rooms[i].flags & RF_EXTERNAL))
+    if (Rooms[i].used && !Rooms[i].flags.external)
       EBNode_RemoveNodesAtUnopenablePortals(i);
   }
 

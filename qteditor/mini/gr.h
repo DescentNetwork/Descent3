@@ -107,6 +107,7 @@
 #include "logger/log.h"
 #include "Ddgr.h"
 #include "fix.h"
+#include <string>
 
 class grMemorySurface;
 class grViewport;
@@ -378,10 +379,10 @@ public:
 class grHardwareSurface final : public grSurface {
 public:
   grHardwareSurface() = default;
-  grHardwareSurface(int w, int h, int bpp, unsigned flags = 0, const char *name = NULL);
+  grHardwareSurface(int w, int h, int bpp, unsigned flags = 0, const std::string &name = {});
   virtual ~grHardwareSurface() = default;
 
-  bool create(int w, int h, int bpp, unsigned flags = 0, const char *name = NULL);
+  bool create(int w, int h, int bpp, unsigned flags = 0, const std::string &name = {});
 };
 
 //	----------------------------------------------------------------------------

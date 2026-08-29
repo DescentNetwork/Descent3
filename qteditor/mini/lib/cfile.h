@@ -94,7 +94,7 @@
 
 #ifndef CFILE_H
 #define CFILE_H
-
+#if 0
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
@@ -125,7 +125,7 @@ enum CFileError {
 struct cfile_error {
   int read_write;  // reading or writing?  See defines.
   const char *msg; // the error message
-  CFILE *file;     // the file that got the error
+  struct CFILE* file;     // the file that got the error
 };
 
 // Flags for CFILE struct
@@ -154,7 +154,7 @@ extern std::vector<std::filesystem::path> Base_directories;
 /* This function should be called at least once before you use anything else
  * from this module.
  */
-void cf_AddBaseDirectory(const std::filesystem::path &base_directory);
+void cf_AddBaseDirectory(const std::filesystem::path& base_directory);
 
 /* The user can specify a list of default read-only base directories by setting
  * the -DDEFAULT_ADDITIONAL_DIRS CMake option. This function adds those base
@@ -179,7 +179,7 @@ void cf_ClearBaseDirectories();
  * @return Either an absolute path that’s inside Base_directory or an empty path
  *         if nothing is found.
  */
-std::filesystem::path cf_LocatePath(const std::filesystem::path &relative_path);
+std::filesystem::path cf_LocatePath(const std::filesystem::path& relative_path);
 
 /**
  * Tries to find multiple relative paths inside of the Base_directories.
@@ -192,7 +192,7 @@ std::filesystem::path cf_LocatePath(const std::filesystem::path &relative_path);
  * @return A list of absolute paths. Each path will be inside one of the
  *         Base_directories.
  */
-std::vector<std::filesystem::path> cf_LocateMultiplePaths(const std::filesystem::path &relative_path);
+std::vector<std::filesystem::path> cf_LocateMultiplePaths(const std::filesystem::path& relative_path);
 
 /* Not all Base_directories are necessarily writable, but this function will
  * return one that should be writable.
@@ -200,14 +200,14 @@ std::vector<std::filesystem::path> cf_LocateMultiplePaths(const std::filesystem:
 std::filesystem::path cf_GetWritableBaseDirectory();
 
 // See if a file is in a hog
-bool cf_IsFileInHog(const std::filesystem::path &filename, const std::filesystem::path &hogname);
+bool cf_IsFileInHog(const std::filesystem::path& filename, const std::filesystem::path& hogname);
 
 // Opens a HOG file.  Future calls to cfopen(), etc. will look in this HOG.
 // Parameters:  libname - path to the HOG file, relative to one of the Base_directories.
 // NOTE:	libname must be valid for the entire execution of the program.  Therefore, Base_directories
 // 			must not change.
 // Returns: 0 if error, else library handle that can be used to close the library
-int cf_OpenLibrary(const std::filesystem::path &libname);
+int cf_OpenLibrary(const std::filesystem::path& libname);
 
 // Closes a library file.
 // Parameters:  handle: the handle returned by cf_OpenLibrary()
@@ -223,7 +223,7 @@ void cf_CloseLibrary(int handle);
  * false: path is not a real directory;
  * true: path was successfully added.
  */
-bool cf_SetSearchPath(const std::filesystem::path &path, const std::vector<std::filesystem::path> &ext_list = {});
+bool cf_SetSearchPath(const std::filesystem::path& path, const std::vector<std::filesystem::path> &ext_list = {});
 
 // Removes all search paths that have been added by cf_SetSearchPath
 void cf_ClearAllSearchPaths();
@@ -234,46 +234,46 @@ void cf_ClearAllSearchPaths();
 // Parameters:	filename - the name if the file, with or without a path
 //					mode - the standard C mode string
 // Returns:		the CFile handle, or NULL if file not opened
-CFILE *cfopen(const std::filesystem::path &filename, const char *mode);
+struct CFILE* cfopen(const std::filesystem::path& filename, const char *mode);
 
 // Opens a file for reading in a library, given the library id.
 // Works just like cfopen, except it assumes "rb" mode and forces the file to be
 // opened from the given library.  Returns the CFILE handle or NULL if file
 // couldn't be found or open.
-CFILE *cf_OpenFileInLibrary(const std::filesystem::path &filename, int libhandle);
+struct CFILE* cf_OpenFileInLibrary(const std::filesystem::path& filename, int libhandle);
 
 // Returns the length of the specified file
 // Parameters: cfp - the file pointer returned by cfopen()
-uint32_t cfilelength(CFILE *cfp);
+uint32_t cfilelength(struct CFILE* cfp);
 
 // Closes an open CFILE.
 // Parameters:  cfile - the file pointer returned by cfopen()
-void cfclose(CFILE *cfp);
+void cfclose(struct CFILE* cfp);
 
 // Just like stdio fgetc(), except works on a CFILE
 // Returns a char or EOF
-int cfgetc(CFILE *cfp);
+int cfgetc(struct CFILE* cfp);
 
 // Just like stdio fseek(), except works on a CFILE
-int cfseek(CFILE *cfp, long offset, int where);
+int cfseek(struct CFILE* cfp, long offset, int where);
 
 // Just like stdio ftell(), except works on a CFILE
-long cftell(CFILE *cfp);
+long cftell(struct CFILE* cfp);
 
 // Returns true if at EOF
-int cfeof(CFILE *cfp);
+int cfeof(struct CFILE* cfp);
 
 // Tells if the file exists
 // Returns non-zero if file exists.  Also tells if the file is on disk
 //	or in a hog -  See return values in cfile.h
-int cfexist(const std::filesystem::path &filename);
+int cfexist(const std::filesystem::path& filename);
 
 // Reads the specified number of bytes from a file into the buffer
 // DO NOT USE THIS TO READ STRUCTURES.  This function is for byte
 // data, such as a string or a bitmap of 8-bit pixels.
 // Returns the number of bytes read.
 // Throws an exception of type (cfile_error *) if the OS returns an error on read
-int cf_ReadBytes(uint8_t *buf, int count, CFILE *cfp);
+int cf_ReadBytes(uint8_t *buf, int count, struct CFILE* cfp);
 
 // The following functions read numeric vales from a CFILE.  All values are
 // stored in the file in Intel (little-endian) format.  These functions
@@ -283,23 +283,23 @@ int cf_ReadBytes(uint8_t *buf, int count, CFILE *cfp);
 
 // Read and return an integer (32 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on read
-int32_t cf_ReadInt(CFILE *cfp, bool little_endian = true);
+int32_t cf_ReadInt(struct CFILE* cfp, bool little_endian = true);
 
 // Read and return a int16_t (16 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on read
-int16_t cf_ReadShort(CFILE *cfp, bool little_endian = true);
+int16_t cf_ReadShort(struct CFILE* cfp, bool little_endian = true);
 
 // Read and return a byte (8 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on read
-int8_t cf_ReadByte(CFILE *cfp);
+int8_t cf_ReadByte(struct CFILE* cfp);
 
 // Read and return a float (32 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on read
-float cf_ReadFloat(CFILE *cfp);
+float cf_ReadFloat(struct CFILE* cfp);
 
 // Read and return a double (64 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on read
-double cf_ReadDouble(CFILE *cfp);
+double cf_ReadDouble(struct CFILE* cfp);
 
 // Reads a string from a CFILE.  If the file is type binary, this
 // function reads until a NULL or EOF is found.  If the file is text,
@@ -310,14 +310,14 @@ double cf_ReadDouble(CFILE *cfp);
 //					cfp - the CFILE pointer
 // Returns the number of bytes in the string, before the terminator
 // Does not generate an exception on EOF
-int cf_ReadString(char *buf, size_t n, CFILE *cfp);
+int cf_ReadString(char *buf, size_t n, struct CFILE* cfp);
 
 // Writes the specified number of bytes from a file into the buffer
 // DO NOT USE THIS TO WRITE STRUCTURES.  This function is for byte
 // data, such as a string or a bitmap of 8-bit pixels.
 // Returns the number of bytes written.
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-int cf_WriteBytes(const uint8_t *buf, int count, CFILE *cfp);
+int cf_WriteBytes(const uint8_t *buf, int count, struct CFILE* cfp);
 
 // Writes a null-terminated string to a file.  If the file is type binary,
 // the string is terminated in the file with a null.  If the file is type
@@ -326,10 +326,10 @@ int cf_WriteBytes(const uint8_t *buf, int count, CFILE *cfp);
 //					cfp = the CFILE pointer
 // Returns the number of bytes written
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-int cf_WriteString(CFILE *cfp, const char *buf);
+int cf_WriteString(struct CFILE* cfp, const char *buf);
 
 // Just like stdio fprintf(), except works on a CFILE
-int cfprintf(CFILE *cfp, const char *format, ...);
+int cfprintf(struct CFILE* cfp, const char *format, ...);
 
 // The following functions write numeric vales to a CFILE.  All values are
 // stored to the file in Intel (little-endian) format.
@@ -337,42 +337,42 @@ int cfprintf(CFILE *cfp, const char *format, ...);
 
 // Write an integer (32 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-void cf_WriteInt(CFILE *cfp, int32_t i);
+void cf_WriteInt(struct CFILE* cfp, int32_t i);
 
 // Write a int16_t (16 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-void cf_WriteShort(CFILE *cfp, int16_t s);
+void cf_WriteShort(struct CFILE* cfp, int16_t s);
 
 // Write a byte (8 bits).  If the byte is a newline & the file is a text file, writes a CR/LF pair.
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-void cf_WriteByte(CFILE *cfp, int8_t b);
+void cf_WriteByte(struct CFILE* cfp, int8_t b);
 
 // Write a float (32 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-void cf_WriteFloat(CFILE *cfp, float f);
+void cf_WriteFloat(struct CFILE* cfp, float f);
 
 // Write a double (64 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-void cf_WriteDouble(CFILE *cfp, double d);
+void cf_WriteDouble(struct CFILE* cfp, double d);
 
 // Copies a file.  Returns TRUE if copied ok.  Returns FALSE if error opening either file.
 // Throws an exception of type (cfile_error *) if the OS returns an error on read or write
 // If copytime is nonzero, copies the filetime info as well
-bool cf_CopyFile(const std::filesystem::path &dest, const std::filesystem::path &src, int copytime = 0);
+bool cf_CopyFile(const std::filesystem::path& dest, const std::filesystem::path& src, int copytime = 0);
 
 // Checks to see if two files are different.
 // Returns TRUE if the files are different, or FALSE if they are the same.
-bool cf_Diff(const std::filesystem::path &a, const std::filesystem::path &b);
+bool cf_Diff(const std::filesystem::path& a, const std::filesystem::path& b);
 
 // Copies the file time from one file to another
-void cf_CopyFileTime(const std::filesystem::path &dest, const std::filesystem::path &src);
+void cf_CopyFileTime(const std::filesystem::path& dest, const std::filesystem::path& src);
 
 // rewinds cfile position
-void cf_Rewind(CFILE *fp);
+void cf_Rewind(struct CFILE* fp);
 
 // Calculates a 32 bit CRC
-uint32_t cf_GetfileCRC(const std::filesystem::path &src);
-uint32_t cf_CalculateFileCRC(CFILE *fp); // same as cf_GetfileCRC, except works with CFILE pointers
+uint32_t cf_GetfileCRC(const std::filesystem::path& src);
+uint32_t cf_CalculateFileCRC(struct CFILE* fp); // same as cf_GetfileCRC, except works with CFILE pointers
 
 /**
  * Execute function for each file in lib that matches to extension.
@@ -381,7 +381,8 @@ uint32_t cf_CalculateFileCRC(CFILE *fp); // same as cf_GetfileCRC, except works 
  * @param func function callback
  * @return count of applied files
  */
-int cf_DoForeachFileInLibrary(int handle, const std::filesystem::path &ext,
+int cf_DoForeachFileInLibrary(int handle, const std::filesystem::path& ext,
                                const std::function<void(std::filesystem::path)> &func);
 
+#endif
 #endif

@@ -46,7 +46,6 @@
 #include "about_dialog.h"
 
 
-#include "editor_file_dialogs.h"
 #include "editor_view.h"
 #include "hog_dialog.h"
 #include "level_io.h"
@@ -121,9 +120,9 @@ MainWindow::MainWindow(QWidget *parent)
   connect(m_editorView, &EditorView::objectSelected, this, [this](int idx) {
     Cur_object_index = idx;
     State_changed = true;
-    const char *name = (idx >= 0 && idx <= Highest_object_index && Objects[idx].name)
-                           ? Objects[idx].name
-                           : "";
+    QString name = (idx >= 0 && idx <= Highest_object_index && !Objects[idx].name.empty())
+                           ? QString::fromStdString(Objects[idx].name)
+                           : QString();
     statusBar()->showMessage(
         QStringLiteral("Object %1 selected (%2)").arg(idx).arg(name));
     m_editorView->requestRedraw();
@@ -349,25 +348,20 @@ void MainWindow::onFileNew() {
 void MainWindow::onFileOpen() {
   // Use the editor's LocalLevelsDir rather than the install root so the file
   // dialog opens where the user actually keeps their .d3l files.
-  static char initial_dir[PATH_MAX];
-  if (m_currentLevelFile.isEmpty()) {
-    std::strncpy(initial_dir, LocalLevelsDir, sizeof(initial_dir) - 1);
-    initial_dir[sizeof(initial_dir) - 1] = '\0';
-  } else {
-    const QByteArray current = QFileInfo(m_currentLevelFile).absolutePath().toLatin1();
-    std::strncpy(initial_dir, current.constData(), sizeof(initial_dir) - 1);
-    initial_dir[sizeof(initial_dir) - 1] = '\0';
-  }
-  char picked[PATH_MAX] = "";
-  const char *filter = "Descent 3 Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
-  if (!OpenFileDialog(this, filter, picked, initial_dir,
-                                int {sizeof(initial_dir)})) {
+  std::filesystem::path initial_dir = m_currentLevelFile.isEmpty()
+                                          ? LocalLevelsDir
+                                          : std::filesystem::path(m_currentLevelFile.toStdString()).parent_path();
+  const QString picked =
+      QFileDialog::getOpenFileName(this, QStringLiteral("Open Level"),
+                                   QString::fromStdString(initial_dir.string()),
+                                   QStringLiteral("Descent 3 Level Files (*.d3l);;All Files (*.*)"));
+  if (picked.isEmpty()) {
     statusBar()->showMessage(QStringLiteral("Open cancelled."));
     return;
   }
-  m_currentLevelFile = QString::fromLatin1(picked);
+  m_currentLevelFile = picked;
   setWindowTitle(QStringLiteral("Descent 3 Editor - %1").arg(m_currentLevelFile));
-  EditorLoadLevel(picked);
+  EditorLoadLevel(std::filesystem::path(picked.toStdString()));
   if (m_editorView != nullptr) {
     m_editorView->resetCamera();
     m_editorView->requestRedraw();
@@ -376,41 +370,31 @@ void MainWindow::onFileOpen() {
       QStringLiteral("Opened %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
 }
 
-void MainWindow::onRoomSelectByNumber() {
-  onSelectRoomByNumber();
-}
-
 void MainWindow::onFileSave() {
   if (m_currentLevelFile.isEmpty()) {
     onFileSaveAs();
     return;
   }
-  const QByteArray path = m_currentLevelFile.toLatin1();
-  EditorSaveLevel(path.constData());
+  EditorSaveLevel(std::filesystem::path(m_currentLevelFile.toStdString()));
   statusBar()->showMessage(
       QStringLiteral("Saved %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
 }
 
 void MainWindow::onFileSaveAs() {
-  static char initial_dir[PATH_MAX];
-  if (m_currentLevelFile.isEmpty()) {
-    std::strncpy(initial_dir, LocalLevelsDir, sizeof(initial_dir) - 1);
-    initial_dir[sizeof(initial_dir) - 1] = '\0';
-  } else {
-    const QByteArray current = QFileInfo(m_currentLevelFile).absolutePath().toLatin1();
-    std::strncpy(initial_dir, current.constData(), sizeof(initial_dir) - 1);
-    initial_dir[sizeof(initial_dir) - 1] = '\0';
-  }
-  char picked[PATH_MAX] = "";
-  const char *filter = "Descent 3 Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
-  if (!SaveFileDialog(this, filter, picked, initial_dir,
-                                int {sizeof(initial_dir)})) {
+  std::filesystem::path initial_dir = m_currentLevelFile.isEmpty()
+                                          ? LocalLevelsDir
+                                          : std::filesystem::path(m_currentLevelFile.toStdString()).parent_path();
+  const QString picked =
+      QFileDialog::getSaveFileName(this, QStringLiteral("Save Level As"),
+                                   QString::fromStdString(initial_dir.string()),
+                                   QStringLiteral("Descent 3 Level Files (*.d3l);;All Files (*.*)"));
+  if (picked.isEmpty()) {
     statusBar()->showMessage(QStringLiteral("Save As cancelled."));
     return;
   }
-  m_currentLevelFile = QString::fromLatin1(picked);
+  m_currentLevelFile = picked;
   setWindowTitle(QStringLiteral("Descent 3 Editor - %1").arg(m_currentLevelFile));
-  EditorSaveLevel(picked);
+  EditorSaveLevel(std::filesystem::path(picked.toStdString()));
   statusBar()->showMessage(
       QStringLiteral("Saved as %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
 }
@@ -420,15 +404,9 @@ void MainWindow::onFileStats() {
   // is built on top of the same Rooms[]/Objects[] iteration the Win32
   // entry point did; the dialog surface just got swapped from
   // OutrageMessageBox to QMessageBox::information.
-  char *text = RenderLevelStats();
-  if (text == nullptr) {
-    QMessageBox::information(this, QStringLiteral("Level stats"),
-                              QStringLiteral("Level stats unavailable."));
-    return;
-  }
+  const std::string text = RenderLevelStats();
   QMessageBox::information(this, QStringLiteral("Level stats"),
-                            QString::fromUtf8(text));
-  delete[] text;
+                            QString::fromStdString(text));
 }
 
 void MainWindow::onFileVerifyLevel() {
@@ -720,7 +698,7 @@ void MainWindow::showReorderPages() {
   QString text;
   for (int i = 0; i < MAX_TRACKLOCKS; i++)
     if (GlobalTrackLocks[i].used)
-      text += QString("%1  %2\n").arg(i).arg(GlobalTrackLocks[i].name);
+      text += QString("%1  %2\n").arg(i).arg(QString::fromStdString(GlobalTrackLocks[i].name));
   if (text.isEmpty())
     text = QStringLiteral("No pages checked out.");
   QMessageBox::information(this, QStringLiteral("Reorder Net Pages"), text);
@@ -731,7 +709,7 @@ void MainWindow::showAllCheckedOut() {
   int total = 0;
   for (int i = 0; i < MAX_TRACKLOCKS; i++)
     if (GlobalTrackLocks[i].used) {
-      text += QString("%1\n").arg(GlobalTrackLocks[i].name);
+      text += QString("%1\n").arg(QString::fromStdString(GlobalTrackLocks[i].name));
       total++;
     }
   if (total == 0)
@@ -747,8 +725,8 @@ void MainWindow::showBitmapImporter() {
                                                     QStringLiteral("Images (*.pcx *.tga *.bmp)"));
   if (path.isEmpty())
     return;
-  const QByteArray pathBytes = path.toLocal8Bit();
-  const int bm = LoadTextureImage(pathBytes.constData(), nullptr, 0, 0);
+  const std::filesystem::path pathFs(path.toStdString());
+  const int bm = LoadTextureImage(pathFs, nullptr, 0, 0);
   if (bm < 0) {
     QMessageBox::warning(this, QStringLiteral("Import Bitmap"), QStringLiteral("Could not load %1.").arg(path));
     return;
@@ -933,7 +911,7 @@ int MainWindow::onPlaceCameraAtViewer() {
   pos.z() += 1.0f;
   Objects[slot].type = OBJ_CAMERA;
   Objects[slot].render_type = RT_POLYOBJ;
-  std::strncpy(Objects[slot].name, "Cam", sizeof(Objects[slot].name) - 1);
+  Objects[slot].name = "Cam";
   ObjSetPos(&Objects[slot], &pos, Viewer_object->roomnum,
             &Viewer_object->orient, false);
 
@@ -1517,28 +1495,21 @@ int MainWindow::onSelectRoomByNumber() {
 
 // Rename the current room. Pops a QInputDialog pre-filled with the
 // existing name; returns true if the user picked a new value, false
-// otherwise (cancellation or no change). Leading/trailing spaces are
-// stripped in line with editor/HFile.cpp's StripLeadingTrailingSpaces().
+// otherwise (cancellation or no change).
 bool MainWindow::onRenameRoom() {
   if (Curroomp == nullptr)
     return false;
   bool ok = false;
-  QString current = (Curroomp->name != nullptr)
-                        ? QString::fromLatin1(Curroomp->name)
-                        : QString();
+  QString current = QString::fromStdString(Curroomp->name);
   const QString picked = QInputDialog::getText(
       nullptr, QStringLiteral("Rename Room"),
-      QStringLiteral("New name:"), QLineEdit::Normal, current, &ok);
+      QStringLiteral("New name:"), QLineEdit::Normal, current, &ok).trimmed();
   if (!ok || picked.isEmpty())
     return false;
-  QByteArray bytes = picked.toLatin1();
-  bytes.append('\0');
-  char *buf = bytes.data();
-  StripLeadingTrailingSpaces(buf);
-  std::strncpy(Curroomp->name, buf, sizeof(Curroomp->name) - 1);
-  Curroomp->name[sizeof(Curroomp->name) - 1] = '\0';
+
+  Curroomp->name = picked.toStdString();
   Mine_changed = true;
-  std::fprintf(stderr, "[room_ops] RenameRoom -> %s\n", Curroomp->name);
+  std::fprintf(stderr, "[room_ops] RenameRoom -> %s\n", Curroomp->name.c_str());
   return true;
 }
 

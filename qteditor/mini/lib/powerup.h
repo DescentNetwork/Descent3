@@ -84,11 +84,11 @@
 #define PSI_PICKUP 0
 
 struct powerup {
-  char name[PAGENAME_LEN];
+  std::string name;
   float size;
   int score;
   int image_handle;              // Either a vclip or a polygon model
-  char model_name[PAGENAME_LEN]; // used for remapping powerups which contain models
+  std::string model_name; // used for remapping powerups which contain models
   int flags;
   uint16_t used;
 

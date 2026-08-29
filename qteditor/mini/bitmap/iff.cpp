@@ -49,11 +49,6 @@
 #include "log.h"
 #include "grdefs.h"
 
-// The mini tree only defines Q_ASSERT inside cfile/cfile_compat.h.  Provide a
-// local fallback so the ported readers compile regardless of include order.
-#ifndef Q_ASSERT
-#define Q_ASSERT(cond) Q_ASSERT(cond)
-#endif
 
 // Byte-oriented readers over an in-memory posix_istream (fmemopen).  These
 // mirror the legacy CFILE read helpers exactly: the 2-arg IFF variants use

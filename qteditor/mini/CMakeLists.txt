@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(qteditor_mini VERSION 1.0.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEDITOR")
 # Mini-specific build flag: marks code/tests that only make sense in the
@@ -103,8 +103,10 @@ foreach(f stubs.cpp level_loader.cpp)
   endif()
 endforeach()
 
-# Mini engine-replacement subdir sources.
-file(GLOB QTEDITOR_SUBDIR_SOURCES
+# Mini engine-replacement subdir sources.  CONFIGURE_DEPENDS re-globs this list
+# when new .cpp files (e.g. manage/*page.cpp readers) are added, so they are
+# picked up without a manual source-list edit.
+file(GLOB QTEDITOR_SUBDIR_SOURCES CONFIGURE_DEPENDS
     "lib/*.cpp"
     "editor/*.cpp"
     "game/*.cpp"
@@ -143,6 +145,23 @@ file(GLOB QTEDITOR_HEADERS
     "2dlib/*.h"
     "mem/*.h"
     "sndlib/*.h"
+    "bitmap/*.h"
+    "cfile/*.h"
+    "ddebug/*.h"
+    "ddio/*.h"
+    "fix/*.h"
+    "logger/*.h"
+    "manage/*.h"
+    "md5/*.h"
+    "misc/*.h"
+    "music/*.h"
+    "physics/*.h"
+    "renderer/*.h"
+    "scripts/*.h"
+    "unzip/*.h"
+    "ui/*.h"
+    "${PROJECT_SOURCE_DIR}/../../descar/src/*.h"
+    "${PROJECT_SOURCE_DIR}/../../descar/utils/*.h"
 )
 file(GLOB QTEDITOR_UI "ui/*.ui")
 

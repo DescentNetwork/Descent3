@@ -186,7 +186,7 @@ struct netplayer {
   uint32_t file_xfer_pos;       // Position for sending and/or receiving
   uint32_t file_xfer_id;        // File id that we are sending
   uint32_t file_xfer_who;       // Who the file is for
-  CFILE *file_xfer_cfile;           // File handle for src/target file
+  struct CFILE* file_xfer_cfile;           // File handle for src/target file
   uint16_t position_counter;          // for making sure we don't get position packets out of order
   char ship_logo[_MAX_PATH];
   char voice_taunt1[_MAX_PATH];
@@ -252,7 +252,7 @@ struct netgame_info {
   char mission_name[MISSION_NAME_LEN];
   char scriptname[NETGAME_SCRIPT_LEN];
   std::filesystem::path server_config_name;
-  char connection_name[PAGENAME_LEN];
+  std::string connection_name;
   network_address server_address; // The address of the server that we're talking to - not used if we are the server
 
   uint8_t local_role;

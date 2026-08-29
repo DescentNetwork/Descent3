@@ -32,7 +32,7 @@
 #define VCF_WANTS_MIPPED 2
 
 struct vclip {
-  char name[PAGENAME_LEN];
+  std::string name;
   int16_t num_frames;
   int16_t *frames;    // bitmap indices
   float frame_time; // time (in seconds) of each frame
@@ -76,7 +76,7 @@ void ChangeVClipName(const char *src, char *dest);
 
 // Searches thru all vclips for a specific name, returns -1 if not found
 // or index of vclip with name
-int FindVClipName(const char *name);
+int FindVClipName(const std::string& name);
 
 // Pages in a vclip if it needs to be
 void PageInVClip(int vcnum);

@@ -202,7 +202,7 @@ public:
 
 public:
   // data access functions
-  void set_name(const char *name);
+  void set_name(const std::string& name);
   void get_name(char *name);
 
   void set_ship(const char *ship);
@@ -240,36 +240,36 @@ private:
   bool write_pending;    // data has changed and pilot data is out of sync with file
 private:
   // internal file access functions
-  void write_name(CFILE *file);
-  void write_ship_info(CFILE *file);
-  void write_custom_multiplayer_data(CFILE *file);
-  void write_difficulty(CFILE *file);
-  void write_hud_data(CFILE *file);
-  void write_mission_data(CFILE *file);
-  void write_taunts(CFILE *file);
-  void write_weapon_select(CFILE *file);
-  void write_controls(CFILE *file);
-  void write_profanity_filter(CFILE *file);
-  void write_audiotaunts(CFILE *file);
-  void write_gameplay_toggles(CFILE *file);
-  void write_guidebot_name(CFILE *file);
+  void write_name(struct CFILE* file);
+  void write_ship_info(struct CFILE* file);
+  void write_custom_multiplayer_data(struct CFILE* file);
+  void write_difficulty(struct CFILE* file);
+  void write_hud_data(struct CFILE* file);
+  void write_mission_data(struct CFILE* file);
+  void write_taunts(struct CFILE* file);
+  void write_weapon_select(struct CFILE* file);
+  void write_controls(struct CFILE* file);
+  void write_profanity_filter(struct CFILE* file);
+  void write_audiotaunts(struct CFILE* file);
+  void write_gameplay_toggles(struct CFILE* file);
+  void write_guidebot_name(struct CFILE* file);
 
   // for the read functions, skip is true if the data should actually
   // just be skipped and not processed
   int file_version;
-  void read_name(CFILE *file, bool skip);
-  void read_ship_info(CFILE *file, bool skip);
-  void read_custom_multiplayer_data(CFILE *file, bool skip);
-  void read_difficulty(CFILE *file, bool skip);
-  void read_hud_data(CFILE *file, bool skip);
-  void read_mission_data(CFILE *file, bool skip);
-  void read_taunts(CFILE *file, bool skip);
-  void read_weapon_select(CFILE *file);
-  void read_controls(CFILE *file, bool skip);
-  void read_profanity_filter(CFILE *file, bool skip);
-  void read_audiotaunts(CFILE *file, bool skip);
-  void read_gameplay_toggles(CFILE *file, bool skip);
-  void read_guidebot_name(CFILE *file, bool skip);
+  void read_name(struct CFILE* file, bool skip);
+  void read_ship_info(struct CFILE* file, bool skip);
+  void read_custom_multiplayer_data(struct CFILE* file, bool skip);
+  void read_difficulty(struct CFILE* file, bool skip);
+  void read_hud_data(struct CFILE* file, bool skip);
+  void read_mission_data(struct CFILE* file, bool skip);
+  void read_taunts(struct CFILE* file, bool skip);
+  void read_weapon_select(struct CFILE* file);
+  void read_controls(struct CFILE* file, bool skip);
+  void read_profanity_filter(struct CFILE* file, bool skip);
+  void read_audiotaunts(struct CFILE* file, bool skip);
+  void read_gameplay_toggles(struct CFILE* file, bool skip);
+  void read_guidebot_name(struct CFILE* file, bool skip);
 
 private:
   //--- Pilot data				---//

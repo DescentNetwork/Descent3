@@ -48,7 +48,7 @@ void ScriptSelectDialog::populate() {
   if (m_list == nullptr)
     return;
   m_list->clear();
-  QDir dir(LocalScriptDir);
+  QDir dir(QString::fromStdString(LocalScriptDir.string()));
   const QStringList names = dir.entryList(QStringList() << "*.dll", QDir::Files);
   for (const QString &n : names)
     m_list->addItem(QFileInfo(n).completeBaseName());

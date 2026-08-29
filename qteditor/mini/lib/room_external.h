@@ -102,6 +102,7 @@
 #include "pstypes.h"
 #include "vecmat_external.h"
 #include "bnode.h"
+#include <cstdint>
 
 #define MAX_FACES_PER_ROOM 3000  // max number of faces per room
 #define MAX_VERTS_PER_ROOM 10000 // max vertices per room
@@ -207,9 +208,71 @@ struct portal {
 
 struct doorway;
 
+struct [[gnu::packed]] room_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 2;             // Unused padding to complete 32 bits
+  uint32_t no_light : 1;            // This room does not get lit
+  uint32_t secret : 1;              // This room is a secret room
+  uint32_t waypoint : 1;            // This room has a waypoint in it
+  uint32_t manual_path_pnt : 1;     // The room path_pnt has been set manually (i.e. by the designer)
+  uint32_t inform_relink_to_lg : 1; // Informs the level goal system on player relinking to this room
+  uint32_t mine : 5;                // Mine index of this room (we support up to 32 individual mines without a problem)
+  uint32_t flicker : 1;             // This room flickers with pulse lighting
+  uint32_t strobe : 1;              // This room strobes with pulse lighting
+  uint32_t triangulate : 1;         // All the faces in this room should be drawn with triagulation on
+  uint32_t mirror_visible : 1;      // The mirror is this room is visible
+  uint32_t special6 : 1;            // This room is a special room
+  uint32_t special5 : 1;            // This room is a special room
+  uint32_t special4 : 1;            // This room is a special room
+  uint32_t special3 : 1;            // This room is a special room
+  uint32_t special2 : 1;            // This room is a special room
+  uint32_t special1 : 1;            // This room is a special room
+  uint32_t fog : 1;                 // this room is fogged
+  uint32_t goal4 : 1;               // this room is goal 4
+  uint32_t goal3 : 1;               // this room is goal 3
+  uint32_t sorted_inc_y : 1;        // Faces are sorted with increasing y
+  uint32_t touches_terrain : 1;     // this room should recieve lighting from satellites
+  uint32_t goal2 : 1;               // this room is goal 2
+  uint32_t goal1 : 1;               // this room is goal 1
+  uint32_t external : 1;            // this is an external room (i.e. a building)
+  uint32_t door : 1;                // a 3d door is here.
+  uint32_t fuelcen : 1;             // room is a refueling center
+#else
+  uint32_t fuelcen : 1;             // room is a refueling center
+  uint32_t door : 1;                // a 3d door is here.
+  uint32_t external : 1;            // this is an external room (i.e. a building)
+  uint32_t goal1 : 1;               // this room is goal 1
+  uint32_t goal2 : 1;               // this room is goal 2
+  uint32_t touches_terrain : 1;     // this room should recieve lighting from satellites
+  uint32_t sorted_inc_y : 1;        // Faces are sorted with increasing y
+  uint32_t goal3 : 1;               // this room is goal 3
+  uint32_t goal4 : 1;               // this room is goal 4
+  uint32_t fog : 1;                 // this room is fogged
+  uint32_t special1 : 1;            // This room is a special room
+  uint32_t special2 : 1;            // This room is a special room
+  uint32_t special3 : 1;            // This room is a special room
+  uint32_t special4 : 1;            // This room is a special room
+  uint32_t special5 : 1;            // This room is a special room
+  uint32_t special6 : 1;            // This room is a special room
+  uint32_t mirror_visible : 1;      // The mirror is this room is visible
+  uint32_t triangulate : 1;         // All the faces in this room should be drawn with triagulation on
+  uint32_t strobe : 1;              // This room strobes with pulse lighting
+  uint32_t flicker : 1;             // This room flickers with pulse lighting
+  uint32_t mine : 5;                // Mine index of this room (we support up to 32 individual mines without a problem)
+  uint32_t inform_relink_to_lg : 1; // Informs the level goal system on player relinking to this room
+  uint32_t manual_path_pnt : 1;     // The room path_pnt has been set manually (i.e. by the designer)
+  uint32_t waypoint : 1;            // This room has a waypoint in it
+  uint32_t secret : 1;              // This room is a secret room
+  uint32_t no_light : 1;            // This room does not get lit
+  uint32_t padding : 2;             // Unused padding to complete 32 bits
+#endif
+};
+static_assert(sizeof(room_flags_t) == sizeof(uint32_t));
+
 // the basic building-block of a Descent 3 level
 struct room {
-  int flags; // various room flags
+  room_flags_t flags;
 
   int num_faces;   // how many poygons in this room
   int num_portals; // how many connections in this room
@@ -220,7 +283,7 @@ struct room {
   vector4 *verts4; // array of 16byte vertices for this room
 
   doorway *doorway_data;   // pointer to this room's doorway data, or NULL if not a doorway
-  char *name;              // name of this room, or NULL
+  std::string name;              // name of this room, or NULL
   int objects;             // index of first object in this room
   vector max_xyz, min_xyz; // for external room visibility checking
 

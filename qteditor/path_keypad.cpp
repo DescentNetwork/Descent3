@@ -119,8 +119,8 @@ void PathKeypad::updateDialog() {
     combo->clear();
     for (int i = 0; i < MAX_GAME_PATHS; i++)
       if (GamePaths[i].used)
-        combo->addItem(GamePaths[i].name);
-    combo->setCurrentText(GamePaths[p].name);
+        combo->addItem(QString::fromStdString(GamePaths[i].name));
+    combo->setCurrentText(QString::fromStdString(GamePaths[p].name));
   }
 
   if (QLabel *label = ui->IDC_PATHPAD_NUM_NODES)
@@ -144,8 +144,7 @@ void PathKeypad::onAddPath() {
   int pathnum = AllocGamePath();
   if (pathnum == -1)
     return;
-  snprintf(GamePaths[pathnum].name, sizeof(GamePaths[pathnum].name), "%s",
-           name.toLocal8Bit().constData());
+  GamePaths[pathnum].name = name.toStdString();
   D3EditState.current_path = pathnum;
   D3EditState.current_node = 0;
   updateDialog();
@@ -163,7 +162,7 @@ void PathKeypad::onDeletePath() {
 
 void PathKeypad::onPathPulldownChanged() {
   QComboBox *combo = ui->IDC_PATHPAD_PULLDOWN;
-  const int i = FindGamePathName(combo->currentText().toLocal8Bit().constData());
+  const int i = FindGamePathName(combo->currentText().toStdString());
   if (i == -1)
     return;
   D3EditState.current_path = i;

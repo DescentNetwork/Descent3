@@ -57,8 +57,8 @@ ProceduralDialog::ProceduralDialog(QWidget *parent)
       if (QMessageBox::question(this, "Clear procedurals", "Clear all procedural textures?") ==
           QMessageBox::Yes) {
         for (int i = 0; i < MAX_TEXTURES; i++)
-          if (GameTextures[i].used && GameTextures[i].flags & TF_PROCEDURAL)
-            GameTextures[i].flags &= ~TF_PROCEDURAL;
+          if (GameTextures[i].used && GameTextures[i].flags.procedural)
+            GameTextures[i].flags.procedural = false;
       }
     });
   }

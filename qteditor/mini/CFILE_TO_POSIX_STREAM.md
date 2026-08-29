@@ -132,7 +132,7 @@ fixed_string_t<36> name;        // 36 raw bytes, NUL-padded on disk
 in  >> name;                    // read exactly 36 bytes
 out << name;                    // write exactly 36 bytes
 
-std::string s = name.string();  // strip trailing NULs to a std::string
+std::string s = name;  // fixed_string_t converts to std::string transparently (also .string())
 name = s;                       // assign a std::string back
 ```
 

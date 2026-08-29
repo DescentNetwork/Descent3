@@ -159,11 +159,11 @@ public:
   int GetSpawnPnt(int8_t s_index);
   bool SetSpawnPnt(int8_t s_index, int s_value);
 
-  void SaveData(CFILE *fptr);
-  void LoadData(CFILE *fptr);
+  void SaveData(struct CFILE* fptr);
+  void LoadData(struct CFILE* fptr);
 
-  void GetName(char *);
-  bool SetName(const char *);
+  std::string GetName(void);
+  bool SetName(const std::string& name);
 
   int GetMaxProd();
   bool SetMaxProd(int max_p);

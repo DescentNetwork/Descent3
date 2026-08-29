@@ -55,7 +55,7 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, int format = 0);
 int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname, int format, int mipped);
 
 // Loads a pcx file and converts it to 16 bit.  Returns bitmap handle or -1 on error
-int bm_pcx_alloc_file(CFILE *infile);
+int bm_pcx_alloc_file(struct CFILE* infile);
 
 // Pages in bitmap index n.  Returns 1 if successful, 0 if not
 int bm_page_in_file(int n);

@@ -178,7 +178,7 @@
 #define NUM_FIREBALLS 52
 
 struct fireball {
-  char name[PAGENAME_LEN]; // The filename of this animation
+  std::string name; // The filename of this animation
 
   uint8_t type;       // type of fireball, see above
   uint8_t tex_size;   // What size texture to use for this animation

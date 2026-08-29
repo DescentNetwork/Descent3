@@ -23,6 +23,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFileDialog>
+#include <QFile>
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
@@ -230,7 +231,7 @@ void WorldSoundsDialog::updateDialog() {
   if (QLineEdit *edit = ui->IDC_SOUND_IMPORT_VOLUME_EDIT)
     edit->setText(QString::number(Sounds[s].import_volume * 100.0f));
   if (QLineEdit *edit = ui->IDC_RAW_NAME_EDIT)
-    edit->setText(SoundFiles[Sounds[s].sample_index].name);
+    edit->setText(QString::fromStdString(SoundFiles[Sounds[s].sample_index].name));
 
   if (QLabel *label = ui->IDC_SOUND_MEMORY_STATIC)
     label->setText(QString("%1, %2 H, %3 Total")
@@ -309,8 +310,8 @@ void WorldSoundsDialog::updateDialog() {
     combo->clear();
     for (int i = 0; i < MAX_SOUNDS; i++)
       if (Sounds[i].used)
-        combo->addItem(Sounds[i].name);
-    combo->setCurrentText(Sounds[s].name);
+        combo->addItem(QString::fromStdString(Sounds[i].name));
+    combo->setCurrentText(QString::fromStdString(Sounds[s].name));
   }
 }
 
@@ -346,17 +347,17 @@ void WorldSoundsDialog::onAddSound() {
       snprintf(cur_name, sizeof(cur_name), "%s", fname);
     else
       snprintf(cur_name, sizeof(cur_name), "%s%d", fname, c);
-    if (FindSoundName(cur_name) != -1)
+    if (FindSoundName(std::string(cur_name)) != -1)
       c++;
     else
       finding_name = false;
   }
 
-  snprintf(Sounds[sound_handle].name, sizeof(Sounds[sound_handle].name), "%s", cur_name);
+  Sounds[sound_handle].name = cur_name;
   Sounds[sound_handle].sample_index = raw_handle;
 
   std::filesystem::path destname = LocalSoundsDir / SoundFiles[Sounds[sound_handle].sample_index].name;
-  cf_CopyFile(destname, pathname.toStdString());
+  std::filesystem::copy(std::filesystem::path(pathname.toStdString()), (destname), std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(cur_name, PAGETYPE_SOUND);
   D3EditState.current_sound = sound_handle;
@@ -405,17 +406,17 @@ void WorldSoundsDialog::onDeleteSound() {
     return;
   }
   if (QMessageBox::question(this, "Delete sound",
-                            QString("Are you sure you want to delete this sound? %1").arg(Sounds[n].name)) !=
+                            QString("Are you sure you want to delete this sound? %1").arg(QString::fromStdString(Sounds[n].name))) !=
       QMessageBox::Yes)
     return;
   if (!mng_MakeLocker())
     return;
 
   mngs_Pagelock pl;
-  snprintf(pl.name, sizeof(pl.name), "%s", Sounds[n].name);
+  pl.name = Sounds[n].name;
   pl.pagetype = PAGETYPE_SOUND;
 
-  if (mng_CheckIfPageOwned(&pl, TableUser) != 1) {
+  if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
     mng_FreeTrackLock(tl);
     Q_ASSERT(mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 1));
   } else {
@@ -442,7 +443,7 @@ void WorldSoundsDialog::onLockSound() {
 
   mngs_Pagelock temp_pl;
   mngs_sound_page soundpage;
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", Sounds[n].name);
+  temp_pl.name = Sounds[n].name;
   temp_pl.pagetype = PAGETYPE_SOUND;
 
   const int r = mng_CheckIfPageLocked(&temp_pl);
@@ -450,7 +451,7 @@ void WorldSoundsDialog::onLockSound() {
     if (QMessageBox::question(this, "Are you sure?",
                           "This page is not even in the table file, or the database maybe corrupt.  Override to "
                           "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
-      snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
+      temp_pl.holder = "UNLOCKED";
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
         QMessageBox::critical(this, "Error!", ErrorString);
     }
@@ -459,7 +460,7 @@ void WorldSoundsDialog::onLockSound() {
   } else if (r == 1) {
     QMessageBox::information(this, "Information", InfoString);
   } else {
-    snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
+    temp_pl.holder = TableUser.toStdString();
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
       QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
@@ -493,16 +494,16 @@ void WorldSoundsDialog::onCheckinSound() {
     return;
 
   mngs_Pagelock temp_pl;
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", Sounds[n].name);
+  temp_pl.name = Sounds[n].name;
   temp_pl.pagetype = PAGETYPE_SOUND;
 
-  const int r = mng_CheckIfPageOwned(&temp_pl, TableUser);
+  const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
   if (r < 0)
     QMessageBox::critical(this, "Error!", ErrorString);
   else if (r == 0)
     QMessageBox::information(this, "Information", InfoString);
   else {
-    snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
+    temp_pl.holder = "UNLOCKED";
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
       QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
@@ -542,7 +543,7 @@ void WorldSoundsDialog::onKillsounds() {
 void WorldSoundsDialog::onOverride() {
   const int n = D3EditState.current_sound;
   mngs_Pagelock temp_pl;
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", Sounds[n].name);
+  temp_pl.name = Sounds[n].name;
   temp_pl.pagetype = PAGETYPE_SOUND;
   mng_OverrideToUnlocked(&temp_pl);
 }
@@ -556,28 +557,28 @@ void WorldSoundsDialog::onChangeName() {
   }
   bool ok = false;
   QString name = QInputDialog::getText(this, "Sound name", "Enter a new name for this sound:",
-                                       QLineEdit::Normal, Sounds[n].name, &ok);
+                                       QLineEdit::Normal, QString::fromStdString(Sounds[n].name), &ok);
   if (!ok)
     return;
-  if (FindSoundName(name.toLocal8Bit().constData()) != -1) {
+  if (FindSoundName(name.toStdString()) != -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
   if (!mng_MakeLocker())
     return;
   mngs_Pagelock pl;
-  snprintf(pl.name, sizeof(pl.name), "%s", Sounds[n].name);
+  pl.name = Sounds[n].name;
   pl.pagetype = PAGETYPE_SOUND;
   const QByteArray newName = name.toLocal8Bit();
-  char newNameBuf[PAGENAME_LEN];
-  snprintf(newNameBuf, sizeof(newNameBuf), "%s", newName.constData());
-  const int ret = mng_CheckIfPageOwned(&pl, TableUser);
+  std::string newNameBuf;
+  newNameBuf = std::string(newName.constData());
+  const int ret = mng_CheckIfPageOwned(&pl, TableUser.toStdString());
   if (ret < 0)
     QMessageBox::critical(this, "Error!", ErrorString);
   else if (ret == 1)
     mng_RenamePage(Sounds[n].name, newNameBuf, PAGETYPE_SOUND);
   else if (ret == 2) {
-    snprintf(GlobalTrackLocks[p].name, sizeof(GlobalTrackLocks[p].name), "%s", newName.constData());
+    GlobalTrackLocks[p].name = newName.constData();
     mng_ReplacePage(GlobalTrackLocks[p].name, newNameBuf, n, PAGETYPE_SOUND, 1);
   } else if (ret == 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You don't own this page.  Get Jason now!");
@@ -585,8 +586,8 @@ void WorldSoundsDialog::onChangeName() {
     mng_EraseLocker();
     return;
   }
-  snprintf(GlobalTrackLocks[p].name, sizeof(GlobalTrackLocks[p].name), "%s", newName.constData());
-  snprintf(Sounds[n].name, sizeof(Sounds[n].name), "%s", newName.constData());
+  GlobalTrackLocks[p].name = newName.constData();
+  Sounds[n].name = newName.constData();
   mng_EraseLocker();
   RemapSounds();
   updateDialog();
@@ -594,7 +595,7 @@ void WorldSoundsDialog::onChangeName() {
 
 void WorldSoundsDialog::onSoundPulldownChanged() {
   QComboBox *combo = ui->IDC_SOUND_PULLDOWN;
-  const int i = FindSoundName(combo->currentText().toLocal8Bit().constData());
+  const int i = FindSoundName(combo->currentText().toStdString());
   if (i == -1)
     return;
   D3EditState.current_sound = i;

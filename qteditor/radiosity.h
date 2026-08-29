@@ -114,6 +114,20 @@ struct volume_element {
 #define SF_TOUCHES_TERRAIN 1
 #define SF_LIGHTSOURCE 2
 
+
+struct [[gnu::packed]] surface_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 6;           // Unused padding
+  uint8_t lightsource : 1;       // surface emits light
+  uint8_t touches_terrain : 1;   // surface contacts with terrain
+#else
+  uint8_t touches_terrain : 1;   // surface contacts with terrain
+  uint8_t lightsource : 1;       // surface emits light
+  uint8_t padding : 6;           // Unused padding
+#endif
+};
+
 struct rad_surface {
   float area;
   spectra emittance;
@@ -130,7 +144,7 @@ struct rad_surface {
   int facenum; // facenumber of room
   int roomnum; // The roomnumber or terrain segment number
   uint8_t num_verts;
-  uint8_t flags;
+  surface_flags_t flags;
 
   float surface_area, element_area;
 

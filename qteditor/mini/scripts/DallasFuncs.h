@@ -203,7 +203,7 @@ extern void aEnableShip(const char *Ship);
 extern void aDisableShip(const char *Ship);
 extern void aTriggerSetState(int state, int trigger_num);
 extern void aAddObjectToInventory(int Object, int PlayerObject, bool Spewable);
-extern void aAddObjectToInventoryNamed(int Object, int PlayerObject, const char *name, bool Spewable);
+extern void aAddObjectToInventoryNamed(int Object, int PlayerObject, const std::string& name, bool Spewable);
 extern void aRemoveObjectFromInventory(int Object, int PlayerObject);
 extern void aStoreObjectInPositionClipboard(int Object);
 extern void aMoveObjectToPositionClipboard(int Object);
@@ -230,7 +230,7 @@ $$END
 #define aObjFireFlare(gun_num, objhandle) aObjFireWeapon("Yellow flare", gun_num, objhandle)
 
 extern void aDestroyAllRobotsInit();
-extern void aDestroyAllRobotsSpareType(const char *name);
+extern void aDestroyAllRobotsSpareType(const std::string& name);
 extern void aDestroyAllRobotsSpareHandle(int handle);
 extern void aDestroyAllRobotsEnd(void);
 extern void aEnableVirusInfection(int enable, int handle);

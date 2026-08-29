@@ -21,9 +21,6 @@
 
 #include <filesystem>
 
-#include "cfile.h"
-#include "crossplat.h" //needed for stricmp's throughout bitmap lib
-
 #define MAX_BITMAPS 5000
 #define NUM_MIP_LEVELS 5
 
@@ -96,15 +93,15 @@ int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname,
 // Returns the handle of the loaded bitmap
 // Returns -1 if something is wrong
 // If mipped is non-zero, allocs extra space for mips and computes them
-int bm_AllocLoadBitmap(CFILE *infile, int mipped, int format = BITMAP_FORMAT_1555);
+int bm_AllocLoadBitmap(struct CFILE* infile, int mipped, int format = BITMAP_FORMAT_1555);
 // Given a handle, makes a big random shape to let you know you are screwed.
 void bm_MakeBad(int handle);
 // Searches thru all bitmaps for a specific name, returns -1 if not found
 // or index of bitmap with name
-int bm_FindBitmapName(const char *name);
+int bm_FindBitmapName(const std::string& name);
 // Saves a bitmap as an OUTRAGE_TGA_TYPE to an open file
 // Returns -1 if something is wrong.
-int bm_SaveBitmap(CFILE *fp, int handle);
+int bm_SaveBitmap(struct CFILE* fp, int handle);
 // Saves a bitmap to a file.  Saves the bitmap as an OUTRAGE_TGA_TYPE.
 // Returns -1 if something is wrong.
 int bm_SaveFileBitmap(const std::filesystem::path& filename, int handle);

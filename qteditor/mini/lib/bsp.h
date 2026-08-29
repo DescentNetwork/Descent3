@@ -106,10 +106,10 @@ int BSPRayOccluded(vector *start, vector *end, bspnode *node);
 void DestroyBSPTree(bsptree *tree);
 
 // Saves and BSP node to an open file and recurses with the nodes children
-void SaveBSPNode(CFILE *outfile, bspnode *node);
+void SaveBSPNode(struct CFILE* outfile, bspnode *node);
 
 // Loads a bsp node from an open file and recurses with its children
-void LoadBSPNode(CFILE *infile, bspnode **node);
+void LoadBSPNode(struct CFILE* infile, bspnode **node);
 
 // Initializes some variables for the indoor bsp tree
 void InitDefaultBSP();

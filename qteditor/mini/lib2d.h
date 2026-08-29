@@ -22,7 +22,7 @@
 
 #ifndef LIB2D_H
 #define LIB2D_H
-
+#if 0
 #include "gr.h"
 #include "renderer.h"
 
@@ -57,4 +57,5 @@ bool gr_mem_surf_Unlock(ddgr_surface *sf, void *ptr);
 //	initializes a surface based of preinitialized objects by the user.
 bool gr_mem_surf_Init(ddgr_surface *sf, char *data, int rowsize);
 
+#endif
 #endif

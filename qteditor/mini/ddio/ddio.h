@@ -336,10 +336,10 @@ int ddio_GetFileLength(FILE *filePtr);
 
 //	check if two files are different
 //	This pathname is *RELATIVE* not fully qualified
-bool ddio_FileDiff(const std::filesystem::path &path1, const std::filesystem::path &path2);
+bool ddio_FileDiff(const std::filesystem::path& path1, const std::filesystem::path& path2);
 
 //	copies one files timestamp to another
-void ddio_CopyFileTime(const std::filesystem::path &dest, const std::filesystem::path &src);
+void ddio_CopyFileTime(const std::filesystem::path& dest, const std::filesystem::path& src);
 
 // Split a pathname into its component parts
 //	The path in splitpath is in the *LOCAL* file system's syntax
@@ -371,7 +371,7 @@ void ddio_MakePath(char *newPath, const char *absolutePathHeader, const char *su
  * @param func function callback
  * @return number of processed files
  */
-void ddio_DoForeachFile(const std::filesystem::path &search_path, const std::regex &regex,
+void ddio_DoForeachFile(const std::filesystem::path& search_path, const std::regex &regex,
                        const std::function<void(std::filesystem::path)> &func);
 
 /**
@@ -381,7 +381,7 @@ void ddio_DoForeachFile(const std::filesystem::path &search_path, const std::reg
  * @param prefix prefix for the temp filename
  * @return generated filename with ".tmp" extension in basedir directory or empty path on failure
  */
-std::filesystem::path ddio_GetTmpFileName(const std::filesystem::path &basedir, const char *prefix);
+std::filesystem::path ddio_GetTmpFileName(const std::filesystem::path& basedir, const char *prefix);
 
 /**
  * Gets path where files can be written.
@@ -417,13 +417,13 @@ int ddio_GetPID();
  * @return true if lock file successfully created, false otherwise (unable to
  * create, lock file already created by another process etc).
  */
-bool ddio_CreateLockFile(const std::filesystem::path &dir);
+bool ddio_CreateLockFile(const std::filesystem::path& dir);
 
 /**
  * Deletes a lock file (for the current process) in the specified directory
  * @param dir Directory for which the lock file should be deleted from
  * @return true if lock file successfully deleted, false otherwise
  */
-bool ddio_DeleteLockFile(const std::filesystem::path &dir);
+bool ddio_DeleteLockFile(const std::filesystem::path& dir);
 
 #endif

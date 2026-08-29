@@ -23,33 +23,34 @@
 #include "door.h"
 #include "cfile.h"
 #include <posix_stream.h>
+#include <string>
 #include "pstypes.h"
 
 struct mngs_door_page {
   door door_struct;
-  char image_name[PAGENAME_LEN];
-  char open_sound_name[PAGENAME_LEN];
-  char close_sound_name[PAGENAME_LEN];
+  std::string image_name;
+  std::string open_sound_name;
+  std::string close_sound_name;
 };
 
 // Door page functions
 //---------------------------------------------------------------
 
 // Given an open file pointer and a door_page struct, writes that doorpage out
-void mng_WriteDoorPage(CFILE *outfile, mngs_door_page *doorpage);
+void mng_WriteDoorPage(struct CFILE* outfile, mngs_door_page *doorpage);
 
 // Reads a door page from an open file.  Returns 0 on error.
 int mng_ReadDoorPage(posix_istream &infile, mngs_door_page *doorpage);
 
 // Given an open file pointer and a door_page struct, writes that doorpage out
-void mng_WriteNewDoorPage(CFILE *outfile, mngs_door_page *doorpage);
+void mng_WriteNewDoorPage(struct CFILE* outfile, mngs_door_page *doorpage);
 
 // Reads a door page from an open file.  Returns 0 on error.
 int mng_ReadNewDoorPage(posix_istream &infile, mngs_door_page *doorpage);
 
 // Reads in the doorpage named "name" into doorpage struct
 // Returns 0 on error or couldn't find, else 1 if all is good
-int mng_FindSpecificDoorPage(char *name, mngs_door_page *doorpage, int offset = 0);
+int mng_FindSpecificDoorPage(const std::string &name, mngs_door_page *doorpage, int offset = 0);
 
 // Given a door page, allocs a door and calls AssignDoorPageToDoor to actually
 // load model and values. Returns door handle on success, -1 if fail
@@ -65,9 +66,9 @@ void mng_AssignDoorToDoorPage(int n, mngs_door_page *doorpage);
 
 // Reads in a door page from the local table file, superseding any door
 // already in RAM with that same name
-void mng_LoadLocalDoorPage(CFILE *);
+void mng_LoadLocalDoorPage(struct CFILE* );
 
 // Reads in a page off the net
-void mng_LoadNetDoorPage(CFILE *, bool overlay = false);
+void mng_LoadNetDoorPage(struct CFILE* , bool overlay = false);
 
 #endif

@@ -56,7 +56,7 @@ private:
 
   // The page data
   uint8_t type;            // stores the page type
-  char name[PAGENAME_LEN]; // stores the page name
+  std::string name; // stores the page name
 
   int flags;     // Stores whether file was added from level (or just added as extra)
   int tag_count; // Stores number of level files requiring this page
@@ -67,8 +67,8 @@ public:
 
   bool operator<(const PageDataNode &node);
 
-  bool Load(CFILE *infile);
-  bool Save(CFILE *outfile);
+  bool Load(struct CFILE* infile);
+  bool Save(struct CFILE* outfile);
 };
 
 ///////////////////////////////////////////////////////////

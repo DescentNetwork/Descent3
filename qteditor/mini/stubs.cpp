@@ -57,6 +57,8 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <algorithm>
+#include <cctype>
 #include <vector>
 #include <filesystem>
 #include <cstdarg>
@@ -67,7 +69,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "default_base_directories.h"
+//#include "default_base_directories.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -387,7 +389,7 @@ void grSurface::free() { PRINT_STUB(__FUNCTION__); }
 grViewport::grViewport(grSurface *s) { PRINT_STUB(__FUNCTION__); }
 grViewport::~grViewport() { PRINT_STUB(__FUNCTION__); }
 // grHardwareSurface::create returns bool, takes (int, int, int, unsigned, const char*)
-bool grHardwareSurface::create(int w, int h, int bpp, unsigned flags, const char *name) { PRINT_STUB(__FUNCTION__); return false; }
+bool grHardwareSurface::create(int w, int h, int bpp, unsigned flags, const std::string& name) { PRINT_STUB(__FUNCTION__); return false; }
 float Float_to_ubyte(float f) { PRINT_STUB(__FUNCTION__); return f; }
 
 // ==================== Object ====================
@@ -485,17 +487,17 @@ int sound_override_force_field = -1;
 int sound_override_glass_breaking = -1;
 bool Level_powerups_ignore_wind = false;
 
-char InfoString[INFO_STRING_LEN] = {};
+QString InfoString;
+QString ErrorString;
+QString TableUser;
 std::string Default_pilot;
 std::filesystem::path LocalMiscDir;
 std::filesystem::path LocalModelsDir;
 std::filesystem::path LocalSoundsDir;
 std::filesystem::path NetMiscDir;
 std::filesystem::path NetModelsDir;
-char LocalLevelsDir[] = "";
-char LocalScriptDir[] = "";
-char TableUser[] = "";
-char ErrorString[INFO_STRING_LEN] = "";
+std::filesystem::path LocalLevelsDir;
+std::filesystem::path LocalScriptDir;
 
 // ==================== Game data arrays ====================
 bms_bitmap GameBitmaps[MAX_BITMAPS];
@@ -577,32 +579,32 @@ ambient_life a_life;
 void ambient_life::ALReset() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Manage ====================
-mngs_track_lock GlobalTrackLocks[] = {};
-int mng_AllocTrackLock(char *a, int b) { PRINT_STUB(__FUNCTION__); return -1; }
+mngs_track_lock GlobalTrackLocks[MAX_TRACKLOCKS] = {};
+int mng_AllocTrackLock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return -1; }
 void mng_FreeTrackLock(int n) { PRINT_STUB(__FUNCTION__); }
-int mng_FindTrackLock(char *a, int b) { PRINT_STUB(__FUNCTION__); return -1; }
+int mng_FindTrackLock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return -1; }
 int mng_CheckIfPageLocked(mngs_Pagelock *p) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_CheckIfPageOwned(mngs_Pagelock *p, char *a) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_DeletePage(char *a, int b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_DeletePagelock(char *a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_CheckIfPageOwned(mngs_Pagelock *p, const std::string &a) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_DeletePage(const std::string &a, int b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_DeletePagelock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
 void mng_EraseLocker() { PRINT_STUB(__FUNCTION__); }
 int mng_MakeLocker() { PRINT_STUB(__FUNCTION__); return 0; }
 void mng_OverrideToUnlocked(mngs_Pagelock *p) { PRINT_STUB(__FUNCTION__); }
-int mng_RenamePage(char *a, char *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_ReplacePage(char *a, char *b, int c, int d, int e) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_ReplacePagelock(char *a, mngs_Pagelock *b) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_FindSpecificDoorPage(char *a, mngs_door_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_FindSpecificGenericPage(char *a, mngs_generic_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_FindSpecificShipPage(char *a, mngs_ship_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_FindSpecificSoundPage(char *a, mngs_sound_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_FindSpecificTexPage(char *a, mngs_texture_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_FindSpecificWeaponPage(char *a, mngs_weapon_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_RenamePage(const std::string &a, const std::string &b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_ReplacePage(const std::string &a, const std::string &b, int c, int d, int e) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_ReplacePagelock(const std::string &a, mngs_Pagelock *b) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_FindSpecificDoorPage(const std::string &a, mngs_door_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_FindSpecificGenericPage(const std::string &a, mngs_generic_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_FindSpecificShipPage(const std::string &a, mngs_ship_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_FindSpecificSoundPage(const std::string &a, mngs_sound_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_FindSpecificTexPage(const std::string &a, mngs_texture_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_FindSpecificWeaponPage(const std::string &a, mngs_weapon_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignDoorPageToDoor(mngs_door_page *a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_AssignGenericPageToObjInfo(mngs_generic_page *a, int b, CFILE *c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_AssignShipPageToShip(mngs_ship_page *a, int b, CFILE *c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_AssignGenericPageToObjInfo(mngs_generic_page *a, int b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_AssignShipPageToShip(mngs_ship_page *a, int b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignSoundPageToSound(mngs_sound_page *a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_AssignTexPageToTexture(mngs_texture_page *a, int b, CFILE *c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_AssignWeaponPageToWeapon(mngs_weapon_page *a, int b, CFILE *c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_AssignTexPageToTexture(mngs_texture_page *a, int b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_AssignWeaponPageToWeapon(mngs_weapon_page *a, int b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }
 
 // ==================== CFILE (implemented in cfile/cfile.cpp) ====================
 
@@ -632,7 +634,7 @@ char *mem_strdup_sub(const char *s, const char *fn, int line) {
 
 // ==================== Room ====================
 void InitRoom(room *rp, int nverts, int nfaces, int nportals) {
-  rp->flags = 0;
+  memset(&rp->flags, 0, sizeof(uint32_t));
   rp->objects = -1;
   rp->vis_effects = -1;
   rp->volume_lights = nullptr;
@@ -654,7 +656,7 @@ void InitRoom(room *rp, int nverts, int nfaces, int nportals) {
   rp->pulse_time = 0;
   rp->pulse_offset = 0;
   rp->ambient_sound = -1;
-  rp->name = nullptr;
+  rp->name.clear();
   rp->doorway_data = nullptr;
   rp->env_reverb = 0;
   rp->damage = 0.0f;
@@ -853,14 +855,14 @@ int ddio_GetFileLength(FILE *filePtr) {
 }
 void joy_GetPos(tJoystick joy, tJoyPos *pos) { PRINT_STUB(__FUNCTION__); if (pos) { pos->x = 0; pos->y = 0; pos->z = 0; } }
 bool joy_IsValid(tJoystick id) { PRINT_STUB(__FUNCTION__); return false; }
-bool ddio_FileDiff(const std::filesystem::path &a, const std::filesystem::path &b) {
+bool ddio_FileDiff(const std::filesystem::path& a, const std::filesystem::path& b) {
   if (a == b)
     return false;
   if (!std::filesystem::exists(a) || !std::filesystem::exists(b))
     return true;
   return std::filesystem::file_size(a) != std::filesystem::file_size(b);
 }
-void ddio_CopyFileTime(const std::filesystem::path &dest, const std::filesystem::path &src) { PRINT_STUB(__FUNCTION__); (void)dest; (void)src; }
+void ddio_CopyFileTime(const std::filesystem::path& dest, const std::filesystem::path& src) { PRINT_STUB(__FUNCTION__); (void)dest; (void)src; }
 
 
 namespace D3 {
@@ -921,7 +923,7 @@ int FindArg(const char *which, int start) {
   if (which == nullptr)
     return 0;
   for (int i = start; i < MAX_ARGS; i++) {
-    if (GameArgs[i][0] && stricmp(GameArgs[i], which) == 0)
+    if (GameArgs[i][0] && strcasecmp(GameArgs[i], which) == 0)
       return i;
   }
   return 0;
@@ -1010,24 +1012,24 @@ oeApplication *Descent = nullptr;
 oeAppDatabase *Database = nullptr;
 
 // ==================== Find* ====================
-int FindDoorName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
-int FindGamePathName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
-int FindObjectIDName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
-int FindShipName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
-int FindSoundName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
+
+int FindDoorName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
+int FindGamePathName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
+int FindObjectIDName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
+int FindShipName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
+int FindSoundName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
 // FindTextureName: look up a texture by name in the loaded GameTextures table.
 // Returns the global texture index or -1 if absent.  Used by the level loader's
 // TXNM texture remap and by gamedata cross-references.
-int FindTextureName(const char *name) {
-  if (name == nullptr)
-    return -1;
+int FindTextureName(const std::string &name) {
   for (int i = 0; i < Num_textures; i++) {
-    if (GameTextures[i].name[0] && stricmp(GameTextures[i].name, name) == 0)
+    if (!GameTextures[i].name.empty() && name == GameTextures[i].name)
       return i;
   }
+  std::runtime_error("texture not found!");
   return -1;
 }
-int FindWeaponName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
+int FindWeaponName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Alloc/Free ====================
 int AllocDoor() { PRINT_STUB(__FUNCTION__); return -1; }
@@ -1068,11 +1070,11 @@ void RemapStaticIDs() { PRINT_STUB(__FUNCTION__); }
 void RemapWeapons() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Load ====================
-int LoadDoorImage(const char *name, int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int LoadPolyModel(const std::filesystem::path &name, int f_module) { PRINT_STUB(__FUNCTION__); return -1; }
-int LoadShipImage(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
+int LoadDoorImage(const std::filesystem::path& name, int n) { PRINT_STUB(__FUNCTION__); return -1; }
+int LoadPolyModel(const std::filesystem::path& name, int f_module) { PRINT_STUB(__FUNCTION__); return -1; }
+int LoadShipImage(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return -1; }
 int LoadSoundFile(const char *name, float vol, bool b) { PRINT_STUB(__FUNCTION__); return -1; }
-int LoadTextureImage(const char *name, int *handle, int a, int b, int c, int d) { PRINT_STUB(__FUNCTION__); return -1; }
+int LoadTextureImage(const std::filesystem::path& name, int *handle, int a, int b, int c, int d) { PRINT_STUB(__FUNCTION__); return -1; }
 int GetDoorImage(int n) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Polymodel ====================
@@ -1083,9 +1085,9 @@ void PageInPolymodel(int model_num, int f_damage, float *size) { PRINT_STUB(__FU
 void SetModelAnglesAndPos(poly_model *pm, float *anim, unsigned int flags) { PRINT_STUB(__FUNCTION__); }
 int IsNonRenderableSubmodel(poly_model *pm, int index) { PRINT_STUB(__FUNCTION__); return 0; }
 void ChangeOldModelsForObjects(int a, int b) { PRINT_STUB(__FUNCTION__); }
-std::filesystem::path ChangePolyModelName(const std::filesystem::path &name) { PRINT_STUB(__FUNCTION__); return name; }
+std::filesystem::path ChangePolyModelName(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return name; }
 void GenerateLODDeltas() { PRINT_STUB(__FUNCTION__); }
-int FindPolyModelName(const std::filesystem::path &name) { PRINT_STUB(__FUNCTION__); return -1; }
+int FindPolyModelName(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return -1; }
 void FreePolyModel(int n) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Misc ====================
@@ -1105,9 +1107,9 @@ int fvi_QuickDistFaceList(int init_room_index, vector *pos, float rad, fvi_face_
 bool FVI_always_check_ceiling = false;
 
 // ==================== OSIRIS ====================
-int osipf_FindObjectName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
-int osipf_FindRoomName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
-int osipf_FindTriggerName(const char *name) { PRINT_STUB(__FUNCTION__); return -1; }
+int osipf_FindObjectName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
+int osipf_FindRoomName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
+int osipf_FindTriggerName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Pilot ====================
 void PltClearList() { PRINT_STUB(__FUNCTION__); }
@@ -1214,5 +1216,5 @@ int hlsSystem::Play2dSound(int sound_index, float volume, float pan, unsigned sh
 bool hlsSystem::CheckAndForceSoundDataAlloc(int sound_file_index) { PRINT_STUB(__FUNCTION__); return false; }
 
 // ==================== matcen methods ====================
-void matcen::GetName(char *buf) { PRINT_STUB(__FUNCTION__); if (buf) buf[0] = 0; }
-bool matcen::SetName(const char *name) { PRINT_STUB(__FUNCTION__); return false; }
+std::string matcen::GetName(void) { PRINT_STUB(__FUNCTION__); return std::string(); }
+bool matcen::SetName(const std::string& name) { PRINT_STUB(__FUNCTION__); return false; }

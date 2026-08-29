@@ -544,7 +544,7 @@ static inline int GetFacePhysicsFlags(const room *rp, const face *fp) {
   // If we're here, it's either a non-portal face, or portal face that gets rendered
 
   // Check if the face is marked fly-through
-  if (GameTextures[fp->tmap].flags & TF_FLY_THRU)
+  if (GameTextures[fp->tmap].flags.fly_thru)
     return ret;
 
   // Check if the face is solid or transparent

@@ -312,9 +312,9 @@ public:
   // searches the inventory for the specified type/id, sets the pos to it
   bool FindPos(int type, int id = -1);
   // saves the inventory to the file (returns number of bytes written)
-  int SaveInventory(CFILE *file);
+  int SaveInventory(struct CFILE* file);
   // restores the inventory from file (returns number of bytes read)
-  int ReadInventory(CFILE *file);
+  int ReadInventory(struct CFILE* file);
   // gets a detailed list of information about what is in the inventory
   // returns the number of items filled in.
   int GetInventoryItemList(tInvenList *list, int max_amount, int *cur_sel);

@@ -31,7 +31,7 @@ void populateTriggerCombo(QComboBox *combo, int selected) {
 
   for (int i = 0; i < Num_triggers; i++) {
     int index = combo->count();
-    combo->addItem(Triggers[i].name, i);
+    combo->addItem(QString::fromStdString(Triggers[i].name), i);
     if (selected == i)
       combo->setCurrentIndex(index);
   }

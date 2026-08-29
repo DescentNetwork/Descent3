@@ -27,15 +27,15 @@
 
 struct mngs_power_page {
   powerup powerup_struct;
-  char image_name[PAGENAME_LEN];
-  char sound_name[MAX_POWERUP_SOUNDS][PAGENAME_LEN];
+  std::string image_name;
+  std::string sound_name[MAX_POWERUP_SOUNDS];
 };
 
 // Powerup page functions
 //---------------------------------------------------------------
 
 // Given an open file pointer and a power_page struct, writes that power page out
-void mng_WritePowerPage(CFILE *outfile, mngs_power_page *powpage);
+void mng_WritePowerPage(struct CFILE* outfile, mngs_power_page *powpage);
 
 // Reads a powerup page from an open file.  Returns 0 on error.
 int mng_ReadPowerPage(posix_istream &infile, mngs_power_page *powpage);
@@ -67,14 +67,14 @@ void mng_AssignPowerupToPowPage(int n, mngs_power_page *powpage);
 
 // Reads in a power page from the local table file, superseding any powerup
 // already in RAM with that same name
-void mng_LoadLocalPowerupPage(CFILE *);
+void mng_LoadLocalPowerupPage(struct CFILE* );
 
 // Reads in a page off the net
-void mng_LoadNetPowerupPage(CFILE *);
+void mng_LoadNetPowerupPage(struct CFILE* );
 
 // First searches through the powerup index to see if the powerup is already
 // loaded.  If not, searches in the table file and loads it.
 // Returns index of powerup if found, -1 if not
-int mng_GetGuaranteedPowerupPage(char *name, CFILE *infile = NULL);
+int mng_GetGuaranteedPowerupPage(char *name, struct CFILE* infile = NULL);
 
 #endif

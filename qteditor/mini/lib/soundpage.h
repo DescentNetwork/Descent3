@@ -27,26 +27,26 @@
 
 struct mngs_sound_page {
   sound_info sound_struct;
-  char raw_name[PAGENAME_LEN];
+  std::string raw_name;
 };
 
 // Sound page functions
 //---------------------------------------------------------------
 
 // Given an open file pointer and a sound_page struct, writes that soundpage out
-void mng_WriteSoundPage(CFILE *outfile, mngs_sound_page *soundpage);
+void mng_WriteSoundPage(struct CFILE* outfile, mngs_sound_page *soundpage);
 
 // Reads a sound page from an open file.  Returns 0 on error.
 int mng_ReadSoundPage(posix_istream &infile, mngs_sound_page *soundpage);
 // Given an open file pointer and a sound_page struct, writes that soundpage out
-void mng_WriteNewSoundPage(CFILE *outfile, mngs_sound_page *soundpage);
+void mng_WriteNewSoundPage(struct CFILE* outfile, mngs_sound_page *soundpage);
 
 // Reads a sound page from an open file.  Returns 0 on error.
 int mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage);
 
 // Reads in the soundpage named "name" into soundpage struct
 // Returns 0 on error or couldn't find, else 1 if all is good
-int mng_FindSpecificSoundPage(char *name, mngs_sound_page *soundpage, int offset = 0);
+int mng_FindSpecificSoundPage(const std::string &name, mngs_sound_page *soundpage, int offset = 0);
 
 // Given a sound page, allocs a sound and calls AssignSoundPageToSound to actually
 // load model and values. Returns sound handle on success, -1 if fail
@@ -62,14 +62,14 @@ void mng_AssignSoundToSoundPage(int n, mngs_sound_page *soundpage);
 
 // Reads in a sound page from the local table file, superseding any sound
 // already in RAM with that same name
-void mng_LoadLocalSoundPage(CFILE *);
+void mng_LoadLocalSoundPage(struct CFILE* );
 
 // Reads in a page off the net
-void mng_LoadNetSoundPage(CFILE *, bool overlay = false);
+void mng_LoadNetSoundPage(struct CFILE* , bool overlay = false);
 
 // First searches through the sound index to see if the sound is already
 // loaded.  If not, searches in the table file and loads it.
 // Returns index of sound if found, -1 if not
-int mng_GetGuaranteedSoundPage(char *name, CFILE *infile = NULL);
+int mng_GetGuaranteedSoundPage(char *name, struct CFILE* infile = NULL);
 
 #endif

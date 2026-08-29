@@ -57,6 +57,7 @@
 #define POLYMODEL_EXTERNAL_H_
 
 #include <cstdint>
+#include <string>
 
 #include "grdefs.h"
 #include "manage_external.h"
@@ -153,7 +154,7 @@ struct glowinfo {
 
 // bsp information
 struct bsp_info {
-  char name[PAGENAME_LEN]; // name of the subsystem.  Probably displayed on HUD
+  std::string name; // name of the subsystem.  Probably displayed on HUD
   int movement_type;       //-1 if no movement, otherwise rotational or positional movement -- subobjects only
   int movement_axis;       // which axis this subobject moves or rotates on.
   int tree_offset;         // offset of tree data (children included) into the model_data
@@ -233,7 +234,7 @@ struct poly_model {
   uint8_t new_style; // if 1, then this polymodel is in the new outrage format (oof)
   int id;          // what the polygon model number is.  (Index in Poly_models)
   int version;
-  char name[PAGENAME_LEN];
+  std::string name;
 
   int n_models;
   int model_data_size;

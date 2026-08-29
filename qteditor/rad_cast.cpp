@@ -414,7 +414,7 @@ int ShootRayFromPoint(vector *src, vector *dest, rad_surface *src_surf, rad_surf
 
   dist = vm_VectorDistance(&hit_info.hit_pnt, &temp_dest);
   if (dist > .1) {
-    // mprintf(0,"Didn't hit!\n");
+    // LOG_INFO("Didn't hit!\n");
     return 0;
   }
 
@@ -514,10 +514,10 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra *color, vector *s
   room *rp = &Rooms[dest_surf->roomnum];
   face *fp = &rp->faces[dest_surf->facenum];
 
-  if (GameTextures[fp->tmap].flags & TF_SMOOTH_SPECULAR)
+  if (GameTextures[fp->tmap].flags.smooth_specular)
     threshold = .01f;
   else {
-    if (!(rad_MaxSurface->flags & SF_LIGHTSOURCE))
+    if (!rad_MaxSurface->flags.lightsource)
       return;
   }
 
@@ -816,7 +816,7 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector *src_center) {
       check_room[rad_MaxSurface->roomnum] = 1;
 
       for (i = 0; i < num_faces; i++) {
-        if (Rooms[facelist[i].room_index].flags & RF_EXTERNAL)
+        if (Rooms[facelist[i].room_index].flags.external)
           continue;
         check_room[facelist[i].room_index] = 1;
       }
@@ -835,7 +835,7 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector *src_center) {
         int h = Rooms[roomnum].volume_height;
         int d = Rooms[roomnum].volume_depth;
 
-        if (0 && !Shoot_from_patch && (rad_MaxSurface->flags & SF_LIGHTSOURCE)) // super detail
+        if (0 && !Shoot_from_patch && rad_MaxSurface->flags.lightsource) // super detail
         {
           int src_num_elements = rad_MaxSurface->xresolution * rad_MaxSurface->yresolution;
 
@@ -1021,7 +1021,7 @@ void CalculateFormFactorsRaycast() {
     // Ignore this surface if we're shooting from a satellite and we cant possibly see it
     if (rad_MaxSurface->surface_type == ST_SATELLITE) {
       if (dest_surf->surface_type == ST_ROOM || dest_surf->surface_type == ST_ROOM_OBJECT) {
-        if (!dest_surf->flags & SF_TOUCHES_TERRAIN)
+        if (!dest_surf->flags.touches_terrain)
           ignore = 1;
       }
     }
@@ -1043,7 +1043,7 @@ void CalculateFormFactorsRaycast() {
         continue;
 
       if (Shoot_from_patch || rad_MaxSurface->surface_type == ST_SATELLITE ||
-          !(rad_MaxSurface->flags & SF_LIGHTSOURCE)) {
+          !rad_MaxSurface->flags.lightsource) {
         if (rad_MaxSurface->surface_type == ST_SATELLITE)
           form_factor = GetFormFactorForElementAndSatellite(dest_surf, dest_element, &src_center);
         else

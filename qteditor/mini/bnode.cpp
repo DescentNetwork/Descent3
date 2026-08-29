@@ -30,7 +30,7 @@
  * Mac merge
  *
  * 22    10/08/99 4:27p Chris
- * Removed a needless ASSERT
+ * Removed a needless Q_ASSERT
  *
  * 21    5/20/99 8:09p Chris
  * Patched up the bnode crashes
@@ -225,8 +225,8 @@ bool BNode_FindPath(int start_room, int i, int j, float rad) {
   pq_item **node_list;
   bn_list *bnlist = BNode_GetBNListPtr(start_room);
 
-  ASSERT(bnlist);
-  ASSERT(i >= 0 && i < bnlist->num_nodes && j >= 0 && j < bnlist->num_nodes);
+  Q_ASSERT(bnlist);
+  Q_ASSERT(i >= 0 && i < bnlist->num_nodes && j >= 0 && j < bnlist->num_nodes);
 
   node_list = mem_rmalloc<pq_item *>(bnlist->num_nodes);
   memset(node_list, 0, bnlist->num_nodes * sizeof(pq_item *));
@@ -259,7 +259,7 @@ bool BNode_FindPath(int start_room, int i, int j, float rad) {
 
       next_node = bnlist->nodes[cur_node->node].edges[counter].end_index;
 
-      ASSERT(bnlist->nodes[cur_node->node].edges[counter].cost > 0);
+      Q_ASSERT(bnlist->nodes[cur_node->node].edges[counter].cost > 0);
       new_cost = cur_node->cost + bnlist->nodes[cur_node->node].edges[counter].cost;
 
       list_item = node_list[next_node];
@@ -384,12 +384,12 @@ retry:
     goto retry;
   }
 
-  ASSERT(bnlist->num_nodes > 0);
+  Q_ASSERT(bnlist->num_nodes > 0);
   if (closest_node == -1 && bnlist->num_nodes > 0) {
     closest_node = ps_rand() % bnlist->num_nodes;
   }
 
-  ASSERT(closest_node != -1);
+  Q_ASSERT(closest_node != -1);
 
   return closest_node;
 }
@@ -406,7 +406,7 @@ int BNode_FindClosestLocalVisibleBNode(int roomnum, vector *pos, float rad) {
   }
 
   bn_list *bnlist = BNode_GetBNListPtr(roomnum);
-  ASSERT(bnlist);
+  Q_ASSERT(bnlist);
 
 retry:
 
@@ -453,12 +453,12 @@ retry:
     goto retry;
   }
 
-  ASSERT(bnlist->num_nodes > 0);
+  Q_ASSERT(bnlist->num_nodes > 0);
   if (closest_node == -1 && bnlist->num_nodes > 0) {
     closest_node = ps_rand() % bnlist->num_nodes;
   }
 
-  ASSERT(closest_node != -1);
+  Q_ASSERT(closest_node != -1);
 
   return closest_node;
 }
@@ -469,7 +469,7 @@ bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level) {
   } else if (roomnum >= 0 && roomnum <= Highest_room_index) {
     //		if(!f_in_load_level)
     //		{
-    //			ASSERT(!(Rooms[roomnum].flags & RF_EXTERNAL));
+    //			Q_ASSERT(!(Rooms[roomnum].flags2.external));
     //		}
 
     if (!Rooms[roomnum].used) {
@@ -543,7 +543,7 @@ void BNode_RemapTerrainRooms(int old_hri, int new_hri) {
   if (new_hri < 0)
     return;
 
-  ASSERT(delta <= 1);
+  Q_ASSERT(delta <= 1);
 
   for (i = 0; i <= new_hri + BOA_num_terrain_regions; i++) {
 
@@ -552,11 +552,11 @@ void BNode_RemapTerrainRooms(int old_hri, int new_hri) {
       int k;
 
       // Skip external rooms
-      if ((i <= new_hri) && (Rooms[i].flags & RF_EXTERNAL))
+      if ((i <= new_hri) && Rooms[i].flags2.external)
         continue;
 
       bn_list *bnlist = BNode_GetBNListPtr(i);
-      ASSERT(bnlist);
+      Q_ASSERT(bnlist);
 
       for (j = 0; j < bnlist->num_nodes; j++) {
         for (k = 0; k < bnlist->nodes[j].num_edges; k++) {

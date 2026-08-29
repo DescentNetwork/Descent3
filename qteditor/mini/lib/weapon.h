@@ -257,6 +257,8 @@
 // These defines must correspond to the Static_weapons_names array
 
 #define MAX_WEAPON_SOUNDS 7
+
+// weapon sound index
 #define WSI_FIRE                                                                                                       \
   0 // chrishack -- removed!  Change const when we add a new slot
     // grep for occurances of WSI_FIRE and fix (or remove) old code
@@ -265,8 +267,79 @@
 #define WSI_IMPACT_ROBOT 3
 #define WSI_BOUNCE 4
 
+struct [[gnu::packed]] weapon_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t custom_size : 1;      // This weapon uses a custom size
+  uint32_t no_rotate : 1;        // This weapon does not rotate as a bitmap
+  uint32_t homing_split : 1;     // This weapon homes when it splits
+  uint32_t silent_homing : 1;    // This weapon does not give a homing lock sound
+  uint32_t planar_smoke : 1;     // This weapon has a planar smoke trail instead of a blob
+  uint32_t timeout_wall : 1;     // This weapon times out like a wall hit
+  uint32_t freeze : 1;           // This weapon slows a ship/object down
+  uint32_t spawns_robot : 1;     // This weapon spawns a robot upon death
+  uint32_t countermeasure : 1;   // This weapon is a countermeasure
+  uint32_t gravity_field : 1;    // This weapon has a gravity field
+  uint32_t reverse_smoke : 1;    // The smoke trail gets smaller as it ages
+  uint32_t napalm : 1;           // This weapon does a napalm effect to objects it touches
+  uint32_t microwave : 1;        // This weapon makes a microwave effect on the victim
+  uint32_t muzzle : 1;           // This weapon produces a muzzle flash when fired
+  uint32_t expand : 1;           // This weapon expands when exploding
+  uint32_t spawns_timeout : 1;   // This weapon spawns others when it times out
+  uint32_t spawns_impact : 1;    // This weapon spawns others on impact
+  uint32_t enable_camera : 1;    // This weapon can be used for missile camera
+  uint32_t planar : 1;           // This weapon doesn't always face you
+  uint32_t planar_blast : 1;     // Blast bitmap takes on the walls plane
+  uint32_t blast_ring : 1;       // Creates a blast ring upon explosion
+  uint32_t saturate : 1;         // Saturate this bitmap weapon
+  uint32_t ring : 1;             // This weapon is drawn ring style
+  uint32_t invisible : 1;        // This weapon is invisible
+  uint32_t streamer : 1;         // This weapon has a streamer effect attached
+  uint32_t spray : 1;            // This weapon is a spray, like a flamethrower
+  uint32_t image_vclip : 1;      // This weapon fire image is a vclip
+  uint32_t electrical : 1;       // This weapons fires as an electrical storm
+  uint32_t matter_weapon : 1;    // This a matter weapon, as opposed to an energy weapon
+  uint32_t smoke : 1;            // Weapon drops smoke as it moves
+  uint32_t image_bitmap : 1;     // whether or not the firing image is a bitmap or model
+  uint32_t hud_animated : 1;
+#else
+  uint32_t hud_animated : 1;
+  uint32_t image_bitmap : 1;     // whether or not the firing image is a bitmap or model
+  uint32_t smoke : 1;            // Weapon drops smoke as it moves
+  uint32_t matter_weapon : 1;    // This a matter weapon, as opposed to an energy weapon
+  uint32_t electrical : 1;       // This weapons fires as an electrical storm
+  uint32_t image_vclip : 1;      // This weapon fire image is a vclip
+  uint32_t spray : 1;            // This weapon is a spray, like a flamethrower
+  uint32_t streamer : 1;         // This weapon has a streamer effect attached
+  uint32_t invisible : 1;        // This weapon is invisible
+  uint32_t ring : 1;             // This weapon is drawn ring style
+  uint32_t saturate : 1;         // Saturate this bitmap weapon
+  uint32_t blast_ring : 1;       // Creates a blast ring upon explosion
+  uint32_t planar_blast : 1;     // Blast bitmap takes on the walls plane
+  uint32_t planar : 1;           // This weapon doesn't always face you
+  uint32_t enable_camera : 1;    // This weapon can be used for missile camera
+  uint32_t spawns_impact : 1;    // This weapon spawns others on impact
+  uint32_t spawns_timeout : 1;   // This weapon spawns others when it times out
+  uint32_t expand : 1;           // This weapon expands when exploding
+  uint32_t muzzle : 1;           // This weapon produces a muzzle flash when fired
+  uint32_t microwave : 1;        // This weapon makes a microwave effect on the victim
+  uint32_t napalm : 1;           // This weapon does a napalm effect to objects it touches
+  uint32_t reverse_smoke : 1;    // The smoke trail gets smaller as it ages
+  uint32_t gravity_field : 1;    // This weapon has a gravity field
+  uint32_t countermeasure : 1;   // This weapon is a countermeasure
+  uint32_t spawns_robot : 1;     // This weapon spawns a robot upon death
+  uint32_t freeze : 1;           // This weapon slows a ship/object down
+  uint32_t timeout_wall : 1;     // This weapon times out like a wall hit
+  uint32_t planar_smoke : 1;     // This weapon has a planar smoke trail instead of a blob
+  uint32_t silent_homing : 1;    // This weapon does not give a homing lock sound
+  uint32_t homing_split : 1;     // This weapon homes when it splits
+  uint32_t no_rotate : 1;        // This weapon does not rotate as a bitmap
+  uint32_t custom_size : 1;      // This weapon uses a custom size
+#endif
+};
+
 struct weapon {
-  char name[PAGENAME_LEN];
+  std::string name;
   float player_damage;             // how much damage a full impact causes a player
   float generic_damage;            // how much damage a full impact causes a robot
   float alpha;                     // What alpha to draw this weapon with
@@ -293,7 +366,7 @@ struct weapon {
 
   float scorch_size; // how big the scorch mark is
 
-  int flags; //  see above
+  weapon_flags_t flags;
 
   float size;
   float life_time;
@@ -347,7 +420,7 @@ int GetPrevWeapon(int n);
 
 // Searches thru all weapons for a specific name, returns -1 if not found
 // or index of weapon with name
-int FindWeaponName(const char *name);
+int FindWeaponName(const std::string &name);
 
 // Given a filename, loads either the model or vclip found in that file.  If type
 // is not NULL, sets it to 1 if file is model, otherwise sets it to zero
@@ -436,8 +509,8 @@ bool IsWeaponSecondary(int index);
 void ResetWeaponSelectStates(uint16_t new_state = 0);
 
 //	save and load weapon state information
-void SaveWeaponSelectStates(CFILE *fp);
-void LoadWeaponSelectStates(CFILE *fp);
+void SaveWeaponSelectStates(struct CFILE* fp);
+void LoadWeaponSelectStates(struct CFILE* fp);
 
 // Draws an alpha blended polygon over the entire 3d rendering scene
 // The r,g,b floats specify the color

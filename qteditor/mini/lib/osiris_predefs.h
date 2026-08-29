@@ -191,12 +191,12 @@ bool osipf_CallTriggerEvent(int trignum, int event, tOSIRISEventInfo *ei);
 void osipf_SoundTouch(char *str);
 
 // searches for an object id given its name
-int osipf_ObjectFindID(const char *name);
+int osipf_ObjectFindID(const std::string& name);
 
-int osipf_ObjectFindType(const char *name);
+int osipf_ObjectFindType(const std::string& name);
 
 // searches through the weapons for a name and returns the id
-int osipf_WeaponFindID(const char *name);
+int osipf_WeaponFindID(const std::string& name);
 
 // returns how long an object has lived
 float osipf_ObjectGetTimeLived(int objhandle);
@@ -254,7 +254,7 @@ void osipf_AIValue(int objhandle, char op, char vtype, void *ptr);
 // data, such as a string or a bitmap of 8-bit pixels.
 // Returns the number of bytes read.
 // Throws an exception of type (cfile_error *) if the OS returns an error on read
-int osipf_CFReadBytes(uint8_t *buffer, int count, CFILE *cfp);
+int osipf_CFReadBytes(uint8_t *buffer, int count, struct CFILE* cfp);
 
 // The following functions read numeric vales from a CFILE.  All values are
 // stored in the file in Intel (little-endian) format.  These functions
@@ -264,23 +264,23 @@ int osipf_CFReadBytes(uint8_t *buffer, int count, CFILE *cfp);
 
 // Read and return an integer (32 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on read
-int osipf_CFReadInt(CFILE *cfp);
+int osipf_CFReadInt(struct CFILE* cfp);
 
 // Read and return a int16_t (16 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on read
-int16_t osipf_CFReadShort(CFILE *cfp);
+int16_t osipf_CFReadShort(struct CFILE* cfp);
 
 // Read and return a byte (8 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on read
-int8_t osipf_CFReadByte(CFILE *cfp);
+int8_t osipf_CFReadByte(struct CFILE* cfp);
 
 // Read and return a float (32 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on read
-float osipf_CFReadFloat(CFILE *cfp);
+float osipf_CFReadFloat(struct CFILE* cfp);
 
 // Read and return a double (64 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on read
-double osipf_CFReadDouble(CFILE *cfp);
+double osipf_CFReadDouble(struct CFILE* cfp);
 
 // Reads a string from a CFILE.  If the file is type binary, this
 // function reads until a NULL or EOF is found.  If the file is text,
@@ -291,14 +291,14 @@ double osipf_CFReadDouble(CFILE *cfp);
 //					cfp - the CFILE pointer
 // Returns the number of bytes in the string, before the terminator
 // Does not generate an exception on EOF
-int osipf_CFReadString(char *buf, size_t n, CFILE *cfp);
+int osipf_CFReadString(char *buf, size_t n, struct CFILE* cfp);
 
 // Writes the specified number of bytes from a file into the buffer
 // DO NOT USE THIS TO WRITE STRUCTURES.  This function is for byte
 // data, such as a string or a bitmap of 8-bit pixels.
 // Returns the number of bytes written.
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-int osipf_CFWriteBytes(const uint8_t *buf, int count, CFILE *cfp);
+int osipf_CFWriteBytes(const uint8_t *buf, int count, struct CFILE* cfp);
 
 // Writes a null-terminated string to a file.  If the file is type binary,
 // the string is terminated in the file with a null.  If the file is type
@@ -307,7 +307,7 @@ int osipf_CFWriteBytes(const uint8_t *buf, int count, CFILE *cfp);
 //					cfp = the CFILE pointer
 // Returns the number of bytes written
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-int osipf_CFWriteString(const char *buf, CFILE *cfp);
+int osipf_CFWriteString(const char *buf, struct CFILE* cfp);
 
 // The following functions write numeric vales to a CFILE.  All values are
 // stored to the file in Intel (little-endian) format.
@@ -315,23 +315,23 @@ int osipf_CFWriteString(const char *buf, CFILE *cfp);
 
 // Write an integer (32 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-void osipf_CFWriteInt(int i, CFILE *cfp);
+void osipf_CFWriteInt(int i, struct CFILE* cfp);
 
 // Write a int16_t (16 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-void osipf_CFWriteShort(int16_t s, CFILE *cfp);
+void osipf_CFWriteShort(int16_t s, struct CFILE* cfp);
 
 // Write a byte (8 bits).  If the byte is a newline & the file is a text file, writes a CR/LF pair.
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-void osipf_CFWriteByte(int8_t b, CFILE *cfp);
+void osipf_CFWriteByte(int8_t b, struct CFILE* cfp);
 
 // Write a float (32 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-void osipf_CFWriteFloat(float f, CFILE *cfp);
+void osipf_CFWriteFloat(float f, struct CFILE* cfp);
 
 // Write a double (64 bits)
 // Throws an exception of type (cfile_error *) if the OS returns an error on write
-void osipf_CFWriteDouble(double d, CFILE *cfp);
+void osipf_CFWriteDouble(double d, struct CFILE* cfp);
 
 // CONTROLLER predefs
 //	enables or disables controls specified.
@@ -378,13 +378,13 @@ bool osipf_ObjIsEffect(int handle, int type_flag);
 void *osipf_CFopen(const char *filename, const char *mode);
 
 //	closes a cfile (like fclose())
-void osipf_CFclose(CFILE *file);
+void osipf_CFclose(struct CFILE* file);
 
 //	returns the current position of the file (like ftell())
-int osipf_CFtell(CFILE *file);
+int osipf_CFtell(struct CFILE* file);
 
 //	returns 1 if the file is at the EOF, else 0 (like feof())
-uint8_t osipf_CFeof(CFILE *file);
+uint8_t osipf_CFeof(struct CFILE* file);
 
 void osipf_SoundStop(int s_handle, bool f_immediately = false);
 int osipf_SoundPlay2d(int obj_handle, int s_id, float volume = 1.0f);
@@ -399,17 +399,17 @@ int osipf_AIGetNearbyObjs(vector *pos, int init_roomnum, float rad, int *object_
                           bool f_include_non_collide_objects = false, bool f_stop_at_closed_doors = true);
 char osipf_AIGetCurGoalIndex(int obj_handle);
 
-int osipf_FindSoundName(const char *name);
-int osipf_FindRoomName(const char *name);
-int osipf_FindTriggerName(const char *name);
-int osipf_FindObjectName(const char *name);
+int osipf_FindSoundName(const std::string& name);
+int osipf_FindRoomName(const std::string& name);
+int osipf_FindTriggerName(const std::string& name);
+int osipf_FindObjectName(const std::string& name);
 int osipf_GetTriggerRoom(int trigger_id);
 int osipf_GetTriggerFace(int trigger_id);
-int osipf_FindDoorName(const char *name);
-int osipf_FindTextureName(const char *name);
-int osipf_FindMatcenName(const char *name);
-int osipf_FindPathName(const char *name);
-int osipf_FindLevelGoalName(const char *name);
+int osipf_FindDoorName(const std::string& name);
+int osipf_FindTextureName(const std::string& name);
+int osipf_FindMatcenName(const std::string& name);
+int osipf_FindPathName(const std::string& name);
+int osipf_FindLevelGoalName(const std::string& name);
 
 void osipf_CreateRandomSparks(int num_sparks, vector *pos, int roomnum, int which_index, float force_scalar);
 

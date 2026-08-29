@@ -86,7 +86,7 @@ void CallGameDLL(int eventnum, dllinfo *data);
 void FreeGameDLL();
 
 // Loads the game dll.  Returns 1 on success, else 0 on failure
-int LoadGameDLL(const char *name, int num_teams_to_use = -1);
+int LoadGameDLL(const std::string& name, int num_teams_to_use = -1);
 
 // If this function is called than the DLL is to be closed, because there was an error running it
 // if reason is not NULL than that is the reason why
@@ -96,17 +96,17 @@ void DLLFatalError(const char *reason = NULL);
 bool GameDLLIsAddressBanned(network_address *addr, const char *tracker_id);
 
 // Call this function to get information/options from a unloaded mod
-bool GetDLLGameInfo(const char *name, tDLLOptions *options);
+bool GetDLLGameInfo(const std::string& name, tDLLOptions *options);
 
 // Call this function to get information about the number of teams for the game
 // Returns true if it's a team game...false if it's a non-team game.
 // If it returns true, then min is filled in with the minumum number of teams needed for the game
 // and max is filled in with the maximum number of teams for the game...if they are the same
 // value, then it is the only number of teams supported.
-bool GetDLLNumTeamInfo(const char *name, int *mint, int *maxt);
+bool GetDLLNumTeamInfo(const std::string& name, int *mint, int *maxt);
 
 // Call this function to get the list of requirements that the given module needs in order
 // to be playable.  Returns the number of requirements it needs...-1 on error.
-int GetDLLRequirements(const char *name, char *requirements, int buflen);
+int GetDLLRequirements(const std::string& name, char *requirements, int buflen);
 
 #endif

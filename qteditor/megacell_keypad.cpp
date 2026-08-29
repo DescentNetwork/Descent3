@@ -59,7 +59,7 @@ void MegacellKeypad::updateDialog() {
     D3EditState.current_megacell = n;
   }
   if (QLabel *label = ui->IDC_MEGACELL_NAME_STATIC)
-    label->setText(QString("Megacell name: %1").arg(Megacells[n].name));
+    label->setText(QString("Megacell name: %1").arg(QString::fromStdString(Megacells[n].name)));
   if (QLabel *label = ui->IDC_MEGA_WIDTH_STATIC)
     label->setText(QString("Width: %1").arg(Megacells[n].width));
   if (QLabel *label = ui->IDC_MEGA_HEIGHT_STATIC)

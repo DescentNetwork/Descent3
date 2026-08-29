@@ -186,7 +186,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
       surface_norm = &Curroomp->faces[Curface].normal;
       roomnum = ROOMNUM(Curroomp);
 
-      if (Rooms[roomnum].flags & RF_EXTERNAL)
+      if (Rooms[roomnum].flags.external)
         roomnum = GetTerrainRoomFromPos(&pos);
     }
 

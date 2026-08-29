@@ -18,7 +18,7 @@
 
 #ifndef __HARDWARE_INTERNAL_H__
 #define __HARDWARE_INTERNAL_H__
-
+#if 0
 #define MAX_POINTS_IN_POLY 100
 
 // These structs are for drawing with vertex arrays
@@ -99,4 +99,5 @@ void rend_DrawMultitexturePolygon3D(int handle, g3Point **p, int nv, int map_typ
 */
 color_array DeterminePointColor(g3Point const* pnt, bool disableGouraud = false, bool checkTextureQuality = false, bool flatColorForNoLight = false);
 
+#endif
 #endif

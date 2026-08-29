@@ -168,6 +168,7 @@
 #define MISSION_H
 
 #include <vector>
+#include <string>
 
 #include "pstypes.h"
 #include "descent.h"
@@ -200,10 +201,10 @@ const uint16_t LVLOBJF_SECONDARY1 = 1, LVLOBJF_SECONDARY2 = 2, LVLOBJF_SECONDARY
 
 // Struct for info about the current level
 struct level_info {
-  char name[100];
-  char designer[100];
-  char copyright[100];
-  char notes[1000];
+  std::string name;
+  std::string designer;
+  std::string copyright;
+  std::string notes;
 };
 
 // Info about the current level
@@ -281,7 +282,7 @@ extern std::filesystem::path D3MissionsDir;
  * @param mn3file file for loading
  * @return true on success
  */
-bool mn3_Open(const std::filesystem::path &mn3file);
+bool mn3_Open(const std::filesystem::path& mn3file);
 
 /**
  * Closes the current mn3 file
@@ -336,7 +337,7 @@ bool IsMissionMultiPlayable(const char *mission);
  * @param msn mission info to be filled
  * @return true on success
  */
-bool GetMissionInfo(const std::filesystem::path &msnfile, tMissionInfo *msn);
+bool GetMissionInfo(const std::filesystem::path& msnfile, tMissionInfo *msn);
 
 // Returns the max number of teams this mission can support for this mod, or
 //-1 if this level shouldn't be played with this mission
