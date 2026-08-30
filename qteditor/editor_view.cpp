@@ -266,6 +266,14 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
   }
 }
 
+bool EditorView::projectWorldToScreen(const vector &world, float *sx, float *sy, float *depth) const {
+  // The camera is kept valid by paint/pick; recompute only when needed so
+  // per-vertex calls don't re-scan the whole mine every time.
+  if (!m_cameraValid)
+    const_cast<EditorView *>(this)->updateCamera();
+  return projectVertexDepth(world, sx, sy, depth);
+}
+
 void EditorView::ensureTexture(int bmHandle) {
   if (bmHandle < 0 || m_textures.contains(bmHandle))
     return;
@@ -1063,13 +1071,22 @@ void EditorView::updateCamera() {
   }
   m_target = (min + max) * 0.5f;
   if (!m_targetInitialized) {
+    // Fit the entire mine in the view: distance is chosen from the bounding
+    // sphere radius (half the bbox diagonal) and the horizontal+vertical
+    // field of view, so the eye sits clearly outside the mine and the center
+    // ray reliably meets the near surface of the mine.
     vector extent = max - min;
-    float radius = extent.x() > extent.y() ? extent.x() : extent.y();
-    if (extent.z() > radius)
-      radius = extent.z();
+    const float r2 = extent.x() * extent.x() + extent.y() * extent.y() + extent.z() * extent.z();
+    float radius = std::sqrt(r2) * 0.5f;
     if (radius < 1.0f)
       radius = 1.0f;
-    m_dist = radius * 2.5f;
+    const float h = height() > 0 ? static_cast<float>(height()) : 480.0f;
+    const float w = width() > 0 ? static_cast<float>(width()) : 640.0f;
+    const float halfFovY = kFovY * 0.5f;
+    const float halfFovX = std::atan(std::tan(halfFovY) * (w / h));
+    const float fitVertical = radius / std::sin(halfFovY);
+    const float fitHorizontal = radius / std::sin(halfFovX);
+    m_dist = (fitVertical > fitHorizontal ? fitVertical : fitHorizontal) * 1.5f;
     m_targetInitialized = true;
   }
 
