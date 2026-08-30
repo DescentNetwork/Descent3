@@ -321,6 +321,77 @@ struct soundsource_info_s {
   float volume;
 };
 
+struct [[gnu::packed]] physics_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t no_door_collisions : 1;          // No collisions occur with doors
+  uint32_t no_same_collisions : 1;          // No collisions occur with same objects
+  uint32_t never_use_big_sphere : 1;        // Never use big sphere for collisions
+  uint32_t lock_b : 1;                     // Lock bank
+  uint32_t lock_h : 1;                     // Lock heading
+  uint32_t lock_p : 1;                     // Lock pitch
+  uint32_t lock_z : 1;                     // Lock Z axis
+  uint32_t lock_y : 1;                     // Lock Y axis
+  uint32_t lock_x : 1;                     // Lock X axis
+  uint32_t destination_pos : 1;            // Head towards destination position
+  uint32_t ignore_concussive_forces : 1;   // Ignored by concussive forces
+  uint32_t guided : 1;                     // This object is guided
+  uint32_t homing : 1;                     // This object (weapon) homes
+  uint32_t point_collide_walls : 1;        // When colliding with walls, make our radius zero
+  uint32_t no_robot_collisions : 1;        // No collisions occur with robots
+  uint32_t no_collide : 1;                 // No collisions AND NO RELINKS -- DANGEROUS TO USE if not used correctly
+  uint32_t reverse_gravity : 1;            // This object flys upward with gravity
+  uint32_t hits_siblings : 1;              // this object can collide with its siblings (like a bomb)
+  uint32_t no_collide_parent : 1;          // this object cannot collide with its parent
+  uint32_t fixed_rot_velocity : 1;         // Fixed rotational velocity
+  uint32_t fixed_velocity : 1;             // Fixed velocity
+  uint32_t uses_parent_velocity : 1;       // Uses parent velocity
+  uint32_t wind : 1;                       // Effected by wind
+  uint32_t ignore_own_conc_forces : 1;     // Effected by magnetism
+  uint32_t gravity : 1;                    // Effected by gravity
+  uint32_t uses_thrust : 1;                // This object uses its thrust
+  uint32_t persistent : 1;                 // Object keeps going even after it hits another object (eg, fusion cannon)
+  uint32_t stick : 1;                      // Object sticks (stops moving) when hits wall
+  uint32_t wiggle : 1;                     // Wiggle while flying
+  uint32_t bounce : 1;                     // Bounce (not slide) when hit will
+  uint32_t leveling : 1;                   // Level object with closest side
+  uint32_t turnroll : 1;                   // Roll when turning
+#else
+  uint32_t turnroll : 1;                   // Roll when turning
+  uint32_t leveling : 1;                   // Level object with closest side
+  uint32_t bounce : 1;                     // Bounce (not slide) when hit will
+  uint32_t wiggle : 1;                     // Wiggle while flying
+  uint32_t stick : 1;                      // Object sticks (stops moving) when hits wall
+  uint32_t persistent : 1;                 // Object keeps going even after it hits another object (eg, fusion cannon)
+  uint32_t uses_thrust : 1;                // This object uses its thrust
+  uint32_t gravity : 1;                    // Effected by gravity
+  uint32_t ignore_own_conc_forces : 1;     // Effected by magnetism
+  uint32_t wind : 1;                       // Effected by wind
+  uint32_t uses_parent_velocity : 1;       // Uses parent velocity
+  uint32_t fixed_velocity : 1;             // Fixed velocity
+  uint32_t fixed_rot_velocity : 1;         // Fixed rotational velocity
+  uint32_t no_collide_parent : 1;          // this object cannot collide with its parent
+  uint32_t hits_siblings : 1;              // this object can collide with its siblings (like a bomb)
+  uint32_t reverse_gravity : 1;            // This object flys upward with gravity
+  uint32_t no_collide : 1;                 // No collisions AND NO RELINKS -- DANGEROUS TO USE if not used correctly
+  uint32_t no_robot_collisions : 1;        // No collisions occur with robots
+  uint32_t point_collide_walls : 1;        // When colliding with walls, make our radius zero
+  uint32_t homing : 1;                     // This object (weapon) homes
+  uint32_t guided : 1;                     // This object is guided
+  uint32_t ignore_concussive_forces : 1;   // Ignored by concussive forces
+  uint32_t destination_pos : 1;            // Head towards destination position
+  uint32_t lock_x : 1;                     // Lock X axis
+  uint32_t lock_y : 1;                     // Lock Y axis
+  uint32_t lock_z : 1;                     // Lock Z axis
+  uint32_t lock_p : 1;                     // Lock pitch
+  uint32_t lock_h : 1;                     // Lock heading
+  uint32_t lock_b : 1;                     // Lock bank
+  uint32_t never_use_big_sphere : 1;        // Never use big sphere for collisions
+  uint32_t no_same_collisions : 1;          // No collisions occur with same objects
+  uint32_t no_door_collisions : 1;          // No collisions occur with doors
+#endif
+};
+
 // information for physics sim for an object
 // Some of this stuff is not object instance dependant -- so, it could be moved into
 // a different struct to save space.  (But, then we cannot change it -- i.e we might want a powerup
@@ -369,7 +440,7 @@ struct physics_info {
     int32_t stuck_portal;
   };
 
-  uint32_t flags; // Misc physics flags
+  uint32_t flags; // Misc physics flags // TYPE_UPDATE: `physics_flags_t`
 };
 
 struct shockwave_info {
