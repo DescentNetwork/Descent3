@@ -63,6 +63,10 @@ public:
   };
   void projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const;
 
+  // Projects a world-space point to screen pixels using the same camera and
+  // math as pickAt(); returns false when the point is behind the camera.
+  bool projectWorldToScreen(const vector &world, float *sx, float *sy, float *depth = nullptr) const;
+
   // Picking result returned by pickAt().
   struct PickResult {
     int roomIndex = -1;
