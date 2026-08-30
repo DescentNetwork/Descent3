@@ -178,7 +178,7 @@ static void mng_InitGenericPage(mngs_generic_page *genericpage) {
   genericpage->objinfo_struct.module_name[0] = '\0';
 
   for (i = 0; i < MAX_DEATH_TYPES; i++) {
-    genericpage->objinfo_struct.death_types[i].flags = 0;
+    memset(&genericpage->objinfo_struct.death_types[i].flags, 0, sizeof(uint32_t));
     genericpage->objinfo_struct.death_types[i].delay_min = 0.0;
     genericpage->objinfo_struct.death_types[i].delay_max = 0.0;
     genericpage->objinfo_struct.death_probabilities[i] = 0;
@@ -481,14 +481,15 @@ int mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage
     int16_t n = 0;
     infile >> n;
     int n_death_types = n;
-    for (i = 0; i < n_death_types; i++) {
-      int flags = 0;
+    for (i = 0; i < n_death_types; i++)
+    {
+      uint32_t flags = 0;
       infile >> flags;
       if (version == 22) { // translate death flags
         Q_ASSERT(false);            // this version no longer supported
       }
 
-      genericpage->objinfo_struct.death_types[i].flags = flags;
+      memcpy(&genericpage->objinfo_struct.death_types[i].flags, &flags, sizeof(uint32_t));
       infile >> genericpage->objinfo_struct.death_types[i].delay_min;
       infile >> genericpage->objinfo_struct.death_types[i].delay_max;
       infile >> genericpage->objinfo_struct.death_probabilities[i];
