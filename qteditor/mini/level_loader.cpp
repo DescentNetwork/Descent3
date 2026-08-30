@@ -684,13 +684,10 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
 
   FreeAllRooms();
 
-  // Reset the object table.
-  for (int i = 0; i < MAX_OBJECTS; i++) {
-    Objects[i] = object{};
-    Objects[i].type = OBJ_NONE;
-    Objects[i].handle = i;
-  }
-  Highest_object_index = -1;
+  // Reset the object table (matches the original's ResetObjectList: handles,
+  // OBJ_NONE markers, roomnums -1, the free-object list, big-object list and
+  // position-history state).
+  ResetObjectList();
   Num_triggers = 0;
 
   const size_t filelen = ifile.size();
@@ -772,12 +769,25 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
           ifile >> ty;
           obj->type = ty;
           ifile >> obj->id;
-          ifile >> obj->roomnum;
+          int32_t roomnum = 0;
+          ifile >> roomnum;
           LL_ReadVector(ifile, obj->pos);
           LL_ReadMatrix(ifile, obj->orient);
+          // Give the object a usable handle and link it into the mine, exactly
+          // as the original LL_ReadObjects does (object.cpp / LoadLevel.cpp).
+          obj->handle = objnum + HANDLE_COUNT_INCREMENT;
+          obj->roomnum = -1; // ObjLink() expects the roomnum to be -1
+          if ((roomnum > Highest_room_index) && !ROOMNUM_OUTSIDE(roomnum)) {
+            obj->type = OBJ_NONE; // loading object with invalid room number
+          } else {
+            ObjLink(objnum, roomnum);
+          }
           if (objnum > Highest_object_index)
             Highest_object_index = objnum;
         }
+        // Rebuild the free object list, as the original does after the OBJS
+        // chunk (this syncs Num_objects and free_obj_list with the loaded set).
+        ResetFreeObjects();
       } else if (IsChunk(chunk_name, "TRIG")) {
         int32_t nt = 0;
         ifile >> nt;

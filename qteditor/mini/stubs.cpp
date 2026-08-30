@@ -393,16 +393,6 @@ bool grHardwareSurface::create(int w, int h, int bpp, unsigned flags, const std:
 float Float_to_ubyte(float f) { PRINT_STUB(__FUNCTION__); return f; }
 
 // ==================== Object ====================
-void ObjSetPos(object *obj, vector *pos, int roomnum, matrix *orient, bool f_relink) { PRINT_STUB(__FUNCTION__); }
-void ObjDelete(int objnum) { PRINT_STUB(__FUNCTION__); }
-int ObjCreate(uint8_t type, uint16_t id, int roomnum, vector *pos, const matrix *orient, int parent_handle) { PRINT_STUB(__FUNCTION__); return -1; }
-void ObjSetOrient(object *obj, const matrix *orient) { PRINT_STUB(__FUNCTION__); }
-object *ObjGet(int objnum) { PRINT_STUB(__FUNCTION__); return nullptr; }
-void ObjReInitAll() { PRINT_STUB(__FUNCTION__); }
-void FreeAllObjects() { PRINT_STUB(__FUNCTION__); }
-void ResetObjectList() { PRINT_STUB(__FUNCTION__); }
-void GetObjectPointInWorld(vector *dest, object *obj, int gun_num, int animated_frame) { PRINT_STUB(__FUNCTION__); *dest = {}; }
-
 object Objects[MAX_OBJECTS];
 int Highest_object_index = -1;
 object *Viewer_object = &Objects[0];
@@ -1094,7 +1084,6 @@ void FreePolyModel(int n) { PRINT_STUB(__FUNCTION__); }
 int CreateMatcen(const char *name, bool *flag) { PRINT_STUB(__FUNCTION__); return -1; }
 void DestroyAllMatcens() { PRINT_STUB(__FUNCTION__); }
 void FreeAllGamePaths() { PRINT_STUB(__FUNCTION__); }
-void FreeGamePath(int n) { PRINT_STUB(__FUNCTION__); }
 int FindPointRoom(vector *pnt) { PRINT_STUB(__FUNCTION__); return -1; }
 int GetTerrainRoomFromPos_ret(vector *pos) { PRINT_STUB(__FUNCTION__); return -1; }
 int AIMakeNextRoomList(int roomnum, int *next_rooms, int max_rooms) { PRINT_STUB(__FUNCTION__); return 0; }
