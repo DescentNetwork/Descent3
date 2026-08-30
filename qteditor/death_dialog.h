@@ -36,9 +36,10 @@ public:
 
 private slots:
   void onOk();
-  void onExplosionSmall();
-  void onExplosionMedium();
-  void onExplosionLarge();
+  //void onExplosionSmall();
+  //void onExplosionMedium();
+  //void onExplosionLarge();
+  void onReset(void);
   void onCommonDescent();
   void onCommonQuickExplosion();
   void onCommonShootUp();
@@ -52,7 +53,7 @@ private:
 
   Ui::DeathDialog *ui;
   death_info *m_info;
-  uint32_t m_flags;
+  death_flags_t m_flags;
   float m_delayMin;
   float m_delayMax;
 };
