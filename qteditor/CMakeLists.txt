@@ -1,437 +1,270 @@
+cmake_minimum_required(VERSION 3.16)
+project(qteditor VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEDITOR")
+# Mini-specific build flag: marks code/tests that only make sense in the
+# decoupled mini build (gated with #ifdef MINI_EDITOR in the shared sources so
+# the original qteditor build omits them). Set as a target compile definition
+# (not just CMAKE_CXX_FLAGS) so AUTOMOC's moc invocation also sees it and
+# registers the gated Q_OBJECT test slots.
+#add_compile_defxinitions(MINI_EDITOR)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+option(FORCE_QT5_EDITOR "Build the editor with Qt5" ON)
+
+# Try Qt6 first, fall back to Qt5
 if(NOT FORCE_QT5_EDITOR)
-  find_package(Qt6 COMPONENTS Widgets UiTools)
+  find_package(Qt6 COMPONENTS Widgets OpenGLWidgets)
 endif()
 
 if(Qt6_FOUND)
-  set(QT_VERSION_MAJOR ${Qt6Core_VERSION_MAJOR} CACHE STRING "Major version of Qt" FORCE)
-  set(QT_VERSION_MINOR ${Qt6Core_VERSION_MINOR} CACHE STRING "Minor version of Qt" FORCE)
+  set(QT_VERSION_MAJOR ${Qt6Core_VERSION_MAJOR})
+  set(QT_VERSION_MINOR ${Qt6Core_VERSION_MINOR})
+  message(STATUS "Using Qt6")
 else()
-  find_package(Qt5 REQUIRED COMPONENTS Widgets UiTools)
-  set(QT_VERSION_MAJOR ${Qt5Core_VERSION_MAJOR} CACHE STRING "Major version of Qt" FORCE)
-  set(QT_VERSION_MINOR ${Qt5Core_VERSION_MINOR} CACHE STRING "Minor version of Qt" FORCE)
+  find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets OpenGL)
+  set(QT_VERSION_MAJOR ${Qt5Core_VERSION_MAJOR})
+  set(QT_VERSION_MINOR ${Qt5Core_VERSION_MINOR})
+  message(STATUS "Using Qt5")
 endif()
 
-qt_add_resources(QTEDITOR_RESOURCES resources.qrc)
+# Find required packages (SDL2 removed - using Qt for windowing/input)
+find_package(OpenGL REQUIRED)
+
+set(MINI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/mini)
+
+# Include directories
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${MINI_SRC}
+    ${MINI_SRC}/lib
+    ${MINI_SRC}/editor
+    ${MINI_SRC}/game
+    ${MINI_SRC}/fix
+    ${MINI_SRC}/logger
+    ${MINI_SRC}/mem
+    ${MINI_SRC}/sndlib
+    ${MINI_SRC}/physics
+    ${MINI_SRC}/2dlib
+    ${MINI_SRC}/ui
+    ${MINI_SRC}/lib/linux
+    ${MINI_SRC}/bitmap
+    ${MINI_SRC}/grtext
+    ${MINI_SRC}/module
+    ${MINI_SRC}/cfile
+    ${MINI_SRC}/manage
+    ${MINI_SRC}/ddebug
+    ${MINI_SRC}/misc
+    ${MINI_SRC}/renderer
+    ${MINI_SRC}/scripts
+    ${MINI_SRC}/unzip
+    ${PROJECT_SOURCE_DIR}/../descar/src
+    ${PROJECT_SOURCE_DIR}/../descar/utils
+    ${Qt5Core_INCLUDE_DIRS}
+    ${Qt5Gui_INCLUDE_DIRS}
+    ${Qt5Widgets_INCLUDE_DIRS}
+    ${Qt5OpenGL_INCLUDE_DIRS}
+    ${OPENGL_INCLUDE_DIR}
+)
+
+# ---------------------------------------------------------------------------
+# Source collection.
+#
+# The mini build compiles the ORIGINAL qteditor root sources (parent dir) so we
+# don't keep duplicate copies in mini/.  The only root sources that remain in
+# mini/ are:
+#   - the decoupled overrides (modified to build against the mini engine
+#     replacement instead of SDL / Descent3Core), and
+#   - mini-only sources with no parent counterpart (stubs.cpp, level_loader.cpp).
+# The mini engine-replacement subdirs (lib/, editor/, game/, cfile/, manage/,
+# bitmap/, mem/, etc.) still come from mini/.
+# ---------------------------------------------------------------------------
+
+# All original root .cpp sources from the parent qteditor dir...
+file(GLOB QTEDITOR_SOURCES
+     "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
+     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+# Mini root sources that are decoupled stubs/overrides with no parent
+# counterpart: engine-data globals (stubs.cpp), the decoupled level loader
+# (level_loader.cpp) and the mini brief model (brief_model.cpp).
+set(QTEDITOR_MINI_SOURCES
+    ${MINI_SRC}/stubs.cpp
+    ${MINI_SRC}/level_loader.cpp
+    ${MINI_SRC}/brief_model.cpp
+)
+
+# Mini engine-replacement subdir sources.  CONFIGURE_DEPENDS re-globs this list
+# when new .cpp files (e.g. manage/*page.cpp readers) are added, so they are
+# picked up without a manual source-list edit.
+file(GLOB QTEDITOR_SUBDIR_SOURCES CONFIGURE_DEPENDS
+    "${MINI_SRC}/lib/*.cpp"
+    "${MINI_SRC}/editor/*.cpp"
+    "${MINI_SRC}/game/*.cpp"
+    "${MINI_SRC}/2dlib/*.cpp"
+    "${MINI_SRC}/mem/*.cpp"
+    "${MINI_SRC}/sndlib/*.cpp"
+    "${MINI_SRC}/md5/*.cpp"
+    "${MINI_SRC}/cfile/*.cpp"
+    "${MINI_SRC}/manage/*.cpp"
+    "${MINI_SRC}/bitmap/*.cpp"
+)
+
+# Headers from the mini engine replacement (AUTOMOC/AUTOUIC discovery and IDE
+# browsing); the parent-dir headers are already inside QTEDITOR_SOURCES.
+file(GLOB QTEDITOR_HEADERS
+    "${MINI_SRC}/*.h"
+    "${MINI_SRC}/lib/*.h"
+    "${MINI_SRC}/editor/*.h"
+    "${MINI_SRC}/game/*.h"
+    "${MINI_SRC}/2dlib/*.h"
+    "${MINI_SRC}/mem/*.h"
+    "${MINI_SRC}/sndlib/*.h"
+    "${MINI_SRC}/bitmap/*.h"
+    "${MINI_SRC}/cfile/*.h"
+    "${MINI_SRC}/ddebug/*.h"
+    "${MINI_SRC}/ddio/*.h"
+    "${MINI_SRC}/fix/*.h"
+    "${MINI_SRC}/logger/*.h"
+    "${MINI_SRC}/manage/*.h"
+    "${MINI_SRC}/md5/*.h"
+    "${MINI_SRC}/misc/*.h"
+    "${MINI_SRC}/music/*.h"
+    "${MINI_SRC}/physics/*.h"
+    "${MINI_SRC}/renderer/*.h"
+    "${MINI_SRC}/scripts/*.h"
+    "${MINI_SRC}/unzip/*.h"
+    "${MINI_SRC}/ui/*.h"
+    "${PROJECT_SOURCE_DIR}/../descar/src/*.h"
+    "${PROJECT_SOURCE_DIR}/../descar/utils/*.h"
+)
 
 set(QTEDITOR_SOURCES
-  about_dialog.cpp
-  about_dialog.h
-  addscript_dialog.cpp
-  addscript_dialog.h
-  brief_mission_flags_dialog.cpp
-  brief_mission_flags_dialog.h
-  brief_bitmap_dialog.cpp
-  brief_bitmap_dialog.h
-  brief_button_dialog.cpp
-  brief_button_dialog.h
-  brief_movie_dialog.cpp
-  brief_movie_dialog.h
-  brief_sound_dialog.cpp
-  brief_sound_dialog.h
-  brief_main_dialog.cpp
-  brief_main_dialog.h
-  brief_manage_dialog.cpp
-  brief_manage_dialog.h
-  brief_screen_dialog.cpp
-  brief_screen_dialog.h
-  brief_text_edit_dialog.cpp
-  brief_text_edit_dialog.h
-  createscript_dialog.cpp
-  createscript_dialog.h
-  customize_object_dialog.cpp
-  customize_object_dialog.h
-  d3_editor_init.cpp
-  d3_editor_init.h
-  d3_editor_state.cpp
-  dallas_prompt_dialogs.cpp
-  dallas_prompt_dialogs.h
-  death_dialog.cpp
-  death_dialog.h
-  doorway_keypad.cpp
-  doorway_keypad.h
-  editline_dialog.cpp
-  editline_dialog.h
-  file_page_dialog.cpp
-  file_page_dialog.h
-  font_dialog.cpp
-  font_dialog.h
-  editor_lighting.cpp
-  editor_lighting.h
-  editor_object_lighting.cpp
-  editor_room_state.h
-  editor_settings.cpp
-  editor_settings.h
-  editor_view.cpp
-  editor_view.h
-  generic_death_dialog.cpp
-  generic_death_dialog.h
-  generic_light_dialog.cpp
-  generic_light_dialog.h
-  hog_dialog.cpp
-  hog_dialog.h
-  ${PROJECT_SOURCE_DIR}/descar/utils/posix_stream.cpp
-  ${PROJECT_SOURCE_DIR}/descar/src/hog2_format.cpp
-  keypad_dialog.cpp
-  keypad_dialog.h
-  level_keypad.cpp
-  level_keypad.h
-  lighting_keypad.cpp
-  lighting_keypad.h
-  megacell_dialog.cpp
-  megacell_dialog.h
-  megacell_keypad.cpp
-  megacell_keypad.h
-  level_info_dialog.cpp
-  level_info_dialog.h
-  level_io.cpp
-  level_io.h
-  main_window.cpp
-  room_ops.cpp
-  object_ops.cpp
-  obj_move_manager.cpp
-  obj_move_manager.h
-  ebnode.cpp
-  ebnode.h
-  multicheck_dialog.cpp
-  multicheck_dialog.h
-  matcen_keypad.cpp
-  matcen_keypad.h
-  main_window.h
-  path_keypad.cpp
-  path_keypad.h
-  object_keypad.cpp
-  object_keypad.h
-  object_list_combo.cpp
-  object_list_combo.h
-  object_properties_dialog.cpp
-  object_properties_dialog.h
-  physics_dialog.cpp
-  physics_dialog.h
-  player_weapons_dialog.cpp
-  player_weapons_dialog.h
-  powprop_dialog.cpp
-  powprop_dialog.h
-  procedural_dialog.cpp
-  procedural_dialog.h
-  preferences_dialog.cpp
-  preferences_dialog.h
-  propscript_dialog.cpp
-  propscript_dialog.h
-  propai_dialog.cpp
-  propai_dialog.h
-  property_physics_dialog.cpp
-  property_physics_dialog.h
-  propscript_dialog.cpp
-  propscript_dialog.h
-  quickcompile_dialog.cpp
-  quickcompile_dialog.h
-  robot_weapons_dialog.cpp
-  robot_weapons_dialog.h
-  room_list_combo.cpp
-  room_list_combo.h
-  room_keypad.cpp
-  room_keypad.h
-  script_editor_dialog.cpp
-  script_editor_dialog.h
-  script_parm_dialog.cpp
-  script_parm_dialog.h
-  script_select_dialog.cpp
-  script_select_dialog.h
-  selectrange_dialog.cpp
-  selectrange_dialog.h
-  sound_combo.cpp
-  sound_combo.h
-  sound_source_dialog.cpp
-  sound_source_dialog.h
-  status_dialog.cpp
-  status_dialog.h
-  terrain_keypad.cpp
-  terrain_keypad.h
-  texture_keypad.cpp
-  texture_keypad.h
-  terrain_sound_dialog.cpp
-  terrain_sound_dialog.h
-  trigger_list_combo.cpp
-  trigger_list_combo.h
-  trigger_keypad.cpp
-  trigger_keypad.h
-  viewer_prop_dialog.cpp
-  viewer_prop_dialog.h
-  water_procedural_dialog.cpp
-  water_procedural_dialog.h
-  world_objects_door_dialog.cpp
-  world_objects_door_dialog.h
-  world_objects_generic_dialog.cpp
-  world_objects_generic_dialog.h
-  world_objects_player_dialog.cpp
-  world_objects_player_dialog.h
-  world_sounds_dialog.cpp
-  world_sounds_dialog.h
-  world_textures_dialog.cpp
-  world_textures_dialog.h
-  world_weapons_dialog.cpp
-  world_weapons_dialog.h
-  worldobjectslight_dialog.cpp
-  worldobjectslight_dialog.h
-  ai_settings_dialog.cpp
-  ai_settings_dialog.h
-  ambient_sound_element_dialog.cpp
-  ambient_sound_element_dialog.h
-  ambient_sound_patterns_dialog.cpp
-  ambient_sound_patterns_dialog.h
-  anim_states_dialog.cpp
-  anim_states_dialog.h
-  compile_all_dialog.cpp
-  compile_all_dialog.h
-  config_compiler_dialog.cpp
-  config_compiler_dialog.h
-  cust_default_script_dialog.cpp
-  cust_default_script_dialog.h
-  dallas_flag_dialog.cpp
-  dallas_flag_dialog.h
-  dallas_import_dialog.cpp
-  dallas_import_dialog.h
-  dallas_main_dialog.cpp
-  dallas_main_dialog.h
-  dallas_sound_dialog.cpp
-  dallas_sound_dialog.h
-  dallas_strm_audio_dialog.cpp
-  dallas_strm_audio_dialog.h
-  dallas_texture_dialog.cpp
-  dallas_texture_dialog.h
-  dallas_usertypes_dialog.cpp
-  dallas_usertypes_dialog.h
-  file_page_add_dialog.cpp
-  file_page_add_dialog.h
-  level_keypad_layout.cpp
-  level_keypad_layout.h
-  level_properties_dialog.cpp
-  level_properties_dialog.h
-  lighting_status_dialog.cpp
-  lighting_status_dialog.h
-  localize_script_dialog.cpp
-  localize_script_dialog.h
-  object_tree_dialog.cpp
-  object_tree_dialog.h
-  orphan_remove_dialog.cpp
-  orphan_remove_dialog.h
-  osiris_status_dialog.cpp
-  osiris_status_dialog.h
-  rad_cast.cpp
-  rad_cast.h
-  rad_hemicube.cpp
-  rad_init.cpp
-  radiosity.h
-  rad_stubs.cpp
-  script_interface_dialog.cpp
-  script_interface_dialog.h
-  script_studio_dialog.cpp
-  script_studio_dialog.h
-  script_sync_dialog.cpp
-  script_sync_dialog.h
-  script_wizard_dialog.cpp
-  script_wizard_dialog.h
-  status_panel_dialog.cpp
-  status_panel_dialog.h
-  table_file_edit_dialog.cpp
-  table_file_edit_dialog.h
-  table_file_filter_add_dialog.cpp
-  table_file_filter_add_dialog.h
-  table_file_filter_dialog.cpp
-  table_file_filter_dialog.h
+    ${QTEDITOR_SOURCES}
+    ${QTEDITOR_MINI_SOURCES}
+    ${QTEDITOR_SUBDIR_SOURCES}
+)
+# Exclude test files from main build
+list(FILTER QTEDITOR_SOURCES EXCLUDE REGEX "editor_test\\.cpp$")
+list(FILTER QTEDITOR_SOURCES EXCLUDE REGEX "dialog_test\\.cpp$")
+# Copy for the test target, then drop main.cpp (which owns the GUI entry point;
+# editor_test.cpp supplies its own main()).
+set(QTEDITOR_TEST_SOURCES ${QTEDITOR_SOURCES})
+list(FILTER QTEDITOR_TEST_SOURCES EXCLUDE REGEX "(^|/)main\\.cpp$")
+# descar sources (used for hog2 archive support)
+set(DESCAR_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/../descar/src/hog2_format.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../descar/utils/posix_stream.cpp
 )
 
-set(QTEDITOR_UI_FILES
-  ui/propai.ui
-  ui/brief_main.ui
-  ui/scriptstudio.ui
-  ui/ai.ui
-  ui/brief_manage.ui
-  ui/brief_addsound.ui
-  ui/worldobjectsplayer.ui
-  ui/filepageadd.ui
-  ui/ambientsoundpatterns.ui
-  ui/objectkeypad.ui
-  ui/dallas_usertypes_dialog.ui
-  ui/worldobjectsdoor.ui
-  ui/levelkeypad_layout.ui
-  ui/table_file_filter.ui
-  ui/animstates.ui
-  ui/powprop_dialog.ui
-  ui/tablefilefilter_addpage_dlg.ui
-  ui/aboutbox.ui
-  ui/player_weapons.ui
-  ui/brief_addbitmap.ui
-  ui/worldsounds.ui
-  ui/robot_weapon_dialog.ui
-  ui/orphan.ui
-  ui/genericlight.ui
-  ui/statusdlg.ui
-  ui/status.ui
-  ui/quickcompile.ui
-  ui/ambientsoundelement.ui
-  ui/soundsource_dialog.ui
-  ui/worldobjectsgeneric.ui
-  ui/terrainkeypad.ui
-  ui/configcompiler.ui
-  ui/brief_addbutton.ui
-  ui/hogdialog.ui
-  ui/physics.ui
-  ui/preferences.ui
-  ui/propphysics.ui
-  ui/compileall.ui
-  ui/level_info.ui
-  ui/worldweapons.ui
-  ui/briefmissionflags.ui
-  ui/scriptwiz.ui
-  ui/pathkeypad.ui
-  ui/viewer_dialog.ui
-  ui/table_file_editor.ui
-  ui/dallas_strm_audio_dialog.ui
-  ui/roomkeypad.ui
-  ui/worldtextures.ui
-  ui/custdefscript.ui
-  ui/scriptinterface.ui
-  ui/lightingstatus.ui
-  ui/brief_addmovie.ui
-  ui/doorwaykeypad.ui
-  ui/addscript.ui
-  ui/mainwindow.ui
-  ui/filepage.ui
-  ui/objectproperties.ui
-  ui/syncscripts.ui
-  ui/dallas_texture_dialog.ui
-  ui/worldobjectslight.ui
-  ui/propscript.ui
-  ui/selectrange_dialog.ui
-  ui/megacell.ui
-  ui/scriptparms.ui
-  ui/brief_addtext.ui
-  ui/dallas_generic_prompt_dialog.ui
-  ui/water_procedural.ui
-  ui/dallas_import_dialog.ui
-  ui/generic_deaths.ui
-  ui/multicheck.ui
-  ui/objtreedlg.ui
-  ui/procedural_dialog.ui
-  ui/terrain_sound_dialog.ui
-  ui/megakeypad.ui
-  ui/levelkeypad.ui
-  ui/death_dialog.ui
-  ui/levelproperties.ui
-  ui/dallas_flag_dialog.ui
-  ui/createscript.ui
-  ui/triggerkeypad.ui
-  ui/osiris_status.ui
-  ui/lightingkeypad.ui
-  ui/keypad_dlgbar.ui
-  ui/brief_addscreen.ui
-  ui/font_dialog.ui
-  ui/texturekeypad.ui
-  ui/matcenkeypad.ui
-  ui/editlinedlg.ui
-  ui/customize_object.ui
-  ui/dallas_sound_dialog.ui
-  ui/scripteditor.ui
-  ui/dallas_vector_dialog.ui
-  ui/dallas_main_dialog.ui
-  ui/localizescript.ui
-  ui/keypads.ui
-  ui/scriptselect.ui
+file(GLOB QTEDITOR_UI "ui/*.ui")
+
+# Resources
+set(QTEDITOR_RESOURCES
+    resources.qrc
 )
 
-add_executable(Descent3EditorQt
-  main.cpp
-  ${QTEDITOR_SOURCES}
-  ${QTEDITOR_UI_FILES}
-  ${QTEDITOR_RESOURCES}
+# Set UIC search path for UI files
+set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
+
+# Create executable
+add_executable(qteditor
+    ${QTEDITOR_SOURCES}
+    ${QTEDITOR_HEADERS}
+    ${DESCAR_SOURCES}
+    ${QTEDITOR_UI}
+    ${QTEDITOR_RESOURCES}
 )
 
-target_include_directories(Descent3EditorQt PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${PROJECT_SOURCE_DIR}
-  ${PROJECT_SOURCE_DIR}/editor
-  ${PROJECT_SOURCE_DIR}/lib
-  ${PROJECT_SOURCE_DIR}/fix
-  ${PROJECT_SOURCE_DIR}/Descent3
-  ${PROJECT_SOURCE_DIR}/cfile
-  ${PROJECT_SOURCE_DIR}/manage
-  ${PROJECT_SOURCE_DIR}/renderer
-  ${PROJECT_SOURCE_DIR}/linux
-  ${PROJECT_SOURCE_DIR}/vecmat
-  ${PROJECT_SOURCE_DIR}/physics
-  ${PROJECT_SOURCE_DIR}/grtext
-  ${PROJECT_SOURCE_DIR}/bitmap
-  ${PROJECT_SOURCE_DIR}/sndlib
-  ${PROJECT_SOURCE_DIR}/descar/utils
-  ${PROJECT_SOURCE_DIR}/descar/src
-  ${PROJECT_BINARY_DIR}/lib
-  ${SDL3_INCLUDE_DIRS}
-)
-
-# D3 core (game logic) plus the support libraries it pulls in.
-set(PLATFORM_LIBS m ${CMAKE_DL_LIBS})
-
-target_link_libraries(Descent3EditorQt PRIVATE
-  $<LINK_LIBRARY:WHOLE_ARCHIVE,Descent3Core,linux>
-  Qt::Widgets
-  Qt::UiTools
-  ${PLATFORM_LIBS}
-)
-
-set_target_properties(Descent3EditorQt PROPERTIES
-  AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
-  OUTPUT_NAME "Descent3EditorQt")
-
-# QTest based editor tester (exercises every dialog/widget).
-add_executable(Descent3EditorTests
-  editor_test.cpp
-  dialog_test.cpp
-  dialog_test.h
-  ${QTEDITOR_SOURCES}
-  ${QTEDITOR_UI_FILES}
-  ${QTEDITOR_RESOURCES}
-)
-
-if(BUILD_QT_EDITOR_TEST)
-  if(NOT FORCE_QT5_EDITOR)
-    find_package(Qt6 COMPONENTS Widgets UiTools Test)
-  endif()
-  if(NOT Qt6_FOUND)
-      find_package(Qt5 REQUIRED COMPONENTS Widgets UiTools Test)
-  endif()
-  target_include_directories(Descent3EditorTests PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}/editor
-    ${PROJECT_SOURCE_DIR}/lib
-    ${PROJECT_SOURCE_DIR}/fix
-    ${PROJECT_SOURCE_DIR}/Descent3
-    ${PROJECT_SOURCE_DIR}/cfile
-    ${PROJECT_SOURCE_DIR}/manage
-    ${PROJECT_SOURCE_DIR}/renderer
-    ${PROJECT_SOURCE_DIR}/linux
-    ${PROJECT_SOURCE_DIR}/vecmat
-    ${PROJECT_SOURCE_DIR}/physics
-    ${PROJECT_SOURCE_DIR}/grtext
-    ${PROJECT_SOURCE_DIR}/bitmap
-    ${PROJECT_SOURCE_DIR}/sndlib
-    ${PROJECT_SOURCE_DIR}/descar/utils
-    ${PROJECT_SOURCE_DIR}/descar/src
-    ${PROJECT_BINARY_DIR}/lib
-    ${SDL3_INCLUDE_DIRS}
+# Link libraries
+if(Qt6_FOUND)
+  target_link_libraries(qteditor PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::OpenGLWidgets
+    OpenGL::GL
   )
-  target_link_libraries(Descent3EditorTests PRIVATE
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,Descent3Core,linux>
-    Qt::Widgets
-    Qt::UiTools
-    Qt::Test
-    ${PLATFORM_LIBS}
+  target_compile_definitions(qteditor PRIVATE
+    QT_CORE_LIB
+    QT_GUI_LIB
+    QT_WIDGETS_LIB
   )
-  set_target_properties(Descent3EditorTests PROPERTIES
-    AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
-    OUTPUT_NAME "Descent3EditorTests")
+else()
+  target_link_libraries(qteditor PRIVATE
+    Qt5::Core
+    Qt5::Gui
+    Qt5::Widgets
+    Qt5::OpenGL
+    OpenGL::GL
+  )
+  target_compile_definitions(qteditor PRIVATE
+    QT_CORE_LIB
+    QT_GUI_LIB
+    QT_WIDGETS_LIB
+    QT_OPENGL_LIB
+  )
+endif()
+
+# ---------------------------------------------------------------------------
+# Standalone QTest executable (Phase 5): exercises every dialog/widget and
+# the editor core WITHOUT linking Descent3Core. The test sources already live
+# in mini/ (editor_test.cpp is a QTest suite with its own main(); dialog_test.cpp
+# provides runDialogTest()). Guarded so builds that don't carry the Qt Test
+# module can disable it.
+# ---------------------------------------------------------------------------
+option(BUILD_EDITOR_TESTS "Build the QTest editor test executable" ON)
+
+if(BUILD_EDITOR_TESTS)
+  if(Qt6_FOUND)
+    find_package(Qt6 COMPONENTS Test)
+  else()
+    find_package(Qt5 REQUIRED COMPONENTS Test)
+  endif()
+
+  add_executable(qteditor_tests
+    ${CMAKE_CURRENT_SOURCE_DIR}/editor_test.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/dialog_test.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/dialog_test.h
+    ${QTEDITOR_TEST_SOURCES}
+    ${QTEDITOR_HEADERS}
+    ${DESCAR_SOURCES}
+    ${QTEDITOR_UI}
+    ${QTEDITOR_RESOURCES}
+  )
+
+  if(Qt6_FOUND)
+    target_link_libraries(qteditor_tests PRIVATE
+      Qt6::Core
+      Qt6::Gui
+      Qt6::Widgets
+      Qt6::OpenGLWidgets
+      Qt6::Test
+      OpenGL::GL
+    )
+    target_compile_definitions(qteditor_tests PRIVATE
+      QT_CORE_LIB
+      QT_GUI_LIB
+      QT_WIDGETS_LIB
+    )
+  else()
+    target_link_libraries(qteditor_tests PRIVATE
+      Qt5::Core
+      Qt5::Gui
+      Qt5::Widgets
+      Qt5::OpenGL
+      Qt5::Test
+      OpenGL::GL
+    )
+    target_compile_definitions(qteditor_tests PRIVATE
+      QT_CORE_LIB
+      QT_GUI_LIB
+      QT_WIDGETS_LIB
+      QT_OPENGL_LIB
+    )
+  endif()
 endif()
