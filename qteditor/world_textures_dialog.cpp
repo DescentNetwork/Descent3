@@ -197,30 +197,38 @@ void WorldTexturesDialog::updateDialog() {
     if (QLineEdit *edit = findChild<QLineEdit*>(f.name))
       edit->setText(QString::number(GameTextures[n].*f.field));
 
-  #define SET_CHECK(IDC, MEMBER) ui->IDC->setChecked(GameTextures[n].flags.MEMBER);
-  SET_CHECK(IDC_MINE_TEXTURE, mine);
-  SET_CHECK(IDC_OBJECT_TEXTURE, object);
-  SET_CHECK(IDC_TERRAIN_TEXTURE, terrain);
-  SET_CHECK(IDC_EFFECT_TEXTURE, effect);
-  SET_CHECK(IDC_HUD_COCKPIT_TEXTURE, hud_cockpit);
-  SET_CHECK(IDC_LIGHT_TEXTURE, light);
-  SET_CHECK(IDC_WATER, water);
-  SET_CHECK(IDC_VOLATILE, volatile_flag);
-  SET_CHECK(IDC_SATURATE, saturate);
-  SET_CHECK(IDC_MARBLE_CHECK, marble);
-  SET_CHECK(IDC_TEXTURE_FLY_THRU_CHECK, fly_thru);
-  SET_CHECK(IDC_FORCEFIELD, forcefield);
-  SET_CHECK(IDC_METAL_CHECK, metal);
-  SET_CHECK(IDC_PLASTIC_CHECK, plastic);
-  SET_CHECK(IDC_CHECK_ANIMATE, animated);
-  SET_CHECK(IDC_PING_PONG, ping_pong);
-  SET_CHECK(IDC_CHECK_TMAP2, tmap2);
-  SET_CHECK(IDC_CHECK_DESTROY, destroyable);
-  SET_CHECK(IDC_CHECK_BREAKABLE, breakable);
-  SET_CHECK(IDC_LAVA_CHECKBOX, lava);
-  SET_CHECK(IDC_RUBBLE_CHECKBOX, rubble);
-  SET_CHECK(IDC_SMOOTH_SPEC_CHECK, smooth_specular);
-  #undef SET_CHECK
+  ui->IDC_REFLECT->setText(QString::number(GameTextures[n].reflectivity));
+  ui->IDC_RED_LIGHTING->setText(QString::number(GameTextures[n].r));
+  ui->IDC_GREEN_LIGHTING->setText(QString::number(GameTextures[n].g));
+  ui->IDC_BLUE_LIGHTING->setText(QString::number(GameTextures[n].b));
+  ui->IDC_SLIDEU->setText(QString::number(GameTextures[n].slide_u));
+  ui->IDC_SLIDEV->setText(QString::number(GameTextures[n].slide_v));
+  ui->IDC_ALPHA_EDIT->setText(QString::number(GameTextures[n].alpha));
+  ui->IDC_SPEED_EDIT->setText(QString::number(GameTextures[n].speed));
+  ui->IDC_TEXTURE_AMBIENT_SOUND_VOLUME->setText(QString::number(GameTextures[n].sound_volume));
+
+  ui->IDC_MINE_TEXTURE->setChecked(GameTextures[n].flags.mine);
+  ui->IDC_OBJECT_TEXTURE->setChecked(GameTextures[n].flags.object);
+  ui->IDC_TERRAIN_TEXTURE->setChecked(GameTextures[n].flags.terrain);
+  ui->IDC_EFFECT_TEXTURE->setChecked(GameTextures[n].flags.effect);
+  ui->IDC_HUD_COCKPIT_TEXTURE->setChecked(GameTextures[n].flags.hud_cockpit);
+  ui->IDC_LIGHT_TEXTURE->setChecked(GameTextures[n].flags.light);
+  ui->IDC_WATER->setChecked(GameTextures[n].flags.water);
+  ui->IDC_VOLATILE->setChecked(GameTextures[n].flags.volatile_flag);
+  ui->IDC_SATURATE->setChecked(GameTextures[n].flags.saturate);
+  ui->IDC_MARBLE_CHECK->setChecked(GameTextures[n].flags.marble);
+  ui->IDC_TEXTURE_FLY_THRU_CHECK->setChecked(GameTextures[n].flags.fly_thru);
+  ui->IDC_FORCEFIELD->setChecked(GameTextures[n].flags.forcefield);
+  ui->IDC_METAL_CHECK->setChecked(GameTextures[n].flags.metal);
+  ui->IDC_PLASTIC_CHECK->setChecked(GameTextures[n].flags.plastic);
+  ui->IDC_CHECK_ANIMATE->setChecked(GameTextures[n].flags.animated);
+  ui->IDC_PING_PONG->setChecked(GameTextures[n].flags.ping_pong);
+  ui->IDC_CHECK_TMAP2->setChecked(GameTextures[n].flags.tmap2);
+  ui->IDC_CHECK_DESTROY->setChecked(GameTextures[n].flags.destroyable);
+  ui->IDC_CHECK_BREAKABLE->setChecked(GameTextures[n].flags.breakable);
+  ui->IDC_LAVA_CHECKBOX->setChecked(GameTextures[n].flags.lava);
+  ui->IDC_RUBBLE_CHECKBOX->setChecked(GameTextures[n].flags.rubble);
+  ui->IDC_SMOOTH_SPEC_CHECK->setChecked(GameTextures[n].flags.smooth_specular);
 
   if (QLineEdit *edit = ui->IDC_BITMAP_NAME) {
     const int bm = GameTextures[n].bm_handle;
