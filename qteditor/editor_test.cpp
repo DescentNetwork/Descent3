@@ -173,6 +173,7 @@ bool EBNode_VerifyGraph();
 
 #include "cfile.h"
 #include "gamedata_loader.h"
+#include "brief_model.h"
 #endif // MINI_EDITOR
 
 #include "editor_view.h"
@@ -706,6 +707,68 @@ private slots:
 
     errno = 0;
   }
+
+  // Round-trips the Briefing model through .brf save/load (text + bmp + sound)
+  // and verifies screens, effects and the global values survive.
+  void testBriefModelRoundTrip()
+  {
+    BriefEditInitScreens();
+
+    Briefing_globals.title = "Mission Brief";
+    Briefing_globals.static_val = 0.25f;
+    Briefing_globals.glitch_val = 0.5f;
+
+    // Screen 0: one text effect.
+    Briefing_screens[0].init();
+    Briefing_screens[0].used = true;
+    Briefing_screens[0].layout = "briefing1";
+    Briefing_screens[0].mission_mask_set = 0x1;
+    Briefing_root_screen = 0;
+
+    tBriefEffect *efx = &Briefing_screens[0].effects[0];
+    efx->init();
+    efx->used = true;
+    efx->type = BE_TEXT;
+    efx->id = 3;
+    efx->description = "intro";
+    efx->text = "Welcome to the mission.";
+    efx->desc.text_desc.type = TC_TEXT_SCROLL;
+    efx->desc.text_desc.flags = TC_TEXTF_L2R;
+    efx->desc.text_desc.speed = 2.0f;
+    efx->desc.text_desc.waittime = 1.5f;
+    efx->desc.text_desc.font = 0; // sm_brief
+    efx->desc.text_desc.color = GR_RGB(10, 20, 30);
+    efx->desc.text_desc.caps = TCTD_FONT | TCTD_COLOR | TCTD_SPEED | TCTD_WAITTIME | TCTD_TEXTBOX | TCTD_SCROLL;
+    Briefing_screens[0].root_effect = 0;
+
+    const QString tmp = QDir::tempPath() + "/_test_brief";
+    QDir::current().mkpath(tmp);
+    const QString file = tmp + "/roundtrip.brf";
+    QFile::remove(file);
+
+    QVERIFY(BriefEditSaveScreens(std::filesystem::path(file.toStdString()), &Briefing_globals));
+
+    BriefEditInitScreens();
+    QVERIFY(BriefEditLoadScreens(std::filesystem::path(file.toStdString()), &Briefing_globals));
+
+    QCOMPARE(QString::fromStdString(Briefing_globals.title), QStringLiteral("Mission Brief"));
+    QVERIFY(!Briefing_globals.title.empty());
+    QCOMPARE(Briefing_globals.static_val, 0.25f);
+    QCOMPARE(Briefing_globals.glitch_val, 0.5f);
+    QVERIFY(Briefing_screens[0].used);
+    QCOMPARE(Briefing_screens[0].root_effect, 0);
+    QCOMPARE(Briefing_screens[0].effects[0].type, BE_TEXT);
+    QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc.flags, TC_TEXTF_L2R);
+    QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc.speed, 2.0f);
+    QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc.waittime, 1.5f);
+    QCOMPARE(QString::fromStdString(Briefing_screens[0].effects[0].text),
+             QStringLiteral("Welcome to the mission."));
+
+    BriefEditFreeScreens();
+    QFile::remove(file);
+    QDir::current().rmdir(tmp);
+    errno = 0;
+  }
 #endif // MINI_EDITOR
 
 
@@ -726,8 +789,24 @@ private slots:
       make("brief_mission_flags", d);
     }
     {
-      auto *d = new BriefTextEditDialog(0, nullptr, 0);
+      auto *d = new BriefTextEditDialog(0, nullptr, {}, 0);
       make("brief_text_edit", d);
+    }
+    {
+      auto *d = new BriefSoundDialog(nullptr);
+      make("brief_sound", d);
+    }
+    {
+      auto *d = new BriefMovieDialog(nullptr);
+      make("brief_movie", d);
+    }
+    {
+      auto *d = new BriefBitmapDialog(nullptr);
+      make("brief_bitmap", d);
+    }
+    {
+      auto *d = new BriefButtonDialog(nullptr);
+      make("brief_button", d);
     }
     make("createscript", (new CreateNewScriptDialog));
     make("customize_object", (new CustomObjectDialog));

@@ -30,18 +30,11 @@
 #include <QStringList>
 
 #include <array>
-#include <cstdio>
 #include <cstring>
 
 #include "brief_mission_flags_dialog.h"
 #include "gamefont.h"
 #include "grdefs.h"
-
-
-BriefLayoutScreen *PBlayouts = nullptr;
-int *PBnum_layouts = nullptr;
-BriefScreen Briefing_screens[kMaxTelcomScreens]{
-};
 
 namespace {
 constexpr int kMaxTabStops = 10;
@@ -117,13 +110,13 @@ void radioToEffectType(int effectType, TCTEXTDESC *desc) {
 }
 } // namespace
 
-BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const char *text_buffer,
+BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const std::string &text,
                                          int id, QWidget *parent)
     : QDialog(parent), ui(new Ui::BriefTextDialog), m_screen(currScreen), m_text(""), m_id(id),
       m_effectType(0), m_richEdit(nullptr)
 {
   ui->setupUi(this);
-  std::memset(&m_desc, 0, sizeof(TCTEXTDESC));
+  memset(&m_desc, 0, sizeof(TCTEXTDESC));
   m_desc.type = TC_TEXT_STATIC;
   m_desc.font = BRIEF_FONT_INDEX;
   m_desc.color = GR_GREEN;
@@ -155,8 +148,7 @@ BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const ch
     m_desc.mission_mask_set = d->mission_mask_set;
     m_desc.mission_mask_unset = d->mission_mask_unset;
   }
-  if (text_buffer)
-    m_text = text_buffer;
+  m_text = QString::fromStdString(text);
 
   m_effectType = effectTypeToRadio(&m_desc);
 
@@ -228,16 +220,14 @@ void BriefTextEditDialog::populatePredefs() {
     int layout = -1;
     if (PBlayouts && PBnum_layouts) {
       for (int i = 0; i < *PBnum_layouts; i++) {
-        if (std::strcmp(Briefing_screens[m_screen].layout, PBlayouts[i].filename) == 0)
+        if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
           layout = i;
       }
       if (layout != -1) {
         for (int j = 0; j < PBlayouts[layout].num_texts; j++) {
-          char buffer[100];
-          std::sprintf(buffer, "(%d,%d)->(%d,%d)", PBlayouts[layout].texts[j].lx,
-                       PBlayouts[layout].texts[j].ty, PBlayouts[layout].texts[j].rx,
-                       PBlayouts[layout].texts[j].by);
-          combo->addItem(buffer);
+          const auto &t = PBlayouts[layout].texts[j];
+          combo->addItem(
+              QString("(%1,%2)->(%3,%4)").arg(t.lx).arg(t.ty).arg(t.rx).arg(t.by));
         }
       }
     }
@@ -253,7 +243,7 @@ void BriefTextEditDialog::onPredefChanged(int index) {
   if (!PBlayouts || !PBnum_layouts)
     return;
   for (int i = 0; i < *PBnum_layouts; i++) {
-    if (std::strcmp(Briefing_screens[m_screen].layout, PBlayouts[i].filename) == 0)
+    if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
       layout = i;
   }
   if (layout != -1) {

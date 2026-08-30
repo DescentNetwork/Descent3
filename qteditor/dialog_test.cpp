@@ -94,7 +94,7 @@ int runDialogTest() {
     check("brief_mission_flags", dlg != nullptr);
   }
   {
-    BriefTextEditDialog* dlg = new BriefTextEditDialog(0, nullptr, 0);
+    BriefTextEditDialog* dlg = new BriefTextEditDialog(0, nullptr, {}, 0);
     check("brief_text_edit", dlg != nullptr);
   }
   construct<CreateNewScriptDialog>("createscript", nullptr);
