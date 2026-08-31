@@ -26,6 +26,9 @@
 #include "objinfo.h"
 #include "robotfirestruct.h"
 
+// Current version of the generic page (matches the original manage/generic.cpp)
+#define GENERICFILE_VERSION 27
+
 struct mngs_generic_page {
   object_info objinfo_struct;
   anim_elem anim[NUM_MOVEMENT_CLASSES];
@@ -45,17 +48,18 @@ struct mngs_generic_page {
 // Generic page functions
 //---------------------------------------------------------------
 
-// Given an open file pointer and a generic_page struct, writes that genericpage out
-void mng_WriteGenericPage(struct CFILE* outfile, mngs_generic_page *genericpage);
-
 // Reads a generic page from an open file.  Returns 0 on error.
 int mng_ReadGenericPage(posix_istream &infile, mngs_generic_page *genericpage);
 
-// Given an open file pointer and a generic_page struct, writes that genericpage out
-void mng_WriteNewGenericPage(struct CFILE* outfile, mngs_generic_page *genericpage);
-
 // Reads a generic page from an open file.  Returns 0 on error.
 int mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage);
+
+// Serializes a generic page in the current table-file format (the exact mirror
+// of mng_ReadNewGenericPage: same field order and encodings, so a page written
+// here parses back bit-for-bit with the reader).  Writes the full page frame —
+// [PAGETYPE_GENERIC][int32 len] header + payload — just like the original
+// StartManagePage/EndManagePage-wrapped writer.
+void mng_WriteNewGenericPage(byte_ostream &outfile, mngs_generic_page *genericpage);
 
 // Reads in the genericpage named "name" into genericpage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

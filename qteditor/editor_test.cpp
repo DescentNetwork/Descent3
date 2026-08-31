@@ -130,10 +130,15 @@ bool EBNode_VerifyGraph();
 #include "hog_dialog.h"
 #include "hog2_format.h"
 #include "posix_stream.h"
+#include "table_manage.h"
 
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <iterator>
+#include <vector>
+#include <QtGlobal>
+#include <QTemporaryDir>
 #include "level_info_dialog.h"
 #include "megacell_dialog.h"
 #include "megacell_keypad.h"
@@ -2944,6 +2949,180 @@ private slots:
     EBNode_ClearLevel();
     QVERIFY(!BNode_allocated);
     QVERIFY(!BNode_verified);
+  }
+
+  // Round-trips a generic page through mng_WriteNewGenericPage back into
+  // mng_ReadNewGenericPage and compares key fields.  The writer must be the
+  // exact mirror of the reader (same field order and encodings), and must emit
+  // the [PAGETYPE_GENERIC][int32 len] page frame the loader loop expects.
+  void testGenericPageWriteReadRoundTrip()
+  {
+    std::vector<uint8_t> buffer(64 * 1024);
+    posix_ostream out(buffer.data(), buffer.size(), std::ios_base::out);
+
+    mngs_generic_page page{};
+    page.objinfo_struct.type = OBJ_ROBOT;
+    page.objinfo_struct.name = "roundtrip_robot";
+    page.image_name = "models/robot.oof";
+    page.med_image_name = "models/robot.oof";
+    page.lo_image_name = "models/robot.oof";
+    page.objinfo_struct.impact_size = 1.5f;
+    page.objinfo_struct.impact_time = 2.5f;
+    page.objinfo_struct.damage = 42.0f;
+    page.objinfo_struct.score = 150;
+    page.objinfo_struct.hit_points = 1000;
+    page.objinfo_struct.size = 3.0f;
+    page.objinfo_struct.med_lod_distance = 250.0f;
+    page.objinfo_struct.lo_lod_distance = 500.0f;
+    page.objinfo_struct.respawn_scalar = 1.0f;
+    page.objinfo_struct.module_name = "roundtrip_module";
+    page.objinfo_struct.script_name_override = "roundtrip_script";
+    page.ai_info.flags = (int)0xDEADBEEF;
+    page.ai_info.ai_class = 3;
+    page.ai_info.notify_flags = 0x1F;
+    page.dspew_name[0] = "spew_one";
+    page.dspew_name[1] = "spew_two";
+    page.anim[0].elem[1].from = 2;
+    page.anim[0].elem[1].to = 9;
+    page.anim[0].elem[1].spc = 0.25f;
+    page.static_wb[0].aiming_gp_index = 4;
+
+    mng_WriteNewGenericPage(out, &page);
+    const size_t bytes = static_cast<size_t>(out.tell());
+    QVERIFY(bytes > 16);
+    out.close(); // materialize fmemopen stdio buffering into the memory
+
+    // Page frame: [PAGETYPE_GENERIC][int32 len][payload].
+    posix_istream in(buffer.data(), bytes, std::ios_base::in);
+    uint8_t pagetype = 0;
+    int32_t len = 0;
+    in >> pagetype;
+    in >> len;
+    QCOMPARE(static_cast<int>(pagetype), static_cast<int>(PAGETYPE_GENERIC));
+    QCOMPARE(static_cast<int32_t>(len), static_cast<int32_t>(bytes) - 1);
+
+    mngs_generic_page got{};
+    QVERIFY(mng_ReadNewGenericPage(in, &got));
+    QCOMPARE(static_cast<int>(got.objinfo_struct.type), static_cast<int>(OBJ_ROBOT));
+    QCOMPARE(got.objinfo_struct.name, page.objinfo_struct.name);
+    QCOMPARE(got.image_name, page.image_name);
+    QCOMPARE(got.objinfo_struct.module_name, page.objinfo_struct.module_name);
+    QCOMPARE(got.objinfo_struct.hit_points, page.objinfo_struct.hit_points);
+    QCOMPARE(got.ai_info.flags, page.ai_info.flags);
+    QCOMPARE(got.ai_info.ai_class, page.ai_info.ai_class);
+    QCOMPARE(got.dspew_name[1], page.dspew_name[1]);
+    QCOMPARE(got.anim[0].elem[1].spc, page.anim[0].elem[1].spc);
+    QCOMPARE(static_cast<int>(got.static_wb[0].aiming_gp_index), 4);
+  }
+
+  // Exercises GenericPageList: LoadTable sorts pages by name (case
+  // insensitive), selection wraps around the ends, description edits mark the
+  // table modified, and SaveTable writes the edited pages back into a new
+  // file (non-generic pages copied through byte-for-byte) that reloads with
+  // the edits intact.
+  void testGenericPageListLoadSave()
+  {
+    QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+    const std::string path = dir.filePath("table.loc").toStdString();
+
+    {
+      posix_ostream file(path, std::ios_base::out);
+
+      // A non-generic page first; it must be copied through untouched.
+      file.put(PAGETYPE_SOUND);
+      int32_t len = 3;
+      file << len;
+      file.write("ABC", 3);
+
+      auto write_robot = [&file](const std::string &name) {
+        mngs_generic_page p{};
+        p.objinfo_struct.type = OBJ_ROBOT;
+        p.objinfo_struct.name = name;
+        p.image_name = "models/" + name + ".oof";
+        p.med_image_name = "models/" + name + ".oof";
+        p.lo_image_name = "models/" + name + ".oof";
+        mng_WriteNewGenericPage(file, &p);
+      };
+
+      write_robot("Zeta_robot");
+      write_robot("Alpha_robot");
+      write_robot("Mid_robot");
+    }
+
+    GenericPageList list;
+
+    // Loading a missing file fails cleanly.
+    QVERIFY(!list.LoadTable(dir.filePath("missing.loc").toStdString()));
+
+    // Saving before any table is loaded is a no-op.
+    GenericPageList unloaded;
+    QVERIFY(!unloaded.SaveTable(dir.filePath("unloaded.loc").toStdString()));
+
+    QVERIFY(list.LoadTable(path));
+    QVERIFY(list.IsLoaded());
+    QCOMPARE(static_cast<int>(list.size()), 3);
+    QVERIFY(!list.IsModified());
+
+    // Pages are in ascending alphabetical order, page ids preserved.
+    list.SelectNode(0);
+    QCOMPARE(list.Selected()->name(), std::string("Alpha_robot"));
+    list.SelectNode(1);
+    QCOMPARE(list.Selected()->name(), std::string("Mid_robot"));
+    list.SelectNode(2);
+    QCOMPARE(list.Selected()->name(), std::string("Zeta_robot"));
+
+    // Next/Prev wrap around the ends.
+    list.SelectNext();
+    QCOMPARE(list.SelectedIndex(), 0u);
+    QCOMPARE(list.Selected()->name(), std::string("Alpha_robot"));
+    list.SelectPrev();
+    QCOMPARE(list.SelectedIndex(), 2u);
+    QCOMPARE(list.Selected()->name(), std::string("Zeta_robot"));
+
+    // Out-of-range selections are ignored.
+    GenericPageList empty;
+    empty.SelectNode(0);
+    QVERIFY(empty.Selected() == nullptr);
+
+    // Description editing.
+    QVERIFY(list.SaveSelectedDescription("Zeta description"));
+    QVERIFY(list.IsModified());
+    QCOMPARE(list.Selected()->description(), std::string("Zeta description"));
+    // Unchanged text must not mark the table modified again.
+    QVERIFY(!list.SaveSelectedDescription("Zeta description"));
+    // "<None>" clears the description.
+    QVERIFY(list.SaveSelectedDescription(NO_DESCRIPTION_STRING));
+    QVERIFY(list.Selected()->description().empty());
+    // Put a real edit back before saving.
+    QVERIFY(list.SaveSelectedDescription("persisted description"));
+
+    const std::string out_path = dir.filePath("out.loc").toStdString();
+    QVERIFY(list.SaveTable(out_path));
+    QVERIFY(!list.IsModified());
+    QCOMPARE(list.TableFilename(), std::string(out_path));
+
+    // Reload the saved table: the edit is present and ordering is unchanged.
+    GenericPageList round;
+    QVERIFY(round.LoadTable(out_path));
+    QCOMPARE(static_cast<int>(round.size()), 3);
+    round.SelectNode(2);
+    QCOMPARE(round.Selected()->name(), std::string("Zeta_robot"));
+    QCOMPARE(round.Selected()->description(), std::string("persisted description"));
+
+    // The non-generic page survived the save byte-for-byte.
+    std::ifstream ifs(out_path, std::ios::binary);
+    std::vector<uint8_t> raw((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    QVERIFY(raw.size() > 5);
+    QCOMPARE(static_cast<int>(raw[0]), static_cast<int>(PAGETYPE_SOUND));
+    QCOMPARE(static_cast<int>(raw[1]), 3); // little-endian int32 len of 3
+    QCOMPARE(static_cast<int>(raw[2]), 0);
+    QCOMPARE(static_cast<int>(raw[3]), 0);
+    QCOMPARE(static_cast<int>(raw[4]), 0);
+    QCOMPARE(static_cast<char>(raw[5]), 'A');
+
+    // The title string reflects the loaded (unmodified) file.
+    QCOMPARE(list.TitleString(), std::string(TITLE_NAME + std::string(" - [") + out_path + "]"));
   }
 };
 // Force the offscreen QPA platform so the test binary never opens a real

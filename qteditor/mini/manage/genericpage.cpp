@@ -28,6 +28,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <vector>
 #include <QtGlobal>
 
 #include "manage.h"
@@ -45,6 +46,11 @@
 #ifndef OLD_DF_DELAY_MASK
 #define OLD_DF_DELAY_MASK 0x0000003
 #endif
+
+// Scratch size for serializing a generic page.  Real pages (as produced by the
+// original D3 tools) fit comfortably within this; any page that would not is
+// rejected by the Q_ASSERT in mng_WriteNewGenericPage.
+constexpr size_t kGenericPageBufferSize = 1u << 20;
 
 //-----------------------------------------------------------------------------
 // Chunk readers (used by the generic + weapon + ship readers).  Pure data.
@@ -516,6 +522,293 @@ int mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage
   Q_ASSERT(genericpage->objinfo_struct.type != OBJ_NONE);
 
   return 1; // successfully read
+}
+
+//-----------------------------------------------------------------------------
+// Chunk writers (the exact mirror of the readers above: same field order and
+// encodings, so SaveTable can round-trip pages it has loaded).
+//-----------------------------------------------------------------------------
+
+static void mng_WritePhysicsChunk(byte_ostream &outfile, const physics_info *phys_info) {
+  outfile << phys_info->mass;
+  outfile << phys_info->drag;
+  outfile << phys_info->full_thrust;
+  outfile << phys_info->flags;
+  outfile << phys_info->rotdrag;
+  outfile << phys_info->full_rotthrust;
+  outfile << phys_info->num_bounces;
+  outfile << phys_info->velocity.z();
+  outfile << phys_info->rotvel.x() << phys_info->rotvel.y() << phys_info->rotvel.z();
+  outfile << phys_info->wiggle_amplitude;
+  outfile << phys_info->wiggles_per_sec;
+  outfile << phys_info->coeff_restitution;
+  outfile << phys_info->hit_die_dot;
+  outfile << phys_info->max_turnroll_rate;
+  outfile << phys_info->turnroll_ratio;
+}
+
+static void mng_WriteLightingChunk(byte_ostream &outfile, const light_info *lighting_info) {
+  outfile << lighting_info->light_distance;
+  outfile << lighting_info->red_light1;
+  outfile << lighting_info->green_light1;
+  outfile << lighting_info->blue_light1;
+  outfile << lighting_info->time_interval;
+  outfile << lighting_info->flicker_distance;
+  outfile << lighting_info->directional_dot;
+  outfile << lighting_info->red_light2;
+  outfile << lighting_info->green_light2;
+  outfile << lighting_info->blue_light2;
+  outfile << lighting_info->flags;
+  outfile << lighting_info->timebits;
+  outfile.put(lighting_info->angle);
+  outfile.put(lighting_info->lighting_render_type);
+}
+
+static void mng_WriteWeaponBatteryChunk(byte_ostream &outfile, const otype_wb_info *static_wb) {
+  int j;
+
+  outfile << static_wb->energy_usage;
+  outfile << static_wb->ammo_usage;
+
+  for (j = 0; j < MAX_WB_GUNPOINTS; j++) {
+    outfile << static_wb->gp_weapon_index[j];
+  }
+
+  for (j = 0; j < MAX_WB_FIRING_MASKS; j++) {
+    outfile.put(static_wb->gp_fire_masks[j]);
+    outfile << static_wb->gp_fire_wait[j];
+    outfile << static_wb->anim_time[j];
+    outfile << static_wb->anim_start_frame[j];
+    outfile << static_wb->anim_fire_frame[j];
+    outfile << static_wb->anim_end_frame[j];
+  }
+  outfile.put(static_wb->num_masks);
+  outfile << static_wb->aiming_gp_index;
+  outfile.put(static_wb->aiming_flags);
+  outfile << static_wb->aiming_3d_dot;
+  outfile << static_wb->aiming_3d_dist;
+  outfile << static_wb->aiming_XZ_dot;
+  uint16_t flags_raw = 0;
+  std::memcpy(&flags_raw, &static_wb->flags, sizeof(flags_raw));
+  outfile << flags_raw;
+  outfile.put(static_wb->gp_quad_fire_mask);
+}
+
+// Serializes one page (header + payload) into a concrete posix_ostream with
+// the [PAGETYPE_GENERIC][int32 len] frame back-patched, mirroring the
+// original StartManagePage/EndManagePage.  The public mng_WriteNewGenericPage
+// runs this against a scratch buffer so it can talk to any byte_ostream.
+static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_page *genericpage) {
+  int i, j;
+
+  outfile.put(PAGETYPE_GENERIC);
+  const off_t chunk_start_pos = outfile.tell();
+  int32_t idum = 0; // placeholder for chunk len
+  outfile << idum;
+
+  int16_t version = GENERICFILE_VERSION;
+  outfile << version;
+
+  outfile.put(static_cast<uint8_t>(genericpage->objinfo_struct.type));
+
+  // Write object name
+  outfile << genericpage->objinfo_struct.name;
+
+  // Write model names
+  outfile << genericpage->image_name;
+  outfile << genericpage->med_image_name;
+  outfile << genericpage->lo_image_name;
+
+  // Write out impact data
+  outfile << genericpage->objinfo_struct.impact_size;
+  outfile << genericpage->objinfo_struct.impact_time;
+  outfile << genericpage->objinfo_struct.damage;
+
+  // Write score
+  {
+    int16_t s = static_cast<int16_t>(genericpage->objinfo_struct.score);
+    outfile << s;
+  }
+
+  // Write ammo
+  if (genericpage->objinfo_struct.type == OBJ_POWERUP) {
+    int16_t a = static_cast<int16_t>(genericpage->objinfo_struct.ammo_count);
+    outfile << a;
+  }
+
+  // Write script name (discarded by the reader)
+  outfile << std::string();
+
+  // Write module name / scriptname override
+  outfile << genericpage->objinfo_struct.module_name;
+  outfile << genericpage->objinfo_struct.script_name_override;
+
+  if (genericpage->objinfo_struct.description != nullptr) {
+    // Write description if there is one
+    outfile.put(1);
+    outfile << static_cast<const char *>(genericpage->objinfo_struct.description);
+  } else
+    outfile.put(0);
+
+  // Write icon name
+  outfile << genericpage->objinfo_struct.icon_name;
+
+  // Write LOD distances
+  outfile << genericpage->objinfo_struct.med_lod_distance;
+  outfile << genericpage->objinfo_struct.lo_lod_distance;
+
+  // Write physics stuff
+  mng_WritePhysicsChunk(outfile, &genericpage->objinfo_struct.phys_info);
+
+  // Write size
+  outfile << genericpage->objinfo_struct.size;
+
+  // Write light info
+  mng_WriteLightingChunk(outfile, &genericpage->objinfo_struct.lighting_info);
+
+  // Write hit points
+  outfile << genericpage->objinfo_struct.hit_points;
+
+  // Write flags (the on-disk form is a raw 32-bit value; the struct packs it
+  // in a bitfield, so copy the bit pattern out).
+  uint32_t raw_flags = 0;
+  std::memcpy(&raw_flags, &genericpage->objinfo_struct.flags, sizeof(raw_flags));
+  outfile << raw_flags;
+
+  // Write AI info
+  outfile << genericpage->ai_info.flags;
+  outfile.put(static_cast<uint8_t>(genericpage->ai_info.ai_class));
+  outfile.put(static_cast<uint8_t>(genericpage->ai_info.ai_type));
+  outfile.put(static_cast<uint8_t>(genericpage->ai_info.movement_type));
+  outfile.put(static_cast<uint8_t>(genericpage->ai_info.movement_subtype));
+  outfile << genericpage->ai_info.fov;
+
+  outfile << genericpage->ai_info.max_velocity;
+  outfile << genericpage->ai_info.max_delta_velocity;
+  outfile << genericpage->ai_info.max_turn_rate;
+
+  // Makes sure there are no bugs as things are added and removed  -- ask chris
+  {
+    int notify_flags = genericpage->ai_info.notify_flags & ~AI_NOTIFIES_ALWAYS_ON;
+    outfile << notify_flags;
+  }
+
+  outfile << genericpage->ai_info.max_delta_turn_rate;
+  outfile << genericpage->ai_info.circle_distance;
+  outfile << genericpage->ai_info.attack_vel_percent;
+  outfile << genericpage->ai_info.dodge_percent;
+  outfile << genericpage->ai_info.dodge_vel_percent;
+  outfile << genericpage->ai_info.flee_vel_percent;
+  outfile << genericpage->ai_info.melee_damage[0];
+  outfile << genericpage->ai_info.melee_damage[1];
+  outfile << genericpage->ai_info.melee_latency[0];
+  outfile << genericpage->ai_info.melee_latency[1];
+
+  outfile << genericpage->ai_info.curiousity;
+  outfile << genericpage->ai_info.night_vision;
+  outfile << genericpage->ai_info.fog_vision;
+  outfile << genericpage->ai_info.lead_accuracy;
+  outfile << genericpage->ai_info.lead_varience;
+  outfile << genericpage->ai_info.fire_spread;
+  outfile << genericpage->ai_info.fight_team;
+  outfile << genericpage->ai_info.fight_same;
+  outfile << genericpage->ai_info.aggression;
+  outfile << genericpage->ai_info.hearing;
+  outfile << genericpage->ai_info.frustration;
+  outfile << genericpage->ai_info.roaming;
+  outfile << genericpage->ai_info.life_preservation;
+  outfile << genericpage->ai_info.avoid_friends_distance;
+
+  outfile << genericpage->ai_info.biased_flight_importance;
+  outfile << genericpage->ai_info.biased_flight_min;
+  outfile << genericpage->ai_info.biased_flight_max;
+
+  // Write out objects spewed
+  for (i = 0; i < MAX_DSPEW_TYPES; i++) {
+    outfile.put(static_cast<uint8_t>(genericpage->objinfo_struct.f_dspew));
+    outfile << genericpage->objinfo_struct.dspew_percent[i];
+    outfile << genericpage->objinfo_struct.dspew_number[i];
+    outfile << genericpage->dspew_name[i];
+  }
+
+  // Write out animation info
+  for (i = 0; i < NUM_MOVEMENT_CLASSES; i++) {
+    for (j = 0; j < NUM_ANIMS_PER_CLASS; j++) {
+      outfile << genericpage->anim[i].elem[j].from;
+      outfile << genericpage->anim[i].elem[j].to;
+      outfile << genericpage->anim[i].elem[j].spc;
+    }
+  }
+
+  // Write out weapon batteries
+  for (i = 0; i < MAX_WBS_PER_OBJ; i++)
+    mng_WriteWeaponBatteryChunk(outfile, &genericpage->static_wb[i]);
+
+  // Write out weapon names
+  for (i = 0; i < MAX_WBS_PER_OBJ; i++) {
+    for (j = 0; j < MAX_WB_GUNPOINTS; j++)
+      outfile << genericpage->weapon_name[i][j];
+  }
+
+  // Write out sounds
+  for (i = 0; i < MAX_OBJ_SOUNDS; i++)
+    outfile << genericpage->sound_name[i];
+
+  for (i = 0; i < MAX_AI_SOUNDS; i++)
+    outfile << genericpage->ai_sound_name[i];
+
+  for (i = 0; i < MAX_WBS_PER_OBJ; i++) {
+    for (j = 0; j < MAX_WB_FIRING_MASKS; j++)
+      outfile << genericpage->fire_sound_name[i][j];
+  }
+
+  for (i = 0; i < NUM_MOVEMENT_CLASSES; i++) {
+    for (j = 0; j < NUM_ANIMS_PER_CLASS; j++)
+      outfile << genericpage->anim_sound_name[i][j];
+  }
+
+  // Write out respawn scalar
+  outfile << genericpage->objinfo_struct.respawn_scalar;
+
+  // Write out death information
+  {
+    int16_t n = MAX_DEATH_TYPES;
+    outfile << n;
+  }
+  for (i = 0; i < MAX_DEATH_TYPES; i++) {
+    uint32_t flags = 0;
+    std::memcpy(&flags, &genericpage->objinfo_struct.death_types[i].flags, sizeof(uint32_t));
+    outfile << flags;
+    outfile << genericpage->objinfo_struct.death_types[i].delay_min;
+    outfile << genericpage->objinfo_struct.death_types[i].delay_max;
+    outfile.put(genericpage->objinfo_struct.death_probabilities[i]);
+  }
+
+  // Fill in page length when done writing
+  const off_t save_pos = outfile.tell();
+  const off_t chunk_len = save_pos - chunk_start_pos;
+  outfile.seek(chunk_start_pos, std::ios_base::beg);
+  int32_t len = static_cast<int32_t>(chunk_len);
+  outfile << len; // write chunk length
+  outfile.seek(save_pos, std::ios_base::beg);
+}
+
+// Serializes a generic page in the current table-file format (mirrors
+// mng_ReadNewGenericPage: same field order and encodings, so a page written
+// here parses back bit-for-bit with the reader) and writes the full page
+// frame downstream.
+void mng_WriteNewGenericPage(byte_ostream &outfile, mngs_generic_page *genericpage) {
+  // The page frame's length field has to be patched in after the payload is
+  // written, which needs seek/tell, so serialize into a scratch buffer first.
+  std::vector<uint8_t> buffer(kGenericPageBufferSize);
+  posix_ostream scratch(buffer.data(), buffer.size(), std::ios_base::out);
+  mng_WriteNewGenericPageFramed(scratch, genericpage);
+  const size_t bytes = static_cast<size_t>(scratch.tell());
+  Q_ASSERT(bytes <= buffer.size());
+  // Close first: fmemopen's stdio buffering only materializes the bytes into
+  // the caller-visible memory array on flush/close.
+  scratch.close();
+  outfile.write(buffer.data(), bytes);
 }
 
 // Reads a generic page from an open file.  Returns 0 on error.
