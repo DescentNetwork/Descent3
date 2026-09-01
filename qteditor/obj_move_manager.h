@@ -48,9 +48,11 @@ public:
   // Ends the current drag.
   void End();
 
-  // Called each frame while dragging; polls ddio mouse state and applies
-  // movement/rotation to the tracked object.
-  void Defer();
+  // Called on each mouse move while dragging.  dsx/dsy are the incremental
+  // screen deltas since the last event and leftDown is whether the left mouse
+  // button is still held.  Applies movement/rotation to the tracked object;
+  // ends the drag when the button is released.
+  void Defer(int dsx, int dsy, bool leftDown);
 
   bool IsMoving() const { return (m_DragState == 1); }
 

@@ -53,6 +53,7 @@
 #include "object.h"
 #include "object_ops.h"
 #include "obj_move_manager.h"
+#include "findintersection.h"
 
 int AllocGamePath();
 void FreeGamePath(int n);
@@ -2902,6 +2903,362 @@ private slots:
     ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_Y);
     ObjMoveManager.End();
     QVERIFY(!ObjMoveManager.IsMoving());
+  }
+
+  // Verifies that a rightward drag actually translates the object via the
+  // event-driven Defer(int,int,bool) overload.
+  void testObjMoveManagerDeferTranslatesAndReleases() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Rooms[0].verts = nullptr;
+    Rooms[0].faces = nullptr;
+    Rooms[0].portals = nullptr;
+    {
+      room *rp = CreateNewRoom(8, 1, false);
+      Rooms[0] = *rp;
+      rp->verts = nullptr;
+      rp->faces = nullptr;
+      rp->portals = nullptr;
+      delete rp;
+      Rooms[0].used = 1;
+      Rooms[0].num_verts = 8;
+      Rooms[0].num_faces = 1;
+      for (int v = 0; v < 8; ++v)
+        Rooms[0].verts[v] = vector{};
+      ComputeFaceNormal(&Rooms[0], 0);
+    }
+    Highest_room_index = 0;
+
+    Objects[0].type = OBJ_VIEWER;
+    Objects[0].render_type = RT_POLYOBJ;
+    Objects[0].orient = IDENTITY_MATRIX;
+    Viewer_object = &Objects[0];
+
+    Objects[1].type = OBJ_POWERUP;
+    Objects[1].render_type = RT_POLYOBJ;
+    Objects[1].movement_type = MT_NONE;
+    Objects[1].orient = IDENTITY_MATRIX;
+    Objects[1].size = 1.0f;
+    Highest_object_index = 1;
+
+    vector origin{};
+    ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
+
+    Cur_object_index = 1;
+    D3EditState.object_move_mode = REL_OBJECT;
+    ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_X);
+
+    matrix viewMat = IDENTITY_MATRIX;
+    vector viewPos{0.0f, 0.0f, 100.0f};
+    ObjMoveManager.Start(800, 600, &viewPos, &viewMat, 400, 300);
+    QVERIFY(ObjMoveManager.IsMoving());
+
+    const vector pos0 = Objects[1].pos;
+    Object_moved = false;
+    ObjMoveManager.Defer(10, 0, true);
+    QVERIFY(ObjMoveManager.IsMoving());
+    QVERIFY(Object_moved);
+    QVERIFY(vm_VectorDistance(&pos0, &Objects[1].pos) > 1e-3f);
+
+    ObjMoveManager.Defer(0, 0, false);
+    QVERIFY(!ObjMoveManager.IsMoving());
+
+    Cur_object_index = -1;
+    Objects[0].type = OBJ_NONE;
+    Objects[1].type = OBJ_NONE;
+    Viewer_object = nullptr;
+    ResetObjectList();
+    Highest_object_index = -1;
+    FreeRoom(&Rooms[0]);
+  }
+
+  // Verifies that dragging with OBJMOVEAXIS_H rotates the object.
+  void testObjMoveManagerDeferRotates() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Rooms[0].verts = nullptr;
+    Rooms[0].faces = nullptr;
+    Rooms[0].portals = nullptr;
+    {
+      room *rp = CreateNewRoom(8, 1, false);
+      Rooms[0] = *rp;
+      rp->verts = nullptr;
+      rp->faces = nullptr;
+      rp->portals = nullptr;
+      delete rp;
+      Rooms[0].used = 1;
+      Rooms[0].num_verts = 8;
+      Rooms[0].num_faces = 1;
+      for (int v = 0; v < 8; ++v)
+        Rooms[0].verts[v] = vector{};
+      ComputeFaceNormal(&Rooms[0], 0);
+    }
+    Highest_room_index = 0;
+
+    Objects[0].type = OBJ_VIEWER;
+    Objects[0].render_type = RT_POLYOBJ;
+    Objects[0].orient = IDENTITY_MATRIX;
+    Viewer_object = &Objects[0];
+
+    Objects[1].type = OBJ_POWERUP;
+    Objects[1].render_type = RT_POLYOBJ;
+    Objects[1].movement_type = MT_NONE;
+    Objects[1].orient = IDENTITY_MATRIX;
+    Objects[1].size = 1.0f;
+    Highest_object_index = 1;
+
+    vector origin{};
+    ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
+
+    Cur_object_index = 1;
+    D3EditState.object_move_mode = REL_OBJECT;
+    ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_H);
+
+    matrix viewMat = IDENTITY_MATRIX;
+    vector viewPos{0.0f, 0.0f, 100.0f};
+    ObjMoveManager.Start(800, 600, &viewPos, &viewMat, 400, 300);
+    QVERIFY(ObjMoveManager.IsMoving());
+
+    matrix before = Objects[1].orient;
+    ObjMoveManager.Defer(10, 0, true);
+    QVERIFY(ObjMoveManager.IsMoving());
+
+    bool changed = false;
+    if (Objects[1].orient.fvec.x() != before.fvec.x() ||
+        Objects[1].orient.fvec.y() != before.fvec.y() ||
+        Objects[1].orient.fvec.z() != before.fvec.z())
+      changed = true;
+    QVERIFY(changed);
+    QVERIFY(vm_GetMagnitude(&Objects[1].orient.fvec) > 0.9f);
+
+    ObjMoveManager.Defer(0, 0, false);
+    QVERIFY(!ObjMoveManager.IsMoving());
+
+    Cur_object_index = -1;
+    Objects[0].type = OBJ_NONE;
+    Objects[1].type = OBJ_NONE;
+    Viewer_object = nullptr;
+    ResetObjectList();
+    Highest_object_index = -1;
+    FreeRoom(&Rooms[0]);
+  }
+
+  // End-to-end widget-level drag: press on a projected object, drag, release,
+  // and verify the object moved in world space.
+  void testEditorViewDragMovesObject() {
+    for (int i = 0; i < MAX_OBJECTS; ++i)
+      Objects[i].type = OBJ_NONE;
+    ResetObjectList();
+    Highest_object_index = -1;
+
+    Rooms[0].verts = nullptr;
+    Rooms[0].faces = nullptr;
+    Rooms[0].portals = nullptr;
+    {
+      room *rp = CreateNewRoom(8, 1, false);
+      Rooms[0] = *rp;
+      rp->verts = nullptr;
+      rp->faces = nullptr;
+      rp->portals = nullptr;
+      delete rp;
+      Rooms[0].used = 1;
+      Rooms[0].num_verts = 8;
+      Rooms[0].num_faces = 1;
+      for (int v = 0; v < 8; ++v)
+        Rooms[0].verts[v] = vector{};
+      ComputeFaceNormal(&Rooms[0], 0);
+    }
+    Highest_room_index = 0;
+
+    Objects[0].type = OBJ_POWERUP;
+    Objects[0].render_type = RT_POLYOBJ;
+    Objects[0].movement_type = MT_NONE;
+    Objects[0].orient = IDENTITY_MATRIX;
+    Objects[0].size = 3.0f;
+    Highest_object_index = 0;
+    vector origin{};
+    ObjSetPos(&Objects[0], &origin, 0, nullptr, false);
+
+    Editor_view_mode = VM_MINE;
+    Cur_object_index = -1;
+    D3EditState.object_move_mode = REL_OBJECT;
+    ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_X);
+
+    EditorView view;
+    view.resize(640, 480);
+    view.show();
+    QCoreApplication::processEvents();
+    for (int i = 0; i < 20 && view.frameCount() < 1; i++)
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    QCoreApplication::processEvents();
+    QVERIFY2(view.frameCount() >= 1, "view never painted");
+
+    float screenX = 0.0f, screenY = 0.0f, depth = 0.0f;
+    QVERIFY2(view.projectWorldToScreen(Objects[0].pos, &screenX, &screenY, &depth),
+             "object not projectable");
+    const int px = qBound(0, static_cast<int>(screenX), view.width() - 1);
+    const int py = qBound(0, static_cast<int>(screenY), view.height() - 1);
+
+    QMouseEvent press(QEvent::MouseButtonPress, QPointF(px, py),
+                      Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QCoreApplication::sendEvent(&view, &press);
+    QCoreApplication::processEvents();
+    QCOMPARE(Cur_object_index, 0);
+    QVERIFY(ObjMoveManager.IsMoving());
+
+    const vector pos0 = Objects[0].pos;
+
+    for (int d = 1; d <= 4; ++d) {
+      QMouseEvent move(QEvent::MouseMove, QPointF(px + d * 10, py),
+                       Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+      QCoreApplication::sendEvent(&view, &move);
+    }
+    QCoreApplication::processEvents();
+    QVERIFY(ObjMoveManager.IsMoving());
+
+    QMouseEvent release(QEvent::MouseButtonRelease, QPointF(px + 40, py),
+                        Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+    QCoreApplication::sendEvent(&view, &release);
+    QVERIFY(!ObjMoveManager.IsMoving());
+
+    QVERIFY2(vm_VectorDistance(&pos0, &Objects[0].pos) > 1e-3f,
+            "drag did not move the object");
+
+    Cur_object_index = -1;
+    Objects[0].type = OBJ_NONE;
+    Editor_view_mode = VM_MINE;
+    ResetObjectList();
+    Highest_object_index = -1;
+    FreeRoom(&Rooms[0]);
+  }
+
+  // Builds an axis-aligned box room on Rooms[roomIdx] spanning [x0,y0,z0] to
+  // [x1,y1,z1] with 8 verts / 6 faces and outward-pointing normals.  Returns
+  // the face index of the specified face (0..5 mapping to -X,+X,-Y,+Y,-Z,+Z).
+  // Remaining fences become either walls or (if makePortal is true) a portal
+  // linking to Rooms[otherIdx].  Used to exercise fvi_FindIntersection directly.
+  int buildBoxRoom(int roomIdx, vector min, vector max, int portalFace, int otherIdx) {
+    room *rp = &Rooms[roomIdx];
+    *(rp) = room{};
+    InitRoom(rp, 8, 6, portalFace >= 0 ? 1 : 0);
+    rp->used = 1;
+    float x0 = min.x(), y0 = min.y(), z0 = min.z();
+    float x1 = max.x(), y1 = max.y(), z1 = max.z();
+    rp->verts[0] = vector{x0, y0, z0};
+    rp->verts[1] = vector{x1, y0, z0};
+    rp->verts[2] = vector{x1, y1, z0};
+    rp->verts[3] = vector{x0, y1, z0};
+    rp->verts[4] = vector{x0, y0, z1};
+    rp->verts[5] = vector{x1, y0, z1};
+    rp->verts[6] = vector{x1, y1, z1};
+    rp->verts[7] = vector{x0, y1, z1};
+
+    auto initFace = [&](int f, int v0, int v1, int v2, int v3, vector normal) {
+      InitRoomFace(&rp->faces[f], 4);
+      rp->faces[f].face_verts[0] = (int16_t)v0;
+      rp->faces[f].face_verts[1] = (int16_t)v1;
+      rp->faces[f].face_verts[2] = (int16_t)v2;
+      rp->faces[f].face_verts[3] = (int16_t)v3;
+      rp->faces[f].normal = normal;
+      rp->faces[f].portal_num = -1;
+    };
+    initFace(0, 0, 3, 7, 4, vector{-1, 0, 0}); // -X
+    initFace(1, 1, 5, 6, 2, vector{1, 0, 0});  // +X
+    initFace(2, 0, 1, 2, 3, vector{0, -1, 0}); // -Y
+    initFace(3, 4, 7, 6, 5, vector{0, 1, 0});  // +Y
+    initFace(4, 0, 1, 2, 3, vector{0, 0, -1}); // -Z
+    initFace(5, 4, 5, 6, 7, vector{0, 0, 1});  // +Z
+
+    if (portalFace >= 0) {
+      rp->faces[portalFace].portal_num = 0;
+      rp->portals[0].croom = (int16_t)otherIdx;
+      rp->portals[0].cportal = 0;
+      rp->portals[0].portal_face = (int16_t)portalFace;
+    }
+    return portalFace >= 0 ? portalFace : -1;
+  }
+
+  // Exercises fvi_FindIntersection: wall stopping, portal traversal and the
+  // FQ_IGNORE_WALLS flag against two connected box rooms.
+  void testFviWallAndPortal() {
+    for (int i = 0; i < MAX_ROOMS; ++i)
+      Rooms[i] = room{};
+    Highest_room_index = 1;
+
+    // Portal between room0 (+X face at x=15) and room1 (-X face at x=15).
+    int p0 = buildBoxRoom(0, vector{-5, -5, -5}, vector{15, 5, 5}, 1, 1);
+    int p1 = buildBoxRoom(1, vector{15, -5, -5}, vector{35, 5, 5}, 0, 0);
+    QVERIFY(p0 == 1 && p1 == 0);
+
+    // A ray along +X crosses the portal at x=15 and ends in room 1.
+    {
+      vector p0v{0, 0, 0};
+      vector p1v{20, 0, 0};
+      fvi_query fq{};
+      fq.p0 = &p0v;
+      fq.p1 = &p1v;
+      fq.startroom = 0;
+      fq.rad = 0.0f;
+      fq.thisobjnum = -1;
+      fq.ignore_obj_list = nullptr;
+      fq.flags = 0;
+      fvi_info info{};
+      int fate = fvi_FindIntersection(&fq, &info);
+      QCOMPARE(fate, HIT_NONE);
+      QCOMPARE(info.hit_room, 1);
+      QCOMPARE(info.n_rooms, 2);
+      QVERIFY(vm_VectorDistance(&p1v, &info.hit_pnt) < 1e-3f);
+    }
+
+    // A ray along +Z hits the -Z wall of room 0 (z=-5) before any portal.
+    {
+      vector p0v{0, 0, -20};
+      vector p1v{0, 0, 20};
+      fvi_query fq{};
+      fq.p0 = &p0v;
+      fq.p1 = &p1v;
+      fq.startroom = 0;
+      fq.rad = 0.0f;
+      fq.thisobjnum = -1;
+      fq.ignore_obj_list = nullptr;
+      fq.flags = 0;
+      fvi_info info{};
+      int fate = fvi_FindIntersection(&fq, &info);
+      QCOMPARE(fate, HIT_WALL);
+      QVERIFY(std::fabs(info.hit_pnt.z() + 5.0f) < 1e-3f);
+      QCOMPARE(info.hit_room, 0);
+      QCOMPARE(info.hit_face[0], 4); // -Z face
+    }
+
+    // The same +Z ray with FQ_IGNORE_WALLS ignores walls and ends at p1.
+    {
+      vector p0v{0, 0, -20};
+      vector p1v{0, 0, 20};
+      fvi_query fq{};
+      fq.p0 = &p0v;
+      fq.p1 = &p1v;
+      fq.startroom = 0;
+      fq.rad = 0.0f;
+      fq.thisobjnum = -1;
+      fq.ignore_obj_list = nullptr;
+      fq.flags = FQ_IGNORE_WALLS;
+      fvi_info info{};
+      int fate = fvi_FindIntersection(&fq, &info);
+      QCOMPARE(fate, HIT_NONE);
+      QVERIFY(vm_VectorDistance(&p1v, &info.hit_pnt) < 1e-3f);
+    }
+
+    FreeRoom(&Rooms[0]);
+    FreeRoom(&Rooms[1]);
+    for (int i = 0; i < MAX_ROOMS; ++i)
+      Rooms[i] = room{};
+    Highest_room_index = 0;
   }
 
   void testAllocFreeGamePath() {

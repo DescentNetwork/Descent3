@@ -1091,7 +1091,6 @@ bool PhysCalcGround(vector *ground_point, vector *ground_normal, object *obj, in
 void ClearAllEvents() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== FVI ====================
-int fvi_FindIntersection(fvi_query *q, fvi_info *info, bool b) { memset(info, 0, sizeof(fvi_info)); return 0; }
 int fvi_QuickDistFaceList(int init_room_index, vector *pos, float rad, fvi_face_room_list *quick_fr_list, int max_elements) { PRINT_STUB(__FUNCTION__); return 0; }
 bool FVI_always_check_ceiling = false;
 

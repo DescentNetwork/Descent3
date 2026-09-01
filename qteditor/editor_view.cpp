@@ -1162,8 +1162,12 @@ void EditorView::mouseMoveEvent(QMouseEvent *event) {
       m_dragged = true;
   }
 
+  const QPoint delta = event->pos() - m_lastMouse;
+  m_lastMouse = event->pos();
+
   if (ObjMoveManager.IsMoving()) {
-    ObjMoveManager.Defer();
+    const bool leftDown = (event->buttons() & Qt::LeftButton) != 0;
+    ObjMoveManager.Defer(delta.x(), delta.y(), leftDown);
     if (ObjMoveManager.IsMoving())
       update();
     return;
@@ -1171,9 +1175,6 @@ void EditorView::mouseMoveEvent(QMouseEvent *event) {
 
   if (!m_dragged && Viewer_object != nullptr)
     return;
-
-  const QPoint delta = event->pos() - m_lastMouse;
-  m_lastMouse = event->pos();
 
   if (m_mouseDown && m_panMode) {
     const float panScale = m_dist * 0.002f;
