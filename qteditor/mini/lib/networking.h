@@ -158,7 +158,6 @@
 
 #include "pstypes.h"
 #include <cstdint>
-#include "win32_types_stub.h"
 
 #if defined(WIN32)
 // Windows includes
@@ -189,7 +188,7 @@ static inline void INADDR_GET_SUN_SUNB(struct in_addr *st, uint8_t *s_b1, uint8_
   *s_b4 = st->S_un.S_un_b.s_b4;
 }
 
-#elif defined(POSIX)
+#else // if defined(POSIX)
 // Linux includes/defines
 
 #include <sys/types.h>
