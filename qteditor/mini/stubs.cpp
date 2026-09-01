@@ -127,13 +127,6 @@ void UpdateTerrainLightmaps() { PRINT_STUB(__FUNCTION__); }
 int TERRAIN_REGION(int x) { PRINT_STUB(__FUNCTION__); return 0; }
 void ClearTerrainSound() { PRINT_STUB(__FUNCTION__); }
 
-// ==================== BNode ====================
-bool BNode_allocated = false;
-bool BNode_verified = false;
-bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level) { PRINT_STUB(__FUNCTION__); return nullptr; }
-bool BNode_FindPath(int start_room, int i, int j, float rad) { PRINT_STUB(__FUNCTION__);return false; }
-void BNode_ClearBNodeInfo() { PRINT_STUB(__FUNCTION__); }
-
 // ==================== BOA ====================
 int BOA_num_terrain_regions = 0;
 connect_data BOA_connect[MAX_BOA_TERRAIN_REGIONS][MAX_PATH_PORTALS] = {};

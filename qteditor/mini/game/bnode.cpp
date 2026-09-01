@@ -106,8 +106,8 @@
 #include "terrain.h"
 #include "findintersection.h"
 #include "BOA.h"
-#include "pserror.h"
-#include "psrand.h"
+//#include "psrand.h"
+#include <cstdlib>
 
 bn_list BNode_terrain_list[8];
 bool BNode_allocated = false;
@@ -172,7 +172,7 @@ public:
   }
 };
 
-static float BNode_QuickDist(vector *pos1, vector *pos2) {
+static float BNode_QuickDist(vector3 *pos1, vector3 *pos2) {
   return fabs(pos1->x() - pos2->x()) + fabs(pos1->y() - pos2->y()) + fabs(pos1->z() - pos2->z());
 }
 
@@ -291,7 +291,7 @@ done:
 
 // TODO: MTS: Unused?
 int BNode_GenerateBestPathThroughRoom(int sroom, int spnt, int croom, int eroom, int eportal, int max_nodes,
-                                      vector *pos_list) {
+                                      vector3 *pos_list) {
   return -1;
 }
 
@@ -300,7 +300,7 @@ static char BNode_vis[MAX_BNODES_PER_ROOM];
 #define VIS_OK 1
 #define VIS_NO 2
 
-int BNode_FindDirLocalVisibleBNode(int roomnum, vector *pos, vector *fvec, float rad) {
+int BNode_FindDirLocalVisibleBNode(int roomnum, vector3 *pos, vector3 *fvec, float rad) {
   int i;
   float best_dot = -1.01f;
   float closest_dist = 800.0f;
@@ -319,7 +319,7 @@ int BNode_FindDirLocalVisibleBNode(int roomnum, vector *pos, vector *fvec, float
 retry:
 
   for (i = 0; i < bnlist->num_nodes; i++) {
-    vector to = bnlist->nodes[i].pos - *pos;
+    vector3 to = bnlist->nodes[i].pos - *pos;
     scalar dist = vm_NormalizeVector(&to);
 
     if (dist < closest_dist) {
@@ -386,7 +386,7 @@ retry:
 
   Q_ASSERT(bnlist->num_nodes > 0);
   if (closest_node == -1 && bnlist->num_nodes > 0) {
-    closest_node = ps_rand() % bnlist->num_nodes;
+    closest_node = std::rand() % bnlist->num_nodes;
   }
 
   Q_ASSERT(closest_node != -1);
@@ -394,7 +394,7 @@ retry:
   return closest_node;
 }
 
-int BNode_FindClosestLocalVisibleBNode(int roomnum, vector *pos, float rad) {
+int BNode_FindClosestLocalVisibleBNode(int roomnum, vector3 *pos, float rad) {
   int i, j;
   float closest_dist = 800.0f;
   int closest_node = -1;
@@ -455,7 +455,7 @@ retry:
 
   Q_ASSERT(bnlist->num_nodes > 0);
   if (closest_node == -1 && bnlist->num_nodes > 0) {
-    closest_node = ps_rand() % bnlist->num_nodes;
+    closest_node = std::rand() % bnlist->num_nodes;
   }
 
   Q_ASSERT(closest_node != -1);
@@ -552,7 +552,7 @@ void BNode_RemapTerrainRooms(int old_hri, int new_hri) {
       int k;
 
       // Skip external rooms
-      if ((i <= new_hri) && Rooms[i].flags2.external)
+      if ((i <= new_hri) && Rooms[i].flags.external)
         continue;
 
       bn_list *bnlist = BNode_GetBNListPtr(i);

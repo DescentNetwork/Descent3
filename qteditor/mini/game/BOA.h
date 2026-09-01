@@ -117,6 +117,9 @@
 #ifndef _BOA_H__
 #define _BOA_H__
 
+// "Blockage/Occulsion Array" (where robots/sound/light are blocked)
+// Axis-Aligned Bounding Box
+
 #include "room.h"
 #include "terrain.h"
 
@@ -201,7 +204,14 @@ public:
 
 // Visibility Info
 
+// flags
 #define BOAF_VIS 0x0400
+#define BOAF_VNEAR_DIST 0x0000 // 0.0   to 100.0
+#define BOAF_NEAR_DIST 0x1000  // 100.0 to 200.0
+#define BOAF_FAR_DIST 0x2000   // 200.0 to 300.0
+#define BOAF_VFAR_DIST 0x3000  // 300.0+
+#define BOAF_BLOCKAGE 0x4000
+#define BOAF_TOO_SMALL_FOR_ROBOT 0x8000
 
 #define BOA_GET_VIS(a, b) (BOA_vis_valid ? ((BOA_Array[a][b] & BOAF_VIS) != 0) : 1)
 
@@ -210,27 +220,21 @@ public:
 
 // Distance from segment to segment Info
 
-#define BOA_DIST_MASK 0x3000
+#define BOAF_DIST_MASK 0x3000
 
 #define BOA_VNEAR_DIST 0.0
 #define BOA_NEAR_DIST 100.0
 #define BOA_FAR_DIST 200.0
 #define BOA_VFAR_DIST 300.0
 
-#define BOAF_VNEAR_DIST 0x0000 // 0.0   to 100.0
-#define BOAF_NEAR_DIST 0x1000  // 100.0 to 200.0
-#define BOAF_FAR_DIST 0x2000   // 200.0 to 300.0
-#define BOAF_VFAR_DIST 0x3000  // 300.0+
 
-#define BOA_GET_DIST(a, b) ((BOA_Array[a][b] & BOA_DIST_MASK) != 0)
+#define BOA_GET_DIST(a, b) ((BOA_Array[a][b] & BOAF_DIST_MASK) != 0)
 
 // Possible Blockage Info
 
-#define BOAF_BLOCKAGE 0x4000
 #define BOA_HAS_POSSIBLE_BLOCKAGE(a, b) ((BOA_Array[a][b] & BOAF_BLOCKAGE) != 0)
 
 // Path have a sport in it that is too small for a robot to get through
-#define BOAF_TOO_SMALL_FOR_ROBOT 0x8000
 #define BOA_TOO_SMALL_FOR_ROBOT(a, b) ((BOA_Array[a][b] & BOAF_TOO_SMALL_FOR_ROBOT) != 0)
 
 struct connect_data {
