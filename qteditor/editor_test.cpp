@@ -34,10 +34,13 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QLabel>
+#include <QListWidget>
 #include <QLineEdit>
 #include <QMenu>
 #include <QMenuBar>
+#include <QPushButton>
 #include <QSettings>
+#include <QTextEdit>
 #include <cmath>
 #include <QSlider>
 #include <QTimer>
@@ -54,6 +57,7 @@
 #include "object_ops.h"
 #include "obj_move_manager.h"
 #include "findintersection.h"
+#include "ScriptCompilerAPI.h"
 
 int AllocGamePath();
 void FreeGamePath(int n);
@@ -3480,6 +3484,73 @@ private slots:
 
     // The title string reflects the loaded (unmodified) file.
     QCOMPARE(list.TitleString(), std::string(TITLE_NAME + std::string(" - [") + out_path + "]"));
+  }
+
+  // Redirects the app-wide QSettings used by ScriptCompile/ConfigCompilerDialog
+  // to a private temp INI so the tests are hermetic.
+  void testScriptCompileSourceMissing() {
+    QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, dir.path());
+
+    tCompilerInfo ci;
+    ci.source_filename = (dir.filePath("does_not_exist.cpp")).toStdString();
+    ci.script_type = ST_LEVEL;
+    ci.callback = nullptr;
+    QCOMPARE(ScriptCompile(&ci), CERR_SOURCENOEXIST);
+
+    // Restore default settings scope.
+    QSettings::setDefaultFormat(QSettings::NativeFormat);
+  }
+
+  void testScriptCompileNoCompilerDefined() {
+    QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, dir.path());
+
+    const QString src = dir.filePath("module.cpp");
+    QFile f(src);
+    QVERIFY(f.open(QIODevice::WriteOnly));
+    f.write("// test\n");
+    f.close();
+
+    // No compiler key present -> NOCOMPILERDEFINED.
+    tCompilerInfo ci;
+    ci.source_filename = src.toStdString();
+    ci.script_type = ST_LEVEL;
+    ci.callback = nullptr;
+    QCOMPARE(ScriptCompile(&ci), CERR_NOCOMPILERDEFINED);
+
+    QSettings::setDefaultFormat(QSettings::NativeFormat);
+  }
+
+  void testCompileAllWithMissingSource() {
+    QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, dir.path());
+
+    // Point LocalScriptDir at a scratch dir with no scripts.
+    const auto savedScriptDir = LocalScriptDir;
+    LocalScriptDir = dir.path().toStdString();
+
+    CompileAllDialog dlg;
+    dlg.setModal(false);
+    if (QListWidget *list = dlg.findChild<QListWidget *>(QStringLiteral("IDC_LIST"))) {
+      // Populate one module whose source does not exist.
+      list->clear();
+      list->addItem("missingmod");
+      list->selectAll();
+    }
+    if (QPushButton *build = dlg.findChild<QPushButton *>(QStringLiteral("IDC_BUILD"))) {
+      QTest::mouseClick(build, Qt::LeftButton);
+    }
+    QVERIFY(dlg.findChild<QTextEdit *>(QStringLiteral("IDC_OUTPUT")) != nullptr);
+
+    LocalScriptDir = savedScriptDir;
+    QSettings::setDefaultFormat(QSettings::NativeFormat);
   }
 };
 // Force the offscreen QPA platform so the test binary never opens a real
