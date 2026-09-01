@@ -107,6 +107,9 @@
 #ifndef __MULTI_EXTERNAL_H_
 #define __MULTI_EXTERNAL_H_
 
+#define MAX_NET_PLAYERS 32
+
+#if 0
 #if defined(POSIX)
 #include <cstring>
 #include <cstdint>
@@ -382,13 +385,14 @@ inline void MultiGetString(char *str, uint8_t *data, int *count) {
   *count += len;
 }
 
-inline void MultiAddVector(vector v, uint8_t *data, int *count) {
+inline void MultiAddVector(vector3 v, uint8_t *data, int *count) {
   MultiAddFloat(v.x(), data, count);
   MultiAddFloat(v.y(), data, count);
   MultiAddFloat(v.z(), data, count);
 }
 
-inline vector MultiGetVector(uint8_t *data, int *count) {
+inline vector3 MultiGetVector(uint8_t *data, int *count) {
   return { MultiGetFloat(data, count), MultiGetFloat(data, count), MultiGetFloat(data, count) };
 }
+#endif
 #endif

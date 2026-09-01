@@ -181,4 +181,4 @@ bool OpenFileDialog(CWnd *wnd, LPCTSTR filter, char *pathname, char *initialdir 
 bool SaveFileDialog(CWnd *wnd, LPCTSTR filter, char *pathname, char *initialdir = NULL, int dirlen = 0);
 
 // Move the viewer object.  This should be called whenever the viewer object is moved
-void MoveViewer(vector *pos, int roomnum, matrix *orient);
+void MoveViewer(vector3 *pos, int roomnum, matrix *orient);

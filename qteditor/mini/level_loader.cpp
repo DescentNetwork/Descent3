@@ -102,16 +102,16 @@ static void LL_ReadTextureList(posix_istream &ifile, int chunk_size) {
 }
 
 // Read/write a vector (3 floats)
-static void LL_ReadVector(posix_istream &f, vector &v) {
+static void LL_ReadVector(posix_istream &f, vector3 &v) {
   float x = 0.0f;
   float y = 0.0f;
   float z = 0.0f;
   f >> x;
   f >> y;
   f >> z;
-  v = vector{x, y, z};
+  v = vector3{x, y, z};
 }
-static void LL_WriteVector(posix_ostream &f, const vector &v) {
+static void LL_WriteVector(posix_ostream &f, const vector3 &v) {
   f << v.x();
   f << v.y();
   f << v.z();
@@ -275,7 +275,7 @@ static int LL_ReadFace(posix_istream &ifile, face *fp, int version) {
   }
 
   if (version >= 22 && version <= 29) {
-    vector trash;
+    vector3 trash;
     LL_ReadVector(ifile, trash);
   }
   if (version >= 40 && version <= 60) {
@@ -302,7 +302,7 @@ static int LL_ReadFace(posix_istream &ifile, face *fp, int version) {
       if (version < 77) {
         uint8_t trash;
         ifile >> trash;
-        vector tv;
+        vector3 tv;
         LL_ReadVector(ifile, tv);
         int16_t s;
         ifile >> s;
@@ -324,14 +324,14 @@ static int LL_ReadFace(posix_istream &ifile, face *fp, int version) {
           }
         }
         for (i = 0; i < num; i++) {
-          vector tv;
+          vector3 tv;
           LL_ReadVector(ifile, tv);
           int16_t s;
           ifile >> s;
         }
         if (smooth) {
           for (i = 0; i < num_smooth; i++) {
-            vector tv;
+            vector3 tv;
             LL_ReadVector(ifile, tv);
           }
         }
@@ -450,9 +450,7 @@ static int LL_ReadRoom(posix_istream &ifile, room *rp, int version) {
 
   rp->name.clear();
   if (version >= 96) {
-    std::string s;
-    psReadString(ifile, s, ROOM_NAME_LEN);
-    rp->name = s;
+    ifile >> rp->name;
   }
 
   if (version >= 63)
@@ -465,7 +463,7 @@ static int LL_ReadRoom(posix_istream &ifile, room *rp, int version) {
       ifile >> trash;
       ifile >> trash;
     } else if (version >= 68 && version < 71) {
-      vector trash;
+      vector3 trash;
       LL_ReadVector(ifile, trash);
       int16_t s;
       ifile >> s;
@@ -540,7 +538,7 @@ static int LL_ReadRoom(posix_istream &ifile, room *rp, int version) {
 
   if (version >= 78) {
     std::string s;
-    psReadString(ifile, s, 63);
+    ifile >> s;
     // Mini has no ambient sound page; leave ambient_sound at InitRoom's -1.
   }
 

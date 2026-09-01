@@ -53,11 +53,11 @@
 #define MAX_NODES_PER_PATH 100
 
 struct node {
-  vector pos;  // where this node is in the world
+  vector3 pos;  // where this node is in the world
   int roomnum; // what room?
   int flags;   // if this point lives over the terrain, etc
-  vector fvec;
-  vector uvec;
+  vector3 fvec;
+  vector3 uvec;
 };
 
 class game_path {

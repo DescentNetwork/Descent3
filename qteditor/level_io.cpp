@@ -79,14 +79,14 @@ std::string IntSpacing(int i) {
 
 // ---- Default room geometry (from editor/HFile.cpp) ----
 // Vertices for the octagonal prism created by CreateNewMine().
-static vector default_room_verts[] = {
+static vector3 default_room_verts[] = {
     {-10, 8, 20},  {-5, 10, 20},  {5, 10, 20},    {10, 8, 20},
     {10, -8, 20},  {5, -10, 20},  {-5, -10, 20},  {-10, -8, 20},
     {-10, 8, -20}, {-5, 10, -20}, {5, 10, -20},   {10, 8, -20},
     {10, -8, -20}, {5, -10, -20}, {-5, -10, -20}, {-10, -8, -20}};
 
 // Center of the mine world, matching editor/HFile.cpp.
-static vector Mine_origin = {float(TERRAIN_WIDTH * (TERRAIN_SIZE / 2)),
+static vector3 Mine_origin = {float(TERRAIN_WIDTH * (TERRAIN_SIZE / 2)),
                              -100,
                              float(TERRAIN_DEPTH * (TERRAIN_SIZE / 2))};
 

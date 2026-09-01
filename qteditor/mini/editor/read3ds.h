@@ -40,7 +40,7 @@
 int Read3DSMaxFile(char *filename);
 
 // Converts the 3dsmax coordinate space into our left-handed coordinate space
-void ConvertHandiness(vector *v);
+void ConvertHandiness(vector3 *v);
 
 // Parses a chunk of a 3dsmax file - this function calls itself
 void Parse3DSMaxChunk(struct CFILE* fp, int size);

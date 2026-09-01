@@ -105,7 +105,7 @@ struct player {
 
   // positional data for player starts
   int32_t start_index;
-  vector start_pos; // where the player starts
+  vector3 start_pos; // where the player starts
   int32_t start_roomnum;
   matrix start_orient;
 
@@ -227,7 +227,7 @@ struct player {
   int32_t ship_permissions;
 
   // For invul hit effect
-  vector invul_vector;
+  vector3 invul_vector;
 
   // Used to disable various controller input from scripting
   uint32_t controller_bitflags;

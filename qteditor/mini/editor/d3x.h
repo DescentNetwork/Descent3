@@ -31,5 +31,5 @@ struct tD3XProgram {
 };
 
 struct tScriptParm {
-  vector val;
+  vector3 val;
 };

@@ -269,9 +269,9 @@ class oeApplication; // reference to oeApplication class.
 
 // object information needed by the sound code.  Calling code should copy data into here & pass to sound
 struct pos_state {
-  vector *position; // Where in the world is this object
+  vector3 *position; // Where in the world is this object
   matrix *orient;
-  vector *velocity;
+  vector3 *velocity;
   int roomnum;
 };
 

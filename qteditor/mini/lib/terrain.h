@@ -168,7 +168,7 @@ struct terrain_sky {
   int textured; // 1=use textures, 0=use gouraud shaded polygon
 
   // The two subscripts correspond to the top, middle, and bottom of the horizon piece
-  vector horizon_vectors[MAX_HORIZON_PIECES][6];
+  vector3 horizon_vectors[MAX_HORIZON_PIECES][6];
   float horizon_u[MAX_HORIZON_PIECES][5];
   float horizon_v[MAX_HORIZON_PIECES][5];
 
@@ -185,8 +185,8 @@ struct terrain_sky {
   float satellite_g[MAX_SATELLITES];
   float satellite_b[MAX_SATELLITES];
 
-  vector star_vectors[MAX_STARS];
-  vector satellite_vectors[MAX_SATELLITES];
+  vector3 star_vectors[MAX_STARS];
+  vector3 satellite_vectors[MAX_SATELLITES];
   terrain_satellite_flags_t satellite_flags[MAX_SATELLITES];
   float satellite_size[MAX_SATELLITES];
 
@@ -195,7 +195,7 @@ struct terrain_sky {
 
   int16_t satellite_texture[MAX_SATELLITES];
 
-  vector lightsource;
+  vector3 lightsource;
   angle lightangle;
 
   float damage_per_second;
@@ -229,8 +229,8 @@ struct terrain_render_info {
 };
 
 struct terrain_normals {
-  vector normal1; // Upper left triangle
-  vector normal2; // Lower right triangle
+  vector3 normal1; // Upper left triangle
+  vector3 normal2; // Lower right triangle
 };
 
 extern uint8_t Terrain_dynamic_table[];
@@ -319,7 +319,7 @@ extern void InitTerrain();
 // Called whenever a new level is initted
 extern void ResetTerrain(int force = 0);
 
-extern int GetVisibleTerrain(vector *, matrix *);
+extern int GetVisibleTerrain(vector3 *, matrix *);
 extern void DisplayTerrainList(int, bool from_automap = 0);
 extern int CheckToRenderSky(int);
 
@@ -338,17 +338,17 @@ int LoadPCXTerrain(char *);
 
 // Given a position, returns the terrain segment that that position is in/over
 // The return value is a pure cell number, meaning it doesn't have the outside flag set
-int GetTerrainCellFromPos(vector *pos);
+int GetTerrainCellFromPos(vector3 *pos);
 
 // Given a position, returns the terrain segment that that position is in/over
 // The return value is a valid room number, meaning it has the outside flag set
-int GetTerrainRoomFromPos(vector *pos);
+int GetTerrainRoomFromPos(vector3 *pos);
 
 // Computes the center of the segment in x,z and also sets y touching the ground
-void ComputeTerrainSegmentCenter(vector *pos, int segnum);
+void ComputeTerrainSegmentCenter(vector3 *pos, int segnum);
 // Given an position, returns the terrain Y coord at that location
 // Also now can return the normal at that ground point
-float GetTerrainGroundPoint(vector *pos, vector *normal = NULL);
+float GetTerrainGroundPoint(vector3 *pos, vector3 *normal = NULL);
 
 void SetupSky(float radius, int flags, uint8_t randit = 0);
 
@@ -374,7 +374,7 @@ void GenerateLODDeltas();
 void UpdateTerrainLightmaps();
 
 // Gets the dynamic light value for this position
-float GetTerrainDynamicScalar(vector *pos, int seg);
+float GetTerrainDynamicScalar(vector3 *pos, int seg);
 
 // Shuts off LOD for a given cell
 void TurnOffLODForCell(int cellnum);

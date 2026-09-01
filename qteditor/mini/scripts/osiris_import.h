@@ -82,7 +82,7 @@ OSIRISEXTERN Obj_GetTimeLived_fp Obj_GetTimeLived;
 typedef void (*Obj_GetGunPos_fp)(int objhandle, int gun_number, vector *gun_pnt, vector *gun_normal);
 OSIRISEXTERN Obj_GetGunPos_fp Obj_GetGunPosFP;
 
-static inline void Obj_GetGunPos(int objhandle, int gun_number, vector *gun_pnt, vector *gun_normal = NULL) {
+static inline void Obj_GetGunPos(int objhandle, int gun_number, vector3 *gun_pnt, vector3 *gun_normal = NULL) {
   Obj_GetGunPosFP(objhandle, gun_number, gun_pnt, gun_normal);
 }
 
@@ -90,8 +90,8 @@ static inline void Obj_GetGunPos(int objhandle, int gun_number, vector *gun_pnt,
 //	returns information about a groundpoint of an object
 typedef void (*Obj_GetGroundPos_fp)(int objhandle, int ground_number, vector *ground_pnt, vector *ground_normal);
 OSIRISEXTERN Obj_GetGroundPos_fp Obj_GetGroundPosFP;
-static inline void Obj_GetGroundPos(int objhandle, int ground_number, vector *ground_pnt,
-                                    vector *ground_normal = NULL) {
+static inline void Obj_GetGroundPos(int objhandle, int ground_number, vector3 *ground_pnt,
+                                    vector3 *ground_normal = NULL) {
   Obj_GetGroundPosFP(objhandle, ground_number, ground_pnt, ground_normal);
 }
 
@@ -199,7 +199,7 @@ typedef void (*AI_SetType_fp)(int objhandle, int type);
 OSIRISEXTERN AI_SetType_fp AI_SetType;
 
 //	vector AI_FindHidePos(int hideobjhandle,int viewobjhandle,float time,int *hide_room);
-typedef vector (*AI_FindHidePos_fp)(int hideobjhandle, int viewobjhandle, float time, int *hide_room);
+typedef vector3 (*AI_FindHidePos_fp)(int hideobjhandle, int viewobjhandle, float time, int *hide_room);
 OSIRISEXTERN AI_FindHidePos_fp AI_FindHidePos;
 
 //	int AI_GoalAddEnabler(int objhandle,int goal_index,int enabler_type,float percent,float interval,void *ptr);
@@ -223,7 +223,7 @@ static inline int AI_FindObjOfType(int objhandle, int type, int id, bool f_ignor
   return AI_FindObjOfTypeFP(objhandle, type, id, f_ignore_init_room, parent_handle);
 }
 //	vector AI_GetRoomPathPoint(int roomnum);
-typedef vector (*AI_GetRoomPathPoint_fp)(int roomnum);
+typedef vector3 (*AI_GetRoomPathPoint_fp)(int roomnum);
 OSIRISEXTERN AI_GetRoomPathPoint_fp AI_GetRoomPathPoint;
 
 //	int AI_FindEnergyCenter(int objhandle);
@@ -385,8 +385,8 @@ OSIRISEXTERN MSafe_DoPowerup_fp MSafe_DoPowerup;
 typedef int (*Obj_Create_fp)(uint8_t type, uint16_t id, int roomnum, vector *pos, const matrix *orient, int parent_handle,
                              vector *initial_velocity);
 OSIRISEXTERN Obj_Create_fp Obj_CreateFP;
-static inline int Obj_Create(uint8_t type, uint16_t id, int roomnum, vector *pos, const matrix *orient = NULL,
-                             int parent_handle = 0, vector *initial_velocity = NULL) {
+static inline int Obj_Create(uint8_t type, uint16_t id, int roomnum, vector3 *pos, const matrix *orient = NULL,
+                             int parent_handle = 0, vector3 *initial_velocity = NULL) {
   return Obj_CreateFP(type, id, roomnum, pos, orient, parent_handle, initial_velocity);
 }
 // float Game_GetTime() (void)
@@ -511,7 +511,7 @@ typedef int (*AI_GetNearbyObjs_fp)(vector *pos, int init_roomnum, float rad, int
                                    bool f_lightmap_only, bool f_only_players_and_ais,
                                    bool f_include_non_collide_objects, bool f_stop_at_closed_doors);
 OSIRISEXTERN AI_GetNearbyObjs_fp AI_GetNearbyObjsFP;
-static inline int AI_GetNearbyObjs(vector *pos, int init_roomnum, float rad, int *object_handle_list, int max_elements,
+static inline int AI_GetNearbyObjs(vector3 *pos, int init_roomnum, float rad, int *object_handle_list, int max_elements,
                                    bool f_lightmap_only, bool f_only_players_and_ais = true,
                                    bool f_include_non_collide_objects = false, bool f_stop_at_closed_doors = true) {
   return AI_GetNearbyObjsFP(pos, init_roomnum, rad, object_handle_list, max_elements, f_lightmap_only,
@@ -604,7 +604,7 @@ OSIRISEXTERN Scrpt_FindTextureName_fp Scrpt_FindTextureName;
 typedef void (*Game_CreateRandomSparks_fp)(int num_sparks, vector *pos, int roomnum, int which_index,
                                            float force_scalar);
 OSIRISEXTERN Game_CreateRandomSparks_fp Game_CreateRandomSparksFP;
-static inline void Game_CreateRandomSparks(int num_sparks, vector *pos, int roomnum, int which_index = -1,
+static inline void Game_CreateRandomSparks(int num_sparks, vector3 *pos, int roomnum, int which_index = -1,
                                            float force_scalar = 1.0f) {
   return Game_CreateRandomSparksFP(num_sparks, pos, roomnum, which_index, force_scalar);
 }
@@ -628,7 +628,7 @@ OSIRISEXTERN Game_IsShipEnabled_fp Game_IsShipEnabled;
 // returns true if operation was successful
 typedef bool (*Path_GetInformation_fp)(int pathid, int point, vector *pos, int *room, matrix *orient);
 OSIRISEXTERN Path_GetInformation_fp Path_GetInformationFP;
-static inline bool Path_GetInformation(int pathid, int point, vector *pos = NULL, int *room = NULL,
+static inline bool Path_GetInformation(int pathid, int point, vector3 *pos = NULL, int *room = NULL,
                                        matrix *orient = NULL) {
   return Path_GetInformationFP(pathid, point, pos, room, orient);
 }

@@ -67,9 +67,9 @@ extern char EBN_draw_type;
 extern void EBNode_MakeDefaultIntraRoomNodes(int roomnum);
 extern void EBNode_MakeDefaultInterRoomEdges(int roomnum);
 extern void EBNode_MakeFirstPass(void);
-extern void EBNode_Draw(char draw_type, grViewport *vp, vector *viewer_eye, matrix *viewer_orient, float zoom);
-extern void EBNode_Move(bool f_offset, int roomnum, int pnt, vector *pos);
-extern int EBNode_AddNode(int roomnum, vector *pnt, bool f_from_editor, bool f_check_for_close_nodes);
+extern void EBNode_Draw(char draw_type, grViewport *vp, vector3 *viewer_eye, matrix *viewer_orient, float zoom);
+extern void EBNode_Move(bool f_offset, int roomnum, int pnt, vector3 *pos);
+extern int EBNode_AddNode(int roomnum, vector3 *pnt, bool f_from_editor, bool f_check_for_close_nodes);
 // Note the 2 last parameters are for internal use ONLY never set them
 extern void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_make_reverse = true,
                            float computed_max_rad = -1.0f);

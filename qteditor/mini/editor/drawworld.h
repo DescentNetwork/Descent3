@@ -56,9 +56,9 @@
 
 #include "vecmat.h"
 
-void DrawWorld(grViewport *vp, vector *view_target, matrix *view_orient, float view_dist, int start_room, float rad);
+void DrawWorld(grViewport *vp, vector3 *view_target, matrix *view_orient, float view_dist, int start_room, float rad);
 
-void DrawTerrainWorld(grViewport *vp, vector *view_target, matrix *view_orient, float view_dist);
+void DrawTerrainWorld(grViewport *vp, vector3 *view_target, matrix *view_orient, float view_dist);
 
 // Find mode values
 #define FM_CLOSEST 0  // Finds the closest face

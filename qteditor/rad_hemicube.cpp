@@ -158,7 +158,7 @@ void CalculateFormFactorsHemiCube() {
             continue;
 
           for (k = 0; k < ep->num_verts; k++) {
-            vector vec = ep->verts[k];
+            vector3 vec = ep->verts[k];
             g3_RotatePoint(&Element_points[k], &vec);
             Element_points[k].p3_flags = 0;
           }
@@ -280,8 +280,8 @@ void ClearHemicubeGrid() {
 }
 
 void SetElementView(rad_element *ep) {
-  vector rv; // Random vector
-  vector u, v, n;
+  vector3 rv; // Random vector
+  vector3 u, v, n;
 
   // Select random vector for hemicube orientation
   rv.x() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
@@ -308,8 +308,8 @@ void SetElementView(rad_element *ep) {
 }
 
 void SetSurfaceView(rad_surface *surf) {
-  vector rv; // Random vector
-  vector u, v, n;
+  vector3 rv; // Random vector
+  vector3 u, v, n;
 
   // Select random vector for hemicube orientation
   rv.x() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
@@ -336,7 +336,7 @@ void SetSurfaceView(rad_surface *surf) {
 }
 
 // Build transformation matrix for our hemicube
-void BuildTransform(vector *nu, vector *nv, vector *nn) {
+void BuildTransform(vector3 *nu, vector3 *nv, vector3 *nn) {
   matrix *vm = &rad_Hemicube.view_matrix; // view matrix
 
   if (Shoot_from_patch)
@@ -429,7 +429,7 @@ void EndHemicubeDrawing(int face) {
 
 // Update hemicube view transformation matrix
 void UpdateView(int face_id) {
-  vector nu, nv, nn; // View space co-ordinates
+  vector3 nu, nv, nn; // View space co-ordinates
 
   switch (face_id) // Exchange co-ordinates
   {

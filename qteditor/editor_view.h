@@ -65,7 +65,7 @@ public:
 
   // Projects a world-space point to screen pixels using the same camera and
   // math as pickAt(); returns false when the point is behind the camera.
-  bool projectWorldToScreen(const vector &world, float *sx, float *sy, float *depth = nullptr) const;
+  bool projectWorldToScreen(const vector3 &world, float *sx, float *sy, float *depth = nullptr) const;
 
   // Picking result returned by pickAt().
   struct PickResult {
@@ -103,8 +103,8 @@ protected:
   void wheelEvent(QWheelEvent *event) override;
 
 private:
-  bool projectVertex(const vector &world, float *sx, float *sy) const;
-  bool projectVertexDepth(const vector &world, float *sx, float *sy, float *depth) const;
+  bool projectVertex(const vector3 &world, float *sx, float *sy) const;
+  bool projectVertexDepth(const vector3 &world, float *sx, float *sy, float *depth) const;
   void updateCamera();
   void renderRooms();
   void renderTerrain();
@@ -114,7 +114,7 @@ private:
 
   static bool pointInPolygon(float px, float py, const float *sx, const float *sy, int n);
 
-  vector m_eye;
+  vector3 m_eye;
   matrix m_orient;
   bool m_cameraValid = false;
 
@@ -127,7 +127,7 @@ private:
   float m_pitch = -0.4f;
   float m_dist = 500.0f;
   float m_rad = 5000.0f; // wireframe render radius
-  vector m_target;
+  vector3 m_target;
   bool m_targetInitialized = false;
 
   // Click vs drag tracking.

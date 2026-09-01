@@ -721,7 +721,7 @@ inline void AppendToLevelChecksum(float val) {
   Level_md5->update(val);
 }
 
-inline void AppendToLevelChecksum(vector val) {
+inline void AppendToLevelChecksum(vector3 val) {
   if (!Level_md5) {
     return;
   }

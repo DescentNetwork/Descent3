@@ -359,22 +359,22 @@ void ObjResetPositionHistory(void) {
 // AABB
 // ---------------------------------------------------------------------------
 
-static vector ComputeObjectRadiusFromModel(int model_num, float fallback_size) {
+static vector3 ComputeObjectRadiusFromModel(int model_num, float fallback_size) {
   float size = fallback_size;
   if (model_num >= 0 && model_num < MINI_POLY_MODELS)
     size = Poly_models[model_num].anim_size;
-  return vector{size, size, size};
+  return vector3{size, size, size};
 }
 
 void ObjSetAABB(object *obj) {
-  vector object_rad;
+  vector3 object_rad;
 
   if (obj->type == OBJ_ROOM && obj->id >= 0 && obj->id < MAX_ROOMS) {
     obj->min_xyz = Rooms[obj->id].min_xyz;
     obj->max_xyz = Rooms[obj->id].max_xyz;
   } else if (obj->flags & OF_POLYGON_OBJECT && obj->type != OBJ_WEAPON && obj->type != OBJ_DEBRIS &&
              obj->type != OBJ_POWERUP && obj->type != OBJ_PLAYER) {
-    vector offset_pos;
+    vector3 offset_pos;
 
     object_rad = ComputeObjectRadiusFromModel(obj->rtype.pobj_info.model_num, obj->size);
     offset_pos = obj->pos + obj->anim_sphere_offset;
@@ -486,7 +486,7 @@ static int ObjInitTypeSpecific(object *objp, bool reinitializing) {
 
 // Initializes a new object.  All fields not passed in are set to defaults.
 // Returns 1 if ok, 0 if error
-int ObjInit(object *objp, int type, int id, int handle, vector *pos, float creation_time, int parent_handle) {
+int ObjInit(object *objp, int type, int id, int handle, vector3 *pos, float creation_time, int parent_handle) {
   // Zero out the object structure.  The original uses memset() here; the mini
   // object holds a std::string (name) so a value-initialized temporary is used
   // instead — equivalent zeroing without clobbering the string.
@@ -538,7 +538,7 @@ void ObjReInitAll() {
 
 // Initializes a new object.  Adds it to the list for the given room.
 // Returns the object number, or -1 on failure.
-int ObjCreate(uint8_t type, uint16_t id, int roomnum, vector *pos, const matrix *orient, int parent_handle) {
+int ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3 *pos, const matrix *orient, int parent_handle) {
   if (type == OBJ_NONE)
     return -1;
 
@@ -704,18 +704,18 @@ void ObjSetOrient(object *obj, const matrix *orient) {
         obj->anim_sphere_offset = Poly_models[mn].anim_size_offset * m;
       }
     } else {
-      obj->wall_sphere_offset = vector{};
-      obj->anim_sphere_offset = vector{};
+      obj->wall_sphere_offset = vector3{};
+      obj->anim_sphere_offset = vector3{};
     }
   }
 }
 
 // Sets the position of an object.  This should be called to move an object.
-void ObjSetPos(object *obj, vector *pos, int roomnum, matrix *orient, bool f_update_attached_children) {
+void ObjSetPos(object *obj, vector3 *pos, int roomnum, matrix *orient, bool f_update_attached_children) {
   (void)f_update_attached_children;
 
   int oldroomnum = obj->roomnum;
-  vector old_pos = obj->pos;
+  vector3 old_pos = obj->pos;
 
   // Reset the position & recalculate the AABB
   obj->pos = *pos;
@@ -779,7 +779,7 @@ object *ObjGet(int handle) {
 }
 
 // Returns a vertex of an object in WORLD coordinates.
-void GetObjectPointInWorld(vector *dest, object *obj, int subnum, int vertnum) {
+void GetObjectPointInWorld(vector3 *dest, object *obj, int subnum, int vertnum) {
   int mn_i = obj->rtype.pobj_info.model_num;
   if (mn_i < 0 || mn_i >= MINI_POLY_MODELS)
     return;
@@ -796,13 +796,13 @@ void GetObjectPointInWorld(vector *dest, object *obj, int subnum, int vertnum) {
 
   SetModelAnglesAndPos(pm, normalized_time);
 
-  vector pnt = sm->verts[vertnum];
+  vector3 pnt = sm->verts[vertnum];
   int mn = subnum;
   matrix m;
 
   // Instance up the tree for this gun
   while (mn != -1) {
-    vector tpnt;
+    vector3 tpnt;
 
     vm_AnglesToMatrix(&m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
     vm_TransposeMatrix(&m);

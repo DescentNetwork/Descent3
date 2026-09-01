@@ -87,9 +87,9 @@ extern int Physics_player_verbose;
 extern uint8_t Default_player_terrain_leveling;
 extern uint8_t Default_player_room_leveling;
 
-bool PhysicsDoSimRot(object *obj, float frame_time, matrix *orient, vector *rotforce, vector *rotvel, angle *turn_roll);
-void PhysicsDoSimLinear(const object &obj, const vector &pos, const vector &force, vector &velocity,
-                        vector &movementVec, vector &movementPos, float simTime, int count);
+bool PhysicsDoSimRot(object *obj, float frame_time, matrix *orient, vector3 *rotforce, vector3 *rotvel, angle *turn_roll);
+void PhysicsDoSimLinear(const object &obj, const vector3 &pos, const vector3 &force, vector3 &velocity,
+                        vector3 &movementVec, vector3 &movementPos, float simTime, int count);
 
 extern int Physics_NumLinked;
 extern int PhysicsLinkList[MAX_OBJECTS];
@@ -105,14 +105,14 @@ void do_walking_sim(object *obj);
 
 // Applies an instantaneous force on an object, resulting in an instantaneous
 // change in velocity.
-void phys_apply_force(object *obj, vector *force_vec, int16_t weapon_index = -1);
+void phys_apply_force(object *obj, vector3 *force_vec, int16_t weapon_index = -1);
 
 // Applies an instantaneous whack on an object, resulting in an instantaneous change in orientation.
 // TODO: does nothing
-void phys_apply_rot(object *obj, vector *force_vec);
+void phys_apply_rot(object *obj, vector3 *force_vec);
 
 // Determines the point and normal of the ground point
-bool PhysCalcGround(vector *ground_point, vector *ground_normal, object *obj, int ground_num);
+bool PhysCalcGround(vector3 *ground_point, vector3 *ground_normal, object *obj, int ground_num);
 
 // Linked objects arbitrary linking for things like weapons (unlike attached objects)
 void DoPhysLinkedFrame(object *obj);

@@ -258,11 +258,11 @@ void SlewResetOrient(object *obj) {
 int SlewFrame(object *obj, int movement_limitations) {
   static int16_t old_joy_x = 0, old_joy_y = 0; // position last time around
   int ret_flags = 0;
-  vector svel, movement; // scaled velocity (per this frame)
+  vector3 svel, movement; // scaled velocity (per this frame)
   matrix rotmat, new_pm;
   angvec rotang;
-  vector rottime;
-  vector new_pos;
+  vector3 rottime;
+  vector3 new_pos;
   int new_room;
   fvi_query fq;
   fvi_info hit_info;

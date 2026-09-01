@@ -36,7 +36,7 @@
 // Editor-side path helpers provided in d3_editor_state.cpp.
 int AllocGamePath();
 void FreeGamePath(int n);
-int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector pos, matrix orient);
+int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient);
 void DeleteNodeFromPath(int pathnum, int nodenum);
 int GetNextPath(int n);
 int GetPrevPath(int n);
@@ -211,7 +211,7 @@ void PathKeypad::onInsertNode() {
     return;
   matrix orient;
   vm_MakeIdentity(&orient);
-  vector zero_pos;
+  vector3 zero_pos;
   vm_MakeZero(&zero_pos);
   const int newnode = InsertNodeIntoPath(p, n, 0, 0, zero_pos, orient);
   if (newnode != -1)

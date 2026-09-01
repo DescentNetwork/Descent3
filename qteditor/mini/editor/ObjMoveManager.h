@@ -58,7 +58,7 @@ class ObjectMoveManager {
   RECT m_DragRect;
 
   matrix m_ViewMat;
-  vector m_ViewPos;
+  vector3 m_ViewPos;
 
   //	dx and dy are the return values projected from dsx and dsy, given the object's position
   void GetObjectDeltas(float *dx, float *dy, object *obj, int dsx, int dsy);
@@ -67,7 +67,7 @@ public:
   ObjectMoveManager();
 
   //	starts motion
-  void Start(CWnd *wnd, int view_width, int view_height, vector *view_pos, matrix *view_mat, int x, int y);
+  void Start(CWnd *wnd, int view_width, int view_height, vector3 *view_pos, matrix *view_mat, int x, int y);
 
   //	ends current object movement
   void End();

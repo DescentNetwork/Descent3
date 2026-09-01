@@ -230,16 +230,16 @@ int GetNextRoom(int n);
 //					If the face is convex, returns -1
 // NOTE: A face could have multiple concavities, and this will only find the one with the
 // lowest-numbered vertex
-int CheckFaceConcavity(int num_verts, int16_t *face_verts, vector *normal, vector *verts);
+int CheckFaceConcavity(int num_verts, int16_t *face_verts, vector3 *normal, vector3 *verts);
 
 // Goes through each face of the passed room and sets the default uvs
 void AssignDefaultUVsToRoom(room *rp);
 
 // Computes the center point on a face by averaging the points in the face
-void ComputeCenterPointOnFace(vector *vp, room *rp, int facenum);
+void ComputeCenterPointOnFace(vector3 *vp, room *rp, int facenum);
 
 // Computes the center point on a face by averaging the points in the portal
-void ComputeCenterPointOnPortal(vector *vp, room *rp, int portalnum);
+void ComputeCenterPointOnPortal(vector3 *vp, room *rp, int portalnum);
 
 // Recompute the surface normals for all the faces in a room
 // Parameters:	rp - pointer to the room
@@ -263,19 +263,19 @@ void ReInitRoomFace(face *fp, int nverts);
 // Determines if two points are close enough together to be considered the same
 // Parameters:	v0,v1 - the two points
 // Returns:		true if the points are the same or very close; else false
-bool PointsAreSame(vector *v0, vector *v1);
+bool PointsAreSame(vector3 *v0, vector3 *v1);
 
 // Check to see if a point is in, in front of, or behind a plane
 // Parameters:	checkpoint - the point to check
 //					planepoint,normal - the plane we're checking against
 // Returns:		0 if on the plane, -1 if behind, 1 if in front
-int CheckPointToPlane(vector *checkpoint, vector *planepoint, vector *normal);
+int CheckPointToPlane(vector3 *checkpoint, vector3 *planepoint, vector3 *normal);
 
 // Check to see if all the points on a face are in front of a plane
 // Parameters:	rp,facenum - the face to check
 //					planepoint,normal - define the plane we're checking against
 // Returns:		the number of the first point found on the back of the plane, or -1 of all on front
-int CheckFaceToPlane(room *rp, int facenum, vector *planepoint, vector *normal);
+int CheckFaceToPlane(room *rp, int facenum, vector3 *planepoint, vector3 *normal);
 
 // Check if a point is inside, outside, or on an edge of a polygon
 // Parameters:	checkv - the point to be checked
@@ -284,7 +284,7 @@ int CheckFaceToPlane(room *rp, int facenum, vector *planepoint, vector *normal);
 // Returns:	 1 if the point in inside the edge
 //				 0 if the point is on the edge
 //				-1 if the point is outside the edge
-int CheckPointAgainstEdge(vector *checkv, vector *v0, vector *v1, vector *normal);
+int CheckPointAgainstEdge(vector3 *checkv, vector3 *v0, vector3 *v1, vector3 *normal);
 
 // Create space for additional vertices in a room.
 // Allocates a new array of vertices, copies from the old list, and frees the old list
@@ -304,7 +304,7 @@ int RoomAddFaces(room *rp, int num_new_faces);
 
 // Structure to hold vector and uvl data for clipping
 struct vertex {
-  vector vec;
+  vector3 vec;
   roomUVL uvl;
 };
 
@@ -313,7 +313,7 @@ struct vertex {
 //					v0,v1 - the edge to be clipped
 //					v2,v3 - is the edge clipped against
 //					newv - filled in with the intersection point
-void ClipEdge(vector *normal, vertex *v0, vertex *v1, vector *v2, vector *v3, vertex *newv);
+void ClipEdge(vector3 *normal, vertex *v0, vertex *v1, vector3 *v2, vector3 *v3, vertex *newv);
 
 // Finds a shared edge, if one exists, between two faces in the same room
 // Parameters:	fp0,fp1 - pointers to the two faces
@@ -338,7 +338,7 @@ bool FindSharedEdgeAcrossRooms(room *rp0, int face0, room *rp1, int face1, int *
 // Determines if two normals are the same (or very very close)
 // Parameters:	n0,n1 - the two normals
 // Returns:		true if they are more-or-less the same, else false
-inline bool NormalsAreSame(vector *n0, vector *n1) {
+inline bool NormalsAreSame(vector3 *n0, vector3 *n1) {
   scalar d = vm_Dot3Product(*n0, *n1);
 
   return (d > NORMALS_SAME_VALUE);
@@ -379,7 +379,7 @@ void LinkRooms(room *roomlist, int room0, int face0, int room1, int face1);
 // Finds the min and max x,y,z values of the vertices in a room
 // Parameters:	min,max - filled in with the minimum and maximum x,y, & z values, respectively
 //					rp = the room
-void ComputeRoomMinMax(vector *min, vector *max, room *rp);
+void ComputeRoomMinMax(vector3 *min, vector3 *max, room *rp);
 
 // Builds a list of all the vertices in a room that are part of a portal
 // Parameters:	rp - the room to check
@@ -412,7 +412,7 @@ void RemoveAllDuplicateAndUnusedPoints();
 // Checks to see if a face is planar.
 // See if all the points are within a certain distance of an average point
 // Returns 1 if face is planar, 0 if not
-bool FaceIsPlanar(int nv, int16_t *face_verts, vector *normal, vector *verts);
+bool FaceIsPlanar(int nv, int16_t *face_verts, vector3 *normal, vector3 *verts);
 
 // Checks to see if a face is planar.
 // See if all the points are within a certain distance of an average point

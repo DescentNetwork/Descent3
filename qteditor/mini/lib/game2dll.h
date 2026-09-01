@@ -31,7 +31,7 @@ struct tPreJoinData {
 };
 
 struct game_collide_info {
-  vector point, normal;
+  vector3 point, normal;
   float hitspeed, hit_dot;
   int hitseg, hitwall;
 };

@@ -37,12 +37,12 @@ void ResetWireframeViewRad();
 
 // Set the wireframe view target to a specific location
 // Does not reset the distance or orientation
-void SetWireframeView(vector *pos);
+void SetWireframeView(vector3 *pos);
 
 // Structure to describe the wireframe view
 struct wireframe_view {
   matrix orient;
-  vector target;
+  vector3 target;
   float dist;
   float rad;
 };

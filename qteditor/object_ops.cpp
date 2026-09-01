@@ -75,7 +75,7 @@ int GetSelectedTerrainCell() {
 // MoveObject (internal) — editor/HObject.cpp:575
 // Attempt to set new object position using FVI.  Returns true if moved.
 // ============================================================================
-bool MoveObject(object *obj, vector *newpos) {
+bool MoveObject(object *obj, vector3 *newpos) {
   fvi_query fq;
   fvi_info hit_info;
 
@@ -161,8 +161,8 @@ bool HObjectPlace(int obj_type, int obj_id) {
   if ((objp->render_type == RT_POLYOBJ) &&
       ((pm = GetPolymodelPointer(objp->rtype.pobj_info.model_num)) != nullptr) &&
       pm->n_ground) {
-    vector *surface_norm;
-    vector pos;
+    vector3 *surface_norm;
+    vector3 pos;
     int roomnum;
 
     if (Editor_view_mode == VM_TERRAIN) {
@@ -192,9 +192,9 @@ bool HObjectPlace(int obj_type, int obj_id) {
 
     matrix groundplane_orient, surface_orient, object_orient;
 
-    vector ground_point;
-    vector ground_normal;
-    vector to_ground;
+    vector3 ground_point;
+    vector3 ground_normal;
+    vector3 to_ground;
 
     PhysCalcGround(&ground_point, &ground_normal, objp, 0);
     to_ground = objp->pos - ground_point;
@@ -208,7 +208,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
     ObjSetPos(objp, &pos, roomnum, &object_orient, false);
   } else {
     // No ground plane — move in front of viewer, facing viewer
-    vector pos;
+    vector3 pos;
 
     if (Viewer_object->flags & OF_OUTSIDE_MINE) {
       ObjDelete(objnum);
@@ -257,13 +257,13 @@ void ResetGroundObject(object *objp) {
         pm->n_ground))
     return;
 
-  vector surface_norm;
-  vector pos = objp->pos;
+  vector3 surface_norm;
+  vector3 pos = objp->pos;
   pos.y() = GetTerrainGroundPoint(&pos, &surface_norm);
 
-  vector ground_point;
-  vector ground_normal;
-  vector to_ground;
+  vector3 ground_point;
+  vector3 ground_normal;
+  vector3 to_ground;
 
   PhysCalcGround(&ground_point, &ground_normal, objp, 0);
   to_ground = objp->pos - ground_point;
@@ -295,7 +295,7 @@ void HObjectMove(int objnum, float dx, float dy, float dz) {
   object *ref_obj = (D3EditState.object_move_mode == REL_VIEWER) ? Viewer_object : obj;
   matrix *mat = &ref_obj->orient;
 
-  vector newpos = obj->pos + (mat->rvec * dx) + (mat->uvec * dy) + (mat->fvec * -dz);
+  vector3 newpos = obj->pos + (mat->rvec * dx) + (mat->uvec * dy) + (mat->fvec * -dz);
 
   MoveObject(obj, &newpos);
   Object_moved = true;
@@ -357,7 +357,7 @@ void HObjectSetDefault() {
 void HObjectMoveToViewer(object *objp) {
   ObjSetPos(objp, &Viewer_object->pos, Viewer_object->roomnum, NULL, false);
 
-  vector pos = Viewer_object->pos + Viewer_object->orient.fvec * OBJECT_PLACE_DIST;
+  vector3 pos = Viewer_object->pos + Viewer_object->orient.fvec * OBJECT_PLACE_DIST;
   MoveObject(objp, &pos);
 
   World_changed = true;

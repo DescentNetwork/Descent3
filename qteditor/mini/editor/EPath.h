@@ -59,10 +59,10 @@ void FreeGamePath(int n);
 void DeleteNodeFromPath(int pathnum, int nodenum);
 
 // Given a path number and a node, it moves the node by the change in position (if the new position is valid)
-int MovePathNode(int pathnum, int nodenum, vector *delta_pos);
+int MovePathNode(int pathnum, int nodenum, vector3 *delta_pos);
 
 // Given a path number and a node, it moves the node to the position (if the new position is valid)
-int MovePathNodeToPos(int pathnum, int nodenum, vector *pos);
+int MovePathNodeToPos(int pathnum, int nodenum, vector3 *pos);
 
 // Gets next path from n that has actually been alloced
 int GetNextPath(int n);
@@ -74,8 +74,8 @@ int GetPrevPath(int n);
 int GetFirstPath();
 
 // draws a vector number
-void DrawNumber(int num, vector pos, float size);
+void DrawNumber(int num, vector3 pos, float size);
 
 class grViewport;
 // draws all the paths
-void DrawAllPaths(grViewport *vp, vector *viewer_eye, matrix *viewer_orient, float zoom);
+void DrawAllPaths(grViewport *vp, vector3 *viewer_eye, matrix *viewer_orient, float zoom);

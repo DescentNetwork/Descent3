@@ -110,7 +110,7 @@ public:
 private:
   int CTextureGrWnd::TGWFindRoomFace(int x, int y, int *roomnum, int *facenum);
   int CTextureGrWnd::TGWFindLightmapFace(int x, int y, int *roomnum, int *facenum, int *lumel_num);
-  void CTextureGrWnd::TGWRenderMine(vector *pos, matrix *orient, float zoom, int start_roomnum);
+  void CTextureGrWnd::TGWRenderMine(vector3 *pos, matrix *orient, float zoom, int start_roomnum);
 
   // Generated message map functions
 protected:
@@ -133,11 +133,11 @@ private:
   BOOL m_Movable;   // is this floating?
   BOOL m_StartFlip; // shall we flip the screen when getting to OnPaint.
 
-  vector m_ViewPos;
+  vector3 m_ViewPos;
   matrix m_ViewMatrix; // these are used by the object mover.
 
   // for FindRoomFace()
-  vector m_last_viewer_eye;
+  vector3 m_last_viewer_eye;
   matrix m_last_viewer_orient;
   float m_last_zoom;
   int m_last_start_room;

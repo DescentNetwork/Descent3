@@ -765,7 +765,7 @@ void MainWindow::onCenterViewOnMine() {
 
   // Average the verts to find the centroid of the current room; the
   // Win32 OnViewCenterOnMine uses the same trick.
-  vector centroid{};
+  vector3 centroid{};
   for (int i = 0; i < Curroomp->num_verts; ++i)
     centroid += Curroomp->verts[i];
   centroid /= static_cast<float>(Curroomp->num_verts);
@@ -792,7 +792,7 @@ void MainWindow::onCenterViewOnObject() {
   // target object's facing vector so the object stays visible after
   // the move.
   object *target = &Objects[Cur_object_index];
-  vector pos = target->pos;
+  vector3 pos = target->pos;
   pos -= target->orient.fvec;
   ObjSetPos(Viewer_object, &pos, target->roomnum, &target->orient, false);
   State_changed = true;
@@ -828,7 +828,7 @@ void MainWindow::onMoveViewToSelectedRoom() {
   // yet, just keep the viewer's current pos/orient and only update
   // roomnum (matches the Win32 fallback in editor/editorView.cpp).
   if (Curroomp->num_verts > 0) {
-    vector centroid{};
+    vector3 centroid{};
     for (int i = 0; i < Curroomp->num_verts; ++i)
       centroid += Curroomp->verts[i];
     centroid /= static_cast<float>(Curroomp->num_verts);
@@ -907,7 +907,7 @@ int MainWindow::onPlaceCameraAtViewer() {
   // Mirror the Win32 placement logic in editor/Placement.cpp: take the
   // viewer's pose and bump a bit on z so the camera isn't right on top
   // of the camera setup itself.
-  vector pos = Viewer_object->pos;
+  vector3 pos = Viewer_object->pos;
   pos.z() += 1.0f;
   Objects[slot].type = OBJ_CAMERA;
   Objects[slot].render_type = RT_POLYOBJ;
@@ -1001,7 +1001,7 @@ void MainWindow::onMovePlayerToCurrentRoom() {
 
   // Win32 OnObjectMovePlayer rewinds the player to a known start state:
   // origin of the current room, identity matrix, roomnum from Curroomp.
-  vector rp;
+  vector3 rp;
   const int slot = ROOMNUM(Curroomp);
   matrix idmat;
   ObjSetPos(Player_object, &rp, slot, &idmat, false);
@@ -1359,7 +1359,7 @@ bool MainWindow::onAddRoom()
 
   // Geometry: extrude the current face's verts outward by `kDefaultRoomLength`
   // along the face normal so the new room extends from the existing face.
-  const vector room_delta = cfp->normal * -kDefaultRoomLength;
+  const vector3 room_delta = cfp->normal * -kDefaultRoomLength;
   for (int i = 0; i < cnv; ++i) {
     rp->verts[i] = Curroomp->verts[cfp->face_verts[cnv - 1 - i]];
     rp->verts[cnv + i] = rp->verts[i] + room_delta;

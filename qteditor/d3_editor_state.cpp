@@ -86,9 +86,9 @@ group *Placed_group = nullptr;
 int Placed_room_face = 0;
 int Placed_door = -1;
 float Placed_room_angle = 0;
-vector Placed_room_origin = {0, 0, 0};
+vector3 Placed_room_origin = {0, 0, 0};
 matrix Placed_room_orient = IDENTITY_MATRIX;
-vector Placed_room_attachpoint = {0, 0, 0};
+vector3 Placed_room_attachpoint = {0, 0, 0};
 matrix Placed_room_rotmat = IDENTITY_MATRIX;
 room *Placed_baseroomp = nullptr;
 int Placed_baseface = 0;
@@ -161,7 +161,7 @@ int GetPrevObjectID(int n) {
 // Path editing helpers (editor/EPath.cpp in the MFC editor).
 uint8_t Show_paths = 1;
 
-int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector pos, matrix orient) {
+int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient) {
   if (GamePaths[pathnum].num_nodes >= MAX_NODES_PER_PATH) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Path already has its maximum amount of nodes.");
     return -1;
@@ -200,7 +200,7 @@ int AllocGamePath() {
   return -1;
 }
 
-int MovePathNodeToPos(int pathnum, int nodenum, vector *attempted_pos) {
+int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
   fvi_query fq;
   fvi_info hit_info;
 
@@ -252,8 +252,8 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector *attempted_pos) {
   return 0;
 }
 
-int MovePathNode(int pathnum, int nodenum, vector *delta_pos) {
-  vector attempted_pos = GamePaths[pathnum].pathnodes[nodenum].pos + *delta_pos;
+int MovePathNode(int pathnum, int nodenum, vector3 *delta_pos) {
+  vector3 attempted_pos = GamePaths[pathnum].pathnodes[nodenum].pos + *delta_pos;
   return MovePathNodeToPos(pathnum, nodenum, &attempted_pos);
 }
 
@@ -311,7 +311,7 @@ room *CreateNewRoom(int nverts, int nfaces, bool palette_room) {
   rp->used = 1;
   rp->num_verts = nverts;
   rp->num_faces = nfaces;
-  rp->verts = new vector[nverts]();
+  rp->verts = new vector3[nverts]();
   rp->faces = new face[nfaces]();
   return rp;
 }

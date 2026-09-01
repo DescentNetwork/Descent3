@@ -75,12 +75,8 @@ int mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
   infile >> version;
 
   infile >> texpage->tex_struct.name;
-  std::string bname;
-  psReadString(infile, bname, PAGENAME_LEN - 1);
-  texpage->bitmap_name = bname;
-  std::string dname;
-  psReadString(infile, dname, PAGENAME_LEN - 1);
-  texpage->destroy_name = dname;
+  infile >> texpage->bitmap_name;
+  infile >> texpage->destroy_name;
 
   infile >> texpage->tex_struct.r;
   infile >> texpage->tex_struct.g;

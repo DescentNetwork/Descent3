@@ -30,7 +30,7 @@
 #include "BOA.h"
 
 
-void StartEditorFrame(grViewport *vp, vector *view_vec, matrix *id_mat, float zoom) {}
+void StartEditorFrame(grViewport *vp, vector3 *view_vec, matrix *id_mat, float zoom) {}
 
 void EndEditorFrame() {}
 

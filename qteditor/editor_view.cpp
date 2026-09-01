@@ -117,7 +117,7 @@ constexpr float kFovY = 0.5445f;
 
 namespace {
 
-void computeMineBounds(vector *min, vector *max) {
+void computeMineBounds(vector3 *min, vector3 *max) {
   min->x() = min->y() = min->z() = 1e30f;
   max->x() = max->y() = max->z() = -1e30f;
   bool any = false;
@@ -126,7 +126,7 @@ void computeMineBounds(vector *min, vector *max) {
     if (!rp->used)
       continue;
     for (int v = 0; v < rp->num_verts; v++) {
-      vector *p = &rp->verts[v];
+      vector3 *p = &rp->verts[v];
       if (p->x() < min->x())
         min->x() = p->x();
       if (p->y() < min->y())
@@ -143,8 +143,8 @@ void computeMineBounds(vector *min, vector *max) {
     }
   }
   if (!any) {
-    *min = vector{-100, -100, -100};
-    *max = vector{100, 100, 100};
+    *min = vector3{-100, -100, -100};
+    *max = vector3{100, 100, 100};
   }
 }
 
@@ -202,14 +202,14 @@ void EditorView::resizeGL(int w, int h) {
   requestRedraw();
 }
 
-bool EditorView::projectVertex(const vector &world, float *sx, float *sy) const {
+bool EditorView::projectVertex(const vector3 &world, float *sx, float *sy) const {
   float dummy;
   return projectVertexDepth(world, sx, sy, &dummy);
 }
 
-bool EditorView::projectVertexDepth(const vector &world, float *sx, float *sy, float *depth) const {
-  vector d = world - m_eye;
-  vector c;
+bool EditorView::projectVertexDepth(const vector3 &world, float *sx, float *sy, float *depth) const {
+  vector3 d = world - m_eye;
+  vector3 c;
   c.x() = d.x() * m_orient.rvec.x() + d.y() * m_orient.rvec.y() + d.z() * m_orient.rvec.z();
   c.y() = d.x() * m_orient.uvec.x() + d.y() * m_orient.uvec.y() + d.z() * m_orient.uvec.z();
   c.z() = d.x() * m_orient.fvec.x() + d.y() * m_orient.fvec.y() + d.z() * m_orient.fvec.z();
@@ -252,7 +252,7 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
       QVector<ProjectedVertex> face;
       bool ok = true;
       for (int v = 0; v < fp->num_verts; v++) {
-        const vector &world = rp->verts[fp->face_verts[v]];
+        const vector3 &world = rp->verts[fp->face_verts[v]];
         float sx, sy;
         if (!projectVertex(world, &sx, &sy)) {
           ok = false;
@@ -266,7 +266,7 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
   }
 }
 
-bool EditorView::projectWorldToScreen(const vector &world, float *sx, float *sy, float *depth) const {
+bool EditorView::projectWorldToScreen(const vector3 &world, float *sx, float *sy, float *depth) const {
   // The camera is kept valid by paint/pick; recompute only when needed so
   // per-vertex calls don't re-scan the whole mine every time.
   if (!m_cameraValid)
@@ -413,11 +413,11 @@ void EditorView::renderRooms() {
 
         // Determine facing: face normal dot view direction.
         // A face is "facing" the camera if its normal points toward us.
-        vector faceCenter = rp->verts[fp->face_verts[0]];
+        vector3 faceCenter = rp->verts[fp->face_verts[0]];
         for (int v = 1; v < fnv; v++)
           faceCenter += rp->verts[fp->face_verts[v]];
         faceCenter /= float(fnv);
-        vector toCamera = m_eye - faceCenter;
+        vector3 toCamera = m_eye - faceCenter;
         float facingDot = fp->normal.x() * toCamera.x() +
                           fp->normal.y() * toCamera.y() +
                           fp->normal.z() * toCamera.z();
@@ -472,7 +472,7 @@ void EditorView::renderRooms() {
           nv = 16;
         bool behind = false;
         for (int v = 0; v < nv; v++) {
-          const vector &world = rp->verts[fp->face_verts[v]];
+          const vector3 &world = rp->verts[fp->face_verts[v]];
           if (!projectVertex(world, &sx[v], &sy[v])) {
             behind = true;
             break;
@@ -482,10 +482,10 @@ void EditorView::renderRooms() {
           continue;
 
         // Face shading from a fixed world light direction.
-        vector ld{0.4f, 0.7f, 0.6f};
+        vector3 ld{0.4f, 0.7f, 0.6f};
         float len = vm_NormalizeVector(&ld);
         if (len < 0.001f)
-          ld = vector{0, 1, 0};
+          ld = vector3{0, 1, 0};
         float diff = (fp->normal.x() * ld.x() + fp->normal.y() * ld.y() + fp->normal.z() * ld.z());
         float shade = 0.35f + 0.65f * (diff < 0 ? -diff : diff);
         if (shade > 1.0f)
@@ -690,13 +690,13 @@ void EditorView::renderTerrain() {
       const int idx01 = (z + 1) * (TERRAIN_WIDTH + 1) + x;
       const int idx11 = (z + 1) * (TERRAIN_WIDTH + 1) + (x + 1);
 
-      const vector v00{float(x * TERRAIN_SIZE), Terrain_seg[idx00].y,
+      const vector3 v00{float(x * TERRAIN_SIZE), Terrain_seg[idx00].y,
                        float(z * TERRAIN_SIZE)};
-      const vector v10{float((x + 1) * TERRAIN_SIZE), Terrain_seg[idx10].y,
+      const vector3 v10{float((x + 1) * TERRAIN_SIZE), Terrain_seg[idx10].y,
                        float(z * TERRAIN_SIZE)};
-      const vector v01{float(x * TERRAIN_SIZE), Terrain_seg[idx01].y,
+      const vector3 v01{float(x * TERRAIN_SIZE), Terrain_seg[idx01].y,
                        float((z + 1) * TERRAIN_SIZE)};
-      const vector v11{float((x + 1) * TERRAIN_SIZE), Terrain_seg[idx11].y,
+      const vector3 v11{float((x + 1) * TERRAIN_SIZE), Terrain_seg[idx11].y,
                        float((z + 1) * TERRAIN_SIZE)};
 
       float sx[4], sy[4];
@@ -941,7 +941,7 @@ void EditorView::renderPaths() {
       float fex = gp->pathnodes[t].pos.x() + gp->pathnodes[t].fvec.x() * (size * 0.4f);
       float fey = gp->pathnodes[t].pos.y() + gp->pathnodes[t].fvec.y() * (size * 0.4f);
       float fez = gp->pathnodes[t].pos.z() + gp->pathnodes[t].fvec.z() * (size * 0.4f);
-      vector fepos{fex, fey, fez};
+      vector3 fepos{fex, fey, fez};
       float fx, fy, fdep;
       if (projectVertexDepth(fepos, &fx, &fy, &fdep)) {
         glColor3f(0.0f, 1.0f, 0.0f);
@@ -954,7 +954,7 @@ void EditorView::renderPaths() {
       float uex = gp->pathnodes[t].pos.x() + gp->pathnodes[t].uvec.x() * (size * 0.4f);
       float uey = gp->pathnodes[t].pos.y() + gp->pathnodes[t].uvec.y() * (size * 0.4f);
       float uez = gp->pathnodes[t].pos.z() + gp->pathnodes[t].uvec.z() * (size * 0.4f);
-      vector uepos{uex, uey, uez};
+      vector3 uepos{uex, uey, uez};
       float ux, uy, udep;
       if (projectVertexDepth(uepos, &ux, &uy, &udep)) {
         glColor3f(0.0f, 0.0f, 1.0f);
@@ -1061,10 +1061,10 @@ void EditorView::updateCamera() {
     m_cameraValid = true;
     return;
   }
-  vector min, max;
+  vector3 min, max;
   if (Editor_view_mode == VM_TERRAIN) {
-    min = vector{0, 0, 0};
-    max = vector{float(TERRAIN_WIDTH * TERRAIN_SIZE), float(MAX_TERRAIN_HEIGHT),
+    min = vector3{0, 0, 0};
+    max = vector3{float(TERRAIN_WIDTH * TERRAIN_SIZE), float(MAX_TERRAIN_HEIGHT),
                  float(TERRAIN_DEPTH * TERRAIN_SIZE)};
   } else {
     computeMineBounds(&min, &max);
@@ -1075,7 +1075,7 @@ void EditorView::updateCamera() {
     // sphere radius (half the bbox diagonal) and the horizontal+vertical
     // field of view, so the eye sits clearly outside the mine and the center
     // ray reliably meets the near surface of the mine.
-    vector extent = max - min;
+    vector3 extent = max - min;
     const float r2 = extent.x() * extent.x() + extent.y() * extent.y() + extent.z() * extent.z();
     float radius = std::sqrt(r2) * 0.5f;
     if (radius < 1.0f)

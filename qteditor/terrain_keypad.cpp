@@ -313,10 +313,10 @@ void TerrainKeypad::moveSat(int pitch, int heading) {
   int n = m_currentSatellite;
   matrix rot_matrix;
   vm_AnglesToMatrix(&rot_matrix, pitch, heading, 0);
-  vector sat_vec = Terrain_sky.satellite_vectors[n] - Viewer_object->pos;
+  vector3 sat_vec = Terrain_sky.satellite_vectors[n] - Viewer_object->pos;
   float mag = vm_GetMagnitude(&sat_vec);
   vm_NormalizeVector(&sat_vec);
-  vector rot_vec;
+  vector3 rot_vec;
   vm_MatrixMulVector(&rot_vec, &sat_vec, &rot_matrix);
   Terrain_sky.satellite_vectors[n] = Viewer_object->pos + (rot_vec * mag);
   TV_changed = true;
@@ -522,7 +522,7 @@ void TerrainKeypad::onDropTerrain() {
 
   for (int o = 0; o <= Highest_object_index; o++) {
     if (Objects[o].type != OBJ_NONE) {
-      vector new_pos = Objects[o].pos;
+      vector3 new_pos = Objects[o].pos;
       new_pos.y() += delta_y;
       ObjSetPos(&Objects[o], &new_pos, Objects[o].roomnum, NULL, false);
     }

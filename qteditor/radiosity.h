@@ -88,7 +88,7 @@ struct spectra {
 #define EF_SMALL 2 // Don't blend this one into the lightmap - it will corrupt!
 
 struct rad_element {
-  vector *verts;
+  vector3 *verts;
   spectra exitance;
   float area;
   uint8_t num_verts;
@@ -99,7 +99,7 @@ struct rad_element {
 
 struct volume_element {
   spectra color;
-  vector pos;
+  vector3 pos;
   uint8_t flags;
 };
 
@@ -136,8 +136,8 @@ struct rad_surface {
   uint8_t xresolution; // how many elements (resolution x resolution) for this face
   uint8_t yresolution;
   rad_element *elements; // list of elements for this surface
-  vector normal;         // normal of this surface
-  vector *verts;
+  vector3 normal;         // normal of this surface
+  vector3 *verts;
 
   uint8_t surface_type; // See ST_ types above
 
@@ -152,7 +152,7 @@ struct rad_surface {
 };
 
 struct rad_point {
-  vector pos;
+  vector3 pos;
   uint8_t code;
 };
 
@@ -208,13 +208,13 @@ void UpdateUnsentValues();
 int DoRadiosityIteration();
 
 // Finds the world coordinate center of a element
-void GetCenterOfElement(rad_element *ep, vector *dest);
+void GetCenterOfElement(rad_element *ep, vector3 *dest);
 
 // Finds the world coordinate center of a surface
-void GetCenterOfSurface(rad_surface *ep, vector *dest);
+void GetCenterOfSurface(rad_surface *ep, vector3 *dest);
 
 // Returns 1 if a src vector can hit dest vector unobstructed
-int ShootRayFromPoint(vector *src, vector *dest, rad_surface *src_surf, rad_surface *dest_surf);
+int ShootRayFromPoint(vector3 *src, vector3 *dest, rad_surface *src_surf, rad_surface *dest_surf);
 
 // Shoots a ray from the center of the max surface to center of every other element
 // Also updates the exitances of elements that get hit

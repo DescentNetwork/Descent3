@@ -187,7 +187,7 @@
 #include "grdefs.h"
 #include "float.h"
 
-extern vector Matrix_scale; // how the matrix is currently scaled
+extern vector3 Matrix_scale; // how the matrix is currently scaled
 
 // Structure for storing u,v,light values.  This structure doesn't have a
 // prefix because it was defined somewhere else before it was moved here
@@ -234,8 +234,8 @@ struct g3Point {
   uint8_t p3_codes;      // clipping codes
   uint8_t p3_flags;      // projected?
   int16_t p3_pad;        // keep structure longword aligned
-  vector p3_vec;       // x,y,z of rotated point
-  vector p3_vecPreRot; // original XYZ of the point
+  vector3 p3_vec;       // x,y,z of rotated point
+  vector3 p3_vecPreRot; // original XYZ of the point
   g3UVL p3_uvl;        // uv & lighting values
 };
 
@@ -260,13 +260,13 @@ struct g3Point {
 // Frame setup functions:
 
 // start the frame, specifying view position, matrix, & zoom
-void g3_StartFrame(vector *view_pos, matrix *view_matrix, float zoom);
+void g3_StartFrame(vector3 *view_pos, matrix *view_matrix, float zoom);
 
 // end the frame
 void g3_EndFrame(void);
 
 // get the current view position
-void g3_GetViewPosition(vector *vp);
+void g3_GetViewPosition(vector3 *vp);
 
 //	returns the current view matrix
 void g3_GetViewMatrix(matrix *mat);
@@ -282,10 +282,10 @@ float g3_GetAspectRatio();
 // Instancing
 
 // instance at specified point with specified orientation
-void g3_StartInstanceMatrix(vector *pos, matrix *orient);
+void g3_StartInstanceMatrix(vector3 *pos, matrix *orient);
 
 // instance at specified point with specified orientation
-void g3_StartInstanceAngles(vector *pos, angvec *angles);
+void g3_StartInstanceAngles(vector3 *pos, angvec *angles);
 
 // pops the old context
 void g3_DoneInstance();
@@ -294,31 +294,31 @@ void g3_DoneInstance();
 
 // returns true if a plane is facing the viewer. takes the unrotated surface
 // normal of the plane, and a point on it.  The normal need not be normalized
-bool g3_CheckNormalFacing(vector *v, vector *norm);
+bool g3_CheckNormalFacing(vector3 *v, vector3 *norm);
 
 // Point definition and rotation functions:
 
 // rotates a point. returns codes.  does not check if already rotated
-uint8_t g3_RotatePoint(g3Point *dest, vector *src);
+uint8_t g3_RotatePoint(g3Point *dest, vector3 *src);
 
 // projects a point
 void g3_ProjectPoint(g3Point *point);
 
 // calculate the depth of a point - returns the z coord of the rotated point
-float g3_CalcPointDepth(vector *pnt);
+float g3_CalcPointDepth(vector3 *pnt);
 
 // from a 2d point, compute the vector through that point
-void g3_Point2Vec(vector *v, int16_t sx, int16_t sy);
+void g3_Point2Vec(vector3 *v, int16_t sx, int16_t sy);
 
 // code a point.  fills in the p3_codes field of the point, and returns the codes
 uint8_t g3_CodePoint(g3Point *point);
 
 // delta rotation functions
-vector *g3_RotateDeltaX(vector *dest, float dx);
-vector *g3_RotateDeltaY(vector *dest, float dy);
-vector *g3_RotateDeltaZ(vector *dest, float dz);
-vector *g3_RotateDeltaVec(vector *dest, vector *src);
-uint8_t g3_AddDeltaVec(g3Point *dest, g3Point *src, vector *deltav);
+vector3 *g3_RotateDeltaX(vector3 *dest, float dx);
+vector3 *g3_RotateDeltaY(vector3 *dest, float dy);
+vector3 *g3_RotateDeltaZ(vector3 *dest, float dz);
+vector3 *g3_RotateDeltaVec(vector3 *dest, vector3 *src);
+uint8_t g3_AddDeltaVec(g3Point *dest, g3Point *src, vector3 *deltav);
 
 // Drawing functions:
 // draw a polygon
@@ -336,17 +336,17 @@ void g3_DrawSphere(ddgr_color color, g3Point *pnt, float rad);
 // pre-compute the normal, and pass it to this function.  When the normal
 // is passed, this function works like g3_CheckNormalFacing() plus
 // g3_DrawPoly().
-void g3_CheckAndDrawPoly(int nv, g3Point **pointlist, int bm, vector *norm, vector *pnt);
+void g3_CheckAndDrawPoly(int nv, g3Point **pointlist, int bm, vector3 *norm, vector3 *pnt);
 
 // draws a line. takes two points.
 void g3_DrawLine(ddgr_color color, g3Point *p0, g3Point *p1);
 
 // draws a bitmap with the specified 3d width & height
 // returns 1 if off screen, 0 if drew
-void g3_DrawBitmap(vector *pos, float width, float height, int bm, int color = -1);
+void g3_DrawBitmap(vector3 *pos, float width, float height, int bm, int color = -1);
 
 // Draws a bitmap that has been rotated about its center.  Angle of rotation is passed as 'rot_angle'
-void g3_DrawRotatedBitmap(vector *pos, angle rot_angle, float width, float height, int bm, int color = -1);
+void g3_DrawRotatedBitmap(vector3 *pos, angle rot_angle, float width, float height, int bm, int color = -1);
 
 // Draw a wireframe box aligned with the screen.  Used for the editor.
 // Parameters:	color - the color to draw the lines
@@ -355,7 +355,7 @@ void g3_DrawRotatedBitmap(vector *pos, angle rot_angle, float width, float heigh
 void g3_DrawBox(ddgr_color color, g3Point *pnt, float rad);
 
 // Sets up a custom clipping plane - g3_StartFrame must be called before this is called
-void g3_SetCustomClipPlane(uint8_t state, vector *pnt, vector *normal);
+void g3_SetCustomClipPlane(uint8_t state, vector3 *pnt, vector3 *normal);
 
 // sets the z distance of the far clipping plane
 void g3_SetFarClipZ(float z);
@@ -377,7 +377,7 @@ g3Point **g3_ClipPolygon(g3Point **pointlist, int *nv, g3Codes *cc);
 void g3_FreeTempPoints(g3Point **pointlist, int nv);
 
 // Gets the matrix scale vector
-void g3_GetMatrixScale(vector *matrix_scale);
+void g3_GetMatrixScale(vector3 *matrix_scale);
 
 // Sets the triangulation test to on or off
 void g3_SetTriangulationTest(int state);
@@ -386,11 +386,11 @@ void g3_SetTriangulationTest(int state);
 void g3_DrawSpecialLine(g3Point *p0, g3Point *p1);
 
 // Draws a bitmap on a specific plane.  Also does rotation.  Angle of rotation is passed as 'rot_angle'
-void g3_DrawPlanarRotatedBitmap(vector *pos, vector *norm, angle rot_angle, float width, float height, int bm);
+void g3_DrawPlanarRotatedBitmap(vector3 *pos, vector3 *norm, angle rot_angle, float width, float height, int bm);
 
 void g3_TransformMult(float res[4][4], float a[4][4], float b[4][4]);
 void g3_TransformTrans(float res[4][4], float t[4][4]);
-void g3_GetModelViewMatrix(const vector *viewPos, const matrix *viewMatrix, float *mvMat);
+void g3_GetModelViewMatrix(const vector3 *viewPos, const matrix *viewMatrix, float *mvMat);
 extern float gTransformViewPort[4][4];
 extern float gTransformProjection[4][4];
 extern float gTransformModelView[4][4];

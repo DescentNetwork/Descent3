@@ -106,17 +106,17 @@ void vm_Orthogonalize(matrix *m) {
   }
   m->uvec = vm_Cross3Product(m->fvec, m->rvec);
 }
-scalar vm_GetMagnitude(const vector *v) { return v == nullptr ? 0 : v->mag(); }
-scalar vm_GetMagnitudeFast(const vector *v) { return v == nullptr ? 0 : v->mag(); }
-void vm_CrossProduct(vector *result, const vector *a, const vector *b) { *result = vm_Cross3Product(*a, *b); }
-scalar vm_DotProduct(const vector *a, const vector *b) { return vm_Dot3Product(*a, *b); }
-scalar vm_VectorDistance(const vector *a, const vector *b) {
+scalar vm_GetMagnitude(const vector3 *v) { return v == nullptr ? 0 : v->mag(); }
+scalar vm_GetMagnitudeFast(const vector3 *v) { return v == nullptr ? 0 : v->mag(); }
+void vm_CrossProduct(vector3 *result, const vector3 *a, const vector3 *b) { *result = vm_Cross3Product(*a, *b); }
+scalar vm_DotProduct(const vector3 *a, const vector3 *b) { return vm_Dot3Product(*a, *b); }
+scalar vm_VectorDistance(const vector3 *a, const vector3 *b) {
   if (a == nullptr || b == nullptr)
     return 0;
   return (*a - *b).mag();
 }
-scalar vm_VectorDistanceQuick(const vector *a, const vector *b) { return vm_VectorDistance(a, b); }
-scalar vm_NormalizeVector(vector *v) {
+scalar vm_VectorDistanceQuick(const vector3 *a, const vector3 *b) { return vm_VectorDistance(a, b); }
+scalar vm_NormalizeVector(vector3 *v) {
   if (v == nullptr)
     return 0;
   const scalar m = vm_GetMagnitude(v);
@@ -124,52 +124,52 @@ scalar vm_NormalizeVector(vector *v) {
     *v = *v * (1.0f / m);
   return m;
 }
-scalar vm_NormalizeVectorFast(vector *v) { return vm_NormalizeVector(v); }
-void vm_SubVectors(vector *result, const vector *a, const vector *b) { *result = *a - *b; }
-void vm_AddVectors(vector *result, const vector *a, const vector *b) { *result = *a + *b; }
-void vm_ScaleVector(vector *result, const vector *src, scalar s) { *result = *src * s; }
-void vm_ScaleAddVector(vector *d, const vector *p, const vector *v, scalar s) {
+scalar vm_NormalizeVectorFast(vector3 *v) { return vm_NormalizeVector(v); }
+void vm_SubVectors(vector3 *result, const vector3 *a, const vector3 *b) { *result = *a - *b; }
+void vm_AddVectors(vector3 *result, const vector3 *a, const vector3 *b) { *result = *a + *b; }
+void vm_ScaleVector(vector3 *result, const vector3 *src, scalar s) { *result = *src * s; }
+void vm_ScaleAddVector(vector3 *d, const vector3 *p, const vector3 *v, scalar s) {
   if (d == nullptr || p == nullptr || v == nullptr)
     return;
   *d = *p + *v * s;
 }
-void vm_DivVector(vector *result, const vector *src, scalar s) {
+void vm_DivVector(vector3 *result, const vector3 *src, scalar s) {
   if (result == nullptr || src == nullptr || s == 0)
     return;
   *result = *src * (1.0f / s);
 }
-void vm_CenterVector(vector *v) {
+void vm_CenterVector(vector3 *v) {
   if (v)
-    *v = vector{};
+    *v = vector3{};
 }
-void vm_AverageVector(vector *v, int n) {
+void vm_AverageVector(vector3 *v, int n) {
   if (v == nullptr || n == 0)
     return;
   for (int i = 0; i < 3; i++)
     (*v)[i] /= (scalar)n;
 }
-scalar vm_GetNormal(vector *n, const vector *v0, const vector *v1, const vector *v2) {
+scalar vm_GetNormal(vector3 *n, const vector3 *v0, const vector3 *v1, const vector3 *v2) {
   if (n == nullptr || v0 == nullptr || v1 == nullptr || v2 == nullptr)
     return 0;
-  vector a = *v1 - *v0;
-  vector b = *v2 - *v0;
+  vector3 a = *v1 - *v0;
+  vector3 b = *v2 - *v0;
   *n = vm_Cross3Product(a, b);
   return vm_NormalizeVector(n);
 }
-void vm_GetPerp(vector *n, const vector *a, const vector *b, const vector *c) { *n = {}; }
-scalar vm_GetCentroid(vector *centroid, const vector *src, int nv) {
+void vm_GetPerp(vector3 *n, const vector3 *a, const vector3 *b, const vector3 *c) { *n = {}; }
+scalar vm_GetCentroid(vector3 *centroid, const vector3 *src, int nv) {
   if (centroid == nullptr || src == nullptr || nv <= 0)
     return 0;
-  *centroid = vector{};
+  *centroid = vector3{};
   for (int i = 0; i < nv; i++)
     *centroid += src[i];
   *centroid = *centroid * (1.0f / (float)nv);
   return 0;
 }
-scalar vm_GetCentroidFast(vector *centroid, const vector *src, int nv) { return vm_GetCentroid(centroid, src, nv); }
-scalar vm_ComputeBoundingSphere(vector *center, const vector *vecs, int num_verts) {
+scalar vm_GetCentroidFast(vector3 *centroid, const vector3 *src, int nv) { return vm_GetCentroid(centroid, src, nv); }
+scalar vm_ComputeBoundingSphere(vector3 *center, const vector3 *vecs, int num_verts) {
   if (center)
-    *center = vector{};
+    *center = vector3{};
   if (vecs == nullptr || num_verts <= 0)
     return 0;
   vm_GetCentroid(center, vecs, num_verts);
@@ -181,20 +181,20 @@ scalar vm_ComputeBoundingSphere(vector *center, const vector *vecs, int num_vert
   }
   return max_r;
 }
-void vm_MakeRandomVector(vector *vec) {
+void vm_MakeRandomVector(vector3 *vec) {
   if (vec)
-    *vec = vector{};
+    *vec = vector3{};
 }
-scalar vm_GetNormalizedDir(vector *dest, const vector *end, const vector *start) {
+scalar vm_GetNormalizedDir(vector3 *dest, const vector3 *end, const vector3 *start) {
   if (dest == nullptr || end == nullptr || start == nullptr)
     return 0;
   *dest = *end - *start;
   return vm_NormalizeVector(dest);
 }
-scalar vm_GetNormalizedDirFast(vector *dest, const vector *end, const vector *start) {
+scalar vm_GetNormalizedDirFast(vector3 *dest, const vector3 *end, const vector3 *start) {
   return vm_GetNormalizedDir(dest, end, start);
 }
-scalar vm_DistToPlane(const vector *checkp, const vector *norm, const vector *planep) {
+scalar vm_DistToPlane(const vector3 *checkp, const vector3 *norm, const vector3 *planep) {
   if (checkp == nullptr || norm == nullptr || planep == nullptr)
     return 0;
   return vm_Dot3Product(*checkp - *planep, *norm);
@@ -236,8 +236,8 @@ void vm_SinCosToMatrix(matrix *m, scalar sinp, scalar cosp, scalar sinb, scalar 
   m->fvec.z() = (cosh * cosp);
   m->fvec.y() = -sinp;
 }
-angle vm_DeltaAngVec(const vector *v0, const vector *v1, const vector *fvec) {
-  vector t;
+angle vm_DeltaAngVec(const vector3 *v0, const vector3 *v1, const vector3 *fvec) {
+  vector3 t;
   if (v0 == nullptr || v1 == nullptr || fvec == nullptr)
     return 0;
   t = *v1 - *v0;
@@ -246,7 +246,7 @@ angle vm_DeltaAngVec(const vector *v0, const vector *v1, const vector *fvec) {
     t = t * (1.0f / m);
   return vm_DeltaAngVecNorm(&t, nullptr, fvec);
 }
-angle vm_DeltaAngVecNorm(const vector *v0, const vector *v1, const vector *fvec) {
+angle vm_DeltaAngVecNorm(const vector3 *v0, const vector3 *v1, const vector3 *fvec) {
   if (v0 == nullptr || fvec == nullptr)
     return 0;
   scalar s = vm_Dot3Product(*v0, *fvec);
@@ -279,7 +279,7 @@ angvec *vm_ExtractAnglesFromMatrix(angvec *a, const matrix *m) {
   }
   return a;
 }
-void vm_VectorToMatrix(matrix *m, vector *fvec, vector *uvec, vector *rvec) {
+void vm_VectorToMatrix(matrix *m, vector3 *fvec, vector3 *uvec, vector3 *rvec) {
   if (m == nullptr || fvec == nullptr)
     return;
   matrix tmp;
@@ -289,32 +289,32 @@ void vm_VectorToMatrix(matrix *m, vector *fvec, vector *uvec, vector *rvec) {
   if (uvec != nullptr) {
     tmp.uvec = *uvec;
     if (vm_NormalizeVector(&tmp.uvec) == 0)
-      tmp.uvec = vector{0, 1, 0};
+      tmp.uvec = vector3{0, 1, 0};
     tmp.rvec = vm_Cross3Product(tmp.uvec, tmp.fvec);
     if (vm_NormalizeVector(&tmp.rvec) == 0)
-      tmp.rvec = vector{1, 0, 0};
+      tmp.rvec = vector3{1, 0, 0};
     tmp.uvec = vm_Cross3Product(tmp.fvec, tmp.rvec);
   } else if (rvec != nullptr) {
     tmp.rvec = *rvec;
     if (vm_NormalizeVector(&tmp.rvec) == 0)
-      tmp.rvec = vector{1, 0, 0};
+      tmp.rvec = vector3{1, 0, 0};
     tmp.uvec = vm_Cross3Product(tmp.fvec, tmp.rvec);
     if (vm_NormalizeVector(&tmp.uvec) == 0)
-      tmp.uvec = vector{0, 1, 0};
+      tmp.uvec = vector3{0, 1, 0};
     tmp.rvec = vm_Cross3Product(tmp.uvec, tmp.fvec);
   } else {
     if (tmp.fvec.x() == 0 && tmp.fvec.z() == 0) {
-      tmp.rvec = vector{1, 0, 0};
-      tmp.uvec = vector{0, (tmp.fvec.y() < 0) ? 1.0f : -1.0f, 0};
+      tmp.rvec = vector3{1, 0, 0};
+      tmp.uvec = vector3{0, (tmp.fvec.y() < 0) ? 1.0f : -1.0f, 0};
     } else {
-      tmp.rvec = vector{tmp.fvec.z(), 0, -tmp.fvec.x()};
+      tmp.rvec = vector3{tmp.fvec.z(), 0, -tmp.fvec.x()};
       vm_NormalizeVector(&tmp.rvec);
       tmp.uvec = vm_Cross3Product(tmp.fvec, tmp.rvec);
     }
   }
   *m = tmp;
 }
-void vm_VectorAngleToMatrix(matrix *m, vector *v, angle a) {
+void vm_VectorAngleToMatrix(matrix *m, vector3 *v, angle a) {
   if (m == nullptr || v == nullptr)
     return;
   scalar sinp = -v->y();
@@ -341,14 +341,14 @@ void vm_MatrixMulTMatrix(matrix *dest, const matrix *src0, const matrix *src1) {
   d.fvec.z() = src0->rvec.z() * src1->rvec.z() + src0->uvec.z() * src1->uvec.z() + src0->fvec.z() * src1->fvec.z();
   *dest = d;
 }
-void vm_MatrixMulVector(vector *result, const vector *v, const matrix *m) {
+void vm_MatrixMulVector(vector3 *result, const vector3 *v, const matrix *m) {
   if (result == nullptr || v == nullptr || m == nullptr)
     return;
   result->x() = vm_Dot3Product(*v, m->rvec);
   result->y() = vm_Dot3Product(*v, m->uvec);
   result->z() = vm_Dot3Product(*v, m->fvec);
 }
-void vm_VectorMulTMatrix(vector *result, const vector *v, const matrix *m) {
+void vm_VectorMulTMatrix(vector3 *result, const vector3 *v, const matrix *m) {
   if (result == nullptr || v == nullptr || m == nullptr)
     return;
   result->x() = vm_Dot3Vector(v->x(), v->y(), v->z(), &m->rvec);
@@ -362,13 +362,13 @@ void vm_MatrixMul(matrix *dest, const matrix *a, const matrix *b) {
 }
 matrix operator*(const matrix &a, const matrix &b) {
   matrix d;
-  d.rvec = vector{vm_Dot3Vector(a.rvec.x(), a.uvec.x(), a.fvec.x(), &b.rvec),
+  d.rvec = vector3{vm_Dot3Vector(a.rvec.x(), a.uvec.x(), a.fvec.x(), &b.rvec),
                   vm_Dot3Vector(a.rvec.y(), a.uvec.y(), a.fvec.y(), &b.rvec),
                   vm_Dot3Vector(a.rvec.z(), a.uvec.z(), a.fvec.z(), &b.rvec)};
-  d.uvec = vector{vm_Dot3Vector(a.rvec.x(), a.uvec.x(), a.fvec.x(), &b.uvec),
+  d.uvec = vector3{vm_Dot3Vector(a.rvec.x(), a.uvec.x(), a.fvec.x(), &b.uvec),
                   vm_Dot3Vector(a.rvec.y(), a.uvec.y(), a.fvec.y(), &b.uvec),
                   vm_Dot3Vector(a.rvec.z(), a.uvec.z(), a.fvec.z(), &b.uvec)};
-  d.fvec = vector{vm_Dot3Vector(a.rvec.x(), a.uvec.x(), a.fvec.x(), &b.fvec),
+  d.fvec = vector3{vm_Dot3Vector(a.rvec.x(), a.uvec.x(), a.fvec.x(), &b.fvec),
                   vm_Dot3Vector(a.rvec.y(), a.uvec.y(), a.fvec.y(), &b.fvec),
                   vm_Dot3Vector(a.rvec.z(), a.uvec.z(), a.fvec.z(), &b.fvec)};
   return d;
@@ -376,9 +376,9 @@ matrix operator*(const matrix &a, const matrix &b) {
 matrix operator*=(matrix &a, const matrix &b) { return (a = a * b); }
 
 // ==================== 3D functions (exact signatures from 3d.h) ====================
-uint8_t g3_RotatePoint(g3Point *dest, vector *src) { PRINT_STUB(__FUNCTION__); return 0; }
+uint8_t g3_RotatePoint(g3Point *dest, vector3 *src) { PRINT_STUB(__FUNCTION__); return 0; }
 void g3_ProjectPoint(g3Point *point) { PRINT_STUB(__FUNCTION__); }
-bool g3_CheckNormalFacing(vector *v, vector *norm) { PRINT_STUB(__FUNCTION__); return false; }
+bool g3_CheckNormalFacing(vector3 *v, vector3 *norm) { PRINT_STUB(__FUNCTION__); return false; }
 g3Point **g3_ClipPolygon(g3Point **pointlist, int *nv, g3Codes *cc) { PRINT_STUB(__FUNCTION__); return pointlist; }
 void g3_FreeTempPoints(g3Point **pointlist, int nv) { PRINT_STUB(__FUNCTION__); }
 
@@ -413,9 +413,9 @@ uint8_t Fast_terrain = 0;
 uint8_t Flat_terrain = 0;
 uint8_t Show_invisible_terrain = 0;
 
-int GetTerrainRoomFromPos(vector *pos) { PRINT_STUB(__FUNCTION__); return -1; }
-void ComputeTerrainSegmentCenter(vector *center, int seg) { PRINT_STUB(__FUNCTION__); *center = {}; }
-float GetTerrainGroundPoint(vector *in, vector *out) { PRINT_STUB(__FUNCTION__); *out = *in; return 0; }
+int GetTerrainRoomFromPos(vector3 *pos) { PRINT_STUB(__FUNCTION__); return -1; }
+void ComputeTerrainSegmentCenter(vector3 *center, int seg) { PRINT_STUB(__FUNCTION__); *center = {}; }
+float GetTerrainGroundPoint(vector3 *in, vector3 *out) { PRINT_STUB(__FUNCTION__); *out = *in; return 0; }
 void BuildMinMaxTerrain() { PRINT_STUB(__FUNCTION__); }
 void BuildTerrainNormals() { PRINT_STUB(__FUNCTION__); }
 void ResetTerrain(int terrain_size) { PRINT_STUB(__FUNCTION__); }
@@ -445,7 +445,7 @@ bool BOA_IsVisible(int start_room, int end_room) { PRINT_STUB(__FUNCTION__); ret
 
 // ==================== BSP ====================
 void InitBSP() { PRINT_STUB(__FUNCTION__); }
-int BSPRayOccluded(vector *a, vector *b, bspnode *n) { PRINT_STUB(__FUNCTION__); return 0; }
+int BSPRayOccluded(vector3 *a, vector3 *b, bspnode *n) { PRINT_STUB(__FUNCTION__); return 0; }
 bsptree MineBSP = {};
 uint8_t UseBSP = 0;
 void BuildBSPTree() { PRINT_STUB(__FUNCTION__); }
@@ -632,7 +632,7 @@ void InitRoom(room *rp, int nverts, int nfaces, int nportals) {
   rp->num_mirror_faces = 0;
   rp->mirror_faces_list = nullptr;
   rp->room_change_flags = 0;
-  rp->wind = vector{};
+  rp->wind = vector3{};
   rp->num_faces = nfaces;
   rp->num_verts = nverts;
   rp->num_portals = nportals;
@@ -640,7 +640,7 @@ void InitRoom(room *rp, int nverts, int nfaces, int nportals) {
   rp->fog_depth = 100.0f;
   rp->fog_r = rp->fog_g = rp->fog_b = 1.0f;
   rp->faces = nfaces ? static_cast<face *>(mem_malloc(sizeof(face) * nfaces)) : nullptr;
-  rp->verts = nverts ? static_cast<vector *>(mem_malloc(sizeof(vector) * nverts)) : nullptr;
+  rp->verts = nverts ? static_cast<vector3 *>(mem_malloc(sizeof(vector3) * nverts)) : nullptr;
   rp->verts4 = nullptr;
   rp->portals = nportals ? static_cast<portal *>(mem_malloc(sizeof(portal) * nportals)) : nullptr;
   rp->pulse_time = 0;
@@ -696,9 +696,9 @@ void InitRoomFace(face *fp, int nverts) {
   fp->lmi_handle = 0;
   fp->special_handle = 0;
   fp->light_multiple = 4;
-  fp->normal = vector{};
-  fp->min_xyz = vector{};
-  fp->max_xyz = vector{};
+  fp->normal = vector3{};
+  fp->min_xyz = vector3{};
+  fp->max_xyz = vector3{};
   fp->renderframe = 0;
   fp->face_verts = nverts ? static_cast<int16_t *>(mem_malloc(sizeof(int16_t) * nverts)) : nullptr;
   fp->face_uvls = nverts ? static_cast<roomUVL *>(mem_malloc(sizeof(roomUVL) * nverts)) : nullptr;
@@ -727,12 +727,12 @@ bool ComputeFaceNormal(room *rp, int facenum) {
   face *fp = &rp->faces[facenum];
   if (fp->num_verts < 3)
     return false;
-  const vector *v0 = &rp->verts[fp->face_verts[0]];
-  const vector *v1 = &rp->verts[fp->face_verts[1]];
-  const vector *v2 = &rp->verts[fp->face_verts[2]];
-  vector a = *v1 - *v0;
-  vector b = *v2 - *v0;
-  fp->normal = vector{a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]};
+  const vector3 *v0 = &rp->verts[fp->face_verts[0]];
+  const vector3 *v1 = &rp->verts[fp->face_verts[1]];
+  const vector3 *v2 = &rp->verts[fp->face_verts[2]];
+  vector3 a = *v1 - *v0;
+  vector3 b = *v2 - *v0;
+  fp->normal = vector3{a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]};
   const scalar mag = fp->normal.mag();
   if (mag < 0.0001f)
     return false;
@@ -740,21 +740,21 @@ bool ComputeFaceNormal(room *rp, int facenum) {
   return true;
 }
 
-bool ComputeNormal(vector *normal, int num_verts, short *vertnum_list, vector *verts) {
+bool ComputeNormal(vector3 *normal, int num_verts, short *vertnum_list, vector3 *verts) {
   if (num_verts < 3 || verts == nullptr || vertnum_list == nullptr)
     return false;
-  const vector *v0 = &verts[vertnum_list[0]];
-  const vector *v1 = &verts[vertnum_list[1]];
-  const vector *v2 = &verts[vertnum_list[2]];
-  vector a = *v1 - *v0;
-  vector b = *v2 - *v0;
-  *normal = vector{a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]};
+  const vector3 *v0 = &verts[vertnum_list[0]];
+  const vector3 *v1 = &verts[vertnum_list[1]];
+  const vector3 *v2 = &verts[vertnum_list[2]];
+  vector3 a = *v1 - *v0;
+  vector3 b = *v2 - *v0;
+  *normal = vector3{a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]};
   return true;
 }
 
-void ComputePortalCenter(vector *center, room *rp, int portal) { *center = {}; }
-void ComputeCenterPointOnFace(vector *center, room *rp, int facenum) { *center = {}; }
-void GetIJ(const vector *normal, int *ii, int *jj) {
+void ComputePortalCenter(vector3 *center, room *rp, int portal) { *center = {}; }
+void ComputeCenterPointOnFace(vector3 *center, room *rp, int facenum) { *center = {}; }
+void GetIJ(const vector3 *normal, int *ii, int *jj) {
   if (normal == nullptr || ii == nullptr || jj == nullptr) {
     if (ii)
       *ii = 0;
@@ -1084,14 +1084,14 @@ void FreePolyModel(int n) { PRINT_STUB(__FUNCTION__); }
 int CreateMatcen(const char *name, bool *flag) { PRINT_STUB(__FUNCTION__); return -1; }
 void DestroyAllMatcens() { PRINT_STUB(__FUNCTION__); }
 void FreeAllGamePaths() { PRINT_STUB(__FUNCTION__); }
-int FindPointRoom(vector *pnt) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetTerrainRoomFromPos_ret(vector *pos) { PRINT_STUB(__FUNCTION__); return -1; }
+int FindPointRoom(vector3 *pnt) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetTerrainRoomFromPos_ret(vector3 *pos) { PRINT_STUB(__FUNCTION__); return -1; }
 int AIMakeNextRoomList(int roomnum, int *next_rooms, int max_rooms) { PRINT_STUB(__FUNCTION__); return 0; }
-bool PhysCalcGround(vector *ground_point, vector *ground_normal, object *obj, int ground_num) { PRINT_STUB(__FUNCTION__); return false; }
+bool PhysCalcGround(vector3 *ground_point, vector3 *ground_normal, object *obj, int ground_num) { PRINT_STUB(__FUNCTION__); return false; }
 void ClearAllEvents() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== FVI ====================
-int fvi_QuickDistFaceList(int init_room_index, vector *pos, float rad, fvi_face_room_list *quick_fr_list, int max_elements) { PRINT_STUB(__FUNCTION__); return 0; }
+int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face_room_list *quick_fr_list, int max_elements) { PRINT_STUB(__FUNCTION__); return 0; }
 bool FVI_always_check_ceiling = false;
 
 // ==================== OSIRIS ====================

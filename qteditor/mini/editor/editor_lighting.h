@@ -25,9 +25,9 @@
 #include "object.h"
 #include "lightmap_info.h"
 
-extern vector ScratchCenters[MAX_LIGHTMAP_INFOS];
-extern vector ScratchRVecs[MAX_LIGHTMAP_INFOS];
-extern vector ScratchUVecs[MAX_LIGHTMAP_INFOS];
+extern vector3 ScratchCenters[MAX_LIGHTMAP_INFOS];
+extern vector3 ScratchRVecs[MAX_LIGHTMAP_INFOS];
+extern vector3 ScratchUVecs[MAX_LIGHTMAP_INFOS];
 extern int AllowCombining;
 
 extern float Room_multiplier[];
@@ -56,16 +56,16 @@ int ClipRadToPlane(int plane, rad_point *src, rad_point *dest, int nv);
 // Takes two points and a plane, and clips.
 void ClipRadEdge(int plane_flag, rad_point *on_pnt, rad_point *off_pnt);
 
-void SetRadClipLines(vector *tp, vector *rp, vector *bp, vector *lp);
+void SetRadClipLines(vector3 *tp, vector3 *rp, vector3 *bp, vector3 *lp);
 
-void ClipSurfaceElement(vector *surf_verts, rad_element *ep, vector *clip_verts, int nv);
+void ClipSurfaceElement(vector3 *surf_verts, rad_element *ep, vector3 *clip_verts, int nv);
 
-void BuildLightmapUVs(int *room_list, int *face_list, int count, vector *lightmap_poly, int nv, int external);
+void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightmap_poly, int nv, int external);
 
 // Returns number of verts in dest if face a can be safely combined with face b
 // Returns 0 if not
-int CombineLightFaces(vector *dest_verts, vector *averts, int nva, vector *norma, vector *bverts, int nvb,
-                      vector *normb, int aroom = -1, int broom = -1);
+int CombineLightFaces(vector3 *dest_verts, vector3 *averts, int nva, vector3 *norma, vector3 *bverts, int nvb,
+                      vector3 *normb, int aroom = -1, int broom = -1);
 
 // Given a roomnumber and a face, goes through the entire mine and checks to see
 // if this face can share a lightmap with any other face
@@ -93,7 +93,7 @@ int GetTotalObjectFaces(int terrain);
 // Gets the total number of object faces that exist in a room
 int GetTotalObjectFacesForSingleRoom(int roomnum);
 
-void BuildObjectLightmapUVs(object *obj, int *sublist, int *facelist, int count, vector *lightmap_poly, int nv,
+void BuildObjectLightmapUVs(object *obj, int *sublist, int *facelist, int count, vector3 *lightmap_poly, int nv,
                             int lm_type);
 
 // Goes through all objects and fills in the lightmap data for them

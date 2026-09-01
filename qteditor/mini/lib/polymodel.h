@@ -319,11 +319,11 @@ extern polymodel_light_type Polymodel_light_type;
 extern float Polylighting_static_red;
 extern float Polylighting_static_green;
 extern float Polylighting_static_blue;
-extern vector *Polymodel_light_direction, Polymodel_fog_portal_vert, Polymodel_fog_plane, Polymodel_specular_pos,
+extern vector3 *Polymodel_light_direction, Polymodel_fog_portal_vert, Polymodel_fog_plane, Polymodel_specular_pos,
     Polymodel_bump_pos;
 extern lightmap_object *Polylighting_lightmap_object;
 
-extern vector Interp_pos_instance_vec;
+extern vector3 Interp_pos_instance_vec;
 extern g3Point Robot_points[];
 
 // Flag to draw an outline around the faces
@@ -345,17 +345,17 @@ int FindPolyModelName(const std::filesystem::path& name);
 // an animation state we are
 
 // This one is for static lighting - ie 1 light value for the entire model
-void DrawPolygonModel(vector *pos, matrix *orient, int model_num, float *normalized_time, int flags, float r, float g,
+void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normalized_time, int flags, float r, float g,
                       float b, uint32_t f_render_sub = 0xFFFFFFFF, uint8_t use_effect = 0, uint8_t overlay = 0);
 
 // This one is for gouraud shading - the lightdir is the normalized light direction, and lightscalar is a 0-1 scalar to
 // apply
-void DrawPolygonModel(vector *pos, matrix *orient, int model_num, float *normalized_time, int flags, vector *lightdir,
+void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normalized_time, int flags, vector3 *lightdir,
                       float r, float g, float b, uint32_t f_render_sub = 0xFFFFFFFF, uint8_t use_effect = 0,
                       uint8_t overlay = 0);
 
 // This one is for lightmap rendering
-void DrawPolygonModel(vector *pos, matrix *orient, int model_num, float *normalized_time, int flags,
+void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normalized_time, int flags,
                       lightmap_object *lm_object, uint32_t f_render_sub, uint8_t use_effect = 0, uint8_t overlay = 0);
 
 // Inits our models array
@@ -372,7 +372,7 @@ float GetNormalizedKeyframe(int handle, float num);
 void RemapPolyModels();
 
 // Sets a positional instance
-void StartPolyModelPosInstance(vector *posvec);
+void StartPolyModelPosInstance(vector3 *posvec);
 
 // Pops a positional instance
 void DonePolyModelPosInstance();
@@ -396,10 +396,10 @@ int RenderPolygonModel(poly_model *, uint32_t f_render_sub = 0xFFFFFFFF);
 void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub);
 
 //	returns point within polymodel/submodel in world coordinates.
-void GetPolyModelPointInWorld(vector *dest, poly_model *pm, vector *wpos, matrix *orient, int subnum, vector *pos,
-                              vector *norm = nullptr);
-void GetPolyModelPointInWorld(vector *dest, poly_model *pm, vector *wpos, matrix *orient, int subnum,
-                              float *normalized_time, vector *pos, vector *norm = nullptr);
+void GetPolyModelPointInWorld(vector3 *dest, poly_model *pm, vector3 *wpos, matrix *orient, int subnum, vector3 *pos,
+                              vector3 *norm = nullptr);
+void GetPolyModelPointInWorld(vector3 *dest, poly_model *pm, vector3 *wpos, matrix *orient, int subnum,
+                              float *normalized_time, vector3 *pos, vector3 *norm = nullptr);
 
 // Returns 1 if this submodel shouldn't be rendered
 int IsNonRenderableSubmodel(poly_model *pm, int submodelnum);
@@ -420,6 +420,6 @@ void FreePolymodelData(int i);
 void SetModelAnglesAndPos(poly_model *po, float *normalized_time, uint32_t subobj_flags = 0xFFFFFFFF);
 
 extern void DoneLightInstance();
-extern void StartLightInstance(vector *, matrix *);
+extern void StartLightInstance(vector3 *, matrix *);
 
 #endif

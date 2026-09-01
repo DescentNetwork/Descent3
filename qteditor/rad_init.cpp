@@ -129,7 +129,7 @@ void SetupFormFactors() {
 void CalculateAreaForSurface(rad_surface *sp) {
   int i;
 
-  vector normal;
+  vector3 normal;
 
   vm_GetPerp(&normal, &sp->verts[0], &sp->verts[1], &sp->verts[2]);
   sp->area = (vm_GetMagnitude(&normal) / 2);
@@ -146,7 +146,7 @@ void CalculateAreaForSurface(rad_surface *sp) {
 void CalculateAreaForElement(rad_element *ep) {
   int i;
 
-  vector normal;
+  vector3 normal;
 
   if (ep->flags & EF_IGNORE) {
     ep->area = .0000001f;
@@ -294,10 +294,10 @@ void UpdateUnsentValues() {
 }
 
 // Finds the world coordinate center of a surface
-void GetCenterOfSurface(rad_surface *sp, vector *dest) { vm_GetCentroid(dest, sp->verts, sp->num_verts); }
+void GetCenterOfSurface(rad_surface *sp, vector3 *dest) { vm_GetCentroid(dest, sp->verts, sp->num_verts); }
 
 // Finds the world coordinate center of a surface
-void GetCenterOfElement(rad_element *ep, vector *dest) { vm_GetCentroid(dest, ep->verts, ep->num_verts); }
+void GetCenterOfElement(rad_element *ep, vector3 *dest) { vm_GetCentroid(dest, ep->verts, ep->num_verts); }
 
 void CalculateRadiosity() {
   while (!rad_DoneCalculating) {

@@ -26,7 +26,7 @@
 struct rad_hemicube {
   matrix view_matrix;
   matrix head_matrix;
-  vector view_position;
+  vector3 view_position;
   rad_element *shooting_element;
   rad_surface *shooting_surface;
 
@@ -68,7 +68,7 @@ void SetElementView(rad_element *ep);
 void SetSurfaceView(rad_surface *ep);
 
 // Build transformation matrix for our hemicube
-void BuildTransform(vector *nu, vector *nv, vector *nn);
+void BuildTransform(vector3 *nu, vector3 *nv, vector3 *nn);
 
 // Gets our view system ready for drawing
 void StartHemicubeDrawing();

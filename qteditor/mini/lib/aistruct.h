@@ -413,8 +413,8 @@ extern char AI_Status;
 
 // Last know player info -- might make it a [MAX_PLAYERS]
 
-extern vector ai_lkplayer_pos;
-extern vector ai_lkplayer_velocity;
+extern vector3 ai_lkplayer_pos;
+extern vector3 ai_lkplayer_velocity;
 extern float ai_lkplayer_time;
 
 #define MAX_AI_INIT_CLASSES 3
@@ -506,7 +506,7 @@ struct ai_path_info {
 
 // Used for predefined move lists (off of normal static paths)
 struct ai_move_path {
-  vector pos;
+  vector3 pos;
   matrix orient;
 
   int16_t path_id;
@@ -606,8 +606,8 @@ struct goal_info {
 
   union {
     float time;
-    vector vec;
-    vector pos;
+    vector3 vec;
+    vector3 pos;
     g_floats fs; // goal floats or a vector
   };
 
@@ -649,9 +649,9 @@ struct goal {
 
   float dist_to_goal;
 
-  vector vec_to_target;
+  vector3 vec_to_target;
   float next_check_see_target_time;
-  vector last_see_target_pos;
+  vector3 last_see_target_pos;
   float last_see_target_time;
   float next_target_update_time;
 
@@ -660,8 +660,8 @@ struct goal {
 
   int goal_uid; // used by the AI system for paths
 
-  vector set_fvec;
-  vector set_uvec;
+  vector3 set_fvec;
+  vector3 set_uvec;
 
   bool used;
 };
@@ -683,7 +683,7 @@ struct notify {
   };
 
   union {
-    vector pos;
+    vector3 pos;
     int movement_type;
     int anim_type;
     int attack_num;
@@ -699,7 +699,7 @@ struct ain_weapon_hit_info {
   int hit_face;
   int hit_subobject;
   float hit_damage;
-  vector hit_pnt;
+  vector3 hit_pnt;
 };
 
 //-------------------------------------------------
@@ -777,11 +777,11 @@ struct ai_frame {
 
   float dist_to_target_actual;
   float dist_to_target_perceived;
-  vector vec_to_target_actual;
-  vector vec_to_target_perceived;
+  vector3 vec_to_target_actual;
+  vector3 vec_to_target_perceived;
 
   float next_check_see_target_time;
-  vector last_see_target_pos;
+  vector3 last_see_target_pos;
   float last_see_target_time;
   float last_hear_target_time;
 
@@ -800,8 +800,8 @@ struct ai_frame {
   int notify_flags; // Agent is only notified of some event types
 
   // Normalized movement and facing information
-  vector movement_dir;
-  vector rot_thrust_vector;
+  vector3 movement_dir;
+  vector3 rot_thrust_vector;
 
   float fov;
 
@@ -841,7 +841,7 @@ struct ai_frame {
   float biased_flight_min;
   float biased_flight_max;
 
-  vector last_dodge_dir;
+  vector3 last_dodge_dir;
   float dodge_till_time;
 
   float awareness;
@@ -866,7 +866,7 @@ public:
     owner_handle = OBJECT_HANDLE_NONE;
   };
 
-  vector pos[MAX_NODES];
+  vector3 pos[MAX_NODES];
   int roomnum[MAX_NODES];
 
   int16_t num_nodes;

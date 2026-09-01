@@ -35,7 +35,7 @@
 namespace {
 
 // True when pnt (which lies on the plane of face f) is inside the face polygon.
-bool pointInsideFace(const room *rp, int faceIndex, const vector &pnt) {
+bool pointInsideFace(const room *rp, int faceIndex, const vector3 &pnt) {
   const face *fp = &rp->faces[faceIndex];
   const int n = fp->num_verts;
   if (n < 3)
@@ -50,7 +50,7 @@ bool pointInsideFace(const room *rp, int faceIndex, const vector &pnt) {
   float sx[64] = {};
   float sy[64] = {};
   for (int v = 0; v < n; ++v) {
-    const vector rel = rp->verts[fp->face_verts[v]] - pnt;
+    const vector3 rel = rp->verts[fp->face_verts[v]] - pnt;
     if (dropX) {
       sx[v] = rel.y();
       sy[v] = rel.z();
@@ -73,7 +73,7 @@ bool pointInsideFace(const room *rp, int faceIndex, const vector &pnt) {
 }
 
 // Parametric t in [0,1] where the segment crosses the face plane.
-bool facePlaneIntersect(const vector &p0, const vector &seg, const vector &v0, const vector &normal, float &tOut) {
+bool facePlaneIntersect(const vector3 &p0, const vector3 &seg, const vector3 &v0, const vector3 &normal, float &tOut) {
   const float denom = vm_DotProduct(&normal, &seg);
   if (std::fabs(denom) < 1e-6f)
     return false;
@@ -86,12 +86,12 @@ bool facePlaneIntersect(const vector &p0, const vector &seg, const vector &v0, c
 
 // Strictly-inside test: a point is inside a room when it is on the interior
 // side of every face plane.
-bool pointInsideRoom(const room *rp, const vector &pnt) {
+bool pointInsideRoom(const room *rp, const vector3 &pnt) {
   for (int f = 0; f < rp->num_faces; ++f) {
     const face *fp = &rp->faces[f];
     if (fp->num_verts < 3)
       continue;
-    const vector rel = pnt - rp->verts[fp->face_verts[0]];
+    const vector3 rel = pnt - rp->verts[fp->face_verts[0]];
     if (vm_DotProduct(&fp->normal, &rel) > 0.0f)
       return false;
   }
@@ -106,9 +106,9 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *ans, bool no_subdivision) {
   ans->hit_face[0] = -1;
   ans->hit_object[0] = -1;
 
-  const vector p0 = *fq->p0;
-  const vector p1 = *fq->p1;
-  const vector seg = p1 - p0;
+  const vector3 p0 = *fq->p0;
+  const vector3 p1 = *fq->p1;
+  const vector3 seg = p1 - p0;
   const float segLen = vm_GetMagnitude(&seg);
 
   if (fq->startroom < 0 || fq->startroom > Highest_room_index) {
@@ -168,13 +168,13 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *ans, bool no_subdivision) {
       const int nv = fp->num_verts;
       if (nv < 3)
         continue;
-      const vector v0 = rp->verts[fp->face_verts[0]];
+      const vector3 v0 = rp->verts[fp->face_verts[0]];
       float t = 0.0f;
       if (!facePlaneIntersect(p0, seg, v0, fp->normal, t))
         continue;
       if (t <= rayT + 1e-5f)
         continue;
-      const vector pnt = p0 + seg * t;
+      const vector3 pnt = p0 + seg * t;
       if (!pointInsideFace(rp, f, pnt))
         continue;
       const bool isPortal = (fp->portal_num >= 0);

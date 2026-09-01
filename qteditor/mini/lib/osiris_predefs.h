@@ -201,7 +201,7 @@ int osipf_WeaponFindID(const std::string& name);
 // returns how long an object has lived
 float osipf_ObjectGetTimeLived(int objhandle);
 
-void osipf_GetGunPos(int objhandle, int gun_number, vector *gun_pnt, vector *gun_normal = NULL);
+void osipf_GetGunPos(int objhandle, int gun_number, vector3 *gun_pnt, vector3 *gun_normal = NULL);
 
 // Returns room values (Index is optional and not always used)
 void osipf_RoomValue(int roomnum, char op, char vhandle, void *ptr, int index = 0);
@@ -221,15 +221,15 @@ void osipf_UnattachFromParent(int objhandle);
 void osipf_UnattachChild(int objhandle, char parent_ap);
 void osipf_UnattachChildren(int objhandle);
 
-int osipf_RayCast(int objhandle, vector *p0, vector *p1, int start_roomnum, float rad, int flags, ray_info *ri);
+int osipf_RayCast(int objhandle, vector3 *p0, vector3 *p1, int start_roomnum, float rad, int flags, ray_info *ri);
 
 // searches through GamePath index and returns index of path matching name
 // returns -1 if not found
 int osipf_AIGetPathID(char *string);
-vector osipf_AIFindHidePos(int hideobjhandle, int viewobjhandle, float time, int *hide_room);
+vector3 osipf_AIFindHidePos(int hideobjhandle, int viewobjhandle, float time, int *hide_room);
 int osipf_AIFindObjOfType(int objhandle, int type, int id, bool f_ignore_init_room,
                           int parent_handle = OBJECT_HANDLE_NONE);
-vector osipf_AIGetRoomPathPoint(int roomnum);
+vector3 osipf_AIGetRoomPathPoint(int roomnum);
 int osipf_AIFindEnergyCenter(int objhandle);
 float osipf_AIGetDistToObj(int objhandle, int otherobjhandle);
 
@@ -243,8 +243,8 @@ int osipf_AIGoalFollowPathSimple(int objhandle, int path_id, int guid, int flags
 void osipf_AISetGoalCircleDist(int objhandle, int goal_handle, float dist);
 int osipf_AISetGoalFlags(int objhandle, int goal_handle, int flags, uint8_t f_enable);
 
-uint8_t osipf_AITurnTowardsVectors(int objhandle, vector *fvec, vector *uvec);
-uint8_t osipf_AIMoveTowardsPosition(int objhandle, vector *pos, int *roomnum, float scalar, bool f_bline,
+uint8_t osipf_AITurnTowardsVectors(int objhandle, vector3 *fvec, vector3 *uvec);
+uint8_t osipf_AIMoveTowardsPosition(int objhandle, vector3 *pos, int *roomnum, float scalar, bool f_bline,
                                   bool f_bline_if_vis);
 
 void osipf_AIValue(int objhandle, char op, char vtype, void *ptr);
@@ -341,8 +341,8 @@ void osipf_SetAllControls(bool enabled);
 void osipf_SetControls(int fn, bool enabled);
 
 // Creates an object
-int osipf_ObjCreate(uint8_t type, uint16_t id, int roomnum, vector *pos, const matrix *orient = NULL,
-                    int parent_handle = OBJECT_HANDLE_NONE, vector *velocity = NULL);
+int osipf_ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3 *pos, const matrix *orient = NULL,
+                    int parent_handle = OBJECT_HANDLE_NONE, vector3 *velocity = NULL);
 
 // OBJECT Properties.
 // is an object visible? (rendered current frame)
@@ -394,7 +394,7 @@ int osipf_SoundFindId(const char *s_name);
 bool osipf_AIIsObjFriend(int obj_handle, int it_handle);
 bool osipf_AIIsObjEnemy(int obj_handle, int it_handle);
 void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void *ptr, int8_t index = 0);
-int osipf_AIGetNearbyObjs(vector *pos, int init_roomnum, float rad, int *object_handle_list, int max_elements,
+int osipf_AIGetNearbyObjs(vector3 *pos, int init_roomnum, float rad, int *object_handle_list, int max_elements,
                           bool f_lightmap_only, bool f_only_players_and_ais = true,
                           bool f_include_non_collide_objects = false, bool f_stop_at_closed_doors = true);
 char osipf_AIGetCurGoalIndex(int obj_handle);
@@ -411,9 +411,9 @@ int osipf_FindMatcenName(const std::string& name);
 int osipf_FindPathName(const std::string& name);
 int osipf_FindLevelGoalName(const std::string& name);
 
-void osipf_CreateRandomSparks(int num_sparks, vector *pos, int roomnum, int which_index, float force_scalar);
+void osipf_CreateRandomSparks(int num_sparks, vector3 *pos, int roomnum, int which_index, float force_scalar);
 
-void osipf_GetGroundPos(int objhandle, int ground_number, vector *ground_pnt, vector *ground_normal);
+void osipf_GetGroundPos(int objhandle, int ground_number, vector3 *ground_pnt, vector3 *ground_normal);
 
 // disable/enable ship
 void osipf_EnableShip(char *ship_name, bool enable);
@@ -428,7 +428,7 @@ void osipf_SetPlayerControlMode(int pnum, bool set_to_ai);
 //	pathid: path number
 //	point: which path point
 // returns true if operation was successful
-bool osipf_PathGetInformation(int pathid, int point, vector *pos, int *room, matrix *orient);
+bool osipf_PathGetInformation(int pathid, int point, vector3 *pos, int *room, matrix *orient);
 
 void osipf_LGoalValue(char op, char vtype, void *ptr, int g_index = -1, int i_index = -1);
 int osipf_ObjMakeListOfType(int objhandle, int type, int id, bool f_ignore_init_room, int parent_handle,

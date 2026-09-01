@@ -61,7 +61,7 @@
 
 int AllocGamePath();
 void FreeGamePath(int n);
-int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector pos, matrix orient);
+int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient);
 void DeleteNodeFromPath(int pathnum, int nodenum);
 void EBNode_ClearLevel();
 bool EBNode_VerifyGraph();
@@ -1559,7 +1559,7 @@ private slots:
     src.portal_num = 5;
     src.tmap = 42;
     src.light_multiple = 3;
-    src.normal = vector{(float)1, (float)2, (float)3};
+    src.normal = vector3{(float)1, (float)2, (float)3};
     for (int i = 0; i < 4; i++) {
       src.face_verts[i] = i * 10;
       src.face_uvls[i].u = i * 0.5f;
@@ -1592,24 +1592,24 @@ private slots:
     src.num_verts = 4;
     src.num_faces = 2;
     src.num_portals = 0;
-    src.verts = new vector[4];
+    src.verts = new vector3[4];
     src.faces = new face[2];
-    src.verts[0] = vector{(float)10, (float)20, (float)30};
-    src.verts[1] = vector{(float)40, (float)50, (float)60};
-    src.verts[2] = vector{(float)70, (float)80, (float)90};
-    src.verts[3] = vector{(float)100, (float)110, (float)120};
+    src.verts[0] = vector3{(float)10, (float)20, (float)30};
+    src.verts[1] = vector3{(float)40, (float)50, (float)60};
+    src.verts[2] = vector3{(float)70, (float)80, (float)90};
+    src.verts[3] = vector3{(float)100, (float)110, (float)120};
     InitRoomFace(&src.faces[0], 3);
     src.faces[0].face_verts[0] = 0;
     src.faces[0].face_verts[1] = 1;
     src.faces[0].face_verts[2] = 2;
     src.faces[0].tmap = 5;
-    src.faces[0].normal = vector{(float)0, (float)0, (float)1};
+    src.faces[0].normal = vector3{(float)0, (float)0, (float)1};
     InitRoomFace(&src.faces[1], 3);
     src.faces[1].face_verts[0] = 1;
     src.faces[1].face_verts[1] = 2;
     src.faces[1].face_verts[2] = 3;
     src.faces[1].tmap = 6;
-    src.faces[1].normal = vector{(float)0, (float)1, (float)0};
+    src.faces[1].normal = vector3{(float)0, (float)1, (float)0};
     src.flags.external = 1;
 
     room dst;
@@ -1642,14 +1642,14 @@ private slots:
     *(r1) = room{};
     InitRoom(r0, 4, 1, 0);
     InitRoom(r1, 4, 1, 0);
-    r0->verts[0] = vector{(float)0, (float)0, (float)0};
-    r0->verts[1] = vector{(float)10, (float)0, (float)0};
-    r0->verts[2] = vector{(float)10, (float)0, (float)-10};
-    r0->verts[3] = vector{(float)0, (float)0, (float)-10};
-    r1->verts[0] = vector{(float)10, (float)0, (float)0};
-    r1->verts[1] = vector{(float)20, (float)0, (float)0};
-    r1->verts[2] = vector{(float)20, (float)0, (float)-10};
-    r1->verts[3] = vector{(float)10, (float)0, (float)-10};
+    r0->verts[0] = vector3{(float)0, (float)0, (float)0};
+    r0->verts[1] = vector3{(float)10, (float)0, (float)0};
+    r0->verts[2] = vector3{(float)10, (float)0, (float)-10};
+    r0->verts[3] = vector3{(float)0, (float)0, (float)-10};
+    r1->verts[0] = vector3{(float)10, (float)0, (float)0};
+    r1->verts[1] = vector3{(float)20, (float)0, (float)0};
+    r1->verts[2] = vector3{(float)20, (float)0, (float)-10};
+    r1->verts[3] = vector3{(float)10, (float)0, (float)-10};
     InitRoomFace(&r0->faces[0], 4);
     InitRoomFace(&r1->faces[0], 4);
     for (int i = 0; i < 4; i++) {
@@ -1681,16 +1681,16 @@ private slots:
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 3, 1, 0);
-    rp->verts[0] = vector{(float)0, (float)0, (float)0};
-    rp->verts[1] = vector{(float)10, (float)0, (float)0};
-    rp->verts[2] = vector{(float)0, (float)10, (float)0};
+    rp->verts[0] = vector3{(float)0, (float)0, (float)0};
+    rp->verts[1] = vector3{(float)10, (float)0, (float)0};
+    rp->verts[2] = vector3{(float)0, (float)10, (float)0};
     InitRoomFace(&rp->faces[0], 3);
     rp->faces[0].face_verts[0] = 0;
     rp->faces[0].face_verts[1] = 1;
     rp->faces[0].face_verts[2] = 2;
     rp->faces[0].portal_num = -1;
     ComputeFaceNormal(rp, 0);
-    vector origNormal = rp->faces[0].normal;
+    vector3 origNormal = rp->faces[0].normal;
 
     FlipFace(rp, 0);
 
@@ -1709,10 +1709,10 @@ private slots:
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 4, 2, 0);
-    rp->verts[0] = vector{(float)0, (float)0, (float)0};
-    rp->verts[1] = vector{(float)10, (float)0, (float)0};
-    rp->verts[2] = vector{(float)10, (float)10, (float)0};
-    rp->verts[3] = vector{(float)0, (float)10, (float)0};
+    rp->verts[0] = vector3{(float)0, (float)0, (float)0};
+    rp->verts[1] = vector3{(float)10, (float)0, (float)0};
+    rp->verts[2] = vector3{(float)10, (float)10, (float)0};
+    rp->verts[3] = vector3{(float)0, (float)10, (float)0};
 
     InitRoomFace(&rp->faces[0], 3);
     rp->faces[0].face_verts[0] = 0;
@@ -1752,20 +1752,20 @@ private slots:
     InitRoom(r1, 4, 1, 0);
 
     // room0 face 0 = portal face (verts 0-3)
-    r0->verts[0] = vector{(float)0, (float)0, (float)0};
-    r0->verts[1] = vector{(float)10, (float)0, (float)0};
-    r0->verts[2] = vector{(float)10, (float)0, (float)-10};
-    r0->verts[3] = vector{(float)0, (float)0, (float)-10};
+    r0->verts[0] = vector3{(float)0, (float)0, (float)0};
+    r0->verts[1] = vector3{(float)10, (float)0, (float)0};
+    r0->verts[2] = vector3{(float)10, (float)0, (float)-10};
+    r0->verts[3] = vector3{(float)0, (float)0, (float)-10};
     InitRoomFace(&r0->faces[0], 4);
     for (int i = 0; i < 4; i++) r0->faces[0].face_verts[i] = i;
     ComputeFaceNormal(r0, 0);
     AssignDefaultUVsToRoomFace(r0, 0);
 
     // room0 face 1 = non-portal face (verts 4-7, offset in +y direction)
-    r0->verts[4] = vector{(float)0, (float)0, (float)-10};
-    r0->verts[5] = vector{(float)10, (float)0, (float)-10};
-    r0->verts[6] = vector{(float)10, (float)10, (float)-10};
-    r0->verts[7] = vector{(float)0, (float)10, (float)-10};
+    r0->verts[4] = vector3{(float)0, (float)0, (float)-10};
+    r0->verts[5] = vector3{(float)10, (float)0, (float)-10};
+    r0->verts[6] = vector3{(float)10, (float)10, (float)-10};
+    r0->verts[7] = vector3{(float)0, (float)10, (float)-10};
     InitRoomFace(&r0->faces[1], 4);
     r0->faces[1].face_verts[0] = 4;
     r0->faces[1].face_verts[1] = 5;
@@ -1775,10 +1775,10 @@ private slots:
     AssignDefaultUVsToRoomFace(r0, 1);
 
     // room1: adjacent quad
-    r1->verts[0] = vector{(float)10, (float)0, (float)0};
-    r1->verts[1] = vector{(float)20, (float)0, (float)0};
-    r1->verts[2] = vector{(float)20, (float)0, (float)-10};
-    r1->verts[3] = vector{(float)10, (float)0, (float)-10};
+    r1->verts[0] = vector3{(float)10, (float)0, (float)0};
+    r1->verts[1] = vector3{(float)20, (float)0, (float)0};
+    r1->verts[2] = vector3{(float)20, (float)0, (float)-10};
+    r1->verts[3] = vector3{(float)10, (float)0, (float)-10};
     InitRoomFace(&r1->faces[0], 4);
     for (int i = 0; i < 4; i++) r1->faces[0].face_verts[i] = i;
     ComputeFaceNormal(r1, 0);
@@ -1791,7 +1791,7 @@ private slots:
     Markedroomp = r1;
     Markedface = 0;
 
-    vector orig = r0->verts[6];
+    vector3 orig = r0->verts[6];
 
     RotateRooms(8192, 0, 0);
 
@@ -1813,10 +1813,10 @@ private slots:
     room *r0 = &Rooms[0];
     *(r0) = room{};
     InitRoom(r0, 4, 1, 0);
-    r0->verts[0] = vector{(float)100, (float)100, (float)0};
-    r0->verts[1] = vector{(float)200, (float)100, (float)0};
-    r0->verts[2] = vector{(float)200, (float)200, (float)0};
-    r0->verts[3] = vector{(float)100, (float)200, (float)0};
+    r0->verts[0] = vector3{(float)100, (float)100, (float)0};
+    r0->verts[1] = vector3{(float)200, (float)100, (float)0};
+    r0->verts[2] = vector3{(float)200, (float)200, (float)0};
+    r0->verts[3] = vector3{(float)100, (float)200, (float)0};
     InitRoomFace(&r0->faces[0], 4);
     for (int i = 0; i < 4; i++) r0->faces[0].face_verts[i] = i;
     ComputeFaceNormal(r0, 0);
@@ -1828,8 +1828,8 @@ private slots:
     Placed_baseroomp = nullptr;
     Placed_baseface = -1;
     Placed_room_face = 0;
-    Placed_room_origin = vector{(float)150, (float)150, (float)0};
-    Placed_room_attachpoint = vector{(float)0, (float)0, (float)0};
+    Placed_room_origin = vector3{(float)150, (float)150, (float)0};
+    Placed_room_attachpoint = vector3{(float)0, (float)0, (float)0};
     vm_MakeIdentity(&Placed_room_rotmat);
     Placed_door = -1;
 
@@ -1863,10 +1863,10 @@ private slots:
     InitRoom(att, 4, 1, 0);
 
     // base: quad at z=0, normal points -Y
-    base->verts[0] = vector{(float)0, (float)0, (float)0};
-    base->verts[1] = vector{(float)10, (float)0, (float)0};
-    base->verts[2] = vector{(float)10, (float)0, (float)-10};
-    base->verts[3] = vector{(float)0, (float)0, (float)-10};
+    base->verts[0] = vector3{(float)0, (float)0, (float)0};
+    base->verts[1] = vector3{(float)10, (float)0, (float)0};
+    base->verts[2] = vector3{(float)10, (float)0, (float)-10};
+    base->verts[3] = vector3{(float)0, (float)0, (float)-10};
     InitRoomFace(&base->faces[0], 4);
     for (int i = 0; i < 4; i++) base->faces[0].face_verts[i] = i;
     ComputeFaceNormal(base, 0);
@@ -1874,10 +1874,10 @@ private slots:
     base->used = true;
 
     // att: REVERSE winding so the attach face faces the opposite direction
-    att->verts[0] = vector{(float)0, (float)0, (float)0};
-    att->verts[1] = vector{(float)10, (float)0, (float)0};
-    att->verts[2] = vector{(float)10, (float)0, (float)-10};
-    att->verts[3] = vector{(float)0, (float)0, (float)-10};
+    att->verts[0] = vector3{(float)0, (float)0, (float)0};
+    att->verts[1] = vector3{(float)10, (float)0, (float)0};
+    att->verts[2] = vector3{(float)10, (float)0, (float)-10};
+    att->verts[3] = vector3{(float)0, (float)0, (float)-10};
     InitRoomFace(&att->faces[0], 4);
     att->faces[0].face_verts[0] = 0;
     att->faces[0].face_verts[1] = 3;
@@ -1892,8 +1892,8 @@ private slots:
     Placed_baseroomp = base;
     Placed_baseface = 0;
     Placed_room_face = 0;
-    Placed_room_origin = vector{(float)5, (float)0, (float)-5};
-    Placed_room_attachpoint = vector{(float)5, (float)0, (float)-5};
+    Placed_room_origin = vector3{(float)5, (float)0, (float)-5};
+    Placed_room_attachpoint = vector3{(float)5, (float)0, (float)-5};
     vm_MakeIdentity(&Placed_room_rotmat);
     Placed_door = -1;
 
@@ -1924,10 +1924,10 @@ private slots:
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
-    rp->verts[0] = vector{(float)0, (float)0, (float)0};
-    rp->verts[1] = vector{(float)10, (float)0, (float)0};
-    rp->verts[2] = vector{(float)10, (float)0, (float)-10};
-    rp->verts[3] = vector{(float)0, (float)0, (float)-10};
+    rp->verts[0] = vector3{(float)0, (float)0, (float)0};
+    rp->verts[1] = vector3{(float)10, (float)0, (float)0};
+    rp->verts[2] = vector3{(float)10, (float)0, (float)-10};
+    rp->verts[3] = vector3{(float)0, (float)0, (float)-10};
     InitRoomFace(&rp->faces[0], 4);
     for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
     ComputeFaceNormal(rp, 0);
@@ -1958,10 +1958,10 @@ private slots:
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
-    rp->verts[0] = vector{(float)0, (float)0, (float)0};
-    rp->verts[1] = vector{(float)10, (float)0, (float)0};
-    rp->verts[2] = vector{(float)10, (float)0, (float)-10};
-    rp->verts[3] = vector{(float)0, (float)0, (float)-10};
+    rp->verts[0] = vector3{(float)0, (float)0, (float)0};
+    rp->verts[1] = vector3{(float)10, (float)0, (float)0};
+    rp->verts[2] = vector3{(float)10, (float)0, (float)-10};
+    rp->verts[3] = vector3{(float)0, (float)0, (float)-10};
     InitRoomFace(&rp->faces[0], 4);
     for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
     ComputeFaceNormal(rp, 0);
@@ -1983,10 +1983,10 @@ private slots:
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
-    rp->verts[0] = vector{(float)0, (float)0, (float)0};
-    rp->verts[1] = vector{(float)10, (float)0, (float)0};
-    rp->verts[2] = vector{(float)10, (float)0, (float)-10};
-    rp->verts[3] = vector{(float)0, (float)0, (float)-10};
+    rp->verts[0] = vector3{(float)0, (float)0, (float)0};
+    rp->verts[1] = vector3{(float)10, (float)0, (float)0};
+    rp->verts[2] = vector3{(float)10, (float)0, (float)-10};
+    rp->verts[3] = vector3{(float)0, (float)0, (float)-10};
     InitRoomFace(&rp->faces[0], 4);
     for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
     ComputeFaceNormal(rp, 0);
@@ -2017,10 +2017,10 @@ private slots:
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
-    rp->verts[0] = vector{(float)0, (float)10, (float)0};
-    rp->verts[1] = vector{(float)10, (float)10, (float)0};
-    rp->verts[2] = vector{(float)10, (float)0, (float)0};
-    rp->verts[3] = vector{(float)0, (float)0, (float)0};
+    rp->verts[0] = vector3{(float)0, (float)10, (float)0};
+    rp->verts[1] = vector3{(float)10, (float)10, (float)0};
+    rp->verts[2] = vector3{(float)10, (float)0, (float)0};
+    rp->verts[3] = vector3{(float)0, (float)0, (float)0};
     InitRoomFace(&rp->faces[0], 4);
     for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
     ComputeFaceNormal(rp, 0);
@@ -2397,19 +2397,19 @@ private slots:
     InitRoom(base, 4, 1, 0);
     InitRoom(att, 4, 1, 0);
 
-    base->verts[0] = vector{(float)0, (float)0, (float)0};
-    base->verts[1] = vector{(float)10, (float)0, (float)0};
-    base->verts[2] = vector{(float)10, (float)0, (float)-10};
-    base->verts[3] = vector{(float)0, (float)0, (float)-10};
+    base->verts[0] = vector3{(float)0, (float)0, (float)0};
+    base->verts[1] = vector3{(float)10, (float)0, (float)0};
+    base->verts[2] = vector3{(float)10, (float)0, (float)-10};
+    base->verts[3] = vector3{(float)0, (float)0, (float)-10};
     InitRoomFace(&base->faces[0], 4);
     for (int i = 0; i < 4; i++) base->faces[0].face_verts[i] = i;
     ComputeFaceNormal(base, 0);
     base->used = true;
 
-    att->verts[0] = vector{(float)0, (float)0, (float)0};
-    att->verts[1] = vector{(float)10, (float)0, (float)0};
-    att->verts[2] = vector{(float)10, (float)0, (float)-10};
-    att->verts[3] = vector{(float)0, (float)0, (float)-10};
+    att->verts[0] = vector3{(float)0, (float)0, (float)0};
+    att->verts[1] = vector3{(float)10, (float)0, (float)0};
+    att->verts[2] = vector3{(float)10, (float)0, (float)-10};
+    att->verts[3] = vector3{(float)0, (float)0, (float)-10};
     InitRoomFace(&att->faces[0], 4);
     att->faces[0].face_verts[0] = 0;
     att->faces[0].face_verts[1] = 3;
@@ -2429,7 +2429,7 @@ private slots:
 
     // Placed_room_orient.fvec should match base face normal
     {
-      vector diff = Placed_room_orient.fvec - base->faces[0].normal;
+      vector3 diff = Placed_room_orient.fvec - base->faces[0].normal;
       float dist = vm_GetMagnitude(&diff);
       QVERIFY(dist < 0.01f);
     }
@@ -2444,10 +2444,10 @@ private slots:
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
-    rp->verts[0] = vector{(float)0, (float)0, (float)0};
-    rp->verts[1] = vector{(float)10, (float)0, (float)0};
-    rp->verts[2] = vector{(float)10, (float)0, (float)-10};
-    rp->verts[3] = vector{(float)0, (float)0, (float)-10};
+    rp->verts[0] = vector3{(float)0, (float)0, (float)0};
+    rp->verts[1] = vector3{(float)10, (float)0, (float)0};
+    rp->verts[2] = vector3{(float)10, (float)0, (float)-10};
+    rp->verts[3] = vector3{(float)0, (float)0, (float)-10};
     InitRoomFace(&rp->faces[0], 4);
     for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
     ComputeFaceNormal(rp, 0);
@@ -2580,9 +2580,9 @@ private slots:
     Highest_object_index = 0;
     Cur_object_index = 0;
 
-    vector fvec_before = Objects[0].orient.fvec;
-    vector rvec_before = Objects[0].orient.rvec;
-    vector uvec_before = Objects[0].orient.uvec;
+    vector3 fvec_before = Objects[0].orient.fvec;
+    vector3 rvec_before = Objects[0].orient.rvec;
+    vector3 uvec_before = Objects[0].orient.uvec;
 
     HObjectFlip();
 
@@ -2693,7 +2693,7 @@ private slots:
       Rooms[0].num_verts = 8;
       Rooms[0].num_faces = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[0].verts[v] = vector{};
+        Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
     Highest_room_index = 0;
@@ -2708,10 +2708,10 @@ private slots:
     Objects[1].size = 1.0f;
     Highest_object_index = 1;
 
-    vector origin{};
+    vector3 origin{};
     ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
 
-    vector newpos{(float)5, (float)0, (float)0};
+    vector3 newpos{(float)5, (float)0, (float)0};
     bool moved = MoveObject(&Objects[1], &newpos);
 
     QVERIFY(moved);
@@ -2746,7 +2746,7 @@ private slots:
       Rooms[0].num_verts = 8;
       Rooms[0].num_faces = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[0].verts[v] = vector{};
+        Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
     Highest_room_index = 0;
@@ -2763,7 +2763,7 @@ private slots:
     Objects[1].size = 1.0f;
     Highest_object_index = 1;
 
-    vector origin{};
+    vector3 origin{};
     ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
 
     Cur_object_index = 1;
@@ -2803,7 +2803,7 @@ private slots:
       Rooms[0].num_verts = 8;
       Rooms[0].num_faces = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[0].verts[v] = vector{};
+        Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
     Highest_room_index = 0;
@@ -2820,7 +2820,7 @@ private slots:
     Objects[1].size = 1.0f;
     Highest_object_index = 1;
 
-    vector origin{};
+    vector3 origin{};
     ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
 
     Cur_object_index = 1;
@@ -2828,7 +2828,7 @@ private slots:
     QVERIFY(!ObjMoveManager.IsMoving());
 
     matrix viewMat = IDENTITY_MATRIX;
-    vector viewPos{};
+    vector3 viewPos{};
     ObjMoveManager.Start(800, 600, &viewPos, &viewMat, 400, 300);
 
     QVERIFY(ObjMoveManager.IsMoving());
@@ -2866,7 +2866,7 @@ private slots:
       Rooms[0].num_verts = 8;
       Rooms[0].num_faces = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[0].verts[v] = vector{};
+        Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
     Highest_room_index = 0;
@@ -2883,13 +2883,13 @@ private slots:
     Objects[1].size = 1.0f;
     Highest_object_index = 1;
 
-    vector origin{};
+    vector3 origin{};
     ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
 
     Cur_object_index = 1;
 
     matrix viewMat = IDENTITY_MATRIX;
-    vector viewPos{};
+    vector3 viewPos{};
     ObjMoveManager.Start(800, 600, &viewPos, &viewMat, 400, 300);
 
     QVERIFY(!ObjMoveManager.IsMoving());
@@ -2931,7 +2931,7 @@ private slots:
       Rooms[0].num_verts = 8;
       Rooms[0].num_faces = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[0].verts[v] = vector{};
+        Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
     Highest_room_index = 0;
@@ -2948,7 +2948,7 @@ private slots:
     Objects[1].size = 1.0f;
     Highest_object_index = 1;
 
-    vector origin{};
+    vector3 origin{};
     ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
 
     Cur_object_index = 1;
@@ -2956,11 +2956,11 @@ private slots:
     ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_X);
 
     matrix viewMat = IDENTITY_MATRIX;
-    vector viewPos{0.0f, 0.0f, 100.0f};
+    vector3 viewPos{0.0f, 0.0f, 100.0f};
     ObjMoveManager.Start(800, 600, &viewPos, &viewMat, 400, 300);
     QVERIFY(ObjMoveManager.IsMoving());
 
-    const vector pos0 = Objects[1].pos;
+    const vector3 pos0 = Objects[1].pos;
     Object_moved = false;
     ObjMoveManager.Defer(10, 0, true);
     QVERIFY(ObjMoveManager.IsMoving());
@@ -3000,7 +3000,7 @@ private slots:
       Rooms[0].num_verts = 8;
       Rooms[0].num_faces = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[0].verts[v] = vector{};
+        Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
     Highest_room_index = 0;
@@ -3017,7 +3017,7 @@ private slots:
     Objects[1].size = 1.0f;
     Highest_object_index = 1;
 
-    vector origin{};
+    vector3 origin{};
     ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
 
     Cur_object_index = 1;
@@ -3025,7 +3025,7 @@ private slots:
     ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_H);
 
     matrix viewMat = IDENTITY_MATRIX;
-    vector viewPos{0.0f, 0.0f, 100.0f};
+    vector3 viewPos{0.0f, 0.0f, 100.0f};
     ObjMoveManager.Start(800, 600, &viewPos, &viewMat, 400, 300);
     QVERIFY(ObjMoveManager.IsMoving());
 
@@ -3075,7 +3075,7 @@ private slots:
       Rooms[0].num_verts = 8;
       Rooms[0].num_faces = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[0].verts[v] = vector{};
+        Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
     Highest_room_index = 0;
@@ -3086,7 +3086,7 @@ private slots:
     Objects[0].orient = IDENTITY_MATRIX;
     Objects[0].size = 3.0f;
     Highest_object_index = 0;
-    vector origin{};
+    vector3 origin{};
     ObjSetPos(&Objects[0], &origin, 0, nullptr, false);
 
     Editor_view_mode = VM_MINE;
@@ -3116,7 +3116,7 @@ private slots:
     QCOMPARE(Cur_object_index, 0);
     QVERIFY(ObjMoveManager.IsMoving());
 
-    const vector pos0 = Objects[0].pos;
+    const vector3 pos0 = Objects[0].pos;
 
     for (int d = 1; d <= 4; ++d) {
       QMouseEvent move(QEvent::MouseMove, QPointF(px + d * 10, py),
@@ -3147,23 +3147,23 @@ private slots:
   // the face index of the specified face (0..5 mapping to -X,+X,-Y,+Y,-Z,+Z).
   // Remaining fences become either walls or (if makePortal is true) a portal
   // linking to Rooms[otherIdx].  Used to exercise fvi_FindIntersection directly.
-  int buildBoxRoom(int roomIdx, vector min, vector max, int portalFace, int otherIdx) {
+  int buildBoxRoom(int roomIdx, vector3 min, vector3 max, int portalFace, int otherIdx) {
     room *rp = &Rooms[roomIdx];
     *(rp) = room{};
     InitRoom(rp, 8, 6, portalFace >= 0 ? 1 : 0);
     rp->used = 1;
     float x0 = min.x(), y0 = min.y(), z0 = min.z();
     float x1 = max.x(), y1 = max.y(), z1 = max.z();
-    rp->verts[0] = vector{x0, y0, z0};
-    rp->verts[1] = vector{x1, y0, z0};
-    rp->verts[2] = vector{x1, y1, z0};
-    rp->verts[3] = vector{x0, y1, z0};
-    rp->verts[4] = vector{x0, y0, z1};
-    rp->verts[5] = vector{x1, y0, z1};
-    rp->verts[6] = vector{x1, y1, z1};
-    rp->verts[7] = vector{x0, y1, z1};
+    rp->verts[0] = vector3{x0, y0, z0};
+    rp->verts[1] = vector3{x1, y0, z0};
+    rp->verts[2] = vector3{x1, y1, z0};
+    rp->verts[3] = vector3{x0, y1, z0};
+    rp->verts[4] = vector3{x0, y0, z1};
+    rp->verts[5] = vector3{x1, y0, z1};
+    rp->verts[6] = vector3{x1, y1, z1};
+    rp->verts[7] = vector3{x0, y1, z1};
 
-    auto initFace = [&](int f, int v0, int v1, int v2, int v3, vector normal) {
+    auto initFace = [&](int f, int v0, int v1, int v2, int v3, vector3 normal) {
       InitRoomFace(&rp->faces[f], 4);
       rp->faces[f].face_verts[0] = (int16_t)v0;
       rp->faces[f].face_verts[1] = (int16_t)v1;
@@ -3172,12 +3172,12 @@ private slots:
       rp->faces[f].normal = normal;
       rp->faces[f].portal_num = -1;
     };
-    initFace(0, 0, 3, 7, 4, vector{-1, 0, 0}); // -X
-    initFace(1, 1, 5, 6, 2, vector{1, 0, 0});  // +X
-    initFace(2, 0, 1, 2, 3, vector{0, -1, 0}); // -Y
-    initFace(3, 4, 7, 6, 5, vector{0, 1, 0});  // +Y
-    initFace(4, 0, 1, 2, 3, vector{0, 0, -1}); // -Z
-    initFace(5, 4, 5, 6, 7, vector{0, 0, 1});  // +Z
+    initFace(0, 0, 3, 7, 4, vector3{-1, 0, 0}); // -X
+    initFace(1, 1, 5, 6, 2, vector3{1, 0, 0});  // +X
+    initFace(2, 0, 1, 2, 3, vector3{0, -1, 0}); // -Y
+    initFace(3, 4, 7, 6, 5, vector3{0, 1, 0});  // +Y
+    initFace(4, 0, 1, 2, 3, vector3{0, 0, -1}); // -Z
+    initFace(5, 4, 5, 6, 7, vector3{0, 0, 1});  // +Z
 
     if (portalFace >= 0) {
       rp->faces[portalFace].portal_num = 0;
@@ -3196,14 +3196,14 @@ private slots:
     Highest_room_index = 1;
 
     // Portal between room0 (+X face at x=15) and room1 (-X face at x=15).
-    int p0 = buildBoxRoom(0, vector{-5, -5, -5}, vector{15, 5, 5}, 1, 1);
-    int p1 = buildBoxRoom(1, vector{15, -5, -5}, vector{35, 5, 5}, 0, 0);
+    int p0 = buildBoxRoom(0, vector3{-5, -5, -5}, vector3{15, 5, 5}, 1, 1);
+    int p1 = buildBoxRoom(1, vector3{15, -5, -5}, vector3{35, 5, 5}, 0, 0);
     QVERIFY(p0 == 1 && p1 == 0);
 
     // A ray along +X crosses the portal at x=15 and ends in room 1.
     {
-      vector p0v{0, 0, 0};
-      vector p1v{20, 0, 0};
+      vector3 p0v{0, 0, 0};
+      vector3 p1v{20, 0, 0};
       fvi_query fq{};
       fq.p0 = &p0v;
       fq.p1 = &p1v;
@@ -3222,8 +3222,8 @@ private slots:
 
     // A ray along +Z hits the -Z wall of room 0 (z=-5) before any portal.
     {
-      vector p0v{0, 0, -20};
-      vector p1v{0, 0, 20};
+      vector3 p0v{0, 0, -20};
+      vector3 p1v{0, 0, 20};
       fvi_query fq{};
       fq.p0 = &p0v;
       fq.p1 = &p1v;
@@ -3242,8 +3242,8 @@ private slots:
 
     // The same +Z ray with FQ_IGNORE_WALLS ignores walls and ends at p1.
     {
-      vector p0v{0, 0, -20};
-      vector p1v{0, 0, 20};
+      vector3 p0v{0, 0, -20};
+      vector3 p1v{0, 0, 20};
       fvi_query fq{};
       fq.p0 = &p0v;
       fq.p1 = &p1v;
@@ -3287,12 +3287,12 @@ private slots:
     D3EditState.current_path = idx;
 
     matrix orient = IDENTITY_MATRIX;
-    vector pos{10.0f, 20.0f, 30.0f};
+    vector3 pos{10.0f, 20.0f, 30.0f};
     int n0 = InsertNodeIntoPath(idx, -1, 0, 0, pos, orient);
     QVERIFY(n0 >= 0);
     QCOMPARE(GamePaths[idx].num_nodes, 1);
 
-    vector pos2{40.0f, 50.0f, 60.0f};
+    vector3 pos2{40.0f, 50.0f, 60.0f};
     int n1 = InsertNodeIntoPath(idx, 0, 0, 0, pos2, orient);
     QVERIFY(n1 == 1);
     QCOMPARE(GamePaths[idx].num_nodes, 2);

@@ -82,7 +82,7 @@ static void EditorDeleteTriggerByRoomFace(int roomnum, int facenum) {
 // ============================================================================
 // Helper: NormalsAreSame
 // ============================================================================
-static inline bool NormalsAreSame(const vector *n0, const vector *n1) {
+static inline bool NormalsAreSame(const vector3 *n0, const vector3 *n1) {
   scalar d = vm_Dot3Product(*n0, *n1);
   return (d > 0.999f);
 }
@@ -114,7 +114,7 @@ int RoomAddVertices(room *rp, int num_new_verts) {
   if (num_new_verts == 0)
     return 0;
 
-  auto newverts = mem_rmalloc<vector>(rp->num_verts + num_new_verts);
+  auto newverts = mem_rmalloc<vector3>(rp->num_verts + num_new_verts);
   Q_ASSERT(newverts != NULL);
 
   for (int i = 0; i < rp->num_verts; i++)
@@ -235,7 +235,7 @@ void CopyRoom(room *destp, room *srcp) {
 // ============================================================================
 // FaceIsPlanar — editor/Erooms.cpp:1194
 // ============================================================================
-bool FaceIsPlanar(int nv, int16_t *face_verts, vector *normal, vector *verts) {
+bool FaceIsPlanar(int nv, int16_t *face_verts, vector3 *normal, vector3 *verts) {
   if (nv == 3)
     return true;
 
@@ -256,7 +256,7 @@ bool FaceIsPlanar(int nv, int16_t *face_verts, vector *normal, vector *verts) {
 // CheckFaceConcavity — editor/Erooms.cpp:1108
 // Returns the index of the vertex causing concavity, or -1 if convex.
 // ============================================================================
-int CheckFaceConcavity(int num_verts, int16_t *face_verts, vector *normal, vector *verts) {
+int CheckFaceConcavity(int num_verts, int16_t *face_verts, vector3 *normal, vector3 *verts) {
   int ii, jj;
   float i0, j0, i1, j1;
   float *v0, *v1;
@@ -513,7 +513,7 @@ void AssignUVsToFace(room *rp, int facenum, roomUVL *uva, roomUVL *uvb, int va, 
   face *fp = &rp->faces[facenum];
   int nv = fp->num_verts;
   int vlo, vhi;
-  vector fvec, rvec, tvec;
+  vector3 fvec, rvec, tvec;
   roomUVL ruvmag, fuvmag, uvlo, uvhi;
   float fmag, mag01;
 
@@ -549,8 +549,8 @@ void AssignUVsToFace(room *rp, int facenum, roomUVL *uva, roomUVL *uvb, int va, 
     fuvmag.v = uvhi.v - uvlo.v;
   }
 
-  vector *vv0 = &rp->verts[fp->face_verts[vlo]];
-  vector *vv1 = &rp->verts[fp->face_verts[vhi]];
+  vector3 *vv0 = &rp->verts[fp->face_verts[vlo]];
+  vector3 *vv1 = &rp->verts[fp->face_verts[vhi]];
 
   fvec = *vv1 - *vv0;
   mag01 = vm_NormalizeVector(&fvec);
@@ -741,7 +741,7 @@ bool CombineFaces(room *rp, int face0, int face1) {
     nv++;
   }
 
-  vector new_normal;
+  vector3 new_normal;
   ComputeNormal(&new_normal, nv, vertlist, rp->verts);
 
   if (!FaceIsPlanar(nv, vertlist, &new_normal, rp->verts)) {
@@ -779,7 +779,7 @@ void RotateRooms(angle p, angle h, angle b) {
   int checkfaces[MAX_FACES_PER_ROOM];
   int checkcount = 0;
   matrix rotmat, roommat;
-  vector rotpoint, portal_normal;
+  vector3 rotpoint, portal_normal;
   int marked_portalnum = -1;
   int cur_portalnum = -1;
 
@@ -935,17 +935,17 @@ void DetachPortal(room *rp, int portal_num) {
 // ============================================================================
 
 struct clip_vertex {
-  vector vec;
+  vector3 vec;
   roomUVL uvl;
 };
 
 #define POINT_TO_EDGE_EPSILON 0.1f
 
-static bool PointsAreSame(const vector *v0, const vector *v1) {
+static bool PointsAreSame(const vector3 *v0, const vector3 *v1) {
   return vm_VectorDistance(v0, v1) < POINT_TO_POINT_EPSILON;
 }
 
-static int CheckPointAgainstEdge(const vector *checkv, const vector *v0, const vector *v1, const vector *normal) {
+static int CheckPointAgainstEdge(const vector3 *checkv, const vector3 *v0, const vector3 *v1, const vector3 *normal) {
   int ii, jj;
   GetIJ(normal, &ii, &jj);
 
@@ -966,8 +966,8 @@ static int CheckPointAgainstEdge(const vector *checkv, const vector *v0, const v
     return 0;
 }
 
-static void ClipEdge(const vector *normal, const clip_vertex *v0, const clip_vertex *v1,
-                     const vector *v2, const vector *v3, clip_vertex *newv) {
+static void ClipEdge(const vector3 *normal, const clip_vertex *v0, const clip_vertex *v1,
+                     const vector3 *v2, const vector3 *v3, clip_vertex *newv) {
   int ii, jj;
   GetIJ(normal, &ii, &jj);
 
@@ -1024,9 +1024,9 @@ static void AddVertToFace(room *rp, int facenum, int new_v, int after_v) {
   }
 
   // Compute UV for the new vert by interpolating along the edge
-  vector *va = &rp->verts[fp->face_verts[after_v]];
-  vector *vb = &rp->verts[fp->face_verts[(after_v + 2) % fp->num_verts]];
-  vector *vn = &rp->verts[fp->face_verts[after_v + 1]];
+  vector3 *va = &rp->verts[fp->face_verts[after_v]];
+  vector3 *vb = &rp->verts[fp->face_verts[(after_v + 2) % fp->num_verts]];
+  vector3 *vn = &rp->verts[fp->face_verts[after_v + 1]];
   roomUVL *uva = &fp->face_uvls[after_v];
   roomUVL *uvb = &fp->face_uvls[(after_v + 2) % fp->num_verts];
 
@@ -1054,7 +1054,7 @@ static void AddVertToAllEdges(room *rp, int v0, int v1, int new_v) {
   }
 }
 
-static void AddPointToAllEdges(room *rp, int v0, int v1, const vector *new_v) {
+static void AddPointToAllEdges(room *rp, int v0, int v1, const vector3 *new_v) {
   int newvertnum = RoomAddVertices(rp, 1);
   rp->verts[newvertnum] = *new_v;
   AddVertToAllEdges(rp, v0, v1, newvertnum);
@@ -1080,7 +1080,7 @@ static void AddEdgeInsert(int v0, int v1, int new_v) {
 }
 
 static void ClipAgainstEdge(int nv, int16_t *vertnums, clip_vertex *vertices, int *num_vertices,
-                            const vector *v0, const vector *v1, const vector *normal,
+                            const vector3 *v0, const vector3 *v1, const vector3 *normal,
                             int16_t *inbuf, int *inv, int16_t *outbuf, int *onv) {
   int16_t *ip = inbuf, *op = outbuf;
   int inside_points = 0, outside_points = 0;
@@ -1158,8 +1158,8 @@ static bool ClipFace(room *arp, int afacenum, room *brp, int bfacenum) {
   num_newverts = nv;
 
   for (int edgenum = 0; edgenum < bfp->num_verts; edgenum++) {
-    vector *ev0 = &brp->verts[bfp->face_verts[(bfp->num_verts - edgenum) % bfp->num_verts]];
-    vector *ev1 = &brp->verts[bfp->face_verts[bfp->num_verts - edgenum - 1]];
+    vector3 *ev0 = &brp->verts[bfp->face_verts[(bfp->num_verts - edgenum) % bfp->num_verts]];
+    vector3 *ev1 = &brp->verts[bfp->face_verts[bfp->num_verts - edgenum - 1]];
     int16_t *outbuf = newface_verts[num_newfaces];
     int *onv = &newface_nvs[num_newfaces];
 
@@ -1262,15 +1262,15 @@ check_faces:;
     int vn0 = fp0->face_verts[(i + n0) % fp0->num_verts];
     int vn1 = fp1->face_verts[(j - n1 + fp1->num_verts) % fp1->num_verts];
 
-    vector *v0 = &rp0->verts[vn0];
-    vector *v1 = &rp1->verts[vn1];
+    vector3 *v0 = &rp0->verts[vn0];
+    vector3 *v1 = &rp1->verts[vn1];
 
     if (PointsAreSame(v0, v1)) {
       if (!check_only)
         *v0 = *v1;
     } else {
-      vector *prev_v0 = &rp0->verts[prev_vn0];
-      vector *prev_v1 = &rp1->verts[prev_vn1];
+      vector3 *prev_v0 = &rp0->verts[prev_vn0];
+      vector3 *prev_v1 = &rp1->verts[prev_vn1];
 
       float d0 = vm_VectorDistance(v0, prev_v0);
       float d1 = vm_VectorDistance(v1, prev_v1);
@@ -1334,8 +1334,8 @@ void AttachRoom() {
   int baseface = Placed_baseface;
   room *attroomp = &Rooms[Placed_room];
   int attface = Placed_room_face;
-  vector attcenter = Placed_room_origin;
-  vector basecenter = Placed_room_attachpoint;
+  vector3 attcenter = Placed_room_origin;
+  vector3 basecenter = Placed_room_attachpoint;
 
   // Find a free slot in Rooms[]
   int slot = -1;
@@ -1392,8 +1392,8 @@ void AttachRoom() {
     // If there is a door, place it
     if (Placed_door != -1) {
       matrix orient = ~Placed_room_rotmat;
-      vector doorcenter = {0, 0, 0};
-      vector room_center = ((doorcenter - attcenter) * Placed_room_rotmat) + basecenter;
+      vector3 doorcenter = {0, 0, 0};
+      vector3 room_center = ((doorcenter - attcenter) * Placed_room_rotmat) + basecenter;
 
       FreeRoom(&Rooms[Placed_room]);
 
@@ -1424,8 +1424,8 @@ void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
   int nv = fp->num_verts;
 
   matrix face_matrix, trans_matrix;
-  vector fvec, avg_vert, rot_vert;
-  vector verts[MAX_VERTS_PER_FACE];
+  vector3 fvec, avg_vert, rot_vert;
+  vector3 verts[MAX_VERTS_PER_FACE];
 
   // find the center point of this face
   vm_MakeZero(&avg_vert);
@@ -1444,7 +1444,7 @@ void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
 
   // Rotate all the points
   for (i = 0; i < nv; i++) {
-    vector vert = rp->verts[fp->face_verts[i]];
+    vector3 vert = rp->verts[fp->face_verts[i]];
     vert -= avg_vert;
     vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
     verts[i] = rot_vert;
@@ -1471,7 +1471,7 @@ void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
   }
 
   // now set the base vertex
-  vector base_vector;
+  vector3 base_vector;
   base_vector.x() = verts[leftmost_point].x();
   base_vector.y() = verts[topmost_point].y();
   base_vector.z() = 0;
@@ -1683,7 +1683,7 @@ void ComputePlacedRoomMatrix() {
   room *placedroomp;
   int placedface;
   matrix srcmat;
-  vector t;
+  vector3 t;
 
   if (Placed_room != -1) {
     placedroomp = &Rooms[Placed_room];
@@ -1795,11 +1795,11 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
   for (int i = 0; i < front_sm->nverts; i++)
     front_remap[i] = -1;
 
-  vector diff_vec = front_sm->offset - shell_sm->offset;
+  vector3 diff_vec = front_sm->offset - shell_sm->offset;
 
   for (int i = 0; i < shell_sm->nverts; i++) {
     for (int t = 0; t < front_sm->nverts; t++) {
-      vector testvec = front_sm->verts[t] + diff_vec;
+      vector3 testvec = front_sm->verts[t] + diff_vec;
       if (PointsAreSame(&shell_sm->verts[i], &testvec))
         front_remap[t] = i;
     }

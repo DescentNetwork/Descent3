@@ -94,7 +94,7 @@ public:
   void GetMagCoords(int *, int *, int *, int *);
   void SetMagCoords(int, int, int, int);
   int m_x1, m_x2, m_y1, m_y2; // min,max of topographical map magnification
-  void DrawTerrainWorld(grViewport *vp, vector *view_target, matrix *view_orient, float view_dist);
+  void DrawTerrainWorld(grViewport *vp, vector3 *view_target, matrix *view_orient, float view_dist);
   int GetCellFromPoint(int x, int y);
   void DrawTerrainCell(int seg);
 
