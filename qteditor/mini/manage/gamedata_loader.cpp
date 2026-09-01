@@ -28,6 +28,7 @@
 
 #include "gamedata_loader.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <cctype>
@@ -282,4 +283,48 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
   hogin.close();
 
   return ok;
+}
+
+//-----------------------------------------------------------------------------
+// Name lookups over the loaded game tables (replaces the original stricmp
+// searches in objinfo.cpp / weapon.cpp / soundload.cpp).
+//-----------------------------------------------------------------------------
+
+namespace {
+
+// Case-insensitive ASCII comparison (replaces the original stricmp).
+bool CiStrEqual(const std::string &a, const std::string &b) {
+  return a.size() == b.size() &&
+         std::equal(a.begin(), a.end(), b.begin(), [](unsigned char x, unsigned char y) {
+           return std::tolower(x) == std::tolower(y);
+         });
+}
+
+}  // namespace
+
+// Searches all object ids for a specific name.  Returns the found id, or -1.
+int FindObjectIDName(const std::string &name) {
+  for (int i = 0; i < Num_objects; i++)
+    if ((Object_info[i].type != OBJ_NONE) && CiStrEqual(name, Object_info[i].name))
+      return i;
+
+  return -1;
+}
+
+// Searches the weapons table for a matching name.  Returns the id, or -1.
+int FindWeaponName(const std::string &name) {
+  for (int i = 0; i < Num_weapons; i++)
+    if (Weapons[i].used && CiStrEqual(name, Weapons[i].name))
+      return i;
+
+  return -1;
+}
+
+// Searches the sound table for a matching name.  Returns the id, or -1.
+int FindSoundName(const std::string &name) {
+  for (int i = 0; i < Num_sounds; i++)
+    if (Sounds[i].used && CiStrEqual(name, Sounds[i].name))
+      return i;
+
+  return -1;
 }

@@ -175,7 +175,8 @@
 
 #include <cstdint>
 #include "osiris_dll.h"
-#include "cfile.h"
+#include "object_external.h"
+#include "vecmat_external.h"
 
 //	osipf_CallObjectEvent
 //	Sends an event to an object.  Returns true if the default action should
@@ -188,7 +189,7 @@ bool osipf_CallObjectEvent(int objnum, int event, tOSIRISEventInfo *ei);
 bool osipf_CallTriggerEvent(int trignum, int event, tOSIRISEventInfo *ei);
 
 // Touches a sound file so it loads into memory
-void osipf_SoundTouch(char *str);
+void osipf_SoundTouch(const std::string &str);
 
 // searches for an object id given its name
 int osipf_ObjectFindID(const std::string& name);
@@ -225,7 +226,7 @@ int osipf_RayCast(int objhandle, vector3 *p0, vector3 *p1, int start_roomnum, fl
 
 // searches through GamePath index and returns index of path matching name
 // returns -1 if not found
-int osipf_AIGetPathID(char *string);
+int osipf_AIGetPathID(const std::string &string);
 vector3 osipf_AIFindHidePos(int hideobjhandle, int viewobjhandle, float time, int *hide_room);
 int osipf_AIFindObjOfType(int objhandle, int type, int id, bool f_ignore_init_room,
                           int parent_handle = OBJECT_HANDLE_NONE);
@@ -353,12 +354,6 @@ float osipf_FrameTime(void);
 void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void *ptr, int8_t g_index = 0);
 
 void osipf_ObjectValue(int handle, char op, char vtype, void *ptr, int index = 0);
-void osipf_MatcenValue(int handle, char op, char vtype, void *ptr, int index = 0);
-
-void osipf_MatcenReset(int handle);
-void osipf_MatcenCopy(int dhandle, int shandle);
-int osipf_MatcenCreate(char *name);
-int osipf_MatcenFindId(char *str);
 
 // Sets/Clears mission flags
 //	flag is which mission flag to set/clear (1-32)
@@ -389,7 +384,7 @@ uint8_t osipf_CFeof(struct CFILE* file);
 void osipf_SoundStop(int s_handle, bool f_immediately = false);
 int osipf_SoundPlay2d(int obj_handle, int s_id, float volume = 1.0f);
 int osipf_SoundPlay3d(int obj_handle, int s_id, float volume = 1.0f);
-int osipf_SoundFindId(const char *s_name);
+int osipf_SoundFindId(const std::string &s_name);
 
 bool osipf_AIIsObjFriend(int obj_handle, int it_handle);
 bool osipf_AIIsObjEnemy(int obj_handle, int it_handle);
@@ -407,7 +402,6 @@ int osipf_GetTriggerRoom(int trigger_id);
 int osipf_GetTriggerFace(int trigger_id);
 int osipf_FindDoorName(const std::string& name);
 int osipf_FindTextureName(const std::string& name);
-int osipf_FindMatcenName(const std::string& name);
 int osipf_FindPathName(const std::string& name);
 int osipf_FindLevelGoalName(const std::string& name);
 

@@ -343,12 +343,12 @@
 #include "robotfirestruct_external.h"
 #include "findintersection_external.h"
 #include "weapon_external.h"
-#include "damage_external.h"
-#include "fireball_external.h"
+//#include "damage_external.h"
+//#include "fireball_external.h"
 #include "levelgoal_external.h"
 #include "deathinfo_external.h"
-#include "difficulty_external.h"
-#include "gamecinematics_external.h"
+//#include "difficulty_external.h"
+//#include "gamecinematics_external.h"
 #include "player_external.h"
 
 // =======================================================================
@@ -916,7 +916,7 @@ typedef int OMMSHANDLE;
 // =======================================================================
 // Structures shared between OSIRIS and the game
 // =======================================================================
-
+#if 0
 // Since this header is shared within D3, in order to keep redefinition errors
 // quiet, the following section will only be included if this header file
 // is included by a DLL
@@ -941,6 +941,7 @@ typedef uint32_t ddgr_color;
 inline ddgr_color GR_RGB(int r, int g, int b) { return ((r << 16) + (g << 8) + b); }
 
 #endif // end #ifndef INCLUDED_FROM_D3
+#endif
 
 // =======================================================================
 // GB Menu structure
@@ -1315,7 +1316,7 @@ struct msafe_struct {
   char message2[MSAFE_MESSAGE_LENGTH];
 
 };
-
+/*
 struct ray_info {
   int32_t fate;
   int32_t hit_room;
@@ -1329,6 +1330,7 @@ struct ray_info {
   int32_t hit_face_room;
   vector3 hit_wallnorm;
 };
+*/
 
 #define PV_POS 0x00000001        // set/get pos member (pass in an osiris_path_node_info ptr)
 #define PV_ROOMNUM 0x00000002    // set/get roomnum member (pass in an osiris_path_node_info ptr)
