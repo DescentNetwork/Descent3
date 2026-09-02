@@ -36,14 +36,6 @@ void EndEditorFrame() {}
 
 void ShowRadView() {}
 
-void MakeBOAVisTable(bool from_lighting) {
-  MakeBOA();
-  BOA_vis_valid = 1;
-  BOA_vis_checksum = BOA_mine_checksum;
-  if (!from_lighting)
-    LOG_INFO("BOA vis table computed (stub).\n");
-}
-
 bool ddgr_surf_InitVideo(ddgr_surface *sf) { return false; }
 bool ddgr_surf_Create(ddgr_surface *sf) { return false; }
 void ddgr_surf_CloseVideo(ddgr_surface *sf) {}

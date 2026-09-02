@@ -181,6 +181,7 @@
 #define _EROOMS_H
 
 #include "room.h"
+#include "vecmat_external.h"
 
 #define DEFAULT_ROOM_SIZE 20.0
 

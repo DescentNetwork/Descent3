@@ -2331,6 +2331,88 @@ private slots:
     QVERIFY2(gotFace || gotObject, "pickAt on a visible face found neither face nor object");
   }
 
+  // Regression: pickAt() must resolve occlusion by the perspective-correct
+  // depth at the clicked pixel, not by the average of the face's vertex
+  // depths.  A large foreground face viewed at an angle has vertices at very
+  // different depths, so its *average* vertex depth can be farther than an
+  // occluded face just behind the click point.  The old code compared those
+  // averages and picked the occluded (background) face; the fixed code must
+  // pick the visible foreground face.
+  void testPickPrefersForegroundFaceOverOccluded() {
+    // Deterministic camera: eye at origin looking down +X with identity
+    // view axes, so world x = depth, world y = up, world z = right.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    Viewer_object = &Objects[0];
+    Viewer_object->type = OBJ_VIEWER;
+    Viewer_object->pos = vector3{0, 0, 0};
+    Viewer_object->orient.rvec = vector3{0, 0, 1};
+    Viewer_object->orient.uvec = vector3{0, 1, 0};
+    Viewer_object->orient.fvec = vector3{1, 0, 0};
+    Editor_view_mode = VM_MINE;
+
+    auto setFaceQuad = [](room *rp, const vector3 *verts) {
+      InitRoomFace(&rp->faces[0], 4);
+      for (int i = 0; i < 4; i++) {
+        rp->verts[i] = verts[i];
+        rp->faces[0].face_verts[i] = (int16_t)i;
+      }
+    };
+
+    // Room 0: large foreground quad in the plane x+z=8.  It crosses the
+    // camera axis at depth x=8 (in front of the occluded face) but its
+    // vertices recede to depth x=68, so its average vertex depth (~31) is
+    // greater than the occluded face's average (~25).
+    {
+      room *r0 = &Rooms[0];
+      *r0 = room{};
+      InitRoom(r0, 4, 1, 0);
+      const vector3 v[4] = {
+        {5, -4, 3}, {48, -4, -40}, {68, 4, -60}, {5, 4, 3},
+      };
+      setFaceQuad(r0, v);
+      r0->used = 1;
+    }
+    // Room 1: small flat occluded face perpendicular to the view at depth
+    // x=25, behind the click point.
+    {
+      room *r1 = &Rooms[1];
+      *r1 = room{};
+      InitRoom(r1, 4, 1, 0);
+      const vector3 v[4] = {
+        {25, -2, -6}, {25, -2, 6}, {25, 2, 6}, {25, 2, -6},
+      };
+      setFaceQuad(r1, v);
+      r1->used = 1;
+    }
+    Highest_room_index = 1;
+
+    EditorView view;
+    view.resize(640, 480);
+    view.show();
+    QCoreApplication::processEvents();
+    for (int i = 0; i < 20 && view.frameCount() < 1; i++)
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    QCoreApplication::processEvents();
+    QVERIFY(view.frameCount() >= 1);
+
+    // Screen centre maps into both faces; the foreground angled face (room 0)
+    // must win even though its average vertex depth is larger.
+    EditorView::PickResult pick = view.pickAt(320, 240);
+    qInfo() << "centre pick room=" << pick.roomIndex << "face=" << pick.faceIndex
+            << "obj=" << pick.objectIndex;
+    QCOMPARE(pick.objectIndex, -1);
+    QVERIFY2(pick.roomIndex == 0,
+             "foreground angled face was not picked; occluded face won (depth bug)");
+    QCOMPARE(pick.faceIndex, 0);
+  }
+
   // Verifies that the selection signals fire and update the editor state.
   void testPickSignalsUpdateState() {
     const QString level = "/home/gravis/project/D3rebuild/testdata/level1.d3l";

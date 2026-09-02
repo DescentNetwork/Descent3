@@ -94,6 +94,7 @@ file(GLOB QTEDITOR_SOURCES
 # (level_loader.cpp) and the mini brief model (brief_model.cpp).
 set(QTEDITOR_MINI_SOURCES
     ${MINI_SRC}/stubs.cpp
+    ${MINI_SRC}/string_helpers.cpp
     ${MINI_SRC}/level_loader.cpp
     ${MINI_SRC}/brief_model.cpp
 )

@@ -313,7 +313,7 @@
 #include "object.h"
 #include "manage.h"
 #include "DeathInfo.h"
-#include <fixed_string.h>
+//#include <fixed_string.h>
 
 #ifdef NEWEDITOR
 #include "..\neweditor\ned_Object.h"
@@ -388,74 +388,6 @@ struct anim_elem {
 
 // How many different deaths each object can have
 #define MAX_DEATH_TYPES 4
-
-struct [[gnu::packed]] death_flags_t
-{
-#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-  uint32_t padding : 3;
-  uint32_t delay_sound : 1;              // play sound at start of fade (0x1000000)
-  uint32_t delay_no_tumble_fly : 1;      // don't tumble while flying up in the air (0x2000000)
-  uint32_t fade_away : 1;                // fades away (0x0800000)
-  uint32_t delay_fade_away : 1;          // fade away (0x0400000)
-  uint32_t delay_fireball : 1;           // delay with fireballs (0x0200000)
-  uint32_t delay_flying : 1;             // delay with object flying up into the air (0x0100000)
-  uint32_t debris_remains : 1;           // stays around (0x0080000)
-  uint32_t debris_blast_ring : 1;        // blast ring (0x0040000)
-  uint32_t debris_fireball : 1;          // creates fireballs (0x0020000)
-  uint32_t debris_ smokes : 1;           // the debris that's created smokes (0x0010000)
-  uint32_t contact_remains : 1;          // stays around (0x0008000)
-  uint32_t contact_blast_ring : 1;       // blast ring (0x0004000)
-  uint32_t contact_breaks_apart : 1;     // break apart (0x0002000)
-  uint32_t contact_fireball : 1;         // creates fireballs (0x0001000)
-  uint32_t expl_size_mask_high : 1;      // part of DF_EXPL_SIZE_MASK (0x0000800 - large)
-  uint32_t expl_size_mask_low : 1;       // part of DF_EXPL_SIZE_MASK (0x0000400 - medium)
-  uint32_t loses_antigrav : 1;           // object gets gravity on death (0x0000200)
-  uint32_t remains : 1;                  // the object does not go away when it does (0x0000100)
-  uint32_t blast_ring : 1;               // a blast ring is created when the object dies (0x0000080)
-  uint32_t breaks_apart : 1;             // the object breaks into pieces when it dies (0x0000040)
-  uint32_t fireball : 1;                 // there are fireballs when the object dies (0x0000020)
-  uint32_t delay_smokes : 1;             // delay with smoke (0x0000010)
-  uint32_t delay_loses_antigrav : 1;     // object gets gravity during delay (0x0000008)
-  uint32_t delay_sparks : 1;             // delay with sparks (0x0000004)
-  uint32_t delay_from_anim : 1;          // delay time from death animation (0x0000002)
-  uint32_t unused : 1;                   // Unused flag (0x0000001)
-#else
-  uint32_t unused : 1;                   // Unused flag (0x0000001)
-  uint32_t delay_from_anim : 1;          // delay time from death animation (0x0000002)
-  uint32_t delay_sparks : 1;             // delay with sparks (0x0000004)
-  uint32_t delay_loses_antigrav : 1;     // object gets gravity during delay (0x0000008)
-  uint32_t delay_smokes : 1;             // delay with smoke (0x0000010)
-  uint32_t fireball : 1;                 // there are fireballs when the object dies (0x0000020)
-  uint32_t breaks_apart : 1;             // the object breaks into pieces when it dies (0x0000040)
-  uint32_t blast_ring : 1;               // a blast ring is created when the object dies (0x0000080)
-  uint32_t remains : 1;                  // the object does not go away when it does (0x0000100)
-  uint32_t loses_antigrav : 1;           // object gets gravity on death (0x0000200)
-  uint32_t expl_size_mask_low : 1;       // part of DF_EXPL_SIZE_MASK (0x0000400 - medium)
-  uint32_t expl_size_mask_high : 1;      // part of DF_EXPL_SIZE_MASK (0x0000800 - large)
-  uint32_t contact_fireball : 1;         // creates fireballs (0x0001000)
-  uint32_t contact_breaks_apart : 1;     // break apart (0x0002000)
-  uint32_t contact_blast_ring : 1;       // blast ring (0x0004000)
-  uint32_t contact_remains : 1;          // stays around (0x0008000)
-  uint32_t debris_smokes : 1;            // the debris that's created smokes (0x0010000)
-  uint32_t debris_fireball : 1;          // creates fireballs (0x0020000)
-  uint32_t debris_blast_ring : 1;        // blast ring (0x0040000)
-  uint32_t debris_remains : 1;           // stays around (0x0080000)
-  uint32_t delay_flying : 1;             // delay with object flying up into the air (0x0100000)
-  uint32_t delay_fireball : 1;           // delay with fireballs (0x0200000)
-  uint32_t delay_fade_away : 1;          // fade away (0x0400000)
-  uint32_t fade_away : 1;                // fades away (0x0800000)
-  uint32_t delay_no_tumble_fly : 1;      // don't tumble while flying up in the air (0x2000000)
-  uint32_t delay_sound : 1;              // play sound at start of fade (0x1000000)
-  uint32_t padding : 3;
-#endif
-};
-
-// Death info for an object type
-struct death_info {
-  death_flags_t flags;      // death flags // UPDATE_TYPE: `death_flags_t`
-  float delay_min; // if delay, min amount
-  float delay_max; // if delay, max amount
-};
 
 // AI info for this object
 // This is the subset of ai_frame data that the user can edit for an object type

@@ -62,6 +62,8 @@
 #include "iff.h"
 #include "bitmap.h"
 
+#include "string_helpers.h"
+
 // The mini manage.h declares this extern but no mini source defines it.  Net
 // tables never use the old command-based method, so it is always 0 here.  A
 // single translation-unit definition satisfies the extern (ODR) requirement.
@@ -290,22 +292,10 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 // searches in objinfo.cpp / weapon.cpp / soundload.cpp).
 //-----------------------------------------------------------------------------
 
-namespace {
-
-// Case-insensitive ASCII comparison (replaces the original stricmp).
-bool CiStrEqual(const std::string &a, const std::string &b) {
-  return a.size() == b.size() &&
-         std::equal(a.begin(), a.end(), b.begin(), [](unsigned char x, unsigned char y) {
-           return std::tolower(x) == std::tolower(y);
-         });
-}
-
-}  // namespace
-
 // Searches all object ids for a specific name.  Returns the found id, or -1.
 int FindObjectIDName(const std::string &name) {
   for (int i = 0; i < Num_objects; i++)
-    if ((Object_info[i].type != OBJ_NONE) && CiStrEqual(name, Object_info[i].name))
+    if ((Object_info[i].type != OBJ_NONE) && match(name, Object_info[i].name))
       return i;
 
   return -1;
@@ -314,7 +304,7 @@ int FindObjectIDName(const std::string &name) {
 // Searches the weapons table for a matching name.  Returns the id, or -1.
 int FindWeaponName(const std::string &name) {
   for (int i = 0; i < Num_weapons; i++)
-    if (Weapons[i].used && CiStrEqual(name, Weapons[i].name))
+    if (Weapons[i].used && match(name, Weapons[i].name))
       return i;
 
   return -1;
@@ -323,7 +313,7 @@ int FindWeaponName(const std::string &name) {
 // Searches the sound table for a matching name.  Returns the id, or -1.
 int FindSoundName(const std::string &name) {
   for (int i = 0; i < Num_sounds; i++)
-    if (Sounds[i].used && CiStrEqual(name, Sounds[i].name))
+    if (Sounds[i].used && match(name, Sounds[i].name))
       return i;
 
   return -1;

@@ -12,6 +12,7 @@
 #include "polymodel.h"
 #include "lightmap_info.h"
 #include "cfile.h"
+#include "dedicated_server.h"
 #include "3d.h"
 #include "grtext.h"
 #include "findintersection.h"
@@ -32,6 +33,7 @@
 #include "mem.h"
 #include "game.h"
 #include "physics.h"
+#include "renderer.h"
 #include "lightmap.h"
 #include "objinfo.h"
 #include "vclip.h"
@@ -43,6 +45,7 @@
 #include "d3edit.h"
 #include "lnxdatabase.h"
 #include "door.h"
+#include "descent.h"
 #include "doorpage.h"
 #include "genericpage.h"
 #include "shippage.h"
@@ -93,7 +96,7 @@ grViewport::grViewport(grSurface *s) { PRINT_STUB(__FUNCTION__); }
 grViewport::~grViewport() { PRINT_STUB(__FUNCTION__); }
 // grHardwareSurface::create returns bool, takes (int, int, int, unsigned, const char*)
 bool grHardwareSurface::create(int w, int h, int bpp, unsigned flags, const std::string& name) { PRINT_STUB(__FUNCTION__); return false; }
-float Float_to_ubyte(float f) { PRINT_STUB(__FUNCTION__); return f; }
+//float Float_to_ubyte(float f) { PRINT_STUB(__FUNCTION__); return f; }
 
 // ==================== Object ====================
 object Objects[MAX_OBJECTS];
@@ -102,14 +105,27 @@ object *Viewer_object = &Objects[0];
 object *Player_object = &Objects[0];
 object_info Object_info[MAX_OBJECTS];
 
+// Walks the object parent handle chain to the ultimate ancestor.  The mini
+// port has no parented-object state, so every object is treated as its own
+// root.
+object *ObjGetUltimateParent(object *child) { PRINT_STUB(__FUNCTION__); return child; }
+
+// ==================== Game / Descent ====================
+float Gametime = 0.0f;
+int FrameCount = 0;
+bool Katmai = false;                    // whether or not katmai CPU is detected
+bool Dedicated_server = false;
+function_mode View_mode = EDITOR_MODE;
+
 // ==================== Terrain ====================
+terrain_sound_band Terrain_sound_bands[256] = {};
+/*
 int Terrain_checksum = 0;
 uint8_t Terrain_dynamic_table[16] = {};
 terrain_segment Terrain_seg[(TERRAIN_WIDTH+1) * (TERRAIN_DEPTH+1)] = {};
 terrain_tex_segment Terrain_tex_seg[TERRAIN_TEX_WIDTH * TERRAIN_TEX_DEPTH] = {};
 terrain_sky Terrain_sky = {};
 terrain_normals *TerrainNormals[MAX_TERRAIN_LOD] = {};
-terrain_sound_band Terrain_sound_bands[256] = {};
 float Terrain_texture_distance = 0;
 int16_t Terrain_seg_render_objs[(TERRAIN_WIDTH+1) * (TERRAIN_DEPTH+1)] = {};
 uint8_t Fast_terrain = 0;
@@ -125,9 +141,18 @@ void ResetTerrain(int terrain_size) { PRINT_STUB(__FUNCTION__); }
 void SetupSky(float t, int tmap, unsigned char layer) { PRINT_STUB(__FUNCTION__); }
 void UpdateTerrainLightmaps() { PRINT_STUB(__FUNCTION__); }
 int TERRAIN_REGION(int x) { PRINT_STUB(__FUNCTION__); return 0; }
+*/
 void ClearTerrainSound() { PRINT_STUB(__FUNCTION__); }
 
+// ==================== Terrain search / render ====================
+int Check_terrain_portal = 0;
+uint8_t Terrain_from_mine = 1;
+void rend_GetProjectionParameters(int *width, int *height) { PRINT_STUB(__FUNCTION__); *width = 0; *height = 0; }
+uint8_t g3_CodePoint(g3Point *point) { PRINT_STUB(__FUNCTION__); return 0; }
+uint8_t CodeTerrainPoint(g3Point *p) { PRINT_STUB(__FUNCTION__); return 0; }
+
 // ==================== BOA ====================
+/*
 int BOA_num_terrain_regions = 0;
 connect_data BOA_connect[MAX_BOA_TERRAIN_REGIONS][MAX_PATH_PORTALS] = {};
 int BOA_num_connect[MAX_BOA_TERRAIN_REGIONS] = {};
@@ -138,7 +163,7 @@ int BOA_vis_checksum = 0;
 bool BOA_vis_valid = false;
 void MakeBOA() { PRINT_STUB(__FUNCTION__); }
 bool BOA_IsVisible(int start_room, int end_room) { PRINT_STUB(__FUNCTION__); return false; }
-
+*/
 // ==================== BSP ====================
 void InitBSP() { PRINT_STUB(__FUNCTION__); }
 int BSPRayOccluded(vector3 *a, vector3 *b, bspnode *n) { PRINT_STUB(__FUNCTION__); return 0; }
@@ -151,7 +176,7 @@ void BuildSingleBSPTree(int n) { PRINT_STUB(__FUNCTION__); }
 int Num_textures = 0;
 int Num_sounds = 0;
 int Num_weapons = 0;
-int Num_doors = 0;
+//int Num_doors = 0;
 int Num_ships = 0;
 int Num_megacells = 0;
 int Num_objects = 0;
@@ -210,6 +235,7 @@ int Num_of_lightmap_info = 0;
 int Num_lightmap_infos_read = 0;
 int Outline_lightmaps = 0;
 void FreeLightmapMemory() { PRINT_STUB(__FUNCTION__); }
+void FreeLightmapInfo(int handle) { PRINT_STUB(__FUNCTION__); }
 void ClearAllObjectLightmaps(int n) { PRINT_STUB(__FUNCTION__); }
 void ClearObjectLightmaps(object *obj) { PRINT_STUB(__FUNCTION__); }
 void BlurLightmapInfos(int n) { PRINT_STUB(__FUNCTION__); }
@@ -223,7 +249,7 @@ int lm_h(int n) { PRINT_STUB(__FUNCTION__); return 0; }
 int lmi_h(int n) { PRINT_STUB(__FUNCTION__); return 0; }
 int lmi_w(int n) { PRINT_STUB(__FUNCTION__); return 0; }
 void SetupObjectLightmapMemory(object *obj) { PRINT_STUB(__FUNCTION__); }
-void ClearAllVolumeLights() { PRINT_STUB(__FUNCTION__); }
+//void ClearAllVolumeLights() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Player/ship ====================
 player Players[MAX_PLAYERS] = {};
@@ -231,8 +257,8 @@ int Num_player_shapes = 0;
 ship Ships[MAX_SHIPS] = {};
 
 // ==================== Door ====================
-door Doors[MAX_DOORS];
-doorway *DoorwayAdd(room *rp, int doornum) { PRINT_STUB(__FUNCTION__); return nullptr; }
+//door Doors[MAX_DOORS];
+//doorway *DoorwayAdd(room *rp, int doornum) { PRINT_STUB(__FUNCTION__); return nullptr; }
 
 // ==================== Weapon ====================
 weapon Weapons[MAX_WEAPONS] = {};
@@ -287,12 +313,12 @@ int mng_AssignWeaponPageToWeapon(mngs_weapon_page *a, int b, struct CFILE* c) { 
 // ==================== CFILE (implemented in cfile/cfile.cpp) ====================
 
 // ==================== Room ====================
-void ClearAllRoomLightmaps(int n) { PRINT_STUB(__FUNCTION__); }
-void ClearRoomLightmaps(int n) { PRINT_STUB(__FUNCTION__); }
-void ClearAllRoomSpecmaps(int n) { PRINT_STUB(__FUNCTION__); }
+//void ClearAllRoomLightmaps(int n) { PRINT_STUB(__FUNCTION__); }
+//void ClearRoomLightmaps(int n) { PRINT_STUB(__FUNCTION__); }
+//void ClearAllRoomSpecmaps(int n) { PRINT_STUB(__FUNCTION__); }
 
-room Rooms[MAX_ROOMS] = {};
-int Highest_room_index = -1;
+//room Rooms[MAX_ROOMS] = {};
+//int Highest_room_index = -1;
 
 // ==================== DDIO ====================
 void ddio_SplitPath(const char *path, char *dir, char *fname, char *ext) { PRINT_STUB(__FUNCTION__); if (dir) dir[0] = 0; if (fname) fname[0] = 0; if (ext) ext[0] = 0; }
@@ -373,8 +399,8 @@ int FindDoorName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1;
 int FindShipName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Alloc/Free ====================
-int AllocDoor() { PRINT_STUB(__FUNCTION__); return -1; }
-void FreeDoor(int n) { PRINT_STUB(__FUNCTION__);}
+//int AllocDoor() { PRINT_STUB(__FUNCTION__); return -1; }
+//void FreeDoor(int n) { PRINT_STUB(__FUNCTION__);}
 int AllocObjectID(int id, bool a, bool b, bool c) { PRINT_STUB(__FUNCTION__); return -1; }
 void FreeObjectID(int n) { PRINT_STUB(__FUNCTION__); }
 int GetObjectID(int n) { PRINT_STUB(__FUNCTION__); return -1; }
@@ -391,8 +417,8 @@ void FreeWeapon(int n) { PRINT_STUB(__FUNCTION__); }
 int AllocLightmapInfo(int a, int b, int c, bool d) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== GetNext/Prev ====================
-int GetNextDoor(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetPrevDoor(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+//int GetNextDoor(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+//int GetPrevDoor(int n) { PRINT_STUB(__FUNCTION__); return -1; }
 int GetNextMegacell(int n) { PRINT_STUB(__FUNCTION__); return -1; }
 int GetPrevMegacell(int n) { PRINT_STUB(__FUNCTION__); return -1; }
 int GetNextShip(int n) { PRINT_STUB(__FUNCTION__); return -1; }
@@ -416,7 +442,7 @@ int LoadPolyModel(const std::filesystem::path& name, int f_module) { PRINT_STUB(
 int LoadShipImage(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return -1; }
 int LoadSoundFile(const char *name, float vol, bool b) { PRINT_STUB(__FUNCTION__); return -1; }
 int LoadTextureImage(const std::filesystem::path& name, int *handle, int a, int b, int c, int d) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetDoorImage(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+//int GetDoorImage(int n) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Polymodel ====================
 poly_model *GetPolymodelPointer(int n) { PRINT_STUB(__FUNCTION__); return nullptr; }
@@ -427,15 +453,15 @@ void SetModelAnglesAndPos(poly_model *pm, float *anim, unsigned int flags) { PRI
 int IsNonRenderableSubmodel(poly_model *pm, int index) { PRINT_STUB(__FUNCTION__); return 0; }
 void ChangeOldModelsForObjects(int a, int b) { PRINT_STUB(__FUNCTION__); }
 std::filesystem::path ChangePolyModelName(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return name; }
-void GenerateLODDeltas() { PRINT_STUB(__FUNCTION__); }
 int FindPolyModelName(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return -1; }
 void FreePolyModel(int n) { PRINT_STUB(__FUNCTION__); }
+void SetNormalizedTimeObj(object *obj, float *normalized_time) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Misc ====================
 int CreateMatcen(const char *name, bool *flag) { PRINT_STUB(__FUNCTION__); return -1; }
 void DestroyAllMatcens() { PRINT_STUB(__FUNCTION__); }
 void FreeAllGamePaths() { PRINT_STUB(__FUNCTION__); }
-int FindPointRoom(vector3 *pnt) { PRINT_STUB(__FUNCTION__); return -1; }
+//int FindPointRoom(vector3 *pnt) { PRINT_STUB(__FUNCTION__); return -1; }
 int GetTerrainRoomFromPos_ret(vector3 *pos) { PRINT_STUB(__FUNCTION__); return -1; }
 int AIMakeNextRoomList(int roomnum, int *next_rooms, int max_rooms) { PRINT_STUB(__FUNCTION__); return 0; }
 bool PhysCalcGround(vector3 *ground_point, vector3 *ground_normal, object *obj, int ground_num) { PRINT_STUB(__FUNCTION__); return false; }
@@ -443,6 +469,12 @@ void ClearAllEvents() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== FVI ====================
 int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face_room_list *quick_fr_list, int max_elements) { PRINT_STUB(__FUNCTION__); return 0; }
+bool fvi_QuickRoomCheck(vector3 *pos, room *cur_room, bool try_again) { PRINT_STUB(__FUNCTION__); return false; }
+int fvi_QuickDistObjectList(vector3 *pos, int init_roomnum, float rad, int16_t *object_index_list, int max_elements,
+                            bool f_lightmap_only, bool f_only_players_and_ais,
+                            bool f_include_non_collide_objects, bool f_stop_at_closed_doors) { PRINT_STUB(__FUNCTION__); return 0; }
+int fvi_QuickDistCellList(int init_cell_index, vector3 *pos, float rad, int *quick_cell_list, int max_elements) { PRINT_STUB(__FUNCTION__); return 0; }
+uint32_t check_point_to_face(vector3 *colp, vector3 *face_normal, int nv, vector3 **vertex_ptr_list) { PRINT_STUB(__FUNCTION__); return 0; }
 bool FVI_always_check_ceiling = false;
 
 // ==================== OSIRIS ====================

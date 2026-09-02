@@ -38,6 +38,11 @@
 #include "room.h"
 #include "terrain.h"
 
+uint8_t Show_invisible_terrain = 0;
+uint8_t Fast_terrain = 1;
+float Terrain_texture_distance = DEFAULT_TEXTURE_DISTANCE;
+
+
 
 namespace {
 
@@ -1283,15 +1288,49 @@ EditorView::PickResult EditorView::pickAt(int screenX, int screenY) const {
       if (!pointInPolygon(static_cast<float>(screenX), static_cast<float>(screenY), sx, sy, nv))
         continue;
 
-      float avgDepth = 0.0f;
-      for (int v = 0; v < nv; v++)
-        avgDepth += sz[v];
-      avgDepth /= nv;
+      // Perspective-correct depth of the surface exactly at the clicked
+      // pixel.  1/z is linear in screen space for a perspective projection,
+      // so barycentric interpolation of the inverse vertex depths across the
+      // clicked triangle gives the true depth of the surface under the mouse.
+      // Averaging the raw vertex depths is wrong: a large foreground face seen
+      // at an angle has vertices at wildly different depths, so its average can
+      // be farther than an occluded face just behind the click point, causing
+      // the occluded (background) element to be picked instead of the visible
+      // foreground one.
+      const float px = static_cast<float>(screenX);
+      const float py = static_cast<float>(screenY);
+      bool found = false;
+      float pixelDepth = 0.0f;
+      for (int v = 1; v + 1 < nv; v++) {
+        const float invB = 1.0f / sz[0];
+        const float invC = 1.0f / sz[v];
+        const float invD = 1.0f / sz[v + 1];
+        const float det = (sx[v] - sx[0]) * (sy[v + 1] - sy[0]) -
+                          (sx[v + 1] - sx[0]) * (sy[v] - sy[0]);
+        if (std::fabs(det) < 1e-9f)
+          continue;
+        const float invDet = 1.0f / det;
+        const float lamB = ((px - sx[0]) * (sy[v + 1] - sy[0]) -
+                            (sx[v + 1] - sx[0]) * (py - sy[0])) * invDet;
+        const float lamC = ((sx[v] - sx[0]) * (py - sy[0]) -
+                            (px - sx[0]) * (sy[v] - sy[0])) * invDet;
+        if (lamB < -1e-4f || lamC < -1e-4f || lamB + lamC > 1.0f + 1e-4f)
+          continue;
+        const float lamA = 1.0f - lamB - lamC;
+        const float invDepth = lamA * invB + lamB * invC + lamC * invD;
+        if (invDepth > 0.0f) {
+          pixelDepth = 1.0f / invDepth;
+          found = true;
+          break;
+        }
+      }
+      if (!found)
+        continue;
 
-      if (avgDepth < best.depth) {
+      if (pixelDepth < best.depth) {
         best.roomIndex = r;
         best.faceIndex = f;
-        best.depth = avgDepth;
+        best.depth = pixelDepth;
       }
     }
   }

@@ -296,10 +296,10 @@ struct alignas(N==N_POW2 && A != align::scalar || A == align::vector ? alignof(T
   static constexpr inline scalar distance(const vec<T,N_A,A_A> &a, const vec<T,N_B,A_B> &b) { return (a - b).mag(); }
 };
 
-using vector3                = vec<scalar,3>;
-using vector_array          = vector3;
-using aligned_vector        = vec<scalar,3,align::vector>;
-using aligned_vector_array  = aligned_vector;
+using vector3               = vec<scalar,3>;
+using vector3_array         = vector3;
+using aligned_vector3       = vec<scalar,3,align::vector>;
+using aligned_vector3_array = aligned_vector3;
 
 using vector4               = vec<scalar,4>;
 using vector4_array         = vector4;
@@ -421,7 +421,7 @@ static inline matrix operator/(matrix src, float n) {
 }
 
 inline scalar vm_Dot3Product(const vector3 &a, const vector3 &b) { return vector3::dot(a,b); }
-static inline scalar vm_Dot3Vector(scalar x, scalar y, scalar z, const vector3 *v) { return vector3::dot(aligned_vector{x,y,z}, *v); }
+static inline scalar vm_Dot3Vector(scalar x, scalar y, scalar z, const vector3 *v) { return vector3::dot(aligned_vector3{x,y,z}, *v); }
 
 inline vector3 vm_Cross3Product(const vector3 &u, const vector3 &v) {
   return vector3::cross3(u,v);

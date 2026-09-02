@@ -9,26 +9,12 @@
 
 #include "gamepath.h"
 #include "mem/mem.h"
-
-#include <algorithm>
-#include <cctype>
-
-namespace {
-
-// Case-insensitive ASCII comparison (replaces the original stricmp).
-bool CiStrEqual(const std::string &a, const std::string &b) {
-  return a.size() == b.size() &&
-         std::equal(a.begin(), a.end(), b.begin(), [](unsigned char x, unsigned char y) {
-           return std::tolower(x) == std::tolower(y);
-         });
-}
-
-}  // namespace
+#include "string_helpers.h"
 
 // Returns the index of the game path whose name matches, or -1 if not found.
 int FindGamePathName(const std::string &name) {
   for (int i = 0; i < MAX_GAME_PATHS; i++) {
-    if (GamePaths[i].used && CiStrEqual(GamePaths[i].name, name))
+    if (GamePaths[i].used && match(GamePaths[i].name, name))
       return i;
   }
   return -1;

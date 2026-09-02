@@ -473,16 +473,8 @@
 //#include "psrand.h"
 #include "demofile.h"
 #include "osiris_common.h"
+#include "string_helpers.h"
 
-namespace {
-// Case-insensitive ASCII comparison (replaces the original stricmp).
-bool CiStrEqual(const std::string &a, const std::string &b) {
-  return a.size() == b.size() &&
-         std::equal(a.begin(), a.end(), b.begin(), [](unsigned char x, unsigned char y) {
-           return std::tolower(x) == std::tolower(y);
-         });
-}
-}  // namespace
 
 int *hack_ilist = NULL;
 int hack_list[100];
@@ -2870,7 +2862,7 @@ void osipf_ObjGhost(int handle, bool f_ghost) {
     // BLACKPYROHACK - Chrishack for Mercenary
     if (!(Game_mode & GM_MULTI)) {
       if (obj->handle == Buddy_handle[0]) {
-        if (stricmp(Ships[Players[Player_object->id].ship_index].name, "Black Pyro") == 0) {
+        if (strcasecmp(Ships[Players[Player_object->id].ship_index].name, "Black Pyro") == 0) {
           obj->id = ROBOT_GUIDEBOTRED;
           PageInPolymodel(Object_info[ROBOT_GUIDEBOTRED].render_handle, Object_info[ROBOT_GUIDEBOTRED].type,
                           &Object_info[ROBOT_GUIDEBOTRED].size);
@@ -3384,7 +3376,7 @@ int osipf_FindSoundName(const std::string &name) { return FindSoundName(IGNORE_T
 int osipf_FindRoomName(const std::string &name) {
   for (int i = 0; i <= Highest_room_index; i++) {
     if (Rooms[i].used && !Rooms[i].name.empty()) {
-      if (CiStrEqual(name, Rooms[i].name))
+      if (match(name, Rooms[i].name))
         return i;
     }
   }
@@ -3394,7 +3386,7 @@ int osipf_FindRoomName(const std::string &name) {
 int osipf_FindTriggerName(const std::string &name) {
   for (int i = 0; i < Num_triggers; i++) {
     if (!Triggers[i].name.empty()) {
-      if (CiStrEqual(name, Triggers[i].name))
+      if (match(name, Triggers[i].name))
         return i;
     }
   }
@@ -3404,7 +3396,7 @@ int osipf_FindTriggerName(const std::string &name) {
 int osipf_FindObjectName(const std::string &name) {
   for (int i = 0; i < MAX_OBJECTS; i++) {
     if (Objects[i].type != OBJ_NONE && !Objects[i].name.empty()) {
-      if (CiStrEqual(name, Objects[i].name))
+      if (match(name, Objects[i].name))
         return Objects[i].handle;
     }
   }
@@ -3427,7 +3419,7 @@ int osipf_GetTriggerFace(int trigger_id) {
 
 int osipf_FindDoorName(const std::string &name) {
   for (int i = 0; i <= MAX_OBJECTS; i++) {
-    if (Objects[i].type == OBJ_DOOR && !Objects[i].name.empty() && CiStrEqual(Objects[i].name, name)) {
+    if (Objects[i].type == OBJ_DOOR && !Objects[i].name.empty() && match(Objects[i].name, name)) {
       return Objects[i].handle;
     }
   }

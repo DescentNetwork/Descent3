@@ -19,7 +19,7 @@
 #pragma once
 
 #include "fix.h"
-#include "vecmat.h"
+#include "vecmat_external.h"
 
 struct face;
 struct room;

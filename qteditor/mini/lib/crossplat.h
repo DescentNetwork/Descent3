@@ -31,38 +31,15 @@
 #elif defined(POSIX) || defined(__linux__) || defined(__APPLE__) || defined(__unix__)
 
 #include <cctype>      // tolower, toupper
-#include <cstring>     // strcasecmp, strncasecmp
 #include <sys/stat.h>  // chmod
 
-inline char *_strlwr(char *string) {
-  char *ptr = string;
-  while (*ptr) {
-    *ptr = tolower(*ptr);
-    ptr++;
-  }
-  return string;
-}
 
-inline char *_strupr(char *string) {
-  while (string && *string) {
-    *string = toupper(*string);
-    string++;
-  }
-  return string;
-}
 
 // Replace missing defines from stdlib.h
 #define _MAX_PATH 260  /* max. length of full pathname*/
 #define _MAX_FNAME 256 /* max. length of path component*/
 #define _MAX_EXT 256   /* max. length of extension component*/
 
-// _cdecl replacement
-#define __cdecl __attribute__((cdecl))
-// __stdcall replacement
-#define __stdcall __attribute__((stdcall))
-
-#define strnicmp(a, b, c) strncasecmp(a, b, c)
-#define _chmod(a, b) chmod(a, b)
 
 #else
 

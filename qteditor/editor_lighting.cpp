@@ -2240,7 +2240,7 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
                 for (t=0;t<TERRAIN_WIDTH-1;t++)
                 {
                         int tseg=i*TERRAIN_WIDTH+t;
-                        vector pos1,pos2;
+                        vector3 pos1,pos2;
 
                         pos1.x=(t*TERRAIN_SIZE)+(TERRAIN_SIZE/3);
                         pos1.z=(i*TERRAIN_SIZE)+(TERRAIN_SIZE * .66);
@@ -2269,10 +2269,10 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
                                 int tmap=Terrain_sky.satellite_texture[j];
 
                                 float light1,light2,light_avg;
-                                vector tnorm1=TerrainNormals[MAX_TERRAIN_LOD-1][tseg].normal1;
-                                vector tnorm2=TerrainNormals[MAX_TERRAIN_LOD-1][tseg].normal2;
+                                vector3 tnorm1=TerrainNormals[MAX_TERRAIN_LOD-1][tseg].normal1;
+                                vector3 tnorm2=TerrainNormals[MAX_TERRAIN_LOD-1][tseg].normal2;
 
-                                vector normal;
+                                vector3 normal;
 
                                 vm_GetNormalizedDir (&normal,&Terrain_sky.satellite_vectors[j],&pos1);
                                 light1=answer1*(vm_DotProduct (&normal,&tnorm1));
@@ -2586,11 +2586,11 @@ uint8_t *RoomsAlreadyCombined[MAX_ROOMS];
 /*
 // Returns number of verts in dest if face a can be safely combined with face b
 // Returns 0 if not
-int CombineLightFaces( vector *dest_verts,vector *averts, int nva, vector *norma,vector *bverts, int nvb,vector
+int CombineLightFaces( vector3 *dest_verts,vector3 *averts, int nva, vector3 *norma,vector3 *bverts, int nvb,vector3
 *normb,int aroom,int broom)
 {
         int starta, startb, i;
-        vector va;
+        vector3 va;
         float dp;
 
         dp=vm_DotProduct (normb,norma);
@@ -2658,7 +2658,7 @@ vertex!\n");
 
                 for (startb=0; startb<nvb; startb++)
                 {
-                        vector line_a=averts[nexta]-averts[starta];
+                        vector3 line_a=averts[nexta]-averts[starta];
 
 
 
@@ -3053,14 +3053,14 @@ void CreateNormalMapForFace (room *rp,face *fp)
         int h=lmi_h(fp->lmi_handle);
         special_face *sfp=&SpecialFaces[fp->special_handle];
         spec_vertex spec_verts[MAX_VERTS_PER_FACE];
-        vector vertnorms[MAX_VERTS_PER_FACE];
+        vector3 vertnorms[MAX_VERTS_PER_FACE];
         int vlt,vlb,vrt,vrb,max_y_vertex,top_y,bottom_y,height;
         int no_height=0,no_width=0,no_right=0,no_left=0;
         lightmap_info *lmi_ptr=&LightmapInfo[fp->lmi_handle];
         uint16_t *src_data=lm_data(lmi_ptr->lm_handle);
 
         matrix facematrix;
-        vector fvec=-lmi_ptr->normal;
+        vector3 fvec=-lmi_ptr->normal;
         vm_VectorToMatrix(&facematrix,&fvec,NULL,NULL);
 
         sfp->normal_map=(uint8_t *)mem_malloc (w*h*3);
@@ -3094,8 +3094,8 @@ void CreateNormalMapForFace (room *rp,face *fp)
 
         float left_x=spec_verts[vlt].x*w;
         float delta_left_x=((spec_verts[vlb].x-spec_verts[vlt].x)*w)/left_height;
-        vector left_vnorm=vertnorms[vlt];
-        vector delta_left_vnorm=(vertnorms[vlb]-vertnorms[vlt])/left_height;
+        vector3 left_vnorm=vertnorms[vlt];
+        vector3 delta_left_vnorm=(vertnorms[vlb]-vertnorms[vlt])/left_height;
         int next_break_left = spec_verts[vlb].y*h;
 
         // Setup right interpolant
@@ -3104,8 +3104,8 @@ void CreateNormalMapForFace (room *rp,face *fp)
 
         float right_x=spec_verts[vrt].x*w;
         float delta_right_x=((spec_verts[vrb].x-spec_verts[vrt].x)*w)/right_height;
-        vector right_vnorm=vertnorms[vrt];
-        vector delta_right_vnorm=(vertnorms[vrb]-vertnorms[vrt])/right_height;
+        vector3 right_vnorm=vertnorms[vrt];
+        vector3 delta_right_vnorm=(vertnorms[vrb]-vertnorms[vrt])/right_height;
         int next_break_right = spec_verts[vrb].y*h;
 
         // Do the loop
@@ -3146,8 +3146,8 @@ void CreateNormalMapForFace (room *rp,face *fp)
 
                 int width=(right_x-left_x)+1;
 
-                vector delta_vnorm=(right_vnorm-left_vnorm)/width;
-                vector vnorm=left_vnorm;
+                vector3 delta_vnorm=(right_vnorm-left_vnorm)/width;
+                vector3 vnorm=left_vnorm;
 
                 for (i=left_x;i<(left_x+width);i++)
                 {
@@ -3369,7 +3369,7 @@ void SetupSpecularLighting(int external) {
         {
                 if (!RoomsAlreadyCombined[roomnum][t])
                 {
-                        vector verts[MAX_VERTS_PER_FACE];
+                        vector3 verts[MAX_VERTS_PER_FACE];
                         int room_list[2],face_list[2];
                         for (k=0;k<Rooms[roomnum].faces[t].num_verts;k++)
                                 verts[k]=Rooms[roomnum].verts[Rooms[roomnum].faces[t].face_verts[k]];

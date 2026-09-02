@@ -17,6 +17,7 @@
 
 #include <posix_stream.h>
 #include "posix_helpers.h"
+#include "string_helpers.h"
 #include "mem.h"
 
 namespace {
@@ -32,13 +33,6 @@ bool CiStrLess(const std::string &a, const std::string &b) {
       return ca < cb;
   }
   return (ia == a.end()) && (ib != b.end());
-}
-
-bool CiStrEqual(const std::string &a, const std::string &b) {
-  return a.size() == b.size() &&
-         std::equal(a.begin(), a.end(), b.begin(), [](unsigned char x, unsigned char y) {
-           return std::tolower(x) == std::tolower(y);
-         });
 }
 
 // Reads the [len][data] payload of a non-generic page.  If outfile is
@@ -381,7 +375,7 @@ bool GenericPageList::SaveSelectedDescription(const std::string &new_description
     return false;
 
   std::string new_text = new_description;
-  if (new_text.empty() || CiStrEqual(new_text, NO_DESCRIPTION_STRING))
+  if (new_text.empty() || match(new_text, NO_DESCRIPTION_STRING))
     new_text.clear();
 
   const std::string old_text = m_SelectedNode->description();
