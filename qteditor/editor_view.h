@@ -105,8 +105,11 @@ protected:
 private:
   bool projectVertex(const vector3 &world, float *sx, float *sy) const;
   bool projectVertexDepth(const vector3 &world, float *sx, float *sy, float *depth) const;
+  float getFocal() const;
   void updateCamera();
+  void drawTerrainDots();
   void renderRooms();
+  void renderOverlays();
   void renderTerrain();
   void renderObjects();
   void renderPaths();
