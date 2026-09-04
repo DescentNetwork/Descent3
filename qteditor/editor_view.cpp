@@ -18,12 +18,15 @@
 
 #include "editor_view.h"
 
+#include <QDebug>
+
 #include <QMouseEvent>
 #include <QOpenGLFunctions>
 #include <GL/gl.h>
 #include <QSurfaceFormat>
 
 #include <cmath>
+#include <algorithm>
 
 #include "bitmap.h"
 
@@ -411,7 +414,50 @@ void EditorView::renderRooms() {
   if (Editor_view_mode != VM_ROOM && m_wireframe && D3EditState.terrain_dots)
     drawTerrainDots();
 
+  // For solid (textured) mode, occlusion is resolved the way the Win32
+  // renderer did it: with a Z-buffer rather than a painter's sort.  The GPU
+  // depth buffer is used, and GL_DEPTH_TEST (GL_LESS) keeps the nearest
+  // fragment per pixel regardless of draw order.  The depth buffer is cleared
+  // once per frame and shared across every room here, so the view-distance ->
+  // window-z depth scale must be IDENTICAL for all rooms; otherwise a near
+  // face in one room would not correctly occlude a far face in another.
+  // Precompute the global maximum view distance across the rendered rooms.
+  float solidMaxDepth = 10.0f;
+  if (!m_wireframe) {
+    for (int rr = renderStart; rr <= renderEnd; rr++) {
+      room *rpc = &Rooms[rr];
+      if (!rpc->used)
+        continue;
+      for (int i = 0; i < rpc->num_faces; i++) {
+        face *fp = &rpc->faces[i];
+        int fnv = fp->num_verts;
+        if (fnv > 16)
+          fnv = 16;
+        if (fnv < 3)
+          continue;
+        for (int v = 0; v < fnv; v++) {
+          float tsx, tsy, td;
+          if (projectVertexDepth(rpc->verts[fp->face_verts[v]], &tsx, &tsy, &td)) {
+            if (td > solidMaxDepth)
+              solidMaxDepth = td;
+          }
+        }
+      }
+    }
+  }
+
   // ---- Pass 1: render room geometry (textured or wireframe) ----
+  // Solid mode resolves occlusion with the shared depth buffer; enable it for
+  // the whole room pass so faces in different rooms compare against the same
+  // Z-buffer (near faces win with GL_LESS regardless of draw order).
+  if (!m_wireframe) {
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    // Picking (pickAt) ray-casts every face regardless of facing, so the
+    // displayed surface must too; otherwise a picked back-facing face would
+    // never be shown.  Draw all faces and let the Z-buffer resolve occlusion.
+    glDisable(GL_CULL_FACE);
+  }
   for (int r = renderStart; r <= renderEnd; r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
@@ -565,14 +611,13 @@ void EditorView::renderRooms() {
       for (int i = 0; i < rp->num_faces; i++) {
         face *fp = &rp->faces[i];
 
-        float sx[16], sy[16];
+        float sx[16], sy[16], d[16];
         int nv = fp->num_verts;
         if (nv > 16)
           nv = 16;
         bool behind = false;
         for (int v = 0; v < nv; v++) {
-          const vector3 &world = rp->verts[fp->face_verts[v]];
-          if (!projectVertex(world, &sx[v], &sy[v])) {
+          if (!projectVertexDepth(rp->verts[fp->face_verts[v]], &sx[v], &sy[v], &d[v])) {
             behind = true;
             break;
           }
@@ -589,6 +634,15 @@ void EditorView::renderRooms() {
         float shade = 0.35f + 0.65f * (diff < 0 ? -diff : diff);
         if (shade > 1.0f)
           shade = 1.0f;
+
+        // Pack each vertex's view distance into window z using the GLOBAL
+        // depth scale so this face agrees with faces in every other room.
+        // Near -> z=-1 (smallest depth value), far -> z=+1.
+        static const float kDepthNear = 0.1f;
+        const float zScale = 2.0f / (solidMaxDepth - kDepthNear);
+        const float zBase = -1.0f - kDepthNear * zScale;
+        for (int v = 0; v < nv; v++)
+          d[v] = zBase + d[v] * zScale;
 
         // Texture the face if possible.
         int bm = -1;
@@ -611,7 +665,7 @@ void EditorView::renderRooms() {
                 vv = fp->face_uvls[v].v / th;
               }
               glTexCoord2f(u, vv);
-              glVertex2f(sx[v], sy[v]);
+              glVertex3f(sx[v], sy[v], d[v]);
             }
             glEnd();
             glDisable(GL_TEXTURE_2D);
@@ -622,7 +676,7 @@ void EditorView::renderRooms() {
         glColor3f(shade * 0.7f, shade * 0.75f, shade * 0.85f);
         glBegin(GL_TRIANGLE_FAN);
         for (int v = 0; v < nv; v++)
-          glVertex2f(sx[v], sy[v]);
+          glVertex3f(sx[v], sy[v], d[v]);
         glEnd();
       }
     }
@@ -972,6 +1026,8 @@ void EditorView::renderTerrain() {
       glEnd();
     }
   }
+  if (!m_wireframe)
+    glDisable(GL_DEPTH_TEST);
 }
 
 // Draws the objects in each rendered room as filled disks, matching the
@@ -1277,6 +1333,15 @@ void EditorView::updateCamera() {
   m_cameraValid = true;
 }
 
+void EditorView::setOrbitCamera(float yawDeg, float pitchDeg, float dist) {
+  m_yaw = yawDeg;
+  m_pitch = pitchDeg;
+  if (dist > 0.0f)
+    m_dist = dist;
+  m_cameraValid = false;
+  update();
+}
+
 void EditorView::paintGL() {
   QOpenGLFunctions *f = context() ? context()->functions() : nullptr;
   if (f == nullptr)
@@ -1443,7 +1508,13 @@ bool EditorView::pointInPolygon(float px, float py, const float *sx, const float
 }
 
 EditorView::PickResult EditorView::pickAt(int screenX, int screenY) const {
-  return pickAtImpl(screenX, screenY, -1, -1, 1e30f);
+  PickResult pick = pickAtImpl(screenX, screenY, -1, -1, 1e30f);
+  qInfo().noquote()
+      << "PICK" << "yaw=" << m_yaw << "pitch=" << m_pitch << "zoom=" << m_dist
+      << "click=(" << screenX << "," << screenY << ")"
+      << "room=" << pick.roomIndex << "face=" << pick.faceIndex
+      << "obj=" << pick.objectIndex << "depth=" << pick.depth;
+  return pick;
 }
 
 EditorView::PickResult EditorView::pickAtCycle(int screenX, int screenY) {

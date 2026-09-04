@@ -203,6 +203,10 @@ bool EBNode_VerifyGraph();
 #endif // MINI_EDITOR
 #include "d3edit.h"
 
+static constexpr double kPi = 3.14159265358979323846;
+// Vertical field of view in radians (matches EditorView::kFovY).
+static constexpr float kPickFovY = 0.5445f;
+
 namespace {
 
 struct DialogInstance
@@ -2458,6 +2462,113 @@ private slots:
     QCOMPARE(pick.faceIndex, 0);
   }
 
+  // Display-level occlusion check: with the same controlled camera as
+  // testPickPrefersForegroundFaceOverOccluded, the rendered framebuffer must
+  // show the FOREGROUND face (the one pickAt() reports) at the shared pixel,
+  // not the occluded background face drawn later in scene order.  This verifies
+  // the solid renderer resolves depth with the GPU Z-buffer the way the Win32
+  // renderer did, so the displayed surface matches what picking returns.
+  void testRenderShowsForegroundFaceOverOccluded() {
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    Viewer_object = &Objects[0];
+    Viewer_object->type = OBJ_VIEWER;
+    Viewer_object->pos = vector3{0, 0, 0};
+    Viewer_object->orient.rvec = vector3{0, 0, 1};
+    Viewer_object->orient.uvec = vector3{0, 1, 0};
+    Viewer_object->orient.fvec = vector3{1, 0, 0};
+    Editor_view_mode = VM_MINE;
+
+    auto setFlatQuad = [](room *rp, const vector3 *verts) {
+      InitRoomFace(&rp->faces[0], 4);
+      rp->faces[0].tmap = -1; // force flat shading, independent of textures
+      for (int i = 0; i < 4; i++) {
+        rp->verts[i] = verts[i];
+        rp->faces[0].face_verts[i] = (int16_t)i;
+      }
+      ComputeFaceNormal(rp, 0);
+    };
+
+    // Room 0 (foreground): angled quad crossing the view axis at depth x=8.
+    {
+      room *r0 = &Rooms[0];
+      *r0 = room{};
+      InitRoom(r0, 4, 1, 0);
+      const vector3 v[4] = {{5, -4, 3}, {48, -4, -40}, {68, 4, -60}, {5, 4, 3}};
+      setFlatQuad(r0, v);
+      r0->used = 1;
+    }
+    // Room 1 (background): flat quad perpendicular to the view at depth x=25,
+    // drawn AFTER room 0 in scene order (so without depth it would overwrite it).
+    {
+      room *r1 = &Rooms[1];
+      *r1 = room{};
+      InitRoom(r1, 4, 1, 0);
+      const vector3 v[4] = {{25, -2, -6}, {25, -2, 6}, {25, 2, 6}, {25, 2, -6}};
+      setFlatQuad(r1, v);
+      r1->used = 1;
+    }
+    Highest_room_index = 1;
+
+    EditorView view;
+    view.resize(640, 480);
+    view.show();
+    QCoreApplication::processEvents();
+    for (int i = 0; i < 20 && view.frameCount() < 1; i++)
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    QCoreApplication::processEvents();
+    QVERIFY(view.frameCount() >= 1);
+
+    // Sanity: picking agrees the foreground (room 0) face is nearest at centre.
+    EditorView::PickResult pick = view.pickAt(320, 240);
+    QVERIFY2(pick.roomIndex == 0 && pick.faceIndex == 0, "foreground face not picked");
+
+    // Expected flat colours (mirrors the shading math in renderRooms).
+    auto flatRgb = [](const vector3 &n, float *out) {
+      vector3 ld{0.4f, 0.7f, 0.6f};
+      float len = vm_NormalizeVector(&ld);
+      if (len < 0.001f)
+        ld = vector3{0, 1, 0};
+      float diff = n.x() * ld.x() + n.y() * ld.y() + n.z() * ld.z();
+      float shade = 0.35f + 0.65f * (diff < 0 ? -diff : diff);
+      if (shade > 1.0f)
+        shade = 1.0f;
+      out[0] = shade * 0.70f;
+      out[1] = shade * 0.75f;
+      out[2] = shade * 0.85f;
+    };
+    float fg[3], bg[3];
+    flatRgb(Rooms[0].faces[0].normal, fg);
+    flatRgb(Rooms[1].faces[0].normal, bg);
+    auto toInt = [](float c) { return (int)(c * 255.0f + 0.5f); };
+    const int fgR = toInt(fg[0]), fgG = toInt(fg[1]), fgB = toInt(fg[2]);
+    const int bgR = toInt(bg[0]), bgG = toInt(bg[1]), bgB = toInt(bg[2]);
+    qInfo() << "expected fg rgb=(" << fgR << "," << fgG << "," << fgB << ") bg rgb=(" << bgR
+            << "," << bgG << "," << bgB << ")";
+    // The two faces must be visually distinct or the check is meaningless.
+    QVERIFY2((qAbs(fgR - bgR) + qAbs(fgG - bgG) + qAbs(fgB - bgB)) > 20,
+             "foreground and background faces are too similar in colour to test occlusion");
+
+    QImage img = view.grabFramebuffer();
+    QVERIFY(!img.isNull());
+    QRgb p = img.pixel(QPoint(320, 240));
+    const int ar = qRed(p), ag = qGreen(p), ab = qBlue(p);
+    qInfo() << "centre pixel rgb=(" << ar << "," << ag << "," << ab << ")";
+
+    const int dFg = qAbs(ar - fgR) + qAbs(ag - fgG) + qAbs(ab - fgB);
+    const int dBg = qAbs(ar - bgR) + qAbs(ag - bgG) + qAbs(ab - bgB);
+    QVERIFY2(dFg <= 12,
+             "centre pixel does not match the foreground face (depth occlusion not displayed)");
+    QVERIFY2(dBg > 12,
+             "centre pixel matched the occluded background face; depth buffer not resolving occlusion");
+  }
+
   // Verifies that the selection signals fire and update the editor state.
   void testPickSignalsUpdateState() {
     const QString level = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
@@ -2587,6 +2698,214 @@ private slots:
     // face again (near face wins).
     EditorView::PickResult other = fix.view.pickAtCycle(321, 240);
     QCOMPARE(other.roomIndex, 0);
+  }
+
+  // Independent geometric pick oracle.  Unlike EditorView::projectVertexDepth
+  // / pickAtImpl, this never reuses the view's projection or depth math: it
+  // reconstructs the orbit camera directly from (yaw, pitch, zoom, mine-centre)
+  // and ray-casts every room face (Moller-Trumbore) to find the nearest
+  // intersection along the pixel's view ray.  Any camera-rotation or
+  // depth-resolution bug in pickAt() makes the two disagree, so this oracle
+  // genuinely validates pickAt() under rotation instead of comparing the pick
+  // code against itself.
+  bool rayOracle(const EditorView &view, float yawDeg, float pitchDeg, float zoom, int sx,
+                 int sy, int *outRoom, int *outFace, float *outDepth) const {
+    // Mine bbox centre == the orbit target (same as EditorView::updateCamera,
+    // recomputed here independently from the room data).
+    vector3 mn{1e30f, 1e30f, 1e30f}, mx{-1e30f, -1e30f, -1e30f};
+    bool any = false;
+    for (int r = 0; r <= Highest_room_index; r++) {
+      room *rp = &Rooms[r];
+      if (!rp->used)
+        continue;
+      for (int v = 0; v < rp->num_verts; v++) {
+        const vector3 &p = rp->verts[v];
+        mn.x() = std::min(mn.x(), p.x());
+        mn.y() = std::min(mn.y(), p.y());
+        mn.z() = std::min(mn.z(), p.z());
+        mx.x() = std::max(mx.x(), p.x());
+        mx.y() = std::max(mx.y(), p.y());
+        mx.z() = std::max(mx.z(), p.z());
+        any = true;
+      }
+    }
+    if (!any)
+      return false;
+    const vector3 target = (mn + mx) * 0.5f;
+
+    // Camera orientation: EditorView::updateCamera uses
+    // vm_AnglesToMatrix(&m_orient, 0, yaw, pitch) i.e. p=0, h=yaw, b=pitch.
+    const double pRad = pitchDeg * kPi / 180.0;
+    const double hRad = yawDeg * kPi / 180.0;
+    matrix orient;
+    vm_SinCosToMatrix(&orient, 0.0f, 1.0f, (scalar)std::sin(pRad), (scalar)std::cos(pRad),
+                      (scalar)std::sin(hRad), (scalar)std::cos(hRad));
+    const vector3 eye = target - orient.fvec * zoom;
+
+    // Focal from the vertical FOV (matches EditorView::projectVertexDepth).
+    const float h = view.height() > 0 ? (float)view.height() : 480.0f;
+    const float w = view.width() > 0 ? (float)view.width() : 640.0f;
+    const float focal = (h * 0.5f) / std::tan(kPickFovY * 0.5f);
+
+    // For screen pixel (sx, sy): sx = w/2 + (cx/cz)*focal, sy = h/2 - (cy/cz)*focal.
+    // Choose cz = 1 => world = eye + rvec*cx + uvec*cy + fvec.
+    const float cx = ((float)sx - w * 0.5f) / focal;
+    const float cy = (h * 0.5f - (float)sy) / focal;
+    vector3 dir = orient.rvec * cx + orient.uvec * cy + orient.fvec;
+    const float dlen = vm_GetMagnitude(&dir);
+    if (dlen < 1e-6f)
+      return false;
+    dir = dir * (1.0f / dlen);
+
+    int bestR = -1, bestF = -1;
+    float bestT = 1e30f;
+    const float rad2 = 5000.0f * 5000.0f; // matches EditorView::m_rad default
+    for (int r = 0; r <= Highest_room_index; r++) {
+      room *rp = &Rooms[r];
+      if (!rp->used)
+        continue;
+      if (rp->num_verts > 0) {
+        const vector3 dv = rp->verts[0] - target;
+        if ((dv.x() * dv.x() + dv.y() * dv.y() + dv.z() * dv.z()) > rad2)
+          continue;
+      }
+      for (int f = 0; f < rp->num_faces; f++) {
+        face *fp = &rp->faces[f];
+        const int nv = fp->num_verts;
+        if (nv < 3 || nv > 64)
+          continue;
+        const vector3 &A = rp->verts[fp->face_verts[0]];
+        for (int i = 1; i + 1 < nv; i++) {
+          const vector3 &B = rp->verts[fp->face_verts[i]];
+          const vector3 &C = rp->verts[fp->face_verts[i + 1]];
+          const vector3 e1 = B - A;
+          const vector3 e2 = C - A;
+          const vector3 pvec = vm_Cross3Product(dir, e2);
+          const float det = vm_Dot3Product(e1, pvec);
+          if (std::fabs(det) < 1e-9f)
+            continue;
+          const float inv = 1.0f / det;
+          const vector3 tvec = eye - A;
+          const float u = vm_Dot3Product(tvec, pvec) * inv;
+          if (u < -1e-5f || u > 1.0f + 1e-5f)
+            continue;
+          const vector3 qvec = vm_Cross3Product(tvec, e1);
+          const float vv = vm_Dot3Product(dir, qvec) * inv;
+          if (vv < -1e-5f || u + vv > 1.0f + 1e-5f)
+            continue;
+          const float t = vm_Dot3Product(e2, qvec) * inv;
+          if (t < 1e-4f)
+            continue;
+          if (t < bestT) {
+            bestT = t;
+            bestR = r;
+            bestF = f;
+          }
+        }
+      }
+    }
+    *outRoom = bestR;
+    *outFace = bestF;
+    *outDepth = bestT;
+    return bestR >= 0;
+  }
+
+  // Camera states actually exercised in the GUI (captured from real clicks:
+  // a mix of yaw/pitch/zoom).  At each state the test scans the viewport,
+  // finds pixels where one section of the mine geometrically occludes another
+  // (an independent ray oracle reports a nearer face with a deeper face behind
+  // it), and asserts pickAt() returns that foreground face.  This validates
+  // pickAt() against the camera rotation/position using a genuinely
+  // independent oracle rather than the view's own projection.
+  void testPickOcclusionMatchesIndependentOracle() {
+    const QString level = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    QVERIFY2(EditorLoadLevel(std::filesystem::path(level.toStdString())), "EditorLoadLevel failed");
+
+    EditorView view;
+    view.resize(1200, 800);
+    view.show();
+    QCoreApplication::processEvents();
+    for (int i = 0; i < 30 && view.frameCount() < 1; i++)
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    QCoreApplication::processEvents();
+    QVERIFY2(view.frameCount() >= 1, "view never painted");
+
+    view.resetCamera();
+    view.update();
+    QCoreApplication::processEvents();
+
+    // Yaw/pitch/zoom from the real GUI session (a representative subset).
+    const float cameras[][3] = {
+        {97.5f, 1.5f, 1867.73f}, {214.5f, -1.5f, 1361.58f}, {266.0f, 1.0f, 1361.58f},
+        {285.5f, -1.5f, 1361.58f}, {397.5f, 1.0f, 1361.58f}, {438.0f, -1.5f, 1361.58f},
+    };
+
+    int camerasWithOcclusion = 0;
+    for (size_t ci = 0; ci < sizeof(cameras) / sizeof(cameras[0]); ci++) {
+      const float yaw = cameras[ci][0];
+      const float pitch = cameras[ci][1];
+      const float zoom = cameras[ci][2];
+      view.setOrbitCamera(yaw, pitch, zoom);
+      QCoreApplication::processEvents();
+
+      int verifiedAtThisCamera = 0;
+      for (int sy = 20; sy < 780; sy += 120) {
+        for (int sx = 20; sx < 1180; sx += 120) {
+          // Oracle: nearest face along this pixel's ray.
+          int oroom = -1, oface = -1;
+          float odepth = 0.0f;
+          if (!rayOracle(view, yaw, pitch, zoom, sx, sy, &oroom, &oface, &odepth))
+            continue;
+          // Need a genuine occlusion: a second face deeper than the nearest
+          // along the same ray.  Two pickAtCycle() calls at the same pixel
+          // resolve this: the first returns the foreground face (and records
+          // it for cycling), the second returns the next-farther face under
+          // the same pixel (Win32 FM_NEXT) when one exists.
+          EditorView::PickResult front = view.pickAtCycle(sx, sy);
+          EditorView::PickResult next = view.pickAtCycle(sx, sy);
+          bool hasDeeper = false;
+          float depth2 = 0.0f;
+          if (next.roomIndex >= 0 && next.faceIndex >= 0 && front.roomIndex == oroom &&
+              front.faceIndex == oface && !(next.roomIndex == oroom && next.faceIndex == oface) &&
+              next.depth > front.depth) {
+            hasDeeper = true;
+            depth2 = next.depth;
+          }
+          if (!hasDeeper)
+            continue;
+          if (depth2 <= (front.depth * 1.02f + 0.5f))
+            continue; // not a decisive foreground/background separation
+
+          // Ground truth == the foreground face from the independent oracle.
+          EditorView::PickResult pick = view.pickAt(sx, sy);
+          if (!(pick.roomIndex == oroom && pick.faceIndex == oface)) {
+            qWarning().noquote()
+                << "MISMATCH camera(yaw,pitch,zoom)=(" << yaw << "," << pitch << "," << zoom
+                << ") click=(" << sx << "," << sy << ") oracle(front)=(" << oroom << "," << oface
+                << ") pickAt=(" << pick.roomIndex << "," << pick.faceIndex
+                << ",obj=" << pick.objectIndex << ")";
+            QVERIFY2(pick.roomIndex == oroom && pick.faceIndex == oface,
+                     "pickAt() disagrees with the independent occlusion oracle");
+          }
+          QVERIFY2(pick.objectIndex < 0, "pickAt() picked an object over the foreground face");
+          verifiedAtThisCamera++;
+          if (verifiedAtThisCamera >= 4)
+            break;
+        }
+        if (verifiedAtThisCamera >= 4)
+          break;
+      }
+      if (verifiedAtThisCamera > 0)
+        camerasWithOcclusion++;
+      else
+        qWarning() << "no decisive face-face occlusion at camera(yaw,pitch,zoom)=(" << yaw << ","
+                   << pitch << "," << zoom << ")";
+    }
+
+    QVERIFY2(camerasWithOcclusion > 0,
+             "no tested camera orientation produced a foreground/background occlusion to check");
+    qInfo() << "pickAt() matched the independent occlusion oracle at" << camerasWithOcclusion
+            << "camera orientation(s)";
   }
 
   void testPlaceRoomSetsGlobals() {

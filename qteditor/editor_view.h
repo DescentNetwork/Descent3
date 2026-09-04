@@ -44,9 +44,14 @@ public:
   // Forces a redraw (the Win32 InvalidateRect equivalent).
   void requestRedraw();
 
-  // Resets orbit camera distance/target so the next paint recomputes
+  // Resets orbit camera distance/target so the next paint recompute
   // from the mine bounds (call after level load / new).
   void resetCamera() { m_targetInitialized = false; }
+
+  // Sets the orbit camera to the given orientation (and optionally distance)
+  // and forces a redraw.  Only takes effect when no viewer object exists.
+  // Angles are in degrees; the default distance keeps the current m_dist.
+  void setOrbitCamera(float yawDeg, float pitchDeg, float dist = -1.0f);
 
   QSize renderSize() const;
   void setPickRadius(float radius) { m_rad = radius; }
