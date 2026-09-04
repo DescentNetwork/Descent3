@@ -35,8 +35,6 @@
 #include <filesystem>
 #include <string>
 #include <vector>
-
-#include "posix_helpers.h"
 #include <hog2_format.h>
 
 #include "manage.h"

@@ -31,8 +31,6 @@
 #include <cstring>
 #include <string>
 
-#include "posix_helpers.h"
-
 // Case-insensitive prefix equality (replaces strnicmp(a.c_str(), b, strlen(b))).
 inline bool ieq_prefix(const std::string &a, const char *b) {
   size_t n = std::strlen(b);

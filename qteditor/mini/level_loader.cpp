@@ -46,7 +46,6 @@
 #include "terrain.h"
 #include "findintersection.h"
 #include "gametexture.h"
-#include "posix_helpers.h"
 
 #include <cstring>
 #include <cstdio>

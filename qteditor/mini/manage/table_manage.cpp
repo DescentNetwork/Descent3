@@ -16,7 +16,6 @@
 #include <vector>
 
 #include <posix_stream.h>
-#include "posix_helpers.h"
 #include "string_helpers.h"
 #include "mem.h"
 
