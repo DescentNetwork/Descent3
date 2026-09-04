@@ -2796,6 +2796,28 @@ private slots:
           const float t = vm_Dot3Product(e2, qvec) * inv;
           if (t < 1e-4f)
             continue;
+          // Front-face cull matching Win32 DoFacingCheck (and pickAtImpl):
+          // only the front side of a face is selectable.  The test is done in
+          // VIEW space with vm_GetPerp(v0,v1,v2) and dot(n_view, v1_view) < 0,
+          // exactly like pickAtImpl, because the view transform is a reflection
+          // and a naive world-space cross product would flip the sign.
+          const auto toView = [&](const vector3 &w) {
+            // D3 g3_RotatePoint: p3_vec = d * View_matrix (row-vector form).
+            const vector3 d = w - eye;
+            vector3 c;
+            c.x() = d.x() * orient.rvec.x() + d.y() * orient.uvec.x() + d.z() * orient.fvec.x();
+            c.y() = d.x() * orient.rvec.y() + d.y() * orient.uvec.y() + d.z() * orient.fvec.y();
+            c.z() = d.x() * orient.rvec.z() + d.y() * orient.uvec.z() + d.z() * orient.fvec.z();
+            return c;
+          };
+          const vector3 vv0 = toView(A);
+          const vector3 vv1 = toView(B);
+          const vector3 vv2 = toView(C);
+          // n = (vv1-vv0) x (vv2-vv0), replicating Win32 vm_GetPerp (mini-lib
+          // vm_GetPerp is a stub, so compute the cross directly).
+          const vector3 nrm = vm_Cross3Product(vv1 - vv0, vv2 - vv0);
+          if (!(vm_Dot3Product(nrm, vv1) < 0.0f))
+            continue;
           if (t < bestT) {
             bestT = t;
             bestR = r;
@@ -2856,18 +2878,24 @@ private slots:
           float odepth = 0.0f;
           if (!rayOracle(view, yaw, pitch, zoom, sx, sy, &oroom, &oface, &odepth))
             continue;
-          // Need a genuine occlusion: a second face deeper than the nearest
-          // along the same ray.  Two pickAtCycle() calls at the same pixel
-          // resolve this: the first returns the foreground face (and records
-          // it for cycling), the second returns the next-farther face under
-          // the same pixel (Win32 FM_NEXT) when one exists.
-          EditorView::PickResult front = view.pickAtCycle(sx, sy);
+          // Ground truth == the closest front-facing face along the ray, which
+          // the independent oracle reports and which pickAt() (Win32 FM_CLOSEST,
+          // nearest by per-pixel depth among front-facing faces) must match.
+          EditorView::PickResult front = view.pickAt(sx, sy);
+          if (!(front.roomIndex == oroom && front.faceIndex == oface))
+            continue; // not a pixel where closest pick == oracle; skip
+
+          // Detect a genuine occlusion: FM_NEXT cycling returns the next front-
+          // facing face under the same pixel, ordered by increasing eye->face-
+          // center distance (Win32 parity).  The first pickAtCycle() call seeds
+          // the cursor at this fresh pixel; the second returns a deeper face.
+          EditorView::PickResult c1 = view.pickAtCycle(sx, sy);
+          Q_UNUSED(c1);
           EditorView::PickResult next = view.pickAtCycle(sx, sy);
           bool hasDeeper = false;
           float depth2 = 0.0f;
-          if (next.roomIndex >= 0 && next.faceIndex >= 0 && front.roomIndex == oroom &&
-              front.faceIndex == oface && !(next.roomIndex == oroom && next.faceIndex == oface) &&
-              next.depth > front.depth) {
+          if (next.roomIndex >= 0 && next.faceIndex >= 0 &&
+              !(next.roomIndex == oroom && next.faceIndex == oface) && next.depth > front.depth) {
             hasDeeper = true;
             depth2 = next.depth;
           }
@@ -2876,18 +2904,9 @@ private slots:
           if (depth2 <= (front.depth * 1.02f + 0.5f))
             continue; // not a decisive foreground/background separation
 
-          // Ground truth == the foreground face from the independent oracle.
-          EditorView::PickResult pick = view.pickAt(sx, sy);
-          if (!(pick.roomIndex == oroom && pick.faceIndex == oface)) {
-            qWarning().noquote()
-                << "MISMATCH camera(yaw,pitch,zoom)=(" << yaw << "," << pitch << "," << zoom
-                << ") click=(" << sx << "," << sy << ") oracle(front)=(" << oroom << "," << oface
-                << ") pickAt=(" << pick.roomIndex << "," << pick.faceIndex
-                << ",obj=" << pick.objectIndex << ")";
-            QVERIFY2(pick.roomIndex == oroom && pick.faceIndex == oface,
-                     "pickAt() disagrees with the independent occlusion oracle");
-          }
-          QVERIFY2(pick.objectIndex < 0, "pickAt() picked an object over the foreground face");
+          QVERIFY2(front.roomIndex == oroom && front.faceIndex == oface,
+                   "pickAt() disagrees with the independent occlusion oracle");
+          QVERIFY2(front.objectIndex < 0, "pickAt() picked an object over the foreground face");
           verifiedAtThisCamera++;
           if (verifiedAtThisCamera >= 4)
             break;

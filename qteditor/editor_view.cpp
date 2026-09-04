@@ -453,9 +453,10 @@ void EditorView::renderRooms() {
   if (!m_wireframe) {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-    // Picking (pickAt) ray-casts every face regardless of facing, so the
-    // displayed surface must too; otherwise a picked back-facing face would
-    // never be shown.  Draw all faces and let the Z-buffer resolve occlusion.
+    // Back faces are culled per-face below (geometric, matching the Win32
+    // DoFacingCheck test and pickAtImpl) so the displayed surface matches what
+    // picking can select.  GL winding culling is left disabled; the Z-buffer
+    // resolves occlusion between the remaining front-facing faces.
     glDisable(GL_CULL_FACE);
   }
   for (int r = renderStart; r <= renderEnd; r++) {
@@ -624,6 +625,29 @@ void EditorView::renderRooms() {
         }
         if (behind)
           continue;
+
+        // Front-face cull matching Win32 DoFacingCheck (and pickAtImpl): only
+        // front-facing faces are drawn, so the displayed surface agrees with
+        // what picking can select.  Uses D3's row-vector view space
+        // (p3_vec = d * View_matrix): dot((v1-v0)x(v2-v0), v1) < 0 => front.
+        {
+          auto toViewScratch = [this](const vector3 &w, vector3 &c) {
+            const vector3 d = w - m_eye;
+            c = vector3{d.x() * m_orient.rvec.x() + d.y() * m_orient.uvec.x() +
+                            d.z() * m_orient.fvec.x(),
+                        d.x() * m_orient.rvec.y() + d.y() * m_orient.uvec.y() +
+                            d.z() * m_orient.fvec.y(),
+                        d.x() * m_orient.rvec.z() + d.y() * m_orient.uvec.z() +
+                            d.z() * m_orient.fvec.z()};
+          };
+          vector3 v0, v1, v2;
+          toViewScratch(rp->verts[fp->face_verts[0]], v0);
+          toViewScratch(rp->verts[fp->face_verts[1]], v1);
+          toViewScratch(rp->verts[fp->face_verts[2]], v2);
+          const vector3 n = vm_Cross3Product(v1 - v0, v2 - v0);
+          if (!(vm_Dot3Product(n, v1) < 0.0f))
+            continue; // back-facing -> not drawn (matches pick)
+        }
 
         // Face shading from a fixed world light direction.
         vector3 ld{0.4f, 0.7f, 0.6f};
@@ -1293,21 +1317,29 @@ void EditorView::renderBNodes() {
 
 void EditorView::updateCamera() {
   m_cameraValid = false;
+
+  // Always refresh the orbit target from the CURRENT mine bounds.  The pick
+  // radius gate (and the orbit camera below) rely on m_target, so even when we
+  // follow a Viewer_object (identity camera) m_target must not go stale between
+  // mine loads / tests -- otherwise the radius gate would use an out-of-date
+  // center and wrongly cull rooms.
+  vector3 min, max;
+  if (Editor_view_mode == VM_TERRAIN) {
+    min = vector3{0, 0, 0};
+    max = vector3{float(TERRAIN_WIDTH * TERRAIN_SIZE), float(MAX_TERRAIN_HEIGHT),
+                  float(TERRAIN_DEPTH * TERRAIN_SIZE)};
+  } else {
+    computeMineBounds(&min, &max);
+  }
+  m_target = (min + max) * 0.5f;
+
   if (Viewer_object != nullptr) {
     m_eye = Viewer_object->pos;
     m_orient = Viewer_object->orient;
     m_cameraValid = true;
     return;
   }
-  vector3 min, max;
-  if (Editor_view_mode == VM_TERRAIN) {
-    min = vector3{0, 0, 0};
-    max = vector3{float(TERRAIN_WIDTH * TERRAIN_SIZE), float(MAX_TERRAIN_HEIGHT),
-                 float(TERRAIN_DEPTH * TERRAIN_SIZE)};
-  } else {
-    computeMineBounds(&min, &max);
-  }
-  m_target = (min + max) * 0.5f;
+
   if (!m_targetInitialized) {
     // Fit the entire mine in the view: distance is chosen from the bounding
     // sphere radius (half the bbox diagonal) and the horizontal+vertical
@@ -1469,7 +1501,7 @@ void EditorView::mouseReleaseEvent(QMouseEvent *event) {
         } else {
           m_pickRoom = -1;
           m_pickFace = -1;
-          m_pickDepth = 1e30f;
+          m_pickCenterDist = 1e30f;
           emit selectionCleared();
         }
       }
@@ -1519,25 +1551,34 @@ EditorView::PickResult EditorView::pickAt(int screenX, int screenY) const {
 
 EditorView::PickResult EditorView::pickAtCycle(int screenX, int screenY) {
   const bool sameSpot = (m_pickScreen == QPoint(screenX, screenY));
+  // FM_NEXT: only faces farther (by eye->face-center distance) than the
+  // previously picked face are considered, so seed with that center distance.
+  // A brand-new click position uses 0 (no gate: pick the closest front face).
   PickResult best =
       pickAtImpl(screenX, screenY, sameSpot ? m_pickRoom : -1,
-                 sameSpot ? m_pickFace : -1, sameSpot ? m_pickDepth : 1e30f);
-  // Remember the picked surface for the next FM_NEXT-style cycle.
+                 sameSpot ? m_pickFace : -1, sameSpot ? m_pickCenterDist : 0.0f);
+  // Remember the picked surface (and its center distance) for the next cycle.
   if (best.roomIndex >= 0 && best.faceIndex >= 0) {
     m_pickRoom = best.roomIndex;
     m_pickFace = best.faceIndex;
-    m_pickDepth = best.depth;
+    m_pickCenterDist = best.depth;
     m_pickScreen = QPoint(screenX, screenY);
   }
   return best;
 }
 
-// Shared implementation.  When (prevRoom, prevFace, prevDepth) are valid the
-// pick advances to the next farther face under the same pixel (Win32 FM_NEXT):
-// a face closer than or at prevDepth is skipped, and only faces farther than
-// prevDepth are considered.
+// Shared implementation mirroring Win32 WireframeFindRoomFace / CheckRoom.  A
+// face is a candidate only if it is FRONT-FACING (Win32 DoFacingCheck: back
+// faces culled via the geometric normal) and its polygon covers the click
+// pixel.  For a plain pick (prevRoom < 0, FM_CLOSEST) the winner is the
+// candidate nearest along the view ray at the pixel (the Z-buffer front-most
+// face) -- i.e. minimum per-pixel depth.  For FM_NEXT (prevRoom/prevFace valid,
+// e.g. via pickAtCycle) only candidates whose eye->face-center distance is
+// strictly greater than prevCenterDist are considered, and the winner is the
+// one with the minimum such eye->face-center distance (Win32:
+// dist > Search_min_dist with Search_min_dist = Found_dist, then min dist).
 EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prevRoom,
-                                               int prevFace, float prevDepth) const {
+                                               int prevFace, float prevCenterDist) const {
   PickResult best;
   const bool cycle = prevRoom >= 0 && prevFace >= 0;
 
@@ -1591,15 +1632,50 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
       if (!pointInPolygon(static_cast<float>(screenX), static_cast<float>(screenY), sx, sy, nv))
         continue;
 
-      // Perspective-correct depth of the surface exactly at the clicked
-      // pixel.  1/z is linear in screen space for a perspective projection,
-      // so barycentric interpolation of the inverse vertex depths across the
-      // clicked triangle gives the true depth of the surface under the mouse.
-      // Averaging the raw vertex depths is wrong: a large foreground face seen
-      // at an angle has vertices at wildly different depths, so its average can
-      // be farther than an occluded face just behind the click point, causing
-      // the occluded (background) element to be picked instead of the visible
-      // foreground one.
+      // Win32 DoFacingCheck: back-face cull by the geometric face normal.  In
+      // view space the face is front-facing when dot(n_view, vert_view) < 0,
+      // where n_view = vm_GetPerp(v0, v1, v2) = (v1 - v0) x (v2 - v0) computed
+      // from the VIEW-SPACE vertex coordinates (as g3_RotatePoint produces).
+      // We must use g3_RotatePoint's exact row-vector view transform
+      // (p3_vec = d * View_matrix, which is the transpose of projectVertexDepth's
+      // c = M * d) rather than camera-relative world-space vectors: the view
+      // transform is a reflection (left-handed), so a naive world-space cross
+      // product would flip the facing sign.  Back faces are never selectable.
+      {
+        const vector3 &w0 = rp->verts[fp->face_verts[0]];
+        const vector3 &w1 = rp->verts[fp->face_verts[1]];
+        const vector3 &w2 = rp->verts[fp->face_verts[2]];
+        auto toViewScratch = [](const vector3 &w, const vector3 &eye,
+                                const matrix &o, vector3 &c) {
+          // D3 g3_RotatePoint computes p3_vec = d * View_matrix (row-vector
+          // convention), i.e. the TRANSPOSE of projectVertexDepth's c = M*d.
+          // DoFacingCheck must use this exact view space, so replicate the
+          // d * View_matrix row-vector form (positive scalings dropped --
+          // they cannot change the facing sign).
+          const vector3 d = w - eye;
+          c.x() = d.x() * o.rvec.x() + d.y() * o.uvec.x() + d.z() * o.fvec.x();
+          c.y() = d.x() * o.rvec.y() + d.y() * o.uvec.y() + d.z() * o.fvec.y();
+          c.z() = d.x() * o.rvec.z() + d.y() * o.uvec.z() + d.z() * o.fvec.z();
+        };
+        vector3 v0, v1, v2;
+        toViewScratch(w0, m_eye, m_orient, v0);
+        toViewScratch(w1, m_eye, m_orient, v1);
+        toViewScratch(w2, m_eye, m_orient, v2);
+        // n = (v1-v0) x (v2-v0) in view space, replicating Win32 vm_GetPerp
+        // (the mini-lib vm_GetPerp is a stub, so compute the cross directly).
+        const vector3 m10 = v1 - v0;
+        const vector3 m20 = v2 - v0;
+        const vector3 n = vm_Cross3Product(m10, m20);
+        float dotv1 = vm_Dot3Product(n, v1);
+        if (!(dotv1 < 0.0f))
+          continue; // back-facing -> not a valid pick candidate (Win32)
+      }
+
+      // Perspective-correct depth of the surface exactly at the clicked pixel
+      // (used to resolve the nearest front-facing face for a plain pick).  1/z
+      // is linear in screen space for a perspective projection, so barycentric
+      // interpolation of the inverse vertex depths across the clicked triangle
+      // gives the true depth of the surface under the mouse.
       const float px = static_cast<float>(screenX);
       const float py = static_cast<float>(screenY);
       bool found = false;
@@ -1630,14 +1706,30 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
       if (!found)
         continue;
 
-      // When cycling (FM_NEXT), skip faces at or closer than the previous pick.
-      if (cycle && pixelDepth <= prevDepth + 1e-4f)
-        continue;
+      // Win32 ComputeCenterPointOnFace + vm_VectorDistance: the distance from
+      // the viewer's EYE to the (vertex-averaged) face center.  This is the
+      // metric Win32 stores in Found_dist and uses to order FM_NEXT.
+      vector3 center;
+      ComputeCenterPointOnFace(&center, rp, f);
+      const float centerDist = vm_VectorDistance(&center, &m_eye);
 
-      if (pixelDepth < best.depth) {
-        best.roomIndex = r;
-        best.faceIndex = f;
-        best.depth = pixelDepth;
+      if (cycle) {
+        // FM_NEXT: strictly farther (by eye->face-center distance) than the
+        // previously picked face, choosing the minimum such distance.
+        if (centerDist <= prevCenterDist + 1e-4f)
+          continue;
+        if (centerDist < best.depth) {
+          best.roomIndex = r;
+          best.faceIndex = f;
+          best.depth = centerDist;
+        }
+      } else {
+        // FM_CLOSEST: nearest front-facing face at the pixel (Z-buffer result).
+        if (pixelDepth < best.depth) {
+          best.roomIndex = r;
+          best.faceIndex = f;
+          best.depth = pixelDepth;
+        }
       }
     }
   }

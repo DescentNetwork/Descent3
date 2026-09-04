@@ -85,10 +85,13 @@ public:
   PickResult pickAt(int screenX, int screenY) const;  // Same as pickAt(), but on a repeated click over the same surface cycles to
   // the next farther face (Win32 FM_NEXT behavior).
   PickResult pickAtCycle(int screenX, int screenY);
-  // Shared pick implementation; (prevRoom, prevFace, prevDepth) drive FM_NEXT
-  // cycling when non-negative.
+  // Shared pick implementation mirroring Win32 WireframeFindRoomFace.  A face
+  // is a candidate only if it is FRONT-FACING (Win32 DoFacingCheck) and covers
+  // the click pixel.  When (prevRoom, prevFace) are valid, FM_NEXT cycling is
+  // active and only faces whose eye->face-center distance is strictly greater
+  // than prevCenterDist are considered, choosing the minimum such distance.
   PickResult pickAtImpl(int screenX, int screenY, int prevRoom, int prevFace,
-                        float prevDepth) const;
+                        float prevCenterDist) const;
 
 signals:
   void faceSelected(int roomIndex, int faceIndex);
@@ -149,11 +152,12 @@ private:
   bool m_targetInitialized = false;
 
   // Face picking cycle state (Win32 WireframeFindRoomFace parity): the most
-  // recently picked (room, face, depth).  A repeated click without drag reuses
-  // these to pick the next farther face under the same pixel.
+  // recently picked (room, face, eye->face-center distance).  A repeated click
+  // without drag reuses these to pick the next-farther front-facing face under
+  // the same pixel (FM_NEXT), ordered by increasing eye->face-center distance.
   int m_pickRoom = -1;
   int m_pickFace = -1;
-  float m_pickDepth = 1e30f;
+  float m_pickCenterDist = 1e30f;
   QPoint m_pickScreen = QPoint(-1, -1);
 
   // Click vs drag tracking.
