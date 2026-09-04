@@ -29,10 +29,6 @@ extern int Num_objects;
 int Num_big_objects = 0;
 int16_t BigObjectList[MAX_BIG_OBJECTS];
 
-// The mini has no runtime game loop, so the engine is always behaving as the
-// level editor (mirrors the original's behavior while the editor is active).
-function_mode GetFunctionMode() { return EDITOR_MODE; }
-
 // The mini defines the in-memory model table with this many slots
 // (see stubs.cpp).  Guards model lookups against the original's
 // unguarded Poly_models[model_num] indexing.
@@ -737,18 +733,16 @@ void ObjSetPos(object *obj, vector3 *pos, int roomnum, matrix *orient, bool f_up
     ObjRelink(OBJNUM(obj), roomnum);
 
     // Slowly change volume lighting if going between rooms, if not in the editor
-    if (GetFunctionMode() != EDITOR_MODE) {
-      if ((obj->effect_info != nullptr) && (obj->effect_info->type_flags & EF_VOLUME_LIT)) {
-        if (!ROOMNUM_OUTSIDE(oldroomnum) && !ROOMNUM_OUTSIDE(roomnum)) {
-          if (!(obj->effect_info->type_flags & EF_VOLUME_CHANGING)) {
-            obj->effect_info->type_flags |= EF_VOLUME_CHANGING;
-            obj->effect_info->volume_change_time = 1.0f;
-            obj->effect_info->volume_old_room = oldroomnum;
-            obj->effect_info->volume_old_pos = old_pos;
-          }
-        } else // either old or new room was outside, so don't do volume changing
-          obj->effect_info->type_flags &= ~EF_VOLUME_CHANGING;
-      }
+    if ((obj->effect_info != nullptr) && (obj->effect_info->type_flags & EF_VOLUME_LIT)) {
+      if (!ROOMNUM_OUTSIDE(oldroomnum) && !ROOMNUM_OUTSIDE(roomnum)) {
+        if (!(obj->effect_info->type_flags & EF_VOLUME_CHANGING)) {
+          obj->effect_info->type_flags |= EF_VOLUME_CHANGING;
+          obj->effect_info->volume_change_time = 1.0f;
+          obj->effect_info->volume_old_room = oldroomnum;
+          obj->effect_info->volume_old_pos = old_pos;
+        }
+      } else // either old or new room was outside, so don't do volume changing
+        obj->effect_info->type_flags &= ~EF_VOLUME_CHANGING;
     }
   }
 }

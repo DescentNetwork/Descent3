@@ -18,32 +18,21 @@
 
 #pragma once
 
-#include <chrono>
+namespace d3
+{
+  namespace chrono
+  {
+    // Elapsed time (in seconds) since the clock was last advanced by update().
+    // Behave like the game's Gametime: a monotonically increasing clock that is
+    // only advanced by calling update().
+    float last_update();
 
-namespace D3 {
+    // The amount of time (in seconds) that elapsed during the most recent
+    // update() call. Behave like the game's Frametime.
+    float last_render();
 
-static std::chrono::time_point<std::chrono::steady_clock> m_start_tstamp;
-
-/**
- * Static class for handling timers and time durations
- */
-class ChronoTimer {
-public:
-
-  /// Initialize internal timestamp
-  static void Initialize();
-
-  /// Get time in seconds after class initialization (i.e. application start)
-  static float GetTime();
-
-  /// Get time in milliseconds after class initialization (i.e. application start)
-  static int64_t GetTimeMS();
-
-  /// Get time in microseconds after class initialization (i.e. application start)
-  static int64_t GetTimeUS();
-
-  /// Sleep for delay milliseconds
-  static void SleepMS(int delay);
-};
-
+    // Advanced the clock: measures the real elapsed time since the previous call
+    // and accumulates it into the value returned by last_update().
+    void update();
+  }
 }

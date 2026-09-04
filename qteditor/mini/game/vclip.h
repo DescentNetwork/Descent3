@@ -15,9 +15,7 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifndef VCLIP_H
-
 #define VCLIP_H
 
 #include <filesystem>
@@ -63,16 +61,16 @@ int SaveVClip(const std::filesystem::path& filename, int num);
 // Returns -1 on error, index into GameVClip array on success
 // Argument texture means that this vclip is an animated texture and
 // needs to have an 8bit version
-int AllocLoadVClip(const char *filename, int texture_size, int mipped, int pageable = 0, int format = 0);
+int AllocLoadVClip(const std::filesystem::path& filename, int texture_size, int mipped, int pageable = 0, int format = 0);
 
 // Allocs and loads a vclip from a 3DS ILS file
 // Returns -1 on error, else index into GameVClips on success
 // Argument texture means that this vclip is an animated texture and
 // needs to have an 8bit version
-int AllocLoadIFLVClip(const char *filename, int texture_size, int mipped, int format = 0);
+int AllocLoadIFLVClip(const std::filesystem::path& filename, int texture_size, int mipped, int format = 0);
 
 // gets the filename from a path, plus appends our .oaf extension
-void ChangeVClipName(const char *src, char *dest);
+void ChangeVClipName(const std::filesystem::path& src, std::string& dest);
 
 // Searches thru all vclips for a specific name, returns -1 if not found
 // or index of vclip with name

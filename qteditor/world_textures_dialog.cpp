@@ -125,7 +125,7 @@ WorldTexturesDialog::WorldTexturesDialog(QWidget *parent)
   CONNECT_TEXTURE_FLAG(IDC_HUD_COCKPIT_TEXTURE, hud_cockpit);
   CONNECT_TEXTURE_FLAG(IDC_LIGHT_TEXTURE, light);
   CONNECT_TEXTURE_FLAG(IDC_WATER, water);
-  CONNECT_TEXTURE_FLAG(IDC_VOLATILE, volatile_flag);
+  CONNECT_TEXTURE_FLAG(IDC_VOLATILE, explosive);
   CONNECT_TEXTURE_FLAG(IDC_SATURATE, saturate);
   CONNECT_TEXTURE_FLAG(IDC_MARBLE_CHECK, marble);
   CONNECT_TEXTURE_FLAG(IDC_TEXTURE_FLY_THRU_CHECK, fly_thru);
@@ -214,7 +214,7 @@ void WorldTexturesDialog::updateDialog() {
   ui->IDC_HUD_COCKPIT_TEXTURE->setChecked(GameTextures[n].flags.hud_cockpit);
   ui->IDC_LIGHT_TEXTURE->setChecked(GameTextures[n].flags.light);
   ui->IDC_WATER->setChecked(GameTextures[n].flags.water);
-  ui->IDC_VOLATILE->setChecked(GameTextures[n].flags.volatile_flag);
+  ui->IDC_VOLATILE->setChecked(GameTextures[n].flags.explosive);
   ui->IDC_SATURATE->setChecked(GameTextures[n].flags.saturate);
   ui->IDC_MARBLE_CHECK->setChecked(GameTextures[n].flags.marble);
   ui->IDC_TEXTURE_FLY_THRU_CHECK->setChecked(GameTextures[n].flags.fly_thru);

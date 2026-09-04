@@ -228,8 +228,7 @@ void SetGameMode(int mode);
 // How long (in seconds) the last frame took
 extern float Frametime;
 
-// How long (in seconds) since the game started
-extern float Gametime;
+
 
 //	set this to clear the screen X number of times.
 extern int Clear_screen;
@@ -242,7 +241,6 @@ extern int FrameCount;
 extern int Game_window_x, Game_window_y, Game_window_w, Game_window_h;
 extern int Max_window_w, Max_window_h;
 
-extern int Game_mode;
 extern int Difficulty_level;
 
 extern int sound_override_force_field;

@@ -111,7 +111,6 @@ object_info Object_info[MAX_OBJECTS];
 object *ObjGetUltimateParent(object *child) { PRINT_STUB(__FUNCTION__); return child; }
 
 // ==================== Game / Descent ====================
-float Gametime = 0.0f;
 int FrameCount = 0;
 bool Katmai = false;                    // whether or not katmai CPU is detected
 bool Dedicated_server = false;
@@ -140,7 +139,6 @@ void BuildTerrainNormals() { PRINT_STUB(__FUNCTION__); }
 void ResetTerrain(int terrain_size) { PRINT_STUB(__FUNCTION__); }
 void SetupSky(float t, int tmap, unsigned char layer) { PRINT_STUB(__FUNCTION__); }
 void UpdateTerrainLightmaps() { PRINT_STUB(__FUNCTION__); }
-int TERRAIN_REGION(int x) { PRINT_STUB(__FUNCTION__); return 0; }
 */
 void ClearTerrainSound() { PRINT_STUB(__FUNCTION__); }
 
@@ -173,6 +171,8 @@ void BuildBSPTree() { PRINT_STUB(__FUNCTION__); }
 void BuildSingleBSPTree(int n) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Game globals ====================
+float Frametime = 0.0f;
+
 int Num_textures = 0;
 int Num_sounds = 0;
 int Num_weapons = 0;
@@ -191,8 +191,7 @@ renderer_type PreferredRenderer = {};
 int Detail_settings = 0;
 float force_field_bounce_multiplier[MAX_FORCE_FIELD_BOUNCE_TEXTURES] = {};
 int force_field_bounce_texture[MAX_FORCE_FIELD_BOUNCE_TEXTURES] = {};
-float Ceiling_height = 100.0f;
-float Frametime = 0;
+//float Ceiling_height = 100.0f;
 renderer_preferred_state Render_preferred_state = {};
 int sound_override_force_field = -1;
 int sound_override_glass_breaking = -1;
@@ -214,8 +213,8 @@ std::filesystem::path LocalScriptDir;
 bms_bitmap GameBitmaps[MAX_BITMAPS];
 bms_lightmap GameLightmaps[MAX_LIGHTMAPS];
 texture GameTextures[MAX_TEXTURES];
-vclip GameVClips[MAX_VCLIPS];
-poly_model Poly_models[500];
+//vclip GameVClips[MAX_VCLIPS];
+//poly_model Poly_models[500];
 game_path GamePaths[MAX_GAME_PATHS];
 trigger Triggers[500];
 special_face SpecialFaces[MAX_SPECIAL_FACES];
@@ -233,7 +232,6 @@ lightmap_info LightmapInfoStore[MAX_LIGHTMAP_INFOS] = {};
 lightmap_info *LightmapInfo = LightmapInfoStore;
 int Num_of_lightmap_info = 0;
 int Num_lightmap_infos_read = 0;
-int Outline_lightmaps = 0;
 void FreeLightmapMemory() { PRINT_STUB(__FUNCTION__); }
 void FreeLightmapInfo(int handle) { PRINT_STUB(__FUNCTION__); }
 void ClearAllObjectLightmaps(int n) { PRINT_STUB(__FUNCTION__); }
@@ -334,8 +332,7 @@ const std::vector<std::filesystem::path> Default_read_only_base_directories;
 }
 
 // ==================== ChronoTimer ====================
-float D3::ChronoTimer::GetTime() { PRINT_STUB(__FUNCTION__); return 0; }
-void D3::ChronoTimer::Initialize() { PRINT_STUB(__FUNCTION__); }
+
 
 // ==================== Init ====================
 // Command-line argument store. GatherArgs collects the argv tokens (including
@@ -437,25 +434,25 @@ void RemapStaticIDs() { PRINT_STUB(__FUNCTION__); }
 void RemapWeapons() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Load ====================
-int LoadDoorImage(const std::filesystem::path& name, int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int LoadPolyModel(const std::filesystem::path& name, int f_module) { PRINT_STUB(__FUNCTION__); return -1; }
+//int LoadDoorImage(const std::filesystem::path& name, int n) { PRINT_STUB(__FUNCTION__); return -1; }
+//int LoadPolyModel(const std::filesystem::path& name, int f_module) { PRINT_STUB(__FUNCTION__); return -1; }
 int LoadShipImage(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return -1; }
 int LoadSoundFile(const char *name, float vol, bool b) { PRINT_STUB(__FUNCTION__); return -1; }
 int LoadTextureImage(const std::filesystem::path& name, int *handle, int a, int b, int c, int d) { PRINT_STUB(__FUNCTION__); return -1; }
 //int GetDoorImage(int n) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Polymodel ====================
-poly_model *GetPolymodelPointer(int n) { PRINT_STUB(__FUNCTION__); return nullptr; }
-int CountFacesInPolymodel(poly_model *pm) { PRINT_STUB(__FUNCTION__); return 0; }
-float ComputeDefaultSize(int type, int handle, float *size) { PRINT_STUB(__FUNCTION__); return 0; }
-void PageInPolymodel(int model_num, int f_damage, float *size) { PRINT_STUB(__FUNCTION__); }
-void SetModelAnglesAndPos(poly_model *pm, float *anim, unsigned int flags) { PRINT_STUB(__FUNCTION__); }
-int IsNonRenderableSubmodel(poly_model *pm, int index) { PRINT_STUB(__FUNCTION__); return 0; }
+//poly_model *GetPolymodelPointer(int n) { PRINT_STUB(__FUNCTION__); return nullptr; }
+//int CountFacesInPolymodel(poly_model *pm) { PRINT_STUB(__FUNCTION__); return 0; }
+//float ComputeDefaultSize(int type, int handle, float *size) { PRINT_STUB(__FUNCTION__); return 0; }
+//void PageInPolymodel(int model_num, int f_damage, float *size) { PRINT_STUB(__FUNCTION__); }
+//void SetModelAnglesAndPos(poly_model *pm, float *anim, unsigned int flags) { PRINT_STUB(__FUNCTION__); }
+//int IsNonRenderableSubmodel(poly_model *pm, int index) { PRINT_STUB(__FUNCTION__); return 0; }
 void ChangeOldModelsForObjects(int a, int b) { PRINT_STUB(__FUNCTION__); }
-std::filesystem::path ChangePolyModelName(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return name; }
-int FindPolyModelName(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return -1; }
-void FreePolyModel(int n) { PRINT_STUB(__FUNCTION__); }
-void SetNormalizedTimeObj(object *obj, float *normalized_time) { PRINT_STUB(__FUNCTION__); }
+//std::filesystem::path ChangePolyModelName(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return name; }
+//int FindPolyModelName(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return -1; }
+//void FreePolyModel(int n) { PRINT_STUB(__FUNCTION__); }
+//void SetNormalizedTimeObj(object *obj, float *normalized_time) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Misc ====================
 int CreateMatcen(const char *name, bool *flag) { PRINT_STUB(__FUNCTION__); return -1; }
@@ -468,6 +465,7 @@ bool PhysCalcGround(vector3 *ground_point, vector3 *ground_normal, object *obj, 
 void ClearAllEvents() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== FVI ====================
+/*
 int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face_room_list *quick_fr_list, int max_elements) { PRINT_STUB(__FUNCTION__); return 0; }
 bool fvi_QuickRoomCheck(vector3 *pos, room *cur_room, bool try_again) { PRINT_STUB(__FUNCTION__); return false; }
 int fvi_QuickDistObjectList(vector3 *pos, int init_roomnum, float rad, int16_t *object_index_list, int max_elements,
@@ -476,7 +474,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_roomnum, float rad, int16_t *
 int fvi_QuickDistCellList(int init_cell_index, vector3 *pos, float rad, int *quick_cell_list, int max_elements) { PRINT_STUB(__FUNCTION__); return 0; }
 uint32_t check_point_to_face(vector3 *colp, vector3 *face_normal, int nv, vector3 **vertex_ptr_list) { PRINT_STUB(__FUNCTION__); return 0; }
 bool FVI_always_check_ceiling = false;
-
+*/
 // ==================== OSIRIS ====================
 
 // ==================== Pilot ====================

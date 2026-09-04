@@ -21,6 +21,7 @@
 #include "d3edit.h"
 #include "lighting_status_dialog.h"
 #include "radiosity.h"
+#include "chrono_timer.h"
 
 #include "findintersection.h"
 #include "hemicube.h"
@@ -80,7 +81,7 @@ int DoRadiosityRun(int method, rad_surface *light_surfaces, int count) {
 
   Shoot_method = method;
 
-  start_time = timer_GetTime();
+  start_time = d3::chrono::last_update();
 
   InitRadiosityRun();
 
@@ -95,7 +96,7 @@ int DoRadiosityRun(int method, rad_surface *light_surfaces, int count) {
   CloseRadiosityRun();
 
   // Print time taken
-  LOG_INFO("\nLighting took %.4f seconds.\n", timer_GetTime() - start_time);
+  LOG_INFO("\nLighting took %.4f seconds.\n", d3::chrono::last_update() - start_time);
 
   return 1;
 }
@@ -274,9 +275,9 @@ void UpdateUnsentValues() {
   else
     rad_Convergence = 0.0;
 
-  if (timer_GetTime() - last_report_time > 10.0) {
+  if (d3::chrono::last_update() - last_report_time > 10.0) {
     LOG_INFO("Percentage left=%f\n", rad_Convergence);
-    last_report_time = timer_GetTime();
+    last_report_time = d3::chrono::last_update();
   }
 
   if (use_sat)
@@ -309,6 +310,10 @@ void CalculateRadiosity() {
     DoRadiosityIteration();
 
     rad_StepCount++;
+
+    // Advance the game clock so last_update() tracks real elapsed time for
+    // progress reporting and timing logs.
+    d3::chrono::update();
 
     Descent->defer();
     // Qt handles keyboard events natively - abort logic should be moved to UI

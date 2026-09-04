@@ -49,6 +49,13 @@ int bm_AllocBitmap(int w, int h, int add_mem) {
   return n;
 }
 
+// Given a handle, frees the bitmap memory and flags this bitmap as unused
+void bm_FreeBitmap(int handle) {
+  if (handle != BAD_BITMAP_HANDLE && GameBitmaps[handle].used >= 1)
+    GameBitmaps[handle].used--;
+}
+
+
 uint16_t *bm_data(int handle, int miplevel) {
   if (handle < 0 || handle >= MAX_BITMAPS)
     return nullptr;

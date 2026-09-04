@@ -226,6 +226,7 @@ struct bsp_info {
 #define PMF_NOT_RESIDENT 16  // This polymodel is not in memory
 #define PMF_SIZE_COMPUTED 32 // This polymodel's size is computed
 
+static_assert(sizeof(bool) == sizeof(uint8_t));
 // used to describe a polygon model
 struct poly_model {
   uint16_t used;

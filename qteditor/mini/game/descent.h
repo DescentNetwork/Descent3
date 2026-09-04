@@ -208,10 +208,6 @@ void MainLoop();
 //	the defer handler
 void D3DeferHandler(bool is_active);
 
-//	Set and retrieve the current function mode of Descent 3
-void SetFunctionMode(function_mode mode);
-function_mode GetFunctionMode();
-
 // Shows a fullscreen static bitmap
 void ShowStaticScreen(const char *bitmap_filename, bool timed = false, float delay_time = 0.0f);
 

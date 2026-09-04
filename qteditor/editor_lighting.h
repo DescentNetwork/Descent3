@@ -92,7 +92,7 @@ extern uint8_t *TerrainLightSpeedup[];
 
 extern int Square_surfaces;
 extern int LightSpacing;
-extern int BestFit;
+extern bool BestFit;
 extern float Ambient_red, Ambient_green, Ambient_blue;
 
 bool PointsAreSame(vector3 *v0, vector3 *v1);

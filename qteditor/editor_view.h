@@ -49,6 +49,7 @@ public:
   void resetCamera() { m_targetInitialized = false; }
 
   QSize renderSize() const;
+  void setPickRadius(float radius) { m_rad = radius; }
 
   bool isWireframe() const { return m_wireframe; }
   void enableWireframeMode(void) { setWireframe(true); }
@@ -76,13 +77,22 @@ public:
   };
 
   // Identifies what is under the given screen pixel (left-hand origin).
-  PickResult pickAt(int screenX, int screenY) const;
+  PickResult pickAt(int screenX, int screenY) const;  // Same as pickAt(), but on a repeated click over the same surface cycles to
+  // the next farther face (Win32 FM_NEXT behavior).
+  PickResult pickAtCycle(int screenX, int screenY);
+  // Shared pick implementation; (prevRoom, prevFace, prevDepth) drive FM_NEXT
+  // cycling when non-negative.
+  PickResult pickAtImpl(int screenX, int screenY, int prevRoom, int prevFace,
+                        float prevDepth) const;
 
 signals:
   void faceSelected(int roomIndex, int faceIndex);
   void objectSelected(int objIndex);
   void selectionCleared();
   void objectContextMenuRequested(const QPoint &globalPos, int objIndex);
+  // Emitted on Shift+click over a room to toggle that room's selection
+  // (Win32 ToggleRoomSelectedState).
+  void roomToggleRequested(int roomIndex);
   void rectSelectionFinished(const QRect &rect);
 
   // Rectangle selection (rubber band / SelManager equivalent).
@@ -132,6 +142,14 @@ private:
   float m_rad = 5000.0f; // wireframe render radius
   vector3 m_target;
   bool m_targetInitialized = false;
+
+  // Face picking cycle state (Win32 WireframeFindRoomFace parity): the most
+  // recently picked (room, face, depth).  A repeated click without drag reuses
+  // these to pick the next farther face under the same pixel.
+  int m_pickRoom = -1;
+  int m_pickFace = -1;
+  float m_pickDepth = 1e30f;
+  QPoint m_pickScreen = QPoint(-1, -1);
 
   // Click vs drag tracking.
   bool m_mouseDown = false;

@@ -154,9 +154,7 @@ int mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
       texpage->tex_struct.sound = -1;
       texpage->sound_name.clear();
     } else {
-      std::string sname;
-      psReadString(infile, sname, PAGENAME_LEN - 1);
-      texpage->sound_name = sname;
+      infile >> texpage->sound_name;
     }
 
     infile >> texpage->tex_struct.sound_volume;

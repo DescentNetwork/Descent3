@@ -317,9 +317,9 @@ struct [[gnu::packed]] texture_flags_t
   uint32_t marble : 1;              // Shines like marble
   uint32_t metal : 1;               // Shines like metal
   uint32_t water : 1;
-  uint32_t volatile_flag : 1;
+  uint32_t explosive : 1;
 #else
-  uint32_t volatile_flag : 1;
+  uint32_t explosive : 1;
   uint32_t water : 1;
   uint32_t metal : 1;               // Shines like metal
   uint32_t marble : 1;              // Shines like marble

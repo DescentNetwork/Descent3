@@ -231,14 +231,6 @@ float ddio_InternalKeyDownTime(uint8_t key);
 void ddio_InternalResetKey(uint8_t key);
 
 // ----------------------------------------------------------------------------
-//	Device Dependent Timer Interface
-// ----------------------------------------------------------------------------
-
-#define timer_Init D3::ChronoTimer::Initialize
-#define timer_GetTime D3::ChronoTimer::GetTime
-#define timer_GetMSTime D3::ChronoTimer::GetTimeMS
-
-// ----------------------------------------------------------------------------
 //	Device Dependent Mouse Interface
 // ----------------------------------------------------------------------------
 

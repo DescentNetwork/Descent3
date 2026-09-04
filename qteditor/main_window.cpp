@@ -47,6 +47,7 @@
 
 
 #include "editor_view.h"
+#include "editor_room_state.h"
 #include "hog_dialog.h"
 #include "level_io.h"
 #include "object.h"
@@ -135,6 +136,14 @@ MainWindow::MainWindow(QWidget *parent)
     statusBar()->showMessage(QStringLiteral("Selection cleared."));
     m_editorView->requestRedraw();
   });
+  connect(m_editorView, &EditorView::roomToggleRequested, this,
+          [this](int roomIndex) {
+            ToggleRoomSelectedState(roomIndex);
+            State_changed = true;
+            statusBar()->showMessage(
+                QStringLiteral("Room %1 selection toggled.").arg(roomIndex));
+            m_editorView->requestRedraw();
+          });
   connect(m_editorView, &EditorView::objectContextMenuRequested, this,
           [this](const QPoint &globalPos, int objIdx) {
             Cur_object_index = objIdx;

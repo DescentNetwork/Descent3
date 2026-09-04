@@ -27,7 +27,6 @@
 #define WBF_SPRAY 1
 #define WBF_ANIM_LOCAL 2
 #define WBF_ANIM_FULL 4
-#define WBF_ANIM_MASKS 6
 #define WBF_RANDOM_FIRE_ORDER 8
 #define WBF_GUIDED 16
 #define WBF_USE_CUSTOM_FOV 32
@@ -38,6 +37,7 @@
 #define WBF_AIM_FVEC 1024
 #define WBF_FIRE_TARGET 2048
 
+#define WBF_ANIM_MASKS 6
 
 #define MAX_WB_UPGRADES 5
 

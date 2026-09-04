@@ -80,7 +80,7 @@
 struct [[gnu::packed]] terrain_segment_flags_t
 {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-  uint8_t ai_region : 3;        // AI stuff (terrain region partitioning)
+  uint8_t region : 3;           // terrain region number
   uint8_t invisible : 1;        // TF_INVISIBLE (16)
   uint8_t special_mine : 1;     // TF_SPECIAL_MINE (8)
   uint8_t special_water : 1;    // TF_SPECIAL_WATER (4)
@@ -92,7 +92,7 @@ struct [[gnu::packed]] terrain_segment_flags_t
   uint8_t special_water : 1;    // TF_SPECIAL_WATER (4)
   uint8_t special_mine : 1;     // TF_SPECIAL_MINE (8)
   uint8_t invisible : 1;        // TF_INVISIBLE (16)
-  uint8_t ai_region : 3;        // AI stuff (terrain region partitioning)
+  uint8_t region : 3;           // terrain region number
 #endif
 };
 static_assert(sizeof(terrain_segment_flags_t) == sizeof(uint8_t));
@@ -110,7 +110,7 @@ struct terrain_segment {
   int16_t objects;      // Index of the first object in this cell
   int16_t texseg_index; // index into the tex_segment array
 
-  uint8_t flags;   // various flags
+  terrain_segment_flags_t flags;   // various flags
   uint8_t lm_quad; // which lightmap quad this index belongs to
   uint8_t ypos;    // this is so we don't have to constantly convert
                  // floats to ints when traversing the terrain
@@ -265,12 +265,6 @@ extern terrain_tex_segment Terrain_tex_seg[TERRAIN_TEX_WIDTH * TERRAIN_TEX_DEPTH
 
 // first object to render after cell has been rendered (only used for SW renderer)
 extern int16_t Terrain_seg_render_objs[];
-
-#ifdef RELEASE
-#define TERRAIN_REGION(x) ((Terrain_seg[0x7FFFFFFF & x].flags & TFM_REGION_MASK) >> 5)
-#else // debug(-ish) builds - check if x is valid
-int TERRAIN_REGION(int x);
-#endif
 
 extern terrain_sky Terrain_sky;
 

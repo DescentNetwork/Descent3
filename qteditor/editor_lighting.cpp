@@ -58,6 +58,7 @@
 
 #include "d3_editor_init.h"
 
+bool BestFit = false;
 
 struct spec_vertex {
   float x, y;

@@ -176,6 +176,8 @@ extern int Editor_view_mode;
 // The ID of the most recent viewer object (not counting room view)
 extern int Editor_viewer_id;
 
+extern int paged_in_count;
+extern int paged_in_num;
 
 
 //	object id clipboard.

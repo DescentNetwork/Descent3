@@ -61,7 +61,7 @@ int Selected_rooms[MAX_ROOMS];
 int Slew_limitations = 0;
 
 // Editor-side lighting globals (editor_lighting.cpp / rad_init.cpp in MFC).
-int BestFit = 0;
+
 int Shoot_from_patch = 1;
 
 // Editor room/face/portal editing context (defined in the MFC editor).
@@ -90,6 +90,9 @@ int Placed_baseface = 0;
 bool Mine_changed = false;
 int Editor_view_mode = 0; // VM_MINE
 int Editor_viewer_id = -1;
+int paged_in_count = 0;
+int paged_in_num = 0;
+
 
 // SLEW.cpp guards SlewControlInit() with EDITOR; slew.cpp provides it.
 

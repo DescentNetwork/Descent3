@@ -48,6 +48,7 @@
 #include <functional>
 #include <limits>
 #include <numeric>
+#include "posix_stream.h"
 
 static constexpr inline bool VM_ISPOW2(uintmax_t x) { return (x && (!(x & (x-1)))); }
 
@@ -453,3 +454,10 @@ static inline matrix operator~(matrix m) {
 static inline vector3 operator*(const vector3 &v, const matrix &m) {
   return { vector3::dot(v,m.rvec), vector3::dot(v,m.uvec), vector3::dot(v,m.fvec) };
 }
+
+
+inline byte_istream& operator >>(byte_istream& input, vector3& data)
+  { return input >> data.x() >> data.y() >> data.z(); }
+
+inline byte_ostream& operator <<(byte_ostream& output, const vector3& data)
+  { return output << data.x() << data.y() << data.z(); }

@@ -16,12 +16,6 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef NEWEDITOR
-#include "neweditor\globals.h"
-#else
-#include <cstdlib>
-#endif
-
 #include <algorithm>
 #include <cstring>
 
@@ -37,8 +31,7 @@
 //#include "weather.h"
 #include "mem.h"
 //#include "dedicated_server.h"
-//#include "psrand.h"
-#include <cstdlib>
+#include "rand.h"
 
 #define SKY_RADIUS 2500.0
 #define DEFAULT_LIGHT_SOURCE                                                                                           \
@@ -105,17 +98,6 @@ int Terrain_checksum = -1;
 // Occlusion data for knowing what to draw
 uint8_t Terrain_occlusion_map[256][32];
 int Terrain_occlusion_checksum = -2;
-
-#ifndef RELEASE
-int TERRAIN_REGION(int x) {
-  Q_ASSERT(x != -1 && "invalid/unset room number (-1)!");
-  // Note: due to the 0x7FFFFFFF mask, terrSegIdx will be >= 0
-  int terrSegIdx = 0x7FFFFFFF & x;
-  // catch other invalid cell/segment numbers than -1 as well
-  Q_ASSERT((terrSegIdx < TERRAIN_WIDTH * TERRAIN_DEPTH) && "invalid cellnum!");
-  return (Terrain_seg[terrSegIdx].flags & TFM_REGION_MASK) >> 5;
-}
-#endif
 
 // returns the index of the highest float
 int GetHighestDelta(float *deltas, int count) {
@@ -210,7 +192,7 @@ float RecurseLODDeltas(int x1, int y1, int x2, int y2, int lod) {
 
     for (i = y1; i < y2; i++) {
       for (t = x1; t < x2; t++, total_counted++) {
-        if ((Terrain_seg[i * TERRAIN_WIDTH + t].flags & TF_INVISIBLE)) {
+        if ((Terrain_seg[i * TERRAIN_WIDTH + t].flags.invisible)) {
           maxdelta = SHUTOFF_LOD_DELTA;
           total_invis++;
         }
@@ -752,15 +734,15 @@ void SetupSky(float radius, int flags, uint8_t randit) {
     top = ((65536 / 4) * 3);
     int highlimit = MAX_STARS / 8;
 
-    p = std::rand() % (65336 / 4);
+    p = d3::rand() % (65336 / 4);
 
     while (highcount > highlimit && p < 6000)
-      p = std::rand() % (65336 / 4);
+      p = d3::rand() % (65336 / 4);
 
     if (p < 6000)
       highcount++;
 
-    vm_AnglesToMatrix(&tempm, (top + p) % 65336, (std::rand() * std::rand()) % 65536, 0);
+    vm_AnglesToMatrix(&tempm, (top + p) % 65336, (d3::rand() * d3::rand()) % 65536, 0);
     vm_ScaleVector(&starvec, &tempm.fvec, Terrain_sky.radius * 500);
     Terrain_sky.star_vectors[i] = starvec;
 
@@ -770,7 +752,7 @@ void SetupSky(float radius, int flags, uint8_t randit) {
 
     float color_norm = ynorm * 2;
     color_norm = std::clamp(color_norm, 0.2f, 1.0f);
-    int color = std::rand() % 6;
+    int color = d3::rand() % 6;
     int r, g, b;
 
     if (color <= 2) {
@@ -802,10 +784,10 @@ void SetupSky(float radius, int flags, uint8_t randit) {
     vector3 satellitevec;
     matrix tempm;
 
-    int p = std::rand() % (65336 / 8);
+    int p = d3::rand() % (65336 / 8);
     top = ((65536 / 4) * 3) + (4096); // don't do satellites that are straight up
 
-    vm_AnglesToMatrix(&tempm, (top + p) % 65336, (std::rand() * std::rand()) % 65536, 0);
+    vm_AnglesToMatrix(&tempm, (top + p) % 65336, (d3::rand() * d3::rand()) % 65536, 0);
     vm_ScaleVector(&satellitevec, &tempm.fvec, Terrain_sky.radius * 3);
     Terrain_sky.satellite_vectors[i] = satellitevec;
     Terrain_sky.satellite_size[i] = 500;
@@ -892,7 +874,7 @@ void ResetTerrain(int force) {
       Terrain_seg_render_objs[i * TERRAIN_WIDTH + t] = -1;
 #endif
       Terrain_seg[i * TERRAIN_WIDTH + t].objects = -1;
-      Terrain_seg[i * TERRAIN_WIDTH + t].flags = 0;
+      Terrain_seg[i * TERRAIN_WIDTH + t].flags = {};
       Terrain_seg[i * TERRAIN_WIDTH + t].lm_quad = ((i / 128) * 2) + (t / 128);
       Terrain_seg[i * TERRAIN_WIDTH + t].texseg_index = ((i >> 3) * TERRAIN_TEX_WIDTH) + (t >> 3);
 

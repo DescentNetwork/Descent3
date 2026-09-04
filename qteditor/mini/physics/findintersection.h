@@ -99,7 +99,7 @@
  * Added the f_lightmap_only parameter to fvi_QuickDistObjectList
  *
  * 28    3/23/98 11:18a Chris
- * Added int fvi_QuickDistObjectList(vector *pos, int init_room_index,
+ * Added int fvi_QuickDistObjectList(vector3 *pos, int init_room_index,
  * float rad, int16_t *object_index_list, int max_elements)
  *
  *
@@ -308,18 +308,18 @@ static inline bool FastVectorBBox(const float *min, const float *max, const floa
 
 // this data structure gets filled in by find_vector_intersection()
 struct fvi_info {
-  vector hit_pnt; // centerpoint when we hit
+  vector3 hit_pnt; // centerpoint when we hit
   int hit_room;   // what room hit_pnt is in
   float hit_dist; // distance of the hit
 
   int num_hits; // Number of recorded hits
 
   int hit_type[MAX_HITS];        // what sort of intersection
-  vector hit_face_pnt[MAX_HITS]; // actual collision point (edge of rad)
+  vector3 hit_face_pnt[MAX_HITS]; // actual collision point (edge of rad)
 
   int hit_face_room[MAX_HITS];   // what room the hit face is in
   int hit_face[MAX_HITS];        // if hit wall, which face
-  vector hit_wallnorm[MAX_HITS]; // if hit wall, ptr to its surface normal
+  vector3 hit_wallnorm[MAX_HITS]; // if hit wall, ptr to its surface normal
 
   int hit_object[MAX_HITS];    // if object hit, which object
   int hit_subobject[MAX_HITS]; // if a POLY_2_SPHERE hit, then it has the poly involved
@@ -329,19 +329,19 @@ struct fvi_info {
 
   // BBox hit results
   matrix hit_orient;
-  vector hit_rotvel;
+  vector3 hit_rotvel;
   angle hit_turnroll;
-  vector hit_velocity;
+  vector3 hit_velocity;
   float hit_time;
 
-  vector hit_subobj_fvec;
-  vector hit_subobj_uvec;
-  vector hit_subobj_pos;
+  vector3 hit_subobj_fvec;
+  vector3 hit_subobj_uvec;
+  vector3 hit_subobj_pos;
 };
 
 // this data contains the parms to fvi()
 struct fvi_query {
-  vector *p0, *p1;
+  vector3 *p0, *p1;
   int startroom;
   float rad;
   int16_t thisobjnum;
@@ -350,11 +350,11 @@ struct fvi_query {
 
   // BBox stuff...
   matrix *o_orient;
-  vector *o_rotvel;
-  vector *o_rotthrust;
-  vector *o_velocity;
+  vector3 *o_rotvel;
+  vector3 *o_rotthrust;
+  vector3 *o_velocity;
   angle *o_turnroll;
-  vector *o_thrust;
+  vector3 *o_thrust;
   float frametime;
 };
 
@@ -384,24 +384,24 @@ extern int Fvi_num_recorded_faces;
 
 // Generates a list of faces(with corresponding room numbers) within a given distance to a position.
 // Return value is the number of faces in the list
-extern int fvi_QuickDistFaceList(int init_room_index, vector *pos, float rad, fvi_face_room_list *quick_fr_list,
+extern int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face_room_list *quick_fr_list,
                                  int max_elements);
 // Returns the number of cells that are approximately within the specified radius
-extern int fvi_QuickDistCellList(int init_cell_index, vector *pos, float rad, int *quick_cell_list, int max_elements);
+extern int fvi_QuickDistCellList(int init_cell_index, vector3 *pos, float rad, int *quick_cell_list, int max_elements);
 
 // Returns the number of objects that are approximately within the specified radius
-int fvi_QuickDistObjectList(vector *pos, int init_roomnum, float rad, int16_t *object_index_list, int max_elements,
+int fvi_QuickDistObjectList(vector3 *pos, int init_roomnum, float rad, int16_t *object_index_list, int max_elements,
                             bool f_lightmap_only, bool f_only_players_and_ais = false,
                             bool f_include_non_collide_objects = false, bool f_stop_at_closed_doors = false);
 
 // finds the uv coords of the given point on the given seg & side
 // fills in u & v. if l is non-NULL fills it in also
-// extern void fvi_FindHitpointUV(float *u,float *v,float *l, vector *pnt,segment *seg,int sidenum,int facenum);
+// extern void fvi_FindHitpointUV(float *u,float *v,float *l, vector3 *pnt,segment *seg,int sidenum,int facenum);
 
 extern int FVI_counter;
 extern int FVI_room_counter;
 
-bool fvi_QuickRoomCheck(vector *pos, room *cur_room, bool try_again = false);
+bool fvi_QuickRoomCheck(vector3 *pos, room *cur_room, bool try_again = false);
 
 extern fvi_info *fvi_hit_data_ptr;
 extern fvi_query *fvi_query_ptr;
@@ -411,16 +411,16 @@ extern int fvi_moveobj;
 
 bool PolyCollideObject(object *obj);
 
-bool BBoxPlaneIntersection(bool fast_exit, vector *collision_point, vector *collision_normal, object *obj,
-                           vector *new_pos, int nv, vector **vertex_ptr_list, vector *face_normal, matrix *orient);
+bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *collision_normal, object *obj,
+                           vector3 *new_pos, int nv, vector3 **vertex_ptr_list, vector3 *face_normal, matrix *orient);
 
-extern uint32_t check_point_to_face(vector *colp, vector *face_normal, int nv, vector **vertex_ptr_list);
+extern uint32_t check_point_to_face(vector3 *colp, vector3 *face_normal, int nv, vector3 **vertex_ptr_list);
 
-extern int check_vector_to_sphere_1(vector *intp, float *col_dist, const vector *p0, const vector *p1,
-                                    vector *sphere_pos, float sphere_rad, bool f_correcting, bool f_init_collisions);
+extern int check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, const vector3 *p1,
+                                    vector3 *sphere_pos, float sphere_rad, bool f_correcting, bool f_init_collisions);
 
-extern int check_line_to_face(vector *newp, vector *colp, float *col_dist, vector *wall_norm, const vector *p0,
-                              const vector *p1, vector *face_normal, vector **vertex_ptr_list, const int nv,
+extern int check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
+                              const vector3 *p1, vector3 *face_normal, vector3 **vertex_ptr_list, const int nv,
                               const float rad);
 extern void InitFVI();
 

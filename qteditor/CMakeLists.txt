@@ -89,20 +89,11 @@ file(GLOB QTEDITOR_SOURCES
      "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
      "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-# Mini root sources that are decoupled stubs/overrides with no parent
-# counterpart: engine-data globals (stubs.cpp), the decoupled level loader
-# (level_loader.cpp) and the mini brief model (brief_model.cpp).
-set(QTEDITOR_MINI_SOURCES
-    ${MINI_SRC}/stubs.cpp
-    ${MINI_SRC}/string_helpers.cpp
-    ${MINI_SRC}/level_loader.cpp
-    ${MINI_SRC}/brief_model.cpp
-)
-
 # Mini engine-replacement subdir sources.  CONFIGURE_DEPENDS re-globs this list
 # when new .cpp files (e.g. manage/*page.cpp readers) are added, so they are
 # picked up without a manual source-list edit.
 file(GLOB QTEDITOR_SUBDIR_SOURCES CONFIGURE_DEPENDS
+    "${MINI_SRC}/*.cpp"
     "${MINI_SRC}/lib/*.cpp"
     "${MINI_SRC}/editor/*.cpp"
     "${MINI_SRC}/game/*.cpp"
@@ -113,6 +104,9 @@ file(GLOB QTEDITOR_SUBDIR_SOURCES CONFIGURE_DEPENDS
     "${MINI_SRC}/cfile/*.cpp"
     "${MINI_SRC}/manage/*.cpp"
     "${MINI_SRC}/bitmap/*.cpp"
+    "${MINI_SRC}/physics/*.cpp"
+    "${MINI_SRC}/renderer/*.cpp"
+    "${MINI_SRC}/model/*.cpp"
 )
 
 # Headers from the mini engine replacement (AUTOMOC/AUTOUIC discovery and IDE
@@ -135,6 +129,7 @@ file(GLOB QTEDITOR_HEADERS
     "${MINI_SRC}/md5/*.h"
     "${MINI_SRC}/misc/*.h"
     "${MINI_SRC}/music/*.h"
+    "${MINI_SRC}/model/*.h"
     "${MINI_SRC}/physics/*.h"
     "${MINI_SRC}/renderer/*.h"
     "${MINI_SRC}/scripts/*.h"
@@ -146,7 +141,6 @@ file(GLOB QTEDITOR_HEADERS
 
 set(QTEDITOR_SOURCES
     ${QTEDITOR_SOURCES}
-    ${QTEDITOR_MINI_SOURCES}
     ${QTEDITOR_SUBDIR_SOURCES}
 )
 # Exclude test files from main build

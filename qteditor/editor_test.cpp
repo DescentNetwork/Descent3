@@ -284,6 +284,51 @@ void dismissModals(int count = 4, int msTotal = 800) {
 
 } // namespace
 
+// Shared helper for the room-picking parity tests: a deterministic camera (eye
+// at origin looking along +X with identity view axes) and rooms with a single
+// perpendicular quad face each.  Lives outside the Q_OBJECT test class so moc
+// does not need to parse it.
+struct PickFixture {
+  EditorView view;
+  void setup() {
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    Viewer_object = &Objects[0];
+    Viewer_object->type = OBJ_VIEWER;
+    Viewer_object->pos = vector3{0, 0, 0};
+    Viewer_object->orient.rvec = vector3{0, 0, 1};
+    Viewer_object->orient.uvec = vector3{0, 1, 0};
+    Viewer_object->orient.fvec = vector3{1, 0, 0};
+    Editor_view_mode = VM_MINE;
+    D3EditState.current_room = -1;
+    view.resize(640, 480);
+    view.show();
+    QCoreApplication::processEvents();
+    for (int i = 0; i < 20 && view.frameCount() < 1; i++)
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    QCoreApplication::processEvents();
+  }
+  static void addQuadRoom(int roomIndex, const vector3 *verts) {
+    room *rp = &Rooms[roomIndex];
+    *rp = room{};
+    InitRoom(rp, 4, 1, 0);
+    InitRoomFace(&rp->faces[0], 4);
+    for (int i = 0; i < 4; i++) {
+      rp->verts[i] = verts[i];
+      rp->faces[0].face_verts[i] = (int16_t)i;
+    }
+    rp->used = 1;
+    if (roomIndex > Highest_room_index)
+      Highest_room_index = roomIndex;
+  }
+};
+
 class EditorTest : public QObject
 {
   Q_OBJECT
@@ -2469,6 +2514,79 @@ private slots:
       QVERIFY2(selObj >= 0, "objectSelected emitted with negative index");
       qInfo() << "object selected:" << selObj;
     }
+  }
+
+  // Pars layout for pick tests: a deterministic camera (eye at origin looking
+  // along +X with identity view axes) and a set of rooms with a single quad
+  // face each, perpendicular to the view axis.
+  void testPickRadiusGate() {
+    PickFixture fix;
+    fix.setup();
+
+    // Two rooms, both projected onto screen centre, so both would be hit if
+    // the radius gate did not apply.  Room 0 lies right in front of the eye;
+    // room 1 is far away (beyond the default 5000-unit radius is not needed;
+    // place it at depth 8000 with the small default radius).  The default
+    // m_rad is 5000, so room 1 is excluded.
+    const vector3 nearV[4] = {
+      {5, -4, -4}, {5, 4, -4}, {5, 4, 4}, {5, -4, 4},
+    };
+    const vector3 farV[4] = {
+      {8000, -4, -4}, {8000, 4, -4}, {8000, 4, 4}, {8000, -4, 4},
+    };
+    PickFixture::addQuadRoom(0, nearV);
+    PickFixture::addQuadRoom(1, farV);
+
+    // Near room only -> radius-excluded far room must not be picked.
+    EditorView::PickResult pick = fix.view.pickAt(320, 240);
+    QCOMPARE(pick.roomIndex, 0);
+
+    // Even though room 1 is far, it must be picked when it is the current room
+    // (the current room bypasses the radius gate).
+    D3EditState.current_room = 1;
+    // Put the near room beyond the radius so only the current room is a
+    // candidate under the centre pixel; both are still on the centre ray.
+    // Simpler: shrink the radius below the near room's distance.
+    fix.view.setPickRadius(2.0f);
+    pick = fix.view.pickAt(320, 240);
+    QCOMPARE(pick.roomIndex, 1);
+  }
+
+  // Win32 parity: repeated clicks over the same surface cycle to the next
+  // farther face under the same pixel (FM_CLOSEST -> FM_SPECIFIC -> FM_NEXT).
+  void testPickFaceCycling() {
+    PickFixture fix;
+    fix.setup();
+
+    // Two coplanar-on-the-ray quads: room 0 near (depth 5), room 1 far
+    // (depth 25); both occupy screen centre.
+    const vector3 nearV[4] = {
+      {5, -4, -4}, {5, 4, -4}, {5, 4, 4}, {5, -4, 4},
+    };
+    const vector3 farV[4] = {
+      {25, -4, -4}, {25, 4, -4}, {25, 4, 4}, {25, -4, 4},
+    };
+    PickFixture::addQuadRoom(0, nearV);
+    PickFixture::addQuadRoom(1, farV);
+
+    // First pick (FM_CLOSEST) -> near face.
+    EditorView::PickResult first = fix.view.pickAtCycle(320, 240);
+    QCOMPARE(first.roomIndex, 0);
+    QCOMPARE(first.faceIndex, 0);
+
+    // Second pick at the same spot (FM_NEXT) -> far face.
+    EditorView::PickResult second = fix.view.pickAtCycle(320, 240);
+    QCOMPARE(second.roomIndex, 1);
+    QCOMPARE(second.faceIndex, 0);
+
+    // Third pick at the same spot: no farther face remains -> picks nothing.
+    EditorView::PickResult third = fix.view.pickAtCycle(320, 240);
+    QCOMPARE(third.roomIndex, -1);
+
+    // A pick at a *different* screen position resets the cycle to the closest
+    // face again (near face wins).
+    EditorView::PickResult other = fix.view.pickAtCycle(321, 240);
+    QCOMPARE(other.roomIndex, 0);
   }
 
   void testPlaceRoomSetsGlobals() {

@@ -439,7 +439,7 @@ __inline void CheckCellOccupancy(int x, int y, int *ccount, uint8_t lod) {
 
   n = y * TERRAIN_WIDTH + x;
 
-  if (Show_invisible_terrain == 0 && lod == MAX_TERRAIN_LOD - 1 && Terrain_seg[n].flags & TF_INVISIBLE)
+  if (Show_invisible_terrain == 0 && lod == MAX_TERRAIN_LOD - 1 && Terrain_seg[n].flags.invisible)
     return;
 
   (*ccount)++;

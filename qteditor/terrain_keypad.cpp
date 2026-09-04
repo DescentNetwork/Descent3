@@ -545,10 +545,7 @@ void TerrainKeypad::onToggleVisibility() {
   const int count = TERRAIN_WIDTH * TERRAIN_DEPTH;
   for (int i = 0; i < count; i++) {
     if (TerrainSelected[i]) {
-      if (Terrain_seg[i].flags & TF_INVISIBLE)
-        Terrain_seg[i].flags &= ~TF_INVISIBLE;
-      else
-        Terrain_seg[i].flags |= TF_INVISIBLE;
+      Terrain_seg[i].flags.invisible = ~Terrain_seg[i].flags.invisible;
       World_changed = true;
     }
   }

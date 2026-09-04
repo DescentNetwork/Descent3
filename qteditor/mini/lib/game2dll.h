@@ -20,7 +20,6 @@
 #define GAME2DLL_H
 
 #include "pstypes.h"
-#include "multi.h"
 
 #include "d3events.h"
 #include "vecmat.h"

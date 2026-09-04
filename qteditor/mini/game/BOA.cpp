@@ -352,7 +352,7 @@ int BOA_DetermineStartRoomPortal(int start_room, vector3 *start_pos, int end_roo
           int cell = GetTerrainCellFromPos(&Rooms[start_room].portals[i].path_pnt);
           Q_ASSERT(cell != -1); // DAJ -1FIX
 
-          if (Highest_room_index + TERRAIN_REGION(cell) + 1 == end_room)
+          if (Highest_room_index + Terrain_seg[cell].flags.region + 1 == end_room)
             break;
         }
       }
@@ -480,7 +480,7 @@ bool BOA_IsSoundAudible(int start_room, int end_room) {
       return false;
     }
   } else if (ROOMNUM_OUTSIDE(s_index)) {
-    s_index = TERRAIN_REGION(start_room) + Highest_room_index + 1;
+    s_index = Terrain_seg[start_room].flags.region + Highest_room_index + 1;
   } else {
     Q_ASSERT(s_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
   }
@@ -490,7 +490,7 @@ bool BOA_IsSoundAudible(int start_room, int end_room) {
       return false;
     }
   } else if (ROOMNUM_OUTSIDE(e_index)) {
-    e_index = TERRAIN_REGION(end_room) + Highest_room_index + 1;
+    e_index = Terrain_seg[end_room].flags.region + Highest_room_index + 1;
   } else {
     Q_ASSERT(e_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
   }
@@ -511,7 +511,7 @@ bool BOA_HasPossibleBlockage(int start_room, int end_room) {
       return false;
     }
   } else if (ROOMNUM_OUTSIDE(s_index)) {
-    s_index = TERRAIN_REGION(start_room) + Highest_room_index + 1;
+    s_index = Terrain_seg[start_room].flags.region + Highest_room_index + 1;
   } else {
     Q_ASSERT(s_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
   }
@@ -521,7 +521,7 @@ bool BOA_HasPossibleBlockage(int start_room, int end_room) {
       return false;
     }
   } else if (ROOMNUM_OUTSIDE(e_index)) {
-    e_index = TERRAIN_REGION(end_room) + Highest_room_index + 1;
+    e_index = Terrain_seg[end_room].flags.region + Highest_room_index + 1;
   } else {
     Q_ASSERT(e_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
   }
@@ -547,7 +547,7 @@ bool BOA_IsVisible(int start_room, int end_room) {
       return false;
     }
   } else if (ROOMNUM_OUTSIDE(s_index)) {
-    s_index = TERRAIN_REGION(start_room) + Highest_room_index + 1;
+    s_index = Terrain_seg[start_room].flags.region + Highest_room_index + 1;
   } else {
     Q_ASSERT(s_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
   }
@@ -557,7 +557,7 @@ bool BOA_IsVisible(int start_room, int end_room) {
       return false;
     }
   } else if (ROOMNUM_OUTSIDE(e_index)) {
-    e_index = TERRAIN_REGION(end_room) + Highest_room_index + 1;
+    e_index = Terrain_seg[end_room].flags.region + Highest_room_index + 1;
   } else {
     Q_ASSERT(e_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
   }
@@ -578,7 +578,7 @@ int BOA_GetNextRoom(int start_room, int end_room) {
       return BOA_NO_PATH;
     }
   } else if (ROOMNUM_OUTSIDE(s_index)) {
-    s_index = TERRAIN_REGION(start_room) + Highest_room_index + 1;
+    s_index = Terrain_seg[start_room].flags.region + Highest_room_index + 1;
   } else {
     Q_ASSERT(s_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
   }
@@ -588,7 +588,7 @@ int BOA_GetNextRoom(int start_room, int end_room) {
       return BOA_NO_PATH;
     }
   } else if (ROOMNUM_OUTSIDE(e_index)) {
-    e_index = TERRAIN_REGION(end_room) + Highest_room_index + 1;
+    e_index = Terrain_seg[end_room].flags.region + Highest_room_index + 1;
   } else {
     Q_ASSERT(e_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
   }
@@ -664,7 +664,7 @@ void add_terrain_cell(int cell, int t_region, char *checked) {
 
   while (depth > 0) {
     cell = stack[--depth];
-    Terrain_seg[cell].flags |= (t_region << 5);
+    Terrain_seg[cell].flags.region = t_region;
     checked[cell] = 1;
 
     int xcounter, ycounter;
@@ -708,17 +708,9 @@ void compute_terrain_region_info() {
   char checked[TERRAIN_WIDTH * TERRAIN_DEPTH];
 
   for (i = 0; i < TERRAIN_WIDTH * TERRAIN_DEPTH; i++) {
-    Terrain_seg[i].flags &= (~TFM_REGION_MASK);
-    Q_ASSERT((Terrain_seg[i].flags & TFM_REGION_MASK) == 0);
+    Terrain_seg[i].flags.region = 0;
     checked[i] = 0;
   }
-
-#ifdef _DEBUG
-  for (i = 0; i < TERRAIN_WIDTH * TERRAIN_DEPTH; i++) {
-    Q_ASSERT((Terrain_seg[i].flags & TFM_REGION_MASK) == 0);
-    Q_ASSERT(((Terrain_seg[i].flags & TFM_REGION_MASK) >> 5) == 0);
-  }
-#endif
 
   // Find saturated points
   for (i = 0; i < TERRAIN_WIDTH * TERRAIN_DEPTH; i++) {
@@ -757,7 +749,7 @@ void compute_terrain_region_info() {
 
 #ifdef _DEBUG
   for (i = 0; i < TERRAIN_WIDTH * TERRAIN_DEPTH; i++) {
-    Q_ASSERT(TERRAIN_REGION(i) < BOA_num_terrain_regions);
+    Q_ASSERT(Terrain_seg[i].flags.region < BOA_num_terrain_regions);
   }
 #endif
 
@@ -773,7 +765,7 @@ void compute_terrain_region_info() {
         int cell = GetTerrainCellFromPos(&Rooms[i].portals[j].path_pnt);
         Q_ASSERT(cell != -1); // DAJ -1FIX
 
-        int region = TERRAIN_REGION(cell);
+        int region = Terrain_seg[cell].flags.region;
 
         if (!(BOA_num_connect[region] < MAX_PATH_PORTALS)) {
           f_warning = true;
@@ -990,7 +982,7 @@ void FindPath(int i, int j) {
           int cell = GetTerrainCellFromPos(&Rooms[cur_node->roomnum].portals[counter].path_pnt);
           Q_ASSERT(cell >= 0 && cell < TERRAIN_WIDTH * TERRAIN_DEPTH);
 
-          next_room = Highest_room_index + TERRAIN_REGION(cell) + 1;
+          next_room = Highest_room_index + Terrain_seg[cell].flags.region + 1;
           Q_ASSERT(next_room <= Highest_room_index + BOA_num_terrain_regions);
         }
 
@@ -1049,7 +1041,7 @@ void FindPath(int i, int j) {
           Q_ASSERT(cur_node->roomnum <= Highest_room_index);
           int cell = GetTerrainCellFromPos(&Rooms[cur_node->roomnum].portals[counter].path_pnt);
           Q_ASSERT(cell != -1); // DAJ -1FIX
-          next_room = Highest_room_index + TERRAIN_REGION(cell) + 1;
+          next_room = Highest_room_index + Terrain_seg[cell].flags.region + 1;
         }
 
         int next_portal;
@@ -1633,7 +1625,7 @@ void MakeBOAVisTable(bool from_lighting) {
           for (xxx = 0; xxx < Rooms[croom].num_portals; xxx++) {
             int cell = GetTerrainCellFromPos(&Rooms[croom].portals[xxx].path_pnt);
             Q_ASSERT(cell != -1); // DAJ -1FIX
-            int region = TERRAIN_REGION(cell);
+            int region = Terrain_seg[cell].flags.region;
 
             BOA_Array[i][Highest_room_index + region + 1] |= BOAF_VIS;
           }
@@ -1844,7 +1836,7 @@ void MakeBOAVisTable(bool from_lighting) {
                       for (xxx = 0; xxx < Rooms[check_room].num_portals; xxx++) {
                         int cell = GetTerrainCellFromPos(&Rooms[check_room].portals[xxx].path_pnt);
                         Q_ASSERT(cell != -1); // DAJ -1FIX
-                        int region = TERRAIN_REGION(cell);
+                        int region = Terrain_seg[cell].flags.region;
 
                         BOA_Array[i][Highest_room_index + region + 1] |= BOAF_VIS;
                       }

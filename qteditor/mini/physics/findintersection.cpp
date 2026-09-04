@@ -916,14 +916,14 @@ static uint16_t fvi_cells_obj_visited[MAX_CELLS_VISITED];
 
 // Fvi wall collision stuff
 static float fvi_wall_sphere_rad;
-static vector fvi_wall_sphere_offset;
-static vector fvi_wall_sphere_p0;
-static vector fvi_wall_sphere_p1;
+static vector3 fvi_wall_sphere_offset;
+static vector3 fvi_wall_sphere_p0;
+static vector3 fvi_wall_sphere_p1;
 
 static float fvi_anim_sphere_rad;
-static vector fvi_anim_sphere_offset;
-static vector fvi_anim_sphere_p0;
-static vector fvi_anim_sphere_p1;
+static vector3 fvi_anim_sphere_offset;
+static vector3 fvi_anim_sphere_p0;
+static vector3 fvi_anim_sphere_p1;
 
 // Fvi information pointers.
 fvi_info *fvi_hit_data_ptr;
@@ -933,13 +933,13 @@ fvi_query *fvi_query_ptr;
 float fvi_collision_dist;
 
 // AABB for the movement
-static vector fvi_max_xyz;
-static vector fvi_min_xyz;
-static vector fvi_movement_delta;
+static vector3 fvi_max_xyz;
+static vector3 fvi_min_xyz;
+static vector3 fvi_movement_delta;
 
 // AABB for the movement
-static vector fvi_wall_max_xyz;
-static vector fvi_wall_min_xyz;
+static vector3 fvi_wall_max_xyz;
+static vector3 fvi_wall_min_xyz;
 
 // CHRISHACK -- Do we still need this????
 int fvi_curobj;
@@ -965,18 +965,18 @@ static void do_fvi_rooms(int initial_room_index);
 /// - parameter p1: are the ends of the line.
 ///
 /// Assumes that the initial point is not intersecting the plane.
-static inline int find_plane_line_intersection(vector *intp, vector *colp, vector *plane_pnt, const vector *plane_norm,
-                                               const vector *p0, const vector *p1, float rad);
-static bool IsPointInCylinder(vector *normal, vector *cylinder_pnt, vector *edir, float elen, const float rad,
-                              const vector *pnt, vector *mdir, bool *f_collide);
+static inline int find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *plane_pnt, const vector3 *plane_norm,
+                                               const vector3 *p0, const vector3 *p1, float rad);
+static bool IsPointInCylinder(vector3 *normal, vector3 *cylinder_pnt, vector3 *edir, float elen, const float rad,
+                              const vector3 *pnt, vector3 *mdir, bool *f_collide);
 
 //! check if a sphere intersects a face -- this can be optimized (only need 2d stuff after rotation)
-static int check_vector_to_cylinder(vector *colp, vector *intp, float *col_dist, vector *wall_norm, const vector *p0,
-                                    const vector *p1, float rad, vector *ep0, vector *ep1);
+static int check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
+                                    const vector3 *p1, float rad, vector3 *ep0, vector3 *ep1);
 
 //! check if a sphere intersects a face.
-static int check_sphere_to_face(vector *colp, vector *intp, float *col_dist, vector *wall_norm, const vector *p0,
-                                const vector *p1, vector *face_normal, int nv, float rad, vector **vertex_ptr_list);
+static int check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
+                                const vector3 *p1, vector3 *face_normal, int nv, float rad, vector3 **vertex_ptr_list);
 static void fvi_rooms_objs(void);
 static int obj_in_list(int objnum, int *obj_list);
 static void make_trigger_face_list(int last_sim_faces);
@@ -998,14 +998,14 @@ void InitFVI() {
 // plane_pnt & plane_norm describe the plane
 // p0 & p1 are the ends of the line
 // Assumes that the initial point is not intersecting the plane
-inline int find_plane_line_intersection(vector *intp, vector *colp, vector *plane_pnt, const vector *plane_norm,
-                                        const vector *p0, const vector *p1, float rad) {
-  vector line_vec;             // Vector from p0 to p1
-  vector point_plane_vec;      // Vector from p0 to a point on the plane
+inline int find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *plane_pnt, const vector3 *plane_norm,
+                                        const vector3 *p0, const vector3 *p1, float rad) {
+  vector3 line_vec;             // Vector from p0 to p1
+  vector3 point_plane_vec;      // Vector from p0 to a point on the plane
   float proj_dist_line;        // Distance projection of line onto the plane normal
   float proj_dist_point_plane; // Distance of the object from the plane
 
-  ASSERT(intp != nullptr && plane_pnt != nullptr && colp != nullptr && plane_norm != nullptr && p0 != nullptr &&
+  Q_ASSERT(intp != nullptr && plane_pnt != nullptr && colp != nullptr && plane_norm != nullptr && p0 != nullptr &&
          p1 != nullptr && rad >= 0.0);
 
   // Line direction
@@ -1054,7 +1054,7 @@ inline int find_plane_line_intersection(vector *intp, vector *colp, vector *plan
     *intp = *p1 + (rad - plane_dist) * (*plane_norm);
 
     // Make sure the computed new position is not behind the wall.
-    ASSERT(vm_Dot3Product((*intp - *plane_pnt), *plane_norm) >= -0.01);
+    Q_ASSERT(vm_Dot3Product((*intp - *plane_pnt), *plane_norm) >= -0.01);
 
   } else {
     // The intersection of the line and the plane is a simple linear combination
@@ -1062,7 +1062,7 @@ inline int find_plane_line_intersection(vector *intp, vector *colp, vector *plan
   }
 
   // Make sure the computed new position is not colliding with the wall.
-  //	ASSERT((*intp - *plane_pnt) * *plane_norm >= rad);
+  //	Q_ASSERT((*intp - *plane_pnt) * *plane_norm >= rad);
 
   // Collision point is a rad. closer in the direction of the normal
   *colp = *intp + *plane_norm * -rad;
@@ -1089,19 +1089,19 @@ static const int ij_table[3][2] = {
 #define IT_POINT 3 // touches vertex
 
 // see if a point in inside a face by projecting into 2d
-uint32_t check_point_to_face(vector *colp, vector *face_normal, int nv, vector **vertex_ptr_list) {
-  vector *colp_array; // Axis-independent version of the collision point
-  vector *norm;       // Axis-independent version of the plane's normal
-  vector t;                 // Temporary vector that holds the magnatude of the normal's x,y,z components (ABS)
+uint32_t check_point_to_face(vector3 *colp, vector3 *face_normal, int nv, vector3 **vertex_ptr_list) {
+  vector3 *colp_array; // Axis-independent version of the collision point
+  vector3 *norm;       // Axis-independent version of the plane's normal
+  vector3 t;                 // Temporary vector3 that holds the magnatude of the normal's x,y,z components (ABS)
   int biggest;              // Index of the largest of the three components (0-x, 1-y, 2-z)  Axis to ignore :)
   int i, j, edge;           // Index for i-axis, Index for j-axis, and the current edge
   uint32_t edgemask;        // Bit-field for which side we are outside of
   float check_i, check_j;   // (i,j) checkpoint for 2d in/out test
-  vector_array *v0, *v1;    // Vertices of the current line segment in the 2d in/out check loop
+  vector3_array *v0, *v1;    // Vertices of the current line segment in the 2d in/out check loop
 
   // Lets look at these vectors as arrays :)
-  norm = (vector *)face_normal;
-  colp_array = (vector *)colp;
+  norm = (vector3 *)face_normal;
+  colp_array = (vector3 *)colp;
 
   // now do 2d check to see if point is in side
 
@@ -1144,8 +1144,8 @@ uint32_t check_point_to_face(vector *colp, vector *face_normal, int nv, vector *
     vec2d edgevec, checkvec;
     scalar d;
 
-    // v0 = (vector_array *)&Vertices[vertex_list[facenum*3+edge]];
-    // v1 = (vector_array *)&Vertices[vertex_list[facenum*3+((edge+1)%nv)]];
+    // v0 = (vector3_array *)&Vertices[vertex_list[facenum*3+edge]];
+    // v1 = (vector3_array *)&Vertices[vertex_list[facenum*3+((edge+1)%nv)]];
     v0 = vertex_ptr_list[edge];
     v1 = vertex_ptr_list[(edge + 1) % nv];
 
@@ -1165,26 +1165,26 @@ uint32_t check_point_to_face(vector *colp, vector *face_normal, int nv, vector *
 }
 
 // decide if it's close enough to hit
-// determine if and where a vector intersects with a sphere
-// vector defined by p0,p1
+// determine if and where a vector3 intersects with a sphere
+// vector3 defined by p0,p1
 // if there is an intersection this function returns 1, fills in intp, and col_dist else it returns 0
-// NOTE:  Caller should account for the radius of the vector (i.e. no rad. for the vector is passed
+// NOTE:  Caller should account for the radius of the vector3 (i.e. no rad. for the vector3 is passed
 //        to this function -- the 2 radii are additive to it is trial and it saves 1 parameter
-int check_vector_to_sphere_1(vector *intp, float *col_dist, const vector *p0, const vector *p1, vector *sphere_pos,
+int check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, const vector3 *p1, vector3 *sphere_pos,
                              float sphere_rad, bool f_correcting, bool f_init_collisions) {
-  vector line_vec;            // Vector direction of line from p0 to p1
-  vector normalized_line_vec; // Normalized line vector
+  vector3 line_vec;            // Vector direction of line from p0 to p1
+  vector3 normalized_line_vec; // Normalized line vector3
   float mag_line;             // Length of the line
 
-  vector point_to_center_vec;  // Vector from p0 to the center of the sphere
-  vector closest_point;        // Location the sphere's centerpoint parallel projected onto the line
+  vector3 point_to_center_vec;  // Vector from p0 to the center of the sphere
+  vector3 closest_point;        // Location the sphere's centerpoint parallel projected onto the line
   float closest_point_dist;    // Distance from p0 to the closest_point
   float closest_mag_to_center; // Distance from the clostest_point to the center of the sphere
 
   float shorten; // How much to subtract from the closest_point_dist to get the actual intersection
                  // point
 
-  ASSERT(sphere_rad > 0.0);
+  Q_ASSERT(sphere_rad > 0.0);
 
   // Get the vectors as usual
   line_vec = *p1 - *p0;
@@ -1193,7 +1193,7 @@ int check_vector_to_sphere_1(vector *intp, float *col_dist, const vector *p0, co
   if (vm_Dot3Product(line_vec, point_to_center_vec) <= 0.0f)
     return 0;
 
-  // Get the magnitude and direction of the line vector
+  // Get the magnitude and direction of the line vector3
   normalized_line_vec = line_vec;
   mag_line = vm_NormalizeVector(&normalized_line_vec);
 
@@ -1214,8 +1214,8 @@ int check_vector_to_sphere_1(vector *intp, float *col_dist, const vector *p0, co
                     point_to_center_vec * point_to_center_vec,
                     sphere_rad * sphere_rad);
       */
-      // chrishack this movement intersection fix is a hack...  How do we do correct cylinder/vector interestion?
-      vector n_ptc = point_to_center_vec;
+      // chrishack this movement intersection fix is a hack...  How do we do correct cylinder/vector3 interestion?
+      vector3 n_ptc = point_to_center_vec;
       vm_NormalizeVector(&n_ptc);
 
       *intp =
@@ -1256,15 +1256,15 @@ int check_vector_to_sphere_1(vector *intp, float *col_dist, const vector *p0, co
   return 1;
 }
 
-bool IsPointInCylinder(vector *normal, vector *cylinder_pnt, vector *edir, float elen, const float rad,
-                       const vector *pnt, vector *mdir, bool *f_collide) {
+bool IsPointInCylinder(vector3 *normal, vector3 *cylinder_pnt, vector3 *edir, float elen, const float rad,
+                       const vector3 *pnt, vector3 *mdir, bool *f_collide) {
   scalar plen = vm_Dot3Product((*pnt - *cylinder_pnt), *edir);
 
   if (plen < 0.0f || plen > elen) {
     return false;
   }
 
-  vector newp = *cylinder_pnt + *edir * plen;
+  vector3 newp = *cylinder_pnt + *edir * plen;
   *normal = *pnt - newp;
 
   if (vm_NormalizeVector(normal) >= rad) {
@@ -1280,13 +1280,13 @@ bool IsPointInCylinder(vector *normal, vector *cylinder_pnt, vector *edir, float
 }
 
 // check if a sphere intersects a face -- this can be optimized (only need 2d stuff after rotation)
-int check_vector_to_cylinder(vector *colp, vector *intp, float *col_dist, vector *wall_norm, const vector *p0,
-                             const vector *p1, float rad, vector *ep0, vector *ep1) {
+int check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
+                             const vector3 *p1, float rad, vector3 *ep0, vector3 *ep1) {
   matrix edge_orient;
-  vector po0, po1;
-  vector edgevec = *ep1 - *ep0;
-  vector mvec;
-  vector closest_pnt;
+  vector3 po0, po1;
+  vector3 edgevec = *ep1 - *ep0;
+  vector3 mvec;
+  vector3 closest_pnt;
 
   float edge_len;
   float dist;
@@ -1296,22 +1296,22 @@ int check_vector_to_cylinder(vector *colp, vector *intp, float *col_dist, vector
   int i;
   int valid_hit = 0;
 
-  vector mvec3d;
+  vector3 mvec3d;
   float vector_len3d;
 
   float t[4];
-  vector ivertex[4];
+  vector3 ivertex[4];
 
   int valid_t[4];
   float cole_dist[4];
-  vector inte[4];
+  vector3 inte[4];
 
   mvec3d = *p1 - *p0;
   vector_len3d = vm_NormalizeVector(&mvec3d);
 
   edge_len = vm_NormalizeVector(&edgevec);
 
-  vector init_normal;
+  vector3 init_normal;
   bool f_init_collide;
 
   if (!IsPointInCylinder(&init_normal, ep0, &edgevec, edge_len, rad, p0, &mvec3d, &f_init_collide)) {
@@ -1327,7 +1327,7 @@ int check_vector_to_cylinder(vector *colp, vector *intp, float *col_dist, vector
     dist = -(vm_Dot3Product(mvec,po0));
 
     closest_pnt = po0 + dist * mvec;
-    //	ASSERT(!(closest_pnt.x == 0.0 && closest_pnt.y == 0.0 && closest_pnt.z == 0)); -- why does this matter?
+    //	Q_ASSERT(!(closest_pnt.x == 0.0 && closest_pnt.y == 0.0 && closest_pnt.z == 0)); -- why does this matter?
 
     dist_from_origin = vm_GetMagnitude(&closest_pnt);
     if (dist_from_origin >= rad)
@@ -1367,7 +1367,7 @@ int check_vector_to_cylinder(vector *colp, vector *intp, float *col_dist, vector
       }
     }
 
-    vector d_vec;
+    vector3 d_vec;
     // check end spheres
     if (check_vector_to_sphere_1(&ivertex[2], &cole_dist[2], p0, p1, ep0, rad, false, true)) {
       t[2] = cole_dist[2] / vector_len3d;
@@ -1430,31 +1430,31 @@ int check_vector_to_cylinder(vector *colp, vector *intp, float *col_dist, vector
 }
 
 /*
-int check_vector_to_cylinder(vector *colp, vector *intp, float *col_dist, vector *wall_norm, vector *p0, vector *p1,
-float rad, vector *ep0, vector *ep1)
+int check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, vector3 *p0, vector3 *p1,
+float rad, vector3 *ep0, vector3 *ep1)
 {
         int i;
         float s;
         float t;
         float pmag;
-        vector init_normal;
+        vector3 init_normal;
         bool f_hit = false;
-        vector mdir = *p1 - *p0;
+        vector3 mdir = *p1 - *p0;
         float mlen = vm_NormalizeVector(&mdir);
-        vector edir = *ep1 - *ep0;
+        vector3 edir = *ep1 - *ep0;
         float elen = vm_NormalizeVector(&edir);
         bool f_init_collide;
 
         float cdist; // Closest dist
 
-        vector perp = (mdir ^ edir);        // Determines the normalized perp to both lines
-        if(perp == vector{})
+        vector3 perp = (mdir ^ edir);        // Determines the normalized perp to both lines
+        if(perp == vector3{})
                 goto check_ends;  // We are moving parallal to the cylinder (only end collisions are possible)
         pmag = vm_NormalizeVector(&perp);
 
-        ASSERT(pmag != 0.0);
+        Q_ASSERT(pmag != 0.0);
 
-        vector brbc = *p0 - *ep0;
+        vector3 brbc = *p0 - *ep0;
         cdist = fabs((brbc) * perp);  // Closest distance
 
         if(cdist >= rad)  // If the closest point is a more than a rad away, no hit
@@ -1465,13 +1465,13 @@ float rad, vector *ep0, vector *ep1)
         {
                 t = (((brbc) ^ edir) * perp)/pmag;
 
-                vector o = perp ^ edir;
+                vector3 o = perp ^ edir;
                 vm_NormalizeVector(&o);
 
                 s = fabs(sqrt(rad * rad - pmag * pmag)/(mdir * o));
 
-                vector cyl_pnt[2];
-                vector cyl_norm[2];
+                vector3 cyl_pnt[2];
+                vector3 cyl_norm[2];
 
                 // Determine the 2 potential hitpoint
                 cyl_pnt[0] = *p0 + (t - s) * mdir;
@@ -1480,7 +1480,7 @@ float rad, vector *ep0, vector *ep1)
                 // Determine the 2 potential hit normals
                 for(i = 0; i < 2; i++)
                 {
-                        vector hb = cyl_pnt[i] - *ep0;
+                        vector3 hb = cyl_pnt[i] - *ep0;
                         cyl_norm[i] = (hb - (hb * edir) * edir)/rad;
                         vm_NormalizeVector(&cyl_norm[i]); // Accounts for fp round off. - probably not necessary
                 }
@@ -1534,7 +1534,7 @@ float rad, vector *ep0, vector *ep1)
 
                 check_ends:
 
-                vector end_pnt;
+                vector3 end_pnt;
 
                 if(f_hit)
                 {
@@ -1592,11 +1592,11 @@ float rad, vector *ep0, vector *ep1)
 */
 
 // check if a sphere intersects a face
-int check_sphere_to_face(vector *colp, vector *intp, float *col_dist, vector *wall_norm, const vector *p0,
-                         const vector *p1, vector *face_normal, int nv, float rad, vector **vertex_ptr_list) {
+int check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
+                         const vector3 *p1, vector3 *face_normal, int nv, float rad, vector3 **vertex_ptr_list) {
   uint32_t edgemask;
 
-  ASSERT(nv > 0 && nv <= 32); // otherwise, we overflow the edgemask -- if we hit this we need to make edgemask a long
+  Q_ASSERT(nv > 0 && nv <= 32); // otherwise, we overflow the edgemask -- if we hit this we need to make edgemask a long
                               // long and adjust the other functions accordingly
 
   // now do 2d check to see if point is inside the face (if so, we are done)
@@ -1613,7 +1613,7 @@ int check_sphere_to_face(vector *colp, vector *intp, float *col_dist, vector *wa
     // If the checkpoint collides with the edge of a face, it could
     // go a little farther before hitting anything
 
-    vector *v0, *v1;
+    vector3 *v0, *v1;
     int edgenum;
 
     // If we have no radius we could only hit the face and not an edge or point
@@ -1621,7 +1621,7 @@ int check_sphere_to_face(vector *colp, vector *intp, float *col_dist, vector *wa
       return IT_NONE;
 
     int f_hit = 0;
-    vector c_end = *p1;
+    vector3 c_end = *p1;
 
     // get verts for edge we're behind
     for (edgenum = 0; edgenum < nv; edgenum++) {
@@ -1681,14 +1681,14 @@ int check_sphere_to_face(vector *colp, vector *intp, float *col_dist, vector *wa
 // point on plane, whether or not line intersects side
 // facenum determines which of four possible faces we have
 // note: the seg parm is temporary, until the face itself has a point field
-int check_line_to_face(vector *newp, vector *colp, float *col_dist, vector *wall_norm, const vector *p0,
-                       const vector *p1, vector *face_normal, vector **vertex_ptr_list, const int nv, const float rad) {
+int check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
+                       const vector3 *p1, vector3 *face_normal, vector3 **vertex_ptr_list, const int nv, const float rad) {
   int f_pli; // Flag for if a plane that defines the face intersects with the line
   int vertnum = 0;
-  vector *test = vertex_ptr_list[0];
+  vector3 *test = vertex_ptr_list[0];
   int i;
 
-  ASSERT(newp != nullptr && p0 != 0 && p1 != nullptr && rad >= 0.0);
+  Q_ASSERT(newp != nullptr && p0 != 0 && p1 != nullptr && rad >= 0.0);
 
   // This is so we always use the same vertex
   for (i = 1; i < nv; i++) {
@@ -1719,7 +1719,7 @@ int check_line_to_face(vector *newp, vector *colp, float *col_dist, vector *wall
 // chrishack -- check this later
 // computes the parameters of closest approach of two lines
 // fill in two parameters, t0 & t1.  returns 0 if lines are parallel, else 1
-bool check_line_to_line(scalar *t1, scalar *t2, vector *p1, vector *v1, vector *p2, vector *v2) {
+bool check_line_to_line(scalar *t1, scalar *t2, vector3 *p1, vector3 *v1, vector3 *p2, vector3 *v2) {
   matrix det;
   scalar d, cross_mag2; // mag squared cross product
 
@@ -1743,10 +1743,10 @@ bool check_line_to_line(scalar *t1, scalar *t2, vector *p1, vector *v1, vector *
 
 // determine if a vector intersects with an object
 // if no intersects, returns 0, else fills in intp and returns dist
-int check_vector_to_object(vector *intp, float *col_dist, vector *p0, vector *p1, float rad, object *still_obj,
+int check_vector_to_object(vector3 *intp, float *col_dist, vector3 *p0, vector3 *p1, float rad, object *still_obj,
                            object *fvi_obj) {
   float still_size;
-  vector still_pos = still_obj->pos;
+  vector3 still_pos = still_obj->pos;
   float total_size;
 
   int fvi_objnum = fvi_query_ptr->thisobjnum;
@@ -1758,16 +1758,6 @@ int check_vector_to_object(vector *intp, float *col_dist, vector *p0, vector *p1
   } else {
     still_size = still_obj->size;
   }
-
-  // chrishack -- why?
-  //	if (obj->type == OBJ_ROBOT && Robot_info[obj->id].attack_type)
-  //		size = (size*3)/4;
-  // if obj is player, and bumping into other player or a weapon of another coop player, reduce radius
-  //	if (obj->type == OBJ_PLAYER &&
-  //		 	((otherobj->type == OBJ_PLAYER) ||
-  //	 		((Game_mode&GM_MULTI_COOP) && otherobj->type == OBJ_WEAPON &&
-  // otherobj->ctype.laser_info.parent_type
-  //== OBJ_PLAYER))) 		size = size/2;
 
   // This accounts for relative position vs. relative velocity
   if (fvi_objnum != -1 && still_obj->movement_type == MT_PHYSICS && Objects[fvi_objnum].movement_type == MT_PHYSICS) {
@@ -1807,7 +1797,7 @@ int check_vector_to_object(vector *intp, float *col_dist, vector *p0, vector *p1
 }
 
 inline void compute_movement_AABB(void) {
-  const vector delta_movement = fvi_hit_data_ptr->hit_pnt - *fvi_query_ptr->p0;
+  const vector3 delta_movement = fvi_hit_data_ptr->hit_pnt - *fvi_query_ptr->p0;
 
   fvi_min_xyz = fvi_max_xyz = *fvi_query_ptr->p0;
 
@@ -1831,7 +1821,7 @@ inline void compute_movement_AABB(void) {
 
   if (!fvi_zero_rad) {
     if (fvi_query_ptr->thisobjnum < 0) {
-      vector offset_vec;
+      vector3 offset_vec;
 
       offset_vec.x() = fvi_query_ptr->rad;
       offset_vec.y() = fvi_query_ptr->rad;
@@ -1843,8 +1833,8 @@ inline void compute_movement_AABB(void) {
       fvi_wall_min_xyz = fvi_min_xyz;
       fvi_wall_max_xyz = fvi_max_xyz;
     } else {
-      vector max_offset = Objects[fvi_query_ptr->thisobjnum].max_xyz - Objects[fvi_query_ptr->thisobjnum].pos;
-      vector min_offset = Objects[fvi_query_ptr->thisobjnum].min_xyz - Objects[fvi_query_ptr->thisobjnum].pos;
+      vector3 max_offset = Objects[fvi_query_ptr->thisobjnum].max_xyz - Objects[fvi_query_ptr->thisobjnum].pos;
+      vector3 min_offset = Objects[fvi_query_ptr->thisobjnum].min_xyz - Objects[fvi_query_ptr->thisobjnum].pos;
 
       fvi_max_xyz += max_offset;
       fvi_min_xyz += min_offset;
@@ -1900,7 +1890,7 @@ inline bool room_movement_AABB(face *room_face) {
   return overlap;
 }
 
-inline bool room_manual_AABB(const face *room_face, const vector *min_xyz, const vector *max_xyz) {
+inline bool room_manual_AABB(const face *room_face, const vector3 *min_xyz, const vector3 *max_xyz) {
   bool overlap = true;
 
   if (max_xyz->y() < room_face->min_xyz.y() || room_face->max_xyz.y() < min_xyz->y() || max_xyz->x() < room_face->min_xyz.x() ||
@@ -1913,20 +1903,20 @@ inline bool room_manual_AABB(const face *room_face, const vector *min_xyz, const
 #define MAX_QUICK_ROOMS 20
 
 // Returns the number of faces that are approximately within the specified radius
-int fvi_QuickDistFaceList(int init_room_index, vector *pos, float rad, fvi_face_room_list *quick_fr_list,
+int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face_room_list *quick_fr_list,
                           int max_elements) {
   int num_faces = 0;
   room *cur_room;
-  vector min_xyz, max_xyz;
+  vector3 min_xyz, max_xyz;
   int next_rooms[MAX_QUICK_ROOMS];
   int highest_next_room_index;
   int cur_next_room_index;
   int i;
 
-  // ASSERT(quick_fr_list != NULL);
-  ASSERT(pos != nullptr);
-  ASSERT(init_room_index >= 0 && init_room_index <= Highest_room_index && Rooms[init_room_index].used != 0);
-  ASSERT(rad >= 0.0f);
+  // Q_ASSERT(quick_fr_list != NULL);
+  Q_ASSERT(pos != nullptr);
+  Q_ASSERT(init_room_index >= 0 && init_room_index <= Highest_room_index && Rooms[init_room_index].used != 0);
+  Q_ASSERT(rad >= 0.0f);
 
   // Quick volume
   min_xyz = max_xyz = *pos;
@@ -1976,8 +1966,8 @@ int fvi_QuickDistFaceList(int init_room_index, vector *pos, float rad, fvi_face_
     const int16_t num_bbf_regions = cur_room->num_bbf_regions;
     int16_t *num_faces_ptr = cur_room->num_bbf;
     uint8_t *bbf_val = cur_room->bbf_list_sector;
-    vector *region_min = cur_room->bbf_list_min_xyz;
-    vector *region_max = cur_room->bbf_list_max_xyz;
+    vector3 *region_min = cur_room->bbf_list_min_xyz;
+    vector3 *region_max = cur_room->bbf_list_max_xyz;
     int16_t **bbf_list_ptr = cur_room->bbf_list;
 
     // Do the actual wall collsion stuff here!
@@ -2017,7 +2007,7 @@ int fvi_QuickDistFaceList(int init_room_index, vector *pos, float rad, fvi_face_
 
             // If the conect_room is not a terrain cell and we still have a slot in the next room list...
             if (connect_room >= 0 && highest_next_room_index + 1 < MAX_QUICK_ROOMS) {
-              ASSERT(Rooms[connect_room].used);
+              Q_ASSERT(Rooms[connect_room].used);
 
               if ((fvi_visit_list[connect_room >> 3] & (0x01 << ((connect_room) % 8))) == 0) {
                 fvi_visit_list[connect_room >> 3] |= 0x01 << (connect_room % 8);
@@ -2049,7 +2039,7 @@ int fvi_QuickDistFaceList(int init_room_index, vector *pos, float rad, fvi_face_
 }
 
 // Returns the number of faces that are approximately within the specified radius
-int fvi_QuickDistCellList(int init_cell_index, vector *pos, float rad, int *quick_cell_list, int max_elements) {
+int fvi_QuickDistCellList(int init_cell_index, vector3 *pos, float rad, int *quick_cell_list, int max_elements) {
   int num_cells = 0;
   int next_y_delta;
   int xstart, xend, ystart, yend;
@@ -2057,10 +2047,10 @@ int fvi_QuickDistCellList(int init_cell_index, vector *pos, float rad, int *quic
   int xcounter, ycounter;
   int cur_node;
 
-  ASSERT(quick_cell_list != nullptr);
-  ASSERT(pos != nullptr);
-  ASSERT(init_cell_index >= 0 && init_cell_index < TERRAIN_WIDTH * TERRAIN_DEPTH);
-  ASSERT(rad >= 0.0f);
+  Q_ASSERT(quick_cell_list != nullptr);
+  Q_ASSERT(pos != nullptr);
+  Q_ASSERT(init_cell_index >= 0 && init_cell_index < TERRAIN_WIDTH * TERRAIN_DEPTH);
+  Q_ASSERT(rad >= 0.0f);
 
   cur_node = init_cell_index;
 
@@ -2104,12 +2094,12 @@ int fvi_QuickDistCellList(int init_cell_index, vector *pos, float rad, int *quic
   return num_cells;
 }
 
-int fvi_QuickDistObjectList(vector *pos, int init_room_index, float rad, int16_t *object_index_list, int max_elements,
+int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_t *object_index_list, int max_elements,
                             bool f_lightmap_only, bool f_only_players_and_ais, bool f_include_non_collide_objects,
                             bool f_stop_at_closed_doors) {
   int num_objects = 0;
   int x; //, y;
-  vector delta;
+  vector3 delta;
 
   // Quick volume
   delta.x() = delta.y() = delta.z() = rad;
@@ -2168,7 +2158,7 @@ int fvi_QuickDistObjectList(vector *pos, int init_room_index, float rad, int16_t
                     Objects[cur_obj_index].type != OBJ_ROOM)) {
                 if (object_movement_AABB(&Objects[cur_obj_index]) && !(Objects[cur_obj_index].flags & OF_BIG_OBJECT)) {
                   object_index_list[num_objects++] = cur_obj_index;
-                  ASSERT(num_objects < 0 || num_objects <= max_elements);
+                  Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
                 }
               }
             }
@@ -2197,7 +2187,7 @@ int fvi_QuickDistObjectList(vector *pos, int init_room_index, float rad, int16_t
                 Objects[BigObjectList[x]].type != OBJ_ROOM)) {
             if (object_movement_AABB(&Objects[BigObjectList[x]])) {
               object_index_list[num_objects++] = BigObjectList[x];
-              ASSERT(num_objects < 0 || num_objects <= max_elements);
+              Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
             }
           }
         }
@@ -2210,9 +2200,9 @@ int fvi_QuickDistObjectList(vector *pos, int init_room_index, float rad, int16_t
     int cur_next_room_index;
     int i;
 
-    ASSERT(pos != nullptr);
-    ASSERT(init_room_index >= 0 && init_room_index <= Highest_room_index && Rooms[init_room_index].used != 0);
-    ASSERT(rad >= 0.0f);
+    Q_ASSERT(pos != nullptr);
+    Q_ASSERT(init_room_index >= 0 && init_room_index <= Highest_room_index && Rooms[init_room_index].used != 0);
+    Q_ASSERT(rad >= 0.0f);
 
     // Initially this is the only room in the list
     next_rooms[0] = init_room_index;
@@ -2238,7 +2228,7 @@ int fvi_QuickDistObjectList(vector *pos, int init_room_index, float rad, int16_t
             if (!(f_lightmap_only && (Objects[cur_obj_index].lighting_render_type != LRT_LIGHTMAPS))) {
               if (object_movement_AABB(&Objects[cur_obj_index])) {
                 object_index_list[num_objects++] = cur_obj_index;
-                ASSERT(num_objects < 0 || num_objects <= max_elements);
+                Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
               }
             }
           }
@@ -2250,7 +2240,7 @@ int fvi_QuickDistObjectList(vector *pos, int init_room_index, float rad, int16_t
       if (num_objects >= max_elements)
         break;
 
-      if (f_stop_at_closed_doors && cur_room->flags & RF_DOOR) {
+      if (f_stop_at_closed_doors && cur_room->flags.door) {
         // Closed doors antenuate a lot
         if (DoorwayGetPosition(cur_room) == 0.0)
           goto skip_room_prop;
@@ -2278,13 +2268,13 @@ int fvi_QuickDistObjectList(vector *pos, int init_room_index, float rad, int16_t
 
         // If the conect_room is not a terrain cell and we still have a slot in the next room list...
         if (connect_room >= 0 && highest_next_room_index + 1 < MAX_QUICK_ROOMS) {
-          ASSERT(Rooms[connect_room].used);
+          Q_ASSERT(Rooms[connect_room].used);
 
           if ((fvi_visit_list[connect_room >> 3] & (0x01 << ((connect_room) % 8))) == 0) {
             fvi_visit_list[connect_room >> 3] |= 0x01 << (connect_room % 8);
             fvi_rooms_visited[fvi_num_rooms_visited++] = connect_room;
 
-            ASSERT(highest_next_room_index + 1 >= 0 && highest_next_room_index + 1 < MAX_QUICK_ROOMS);
+            Q_ASSERT(highest_next_room_index + 1 >= 0 && highest_next_room_index + 1 < MAX_QUICK_ROOMS);
             next_rooms[++highest_next_room_index] = connect_room;
           }
         }
@@ -2304,9 +2294,9 @@ int fvi_QuickDistObjectList(vector *pos, int init_room_index, float rad, int16_t
   return num_objects;
 }
 
-bool fvi_QuickRoomCheck(vector *pos, room *cur_room, bool try_again) {
-  vector hit_point; // where we hit
-  vector colp;
+bool fvi_QuickRoomCheck(vector3 *pos, room *cur_room, bool try_again) {
+  vector3 hit_point; // where we hit
+  vector3 colp;
   float cur_dist; // distance to hit point
   int i;
   bool f_in_room = true;
@@ -2316,11 +2306,11 @@ internal_try_again:
   int closest_hit_type = 0;
   float closest_hit_distance = 10000000.0f;
 
-  vector min_xyz;
-  vector max_xyz;
-  vector new_pos;
+  vector3 min_xyz;
+  vector3 max_xyz;
+  vector3 new_pos;
 
-  if (!(cur_room->used) || (cur_room->flags & RF_EXTERNAL))
+  if (!(cur_room->used) || cur_room->flags.external)
     return false;
 
   new_pos = min_xyz = max_xyz = *pos;
@@ -2363,8 +2353,8 @@ internal_try_again:
   const int16_t num_bbf_regions = cur_room->num_bbf_regions;
   int16_t *num_faces_ptr = cur_room->num_bbf;
   uint8_t *bbf_val = cur_room->bbf_list_sector;
-  vector *region_min = cur_room->bbf_list_min_xyz;
-  vector *region_max = cur_room->bbf_list_max_xyz;
+  vector3 *region_min = cur_room->bbf_list_min_xyz;
+  vector3 *region_max = cur_room->bbf_list_max_xyz;
   int16_t **bbf_list_ptr = cur_room->bbf_list;
 
   // Do the actual wall collsion stuff here!
@@ -2380,10 +2370,10 @@ internal_try_again:
         i = *cur_face_index_ptr;
         cur_face_index_ptr++;
 
-        vector face_normal;
-        vector *vertex_ptr_list[MAX_VERTS_PER_FACE];
+        vector3 face_normal;
+        vector3 *vertex_ptr_list[MAX_VERTS_PER_FACE];
         int face_hit_type;
-        vector wall_norm;
+        vector3 wall_norm;
         int16_t count;
         bool f_backface;
 
@@ -2460,15 +2450,15 @@ inline bool is_long_xz_ray(fvi_query *fq) {
 }
 
 void check_ceiling() {
-  vector hit_point;
+  vector3 hit_point;
   float cur_dist;
 
-  vector face_normal = {0.0, -1.0, 0.0};
-  vector *vertex_ptr_list[4];
-  vector vlist[4];
+  vector3 face_normal = {0.0, -1.0, 0.0};
+  vector3 *vertex_ptr_list[4];
+  vector3 vlist[4];
   int face_hit_type;
-  vector wall_norm;
-  vector colp;
+  vector3 wall_norm;
+  vector3 colp;
 
   // Bail early if hitpnt is not high enough
   if (fvi_query_ptr->rad + fvi_hit_data_ptr->hit_pnt.y() < CEILING_HEIGHT)
@@ -2528,15 +2518,15 @@ void make_trigger_face_list(int last_sim_faces) {
 
   num_real_collisions = last_sim_faces;
 
-  ASSERT(Fvi_num_recorded_faces <= MAX_RECORDED_FACES);
+  Q_ASSERT(Fvi_num_recorded_faces <= MAX_RECORDED_FACES);
 
   for (x = last_sim_faces; x < Fvi_num_recorded_faces; x++) {
-    vector face_normal;
-    vector *vertex_ptr_list[MAX_VERTS_PER_FACE];
+    vector3 face_normal;
+    vector3 *vertex_ptr_list[MAX_VERTS_PER_FACE];
     int face_hit_type;
-    vector wall_norm;
-    vector colp;
-    vector hit_point;
+    vector3 wall_norm;
+    vector3 colp;
+    vector3 hit_point;
     int16_t count;
     room *cur_room = &Rooms[Fvi_recorded_faces[x].room_index];
     int i = Fvi_recorded_faces[x].face_index;
@@ -2591,7 +2581,7 @@ void make_trigger_face_list(int last_sim_faces) {
   Fvi_num_recorded_faces = num_real_collisions;
 }
 
-// Find out if a vector intersects with anything.
+// Find out if a vector3 intersects with anything.
 // Fills in hit_data, an fvi_info structure (see header file).
 // Parms:
 //  p0 & startseg 	describe the start of the vector
@@ -2648,11 +2638,11 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
   else
     fvi_zero_rad = false;
 
-  ASSERT(fq != nullptr && hit_data != nullptr);
+  Q_ASSERT(fq != nullptr && hit_data != nullptr);
 
-  ASSERT(std::isfinite(fq->p1->x())); // Caller wants to go to infinity!  -- Not FVI's fault.
-  ASSERT(std::isfinite(fq->p1->y())); // Caller wants to go to infinity!  -- Not FVI's fault.
-  ASSERT(std::isfinite(fq->p1->z())); // Caller wants to go to infinity!  -- Not FVI's fault.
+  Q_ASSERT(std::isfinite(fq->p1->x())); // Caller wants to go to infinity!  -- Not FVI's fault.
+  Q_ASSERT(std::isfinite(fq->p1->y())); // Caller wants to go to infinity!  -- Not FVI's fault.
+  Q_ASSERT(std::isfinite(fq->p1->z())); // Caller wants to go to infinity!  -- Not FVI's fault.
 
   fvi_movement_delta = *fq->p1 - *fq->p0;
 
@@ -2668,7 +2658,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
       this_obj->type != OBJ_PLAYER && fq->rad == this_obj->size) {
     if (this_obj->mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS) {
       fvi_wall_sphere_rad = 0.0f;
-      fvi_wall_sphere_offset = vector{};
+      fvi_wall_sphere_offset = vector3{};
       fvi_wall_sphere_p0 = *fq->p0;
       fvi_wall_sphere_p1 = *fq->p1;
     } else {
@@ -2687,23 +2677,23 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
       fvi_wall_sphere_rad = fq->rad * PLAYER_SIZE_SCALAR;
       if (Players[this_obj->id].flags & (PLAYER_FLAGS_DEAD | PLAYER_FLAGS_DYING))
         fvi_wall_sphere_rad *= 0.5f;
-      fvi_wall_sphere_offset = vector{};
+      fvi_wall_sphere_offset = vector3{};
       fvi_wall_sphere_p0 = *fq->p0;
       fvi_wall_sphere_p1 = *fq->p1;
     } else if ((this_obj) && this_obj->mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS) {
       fvi_wall_sphere_rad = 0.0f;
-      fvi_wall_sphere_offset = vector{};
+      fvi_wall_sphere_offset = vector3{};
       fvi_wall_sphere_p0 = *fq->p0;
       fvi_wall_sphere_p1 = *fq->p1;
     } else {
       fvi_wall_sphere_rad = fq->rad;
-      fvi_wall_sphere_offset = vector{};
+      fvi_wall_sphere_offset = vector3{};
       fvi_wall_sphere_p0 = *fq->p0;
       fvi_wall_sphere_p1 = *fq->p1;
     }
 
     fvi_anim_sphere_rad = fq->rad;
-    fvi_anim_sphere_offset = vector{};
+    fvi_anim_sphere_offset = vector3{};
     fvi_anim_sphere_p0 = *fq->p0;
     fvi_anim_sphere_p1 = *fq->p1;
   }
@@ -2741,12 +2731,12 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
       fvi_query fvi_new_query = *fq;
 
       // These are the new "moving" line points
-      vector new_p0;
-      vector new_p1;
+      vector3 new_p0;
+      vector3 new_p1;
 
       // Number of whole subdivisions
       int num_subdivisions = vm_VectorDistance(fq->p0, fq->p1) / MIN_LONG_RAY;
-      vector sub_dir;     // Direction and magnitude of each subdivision
+      vector3 sub_dir;     // Direction and magnitude of each subdivision
       int s_hit_type = 0; // Sub-divided hit type
 
       sub_dir = *fq->p1 - *fq->p0;  // Direction of movement
@@ -2797,13 +2787,13 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
     } else
       do_fvi_terrain();
   } else {
-    ASSERT(!(Rooms[fq->startroom].flags & RF_EXTERNAL)); // If we hit this, it is not FVI's fault
+    Q_ASSERT(!Rooms[fq->startroom].flags.external); // If we hit this, it is not FVI's fault
                                                          // The caller to fvi has a bug
     FVI_room_counter++;
     // do_fvi_rooms(fq->startroom);
     fvi_room(fq->startroom, -1);
 
-    ASSERT(fvi_num_rooms_visited >= 1);
+    Q_ASSERT(fvi_num_rooms_visited >= 1);
   }
 
   // Check objects in rooms we visited
@@ -2824,13 +2814,13 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
                 (fvi_query_ptr->thisobjnum >= 0 &&
                  (Objects[fvi_query_ptr->thisobjnum].mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS))) &&
                (ROOMNUM_OUTSIDE(hit_data->hit_face_room[0]) ||
-                !(Rooms[hit_data->hit_face_room[0]].flags & RF_EXTERNAL))) {
+                !Rooms[hit_data->hit_face_room[0]].flags.external)) {
       hit_data->hit_room = hit_data->hit_face_room[0];
     } else {
       bool f_found_room = false;
 
       for (i = 0; i < fvi_num_rooms_visited && !f_found_room; i++) {
-        if (!(Rooms[fvi_rooms_visited[i]].flags & RF_EXTERNAL))
+        if (!Rooms[fvi_rooms_visited[i]].flags.external)
           if (fvi_QuickRoomCheck(&hit_data->hit_pnt, &Rooms[fvi_rooms_visited[i]])) {
             f_found_room = true;
             hit_data->hit_room = fvi_rooms_visited[i];
@@ -2853,22 +2843,22 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
       } else if (!f_found_room) {
         //				mprintf(0, "Attempting to patch\n");
         for (i = 0; i < fvi_num_rooms_visited && !f_found_room; i++) {
-          if (!(Rooms[fvi_rooms_visited[i]].flags & RF_EXTERNAL))
+          if (!Rooms[fvi_rooms_visited[i]].flags.external)
             if (fvi_QuickRoomCheck(&hit_data->hit_pnt, &Rooms[fvi_rooms_visited[i]]), true) {
               f_found_room = true;
               hit_data->hit_room = fvi_rooms_visited[i];
-              ASSERT(!(Rooms[hit_data->hit_room].flags & RF_EXTERNAL));
+              Q_ASSERT(!Rooms[hit_data->hit_room].flags.external);
               //				break;
             }
         }
 
-        ASSERT(no_subdivision || f_found_room);
+        Q_ASSERT(no_subdivision || f_found_room);
       }
     }
 
     // Do the ASSERTS for FVI.
-    ASSERT(!(hit_data->hit_room == -1 && hit_data->hit_type[0] != HIT_OUT_OF_TERRAIN_BOUNDS));
-    ASSERT(!(hit_data->hit_type[0] == HIT_OBJECT && hit_data->hit_object[0] == -1));
+    Q_ASSERT(!(hit_data->hit_room == -1 && hit_data->hit_type[0] != HIT_OUT_OF_TERRAIN_BOUNDS));
+    Q_ASSERT(!(hit_data->hit_type[0] == HIT_OBJECT && hit_data->hit_object[0] == -1));
   }
 
   // Clean up the visit list bits
@@ -2908,7 +2898,7 @@ int obj_in_list(int objnum, int *obj_list) {
 
 // new function for Mike
 // note: n_segs_visited must be set to zero before this is called
-int sphere_intersects_wall(vector *pnt, int segnum, float rad) {
+int sphere_intersects_wall(vector3 *pnt, int segnum, float rad) {
   /*
           int facemask;
           segment *seg;
@@ -2936,7 +2926,7 @@ int sphere_intersects_wall(vector *pnt, int segnum, float rad) {
                                           //did we go through this wall/door?
 
                                           if ((seg-Segments)==-1)
-                                                  Error("segnum == -1 in sphere_intersects_wall()");
+                                                  LOG_ERROR("segnum == -1 in sphere_intersects_wall()");
 
                                           create_abs_vertex_lists(&num_faces,vertex_list,seg-Segments,side);
 
@@ -2977,22 +2967,22 @@ static const int bbox_edges[12][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {3, 4}, {2
 static const int bbox_faces[6][4] = {{4, 5, 2, 3}, {7, 6, 5, 4}, {0, 1, 6, 7},
                                      {0, 3, 2, 1}, {7, 4, 3, 0}, {1, 2, 5, 3}};
 /*
-bool BBoxPlaneIntersection(bool fast_exit, vector *collision_point, vector *collision_normal, object *obj, vector
-*new_pos, int nv, vector **vertex_ptr_list, vector *face_normal)
+bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *collision_normal, object *obj, vector3
+*new_pos, int nv, vector3 **vertex_ptr_list, vector3 *face_normal)
 {
-        vector plane_pnt;
-        vector verts[12];
-        vector norms[6];
+        vector3 plane_pnt;
+        vector3 verts[12];
+        vector3 norms[6];
         poly_model *pm = &Poly_models[obj->rtype.pobj_info.model_num];
         int i, j, k;
-        vector rel[32];
+        vector3 rel[32];
         float dot[32];
-        vector *bbox_vertex_ptr_list[4];
+        vector3 *bbox_vertex_ptr_list[4];
 
         int num_int_box = 0;
         int num_int_poly = 0;
-        vector int_points_box[12];
-        vector int_points_poly[32];
+        vector3 int_points_box[12];
+        vector3 int_points_poly[32];
         int16_t int_faces = 0;
         bool f_int_box = false;
         bool f_int_poly = false;
@@ -3055,7 +3045,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector *collision_point, vector *coll
         // Get Plane intersection point
         for(i = 0; i < 12; i++)
         {
-                vector movement;
+                vector3 movement;
                 bool found;
                 float nmovement;
 
@@ -3109,7 +3099,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector *collision_point, vector *coll
 
                 for(i = 0; i < nv; i++)
                 {
-                        vector movement;
+                        vector3 movement;
                         bool found;
                         float nmovement;
 
@@ -3185,16 +3175,16 @@ bool BBoxPlaneIntersection(bool fast_exit, vector *collision_point, vector *coll
 }
 */
 
-vector PointSpeed(object *obj, vector *pos, matrix *orient, vector *rotvel, vector *velocity) {
-  vector r1 = *pos - obj->pos;
-  vector w1;
-  vector n1;
+vector3 PointSpeed(object *obj, vector3 *pos, matrix *orient, vector3 *rotvel, vector3 *velocity) {
+  vector3 r1 = *pos - obj->pos;
+  vector3 w1;
+  vector3 n1;
   float temp1;
 
   matrix o_t1 = *orient;
 
   vm_TransposeMatrix(&o_t1);
-  vector cmp1 = *rotvel * o_t1;
+  vector3 cmp1 = *rotvel * o_t1;
   ConvertEulerToAxisAmount(&cmp1, &n1, &temp1);
 
   n1 *= temp1;
@@ -3202,7 +3192,7 @@ vector PointSpeed(object *obj, vector *pos, matrix *orient, vector *rotvel, vect
   if (temp1 != 0.0f) {
     vm_CrossProduct(&w1, &n1, &r1);
   } else {
-    w1 = vector{};
+    w1 = vector3{};
   }
 
   return *velocity + w1;
@@ -3210,19 +3200,19 @@ vector PointSpeed(object *obj, vector *pos, matrix *orient, vector *rotvel, vect
 
 // MTS: only used in this file.
 // Hacked for some initial testing
-bool BBoxPlaneIntersection(bool fast_exit, vector *collision_point, vector *collision_normal, object *obj,
-                           vector *new_pos, int nv, vector **vertex_ptr_list, vector *face_normal, matrix *orient,
-                           vector *rotvel, vector *velocity) {
-  vector plane_pnt;
-  vector verts[12];
+bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *collision_normal, object *obj,
+                           vector3 *new_pos, int nv, vector3 **vertex_ptr_list, vector3 *face_normal, matrix *orient,
+                           vector3 *rotvel, vector3 *velocity) {
+  vector3 plane_pnt;
+  vector3 verts[12];
   poly_model *pm = &Poly_models[obj->rtype.pobj_info.model_num];
   int i;
-  vector rel[32];
+  vector3 rel[32];
   float dot[32];
   bool collidable[32];
 
   int num_int_box = 0;
-  vector int_points_box[12];
+  vector3 int_points_box[12];
 
   verts[0] = (orient->rvec * pm->mins.x()) + (orient->uvec * pm->maxs.y()) + (orient->fvec * pm->mins.z());
 
@@ -3244,7 +3234,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector *collision_point, vector *coll
     verts[i] += *new_pos;
   }
 
-  vector xxx_normal{};
+  vector3 xxx_normal{};
   xxx_normal.y() = 1.0f;
 
   for (i = 0; i < 8; i++) {
@@ -3259,7 +3249,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector *collision_point, vector *coll
 
   // Get Ground intersection points
   for (i = 0; i < 12; i++) {
-    vector movement;
+    vector3 movement;
     bool found;
     float nmovement;
 
@@ -3316,12 +3306,12 @@ int object_intersects_wall(object *objp) {
   //	n_segs_visited = 0;
   //
   //	return sphere_intersects_wall(&objp->pos,objp->segnum,objp->size);
-  ASSERT(0);
+  Q_ASSERT(0);
   return 0;
 }
 
 void check_hit_obj(int objnum) {
-  vector hit_point;
+  vector3 hit_point;
   float cur_dist;
   const object *obj = &Objects[objnum];
   int collision_type;
@@ -3450,7 +3440,7 @@ void check_hit_obj(int objnum) {
               switch (collision_type) {
               case RESULT_CHECK_BBOX_ROOM:
               case RESULT_CHECK_SPHERE_ROOM: {
-                ASSERT(obj->type == OBJ_ROOM);
+                Q_ASSERT(obj->type == OBJ_ROOM);
 
                 fvi_room(obj->id, -1, objnum);
               } break;
@@ -3458,7 +3448,7 @@ void check_hit_obj(int objnum) {
               case RESULT_CHECK_SPHERE_POLY:
               case RESULT_CHECK_BBOX_POLY: {
                 //									float dist;
-                //									vector pos;
+                //									vector3 pos;
                 //									float size;
 
                 if (!(obj->flags & OF_POLYGON_OBJECT))
@@ -3495,7 +3485,7 @@ void check_hit_obj(int objnum) {
                 fvi_query fq;
                 float saved_dist = fvi_collision_dist;
 
-                vector relative_pos = obj->pos + (*fvi_query_ptr->p0 - *fvi_query_ptr->p1);
+                vector3 relative_pos = obj->pos + (*fvi_query_ptr->p0 - *fvi_query_ptr->p1);
 
                 fvi_hit_data_ptr = &hit_info;
                 fvi_query_ptr = &fq;
@@ -3541,7 +3531,7 @@ void check_hit_obj(int objnum) {
                     fvi_hit_data_ptr->num_hits++;
                   }
 
-                  ASSERT(!(fvi_hit_data_ptr->num_hits > 1 && !(fvi_query_ptr->flags & FQ_MULTI_POINT)));
+                  Q_ASSERT(!(fvi_hit_data_ptr->num_hits > 1 && !(fvi_query_ptr->flags & FQ_MULTI_POINT)));
                 }
               } break;
 
@@ -3556,9 +3546,9 @@ void check_hit_obj(int objnum) {
 
                   if (cur_dist < fvi_collision_dist) {
 
-                    vector pos_hit;
+                    vector3 pos_hit;
                     scalar hit_obj_size;
-                    vector hit_obj_pos;
+                    vector3 hit_obj_pos;
 
                     hit_obj_pos = obj->pos + obj->anim_sphere_offset;
                     pos_hit = hit_point - hit_obj_pos;
@@ -3570,7 +3560,7 @@ void check_hit_obj(int objnum) {
                       hit_obj_size = obj->size;
                     }
 
-                    ASSERT(hit_obj_size + fvi_anim_sphere_rad > 0.0f);
+                    Q_ASSERT(hit_obj_size + fvi_anim_sphere_rad > 0.0f);
                     pos_hit = hit_obj_pos + pos_hit * (hit_obj_size / (hit_obj_size + fvi_anim_sphere_rad));
 
                     fvi_collision_dist = cur_dist;
@@ -3582,10 +3572,10 @@ void check_hit_obj(int objnum) {
                     fvi_hit_data_ptr->hit_type[0] = HIT_OBJECT;
                     fvi_hit_data_ptr->hit_face_pnt[0] = pos_hit;
 
-                    ASSERT(hit_obj_size > 0.0f);
+                    Q_ASSERT(hit_obj_size > 0.0f);
                     fvi_hit_data_ptr->hit_wallnorm[0] = (pos_hit - hit_obj_pos) / hit_obj_size;
 
-                    ASSERT(objnum != -1);
+                    Q_ASSERT(objnum != -1);
                   }
                 }
               } break;
@@ -3643,7 +3633,7 @@ void check_hit_obj(int objnum) {
 #endif
   }
 
-  ASSERT(!(fvi_hit_data_ptr->num_hits > 1 && !(fvi_query_ptr->flags & FQ_MULTI_POINT)));
+  Q_ASSERT(!(fvi_hit_data_ptr->num_hits > 1 && !(fvi_query_ptr->flags & FQ_MULTI_POINT)));
 }
 
 /*	// Check each terrain cell
@@ -3653,7 +3643,7 @@ void check_hit_obj(int objnum) {
                 int j_end;
 
                 start_node = GetColTerrainSegFromTerrainSeg(fvi_cells_visited[i]);
-                ASSERT(start_node != -1);
+                Q_ASSERT(start_node != -1);
 
                 if(start_node%COL_TERRAIN_WIDTH) j_start = -1;
                 else j_start = 0;
@@ -3679,7 +3669,7 @@ void check_hit_obj(int objnum) {
                                 // Only check each col cell once.
                                 if((fvi_col_terrain_visit_list[cur_col_node >> 3] & (0x01 << (cur_col_node % 8))) == 0)
                                 {
-                                        ASSERT(fvi_num_col_cells_visited <= MAX_CELLS_VISITED);
+                                        Q_ASSERT(fvi_num_col_cells_visited <= MAX_CELLS_VISITED);
 
                                         fvi_col_terrain_visit_list[cur_col_node >> 3] |= 0x01 << (cur_col_node % 8);
                                         fvi_col_cells_visited[fvi_num_col_cells_visited] = cur_col_node;
@@ -3700,23 +3690,23 @@ void check_hit_obj(int objnum) {
 #define MAX_BBOX_GROUND_TOLERANCE 0.0001
 
 /*
-void DoLinearApprox(vector *collision_point, vector *collision_normal, float *hit_dist, float *hit_interval, vector
-*movement_dir, vector *p0, object *obj, int nv, vector **vertex_ptr_list, vector *face_normal)
+void DoLinearApprox(vector3 *collision_point, vector3 *collision_normal, float *hit_dist, float *hit_interval, vector3
+*movement_dir, vector3 *p0, object *obj, int nv, vector3 **vertex_ptr_list, vector3 *face_normal)
 {
-        vector end_pos;
+        vector3 end_pos;
         bool hit;
 
         *hit_interval /= 2.0f;
         end_pos = *p0 + ((*hit_interval + *hit_dist)* *movement_dir);
 
         float frametime = fvi_query_ptr->frametime * ((*hit_interval + *hit_dist)/vm_VectorDistance(fvi_query_ptr->p0,
-fvi_query_ptr->p1)); matrix orient = *fvi_query_ptr->o_orient; vector rotvel = *fvi_query_ptr->o_rotvel; vector rotforce
+fvi_query_ptr->p1)); matrix orient = *fvi_query_ptr->o_orient; vector3 rotvel = *fvi_query_ptr->o_rotvel; vector3 rotforce
 = *fvi_query_ptr->o_rotthrust; angle turnroll = *fvi_query_ptr->o_turnroll;
-        //vector thrust = *fvi_query_ptr->o_thrust;
-        vector velocity = *fvi_query_ptr->o_velocity;
-        //vector movement_pos;
-        //vector movement_vec;
-        //vector test;
+        //vector3 thrust = *fvi_query_ptr->o_thrust;
+        vector3 velocity = *fvi_query_ptr->o_velocity;
+        //vector3 movement_pos;
+        //vector3 movement_vec;
+        //vector3 test;
 
         float sim_time_remaining = frametime;
         float old_sim_time_remaining = frametime;
@@ -3726,13 +3716,13 @@ fvi_query_ptr->p1)); matrix orient = *fvi_query_ptr->o_orient; vector rotvel = *
 &velocity, &movement_vec, &movement_pos, frametime);
 
 
-        vector moved_vec_n;
+        vector3 moved_vec_n;
         float attempted_dist,actual_dist;
 
         // Save results of this simulation
         old_sim_time_remaining = sim_time_remaining;
         moved_vec_n = end_pos - *p0;
-        if(moved_vec_n != vector{})
+        if(moved_vec_n != vector3{})
         {
                 actual_dist = vm_NormalizeVector(&moved_vec_n);
         }
@@ -3793,7 +3783,7 @@ vertex_ptr_list, face_normal);
 // checks for collisions within a given terrain node (fvi_sub minus the recursiveness).
 // If f_check_local_nodes is set, it will look in surrounding nodes.
 inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_check_ground) {
-  vector hit_point;
+  vector3 hit_point;
   float cur_dist;
   int check_x, check_y;
   int tercheck_x, tercheck_y;
@@ -3815,15 +3805,15 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
 
   // Object checks
   if ((fvi_terrain_obj_visit_list[cur_node >> 3] & (0x01 << (cur_node % 8))) == 0) {
-    ASSERT(cur_node >= 0 && cur_node < TERRAIN_WIDTH * TERRAIN_DEPTH);
-    ASSERT(fvi_num_cells_obj_visited < MAX_CELLS_VISITED);
+    Q_ASSERT(cur_node >= 0 && cur_node < TERRAIN_WIDTH * TERRAIN_DEPTH);
+    Q_ASSERT(fvi_num_cells_obj_visited < MAX_CELLS_VISITED);
     fvi_terrain_obj_visit_list[cur_node >> 3] |= 0x01 << (cur_node % 8);
     fvi_cells_obj_visited[fvi_num_cells_obj_visited] = cur_node;
     fvi_num_cells_obj_visited++;
 
     if (fvi_query_ptr->flags & FQ_CHECK_OBJS) {
       for (objnum = Terrain_seg[cur_node].objects; objnum != -1; objnum = Objects[objnum].next) {
-        ASSERT(objnum != -1);
+        Q_ASSERT(objnum != -1);
         if (!(Objects[objnum].flags & OF_BIG_OBJECT))
           check_hit_obj(objnum);
       }
@@ -3831,7 +3821,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
 
       if (!(fvi_query_ptr->flags & FQ_IGNORE_EXTERNAL_ROOMS))
         for (objnum = Terrain_seg[cur_node].objects; objnum != -1; objnum = Objects[objnum].next) {
-          ASSERT(objnum != -1);
+          Q_ASSERT(objnum != -1);
           if ((Objects[objnum].type == OBJ_ROOM) && !(Objects[objnum].flags & OF_BIG_OBJECT))
             check_hit_obj(objnum);
         }
@@ -3843,9 +3833,9 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
     int lod_x = (cur_node % TERRAIN_WIDTH) >> 2;
     int lod_z = (cur_node / TERRAIN_WIDTH) >> 2;
 
-    ASSERT(cur_node >= 0 && cur_node < TERRAIN_WIDTH * TERRAIN_DEPTH);
-    ASSERT((fvi_terrain_visit_list[cur_node >> 3] & (0x01 << (cur_node % 8))) == 0);
-    ASSERT(fvi_num_cells_visited < MAX_CELLS_VISITED);
+    Q_ASSERT(cur_node >= 0 && cur_node < TERRAIN_WIDTH * TERRAIN_DEPTH);
+    Q_ASSERT((fvi_terrain_visit_list[cur_node >> 3] & (0x01 << (cur_node % 8))) == 0);
+    Q_ASSERT(fvi_num_cells_visited < MAX_CELLS_VISITED);
 
     // Mark the current node as visited
     fvi_terrain_visit_list[cur_node >> 3] |= 0x01 << (cur_node % 8);
@@ -3858,17 +3848,17 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
          (float)Terrain_max_height_int[6][lod_z * (TERRAIN_WIDTH >> 2) + lod_x] * TERRAIN_HEIGHT_INCREMENT +
                  fvi_query_ptr->rad >=
              fvi_query_ptr->p1->y()) &&
-        !(Terrain_seg[cur_node].flags & TF_INVISIBLE) &&
+        !(Terrain_seg[cur_node].flags.invisible) &&
         !(fvi_query_ptr->flags & (FQ_IGNORE_WALLS | FQ_IGNORE_TERRAIN))) {
 
       // check this node for ground collision
       for (i = 0; i < 2; i++) {
-        vector face_normal;
-        vector *vertex_ptr_list[4];
-        vector vlist[3];
+        vector3 face_normal;
+        vector3 *vertex_ptr_list[4];
+        vector3 vlist[3];
         int face_hit_type;
-        vector wall_norm;
-        vector colp;
+        vector3 wall_norm;
+        vector3 colp;
 
         // There are two triangles per node.  Check each of them for collision.
         if (i == 0) {
@@ -3957,7 +3947,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
                                      &Objects[fvi_query_ptr->thisobjnum], fvi_query_ptr->p0, 3, vertex_ptr_list,
                                      &face_normal, fvi_query_ptr->o_orient, fvi_query_ptr->o_rotvel,
                                      fvi_query_ptr->o_velocity))
-            ASSERT(1);
+            Q_ASSERT(1);
 
           if (fvi_hit_data_ptr->hit_type[0] == HIT_NONE &&
               BBoxPlaneIntersection(false, &fvi_hit_data_ptr->hit_face_pnt[0], &fvi_hit_data_ptr->hit_wallnorm[0],
@@ -3966,7 +3956,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
                                     &fvi_hit_data_ptr->hit_velocity)) {
             float hit_dist = 0.0;
             float hit_interval;
-            vector movement_dir;
+            vector3 movement_dir;
 
             if (!BBoxPlaneIntersection(false, &fvi_hit_data_ptr->hit_face_pnt[0], &fvi_hit_data_ptr->hit_wallnorm[0],
                                        &Objects[fvi_query_ptr->thisobjnum], fvi_query_ptr->p0, 3, vertex_ptr_list,
@@ -3987,7 +3977,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
               fvi_hit_data_ptr->hit_pnt = *fvi_query_ptr->p0;
 
               fvi_collision_dist = 0.0;
-              movement_dir = vector{};
+              movement_dir = vector3{};
               hit_dist = 0.0f;
             }
 
@@ -4006,7 +3996,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
               &fvi_hit_data_ptr->hit_face_pnt[0], &fvi_hit_data_ptr->hit_wallnorm[0], &Objects[fvi_query_ptr->thisobjnum],
               &fvi_hit_data_ptr->hit_pnt, 3, vertex_ptr_list, &face_normal, &fvi_hit_data_ptr->hit_orient,
               &fvi_hit_data_ptr->hit_rotvel, &fvi_hit_data_ptr->hit_rotvel))
-              ASSERT(1);
+              Q_ASSERT(1);
 */
             goto ignore_hit;
           }
@@ -4188,7 +4178,7 @@ int do_fvi_terrain() {
   // End point is out of bounds, so clip it.
   if (fvi_hit_data_ptr->hit_room == -1) {
     float delta = 1.0;
-    vector movement = fvi_hit_data_ptr->hit_pnt - *fvi_query_ptr->p0;
+    vector3 movement = fvi_hit_data_ptr->hit_pnt - *fvi_query_ptr->p0;
 
     if (fvi_hit_data_ptr->hit_pnt.x() < (fvi_query_ptr->rad + 0.000001)) {
       delta = (fvi_query_ptr->p0->x() - (fvi_query_ptr->rad + 0.000001)) / (-movement.x());
@@ -4352,12 +4342,12 @@ int do_fvi_terrain() {
     }
   }
 
-  ASSERT(x == x2 && y == y2);
+  Q_ASSERT(x == x2 && y == y2);
 
 check_big_objs: // Check Big objects
   if (fvi_query_ptr->flags & FQ_CHECK_OBJS) {
     for (i = 0; i < Num_big_objects; i++) {
-      ASSERT(BigObjectList[i] >= 0);
+      Q_ASSERT(BigObjectList[i] >= 0);
       check_hit_obj(BigObjectList[i]);
       //		mprintf(0, "CHecking BIG %d\n", i);
     }
@@ -4388,11 +4378,11 @@ void fvi_rooms_objs(void) {
 
   for (i = 0; i < fvi_num_rooms_visited; i++) {
     cur_room = &Rooms[fvi_rooms_visited[i]];
-    ASSERT((fvi_visit_list[ROOMNUM(cur_room) >> 3] & (0x01 << (ROOMNUM(cur_room) % 8))) != 0);
-    ASSERT(ROOMNUM(cur_room) >= 0 && ROOMNUM(cur_room) <= Highest_room_index && cur_room->used);
+    Q_ASSERT((fvi_visit_list[ROOMNUM(cur_room) >> 3] & (0x01 << (ROOMNUM(cur_room) % 8))) != 0);
+    Q_ASSERT(ROOMNUM(cur_room) >= 0 && ROOMNUM(cur_room) <= Highest_room_index && cur_room->used);
 
     for (objnum = cur_room->objects; objnum != -1; objnum = Objects[objnum].next) {
-      ASSERT(objnum != -1);
+      Q_ASSERT(objnum != -1);
       check_hit_obj(objnum);
     }
   }
@@ -4410,7 +4400,7 @@ void fvi_rooms_objs(void) {
 // the return bits are the ATF_ flags in renderer.h
 inline int GetFaceAlpha(face *fp, int bm_handle) {
   int ret = AT_ALWAYS;
-  if (GameTextures[fp->tmap].flags & TF_SATURATE) {
+  if (GameTextures[fp->tmap].flags.saturate) {
     if (fp->flags & FF_VERTEX_ALPHA)
       ret = AT_SATURATE_TEXTURE_VERTEX;
     else
@@ -4426,7 +4416,7 @@ inline int GetFaceAlpha(face *fp, int bm_handle) {
       ret |= ATF_VERTEX;
 
     // Check for transparency
-    if (GameBitmaps[bm_handle].format != BITMAP_FORMAT_4444 && GameTextures[fp->tmap].flags & TF_TMAP2)
+    if (GameBitmaps[bm_handle].format != BITMAP_FORMAT_4444 && GameTextures[fp->tmap].flags.tmap2)
       ret |= ATF_TEXTURE;
   }
 
@@ -4436,20 +4426,20 @@ inline int GetFaceAlpha(face *fp, int bm_handle) {
 bool PhysPastPortal(const room *rp, portal *pp) {
   // If we don't render the portal's faces, then we see through it
   if (!(pp->flags & PF_RENDER_FACES))
-    return 1;
+    return true;
 
   // Check if the face's texture has transparency
   face *fp = &rp->faces[pp->portal_face];
   int bm_handle = GetTextureBitmap(fp->tmap, 0);
 
   if (GetFaceAlpha(fp, bm_handle))
-    return 1; // Face has alpha or transparency, so we can see through it
-  else
-    return 0; // Not transparent, so no render past
+    return true; // Face has alpha or transparency, so we can see through it
+
+  return false; // Not transparent, so no render past
 }
 
 int fvi_room(int room_index, int from_portal, int room_obj) {
-  vector hit_point; // where we hit
+  vector3 hit_point; // where we hit
   float cur_dist;   // distance to hit point
   const room *cur_room = &Rooms[room_index];
   int16_t i;
@@ -4457,8 +4447,8 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
   int num_next_portals = 0;
   int next_portal_index;
   int portal_num;
-  //	vector col_point[32];
-  //	vector col_normal[32];
+  //	vector3 col_point[32];
+  //	vector3 col_normal[32];
   object *this_obj;
   uint8_t msector = 0;
 
@@ -4486,21 +4476,21 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
   else
     this_obj = nullptr;
 
-  ASSERT(room_index >= 0 && room_index <= Highest_room_index);
-  ASSERT(Rooms[room_index].used);
-  ASSERT((fvi_visit_list[room_index >> 3] & (0x01 << (room_index % 8))) == 0);
+  Q_ASSERT(room_index >= 0 && room_index <= Highest_room_index);
+  Q_ASSERT(Rooms[room_index].used);
+  Q_ASSERT((fvi_visit_list[room_index >> 3] & (0x01 << (room_index % 8))) == 0);
 
-  if (!(cur_room->flags & RF_EXTERNAL)) {
+  if (!cur_room->flags.external) {
     fvi_visit_list[room_index >> 3] |= 0x01 << (room_index % 8);
     fvi_rooms_visited[fvi_num_rooms_visited] = room_index;
     fvi_num_rooms_visited++;
 
-    ASSERT(fvi_num_rooms_visited <= MAX_ROOMS);
+    Q_ASSERT(fvi_num_rooms_visited <= MAX_ROOMS);
   }
 
   if (fvi_query_ptr->flags & FQ_IGNORE_WALLS) {
-    vector face_normal;
-    vector *vertex_ptr_list[MAX_VERTS_PER_FACE];
+    vector3 face_normal;
+    vector3 *vertex_ptr_list[MAX_VERTS_PER_FACE];
     int16_t count;
     bool f_backface;
     int face_info;
@@ -4543,11 +4533,11 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
           }
 
           if (f_add_next_portal) {
-            ASSERT(num_next_portals < MAX_NEXT_PORTALS);
+            Q_ASSERT(num_next_portals < MAX_NEXT_PORTALS);
             next_portals[num_next_portals++] = portal_num;
 
             if ((fvi_query_ptr->flags & FQ_RECORD) && (face_info & FPF_RECORD)) {
-              ASSERT(Fvi_num_recorded_faces < MAX_RECORDED_FACES);
+              Q_ASSERT(Fvi_num_recorded_faces < MAX_RECORDED_FACES);
               if (Fvi_num_recorded_faces < MAX_RECORDED_FACES) {
                 Fvi_recorded_faces[Fvi_num_recorded_faces].face_index = i;
                 Fvi_recorded_faces[Fvi_num_recorded_faces++].room_index = room_index;
@@ -4561,8 +4551,8 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
     const int16_t num_bbf_regions = cur_room->num_bbf_regions;
     int16_t *num_faces_ptr = cur_room->num_bbf;
     uint8_t *bbf_val = cur_room->bbf_list_sector;
-    vector *region_min = cur_room->bbf_list_min_xyz;
-    vector *region_max = cur_room->bbf_list_max_xyz;
+    vector3 *region_min = cur_room->bbf_list_min_xyz;
+    vector3 *region_max = cur_room->bbf_list_max_xyz;
     int16_t **bbf_list_ptr = cur_room->bbf_list;
 
     // Do the actual wall collsion stuff here!
@@ -4580,11 +4570,11 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
         int16_t *cur_face_index_ptr = *bbf_list_ptr;
 
         for (int sort_list_cur = 0; sort_list_cur < (*num_faces_ptr); sort_list_cur++) {
-          vector face_normal;
-          vector *vertex_ptr_list[MAX_VERTS_PER_FACE];
+          vector3 face_normal;
+          vector3 *vertex_ptr_list[MAX_VERTS_PER_FACE];
           int face_hit_type;
-          vector wall_norm;
-          vector colp;
+          vector3 wall_norm;
+          vector3 colp;
           int16_t count;
           bool f_backface;
           int face_info;
@@ -4594,8 +4584,8 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
           cur_face = &cur_room->faces[*cur_face_index_ptr];
           cur_face_index_ptr++;
 
-          const vector *cf_max = &cur_face->max_xyz;
-          const vector *cf_min = &cur_face->min_xyz;
+          const vector3 *cf_max = &cur_face->max_xyz;
+          const vector3 *cf_min = &cur_face->min_xyz;
 
           if (cf_min->x() > fvi_wall_max_xyz.x() || cf_min->y() > fvi_wall_max_xyz.y() || cf_min->z() > fvi_wall_max_xyz.z() ||
               cf_max->x() < fvi_wall_min_xyz.x() || cf_max->y() < fvi_wall_min_xyz.y() || cf_max->z() < fvi_wall_min_xyz.z())
@@ -4623,7 +4613,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
           // Add the portal if we are within a AABB of it.
           if ((face_info & FPF_PORTAL)) {
             if ((fvi_query_ptr->flags & FQ_RECORD) && (face_info & FPF_RECORD)) {
-              ASSERT(Fvi_num_recorded_faces < MAX_RECORDED_FACES);
+              Q_ASSERT(Fvi_num_recorded_faces < MAX_RECORDED_FACES);
               if (Fvi_num_recorded_faces < MAX_RECORDED_FACES) {
                 Fvi_recorded_faces[Fvi_num_recorded_faces].face_index = i;
                 Fvi_recorded_faces[Fvi_num_recorded_faces++].room_index = room_index;
@@ -4642,7 +4632,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
               }
 
               if (f_add_next_portal) {
-                ASSERT(num_next_portals < MAX_NEXT_PORTALS);
+                Q_ASSERT(num_next_portals < MAX_NEXT_PORTALS);
                 next_portals[num_next_portals++] = portal_num;
               }
             }
@@ -4659,7 +4649,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
               }
 
               if (f_add_next_portal) {
-                ASSERT(num_next_portals < MAX_NEXT_PORTALS);
+                Q_ASSERT(num_next_portals < MAX_NEXT_PORTALS);
                 next_portals[num_next_portals++] = portal_num;
               }
 
@@ -4683,8 +4673,8 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
                                                cur_face->num_verts, fvi_query_ptr->rad);
           }
 
-          if ((((fvi_query_ptr->flags & FQ_OBJ_BACKFACE) && (cur_room->flags & RF_EXTERNAL)) ||
-               ((fvi_query_ptr->flags & FQ_BACKFACE) && !(cur_room->flags & RF_EXTERNAL))) &&
+          if ((((fvi_query_ptr->flags & FQ_OBJ_BACKFACE) && cur_room->flags.external) ||
+               ((fvi_query_ptr->flags & FQ_BACKFACE) && !cur_room->flags.external)) &&
               (!face_hit_type)) {
             face_normal *= -1.0f;
             for (count = 0; count < cur_face->num_verts; count++)
@@ -4708,7 +4698,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
                 !(Fvi_num_recorded_faces > 0 &&
                   Fvi_recorded_faces[Fvi_num_recorded_faces - 1].face_index == i &&
                   Fvi_recorded_faces[Fvi_num_recorded_faces - 1].room_index == room_index)) {
-              ASSERT(Fvi_num_recorded_faces < MAX_RECORDED_FACES);
+              Q_ASSERT(Fvi_num_recorded_faces < MAX_RECORDED_FACES);
               if (Fvi_num_recorded_faces < MAX_RECORDED_FACES) {
                 Fvi_recorded_faces[Fvi_num_recorded_faces].face_index = i;
                 Fvi_recorded_faces[Fvi_num_recorded_faces++].room_index = room_index;
@@ -4758,7 +4748,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
   /*	if(num_cols > 1)
           {
                   int i;
-                  vector new_normal;
+                  vector3 new_normal;
                   float len;
 
                   for(i = 0; i < num_cols; i++)
@@ -4783,7 +4773,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
     for (i = 0; i < cur_room->num_portals; i++) {
       int c_room = cur_room->portals[i].croom;
 
-      if ((c_room > 0) && (Rooms[c_room].flags & RF_DOOR)) {
+      if ((c_room > 0) && Rooms[c_room].flags.door) {
         bool f_add_next_portal = true;
         for (next_portal_index = 0; next_portal_index < num_next_portals; next_portal_index++) {
           if (next_portals[next_portal_index] == i) {
@@ -4793,7 +4783,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
         }
 
         if (f_add_next_portal) {
-          ASSERT(num_next_portals < MAX_NEXT_PORTALS);
+          Q_ASSERT(num_next_portals < MAX_NEXT_PORTALS);
           next_portals[num_next_portals++] = i;
         }
       }
@@ -4806,7 +4796,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
       portal_num = next_portals[next_portal_index];
       connect_room = cur_room->portals[portal_num].croom;
 
-      if (!(Rooms[connect_room].flags & RF_EXTERNAL)) {
+      if (!Rooms[connect_room].flags.external) {
         if ((fvi_visit_list[connect_room >> 3] & (0x01 << ((connect_room) % 8))) == 0) {
           /*
           mprintf(0, "A portal %d to room %d,from room %d,with %d cportal\n",
@@ -4857,7 +4847,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
 
   // quit_looking:
 
-  ASSERT(!(fvi_hit_data_ptr->hit_type[0] == HIT_OBJECT && fvi_hit_data_ptr->hit_object[0] == -1));
+  Q_ASSERT(!(fvi_hit_data_ptr->hit_type[0] == HIT_OBJECT && fvi_hit_data_ptr->hit_object[0] == -1));
 
   return fvi_hit_data_ptr->hit_type[0];
 }

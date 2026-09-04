@@ -27,6 +27,7 @@
 
 #include "bitmap.h"
 
+#include "chrono_timer.h"
 #include "ebnode.h"
 #include "d3edit.h"
 #include "editor_room_state.h"
@@ -1312,6 +1313,10 @@ void EditorView::paintGL() {
   renderPaths();
   renderBNodes();
   ++m_frameCount;
+
+  // Advance the game clock so animated elements (textures, room changes,
+  // rotating submodels) progress with wall-clock time.
+  d3::chrono::update();
 }
 
 void EditorView::mousePressEvent(QMouseEvent *event) {
@@ -1381,13 +1386,27 @@ void EditorView::mouseReleaseEvent(QMouseEvent *event) {
       ObjMoveManager.End();
     } else if (m_mouseDown && !m_dragged) {
       updateCamera();
-      PickResult pick = pickAt(event->pos().x(), event->pos().y());
-      if (pick.objectIndex >= 0) {
-        emit objectSelected(pick.objectIndex);
-      } else if (pick.roomIndex >= 0 && pick.faceIndex >= 0) {
-        emit faceSelected(pick.roomIndex, pick.faceIndex);
+      const bool shift = (event->modifiers() & Qt::ShiftModifier) != 0;
+      if (shift) {
+        // Shift+click toggles the current room selection (Win32
+        // ToggleRoomSelectedState).
+        PickResult pick = pickAt(event->pos().x(), event->pos().y());
+        if (pick.roomIndex >= 0)
+          emit roomToggleRequested(pick.roomIndex);
+        else
+          emit selectionCleared();
       } else {
-        emit selectionCleared();
+        PickResult pick = pickAtCycle(event->pos().x(), event->pos().y());
+        if (pick.objectIndex >= 0) {
+          emit objectSelected(pick.objectIndex);
+        } else if (pick.roomIndex >= 0 && pick.faceIndex >= 0) {
+          emit faceSelected(pick.roomIndex, pick.faceIndex);
+        } else {
+          m_pickRoom = -1;
+          m_pickFace = -1;
+          m_pickDepth = 1e30f;
+          emit selectionCleared();
+        }
       }
     }
     m_mouseDown = false;
@@ -1424,7 +1443,32 @@ bool EditorView::pointInPolygon(float px, float py, const float *sx, const float
 }
 
 EditorView::PickResult EditorView::pickAt(int screenX, int screenY) const {
+  return pickAtImpl(screenX, screenY, -1, -1, 1e30f);
+}
+
+EditorView::PickResult EditorView::pickAtCycle(int screenX, int screenY) {
+  const bool sameSpot = (m_pickScreen == QPoint(screenX, screenY));
+  PickResult best =
+      pickAtImpl(screenX, screenY, sameSpot ? m_pickRoom : -1,
+                 sameSpot ? m_pickFace : -1, sameSpot ? m_pickDepth : 1e30f);
+  // Remember the picked surface for the next FM_NEXT-style cycle.
+  if (best.roomIndex >= 0 && best.faceIndex >= 0) {
+    m_pickRoom = best.roomIndex;
+    m_pickFace = best.faceIndex;
+    m_pickDepth = best.depth;
+    m_pickScreen = QPoint(screenX, screenY);
+  }
+  return best;
+}
+
+// Shared implementation.  When (prevRoom, prevFace, prevDepth) are valid the
+// pick advances to the next farther face under the same pixel (Win32 FM_NEXT):
+// a face closer than or at prevDepth is skipped, and only faces farther than
+// prevDepth are considered.
+EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prevRoom,
+                                               int prevFace, float prevDepth) const {
   PickResult best;
+  const bool cycle = prevRoom >= 0 && prevFace >= 0;
 
   const_cast<EditorView *>(this)->updateCamera();
   if (!m_cameraValid)
@@ -1443,10 +1487,21 @@ EditorView::PickResult EditorView::pickAt(int screenX, int screenY) const {
     pickEnd = D3EditState.current_room;
   }
 
+  const float rad2 = m_rad * m_rad;
   for (int r = pickStart; r <= pickEnd; r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
       continue;
+
+    // Win32 DrawAllRooms gating: only rooms whose first vertex lies within the
+    // wireframe render radius of the orbit target are candidates, except the
+    // current room, which is always a candidate (VM_ROOM already restricts to
+    // a single room, so this only matters in VM_MINE).
+    const bool isCurrent = (D3EditState.current_room == r);
+    if (!isCurrent && rp->num_verts > 0 &&
+        (vm_VectorDistance(&rp->verts[0], &m_target) * vm_VectorDistance(&rp->verts[0], &m_target)) > rad2)
+      continue;
+
     for (int f = 0; f < rp->num_faces; f++) {
       face *fp = &rp->faces[f];
       int nv = fp->num_verts;
@@ -1454,14 +1509,12 @@ EditorView::PickResult EditorView::pickAt(int screenX, int screenY) const {
         continue;
 
       float sx[64], sy[64], sz[64];
-      bool allInFront = true;
+      int inFront = 0;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertexDepth(rp->verts[fp->face_verts[v]], &sx[v], &sy[v], &sz[v])) {
-          allInFront = false;
-          break;
-        }
+        if (projectVertexDepth(rp->verts[fp->face_verts[v]], &sx[v], &sy[v], &sz[v]))
+          inFront++;
       }
-      if (!allInFront)
+      if (inFront < 1)
         continue;
 
       if (!pointInPolygon(static_cast<float>(screenX), static_cast<float>(screenY), sx, sy, nv))
@@ -1504,6 +1557,10 @@ EditorView::PickResult EditorView::pickAt(int screenX, int screenY) const {
         }
       }
       if (!found)
+        continue;
+
+      // When cycling (FM_NEXT), skip faces at or closer than the previous pick.
+      if (cycle && pixelDepth <= prevDepth + 1e-4f)
         continue;
 
       if (pixelDepth < best.depth) {

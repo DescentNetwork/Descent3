@@ -117,10 +117,10 @@
  * $NoKeywords: $
  */
 
+#include <QtGlobal>
 #include <cstring>
 
 #include "door.h"
-//#include "pserror.h"
 #include "polymodel.h"
 #include "game.h"
 #include "doorway.h"
@@ -233,7 +233,7 @@ int FindDoorName(const char *name) {
 
 // Given a filename, loads the model found in that file
 
-int LoadDoorImage(const char *filename, int pageable) {
+int LoadDoorImage(const std::filesystem::path& filename, int pageable) {
   int img_handle;
 
   img_handle = LoadPolyModel(filename, pageable);

@@ -470,11 +470,11 @@
 //#include "aipath.h"
 //#include "difficulty.h"
 //#include "localization.h"
-//#include "psrand.h"
 #include "demofile.h"
 #include "osiris_common.h"
 #include "string_helpers.h"
-
+#include "chrono_timer.h"
+#include "rand.h"
 
 int *hack_ilist = NULL;
 int hack_list[100];
@@ -950,7 +950,7 @@ float osipf_ObjectGetTimeLived(int objhandle) {
     return 0;
   }
 
-  return (Gametime - objp->creation_time);
+  return (d3::chrono::last_update() - objp->creation_time);
 }
 #endif
 
@@ -1149,7 +1149,7 @@ void osipf_AIValue(int objhandle, char op, char vtype, void *ptr) {
   case AIV_F_LAST_SEE_TARGET_TIME:
     if (op == VF_SET) {
       ai_info->last_see_target_time = *((float *)ptr);
-      if (ai_info->last_see_target_time == Gametime) {
+      if (ai_info->last_see_target_time == d3::chrono::last_update()) {
         AINotify(objp, AIN_SEE_TARGET, ObjGet(ai_info->target_handle));
       }
     } else {
@@ -2000,7 +2000,7 @@ vector3 osipf_AIGetRoomPathPoint(int roomnum) {
       vector3 pos;
 
       ComputeTerrainSegmentCenter(&pos, cell);
-      pos.y() += 15.0f + ((float)ps_rand() / (float)D3_RAND_MAX) * 20; // between 15 and 35
+      pos.y() += 15.0f + ((float)d3::rand() / (float)d3::rand_max) * 20; // between 15 and 35
 
       return pos;
     }
@@ -2613,21 +2613,12 @@ int osipf_ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3 *pos, const 
       obj->mtype.phys_info.velocity = *initial_velocity;
     }
 
-    if (Game_mode & GM_MULTI) {
-      // Q_ASSERT (Netgame.local_role==LR_SERVER);
-      if (Netgame.local_role == LR_SERVER) {
-        MultiSendObject(obj, 0);
-      }
-    }
-
     InitObjectScripts(obj);
 
     if (IS_GENERIC(obj->type)) {
       int ambient_sound = Object_info[obj->id].sounds[GSI_AMBIENT];
       if (ambient_sound != SOUND_NONE_INDEX) {
         Sound_system.Play3dSound(ambient_sound, SND_PRIORITY_LOWEST, obj);
-        if (Game_mode & GM_MULTI)
-          MultiPlay3dSound(ambient_sound, objnum, SND_PRIORITY_LOW);
         if (Demo_flags == DF_RECORDING)
           DemoWrite3DSound(ambient_sound, objnum, SND_PRIORITY_LOW);
       }
@@ -2648,7 +2639,7 @@ bool osipf_IsObjectVisible(object *obj) {
   return true;
 }
 
-float osipf_GameTime(void) { return Gametime; }
+float osipf_GameTime(void) { return d3::chrono::last_update(); }
 
 float osipf_FrameTime(void) { return Frametime; }
 
@@ -2860,7 +2851,6 @@ void osipf_ObjGhost(int handle, bool f_ghost) {
   object *obj = ObjGet(handle);
   if (obj) {
     // BLACKPYROHACK - Chrishack for Mercenary
-    if (!(Game_mode & GM_MULTI)) {
       if (obj->handle == Buddy_handle[0]) {
         if (strcasecmp(Ships[Players[Player_object->id].ship_index].name, "Black Pyro") == 0) {
           obj->id = ROBOT_GUIDEBOTRED;
@@ -2871,7 +2861,6 @@ void osipf_ObjGhost(int handle, bool f_ghost) {
           obj->id = ROBOT_GUIDEBOT;
           obj->rtype.pobj_info.model_num = Object_info[ROBOT_GUIDEBOT].render_handle;
         }
-      }
     }
 
     msafe_struct mo;
@@ -3654,7 +3643,7 @@ void osipf_ObjKill(int handle, int killer_handle, float damage, int flags, float
     if (flags == -1) // no flags, so use default death
       KillObject(obj, killer, damage);
     else {
-      float delay_time = min_time + (max_time - min_time) * ps_rand() / D3_RAND_MAX;
+      float delay_time = min_time + (max_time - min_time) * d3::rand() / d3::rand_max;
       KillObject(obj, killer, damage, flags, delay_time);
     }
   }

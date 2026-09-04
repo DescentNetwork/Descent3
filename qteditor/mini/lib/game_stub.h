@@ -8,7 +8,6 @@ extern "C" {
 #endif
 
 // Game state stubs
-extern int Game_mode;
 extern int Frame_count;
 extern float Frametime;
 

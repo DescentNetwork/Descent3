@@ -24,6 +24,7 @@
  * $NoKeywords: $
  */
 
+#include <QtGlobal>
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
@@ -43,7 +44,6 @@
 #include "config.h"
 #include "dedicated_server.h"
 #include "objinfo.h"
-//#include "pserror.h"
 
 #define NUM_DYNAMIC_CLASSES 7
 #define MAX_DYNAMIC_FACES 2000
@@ -1427,7 +1427,7 @@ void ClearDynamicLightmaps() {
 
   for (i = 0; i < Num_dynamic_cells; i++) {
     int cellnum = Dynamic_cell_list[i].cellnum;
-    Terrain_seg[cellnum].flags &= ~TF_DYNAMIC;
+    Terrain_seg[cellnum].flags.dynamic = 0;
     Terrain_seg[cellnum].r = Dynamic_cell_list[i].r;
     Terrain_seg[cellnum].g = Dynamic_cell_list[i].g;
     Terrain_seg[cellnum].b = Dynamic_cell_list[i].b;
@@ -1533,12 +1533,12 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
       continue;
 
     // Add a new face to our list
-    if (!(tseg->flags & TF_DYNAMIC)) {
+    if (!(tseg->flags.dynamic)) {
       Dynamic_cell_list[Num_dynamic_cells].cellnum = cellnum;
       Dynamic_cell_list[Num_dynamic_cells].r = tseg->r;
       Dynamic_cell_list[Num_dynamic_cells].g = tseg->g;
       Dynamic_cell_list[Num_dynamic_cells].b = tseg->b;
-      tseg->flags |= TF_DYNAMIC;
+      tseg->flags.dynamic = 1;
       Num_dynamic_cells++;
 
       if (GameLightmaps[whichmap].flags & LF_LIMITS) {
@@ -1691,9 +1691,9 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         // Choose material
         int material_type=0;
 
-        if (GameTextures[fp->tmap].flags & TF_PLASTIC)
+        if (GameTextures[fp->tmap].flags.plastic)
                 material_type=1;
-        else if (GameTextures[fp->tmap].flags & TF_MARBLE)
+        else if (GameTextures[fp->tmap].flags.marble)
                 material_type=2;
 
         // Go through and change each element of this lightmap
@@ -1887,9 +1887,9 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         // Choose material
         int material_type=0;
 
-        if (GameTextures[fp->tmap].flags & TF_PLASTIC)
+        if (GameTextures[fp->tmap].flags.plastic)
                 material_type=1;
-        else if (GameTextures[fp->tmap].flags & TF_MARBLE)
+        else if (GameTextures[fp->tmap].flags.marble)
                 material_type=2;
 
         // Go through and change each element of this lightmap

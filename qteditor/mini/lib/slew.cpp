@@ -454,7 +454,8 @@ int SlewFrame(object *obj, int movement_limitations) {
         if (new_room != obj->roomnum) { // if we've changed rooms, say so
           if (ROOMNUM_OUTSIDE(new_room))
             if (was_outside)
-              LOG_DEBUG("SLEW: Moved to cell %d, BOA TR %d", CELLNUM(new_room), TERRAIN_REGION(new_room));
+              LOG_DEBUG("SLEW: Moved to cell %d, BOA TR %d", CELLNUM(new_room),
+                        Terrain_seg[new_room].flags.region);
             else
               LOG_DEBUG("SLEW: Moved outside to cell %d", CELLNUM(new_room));
           else if (was_outside)

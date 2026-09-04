@@ -97,6 +97,7 @@
  * $NoKeywords: $
  */
 
+#include <cstdlib>
 
 #include "memory.h"
 #include "bnode.h"
@@ -106,8 +107,7 @@
 #include "terrain.h"
 #include "findintersection.h"
 #include "BOA.h"
-//#include "psrand.h"
-#include <cstdlib>
+#include "rand.h"
 
 bn_list BNode_terrain_list[8];
 bool BNode_allocated = false;
@@ -386,7 +386,7 @@ retry:
 
   Q_ASSERT(bnlist->num_nodes > 0);
   if (closest_node == -1 && bnlist->num_nodes > 0) {
-    closest_node = std::rand() % bnlist->num_nodes;
+    closest_node = d3::rand() % bnlist->num_nodes;
   }
 
   Q_ASSERT(closest_node != -1);
@@ -455,7 +455,7 @@ retry:
 
   Q_ASSERT(bnlist->num_nodes > 0);
   if (closest_node == -1 && bnlist->num_nodes > 0) {
-    closest_node = std::rand() % bnlist->num_nodes;
+    closest_node = d3::rand() % bnlist->num_nodes;
   }
 
   Q_ASSERT(closest_node != -1);
@@ -479,7 +479,7 @@ bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level) {
     room *rp = &Rooms[roomnum];
     return &rp->bn_info;
   } else if (ROOMNUM_OUTSIDE(roomnum)) {
-    return &BNode_terrain_list[TERRAIN_REGION(roomnum)];
+    return &BNode_terrain_list[Terrain_seg[roomnum].flags.region];
   } else if (roomnum <= Highest_room_index + 8) {
     return &BNode_terrain_list[roomnum - Highest_room_index - 1];
   }

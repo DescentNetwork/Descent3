@@ -396,6 +396,7 @@
  * $NoKeywords: $
  */
 
+#include <QtGlobal>
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
@@ -416,9 +417,8 @@
 #include "multi_world_state.h"
 #include "damage_external.h"
 #include "descent.h"
-//#include "pserror.h"
 #include "editor_lighting.h"
-
+#include "chrono_timer.h"
 
 // Global array of rooms
 room Rooms[MAX_ROOMS + MAX_PALETTE_ROOMS];
@@ -1302,7 +1302,7 @@ void DoRoomChangeFrame() {
 
     room *rp = &Rooms[Room_changes[i].roomnum];
 
-    float norm = (Gametime - Room_changes[i].start_time) / Room_changes[i].total_time;
+    float norm = (d3::chrono::last_update() - Room_changes[i].start_time) / Room_changes[i].total_time;
 
     if (norm > 1)
       norm = 1.0;
@@ -1368,7 +1368,7 @@ int SetRoomChangeOverTime(int roomnum, bool fog, vector3 *end, float depth_end, 
   Room_changes[index].roomnum = roomnum;
   Room_changes[index].fog = fog;
   Room_changes[index].end_vector = *end;
-  Room_changes[index].start_time = Gametime;
+  Room_changes[index].start_time = d3::chrono::last_update();
   Room_changes[index].total_time = time;
   rp->room_change_flags |= RCF_CHANGING_WIND_FOG;
 

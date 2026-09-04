@@ -60,7 +60,7 @@ bool EBNode_VerifyGraph() {
 
     for (int j = nlist->num_nodes - 1; j >= 0; j--) {
       int cell = GetTerrainRoomFromPos(&nlist->nodes[j].pos);
-      if (cur_region != TERRAIN_REGION(cell)) {
+      if (cur_region != Terrain_seg[cell].flags.region) {
         for (int k = 0; k < nlist->nodes[j].num_edges; k++) {
           if (BOA_INDEX(nlist->nodes[j].edges[k].end_room) >= 0 &&
               BOA_INDEX(nlist->nodes[j].edges[k].end_room) <= Highest_room_index) {
@@ -211,14 +211,15 @@ bool EBNode_VerifyGraph() {
             int roomnum = BOA_INDEX(GetTerrainRoomFromPos(&pos));
 
             int xxx;
-            for (xxx = 0; xxx < BOA_num_connect[TERRAIN_REGION(roomnum)]; xxx++) {
-              if (BOA_connect[TERRAIN_REGION(roomnum)][xxx].roomnum == cr &&
-                  BOA_connect[TERRAIN_REGION(roomnum)][xxx].portal == rp->portals[j].cportal) {
+            uint8_t region = Terrain_seg[roomnum].flags.region;
+            for (xxx = 0; xxx < BOA_num_connect[region]; xxx++) {
+              if (BOA_connect[region][xxx].roomnum == cr &&
+                  BOA_connect[region][xxx].portal == rp->portals[j].cportal) {
                 break;
               }
             }
 
-            if (xxx >= BOA_num_connect[TERRAIN_REGION(roomnum)]) {
+            if (xxx >= BOA_num_connect[region]) {
               LOG_INFO("EBNode Verify:  External room isn't in terrain region list\n");
               f_verified = false;
               continue;
@@ -411,7 +412,7 @@ static void RemapPortalNodeIndices(int roomnum, int pnt) {
       vector3 pos = Rooms[cr].portals[cp].path_pnt + Rooms[cr].faces[Rooms[cr].portals[cp].portal_face].normal * 0.75f;
       int cell = GetTerrainRoomFromPos(&pos);
 
-      if (region == TERRAIN_REGION(cell) && Rooms[cr].portals[cp].bnode_index == pnt) {
+      if (region == Terrain_seg[cell].flags.region && Rooms[cr].portals[cp].bnode_index == pnt) {
         Rooms[cr].portals[cp].bnode_index = -1;
       }
     }

@@ -25,11 +25,11 @@
 #include "lighting.h"
 #include "radiosity.h"
 #include "bsp.h"
+#include "editor_lighting.h"
 
 // Editor-side lighting globals. Outline_lightmaps is a bool in Descent3Core
 // (render.cpp); the others are provided in d3_editor_state.cpp.
 extern bool Outline_lightmaps;
-extern int BestFit;
 extern int Shoot_from_patch;
 
 
@@ -59,7 +59,7 @@ LightingKeypad::~LightingKeypad() { delete ui; }
 
 void LightingKeypad::updateDialog() {
   if (QCheckBox *cb = ui->IDC_SHOW_LIGHTMAPS)
-    cb->setChecked(Outline_lightmaps != 0);
+    cb->setChecked(Outline_lightmaps);
   if (QCheckBox *cb = ui->IDC_BESTFIT_CHECK)
     cb->setChecked(BestFit != 0);
   if (QCheckBox *cb = ui->IDC_HEMICUBE_CHECK)
@@ -79,7 +79,7 @@ void LightingKeypad::onShowLightmaps(bool checked) {
   State_changed = true;
 }
 void LightingKeypad::onBestFit(bool checked) {
-  BestFit = checked ? 1 : 0;
+  BestFit = checked;
   State_changed = true;
 }
 void LightingKeypad::onHemicube(bool checked) {
