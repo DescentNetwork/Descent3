@@ -20,6 +20,8 @@
 
 #include <QDebug>
 
+#include <QFocusEvent>
+#include <QKeyEvent>
 #include <QMouseEvent>
 #include <QOpenGLFunctions>
 #include <GL/gl.h>
@@ -159,45 +161,67 @@ void drawFilledCircle(float cx, float cy, float radius, const float *color) {
   glEnd();
 }
 
+// ---- Turntable (orbit) camera: port of editor/moveworld.cpp ----
+// The Win32 wireframe view is a trackball camera.  The mouse controls are:
+//   Ctrl+drag            -> rotate the view around the target
+//   Ctrl+Shift+drag      -> pan (move the target)
+//   Z+drag               -> zoom (move dist)
+//   Z+Shift+drag         -> change the render radius rad
+// These all live in editor/moveworld.cpp MoveWorld(); the definitions below
+// mirror the constants and helpers exactly (MOVE_SCALE 3.0, ZOOM_SCALE /
+// RAD_SCALE 10.0, DEFAULT_VIEW_DIST 500, DEFAULT_VIEW_RAD 5000).
+
+constexpr float kDefaultViewDist = 500.0f; // DEFAULT_VIEW_DIST
+constexpr float kDefaultViewRad = 5000.0f; // DEFAULT_VIEW_RAD
+constexpr float kMoveScale = 3.0f;         // MOVE_SCALE
+constexpr float kZoomScale = 10.0f;        // ZOOM_SCALE
+constexpr float kRadScale = 10.0f;         // RAD_SCALE
+
+// Mine_origin (editor/HFile.cpp:402): the fixed world point that
+// ResetWireframeView aims the view at (center of the terrain grid).
+const vector3 kMineOrigin = {float(TERRAIN_WIDTH * (TERRAIN_SIZE / 2)), -100.0f,
+                             float(TERRAIN_DEPTH * (TERRAIN_SIZE / 2))};
+
+// Port of the dist_2d macro (editor/moveworld.cpp:66).
+float dist2d(float x, float y) { return std::sqrt(x * x + y * y); }
+
+// Port of GetMouseRotation (editor/moveworld.cpp:68-102): builds the
+// incremental trackball rotation matrix for a (dx, dy) mouse motion (idy is
+// negated because the Win32 origin is the bottom-left).
+void getMouseRotation(int idx, int idy, matrix *rotMat) {
+  const float Radius = 100.0f;
+  idy *= -1;
+
+  const float dx = static_cast<float>(idx);
+  const float dy = static_cast<float>(idy);
+
+  const float dr = dist2d(dx, dy);
+  const float denom = dist2d(Radius, dr);
+
+  const float cos_theta = Radius / denom;
+  const float sin_theta = dr / denom;
+  const float cos_theta1 = 1.0f - cos_theta;
+
+  const float dxdr = dx / dr;
+  const float dydr = dy / dr;
+
+  rotMat->rvec.x() = cos_theta + ((dydr * dydr) * cos_theta1);
+  rotMat->uvec.x() = -((dxdr * dydr) * cos_theta1);
+  rotMat->fvec.x() = (dxdr * sin_theta);
+
+  rotMat->rvec.y() = rotMat->uvec.x();
+  rotMat->uvec.y() = cos_theta + ((dxdr * dxdr) * cos_theta1);
+  rotMat->fvec.y() = (dydr * sin_theta);
+
+  rotMat->rvec.z() = -rotMat->fvec.x();
+  rotMat->uvec.z() = -rotMat->fvec.y();
+  rotMat->fvec.z() = cos_theta;
+}
+
 } // anonymous namespace
 
 // Vertical field of view in radians (matches the editor's default zoom).
 constexpr float kFovY = 0.5445f;
-
-namespace {
-
-void computeMineBounds(vector3 *min, vector3 *max) {
-  min->x() = min->y() = min->z() = 1e30f;
-  max->x() = max->y() = max->z() = -1e30f;
-  bool any = false;
-  for (int r = 0; r <= Highest_room_index; r++) {
-    room *rp = &Rooms[r];
-    if (!rp->used)
-      continue;
-    for (int v = 0; v < rp->num_verts; v++) {
-      vector3 *p = &rp->verts[v];
-      if (p->x() < min->x())
-        min->x() = p->x();
-      if (p->y() < min->y())
-        min->y() = p->y();
-      if (p->z() < min->z())
-        min->z() = p->z();
-      if (p->x() > max->x())
-        max->x() = p->x();
-      if (p->y() > max->y())
-        max->y() = p->y();
-      if (p->z() > max->z())
-        max->z() = p->z();
-      any = true;
-    }
-  }
-  if (!any) {
-    *min = vector3{-100, -100, -100};
-    *max = vector3{100, 100, 100};
-  }
-}
-
-} // namespace
 
 EditorView::EditorView(QWidget *parent) : QOpenGLWidget(parent) {
   QSurfaceFormat fmt;
@@ -210,6 +234,9 @@ EditorView::EditorView(QWidget *parent) : QOpenGLWidget(parent) {
   setFormat(fmt);
   setMinimumSize(320, 240);
   setFocusPolicy(Qt::StrongFocus);
+  // The Win32 editor orbits from plain mouse motion with a key held (its
+  // OnIdle polls the mouse every frame), so the view must see hover moves.
+  setMouseTracking(true);
 }
 
 EditorView::~EditorView() {
@@ -1315,24 +1342,29 @@ void EditorView::renderBNodes() {
   glLineWidth(1.0f);
 }
 
+EditorView::WireframeViewState *EditorView::activeView() {
+  return Editor_view_mode == VM_ROOM ? &m_viewRoom : &m_viewMine;
+}
+
+const EditorView::WireframeViewState *EditorView::activeView() const {
+  return Editor_view_mode == VM_ROOM ? &m_viewRoom : &m_viewMine;
+}
+
+const EditorView::WireframeViewState &EditorView::activeWireframeView() const {
+  return *activeView();
+}
+
 void EditorView::updateCamera() {
+  // The camera is derived from the active wireframe view state (Win32
+  // Wireframe_view).  m_target / m_dist / m_rad are the mirrors the projection
+  // and render code (and the pick radius gate) read, so they must stay in sync
+  // with the orbit state even while the eye/orient follow a Viewer_object.
+  const WireframeViewState *v = activeView();
+  m_target = v->target;
+  m_dist = v->dist;
+  m_rad = v->rad;
+
   m_cameraValid = false;
-
-  // Always refresh the orbit target from the CURRENT mine bounds.  The pick
-  // radius gate (and the orbit camera below) rely on m_target, so even when we
-  // follow a Viewer_object (identity camera) m_target must not go stale between
-  // mine loads / tests -- otherwise the radius gate would use an out-of-date
-  // center and wrongly cull rooms.
-  vector3 min, max;
-  if (Editor_view_mode == VM_TERRAIN) {
-    min = vector3{0, 0, 0};
-    max = vector3{float(TERRAIN_WIDTH * TERRAIN_SIZE), float(MAX_TERRAIN_HEIGHT),
-                  float(TERRAIN_DEPTH * TERRAIN_SIZE)};
-  } else {
-    computeMineBounds(&min, &max);
-  }
-  m_target = (min + max) * 0.5f;
-
   if (Viewer_object != nullptr) {
     m_eye = Viewer_object->pos;
     m_orient = Viewer_object->orient;
@@ -1340,36 +1372,139 @@ void EditorView::updateCamera() {
     return;
   }
 
-  if (!m_targetInitialized) {
-    // Fit the entire mine in the view: distance is chosen from the bounding
-    // sphere radius (half the bbox diagonal) and the horizontal+vertical
-    // field of view, so the eye sits clearly outside the mine and the center
-    // ray reliably meets the near surface of the mine.
-    vector3 extent = max - min;
-    const float r2 = extent.x() * extent.x() + extent.y() * extent.y() + extent.z() * extent.z();
-    float radius = std::sqrt(r2) * 0.5f;
-    if (radius < 1.0f)
-      radius = 1.0f;
-    const float h = height() > 0 ? static_cast<float>(height()) : 480.0f;
-    const float w = width() > 0 ? static_cast<float>(width()) : 640.0f;
-    const float halfFovY = kFovY * 0.5f;
-    const float halfFovX = std::atan(std::tan(halfFovY) * (w / h));
-    const float fitVertical = radius / std::sin(halfFovY);
-    const float fitHorizontal = radius / std::sin(halfFovX);
-    m_dist = (fitVertical > fitHorizontal ? fitVertical : fitHorizontal) * 1.5f;
-    m_targetInitialized = true;
-  }
-
-  vm_AnglesToMatrix(&m_orient, 0, m_yaw * 65536.0f / 360.0f, m_pitch * 65536.0f / 360.0f);
+  // Turntable camera: the eye orbits on the sphere of radius dist around the
+  // target, so the center of rotation stays wherever the view is aimed
+  // (reset: Mine_origin; pan: moved target; SetWireframeView: room/object).
+  m_orient = v->orient;
   m_eye = m_target - m_orient.fvec * m_dist;
   m_cameraValid = true;
 }
 
+void EditorView::resetCamera() { resetWireframeView(); }
+
+void EditorView::resetWireframeView() {
+  // Port of ResetWireframeView (editor/moveworld.cpp:164-172).
+  WireframeViewState *v = activeView();
+  v->dist = kDefaultViewDist;
+  v->rad = kDefaultViewRad;
+  vm_MakeIdentity(&v->orient);
+  v->target = kMineOrigin;
+  m_cameraValid = false;
+  update();
+}
+
+void EditorView::resetWireframeViewRad() {
+  // Port of ResetWireframeViewRad (editor/moveworld.cpp:175-178).
+  activeView()->rad = kDefaultViewRad;
+  m_cameraValid = false;
+  update();
+}
+
+void EditorView::setWireframeView(const vector3 &pos) {
+  // Port of SetWireframeView (editor/moveworld.cpp:182-185): re-aim the active
+  // view at a new location without touching distance or orientation.
+  activeView()->target = pos;
+  m_cameraValid = false;
+  update();
+}
+
+void EditorView::moveWorld(int dx, int dy, bool ctrlDown, bool shiftDown, bool zDown) {
+  // Port of MoveWorld (editor/moveworld.cpp:120-158).  The mouse control keys
+  // are mutually exclusive in the Win32 function (rotate / pan / zoom / rad),
+  // so the order here matches the original if/if/if/if structure.  The Win32
+  // editor performs no mouse-drag selection while these run, so the Qt port
+  // applies the same camera motion on plain mouse movement over the view.
+  if (dx == 0 && dy == 0)
+    return;
+  if (Editor_view_mode == VM_TERRAIN)
+    return;
+
+  WireframeViewState *v = activeView();
+
+  // Ctrl+drag: rotate the view around its target.
+  if (ctrlDown && !shiftDown) {
+    matrix rotmat, tempm;
+    getMouseRotation(dx, dy, &rotmat);
+    tempm = v->orient * rotmat;
+    v->orient = tempm;
+    m_cameraValid = false;
+  }
+
+  // Ctrl+Shift+drag: pan the target along the view's right/up axes.
+  if (ctrlDown && shiftDown) {
+    v->target += v->orient.rvec * -dx * kMoveScale;
+    v->target += v->orient.uvec * dy * kMoveScale;
+    m_cameraValid = false;
+  }
+
+  // Z+drag: zoom by moving the eye along the target->eye ray.
+  if (zDown && !shiftDown) {
+    v->dist += dy * kZoomScale;
+    if (v->dist < 0)
+      v->dist = 0;
+    m_cameraValid = false;
+  }
+
+  // Z+Shift+drag: change the wireframe render radius.
+  if (zDown && shiftDown) {
+    v->rad += dy * kRadScale;
+    if (v->rad < 0)
+      v->rad = 0;
+    m_cameraValid = false;
+  }
+}
+
 void EditorView::setOrbitCamera(float yawDeg, float pitchDeg, float dist) {
-  m_yaw = yawDeg;
-  m_pitch = pitchDeg;
+  WireframeViewState *v = activeView();
+  // Same angle mapping updateCamera used to apply: p=0, h=yaw, b=pitch.
+  vm_AnglesToMatrix(&v->orient, 0, yawDeg * 65536.0f / 360.0f, pitchDeg * 65536.0f / 360.0f);
   if (dist > 0.0f)
-    m_dist = dist;
+    v->dist = dist;
+  m_cameraValid = false;
+  update();
+}
+
+void EditorView::setPickRadius(float radius) {
+  activeView()->rad = radius;
+  m_cameraValid = false;
+}
+
+void EditorView::fitToMine() {
+  vector3 mn{1e30f, 1e30f, 1e30f}, mx{-1e30f, -1e30f, -1e30f};
+  bool any = false;
+  for (int r = 0; r <= Highest_room_index; r++) {
+    room *rp = &Rooms[r];
+    if (!rp->used)
+      continue;
+    for (int v = 0; v < rp->num_verts; v++) {
+      const vector3 &p = rp->verts[v];
+      mn.x() = std::min(mn.x(), p.x());
+      mn.y() = std::min(mn.y(), p.y());
+      mn.z() = std::min(mn.z(), p.z());
+      mx.x() = std::max(mx.x(), p.x());
+      mx.y() = std::max(mx.y(), p.y());
+      mx.z() = std::max(mx.z(), p.z());
+      any = true;
+    }
+  }
+  if (!any)
+    return;
+
+  const vector3 center = (mn + mx) * 0.5f;
+  const vector3 e = mx - mn;
+  const float radius = vm_GetMagnitude(&e) * 0.5f;
+
+  const float h = height() > 0 ? static_cast<float>(height()) : 480.0f;
+  const float w = width() > 0 ? static_cast<float>(width()) : 640.0f;
+  const float halfFovY = kFovY * 0.5f;
+  const float halfFovX = std::atan(std::tan(halfFovY) * (w / h));
+  const float fitY = radius / std::sin(halfFovY);
+  const float fitX = radius / std::sin(halfFovX);
+
+  WireframeViewState *v = activeView();
+  v->target = center;
+  v->dist = std::max(fitX, fitY) * 1.5f;
+  vm_MakeIdentity(&v->orient);
   m_cameraValid = false;
   update();
 }
@@ -1418,20 +1553,33 @@ void EditorView::paintGL() {
 
 void EditorView::mousePressEvent(QMouseEvent *event) {
   m_lastMouse = event->pos();
+  const bool ctrl = (event->modifiers() & Qt::ControlModifier) != 0;
+  const bool shift = (event->modifiers() & Qt::ShiftModifier) != 0;
+
+  // Camera-motion keys (Win32 MoveWorld): while Ctrl or Z is held, mouse
+  // drags orbit/pan/zoom the wireframe view, so they must never start a pick
+  // or an object drag.
+  if (ctrl || m_zKeyHeld) {
+    m_mouseDown = false;
+    return;
+  }
+
   if (event->button() == Qt::LeftButton) {
     m_mouseDown = true;
     m_dragged = false;
     m_pressPos = event->pos();
-    m_panMode = (event->modifiers() & Qt::ShiftModifier) != 0;
 
-    if (!m_panMode) {
-      updateCamera();
-      PickResult pick = pickAt(event->pos().x(), event->pos().y());
-      if (pick.objectIndex >= 0) {
-        Cur_object_index = pick.objectIndex;
-        emit objectSelected(pick.objectIndex);
-        ObjMoveManager.Start(width(), height(), &m_eye, &m_orient, event->pos().x(), event->pos().y());
-      }
+    // Shift+click toggles the room selection on release (Win32
+    // ToggleRoomSelectedState); don't pick on press.
+    if (shift)
+      return;
+
+    updateCamera();
+    PickResult pick = pickAt(event->pos().x(), event->pos().y());
+    if (pick.objectIndex >= 0) {
+      Cur_object_index = pick.objectIndex;
+      emit objectSelected(pick.objectIndex);
+      ObjMoveManager.Start(width(), height(), &m_eye, &m_orient, event->pos().x(), event->pos().y());
     }
   } else if (event->button() == Qt::RightButton) {
     updateCamera();
@@ -1459,22 +1607,15 @@ void EditorView::mouseMoveEvent(QMouseEvent *event) {
     return;
   }
 
-  if (!m_dragged && Viewer_object != nullptr)
-    return;
-
-  if (m_mouseDown && m_panMode) {
-    const float panScale = m_dist * 0.002f;
-    m_target += m_orient.rvec * (-delta.x() * panScale);
-    m_target += m_orient.uvec * (delta.y() * panScale);
-  } else if (m_mouseDown || Viewer_object == nullptr) {
-    m_yaw += delta.x() * 0.5f;
-    m_pitch += delta.y() * 0.5f;
-    if (m_pitch > 1.5f)
-      m_pitch = 1.5f;
-    if (m_pitch < -1.5f)
-      m_pitch = -1.5f;
+  // Win32 MoveWorld (editor editor OnIdle -> MoveWorld): any mouse motion
+  // while Ctrl/Z is held orbits/pans/zooms the wireframe view, independent of
+  // which mouse button (if any) is pressed.
+  const bool ctrl = (event->modifiers() & Qt::ControlModifier) != 0;
+  const bool shift = (event->modifiers() & Qt::ShiftModifier) != 0;
+  if (ctrl || shift || m_zKeyHeld) {
+    moveWorld(delta.x(), delta.y(), ctrl, shift, m_zKeyHeld);
+    update();
   }
-  update();
 }
 
 void EditorView::mouseReleaseEvent(QMouseEvent *event) {
@@ -1511,22 +1652,30 @@ void EditorView::mouseReleaseEvent(QMouseEvent *event) {
   }
 }
 
-void EditorView::wheelEvent(QWheelEvent *event) {
-  if (Viewer_object != nullptr)
+void EditorView::keyPressEvent(QKeyEvent *event) {
+  // Win32 MoveWorld keys are polled by KEY_STATE(KEY_Z) each idle frame; the
+  // Qt equivalent tracks the Z key between move events.  The event is passed
+  // on so accelerator/menu handling in the parent is not blocked.
+  if (event->key() == Qt::Key_Z) {
+    m_zKeyHeld = true;
+    event->accept();
     return;
-  const float dy = event->angleDelta().y();
-  if (event->modifiers() & Qt::ShiftModifier) {
-    // Shift+wheel: change wireframe render radius.
-    m_rad *= (dy > 0) ? 1.1f : 0.9f;
-    if (m_rad < 10.0f)
-      m_rad = 10.0f;
-  } else {
-    // Normal wheel: zoom distance.
-    m_dist *= (dy > 0) ? 0.9f : 1.1f;
-    if (m_dist < 1.0f)
-      m_dist = 1.0f;
   }
-  update();
+  QOpenGLWidget::keyPressEvent(event);
+}
+
+void EditorView::keyReleaseEvent(QKeyEvent *event) {
+  if (event->key() == Qt::Key_Z) {
+    m_zKeyHeld = false;
+    event->accept();
+    return;
+  }
+  QOpenGLWidget::keyReleaseEvent(event);
+}
+
+void EditorView::focusOutEvent(QFocusEvent *event) {
+  m_zKeyHeld = false;
+  QOpenGLWidget::focusOutEvent(event);
 }
 
 bool EditorView::pointInPolygon(float px, float py, const float *sx, const float *sy, int n) {
@@ -1541,8 +1690,10 @@ bool EditorView::pointInPolygon(float px, float py, const float *sx, const float
 
 EditorView::PickResult EditorView::pickAt(int screenX, int screenY) const {
   PickResult pick = pickAtImpl(screenX, screenY, -1, -1, 1e30f);
+  const WireframeViewState &v = activeWireframeView();
   qInfo().noquote()
-      << "PICK" << "yaw=" << m_yaw << "pitch=" << m_pitch << "zoom=" << m_dist
+      << "PICK" << "target=(" << v.target.x() << "," << v.target.y() << "," << v.target.z() << ")"
+      << "dist=" << v.dist << "rad=" << v.rad << "zoom=" << m_dist
       << "click=(" << screenX << "," << screenY << ")"
       << "room=" << pick.roomIndex << "face=" << pick.faceIndex
       << "obj=" << pick.objectIndex << "depth=" << pick.depth;

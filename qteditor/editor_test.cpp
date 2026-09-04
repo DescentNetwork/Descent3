@@ -2262,6 +2262,10 @@ private slots:
     qInfo() << "rooms=" << nRooms << "faces=" << nFaces;
 
     EditorView view;
+    view.resize(640, 480);
+    view.show();
+    QCoreApplication::processEvents();
+    view.fitToMine(); // same framing updateCamera used to auto-apply
     QVector<QVector<EditorView::ProjectedVertex>> faces;
     view.projectMine(&faces);
     QVERIFY2(faces.size() > 0, "projectMine produced no faces");
@@ -2280,6 +2284,9 @@ private slots:
 
     EditorView view;
     view.resize(640, 480);
+    view.show();
+    QCoreApplication::processEvents();
+    view.fitToMine();
     view.show();
     QCoreApplication::processEvents();
     for (int i = 0; i < 20 && view.frameCount() < 1; i++) {
@@ -2318,6 +2325,7 @@ private slots:
     view.resize(640, 480);
     view.show();
     QCoreApplication::processEvents();
+    view.fitToMine();
     // Let the view paint so the camera is initialized.
     for (int i = 0; i < 20 && view.frameCount() < 1; i++)
       QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
@@ -2700,6 +2708,122 @@ private slots:
     QCOMPARE(other.roomIndex, 0);
   }
 
+  // The turntable camera: eye = target - orient.fvec * dist (Win32
+  // editor/moveworld.cpp / ResetWireframeView defaults dist=500, rad=5000,
+  // identity orient aimed at Mine_origin).
+  void testResetWireframeViewDefaults() {
+    PickFixture fix;
+    fix.setup();
+
+    fix.view.resetCamera();
+    const EditorView::WireframeViewState &v = fix.view.activeWireframeView();
+    QCOMPARE(v.dist, 500.0f);
+    QCOMPARE(v.rad, 5000.0f);
+    // Identity orientation.
+    QCOMPARE(v.orient.rvec.x(), 1.0f); QCOMPARE(v.orient.uvec.y(), 1.0f); QCOMPARE(v.orient.fvec.z(), 1.0f);
+    // Aimed at Mine_origin { TERRAIN_WIDTH*(TERRAIN_SIZE/2), -100, TERRAIN_DEPTH*(TERRAIN_SIZE/2) }.
+    QCOMPARE(v.target.x(), 256.0f * (16.0f / 2.0f));
+    QCOMPARE(v.target.y(), -100.0f);
+    QCOMPARE(v.target.z(), 256.0f * (16.0f / 2.0f));
+  }
+
+  // moveWorld rotate (Ctrl+drag) pivots around the target without changing
+  // dist or rad (the orbit target is fixed; Win32 MoveWorld).
+  void testMoveWorldRotateKeepsTarget() {
+    PickFixture fix;
+    fix.setup();
+    fix.view.resetCamera();
+    const EditorView::WireframeViewState before = fix.view.activeWireframeView();
+
+    // A pure Ctrl drag rotates the view.
+    fix.view.moveWorld(12, 0, /*ctrl*/ true, /*shift*/ false, /*z*/ false);
+    const EditorView::WireframeViewState after = fix.view.activeWireframeView();
+
+    // Target, dist, rad unchanged by rotation.
+    QCOMPARE(after.target.x(), before.target.x());
+    QCOMPARE(after.target.y(), before.target.y());
+    QCOMPARE(after.target.z(), before.target.z());
+    QCOMPARE(after.dist, before.dist);
+    QCOMPARE(after.rad, before.rad);
+    // Orientation actually changed.
+    const bool rotChanged =
+        after.orient.rvec.x() != before.orient.rvec.x() ||
+        after.orient.uvec.y() != before.orient.uvec.y() ||
+        after.orient.fvec.z() != before.orient.fvec.z();
+    QVERIFY(rotChanged);
+  }
+
+  // moveWorld pan (Ctrl+Shift+drag) moves the target along the view's
+  // right/up axes, leaving dist/rad and orientation untouched.
+  void testMoveWorldPanMovesTarget() {
+    PickFixture fix;
+    fix.setup();
+    fix.view.resetCamera();
+    const EditorView::WireframeViewState before = fix.view.activeWireframeView();
+
+    // +dx pan moves the target along -rvec; +dy along +uvec.
+    fix.view.moveWorld(10, 0, /*ctrl*/ true, /*shift*/ true, /*z*/ false);
+    const EditorView::WireframeViewState after = fix.view.activeWireframeView();
+
+    QVERIFY2(std::fabs(after.target.x() - before.target.x()) > 1e-3f ||
+                 std::fabs(after.target.y() - before.target.y()) > 1e-3f ||
+                 std::fabs(after.target.z() - before.target.z()) > 1e-3f,
+             "Ctrl+Shift+drag did not move the orbit target");
+    QCOMPARE(after.dist, before.dist);
+    QCOMPARE(after.rad, before.rad);
+  }
+
+  // moveWorld zoom (Z+drag) changes dist but not target/rad; rad (Z+Shift+drag)
+  // changes rad but not dist/target.
+  void testMoveWorldZoomAndRadius() {
+    PickFixture fix;
+    fix.setup();
+    fix.view.resetCamera();
+    const EditorView::WireframeViewState base = fix.view.activeWireframeView();
+
+    fix.view.moveWorld(0, -10, /*ctrl*/ false, /*shift*/ false, /*z*/ true);
+    {
+      const EditorView::WireframeViewState a = fix.view.activeWireframeView();
+      QVERIFY2(std::fabs(a.dist - base.dist) > 1e-3f, "Z+drag did not change dist");
+      QCOMPARE(a.rad, base.rad);
+    }
+
+    fix.view.moveWorld(0, 5, /*ctrl*/ false, /*shift*/ true, /*z*/ true);
+    {
+      const EditorView::WireframeViewState a = fix.view.activeWireframeView();
+      QVERIFY2(std::fabs(a.rad - base.rad) > 1e-3f, "Z+Shift+drag did not change rad");
+      QCOMPARE(a.dist, (base.dist + (-10) * 10.0f)); // dist unscathed by the rad change
+    }
+  }
+
+  // The mine and room view modes keep independent wireframe view state (Win32
+  // Wireframe_view_mine / _room, SetViewMode at editor/MainFrm.cpp:2948).
+  void testMineAndRoomViewsIndependent() {
+    PickFixture fix;
+    fix.setup();
+    fix.view.resetCamera();
+
+    // Since OrbitViewMine != Wireframe_view_room after the reset, make it
+    // explicit: mutate the mine view, then confirm room state is unaffected.
+    const EditorView::WireframeViewState mineBefore = fix.view.activeWireframeView();
+    fix.view.moveWorld(10, 5, /*ctrl*/ true, /*shift*/ false, /*z*/ false);
+
+    Editor_view_mode = VM_ROOM;
+    const EditorView::WireframeViewState roomState = fix.view.activeWireframeView();
+    Editor_view_mode = VM_MINE;
+    const EditorView::WireframeViewState mineAfter = fix.view.activeWireframeView();
+
+    // Room view still holds the identity/default state from reset (mutable
+    // target), not the rotated mine view.
+    QCOMPARE(roomState.orient.fvec.z(), 1.0f);
+    // The mine view now differs from the room view.
+    QVERIFY2(mineAfter.orient.fvec.z() != roomState.orient.fvec.z() ||
+                 mineAfter.orient.rvec.x() != roomState.orient.rvec.x() ||
+                 mineAfter.orient.uvec.y() != roomState.orient.uvec.y(),
+             "mine view orientation did not diverge from room view after rotate");
+    Q_UNUSED(mineBefore);
+  }
+
   // Independent geometric pick oracle.  Unlike EditorView::projectVertexDepth
   // / pickAtImpl, this never reuses the view's projection or depth math: it
   // reconstructs the orbit camera directly from (yaw, pitch, zoom, mine-centre)
@@ -2710,28 +2834,14 @@ private slots:
   // code against itself.
   bool rayOracle(const EditorView &view, float yawDeg, float pitchDeg, float zoom, int sx,
                  int sy, int *outRoom, int *outFace, float *outDepth) const {
-    // Mine bbox centre == the orbit target (same as EditorView::updateCamera,
-    // recomputed here independently from the room data).
-    vector3 mn{1e30f, 1e30f, 1e30f}, mx{-1e30f, -1e30f, -1e30f};
-    bool any = false;
-    for (int r = 0; r <= Highest_room_index; r++) {
-      room *rp = &Rooms[r];
-      if (!rp->used)
-        continue;
-      for (int v = 0; v < rp->num_verts; v++) {
-        const vector3 &p = rp->verts[v];
-        mn.x() = std::min(mn.x(), p.x());
-        mn.y() = std::min(mn.y(), p.y());
-        mn.z() = std::min(mn.z(), p.z());
-        mx.x() = std::max(mx.x(), p.x());
-        mx.y() = std::max(mx.y(), p.y());
-        mx.z() = std::max(mx.z(), p.z());
-        any = true;
-      }
-    }
-    if (!any)
-      return false;
-    const vector3 target = (mn + mx) * 0.5f;
+    // Orbit target and render radius are inputs the view exposes (SetWireframeView
+    // / reset aim at Mine_origin; the index-tracked view-Mine_Center framing and
+    // resetCamera() set them explicitly).  Reading them keeps the oracle's eye
+    // reconstruction pinned to the SAME orbit state pickAt() uses, while all the
+    // projection/depth math below is still computed independently.
+    const EditorView::WireframeViewState &vstate = view.activeWireframeView();
+    const vector3 target = vstate.target;
+    const float rad2 = vstate.rad * vstate.rad;
 
     // Camera orientation: EditorView::updateCamera uses
     // vm_AnglesToMatrix(&m_orient, 0, yaw, pitch) i.e. p=0, h=yaw, b=pitch.
@@ -2759,7 +2869,6 @@ private slots:
 
     int bestR = -1, bestF = -1;
     float bestT = 1e30f;
-    const float rad2 = 5000.0f * 5000.0f; // matches EditorView::m_rad default
     for (int r = 0; r <= Highest_room_index; r++) {
       room *rp = &Rooms[r];
       if (!rp->used)
@@ -2853,6 +2962,10 @@ private slots:
     QVERIFY2(view.frameCount() >= 1, "view never painted");
 
     view.resetCamera();
+    // Aim the orbit target at the mine's bounding-box centre (the win32
+    // editor's default camera stares at Mine_origin, so without this the level
+    // would sit off-axis); each setOrbitCamera() below rotates around it.
+    view.fitToMine();
     view.update();
     QCoreApplication::processEvents();
 
