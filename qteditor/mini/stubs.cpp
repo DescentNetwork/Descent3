@@ -78,7 +78,15 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#define PRINT_STUB(x) qDebug() << "Function \"" << __FUNCTION__ << "\" is a stub!"
+#define PRINT_STUB(x) \
+{ \
+  static bool printed_##__FUNCTION__ = false; \
+  if( !printed_##__FUNCTION__ ) \
+  { \
+    printed_##__FUNCTION__ = true; \
+    qDebug() << "Function \"" << __FUNCTION__ << "\" is a stub!"; \
+  } \
+}
 
 
 // ==================== 3D functions (exact signatures from 3d.h) ====================
