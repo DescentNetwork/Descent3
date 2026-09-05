@@ -19,7 +19,7 @@
 #pragma once
 
 #include "fix.h"
-#include "vecmat.h"
+#include "vecmat_external.h"
 
 struct face;
 struct room;
@@ -55,8 +55,8 @@ void ReInitRoomFace(face *fp, int nverts);
 int RoomAddVertices(room *rp, int num_new_verts);
 int RoomAddFaces(room *rp, int num_new_faces);
 bool ResetRoomFaceNormals(room *rp);
-bool FaceIsPlanar(int nv, int16_t *face_verts, vector *normal, vector *verts);
-int CheckFaceConcavity(int num_verts, int16_t *face_verts, vector *normal, vector *verts);
+bool FaceIsPlanar(int nv, int16_t *face_verts, vector3 *normal, vector3 *verts);
+int CheckFaceConcavity(int num_verts, int16_t *face_verts, vector3 *normal, vector3 *verts);
 bool FindSharedEdge(face *fp0, face *fp1, int *vn0, int *vn1);
 void DeleteRoomFace(room *rp, int facenum);
 void DeleteRoomPortal(room *rp, int portalnum);

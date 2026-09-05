@@ -19,6 +19,7 @@
 #include "object_keypad.h"
 #include "ui_objectkeypad.h"
 
+#include <cstring>
 #include <QMessageBox>
 #include <QCheckBox>
 #include <QComboBox>
@@ -139,7 +140,9 @@ void ObjectKeypad::onResetObjects() {
     const int type = Objects[i].type;
     if (type < 0 || type >= MAX_OBJECT_TYPES || Object_info[type].type == OBJ_NONE)
       continue;
-    Objects[i].flags = Object_info[type].flags;
+    uint32_t obj_flags = 0;
+    std::memcpy(&obj_flags, &Object_info[type].flags, sizeof(obj_flags));
+    Objects[i].flags = obj_flags;
     Objects[i].size = Object_info[type].size;
   }
   Mine_changed = true;

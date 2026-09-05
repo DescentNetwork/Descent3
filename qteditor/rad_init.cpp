@@ -1,3 +1,4 @@
+#include <QtGlobal>
 /*
  * Descent 3
  * Copyright (C) 2024 Parallax Software
@@ -20,6 +21,7 @@
 #include "d3edit.h"
 #include "lighting_status_dialog.h"
 #include "radiosity.h"
+#include "chrono_timer.h"
 
 #include "findintersection.h"
 #include "hemicube.h"
@@ -27,7 +29,9 @@
 #include "rad_cast.h"
 #include "vecmat.h"
 #include <cstdlib>
-#include "mem.h"
+#include "mem/mem.h"
+
+#include "ddio.h"
 
 
 // Some radiosity globals
@@ -77,7 +81,7 @@ int DoRadiosityRun(int method, rad_surface *light_surfaces, int count) {
 
   Shoot_method = method;
 
-  start_time = timer_GetTime();
+  start_time = d3::chrono::last_update();
 
   InitRadiosityRun();
 
@@ -92,7 +96,7 @@ int DoRadiosityRun(int method, rad_surface *light_surfaces, int count) {
   CloseRadiosityRun();
 
   // Print time taken
-  LOG_INFO("\nLighting took %.4f seconds.\n", timer_GetTime() - start_time);
+  LOG_INFO("\nLighting took %.4f seconds.\n", d3::chrono::last_update() - start_time);
 
   return 1;
 }
@@ -126,7 +130,7 @@ void SetupFormFactors() {
 void CalculateAreaForSurface(rad_surface *sp) {
   int i;
 
-  vector normal;
+  vector3 normal;
 
   vm_GetPerp(&normal, &sp->verts[0], &sp->verts[1], &sp->verts[2]);
   sp->area = (vm_GetMagnitude(&normal) / 2);
@@ -143,7 +147,7 @@ void CalculateAreaForSurface(rad_surface *sp) {
 void CalculateAreaForElement(rad_element *ep) {
   int i;
 
-  vector normal;
+  vector3 normal;
 
   if (ep->flags & EF_IGNORE) {
     ep->area = .0000001f;
@@ -271,9 +275,9 @@ void UpdateUnsentValues() {
   else
     rad_Convergence = 0.0;
 
-  if (timer_GetTime() - last_report_time > 10.0) {
+  if (d3::chrono::last_update() - last_report_time > 10.0) {
     LOG_INFO("Percentage left=%f\n", rad_Convergence);
-    last_report_time = timer_GetTime();
+    last_report_time = d3::chrono::last_update();
   }
 
   if (use_sat)
@@ -291,10 +295,10 @@ void UpdateUnsentValues() {
 }
 
 // Finds the world coordinate center of a surface
-void GetCenterOfSurface(rad_surface *sp, vector *dest) { vm_GetCentroid(dest, sp->verts, sp->num_verts); }
+void GetCenterOfSurface(rad_surface *sp, vector3 *dest) { vm_GetCentroid(dest, sp->verts, sp->num_verts); }
 
 // Finds the world coordinate center of a surface
-void GetCenterOfElement(rad_element *ep, vector *dest) { vm_GetCentroid(dest, ep->verts, ep->num_verts); }
+void GetCenterOfElement(rad_element *ep, vector3 *dest) { vm_GetCentroid(dest, ep->verts, ep->num_verts); }
 
 void CalculateRadiosity() {
   while (!rad_DoneCalculating) {
@@ -306,6 +310,10 @@ void CalculateRadiosity() {
     DoRadiosityIteration();
 
     rad_StepCount++;
+
+    // Advance the game clock so last_update() tracks real elapsed time for
+    // progress reporting and timing logs.
+    d3::chrono::update();
 
     Descent->defer();
     // Qt handles keyboard events natively - abort logic should be moved to UI
@@ -394,7 +402,7 @@ void Calculate() {
   rad_MaxSurface->exitance.r = 0;
   rad_MaxSurface->exitance.g = 0;
   rad_MaxSurface->exitance.b = 0;
-  rad_MaxSurface->flags &= ~SF_LIGHTSOURCE;
+  rad_MaxSurface->flags.lightsource = 0;
 }
 
 // Does one iteration of ray-casting radiosity

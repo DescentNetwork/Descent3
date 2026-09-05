@@ -45,7 +45,7 @@ private slots:
 
 private:
   void updateDialog();
-  void setActivator(uint16_t flag, const char *checkName, bool checked);
+  void setActivator(int id, const char *checkName, bool checked);
 
   template <typename T>
   T *find(const QString &name) const { return findChild<T *>(name); }

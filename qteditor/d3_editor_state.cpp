@@ -20,7 +20,7 @@
 // The D3 core is compiled without the EDITOR define, so this is re-provided
 // here for the Qt port.
 #include "editor_room_state.h"
-#include "mem.h"
+#include "mem/mem.h"
 #include "terrain.h"
 #include "slew.h"
 #include "manage.h"
@@ -31,6 +31,7 @@
 #include "room.h"
 #include "vecmat.h"
 #include <cstdarg>
+#include <atomic>
 #include <cstring>
 #include <filesystem>
 #include <QtGlobal>
@@ -38,16 +39,11 @@
 #include <QApplication>
 
 #include "d3edit.h"
+#include "vecmat.h"
 
 d3edit_state D3EditState;
 bool World_changed = false;
 
-// Editor-only terrain globals guarded by EDITOR in terrain.cpp; the D3 core is
-// compiled without that define, so provide them here.
-uint8_t TerrainSelected[TERRAIN_WIDTH * TERRAIN_DEPTH];
-int Num_terrain_selected = 0;
-int Editor_LOD_engine_off = 1;
-bool Terrain_render_ext_room_objs = true;
 
 // Editor-only state flags declared in d3edit.h (defined in the MFC editor's
 // editor.cpp/EDVARS.cpp).
@@ -65,7 +61,7 @@ int Selected_rooms[MAX_ROOMS];
 int Slew_limitations = 0;
 
 // Editor-side lighting globals (editor_lighting.cpp / rad_init.cpp in MFC).
-int BestFit = 0;
+
 int Shoot_from_patch = 1;
 
 // Editor room/face/portal editing context (defined in the MFC editor).
@@ -85,22 +81,20 @@ group *Placed_group = nullptr;
 int Placed_room_face = 0;
 int Placed_door = -1;
 float Placed_room_angle = 0;
-vector Placed_room_origin = {0, 0, 0};
+vector3 Placed_room_origin = {0, 0, 0};
 matrix Placed_room_orient = IDENTITY_MATRIX;
-vector Placed_room_attachpoint = {0, 0, 0};
+vector3 Placed_room_attachpoint = {0, 0, 0};
 matrix Placed_room_rotmat = IDENTITY_MATRIX;
 room *Placed_baseroomp = nullptr;
 int Placed_baseface = 0;
 bool Mine_changed = false;
 int Editor_view_mode = 0; // VM_MINE
 int Editor_viewer_id = -1;
+int paged_in_count = 0;
+int paged_in_num = 0;
 
-// SLEW.cpp guards SlewControlInit() with EDITOR; the Qt port has no controller
-// integration, so provide a stub. The non-EDITOR branch of slew.h turns
-// SlewControlInit into a no-arg function-like macro with an empty replacement
-// list, so undef it before defining the real function body.
-#undef SlewControlInit
-void SlewControlInit() {}
+
+// SLEW.cpp guards SlewControlInit() with EDITOR; slew.cpp provides it.
 
 
 // Editor-only object helpers guarded by EDITOR in object.cpp/objinfo.cpp; the
@@ -165,7 +159,7 @@ int GetPrevObjectID(int n) {
 // Path editing helpers (editor/EPath.cpp in the MFC editor).
 uint8_t Show_paths = 1;
 
-int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector pos, matrix orient) {
+int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient) {
   if (GamePaths[pathnum].num_nodes >= MAX_NODES_PER_PATH) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Path already has its maximum amount of nodes.");
     return -1;
@@ -204,7 +198,7 @@ int AllocGamePath() {
   return -1;
 }
 
-int MovePathNodeToPos(int pathnum, int nodenum, vector *attempted_pos) {
+int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
   fvi_query fq;
   fvi_info hit_info;
 
@@ -256,8 +250,8 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector *attempted_pos) {
   return 0;
 }
 
-int MovePathNode(int pathnum, int nodenum, vector *delta_pos) {
-  vector attempted_pos = GamePaths[pathnum].pathnodes[nodenum].pos + *delta_pos;
+int MovePathNode(int pathnum, int nodenum, vector3 *delta_pos) {
+  vector3 attempted_pos = GamePaths[pathnum].pathnodes[nodenum].pos + *delta_pos;
   return MovePathNodeToPos(pathnum, nodenum, &attempted_pos);
 }
 
@@ -309,12 +303,13 @@ int IsRoomSelected(int roomnum) {
 
 room *CreateNewRoom(int nverts, int nfaces, bool palette_room) {
   (void)palette_room;
+  // `new room()` value-initialises (zeroing PODs, default-constructing the
+  // std::string name).  No memset — memset would corrupt the std::string.
   room *rp = new room();
-  memset(rp, 0, sizeof(room));
   rp->used = 1;
   rp->num_verts = nverts;
   rp->num_faces = nfaces;
-  rp->verts = new vector[nverts]();
+  rp->verts = new vector3[nverts]();
   rp->faces = new face[nfaces]();
   return rp;
 }
@@ -475,13 +470,3 @@ void SetErrorMessage(const char *fmt, ...) {
 }
 
 const char *GetErrorMessage() { return Editor_error_message; }
-
-bool SaveLevel(char *filename, bool f_save_room_AABB) {
-  (void)f_save_room_AABB;
-  // The stub refuses to scribble anything to disk: writing a stale or empty
-  // .d3l would mask real bugs during development. The Qt port will swap
-  // this for the real implementation once editor/ebnode.h's MFC deps
-  // (EditorMessageBox, etc.) have a Linux equivalent.
-  (void)filename;
-  return false;
-}

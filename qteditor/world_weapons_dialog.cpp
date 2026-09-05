@@ -1,3 +1,4 @@
+#include <QtGlobal>
 /*
  * Descent 3
  * Copyright (C) 2024 Descent Developers
@@ -27,6 +28,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
+#include <cstring>
 
 
 
@@ -110,10 +112,13 @@ void WorldWeaponsDialog::setFlag(uint32_t flag, const char *checkName, bool chec
   const int n = D3EditState.current_weapon;
   if (n < 0 || n >= MAX_WEAPONS || !Weapons[n].used)
     return;
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &Weapons[n].flags, sizeof(flags_raw));
   if (checked)
-    Weapons[n].flags |= flag;
+    flags_raw |= flag;
   else
-    Weapons[n].flags &= ~flag;
+    flags_raw &= ~flag;
+  std::memcpy(&Weapons[n].flags, &flags_raw, sizeof(flags_raw));
 }
 
 void WorldWeaponsDialog::setPhysFlag(uint32_t flag, const char *checkName, bool checked) {
@@ -321,6 +326,9 @@ void WorldWeaponsDialog::updateDialog() {
   if (QLineEdit *edit = ui->IDC_TERRAIN_DAMAGE_DEPTH)
     edit->setText(QString::number(Weapons[n].terrain_damage_depth));
 
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &Weapons[n].flags, sizeof(flags_raw));
+
   const struct {
     const char *name;
     uint32_t flag;
@@ -341,7 +349,7 @@ void WorldWeaponsDialog::updateDialog() {
   };
   for (const auto &c : wf)
     if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
-      cb->setChecked(Weapons[n].flags & c.flag);
+      cb->setChecked(flags_raw & c.flag);
 
   const struct {
     const char *name;
@@ -356,9 +364,9 @@ void WorldWeaponsDialog::updateDialog() {
       cb->setChecked(Weapons[n].phys_info.flags & c.flag);
 
   if (QRadioButton *rb = ui->IDC_ENERGY_RADIO)
-    rb->setChecked(!(Weapons[n].flags & WF_MATTER_WEAPON));
+    rb->setChecked(!(flags_raw & WF_MATTER_WEAPON));
   if (QRadioButton *rb = ui->IDC_MATTER_RADIO)
-    rb->setChecked(Weapons[n].flags & WF_MATTER_WEAPON);
+    rb->setChecked(flags_raw & WF_MATTER_WEAPON);
 
   if (QPushButton *checkin = ui->IDC_CHECKIN_WEAPON) {
     if (mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON) == -1) {
@@ -377,8 +385,8 @@ void WorldWeaponsDialog::updateDialog() {
     combo->clear();
     for (int i = 0; i < MAX_WEAPONS; i++)
       if (Weapons[i].used)
-        combo->addItem(Weapons[i].name);
-    combo->setCurrentText(Weapons[n].name);
+        combo->addItem(QString::fromStdString(Weapons[i].name));
+    combo->setCurrentText(QString::fromStdString(Weapons[n].name));
   }
 
   populateSoundCombo(ui->IDC_FIRE_SOUND_PULLDOWN, Weapons[n].sounds[WSI_FIRE]);
@@ -397,7 +405,7 @@ void WorldWeaponsDialog::onAddWeapon() {
       QInputDialog::getText(this, "Weapon", "Enter a name for your weapon:", QLineEdit::Normal, "", &ok);
   if (!ok || name.isEmpty())
     return;
-  if (FindWeaponName(name.toLocal8Bit().constData()) != -1) {
+  if (FindWeaponName(name.toStdString()) != -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There is already a weapon with that name.");
     return;
   }
@@ -406,7 +414,7 @@ void WorldWeaponsDialog::onAddWeapon() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot add weapon: There are no free weapon slots.");
     return;
   }
-  snprintf(Weapons[handle].name, sizeof(Weapons[handle].name), "%s", name.toLocal8Bit().constData());
+  Weapons[handle].name = name.toStdString();
   mng_AllocTrackLock(Weapons[handle].name, PAGETYPE_WEAPON);
   D3EditState.current_weapon = handle;
   RemapWeapons();
@@ -423,15 +431,15 @@ void WorldWeaponsDialog::onDeleteWeapon() {
     return;
   }
   if (QMessageBox::question(this, "Delete weapon",
-                            QString("Are you sure you want to delete this weapon? %1").arg(Weapons[n].name)) !=
+                            QString("Are you sure you want to delete this weapon? %1").arg(QString::fromStdString(Weapons[n].name))) !=
       QMessageBox::Yes)
     return;
   if (!mng_MakeLocker())
     return;
   mngs_Pagelock pl;
-  snprintf(pl.name, sizeof(pl.name), "%s", Weapons[n].name);
+  pl.name = Weapons[n].name;
   pl.pagetype = PAGETYPE_WEAPON;
-  if (mng_CheckIfPageOwned(&pl, TableUser) != 1) {
+  if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
     mng_FreeTrackLock(tl);
     Q_ASSERT(mng_DeletePage(Weapons[n].name, PAGETYPE_WEAPON, 1));
   } else {
@@ -456,14 +464,14 @@ void WorldWeaponsDialog::onLockWeapon() {
     return;
   mngs_Pagelock temp_pl;
   mngs_weapon_page weaponpage;
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", Weapons[n].name);
+  temp_pl.name = Weapons[n].name;
   temp_pl.pagetype = PAGETYPE_WEAPON;
   const int r = mng_CheckIfPageLocked(&temp_pl);
   if (r == 2) {
     if (QMessageBox::question(this, "Are you sure?",
                           "This page is not even in the table file, or the database maybe corrupt.  Override to "
                               "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
-      snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
+      temp_pl.holder = "UNLOCKED";
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
         QMessageBox::critical(this, "Error!", ErrorString);
     }
@@ -472,7 +480,7 @@ void WorldWeaponsDialog::onLockWeapon() {
   } else if (r == 1) {
     QMessageBox::information(this, "Information", InfoString);
   } else {
-    snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
+    temp_pl.holder = TableUser.toStdString();
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
       QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
@@ -505,15 +513,15 @@ void WorldWeaponsDialog::onCheckinWeapon() {
   if (!mng_MakeLocker())
     return;
   mngs_Pagelock temp_pl;
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", Weapons[n].name);
+  temp_pl.name = Weapons[n].name;
   temp_pl.pagetype = PAGETYPE_WEAPON;
-  const int r = mng_CheckIfPageOwned(&temp_pl, TableUser);
+  const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
   if (r < 0)
     QMessageBox::critical(this, "Error!", ErrorString);
   else if (r == 0)
     QMessageBox::information(this, "Information", InfoString);
   else {
-    snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
+    temp_pl.holder = "UNLOCKED";
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
       QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
@@ -539,7 +547,7 @@ void WorldWeaponsDialog::onWeaponsOut() {
   int total = 0;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
     if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == PAGETYPE_WEAPON) {
-      str += GlobalTrackLocks[i].name;
+      str += QString::fromStdString(GlobalTrackLocks[i].name);
       str += "\n";
       total++;
     }
@@ -559,7 +567,7 @@ void WorldWeaponsDialog::onPrevWeapon() {
 
 void WorldWeaponsDialog::onWeaponPulldownChanged() {
   QComboBox *combo = ui->IDC_WEAPON_PULLDOWN;
-  const int i = FindWeaponName(combo->currentText().toLocal8Bit().constData());
+  const int i = FindWeaponName(combo->currentText().toStdString());
   if (i == -1)
     return;
   D3EditState.current_weapon = i;
@@ -569,7 +577,7 @@ void WorldWeaponsDialog::onWeaponPulldownChanged() {
 void WorldWeaponsDialog::onOverride() {
   const int n = D3EditState.current_weapon;
   mngs_Pagelock temp_pl;
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", Weapons[n].name);
+  temp_pl.name = Weapons[n].name;
   temp_pl.pagetype = PAGETYPE_WEAPON;
   mng_OverrideToUnlocked(&temp_pl);
 }
@@ -593,16 +601,15 @@ void WorldWeaponsDialog::onChangeName() {
   }
   bool ok = false;
   const QString name = QInputDialog::getText(this, "Weapon name", "Enter a new name for this weapon:",
-                                             QLineEdit::Normal, Weapons[n].name, &ok);
+                                             QLineEdit::Normal, QString::fromStdString(Weapons[n].name), &ok);
   if (!ok || name.isEmpty())
     return;
-  if (FindWeaponName(name.toLocal8Bit().constData()) != -1) {
+  if (FindWeaponName(name.toStdString()) != -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
-  snprintf(Weapons[n].name, sizeof(Weapons[n].name), "%s", name.toLocal8Bit().constData());
-  snprintf(GlobalTrackLocks[p].name, sizeof(GlobalTrackLocks[p].name), "%s",
-           Weapons[n].name);
+  Weapons[n].name = name.toStdString();
+  GlobalTrackLocks[p].name = Weapons[n].name;
   RemapWeapons();
   updateDialog();
 }

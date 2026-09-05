@@ -27,6 +27,29 @@
 #include "room_external.h"
 #include "trigger.h"
 
+namespace {
+bool getActivatorFlag(const activator_flags_t &af, int id) {
+  switch (id) {
+    case 0: return af.player;
+    case 1: return af.player_weapon;
+    case 2: return af.robot;
+    case 3: return af.robot_weapon;
+    case 4: return af.clutter;
+  }
+  return false;
+}
+
+void setActivatorFlag(activator_flags_t &af, int id, bool value) {
+  switch (id) {
+    case 0: af.player = value; break;
+    case 1: af.player_weapon = value; break;
+    case 2: af.robot = value; break;
+    case 3: af.robot_weapon = value; break;
+    case 4: af.clutter = value; break;
+  }
+}
+} // namespace
+
 
 TriggerKeypad::TriggerKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::TriggerKeypad)
@@ -71,7 +94,7 @@ void TriggerKeypad::updateDialog() {
   trigger *tp = &Triggers[Current_trigger];
 
   if (QLabel *label = ui->IDC_TRIG_CURRENT_NAME)
-    label->setText(tp->name);
+    label->setText(QString::fromStdString(tp->name));
   if (QLabel *label = ui->IDC_TRIG_CURRENT_NUM)
     label->setText(QString::number(Current_trigger));
   if (QLabel *label = ui->IDC_TRIG_CURRENT_ROOM)
@@ -80,62 +103,56 @@ void TriggerKeypad::updateDialog() {
     label->setText(QString::number(tp->facenum));
 
   if (QCheckBox *cb = ui->IDC_TRIG_ONESHOT)
-    cb->setChecked(tp->flags & TF_ONESHOT);
+    cb->setChecked(tp->flags.oneshot);
 
   const struct {
     const char *name;
-    uint16_t flag;
+    int id;
   } act[] = {
-      {"IDC_TRIG_ACTIV_PLAYER", AF_PLAYER},
-      {"IDC_TRIG_ACTIV_PLAYER_WEAPONS", AF_PLAYER_WEAPON},
-      {"IDC_TRIG_ACTIV_ROBOTS", AF_ROBOT},
-      {"IDC_TRIG_ACTIV_ROBOT_WEAPONS", AF_ROBOT_WEAPON},
-      {"IDC_TRIG_ACTIV_CLUTTER", AF_CLUTTER},
+      {"IDC_TRIG_ACTIV_PLAYER", 0},
+      {"IDC_TRIG_ACTIV_PLAYER_WEAPONS", 1},
+      {"IDC_TRIG_ACTIV_ROBOTS", 2},
+      {"IDC_TRIG_ACTIV_ROBOT_WEAPONS", 3},
+      {"IDC_TRIG_ACTIV_CLUTTER", 4},
   };
   for (const auto &a : act)
     if (QCheckBox *cb = findChild<QCheckBox*>(a.name))
-      cb->setChecked(tp->activator & a.flag);
+      cb->setChecked(getActivatorFlag(tp->activator, a.id));
 }
 
-void TriggerKeypad::setActivator(uint16_t flag, const char *checkName, bool checked) {
+void TriggerKeypad::setActivator(int id, const char *checkName, bool checked) {
   if (Current_trigger < 0 || Current_trigger >= Num_triggers)
     return;
-  if (checked)
-    Triggers[Current_trigger].activator |= flag;
-  else
-    Triggers[Current_trigger].activator &= ~flag;
+  setActivatorFlag(Triggers[Current_trigger].activator, id, checked);
 }
 
 void TriggerKeypad::onOneshotToggled(bool checked) {
   if (Current_trigger < 0 || Current_trigger >= Num_triggers)
     return;
-  if (checked)
-    Triggers[Current_trigger].flags |= TF_ONESHOT;
-  else
-    Triggers[Current_trigger].flags &= ~TF_ONESHOT;
+  Triggers[Current_trigger].flags.oneshot = checked;
 }
 
 void TriggerKeypad::onActivatorToggled() {
   const struct {
     const char *name;
-    uint16_t flag;
+    int id;
   } act[] = {
-      {"IDC_TRIG_ACTIV_PLAYER", AF_PLAYER},
-      {"IDC_TRIG_ACTIV_PLAYER_WEAPONS", AF_PLAYER_WEAPON},
-      {"IDC_TRIG_ACTIV_ROBOTS", AF_ROBOT},
-      {"IDC_TRIG_ACTIV_ROBOT_WEAPONS", AF_ROBOT_WEAPON},
-      {"IDC_TRIG_ACTIV_CLUTTER", AF_CLUTTER},
+      {"IDC_TRIG_ACTIV_PLAYER", 0},
+      {"IDC_TRIG_ACTIV_PLAYER_WEAPONS", 1},
+      {"IDC_TRIG_ACTIV_ROBOTS", 2},
+      {"IDC_TRIG_ACTIV_ROBOT_WEAPONS", 3},
+      {"IDC_TRIG_ACTIV_CLUTTER", 4},
   };
   for (const auto &a : act)
     if (QCheckBox *cb = findChild<QCheckBox*>(a.name))
-      setActivator(a.flag, a.name, cb->isChecked());
+      setActivator(a.id, a.name, cb->isChecked());
 }
 
 void TriggerKeypad::onDelete() {
   if (Current_trigger < 0 || Current_trigger >= Num_triggers)
     return;
   // Mirror the original: mark unused and renumber triggers above it.
-  Triggers[Current_trigger].flags |= TF_UNUSED;
+  Triggers[Current_trigger].flags.unused = true;
   for (int i = Current_trigger + 1; i < Num_triggers; i++)
     Triggers[i - 1] = Triggers[i];
   Num_triggers--;

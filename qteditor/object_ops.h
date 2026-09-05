@@ -68,5 +68,5 @@ void HObjectDelete();
 void ResetGroundObject(object *objp);
 
 // Internal helpers (exposed for testing).
-bool MoveObject(object *obj, vector *newpos);
+bool MoveObject(object *obj, vector3 *newpos);
 bool RotateObject(int objnum, angle p, angle h, angle b);

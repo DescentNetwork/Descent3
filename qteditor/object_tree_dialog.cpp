@@ -10,6 +10,8 @@
 #include "object_ops.h"
 
 
+using namespace std::string_literals;
+
 namespace {
 const char *kCategoryNames[] = {
     "Clipboard", "Powerups", "Robots", "Buildings", "Door",
@@ -71,16 +73,16 @@ QString ObjectTreeDialog::makeInfoStr(const object *obj) {
     str = QString("%1-(0x%2)[%3](%4) ")
               .arg(static_cast<int>(OBJNUM(obj)))
               .arg(obj->handle, 0, 16)
-              .arg(QString::fromLatin1(Object_info[obj->id].name))
-              .arg(obj->name ? QString::fromLatin1(obj->name) : "No Name Given");
+              .arg(QString::fromStdString(Object_info[obj->id].name))
+              .arg(QString::fromStdString(obj->name.empty() ? "No Name Given"s : obj->name));
   } else {
-    const char *typeName =
+    QString typeName =
         (obj->type >= 0 && obj->type < MAX_OBJECT_TYPES) ? Object_type_names[obj->type] : "Unnamed type";
     str = QString("%1-(0x%2)[%3](%4) ")
               .arg(static_cast<int>(OBJNUM(obj)))
               .arg(obj->handle, 0, 16)
-              .arg(QString::fromLatin1(typeName))
-              .arg(obj->name ? QString::fromLatin1(obj->name) : "No Name Given");
+              .arg(typeName)
+              .arg(QString::fromStdString(obj->name.empty() ? "No Name Given"s : obj->name));
   }
 
   if (OBJECT_OUTSIDE(obj))

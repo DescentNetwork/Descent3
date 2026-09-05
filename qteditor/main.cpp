@@ -25,7 +25,6 @@
 #include <cerrno>
 
 #include "d3_editor_init.h"
-#include "dialog_test.h"
 #include "main_window.h"
 
 

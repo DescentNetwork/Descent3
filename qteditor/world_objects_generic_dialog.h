@@ -40,8 +40,6 @@ public:
 private slots:
   void onEditAI();
   void onEditPhysics();
-  void onUsesAI(bool checked);
-  void onUsesPhysics(bool checked);
   void onAddNew();
   void onCheckedOut();
   void onCheckIn();
@@ -55,7 +53,6 @@ private slots:
   void onKillfocusSize();
   void onCopy();
   void onPaste();
-  void onDestroyableToggled(bool checked);
   void onKillfocusHitpoints();
   void onWeaponInfo();
   void onLight();
@@ -73,13 +70,9 @@ private slots:
   void onKillfocusInvenDescription();
   void onKillfocusInvenIconname();
   void onOverride();
-  void onInvenSelectable(bool checked);
-  void onInvenNonuseable(bool checked);
   void onKillfocusLodDistance();
   void onInvtypeGame();
   void onInvtypeMission();
-  void onInvenNoremove(bool checked);
-  void onInvenViswhenused(bool checked);
   void onDeathPowerup1Changed();
   void onDeathPowerup1NumEdited();
   void onDeathPowerup1PercentEdited();
@@ -91,23 +84,16 @@ private slots:
   void onKillfocusScriptname();
   void onCompilemodule();
   void onKillfocusScriptOverride();
-  void onAiScriptedDeath(bool checked);
   void onKillfocusRespawnScalar();
   void onGenericDeaths();
   void onKillfocusScore();
   void onKillfocusAmmo();
-  void onObjCeiling(bool checked);
-  void onFlyThroughRenderedPortals(bool checked);
-  void onNsc(bool checked);
-  void onDsmpbd(bool checked);
-  void onAmbient(bool checked);
 
 private:
   void updateDialog();
   void enableDisableAll(bool flag);
   bool isLocked(int n);
   int countLockedItems();
-  void setFlag(uint32_t flag, const char *checkName, bool checked);
   void setCurrent(int id);
   void saveGenericsOnClose();
 

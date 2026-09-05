@@ -97,7 +97,7 @@ bool HogDialog::loadHogFile(const QString &hogname) {
                     .arg(static_cast<qulonglong>(total)));
   std::size_t i = 0;
   for (auto it = archive.begin(); it != archive.end(); ++it, ++i) {
-    const QString name = QString::fromStdString(std::string(it->name.string()));
+    const QString name = QString::fromStdString(it->name.string());
     const QString date =
         (it->timestamp != 0) ? formatTimestamp(it->timestamp) : QStringLiteral("-");
     addFile(name, date, it->len, QString::number(it->flags));

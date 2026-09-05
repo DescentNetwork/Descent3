@@ -1,3 +1,4 @@
+#include <QtGlobal>
 /*
  * Descent 3
  * Copyright (C) 2024 Descent Developers
@@ -45,8 +46,8 @@
 #include "about_dialog.h"
 
 
-#include "editor_file_dialogs.h"
 #include "editor_view.h"
+#include "editor_room_state.h"
 #include "hog_dialog.h"
 #include "level_io.h"
 #include "object.h"
@@ -120,9 +121,9 @@ MainWindow::MainWindow(QWidget *parent)
   connect(m_editorView, &EditorView::objectSelected, this, [this](int idx) {
     Cur_object_index = idx;
     State_changed = true;
-    const char *name = (idx >= 0 && idx <= Highest_object_index && Objects[idx].name)
-                           ? Objects[idx].name
-                           : "";
+    QString name = (idx >= 0 && idx <= Highest_object_index && !Objects[idx].name.empty())
+                           ? QString::fromStdString(Objects[idx].name)
+                           : QString();
     statusBar()->showMessage(
         QStringLiteral("Object %1 selected (%2)").arg(idx).arg(name));
     m_editorView->requestRedraw();
@@ -135,6 +136,14 @@ MainWindow::MainWindow(QWidget *parent)
     statusBar()->showMessage(QStringLiteral("Selection cleared."));
     m_editorView->requestRedraw();
   });
+  connect(m_editorView, &EditorView::roomToggleRequested, this,
+          [this](int roomIndex) {
+            ToggleRoomSelectedState(roomIndex);
+            State_changed = true;
+            statusBar()->showMessage(
+                QStringLiteral("Room %1 selection toggled.").arg(roomIndex));
+            m_editorView->requestRedraw();
+          });
   connect(m_editorView, &EditorView::objectContextMenuRequested, this,
           [this](const QPoint &globalPos, int objIdx) {
             Cur_object_index = objIdx;
@@ -170,7 +179,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->ID_VIEW_KEYPAD_TOGGLE, &QAction::triggered, this, &MainWindow::toggleKeypadBar);
   connect(ui->ID_VIEW_CENTERONMINE, &QAction::triggered, this, &MainWindow::onCenterViewOnMine);
   connect(ui->ID_VIEW_CENTERONOBJECT, &QAction::triggered, this, &MainWindow::onCenterViewOnObject);
-  connect(ui->ID_VIEW_RESETVIEWRADIUS, &QAction::triggered, this, &MainWindow::onMoveViewToSelectedRoom);
+  connect(ui->ID_VIEW_RESETVIEWRADIUS, &QAction::triggered, this, &MainWindow::onResetViewRadius);
   connect(ui->ID_VIEW_TOOLBAR, &QAction::triggered, this, &MainWindow::onViewToolbar);
   connect(ui->ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW, &QAction::triggered, this, &MainWindow::onViewShowObjectsInWireframe);
   connect(ui->ID_MINE_VIEW, &QAction::triggered, this, &MainWindow::onViewMine);
@@ -181,6 +190,10 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->ID_VIEW_DELETEVIEWER, &QAction::triggered, this, &MainWindow::onDeleteCurrentViewer);
   connect(ui->ID_VIEW_NEXTVIEWER, &QAction::triggered, this, &MainWindow::onSelectNextViewer);
   connect(ui->ID_VIEW_VIEWPROP, &QAction::triggered, this, &MainWindow::toggleViewerProps);
+  connect(ui->ID_VIEW_MOVECAMERATOSELECTEDROOM, &QAction::triggered, this, &MainWindow::onMoveViewToSelectedRoom);
+  connect(ui->ID_VIEW_MOVECAMERATOSELECTEDFACE, &QAction::triggered, this, &MainWindow::onMoveCameraToSelectedFace);
+  connect(ui->ID_VIEW_MOVECAMERATOCURRENTOBJECT, &QAction::triggered, this, &MainWindow::onMoveCameraToCurrentObject);
+  connect(ui->ID_VIEW_FLIP, &QAction::triggered, this, &MainWindow::onFlipViewer);
 
   connect(ui->ID_VIEW_TEXTUREMINE, &QAction::triggered, m_editorView, &EditorView::disableWireframeMode);
   connect(ui->ID_VIEW_WIREFRAMEMINE, &QAction::triggered, m_editorView, &EditorView::enableWireframeMode);
@@ -348,35 +361,29 @@ void MainWindow::onFileNew() {
 void MainWindow::onFileOpen() {
   // Use the editor's LocalLevelsDir rather than the install root so the file
   // dialog opens where the user actually keeps their .d3l files.
-  static char initial_dir[PATH_MAX];
-  if (m_currentLevelFile.isEmpty()) {
-    std::strncpy(initial_dir, LocalLevelsDir, sizeof(initial_dir) - 1);
-    initial_dir[sizeof(initial_dir) - 1] = '\0';
-  } else {
-    const QByteArray current = QFileInfo(m_currentLevelFile).absolutePath().toLatin1();
-    std::strncpy(initial_dir, current.constData(), sizeof(initial_dir) - 1);
-    initial_dir[sizeof(initial_dir) - 1] = '\0';
-  }
-  char picked[PATH_MAX] = "";
-  const char *filter = "Descent 3 Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
-  if (!OpenFileDialog(this, filter, picked, initial_dir,
-                                int {sizeof(initial_dir)})) {
+  std::filesystem::path initial_dir = m_currentLevelFile.isEmpty()
+                                          ? LocalLevelsDir
+                                          : std::filesystem::path(m_currentLevelFile.toStdString()).parent_path();
+  const QString picked =
+      QFileDialog::getOpenFileName(this, QStringLiteral("Open Level"),
+                                   QString::fromStdString(initial_dir.string()),
+                                   QStringLiteral("Descent 3 Level Files (*.d3l);;All Files (*.*)"));
+  if (picked.isEmpty()) {
     statusBar()->showMessage(QStringLiteral("Open cancelled."));
     return;
   }
-  m_currentLevelFile = QString::fromLatin1(picked);
+  m_currentLevelFile = picked;
   setWindowTitle(QStringLiteral("Descent 3 Editor - %1").arg(m_currentLevelFile));
-  EditorLoadLevel(picked);
+  EditorLoadLevel(std::filesystem::path(picked.toStdString()));
   if (m_editorView != nullptr) {
-    m_editorView->resetCamera();
+    // Win32 OnOpenDocument -> EditorLoadLevel resets only the view radius
+    // (HFile.cpp:626 ResetWireframeViewRad); the camera binds to the level's
+    // saved viewer via SetEditorViewer() inside EditorLoadLevel.
+    m_editorView->resetWireframeViewRad();
     m_editorView->requestRedraw();
   }
   statusBar()->showMessage(
       QStringLiteral("Opened %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
-}
-
-void MainWindow::onRoomSelectByNumber() {
-  onSelectRoomByNumber();
 }
 
 void MainWindow::onFileSave() {
@@ -384,32 +391,26 @@ void MainWindow::onFileSave() {
     onFileSaveAs();
     return;
   }
-  const QByteArray path = m_currentLevelFile.toLatin1();
-  EditorSaveLevel(path.constData());
+  EditorSaveLevel(std::filesystem::path(m_currentLevelFile.toStdString()));
   statusBar()->showMessage(
       QStringLiteral("Saved %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
 }
 
 void MainWindow::onFileSaveAs() {
-  static char initial_dir[PATH_MAX];
-  if (m_currentLevelFile.isEmpty()) {
-    std::strncpy(initial_dir, LocalLevelsDir, sizeof(initial_dir) - 1);
-    initial_dir[sizeof(initial_dir) - 1] = '\0';
-  } else {
-    const QByteArray current = QFileInfo(m_currentLevelFile).absolutePath().toLatin1();
-    std::strncpy(initial_dir, current.constData(), sizeof(initial_dir) - 1);
-    initial_dir[sizeof(initial_dir) - 1] = '\0';
-  }
-  char picked[PATH_MAX] = "";
-  const char *filter = "Descent 3 Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
-  if (!SaveFileDialog(this, filter, picked, initial_dir,
-                                int {sizeof(initial_dir)})) {
+  std::filesystem::path initial_dir = m_currentLevelFile.isEmpty()
+                                          ? LocalLevelsDir
+                                          : std::filesystem::path(m_currentLevelFile.toStdString()).parent_path();
+  const QString picked =
+      QFileDialog::getSaveFileName(this, QStringLiteral("Save Level As"),
+                                   QString::fromStdString(initial_dir.string()),
+                                   QStringLiteral("Descent 3 Level Files (*.d3l);;All Files (*.*)"));
+  if (picked.isEmpty()) {
     statusBar()->showMessage(QStringLiteral("Save As cancelled."));
     return;
   }
-  m_currentLevelFile = QString::fromLatin1(picked);
+  m_currentLevelFile = picked;
   setWindowTitle(QStringLiteral("Descent 3 Editor - %1").arg(m_currentLevelFile));
-  EditorSaveLevel(picked);
+  EditorSaveLevel(std::filesystem::path(picked.toStdString()));
   statusBar()->showMessage(
       QStringLiteral("Saved as %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
 }
@@ -419,15 +420,9 @@ void MainWindow::onFileStats() {
   // is built on top of the same Rooms[]/Objects[] iteration the Win32
   // entry point did; the dialog surface just got swapped from
   // OutrageMessageBox to QMessageBox::information.
-  char *text = RenderLevelStats();
-  if (text == nullptr) {
-    QMessageBox::information(this, QStringLiteral("Level stats"),
-                              QStringLiteral("Level stats unavailable."));
-    return;
-  }
+  const std::string text = RenderLevelStats();
   QMessageBox::information(this, QStringLiteral("Level stats"),
-                            QString::fromUtf8(text));
-  delete[] text;
+                            QString::fromStdString(text));
 }
 
 void MainWindow::onFileVerifyLevel() {
@@ -719,7 +714,7 @@ void MainWindow::showReorderPages() {
   QString text;
   for (int i = 0; i < MAX_TRACKLOCKS; i++)
     if (GlobalTrackLocks[i].used)
-      text += QString("%1  %2\n").arg(i).arg(GlobalTrackLocks[i].name);
+      text += QString("%1  %2\n").arg(i).arg(QString::fromStdString(GlobalTrackLocks[i].name));
   if (text.isEmpty())
     text = QStringLiteral("No pages checked out.");
   QMessageBox::information(this, QStringLiteral("Reorder Net Pages"), text);
@@ -730,7 +725,7 @@ void MainWindow::showAllCheckedOut() {
   int total = 0;
   for (int i = 0; i < MAX_TRACKLOCKS; i++)
     if (GlobalTrackLocks[i].used) {
-      text += QString("%1\n").arg(GlobalTrackLocks[i].name);
+      text += QString("%1\n").arg(QString::fromStdString(GlobalTrackLocks[i].name));
       total++;
     }
   if (total == 0)
@@ -746,8 +741,8 @@ void MainWindow::showBitmapImporter() {
                                                     QStringLiteral("Images (*.pcx *.tga *.bmp)"));
   if (path.isEmpty())
     return;
-  const QByteArray pathBytes = path.toLocal8Bit();
-  const int bm = LoadTextureImage(pathBytes.constData(), nullptr, 0, 0);
+  const std::filesystem::path pathFs(path.toStdString());
+  const int bm = LoadTextureImage(pathFs, nullptr, 0, 0);
   if (bm < 0) {
     QMessageBox::warning(this, QStringLiteral("Import Bitmap"), QStringLiteral("Could not load %1.").arg(path));
     return;
@@ -771,6 +766,114 @@ void MainWindow::showHotSpotTGA() {
 // 1.0f (D3_DEFAULT_ZOOM in editor/editorView.cpp).
 constexpr float kDefaultViewRadius = 1.0f;
 
+#include "findintersection.h"
+#include "terrain.h"
+#include "vecmat.h"
+
+// Move the viewer object (port of editor/editor.cpp:1141 MoveViewer).  This
+// should be called whenever the viewer object is moved.  ObjSetPos relinks the
+// viewer into the mine/terrain; when it crosses the boundary the global view
+// mode follows (VM_TERRAIN <-> VM_MINE), mirroring SetViewMode().
+static void moveViewer(vector3 *pos, int roomnum, matrix *orient) {
+  if (Viewer_object == nullptr)
+    return;
+  const bool was_outside = OBJECT_OUTSIDE(Viewer_object);
+
+  ObjSetPos(Viewer_object, pos, roomnum, orient, false);
+
+  if (OBJECT_OUTSIDE(Viewer_object) && !was_outside)
+    Editor_view_mode = VM_TERRAIN;
+  else if (!OBJECT_OUTSIDE(Viewer_object) && was_outside)
+    Editor_view_mode = VM_MINE;
+}
+
+// Set the viewer in the specified room facing the specified face (port of
+// editor/HView.cpp:134 SetViewerFromRoomFace).  If room_center is true, put
+// the viewer at the center of the room facing the face; if room_center is
+// false, put the viewer directly in front of the selected face.  If the room
+// is external, put the viewer a distance away from the room, facing either the
+// center (if room_center is true) or the specified face.
+static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
+  if (Viewer_object == nullptr || roomp == nullptr)
+    return;
+  // FACE_VIEW_DIST is defined in editor/HView.cpp:127.
+  constexpr float kFaceViewDist = 5.0f;
+
+  vector3 vp;
+  vector3 newpos;
+  matrix orient;
+  int roomnum = ROOMNUM(roomp);
+  bool outside_mine = false;
+
+  ComputeCenterPointOnFace(&vp, roomp, facenum);
+
+  if (room_center) {
+    // Get position
+    ComputeRoomCenter(&newpos, roomp);
+
+    if (roomp->flags.external) {
+      vector3 t;
+      float rad = ComputeRoomBoundingSphere(&t, roomp);
+
+      newpos.z() -= rad * 1.5f;
+
+      if (newpos.x() < 1.0f)
+        newpos.x() = 1.0f;
+      if (newpos.x() > TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f)
+        newpos.x() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
+      if (newpos.z() < 1.0f)
+        newpos.z() = 1.0f;
+      if (newpos.z() > TERRAIN_DEPTH * TERRAIN_SIZE - 1.0f)
+        newpos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
+
+      orient = Identity_matrix;
+
+      roomnum = GetTerrainRoomFromPos(&newpos);
+    } else {
+      // Get orientation: vector from center of room to face
+      vp -= newpos;
+      vm_VectorToMatrix(&orient, &vp, nullptr, nullptr);
+    }
+  } else {
+    face *fp = &roomp->faces[facenum];
+
+    newpos = vp + fp->normal * kFaceViewDist;
+
+    vector3 t = -fp->normal;
+    vm_VectorToMatrix(&orient, &t, nullptr, nullptr);
+
+    if (roomp->flags.external) {
+      if (newpos.x() < 1.0f)
+        newpos.x() = 1.0f;
+      if (newpos.x() > TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f)
+        newpos.x() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
+      if (newpos.z() < 1.0f)
+        newpos.z() = 1.0f;
+      if (newpos.z() > TERRAIN_DEPTH * TERRAIN_SIZE - 1.0f)
+        newpos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
+      roomnum = GetTerrainRoomFromPos(&newpos);
+    } else {
+      int new_roomnum = FindPointRoom(&newpos);
+      if (new_roomnum == -1)
+        outside_mine = true;
+      else
+        roomnum = new_roomnum;
+    }
+  }
+
+  // Reset viewer
+  if (Editor_view_mode == VM_ROOM) {
+    Viewer_object->pos = newpos;
+    Viewer_object->orient = orient;
+  } else
+    moveViewer(&newpos, roomnum, &orient);
+
+  if (outside_mine)
+    Viewer_object->flags |= OF_OUTSIDE_MINE;
+
+  Viewer_moved = true;
+}
+
 
 void MainWindow::onCenterViewOnMine() {
   if (Viewer_object == nullptr)
@@ -786,7 +889,7 @@ void MainWindow::onCenterViewOnMine() {
 
   // Average the verts to find the centroid of the current room; the
   // Win32 OnViewCenterOnMine uses the same trick.
-  vector centroid{};
+  vector3 centroid{};
   for (int i = 0; i < Curroomp->num_verts; ++i)
     centroid += Curroomp->verts[i];
   centroid /= static_cast<float>(Curroomp->num_verts);
@@ -813,7 +916,7 @@ void MainWindow::onCenterViewOnObject() {
   // target object's facing vector so the object stays visible after
   // the move.
   object *target = &Objects[Cur_object_index];
-  vector pos = target->pos;
+  vector3 pos = target->pos;
   pos -= target->orient.fvec;
   ObjSetPos(Viewer_object, &pos, target->roomnum, &target->orient, false);
   State_changed = true;
@@ -838,30 +941,87 @@ void MainWindow::onResetViewRadius() {
 }
 
 void MainWindow::onMoveViewToSelectedRoom() {
+  // Win32 ID_VIEW_MOVECAMERATOSELECTEDROOM -> CMainFrame::OnViewMoveCameraToSelectedRoom
+  // (editor/MainFrm.cpp:2216) -> SetViewerFromRoomFace(Curroomp, Curface, 1).
+  setViewerFromRoomFace(Curroomp, Curface, true);
+  State_changed = true;
+
+  m_editorView->requestRedraw();
+}
+
+// Win32 ID_VIEW_MOVECAMERATOSELECTEDFACE -> CMainFrame::OnViewMoveCameraToSelectedFace
+// (editor/MainFrm.cpp:3670) -> SetViewerFromRoomFace(Curroomp, Curface, 0).
+void MainWindow::onMoveCameraToSelectedFace() {
+  setViewerFromRoomFace(Curroomp, Curface, false);
+  State_changed = true;
+
+  m_editorView->requestRedraw();
+}
+
+// Win32 ID_VIEW_MOVECAMERATOCURRENTOBJECT -> CMainFrame::OnViewMoveCameraToCurrentObject
+// (editor/MainFrm.cpp:3399-3430): turn the viewer to face the current object,
+// drop it on the object, then step back OBJECT_PLACE_DIST units.  An FVI trace
+// from the viewer to the target spot keeps a wall from ending up between the
+// viewer and the object.
+void MainWindow::onMoveCameraToCurrentObject() {
   if (Viewer_object == nullptr)
     return;
-  int target_room = -1;
-  if (Curroomp != nullptr && Curroomp->used)
-    target_room = ROOMNUM(Curroomp);
-  if (target_room < 0)
+  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
     return;
-  // Pull the room's centroid; if the room is brand new with no verts
-  // yet, just keep the viewer's current pos/orient and only update
-  // roomnum (matches the Win32 fallback in editor/editorView.cpp).
-  if (Curroomp->num_verts > 0) {
-    vector centroid{};
-    for (int i = 0; i < Curroomp->num_verts; ++i)
-      centroid += Curroomp->verts[i];
-    centroid /= static_cast<float>(Curroomp->num_verts);
-    ObjSetPos(Viewer_object, &centroid, target_room, &Viewer_object->orient,
-              false);
-  } else {
-    ObjSetPos(Viewer_object, &Viewer_object->pos, target_room,
-              &Viewer_object->orient, false);
-  }
+  object *objp = &Objects[Cur_object_index];
+  if (objp->type == OBJ_NONE)
+    return;
+
+  // OBJECT_PLACE_DIST is defined in editor/HObject.cpp:258 and reused by the
+  // Win32 handler via a local #define (editor/MainFrm.cpp:3396).
+  constexpr float kObjectPlaceDist = 10.0f;
+
+  // Turn the viewer around so facing the object: the viewer's f/r vectors are
+  // the object's negated ones, keeping its up vector.
+  matrix orient;
+  orient.fvec = -objp->orient.fvec;
+  orient.rvec = -objp->orient.rvec;
+  orient.uvec = objp->orient.uvec;
+
+  // Move the viewer to the object
+  moveViewer(&objp->pos, objp->roomnum, &orient);
+
+  // Calculate a position a little in front of the object
+  vector3 pos = Viewer_object->pos - (Viewer_object->orient.fvec * kObjectPlaceDist);
+
+  // Follow vector from start position to desired end position, & move as far
+  // as we can
+  fvi_query fq;
+  fvi_info hit_info;
+  memset(&fq, 0, sizeof(fq));
+  fq.p0 = &Viewer_object->pos;
+  fq.startroom = Viewer_object->roomnum;
+  fq.p1 = &pos;
+  fq.thisobjnum = OBJNUM(Viewer_object);
+  fq.ignore_obj_list = nullptr;
+  fq.flags = 0;
+  fq.rad = 0.0f;
+  fvi_FindIntersection(&fq, &hit_info);
+
+  // Move the viewer to the new position
+  moveViewer(&hit_info.hit_pnt, hit_info.hit_room, nullptr);
+  Viewer_moved = true;
   State_changed = true;
-  std::fprintf(stderr, "[viewer_ops] MoveViewToSelectedRoom -> room %d\n",
-               target_room);
+
+  m_editorView->requestRedraw();
+}
+
+// Win32 ID_VIEW_FLIP -> CEditorView::OnViewFlip (editor/editorView.cpp:1457):
+// reverse the viewer's facing direction by negating its f and r vectors (the
+// up vector is left alone).
+void MainWindow::onFlipViewer() {
+  if (Viewer_object == nullptr)
+    return;
+  Viewer_object->orient.fvec = -Viewer_object->orient.fvec;
+  Viewer_object->orient.rvec = -Viewer_object->orient.rvec;
+
+  Viewer_moved = true;
+  State_changed = true;
 
   m_editorView->requestRedraw();
 }
@@ -928,11 +1088,11 @@ int MainWindow::onPlaceCameraAtViewer() {
   // Mirror the Win32 placement logic in editor/Placement.cpp: take the
   // viewer's pose and bump a bit on z so the camera isn't right on top
   // of the camera setup itself.
-  vector pos = Viewer_object->pos;
+  vector3 pos = Viewer_object->pos;
   pos.z() += 1.0f;
   Objects[slot].type = OBJ_CAMERA;
   Objects[slot].render_type = RT_POLYOBJ;
-  std::strncpy(Objects[slot].name, "Cam", sizeof(Objects[slot].name) - 1);
+  Objects[slot].name = "Cam";
   ObjSetPos(&Objects[slot], &pos, Viewer_object->roomnum,
             &Viewer_object->orient, false);
 
@@ -1022,7 +1182,7 @@ void MainWindow::onMovePlayerToCurrentRoom() {
 
   // Win32 OnObjectMovePlayer rewinds the player to a known start state:
   // origin of the current room, identity matrix, roomnum from Curroomp.
-  vector rp;
+  vector3 rp;
   const int slot = ROOMNUM(Curroomp);
   matrix idmat;
   ObjSetPos(Player_object, &rp, slot, &idmat, false);
@@ -1380,7 +1540,7 @@ bool MainWindow::onAddRoom()
 
   // Geometry: extrude the current face's verts outward by `kDefaultRoomLength`
   // along the face normal so the new room extends from the existing face.
-  const vector room_delta = cfp->normal * -kDefaultRoomLength;
+  const vector3 room_delta = cfp->normal * -kDefaultRoomLength;
   for (int i = 0; i < cnv; ++i) {
     rp->verts[i] = Curroomp->verts[cfp->face_verts[cnv - 1 - i]];
     rp->verts[cnv + i] = rp->verts[i] + room_delta;
@@ -1516,28 +1676,21 @@ int MainWindow::onSelectRoomByNumber() {
 
 // Rename the current room. Pops a QInputDialog pre-filled with the
 // existing name; returns true if the user picked a new value, false
-// otherwise (cancellation or no change). Leading/trailing spaces are
-// stripped in line with editor/HFile.cpp's StripLeadingTrailingSpaces().
+// otherwise (cancellation or no change).
 bool MainWindow::onRenameRoom() {
   if (Curroomp == nullptr)
     return false;
   bool ok = false;
-  QString current = (Curroomp->name != nullptr)
-                        ? QString::fromLatin1(Curroomp->name)
-                        : QString();
+  QString current = QString::fromStdString(Curroomp->name);
   const QString picked = QInputDialog::getText(
       nullptr, QStringLiteral("Rename Room"),
-      QStringLiteral("New name:"), QLineEdit::Normal, current, &ok);
+      QStringLiteral("New name:"), QLineEdit::Normal, current, &ok).trimmed();
   if (!ok || picked.isEmpty())
     return false;
-  QByteArray bytes = picked.toLatin1();
-  bytes.append('\0');
-  char *buf = bytes.data();
-  StripLeadingTrailingSpaces(buf);
-  std::strncpy(Curroomp->name, buf, sizeof(Curroomp->name) - 1);
-  Curroomp->name[sizeof(Curroomp->name) - 1] = '\0';
+
+  Curroomp->name = picked.toStdString();
   Mine_changed = true;
-  std::fprintf(stderr, "[room_ops] RenameRoom -> %s\n", Curroomp->name);
+  std::fprintf(stderr, "[room_ops] RenameRoom -> %s\n", Curroomp->name.c_str());
   return true;
 }
 

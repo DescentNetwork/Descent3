@@ -63,51 +63,30 @@
 
 #include <cstdio>
 #include <cstring>
+#include <sstream>
 
-
-// Trim leading and trailing spaces in-place; returns whether anything was
-// stripped. Verbatim from editor/HFile.cpp and free of game-state deps so
-// the Qt port's level_io.cpp can re-export it for tests.
-bool StripLeadingTrailingSpaces(char *s) {
-  if (s == nullptr)
-    return false;
-  bool stripped = false;
-  char *t = s;
-  while (*t == ' ')
-    t++;
-  if (t != s) {
-    std::strcpy(s, t);
-    stripped = true;
-  }
-  for (t = s + std::strlen(s) - 1; t >= s && *t == ' '; t--) {
-    *t = 0;
-    stripped = true;
-  }
-  return stripped;
-}
 
 // Number of leading spaces needed to right-justify a numeric column in
 // RenderLevelStats; same trick as the Win32 IntSpacing helper.
-char *IntSpacing(int i) {
-  static char spaces[] = "               ";
+std::string IntSpacing(int i) {
   i = std::abs(i);
   int n;
   for (n = 1; i >= 10; n++)
     i /= 10;
-  return spaces + n * 2 + n / 2;
+  return std::string(2 * n + n / 2, ' ');
 }
 
 
 // ---- Default room geometry (from editor/HFile.cpp) ----
 // Vertices for the octagonal prism created by CreateNewMine().
-static vector default_room_verts[] = {
+static vector3 default_room_verts[] = {
     {-10, 8, 20},  {-5, 10, 20},  {5, 10, 20},    {10, 8, 20},
     {10, -8, 20},  {5, -10, 20},  {-5, -10, 20},  {-10, -8, 20},
     {-10, 8, -20}, {-5, 10, -20}, {5, 10, -20},   {10, 8, -20},
     {10, -8, -20}, {5, -10, -20}, {-5, -10, -20}, {-10, -8, -20}};
 
 // Center of the mine world, matching editor/HFile.cpp.
-static vector Mine_origin = {float(TERRAIN_WIDTH * (TERRAIN_SIZE / 2)),
+static vector3 Mine_origin = {float(TERRAIN_WIDTH * (TERRAIN_SIZE / 2)),
                              -100,
                              float(TERRAIN_DEPTH * (TERRAIN_SIZE / 2))};
 
@@ -181,10 +160,14 @@ void CreateNewMine() {
   Curface = Curedge = Curvert = 0;
   Curportal = -1;
   New_mine = true;
+  World_changed = false;
 
   // Reset the view position for the orbit camera.
   Editor_view_mode = VM_MINE;
   Editor_viewer_id = -1;
+
+  // Create a camera for this level (Win32 HFile.cpp:478 SetEditorViewer).
+  SetEditorViewer();
 
   // Clear the marked room and selected segments.
   Markedroomp = nullptr;
@@ -231,11 +214,10 @@ void CreateNewMine() {
     BOA_AABB_ROOM_checksum[i] = 0;
 
   // Init level info.
-  std::strcpy(Level_info.name, "Unnamed");
-  std::strcpy(Level_info.designer, "Anonymous");
-  std::strcpy(Level_info.copyright,
-              "Copyright (c) 1999 Outrage Entertainment, Inc.");
-  std::strcpy(Level_info.notes, "");
+  Level_info.name = "Unnamed";
+  Level_info.designer = "Anonymous";
+  Level_info.copyright = "Copyright (c) 1999 Outrage Entertainment, Inc.";
+  Level_info.notes.clear();
 }
 
 // Walk the level's named entities (objects, triggers, rooms) and surface
@@ -247,77 +229,249 @@ void CheckLevelNames() {
   int i;
   object *objp;
   for (i = 0, objp = Objects; i <= Highest_object_index; i++, objp++) {
-    if (objp->type != OBJ_NONE && objp->name != nullptr) {
+    if (objp->type != OBJ_NONE && !objp->name.empty()) {
       const int handle = osipf_FindObjectName(objp->name);
       if (handle != objp->handle)
         std::fprintf(stderr, "[level_io] duplicate object name \"%s\"\n",
                      objp->name);
-      if (StripLeadingTrailingSpaces(objp->name))
-        std::fprintf(stderr,
-                     "[level_io] stripped spaces from object %d name\n", i);
     }
   }
   trigger *tp;
   for (i = 0, tp = Triggers; i < Num_triggers; i++, tp++) {
-    if (tp != nullptr && tp->name[0] != '\0') {
+    if (tp != nullptr && !tp->name.empty()) {
       const int n = osipf_FindTriggerName(tp->name);
       if (n != i)
         std::fprintf(stderr, "[level_io] duplicate trigger name \"%s\"\n",
-                     tp->name);
-      if (StripLeadingTrailingSpaces(tp->name))
-        std::fprintf(stderr,
-                     "[level_io] stripped spaces from trigger %d name\n", i);
+                     tp->name.c_str());
     }
   }
   room *rp;
   for (i = 0, rp = Rooms; i <= Highest_room_index; i++, rp++) {
-    if (rp->used && rp->name != nullptr) {
+    if (rp->used && !rp->name.empty()) {
       const int n = osipf_FindRoomName(rp->name);
       if (n != i)
         std::fprintf(stderr, "[level_io] duplicate room name \"%s\"\n",
                      rp->name);
-      if (StripLeadingTrailingSpaces(rp->name))
-        std::fprintf(stderr,
-                     "[level_io] stripped spaces from room %d name\n", i);
     }
   }
 }
 
-bool EditorLoadLevel(const char *filename) {
-  if (filename == nullptr)
+// max viewers for each type
+#define MAX_VIEWERS 20
+
+// The viewer in room mode has this ID
+#define ROOM_VIEWER_ID MAX_VIEWERS
+
+// Finds a specific viewer object if one exists
+// Parameters:	id - which viewer id
+// Returns:		object number of a viewer object, or -1 if none
+// (port of editor/HView.cpp:220 FindViewerObject)
+static int findViewerObject(int id) {
+  for (int objnum = 0; objnum <= Highest_object_index; objnum++)
+    if ((Objects[objnum].type == OBJ_VIEWER) && (Objects[objnum].id == id))
+      return objnum;
+  return -1;
+}
+
+// Finds a viewer object if one exists.  Starts looking at the specified id
+// and searches through all possible ids.
+// Parameters:	id - which viewer id
+//					view_mode - if -1, find any viewer, else find one that matches
+//                  view mode
+// Returns:		object number of a viewer object, or -1 if none
+// (port of editor/HView.cpp:240 FindNextViewerObject)
+static int findNextViewerObject(int id, int view_mode) {
+  if (id == -1)
+    id = 0;
+
+  Q_ASSERT((id >= 0) && (id <= MAX_VIEWERS));
+
+  // Get flags
+  const int terrain_flag = (view_mode == VM_TERRAIN);
+
+  // Try all viewer id's, starting at the one passed in
+  int i;
+  for (i = 0; i < MAX_VIEWERS; i++) {
+    const int check_id = ((id + i) % MAX_VIEWERS);
+
+    const int objnum = findViewerObject(check_id);
+
+    if ((objnum != -1) &&
+        ((view_mode == -1) || ((OBJECT_OUTSIDE(&Objects[objnum]) != 0) == terrain_flag)))
+      return objnum;
+  }
+
+  return -1;
+}
+
+// Creates a viewer object of the specified type
+// Parameters:	view_mode - mine, terrain, or room.  See constants in d3edit.h
+//					pos - initial position of this object
+//					roomnum - initial room/terrain cell of this object
+// Returns:		object number of the object created, or -1 if at max number of
+//              viewers of that type
+// (port of editor/HView.cpp:274 CreateViewerObject; ObjCreate is MFC gated
+// so the slot is carved out of Objects[] directly, like
+// MainWindow::onSpawnNewViewer)
+static int createViewerObject(int view_mode, vector3 *pos, int roomnum) {
+  int id;
+  int objnum = -1;
+
+  if (view_mode == VM_ROOM) {
+    id = ROOM_VIEWER_ID;
+
+    for (objnum = 0; objnum <= Highest_object_index; objnum++)
+      if ((Objects[objnum].type == OBJ_VIEWER) && (Objects[objnum].id == id))
+        return -1; // this one already used
+  } else {
+    // for each id, loop through all objects to see if it's used
+    for (id = 0; id < MAX_VIEWERS; id++) {
+      for (objnum = 0; objnum <= Highest_object_index; objnum++)
+        if ((Objects[objnum].type == OBJ_VIEWER) && (Objects[objnum].id == id))
+          break;                             // this one already used
+      if (objnum > Highest_object_index)     // didn't find object with this id
+        break;
+    }
+
+    if (id == MAX_VIEWERS) // no unused viewer id's
+      return -1;
+  }
+
+  // Create the new object
+  objnum = -1;
+  for (int i = 0; i < MAX_OBJECTS; ++i) {
+    if (Objects[i].type == OBJ_NONE) {
+      objnum = i;
+      break;
+    }
+  }
+
+  if (objnum == -1)
+    return -1;
+
+  Objects[objnum] = object{};
+  Objects[objnum].type = OBJ_VIEWER;
+  Objects[objnum].render_type = RT_POLYOBJ;
+  Objects[objnum].id = id;
+
+  // ObjSetPos relinks the object into its room, and ObjRelink asserts that
+  // objnum <= Highest_object_index, so bump it before positioning the object.
+  if (objnum > Highest_object_index)
+    Highest_object_index = objnum;
+
+  ObjSetPos(&Objects[objnum], pos, roomnum, nullptr, false);
+
+  return objnum;
+}
+
+// Binds the editor camera to an object (port of editor/HView.cpp:318
+// SetViewer).  The caller guarantees `objnum` names a valid object slot.
+static void setViewer(int objnum) {
+  Viewer_object = &Objects[objnum];
+
+  if (Editor_view_mode != VM_ROOM)
+    Editor_viewer_id = Viewer_object->id;
+
+  if ((Editor_view_mode == VM_MINE) && OBJECT_OUTSIDE(Viewer_object))
+    Editor_view_mode = VM_TERRAIN;
+
+  if ((Editor_view_mode == VM_TERRAIN) && !OBJECT_OUTSIDE(Viewer_object))
+    Editor_view_mode = VM_MINE;
+
+  State_changed = Viewer_moved = true;
+}
+
+// Sets the viewer object for the editor, creating if not already in the
+// mine.  Keeps separate viewer objects for mine & terrain views.
+// (port of editor/HView.cpp:410 SetEditorViewer)
+void SetEditorViewer() {
+  // First, see if a camera object already exists in the level
+  int objnum;
+  if (Editor_view_mode == VM_ROOM)
+    objnum = findViewerObject(ROOM_VIEWER_ID);
+  else
+    objnum = findNextViewerObject(Editor_viewer_id, Editor_view_mode);
+
+  // If no viewer object, create one
+  if (objnum == -1) {
+    vector3 pos;
+    int roomnum;
+
+    // get position for viewer
+    if (Editor_view_mode == VM_TERRAIN) { // if terrain, put viewer at center of world
+      pos.x() = TERRAIN_SIZE * TERRAIN_WIDTH / 2;
+      pos.y() = Terrain_seg[0].y + 30;
+      pos.z() = TERRAIN_SIZE * TERRAIN_DEPTH / 2;
+      roomnum = MAKE_ROOMNUM(0); // any value ok, so long as it has terrain flag
+    } else if (Editor_view_mode == VM_MINE) { // if mine, put in center of any room
+      for (roomnum = 0; roomnum <= Highest_room_index; roomnum++)
+        if (Rooms[roomnum].used && !Rooms[roomnum].flags.external) {
+          ComputeRoomCenter(&pos, &Rooms[roomnum]);
+          break;
+        }
+      Q_ASSERT(roomnum <= Highest_room_index);
+    } else if (Editor_view_mode == VM_ROOM) { // if room, put at 0,0,0
+      pos = vector3{};
+      roomnum = MAKE_ROOMNUM(0);
+    } else {
+      Q_ASSERT(false); // unknown view mode
+      return;
+    }
+
+    objnum = createViewerObject(Editor_view_mode, &pos, roomnum);
+
+    // If no free viewer slots, grab any viewer and move it
+    if (objnum == -1) {
+      Q_ASSERT(Viewer_object != nullptr);
+      if (Viewer_object->type == OBJ_VIEWER)
+        objnum = OBJNUM(Viewer_object);
+      else {
+        objnum = findNextViewerObject(Editor_viewer_id, -1);
+        Q_ASSERT(objnum != -1);
+      }
+      ObjSetPos(&Objects[objnum], &pos, roomnum, nullptr, true);
+    }
+  }
+
+  Q_ASSERT(objnum != -1);
+  if (objnum != -1)
+    setViewer(objnum);
+}
+
+bool EditorLoadLevel(const std::filesystem::path& filename) {
+  if (filename.empty())
     return false;
   // LoadLevel takes an optional progress callback; we don't surface the
   // progress UI yet, so pass nullptr and call the engine.
-  if (!LoadLevel(const_cast<char *>(filename), nullptr))
+  if (!LoadLevel(filename, nullptr))
     return false;
-  // LoadLevel → FreeAllObjects leaves Viewer_object dangling (see comment
-  // in CreateNewMine).  Null it so updateCamera() uses orbit fallback.
-  Viewer_object = nullptr;
+  // LoadLevel -> FreeAllObjects leaves Viewer_object dangling, so the
+  // viewer must be re-established before the camera can render (Win32
+  // calls SetEditorViewer() in EditorLoadLevel, HFile.cpp:623).
   CheckLevelNames();
   New_mine = true;
+  SetEditorViewer();
   return true;
 }
 
-bool EditorSaveLevel(const char *filename) {
-  if (filename == nullptr)
+bool EditorSaveLevel(const std::filesystem::path& filename) {
+  if (filename.empty())
     return false;
   // SaveLevel lives in Descent3/LoadLevel.cpp behind an
   // "#include editor/ebnode.h" mid-file; Descent3Core doesn't compile that
   // path on Linux (editor/) so we report success/0 honestly. The Qt port
   // will replace this once editor/ebnode.h's MFC deps (EditorMessageBox)
   // have a Linux equivalent.
-  if (!SaveLevel(const_cast<char *>(filename), true))
+  if (!SaveLevel(filename, true))
     return false;
   Mine_changed = false;
   return true;
 }
 
 // Compose the multi-line "Level Stats:" report described in
-// editor/HFile.cpp::ShowLevelStats(). Returns a heap buffer owned by the
-// caller; delete[] when done.
-char *RenderLevelStats() {
-  static constexpr int BUF_LEN = 5000;
-  char *text_buf = new char[BUF_LEN];
+// editor/HFile.cpp::ShowLevelStats(). Returns the report as a std::string.
+std::string RenderLevelStats() {
+  std::ostringstream oss;
 
   int n_rooms = 0, n_rooms_external = 0, n_faces = 0, n_verts = 0;
   int n_objects = 0, n_portals = 0, n_doors = 0, n_objects_outside = 0;
@@ -339,7 +493,7 @@ char *RenderLevelStats() {
     n_verts += rp->num_verts;
     n_faces += rp->num_faces;
     n_portals += rp->num_portals;
-    if (rp->flags & RF_EXTERNAL)
+    if (rp->flags.external)
       n_rooms_external++;
     else
       total_volume_bytes += GetVolumeSizeOfRoom(rp);
@@ -347,31 +501,32 @@ char *RenderLevelStats() {
     for (int t = 0; t < rp->num_faces; t++) {
       face *fp = &rp->faces[t];
       if (fp->special_handle != BAD_SPECIAL_FACE_INDEX &&
-          GameTextures[fp->tmap].flags & TF_SPECULAR &&
+          (GameTextures[fp->tmap].flags.metal || GameTextures[fp->tmap].flags.marble ||
+           GameTextures[fp->tmap].flags.plastic) &&
           fp->lmi_handle != BAD_LMI_INDEX)
         spec_faces++;
     }
-    if (rp->flags & RF_DOOR)
+    if (rp->flags.door)
       n_doors++;
-    if (rp->flags & RF_SPECIAL1)
+    if (rp->flags.special1)
       num_sp1++;
-    if (rp->flags & RF_SPECIAL2)
+    if (rp->flags.special2)
       num_sp2++;
-    if (rp->flags & RF_SPECIAL3)
+    if (rp->flags.special3)
       num_sp3++;
-    if (rp->flags & RF_SPECIAL4)
+    if (rp->flags.special4)
       num_sp4++;
-    if (rp->flags & RF_SPECIAL5)
+    if (rp->flags.special5)
       num_sp5++;
-    if (rp->flags & RF_SPECIAL6)
+    if (rp->flags.special6)
       num_sp6++;
-    if (rp->flags & RF_GOAL1)
+    if (rp->flags.goal1)
       num_redgoals++;
-    if (rp->flags & RF_GOAL2)
+    if (rp->flags.goal2)
       num_bluegoals++;
-    if (rp->flags & RF_GOAL3)
+    if (rp->flags.goal3)
       num_greengoals++;
-    if (rp->flags & RF_GOAL4)
+    if (rp->flags.goal4)
       num_yellowgoals++;
   }
   object *objp;
@@ -417,49 +572,39 @@ char *RenderLevelStats() {
     }
   }
 
-  std::snprintf(text_buf, BUF_LEN,
-                "Level Stats:\n"
-                "\n"
-                "%s%d   Rooms (%d external)\n"
-                "%s%d   Faces\n"
-                "%s%d   Vertices\n"
-                "\n"
-                "%s%d   Portals\n"
-                "%s%d   Doors\n"
-                "\n"
-                "%s%d   Polygon Objects (%d inside, %d outside)\n"
-                "%s%d   Object Faces (%d with lightmaps)\n"
-                "\n"
-                "%s%d   Total lightmap faces\n"
-                "%d	Total volume bytes\n"
-                "%d   Total bytes in lightmaps\n"
-                "%d   Total specular faces\n"
-                "%d   Bytes wasted in lightmaps\n"
-                "\n"
-                "%d Red Goals\n"
-                "%d Blue Goals\n"
-                "%d Green Goals\n"
-                "%d Yellow Goals\n"
-                "%d Special 1 Rooms\n"
-                "%d Special 2 Rooms\n"
-                "%d Special 3 Rooms\n"
-                "%d Special 4 Rooms\n"
-                "%d Special 5 Rooms\n"
-                "%d Special 6 Rooms\n",
-                IntSpacing(n_rooms), n_rooms, n_rooms_external,
-                IntSpacing(n_faces), n_faces,
-                IntSpacing(n_verts), n_verts,
-                IntSpacing(n_portals / 2), n_portals / 2,
-                IntSpacing(n_doors), n_doors,
-                IntSpacing(n_objects), n_objects,
-                n_objects - n_objects_outside, n_objects_outside,
-                IntSpacing(n_object_faces), n_object_faces,
-                n_object_lightmap_faces,
-                IntSpacing(n_faces + n_object_lightmap_faces),
-                n_faces + n_object_lightmap_faces,
-                total_volume_bytes, lm_bytes, spec_faces, bytes_wasted,
-                num_redgoals, num_bluegoals, num_greengoals, num_yellowgoals,
-                num_sp1, num_sp2, num_sp3, num_sp4, num_sp5, num_sp6);
-  return text_buf;
+  oss << "Level Stats:\n"
+      << "\n"
+      << IntSpacing(n_rooms) << n_rooms << "   Rooms (" << n_rooms_external
+      << " external)\n"
+      << IntSpacing(n_faces) << n_faces << "   Faces\n"
+      << IntSpacing(n_verts) << n_verts << "   Vertices\n"
+      << "\n"
+      << IntSpacing(n_portals / 2) << n_portals / 2 << "   Portals\n"
+      << IntSpacing(n_doors) << n_doors << "   Doors\n"
+      << "\n"
+      << IntSpacing(n_objects) << n_objects << "   Polygon Objects ("
+      << n_objects - n_objects_outside << " inside, " << n_objects_outside
+      << " outside)\n"
+      << IntSpacing(n_object_faces) << n_object_faces << "   Object Faces ("
+      << n_object_lightmap_faces << " with lightmaps)\n"
+      << "\n"
+      << IntSpacing(n_faces + n_object_lightmap_faces)
+      << n_faces + n_object_lightmap_faces << "   Total lightmap faces\n"
+      << total_volume_bytes << "\tTotal volume bytes\n"
+      << lm_bytes << "   Total bytes in lightmaps\n"
+      << spec_faces << "   Total specular faces\n"
+      << bytes_wasted << "   Bytes wasted in lightmaps\n"
+      << "\n"
+      << num_redgoals << " Red Goals\n"
+      << num_bluegoals << " Blue Goals\n"
+      << num_greengoals << " Green Goals\n"
+      << num_yellowgoals << " Yellow Goals\n"
+      << num_sp1 << " Special 1 Rooms\n"
+      << num_sp2 << " Special 2 Rooms\n"
+      << num_sp3 << " Special 3 Rooms\n"
+      << num_sp4 << " Special 4 Rooms\n"
+      << num_sp5 << " Special 5 Rooms\n"
+      << num_sp6 << " Special 6 Rooms\n";
+  return oss.str();
 }
 

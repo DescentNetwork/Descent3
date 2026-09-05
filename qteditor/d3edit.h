@@ -146,9 +146,9 @@ extern group *Placed_group;
 extern int Placed_room_face;
 extern int Placed_door;
 extern float Placed_room_angle;
-extern vector Placed_room_origin;
+extern vector3 Placed_room_origin;
 extern matrix Placed_room_orient;
-extern vector Placed_room_attachpoint;
+extern vector3 Placed_room_attachpoint;
 extern matrix Placed_room_rotmat;
 extern room *Placed_baseroomp;
 extern int Placed_baseface;
@@ -176,6 +176,8 @@ extern int Editor_view_mode;
 // The ID of the most recent viewer object (not counting room view)
 extern int Editor_viewer_id;
 
+extern int paged_in_count;
+extern int paged_in_num;
 
 
 //	object id clipboard.
@@ -184,7 +186,7 @@ extern int Copied_object_id;
 //	FUNCTIONS
 void EditorStatus(const char *format, ...);
 void SplashMessage(const char *format, ...);
-void StartEditorFrame(grViewport *vp, vector *view_vec, matrix *id_mat, float zoom);
+void StartEditorFrame(grViewport *vp, vector3 *view_vec, matrix *id_mat, float zoom);
 void EndEditorFrame();
 
 // Set the editor error message.  A function that's going to return a failure

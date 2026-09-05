@@ -19,7 +19,9 @@
 #pragma once
 
 #include "TelComEfxStructs.h"
+#include "brief_model.h"
 #include <QDialog>
+#include <string>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class BriefTextDialog; }
@@ -28,47 +30,19 @@ QT_END_NAMESPACE
 class QPlainTextEdit;
 
 
-// Mirror of the editor's briefing layout globals (set by the briefing editor).
-constexpr int kMaxTelcomScreens = 20;
-
-struct BriefEffect {
-  int type;
-  int next, prev;
-};
-
-struct BriefScreen {
-  bool used;
-  int root_effect;
-  char layout[260];
-  BriefEffect effects[32];
-  uint32_t mission_mask_set, mission_mask_unset;
-  int next, prev;
-};
-
-struct BriefLayoutScreen {
-  char filename[260];
-  int num_texts, num_bmps;
-  struct {
-    int lx, rx, ty, by;
-  } texts[10];
-  struct {
-    int x, y;
-  } bmps[10];
-};
-extern BriefLayoutScreen *PBlayouts;
-extern int *PBnum_layouts;
-extern BriefScreen Briefing_screens[kMaxTelcomScreens];
-
 // Port of CBriefTextEdit (IDD_BRIEF_ADDTEXT): edits a briefing text effect.
 class BriefTextEditDialog : public QDialog {
   Q_OBJECT
 public:
   explicit BriefTextEditDialog(int currScreen, TCTEXTDESC *desc = nullptr,
-                               const char *text = nullptr, int id = 0,
+                               const std::string &text = {}, int id = 0,
                                QWidget *parent = nullptr);
   ~BriefTextEditDialog();
 
   TCTEXTDESC result() const { return m_desc; }
+  QString descText() const { return m_text; }
+  int id() const { return m_id; }
+  std::string textBuffer() const { return m_text.toStdString(); }
 
 private slots:
   void onOk();

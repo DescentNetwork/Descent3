@@ -33,7 +33,7 @@ void populateSoundCombo(QComboBox *combo, int selected) {
   for (int i = 0; i < MAX_SOUNDS; i++) {
     if (Sounds[i].used) {
       int index = combo->count();
-      combo->addItem(Sounds[i].name, i);
+      combo->addItem(QString::fromStdString(Sounds[i].name), i);
       if (selected == i)
         combo->setCurrentIndex(index);
     }

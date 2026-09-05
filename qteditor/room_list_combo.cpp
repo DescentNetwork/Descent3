@@ -31,9 +31,9 @@ void populateRoomCombo(QComboBox *combo, int selected) {
   combo->addItem("<none>", -1);
 
   for (int i = 0; i <= Highest_room_index; i++) {
-    if (Rooms[i].used && Rooms[i].name) {
+    if (Rooms[i].used && !Rooms[i].name.empty()) {
       int index = combo->count();
-      combo->addItem(Rooms[i].name, i);
+      combo->addItem(QString::fromStdString(Rooms[i].name), i);
       if (selected == i)
         combo->setCurrentIndex(index);
     }

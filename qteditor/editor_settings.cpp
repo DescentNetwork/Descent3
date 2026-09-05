@@ -17,9 +17,9 @@
  */
 
 #include "editor_settings.h"
+#include "lib/slew.h"
 
 #include "d3edit.h"
-#include "slew.h"
 
 #include <QSettings>
 
@@ -169,7 +169,7 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state) {
   state.tile_views        = readBool(settings, "tile_views",        false);
   state.game_render_mode  = readInt(settings,  "game_render_mode",  0);
 
-  state.terrain_dots      = readBool(settings, "terrain_dots",      false);
+  state.terrain_dots      = readBool(settings, "terrain_dots",      true);
   state.terrain_flat_shade = readBool(settings, "terrain_flat_shade", false);
 
   state.randomize_megacell = readBool(settings, "randomize_megacell", false);
@@ -182,7 +182,7 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state) {
 
   Slew_key_speed = readFloat(settings, "slew_key_speed", 1.0f);
   state.joy_slewing       = readBool(settings, "joy_slewing",         false);
-  state.objects_in_wireframe = readBool(settings, "objects_in_wireframe", false);
+  state.objects_in_wireframe = readBool(settings, "objects_in_wireframe", true);
 
   settings.endGroup();
 }

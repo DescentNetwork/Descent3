@@ -38,35 +38,78 @@
 
 namespace {
 const char *kNumMasksEdit = "IDC_GB_NUM_MASKS_EDIT";
-const char *kMaskLatencyEdit[MAX_WB_FIRING_MASKS] = {
-    "IDC_GB_MASK_LATENCY_0_EDIT", "IDC_GB_MASK_LATENCY_1_EDIT", "IDC_GB_MASK_LATENCY_2_EDIT",
-    "IDC_GB_MASK_LATENCY_3_EDIT", "IDC_GB_MASK_LATENCY_4_EDIT", "IDC_GB_MASK_LATENCY_5_EDIT",
-    "IDC_GB_MASK_LATENCY_6_EDIT", "IDC_GB_MASK_LATENCY_7_EDIT"};
-const char *kFireSoundCombo[MAX_WB_FIRING_MASKS] = {
-    "IDC_WB_FIRE0_SOUND_PULLDOWN", "IDC_WB_FIRE1_SOUND_PULLDOWN", "IDC_WB_FIRE2_SOUND_PULLDOWN",
-    "IDC_WB_FIRE3_SOUND_PULLDOWN", "IDC_WB_FIRE4_SOUND_PULLDOWN", "IDC_WB_FIRE5_SOUND_PULLDOWN",
-    "IDC_WB_FIRE6_SOUND_PULLDOWN", "IDC_WB_FIRE7_SOUND_PULLDOWN"};
-const char *kStartTickEdit[MAX_WB_FIRING_MASKS] = {
-    "IDC_WB_FIRE0_START_TICK", "IDC_WB_FIRE1_START_TICK", "IDC_WB_FIRE2_START_TICK", "IDC_WB_FIRE3_START_TICK",
-    "IDC_WB_FIRE4_START_TICK", "IDC_WB_FIRE5_START_TICK", "IDC_WB_FIRE6_START_TICK", "IDC_WB_FIRE7_START_TICK"};
-const char *kFireTickEdit[MAX_WB_FIRING_MASKS] = {
-    "IDC_WB_FIRE0_FIRE_TICK", "IDC_WB_FIRE1_FIRE_TICK", "IDC_WB_FIRE2_FIRE_TICK", "IDC_WB_FIRE3_FIRE_TICK",
-    "IDC_WB_FIRE4_FIRE_TICK", "IDC_WB_FIRE5_FIRE_TICK", "IDC_WB_FIRE6_FIRE_TICK", "IDC_WB_FIRE7_FIRE_TICK"};
-const char *kEndTickEdit[MAX_WB_FIRING_MASKS] = {
-    "IDC_WB_FIRE0_END_TICK", "IDC_WB_FIRE1_END_TICK", "IDC_WB_FIRE2_END_TICK", "IDC_WB_FIRE3_END_TICK",
-    "IDC_WB_FIRE4_END_TICK", "IDC_WB_FIRE5_END_TICK", "IDC_WB_FIRE6_END_TICK", "IDC_WB_FIRE7_END_TICK"};
-const char *kCycleTimeEdit[MAX_WB_FIRING_MASKS] = {
-    "IDC_WB_FIRE0_CYCLE_TIME", "IDC_WB_FIRE1_CYCLE_TIME", "IDC_WB_FIRE2_CYCLE_TIME", "IDC_WB_FIRE3_CYCLE_TIME",
-    "IDC_WB_FIRE4_CYCLE_TIME", "IDC_WB_FIRE5_CYCLE_TIME", "IDC_WB_FIRE6_CYCLE_TIME", "IDC_WB_FIRE7_CYCLE_TIME"};
-const char *kBarrelCombo[MAX_WB_GUNPOINTS] = {
-    "IDC_BARREL_0_COMBO", "IDC_BARREL_1_COMBO", "IDC_BARREL_2_COMBO", "IDC_BARREL_3_COMBO",
-    "IDC_BARREL_4_COMBO", "IDC_BARREL_5_COMBO", "IDC_BARREL_6_COMBO", "IDC_BARREL_7_COMBO"};
-const char *kBarrelRadio[MAX_WB_GUNPOINTS] = {
-    "IDC_BARREL_0_RADIO", "IDC_BARREL_1_RADIO", "IDC_BARREL_2_RADIO", "IDC_BARREL_3_RADIO",
-    "IDC_BARREL_4_RADIO", "IDC_BARREL_5_RADIO", "IDC_BARREL_6_RADIO", "IDC_BARREL_7_RADIO"};
-const char *kQuadCheck[MAX_WB_GUNPOINTS] = {
-    "IDC_GP_MASK_Q_0", "IDC_GP_MASK_Q_1", "IDC_GP_MASK_Q_2", "IDC_GP_MASK_Q_3",
-    "IDC_GP_MASK_Q_4", "IDC_GP_MASK_Q_5", "IDC_GP_MASK_Q_6", "IDC_GP_MASK_Q_7"};
+const char *kMaskLatencyEdit[MAX_WB_FIRING_MASKS] = {"IDC_GB_MASK_LATENCY_0_EDIT",
+                                                     "IDC_GB_MASK_LATENCY_1_EDIT",
+                                                     "IDC_GB_MASK_LATENCY_2_EDIT",
+                                                     "IDC_GB_MASK_LATENCY_3_EDIT",
+                                                     "IDC_GB_MASK_LATENCY_4_EDIT",
+                                                     "IDC_GB_MASK_LATENCY_5_EDIT",
+                                                     "IDC_GB_MASK_LATENCY_6_EDIT",
+                                                     "IDC_GB_MASK_LATENCY_7_EDIT"};
+const char *kFireSoundCombo[MAX_WB_FIRING_MASKS] = {"IDC_WB_FIRE0_SOUND_PULLDOWN",
+                                                    "IDC_WB_FIRE1_SOUND_PULLDOWN",
+                                                    "IDC_WB_FIRE2_SOUND_PULLDOWN",
+                                                    "IDC_WB_FIRE3_SOUND_PULLDOWN",
+                                                    "IDC_WB_FIRE4_SOUND_PULLDOWN",
+                                                    "IDC_WB_FIRE5_SOUND_PULLDOWN",
+                                                    "IDC_WB_FIRE6_SOUND_PULLDOWN",
+                                                    "IDC_WB_FIRE7_SOUND_PULLDOWN"};
+const char *kStartTickEdit[MAX_WB_FIRING_MASKS] = {"IDC_WB_FIRE0_START_TICK",
+                                                   "IDC_WB_FIRE1_START_TICK",
+                                                   "IDC_WB_FIRE2_START_TICK",
+                                                   "IDC_WB_FIRE3_START_TICK",
+                                                   "IDC_WB_FIRE4_START_TICK",
+                                                   "IDC_WB_FIRE5_START_TICK",
+                                                   "IDC_WB_FIRE6_START_TICK",
+                                                   "IDC_WB_FIRE7_START_TICK"};
+const char *kFireTickEdit[MAX_WB_FIRING_MASKS] = {"IDC_WB_FIRE0_FIRE_TICK",
+                                                  "IDC_WB_FIRE1_FIRE_TICK",
+                                                  "IDC_WB_FIRE2_FIRE_TICK",
+                                                  "IDC_WB_FIRE3_FIRE_TICK",
+                                                  "IDC_WB_FIRE4_FIRE_TICK",
+                                                  "IDC_WB_FIRE5_FIRE_TICK",
+                                                  "IDC_WB_FIRE6_FIRE_TICK",
+                                                  "IDC_WB_FIRE7_FIRE_TICK"};
+const char *kEndTickEdit[MAX_WB_FIRING_MASKS] = {"IDC_WB_FIRE0_END_TICK",
+                                                 "IDC_WB_FIRE1_END_TICK",
+                                                 "IDC_WB_FIRE2_END_TICK",
+                                                 "IDC_WB_FIRE3_END_TICK",
+                                                 "IDC_WB_FIRE4_END_TICK",
+                                                 "IDC_WB_FIRE5_END_TICK",
+                                                 "IDC_WB_FIRE6_END_TICK",
+                                                 "IDC_WB_FIRE7_END_TICK"};
+const char *kCycleTimeEdit[MAX_WB_FIRING_MASKS] = {"IDC_WB_FIRE0_CYCLE_TIME",
+                                                   "IDC_WB_FIRE1_CYCLE_TIME",
+                                                   "IDC_WB_FIRE2_CYCLE_TIME",
+                                                   "IDC_WB_FIRE3_CYCLE_TIME",
+                                                   "IDC_WB_FIRE4_CYCLE_TIME",
+                                                   "IDC_WB_FIRE5_CYCLE_TIME",
+                                                   "IDC_WB_FIRE6_CYCLE_TIME",
+                                                   "IDC_WB_FIRE7_CYCLE_TIME"};
+const char *kBarrelCombo[MAX_WB_GUNPOINTS] = {"IDC_BARREL_0_COMBO",
+                                              "IDC_BARREL_1_COMBO",
+                                              "IDC_BARREL_2_COMBO",
+                                              "IDC_BARREL_3_COMBO",
+                                              "IDC_BARREL_4_COMBO",
+                                              "IDC_BARREL_5_COMBO",
+                                              "IDC_BARREL_6_COMBO",
+                                              "IDC_BARREL_7_COMBO"};
+const char *kBarrelRadio[MAX_WB_GUNPOINTS] = {"IDC_BARREL_0_RADIO",
+                                              "IDC_BARREL_1_RADIO",
+                                              "IDC_BARREL_2_RADIO",
+                                              "IDC_BARREL_3_RADIO",
+                                              "IDC_BARREL_4_RADIO",
+                                              "IDC_BARREL_5_RADIO",
+                                              "IDC_BARREL_6_RADIO",
+                                              "IDC_BARREL_7_RADIO"};
+const char *kQuadCheck[MAX_WB_GUNPOINTS] = {"IDC_GP_MASK_Q_0",
+                                            "IDC_GP_MASK_Q_1",
+                                            "IDC_GP_MASK_Q_2",
+                                            "IDC_GP_MASK_Q_3",
+                                            "IDC_GP_MASK_Q_4",
+                                            "IDC_GP_MASK_Q_5",
+                                            "IDC_GP_MASK_Q_6",
+                                            "IDC_GP_MASK_Q_7"};
 
 QString maskCheckName(int mask, int gp) { return QString("IDC_GP_MASK_%1_%2").arg(mask).arg(gp); }
 
@@ -83,7 +126,7 @@ RobotEditWeaponsDialog::RobotEditWeaponsDialog(otype_wb_info *static_wb, poly_mo
     if (QComboBox *combo = findChild<QComboBox*>(kBarrelCombo[gp])) {
       for (int i = 0; i < MAX_WEAPONS; i++)
         if (Weapons[i].used)
-          combo->addItem(Weapons[i].name, i);
+          combo->addItem(QString::fromStdString(Weapons[i].name), i);
     }
   }
 
@@ -148,27 +191,27 @@ void RobotEditWeaponsDialog::loadData() {
     edit->setText(QString::number(wb->ammo_usage));
 
   if (QCheckBox *cb = ui->IDC_SPRAY_CHECK)
-    cb->setChecked(wb->flags & WBF_SPRAY);
+    cb->setChecked(wb->flags.spray);
   if (QCheckBox *cb = ui->IDC_GUIDED_CHECK)
-    cb->setChecked(wb->flags & WBF_GUIDED);
+    cb->setChecked(wb->flags.guided);
   if (QCheckBox *cb = ui->IDC_ONOFF_CHECK)
-    cb->setChecked(wb->flags & WBF_ON_OFF);
+    cb->setChecked(wb->flags.on_off);
   if (QCheckBox *cb = ui->IDC_WB_RANDOM_CHECK)
-    cb->setChecked(wb->flags & WBF_RANDOM_FIRE_ORDER);
+    cb->setChecked(wb->flags.random_fire_order);
   if (QCheckBox *cb = ui->IDC_USER_TIMEOUT_CHECK)
-    cb->setChecked(wb->flags & WBF_USER_TIMEOUT);
+    cb->setChecked(wb->flags.user_timeout);
   if (QCheckBox *cb = ui->IDC_FORCE_TO_FVEC_CHECK)
-    cb->setChecked(wb->flags & WBF_FIRE_FVEC);
+    cb->setChecked(wb->flags.fire_fvec);
   if (QCheckBox *cb = ui->IDC_FORCE_TO_TARGET_CHECK)
-    cb->setChecked(wb->flags & WBF_FIRE_TARGET);
+    cb->setChecked(wb->flags.fire_target);
   if (QCheckBox *cb = ui->IDC_WBAIMFORWARD_CHECK)
-    cb->setChecked(wb->flags & WBF_AIM_FVEC);
+    cb->setChecked(wb->flags.aim_fvec);
   if (QCheckBox *cb = ui->IDC_VIEW_CONE_ANGLE_CHECK)
-    cb->setChecked(wb->flags & WBF_USE_CUSTOM_FOV);
+    cb->setChecked(wb->flags.use_custom_fov);
   if (QCheckBox *cb = ui->IDC_MAX_DISTANCE_CHECK)
-    cb->setChecked(wb->flags & WBF_USE_CUSTOM_MAX_DIST);
+    cb->setChecked(wb->flags.use_custom_max_dist);
 
-  const int anim_type = wb->flags & WBF_ANIM_MASKS;
+  const int anim_type = (wb->flags.anim_local ? WBF_ANIM_LOCAL : 0) | (wb->flags.anim_full ? WBF_ANIM_FULL : 0);
   if (QRadioButton *radio = ui->IDC_WB_NO_ANIM_RADIO)
     radio->setChecked(anim_type == 0);
   if (QRadioButton *radio = ui->IDC_WB_LOCAL_ANIM_RADIO)
@@ -273,28 +316,38 @@ void RobotEditWeaponsDialog::getData() {
   wb->energy_usage = ui->IDC_ENERGY_USAGE_EDIT->text().toFloat();
   wb->ammo_usage = ui->IDC_AMMO_USAGE_EDIT->text().toFloat();
 
-  wb->flags &= ~WBF_ANIM_MASKS;
+  wb->flags.anim_local = false;
+  wb->flags.anim_full = false;
   if (ui->IDC_WB_LOCAL_ANIM_RADIO->isChecked())
-    wb->flags |= WBF_ANIM_LOCAL;
+    wb->flags.anim_local = true;
   else if (ui->IDC_WB_MODEL_ANIM_RADIO->isChecked())
-    wb->flags |= WBF_ANIM_FULL;
+    wb->flags.anim_full = true;
 
-  auto setFlag2 = [this, wb](uint16_t flag, const QString &name) {
-    if (checkBox(this, name)->isChecked())
-      wb->flags |= flag;
-    else
-      wb->flags &= ~flag;
+  auto setFlag2 = [this, wb](int id, const QString &name) {
+    bool value = checkBox(this, name)->isChecked();
+    switch (id) {
+      case 0: wb->flags.spray = value; break;
+      case 1: wb->flags.guided = value; break;
+      case 2: wb->flags.on_off = value; break;
+      case 3: wb->flags.random_fire_order = value; break;
+      case 4: wb->flags.user_timeout = value; break;
+      case 5: wb->flags.fire_fvec = value; break;
+      case 6: wb->flags.fire_target = value; break;
+      case 7: wb->flags.aim_fvec = value; break;
+      case 8: wb->flags.use_custom_fov = value; break;
+      case 9: wb->flags.use_custom_max_dist = value; break;
+    }
   };
-  setFlag2(WBF_SPRAY, "IDC_SPRAY_CHECK");
-  setFlag2(WBF_GUIDED, "IDC_GUIDED_CHECK");
-  setFlag2(WBF_ON_OFF, "IDC_ONOFF_CHECK");
-  setFlag2(WBF_RANDOM_FIRE_ORDER, "IDC_WB_RANDOM_CHECK");
-  setFlag2(WBF_USER_TIMEOUT, "IDC_USER_TIMEOUT_CHECK");
-  setFlag2(WBF_FIRE_FVEC, "IDC_FORCE_TO_FVEC_CHECK");
-  setFlag2(WBF_FIRE_TARGET, "IDC_FORCE_TO_TARGET_CHECK");
-  setFlag2(WBF_AIM_FVEC, "IDC_WBAIMFORWARD_CHECK");
-  setFlag2(WBF_USE_CUSTOM_FOV, "IDC_VIEW_CONE_ANGLE_CHECK");
-  setFlag2(WBF_USE_CUSTOM_MAX_DIST, "IDC_MAX_DISTANCE_CHECK");
+  setFlag2(0, "IDC_SPRAY_CHECK");
+  setFlag2(1, "IDC_GUIDED_CHECK");
+  setFlag2(2, "IDC_ONOFF_CHECK");
+  setFlag2(3, "IDC_WB_RANDOM_CHECK");
+  setFlag2(4, "IDC_USER_TIMEOUT_CHECK");
+  setFlag2(5, "IDC_FORCE_TO_FVEC_CHECK");
+  setFlag2(6, "IDC_FORCE_TO_TARGET_CHECK");
+  setFlag2(7, "IDC_WBAIMFORWARD_CHECK");
+  setFlag2(8, "IDC_VIEW_CONE_ANGLE_CHECK");
+  setFlag2(9, "IDC_MAX_DISTANCE_CHECK");
 }
 
 void editRobotWeapons(otype_wb_info *wb, poly_model *pm, QWidget *parent) {

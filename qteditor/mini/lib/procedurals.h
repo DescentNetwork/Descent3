@@ -1,0 +1,6 @@
+#ifndef PROCEDURALS_H
+#define PROCEDURALS_H
+
+#define MAX_PROC_ELEMENTS 8000
+
+#endif

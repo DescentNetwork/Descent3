@@ -56,8 +56,7 @@ void MatcenKeypad::updateDialog() {
   if (Num_matcens <= 0 || m_matcenId >= Num_matcens)
     return;
   matcen *mc = Matcen[m_matcenId];
-  char name[MAX_MATCEN_NAME_LEN] = "";
-  mc->GetName(name);
+  std::string name = mc->GetName();
   if (QLabel *label = ui->IDC_MAT_CUR_STATIC)
     label->setText(QString("Current Matcen: %1").arg(m_matcenId + 1));
   if (QLabel *label = ui->IDC_MAT_NUM_STATIC)

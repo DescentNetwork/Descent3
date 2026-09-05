@@ -1,3 +1,4 @@
+#include <QtGlobal>
 /*
  * Descent 3
  * Copyright (C) 2024 Descent Developers
@@ -23,6 +24,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFileDialog>
+#include <QFile>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
@@ -158,8 +160,8 @@ WorldObjectsDoorDialog::WorldObjectsDoorDialog(QWidget *parent)
         else if (QString::compare(name, "IDC_DOOR_HITPOINTS_EDIT") == 0)
           Doors[n].hit_points = findChild<QLineEdit*>(name)->text().toInt();
         else if (QString::compare(name, "IDC_SCRIPTNAME") == 0) {
-          const QByteArray text = findChild<QLineEdit*>(name)->text().toLatin1();
-          snprintf(Doors[n].module_name, sizeof(Doors[n].module_name), "%s", text.constData());
+          const QString text = findChild<QLineEdit*>(name)->text();
+          Doors[n].module_name = text.toStdString();
         }
       });
   }
@@ -204,7 +206,7 @@ void WorldObjectsDoorDialog::updateDialog() {
   const bool blastable = (Doors[n].flags & DF_BLASTABLE) != 0;
 
   if (QLineEdit *edit = ui->IDC_DOOR_MODEL_NAME_EDIT)
-    edit->setText(Poly_models[Doors[n].model_handle].name);
+    edit->setText(QString::fromStdString(Poly_models[Doors[n].model_handle].name));
   if (QLineEdit *edit = ui->IDC_DOOR_OPEN_TIME)
     edit->setText(QString::number(Doors[n].total_open_time));
   if (QLineEdit *edit = ui->IDC_DOOR_STAYS_OPEN)
@@ -236,15 +238,15 @@ void WorldObjectsDoorDialog::updateDialog() {
     combo->clear();
     for (int i = 0; i < MAX_DOORS; i++)
       if (Doors[i].used)
-        combo->addItem(Doors[i].name);
-    combo->setCurrentText(Doors[n].name);
+        combo->addItem(QString::fromStdString(Doors[i].name));
+    combo->setCurrentText(QString::fromStdString(Doors[n].name));
   }
 
   if (QLineEdit *edit = ui->IDC_SCRIPTNAME) {
     if (!Doors[n].module_name[0])
       edit->setText("null");
     else
-      edit->setText(Doors[n].module_name);
+      edit->setText(QString::fromStdString(Doors[n].module_name));
   }
 
   populateSoundCombo(ui->IDC_DOOR_OPEN_SOUND, Doors[n].open_sound);
@@ -263,12 +265,8 @@ void WorldObjectsDoorDialog::onAddDoor() {
   if (pathname.isEmpty())
     return;
 
-  const QByteArray pathBytes = pathname.toLocal8Bit();
-  const std::filesystem::path pathFs(pathBytes.constData());
-  int img_handle = LoadDoorImage(pathBytes.constData(), 0);
-
-  char dir[260], filename[260], ext[32];
-  ddio_SplitPath(pathBytes.constData(), dir, filename, ext);
+  const std::filesystem::path pathFs(pathname.toStdString());
+  int img_handle = LoadDoorImage(pathFs, 0);
 
   if (img_handle < 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't open that model file.");
@@ -282,23 +280,24 @@ void WorldObjectsDoorDialog::onAddDoor() {
   int door_handle = AllocDoor();
   int c = 1;
   bool finding_name = true;
-  char cur_name[100];
+  const std::string base = pathFs.stem().string();
+  std::string cur_name;
   while (finding_name) {
     if (c == 1)
-      snprintf(cur_name, sizeof(cur_name), "%s", filename);
+      cur_name = base;
     else
-      snprintf(cur_name, sizeof(cur_name), "%s%d", filename, c);
+      cur_name = base + std::to_string(c);
     if (FindDoorName(cur_name) != -1)
       c++;
     else
       finding_name = false;
   }
 
-  snprintf(Doors[door_handle].name, sizeof(Doors[door_handle].name), "%s", cur_name);
+  Doors[door_handle].name = cur_name;
   Doors[door_handle].model_handle = img_handle;
 
   std::filesystem::path destname = LocalModelsDir / Poly_models[Doors[door_handle].model_handle].name;
-  cf_CopyFile(destname, pathFs);
+  std::filesystem::copy((pathFs), (destname), std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(cur_name, PAGETYPE_DOOR);
 
@@ -318,7 +317,7 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
     return;
   }
 
-  if (QMessageBox::question(this, "Delete door", QString("Are you sure you want to delete this door? %1").arg(Doors[n].name)) !=
+  if (QMessageBox::question(this, "Delete door", QString("Are you sure you want to delete this door? %1").arg(QString::fromStdString(Doors[n].name))) !=
       QMessageBox::Yes)
     return;
 
@@ -326,10 +325,10 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
     return;
 
   mngs_Pagelock pl;
-  snprintf(pl.name, sizeof(pl.name), "%s", Doors[n].name);
+  pl.name = Doors[n].name;
   pl.pagetype = PAGETYPE_DOOR;
 
-  if (mng_CheckIfPageOwned(&pl, TableUser) != 1) {
+  if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
     mng_FreeTrackLock(tl);
     Q_ASSERT(mng_DeletePage(Doors[n].name, PAGETYPE_DOOR, 1));
   } else {
@@ -358,7 +357,7 @@ void WorldObjectsDoorDialog::onLockDoor() {
   if (!mng_MakeLocker())
     return;
 
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", Doors[n].name);
+  temp_pl.name = Doors[n].name;
   temp_pl.pagetype = PAGETYPE_DOOR;
 
   const int r = mng_CheckIfPageLocked(&temp_pl);
@@ -366,7 +365,7 @@ void WorldObjectsDoorDialog::onLockDoor() {
     if (QMessageBox::question(this, "Are you sure?",
                           "This page is not even in the table file, or the database maybe corrupt.  Override to "
                               "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
-      snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
+      temp_pl.holder = "UNLOCKED";
       if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
         QMessageBox::critical(this, "Error!", ErrorString);
     }
@@ -375,7 +374,7 @@ void WorldObjectsDoorDialog::onLockDoor() {
   } else if (r == 1) {
     QMessageBox::information(this, "Information", InfoString);
   } else {
-    snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
+    temp_pl.holder = TableUser.toStdString();
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
       QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
@@ -412,16 +411,16 @@ void WorldObjectsDoorDialog::onCheckinDoor() {
   if (!mng_MakeLocker())
     return;
 
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", Doors[n].name);
+  temp_pl.name = Doors[n].name;
   temp_pl.pagetype = PAGETYPE_DOOR;
 
-  const int r = mng_CheckIfPageOwned(&temp_pl, TableUser);
+  const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
   if (r < 0)
     QMessageBox::critical(this, "Error!", ErrorString);
   else if (r == 0)
     QMessageBox::information(this, "Information", InfoString);
   else {
-    snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
+    temp_pl.holder = "UNLOCKED";
     if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
       QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
@@ -432,7 +431,7 @@ void WorldObjectsDoorDialog::onCheckinDoor() {
       else {
         std::filesystem::path srcname = LocalModelsDir / Poly_models[Doors[n].model_handle].name;
         std::filesystem::path destname = NetModelsDir / Poly_models[Doors[n].model_handle].name;
-        cf_CopyFile(destname, srcname);
+        std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
 
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Door checked in.");
 
@@ -456,7 +455,7 @@ void WorldObjectsDoorDialog::onDoorsOut() {
   int total = 0;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
     if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == PAGETYPE_DOOR) {
-      str += GlobalTrackLocks[i].name;
+      str += QString::fromStdString(GlobalTrackLocks[i].name);
       str += "\n";
       total++;
     }
@@ -479,7 +478,7 @@ void WorldObjectsDoorDialog::onDoorPulldownChanged() {
   QComboBox *combo = ui->IDC_DOOR_PULLDOWN;
   if (combo == nullptr)
     return;
-  const int i = FindDoorName(combo->currentText().toLocal8Bit().constData());
+  const int i = FindDoorName(combo->currentText().toStdString());
   if (i == -1)
     return;
   D3EditState.current_door = i;
@@ -550,8 +549,8 @@ void WorldObjectsDoorDialog::onBrowse() {
 void WorldObjectsDoorDialog::onKillfocusScriptname() {
   const int n = D3EditState.current_door;
   if (QLineEdit *edit = ui->IDC_SCRIPTNAME) {
-    const QByteArray text = edit->text().toLatin1();
-    snprintf(Doors[n].module_name, sizeof(Doors[n].module_name), "%s", text.constData());
+    const QString text = edit->text();
+    Doors[n].module_name = text.toStdString();
   }
 }
 

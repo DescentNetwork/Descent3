@@ -88,7 +88,7 @@ PlayerWeaponsDialog::PlayerWeaponsDialog(int current_ship, QWidget *parent)
   spew->addItem("<none>", -1);
   for (int i = 0; i < MAX_OBJECT_IDS; i++) {
     if (Object_info[i].type == OBJ_POWERUP)
-      spew->addItem(Object_info[i].name, i);
+      spew->addItem(QString::fromStdString(Object_info[i].name), i);
   }
 
   updateDialog();
@@ -115,7 +115,7 @@ void PlayerWeaponsDialog::updateDialog() {
   if (QCheckBox *cb = ui->IDC_FIRES_FUSION)
     cb->setChecked(fire_flags & SFF_FUSION);
   if (QCheckBox *cb = ui->IDC_ONOFF)
-    cb->setChecked(shp->static_wb[index].flags & WBF_ON_OFF);
+    cb->setChecked(shp->static_wb[index].flags.on_off);
   if (QCheckBox *cb = ui->IDC_ZOOM)
     cb->setChecked(fire_flags & SFF_ZOOM);
   if (QCheckBox *cb = ui->IDC_SHOW_TENTHS)
@@ -172,7 +172,7 @@ void PlayerWeaponsDialog::onCurrentWeaponChanged() {
 void PlayerWeaponsDialog::onFiresFusion() {
   const int i = currentWBIndex();
   Ships[m_current_ship].fire_flags[i] &= ~SFF_ZOOM;
-  Ships[m_current_ship].static_wb[i].flags &= ~WBF_ON_OFF;
+  Ships[m_current_ship].static_wb[i].flags.on_off = false;
   Ships[m_current_ship].fire_flags[i] |= SFF_FUSION;
   updateDialog();
 }
@@ -212,14 +212,14 @@ void PlayerWeaponsDialog::onSpewPowerupChanged() {
 void PlayerWeaponsDialog::onOnOff() {
   const int i = currentWBIndex();
   Ships[m_current_ship].fire_flags[i] &= ~(SFF_FUSION | SFF_ZOOM);
-  Ships[m_current_ship].static_wb[i].flags |= WBF_ON_OFF;
+  Ships[m_current_ship].static_wb[i].flags.on_off = true;
   updateDialog();
 }
 
 void PlayerWeaponsDialog::onZoom() {
   const int i = currentWBIndex();
   Ships[m_current_ship].fire_flags[i] &= ~SFF_FUSION;
-  Ships[m_current_ship].static_wb[i].flags &= ~WBF_ON_OFF;
+  Ships[m_current_ship].static_wb[i].flags.on_off = false;
   Ships[m_current_ship].fire_flags[i] |= SFF_ZOOM;
   updateDialog();
 }

@@ -24,6 +24,7 @@
 #include <QDialog>
 #include <QWidget>
 #include <QTimer>
+#include <QFileInfo>
 //#include <DockManager.h>
 //#include <DockWidget.h>
 
@@ -150,6 +151,9 @@ private:
   void onCenterViewOnObject();
   void onResetViewRadius();
   void onMoveViewToSelectedRoom();
+  void onMoveCameraToSelectedFace();
+  void onMoveCameraToCurrentObject();
+  void onFlipViewer();
 
   // ====== OBJECT OPERATIONS ======
   int onPlaceCameraAtViewer();

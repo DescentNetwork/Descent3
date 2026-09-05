@@ -18,12 +18,6 @@
 
 #include "d3_editor_init.h"
 
-#include <filesystem>
-
-std::filesystem::path orig_pwd;
-
-#include <SDL3/SDL.h>
-
 #include <QSettings>
 
 #include "appdatabase.h"
@@ -33,6 +27,7 @@ std::filesystem::path orig_pwd;
 
 #include "descent.h"
 #include "editor_settings.h"
+#include "gamedata_loader.h"
 #include "init.h"
 #include "lnxapp.h"
 #include "program.h"
@@ -44,6 +39,9 @@ std::filesystem::path orig_pwd;
 #endif
 
 
+std::filesystem::path orig_pwd;
+
+#if 0
 void initD3Core(int argc, char *argv[]) {
   GatherArgs(argv);
 
@@ -77,3 +75,72 @@ void initD3Core(int argc, char *argv[]) {
   errno = 0; // clear any errno states
 }
 
+#else
+
+// Try to locate the directory that contains the game data files (d3.hog).
+// The user can override via -datadir <path>; otherwise a small set of common
+// install locations (including this machine's known path) is probed.
+static std::filesystem::path FindGameDataDir() {
+  // Explicit command-line override wins.
+  int arg = FindArg("-datadir");
+  if (arg) {
+    std::filesystem::path p = GetArg(arg + 1);
+    if (std::filesystem::exists(p / "d3.hog"))
+      return p;
+  }
+
+  const std::filesystem::path candidates[] = {
+      "/mnt/media/games/pc/Descent 3",
+      "/usr/share/descent3",
+      "/usr/local/share/descent3",
+  };
+  for (const auto &c : candidates) {
+    if (std::filesystem::exists(c / "d3.hog"))
+      return c;
+  }
+  return {};
+}
+
+void initD3Core(int argc, char *argv[]) {
+  GatherArgs(argv);
+
+  orig_pwd = std::filesystem::current_path();
+
+#ifdef LOGGER
+  InitLog(LogSeverity::debug, false, false);
+#endif
+
+  // SDL initialization removed - using Qt for window management
+  PreInitD3Systems();
+
+  tLnxAppInfo appinfo{};
+  appinfo.flags = APPFLAG_WINDOWEDMODE | APPFLAG_NOSHAREDMEMORY;
+  Descent = new oeLnxApplication(&appinfo);
+  Database = new oeLnxAppDatabase;
+
+  ProgramVersion(DEVELOPMENT_VERSION, 0, 0, 0);
+
+  InitD3Systems1(true);
+  InitD3Systems2(true);
+
+  // Load the gamedata tables (d3.hog -> Table.gam) so levels opening later
+  // can reference object/ship/weapon/sound/texture metadata. This is what the
+  // Win32 editor does during startup; without it the level's referenced data
+  // is unavailable.
+  {
+    std::filesystem::path data_dir = FindGameDataDir();
+    if (!data_dir.empty()) {
+      loadGameDataTable(data_dir / "d3.hog");
+    }
+  }
+
+  // Pull the user's saved UI state on top of the zero defaults so Preferences
+  // (and the texture/wireframe/keypad visibility flags) reflect what they
+  // closed the editor with. Only loads keys that exist; an empty store is a
+  // no-op equivalent to the Win32 "registry is empty" path.
+  QSettings settings;
+  loadEditorSettings(settings, D3EditState);
+
+  errno = 0; // clear any errno states
+}
+#endif

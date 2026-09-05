@@ -22,6 +22,7 @@
 #include "logger/log.h"
 
 #include <algorithm>
+#include <cstring>
 
 #include <QMessageBox>
 #include <QCheckBox>
@@ -190,15 +191,15 @@ void TerrainKeypad::updateDialog() {
   if (QLineEdit *e = ui->IDC_ROTATE_SPEED_EDIT)
     e->setText(QString::number(Terrain_sky.rotate_rate, 'f', 2));
 
-  if (QCheckBox *c = ui->IDC_STARS_CHECK) c->setChecked(Terrain_sky.flags & TF_STARS);
-  if (QCheckBox *c = ui->IDC_SATELLITE_CHECK) c->setChecked(Terrain_sky.flags & TF_SATELLITES);
+  if (QCheckBox *c = ui->IDC_STARS_CHECK) c->setChecked(Terrain_sky.flags.stars);
+  if (QCheckBox *c = ui->IDC_SATELLITE_CHECK) c->setChecked(Terrain_sky.flags.satellites);
   if (QCheckBox *c = ui->IDC_TEXTURE_SKY) c->setChecked(Terrain_sky.textured);
-  if (QCheckBox *c = ui->IDC_USE_FOG) c->setChecked(Terrain_sky.flags & TF_FOG);
-  if (QCheckBox *c = ui->IDC_ROTATE_STARS) c->setChecked(Terrain_sky.flags & TF_ROTATE_STARS);
-  if (QCheckBox *c = ui->IDC_ROTATE_SKY) c->setChecked(Terrain_sky.flags & TF_ROTATE_SKY);
+  if (QCheckBox *c = ui->IDC_USE_FOG) c->setChecked(Terrain_sky.flags.fog);
+  if (QCheckBox *c = ui->IDC_ROTATE_STARS) c->setChecked(Terrain_sky.flags.rotate_stars);
+  if (QCheckBox *c = ui->IDC_ROTATE_SKY) c->setChecked(Terrain_sky.flags.rotate_sky);
   if (m_currentSatellite >= 0 && m_currentSatellite < 5) {
-    if (QCheckBox *c = ui->IDC_USE_HALO) c->setChecked(Terrain_sky.satellite_flags[m_currentSatellite] & TSF_HALO);
-    if (QCheckBox *c = ui->IDC_USE_ATMOSPHERE) c->setChecked(Terrain_sky.satellite_flags[m_currentSatellite] & TSF_ATMOSPHERE);
+    if (QCheckBox *c = ui->IDC_USE_HALO) c->setChecked(Terrain_sky.satellite_flags[m_currentSatellite].halo);
+    if (QCheckBox *c = ui->IDC_USE_ATMOSPHERE) c->setChecked(Terrain_sky.satellite_flags[m_currentSatellite].atmosphere);
   }
   if (QCheckBox *c = ui->IDC_SHOW_TERRAIN) c->setChecked(D3EditState.terrain_dots);
   if (QCheckBox *c = ui->IDC_FLAT_SHADE_TERRAIN_CHECK) c->setChecked(D3EditState.terrain_flat_shade);
@@ -312,10 +313,10 @@ void TerrainKeypad::moveSat(int pitch, int heading) {
   int n = m_currentSatellite;
   matrix rot_matrix;
   vm_AnglesToMatrix(&rot_matrix, pitch, heading, 0);
-  vector sat_vec = Terrain_sky.satellite_vectors[n] - Viewer_object->pos;
+  vector3 sat_vec = Terrain_sky.satellite_vectors[n] - Viewer_object->pos;
   float mag = vm_GetMagnitude(&sat_vec);
   vm_NormalizeVector(&sat_vec);
-  vector rot_vec;
+  vector3 rot_vec;
   vm_MatrixMulVector(&rot_vec, &sat_vec, &rot_matrix);
   Terrain_sky.satellite_vectors[n] = Viewer_object->pos + (rot_vec * mag);
   TV_changed = true;
@@ -364,31 +365,41 @@ void TerrainKeypad::onRotTexture() {
 void TerrainKeypad::onRedoTopmap() { World_changed = true; }
 
 void TerrainKeypad::onTileMore() {
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
   if (Terrain_sky.radius > 500) {
-    SetupSky(Terrain_sky.radius - 500, Terrain_sky.flags);
+    SetupSky(Terrain_sky.radius - 500, flags_raw);
     TV_changed = true;
   }
 }
 
 void TerrainKeypad::onTileLess() {
-  SetupSky(Terrain_sky.radius + 500, Terrain_sky.flags);
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
+  SetupSky(Terrain_sky.radius + 500, flags_raw);
   TV_changed = true;
 }
 
 void TerrainKeypad::onSkyNearer() {
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
   if (Terrain_sky.radius > 500) {
-    SetupSky(Terrain_sky.radius - 500, Terrain_sky.flags);
+    SetupSky(Terrain_sky.radius - 500, flags_raw);
     TV_changed = true;
   }
 }
 
 void TerrainKeypad::onSkyFarther() {
-  SetupSky(Terrain_sky.radius + 500, Terrain_sky.flags);
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
+  SetupSky(Terrain_sky.radius + 500, flags_raw);
   TV_changed = true;
 }
 
 void TerrainKeypad::onRandomizeSky() {
-  SetupSky(Terrain_sky.radius, Terrain_sky.flags, 1);
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
+  SetupSky(Terrain_sky.radius, flags_raw, 1);
   TV_changed = true;
 }
 
@@ -511,7 +522,7 @@ void TerrainKeypad::onDropTerrain() {
 
   for (int o = 0; o <= Highest_object_index; o++) {
     if (Objects[o].type != OBJ_NONE) {
-      vector new_pos = Objects[o].pos;
+      vector3 new_pos = Objects[o].pos;
       new_pos.y() += delta_y;
       ObjSetPos(&Objects[o], &new_pos, Objects[o].roomnum, NULL, false);
     }
@@ -534,10 +545,7 @@ void TerrainKeypad::onToggleVisibility() {
   const int count = TERRAIN_WIDTH * TERRAIN_DEPTH;
   for (int i = 0; i < count; i++) {
     if (TerrainSelected[i]) {
-      if (Terrain_seg[i].flags & TF_INVISIBLE)
-        Terrain_seg[i].flags &= ~TF_INVISIBLE;
-      else
-        Terrain_seg[i].flags |= TF_INVISIBLE;
+      Terrain_seg[i].flags.invisible = ~Terrain_seg[i].flags.invisible;
       World_changed = true;
     }
   }
@@ -650,13 +658,11 @@ void TerrainKeypad::onRotateSpeedEdited() {
 }
 
 void TerrainKeypad::onStarsToggled(bool checked) {
-  if (checked) Terrain_sky.flags |= TF_STARS;
-  else Terrain_sky.flags &= ~TF_STARS;
+  Terrain_sky.flags.stars = checked;
   TV_changed = true;
 }
 void TerrainKeypad::onSatelliteToggled(bool checked) {
-  if (checked) Terrain_sky.flags |= TF_SATELLITES;
-  else Terrain_sky.flags &= ~TF_SATELLITES;
+  Terrain_sky.flags.satellites = checked;
   TV_changed = true;
 }
 void TerrainKeypad::onTexturedSkyToggled(bool checked) {
@@ -664,32 +670,27 @@ void TerrainKeypad::onTexturedSkyToggled(bool checked) {
   World_changed = true;
 }
 void TerrainKeypad::onUseFogToggled(bool checked) {
-  if (checked) Terrain_sky.flags |= TF_FOG;
-  else Terrain_sky.flags &= ~TF_FOG;
+  Terrain_sky.flags.fog = checked;
   World_changed = true;
 }
 void TerrainKeypad::onUseHaloToggled(bool checked) {
   if (m_currentSatellite >= 0 && m_currentSatellite < 5) {
-    if (checked) Terrain_sky.satellite_flags[m_currentSatellite] |= TSF_HALO;
-    else Terrain_sky.satellite_flags[m_currentSatellite] &= ~TSF_HALO;
+    Terrain_sky.satellite_flags[m_currentSatellite].halo = checked;
     World_changed = true;
   }
 }
 void TerrainKeypad::onUseAtmosphereToggled(bool checked) {
   if (m_currentSatellite >= 0 && m_currentSatellite < 5) {
-    if (checked) Terrain_sky.satellite_flags[m_currentSatellite] |= TSF_ATMOSPHERE;
-    else Terrain_sky.satellite_flags[m_currentSatellite] &= ~TSF_ATMOSPHERE;
+    Terrain_sky.satellite_flags[m_currentSatellite].atmosphere = checked;
     World_changed = true;
   }
 }
 void TerrainKeypad::onRotateStarsToggled(bool checked) {
-  if (checked) Terrain_sky.flags |= TF_ROTATE_STARS;
-  else Terrain_sky.flags &= ~TF_ROTATE_STARS;
+  Terrain_sky.flags.rotate_stars = checked;
   TV_changed = true;
 }
 void TerrainKeypad::onRotateSkyToggled(bool checked) {
-  if (checked) Terrain_sky.flags |= TF_ROTATE_SKY;
-  else Terrain_sky.flags &= ~TF_ROTATE_SKY;
+  Terrain_sky.flags.rotate_sky = checked;
   TV_changed = true;
 }
 void TerrainKeypad::onFastTerrainToggled(bool checked) {
