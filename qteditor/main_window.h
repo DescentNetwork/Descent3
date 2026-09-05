@@ -151,6 +151,9 @@ private:
   void onCenterViewOnObject();
   void onResetViewRadius();
   void onMoveViewToSelectedRoom();
+  void onMoveCameraToSelectedFace();
+  void onMoveCameraToCurrentObject();
+  void onFlipViewer();
 
   // ====== OBJECT OPERATIONS ======
   int onPlaceCameraAtViewer();

@@ -40,6 +40,11 @@ void CreateNewMine();
 // Replace CEditorDoc::OnOpenDocument. Returns true on success.
 bool EditorLoadLevel(const std::filesystem::path& filename);
 
+// Sets the editor viewer object for the current level, creating it if the
+// level has none (port of editor/HView.cpp:410 SetEditorViewer). Keeps
+// separate viewer objects for mine & terrain views.
+void SetEditorViewer();
+
 // Replace CEditorDoc::OnSaveDocument. Returns true on success (1) or 0.
 bool EditorSaveLevel(const std::filesystem::path& filename);
 

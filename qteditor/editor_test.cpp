@@ -1193,7 +1193,11 @@ private slots:
     QCOMPARE(Num_triggers, 0);
     QCOMPARE(Current_trigger, -1);
     QCOMPARE(Editor_view_mode, int(VM_MINE));
-    QCOMPARE(Editor_viewer_id, -1);
+    // CreateNewMine spawns a viewer for the level (Win32 HFile.cpp:478
+    // SetEditorViewer), so the id/object are non-empty afterwards.
+    QCOMPARE(Editor_viewer_id, 0);
+    QVERIFY(Viewer_object != nullptr);
+    QCOMPARE(int(Viewer_object->type), OBJ_VIEWER);
     QCOMPARE(New_mine, true);
     QCOMPARE(World_changed, false);
 
@@ -1210,6 +1214,107 @@ private slots:
     QVERIFY(!EditorLoadLevel(std::filesystem::path{}));
     QCOMPARE(EditorSaveLevel(std::filesystem::path{}), false);
     errno = 0;
+  }
+
+  // SetEditorViewer parity (editor/HView.cpp:410): on level load the camera
+  // binds to an OBJ_VIEWER saved in the level file, preserving its stored
+  // position/orientation/roomnum instead of falling back to the orbit camera.
+  void testSetEditorViewerBindsSavedViewer() {
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; ++i) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Viewer_object = nullptr;
+    Editor_viewer_id = -1;
+    Editor_view_mode = VM_MINE;
+
+    // A single interior room (flags.external is false after InitRoom).
+    const vector3 quadV[4] = {
+      {2048 + 10, 0, 2048 - 10}, {2048 + 0, 0, 2048 - 10},
+      {2048 + 0, 0, 2048 + 10}, {2048 + 10, 0, 2048 + 10},
+    };
+    room *rp = &Rooms[0];
+    *rp = room{};
+    InitRoom(rp, 4, 1, 0);
+    InitRoomFace(&rp->faces[0], 4);
+    for (int i = 0; i < 4; i++) {
+      rp->verts[i] = quadV[i];
+      rp->faces[0].face_verts[i] = (int16_t)i;
+    }
+    rp->used = 1;
+    Highest_room_index = 0;
+
+    // A saved viewer at a known pose inside room 0.
+    const vector3 savedPos{1, 2, 3};
+    const int viewerSlot = 0;
+    Objects[viewerSlot].type = OBJ_VIEWER;
+    Objects[viewerSlot].id = 4;
+    Objects[viewerSlot].pos = savedPos;
+    Objects[viewerSlot].roomnum = 0;
+    Highest_object_index = viewerSlot;
+
+    SetEditorViewer();
+
+    // The camera must bind to the saved viewer, not a fresh creation.
+    QVERIFY(Viewer_object != nullptr);
+    QCOMPARE(int(Viewer_object - Objects), viewerSlot);
+    QCOMPARE(Viewer_object->id, 4);
+    QCOMPARE(Editor_viewer_id, 4);
+    QVERIFY(Viewer_object->pos.x() == savedPos.x());
+    QVERIFY(Viewer_object->pos.y() == savedPos.y());
+    QVERIFY(Viewer_object->pos.z() == savedPos.z());
+    QCOMPARE(Viewer_object->roomnum, 0);
+  }
+
+  // SetEditorViewer parity: a level with no OBJ_VIEWER gets one created at
+  // the center of the first used, non-external room (editor/HView.cpp:429-434)
+  // and the editor binds to it.
+  void testSetEditorViewerCreatesAtRoomCenter() {
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; ++i) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Viewer_object = nullptr;
+    Editor_viewer_id = -1;
+    Editor_view_mode = VM_MINE;
+
+    const vector3 quadV[4] = {
+      {2048 + 10, -5, 2048 - 10}, {2048 + 0, -5, 2048 - 10},
+      {2048 + 0, -5, 2048 + 10}, {2048 + 10, -5, 2048 + 10},
+    };
+    room *rp = &Rooms[0];
+    *rp = room{};
+    InitRoom(rp, 4, 1, 0);
+    InitRoomFace(&rp->faces[0], 4);
+    for (int i = 0; i < 4; i++) {
+      rp->verts[i] = quadV[i];
+      rp->faces[0].face_verts[i] = (int16_t)i;
+    }
+    rp->used = 1;
+    Highest_room_index = 0;
+
+    SetEditorViewer();
+
+    QVERIFY(Viewer_object != nullptr);
+    QCOMPARE(int(Viewer_object->type), OBJ_VIEWER);
+    QCOMPARE(Viewer_object->roomnum, 0);
+    QCOMPARE(Editor_viewer_id, 0);
+    State_changed = Viewer_moved = false;
+
+    // The new viewer lands at the room's centroid.
+    const vector3 center =
+        (quadV[0] + quadV[1] + quadV[2] + quadV[3]) * 0.25f;
+    const float dx = std::fabs(Viewer_object->pos.x() - center.x());
+    const float dy = std::fabs(Viewer_object->pos.y() - center.y());
+    const float dz = std::fabs(Viewer_object->pos.z() - center.z());
+    QVERIFY2(dx < 1e-3f && dy < 1e-3f && dz < 1e-3f,
+             "SetEditorViewer did not place the viewer at the room center");
   }
 
   void testMainFrameViewSubActions()
@@ -2299,11 +2404,14 @@ private slots:
     QVERIFY2(view.frameCount() >= 1, qPrintable(QString("view never painted (frameCount=%1)").arg(view.frameCount())));
 
     int nonBackground = 0;
+    // The mine view clears to (0.10, 0.12, 0.18) -> (25, 31, 46) in
+    // paintGL().  Count samples that differ from that clear color; a blank
+    // framebuffer (geometry culled) yields zero here.
     for (int y = 0; y < img.height(); y += 4) {
       const QRgb *line = reinterpret_cast<const QRgb *>(img.constScanLine(y));
       for (int x = 0; x < img.width(); x += 4) {
         const QRgb p = line[x];
-        if (qRed(p) > 40 || qGreen(p) > 40 || qBlue(p) > 40)
+        if (qAbs(qRed(p) - 25) > 16 || qAbs(qGreen(p) - 31) > 16 || qAbs(qBlue(p) - 46) > 16)
           nonBackground++;
       }
     }
@@ -2311,6 +2419,65 @@ private slots:
     QVERIFY2(nonBackground > 100, "framebuffer appears blank (no geometry rendered)");
     QVERIFY2(img.save("/tmp/opencode/editor_view.png"), "failed to save screenshot");
     qInfo() << "saved /tmp/opencode/editor_view.png";
+  }
+
+  // Regression test for the File>Open camera path: the mine must render right
+  // after loading with the GUI viewport (no auto-fit).  testdata/level1.d3l
+  // ships an OBJ_VIEWER whose orientation matrix is all zeros; following such
+  // a degenerate viewer as the camera gives a zero forward vector so every
+  // world point projects behind the eye and the view stays blank.  updateCamera
+  // must instead fall back to the orbit camera (Mine_origin target, +Z fwd).
+  void testOpenPathFallsBackFromDegenerateViewer() {
+    const QString level = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    QVERIFY2(EditorLoadLevel(std::filesystem::path(level.toStdString())), "EditorLoadLevel failed");
+    QVERIFY(Viewer_object != nullptr);
+    // level1.d3l's saved viewer carries a zero orientation matrix.
+    QVERIFY(Viewer_object->orient.fvec.x() == 0.0f && Viewer_object->orient.fvec.y() == 0.0f &&
+            Viewer_object->orient.fvec.z() == 0.0f);
+
+    EditorView view;
+    view.resize(640, 480);
+    view.show();
+    QCoreApplication::processEvents();
+    view.resetWireframeViewRad(); // the GUI File>Open extra step (HFile.cpp:626)
+
+    // A point directly ahead of the fallback orbit camera at dist=500
+    // (eye=(2048,-100,1548), fvec=(0,0,1)) must project in front.
+    float sx = 0, sy = 0, depth = 0;
+    const vector3 ahead{2048.0f, -100.0f, 1800.0f};
+    QVERIFY2(view.projectWorldToScreen(ahead, &sx, &sy, &depth), "orbit camera lost (degenerate viewer followed)");
+    QVERIFY2(depth > 0.0f, "point behind camera despite valid orbit framing");
+
+    // And no rooms are culled by the render radius: the default rad=5000 at
+    // Mine_origin keeps the whole mine in the wireframe pass.
+    QCOMPARE(view.activeWireframeView().rad, 5000.0f);
+  }
+
+  // A *valid* saved viewer still binds as the camera (parity with Win32
+  // SetViewer, HView.cpp:318): updateCamera must only ignore degenerate
+  // orientations, not all viewers.
+  void testValidViewerStillControlsCamera() {
+    EditorView view;
+    view.resize(640, 480);
+    view.show();
+    QCoreApplication::processEvents();
+
+    // Camera-space identity-free orientation at the origin, looking +X
+    // (the same pose the pick fixtures set up).
+    Objects[0].type = OBJ_VIEWER;
+    Objects[0].pos = vector3{0, 0, 0};
+    Objects[0].orient.rvec = vector3{0, 0, 1};
+    Objects[0].orient.uvec = vector3{0, 1, 0};
+    Objects[0].orient.fvec = vector3{1, 0, 0};
+    Viewer_object = &Objects[0];
+
+    float sx = 0, sy = 0, depth = 0;
+    // No orbit mutation runs here (resetCamera would sync the viewer back to
+    // the orbit pose), so the camera follows the +X viewer directly.
+    // (50,0,0) is straight ahead of the +X viewer camera.
+    const vector3 ahead{50.0f, 0.0f, 0.0f};
+    QVERIFY2(view.projectWorldToScreen(ahead, &sx, &sy, &depth), "valid viewer not followed as camera");
+    QVERIFY(depth > 0.0f);
   }
 
   // Tests that pickAt() identifies a face when clicking on a visible face of

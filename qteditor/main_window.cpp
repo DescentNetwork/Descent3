@@ -179,7 +179,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->ID_VIEW_KEYPAD_TOGGLE, &QAction::triggered, this, &MainWindow::toggleKeypadBar);
   connect(ui->ID_VIEW_CENTERONMINE, &QAction::triggered, this, &MainWindow::onCenterViewOnMine);
   connect(ui->ID_VIEW_CENTERONOBJECT, &QAction::triggered, this, &MainWindow::onCenterViewOnObject);
-  connect(ui->ID_VIEW_RESETVIEWRADIUS, &QAction::triggered, this, &MainWindow::onMoveViewToSelectedRoom);
+  connect(ui->ID_VIEW_RESETVIEWRADIUS, &QAction::triggered, this, &MainWindow::onResetViewRadius);
   connect(ui->ID_VIEW_TOOLBAR, &QAction::triggered, this, &MainWindow::onViewToolbar);
   connect(ui->ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW, &QAction::triggered, this, &MainWindow::onViewShowObjectsInWireframe);
   connect(ui->ID_MINE_VIEW, &QAction::triggered, this, &MainWindow::onViewMine);
@@ -190,6 +190,10 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->ID_VIEW_DELETEVIEWER, &QAction::triggered, this, &MainWindow::onDeleteCurrentViewer);
   connect(ui->ID_VIEW_NEXTVIEWER, &QAction::triggered, this, &MainWindow::onSelectNextViewer);
   connect(ui->ID_VIEW_VIEWPROP, &QAction::triggered, this, &MainWindow::toggleViewerProps);
+  connect(ui->ID_VIEW_MOVECAMERATOSELECTEDROOM, &QAction::triggered, this, &MainWindow::onMoveViewToSelectedRoom);
+  connect(ui->ID_VIEW_MOVECAMERATOSELECTEDFACE, &QAction::triggered, this, &MainWindow::onMoveCameraToSelectedFace);
+  connect(ui->ID_VIEW_MOVECAMERATOCURRENTOBJECT, &QAction::triggered, this, &MainWindow::onMoveCameraToCurrentObject);
+  connect(ui->ID_VIEW_FLIP, &QAction::triggered, this, &MainWindow::onFlipViewer);
 
   connect(ui->ID_VIEW_TEXTUREMINE, &QAction::triggered, m_editorView, &EditorView::disableWireframeMode);
   connect(ui->ID_VIEW_WIREFRAMEMINE, &QAction::triggered, m_editorView, &EditorView::enableWireframeMode);
@@ -372,7 +376,10 @@ void MainWindow::onFileOpen() {
   setWindowTitle(QStringLiteral("Descent 3 Editor - %1").arg(m_currentLevelFile));
   EditorLoadLevel(std::filesystem::path(picked.toStdString()));
   if (m_editorView != nullptr) {
-    m_editorView->resetCamera();
+    // Win32 OnOpenDocument -> EditorLoadLevel resets only the view radius
+    // (HFile.cpp:626 ResetWireframeViewRad); the camera binds to the level's
+    // saved viewer via SetEditorViewer() inside EditorLoadLevel.
+    m_editorView->resetWireframeViewRad();
     m_editorView->requestRedraw();
   }
   statusBar()->showMessage(
@@ -759,6 +766,114 @@ void MainWindow::showHotSpotTGA() {
 // 1.0f (D3_DEFAULT_ZOOM in editor/editorView.cpp).
 constexpr float kDefaultViewRadius = 1.0f;
 
+#include "findintersection.h"
+#include "terrain.h"
+#include "vecmat.h"
+
+// Move the viewer object (port of editor/editor.cpp:1141 MoveViewer).  This
+// should be called whenever the viewer object is moved.  ObjSetPos relinks the
+// viewer into the mine/terrain; when it crosses the boundary the global view
+// mode follows (VM_TERRAIN <-> VM_MINE), mirroring SetViewMode().
+static void moveViewer(vector3 *pos, int roomnum, matrix *orient) {
+  if (Viewer_object == nullptr)
+    return;
+  const bool was_outside = OBJECT_OUTSIDE(Viewer_object);
+
+  ObjSetPos(Viewer_object, pos, roomnum, orient, false);
+
+  if (OBJECT_OUTSIDE(Viewer_object) && !was_outside)
+    Editor_view_mode = VM_TERRAIN;
+  else if (!OBJECT_OUTSIDE(Viewer_object) && was_outside)
+    Editor_view_mode = VM_MINE;
+}
+
+// Set the viewer in the specified room facing the specified face (port of
+// editor/HView.cpp:134 SetViewerFromRoomFace).  If room_center is true, put
+// the viewer at the center of the room facing the face; if room_center is
+// false, put the viewer directly in front of the selected face.  If the room
+// is external, put the viewer a distance away from the room, facing either the
+// center (if room_center is true) or the specified face.
+static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
+  if (Viewer_object == nullptr || roomp == nullptr)
+    return;
+  // FACE_VIEW_DIST is defined in editor/HView.cpp:127.
+  constexpr float kFaceViewDist = 5.0f;
+
+  vector3 vp;
+  vector3 newpos;
+  matrix orient;
+  int roomnum = ROOMNUM(roomp);
+  bool outside_mine = false;
+
+  ComputeCenterPointOnFace(&vp, roomp, facenum);
+
+  if (room_center) {
+    // Get position
+    ComputeRoomCenter(&newpos, roomp);
+
+    if (roomp->flags.external) {
+      vector3 t;
+      float rad = ComputeRoomBoundingSphere(&t, roomp);
+
+      newpos.z() -= rad * 1.5f;
+
+      if (newpos.x() < 1.0f)
+        newpos.x() = 1.0f;
+      if (newpos.x() > TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f)
+        newpos.x() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
+      if (newpos.z() < 1.0f)
+        newpos.z() = 1.0f;
+      if (newpos.z() > TERRAIN_DEPTH * TERRAIN_SIZE - 1.0f)
+        newpos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
+
+      orient = Identity_matrix;
+
+      roomnum = GetTerrainRoomFromPos(&newpos);
+    } else {
+      // Get orientation: vector from center of room to face
+      vp -= newpos;
+      vm_VectorToMatrix(&orient, &vp, nullptr, nullptr);
+    }
+  } else {
+    face *fp = &roomp->faces[facenum];
+
+    newpos = vp + fp->normal * kFaceViewDist;
+
+    vector3 t = -fp->normal;
+    vm_VectorToMatrix(&orient, &t, nullptr, nullptr);
+
+    if (roomp->flags.external) {
+      if (newpos.x() < 1.0f)
+        newpos.x() = 1.0f;
+      if (newpos.x() > TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f)
+        newpos.x() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
+      if (newpos.z() < 1.0f)
+        newpos.z() = 1.0f;
+      if (newpos.z() > TERRAIN_DEPTH * TERRAIN_SIZE - 1.0f)
+        newpos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
+      roomnum = GetTerrainRoomFromPos(&newpos);
+    } else {
+      int new_roomnum = FindPointRoom(&newpos);
+      if (new_roomnum == -1)
+        outside_mine = true;
+      else
+        roomnum = new_roomnum;
+    }
+  }
+
+  // Reset viewer
+  if (Editor_view_mode == VM_ROOM) {
+    Viewer_object->pos = newpos;
+    Viewer_object->orient = orient;
+  } else
+    moveViewer(&newpos, roomnum, &orient);
+
+  if (outside_mine)
+    Viewer_object->flags |= OF_OUTSIDE_MINE;
+
+  Viewer_moved = true;
+}
+
 
 void MainWindow::onCenterViewOnMine() {
   if (Viewer_object == nullptr)
@@ -826,30 +941,87 @@ void MainWindow::onResetViewRadius() {
 }
 
 void MainWindow::onMoveViewToSelectedRoom() {
+  // Win32 ID_VIEW_MOVECAMERATOSELECTEDROOM -> CMainFrame::OnViewMoveCameraToSelectedRoom
+  // (editor/MainFrm.cpp:2216) -> SetViewerFromRoomFace(Curroomp, Curface, 1).
+  setViewerFromRoomFace(Curroomp, Curface, true);
+  State_changed = true;
+
+  m_editorView->requestRedraw();
+}
+
+// Win32 ID_VIEW_MOVECAMERATOSELECTEDFACE -> CMainFrame::OnViewMoveCameraToSelectedFace
+// (editor/MainFrm.cpp:3670) -> SetViewerFromRoomFace(Curroomp, Curface, 0).
+void MainWindow::onMoveCameraToSelectedFace() {
+  setViewerFromRoomFace(Curroomp, Curface, false);
+  State_changed = true;
+
+  m_editorView->requestRedraw();
+}
+
+// Win32 ID_VIEW_MOVECAMERATOCURRENTOBJECT -> CMainFrame::OnViewMoveCameraToCurrentObject
+// (editor/MainFrm.cpp:3399-3430): turn the viewer to face the current object,
+// drop it on the object, then step back OBJECT_PLACE_DIST units.  An FVI trace
+// from the viewer to the target spot keeps a wall from ending up between the
+// viewer and the object.
+void MainWindow::onMoveCameraToCurrentObject() {
   if (Viewer_object == nullptr)
     return;
-  int target_room = -1;
-  if (Curroomp != nullptr && Curroomp->used)
-    target_room = ROOMNUM(Curroomp);
-  if (target_room < 0)
+  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
     return;
-  // Pull the room's centroid; if the room is brand new with no verts
-  // yet, just keep the viewer's current pos/orient and only update
-  // roomnum (matches the Win32 fallback in editor/editorView.cpp).
-  if (Curroomp->num_verts > 0) {
-    vector3 centroid{};
-    for (int i = 0; i < Curroomp->num_verts; ++i)
-      centroid += Curroomp->verts[i];
-    centroid /= static_cast<float>(Curroomp->num_verts);
-    ObjSetPos(Viewer_object, &centroid, target_room, &Viewer_object->orient,
-              false);
-  } else {
-    ObjSetPos(Viewer_object, &Viewer_object->pos, target_room,
-              &Viewer_object->orient, false);
-  }
+  object *objp = &Objects[Cur_object_index];
+  if (objp->type == OBJ_NONE)
+    return;
+
+  // OBJECT_PLACE_DIST is defined in editor/HObject.cpp:258 and reused by the
+  // Win32 handler via a local #define (editor/MainFrm.cpp:3396).
+  constexpr float kObjectPlaceDist = 10.0f;
+
+  // Turn the viewer around so facing the object: the viewer's f/r vectors are
+  // the object's negated ones, keeping its up vector.
+  matrix orient;
+  orient.fvec = -objp->orient.fvec;
+  orient.rvec = -objp->orient.rvec;
+  orient.uvec = objp->orient.uvec;
+
+  // Move the viewer to the object
+  moveViewer(&objp->pos, objp->roomnum, &orient);
+
+  // Calculate a position a little in front of the object
+  vector3 pos = Viewer_object->pos - (Viewer_object->orient.fvec * kObjectPlaceDist);
+
+  // Follow vector from start position to desired end position, & move as far
+  // as we can
+  fvi_query fq;
+  fvi_info hit_info;
+  memset(&fq, 0, sizeof(fq));
+  fq.p0 = &Viewer_object->pos;
+  fq.startroom = Viewer_object->roomnum;
+  fq.p1 = &pos;
+  fq.thisobjnum = OBJNUM(Viewer_object);
+  fq.ignore_obj_list = nullptr;
+  fq.flags = 0;
+  fq.rad = 0.0f;
+  fvi_FindIntersection(&fq, &hit_info);
+
+  // Move the viewer to the new position
+  moveViewer(&hit_info.hit_pnt, hit_info.hit_room, nullptr);
+  Viewer_moved = true;
   State_changed = true;
-  std::fprintf(stderr, "[viewer_ops] MoveViewToSelectedRoom -> room %d\n",
-               target_room);
+
+  m_editorView->requestRedraw();
+}
+
+// Win32 ID_VIEW_FLIP -> CEditorView::OnViewFlip (editor/editorView.cpp:1457):
+// reverse the viewer's facing direction by negating its f and r vectors (the
+// up vector is left alone).
+void MainWindow::onFlipViewer() {
+  if (Viewer_object == nullptr)
+    return;
+  Viewer_object->orient.fvec = -Viewer_object->orient.fvec;
+  Viewer_object->orient.rvec = -Viewer_object->orient.rvec;
+
+  Viewer_moved = true;
+  State_changed = true;
 
   m_editorView->requestRedraw();
 }

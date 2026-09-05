@@ -166,6 +166,11 @@ private:
   bool projectVertexDepth(const vector3 &world, float *sx, float *sy, float *depth) const;
   float getFocal() const;
   void updateCamera();
+  // Mirrors the active orbit/wireframe camera into the Viewer_object (when one
+  // exists) so the displayed camera, which follows the viewer, stays congruent
+  // with the orbit state after any orbit mutation (reset / setWireframeView /
+  // moveWorld / setOrbitCamera / fitToMine).
+  void syncViewerToCamera();
   void drawTerrainDots();
   void renderRooms();
   void renderOverlays();

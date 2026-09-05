@@ -166,6 +166,9 @@ void CreateNewMine() {
   Editor_view_mode = VM_MINE;
   Editor_viewer_id = -1;
 
+  // Create a camera for this level (Win32 HFile.cpp:478 SetEditorViewer).
+  SetEditorViewer();
+
   // Clear the marked room and selected segments.
   Markedroomp = nullptr;
   ClearRoomSelectedList();
@@ -253,6 +256,188 @@ void CheckLevelNames() {
   }
 }
 
+// max viewers for each type
+#define MAX_VIEWERS 20
+
+// The viewer in room mode has this ID
+#define ROOM_VIEWER_ID MAX_VIEWERS
+
+// Finds a specific viewer object if one exists
+// Parameters:	id - which viewer id
+// Returns:		object number of a viewer object, or -1 if none
+// (port of editor/HView.cpp:220 FindViewerObject)
+static int findViewerObject(int id) {
+  for (int objnum = 0; objnum <= Highest_object_index; objnum++)
+    if ((Objects[objnum].type == OBJ_VIEWER) && (Objects[objnum].id == id))
+      return objnum;
+  return -1;
+}
+
+// Finds a viewer object if one exists.  Starts looking at the specified id
+// and searches through all possible ids.
+// Parameters:	id - which viewer id
+//					view_mode - if -1, find any viewer, else find one that matches
+//                  view mode
+// Returns:		object number of a viewer object, or -1 if none
+// (port of editor/HView.cpp:240 FindNextViewerObject)
+static int findNextViewerObject(int id, int view_mode) {
+  if (id == -1)
+    id = 0;
+
+  Q_ASSERT((id >= 0) && (id <= MAX_VIEWERS));
+
+  // Get flags
+  const int terrain_flag = (view_mode == VM_TERRAIN);
+
+  // Try all viewer id's, starting at the one passed in
+  int i;
+  for (i = 0; i < MAX_VIEWERS; i++) {
+    const int check_id = ((id + i) % MAX_VIEWERS);
+
+    const int objnum = findViewerObject(check_id);
+
+    if ((objnum != -1) &&
+        ((view_mode == -1) || ((OBJECT_OUTSIDE(&Objects[objnum]) != 0) == terrain_flag)))
+      return objnum;
+  }
+
+  return -1;
+}
+
+// Creates a viewer object of the specified type
+// Parameters:	view_mode - mine, terrain, or room.  See constants in d3edit.h
+//					pos - initial position of this object
+//					roomnum - initial room/terrain cell of this object
+// Returns:		object number of the object created, or -1 if at max number of
+//              viewers of that type
+// (port of editor/HView.cpp:274 CreateViewerObject; ObjCreate is MFC gated
+// so the slot is carved out of Objects[] directly, like
+// MainWindow::onSpawnNewViewer)
+static int createViewerObject(int view_mode, vector3 *pos, int roomnum) {
+  int id;
+  int objnum = -1;
+
+  if (view_mode == VM_ROOM) {
+    id = ROOM_VIEWER_ID;
+
+    for (objnum = 0; objnum <= Highest_object_index; objnum++)
+      if ((Objects[objnum].type == OBJ_VIEWER) && (Objects[objnum].id == id))
+        return -1; // this one already used
+  } else {
+    // for each id, loop through all objects to see if it's used
+    for (id = 0; id < MAX_VIEWERS; id++) {
+      for (objnum = 0; objnum <= Highest_object_index; objnum++)
+        if ((Objects[objnum].type == OBJ_VIEWER) && (Objects[objnum].id == id))
+          break;                             // this one already used
+      if (objnum > Highest_object_index)     // didn't find object with this id
+        break;
+    }
+
+    if (id == MAX_VIEWERS) // no unused viewer id's
+      return -1;
+  }
+
+  // Create the new object
+  objnum = -1;
+  for (int i = 0; i < MAX_OBJECTS; ++i) {
+    if (Objects[i].type == OBJ_NONE) {
+      objnum = i;
+      break;
+    }
+  }
+
+  if (objnum == -1)
+    return -1;
+
+  Objects[objnum] = object{};
+  Objects[objnum].type = OBJ_VIEWER;
+  Objects[objnum].render_type = RT_POLYOBJ;
+  Objects[objnum].id = id;
+
+  // ObjSetPos relinks the object into its room, and ObjRelink asserts that
+  // objnum <= Highest_object_index, so bump it before positioning the object.
+  if (objnum > Highest_object_index)
+    Highest_object_index = objnum;
+
+  ObjSetPos(&Objects[objnum], pos, roomnum, nullptr, false);
+
+  return objnum;
+}
+
+// Binds the editor camera to an object (port of editor/HView.cpp:318
+// SetViewer).  The caller guarantees `objnum` names a valid object slot.
+static void setViewer(int objnum) {
+  Viewer_object = &Objects[objnum];
+
+  if (Editor_view_mode != VM_ROOM)
+    Editor_viewer_id = Viewer_object->id;
+
+  if ((Editor_view_mode == VM_MINE) && OBJECT_OUTSIDE(Viewer_object))
+    Editor_view_mode = VM_TERRAIN;
+
+  if ((Editor_view_mode == VM_TERRAIN) && !OBJECT_OUTSIDE(Viewer_object))
+    Editor_view_mode = VM_MINE;
+
+  State_changed = Viewer_moved = true;
+}
+
+// Sets the viewer object for the editor, creating if not already in the
+// mine.  Keeps separate viewer objects for mine & terrain views.
+// (port of editor/HView.cpp:410 SetEditorViewer)
+void SetEditorViewer() {
+  // First, see if a camera object already exists in the level
+  int objnum;
+  if (Editor_view_mode == VM_ROOM)
+    objnum = findViewerObject(ROOM_VIEWER_ID);
+  else
+    objnum = findNextViewerObject(Editor_viewer_id, Editor_view_mode);
+
+  // If no viewer object, create one
+  if (objnum == -1) {
+    vector3 pos;
+    int roomnum;
+
+    // get position for viewer
+    if (Editor_view_mode == VM_TERRAIN) { // if terrain, put viewer at center of world
+      pos.x() = TERRAIN_SIZE * TERRAIN_WIDTH / 2;
+      pos.y() = Terrain_seg[0].y + 30;
+      pos.z() = TERRAIN_SIZE * TERRAIN_DEPTH / 2;
+      roomnum = MAKE_ROOMNUM(0); // any value ok, so long as it has terrain flag
+    } else if (Editor_view_mode == VM_MINE) { // if mine, put in center of any room
+      for (roomnum = 0; roomnum <= Highest_room_index; roomnum++)
+        if (Rooms[roomnum].used && !Rooms[roomnum].flags.external) {
+          ComputeRoomCenter(&pos, &Rooms[roomnum]);
+          break;
+        }
+      Q_ASSERT(roomnum <= Highest_room_index);
+    } else if (Editor_view_mode == VM_ROOM) { // if room, put at 0,0,0
+      pos = vector3{};
+      roomnum = MAKE_ROOMNUM(0);
+    } else {
+      Q_ASSERT(false); // unknown view mode
+      return;
+    }
+
+    objnum = createViewerObject(Editor_view_mode, &pos, roomnum);
+
+    // If no free viewer slots, grab any viewer and move it
+    if (objnum == -1) {
+      Q_ASSERT(Viewer_object != nullptr);
+      if (Viewer_object->type == OBJ_VIEWER)
+        objnum = OBJNUM(Viewer_object);
+      else {
+        objnum = findNextViewerObject(Editor_viewer_id, -1);
+        Q_ASSERT(objnum != -1);
+      }
+      ObjSetPos(&Objects[objnum], &pos, roomnum, nullptr, true);
+    }
+  }
+
+  Q_ASSERT(objnum != -1);
+  if (objnum != -1)
+    setViewer(objnum);
+}
+
 bool EditorLoadLevel(const std::filesystem::path& filename) {
   if (filename.empty())
     return false;
@@ -260,11 +445,12 @@ bool EditorLoadLevel(const std::filesystem::path& filename) {
   // progress UI yet, so pass nullptr and call the engine.
   if (!LoadLevel(filename, nullptr))
     return false;
-  // LoadLevel → FreeAllObjects leaves Viewer_object dangling (see comment
-  // in CreateNewMine).  Null it so updateCamera() uses orbit fallback.
-  Viewer_object = nullptr;
+  // LoadLevel -> FreeAllObjects leaves Viewer_object dangling, so the
+  // viewer must be re-established before the camera can render (Win32
+  // calls SetEditorViewer() in EditorLoadLevel, HFile.cpp:623).
   CheckLevelNames();
   New_mine = true;
+  SetEditorViewer();
   return true;
 }
 

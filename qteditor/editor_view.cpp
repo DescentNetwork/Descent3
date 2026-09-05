@@ -72,6 +72,31 @@ const float kObjPowerupColor[3] = {0.0f, 0.0f, 1.0f};
 const float kObjMiscColor[3] = {0.0f, 100.0f / 255, 100.0f / 255};
 const float kObjCameraColor[3] = {1.0f, 1.0f, 0.0f};
 
+// Returns true when `m` is a usable camera basis (a right-handed orthonormal
+// rotation).  Degenerate orientation data in a saved level (e.g. level1.d3l's
+// shipped viewer has an all-zero matrix) must not be followed as the camera:
+// with a zero forward vector every world point projects behind the eye and the
+// view renders blank.  updateCamera() falls back to the orbit view instead.
+bool isUsableCameraOrient(const matrix &m) {
+  const auto mag2 = [](const vector3 &v) {
+    return v.x() * v.x() + v.y() * v.y() + v.z() * v.z();
+  };
+  const float fr = mag2(m.fvec);
+  const float ur = mag2(m.uvec);
+  const float rr = mag2(m.rvec);
+  constexpr float kLo = 0.6f, kHi = 1.4f;
+  if (fr < kLo || fr > kHi || ur < kLo || ur > kHi || rr < kLo || rr > kHi)
+    return false;
+  constexpr float kPerpSlack = 0.3f;
+  if (std::fabs(m.fvec.x() * m.uvec.x() + m.fvec.y() * m.uvec.y() + m.fvec.z() * m.uvec.z()) > kPerpSlack)
+    return false;
+  if (std::fabs(m.fvec.x() * m.rvec.x() + m.fvec.y() * m.rvec.y() + m.fvec.z() * m.rvec.z()) > kPerpSlack)
+    return false;
+  if (std::fabs(m.rvec.x() * m.uvec.x() + m.rvec.y() * m.uvec.y() + m.rvec.z() * m.uvec.z()) > kPerpSlack)
+    return false;
+  return true;
+}
+
 // Edge types for the deduplication hash table.
 enum EdgeType { ET_FACING = 0, ET_NOTFACING = 1, ET_PORTAL = 2, ET_EMPTY = 255 };
 
@@ -1365,7 +1390,7 @@ void EditorView::updateCamera() {
   m_rad = v->rad;
 
   m_cameraValid = false;
-  if (Viewer_object != nullptr) {
+  if (Viewer_object != nullptr && isUsableCameraOrient(Viewer_object->orient)) {
     m_eye = Viewer_object->pos;
     m_orient = Viewer_object->orient;
     m_cameraValid = true;
@@ -1380,6 +1405,14 @@ void EditorView::updateCamera() {
   m_cameraValid = true;
 }
 
+void EditorView::syncViewerToCamera() {
+  if (Viewer_object == nullptr)
+    return;
+  const WireframeViewState *v = activeView();
+  Viewer_object->orient = v->orient;
+  Viewer_object->pos = v->target - v->orient.fvec * v->dist;
+}
+
 void EditorView::resetCamera() { resetWireframeView(); }
 
 void EditorView::resetWireframeView() {
@@ -1389,6 +1422,7 @@ void EditorView::resetWireframeView() {
   v->rad = kDefaultViewRad;
   vm_MakeIdentity(&v->orient);
   v->target = kMineOrigin;
+  syncViewerToCamera();
   m_cameraValid = false;
   update();
 }
@@ -1404,6 +1438,7 @@ void EditorView::setWireframeView(const vector3 &pos) {
   // Port of SetWireframeView (editor/moveworld.cpp:182-185): re-aim the active
   // view at a new location without touching distance or orientation.
   activeView()->target = pos;
+  syncViewerToCamera();
   m_cameraValid = false;
   update();
 }
@@ -1452,6 +1487,8 @@ void EditorView::moveWorld(int dx, int dy, bool ctrlDown, bool shiftDown, bool z
       v->rad = 0;
     m_cameraValid = false;
   }
+
+  syncViewerToCamera();
 }
 
 void EditorView::setOrbitCamera(float yawDeg, float pitchDeg, float dist) {
@@ -1460,6 +1497,7 @@ void EditorView::setOrbitCamera(float yawDeg, float pitchDeg, float dist) {
   vm_AnglesToMatrix(&v->orient, 0, yawDeg * 65536.0f / 360.0f, pitchDeg * 65536.0f / 360.0f);
   if (dist > 0.0f)
     v->dist = dist;
+  syncViewerToCamera();
   m_cameraValid = false;
   update();
 }
@@ -1505,6 +1543,7 @@ void EditorView::fitToMine() {
   v->target = center;
   v->dist = std::max(fitX, fitY) * 1.5f;
   vm_MakeIdentity(&v->orient);
+  syncViewerToCamera();
   m_cameraValid = false;
   update();
 }
