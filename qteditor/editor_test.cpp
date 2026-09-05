@@ -2530,6 +2530,87 @@ private slots:
     QVERIFY(depth > 0.0f);
   }
 
+  // Regression test for the blank-view-after-Open bug.  The Win32 editor runs
+  // CreateNewMine() at startup (OnNewDocument), which aims the wireframe view
+  // at Mine_origin; File>Open then only resets the view radius (HFile.cpp:626)
+  // so the camera keeps that aim.  When the Qt port's startup never ran the
+  // new-mine sequence, the view kept the raw (0,0,0) default aim and a loaded
+  // level built around Mine_origin projected entirely off-screen
+  // (testdata/level1.d3l's mine spans x in [1908,4177], z in [1923,3263]).
+  void testOpenPathRendersFromMineOrigin() {
+    const QString level = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+
+    // The state the startup CreateNewMine()/OnNewDocument establishes.
+    CreateNewMine();
+    EditorView view;
+    view.resize(800, 480);
+    view.show();
+    QCoreApplication::processEvents();
+    view.resetCamera();
+
+    // The startup ResetWireframeView aims at Mine_origin
+    // (TERRAIN_WIDTH*(TERRAIN_SIZE/2), -100, TERRAIN_DEPTH*(TERRAIN_SIZE/2)).
+    QCOMPARE(view.activeWireframeView().target.x(), 2048.0f);
+    QCOMPARE(view.activeWireframeView().target.y(), -100.0f);
+    QCOMPARE(view.activeWireframeView().target.z(), 2048.0f);
+
+    // GUI File>Open sequence: EditorLoadLevel + ResetWireframeViewRad only.
+    QVERIFY2(EditorLoadLevel(std::filesystem::path(level.toStdString())), "EditorLoadLevel failed");
+    view.resetWireframeViewRad();
+    QCoreApplication::processEvents();
+    for (int i = 0; i < 20 && view.frameCount() < 1; i++)
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    QCoreApplication::processEvents();
+
+    // The default 800x480 mine view clears to (25,31,46); anything else on
+    // screen means level geometry was actually rendered.
+    QImage img = view.grabFramebuffer();
+    QVERIFY2(!img.isNull(), "grabFramebuffer returned null");
+    int nonBackground = 0;
+    for (int y = 0; y < img.height(); y += 4) {
+      const QRgb *line = reinterpret_cast<const QRgb *>(img.constScanLine(y));
+      for (int x = 0; x < img.width(); x += 4) {
+        const QRgb p = line[x];
+        if (qAbs(qRed(p) - 25) > 16 || qAbs(qGreen(p) - 31) > 16 || qAbs(qBlue(p) - 46) > 16)
+          nonBackground++;
+      }
+    }
+    QVERIFY2(nonBackground > 50, "level not visible after File>Open (camera not aimed at Mine_origin)");
+
+    // And a click over the rendered mine must pick a face, not miss everything
+    // (the original bug's PICK output had room=-1 face=-1 for every click).
+    const EditorView::WireframeViewState &v = view.activeWireframeView();
+    QVERIFY(v.rad == 5000.0f); // File>Open keeps the default view radius
+    // Find a screen point that actually shows a face of the mine and click it.
+    bool pickedSomething = false;
+    for (int r = 0; r <= Highest_room_index && !pickedSomething; r++) {
+      room *rp = &Rooms[r];
+      if (!rp->used)
+        continue;
+      for (int f = 0; f < rp->num_faces && !pickedSomething; f++) {
+        face *fp = &rp->faces[f];
+        if (fp->portal_num != -1)
+          continue;
+        vector3 center{};
+        for (int i = 0; i < fp->num_verts; i++)
+          center += rp->verts[fp->face_verts[i]];
+        center /= fp->num_verts;
+        float sx, sy, depth;
+        if (!view.projectWorldToScreen(center, &sx, &sy, &depth))
+          continue;
+        if (sx < 0 || sx >= img.width() || sy < 0 || sy >= img.height())
+          continue;
+        int dist = view.pickAt(static_cast<int>(sx), static_cast<int>(sy)).faceIndex;
+        if (dist >= 0) {
+          pickedSomething = true;
+          break;
+        }
+      }
+    }
+    QVERIFY2(pickedSomething,
+             "no pickable face projected on screen; clicking the visible mine never selects a face");
+  }
+
   // Tests that pickAt() identifies a face when clicking on a visible face of
   // a loaded level.  The pick point is the projected centroid of the nearest
   // face to the camera, so the test is independent of the initial camera

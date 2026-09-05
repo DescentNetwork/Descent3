@@ -324,6 +324,16 @@ MainWindow::MainWindow(QWidget *parent)
   setCentralWidget(m_editorView);
   buildKeypadBar();
 
+  // Win32 CEditorDoc::OnNewDocument (editor/editorDoc.cpp:186) runs
+  // CreateNewMine() at editor startup, which aims the wireframe view at
+  // Mine_origin (CreateNewMine -> ResetWireframeView).  Replicating that
+  // here means a later File>Open (which only resets the view radius,
+  // HFile.cpp:626) keeps the camera aimed at Mine_origin, where loaded
+  // levels are built.  Without it the fresh default aim (0,0,0) leaves the
+  // mine projecting off-screen and the level appears blank after Open.
+  onFileNew();
+  m_editorView->requestRedraw();
+
   // The EditorView is now the central dock widget inside the dock manager.
   // All previously existing dock/undock/visibility logic stays the same.
   // Pull geometry / dock state saved by an earlier session so docked
