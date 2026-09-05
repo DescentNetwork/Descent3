@@ -1218,6 +1218,47 @@ private slots:
     }
   }
 
+  // The Win32 editor only zooms with Z+drag (MoveWorld); the Qt port also
+  // maps the mouse wheel onto that same zoom path so the orbit dist changes
+  // while the aim target stays put.  One notch = +120 angleDelta = 15 degrees,
+  // scaled by ZOOM_SCALE (kZoomScale = 10) -> 150 units per notch.
+  void testMouseWheelZoomsOrbitView() {
+    MainWindow win;
+    win.show();
+    QCoreApplication::processEvents();
+    auto *view = win.findChild<EditorView *>();
+    QVERIFY(view != nullptr);
+    {
+      const EditorView::WireframeViewState &v0 = view->activeWireframeView();
+      QCOMPARE(v0.dist, 500.0f);
+      QCOMPARE(v0.target.x(), 2048.0f);
+    }
+
+    const QPointF c = view->rect().center();
+    const QPointF gc = view->mapToGlobal(view->rect().center());
+
+    // Scroll up (positive angleDelta) zooms in: 500 -> 350.
+    QWheelEvent in(c, gc, QPoint(0, 0), QPoint(0, 120), Qt::NoButton,
+                   Qt::NoModifier, Qt::ScrollUpdate, false);
+    QApplication::sendEvent(view, &in);
+    QCoreApplication::processEvents();
+    {
+      const EditorView::WireframeViewState &v = view->activeWireframeView();
+      QCOMPARE(v.dist, 350.0f);
+      QCOMPARE(v.target.x(), 2048.0f); // aim unchanged
+    }
+
+    // Scroll down zooms back out: 350 -> 500.
+    QWheelEvent out(c, gc, QPoint(0, 0), QPoint(0, -120), Qt::NoButton,
+                    Qt::NoModifier, Qt::ScrollUpdate, false);
+    QApplication::sendEvent(view, &out);
+    QCoreApplication::processEvents();
+    {
+      const EditorView::WireframeViewState &v = view->activeWireframeView();
+      QCOMPARE(v.dist, 500.0f);
+    }
+  }
+
   // Verifies SaveEditorSettings / LoadEditorSettings (editor.cpp) round-trip
   // through QSettings. Uses an INI-formatted store under a tmp file so the
   // global app config isn't touched, and a constructed d3edit_state seeded

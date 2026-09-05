@@ -23,6 +23,7 @@
 #include <QFocusEvent>
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QWheelEvent>
 #include <QOpenGLFunctions>
 #include <GL/gl.h>
 #include <QSurfaceFormat>
@@ -1689,6 +1690,25 @@ void EditorView::mouseReleaseEvent(QMouseEvent *event) {
     m_mouseDown = false;
     m_dragged = false;
   }
+}
+
+void EditorView::wheelEvent(QWheelEvent *event) {
+  // The Win32 editor has no wheel zoom (zoom is Z+drag in MoveWorld); this is
+  // a Qt convenience that drives the same Z+drag zoom path so the orbit dist
+  // and the mirrored viewer stay consistent.  angleDelta().y() is positive
+  // when the wheel rolls away from the user (scroll up -> zoom in), i.e. in
+  // the opposite sense of the screen-space dy used by MoveWorld zoom.
+  const int degrees = event->angleDelta().y() / 8;
+  if (degrees == 0) {
+    event->ignore();
+    return;
+  }
+  // Screen-dy equivalent: +15 scroll-up maps to -15 dy (zoom in), applying the
+  // same Z+drag rate so one wheel notch behaves like 15px of zoom drag.
+  const int dy = -degrees;
+  moveWorld(0, dy, /*ctrlDown=*/false, /*shiftDown=*/false, /*zDown=*/true);
+  update();
+  event->accept();
 }
 
 void EditorView::keyPressEvent(QKeyEvent *event) {
