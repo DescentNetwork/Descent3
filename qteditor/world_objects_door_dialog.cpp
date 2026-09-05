@@ -74,16 +74,19 @@ bool verifyDoorModel(int handle) {
       }
 
       room check_room;
-      face check_face;
+      check_room = room{};
 
-      check_room.verts = sm->verts;
-      check_room.faces = &check_face;
+      if (sm->nverts > 0)
+        check_room.verts.assign(sm->verts, sm->verts + sm->nverts);
+      check_room.faces.resize(1);
 
       for (int f = 0; f < sm->num_faces; f++) {
         polyface *polyface = &sm->faces[f];
 
-        check_face.num_verts = polyface->nverts;
-        check_face.face_verts = polyface->vertnums;
+        face *check_face = &check_room.faces[0];
+        check_face->num_verts = polyface->nverts;
+        if (polyface->nverts > 0)
+          check_face->face_verts.assign(polyface->vertnums, polyface->vertnums + polyface->nverts);
 
         if (!ComputeFaceNormal(&check_room, 0)) {
           QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("Invalid door model: Face %1 in shell has bad normal.").arg(f));

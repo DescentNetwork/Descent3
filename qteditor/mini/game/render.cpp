@@ -486,7 +486,7 @@ void MakePointsFromMinMax(vector3 *corners, vector3 *minp, vector3 *maxp) {
 }
 
 // Rotates all the points in a room
-void RotateRoomPoints(room *rp, vector3 *world_vecs) {
+void RotateRoomPoints(room *rp, const vector3 *world_vecs) {
   int i;
   // Jig the vertices a bit if being deformed
   if (Viewer_object->effect_info && (Viewer_object->effect_info->type_flags & EF_DEFORM)) {
@@ -501,7 +501,8 @@ void RotateRoomPoints(room *rp, vector3 *world_vecs) {
     }
   } else {
     for (i = 0; i < rp->num_verts; i++) {
-      g3_RotatePoint(&World_point_buffer[rp->wpb_index + i], &world_vecs[i]);
+      vector3 vec = world_vecs[i];
+      g3_RotatePoint(&World_point_buffer[rp->wpb_index + i], &vec);
       g3_ProjectPoint(&World_point_buffer[rp->wpb_index + i]);
     }
   }
@@ -521,7 +522,7 @@ void ReflectRay(vector3 *dest, vector3 *src, vector3 *mirror_norm) {
 void ResetFacings() { memset(Facing_visited, 0, sizeof(int) * (Highest_room_index + 1)); }
 
 // Marks all the faces facing us as drawable
-void MarkFacingFaces(int roomnum, vector3 *world_verts) {
+void MarkFacingFaces(int roomnum, const vector3 *world_verts) {
   room *rp = &Rooms[roomnum];
   face *fp;
   vector3 tvec;
@@ -574,7 +575,7 @@ int ExternalRoomVisibleFromPortal(int index, clip_wnd *wnd) {
 void MarkFacesForRendering(int roomnum, clip_wnd *wnd) {
   room *rp = &Rooms[roomnum];
   int i;
-  MarkFacingFaces(roomnum, rp->verts);
+  MarkFacingFaces(roomnum, rp->verts.data());
 
   // Rotate all the points in this room
   if (rp->wpb_index == -1) {
@@ -584,10 +585,10 @@ void MarkFacesForRendering(int roomnum, clip_wnd *wnd) {
     // everyone has the intel compiler!
 #if (defined(RELEASE) && defined(KATMAI))
     if (Katmai)
-      RotateRoomPoints(rp, rp->verts4);
+      RotateRoomPoints(rp, rp->verts4.data());
     else
 #endif
-      RotateRoomPoints(rp, rp->verts);
+      RotateRoomPoints(rp, rp->verts.data());
 
     Global_buffer_index += rp->num_verts;
   }
@@ -1097,7 +1098,7 @@ void BuildRoomList(int start_room_num) {
   for (i = 0; i < rp->num_faces; i++)
     rp->faces[i].flags |= FF_VISIBLE;
 
-  MarkFacingFaces(start_room_num, rp->verts);
+  MarkFacingFaces(start_room_num, rp->verts.data());
   // Enable mirror if there is one
   if (rp->mirror_face != -1 && Detail_settings.Mirrored_surfaces &&
       !(rp->faces[rp->mirror_face].flags & FF_NOT_FACING)) {
@@ -1113,10 +1114,10 @@ void BuildRoomList(int start_room_num) {
 #if (defined(RELEASE) && defined(KATMAI))
   if (Katmai)
 
-    RotateRoomPoints(rp, rp->verts4);
+    RotateRoomPoints(rp, rp->verts4.data());
   else
 #endif
-    RotateRoomPoints(rp, rp->verts);
+    RotateRoomPoints(rp, rp->verts.data());
 
   Global_buffer_index += rp->num_verts;
 
@@ -1140,7 +1141,7 @@ void BuildRoomList(int start_room_num) {
         if (rp->used && (rp->flags.external)) {
           for (int t = 0; t < rp->num_faces; t++)
             rp->faces[t].flags |= FF_VISIBLE;
-          MarkFacingFaces(i, rp->verts);
+          MarkFacingFaces(i, rp->verts.data());
 
           if (!Rooms_visited[i])
             Render_list[N_render_rooms++] = i;
@@ -1468,7 +1469,7 @@ void RenderSpecularFacesFlat(room *rp) {
       }
     }
     if (GameTextures[fp->tmap].flags.smooth_specular) {
-      smooth_faces[num_smooth_faces] = fp - rp->faces;
+      smooth_faces[num_smooth_faces] = fp - rp->faces.data();
       num_smooth_faces++;
     } else {
       if (fp->flags & FF_TRIANGULATED)
@@ -1533,7 +1534,7 @@ void UpdateSpecularFace(room *rp, face *fp) {
   int n = Num_specular_faces_to_render;
   if (n >= MAX_SPECULAR_FACES)
     return;
-  Specular_faces[n] = fp - rp->faces;
+  Specular_faces[n] = fp - rp->faces.data();
   Num_specular_faces_to_render++;
   if (!(fp->flags & FF_SPEC_INVISIBLE))
     Num_real_specular_faces_to_render++;
@@ -1549,7 +1550,7 @@ bool Fog_disabled = 0;
 void UpdateFogFace(room *rp, face *fp) {
   if (Fog_disabled || !Detail_settings.Fog_enabled)
     return;
-  Fog_faces[Num_fog_faces_to_render++] = fp - rp->faces;
+  Fog_faces[Num_fog_faces_to_render++] = fp - rp->faces.data();
 }
 
 // Render a fog layer on top of a face
@@ -2146,10 +2147,10 @@ void RenderRoomSorted(room *rp) {
     // everyone has the intel compiler!
 #if (defined(RELEASE) && defined(KATMAI))
     if (Katmai)
-      RotateRoomPoints(rp, rp->verts4);
+      RotateRoomPoints(rp, rp->verts4.data());
     else
 #endif
-      RotateRoomPoints(rp, rp->verts);
+      RotateRoomPoints(rp, rp->verts.data());
 
     Global_buffer_index += rp->num_verts;
   }
@@ -2247,11 +2248,11 @@ void RenderRoomUnsorted(room *rp) {
 // everyone has the intel compiler!
 #if (defined(RELEASE) && defined(KATMAI))
     if (Katmai) {
-      RotateRoomPoints(rp, rp->verts4);
+      RotateRoomPoints(rp, rp->verts4.data());
     } else
 #endif
     {
-      RotateRoomPoints(rp, rp->verts);
+      RotateRoomPoints(rp, rp->verts.data());
     }
 
     Global_buffer_index += rp->num_verts;

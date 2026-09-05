@@ -464,69 +464,6 @@ int CountRoomFaceVerts(room *rp) {
 
 #endif
 
-// Vars for the room memory system
-uint8_t *Room_mem_buf = NULL; // pointer to the rooms block of memory
-uint8_t *Room_mem_ptr = NULL; // pointer to free memory in the rooms block
-int Room_mem_size;          // How big our chunk is
-
-// Closes down the room memory system.
-void RoomMemClose() {
-  if (Room_mem_buf)
-    mem_rmfree(Room_mem_buf);
-
-  Room_mem_buf = Room_mem_ptr = NULL;
-}
-
-// Initialized the memory buffer for a room
-// Parameters:	size - the total amount of memory needed for the room
-void RoomMemInit(int nverts, int nfaces, int nfaceverts, int nportals) {
-#if (defined(EDITOR) || defined(NEWEDITOR))
-  return; // This system is disabled in the editor
-#endif
-
-  if (nverts == 0) // We don't know how much mem the room will use, so do the old way
-    return;
-
-  size_t size = 0;
-  size += nfaces * (sizeof(*Rooms[0].faces) + sizeof(std::max_align_t));
-  size += nverts * (sizeof(*Rooms[0].verts) + sizeof(std::max_align_t));
-  size += nportals * (sizeof(*Rooms[0].portals) + sizeof(std::max_align_t));
-  size += nfaceverts * (sizeof(*Rooms[0].faces[0].face_verts) + sizeof(std::max_align_t) +
-          sizeof(*Rooms[0].faces[0].face_uvls) + sizeof(std::max_align_t));
-
-  if (Room_mem_buf)
-    mem_rmfree(Room_mem_buf);
-
-  Room_mem_buf = mem_rmalloc<uint8_t>(size);
-  Room_mem_size = size;
-
-  Room_mem_ptr = Room_mem_buf;
-}
-
-// Allocates memory for a room or face
-template<typename T> static T *RoomMemAlloc(size_t nelem) {
-  if (Room_mem_buf) {
-    uint8_t *p = reinterpret_cast<uint8_t *>((reinterpret_cast<uintptr_t>(Room_mem_ptr) + alignof(T) - 1) / alignof(T) * alignof(T));
-    Room_mem_ptr = p + nelem * sizeof(T);
-    Q_ASSERT(Room_mem_ptr <= (Room_mem_buf + Room_mem_size));
-    return static_cast<T *>(static_cast<void *>(p));
-  } else
-    return new T[nelem];
-}
-
-// Frees memory in a room
-// Doesn't actually do anything
-template<typename T> void RoomMemFree(T *buf) {
-  if (!buf)
-    return;
-
-  if (Room_mem_buf) {
-    uint8_t *p = reinterpret_cast<uint8_t *>(buf);
-    Q_ASSERT(((p) >= Room_mem_buf) && ((p) < (Room_mem_buf + Room_mem_size)));
-  } else
-    delete[] buf;
-}
-
 // Initalize a room, allocating memory and filling in fields
 // Parameters:	rp - the room to be initialized
 //					nverts - how many vertices this room will have
@@ -559,27 +496,16 @@ void InitRoom(room *rp, int nverts, int nfaces, int nportals) {
   rp->fog_g = 1.0;
   rp->fog_b = 1.0;
 
-  rp->faces = RoomMemAlloc<face>(nfaces);
-  Q_ASSERT(rp->faces != NULL);
+  rp->faces.resize(nfaces);
+  rp->verts.resize(nverts);
+  rp->verts4.resize(Katmai ? nverts : 0);
 
   rp->num_bbf_regions = 0;
-
-  rp->verts = RoomMemAlloc<vector3>(nverts);
-  Q_ASSERT(rp->verts != NULL);
-
-  if (Katmai) {
-    rp->verts4 = mem_rmalloc<vector4>(nverts);
-    Q_ASSERT(rp->verts4 != NULL);
-  }
 
   rp->pulse_time = 0;
   rp->pulse_offset = 0;
 
-  if (nportals) {
-    rp->portals = RoomMemAlloc<portal>(nportals);
-    Q_ASSERT(rp->portals != NULL);
-  } else
-    rp->portals = NULL;
+  rp->portals.resize(nportals);
 
   // Default to no ambient sound
   rp->ambient_sound = -1;
@@ -628,13 +554,9 @@ void InitRoomFace(face *fp, int nverts) {
   fp->special_handle = BAD_SPECIAL_FACE_INDEX;
   fp->light_multiple = 4;
 
-  fp->face_verts = RoomMemAlloc<short>(nverts);
-  Q_ASSERT(fp->face_verts != NULL);
-  fp->face_uvls = RoomMemAlloc<roomUVL>(nverts);
-  Q_ASSERT(fp->face_uvls != NULL);
+  fp->face_verts.resize(nverts);
+  fp->face_uvls.resize(nverts);
 
-  Q_ASSERT(fp->face_verts);
-  Q_ASSERT(fp->face_uvls);
   for (int i = 0; i < nverts; i++)
     fp->face_uvls[i].alpha = 255;
 }
@@ -671,22 +593,17 @@ void FreeRoom(room *rp) {
     FreeRoomFace(&rp->faces[i]);
 
   // Free up mem alloced for this room
-  RoomMemFree(rp->faces);
-  RoomMemFree(rp->portals);
-  RoomMemFree(rp->verts);
-
-  if (Katmai )
-    mem_rmfree(rp->verts4);
+  rp->faces.clear();
+  rp->portals.clear();
+  rp->verts.clear();
+  rp->verts4.clear();
 
   if (rp->num_bbf_regions) {
-    for (i = 0; i < rp->num_bbf_regions; i++) {
-      mem_free(rp->bbf_list[i]);
-    }
-    mem_free(rp->bbf_list);
-    mem_free(rp->num_bbf);
-    mem_free(rp->bbf_list_min_xyz);
-    mem_free(rp->bbf_list_max_xyz);
-    mem_free(rp->bbf_list_sector);
+    rp->bbf_list.clear();
+    rp->num_bbf.clear();
+    rp->bbf_list_min_xyz.clear();
+    rp->bbf_list_max_xyz.clear();
+    rp->bbf_list_sector.clear();
 
     rp->num_bbf_regions = 0;
   }
@@ -726,8 +643,6 @@ void FreeAllRooms() {
 
   Q_ASSERT(Highest_room_index == -1);
 
-  RoomMemClose();
-
   //	mprintf(2,"Done\n");
 }
 
@@ -756,8 +671,8 @@ void FreeRoomFace(face *fp) {
     fp->special_handle = BAD_SPECIAL_FACE_INDEX;
   }
 
-  RoomMemFree(fp->face_verts);
-  RoomMemFree(fp->face_uvls);
+  fp->face_verts.clear();
+  fp->face_uvls.clear();
 }
 
 // Finds the center point of a room
@@ -803,7 +718,7 @@ bool ComputeFaceNormal(room *rp, int facenum) {
   face *fp = &rp->faces[facenum];
   bool ok;
 
-  ok = ComputeNormal(&fp->normal, fp->num_verts, fp->face_verts, rp->verts);
+  ok = ComputeNormal(&fp->normal, fp->num_verts, fp->face_verts.data(), rp->verts.data());
 
   if (!ok) {
     LOG_WARNING("Warning: Low precision normal for room:face = %d:%d", ROOMNUM(rp), facenum);
@@ -821,7 +736,7 @@ bool ComputeFaceNormal(room *rp, int facenum) {
 //					verts - the array of vertices into which the elements of vertnum_list index
 // Returns:		true if the normal is ok
 //					false if the normal has a very small (pre-normalization) magnitude
-bool ComputeNormal(vector3 *normal, int num_verts, short *vertnum_list, vector3 *verts) {
+bool ComputeNormal(vector3 *normal, int num_verts, const int16_t *vertnum_list, const vector3 *verts) {
   int i;
   float largest_mag;
 
@@ -1074,7 +989,7 @@ void FindPointUV(float *u, float *v, const vector3 *pnt, const room *rp, const f
 // Returns:	true if can pass through the given point, else 0
 int CheckTransparentPoint(const vector3 *pnt, const room *rp, const int facenum) {
   int bm_handle;
-  face *fp = &rp->faces[facenum];
+  const face *fp = &rp->faces[facenum];
   float u, v;
   int w, h, x, y;
 
@@ -1119,10 +1034,10 @@ float ComputeRoomBoundingSphere(vector3 *center, room *rp) {
 #endif
 
   // Initialize min, max vars
-  min_x = max_x = min_y = max_y = min_z = max_z = &rp->verts[0];
+  min_x = max_x = min_y = max_y = min_z = max_z = rp->verts.data();
 
   // First, find the points with the min & max x,y, & z coordinates
-  for (i = 0, vp = rp->verts; i < rp->num_verts; i++, vp++) {
+  for (i = 0, vp = rp->verts.data(); i < rp->num_verts; i++, vp++) {
 
     if (vp->x() < min_x->x())
       min_x = vp;
@@ -1167,7 +1082,7 @@ float ComputeRoomBoundingSphere(vector3 *center, room *rp) {
 
   // Go through all points and look for ones that don't fit
   rad2 = rad * rad;
-  for (i = 0, vp = rp->verts; i < rp->num_verts; i++, vp++) {
+  for (i = 0, vp = rp->verts.data(); i < rp->num_verts; i++, vp++) {
     vector3 delta;
     float t2;
 

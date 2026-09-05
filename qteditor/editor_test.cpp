@@ -369,16 +369,11 @@ struct PickFixture {
     rp->bbf_max_xyz = rp->max_xyz;
 
     rp->num_bbf_regions = 1;
-    rp->bbf_list = (int16_t **)mem_malloc(sizeof(int16_t *));
-    rp->bbf_list[0] = (int16_t *)mem_malloc(rp->num_faces * sizeof(int16_t));
-    rp->num_bbf = (int16_t *)mem_malloc(sizeof(int16_t));
-    rp->num_bbf[0] = (int16_t)rp->num_faces;
-    rp->bbf_list_sector = (uint8_t *)mem_malloc(sizeof(uint8_t));
-    rp->bbf_list_sector[0] = 0;
-    rp->bbf_list_min_xyz = (vector3 *)mem_malloc(sizeof(vector3));
-    rp->bbf_list_max_xyz = (vector3 *)mem_malloc(sizeof(vector3));
-    rp->bbf_list_min_xyz[0] = rp->min_xyz;
-    rp->bbf_list_max_xyz[0] = rp->max_xyz;
+    rp->bbf_list.assign(1, std::vector<int16_t>(rp->num_faces));
+    rp->num_bbf.assign(1, (int16_t)rp->num_faces);
+    rp->bbf_list_sector.assign(1, uint8_t{0});
+    rp->bbf_list_min_xyz.assign(1, rp->min_xyz);
+    rp->bbf_list_max_xyz.assign(1, rp->max_xyz);
     for (int f = 0; f < rp->num_faces; ++f)
       rp->bbf_list[0][f] = (int16_t)f;
   }
@@ -1608,10 +1603,7 @@ private slots:
     {
       room *rp = CreateNewRoom(8, 3, false);
       QVERIFY(rp != nullptr);
-      Rooms[0] = *rp;
-      rp->verts = nullptr;
-      rp->faces = nullptr;
-      rp->portals = nullptr;
+      Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
       Rooms[0].num_verts = 8;
@@ -1715,15 +1707,9 @@ private slots:
     // camera placement goes through ObjSetPos cleanly. (testRoomOpsContract
     // runs first and DestroyRoom's the slot, so leaving the test in a
     // clean state is essential.)
-    Rooms[0].verts = nullptr;
-    Rooms[0].faces = nullptr;
-    Rooms[0].portals = nullptr;
     {
       room *rp = CreateNewRoom(8, 3, false);
-      Rooms[0] = *rp;
-      rp->verts = nullptr;
-      rp->faces = nullptr;
-      rp->portals = nullptr;
+      Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
       Rooms[0].num_verts = 8;
@@ -1775,18 +1761,12 @@ private slots:
     // Spin up a single room with valid verts so CenterViewOnMine /
     // MoveViewToSelectedRoom produce a non-degenerate centroid.
     for (int i = 0; i < MAX_ROOMS; ++i) {
-      Rooms[i].verts = nullptr;
-      Rooms[i].faces = nullptr;
-      Rooms[i].portals = nullptr;
-      Rooms[i].used = 0;
+      Rooms[i] = room{};
     }
     Highest_room_index = -1;
     {
       room *rp = CreateNewRoom(4, 1, false);
-      Rooms[0] = *rp;
-      rp->verts = nullptr;
-      rp->faces = nullptr;
-      rp->portals = nullptr;
+      Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
       Rooms[0].num_verts = 4;
@@ -1905,8 +1885,7 @@ private slots:
     src.num_verts = 4;
     src.num_faces = 2;
     src.num_portals = 0;
-    src.verts = new vector3[4];
-    src.faces = new face[2];
+    InitRoom(&src, 4, 2, 0);
     src.verts[0] = vector3{(float)10, (float)20, (float)30};
     src.verts[1] = vector3{(float)40, (float)50, (float)60};
     src.verts[2] = vector3{(float)70, (float)80, (float)90};
@@ -1937,14 +1916,8 @@ private slots:
     QCOMPARE(dst.faces[0].tmap, 5);
     QCOMPARE(dst.faces[1].tmap, 6);
 
-    FreeRoomFace(&dst.faces[0]);
-    FreeRoomFace(&dst.faces[1]);
-    delete[] dst.verts;
-    delete[] dst.faces;
-    FreeRoomFace(&src.faces[0]);
-    FreeRoomFace(&src.faces[1]);
-    delete[] src.verts;
-    delete[] src.faces;
+    FreeRoom(&dst);
+    FreeRoom(&src);
   }
 
   void testLinkRoomsAndDeletePortal() {
@@ -2046,14 +2019,7 @@ private slots:
     QCOMPARE(rp->num_faces, 1);
     QCOMPARE(rp->faces[0].num_verts, 4);
 
-    FreeRoomFace(&rp->faces[0]);
-    mem_free(rp->faces);
-    rp->faces = nullptr;
-    rp->num_faces = 0;
-    delete[] rp->verts;
-    rp->verts = nullptr;
-    rp->num_verts = 0;
-    rp->used = 0;
+    FreeRoom(rp);
   }
 
   void testRotateRooms() {
@@ -3737,15 +3703,10 @@ private slots:
     ResetObjectList();
     Highest_object_index = -1;
 
-    Rooms[0].verts = nullptr;
-    Rooms[0].faces = nullptr;
-    Rooms[0].portals = nullptr;
+    
     {
       room *rp = CreateNewRoom(8, 1, false);
-      Rooms[0] = *rp;
-      rp->verts = nullptr;
-      rp->faces = nullptr;
-      rp->portals = nullptr;
+      Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
       Rooms[0].num_verts = 8;
@@ -3790,15 +3751,10 @@ private slots:
     ResetObjectList();
     Highest_object_index = -1;
 
-    Rooms[0].verts = nullptr;
-    Rooms[0].faces = nullptr;
-    Rooms[0].portals = nullptr;
+    
     {
       room *rp = CreateNewRoom(8, 1, false);
-      Rooms[0] = *rp;
-      rp->verts = nullptr;
-      rp->faces = nullptr;
-      rp->portals = nullptr;
+      Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
       Rooms[0].num_verts = 8;
@@ -3847,15 +3803,10 @@ private slots:
     ResetObjectList();
     Highest_object_index = -1;
 
-    Rooms[0].verts = nullptr;
-    Rooms[0].faces = nullptr;
-    Rooms[0].portals = nullptr;
+    
     {
       room *rp = CreateNewRoom(8, 1, false);
-      Rooms[0] = *rp;
-      rp->verts = nullptr;
-      rp->faces = nullptr;
-      rp->portals = nullptr;
+      Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
       Rooms[0].num_verts = 8;
@@ -3910,15 +3861,10 @@ private slots:
     ResetObjectList();
     Highest_object_index = -1;
 
-    Rooms[0].verts = nullptr;
-    Rooms[0].faces = nullptr;
-    Rooms[0].portals = nullptr;
+    
     {
       room *rp = CreateNewRoom(8, 1, false);
-      Rooms[0] = *rp;
-      rp->verts = nullptr;
-      rp->faces = nullptr;
-      rp->portals = nullptr;
+      Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
       Rooms[0].num_verts = 8;
@@ -3975,15 +3921,10 @@ private slots:
     ResetObjectList();
     Highest_object_index = -1;
 
-    Rooms[0].verts = nullptr;
-    Rooms[0].faces = nullptr;
-    Rooms[0].portals = nullptr;
+    
     {
       room *rp = CreateNewRoom(8, 1, false);
-      Rooms[0] = *rp;
-      rp->verts = nullptr;
-      rp->faces = nullptr;
-      rp->portals = nullptr;
+      Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
       Rooms[0].num_verts = 8;
@@ -4044,15 +3985,10 @@ private slots:
     ResetObjectList();
     Highest_object_index = -1;
 
-    Rooms[0].verts = nullptr;
-    Rooms[0].faces = nullptr;
-    Rooms[0].portals = nullptr;
+    
     {
       room *rp = CreateNewRoom(8, 1, false);
-      Rooms[0] = *rp;
-      rp->verts = nullptr;
-      rp->faces = nullptr;
-      rp->portals = nullptr;
+      Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
       Rooms[0].num_verts = 8;
@@ -4119,21 +4055,19 @@ private slots:
     ResetObjectList();
     Highest_object_index = -1;
 
-    Rooms[0].verts = nullptr;
-    Rooms[0].faces = nullptr;
-    Rooms[0].portals = nullptr;
+    
     {
       room *rp = CreateNewRoom(8, 1, false);
-      Rooms[0] = *rp;
-      rp->verts = nullptr;
-      rp->faces = nullptr;
-      rp->portals = nullptr;
+      Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
       Rooms[0].num_verts = 8;
       Rooms[0].num_faces = 1;
-      for (int v = 0; v < 8; ++v)
-        Rooms[0].verts[v] = vector3{};
+      for (int v = 0; v < 4; ++v)
+        Rooms[0].verts[v] = vector3{(float)(v & 1) * 10, 0, (float)(v > 1) * 10};
+      InitRoomFace(&Rooms[0].faces[0], 4);
+      for (int i = 0; i < 4; ++i)
+        Rooms[0].faces[0].face_verts[i] = (int16_t)i;
       ComputeFaceNormal(&Rooms[0], 0);
     }
     Highest_room_index = 0;
@@ -4151,6 +4085,9 @@ private slots:
     Cur_object_index = -1;
     D3EditState.object_move_mode = REL_OBJECT;
     ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_X);
+    // Use the orbit camera (not the viewer) so the eye is not co-located
+    // with the object at Mine_origin; otherwise it renders unprojectable.
+    Viewer_object = nullptr;
 
     EditorView view;
     view.resize(640, 480);

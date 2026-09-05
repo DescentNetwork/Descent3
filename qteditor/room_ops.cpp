@@ -97,13 +97,8 @@ void ReInitRoomFace(face *fp, int nverts) {
 
   fp->num_verts = nverts;
 
-  mem_free(fp->face_verts);
-  mem_free(fp->face_uvls);
-
-  fp->face_verts = (int16_t *)mem_malloc(nverts * sizeof(*fp->face_verts));
-  Q_ASSERT(fp->face_verts != NULL);
-  fp->face_uvls = mem_rmalloc<roomUVL>(nverts);
-  Q_ASSERT(fp->face_uvls != NULL);
+  fp->face_verts.assign(static_cast<size_t>(nverts), 0);
+  fp->face_uvls.resize(nverts);
 }
 
 // ============================================================================
@@ -114,14 +109,7 @@ int RoomAddVertices(room *rp, int num_new_verts) {
   if (num_new_verts == 0)
     return 0;
 
-  auto newverts = mem_rmalloc<vector3>(rp->num_verts + num_new_verts);
-  Q_ASSERT(newverts != NULL);
-
-  for (int i = 0; i < rp->num_verts; i++)
-    newverts[i] = rp->verts[i];
-
-  mem_rmfree(rp->verts);
-  rp->verts = newverts;
+  rp->verts.resize(rp->num_verts + num_new_verts);
   rp->num_verts += num_new_verts;
 
   return (rp->num_verts - num_new_verts);
@@ -135,24 +123,15 @@ int RoomAddFaces(room *rp, int num_new_faces) {
   if (num_new_faces == 0)
     return 0;
 
-  auto newfaces = mem_rmalloc<face>(rp->num_faces + num_new_faces);
-  Q_ASSERT(newfaces != NULL);
-
-  for (int i = 0; i < rp->num_faces; i++)
-    newfaces[i] = rp->faces[i];
-
-  mem_free(rp->faces);
-  rp->faces = newfaces;
+  rp->faces.resize(rp->num_faces + num_new_faces);
   rp->num_faces += num_new_faces;
 
   if (rp->num_bbf_regions) {
-    for (int i = 0; i < rp->num_bbf_regions; i++)
-      mem_free(rp->bbf_list[i]);
-    mem_free(rp->bbf_list);
-    mem_free(rp->num_bbf);
-    mem_free(rp->bbf_list_min_xyz);
-    mem_free(rp->bbf_list_max_xyz);
-    mem_free(rp->bbf_list_sector);
+    rp->bbf_list.clear();
+    rp->num_bbf.clear();
+    rp->bbf_list_min_xyz.clear();
+    rp->bbf_list_max_xyz.clear();
+    rp->bbf_list_sector.clear();
     rp->num_bbf_regions = 0;
   }
 
@@ -337,17 +316,8 @@ void DeleteRoomFace(room *rp, int facenum) {
     }
   }
 
-  face *newfaces = mem_rmalloc<face>(rp->num_faces - 1);
-  Q_ASSERT(newfaces != NULL);
-
-  for (f = 0; f < facenum; f++)
-    newfaces[f] = rp->faces[f];
-  for (f = facenum + 1; f < rp->num_faces; f++)
-    newfaces[f - 1] = rp->faces[f];
-
   FreeRoomFace(&rp->faces[facenum]);
-  mem_free(rp->faces);
-  rp->faces = newfaces;
+  rp->faces.erase(rp->faces.begin() + facenum);
   rp->num_faces--;
 
   if (rp == Curroomp) {
@@ -358,13 +328,11 @@ void DeleteRoomFace(room *rp, int facenum) {
   }
 
   if (rp->num_bbf_regions) {
-    for (i = 0; i < rp->num_bbf_regions; i++)
-      mem_free(rp->bbf_list[i]);
-    mem_free(rp->bbf_list);
-    mem_free(rp->num_bbf);
-    mem_free(rp->bbf_list_min_xyz);
-    mem_free(rp->bbf_list_max_xyz);
-    mem_free(rp->bbf_list_sector);
+    rp->bbf_list.clear();
+    rp->num_bbf.clear();
+    rp->bbf_list_min_xyz.clear();
+    rp->bbf_list_max_xyz.clear();
+    rp->bbf_list_sector.clear();
     rp->num_bbf_regions = 0;
   }
 }
@@ -388,21 +356,7 @@ void DeleteRoomPortal(room *rp, int portalnum) {
       Rooms[tp->croom].portals[tp->cportal].cportal--;
   }
 
-  portal *newportals;
-  if (rp->num_portals == 1)
-    newportals = NULL;
-  else {
-    newportals = mem_rmalloc<portal>(rp->num_portals - 1);
-    Q_ASSERT(newportals != NULL);
-  }
-
-  for (int p = 0; p < portalnum; p++)
-    newportals[p] = rp->portals[p];
-  for (int p = portalnum + 1; p < rp->num_portals; p++)
-    newportals[p - 1] = rp->portals[p];
-
-  mem_free(rp->portals);
-  rp->portals = newportals;
+  rp->portals.erase(rp->portals.begin() + portalnum);
   rp->num_portals--;
 }
 
@@ -411,15 +365,7 @@ void DeleteRoomPortal(room *rp, int portalnum) {
 // Adds a new portal to a room.  Returns the portal number.
 // ============================================================================
 int AddPortal(room *rp) {
-  auto newlist = mem_rmalloc<portal>(rp->num_portals + 1);
-
-  if (rp->num_portals) {
-    for (int i = 0; i < rp->num_portals; i++)
-      newlist[i] = rp->portals[i];
-    mem_free(rp->portals);
-  }
-
-  rp->portals = newlist;
+  rp->portals.resize(rp->num_portals + 1);
   rp->portals[rp->num_portals].flags = 0;
   rp->portals[rp->num_portals].bnode_index = -1;
 
@@ -596,7 +542,7 @@ void AssignDefaultUVsToRoom(room *rp) {
 void FixConcaveFaces(room *rp, int *facelist, int facecount) {
   for (int i = 0; i < facecount; i++) {
     face *fp = &rp->faces[facelist[i]];
-    if (!FaceIsPlanar(fp->num_verts, fp->face_verts, &fp->normal, rp->verts)) {
+    if (!FaceIsPlanar(fp->num_verts, fp->face_verts.data(), &fp->normal, rp->verts.data())) {
       int concave_verts[MAX_VERTS_PER_FACE];
       int concave_count = rp->faces[facelist[i]].num_verts;
       int old_tmap = rp->faces[facelist[i]].tmap;
@@ -609,58 +555,30 @@ void FixConcaveFaces(room *rp, int *facelist, int facecount) {
       int old_num_faces = rp->num_faces;
       int nfaces = rp->num_faces + num_new_faces;
 
-      face *newfaces = mem_rmalloc<face>(nfaces);
-      Q_ASSERT(newfaces != NULL);
+      rp->faces.resize(nfaces);
 
       for (int t = 0; t < rp->num_faces; t++) {
         if (t != facelist[i]) {
-          int nverts = rp->faces[t].num_verts;
-
-          newfaces[t].face_verts = mem_rmalloc<int16_t>(nverts);
-          newfaces[t].face_uvls = mem_rmalloc<roomUVL>(nverts);
-          newfaces[t].normal = rp->faces[t].normal;
-          newfaces[t].tmap = rp->faces[t].tmap;
-          newfaces[t].flags = rp->faces[t].flags;
-          newfaces[t].portal_num = rp->faces[t].portal_num;
-          newfaces[t].num_verts = rp->faces[t].num_verts;
-          newfaces[t].special_handle = BAD_SPECIAL_FACE_INDEX;
-
-          for (int k = 0; k < nverts; k++) {
-            newfaces[t].face_verts[k] = rp->faces[t].face_verts[k];
-            newfaces[t].face_uvls[k] = rp->faces[t].face_uvls[k];
-          }
+          rp->faces[t].special_handle = BAD_SPECIAL_FACE_INDEX;
         } else {
-          newfaces[t].face_verts = mem_rmalloc<int16_t>(3);
-          newfaces[t].face_uvls = mem_rmalloc<roomUVL>(3);
-          newfaces[t].tmap = rp->faces[t].tmap;
-          newfaces[t].flags = rp->faces[t].flags;
-          newfaces[t].portal_num = rp->faces[t].portal_num;
-          newfaces[t].num_verts = 3;
-          newfaces[t].special_handle = BAD_SPECIAL_FACE_INDEX;
-
-          for (int k = 0; k < 3; k++) {
-            newfaces[t].face_verts[k] = rp->faces[t].face_verts[k];
-            newfaces[t].face_uvls[k] = rp->faces[t].face_uvls[k];
-          }
+          rp->faces[t].face_verts.resize(3);
+          rp->faces[t].face_uvls.resize(3);
+          rp->faces[t].num_verts = 3;
+          rp->faces[t].special_handle = BAD_SPECIAL_FACE_INDEX;
 
           if (!ComputeFaceNormal(rp, t))
             Q_ASSERT(false);
-          newfaces[t].normal = rp->faces[t].normal;
         }
       }
 
-mem_rmfree(rp->faces);
-  rp->faces = newfaces;
       rp->num_faces = nfaces;
 
       if (rp->num_bbf_regions) {
-        for (int j = 0; j < rp->num_bbf_regions; j++)
-          mem_free(rp->bbf_list[j]);
-        mem_free(rp->bbf_list);
-        mem_free(rp->num_bbf);
-        mem_free(rp->bbf_list_min_xyz);
-        mem_free(rp->bbf_list_max_xyz);
-        mem_free(rp->bbf_list_sector);
+        rp->bbf_list.clear();
+        rp->num_bbf.clear();
+        rp->bbf_list_min_xyz.clear();
+        rp->bbf_list_max_xyz.clear();
+        rp->bbf_list_sector.clear();
         rp->num_bbf_regions = 0;
       }
 
@@ -742,14 +660,14 @@ bool CombineFaces(room *rp, int face0, int face1) {
   }
 
   vector3 new_normal;
-  ComputeNormal(&new_normal, nv, vertlist, rp->verts);
+  ComputeNormal(&new_normal, nv, vertlist, rp->verts.data());
 
-  if (!FaceIsPlanar(nv, vertlist, &new_normal, rp->verts)) {
+  if (!FaceIsPlanar(nv, vertlist, &new_normal, rp->verts.data())) {
     SetErrorMessage("The new face would not be planar.");
     return false;
   }
 
-  if (CheckFaceConcavity(nv, vertlist, &new_normal, rp->verts) != -1) {
+  if (CheckFaceConcavity(nv, vertlist, &new_normal, rp->verts.data()) != -1) {
     SetErrorMessage("The new face would be concave.");
     return false;
   }
@@ -827,7 +745,7 @@ void RotateRooms(angle p, angle h, angle b) {
   ComputePortalCenter(&rotpoint, Curroomp, cur_portalnum);
   vm_AnglesToMatrix(&rotmat, p, h, b);
   face *fp = &Curroomp->faces[Curroomp->portals[cur_portalnum].portal_face];
-  ComputeNormal(&portal_normal, fp->num_verts, fp->face_verts, Curroomp->verts);
+  ComputeNormal(&portal_normal, fp->num_verts, fp->face_verts.data(), Curroomp->verts.data());
   portal_normal *= -1.0;
 
   vm_VectorToMatrix(&roommat, &portal_normal, NULL, NULL);

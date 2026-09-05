@@ -2388,27 +2388,22 @@ void ComputeAABB(bool f_full) {
         int nonpart = 0;
 
         if (rp->num_bbf_regions != 0) {
-          for (x = 0; x < rp->num_bbf_regions; x++) {
-            mem_free(rp->bbf_list[x]);
-          }
-          mem_free(rp->bbf_list);
-          mem_free(rp->num_bbf);
-          mem_free(rp->bbf_list_min_xyz);
-          mem_free(rp->bbf_list_max_xyz);
-          mem_free(rp->bbf_list_sector);
+          rp->bbf_list.clear();
+          rp->num_bbf.clear();
+          rp->bbf_list_min_xyz.clear();
+          rp->bbf_list_max_xyz.clear();
+          rp->bbf_list_sector.clear();
           rp->num_bbf_regions = 0;
         }
 
-        // temporary malloc
+        // Temporary allocation sized to the fixed MAX_REGIONS_PER_ROOM cap,
+        // mirroring the original engine's malloc(MAX_REGIONS_PER_ROOM).
         rp->num_bbf_regions = 27 + num_structs_per_room[i] - 1;
-        rp->bbf_list = (int16_t **)mem_malloc(MAX_REGIONS_PER_ROOM * sizeof(int16_t *));
-        for (x = 0; x < MAX_REGIONS_PER_ROOM; x++) {
-          rp->bbf_list[x] = (int16_t *)mem_malloc(rp->num_faces * sizeof(int16_t));
-        }
-        rp->num_bbf = (int16_t *)mem_malloc(MAX_REGIONS_PER_ROOM * sizeof(int16_t));
-        rp->bbf_list_min_xyz = (vector3 *)mem_malloc(MAX_REGIONS_PER_ROOM * sizeof(vector3));
-        rp->bbf_list_max_xyz = (vector3 *)mem_malloc(MAX_REGIONS_PER_ROOM * sizeof(vector3));
-        rp->bbf_list_sector = (uint8_t *)mem_malloc(MAX_REGIONS_PER_ROOM * sizeof(uint8_t));
+        rp->bbf_list.assign(MAX_REGIONS_PER_ROOM, std::vector<int16_t>(rp->num_faces));
+        rp->num_bbf.assign(MAX_REGIONS_PER_ROOM, 0);
+        rp->bbf_list_min_xyz.assign(MAX_REGIONS_PER_ROOM, vector3{});
+        rp->bbf_list_max_xyz.assign(MAX_REGIONS_PER_ROOM, vector3{});
+        rp->bbf_list_sector.assign(MAX_REGIONS_PER_ROOM, 0);
 
         for (x = 0; x < 27; x++) {
           rp->bbf_list_sector[x] = bbf_lookup[x];
@@ -2680,10 +2675,7 @@ void ComputeAABB(bool f_full) {
         for (i = 0; i < rp->num_bbf_regions; i++) {
           if (rp->num_bbf[i] == 0) {
             for (j = i + 1; j < rp->num_bbf_regions; j++) {
-              int16_t *temp = rp->bbf_list[j - 1];
-
-              rp->bbf_list[j - 1] = rp->bbf_list[j];
-              rp->bbf_list[j] = temp;
+              rp->bbf_list[j - 1] = std::move(rp->bbf_list[j]);
 
               rp->num_bbf[j - 1] = rp->num_bbf[j];
               rp->bbf_list_min_xyz[j - 1] = rp->bbf_list_min_xyz[j];
@@ -2804,10 +2796,7 @@ void ComputeAABB(bool f_full) {
         for (i = 0; i < rp->num_bbf_regions; i++) {
           if (rp->num_bbf[i] == 0) {
             for (j = i + 1; j < rp->num_bbf_regions; j++) {
-              int16_t *temp = rp->bbf_list[j - 1];
-
-              rp->bbf_list[j - 1] = rp->bbf_list[j];
-              rp->bbf_list[j] = temp;
+              rp->bbf_list[j - 1] = std::move(rp->bbf_list[j]);
 
               rp->num_bbf[j - 1] = rp->num_bbf[j];
               rp->bbf_list_min_xyz[j - 1] = rp->bbf_list_min_xyz[j];
@@ -2923,18 +2912,14 @@ void ComputeAABB(bool f_full) {
           continue;
 
         for (j = 0; j < rp->num_bbf_regions; j++) {
-          rp->bbf_list[j] = (int16_t *)mem_realloc(rp->bbf_list[j], (sizeof(int16_t) * rp->num_bbf[j]));
-        }
-        for (j = rp->num_bbf_regions; j < MAX_REGIONS_PER_ROOM; j++) {
-          mem_free(rp->bbf_list[j]);
+          rp->bbf_list[j].resize(rp->num_bbf[j]);
         }
 
-        rp->bbf_list = (int16_t **)mem_realloc(rp->bbf_list, rp->num_bbf_regions * sizeof(int16_t *));
-        rp->num_bbf = (int16_t *)mem_realloc(rp->num_bbf, rp->num_bbf_regions * sizeof(int16_t));
-        rp->bbf_list_min_xyz = (vector3 *)mem_realloc(rp->bbf_list_min_xyz, rp->num_bbf_regions * sizeof(vector3));
-        rp->bbf_list_max_xyz = (vector3 *)mem_realloc(rp->bbf_list_max_xyz, rp->num_bbf_regions * sizeof(vector3));
-        rp->bbf_list_sector =
-            (uint8_t *)mem_realloc(rp->bbf_list_sector, rp->num_bbf_regions * sizeof(uint8_t));
+        rp->bbf_list.resize(rp->num_bbf_regions);
+        rp->num_bbf.resize(rp->num_bbf_regions);
+        rp->bbf_list_min_xyz.resize(rp->num_bbf_regions);
+        rp->bbf_list_max_xyz.resize(rp->num_bbf_regions);
+        rp->bbf_list_sector.resize(rp->num_bbf_regions);
       }
     }
 

@@ -980,7 +980,7 @@ static int check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, v
 static void fvi_rooms_objs(void);
 static int obj_in_list(int objnum, int *obj_list);
 static void make_trigger_face_list(int last_sim_faces);
-static bool PhysPastPortal(const room *rp, portal *pp);
+static bool PhysPastPortal(const room *rp, const portal *pp);
 
 //------------------------------------------------------------------------------------------
 // FVI FUNCTIONS
@@ -1966,24 +1966,26 @@ int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face
     }
 
     const int16_t num_bbf_regions = cur_room->num_bbf_regions;
-    int16_t* num_faces_ptr = cur_room->num_bbf;
-    uint8_t* bbf_val = cur_room->bbf_list_sector;
-    vector3* region_min = cur_room->bbf_list_min_xyz;
-    vector3* region_max = cur_room->bbf_list_max_xyz;
-    int16_t** bbf_list_ptr = cur_room->bbf_list;
+    const auto &num_bbf = cur_room->num_bbf;
+    const auto &bbf_list_sector = cur_room->bbf_list_sector;
+    const auto &bbf_list_min_xyz = cur_room->bbf_list_min_xyz;
+    const auto &bbf_list_max_xyz = cur_room->bbf_list_max_xyz;
+    const auto &bbf_list = cur_room->bbf_list;
 
     // Do the actual wall collsion stuff here!
     for (int test1 = 0; test1 < num_bbf_regions; test1++) {
-      if (((*bbf_val) & msector) == (*bbf_val)) {
-        if (region_min->x() > max_xyz.x() || region_min->y() > max_xyz.y() || region_min->z() > max_xyz.z() ||
-            region_max->x() < min_xyz.x() || region_max->y() < min_xyz.y() || region_max->z() < min_xyz.z())
+      const uint8_t bbf_val = bbf_list_sector[test1];
+      const vector3 &region_min = bbf_list_min_xyz[test1];
+      const vector3 &region_max = bbf_list_max_xyz[test1];
+      if ((bbf_val & msector) == bbf_val) {
+        if (region_min.x() > max_xyz.x() || region_min.y() > max_xyz.y() || region_min.z() > max_xyz.z() ||
+            region_max.x() < min_xyz.x() || region_max.y() < min_xyz.y() || region_max.z() < min_xyz.z())
           goto skip_region;
 
-        int16_t *cur_face_index_ptr = *bbf_list_ptr;
+        const std::vector<int16_t> &region_faces = bbf_list[test1];
 
-        for (int sort_list_cur = 0; sort_list_cur < (*num_faces_ptr); sort_list_cur++) {
-          i = *cur_face_index_ptr;
-          cur_face_index_ptr++;
+        for (int sort_list_cur = 0; sort_list_cur < num_bbf[test1]; sort_list_cur++) {
+          i = region_faces[sort_list_cur];
 
           int portal_num;
           int connect_room;
@@ -2022,11 +2024,6 @@ int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face
         }
       }
     skip_region:;
-      num_faces_ptr++;
-      bbf_val++;
-      region_max++;
-      region_min++;
-      bbf_list_ptr++;
     }
 
     cur_next_room_index++;
@@ -2353,24 +2350,26 @@ internal_try_again:
   }
 
   const int16_t num_bbf_regions = cur_room->num_bbf_regions;
-  int16_t* num_faces_ptr = cur_room->num_bbf;
-  uint8_t* bbf_val = cur_room->bbf_list_sector;
-  vector3* region_min = cur_room->bbf_list_min_xyz;
-  vector3* region_max = cur_room->bbf_list_max_xyz;
-  int16_t** bbf_list_ptr = cur_room->bbf_list;
+  const auto &num_bbf = cur_room->num_bbf;
+  const auto &bbf_list_sector = cur_room->bbf_list_sector;
+  const auto &bbf_list_min_xyz = cur_room->bbf_list_min_xyz;
+  const auto &bbf_list_max_xyz = cur_room->bbf_list_max_xyz;
+  const auto &bbf_list = cur_room->bbf_list;
 
   // Do the actual wall collsion stuff here!
   for (int test1 = 0; test1 < num_bbf_regions; test1++) {
-    if (((*bbf_val) & msector) == (*bbf_val)) {
-      if (region_min->x() > max_xyz.x() || region_min->y() > max_xyz.y() || region_min->z() > max_xyz.z() ||
-          region_max->x() < min_xyz.x() || region_max->y() < min_xyz.y() || region_max->z() < min_xyz.z())
+    const uint8_t bbf_val = bbf_list_sector[test1];
+    const vector3 &region_min = bbf_list_min_xyz[test1];
+    const vector3 &region_max = bbf_list_max_xyz[test1];
+    if ((bbf_val & msector) == bbf_val) {
+      if (region_min.x() > max_xyz.x() || region_min.y() > max_xyz.y() || region_min.z() > max_xyz.z() ||
+          region_max.x() < min_xyz.x() || region_max.y() < min_xyz.y() || region_max.z() < min_xyz.z())
         goto skip_region;
 
-      int16_t *cur_face_index_ptr = *bbf_list_ptr;
+      const std::vector<int16_t> &region_faces = bbf_list[test1];
 
-      for (int sort_list_cur = 0; sort_list_cur < (*num_faces_ptr); sort_list_cur++) {
-        i = *cur_face_index_ptr;
-        cur_face_index_ptr++;
+      for (int sort_list_cur = 0; sort_list_cur < num_bbf[test1]; sort_list_cur++) {
+        i = region_faces[sort_list_cur];
 
         vector3 face_normal;
         vector3 *vertex_ptr_list[MAX_VERTS_PER_FACE];
@@ -2419,11 +2418,6 @@ internal_try_again:
       }
     }
   skip_region:;
-    num_faces_ptr++;
-    bbf_val++;
-    region_max++;
-    region_min++;
-    bbf_list_ptr++;
   }
 
   if (closest_hit_type != HIT_WALL) {
@@ -4393,7 +4387,7 @@ void fvi_rooms_objs(void) {
 //					bm_handle - the handle for the bitmap for this frame, or -1 if don't care about
 // transparence Returns:		bitmask describing the alpha blending for the face
 // the return bits are the ATF_ flags in renderer.h
-inline int GetFaceAlpha(face *fp, int bm_handle) {
+inline int GetFaceAlpha(const face *fp, int bm_handle) {
   int ret = AT_ALWAYS;
   if (GameTextures[fp->tmap].flags.saturate) {
     if (fp->flags & FF_VERTEX_ALPHA)
@@ -4418,13 +4412,13 @@ inline int GetFaceAlpha(face *fp, int bm_handle) {
   return ret;
 }
 
-bool PhysPastPortal(const room *rp, portal *pp) {
+bool PhysPastPortal(const room *rp, const portal *pp) {
   // If we don't render the portal's faces, then we see through it
   if (!(pp->flags & PF_RENDER_FACES))
     return true;
 
   // Check if the face's texture has transparency
-  face *fp = &rp->faces[pp->portal_face];
+  const face *fp = &rp->faces[pp->portal_face];
   int bm_handle = GetTextureBitmap(fp->tmap, 0);
 
   if (GetFaceAlpha(fp, bm_handle))
@@ -4436,7 +4430,7 @@ bool PhysPastPortal(const room *rp, portal *pp) {
 int fvi_room(int room_index, int from_portal, int room_obj) {
   vector3 hit_point; // where we hit
   float cur_dist;   // distance to hit point
-  const room *cur_room = &Rooms[room_index];
+  room *cur_room = &Rooms[room_index];
   int16_t i;
   int next_portals[MAX_NEXT_PORTALS];
   int num_next_portals = 0;
@@ -4544,27 +4538,30 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
     }
   } else {
     const int16_t num_bbf_regions = cur_room->num_bbf_regions;
-    int16_t *num_faces_ptr = cur_room->num_bbf;
-    uint8_t *bbf_val = cur_room->bbf_list_sector;
-    vector3 *region_min = cur_room->bbf_list_min_xyz;
-    vector3 *region_max = cur_room->bbf_list_max_xyz;
-    int16_t **bbf_list_ptr = cur_room->bbf_list;
+    const auto &num_bbf = cur_room->num_bbf;
+    const auto &bbf_list_sector = cur_room->bbf_list_sector;
+    const auto &bbf_list_min_xyz = cur_room->bbf_list_min_xyz;
+    const auto &bbf_list_max_xyz = cur_room->bbf_list_max_xyz;
+    const auto &bbf_list = cur_room->bbf_list;
 
     // Do the actual wall collsion stuff here!
     for (int test1 = 0; test1 < num_bbf_regions; test1++) {
-      if (((*bbf_val) & msector) == (*bbf_val)) {
-        if (region_min->x() > fvi_wall_max_xyz.x() || region_min->y() > fvi_wall_max_xyz.y() ||
-            region_min->z() > fvi_wall_max_xyz.z() || region_max->x() < fvi_wall_min_xyz.x() ||
-            region_max->y() < fvi_wall_min_xyz.y() || region_max->z() < fvi_wall_min_xyz.z())
+      const uint8_t bbf_val = bbf_list_sector[test1];
+      const vector3 &region_min = bbf_list_min_xyz[test1];
+      const vector3 &region_max = bbf_list_max_xyz[test1];
+      if ((bbf_val & msector) == bbf_val) {
+        if (region_min.x() > fvi_wall_max_xyz.x() || region_min.y() > fvi_wall_max_xyz.y() ||
+            region_min.z() > fvi_wall_max_xyz.z() || region_max.x() < fvi_wall_min_xyz.x() ||
+            region_max.y() < fvi_wall_min_xyz.y() || region_max.z() < fvi_wall_min_xyz.z())
           goto skip_region;
 
-        if (fvi_zero_rad && FastVectorBBox((float *)region_min, (float *)region_max, (float *)fvi_query_ptr->p0,
+        if (fvi_zero_rad && FastVectorBBox((float *)&region_min, (float *)&region_max, (float *)fvi_query_ptr->p0,
                                            (float *)&fvi_movement_delta) == false)
           goto skip_region;
 
-        int16_t *cur_face_index_ptr = *bbf_list_ptr;
+        const std::vector<int16_t> &region_faces = bbf_list[test1];
 
-        for (int sort_list_cur = 0; sort_list_cur < (*num_faces_ptr); sort_list_cur++) {
+        for (int sort_list_cur = 0; sort_list_cur < num_bbf[test1]; sort_list_cur++) {
           vector3 face_normal;
           vector3 *vertex_ptr_list[MAX_VERTS_PER_FACE];
           int face_hit_type;
@@ -4575,9 +4572,8 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
           int face_info;
           face *cur_face;
 
-          i = *cur_face_index_ptr;
-          cur_face = &cur_room->faces[*cur_face_index_ptr];
-          cur_face_index_ptr++;
+          i = region_faces[sort_list_cur];
+          cur_face = &cur_room->faces[region_faces[sort_list_cur]];
 
           const vector3 *cf_max = &cur_face->max_xyz;
           const vector3 *cf_min = &cur_face->min_xyz;
@@ -4731,11 +4727,6 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
       }
     skip_region:;
     ignore_hit:;
-      num_faces_ptr++;
-      bbf_val++;
-      region_max++;
-      region_min++;
-      bbf_list_ptr++;
     }
   }
   // repeated: ;

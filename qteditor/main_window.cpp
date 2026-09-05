@@ -1527,13 +1527,10 @@ bool MainWindow::onAddRoom()
   }
 
   // Drop the freshly minted room into Rooms[] at `slot`. The pointer
-  // returned by CreateNewRoom is heap-allocated; we copy it into the
+  // returned by CreateNewRoom is heap-allocated; we move it into the
   // slot and then orphan the heap copy so DestroyRoom handles the field
   // arrays correctly.
-  Rooms[slot] = *rp;
-  rp->verts = nullptr;
-  rp->faces = nullptr;
-  rp->portals = nullptr;
+  Rooms[slot] = std::move(*rp);
   delete rp;
 
   rp = &Rooms[slot];

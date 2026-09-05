@@ -307,10 +307,10 @@ room *CreateNewRoom(int nverts, int nfaces, bool palette_room) {
   // std::string name).  No memset — memset would corrupt the std::string.
   room *rp = new room();
   rp->used = 1;
+  rp->verts.resize(nverts);
+  rp->faces.resize(nfaces);
   rp->num_verts = nverts;
   rp->num_faces = nfaces;
-  rp->verts = new vector3[nverts]();
-  rp->faces = new face[nfaces]();
   return rp;
 }
 
@@ -325,18 +325,15 @@ void DestroyRoom(int roomnum) {
   room *rp = &Rooms[roomnum];
   if (!rp->used)
     return;
-  if (rp->verts != nullptr) {
-    delete[] rp->verts;
-    rp->verts = nullptr;
-  }
-  if (rp->faces != nullptr) {
-    delete[] rp->faces;
-    rp->faces = nullptr;
-  }
-  if (rp->portals != nullptr) {
-    delete[] rp->portals;
-    rp->portals = nullptr;
-  }
+  rp->verts.clear();
+  rp->verts4.clear();
+  rp->faces.clear();
+  rp->portals.clear();
+  rp->bbf_list.clear();
+  rp->num_bbf.clear();
+  rp->bbf_list_min_xyz.clear();
+  rp->bbf_list_max_xyz.clear();
+  rp->bbf_list_sector.clear();
   rp->used = 0;
   rp->num_verts = 0;
   rp->num_faces = 0;

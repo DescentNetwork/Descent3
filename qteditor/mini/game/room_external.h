@@ -103,6 +103,7 @@
 #include "vecmat_external.h"
 #include "bnode.h"
 #include <cstdint>
+#include <vector>
 
 #define MAX_FACES_PER_ROOM 3000  // max number of faces per room
 #define MAX_VERTS_PER_ROOM 10000 // max vertices per room
@@ -141,8 +142,8 @@ struct face {
   uint8_t num_verts;  // how many vertices in this face
   int8_t portal_num; // which portal this face is part of, or -1 if none
 
-  int16_t* face_verts = nullptr;       // index into list of vertices for this face
-  roomUVL* face_uvls = nullptr;      // index into list of uvls for this face
+  std::vector<int16_t> face_verts;   // indices into the room's vertex list
+  std::vector<roomUVL> face_uvls;    // per-vertex uvls
   vector3 normal;           // the surface normal of this face
   int16_t tmap;              // texture numbers for this face
   uint16_t lmi_handle;       // the lightmap info number for this face
@@ -277,10 +278,10 @@ struct room {
   int num_faces;   // how many poygons in this room
   int num_portals; // how many connections in this room
   int num_verts;   // how many verts in the room
-  face* faces = nullptr;     // pointer to list of faces
-  portal* portals = nullptr; // pointer to list of portals
-  vector3* verts = nullptr;   // array of vertices for this room
-  vector4* verts4 = nullptr; // array of 16byte vertices for this room
+  std::vector<face> faces;     // list of faces (num_faces)
+  std::vector<portal> portals; // list of portals (num_portals)
+  std::vector<vector3> verts;  // array of vertices for this room (num_verts)
+  std::vector<vector4> verts4; // array of 16byte vertices for this room (num_verts, Katmai)
 
   doorway* doorway_data = nullptr;   // pointer to this room's doorway data, or NULL if not a doorway
   std::string name;              // name of this room, or NULL
@@ -294,11 +295,11 @@ struct room {
   vector3 bbf_max_xyz;
   int16_t num_bbf_regions;
   int16_t pad1;
-  int16_t** bbf_list = nullptr;
-  int16_t* num_bbf = nullptr;
-  vector3* bbf_list_min_xyz = nullptr;
-  vector3* bbf_list_max_xyz = nullptr;
-  uint8_t* bbf_list_sector = nullptr;
+  std::vector<std::vector<int16_t>> bbf_list; // faces per region (num_bbf_regions lists)
+  std::vector<int16_t> num_bbf;               // face count per region
+  std::vector<vector3> bbf_list_min_xyz;       // min extent per region
+  std::vector<vector3> bbf_list_max_xyz;       // max extent per region
+  std::vector<uint8_t> bbf_list_sector;        // sector id per region
 
   bn_list bn_info;
 

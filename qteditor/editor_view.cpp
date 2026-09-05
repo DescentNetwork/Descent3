@@ -737,7 +737,7 @@ void EditorView::renderRooms() {
             glBegin(GL_TRIANGLE_FAN);
             for (int v = 0; v < nv; v++) {
               float u = 0, vv = 0;
-              if (fp->face_uvls != nullptr && tw > 0 && th > 0) {
+              if (!fp->face_uvls.empty() && tw > 0 && th > 0) {
                 u = fp->face_uvls[v].u / tw;
                 vv = fp->face_uvls[v].v / th;
               }

@@ -469,7 +469,7 @@ bool ComputeFaceNormal(room *rp, int facenum);
 //					verts - the array of vertices into which the elements of vertnum_list index
 // Returns:		true if the normal is ok
 //					false if the normal has a very small (pre-normalization) magnitude
-bool ComputeNormal(vector3 *normal, int num_verts, short *vertnum_list, vector3 *verts);
+bool ComputeNormal(vector3 *normal, int num_verts, const int16_t *vertnum_list, const vector3 *verts);
 
 // Finds the center point of a portal by averaging the points in the portal
 // Parameters:	vp           - filled in with the center point
@@ -531,7 +531,7 @@ static inline int GetFacePhysicsFlags(const room *rp, const face *fp) {
 
   // Deal with faces that are part of a portal
   if (fp->portal_num != -1) {
-    portal *pp = &rp->portals[fp->portal_num];
+    const portal *pp = &rp->portals[fp->portal_num];
 
     // Mark as portal
     ret |= FPF_PORTAL;
