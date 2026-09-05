@@ -601,8 +601,8 @@ void ObjDelete(int objnum) {
   if (obj->flags & OF_POLYGON_OBJECT) {
     polyobj_info *p_info = &obj->rtype.pobj_info;
     if (p_info->multi_turret_info.keyframes != nullptr) {
-      mem_free(p_info->multi_turret_info.keyframes);
-      mem_free(p_info->multi_turret_info.last_keyframes);
+      mem_rmfree(p_info->multi_turret_info.keyframes);
+      mem_rmfree(p_info->multi_turret_info.last_keyframes);
 
       p_info->multi_turret_info.keyframes = nullptr;
       p_info->multi_turret_info.last_keyframes = nullptr;
@@ -636,29 +636,29 @@ void ObjDelete(int objnum) {
 
   // Free up effects memory
   if (obj->effect_info) {
-    mem_free(obj->effect_info);
+    mem_rmfree(obj->effect_info);
     obj->effect_info = nullptr;
   }
 
   if (obj->ai_info != nullptr) {
-    mem_free(obj->ai_info);
+    mem_rmfree(obj->ai_info);
     obj->ai_info = nullptr;
   }
 
   if (obj->dynamic_wb != nullptr) {
-    mem_free(obj->dynamic_wb);
+    mem_rmfree(obj->dynamic_wb);
     obj->dynamic_wb = nullptr;
   }
 
   if (obj->attach_children != nullptr) {
-    mem_free(obj->attach_children);
+    mem_rmfree(obj->attach_children);
     obj->attach_children = nullptr;
   }
 
   obj->name.clear();
 
   if (obj->lighting_info) {
-    mem_free(obj->lighting_info);
+    mem_rmfree(obj->lighting_info);
     obj->lighting_info = nullptr;
   }
 

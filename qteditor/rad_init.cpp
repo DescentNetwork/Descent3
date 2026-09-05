@@ -387,7 +387,7 @@ void CloseRadiosityRun() {
 
   NormalizeExitance();
   if (Shoot_method == SM_HEMICUBE) {
-    mem_free(rad_FormFactors);
+    mem_rmfree(rad_FormFactors);
     CloseHemicube();
   }
 }

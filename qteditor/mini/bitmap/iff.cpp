@@ -889,7 +889,7 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, int format) {
     Q_ASSERT(false); // Get Jason
 
   if (Tga_file_data != NULL) {
-    mem_free(Tga_file_data);
+    mem_rmfree(Tga_file_data);
     Tga_file_data = NULL;
     infile.seek(savepos + Fake_pos, std::ios_base::beg);
   }

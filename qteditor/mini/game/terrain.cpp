@@ -618,7 +618,7 @@ void CloseTerrain(void) {
   int i;
 
   for (i = MAX_TERRAIN_LOD - 1; i < MAX_TERRAIN_LOD; i++)
-    mem_free(TerrainNormals[i]);
+    mem_rmfree(TerrainNormals[i]);
 
   for (i = 0; i < 7; i++) {
     if (Terrain_min_height_int[i])
@@ -628,7 +628,7 @@ void CloseTerrain(void) {
   }
 
   mem_free(Terrain_rotate_list);
-  mem_free(World_point_buffer);
+  mem_rmfree(World_point_buffer);
 
   for (i = 0; i < MAX_TERRAIN_LOD - 1; i++)
     mem_free(TerrainDeltaBlocks[i]);
@@ -846,7 +846,7 @@ int LoadPCXTerrain(char *filename) {
       Terrain_seg[((TERRAIN_WIDTH - 1) - i) * TERRAIN_WIDTH + j].ypos = n;
     }
 
-  mem_free(lando);
+  mem_rmfree(lando);
   BuildMinMaxTerrain();
   BuildTerrainNormals();
   GenerateTerrainLight();

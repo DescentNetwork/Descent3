@@ -734,7 +734,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
   }
 
   mem_free(Lightmap_mask);
-  mem_free(Lmi_spoken_for);
+  mem_rmfree(Lmi_spoken_for);
   LOG_INFO("Done squeezing lightmaps.\n");
 }
 
@@ -1105,7 +1105,7 @@ void DoRadiosityForRooms() {
       }
 
       AssignVolumeSpectraToRoom(i);
-      mem_free(Volume_elements[i]);
+      mem_rmfree(Volume_elements[i]);
     }
   }
 
@@ -1123,16 +1123,16 @@ void DoRadiosityForRooms() {
 
   for (i = 0; i < facecount; i++) {
     if (Light_surfaces[i].verts)
-      mem_free(Light_surfaces[i].verts);
+      mem_rmfree(Light_surfaces[i].verts);
     for (t = 0; t < Light_surfaces[i].xresolution * Light_surfaces[i].yresolution; t++)
       if (Light_surfaces[i].elements[t].num_verts > 0)
-        mem_free(Light_surfaces[i].elements[t].verts);
+        mem_rmfree(Light_surfaces[i].elements[t].verts);
 
     if (Light_surfaces[i].elements)
-      mem_free(Light_surfaces[i].elements);
+      mem_rmfree(Light_surfaces[i].elements);
     Light_surfaces[i].elements = NULL;
   }
-  mem_free(Light_surfaces);
+  mem_rmfree(Light_surfaces);
   Light_surfaces = NULL;
   Do_volume_lighting = 0;
 
@@ -1294,15 +1294,15 @@ void DoRadiosityForCurrentRoom(room *rp) {
   // Free our memory
 
   for (int i = 0; i < facecount; i++) {
-    mem_free(Light_surfaces[i].verts);
+    mem_rmfree(Light_surfaces[i].verts);
     for (t = 0; t < Light_surfaces[i].xresolution * Light_surfaces[i].yresolution; t++)
       if (Light_surfaces[i].elements[t].num_verts > 0)
-        mem_free(Light_surfaces[i].elements[t].verts);
+        mem_rmfree(Light_surfaces[i].elements[t].verts);
 
-    mem_free(Light_surfaces[i].elements);
+    mem_rmfree(Light_surfaces[i].elements);
     Light_surfaces[i].elements = NULL;
   }
-  mem_free(Light_surfaces);
+  mem_rmfree(Light_surfaces);
   Light_surfaces = NULL;
 
   // Finally, squeeze the lightmaps
@@ -2169,16 +2169,16 @@ void DoRadiosityForTerrain() {
   // Free memory
 
   for (i = 0; i < total_surfaces; i++) {
-    mem_free(Light_surfaces[i].verts);
+    mem_rmfree(Light_surfaces[i].verts);
     for (int t = 0; t < Light_surfaces[i].xresolution * Light_surfaces[i].yresolution; t++)
       if (Light_surfaces[i].elements[t].num_verts > 0)
-        mem_free(Light_surfaces[i].elements[t].verts);
-    mem_free(Light_surfaces[i].elements);
+        mem_rmfree(Light_surfaces[i].elements[t].verts);
+    mem_rmfree(Light_surfaces[i].elements);
   }
 
-  mem_free(Light_surfaces);
-  mem_free(terrain_sums[0]);
-  mem_free(terrain_sums[1]);
+  mem_rmfree(Light_surfaces);
+  mem_rmfree(terrain_sums[0]);
+  mem_rmfree(terrain_sums[1]);
 
   for (i = 0; i < Terrain_sky.num_satellites; i++)
     mem_free(TerrainLightSpeedup[i]);
@@ -2966,7 +2966,7 @@ void ComputeAllRoomLightmapUVs(int external) {
       if (!external && Rooms[i].flags.external)
         continue;
 
-      mem_free(RoomsAlreadyCombined[i]);
+      mem_rmfree(RoomsAlreadyCombined[i]);
     }
   }
 }
@@ -3189,7 +3189,7 @@ void CleanupSpecularLighting(int external) {
       room *rp = &Rooms[i];
 
       for (t = 0; t < 4; t++) {
-        mem_free(Room_strongest_value[i][t]);
+        mem_rmfree(Room_strongest_value[i][t]);
       }
 
       for (t = 0; t < rp->num_faces; t++) {
@@ -3340,7 +3340,7 @@ void SetupSpecularLighting(int external) {
           }
         }
       }
-      mem_free(vertnorms);
+      mem_rmfree(vertnorms);
     }
   }
 }

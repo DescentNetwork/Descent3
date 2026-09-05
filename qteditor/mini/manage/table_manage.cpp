@@ -75,7 +75,7 @@ GenericPageNode::GenericPageNode() {
 GenericPageNode::~GenericPageNode() {
   // Free up the object description memory
   if (genericpage.objinfo_struct.description != nullptr) {
-    mem_free(genericpage.objinfo_struct.description);
+    mem_rmfree(genericpage.objinfo_struct.description);
     genericpage.objinfo_struct.description = nullptr;
   }
 }
@@ -98,7 +98,7 @@ void GenericPageNode::setDescription(const std::string &text) {
   }
   genericpage.objinfo_struct.description = next;
   if (old != nullptr)
-    mem_free(old);
+    mem_rmfree(old);
 }
 
 ////////////////////////////////////////////////////////////
@@ -296,7 +296,7 @@ bool GenericPageList::SaveTable(const std::string &table_filename) {
     // Free the temporarily-read page's description memory (it is not adopted
     // by the list)
     if (genericpage.objinfo_struct.description != nullptr) {
-      mem_free(genericpage.objinfo_struct.description);
+      mem_rmfree(genericpage.objinfo_struct.description);
       genericpage.objinfo_struct.description = nullptr;
     }
 

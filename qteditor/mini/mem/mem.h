@@ -74,7 +74,6 @@
 #ifndef MEM_H
 #define MEM_H
 #include <cstdlib>
-#include <type_traits>
 
 // Memory management debugging
 #ifdef MEM_USE_RTL
@@ -127,15 +126,21 @@ void *mem_realloc_sub(void *memblock, int size);
 //void mem_heapcheck();
 
 // type aware memory allocation
+// Uses new/delete[] so types with default member initializers (e.g. room data)
+// are properly constructed rather than rawe-allocated like mem_malloc.
 template<typename T> static inline T *mem_rmalloc()
 {
-  static_assert(std::is_trivially_constructible_v<T> && std::is_trivially_destructible_v<T>);
-  return static_cast<T *>(mem_malloc(sizeof(T)));
+  return new T[1];
 }
 template<typename T> static inline T *mem_rmalloc(std::size_t nelem)
 {
-  static_assert(std::is_trivially_constructible_v<T> && std::is_trivially_destructible_v<T>);
-  return static_cast<T *>(mem_malloc(nelem * sizeof(T)));
+  return new T[nelem];
+}
+
+// Frees memory allocated with mem_rmalloc().
+template<typename T> static inline void mem_rmfree(T *ptr)
+{
+  delete[] ptr;
 }
 
 #endif

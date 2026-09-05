@@ -926,8 +926,8 @@ static vector3 fvi_anim_sphere_p0;
 static vector3 fvi_anim_sphere_p1;
 
 // Fvi information pointers.
-fvi_info *fvi_hit_data_ptr;
-fvi_query *fvi_query_ptr;
+fvi_info* fvi_hit_data_ptr = nullptr;
+fvi_query* fvi_query_ptr = nullptr;
 
 // Best collision's distance
 float fvi_collision_dist;
@@ -1090,14 +1090,15 @@ static const int ij_table[3][2] = {
 
 // see if a point in inside a face by projecting into 2d
 uint32_t check_point_to_face(vector3 *colp, vector3 *face_normal, int nv, vector3 **vertex_ptr_list) {
-  vector3 *colp_array; // Axis-independent version of the collision point
-  vector3 *norm;       // Axis-independent version of the plane's normal
+  vector3* colp_array; // Axis-independent version of the collision point
+  vector3* norm;       // Axis-independent version of the plane's normal
   vector3 t;                 // Temporary vector3 that holds the magnatude of the normal's x,y,z components (ABS)
   int biggest;              // Index of the largest of the three components (0-x, 1-y, 2-z)  Axis to ignore :)
   int i, j, edge;           // Index for i-axis, Index for j-axis, and the current edge
   uint32_t edgemask;        // Bit-field for which side we are outside of
   float check_i, check_j;   // (i,j) checkpoint for 2d in/out test
-  vector3_array *v0, *v1;    // Vertices of the current line segment in the 2d in/out check loop
+  vector3_array* v0 = nullptr;    // Vertices of the current line segment in the 2d in/out check loop
+  vector3_array* v1 = nullptr;
 
   // Lets look at these vectors as arrays :)
   norm = (vector3 *)face_normal;
@@ -1613,7 +1614,8 @@ int check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 
     // If the checkpoint collides with the edge of a face, it could
     // go a little farther before hitting anything
 
-    vector3 *v0, *v1;
+    vector3* v0 = nullptr;
+    vector3* v1 = nullptr;
     int edgenum;
 
     // If we have no radius we could only hit the face and not an edge or point
@@ -1685,7 +1687,7 @@ int check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *w
                        const vector3 *p1, vector3 *face_normal, vector3 **vertex_ptr_list, const int nv, const float rad) {
   int f_pli; // Flag for if a plane that defines the face intersects with the line
   int vertnum = 0;
-  vector3 *test = vertex_ptr_list[0];
+  vector3* test = vertex_ptr_list[0];
   int i;
 
   Q_ASSERT(newp != nullptr && p0 != 0 && p1 != nullptr && rad >= 0.0);
@@ -1906,7 +1908,7 @@ inline bool room_manual_AABB(const face *room_face, const vector3 *min_xyz, cons
 int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face_room_list *quick_fr_list,
                           int max_elements) {
   int num_faces = 0;
-  room *cur_room;
+  room* cur_room = nullptr;
   vector3 min_xyz, max_xyz;
   int next_rooms[MAX_QUICK_ROOMS];
   int highest_next_room_index;
@@ -1964,11 +1966,11 @@ int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face
     }
 
     const int16_t num_bbf_regions = cur_room->num_bbf_regions;
-    int16_t *num_faces_ptr = cur_room->num_bbf;
-    uint8_t *bbf_val = cur_room->bbf_list_sector;
-    vector3 *region_min = cur_room->bbf_list_min_xyz;
-    vector3 *region_max = cur_room->bbf_list_max_xyz;
-    int16_t **bbf_list_ptr = cur_room->bbf_list;
+    int16_t* num_faces_ptr = cur_room->num_bbf;
+    uint8_t* bbf_val = cur_room->bbf_list_sector;
+    vector3* region_min = cur_room->bbf_list_min_xyz;
+    vector3* region_max = cur_room->bbf_list_max_xyz;
+    int16_t** bbf_list_ptr = cur_room->bbf_list;
 
     // Do the actual wall collsion stuff here!
     for (int test1 = 0; test1 < num_bbf_regions; test1++) {
@@ -2194,7 +2196,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
       }
     }
   } else {
-    room *cur_room;
+    room* cur_room = nullptr;
     int next_rooms[MAX_QUICK_ROOMS];
     int highest_next_room_index;
     int cur_next_room_index;
@@ -2351,11 +2353,11 @@ internal_try_again:
   }
 
   const int16_t num_bbf_regions = cur_room->num_bbf_regions;
-  int16_t *num_faces_ptr = cur_room->num_bbf;
-  uint8_t *bbf_val = cur_room->bbf_list_sector;
-  vector3 *region_min = cur_room->bbf_list_min_xyz;
-  vector3 *region_max = cur_room->bbf_list_max_xyz;
-  int16_t **bbf_list_ptr = cur_room->bbf_list;
+  int16_t* num_faces_ptr = cur_room->num_bbf;
+  uint8_t* bbf_val = cur_room->bbf_list_sector;
+  vector3* region_min = cur_room->bbf_list_min_xyz;
+  vector3* region_max = cur_room->bbf_list_max_xyz;
+  int16_t** bbf_list_ptr = cur_room->bbf_list;
 
   // Do the actual wall collsion stuff here!
   for (int test1 = 0; test1 < num_bbf_regions; test1++) {
@@ -2454,7 +2456,7 @@ void check_ceiling() {
   float cur_dist;
 
   vector3 face_normal = {0.0, -1.0, 0.0};
-  vector3 *vertex_ptr_list[4];
+  vector3* vertex_ptr_list[4];
   vector3 vlist[4];
   int face_hit_type;
   vector3 wall_norm;
@@ -3215,19 +3217,12 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
   vector3 int_points_box[12];
 
   verts[0] = (orient->rvec * pm->mins.x()) + (orient->uvec * pm->maxs.y()) + (orient->fvec * pm->mins.z());
-
   verts[1] = (orient->rvec * pm->mins.x()) + (orient->uvec * pm->mins.y()) + (orient->fvec * pm->mins.z());
-
   verts[2] = (orient->rvec * pm->maxs.x()) + (orient->uvec * pm->mins.y()) + (orient->fvec * pm->mins.z());
-
   verts[3] = (orient->rvec * pm->maxs.x()) + (orient->uvec * pm->maxs.y()) + (orient->fvec * pm->mins.z());
-
   verts[4] = (orient->rvec * pm->maxs.x()) + (orient->uvec * pm->maxs.y()) + (orient->fvec * pm->maxs.z());
-
   verts[5] = (orient->rvec * pm->maxs.x()) + (orient->uvec * pm->mins.y()) + (orient->fvec * pm->maxs.z());
-
   verts[6] = (orient->rvec * pm->mins.x()) + (orient->uvec * pm->mins.y()) + (orient->fvec * pm->maxs.z());
-
   verts[7] = (orient->rvec * pm->mins.x()) + (orient->uvec * pm->maxs.y()) + (orient->fvec * pm->maxs.z());
 
   for (i = 0; i < 8; i++) {

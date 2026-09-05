@@ -231,7 +231,7 @@ void FreeVClip(int num) {
       bm_FreeBitmap(GameVClips[num].frames[i]);
   }
 
-  mem_free(GameVClips[num].frames);
+  mem_rmfree(GameVClips[num].frames);
 
   Num_vclips--;
   Q_ASSERT(Num_vclips >= 0);

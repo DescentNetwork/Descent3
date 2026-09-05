@@ -340,21 +340,23 @@ struct fvi_info {
 };
 
 // this data contains the parms to fvi()
-struct fvi_query {
-  vector3 *p0, *p1;
+struct fvi_query
+{
+  vector3* p0 = nullptr;
+  vector3* p1 = nullptr;
   int startroom;
   float rad;
   int16_t thisobjnum;
-  int *ignore_obj_list;
+  int* ignore_obj_list = nullptr;
   int flags;
 
   // BBox stuff...
-  matrix *o_orient;
-  vector3 *o_rotvel;
-  vector3 *o_rotthrust;
-  vector3 *o_velocity;
-  angle *o_turnroll;
-  vector3 *o_thrust;
+  matrix* o_orient = nullptr;
+  vector3* o_rotvel = nullptr;
+  vector3* o_rotthrust = nullptr;
+  vector3* o_velocity = nullptr;
+  angle* o_turnroll = nullptr;
+  vector3* o_thrust = nullptr;
   float frametime;
 };
 
@@ -403,8 +405,8 @@ extern int FVI_room_counter;
 
 bool fvi_QuickRoomCheck(vector3 *pos, room *cur_room, bool try_again = false);
 
-extern fvi_info *fvi_hit_data_ptr;
-extern fvi_query *fvi_query_ptr;
+extern fvi_info* fvi_hit_data_ptr;
+extern fvi_query* fvi_query_ptr;
 extern float fvi_collision_dist;
 extern int fvi_curobj;
 extern int fvi_moveobj;

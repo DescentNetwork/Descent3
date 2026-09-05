@@ -120,7 +120,7 @@ int RoomAddVertices(room *rp, int num_new_verts) {
   for (int i = 0; i < rp->num_verts; i++)
     newverts[i] = rp->verts[i];
 
-  mem_free(rp->verts);
+  mem_rmfree(rp->verts);
   rp->verts = newverts;
   rp->num_verts += num_new_verts;
 
@@ -649,8 +649,8 @@ void FixConcaveFaces(room *rp, int *facelist, int facecount) {
         }
       }
 
-      mem_free(rp->faces);
-      rp->faces = newfaces;
+mem_rmfree(rp->faces);
+  rp->faces = newfaces;
       rp->num_faces = nfaces;
 
       if (rp->num_bbf_regions) {

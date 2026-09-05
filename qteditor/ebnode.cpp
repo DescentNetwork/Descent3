@@ -531,7 +531,7 @@ int EBNode_AddNode(int roomnum, vector3 *pnt, bool f_from_editor, bool f_check_f
   if (new_node != 0)
     nlist->nodes = (bn_node *)mem_realloc(nlist->nodes, sizeof(bn_node) * nlist->num_nodes);
   else
-    nlist->nodes = mem_rmalloc<bn_node>();
+    nlist->nodes = (bn_node *)mem_malloc(sizeof(bn_node));
 
   nlist->nodes[new_node].edges = NULL;
   nlist->nodes[new_node].num_edges = 0;
@@ -636,7 +636,7 @@ void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_add_reverse
     snlist->nodes[spnt].num_edges++;
 
     if (new_edge == 0) {
-      snlist->nodes[spnt].edges = mem_rmalloc<bn_edge>();
+      snlist->nodes[spnt].edges = (bn_edge *)mem_malloc(sizeof(bn_edge));
     } else {
       snlist->nodes[spnt].edges =
           (bn_edge *)mem_realloc(snlist->nodes[spnt].edges, sizeof(bn_edge) * snlist->nodes[spnt].num_edges);

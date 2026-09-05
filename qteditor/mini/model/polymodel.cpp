@@ -765,7 +765,7 @@ void FreePolymodelData(int i) {
   for (t = 0; t < Poly_models[i].n_models; t++) {
     if (Poly_models[i].submodel) {
       if (Poly_models[i].submodel[t].keyframe_axis) {
-        mem_free(Poly_models[i].submodel[t].keyframe_axis);
+        mem_rmfree(Poly_models[i].submodel[t].keyframe_axis);
         Poly_models[i].submodel[t].keyframe_axis = nullptr;
       }
 
@@ -784,42 +784,42 @@ void FreePolymodelData(int i) {
         Poly_models[i].submodel[t].keyframe_angles = nullptr;
       }
       if (Poly_models[i].submodel[t].keyframe_matrix) {
-        mem_free(Poly_models[i].submodel[t].keyframe_matrix);
+        mem_rmfree(Poly_models[i].submodel[t].keyframe_matrix);
         Poly_models[i].submodel[t].keyframe_matrix = nullptr;
       }
 
       if (Poly_models[i].submodel[t].keyframe_pos) {
-        mem_free(Poly_models[i].submodel[t].keyframe_pos);
+        mem_rmfree(Poly_models[i].submodel[t].keyframe_pos);
         Poly_models[i].submodel[t].keyframe_pos = nullptr;
       }
 
       if (Poly_models[i].submodel[t].verts) {
-        mem_free(Poly_models[i].submodel[t].verts);
+        mem_rmfree(Poly_models[i].submodel[t].verts);
         Poly_models[i].submodel[t].verts = nullptr;
       }
 
       if (Poly_models[i].submodel[t].vertnorms) {
-        mem_free(Poly_models[i].submodel[t].vertnorms);
+        mem_rmfree(Poly_models[i].submodel[t].vertnorms);
         Poly_models[i].submodel[t].vertnorms = nullptr;
       }
 
       if (Poly_models[i].submodel[t].alpha) {
-        mem_free(Poly_models[i].submodel[t].alpha);
+        mem_rmfree(Poly_models[i].submodel[t].alpha);
         Poly_models[i].submodel[t].alpha = nullptr;
       }
 
       if (Poly_models[i].submodel[t].vertnum_memory) {
-        mem_free(Poly_models[i].submodel[t].vertnum_memory);
+        mem_rmfree(Poly_models[i].submodel[t].vertnum_memory);
         Poly_models[i].submodel[t].vertnum_memory = nullptr;
       }
 
       if (Poly_models[i].submodel[t].u_memory) {
-        mem_free(Poly_models[i].submodel[t].u_memory);
+        mem_rmfree(Poly_models[i].submodel[t].u_memory);
         Poly_models[i].submodel[t].u_memory = nullptr;
       }
 
       if (Poly_models[i].submodel[t].v_memory) {
-        mem_free(Poly_models[i].submodel[t].v_memory);
+        mem_rmfree(Poly_models[i].submodel[t].v_memory);
         Poly_models[i].submodel[t].v_memory = nullptr;
       }
 
@@ -836,20 +836,20 @@ void FreePolymodelData(int i) {
       }
 
       if (Poly_models[i].submodel[t].flags & (SOF_GLOW | SOF_THRUSTER)) {
-        mem_free(Poly_models[i].submodel[t].glow_info);
+        mem_rmfree(Poly_models[i].submodel[t].glow_info);
         Poly_models[i].submodel[t].glow_info = nullptr;
       }
 
       if (Poly_models[i].submodel[t].faces) {
-        mem_free(Poly_models[i].submodel[t].faces);
+        mem_rmfree(Poly_models[i].submodel[t].faces);
         Poly_models[i].submodel[t].faces = nullptr;
 
         if (Poly_models[i].submodel[t].face_min) {
-          mem_free(Poly_models[i].submodel[t].face_min);
+          mem_rmfree(Poly_models[i].submodel[t].face_min);
           Poly_models[i].submodel[t].face_min = nullptr;
         }
         if (Poly_models[i].submodel[t].face_max) {
-          mem_free(Poly_models[i].submodel[t].face_max);
+          mem_rmfree(Poly_models[i].submodel[t].face_max);
           Poly_models[i].submodel[t].face_max = nullptr;
         }
       }
@@ -861,20 +861,20 @@ void FreePolymodelData(int i) {
     Poly_models[i].model_data = nullptr;
   }
   if (Poly_models[i].gun_slots) {
-    mem_free(Poly_models[i].gun_slots);
+    mem_rmfree(Poly_models[i].gun_slots);
     Poly_models[i].gun_slots = nullptr;
   }
   if (Poly_models[i].poly_wb) {
-    mem_free(Poly_models[i].poly_wb);
+    mem_rmfree(Poly_models[i].poly_wb);
     Poly_models[i].poly_wb = nullptr;
   }
   if (Poly_models[i].attach_slots) {
-    mem_free(Poly_models[i].attach_slots);
+    mem_rmfree(Poly_models[i].attach_slots);
     Poly_models[i].attach_slots = nullptr;
   }
 
   if (Poly_models[i].ground_slots) {
-    mem_free(Poly_models[i].ground_slots);
+    mem_rmfree(Poly_models[i].ground_slots);
     Poly_models[i].ground_slots = nullptr;
   }
   if (Poly_models[i].submodel) {
@@ -1556,7 +1556,7 @@ int ReadNewModelFile(int polynum, byte_istream &infile) {
       infile.seek(save_position, std::ios_base::beg);
 
       if (start_index)
-        mem_free(start_index);
+        mem_rmfree(start_index);
 
       for (i = 0; i < nfaces; i++) {
         infile >> pm->submodel[n].faces[i].normal;

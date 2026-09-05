@@ -3342,7 +3342,7 @@ int osipf_AIGetNearbyObjs(vector3 *pos, int init_roomnum, float rad, int *object
     }
   }
 
-  mem_free(s_list);
+  mem_rmfree(s_list);
 
   return count;
 }

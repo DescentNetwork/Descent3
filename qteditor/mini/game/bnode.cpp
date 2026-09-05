@@ -285,7 +285,7 @@ done:
       delete node_list[counter];
   }
 
-  mem_free(node_list); // DAJ LEAKFIX
+  mem_rmfree(node_list); // DAJ LEAKFIX
   return f_found;
 }
 

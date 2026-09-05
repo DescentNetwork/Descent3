@@ -2234,8 +2234,8 @@ void ComputeAABB(bool f_full) {
 
         int n_new;
 
-        nfaces = mem_rmalloc<int16_t>(rp->num_faces);
-        used = mem_rmalloc<bool>(rp->num_faces);
+        nfaces = (int16_t *)mem_malloc(rp->num_faces * sizeof(int16_t));
+        used = (bool *)mem_malloc(rp->num_faces * sizeof(bool));
 
         for (count1 = 0; count1 < rp->num_faces; count1++) {
           used[count1] = false;
@@ -2309,8 +2309,8 @@ void ComputeAABB(bool f_full) {
         //
         //			continue;
 
-        vector3 *s_max_xyz = mem_rmalloc<vector3>(num_structs_per_room[i]);
-        vector3 *s_min_xyz = mem_rmalloc<vector3>(num_structs_per_room[i]);
+        vector3 *s_max_xyz = (vector3 *)mem_malloc(num_structs_per_room[i] * sizeof(vector3));
+        vector3 *s_min_xyz = (vector3 *)mem_malloc(num_structs_per_room[i] * sizeof(vector3));
 
         for (count = 0; count < num_structs_per_room[i]; count++) {
 
@@ -2401,14 +2401,14 @@ void ComputeAABB(bool f_full) {
 
         // temporary malloc
         rp->num_bbf_regions = 27 + num_structs_per_room[i] - 1;
-        rp->bbf_list = mem_rmalloc<int16_t *>(MAX_REGIONS_PER_ROOM);
+        rp->bbf_list = (int16_t **)mem_malloc(MAX_REGIONS_PER_ROOM * sizeof(int16_t *));
         for (x = 0; x < MAX_REGIONS_PER_ROOM; x++) {
-          rp->bbf_list[x] = mem_rmalloc<int16_t>(rp->num_faces);
+          rp->bbf_list[x] = (int16_t *)mem_malloc(rp->num_faces * sizeof(int16_t));
         }
-        rp->num_bbf = mem_rmalloc<int16_t>(MAX_REGIONS_PER_ROOM);
-        rp->bbf_list_min_xyz = mem_rmalloc<vector3>(MAX_REGIONS_PER_ROOM);
-        rp->bbf_list_max_xyz = mem_rmalloc<vector3>(MAX_REGIONS_PER_ROOM);
-        rp->bbf_list_sector = mem_rmalloc<uint8_t>(MAX_REGIONS_PER_ROOM);
+        rp->num_bbf = (int16_t *)mem_malloc(MAX_REGIONS_PER_ROOM * sizeof(int16_t));
+        rp->bbf_list_min_xyz = (vector3 *)mem_malloc(MAX_REGIONS_PER_ROOM * sizeof(vector3));
+        rp->bbf_list_max_xyz = (vector3 *)mem_malloc(MAX_REGIONS_PER_ROOM * sizeof(vector3));
+        rp->bbf_list_sector = (uint8_t *)mem_malloc(MAX_REGIONS_PER_ROOM * sizeof(uint8_t));
 
         for (x = 0; x < 27; x++) {
           rp->bbf_list_sector[x] = bbf_lookup[x];

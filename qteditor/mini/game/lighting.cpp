@@ -110,7 +110,7 @@ void FreeLighting() {
   if (Dynamic_lightmap_memory)
     mem_free(Dynamic_lightmap_memory);
   if (Dynamic_lightmaps)
-    mem_free(Dynamic_lightmaps);
+    mem_rmfree(Dynamic_lightmaps);
 }
 
 // Sets up our dynamic lighting maps

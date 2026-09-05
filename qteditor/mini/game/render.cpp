@@ -3631,7 +3631,7 @@ void ConsolidateMineMirrors() {
     if (!rp->used)
       continue;
     if (rp->mirror_faces_list) {
-      mem_free(rp->mirror_faces_list);
+      mem_rmfree(rp->mirror_faces_list);
       rp->mirror_faces_list = NULL;
       rp->num_mirror_faces = 0;
     }

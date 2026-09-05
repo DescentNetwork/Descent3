@@ -472,7 +472,7 @@ int Room_mem_size;          // How big our chunk is
 // Closes down the room memory system.
 void RoomMemClose() {
   if (Room_mem_buf)
-    mem_free(Room_mem_buf);
+    mem_rmfree(Room_mem_buf);
 
   Room_mem_buf = Room_mem_ptr = NULL;
 }
@@ -495,7 +495,7 @@ void RoomMemInit(int nverts, int nfaces, int nfaceverts, int nportals) {
           sizeof(*Rooms[0].faces[0].face_uvls) + sizeof(std::max_align_t));
 
   if (Room_mem_buf)
-    mem_free(Room_mem_buf);
+    mem_rmfree(Room_mem_buf);
 
   Room_mem_buf = mem_rmalloc<uint8_t>(size);
   Room_mem_size = size;
@@ -505,26 +505,26 @@ void RoomMemInit(int nverts, int nfaces, int nfaceverts, int nportals) {
 
 // Allocates memory for a room or face
 template<typename T> static T *RoomMemAlloc(size_t nelem) {
-  static_assert(std::is_trivially_constructible_v<T> && std::is_trivially_destructible_v<T>);
   if (Room_mem_buf) {
     uint8_t *p = reinterpret_cast<uint8_t *>((reinterpret_cast<uintptr_t>(Room_mem_ptr) + alignof(T) - 1) / alignof(T) * alignof(T));
     Room_mem_ptr = p + nelem * sizeof(T);
     Q_ASSERT(Room_mem_ptr <= (Room_mem_buf + Room_mem_size));
     return static_cast<T *>(static_cast<void *>(p));
   } else
-    return static_cast<T *>(mem_malloc(nelem * sizeof(T)));
+    return new T[nelem];
 }
 
 // Frees memory in a room
 // Doesn't actually do anything
-void RoomMemFree(void *buf) {
+template<typename T> void RoomMemFree(T *buf) {
   if (!buf)
     return;
 
   if (Room_mem_buf) {
-    Q_ASSERT(((buf) >= Room_mem_buf) && ((buf) < (Room_mem_buf + Room_mem_size)));
+    uint8_t *p = reinterpret_cast<uint8_t *>(buf);
+    Q_ASSERT(((p) >= Room_mem_buf) && ((p) < (Room_mem_buf + Room_mem_size)));
   } else
-    mem_free(buf);
+    delete[] buf;
 }
 
 // Initalize a room, allocating memory and filling in fields
@@ -676,7 +676,7 @@ void FreeRoom(room *rp) {
   RoomMemFree(rp->verts);
 
   if (Katmai )
-    mem_free(rp->verts4);
+    mem_rmfree(rp->verts4);
 
   if (rp->num_bbf_regions) {
     for (i = 0; i < rp->num_bbf_regions; i++) {
@@ -694,13 +694,13 @@ void FreeRoom(room *rp) {
   BNode_FreeRoom(rp);
 
   if (rp->volume_lights)
-    mem_free(rp->volume_lights);
+    mem_rmfree(rp->volume_lights);
 
   if (rp->doorway_data)
-    mem_free(rp->doorway_data);
+    mem_rmfree(rp->doorway_data);
 
   if (rp->mirror_faces_list)
-    mem_free(rp->mirror_faces_list);
+    mem_rmfree(rp->mirror_faces_list);
 
   rp->used = 0;
 

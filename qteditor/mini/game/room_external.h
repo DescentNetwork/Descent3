@@ -141,8 +141,8 @@ struct face {
   uint8_t num_verts;  // how many vertices in this face
   int8_t portal_num; // which portal this face is part of, or -1 if none
 
-  int16_t *face_verts;       // index into list of vertices for this face
-  roomUVL *face_uvls;      // index into list of uvls for this face
+  int16_t* face_verts = nullptr;       // index into list of vertices for this face
+  roomUVL* face_uvls = nullptr;      // index into list of uvls for this face
   vector3 normal;           // the surface normal of this face
   int16_t tmap;              // texture numbers for this face
   uint16_t lmi_handle;       // the lightmap info number for this face
@@ -277,12 +277,12 @@ struct room {
   int num_faces;   // how many poygons in this room
   int num_portals; // how many connections in this room
   int num_verts;   // how many verts in the room
-  face *faces;     // pointer to list of faces
-  portal *portals; // pointer to list of portals
-  vector3 *verts;   // array of vertices for this room
-  vector4 *verts4; // array of 16byte vertices for this room
+  face* faces = nullptr;     // pointer to list of faces
+  portal* portals = nullptr; // pointer to list of portals
+  vector3* verts = nullptr;   // array of vertices for this room
+  vector4* verts4 = nullptr; // array of 16byte vertices for this room
 
-  doorway *doorway_data;   // pointer to this room's doorway data, or NULL if not a doorway
+  doorway* doorway_data = nullptr;   // pointer to this room's doorway data, or NULL if not a doorway
   std::string name;              // name of this room, or NULL
   int objects;             // index of first object in this room
   vector3 max_xyz, min_xyz; // for external room visibility checking
@@ -294,11 +294,11 @@ struct room {
   vector3 bbf_max_xyz;
   int16_t num_bbf_regions;
   int16_t pad1;
-  int16_t **bbf_list;
-  int16_t *num_bbf;
-  vector3 *bbf_list_min_xyz;
-  vector3 *bbf_list_max_xyz;
-  uint8_t *bbf_list_sector;
+  int16_t** bbf_list = nullptr;
+  int16_t* num_bbf = nullptr;
+  vector3* bbf_list_min_xyz = nullptr;
+  vector3* bbf_list_max_xyz = nullptr;
+  uint8_t* bbf_list_sector = nullptr;
 
   bn_list bn_info;
 
@@ -310,11 +310,11 @@ struct room {
   int16_t vis_effects;         // index of first visual effect in this room
   int16_t mirror_face;         // Index of face that this room is to be mirrored by
   uint8_t num_mirror_faces;    // Number of faces in this room that have the same texture as the mirror
-  uint16_t *mirror_faces_list; // the list of faces in this room that have the same texture as the mirror
+  uint16_t* mirror_faces_list = nullptr; // the list of faces in this room that have the same texture as the mirror
   float damage;              // The damage per second applied to players (& maybe others) in room
 
   vector3 path_pnt;      // Point used by the path system
-  uint8_t *volume_lights; // Pointer to memory for our volumetric lighting
+  uint8_t* volume_lights = nullptr; // Pointer to memory for our volumetric lighting
   int16_t volume_width;   // The dimensions of our volumetric room
   int16_t volume_height;
   int16_t volume_depth;

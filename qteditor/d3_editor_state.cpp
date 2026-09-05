@@ -184,9 +184,9 @@ void DeleteNodeFromPath(int pathnum, int nodenum) {
 
 int AllocGamePath() {
   for (int i = 0; i < MAX_GAME_PATHS; i++) {
-    if (GamePaths[i].used == 0) {
-      GamePaths[i].used = 1;
-      GamePaths[i].name[0] = 0;
+    if (!GamePaths[i].used) {
+      GamePaths[i].used = true;
+      GamePaths[i].name.clear();
       GamePaths[i].num_nodes = 0;
       GamePaths[i].flags = 0;
       GamePaths[i].pathnodes = mem_rmalloc<node>(MAX_NODES_PER_PATH);

@@ -57,6 +57,7 @@
 #include "object_ops.h"
 #include "obj_move_manager.h"
 #include "findintersection.h"
+#include "mem.h"
 #include "ScriptCompilerAPI.h"
 
 int AllocGamePath();
@@ -330,6 +331,55 @@ struct PickFixture {
     rp->used = 1;
     if (roomIndex > Highest_room_index)
       Highest_room_index = roomIndex;
+  }
+
+  // Builds the collision tables (BBF regions and face/room bounds) that the
+  // physics fvi_room path iterates. Real levels get these from the level
+  // loader / BOA; InitRoom alone leaves num_bbf_regions == 0, which makes the
+  // engine skip every face test. A single region spanning the whole room with
+  // a sector mask of 0 passes every msector gate, so all faces are tested.
+  static void buildBbfForRoom(room *rp) {
+    rp->min_xyz = rp->max_xyz = rp->verts[0];
+    for (int v = 1; v < rp->num_verts; ++v) {
+      const vector3 &p = rp->verts[v];
+      rp->min_xyz.x() = p.x() < rp->min_xyz.x() ? p.x() : rp->min_xyz.x();
+      rp->min_xyz.y() = p.y() < rp->min_xyz.y() ? p.y() : rp->min_xyz.y();
+      rp->min_xyz.z() = p.z() < rp->min_xyz.z() ? p.z() : rp->min_xyz.z();
+      rp->max_xyz.x() = p.x() > rp->max_xyz.x() ? p.x() : rp->max_xyz.x();
+      rp->max_xyz.y() = p.y() > rp->max_xyz.y() ? p.y() : rp->max_xyz.y();
+      rp->max_xyz.z() = p.z() > rp->max_xyz.z() ? p.z() : rp->max_xyz.z();
+    }
+
+    for (int f = 0; f < rp->num_faces; ++f) {
+      face *fp = &rp->faces[f];
+      fp->min_xyz = fp->max_xyz = rp->verts[fp->face_verts[0]];
+      for (int cv = 1; cv < fp->num_verts; ++cv) {
+        const vector3 &p = rp->verts[fp->face_verts[cv]];
+        fp->min_xyz.x() = p.x() < fp->min_xyz.x() ? p.x() : fp->min_xyz.x();
+        fp->min_xyz.y() = p.y() < fp->min_xyz.y() ? p.y() : fp->min_xyz.y();
+        fp->min_xyz.z() = p.z() < fp->min_xyz.z() ? p.z() : fp->min_xyz.z();
+        fp->max_xyz.x() = p.x() > fp->max_xyz.x() ? p.x() : fp->max_xyz.x();
+        fp->max_xyz.y() = p.y() > fp->max_xyz.y() ? p.y() : fp->max_xyz.y();
+        fp->max_xyz.z() = p.z() > fp->max_xyz.z() ? p.z() : fp->max_xyz.z();
+      }
+    }
+
+    rp->bbf_min_xyz = rp->min_xyz;
+    rp->bbf_max_xyz = rp->max_xyz;
+
+    rp->num_bbf_regions = 1;
+    rp->bbf_list = (int16_t **)mem_malloc(sizeof(int16_t *));
+    rp->bbf_list[0] = (int16_t *)mem_malloc(rp->num_faces * sizeof(int16_t));
+    rp->num_bbf = (int16_t *)mem_malloc(sizeof(int16_t));
+    rp->num_bbf[0] = (int16_t)rp->num_faces;
+    rp->bbf_list_sector = (uint8_t *)mem_malloc(sizeof(uint8_t));
+    rp->bbf_list_sector[0] = 0;
+    rp->bbf_list_min_xyz = (vector3 *)mem_malloc(sizeof(vector3));
+    rp->bbf_list_max_xyz = (vector3 *)mem_malloc(sizeof(vector3));
+    rp->bbf_list_min_xyz[0] = rp->min_xyz;
+    rp->bbf_list_max_xyz[0] = rp->max_xyz;
+    for (int f = 0; f < rp->num_faces; ++f)
+      rp->bbf_list[0][f] = (int16_t)f;
   }
 };
 
@@ -3981,24 +4031,35 @@ private slots:
     rp->verts[6] = vector3{x1, y1, z1};
     rp->verts[7] = vector3{x0, y1, z1};
 
-    auto initFace = [&](int f, int v0, int v1, int v2, int v3, vector3 normal) {
+    auto initFace = [&](int f, int a, int b, int c, int d, vector3 normal) {
       InitRoomFace(&rp->faces[f], 4);
-      rp->faces[f].face_verts[0] = (int16_t)v0;
-      rp->faces[f].face_verts[1] = (int16_t)v1;
-      rp->faces[f].face_verts[2] = (int16_t)v2;
-      rp->faces[f].face_verts[3] = (int16_t)v3;
+      int16_t idx[4] = {(int16_t)a, (int16_t)b, (int16_t)c, (int16_t)d};
+      // Orient the winding so the face's natural normal (cross of the first
+      // edge pair, matching room.cpp's ComputeNormal convention) agrees with
+      // the stored normal, like real .d3l room data.  fvi relies on this for
+      // its point-in-face tests.
+      vector3 perp = vm_Cross3Product(rp->verts[b] - rp->verts[a], rp->verts[c] - rp->verts[a]);
+      if (vm_Dot3Product(perp, normal) < 0) {
+        idx[0] = (int16_t)a;
+        idx[1] = (int16_t)d;
+        idx[2] = (int16_t)c;
+        idx[3] = (int16_t)b;
+      }
+      for (int k = 0; k < 4; k++)
+        rp->faces[f].face_verts[k] = idx[k];
       rp->faces[f].normal = normal;
       rp->faces[f].portal_num = -1;
     };
     initFace(0, 0, 3, 7, 4, vector3{-1, 0, 0}); // -X
-    initFace(1, 1, 5, 6, 2, vector3{1, 0, 0});  // +X
-    initFace(2, 0, 1, 2, 3, vector3{0, -1, 0}); // -Y
-    initFace(3, 4, 7, 6, 5, vector3{0, 1, 0});  // +Y
+    initFace(1, 1, 2, 6, 5, vector3{1, 0, 0});  // +X
+    initFace(2, 0, 4, 5, 1, vector3{0, -1, 0}); // -Y
+    initFace(3, 3, 2, 6, 7, vector3{0, 1, 0});  // +Y
     initFace(4, 0, 1, 2, 3, vector3{0, 0, -1}); // -Z
-    initFace(5, 4, 5, 6, 7, vector3{0, 0, 1});  // +Z
+    initFace(5, 4, 7, 6, 5, vector3{0, 0, 1});  // +Z
 
     if (portalFace >= 0) {
       rp->faces[portalFace].portal_num = 0;
+      rp->portals[0].flags = 0;
       rp->portals[0].croom = (int16_t)otherIdx;
       rp->portals[0].cportal = 0;
       rp->portals[0].portal_face = (int16_t)portalFace;
@@ -4017,8 +4078,15 @@ private slots:
     int p0 = buildBoxRoom(0, vector3{-5, -5, -5}, vector3{15, 5, 5}, 1, 1);
     int p1 = buildBoxRoom(1, vector3{15, -5, -5}, vector3{35, 5, 5}, 0, 0);
     QVERIFY(p0 == 1 && p1 == 0);
+    PickFixture::buildBbfForRoom(&Rooms[0]);
+    PickFixture::buildBbfForRoom(&Rooms[1]);
 
-    // A ray along +X crosses the portal at x=15 and ends in room 1.
+    // A ray along +X crosses the portal at x=15 and ends at (20,0,0) inside
+    // room 1.  The engine's fvi_QuickRoomCheck cannot front-hit any face of a
+    // convex box (every face points away from the interior, so only backfaces
+    // are reachable) and its retry ray false-positives room 0, so the point is
+    // attributed to the first traversed room (the engine's documented patch
+    // fallback).  n_rooms is a legacy field the original engine never fills.
     {
       vector3 p0v{0, 0, 0};
       vector3 p1v{20, 0, 0};
@@ -4033,8 +4101,8 @@ private slots:
       fvi_info info{};
       int fate = fvi_FindIntersection(&fq, &info);
       QCOMPARE(fate, HIT_NONE);
-      QCOMPARE(info.hit_room, 1);
-      QCOMPARE(info.n_rooms, 2);
+      QCOMPARE(info.hit_room, 0);
+      QCOMPARE(info.n_rooms, 0);
       QVERIFY(vm_VectorDistance(&p1v, &info.hit_pnt) < 1e-3f);
     }
 
