@@ -178,6 +178,7 @@ MainWindow::MainWindow(QWidget *parent)
   // ----------------------------------------------------------------- View
   connect(ui->ID_VIEW_KEYPAD_TOGGLE, &QAction::triggered, this, &MainWindow::toggleKeypadBar);
   connect(ui->ID_VIEW_CENTERONMINE, &QAction::triggered, this, &MainWindow::onCenterViewOnMine);
+  connect(ui->ID_VIEW_CENTERONCUBE, &QAction::triggered, this, &MainWindow::onCenterViewOnCube);
   connect(ui->ID_VIEW_CENTERONOBJECT, &QAction::triggered, this, &MainWindow::onCenterViewOnObject);
   connect(ui->ID_VIEW_RESETVIEWRADIUS, &QAction::triggered, this, &MainWindow::onResetViewRadius);
   connect(ui->ID_VIEW_TOOLBAR, &QAction::triggered, this, &MainWindow::onViewToolbar);
@@ -886,54 +887,45 @@ static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
 
 
 void MainWindow::onCenterViewOnMine() {
-  if (Viewer_object == nullptr)
-    return;
-  // Editor_view_mode determines whether the editor mines-terrain split
-  // is meaningful. We only recentre when the mode is VM_MINE; other
-  // modes are left as-is so the viewport doesn't snap while the user
-  // is poking at terrain.
-  if (Editor_view_mode != VM_MINE)
-    return;
-  if (Curroomp == nullptr || Curroomp->num_verts <= 0)
+  // Win32 ID_VIEW_CENTERONMINE -> CMainFrame::OnViewCenterOnMine
+  // (editor/MainFrm.cpp:2214) -> ResetWireframeView(): re-aim the active
+  // wireframe view at Mine_origin with the default distance/radius/orientation.
+  // resetCamera() also mirrors the new orbit camera back into the viewer
+  // (syncViewerToCamera) so the following camera stays congruent.
+  m_editorView->resetCamera();
+  m_editorView->requestRedraw();
+}
+
+void MainWindow::onCenterViewOnCube() {
+  // Win32 ID_VIEW_CENTERONCUBE -> CMainFrame::OnViewCenterOnCube
+  // (editor/MainFrm.cpp:2218): re-aim the wireframe view at the current
+  // room's center without changing distance or orientation.
+  room *rp;
+  if (Editor_view_mode == VM_ROOM) {
+    if (D3EditState.current_room < 0 || D3EditState.current_room > Highest_room_index)
+      return;
+    rp = &Rooms[D3EditState.current_room];
+  } else {
+    rp = Curroomp;
+  }
+  if (rp == nullptr || !rp->used)
     return;
 
-  // Average the verts to find the centroid of the current room; the
-  // Win32 OnViewCenterOnMine uses the same trick.
-  vector3 centroid{};
-  for (int i = 0; i < Curroomp->num_verts; ++i)
-    centroid += Curroomp->verts[i];
-  centroid /= static_cast<float>(Curroomp->num_verts);
-
-  matrix idmat{};
-  ObjSetPos(Viewer_object, &centroid, ROOMNUM(Curroomp), &idmat, false);
-  State_changed = true;
-  std::fprintf(stderr,
-               "[viewer_ops] CenterViewOnMine -> (%g,%g,%g) room %ld\n",
-               centroid.x(), centroid.y(), centroid.z(), ROOMNUM(Curroomp));
-
+  vector3 pos;
+  ComputeRoomCenter(&pos, rp);
+  m_editorView->setWireframeView(pos);
   m_editorView->requestRedraw();
 }
 
 void MainWindow::onCenterViewOnObject() {
-  if (Viewer_object == nullptr)
-    return;
+  // Win32 ID_VIEW_CENTERONOBJECT -> CMainFrame::OnViewCenterOnObject
+  // (editor/MainFrm.cpp:2229) -> SetWireframeView(&Objects[cur].pos).
   if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
     return;
   if (Objects[Cur_object_index].type == OBJ_NONE)
     return;
 
-  // Win32 OnViewCenterOnObject places the viewer one unit behind the
-  // target object's facing vector so the object stays visible after
-  // the move.
-  object *target = &Objects[Cur_object_index];
-  vector3 pos = target->pos;
-  pos -= target->orient.fvec;
-  ObjSetPos(Viewer_object, &pos, target->roomnum, &target->orient, false);
-  State_changed = true;
-  std::fprintf(stderr,
-               "[viewer_ops] CenterViewOnObject -> (%g,%g,%g) room %d\n",
-               pos.x(), pos.y(), pos.z(), target->roomnum);
-
+  m_editorView->setWireframeView(Objects[Cur_object_index].pos);
   m_editorView->requestRedraw();
 }
 

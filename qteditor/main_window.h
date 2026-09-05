@@ -148,6 +148,7 @@ private:
 
   // ====== VIEWER OPERATIONS ======
   void onCenterViewOnMine();
+  void onCenterViewOnCube();
   void onCenterViewOnObject();
   void onResetViewRadius();
   void onMoveViewToSelectedRoom();

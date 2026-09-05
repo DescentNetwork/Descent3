@@ -67,6 +67,7 @@ void DeleteNodeFromPath(int pathnum, int nodenum);
 void EBNode_ClearLevel();
 bool EBNode_VerifyGraph();
 #include "room_external.h"
+#include "room.h"
 #include "ship.h"
 #include "ssl_lib.h"
 #include "terrain.h"
@@ -1148,6 +1149,73 @@ private slots:
     a_saveas->trigger(); // Headless: may return the suggested default name.
     QCoreApplication::processEvents();
     QVERIFY(win.windowTitle().startsWith(QStringLiteral("Descent 3 Editor")));
+  }
+
+  // Win32 MainFrm.cpp:2214-2230: the View>Center on ... actions re-aim the
+  // wireframe view (ResetWireframeView / SetWireframeView) rather than moving
+  // the viewer actor.  ID_VIEW_CENTERONCUBE -> current room center,
+  // ID_VIEW_CENTERONOBJECT -> current object position, ID_VIEW_CENTERONMINE ->
+  // Mine_origin with the default dist/rad/orientation.
+  void testCenterViewActionsWireOrbitTarget() {
+    MainWindow win;
+    win.show();
+    QCoreApplication::processEvents();
+
+    auto *view = win.findChild<EditorView *>();
+    QVERIFY(view != nullptr);
+    QAction *a_room = win.findChild<QAction *>(QStringLiteral("ID_VIEW_CENTERONCUBE"));
+    QAction *a_mine = win.findChild<QAction *>(QStringLiteral("ID_VIEW_CENTERONMINE"));
+    QAction *a_object = win.findChild<QAction *>(QStringLiteral("ID_VIEW_CENTERONOBJECT"));
+    QVERIFY(a_room != nullptr);
+    QVERIFY(a_mine != nullptr);
+    QVERIFY(a_object != nullptr);
+
+    // The fresh mine from the startup CreateNewMine aims at Mine_origin.
+    QCOMPARE(view->activeWireframeView().target.x(), 2048.0f);
+    QCOMPARE(view->activeWireframeView().target.y(), -100.0f);
+    QCOMPARE(view->activeWireframeView().target.z(), 2048.0f);
+
+    // Center on Current Room: orbit target becomes the current room's center,
+    // distance/orientation untouched.
+    QVERIFY(Curroomp != nullptr && Curroomp->used);
+    vector3 roomCenter;
+    ComputeRoomCenter(&roomCenter, Curroomp);
+    a_room->trigger();
+    QCoreApplication::processEvents();
+    {
+      const EditorView::WireframeViewState &v = view->activeWireframeView();
+      QVERIFY2(vm_VectorDistance(&roomCenter, &v.target) < 1e-3f,
+               "Center on Current Room did not aim the orbit target at the room center");
+      QCOMPARE(v.dist, 500.0f); // SetWireframeView keeps distance
+    }
+
+    // Center on Current Object: the wireframe target becomes the current
+    // object's position.  The fresh mine's viewer is the only object; note
+    // the port's setWireframeView() also mirrors the camera back into the
+    // viewer (syncViewerToCamera), so the viewer itself will be moved dist
+    // units behind the target — hence we capture the pre-command position.
+    QVERIFY(Viewer_object != nullptr);
+    const int selIdx = OBJNUM(Viewer_object);
+    QVERIFY(selIdx >= 0);
+    const vector3 selPos = Objects[selIdx].pos;
+    Cur_object_index = selIdx;
+    a_object->trigger();
+    QCoreApplication::processEvents();
+    QVERIFY2(vm_VectorDistance(&selPos, &view->activeWireframeView().target) < 1e-3f,
+             "Center on Current Object did not aim the orbit target at the object");
+
+    // Center on Mine Origin: ResetWireframeView defaults (dist=500/rad=5000)
+    // aimed at Mine_origin.
+    a_mine->trigger();
+    QCoreApplication::processEvents();
+    {
+      const EditorView::WireframeViewState &vm2 = view->activeWireframeView();
+      QCOMPARE(vm2.target.x(), 2048.0f);
+      QCOMPARE(vm2.target.y(), -100.0f);
+      QCOMPARE(vm2.target.z(), 2048.0f);
+      QCOMPARE(vm2.dist, 500.0f);
+      QCOMPARE(vm2.rad, 5000.0f);
+    }
   }
 
   // Verifies SaveEditorSettings / LoadEditorSettings (editor.cpp) round-trip
