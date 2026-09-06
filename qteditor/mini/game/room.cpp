@@ -518,8 +518,7 @@ void InitRoom(room *rp, int nverts, int nfaces, int nportals) {
   rp->damage = 0.0;          // room damage
   rp->damage_type = PD_NONE; // room damage type
 
-  rp->bn_info.num_nodes = 0;
-  rp->bn_info.nodes = NULL;
+  rp->bn_info.nodes.clear();
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
   // Room_multiplier / Room_ambience_* are indexed by the room's slot in the

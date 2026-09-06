@@ -1309,19 +1309,19 @@ void EditorView::renderBNodes() {
       continue;
 
     bn_list *nlist = BNode_GetBNListPtr(roomnum);
-    if (!nlist || nlist->num_nodes == 0)
+    if (!nlist || nlist->nodes.empty())
       continue;
 
     bool is_current_room = (Viewer_object != nullptr && roomnum == Viewer_object->roomnum);
 
-    for (int i = 0; i < nlist->num_nodes; i++) {
-      for (int e = 0; e < nlist->nodes[i].num_edges; e++) {
+    for (int i = 0; i < (int)nlist->nodes.size(); i++) {
+      for (int e = 0; e < (int)nlist->nodes[i].edges.size(); e++) {
         int eroom = nlist->nodes[i].edges[e].end_room;
         int eidx = nlist->nodes[i].edges[e].end_index;
         bn_list *enlist = BNode_GetBNListPtr(eroom);
         if (!enlist)
           continue;
-        if (eidx < 0 || eidx >= enlist->num_nodes)
+        if (eidx < 0 || eidx >= (int)enlist->nodes.size())
           continue;
 
         float ax, ay, az, bx, by, bz;
@@ -1341,7 +1341,7 @@ void EditorView::renderBNodes() {
       }
     }
 
-    for (int i = 0; i < nlist->num_nodes; i++) {
+    for (int i = 0; i < (int)nlist->nodes.size(); i++) {
       float nx, ny, nz;
       if (!projectVertexDepth(nlist->nodes[i].pos, &nx, &ny, &nz))
         continue;

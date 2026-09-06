@@ -73,6 +73,8 @@
 #ifndef BNODE_H_
 #define BNODE_H_
 
+#include <vector>
+
 #include "vecmat_external.h"
 
 #define MAX_BNODE_SIZE 20.0f
@@ -91,13 +93,11 @@ struct bn_edge {
 
 struct bn_node {
   vector3 pos;
-  int num_edges;
-  bn_edge *edges;
+  std::vector<bn_edge> edges;
 };
 
 struct bn_list {
-  int num_nodes;
-  bn_node *nodes;
+  std::vector<bn_node> nodes;
 };
 
 struct room;

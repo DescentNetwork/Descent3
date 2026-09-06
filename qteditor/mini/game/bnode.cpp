@@ -226,10 +226,10 @@ bool BNode_FindPath(int start_room, int i, int j, float rad) {
   bn_list *bnlist = BNode_GetBNListPtr(start_room);
 
   Q_ASSERT(bnlist);
-  Q_ASSERT(i >= 0 && i < bnlist->num_nodes && j >= 0 && j < bnlist->num_nodes);
+  Q_ASSERT(i >= 0 && i < (int)bnlist->nodes.size() && j >= 0 && j < (int)bnlist->nodes.size());
 
-  node_list = mem_rmalloc<pq_item *>(bnlist->num_nodes);
-  memset(node_list, 0, bnlist->num_nodes * sizeof(pq_item *));
+  node_list = mem_rmalloc<pq_item *>(bnlist->nodes.size());
+  memset(node_list, 0, bnlist->nodes.size() * sizeof(pq_item *));
 
   PQPath.push(start_node);
 
@@ -244,7 +244,7 @@ bool BNode_FindPath(int start_room, int i, int j, float rad) {
 
     int num_edges;
 
-    num_edges = bnlist->nodes[cur_node->node].num_edges;
+    num_edges = (int)bnlist->nodes[cur_node->node].edges.size();
 
     for (counter = 0; counter < num_edges; counter++) {
       int next_node;
@@ -280,7 +280,7 @@ bool BNode_FindPath(int start_room, int i, int j, float rad) {
   }
 
 done:
-  for (counter = 0; counter < bnlist->num_nodes; counter++) {
+  for (counter = 0; counter < (int)bnlist->nodes.size(); counter++) {
     if (node_list[counter])
       delete node_list[counter];
   }
@@ -318,7 +318,7 @@ int BNode_FindDirLocalVisibleBNode(int roomnum, vector3 *pos, vector3 *fvec, flo
 
 retry:
 
-  for (i = 0; i < bnlist->num_nodes; i++) {
+  for (i = 0; i < (int)bnlist->nodes.size(); i++) {
     vector3 to = bnlist->nodes[i].pos - *pos;
     scalar dist = vm_NormalizeVector(&to);
 
@@ -330,7 +330,7 @@ retry:
 
                                         if(!f_retry)
                                         {
-                                                for(j = 0; j < bnlist->nodes[i].num_edges; j++)
+                                                for(j = 0; j < (int)bnlist->nodes[i].edges.size(); j++)
                                                 {
                                                         if(bnlist->nodes[i].edges[j].max_rad > node_size)
                                                         {
@@ -384,9 +384,9 @@ retry:
     goto retry;
   }
 
-  Q_ASSERT(bnlist->num_nodes > 0);
-  if (closest_node == -1 && bnlist->num_nodes > 0) {
-    closest_node = d3::rand() % bnlist->num_nodes;
+  Q_ASSERT(!bnlist->nodes.empty());
+  if (closest_node == -1 && !bnlist->nodes.empty()) {
+    closest_node = d3::rand() % bnlist->nodes.size();
   }
 
   Q_ASSERT(closest_node != -1);
@@ -410,14 +410,14 @@ int BNode_FindClosestLocalVisibleBNode(int roomnum, vector3 *pos, float rad) {
 
 retry:
 
-  for (i = 0; i < bnlist->num_nodes; i++) {
+  for (i = 0; i < (int)bnlist->nodes.size(); i++) {
     float dist = BNode_QuickDist(&bnlist->nodes[i].pos, pos);
 
     if (dist < closest_dist) {
       float node_size = 0.0f;
 
       if (!f_retry) {
-        for (j = 0; j < bnlist->nodes[i].num_edges; j++) {
+        for (j = 0; j < (int)bnlist->nodes[i].edges.size(); j++) {
           if (bnlist->nodes[i].edges[j].max_rad > node_size) {
             node_size = bnlist->nodes[i].edges[j].max_rad;
           }
@@ -453,9 +453,9 @@ retry:
     goto retry;
   }
 
-  Q_ASSERT(bnlist->num_nodes > 0);
-  if (closest_node == -1 && bnlist->num_nodes > 0) {
-    closest_node = d3::rand() % bnlist->num_nodes;
+  Q_ASSERT(!bnlist->nodes.empty());
+  if (closest_node == -1 && !bnlist->nodes.empty()) {
+    closest_node = d3::rand() % bnlist->nodes.size();
   }
 
   Q_ASSERT(closest_node != -1);
@@ -488,20 +488,8 @@ bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level) {
 }
 
 void BNode_ClearBNodeInfo(void) {
-  int i, j;
-
-  for (i = 0; i < 8; i++) {
-    if (BNode_allocated) {
-      for (j = 0; j < BNode_terrain_list[i].num_nodes; j++) {
-        if (BNode_terrain_list[i].nodes[j].num_edges) {
-          mem_free(BNode_terrain_list[i].nodes[j].edges);
-        }
-      }
-      mem_free(BNode_terrain_list[i].nodes);
-    }
-
-    BNode_terrain_list[i].num_nodes = 0;
-    BNode_terrain_list[i].nodes = NULL;
+  for (int i = 0; i < 8; i++) {
+    BNode_terrain_list[i].nodes.clear();
   }
 
   BNode_allocated = false;
@@ -515,19 +503,7 @@ bool BNode_MakeSubPath(int16_t sroom, int16_t spnt, int16_t eroom, int16_t epnt,
 }
 
 void BNode_FreeRoom(room *rp) {
-  int i;
-
-  for (i = 0; i < rp->bn_info.num_nodes; i++) {
-    if (rp->bn_info.nodes[i].num_edges) {
-      mem_free(rp->bn_info.nodes[i].edges);
-    }
-  }
-
-  if (rp->bn_info.num_nodes) {
-    mem_free(rp->bn_info.nodes);
-    rp->bn_info.nodes = NULL;
-    rp->bn_info.num_nodes = 0;
-  }
+  rp->bn_info.nodes.clear();
 }
 
 void BNode_RemapTerrainRooms(int old_hri, int new_hri) {
@@ -558,8 +534,8 @@ void BNode_RemapTerrainRooms(int old_hri, int new_hri) {
       bn_list *bnlist = BNode_GetBNListPtr(i);
       Q_ASSERT(bnlist);
 
-      for (j = 0; j < bnlist->num_nodes; j++) {
-        for (k = 0; k < bnlist->nodes[j].num_edges; k++) {
+      for (j = 0; j < (int)bnlist->nodes.size(); j++) {
+        for (k = 0; k < (int)bnlist->nodes[j].edges.size(); k++) {
           if (bnlist->nodes[j].edges[k].end_room >= new_hri) {
             bnlist->nodes[j].edges[k].end_room += delta;
           }
