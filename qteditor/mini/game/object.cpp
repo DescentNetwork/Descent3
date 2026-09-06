@@ -507,14 +507,14 @@ int ObjInit(object *objp, int type, int id, int handle, vector3 *pos, float crea
   objp->change_flags = 0;
   objp->generic_nonvis_flags = 0;
   objp->generic_sent_nonvis = 0;
-  objp->custom_default_script_name = nullptr;
-  objp->custom_default_module_name = nullptr;
+  objp->custom_default_script_name.clear();
+  objp->custom_default_module_name.clear();
   objp->contains_type = -1;
   objp->lifeleft = 0;
   objp->effect_info = nullptr;
   objp->ai_info = nullptr;
   objp->dynamic_wb = nullptr;
-  objp->attach_children = nullptr;
+  objp->attach_children.clear();
 
   // Now initialize the type-specific data
   return ObjInitTypeSpecific(objp, false);
@@ -617,15 +617,8 @@ void ObjDelete(int objnum) {
 
   ObjUnlink(objnum);
 
-  if (obj->custom_default_script_name) {
-    mem_free(obj->custom_default_script_name);
-    obj->custom_default_script_name = nullptr;
-  }
-
-  if (obj->custom_default_module_name) {
-    mem_free(obj->custom_default_module_name);
-    obj->custom_default_module_name = nullptr;
-  }
+  obj->custom_default_script_name.clear();
+  obj->custom_default_module_name.clear();
 
   obj->type = OBJ_NONE; // unused!
   obj->roomnum = -1;    // zero it!
@@ -650,10 +643,7 @@ void ObjDelete(int objnum) {
     obj->dynamic_wb = nullptr;
   }
 
-  if (obj->attach_children != nullptr) {
-    mem_rmfree(obj->attach_children);
-    obj->attach_children = nullptr;
-  }
+  obj->attach_children.clear();
 
   obj->name.clear();
 

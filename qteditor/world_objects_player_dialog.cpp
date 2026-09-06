@@ -508,7 +508,7 @@ void WorldObjectsPlayerDialog::onPshipLoadModel() {
   }
 
   if (QMessageBox::question(this, "Are you sure?", "Would you like to clear the weapon battery info?") == QMessageBox::Yes) {
-    WBClearInfo(Ships[ship_handle].static_wb);
+    WBClearInfo(Ships[ship_handle].static_wb.data());
   }
 
   std::filesystem::path curname = LocalModelsDir / Poly_models[img_handle].name;

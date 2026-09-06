@@ -19,6 +19,7 @@
 #ifndef ROBOTFIRESTRUCT_H_
 #define ROBOTFIRESTRUCT_H_
 
+#include <array>
 #include <cstdint>
 
 #include "robotfirestruct_external.h"
@@ -35,11 +36,11 @@
 struct poly_wb_info {
   // Static Data  (Add to robot generic page)
   uint16_t num_gps;
-  uint8_t gp_index[MAX_WB_GUNPOINTS];
+  std::array<uint8_t, MAX_WB_GUNPOINTS> gp_index;
 
   // Turrets are listed from most important (greatest mobility) to least important
   uint8_t num_turrets;
-  uint16_t turret_index[MAX_WB_TURRETS];
+  std::array<uint16_t, MAX_WB_TURRETS> turret_index;
 
 };
 
@@ -83,29 +84,29 @@ static_assert(sizeof(otype_wb_info_flags_t) == sizeof(uint16_t));
 
 // Attach to a object type
 struct otype_wb_info {
-  uint16_t gp_weapon_index[MAX_WB_GUNPOINTS];
-  uint16_t fm_fire_sound_index[MAX_WB_FIRING_MASKS];
+  std::array<uint16_t, MAX_WB_GUNPOINTS> gp_weapon_index;
+  std::array<uint16_t, MAX_WB_FIRING_MASKS> fm_fire_sound_index;
   uint16_t aiming_gp_index;
 
   uint8_t num_masks;
-  uint8_t gp_fire_masks[MAX_WB_FIRING_MASKS];
-  float gp_fire_wait[MAX_WB_FIRING_MASKS];
+  std::array<uint8_t, MAX_WB_FIRING_MASKS> gp_fire_masks;
+  std::array<float, MAX_WB_FIRING_MASKS> gp_fire_wait;
 
   uint8_t gp_quad_fire_mask;
 
   uint8_t num_levels;
-  uint16_t gp_level_weapon_index[MAX_WB_UPGRADES];
-  uint16_t gp_level_fire_sound_index[MAX_WB_UPGRADES];
+  std::array<uint16_t, MAX_WB_UPGRADES> gp_level_weapon_index;
+  std::array<uint16_t, MAX_WB_UPGRADES> gp_level_fire_sound_index;
 
   uint8_t aiming_flags;
   float aiming_3d_dot; // These can be reused.
   float aiming_3d_dist;
   float aiming_XZ_dot;
 
-  float anim_start_frame[MAX_WB_FIRING_MASKS];
-  float anim_fire_frame[MAX_WB_FIRING_MASKS];
-  float anim_end_frame[MAX_WB_FIRING_MASKS];
-  float anim_time[MAX_WB_FIRING_MASKS];
+  std::array<float, MAX_WB_FIRING_MASKS> anim_start_frame;
+  std::array<float, MAX_WB_FIRING_MASKS> anim_fire_frame;
+  std::array<float, MAX_WB_FIRING_MASKS> anim_end_frame;
+  std::array<float, MAX_WB_FIRING_MASKS> anim_time;
 
   otype_wb_info_flags_t flags;
 
@@ -145,9 +146,9 @@ struct dynamic_wb_info {
   float last_fire_time;
   uint8_t cur_firing_mask;
 
-  float norm_turret_angle[MAX_WB_TURRETS];
-  float turret_next_think_time[MAX_WB_TURRETS];
-  uint8_t turret_direction[MAX_WB_TURRETS];
+  std::array<float, MAX_WB_TURRETS> norm_turret_angle;
+  std::array<float, MAX_WB_TURRETS> turret_next_think_time;
+  std::array<uint8_t, MAX_WB_TURRETS> turret_direction;
 
   uint8_t wb_anim_mask;
   float wb_anim_frame;

@@ -118,6 +118,7 @@
 #include "object.h"
 #include "robotfirestruct.h"
 #include "player.h"
+#include <array>
 #include <string>
 
 #define MAX_SHIPS 30
@@ -156,14 +157,14 @@ struct ship {
   float med_lod_distance;
   float lo_lod_distance;
 
-  otype_wb_info static_wb[MAX_PLAYER_WEAPONS];
-  uint8_t fire_flags[MAX_PLAYER_WEAPONS]; // how a particular weapon fires
-  int max_ammo[MAX_PLAYER_WEAPONS];
+  std::array<otype_wb_info, MAX_PLAYER_WEAPONS> static_wb;
+  std::array<uint8_t, MAX_PLAYER_WEAPONS> fire_flags; // how a particular weapon fires
+  std::array<int, MAX_PLAYER_WEAPONS> max_ammo;
 
-  int firing_sound[MAX_PLAYER_WEAPONS];         // sound the weapon makes while button held down
-  int firing_release_sound[MAX_PLAYER_WEAPONS]; // sound the weapon makes when the button is released
+  std::array<int, MAX_PLAYER_WEAPONS> firing_sound;         // sound the weapon makes while button held down
+  std::array<int, MAX_PLAYER_WEAPONS> firing_release_sound; // sound the weapon makes when the button is released
 
-  int spew_powerup[MAX_PLAYER_WEAPONS]; // which powerup to spew for each weapon
+  std::array<int, MAX_PLAYER_WEAPONS> spew_powerup; // which powerup to spew for each weapon
 
   std::string cockpit_name;    // name of cockpit.inf file
   std::string hud_config_name; // name of hud configuration file

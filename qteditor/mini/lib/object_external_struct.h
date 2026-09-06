@@ -91,7 +91,10 @@
  * $NoKeywords: $
  */
 
+#include <array>
 #include <cstdint>
+#include <string>
+#include <vector>
 
 #include "vecmat_external.h"
 #include "robotfirestruct.h"
@@ -251,8 +254,8 @@ struct polyobj_info {
 
 // A shard of, presumably, glass
 struct shard_info_s {
-  vector3 points[3];
-  float u[3], v[3];
+  std::array<vector3, 3> points;
+  std::array<float, 3> u, v;
   vector3 normal;
   int16_t tmap;
 };
@@ -311,7 +314,7 @@ struct powerup_info_s {
 struct splinter_info_s {
   uint8_t subobj_num;
   int16_t facenum;
-  vector3 verts[MAX_VERTS_PER_SPLINTER];
+  std::array<vector3, MAX_VERTS_PER_SPLINTER> verts;
   vector3 center;
 };
 
@@ -514,7 +517,7 @@ struct object {
 
   int32_t attach_ultimate_handle;
   int32_t attach_parent_handle;
-  int32_t *attach_children;   // List of object handles for connected children
+  std::vector<int32_t> attach_children; // List of object handles for connected children
 
   uint8_t weapon_fire_flags;  // Used to indicate special weapon effects.  See flags above.
 
@@ -587,8 +590,8 @@ struct object {
   // OSIRIS Script Info (new OSIRIS)
   tOSIRISScript *osiris_script;
 
-  char *custom_default_script_name;
-  char *custom_default_module_name;
+  std::string custom_default_script_name;
+  std::string custom_default_module_name;
 };
 
 #endif
