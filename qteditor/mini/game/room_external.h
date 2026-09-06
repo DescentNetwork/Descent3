@@ -311,11 +311,11 @@ struct room {
   int16_t vis_effects;         // index of first visual effect in this room
   int16_t mirror_face;         // Index of face that this room is to be mirrored by
   uint8_t num_mirror_faces;    // Number of faces in this room that have the same texture as the mirror
-  uint16_t* mirror_faces_list = nullptr; // the list of faces in this room that have the same texture as the mirror
+  std::vector<uint16_t> mirror_faces_list; // the list of faces in this room that have the same texture as the mirror
   float damage;              // The damage per second applied to players (& maybe others) in room
 
   vector3 path_pnt;      // Point used by the path system
-  uint8_t* volume_lights = nullptr; // Pointer to memory for our volumetric lighting
+  std::vector<uint8_t> volume_lights; // memory for our volumetric lighting
   int16_t volume_width;   // The dimensions of our volumetric room
   int16_t volume_height;
   int16_t volume_depth;

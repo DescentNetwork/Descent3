@@ -4,12 +4,9 @@ project(qteditor VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEDITOR")
-# Mini-specific build flag: marks code/tests that only make sense in the
-# decoupled mini build (gated with #ifdef MINI_EDITOR in the shared sources so
-# the original qteditor build omits them). Set as a target compile definition
-# (not just CMAKE_CXX_FLAGS) so AUTOMOC's moc invocation also sees it and
-# registers the gated Q_OBJECT test slots.
-#add_compile_defxinitions(MINI_EDITOR)
+# This tree is the decoupled "mini" editor build.  MINI_EDITOR gating in the
+# shared sources has been removed: the code that used to be guarded is always
+# part of the build now.
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)

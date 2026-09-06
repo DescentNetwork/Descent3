@@ -474,10 +474,10 @@ void InitRoom(room *rp, int nverts, int nfaces, int nportals) {
   rp->flags = {};
   rp->objects = -1;
   rp->vis_effects = -1;
-  rp->volume_lights = NULL;
+  rp->volume_lights.clear();
   rp->mirror_face = -1;
   rp->num_mirror_faces = 0;
-  rp->mirror_faces_list = NULL;
+  rp->mirror_faces_list.clear();
   rp->room_change_flags = 0;
 
 #ifndef NEWEDITOR // the new editor must allow users to create a room from scratch
@@ -609,14 +609,12 @@ void FreeRoom(room *rp) {
 
   BNode_FreeRoom(rp);
 
-  if (rp->volume_lights)
-    mem_rmfree(rp->volume_lights);
+  rp->volume_lights.clear();
 
   if (rp->doorway_data)
     mem_rmfree(rp->doorway_data);
 
-  if (rp->mirror_faces_list)
-    mem_rmfree(rp->mirror_faces_list);
+  rp->mirror_faces_list.clear();
 
   rp->used = 0;
 
@@ -851,10 +849,7 @@ void ClearVolumeLights(int roomnum) {
 
   Q_ASSERT(!Rooms[roomnum].flags.external);
 
-  if (Rooms[roomnum].volume_lights) {
-    mem_free(Rooms[roomnum].volume_lights);
-    Rooms[roomnum].volume_lights = NULL;
-  }
+  Rooms[roomnum].volume_lights.clear();
 }
 
 // Removes all room volume lights from memory

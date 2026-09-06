@@ -3010,7 +3010,7 @@ void GetRoomDynamicScalar(vector3 *pos, room *rp, float *r, float *g, float *b) 
   float back_values_g[10];
   float front_values_b[10];
   float back_values_b[10];
-  if (!rp->volume_lights) {
+  if (rp->volume_lights.empty()) {
     *r = 1;
     *g = 1;
     *b = 1;
@@ -3631,11 +3631,8 @@ void ConsolidateMineMirrors() {
     room *rp = &Rooms[i];
     if (!rp->used)
       continue;
-    if (rp->mirror_faces_list) {
-      mem_rmfree(rp->mirror_faces_list);
-      rp->mirror_faces_list = NULL;
-      rp->num_mirror_faces = 0;
-    }
+    rp->mirror_faces_list.clear();
+    rp->num_mirror_faces = 0;
     if (rp->mirror_face == -1)
       continue;
     // Count the number of faces that have the same texture as the mirror face
@@ -3650,8 +3647,7 @@ void ConsolidateMineMirrors() {
       rp->mirror_face = 0;
       continue;
     }
-    rp->mirror_faces_list = mem_rmalloc<uint16_t>(num_mirror_faces);
-    Q_ASSERT(rp->mirror_faces_list);
+    rp->mirror_faces_list.resize(num_mirror_faces);
     rp->num_mirror_faces = num_mirror_faces;
     // Now go through and fill in our list
     int count = 0;

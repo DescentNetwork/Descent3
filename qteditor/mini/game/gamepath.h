@@ -38,6 +38,7 @@
 #ifndef GAME_PATH_H
 #define GAME_PATH_H
 
+#include <array>
 #include <cstdlib>
 
 #include "3d.h"
@@ -45,6 +46,7 @@
 #include "mem/mem.h"
 #include "pstypes.h"
 #include "vecmat.h"
+#include <vector>
 
 // chrishack -- this could be dynamically allocated at the beginning of a level
 // MAX_NODES_PER_PATH is big and so is MAX_GAME_PATHS
@@ -64,23 +66,17 @@ class game_path {
 public:
   game_path() {
     num_nodes = 0;
-    pathnodes = NULL;
-    used = false;
-  }
-  ~game_path() {
-    if (used)
-      mem_free(pathnodes);
     used = false;
   }
 
-  node *pathnodes;
+  std::vector<node> pathnodes; // how many nodes in this path? (count kept in num_nodes)
   int num_nodes;           // how many nodes in this path?
   std::string name; // the name of this path
   uint8_t flags;             // special properties of this path
   bool used;               // if this path is in use
 };
 
-extern game_path GamePaths[MAX_GAME_PATHS];
+extern std::array<game_path, MAX_GAME_PATHS> GamePaths;
 extern int Num_game_paths;
 
 void InitGamePaths();

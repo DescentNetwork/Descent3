@@ -27,25 +27,15 @@
 #include <QMessageBox>
 #include <QPushButton>
 
-#include <cstring>
 #include <string>
 
 #include "brief_mission_flags_dialog.h"
-
-namespace {
-
-void copyToFilename(char *dst, size_t dstLen, const std::string &src) {
-  std::strncpy(dst, src.c_str(), dstLen - 1);
-  dst[dstLen - 1] = '\0';
-}
-
-} // namespace
 
 BriefMovieDialog::BriefMovieDialog(TCMOVIEDESC *desc, QWidget *parent)
     : QDialog(parent), ui(new Ui::BriefMovieDialog)
 {
   ui->setupUi(this);
-  std::memset(&m_desc, 0, sizeof(TCMOVIEDESC));
+  m_desc = TCMOVIEDESC{};
   m_desc.fps = 20.0f;
 
   if (desc) {
@@ -62,7 +52,7 @@ BriefMovieDialog::BriefMovieDialog(TCMOVIEDESC *desc, QWidget *parent)
       m_desc.fps = desc->fps;
     m_desc.mission_mask_set = desc->mission_mask_set;
     m_desc.mission_mask_unset = desc->mission_mask_unset;
-    copyToFilename(m_desc.filename, MAX_FILELEN, desc->filename);
+    m_desc.filename = desc->filename;
   }
 
   ui->IDC_BRIEF_M_FILENAME->setText(QString::fromStdString(m_desc.filename));
@@ -111,7 +101,7 @@ void BriefMovieDialog::onOk() {
   }
 
   m_desc.caps = TCMD_XY | TCMD_LOOPING | TCMD_WAITTIME | TCMD_FPS;
-  copyToFilename(m_desc.filename, MAX_FILELEN, filename.toStdString());
+  m_desc.filename = filename.toStdString();
   m_desc.fps = ui->IDC_BRIEF_M_FPS->text().toFloat();
   m_desc.looping = ui->IDC_BRIEF_M_LOOPING->isChecked();
   m_desc.waittime = ui->IDC_BRIEF_M_STARTTIME->text().toFloat();

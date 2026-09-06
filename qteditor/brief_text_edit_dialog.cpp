@@ -30,7 +30,6 @@
 #include <QStringList>
 
 #include <array>
-#include <cstring>
 
 #include "brief_mission_flags_dialog.h"
 #include "gamefont.h"
@@ -116,7 +115,7 @@ BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const st
       m_effectType(0), m_richEdit(nullptr)
 {
   ui->setupUi(this);
-  memset(&m_desc, 0, sizeof(TCTEXTDESC));
+  m_desc = TCTEXTDESC{};
   m_desc.type = TC_TEXT_STATIC;
   m_desc.font = BRIEF_FONT_INDEX;
   m_desc.color = GR_GREEN;
@@ -142,7 +141,7 @@ BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const st
     if (d->caps & TCTD_LOOPING)
       m_desc.looping = d->looping;
     if (d->caps & TCTD_TEXTBOX)
-      std::memcpy(&m_desc.textbox, &d->textbox, sizeof(tc_text));
+      m_desc.textbox = d->textbox;
     if (d->caps & TCTD_WAITTIME)
       m_desc.waittime = d->waittime;
     m_desc.mission_mask_set = d->mission_mask_set;

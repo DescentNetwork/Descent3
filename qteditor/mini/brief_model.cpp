@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <cstdio>
-#include <cstring>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -289,7 +288,7 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, BriefGlobalValu
 
       switch (efx->type) {
       case BE_TEXT: {
-        TCTEXTDESC *desc = &efx->desc.text_desc;
+        TCTEXTDESC *desc = &efx->desc.text_desc();
         std::string red = std::to_string(GR_COLOR_RED(desc->color));
         std::string green = std::to_string(GR_COLOR_GREEN(desc->color));
         std::string blue = std::to_string(GR_COLOR_BLUE(desc->color));
@@ -309,7 +308,7 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, BriefGlobalValu
         out << "$endtext\n";
       } break;
       case BE_BMP: {
-        TCBMPDESC *desc = &efx->desc.bmp_desc;
+        TCBMPDESC *desc = &efx->desc.bmp_desc();
         out << "$bitmap effect " << bmpEffectWord(*desc) << " starttime " << desc->waittime;
         if (desc->flags & TC_NOEARLYRENDER)
           out << " no_early_rend";
@@ -323,7 +322,7 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, BriefGlobalValu
         out << " desc \"" << efx->description << "\" show \"" << desc->filename << "\"\n";
       } break;
       case BE_MOVIE: {
-        TCMOVIEDESC *desc = &efx->desc.movie_desc;
+        TCMOVIEDESC *desc = &efx->desc.movie_desc();
         out << "$movie position " << desc->x << "," << desc->y << " fps " << desc->fps
             << (desc->looping ? " looping" : "") << " starttime " << desc->waittime;
         std::string sm2 = missionFlagTokens(desc->mission_mask_set, true);
@@ -335,7 +334,7 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, BriefGlobalValu
         out << " desc \"" << efx->description << "\" show \"" << desc->filename << "\"\n";
       } break;
       case BE_SND: {
-        TCSNDDESC *desc = &efx->desc.snd_desc;
+        TCSNDDESC *desc = &efx->desc.snd_desc();
         out << "$sound " << (desc->once ? "once" : "") << " starttime " << desc->waittime;
         std::string sm2 = missionFlagTokens(desc->mission_mask_set, true);
         std::string um2 = missionFlagTokens(desc->mission_mask_unset, false);
@@ -346,7 +345,7 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, BriefGlobalValu
         out << " desc \"" << efx->description << "\" play \"" << desc->filename << "\"\n";
       } break;
       case BE_BUTTON: {
-        TCBUTTONDESC *desc = &efx->desc.button_desc;
+        TCBUTTONDESC *desc = &efx->desc.button_desc();
         std::string ctype;
         switch (desc->click_type) {
         case 0: ctype = "ClickDown"; break;
@@ -533,7 +532,7 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValu
 
       if (cmd == "$text") {
         efx->type = BE_TEXT;
-        TCTEXTDESC *desc = &efx->desc.text_desc;
+        TCTEXTDESC *desc = &efx->desc.text_desc();
         desc->caps = TCTD_FONT | TCTD_COLOR | TCTD_SPEED | TCTD_WAITTIME | TCTD_TEXTBOX | TCTD_SCROLL;
         // parse key fields
         auto pos = rest.find("font ");
@@ -590,7 +589,7 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValu
         pending_text.clear();
       } else if (cmd == "$bitmap") {
         efx->type = BE_BMP;
-        TCBMPDESC *desc = &efx->desc.bmp_desc;
+        TCBMPDESC *desc = &efx->desc.bmp_desc();
         auto pos = rest.find(" starttime ");
         if (pos != std::string::npos)
           std::istringstream(rest.substr(pos + 10)) >> desc->waittime;
@@ -616,15 +615,11 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValu
         if (pos != std::string::npos) {
           size_t s = pos + 7;
           size_t e = rest.find('"', s);
-          std::string fn = (e != std::string::npos) ? rest.substr(s, e - s) : std::string();
-          if (fn.size() >= MAX_FILELEN)
-            fn = fn.substr(0, MAX_FILELEN - 1);
-          std::memcpy(desc->filename, fn.c_str(), fn.size());
-          desc->filename[std::min<std::size_t>(fn.size(), MAX_FILELEN - 1)] = 0;
+          desc->filename = (e != std::string::npos) ? rest.substr(s, e - s) : std::string();
         }
       } else if (cmd == "$movie") {
         efx->type = BE_MOVIE;
-        TCMOVIEDESC *desc = &efx->desc.movie_desc;
+        TCMOVIEDESC *desc = &efx->desc.movie_desc();
         auto pos = rest.find(" position ");
         if (pos != std::string::npos) {
           std::istringstream p(rest.substr(pos + 9));
@@ -642,13 +637,11 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValu
         if (pos != std::string::npos) {
           size_t s = pos + 7;
           size_t e = rest.find('"', s);
-          std::string fn = (e != std::string::npos) ? rest.substr(s, e - s) : std::string();
-          std::memcpy(desc->filename, fn.c_str(), std::min<std::size_t>(fn.size(), MAX_FILELEN - 1));
-          desc->filename[std::min<std::size_t>(fn.size(), MAX_FILELEN - 1)] = 0;
+          desc->filename = (e != std::string::npos) ? rest.substr(s, e - s) : std::string();
         }
       } else if (cmd == "$sound") {
         efx->type = BE_SND;
-        TCSNDDESC *desc = &efx->desc.snd_desc;
+        TCSNDDESC *desc = &efx->desc.snd_desc();
         auto pos = rest.find(" starttime ");
         if (pos != std::string::npos)
           std::istringstream(rest.substr(pos + 10)) >> desc->waittime;
@@ -657,9 +650,7 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValu
         if (pos != std::string::npos) {
           size_t s = pos + 7;
           size_t e = rest.find('"', s);
-          std::string fn = (e != std::string::npos) ? rest.substr(s, e - s) : std::string();
-          std::memcpy(desc->filename, fn.c_str(), std::min<std::size_t>(fn.size(), MAX_FILELEN - 1));
-          desc->filename[std::min<std::size_t>(fn.size(), MAX_FILELEN - 1)] = 0;
+          desc->filename = (e != std::string::npos) ? rest.substr(s, e - s) : std::string();
         }
       }
       // (button omitted in parse for now; round-trip focuses on text/bmp/movie/sound)

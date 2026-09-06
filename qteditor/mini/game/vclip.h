@@ -22,6 +22,7 @@
 
 #include "fix.h"
 #include "manage.h"
+#include <vector>
 
 #define MAX_VCLIPS 200
 #define VCLIP_MAX_FRAMES 50
@@ -32,7 +33,7 @@
 struct vclip {
   std::string name;
   int16_t num_frames;
-  int16_t *frames;    // bitmap indices
+  std::vector<int16_t> frames; // bitmap indices
   float frame_time; // time (in seconds) of each frame
   int flags;
   uint8_t target_size; // what size this vclip should use (texture wise)

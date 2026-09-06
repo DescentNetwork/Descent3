@@ -19,6 +19,7 @@
 #ifndef _AIAMBIENT_H_
 #define _AIAMBIENT_H_
 
+#include <array>
 #include <cstdint>
 #include "cfile.h"
 
@@ -38,19 +39,19 @@
 
 class ambient_life {
   // Editor settable values
-  int m_type[MAX_AL_TYPES];
-  uint8_t m_total[MAX_AL_TYPES];
-  uint8_t m_max[MAX_AL_TYPES];
-  uint8_t m_min[MAX_AL_TYPES];
-  uint8_t m_flags[MAX_AL_TYPES];
+  std::array<int, MAX_AL_TYPES> m_type;
+  std::array<uint8_t, MAX_AL_TYPES> m_total;
+  std::array<uint8_t, MAX_AL_TYPES> m_max;
+  std::array<uint8_t, MAX_AL_TYPES> m_min;
+  std::array<uint8_t, MAX_AL_TYPES> m_flags;
 
   // These are never set or gotten from outside of the class
-  uint8_t m_cur_num[MAX_AL_TYPES];
-  int m_handle[MAX_AL_TYPES][MAX_ALS_PER_TYPE];
+  std::array<uint8_t, MAX_AL_TYPES> m_cur_num;
+  std::array<std::array<int, MAX_ALS_PER_TYPE>, MAX_AL_TYPES> m_handle;
 
   // Don't save these...
-  uint8_t m_next_size[MAX_AL_TYPES];
-  float m_next_do_time[MAX_AL_TYPES];
+  std::array<uint8_t, MAX_AL_TYPES> m_next_size;
+  std::array<float, MAX_AL_TYPES> m_next_do_time;
 
   void ComputeNextSize(int8_t index);
 

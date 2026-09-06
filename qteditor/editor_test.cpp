@@ -27,6 +27,8 @@
 #include <QAbstractButton>
 #include <QAction>
 #include <QComboBox>
+#include <QCoreApplication>
+#include <QDebug>
 #include <QDockWidget>
 #include <QElapsedTimer>
 #include <QEventLoop>
@@ -38,6 +40,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QMenuBar>
+#include <QRegularExpression>
 #include <QPushButton>
 #include <QSettings>
 #include <QTextEdit>
@@ -139,6 +142,7 @@ bool EBNode_VerifyGraph();
 #include "posix_stream.h"
 #include "table_manage.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
@@ -179,14 +183,12 @@ bool EBNode_VerifyGraph();
 #include <QDir>
 #include <QLabel>
 
-#ifdef MINI_EDITOR
 // ---- Decoupled-mini-only includes (cfile/gamedata level-loading) ----
 #include <filesystem>
 
 #include "cfile.h"
 #include "gamedata_loader.h"
 #include "brief_model.h"
-#endif // MINI_EDITOR
 
 #include "editor_view.h"
 #include "level_io.h"
@@ -200,9 +202,7 @@ bool EBNode_VerifyGraph();
 #include "world_weapons_dialog.h"
 #include "worldobjectslight_dialog.h"
 #include "level_io.h"
-#ifdef MINI_EDITOR
 #include "LoadLevel.h"
-#endif // MINI_EDITOR
 #include "d3edit.h"
 
 static constexpr double kPi = 3.14159265358979323846;
@@ -386,8 +386,7 @@ class EditorTest : public QObject
 private slots:
   void initTestCase() { QCoreApplication::processEvents(); }
 
-#ifdef MINI_EDITOR
-  // Round-trips a tiny hand-built world (rooms, objects, triggers, wind,
+// Round-trips a tiny hand-built world (rooms, objects, triggers, wind,
   // level info) through SaveLevel -> LoadLevel and verifies the key geometry
   // and object/trigger counts reproduce.
   void testLevelLoadSaveRoundTrip()
@@ -405,25 +404,25 @@ private slots:
     room *r0 = &Rooms[0];
     *(r0) = room{};
     InitRoom(r0, 4, 1, 0);
-    r0->verts[0] = vector{(float)10, (float)0, (float)-10};
-    r0->verts[1] = vector{(float)0, (float)0, (float)-10};
-    r0->verts[2] = vector{(float)0, (float)0, (float)10};
-    r0->verts[3] = vector{(float)10, (float)0, (float)10};
+    r0->verts[0] = vector3{(float)10, (float)0, (float)-10};
+    r0->verts[1] = vector3{(float)0, (float)0, (float)-10};
+    r0->verts[2] = vector3{(float)0, (float)0, (float)10};
+    r0->verts[3] = vector3{(float)10, (float)0, (float)10};
     InitRoomFace(&r0->faces[0], 4);
     for (int i = 0; i < 4; i++)
       r0->faces[0].face_verts[i] = (int16_t)i;
     r0->faces[0].tmap = 2;
     r0->faces[0].face_uvls[0].u = 0.5f;
-    r0->wind = vector{(float)1, (float)0, (float)0};
+    r0->wind = vector3{(float)1, (float)0, (float)0};
     r0->name.clear();
 
     // Room 1: triangle.
     room *r1 = &Rooms[1];
     *(r1) = room{};
     InitRoom(r1, 3, 1, 0);
-    r1->verts[0] = vector{(float)20, (float)0, (float)-10};
-    r1->verts[1] = vector{(float)30, (float)0, (float)-10};
-    r1->verts[2] = vector{(float)25, (float)0, (float)10};
+    r1->verts[0] = vector3{(float)20, (float)0, (float)-10};
+    r1->verts[1] = vector3{(float)30, (float)0, (float)-10};
+    r1->verts[2] = vector3{(float)25, (float)0, (float)10};
     InitRoomFace(&r1->faces[0], 3);
     for (int i = 0; i < 3; i++)
       r1->faces[0].face_verts[i] = (int16_t)i;
@@ -434,14 +433,14 @@ private slots:
     Objects[0].type = OBJ_POWERUP;
     Objects[0].id = 1;
     Objects[0].roomnum = 0;
-    Objects[0].pos = vector{(float)5, (float)1, (float)-5};
-    Objects[0].orient.rvec = vector{(float)1, 0, 0};
-    Objects[0].orient.uvec = vector{(float)0, (float)1, 0};
-    Objects[0].orient.fvec = vector{0, 0, (float)1};
+    Objects[0].pos = vector3{(float)5, (float)1, (float)-5};
+    Objects[0].orient.rvec = vector3{(float)1, 0, 0};
+    Objects[0].orient.uvec = vector3{(float)0, (float)1, 0};
+    Objects[0].orient.fvec = vector3{0, 0, (float)1};
     Objects[1].type = OBJ_ROBOT;
     Objects[1].id = 7;
     Objects[1].roomnum = 1;
-    Objects[1].pos = vector{(float)25, (float)2, (float)0};
+    Objects[1].pos = vector3{(float)25, (float)2, (float)0};
     Highest_object_index = 1;
 
     // Trigger.
@@ -475,6 +474,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
+    Highest_room_index = -1;
     Num_triggers = 0;
 
     QVERIFY2(LoadLevel(std::filesystem::path(file.toStdString()), nullptr),
@@ -582,7 +582,6 @@ private slots:
     Highest_room_index = -1;
     errno = 0;
   }
-#endif // MINI_EDITOR
 
   // CAddScriptDialog (IDD_ADDSCRIPT) gates the name length at 32 chars via
   // DDV_MaxChars in Win32 and via setMaxLength on the Qt line edit here. It
@@ -695,8 +694,7 @@ private slots:
     errno = 0;
   }
 
-#ifdef MINI_EDITOR
-  // Verifies the posix_stream + hog2::archive_t layer can open the real d3.hog,
+// Verifies the posix_stream + hog2::archive_t layer can open the real d3.hog,
   // locate and open the Table.gam gamedata file inside it, and read bytes from
   // it. This is the foundation for loading gamedata before a level is opened
   // (replaces the legacy cfile/hogfile API). Skips if the game data directory
@@ -837,13 +835,13 @@ private slots:
     efx->id = 3;
     efx->description = "intro";
     efx->text = "Welcome to the mission.";
-    efx->desc.text_desc.type = TC_TEXT_SCROLL;
-    efx->desc.text_desc.flags = TC_TEXTF_L2R;
-    efx->desc.text_desc.speed = 2.0f;
-    efx->desc.text_desc.waittime = 1.5f;
-    efx->desc.text_desc.font = 0; // sm_brief
-    efx->desc.text_desc.color = GR_RGB(10, 20, 30);
-    efx->desc.text_desc.caps = TCTD_FONT | TCTD_COLOR | TCTD_SPEED | TCTD_WAITTIME | TCTD_TEXTBOX | TCTD_SCROLL;
+    efx->desc.text_desc().type = TC_TEXT_SCROLL;
+    efx->desc.text_desc().flags = TC_TEXTF_L2R;
+    efx->desc.text_desc().speed = 2.0f;
+    efx->desc.text_desc().waittime = 1.5f;
+    efx->desc.text_desc().font = 0; // sm_brief
+    efx->desc.text_desc().color = GR_RGB(10, 20, 30);
+    efx->desc.text_desc().caps = TCTD_FONT | TCTD_COLOR | TCTD_SPEED | TCTD_WAITTIME | TCTD_TEXTBOX | TCTD_SCROLL;
     Briefing_screens[0].root_effect = 0;
 
     const QString tmp = QDir::tempPath() + "/_test_brief";
@@ -863,9 +861,9 @@ private slots:
     QVERIFY(Briefing_screens[0].used);
     QCOMPARE(Briefing_screens[0].root_effect, 0);
     QCOMPARE(Briefing_screens[0].effects[0].type, BE_TEXT);
-    QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc.flags, TC_TEXTF_L2R);
-    QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc.speed, 2.0f);
-    QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc.waittime, 1.5f);
+    QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc().flags, TC_TEXTF_L2R);
+    QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc().speed, 2.0f);
+    QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc().waittime, 1.5f);
     QCOMPARE(QString::fromStdString(Briefing_screens[0].effects[0].text),
              QStringLiteral("Welcome to the mission."));
 
@@ -874,7 +872,6 @@ private slots:
     QDir::current().rmdir(tmp);
     errno = 0;
   }
-#endif // MINI_EDITOR
 
 
   void testDialogsConstruct()
@@ -1716,7 +1713,7 @@ private slots:
       Rooms[0].num_faces = 3;
       // Default-construct each vertex so the room has a valid normal flow.
       for (int v = 0; v < 8; ++v)
-        Rooms[0].verts[v] = vector{};
+        Rooms[0].verts[v] = vector3{};
       Highest_room_index = 0;
     }
     Curroomp = &Rooms[0];
@@ -4593,19 +4590,116 @@ int main(int argc, char *argv[])
   initD3Core(argc, argv);
   EditorTest tc;
   Q_ASSERT(errno == 0);
-  const int rc = QTest::qExec(&tc, argc, argv);
 
-  // The object/room/viewer tests poke the global Objects[]/Rooms[] tables
-  // directly, leaving the engine's linked lists and room->object links in a
-  // state that trips ObjDelete/ObjLink/ObjRelink assertions when the
-  // atexit(FreeAllObjects) handler runs. Restore the tables to a consistent
-  // state before the process exits so teardown is clean.
-  ResetObjectList();
-  for (int i = 0; i < MAX_ROOMS; i++) {
-    Rooms[i].objects = -1;
-    Rooms[i].vis_effects = -1;
+  // Enumerate the runnable test functions (private slots; *_data providers and
+  // init/cleanup hooks are handled by QTest itself, not run directly).
+  QStringList allTests;
+  {
+    const QMetaObject *mo = &EditorTest::staticMetaObject;
+    for (int i = mo->methodOffset(); i < mo->methodCount(); ++i) {
+      const QMetaMethod m = mo->method(i);
+      if (m.access() != QMetaMethod::Private || m.methodType() != QMetaMethod::Slot)
+        continue;
+      if (m.parameterCount() > 0)
+        continue; // QTest test functions take no arguments
+      const QString name = QString::fromLatin1(m.name());
+      if (name.endsWith(QLatin1String("_data")) || name == QLatin1String("init") ||
+          name == QLatin1String("cleanup") || name == QLatin1String("initTestCase") ||
+          name == QLatin1String("cleanupTestCase"))
+        continue;
+      allTests << name;
+    }
+    allTests.sort();
   }
-  Highest_object_index = -1;
+
+  // Selection: --run <regex> / --exclude <regex> (repeatable).  Every other
+  // argument passes through to QTest (e.g. -o, -txt, or explicit function
+  // names).  Without --run/--exclude the behaviour is unchanged.
+  const QStringList args = QCoreApplication::arguments();
+  QStringList passthrough;
+  QStringList runPatterns;
+  QStringList excludePatterns;
+  for (qsizetype i = 1; i < args.size(); ++i) {
+    if (args[i] == QLatin1String("--run") && i + 1 < args.size()) {
+      runPatterns << args[++i];
+    } else if (args[i] == QLatin1String("--exclude") && i + 1 < args.size()) {
+      excludePatterns << args[++i];
+    } else if (args[i] == QLatin1String("--help")) {
+      qInfo().noquote() << "Usage: qteditor_tests [QTest options]";
+      qInfo().noquote() << "       [--run <regex>]... [--exclude <regex>]... [--help]";
+      qInfo().noquote() << "Available tests:";
+      for (const QString &f : std::as_const(allTests))
+        qInfo().noquote() << "  " << f;
+      return 0;
+    } else {
+      passthrough << args[i];
+    }
+  }
+
+  auto matchesAny = [](const QStringList &patterns, const QString &name) {
+    for (const QString &p : patterns) {
+      const QRegularExpression re(p);
+      if (!re.isValid()) {
+        qWarning().noquote() << "Invalid --run/--exclude regex:" << p;
+        continue;
+      }
+      if (re.match(name).hasMatch())
+        return true;
+    }
+    return false;
+  };
+
+  QStringList qArgs;
+  const bool hasRun = !runPatterns.isEmpty();
+  const bool hasExclude = !excludePatterns.isEmpty();
+  if (hasRun || hasExclude) {
+    QStringList selection;
+    for (const QString &a : std::as_const(passthrough)) {
+      if (allTests.contains(a)) {
+        if (!selection.contains(a))
+          selection << a; // explicit function names are honoured
+      } else {
+        qArgs << a; // QTest options / filenames keep their relative order
+      }
+    }
+    if (hasRun) {
+      for (const QString &f : std::as_const(allTests))
+        if (matchesAny(runPatterns, f) && !selection.contains(f))
+          selection << f;
+    } else if (selection.isEmpty()) {
+      selection = allTests;
+    }
+    if (hasExclude)
+      selection.erase(std::remove_if(selection.begin(), selection.end(),
+                                     [&](const QString &f) { return matchesAny(excludePatterns, f); }),
+                      selection.end());
+    qArgs << args.first() << selection; // argv[0] first, then the chosen tests
+  } else {
+    qArgs = args;
+  }
+
+  // RAII guard: restores the global Objects[]/Rooms[] tables to a consistent
+  // state on every exit path (QTest::qExec returns via many early exits).  The
+  // object/room/viewer tests poke those tables directly, leaving the engine's
+  // linked lists and room->object links in a state that trips
+  // ObjDelete/ObjLink/ObjRelink assertions when the atexit(FreeAllObjects) /
+  // atexit(FreeAllRooms) handlers (registered by InitRooms) run.  Those
+  // handlers also assert Highest_*_index == -1, so reset the indices too or
+  // the process aborts after any test run, no matter which subset ran.
+  struct EditorTestCleanup {
+    ~EditorTestCleanup() {
+      ResetObjectList();
+      for (int i = 0; i < MAX_ROOMS; i++) {
+        Rooms[i].used = 0;
+        Rooms[i].objects = -1;
+        Rooms[i].vis_effects = -1;
+      }
+      Highest_object_index = -1;
+      Highest_room_index = -1;
+    }
+  } editorTestCleanup;
+
+  const int rc = QTest::qExec(&tc, qArgs);
   return rc;
 }
 #include "editor_test.moc"

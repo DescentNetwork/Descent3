@@ -160,25 +160,23 @@ int GetPrevObjectID(int n) {
 uint8_t Show_paths = 1;
 
 int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient) {
-  if (GamePaths[pathnum].num_nodes >= MAX_NODES_PER_PATH) {
+  if ((int)GamePaths[pathnum].pathnodes.size() >= MAX_NODES_PER_PATH) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Path already has its maximum amount of nodes.");
     return -1;
   }
-  for (int i = GamePaths[pathnum].num_nodes - 1; i > nodenum; i--)
-    memcpy(&GamePaths[pathnum].pathnodes[i + 1], &GamePaths[pathnum].pathnodes[i], sizeof(node));
-  const int newnode = nodenum + 1;
-  GamePaths[pathnum].pathnodes[newnode].pos = pos;
-  GamePaths[pathnum].pathnodes[newnode].roomnum = roomnum;
-  GamePaths[pathnum].pathnodes[newnode].flags = flags;
-  GamePaths[pathnum].pathnodes[newnode].fvec = orient.fvec;
-  GamePaths[pathnum].pathnodes[newnode].uvec = orient.uvec;
+  GamePaths[pathnum].pathnodes.insert(GamePaths[pathnum].pathnodes.begin() + nodenum + 1, node{});
+  node &newnode_ref = GamePaths[pathnum].pathnodes[nodenum + 1];
+  newnode_ref.pos = pos;
+  newnode_ref.roomnum = roomnum;
+  newnode_ref.flags = flags;
+  newnode_ref.fvec = orient.fvec;
+  newnode_ref.uvec = orient.uvec;
   GamePaths[pathnum].num_nodes++;
-  return newnode;
+  return nodenum + 1;
 }
 
 void DeleteNodeFromPath(int pathnum, int nodenum) {
-  for (int i = nodenum; i < GamePaths[pathnum].num_nodes - 1; i++)
-    memcpy(&GamePaths[pathnum].pathnodes[i], &GamePaths[pathnum].pathnodes[i + 1], sizeof(node));
+  GamePaths[pathnum].pathnodes.erase(GamePaths[pathnum].pathnodes.begin() + nodenum);
   GamePaths[pathnum].num_nodes--;
 }
 
@@ -189,7 +187,7 @@ int AllocGamePath() {
       GamePaths[i].name.clear();
       GamePaths[i].num_nodes = 0;
       GamePaths[i].flags = 0;
-      GamePaths[i].pathnodes = mem_rmalloc<node>(MAX_NODES_PER_PATH);
+      GamePaths[i].pathnodes.clear();
       Num_game_paths++;
       return i;
     }

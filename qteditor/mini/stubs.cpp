@@ -223,7 +223,7 @@ bms_lightmap GameLightmaps[MAX_LIGHTMAPS];
 texture GameTextures[MAX_TEXTURES];
 //vclip GameVClips[MAX_VCLIPS];
 //poly_model Poly_models[500];
-game_path GamePaths[MAX_GAME_PATHS];
+std::array<game_path, MAX_GAME_PATHS> GamePaths;
 trigger Triggers[500];
 special_face SpecialFaces[MAX_SPECIAL_FACES];
 

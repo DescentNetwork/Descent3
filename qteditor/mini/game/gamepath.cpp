@@ -28,7 +28,7 @@ void FreeGamePath(int n) {
   if (!GamePaths[n].used)
     return;
 
-  mem_rmfree(GamePaths[n].pathnodes);
+  GamePaths[n].pathnodes.clear();
 
   GamePaths[n].num_nodes = 0;
   GamePaths[n].used = 0;

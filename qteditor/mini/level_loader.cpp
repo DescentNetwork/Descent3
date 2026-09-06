@@ -519,8 +519,8 @@ static int LL_ReadRoom(posix_istream &ifile, room *rp, int version) {
       ifile >> d;
       int size = w * h * d;
       if (size) {
-        rp->volume_lights = mem_rmalloc<uint8_t>(size);
-        LL_ReadCompressionByte(ifile, rp->volume_lights, size);
+        rp->volume_lights.resize(size);
+        LL_ReadCompressionByte(ifile, rp->volume_lights.data(), size);
       }
       rp->volume_width = (int16_t)w;
       rp->volume_height = (int16_t)h;
@@ -592,14 +592,14 @@ static int LL_WriteRoom(posix_ostream &ofile, room *rp) {
     ofile << pos; // position
   }
 
-  if (!rp->volume_lights)
+  if (rp->volume_lights.empty())
     ofile.put(0);
   else {
     ofile.put(1);
     ofile << rp->volume_width;
     ofile << rp->volume_height;
     ofile << rp->volume_depth;
-    LL_WriteCompressionByte(ofile, rp->volume_lights, rp->volume_width * rp->volume_height * rp->volume_depth);
+    LL_WriteCompressionByte(ofile, rp->volume_lights.data(), rp->volume_width * rp->volume_height * rp->volume_depth);
   }
 
   ofile << rp->fog_depth;

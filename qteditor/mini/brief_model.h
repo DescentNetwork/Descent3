@@ -11,8 +11,9 @@
 #define BRIEF_MODEL_H
 
 #include <cstdint>
-#include <string>
 #include <filesystem>
+#include <string>
+#include <variant>
 
 #include "TelComEfxStructs.h"
 
@@ -39,15 +40,54 @@ struct BriefGlobalValues {
 };
 
 // A single briefing effect.  `text` and `filename`/`layout` are dynamic and
-// stored as std::string (no C strings in new code).
-union BriefEffectDesc {
-  TCTEXTDESC text_desc;
-  TCBMPDESC bmp_desc;
-  TCMOVIEDESC movie_desc;
-  TCBKGDESC bkg_desc;
-  TCPOLYDESC poly_desc;
-  TCSNDDESC snd_desc;
-  TCBUTTONDESC button_desc;
+// stored as std::string (no C strings in new code).  The effect descriptor is
+// a std::variant (the Win32 source used a raw union, which is not permitted
+// with non-trivial members).  Accesses activate the requested alternative.
+struct BriefEffectDesc {
+  std::variant<TCTEXTDESC, TCBMPDESC, TCMOVIEDESC, TCBKGDESC, TCPOLYDESC, TCSNDDESC, TCBUTTONDESC> v;
+
+  TCTEXTDESC &text_desc() {
+    if (!std::holds_alternative<TCTEXTDESC>(v))
+      v = TCTEXTDESC{};
+    return std::get<TCTEXTDESC>(v);
+  }
+  const TCTEXTDESC &text_desc() const { return std::get<TCTEXTDESC>(v); }
+  TCBMPDESC &bmp_desc() {
+    if (!std::holds_alternative<TCBMPDESC>(v))
+      v = TCBMPDESC{};
+    return std::get<TCBMPDESC>(v);
+  }
+  const TCBMPDESC &bmp_desc() const { return std::get<TCBMPDESC>(v); }
+  TCMOVIEDESC &movie_desc() {
+    if (!std::holds_alternative<TCMOVIEDESC>(v))
+      v = TCMOVIEDESC{};
+    return std::get<TCMOVIEDESC>(v);
+  }
+  const TCMOVIEDESC &movie_desc() const { return std::get<TCMOVIEDESC>(v); }
+  TCBKGDESC &bkg_desc() {
+    if (!std::holds_alternative<TCBKGDESC>(v))
+      v = TCBKGDESC{};
+    return std::get<TCBKGDESC>(v);
+  }
+  const TCBKGDESC &bkg_desc() const { return std::get<TCBKGDESC>(v); }
+  TCPOLYDESC &poly_desc() {
+    if (!std::holds_alternative<TCPOLYDESC>(v))
+      v = TCPOLYDESC{};
+    return std::get<TCPOLYDESC>(v);
+  }
+  const TCPOLYDESC &poly_desc() const { return std::get<TCPOLYDESC>(v); }
+  TCSNDDESC &snd_desc() {
+    if (!std::holds_alternative<TCSNDDESC>(v))
+      v = TCSNDDESC{};
+    return std::get<TCSNDDESC>(v);
+  }
+  const TCSNDDESC &snd_desc() const { return std::get<TCSNDDESC>(v); }
+  TCBUTTONDESC &button_desc() {
+    if (!std::holds_alternative<TCBUTTONDESC>(v))
+      v = TCBUTTONDESC{};
+    return std::get<TCBUTTONDESC>(v);
+  }
+  const TCBUTTONDESC &button_desc() const { return std::get<TCBUTTONDESC>(v); }
 };
 
 struct tBriefEffect {

@@ -31,7 +31,6 @@
 
 #include <array>
 #include <cstdint>
-#include <cstring>
 #include <string>
 
 #include "brief_mission_flags_dialog.h"
@@ -49,16 +48,6 @@ constexpr uint8_t kButtJump = 6;
 constexpr uint8_t kClickCursorClickUp = 1;
 constexpr uint8_t kClickCursorClickDown = 0;
 constexpr uint8_t kClickCursorHold = 2;
-
-void copyToFilename(char *dst, size_t dstLen, const std::string &src) {
-  std::strncpy(dst, src.c_str(), dstLen - 1);
-  dst[dstLen - 1] = '\0';
-}
-
-void clearFilename(char *dst, size_t dstLen) {
-  dst[0] = '\0';
-  (void)dstLen;
-}
 
 // Button-type radios indexed by the win32 radio index (0..5).
 static const std::array<const char *, 6> buttonRadios = {
@@ -110,16 +99,16 @@ BriefButtonDialog::BriefButtonDialog(TCBUTTONDESC *desc, QWidget *parent)
     : QDialog(parent), ui(new Ui::BriefButtonDialog)
 {
   ui->setupUi(this);
-  std::memset(&m_desc, 0, sizeof(TCBUTTONDESC));
+  m_desc = TCBUTTONDESC{};
 
   if (desc) {
-    copyToFilename(m_desc.filename, MAX_FILELEN, desc->filename);
-    copyToFilename(m_desc.filename_focus, MAX_FILELEN, desc->filename_focus);
+    m_desc.filename = desc->filename;
+    m_desc.filename_focus = desc->filename_focus;
     if (desc->flasher) {
       m_desc.flasher = true;
       m_desc.flash_time = desc->flash_time;
-      copyToFilename(m_desc.flash_filename, MAX_FILELEN, desc->flash_filename);
-      copyToFilename(m_desc.flash_filename_focus, MAX_FILELEN, desc->flash_filename_focus);
+      m_desc.flash_filename = desc->flash_filename;
+      m_desc.flash_filename_focus = desc->flash_filename_focus;
     }
     m_desc.sibling_id = desc->sibling_id;
     m_desc.parent_id = desc->parent_id;
@@ -291,13 +280,13 @@ void BriefButtonDialog::onOk() {
     m_desc.osflags |= OBF_GLOW;
 
   if (m_desc.flasher) {
-    copyToFilename(m_desc.flash_filename, MAX_FILELEN, flashFilename);
-    copyToFilename(m_desc.flash_filename_focus, MAX_FILELEN, flashFilenameFocus);
+    m_desc.flash_filename = flashFilename;
+    m_desc.flash_filename_focus = flashFilenameFocus;
     if (m_desc.osflags & OBF_FLASH)
       m_desc.flash_time = ui->IDC_BRIEF_BT_FLASHSTART->text().toFloat();
   } else {
-    clearFilename(m_desc.flash_filename, MAX_FILELEN);
-    clearFilename(m_desc.flash_filename_focus, MAX_FILELEN);
+    m_desc.flash_filename.clear();
+    m_desc.flash_filename_focus.clear();
   }
 
   m_desc.parent_id = ui->IDC_BRIEF_BT_PID->text().toInt();
@@ -325,7 +314,7 @@ void BriefButtonDialog::onOk() {
   m_desc.click_type = (ci == 0) ? kClickCursorClickUp : ((ci == 1) ? kClickCursorClickDown
                                                                    : kClickCursorHold);
 
-  copyToFilename(m_desc.filename, MAX_FILELEN, filename);
-  copyToFilename(m_desc.filename_focus, MAX_FILELEN, filenameFocus);
+  m_desc.filename = filename;
+  m_desc.filename_focus = filenameFocus;
   accept();
 }

@@ -27,32 +27,21 @@
 #include <QMessageBox>
 #include <QPushButton>
 
-#include <cstring>
 #include <string>
 
 #include "brief_mission_flags_dialog.h"
-
-namespace {
-
-// Copy a std::string into a fixed-length char[] POD field (existing structs).
-void copyToFilename(char *dst, size_t dstLen, const std::string &src) {
-  std::strncpy(dst, src.c_str(), dstLen - 1);
-  dst[dstLen - 1] = '\0';
-}
-
-} // namespace
 
 BriefSoundDialog::BriefSoundDialog(TCSNDDESC *desc, QWidget *parent)
     : QDialog(parent), ui(new Ui::BriefSoundDialog)
 {
   ui->setupUi(this);
-  std::memset(&m_desc, 0, sizeof(TCSNDDESC));
+  m_desc = TCSNDDESC{};
   m_desc.caps = TCSD_WAITTIME | TCSD_ONCE;
   m_desc.waittime = 0;
   m_desc.once = false;
 
   if (desc) {
-    copyToFilename(m_desc.filename, MAX_FILELEN, desc->filename);
+    m_desc.filename = desc->filename;
     if (desc->caps & TCSD_WAITTIME)
       m_desc.waittime = desc->waittime;
     if (desc->caps & TCSD_ONCE)
@@ -106,7 +95,7 @@ void BriefSoundDialog::onOk() {
   }
 
   m_desc.caps = TCSD_WAITTIME | TCSD_ONCE;
-  copyToFilename(m_desc.filename, MAX_FILELEN, filename.toStdString());
+  m_desc.filename = filename.toStdString();
   m_desc.once = ui->IDC_BRIEF_S_PLAYONCE->isChecked();
   m_desc.waittime = ui->IDC_BRIEF_S_STARTTIME->text().toFloat();
   accept();

@@ -91,6 +91,8 @@
 #ifndef __TELCOMEFXSTRUCTS_H_
 #define __TELCOMEFXSTRUCTS_H_
 
+#include <string>
+
 #include "grdefs.h"
 
 #define MAX_FILELEN 32
@@ -205,7 +207,7 @@ struct TCBMPDESC {
   // how fast the bitmap effect should be (only useful for non-static)
   float speed; //(Default: 2.0f)
   // filename
-  char filename[MAX_FILELEN]; // MUST BE FILLED IN
+  std::string filename; // MUST BE FILLED IN
   // mission flag mask
   uint32_t mission_mask_set, mission_mask_unset;
 };
@@ -218,7 +220,7 @@ struct TCMOVIEDESC {
   // upper left coordinate of the movie
   int x, y; //(Default: (0,0) )
   // filename of the movie to play
-  char filename[MAX_FILELEN]; // MUST BE FILLED IN
+  std::string filename; // MUST BE FILLED IN
   // whether the movie is to loop
   bool looping; //(Default: false)
   // Frames per second
@@ -259,7 +261,7 @@ struct TCPOLYDESC {
   // how long to wait until effect starts
   float waittime;
   // polymodel name
-  char polyname[MAX_FILELEN];
+  std::string polyname;
   // mission flag mask
   uint32_t mission_mask_set, mission_mask_unset;
 };
@@ -274,16 +276,16 @@ struct TCSNDDESC {
   // how long to wait until effect starts
   float waittime;
   // sound name
-  char filename[MAX_FILELEN];
+  std::string filename;
   // mission flag mask
   uint32_t mission_mask_set, mission_mask_unset;
 };
 
 struct TCBUTTONDESC {
-  char filename[MAX_FILELEN];
-  char filename_focus[MAX_FILELEN];
-  char flash_filename[MAX_FILELEN];
-  char flash_filename_focus[MAX_FILELEN];
+  std::string filename;
+  std::string filename_focus;
+  std::string flash_filename;
+  std::string flash_filename_focus;
   int sibling_id; // Sibling effect ID(for down/up arrows), -1 if none
   int parent_id;  // Parent effect ID (text for down/up arrows), -1 if it works with TelCom System
   int x, y, w, h;

@@ -909,8 +909,7 @@ void DoRadiosityForRooms() {
       Rooms[roomnum].volume_height = vh;
       Rooms[roomnum].volume_depth = vd;
 
-      Rooms[roomnum].volume_lights = (uint8_t *)mem_malloc(vw * vh * vd);
-      Q_ASSERT(Rooms[roomnum].volume_lights);
+      Rooms[roomnum].volume_lights.resize(vw * vh * vd);
 
       Volume_elements[roomnum] = mem_rmalloc<volume_element>(vw * vh * vd);
       Q_ASSERT(Volume_elements[roomnum]);

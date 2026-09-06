@@ -30,17 +30,11 @@
 #include <QRadioButton>
 
 #include <array>
-#include <cstring>
 #include <string>
 
 #include "brief_mission_flags_dialog.h"
 
 namespace {
-
-void copyToFilename(char *dst, size_t dstLen, const std::string &src) {
-  std::strncpy(dst, src.c_str(), dstLen - 1);
-  dst[dstLen - 1] = '\0';
-}
 
 // Bitmap effect radios indexed by m_iEffectType (0..8), mirroring win32.
 static const std::array<const char *, 9> effectRadios = {
@@ -112,7 +106,7 @@ BriefBitmapDialog::BriefBitmapDialog(TCBMPDESC *desc, QWidget *parent)
     : QDialog(parent), ui(new Ui::BriefBitmapDialog), m_effectType(0), m_screen(0)
 {
   ui->setupUi(this);
-  std::memset(&m_desc, 0, sizeof(TCBMPDESC));
+  m_desc = TCBMPDESC{};
   m_desc.type = TC_BMP_STATIC;
 
   if (desc) {
@@ -129,7 +123,7 @@ BriefBitmapDialog::BriefBitmapDialog(TCBMPDESC *desc, QWidget *parent)
       m_desc.speed = desc->speed;
     m_desc.type = desc->type;
     m_desc.flags = desc->flags;
-    copyToFilename(m_desc.filename, MAX_FILELEN, desc->filename);
+    m_desc.filename = desc->filename;
     m_desc.mission_mask_set = desc->mission_mask_set;
     m_desc.mission_mask_unset = desc->mission_mask_unset;
   }
@@ -222,7 +216,7 @@ void BriefBitmapDialog::onOk() {
   }
 
   m_desc.caps = TCBD_XY | TCBD_LOOPING | TCBD_WAITTIME | TCBD_SPEED;
-  copyToFilename(m_desc.filename, MAX_FILELEN, filename.toStdString());
+  m_desc.filename = filename.toStdString();
   m_desc.speed = ui->IDC_BRIEF_B_SPEED->text().toFloat();
   m_desc.waittime = ui->IDC_BRIEF_B_STARTTIME->text().toFloat();
   m_desc.x = ui->IDC_BRIEF_B_X->text().toInt();
