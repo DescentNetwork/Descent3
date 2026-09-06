@@ -25,6 +25,9 @@
 #include "grdefs.h"
 #include "object.h"
 
+#include <array>
+#include <vector>
+
 // How far we texture out to...after this distance we draw flat shaded polygons
 #define DEFAULT_TEXTURE_DISTANCE 9999
 
@@ -234,7 +237,7 @@ struct terrain_normals {
 };
 
 extern uint8_t Terrain_dynamic_table[];
-extern terrain_normals *TerrainNormals[MAX_TERRAIN_LOD];
+extern std::array<std::vector<terrain_normals>, MAX_TERRAIN_LOD> TerrainNormals;
 
 // Occlusion data for knowing what to draw
 extern uint8_t Terrain_occlusion_map[256][32];
@@ -278,9 +281,9 @@ extern int Terrain_LOD_engine_off;
 extern float Terrain_texture_distance; // how far we should texture before going to flat shad
 
 extern uint8_t TerrainJoinMap[];
-extern float *TerrainDeltaBlocks[];
-extern uint8_t *Terrain_max_height_int[];
-extern uint8_t *Terrain_min_height_int[];
+extern std::array<std::vector<float>, MAX_TERRAIN_LOD> TerrainDeltaBlocks;
+extern std::array<std::vector<uint8_t>, 7> Terrain_max_height_int;
+extern std::array<std::vector<uint8_t>, 7> Terrain_min_height_int;
 extern uint8_t Fast_terrain;
 extern uint8_t Flat_terrain;
 extern uint8_t Show_invisible_terrain;
@@ -292,8 +295,8 @@ extern uint8_t TerrainSelected[];
 extern int Num_terrain_selected;
 #endif
 
-extern uint16_t *Terrain_rotate_list; // which points have been sub/rotated this frame
-extern g3Point *World_point_buffer; // Rotated points
+extern std::vector<uint16_t> Terrain_rotate_list; // which points have been sub/rotated this frame
+extern std::vector<g3Point> World_point_buffer; // Rotated points
 
 #define TSEARCH_FOUND_TERRAIN 0
 #define TSEARCH_FOUND_MINE 1
