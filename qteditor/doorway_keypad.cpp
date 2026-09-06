@@ -75,7 +75,7 @@ DoorwayKeypad::~DoorwayKeypad() { delete ui; }
 doorway *currentDoorway() {
   if (Curroomp == nullptr)
     return nullptr;
-  return Curroomp->doorway_data;
+  return Curroomp->doorway_data.get();
 }
 
 void DoorwayKeypad::updateDialog() {

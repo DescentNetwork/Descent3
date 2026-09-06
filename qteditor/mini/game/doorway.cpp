@@ -208,9 +208,9 @@ doorway *GetDoorwayFromObject(int door_obj_handle) {
   room *rp = &Rooms[objp->roomnum];
 
   Q_ASSERT(rp->flags.door);
-  Q_ASSERT(rp->doorway_data != NULL);
+  Q_ASSERT(rp->doorway_data.get() != nullptr);
 
-  return rp->doorway_data;
+  return rp->doorway_data.get();
 }
 #if 0
 // Plays a sound for this door
@@ -529,7 +529,7 @@ bool DoorwayLocked(int door_obj_handle) {
 bool DoorwayLocked(room *rp) {
   Q_ASSERT(rp->flags.door);
 
-  doorway *dp = rp->doorway_data;
+  doorway *dp = rp->doorway_data.get();
   Q_ASSERT(dp != NULL);
 
   return ((dp->flags & DF_LOCKED) != 0);
@@ -605,7 +605,7 @@ void DoorwayLockUnlock(int door_obj_handle, bool state) {
 // Returns the current position of the door.  0.0 = totally closed, 1.0 = totally open
 float DoorwayPosition(room *rp) {
   Q_ASSERT(rp->flags.door);
-  Q_ASSERT(rp->doorway_data != NULL);
+  Q_ASSERT(rp->doorway_data.get() != nullptr);
 
   return rp->doorway_data->position;
 }
@@ -642,11 +642,12 @@ void DoorwayRebuildActiveList() {
 // Adds a doorway to the specified room
 // Returns a pointer to the doorway struct
 doorway *DoorwayAdd(room *rp, int doornum) {
-  Q_ASSERT(rp->doorway_data == NULL);
+  Q_ASSERT(rp->doorway_data.get() == nullptr);
 
   rp->flags.door = 1;
 
-  auto dp = rp->doorway_data = mem_rmalloc<doorway>();
+  rp->doorway_data = std::make_unique<doorway>();
+  doorway *dp = rp->doorway_data.get();
 
   // Initialize
   dp->doornum = doornum;

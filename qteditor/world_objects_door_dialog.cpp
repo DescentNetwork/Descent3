@@ -37,6 +37,7 @@
 #include "ddio.h"
 #include "door.h"
 #include "doorpage.h"
+#include "doorway.h"
 #include "manage.h"
 #include "polymodel.h"
 #include "room.h"

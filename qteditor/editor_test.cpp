@@ -54,6 +54,7 @@
 #include "d3_editor_init.h"
 
 #include "door.h"
+#include "doorway.h"
 #include "gamepath.h"
 #include "manage.h"
 #include "object.h"

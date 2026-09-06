@@ -24,6 +24,7 @@
 #include "terrain.h"
 #include "slew.h"
 #include "manage.h"
+#include "doorway.h"
 
 #include "objinfo.h"
 #include "gamepath.h"

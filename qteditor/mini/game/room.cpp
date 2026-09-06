@@ -511,7 +511,7 @@ void InitRoom(room *rp, int nverts, int nfaces, int nportals) {
   rp->ambient_sound = -1;
 
   rp->name.clear();
-  rp->doorway_data = NULL;
+  rp->doorway_data.reset();
 
   rp->env_reverb = 0; // reverb for sound system.
 
@@ -610,9 +610,6 @@ void FreeRoom(room *rp) {
   BNode_FreeRoom(rp);
 
   rp->volume_lights.clear();
-
-  if (rp->doorway_data)
-    mem_rmfree(rp->doorway_data);
 
   rp->mirror_faces_list.clear();
 

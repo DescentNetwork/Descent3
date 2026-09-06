@@ -103,6 +103,7 @@
 #include "vecmat_external.h"
 #include "bnode.h"
 #include <cstdint>
+#include <memory>
 #include <vector>
 
 #define MAX_FACES_PER_ROOM 3000  // max number of faces per room
@@ -283,7 +284,7 @@ struct room {
   std::vector<vector3> verts;  // array of vertices for this room (num_verts)
   std::vector<vector4> verts4; // array of 16byte vertices for this room (num_verts, Katmai)
 
-  doorway* doorway_data = nullptr;   // pointer to this room's doorway data, or NULL if not a doorway
+  std::unique_ptr<doorway> doorway_data;   // this room's doorway data, or null if not a doorway
   std::string name;              // name of this room, or NULL
   int objects;             // index of first object in this room
   vector3 max_xyz, min_xyz; // for external room visibility checking

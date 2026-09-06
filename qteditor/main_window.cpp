@@ -48,6 +48,7 @@
 
 #include "editor_view.h"
 #include "editor_room_state.h"
+#include "doorway.h"
 #include "hog_dialog.h"
 #include "level_io.h"
 #include "object.h"
