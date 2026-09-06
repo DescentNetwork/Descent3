@@ -20,6 +20,8 @@
 #define _LEVELGOAL_H_
 
 #include <cstdint>
+#include <array>
+#include <string>
 #include "object.h"
 #include "cfile.h"
 #include <cstdlib>
@@ -41,13 +43,13 @@ public:
 
 class lgoal {
 private:
-  char *m_name;
-  char *m_item_name;
-  char *m_desc;
-  char *m_completion_message;
+  std::string m_name;
+  std::string m_item_name;
+  std::string m_desc;
+  std::string m_completion_message;
 
   int m_num_items;
-  litem m_item[MAX_GOAL_ITEMS];
+  std::array<litem, MAX_GOAL_ITEMS> m_item;
 
   char m_g_list;
   char m_modified;
@@ -63,24 +65,12 @@ private:
 
 public:
   lgoal() {
-    m_name = NULL;
-    m_item_name = NULL;
-    m_desc = NULL;
     m_num_items = 0;
-    m_completion_message = NULL;
     m_priority = 0;
     m_g_list = 0;
     m_flags = LGF_ENABLED | LGF_TELCOM_LISTS;
     m_modified = 0;
     m_goal_completed = false;
-  };
-  ~lgoal() {
-    if (m_name)
-      mem_free(m_name);
-    if (m_item_name)
-      mem_free(m_item_name);
-    if (m_desc)
-      mem_free(m_desc);
   };
 
   int AddItem();
@@ -89,15 +79,15 @@ public:
 
   void Reset(bool f_from_editor);
 
-  bool SetName(int handle, char *name);
-  bool SetItemName(char *iname);
-  bool SetDesc(char *desc);
-  bool SetCompletionMessage(char *message);
+  bool SetName(int handle, const std::string &name);
+  bool SetItemName(const std::string &iname);
+  bool SetDesc(const std::string &desc);
+  bool SetCompletionMessage(const std::string &message);
 
-  int GetName(char *name, int buffer_size);
-  int GetItemName(char *iname, int buffer_size);
-  int GetDesc(char *desc, int buffer_size);
-  int GetCompletionMessage(char *message, int buffer_size);
+  std::string GetName() const;
+  std::string GetItemName() const;
+  std::string GetDesc() const;
+  std::string GetCompletionMessage() const;
 
   bool Priority(int handle, char operation, int *value);
   bool GoalList(char operation, int8_t *value);
@@ -113,19 +103,20 @@ public:
 class levelgoals {
 private:
   int m_num_goals;
-  lgoal m_goal[MAX_LEVEL_GOALS];
+  std::array<lgoal, MAX_LEVEL_GOALS> m_goal;
   int m_flags;
 
   int m_num_active_primaries;
-  int m_active_primaries[MAX_LEVEL_GOALS];
+  std::array<int, MAX_LEVEL_GOALS> m_active_primaries;
   int m_num_active_secondaries;
-  int m_active_secondaries[MAX_LEVEL_GOALS];
+  std::array<int, MAX_LEVEL_GOALS> m_active_secondaries;
 
 public:
   levelgoals() {
     m_num_goals = 0;
-    m_num_active_secondaries = 0;
     m_num_active_primaries = 0;
+    m_num_active_secondaries = 0;
+    m_flags = 0;
   };
 
   int AddGoal(bool f_from_editor);
@@ -135,21 +126,21 @@ public:
   bool GoalDeleteItem(int goal_index, int item_index);
   bool GoalItemInfo(int goal_index, int index, char operation, char *type, int *handle, bool *done);
 
-  bool GoalSetName(int goal_index, char *name);
-  bool GoalSetItemName(int goal_index, char *iname);
-  bool GoalSetDesc(int goal_index, char *desc);
-  bool GoalSetCompletionMessage(int goal_index, char *message);
+  bool GoalSetName(int goal_index, const std::string &name);
+  bool GoalSetItemName(int goal_index, const std::string &iname);
+  bool GoalSetDesc(int goal_index, const std::string &desc);
+  bool GoalSetCompletionMessage(int goal_index, const std::string &message);
 
-  int GoalGetName(int goal_index, char *name, int buffer_size);
-  int GoalGetItemName(int goal_index, char *iname, int buffer_size);
-  int GoalGetDesc(int goal_index, char *desc, int buffer_size);
-  int GoalGetCompletionMessage(int goal_index, char *message, int buffer_size);
+  std::string GoalGetName(int goal_index) const;
+  std::string GoalGetItemName(int goal_index) const;
+  std::string GoalGetDesc(int goal_index) const;
+  std::string GoalGetCompletionMessage(int goal_index) const;
 
   bool GoalPriority(int goal_index, char operation, int *value);
   bool GoalGoalList(int goal_index, char operation, int8_t *value);
   bool GoalStatus(int goal_index, char operation, int *value, bool announce = true);
 
-  int GoalFindId(const char *goal_name);
+  int GoalFindId(const std::string &goal_name);
 
   int GoalGetNumItems(int goal_index);
 

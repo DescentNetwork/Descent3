@@ -3419,7 +3419,7 @@ int osipf_FindTextureName(const std::string &name) { return FindTextureName(IGNO
 
 int osipf_FindPathName(const std::string &name) { return FindGamePathName(name); }
 
-int osipf_FindLevelGoalName(const std::string &name) { return Level_goals.GoalFindId(name.c_str()); }
+int osipf_FindLevelGoalName(const std::string &name) { return Level_goals.GoalFindId(name); }
 #if 0
 void osipf_CreateRandomSparks(int num_sparks, vector3 *pos, int roomnum, int which_index, float force_scalar) {
   CreateRandomSparks(num_sparks, pos, roomnum, which_index, force_scalar);
