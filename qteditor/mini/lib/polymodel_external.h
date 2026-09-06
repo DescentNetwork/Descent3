@@ -58,6 +58,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "grdefs.h"
 #include "manage_external.h"
@@ -126,17 +127,17 @@ struct lightmap_object_face {
 struct lightmap_object {
   uint8_t num_models;
 
-  int16_t num_faces[MAX_SUBOBJECTS];
-  lightmap_object_face *lightmap_faces[MAX_SUBOBJECTS];
+  std::vector<int16_t> num_faces;
+  std::vector<std::vector<lightmap_object_face>> lightmap_faces;
   uint8_t used;
 
 };
 
 struct polyface {
   int8_t nverts;
-  int16_t *vertnums;
-  float *u;
-  float *v;
+  std::vector<int16_t> vertnums;
+  std::vector<float> u;
+  std::vector<float> v;
 
   // float *u2,*v2;						// For lightmaps only
 
@@ -167,16 +168,16 @@ struct bsp_info {
                            // Reference as all other vertices in this submodel. (Relative to pivot point)
   float rad;               // radius for each submodel
 
-  vector3 *verts; // vertices for the submodel (NEWSTYLE)
-  vector3 *vertnorms;
-  float *alpha;
-  polyface *faces; // faces for the submodel (NEWSTYLE)
-  vector3 *face_min;
-  vector3 *face_max;
+  std::vector<vector3> verts; // vertices for the submodel (NEWSTYLE)
+  std::vector<vector3> vertnorms;
+  std::vector<float> alpha;
+  std::vector<polyface> faces; // faces for the submodel (NEWSTYLE)
+  std::vector<vector3> face_min;
+  std::vector<vector3> face_max;
 
-  int16_t *vertnum_memory;
-  float *u_memory;
-  float *v_memory;
+  std::vector<int16_t> vertnum_memory;
+  std::vector<float> u_memory;
+  std::vector<float> v_memory;
 
   int nverts;
   int num_faces; // amount of faces (NEWSTYLE);
@@ -193,14 +194,14 @@ struct bsp_info {
   matrix mod_matrix; // The angles from parent.  Stuffed by model_set_instance
   vector3 mod_pos;    // The modified position of this object.  Used for positional interpolation
 
-  vector3 *keyframe_axis; // the axis of rotation for each keyframe
-  int *keyframe_angles;  // The destination angles for each key frame
-  vector3 *keyframe_pos;
-  matrix *keyframe_matrix; // the combined rotation matrices up to frame n
-  uint16_t *tick_pos_remap;  // For looking up keyframes fast
-  uint16_t *tick_ang_remap;  // For looking up keyframes fast
-  int *rot_start_time;
-  int *pos_start_time;
+  std::vector<vector3> keyframe_axis; // the axis of rotation for each keyframe
+  std::vector<int> keyframe_angles;  // The destination angles for each key frame
+  std::vector<vector3> keyframe_pos;
+  std::vector<matrix> keyframe_matrix; // the combined rotation matrices up to frame n
+  std::vector<uint16_t> tick_pos_remap;  // For looking up keyframes fast
+  std::vector<uint16_t> tick_ang_remap;  // For looking up keyframes fast
+  std::vector<int> rot_start_time;
+  std::vector<int> pos_start_time;
 
   int num_key_angles;
   int num_key_pos;
@@ -216,7 +217,7 @@ struct bsp_info {
 
   float normalized_angle;
 
-  glowinfo *glow_info;
+  std::vector<glowinfo> glow_info;
 };
 
 #define PMF_LIGHTMAP_RES 1
@@ -239,7 +240,7 @@ struct poly_model {
 
   int n_models;
   int model_data_size;
-  uint8_t *model_data;
+  std::vector<uint8_t> model_data;
 
   vector3 mins, maxs; // min,max for whole model
   vector3 view_pos;   // viewing position.  Default to {0,0,0}.
@@ -254,7 +255,7 @@ struct poly_model {
   int n_textures;
   int16_t textures[MAX_MODEL_TEXTURES]; // a list of bitmap indices
 
-  bsp_info *submodel; // an array of size n_models of submodel info.
+  std::vector<bsp_info> submodel; // an array of size n_models of submodel info.
   int num_key_angles;
   int num_key_pos;
   int max_keys; // the greater number of num_key_pos or num_key_angles
@@ -262,18 +263,18 @@ struct poly_model {
   int frame_min, frame_max; // For TIMED polymodels, the min/max frames
 
   int n_guns;
-  w_bank *gun_slots; // array of gun banks
+  std::vector<w_bank> gun_slots; // array of gun banks
 
   int n_ground;
-  w_bank *ground_slots; // array of ground planes
+  std::vector<w_bank> ground_slots; // array of ground planes
 
   int n_attach;
-  a_bank *attach_slots;
+  std::vector<a_bank> attach_slots;
 
   int num_wbs;
-  poly_wb_info *poly_wb; // array of weapon batteries
+  std::vector<poly_wb_info> poly_wb; // array of weapon batteries
 
-  int *render_order; // internal use
+  std::vector<int> render_order; // internal use
 
 };
 

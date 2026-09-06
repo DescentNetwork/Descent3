@@ -178,7 +178,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
   int bm_handle;
   int smooth = 0;
   polyface *fp = &sm->faces[facenum];
-  int modelnum = sm - pm->submodel;
+  int modelnum = sm - pm->submodel.data();
   texture *texp = nullptr;
   int t;
   int custom = 0;
@@ -479,7 +479,7 @@ inline void RenderSubmodelLightmapFace(poly_model *pm, bsp_info *sm, int facenum
   g3Point *pointlist[100];
 
   polyface *fp = &sm->faces[facenum];
-  int modelnum = sm - pm->submodel;
+  int modelnum = sm - pm->submodel.data();
   int t;
 
   int lm_handle = LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle;
@@ -684,7 +684,7 @@ void RenderSubmodelFacesSorted(poly_model *pm, bsp_info *sm) {
 }
 void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
   int i;
-  int modelnum = sm - pm->submodel;
+  int modelnum = sm - pm->submodel.data();
   int16_t alpha_faces[MAX_FACES_PER_ROOM], num_alpha_faces = 0;
   int rcount = 0;
   vector3 view_pos;
@@ -945,7 +945,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
   matrix lightmatrix;
 
   // Don't render door housings
-  if (IsNonRenderableSubmodel(pm, sm - pm->submodel))
+  if (IsNonRenderableSubmodel(pm, sm - pm->submodel.data()))
     return;
 
   if (Polymodel_light_type != POLYMODEL_LIGHTING_LIGHTMAP) {
@@ -967,7 +967,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
   StartLightInstance(&temp_vec, &lightmatrix);
 
   // Check my bit to see if I get drawn
-  if (f_render_sub & (0x00000001 << (sm - pm->submodel))) {
+  if (f_render_sub & (0x00000001 << (sm - pm->submodel.data()))) {
     if (sm->flags & SOF_CUSTOM) {
       if (!(Polymodel_effect.type & PEF_CUSTOM_TEXTURE))
         goto pop_lighting;
@@ -984,19 +984,19 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
       if (Polymodel_use_effect && Polymodel_effect.type & PEF_GLOW_SCALAR) {
         if (Polymodel_effect.type & PEF_CUSTOM_GLOW)
           DrawThrusterEffect(&zero_pos, Polymodel_effect.glow_r, Polymodel_effect.glow_g, Polymodel_effect.glow_b,
-                             &sm->glow_info->normal, sm->glow_info->glow_size * Polymodel_effect.glow_size_scalar,
+                             &sm->glow_info[0].normal, sm->glow_info[0].glow_size * Polymodel_effect.glow_size_scalar,
                              3 * Polymodel_effect.glow_length_scalar);
         else
-          DrawThrusterEffect(&zero_pos, sm->glow_info->glow_r, sm->glow_info->glow_g, sm->glow_info->glow_b,
-                             &sm->glow_info->normal, sm->glow_info->glow_size * Polymodel_effect.glow_size_scalar,
+          DrawThrusterEffect(&zero_pos, sm->glow_info[0].glow_r, sm->glow_info[0].glow_g, sm->glow_info[0].glow_b,
+                             &sm->glow_info[0].normal, sm->glow_info[0].glow_size * Polymodel_effect.glow_size_scalar,
                              3 * Polymodel_effect.glow_length_scalar);
       } else {
         if (Polymodel_use_effect && Polymodel_effect.type & PEF_CUSTOM_GLOW)
           DrawGlowEffect(&zero_pos, Polymodel_effect.glow_r, Polymodel_effect.glow_g, Polymodel_effect.glow_b,
-                         &sm->glow_info->normal, sm->glow_info->glow_size);
+                         &sm->glow_info[0].normal, sm->glow_info[0].glow_size);
         else
-          DrawGlowEffect(&zero_pos, sm->glow_info->glow_r, sm->glow_info->glow_g, sm->glow_info->glow_b,
-                         &sm->glow_info->normal, sm->glow_info->glow_size);
+          DrawGlowEffect(&zero_pos, sm->glow_info[0].glow_r, sm->glow_info[0].glow_g, sm->glow_info[0].glow_b,
+                         &sm->glow_info[0].normal, sm->glow_info[0].glow_size);
       }
 
       goto pop_lighting;

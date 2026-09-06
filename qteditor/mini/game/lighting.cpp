@@ -604,7 +604,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
   vector3 Light_max_xyz;
   vector3 rad;
   int i, t;
-  int subnum = sm - pm->submodel;
+  int subnum = sm - pm->submodel.data();
   int lm_handle;
   uint16_t *dest_data;
   uint16_t lmilist[MAX_DYNAMIC_FACES];
