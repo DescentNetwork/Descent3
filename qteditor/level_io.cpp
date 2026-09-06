@@ -538,7 +538,7 @@ std::string RenderLevelStats() {
     n_objects++;
     if (OBJECT_OUTSIDE(objp))
       n_objects_outside++;
-    poly_model *pm = GetPolymodelPointer(objp->rtype.pobj_info.model_num);
+    poly_model *pm = GetPolymodelPointer(objp->rtype.pobj_info().model_num);
     if (pm == nullptr)
       continue;
     for (int m = 0; m < pm->n_models; m++) {

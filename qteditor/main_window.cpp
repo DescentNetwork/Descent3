@@ -23,6 +23,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
+#include <QDataStream>
 #include <QFileInfo>
 #include <QMenu>
 #include <QDockWidget>
@@ -1380,8 +1381,143 @@ void MainWindow::onSelectObject(int objnum) {
 
 // ====== CLIPBOARD OPERATIONS ======
 // Qt clipboard integration. Objects are serialized via a custom MIME type
-// so the system clipboard owns the data lifetime.
+// so the system clipboard owns the data lifetime. The object owns its
+// std::string/std::vector/std::unique_ptr members, so it is streamed
+// field-by-field instead of copied as raw bytes.
 static const char *kObjectMimeType = "application/x-descent3-editor-object";
+
+static void writeVector(QDataStream &out, const vector3 &v) {
+  out << v.x() << v.y() << v.z();
+}
+
+static vector3 readVector(QDataStream &in) {
+  float x = 0, y = 0, z = 0;
+  in >> x >> y >> z;
+  return vector3{x, y, z};
+}
+
+// Serializes the editor-relevant state of an object.
+static QByteArray serializeObject(const object &obj) {
+  QByteArray data;
+  QDataStream out(&data, QIODevice::WriteOnly);
+  out.setVersion(QDataStream::Qt_5_0);
+
+  out << quint8(obj.type) << quint8(obj.dummy_type) << quint16(obj.id) << quint32(obj.flags);
+  out << QString::fromStdString(obj.name);
+  out << qint32(obj.handle) << qint16(obj.next) << qint16(obj.prev);
+  out << quint8(obj.control_type) << quint8(obj.movement_type) << quint8(obj.render_type)
+      << quint8(obj.lighting_render_type);
+  out << qint32(obj.roomnum);
+  writeVector(out, obj.pos);
+  for (int i = 0; i < 9; ++i)
+    out << obj.orient.a1d[i];
+  writeVector(out, obj.last_pos);
+  out << quint16(obj.renderframe);
+  writeVector(out, obj.wall_sphere_offset);
+  writeVector(out, obj.anim_sphere_offset);
+  out << obj.size << obj.shields;
+  out << qint8(obj.contains_type) << qint8(obj.contains_id) << qint8(obj.contains_count);
+  out << obj.creation_time << obj.lifeleft << obj.lifetime;
+  out << qint32(obj.parent_handle) << qint32(obj.attach_ultimate_handle)
+      << qint32(obj.attach_parent_handle);
+  QVector<qint32> children;
+  children.reserve(int(obj.attach_children.size()));
+  for (int32_t c : obj.attach_children)
+    children.push_back(c);
+  out << children;
+  out << quint8(obj.weapon_fire_flags) << qint8(obj.attach_type) << obj.attach_dist;
+  writeVector(out, obj.min_xyz);
+  writeVector(out, obj.max_xyz);
+  out << obj.impact_size << obj.impact_time << obj.impact_player_damage << obj.impact_generic_damage
+      << obj.impact_force;
+  out << qint32(obj.change_flags) << qint32(obj.generic_nonvis_flags) << qint32(obj.generic_sent_nonvis);
+  out << quint16(obj.position_counter);
+  out << QString::fromStdString(obj.custom_default_script_name);
+  out << QString::fromStdString(obj.custom_default_module_name);
+
+  // Editor-facing polygon model info (the runtime unions are not serialized;
+  // they never hold heap data in the editor).
+  const polyobj_info &pi = obj.rtype.pobj_info();
+  out << qint16(pi.model_num) << qint16(pi.dying_model_num);
+  out << pi.anim_start_frame << pi.anim_frame << pi.anim_end_frame << pi.anim_time;
+  out << quint32(pi.anim_flags) << pi.max_speed;
+  out << quint32(pi.subobj_flags) << qint32(pi.tmap_override);
+
+  return data;
+}
+
+// Restores editor-relevant state into a fresh object.
+static object deserializeObject(const QByteArray &data) {
+  QDataStream in(data);
+  in.setVersion(QDataStream::Qt_5_0);
+
+  object obj; // default-constructed: empty strings, null smart pointers
+  quint8 b8 = 0;
+  quint16 u16 = 0;
+  quint32 u32 = 0;
+  qint32 i32 = 0;
+  qint16 i16 = 0;
+
+  in >> b8; obj.type = b8;
+  in >> b8; obj.dummy_type = b8;
+  in >> u16; obj.id = u16;
+  in >> u32; obj.flags = u32;
+  QString name;
+  in >> name; obj.name = name.toStdString();
+  in >> i32; obj.handle = i32;
+  in >> i16; obj.next = i16;
+  in >> i16; obj.prev = i16;
+  in >> b8; obj.control_type = b8;
+  in >> b8; obj.movement_type = b8;
+  in >> b8; obj.render_type = b8;
+  in >> b8; obj.lighting_render_type = b8;
+  in >> i32; obj.roomnum = i32;
+  obj.pos = readVector(in);
+  for (int i = 0; i < 9; ++i)
+    in >> obj.orient.a1d[i];
+  obj.last_pos = readVector(in);
+  in >> u16; obj.renderframe = u16;
+  obj.wall_sphere_offset = readVector(in);
+  obj.anim_sphere_offset = readVector(in);
+  in >> obj.size >> obj.shields;
+  qint8 i8 = 0;
+  in >> i8; obj.contains_type = i8;
+  in >> i8; obj.contains_id = i8;
+  in >> i8; obj.contains_count = i8;
+  in >> obj.creation_time >> obj.lifeleft >> obj.lifetime;
+  in >> i32; obj.parent_handle = i32;
+  in >> i32; obj.attach_ultimate_handle = i32;
+  in >> i32; obj.attach_parent_handle = i32;
+  QVector<qint32> children;
+  in >> children;
+  obj.attach_children.resize(int(children.size()));
+  for (int i = 0; i < int(children.size()); ++i)
+    obj.attach_children[size_t(i)] = children[i];
+  in >> b8; obj.weapon_fire_flags = b8;
+  in >> i8; obj.attach_type = i8;
+  in >> obj.attach_dist;
+  obj.min_xyz = readVector(in);
+  obj.max_xyz = readVector(in);
+  in >> obj.impact_size >> obj.impact_time >> obj.impact_player_damage >> obj.impact_generic_damage
+      >> obj.impact_force;
+  in >> i32; obj.change_flags = i32;
+  in >> i32; obj.generic_nonvis_flags = i32;
+  in >> i32; obj.generic_sent_nonvis = i32;
+  in >> u16; obj.position_counter = u16;
+  in >> name; obj.custom_default_script_name = name.toStdString();
+  in >> name; obj.custom_default_module_name = name.toStdString();
+
+  polyobj_info &pi = obj.rtype.pobj_info();
+  in >> i16; pi.model_num = i16;
+  in >> i16; pi.dying_model_num = i16;
+  in >> pi.anim_start_frame >> pi.anim_frame >> pi.anim_end_frame >> pi.anim_time;
+  in >> u32; pi.anim_flags = u32;
+  in >> pi.max_speed;
+  in >> u32; pi.subobj_flags = u32;
+  in >> i32; pi.tmap_override = i32;
+
+  return obj;
+}
 
 void MainWindow::onCopyObjectToClipboard() {
   if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
@@ -1389,9 +1525,7 @@ void MainWindow::onCopyObjectToClipboard() {
   if (Objects[Cur_object_index].type == OBJ_NONE)
     return;
   auto *mime = new QMimeData();
-  mime->setData(kObjectMimeType,
-                QByteArray(reinterpret_cast<const char *>(&Objects[Cur_object_index]),
-                           sizeof(object)));
+  mime->setData(kObjectMimeType, serializeObject(Objects[Cur_object_index]));
   QApplication::clipboard()->setMimeData(mime);
 }
 
@@ -1409,7 +1543,7 @@ void MainWindow::onPasteObjectFromClipboard() {
   if (!mime || !mime->hasFormat(kObjectMimeType))
     return;
   const QByteArray data = mime->data(kObjectMimeType);
-  if (data.size() != static_cast<int>(sizeof(object)))
+  if (data.isEmpty())
     return;
   // Find the first unused slot.
   int slot = -1;
@@ -1421,7 +1555,7 @@ void MainWindow::onPasteObjectFromClipboard() {
   }
   if (slot < 0)
     return;
-  std::memcpy(&Objects[slot], data.constData(), sizeof(object));
+  Objects[slot] = deserializeObject(data);
   if (slot > Highest_object_index)
     Highest_object_index = slot;
   Cur_object_index = slot;

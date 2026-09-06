@@ -902,14 +902,14 @@ void osipf_ObjectCustomAnim(int handle, float start, float end, float time, char
     return;
   }
 
-  objp->rtype.pobj_info.anim_flags |= AIAF_NOTIFY;
+  objp->rtype.pobj_info().anim_flags |= AIAF_NOTIFY;
 
-  objp->rtype.pobj_info.custom_anim_info.anim_start_frame = start;
-  objp->rtype.pobj_info.custom_anim_info.anim_end_frame = end;
-  objp->rtype.pobj_info.custom_anim_info.anim_time = time;
-  objp->rtype.pobj_info.custom_anim_info.flags = flags;
-  objp->rtype.pobj_info.custom_anim_info.anim_sound_index = sound_handle;
-  objp->rtype.pobj_info.custom_anim_info.next_anim_type = next_anim_type;
+  objp->rtype.pobj_info().custom_anim_info.anim_start_frame = start;
+  objp->rtype.pobj_info().custom_anim_info.anim_end_frame = end;
+  objp->rtype.pobj_info().custom_anim_info.anim_time = time;
+  objp->rtype.pobj_info().custom_anim_info.flags = flags;
+  objp->rtype.pobj_info().custom_anim_info.anim_sound_index = sound_handle;
+  objp->rtype.pobj_info().custom_anim_info.next_anim_type = next_anim_type;
 
   if (objp->ai_info)
     objp->ai_info->next_animation_type = AS_CUSTOM;
@@ -968,7 +968,7 @@ void osipf_AIValue(int objhandle, char op, char vtype, void *ptr) {
     return;
   }
 
-  ai_frame *ai_info = objp->ai_info;
+  ai_frame *ai_info = objp->ai_info.get();
 
   switch (vtype) {
   case AIV_F_MAX_SPEED:
@@ -1549,7 +1549,7 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
     break;
   case OBJV_F_ANIM_FRAME:
     if (op == VF_GET)
-      *(float *)ptr = obj->rtype.pobj_info.anim_frame;
+      *(float *)ptr = obj->rtype.pobj_info().anim_frame;
     break;
   case OBJV_F_MAX_SHIELDS:
     if (op == VF_GET) {
@@ -2057,7 +2057,7 @@ int osipf_AISetGoalFlags(int objhandle, int goal_handle, int flags, uint8_t f_en
     return 0;
   }
 
-  ai_frame *ai_info = obj->ai_info;
+  ai_frame *ai_info = obj->ai_info.get();
 
   if (goal_handle >= 0 && goal_handle < MAX_GOALS && ai_info->goals[goal_handle].used != 0) {
     if (f_enable)
@@ -2082,7 +2082,7 @@ void osipf_AISetGoalCircleDist(int objhandle, int goal_handle, float dist) {
     return;
   }
 
-  ai_frame *ai_info = obj->ai_info;
+  ai_frame *ai_info = obj->ai_info.get();
 
   if (goal_handle >= 0 && goal_handle < MAX_GOALS && ai_info->goals[goal_handle].used != 0) {
     ai_info->goals[goal_handle].circle_distance = dist;
@@ -2154,7 +2154,7 @@ int osipf_GetNumAttachSlots(int objhandle) {
   object *parent = ObjGet(objhandle);
 
   if ((parent) && (parent->flags & OF_POLYGON_OBJECT)) {
-    poly_model *parent_pm = &Poly_models[parent->rtype.pobj_info.model_num];
+    poly_model *parent_pm = &Poly_models[parent->rtype.pobj_info().model_num];
     return (parent_pm->n_attach);
   }
 
@@ -2166,7 +2166,7 @@ int osipf_GetAttachChildHandle(int objhandle, char attachpoint) {
   int8_t parent_ap = attachpoint;
 
   if ((parent) && (parent->flags & OF_POLYGON_OBJECT)) {
-    poly_model *parent_pm = &Poly_models[parent->rtype.pobj_info.model_num];
+    poly_model *parent_pm = &Poly_models[parent->rtype.pobj_info().model_num];
     if (parent_ap >= 0 && parent_ap < parent_pm->n_attach) {
       return (parent->attach_children[parent_ap]);
     }
@@ -2656,9 +2656,14 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
     return;
   }
 
+  if (!objp->dynamic_wb) {
+    LOG_ERROR("Obj_WBValue: no dynamic weapon battery info");
+    return;
+  }
+
   dynamic_wb_info *p_dwb = &objp->dynamic_wb[wb_index];
   otype_wb_info *static_wb;
-  poly_model *pm = &Poly_models[objp->rtype.pobj_info.model_num];
+  poly_model *pm = &Poly_models[objp->rtype.pobj_info().model_num];
 
   if (objp->type == OBJ_PLAYER || objp->type == OBJ_OBSERVER) {
     ship *ship = &Ships[Players[objp->id].ship_index];
@@ -2685,7 +2690,7 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
       if (anim_type == WBF_ANIM_LOCAL) {
         *((float *)ptr) = p_dwb->wb_anim_frame;
       } else {
-        *((float *)ptr) = objp->rtype.pobj_info.anim_frame;
+        *((float *)ptr) = objp->rtype.pobj_info().anim_frame;
       }
     }
     break;
@@ -2856,10 +2861,10 @@ void osipf_ObjGhost(int handle, bool f_ghost) {
           obj->id = ROBOT_GUIDEBOTRED;
           PageInPolymodel(Object_info[ROBOT_GUIDEBOTRED].render_handle, Object_info[ROBOT_GUIDEBOTRED].type,
                           &Object_info[ROBOT_GUIDEBOTRED].size);
-          obj->rtype.pobj_info.model_num = Object_info[ROBOT_GUIDEBOTRED].render_handle;
+          obj->rtype.pobj_info().model_num = Object_info[ROBOT_GUIDEBOTRED].render_handle;
         } else {
           obj->id = ROBOT_GUIDEBOT;
-          obj->rtype.pobj_info.model_num = Object_info[ROBOT_GUIDEBOT].render_handle;
+          obj->rtype.pobj_info().model_num = Object_info[ROBOT_GUIDEBOT].render_handle;
         }
     }
 
@@ -2987,7 +2992,7 @@ void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void
   if (!obj)
     return;
 
-  ai_frame *ai_info = obj->ai_info;
+  ai_frame *ai_info = obj->ai_info.get();
   if (!ai_info)
     return;
 

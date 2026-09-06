@@ -372,7 +372,7 @@ void ObjSetAABB(object *obj) {
              obj->type != OBJ_POWERUP && obj->type != OBJ_PLAYER) {
     vector3 offset_pos;
 
-    object_rad = ComputeObjectRadiusFromModel(obj->rtype.pobj_info.model_num, obj->size);
+    object_rad = ComputeObjectRadiusFromModel(obj->rtype.pobj_info().model_num, obj->size);
     offset_pos = obj->pos + obj->anim_sphere_offset;
 
     obj->min_xyz = offset_pos - object_rad;
@@ -398,18 +398,18 @@ static void ObjSetRenderPolyobj(object *objp, int handle) {
   if (handle == -1) {
     objp->render_type = RT_NONE;
     objp->flags &= ~OF_POLYGON_OBJECT;
-    objp->rtype.pobj_info.model_num = -1;
+    objp->rtype.pobj_info().model_num = -1;
   } else {
     objp->render_type = RT_POLYOBJ;
     objp->flags |= OF_POLYGON_OBJECT;
-    objp->rtype.pobj_info.model_num = handle;
+    objp->rtype.pobj_info().model_num = handle;
   }
 
-  objp->rtype.pobj_info.subobj_flags = 0;
-  objp->rtype.pobj_info.anim_time = 0.0f;
-  objp->rtype.pobj_info.anim_frame = 0.0f;
-  objp->rtype.pobj_info.anim_start_frame = 0.0f;
-  objp->rtype.pobj_info.anim_end_frame = 0.0f;
+  objp->rtype.pobj_info().subobj_flags = 0;
+  objp->rtype.pobj_info().anim_time = 0.0f;
+  objp->rtype.pobj_info().anim_frame = 0.0f;
+  objp->rtype.pobj_info().anim_start_frame = 0.0f;
+  objp->rtype.pobj_info().anim_end_frame = 0.0f;
 }
 
 // Initializes the type-specific data of an object from its object_info page.
@@ -495,7 +495,6 @@ int ObjInit(object *objp, int type, int id, int handle, vector3 *pos, float crea
   objp->pos = objp->last_pos = *pos;
   objp->parent_handle = parent_handle;
   objp->creation_time = creation_time;
-  objp->osiris_script = nullptr;
 
   // Initialize some general stuff
   objp->roomnum = -1;
@@ -511,9 +510,6 @@ int ObjInit(object *objp, int type, int id, int handle, vector3 *pos, float crea
   objp->custom_default_module_name.clear();
   objp->contains_type = -1;
   objp->lifeleft = 0;
-  objp->effect_info = nullptr;
-  objp->ai_info = nullptr;
-  objp->dynamic_wb = nullptr;
   objp->attach_children.clear();
 
   // Now initialize the type-specific data
@@ -599,14 +595,9 @@ void ObjDelete(int objnum) {
     return;
 
   if (obj->flags & OF_POLYGON_OBJECT) {
-    polyobj_info *p_info = &obj->rtype.pobj_info;
-    if (p_info->multi_turret_info.keyframes != nullptr) {
-      mem_rmfree(p_info->multi_turret_info.keyframes);
-      mem_rmfree(p_info->multi_turret_info.last_keyframes);
-
-      p_info->multi_turret_info.keyframes = nullptr;
-      p_info->multi_turret_info.last_keyframes = nullptr;
-    }
+    polyobj_info *p_info = &obj->rtype.pobj_info();
+    p_info->multi_turret_info.keyframes.clear();
+    p_info->multi_turret_info.last_keyframes.clear();
   }
 
   if (obj == Viewer_object) // deleting the viewer?
@@ -627,30 +618,13 @@ void ObjDelete(int objnum) {
   if (obj->lm_object.used)
     ClearObjectLightmaps(obj);
 
-  // Free up effects memory
-  if (obj->effect_info) {
-    mem_rmfree(obj->effect_info);
-    obj->effect_info = nullptr;
-  }
-
-  if (obj->ai_info != nullptr) {
-    mem_rmfree(obj->ai_info);
-    obj->ai_info = nullptr;
-  }
-
-  if (obj->dynamic_wb != nullptr) {
-    mem_rmfree(obj->dynamic_wb);
-    obj->dynamic_wb = nullptr;
-  }
-
   obj->attach_children.clear();
 
   obj->name.clear();
 
-  if (obj->lighting_info) {
-    mem_rmfree(obj->lighting_info);
-    obj->lighting_info = nullptr;
-  }
+  // (dynamic_wb/ai_info/effect_info/lighting_info/osiris_script are
+  // std::unique_ptr members; the implied destructor of the Objects array
+  // releases any memory they still own.)
 
   ObjFree(objnum);
 }
@@ -679,7 +653,7 @@ void ObjSetOrient(object *obj, const matrix *orient) {
   // Recompute the orientation dependent information
   if (obj->flags & OF_POLYGON_OBJECT) {
     if (obj->type != OBJ_WEAPON && obj->type != OBJ_DEBRIS && obj->type != OBJ_POWERUP && obj->type != OBJ_ROOM) {
-      int mn = obj->rtype.pobj_info.model_num;
+      int mn = obj->rtype.pobj_info().model_num;
       if (mn >= 0 && mn < MINI_POLY_MODELS) {
         matrix m;
 
@@ -764,7 +738,7 @@ object *ObjGet(int handle) {
 
 // Returns a vertex of an object in WORLD coordinates.
 void GetObjectPointInWorld(vector3 *dest, object *obj, int subnum, int vertnum) {
-  int mn_i = obj->rtype.pobj_info.model_num;
+  int mn_i = obj->rtype.pobj_info().model_num;
   if (mn_i < 0 || mn_i >= MINI_POLY_MODELS)
     return;
 

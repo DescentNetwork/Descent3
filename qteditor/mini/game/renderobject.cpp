@@ -656,7 +656,7 @@ void DrawVirusLightning(object *obj);
 // Actually, only draws those either in front or in back of the object, based on front_flag
 void DrawObjectSelectionBrackets(object *obj, bool front_flag) {
   vector3 viewvec;
-  poly_model *pm = &Poly_models[obj->rtype.pobj_info.model_num];
+  poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
   float line_len;
   // Get vector from object to viewer
   g3_GetViewPosition(&viewvec);
@@ -922,11 +922,11 @@ void DrawDebugInfo(object *obj) {
     DrawColoredDisk(&obj->pos, 0.0f, 0.0f, 1.0f, .1f, .7f, obj->size, 1);
   } else {
     if (Game_show_sphere == 1) {
-      vector3 center = obj->pos + Poly_models[obj->rtype.pobj_info.model_num].wall_size_offset * m;
-      DrawColoredDisk(&center, 0.0f, 0.0f, 1.0f, .1f, .7f, Poly_models[obj->rtype.pobj_info.model_num].wall_size, 1);
+      vector3 center = obj->pos + Poly_models[obj->rtype.pobj_info().model_num].wall_size_offset * m;
+      DrawColoredDisk(&center, 0.0f, 0.0f, 1.0f, .1f, .7f, Poly_models[obj->rtype.pobj_info().model_num].wall_size, 1);
     } else if (Game_show_sphere == 2) {
-      vector3 center = obj->pos + Poly_models[obj->rtype.pobj_info.model_num].anim_size_offset * m;
-      DrawColoredDisk(&center, 0.0f, 0.1f, .9f, .1f, .7f, Poly_models[obj->rtype.pobj_info.model_num].anim_size, 1);
+      vector3 center = obj->pos + Poly_models[obj->rtype.pobj_info().model_num].anim_size_offset * m;
+      DrawColoredDisk(&center, 0.0f, 0.1f, .9f, .1f, .7f, Poly_models[obj->rtype.pobj_info().model_num].anim_size, 1);
     } else if (Game_show_sphere == 3) {
       DrawColoredDisk(&obj->pos, 0.1f, 0.2f, .9f, .1f, .7f, obj->size, 1);
     }
@@ -935,7 +935,7 @@ void DrawDebugInfo(object *obj) {
   memset(g3p, 0, 8 * sizeof(g3Point));
   vector3 pos[9];
   // g3p[0].p3_vec = obj->pos;
-  // g3p[1].p3_vec = obj->rtype.line_info.end_pos;
+  // g3p[1].p3_vec = obj->rtype.line_info().end_pos;
 
   ddgr_color c1;
   if (!object_object_AABB(obj, Player_object))
@@ -992,7 +992,7 @@ void DrawDebugInfo(object *obj) {
 #endif
 // Draw a shard
 void DrawShardObject(object *obj) {
-  shard_info_s *si = &obj->rtype.shard_info;
+  shard_info_s *si = &obj->rtype.shard_info();
   g3Point rotated_points[3];
   g3Point *pointlist[3];
   uint8_t codes_and = 0xff;
@@ -1085,7 +1085,7 @@ bool SetupTerrainObject(object *obj) {
       }
     }
 
-    if (obj->lighting_render_type == LRT_STATIC || Poly_models[obj->rtype.pobj_info.model_num].new_style == 0)
+    if (obj->lighting_render_type == LRT_STATIC || Poly_models[obj->rtype.pobj_info().model_num].new_style == 0)
       RenderObject_SetStatic(scalar_r, scalar_g, scalar_b);
     else if (obj->lighting_render_type == LRT_GOURAUD || NoLightmaps) {
       vector3 lightdir = {0, -1.0, 0}; // straight down for now
@@ -1103,7 +1103,7 @@ bool SetupTerrainObject(object *obj) {
 }
 // Sets up the light states for an indoor object to be rendered
 bool SetupMineObject(object *objp) {
-  if (objp->lighting_render_type == LRT_STATIC || Poly_models[objp->rtype.pobj_info.model_num].new_style == 0) {
+  if (objp->lighting_render_type == LRT_STATIC || Poly_models[objp->rtype.pobj_info().model_num].new_style == 0) {
     RenderObject_SetStatic(1.0f, 1.0f, 1.0f);
   } else if (objp->lighting_render_type == LRT_GOURAUD || NoLightmaps) {
     float scalar_r = 1.0, scalar_g = 1.0, scalar_b = 1.0;
@@ -1238,14 +1238,14 @@ void RenderObject(object *obj) {
     if (!UseHardware) {
       g3Point sphere_point;
       g3_RotatePoint(&sphere_point, &obj->pos);
-      g3_DrawSphere(obj->rtype.sphere_color, &sphere_point, obj->size);
+      g3_DrawSphere(obj->rtype.sphere_color(), &sphere_point, obj->size);
     } else {
       // Let me take this opportunity to say how much it pisses me off that
       // the DrawColoredDisk() function takes r,g,b as floats, when the standard
       // in our graphics system is to pass color as a ddgr_color
-      float r = (float)GR_COLOR_RED(obj->rtype.sphere_color) / 255.0,
-            g = (float)GR_COLOR_GREEN(obj->rtype.sphere_color) / 255.0,
-            b = (float)GR_COLOR_BLUE(obj->rtype.sphere_color) / 255.0;
+      float r = (float)GR_COLOR_RED(obj->rtype.sphere_color()) / 255.0,
+            g = (float)GR_COLOR_GREEN(obj->rtype.sphere_color()) / 255.0,
+            b = (float)GR_COLOR_BLUE(obj->rtype.sphere_color()) / 255.0;
       DrawColoredDisk(&obj->pos, r, g, b, 1, 1, obj->size, 0);
     }
 
@@ -1254,8 +1254,8 @@ void RenderObject(object *obj) {
     if (obj - Objects == Cur_object_index)
       DrawObjectSelectionBrackets(obj, 0); // draw back brackets
 
-    if (obj->rtype.pobj_info.anim_frame || (Poly_models[obj->rtype.pobj_info.model_num].frame_max !=
-                                            Poly_models[obj->rtype.pobj_info.model_num].frame_min)) {
+    if (obj->rtype.pobj_info().anim_frame || (Poly_models[obj->rtype.pobj_info().model_num].frame_max !=
+                                            Poly_models[obj->rtype.pobj_info().model_num].frame_min)) {
       SetNormalizedTimeObj(obj, normalized_time);
       RenderObject_DrawPolymodel(obj, normalized_time);
     } else {
@@ -1322,8 +1322,8 @@ void RenderObject(object *obj) {
           rend_SetAlphaFactor(curr_alpha);
 
           // render the iteration
-          if (obj->rtype.pobj_info.anim_frame || (Poly_models[obj->rtype.pobj_info.model_num].frame_max !=
-                                                  Poly_models[obj->rtype.pobj_info.model_num].frame_min)) {
+          if (obj->rtype.pobj_info().anim_frame || (Poly_models[obj->rtype.pobj_info().model_num].frame_max !=
+                                                  Poly_models[obj->rtype.pobj_info().model_num].frame_min)) {
             RenderObject_DrawPolymodel(obj, normalized_time);
           } else {
             RenderObject_DrawPolymodel(obj, NULL);
@@ -1391,10 +1391,10 @@ void RenderObject(object *obj) {
     g3Point g3p[2];
     memset(g3p, 0, 2 * sizeof(g3Point));
     // g3p[0].p3_vec = obj->pos;
-    // g3p[1].p3_vec = obj->rtype.line_info.end_pos;
+    // g3p[1].p3_vec = obj->rtype.line_info().end_pos;
 
     g3_RotatePoint(&g3p[0], &obj->pos);
-    g3_RotatePoint(&g3p[1], &obj->rtype.line_info.end_pos);
+    g3_RotatePoint(&g3p[1], &obj->rtype.line_info().end_pos);
     g3_DrawLine(GR_RGB(255, 255, 255), &g3p[0], &g3p[1]);
     break;
   }
@@ -1619,22 +1619,22 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
       else if (Detail_settings.Object_complexity == 2)
         detail_scalar = 1.2f;
       if (pnt.p3_z < (Object_info[obj->id].med_lod_distance * detail_scalar))
-        model_num = obj->rtype.pobj_info.model_num;
+        model_num = obj->rtype.pobj_info().model_num;
       else if (pnt.p3_z < (Object_info[obj->id].lo_lod_distance * detail_scalar)) {
         if (Object_info[obj->id].med_render_handle != -1)
           model_num = Object_info[obj->id].med_render_handle;
         else {
-          model_num = obj->rtype.pobj_info.model_num;
+          model_num = obj->rtype.pobj_info().model_num;
         }
       } else {
         if (Object_info[obj->id].lo_render_handle != -1)
           model_num = Object_info[obj->id].lo_render_handle;
         else {
-          model_num = obj->rtype.pobj_info.model_num;
+          model_num = obj->rtype.pobj_info().model_num;
           if (Object_info[obj->id].med_render_handle != -1)
             model_num = Object_info[obj->id].med_render_handle;
           else
-            model_num = obj->rtype.pobj_info.model_num;
+            model_num = obj->rtype.pobj_info().model_num;
         }
       }
     } else if (obj->type == OBJ_MARKER) {
@@ -1649,28 +1649,28 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
       else if (Detail_settings.Object_complexity == 2)
         detail_scalar = 1.2f;
       if (pnt.p3_z < (Ships[ship_num].med_lod_distance * detail_scalar))
-        model_num = obj->rtype.pobj_info.model_num;
+        model_num = obj->rtype.pobj_info().model_num;
       else if (pnt.p3_z < (Ships[ship_num].lo_lod_distance * detail_scalar)) {
         if (Ships[ship_num].med_render_handle != -1)
           model_num = Ships[ship_num].med_render_handle;
         else {
-          model_num = obj->rtype.pobj_info.model_num;
+          model_num = obj->rtype.pobj_info().model_num;
         }
       } else {
         if (Ships[ship_num].lo_render_handle != -1)
           model_num = Ships[ship_num].lo_render_handle;
         else {
-          model_num = obj->rtype.pobj_info.model_num;
+          model_num = obj->rtype.pobj_info().model_num;
           if (Ships[ship_num].med_render_handle != -1)
             model_num = Ships[ship_num].med_render_handle;
           else
-            model_num = obj->rtype.pobj_info.model_num;
+            model_num = obj->rtype.pobj_info().model_num;
         }
       }
     } else
-      model_num = obj->rtype.pobj_info.model_num;
+      model_num = obj->rtype.pobj_info().model_num;
   } else
-    model_num = obj->rtype.pobj_info.model_num;
+    model_num = obj->rtype.pobj_info().model_num;
   if (obj->type == OBJ_BUILDING && obj->flags & OF_USE_DESTROYED_POLYMODEL) {
     if (Object_info[obj->id].lo_render_handle != -1)
       model_num = Object_info[obj->id].lo_render_handle;
@@ -1681,27 +1681,27 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
   if (RenderObjectType == RO_STATIC) {
     // Draw this object with static light
     int overlay = 0;
-    if ((obj->type == OBJ_ROBOT || obj->type == OBJ_PLAYER) && obj->rtype.pobj_info.subobj_flags != 0xFFFFFFFF)
+    if ((obj->type == OBJ_ROBOT || obj->type == OBJ_PLAYER) && obj->rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
       overlay = 1;
 
     DrawPolygonModel(&obj_pos, &obj->orient, model_num, normalized_times, 0, RenderObjectStaticRedValue,
-                     RenderObjectStaticGreenValue, RenderObjectStaticBlueValue, obj->rtype.pobj_info.subobj_flags,
+                     RenderObjectStaticGreenValue, RenderObjectStaticBlueValue, obj->rtype.pobj_info().subobj_flags,
                      use_effect, overlay);
   } else if (RenderObjectType == RO_GOURAUD || NoLightmaps) {
     // Draw this object with gouraud static light
     int overlay = 0;
-    if ((obj->type == OBJ_ROBOT || obj->type == OBJ_PLAYER) && obj->rtype.pobj_info.subobj_flags != 0xFFFFFFFF)
+    if ((obj->type == OBJ_ROBOT || obj->type == OBJ_PLAYER) && obj->rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
       overlay = 1;
     DrawPolygonModel(&obj_pos, &obj->orient, model_num, normalized_times, 0, &RenderObject_LightDirection,
                      RenderObjectStaticRedValue, RenderObjectStaticGreenValue, RenderObjectStaticBlueValue,
-                     obj->rtype.pobj_info.subobj_flags, use_effect, overlay);
+                     obj->rtype.pobj_info().subobj_flags, use_effect, overlay);
   } else if (RenderObjectType == RO_LIGHTMAPS) {
     int overlay = 0;
-    if ((obj->type == OBJ_ROBOT || obj->type == OBJ_PLAYER) && obj->rtype.pobj_info.subobj_flags != 0xFFFFFFFF)
+    if ((obj->type == OBJ_ROBOT || obj->type == OBJ_PLAYER) && obj->rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
       overlay = 1;
     // If this object is a destroyed building then do something different with it
     DrawPolygonModel(&obj_pos, &obj->orient, model_num, normalized_times, 0, RenderObjectLightmapObject,
-                     obj->rtype.pobj_info.subobj_flags, use_effect, overlay);
+                     obj->rtype.pobj_info().subobj_flags, use_effect, overlay);
   } else
     Q_ASSERT(false); // Get Jason
 }

@@ -417,9 +417,9 @@ void DoorwayUpdateAnimation(room *rp) {
   norm = DoorwayPosition(rp);
 
   if (pm->flags & PMF_TIMED)
-    objp->rtype.pobj_info.anim_frame = pm->frame_max * norm;
+    objp->rtype.pobj_info().anim_frame = pm->frame_max * norm;
   else
-    objp->rtype.pobj_info.anim_frame = pm->max_keys * norm;
+    objp->rtype.pobj_info().anim_frame = pm->max_keys * norm;
 }
 
 //	Update all doorways currently active in the mine

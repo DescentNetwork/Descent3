@@ -1755,7 +1755,7 @@ int check_vector_to_object(vector3 *intp, float *col_dist, vector3 *p0, vector3 
 
   if ((still_obj->flags & OF_POLYGON_OBJECT) && still_obj->type != OBJ_POWERUP && still_obj->type != OBJ_WEAPON &&
       still_obj->type != OBJ_DEBRIS && still_obj->type != OBJ_ROOM && still_obj->type != OBJ_PLAYER) {
-    still_size = Poly_models[still_obj->rtype.pobj_info.model_num].anim_size;
+    still_size = Poly_models[still_obj->rtype.pobj_info().model_num].anim_size;
     still_pos += still_obj->anim_sphere_offset;
   } else {
     still_size = still_obj->size;
@@ -2658,13 +2658,13 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
       fvi_wall_sphere_p0 = *fq->p0;
       fvi_wall_sphere_p1 = *fq->p1;
     } else {
-      fvi_wall_sphere_rad = Poly_models[this_obj->rtype.pobj_info.model_num].wall_size;
+      fvi_wall_sphere_rad = Poly_models[this_obj->rtype.pobj_info().model_num].wall_size;
       fvi_wall_sphere_offset = this_obj->wall_sphere_offset;
       fvi_wall_sphere_p0 = *fq->p0 + fvi_wall_sphere_offset;
       fvi_wall_sphere_p1 = *fq->p1 + fvi_wall_sphere_offset;
     }
 
-    fvi_anim_sphere_rad = Poly_models[this_obj->rtype.pobj_info.model_num].anim_size;
+    fvi_anim_sphere_rad = Poly_models[this_obj->rtype.pobj_info().model_num].anim_size;
     fvi_anim_sphere_offset = this_obj->anim_sphere_offset;
     fvi_anim_sphere_p0 = *fq->p0 + fvi_anim_sphere_offset;
     fvi_anim_sphere_p1 = *fq->p1 + fvi_anim_sphere_offset;
@@ -2969,7 +2969,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
         vector3 plane_pnt;
         vector3 verts[12];
         vector3 norms[6];
-        poly_model *pm = &Poly_models[obj->rtype.pobj_info.model_num];
+        poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
         int i, j, k;
         vector3 rel[32];
         float dot[32];
@@ -3201,7 +3201,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
                            vector3 *rotvel, vector3 *velocity) {
   vector3 plane_pnt;
   vector3 verts[12];
-  poly_model *pm = &Poly_models[obj->rtype.pobj_info.model_num];
+  poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
   int i;
   vector3 rel[32];
   float dot[32];
@@ -3446,7 +3446,7 @@ void check_hit_obj(int objnum) {
                 //									pos = obj->pos +
                 // obj->anim_sphere_offset; 									dist =
                 // vm_VectorDistance(&pos, &fvi_anim_sphere_p0);
-                // size = Poly_models[obj->rtype.pobj_info.model_num].anim_size;
+                // size = Poly_models[obj->rtype.pobj_info().model_num].anim_size;
 
                 //									if((dist <= size +
                 // fvi_anim_sphere_rad)
@@ -3544,7 +3544,7 @@ void check_hit_obj(int objnum) {
 
                     if ((obj->flags & OF_POLYGON_OBJECT) && obj->type != OBJ_ROOM && obj->type != OBJ_WEAPON &&
                         obj->type != OBJ_POWERUP && obj->type != OBJ_DEBRIS && obj->type != OBJ_PLAYER) {
-                      hit_obj_size = Poly_models[obj->rtype.pobj_info.model_num].anim_size;
+                      hit_obj_size = Poly_models[obj->rtype.pobj_info().model_num].anim_size;
                     } else {
                       hit_obj_size = obj->size;
                     }

@@ -1014,7 +1014,7 @@ void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float r
         continue;
     }
 
-    int model_num = obj->rtype.pobj_info.model_num;
+    int model_num = obj->rtype.pobj_info().model_num;
     poly_model *pm = &Poly_models[model_num];
 
     // Set our light position

@@ -151,7 +151,7 @@ void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surf
 }
 
 void GetPointInObjectSpace(vector3 *dest, vector3 *pos, object *obj, int subnum, int world) {
-  poly_model *pm = &Poly_models[obj->rtype.pobj_info.model_num];
+  poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
   bsp_info *sm = &pm->submodel[subnum];
   float normalized_time[MAX_SUBOBJECTS];
   int i;
@@ -214,7 +214,7 @@ void AssignLightmapsToObjectSurfaces(int surface_index, int terrain) {
       continue;
 
     if (Objects[i].type != OBJ_NONE && Objects[i].lighting_render_type == LRT_LIGHTMAPS) {
-      poly_model *po = &Poly_models[Objects[i].rtype.pobj_info.model_num];
+      poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
 
       if (!po->new_style)
         continue;
@@ -268,7 +268,7 @@ void AssignLightmapsToObjectSurfacesForSingleRoom(int surface_index, int roomnum
 
     if (Objects[i].type != OBJ_NONE && Objects[i].lighting_render_type == LRT_LIGHTMAPS &&
         Objects[i].roomnum == roomnum) {
-      poly_model *po = &Poly_models[Objects[i].rtype.pobj_info.model_num];
+      poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
 
       if (!po->new_style)
         continue;
@@ -296,7 +296,7 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
       continue;
 
     if (Objects[i].type != OBJ_NONE && Objects[i].lighting_render_type == LRT_LIGHTMAPS) {
-      poly_model *po = &Poly_models[Objects[i].rtype.pobj_info.model_num];
+      poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
 
       if (!po->new_style)
         continue;
@@ -387,7 +387,7 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
 
     if (Objects[i].type != OBJ_NONE && Objects[i].lighting_render_type == LRT_LIGHTMAPS &&
         Objects[i].roomnum == roomnum) {
-      poly_model *po = &Poly_models[Objects[i].rtype.pobj_info.model_num];
+      poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
 
       if (!po->new_style)
         continue;
@@ -457,7 +457,7 @@ int GetTotalObjectFaces(int terrain) {
         continue;
 
       if (Objects[i].lighting_render_type == LRT_LIGHTMAPS) {
-        poly_model *po = &Poly_models[Objects[i].rtype.pobj_info.model_num];
+        poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
 
         if (!po->new_style)
           continue;
@@ -481,7 +481,7 @@ int GetTotalObjectFacesForSingleRoom(int roomnum) {
         continue;
 
       if (Objects[i].lighting_render_type == LRT_LIGHTMAPS) {
-        poly_model *po = &Poly_models[Objects[i].rtype.pobj_info.model_num];
+        poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
 
         if (!po->new_style)
           continue;
@@ -506,7 +506,7 @@ void BuildObjectLightmapUVs(object *obj, int *sublist, int *facelist, int count,
   int lmi_handle;
   vector3 world_verts[32];
 
-  poly_model *pm = &Poly_models[obj->rtype.pobj_info.model_num];
+  poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
 
   for (i = 0; i < pm->submodel[sublist[0]].faces[facelist[0]].nverts; i++)
     GetObjectPointInWorld(&world_verts[i], obj, sublist[0], pm->submodel[sublist[0]].faces[facelist[0]].vertnums[i]);
@@ -739,7 +739,7 @@ void BuildElementListForObjectFace(int objnum, int subnum, int facenum, rad_surf
   int xres, yres;
   int lmi_handle;
   int x1 = surf->x1, y1 = surf->y1;
-  poly_model *pm = &Poly_models[Objects[objnum].rtype.pobj_info.model_num];
+  poly_model *pm = &Poly_models[Objects[objnum].rtype.pobj_info().model_num];
   bsp_info *sm = &pm->submodel[subnum];
   polyface *fp = &sm->faces[facenum];
 
@@ -848,7 +848,7 @@ uint8_t *ObjectsAlreadyCombined[MAX_OBJECTS];
 // if this face can share a lightmap with any other face
 int TestObjectLightAdjacency(object *obj, int subnum, int facenum, int lmi_type) {
   int i, t, k;
-  poly_model *pm = &Poly_models[obj->rtype.pobj_info.model_num];
+  poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
   bsp_info *a_sm = &pm->submodel[subnum];
   polyface *afp = &a_sm->faces[facenum];
   vector3 anormal;
@@ -952,7 +952,7 @@ void CombineObjectLightmapUVs(object *obj, int lmi_type) {
   int i, t, k;
   int not_combined = 0;
 
-  poly_model *pm = &Poly_models[obj->rtype.pobj_info.model_num];
+  poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
   Q_ASSERT(obj->lm_object.used);
 
   for (i = 0; i < pm->n_models; i++) {

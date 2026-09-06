@@ -2156,14 +2156,14 @@ void DonePolyModelPosInstance() {
 
 void SetNormalizedTimeObjTimed(object *obj, float *normalized_time) {
   int i, j;
-  poly_model *pm = &Poly_models[obj->rtype.pobj_info.model_num];
+  poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
   object_info *obj_info = &Object_info[obj->id];
 
   if (obj->type == OBJ_PLAYER || obj->type == OBJ_WEAPON)
     return;
 
   // Setup all the subobjects for the keyframe
-  float frame = obj->rtype.pobj_info.anim_frame;
+  float frame = obj->rtype.pobj_info().anim_frame;
 
   for (i = 0; i < pm->n_models; i++) {
     bsp_info *sm = &pm->submodel[i];
@@ -2227,15 +2227,15 @@ void SetNormalizedTimeObjTimed(object *obj, float *normalized_time) {
 void SetNormalizedTimeObj(object *obj, float *normalized_time) {
   int i, j;
 
-  if (Poly_models[obj->rtype.pobj_info.model_num].flags & PMF_TIMED) {
+  if (Poly_models[obj->rtype.pobj_info().model_num].flags & PMF_TIMED) {
     SetNormalizedTimeObjTimed(obj, normalized_time);
     return;
   }
 
-  float norm_anim_frame = GetNormalizedKeyframe(obj->rtype.pobj_info.model_num, obj->rtype.pobj_info.anim_frame);
+  float norm_anim_frame = GetNormalizedKeyframe(obj->rtype.pobj_info().model_num, obj->rtype.pobj_info().anim_frame);
 
   // Setup all the subobjects for the keyframe
-  for (i = 0; i < Poly_models[obj->rtype.pobj_info.model_num].n_models; i++)
+  for (i = 0; i < Poly_models[obj->rtype.pobj_info().model_num].n_models; i++)
     normalized_time[i] = norm_anim_frame;
 
   // Currently, we are not handling player weapons in this manner
@@ -2247,11 +2247,11 @@ void SetNormalizedTimeObj(object *obj, float *normalized_time) {
          obj->type == OBJ_DOOR || obj->type == OBJ_CLUTTER);
 
   // Now, override angles of weapon bank turrets
-  for (i = 0; i < Poly_models[obj->rtype.pobj_info.model_num].num_wbs; i++) {
-    for (j = 0; j < Poly_models[obj->rtype.pobj_info.model_num].poly_wb[i].num_turrets; j++) {
+  for (i = 0; i < Poly_models[obj->rtype.pobj_info().model_num].num_wbs; i++) {
+    for (j = 0; j < Poly_models[obj->rtype.pobj_info().model_num].poly_wb[i].num_turrets; j++) {
       int sobj_index;
 
-      sobj_index = Poly_models[obj->rtype.pobj_info.model_num].poly_wb[i].turret_index[j];
+      sobj_index = Poly_models[obj->rtype.pobj_info().model_num].poly_wb[i].turret_index[j];
       normalized_time[sobj_index] = obj->dynamic_wb[i].norm_turret_angle[j];
     }
   }

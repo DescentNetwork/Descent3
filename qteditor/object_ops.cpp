@@ -159,7 +159,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
 
   // If we have a ground plane, use current cell or face for position
   if ((objp->render_type == RT_POLYOBJ) &&
-      ((pm = GetPolymodelPointer(objp->rtype.pobj_info.model_num)) != nullptr) &&
+      ((pm = GetPolymodelPointer(objp->rtype.pobj_info().model_num)) != nullptr) &&
       pm->n_ground) {
     vector3 *surface_norm;
     vector3 pos;
@@ -253,7 +253,7 @@ void ResetGroundObject(object *objp) {
 
   poly_model *pm;
   if (!((objp->render_type == RT_POLYOBJ) &&
-        ((pm = GetPolymodelPointer(objp->rtype.pobj_info.model_num)) != nullptr) &&
+        ((pm = GetPolymodelPointer(objp->rtype.pobj_info().model_num)) != nullptr) &&
         pm->n_ground))
     return;
 
