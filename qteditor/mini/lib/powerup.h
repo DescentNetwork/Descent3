@@ -19,6 +19,8 @@
 #ifndef POWERUP_H
 #define POWERUP_H
 
+#include <array>
+#include <string>
 #include "pstypes.h"
 #include "manage.h"
 #include "object.h"
@@ -92,7 +94,7 @@ struct powerup {
   int flags;
   uint16_t used;
 
-  int16_t sounds[MAX_POWERUP_SOUNDS];
+  std::array<int16_t, MAX_POWERUP_SOUNDS> sounds;
 
   // Default physics information for this powerup type
   physics_info phys_info; // the physics data for this obj type.
@@ -101,7 +103,7 @@ struct powerup {
 
 extern int Num_powerups;
 extern powerup Powerups[MAX_POWERUPS];
-extern char *Static_powerup_names[];
+extern char *Static_powerup_names[MAX_STATIC_POWERUPS];
 
 // Sets all powerups to unused
 void InitPowerups();
@@ -120,11 +122,11 @@ int GetPrevPowerup(int n);
 
 // Searches thru all powerups for a specific name, returns -1 if not found
 // or index of powerup with name
-int FindPowerupName(char *name);
+int FindPowerupName(const std::string &name);
 
 // Given a filename, loads either the model or vclip found in that file.  If type
 // is not NULL, sets it to 1 if file is model, otherwise sets it to zero
-int LoadPowerupImage(char *filename, int *type);
+int LoadPowerupImage(const std::string &filename, int *type);
 
 // Given a powerup handle, returns that powerups image for framenum
 int GetPowerupImage(int handle, int framenum);
@@ -136,7 +138,7 @@ void DrawPowerupObject(object *obj);
 // Given a powerup name, assigns that powerup to a specific index into
 // the Powerups array.  Returns -1 if the named powerup is not found, 0 if the powerup
 // is already in its place, or 1 if successfully moved
-int MatchPowerupToIndex(char *name, int dest_index);
+int MatchPowerupToIndex(const std::string &name, int dest_index);
 
 // Moves a powerup from a given index into a new one (above MAX_STATIC_POWERUPS)
 // returns new index

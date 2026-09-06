@@ -24,7 +24,9 @@
 #include <posix_stream.h>
 #include "pstypes.h"
 #include "procedurals.h"
+#include <array>
 #include <string>
+#include <vector>
 
 struct mngs_texture_page {
   std::string bitmap_name;  // filename for the bitmap associated with this texture
@@ -38,19 +40,19 @@ struct mngs_texture_page {
 
   float proc_evaluation_time, osc_time;
 
-  uint8_t proc_type[MAX_PROC_ELEMENTS];
+  std::vector<uint8_t> proc_type;
 
-  uint8_t proc_frequency[MAX_PROC_ELEMENTS];
-  uint8_t proc_speed[MAX_PROC_ELEMENTS];
+  std::vector<uint8_t> proc_frequency;
+  std::vector<uint8_t> proc_speed;
 
-  uint8_t proc_size[MAX_PROC_ELEMENTS];
+  std::vector<uint8_t> proc_size;
 
-  uint8_t proc_x1[MAX_PROC_ELEMENTS];
-  uint8_t proc_y1[MAX_PROC_ELEMENTS];
-  uint8_t proc_x2[MAX_PROC_ELEMENTS];
-  uint8_t proc_y2[MAX_PROC_ELEMENTS];
+  std::vector<uint8_t> proc_x1;
+  std::vector<uint8_t> proc_y1;
+  std::vector<uint8_t> proc_x2;
+  std::vector<uint8_t> proc_y2;
 
-  uint16_t proc_palette[256];
+  std::array<uint16_t, 255> proc_palette;
 };
 
 // Texture page functions

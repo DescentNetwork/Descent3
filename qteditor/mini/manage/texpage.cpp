@@ -98,6 +98,7 @@ int mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
   }
 
   if (texpage->tex_struct.flags.procedural) {
+    texpage->proc_palette.fill(0);
     for (i = 0; i < 255; i++) {
       uint16_t val = 0;
       infile >> val;
@@ -122,6 +123,15 @@ int mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
       LOG_ERROR("Warning! Too many procedural elements!");
       Q_ASSERT(false);
     }
+
+    texpage->proc_type.resize(texpage->num_proc_elements);
+    texpage->proc_frequency.resize(texpage->num_proc_elements);
+    texpage->proc_speed.resize(texpage->num_proc_elements);
+    texpage->proc_size.resize(texpage->num_proc_elements);
+    texpage->proc_x1.resize(texpage->num_proc_elements);
+    texpage->proc_y1.resize(texpage->num_proc_elements);
+    texpage->proc_x2.resize(texpage->num_proc_elements);
+    texpage->proc_y2.resize(texpage->num_proc_elements);
 
     for (i = 0; i < texpage->num_proc_elements; i++) {
       infile >> texpage->proc_type[i];
