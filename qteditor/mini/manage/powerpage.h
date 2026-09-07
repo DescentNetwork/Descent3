@@ -19,6 +19,7 @@
 #ifndef POWERPAGE_H
 #define POWERPAGE_H
 
+#include <array>
 #include "manage.h"
 #include "cfile.h"
 #include <posix_stream.h>
@@ -28,7 +29,7 @@
 struct mngs_power_page {
   powerup powerup_struct;
   std::string image_name;
-  std::string sound_name[MAX_POWERUP_SOUNDS];
+  std::array<std::string, MAX_POWERUP_SOUNDS> sound_name;
 };
 
 // Powerup page functions

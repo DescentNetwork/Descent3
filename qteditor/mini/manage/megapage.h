@@ -22,6 +22,7 @@
 #ifndef MEGAPAGE_H
 #define MEGAPAGE_H
 
+#include <array>
 #include <posix_stream.h>
 
 #include "manage.h"
@@ -32,7 +33,7 @@
 // the game-data loader can share the same struct definition.
 struct mngs_megacell_page {
   megacell megacell_struct;
-  std::string cellname[MAX_MEGACELL_WIDTH * MAX_MEGACELL_HEIGHT];
+  std::array<std::string, MAX_MEGACELL_WIDTH * MAX_MEGACELL_HEIGHT> cellname;
 };
 
 // Current version of the megacell page (matches the original manage/megapage.cpp)
