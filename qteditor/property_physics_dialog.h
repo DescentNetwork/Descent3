@@ -37,7 +37,6 @@ public:
 
 private slots:
   void onOk();
-  void onFlagToggled();
 
 private:
   void updateDialog();

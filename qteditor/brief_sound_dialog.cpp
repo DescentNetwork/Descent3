@@ -36,15 +36,16 @@ BriefSoundDialog::BriefSoundDialog(TCSNDDESC *desc, QWidget *parent)
 {
   ui->setupUi(this);
   m_desc = TCSNDDESC{};
-  m_desc.caps = TCSD_WAITTIME | TCSD_ONCE;
+  m_desc.caps.waittime = true;
+  m_desc.caps.once = true;
   m_desc.waittime = 0;
   m_desc.once = false;
 
   if (desc) {
     m_desc.filename = desc->filename;
-    if (desc->caps & TCSD_WAITTIME)
+    if (desc->caps.waittime)
       m_desc.waittime = desc->waittime;
-    if (desc->caps & TCSD_ONCE)
+    if (desc->caps.once)
       m_desc.once = desc->once;
     m_desc.caps = desc->caps;
     m_desc.type = desc->type;
@@ -94,7 +95,8 @@ void BriefSoundDialog::onOk() {
     return;
   }
 
-  m_desc.caps = TCSD_WAITTIME | TCSD_ONCE;
+  m_desc.caps.waittime = true;
+  m_desc.caps.once = true;
   m_desc.filename = filename.toStdString();
   m_desc.once = ui->IDC_BRIEF_S_PLAYONCE->isChecked();
   m_desc.waittime = ui->IDC_BRIEF_S_STARTTIME->text().toFloat();

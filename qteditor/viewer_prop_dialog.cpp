@@ -40,21 +40,13 @@ ViewerPropDialog::ViewerPropDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::ViewerPropDialog)
 {
   ui->setupUi(this);
-  {
-    QCheckBox *cb = ui->IDC_XMOVE_CHECK;
-    cb->setChecked(true);
-    connect(cb, &QCheckBox::toggled, this, &ViewerPropDialog::onXMoveToggled);
-  }
-  {
-    QCheckBox *cb = ui->IDC_YMOVE_CHECK;
-    cb->setChecked(true);
-    connect(cb, &QCheckBox::toggled, this, &ViewerPropDialog::onYMoveToggled);
-  }
-  {
-    QCheckBox *cb = ui->IDC_ZMOVE_CHECK;
-    cb->setChecked(true);
-    connect(cb, &QCheckBox::toggled, this, &ViewerPropDialog::onZMoveToggled);
-  }
+  ui->IDC_XMOVE_CHECK->setChecked(true);
+  ui->IDC_YMOVE_CHECK->setChecked(true);
+  ui->IDC_ZMOVE_CHECK->setChecked(true);
+
+  connect(ui->IDC_XMOVE_CHECK, &QCheckBox::toggled, this, &ViewerPropDialog::onXMoveToggled);
+  connect(ui->IDC_YMOVE_CHECK, &QCheckBox::toggled, this, &ViewerPropDialog::onYMoveToggled);
+  connect(ui->IDC_ZMOVE_CHECK, &QCheckBox::toggled, this, &ViewerPropDialog::onZMoveToggled);
 
   updatePosition();
   updateOrientation();
@@ -68,98 +60,44 @@ ViewerPropDialog::ViewerPropDialog(QWidget *parent)
         w->setEnabled(false);
   }
 
-  {
-    QPushButton *b = ui->IDC_POS_COMMIT_BUTTON;
-    b->setEnabled(Viewer_object != nullptr);
-  }
+  ui->IDC_POS_COMMIT_BUTTON->setEnabled(Viewer_object != nullptr);
 
-  {
-    QPushButton *b = ui->IDC_ALIGN_UPYPOS_BUTTON;
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignUpYpos);
-  }
-  {
-    QPushButton *b = ui->IDC_ALIGN_XNEG_BUTTON;
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignXneg);
-  }
-  {
-    QPushButton *b = ui->IDC_ALIGN_XPOS_BUTTON;
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignXpos);
-  }
-  {
-    QPushButton *b = ui->IDC_ALIGN_YNEG_BUTTON;
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignYneg);
-  }
-  {
-    QPushButton *b = ui->IDC_ALIGN_YPOS_BUTTON;
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignYpos);
-  }
-  {
-    QPushButton *b = ui->IDC_ALIGN_ZNEG_BUTTON;
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignZneg);
-  }
-  {
-    QPushButton *b = ui->IDC_ALIGN_ZPOS_BUTTON;
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignZpos);
-  }
-  {
-    QPushButton *b = ui->IDC_ORIENT_COMMIT_BUTTON;
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onOrientCommit);
-  }
-  {
-    QPushButton *b = ui->IDC_POS_COMMIT_BUTTON;
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onPosCommit);
-  }
+  connect(ui->IDC_ALIGN_UPYPOS_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignUpYpos);
+  connect(ui->IDC_ALIGN_XNEG_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignXneg);
+  connect(ui->IDC_ALIGN_XPOS_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignXpos);
+  connect(ui->IDC_ALIGN_YNEG_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignYneg);
+  connect(ui->IDC_ALIGN_YPOS_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignYpos);
+  connect(ui->IDC_ALIGN_ZNEG_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignZneg);
+  connect(ui->IDC_ALIGN_ZPOS_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignZpos);
+  connect(ui->IDC_ORIENT_COMMIT_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onOrientCommit);
+  connect(ui->IDC_POS_COMMIT_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onPosCommit);
 }
 
 ViewerPropDialog::~ViewerPropDialog() { delete ui; }
 
 void ViewerPropDialog::updateOrientation() {
   if (Viewer_object == nullptr) {
-    {
-      QWidget *w = ui->IDC_PITCH_EDIT;
-      w->setEnabled(false);
-    }
+    ui->IDC_PITCH_EDIT->setEnabled(false);
     return;
   }
   angvec angs;
   vm_ExtractAnglesFromMatrix(&angs, &Viewer_object->orient);
 
-  {
-    QLineEdit *edit = ui->IDC_PITCH_EDIT;
-    edit->setText(QString::number((int)angs.p() * kDegreesPerAngle));
-  }
-  {
-    QLineEdit *edit = ui->IDC_HEADING_EDIT;
-    edit->setText(QString::number((int)angs.h() * kDegreesPerAngle));
-  }
-  {
-    QLineEdit *edit = ui->IDC_BANK_EDIT;
-    edit->setText(QString::number((int)angs.b() * kDegreesPerAngle));
-  }
+  ui->IDC_PITCH_EDIT->setText(QString::number((int)angs.p() * kDegreesPerAngle));
+  ui->IDC_HEADING_EDIT->setText(QString::number((int)angs.h() * kDegreesPerAngle));
+  ui->IDC_BANK_EDIT->setText(QString::number((int)angs.b() * kDegreesPerAngle));
 }
 
 void ViewerPropDialog::updatePosition() {
   const bool hasViewer = (Viewer_object != nullptr);
   if (Viewer_object == nullptr) {
     // Win32 gates the whole dialog on the viewer existing.
-    {
-      QWidget *w = ui->IDC_XPOS_EDIT;
-      w->setEnabled(false);
-    }
+    ui->IDC_XPOS_EDIT->setEnabled(false);
     return;
   }
-  {
-    QLineEdit *edit = ui->IDC_XPOS_EDIT;
-    edit->setText(QString::number((double)Viewer_object->pos.x(), 'f', 2));
-  }
-  {
-    QLineEdit *edit = ui->IDC_YPOS_EDIT;
-    edit->setText(QString::number((double)Viewer_object->pos.y(), 'f', 2));
-  }
-  {
-    QLineEdit *edit = ui->IDC_ZPOS_EDIT;
-    edit->setText(QString::number((double)Viewer_object->pos.z(), 'f', 2));
-  }
+  ui->IDC_XPOS_EDIT->setText(QString::number((double)Viewer_object->pos.x(), 'f', 2));
+  ui->IDC_YPOS_EDIT->setText(QString::number((double)Viewer_object->pos.y(), 'f', 2));
+  ui->IDC_ZPOS_EDIT->setText(QString::number((double)Viewer_object->pos.z(), 'f', 2));
   (void)hasViewer;
 }
 

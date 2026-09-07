@@ -40,18 +40,9 @@ TerrainSoundDialog::TerrainSoundDialog(QWidget *parent)
     m_bands[b] = Terrain_sound_bands[b];
 
   connect(this, &QDialog::accept, this, &TerrainSoundDialog::onOk);
-  {
-    QPushButton *next = ui->IDC_TERRAIN_SOUND_NEXT;
-    connect(next, &QPushButton::clicked, this, &TerrainSoundDialog::onNext);
-  }
-  {
-    QPushButton *prev = ui->IDC_TERRAIN_SOUND_PREV;
-    connect(prev, &QPushButton::clicked, this, &TerrainSoundDialog::onPrev);
-  }
-  {
-    QComboBox *combo = ui->IDC_TERRAIN_SOUND_COMBO;
-    connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &TerrainSoundDialog::onSoundChanged);
-  }
+  connect(ui->IDC_TERRAIN_SOUND_NEXT, &QPushButton::clicked, this, &TerrainSoundDialog::onNext);
+  connect(ui->IDC_TERRAIN_SOUND_PREV, &QPushButton::clicked, this, &TerrainSoundDialog::onPrev);
+  connect(ui->IDC_TERRAIN_SOUND_COMBO, qOverload<int>(&QComboBox::currentIndexChanged), this, &TerrainSoundDialog::onSoundChanged);
 
   {
     QLineEdit *edit = ui->IDC_TERRAIN_SOUND_LOW_ALT;
@@ -79,82 +70,31 @@ TerrainSoundDialog::~TerrainSoundDialog() { delete ui; }
 
 void TerrainSoundDialog::updateDialog() {
   const bool enabled = m_bands[m_current].sound_index != -1;
-  {
-    QWidget *w = ui->IDC_TERRAIN_SOUND_LOW_ALT;
-    w->setEnabled(enabled);
-  }
-  {
-    QWidget *w = ui->IDC_TERRAIN_SOUND_HIGH_ALT;
-    w->setEnabled(enabled);
-  }
-  {
-    QWidget *w = ui->IDC_TERRAIN_SOUND_LOW_VOLUME;
-    w->setEnabled(enabled);
-  }
-  {
-    QWidget *w = ui->IDC_TERRAIN_SOUND_HIGH_VOLUME;
-    w->setEnabled(enabled);
-  }
+  ui->IDC_TERRAIN_SOUND_LOW_ALT->setEnabled(enabled);
+  ui->IDC_TERRAIN_SOUND_HIGH_ALT->setEnabled(enabled);
+  ui->IDC_TERRAIN_SOUND_LOW_VOLUME->setEnabled(enabled);
+  ui->IDC_TERRAIN_SOUND_HIGH_VOLUME->setEnabled(enabled);
 
-  {
-    QLabel *label = ui->IDC_TERRAIN_SOUND_BAND_TEXT;
-    label->setText(QString("Band %1:").arg(m_current));
-  }
+  ui->IDC_TERRAIN_SOUND_BAND_TEXT->setText(QString("Band %1:").arg(m_current));
 
-  {
-    QPushButton *next = ui->IDC_TERRAIN_SOUND_NEXT;
-    next->setEnabled(m_current < NUM_TERRAIN_SOUND_BANDS - 1);
-  }
-  {
-    QPushButton *prev = ui->IDC_TERRAIN_SOUND_PREV;
-    prev->setEnabled(m_current > 0);
-  }
+  ui->IDC_TERRAIN_SOUND_NEXT->setEnabled(m_current < NUM_TERRAIN_SOUND_BANDS - 1);
+  ui->IDC_TERRAIN_SOUND_PREV->setEnabled(m_current > 0);
 }
 
 void TerrainSoundDialog::copyToControls() {
-  {
-    QLineEdit *edit = ui->IDC_TERRAIN_SOUND_LOW_ALT;
-    edit->setText(QString::number(m_bands[m_current].low_alt));
-  }
-  {
-    QLineEdit *edit = ui->IDC_TERRAIN_SOUND_HIGH_ALT;
-    edit->setText(QString::number(m_bands[m_current].high_alt));
-  }
-  {
-    QLineEdit *edit = ui->IDC_TERRAIN_SOUND_LOW_VOLUME;
-    edit->setText(QString::number(m_bands[m_current].low_volume));
-  }
-  {
-    QLineEdit *edit = ui->IDC_TERRAIN_SOUND_HIGH_VOLUME;
-    edit->setText(QString::number(m_bands[m_current].high_volume));
-  }
-  {
-    QComboBox *combo = ui->IDC_TERRAIN_SOUND_COMBO;
-    setSoundComboSelected(combo, m_bands[m_current].sound_index);
-  }
+  ui->IDC_TERRAIN_SOUND_LOW_ALT->setText(QString::number(m_bands[m_current].low_alt));
+  ui->IDC_TERRAIN_SOUND_HIGH_ALT->setText(QString::number(m_bands[m_current].high_alt));
+  ui->IDC_TERRAIN_SOUND_LOW_VOLUME->setText(QString::number(m_bands[m_current].low_volume));
+  ui->IDC_TERRAIN_SOUND_HIGH_VOLUME->setText(QString::number(m_bands[m_current].high_volume));
+  setSoundComboSelected(ui->IDC_TERRAIN_SOUND_COMBO, m_bands[m_current].sound_index);
 }
 
 bool TerrainSoundDialog::copyFromControls() {
-  {
-    QLineEdit *edit = ui->IDC_TERRAIN_SOUND_LOW_ALT;
-    m_bands[m_current].low_alt = edit->text().toInt();
-  }
-  {
-    QLineEdit *edit = ui->IDC_TERRAIN_SOUND_HIGH_ALT;
-    m_bands[m_current].high_alt = edit->text().toInt();
-  }
-  {
-    QLineEdit *edit = ui->IDC_TERRAIN_SOUND_LOW_VOLUME;
-    m_bands[m_current].low_volume = edit->text().toFloat();
-  }
-  {
-    QLineEdit *edit = ui->IDC_TERRAIN_SOUND_HIGH_VOLUME;
-    m_bands[m_current].high_volume = edit->text().toFloat();
-  }
-  {
-    QComboBox *combo = ui->IDC_TERRAIN_SOUND_COMBO;
-    m_bands[m_current].sound_index = soundComboSelected(combo);
-  }
+  m_bands[m_current].low_alt = ui->IDC_TERRAIN_SOUND_LOW_ALT->text().toInt();
+  m_bands[m_current].high_alt = ui->IDC_TERRAIN_SOUND_HIGH_ALT->text().toInt();
+  m_bands[m_current].low_volume = ui->IDC_TERRAIN_SOUND_LOW_VOLUME->text().toFloat();
+  m_bands[m_current].high_volume = ui->IDC_TERRAIN_SOUND_HIGH_VOLUME->text().toFloat();
+  m_bands[m_current].sound_index = soundComboSelected(ui->IDC_TERRAIN_SOUND_COMBO);
 
   if (m_bands[m_current].low_alt > m_bands[m_current].high_alt) {
     QMessageBox::warning(this, "Terrain Sound", "High elevation must be greater than or equal to low elevation.");

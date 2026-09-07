@@ -54,10 +54,7 @@ void StatusDialog::text(const QString &string) {
 }
 
 void StatusDialog::setTo(int value) {
-  {
-    QProgressBar *progress = ui->IDC_STATUSPROGRESS;
-    progress->setValue(value);
-  }
+  ui->IDC_STATUSPROGRESS->setValue(value);
 }
 
 Progress::~Progress() { destroyProgress(); }

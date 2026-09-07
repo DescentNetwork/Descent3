@@ -50,14 +50,8 @@ LevelKeypad::LevelKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::LevelKeypad)
 {
   ui->setupUi(this);
-  {
-    QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT;
-    connect(edit, &QLineEdit::editingFinished, this, &LevelKeypad::onGravityEdited);
-  }
-  {
-    QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT;
-    connect(edit, &QLineEdit::editingFinished, this, &LevelKeypad::onCeilingEdited);
-  }
+  connect(ui->IDC_LEVEL_GRAVITY_EDIT, &QLineEdit::editingFinished, this, &LevelKeypad::onGravityEdited);
+  connect(ui->IDC_LEVEL_CEILING_EDIT, &QLineEdit::editingFinished, this, &LevelKeypad::onCeilingEdited);
 
   updateDialog();
 }
@@ -65,21 +59,12 @@ LevelKeypad::LevelKeypad(QWidget *parent)
 LevelKeypad::~LevelKeypad() { delete ui; }
 
 void LevelKeypad::updateDialog() {
-  {
-    QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT;
-    edit->setText(QString::number(Gravity_strength));
-  }
-  {
-    QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT;
-    edit->setText(QString::number(levelCeiling()));
-  }
+  ui->IDC_LEVEL_GRAVITY_EDIT->setText(QString::number(Gravity_strength));
+  ui->IDC_LEVEL_CEILING_EDIT->setText(QString::number(levelCeiling()));
 }
 
 void LevelKeypad::onGravityEdited() {
-  {
-    QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT;
-    Gravity_strength = edit->text().toFloat();
-  }
+  Gravity_strength = ui->IDC_LEVEL_GRAVITY_EDIT->text().toFloat();
   World_changed = true;
 }
 

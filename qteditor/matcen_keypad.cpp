@@ -34,30 +34,12 @@ MatcenKeypad::MatcenKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::MatcenKeypad)
 {
   ui->setupUi(this);
-  {
-    QPushButton *b = ui->IDC_MAT_PREV_BUTTON;
-    connect(b, &QPushButton::clicked, this, &MatcenKeypad::onPrev);
-  }
-  {
-    QPushButton *b = ui->IDC_MAT_NEXT_BUTTON;
-    connect(b, &QPushButton::clicked, this, &MatcenKeypad::onNext);
-  }
-  {
-    QPushButton *b = ui->IDC_MAT_NEW_BUTTON;
-    connect(b, &QPushButton::clicked, this, &MatcenKeypad::onNew);
-  }
-  {
-    QPushButton *b = ui->IDC_MAT_DELETE_BUTTON;
-    connect(b, &QPushButton::clicked, this, &MatcenKeypad::onDelete);
-  }
-  {
-    QPushButton *b = ui->IDC_MAT_COPY_BUTTON;
-    connect(b, &QPushButton::clicked, this, &MatcenKeypad::onCopy);
-  }
-  {
-    QPushButton *b = ui->IDC_MAT_PASTE_BUTTON;
-    connect(b, &QPushButton::clicked, this, &MatcenKeypad::onPaste);
-  }
+  connect(ui->IDC_MAT_PREV_BUTTON, &QPushButton::clicked, this, &MatcenKeypad::onPrev);
+  connect(ui->IDC_MAT_NEXT_BUTTON, &QPushButton::clicked, this, &MatcenKeypad::onNext);
+  connect(ui->IDC_MAT_NEW_BUTTON, &QPushButton::clicked, this, &MatcenKeypad::onNew);
+  connect(ui->IDC_MAT_DELETE_BUTTON, &QPushButton::clicked, this, &MatcenKeypad::onDelete);
+  connect(ui->IDC_MAT_COPY_BUTTON, &QPushButton::clicked, this, &MatcenKeypad::onCopy);
+  connect(ui->IDC_MAT_PASTE_BUTTON, &QPushButton::clicked, this, &MatcenKeypad::onPaste);
 
   updateDialog();
 }
@@ -69,14 +51,8 @@ void MatcenKeypad::updateDialog() {
     return;
   matcen *mc = Matcen[m_matcenId];
   std::string name = mc->GetName();
-  {
-    QLabel *label = ui->IDC_MAT_CUR_STATIC;
-    label->setText(QString("Current Matcen: %1").arg(m_matcenId + 1));
-  }
-  {
-    QLabel *label = ui->IDC_MAT_NUM_STATIC;
-    label->setText(QString("Number of Matcens: %1").arg(Num_matcens));
-  }
+  ui->IDC_MAT_CUR_STATIC->setText(QString("Current Matcen: %1").arg(m_matcenId + 1));
+  ui->IDC_MAT_NUM_STATIC->setText(QString("Number of Matcens: %1").arg(Num_matcens));
 
   // TODO: Once matcen API is fully ported, populate these labels.
   // if (QLabel *label = ui->IDC_MAT_NAME_STATIC)

@@ -28,10 +28,7 @@ DallasFlagDialog::DallasFlagDialog(const QString &prompt, const QStringList &fla
     : QDialog(parent), ui(new Ui::DallasFlagDialog), m_list(nullptr)
 {
   ui->setupUi(this);
-  {
-    QLabel *label = ui->IDC_FLAG_PROMPT_STATIC;
-    label->setText(prompt);
-  }
+  ui->IDC_FLAG_PROMPT_STATIC->setText(prompt);
   m_list = ui->IDC_FLAG_LIST;
   if (m_list != nullptr) {
     m_list->addItems(flags);

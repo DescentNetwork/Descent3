@@ -196,19 +196,19 @@ static std::string missionFlagTokens(uint32_t mask, bool isSet) {
   return oss.str();
 }
 
-// Maps a text-effect subtype (desc.type / desc.flags) to the "effect" word.
+// Maps a text-effect subtype (desc.type / desc.mode) to the "effect" word.
 static std::string textEffectWord(const TCTEXTDESC &desc) {
   switch (desc.type) {
   case TC_TEXT_SCROLL:
-    switch (desc.flags) {
-    case TC_TEXTF_L2R: return "scroll_l2r";
-    case TC_TEXTF_R2L: return "scroll_r2l";
-    case TC_TEXTF_T2B: return "scroll_t2b";
-    case TC_TEXTF_B2T: return "scroll_b2t";
+    switch (desc.mode) {
+    case tc_text_mode::scroll_l2r: return "scroll_l2r";
+    case tc_text_mode::scroll_r2l: return "scroll_r2l";
+    case tc_text_mode::scroll_t2b: return "scroll_t2b";
+    case tc_text_mode::scroll_b2t: return "scroll_b2t";
     default: return "None";
     }
   case TC_TEXT_FADE:
-    if (desc.flags == TC_TEXTF_OUT)
+    if (desc.mode == tc_text_mode::fade_out)
       return "fade_out";
     return "fade_in";
   case TC_TEXT_FLASH:
@@ -220,7 +220,7 @@ static std::string textEffectWord(const TCTEXTDESC &desc) {
 
 // Maps a bitmap-effect subtype to the "effect" word.
 static std::string bmpEffectWord(const TCBMPDESC &desc) {
-  std::string suffix = (desc.flags == TC_BMPF_OUT) ? "_out" : "_in";
+  std::string suffix = (desc.mode == tc_bmp_mode::out) ? "_out" : "_in";
   switch (desc.type) {
   case TC_BMP_BLUR: return "Blur" + suffix;
   case TC_BMP_SCANLINE: return "Scan" + suffix;
@@ -280,7 +280,7 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, BriefGlobalValu
         std::string green = std::to_string(GR_COLOR_GREEN(desc->color));
         std::string blue = std::to_string(GR_COLOR_BLUE(desc->color));
         out << "$text effect " << textEffectWord(*desc) << " font " << fontWord(desc->font)
-            << ((desc->caps & TCTD_TABSTOP) ? " tabstop" : "") << " speed " << desc->speed
+            << ((desc->caps.tabstop) ? " tabstop" : "") << " speed " << desc->speed
             << " box " << desc->textbox.left << "," << desc->textbox.right << "," << desc->textbox.top << ","
             << desc->textbox.bottom << " color " << red << "," << green << "," << blue
             << " desc \"" << efx->description << "\" id " << efx->id << " starttime " << desc->waittime;
@@ -297,7 +297,7 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, BriefGlobalValu
       case BE_BMP: {
         TCBMPDESC *desc = &efx->desc.bmp_desc();
         out << "$bitmap effect " << bmpEffectWord(*desc) << " starttime " << desc->waittime;
-        if (desc->flags & TC_NOEARLYRENDER)
+        if (desc->no_early_render)
           out << " no_early_rend";
         out << " speed " << desc->speed << " position " << desc->x << "," << desc->y;
         std::string sm2 = missionFlagTokens(desc->mission_mask_set, true);
@@ -335,26 +335,26 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, BriefGlobalValu
         TCBUTTONDESC *desc = &efx->desc.button_desc();
         std::string ctype;
         switch (desc->click_type) {
-        case 0: ctype = "ClickDown"; break;
-        case 1: ctype = "ClickUp"; break;
-        case 2: ctype = "HoldDown"; break;
+        case tc_click_type::click_down: ctype = "ClickDown"; break;
+        case tc_click_type::click_up: ctype = "ClickUp"; break;
+        case tc_click_type::hold: ctype = "HoldDown"; break;
         default: ctype = "ClickUp"; break;
         }
         std::string btype;
         switch (desc->button_type) {
-        case 0: btype = "Up"; break;
-        case 1: btype = "Down"; break;
-        case 2: btype = "Next"; break;
-        case 3: btype = "Prev"; break;
-        case 4: btype = "Quit"; break;
-        case 6: btype = "Jump " + std::to_string(desc->jump_page); break;
+        case tc_button_type::up_arrow: btype = "Up"; break;
+        case tc_button_type::down_arrow: btype = "Down"; break;
+        case tc_button_type::next_page: btype = "Next"; break;
+        case tc_button_type::prev_page: btype = "Prev"; break;
+        case tc_button_type::quit: btype = "Quit"; break;
+        case tc_button_type::jump: btype = "Jump " + std::to_string(desc->jump_page); break;
         default: btype = "Next"; break;
         }
         out << "$button " << desc->x << "," << desc->y << " type " << btype;
-        if (desc->osflags & OBF_FLASH)
+        if (desc->osflags.flash)
           out << " flash " << desc->flash_time << " \"" << desc->flash_filename << "\" \""
               << desc->flash_filename_focus << "\"";
-        if (desc->osflags & OBF_GLOW)
+        if (desc->osflags.glow)
           out << " glow";
         out << " click " << ctype << " id " << efx->id << " desc \"" << efx->description << "\" parent_id "
             << desc->parent_id << " sibling_id " << desc->sibling_id;
@@ -520,7 +520,12 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValu
       if (cmd == "$text") {
         efx->type = BE_TEXT;
         TCTEXTDESC *desc = &efx->desc.text_desc();
-        desc->caps = TCTD_FONT | TCTD_COLOR | TCTD_SPEED | TCTD_WAITTIME | TCTD_TEXTBOX | TCTD_SCROLL;
+        desc->caps.font = true;
+        desc->caps.color = true;
+        desc->caps.speed = true;
+        desc->caps.waittime = true;
+        desc->caps.textbox = true;
+        desc->caps.scroll = true;
         // parse key fields
         auto pos = rest.find("font ");
         if (pos != std::string::npos) {
@@ -543,7 +548,7 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValu
         if (pos != std::string::npos)
           std::istringstream(rest.substr(pos + 10)) >> desc->waittime;
         if (rest.find("tabstop") != std::string::npos)
-          desc->caps |= TCTD_TABSTOP;
+          desc->caps.tabstop = true;
         // color
         pos = rest.find(" color ");
         if (pos != std::string::npos) {
@@ -563,13 +568,13 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValu
         pos = rest.find(" id ");
         if (pos != std::string::npos)
           std::istringstream(rest.substr(pos + 4)) >> efx->id;
-        // effect word -> desc.type/flags
-        if (rest.find("scroll_l2r") != std::string::npos) { desc->type = TC_TEXT_SCROLL; desc->flags = TC_TEXTF_L2R; }
-        else if (rest.find("scroll_r2l") != std::string::npos) { desc->type = TC_TEXT_SCROLL; desc->flags = TC_TEXTF_R2L; }
-        else if (rest.find("scroll_t2b") != std::string::npos) { desc->type = TC_TEXT_SCROLL; desc->flags = TC_TEXTF_T2B; }
-        else if (rest.find("scroll_b2t") != std::string::npos) { desc->type = TC_TEXT_SCROLL; desc->flags = TC_TEXTF_B2T; }
-        else if (rest.find("fade_in") != std::string::npos) { desc->type = TC_TEXT_FADE; desc->flags = TC_TEXTF_IN; }
-        else if (rest.find("fade_out") != std::string::npos) { desc->type = TC_TEXT_FADE; desc->flags = TC_TEXTF_OUT; }
+        // effect word -> desc.type/mode
+        if (rest.find("scroll_l2r") != std::string::npos) { desc->type = TC_TEXT_SCROLL; desc->mode = tc_text_mode::scroll_l2r; }
+        else if (rest.find("scroll_r2l") != std::string::npos) { desc->type = TC_TEXT_SCROLL; desc->mode = tc_text_mode::scroll_r2l; }
+        else if (rest.find("scroll_t2b") != std::string::npos) { desc->type = TC_TEXT_SCROLL; desc->mode = tc_text_mode::scroll_t2b; }
+        else if (rest.find("scroll_b2t") != std::string::npos) { desc->type = TC_TEXT_SCROLL; desc->mode = tc_text_mode::scroll_b2t; }
+        else if (rest.find("fade_in") != std::string::npos) { desc->type = TC_TEXT_FADE; desc->mode = tc_text_mode::fade_in; }
+        else if (rest.find("fade_out") != std::string::npos) { desc->type = TC_TEXT_FADE; desc->mode = tc_text_mode::fade_out; }
         else if (rest.find("flash") != std::string::npos) { desc->type = TC_TEXT_FLASH; }
         else { desc->type = TC_TEXT_STATIC; }
         in_text = true;
@@ -590,7 +595,7 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValu
           p >> desc->x >> comma >> desc->y;
         }
         if (rest.find("no_early_rend") != std::string::npos)
-          desc->flags |= TC_NOEARLYRENDER;
+          desc->no_early_render = true;
         pos = rest.find(" desc \"");
         if (pos != std::string::npos) {
           size_t s = pos + 7;

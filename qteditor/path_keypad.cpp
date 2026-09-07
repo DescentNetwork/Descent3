@@ -47,71 +47,23 @@ PathKeypad::PathKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::PathKeypad)
 {
   ui->setupUi(this);
-  {
-    QPushButton *b = ui->IDC_PATHPAD_ADD_PATH;
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onAddPath);
-  }
-  {
-    QPushButton *b = ui->IDC_DELETE_PATH;
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onDeletePath);
-  }
-  {
-    QPushButton *b = ui->IDC_PATHPAD_NEXT_NODE;
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onNextNode);
-  }
-  {
-    QPushButton *b = ui->IDC_PATHPAD_PREV_NODE;
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onPrevNode);
-  }
-  {
-    QPushButton *b = ui->IDC_PATHPAD_INSERT_NODE;
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onInsertNode);
-  }
-  {
-    QPushButton *b = ui->IDC_PATHPAD_DELETE_NODE;
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onDeleteNode);
-  }
-  {
-    QPushButton *b = ui->IDC_PATHPAD_MOVE_FORWARD;
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
-  }
-  {
-    QPushButton *b = ui->IDC_PATHPAD_MOVE_BACKWARD;
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
-  }
-  {
-    QPushButton *b = ui->IDC_PATHPAD_MOVE_LEFT;
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
-  }
-  {
-    QPushButton *b = ui->IDC_PATHPAD_MOVE_RIGHT;
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
-  }
-  {
-    QPushButton *b = ui->IDC_PATHPAD_MOVE_UP;
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
-  }
-  {
-    QPushButton *b = ui->IDC_PATHPAD_MOVE_DOWN;
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
-  }
+  connect(ui->IDC_PATHPAD_ADD_PATH, &QPushButton::clicked, this, &PathKeypad::onAddPath);
+  connect(ui->IDC_DELETE_PATH, &QPushButton::clicked, this, &PathKeypad::onDeletePath);
+  connect(ui->IDC_PATHPAD_NEXT_NODE, &QPushButton::clicked, this, &PathKeypad::onNextNode);
+  connect(ui->IDC_PATHPAD_PREV_NODE, &QPushButton::clicked, this, &PathKeypad::onPrevNode);
+  connect(ui->IDC_PATHPAD_INSERT_NODE, &QPushButton::clicked, this, &PathKeypad::onInsertNode);
+  connect(ui->IDC_PATHPAD_DELETE_NODE, &QPushButton::clicked, this, &PathKeypad::onDeleteNode);
+  connect(ui->IDC_PATHPAD_MOVE_FORWARD, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
+  connect(ui->IDC_PATHPAD_MOVE_BACKWARD, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
+  connect(ui->IDC_PATHPAD_MOVE_LEFT, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
+  connect(ui->IDC_PATHPAD_MOVE_RIGHT, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
+  connect(ui->IDC_PATHPAD_MOVE_UP, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
+  connect(ui->IDC_PATHPAD_MOVE_DOWN, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
 
-  {
-    QComboBox *combo = ui->IDC_PATHPAD_PULLDOWN;
-    connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &PathKeypad::onPathPulldownChanged);
-  }
-  {
-    QLineEdit *edit = ui->IDC_CURRENT_NODE_EDIT;
-    connect(edit, &QLineEdit::editingFinished, this, &PathKeypad::onCurrentNodeEdited);
-  }
-  {
-    QLineEdit *edit = ui->IDC_PATH_INC_TEXT;
-    connect(edit, &QLineEdit::editingFinished, this, &PathKeypad::onIncEdited);
-  }
-  {
-    QCheckBox *cb = ui->IDC_SHOW_NODES_CHECK;
-    connect(cb, &QCheckBox::toggled, this, &PathKeypad::onShowNodesToggled);
-  }
+  connect(ui->IDC_PATHPAD_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, &PathKeypad::onPathPulldownChanged);
+  connect(ui->IDC_CURRENT_NODE_EDIT, &QLineEdit::editingFinished, this, &PathKeypad::onCurrentNodeEdited);
+  connect(ui->IDC_PATH_INC_TEXT, &QLineEdit::editingFinished, this, &PathKeypad::onIncEdited);
+  connect(ui->IDC_SHOW_NODES_CHECK, &QCheckBox::toggled, this, &PathKeypad::onShowNodesToggled);
 
   updateDialog();
 }
@@ -156,21 +108,12 @@ void PathKeypad::updateDialog() {
     combo->setCurrentText(QString::fromStdString(GamePaths[p].name));
   }
 
-  {
-    QLabel *label = ui->IDC_PATHPAD_NUM_NODES;
-    label->setText(QString::number(GamePaths[p].num_nodes));
-  }
+  ui->IDC_PATHPAD_NUM_NODES->setText(QString::number(GamePaths[p].num_nodes));
 
   const int n = currentNode();
-  {
-    QLineEdit *edit = ui->IDC_CURRENT_NODE_EDIT;
-    edit->setText(QString::number(n));
-  }
-  {
-    QLabel *label = ui->IDC_PATHPAD_CUR_NODE_ROOM;
-    if (n >= 0 && n < GamePaths[p].num_nodes)
-      label->setText(QString::number(GamePaths[p].pathnodes[n].roomnum));
-  }
+  ui->IDC_CURRENT_NODE_EDIT->setText(QString::number(n));
+  if (n >= 0 && n < GamePaths[p].num_nodes)
+      ui->IDC_PATHPAD_CUR_NODE_ROOM->setText(QString::number(GamePaths[p].pathnodes[n].roomnum));
 }
 
 void PathKeypad::onAddPath() {

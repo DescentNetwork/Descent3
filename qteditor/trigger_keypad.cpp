@@ -27,68 +27,39 @@
 #include "room_external.h"
 #include "trigger.h"
 
-namespace {
-bool getActivatorFlag(const activator_flags_t &af, int id) {
-  switch (id) {
-    case 0: return af.player;
-    case 1: return af.player_weapon;
-    case 2: return af.robot;
-    case 3: return af.robot_weapon;
-    case 4: return af.clutter;
-  }
-  return false;
-}
-
-void setActivatorFlag(activator_flags_t &af, int id, bool value) {
-  switch (id) {
-    case 0: af.player = value; break;
-    case 1: af.player_weapon = value; break;
-    case 2: af.robot = value; break;
-    case 3: af.robot_weapon = value; break;
-    case 4: af.clutter = value; break;
-  }
-}
-} // namespace
-
 
 TriggerKeypad::TriggerKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::TriggerKeypad)
 {
   ui->setupUi(this);
-  {
-    QPushButton *b = ui->IDC_TRIG_DELETE;
-    connect(b, &QPushButton::clicked, this, &TriggerKeypad::onDelete);
-  }
-  {
-    QPushButton *b = ui->IDC_TRIG_PREV_IN_MINE;
-    connect(b, &QPushButton::clicked, this, &TriggerKeypad::onPrevInMine);
-  }
-  {
-    QPushButton *b = ui->IDC_TRIG_NEXT_IN_MINE;
-    connect(b, &QPushButton::clicked, this, &TriggerKeypad::onNextInMine);
-  }
-  {
-    QPushButton *b = ui->IDC_TRIG_PREV_IN_ROOM;
-    connect(b, &QPushButton::clicked, this, &TriggerKeypad::onPrevInRoom);
-  }
-  {
-    QPushButton *b = ui->IDC_TRIG_NEXT_IN_ROOM;
-    connect(b, &QPushButton::clicked, this, &TriggerKeypad::onNextInRoom);
-  }
-  {
-    QPushButton *b = ui->IDC_TRIG_NEXT_PORTAL;
-    connect(b, &QPushButton::clicked, this, &TriggerKeypad::onNextPortal);
-  }
-  {
-    QCheckBox *cb = ui->IDC_TRIG_ONESHOT;
-    connect(cb, &QCheckBox::toggled, this, &TriggerKeypad::onOneshotToggled);
-  }
+  connect(ui->IDC_TRIG_DELETE, &QPushButton::clicked, this, &TriggerKeypad::onDelete);
+  connect(ui->IDC_TRIG_PREV_IN_MINE, &QPushButton::clicked, this, &TriggerKeypad::onPrevInMine);
+  connect(ui->IDC_TRIG_NEXT_IN_MINE, &QPushButton::clicked, this, &TriggerKeypad::onNextInMine);
+  connect(ui->IDC_TRIG_PREV_IN_ROOM, &QPushButton::clicked, this, &TriggerKeypad::onPrevInRoom);
+  connect(ui->IDC_TRIG_NEXT_IN_ROOM, &QPushButton::clicked, this, &TriggerKeypad::onNextInRoom);
+  connect(ui->IDC_TRIG_NEXT_PORTAL, &QPushButton::clicked, this, &TriggerKeypad::onNextPortal);
+  connect(ui->IDC_TRIG_ONESHOT, &QCheckBox::toggled, this, &TriggerKeypad::onOneshotToggled);
 
-  const char *activators[] = {"IDC_TRIG_ACTIV_PLAYER", "IDC_TRIG_ACTIV_PLAYER_WEAPONS",
-                              "IDC_TRIG_ACTIV_ROBOTS", "IDC_TRIG_ACTIV_ROBOT_WEAPONS", "IDC_TRIG_ACTIV_CLUTTER"};
-  for (const char *name : activators)
-    if (QCheckBox *cb = findChild<QCheckBox*>(name))
-      connect(cb, &QCheckBox::toggled, this, &TriggerKeypad::onActivatorToggled);
+  connect(ui->IDC_TRIG_ACTIV_PLAYER, &QCheckBox::toggled, this, [this](bool checked) {
+    if (Current_trigger >= 0 && Current_trigger < Num_triggers)
+      Triggers[Current_trigger].activator.player = checked;
+  });
+  connect(ui->IDC_TRIG_ACTIV_PLAYER_WEAPONS, &QCheckBox::toggled, this, [this](bool checked) {
+    if (Current_trigger >= 0 && Current_trigger < Num_triggers)
+      Triggers[Current_trigger].activator.player_weapon = checked;
+  });
+  connect(ui->IDC_TRIG_ACTIV_ROBOTS, &QCheckBox::toggled, this, [this](bool checked) {
+    if (Current_trigger >= 0 && Current_trigger < Num_triggers)
+      Triggers[Current_trigger].activator.robot = checked;
+  });
+  connect(ui->IDC_TRIG_ACTIV_ROBOT_WEAPONS, &QCheckBox::toggled, this, [this](bool checked) {
+    if (Current_trigger >= 0 && Current_trigger < Num_triggers)
+      Triggers[Current_trigger].activator.robot_weapon = checked;
+  });
+  connect(ui->IDC_TRIG_ACTIV_CLUTTER, &QCheckBox::toggled, this, [this](bool checked) {
+    if (Current_trigger >= 0 && Current_trigger < Num_triggers)
+      Triggers[Current_trigger].activator.clutter = checked;
+  });
 
   updateDialog();
 }
@@ -107,69 +78,24 @@ void TriggerKeypad::updateDialog() {
     return;
   trigger *tp = &Triggers[Current_trigger];
 
-  {
-    QLabel *label = ui->IDC_TRIG_CURRENT_NAME;
-    label->setText(QString::fromStdString(tp->name));
-  }
-  {
-    QLabel *label = ui->IDC_TRIG_CURRENT_NUM;
-    label->setText(QString::number(Current_trigger));
-  }
-  {
-    QLabel *label = ui->IDC_TRIG_CURRENT_ROOM;
-    label->setText(QString::number(tp->roomnum));
-  }
-  {
-    QLabel *label = ui->IDC_TRIG_CURRENT_FACE;
-    label->setText(QString::number(tp->facenum));
-  }
+  ui->IDC_TRIG_CURRENT_NAME->setText(QString::fromStdString(tp->name));
+  ui->IDC_TRIG_CURRENT_NUM->setText(QString::number(Current_trigger));
+  ui->IDC_TRIG_CURRENT_ROOM->setText(QString::number(tp->roomnum));
+  ui->IDC_TRIG_CURRENT_FACE->setText(QString::number(tp->facenum));
 
-  {
-    QCheckBox *cb = ui->IDC_TRIG_ONESHOT;
-    cb->setChecked(tp->flags.oneshot);
-  }
+  ui->IDC_TRIG_ONESHOT->setChecked(tp->flags.oneshot);
 
-  const struct {
-    const char *name;
-    int id;
-  } act[] = {
-      {"IDC_TRIG_ACTIV_PLAYER", 0},
-      {"IDC_TRIG_ACTIV_PLAYER_WEAPONS", 1},
-      {"IDC_TRIG_ACTIV_ROBOTS", 2},
-      {"IDC_TRIG_ACTIV_ROBOT_WEAPONS", 3},
-      {"IDC_TRIG_ACTIV_CLUTTER", 4},
-  };
-  for (const auto &a : act)
-    if (QCheckBox *cb = findChild<QCheckBox*>(a.name))
-      cb->setChecked(getActivatorFlag(tp->activator, a.id));
-}
-
-void TriggerKeypad::setActivator(int id, const char *checkName, bool checked) {
-  if (Current_trigger < 0 || Current_trigger >= Num_triggers)
-    return;
-  setActivatorFlag(Triggers[Current_trigger].activator, id, checked);
+  ui->IDC_TRIG_ACTIV_PLAYER->setChecked(tp->activator.player);
+  ui->IDC_TRIG_ACTIV_PLAYER_WEAPONS->setChecked(tp->activator.player_weapon);
+  ui->IDC_TRIG_ACTIV_ROBOTS->setChecked(tp->activator.robot);
+  ui->IDC_TRIG_ACTIV_ROBOT_WEAPONS->setChecked(tp->activator.robot_weapon);
+  ui->IDC_TRIG_ACTIV_CLUTTER->setChecked(tp->activator.clutter);
 }
 
 void TriggerKeypad::onOneshotToggled(bool checked) {
   if (Current_trigger < 0 || Current_trigger >= Num_triggers)
     return;
   Triggers[Current_trigger].flags.oneshot = checked;
-}
-
-void TriggerKeypad::onActivatorToggled() {
-  const struct {
-    const char *name;
-    int id;
-  } act[] = {
-      {"IDC_TRIG_ACTIV_PLAYER", 0},
-      {"IDC_TRIG_ACTIV_PLAYER_WEAPONS", 1},
-      {"IDC_TRIG_ACTIV_ROBOTS", 2},
-      {"IDC_TRIG_ACTIV_ROBOT_WEAPONS", 3},
-      {"IDC_TRIG_ACTIV_CLUTTER", 4},
-  };
-  for (const auto &a : act)
-    if (QCheckBox *cb = findChild<QCheckBox*>(a.name))
-      setActivator(a.id, a.name, cb->isChecked());
 }
 
 void TriggerKeypad::onDelete() {

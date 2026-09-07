@@ -51,138 +51,48 @@ namespace {
 WorldSoundsDialog::WorldSoundsDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::WorldSoundsDialog) {
   ui->setupUi(this);
-  {
-    QPushButton *b = ui->IDC_ADD_SOUND;
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onAddSound);
-  }
-  {
-    QPushButton *b = ui->IDC_LOAD_SOUND;
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onLoadSound);
-  }
-  {
-    QPushButton *b = ui->IDC_NEXT_SOUND;
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onNextSound);
-  }
-  {
-    QPushButton *b = ui->IDC_PREV_SOUND;
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onPrevSound);
-  }
-  {
-    QPushButton *b = ui->IDC_DELETE_SOUND;
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onDeleteSound);
-  }
-  {
-    QPushButton *b = ui->IDC_LOCK_SOUND;
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onLockSound);
-  }
-  {
-    QPushButton *b = ui->IDC_CHECKIN_SOUND;
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onCheckinSound);
-  }
-  {
-    QPushButton *b = ui->IDC_PLAYSOUND;
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onPlaysound);
-  }
-  {
-    QPushButton *b = ui->IDC_KILLSOUNDS;
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onKillsounds);
-  }
-  {
-    QPushButton *b = ui->IDC_OVERRIDE;
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onOverride);
-  }
-  {
-    QPushButton *b = ui->IDC_SOUND_CHANGE_NAME;
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onChangeName);
-  }
+  connect(ui->IDC_ADD_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onAddSound);
+  connect(ui->IDC_LOAD_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onLoadSound);
+  connect(ui->IDC_NEXT_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onNextSound);
+  connect(ui->IDC_PREV_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onPrevSound);
+  connect(ui->IDC_DELETE_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onDeleteSound);
+  connect(ui->IDC_LOCK_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onLockSound);
+  connect(ui->IDC_CHECKIN_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onCheckinSound);
+  connect(ui->IDC_PLAYSOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onPlaysound);
+  connect(ui->IDC_KILLSOUNDS, &QPushButton::clicked, this, &WorldSoundsDialog::onKillsounds);
+  connect(ui->IDC_OVERRIDE, &QPushButton::clicked, this, &WorldSoundsDialog::onOverride);
+  connect(ui->IDC_SOUND_CHANGE_NAME, &QPushButton::clicked, this, &WorldSoundsDialog::onChangeName);
 
-  {
-    QComboBox *combo = ui->IDC_SOUND_PULLDOWN;
-    connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
+      connect(ui->IDC_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this,
     &WorldSoundsDialog::onSoundPulldownChanged);
-  }
 
-  const char *edits[] = {"IDC_SOUNDMAXDIST_EDIT",    "IDC_SOUNDMINDIST_EDIT",   "IDC_SOUNDINNERCONEANGLE_EDIT",
-                         "IDC_SOUNDOUTERCONEANGLE_EDIT", "IDC_SOUNDOUTERCONEVOL_EDIT", "IDC_SOUNDLOOPSTART_EDIT",
-                         "IDC_SOUNDLOOPEND_EDIT",    "IDC_SOUND_IMPORT_VOLUME_EDIT"};
-  const auto slotFor = [&](const char *name) {
-    if (QString::compare(name, "IDC_SOUNDMAXDIST_EDIT") == 0)
-      return &WorldSoundsDialog::onMaxDistEdited;
-    if (QString::compare(name, "IDC_SOUNDMINDIST_EDIT") == 0)
-      return &WorldSoundsDialog::onMinDistEdited;
-    if (QString::compare(name, "IDC_SOUNDINNERCONEANGLE_EDIT") == 0)
-      return &WorldSoundsDialog::onInnerConeEdited;
-    if (QString::compare(name, "IDC_SOUNDOUTERCONEANGLE_EDIT") == 0)
-      return &WorldSoundsDialog::onOuterConeAngleEdited;
-    if (QString::compare(name, "IDC_SOUNDOUTERCONEVOL_EDIT") == 0)
-      return &WorldSoundsDialog::onOuterConeVolEdited;
-    if (QString::compare(name, "IDC_SOUNDLOOPSTART_EDIT") == 0)
-      return &WorldSoundsDialog::onLoopStartEdited;
-    if (QString::compare(name, "IDC_SOUNDLOOPEND_EDIT") == 0)
-      return &WorldSoundsDialog::onLoopEndEdited;
-    return &WorldSoundsDialog::onImportVolumeEdited;
-  };
-  for (const char *name : edits) {
-    if (QLineEdit *edit = findChild<QLineEdit*>(name))
-      connect(edit, &QLineEdit::editingFinished, this, slotFor(name));
-  }
+  connect(ui->IDC_SOUNDMAXDIST_EDIT, &QLineEdit::editingFinished, this,&WorldSoundsDialog::onMaxDistEdited);
+  connect(ui->IDC_SOUNDMINDIST_EDIT, &QLineEdit::editingFinished, this,&WorldSoundsDialog::onMinDistEdited);
+  connect(ui->IDC_SOUNDINNERCONEANGLE_EDIT,&QLineEdit::editingFinished,this,&WorldSoundsDialog::onInnerConeEdited);
+  connect(ui->IDC_SOUNDOUTERCONEANGLE_EDIT,&QLineEdit::editingFinished,this,&WorldSoundsDialog::onOuterConeAngleEdited);
+  connect(ui->IDC_SOUNDOUTERCONEVOL_EDIT,&QLineEdit::editingFinished,this,&WorldSoundsDialog::onOuterConeVolEdited);
+  connect(ui->IDC_SOUNDLOOPSTART_EDIT,&QLineEdit::editingFinished,this,&WorldSoundsDialog::onLoopStartEdited);
+  connect(ui->IDC_SOUNDLOOPEND_EDIT,&QLineEdit::editingFinished,this,&WorldSoundsDialog::onLoopEndEdited);
+  connect(ui->IDC_SOUND_IMPORT_VOLUME_EDIT,&QLineEdit::editingFinished,this,&WorldSoundsDialog::onImportVolumeEdited);
 
-  struct {
-    const char *name;
-    void (WorldSoundsDialog::*slot)(bool);
-  } checks[] = {
-      {"IDC_SOUNDHALLEFFECT_CHECK", &WorldSoundsDialog::onHallEffectToggled},
-      {"IDC_LOOPING_CHECK", &WorldSoundsDialog::onLoopingToggled},
-      {"IDC_SOUNDFOREVER_CHECK", &WorldSoundsDialog::onForeverToggled},
-      {"IDC_SOUNDEXCLUSIVE_CHECK", &WorldSoundsDialog::onExclusiveToggled},
-      {"IDC_SOUNDONCE_CHECK", &WorldSoundsDialog::onOnceToggled},
-      {"IDC_SOUND_ONCE_PER_OBJ_CHECK", &WorldSoundsDialog::onOncePerObjToggled},
-      {"IDC_SOUND_NO_UPDATE", &WorldSoundsDialog::onNoUpdateToggled},
-  };
-  for (const auto &c : checks)
-    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
-      connect(cb, &QCheckBox::toggled, this, c.slot);
+  connect(ui->IDC_SOUNDHALLEFFECT_CHECK, &QCheckBox::toggled, this, &WorldSoundsDialog::onHallEffectToggled);
+  connect(ui->IDC_LOOPING_CHECK, &QCheckBox::toggled, this, &WorldSoundsDialog::onLoopingToggled);
+  connect(ui->IDC_SOUNDFOREVER_CHECK, &QCheckBox::toggled, this, &WorldSoundsDialog::onForeverToggled);
+  connect(ui->IDC_SOUNDEXCLUSIVE_CHECK, &QCheckBox::toggled, this, &WorldSoundsDialog::onExclusiveToggled);
+  connect(ui->IDC_SOUNDONCE_CHECK, &QCheckBox::toggled, this, &WorldSoundsDialog::onOnceToggled);
+  connect(ui->IDC_SOUND_ONCE_PER_OBJ_CHECK, &QCheckBox::toggled, this, &WorldSoundsDialog::onOncePerObjToggled);
+  connect(ui->IDC_SOUND_NO_UPDATE, &QCheckBox::toggled, this, &WorldSoundsDialog::onNoUpdateToggled);
 
-  {
-    QRadioButton *rb = ui->IDC_SOUNDOBJATTACH_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onObjAttach);
-  }
-  {
-    QRadioButton *rb = ui->IDC_SOUNDPOSATTACH_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onPosAttach);
-  }
-  {
-    QRadioButton *rb = ui->IDC_SOUNDOBJECT_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeLinkObject);
-  }
-  {
-    QRadioButton *rb = ui->IDC_SOUNDTURRET1_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeLinkTurret1);
-  }
-  {
-    QRadioButton *rb = ui->IDC_SOUNDTURRET2_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeLinkTurret2);
-  }
-  {
-    QRadioButton *rb = ui->IDC_SOUNDTURRET3_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeLinkTurret3);
-  }
-  {
-    QRadioButton *rb = ui->IDC_SOUNDFORWARD_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeDirForward);
-  }
-  {
-    QRadioButton *rb = ui->IDC_SOUNDBACKWARD_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeDirBackward);
-  }
-  {
-    QRadioButton *rb = ui->IDC_SOUNDUPWARD_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeDirUpward);
-  }
-  {
-    QRadioButton *rb = ui->IDC_SOUNDDOWNWARD_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeDirDownward);
-  }
+  connect(ui->IDC_SOUNDOBJATTACH_RADIO, &QRadioButton::clicked, this, &WorldSoundsDialog::onObjAttach);
+  connect(ui->IDC_SOUNDPOSATTACH_RADIO, &QRadioButton::clicked, this, &WorldSoundsDialog::onPosAttach);
+  connect(ui->IDC_SOUNDOBJECT_RADIO, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeLinkObject);
+  connect(ui->IDC_SOUNDTURRET1_RADIO, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeLinkTurret1);
+  connect(ui->IDC_SOUNDTURRET2_RADIO, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeLinkTurret2);
+  connect(ui->IDC_SOUNDTURRET3_RADIO, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeLinkTurret3);
+  connect(ui->IDC_SOUNDFORWARD_RADIO, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeDirForward);
+  connect(ui->IDC_SOUNDBACKWARD_RADIO, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeDirBackward);
+  connect(ui->IDC_SOUNDUPWARD_RADIO, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeDirUpward);
+  connect(ui->IDC_SOUNDDOWNWARD_RADIO, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeDirDownward);
 
   updateDialog();
 }
@@ -227,19 +137,12 @@ void WorldSoundsDialog::setConeDir(int value) {
 void WorldSoundsDialog::updateDialog() {
   const int n = D3EditState.current_sound;
 
-  {
-    QPushButton *next = ui->IDC_NEXT_SOUND;
-    next->setEnabled(Num_sounds >= 1);
-  }
-  {
-    QPushButton *prev = ui->IDC_PREV_SOUND;
-    prev->setEnabled(Num_sounds >= 1);
-  }
+  ui->IDC_NEXT_SOUND->setEnabled(Num_sounds >= 1);
+  ui->IDC_PREV_SOUND->setEnabled(Num_sounds >= 1);
   if (!Network_up) {
-    for (const char *name : {"IDC_LOCK_SOUND", "IDC_CHECKIN_SOUND", "IDC_OVERRIDE"}) {
-      if (auto *w = findChild<QPushButton*>(name))
-        w->setEnabled(false);
-    }
+    ui->IDC_LOCK_SOUND->setEnabled(false);
+    ui->IDC_CHECKIN_SOUND->setEnabled(false);
+    ui->IDC_OVERRIDE->setEnabled(false);
     return;
   }
   if (Num_sounds < 1)
@@ -256,94 +159,37 @@ void WorldSoundsDialog::updateDialog() {
     if (Sounds[i].used)
       total_memory += SoundFiles[Sounds[i].sample_index].sample_length * 2;
 
-  {
-    QLineEdit *edit = ui->IDC_SOUNDMAXDIST_EDIT;
-    edit->setText(QString::number(Sounds[s].max_distance));
-  }
-  {
-    QLineEdit *edit = ui->IDC_SOUNDMINDIST_EDIT;
-    edit->setText(QString::number(Sounds[s].min_distance));
-  }
-  {
-    QLineEdit *edit = ui->IDC_SOUNDINNERCONEANGLE_EDIT;
-    edit->setText(QString::number(Sounds[s].inner_cone_angle));
-  }
-  {
-    QLineEdit *edit = ui->IDC_SOUNDOUTERCONEANGLE_EDIT;
-    edit->setText(QString::number(Sounds[s].outer_cone_angle));
-  }
-  {
-    QLineEdit *edit = ui->IDC_SOUNDOUTERCONEVOL_EDIT;
-    edit->setText(QString::number(Sounds[s].outer_cone_volume * 100.0f));
-  }
-  {
-    QLineEdit *edit = ui->IDC_SOUNDLOOPSTART_EDIT;
-    edit->setText(QString::number(Sounds[s].loop_start));
-  }
+  ui->IDC_SOUNDMAXDIST_EDIT->setText(QString::number(Sounds[s].max_distance));
+  ui->IDC_SOUNDMINDIST_EDIT->setText(QString::number(Sounds[s].min_distance));
+  ui->IDC_SOUNDINNERCONEANGLE_EDIT->setText(QString::number(Sounds[s].inner_cone_angle));
+  ui->IDC_SOUNDOUTERCONEANGLE_EDIT->setText(QString::number(Sounds[s].outer_cone_angle));
+  ui->IDC_SOUNDOUTERCONEVOL_EDIT->setText(QString::number(Sounds[s].outer_cone_volume * 100.0f));
+  ui->IDC_SOUNDLOOPSTART_EDIT->setText(QString::number(Sounds[s].loop_start));
 
   if (Sounds[s].loop_end >= SoundFiles[Sounds[s].sample_index].np_sample_length)
     Sounds[s].loop_end = SoundFiles[Sounds[s].sample_index].np_sample_length - 1;
   if (Sounds[s].loop_start > Sounds[s].loop_end)
     Sounds[s].loop_start = 0;
-  {
-    QLineEdit *edit = ui->IDC_SOUNDLOOPEND_EDIT;
-    edit->setText(QString::number(Sounds[s].loop_end));
-  }
+  ui->IDC_SOUNDLOOPEND_EDIT->setText(QString::number(Sounds[s].loop_end));
 
-  {
-    QLineEdit *edit = ui->IDC_SOUND_IMPORT_VOLUME_EDIT;
-    edit->setText(QString::number(Sounds[s].import_volume * 100.0f));
-  }
-  {
-    QLineEdit *edit = ui->IDC_RAW_NAME_EDIT;
-    edit->setText(QString::fromStdString(SoundFiles[Sounds[s].sample_index].name));
-  }
+  ui->IDC_SOUND_IMPORT_VOLUME_EDIT->setText(QString::number(Sounds[s].import_volume * 100.0f));
+  ui->IDC_RAW_NAME_EDIT->setText(QString::fromStdString(SoundFiles[Sounds[s].sample_index].name));
 
-  {
-    QLabel *label = ui->IDC_SOUND_MEMORY_STATIC;
-    label->setText(QString("%1, %2 H, %3 Total")
+  ui->IDC_SOUND_MEMORY_STATIC->setText(QString("%1, %2 H, %3 Total")
     .arg(SoundFiles[Sounds[s].sample_index].sample_length / 512)
     .arg(0)
     .arg(total_memory / 1024));
-  }
 
-  {
-    QCheckBox *cb = ui->IDC_SOUNDHALLEFFECT_CHECK;
-    cb->setChecked(!(Sounds[s].flags & SPF_FIXED_FREQ));
-  }
-  {
-    QCheckBox *cb = ui->IDC_SOUNDFOREVER_CHECK;
-    cb->setChecked(Sounds[s].flags & SPF_FOREVER);
-  }
-  {
-    QCheckBox *cb = ui->IDC_SOUND_ONCE_PER_OBJ_CHECK;
-    cb->setChecked(Sounds[s].flags & SPF_ONCE_PER_OBJ);
-  }
-  {
-    QCheckBox *cb = ui->IDC_SOUNDEXCLUSIVE_CHECK;
-    cb->setChecked(Sounds[s].flags & SPF_PLAYS_EXCLUSIVELY);
-  }
-  {
-    QCheckBox *cb = ui->IDC_SOUND_NO_UPDATE;
-    cb->setChecked(Sounds[s].flags & SPF_LISTENER_UPDATE);
-  }
-  {
-    QCheckBox *cb = ui->IDC_SOUNDONCE_CHECK;
-    cb->setChecked(Sounds[s].flags & SPF_PLAYS_ONCE);
-  }
-  {
-    QCheckBox *cb = ui->IDC_LOOPING_CHECK;
-    cb->setChecked(Sounds[s].flags & SPF_LOOPED);
-  }
+  ui->IDC_SOUNDHALLEFFECT_CHECK->setChecked(!(Sounds[s].flags & SPF_FIXED_FREQ));
+  ui->IDC_SOUNDFOREVER_CHECK->setChecked(Sounds[s].flags & SPF_FOREVER);
+  ui->IDC_SOUND_ONCE_PER_OBJ_CHECK->setChecked(Sounds[s].flags & SPF_ONCE_PER_OBJ);
+  ui->IDC_SOUNDEXCLUSIVE_CHECK->setChecked(Sounds[s].flags & SPF_PLAYS_EXCLUSIVELY);
+  ui->IDC_SOUND_NO_UPDATE->setChecked(Sounds[s].flags & SPF_LISTENER_UPDATE);
+  ui->IDC_SOUNDONCE_CHECK->setChecked(Sounds[s].flags & SPF_PLAYS_ONCE);
+  ui->IDC_LOOPING_CHECK->setChecked(Sounds[s].flags & SPF_LOOPED);
 
-  {
-    QRadioButton *rb = ui->IDC_SOUNDOBJATTACH_RADIO;
-    rb->setChecked(Sounds[s].flags & SPF_OBJ_UPDATE);
-  }
-  {
-    QRadioButton *rb = ui->IDC_SOUNDPOSATTACH_RADIO;
-    rb->setChecked(!(Sounds[s].flags & SPF_OBJ_UPDATE));
-  }
+  ui->IDC_SOUNDOBJATTACH_RADIO->setChecked(Sounds[s].flags & SPF_OBJ_UPDATE);
+  ui->IDC_SOUNDPOSATTACH_RADIO->setChecked(!(Sounds[s].flags & SPF_OBJ_UPDATE));
 
   switch (SPFT_CONE_LINK_MASK & Sounds[s].flags) {
   case SPFT_CONE_LINK_TURRET1:
@@ -379,24 +225,12 @@ void WorldSoundsDialog::updateDialog() {
     QPushButton *checkin = ui->IDC_CHECKIN_SOUND;
     if (mng_FindTrackLock(Sounds[s].name, PAGETYPE_SOUND) == -1) {
       checkin->setEnabled(false);
-      {
-        QPushButton *lock = ui->IDC_LOCK_SOUND;
-        lock->setEnabled(true);
-      }
-      {
-        QPushButton *rename = ui->IDC_SOUND_CHANGE_NAME;
-        rename->setEnabled(false);
-      }
+      ui->IDC_LOCK_SOUND->setEnabled(true);
+      ui->IDC_SOUND_CHANGE_NAME->setEnabled(false);
     } else {
       checkin->setEnabled(true);
-      {
-        QPushButton *lock = ui->IDC_LOCK_SOUND;
-        lock->setEnabled(false);
-      }
-      {
-        QPushButton *rename = ui->IDC_SOUND_CHANGE_NAME;
-        rename->setEnabled(true);
-      }
+      ui->IDC_LOCK_SOUND->setEnabled(false);
+      ui->IDC_SOUND_CHANGE_NAME->setEnabled(true);
     }
   }
 
@@ -700,59 +534,35 @@ void WorldSoundsDialog::onSoundPulldownChanged() {
 
 void WorldSoundsDialog::onMaxDistEdited() {
   const int n = D3EditState.current_sound;
-  {
-    QLineEdit *e = ui->IDC_SOUNDMAXDIST_EDIT;
-    Sounds[n].max_distance = e->text().toFloat();
-  }
+  Sounds[n].max_distance = ui->IDC_SOUNDMAXDIST_EDIT->text().toFloat();
 }
 void WorldSoundsDialog::onMinDistEdited() {
   const int n = D3EditState.current_sound;
-  {
-    QLineEdit *e = ui->IDC_SOUNDMINDIST_EDIT;
-    Sounds[n].min_distance = e->text().toFloat();
-  }
+  Sounds[n].min_distance = ui->IDC_SOUNDMINDIST_EDIT->text().toFloat();
 }
 void WorldSoundsDialog::onInnerConeEdited() {
   const int n = D3EditState.current_sound;
-  {
-    QLineEdit *e = ui->IDC_SOUNDINNERCONEANGLE_EDIT;
-    Sounds[n].inner_cone_angle = e->text().toInt();
-  }
+  Sounds[n].inner_cone_angle = ui->IDC_SOUNDINNERCONEANGLE_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onOuterConeAngleEdited() {
   const int n = D3EditState.current_sound;
-  {
-    QLineEdit *e = ui->IDC_SOUNDOUTERCONEANGLE_EDIT;
-    Sounds[n].outer_cone_angle = e->text().toInt();
-  }
+  Sounds[n].outer_cone_angle = ui->IDC_SOUNDOUTERCONEANGLE_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onOuterConeVolEdited() {
   const int n = D3EditState.current_sound;
-  {
-    QLineEdit *e = ui->IDC_SOUNDOUTERCONEVOL_EDIT;
-    Sounds[n].outer_cone_volume = e->text().toFloat() / 100.0f;
-  }
+  Sounds[n].outer_cone_volume = ui->IDC_SOUNDOUTERCONEVOL_EDIT->text().toFloat() / 100.0f;
 }
 void WorldSoundsDialog::onLoopStartEdited() {
   const int n = D3EditState.current_sound;
-  {
-    QLineEdit *e = ui->IDC_SOUNDLOOPSTART_EDIT;
-    Sounds[n].loop_start = e->text().toInt();
-  }
+  Sounds[n].loop_start = ui->IDC_SOUNDLOOPSTART_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onLoopEndEdited() {
   const int n = D3EditState.current_sound;
-  {
-    QLineEdit *e = ui->IDC_SOUNDLOOPEND_EDIT;
-    Sounds[n].loop_end = e->text().toInt();
-  }
+  Sounds[n].loop_end = ui->IDC_SOUNDLOOPEND_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onImportVolumeEdited() {
   const int n = D3EditState.current_sound;
-  {
-    QLineEdit *e = ui->IDC_SOUND_IMPORT_VOLUME_EDIT;
-    Sounds[n].import_volume = e->text().toFloat() / 100.0f;
-  }
+  Sounds[n].import_volume = ui->IDC_SOUND_IMPORT_VOLUME_EDIT->text().toFloat() / 100.0f;
 }
 
 void WorldSoundsDialog::onHallEffectToggled(bool checked) { setFlag(SPF_FIXED_FREQ, "", !checked); }

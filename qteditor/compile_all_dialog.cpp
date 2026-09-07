@@ -26,15 +26,9 @@ CompileAllDialog::CompileAllDialog(QWidget *parent)
     });
   }
 
-  {
-    QPushButton *build = ui->IDC_BUILD;
-    connect(build, &QPushButton::clicked, this, &CompileAllDialog::buildAll);
-  }
+  connect(ui->IDC_BUILD, &QPushButton::clicked, this, &CompileAllDialog::buildAll);
 
-  {
-    QPushButton *done = ui->IDOK;
-    connect(done, &QPushButton::clicked, this, &CompileAllDialog::accept);
-  }
+  connect(ui->IDOK, &QPushButton::clicked, this, &CompileAllDialog::accept);
 }
 
 CompileAllDialog::~CompileAllDialog() { delete ui; }

@@ -29,71 +29,10 @@
 #include <QPushButton>
 #include <QRadioButton>
 
-#include <array>
 #include <cstdint>
 #include <string>
 
 #include "brief_mission_flags_dialog.h"
-
-namespace {
-
-// Button type / click type numeric values (mirror the game's TelComEffects.h,
-// which the mini build's TelComEfxStructs.h does not carry).
-constexpr uint8_t kButtUpArrow = 0;
-constexpr uint8_t kButtDownArrow = 1;
-constexpr uint8_t kButtNextPage = 2;
-constexpr uint8_t kButtPrevPage = 3;
-constexpr uint8_t kButtQuit = 4;
-constexpr uint8_t kButtJump = 6;
-constexpr uint8_t kClickCursorClickUp = 1;
-constexpr uint8_t kClickCursorClickDown = 0;
-constexpr uint8_t kClickCursorHold = 2;
-
-// Button-type radios indexed by the win32 radio index (0..5).
-static const std::array<const char *, 6> buttonRadios = {
-    "IDC_BRIEF_BT_SCROLLUP",   "IDC_BRIEF_BT_SCROLLDOWN", "IDC_BRIEF_BT_NEXTSCREEN",
-    "IDC_BRIEF_BT_PREVSCREEN", "IDC_BRIEF_BT_QUIT",       "IDC_BRIEF_BT_JUMP"};
-static const std::array<uint8_t, 6> buttonRadioValues = {kButtUpArrow, kButtDownArrow,
-                                                          kButtNextPage, kButtPrevPage,
-                                                          kButtQuit, kButtJump};
-
-int buttonTypeToRadio(uint8_t buttonType) {
-  switch (buttonType) {
-  case kButtUpArrow:
-    return 0;
-  case kButtDownArrow:
-    return 1;
-  case kButtNextPage:
-    return 2;
-  case kButtPrevPage:
-    return 3;
-  case kButtQuit:
-    return 4;
-  case kButtJump:
-    return 5;
-  default:
-    return 0;
-  }
-}
-
-// Click-type radios indexed by the win32 radio index (0..2).
-static const std::array<const char *, 3> clickRadios = {
-    "IDC_BRIEF_BT_MOUSEUP", "IDC_BRIEF_BT_MOUSEDOWN", "IDC_BRIEF_BT_MOUSEHOLD"};
-
-int clickTypeToRadio(uint8_t clickType) {
-  switch (clickType) {
-  case kClickCursorClickUp:
-    return 0;
-  case kClickCursorClickDown:
-    return 1;
-  case kClickCursorHold:
-    return 2;
-  default:
-    return 0;
-  }
-}
-
-} // namespace
 
 BriefButtonDialog::BriefButtonDialog(TCBUTTONDESC *desc, QWidget *parent)
     : QDialog(parent), ui(new Ui::BriefButtonDialog)
@@ -123,52 +62,48 @@ BriefButtonDialog::BriefButtonDialog(TCBUTTONDESC *desc, QWidget *parent)
     m_desc.mission_mask_unset = desc->mission_mask_unset;
     m_desc.jump_page = desc->jump_page;
   } else {
-    m_desc.button_type = kButtNextPage;
-    m_desc.click_type = kClickCursorClickDown;
+    m_desc.button_type = tc_button_type::next_page;
+    m_desc.click_type = tc_click_type::click_down;
   }
 
   ui->IDC_BRIEF_BT_FILENAME->setText(QString::fromStdString(m_desc.filename));
   ui->IDC_BRIEF_BT_FILENAME_FOCUS->setText(QString::fromStdString(m_desc.filename_focus));
   ui->IDC_BRIEF_BT_FLASH_FILENAME->setText(QString::fromStdString(m_desc.flash_filename));
-  ui->IDC_BRIEF_BT_FLASH_FILENAME_FOCUS->setText(
-      QString::fromStdString(m_desc.flash_filename_focus));
+  ui->IDC_BRIEF_BT_FLASH_FILENAME_FOCUS->setText(QString::fromStdString(m_desc.flash_filename_focus));
   ui->IDC_BRIEF_BT_ID->setText("0");
   ui->IDC_BRIEF_BT_PID->setText(QString::number(m_desc.parent_id));
   ui->IDC_BRIEF_BT_SID->setText(QString::number(m_desc.sibling_id));
   ui->IDC_BRIEF_BT_X->setText(QString::number(m_desc.x));
   ui->IDC_BRIEF_BT_Y->setText(QString::number(m_desc.y));
   ui->IDC_BRIEF_BT_JUMP_SCREEN->setText(QString::number(m_desc.jump_page));
-  ui->IDC_BRIEF_BT_GLOW->setChecked((m_desc.osflags & OBF_GLOW) != 0);
-  ui->IDC_BRIEF_BT_FLASHER->setChecked((m_desc.osflags & OBF_FLASH) != 0);
-  ui->IDC_BRIEF_BT_FLASHSTART->setText(
-      QString::number((m_desc.osflags & OBF_FLASH) ? m_desc.flash_time : 0));
+  ui->IDC_BRIEF_BT_GLOW->setChecked(m_desc.osflags.glow);
+  ui->IDC_BRIEF_BT_FLASHER->setChecked(m_desc.osflags.flash);
+  ui->IDC_BRIEF_BT_FLASHSTART->setText(QString::number(m_desc.osflags.flash ? m_desc.flash_time : 0));
 
-  int bi = buttonTypeToRadio(m_desc.button_type);
-  if (bi >= 0 && bi < (int)buttonRadios.size())
-    if (auto *rb = findChild<QRadioButton*>(buttonRadios[bi]))
-      rb->setChecked(true);
-  int ci = clickTypeToRadio(m_desc.click_type);
-  if (ci >= 0 && ci < (int)clickRadios.size())
-    if (auto *rb = findChild<QRadioButton*>(clickRadios[ci]))
-      rb->setChecked(true);
+  ui->IDC_BRIEF_BT_SCROLLUP->setChecked(m_desc.button_type == tc_button_type::up_arrow);
+  ui->IDC_BRIEF_BT_SCROLLDOWN->setChecked(m_desc.button_type == tc_button_type::down_arrow);
+  ui->IDC_BRIEF_BT_NEXTSCREEN->setChecked(m_desc.button_type == tc_button_type::next_page);
+  ui->IDC_BRIEF_BT_PREVSCREEN->setChecked(m_desc.button_type == tc_button_type::prev_page);
+  ui->IDC_BRIEF_BT_QUIT->setChecked(m_desc.button_type == tc_button_type::quit);
+  ui->IDC_BRIEF_BT_JUMP->setChecked(m_desc.button_type == tc_button_type::jump);
+  ui->IDC_BRIEF_BT_MOUSEUP->setChecked(m_desc.click_type == tc_click_type::click_up);
+  ui->IDC_BRIEF_BT_MOUSEDOWN->setChecked(m_desc.click_type == tc_click_type::click_down);
+  ui->IDC_BRIEF_BT_MOUSEHOLD->setChecked(m_desc.click_type == tc_click_type::hold);
 
-  if (auto *btn = ui->IDC_BRIEF_BT_CHOOSE)
-    connect(btn, &QPushButton::clicked, this, &BriefButtonDialog::onChoose);
-  if (auto *btn = ui->IDC_BRIEF_BT_CHOOSE_FOCUS)
-    connect(btn, &QPushButton::clicked, this, &BriefButtonDialog::onChooseFocus);
-  if (auto *btn = ui->IDC_BRIEF_BT_FLASH_CHOOSE)
-    connect(btn, &QPushButton::clicked, this, &BriefButtonDialog::onFlashChoose);
-  if (auto *btn = ui->IDC_BRIEF_BT_FLASH_CHOOSE_FOCUS)
-    connect(btn, &QPushButton::clicked, this, &BriefButtonDialog::onFlashChooseFocus);
-  if (auto *btn = ui->IDC_MISSIONFLAGS)
-    connect(btn, &QPushButton::clicked, this, &BriefButtonDialog::onMissionFlags);
+  connect(ui->IDC_BRIEF_BT_CHOOSE, &QPushButton::clicked, this, &BriefButtonDialog::onChoose);
+  connect(ui->IDC_BRIEF_BT_CHOOSE_FOCUS, &QPushButton::clicked, this, &BriefButtonDialog::onChooseFocus);
+  connect(ui->IDC_BRIEF_BT_FLASH_CHOOSE, &QPushButton::clicked, this, &BriefButtonDialog::onFlashChoose);
+  connect(ui->IDC_BRIEF_BT_FLASH_CHOOSE_FOCUS, &QPushButton::clicked, this, &BriefButtonDialog::onFlashChooseFocus);
+  connect(ui->IDC_MISSIONFLAGS, &QPushButton::clicked, this, &BriefButtonDialog::onMissionFlags);
 
   connect(ui->IDC_BRIEF_BT_FLASHER, &QCheckBox::toggled, this, &BriefButtonDialog::onFlasherToggled);
   connect(ui->IDC_BRIEF_BT_GLOW, &QCheckBox::toggled, this, &BriefButtonDialog::onGlowToggled);
-  for (const auto &name : buttonRadios) {
-    if (auto *rb = findChild<QRadioButton*>(name))
-      connect(rb, &QRadioButton::toggled, this, &BriefButtonDialog::updateStates);
-  }
+  connect(ui->IDC_BRIEF_BT_SCROLLUP,&QRadioButton::toggled,this,&BriefButtonDialog::updateStates);
+  connect(ui->IDC_BRIEF_BT_SCROLLDOWN,&QRadioButton::toggled,this,&BriefButtonDialog::updateStates);
+  connect(ui->IDC_BRIEF_BT_NEXTSCREEN,&QRadioButton::toggled,this,&BriefButtonDialog::updateStates);
+  connect(ui->IDC_BRIEF_BT_PREVSCREEN,&QRadioButton::toggled,this,&BriefButtonDialog::updateStates);
+  connect(ui->IDC_BRIEF_BT_QUIT,&QRadioButton::toggled,this,&BriefButtonDialog::updateStates);
+  connect(ui->IDC_BRIEF_BT_JUMP,&QRadioButton::toggled,this,&BriefButtonDialog::updateStates);
 
   updateStates();
 
@@ -178,31 +113,27 @@ BriefButtonDialog::BriefButtonDialog(TCBUTTONDESC *desc, QWidget *parent)
 BriefButtonDialog::~BriefButtonDialog() { delete ui; }
 
 void BriefButtonDialog::updateStates() {
-  const bool flasher = ui->IDC_BRIEF_BT_FLASHER->isChecked();
-  const bool glow = ui->IDC_BRIEF_BT_GLOW->isChecked();
-  const bool active = flasher || glow;
+  const bool active = ui->IDC_BRIEF_BT_FLASHER->isChecked() || ui->IDC_BRIEF_BT_GLOW->isChecked();
   ui->IDC_BRIEF_BT_FLASH_FILENAME->setEnabled(active);
   ui->IDC_BRIEF_BT_FLASH_CHOOSE->setEnabled(active);
   ui->IDC_BRIEF_BT_FLASH_FILENAME_FOCUS->setEnabled(active);
-  ui->IDC_BRIEF_BT_FLASHSTART->setEnabled(flasher);
-
-  if (auto *jump = findChild<QRadioButton*>("IDC_BRIEF_BT_JUMP"))
-    ui->IDC_BRIEF_BT_JUMP_SCREEN->setEnabled(jump->isChecked());
+  ui->IDC_BRIEF_BT_FLASHSTART->setEnabled(ui->IDC_BRIEF_BT_FLASHER->isChecked());
+  ui->IDC_BRIEF_BT_JUMP_SCREEN->setEnabled(ui->IDC_BRIEF_BT_JUMP->isChecked());
 }
 
 void BriefButtonDialog::onFlasherToggled(bool checked) {
   if (checked)
-    m_desc.osflags |= OBF_FLASH;
+    m_desc.osflags.flash = true;
   else
-    m_desc.osflags &= ~OBF_FLASH;
+    m_desc.osflags.flash = false;
   updateStates();
 }
 
 void BriefButtonDialog::onGlowToggled(bool checked) {
   if (checked)
-    m_desc.osflags |= OBF_GLOW;
+    m_desc.osflags.glow = true;
   else
-    m_desc.osflags &= ~OBF_GLOW;
+    m_desc.osflags.glow = false;
   updateStates();
 }
 
@@ -253,8 +184,8 @@ void BriefButtonDialog::onMissionFlags() {
 void BriefButtonDialog::onOk() {
   const std::string filename = ui->IDC_BRIEF_BT_FILENAME->text().toStdString();
   const std::string filenameFocus = ui->IDC_BRIEF_BT_FILENAME_FOCUS->text().toStdString();
-  const bool flasherChk = ui->IDC_BRIEF_BT_FLASHER->isChecked();
-  const bool glowChk = ui->IDC_BRIEF_BT_GLOW->isChecked();
+  m_desc.osflags.flash = ui->IDC_BRIEF_BT_FLASHER->isChecked();
+  m_desc.osflags.glow = ui->IDC_BRIEF_BT_GLOW->isChecked();
   const std::string flashFilename = ui->IDC_BRIEF_BT_FLASH_FILENAME->text().toStdString();
   const std::string flashFilenameFocus =
       ui->IDC_BRIEF_BT_FLASH_FILENAME_FOCUS->text().toStdString();
@@ -264,7 +195,7 @@ void BriefButtonDialog::onOk() {
     QMessageBox::warning(this, tr("Error"), tr("Filename Does Not Exist"));
     return;
   }
-  if (flasherChk || glowChk) {
+  if (m_desc.osflags.flash || m_desc.osflags.glow) {
     if (!QFile::exists(QString::fromStdString(flashFilename)) ||
         !QFile::exists(QString::fromStdString(flashFilenameFocus))) {
       QMessageBox::warning(this, tr("Error"), tr("Flash Filename Does Not Exist"));
@@ -272,17 +203,13 @@ void BriefButtonDialog::onOk() {
     }
   }
 
-  m_desc.osflags = 0;
-  m_desc.flasher = (flasherChk || glowChk);
-  if (flasherChk)
-    m_desc.osflags |= OBF_FLASH;
-  if (glowChk)
-    m_desc.osflags |= OBF_GLOW;
+  m_desc.osflags = {};
+  m_desc.flasher = (m_desc.osflags.flash || m_desc.osflags.glow);
 
   if (m_desc.flasher) {
     m_desc.flash_filename = flashFilename;
     m_desc.flash_filename_focus = flashFilenameFocus;
-    if (m_desc.osflags & OBF_FLASH)
+    if (m_desc.osflags.flash)
       m_desc.flash_time = ui->IDC_BRIEF_BT_FLASHSTART->text().toFloat();
   } else {
     m_desc.flash_filename.clear();
@@ -295,24 +222,27 @@ void BriefButtonDialog::onOk() {
   m_desc.y = ui->IDC_BRIEF_BT_Y->text().toInt();
   m_desc.jump_page = ui->IDC_BRIEF_BT_JUMP_SCREEN->text().toInt();
 
-  int bi = 0;
-  for (int i = 0; i < (int)buttonRadios.size(); i++) {
-    if (auto *rb = findChild<QRadioButton*>(buttonRadios[i]); rb && rb->isChecked()) {
-      bi = i;
-      break;
-    }
-  }
-  m_desc.button_type = buttonRadioValues[bi];
+  if (ui->IDC_BRIEF_BT_SCROLLUP->isChecked())
+    m_desc.button_type = tc_button_type::up_arrow;
+  else if (ui->IDC_BRIEF_BT_SCROLLDOWN->isChecked())
+    m_desc.button_type = tc_button_type::down_arrow;
+  else if (ui->IDC_BRIEF_BT_NEXTSCREEN->isChecked())
+    m_desc.button_type = tc_button_type::next_page;
+  else if (ui->IDC_BRIEF_BT_PREVSCREEN->isChecked())
+    m_desc.button_type = tc_button_type::prev_page;
+  else if (ui->IDC_BRIEF_BT_QUIT->isChecked())
+    m_desc.button_type = tc_button_type::quit;
+  else if (ui->IDC_BRIEF_BT_JUMP->isChecked())
+    m_desc.button_type = tc_button_type::jump;
+  else
+    m_desc.button_type = tc_button_type::next_page;
 
-  int ci = 0;
-  for (int i = 0; i < (int)clickRadios.size(); i++) {
-    if (auto *rb = findChild<QRadioButton*>(clickRadios[i]); rb && rb->isChecked()) {
-      ci = i;
-      break;
-    }
-  }
-  m_desc.click_type = (ci == 0) ? kClickCursorClickUp : ((ci == 1) ? kClickCursorClickDown
-                                                                   : kClickCursorHold);
+  if (ui->IDC_BRIEF_BT_MOUSEUP->isChecked())
+    m_desc.click_type = tc_click_type::click_up;
+  else if (ui->IDC_BRIEF_BT_MOUSEDOWN->isChecked())
+    m_desc.click_type = tc_click_type::click_down;
+  else
+    m_desc.click_type = tc_click_type::hold;
 
   m_desc.filename = filename;
   m_desc.filename_focus = filenameFocus;

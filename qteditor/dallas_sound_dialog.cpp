@@ -36,14 +36,8 @@ DallasSoundDialog::DallasSoundDialog(QWidget *parent)
       if (Sounds[i].used)
         m_list->addItem(QString::fromStdString(Sounds[i].name));
   }
-  {
-    QPushButton *b = ui->IDC_PLAY_SOUND_BUTTON;
-    connect(b, &QPushButton::clicked, this, &DallasSoundDialog::onPlay);
-  }
-  {
-    QPushButton *b = ui->IDC_STOP_SOUNDS_BUTTON;
-    connect(b, &QPushButton::clicked, this, &DallasSoundDialog::onStop);
-  }
+  connect(ui->IDC_PLAY_SOUND_BUTTON, &QPushButton::clicked, this, &DallasSoundDialog::onPlay);
+  connect(ui->IDC_STOP_SOUNDS_BUTTON, &QPushButton::clicked, this, &DallasSoundDialog::onStop);
 }
 
 DallasSoundDialog::~DallasSoundDialog() { delete ui; }

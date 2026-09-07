@@ -48,10 +48,7 @@ OrphanRemoveDialog::OrphanRemoveDialog(QWidget *parent)
     }
     if (orphans == 0)
       m_list->addItem("No orphans found.");
-    {
-      QLabel *label = ui->IDC_STATUS;
-      label->setText(QString("Scanned %1 objects; %2 orphans.").arg(Highest_object_index + 1).arg(orphans));
-    }
+    ui->IDC_STATUS->setText(QString("Scanned %1 objects; %2 orphans.").arg(Highest_object_index + 1).arg(orphans));
   }
 }
 

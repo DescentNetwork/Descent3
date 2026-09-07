@@ -19,21 +19,15 @@ ConfigCompilerDialog::ConfigCompilerDialog(QWidget *parent)
 {
   ui->setupUi(this);
 
-  {
-    QPushButton *b = ui->IDC_BROWSE;
-    connect(b, &QPushButton::clicked, this, [this]() {
+      connect(ui->IDC_BROWSE, &QPushButton::clicked, this, [this]() {
       const QString start = ui->IDC_COMPILER ? ui->IDC_COMPILER->text() : QString();
       const QString path = QFileDialog::getOpenFileName(
           this, tr("Select Script Compiler"), start, tr("Applications (*);;All files (*)"));
       if (!path.isEmpty() && ui->IDC_COMPILER)
         ui->IDC_COMPILER->setText(path);
     });
-  }
 
-  {
-    QPushButton *done = ui->IDOK;
-    connect(done, &QPushButton::clicked, this, &ConfigCompilerDialog::accept);
-  }
+  connect(ui->IDOK, &QPushButton::clicked, this, &ConfigCompilerDialog::accept);
 
   QSettings settings;
   QString compiler;
@@ -44,39 +38,15 @@ ConfigCompilerDialog::ConfigCompilerDialog(QWidget *parent)
   if (ui->IDC_COMPILER)
     ui->IDC_COMPILER->setText(compiler);
 
-  {
-    QRadioButton *none = ui->IDC_WARN_NONE;
-    none->setChecked(warning == 0);
-  }
-  {
-    QRadioButton *low = ui->IDC_WARN_LOW;
-    low->setChecked(warning == 1);
-  }
-  {
-    QRadioButton *med = ui->IDC_WARN_MED;
-    med->setChecked(warning == 2);
-  }
-  {
-    QRadioButton *high = ui->IDC_WARN_HIGH;
-    high->setChecked(warning == 3);
-  }
-  {
-    QRadioButton *highest = ui->IDC_RADIO8;
-    highest->setChecked(warning == 4 || warning == kDefaultWarning);
-  }
+  ui->IDC_WARN_NONE->setChecked(warning == 0);
+  ui->IDC_WARN_LOW->setChecked(warning == 1);
+  ui->IDC_WARN_MED->setChecked(warning == 2);
+  ui->IDC_WARN_HIGH->setChecked(warning == 3);
+  ui->IDC_RADIO8->setChecked(warning == 4 || warning == kDefaultWarning);
 
-  {
-    QRadioButton *opt = ui->IDC_OPTIMIZE;
-    opt->setChecked(debug == 0);
-  }
-  {
-    QRadioButton *coff = ui->IDC_COFF;
-    coff->setChecked(debug == 1);
-  }
-  {
-    QRadioButton *c7 = ui->IDC_C7;
-    c7->setChecked(debug == 2 || debug == kDefaultDebug);
-  }
+  ui->IDC_OPTIMIZE->setChecked(debug == 0);
+  ui->IDC_COFF->setChecked(debug == 1);
+  ui->IDC_C7->setChecked(debug == 2 || debug == kDefaultDebug);
 }
 
 ConfigCompilerDialog::~ConfigCompilerDialog() { delete ui; }

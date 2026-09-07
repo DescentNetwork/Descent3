@@ -34,14 +34,8 @@ ScriptEditorDialog::ScriptEditorDialog(const QString &module, QWidget *parent)
     : QDialog(parent), ui(new Ui::ScriptEditorDialog), m_module(module)
 {
   ui->setupUi(this);
-  {
-    QLabel *label = ui->IDC_SCRMOD_BOX;
-    label->setText(module.isEmpty() ? "(new script)" : module);
-  }
-  {
-    QPushButton *b = ui->IDC_SCRIPT_COMPILE;
-    connect(b, &QPushButton::clicked, this, &ScriptEditorDialog::onCompile);
-  }
+  ui->IDC_SCRMOD_BOX->setText(module.isEmpty() ? "(new script)" : module);
+  connect(ui->IDC_SCRIPT_COMPILE, &QPushButton::clicked, this, &ScriptEditorDialog::onCompile);
 }
 
 ScriptEditorDialog::~ScriptEditorDialog() { delete ui; }

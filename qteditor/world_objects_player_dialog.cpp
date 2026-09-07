@@ -50,116 +50,65 @@ WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::WorldObjectsPlayerDialog)
 {
   ui->setupUi(this);
-  {
-    QPushButton *b = ui->IDC_ADD_PSHIP;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onAddPship);
-  }
-  {
-    QPushButton *b = ui->IDC_PSHIP_DELETE;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipDelete);
-  }
-  {
-    QPushButton *b = ui->IDC_PSHIP_LOCK;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipLock);
-  }
-  {
-    QPushButton *b = ui->IDC_PSHIP_CHECKIN;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipCheckin);
-  }
-  {
-    QPushButton *b = ui->IDC_PSHIPS_OUT;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipsOut);
-  }
-  {
-    QPushButton *b = ui->IDC_PSHIP_NEXT;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipNext);
-  }
-  {
-    QPushButton *b = ui->IDC_PSHIP_PREV;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipPrev);
-  }
-  {
-    QPushButton *b = ui->IDC_PSHIP_LOAD_MODEL;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipLoadModel);
-  }
-  {
-    QPushButton *b = ui->IDC_PSHIP_DYING_MODEL;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipDyingModel);
-  }
-  {
-    QPushButton *b = ui->IDC_NULL_DYING;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onNullDying);
-  }
-  {
-    QPushButton *b = ui->IDC_EDIT_WEAPONS;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onEditWeapons);
-  }
-  {
-    QPushButton *b = ui->IDC_PSHIP_COCKPIT;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipCockpit);
-  }
-  {
-    QPushButton *b = ui->IDC_PSHIP_EDIT_PHYSICS;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipEditPhysics);
-  }
-  {
-    QPushButton *b = ui->IDC_NOLOD;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onNolod);
-  }
+  connect(ui->IDC_ADD_PSHIP, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onAddPship);
+  connect(ui->IDC_PSHIP_DELETE, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipDelete);
+  connect(ui->IDC_PSHIP_LOCK, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipLock);
+  connect(ui->IDC_PSHIP_CHECKIN, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipCheckin);
+  connect(ui->IDC_PSHIPS_OUT, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipsOut);
+  connect(ui->IDC_PSHIP_NEXT, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipNext);
+  connect(ui->IDC_PSHIP_PREV, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipPrev);
+  connect(ui->IDC_PSHIP_LOAD_MODEL, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipLoadModel);
+  connect(ui->IDC_PSHIP_DYING_MODEL, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipDyingModel);
+  connect(ui->IDC_NULL_DYING, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onNullDying);
+  connect(ui->IDC_EDIT_WEAPONS, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onEditWeapons);
+  connect(ui->IDC_PSHIP_COCKPIT, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipCockpit);
+  connect(ui->IDC_PSHIP_EDIT_PHYSICS, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onPshipEditPhysics);
+  connect(ui->IDC_NOLOD, &QPushButton::clicked, this, &WorldObjectsPlayerDialog::onNolod);
 
-  {
-    QComboBox *combo = ui->IDC_PSHIP_PULLDOWN;
-    connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
+      connect(ui->IDC_PSHIP_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this,
     &WorldObjectsPlayerDialog::onPshipPulldownChanged);
-  }
 
-  const char *edits[] = {"IDC_PSHIP_NAME_EDIT", "IDC_PSHIP_COCKPIT_EDIT", "IDC_SHIP_ARMOR_EDIT",
-                         "IDC_LOD_DISTANCE_EDIT"};
-  for (const char *name : edits) {
-    if (QLineEdit *edit = findChild<QLineEdit*>(name))
-      connect(edit, &QLineEdit::editingFinished, this, [this, name]() {
-        const int n = D3EditState.current_ship;
-        if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
-          return;
-        if (QString::compare(name, "IDC_PSHIP_COCKPIT_EDIT") == 0)
-          Ships[n].cockpit_name = findChild<QLineEdit*>(name)->text().toStdString();
-        else if (QString::compare(name, "IDC_SHIP_ARMOR_EDIT") == 0) {
-          float val = findChild<QLineEdit*>(name)->text().toFloat();
-          if (val < .05f)
-            val = .05f;
-          if (val > 10)
-            val = 10;
-          Ships[n].armor_scalar = val;
-          updateDialog();
-        } else if (QString::compare(name, "IDC_LOD_DISTANCE_EDIT") == 0) {
-          const float dist = findChild<QLineEdit*>(name)->text().toFloat();
-          if (dist < 0)
-            return;
-          if (m_lod == 1)
-            Ships[n].med_lod_distance = dist;
-          else if (m_lod == 2)
-            Ships[n].lo_lod_distance = dist;
-        }
-      });
-  }
+  connect(ui->IDC_PSHIP_NAME_EDIT, &QLineEdit::editingFinished, this, [this]() {
+    const int n = D3EditState.current_ship;
+    if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
+      return;
+  });
+  connect(ui->IDC_PSHIP_COCKPIT_EDIT, &QLineEdit::editingFinished, this, [this]() {
+    const int n = D3EditState.current_ship;
+    if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
+      return;
+    Ships[n].cockpit_name = ui->IDC_PSHIP_COCKPIT_EDIT->text().toStdString();
+  });
+  connect(ui->IDC_SHIP_ARMOR_EDIT, &QLineEdit::editingFinished, this, [this]() {
+    const int n = D3EditState.current_ship;
+    if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
+      return;
+    float val = ui->IDC_SHIP_ARMOR_EDIT->text().toFloat();
+    if (val < .05f)
+      val = .05f;
+    if (val > 10)
+      val = 10;
+    Ships[n].armor_scalar = val;
+    updateDialog();
+  });
+  connect(ui->IDC_LOD_DISTANCE_EDIT, &QLineEdit::editingFinished, this, [this]() {
+    const int n = D3EditState.current_ship;
+    if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
+      return;
+    const float dist = ui->IDC_LOD_DISTANCE_EDIT->text().toFloat();
+    if (dist < 0)
+      return;
+    if (m_lod == 1)
+      Ships[n].med_lod_distance = dist;
+    else if (m_lod == 2)
+      Ships[n].lo_lod_distance = dist;
+  });
 
-  {
-    QCheckBox *cb = ui->IDC_DEFAULTALLOW;
-    connect(cb, &QCheckBox::toggled, this, &WorldObjectsPlayerDialog::onDefaultAllowToggled);
-  }
+  connect(ui->IDC_DEFAULTALLOW, &QCheckBox::toggled, this, &WorldObjectsPlayerDialog::onDefaultAllowToggled);
 
-  {
-    QRadioButton *rb = ui->IDC_HIRES_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldObjectsPlayerDialog::onHiresRadio);
-  }
-  {
-    QRadioButton *rb = ui->IDC_MEDRES_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldObjectsPlayerDialog::onMedresRadio);
-  }
-  {
-    QRadioButton *rb = ui->IDC_LORES_RADIO;
-    connect(rb, &QRadioButton::clicked, this, &WorldObjectsPlayerDialog::onLoresRadio);
-  }
+  connect(ui->IDC_HIRES_RADIO, &QRadioButton::clicked, this, &WorldObjectsPlayerDialog::onHiresRadio);
+  connect(ui->IDC_MEDRES_RADIO, &QRadioButton::clicked, this, &WorldObjectsPlayerDialog::onMedresRadio);
+  connect(ui->IDC_LORES_RADIO, &QRadioButton::clicked, this, &WorldObjectsPlayerDialog::onLoresRadio);
 
   m_lod = 0;
   updateDialog();
@@ -168,23 +117,12 @@ WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent)
 WorldObjectsPlayerDialog::~WorldObjectsPlayerDialog() { delete ui; }
 
 void WorldObjectsPlayerDialog::updateDialog() {
-  {
-    QPushButton *next = ui->IDC_PSHIP_NEXT;
-    next->setEnabled(Num_ships >= 1);
-  }
-  {
-    QPushButton *prev = ui->IDC_PSHIP_PREV;
-    prev->setEnabled(Num_ships >= 1);
-  }
-  {
-    QPushButton *cockpit = ui->IDC_PSHIP_COCKPIT;
-    cockpit->setEnabled(Num_ships >= 1);
-  }
+  ui->IDC_PSHIP_NEXT->setEnabled(Num_ships >= 1);
+  ui->IDC_PSHIP_PREV->setEnabled(Num_ships >= 1);
+  ui->IDC_PSHIP_COCKPIT->setEnabled(Num_ships >= 1);
   if (!Network_up) {
-    for (const char *name : {"IDC_PSHIP_LOCK", "IDC_PSHIP_CHECKIN", "IDC_OVERRIDE"}) {
-      if (auto *w = findChild<QPushButton*>(name))
-        w->setEnabled(false);
-    }
+    ui->IDC_PSHIP_LOCK->setEnabled(false);
+    ui->IDC_PSHIP_CHECKIN->setEnabled(false);
     return;
   }
   if (Num_ships < 1)
@@ -194,10 +132,7 @@ void WorldObjectsPlayerDialog::updateDialog() {
   if (!Ships[n].used)
     n = D3EditState.current_ship = GetNextShip(n);
 
-  {
-    QLineEdit *edit = ui->IDC_PSHIP_NAME_EDIT;
-    edit->setText(QString::fromStdString(Ships[n].name));
-  }
+  ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(Ships[n].name));
 
   {
     QLineEdit *edit = ui->IDC_PSHIP_MODEL_NAME_EDIT;
@@ -234,36 +169,21 @@ void WorldObjectsPlayerDialog::updateDialog() {
     else
       edit->setText(QString::fromStdString(Poly_models[Ships[n].dying_model_handle].name));
   }
-  {
-    QLineEdit *edit = ui->IDC_PSHIP_COCKPIT_EDIT;
-    edit->setText(QString::fromStdString(Ships[n].cockpit_name));
-  }
-  {
-    QLineEdit *edit = ui->IDC_SHIP_ARMOR_EDIT;
-    edit->setText(QString::number(Ships[n].armor_scalar));
-  }
+  ui->IDC_PSHIP_COCKPIT_EDIT->setText(QString::fromStdString(Ships[n].cockpit_name));
+  ui->IDC_SHIP_ARMOR_EDIT->setText(QString::number(Ships[n].armor_scalar));
 
   {
     QPushButton *checkin = ui->IDC_PSHIP_CHECKIN;
     if (mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP) == -1) {
       checkin->setEnabled(false);
-      {
-        QPushButton *lock = ui->IDC_PSHIP_LOCK;
-        lock->setEnabled(true);
-      }
+      ui->IDC_PSHIP_LOCK->setEnabled(true);
     } else {
       checkin->setEnabled(true);
-      {
-        QPushButton *lock = ui->IDC_PSHIP_LOCK;
-        lock->setEnabled(false);
-      }
+      ui->IDC_PSHIP_LOCK->setEnabled(false);
     }
   }
 
-  {
-    QCheckBox *cb = ui->IDC_DEFAULTALLOW;
-    cb->setChecked(Ships[n].flags & SF_DEFAULT_ALLOW);
-  }
+  ui->IDC_DEFAULTALLOW->setChecked(Ships[n].flags & SF_DEFAULT_ALLOW);
 
   {
     QComboBox *combo = ui->IDC_PSHIP_PULLDOWN;
@@ -285,18 +205,9 @@ void WorldObjectsPlayerDialog::updateDialog() {
       nolod->setEnabled(Ships[n].lo_render_handle != -1);
   }
 
-  {
-    QRadioButton *rb = ui->IDC_HIRES_RADIO;
-    rb->setChecked(m_lod == 0);
-  }
-  {
-    QRadioButton *rb = ui->IDC_MEDRES_RADIO;
-    rb->setChecked(m_lod == 1);
-  }
-  {
-    QRadioButton *rb = ui->IDC_LORES_RADIO;
-    rb->setChecked(m_lod == 2);
-  }
+  ui->IDC_HIRES_RADIO->setChecked(m_lod == 0);
+  ui->IDC_MEDRES_RADIO->setChecked(m_lod == 1);
+  ui->IDC_LORES_RADIO->setChecked(m_lod == 2);
 }
 
 void WorldObjectsPlayerDialog::onAddPship() {
@@ -699,10 +610,7 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
 
 void WorldObjectsPlayerDialog::onKillfocusCockpit() {
   const int n = D3EditState.current_ship;
-  {
-    QLineEdit *edit = ui->IDC_PSHIP_COCKPIT_EDIT;
-    Ships[n].cockpit_name = edit->text().toStdString();
-  }
+  Ships[n].cockpit_name = ui->IDC_PSHIP_COCKPIT_EDIT->text().toStdString();
 }
 
 void WorldObjectsPlayerDialog::onKillfocusArmor() {

@@ -53,7 +53,6 @@ private:
   void enableDisableBounce();
   void enableDisableTurnRoll();
   void enableDisableThrust();
-  void setWidgetEnabled(const char *name, bool enabled);
 
   void setPhysicsData(const physics_info *physInfo);
   void getPhysicsData(physics_info *physInfo) const;

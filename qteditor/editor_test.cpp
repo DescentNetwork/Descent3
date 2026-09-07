@@ -837,12 +837,17 @@ private slots:
     efx->description = "intro";
     efx->text = "Welcome to the mission.";
     efx->desc.text_desc().type = TC_TEXT_SCROLL;
-    efx->desc.text_desc().flags = TC_TEXTF_L2R;
+    efx->desc.text_desc().mode = tc_text_mode::scroll_l2r;
     efx->desc.text_desc().speed = 2.0f;
     efx->desc.text_desc().waittime = 1.5f;
     efx->desc.text_desc().font = 0; // sm_brief
     efx->desc.text_desc().color = GR_RGB(10, 20, 30);
-    efx->desc.text_desc().caps = TCTD_FONT | TCTD_COLOR | TCTD_SPEED | TCTD_WAITTIME | TCTD_TEXTBOX | TCTD_SCROLL;
+    efx->desc.text_desc().caps.font = true;
+    efx->desc.text_desc().caps.color = true;
+    efx->desc.text_desc().caps.speed = true;
+    efx->desc.text_desc().caps.waittime = true;
+    efx->desc.text_desc().caps.textbox = true;
+    efx->desc.text_desc().caps.scroll = true;
     Briefing_screens[0].root_effect = 0;
 
     const QString tmp = QDir::tempPath() + "/_test_brief";
@@ -862,7 +867,7 @@ private slots:
     QVERIFY(Briefing_screens[0].used);
     QCOMPARE(Briefing_screens[0].root_effect, 0);
     QCOMPARE(Briefing_screens[0].effects[0].type, BE_TEXT);
-    QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc().flags, TC_TEXTF_L2R);
+    QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc().mode, tc_text_mode::scroll_l2r);
     QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc().speed, 2.0f);
     QCOMPARE(Briefing_screens[0].effects[0].desc.text_desc().waittime, 1.5f);
     QCOMPARE(QString::fromStdString(Briefing_screens[0].effects[0].text),

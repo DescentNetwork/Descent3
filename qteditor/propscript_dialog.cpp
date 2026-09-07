@@ -41,14 +41,8 @@ PropScriptDialog::PropScriptDialog(QWidget *parent)
     for (const QString &n : names)
       m_list->addItem(QFileInfo(n).completeBaseName());
   }
-  {
-    QPushButton *b = ui->IDC_PARAMETERS;
-    connect(b, &QPushButton::clicked, this, &PropScriptDialog::onParameters);
-  }
-  {
-    QPushButton *b = ui->IDC_SCRIPTSEL_SCRIPT_WIZ;
-    connect(b, &QPushButton::clicked, this, &PropScriptDialog::onScriptWizard);
-  }
+  connect(ui->IDC_PARAMETERS, &QPushButton::clicked, this, &PropScriptDialog::onParameters);
+  connect(ui->IDC_SCRIPTSEL_SCRIPT_WIZ, &QPushButton::clicked, this, &PropScriptDialog::onScriptWizard);
 }
 
 PropScriptDialog::~PropScriptDialog() { delete ui; }

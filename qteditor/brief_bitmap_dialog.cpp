@@ -36,24 +36,18 @@
 
 namespace {
 
-// Bitmap effect radios indexed by m_iEffectType (0..8), mirroring win32.
-static const std::array<const char *, 9> effectRadios = {
-    "IDC_BRIEF_B_STATIC",     "IDC_BRIEF_B_BLURIN",      "IDC_BRIEF_B_BLUROUT",
-    "IDC_BRIEF_B_SCANIN",     "IDC_BRIEF_B_SCANOUT",     "IDC_BRIEF_B_INVIN",
-    "IDC_BRIEF_B_INVOUT",     "IDC_BRIEF_B_STRETCHIN",   "IDC_BRIEF_B_STRETCHOUT"};
-
 int effectTypeFromDesc(const TCBMPDESC &desc) {
   switch (desc.type) {
   case TC_BMP_STATIC:
     return 0;
   case TC_BMP_BLUR:
-    return desc.flags == TC_BMPF_IN ? 1 : 2;
+    return desc.mode == tc_bmp_mode::in ? 1 : 2;
   case TC_BMP_SCANLINE:
-    return desc.flags == TC_BMPF_IN ? 3 : 4;
+    return desc.mode == tc_bmp_mode::in ? 3 : 4;
   case TC_BMP_INVERT:
-    return desc.flags == TC_BMPF_IN ? 5 : 6;
+    return desc.mode == tc_bmp_mode::in ? 5 : 6;
   case TC_BMP_STRETCH:
-    return desc.flags == TC_BMPF_IN ? 7 : 8;
+    return desc.mode == tc_bmp_mode::in ? 7 : 8;
   default:
     return 0;
   }
@@ -63,39 +57,39 @@ void effectTypeToDesc(int effectType, TCBMPDESC *desc) {
   switch (effectType) {
   case 0:
     desc->type = TC_BMP_STATIC;
-    desc->flags = TC_BMPF_IN;
+    desc->mode = tc_bmp_mode::in;
     break;
   case 1:
     desc->type = TC_BMP_BLUR;
-    desc->flags = TC_BMPF_IN;
+    desc->mode = tc_bmp_mode::in;
     break;
   case 2:
     desc->type = TC_BMP_BLUR;
-    desc->flags = TC_BMPF_OUT;
+    desc->mode = tc_bmp_mode::out;
     break;
   case 3:
     desc->type = TC_BMP_SCANLINE;
-    desc->flags = TC_BMPF_IN;
+    desc->mode = tc_bmp_mode::in;
     break;
   case 4:
     desc->type = TC_BMP_SCANLINE;
-    desc->flags = TC_BMPF_OUT;
+    desc->mode = tc_bmp_mode::out;
     break;
   case 5:
     desc->type = TC_BMP_INVERT;
-    desc->flags = TC_BMPF_IN;
+    desc->mode = tc_bmp_mode::in;
     break;
   case 6:
     desc->type = TC_BMP_INVERT;
-    desc->flags = TC_BMPF_OUT;
+    desc->mode = tc_bmp_mode::out;
     break;
   case 7:
     desc->type = TC_BMP_STRETCH;
-    desc->flags = TC_BMPF_IN;
+    desc->mode = tc_bmp_mode::in;
     break;
   case 8:
     desc->type = TC_BMP_STRETCH;
-    desc->flags = TC_BMPF_OUT;
+    desc->mode = tc_bmp_mode::out;
     break;
   }
 }
@@ -111,18 +105,19 @@ BriefBitmapDialog::BriefBitmapDialog(TCBMPDESC *desc, QWidget *parent)
 
   if (desc) {
     m_desc.caps = desc->caps;
-    if (desc->caps & TCBD_XY) {
+    if (desc->caps.xy) {
       m_desc.x = desc->x;
       m_desc.y = desc->y;
     }
-    if (desc->caps & TCBD_LOOPING)
+    if (desc->caps.looping)
       m_desc.looping = desc->looping;
-    if (desc->caps & TCBD_WAITTIME)
+    if (desc->caps.waittime)
       m_desc.waittime = desc->waittime;
-    if (desc->caps & TCBD_SPEED)
+    if (desc->caps.speed)
       m_desc.speed = desc->speed;
     m_desc.type = desc->type;
-    m_desc.flags = desc->flags;
+    m_desc.mode = desc->mode;
+    m_desc.no_early_render = desc->no_early_render;
     m_desc.filename = desc->filename;
     m_desc.mission_mask_set = desc->mission_mask_set;
     m_desc.mission_mask_unset = desc->mission_mask_unset;
@@ -134,11 +129,17 @@ BriefBitmapDialog::BriefBitmapDialog(TCBMPDESC *desc, QWidget *parent)
   ui->IDC_BRIEF_B_STARTTIME->setText(QString::number(m_desc.waittime));
   ui->IDC_BRIEF_B_X->setText(QString::number(m_desc.x));
   ui->IDC_BRIEF_B_Y->setText(QString::number(m_desc.y));
-  ui->IDC_BRIEF_B_NORENDER->setChecked((m_desc.flags & TC_NOEARLYRENDER) != 0);
+  ui->IDC_BRIEF_B_NORENDER->setChecked(m_desc.no_early_render);
 
-  if (m_effectType >= 0 && m_effectType < (int)effectRadios.size())
-    if (auto *rb = findChild<QRadioButton*>(effectRadios[m_effectType]))
-      rb->setChecked(true);
+  ui->IDC_BRIEF_B_STATIC->setChecked(m_effectType == 0);
+  ui->IDC_BRIEF_B_BLURIN->setChecked(m_effectType == 1);
+  ui->IDC_BRIEF_B_BLUROUT->setChecked(m_effectType == 2);
+  ui->IDC_BRIEF_B_SCANIN->setChecked(m_effectType == 3);
+  ui->IDC_BRIEF_B_SCANOUT->setChecked(m_effectType == 4);
+  ui->IDC_BRIEF_B_INVIN->setChecked(m_effectType == 5);
+  ui->IDC_BRIEF_B_INVOUT->setChecked(m_effectType == 6);
+  ui->IDC_BRIEF_B_STRETCHIN->setChecked(m_effectType == 7);
+  ui->IDC_BRIEF_B_STRETCHOUT->setChecked(m_effectType == 8);
 
   if (auto *combo = ui->IDC_BRIEF_B_PREDEF) {
     combo->clear();
@@ -215,7 +216,10 @@ void BriefBitmapDialog::onOk() {
     return;
   }
 
-  m_desc.caps = TCBD_XY | TCBD_LOOPING | TCBD_WAITTIME | TCBD_SPEED;
+  m_desc.caps.xy = true;
+  m_desc.caps.looping = true;
+  m_desc.caps.waittime = true;
+  m_desc.caps.speed = true;
   m_desc.filename = filename.toStdString();
   m_desc.speed = ui->IDC_BRIEF_B_SPEED->text().toFloat();
   m_desc.waittime = ui->IDC_BRIEF_B_STARTTIME->text().toFloat();
@@ -223,18 +227,30 @@ void BriefBitmapDialog::onOk() {
   m_desc.y = ui->IDC_BRIEF_B_Y->text().toInt();
 
   int effectType = 0;
-  for (int i = 0; i < (int)effectRadios.size(); i++) {
-    if (auto *rb = findChild<QRadioButton*>(effectRadios[i]); rb && rb->isChecked()) {
-      effectType = i;
-      break;
-    }
-  }
+  if (ui->IDC_BRIEF_B_STATIC->isChecked())
+    effectType = 0;
+  else if (ui->IDC_BRIEF_B_BLURIN->isChecked())
+    effectType = 1;
+  else if (ui->IDC_BRIEF_B_BLUROUT->isChecked())
+    effectType = 2;
+  else if (ui->IDC_BRIEF_B_SCANIN->isChecked())
+    effectType = 3;
+  else if (ui->IDC_BRIEF_B_SCANOUT->isChecked())
+    effectType = 4;
+  else if (ui->IDC_BRIEF_B_INVIN->isChecked())
+    effectType = 5;
+  else if (ui->IDC_BRIEF_B_INVOUT->isChecked())
+    effectType = 6;
+  else if (ui->IDC_BRIEF_B_STRETCHIN->isChecked())
+    effectType = 7;
+  else if (ui->IDC_BRIEF_B_STRETCHOUT->isChecked())
+    effectType = 8;
   effectTypeToDesc(effectType, &m_desc);
 
   if (ui->IDC_BRIEF_B_NORENDER->isChecked())
-    m_desc.flags |= TC_NOEARLYRENDER;
+    m_desc.no_early_render = true;
   else
-    m_desc.flags &= ~TC_NOEARLYRENDER;
+    m_desc.no_early_render = false;
 
   accept();
 }

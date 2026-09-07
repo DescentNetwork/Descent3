@@ -30,99 +30,32 @@
 #include "room_external.h"
 
 
-namespace {
-
-} // namespace
-
 TextureKeypad::TextureKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::TextureKeypad)
 {
   ui->setupUi(this);
-  {
-    QPushButton *b = ui->IDC_TEXPAD_SLIDELEFT;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onSlideLeft);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_SLIDERIGHT;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onSlideRight);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_SLIDEUP;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onSlideUp);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_SLIDEDOWN;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onSlideDown);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_ROTLEFT;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onRotLeft);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_ROTRIGHT;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onRotRight);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_ROTATE90;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onRotate90);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_FLIPX;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onFlipX);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_FLIPY;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onFlipY);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_EXPAND_U;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onExpandU);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_CONTRACT_U;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onContractU);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_EXPAND_V;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onExpandV);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_CONTRACT_V;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onContractV);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_STRETCHLESS;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onStretchLess);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_STRETCHMORE;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onStretchMore);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_SETDEFAULT;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onSetDefault);
-  }
-  {
-    QPushButton *b = ui->IDC_TEXPAD_GRAB;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onGrab);
-  }
-  {
-    QPushButton *b = ui->IDC_REPLACE_TEXTURE;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onReplace);
-  }
-  {
-    QPushButton *b = ui->IDC_FACE_MAP;
-    connect(b, &QPushButton::clicked, this, &TextureKeypad::onFaceMap);
-  }
-  {
-    QLineEdit *edit = ui->IDC_TEXSCALE_EDIT;
-    connect(edit, &QLineEdit::editingFinished, this, &TextureKeypad::onTexScaleEdited);
-  }
+  connect(ui->IDC_TEXPAD_SLIDELEFT, &QPushButton::clicked, this, &TextureKeypad::onSlideLeft);
+  connect(ui->IDC_TEXPAD_SLIDERIGHT, &QPushButton::clicked, this, &TextureKeypad::onSlideRight);
+  connect(ui->IDC_TEXPAD_SLIDEUP, &QPushButton::clicked, this, &TextureKeypad::onSlideUp);
+  connect(ui->IDC_TEXPAD_SLIDEDOWN, &QPushButton::clicked, this, &TextureKeypad::onSlideDown);
+  connect(ui->IDC_TEXPAD_ROTLEFT, &QPushButton::clicked, this, &TextureKeypad::onRotLeft);
+  connect(ui->IDC_TEXPAD_ROTRIGHT, &QPushButton::clicked, this, &TextureKeypad::onRotRight);
+  connect(ui->IDC_TEXPAD_ROTATE90, &QPushButton::clicked, this, &TextureKeypad::onRotate90);
+  connect(ui->IDC_TEXPAD_FLIPX, &QPushButton::clicked, this, &TextureKeypad::onFlipX);
+  connect(ui->IDC_TEXPAD_FLIPY, &QPushButton::clicked, this, &TextureKeypad::onFlipY);
+  connect(ui->IDC_TEXPAD_EXPAND_U, &QPushButton::clicked, this, &TextureKeypad::onExpandU);
+  connect(ui->IDC_TEXPAD_CONTRACT_U, &QPushButton::clicked, this, &TextureKeypad::onContractU);
+  connect(ui->IDC_TEXPAD_EXPAND_V, &QPushButton::clicked, this, &TextureKeypad::onExpandV);
+  connect(ui->IDC_TEXPAD_CONTRACT_V, &QPushButton::clicked, this, &TextureKeypad::onContractV);
+  connect(ui->IDC_TEXPAD_STRETCHLESS, &QPushButton::clicked, this, &TextureKeypad::onStretchLess);
+  connect(ui->IDC_TEXPAD_STRETCHMORE, &QPushButton::clicked, this, &TextureKeypad::onStretchMore);
+  connect(ui->IDC_TEXPAD_SETDEFAULT, &QPushButton::clicked, this, &TextureKeypad::onSetDefault);
+  connect(ui->IDC_TEXPAD_GRAB, &QPushButton::clicked, this, &TextureKeypad::onGrab);
+  connect(ui->IDC_REPLACE_TEXTURE, &QPushButton::clicked, this, &TextureKeypad::onReplace);
+  connect(ui->IDC_FACE_MAP, &QPushButton::clicked, this, &TextureKeypad::onFaceMap);
+  connect(ui->IDC_TEXSCALE_EDIT, &QLineEdit::editingFinished, this, &TextureKeypad::onTexScaleEdited);
 
-  {
-    QLineEdit *edit = ui->IDC_TEXSCALE_EDIT;
-    edit->setText(QString::number(D3EditState.texscale));
-  }
+  ui->IDC_TEXSCALE_EDIT->setText(QString::number(D3EditState.texscale));
 
   updateDialog();
 }
@@ -133,31 +66,22 @@ void TextureKeypad::updateDialog() {
   // Editing a face's texture requires a current room + face.
   const bool active = (Curroomp != nullptr && Curroomp->used && Curface >= 0 &&
                        Curface < Curroomp->num_faces);
-  const QList<QWidget *> all = this->findChildren<QWidget *>();
-  for (QWidget *w : all)
+  for (QWidget *w : findChildren<QWidget *>())
     if (w->objectName().startsWith("IDC_TEXPAD") || w->objectName().startsWith("IDC_FACE_MAP"))
       w->setEnabled(active);
-  {
-    QLabel *label = ui->IDC_CURRENT_TEXTURE_NAME;
-    if (active) {
-      const int tmap = Curroomp->faces[Curface].tmap;
-      label->setText(QString("Texture %1").arg(tmap));
-    } else {
-      label->setText("No face selected");
-    }
-  }
+
+  if (active)
+    ui->IDC_CURRENT_TEXTURE_NAME->setText(QString("Texture %1").arg(Curroomp->faces[Curface].tmap));
+  else
+    ui->IDC_CURRENT_TEXTURE_NAME->setText("No face selected");
 }
 
 void TextureKeypad::onSlideLeft() { HTextureSlide(Curroomp, Curface, -1.0f * D3EditState.texscale, 0); }
 void TextureKeypad::onSlideRight() { HTextureSlide(Curroomp, Curface, 1.0f * D3EditState.texscale, 0); }
 void TextureKeypad::onSlideUp() { HTextureSlide(Curroomp, Curface, 0, 1.0f * D3EditState.texscale); }
 void TextureKeypad::onSlideDown() { HTextureSlide(Curroomp, Curface, 0, -1.0f * D3EditState.texscale); }
-void TextureKeypad::onRotLeft() {
-  HTextureRotate(Curroomp, Curface, -0.1f * D3EditState.texscale);
-}
-void TextureKeypad::onRotRight() {
-  HTextureRotate(Curroomp, Curface, 0.1f * D3EditState.texscale);
-}
+void TextureKeypad::onRotLeft() { HTextureRotate(Curroomp, Curface, -0.1f * D3EditState.texscale); }
+void TextureKeypad::onRotRight() { HTextureRotate(Curroomp, Curface, 0.1f * D3EditState.texscale); }
 void TextureKeypad::onRotate90() { HTextureRotate(Curroomp, Curface, 3.14159f / 2.0f); }
 void TextureKeypad::onFlipX() { HTextureFlipX(Curroomp, Curface); }
 void TextureKeypad::onFlipY() { HTextureFlipY(Curroomp, Curface); }
@@ -183,12 +107,9 @@ void TextureKeypad::onReplace() {
 void TextureKeypad::onFaceMap() { onSetDefault(); }
 
 void TextureKeypad::onTexScaleEdited() {
-  {
-    QLineEdit *edit = ui->IDC_TEXSCALE_EDIT;
-    D3EditState.texscale = edit->text().toFloat();
-    if (D3EditState.texscale <= 0)
-      D3EditState.texscale = 1.0f;
-  }
+  D3EditState.texscale = ui->IDC_TEXSCALE_EDIT->text().toFloat();
+  if (D3EditState.texscale <= 0)
+    D3EditState.texscale = 1.0f;
 }
 
 

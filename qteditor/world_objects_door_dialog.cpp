@@ -116,94 +116,58 @@ WorldObjectsDoorDialog::WorldObjectsDoorDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::WorldObjectsDoorDialog)
 {
   ui->setupUi(this);
-  {
-    QPushButton *b = ui->IDC_ADD_DOOR;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onAddDoor);
-  }
-  {
-    QPushButton *b = ui->IDC_DELETE_DOOR;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onDeleteDoor);
-  }
-  {
-    QPushButton *b = ui->IDC_LOCK_DOOR;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onLockDoor);
-  }
-  {
-    QPushButton *b = ui->IDC_CHECKIN_DOOR;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onCheckinDoor);
-  }
-  {
-    QPushButton *b = ui->IDC_DOORS_OUT;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onDoorsOut);
-  }
-  {
-    QPushButton *b = ui->IDC_DOOR_NEXT;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onDoorNext);
-  }
-  {
-    QPushButton *b = ui->IDC_DOOR_PREV;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onDoorPrev);
-  }
-  {
-    QPushButton *b = ui->IDC_DOOR_CHANGE_NAME;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onChangeName);
-  }
-  {
-    QPushButton *b = ui->IDC_LOAD_DOOR_MODEL;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onAddDoor);
-  }
-  {
-    QPushButton *b = ui->IDC_BROWSE;
-    connect(b, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onBrowse);
-  }
+  connect(ui->IDC_ADD_DOOR, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onAddDoor);
+  connect(ui->IDC_DELETE_DOOR, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onDeleteDoor);
+  connect(ui->IDC_LOCK_DOOR, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onLockDoor);
+  connect(ui->IDC_CHECKIN_DOOR, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onCheckinDoor);
+  connect(ui->IDC_DOORS_OUT, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onDoorsOut);
+  connect(ui->IDC_DOOR_NEXT, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onDoorNext);
+  connect(ui->IDC_DOOR_PREV, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onDoorPrev);
+  connect(ui->IDC_DOOR_CHANGE_NAME, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onChangeName);
+  connect(ui->IDC_LOAD_DOOR_MODEL, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onAddDoor);
+  connect(ui->IDC_BROWSE, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onBrowse);
 
-  {
-    QComboBox *combo = ui->IDC_DOOR_PULLDOWN;
-    connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
+      connect(ui->IDC_DOOR_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this,
     &WorldObjectsDoorDialog::onDoorPulldownChanged);
-  }
-  {
-    QComboBox *combo = ui->IDC_DOOR_OPEN_SOUND;
-    connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
+      connect(ui->IDC_DOOR_OPEN_SOUND, qOverload<int>(&QComboBox::currentIndexChanged), this,
     &WorldObjectsDoorDialog::onOpenSoundChanged);
-  }
-  {
-    QComboBox *combo = ui->IDC_DOOR_CLOSE_SOUND;
-    connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
+      connect(ui->IDC_DOOR_CLOSE_SOUND, qOverload<int>(&QComboBox::currentIndexChanged), this,
     &WorldObjectsDoorDialog::onCloseSoundChanged);
-  }
 
-  const char *edits[] = {"IDC_DOOR_OPEN_TIME", "IDC_DOOR_STAYS_OPEN", "IDC_CLOSE_TIME",
-                         "IDC_DOOR_HITPOINTS_EDIT", "IDC_SCRIPTNAME"};
-  for (const char *name : edits) {
-    if (QLineEdit *edit = findChild<QLineEdit*>(name))
-      connect(edit, &QLineEdit::editingFinished, this, [this, name]() {
-        const int n = D3EditState.current_door;
-        if (n < 0 || n >= MAX_DOORS || !Doors[n].used)
-          return;
-        if (QString::compare(name, "IDC_DOOR_OPEN_TIME") == 0)
-          Doors[n].total_open_time = findChild<QLineEdit*>(name)->text().toFloat();
-        else if (QString::compare(name, "IDC_DOOR_STAYS_OPEN") == 0)
-          Doors[n].total_time_open = findChild<QLineEdit*>(name)->text().toFloat();
-        else if (QString::compare(name, "IDC_CLOSE_TIME") == 0)
-          Doors[n].total_close_time = findChild<QLineEdit*>(name)->text().toFloat();
-        else if (QString::compare(name, "IDC_DOOR_HITPOINTS_EDIT") == 0)
-          Doors[n].hit_points = findChild<QLineEdit*>(name)->text().toInt();
-        else if (QString::compare(name, "IDC_SCRIPTNAME") == 0) {
-          const QString text = findChild<QLineEdit*>(name)->text();
-          Doors[n].module_name = text.toStdString();
-        }
-      });
-  }
+      connect(ui->IDC_DOOR_OPEN_TIME, &QLineEdit::editingFinished, this, [this]() {
+      const int n = D3EditState.current_door;
+      if (n < 0 || n >= MAX_DOORS || !Doors[n].used)
+        return;
+      Doors[n].total_open_time = ui->IDC_DOOR_OPEN_TIME->text().toFloat();
+    });
+      connect(ui->IDC_DOOR_STAYS_OPEN, &QLineEdit::editingFinished, this, [this]() {
+      const int n = D3EditState.current_door;
+      if (n < 0 || n >= MAX_DOORS || !Doors[n].used)
+        return;
+      Doors[n].total_time_open = ui->IDC_DOOR_STAYS_OPEN->text().toFloat();
+    });
+      connect(ui->IDC_CLOSE_TIME, &QLineEdit::editingFinished, this, [this]() {
+      const int n = D3EditState.current_door;
+      if (n < 0 || n >= MAX_DOORS || !Doors[n].used)
+        return;
+      Doors[n].total_close_time = ui->IDC_CLOSE_TIME->text().toFloat();
+    });
+      connect(ui->IDC_DOOR_HITPOINTS_EDIT, &QLineEdit::editingFinished, this, [this]() {
+      const int n = D3EditState.current_door;
+      if (n < 0 || n >= MAX_DOORS || !Doors[n].used)
+        return;
+      Doors[n].hit_points = ui->IDC_DOOR_HITPOINTS_EDIT->text().toInt();
+    });
+      connect(ui->IDC_SCRIPTNAME, &QLineEdit::editingFinished, this, [this]() {
+      const int n = D3EditState.current_door;
+      if (n < 0 || n >= MAX_DOORS || !Doors[n].used)
+        return;
+      const QString text = ui->IDC_SCRIPTNAME->text();
+      Doors[n].module_name = text.toStdString();
+    });
 
-  {
-    QCheckBox *cb = ui->IDC_TRANSPARENCY;
-    connect(cb, &QCheckBox::toggled, this, &WorldObjectsDoorDialog::onTransparencyToggled);
-  }
-  {
-    QCheckBox *cb = ui->IDC_DOOR_BLASTABLE;
-    connect(cb, &QCheckBox::toggled, this, &WorldObjectsDoorDialog::onBlastableToggled);
-  }
+  connect(ui->IDC_TRANSPARENCY, &QCheckBox::toggled, this, &WorldObjectsDoorDialog::onTransparencyToggled);
+  connect(ui->IDC_DOOR_BLASTABLE, &QCheckBox::toggled, this, &WorldObjectsDoorDialog::onBlastableToggled);
 
   updateDialog();
 }
@@ -211,22 +175,15 @@ WorldObjectsDoorDialog::WorldObjectsDoorDialog(QWidget *parent)
 WorldObjectsDoorDialog::~WorldObjectsDoorDialog() { delete ui; }
 
 void WorldObjectsDoorDialog::updateDialog() {
-  {
-    QPushButton *next = ui->IDC_DOOR_NEXT;
-    next->setEnabled(Num_doors >= 1);
-  }
-  {
-    QPushButton *prev = ui->IDC_DOOR_PREV;
-    prev->setEnabled(Num_doors >= 1);
-  }
+  ui->IDC_DOOR_NEXT->setEnabled(Num_doors >= 1);
+  ui->IDC_DOOR_PREV->setEnabled(Num_doors >= 1);
   // The Win32 editor unconditionally disabled the lock/checkin/out operations
   // when the network was down. The Qt port must do the same so the table
   // editors are non-functional without a network connection.
   if (!Network_up) {
-    for (const char *name : {"IDC_LOCK_DOOR", "IDC_CHECKIN_DOOR", "IDC_DOORS_OUT"}) {
-      if (auto *w = findChild<QPushButton*>(name))
-        w->setEnabled(false);
-    }
+    ui->IDC_LOCK_DOOR->setEnabled(false);
+    ui->IDC_CHECKIN_DOOR->setEnabled(false);
+    ui->IDC_DOORS_OUT->setEnabled(false);
     return;
   }
   if (Num_doors < 1)
@@ -236,38 +193,17 @@ void WorldObjectsDoorDialog::updateDialog() {
   if (!Doors[n].used)
     n = D3EditState.current_door = GetNextDoor(n);
 
-  {
-    QCheckBox *cb = ui->IDC_TRANSPARENCY;
-    cb->setChecked(Doors[n].flags & DF_SEETHROUGH);
-  }
-  {
-    QCheckBox *cb = ui->IDC_DOOR_BLASTABLE;
-    cb->setChecked(Doors[n].flags & DF_BLASTABLE);
-  }
+  ui->IDC_TRANSPARENCY->setChecked(Doors[n].flags & DF_SEETHROUGH);
+  ui->IDC_DOOR_BLASTABLE->setChecked(Doors[n].flags & DF_BLASTABLE);
 
   const bool blastable = (Doors[n].flags & DF_BLASTABLE) != 0;
 
-  {
-    QLineEdit *edit = ui->IDC_DOOR_MODEL_NAME_EDIT;
-    edit->setText(QString::fromStdString(Poly_models[Doors[n].model_handle].name));
-  }
-  {
-    QLineEdit *edit = ui->IDC_DOOR_OPEN_TIME;
-    edit->setText(QString::number(Doors[n].total_open_time));
-  }
-  {
-    QLineEdit *edit = ui->IDC_DOOR_STAYS_OPEN;
-    edit->setText(QString::number(Doors[n].total_time_open));
-  }
-  {
-    QLineEdit *edit = ui->IDC_CLOSE_TIME;
-    edit->setText(QString::number(Doors[n].total_close_time));
-  }
+  ui->IDC_DOOR_MODEL_NAME_EDIT->setText(QString::fromStdString(Poly_models[Doors[n].model_handle].name));
+  ui->IDC_DOOR_OPEN_TIME->setText(QString::number(Doors[n].total_open_time));
+  ui->IDC_DOOR_STAYS_OPEN->setText(QString::number(Doors[n].total_time_open));
+  ui->IDC_CLOSE_TIME->setText(QString::number(Doors[n].total_close_time));
 
-  {
-    QWidget *w = ui->IDC_DOOR_HITPOINTS_TEXT;
-    w->setEnabled(blastable);
-  }
+  ui->IDC_DOOR_HITPOINTS_TEXT->setEnabled(blastable);
   {
     QLineEdit *edit = ui->IDC_DOOR_HITPOINTS_EDIT;
     edit->setText(QString::number(Doors[n].hit_points));
@@ -278,16 +214,10 @@ void WorldObjectsDoorDialog::updateDialog() {
     QPushButton *checkin = ui->IDC_CHECKIN_DOOR;
     if (mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR) == -1) {
       checkin->setEnabled(false);
-      {
-        QPushButton *lock = ui->IDC_LOCK_DOOR;
-        lock->setEnabled(true);
-      }
+      ui->IDC_LOCK_DOOR->setEnabled(true);
     } else {
       checkin->setEnabled(true);
-      {
-        QPushButton *lock = ui->IDC_LOCK_DOOR;
-        lock->setEnabled(false);
-      }
+      ui->IDC_LOCK_DOOR->setEnabled(false);
     }
   }
 
@@ -547,34 +477,22 @@ void WorldObjectsDoorDialog::onDoorPulldownChanged() {
 
 void WorldObjectsDoorDialog::onKillfocusOpenTime() {
   const int n = D3EditState.current_door;
-  {
-    QLineEdit *edit = ui->IDC_DOOR_OPEN_TIME;
-    Doors[n].total_open_time = edit->text().toFloat();
-  }
+  Doors[n].total_open_time = ui->IDC_DOOR_OPEN_TIME->text().toFloat();
 }
 
 void WorldObjectsDoorDialog::onKillfocusStaysOpen() {
   const int n = D3EditState.current_door;
-  {
-    QLineEdit *edit = ui->IDC_DOOR_STAYS_OPEN;
-    Doors[n].total_time_open = edit->text().toFloat();
-  }
+  Doors[n].total_time_open = ui->IDC_DOOR_STAYS_OPEN->text().toFloat();
 }
 
 void WorldObjectsDoorDialog::onKillfocusCloseTime() {
   const int n = D3EditState.current_door;
-  {
-    QLineEdit *edit = ui->IDC_CLOSE_TIME;
-    Doors[n].total_close_time = edit->text().toFloat();
-  }
+  Doors[n].total_close_time = ui->IDC_CLOSE_TIME->text().toFloat();
 }
 
 void WorldObjectsDoorDialog::onKillfocusHitpoints() {
   const int n = D3EditState.current_door;
-  {
-    QLineEdit *edit = ui->IDC_DOOR_HITPOINTS_EDIT;
-    Doors[n].hit_points = edit->text().toInt();
-  }
+  Doors[n].hit_points = ui->IDC_DOOR_HITPOINTS_EDIT->text().toInt();
 }
 
 void WorldObjectsDoorDialog::onTransparencyToggled(bool checked) {
@@ -610,10 +528,7 @@ void WorldObjectsDoorDialog::onBrowse() {
   const QString name = QFileDialog::getOpenFileName(this, "Select script module", {}, "Modules (*.dll)");
   if (name.isEmpty())
     return;
-  {
-    QLineEdit *edit = ui->IDC_SCRIPTNAME;
-    edit->setText(QFileInfo(name).completeBaseName());
-  }
+  ui->IDC_SCRIPTNAME->setText(QFileInfo(name).completeBaseName());
 }
 
 void WorldObjectsDoorDialog::onKillfocusScriptname() {

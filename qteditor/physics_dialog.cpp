@@ -56,10 +56,7 @@ PhysicsDialog::PhysicsDialog(physics_info *physInfo, QWidget *parent)
 
   connect(this, &QDialog::accept, this, &PhysicsDialog::onOk);
 
-  {
-    QPushButton *copy = ui->IDC_PHYSICS_COPY;
-    connect(copy, &QPushButton::clicked, this, &PhysicsDialog::onCopy);
-  }
+  connect(ui->IDC_PHYSICS_COPY, &QPushButton::clicked, this, &PhysicsDialog::onCopy);
   {
     QPushButton *paste = ui->IDC_PHYSICS_PASTE;
     connect(paste, &QPushButton::clicked, this, &PhysicsDialog::onPaste);
@@ -80,62 +77,59 @@ PhysicsDialog::PhysicsDialog(physics_info *physInfo, QWidget *parent)
   if (auto *cb = ui->IDC_PHYSICS_THRUSTS_CHECK)
     connect(cb, &QCheckBox::toggled, this, &PhysicsDialog::onThrustsCheck);
 
-  const char *terminalEdits[] = {"IDC_PHYSICS_DRAG_EDIT", "IDC_PHYSICS_ROTDRAG_EDIT",
-                                 "IDC_PHYSICS_MAXTHRUST_EDIT", "IDC_PHYSICS_ROTTHRUST_EDIT"};
-  for (const char *name : terminalEdits) {
-    if (auto *edit = findChild<QLineEdit*>(name))
-      connect(edit, &QLineEdit::editingFinished, this, &PhysicsDialog::onTerminalEditChanged);
-  }
+  connect(ui->IDC_PHYSICS_DRAG_EDIT, &QLineEdit::editingFinished, this, &PhysicsDialog::onTerminalEditChanged);
+  connect(ui->IDC_PHYSICS_ROTDRAG_EDIT, &QLineEdit::editingFinished, this, &PhysicsDialog::onTerminalEditChanged);
+  connect(ui->IDC_PHYSICS_MAXTHRUST_EDIT, &QLineEdit::editingFinished, this, &PhysicsDialog::onTerminalEditChanged);
+  connect(ui->IDC_PHYSICS_ROTTHRUST_EDIT, &QLineEdit::editingFinished, this, &PhysicsDialog::onTerminalEditChanged);
 }
 
 PhysicsDialog::~PhysicsDialog() { delete ui; }
 
-void PhysicsDialog::setWidgetEnabled(const char *name, bool enabled) {
-  if (QWidget *w = findChild<QWidget*>(name))
-    w->setEnabled(enabled);
-}
-
 void PhysicsDialog::enableDisableFullPhysics() {
-  const char *names[] = {"IDC_PHYSICS_DRAG_EDIT", "IDC_PHYSICS_ROTDRAG_EDIT",
-                         "IDC_PHYSICS_MAXTHRUST_EDIT", "IDC_PHYSICS_ROTTHRUST_EDIT",
-                         "IDC_PHYSICS_MAXTURNROLLRATE_EDIT", "IDC_PHYSICS_TURNROLLRATIO_EDIT",
-                         "IDC_PHYSICS_DRAG_TEXT", "IDC_PHYSICS_ROTDRAG_TEXT",
-                         "IDC_PHYSICS_MAXTHRUST_TEXT", "IDC_PHYSICS_ROTTHRUST_TEXT",
-                         "IDC_PHYSICS_MAXTURNROLLRATE_TEXT", "IDC_PHYSICS_TURNROLLRATIO_TEXT"};
-  for (const char *name : names)
-    setWidgetEnabled(name, true);
+  ui->IDC_PHYSICS_DRAG_EDIT->setEnabled(true);
+  ui->IDC_PHYSICS_ROTDRAG_EDIT->setEnabled(true);
+  ui->IDC_PHYSICS_MAXTHRUST_EDIT->setEnabled(true);
+  ui->IDC_PHYSICS_ROTTHRUST_EDIT->setEnabled(true);
+  ui->IDC_PHYSICS_MAXTURNROLLRATE_EDIT->setEnabled(true);
+  ui->IDC_PHYSICS_TURNROLLRATIO_EDIT->setEnabled(true);
+  ui->IDC_PHYSICS_DRAG_TEXT->setEnabled(true);
+  ui->IDC_PHYSICS_ROTDRAG_TEXT->setEnabled(true);
+  ui->IDC_PHYSICS_MAXTHRUST_TEXT->setEnabled(true);
+  ui->IDC_PHYSICS_ROTTHRUST_TEXT->setEnabled(true);
+  ui->IDC_PHYSICS_MAXTURNROLLRATE_TEXT->setEnabled(true);
+  ui->IDC_PHYSICS_TURNROLLRATIO_TEXT->setEnabled(true);
 }
 
 void PhysicsDialog::enableDisableWiggle() {
   const bool enabled = ui->IDC_PHYSICS_WIGGLE_CHECK->isChecked();
-  setWidgetEnabled("IDC_PHYSICS_WIGGLESIZE_EDIT", enabled);
-  setWidgetEnabled("IDC_PHYSICS_WIGGLEFREQ_EDIT", enabled);
-  setWidgetEnabled("IDC_PHYSICS_WIGGLESIZE_TEXT", enabled);
-  setWidgetEnabled("IDC_PHYSICS_WIGGLES_PER_SEC_TEXT", enabled);
+  ui->IDC_PHYSICS_WIGGLESIZE_EDIT->setEnabled(enabled);
+  ui->IDC_PHYSICS_WIGGLEFREQ_EDIT->setEnabled(enabled);
+  ui->IDC_PHYSICS_WIGGLESIZE_TEXT->setEnabled(enabled);
+  ui->IDC_PHYSICS_WIGGLES_PER_SEC_TEXT->setEnabled(enabled);
 }
 
 void PhysicsDialog::enableDisableBounce() {
   const bool enabled = ui->IDC_PHYSICS_BOUNCY_CHECK->isChecked();
-  setWidgetEnabled("IDC_PHYSICS_MAX_BOUNCES_EDIT", enabled);
-  setWidgetEnabled("IDC_PHYSICS_PERCENT_LOSS_EDIT", enabled);
-  setWidgetEnabled("IDC_MAX_BOUNCES_TEXT", enabled);
-  setWidgetEnabled("IDC_PERCENT_LOSS_TEXT", enabled);
+  ui->IDC_PHYSICS_MAX_BOUNCES_EDIT->setEnabled(enabled);
+  ui->IDC_PHYSICS_PERCENT_LOSS_EDIT->setEnabled(enabled);
+  ui->IDC_MAX_BOUNCES_TEXT->setEnabled(enabled);
+  ui->IDC_PERCENT_LOSS_TEXT->setEnabled(enabled);
 }
 
 void PhysicsDialog::enableDisableTurnRoll() {
   const bool enabled = ui->IDC_TURN_ROLL_CHECK->isChecked();
-  setWidgetEnabled("IDC_PHYSICS_MAXTURNROLLRATE_EDIT", enabled);
-  setWidgetEnabled("IDC_PHYSICS_TURNROLLRATIO_EDIT", enabled);
-  setWidgetEnabled("IDC_PHYSICS_MAXTURNROLLRATE_TEXT", enabled);
-  setWidgetEnabled("IDC_PHYSICS_TURNROLLRATIO_TEXT", enabled);
+  ui->IDC_PHYSICS_MAXTURNROLLRATE_EDIT->setEnabled(enabled);
+  ui->IDC_PHYSICS_TURNROLLRATIO_EDIT->setEnabled(enabled);
+  ui->IDC_PHYSICS_MAXTURNROLLRATE_TEXT->setEnabled(enabled);
+  ui->IDC_PHYSICS_TURNROLLRATIO_TEXT->setEnabled(enabled);
 }
 
 void PhysicsDialog::enableDisableThrust() {
   const bool enabled = ui->IDC_PHYSICS_THRUSTS_CHECK->isChecked();
-  setWidgetEnabled("IDC_PHYSICS_MAXTHRUST_EDIT", enabled);
-  setWidgetEnabled("IDC_PHYSICS_ROTTHRUST_EDIT", enabled);
-  setWidgetEnabled("IDC_PHYSICS_MAXTHRUST_TEXT", enabled);
-  setWidgetEnabled("IDC_PHYSICS_ROTTHRUST_TEXT", enabled);
+  ui->IDC_PHYSICS_MAXTHRUST_EDIT->setEnabled(enabled);
+  ui->IDC_PHYSICS_ROTTHRUST_EDIT->setEnabled(enabled);
+  ui->IDC_PHYSICS_MAXTHRUST_TEXT->setEnabled(enabled);
+  ui->IDC_PHYSICS_ROTTHRUST_TEXT->setEnabled(enabled);
 }
 
 void PhysicsDialog::updateTerminalText() {
@@ -275,10 +269,7 @@ void PhysicsDialog::onTerminalEditChanged() { updateTerminalText(); }
 void PhysicsDialog::onCopy() {
   getPhysicsData(&Paste_data);
   Paste_data_used = true;
-  {
-    QPushButton *paste = ui->IDC_PHYSICS_PASTE;
-    paste->setEnabled(true);
-  }
+  ui->IDC_PHYSICS_PASTE->setEnabled(true);
 }
 
 void PhysicsDialog::onPaste() {

@@ -105,33 +105,150 @@ struct tc_text {
 };
 
 // TCTEXTDESC caps flags
-#define TCTD_FONT 0x0001
-#define TCTD_COLOR 0x0002
-#define TCTD_SPEED 0x0004
-#define TCTD_LOOPING 0x0008
-#define TCTD_WAITTIME 0x0010
-#define TCTD_TEXTBOX 0x0020
-#define TCTD_SCROLL 0x0040
-#define TCTD_TABSTOP 0x0080
+struct [[gnu::packed]] text_caps_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 24;
+  uint32_t tabstop : 1;
+  uint32_t scroll : 1;
+  uint32_t textbox : 1;
+  uint32_t waittime : 1;
+  uint32_t looping : 1;
+  uint32_t speed : 1;
+  uint32_t color : 1;
+  uint32_t font : 1;
+#else
+  uint32_t font : 1;
+  uint32_t color : 1;
+  uint32_t speed : 1;
+  uint32_t looping : 1;
+  uint32_t waittime : 1;
+  uint32_t textbox : 1;
+  uint32_t scroll : 1;
+  uint32_t tabstop : 1;
+  uint32_t padding : 24;
+#endif
+};
+static_assert(sizeof(text_caps_flags_t) == sizeof(uint32_t));
+
 // TCBMPDESC caps flags
-#define TCBD_XY 0x0001
-#define TCBD_LOOPING 0x0002
-#define TCBD_WAITTIME 0x0004
-#define TCBD_SPEED 0x0008
+struct [[gnu::packed]] bmp_caps_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 28;
+  uint32_t speed : 1;
+  uint32_t waittime : 1;
+  uint32_t looping : 1;
+  uint32_t xy : 1;
+#else
+  uint32_t xy : 1;
+  uint32_t looping : 1;
+  uint32_t waittime : 1;
+  uint32_t speed : 1;
+  uint32_t padding : 28;
+#endif
+};
+static_assert(sizeof(bmp_caps_flags_t) == sizeof(uint32_t));
+
 // TCMOVIEDESC caps flags
-#define TCMD_XY 0x0001
-#define TCMD_LOOPING 0x0002
-#define TCMD_WAITTIME 0x0004
-#define TCMD_FPS 0x0008
+struct [[gnu::packed]] movie_caps_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 28;
+  uint32_t fps : 1;
+  uint32_t waittime : 1;
+  uint32_t looping : 1;
+  uint32_t xy : 1;
+#else
+  uint32_t xy : 1;
+  uint32_t looping : 1;
+  uint32_t waittime : 1;
+  uint32_t fps : 1;
+  uint32_t padding : 28;
+#endif
+};
+static_assert(sizeof(movie_caps_flags_t) == sizeof(uint32_t));
+
 // TCBKGDESC caps flags
-#define TCBGD_ID 0x0001
-#define TCBGD_WAITTIME 0x0002
-#define TCBGD_COLOR 0x0004
+struct [[gnu::packed]] bkg_caps_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 29;
+  uint32_t color : 1;
+  uint32_t waittime : 1;
+  uint32_t id : 1;
+#else
+  uint32_t id : 1;
+  uint32_t waittime : 1;
+  uint32_t color : 1;
+  uint32_t padding : 29;
+#endif
+};
+static_assert(sizeof(bkg_caps_flags_t) == sizeof(uint32_t));
+
 // TCPOLYDESC caps flags
-#define TCPM_SPEED 0x0001
+struct [[gnu::packed]] poly_caps_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 31;
+  uint32_t speed : 1;
+#else
+  uint32_t speed : 1;
+  uint32_t padding : 31;
+#endif
+};
+static_assert(sizeof(poly_caps_flags_t) == sizeof(uint32_t));
+
 // TCSNDDESC caps flags
-#define TCSD_WAITTIME 0x0001
-#define TCSD_ONCE 0x0002
+struct [[gnu::packed]] snd_caps_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 30;
+  uint32_t once : 1;
+  uint32_t waittime : 1;
+#else
+  uint32_t waittime : 1;
+  uint32_t once : 1;
+  uint32_t padding : 30;
+#endif
+};
+static_assert(sizeof(snd_caps_flags_t) == sizeof(uint32_t));
+
+// On-screen button flags (TCBUTTONDESC)
+struct [[gnu::packed]] button_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 28;
+  uint32_t mouseover_focus : 1;
+  uint32_t change_focus_is_click : 1;
+  uint32_t glow : 1;
+  uint32_t flash : 1;
+#else
+  uint32_t flash : 1;
+  uint32_t glow : 1;
+  uint32_t change_focus_is_click : 1;
+  uint32_t mouseover_focus : 1;
+  uint32_t padding : 28;
+#endif
+};
+static_assert(sizeof(button_flags_t) == sizeof(uint32_t));
+
+// Button type / click type enumeration values (mirror TelComEffects.h).  The
+// underlying values are stored in TCBUTTONDESC.
+enum class tc_button_type : uint8_t {
+  up_arrow = 0,
+  down_arrow = 1,
+  next_page = 2,
+  prev_page = 3,
+  quit = 4,
+  jump = 6,
+};
+
+enum class tc_click_type : uint8_t {
+  click_down = 0,
+  click_up = 1,
+  hold = 2,
+};
 
 // Type values
 #define TC_TEXT_STATIC 0
@@ -148,18 +265,19 @@ struct tc_text {
 #define TC_POLY_STATIC 0
 #define TC_SND_STATIC 0
 
-// text flags
-#define TC_TEXTF_L2R 0      // scroll left 2 right
-#define TC_TEXTF_R2L 1      // scroll right 2 left
-#define TC_TEXTF_T2B 2      // scroll top 2 bottom
-#define TC_TEXTF_B2T 3      // scroll bottom 2 top
-#define TC_TEXTF_IN 4       // fade in
-#define TC_TEXTF_OUT 5      // fade out
-#define TC_TEXTF_PINGPONG 6 // fade in then out
-// bmp flags
-#define TC_BMPF_IN 0       // blur/scanline/invert in
-#define TC_BMPF_OUT 1      // blur/scanline/invert out
-#define TC_NOEARLYRENDER 2 // don't start rendering until time is up
+// text effect mode (scroll direction / fade)
+enum class tc_text_mode : uint8_t {
+  scroll_l2r = 0,
+  scroll_r2l = 1,
+  scroll_t2b = 2,
+  scroll_b2t = 3,
+  fade_in = 4,
+  fade_out = 5,
+  fade_pingpong = 6,
+};
+
+// bitmap effect mode (blur/scanline/invert in or out)
+enum class tc_bmp_mode : uint8_t { in = 0, out = 1 };
 
 //===================
 // TCTEXTDESC
@@ -170,15 +288,15 @@ struct tc_text {
 // if it's needed default values will be used (defaults listed after each member in structure)
 struct TCTEXTDESC {
   // what values are set/defined
-  int caps; //(MUST BE DEFINED!)
+  text_caps_flags_t caps; //(MUST BE DEFINED!)
   // the text box of the effect
   tc_text textbox; //(Default:entire monitor screen)
   // what kind of font to use
   int font; //(Default: BRIEF_FONT_INDEX)
   // default color of the text
   ddgr_color color; //(Default: GR_GREEN)
-  // flags
-  int flags;
+  // effect mode (scroll direction / fade)
+  tc_text_mode mode;
   // speed
   float speed;
   // does the text effect loop
@@ -187,17 +305,19 @@ struct TCTEXTDESC {
   float waittime; //(Default: 0.0f)
   // type
   int type;
-  // mission flag mask
+  // mission flags mask
   uint32_t mission_mask_set, mission_mask_unset;
 };
 
 struct TCBMPDESC {
   // type
   int type;
-  // flags
-  int flags;
+  // effect mode (blur/scanline/invert in or out)
+  tc_bmp_mode mode;
+  // don't start rendering until time is up
+  bool no_early_render;
   // what members are defined
-  int caps; // MUST BE FILLED IN
+  bmp_caps_flags_t caps; // MUST BE FILLED IN
   // upped left corner to display bitmap
   int x, y; //(Default: (0,0) )
   // does the effect loop
@@ -214,7 +334,7 @@ struct TCBMPDESC {
 
 struct TCMOVIEDESC {
   // fill in with whats valid
-  int caps; // MUST BE FILLED IN
+  movie_caps_flags_t caps; // MUST BE FILLED IN
   // type
   int type;
   // upper left coordinate of the movie
@@ -233,7 +353,7 @@ struct TCMOVIEDESC {
 
 struct TCBKGDESC {
   // whats defined for the struct
-  int caps; // MUST BE SET!
+  bkg_caps_flags_t caps; // MUST BE SET!
   // what type of background effect
   int type; //(Default: MBS_DESKTOP)
   // id used by the type
@@ -247,7 +367,7 @@ struct TCBKGDESC {
 };
 struct TCPOLYDESC {
   // whats defined for the struct
-  int caps; // MUST BE SET!
+  poly_caps_flags_t caps; // MUST BE SET!
   // what type of poly effect
   int type;
   // position
@@ -268,7 +388,7 @@ struct TCPOLYDESC {
 
 struct TCSNDDESC {
   // whats defined for the struct
-  int caps; // MUST BE SET
+  snd_caps_flags_t caps; // MUST BE SET
   // type of sound effect
   int type;
   // true if this sound should only play once
@@ -289,24 +409,15 @@ struct TCBUTTONDESC {
   int sibling_id; // Sibling effect ID(for down/up arrows), -1 if none
   int parent_id;  // Parent effect ID (text for down/up arrows), -1 if it works with TelCom System
   int x, y, w, h;
-  int osflags;
+  button_flags_t osflags;
   int jump_page;
   void (*internal)(int);
   float flash_time;
-  uint8_t button_type; // Up arrow, Down Arrow, TelCom System
-  uint8_t click_type;  // CLICKTYPE_DOWN or CLICKTYPE_CLICK (what the button responds to)
+  tc_button_type button_type; // Up arrow, Down Arrow, TelCom System
+  tc_click_type click_type;   // CLICKTYPE_DOWN or CLICKTYPE_CLICK (what the button responds to)
   bool flasher;
   bool tab_stop;
   uint32_t mission_mask_set, mission_mask_unset; // mission flag mask
 };
-
-//==================
-// tc_button
-//  - contains info on an on screen button
-//==================
-#define OBF_FLASH 0x01
-#define OBF_GLOW 0x02
-#define OBF_CHANGEFOCUSISCLICK 0x04
-#define OBF_MOUSEOVERFOCUS 0x08
 
 #endif

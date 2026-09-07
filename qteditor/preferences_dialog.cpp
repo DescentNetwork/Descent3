@@ -55,34 +55,13 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
     rb->setChecked(D3EditState.game_render_mode == GM_FULLSCREEN_HW);
     connect(rb, &QRadioButton::clicked, this, &PreferencesDialog::onFullScreenHW);
   }
-  {
-    QCheckBox *cb = ui->IDC_DEBUG_CHECK;
-    cb->setChecked(D3EditState.fullscreen_debug_state);
-  }
-  {
-    QRadioButton *rb = ui->IDC_USE_OPENGL;
-    rb->setChecked(PreferredRenderer == RENDERER_OPENGL);
-  }
-  {
-    QRadioButton *rb = ui->IDC_USE_GLIDE;
-    rb->setChecked(PreferredRenderer == RENDERER_GLIDE);
-  }
-  {
-    QRadioButton *rb = ui->IDC_USE_D3D;
-    rb->setChecked(PreferredRenderer == RENDERER_DIRECT3D);
-  }
-  {
-    QCheckBox *cb = ui->IDC_BILINEAR_CHECK;
-    cb->setChecked(Render_preferred_state.filtering != 0);
-  }
-  {
-    QCheckBox *cb = ui->IDC_MIPPING_CHECK;
-    cb->setChecked(Render_preferred_state.mipping != 0);
-  }
-  {
-    QCheckBox *cb = ui->IDC_JOYENABLE;
-    cb->setChecked(D3EditState.joy_slewing);
-  }
+  ui->IDC_DEBUG_CHECK->setChecked(D3EditState.fullscreen_debug_state);
+  ui->IDC_USE_OPENGL->setChecked(PreferredRenderer == RENDERER_OPENGL);
+  ui->IDC_USE_GLIDE->setChecked(PreferredRenderer == RENDERER_GLIDE);
+  ui->IDC_USE_D3D->setChecked(PreferredRenderer == RENDERER_DIRECT3D);
+  ui->IDC_BILINEAR_CHECK->setChecked(Render_preferred_state.filtering != 0);
+  ui->IDC_MIPPING_CHECK->setChecked(Render_preferred_state.mipping != 0);
+  ui->IDC_JOYENABLE->setChecked(D3EditState.joy_slewing);
   {
     QCheckBox *cb = ui->IDC_IGC_ENABLED;
     cb->setChecked(Cinematics_enabled);
@@ -119,17 +98,21 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
 PreferencesDialog::~PreferencesDialog() { delete ui; }
 
 void PreferencesDialog::disableHardwareOptions() {
-  const char *names[] = {"IDC_HARDWARE_ACC", "IDC_USE_OPENGL", "IDC_USE_GLIDE", "IDC_USE_D3D",
-                         "IDC_BILINEAR_CHECK", "IDC_MIPPING_CHECK"};
-  for (const char *name : names)
-    findChild<QWidget*>(name)->setEnabled(false);
+  ui->IDC_HARDWARE_ACC->setEnabled(false);
+  ui->IDC_USE_OPENGL->setEnabled(false);
+  ui->IDC_USE_GLIDE->setEnabled(false);
+  ui->IDC_USE_D3D->setEnabled(false);
+  ui->IDC_BILINEAR_CHECK->setEnabled(false);
+  ui->IDC_MIPPING_CHECK->setEnabled(false);
 }
 
 void PreferencesDialog::enableHardwareOptions() {
-  const char *names[] = {"IDC_HARDWARE_ACC", "IDC_USE_OPENGL", "IDC_USE_GLIDE", "IDC_USE_D3D",
-                         "IDC_BILINEAR_CHECK", "IDC_MIPPING_CHECK"};
-  for (const char *name : names)
-    findChild<QWidget*>(name)->setEnabled(true);
+  ui->IDC_HARDWARE_ACC->setEnabled(true);
+  ui->IDC_USE_OPENGL->setEnabled(true);
+  ui->IDC_USE_GLIDE->setEnabled(true);
+  ui->IDC_USE_D3D->setEnabled(true);
+  ui->IDC_BILINEAR_CHECK->setEnabled(true);
+  ui->IDC_MIPPING_CHECK->setEnabled(true);
 }
 
 void PreferencesDialog::onWindowed() {

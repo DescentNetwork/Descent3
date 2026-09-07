@@ -40,15 +40,15 @@ BriefMovieDialog::BriefMovieDialog(TCMOVIEDESC *desc, QWidget *parent)
 
   if (desc) {
     m_desc.caps = desc->caps;
-    if (desc->caps & TCMD_XY) {
+    if (desc->caps.xy) {
       m_desc.x = desc->x;
       m_desc.y = desc->y;
     }
-    if (desc->caps & TCMD_LOOPING)
+    if (desc->caps.looping)
       m_desc.looping = desc->looping;
-    if (desc->caps & TCMD_WAITTIME)
+    if (desc->caps.waittime)
       m_desc.waittime = desc->waittime;
-    if (desc->caps & TCMD_FPS)
+    if (desc->caps.fps)
       m_desc.fps = desc->fps;
     m_desc.mission_mask_set = desc->mission_mask_set;
     m_desc.mission_mask_unset = desc->mission_mask_unset;
@@ -100,7 +100,10 @@ void BriefMovieDialog::onOk() {
     return;
   }
 
-  m_desc.caps = TCMD_XY | TCMD_LOOPING | TCMD_WAITTIME | TCMD_FPS;
+  m_desc.caps.xy = true;
+  m_desc.caps.looping = true;
+  m_desc.caps.waittime = true;
+  m_desc.caps.fps = true;
   m_desc.filename = filename.toStdString();
   m_desc.fps = ui->IDC_BRIEF_M_FPS->text().toFloat();
   m_desc.looping = ui->IDC_BRIEF_M_LOOPING->isChecked();
