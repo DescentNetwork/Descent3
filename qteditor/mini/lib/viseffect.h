@@ -115,7 +115,9 @@
 
 #include "viseffect_external.h"
 
-extern vis_effect *VisEffects;
+#include <memory>
+
+extern std::unique_ptr<vis_effect[]> VisEffects;
 extern int Highest_vis_effect_index;
 
 // Returns the next free viseffect

@@ -155,7 +155,7 @@ static void mng_InitGenericPage(mngs_generic_page *genericpage) {
     genericpage->dspew_name[i].clear();
   }
 
-  genericpage->objinfo_struct.description = NULL;
+  genericpage->objinfo_struct.description.clear();
   genericpage->objinfo_struct.icon_name[0] = '\0';
 
   for (i = 0; i < NUM_MOVEMENT_CLASSES; i++)
@@ -297,15 +297,10 @@ int mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage
   }
   if (desc) {
     // Read description if there is one
-    std::string tempbuf;
-    infile >> tempbuf;
-    size_t slen = tempbuf.size() + 1;
 
-    genericpage->objinfo_struct.description = mem_rmalloc<char>(slen);
-    Q_ASSERT(genericpage->objinfo_struct.description);
-    std::memcpy(genericpage->objinfo_struct.description, tempbuf.data(), slen);
+    infile >> genericpage->objinfo_struct.description;
   } else
-    genericpage->objinfo_struct.description = NULL;
+    genericpage->objinfo_struct.description.clear();
 
   // Read icon name
   infile >> genericpage->objinfo_struct.icon_name;
@@ -643,10 +638,10 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
   outfile << genericpage->objinfo_struct.module_name;
   outfile << genericpage->objinfo_struct.script_name_override;
 
-  if (genericpage->objinfo_struct.description != nullptr) {
+  if (!genericpage->objinfo_struct.description.empty()) {
     // Write description if there is one
     outfile.put(1);
-    outfile << static_cast<const char *>(genericpage->objinfo_struct.description);
+    outfile << genericpage->objinfo_struct.description;
   } else
     outfile.put(0);
 

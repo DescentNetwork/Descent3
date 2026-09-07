@@ -353,7 +353,7 @@ void CollidePolygonModel(vector3 *pos, matrix *orient, int model_num, float *nor
 #define MULTI_ADD_SPHERE_MIN 1.4f
 #define MULTI_ADD_SPHERE_MAX 2.5f
 
-bool PolyCollideObject(object *obj) {
+bool PolyCollideObject(object& obj) {
 #ifndef NED_PHYSICS
   float normalized_time[MAX_SUBOBJECTS];
 #endif
@@ -362,11 +362,11 @@ bool PolyCollideObject(object *obj) {
   bool f_use_big_sphere = false;
   float addition;
 
-  Q_ASSERT(obj >= Objects && obj <= &Objects[Highest_object_index]);
+  Q_ASSERT(&obj >= Objects && &obj <= &Objects[Highest_object_index]);
 
 #ifndef NED_PHYSICS
   if (fvi_moveobj >= 0 && Objects[fvi_moveobj].type == OBJ_WEAPON &&
-      obj->type == OBJ_PLAYER)
+      obj.type == OBJ_PLAYER)
     f_use_big_sphere = true;
 #endif
 
@@ -394,23 +394,23 @@ bool PolyCollideObject(object *obj) {
 
   Fvi_f_normal = false;
 
-  View_position = obj->pos;
-  View_matrix = obj->orient;
+  View_position = obj.pos;
+  View_matrix = obj.orient;
 
-  Q_ASSERT(obj->flags & OF_POLYGON_OBJECT);
+  Q_ASSERT(obj.flags & OF_POLYGON_OBJECT);
 
 #ifndef NED_PHYSICS
-  if (obj->type == OBJ_PLAYER || obj->type == OBJ_ROBOT || obj->type == OBJ_DEBRIS || obj->type == OBJ_DOOR ||
-      obj->type == OBJ_BUILDING || obj->type == OBJ_CLUTTER || obj->type == OBJ_BUILDING) {
-    SetNormalizedTimeObj(obj, normalized_time);
-    CollidePolygonModel(&obj->pos, &obj->orient, obj->rtype.pobj_info().model_num, normalized_time,
-                        obj->rtype.pobj_info().subobj_flags);
+  if (obj.type == OBJ_PLAYER || obj.type == OBJ_ROBOT || obj.type == OBJ_DEBRIS || obj.type == OBJ_DOOR ||
+      obj.type == OBJ_BUILDING || obj.type == OBJ_CLUTTER || obj.type == OBJ_BUILDING) {
+    SetNormalizedTimeObj(&obj, normalized_time);
+    CollidePolygonModel(&obj.pos, &obj.orient, obj.rtype.pobj_info().model_num, normalized_time,
+                        obj.rtype.pobj_info().subobj_flags);
   } else {
-    CollidePolygonModel(&obj->pos, &obj->orient, obj->rtype.pobj_info().model_num, nullptr,
-                        obj->rtype.pobj_info().subobj_flags);
+    CollidePolygonModel(&obj.pos, &obj.orient, obj.rtype.pobj_info().model_num, nullptr,
+                        obj.rtype.pobj_info().subobj_flags);
   }
 #else
-  CollidePolygonModel(&obj->pos, &obj->orient, obj->rtype.pobj_info().model_num, NULL, obj->rtype.pobj_info().subobj_flags);
+  CollidePolygonModel(&obj.pos, &obj.orient, obj.rtype.pobj_info().model_num, NULL, obj.rtype.pobj_info().subobj_flags);
 #endif
 
   View_position = temp_pos;
@@ -421,7 +421,7 @@ bool PolyCollideObject(object *obj) {
     vector3 pnt = fvi_hit_data_ptr->hit_face_pnt[0];
     int mn = fvi_hit_data_ptr->hit_subobject[0];
     matrix m;
-    poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
+    poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
 
     while (mn != -1) {
       vector3 tpnt;
@@ -439,14 +439,14 @@ bool PolyCollideObject(object *obj) {
 
     fvi_hit_data_ptr->hit_face_pnt[0] = pnt;
 
-    m = obj->orient;
+    m = obj.orient;
     vm_TransposeMatrix(&m);
 
     fvi_hit_data_ptr->hit_wallnorm[0] = fvi_hit_data_ptr->hit_wallnorm[0] * m;
 
     // now instance for the entire object
     fvi_hit_data_ptr->hit_face_pnt[0] = fvi_hit_data_ptr->hit_face_pnt[0] * m;
-    fvi_hit_data_ptr->hit_face_pnt[0] += obj->pos;
+    fvi_hit_data_ptr->hit_face_pnt[0] += obj.pos;
 
     // Now get the hit point
     vector3 x = *fvi_query_ptr->p1 - *fvi_query_ptr->p0;

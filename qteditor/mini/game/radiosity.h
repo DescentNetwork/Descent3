@@ -161,7 +161,7 @@ extern rad_surface *rad_MaxSurface;
 extern int rad_NumSurfaces;
 extern int rad_NumElements;
 
-extern float *rad_FormFactors;
+extern std::vector<float> rad_FormFactors;
 extern rad_surface *rad_Surfaces;
 extern volume_element *Volume_elements[];
 
@@ -173,7 +173,7 @@ extern int Shoot_from_patch;
 // Tells radiosity renderer to do volume lighting
 extern int Do_volume_lighting;
 
-int DoRadiosityRun(int method, rad_surface *light_surfaces, int count);
+int DoRadiosityRun(int method, std::vector<rad_surface>& light_surfaces, int count);
 // Sets up our radiosity run
 void InitRadiosityRun();
 
@@ -199,7 +199,7 @@ void GetCenterOfElement(rad_element *ep, vector *dest);
 void GetCenterOfSurface(rad_surface *ep, vector *dest);
 
 // Returns 1 if a src vector can hit dest vector unobstructed
-int ShootRayFromPoint(vector *src, vector *dest, rad_surface *src_surf, rad_surface *dest_surf);
+int ShootRayFromPoint(vector& src, vector& dest, rad_surface *src_surf, rad_surface *dest_surf);
 
 // Shoots a ray from the center of the max surface to center of every other element
 // Also updates the exitances of elements that get hit

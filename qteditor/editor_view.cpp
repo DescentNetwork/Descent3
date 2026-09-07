@@ -393,12 +393,12 @@ void EditorView::ensureTexture(int bmHandle) {
   if (w <= 0 || h <= 0)
     return;
 
-  QVector<uchar> rgba(w * h * 4);
+  std::vector<uint8_t> rgba(w * h * 4);
   const uint16_t *data = bm_data(bmHandle, 0);
   if (data == nullptr) {
     // 8-bit palettized bitmaps are read through bm_data only when the
     // palette is applied; fall back to a magenta placeholder.
-    memset(rgba.data(), 0, rgba.size());
+    std::ranges::fill(rgba, 0);
     for (int i = 0; i < w * h; i++) {
       rgba[4 * i + 0] = 255; // R
       rgba[4 * i + 1] = 0;   // G
@@ -437,7 +437,7 @@ void EditorView::ensureTexture(int bmHandle) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba.constData());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
   m_textures.insert(bmHandle, tex);
 }
 

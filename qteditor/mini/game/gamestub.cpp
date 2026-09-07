@@ -26,13 +26,15 @@ uint8_t Use_motion_blur = 0;
 int AI_NumRendered = 0;
 int AI_RenderedList[MAX_OBJECTS] = {0};
 
+int Buddy_handle[MAX_PLAYERS] = {0};
+
 int Player_num = 0;
 
 fireball Fireballs[NUM_FIREBALLS] = {};
 
-vis_effect *VisEffects = new vis_effect[MAX_VIS_EFFECTS]();
+std::unique_ptr<vis_effect[]> VisEffects = std::make_unique<vis_effect[]>(MAX_VIS_EFFECTS);
 
-float GetTerrainDynamicScalar(vector3 *, int) { return 1.0f; }
+float GetTerrainDynamicScalar(vector3& , int) { return 1.0f; }
 
 void DrawColoredDisk(vector3 *, float, float, float, float, float, float, uint8_t, uint8_t) {}
 

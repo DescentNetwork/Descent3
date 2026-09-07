@@ -112,7 +112,7 @@ void phys_apply_force(object *obj, vector3 *force_vec, int16_t weapon_index = -1
 void phys_apply_rot(object *obj, vector3 *force_vec);
 
 // Determines the point and normal of the ground point
-bool PhysCalcGround(vector3 *ground_point, vector3 *ground_normal, object *obj, int ground_num);
+bool PhysCalcGround(vector3& ground_point, vector3& ground_normal, object& obj, int ground_num);
 
 // Linked objects arbitrary linking for things like weapons (unlike attached objects)
 void DoPhysLinkedFrame(object *obj);

@@ -16,8 +16,8 @@ BriefScreenDialog::BriefScreenDialog(QWidget *parent)
   if (auto *combo = ui->IDC_BRIEF_ADDS_LAYOUT_LIST) {
     combo->clear();
     combo->addItem(QStringLiteral("(none)"));
-    if (PBlayouts && PBnum_layouts && *PBnum_layouts > 0) {
-      for (int i = 0; i < *PBnum_layouts; i++)
+    if (!PBlayouts.empty()) {
+      for (size_t i = 0; i < PBlayouts.size(); i++)
         combo->addItem(QString::fromStdString(PBlayouts[i].filename));
     }
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,

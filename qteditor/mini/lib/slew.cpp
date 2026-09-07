@@ -251,7 +251,7 @@ void SlewResetOrient(object *obj) {
   if (!obj)
     return;
 
-  ObjSetOrient(obj, &Identity_matrix);
+  ObjSetOrient(*obj, Identity_matrix);
 }
 
 // Moves the object for one frame
@@ -359,7 +359,7 @@ int SlewFrame(object *obj, int movement_limitations) {
   new_pm = obj->orient * rotmat;
   vm_Orthogonalize(&new_pm);
 
-  ObjSetOrient(obj, &new_pm);
+  ObjSetOrient(*obj, new_pm);
 
   vm_TransposeMatrix(&new_pm); // make those columns rows
 
@@ -466,7 +466,7 @@ int SlewFrame(object *obj, int movement_limitations) {
       }
 
     // Now we have the new room, so update the object position
-    ObjSetPos(obj, &new_pos, new_room, NULL, false);
+    ObjSetPos(*obj, new_pos, new_room, nullptr, false);
 
     // Set outside-mine flag if we're outside
     if (outside_mine)

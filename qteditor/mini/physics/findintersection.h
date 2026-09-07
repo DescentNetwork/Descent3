@@ -411,9 +411,9 @@ extern float fvi_collision_dist;
 extern int fvi_curobj;
 extern int fvi_moveobj;
 
-bool PolyCollideObject(object *obj);
+bool PolyCollideObject(object& obj);
 
-bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *collision_normal, object *obj,
+bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *collision_normal, object& obj,
                            vector3 *new_pos, int nv, vector3 **vertex_ptr_list, vector3 *face_normal, matrix *orient);
 
 extern uint32_t check_point_to_face(vector3 *colp, vector3 *face_normal, int nv, vector3 **vertex_ptr_list);

@@ -115,7 +115,7 @@ void BNode_RemapTerrainRooms(int old_hri, int new_hri);
 extern int BNode_Path[MAX_BNODES_PER_ROOM];
 extern int BNode_PathNumNodes;
 extern bool BNode_FindPath(int start_room, int i, int j, float rad);
-extern int BNode_FindDirLocalVisibleBNode(int roomnum, vector3 *pos, vector3 *fvec, float rad);
-extern int BNode_FindClosestLocalVisibleBNode(int roomnum, vector3 *pos, float rad);
+extern int BNode_FindDirLocalVisibleBNode(int roomnum, vector3& pos, vector3& fvec, float rad);
+extern int BNode_FindClosestLocalVisibleBNode(int roomnum, vector3& pos, float rad);
 
 #endif

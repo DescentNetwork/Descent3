@@ -28,7 +28,7 @@ void DrawRoomVisPnts(object *obj);
 #endif
 
 //	Render an object.  Calls one of several routines based on type
-void RenderObject(object *obj);
+void RenderObject(object& obj);
 
 // Sets the polygon render object type to static (one lightval for whole object)
 void RenderObject_SetStatic(float r, float g, float b);

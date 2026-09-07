@@ -184,19 +184,19 @@ struct terrain_sky {
   ddgr_color horizon_color;
   ddgr_color fog_color;
 
-  float satellite_r[MAX_SATELLITES];
-  float satellite_g[MAX_SATELLITES];
-  float satellite_b[MAX_SATELLITES];
+  std::array<float, MAX_SATELLITES> satellite_r;
+  std::array<float, MAX_SATELLITES> satellite_g;
+  std::array<float, MAX_SATELLITES> satellite_b;
 
-  vector3 star_vectors[MAX_STARS];
-  vector3 satellite_vectors[MAX_SATELLITES];
-  terrain_satellite_flags_t satellite_flags[MAX_SATELLITES];
-  float satellite_size[MAX_SATELLITES];
+  std::array<vector3, MAX_STARS> star_vectors;
+  std::array<vector3, MAX_SATELLITES> satellite_vectors;
+  std::array<terrain_satellite_flags_t, MAX_SATELLITES> satellite_flags;
+  std::array<float, MAX_SATELLITES> satellite_size;
 
   uint8_t num_satellites;
   uint8_t num_stars;
 
-  int16_t satellite_texture[MAX_SATELLITES];
+  std::array<int16_t, MAX_SATELLITES> satellite_texture;
 
   vector3 lightsource;
   angle lightangle;
@@ -204,7 +204,7 @@ struct terrain_sky {
   float damage_per_second;
   float fog_scalar;
 
-  int star_color[MAX_STARS];
+  std::array<int, MAX_STARS> star_color;
   terrain_sky_flags_t flags;
 };
 
@@ -335,17 +335,17 @@ int LoadPCXTerrain(char *);
 
 // Given a position, returns the terrain segment that that position is in/over
 // The return value is a pure cell number, meaning it doesn't have the outside flag set
-int GetTerrainCellFromPos(vector3 *pos);
+int GetTerrainCellFromPos(vector3& pos);
 
 // Given a position, returns the terrain segment that that position is in/over
 // The return value is a valid room number, meaning it has the outside flag set
-int GetTerrainRoomFromPos(vector3 *pos);
+int GetTerrainRoomFromPos(vector3& pos);
 
 // Computes the center of the segment in x,z and also sets y touching the ground
-void ComputeTerrainSegmentCenter(vector3 *pos, int segnum);
+void ComputeTerrainSegmentCenter(vector3& pos, int segnum);
 // Given an position, returns the terrain Y coord at that location
 // Also now can return the normal at that ground point
-float GetTerrainGroundPoint(vector3 *pos, vector3 *normal = NULL);
+float GetTerrainGroundPoint(vector3& pos, vector3* normal);
 
 void SetupSky(float radius, int flags, uint8_t randit = 0);
 
@@ -356,7 +356,7 @@ void BuildNormalForTerrainSegment(int n);
 void BuildLightingNormalForSegment(int n);
 
 // Gets a prerotated point that does not fall exactly on one of our 255 height values
-void GetSpecialRotatedPoint(g3Point *dest, int x, int z, float yvalue);
+void GetSpecialRotatedPoint(g3Point& dest, int x, int z, float yvalue);
 
 // Takes our light angle and fills in the appropriate values in the lightsource vector
 void GenerateLightSource();
@@ -371,7 +371,7 @@ void GenerateLODDeltas();
 void UpdateTerrainLightmaps();
 
 // Gets the dynamic light value for this position
-float GetTerrainDynamicScalar(vector3 *pos, int seg);
+float GetTerrainDynamicScalar(vector3& pos, int seg);
 
 // Shuts off LOD for a given cell
 void TurnOffLODForCell(int cellnum);

@@ -45,7 +45,7 @@ struct special_face {
 
   specular_instance *spec_instance;
 
-  vector3 *vertnorms;
+  std::vector<vector3> vertnorms;
 
 };
 

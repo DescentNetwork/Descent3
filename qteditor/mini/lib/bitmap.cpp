@@ -23,26 +23,23 @@ int bm_AllocBitmap(int w, int h, int add_mem) {
   if (n == -1)
     return -1;
 
-  memset(&GameBitmaps[n], 0, sizeof(bms_bitmap));
   GameBitmaps[n].width = (uint16_t)w;
   GameBitmaps[n].height = (uint16_t)h;
   GameBitmaps[n].format = BITMAP_FORMAT_STANDARD;
   GameBitmaps[n].flags = BF_CHANGED | BF_BRAND_NEW;
   GameBitmaps[n].cache_slot = -1;
+  GameBitmaps[n].data16.reset();
+  GameBitmaps[n].mip_levels = 0;
+  GameBitmaps[n].name[0] = 0;
 
   if (w > 0 && h > 0) {
     size_t base = (size_t)w * (size_t)h * 2;
     size_t extra = (add_mem > 0) ? (size_t)add_mem : 0;
-    GameBitmaps[n].data16 = (uint16_t *)mem_malloc(base + extra);
-    if (!GameBitmaps[n].data16) {
-      GameBitmaps[n].used = 0;
-      return -1;
-    }
-    memset(GameBitmaps[n].data16, 0, base + extra);
+    size_t bytes = base + extra;
+    GameBitmaps[n].data16 = std::make_unique<uint16_t[]>((bytes + 1) / 2);
+    std::fill_n(GameBitmaps[n].data16.get(), (bytes + 1) / 2, 0);
     if (add_mem > 0)
       GameBitmaps[n].mip_levels = 1; // marked mipped; actual count set by caller
-  } else {
-    GameBitmaps[n].data16 = nullptr;
   }
 
   GameBitmaps[n].used = 1;
@@ -60,7 +57,7 @@ uint16_t *bm_data(int handle, int miplevel) {
   if (handle < 0 || handle >= MAX_BITMAPS)
     return nullptr;
   const bms_bitmap &b = GameBitmaps[handle];
-  if (b.data16 == nullptr)
+  if (!b.data16)
     return nullptr;
   int offset = 0, w = b.width, h = b.height;
   for (int m = 0; m < miplevel; m++) {
@@ -68,7 +65,7 @@ uint16_t *bm_data(int handle, int miplevel) {
     if (w > 1) w >>= 1;
     if (h > 1) h >>= 1;
   }
-  return b.data16 + offset;
+  return b.data16.get() + offset;
 }
 int bm_w(int handle, int miplevel) {
   if (handle < 0 || handle >= MAX_BITMAPS)

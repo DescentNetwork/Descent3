@@ -69,15 +69,10 @@ GenericPageNode::GenericPageNode() {
   prev = nullptr;
   next = nullptr;
   page_id = 0;
-  genericpage.objinfo_struct.description = nullptr;
 }
 
 GenericPageNode::~GenericPageNode() {
-  // Free up the object description memory
-  if (genericpage.objinfo_struct.description != nullptr) {
-    mem_rmfree(genericpage.objinfo_struct.description);
-    genericpage.objinfo_struct.description = nullptr;
-  }
+  // (description is now an owning std::string; no manual free needed)
 }
 
 bool GenericPageNode::operator<(const GenericPageNode &node) const {
@@ -85,20 +80,11 @@ bool GenericPageNode::operator<(const GenericPageNode &node) const {
 }
 
 std::string GenericPageNode::description() const {
-  const char *d = genericpage.objinfo_struct.description;
-  return d != nullptr ? std::string(d) : std::string();
+  return genericpage.objinfo_struct.description;
 }
 
 void GenericPageNode::setDescription(const std::string &text) {
-  char *old = genericpage.objinfo_struct.description;
-  char *next = nullptr;
-  if (!text.empty()) {
-    next = mem_rmalloc<char>(text.size() + 1);
-    std::memcpy(next, text.data(), text.size() + 1);
-  }
-  genericpage.objinfo_struct.description = next;
-  if (old != nullptr)
-    mem_rmfree(old);
+  genericpage.objinfo_struct.description = text;
 }
 
 ////////////////////////////////////////////////////////////
@@ -293,12 +279,7 @@ bool GenericPageList::SaveTable(const std::string &table_filename) {
     else
       mng_WriteNewGenericPage(outfile, &genericpage);
 
-    // Free the temporarily-read page's description memory (it is not adopted
-    // by the list)
-    if (genericpage.objinfo_struct.description != nullptr) {
-      mem_rmfree(genericpage.objinfo_struct.description);
-      genericpage.objinfo_struct.description = nullptr;
-    }
+    // (description is now an owning std::string; no manual free needed)
 
     page_id++;
   }

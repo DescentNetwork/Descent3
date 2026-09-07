@@ -217,10 +217,10 @@ void BriefTextEditDialog::populatePredefs() {
     combo->clear();
     combo->addItem("<Raw>");
     int layout = -1;
-    if (PBlayouts && PBnum_layouts) {
-      for (int i = 0; i < *PBnum_layouts; i++) {
+    if (!PBlayouts.empty()) {
+      for (size_t i = 0; i < PBlayouts.size(); i++) {
         if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
-          layout = i;
+          layout = (int)i;
       }
       if (layout != -1) {
         for (int j = 0; j < PBlayouts[layout].num_texts; j++) {
@@ -239,11 +239,11 @@ void BriefTextEditDialog::onPredefChanged(int index) {
   if (!combo || index <= 0)
     return;
   int layout = -1;
-  if (!PBlayouts || !PBnum_layouts)
+  if (PBlayouts.empty())
     return;
-  for (int i = 0; i < *PBnum_layouts; i++) {
+  for (size_t i = 0; i < PBlayouts.size(); i++) {
     if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
-      layout = i;
+      layout = (int)i;
   }
   if (layout != -1) {
     ui->IDC_BRIEF_T_UL_X->setText(QString::number(PBlayouts[layout].texts[index - 1].lx));

@@ -314,6 +314,7 @@
 #include "manage.h"
 #include "DeathInfo.h"
 //#include <fixed_string.h>
+#include <string>
 
 #ifdef NEWEDITOR
 #include "..\neweditor\ned_Object.h"
@@ -507,8 +508,8 @@ struct object_info {
 
   int ammo_count; // if a powerup, how much ammo it has
 
-  char *description;                   // used for inventory
-  std::string icon_name; // used for inventory
+  std::string description; // used for inventory
+  std::string icon_name;    // used for inventory
 
   int16_t sounds[MAX_OBJ_SOUNDS]; // list of sound handles
   int16_t dspew[MAX_DSPEW_TYPES];

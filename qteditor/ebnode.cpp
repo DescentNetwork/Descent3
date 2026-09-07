@@ -59,7 +59,7 @@ bool EBNode_VerifyGraph() {
     int cur_region = i - Highest_room_index - 1;
 
     for (int j = (int)nlist->nodes.size() - 1; j >= 0; j--) {
-      int cell = GetTerrainRoomFromPos(&nlist->nodes[j].pos);
+      int cell = GetTerrainRoomFromPos(nlist->nodes[j].pos);
       if (cur_region != Terrain_seg[cell].flags.region) {
         for (int k = 0; k < (int)nlist->nodes[j].edges.size(); k++) {
           if (BOA_INDEX(nlist->nodes[j].edges[k].end_room) >= 0 &&
@@ -208,7 +208,7 @@ bool EBNode_VerifyGraph() {
 
             vector3 pos;
             pos = rp->portals[j].path_pnt + rp->faces[rp->portals[j].portal_face].normal * 0.75f;
-            int roomnum = BOA_INDEX(GetTerrainRoomFromPos(&pos));
+            int roomnum = BOA_INDEX(GetTerrainRoomFromPos(pos));
 
             int xxx;
             uint8_t region = Terrain_seg[roomnum].flags.region;
@@ -250,7 +250,7 @@ bool EBNode_VerifyGraph() {
             if (Rooms[cr].flags.external) {
               vector3 pos;
               pos = rp->portals[j].path_pnt - rp->faces[rp->portals[j].portal_face].normal * 0.75f;
-              int roomnum = BOA_INDEX(GetTerrainRoomFromPos(&pos));
+              int roomnum = BOA_INDEX(GetTerrainRoomFromPos(pos));
               EBNode_AddEdge(rp->portals[j].bnode_index, i, ci, roomnum);
             } else {
               if (ci >= 0)
@@ -400,7 +400,7 @@ static void RemapPortalNodeIndices(int roomnum, int pnt) {
       int cp = Rooms[r].portals[p].cportal;
 
       vector3 pos = Rooms[cr].portals[cp].path_pnt + Rooms[cr].faces[Rooms[cr].portals[cp].portal_face].normal * 0.75f;
-      int cell = GetTerrainRoomFromPos(&pos);
+      int cell = GetTerrainRoomFromPos(pos);
 
       if (region == Terrain_seg[cell].flags.region && Rooms[cr].portals[cp].bnode_index == pnt) {
         Rooms[cr].portals[cp].bnode_index = -1;
@@ -516,7 +516,7 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
     fq.p0 = &snlist->nodes[spnt].pos;
     fq.p1 = &enlist->nodes[epnt].pos;
     fq.startroom = (sroom > Highest_room_index && sroom <= Highest_room_index + 8)
-                       ? GetTerrainRoomFromPos(&snlist->nodes[spnt].pos)
+                       ? GetTerrainRoomFromPos(snlist->nodes[spnt].pos)
                        : sroom;
     fq.rad = size;
 
@@ -526,7 +526,7 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
       fq.p0 = &enlist->nodes[epnt].pos;
       fq.p1 = &snlist->nodes[spnt].pos;
       fq.startroom = (eroom > Highest_room_index && eroom <= Highest_room_index + 8)
-                         ? GetTerrainRoomFromPos(&enlist->nodes[epnt].pos)
+                         ? GetTerrainRoomFromPos(enlist->nodes[epnt].pos)
                          : eroom;
       fq.rad = size;
 
@@ -554,7 +554,7 @@ void EBNode_AutoEdgeNode(int spnt, int sroom) {
       fq.p0 = &snlist->nodes[spnt].pos;
       fq.p1 = &snlist->nodes[i].pos;
       fq.startroom = (sroom > Highest_room_index && sroom <= Highest_room_index + 8)
-                         ? GetTerrainRoomFromPos(&snlist->nodes[spnt].pos)
+                         ? GetTerrainRoomFromPos(snlist->nodes[spnt].pos)
                          : sroom;
 
       fq.rad = 3.0f;
@@ -646,7 +646,7 @@ void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
       fq.p0 = &Rooms[roomnum].bn_info.nodes[i].pos;
       fq.p1 = &Rooms[roomnum].bn_info.nodes[j].pos;
       fq.startroom = (roomnum > Highest_room_index && roomnum <= Highest_room_index + 8)
-                         ? GetTerrainRoomFromPos(&Rooms[roomnum].bn_info.nodes[i].pos)
+                         ? GetTerrainRoomFromPos(Rooms[roomnum].bn_info.nodes[i].pos)
                          : roomnum;
 
       fq.rad = 0.1f;
@@ -808,7 +808,7 @@ int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom) {
     fq.p0 = &snlist->nodes[spnt].pos;
     fq.p1 = &enlist->nodes[epnt].pos;
     fq.startroom = (sroom > Highest_room_index && sroom <= Highest_room_index + 8)
-                       ? GetTerrainRoomFromPos(&snlist->nodes[spnt].pos)
+                       ? GetTerrainRoomFromPos(snlist->nodes[spnt].pos)
                        : sroom;
 
     fq.rad = 0.0f;
@@ -876,7 +876,7 @@ void EBNode_Move(bool f_offset, int roomnum, int pnt, vector3 *pos) {
     fq.p0 = &nlist->nodes[pnt].pos;
     fq.p1 = &npos;
     fq.startroom = (roomnum > Highest_room_index && roomnum <= Highest_room_index + 8)
-                       ? GetTerrainRoomFromPos(&nlist->nodes[pnt].pos)
+                       ? GetTerrainRoomFromPos(nlist->nodes[pnt].pos)
                        : roomnum;
 
     fq.rad = 0.25f;

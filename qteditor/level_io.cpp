@@ -313,7 +313,7 @@ static int findNextViewerObject(int id, int view_mode) {
 // (port of editor/HView.cpp:274 CreateViewerObject; ObjCreate is MFC gated
 // so the slot is carved out of Objects[] directly, like
 // MainWindow::onSpawnNewViewer)
-static int createViewerObject(int view_mode, vector3 *pos, int roomnum) {
+static int createViewerObject(int view_mode, vector3& pos, int roomnum) {
   int id;
   int objnum = -1;
 
@@ -359,7 +359,7 @@ static int createViewerObject(int view_mode, vector3 *pos, int roomnum) {
   if (objnum > Highest_object_index)
     Highest_object_index = objnum;
 
-  ObjSetPos(&Objects[objnum], pos, roomnum, nullptr, false);
+  ObjSetPos(Objects[objnum], pos, roomnum, nullptr, false);
 
   return objnum;
 }
@@ -418,7 +418,7 @@ void SetEditorViewer() {
       return;
     }
 
-    objnum = createViewerObject(Editor_view_mode, &pos, roomnum);
+    objnum = createViewerObject(Editor_view_mode, pos, roomnum);
 
     // If no free viewer slots, grab any viewer and move it
     if (objnum == -1) {
@@ -429,7 +429,7 @@ void SetEditorViewer() {
         objnum = findNextViewerObject(Editor_viewer_id, -1);
         Q_ASSERT(objnum != -1);
       }
-      ObjSetPos(&Objects[objnum], &pos, roomnum, nullptr, true);
+      ObjSetPos(Objects[objnum], pos, roomnum, nullptr, true);
     }
   }
 

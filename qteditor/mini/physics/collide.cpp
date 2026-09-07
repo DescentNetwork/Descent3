@@ -938,7 +938,7 @@ void FindHitpointUV(float *u, float *v, vector3 *point, room *rp, int facenum) {
 
   // 1. find what plane to project this wall onto to make it a 2d case
 
-  GetIJ(&fp->normal, &ii, &jj);
+  GetIJ(fp->normal, ii, jj);
 
   // 2. compute u,v of intersection point
 
@@ -2131,7 +2131,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
   if ((robotobj->type == OBJ_BUILDING) && hit_info) {
     poly_model *pm = GetPolymodelPointer(robotobj->rtype.pobj_info().model_num);
     int tmap = pm->textures[pm->submodel[hit_info->hit_subobject[0]].faces[hit_info->hit_face[0]].texnum];
-    vector3 *normal = &hit_info->hit_wallnorm[0];
+    vector3& normal = &hit_info->hit_wallnorm[0];
 
     DoWallEffects(weapon, tmap);
 

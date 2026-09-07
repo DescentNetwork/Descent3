@@ -32,11 +32,11 @@ struct rad_hemicube {
 
   grHardwareSurface drawing_surface;
   grViewport *vport;
-  int *id_grid;
-  float *depth_grid;
+  std::vector<int> id_grid;
+  std::vector<float> depth_grid;
 
-  float *top_array;
-  float *side_array;
+  std::vector<float> top_array;
+  std::vector<float> side_array;
 
   int ff_res;   // Form factor resolution
   int grid_dim; // Hemicube top/side array dimension
@@ -87,7 +87,7 @@ int PrevIndex(int val, int modulus);
 int NextIndex(int val, int modulus);
 
 // Sums the delta form factors
-void SumDeltas(float *ff_array, int face_id);
+void SumDeltas(std::vector<float>& ff_array, int face_id);
 
 float GetTopFactor(int row, int col);
 

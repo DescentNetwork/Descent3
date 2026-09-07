@@ -172,8 +172,8 @@ public:
   }
 };
 
-static float BNode_QuickDist(vector3 *pos1, vector3 *pos2) {
-  return fabs(pos1->x() - pos2->x()) + fabs(pos1->y() - pos2->y()) + fabs(pos1->z() - pos2->z());
+static float BNode_QuickDist(vector3& pos1, vector3& pos2) {
+  return fabs(pos1.x() - pos2.x()) + fabs(pos1.y() - pos2.y()) + fabs(pos1.z() - pos2.z());
 }
 
 int BNode_Path[MAX_BNODES_PER_ROOM];
@@ -222,14 +222,13 @@ bool BNode_FindPath(int start_room, int i, int j, float rad) {
 
   start_room = BOA_INDEX(start_room);
 
-  pq_item **node_list;
+  std::vector<pq_item *> node_list;
   bn_list *bnlist = BNode_GetBNListPtr(start_room);
 
   Q_ASSERT(bnlist);
   Q_ASSERT(i >= 0 && i < (int)bnlist->nodes.size() && j >= 0 && j < (int)bnlist->nodes.size());
 
-  node_list = mem_rmalloc<pq_item *>(bnlist->nodes.size());
-  memset(node_list, 0, bnlist->nodes.size() * sizeof(pq_item *));
+  node_list.assign(bnlist->nodes.size(), nullptr);
 
   PQPath.push(start_node);
 
@@ -237,7 +236,7 @@ bool BNode_FindPath(int start_room, int i, int j, float rad) {
     node_list[cur_node->node] = cur_node;
 
     if (cur_node->node == j) {
-      BNode_UpdatePathInfo(node_list, i, j);
+      BNode_UpdatePathInfo(node_list.data(), i, j);
       f_found = true;
       goto done;
     }
@@ -285,7 +284,6 @@ done:
       delete node_list[counter];
   }
 
-  mem_rmfree(node_list); // DAJ LEAKFIX
   return f_found;
 }
 
@@ -300,7 +298,7 @@ static char BNode_vis[MAX_BNODES_PER_ROOM];
 #define VIS_OK 1
 #define VIS_NO 2
 
-int BNode_FindDirLocalVisibleBNode(int roomnum, vector3 *pos, vector3 *fvec, float rad) {
+int BNode_FindDirLocalVisibleBNode(int roomnum, vector3& pos, vector3& fvec, float rad) {
   int i;
   float best_dot = -1.01f;
   float closest_dist = 800.0f;
@@ -319,11 +317,11 @@ int BNode_FindDirLocalVisibleBNode(int roomnum, vector3 *pos, vector3 *fvec, flo
 retry:
 
   for (i = 0; i < (int)bnlist->nodes.size(); i++) {
-    vector3 to = bnlist->nodes[i].pos - *pos;
+    vector3 to = bnlist->nodes[i].pos - pos;
     scalar dist = vm_NormalizeVector(&to);
 
     if (dist < closest_dist) {
-      scalar dot = vm_Dot3Product(*fvec, to);
+      scalar dot = vm_Dot3Product(fvec, to);
 
       if (dot > 0.0f || f_retry) {
         /* float node_size = 0.0f;
@@ -343,7 +341,7 @@ retry:
           fvi_query fq;
           fvi_info hit_info;
 
-          fq.p0 = pos;
+          fq.p0 = &pos;
           fq.startroom = (roomnum > Highest_room_index && roomnum <= Highest_room_index + 8)
                              ? GetTerrainRoomFromPos(pos)
                              : roomnum;
@@ -394,7 +392,7 @@ retry:
   return closest_node;
 }
 
-int BNode_FindClosestLocalVisibleBNode(int roomnum, vector3 *pos, float rad) {
+int BNode_FindClosestLocalVisibleBNode(int roomnum, vector3& pos, float rad) {
   int i, j;
   float closest_dist = 800.0f;
   int closest_node = -1;
@@ -411,7 +409,7 @@ int BNode_FindClosestLocalVisibleBNode(int roomnum, vector3 *pos, float rad) {
 retry:
 
   for (i = 0; i < (int)bnlist->nodes.size(); i++) {
-    float dist = BNode_QuickDist(&bnlist->nodes[i].pos, pos);
+    float dist = BNode_QuickDist(bnlist->nodes[i].pos, pos);
 
     if (dist < closest_dist) {
       float node_size = 0.0f;
@@ -429,14 +427,14 @@ retry:
         fvi_info hit_info;
 
         if (!f_retry) {
-          fq.p0 = pos;
+          fq.p0 = &pos;
           fq.startroom = (roomnum > Highest_room_index && roomnum <= Highest_room_index + 8)
                              ? GetTerrainRoomFromPos(pos)
                              : roomnum;
           fq.p1 = &bnlist->nodes[i].pos;
           fq.rad = min_bn_rad;
           fq.thisobjnum = -1;
-          fq.ignore_obj_list = NULL;
+          fq.ignore_obj_list = nullptr;
           fq.flags = 0;
         }
 

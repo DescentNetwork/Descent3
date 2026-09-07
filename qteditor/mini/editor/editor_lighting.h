@@ -93,13 +93,13 @@ int GetTotalObjectFaces(int terrain);
 // Gets the total number of object faces that exist in a room
 int GetTotalObjectFacesForSingleRoom(int roomnum);
 
-void BuildObjectLightmapUVs(object *obj, int *sublist, int *facelist, int count, vector3 *lightmap_poly, int nv,
+void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count, vector3 *lightmap_poly, int nv,
                             int lm_type);
 
 // Goes through all objects and fills in the lightmap data for them
 void AssignLightmapsToObjectSurfaces(int surface_index, int terrain);
 
-void CombineObjectLightmapUVs(object *obj, int lmi_type);
+void CombineObjectLightmapUVs(object& obj, int lmi_type);
 
 // Frees memory for specular lighting
 void CleanupSpecularLighting(int external);

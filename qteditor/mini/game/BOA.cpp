@@ -349,7 +349,7 @@ int BOA_DetermineStartRoomPortal(int start_room, vector3 *start_pos, int end_roo
           break;
       } else {
         if (Rooms[Rooms[start_room].portals[i].croom].flags.external) {
-          int cell = GetTerrainCellFromPos(&Rooms[start_room].portals[i].path_pnt);
+          int cell = GetTerrainCellFromPos(Rooms[start_room].portals[i].path_pnt);
           Q_ASSERT(cell != -1); // DAJ -1FIX
 
           if (Highest_room_index + Terrain_seg[cell].flags.region + 1 == end_room)
@@ -762,7 +762,7 @@ void compute_terrain_region_info() {
       int j;
 
       for (j = 0; j < Rooms[i].num_portals; j++) {
-        int cell = GetTerrainCellFromPos(&Rooms[i].portals[j].path_pnt);
+        int cell = GetTerrainCellFromPos(Rooms[i].portals[j].path_pnt);
         Q_ASSERT(cell != -1); // DAJ -1FIX
 
         int region = Terrain_seg[cell].flags.region;
@@ -979,7 +979,7 @@ void FindPath(int i, int j) {
         if ((next_room <= Highest_room_index) && Rooms[next_room].flags.external) {
           Q_ASSERT(cur_node->roomnum <= Highest_room_index);
 
-          int cell = GetTerrainCellFromPos(&Rooms[cur_node->roomnum].portals[counter].path_pnt);
+          int cell = GetTerrainCellFromPos(Rooms[cur_node->roomnum].portals[counter].path_pnt);
           Q_ASSERT(cell >= 0 && cell < TERRAIN_WIDTH * TERRAIN_DEPTH);
 
           next_room = Highest_room_index + Terrain_seg[cell].flags.region + 1;
@@ -1039,7 +1039,7 @@ void FindPath(int i, int j) {
 
         if ((next_room <= Highest_room_index) && Rooms[next_room].flags.external) {
           Q_ASSERT(cur_node->roomnum <= Highest_room_index);
-          int cell = GetTerrainCellFromPos(&Rooms[cur_node->roomnum].portals[counter].path_pnt);
+          int cell = GetTerrainCellFromPos(Rooms[cur_node->roomnum].portals[counter].path_pnt);
           Q_ASSERT(cell != -1); // DAJ -1FIX
           next_room = Highest_room_index + Terrain_seg[cell].flags.region + 1;
         }
@@ -1623,7 +1623,7 @@ void MakeBOAVisTable(bool from_lighting) {
           BOA_Array[i][Highest_room_index + 1] |= BOAF_VIS;
 
           for (xxx = 0; xxx < Rooms[croom].num_portals; xxx++) {
-            int cell = GetTerrainCellFromPos(&Rooms[croom].portals[xxx].path_pnt);
+            int cell = GetTerrainCellFromPos(Rooms[croom].portals[xxx].path_pnt);
             Q_ASSERT(cell != -1); // DAJ -1FIX
             int region = Terrain_seg[cell].flags.region;
 
@@ -1834,7 +1834,7 @@ void MakeBOAVisTable(bool from_lighting) {
                       BOA_Array[i][Highest_room_index + 1] |= BOAF_VIS;
 
                       for (xxx = 0; xxx < Rooms[check_room].num_portals; xxx++) {
-                        int cell = GetTerrainCellFromPos(&Rooms[check_room].portals[xxx].path_pnt);
+                        int cell = GetTerrainCellFromPos(Rooms[check_room].portals[xxx].path_pnt);
                         Q_ASSERT(cell != -1); // DAJ -1FIX
                         int region = Terrain_seg[cell].flags.region;
 
@@ -2128,17 +2128,15 @@ void ComputeAABB(bool f_full) {
       }
     }
 
-    int16_t *num_structs_per_room = (int16_t *)mem_malloc((Highest_room_index + 1) * sizeof(int16_t));
-    int16_t **r_struct_list;
+    std::vector<int16_t> num_structs_per_room(Highest_room_index + 1, 0);
+    std::vector<std::vector<int16_t>> r_struct_list(Highest_room_index + 1);
 
-    // Allocate the structure that tells what struct each face is in
-    r_struct_list = (int16_t **)mem_malloc((Highest_room_index + 1) * sizeof(int16_t *));
     for (i = 0; i <= Highest_room_index; i++) {
       if (Rooms[i].used) {
         if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
           continue;
 
-        r_struct_list[i] = mem_rmalloc<int16_t>(Rooms[i].num_faces);
+        r_struct_list[i].resize(Rooms[i].num_faces);
       }
     }
 
@@ -2229,17 +2227,10 @@ void ComputeAABB(bool f_full) {
         if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
           continue;
 
-        int16_t *nfaces;
-        bool *used;
-
+        std::vector<int16_t> nfaces(rp->num_faces, 0);
+        std::vector<bool> used(rp->num_faces, false);
         int n_new;
 
-        nfaces = (int16_t *)mem_malloc(rp->num_faces * sizeof(int16_t));
-        used = (bool *)mem_malloc(rp->num_faces * sizeof(bool));
-
-        for (count1 = 0; count1 < rp->num_faces; count1++) {
-          used[count1] = false;
-        }
 
       next_struct:
 
@@ -2286,8 +2277,6 @@ void ComputeAABB(bool f_full) {
 
       done:
 
-        mem_free(nfaces);
-        mem_free(used);
 
         Q_ASSERT(num_struct < MAX_REGIONS_PER_ROOM); // get chris
         num_structs_per_room[i] = num_struct;
@@ -2309,8 +2298,8 @@ void ComputeAABB(bool f_full) {
         //
         //			continue;
 
-        vector3 *s_max_xyz = (vector3 *)mem_malloc(num_structs_per_room[i] * sizeof(vector3));
-        vector3 *s_min_xyz = (vector3 *)mem_malloc(num_structs_per_room[i] * sizeof(vector3));
+        std::vector<vector3> s_max_xyz(num_structs_per_room[i]);
+        std::vector<vector3> s_min_xyz(num_structs_per_room[i]);
 
         for (count = 0; count < num_structs_per_room[i]; count++) {
 
@@ -2366,9 +2355,6 @@ void ComputeAABB(bool f_full) {
             }
           }
         }
-
-        mem_free(s_max_xyz);
-        mem_free(s_min_xyz);
       }
     }
 
@@ -2615,18 +2601,8 @@ void ComputeAABB(bool f_full) {
       }
     }
 
-    mem_free(num_structs_per_room);
-    for (i = 0; i <= Highest_room_index; i++) {
-      if (Rooms[i].used) {
-        if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
-          continue;
-
-        mem_free(r_struct_list[i]);
-      }
-    }
-    mem_free(r_struct_list);
-    num_structs_per_room = NULL;
-    r_struct_list = NULL;
+    num_structs_per_room.clear();
+    r_struct_list.clear();
 
     // Finds the min/max of each region
     for (i = 0; i <= Highest_room_index; i++) {
@@ -2986,8 +2962,8 @@ void ComputeAABB(bool f_full) {
         Objects[i].min_xyz = Rooms[Objects[i].id].min_xyz;
         Objects[i].max_xyz = Rooms[Objects[i].id].max_xyz;
       } else {
-        ObjSetAABB(&Objects[i]);
-        ObjSetOrient(&Objects[i], &Objects[i].orient);
+        ObjSetAABB(Objects[i]);
+        ObjSetOrient(Objects[i], Objects[i].orient);
       }
     }
   }

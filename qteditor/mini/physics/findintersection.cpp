@@ -967,7 +967,7 @@ static void do_fvi_rooms(int initial_room_index);
 /// Assumes that the initial point is not intersecting the plane.
 static inline int find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *plane_pnt, const vector3 *plane_norm,
                                                const vector3 *p0, const vector3 *p1, float rad);
-static bool IsPointInCylinder(vector3 *normal, vector3 *cylinder_pnt, vector3 *edir, float elen, const float rad,
+static bool IsPointInCylinder(vector3& normal, vector3 *cylinder_pnt, vector3 *edir, float elen, const float rad,
                               const vector3 *pnt, vector3 *mdir, bool *f_collide);
 
 //! check if a sphere intersects a face -- this can be optimized (only need 2d stuff after rotation)
@@ -1257,7 +1257,7 @@ int check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, 
   return 1;
 }
 
-bool IsPointInCylinder(vector3 *normal, vector3 *cylinder_pnt, vector3 *edir, float elen, const float rad,
+bool IsPointInCylinder(vector3& normal, vector3 *cylinder_pnt, vector3 *edir, float elen, const float rad,
                        const vector3 *pnt, vector3 *mdir, bool *f_collide) {
   scalar plen = vm_Dot3Product((*pnt - *cylinder_pnt), *edir);
 
@@ -1266,13 +1266,13 @@ bool IsPointInCylinder(vector3 *normal, vector3 *cylinder_pnt, vector3 *edir, fl
   }
 
   vector3 newp = *cylinder_pnt + *edir * plen;
-  *normal = *pnt - newp;
+  normal = *pnt - newp;
 
-  if (vm_NormalizeVector(normal) >= rad) {
+  if (vm_NormalizeVector(&normal) >= rad) {
     return false;
   }
 
-  if (vm_Dot3Product(*normal,*mdir) >= 0.0f)
+  if (vm_Dot3Product(normal,*mdir) >= 0.0f)
     *f_collide = false;
   else
     *f_collide = true;
@@ -1315,7 +1315,7 @@ int check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vect
   vector3 init_normal;
   bool f_init_collide;
 
-  if (!IsPointInCylinder(&init_normal, ep0, &edgevec, edge_len, rad, p0, &mvec3d, &f_init_collide)) {
+  if (!IsPointInCylinder(init_normal, ep0, &edgevec, edge_len, rad, p0, &mvec3d, &f_init_collide)) {
     vm_VectorToMatrix(&edge_orient, &edgevec, nullptr, nullptr);
 
     po0 = (*p0 - *ep0) * edge_orient;
@@ -1462,7 +1462,7 @@ float rad, vector3 *ep0, vector3 *ep1)
                 return 0;
 
         // Check for an initial collision
-        if(!IsPointInCylinder(&init_normal, ep0, &edir, elen, rad, p0, &mdir, &f_init_collide))
+        if(!IsPointInCylinder(init_normal, ep0, &edir, elen, rad, p0, &mdir, &f_init_collide))
         {
                 t = (((brbc) ^ edir) * perp)/pmag;
 
@@ -2747,7 +2747,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
       fvi_new_query.p1 = &new_p1;
 
       for (i = 0; i < num_subdivisions; i++) {
-        fvi_new_query.startroom = GetTerrainRoomFromPos(&new_p0);
+        fvi_new_query.startroom = GetTerrainRoomFromPos(new_p0);
 
         //				mprintf(0, "S %d F %f,%f,%f to %f,%f,%f\n", i, XYZ(&new_p0), XYZ(&new_p1));
         s_hit_type = fvi_FindIntersection(&fvi_new_query, &fvi_new_hit_data, true);
@@ -2832,7 +2832,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
         }
 
         // Determine if we are within the valid terrain bounds
-        hit_data->hit_room = GetTerrainRoomFromPos(&hit_data->hit_pnt);
+        hit_data->hit_room = GetTerrainRoomFromPos(hit_data->hit_pnt);
         if (hit_data->hit_room == -1) {
           hit_data->hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
         }
@@ -2969,7 +2969,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
         vector3 plane_pnt;
         vector3 verts[12];
         vector3 norms[6];
-        poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
+        poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
         int i, j, k;
         vector3 rel[32];
         float dot[32];
@@ -3196,12 +3196,12 @@ vector3 PointSpeed(object *obj, vector3 *pos, matrix *orient, vector3 *rotvel, v
 
 // MTS: only used in this file.
 // Hacked for some initial testing
-bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *collision_normal, object *obj,
+bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *collision_normal, object& obj,
                            vector3 *new_pos, int nv, vector3 **vertex_ptr_list, vector3 *face_normal, matrix *orient,
                            vector3 *rotvel, vector3 *velocity) {
   vector3 plane_pnt;
   vector3 verts[12];
-  poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
+  poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
   int i;
   vector3 rel[32];
   float dot[32];
@@ -3456,7 +3456,7 @@ void check_hit_obj(int objnum) {
                 //									{
                 fvi_curobj = objnum;
                 fvi_moveobj = m_obj_index;
-                if (PolyCollideObject(&Objects[objnum])) {
+                if (PolyCollideObject(Objects[objnum])) {
                   compute_movement_AABB();
                 }
                 //									}
@@ -3490,7 +3490,7 @@ void check_hit_obj(int objnum) {
 
                 fvi_curobj = m_obj_index;
                 fvi_moveobj = objnum;
-                PolyCollideObject(&Objects[temp_fvi_query_ptr->thisobjnum]);
+                PolyCollideObject(Objects[temp_fvi_query_ptr->thisobjnum]);
 
                 fvi_hit_data_ptr = temp_fvi_hit_data_ptr;
                 fvi_query_ptr = temp_fvi_query_ptr;
@@ -4162,7 +4162,7 @@ int do_fvi_terrain() {
   f_check_terrain = false;
 
   // We need to know the endpoint
-  fvi_hit_data_ptr->hit_room = GetTerrainRoomFromPos(&fvi_hit_data_ptr->hit_pnt);
+  fvi_hit_data_ptr->hit_room = GetTerrainRoomFromPos(fvi_hit_data_ptr->hit_pnt);
 
   // End point is out of bounds, so clip it.
   if (fvi_hit_data_ptr->hit_room == -1) {
@@ -4192,7 +4192,7 @@ int do_fvi_terrain() {
     fvi_hit_data_ptr->hit_pnt = *fvi_query_ptr->p0 + delta * movement;
     fvi_collision_dist = vm_VectorDistance(&fvi_hit_data_ptr->hit_pnt, fvi_query_ptr->p0);
 
-    fvi_hit_data_ptr->hit_room = GetTerrainRoomFromPos(&fvi_hit_data_ptr->hit_pnt);
+    fvi_hit_data_ptr->hit_room = GetTerrainRoomFromPos(fvi_hit_data_ptr->hit_pnt);
 
     fvi_hit_data_ptr->hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
 
@@ -4802,12 +4802,12 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
         fvi_hit_data_ptr = &hit_data_terrain;
         fvi_query_ptr = &query_terrain;
 
-        query_terrain.startroom = GetTerrainRoomFromPos(query_terrain.p0);
+        query_terrain.startroom = GetTerrainRoomFromPos(*query_terrain.p0);
 
         //			mprintf(0, "We might go outside\n");
 
         // This is quick, so do it here.
-        hit_data_terrain.hit_room = GetTerrainRoomFromPos(&hit_data_terrain.hit_pnt);
+        hit_data_terrain.hit_room = GetTerrainRoomFromPos(hit_data_terrain.hit_pnt);
 
         if (hit_data_terrain.hit_room == -1)
           hit_data_terrain.hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
@@ -4816,7 +4816,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
         do_fvi_terrain();
 
         // This is quick, so do it here.
-        hit_data_terrain.hit_room = GetTerrainRoomFromPos(&hit_data_terrain.hit_pnt);
+        hit_data_terrain.hit_room = GetTerrainRoomFromPos(hit_data_terrain.hit_pnt);
         if (hit_data_terrain.hit_room == -1)
           hit_data_terrain.hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
 

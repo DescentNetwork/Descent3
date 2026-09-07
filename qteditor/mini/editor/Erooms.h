@@ -231,7 +231,7 @@ int GetNextRoom(int n);
 //					If the face is convex, returns -1
 // NOTE: A face could have multiple concavities, and this will only find the one with the
 // lowest-numbered vertex
-int CheckFaceConcavity(int num_verts, int16_t *face_verts, vector3 *normal, vector3 *verts);
+int CheckFaceConcavity(int num_verts, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts);
 
 // Goes through each face of the passed room and sets the default uvs
 void AssignDefaultUVsToRoom(room *rp);
@@ -270,13 +270,13 @@ bool PointsAreSame(vector3 *v0, vector3 *v1);
 // Parameters:	checkpoint - the point to check
 //					planepoint,normal - the plane we're checking against
 // Returns:		0 if on the plane, -1 if behind, 1 if in front
-int CheckPointToPlane(vector3 *checkpoint, vector3 *planepoint, vector3 *normal);
+int CheckPointToPlane(vector3 *checkpoint, vector3 *planepoint, vector3& normal);
 
 // Check to see if all the points on a face are in front of a plane
 // Parameters:	rp,facenum - the face to check
 //					planepoint,normal - define the plane we're checking against
 // Returns:		the number of the first point found on the back of the plane, or -1 of all on front
-int CheckFaceToPlane(room *rp, int facenum, vector3 *planepoint, vector3 *normal);
+int CheckFaceToPlane(room *rp, int facenum, vector3 *planepoint, vector3& normal);
 
 // Check if a point is inside, outside, or on an edge of a polygon
 // Parameters:	checkv - the point to be checked
@@ -285,7 +285,7 @@ int CheckFaceToPlane(room *rp, int facenum, vector3 *planepoint, vector3 *normal
 // Returns:	 1 if the point in inside the edge
 //				 0 if the point is on the edge
 //				-1 if the point is outside the edge
-int CheckPointAgainstEdge(vector3 *checkv, vector3 *v0, vector3 *v1, vector3 *normal);
+int CheckPointAgainstEdge(vector3 *checkv, vector3 *v0, vector3 *v1, vector3& normal);
 
 // Create space for additional vertices in a room.
 // Allocates a new array of vertices, copies from the old list, and frees the old list
@@ -314,7 +314,7 @@ struct vertex {
 //					v0,v1 - the edge to be clipped
 //					v2,v3 - is the edge clipped against
 //					newv - filled in with the intersection point
-void ClipEdge(vector3 *normal, vertex *v0, vertex *v1, vector3 *v2, vector3 *v3, vertex *newv);
+void ClipEdge(vector3& normal, vertex *v0, vertex *v1, vector3 *v2, vector3 *v3, vertex *newv);
 
 // Finds a shared edge, if one exists, between two faces in the same room
 // Parameters:	fp0,fp1 - pointers to the two faces
@@ -413,7 +413,7 @@ void RemoveAllDuplicateAndUnusedPoints();
 // Checks to see if a face is planar.
 // See if all the points are within a certain distance of an average point
 // Returns 1 if face is planar, 0 if not
-bool FaceIsPlanar(int nv, int16_t *face_verts, vector3 *normal, vector3 *verts);
+bool FaceIsPlanar(int nv, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts);
 
 // Checks to see if a face is planar.
 // See if all the points are within a certain distance of an average point
@@ -421,7 +421,7 @@ bool FaceIsPlanar(int nv, int16_t *face_verts, vector3 *normal, vector3 *verts);
 inline bool FaceIsPlanar(room *rp, int facenum) {
   face *fp = &rp->faces[facenum];
 
-  return FaceIsPlanar(fp->num_verts, fp->face_verts.data(), &fp->normal, rp->verts.data());
+  return FaceIsPlanar(fp->num_verts, fp->face_verts, fp->normal, rp->verts);
 }
 
 // Finds the shell for the specified room.  If the shell is found with no errors, sets

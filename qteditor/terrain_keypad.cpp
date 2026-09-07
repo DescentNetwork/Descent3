@@ -461,8 +461,7 @@ void TerrainKeypad::onSmoothTerrain() {
 
   const int w = TERRAIN_WIDTH;
   const int h = TERRAIN_DEPTH;
-  uint8_t *src = (uint8_t *)mem_malloc(w * h);
-  if (!src) return;
+  std::vector<uint8_t> src(w * h);
 
   for (int i = 0; i < w * h; i++)
     src[i] = Terrain_seg[i].ypos;
@@ -486,7 +485,6 @@ void TerrainKeypad::onSmoothTerrain() {
     }
   }
 
-  mem_free(src);
   BuildMinMaxTerrain();
   QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Terrain smoothed!");
   World_changed = true;
@@ -524,7 +522,7 @@ void TerrainKeypad::onDropTerrain() {
     if (Objects[o].type != OBJ_NONE) {
       vector3 new_pos = Objects[o].pos;
       new_pos.y() += delta_y;
-      ObjSetPos(&Objects[o], &new_pos, Objects[o].roomnum, NULL, false);
+      ObjSetPos(Objects[o], new_pos, Objects[o].roomnum, nullptr, false);
     }
   }
 

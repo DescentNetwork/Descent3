@@ -725,9 +725,9 @@ int SearchQuadTree(int x1, int y1, int x2, int y2, int dir, int *ccount) {
 
 // Given a position, returns the terrain segment that that position is in/over
 // returns -1 if not over terrain
-int GetTerrainCellFromPos(vector3 *pos) {
-  int x = pos->x() / TERRAIN_SIZE;
-  int z = pos->z() / TERRAIN_SIZE;
+int GetTerrainCellFromPos(vector3& pos) {
+  int x = pos.x() / TERRAIN_SIZE;
+  int z = pos.z() / TERRAIN_SIZE;
 
   if (x < 0 || x >= TERRAIN_WIDTH || z < 0 || z >= TERRAIN_DEPTH)
     return -1;
@@ -735,35 +735,34 @@ int GetTerrainCellFromPos(vector3 *pos) {
   return (z * TERRAIN_WIDTH + x);
 }
 
-int GetTerrainRoomFromPos(vector3 *pos) { return MAKE_ROOMNUM(GetTerrainCellFromPos(pos)); }
+int GetTerrainRoomFromPos(vector3& pos) { return MAKE_ROOMNUM(GetTerrainCellFromPos(pos)); }
 
 // Computes the center of the segment in x,z and also sets y touching the ground
-void ComputeTerrainSegmentCenter(vector3 *pos, int segnum) {
+void ComputeTerrainSegmentCenter(vector3& pos, int segnum) {
   int segx = segnum % TERRAIN_WIDTH;
   int segz = segnum / TERRAIN_WIDTH;
 
-  pos->x() = (segx * TERRAIN_SIZE) + (TERRAIN_SIZE / 2);
-  pos->z() = (segz * TERRAIN_SIZE) + (TERRAIN_SIZE / 2);
-
-  pos->y() = GetTerrainGroundPoint(pos);
+  pos.x() = (segx * TERRAIN_SIZE) + (TERRAIN_SIZE / 2);
+  pos.z() = (segz * TERRAIN_SIZE) + (TERRAIN_SIZE / 2);
+  pos.y() = GetTerrainGroundPoint(pos, nullptr);
 }
 
 // Given an position, returns the terrain Y coord at that location
-float GetTerrainGroundPoint(vector3 *pos, vector3 *normal) {
+float GetTerrainGroundPoint(vector3& pos, vector3* normal) {
   float y;
   vector3 pnt, norm;
   int t;
   int x, z;
 
-  x = pos->x() / TERRAIN_SIZE;
-  z = pos->z() / TERRAIN_SIZE;
+  x = pos.x() / TERRAIN_SIZE;
+  z = pos.z() / TERRAIN_SIZE;
 
   if (x < 0 || x >= TERRAIN_WIDTH || z < 0 || z >= TERRAIN_DEPTH)
-    return (0);
+    return 0.0f;
 
   t = z * TERRAIN_WIDTH + x;
 
-  pnt = *pos;
+  pnt = pos;
   pnt.x() -= (x * TERRAIN_SIZE);
   pnt.z() -= (z * TERRAIN_SIZE);
 
@@ -777,7 +776,7 @@ float GetTerrainGroundPoint(vector3 *pos, vector3 *normal) {
   y = -y;
   y += Terrain_seg[t].y;
 
-  if (normal != NULL)
+  if (normal != nullptr)
     *normal = norm;
 
   return (y);

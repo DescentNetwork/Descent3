@@ -3203,7 +3203,7 @@ void RenderRoomObjects(room *rp) {
           save_render = true;
         objp->flags |= OF_SAFE_TO_RENDER;
 
-        RenderObject(objp);
+        RenderObject(*objp);
         if (save_render)
           objp->flags |= OF_SAFE_TO_RENDER;
         else
@@ -3222,7 +3222,7 @@ void RenderRoomObjects(room *rp) {
       object *objp = &Objects[objnum];
       if (objp == Viewer_object)
         continue;
-      RenderObject(objp);
+      RenderObject(*objp);
     }
   }
 #ifdef _DEBUG

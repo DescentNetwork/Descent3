@@ -144,10 +144,10 @@ BriefBitmapDialog::BriefBitmapDialog(TCBMPDESC *desc, QWidget *parent)
     combo->clear();
     combo->addItem("<Raw>");
     int layout = -1;
-    if (PBlayouts && PBnum_layouts) {
-      for (int i = 0; i < *PBnum_layouts; i++) {
+    if (!PBlayouts.empty()) {
+      for (size_t i = 0; i < PBlayouts.size(); i++) {
         if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
-          layout = i;
+          layout = (int)i;
       }
       if (layout != -1) {
         for (int j = 0; j < PBlayouts[layout].num_bmps; j++)
@@ -174,11 +174,11 @@ void BriefBitmapDialog::onPredefChanged(int index) {
   if (index <= 0)
     return;
   int layout = -1;
-  if (!PBlayouts || !PBnum_layouts)
+  if (PBlayouts.empty())
     return;
-  for (int i = 0; i < *PBnum_layouts; i++) {
+  for (size_t i = 0; i < PBlayouts.size(); i++) {
     if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
-      layout = i;
+      layout = (int)i;
   }
   if (layout != -1 && index - 1 < PBlayouts[layout].num_bmps) {
     ui->IDC_BRIEF_B_X->setText(QString::number(PBlayouts[layout].bmps[index - 1].x));

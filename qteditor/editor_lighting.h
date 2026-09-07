@@ -55,7 +55,7 @@ void SetRadClipLines(vector3 *tp, vector3 *rp, vector3 *bp, vector3 *lp);
 void ClipSurfaceElement(vector3 *surf_verts, rad_element *ep, vector3 *clip_verts, int nv);
 
 void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightmap_poly, int nv, int external);
-void BuildObjectLightmapUVs(object *obj, int *sublist, int *facelist, int count, vector3 *lightmap_poly, int nv, int lm_type);
+void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count, vector3 *lightmap_poly, int nv, int lm_type);
 
 int CombineLightFaces(vector3 *dest_verts, vector3 *averts, int nva, vector3 *norma, vector3 *bverts, int nvb, vector3 *normb, int aroom = -1, int broom = -1);
 int TestLightAdjacency(int roomnum, int facenum, int external);
@@ -69,7 +69,7 @@ int GetTotalObjectFaces(int terrain);
 int GetTotalObjectFacesForSingleRoom(int roomnum);
 
 void AssignLightmapsToObjectSurfaces(int surface_index, int terrain);
-void CombineObjectLightmapUVs(object *obj, int lmi_type);
+void CombineObjectLightmapUVs(object& obj, int lmi_type);
 
 void CleanupSpecularLighting(int external);
 void SetupSpecularLighting(int external);
@@ -85,8 +85,8 @@ void AddSpectra(spectra *dest, spectra *a, spectra *b);
 int SpecularPrevIndex(int val, int modulus);
 int SpecularNextIndex(int val, int modulus);
 
-extern rad_surface *Light_surfaces;
-extern rad_surface *Terrain_light_surfaces;
+extern std::vector<rad_surface> Light_surfaces;
+extern std::vector<rad_surface> Terrain_light_surfaces;
 
 extern uint8_t *TerrainLightSpeedup[];
 

@@ -706,9 +706,9 @@ extern int16_t BigObjectList[MAX_BIG_OBJECTS]; // DAJ_MR utb int
  */
 
 // Set the dead flag for an object
-void SetObjectDeadFlag(object *obj, bool tell_clients_to_remove = false, bool play_sound_on_clients = false);
+void SetObjectDeadFlag(object& obj, bool tell_clients_to_remove = false, bool play_sound_on_clients = false);
 
-void SetObjectControlType(object *obj, int control_type);
+void SetObjectControlType(object& obj, int control_type);
 
 // do whatever setup needs to be done
 void InitObjects(void);
@@ -721,12 +721,11 @@ void ObjLink(int objnum, int roomnum);
 void ObjUnlink(int objnum);
 
 // Sets the AABB for the object
-void ObjSetAABB(object *obj);
+void ObjSetAABB(object& obj);
 
 // initialize a new object.  adds to the list for the given room
 // returns the object number
-int ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3 *pos, const matrix *orient,
-              int parent_handle = OBJECT_HANDLE_NONE);
+int ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3& pos, const matrix *orient, int parent_handle = OBJECT_HANDLE_NONE);
 
 // remove object from the world
 void ObjDelete(int objnum);
@@ -755,8 +754,8 @@ void ObjGotoNextViewer();
 //					pos - the new position
 //					roomnum - the correct roomnum for pos.  No error checking is done.
 //					orient - if this is not null, the object's orientation is set to this.
-void ObjSetPos(object *obj, vector3 *pos, int roomnum, matrix *orient, bool f_update_attached_children);
-void ObjSetOrient(object *obj, const matrix *orient);
+void ObjSetPos(object& obj, vector3& pos, int roomnum, matrix* orient, bool f_update_attached_children);
+void ObjSetOrient(object& obj, const matrix& orient);
 
 // delete objects, such as weapons & explosions, that shouldn't stay between levels
 // if clear_all is set, clear even proximity bombs
@@ -775,7 +774,7 @@ void CreatePlayerObject(int roomnum);
 object *ObjGet(int handle);
 
 //	returns a vertex of an object in WORLD coordinates.
-void GetObjectPointInWorld(vector3 *dest, object *obj, int subnum, int vertnum);
+void GetObjectPointInWorld(vector3& dest, object& obj, int subnum, int vertnum);
 
 // These functions are for setting and getting an objects animation information
 // (used in multiplayer games and the like)
@@ -808,8 +807,8 @@ extern tPosHistory Object_position_samples[MAX_OBJECT_POS_HISTORY];
 extern uint8_t Object_position_head;
 extern int16_t Object_map_position_history[MAX_OBJECTS];
 extern float Last_position_history_update[MAX_POSITION_HISTORY]; // last gametime the positions were updated
-void ObjInitPositionHistory(object *obj);
-void ObjFreePositionHistory(object *obj);
+void ObjInitPositionHistory(object& obj);
+void ObjFreePositionHistory(object& obj);
 void ObjResetPositionHistory(void);
 void ObjReInitPositionHistory(void);
 #endif

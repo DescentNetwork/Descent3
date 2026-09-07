@@ -105,8 +105,8 @@ struct iff_bitmap_header {
   uint8_t masking, compression;  // see constants above
   uint8_t xaspect, yaspect;      // aspect ratio (usually 5/6)
   pal_entry palette[256];        // the palette for this bitmap
-  uint8_t *raw_data;             // ptr to array of data
-  int16_t row_size;              // offset to next row
+  std::vector<uint8_t> raw_data; // pixel data
+  int16_t row_size;               // offset to next row
 };
 
 int16_t iff_transparent_color;
@@ -196,7 +196,7 @@ int bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_header *bmh
 
 //  the buffer pointed to by raw_data is stuffed with a pointer to decompressed pixel data
 int bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bmheader) {
-  uint8_t *p = bmheader->raw_data;
+  uint8_t *p = bmheader->raw_data.data();
   int width = 0, depth = 0, done = 0;
 
   if (bmheader->type == TYPE_PBM) {
@@ -288,7 +288,7 @@ void bm_iff_skip_chunk(posix_istream &ifile, uint32_t len) {
 
 // modify passed bitmap
 int bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheader) {
-  uint8_t *p = bmheader->raw_data;
+  uint8_t *p = bmheader->raw_data.data();
   int y;
   int32_t chunk_end = (int32_t)ifile.tell() + len;
 
@@ -381,10 +381,7 @@ int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header *bmheader, iff_bit
       if (ret != IFF_NO_ERROR)
         return ret;
       else {
-
-        bmheader->raw_data = (uint8_t *)mem_malloc(bmheader->w * bmheader->h);
-        if (!bmheader->raw_data)
-          return IFF_NO_MEM;
+        bmheader->raw_data.resize(bmheader->w * bmheader->h);
       }
 
     } break;
@@ -398,12 +395,7 @@ int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header *bmheader, iff_bit
       bmheader->w = prev_bm->w;
       bmheader->h = prev_bm->h;
       bmheader->type = prev_bm->type;
-      bmheader->raw_data = (uint8_t *)mem_malloc(bmheader->w * bmheader->h);
-
-      if (!bmheader->raw_data)
-        return IFF_NO_MEM;
-
-      memcpy(bmheader->raw_data, prev_bm->raw_data, bmheader->w * bmheader->h);
+      bmheader->raw_data = prev_bm->raw_data;
 
       if (len & 1)
         len++;
@@ -486,7 +478,7 @@ void bm_iff_convert_8_to_16(int dest_bm, iff_bitmap_header *iffbm) {
 // Returns bitmap handle on success, or -1 if failed
 int bm_iff_alloc_file(posix_istream &ifile) {
   int ret; // return code
-  iff_bitmap_header bmheader;
+  iff_bitmap_header bmheader{};
   int src_bm;
   char cur_sig[4];
 
@@ -513,14 +505,11 @@ int bm_iff_alloc_file(posix_istream &ifile) {
 
   // Alloc our bitmap
   src_bm = bm_AllocBitmap(bmheader.w, bmheader.h, 0);
-  if (src_bm < 0) {
-    mem_free(bmheader.raw_data);
+  if (src_bm < 0)
     return -1;
-  }
 
   // Convert our 8 bit bitmap to 16bit
   bm_iff_convert_8_to_16(src_bm, &bmheader);
-  free(bmheader.raw_data);
 
   return src_bm;
 }
@@ -531,7 +520,7 @@ int bm_iff_alloc_file(posix_istream &ifile) {
 // variants that D3 textures ship as.
 // ----------------------------------------------------------------------------
 
-static char *Tga_file_data = NULL;
+static std::vector<char> Tga_file_data;
 static int Fake_pos = 0;
 static int Bad_tga = 0;
 static int Fake_file_size = 0;
@@ -559,7 +548,7 @@ inline int tga_read_int() {
     return 0;
   }
 
-  i = *(int *)(Tga_file_data + Fake_pos);
+  i = *(int *)(Tga_file_data.data() + Fake_pos);
   Fake_pos += 4;
 
   return INTEL_INT(i);
@@ -573,7 +562,7 @@ inline int16_t tga_read_short() {
     return 0;
   }
 
-  memcpy(&i, Tga_file_data + Fake_pos, sizeof(i));
+  memcpy(&i, Tga_file_data.data() + Fake_pos, sizeof(i));
   Fake_pos += 2;
 
   return INTEL_SHORT(i);
@@ -874,13 +863,12 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, int format) {
 
     infile.seek(savepos, std::ios_base::beg);
 
-    Tga_file_data = mem_rmalloc<char>(numleft);
-    Q_ASSERT(Tga_file_data != NULL);
+    Tga_file_data.resize(numleft);
     Fake_pos = 0;
     Bad_tga = 0;
     Fake_file_size = numleft;
 
-    infile.read(Tga_file_data, numleft);
+    infile.read(Tga_file_data.data(), numleft);
 
     read_ok = bm_tga_read_outrage_compressed16(n, num_mips, image_type);
   }
@@ -888,9 +876,8 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, int format) {
   else
     Q_ASSERT(false); // Get Jason
 
-  if (Tga_file_data != NULL) {
-    mem_rmfree(Tga_file_data);
-    Tga_file_data = NULL;
+  if (!Tga_file_data.empty()) {
+    Tga_file_data.clear();
     infile.seek(savepos + Fake_pos, std::ios_base::beg);
   }
 

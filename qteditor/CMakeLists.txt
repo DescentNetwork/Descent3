@@ -55,6 +55,7 @@ include_directories(
     ${MINI_SRC}/cfile
     ${MINI_SRC}/manage
     ${MINI_SRC}/ddebug
+    ${MINI_SRC}/model
     ${MINI_SRC}/misc
     ${MINI_SRC}/renderer
     ${MINI_SRC}/scripts

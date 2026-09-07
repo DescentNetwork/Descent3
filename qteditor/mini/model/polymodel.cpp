@@ -685,7 +685,7 @@ static void SetPolymodelProperties(bsp_info *subobj, const std::string &props);
 static void MinMaxSubmodel(poly_model *pm, bsp_info *sm, vector3 offset);
 static void FindMinMaxForModel(poly_model *pm);
 static int ReadNewModelFile(int polynum, byte_istream &infile);
-static void SetNormalizedTimeObjTimed(object *obj, float *normalized_time);
+static void SetNormalizedTimeObjTimed(object& obj, float *normalized_time);
 static void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, poly_model *pm);
 static void FreeAllModels();
 /// Given a model pointer and an array of floats that go from 0..1, calculate the interpolated
@@ -1406,13 +1406,7 @@ int ReadNewModelFile(int polynum, byte_istream &infile) {
       int current_count = 0;
 
       int save_position = (int)infile.tell();
-      int *start_index;
-
-      if (nfaces) {
-        start_index = mem_rmalloc<int>(nfaces);
-        Q_ASSERT(start_index);
-      } else
-        start_index = nullptr;
+      std::vector<int> start_index(nfaces);
 
       uint8_t tempbuf[2000];
 
@@ -1462,8 +1456,7 @@ int ReadNewModelFile(int polynum, byte_istream &infile) {
       // Reset our file pointer and free the temp memory
       infile.seek(save_position, std::ios_base::beg);
 
-      if (start_index)
-        mem_rmfree(start_index);
+      start_index.clear();
 
       for (i = 0; i < nfaces; i++) {
         infile >> pm->submodel[n].faces[i].normal;
@@ -2154,16 +2147,16 @@ void DonePolyModelPosInstance() {
     Interp_pos_instance_vec = Instance_vec_stack[Instance_vec_cnt];
 }
 
-void SetNormalizedTimeObjTimed(object *obj, float *normalized_time) {
+void SetNormalizedTimeObjTimed(object& obj, float *normalized_time) {
   int i, j;
-  poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
-  object_info *obj_info = &Object_info[obj->id];
+  poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
+  object_info *obj_info = &Object_info[obj.id];
 
-  if (obj->type == OBJ_PLAYER || obj->type == OBJ_WEAPON)
+  if (obj.type == OBJ_PLAYER || obj.type == OBJ_WEAPON)
     return;
 
   // Setup all the subobjects for the keyframe
-  float frame = obj->rtype.pobj_info().anim_frame;
+  float frame = obj.rtype.pobj_info().anim_frame;
 
   for (i = 0; i < pm->n_models; i++) {
     bsp_info *sm = &pm->submodel[i];
@@ -2186,8 +2179,8 @@ void SetNormalizedTimeObjTimed(object *obj, float *normalized_time) {
       static float w_frame;
       Q_ASSERT(x >= 0 && x < MAX_WBS_PER_OBJ);
 
-      if (obj->dynamic_wb)
-        w_frame = obj->dynamic_wb[x].wb_anim_frame;
+      if (obj.dynamic_wb)
+        w_frame = obj.dynamic_wb[x].wb_anim_frame;
       else
         w_frame = 0;
 
@@ -2203,13 +2196,13 @@ void SetNormalizedTimeObjTimed(object *obj, float *normalized_time) {
   }
 
   // Now, override angles of weapon bank turrets
-  if (obj->dynamic_wb) {
+  if (obj.dynamic_wb) {
     for (i = 0; i < pm->num_wbs; i++) {
       for (j = 0; j < pm->poly_wb[i].num_turrets; j++) {
         int sobj_index;
 
         sobj_index = pm->poly_wb[i].turret_index[j];
-        normalized_time[sobj_index] = obj->dynamic_wb[i].norm_turret_angle[j];
+        normalized_time[sobj_index] = obj.dynamic_wb[i].norm_turret_angle[j];
       }
     }
   } else {
@@ -2228,7 +2221,7 @@ void SetNormalizedTimeObj(object *obj, float *normalized_time) {
   int i, j;
 
   if (Poly_models[obj->rtype.pobj_info().model_num].flags & PMF_TIMED) {
-    SetNormalizedTimeObjTimed(obj, normalized_time);
+    SetNormalizedTimeObjTimed(*obj, normalized_time);
     return;
   }
 
@@ -3012,22 +3005,22 @@ int CountFacesInPolymodel(poly_model *pm) {
 
 // Given an object, a submodel, and a vertex number, calculates the world position
 // of that point
-void GetPolyModelPointInWorld(vector3 *dest, poly_model *pm, vector3 *wpos, matrix *orient, int subnum, vector3 *pos,
+void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matrix& orient, int subnum, vector3& pos,
                               vector3 *norm) {
   float normalized_time[MAX_SUBOBJECTS];
   int i;
 
-  Q_ASSERT(!(pm->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(pm.flags & PMF_NOT_RESIDENT));
 
-  if (!pm->new_style)
+  if (!pm.new_style)
     return;
 
   for (i = 0; i < MAX_SUBOBJECTS; i++)
     normalized_time[i] = 0.0;
 
-  SetModelAnglesAndPos(pm, normalized_time);
+  SetModelAnglesAndPos(&pm, normalized_time);
 
-  vector3 pnt = *pos;
+  vector3 pnt = pos;
   int mn = subnum;
   vector3 cur_norm;
 
@@ -3040,7 +3033,7 @@ void GetPolyModelPointInWorld(vector3 *dest, poly_model *pm, vector3 *wpos, matr
   while (mn != -1) {
     vector3 tpnt;
 
-    vm_AnglesToMatrix(&m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
+    vm_AnglesToMatrix(&m, pm.submodel[mn].angs.p(), pm.submodel[mn].angs.h(), pm.submodel[mn].angs.b());
     vm_TransposeMatrix(&m);
 
     tpnt = pnt * m;
@@ -3048,31 +3041,31 @@ void GetPolyModelPointInWorld(vector3 *dest, poly_model *pm, vector3 *wpos, matr
     if (norm != nullptr)
       cur_norm = cur_norm * m;
 
-    pnt = tpnt + pm->submodel[mn].offset + pm->submodel[mn].mod_pos;
+    pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
 
-    mn = pm->submodel[mn].parent;
+    mn = pm.submodel[mn].parent;
   }
 
   // now instance for the entire object
-  m = *orient;
+  m = orient;
   vm_TransposeMatrix(&m);
 
   if (norm != nullptr)
     *norm = (cur_norm * m);
-  *dest = pnt * m;
-  *dest += (*wpos);
+  dest = pnt * m;
+  dest += wpos;
 }
 
-void GetPolyModelPointInWorld(vector3 *dest, poly_model *pm, vector3 *wpos, matrix *orient, int subnum,
-                              float *normalized_time, vector3 *pos, vector3 *norm) {
-  Q_ASSERT(!(pm->flags & PMF_NOT_RESIDENT));
+void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matrix& orient, int subnum,
+                              float *normalized_time, vector3& pos, vector3 *norm) {
+  Q_ASSERT(!(pm.flags & PMF_NOT_RESIDENT));
 
-  if (!pm->new_style)
+  if (!pm.new_style)
     return;
 
-  SetModelAnglesAndPos(pm, normalized_time);
+  SetModelAnglesAndPos(&pm, normalized_time);
 
-  vector3 pnt = *pos;
+  vector3 pnt = pos;
   int mn = subnum;
   vector3 cur_norm;
 
@@ -3085,7 +3078,7 @@ void GetPolyModelPointInWorld(vector3 *dest, poly_model *pm, vector3 *wpos, matr
   while (mn != -1) {
     vector3 tpnt;
 
-    vm_AnglesToMatrix(&m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
+    vm_AnglesToMatrix(&m, pm.submodel[mn].angs.p(), pm.submodel[mn].angs.h(), pm.submodel[mn].angs.b());
     vm_TransposeMatrix(&m);
 
     tpnt = pnt * m;
@@ -3093,19 +3086,19 @@ void GetPolyModelPointInWorld(vector3 *dest, poly_model *pm, vector3 *wpos, matr
     if (norm != nullptr)
       cur_norm = cur_norm * m;
 
-    pnt = tpnt + pm->submodel[mn].offset + pm->submodel[mn].mod_pos;
+    pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
 
-    mn = pm->submodel[mn].parent;
+    mn = pm.submodel[mn].parent;
   }
 
   // now instance for the entire object
-  m = *orient;
+  m = orient;
   vm_TransposeMatrix(&m);
 
   if (norm != nullptr)
     *norm = (cur_norm * m);
-  *dest = pnt * m;
-  *dest += (*wpos);
+  dest = pnt * m;
+  dest += wpos;
 }
 
 // Returns 1 if this submodel shouldn't be rendered

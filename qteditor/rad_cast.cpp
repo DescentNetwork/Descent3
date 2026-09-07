@@ -223,7 +223,7 @@ float Current_max_specular_strength;
 spectra Current_max_specular_color;
 
 // Returns 1 if a src vector can hit dest vector for a volume point
-int ShootRayToVolumePoint(vector3 *src, vector3 *dest, int start_room) {
+int ShootRayToVolumePoint(vector3& src, vector3& dest, int start_room) {
   fvi_info hit_info;
   fvi_query fq;
 
@@ -235,8 +235,8 @@ int ShootRayToVolumePoint(vector3 *src, vector3 *dest, int start_room) {
   }
 
   // shoot a ray from the light position to the current vertex
-  fq.p0 = src;
-  fq.p1 = dest;
+  fq.p0 = &src;
+  fq.p1 = &dest;
 
   fq.startroom = start_room;
 
@@ -247,76 +247,76 @@ int ShootRayToVolumePoint(vector3 *src, vector3 *dest, int start_room) {
 
   int fate = fvi_FindIntersection(&fq, &hit_info);
 
-  float dist = vm_VectorDistance(&hit_info.hit_pnt, dest);
+  float dist = vm_VectorDistance(&hit_info.hit_pnt, &dest);
   if (dist > .1)
     return 0;
   return 1;
 }
 
-void ClipSatelliteToTerrain(vector3 *answer, vector3 *src_vec, vector3 *dest_vec) {
-  vector3 cur_vec = *src_vec;
+void ClipSatelliteToTerrain(vector3& answer, vector3& src_vec, vector3& dest_vec) {
+  vector3 cur_vec = src_vec;
   scalar terrain_limit = 256 * TERRAIN_SIZE;
   scalar mag, diff;
   vector3 ray;
 
   // Check ceiling
   if (cur_vec.y() > ((scalar)MAX_TERRAIN_HEIGHT * 30)) {
-    ray = cur_vec - *dest_vec;
+    ray = cur_vec - dest_vec;
 
     mag = vm_GetMagnitude(&ray);
     ray /= mag;
 
-    diff = (((scalar)MAX_TERRAIN_HEIGHT * 30) - dest_vec->y()) / ray.y();
+    diff = (((scalar)MAX_TERRAIN_HEIGHT * 30) - dest_vec.y()) / ray.y();
 
-    cur_vec = (*dest_vec + (ray * diff)) - (ray / 4);
+    cur_vec = (dest_vec + (ray * diff)) - (ray / 4);
   }
 
   // Check right edge
   if (cur_vec.x() > terrain_limit) {
-    ray = cur_vec - *dest_vec;
+    ray = cur_vec - dest_vec;
 
     mag = vm_GetMagnitude(&ray);
     ray /= mag;
 
-    diff = (terrain_limit - dest_vec->x()) / ray.x();
+    diff = (terrain_limit - dest_vec.x()) / ray.x();
 
-    cur_vec = (*dest_vec + (ray * diff)) - (ray / 4);
+    cur_vec = (dest_vec + (ray * diff)) - (ray / 4);
   }
 
   // Check left edge
   if (cur_vec.x() < 0) {
-    ray = cur_vec - *dest_vec;
+    ray = cur_vec - dest_vec;
 
     mag = vm_GetMagnitude(&ray);
     ray /= mag;
 
-    diff = (-dest_vec->x()) / ray.x();
+    diff = (-dest_vec.x()) / ray.x();
 
-    cur_vec = (*dest_vec + (ray * diff)) - (ray / 4);
+    cur_vec = (dest_vec + (ray * diff)) - (ray / 4);
   }
 
   // Check top edge
   if (cur_vec.z() > terrain_limit) {
-    ray = cur_vec - *dest_vec;
+    ray = cur_vec - dest_vec;
 
     mag = vm_GetMagnitude(&ray);
     ray /= mag;
 
-    diff = (terrain_limit - dest_vec->z()) / ray.z();
+    diff = (terrain_limit - dest_vec.z()) / ray.z();
 
-    cur_vec = (*dest_vec + (ray * diff)) - (ray / 4);
+    cur_vec = (dest_vec + (ray * diff)) - (ray / 4);
   }
 
   // Check bottom edge
   if (cur_vec.z() < 0) {
-    ray = cur_vec - *dest_vec;
+    ray = cur_vec - dest_vec;
 
     mag = vm_GetMagnitude(&ray);
     ray /= mag;
 
-    diff = (-dest_vec->z()) / ray.z();
+    diff = (-dest_vec.z()) / ray.z();
 
-    cur_vec = (*dest_vec + (ray * diff)) - (ray / 4);
+    cur_vec = (dest_vec + (ray * diff)) - (ray / 4);
   }
 
   if (cur_vec.x() > 4095)
@@ -324,17 +324,16 @@ void ClipSatelliteToTerrain(vector3 *answer, vector3 *src_vec, vector3 *dest_vec
   if (cur_vec.z() > 4095)
     cur_vec.z() = 4095;
 
-  *answer = cur_vec;
+  answer = cur_vec;
 }
 
 // Returns 1 if a src vector can hit dest vector unobstructed, else 0
-int ShootRayFromPoint(vector3 *src, vector3 *dest, rad_surface *src_surf, rad_surface *dest_surf) {
+int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_surface *dest_surf) {
   scalar dist;
-  bool do_backface = 0;
   fvi_info hit_info;
   fvi_query fq;
-  vector3 temp_src = *src;
-  vector3 temp_dest = *dest;
+  vector3 temp_src = src;
+  vector3 temp_dest = dest;
   int from_satellite = 0;
 
   // Trivially reject all rooms
@@ -358,11 +357,11 @@ int ShootRayFromPoint(vector3 *src, vector3 *dest, rad_surface *src_surf, rad_su
 
   // If this ray is too high, clip it to the ceiling
   if (src_surf->surface_type == ST_SATELLITE) {
-    if (1 || dest->y() >= (scalar)MAX_TERRAIN_HEIGHT) {
+    if (1 || dest.y() >= (scalar)MAX_TERRAIN_HEIGHT) {
       from_satellite = 1;
       // swap the src/dest the variables because we now want to shoot from the ground to the satellite
       rad_surface *temp_surf;
-      vector3 *temp_vec;
+      vector3 temp_vec;
 
       temp_surf = src_surf;
       src_surf = dest_surf;
@@ -372,13 +371,13 @@ int ShootRayFromPoint(vector3 *src, vector3 *dest, rad_surface *src_surf, rad_su
       src = dest;
       dest = temp_vec;
 
-      temp_dest = *dest;
-      temp_src = *src;
+      temp_dest = dest;
+      temp_src = src;
 
-      ClipSatelliteToTerrain(&temp_src, src, &temp_dest);
+      ClipSatelliteToTerrain(temp_src, src, temp_dest);
     } else {
-      ClipSatelliteToTerrain(&temp_src, src, &temp_dest);
-      int src_cell = GetTerrainCellFromPos(&temp_src);
+      ClipSatelliteToTerrain(temp_src, src, temp_dest);
+      int src_cell = GetTerrainCellFromPos(temp_src);
 
       if (src_cell < 0) {
         src_cell = 0;
@@ -467,7 +466,7 @@ float GetFormFactorForElementAndSatellite(rad_surface *dest_surf, rad_element *d
 
       hit = TerrainLightSpeedup[rad_MaxSurface->roomnum][cellnum];
     } else
-      hit = ShootRayFromPoint(&light_center, &dest_center, rad_MaxSurface, dest_surf);
+      hit = ShootRayFromPoint(light_center, dest_center, rad_MaxSurface, dest_surf);
 
     if (hit) {
       float ray_length = vm_GetMagnitude(&ray);
@@ -633,7 +632,7 @@ float GetFormFactorForElement(rad_surface *dest_surf, rad_element *dest_element,
       continue;
     }
 
-    hit = ShootRayFromPoint(&light_center, &dest_center, rad_MaxSurface, dest_surf);
+    hit = ShootRayFromPoint(light_center, dest_center, rad_MaxSurface, dest_surf);
 
     if (hit) {
       // We got a hit...figure out how much light contribution this light has
@@ -747,7 +746,7 @@ float GetFormFactorForElementSuperDetail(rad_surface *dest_surf, rad_element *de
     return 0;
   }
 
-  hit = ShootRayFromPoint(&light_center, &dest_center, rad_MaxSurface, dest_surf);
+  hit = ShootRayFromPoint(light_center, dest_center, rad_MaxSurface, dest_surf);
 
   if (hit) {
     // We got a hit...figure out how much light contribution this light has
@@ -799,7 +798,7 @@ float GetFormFactorForElementSuperDetail(rad_surface *dest_surf, rad_element *de
 }
 
 // Calculates the volume lighting for the currently shooting patch
-void CalculateVolumeLightsForRay(float total_sphere_dist, vector3 *src_center) {
+void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
   float sphere_dist = total_sphere_dist;
   int i, t;
 
@@ -812,7 +811,7 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3 *src_center) {
       memset(check_room, 0, MAX_VOLUME_ELEMENTS);
 
       // Build a list of rooms to check
-      int num_faces = fvi_QuickDistFaceList(rad_MaxSurface->roomnum, src_center, sphere_dist, facelist, 4000);
+      int num_faces = fvi_QuickDistFaceList(rad_MaxSurface->roomnum, &src_center, sphere_dist, facelist, 4000);
       check_room[rad_MaxSurface->roomnum] = 1;
 
       for (i = 0; i < num_faces; i++) {
@@ -883,9 +882,9 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3 *src_center) {
                     hit = 0;
                   } else {
                     if (ve->flags & VEF_REVERSE_SHOOT)
-                      hit = ShootRayToVolumePoint(&ve->pos, &light_center, roomnum);
+                      hit = ShootRayToVolumePoint(ve->pos, light_center, roomnum);
                     else
-                      hit = ShootRayToVolumePoint(&light_center, &ve->pos, rad_MaxSurface->roomnum);
+                      hit = ShootRayToVolumePoint(light_center, ve->pos, rad_MaxSurface->roomnum);
                   }
 
                   if (hit) {
@@ -908,7 +907,7 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3 *src_center) {
                 if (ve->color.r < 0)
                   continue;
 
-                vector3 subvec = ve->pos - *src_center;
+                vector3 subvec = ve->pos - src_center;
                 float mag = vm_GetMagnitudeFast(&subvec);
 
                 if (mag > sphere_dist)
@@ -929,9 +928,9 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3 *src_center) {
                   hit = 0;
                 } else {
                   if (ve->flags & VEF_REVERSE_SHOOT)
-                    hit = ShootRayToVolumePoint(&ve->pos, src_center, roomnum);
+                    hit = ShootRayToVolumePoint(ve->pos, src_center, roomnum);
                   else
-                    hit = ShootRayToVolumePoint(src_center, &ve->pos, rad_MaxSurface->roomnum);
+                    hit = ShootRayToVolumePoint(src_center, ve->pos, rad_MaxSurface->roomnum);
                 }
 
                 if (hit) {
@@ -980,7 +979,7 @@ void CalculateFormFactorsRaycast() {
 
   // Do volume lighting
   if (Do_volume_lighting)
-    CalculateVolumeLightsForRay(sphere_dist, &src_center);
+    CalculateVolumeLightsForRay(sphere_dist, src_center);
 
   // Shoot this patches light to each element within range
   for (i = 0; i < rad_NumSurfaces; i++) {

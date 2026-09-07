@@ -172,7 +172,7 @@ bool BOA_IsVisible(int start_room, int end_room) { PRINT_STUB(__FUNCTION__); ret
 */
 // ==================== BSP ====================
 void InitBSP() { PRINT_STUB(__FUNCTION__); }
-int BSPRayOccluded(vector3 *a, vector3 *b, bspnode *n) { PRINT_STUB(__FUNCTION__); return 0; }
+int BSPRayOccluded(vector3& a, vector3& b, bspnode *n) { PRINT_STUB(__FUNCTION__); return 0; }
 bsptree MineBSP = {};
 uint8_t UseBSP = 0;
 void BuildBSPTree() { PRINT_STUB(__FUNCTION__); }
@@ -395,8 +395,8 @@ bool oeLnxAppDatabase::write(const char *label, const char *entry, int entrylen)
 bool oeLnxAppDatabase::write(const char *label, int entry) { PRINT_STUB(__FUNCTION__); return false; }
 void oeLnxAppDatabase::get_user_name(char *buffer, size_t *size) { PRINT_STUB(__FUNCTION__); if (buffer) buffer[0] = 0; }
 
-oeApplication *Descent = nullptr;
-oeAppDatabase *Database = nullptr;
+std::unique_ptr<oeApplication> Descent;
+std::unique_ptr<oeAppDatabase> Database;
 
 // ==================== Find* ====================
 
@@ -467,9 +467,9 @@ int CreateMatcen(const char *name, bool *flag) { PRINT_STUB(__FUNCTION__); retur
 void DestroyAllMatcens() { PRINT_STUB(__FUNCTION__); }
 void FreeAllGamePaths() { PRINT_STUB(__FUNCTION__); }
 //int FindPointRoom(vector3 *pnt) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetTerrainRoomFromPos_ret(vector3 *pos) { PRINT_STUB(__FUNCTION__); return -1; }
+int GetTerrainRoomFromPos_ret(vector3& pos) { PRINT_STUB(__FUNCTION__); return -1; }
 int AIMakeNextRoomList(int roomnum, int *next_rooms, int max_rooms) { PRINT_STUB(__FUNCTION__); return 0; }
-bool PhysCalcGround(vector3 *ground_point, vector3 *ground_normal, object *obj, int ground_num) { PRINT_STUB(__FUNCTION__); return false; }
+bool PhysCalcGround(vector3& ground_point, vector3& ground_normal, object& obj, int ground_num) { PRINT_STUB(__FUNCTION__); return false; }
 void ClearAllEvents() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== FVI ====================

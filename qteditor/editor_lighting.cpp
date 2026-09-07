@@ -71,7 +71,7 @@ bool PointsAreSame(vector3 *v0, vector3 *v1) { return vm_VectorDistance(v0, v1) 
 int AllowCombining = 1;
 float GlobalMultiplier = 1.0;
 
-rad_surface *Light_surfaces = NULL;
+std::vector<rad_surface> Light_surfaces;
 
 vector3 ScratchCenters[MAX_LIGHTMAP_INFOS];
 vector3 ScratchRVecs[MAX_LIGHTMAP_INFOS];
@@ -957,8 +957,7 @@ void DoRadiosityForRooms() {
 
   // Allocate enough memory to hold all surfaces
 
-  Light_surfaces = mem_rmalloc<rad_surface>(facecount);
-  Q_ASSERT(Light_surfaces != NULL);
+  Light_surfaces.resize(facecount);
 
   // Set initial surface properties
   max_index = surface_index = 0;
@@ -973,20 +972,17 @@ void DoRadiosityForRooms() {
         ComputeSurfaceRes(&Light_surfaces[surface_index], &Rooms[i], t);
 
         if (Rooms[i].faces[t].num_verts) {
-          Light_surfaces[surface_index].verts = mem_rmalloc<vector3>(Rooms[i].faces[t].num_verts);
-          Q_ASSERT(Light_surfaces[surface_index].verts != NULL);
+          Light_surfaces[surface_index].verts.resize(Rooms[i].faces[t].num_verts);
         } else {
-          Light_surfaces[surface_index].verts = NULL;
+          Light_surfaces[surface_index].verts.clear();
           LOG_INFO("Room=%d Face %d has no verts!\n", i, t);
         }
 
-        if (Light_surfaces[surface_index].xresolution * Light_surfaces[surface_index].yresolution) {
-          Light_surfaces[surface_index].elements =
-               mem_rmalloc<rad_element>(Light_surfaces[surface_index].xresolution *
-                                        Light_surfaces[surface_index].yresolution);
-          Q_ASSERT(Light_surfaces[surface_index].elements != NULL);
-        } else {
-          Light_surfaces[surface_index].elements = NULL;
+        if (Light_surfaces[surface_index].xresolution * Light_surfaces[surface_index].yresolution)
+          Light_surfaces[surface_index].elements.resize(Light_surfaces[surface_index].xresolution *
+                                                        Light_surfaces[surface_index].yresolution);
+        else {
+          Light_surfaces[surface_index].elements.clear();
           LOG_INFO("Room=%d Face %d is slivered!\n", i, t);
         }
 
@@ -1044,14 +1040,9 @@ void DoRadiosityForRooms() {
 
   // Setup satellites
   for (i = 0; i < Terrain_sky.num_satellites; i++, surface_index++) {
-    Light_surfaces[surface_index].verts = mem_rmalloc<vector3>(3);
-    Q_ASSERT(Light_surfaces[surface_index].verts != NULL);
-
-    Light_surfaces[surface_index].elements = mem_rmalloc<rad_element>();
-    Q_ASSERT(Light_surfaces[surface_index].elements != NULL);
-
-    Light_surfaces[surface_index].elements[0].verts = mem_rmalloc<vector3>(3);
-    Q_ASSERT(Light_surfaces[surface_index].elements[0].verts);
+    Light_surfaces[surface_index].verts.resize(3);
+    Light_surfaces[surface_index].elements.resize(1);
+    Light_surfaces[surface_index].elements[0].verts.resize(3);
 
     Light_surfaces[surface_index].surface_type = ST_SATELLITE;
     Light_surfaces[surface_index].emittance.r = Terrain_sky.satellite_r[i];
@@ -1119,20 +1110,7 @@ void DoRadiosityForRooms() {
   ShadeLightmapInfoEdges(LMI_ROOM_OBJECT);
 
   // Free our memory
-
-  for (i = 0; i < facecount; i++) {
-    if (Light_surfaces[i].verts)
-      mem_rmfree(Light_surfaces[i].verts);
-    for (t = 0; t < Light_surfaces[i].xresolution * Light_surfaces[i].yresolution; t++)
-      if (Light_surfaces[i].elements[t].num_verts > 0)
-        mem_rmfree(Light_surfaces[i].elements[t].verts);
-
-    if (Light_surfaces[i].elements)
-      mem_rmfree(Light_surfaces[i].elements);
-    Light_surfaces[i].elements = NULL;
-  }
-  mem_rmfree(Light_surfaces);
-  Light_surfaces = NULL;
+  Light_surfaces.clear();
   Do_volume_lighting = 0;
 
   // Free specular lighting stuff
@@ -1210,8 +1188,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
 
   // Allocate enough memory to hold all surfaces
 
-  Light_surfaces = mem_rmalloc<rad_surface>(facecount);
-  Q_ASSERT(Light_surfaces != NULL);
+  Light_surfaces.resize(facecount);
 
   // Set initial surface properties
   max_index = surface_index = 0;
@@ -1220,19 +1197,17 @@ void DoRadiosityForCurrentRoom(room *rp) {
     ComputeSurfaceRes(&Light_surfaces[surface_index], rp, t);
 
     if (rp->faces[t].num_verts) {
-      Light_surfaces[surface_index].verts = mem_rmalloc<vector3>(rp->faces[t].num_verts);
-      Q_ASSERT(Light_surfaces[surface_index].verts != NULL);
+      Light_surfaces[surface_index].verts.resize(rp->faces[t].num_verts);
     } else {
-      Light_surfaces[surface_index].verts = NULL;
+      Light_surfaces[surface_index].verts.clear();
       LOG_INFO("Room=%d Face %d has no verts!\n", rp - Rooms, t);
     }
 
     if (Light_surfaces[surface_index].xresolution * Light_surfaces[surface_index].yresolution) {
-      Light_surfaces[surface_index].elements = mem_rmalloc<rad_element>(
-          Light_surfaces[surface_index].xresolution * Light_surfaces[surface_index].yresolution);
-      Q_ASSERT(Light_surfaces[surface_index].elements != NULL);
+      Light_surfaces[surface_index].elements.resize(Light_surfaces[surface_index].xresolution *
+                                                    Light_surfaces[surface_index].yresolution);
     } else {
-      Light_surfaces[surface_index].elements = NULL;
+      Light_surfaces[surface_index].elements.clear();
       LOG_INFO("Room=%d Face %d is slivered!\n", rp - Rooms, t);
     }
 
@@ -1292,17 +1267,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
 
   // Free our memory
 
-  for (int i = 0; i < facecount; i++) {
-    mem_rmfree(Light_surfaces[i].verts);
-    for (t = 0; t < Light_surfaces[i].xresolution * Light_surfaces[i].yresolution; t++)
-      if (Light_surfaces[i].elements[t].num_verts > 0)
-        mem_rmfree(Light_surfaces[i].elements[t].verts);
-
-    mem_rmfree(Light_surfaces[i].elements);
-    Light_surfaces[i].elements = NULL;
-  }
-  mem_rmfree(Light_surfaces);
-  Light_surfaces = NULL;
+  Light_surfaces.clear();
 
   // Finally, squeeze the lightmaps
   SqueezeLightmaps(0, rp - Rooms);
@@ -1563,8 +1528,7 @@ void ClipSurfaceElement(vector3 *surf_verts, rad_element *ep, vector3 *clip_vert
   if (ep->num_verts == 0)
     ep->flags |= EF_IGNORE;
   else {
-    ep->verts = mem_rmalloc<vector3>(nnv);
-    Q_ASSERT(ep->verts);
+    ep->verts.resize(nnv);
 
     for (i = 0; i < nnv; i++) {
       ep->verts[i] = dlist[i].pos;
@@ -1854,8 +1818,7 @@ void DoRadiosityForTerrain() {
   terrain_sums[1] = mem_rmalloc<spectra>(TERRAIN_WIDTH * TERRAIN_DEPTH);
   Q_ASSERT(terrain_sums[0] && terrain_sums[1]);
 
-  Light_surfaces = mem_rmalloc<rad_surface>(total_surfaces);
-  Q_ASSERT(Light_surfaces != NULL);
+  Light_surfaces.resize(total_surfaces);
 
   // Setup radiosity surfaces
   if (!Ignore_terrain) {
@@ -1888,14 +1851,9 @@ void DoRadiosityForTerrain() {
       }
 
       // Do upper left triangle
-      Light_surfaces[i * 2].elements = mem_rmalloc<rad_element>();
-      Q_ASSERT(Light_surfaces[i * 2].elements != NULL);
-
-      Light_surfaces[i * 2].elements[0].verts = mem_rmalloc<vector3>(3);
-      Q_ASSERT(Light_surfaces[i * 2].elements[0].verts);
-
-      Light_surfaces[i * 2].verts = mem_rmalloc<vector3>(3);
-      Q_ASSERT(Light_surfaces[i * 2].verts != NULL);
+      Light_surfaces[i * 2].elements.resize(1);
+      Light_surfaces[i * 2].elements[0].verts.resize(3);
+      Light_surfaces[i * 2].verts.resize(3);
 
       Light_surfaces[i * 2].normal = TerrainNormals[MAX_TERRAIN_LOD - 1][seg].normal1;
 
@@ -1928,14 +1886,9 @@ void DoRadiosityForTerrain() {
 
       // Now do lower right
 
-      Light_surfaces[i * 2 + 1].elements = mem_rmalloc<rad_element>();
-      Q_ASSERT(Light_surfaces[i * 2 + 1].elements != NULL);
-
-      Light_surfaces[i * 2 + 1].elements[0].verts = mem_rmalloc<vector3>(3);
-      Q_ASSERT(Light_surfaces[i * 2 + 1].elements[0].verts);
-
-      Light_surfaces[i * 2 + 1].verts = mem_rmalloc<vector3>(3);
-      Q_ASSERT(Light_surfaces[i * 2 + 1].verts != NULL);
+      Light_surfaces[i * 2 + 1].elements.resize(1);
+      Light_surfaces[i * 2 + 1].elements[0].verts.resize(3);
+      Light_surfaces[i * 2 + 1].verts.resize(3);
 
       Light_surfaces[i * 2 + 1].normal = TerrainNormals[MAX_TERRAIN_LOD - 1][seg].normal2;
 
@@ -1970,14 +1923,9 @@ void DoRadiosityForTerrain() {
 
   // Setup satellites
   for (i = 0; i < Terrain_sky.num_satellites; i++, surf_index++) {
-    Light_surfaces[surf_index].verts = mem_rmalloc<vector3>(3);
-    Q_ASSERT(Light_surfaces[surf_index].verts != NULL);
-
-    Light_surfaces[surf_index].elements = mem_rmalloc<rad_element>();
-    Q_ASSERT(Light_surfaces[surf_index].elements != NULL);
-
-    Light_surfaces[surf_index].elements[0].verts = mem_rmalloc<vector3>(3);
-    Q_ASSERT(Light_surfaces[surf_index].elements[0].verts);
+    Light_surfaces[surf_index].verts.resize(3);
+    Light_surfaces[surf_index].elements.resize(1);
+    Light_surfaces[surf_index].elements[0].verts.resize(3);
 
     Light_surfaces[surf_index].surface_type = ST_SATELLITE;
     Light_surfaces[surf_index].emittance.r = Terrain_sky.satellite_r[i];
@@ -2018,16 +1966,12 @@ void DoRadiosityForTerrain() {
 
         ComputeSurfaceRes(&Light_surfaces[surf_index], &Rooms[i], t);
 
-        Light_surfaces[surf_index].verts = mem_rmalloc<vector3>(Rooms[i].faces[t].num_verts);
-        Q_ASSERT(Light_surfaces[surf_index].verts != NULL);
-
-        Light_surfaces[surf_index].elements = mem_rmalloc<rad_element>(
-            Light_surfaces[surf_index].xresolution * Light_surfaces[surf_index].yresolution);
-        Q_ASSERT(Light_surfaces[surf_index].elements != NULL);
+        Light_surfaces[surf_index].verts.resize(Rooms[i].faces[t].num_verts);
+        Light_surfaces[surf_index].elements.resize(Light_surfaces[surf_index].xresolution *
+                                                   Light_surfaces[surf_index].yresolution);
 
         if (Rooms[i].faces[t].portal_num != -1 &&
             !(Rooms[i].portals[Rooms[i].faces[t].portal_num].flags & PF_RENDER_FACES))
-
         {
           Light_surfaces[surf_index].surface_type = ST_PORTAL;
           Light_surfaces[surf_index].emittance.r = 0;
@@ -2166,16 +2110,7 @@ void DoRadiosityForTerrain() {
   ShadeLightmapInfoEdges(LMI_TERRAIN_OBJECT);
 
   // Free memory
-
-  for (i = 0; i < total_surfaces; i++) {
-    mem_rmfree(Light_surfaces[i].verts);
-    for (int t = 0; t < Light_surfaces[i].xresolution * Light_surfaces[i].yresolution; t++)
-      if (Light_surfaces[i].elements[t].num_verts > 0)
-        mem_rmfree(Light_surfaces[i].elements[t].verts);
-    mem_rmfree(Light_surfaces[i].elements);
-  }
-
-  mem_rmfree(Light_surfaces);
+  Light_surfaces.clear();
   mem_rmfree(terrain_sums[0]);
   mem_rmfree(terrain_sums[1]);
 
@@ -3283,8 +3218,7 @@ void SetupSpecularLighting(int external) {
       room *rp = &Rooms[i];
 
       // Calculate vertex normals for this room
-      vector3 *vertnorms = mem_rmalloc<vector3>(rp->num_verts);
-      Q_ASSERT(vertnorms);
+      std::vector<vector3> vertnorms(rp->num_verts);
       for (t = 0; t < rp->num_verts; t++) {
         int total = 0;
         vector3 normal;
@@ -3339,7 +3273,6 @@ void SetupSpecularLighting(int external) {
           }
         }
       }
-      mem_rmfree(vertnorms);
     }
   }
 }

@@ -100,7 +100,7 @@ void HObjectMove(int objnum, float dx, float dy, float dz);
 bool HObjectPlace(int obj_type, int obj_id);
 
 // Adjusts an object so it's at the ground level (for when the ground has moved)
-void ResetGroundObject(object *objp);
+void ResetGroundObject(object& objp);
 
 //	deletes the currently selected object from the mine.
 void HObjectDelete();

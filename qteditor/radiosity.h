@@ -88,7 +88,7 @@ struct spectra {
 #define EF_SMALL 2 // Don't blend this one into the lightmap - it will corrupt!
 
 struct rad_element {
-  vector3 *verts;
+  std::vector<vector3> verts;
   spectra exitance;
   float area;
   uint8_t num_verts;
@@ -135,9 +135,9 @@ struct rad_surface {
   float reflectivity;  // how much light bounces off
   uint8_t xresolution; // how many elements (resolution x resolution) for this face
   uint8_t yresolution;
-  rad_element *elements; // list of elements for this surface
+  std::vector<rad_element> elements; // list of elements for this surface
   vector3 normal;         // normal of this surface
-  vector3 *verts;
+  std::vector<vector3> verts;
 
   uint8_t surface_type; // See ST_ types above
 
@@ -176,7 +176,7 @@ extern rad_surface *rad_MaxSurface;
 extern int rad_NumSurfaces;
 extern int rad_NumElements;
 
-extern float *rad_FormFactors;
+extern std::vector<float> rad_FormFactors;
 extern rad_surface *rad_Surfaces;
 extern volume_element *Volume_elements[];
 
@@ -188,7 +188,7 @@ extern int Shoot_from_patch;
 // Tells radiosity renderer to do volume lighting
 extern int Do_volume_lighting;
 
-int DoRadiosityRun(int method, rad_surface *light_surfaces, int count);
+int DoRadiosityRun(int method, std::vector<rad_surface>& light_surfaces, int count);
 // Sets up our radiosity run
 void InitRadiosityRun();
 

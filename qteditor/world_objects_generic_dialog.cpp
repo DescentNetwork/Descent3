@@ -294,10 +294,6 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int current, Q
 }
 
 WorldObjectsGenericDialog::~WorldObjectsGenericDialog() {
-  if (Copy_object.description) {
-    mem_free(Copy_object.description);
-    Copy_object.description = nullptr;
-  }
   saveGenericsOnClose();
   ObjReInitAll();
 }
@@ -603,10 +599,10 @@ void WorldObjectsGenericDialog::updateDialog() {
 
   if (auto *edit = ui->IDC_GENERIC_INVEN_DESCRIPTION)
   {
-    if (oi->description == nullptr || oi->description[0] == '\0')
+    if (oi->description.empty())
       edit->setText("<no description>");
     else
-      edit->setText(oi->description);
+      edit->setText(QString::fromStdString(oi->description));
   }
   if (QLineEdit *edit = ui->IDC_GENERIC_INVEN_ICONNAME)
   {
@@ -944,13 +940,7 @@ void WorldObjectsGenericDialog::onKillfocusSize() {
 void WorldObjectsGenericDialog::onCopy() {
   if (m_current == -1)
     return;
-  if (Copy_object.description) {
-    mem_free(Copy_object.description);
-    Copy_object.description = nullptr;
-  }
   Copy_object = Object_info[m_current];
-  Copy_object.description =
-      mem_strdup(Object_info[m_current].description ? Object_info[m_current].description : "<no description>");
   Copy_object_used = true;
   updateDialog();
 }
@@ -979,8 +969,6 @@ void WorldObjectsGenericDialog::onPaste() {
   }
 
   Object_info[n] = Copy_object;
-  Object_info[n].description = Copy_object.description;
-  Copy_object.description = nullptr;
   Object_info[n].type = m_type;
   Object_info[n].name = temp_name;
   Poly_models[Object_info[m_current].render_handle].used++;
@@ -1092,13 +1080,10 @@ void WorldObjectsGenericDialog::onKillfocusInvenDescription() {
     return;
   auto *edit = ui->IDC_GENERIC_INVEN_DESCRIPTION;
   const QByteArray text = edit->toPlainText().toLocal8Bit();
-  if (Object_info[m_current].description) {
-    mem_free(Object_info[m_current].description);
-    Object_info[m_current].description = nullptr;
-  }
   if (text.size() > 0 && QString::compare(text.constData(), "<no description>") != 0) {
-    Object_info[m_current].description = mem_strdup(text.constData());
+    Object_info[m_current].description = text.constData();
   } else {
+    Object_info[m_current].description.clear();
     edit->setText("<no description>");
   }
 }

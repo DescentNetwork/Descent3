@@ -47,7 +47,7 @@ float rad_Convergence = 1.0f;
 int rad_NumSurfaces;
 int rad_NumElements;
 
-float *rad_FormFactors;
+std::vector<float> rad_FormFactors;
 
 int rad_StepCount = 0;
 int rad_MaxStep = 1;
@@ -71,12 +71,12 @@ volume_element *Volume_elements[MAX_VOLUME_ELEMENTS];
 
 extern int Shoot_from_patch;
 
-int DoRadiosityRun(int method, rad_surface *light_surfaces, int count) {
+int DoRadiosityRun(int method, std::vector<rad_surface>& light_surfaces, int count) {
   float start_time;
 
   LOG_INFO("Calculating radiosity on %d faces.\n", count);
 
-  rad_Surfaces = light_surfaces;
+  rad_Surfaces = light_surfaces.data();
   rad_NumSurfaces = count;
 
   Shoot_method = method;
@@ -122,9 +122,7 @@ void InitRadiosityRun() {
 // Initalizes memory for form factors
 void SetupFormFactors() {
   Q_ASSERT(rad_NumElements > 0);
-
-  rad_FormFactors = mem_rmalloc<float>(rad_NumElements);
-  Q_ASSERT(rad_FormFactors != NULL);
+  rad_FormFactors.resize(rad_NumElements);
 }
 
 void CalculateAreaForSurface(rad_surface *sp) {
@@ -295,10 +293,10 @@ void UpdateUnsentValues() {
 }
 
 // Finds the world coordinate center of a surface
-void GetCenterOfSurface(rad_surface *sp, vector3 *dest) { vm_GetCentroid(dest, sp->verts, sp->num_verts); }
+void GetCenterOfSurface(rad_surface *sp, vector3 *dest) { vm_GetCentroid(dest, sp->verts.data(), sp->num_verts); }
 
 // Finds the world coordinate center of a surface
-void GetCenterOfElement(rad_element *ep, vector3 *dest) { vm_GetCentroid(dest, ep->verts, ep->num_verts); }
+void GetCenterOfElement(rad_element *ep, vector3 *dest) { vm_GetCentroid(dest, ep->verts.data(), ep->num_verts); }
 
 void CalculateRadiosity() {
   while (!rad_DoneCalculating) {
@@ -387,7 +385,7 @@ void CloseRadiosityRun() {
 
   NormalizeExitance();
   if (Shoot_method == SM_HEMICUBE) {
-    mem_rmfree(rad_FormFactors);
+    rad_FormFactors.clear();
     CloseHemicube();
   }
 }

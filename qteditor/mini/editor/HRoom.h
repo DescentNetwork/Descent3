@@ -244,7 +244,7 @@ void FixCracks();
 void SnapPointToEdge(room *rp, int vertnum, vector3 *v0, vector3 *v1);
 
 // Moves a vertex to lie on a specified plane
-void SnapPointToFace(room *rp, int vertnum, vector3 *v0, vector3 *normal);
+void SnapPointToFace(room *rp, int vertnum, vector3 *v0, vector3& normal);
 
 // If this is not equal to -1, there's a snap that can maybe be undone
 extern int Snap_roomnum;

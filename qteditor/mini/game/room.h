@@ -469,7 +469,7 @@ bool ComputeFaceNormal(room *rp, int facenum);
 //					verts - the array of vertices into which the elements of vertnum_list index
 // Returns:		true if the normal is ok
 //					false if the normal has a very small (pre-normalization) magnitude
-bool ComputeNormal(vector3 *normal, int num_verts, const int16_t *vertnum_list, const vector3 *verts);
+bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& vertnum_list, const std::vector<vector3>& verts);
 
 // Finds the center point of a portal by averaging the points in the portal
 // Parameters:	vp           - filled in with the center point
@@ -580,7 +580,7 @@ void ClearRoomSpecmaps(int roomnum);
 // External=1 means to perform the operation on external rooms only, 0 means indoor rooms only
 void ClearAllRoomSpecmaps(int external);
 
-extern void GetIJ(const vector3 *normal, int *ii, int *jj);
+extern void GetIJ(const vector3& normal, int& ii, int& jj);
 
 // Changes a face's texture within a room
 //	returns true on successs

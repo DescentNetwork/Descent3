@@ -148,7 +148,7 @@ void ObjectTreeDialog::onGoTo() {
     Editor_view_mode = VM_MINE;
   }
 
-  ObjSetPos(Viewer_object, &obj->pos, obj->roomnum, &obj->orient, false);
+  ObjSetPos(*Viewer_object, obj->pos, obj->roomnum, &obj->orient, false);
   EditorStatus("Viewer moved to object %d", OBJNUM(obj));
   Viewer_moved = true;
 }

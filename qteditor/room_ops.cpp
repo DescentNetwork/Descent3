@@ -213,17 +213,17 @@ void CopyRoom(room *destp, room *srcp) {
 // ============================================================================
 // FaceIsPlanar — editor/Erooms.cpp:1194
 // ============================================================================
-bool FaceIsPlanar(int nv, int16_t *face_verts, vector3 *normal, vector3 *verts) {
+bool FaceIsPlanar(int nv, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts) {
   if (nv == 3)
     return true;
 
   float average_d = 0;
   for (int v = 0; v < nv; v++)
-    average_d += vm_Dot3Product(verts[face_verts[v]], *normal);
+    average_d += vm_Dot3Product(verts[face_verts[v]], normal);
   average_d /= nv;
 
   for (int v = 0; v < nv; v++) {
-    float d = vm_Dot3Product(verts[face_verts[v]], *normal);
+    float d = vm_Dot3Product(verts[face_verts[v]], normal);
     if (fabs(d - average_d) > POINT_TO_PLANE_EPSILON)
       return false;
   }
@@ -234,12 +234,12 @@ bool FaceIsPlanar(int nv, int16_t *face_verts, vector3 *normal, vector3 *verts) 
 // CheckFaceConcavity — editor/Erooms.cpp:1108
 // Returns the index of the vertex causing concavity, or -1 if convex.
 // ============================================================================
-int CheckFaceConcavity(int num_verts, int16_t *face_verts, vector3 *normal, vector3 *verts) {
+int CheckFaceConcavity(int num_verts, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts) {
   int ii, jj;
   float i0, j0, i1, j1;
   float *v0, *v1;
 
-  GetIJ(normal, &ii, &jj);
+  GetIJ(normal, ii, jj);
 
   v0 = (float *)&verts[face_verts[num_verts - 1]];
   v1 = (float *)&verts[face_verts[0]];
@@ -541,7 +541,7 @@ void AssignDefaultUVsToRoom(room *rp) {
 void FixConcaveFaces(room *rp, int *facelist, int facecount) {
   for (int i = 0; i < facecount; i++) {
     face *fp = &rp->faces[facelist[i]];
-    if (!FaceIsPlanar(fp->num_verts, fp->face_verts.data(), &fp->normal, rp->verts.data())) {
+    if (!FaceIsPlanar(fp->num_verts, fp->face_verts, fp->normal, rp->verts)) {
       int concave_verts[MAX_VERTS_PER_FACE];
       int concave_count = rp->faces[facelist[i]].num_verts;
       int old_tmap = rp->faces[facelist[i]].tmap;
@@ -610,7 +610,7 @@ bool CombineFaces(room *rp, int face0, int face1) {
   face *fp0 = &rp->faces[face0], *fp1 = &rp->faces[face1];
   int nv0 = fp0->num_verts, nv1 = fp1->num_verts;
   int v0, v1;
-  int16_t vertlist[MAX_VERTS_PER_FACE];
+  std::vector<int16_t> vertlist(MAX_VERTS_PER_FACE);
   roomUVL uvllist[MAX_VERTS_PER_FACE];
   int nv;
 
@@ -659,14 +659,14 @@ bool CombineFaces(room *rp, int face0, int face1) {
   }
 
   vector3 new_normal;
-  ComputeNormal(&new_normal, nv, vertlist, rp->verts.data());
+  ComputeNormal(new_normal, nv, vertlist, rp->verts);
 
-  if (!FaceIsPlanar(nv, vertlist, &new_normal, rp->verts.data())) {
+  if (!FaceIsPlanar(nv, vertlist, new_normal, rp->verts)) {
     SetErrorMessage("The new face would not be planar.");
     return false;
   }
 
-  if (CheckFaceConcavity(nv, vertlist, &new_normal, rp->verts.data()) != -1) {
+  if (CheckFaceConcavity(nv, vertlist, new_normal, rp->verts) != -1) {
     SetErrorMessage("The new face would be concave.");
     return false;
   }
@@ -744,7 +744,7 @@ void RotateRooms(angle p, angle h, angle b) {
   ComputePortalCenter(&rotpoint, Curroomp, cur_portalnum);
   vm_AnglesToMatrix(&rotmat, p, h, b);
   face *fp = &Curroomp->faces[Curroomp->portals[cur_portalnum].portal_face];
-  ComputeNormal(&portal_normal, fp->num_verts, fp->face_verts.data(), Curroomp->verts.data());
+  ComputeNormal(portal_normal, fp->num_verts, fp->face_verts, Curroomp->verts);
   portal_normal *= -1.0;
 
   vm_VectorToMatrix(&roommat, &portal_normal, NULL, NULL);
@@ -862,9 +862,9 @@ static bool PointsAreSame(const vector3 *v0, const vector3 *v1) {
   return vm_VectorDistance(v0, v1) < POINT_TO_POINT_EPSILON;
 }
 
-static int CheckPointAgainstEdge(const vector3 *checkv, const vector3 *v0, const vector3 *v1, const vector3 *normal) {
+static int CheckPointAgainstEdge(const vector3 *checkv, const vector3 *v0, const vector3 *v1, const vector3& normal) {
   int ii, jj;
-  GetIJ(normal, &ii, &jj);
+  GetIJ(normal, ii, jj);
 
   float edge_i = ((const float *)v1)[ii] - ((const float *)v0)[ii];
   float edge_j = ((const float *)v1)[jj] - ((const float *)v0)[jj];
@@ -883,10 +883,10 @@ static int CheckPointAgainstEdge(const vector3 *checkv, const vector3 *v0, const
     return 0;
 }
 
-static void ClipEdge(const vector3 *normal, const clip_vertex *v0, const clip_vertex *v1,
+static void ClipEdge(const vector3& normal, const clip_vertex *v0, const clip_vertex *v1,
                      const vector3 *v2, const vector3 *v3, clip_vertex *newv) {
   int ii, jj;
-  GetIJ(normal, &ii, &jj);
+  GetIJ(normal, ii, jj);
 
   const float *vv0 = (const float *)&v0->vec;
   const float *vv1 = (const float *)&v1->vec;
@@ -997,7 +997,7 @@ static void AddEdgeInsert(int v0, int v1, int new_v) {
 }
 
 static void ClipAgainstEdge(int nv, int16_t *vertnums, clip_vertex *vertices, int *num_vertices,
-                            const vector3 *v0, const vector3 *v1, const vector3 *normal,
+                            const vector3 *v0, const vector3 *v1, const vector3& normal,
                             int16_t *inbuf, int *inv, int16_t *outbuf, int *onv) {
   int16_t *ip = inbuf, *op = outbuf;
   int inside_points = 0, outside_points = 0;
@@ -1080,7 +1080,7 @@ static bool ClipFace(room *arp, int afacenum, room *brp, int bfacenum) {
     int16_t *outbuf = newface_verts[num_newfaces];
     int *onv = &newface_nvs[num_newfaces];
 
-    ClipAgainstEdge(nv, src, newverts, &num_newverts, ev0, ev1, &afp->normal, dest, &nv, outbuf, onv);
+    ClipAgainstEdge(nv, src, newverts, &num_newverts, ev0, ev1, afp->normal, dest, &nv, outbuf, onv);
 
     if (nv <= 2)
       return false;
@@ -1193,7 +1193,7 @@ check_faces:;
       float d1 = vm_VectorDistance(v1, prev_v1);
 
       if (d0 > d1) {
-        if (CheckPointAgainstEdge(v1, prev_v0, v0, &fp0->normal)) {
+        if (CheckPointAgainstEdge(v1, prev_v0, v0, fp0->normal)) {
           if (check_only)
             return 0;
           Q_ASSERT(0);
@@ -1207,7 +1207,7 @@ check_faces:;
           }
         }
       } else {
-        if (CheckPointAgainstEdge(v0, prev_v1, v1, &fp1->normal)) {
+        if (CheckPointAgainstEdge(v0, prev_v1, v1, fp1->normal)) {
           if (check_only)
             return 0;
           Q_ASSERT(0);
@@ -1314,7 +1314,7 @@ void AttachRoom() {
 
       FreeRoom(&Rooms[Placed_room]);
 
-      ObjCreate(OBJ_DOOR, Placed_door, ROOMNUM(newroomp), &room_center, &orient);
+      ObjCreate(OBJ_DOOR, Placed_door, ROOMNUM(newroomp), room_center, &orient);
 
       doorway *dp = DoorwayAdd(newroomp, Placed_door);
       (void)dp;

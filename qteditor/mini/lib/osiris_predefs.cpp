@@ -3331,14 +3331,12 @@ void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void
 int osipf_AIGetNearbyObjs(vector3 *pos, int init_roomnum, float rad, int *object_handle_list, int max_elements,
                           bool f_lightmap_only, bool f_only_players_and_ais, bool f_include_non_collide_objects,
                           bool f_stop_at_closed_doors) {
-  int16_t *s_list;
+  std::vector<int16_t> s_list(max_elements);
   int num_close;
   int i;
   int count = 0;
 
-  s_list = mem_rmalloc<int16_t>(max_elements);
-
-  num_close = fvi_QuickDistObjectList(pos, init_roomnum, rad, s_list, max_elements, f_lightmap_only,
+  num_close = fvi_QuickDistObjectList(pos, init_roomnum, rad, s_list.data(), max_elements, f_lightmap_only,
                                       f_only_players_and_ais, f_include_non_collide_objects, f_stop_at_closed_doors);
   Q_ASSERT(num_close <= max_elements);
   for (i = 0; i < num_close; i++) {
@@ -3346,8 +3344,6 @@ int osipf_AIGetNearbyObjs(vector3 *pos, int init_roomnum, float rad, int *object
       object_handle_list[count++] = Objects[s_list[i]].handle;
     }
   }
-
-  mem_rmfree(s_list);
 
   return count;
 }

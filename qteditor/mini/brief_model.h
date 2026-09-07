@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <string>
 #include <variant>
+#include <vector>
 
 #include "TelComEfxStructs.h"
 
@@ -142,8 +143,7 @@ extern tBriefScreen Briefing_screens[MAX_TELCOM_SCREENS];
 extern BriefGlobalValues Briefing_globals;
 
 // Layout predefs parsed from BriefingLayouts.txt.
-extern tLayoutPredef *PBlayouts;
-extern int *PBnum_layouts;
+extern std::vector<tLayoutPredef> PBlayouts;
 
 // Lifecycle.
 void BriefEditInitScreens();

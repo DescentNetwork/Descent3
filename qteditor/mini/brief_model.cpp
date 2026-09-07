@@ -17,8 +17,7 @@ int Briefing_root_screen = -1;
 tBriefScreen Briefing_screens[MAX_TELCOM_SCREENS];
 BriefGlobalValues Briefing_globals;
 
-tLayoutPredef *PBlayouts = nullptr;
-int *PBnum_layouts = nullptr;
+std::vector<tLayoutPredef> PBlayouts;
 
 void BriefEditInitScreens() {
   Briefing_root_screen = -1;
@@ -125,16 +124,9 @@ void BriefEditGetCurScreenEffect(int *ret_screen, int *ret_effect) {
   }
 }
 
-// Parses a BriefingLayouts.txt file into the PBlayouts / PBnum_layouts arrays.
+// Parses a BriefingLayouts.txt file into the PBlayouts array.
 void ParseLayoutScreenFile(const std::filesystem::path &filename) {
-  if (PBlayouts) {
-    delete[] PBlayouts;
-    PBlayouts = nullptr;
-  }
-  if (PBnum_layouts) {
-    delete[] PBnum_layouts;
-    PBnum_layouts = nullptr;
-  }
+  PBlayouts.clear();
 
   std::ifstream in(filename);
   if (!in.is_open())
@@ -182,12 +174,7 @@ void ParseLayoutScreenFile(const std::filesystem::path &filename) {
   if (layouts.empty())
     return;
 
-  PBlayouts = new tLayoutPredef[layouts.size()];
-  PBnum_layouts = new int[layouts.size()];
-  for (size_t i = 0; i < layouts.size(); i++) {
-    PBlayouts[i] = layouts[i];
-    PBnum_layouts[i] = (int)layouts.size();
-  }
+  PBlayouts = std::move(layouts);
 }
 // ---------------------------------------------------------------------------
 // .brf serialization (text command format, compatible with the game).

@@ -712,7 +712,7 @@ bool ComputeFaceNormal(room *rp, int facenum) {
   face *fp = &rp->faces[facenum];
   bool ok;
 
-  ok = ComputeNormal(&fp->normal, fp->num_verts, fp->face_verts.data(), rp->verts.data());
+  ok = ComputeNormal(fp->normal, fp->num_verts, fp->face_verts, rp->verts);
 
   if (!ok) {
     LOG_WARNING("Warning: Low precision normal for room:face = %d:%d", ROOMNUM(rp), facenum);
@@ -730,7 +730,7 @@ bool ComputeFaceNormal(room *rp, int facenum) {
 //					verts - the array of vertices into which the elements of vertnum_list index
 // Returns:		true if the normal is ok
 //					false if the normal has a very small (pre-normalization) magnitude
-bool ComputeNormal(vector3 *normal, int num_verts, const int16_t *vertnum_list, const vector3 *verts) {
+bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& vertnum_list, const std::vector<vector3>& verts) {
   int i;
   float largest_mag;
 
@@ -745,7 +745,7 @@ bool ComputeNormal(vector3 *normal, int num_verts, const int16_t *vertnum_list, 
                        &verts[vertnum_list[(i + 2) % num_verts]]);
 
     if (mag > largest_mag) {
-      *normal = tnormal;
+      normal = tnormal;
       largest_mag = mag;
     }
   }
@@ -753,9 +753,9 @@ bool ComputeNormal(vector3 *normal, int num_verts, const int16_t *vertnum_list, 
   if (largest_mag < MIN_NORMAL_MAG) {
     LOG_WARNING("Warning: Normal has low precision. mag = %f, norm =  %f,%f,%f",
             largest_mag,
-            normal->x(),
-            normal->y(),
-            normal->z());
+            normal.x(),
+            normal.y(),
+            normal.z());
     return false;
   } else
     return true;
@@ -888,43 +888,43 @@ float GetAreaForFace(room *rp, int facenum) {
 // Returns indeces of the two elements of points on a face to use as a 2d projection
 // Parameters:	normal - the surface normal of the face
 //					ii,jj - filled in with elements numbers (0,1, or 2)
-void GetIJ(const vector3 *normal, int *ii, int *jj) {
+void GetIJ(const vector3& normal, int& ii, int& jj) {
 
   // To project onto 2d, find the largest element of the surface normal
-  if (fabs(normal->x()) > fabs(normal->y()))
-    if (fabs(normal->x()) > fabs(normal->z())) {
-      if (normal->x() > 0) {
-        *ii = 2;
-        *jj = 1; // x > y, x > z
+  if (fabs(normal.x()) > fabs(normal.y()))
+    if (fabs(normal.x()) > fabs(normal.z())) {
+      if (normal.x() > 0) {
+        ii = 2;
+        jj = 1; // x > y, x > z
       } else {
-        *ii = 1;
-        *jj = 2;
+        ii = 1;
+        jj = 2;
       }
     } else {
-      if (normal->z() > 0) {
-        *ii = 1;
-        *jj = 0; // z > x > y
+      if (normal.z() > 0) {
+        ii = 1;
+        jj = 0; // z > x > y
       } else {
-        *ii = 0;
-        *jj = 1;
+        ii = 0;
+        jj = 1;
       }
     }
   else // y > x
-    if (fabs(normal->y()) > fabs(normal->z())) {
-      if (normal->y() > 0) {
-        *ii = 0;
-        *jj = 2; // y > x, y > z
+    if (fabs(normal.y()) > fabs(normal.z())) {
+      if (normal.y() > 0) {
+        ii = 0;
+        jj = 2; // y > x, y > z
       } else {
-        *ii = 2;
-        *jj = 0;
+        ii = 2;
+        jj = 0;
       }
     } else {
-      if (normal->z() > 0) {
-        *ii = 1;
-        *jj = 0; // z > y > x
+      if (normal.z() > 0) {
+        ii = 1;
+        jj = 0; // z > y > x
       } else {
-        *ii = 0;
-        *jj = 1;
+        ii = 0;
+        jj = 1;
       }
     }
 }
@@ -949,7 +949,7 @@ void FindPointUV(float *u, float *v, const vector3 *pnt, const room *rp, const f
   Q_ASSERT((roomnum >= 0) && (roomnum <= Highest_room_index));
 
   // Find what plane to project this wall onto to make it a 2d case
-  GetIJ(&fp->normal, &ii, &jj);
+  GetIJ(fp->normal, ii, jj);
 
   // Compute delta vectors
   vec0 = rp->verts[fp->face_verts[0]] - rp->verts[fp->face_verts[1]]; // vec from 1 -> 0
@@ -1113,11 +1113,11 @@ void CreateRoomObjects() {
       int roomnum, objnum;
 
       rad = ComputeRoomBoundingSphere(&pos, rp);
-      roomnum = GetTerrainRoomFromPos(&pos);
+      roomnum = GetTerrainRoomFromPos(pos);
 
       Q_ASSERT(roomnum != -1);
 
-      objnum = ObjCreate(OBJ_ROOM, r, roomnum, &pos, NULL);
+      objnum = ObjCreate(OBJ_ROOM, r, roomnum, pos, nullptr);
       Q_ASSERT(objnum != -1); // DAJ -1FIX moved up
       Objects[objnum].size = rad;
       Objects[objnum].wall_sphere_offset = vector3{};
@@ -1127,7 +1127,7 @@ void CreateRoomObjects() {
         BigObjAdd(objnum);
       }
       // Type specific should have set up the size, so now we can compute the bounding box.
-      ObjSetAABB(&Objects[objnum]);
+      ObjSetAABB(Objects[objnum]);
     }
 }
 

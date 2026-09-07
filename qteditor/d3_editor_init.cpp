@@ -19,6 +19,7 @@
 #include "d3_editor_init.h"
 
 #include <QSettings>
+#include <memory>
 
 #include "appdatabase.h"
 #include "application.h"
@@ -57,8 +58,8 @@ void initD3Core(int argc, char *argv[]) {
 
   tLnxAppInfo appinfo{};
   appinfo.flags = APPFLAG_WINDOWEDMODE | APPFLAG_NOSHAREDMEMORY;
-  Descent = new oeLnxApplication(&appinfo);
-  Database = new oeLnxAppDatabase;
+  Descent = std::make_unique<oeLnxApplication>(&appinfo);
+  Database = std::make_unique<oeLnxAppDatabase>();
 
   ProgramVersion(DEVELOPMENT_VERSION, 0, 0, 0);
 
@@ -115,8 +116,8 @@ void initD3Core(int argc, char *argv[]) {
 
   tLnxAppInfo appinfo{};
   appinfo.flags = APPFLAG_WINDOWEDMODE | APPFLAG_NOSHAREDMEMORY;
-  Descent = new oeLnxApplication(&appinfo);
-  Database = new oeLnxAppDatabase;
+  Descent = std::make_unique<oeLnxApplication>(&appinfo);
+  Database = std::make_unique<oeLnxAppDatabase>();
 
   ProgramVersion(DEVELOPMENT_VERSION, 0, 0, 0);
 

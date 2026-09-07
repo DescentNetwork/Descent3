@@ -787,12 +787,12 @@ constexpr float kDefaultViewRadius = 1.0f;
 // should be called whenever the viewer object is moved.  ObjSetPos relinks the
 // viewer into the mine/terrain; when it crosses the boundary the global view
 // mode follows (VM_TERRAIN <-> VM_MINE), mirroring SetViewMode().
-static void moveViewer(vector3 *pos, int roomnum, matrix *orient) {
+static void moveViewer(vector3& pos, int roomnum, matrix* orient) {
   if (Viewer_object == nullptr)
     return;
   const bool was_outside = OBJECT_OUTSIDE(Viewer_object);
 
-  ObjSetPos(Viewer_object, pos, roomnum, orient, false);
+  ObjSetPos(*Viewer_object, pos, roomnum, orient, false);
 
   if (OBJECT_OUTSIDE(Viewer_object) && !was_outside)
     Editor_view_mode = VM_TERRAIN;
@@ -841,7 +841,7 @@ static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
 
       orient = Identity_matrix;
 
-      roomnum = GetTerrainRoomFromPos(&newpos);
+      roomnum = GetTerrainRoomFromPos(newpos);
     } else {
       // Get orientation: vector from center of room to face
       vp -= newpos;
@@ -864,7 +864,7 @@ static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
         newpos.z() = 1.0f;
       if (newpos.z() > TERRAIN_DEPTH * TERRAIN_SIZE - 1.0f)
         newpos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
-      roomnum = GetTerrainRoomFromPos(&newpos);
+      roomnum = GetTerrainRoomFromPos(newpos);
     } else {
       int new_roomnum = FindPointRoom(&newpos);
       if (new_roomnum == -1)
@@ -879,7 +879,7 @@ static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
     Viewer_object->pos = newpos;
     Viewer_object->orient = orient;
   } else
-    moveViewer(&newpos, roomnum, &orient);
+    moveViewer(newpos, roomnum, &orient);
 
   if (outside_mine)
     Viewer_object->flags |= OF_OUTSIDE_MINE;
@@ -988,7 +988,7 @@ void MainWindow::onMoveCameraToCurrentObject() {
   orient.uvec = objp->orient.uvec;
 
   // Move the viewer to the object
-  moveViewer(&objp->pos, objp->roomnum, &orient);
+  moveViewer(objp->pos, objp->roomnum, &orient);
 
   // Calculate a position a little in front of the object
   vector3 pos = Viewer_object->pos - (Viewer_object->orient.fvec * kObjectPlaceDist);
@@ -1008,7 +1008,7 @@ void MainWindow::onMoveCameraToCurrentObject() {
   fvi_FindIntersection(&fq, &hit_info);
 
   // Move the viewer to the new position
-  moveViewer(&hit_info.hit_pnt, hit_info.hit_room, nullptr);
+  moveViewer(hit_info.hit_pnt, hit_info.hit_room, nullptr);
   Viewer_moved = true;
   State_changed = true;
 
@@ -1097,7 +1097,7 @@ int MainWindow::onPlaceCameraAtViewer() {
   Objects[slot].type = OBJ_CAMERA;
   Objects[slot].render_type = RT_POLYOBJ;
   Objects[slot].name = "Cam";
-  ObjSetPos(&Objects[slot], &pos, Viewer_object->roomnum,
+  ObjSetPos(Objects[slot], pos, Viewer_object->roomnum,
             &Viewer_object->orient, false);
 
   Cur_object_index = slot;
@@ -1124,12 +1124,12 @@ void MainWindow::onSetViewerFromCamera() {
   // In Win32 OnObjectSetViewerFromCamera, the viewer's pos/orient/roomnum
   // are copied from the camera. We follow that contract directly.
   if (Viewer_object != nullptr) {
-    ObjSetPos(Viewer_object, &cam->pos, cam->roomnum, &cam->orient, false);
+    ObjSetPos(*Viewer_object, cam->pos, cam->roomnum, &cam->orient, false);
   }
   // Also propagate to the player object (object 0) so saving the level
   // from the editor preserves the latest camera-driven viewpoint.
   if (Player_object != nullptr)
-    ObjSetPos(Player_object, &cam->pos, cam->roomnum, &cam->orient, false);
+    ObjSetPos(*Player_object, cam->pos, cam->roomnum, &cam->orient, false);
   State_changed = true;
   std::fprintf(stderr, "[object_ops] SetViewerFromCamera: viewer=(%g,%g,%g) room %d\n",
                cam->pos.x(), cam->pos.y(), cam->pos.z(), cam->roomnum);
@@ -1141,17 +1141,17 @@ void MainWindow::onSetViewerFromCamera() {
 void MainWindow::onSetCameraFromViewer() {
   if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
     return;
-  object *cam = &Objects[Cur_object_index];
-  if (cam->type != OBJ_CAMERA)
+  object& cam = Objects[Cur_object_index];
+  if (cam.type != OBJ_CAMERA)
     return;
   if (Viewer_object == nullptr)
     return;
-  ObjSetPos(cam, &Viewer_object->pos, Viewer_object->roomnum,
+  ObjSetPos(cam, Viewer_object->pos, Viewer_object->roomnum,
             &Viewer_object->orient, false);
   Mine_changed = true;
   std::fprintf(stderr,
                "[object_ops] SetCameraFromViewer: camera=(%g,%g,%g) room %d\n",
-               cam->pos.x(), cam->pos.y(), cam->pos.z(), cam->roomnum);
+               cam.pos.x(), cam.pos.y(), cam.pos.z(), cam.roomnum);
 }
 
 // Delete the currently-selected object (Cur_object_index). After the
@@ -1189,7 +1189,7 @@ void MainWindow::onMovePlayerToCurrentRoom() {
   vector3 rp;
   const int slot = ROOMNUM(Curroomp);
   matrix idmat;
-  ObjSetPos(Player_object, &rp, slot, &idmat, false);
+  ObjSetPos(*Player_object, rp, slot, &idmat, false);
   State_changed = true;
   std::fprintf(stderr, "[object_ops] MovePlayerToCurrentRoom -> room %d\n",
                slot);
@@ -1262,7 +1262,7 @@ int MainWindow::onSpawnNewViewer() {
   // objnum <= Highest_object_index, so bump it before positioning the object.
   if (slot > Highest_object_index)
     Highest_object_index = slot;
-  ObjSetPos(&Objects[slot], &Viewer_object->pos, Viewer_object->roomnum,
+  ObjSetPos(Objects[slot], Viewer_object->pos, Viewer_object->roomnum,
             &Viewer_object->orient, false);
   Mine_changed = true;
   New_mine = true;

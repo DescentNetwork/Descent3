@@ -321,7 +321,7 @@ struct PickFixture {
       QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     QCoreApplication::processEvents();
   }
-  static void addQuadRoom(int roomIndex, const vector3 *verts) {
+  static void addQuadRoom(int roomIndex, const std::vector<vector3>& verts) {
     room *rp = &Rooms[roomIndex];
     *rp = room{};
     InitRoom(rp, 4, 1, 0);
@@ -1698,7 +1698,7 @@ private slots:
     vector zero{};
     matrix idmat{};
     Objects[viewer_slot].roomnum = 0;
-    ObjSetPos(Viewer_object, &zero, 0, &idmat, false);
+    ObjSetPos(*Viewer_object, &zero, 0, &idmat, false);
 
     // PlaceCameraAtViewer creates a new OBJ_CAMERA slot adjacent to the
     // viewer. Allocate a fresh Rooms[0] with proper verts/faces so the
@@ -1744,7 +1744,7 @@ private slots:
     // QVERIFY(Cur_object_index >= 0);
     // QVERIFY(Mine_changed == 1);
 
-    // ObjSetPos(Player_object, &target, 0, &idmat, false);
+    // ObjSetPos(*Player_object, &target, 0, &idmat, false);
     // MovePlayerToCurrentRoom();
     // QCOMPARE(Player_object->roomnum, 0);
     // QVERIFY(Player_object->pos.x() == 0.0f);
@@ -2785,7 +2785,7 @@ private slots:
     Viewer_object->orient.fvec = vector3{1, 0, 0};
     Editor_view_mode = VM_MINE;
 
-    auto setFaceQuad = [](room *rp, const vector3 *verts) {
+    auto setFaceQuad = [](room *rp, const std::vector<vector3>& verts) {
       InitRoomFace(&rp->faces[0], 4);
       for (int i = 0; i < 4; i++) {
         rp->verts[i] = verts[i];
@@ -2801,7 +2801,7 @@ private slots:
       room *r0 = &Rooms[0];
       *r0 = room{};
       InitRoom(r0, 4, 1, 0);
-      const vector3 v[4] = {
+      const std::vector<vector3> v = {
         {5, -4, 3}, {48, -4, -40}, {68, 4, -60}, {5, 4, 3},
       };
       setFaceQuad(r0, v);
@@ -2813,7 +2813,7 @@ private slots:
       room *r1 = &Rooms[1];
       *r1 = room{};
       InitRoom(r1, 4, 1, 0);
-      const vector3 v[4] = {
+      const std::vector<vector3> v = {
         {25, -2, -6}, {25, -2, 6}, {25, 2, 6}, {25, 2, -6},
       };
       setFaceQuad(r1, v);
@@ -2864,7 +2864,7 @@ private slots:
     Viewer_object->orient.fvec = vector3{1, 0, 0};
     Editor_view_mode = VM_MINE;
 
-    auto setFlatQuad = [](room *rp, const vector3 *verts) {
+    auto setFlatQuad = [](room *rp, const std::vector<vector3>& verts) {
       InitRoomFace(&rp->faces[0], 4);
       rp->faces[0].tmap = -1; // force flat shading, independent of textures
       for (int i = 0; i < 4; i++) {
@@ -2879,7 +2879,7 @@ private slots:
       room *r0 = &Rooms[0];
       *r0 = room{};
       InitRoom(r0, 4, 1, 0);
-      const vector3 v[4] = {{5, -4, 3}, {48, -4, -40}, {68, 4, -60}, {5, 4, 3}};
+      const std::vector<vector3> v = {{5, -4, 3}, {48, -4, -40}, {68, 4, -60}, {5, 4, 3}};
       setFlatQuad(r0, v);
       r0->used = 1;
     }
@@ -2889,7 +2889,7 @@ private slots:
       room *r1 = &Rooms[1];
       *r1 = room{};
       InitRoom(r1, 4, 1, 0);
-      const vector3 v[4] = {{25, -2, -6}, {25, -2, 6}, {25, 2, 6}, {25, 2, -6}};
+      const std::vector<vector3> v = {{25, -2, -6}, {25, -2, 6}, {25, 2, 6}, {25, 2, -6}};
       setFlatQuad(r1, v);
       r1->used = 1;
     }
@@ -3018,10 +3018,10 @@ private slots:
     // room 1 is far away (beyond the default 5000-unit radius is not needed;
     // place it at depth 8000 with the small default radius).  The default
     // m_rad is 5000, so room 1 is excluded.
-    const vector3 nearV[4] = {
+    const std::vector<vector3> nearV = {
       {5, -4, -4}, {5, 4, -4}, {5, 4, 4}, {5, -4, 4},
     };
-    const vector3 farV[4] = {
+    const std::vector<vector3> farV = {
       {8000, -4, -4}, {8000, 4, -4}, {8000, 4, 4}, {8000, -4, 4},
     };
     PickFixture::addQuadRoom(0, nearV);
@@ -3050,10 +3050,10 @@ private slots:
 
     // Two coplanar-on-the-ray quads: room 0 near (depth 5), room 1 far
     // (depth 25); both occupy screen centre.
-    const vector3 nearV[4] = {
+    const std::vector<vector3> nearV = {
       {5, -4, -4}, {5, 4, -4}, {5, 4, 4}, {5, -4, 4},
     };
-    const vector3 farV[4] = {
+    const std::vector<vector3> farV = {
       {25, -4, -4}, {25, 4, -4}, {25, 4, 4}, {25, -4, 4},
     };
     PickFixture::addQuadRoom(0, nearV);
@@ -3726,10 +3726,10 @@ private slots:
     Highest_object_index = 1;
 
     vector3 origin{};
-    ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
+    ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
     vector3 newpos{(float)5, (float)0, (float)0};
-    bool moved = MoveObject(&Objects[1], &newpos);
+    bool moved = MoveObject(Objects[1], newpos);
 
     QVERIFY(moved);
     QVERIFY(Objects[1].pos.x() > -100.0f);
@@ -3776,7 +3776,7 @@ private slots:
     Highest_object_index = 1;
 
     vector3 origin{};
-    ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
+    ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
     Cur_object_index = 1;
     D3EditState.object_move_mode = REL_OBJECT;
@@ -3828,7 +3828,7 @@ private slots:
     Highest_object_index = 1;
 
     vector3 origin{};
-    ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
+    ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
     Cur_object_index = 1;
 
@@ -3886,7 +3886,7 @@ private slots:
     Highest_object_index = 1;
 
     vector3 origin{};
-    ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
+    ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
     Cur_object_index = 1;
 
@@ -3946,7 +3946,7 @@ private slots:
     Highest_object_index = 1;
 
     vector3 origin{};
-    ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
+    ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
     Cur_object_index = 1;
     D3EditState.object_move_mode = REL_OBJECT;
@@ -4010,7 +4010,7 @@ private slots:
     Highest_object_index = 1;
 
     vector3 origin{};
-    ObjSetPos(&Objects[1], &origin, 0, nullptr, false);
+    ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
     Cur_object_index = 1;
     D3EditState.object_move_mode = REL_OBJECT;
@@ -4077,7 +4077,7 @@ private slots:
     Objects[0].size = 3.0f;
     Highest_object_index = 0;
     vector3 origin{};
-    ObjSetPos(&Objects[0], &origin, 0, nullptr, false);
+    ObjSetPos(Objects[0], origin, 0, nullptr, false);
 
     Editor_view_mode = VM_MINE;
     Cur_object_index = -1;

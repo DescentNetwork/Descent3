@@ -396,10 +396,10 @@ int RenderPolygonModel(poly_model *, uint32_t f_render_sub = 0xFFFFFFFF);
 void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub);
 
 //	returns point within polymodel/submodel in world coordinates.
-void GetPolyModelPointInWorld(vector3 *dest, poly_model *pm, vector3 *wpos, matrix *orient, int subnum, vector3 *pos,
+void GetPolyModelPointInWorld(vector3& dest, poly_model *pm, vector3 *wpos, matrix *orient, int subnum, vector3& pos,
                               vector3 *norm = nullptr);
-void GetPolyModelPointInWorld(vector3 *dest, poly_model *pm, vector3 *wpos, matrix *orient, int subnum,
-                              float *normalized_time, vector3 *pos, vector3 *norm = nullptr);
+void GetPolyModelPointInWorld(vector3& dest, poly_model *pm, vector3 *wpos, matrix *orient, int subnum,
+                              float *normalized_time, vector3& pos, vector3 *norm = nullptr);
 
 // Returns 1 if this submodel shouldn't be rendered
 int IsNonRenderableSubmodel(poly_model *pm, int submodelnum);

@@ -654,33 +654,33 @@ void DrawVirusLightning(object *obj);
 #ifdef EDITOR
 // Draws the little corner brackets around the selected object
 // Actually, only draws those either in front or in back of the object, based on front_flag
-void DrawObjectSelectionBrackets(object *obj, bool front_flag) {
+void DrawObjectSelectionBrackets(object& obj, bool front_flag) {
   vector3 viewvec;
-  poly_model *pm = &Poly_models[obj->rtype.pobj_info().model_num];
+  poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
   float line_len;
   // Get vector from object to viewer
   g3_GetViewPosition(&viewvec);
-  viewvec -= obj->pos;
+  viewvec -= obj.pos;
   // Get length of line segments we're drawing
   line_len = (pm->maxs.x() - pm->mins.x()) * 0.2f;
   // Do each corner
   for (int c = 0; c < 8; c++) {
     vector3 corner;
     // Get the corner relative to the object
-    corner = (obj->orient.rvec * ((c & 1) ? pm->mins.x() : pm->maxs.x())) +
-             (obj->orient.uvec * ((c & 2) ? pm->mins.y() : pm->maxs.y())) +
-             (obj->orient.fvec * ((c & 4) ? pm->mins.z() : pm->maxs.z()));
+    corner = (obj.orient.rvec * ((c & 1) ? pm->mins.x() : pm->maxs.x())) +
+             (obj.orient.uvec * ((c & 2) ? pm->mins.y() : pm->maxs.y())) +
+             (obj.orient.fvec * ((c & 4) ? pm->mins.z() : pm->maxs.z()));
     // See if this corner is in front or in back of the object, as specified
     if ((vm_Dot3Product(corner, viewvec) > 0.0) != front_flag)
       continue;
     // Get absolute position in 3-space
-    corner += obj->pos;
+    corner += obj.pos;
     // Draw line for each axis at this corner
     for (int a = 0; a < 3; a++) {
       g3Point pp0, pp1;
       vector3 t;
       // Grab the x,y, or z axis, and scale by the line segment length
-      t = corner + ((((vector3 *)&obj->orient)[a]) * ((c & (1 << a)) ? line_len : -line_len));
+      t = corner + ((((vector3 *)&obj.orient)[a]) * ((c & (1 << a)) ? line_len : -line_len));
       // Rotate both ends of the line
       g3_RotatePoint(&pp0, &corner);
       g3_RotatePoint(&pp1, &t);
@@ -991,12 +991,12 @@ void DrawDebugInfo(object *obj) {
 }
 #endif
 // Draw a shard
-void DrawShardObject(object *obj) {
-  shard_info_s *si = &obj->rtype.shard_info();
+void DrawShardObject(object& obj) {
+  shard_info_s *si = &obj.rtype.shard_info();
   g3Point rotated_points[3];
   g3Point *pointlist[3];
   uint8_t codes_and = 0xff;
-  g3_StartInstanceMatrix(&obj->pos, &obj->orient);
+  g3_StartInstanceMatrix(&obj.pos, &obj.orient);
   // Build list of points and UVLs for this face
   for (int i = 0; i < 3; i++) {
     uint8_t c;
@@ -1011,7 +1011,7 @@ void DrawShardObject(object *obj) {
     pointlist[i] = &rotated_points[i];
   }
   // Check for backside
-  if (!g3_CheckNormalFacing(&obj->pos, &si->normal)) {
+  if (!g3_CheckNormalFacing(&obj.pos, &si->normal)) {
     g3Point *t = pointlist[1];
     pointlist[1] = pointlist[2];
     pointlist[2] = t;
@@ -1038,7 +1038,7 @@ void DrawShardObject(object *obj) {
   g3_DrawPoly(3, pointlist, bm_handle);
 }
 // Sets up the light states for an outdoor object to be rendered
-bool SetupTerrainObject(object *obj) {
+bool SetupTerrainObject(object& obj) {
   vector3 camlight = Terrain_sky.lightsource;
   vm_NormalizeVector(&camlight);
 #ifdef EDITOR
@@ -1046,33 +1046,33 @@ bool SetupTerrainObject(object *obj) {
     return false;
 #endif
 
-  obj->flags |= OF_SAFE_TO_RENDER;
+  obj.flags |= OF_SAFE_TO_RENDER;
   RenderObject_SetLightDirection(&camlight);
   rend_SetColorModel(CM_MONO);
-  if (obj->render_type == RT_POLYOBJ ||
-      (obj->render_type == RT_WEAPON &&
-       !Weapons[obj->id].flags.image_bitmap &&
-       !Weapons[obj->id].flags.image_vclip))
+  if (obj.render_type == RT_POLYOBJ ||
+      (obj.render_type == RT_WEAPON &&
+       !Weapons[obj.id].flags.image_bitmap &&
+       !Weapons[obj.id].flags.image_vclip))
   {
     float scalar_r, scalar_g, scalar_b, scalar;
-    if (obj->type == OBJ_POWERUP) {
+    if (obj.type == OBJ_POWERUP) {
       scalar = 1.0;
       scalar_r = 1.0;
       scalar_g = 1.0;
       scalar_b = 1.0;
     } else {
-      scalar = GetTerrainDynamicScalar(&obj->pos, CELLNUM(obj->roomnum));
-      if (obj->effect_info && (obj->effect_info->type_flags & EF_VOLUME_LIT)) {
-        scalar_r = std::min<float>(1, scalar + (obj->effect_info->dynamic_red));
-        scalar_g = std::min<float>(1, scalar + (obj->effect_info->dynamic_green));
-        scalar_b = std::min<float>(1, scalar + (obj->effect_info->dynamic_blue));
+      scalar = GetTerrainDynamicScalar(obj.pos, CELLNUM(obj.roomnum));
+      if (obj.effect_info && (obj.effect_info->type_flags & EF_VOLUME_LIT)) {
+        scalar_r = std::min<float>(1, scalar + (obj.effect_info->dynamic_red));
+        scalar_g = std::min<float>(1, scalar + (obj.effect_info->dynamic_green));
+        scalar_b = std::min<float>(1, scalar + (obj.effect_info->dynamic_blue));
         // If this is a robot, make it at least 10% for each RGB component
-        if (obj->type == OBJ_ROBOT) {
+        if (obj.type == OBJ_ROBOT) {
           scalar_r = std::max<float>(.1, scalar_r);
           scalar_g = std::max<float>(.1, scalar_g);
           scalar_b = std::max<float>(.1, scalar_b);
         }
-        if (obj->type == OBJ_PLAYER && ((Players[obj->id].flags & PLAYER_FLAGS_HEADLIGHT)))
+        if (obj.type == OBJ_PLAYER && ((Players[obj.id].flags & PLAYER_FLAGS_HEADLIGHT)))
         {
           scalar_r = 1;
           scalar_g = 1;
@@ -1085,74 +1085,75 @@ bool SetupTerrainObject(object *obj) {
       }
     }
 
-    if (obj->lighting_render_type == LRT_STATIC || Poly_models[obj->rtype.pobj_info().model_num].new_style == 0)
+    if (obj.lighting_render_type == LRT_STATIC || Poly_models[obj.rtype.pobj_info().model_num].new_style == 0)
       RenderObject_SetStatic(scalar_r, scalar_g, scalar_b);
-    else if (obj->lighting_render_type == LRT_GOURAUD || NoLightmaps) {
+    else if (obj.lighting_render_type == LRT_GOURAUD || NoLightmaps) {
       vector3 lightdir = {0, -1.0, 0}; // straight down for now
       RenderObject_SetGouraud(&lightdir, scalar_r, scalar_g, scalar_b, scalar);
-    } else if (obj->lighting_render_type == LRT_LIGHTMAPS) {
-      if (obj->lm_object.used == 0)
+    } else if (obj.lighting_render_type == LRT_LIGHTMAPS) {
+      if (obj.lm_object.used == 0)
         RenderObject_SetStatic(scalar_r, scalar_g, scalar_b);
       else
-        RenderObject_SetLightmaps(&obj->lm_object);
+        RenderObject_SetLightmaps(&obj.lm_object);
     }
   } else {
     RenderObject_SetStatic(1, 1, 1);
   }
   return true;
 }
+
 // Sets up the light states for an indoor object to be rendered
-bool SetupMineObject(object *objp) {
-  if (objp->lighting_render_type == LRT_STATIC || Poly_models[objp->rtype.pobj_info().model_num].new_style == 0) {
+bool SetupMineObject(object& obj) {
+  if (obj.lighting_render_type == LRT_STATIC || Poly_models[obj.rtype.pobj_info().model_num].new_style == 0) {
     RenderObject_SetStatic(1.0f, 1.0f, 1.0f);
-  } else if (objp->lighting_render_type == LRT_GOURAUD || NoLightmaps) {
+  } else if (obj.lighting_render_type == LRT_GOURAUD || NoLightmaps) {
     float scalar_r = 1.0, scalar_g = 1.0, scalar_b = 1.0;
 
     vector3 lightdir = {0, -1.0, 0}; // straight down for now
 
     // Get the volume light for this object
-    if (objp->effect_info && (objp->effect_info->type_flags & EF_VOLUME_LIT) &&
-        !(Rooms[objp->roomnum].flags.external)) {
-      vector3 vpos = objp->pos;
+    if (obj.effect_info && (obj.effect_info->type_flags & EF_VOLUME_LIT) &&
+        !(Rooms[obj.roomnum].flags.external)) {
+      vector3 vpos = obj.pos;
       if (Render_mirror_for_room)
-        vpos = objp->last_pos;
-      if (objp->effect_info->type_flags & EF_VOLUME_CHANGING) {
+        vpos = obj.last_pos;
+      if (obj.effect_info->type_flags & EF_VOLUME_CHANGING) {
         float old_r, old_g, old_b;
         float new_r, new_g, new_b;
-        GetRoomDynamicScalar(&objp->effect_info->volume_old_pos, &Rooms[objp->effect_info->volume_old_room], &old_r,
+        GetRoomDynamicScalar(&obj.effect_info->volume_old_pos, &Rooms[obj.effect_info->volume_old_room], &old_r,
                              &old_g, &old_b);
-        GetRoomDynamicScalar(&vpos, &Rooms[objp->roomnum], &new_r, &new_g, &new_b);
+        GetRoomDynamicScalar(&vpos, &Rooms[obj.roomnum], &new_r, &new_g, &new_b);
         scalar_r =
-            (old_r * objp->effect_info->volume_change_time) + ((1 - objp->effect_info->volume_change_time) * new_r);
+            (old_r * obj.effect_info->volume_change_time) + ((1 - obj.effect_info->volume_change_time) * new_r);
         scalar_g =
-            (old_g * objp->effect_info->volume_change_time) + ((1 - objp->effect_info->volume_change_time) * new_g);
+            (old_g * obj.effect_info->volume_change_time) + ((1 - obj.effect_info->volume_change_time) * new_g);
         scalar_b =
-            (old_b * objp->effect_info->volume_change_time) + ((1 - objp->effect_info->volume_change_time) * new_b);
+            (old_b * obj.effect_info->volume_change_time) + ((1 - obj.effect_info->volume_change_time) * new_b);
       } else
-        GetRoomDynamicScalar(&vpos, &Rooms[objp->roomnum], &scalar_r, &scalar_g, &scalar_b);
+        GetRoomDynamicScalar(&vpos, &Rooms[obj.roomnum], &scalar_r, &scalar_g, &scalar_b);
 
-      scalar_r = std::min<float>(1, scalar_r + (objp->effect_info->dynamic_red));
-      scalar_g = std::min<float>(1, scalar_g + (objp->effect_info->dynamic_green));
-      scalar_b = std::min<float>(1, scalar_b + (objp->effect_info->dynamic_blue));
+      scalar_r = std::min<float>(1, scalar_r + (obj.effect_info->dynamic_red));
+      scalar_g = std::min<float>(1, scalar_g + (obj.effect_info->dynamic_green));
+      scalar_b = std::min<float>(1, scalar_b + (obj.effect_info->dynamic_blue));
       // If this is a robot, make it at least 10% for each RGB component
-      if (objp->type == OBJ_ROBOT) {
+      if (obj.type == OBJ_ROBOT) {
         scalar_r = std::max<float>(.1, scalar_r);
         scalar_g = std::max<float>(.1, scalar_g);
         scalar_b = std::max<float>(.1, scalar_b);
       }
 
-      if (objp->type == OBJ_PLAYER && (Players[objp->id].flags & PLAYER_FLAGS_HEADLIGHT)) {
+      if (obj.type == OBJ_PLAYER && (Players[obj.id].flags & PLAYER_FLAGS_HEADLIGHT)) {
         scalar_r = 1;
         scalar_g = 1;
         scalar_b = 1;
       }
     }
     RenderObject_SetGouraud(&lightdir, scalar_r, scalar_g, scalar_b);
-  } else if (objp->lighting_render_type == LRT_LIGHTMAPS) {
-    if (objp->lm_object.used == 0)
+  } else if (obj.lighting_render_type == LRT_LIGHTMAPS) {
+    if (obj.lm_object.used == 0)
       RenderObject_SetStatic(1.0f, 1.0f, 1.0f);
     else
-      RenderObject_SetLightmaps(&objp->lm_object);
+      RenderObject_SetLightmaps(&obj.lm_object);
   }
   return true;
 }
@@ -1186,93 +1187,93 @@ bool GetLinearPosition(vector3 *points, float *times, int num_points, float t, v
 
 // -----------------------------------------------------------------------------
 //	Render an object.  Calls one of several routines based on type
-void RenderObject(object *obj) {
+void RenderObject(object& obj) {
   float normalized_time[MAX_SUBOBJECTS];
   bool render_it = false;
-  if (obj->type == OBJ_NONE) {
-    LOG_FATAL("ERROR!!! Bogus obj %d in room %d is rendering!", OBJNUM(obj), obj->roomnum);
+  if (obj.type == OBJ_NONE) {
+    LOG_FATAL("ERROR!!! Bogus obj %d in room %d is rendering!", OBJNUM(obj), obj.roomnum);
     Q_ASSERT(false);
     return;
   }
-  if (obj->type == OBJ_DUMMY)
+  if (obj.type == OBJ_DUMMY)
     return;
-  if (obj->flags & OF_ATTACHED) {
+  if (obj.flags & OF_ATTACHED) {
     // See if we should be rendered, because our attach parent might be invisible
-    object *parent_obj = ObjGet(obj->attach_ultimate_handle);
+    object *parent_obj = ObjGet(obj.attach_ultimate_handle);
     if (!parent_obj)
       return;
     if (parent_obj->render_type == RT_NONE && parent_obj->type != OBJ_POWERUP &&
         (parent_obj->type == OBJ_PLAYER || parent_obj->movement_type != MT_NONE))
       return;
   }
-  if (OBJECT_OUTSIDE(obj))
+  if (OBJECT_OUTSIDE(&obj))
     render_it = SetupTerrainObject(obj);
   else
     render_it = SetupMineObject(obj);
   if (!render_it)
     return;
-  if (!(obj->flags & OF_SAFE_TO_RENDER))
+  if (!(obj.flags & OF_SAFE_TO_RENDER))
     return;
   // Mark this a rendered this frame
-  obj->flags |= OF_RENDERED;
+  obj.flags |= OF_RENDERED;
   // If we're not rendering from a mirror, mark this object as rendered
   if (Render_mirror_for_room == false)
-    obj->flags &= ~OF_SAFE_TO_RENDER;
-  obj->renderframe = FrameCount % 65536;
-  if (obj->control_type == CT_AI) {
-    AI_RenderedList[AI_NumRendered] = OBJNUM(obj);
+    obj.flags &= ~OF_SAFE_TO_RENDER;
+  obj.renderframe = FrameCount % 65536;
+  if (obj.control_type == CT_AI) {
+    AI_RenderedList[AI_NumRendered] = OBJNUM(&obj);
     AI_NumRendered += 1;
   }
 
   ddgr_color oldcolor;
-  if (TSearch_on && obj->type != OBJ_ROOM) {
+  if (TSearch_on && obj.type != OBJ_ROOM) {
     rend_SetPixel(GR_RGB(16, 255, 64), TSearch_x, TSearch_y);
     oldcolor = rend_GetPixel(TSearch_x, TSearch_y); // will be different in 15/16-bit color
   }
 
-  switch (obj->render_type) {
+  switch (obj.render_type) {
   case RT_NONE:
     break;
   case RT_EDITOR_SPHERE: // to render objects in editor mode
 
     if (!UseHardware) {
       g3Point sphere_point;
-      g3_RotatePoint(&sphere_point, &obj->pos);
-      g3_DrawSphere(obj->rtype.sphere_color(), &sphere_point, obj->size);
+      g3_RotatePoint(&sphere_point, &obj.pos);
+      g3_DrawSphere(obj.rtype.sphere_color(), &sphere_point, obj.size);
     } else {
       // Let me take this opportunity to say how much it pisses me off that
       // the DrawColoredDisk() function takes r,g,b as floats, when the standard
       // in our graphics system is to pass color as a ddgr_color
-      float r = (float)GR_COLOR_RED(obj->rtype.sphere_color()) / 255.0,
-            g = (float)GR_COLOR_GREEN(obj->rtype.sphere_color()) / 255.0,
-            b = (float)GR_COLOR_BLUE(obj->rtype.sphere_color()) / 255.0;
-      DrawColoredDisk(&obj->pos, r, g, b, 1, 1, obj->size, 0);
+      float r = (float)GR_COLOR_RED(obj.rtype.sphere_color()) / 255.0,
+            g = (float)GR_COLOR_GREEN(obj.rtype.sphere_color()) / 255.0,
+            b = (float)GR_COLOR_BLUE(obj.rtype.sphere_color()) / 255.0;
+      DrawColoredDisk(&obj.pos, r, g, b, 1, 1, obj.size, 0);
     }
 
     break;
   case RT_POLYOBJ:
-    if (obj - Objects == Cur_object_index)
+    if (OBJNUM(&obj) == Cur_object_index)
       DrawObjectSelectionBrackets(obj, 0); // draw back brackets
 
-    if (obj->rtype.pobj_info().anim_frame || (Poly_models[obj->rtype.pobj_info().model_num].frame_max !=
-                                            Poly_models[obj->rtype.pobj_info().model_num].frame_min)) {
-      SetNormalizedTimeObj(obj, normalized_time);
-      RenderObject_DrawPolymodel(obj, normalized_time);
+    if (obj.rtype.pobj_info().anim_frame || (Poly_models[obj.rtype.pobj_info().model_num].frame_max !=
+                                            Poly_models[obj.rtype.pobj_info().model_num].frame_min)) {
+      SetNormalizedTimeObj(&obj, normalized_time);
+      RenderObject_DrawPolymodel(&obj, normalized_time);
     } else {
-      RenderObject_DrawPolymodel(obj, NULL);
+      RenderObject_DrawPolymodel(&obj, NULL);
     }
 
     ////////////////////////////////////////////
     /////////////MOTION BLUR////////////////////
-    if (Use_motion_blur && (obj->type == OBJ_ROBOT || obj->type == OBJ_DEBRIS) &&
-        Object_map_position_history[OBJNUM(obj)] != -1) {
+    if (Use_motion_blur && (obj.type == OBJ_ROBOT || obj.type == OBJ_DEBRIS) &&
+        Object_map_position_history[OBJNUM(&obj)] != -1) {
       float vel_mag;                  // velocity magnitude
       float sphere_size_perc = 0.20f; // percentage of object size
       float AFT = 1.0f / 20.0f;       // Assumed frame time
       int num_iterations;             // number of iterations
 
-      vel_mag = fabs(vm_GetMagnitude(&obj->mtype.phys_info.velocity));
-      num_iterations = (vel_mag * AFT) / (sphere_size_perc * obj->size);
+      vel_mag = fabs(vm_GetMagnitude(&obj.mtype.phys_info.velocity));
+      num_iterations = (vel_mag * AFT) / (sphere_size_perc * obj.size);
 
       if (num_iterations > 12)
         num_iterations = 12;
@@ -1284,16 +1285,16 @@ void RenderObject(object *obj) {
         float times[MAX_POSITION_HISTORY + 1];
 
         // save the position of the object, because we'll have to restore it
-        saved_pos = obj->pos;
+        saved_pos = obj.pos;
         saved_alpha_fac = rend_GetAlphaFactor();
 
-        int pos_slot = Object_map_position_history[OBJNUM(obj)];
+        int pos_slot = Object_map_position_history[OBJNUM(&obj)];
         int i, c_pos = Object_position_head;
 
         // fill in the positions, starting with our current one
         for (i = 0; i < MAX_POSITION_HISTORY + 1; i++) {
           if (i == 0) {
-            positions[i] = obj->pos;
+            positions[i] = obj.pos;
             times[i] = 0;
           } else {
             positions[i] = Object_position_samples[pos_slot].pos[c_pos];
@@ -1316,17 +1317,17 @@ void RenderObject(object *obj) {
         float curr_t = t_interval;
 
         for (i = 0; i < num_iterations; i++) {
-          if (!GetLinearPosition(positions, times, MAX_POSITION_HISTORY + 1, curr_t, &obj->pos))
+          if (!GetLinearPosition(positions, times, MAX_POSITION_HISTORY + 1, curr_t, &obj.pos))
             break;
 
           rend_SetAlphaFactor(curr_alpha);
 
           // render the iteration
-          if (obj->rtype.pobj_info().anim_frame || (Poly_models[obj->rtype.pobj_info().model_num].frame_max !=
-                                                  Poly_models[obj->rtype.pobj_info().model_num].frame_min)) {
-            RenderObject_DrawPolymodel(obj, normalized_time);
+          if (obj.rtype.pobj_info().anim_frame || (Poly_models[obj.rtype.pobj_info().model_num].frame_max !=
+                                                  Poly_models[obj.rtype.pobj_info().model_num].frame_min)) {
+            RenderObject_DrawPolymodel(&obj, normalized_time);
           } else {
-            RenderObject_DrawPolymodel(obj, NULL);
+            RenderObject_DrawPolymodel(&obj, NULL);
           }
 
           // update
@@ -1334,7 +1335,7 @@ void RenderObject(object *obj) {
           curr_t += t_interval;
         }
 
-        obj->pos = saved_pos;
+        obj.pos = saved_pos;
         rend_SetAlphaFactor(saved_alpha_fac);
       }
     }
@@ -1347,63 +1348,63 @@ void RenderObject(object *obj) {
 #endif
 
     // Render that powerup glow
-    if (obj->type == OBJ_POWERUP) {
-      DrawPowerupGlowDisk(obj);
-      DrawPowerupSparkles(obj);
+    if (obj.type == OBJ_POWERUP) {
+      DrawPowerupGlowDisk(&obj);
+      DrawPowerupSparkles(&obj);
     }
 #if 0
-    if (obj->type == OBJ_PLAYER) {
-      DrawPlayerDamageDisk(obj);
-      DrawPlayerRotatingBall(obj);
-      DrawPlayerNameOnHud(obj);
-      DrawPlayerTypingIndicator(obj);
-      DrawPlayerInvulSphere(obj);
+    if (obj.type == OBJ_PLAYER) {
+      DrawPlayerDamageDisk(&obj);
+      DrawPlayerRotatingBall(&obj);
+      DrawPlayerNameOnHud(&obj);
+      DrawPlayerTypingIndicator(&obj);
+      DrawPlayerInvulSphere(&obj);
     }
 #endif
-    if (obj->type == OBJ_PLAYER || obj->type == OBJ_ROBOT || (obj->type == OBJ_BUILDING && obj->ai_info)) {
-      DrawSparkyDamageLightning(obj);
-      DrawVirusLightning(obj);
+    if (obj.type == OBJ_PLAYER || obj.type == OBJ_ROBOT || (obj.type == OBJ_BUILDING && obj.ai_info)) {
+      DrawSparkyDamageLightning(&obj);
+      DrawVirusLightning(&obj);
     }
 
     break;
   case RT_FIREBALL:
-    DrawFireballObject(obj);
+    DrawFireballObject(&obj);
     break;
   case RT_WEAPON:
-    DrawWeaponObject(obj);
+    DrawWeaponObject(&obj);
 
 #ifdef _DEBUG
     if (Game_show_sphere) {
-      DrawDebugInfo(obj);
+      DrawDebugInfo(&obj);
     }
 #endif
     break;
 
   case RT_SPLINTER:
-//    DrawSplinterObject(obj);
+//    DrawSplinterObject(&obj);
     break;
   case RT_SHARD:
-//    DrawShardObject(obj);
+//    DrawShardObject(&obj);
     break;
 
 #ifdef _DEBUG
   case RT_LINE: {
     g3Point g3p[2];
     memset(g3p, 0, 2 * sizeof(g3Point));
-    // g3p[0].p3_vec = obj->pos;
-    // g3p[1].p3_vec = obj->rtype.line_info().end_pos;
+    // g3p[0].p3_vec = obj.pos;
+    // g3p[1].p3_vec = obj.rtype.line_info().end_pos;
 
-    g3_RotatePoint(&g3p[0], &obj->pos);
-    g3_RotatePoint(&g3p[1], &obj->rtype.line_info().end_pos);
+    g3_RotatePoint(&g3p[0], &obj.pos);
+    g3_RotatePoint(&g3p[1], &obj.rtype.line_info().end_pos);
     g3_DrawLine(GR_RGB(255, 255, 255), &g3p[0], &g3p[1]);
     break;
   }
 #endif
   default:
-    LOG_ERROR("Unknown render_type <%d>", obj->render_type);
+    LOG_ERROR("Unknown render_type <%d>", obj.render_type);
   }
 #ifdef NEWDEMO
-  if (obj->render_type != RT_NONE)
+  if (obj.render_type != RT_NONE)
     if (Newdemo_state == ND_STATE_RECORDING) {
       if (!WasRecorded[obj - Objects]) {
         newdemo_record_RenderObject(obj);
@@ -1414,12 +1415,12 @@ void RenderObject(object *obj) {
     //??	Max_linear_depth = mld_save;
     // Mark selected objects
 
-  if (obj - Objects == Cur_object_index)
+  if (OBJNUM(&obj) == Cur_object_index)
   {
-    if (obj->render_type != RT_POLYOBJ) {
+    if (obj.render_type != RT_POLYOBJ) {
       g3Point pnt;
-      g3_RotatePoint(&pnt, &obj->pos);
-      g3_DrawBox(GR_RGB(255, 255, 255), &pnt, obj->size);
+      g3_RotatePoint(&pnt, &obj.pos);
+      g3_DrawBox(GR_RGB(255, 255, 255), &pnt, obj.size);
     } else {                               // polygon model
       DrawObjectSelectionBrackets(obj, 1); // draw front brackets
     }
@@ -1429,8 +1430,8 @@ void RenderObject(object *obj) {
   if (TSearch_on) {
     if (rend_GetPixel(TSearch_x, TSearch_y) != oldcolor) {
       TSearch_found_type = TSEARCH_FOUND_OBJECT;
-      TSearch_seg = obj - Objects;
-      LOG_DEBUG("TR:objnum=%d", obj - Objects);
+      TSearch_seg = OBJNUM(&obj);
+      LOG_DEBUG("TR:objnum=%d", OBJNUM(&obj));
     }
   }
 }
