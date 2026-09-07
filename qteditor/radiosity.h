@@ -158,8 +158,8 @@ struct rad_point {
 
 extern float *Room_strongest_value[][4];
 
-extern int Ignore_terrain;
-extern int Ignore_satellites;
+extern bool Ignore_terrain;
+extern bool Ignore_satellites;
 
 extern float Ignore_limit;
 extern float rad_TotalFlux;

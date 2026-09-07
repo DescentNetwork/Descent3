@@ -38,8 +38,8 @@
 int Shoot_method = SM_HEMICUBE;
 int Hemicube_resolution = 1024;
 
-int Ignore_terrain = 0;
-int Ignore_satellites = 0;
+bool Ignore_terrain = false;
+bool Ignore_satellites = false;
 
 float rad_TotalFlux = 0.0f;
 float rad_Convergence = 1.0f;

@@ -151,30 +151,18 @@ void UpdateTerrainLightmaps() { PRINT_STUB(__FUNCTION__); }
 void ClearTerrainSound() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Terrain search / render ====================
-int Check_terrain_portal = 0;
-uint8_t Terrain_from_mine = 1;
+bool Check_terrain_portal = false;
+bool Terrain_from_mine = true;
 void rend_GetProjectionParameters(int *width, int *height) { PRINT_STUB(__FUNCTION__); *width = 0; *height = 0; }
 uint8_t g3_CodePoint(g3Point *point) { PRINT_STUB(__FUNCTION__); return 0; }
 uint8_t CodeTerrainPoint(g3Point *p) { PRINT_STUB(__FUNCTION__); return 0; }
 
-// ==================== BOA ====================
-/*
-int BOA_num_terrain_regions = 0;
-connect_data BOA_connect[MAX_BOA_TERRAIN_REGIONS][MAX_PATH_PORTALS] = {};
-int BOA_num_connect[MAX_BOA_TERRAIN_REGIONS] = {};
-int BOA_AABB_checksum = 0;
-int BOA_AABB_ROOM_checksum[MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS] = {};
-int BOA_mine_checksum = 0;
-int BOA_vis_checksum = 0;
-bool BOA_vis_valid = false;
-void MakeBOA() { PRINT_STUB(__FUNCTION__); }
-bool BOA_IsVisible(int start_room, int end_room) { PRINT_STUB(__FUNCTION__); return false; }
-*/
+
 // ==================== BSP ====================
 void InitBSP() { PRINT_STUB(__FUNCTION__); }
 int BSPRayOccluded(vector3& a, vector3& b, bspnode *n) { PRINT_STUB(__FUNCTION__); return 0; }
 bsptree MineBSP = {};
-uint8_t UseBSP = 0;
+bool UseBSP = false;
 void BuildBSPTree() { PRINT_STUB(__FUNCTION__); }
 void BuildSingleBSPTree(int n) { PRINT_STUB(__FUNCTION__); }
 

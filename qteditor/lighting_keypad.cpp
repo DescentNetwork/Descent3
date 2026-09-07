@@ -55,8 +55,8 @@ void LightingKeypad::updateDialog() {
   ui->IDC_BESTFIT_CHECK->setChecked(BestFit != 0);
   ui->IDC_HEMICUBE_CHECK->setChecked(D3EditState.hemicube_radiosity != 0);
   ui->IDC_ELEMENT_CHECK->setChecked(Shoot_from_patch == 0);
-  ui->IDC_IGNORE_TERRAIN->setChecked(Ignore_terrain != 0);
-  ui->IDC_IGNORE_SATELLITES->setChecked(Ignore_satellites != 0);
+  ui->IDC_IGNORE_TERRAIN->setChecked(Ignore_terrain);
+  ui->IDC_IGNORE_SATELLITES->setChecked(Ignore_satellites);
   ui->IDC_USE_BSP_CHECK->setChecked(UseBSP != 0);
 }
 
@@ -74,7 +74,7 @@ void LightingKeypad::onHemicube(bool checked) {
 }
 void LightingKeypad::onElement(bool checked) { Shoot_from_patch = checked ? 0 : 1; }
 void LightingKeypad::onIgnoreTerrain(bool checked) {
-  Ignore_terrain = checked ? 1 : 0;
+  Ignore_terrain = checked;
   State_changed = true;
 }
 void LightingKeypad::onIgnoreSatellites(bool checked) {
@@ -82,7 +82,7 @@ void LightingKeypad::onIgnoreSatellites(bool checked) {
   State_changed = true;
 }
 void LightingKeypad::onUseBsp(bool checked) {
-  UseBSP = checked ? 1 : 0;
+  UseBSP = checked;
   State_changed = true;
 }
 

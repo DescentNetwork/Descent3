@@ -243,7 +243,7 @@ extern std::array<std::vector<terrain_normals>, MAX_TERRAIN_LOD> TerrainNormals;
 extern uint8_t Terrain_occlusion_map[256][32];
 extern int Terrain_occlusion_checksum;
 
-extern int Check_terrain_portal;
+extern bool Check_terrain_portal;
 extern int Terrain_checksum;
 
 // Our lighting maps for the terrain, one for each quadrant (starting at lower left)
@@ -259,7 +259,7 @@ extern float VisibleTerrainZ;
 extern float Terrain_average_height;
 
 extern float Clip_scale_left, Clip_scale_right, Clip_scale_top, Clip_scale_bot;
-extern uint8_t Terrain_from_mine;
+extern bool Terrain_from_mine;
 
 extern float Last_terrain_render_time;
 
