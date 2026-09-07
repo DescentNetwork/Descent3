@@ -45,6 +45,12 @@ struct mngs_generic_page {
   std::string dspew_name[MAX_DSPEW_TYPES];
 };
 
+// Table-file serialization; operator>> reads any version from the stream and
+// operator<< writes the current (GENERICFILE_VERSION) layout.  The read is
+// the mirror of the write.
+byte_istream& operator >>(byte_istream& input, mngs_generic_page& data);
+byte_ostream& operator <<(byte_ostream& output, const mngs_generic_page& data);
+
 // Generic page functions
 //---------------------------------------------------------------
 

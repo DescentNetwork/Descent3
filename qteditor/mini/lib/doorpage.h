@@ -33,6 +33,15 @@ struct mngs_door_page {
   std::string close_sound_name;
 };
 
+// Current version of the door page (matches the original manage/doorpage.cpp)
+#define DOORPAGE_VERSION 3
+
+// Table-file serialization; operator>> reads any version from the stream and
+// operator<< writes the current (DOORPAGE_VERSION) layout.  The read is the
+// mirror of the write.
+byte_istream& operator >>(byte_istream& input, mngs_door_page& data);
+byte_ostream& operator <<(byte_ostream& output, const mngs_door_page& data);
+
 // Door page functions
 //---------------------------------------------------------------
 

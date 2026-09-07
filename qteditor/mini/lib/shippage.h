@@ -33,10 +33,19 @@ struct mngs_ship_page {
   std::string fire_sound_name[MAX_PLAYER_WEAPONS][MAX_WB_FIRING_MASKS];
   std::string med_image_name;
   std::string lo_image_name;
-  std::string firing_sound_name;
-  std::string release_sound_name;
-  std::string spew_powerup_name;
+  std::string firing_sound_name[MAX_PLAYER_WEAPONS];
+  std::string release_sound_name[MAX_PLAYER_WEAPONS];
+  std::string spew_powerup_name[MAX_PLAYER_WEAPONS];
 };
+
+// Current version of the ship page (matches the original manage/shippage.cpp)
+#define SHIPPAGE_VERSION 6
+
+// Table-file serialization; operator>> reads any version from the stream and
+// operator<< writes the current (SHIPPAGE_VERSION) layout.  The read is the
+// mirror of the write.
+byte_istream& operator >>(byte_istream& input, mngs_ship_page& data);
+byte_ostream& operator <<(byte_ostream& output, const mngs_ship_page& data);
 
 // Ship page functions
 //---------------------------------------------------------------

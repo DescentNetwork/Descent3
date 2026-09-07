@@ -66,112 +66,161 @@ static void mng_InitTexturePage(mngs_texture_page *texpage) {
 }
 
 // Reads a texture page from an open file.  Returns 0 on error.
-int mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
-  int i;
-
-  mng_InitTexturePage(texpage);
-
+byte_istream& operator>>(byte_istream& input, mngs_texture_page& data) {
   int16_t version = 0;
-  infile >> version;
+  input >> version;
 
-  infile >> texpage->tex_struct.name;
-  infile >> texpage->bitmap_name;
-  infile >> texpage->destroy_name;
+  input >> data.tex_struct.name
+        >> data.bitmap_name
+        >> data.destroy_name;
 
-  infile >> texpage->tex_struct.r;
-  infile >> texpage->tex_struct.g;
-  infile >> texpage->tex_struct.b;
-  infile >> texpage->tex_struct.alpha;
-
-  infile >> texpage->tex_struct.speed;
-
-  infile >> texpage->tex_struct.slide_u;
-  infile >> texpage->tex_struct.slide_v;
-  infile >> texpage->tex_struct.reflectivity;
-
-  infile >> texpage->tex_struct.corona_type;
-  infile >> texpage->tex_struct.damage;
+  input >> data.tex_struct.r
+        >> data.tex_struct.g
+        >> data.tex_struct.b
+        >> data.tex_struct.alpha
+        >> data.tex_struct.speed
+        >> data.tex_struct.slide_u
+        >> data.tex_struct.slide_v
+        >> data.tex_struct.reflectivity
+        >> data.tex_struct.corona_type
+        >> data.tex_struct.damage;
   {
     uint32_t raw_flags = 0;
-    infile >> raw_flags;
-    std::memcpy(&texpage->tex_struct.flags, &raw_flags, sizeof(raw_flags));
+    input >> raw_flags;
+    std::memcpy(&data.tex_struct.flags, &raw_flags, sizeof(raw_flags));
   }
 
-  if (texpage->tex_struct.flags.procedural) {
-    texpage->proc_palette.fill(0);
-    for (i = 0; i < 255; i++) {
+  if (data.tex_struct.flags.procedural) {
+    data.proc_palette.fill(0);
+    for (int i = 0; i < 255; i++) {
       uint16_t val = 0;
-      infile >> val;
-      texpage->proc_palette[i] = val;
+      input >> val;
+      data.proc_palette[i] = val;
     }
 
-    infile >> texpage->proc_heat;
-    infile >> texpage->proc_light;
-    infile >> texpage->proc_thickness;
-    infile >> texpage->proc_evaluation_time;
+    input >> data.proc_heat
+          >> data.proc_light
+          >> data.proc_thickness
+          >> data.proc_evaluation_time;
 
-    if (version >= 6) {
-      infile >> texpage->osc_time;
-      infile >> texpage->osc_value;
-    }
+    if (version >= 6)
+      input >> data.osc_time >> data.osc_value;
 
     int16_t npe = 0;
-    infile >> npe;
-    texpage->num_proc_elements = npe;
+    input >> npe;
+    data.num_proc_elements = npe;
 
-    if (texpage->num_proc_elements > MAX_PROC_ELEMENTS) {
+    if (data.num_proc_elements > MAX_PROC_ELEMENTS) {
       LOG_ERROR("Warning! Too many procedural elements!");
       Q_ASSERT(false);
     }
 
-    texpage->proc_type.resize(texpage->num_proc_elements);
-    texpage->proc_frequency.resize(texpage->num_proc_elements);
-    texpage->proc_speed.resize(texpage->num_proc_elements);
-    texpage->proc_size.resize(texpage->num_proc_elements);
-    texpage->proc_x1.resize(texpage->num_proc_elements);
-    texpage->proc_y1.resize(texpage->num_proc_elements);
-    texpage->proc_x2.resize(texpage->num_proc_elements);
-    texpage->proc_y2.resize(texpage->num_proc_elements);
+    data.proc_type.resize(data.num_proc_elements);
+    data.proc_frequency.resize(data.num_proc_elements);
+    data.proc_speed.resize(data.num_proc_elements);
+    data.proc_size.resize(data.num_proc_elements);
+    data.proc_x1.resize(data.num_proc_elements);
+    data.proc_y1.resize(data.num_proc_elements);
+    data.proc_x2.resize(data.num_proc_elements);
+    data.proc_y2.resize(data.num_proc_elements);
 
-    for (i = 0; i < texpage->num_proc_elements; i++) {
-      infile >> texpage->proc_type[i];
-      infile >> texpage->proc_frequency[i];
-      infile >> texpage->proc_speed[i];
-      infile >> texpage->proc_size[i];
-      infile >> texpage->proc_x1[i];
-      infile >> texpage->proc_y1[i];
-
-      infile >> texpage->proc_x2[i];
-      infile >> texpage->proc_y2[i];
-    }
+    for (int i = 0; i < data.num_proc_elements; i++)
+      input >> data.proc_type[i]
+            >> data.proc_frequency[i]
+            >> data.proc_speed[i]
+            >> data.proc_size[i]
+            >> data.proc_x1[i]
+            >> data.proc_y1[i]
+            >> data.proc_x2[i]
+            >> data.proc_y2[i];
   }
 
-  if (texpage->tex_struct.flags.procedural) {
-    if (texpage->num_proc_elements == 0)
-      texpage->tex_struct.flags.procedural = false;
+  if (data.tex_struct.flags.procedural) {
+    if (data.num_proc_elements == 0)
+      data.tex_struct.flags.procedural = false;
   }
 
-  if (std::string(texpage->destroy_name).compare(0, 7, "INVALID") == 0)
-    texpage->destroy_name.clear();
+  if (std::string(data.destroy_name).compare(0, 7, "INVALID") == 0)
+    data.destroy_name.clear();
 
   if (version >= 5) {
 
     if (version < 7) {
       // Kill buggy version of sound resolving code
       int s;
-      infile >> s;
-      texpage->tex_struct.sound = s;
-      texpage->tex_struct.sound = -1;
-      texpage->sound_name.clear();
+      input >> s;
+      data.tex_struct.sound = s;
+      data.tex_struct.sound = -1;
+      data.sound_name.clear();
     } else {
-      infile >> texpage->sound_name;
+      input >> data.sound_name;
     }
 
-    infile >> texpage->tex_struct.sound_volume;
+    input >> data.tex_struct.sound_volume;
   } else {
-    texpage->tex_struct.sound = -1;
-    texpage->tex_struct.sound_volume = 1.0;
+    data.tex_struct.sound = -1;
+    data.tex_struct.sound_volume = 1.0;
   }
+
+  return input;
+}
+
+// Writes a texture page in the current (TEXPAGE_VERSION) format, the exact
+// mirror of operator>> (same field order and encodings).
+byte_ostream& operator<<(byte_ostream& output, const mngs_texture_page& data) {
+  output << static_cast<int16_t>(TEXPAGE_VERSION);
+  output << data.tex_struct.name
+         << data.bitmap_name
+         << data.destroy_name
+         << data.tex_struct.r
+         << data.tex_struct.g
+         << data.tex_struct.b
+         << data.tex_struct.alpha
+         << data.tex_struct.speed
+         << data.tex_struct.slide_u
+         << data.tex_struct.slide_v
+         << data.tex_struct.reflectivity
+         << data.tex_struct.corona_type
+         << data.tex_struct.damage;
+  {
+    uint32_t raw_flags = 0;
+    std::memcpy(&raw_flags, &data.tex_struct.flags, sizeof(raw_flags));
+    output << raw_flags;
+  }
+
+  if (data.tex_struct.flags.procedural) {
+    for (int i = 0; i < 255; i++)
+      output << data.proc_palette[i];
+
+    output << data.proc_heat
+           << data.proc_light
+           << data.proc_thickness
+           << data.proc_evaluation_time
+           << data.osc_time
+           << data.osc_value
+           << static_cast<int16_t>(data.num_proc_elements);
+    for (int i = 0; i < data.num_proc_elements; i++)
+      output << data.proc_type[i]
+             << data.proc_frequency[i]
+             << data.proc_speed[i]
+             << data.proc_size[i]
+             << data.proc_x1[i]
+             << data.proc_y1[i]
+             << data.proc_x2[i]
+             << data.proc_y2[i];
+  }
+
+  output << data.sound_name
+         << data.tex_struct.sound_volume;
+  return output;
+}
+
+int mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
+  int i;
+
+  mng_InitTexturePage(texpage);
+
+  infile >> *texpage;
 
   texpage->tex_struct.used = 1;
 

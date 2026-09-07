@@ -30,16 +30,25 @@ struct mngs_weapon_page {
   weapon weapon_struct;
   std::string hud_image_name;
   std::string fire_image_name;
-  std::string exlode_image_name;
+  std::string explode_image_name;
   std::string smoke_image_name;
   std::string scorch_image_name;
   std::string icon_name;
-  std::string spaw_name;
+  std::string spawn_name;
   std::string alternate_spawn_name;
   std::string particle_name;
   std::string robot_spawn_name;
   std::string sound_name[MAX_WEAPON_SOUNDS];
 };
+
+// Current version of the weapon page (matches the original manage/weaponpage.cpp)
+#define WEAPONPAGE_VERSION 8
+
+// Table-file serialization; operator>> reads any version from the stream and
+// operator<< writes the current (WEAPONPAGE_VERSION) layout.  The read is the
+// mirror of the write.
+byte_istream& operator >>(byte_istream& input, mngs_weapon_page& data);
+byte_ostream& operator <<(byte_ostream& output, const mngs_weapon_page& data);
 
 // Weapon page functions
 //---------------------------------------------------------------

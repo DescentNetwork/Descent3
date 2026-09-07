@@ -98,6 +98,8 @@
 #include <variant>
 #include <vector>
 
+#include <posix_stream.h>
+
 #include "vecmat_external.h"
 #include "robotfirestruct.h"
 
@@ -151,6 +153,11 @@ struct light_info {
   uint8_t angle;
   uint8_t lighting_render_type;
 };
+
+// Table-file (lighting chunk) serialization; the read is the exact mirror of
+// the write and preserves the on-disk field order from the original manage.cpp.
+byte_istream& operator >>(byte_istream& input, light_info& data);
+byte_ostream& operator <<(byte_ostream& output, const light_info& data);
 
 struct effect_info_s {
   int32_t type_flags; // see EF_FLAGS above
@@ -447,6 +454,11 @@ struct physics_info {
 
   uint32_t flags; // Misc physics flags // TYPE_UPDATE: `physics_flags_t`
 };
+
+// Table-file (physics chunk) serialization; read mirrors write.  Historical
+// quirk preserved: only the z component of velocity is stored on disk.
+byte_istream& operator >>(byte_istream& input, physics_info& data);
+byte_ostream& operator <<(byte_ostream& output, const physics_info& data);
 
 struct shockwave_info {
   uint32_t damaged_list[(MAX_OBJECTS / 32) + 1];

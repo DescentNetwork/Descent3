@@ -258,22 +258,10 @@ int StartManagePage(struct CFILE* ofile, uint8_t pagetype);
 // Fill in page length when done writing
 void EndManagePage(struct CFILE* ofile, int chunk_start_pos);
 
-struct light_info;
-struct physics_info;
-struct otype_wb_info;
-
-// Reads a physics chunk in from the table file
-void mng_ReadPhysicsChunk(physics_info *phys_info, posix_istream &infile);
-void mng_WritePhysicsChunk(physics_info *phys_info, struct CFILE* outfile);
-
-// Writes out weapon battery info
-void mng_WriteWeaponBatteryChunk(otype_wb_info *static_wb, struct CFILE* outfile);
-
-// Reads in weapon battery info
-void mng_ReadWeaponBatteryChunk(otype_wb_info *static_wb, posix_istream &infile, int version);
-
-// Reads in lighting info (used by the generic + weapon page readers)
-void mng_ReadLightingChunk(light_info *lighting_info, posix_istream &infile);
+// Current-version table-file serialization is provided by the stream
+// operators declared alongside each type (see object_external_struct.h
+// operator>>/<< for physics_info and light_info, and robotfirestruct.h for
+// otype_wb_info).
 
 // Given a texture handle, searches the table file and replaces the texture with the same name
 // If local=1, then does it to the users local copy

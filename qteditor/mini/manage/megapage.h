@@ -35,6 +35,15 @@ struct mngs_megacell_page {
   std::string cellname[MAX_MEGACELL_WIDTH * MAX_MEGACELL_HEIGHT];
 };
 
+// Current version of the megacell page (matches the original manage/megapage.cpp)
+#define MEGACELL_VERSION 2
+
+// Table-file serialization; operator>> reads any version from the stream and
+// operator<< writes the current (MEGACELL_VERSION) layout.  The read is the
+// mirror of the write.
+byte_istream& operator >>(byte_istream& input, mngs_megacell_page& data);
+byte_ostream& operator <<(byte_ostream& output, const mngs_megacell_page& data);
+
 // Reads a megacell page from an open file.  Returns 0 on error.
 int mng_ReadMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage);
 

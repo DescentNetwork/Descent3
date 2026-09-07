@@ -31,23 +31,48 @@
 // Sound page (ported from soundpage.cpp : 222-255)
 //-----------------------------------------------------------------------------
 
-int mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
-  /* int version = */ int16_t v; infile >> v;
-  // read in name,rawfile name
-  infile >> soundpage->sound_struct.name;
-  infile >> soundpage->raw_name;
-  infile >> soundpage->sound_struct.flags;
+// sound_info is a page sub-record (its name interleaves with the page-level
+// raw_name on disk), so the page operators inline all of its fields in the
+// original write order: flags, loop_start, loop_end, outer_cone_volume,
+// inner_cone_angle, outer_cone_angle, max_distance, min_distance,
+// import_volume.
 
-  infile >> soundpage->sound_struct.loop_start;
-  infile >> soundpage->sound_struct.loop_end;
-  infile >> soundpage->sound_struct.outer_cone_volume;
-  infile >> soundpage->sound_struct.inner_cone_angle;
-  infile >> soundpage->sound_struct.outer_cone_angle;
-  infile >> soundpage->sound_struct.max_distance;
-  infile >> soundpage->sound_struct.min_distance;
-  infile >> soundpage->sound_struct.import_volume;
-  // The full engine has a DEMO-only import_volume adjustment block here; it is
-  // compiled out unless DEMO is defined (never in the mini build).
+byte_istream& operator>>(byte_istream& input, mngs_sound_page& data) {
+  int16_t version = 0;
+  input >> version;
+
+  return input
+         >> data.sound_struct.name
+         >> data.raw_name
+         >> data.sound_struct.flags
+         >> data.sound_struct.loop_start
+         >> data.sound_struct.loop_end
+         >> data.sound_struct.outer_cone_volume
+         >> data.sound_struct.inner_cone_angle
+         >> data.sound_struct.outer_cone_angle
+         >> data.sound_struct.max_distance
+         >> data.sound_struct.min_distance
+         >> data.sound_struct.import_volume;
+}
+
+byte_ostream& operator<<(byte_ostream& output, const mngs_sound_page& data) {
+  return output
+         << static_cast<int16_t>(SOUNDPAGE_VERSION)
+         << data.sound_struct.name
+         << data.raw_name
+         << data.sound_struct.flags
+         << data.sound_struct.loop_start
+         << data.sound_struct.loop_end
+         << data.sound_struct.outer_cone_volume
+         << data.sound_struct.inner_cone_angle
+         << data.sound_struct.outer_cone_angle
+         << data.sound_struct.max_distance
+         << data.sound_struct.min_distance
+         << data.sound_struct.import_volume;
+}
+
+int mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
+  infile >> *soundpage;
 
   // This is a valid new page
   soundpage->sound_struct.used = 1;

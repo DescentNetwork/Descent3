@@ -55,6 +55,15 @@ struct mngs_texture_page {
   std::array<uint16_t, 255> proc_palette;
 };
 
+// Current version of the texture page (matches the original manage/texpage.cpp)
+#define TEXPAGE_VERSION 7
+
+// Table-file serialization; operator>> reads any version from the stream and
+// operator<< writes the current (TEXPAGE_VERSION) layout.  The read is the
+// mirror of the write.
+byte_istream& operator >>(byte_istream& input, mngs_texture_page& data);
+byte_ostream& operator <<(byte_ostream& output, const mngs_texture_page& data);
+
 // Texture page functions
 //---------------------------------------------------------------
 

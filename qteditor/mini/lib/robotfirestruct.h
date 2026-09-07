@@ -22,6 +22,8 @@
 #include <array>
 #include <cstdint>
 
+#include <posix_stream.h>
+
 #include "robotfirestruct_external.h"
 #include "vecmat.h"
 
@@ -112,6 +114,11 @@ struct otype_wb_info {
 
   float energy_usage, ammo_usage;
 };
+
+// Table-file (weapon battery chunk) serialization.  operator<< follows the
+// current (flags-on-disk-as-uint16) layout, the exact mirror of operator>>.
+byte_istream& operator >>(byte_istream& input, otype_wb_info& data);
+byte_ostream& operator <<(byte_ostream& output, const otype_wb_info& data);
 
 #define WB_MOVE_STILL 0
 #define WB_MOVE_RIGHT 1

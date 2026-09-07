@@ -31,57 +31,90 @@
 // Ship page (ported from shippage.cpp : 539-611)
 //-----------------------------------------------------------------------------
 
-int mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage) {
-  int i, j;
+// On-disk order (SHIPPAGE_VERSION 6) is: version, name, cockpit_name,
+// hud_config_name, image_name, dying_image_name, med_image_name, lo_image_name,
+// med_lod_distance, lo_lod_distance, phys_info, size, armor_scalar, flags,
+// then per-weapon: fire_flags, firing_sound_name, release_sound_name,
+// spew_powerup_name, max_ammo, static_wb, [gunpoints] fire_sound_name,
+// [masks] weapon_name.
 
+byte_istream& operator>>(byte_istream& input, mngs_ship_page& data) {
+  int16_t version = 0;
+  input >> version;
+
+  input >> data.ship_struct.name
+        >> data.ship_struct.cockpit_name
+        >> data.ship_struct.hud_config_name
+        >> data.image_name
+        >> data.dying_image_name
+        >> data.med_image_name
+        >> data.lo_image_name
+        >> data.ship_struct.med_lod_distance
+        >> data.ship_struct.lo_lod_distance
+        >> data.ship_struct.phys_info
+        >> data.ship_struct.size
+        >> data.ship_struct.armor_scalar
+        >> data.ship_struct.flags;
+
+  for (int i = 0; i < MAX_PLAYER_WEAPONS; i++) {
+    input >> data.ship_struct.fire_flags[i]
+          >> data.firing_sound_name[i]
+          >> data.release_sound_name[i]
+          >> data.spew_powerup_name[i]
+          >> data.ship_struct.max_ammo[i]
+          >> data.ship_struct.static_wb[i];
+
+    for (int j = 0; j < MAX_WB_GUNPOINTS; j++)
+      input >> data.fire_sound_name[i][j];
+
+    for (int j = 0; j < MAX_WB_FIRING_MASKS; j++)
+      input >> data.weapon_name[i][j];
+  }
+
+  return input;
+}
+
+byte_ostream& operator<<(byte_ostream& output, const mngs_ship_page& data) {
+  output << static_cast<int16_t>(SHIPPAGE_VERSION);
+
+  output << data.ship_struct.name
+         << data.ship_struct.cockpit_name
+         << data.ship_struct.hud_config_name
+         << data.image_name
+         << data.dying_image_name
+         << data.med_image_name
+         << data.lo_image_name
+         << data.ship_struct.med_lod_distance
+         << data.ship_struct.lo_lod_distance
+         << data.ship_struct.phys_info
+         << data.ship_struct.size
+         << data.ship_struct.armor_scalar
+         << data.ship_struct.flags;
+
+  for (int i = 0; i < MAX_PLAYER_WEAPONS; i++) {
+    output << data.ship_struct.fire_flags[i]
+           << data.firing_sound_name[i]
+           << data.release_sound_name[i]
+           << data.spew_powerup_name[i]
+           << data.ship_struct.max_ammo[i]
+           << data.ship_struct.static_wb[i];
+
+    for (int j = 0; j < MAX_WB_GUNPOINTS; j++)
+      output << data.fire_sound_name[i][j];
+
+    for (int j = 0; j < MAX_WB_FIRING_MASKS; j++)
+      output << data.weapon_name[i][j];
+  }
+
+  return output;
+}
+
+int mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage) {
   // Clear the page record.  The embedded ship holds std::string members, so
   // use member-wise reset rather than memset (which would corrupt them).
   *shippage = mngs_ship_page{};
 
-  int16_t version = 0;
-  infile >> version;
-
-  // ship.name is a variable-length NUL-terminated string on disk (std::string).
-  infile >> shippage->ship_struct.name;
-
-  infile >> shippage->ship_struct.cockpit_name;
-  infile >> shippage->ship_struct.hud_config_name;
-
-  // Read in model names
-  infile >> shippage->image_name;
-  infile >> shippage->dying_image_name;
-  infile >> shippage->med_image_name;
-  infile >> shippage->lo_image_name;
-
-  // read lod distance
-  infile >> shippage->ship_struct.med_lod_distance;
-  infile >> shippage->ship_struct.lo_lod_distance;
-
-  // Read physics
-  mng_ReadPhysicsChunk(&shippage->ship_struct.phys_info, infile);
-
-  infile >> shippage->ship_struct.size;
-  infile >> shippage->ship_struct.armor_scalar;
-  infile >> shippage->ship_struct.flags;
-
-  for (i = 0; i < MAX_PLAYER_WEAPONS; i++) {
-    infile >> shippage->ship_struct.fire_flags[i];
-    infile >> shippage->firing_sound_name[i];
-    infile >> shippage->release_sound_name[i];
-    infile >> shippage->spew_powerup_name[i];
-    infile >> shippage->ship_struct.max_ammo[i];
-
-    if (version >= 6)
-      mng_ReadWeaponBatteryChunk(&shippage->ship_struct.static_wb[i], infile, 2);
-    else
-      mng_ReadWeaponBatteryChunk(&shippage->ship_struct.static_wb[i], infile, 1);
-
-    for (j = 0; j < MAX_WB_GUNPOINTS; j++)
-      infile >> shippage->fire_sound_name[i][j];
-
-    for (j = 0; j < MAX_WB_FIRING_MASKS; j++)
-      infile >> shippage->weapon_name[i][j];
-  }
+  infile >> *shippage;
 
   // Mark the newly filled structure as used
   shippage->ship_struct.used = 1;
@@ -89,18 +122,18 @@ int mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage) {
   // Bash Fusion recharge times for the ships
   if (shippage->ship_struct.name == "Pyro-GL") {
     // Pyro-GL
-    for (j = 0; j < MAX_WB_FIRING_MASKS; j++)
+    for (int j = 0; j < MAX_WB_FIRING_MASKS; j++)
       shippage->ship_struct.static_wb[FUSION_INDEX].gp_fire_wait[j] = 0.66f;
   } else if (shippage->ship_struct.name == "Phoenix") {
     // Phoenix
-    for (j = 0; j < MAX_WB_FIRING_MASKS; j++)
+    for (int j = 0; j < MAX_WB_FIRING_MASKS; j++)
       shippage->ship_struct.static_wb[FUSION_INDEX].gp_fire_wait[j] = 0.792f;
   } else if (shippage->ship_struct.name == "Magnum-AHT") {
     // Magnum
-    for (j = 0; j < MAX_WB_FIRING_MASKS; j++)
+    for (int j = 0; j < MAX_WB_FIRING_MASKS; j++)
       shippage->ship_struct.static_wb[FUSION_INDEX].gp_fire_wait[j] = 1.122f;
   } else {
-    std::runtime_error("ship not found!");
+    // Any other ship: nothing to bash.
   }
 
   return 1; // successfully read

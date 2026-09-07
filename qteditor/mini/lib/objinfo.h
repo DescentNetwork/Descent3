@@ -379,9 +379,17 @@ struct anim_entry {
   uint8_t used;
 };
 
+// Table-file serialization: only the from/to/spc triplet is stored on disk
+// (anim_sound_index and used are runtime-only).
+byte_istream& operator >>(byte_istream& input, anim_entry& data);
+byte_ostream& operator <<(byte_ostream& output, const anim_entry& data);
+
 struct anim_elem {
   anim_entry elem[NUM_ANIMS_PER_CLASS];
 };
+
+byte_istream& operator >>(byte_istream& input, anim_elem& data);
+byte_ostream& operator <<(byte_ostream& output, const anim_elem& data);
 
 #define MAX_DSPEW_TYPES 2
 #define DSF_ONLY_IF_PLAYER_HAS_OBJ_1 1

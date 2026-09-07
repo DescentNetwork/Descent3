@@ -30,6 +30,15 @@ struct mngs_sound_page {
   std::string raw_name;
 };
 
+// Current version of the sound page (matches the original manage/soundpage.cpp)
+#define SOUNDPAGE_VERSION 1
+
+// Table-file serialization; operator>> reads any version from the stream and
+// operator<< writes the current (SOUNDPAGE_VERSION) layout.  The read is the
+// mirror of the write.
+byte_istream& operator >>(byte_istream& input, mngs_sound_page& data);
+byte_ostream& operator <<(byte_ostream& output, const mngs_sound_page& data);
+
 // Sound page functions
 //---------------------------------------------------------------
 

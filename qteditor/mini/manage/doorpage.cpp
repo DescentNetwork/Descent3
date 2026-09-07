@@ -27,37 +27,49 @@
 #include "gamedata_helpers.h"
 
 //-----------------------------------------------------------------------------
-// Door page (ported from doorpage.cpp : 261-292)
+// Door page (ported from doorpage.cpp : 243-292)
 //-----------------------------------------------------------------------------
 
-int mng_ReadNewDoorPage(posix_istream &infile, mngs_door_page *doorpage) {
+// On-disk order (new format, DOORPAGE_VERSION 3) is: name, image_name,
+// total_open_time, total_close_time, total_time_open, flags, hit_points,
+// open_sound_name, close_sound_name, module_name.  The door fields are
+// interleaved with the page-level image/sound names, so the page operators
+// inline them all rather than using a door sub-record operator.
+
+byte_istream& operator>>(byte_istream& input, mngs_door_page& data) {
   int16_t version = 0;
-  infile >> version;
+  input >> version;
 
-  // door name/image are fixed_string_t (std::string) but stored as
-  // variable-length NUL-terminated strings on disk; read them via the
-  // variable-length helper, not the fixed-width stream operator.
-  infile >> doorpage->door_struct.name;
-  infile >> doorpage->image_name;
+  return input
+         >> data.door_struct.name
+         >> data.image_name
+         >> data.door_struct.total_open_time
+         >> data.door_struct.total_close_time
+         >> data.door_struct.total_time_open
+         >> data.door_struct.flags
+         >> data.door_struct.hit_points
+         >> data.open_sound_name
+         >> data.close_sound_name
+         >> data.door_struct.module_name;
+}
 
-  infile >> doorpage->door_struct.total_open_time;
-  infile >> doorpage->door_struct.total_close_time;
-  infile >> doorpage->door_struct.total_time_open;
+byte_ostream& operator<<(byte_ostream& output, const mngs_door_page& data) {
+  return output
+         << static_cast<int16_t>(DOORPAGE_VERSION)
+         << data.door_struct.name
+         << data.image_name
+         << data.door_struct.total_open_time
+         << data.door_struct.total_close_time
+         << data.door_struct.total_time_open
+         << data.door_struct.flags
+         << data.door_struct.hit_points
+         << data.open_sound_name
+         << data.close_sound_name
+         << data.door_struct.module_name;
+}
 
-  infile >> doorpage->door_struct.flags;
-
-  if (version >= 3)
-    infile >> doorpage->door_struct.hit_points;
-  else
-    doorpage->door_struct.hit_points = 0;
-
-  infile >> doorpage->open_sound_name;
-  infile >> doorpage->close_sound_name;
-
-  if (version >= 2)
-    infile >> doorpage->door_struct.module_name;
-  else
-    doorpage->door_struct.module_name[0] = '\0';
+int mng_ReadNewDoorPage(posix_istream &infile, mngs_door_page *doorpage) {
+  infile >> *doorpage;
 
   // This is a valid new page
   doorpage->door_struct.used = 1;

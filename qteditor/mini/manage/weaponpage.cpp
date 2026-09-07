@@ -65,112 +65,211 @@ static void mng_InitWeaponPage(mngs_weapon_page *weaponpage) {
     weaponpage->sound_name[i].clear();
 }
 
-int mng_ReadNewWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) {
-  int i;
-
-  mng_InitWeaponPage(weaponpage);
-
+// Reads a weapon page from an open stream into the page structure.
+byte_istream& operator>>(byte_istream& input, mngs_weapon_page& data) {
   int16_t version = 0;
-  infile >> version;
+  input >> version;
 
-  infile >> weaponpage->weapon_struct.name;
+  input >> data.weapon_struct.name;
 
   // Read hud image name
-  infile >> weaponpage->hud_image_name;
+  input >> data.hud_image_name;
 
   // Read fire image
-  infile >> weaponpage->fire_image_name;
+  input >> data.fire_image_name;
 
   // Read particle data
-  infile >> weaponpage->particle_name;
+  input >> data.particle_name;
 
-  infile >> weaponpage->weapon_struct.particle_count;
-  infile >> weaponpage->weapon_struct.particle_life;
-  infile >> weaponpage->weapon_struct.particle_size;
+  input >> data.weapon_struct.particle_count;
+  input >> data.weapon_struct.particle_life;
+  input >> data.weapon_struct.particle_size;
 
   // Read flags
   uint32_t flags_raw = 0;
-  infile >> flags_raw;
-  std::memcpy(&weaponpage->weapon_struct.flags, &flags_raw, sizeof(flags_raw));
+  input >> flags_raw;
+  std::memcpy(&data.weapon_struct.flags, &flags_raw, sizeof(flags_raw));
 
   // Read spawn data
-  infile >> weaponpage->spawn_name;
-  infile >> weaponpage->weapon_struct.spawn_count;
+  input >> data.spawn_name;
+  input >> data.weapon_struct.spawn_count;
 
-  infile >> weaponpage->robot_spawn_name;
-  infile >> weaponpage->alternate_spawn_name;
+  input >> data.robot_spawn_name;
+  input >> data.alternate_spawn_name;
 
-  infile >> weaponpage->weapon_struct.alternate_chance;
+  input >> data.weapon_struct.alternate_chance;
 
   // Read gravity stuff
-  infile >> weaponpage->weapon_struct.gravity_time;
-  infile >> weaponpage->weapon_struct.gravity_size;
+  input >> data.weapon_struct.gravity_time;
+  input >> data.weapon_struct.gravity_size;
 
   // Read size and homing data
-  infile >> weaponpage->weapon_struct.homing_fov;
-  infile >> weaponpage->weapon_struct.custom_size;
-  infile >> weaponpage->weapon_struct.size;
-  infile >> weaponpage->weapon_struct.thrust_time;
+  input >> data.weapon_struct.homing_fov;
+  input >> data.weapon_struct.custom_size;
+  input >> data.weapon_struct.size;
+  input >> data.weapon_struct.thrust_time;
 
   // Read physics info
-  mng_ReadPhysicsChunk(&weaponpage->weapon_struct.phys_info, infile);
+  input >> data.weapon_struct.phys_info;
 
   // Read terrain damage
-  infile >> weaponpage->weapon_struct.terrain_damage_size;
-  infile >> weaponpage->weapon_struct.terrain_damage_depth;
+  input >> data.weapon_struct.terrain_damage_size;
+  input >> data.weapon_struct.terrain_damage_depth;
 
   // Read alpha
-  infile >> weaponpage->weapon_struct.alpha;
+  input >> data.weapon_struct.alpha;
 
   // Read explosion data
-  infile >> weaponpage->explode_image_name;
-  infile >> weaponpage->weapon_struct.explode_time;
-  infile >> weaponpage->weapon_struct.explode_size;
+  input >> data.explode_image_name;
+  input >> data.weapon_struct.explode_time;
+  input >> data.weapon_struct.explode_size;
 
   // Read damage data
-  infile >> weaponpage->weapon_struct.player_damage;
+  input >> data.weapon_struct.player_damage;
 
   if (version >= 7)
-    infile >> weaponpage->weapon_struct.generic_damage;
+    input >> data.weapon_struct.generic_damage;
   else
-    weaponpage->weapon_struct.generic_damage = weaponpage->weapon_struct.player_damage;
+    data.weapon_struct.generic_damage = data.weapon_struct.player_damage;
 
-  infile >> weaponpage->weapon_struct.impact_size;
-  infile >> weaponpage->weapon_struct.impact_time;
-  infile >> weaponpage->weapon_struct.impact_player_damage;
+  input >> data.weapon_struct.impact_size;
+  input >> data.weapon_struct.impact_time;
+  input >> data.weapon_struct.impact_player_damage;
 
   if (version >= 7)
-    infile >> weaponpage->weapon_struct.impact_generic_damage;
+    input >> data.weapon_struct.impact_generic_damage;
   else
-    weaponpage->weapon_struct.impact_generic_damage = weaponpage->weapon_struct.impact_player_damage;
+    data.weapon_struct.impact_generic_damage = data.weapon_struct.impact_player_damage;
 
-  infile >> weaponpage->weapon_struct.impact_force;
+  input >> data.weapon_struct.impact_force;
 
   // Read lifetime
-  infile >> weaponpage->weapon_struct.life_time;
+  input >> data.weapon_struct.life_time;
 
   // read lighting
-  mng_ReadLightingChunk(&weaponpage->weapon_struct.lighting_info, infile);
+  input >> data.weapon_struct.lighting_info;
 
   // read recoil force
   if (version >= 8)
-    infile >> weaponpage->weapon_struct.recoil_force;
+    input >> data.weapon_struct.recoil_force;
   else
-    weaponpage->weapon_struct.recoil_force = 0.0f;
+    data.weapon_struct.recoil_force = 0.0f;
 
   // Read its sound names
-  for (i = 0; i < MAX_WEAPON_SOUNDS; i++)
-    infile >> weaponpage->sound_name[i];
+  for (int i = 0; i < MAX_WEAPON_SOUNDS; i++)
+    input >> data.sound_name[i];
 
   // Read smoke name
-  infile >> weaponpage->smoke_image_name;
+  input >> data.smoke_image_name;
 
   // Read scorch data
-  infile >> weaponpage->scorch_image_name;
-  infile >> weaponpage->weapon_struct.scorch_size;
+  input >> data.scorch_image_name;
+  input >> data.weapon_struct.scorch_size;
 
   // Read icon name
-  infile >> weaponpage->icon_name;
+  input >> data.icon_name;
+
+  return input;
+}
+
+// Writes a weapon page in the current (WEAPONPAGE_VERSION) format, the exact
+// mirror of operator>> (same field order and encodings).
+byte_ostream& operator<<(byte_ostream& output, const mngs_weapon_page& data) {
+  output << static_cast<int16_t>(WEAPONPAGE_VERSION);
+  output << data.weapon_struct.name;
+
+  // Write out hud image name
+  output << data.hud_image_name;
+
+  // Write out fire image
+  output << data.fire_image_name;
+
+  // Write out particle data
+  output << data.particle_name;
+
+  output << data.weapon_struct.particle_count;
+  output << data.weapon_struct.particle_life;
+  output << data.weapon_struct.particle_size;
+
+  // Write out flags
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &data.weapon_struct.flags, sizeof(flags_raw));
+  output << flags_raw;
+
+  // Write out spawn data
+  output << data.spawn_name;
+  output << data.weapon_struct.spawn_count;
+
+  output << data.robot_spawn_name;
+  output << data.alternate_spawn_name;
+
+  output << data.weapon_struct.alternate_chance;
+
+  // Write out gravity stuff
+  output << data.weapon_struct.gravity_time;
+  output << data.weapon_struct.gravity_size;
+
+  // Write out size and homing data
+  output << data.weapon_struct.homing_fov;
+  output << data.weapon_struct.custom_size;
+  output << data.weapon_struct.size;
+  output << data.weapon_struct.thrust_time;
+
+  // Write out physics info
+  output << data.weapon_struct.phys_info;
+
+  // Write out terrain damage
+  output << data.weapon_struct.terrain_damage_size;
+  output << data.weapon_struct.terrain_damage_depth;
+
+  // Write out alpha
+  output << data.weapon_struct.alpha;
+
+  // Write out explosion data
+  output << data.explode_image_name;
+  output << data.weapon_struct.explode_time;
+  output << data.weapon_struct.explode_size;
+
+  // Write out damage data
+  output << data.weapon_struct.player_damage;
+  output << data.weapon_struct.generic_damage;
+
+  output << data.weapon_struct.impact_size;
+  output << data.weapon_struct.impact_time;
+  output << data.weapon_struct.impact_player_damage;
+  output << data.weapon_struct.impact_generic_damage;
+  output << data.weapon_struct.impact_force;
+
+  // Write out lifetime
+  output << data.weapon_struct.life_time;
+
+  // Write out lighting
+  output << data.weapon_struct.lighting_info;
+
+  // Write out recoil force
+  output << data.weapon_struct.recoil_force;
+
+  // Write out its sound names
+  for (int i = 0; i < MAX_WEAPON_SOUNDS; i++)
+    output << data.sound_name[i];
+
+  // Write out smoke name
+  output << data.smoke_image_name;
+
+  // Write out scorch data
+  output << data.scorch_image_name;
+  output << data.weapon_struct.scorch_size;
+
+  // Write out icon name
+  output << data.icon_name;
+
+  return output;
+}
+
+int mng_ReadNewWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) {
+  mng_InitWeaponPage(weaponpage);
+
+  infile >> *weaponpage;
 
   weaponpage->weapon_struct.used = 1;
 
