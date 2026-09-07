@@ -192,7 +192,6 @@ bool EBNode_VerifyGraph();
 #include "brief_model.h"
 
 #include "editor_view.h"
-#include "level_io.h"
 #include "viewer_prop_dialog.h"
 #include "water_procedural_dialog.h"
 #include "world_objects_door_dialog.h"
@@ -202,8 +201,8 @@ bool EBNode_VerifyGraph();
 #include "world_textures_dialog.h"
 #include "world_weapons_dialog.h"
 #include "worldobjectslight_dialog.h"
-#include "level_io.h"
-#include "LoadLevel.h"
+#include "level_ops.h"
+#include "level_loader.h"
 #include "d3edit.h"
 
 static constexpr double kPi = 3.14159265358979323846;

@@ -23,8 +23,7 @@
 // uses Descent3Core for those primitives where they're available and skips
 // the renderer-dependent bits that still belong to the Win32 CMainFrame.
 
-#include "level_io.h"
-
+#include "level_ops.h"
 #include "d3edit.h"
 
 #include "aiambient.h"
@@ -44,7 +43,7 @@
 #include "lighting.h"
 #include "lightmap.h"
 #include "lightmap_info.h"
-#include "LoadLevel.h"
+#include "level_loader.h"
 #include "manage.h"
 #include "matcen.h"
 #include "mem.h"

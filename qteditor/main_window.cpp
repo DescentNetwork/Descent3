@@ -51,7 +51,7 @@
 #include "editor_room_state.h"
 #include "doorway.h"
 #include "hog_dialog.h"
-#include "level_io.h"
+#include "level_ops.h"
 #include "object.h"
 #include "ai_settings_dialog.h"
 #include "ambient_sound_patterns_dialog.h"
@@ -1578,7 +1578,7 @@ void MainWindow::ClearClipboard() {
 
 #include "editor_room_state.h"
 #include "gametexture.h"
-#include "level_io.h"
+#include "level_ops.h"
 #include "object.h"
 #include "room.h"
 

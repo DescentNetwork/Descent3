@@ -34,7 +34,7 @@
 // All other chunks are skipped by seeking to chunk_start + chunk_size.
 // SaveLevel writes those chunks in the same format so LoadLevel round-trips.
 
-#include "LoadLevel.h"
+#include "level_loader.h"
 #include "room.h"
 #include "trigger.h"
 #include "object.h"
@@ -46,6 +46,7 @@
 #include "terrain.h"
 #include "findintersection.h"
 #include "gametexture.h"
+#include "string_helpers.h"
 
 #include <cstring>
 #include <cstdio>
@@ -53,12 +54,6 @@
 
 #define LL_TAG "D3LV"
 
-template<typename T>
-static inline T lowercase(T s)
-{
-  std::transform(std::begin(s), std::end(s), std::begin(s), [](unsigned char c) { return std::tolower(c); });
-  return s;
-}
 
 static bool IsChunk(const char *chunk_name, const char *id) { return chunk_name[0] == id[0] && chunk_name[1] == id[1] && chunk_name[2] == id[2] && chunk_name[3] == id[3]; }
 
@@ -70,9 +65,8 @@ static bool IsChunk(const char *chunk_name, const char *id) { return chunk_name[
 static int texture_xlate[MAX_TEXTURES];
 
 static int LL_FindTextureName(const std::string& name) {
-  auto l_name = lowercase(name);
   for (int i = 0; i < Num_textures; i++) {
-    if (lowercase(GameTextures[i].name) == l_name)
+    if (match(GameTextures[i].name, name))
       return i;
   }
   return -1;
