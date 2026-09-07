@@ -50,10 +50,14 @@ LevelKeypad::LevelKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::LevelKeypad)
 {
   ui->setupUi(this);
-  if (QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT)
+  {
+    QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT;
     connect(edit, &QLineEdit::editingFinished, this, &LevelKeypad::onGravityEdited);
-  if (QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT;
     connect(edit, &QLineEdit::editingFinished, this, &LevelKeypad::onCeilingEdited);
+  }
 
   updateDialog();
 }
@@ -61,22 +65,29 @@ LevelKeypad::LevelKeypad(QWidget *parent)
 LevelKeypad::~LevelKeypad() { delete ui; }
 
 void LevelKeypad::updateDialog() {
-  if (QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT)
+  {
+    QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT;
     edit->setText(QString::number(Gravity_strength));
-  if (QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT;
     edit->setText(QString::number(levelCeiling()));
+  }
 }
 
 void LevelKeypad::onGravityEdited() {
-  if (QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT)
+  {
+    QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT;
     Gravity_strength = edit->text().toFloat();
+  }
   World_changed = true;
 }
 
 void LevelKeypad::onCeilingEdited() {
   // Setting the ceiling shifts all rooms' vertices so their max Y equals the
   // entered value (a simple uniform fit; the Win32 editor did per-room).
-  if (QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT) {
+  {
+    QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT;
     const float target = edit->text().toFloat();
     const float cur = levelCeiling();
     const float delta = target - cur;

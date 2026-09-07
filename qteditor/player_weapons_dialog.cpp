@@ -42,34 +42,58 @@ PlayerWeaponsDialog::PlayerWeaponsDialog(int current_ship, QWidget *parent)
     : QDialog(parent), ui(new Ui::PlayerWeaponsDialog), m_current_ship(current_ship)
 {
   ui->setupUi(this);
-  if (QPushButton *b = ui->IDC_EDIT_WB_BUTTON)
+  {
+    QPushButton *b = ui->IDC_EDIT_WB_BUTTON;
     connect(b, &QPushButton::clicked, this, &PlayerWeaponsDialog::onEditWbButton);
-  if (QComboBox *combo = ui->IDC_CURRENT_WEAPON_BATTERY_COMBO)
+  }
+  {
+    QComboBox *combo = ui->IDC_CURRENT_WEAPON_BATTERY_COMBO;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
-            &PlayerWeaponsDialog::onCurrentWeaponChanged);
-  if (QCheckBox *cb = ui->IDC_FIRES_FUSION)
+    &PlayerWeaponsDialog::onCurrentWeaponChanged);
+  }
+  {
+    QCheckBox *cb = ui->IDC_FIRES_FUSION;
     connect(cb, &QCheckBox::clicked, this, &PlayerWeaponsDialog::onFiresFusion);
-  if (QCheckBox *cb = ui->IDC_ONOFF)
+  }
+  {
+    QCheckBox *cb = ui->IDC_ONOFF;
     connect(cb, &QCheckBox::clicked, this, &PlayerWeaponsDialog::onOnOff);
-  if (QCheckBox *cb = ui->IDC_ZOOM)
+  }
+  {
+    QCheckBox *cb = ui->IDC_ZOOM;
     connect(cb, &QCheckBox::clicked, this, &PlayerWeaponsDialog::onZoom);
-  if (QCheckBox *cb = ui->IDC_CONTINUOUS_FIRING_SOUND)
+  }
+  {
+    QCheckBox *cb = ui->IDC_CONTINUOUS_FIRING_SOUND;
     connect(cb, &QCheckBox::toggled, this, &PlayerWeaponsDialog::onContinuousFiringSound);
-  if (QCheckBox *cb = ui->IDC_FIRING_RELEASE_SOUND)
+  }
+  {
+    QCheckBox *cb = ui->IDC_FIRING_RELEASE_SOUND;
     connect(cb, &QCheckBox::toggled, this, &PlayerWeaponsDialog::onFiringReleaseSound);
-  if (QCheckBox *cb = ui->IDC_SHOW_TENTHS)
+  }
+  {
+    QCheckBox *cb = ui->IDC_SHOW_TENTHS;
     connect(cb, &QCheckBox::toggled, this, &PlayerWeaponsDialog::onShowTenths);
-  if (QComboBox *combo = ui->IDC_FIRING_SOUND_PULLDOWN)
+  }
+  {
+    QComboBox *combo = ui->IDC_FIRING_SOUND_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
-            &PlayerWeaponsDialog::onFiringSoundChanged);
-  if (QComboBox *combo = ui->IDC_RELEASE_SOUND_PULLDOWN)
+    &PlayerWeaponsDialog::onFiringSoundChanged);
+  }
+  {
+    QComboBox *combo = ui->IDC_RELEASE_SOUND_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
-            &PlayerWeaponsDialog::onReleaseSoundChanged);
-  if (QComboBox *combo = ui->IDC_SPEW_POWERUP_PULLDOWN)
+    &PlayerWeaponsDialog::onReleaseSoundChanged);
+  }
+  {
+    QComboBox *combo = ui->IDC_SPEW_POWERUP_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
-            &PlayerWeaponsDialog::onSpewPowerupChanged);
-  if (QLineEdit *edit = ui->IDC_MAX_AMMO)
+    &PlayerWeaponsDialog::onSpewPowerupChanged);
+  }
+  {
+    QLineEdit *edit = ui->IDC_MAX_AMMO;
     connect(edit, &QLineEdit::editingFinished, this, &PlayerWeaponsDialog::onMaxAmmoEdited);
+  }
 
   QComboBox *wb = ui->IDC_CURRENT_WEAPON_BATTERY_COMBO;
   for (int i = 0; i < MAX_PLAYER_WEAPONS; i++) {
@@ -112,37 +136,56 @@ void PlayerWeaponsDialog::updateDialog() {
   ship *shp = &Ships[m_current_ship];
   const int fire_flags = Ships[m_current_ship].fire_flags[index];
 
-  if (QCheckBox *cb = ui->IDC_FIRES_FUSION)
+  {
+    QCheckBox *cb = ui->IDC_FIRES_FUSION;
     cb->setChecked(fire_flags & SFF_FUSION);
-  if (QCheckBox *cb = ui->IDC_ONOFF)
+  }
+  {
+    QCheckBox *cb = ui->IDC_ONOFF;
     cb->setChecked(shp->static_wb[index].flags.on_off);
-  if (QCheckBox *cb = ui->IDC_ZOOM)
+  }
+  {
+    QCheckBox *cb = ui->IDC_ZOOM;
     cb->setChecked(fire_flags & SFF_ZOOM);
-  if (QCheckBox *cb = ui->IDC_SHOW_TENTHS)
+  }
+  {
+    QCheckBox *cb = ui->IDC_SHOW_TENTHS;
     cb->setChecked(fire_flags & SFF_TENTHS);
+  }
 
   const int firing_sound = Ships[m_current_ship].firing_sound[index];
   const int release_sound = Ships[m_current_ship].firing_release_sound[index];
 
-  if (QCheckBox *cb = ui->IDC_CONTINUOUS_FIRING_SOUND)
+  {
+    QCheckBox *cb = ui->IDC_CONTINUOUS_FIRING_SOUND;
     cb->setChecked(firing_sound != -1);
-  if (QWidget *w = ui->IDC_FIRING_SOUND_PULLDOWN)
+  }
+  {
+    QWidget *w = ui->IDC_FIRING_SOUND_PULLDOWN;
     w->setEnabled(firing_sound != -1);
-  if (QCheckBox *cb = ui->IDC_FIRING_RELEASE_SOUND)
+  }
+  {
+    QCheckBox *cb = ui->IDC_FIRING_RELEASE_SOUND;
     cb->setChecked(release_sound != -1);
-  if (QWidget *w = ui->IDC_RELEASE_SOUND_PULLDOWN)
+  }
+  {
+    QWidget *w = ui->IDC_RELEASE_SOUND_PULLDOWN;
     w->setEnabled(release_sound != -1);
+  }
 
-  if (QComboBox *combo = ui->IDC_FIRING_SOUND_PULLDOWN) {
+  {
+    QComboBox *combo = ui->IDC_FIRING_SOUND_PULLDOWN;
     QSignalBlocker blocker(combo);
     setSoundComboSelected(combo, firing_sound);
   }
-  if (QComboBox *combo = ui->IDC_RELEASE_SOUND_PULLDOWN) {
+  {
+    QComboBox *combo = ui->IDC_RELEASE_SOUND_PULLDOWN;
     QSignalBlocker blocker(combo);
     setSoundComboSelected(combo, release_sound);
   }
 
-  if (QComboBox *combo = ui->IDC_SPEW_POWERUP_PULLDOWN) {
+  {
+    QComboBox *combo = ui->IDC_SPEW_POWERUP_PULLDOWN;
     QSignalBlocker blocker(combo);
     const int spew = Ships[m_current_ship].spew_powerup[index];
     if (spew == -1)
@@ -151,8 +194,10 @@ void PlayerWeaponsDialog::updateDialog() {
       combo->setCurrentIndex(combo->findData(spew));
   }
 
-  if (QLineEdit *edit = ui->IDC_MAX_AMMO)
+  {
+    QLineEdit *edit = ui->IDC_MAX_AMMO;
     edit->setText(QString::number(shp->max_ammo[index]));
+  }
 }
 
 void PlayerWeaponsDialog::onEditWbButton() {
@@ -163,7 +208,8 @@ void PlayerWeaponsDialog::onEditWbButton() {
 }
 
 void PlayerWeaponsDialog::onCurrentWeaponChanged() {
-  if (QComboBox *combo = ui->IDC_CURRENT_WEAPON_BATTERY_COMBO) {
+  {
+    QComboBox *combo = ui->IDC_CURRENT_WEAPON_BATTERY_COMBO;
     m_current_wb_text = combo->currentText();
     updateDialog();
   }

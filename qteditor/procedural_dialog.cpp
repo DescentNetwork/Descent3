@@ -33,8 +33,10 @@ ProceduralDialog::ProceduralDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::ProceduralDialog)
 {
   ui->setupUi(this);
-  if (QComboBox *combo = ui->IDC_PROCEDURAL_PULLDOWN)
+  {
+    QComboBox *combo = ui->IDC_PROCEDURAL_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &ProceduralDialog::onProcTypeChanged);
+  }
 
   const char *sliders[] = {"IDC_FP_HEAT_SLIDER", "IDC_SPEED_SLIDER", "IDC_FREQ_SLIDER", "IDC_SIZE_SLIDER"};
   for (const char *name : sliders)
@@ -46,13 +48,15 @@ ProceduralDialog::ProceduralDialog(QWidget *parent)
   // The Win32 editor lists the procedural types; the proc type data lives in
   // the engine's procedural system which the Qt port does not yet compile in,
   // so list the common types.
-  if (QComboBox *combo = ui->IDC_PROCEDURAL_PULLDOWN) {
+  {
+    QComboBox *combo = ui->IDC_PROCEDURAL_PULLDOWN;
     combo->addItem("Fire");
     combo->addItem("Water");
     combo->addItem("Line Lightning");
   }
 
-  if (QPushButton *b = ui->IDC_CLEAR_PROCEDURALS) {
+  {
+    QPushButton *b = ui->IDC_CLEAR_PROCEDURALS;
     connect(b, &QPushButton::clicked, this, [this]() {
       if (QMessageBox::question(this, "Clear procedurals", "Clear all procedural textures?") ==
           QMessageBox::Yes) {
@@ -69,14 +73,22 @@ ProceduralDialog::ProceduralDialog(QWidget *parent)
 ProceduralDialog::~ProceduralDialog() { delete ui; }
 
 void ProceduralDialog::updateDialog() {
-  if (QSlider *s = ui->IDC_FP_HEAT_SLIDER)
+  {
+    QSlider *s = ui->IDC_FP_HEAT_SLIDER;
     s->setValue(128);
-  if (QSlider *s = ui->IDC_SPEED_SLIDER)
+  }
+  {
+    QSlider *s = ui->IDC_SPEED_SLIDER;
     s->setValue(64);
-  if (QSlider *s = ui->IDC_FREQ_SLIDER)
+  }
+  {
+    QSlider *s = ui->IDC_FREQ_SLIDER;
     s->setValue(64);
-  if (QSlider *s = ui->IDC_SIZE_SLIDER)
+  }
+  {
+    QSlider *s = ui->IDC_SIZE_SLIDER;
     s->setValue(255);
+  }
 }
 
 void ProceduralDialog::onProcTypeChanged() {
@@ -85,13 +97,21 @@ void ProceduralDialog::onProcTypeChanged() {
 }
 
 void ProceduralDialog::onParamChanged() {
-  if (QLabel *l = ui->IDC_HEAT_TEXT)
+  {
+    QLabel *l = ui->IDC_HEAT_TEXT;
     l->setText(QString("Heat: %1").arg(ui->IDC_FP_HEAT_SLIDER->value()));
-  if (QLabel *l = ui->IDC_SPEED_TEXT)
+  }
+  {
+    QLabel *l = ui->IDC_SPEED_TEXT;
     l->setText(QString("Speed: %1").arg(ui->IDC_SPEED_SLIDER->value()));
-  if (QLabel *l = ui->IDC_FREQUENCY_TEXT)
+  }
+  {
+    QLabel *l = ui->IDC_FREQUENCY_TEXT;
     l->setText(QString("Freq: %1").arg(ui->IDC_FREQ_SLIDER->value()));
-  if (QLabel *l = ui->IDC_SIZE_TEXT2)
+  }
+  {
+    QLabel *l = ui->IDC_SIZE_TEXT2;
     l->setText(QString("Size: %1").arg(ui->IDC_SIZE_SLIDER->value()));
+  }
 }
 

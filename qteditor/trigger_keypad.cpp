@@ -55,20 +55,34 @@ TriggerKeypad::TriggerKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::TriggerKeypad)
 {
   ui->setupUi(this);
-  if (QPushButton *b = ui->IDC_TRIG_DELETE)
+  {
+    QPushButton *b = ui->IDC_TRIG_DELETE;
     connect(b, &QPushButton::clicked, this, &TriggerKeypad::onDelete);
-  if (QPushButton *b = ui->IDC_TRIG_PREV_IN_MINE)
+  }
+  {
+    QPushButton *b = ui->IDC_TRIG_PREV_IN_MINE;
     connect(b, &QPushButton::clicked, this, &TriggerKeypad::onPrevInMine);
-  if (QPushButton *b = ui->IDC_TRIG_NEXT_IN_MINE)
+  }
+  {
+    QPushButton *b = ui->IDC_TRIG_NEXT_IN_MINE;
     connect(b, &QPushButton::clicked, this, &TriggerKeypad::onNextInMine);
-  if (QPushButton *b = ui->IDC_TRIG_PREV_IN_ROOM)
+  }
+  {
+    QPushButton *b = ui->IDC_TRIG_PREV_IN_ROOM;
     connect(b, &QPushButton::clicked, this, &TriggerKeypad::onPrevInRoom);
-  if (QPushButton *b = ui->IDC_TRIG_NEXT_IN_ROOM)
+  }
+  {
+    QPushButton *b = ui->IDC_TRIG_NEXT_IN_ROOM;
     connect(b, &QPushButton::clicked, this, &TriggerKeypad::onNextInRoom);
-  if (QPushButton *b = ui->IDC_TRIG_NEXT_PORTAL)
+  }
+  {
+    QPushButton *b = ui->IDC_TRIG_NEXT_PORTAL;
     connect(b, &QPushButton::clicked, this, &TriggerKeypad::onNextPortal);
-  if (QCheckBox *cb = ui->IDC_TRIG_ONESHOT)
+  }
+  {
+    QCheckBox *cb = ui->IDC_TRIG_ONESHOT;
     connect(cb, &QCheckBox::toggled, this, &TriggerKeypad::onOneshotToggled);
+  }
 
   const char *activators[] = {"IDC_TRIG_ACTIV_PLAYER", "IDC_TRIG_ACTIV_PLAYER_WEAPONS",
                               "IDC_TRIG_ACTIV_ROBOTS", "IDC_TRIG_ACTIV_ROBOT_WEAPONS", "IDC_TRIG_ACTIV_CLUTTER"};
@@ -93,17 +107,27 @@ void TriggerKeypad::updateDialog() {
     return;
   trigger *tp = &Triggers[Current_trigger];
 
-  if (QLabel *label = ui->IDC_TRIG_CURRENT_NAME)
+  {
+    QLabel *label = ui->IDC_TRIG_CURRENT_NAME;
     label->setText(QString::fromStdString(tp->name));
-  if (QLabel *label = ui->IDC_TRIG_CURRENT_NUM)
+  }
+  {
+    QLabel *label = ui->IDC_TRIG_CURRENT_NUM;
     label->setText(QString::number(Current_trigger));
-  if (QLabel *label = ui->IDC_TRIG_CURRENT_ROOM)
+  }
+  {
+    QLabel *label = ui->IDC_TRIG_CURRENT_ROOM;
     label->setText(QString::number(tp->roomnum));
-  if (QLabel *label = ui->IDC_TRIG_CURRENT_FACE)
+  }
+  {
+    QLabel *label = ui->IDC_TRIG_CURRENT_FACE;
     label->setText(QString::number(tp->facenum));
+  }
 
-  if (QCheckBox *cb = ui->IDC_TRIG_ONESHOT)
+  {
+    QCheckBox *cb = ui->IDC_TRIG_ONESHOT;
     cb->setChecked(tp->flags.oneshot);
+  }
 
   const struct {
     const char *name;

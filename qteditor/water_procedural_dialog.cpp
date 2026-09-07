@@ -45,7 +45,8 @@ WaterProceduralDialog::WaterProceduralDialog(QWidget *parent)
     if (QLineEdit *e = findChild<QLineEdit*>(name))
       connect(e, &QLineEdit::editingFinished, this, &WaterProceduralDialog::onFieldEdited);
 
-  if (QComboBox *combo = ui->IDC_PROCEDURAL_PULLDOWN) {
+  {
+    QComboBox *combo = ui->IDC_PROCEDURAL_PULLDOWN;
     combo->addItem("Water");
     combo->addItem("Procedural");
   }
@@ -56,29 +57,49 @@ WaterProceduralDialog::WaterProceduralDialog(QWidget *parent)
 WaterProceduralDialog::~WaterProceduralDialog() { delete ui; }
 
 void WaterProceduralDialog::updateDialog() {
-  if (QSlider *s = ui->IDC_WP_THICKNESS_SLIDER)
+  {
+    QSlider *s = ui->IDC_WP_THICKNESS_SLIDER;
     s->setValue(128);
-  if (QSlider *s = ui->IDC_WP_LIGHT_SLIDER)
+  }
+  {
+    QSlider *s = ui->IDC_WP_LIGHT_SLIDER;
     s->setValue(128);
-  if (QSlider *s = ui->IDC_WP_HEIGHT_SLIDER)
+  }
+  {
+    QSlider *s = ui->IDC_WP_HEIGHT_SLIDER;
     s->setValue(64);
-  if (QSlider *s = ui->IDC_WP_FREQUENCY_SLIDER)
+  }
+  {
+    QSlider *s = ui->IDC_WP_FREQUENCY_SLIDER;
     s->setValue(64);
-  if (QSlider *s = ui->IDC_WP_SIZE_SLIDER)
+  }
+  {
+    QSlider *s = ui->IDC_WP_SIZE_SLIDER;
     s->setValue(255);
+  }
 }
 
 void WaterProceduralDialog::onParamChanged() {
-  if (QLabel *l = ui->IDC_THICKNESS_TEXT)
+  {
+    QLabel *l = ui->IDC_THICKNESS_TEXT;
     l->setText(QString("Thickness: %1").arg(ui->IDC_WP_THICKNESS_SLIDER->value()));
-  if (QLabel *l = ui->IDC_LIGHT_TEXT)
+  }
+  {
+    QLabel *l = ui->IDC_LIGHT_TEXT;
     l->setText(QString("Light: %1").arg(ui->IDC_WP_LIGHT_SLIDER->value()));
-  if (QLabel *l = ui->IDC_HEIGHT_TEXT)
+  }
+  {
+    QLabel *l = ui->IDC_HEIGHT_TEXT;
     l->setText(QString("Height: %1").arg(ui->IDC_WP_HEIGHT_SLIDER->value()));
-  if (QLabel *l = ui->IDC_FREQ_TEXT)
+  }
+  {
+    QLabel *l = ui->IDC_FREQ_TEXT;
     l->setText(QString("Freq: %1").arg(ui->IDC_WP_FREQUENCY_SLIDER->value()));
-  if (QLabel *l = ui->IDC_SIZE_TEXT)
+  }
+  {
+    QLabel *l = ui->IDC_SIZE_TEXT;
     l->setText(QString("Size: %1").arg(ui->IDC_WP_SIZE_SLIDER->value()));
+  }
 }
 
 void WaterProceduralDialog::onFieldEdited() {

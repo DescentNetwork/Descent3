@@ -56,9 +56,12 @@ PhysicsDialog::PhysicsDialog(physics_info *physInfo, QWidget *parent)
 
   connect(this, &QDialog::accept, this, &PhysicsDialog::onOk);
 
-  if (QPushButton *copy = ui->IDC_PHYSICS_COPY)
+  {
+    QPushButton *copy = ui->IDC_PHYSICS_COPY;
     connect(copy, &QPushButton::clicked, this, &PhysicsDialog::onCopy);
-  if (QPushButton *paste = ui->IDC_PHYSICS_PASTE) {
+  }
+  {
+    QPushButton *paste = ui->IDC_PHYSICS_PASTE;
     connect(paste, &QPushButton::clicked, this, &PhysicsDialog::onPaste);
     paste->setEnabled(Paste_data_used);
   }
@@ -272,8 +275,10 @@ void PhysicsDialog::onTerminalEditChanged() { updateTerminalText(); }
 void PhysicsDialog::onCopy() {
   getPhysicsData(&Paste_data);
   Paste_data_used = true;
-  if (QPushButton *paste = ui->IDC_PHYSICS_PASTE)
+  {
+    QPushButton *paste = ui->IDC_PHYSICS_PASTE;
     paste->setEnabled(true);
+  }
 }
 
 void PhysicsDialog::onPaste() {

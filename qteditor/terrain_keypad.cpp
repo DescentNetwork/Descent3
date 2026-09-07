@@ -156,12 +156,17 @@ void TerrainKeypad::updateDialog() {
     if (QWidget *w = findChild<QWidget*>(name))
       w->setEnabled(hasTerrain);
 
-  if (QLabel *label = ui->IDC_NUM_MOONS_STATIC)
+  {
+    QLabel *label = ui->IDC_NUM_MOONS_STATIC;
     label->setText(QString("Num of sats:%1").arg(Terrain_sky.num_satellites));
-  if (QLabel *label = ui->IDC_CUR_MOON_STATIC)
+  }
+  {
+    QLabel *label = ui->IDC_CUR_MOON_STATIC;
     label->setText(QString("Current sat:%1").arg(m_currentSatellite));
+  }
 
-  if (QLineEdit *e = ui->IDC_SKY_RED_EDIT) {
+  {
+    QLineEdit *e = ui->IDC_SKY_RED_EDIT;
     int r = 0, g = 0, b = 0;
     if (m_ccMode != ColorMode_Sat) {
       uint32_t color = (m_ccMode == ColorMode_Sky) ? Terrain_sky.sky_color
@@ -174,44 +179,112 @@ void TerrainKeypad::updateDialog() {
     } else {
       e->setText(QString::number(Terrain_sky.satellite_r[m_currentSatellite], 'f', 2));
     }
-    if (QLineEdit *e2 = ui->IDC_SKY_GREEN_EDIT)
+    {
+      QLineEdit *e2 = ui->IDC_SKY_GREEN_EDIT;
       e2->setText(m_ccMode != ColorMode_Sat ? QString::number(g) : QString::number(Terrain_sky.satellite_g[m_currentSatellite], 'f', 2));
-    if (QLineEdit *e3 = ui->IDC_SKY_BLUE_EDIT)
+    }
+    {
+      QLineEdit *e3 = ui->IDC_SKY_BLUE_EDIT;
       e3->setText(m_ccMode != ColorMode_Sat ? QString::number(b) : QString::number(Terrain_sky.satellite_b[m_currentSatellite], 'f', 2));
+    }
   }
 
-  if (QLineEdit *e = ui->IDC_FOG_DISTANCE_EDIT)
+  {
+    QLineEdit *e = ui->IDC_FOG_DISTANCE_EDIT;
     e->setText(QString::number(Detail_settings.Terrain_render_distance / TERRAIN_SIZE, 'f', 1));
-  if (QLineEdit *e = ui->IDC_PIXEL_ERROR_EDIT)
-    e->setText(QString::number(Detail_settings.Pixel_error, 'f', 1));
-  if (QLineEdit *e = ui->IDC_FOG_SCALAR_EDIT)
-    e->setText(QString::number(Terrain_sky.fog_scalar, 'f', 3));
-  if (QLineEdit *e = ui->IDC_DAMAGE_PER_SEC_EDIT)
-    e->setText(QString::number(Terrain_sky.damage_per_second, 'f', 3));
-  if (QLineEdit *e = ui->IDC_ROTATE_SPEED_EDIT)
-    e->setText(QString::number(Terrain_sky.rotate_rate, 'f', 2));
-
-  if (QCheckBox *c = ui->IDC_STARS_CHECK) c->setChecked(Terrain_sky.flags.stars);
-  if (QCheckBox *c = ui->IDC_SATELLITE_CHECK) c->setChecked(Terrain_sky.flags.satellites);
-  if (QCheckBox *c = ui->IDC_TEXTURE_SKY) c->setChecked(Terrain_sky.textured);
-  if (QCheckBox *c = ui->IDC_USE_FOG) c->setChecked(Terrain_sky.flags.fog);
-  if (QCheckBox *c = ui->IDC_ROTATE_STARS) c->setChecked(Terrain_sky.flags.rotate_stars);
-  if (QCheckBox *c = ui->IDC_ROTATE_SKY) c->setChecked(Terrain_sky.flags.rotate_sky);
-  if (m_currentSatellite >= 0 && m_currentSatellite < 5) {
-    if (QCheckBox *c = ui->IDC_USE_HALO) c->setChecked(Terrain_sky.satellite_flags[m_currentSatellite].halo);
-    if (QCheckBox *c = ui->IDC_USE_ATMOSPHERE) c->setChecked(Terrain_sky.satellite_flags[m_currentSatellite].atmosphere);
   }
-  if (QCheckBox *c = ui->IDC_SHOW_TERRAIN) c->setChecked(D3EditState.terrain_dots);
-  if (QCheckBox *c = ui->IDC_FLAT_SHADE_TERRAIN_CHECK) c->setChecked(D3EditState.terrain_flat_shade);
-  if (QCheckBox *c = ui->IDC_NO_LOD_ENGINE) c->setChecked(Editor_LOD_engine_off);
-  if (QCheckBox *c = ui->IDC_TERRAIN_2D) c->setChecked(Flat_terrain);
-  if (QCheckBox *c = ui->IDC_SHOW_INVISIBLE) c->setChecked(Show_invisible_terrain);
-  if (QCheckBox *c = ui->IDC_NO_EXT_ROOMS_OBJS) c->setChecked(!Terrain_render_ext_room_objs);
+  {
+    QLineEdit *e = ui->IDC_PIXEL_ERROR_EDIT;
+    e->setText(QString::number(Detail_settings.Pixel_error, 'f', 1));
+  }
+  {
+    QLineEdit *e = ui->IDC_FOG_SCALAR_EDIT;
+    e->setText(QString::number(Terrain_sky.fog_scalar, 'f', 3));
+  }
+  {
+    QLineEdit *e = ui->IDC_DAMAGE_PER_SEC_EDIT;
+    e->setText(QString::number(Terrain_sky.damage_per_second, 'f', 3));
+  }
+  {
+    QLineEdit *e = ui->IDC_ROTATE_SPEED_EDIT;
+    e->setText(QString::number(Terrain_sky.rotate_rate, 'f', 2));
+  }
 
-  if (QRadioButton *r = ui->IDC_SKY_RADIO) r->setChecked(m_ccMode == ColorMode_Sky);
-  if (QRadioButton *r = ui->IDC_HORIZON_RADIO) r->setChecked(m_ccMode == ColorMode_Horizon);
-  if (QRadioButton *r = ui->IDC_FOG_RADIO) r->setChecked(m_ccMode == ColorMode_Fog);
-  if (QRadioButton *r = ui->IDC_SATELLITE_RADIO) r->setChecked(m_ccMode == ColorMode_Sat);
+  {
+    QCheckBox *c = ui->IDC_STARS_CHECK;
+    c->setChecked(Terrain_sky.flags.stars);
+  }
+  {
+    QCheckBox *c = ui->IDC_SATELLITE_CHECK;
+    c->setChecked(Terrain_sky.flags.satellites);
+  }
+  {
+    QCheckBox *c = ui->IDC_TEXTURE_SKY;
+    c->setChecked(Terrain_sky.textured);
+  }
+  {
+    QCheckBox *c = ui->IDC_USE_FOG;
+    c->setChecked(Terrain_sky.flags.fog);
+  }
+  {
+    QCheckBox *c = ui->IDC_ROTATE_STARS;
+    c->setChecked(Terrain_sky.flags.rotate_stars);
+  }
+  {
+    QCheckBox *c = ui->IDC_ROTATE_SKY;
+    c->setChecked(Terrain_sky.flags.rotate_sky);
+  }
+  if (m_currentSatellite >= 0 && m_currentSatellite < 5) {
+    {
+      QCheckBox *c = ui->IDC_USE_HALO;
+      c->setChecked(Terrain_sky.satellite_flags[m_currentSatellite].halo);
+    }
+    {
+      QCheckBox *c = ui->IDC_USE_ATMOSPHERE;
+      c->setChecked(Terrain_sky.satellite_flags[m_currentSatellite].atmosphere);
+    }
+  }
+  {
+    QCheckBox *c = ui->IDC_SHOW_TERRAIN;
+    c->setChecked(D3EditState.terrain_dots);
+  }
+  {
+    QCheckBox *c = ui->IDC_FLAT_SHADE_TERRAIN_CHECK;
+    c->setChecked(D3EditState.terrain_flat_shade);
+  }
+  {
+    QCheckBox *c = ui->IDC_NO_LOD_ENGINE;
+    c->setChecked(Editor_LOD_engine_off);
+  }
+  {
+    QCheckBox *c = ui->IDC_TERRAIN_2D;
+    c->setChecked(Flat_terrain);
+  }
+  {
+    QCheckBox *c = ui->IDC_SHOW_INVISIBLE;
+    c->setChecked(Show_invisible_terrain);
+  }
+  {
+    QCheckBox *c = ui->IDC_NO_EXT_ROOMS_OBJS;
+    c->setChecked(!Terrain_render_ext_room_objs);
+  }
+
+  {
+    QRadioButton *r = ui->IDC_SKY_RADIO;
+    r->setChecked(m_ccMode == ColorMode_Sky);
+  }
+  {
+    QRadioButton *r = ui->IDC_HORIZON_RADIO;
+    r->setChecked(m_ccMode == ColorMode_Horizon);
+  }
+  {
+    QRadioButton *r = ui->IDC_FOG_RADIO;
+    r->setChecked(m_ccMode == ColorMode_Fog);
+  }
+  {
+    QRadioButton *r = ui->IDC_SATELLITE_RADIO;
+    r->setChecked(m_ccMode == ColorMode_Sat);
+  }
 }
 
 void TerrainKeypad::changeSelectedHeights(int delta, bool toAbsolute, int absoluteValue) {
@@ -615,7 +688,8 @@ void TerrainKeypad::onSkyBlueEdited() {
 }
 
 void TerrainKeypad::onFogDistanceEdited() {
-  if (QLineEdit *edit = ui->IDC_FOG_DISTANCE_EDIT) {
+  {
+    QLineEdit *edit = ui->IDC_FOG_DISTANCE_EDIT;
     float predist = edit->text().toFloat();
     if (predist < 20) predist = 20;
     if (predist > 200) predist = 200;
@@ -625,7 +699,8 @@ void TerrainKeypad::onFogDistanceEdited() {
 }
 
 void TerrainKeypad::onPixelErrorEdited() {
-  if (QLineEdit *edit = ui->IDC_PIXEL_ERROR_EDIT) {
+  {
+    QLineEdit *edit = ui->IDC_PIXEL_ERROR_EDIT;
     float err = edit->text().toFloat();
     if (err < 0) err = 0;
     if (err > 64) err = 64;
@@ -635,21 +710,24 @@ void TerrainKeypad::onPixelErrorEdited() {
 }
 
 void TerrainKeypad::onFogScalarEdited() {
-  if (QLineEdit *edit = ui->IDC_FOG_SCALAR_EDIT) {
+  {
+    QLineEdit *edit = ui->IDC_FOG_SCALAR_EDIT;
     Terrain_sky.fog_scalar = edit->text().toFloat();
     World_changed = true;
   }
 }
 
 void TerrainKeypad::onDamagePerSecEdited() {
-  if (QLineEdit *edit = ui->IDC_DAMAGE_PER_SEC_EDIT) {
+  {
+    QLineEdit *edit = ui->IDC_DAMAGE_PER_SEC_EDIT;
     Terrain_sky.damage_per_second = edit->text().toFloat();
     World_changed = true;
   }
 }
 
 void TerrainKeypad::onRotateSpeedEdited() {
-  if (QLineEdit *edit = ui->IDC_ROTATE_SPEED_EDIT) {
+  {
+    QLineEdit *edit = ui->IDC_ROTATE_SPEED_EDIT;
     Terrain_sky.rotate_rate = edit->text().toFloat();
     World_changed = true;
   }

@@ -61,41 +61,73 @@ physics_flags_t *CurWeaponPhysFlags() {
 WorldWeaponsDialog::WorldWeaponsDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::WorldWeaponsDialog) {
   ui->setupUi(this);
-  if (QPushButton *b = ui->IDC_ADD_WEAPON)
+  {
+    QPushButton *b = ui->IDC_ADD_WEAPON;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onAddWeapon);
-  if (QPushButton *b = ui->IDC_DELETE_WEAPON)
+  }
+  {
+    QPushButton *b = ui->IDC_DELETE_WEAPON;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onDeleteWeapon);
-  if (QPushButton *b = ui->IDC_LOCK_WEAPON)
+  }
+  {
+    QPushButton *b = ui->IDC_LOCK_WEAPON;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onLockWeapon);
-  if (QPushButton *b = ui->IDC_CHECKIN_WEAPON)
+  }
+  {
+    QPushButton *b = ui->IDC_CHECKIN_WEAPON;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onCheckinWeapon);
-  if (QPushButton *b = ui->IDC_WEAPONS_OUT)
+  }
+  {
+    QPushButton *b = ui->IDC_WEAPONS_OUT;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onWeaponsOut);
-  if (QPushButton *b = ui->IDC_NEXT_WEAPON)
+  }
+  {
+    QPushButton *b = ui->IDC_NEXT_WEAPON;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onNextWeapon);
-  if (QPushButton *b = ui->IDC_PREV_WEAPON)
+  }
+  {
+    QPushButton *b = ui->IDC_PREV_WEAPON;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onPrevWeapon);
-  if (QPushButton *b = ui->IDC_OVERRIDE)
+  }
+  {
+    QPushButton *b = ui->IDC_OVERRIDE;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onOverride);
-  if (QPushButton *b = ui->IDC_WEAPON_COPY_BUTTON)
+  }
+  {
+    QPushButton *b = ui->IDC_WEAPON_COPY_BUTTON;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onCopy);
-  if (QPushButton *b = ui->IDC_WEAPON_PASTE_BUTTON)
+  }
+  {
+    QPushButton *b = ui->IDC_WEAPON_PASTE_BUTTON;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onPaste);
-  if (QPushButton *b = ui->IDC_CHANGE_NAME)
+  }
+  {
+    QPushButton *b = ui->IDC_CHANGE_NAME;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onChangeName);
-  if (QPushButton *b = ui->IDC_EDIT_PHYSICS)
+  }
+  {
+    QPushButton *b = ui->IDC_EDIT_PHYSICS;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onEditPhysics);
-  if (QPushButton *b = ui->IDC_DEFAULT_SIZE)
+  }
+  {
+    QPushButton *b = ui->IDC_DEFAULT_SIZE;
     connect(b, &QPushButton::clicked, this, &WorldWeaponsDialog::onDefaultSize);
+  }
 
-  if (QRadioButton *rb = ui->IDC_ENERGY_RADIO)
+  {
+    QRadioButton *rb = ui->IDC_ENERGY_RADIO;
     connect(rb, &QRadioButton::clicked, this, &WorldWeaponsDialog::onEnergyRadio);
-  if (QRadioButton *rb = ui->IDC_MATTER_RADIO)
+  }
+  {
+    QRadioButton *rb = ui->IDC_MATTER_RADIO;
     connect(rb, &QRadioButton::clicked, this, &WorldWeaponsDialog::onMatterRadio);
+  }
 
-  if (QComboBox *combo = ui->IDC_WEAPON_PULLDOWN)
+  {
+    QComboBox *combo = ui->IDC_WEAPON_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
-            &WorldWeaponsDialog::onWeaponPulldownChanged);
+    &WorldWeaponsDialog::onWeaponPulldownChanged);
+  }
 
   bindEdits();
   bindChecks();
@@ -176,8 +208,7 @@ void WorldWeaponsDialog::bindChecks() {
   weapon_flags_t& wf = Weapons[D3EditState.current_weapon].flags;
   physics_flags_t& pf = Weapons[D3EditState.current_weapon].phys_info.flags;
 
-  connect(ui->IDC_SMOKE_CHECK, &QCheckBox::toggled, [&wf](bool checked) { wf.smoke = checked; }); // example line
-
+  connect(ui->IDC_SMOKE_CHECK, &QCheckBox::toggled, [&wf](bool checked) { wf.smoke = checked; });
   connect(ui->IDC_REVERSE_SMOKE_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.reverse_smoke = checked; });
   connect(ui->IDC_PLANAR_SMOKE_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.planar_smoke = checked; });
   connect(ui->IDC_ELECTRICAL_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.electrical = checked; });
@@ -209,31 +240,53 @@ void WorldWeaponsDialog::bindChecks() {
 }
 
 void WorldWeaponsDialog::bindCombos() {
-  if (QComboBox *combo = ui->IDC_FIRE_SOUND_PULLDOWN)
+  {
+    QComboBox *combo = ui->IDC_FIRE_SOUND_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onFireSoundChanged);
-  if (QComboBox *combo = ui->IDC_WEAPON_WALL_SOUND_PULLDOWN)
+  }
+  {
+    QComboBox *combo = ui->IDC_WEAPON_WALL_SOUND_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onWallSoundChanged);
-  if (QComboBox *combo = ui->IDC_FLYING_SOUND_PULLDOWN)
+  }
+  {
+    QComboBox *combo = ui->IDC_FLYING_SOUND_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onFlyingSoundChanged);
-  if (QComboBox *combo = ui->IDC_WEAPON_BOUNCE_SOUND_COMBO)
+  }
+  {
+    QComboBox *combo = ui->IDC_WEAPON_BOUNCE_SOUND_COMBO;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onBounceSoundChanged);
-  if (QComboBox *combo = ui->IDC_EXPLODE_PULLDOWN)
+  }
+  {
+    QComboBox *combo = ui->IDC_EXPLODE_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onExplodeChanged);
-  if (QComboBox *combo = ui->IDC_SMOKE_PULLDOWN)
+  }
+  {
+    QComboBox *combo = ui->IDC_SMOKE_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onSmokeChanged);
-  if (QComboBox *combo = ui->IDC_PARTICLE_PULLDOWN)
+  }
+  {
+    QComboBox *combo = ui->IDC_PARTICLE_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onParticleChanged);
-  if (QComboBox *combo = ui->IDC_WEAPON_SPAWN_PULLDOWN)
+  }
+  {
+    QComboBox *combo = ui->IDC_WEAPON_SPAWN_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onSpawnChanged);
-  if (QComboBox *combo = ui->IDC_SPAWN_ROBOT_PULLDOWN)
+  }
+  {
+    QComboBox *combo = ui->IDC_SPAWN_ROBOT_PULLDOWN;
     connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onSpawnRobotChanged);
+  }
 }
 
 void WorldWeaponsDialog::updateDialog() {
-  if (QPushButton *next = ui->IDC_NEXT_WEAPON)
+  {
+    QPushButton *next = ui->IDC_NEXT_WEAPON;
     next->setEnabled(Num_weapons >= 1);
-  if (QPushButton *prev = ui->IDC_PREV_WEAPON)
+  }
+  {
+    QPushButton *prev = ui->IDC_PREV_WEAPON;
     prev->setEnabled(Num_weapons >= 1);
+  }
   if (!Network_up) {
     for (const char *name : {"IDC_LOCK_WEAPON", "IDC_CHECKIN_WEAPON", "IDC_OVERRIDE"}) {
       if (auto *w = findChild<QPushButton*>(name))
@@ -248,113 +301,257 @@ void WorldWeaponsDialog::updateDialog() {
   if (!Weapons[n].used)
     n = D3EditState.current_weapon = GetNextWeapon(n);
 
-  if (QLineEdit *edit = ui->IDC_WEAPON_DAMAGE_EDIT)
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_DAMAGE_EDIT;
     edit->setText(QString::number(Weapons[n].player_damage));
-  if (QLineEdit *edit = ui->IDC_WEAPON_GENERIC_DAMAGE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_GENERIC_DAMAGE_EDIT;
     edit->setText(QString::number(Weapons[n].generic_damage));
-  if (QLineEdit *edit = ui->IDC_WEAPON_ALPHA_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_ALPHA_EDIT;
     edit->setText(QString::number(Weapons[n].alpha));
-  if (QLineEdit *edit = ui->IDC_WEAPON_BLOB_SIZE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_BLOB_SIZE_EDIT;
     edit->setText(QString::number(Weapons[n].size));
-  if (QLineEdit *edit = ui->IDC_WEAPON_LIFE_TIME_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_LIFE_TIME_EDIT;
     edit->setText(QString::number(Weapons[n].life_time));
-  if (QLineEdit *edit = ui->IDC_WEAPON_THRUST_TIME_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_THRUST_TIME_EDIT;
     edit->setText(QString::number(Weapons[n].thrust_time));
-  if (QLineEdit *edit = ui->IDC_WEAPON_IMPACT_SIZE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_IMPACT_SIZE_EDIT;
     edit->setText(QString::number(Weapons[n].impact_size));
-  if (QLineEdit *edit = ui->IDC_WEAPON_IMPACT_TIME_EDIT2)
+  }
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_IMPACT_TIME_EDIT2;
     edit->setText(QString::number(Weapons[n].impact_time));
-  if (QLineEdit *edit = ui->IDC_WEAPON_IMPACT_DAMAGE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_IMPACT_DAMAGE_EDIT;
     edit->setText(QString::number(Weapons[n].impact_player_damage));
-  if (QLineEdit *edit = ui->IDC_WEAPON_IMPACT_GENERIC_DAMAGE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_IMPACT_GENERIC_DAMAGE_EDIT;
     edit->setText(QString::number(Weapons[n].impact_generic_damage));
-  if (QLineEdit *edit = ui->IDC_WEAPON_IMPACT_FORCE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_IMPACT_FORCE_EDIT;
     edit->setText(QString::number(Weapons[n].impact_force));
-  if (QLineEdit *edit = ui->IDC_EXPLODE_SIZE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_EXPLODE_SIZE_EDIT;
     edit->setText(QString::number(Weapons[n].explode_size));
-  if (QLineEdit *edit = ui->IDC_EXPLODE_TIME_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_EXPLODE_TIME_EDIT;
     edit->setText(QString::number(Weapons[n].explode_time));
-  if (QLineEdit *edit = ui->IDC_PARTICLE_LIFE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_PARTICLE_LIFE_EDIT;
     edit->setText(QString::number(Weapons[n].particle_life));
-  if (QLineEdit *edit = ui->IDC_PARTICLE_SIZE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_PARTICLE_SIZE_EDIT;
     edit->setText(QString::number(Weapons[n].particle_size));
-  if (QLineEdit *edit = ui->IDC_GRAVITY_SIZE)
+  }
+  {
+    QLineEdit *edit = ui->IDC_GRAVITY_SIZE;
     edit->setText(QString::number(Weapons[n].gravity_size));
-  if (QLineEdit *edit = ui->IDC_GRAVITY_TIME)
+  }
+  {
+    QLineEdit *edit = ui->IDC_GRAVITY_TIME;
     edit->setText(QString::number(Weapons[n].gravity_time));
-  if (QLineEdit *edit = ui->IDC_CUSTOM_SIZE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_CUSTOM_SIZE_EDIT;
     edit->setText(QString::number(Weapons[n].custom_size));
-  if (QLineEdit *edit = ui->IDC_HOMING_FOV_TEXT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_HOMING_FOV_TEXT;
     edit->setText(QString::number(Weapons[n].homing_fov));
-  if (QLineEdit *edit = ui->IDC_WEAPON_SCORCH_SIZE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_SCORCH_SIZE_EDIT;
     edit->setText(QString::number(Weapons[n].scorch_size));
-  if (QLineEdit *edit = ui->IDC_TERRIAN_DAMAGE_SIZE)
+  }
+  {
+    QLineEdit *edit = ui->IDC_TERRIAN_DAMAGE_SIZE;
     edit->setText(QString::number(Weapons[n].terrain_damage_size));
+  }
 
-  if (QLineEdit *edit = ui->IDC_WEAPON_SPAWN_EDIT)
+  {
+    QLineEdit *edit = ui->IDC_WEAPON_SPAWN_EDIT;
     edit->setText(QString::number(Weapons[n].spawn_count));
-  if (QLineEdit *edit = ui->IDC_ALTERNATE_CHANCE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_ALTERNATE_CHANCE_EDIT;
     edit->setText(QString::number(Weapons[n].alternate_chance));
-  if (QLineEdit *edit = ui->IDC_PARTICLE_COUNT_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_PARTICLE_COUNT_EDIT;
     edit->setText(QString::number(Weapons[n].particle_count));
-  if (QLineEdit *edit = ui->IDC_TERRAIN_DAMAGE_DEPTH)
+  }
+  {
+    QLineEdit *edit = ui->IDC_TERRAIN_DAMAGE_DEPTH;
     edit->setText(QString::number(Weapons[n].terrain_damage_depth));
+  }
 
 const weapon_flags_t *wflags = CurWeaponFlags();
   const physics_flags_t *pflags = CurWeaponPhysFlags();
   if (wflags)
   {
-    if (QCheckBox *cb = ui->IDC_SMOKE_CHECK) cb->setChecked(wflags->smoke);
-    if (QCheckBox *cb = ui->IDC_REVERSE_SMOKE_CHECK) cb->setChecked(wflags->reverse_smoke);
-    if (QCheckBox *cb = ui->IDC_PLANAR_SMOKE_CHECK) cb->setChecked(wflags->planar_smoke);
-    if (QCheckBox *cb = ui->IDC_ELECTRICAL_CHECK) cb->setChecked(wflags->electrical);
-    if (QCheckBox *cb = ui->IDC_SPRAY_CHECK) cb->setChecked(wflags->spray);
-    if (QCheckBox *cb = ui->IDC_INVISIBLE) cb->setChecked(wflags->invisible);
-    if (QCheckBox *cb = ui->IDC_RING) cb->setChecked(wflags->ring);
-    if (QCheckBox *cb = ui->IDC_SATURATE_CHECK) cb->setChecked(wflags->saturate);
-    if (QCheckBox *cb = ui->IDC_PLANAR_CHECK) cb->setChecked(wflags->planar);
-    if (QCheckBox *cb = ui->IDC_ENABLE_CAMERA) cb->setChecked(wflags->enable_camera);
-    if (QCheckBox *cb = ui->IDC_MUZZLE_FLASH) cb->setChecked(wflags->muzzle);
-    if (QCheckBox *cb = ui->IDC_NAPALM) cb->setChecked(wflags->napalm);
-    if (QCheckBox *cb = ui->IDC_MICROWAVE) cb->setChecked(wflags->microwave);
-    if (QCheckBox *cb = ui->IDC_SILENT_HOMING_CHECK) cb->setChecked(wflags->silent_homing);
-    if (QCheckBox *cb = ui->IDC_EXPLODE_RING) cb->setChecked(wflags->blast_ring);
-    if (QCheckBox *cb = ui->IDC_EXPANDING_CHECK) cb->setChecked(wflags->expand);
-    if (QCheckBox *cb = ui->IDC_PLANAR_BLAST) cb->setChecked(wflags->planar_blast);
-    if (QCheckBox *cb = ui->IDC_TIMEOUT_WALL_CHECK) cb->setChecked(wflags->timeout_wall);
-    if (QCheckBox *cb = ui->IDC_GRAVITY_FIELD_CHECK) cb->setChecked(wflags->gravity_field);
-    if (QCheckBox *cb = ui->IDC_COUNTERMEASURE_CHECK) cb->setChecked(wflags->countermeasure);
-    if (QCheckBox *cb = ui->IDC_SPAWNS_ROBOT_CHECK) cb->setChecked(wflags->spawns_robot);
-    if (QCheckBox *cb = ui->IDC_SPAWNS_ON_IMPACT) cb->setChecked(wflags->spawns_impact);
-    if (QCheckBox *cb = ui->IDC_SPAWNS_ON_TIMEOUT) cb->setChecked(wflags->spawns_timeout);
-    if (QCheckBox *cb = ui->IDC_HOMED_SPLIT_CHECK) cb->setChecked(wflags->homing_split);
-    if (QCheckBox *cb = ui->IDC_INSTANT_CHECK) cb->setChecked(wflags->streamer);
+    {
+      QCheckBox *cb = ui->IDC_SMOKE_CHECK;
+      cb->setChecked(wflags->smoke);
+    }
+    {
+      QCheckBox *cb = ui->IDC_REVERSE_SMOKE_CHECK;
+      cb->setChecked(wflags->reverse_smoke);
+    }
+    {
+      QCheckBox *cb = ui->IDC_PLANAR_SMOKE_CHECK;
+      cb->setChecked(wflags->planar_smoke);
+    }
+    {
+      QCheckBox *cb = ui->IDC_ELECTRICAL_CHECK;
+      cb->setChecked(wflags->electrical);
+    }
+    {
+      QCheckBox *cb = ui->IDC_SPRAY_CHECK;
+      cb->setChecked(wflags->spray);
+    }
+    {
+      QCheckBox *cb = ui->IDC_INVISIBLE;
+      cb->setChecked(wflags->invisible);
+    }
+    {
+      QCheckBox *cb = ui->IDC_RING;
+      cb->setChecked(wflags->ring);
+    }
+    {
+      QCheckBox *cb = ui->IDC_SATURATE_CHECK;
+      cb->setChecked(wflags->saturate);
+    }
+    {
+      QCheckBox *cb = ui->IDC_PLANAR_CHECK;
+      cb->setChecked(wflags->planar);
+    }
+    {
+      QCheckBox *cb = ui->IDC_ENABLE_CAMERA;
+      cb->setChecked(wflags->enable_camera);
+    }
+    {
+      QCheckBox *cb = ui->IDC_MUZZLE_FLASH;
+      cb->setChecked(wflags->muzzle);
+    }
+    {
+      QCheckBox *cb = ui->IDC_NAPALM;
+      cb->setChecked(wflags->napalm);
+    }
+    {
+      QCheckBox *cb = ui->IDC_MICROWAVE;
+      cb->setChecked(wflags->microwave);
+    }
+    {
+      QCheckBox *cb = ui->IDC_SILENT_HOMING_CHECK;
+      cb->setChecked(wflags->silent_homing);
+    }
+    {
+      QCheckBox *cb = ui->IDC_EXPLODE_RING;
+      cb->setChecked(wflags->blast_ring);
+    }
+    {
+      QCheckBox *cb = ui->IDC_EXPANDING_CHECK;
+      cb->setChecked(wflags->expand);
+    }
+    {
+      QCheckBox *cb = ui->IDC_PLANAR_BLAST;
+      cb->setChecked(wflags->planar_blast);
+    }
+    {
+      QCheckBox *cb = ui->IDC_TIMEOUT_WALL_CHECK;
+      cb->setChecked(wflags->timeout_wall);
+    }
+    {
+      QCheckBox *cb = ui->IDC_GRAVITY_FIELD_CHECK;
+      cb->setChecked(wflags->gravity_field);
+    }
+    {
+      QCheckBox *cb = ui->IDC_COUNTERMEASURE_CHECK;
+      cb->setChecked(wflags->countermeasure);
+    }
+    {
+      QCheckBox *cb = ui->IDC_SPAWNS_ROBOT_CHECK;
+      cb->setChecked(wflags->spawns_robot);
+    }
+    {
+      QCheckBox *cb = ui->IDC_SPAWNS_ON_IMPACT;
+      cb->setChecked(wflags->spawns_impact);
+    }
+    {
+      QCheckBox *cb = ui->IDC_SPAWNS_ON_TIMEOUT;
+      cb->setChecked(wflags->spawns_timeout);
+    }
+    {
+      QCheckBox *cb = ui->IDC_HOMED_SPLIT_CHECK;
+      cb->setChecked(wflags->homing_split);
+    }
+    {
+      QCheckBox *cb = ui->IDC_INSTANT_CHECK;
+      cb->setChecked(wflags->streamer);
+    }
   }
   if (pflags)
   {
-    if (QCheckBox *cb = ui->IDC_WEAPON_HOMING_CHECK) cb->setChecked(pflags->homing);
-    if (QCheckBox *cb = ui->IDC_WEAPON_COLLIDE_WITH_SIBLING_CHECK) cb->setChecked(pflags->hits_siblings);
-    if (QCheckBox *cb = ui->IDC_WEAPON_USE_PARENT_VELOCITY_CHECK) cb->setChecked(pflags->uses_parent_velocity);
-  }
-
-  if (QRadioButton *rb = ui->IDC_ENERGY_RADIO)
-    rb->setChecked(!Weapons[n].flags.matter_weapon);
-  if (QRadioButton *rb = ui->IDC_MATTER_RADIO)
-    rb->setChecked(Weapons[n].flags.matter_weapon);
-
-  if (QPushButton *checkin = ui->IDC_CHECKIN_WEAPON) {
-    if (mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON) == -1) {
-      checkin->setEnabled(false);
-      if (QPushButton *lock = ui->IDC_LOCK_WEAPON)
-        lock->setEnabled(true);
-    } else {
-      checkin->setEnabled(true);
-      if (QPushButton *lock = ui->IDC_LOCK_WEAPON)
-        lock->setEnabled(false);
+    {
+      QCheckBox *cb = ui->IDC_WEAPON_HOMING_CHECK;
+      cb->setChecked(pflags->homing);
+    }
+    {
+      QCheckBox *cb = ui->IDC_WEAPON_COLLIDE_WITH_SIBLING_CHECK;
+      cb->setChecked(pflags->hits_siblings);
+    }
+    {
+      QCheckBox *cb = ui->IDC_WEAPON_USE_PARENT_VELOCITY_CHECK;
+      cb->setChecked(pflags->uses_parent_velocity);
     }
   }
 
-  if (QComboBox *combo = ui->IDC_WEAPON_PULLDOWN) {
+  {
+    QRadioButton *rb = ui->IDC_ENERGY_RADIO;
+    rb->setChecked(!Weapons[n].flags.matter_weapon);
+  }
+  {
+    QRadioButton *rb = ui->IDC_MATTER_RADIO;
+    rb->setChecked(Weapons[n].flags.matter_weapon);
+  }
+
+  {
+    QPushButton *checkin = ui->IDC_CHECKIN_WEAPON;
+    if (mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON) == -1) {
+      checkin->setEnabled(false);
+      {
+        QPushButton *lock = ui->IDC_LOCK_WEAPON;
+        lock->setEnabled(true);
+      }
+    } else {
+      checkin->setEnabled(true);
+      {
+        QPushButton *lock = ui->IDC_LOCK_WEAPON;
+        lock->setEnabled(false);
+      }
+    }
+  }
+
+  {
+    QComboBox *combo = ui->IDC_WEAPON_PULLDOWN;
     QSignalBlocker blocker(combo);
     combo->clear();
     for (int i = 0; i < MAX_WEAPONS; i++)
@@ -621,27 +818,37 @@ void WorldWeaponsDialog::onBounceSoundChanged() {
 }
 void WorldWeaponsDialog::onExplodeChanged() {
   const int n = D3EditState.current_weapon;
-  if (QComboBox *combo = ui->IDC_EXPLODE_PULLDOWN)
+  {
+    QComboBox *combo = ui->IDC_EXPLODE_PULLDOWN;
     Weapons[n].explode_image_handle = combo->currentData().toInt();
+  }
 }
 void WorldWeaponsDialog::onSmokeChanged() {
   const int n = D3EditState.current_weapon;
-  if (QComboBox *combo = ui->IDC_SMOKE_PULLDOWN)
+  {
+    QComboBox *combo = ui->IDC_SMOKE_PULLDOWN;
     Weapons[n].smoke_handle = combo->currentData().toInt();
+  }
 }
 void WorldWeaponsDialog::onParticleChanged() {
   const int n = D3EditState.current_weapon;
-  if (QComboBox *combo = ui->IDC_PARTICLE_PULLDOWN)
+  {
+    QComboBox *combo = ui->IDC_PARTICLE_PULLDOWN;
     Weapons[n].particle_handle = combo->currentData().toInt();
+  }
 }
 void WorldWeaponsDialog::onSpawnChanged() {
   const int n = D3EditState.current_weapon;
-  if (QComboBox *combo = ui->IDC_WEAPON_SPAWN_PULLDOWN)
+  {
+    QComboBox *combo = ui->IDC_WEAPON_SPAWN_PULLDOWN;
     Weapons[n].spawn_handle = combo->currentData().toInt();
+  }
 }
 void WorldWeaponsDialog::onSpawnRobotChanged() {
   const int n = D3EditState.current_weapon;
-  if (QComboBox *combo = ui->IDC_SPAWN_ROBOT_PULLDOWN)
+  {
+    QComboBox *combo = ui->IDC_SPAWN_ROBOT_PULLDOWN;
     Weapons[n].robot_spawn_handle = combo->currentData().toInt();
+  }
 }
 

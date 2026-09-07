@@ -32,18 +32,30 @@ FilePageDialog::FilePageDialog(QWidget *parent)
 {
   ui->setupUi(this);
   m_files = ui->IDC_FILELIST;
-  if (QPushButton *b = ui->IDC_ADD_FILE)
+  {
+    QPushButton *b = ui->IDC_ADD_FILE;
     connect(b, &QPushButton::clicked, this, &FilePageDialog::onAddFile);
-  if (QPushButton *b = ui->IDC_DELETE_FILE)
+  }
+  {
+    QPushButton *b = ui->IDC_DELETE_FILE;
     connect(b, &QPushButton::clicked, this, &FilePageDialog::onDeleteFile);
-  if (QPushButton *b = ui->IDC_LOCK_FILE)
+  }
+  {
+    QPushButton *b = ui->IDC_LOCK_FILE;
     connect(b, &QPushButton::clicked, this, &FilePageDialog::onLockFile);
-  if (QPushButton *b = ui->IDC_CHECKIN_FILE)
+  }
+  {
+    QPushButton *b = ui->IDC_CHECKIN_FILE;
     connect(b, &QPushButton::clicked, this, &FilePageDialog::onCheckinFile);
-  if (QPushButton *b = ui->IDC_FILES_OUT)
+  }
+  {
+    QPushButton *b = ui->IDC_FILES_OUT;
     connect(b, &QPushButton::clicked, this, &FilePageDialog::onFilesOut);
-  if (QPushButton *b = ui->IDC_OVERRIDE)
+  }
+  {
+    QPushButton *b = ui->IDC_OVERRIDE;
     connect(b, &QPushButton::clicked, this, &FilePageDialog::onOverride);
+  }
 
   updateDialog();
 }

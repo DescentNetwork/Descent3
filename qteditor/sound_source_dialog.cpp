@@ -37,14 +37,20 @@ SoundSourceDialog::SoundSourceDialog(soundsource_info_s *data, QWidget *parent)
 
   connect(this, &QDialog::accept, this, &SoundSourceDialog::onOk);
 
-  if (QPushButton *select = ui->IDC_SELECT)
+  {
+    QPushButton *select = ui->IDC_SELECT;
     connect(select, &QPushButton::clicked, this, &SoundSourceDialog::onSelect);
-  if (QLineEdit *edit = ui->IDC_VOLUME)
+  }
+  {
+    QLineEdit *edit = ui->IDC_VOLUME;
     edit->setValidator(new QDoubleValidator(0.0, 1.0, 2, edit));
+  }
 
   populateSoundCombo(ui->IDC_SOUND_COMBO, m_data->sound_index);
-  if (QLineEdit *edit = ui->IDC_VOLUME)
+  {
+    QLineEdit *edit = ui->IDC_VOLUME;
     edit->setText(QString::number(m_data->volume));
+  }
 }
 
 SoundSourceDialog::~SoundSourceDialog() { delete ui; }

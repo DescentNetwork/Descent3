@@ -18,18 +18,21 @@ CompileAllDialog::CompileAllDialog(QWidget *parent)
 {
   ui->setupUi(this);
 
-  if (QPushButton *selectAll = ui->IDC_SELECTALL) {
+  {
+    QPushButton *selectAll = ui->IDC_SELECTALL;
     connect(selectAll, &QPushButton::clicked, this, [this]() {
       if (ui->IDC_LIST)
         ui->IDC_LIST->selectAll();
     });
   }
 
-  if (QPushButton *build = ui->IDC_BUILD) {
+  {
+    QPushButton *build = ui->IDC_BUILD;
     connect(build, &QPushButton::clicked, this, &CompileAllDialog::buildAll);
   }
 
-  if (QPushButton *done = ui->IDOK) {
+  {
+    QPushButton *done = ui->IDOK;
     connect(done, &QPushButton::clicked, this, &CompileAllDialog::accept);
   }
 }

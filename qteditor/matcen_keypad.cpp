@@ -34,18 +34,30 @@ MatcenKeypad::MatcenKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::MatcenKeypad)
 {
   ui->setupUi(this);
-  if (QPushButton *b = ui->IDC_MAT_PREV_BUTTON)
+  {
+    QPushButton *b = ui->IDC_MAT_PREV_BUTTON;
     connect(b, &QPushButton::clicked, this, &MatcenKeypad::onPrev);
-  if (QPushButton *b = ui->IDC_MAT_NEXT_BUTTON)
+  }
+  {
+    QPushButton *b = ui->IDC_MAT_NEXT_BUTTON;
     connect(b, &QPushButton::clicked, this, &MatcenKeypad::onNext);
-  if (QPushButton *b = ui->IDC_MAT_NEW_BUTTON)
+  }
+  {
+    QPushButton *b = ui->IDC_MAT_NEW_BUTTON;
     connect(b, &QPushButton::clicked, this, &MatcenKeypad::onNew);
-  if (QPushButton *b = ui->IDC_MAT_DELETE_BUTTON)
+  }
+  {
+    QPushButton *b = ui->IDC_MAT_DELETE_BUTTON;
     connect(b, &QPushButton::clicked, this, &MatcenKeypad::onDelete);
-  if (QPushButton *b = ui->IDC_MAT_COPY_BUTTON)
+  }
+  {
+    QPushButton *b = ui->IDC_MAT_COPY_BUTTON;
     connect(b, &QPushButton::clicked, this, &MatcenKeypad::onCopy);
-  if (QPushButton *b = ui->IDC_MAT_PASTE_BUTTON)
+  }
+  {
+    QPushButton *b = ui->IDC_MAT_PASTE_BUTTON;
     connect(b, &QPushButton::clicked, this, &MatcenKeypad::onPaste);
+  }
 
   updateDialog();
 }
@@ -57,10 +69,14 @@ void MatcenKeypad::updateDialog() {
     return;
   matcen *mc = Matcen[m_matcenId];
   std::string name = mc->GetName();
-  if (QLabel *label = ui->IDC_MAT_CUR_STATIC)
+  {
+    QLabel *label = ui->IDC_MAT_CUR_STATIC;
     label->setText(QString("Current Matcen: %1").arg(m_matcenId + 1));
-  if (QLabel *label = ui->IDC_MAT_NUM_STATIC)
+  }
+  {
+    QLabel *label = ui->IDC_MAT_NUM_STATIC;
     label->setText(QString("Number of Matcens: %1").arg(Num_matcens));
+  }
 
   // TODO: Once matcen API is fully ported, populate these labels.
   // if (QLabel *label = ui->IDC_MAT_NAME_STATIC)

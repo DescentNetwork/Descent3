@@ -29,12 +29,18 @@ DallasUserTypesDialog::DallasUserTypesDialog(QWidget *parent)
 {
   ui->setupUi(this);
   m_list = ui->IDC_VALUES_LIST;
-  if (QPushButton *b = ui->IDC_ADD_BUTTON)
+  {
+    QPushButton *b = ui->IDC_ADD_BUTTON;
     connect(b, &QPushButton::clicked, this, &DallasUserTypesDialog::onAdd);
-  if (QPushButton *b = ui->IDC_CHANGE_BUTTON)
+  }
+  {
+    QPushButton *b = ui->IDC_CHANGE_BUTTON;
     connect(b, &QPushButton::clicked, this, &DallasUserTypesDialog::onChange);
-  if (QPushButton *b = ui->IDC_DELETE_BUTTON)
+  }
+  {
+    QPushButton *b = ui->IDC_DELETE_BUTTON;
     connect(b, &QPushButton::clicked, this, &DallasUserTypesDialog::onDelete);
+  }
 
   updateDialog();
 }

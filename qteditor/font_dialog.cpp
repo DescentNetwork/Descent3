@@ -28,18 +28,26 @@ FontDialog::FontDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::FontDialog)
 {
   ui->setupUi(this);
-  if (QPushButton *b = ui->IDC_NEW)
+  {
+    QPushButton *b = ui->IDC_NEW;
     connect(b, &QPushButton::clicked, this, [this]() {
-      QMessageBox::critical(this, "Unimplemented functionality", "New font: not implemented (font engine pending).");
+    QMessageBox::critical(this, "Unimplemented functionality", "New font: not implemented (font engine pending).");
     });
-  if (QPushButton *b = ui->IDC_OPEN)
+  }
+  {
+    QPushButton *b = ui->IDC_OPEN;
     connect(b, &QPushButton::clicked, this, [this]() {
-      QMessageBox::critical(this, "Unimplemented functionality", "Open font: not implemented (font engine pending).");
+    QMessageBox::critical(this, "Unimplemented functionality", "Open font: not implemented (font engine pending).");
     });
-  if (QPushButton *save = ui->IDC_SAVE)
+  }
+  {
+    QPushButton *save = ui->IDC_SAVE;
     connect(save, &QPushButton::clicked, this, &FontDialog::onOk);
-  if (QPushButton *saveAs = ui->IDC_SAVEAS)
+  }
+  {
+    QPushButton *saveAs = ui->IDC_SAVEAS;
     connect(saveAs, &QPushButton::clicked, this, &FontDialog::onOk);
+  }
 
   connect(this, &QDialog::accept, this, &FontDialog::onOk);
 
@@ -49,12 +57,18 @@ FontDialog::FontDialog(QWidget *parent)
 FontDialog::~FontDialog() { delete ui; }
 
 void FontDialog::updateDialog() {
-  if (QLineEdit *e = ui->IDC_EDIT_MINASCII)
+  {
+    QLineEdit *e = ui->IDC_EDIT_MINASCII;
     e->setText("32");
-  if (QLineEdit *e = ui->IDC_BRIGHTNESS)
+  }
+  {
+    QLineEdit *e = ui->IDC_BRIGHTNESS;
     e->setText("1.0");
-  if (QLineEdit *e = ui->IDC_EDIT_FONTNAME)
+  }
+  {
+    QLineEdit *e = ui->IDC_EDIT_FONTNAME;
     e->setText("(no font)");
+  }
 }
 
 void FontDialog::onOk() { accept(); }

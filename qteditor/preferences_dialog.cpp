@@ -40,43 +40,63 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::PreferencesDialog)
 {
   ui->setupUi(this);
-  if (QRadioButton *rb = ui->IDC_WINDOWED) {
+  {
+    QRadioButton *rb = ui->IDC_WINDOWED;
     rb->setChecked(D3EditState.game_render_mode == GM_WINDOWED);
     connect(rb, &QRadioButton::clicked, this, &PreferencesDialog::onWindowed);
   }
-  if (QRadioButton *rb = ui->IDC_FULLSCREEN_SW) {
+  {
+    QRadioButton *rb = ui->IDC_FULLSCREEN_SW;
     rb->setChecked(D3EditState.game_render_mode == GM_FULLSCREEN_SW);
     connect(rb, &QRadioButton::clicked, this, &PreferencesDialog::onFullScreenSW);
   }
-  if (QRadioButton *rb = ui->IDC_FULLSCREEN_HW) {
+  {
+    QRadioButton *rb = ui->IDC_FULLSCREEN_HW;
     rb->setChecked(D3EditState.game_render_mode == GM_FULLSCREEN_HW);
     connect(rb, &QRadioButton::clicked, this, &PreferencesDialog::onFullScreenHW);
   }
-  if (QCheckBox *cb = ui->IDC_DEBUG_CHECK)
+  {
+    QCheckBox *cb = ui->IDC_DEBUG_CHECK;
     cb->setChecked(D3EditState.fullscreen_debug_state);
-  if (QRadioButton *rb = ui->IDC_USE_OPENGL)
+  }
+  {
+    QRadioButton *rb = ui->IDC_USE_OPENGL;
     rb->setChecked(PreferredRenderer == RENDERER_OPENGL);
-  if (QRadioButton *rb = ui->IDC_USE_GLIDE)
+  }
+  {
+    QRadioButton *rb = ui->IDC_USE_GLIDE;
     rb->setChecked(PreferredRenderer == RENDERER_GLIDE);
-  if (QRadioButton *rb = ui->IDC_USE_D3D)
+  }
+  {
+    QRadioButton *rb = ui->IDC_USE_D3D;
     rb->setChecked(PreferredRenderer == RENDERER_DIRECT3D);
-  if (QCheckBox *cb = ui->IDC_BILINEAR_CHECK)
+  }
+  {
+    QCheckBox *cb = ui->IDC_BILINEAR_CHECK;
     cb->setChecked(Render_preferred_state.filtering != 0);
-  if (QCheckBox *cb = ui->IDC_MIPPING_CHECK)
+  }
+  {
+    QCheckBox *cb = ui->IDC_MIPPING_CHECK;
     cb->setChecked(Render_preferred_state.mipping != 0);
-  if (QCheckBox *cb = ui->IDC_JOYENABLE)
+  }
+  {
+    QCheckBox *cb = ui->IDC_JOYENABLE;
     cb->setChecked(D3EditState.joy_slewing);
-  if (QCheckBox *cb = ui->IDC_IGC_ENABLED) {
+  }
+  {
+    QCheckBox *cb = ui->IDC_IGC_ENABLED;
     cb->setChecked(Cinematics_enabled);
     connect(cb, &QCheckBox::toggled, this, &PreferencesDialog::onIgcToggled);
   }
 
-  if (QSlider *slider = ui->IDC_SLEWSLIDER) {
+  {
+    QSlider *slider = ui->IDC_SLEWSLIDER;
     slider->setRange(0, 3);
     slider->setValue((int)((Slew_key_speed - 0.5) / 0.5));
   }
 
-  if (QComboBox *combo = ui->IDC_DEFAULT_PILOT) {
+  {
+    QComboBox *combo = ui->IDC_DEFAULT_PILOT;
     const std::vector<std::string> pilotlist = PltGetPilots();
     for (const auto &pilot : pilotlist)
       combo->addItem(QString::fromStdString(pilot));
@@ -161,7 +181,8 @@ void PreferencesDialog::onOk() {
   Render_preferred_state.filtering = ui->IDC_BILINEAR_CHECK->isChecked() ? 1 : 0;
   Render_preferred_state.mipping = ui->IDC_MIPPING_CHECK->isChecked() ? 1 : 0;
 
-  if (QComboBox *combo = ui->IDC_DEFAULT_PILOT) {
+  {
+    QComboBox *combo = ui->IDC_DEFAULT_PILOT;
     if (combo->count())
       Default_pilot = combo->currentText().toStdString();
     else

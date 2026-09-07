@@ -253,8 +253,10 @@ void DeathDialog::updateDialog() {
   for (const char *name : debrisWidgets)
     findChild<QWidget*>(name)->setEnabled(breaksApart);
 */
-  if (QPushButton *paste = ui->IDC_DEATH_PASTE)
+  {
+    QPushButton *paste = ui->IDC_DEATH_PASTE;
     paste->setEnabled(Paste_data_used);
+  }
 }
 /*
 void DeathDialog::onExplosionSmall() {

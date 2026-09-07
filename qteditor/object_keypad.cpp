@@ -47,8 +47,10 @@ ObjectKeypad::ObjectKeypad(QWidget *parent) : QDialog(parent), ui(new Ui::Object
   connect(ui->IDC_OBJPAD_SETDEFAULT, &QPushButton::clicked, this, &ObjectKeypad::onSetDefault);
   connect(ui->IDC_OBJ_ROT90, &QPushButton::clicked, this, &ObjectKeypad::onRot90);
   connect(ui->IDC_OBJPAD_DELETEALL, &QPushButton::clicked, this, &ObjectKeypad::onDeleteAll);
-  if (QCheckBox *cb = ui->IDC_OBJECT_PUSHTHROUGHWALLS)
+  {
+    QCheckBox *cb = ui->IDC_OBJECT_PUSHTHROUGHWALLS;
     connect(cb, &QCheckBox::toggled, this, &ObjectKeypad::onPushThroughWalls);
+  }
   connect(ui->IDC_OBJMOVEX, &QPushButton::clicked, this, &ObjectKeypad::onAxisX);
   connect(ui->IDC_OBJMOVEY, &QPushButton::clicked, this, &ObjectKeypad::onAxisY);
   connect(ui->IDC_OBJMOVEZ, &QPushButton::clicked, this, &ObjectKeypad::onAxisZ);
@@ -56,8 +58,10 @@ ObjectKeypad::ObjectKeypad(QWidget *parent) : QDialog(parent), ui(new Ui::Object
   connect(ui->IDC_OBJMOVEH, &QPushButton::clicked, this, &ObjectKeypad::onAxisH);
   connect(ui->IDC_OBJMOVEB, &QPushButton::clicked, this, &ObjectKeypad::onAxisB);
 
-  if (QCheckBox *cb = ui->IDC_OBJECT_PUSHTHROUGHWALLS)
+  {
+    QCheckBox *cb = ui->IDC_OBJECT_PUSHTHROUGHWALLS;
     cb->setChecked(f_allow_objects_to_be_pushed_through_walls);
+  }
 
   updateDialog();
 }

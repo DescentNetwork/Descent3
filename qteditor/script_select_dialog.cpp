@@ -34,12 +34,18 @@ ScriptSelectDialog::ScriptSelectDialog(QWidget *parent)
   ui->setupUi(this);
   m_list = ui->IDC_SCRIPTSEL_LISTBOX;
   populate();
-  if (QPushButton *b = ui->IDC_SCRIPTSEL_ADD)
+  {
+    QPushButton *b = ui->IDC_SCRIPTSEL_ADD;
     connect(b, &QPushButton::clicked, this, &ScriptSelectDialog::onAdd);
-  if (QPushButton *b = ui->IDC_EDITSCRIPT)
+  }
+  {
+    QPushButton *b = ui->IDC_EDITSCRIPT;
     connect(b, &QPushButton::clicked, this, &ScriptSelectDialog::onEdit);
-  if (QPushButton *b = ui->IDC_PARAMETERS)
+  }
+  {
+    QPushButton *b = ui->IDC_PARAMETERS;
     connect(b, &QPushButton::clicked, this, &ScriptSelectDialog::onParameters);
+  }
 }
 
 ScriptSelectDialog::~ScriptSelectDialog() { delete ui; }

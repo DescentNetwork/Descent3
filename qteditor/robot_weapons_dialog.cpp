@@ -178,46 +178,82 @@ void RobotEditWeaponsDialog::loadData() {
 
   const float view_cone = wb->aiming_3d_dot > 1.0f ? 0.0f : acos(wb->aiming_3d_dot) * (360.0 / PI);
   const float xz_angle = wb->aiming_XZ_dot > 1.0f ? 0.0f : acos(wb->aiming_XZ_dot) * (360.0 / PI);
-  if (QLineEdit *edit = ui->IDC_VIEW_CONE_ANGLE_EDIT)
+  {
+    QLineEdit *edit = ui->IDC_VIEW_CONE_ANGLE_EDIT;
     edit->setText(QString::number(view_cone));
-  if (QLineEdit *edit = ui->IDC_MAX_DISTANCE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_MAX_DISTANCE_EDIT;
     edit->setText(QString::number(wb->aiming_3d_dist));
-  if (QLineEdit *edit = ui->IDC_XZ_PLANE_ANGLE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_XZ_PLANE_ANGLE_EDIT;
     edit->setText(QString::number(xz_angle));
+  }
 
-  if (QLineEdit *edit = ui->IDC_ENERGY_USAGE_EDIT)
+  {
+    QLineEdit *edit = ui->IDC_ENERGY_USAGE_EDIT;
     edit->setText(QString::number(wb->energy_usage));
-  if (QLineEdit *edit = ui->IDC_AMMO_USAGE_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_AMMO_USAGE_EDIT;
     edit->setText(QString::number(wb->ammo_usage));
+  }
 
-  if (QCheckBox *cb = ui->IDC_SPRAY_CHECK)
+  {
+    QCheckBox *cb = ui->IDC_SPRAY_CHECK;
     cb->setChecked(wb->flags.spray);
-  if (QCheckBox *cb = ui->IDC_GUIDED_CHECK)
+  }
+  {
+    QCheckBox *cb = ui->IDC_GUIDED_CHECK;
     cb->setChecked(wb->flags.guided);
-  if (QCheckBox *cb = ui->IDC_ONOFF_CHECK)
+  }
+  {
+    QCheckBox *cb = ui->IDC_ONOFF_CHECK;
     cb->setChecked(wb->flags.on_off);
-  if (QCheckBox *cb = ui->IDC_WB_RANDOM_CHECK)
+  }
+  {
+    QCheckBox *cb = ui->IDC_WB_RANDOM_CHECK;
     cb->setChecked(wb->flags.random_fire_order);
-  if (QCheckBox *cb = ui->IDC_USER_TIMEOUT_CHECK)
+  }
+  {
+    QCheckBox *cb = ui->IDC_USER_TIMEOUT_CHECK;
     cb->setChecked(wb->flags.user_timeout);
-  if (QCheckBox *cb = ui->IDC_FORCE_TO_FVEC_CHECK)
+  }
+  {
+    QCheckBox *cb = ui->IDC_FORCE_TO_FVEC_CHECK;
     cb->setChecked(wb->flags.fire_fvec);
-  if (QCheckBox *cb = ui->IDC_FORCE_TO_TARGET_CHECK)
+  }
+  {
+    QCheckBox *cb = ui->IDC_FORCE_TO_TARGET_CHECK;
     cb->setChecked(wb->flags.fire_target);
-  if (QCheckBox *cb = ui->IDC_WBAIMFORWARD_CHECK)
+  }
+  {
+    QCheckBox *cb = ui->IDC_WBAIMFORWARD_CHECK;
     cb->setChecked(wb->flags.aim_fvec);
-  if (QCheckBox *cb = ui->IDC_VIEW_CONE_ANGLE_CHECK)
+  }
+  {
+    QCheckBox *cb = ui->IDC_VIEW_CONE_ANGLE_CHECK;
     cb->setChecked(wb->flags.use_custom_fov);
-  if (QCheckBox *cb = ui->IDC_MAX_DISTANCE_CHECK)
+  }
+  {
+    QCheckBox *cb = ui->IDC_MAX_DISTANCE_CHECK;
     cb->setChecked(wb->flags.use_custom_max_dist);
+  }
 
   const int anim_type = (wb->flags.anim_local ? WBF_ANIM_LOCAL : 0) | (wb->flags.anim_full ? WBF_ANIM_FULL : 0);
-  if (QRadioButton *radio = ui->IDC_WB_NO_ANIM_RADIO)
+  {
+    QRadioButton *radio = ui->IDC_WB_NO_ANIM_RADIO;
     radio->setChecked(anim_type == 0);
-  if (QRadioButton *radio = ui->IDC_WB_LOCAL_ANIM_RADIO)
+  }
+  {
+    QRadioButton *radio = ui->IDC_WB_LOCAL_ANIM_RADIO;
     radio->setChecked(anim_type == WBF_ANIM_LOCAL);
-  if (QRadioButton *radio = ui->IDC_WB_MODEL_ANIM_RADIO)
+  }
+  {
+    QRadioButton *radio = ui->IDC_WB_MODEL_ANIM_RADIO;
     radio->setChecked(anim_type == WBF_ANIM_FULL);
+  }
 
   updateDialog();
 }
@@ -251,24 +287,38 @@ void RobotEditWeaponsDialog::updateDialog() {
 
   const bool custom_fov = ui->IDC_VIEW_CONE_ANGLE_CHECK->isChecked();
   const bool custom_dist = ui->IDC_MAX_DISTANCE_CHECK->isChecked();
-  if (QWidget *w = ui->IDC_VIEW_CONE_ANGLE_EDIT)
+  {
+    QWidget *w = ui->IDC_VIEW_CONE_ANGLE_EDIT;
     w->setEnabled(custom_fov);
-  if (QWidget *w = ui->IDC_XZ_PLANE_ANGLE_EDIT)
+  }
+  {
+    QWidget *w = ui->IDC_XZ_PLANE_ANGLE_EDIT;
     w->setEnabled(custom_fov);
-  if (QWidget *w = ui->IDC_MAX_DISTANCE_EDIT)
+  }
+  {
+    QWidget *w = ui->IDC_MAX_DISTANCE_EDIT;
     w->setEnabled(custom_dist);
+  }
 
   // Turret info (static read-only display).
   if (m_pm != nullptr && m_pm->num_wbs > 0 && m_pm->poly_wb[0].num_turrets > 0) {
     const int turret = m_pm->poly_wb[0].turret_index[0];
-    if (QLabel *label = ui->IDC_TURRET_SOBJ_STATIC)
+    {
+      QLabel *label = ui->IDC_TURRET_SOBJ_STATIC;
       label->setText(QString::number(turret));
-    if (QLabel *label = ui->IDC_TURRET_FOV_STATIC)
+    }
+    {
+      QLabel *label = ui->IDC_TURRET_FOV_STATIC;
       label->setText(QString::number(m_pm->submodel[turret].fov * 720.0));
-    if (QLabel *label = ui->IDC_TURRET_REACTION_TIME_STATIC)
+    }
+    {
+      QLabel *label = ui->IDC_TURRET_REACTION_TIME_STATIC;
       label->setText(QString::number(m_pm->submodel[turret].think_interval, 'f', 2));
-    if (QLabel *label = ui->IDC_TURRET_SPR_STATIC)
+    }
+    {
+      QLabel *label = ui->IDC_TURRET_SPR_STATIC;
       label->setText(QString::number(1.0f / m_pm->submodel[turret].rps, 'f', 2));
+    }
   }
 
   (void)wb;

@@ -19,7 +19,8 @@ ConfigCompilerDialog::ConfigCompilerDialog(QWidget *parent)
 {
   ui->setupUi(this);
 
-  if (QPushButton *b = ui->IDC_BROWSE) {
+  {
+    QPushButton *b = ui->IDC_BROWSE;
     connect(b, &QPushButton::clicked, this, [this]() {
       const QString start = ui->IDC_COMPILER ? ui->IDC_COMPILER->text() : QString();
       const QString path = QFileDialog::getOpenFileName(
@@ -29,7 +30,8 @@ ConfigCompilerDialog::ConfigCompilerDialog(QWidget *parent)
     });
   }
 
-  if (QPushButton *done = ui->IDOK) {
+  {
+    QPushButton *done = ui->IDOK;
     connect(done, &QPushButton::clicked, this, &ConfigCompilerDialog::accept);
   }
 
@@ -42,23 +44,39 @@ ConfigCompilerDialog::ConfigCompilerDialog(QWidget *parent)
   if (ui->IDC_COMPILER)
     ui->IDC_COMPILER->setText(compiler);
 
-  if (QRadioButton *none = ui->IDC_WARN_NONE)
+  {
+    QRadioButton *none = ui->IDC_WARN_NONE;
     none->setChecked(warning == 0);
-  if (QRadioButton *low = ui->IDC_WARN_LOW)
+  }
+  {
+    QRadioButton *low = ui->IDC_WARN_LOW;
     low->setChecked(warning == 1);
-  if (QRadioButton *med = ui->IDC_WARN_MED)
+  }
+  {
+    QRadioButton *med = ui->IDC_WARN_MED;
     med->setChecked(warning == 2);
-  if (QRadioButton *high = ui->IDC_WARN_HIGH)
+  }
+  {
+    QRadioButton *high = ui->IDC_WARN_HIGH;
     high->setChecked(warning == 3);
-  if (QRadioButton *highest = ui->IDC_RADIO8)
+  }
+  {
+    QRadioButton *highest = ui->IDC_RADIO8;
     highest->setChecked(warning == 4 || warning == kDefaultWarning);
+  }
 
-  if (QRadioButton *opt = ui->IDC_OPTIMIZE)
+  {
+    QRadioButton *opt = ui->IDC_OPTIMIZE;
     opt->setChecked(debug == 0);
-  if (QRadioButton *coff = ui->IDC_COFF)
+  }
+  {
+    QRadioButton *coff = ui->IDC_COFF;
     coff->setChecked(debug == 1);
-  if (QRadioButton *c7 = ui->IDC_C7)
+  }
+  {
+    QRadioButton *c7 = ui->IDC_C7;
     c7->setChecked(debug == 2 || debug == kDefaultDebug);
+  }
 }
 
 ConfigCompilerDialog::~ConfigCompilerDialog() { delete ui; }

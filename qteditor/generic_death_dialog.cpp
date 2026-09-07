@@ -43,14 +43,22 @@ GenericDeathDialog::GenericDeathDialog(object_info *objinfo, QWidget *parent)
   }
 
   connect(this, &QDialog::accept, this, &GenericDeathDialog::onOk);
-  if (QPushButton *b = ui->IDC_GENERIC_DEATH_EDIT1)
+  {
+    QPushButton *b = ui->IDC_GENERIC_DEATH_EDIT1;
     connect(b, &QPushButton::clicked, this, &GenericDeathDialog::onEdit1);
-  if (QPushButton *b = ui->IDC_GENERIC_DEATH_EDIT2)
+  }
+  {
+    QPushButton *b = ui->IDC_GENERIC_DEATH_EDIT2;
     connect(b, &QPushButton::clicked, this, &GenericDeathDialog::onEdit2);
-  if (QPushButton *b = ui->IDC_GENERIC_DEATH_EDIT3)
+  }
+  {
+    QPushButton *b = ui->IDC_GENERIC_DEATH_EDIT3;
     connect(b, &QPushButton::clicked, this, &GenericDeathDialog::onEdit3);
-  if (QPushButton *b = ui->IDC_GENERIC_DEATH_EDIT4)
+  }
+  {
+    QPushButton *b = ui->IDC_GENERIC_DEATH_EDIT4;
     connect(b, &QPushButton::clicked, this, &GenericDeathDialog::onEdit4);
+  }
 }
 
 GenericDeathDialog::~GenericDeathDialog() { delete ui; }

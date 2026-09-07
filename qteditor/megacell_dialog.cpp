@@ -34,18 +34,30 @@ MegacellDialog::MegacellDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::MegacellDialog)
 {
   ui->setupUi(this);
-  if (QPushButton *b = ui->IDC_NEW_MEGACELL)
+  {
+    QPushButton *b = ui->IDC_NEW_MEGACELL;
     connect(b, &QPushButton::clicked, this, &MegacellDialog::onNew);
-  if (QPushButton *b = ui->IDC_DELETE_MEGACELL)
+  }
+  {
+    QPushButton *b = ui->IDC_DELETE_MEGACELL;
     connect(b, &QPushButton::clicked, this, &MegacellDialog::onDelete);
-  if (QPushButton *b = ui->IDC_LOCK_MEGACELL)
+  }
+  {
+    QPushButton *b = ui->IDC_LOCK_MEGACELL;
     connect(b, &QPushButton::clicked, this, &MegacellDialog::onLock);
-  if (QPushButton *b = ui->IDC_CHECKIN_MEGACELL)
+  }
+  {
+    QPushButton *b = ui->IDC_CHECKIN_MEGACELL;
     connect(b, &QPushButton::clicked, this, &MegacellDialog::onCheckin);
-  if (QPushButton *b = ui->IDC_PREVIOUS_MEGACELL)
+  }
+  {
+    QPushButton *b = ui->IDC_PREVIOUS_MEGACELL;
     connect(b, &QPushButton::clicked, this, &MegacellDialog::onPrev);
-  if (QPushButton *b = ui->IDC_NEXT_MEGACELL)
+  }
+  {
+    QPushButton *b = ui->IDC_NEXT_MEGACELL;
     connect(b, &QPushButton::clicked, this, &MegacellDialog::onNext);
+  }
 
   updateDialog();
 }

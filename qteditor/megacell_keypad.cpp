@@ -32,18 +32,27 @@ MegacellKeypad::MegacellKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::MegacellKeypad)
 {
   ui->setupUi(this);
-  if (QPushButton *b = ui->IDC_NEXT_MEGA_SET)
+  {
+    QPushButton *b = ui->IDC_NEXT_MEGA_SET;
     connect(b, &QPushButton::clicked, this, &MegacellKeypad::onNextMegaSet);
-  if (QPushButton *b = ui->IDC_PREV_MEGA_SET)
+  }
+  {
+    QPushButton *b = ui->IDC_PREV_MEGA_SET;
     connect(b, &QPushButton::clicked, this, &MegacellKeypad::onPrevMegaSet);
-  if (QCheckBox *cb = ui->IDC_RANDOMIZE_MEGACELL_CHECK) {
+  }
+  {
+    QCheckBox *cb = ui->IDC_RANDOMIZE_MEGACELL_CHECK;
     cb->setChecked(D3EditState.randomize_megacell);
     connect(cb, &QCheckBox::toggled, this, &MegacellKeypad::onRandomizeToggled);
   }
-  if (QLineEdit *edit = ui->IDC_X_GRANULAR_EDIT)
+  {
+    QLineEdit *edit = ui->IDC_X_GRANULAR_EDIT;
     connect(edit, &QLineEdit::editingFinished, this, &MegacellKeypad::onXGranularEdited);
-  if (QLineEdit *edit = ui->IDC_Y_GRANULAR_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_Y_GRANULAR_EDIT;
     connect(edit, &QLineEdit::editingFinished, this, &MegacellKeypad::onYGranularEdited);
+  }
 
   updateDialog();
 }
@@ -58,16 +67,26 @@ void MegacellKeypad::updateDialog() {
     n = GetNextMegacell(n);
     D3EditState.current_megacell = n;
   }
-  if (QLabel *label = ui->IDC_MEGACELL_NAME_STATIC)
+  {
+    QLabel *label = ui->IDC_MEGACELL_NAME_STATIC;
     label->setText(QString("Megacell name: %1").arg(QString::fromStdString(Megacells[n].name)));
-  if (QLabel *label = ui->IDC_MEGA_WIDTH_STATIC)
+  }
+  {
+    QLabel *label = ui->IDC_MEGA_WIDTH_STATIC;
     label->setText(QString("Width: %1").arg(Megacells[n].width));
-  if (QLabel *label = ui->IDC_MEGA_HEIGHT_STATIC)
+  }
+  {
+    QLabel *label = ui->IDC_MEGA_HEIGHT_STATIC;
     label->setText(QString("Height: %1").arg(Megacells[n].height));
-  if (QLineEdit *edit = ui->IDC_X_GRANULAR_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_X_GRANULAR_EDIT;
     edit->setText(QString::number(m_xgran));
-  if (QLineEdit *edit = ui->IDC_Y_GRANULAR_EDIT)
+  }
+  {
+    QLineEdit *edit = ui->IDC_Y_GRANULAR_EDIT;
     edit->setText(QString::number(m_ygran));
+  }
 }
 
 void MegacellKeypad::onNextMegaSet() {

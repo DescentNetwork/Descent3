@@ -47,9 +47,6 @@ private:
   void updateDialog();
   void setActivator(int id, const char *checkName, bool checked);
 
-  template <typename T>
-  T *find(const QString &name) const { return findChild<T *>(name); }
-
   Ui::TriggerKeypad *ui;
 };
 
