@@ -410,8 +410,8 @@ extern int Highest_room_index; // index of highest-numbered room
 // Handy macro to convert a room ptr to a room number
 #define ROOMNUM(r) (r - Rooms)
 
-// See above from RF_MINE_MASK
-#define MINE_INDEX(x) ((Rooms[x].flags & RFM_MINE) >> 20)
+// The mine index of a room (the 5-bit `mine` field of its room_flags_t)
+#define MINE_INDEX(x) (Rooms[x].flags.mine)
 
 //
 // Functions

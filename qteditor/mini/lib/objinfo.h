@@ -332,21 +332,7 @@
 // How many different sounds each object can make
 #define MAX_OBJ_SOUNDS 2
 
-// Object info flags
-#define OIF_CONTROL_AI 0x01         // this object uses AI
-#define OIF_USES_PHYSICS 0x02       // this object uses physics
-#define OIF_DESTROYABLE 0x04        // this object can be destroyed
-#define OIF_INVEN_SELECTABLE 0x08   // this object can be selected in the inventory
-#define OIF_INVEN_NONUSEABLE 0x10   // this object can not be used by pressing ENTER during the game
-#define OIF_INVEN_TYPE_MISSION 0x20 // this object is for Mission objectives
-#define OIF_INVEN_NOREMOVE 0x40     // this object should NOT be removed from the inventory when used
-#define OIF_INVEN_VISWHENUSED 0x80  // this object will not have it contol type, movement type and render types
-#define OIF_AI_SCRIPTED_DEATH 0x100
-#define OIF_DO_CEILING_CHECK 0x200
-#define OIF_IGNORE_FORCEFIELDS_AND_GLASS 0x400
-#define OIF_NO_DIFF_SCALE_DAMAGE 0x800
-#define OIF_NO_DIFF_SCALE_MOVE 0x1000
-#define OIF_AMBIENT_OBJECT (1 << 13) // this object is just for show, & can be removed to improve performance
+// Object info flags use the object_info_flags_t bitfield struct below.
 
 // This next numbers define the distance at which LOD popping occurs in models
 #define DEFAULT_MED_LOD_DISTANCE 75.0f

@@ -214,40 +214,6 @@
 
 #define HAS_FLAG(a) (1 << (a))
 
-// Weapon flags
-#define WF_HUD_ANIMATED (1 << 0)
-#define WF_IMAGE_BITMAP (1 << 1)    // whether or not the firing image is a bitmap or model
-#define WF_SMOKE (1 << 2)           // Weapon drops smoke as it moves
-#define WF_MATTER_WEAPON (1 << 3)   // This a matter weapon, as opposed to an energy weapon
-#define WF_ELECTRICAL (1 << 4)      // This weapons fires as an electrical storm
-#define WF_IMAGE_VCLIP (1 << 5)     // This weapon fire image is a vclip
-#define WF_SPRAY (1 << 6)           // This weapon is a spray, like a flamethrower
-#define WF_STREAMER (1 << 7)        // This weapon has a streamer effect attached
-#define WF_INVISIBLE (1 << 8)       // This weapon is invisible
-#define WF_RING (1 << 9)            // This weapon is drawn ring style
-#define WF_SATURATE (1 << 10)       // Saturate this bitmap weapon
-#define WF_BLAST_RING (1 << 11)     // Creates a blast ring upon explosion
-#define WF_PLANAR_BLAST (1 << 12)   // Blast bitmap takes on the walls plane
-#define WF_PLANAR (1 << 13)         // This weapon doesn't always face you
-#define WF_ENABLE_CAMERA (1 << 14)  // This weapon can be used for missile camera
-#define WF_SPAWNS_IMPACT (1 << 15)  // This weapon spawns others on impact
-#define WF_SPAWNS_TIMEOUT (1 << 16) // This weapon spawns others when it times out
-#define WF_EXPAND (1 << 17)         // This weapon expands when exploding
-#define WF_MUZZLE (1 << 18)         // This weapon produces a muzzle flash when fired
-#define WF_MICROWAVE (1 << 19)      // This weapon makes a microwave effect on the victim
-#define WF_NAPALM (1 << 20)         // This weapon does a napalm effect to objects it touches
-#define WF_REVERSE_SMOKE (1 << 21)  // The smoke trail gets smaller as it ages
-#define WF_GRAVITY_FIELD (1 << 22)  // This weapon has a gravity field
-#define WF_COUNTERMEASURE (1 << 23) // This weapon is a countermeasure
-#define WF_SPAWNS_ROBOT (1 << 24)   // This weapon spawns a robot upon death
-#define WF_FREEZE (1 << 25)         // This weapon slows a ship/object down
-#define WF_TIMEOUT_WALL (1 << 26)   // This weapon times out like a wall hit
-#define WF_PLANAR_SMOKE (1 << 27)   // This weapon has a planar smoke trail instead of a blob
-#define WF_SILENT_HOMING (1 << 28)  // This weapon does not give a homing lock sound
-#define WF_HOMING_SPLIT (1 << 29)   // This weapon homes when it splits
-#define WF_NO_ROTATE (1 << 30)      // This weapon does not rotate as a bitmap
-#define WF_CUSTOM_SIZE (1 << 31)    // This weapon uses a custom size
-
 #define MAX_LASER_LEVEL 4
 #define MAX_SUPER_LASER_LEVEL 6
 

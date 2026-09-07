@@ -28,15 +28,30 @@
 
 
 namespace {
-const struct {
+struct FlagCheck {
   const char *name;
-  uint32_t flag;
-} kFlagChecks[] = {
-    {"IDC_PTURNROLL", PF_TURNROLL},      {"IDC_PLEVELLING", PF_LEVELING},
-    {"IDC_PBOUNCE", PF_BOUNCE},          {"IDC_PWIGGLE", PF_WIGGLE},
-    {"IDC_PSTICKS", PF_STICK},           {"IDC_PPERSISTENT", PF_PERSISTENT},
-    {"IDC_PUSESTHRUST", PF_USES_THRUST}, {"IDC_PGRAVITY", PF_GRAVITY},
-    {"IDC_PWIND", PF_WIND},
+  bool (*get)(const physics_flags_t &);
+  void (*set)(physics_flags_t &, bool);
+};
+const FlagCheck kFlagChecks[] = {
+    {"IDC_PTURNROLL", [](const physics_flags_t &f) { return f.turnroll != 0; },
+     [](physics_flags_t &f, bool v) { f.turnroll = v; }},
+    {"IDC_PLEVELLING", [](const physics_flags_t &f) { return f.leveling != 0; },
+     [](physics_flags_t &f, bool v) { f.leveling = v; }},
+    {"IDC_PBOUNCE", [](const physics_flags_t &f) { return f.bounce != 0; },
+     [](physics_flags_t &f, bool v) { f.bounce = v; }},
+    {"IDC_PWIGGLE", [](const physics_flags_t &f) { return f.wiggle != 0; },
+     [](physics_flags_t &f, bool v) { f.wiggle = v; }},
+    {"IDC_PSTICKS", [](const physics_flags_t &f) { return f.stick != 0; },
+     [](physics_flags_t &f, bool v) { f.stick = v; }},
+    {"IDC_PPERSISTENT", [](const physics_flags_t &f) { return f.persistent != 0; },
+     [](physics_flags_t &f, bool v) { f.persistent = v; }},
+    {"IDC_PUSESTHRUST", [](const physics_flags_t &f) { return f.uses_thrust != 0; },
+     [](physics_flags_t &f, bool v) { f.uses_thrust = v; }},
+    {"IDC_PGRAVITY", [](const physics_flags_t &f) { return f.gravity != 0; },
+     [](physics_flags_t &f, bool v) { f.gravity = v; }},
+    {"IDC_PWIND", [](const physics_flags_t &f) { return f.wind != 0; },
+     [](physics_flags_t &f, bool v) { f.wind = v; }},
 };
 
 } // namespace
@@ -76,17 +91,10 @@ PropertyPhysicsDialog::PropertyPhysicsDialog(physics_info *physInfo, QWidget *pa
 
 PropertyPhysicsDialog::~PropertyPhysicsDialog() { delete ui; }
 
-void PropertyPhysicsDialog::setFlag(uint32_t flag, const char *checkName, bool checked) {
-  if (checked)
-    m_physInfo->flags |= flag;
-  else
-    m_physInfo->flags &= ~flag;
-}
-
 void PropertyPhysicsDialog::updateDialog() {
   for (const auto &c : kFlagChecks)
     if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
-      cb->setChecked(m_physInfo->flags & c.flag);
+      cb->setChecked(c.get(m_physInfo->flags));
   const struct {
     const char *name;
     float physics_info::*field;
@@ -112,7 +120,7 @@ void PropertyPhysicsDialog::onFlagToggled() {
     return;
   for (const auto &c : kFlagChecks)
     if (strcmp(c.name, cb->objectName().toLatin1().constData()) == 0)
-      setFlag(c.flag, c.name, cb->isChecked());
+      c.set(m_physInfo->flags, cb->isChecked());
 }
 
 void PropertyPhysicsDialog::onOk() {

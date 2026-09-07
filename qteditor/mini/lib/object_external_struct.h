@@ -404,6 +404,12 @@ struct [[gnu::packed]] physics_flags_t
 #endif
 };
 
+// True when any of the six lock flags (x/y/z/p/h/b) are set; mirrors the old
+// PF_LOCK_MASK check.
+inline bool physics_locked(const physics_flags_t &f) {
+  return f.lock_x || f.lock_y || f.lock_z || f.lock_p || f.lock_h || f.lock_b;
+}
+
 // information for physics sim for an object
 // Some of this stuff is not object instance dependant -- so, it could be moved into
 // a different struct to save space.  (But, then we cannot change it -- i.e we might want a powerup
@@ -452,13 +458,18 @@ struct physics_info {
     int32_t stuck_portal;
   };
 
-  uint32_t flags; // Misc physics flags // TYPE_UPDATE: `physics_flags_t`
+  physics_flags_t flags; // Misc physics flags
 };
 
 // Table-file (physics chunk) serialization; read mirrors write.  Historical
 // quirk preserved: only the z component of velocity is stored on disk.
 byte_istream& operator >>(byte_istream& input, physics_info& data);
 byte_ostream& operator <<(byte_ostream& output, const physics_info& data);
+
+// The physics flags bitfield is stored on disk as a single little-endian
+// uint32, mirroring the original engine layout.
+byte_istream& operator >>(byte_istream& input, physics_flags_t& data);
+byte_ostream& operator <<(byte_ostream& output, const physics_flags_t& data);
 
 struct shockwave_info {
   uint32_t damaged_list[(MAX_OBJECTS / 32) + 1];

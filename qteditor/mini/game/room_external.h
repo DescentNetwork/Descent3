@@ -174,38 +174,6 @@ struct portal {
   vector3 path_pnt;    // Point used by the path system
 };
 
-// Room flags
-#define RF_FUELCEN 1                // room is a refueling center
-#define RF_DOOR (1 << 1)            // a 3d door is here.
-#define RF_EXTERNAL (1 << 2)        // this is an external room (i.e. a building)
-#define RF_GOAL1 (1 << 3)           // this room is goal 1
-#define RF_GOAL2 (1 << 4)           // this room is goal 2
-#define RF_TOUCHES_TERRAIN (1 << 5) // this room should recieve lighting from satellites
-#define RF_SORTED_INC_Y (1 << 6)    // Faces are sorted with increasing y
-#define RF_GOAL3 (1 << 7)           // this room is goal 3
-#define RF_GOAL4 (1 << 8)           // this room is goal 4
-#define RF_FOG (1 << 9)             // this room is fogged
-#define RF_SPECIAL1 (1 << 10)       // This room is a special room
-#define RF_SPECIAL2 (1 << 11)       // This room is a special room
-#define RF_SPECIAL3 (1 << 12)       // This room is a special room
-#define RF_SPECIAL4 (1 << 13)       // This room is a special room
-#define RF_SPECIAL5 (1 << 14)       // This room is a special room
-#define RF_SPECIAL6 (1 << 15)       // This room is a special room
-#define RF_MIRROR_VISIBLE (1 << 16) // The mirror is this room is visible
-#define RF_TRIANGULATE (1 << 17)    // All the faces in this room should be drawn with triagulation on
-#define RF_STROBE (1 << 18)         // This room strobes with pulse lighting
-#define RF_FLICKER (1 << 19)        // This room flickers with pulse lighting
-#define RFM_MINE                                                                                                       \
-  ((1 << 20) | (1 << 21) | (1 << 22) | (1 << 23) |                                                                     \
-   (1 << 24)) // Mine index of this room (we support up to 32 individual mines without a problem)
-#define RF_INFORM_RELINK_TO_LG (1 << 25) // Informs the level goal system on player relinking to this room
-#define RF_MANUAL_PATH_PNT (1 << 26)     // The room path_pnt has been set manually (i.e. by the designer)
-#define RF_WAYPOINT (1 << 27)            // This room has a waypoint in it
-#define RF_SECRET (1 << 28)              // This room is a secret room
-#define RF_NO_LIGHT (1 << 29)            // This room does not get lit
-
-#define GOALROOM (RF_GOAL1 | RF_GOAL2 | RF_GOAL3 | RF_GOAL4)
-
 #define ROOM_NAME_LEN 19 // how long a room name can be (not counting null terminator)
 
 struct doorway;

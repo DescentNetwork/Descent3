@@ -2020,7 +2020,7 @@ int osipf_AIFindEnergyCenter(int objhandle) {
   }
 
   // returns the roomnum of the closest room with that flag
-  return AIFindRoomWithFlag(obj, RF_FUELCEN);
+  return AIFindRoomWithFlag(obj, 1 << 0); // fuelcen
 }
 
 float osipf_AIGetDistToObj(int objhandle, int otherobjhandle) {

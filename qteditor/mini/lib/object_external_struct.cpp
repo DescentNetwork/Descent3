@@ -23,6 +23,27 @@
 
 #include "object_external_struct.h"
 
+#include <cstring>
+
+//-----------------------------------------------------------------------------
+// physics flags bitfield (stored as a single little-endian uint32 on disk)
+//-----------------------------------------------------------------------------
+
+byte_istream& operator>>(byte_istream& input, physics_flags_t& data) {
+  uint32_t host = 0;
+  input.read(&host, sizeof(host));
+  host = le_to_host(host);
+  std::memcpy(&data, &host, sizeof(data));
+  return input;
+}
+
+byte_ostream& operator<<(byte_ostream& output, const physics_flags_t& data) {
+  uint32_t host = 0;
+  std::memcpy(&host, &data, sizeof(data));
+  host = host_to_le(host);
+  return output.write(&host, sizeof(host));
+}
+
 //-----------------------------------------------------------------------------
 // physics_info chunk (generic + ship + weapon pages)
 //-----------------------------------------------------------------------------

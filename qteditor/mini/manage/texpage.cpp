@@ -22,7 +22,7 @@
 #define PAGENAME_LEN 35
 #endif
 
-#include "gametexture.h" // texture, TF_PROCEDURAL
+#include "gametexture.h" // texture flags
 #include "texpage.h"
 
 #include <cstring>

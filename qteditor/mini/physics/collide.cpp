@@ -911,10 +911,10 @@ bool IsOKToApplyForce(object *objp) {
   if (objp->movement_type != MT_PHYSICS && objp->movement_type != MT_WALKING)
     return false;
 
-  if (objp->mtype.phys_info.flags & PF_PERSISTENT)
+  if (objp->mtype.phys_info.flags.persistent)
     return false;
 
-  if (objp->mtype.phys_info.flags & PF_LOCK_MASK) // Not done!
+  if (physics_locked(objp->mtype.phys_info.flags)) // Not done!
     return false;
 
   return true;
@@ -1018,7 +1018,8 @@ void DoWallEffects(object *weapon, int surface_tmap) {
           vis->mass = 100;
           vis->drag = .1f;
 
-          vis->phys_flags |= PF_GRAVITY | PF_NO_COLLIDE;
+          vis->phys_flags.gravity = true;
+          vis->phys_flags.no_collide = true;
 
           if ((d3::rand() % 3) == 0) {
             vis->velocity.x() = (d3::rand() % 100) - 50;
@@ -1206,7 +1207,7 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
     return true;
 
   // If done bouncing, kill the weapon
-  if ((weapon->mtype.phys_info.num_bounces <= 0) && !(weapon->mtype.phys_info.flags & PF_STICK) &&
+  if ((weapon->mtype.phys_info.num_bounces <= 0) && !(weapon->mtype.phys_info.flags.stick) &&
       (hit_dot > weapon->mtype.phys_info.hit_die_dot)) {
     int snd;
     ain_hear hear;
@@ -1681,14 +1682,14 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
   // Determine if a moving object hits a non-moving object
   if ((object0->movement_type != MT_PHYSICS && object0->movement_type != MT_WALKING) ||
       (object0->movement_type == MT_PHYSICS && object0->mtype.phys_info.velocity == vector3{} &&
-       (object0->mtype.phys_info.flags & PF_LOCK_MASK) && (object0->mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS))) {
+       physics_locked(object0->mtype.phys_info.flags) && (object0->mtype.phys_info.flags.point_collide_walls))) {
     t = object1;
     other = object0;
     *collision_normal *= -1.0f;
   }
   if ((object1->movement_type != MT_PHYSICS && object1->movement_type != MT_WALKING) ||
       (object1->movement_type == MT_PHYSICS && object1->mtype.phys_info.velocity == vector3{} &&
-       (object1->mtype.phys_info.flags & PF_LOCK_MASK) && (object1->mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS))) {
+       physics_locked(object1->mtype.phys_info.flags) && (object1->mtype.phys_info.flags.point_collide_walls))) {
     t = object0;
     other = object1;
   }
@@ -1701,7 +1702,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
       return;
     }
 
-    if (t->mtype.phys_info.flags & PF_PERSISTENT)
+    if (t->mtype.phys_info.flags.persistent)
       return;
 
     vector3 moved_v;
@@ -1718,11 +1719,11 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
       moved_v = t->pos - t->last_pos;
       wall_part = vm_Dot3Product(*collision_normal, t->mtype.phys_info.velocity);
 
-      if (t->mtype.phys_info.flags & PF_BOUNCE) {
+      if (t->mtype.phys_info.flags.bounce) {
         wall_part *= 2.0; // Subtract out wall part twice to achieve bounce
 
         // New bounceness code
-        if ((t->mtype.phys_info.flags & PF_BOUNCE) && (t->mtype.phys_info.num_bounces != PHYSICS_UNLIMITED_BOUNCE)) {
+        if ((t->mtype.phys_info.flags.bounce) && (t->mtype.phys_info.num_bounces != PHYSICS_UNLIMITED_BOUNCE)) {
           if (t->mtype.phys_info.num_bounces == 0) {
             Q_ASSERT(t->type != OBJ_PLAYER);
             if (t->flags & OF_DYING) {
@@ -1758,7 +1759,8 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
       }
 
       // Weapons should face their new heading.  This is so missiles are pointing in the correct direct.
-      if (t->type == OBJ_WEAPON && (t->mtype.phys_info.flags & (PF_BOUNCE | PF_GRAVITY | PF_WIND)))
+      if (t->type == OBJ_WEAPON &&
+        (t->mtype.phys_info.flags.bounce || t->mtype.phys_info.flags.gravity || t->mtype.phys_info.flags.wind))
         vm_VectorToMatrix(&t->orient, &t->mtype.phys_info.velocity, &t->orient.uvec, nullptr);
     }
 
@@ -2070,7 +2072,7 @@ void collide_generic_and_player(object *robotobj, object *playerobj, vector3 *co
       scalar = 0; // don't make collide sound
   }
 
-  if (scalar > .01 || (robotobj->mtype.phys_info.flags & PF_LOCK_MASK)) {
+  if (scalar > .01 || physics_locked(robotobj->mtype.phys_info.flags)) {
     pos_state cur_pos;
     cur_pos.position = collision_point;
     cur_pos.orient = &playerobj->orient;
@@ -2086,16 +2088,16 @@ void collide_generic_and_player(object *robotobj, object *playerobj, vector3 *co
     AINotify(playerobj, AIN_HEAR_NOISE, (void *)&hear);
 
     if ((scalar > .25f && (robotobj->movement_type == MT_WALKING || robotobj->movement_type == MT_PHYSICS)) ||
-        ((robotobj->mtype.phys_info.flags & PF_LOCK_MASK) &&
-         (robotobj->mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS))) {
+        (physics_locked(robotobj->mtype.phys_info.flags) &&
+         (robotobj->mtype.phys_info.flags.point_collide_walls))) {
       if (!(IS_GUIDEBOT(robotobj))) {
         if (robotobj->shields <= 1.0f) {
           ApplyDamageToGeneric(robotobj, playerobj, GD_PHYSICS, 2.0f);
         } else {
           ApplyDamageToGeneric(robotobj, playerobj, GD_PHYSICS, 5.0f * Frametime * scalar);
         }
-        if (scalar < 1.0f && (robotobj->mtype.phys_info.flags & PF_LOCK_MASK) &&
-            (robotobj->mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS))
+        if (scalar < 1.0f && physics_locked(robotobj->mtype.phys_info.flags) &&
+            (robotobj->mtype.phys_info.flags.point_collide_walls))
           scalar = 1.0f;
 
         ApplyDamageToPlayer(playerobj, playerobj, PD_WALL_HIT, 2.0f * Frametime * scalar);
@@ -2124,7 +2126,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
   object *parent_obj;
   float damage_to_apply;
   uint8_t electrical = (Weapons[weapon->id].flags.electrical) ? 1 : 0;
-  bool f_stick = ((weapon->mtype.phys_info.flags & PF_STICK) != 0);
+  bool f_stick = weapon->mtype.phys_info.flags.stick;
   int damage_type;
 
   // Check for lava & volatile surfaces on an object
@@ -2236,7 +2238,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
     bump_two_objects(robotobj, weapon, collision_point, collision_normal, 0);
 
     if (!f_stick || (hit_info == nullptr)) {
-      if ((robotobj->lighting_render_type == LRT_LIGHTMAPS) || !(weapon->mtype.phys_info.flags & PF_PERSISTENT))
+      if ((robotobj->lighting_render_type == LRT_LIGHTMAPS) || !(weapon->mtype.phys_info.flags.persistent))
         SetObjectDeadFlag(weapon);
     } else {
       MakeWeaponStick(weapon, robotobj, hit_info);
@@ -2249,7 +2251,7 @@ void collide_player_and_weapon(object *playerobj, object *weapon, vector3 *colli
   object *parent_obj;
   float damage_to_apply;
   uint8_t electrical = Weapons[weapon->id].flags.electrical ? 1 : 0;
-  bool f_stick = ((weapon->mtype.phys_info.flags & PF_STICK) != 0);
+  bool f_stick = weapon->mtype.phys_info.flags.stick;
 
   if (f_reverse_normal)
     *collision_normal *= -1.0f;
@@ -2302,7 +2304,7 @@ void collide_player_and_weapon(object *playerobj, object *weapon, vector3 *colli
     bump_two_objects(playerobj, weapon, collision_point, collision_normal, 0);
 
     if (!f_stick || (hit_info == nullptr)) {
-      if (!(weapon->mtype.phys_info.flags & PF_PERSISTENT))
+      if (!(weapon->mtype.phys_info.flags.persistent))
         SetObjectDeadFlag(weapon);
     } else {
       MakeWeaponStick(weapon, playerobj, hit_info);

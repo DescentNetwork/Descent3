@@ -36,11 +36,11 @@ bool ObjectsAreRelated(int o1, int o2) {
   if (obj1->movement_type == MT_OBJ_LINKED || obj2->movement_type == MT_OBJ_LINKED)
     return true;
 
-  if (obj1->type != OBJ_SHOCKWAVE && (obj1->mtype.phys_info.flags & PF_NO_COLLIDE)) {
+  if (obj1->type != OBJ_SHOCKWAVE && obj1->mtype.phys_info.flags.no_collide) {
     return true;
   }
 
-  if (obj2->type != OBJ_SHOCKWAVE && (obj2->mtype.phys_info.flags & PF_NO_COLLIDE)) {
+  if (obj2->type != OBJ_SHOCKWAVE && obj2->mtype.phys_info.flags.no_collide) {
     return true;
   }
 
@@ -70,16 +70,16 @@ bool ObjectsAreRelated(int o1, int o2) {
       return false;
   }
 
-  if (obj1->type == OBJ_WEAPON && obj1->movement_type == MT_PHYSICS && (obj1->mtype.phys_info.flags & PF_PERSISTENT) &&
+  if (obj1->type == OBJ_WEAPON && obj1->movement_type == MT_PHYSICS && obj1->mtype.phys_info.flags.persistent &&
       obj1->ctype.laser_info.last_hit_handle == obj2->handle)
     return true;
 
-  if (obj2->type == OBJ_WEAPON && obj2->movement_type == MT_PHYSICS && (obj2->mtype.phys_info.flags & PF_PERSISTENT) &&
+  if (obj2->type == OBJ_WEAPON && obj2->movement_type == MT_PHYSICS && obj2->mtype.phys_info.flags.persistent &&
       obj2->ctype.laser_info.last_hit_handle == obj1->handle)
     return true;
 
   // See if o2 is the parent of o1
-  if (obj1->type == OBJ_WEAPON && (obj1->mtype.phys_info.flags & PF_NO_COLLIDE_PARENT)) {
+  if (obj1->type == OBJ_WEAPON && obj1->mtype.phys_info.flags.no_collide_parent) {
     if (obj1->parent_handle == obj2->handle)
       return true;
 
@@ -92,7 +92,7 @@ bool ObjectsAreRelated(int o1, int o2) {
   }
 
   // See if o1 is the parent of o2
-  if (obj2->type == OBJ_WEAPON && (obj2->mtype.phys_info.flags & PF_NO_COLLIDE_PARENT)) {
+  if (obj2->type == OBJ_WEAPON && obj2->mtype.phys_info.flags.no_collide_parent) {
     if (obj2->parent_handle == obj1->handle)
       return true;
 
@@ -112,7 +112,7 @@ bool ObjectsAreRelated(int o1, int o2) {
   //	Here is the 09/07/94 change -- Siblings must be identical, others can hurt each other
   // See if they're siblings...
   if (obj1->parent_handle == obj2->parent_handle) {
-    if ((obj1->mtype.phys_info.flags & PF_HITS_SIBLINGS) || (obj2->mtype.phys_info.flags & PF_HITS_SIBLINGS)) {
+    if (obj1->mtype.phys_info.flags.hits_siblings || obj2->mtype.phys_info.flags.hits_siblings) {
       return false; // if either is proximity, then can blow up, so say not related
     } else {
       return true;

@@ -1841,7 +1841,7 @@ inline void compute_movement_AABB(void) {
       fvi_max_xyz += max_offset;
       fvi_min_xyz += min_offset;
 
-      //			if(!(Objects[fvi_query_ptr->thisobjnum].mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS))
+      //			if(!(Objects[fvi_query_ptr->thisobjnum].mtype.phys_info.flags.point_collide_walls))
       {
         fvi_wall_min_xyz = fvi_min_xyz;
         fvi_wall_max_xyz = fvi_max_xyz;
@@ -2652,7 +2652,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
   if ((this_obj) && (this_obj->flags & OF_POLYGON_OBJECT) && this_obj->type != OBJ_WEAPON &&
       this_obj->type != OBJ_POWERUP && this_obj->type != OBJ_DEBRIS && this_obj->type != OBJ_ROOM &&
       this_obj->type != OBJ_PLAYER && fq->rad == this_obj->size) {
-    if (this_obj->mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS) {
+    if (this_obj->mtype.phys_info.flags.point_collide_walls) {
       fvi_wall_sphere_rad = 0.0f;
       fvi_wall_sphere_offset = vector3{};
       fvi_wall_sphere_p0 = *fq->p0;
@@ -2676,7 +2676,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
       fvi_wall_sphere_offset = vector3{};
       fvi_wall_sphere_p0 = *fq->p0;
       fvi_wall_sphere_p1 = *fq->p1;
-    } else if ((this_obj) && this_obj->mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS) {
+    } else if ((this_obj) && this_obj->mtype.phys_info.flags.point_collide_walls) {
       fvi_wall_sphere_rad = 0.0f;
       fvi_wall_sphere_offset = vector3{};
       fvi_wall_sphere_p0 = *fq->p0;
@@ -2808,7 +2808,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
     } else if ((hit_data->hit_type[0] == HIT_WALL || hit_data->hit_type[0] == HIT_TERRAIN) &&
                (fvi_zero_rad ||
                 (fvi_query_ptr->thisobjnum >= 0 &&
-                 (Objects[fvi_query_ptr->thisobjnum].mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS))) &&
+                 (Objects[fvi_query_ptr->thisobjnum].mtype.phys_info.flags.point_collide_walls))) &&
                (ROOMNUM_OUTSIDE(hit_data->hit_face_room[0]) ||
                 !Rooms[hit_data->hit_face_room[0]].flags.external)) {
       hit_data->hit_room = hit_data->hit_face_room[0];
@@ -3365,29 +3365,29 @@ void check_hit_obj(int objnum) {
                   break;
                 }
               } else {
-                if (((m_obj->type == OBJ_CLUTTER) && (m_obj->mtype.phys_info.flags & PF_GRAVITY) &&
+                if (((m_obj->type == OBJ_CLUTTER) && (m_obj->mtype.phys_info.flags.gravity) &&
                      (m_obj->movement_type == MT_PHYSICS) && (obj->type == OBJ_PLAYER)) ||
-                    ((obj->type == OBJ_CLUTTER) && (obj->mtype.phys_info.flags & PF_GRAVITY) &&
+                    ((obj->type == OBJ_CLUTTER) && (obj->mtype.phys_info.flags.gravity) &&
                      (obj->movement_type == MT_PHYSICS) && (m_obj->type == OBJ_PLAYER))) {
                   collision_type = RESULT_CHECK_SPHERE_SPHERE;
                 }
 
                 // Ignore robot collisions if it is specified
-                if ((m_obj->mtype.phys_info.flags & PF_NO_SAME_COLLISIONS) && (obj->type == m_obj->type) &&
+                if ((m_obj->mtype.phys_info.flags.no_same_collisions) && (obj->type == m_obj->type) &&
                     (obj->id == m_obj->id))
                   return;
 
                 // Ignore robot collisions if it is specified
-                if ((m_obj->mtype.phys_info.flags & PF_NO_ROBOT_COLLISIONS) &&
+                if ((m_obj->mtype.phys_info.flags.no_robot_collisions) &&
                     (obj->type == OBJ_CLUTTER || obj->type == OBJ_ROBOT || (obj->type == OBJ_BUILDING && obj->ai_info)))
                   return;
 
-                if ((obj->mtype.phys_info.flags & PF_NO_ROBOT_COLLISIONS) &&
+                if ((obj->mtype.phys_info.flags.no_robot_collisions) &&
                     (obj->type == OBJ_CLUTTER || m_obj->type == OBJ_ROBOT ||
                      (m_obj->type == OBJ_BUILDING && m_obj->ai_info)))
                   return;
 
-                if ((m_obj->mtype.phys_info.flags & PF_NO_DOOR_COLLISIONS)) {
+                if ((m_obj->mtype.phys_info.flags.no_door_collisions)) {
                   if (obj->movement_type != MT_PHYSICS && obj->movement_type != MT_WALKING) {
                     return;
                   }
@@ -3909,7 +3909,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
 
         // Did we hit this face?
         if ((fvi_query_ptr->thisobjnum >= 0) &&
-            (Objects[fvi_query_ptr->thisobjnum].mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS)) {
+            (Objects[fvi_query_ptr->thisobjnum].mtype.phys_info.flags.point_collide_walls)) {
           face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, fvi_query_ptr->p0,
                                              &fvi_hit_data_ptr->hit_pnt, &face_normal, vertex_ptr_list, 3, 0.0f);
         } else if ((this_obj) && (this_obj->flags & OF_POLYGON_OBJECT)) {
@@ -4649,7 +4649,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
           }
 
           // Did we hit this face?
-          if ((this_obj) && (this_obj->mtype.phys_info.flags & PF_POINT_COLLIDE_WALLS)) {
+          if ((this_obj) && (this_obj->mtype.phys_info.flags.point_collide_walls)) {
             face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, fvi_query_ptr->p0,
                                                &fvi_hit_data_ptr->hit_pnt, &face_normal, vertex_ptr_list,
                                                cur_face->num_verts, 0.0f);

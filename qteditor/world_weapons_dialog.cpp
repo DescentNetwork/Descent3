@@ -46,6 +46,16 @@ struct EditBinding {
   const char *name;
   void (WorldWeaponsDialog::*noop)() = nullptr;
 };
+
+// Returns the current weapon's flag fields, or nullptr when none is selected.
+weapon_flags_t *CurWeaponFlags() {
+  const int n = D3EditState.current_weapon;
+  return (n >= 0 && n < MAX_WEAPONS && Weapons[n].used) ? &Weapons[n].flags : nullptr;
+}
+physics_flags_t *CurWeaponPhysFlags() {
+  const int n = D3EditState.current_weapon;
+  return (n >= 0 && n < MAX_WEAPONS && Weapons[n].used) ? &Weapons[n].phys_info.flags : nullptr;
+}
 } // namespace
 
 WorldWeaponsDialog::WorldWeaponsDialog(QWidget *parent)
@@ -107,30 +117,6 @@ void WorldWeaponsDialog::saveWeaponsOnClose() {
     }
   }
 }
-
-void WorldWeaponsDialog::setFlag(uint32_t flag, const char *checkName, bool checked) {
-  const int n = D3EditState.current_weapon;
-  if (n < 0 || n >= MAX_WEAPONS || !Weapons[n].used)
-    return;
-  uint32_t flags_raw = 0;
-  std::memcpy(&flags_raw, &Weapons[n].flags, sizeof(flags_raw));
-  if (checked)
-    flags_raw |= flag;
-  else
-    flags_raw &= ~flag;
-  std::memcpy(&Weapons[n].flags, &flags_raw, sizeof(flags_raw));
-}
-
-void WorldWeaponsDialog::setPhysFlag(uint32_t flag, const char *checkName, bool checked) {
-  const int n = D3EditState.current_weapon;
-  if (n < 0 || n >= MAX_WEAPONS || !Weapons[n].used)
-    return;
-  if (checked)
-    Weapons[n].phys_info.flags |= flag;
-  else
-    Weapons[n].phys_info.flags &= ~flag;
-}
-
 void WorldWeaponsDialog::bindEdits() {
   const struct {
     const char *name;
@@ -187,51 +173,39 @@ void WorldWeaponsDialog::bindEdits() {
 }
 
 void WorldWeaponsDialog::bindChecks() {
-  const struct {
-    const char *name;
-    uint32_t flag;
-  } wf[] = {
-      {"IDC_SMOKE_CHECK", WF_SMOKE},
-      {"IDC_REVERSE_SMOKE_CHECK", WF_REVERSE_SMOKE},
-      {"IDC_PLANAR_SMOKE_CHECK", WF_PLANAR_SMOKE},
-      {"IDC_ELECTRICAL_CHECK", WF_ELECTRICAL},
-      {"IDC_SPRAY_CHECK", WF_SPRAY},
-      {"IDC_INVISIBLE", WF_INVISIBLE},
-      {"IDC_RING", WF_RING},
-      {"IDC_SATURATE_CHECK", WF_SATURATE},
-      {"IDC_PLANAR_CHECK", WF_PLANAR},
-      {"IDC_ENABLE_CAMERA", WF_ENABLE_CAMERA},
-      {"IDC_MUZZLE_FLASH", WF_MUZZLE},
-      {"IDC_NAPALM", WF_NAPALM},
-      {"IDC_MICROWAVE", WF_MICROWAVE},
-      {"IDC_SILENT_HOMING_CHECK", WF_SILENT_HOMING},
-      {"IDC_EXPLODE_RING", WF_BLAST_RING},
-      {"IDC_EXPANDING_CHECK", WF_EXPAND},
-      {"IDC_PLANAR_BLAST", WF_PLANAR_BLAST},
-      {"IDC_TIMEOUT_WALL_CHECK", WF_TIMEOUT_WALL},
-      {"IDC_GRAVITY_FIELD_CHECK", WF_GRAVITY_FIELD},
-      {"IDC_COUNTERMEASURE_CHECK", WF_COUNTERMEASURE},
-      {"IDC_SPAWNS_ROBOT_CHECK", WF_SPAWNS_ROBOT},
-      {"IDC_SPAWNS_ON_IMPACT", WF_SPAWNS_IMPACT},
-      {"IDC_SPAWNS_ON_TIMEOUT", WF_SPAWNS_TIMEOUT},
-      {"IDC_HOMED_SPLIT_CHECK", WF_HOMING_SPLIT},
-      {"IDC_INSTANT_CHECK", WF_STREAMER},
-  };
-  for (const auto &c : wf)
-    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
-      connect(cb, &QCheckBox::toggled, this, [this, c](bool checked) { setFlag(c.flag, c.name, checked); });
+  weapon_flags_t& wf = Weapons[D3EditState.current_weapon].flags;
+  physics_flags_t& pf = Weapons[D3EditState.current_weapon].phys_info.flags;
 
-  const struct {
-    const char *name;
-    uint32_t flag;
-  } pf[] = {
-      {"IDC_WEAPON_HOMING_CHECK", PF_HOMING},
-      {"IDC_WEAPON_COLLIDE_WITH_SIBLING_CHECK", PF_HITS_SIBLINGS},
-      {"IDC_WEAPON_USE_PARENT_VELOCITY_CHECK", PF_USES_PARENT_VELOCITY},
-  };
-  for (const auto &c : pf)
-    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
-      connect(cb, &QCheckBox::toggled, this, [this, c](bool checked) { setPhysFlag(c.flag, c.name, checked); });
+  connect(ui->IDC_SMOKE_CHECK, &QCheckBox::toggled, [&wf](bool checked) { wf.smoke = checked; }); // example line
+
+  connect(ui->IDC_REVERSE_SMOKE_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.reverse_smoke = checked; });
+  connect(ui->IDC_PLANAR_SMOKE_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.planar_smoke = checked; });
+  connect(ui->IDC_ELECTRICAL_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.electrical = checked; });
+  connect(ui->IDC_SPRAY_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.spray = checked; });
+  connect(ui->IDC_INVISIBLE,&QCheckBox::toggled,[&wf](bool checked){ wf.invisible = checked; });
+  connect(ui->IDC_RING,&QCheckBox::toggled,[&wf](bool checked){ wf.ring = checked; });
+  connect(ui->IDC_SATURATE_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.saturate = checked; });
+  connect(ui->IDC_PLANAR_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.planar = checked; });
+  connect(ui->IDC_ENABLE_CAMERA,&QCheckBox::toggled,[&wf](bool checked){ wf.enable_camera = checked; });
+  connect(ui->IDC_MUZZLE_FLASH,&QCheckBox::toggled,[&wf](bool checked){ wf.muzzle = checked; });
+  connect(ui->IDC_NAPALM,&QCheckBox::toggled,[&wf](bool checked){ wf.napalm = checked; });
+  connect(ui->IDC_MICROWAVE,&QCheckBox::toggled,[&wf](bool checked){ wf.microwave = checked; });
+  connect(ui->IDC_SILENT_HOMING_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.silent_homing = checked; });
+  connect(ui->IDC_EXPLODE_RING,&QCheckBox::toggled,[&wf](bool checked){ wf.blast_ring = checked; });
+  connect(ui->IDC_EXPANDING_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.expand = checked; });
+  connect(ui->IDC_PLANAR_BLAST,&QCheckBox::toggled,[&wf](bool checked){ wf.planar_blast = checked; });
+  connect(ui->IDC_TIMEOUT_WALL_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.timeout_wall = checked; });
+  connect(ui->IDC_GRAVITY_FIELD_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.gravity_field = checked; });
+  connect(ui->IDC_COUNTERMEASURE_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.countermeasure = checked; });
+  connect(ui->IDC_SPAWNS_ROBOT_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.spawns_robot = checked; });
+  connect(ui->IDC_SPAWNS_ON_IMPACT,&QCheckBox::toggled,[&wf](bool checked){ wf.spawns_impact = checked; });
+  connect(ui->IDC_SPAWNS_ON_TIMEOUT,&QCheckBox::toggled,[&wf](bool checked){ wf.spawns_timeout = checked; });
+  connect(ui->IDC_HOMED_SPLIT_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.homing_split = checked; });
+  connect(ui->IDC_INSTANT_CHECK,&QCheckBox::toggled,[&wf](bool checked){ wf.streamer = checked; });
+
+  connect(ui->IDC_WEAPON_HOMING_CHECK,&QCheckBox::toggled,[&pf](bool checked){ pf.homing = checked; });
+  connect(ui->IDC_WEAPON_COLLIDE_WITH_SIBLING_CHECK,&QCheckBox::toggled,[&pf](bool checked){ pf.hits_siblings = checked; });
+  connect(ui->IDC_WEAPON_USE_PARENT_VELOCITY_CHECK,&QCheckBox::toggled,[&pf](bool checked){ pf.uses_parent_velocity = checked; });
 }
 
 void WorldWeaponsDialog::bindCombos() {
@@ -326,47 +300,47 @@ void WorldWeaponsDialog::updateDialog() {
   if (QLineEdit *edit = ui->IDC_TERRAIN_DAMAGE_DEPTH)
     edit->setText(QString::number(Weapons[n].terrain_damage_depth));
 
-  uint32_t flags_raw = 0;
-  std::memcpy(&flags_raw, &Weapons[n].flags, sizeof(flags_raw));
-
-  const struct {
-    const char *name;
-    uint32_t flag;
-  } wf[] = {
-      {"IDC_SMOKE_CHECK", WF_SMOKE},          {"IDC_REVERSE_SMOKE_CHECK", WF_REVERSE_SMOKE},
-      {"IDC_PLANAR_SMOKE_CHECK", WF_PLANAR_SMOKE}, {"IDC_ELECTRICAL_CHECK", WF_ELECTRICAL},
-      {"IDC_SPRAY_CHECK", WF_SPRAY},          {"IDC_INVISIBLE", WF_INVISIBLE},
-      {"IDC_RING", WF_RING},                  {"IDC_SATURATE_CHECK", WF_SATURATE},
-      {"IDC_PLANAR_CHECK", WF_PLANAR},        {"IDC_ENABLE_CAMERA", WF_ENABLE_CAMERA},
-      {"IDC_MUZZLE_FLASH", WF_MUZZLE},        {"IDC_NAPALM", WF_NAPALM},
-      {"IDC_MICROWAVE", WF_MICROWAVE},        {"IDC_SILENT_HOMING_CHECK", WF_SILENT_HOMING},
-      {"IDC_EXPLODE_RING", WF_BLAST_RING},    {"IDC_EXPANDING_CHECK", WF_EXPAND},
-      {"IDC_PLANAR_BLAST", WF_PLANAR_BLAST},  {"IDC_TIMEOUT_WALL_CHECK", WF_TIMEOUT_WALL},
-      {"IDC_GRAVITY_FIELD_CHECK", WF_GRAVITY_FIELD}, {"IDC_COUNTERMEASURE_CHECK", WF_COUNTERMEASURE},
-      {"IDC_SPAWNS_ROBOT_CHECK", WF_SPAWNS_ROBOT}, {"IDC_SPAWNS_ON_IMPACT", WF_SPAWNS_IMPACT},
-      {"IDC_SPAWNS_ON_TIMEOUT", WF_SPAWNS_TIMEOUT}, {"IDC_HOMED_SPLIT_CHECK", WF_HOMING_SPLIT},
-      {"IDC_INSTANT_CHECK", WF_STREAMER},
-  };
-  for (const auto &c : wf)
-    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
-      cb->setChecked(flags_raw & c.flag);
-
-  const struct {
-    const char *name;
-    uint32_t flag;
-  } pf[] = {
-      {"IDC_WEAPON_HOMING_CHECK", PF_HOMING},
-      {"IDC_WEAPON_COLLIDE_WITH_SIBLING_CHECK", PF_HITS_SIBLINGS},
-      {"IDC_WEAPON_USE_PARENT_VELOCITY_CHECK", PF_USES_PARENT_VELOCITY},
-  };
-  for (const auto &c : pf)
-    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
-      cb->setChecked(Weapons[n].phys_info.flags & c.flag);
+const weapon_flags_t *wflags = CurWeaponFlags();
+  const physics_flags_t *pflags = CurWeaponPhysFlags();
+  if (wflags)
+  {
+    if (QCheckBox *cb = ui->IDC_SMOKE_CHECK) cb->setChecked(wflags->smoke);
+    if (QCheckBox *cb = ui->IDC_REVERSE_SMOKE_CHECK) cb->setChecked(wflags->reverse_smoke);
+    if (QCheckBox *cb = ui->IDC_PLANAR_SMOKE_CHECK) cb->setChecked(wflags->planar_smoke);
+    if (QCheckBox *cb = ui->IDC_ELECTRICAL_CHECK) cb->setChecked(wflags->electrical);
+    if (QCheckBox *cb = ui->IDC_SPRAY_CHECK) cb->setChecked(wflags->spray);
+    if (QCheckBox *cb = ui->IDC_INVISIBLE) cb->setChecked(wflags->invisible);
+    if (QCheckBox *cb = ui->IDC_RING) cb->setChecked(wflags->ring);
+    if (QCheckBox *cb = ui->IDC_SATURATE_CHECK) cb->setChecked(wflags->saturate);
+    if (QCheckBox *cb = ui->IDC_PLANAR_CHECK) cb->setChecked(wflags->planar);
+    if (QCheckBox *cb = ui->IDC_ENABLE_CAMERA) cb->setChecked(wflags->enable_camera);
+    if (QCheckBox *cb = ui->IDC_MUZZLE_FLASH) cb->setChecked(wflags->muzzle);
+    if (QCheckBox *cb = ui->IDC_NAPALM) cb->setChecked(wflags->napalm);
+    if (QCheckBox *cb = ui->IDC_MICROWAVE) cb->setChecked(wflags->microwave);
+    if (QCheckBox *cb = ui->IDC_SILENT_HOMING_CHECK) cb->setChecked(wflags->silent_homing);
+    if (QCheckBox *cb = ui->IDC_EXPLODE_RING) cb->setChecked(wflags->blast_ring);
+    if (QCheckBox *cb = ui->IDC_EXPANDING_CHECK) cb->setChecked(wflags->expand);
+    if (QCheckBox *cb = ui->IDC_PLANAR_BLAST) cb->setChecked(wflags->planar_blast);
+    if (QCheckBox *cb = ui->IDC_TIMEOUT_WALL_CHECK) cb->setChecked(wflags->timeout_wall);
+    if (QCheckBox *cb = ui->IDC_GRAVITY_FIELD_CHECK) cb->setChecked(wflags->gravity_field);
+    if (QCheckBox *cb = ui->IDC_COUNTERMEASURE_CHECK) cb->setChecked(wflags->countermeasure);
+    if (QCheckBox *cb = ui->IDC_SPAWNS_ROBOT_CHECK) cb->setChecked(wflags->spawns_robot);
+    if (QCheckBox *cb = ui->IDC_SPAWNS_ON_IMPACT) cb->setChecked(wflags->spawns_impact);
+    if (QCheckBox *cb = ui->IDC_SPAWNS_ON_TIMEOUT) cb->setChecked(wflags->spawns_timeout);
+    if (QCheckBox *cb = ui->IDC_HOMED_SPLIT_CHECK) cb->setChecked(wflags->homing_split);
+    if (QCheckBox *cb = ui->IDC_INSTANT_CHECK) cb->setChecked(wflags->streamer);
+  }
+  if (pflags)
+  {
+    if (QCheckBox *cb = ui->IDC_WEAPON_HOMING_CHECK) cb->setChecked(pflags->homing);
+    if (QCheckBox *cb = ui->IDC_WEAPON_COLLIDE_WITH_SIBLING_CHECK) cb->setChecked(pflags->hits_siblings);
+    if (QCheckBox *cb = ui->IDC_WEAPON_USE_PARENT_VELOCITY_CHECK) cb->setChecked(pflags->uses_parent_velocity);
+  }
 
   if (QRadioButton *rb = ui->IDC_ENERGY_RADIO)
-    rb->setChecked(!(flags_raw & WF_MATTER_WEAPON));
+    rb->setChecked(!Weapons[n].flags.matter_weapon);
   if (QRadioButton *rb = ui->IDC_MATTER_RADIO)
-    rb->setChecked(flags_raw & WF_MATTER_WEAPON);
+    rb->setChecked(Weapons[n].flags.matter_weapon);
 
   if (QPushButton *checkin = ui->IDC_CHECKIN_WEAPON) {
     if (mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON) == -1) {
@@ -626,8 +600,8 @@ void WorldWeaponsDialog::onDefaultSize() {
   updateDialog();
 }
 
-void WorldWeaponsDialog::onEnergyRadio() { setFlag(WF_MATTER_WEAPON, "", false); }
-void WorldWeaponsDialog::onMatterRadio() { setFlag(WF_MATTER_WEAPON, "", true); }
+void WorldWeaponsDialog::onEnergyRadio() { if (weapon_flags_t *fl = CurWeaponFlags()) fl->matter_weapon = false; }
+void WorldWeaponsDialog::onMatterRadio() { if (weapon_flags_t *fl = CurWeaponFlags()) fl->matter_weapon = true; }
 
 void WorldWeaponsDialog::onFireSoundChanged() {
   const int n = D3EditState.current_weapon;

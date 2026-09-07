@@ -33,6 +33,10 @@ namespace {
 physics_info Paste_data{};
 bool Paste_data_used = false;
 
+constexpr int kNoGravity =0;
+constexpr int kForwardGravity =1;
+constexpr int kReverseGravity =2;
+
 float editFloat(QWidget *w) {
   auto *edit = qobject_cast<QLineEdit *>(w);
   return edit ? edit->text().toFloat() : 0.0f;
@@ -168,36 +172,35 @@ void PhysicsDialog::setPhysicsData(const physics_info *p) {
   setEditFloat(ui->IDC_PHYSICS_PERCENT_LOSS_EDIT,
                (scalar)100.0 - (p->coeff_restitution * (scalar)100.0));
 
-  ui->IDC_PHYSICS_STICKY_CHECK->setChecked((p->flags & PF_STICK) != 0);
-  ui->IDC_PHYSICS_BOUNCY_CHECK->setChecked((p->flags & PF_BOUNCE) != 0);
-  ui->IDC_PHYSICS_THRUSTS_CHECK->setChecked((p->flags & PF_USES_THRUST) != 0);
-  ui->IDC_PHYSICS_FIXED_VELOCITY_CHECK->setChecked((p->flags & PF_FIXED_VELOCITY) != 0);
-  ui->IDC_PHYSICS_FIXED_ROTATE_CHECK->setChecked((p->flags & PF_FIXED_ROT_VELOCITY) != 0);
-  ui->IDC_NO_COLLIDE_CHECK->setChecked((p->flags & PF_NO_COLLIDE) != 0);
-  ui->IDC_TURN_ROLL_CHECK->setChecked((p->flags & PF_TURNROLL) != 0);
-  ui->IDC_PHYSICS_AUTO_LEVELING_CHECK->setChecked((p->flags & PF_LEVELING) != 0);
-  ui->IDC_PHYSICS_POINT_WALL_CHECK->setChecked((p->flags & PF_POINT_COLLIDE_WALLS) != 0);
-  ui->IDC_PHYSICS_IGNORE_ROBOTS_CHECK->setChecked((p->flags & PF_NO_ROBOT_COLLISIONS) != 0);
-  ui->IDC_PHYSICS_IGNORE_SAME_CHECK->setChecked((p->flags & PF_NO_SAME_COLLISIONS) != 0);
-  ui->IDC_PHYSICS_IGNORE_DOOR_CHECK->setChecked((p->flags & PF_NO_DOOR_COLLISIONS) != 0);
-  ui->IDC_PHYSICS_IGNORE_CONCUSSIVE_FORCES
-      ->setChecked((p->flags & PF_IGNORE_CONCUSSIVE_FORCES) != 0);
-  ui->IDC_L_X_CHECK->setChecked((p->flags & PF_LOCK_X) != 0);
-  ui->IDC_L_Y_CHECK->setChecked((p->flags & PF_LOCK_Y) != 0);
-  ui->IDC_L_Z_CHECK->setChecked((p->flags & PF_LOCK_Z) != 0);
-  ui->IDC_L_P_CHECK->setChecked((p->flags & PF_LOCK_P) != 0);
-  ui->IDC_L_B_CHECK->setChecked((p->flags & PF_LOCK_B) != 0);
-  ui->IDC_L_H_CHECK->setChecked((p->flags & PF_LOCK_H) != 0);
-  ui->IDC_NO_BIG_SPHERE_CHECK->setChecked((p->flags & PF_NEVER_USE_BIG_SPHERE) != 0);
-  ui->IDC_PHYSICS_WIGGLE_CHECK->setChecked((p->flags & PF_WIGGLE) != 0);
-  ui->IDC_PHYSICS_MAGNETISM_CHECK->setChecked((p->flags & PF_IGNORE_OWN_CONC_FORCES) != 0);
-  ui->IDC_PHYSICS_WIND_CHECK->setChecked((p->flags & PF_WIND) != 0);
-  ui->IDC_PHYSICS_PERSISTENT_CHECK->setChecked((p->flags & PF_PERSISTENT) != 0);
+  ui->IDC_PHYSICS_STICKY_CHECK->setChecked(p->flags.stick);
+  ui->IDC_PHYSICS_BOUNCY_CHECK->setChecked(p->flags.bounce);
+  ui->IDC_PHYSICS_THRUSTS_CHECK->setChecked(p->flags.uses_thrust);
+  ui->IDC_PHYSICS_FIXED_VELOCITY_CHECK->setChecked(p->flags.fixed_velocity);
+  ui->IDC_PHYSICS_FIXED_ROTATE_CHECK->setChecked(p->flags.fixed_rot_velocity);
+  ui->IDC_NO_COLLIDE_CHECK->setChecked(p->flags.no_collide);
+  ui->IDC_TURN_ROLL_CHECK->setChecked(p->flags.turnroll);
+  ui->IDC_PHYSICS_AUTO_LEVELING_CHECK->setChecked(p->flags.leveling);
+  ui->IDC_PHYSICS_POINT_WALL_CHECK->setChecked(p->flags.point_collide_walls);
+  ui->IDC_PHYSICS_IGNORE_ROBOTS_CHECK->setChecked(p->flags.no_robot_collisions);
+  ui->IDC_PHYSICS_IGNORE_SAME_CHECK->setChecked(p->flags.no_same_collisions);
+  ui->IDC_PHYSICS_IGNORE_DOOR_CHECK->setChecked(p->flags.no_door_collisions);
+  ui->IDC_PHYSICS_IGNORE_CONCUSSIVE_FORCES->setChecked(p->flags.ignore_concussive_forces);
+  ui->IDC_L_X_CHECK->setChecked(p->flags.lock_x);
+  ui->IDC_L_Y_CHECK->setChecked(p->flags.lock_y);
+  ui->IDC_L_Z_CHECK->setChecked(p->flags.lock_z);
+  ui->IDC_L_P_CHECK->setChecked(p->flags.lock_p);
+  ui->IDC_L_B_CHECK->setChecked(p->flags.lock_b);
+  ui->IDC_L_H_CHECK->setChecked(p->flags.lock_h);
+  ui->IDC_NO_BIG_SPHERE_CHECK->setChecked(p->flags.never_use_big_sphere);
+  ui->IDC_PHYSICS_WIGGLE_CHECK->setChecked(p->flags.wiggle);
+  ui->IDC_PHYSICS_MAGNETISM_CHECK->setChecked(p->flags.ignore_own_conc_forces);
+  ui->IDC_PHYSICS_WIND_CHECK->setChecked(p->flags.wind);
+  ui->IDC_PHYSICS_PERSISTENT_CHECK->setChecked(p->flags.persistent);
 
-  m_gravityFlag = p->flags & (PF_GRAVITY | PF_REVERSE_GRAVITY);
-  if (m_gravityFlag == PF_GRAVITY)
+  m_gravityFlag = p->flags.gravity ? kForwardGravity :(p->flags.reverse_gravity ? kReverseGravity : kNoGravity);
+  if (m_gravityFlag == kForwardGravity)
     ui->IDC_PHYSICS_GRAVITY_RADIO->setChecked(true);
-  else if (m_gravityFlag == PF_REVERSE_GRAVITY)
+  else if (m_gravityFlag == kReverseGravity)
     ui->IDC_PHYSICS_REVERSE_GRAVITY_RADIO->setChecked(true);
   else
     ui->IDC_PHYSICS_NO_GRAVITY_RADIO->setChecked(true);
@@ -225,47 +228,42 @@ void PhysicsDialog::getPhysicsData(physics_info *p) const {
   p->num_bounces = (int)editFloat(ui->IDC_PHYSICS_MAX_BOUNCES_EDIT);
   p->coeff_restitution = ((scalar)100.0 - editFloat(ui->IDC_PHYSICS_PERCENT_LOSS_EDIT)) / (scalar)100.0;
 
-  auto setFlag = [p](uint32_t flag, QCheckBox *cb) {
-    if (cb->isChecked())
-      p->flags |= flag;
-    else
-      p->flags &= ~flag;
-  };
-  setFlag(PF_STICK, ui->IDC_PHYSICS_STICKY_CHECK);
-  setFlag(PF_BOUNCE, ui->IDC_PHYSICS_BOUNCY_CHECK);
-  setFlag(PF_USES_THRUST, ui->IDC_PHYSICS_THRUSTS_CHECK);
-  setFlag(PF_FIXED_VELOCITY, ui->IDC_PHYSICS_FIXED_VELOCITY_CHECK);
-  setFlag(PF_FIXED_ROT_VELOCITY, ui->IDC_PHYSICS_FIXED_ROTATE_CHECK);
-  setFlag(PF_NO_COLLIDE, ui->IDC_NO_COLLIDE_CHECK);
-  setFlag(PF_TURNROLL, ui->IDC_TURN_ROLL_CHECK);
-  setFlag(PF_LEVELING, ui->IDC_PHYSICS_AUTO_LEVELING_CHECK);
-  setFlag(PF_POINT_COLLIDE_WALLS, ui->IDC_PHYSICS_POINT_WALL_CHECK);
-  setFlag(PF_NO_ROBOT_COLLISIONS, ui->IDC_PHYSICS_IGNORE_ROBOTS_CHECK);
-  setFlag(PF_NO_SAME_COLLISIONS, ui->IDC_PHYSICS_IGNORE_SAME_CHECK);
-  setFlag(PF_NO_DOOR_COLLISIONS, ui->IDC_PHYSICS_IGNORE_DOOR_CHECK);
-  setFlag(PF_IGNORE_CONCUSSIVE_FORCES, ui->IDC_PHYSICS_IGNORE_CONCUSSIVE_FORCES);
-  setFlag(PF_LOCK_X, ui->IDC_L_X_CHECK);
-  setFlag(PF_LOCK_Y, ui->IDC_L_Y_CHECK);
-  setFlag(PF_LOCK_Z, ui->IDC_L_Z_CHECK);
-  setFlag(PF_LOCK_P, ui->IDC_L_P_CHECK);
-  setFlag(PF_LOCK_B, ui->IDC_L_B_CHECK);
-  setFlag(PF_LOCK_H, ui->IDC_L_H_CHECK);
-  setFlag(PF_NEVER_USE_BIG_SPHERE, ui->IDC_NO_BIG_SPHERE_CHECK);
-  setFlag(PF_WIGGLE, ui->IDC_PHYSICS_WIGGLE_CHECK);
-  setFlag(PF_IGNORE_OWN_CONC_FORCES, ui->IDC_PHYSICS_MAGNETISM_CHECK);
-  setFlag(PF_WIND, ui->IDC_PHYSICS_WIND_CHECK);
-  setFlag(PF_PERSISTENT, ui->IDC_PHYSICS_PERSISTENT_CHECK);
+  
+  p->flags.stick = ui->IDC_PHYSICS_STICKY_CHECK->isChecked();
+  p->flags.bounce = ui->IDC_PHYSICS_BOUNCY_CHECK->isChecked();
+  p->flags.uses_thrust = ui->IDC_PHYSICS_THRUSTS_CHECK->isChecked();
+  p->flags.fixed_velocity = ui->IDC_PHYSICS_FIXED_VELOCITY_CHECK->isChecked();
+  p->flags.fixed_rot_velocity = ui->IDC_PHYSICS_FIXED_ROTATE_CHECK->isChecked();
+  p->flags.no_collide = ui->IDC_NO_COLLIDE_CHECK->isChecked();
+  p->flags.turnroll = ui->IDC_TURN_ROLL_CHECK->isChecked();
+  p->flags.leveling = ui->IDC_PHYSICS_AUTO_LEVELING_CHECK->isChecked();
+  p->flags.point_collide_walls = ui->IDC_PHYSICS_POINT_WALL_CHECK->isChecked();
+  p->flags.no_robot_collisions = ui->IDC_PHYSICS_IGNORE_ROBOTS_CHECK->isChecked();
+  p->flags.no_same_collisions = ui->IDC_PHYSICS_IGNORE_SAME_CHECK->isChecked();
+  p->flags.no_door_collisions = ui->IDC_PHYSICS_IGNORE_DOOR_CHECK->isChecked();
+  p->flags.ignore_concussive_forces = ui->IDC_PHYSICS_IGNORE_CONCUSSIVE_FORCES->isChecked();
+  p->flags.lock_x = ui->IDC_L_X_CHECK->isChecked();
+  p->flags.lock_y = ui->IDC_L_Y_CHECK->isChecked();
+  p->flags.lock_z = ui->IDC_L_Z_CHECK->isChecked();
+  p->flags.lock_p = ui->IDC_L_P_CHECK->isChecked();
+  p->flags.lock_b = ui->IDC_L_B_CHECK->isChecked();
+  p->flags.lock_h = ui->IDC_L_H_CHECK->isChecked();
+  p->flags.never_use_big_sphere = ui->IDC_NO_BIG_SPHERE_CHECK->isChecked();
+  p->flags.wiggle = ui->IDC_PHYSICS_WIGGLE_CHECK->isChecked();
+  p->flags.ignore_own_conc_forces = ui->IDC_PHYSICS_MAGNETISM_CHECK->isChecked();
+  p->flags.wind = ui->IDC_PHYSICS_WIND_CHECK->isChecked();
+  p->flags.persistent = ui->IDC_PHYSICS_PERSISTENT_CHECK->isChecked();
 
   if (p->hit_die_dot != -1)
     p->hit_die_dot = sin(editFloat(ui->IDC_PHYSICS_HIT_DIE_ANGLE) * (scalar)PI / (scalar)180.0);
-  p->flags &= ~PF_GRAVITY_MASK;
-  p->flags |= m_gravityFlag;
+p->flags.gravity = (m_gravityFlag == kForwardGravity);
+  p->flags.reverse_gravity =(m_gravityFlag == kReverseGravity);
 }
 
 void PhysicsDialog::onWiggleCheck() { enableDisableWiggle(); }
-void PhysicsDialog::onGravityRadio() { m_gravityFlag = PF_GRAVITY; }
-void PhysicsDialog::onNoGravityRadio() { m_gravityFlag = 0; }
-void PhysicsDialog::onReverseGravityRadio() { m_gravityFlag = PF_REVERSE_GRAVITY; }
+void PhysicsDialog::onGravityRadio() { m_gravityFlag = kForwardGravity; }
+void PhysicsDialog::onNoGravityRadio() { m_gravityFlag = kNoGravity; }
+void PhysicsDialog::onReverseGravityRadio() { m_gravityFlag = kReverseGravity; }
 void PhysicsDialog::onTurnRollCheck() { enableDisableTurnRoll(); }
 void PhysicsDialog::onBouncyCheck() { enableDisableBounce(); }
 void PhysicsDialog::onThrustsCheck() { enableDisableThrust(); }

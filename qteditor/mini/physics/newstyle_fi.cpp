@@ -378,7 +378,7 @@ bool PolyCollideObject(object& obj) {
 
     if (addition < MULTI_ADD_SPHERE_MIN) {
       addition = MULTI_ADD_SPHERE_MIN;
-      if (fvi_moveobj >= 0 && Objects[fvi_moveobj].mtype.phys_info.flags & PF_NEVER_USE_BIG_SPHERE)
+      if (fvi_moveobj >= 0 && Objects[fvi_moveobj].mtype.phys_info.flags.never_use_big_sphere)
         addition /= 2;
     } else if (addition > MULTI_ADD_SPHERE_MAX)
       addition = MULTI_ADD_SPHERE_MAX;

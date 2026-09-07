@@ -198,43 +198,6 @@
 
 #include "manage.h"
 
-#define TF_VOLATILE 1
-#define TF_WATER (1 << 1)
-#define TF_METAL (1 << 2)   // Shines like metal
-#define TF_MARBLE (1 << 3)  // Shines like marble
-#define TF_PLASTIC (1 << 4) // Shines like plastic
-#define TF_FORCEFIELD (1 << 5)
-#define TF_ANIMATED (1 << 6)
-#define TF_DESTROYABLE (1 << 7)
-#define TF_EFFECT (1 << 8)
-#define TF_HUD_COCKPIT (1 << 9)
-#define TF_MINE (1 << 10)
-#define TF_TERRAIN (1 << 11)
-#define TF_OBJECT (1 << 12)
-#define TF_TEXTURE_64 (1 << 13)
-#define TF_TMAP2 (1 << 14)
-#define TF_TEXTURE_32 (1 << 15)
-#define TF_FLY_THRU (1 << 16)
-#define TF_PASS_THRU (1 << 17)
-#define TF_PING_PONG (1 << 18)
-#define TF_LIGHT (1 << 19)
-#define TF_BREAKABLE (1 << 20) // Breakable (as in glass)
-#define TF_SATURATE (1 << 21)
-#define TF_ALPHA (1 << 22)
-#define TF_DONTUSE (1 << 23)
-#define TF_PROCEDURAL (1 << 24)
-#define TF_WATER_PROCEDURAL (1 << 25)
-#define TF_FORCE_LIGHTMAP (1 << 26)
-#define TF_SATURATE_LIGHTMAP (1 << 27)
-#define TF_TEXTURE_256 (1 << 28)
-#define TF_LAVA (1 << 29)
-#define TF_RUBBLE (1 << 30)
-#define TF_SMOOTH_SPECULAR (1 << 31)
-
-#define TF_TEXTURE_TYPES (TF_MINE + TF_TERRAIN + TF_OBJECT + TF_EFFECT + TF_HUD_COCKPIT + TF_LIGHT)
-
-#define TF_SPECULAR (TF_METAL + TF_MARBLE | TF_PLASTIC)
-
 #define NOT_TEXTURE 0
 #define NORMAL_TEXTURE 1 // a normal size texture
 #define SMALL_TEXTURE 2  // 1/4 of a normal texture
