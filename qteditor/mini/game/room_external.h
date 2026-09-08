@@ -105,6 +105,7 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include <posix_stream.h>
 
 #define MAX_FACES_PER_ROOM 3000  // max number of faces per room
 #define MAX_VERTS_PER_ROOM 10000 // max vertices per room
@@ -297,5 +298,16 @@ struct room {
   uint8_t used;              // is this room holding data?
 
 };
+
+// Level-file (ROOM chunk) record serialization.  These use the current
+// on-disk layouts (file version >= 127) and are the exact mirror of the
+// engine's readers/writers for those versions.  Older-file quirks are handled
+// by the version-gated helpers in level_loader.cpp.
+byte_istream& operator>>(byte_istream& input, face& data);
+byte_ostream& operator<<(byte_ostream& output, const face& data);
+byte_istream& operator>>(byte_istream& input, portal& data);
+byte_ostream& operator<<(byte_ostream& output, const portal& data);
+byte_istream& operator>>(byte_istream& input, room& data);
+byte_ostream& operator<<(byte_ostream& output, const room& data);
 
 #endif

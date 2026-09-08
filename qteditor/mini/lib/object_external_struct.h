@@ -628,4 +628,12 @@ struct object {
   std::string custom_default_module_name;
 };
 
+// Level-file (OBJS chunk) record serialization; read mirrors write.  This is
+// the current on-disk layout (matches the engine's WriteObject since file
+// version 119): type/id/name/flags, optional door shields, room/pos/orient,
+// container info, lifeleft, soundsource info for OBJ_SOUNDSOURCE, the custom
+// default script/module names, and the embedded object lightmap block.
+byte_istream& operator >>(byte_istream& input, object& data);
+byte_ostream& operator <<(byte_ostream& output, const object& data);
+
 #endif

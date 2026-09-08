@@ -1289,3 +1289,295 @@ int SetRoomChangeOverTime(int roomnum, bool fog, vector3 *end, float depth_end, 
 
   return index;
 }
+
+//-----------------------------------------------------------------------------
+// Level-file (ROOM chunk) serialization for the face / portal / room types.
+// These are the current on-disk layouts (file version >= 127); each read is
+// the exact mirror of its write so levels round-trip bit-for-bit.  Version
+// differences for older files are handled by the chunk readers in
+// level_loader.cpp, which route the modern layout through these operators.
+//-----------------------------------------------------------------------------
+
+// Consumes the special (specular) face block present since file version 71.
+// The mini does not model specular faces, but must skip the data to stay
+// aligned with the next record.
+static byte_istream& skipSpecialFace(byte_istream& input, int format) {
+  uint8_t special = 0;
+  input >> special;
+  if (!special)
+    return input;
+
+  int num = 0;
+  if (format < 77) {
+    uint8_t trash = 0;
+    input >> trash;
+    vector3 tv;
+    input >> tv;
+    int16_t s = 0;
+    input >> s;
+    return input;
+  }
+
+  uint8_t trash = 0;
+  input >> trash; // type
+  uint8_t num_b = 0;
+  input >> num_b;
+  num = num_b;
+
+  int smooth = 0;
+  int num_smooth = 0;
+  if (format >= 117) {
+    uint8_t sb = 0;
+    input >> sb;
+    smooth = sb ? 1 : 0;
+    if (smooth) {
+      uint8_t ns = 0;
+      input >> ns;
+      num_smooth = ns;
+    }
+  }
+
+  for (int i = 0; i < num; i++) {
+    vector3 tv;
+    input >> tv;
+    int16_t s = 0;
+    input >> s;
+  }
+  if (smooth) {
+    for (int i = 0; i < num_smooth; i++) {
+      vector3 tv;
+      input >> tv;
+    }
+  }
+  return input;
+}
+
+byte_istream& operator>>(byte_istream& input, face& data) {
+  uint8_t nverts = 0;
+  input >> nverts;
+  InitRoomFace(&data, nverts);
+
+  for (int i = 0; i < data.num_verts; i++)
+    input >> data.face_verts[i];
+
+  int alphaed = 0;
+  for (int i = 0; i < data.num_verts; i++) {
+    input >> data.face_uvls[i].u >> data.face_uvls[i].v;
+    input >> data.face_uvls[i].alpha;
+    if (data.face_uvls[i].alpha != 255)
+      alphaed = 1;
+  }
+
+  input >> data.flags;
+  if (alphaed)
+    data.flags |= FF_VERTEX_ALPHA;
+  else
+    data.flags &= ~FF_VERTEX_ALPHA;
+  input >> data.portal_num;
+
+  // Level files hold the raw texture index; the loader maps it to the global
+  // GameTextures[] slot (texture_xlate) after the whole room is read.
+  input >> data.tmap;
+
+  if (data.flags & FF_LIGHTMAP) {
+    input >> data.lmi_handle;
+    for (int i = 0; i < data.num_verts; i++)
+      input >> data.face_uvls[i].u2 >> data.face_uvls[i].v2;
+  }
+
+  input >> data.light_multiple;
+  if (data.light_multiple == 186)
+    data.light_multiple = 4;
+
+  return skipSpecialFace(input, 127);
+}
+
+byte_ostream& operator<<(byte_ostream& output, const face& data) {
+  output << static_cast<uint8_t>(data.num_verts);
+  for (int i = 0; i < data.num_verts; i++)
+    output << data.face_verts[i];
+  for (int i = 0; i < data.num_verts; i++) {
+    output << data.face_uvls[i].u << data.face_uvls[i].v << data.face_uvls[i].alpha;
+  }
+  output << data.flags << data.portal_num << data.tmap;
+  if (data.flags & FF_LIGHTMAP) {
+    output << data.lmi_handle;
+    for (int i = 0; i < data.num_verts; i++)
+      output << data.face_uvls[i].u2 << data.face_uvls[i].v2;
+  }
+  output << data.light_multiple;
+  // No specular support in the mini: emit the "no special face" byte.
+  return output << static_cast<uint8_t>(0);
+}
+
+//-----------------------------------------------------------------------------
+// portal
+//-----------------------------------------------------------------------------
+
+byte_istream& operator>>(byte_istream& input, portal& data) {
+  input >> data.flags >> data.portal_face;
+  // croom/cportal are stored as int32 on disk (matching the engine writer);
+  // the struct holds them as int16.
+  int32_t room = 0;
+  input >> room;
+  data.croom = static_cast<int16_t>(room);
+  int32_t portal = 0;
+  input >> portal;
+  data.cportal = static_cast<int16_t>(portal);
+  input >> data.bnode_index;
+  input >> data.path_pnt;
+  return input >> data.combine_master;
+}
+
+byte_ostream& operator<<(byte_ostream& output, const portal& data) {
+  output << data.flags << data.portal_face;
+  output << static_cast<int32_t>(data.croom) << static_cast<int32_t>(data.cportal);
+  output << data.bnode_index << data.path_pnt;
+  return output << data.combine_master;
+}
+
+//-----------------------------------------------------------------------------
+// room
+//-----------------------------------------------------------------------------
+
+// RLE byte compression used by the engine for volumetric lights.
+static byte_istream& readCompressedBytes(byte_istream& input, uint8_t *vals, int total) {
+  int count = 0;
+  uint8_t compressed = 0;
+  input >> compressed;
+  if (compressed == 0) {
+    for (int i = 0; i < total; i++)
+      input >> vals[i];
+    return input;
+  }
+  while (count != total) {
+    uint8_t command = 0;
+    input >> command;
+    if (command == 0) { // next byte is raw
+      input >> vals[count];
+      count++;
+    } else if (command >= 2 && command <= 250) {
+      uint8_t height = 0;
+      input >> height;
+      for (int k = 0; k < command; k++) {
+        vals[count] = height;
+        count++;
+      }
+    } else {
+      // invalid command/compression error
+      count = total;
+    }
+  }
+  return input;
+}
+
+static byte_ostream& writeCompressedBytes(byte_ostream& output, const uint8_t *vals, int total) {
+  output.put(0); // no compression
+  for (int i = 0; i < total; i++)
+    output.put(vals[i]);
+  return output;
+}
+
+byte_istream& operator>>(byte_istream& input, room& data) {
+  int32_t nverts = 0;
+  int32_t nfaces = 0;
+  int32_t nportals = 0;
+  input >> nverts >> nfaces >> nportals;
+  InitRoom(&data, nverts, nfaces, nportals);
+
+  input >> data.name >> data.path_pnt;
+
+  for (int i = 0; i < data.num_verts; i++)
+    input >> data.verts[i];
+  for (int i = 0; i < data.num_faces; i++)
+    input >> data.faces[i];
+  for (int i = 0; i < data.num_portals; i++)
+    input >> data.portals[i];
+
+  uint32_t flags_host = 0;
+  input.read(&flags_host, sizeof(flags_host));
+  flags_host = le_to_host(flags_host);
+  std::memcpy(&data.flags, &flags_host, sizeof(data.flags));
+
+  input >> data.pulse_time >> data.pulse_offset >> data.mirror_face;
+
+  if (data.flags.door) {
+    // The mini does not model 3d doors; consume the door record (byte flags,
+    // byte keys, int32 doornum, float position for version >= 106).
+    uint8_t dflags = 0;
+    uint8_t dkeys = 0;
+    int32_t door = 0;
+    float pos = 0.0f;
+    input >> dflags >> dkeys >> door >> pos;
+  }
+
+  uint8_t haslights = 0;
+  input >> haslights;
+  if (haslights == 1) {
+    int32_t w = 0;
+    int32_t h = 0;
+    int32_t d = 0;
+    input >> w >> h >> d;
+    const int size = w * h * d;
+    if (size) {
+      data.volume_lights.resize(size);
+      readCompressedBytes(input, data.volume_lights.data(), size);
+    }
+    data.volume_width = static_cast<int16_t>(w);
+    data.volume_height = static_cast<int16_t>(h);
+    data.volume_depth = static_cast<int16_t>(d);
+  }
+
+  input >> data.fog_depth >> data.fog_r >> data.fog_g >> data.fog_b;
+
+  // Mini has no ambient sound page; consume and discard the pattern name.
+  std::string ambient;
+  input >> ambient;
+
+  input >> data.env_reverb;
+  input >> data.damage >> data.damage_type;
+  return input;
+}
+
+byte_ostream& operator<<(byte_ostream& output, const room& data) {
+  output << static_cast<int32_t>(data.num_verts) << static_cast<int32_t>(data.num_faces)
+         << static_cast<int32_t>(data.num_portals);
+  output << data.name << data.path_pnt;
+
+  for (int i = 0; i < data.num_verts; i++)
+    output << data.verts[i];
+  for (int i = 0; i < data.num_faces; i++)
+    output << data.faces[i];
+  for (int i = 0; i < data.num_portals; i++)
+    output << data.portals[i];
+
+  uint32_t flags_host = 0;
+  std::memcpy(&flags_host, &data.flags, sizeof(flags_host));
+  flags_host = host_to_le(flags_host);
+  output.write(&flags_host, sizeof(flags_host));
+
+  output << data.pulse_time << data.pulse_offset << data.mirror_face;
+
+  if (data.flags.door) {
+    // No doorway data in the mini; write neutral values the reader consumes.
+    output.put(0);
+    output.put(0);
+    output << static_cast<int32_t>(0);
+    output << static_cast<float>(0.0f);
+  }
+
+  if (data.volume_lights.empty()) {
+    output.put(0);
+  } else {
+    output.put(1);
+    output << static_cast<int32_t>(data.volume_width) << static_cast<int32_t>(data.volume_height)
+           << static_cast<int32_t>(data.volume_depth);
+    writeCompressedBytes(output, data.volume_lights.data(),
+                         data.volume_width * data.volume_height * data.volume_depth);
+  }
+
+  output << data.fog_depth << data.fog_r << data.fog_g << data.fog_b;
+  output << std::string("");
+  output << data.env_reverb;
+  return output << data.damage << data.damage_type;
+}

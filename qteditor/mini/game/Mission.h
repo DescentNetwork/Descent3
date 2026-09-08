@@ -172,6 +172,7 @@
 
 #include "pstypes.h"
 #include "descent.h"
+#include "posix_stream.h"
 
 //	*** CONSTANTS ***
 #define LOAD_PROGRESS_START 1
@@ -201,14 +202,20 @@ const uint16_t LVLOBJF_SECONDARY1 = 1, LVLOBJF_SECONDARY2 = 2, LVLOBJF_SECONDARY
 
 // Struct for info about the current level
 struct level_info {
-  std::string name;
-  std::string designer;
-  std::string copyright;
-  std::string notes;
-};
+   std::string name;
+   std::string designer;
+   std::string copyright;
+   std::string notes;
+ };
+
+// Level-file (INFO chunk) record serialization: four null-terminated strings
+// in the exact order the engine reads and writes them (LoadLevel.cpp
+// ReadInfoChunk / WriteObject equivalents).
+byte_istream& operator >>(byte_istream& input, level_info& data);
+byte_ostream& operator <<(byte_ostream& output, const level_info& data);
 
 // Info about the current level
-extern level_info Level_info;
+ extern level_info Level_info;
 
 //	level information
 struct tLevelNode {

@@ -50,6 +50,10 @@
 #include "gametexture.h"
 #include "string_helpers.h"
 #include "log.h"
+#include "d3x_op.h"
+#include "object_external_struct.h"
+
+#include <QtGlobal>
 
 #include <cstring>
 #include <cstdio>
@@ -113,16 +117,11 @@ static void LL_WriteVector(posix_ostream &f, const vector3 &v) {
   f << v.z();
 }
 
-// Read/write a matrix (rvec, uvec, fvec each a vector)
+// Read a matrix (rvec, uvec, fvec each a vector)
 static void LL_ReadMatrix(posix_istream &f, matrix &m) {
   LL_ReadVector(f, m.rvec);
   LL_ReadVector(f, m.uvec);
   LL_ReadVector(f, m.fvec);
-}
-static void LL_WriteMatrix(posix_ostream &f, const matrix &m) {
-  LL_WriteVector(f, m.rvec);
-  LL_WriteVector(f, m.uvec);
-  LL_WriteVector(f, m.fvec);
 }
 
 // Writes a chunk header (4-char name + size placeholder), returns the position
@@ -177,12 +176,6 @@ static void LL_ReadCompressionByte(posix_istream &fp, uint8_t *vals, int total) 
       throw std::runtime_error("bad compression run");
     }
   }
-}
-
-static void LL_WriteCompressionByte(posix_ostream &fp, uint8_t *vals, int total) {
-  fp.put(0); // no compression
-  for (int i = 0; i < total; i++)
-    fp.put(vals[i]);
 }
 
 static int LL_ReadFace(posix_istream &ifile, face *fp, int version) {
@@ -338,44 +331,8 @@ static int LL_ReadFace(posix_istream &ifile, face *fp, int version) {
   return 1;
 }
 
-static int LL_WriteFace(posix_ostream &ofile, face *fp) {
-  int i;
-  int8_t nv = (int8_t)fp->num_verts;
-  ofile << nv;
-  for (i = 0; i < fp->num_verts; i++)
-    ofile << fp->face_verts[i];
-
-  fp->flags &= ~FF_VERTEX_ALPHA;
-  for (i = 0; i < fp->num_verts; i++) {
-    ofile << fp->face_uvls[i].u;
-    ofile << fp->face_uvls[i].v;
-    ofile << fp->face_uvls[i].alpha;
-    if (fp->face_uvls[i].alpha != 255)
-      fp->flags |= FF_VERTEX_ALPHA;
-  }
-
-  ofile << fp->flags;
-  ofile << fp->portal_num;
-  ofile << fp->tmap;
-
-  if (fp->flags & FF_LIGHTMAP) {
-    ofile << fp->lmi_handle;
-    for (i = 0; i < fp->num_verts; i++) {
-      ofile << fp->face_uvls[i].u2;
-      ofile << fp->face_uvls[i].v2;
-    }
-  }
-
-  if (fp->light_multiple == 186)
-    fp->light_multiple = 4;
-  ofile << fp->light_multiple;
-
-  // No specular support: emit the "no special face" byte.
-  ofile.put(0);
-
-  return 1;
-}
-
+// Legacy (pre-127) portal layout.  Current-format portals serialize through
+// the portal stream operator (see room_serialization.cpp).
 static int LL_ReadPortal(posix_istream &ifile, portal *pp, int version) {
   ifile >> pp->flags;
   if (version < 103)
@@ -416,21 +373,22 @@ static int LL_ReadPortal(posix_istream &ifile, portal *pp, int version) {
   return 1;
 }
 
-static int LL_WritePortal(posix_ostream &ofile, portal *pp) {
-  ofile << pp->flags;
-  ofile << pp->portal_face;
-  // Mirror the engine writer: croom/cportal are int32 on disk.
-  ofile << (int32_t)pp->croom;
-  ofile << (int32_t)pp->cportal;
-  ofile << pp->bnode_index;
-  LL_WriteVector(ofile, pp->path_pnt);
-  ofile << pp->combine_master;
-  return 1;
-}
-
 // Reads a room from a disk file.  Mirrors the engine field-by-field for
 // versions >= 127 (the mini writes/reads flash these fields).
 static int LL_ReadRoom(posix_istream &ifile, room *rp, int version) {
+  if (version >= 127) {
+    // Current canonical layout: the room stream operator reads every field
+    // (verts, faces, portals, lights, ...) exactly as the engine does.
+    ifile >> *rp;
+    // Map raw level-local texture indices into global GameTextures[] slots.
+    // (LL_ReadFace does this inline for the legacy path.)
+    for (int f = 0; f < rp->num_faces; f++) {
+      const int raw = rp->faces[f].tmap;
+      rp->faces[f].tmap = (raw >= 0 && raw < MAX_TEXTURES) ? texture_xlate[raw] : 0;
+    }
+    return 1;
+  }
+
   int32_t nverts32 = 0;
   int32_t nfaces32 = 0;
   int32_t nportals32 = 0;
@@ -553,67 +511,6 @@ static int LL_ReadRoom(posix_istream &ifile, room *rp, int version) {
   return 1;
 }
 
-static int LL_WriteRoom(posix_ostream &ofile, room *rp) {
-  int i;
-
-  ofile << rp->num_verts;
-  ofile << rp->num_faces;
-  ofile << rp->num_portals;
-  ofile << rp->name;
-
-  LL_WriteVector(ofile, rp->path_pnt);
-
-  for (i = 0; i < rp->num_verts; i++)
-    LL_WriteVector(ofile, rp->verts[i]);
-
-  for (i = 0; i < rp->num_faces; i++)
-    LL_WriteFace(ofile, &rp->faces[i]);
-
-  for (i = 0; i < rp->num_portals; i++)
-    LL_WritePortal(ofile, &rp->portals[i]);
-
-  ofile.write(&rp->flags, sizeof(uint32_t));
-
-  ofile << rp->pulse_time;
-  ofile << rp->pulse_offset;
-
-  ofile << rp->mirror_face;
-
-  if (rp->flags.door) {
-    // No doorway data in the mini; write neutral values the reader consumes.
-    ofile.put(0);  // flags
-    ofile.put(0);  // keys
-    int32_t door = 0;
-    ofile << door; // door
-    float pos = 0.0f;
-    ofile << pos; // position
-  }
-
-  if (rp->volume_lights.empty())
-    ofile.put(0);
-  else {
-    ofile.put(1);
-    ofile << rp->volume_width;
-    ofile << rp->volume_height;
-    ofile << rp->volume_depth;
-    LL_WriteCompressionByte(ofile, rp->volume_lights.data(), rp->volume_width * rp->volume_height * rp->volume_depth);
-  }
-
-  ofile << rp->fog_depth;
-  ofile << rp->fog_r;
-  ofile << rp->fog_g;
-  ofile << rp->fog_b;
-
-  ofile << std::string(""); // ambient sound name (unused in mini)
-
-  ofile << rp->env_reverb;
-
-  ofile << rp->damage;
-  ofile << rp->damage_type;
-
-  return 1;
-}
-
 static void LL_ReadInfo(posix_istream &ifile, int version) {
   Level_info.name =  "Unnamed";
   Level_info.designer = "Anonymous";
@@ -665,6 +562,91 @@ static void LL_WriteInfo(posix_ostream &ofile) {
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
+
+// Reads the tail of a legacy object record (all fields after pos/orient) for
+// file versions whose layout predates the current canonical serialization.
+// This is a faithful port of the engine's ReadObject tail so that pre-119
+// levels (integer soundsource indices, parent_handle ints, OSIRIS-1 script
+// stubs) keep every record aligned.  The canonical (post-119) layout is read
+// by the object stream operators directly.
+static void LL_ReadObjectLegacyTail(posix_istream &ifile, object &obj, int version) {
+  int8_t c = 0;
+  ifile >> c; obj.contains_type = c;
+  ifile >> c; obj.contains_id = c;
+  ifile >> c; obj.contains_count = c;
+  ifile >> obj.lifeleft;
+
+  if (version >= 65 && version < 111)
+    ifile >> obj.parent_handle;
+
+  // Pre-119 files store the sound-source sound as a raw index, not a name.
+  if (obj.type == OBJ_SOUNDSOURCE) {
+    ifile >> obj.ctype.soundsource_info.sound_index;
+    ifile >> obj.ctype.soundsource_info.volume;
+  }
+
+  // Script / module names are length-prefixed (uint8) since version 105.
+  if (version >= 105) {
+    uint8_t nlen = 0;
+    ifile >> nlen;
+    obj.custom_default_script_name.assign(nlen, '\0');
+    if (nlen) {
+      ifile.read(obj.custom_default_script_name.data(), nlen);
+    }
+    uint8_t mlen = 0;
+    ifile >> mlen;
+    obj.custom_default_module_name.assign(mlen, '\0');
+    if (mlen) {
+      ifile.read(obj.custom_default_module_name.data(), mlen);
+    }
+  }
+
+  // Obsolete OSIRIS-1 script info (dropped at LEVEL_FILE_OSIRIS1DEAD, 97).
+  if (version < LEVEL_FILE_OSIRIS1DEAD) {
+    if (version < LEVEL_FILE_SCRIPTNAMES)
+      { int32_t pad = 0; ifile >> pad; }
+    else
+      { std::string pad; ifile >> pad; }
+    if (version >= LEVEL_FILE_SCRIPTPARMS) {
+      int16_t s = 0; ifile >> s;
+      for (int i = 0; i < s; i++) {
+        int8_t stype = 0; ifile >> stype;
+        if (stype == PARMTYPE_NUMBER || stype == PARMTYPE_REF) { float pad = 0.0f; ifile >> pad; }
+        else if (stype == PARMTYPE_VECTOR) { vector3 pad; ifile >> pad; }
+        else Q_ASSERT(false);
+      }
+    }
+    if (version >= LEVEL_FILE_SCRIPTCHECK) { uint8_t pad = 0; ifile >> pad; }
+  }
+
+  // Embedded per-object lightmap data.
+  int lmdata = 0;
+  if (version >= 35) { uint8_t lm = 0; ifile >> lm; lmdata = lm; }
+  if (lmdata) {
+    uint8_t num_models = 0; ifile >> num_models;
+    obj.lm_object.num_models = num_models;
+    for (int m = 0; m < num_models; m++) {
+      int16_t num_faces = 0; ifile >> num_faces;
+      obj.lm_object.num_faces.push_back(num_faces);
+      auto &faces = obj.lm_object.lightmap_faces.emplace_back();
+      faces.resize(num_faces);
+      for (int t = 0; t < num_faces; t++) {
+        lightmap_object_face &f = faces[t];
+        ifile >> f.lmi_handle;
+        if (version <= 88) { uint8_t pad2; ifile >> pad2; ifile >> pad2; ifile >> pad2; ifile >> pad2; }
+        if (version >= 58) {
+          if (version <= 59) { vector3 pad; ifile >> pad; }
+          ifile >> f.rvec >> f.uvec;
+        } else { f.rvec = {}; f.uvec = {}; f.uvec.y() = 1; }
+        uint8_t nv = 0; ifile >> nv;
+        f.num_verts = nv;
+        f.u2 = new float[nv]; f.v2 = new float[nv];
+        for (int k = 0; k < nv; k++) ifile >> f.u2[k] >> f.v2[k];
+      }
+    }
+    obj.lm_object.used = 1;
+  }
+}
 
 bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *, int, int)) {
   posix_istream ifile;
@@ -764,48 +746,63 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
           // Value-initialise (NOT memset: object contains std::string members).
           *obj = object{};
 
-          int8_t ty = 0;
-          ifile >> ty;
-          obj->type = ty;
-          obj->id = 0;
-          if (version >= 34) {
-            ifile >> obj->id;
+          // Version >= 119 uses the current canonical record: the object
+          // stream operator reads every field (through the embedded lightmap
+          // block) exactly as the engine's ReadObject does, keeping the
+          // record aligned.
+          if (version >= 119) {
+            ifile >> *obj;
           } else {
-            uint8_t idb = 0;
-            ifile >> idb;
-            obj->id = idb;
+            // Older layouts read the placement prefix by hand then run the
+            // legacy tail (see LL_ReadObjectLegacyTail) for the remainder.
+
+            int8_t ty = 0;
+            ifile >> ty;
+            obj->type = ty;
+            obj->id = 0;
+            if (version >= 34) {
+              ifile >> obj->id;
+            } else {
+              uint8_t idb = 0;
+              ifile >> idb;
+              obj->id = idb;
+            }
+
+            // Object name (engine writes a null-terminated string since v95).
+            if (version >= 95) {
+              std::string nam;
+              ifile >> nam;
+              obj->name = nam;
+            }
+
+            // Object flags (int32 since v101, uint16 before that).
+            obj->flags = 0;
+            if (version >= 101) {
+              int32_t flags32 = 0;
+              ifile >> flags32;
+              obj->flags = static_cast<uint32_t>(flags32);
+            } else {
+              uint16_t flags16 = 0;
+              ifile >> flags16;
+              obj->flags = flags16;
+            }
+
+            // Door shields (engine writes a short since v109).
+            if (obj->type == OBJ_DOOR && version >= 109) {
+              int16_t shields = 0;
+              ifile >> shields;
+              obj->shields = static_cast<float>(shields);
+            }
+
+            int32_t roomnum3 = 0;
+            ifile >> roomnum3;
+            obj->roomnum = roomnum3;
+            LL_ReadVector(ifile, obj->pos);
+            LL_ReadMatrix(ifile, obj->orient);
+            LL_ReadObjectLegacyTail(ifile, *obj, version);
           }
 
-          // Object name (engine writes a null-terminated string since v95).
-          if (version >= 95) {
-            std::string nam;
-            ifile >> nam;
-            obj->name = nam;
-          }
-
-          // Object flags (int32 since v101, uint16 before that).
-          obj->flags = 0;
-          if (version >= 101) {
-            int32_t flags32 = 0;
-            ifile >> flags32;
-            obj->flags = static_cast<uint32_t>(flags32);
-          } else {
-            uint16_t flags16 = 0;
-            ifile >> flags16;
-            obj->flags = flags16;
-          }
-
-          // Door shields (engine writes a short since v109).
-          if (obj->type == OBJ_DOOR && version >= 109) {
-            int16_t shields = 0;
-            ifile >> shields;
-            obj->shields = static_cast<float>(shields);
-          }
-
-          int32_t roomnum = 0;
-          ifile >> roomnum;
-          LL_ReadVector(ifile, obj->pos);
-          LL_ReadMatrix(ifile, obj->orient);
+          int roomnum = obj->roomnum;
           LOG_DEBUG("OBJS[%d]: type=%d id=%d name='%s' flags=%u room=%d pos=(%f,%f,%f)",
                     objnum, (int)obj->type, (int)obj->id, obj->name.c_str(), (unsigned)obj->flags, roomnum,
                     (double)obj->pos.x(), (double)obj->pos.y(), (double)obj->pos.z());
@@ -833,19 +830,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
           trigger *tp = &Triggers[i];
           // Value-initialise (NOT memset: trigger contains a std::string name).
           *tp = trigger{};
-          ifile >> tp->name;
-          int16_t room = 0;
-          ifile >> room;
-          tp->roomnum = room;
-          int16_t face = 0;
-          ifile >> face;
-          tp->facenum = face;
-          uint16_t flags_raw = 0;
-          ifile >> flags_raw;
-          std::memcpy(&tp->flags, &flags_raw, sizeof(flags_raw));
-          uint16_t activator_raw = 0;
-          ifile >> activator_raw;
-          std::memcpy(&tp->activator, &activator_raw, sizeof(activator_raw));
+          ifile >> *tp;
         }
       } else if (IsChunk(chunk_name, "INFO")) {
         LL_ReadInfo(ifile, version);
@@ -923,7 +908,7 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
           continue;
         int16_t room = (int16_t)i;
         out << room;
-        LL_WriteRoom(out, &Rooms[i]);
+        out << Rooms[i];
       }
       LL_EndChunk(out, start);
     }
@@ -960,17 +945,9 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
         if (Objects[i].type == OBJ_NONE)
           continue;
         // Engine-compatible record: handle first (low bits = object index),
-        // then the placement prefix fields the reader above consumes.
+        // then the full placement record via the object stream operator.
         out << (int32_t)(i + HANDLE_COUNT_INCREMENT);
-        out << Objects[i].type;
-        out << Objects[i].id;
-        out << Objects[i].name;
-        out << (int32_t)Objects[i].flags;
-        if (Objects[i].type == OBJ_DOOR)
-          out << (int16_t)Objects[i].shields;
-        out << Objects[i].roomnum;
-        LL_WriteVector(out, Objects[i].pos);
-        LL_WriteMatrix(out, Objects[i].orient);
+        out << Objects[i];
       }
       LL_EndChunk(out, start);
     }
@@ -979,19 +956,8 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     {
       int start = LL_StartChunk(out, CHUNK_TRIGGERS);
       out << Num_triggers;
-      for (int i = 0; i < Num_triggers; i++) {
-        out << Triggers[i].name;
-        int16_t room = (int16_t)Triggers[i].roomnum;
-        out << room;
-        int16_t face = (int16_t)Triggers[i].facenum;
-        out << face;
-        uint16_t flags_raw = 0;
-        std::memcpy(&flags_raw, &Triggers[i].flags, sizeof(flags_raw));
-        out << flags_raw;
-        uint16_t activator_raw = 0;
-        std::memcpy(&activator_raw, &Triggers[i].activator, sizeof(activator_raw));
-        out << activator_raw;
-      }
+      for (int i = 0; i < Num_triggers; i++)
+        out << Triggers[i];
       LL_EndChunk(out, start);
     }
 

@@ -223,7 +223,6 @@ int Num_lightmap_infos_read = 0;
 void FreeLightmapMemory() { PRINT_STUB(__FUNCTION__); }
 void FreeLightmapInfo(int handle) { PRINT_STUB(__FUNCTION__); }
 void ClearAllObjectLightmaps(int n) { PRINT_STUB(__FUNCTION__); }
-void ClearObjectLightmaps(object *obj) { PRINT_STUB(__FUNCTION__); }
 void BlurLightmapInfos(int n) { PRINT_STUB(__FUNCTION__); }
 void ShadeLightmapInfoEdges(int n) { PRINT_STUB(__FUNCTION__); }
 void EnableLightmapGen() { PRINT_STUB(__FUNCTION__); }

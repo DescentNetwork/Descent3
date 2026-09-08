@@ -88,6 +88,7 @@
 #include "ObjScript.h"
 #include "object_external_struct.h"
 #include "vecmat.h"
+#include <posix_stream.h>
 
 // Trigger flags
 #define TF_UNUSED 1                 //
@@ -163,6 +164,11 @@ struct trigger {
   // This is allocated when the level is started
   tOSIRISTriggerScript osiris_script;
 };
+
+// Level-file (TRIG chunk) record serialization.  The trigger_flags_t /
+// activator_flags_t bitfields are stored as raw uint16 on disk.
+byte_istream& operator>>(byte_istream& input, trigger& data);
+byte_ostream& operator<<(byte_ostream& output, const trigger& data);
 
 // The number of triggers currently in the mine
 extern int Num_triggers;
