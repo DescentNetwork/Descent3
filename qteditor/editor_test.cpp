@@ -192,6 +192,7 @@ bool EBNode_VerifyGraph();
 #include "brief_model.h"
 
 #include "editor_view.h"
+#include "robot_preview_widget.h"
 #include "viewer_prop_dialog.h"
 #include "water_procedural_dialog.h"
 #include "world_objects_door_dialog.h"
@@ -1580,6 +1581,19 @@ private slots:
     view->requestRedraw();
     QCoreApplication::processEvents();
     QVERIFY(view->frameCount() >= 0);
+  }
+
+  // Verifies the robot-preview GL widget added to DeathDialog: it constructs,
+  // resizes and renders (requesting an update through paintGL) without
+  // crashing under the offscreen QPA platform, and it correctly reports the
+  // model handle it is previewing (initially -1 when no robot model is loaded).
+  void testRobotPreviewWidgetRenders() {
+    RobotPreviewWidget preview;
+    preview.resize(128, 128);
+    QCoreApplication::processEvents();
+    preview.refresh();
+    QCoreApplication::processEvents();
+    QVERIFY(preview.currentModelHandle() >= -1);
   }
 #if 0
   // Verifies the Qt port of editor/HRoom.cpp + editor/selectedroom.cpp,

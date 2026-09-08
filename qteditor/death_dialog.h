@@ -21,6 +21,8 @@
 #include "objinfo.h"
 #include <QDialog>
 
+#include "robot_preview_widget.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class DeathDialog; }
 QT_END_NAMESPACE
@@ -36,9 +38,6 @@ public:
 
 private slots:
   void onOk();
-  //void onExplosionSmall();
-  //void onExplosionMedium();
-  //void onExplosionLarge();
   void onReset(void);
   void onCommonDescent();
   void onCommonQuickExplosion();
@@ -52,6 +51,7 @@ private:
   void updateDialog();
 
   Ui::DeathDialog *ui;
+  RobotPreviewWidget *m_preview;
   death_info *m_info;
   death_flags_t m_flags;
   float m_delayMin;

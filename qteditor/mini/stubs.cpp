@@ -90,12 +90,6 @@
 
 
 // ==================== 3D functions (exact signatures from 3d.h) ====================
-uint8_t g3_RotatePoint(g3Point *dest, vector3 *src) { PRINT_STUB(__FUNCTION__); return 0; }
-void g3_ProjectPoint(g3Point *point) { PRINT_STUB(__FUNCTION__); }
-bool g3_CheckNormalFacing(vector3 *v, vector3 *norm) { PRINT_STUB(__FUNCTION__); return false; }
-g3Point **g3_ClipPolygon(g3Point **pointlist, int *nv, g3Codes *cc) { PRINT_STUB(__FUNCTION__); return pointlist; }
-void g3_FreeTempPoints(g3Point **pointlist, int nv) { PRINT_STUB(__FUNCTION__); }
-
 // ==================== grSurface / grViewport / grHardwareSurface ====================
 grSurface::grSurface() { PRINT_STUB(__FUNCTION__); }
 grSurface::~grSurface() { PRINT_STUB(__FUNCTION__); }
@@ -153,8 +147,6 @@ void ClearTerrainSound() { PRINT_STUB(__FUNCTION__); }
 // ==================== Terrain search / render ====================
 bool Check_terrain_portal = false;
 bool Terrain_from_mine = true;
-void rend_GetProjectionParameters(int *width, int *height) { PRINT_STUB(__FUNCTION__); *width = 0; *height = 0; }
-uint8_t g3_CodePoint(g3Point *point) { PRINT_STUB(__FUNCTION__); return 0; }
 uint8_t CodeTerrainPoint(g3Point *p) { PRINT_STUB(__FUNCTION__); return 0; }
 
 

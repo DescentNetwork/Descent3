@@ -26,6 +26,9 @@
 #include <QRadioButton>
 #include <QButtonGroup>
 #include <QRegularExpressionValidator>
+#include <QRect>
+
+#include "robot_preview_widget.h"
 
 namespace {
 death_info Paste_data{};
@@ -40,6 +43,14 @@ DeathDialog::DeathDialog(death_info *info, QWidget *parent)
   ui->IDC_DEATH_DELAY_MAX->setText(QString::number(m_delayMax));
   ui->IDC_DEATH_DELAY_MIN->setText(QString::number(m_delayMin));
 
+  // Live robot preview: a QOpenGLWidget that renders the poly model of the
+  // robot currently selected in the object page (Object_info[current_robot]).
+  m_preview = new RobotPreviewWidget(this);
+  m_preview->setObjectName("IDC_ROBOTPREVIEW_GL");
+  m_preview->setGeometry(QRect(322, 180, 128, 128));
+  resize(size().width() + 152, size().height());
+  m_preview->move(436, 180);
+  m_preview->raise();
   connect(ui->IDC_DEATH_DELAY_FROM_ANIM, &QCheckBox::clicked, this, [this](bool checked) { m_flags.delay_from_anim = checked; updateDialog(); });
   connect(ui->IDC_DEATH_DELAY_LOSES_ANTIGRAV, &QCheckBox::clicked, this, [this](bool checked) { m_flags.delay_loses_antigrav = checked; });
   connect(ui->IDC_DEATH_DELAY_SPARKS, &QCheckBox::clicked, this, [this](bool checked) { m_flags.delay_sparks = checked; });
@@ -75,14 +86,6 @@ DeathDialog::DeathDialog(death_info *info, QWidget *parent)
   explosionGroup->addButton(ui->IDC_DEATH_EXPLOSION_MEDIUM);
   explosionGroup->addButton(ui->IDC_DEATH_EXPLOSION_LARGE);
 
-/*
-  if (auto *rb = ui->IDC_DEATH_EXPLOSION_SMALL)
-    connect(rb, &QRadioButton::clicked, this, &DeathDialog::onExplosionSmall);
-  if (auto *rb = ui->IDC_DEATH_EXPLOSION_MEDIUM)
-    connect(rb, &QRadioButton::clicked, this, &DeathDialog::onExplosionMedium);
-  if (auto *rb = ui->IDC_DEATH_EXPLOSION_LARGE)
-    connect(rb, &QRadioButton::clicked, this, &DeathDialog::onExplosionLarge);
-*/
   QRegularExpression rx("^-?(?:\\d{0,5}|\\d{1,4}\\.\\d{1,4}|\\d{1,3}\\.\\d{1,3}|\\d{1,2}\\.\\d{1,3}|\\d\\.\\d{1,4}|\\.\\d{1,5})$");
   ui->IDC_DEATH_DELAY_MIN->setValidator(new QRegularExpressionValidator(rx, this));
   ui->IDC_DEATH_DELAY_MAX->setValidator(new QRegularExpressionValidator(rx, this));
