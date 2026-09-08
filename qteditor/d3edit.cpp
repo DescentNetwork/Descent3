@@ -466,3 +466,212 @@ void SetErrorMessage(const char *fmt, ...) {
 }
 
 const char *GetErrorMessage() { return Editor_error_message; }
+
+
+
+#include <QSettings>
+#include <memory>
+
+#include "appdatabase.h"
+#include "application.h"
+#include "args.h"
+#include "d3_version.h"
+
+#include "descent.h"
+#include "editor_settings.h"
+#include "gamedata_loader.h"
+#include "init.h"
+#include "lnxapp.h"
+#include "program.h"
+
+#include "d3edit.h"
+
+#include "lightmap_info.h"
+
+
+#ifdef LOGGER
+#include "log.h"
+#endif
+
+
+
+
+
+void GatherArgs(char **argv) {
+  if (argv == nullptr)
+    return;
+  int n = 0;
+  for (int i = 0; argv[i] && i < MAX_ARGS; i++) {
+    std::strncpy(GameArgs[n++], argv[i], MAX_CHARS_PER_ARG - 1);
+    GameArgs[n - 1][MAX_CHARS_PER_ARG - 1] = '\0';
+  }
+}
+
+void GatherArgs(const char *str) {
+  if (str == nullptr)
+    return;
+  int n = 0;
+  const char *p = str;
+  while (*p && n < MAX_ARGS) {
+    while (*p == ' ')
+      p++;
+    if (!*p)
+      break;
+    int len = 0;
+    while (p[len] && p[len] != ' ' && len < MAX_CHARS_PER_ARG - 1)
+      len++;
+    std::memcpy(GameArgs[n], p, len);
+    GameArgs[n][len] = '\0';
+    n++;
+    p += len;
+  }
+}
+
+int FindArg(const char *which, int start) {
+  if (which == nullptr)
+    return 0;
+  for (int i = start; i < MAX_ARGS; i++) {
+    if (GameArgs[i][0] && strcasecmp(GameArgs[i], which) == 0)
+      return i;
+  }
+  return 0;
+}
+
+int FindArgChar(const char *which, char singleCharArg) { return FindArg(which); }
+
+const char *GetArg(int index) {
+  if (index < 0 || index >= MAX_ARGS)
+    return "";
+  return GameArgs[index];
+}
+
+// Minimal pre-init: establish the memory and error subsystems that the
+// ported engine code relies on before anything else runs.
+void PreInitD3Systems() {
+  if (FindArg("-lowmem") || FindArg("-dedicated"))
+    Mem_low_memory_mode = true;
+  if (FindArg("-superlowmem")) {
+    Mem_low_memory_mode = true;
+    Mem_superlow_memory_mode = true;
+  }
+  if (FindArg("-himem")) {
+    Mem_low_memory_mode = false;
+    Mem_superlow_memory_mode = false;
+  }
+}
+
+// First-phase system init. The decoupled editor replaces the full game's I/O,
+// graphics, sound and network stacks with Qt + OpenGL and a HOG-capable
+// cfile; here we initialise the data structures the editor core uses.
+void InitD3Systems1(bool /*editor*/) {
+  InitLightmapInfo();
+  InitRooms();
+  ResetObjectList();
+}
+
+
+std::filesystem::path orig_pwd;
+
+#if 0
+void initD3Core(int argc, char *argv[]) {
+  GatherArgs(argv);
+
+  orig_pwd = std::filesystem::current_path();
+
+#ifdef LOGGER
+  InitLog(LogSeverity::debug, false, false);
+#endif
+
+  SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO);
+
+  PreInitD3Systems();
+
+  tLnxAppInfo appinfo{};
+  appinfo.flags = APPFLAG_WINDOWEDMODE | APPFLAG_NOSHAREDMEMORY;
+  Descent = std::make_unique<oeLnxApplication>(&appinfo);
+  Database = std::make_unique<oeLnxAppDatabase>();
+
+  ProgramVersion(DEVELOPMENT_VERSION, 0, 0, 0);
+
+  InitD3Systems1(true);
+  InitD3Systems2(true);
+
+  // Pull the user's saved UI state on top of the zero defaults so Preferences
+  // (and the texture/wireframe/keypad visibility flags) reflect what they
+  // closed the editor with. Only loads keys that exist; an empty store is a
+  // no-op equivalent to the Win32 "registry is empty" path.
+  QSettings settings;
+  loadEditorSettings(settings, D3EditState);
+
+  errno = 0; // clear any errno states
+}
+
+#else
+
+// Try to locate the directory that contains the game data files (d3.hog).
+// The user can override via -datadir <path>; otherwise a small set of common
+// install locations (including this machine's known path) is probed.
+static std::filesystem::path FindGameDataDir() {
+  // Explicit command-line override wins.
+  int arg = FindArg("-datadir");
+  if (arg) {
+    std::filesystem::path p = GetArg(arg + 1);
+    if (std::filesystem::exists(p / "d3.hog"))
+      return p;
+  }
+
+  const std::filesystem::path candidates[] = {
+      "/mnt/media/games/pc/Descent 3",
+      "/usr/share/descent3",
+      "/usr/local/share/descent3",
+  };
+  for (const auto &c : candidates) {
+    if (std::filesystem::exists(c / "d3.hog"))
+      return c;
+  }
+  return {};
+}
+
+void initD3Core(int argc, char *argv[]) {
+  GatherArgs(argv);
+
+  orig_pwd = std::filesystem::current_path();
+
+#ifdef LOGGER
+  InitLog(LogSeverity::debug, false, false);
+#endif
+
+  // SDL initialization removed - using Qt for window management
+  PreInitD3Systems();
+
+  tLnxAppInfo appinfo{};
+  appinfo.flags = APPFLAG_WINDOWEDMODE | APPFLAG_NOSHAREDMEMORY;
+  Descent = std::make_unique<oeLnxApplication>(&appinfo);
+  Database = std::make_unique<oeLnxAppDatabase>();
+
+  ProgramVersion(DEVELOPMENT_VERSION, 0, 0, 0);
+
+  InitD3Systems1(true);
+  InitD3Systems2(true);
+
+  // Load the gamedata tables (d3.hog -> Table.gam) so levels opening later
+  // can reference object/ship/weapon/sound/texture metadata. This is what the
+  // Win32 editor does during startup; without it the level's referenced data
+  // is unavailable.
+  {
+    std::filesystem::path data_dir = FindGameDataDir();
+    if (!data_dir.empty()) {
+      loadGameDataTable(data_dir / "d3.hog");
+    }
+  }
+
+  // Pull the user's saved UI state on top of the zero defaults so Preferences
+  // (and the texture/wireframe/keypad visibility flags) reflect what they
+  // closed the editor with. Only loads keys that exist; an empty store is a
+  // no-op equivalent to the Win32 "registry is empty" path.
+  QSettings settings;
+  loadEditorSettings(settings, D3EditState);
+
+  errno = 0; // clear any errno states
+}
+#endif

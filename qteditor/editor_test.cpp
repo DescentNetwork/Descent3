@@ -51,7 +51,7 @@
 
 #include <cerrno>
 
-#include "d3_editor_init.h"
+#include "d3edit.h"
 
 #include "door.h"
 #include "doorway.h"

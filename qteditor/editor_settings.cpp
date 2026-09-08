@@ -24,166 +24,138 @@
 #include <QSettings>
 
 
-namespace {
-
 // Field set mirrors SaveEditorSettings/LoadEditorSettings in editor.cpp.
 // We deliberately use string key names that match the Win32 record names
 // (e.g. "texdlg_texture") so a user migrating from the original editor
 // keeps their settings.
 
-void writeInt(QSettings &s, const char *key, int value) {
-  s.setValue(QString::fromLatin1(key), value);
-}
-
-int readInt(QSettings &s, const char *key, int fallback) {
-  return s.value(QString::fromLatin1(key), fallback).toInt();
-}
-
-void writeBool(QSettings &s, const char *key, bool value) {
-  s.setValue(QString::fromLatin1(key), value);
-}
-
-bool readBool(QSettings &s, const char *key, bool fallback) {
-  return s.value(QString::fromLatin1(key), fallback).toBool();
-}
-
-void writeFloat(QSettings &s, const char *key, float value) {
-  s.setValue(QString::fromLatin1(key), value);
-}
-
-float readFloat(QSettings &s, const char *key, float fallback) {
-  return s.value(QString::fromLatin1(key), fallback).toFloat();
-}
-
-} // namespace
-
 void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   settings.beginGroup(QStringLiteral("editor"));
 
-  writeInt(settings, "texdlg_texture",        state.texdlg_texture);
-  writeInt(settings, "current_obj_type",     state.current_obj_type);
-  writeInt(settings, "current_obj_id",       state.current_obj_id);
-  writeInt(settings, "current_powerup",      state.current_powerup);
-  writeInt(settings, "current_door",         state.current_door);
-  writeInt(settings, "current_robot",        state.current_robot);
-  writeInt(settings, "current_ship",         state.current_ship);
-  writeInt(settings, "current_sound",        state.current_sound);
-  writeInt(settings, "current_weapon",       state.current_weapon);
-  writeInt(settings, "current_path",         state.current_path);
-  writeInt(settings, "current_node",         state.current_node);
-  writeInt(settings, "current_megacell",     state.current_megacell);
-  writeInt(settings, "current_building",     state.current_building);
-  writeInt(settings, "current_clutter",      state.current_clutter);
+  settings.setValue(QStringLiteral("texdlg_texture"),        state.texdlg_texture);
+  settings.setValue(QStringLiteral("current_obj_type"),      state.current_obj_type);
+  settings.setValue(QStringLiteral("current_obj_id"),        state.current_obj_id);
+  settings.setValue(QStringLiteral("current_powerup"),       state.current_powerup);
+  settings.setValue(QStringLiteral("current_door"),          state.current_door);
+  settings.setValue(QStringLiteral("current_robot"),         state.current_robot);
+  settings.setValue(QStringLiteral("current_ship"),          state.current_ship);
+  settings.setValue(QStringLiteral("current_sound"),         state.current_sound);
+  settings.setValue(QStringLiteral("current_weapon"),        state.current_weapon);
+  settings.setValue(QStringLiteral("current_path"),          state.current_path);
+  settings.setValue(QStringLiteral("current_node"),          state.current_node);
+  settings.setValue(QStringLiteral("current_megacell"),      state.current_megacell);
+  settings.setValue(QStringLiteral("current_building"),      state.current_building);
+  settings.setValue(QStringLiteral("current_clutter"),       state.current_clutter);
 
-  writeBool(settings, "texscr_visible",      state.texscr_visible);
-  writeInt(settings,  "texscr_x",            state.texscr_x);
-  writeInt(settings,  "texscr_y",            state.texscr_y);
-  writeInt(settings,  "texscr_w",            state.texscr_w);
-  writeInt(settings,  "texscr_h",            state.texscr_h);
+  settings.setValue(QStringLiteral("texscr_visible"),        state.texscr_visible);
+  settings.setValue(QStringLiteral("texscr_x"),              state.texscr_x);
+  settings.setValue(QStringLiteral("texscr_y"),              state.texscr_y);
+  settings.setValue(QStringLiteral("texscr_w"),              state.texscr_w);
+  settings.setValue(QStringLiteral("texscr_h"),              state.texscr_h);
 
-  writeBool(settings, "wirescr_visible",     state.wirescr_visible);
-  writeInt(settings,  "wirescr_x",           state.wirescr_x);
-  writeInt(settings,  "wirescr_y",           state.wirescr_y);
-  writeInt(settings,  "wirescr_w",           state.wirescr_w);
-  writeInt(settings,  "wirescr_h",           state.wirescr_h);
+  settings.setValue(QStringLiteral("wirescr_visible"),       state.wirescr_visible);
+  settings.setValue(QStringLiteral("wirescr_x"),             state.wirescr_x);
+  settings.setValue(QStringLiteral("wirescr_y"),             state.wirescr_y);
+  settings.setValue(QStringLiteral("wirescr_w"),             state.wirescr_w);
+  settings.setValue(QStringLiteral("wirescr_h"),             state.wirescr_h);
 
-  writeBool(settings, "keypad_visible",      state.keypad_visible);
-  writeInt(settings,  "keypad_current",      state.keypad_current);
+  settings.setValue(QStringLiteral("keypad_visible"),        state.keypad_visible);
+  settings.setValue(QStringLiteral("keypad_current"),        state.keypad_current);
 
-  writeInt(settings,  "float_keypad_x",      state.float_keypad_x);
-  writeInt(settings,  "float_keypad_y",      state.float_keypad_y);
-  writeInt(settings,  "float_keypad_w",      state.float_keypad_w);
-  writeInt(settings,  "float_keypad_h",      state.float_keypad_h);
+  settings.setValue(QStringLiteral("float_keypad_x"),        state.float_keypad_x);
+  settings.setValue(QStringLiteral("float_keypad_y"),        state.float_keypad_y);
+  settings.setValue(QStringLiteral("float_keypad_w"),        state.float_keypad_w);
+  settings.setValue(QStringLiteral("float_keypad_h"),        state.float_keypad_h);
 
-  writeInt(settings,  "objmodeless_x",       state.objmodeless_x);
-  writeInt(settings,  "objmodeless_y",       state.objmodeless_y);
-  writeBool(settings, "objmodeless_on",      state.objmodeless_on);
+  settings.setValue(QStringLiteral("objmodeless_x"),         state.objmodeless_x);
+  settings.setValue(QStringLiteral("objmodeless_y"),         state.objmodeless_y);
+  settings.setValue(QStringLiteral("objmodeless_on"),        state.objmodeless_on);
 
-  writeBool(settings, "tile_views",          state.tile_views);
-  writeInt(settings,  "game_render_mode",    state.game_render_mode);
+  settings.setValue(QStringLiteral("tile_views"),            state.tile_views);
+  settings.setValue(QStringLiteral("game_render_mode"),      state.game_render_mode);
 
-  writeBool(settings, "terrain_dots",        state.terrain_dots);
-  writeBool(settings, "terrain_flat_shade",  state.terrain_flat_shade);
+  settings.setValue(QStringLiteral("terrain_dots"),          state.terrain_dots);
+  settings.setValue(QStringLiteral("terrain_flat_shade"),    state.terrain_flat_shade);
 
-  writeBool(settings, "randomize_megacell",  state.randomize_megacell);
-  writeInt(settings,  "box_selection_mode",  state.box_selection_mode);
-  writeInt(settings,  "object_move_mode",    state.object_move_mode);
-  writeInt(settings,  "object_move_axis",    state.object_move_axis);
-  writeBool(settings, "fullscreen_debug_state", state.fullscreen_debug_state);
+  settings.setValue(QStringLiteral("randomize_megacell"),    state.randomize_megacell);
+  settings.setValue(QStringLiteral("box_selection_mode"),    state.box_selection_mode);
+  settings.setValue(QStringLiteral("object_move_mode"),      state.object_move_mode);
+  settings.setValue(QStringLiteral("object_move_axis"),      state.object_move_axis);
+  settings.setValue(QStringLiteral("fullscreen_debug_state"), state.fullscreen_debug_state);
 
-  writeInt(settings,  "texture_display_flags", state.texture_display_flags);
+  settings.setValue(QStringLiteral("texture_display_flags"), state.texture_display_flags);
 
   // Slew_key_speed lives outside D3EditState in d3edit.h but is part of the
   // editor preferences surface; persist it under the same group so a one-stop
   // QSettings backup covers the editor UI tweaks.
-  writeFloat(settings, "slew_key_speed",     Slew_key_speed);
-  writeBool(settings, "joy_slewing",         state.joy_slewing);
-  writeBool(settings, "objects_in_wireframe", state.objects_in_wireframe);
+  settings.setValue(QStringLiteral("slew_key_speed"),        Slew_key_speed);
+  settings.setValue(QStringLiteral("joy_slewing"),           state.joy_slewing);
+  settings.setValue(QStringLiteral("objects_in_wireframe"),  state.objects_in_wireframe);
 
   settings.endGroup();
   settings.sync();
 }
 
-void loadEditorSettings(QSettings &settings, d3edit_state &state) {
+void loadEditorSettings(QSettings &settings, d3edit_state &state)
+{
   settings.beginGroup(QStringLiteral("editor"));
 
-  state.texdlg_texture    = readInt(settings,  "texdlg_texture",    0);
-  state.current_obj_type  = readInt(settings,  "current_obj_type",  0);
-  state.current_obj_id    = readInt(settings,  "current_obj_id",    0);
-  state.current_powerup   = readInt(settings,  "current_powerup",   0);
-  state.current_door      = readInt(settings,  "current_door",      0);
-  state.current_robot     = readInt(settings,  "current_robot",     0);
-  state.current_ship      = readInt(settings,  "current_ship",      0);
-  state.current_sound     = readInt(settings,  "current_sound",     0);
-  state.current_weapon    = readInt(settings,  "current_weapon",    0);
-  state.current_path      = readInt(settings,  "current_path",      0);
-  state.current_node      = readInt(settings,  "current_node",      0);
-  state.current_megacell  = readInt(settings,  "current_megacell",  0);
-  state.current_building  = readInt(settings,  "current_building",  0);
-  state.current_clutter   = readInt(settings,  "current_clutter",   0);
+  state.texdlg_texture    = settings.value(QStringLiteral("texdlg_texture"),   0).toInt();
+  state.current_obj_type  = settings.value(QStringLiteral("current_obj_type"), 0).toInt();
+  state.current_obj_id    = settings.value(QStringLiteral("current_obj_id"),   0).toInt();
+  state.current_powerup   = settings.value(QStringLiteral("current_powerup"),  0).toInt();
+  state.current_door      = settings.value(QStringLiteral("current_door"),     0).toInt();
+  state.current_robot     = settings.value(QStringLiteral("current_robot"),    0).toInt();
+  state.current_ship      = settings.value(QStringLiteral("current_ship"),     0).toInt();
+  state.current_sound     = settings.value(QStringLiteral("current_sound"),    0).toInt();
+  state.current_weapon    = settings.value(QStringLiteral("current_weapon"),   0).toInt();
+  state.current_path      = settings.value(QStringLiteral("current_path"),     0).toInt();
+  state.current_node      = settings.value(QStringLiteral("current_node"),     0).toInt();
+  state.current_megacell  = settings.value(QStringLiteral("current_megacell"), 0).toInt();
+  state.current_building  = settings.value(QStringLiteral("current_building"), 0).toInt();
+  state.current_clutter   = settings.value(QStringLiteral("current_clutter"),  0).toInt();
 
-  state.texscr_visible    = readBool(settings, "texscr_visible",    false);
-  state.texscr_x          = readInt(settings,  "texscr_x",          0);
-  state.texscr_y          = readInt(settings,  "texscr_y",          0);
-  state.texscr_w          = readInt(settings,  "texscr_w",          0);
-  state.texscr_h          = readInt(settings,  "texscr_h",          0);
+  state.texscr_visible    = settings.value(QStringLiteral("texscr_visible"),    false).toBool();
+  state.texscr_x          = settings.value(QStringLiteral("texscr_x"),          0).toInt();
+  state.texscr_y          = settings.value(QStringLiteral("texscr_y"),          0).toInt();
+  state.texscr_w          = settings.value(QStringLiteral("texscr_w"),          0).toInt();
+  state.texscr_h          = settings.value(QStringLiteral("texscr_h"),          0).toInt();
 
-  state.wirescr_visible   = readBool(settings, "wirescr_visible",   false);
-  state.wirescr_x         = readInt(settings,  "wirescr_x",         0);
-  state.wirescr_y         = readInt(settings,  "wirescr_y",         0);
-  state.wirescr_w         = readInt(settings,  "wirescr_w",         0);
-  state.wirescr_h         = readInt(settings,  "wirescr_h",         0);
+  state.wirescr_visible   = settings.value(QStringLiteral("wirescr_visible"),   false).toBool();
+  state.wirescr_x         = settings.value(QStringLiteral("wirescr_x"),         0).toInt();
+  state.wirescr_y         = settings.value(QStringLiteral("wirescr_y"),         0).toInt();
+  state.wirescr_w         = settings.value(QStringLiteral("wirescr_w"),         0).toInt();
+  state.wirescr_h         = settings.value(QStringLiteral("wirescr_h"),         0).toInt();
 
-  state.keypad_visible    = readBool(settings, "keypad_visible",    false);
-  state.keypad_current    = readInt(settings,  "keypad_current",    0);
+  state.keypad_visible    = settings.value(QStringLiteral("keypad_visible"),    false).toBool();
+  state.keypad_current    = settings.value(QStringLiteral("keypad_current"),    0).toInt();
 
-  state.float_keypad_x    = readInt(settings,  "float_keypad_x",    -1);
-  state.float_keypad_y    = readInt(settings,  "float_keypad_y",    -1);
-  state.float_keypad_w    = readInt(settings,  "float_keypad_w",    -1);
-  state.float_keypad_h    = readInt(settings,  "float_keypad_h",    -1);
+  state.float_keypad_x    = settings.value(QStringLiteral("float_keypad_x"),    -1).toInt();
+  state.float_keypad_y    = settings.value(QStringLiteral("float_keypad_y"),    -1).toInt();
+  state.float_keypad_w    = settings.value(QStringLiteral("float_keypad_w"),    -1).toInt();
+  state.float_keypad_h    = settings.value(QStringLiteral("float_keypad_h"),    -1).toInt();
 
-  state.objmodeless_x     = readInt(settings,  "objmodeless_x",     0);
-  state.objmodeless_y     = readInt(settings,  "objmodeless_y",     0);
-  state.objmodeless_on    = readBool(settings, "objmodeless_on",    false);
+  state.objmodeless_x     = settings.value(QStringLiteral("objmodeless_x"),     0).toInt();
+  state.objmodeless_y     = settings.value(QStringLiteral("objmodeless_y"),     0).toInt();
+  state.objmodeless_on    = settings.value(QStringLiteral("objmodeless_on"),    false).toBool();
 
-  state.tile_views        = readBool(settings, "tile_views",        false);
-  state.game_render_mode  = readInt(settings,  "game_render_mode",  0);
+  state.tile_views        = settings.value(QStringLiteral("tile_views"),        false).toBool();
+  state.game_render_mode  = settings.value(QStringLiteral("game_render_mode"),  0).toInt();
 
-  state.terrain_dots      = readBool(settings, "terrain_dots",      true);
-  state.terrain_flat_shade = readBool(settings, "terrain_flat_shade", false);
+  state.terrain_dots            = settings.value(QStringLiteral("terrain_dots"),            true).toBool();
+  state.terrain_flat_shade      = settings.value(QStringLiteral("terrain_flat_shade"),      false).toBool();
 
-  state.randomize_megacell = readBool(settings, "randomize_megacell", false);
-  state.box_selection_mode = readInt(settings,  "box_selection_mode", 0);
-  state.object_move_mode   = readInt(settings,  "object_move_mode",   0);
-  state.object_move_axis   = readInt(settings,  "object_move_axis",   0);
-  state.fullscreen_debug_state = readBool(settings, "fullscreen_debug_state", false);
+  state.randomize_megacell      = settings.value(QStringLiteral("randomize_megacell"),      false).toBool();
+  state.box_selection_mode      = settings.value(QStringLiteral("box_selection_mode"),      0).toInt();
+  state.object_move_mode        = settings.value(QStringLiteral("object_move_mode"),        0).toInt();
+  state.object_move_axis        = settings.value(QStringLiteral("object_move_axis"),        0).toInt();
+  state.fullscreen_debug_state  = settings.value(QStringLiteral("fullscreen_debug_state"),  false).toBool();
 
-  state.texture_display_flags = readInt(settings, "texture_display_flags", 0);
+  state.texture_display_flags   = settings.value(QStringLiteral("texture_display_flags"),   0).toInt();
 
-  Slew_key_speed = readFloat(settings, "slew_key_speed", 1.0f);
-  state.joy_slewing       = readBool(settings, "joy_slewing",         false);
-  state.objects_in_wireframe = readBool(settings, "objects_in_wireframe", true);
+  Slew_key_speed                = settings.value(QStringLiteral("slew_key_speed"),          1.0f).toFloat();
+  state.joy_slewing             = settings.value(QStringLiteral("joy_slewing"),             false).toBool();
+  state.objects_in_wireframe    = settings.value(QStringLiteral("objects_in_wireframe"),    true).toBool();
 
   settings.endGroup();
 }
-

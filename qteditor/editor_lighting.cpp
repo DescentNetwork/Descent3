@@ -56,7 +56,6 @@
 #include "BOA.h"
 #include "mem/mem.h"
 
-#include "d3_editor_init.h"
 
 bool BestFit = false;
 

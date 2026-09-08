@@ -24,7 +24,7 @@
 #include <cstring>
 #include <cerrno>
 
-#include "d3_editor_init.h"
+#include "d3edit.h"
 #include "main_window.h"
 
 

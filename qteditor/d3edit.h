@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vecmat.h"
-#include <stdlib.h>
+#include <filesystem>
 
 // Define group & room structs so we don't have to include group.h & room.h
 struct group;
@@ -196,4 +196,14 @@ void SetErrorMessage(const char *fmt, ...);
 // Get the error message from the last function that returned failure
 const char *GetErrorMessage();
 
-//#endif
+static inline std::filesystem::path original_pwd(void)
+{
+  extern std::filesystem::path orig_pwd;
+  return orig_pwd;
+}
+
+// Initializes the Descent 3 core in editor mode, mirroring the original MFC
+// editor's startup sequence (CMainFrame::OnCreateClient). Must be called once
+// after the QApplication has been constructed.
+void initD3Core(int argc, char *argv[]);
+
