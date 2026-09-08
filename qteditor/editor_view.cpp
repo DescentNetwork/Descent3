@@ -274,8 +274,6 @@ EditorView::~EditorView() {
   }
 }
 
-void EditorView::requestRedraw() { update(); }
-
 QSize EditorView::renderSize() const { return size(); }
 
 void EditorView::setWireframe(bool wireframe) {
@@ -301,7 +299,7 @@ void EditorView::resizeGL(int w, int h) {
   QOpenGLFunctions *f = context() ? context()->functions() : nullptr;
   if (f != nullptr)
     glViewport(0, 0, w, h);
-  requestRedraw();
+  update();
 }
 
 float EditorView::getFocal() const {

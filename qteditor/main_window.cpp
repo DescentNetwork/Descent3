@@ -118,7 +118,7 @@ MainWindow::MainWindow(QWidget *parent)
     State_changed = true;
     statusBar()->showMessage(
         QStringLiteral("Face selected: room %1, face %2").arg(r).arg(f));
-    m_editorView->requestRedraw();
+    m_editorView->update();
   });
   connect(m_editorView, &EditorView::objectSelected, this, [this](int idx) {
     Cur_object_index = idx;
@@ -128,7 +128,7 @@ MainWindow::MainWindow(QWidget *parent)
                            : QString();
     statusBar()->showMessage(
         QStringLiteral("Object %1 selected (%2)").arg(idx).arg(name));
-    m_editorView->requestRedraw();
+    m_editorView->update();
   });
   connect(m_editorView, &EditorView::selectionCleared, this, [this]() {
     Curroomp = nullptr;
@@ -136,7 +136,7 @@ MainWindow::MainWindow(QWidget *parent)
     Cur_object_index = -1;
     State_changed = true;
     statusBar()->showMessage(QStringLiteral("Selection cleared."));
-    m_editorView->requestRedraw();
+    m_editorView->update();
   });
   connect(m_editorView, &EditorView::roomToggleRequested, this,
           [this](int roomIndex) {
@@ -144,7 +144,7 @@ MainWindow::MainWindow(QWidget *parent)
             State_changed = true;
             statusBar()->showMessage(
                 QStringLiteral("Room %1 selection toggled.").arg(roomIndex));
-            m_editorView->requestRedraw();
+            m_editorView->update();
           });
   connect(m_editorView, &EditorView::objectContextMenuRequested, this,
           [this](const QPoint &globalPos, int objIdx) {
@@ -335,7 +335,7 @@ MainWindow::MainWindow(QWidget *parent)
   // levels are built.  Without it the fresh default aim (0,0,0) leaves the
   // mine projecting off-screen and the level appears blank after Open.
   onFileNew();
-  m_editorView->requestRedraw();
+  m_editorView->update();
 
   // The EditorView is now the central dock widget inside the dock manager.
   // All previously existing dock/undock/visibility logic stays the same.
@@ -366,7 +366,7 @@ void MainWindow::onFileNew() {
   m_currentLevelFile.clear();
   if (m_editorView != nullptr) {
     m_editorView->resetCamera();
-    m_editorView->requestRedraw();
+    m_editorView->update();
   }
   statusBar()->showMessage(QStringLiteral("Created new level."));
 }
@@ -393,7 +393,7 @@ void MainWindow::onFileOpen() {
     // (HFile.cpp:626 ResetWireframeViewRad); the camera binds to the level's
     // saved viewer via SetEditorViewer() inside EditorLoadLevel.
     m_editorView->resetWireframeViewRad();
-    m_editorView->requestRedraw();
+    m_editorView->update();
   }
   statusBar()->showMessage(
       QStringLiteral("Opened %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
@@ -452,7 +452,7 @@ void MainWindow::onViewMine()
   Editor_view_mode = VM_MINE;
   statusBar()->showMessage(QStringLiteral("View: Mine"));
   if (m_editorView)
-    m_editorView->requestRedraw();
+    m_editorView->update();
 }
 
 void MainWindow::onViewTerrain()
@@ -461,7 +461,7 @@ void MainWindow::onViewTerrain()
   Editor_view_mode = VM_TERRAIN;
   statusBar()->showMessage(QStringLiteral("View: Terrain"));
   if (m_editorView)
-    m_editorView->requestRedraw();
+    m_editorView->update();
 }
 
 void MainWindow::onViewRoom()
@@ -470,7 +470,7 @@ void MainWindow::onViewRoom()
   Editor_view_mode = VM_ROOM;
   statusBar()->showMessage(QStringLiteral("View: Room"));
   if (m_editorView)
-    m_editorView->requestRedraw();
+    m_editorView->update();
 }
 
 void MainWindow::onViewToolbar() {
@@ -495,6 +495,7 @@ void MainWindow::onViewShowObjectsInWireframe() {
           .arg(D3EditState.objects_in_wireframe
                    ? QStringLiteral("on")
                    : QStringLiteral("off")));
+  m_editorView->update();
 }
 
 void MainWindow::saveWindowState() {
@@ -895,7 +896,7 @@ void MainWindow::onCenterViewOnMine() {
   // resetCamera() also mirrors the new orbit camera back into the viewer
   // (syncViewerToCamera) so the following camera stays congruent.
   m_editorView->resetCamera();
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 void MainWindow::onCenterViewOnCube() {
@@ -916,7 +917,7 @@ void MainWindow::onCenterViewOnCube() {
   vector3 pos;
   ComputeRoomCenter(&pos, rp);
   m_editorView->setWireframeView(pos);
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 void MainWindow::onCenterViewOnObject() {
@@ -928,7 +929,7 @@ void MainWindow::onCenterViewOnObject() {
     return;
 
   m_editorView->setWireframeView(Objects[Cur_object_index].pos);
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 void MainWindow::onResetViewRadius() {
@@ -941,7 +942,7 @@ void MainWindow::onResetViewRadius() {
   std::fprintf(stderr, "[viewer_ops] ResetViewRadius -> %g\n",
                D3EditState.texscale);
 
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 void MainWindow::onMoveViewToSelectedRoom() {
@@ -950,7 +951,7 @@ void MainWindow::onMoveViewToSelectedRoom() {
   setViewerFromRoomFace(Curroomp, Curface, true);
   State_changed = true;
 
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 // Win32 ID_VIEW_MOVECAMERATOSELECTEDFACE -> CMainFrame::OnViewMoveCameraToSelectedFace
@@ -959,7 +960,7 @@ void MainWindow::onMoveCameraToSelectedFace() {
   setViewerFromRoomFace(Curroomp, Curface, false);
   State_changed = true;
 
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 // Win32 ID_VIEW_MOVECAMERATOCURRENTOBJECT -> CMainFrame::OnViewMoveCameraToCurrentObject
@@ -1012,7 +1013,7 @@ void MainWindow::onMoveCameraToCurrentObject() {
   Viewer_moved = true;
   State_changed = true;
 
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 // Win32 ID_VIEW_FLIP -> CEditorView::OnViewFlip (editor/editorView.cpp:1457):
@@ -1027,7 +1028,7 @@ void MainWindow::onFlipViewer() {
   Viewer_moved = true;
   State_changed = true;
 
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 
@@ -1107,7 +1108,7 @@ int MainWindow::onPlaceCameraAtViewer() {
 
   std::fprintf(stderr,
                "[object_ops] PlaceCameraAtViewer -> object %d\n", slot);
-  m_editorView->requestRedraw();
+  m_editorView->update();
   return slot;
 }
 
@@ -1133,7 +1134,7 @@ void MainWindow::onSetViewerFromCamera() {
   State_changed = true;
   std::fprintf(stderr, "[object_ops] SetViewerFromCamera: viewer=(%g,%g,%g) room %d\n",
                cam->pos.x(), cam->pos.y(), cam->pos.z(), cam->roomnum);
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 // Move the camera's pose onto the viewer's pose so the camera becomes
@@ -1173,7 +1174,7 @@ void MainWindow::onDeleteCurrentObject() {
   std::fprintf(stderr, "[object_ops] DeleteCurrentObject: removed %d, "
                        "Cur_object_index = %d\n",
                was, Cur_object_index);
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 // Move the player (object 0) to the current room. Clears the player's
@@ -1193,7 +1194,7 @@ void MainWindow::onMovePlayerToCurrentRoom() {
   State_changed = true;
   std::fprintf(stderr, "[object_ops] MovePlayerToCurrentRoom -> room %d\n",
                slot);
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 
@@ -1203,7 +1204,7 @@ void MainWindow::onSelectNextObject(int from) {
   const int idx = find_used(from + 1);
   if (idx >= 0)
     Cur_object_index = idx;
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 void MainWindow::onSelectPrevObject(int from) {
@@ -1217,7 +1218,7 @@ void MainWindow::onSelectPrevObject(int from) {
   }
   // Wrap to the highest-used slot.
   Cur_object_index = (Highest_object_index >= 0) ? Highest_object_index : -1;
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 // Win32 OnViewNewviewer / OnViewDeleteviewer / OnViewNextviewer.
@@ -1232,7 +1233,7 @@ void MainWindow::onCreateNewViewer() {
   // engine's ObjCreate path.
   std::fprintf(stderr,
                "[object_ops] CreateNewViewer: pending editor/ObjCreate\n");
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 // Pick the next OBJ_VIEWER slot and copy the viewer's pose onto it.
@@ -1269,7 +1270,7 @@ int MainWindow::onSpawnNewViewer() {
   std::fprintf(stderr,
                "[object_ops] SpawnNewViewer -> object %d (id %d)\n", slot,
                Editor_viewer_id);
-  m_editorView->requestRedraw();
+  m_editorView->update();
   return slot;
 }
 
@@ -1300,7 +1301,7 @@ int MainWindow::onSelectNextViewer() {
   State_changed = Viewer_moved = true;
   std::fprintf(stderr, "[object_ops] SelectNextViewer -> object %d (id %d)\n",
                best, Editor_viewer_id);
-  m_editorView->requestRedraw();
+  m_editorView->update();
   return best;
 }
 
@@ -1334,7 +1335,7 @@ void MainWindow::onDeleteCurrentViewer() {
   Viewer_object = nullptr;
   std::fprintf(stderr,
                "[object_ops] DeleteCurrentViewer: no viewers left\n");
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 // Win32 MainFrm::OnObjectSelectByNumber runs a QInputDialog getInt
@@ -1361,7 +1362,7 @@ int MainWindow::onSelectObjectByNumber()
     return -1;
   }
   Cur_object_index = value;
-  m_editorView->requestRedraw();
+  m_editorView->update();
   return value;
 }
 
@@ -1375,7 +1376,7 @@ void MainWindow::onSelectObject(int objnum) {
   if (Objects[objnum].type == OBJ_NONE)
     return;
   Cur_object_index = objnum;
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 
@@ -1561,7 +1562,7 @@ void MainWindow::onPasteObjectFromClipboard() {
   Cur_object_index = slot;
   Mine_changed = true;
   if (m_editorView != nullptr)
-    m_editorView->requestRedraw();
+    m_editorView->update();
 }
 
 bool MainWindow::HasClipboardObject() {
@@ -1720,7 +1721,7 @@ bool MainWindow::onAddRoom()
   std::fprintf(stderr, "[room_ops] AddRoom -> room %d (%d verts, %d faces)\n",
                slot, cnv * 2, nfaces);
 
-  m_editorView->requestRedraw();
+  m_editorView->update();
   return true;
 }
 
@@ -1764,7 +1765,7 @@ bool MainWindow::onDeleteRoom() {
 
   std::fprintf(stderr, "[room_ops] DeleteRoom: cleared slot %d\n", slot);
 
-  m_editorView->requestRedraw();
+  m_editorView->update();
   return true;
 }
 

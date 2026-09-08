@@ -1639,7 +1639,7 @@ private slots:
   // We check that:
   //
   //   - MainWindow has an EditorView descendant;
-  //   - resize + requestRedraw round-trips through update() without
+  //   - resize + update round-trips through paintGL without
   //     crashing (paintGL itself is best-effort under offscreen QPA);
   //   - The frame counter is reachable after show().
   void testEditorViewAttached() {
@@ -1655,7 +1655,7 @@ private slots:
     // Resize the view directly since the dock manager layout constrains it.
     view->resize(800, 600);
     QCoreApplication::processEvents();
-    view->requestRedraw();
+    view->update();
     QCoreApplication::processEvents();
 
     // The dock-manager layout re-sizes the view during processEvents (the
@@ -1667,8 +1667,8 @@ private slots:
     QVERIFY(view->renderSize().height() >= 64);
     QVERIFY(view->frameCount() >= 0);
 
-    view->requestRedraw();
-    view->requestRedraw();
+    view->update();
+    view->update();
     QCoreApplication::processEvents();
     QVERIFY(view->frameCount() >= 0);
   }

@@ -41,9 +41,6 @@ public:
 
   int frameCount() const { return m_frameCount; }
 
-  // Forces a redraw (the Win32 InvalidateRect equivalent).
-  void requestRedraw();
-
   // Win32 ResetWireframeView (editor/moveworld.cpp:164-172): restores the
   // active wireframe view to identity orientation aimed at Mine_origin with
   // dist=500 / rad=5000.  Called after level load/new (editor/HFile.cpp:465)

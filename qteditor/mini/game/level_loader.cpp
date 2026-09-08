@@ -40,6 +40,7 @@
 #include "room.h"
 #include "trigger.h"
 #include "object.h"
+#include "objinit.h"
 #include "Mission.h"
 #include "mem/mem.h"
 #include "cfile.h"
@@ -142,15 +143,8 @@ static int LL_ReadRoom(posix_istream &ifile, room *rp, int /*version*/) {
 }
 
 static void LL_ReadInfo(posix_istream &ifile, int) {
-  Level_info.name =  "Unnamed";
-  Level_info.designer = "Anonymous";
-  Level_info.copyright.clear();
-  Level_info.notes.clear();
-
-  ifile >> Level_info.name;
-  ifile >> Level_info.designer;
-  ifile >> Level_info.copyright;
-  ifile >> Level_info.notes;
+  Level_info = level_info{};
+  ifile >> Level_info;
 
   ifile >> Gravity_strength;
 
@@ -165,14 +159,13 @@ static void LL_ReadInfo(posix_istream &ifile, int) {
 }
 
 static void LL_WriteInfo(posix_ostream &ofile) {
-  ofile << Level_info.name;
-  ofile << Level_info.designer;
-  ofile << Level_info.copyright;
-  ofile << Level_info.notes;
+  ofile << Level_info;
 
   ofile << Gravity_strength;
-  int32_t check = (int)FVI_always_check_ceiling;
-  ofile << check;
+  int32_t v = (int)Level_powerups_ignore_wind;
+  ofile << v;
+  v = (int)FVI_always_check_ceiling;
+  ofile << v;
   ofile << Ceiling_height;
 }
 
@@ -299,6 +292,10 @@ int handle = handle32;
         // Rebuild the free object list, as the original does after the OBJS
         // chunk (this syncs Num_objects and free_obj_list with the loaded set).
         ResetFreeObjects();
+        // Copy type-specific defaults (size, shields, render type, ...) from
+        // the object_info page for each loaded object, matching the engine's
+        // ReadObject which calls ObjInit() (and thus ObjInitTypeSpecific).
+        ObjReInitAll();
       } else if (IsChunk(chunk_name, "TRIG")) {
         int32_t nt = 0;
         ifile >> nt;
