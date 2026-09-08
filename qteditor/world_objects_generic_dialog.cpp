@@ -335,25 +335,18 @@ void WorldObjectsGenericDialog::enableDisableAll(bool flag) {
 }
 
 void WorldObjectsGenericDialog::updateDialog() {
-  if (m_current == -1) {
-    enableDisableAll(false);
-    ui->IDC_GENERIC_PASTE->setEnabled(Network_up && Copy_object_used);
-    if (!Network_up) {
-      ui->IDC_GENERIC_LOCK->setEnabled(false);
-      ui->IDC_GENERIC_CHECKIN->setEnabled(false);
-      ui->IDC_GENERIC_UNDO_LOCK->setEnabled(false);
-      ui->IDC_GENERIC_CHECKED_OUT->setEnabled(false);
-      ui->IDC_OVERRIDE->setEnabled(false);
-    }
-    return;
-  }
-
   if (!Network_up) {
     ui->IDC_GENERIC_LOCK->setEnabled(false);
     ui->IDC_GENERIC_CHECKIN->setEnabled(false);
     ui->IDC_GENERIC_UNDO_LOCK->setEnabled(false);
     ui->IDC_GENERIC_CHECKED_OUT->setEnabled(false);
     ui->IDC_OVERRIDE->setEnabled(false);
+  }
+
+  if (m_current == -1) {
+    enableDisableAll(false);
+    ui->IDC_GENERIC_PASTE->setEnabled(Network_up && Copy_object_used);
+    return;
   }
 
   enableDisableAll(true);
@@ -397,7 +390,7 @@ void WorldObjectsGenericDialog::updateDialog() {
       m_lod == 0 ? oi->render_handle : (m_lod == 1 ? oi->med_render_handle : oi->lo_render_handle);
   {
     QLabel *label = ui->IDC_NUM_POLYS;
-    if (poly_handle == -1)
+    if (poly_handle < 0 || poly_handle >= MAX_POLY_MODELS || !Poly_models[poly_handle].used)
       label->setText("Num polys: NA");
     else {
       PageInPolymodel(poly_handle);

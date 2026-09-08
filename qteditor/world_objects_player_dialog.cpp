@@ -292,9 +292,11 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
   }
 
   D3EditState.current_ship = GetNextShip(n);
-  FreePolyModel(Ships[n].model_handle);
+  if (Ships[n].model_handle >= 0 && Ships[n].model_handle < MAX_POLY_MODELS && Poly_models[Ships[n].model_handle].used)
+    FreePolyModel(Ships[n].model_handle);
   if (Ships[n].dying_model_handle != -1)
-    FreePolyModel(Ships[n].dying_model_handle);
+    if (Ships[n].dying_model_handle >= 0 && Ships[n].dying_model_handle < MAX_POLY_MODELS && Poly_models[Ships[n].dying_model_handle].used)
+      FreePolyModel(Ships[n].dying_model_handle);
   FreeShip(n);
   mng_EraseLocker();
 
@@ -473,15 +475,18 @@ void WorldObjectsPlayerDialog::onPshipLoadModel() {
   const int ship_handle = D3EditState.current_ship;
   if (m_lod == 0) {
     ChangeOldModelsForObjects(Ships[ship_handle].model_handle, img_handle);
-    FreePolyModel(Ships[ship_handle].model_handle);
+    if (Ships[ship_handle].model_handle >= 0 && Ships[ship_handle].model_handle < MAX_POLY_MODELS && Poly_models[Ships[ship_handle].model_handle].used)
+      FreePolyModel(Ships[ship_handle].model_handle);
     Ships[ship_handle].model_handle = img_handle;
   } else if (m_lod == 1) {
     if (Ships[ship_handle].med_render_handle != -1)
-      FreePolyModel(Ships[ship_handle].med_render_handle);
+      if (Ships[ship_handle].med_render_handle >= 0 && Ships[ship_handle].med_render_handle < MAX_POLY_MODELS && Poly_models[Ships[ship_handle].med_render_handle].used)
+        FreePolyModel(Ships[ship_handle].med_render_handle);
     Ships[ship_handle].med_render_handle = img_handle;
   } else {
     if (Ships[ship_handle].lo_render_handle != -1)
-      FreePolyModel(Ships[ship_handle].lo_render_handle);
+      if (Ships[ship_handle].lo_render_handle >= 0 && Ships[ship_handle].lo_render_handle < MAX_POLY_MODELS && Poly_models[Ships[ship_handle].lo_render_handle].used)
+        FreePolyModel(Ships[ship_handle].lo_render_handle);
     Ships[ship_handle].lo_render_handle = img_handle;
   }
 
@@ -672,10 +677,12 @@ void WorldObjectsPlayerDialog::onNolod() {
     return;
   }
   if (m_lod == 1) {
-    FreePolyModel(Ships[n].med_render_handle);
+    if (Ships[n].med_render_handle >= 0 && Ships[n].med_render_handle < MAX_POLY_MODELS && Poly_models[Ships[n].med_render_handle].used)
+      FreePolyModel(Ships[n].med_render_handle);
     Ships[n].med_render_handle = -1;
   } else {
-    FreePolyModel(Ships[n].lo_render_handle);
+    if (Ships[n].lo_render_handle >= 0 && Ships[n].lo_render_handle < MAX_POLY_MODELS && Poly_models[Ships[n].lo_render_handle].used)
+      FreePolyModel(Ships[n].lo_render_handle);
     Ships[n].lo_render_handle = -1;
   }
   updateDialog();

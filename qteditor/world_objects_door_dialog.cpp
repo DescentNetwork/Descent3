@@ -263,7 +263,8 @@ void WorldObjectsDoorDialog::onAddDoor() {
     return;
   }
   if (!verifyDoorModel(img_handle)) {
-    FreePolyModel(img_handle);
+    if (img_handle >= 0 && img_handle < MAX_POLY_MODELS && Poly_models[img_handle].used)
+      FreePolyModel(img_handle);
     return;
   }
 
@@ -330,7 +331,8 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
 
   D3EditState.current_door = GetNextDoor(n);
 
-  FreePolyModel(Doors[n].model_handle);
+  if (Doors[n].model_handle >= 0 && Doors[n].model_handle < MAX_POLY_MODELS && Poly_models[Doors[n].model_handle].used)
+    FreePolyModel(Doors[n].model_handle);
   FreeDoor(n);
   mng_EraseLocker();
 

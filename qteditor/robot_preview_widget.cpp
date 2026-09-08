@@ -60,12 +60,17 @@ void RobotPreviewWidget::paintGL() {
   const QSize sz = size();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  const int model = D3EditState.current_robot;
-  if (model < 0 || model >= MAX_OBJECT_TYPES)
+  // Ensure the robot/object selection is valid before touching any model
+  // state; a stale current_robot or an unused model handle must not reach the
+  // model renderer (which asserts on pm->used).
+  const int robot = D3EditState.current_robot;
+  if (robot < 0 || robot >= MAX_OBJECT_TYPES)
     return;
-  object_info *oi = &Object_info[model];
+  object_info *oi = &Object_info[robot];
   const int pmHandle = oi->render_handle;
   if (pmHandle < 0 || pmHandle >= MAX_POLY_MODELS)
+    return;
+  if (!Poly_models[pmHandle].used)
     return;
 
   poly_model *pm = GetPolymodelPointer(pmHandle);
