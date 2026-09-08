@@ -53,6 +53,7 @@
 #include "hog_dialog.h"
 #include "level_ops.h"
 #include "object.h"
+#include "render.h"
 #include "ai_settings_dialog.h"
 #include "ambient_sound_patterns_dialog.h"
 #include "brief_main_dialog.h"
@@ -78,6 +79,13 @@
 #include "world_sounds_dialog.h"
 #include "world_textures_dialog.h"
 #include "world_weapons_dialog.h"
+#include "addscript_dialog.h"
+#include "createscript_dialog.h"
+#include "cust_default_script_dialog.h"
+#include "dallas_sound_dialog.h"
+#include "object_properties_dialog.h"
+#include "propscript_dialog.h"
+#include "script_editor_dialog.h"
 
 #include "ui_keypads.h"
 #include "d3edit.h"
@@ -150,10 +158,23 @@ MainWindow::MainWindow(QWidget *parent)
           [this](const QPoint &globalPos, int objIdx) {
             Cur_object_index = objIdx;
             QMenu menu(this);
+            const QString title = (objIdx >= 0 && objIdx <= Highest_object_index &&
+                                   !Objects[objIdx].name.empty())
+                                      ? QString::fromStdString(Objects[objIdx].name)
+                                      : QStringLiteral("(no name)");
+            QAction *titleAct = menu.addAction(title);
+            titleAct->setEnabled(false);
+            menu.addSeparator();
             menu.addAction("Copy", this, &MainWindow::onCopyObjectToClipboard);
             menu.addAction("Cut", this, &MainWindow::onCutObjectToClipboard);
             menu.addAction("Paste", this, &MainWindow::onPasteObjectFromClipboard);
             menu.addAction("Delete", this, &MainWindow::onDeleteCurrentObject);
+            menu.addSeparator();
+            menu.addAction("Edit Name", this, &MainWindow::onObjectRename);
+            menu.addAction("Sound", this, &MainWindow::onObjectSound);
+            menu.addAction("Edit Dallas Scripts", this, &MainWindow::onObjectEditScripts);
+            menu.addAction("New Dallas Script", this, &MainWindow::onObjectNewScript);
+            menu.addAction("Set a custom default script", this, &MainWindow::onObjectCustomDefaultScript);
             menu.exec(globalPos);
           });
 
@@ -481,11 +502,47 @@ void MainWindow::onViewToolbar() {
 void MainWindow::onButtonOutline() {
   if (m_editorView == nullptr)
     return;
-  m_editorView->setWireframe(!m_editorView->isWireframe());
-  statusBar()->showMessage(
-      QStringLiteral("Wireframe: %1")
-          .arg(m_editorView->isWireframe() ? QStringLiteral("on")
-                                            : QStringLiteral("off")));
+  QMenu popup(this);
+  const bool on = (Outline_mode & OM_ON) != 0;
+  QAction *onAct = popup.addAction("On");
+  onAct->setCheckable(true);
+  onAct->setChecked(on);
+  QAction *mineAct = popup.addAction("Mine");
+  mineAct->setCheckable(true);
+  mineAct->setChecked((Outline_mode & OM_MINE) != 0);
+  mineAct->setEnabled(on);
+  QAction *terrainAct = popup.addAction("Terrain");
+  terrainAct->setCheckable(true);
+  terrainAct->setChecked((Outline_mode & OM_TERRAIN) != 0);
+  terrainAct->setEnabled(on);
+  QAction *skyAct = popup.addAction("Sky");
+  skyAct->setCheckable(true);
+  skyAct->setChecked((Outline_mode & OM_SKY) != 0);
+  skyAct->setEnabled(on);
+  QAction *objectsAct = popup.addAction("Objects");
+  objectsAct->setCheckable(true);
+  objectsAct->setChecked((Outline_mode & OM_OBJECTS) != 0);
+  objectsAct->setEnabled(on);
+
+  QAction *chosen = popup.exec(QCursor::pos());
+  if (chosen == nullptr)
+    return;
+  const int old = Outline_mode;
+  if (chosen == onAct)
+    Outline_mode ^= OM_ON;
+  else if (chosen == mineAct)
+    Outline_mode ^= OM_MINE;
+  else if (chosen == terrainAct)
+    Outline_mode ^= OM_TERRAIN;
+  else if (chosen == skyAct)
+    Outline_mode ^= OM_SKY;
+  else if (chosen == objectsAct)
+    Outline_mode ^= OM_OBJECTS;
+
+  // Mirror the On bit into the editor view's wireframe toggle.
+  m_editorView->setWireframe((Outline_mode & OM_ON) != 0);
+  if (Outline_mode != old)
+    State_changed = true;
 }
 
 void MainWindow::onViewShowObjectsInWireframe() {
@@ -1175,6 +1232,45 @@ void MainWindow::onDeleteCurrentObject() {
                        "Cur_object_index = %d\n",
                was, Cur_object_index);
   m_editorView->update();
+}
+
+void MainWindow::onObjectRename() {
+  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+    return;
+  object *obj = &Objects[Cur_object_index];
+  if (obj->type == OBJ_NONE)
+    return;
+  const QString current = QString::fromStdString(obj->name);
+  bool ok = false;
+  const QString picked =
+      QInputDialog::getText(this, QStringLiteral("Object Name"),
+                            QStringLiteral("Enter a new name for this object:"),
+                            QLineEdit::Normal, current, &ok);
+  if (!ok)
+    return;
+  obj->name = picked.toStdString();
+  Mine_changed = true;
+  m_editorView->update();
+}
+
+void MainWindow::onObjectSound() {
+  DallasSoundDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::onObjectEditScripts() {
+  ScriptEditorDialog dlg(QStringLiteral(""), this);
+  dlg.exec();
+}
+
+void MainWindow::onObjectNewScript() {
+  CreateNewScriptDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::onObjectCustomDefaultScript() {
+  CustDefaultScriptDialog dlg(this);
+  dlg.exec();
 }
 
 // Move the player (object 0) to the current room. Clears the player's

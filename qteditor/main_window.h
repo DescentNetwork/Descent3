@@ -131,6 +131,14 @@ private:
   void onViewShowObjectsInWireframe();
   void onButtonOutline();
 
+  // Object context-menu (right-click on an object in the editor view) actions,
+  // mirroring the Win32 CTextureGrWnd popup.
+  void onObjectRename();
+  void onObjectSound();
+  void onObjectEditScripts();
+  void onObjectNewScript();
+  void onObjectCustomDefaultScript();
+
   // Room menu slots that delegate to room_ops. The Room menu has many more
   // items than this list — they route through wireNotPorted() above — but
   // these ones have real Qt-side implementations.

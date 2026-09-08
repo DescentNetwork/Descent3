@@ -41,6 +41,7 @@
 #include "gamepath.h"
 #include "obj_move_manager.h"
 #include "object.h"
+#include "render.h"
 
 #include "room.h"
 #include "terrain.h"
@@ -1114,6 +1115,10 @@ void EditorView::renderObjects() {
   if (Editor_view_mode == VM_TERRAIN || Editor_view_mode == VM_ROOM)
     return;
   if (!D3EditState.objects_in_wireframe)
+    return;
+  if (!m_wireframe || !(Outline_mode & OM_ON))
+    return;
+  if (!(Outline_mode & OM_OBJECTS))
     return;
 
   const float w = width() > 0 ? static_cast<float>(width()) : 640.0f;
