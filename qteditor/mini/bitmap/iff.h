@@ -21,6 +21,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <posix_stream.h>
 #include "bitmap.h"
 
@@ -53,6 +54,13 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, int format = 0);
 // Allocs and loads a bitmap from a fully-resident in-memory payload.
 // Returns the handle of the loaded bitmap, or -1 on error.
 int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname, int format, int mipped);
+
+// Loads the frame 0 image of an Outrage animation file (.oaf) vclip container
+// from a fully-resident in-memory payload (a HOG entry).  OAF containers lead
+// with a small vclip header (see Descent3/vclip.cpp PageInVClip) followed by
+// one contiguous OGF/TGA bitmap per frame; the frame 0 bitmap handle is
+// returned.  Returns -1 on error.
+int bm_LoadOAFFromMemory(const uint8_t *data, size_t size, const std::string &fname, int format);
 
 // Loads a pcx file and converts it to 16 bit.  Returns bitmap handle or -1 on error
 int bm_pcx_alloc_file(struct CFILE* infile);

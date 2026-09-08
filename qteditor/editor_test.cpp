@@ -140,6 +140,7 @@ bool EBNode_VerifyGraph();
 #include "main_window.h"
 #include "hog_dialog.h"
 #include "hog2_format.h"
+#include "iff.h"
 #include "posix_stream.h"
 #include "table_manage.h"
 
@@ -808,6 +809,51 @@ private slots:
     // The decoder returns a resident bitmap with known dimensions.  The stubs
     // returned 0 for everything, so a healthy fraction proves the ported decoder works.
     QVERIFY(withBitmap > nonProcedural / 2);
+
+    errno = 0;
+  }
+
+  // Animated texture files (.oaf) are vclip containers: a short header followed
+  // by one OGF bitmap per frame.  Ensure frame 0 is decoded (previously the
+  // whole container was fed to the TGA decoder and rejected with "Can't read
+  // this type of TGA").
+  void testOafVClipTextureLoads()
+  {
+    const std::filesystem::path hog = "/mnt/media/games/pc/Descent 3/d3.hog";
+    if (!std::filesystem::exists(hog)) {
+      QSKIP("d3.hog not found; skipping OAF vclip texture test.");
+      return;
+    }
+
+    posix_istream in;
+    QVERIFY(in.open(hog, std::ios_base::in));
+
+    hog2::archive_t archive;
+    try {
+      in >> archive;
+    } catch (const std::invalid_argument &) {
+      QFAIL("d3.hog is not a valid HOG2 archive.");
+    }
+
+    auto entry = archive.end();
+    for (auto it = archive.begin(); it != archive.end(); ++it) {
+      if (lowercase(it->name.string()) == "pillar.oaf") {
+        entry = it;
+        break;
+      }
+    }
+    QVERIFY(entry != archive.end());
+
+    std::vector<uint8_t> buf(entry->len);
+    in.seek(archive.fileOffset(entry), std::ios_base::beg);
+    in.read(buf.data(), entry->len);
+
+    const int bm = bm_LoadOAFFromMemory(buf.data(), buf.size(), "pillar.oaf", BITMAP_FORMAT_1555);
+    QVERIFY2(bm >= 0, "frame 0 of the OAF container should decode as an OGF bitmap");
+
+    // pillar.oaf is an 8-frame 1555 mipmapped vclip whose frames are 128x128.
+    QCOMPARE(bm_w(bm, 0), 128);
+    QCOMPARE(bm_h(bm, 0), 128);
 
     errno = 0;
   }

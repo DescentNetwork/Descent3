@@ -111,6 +111,12 @@ static int loadTextureFromArchive(hog2::archive_t &archive, posix_istream &hogin
   hogin.seek(off, std::ios_base::beg);
   hogin.read(buf.data(), len);
 
+  // Animated texture containers (.oaf) lead with a vclip header followed by
+  // one OGF bitmap per frame; the TGA decoder would reject the container, so
+  // route them through the OAF loader which returns frame 0's bitmap.
+  if (lowercase(img).ends_with(".oaf"))
+    return bm_LoadOAFFromMemory(buf.data(), buf.size(), img, format);
+
   return bm_LoadBitmapFromMemory(buf.data(), buf.size(), img.c_str(), format, 0);
 }
 
