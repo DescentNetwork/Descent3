@@ -540,7 +540,7 @@ void InitRoom(room *rp, int nverts, int nfaces, int nportals) {
 
 // Initialize a room face structure.
 void InitRoomFace(face *fp, int nverts) {
-  fp->flags = 0;
+  fp->flags = {};
   fp->num_verts = nverts;
   fp->portal_num = -1;
   fp->tmap = 0;
@@ -657,7 +657,7 @@ void FreeRoomFace(face *fp) {
   if (fp->lmi_handle != BAD_LMI_INDEX) {
     FreeLightmapInfo(fp->lmi_handle);
     fp->lmi_handle = BAD_LMI_INDEX;
-    fp->flags &= ~FF_LIGHTMAP;
+    fp->flags.lightmap = false;
   }
 
   if (fp->special_handle != BAD_SPECIAL_FACE_INDEX) {
@@ -785,7 +785,7 @@ void ClearRoomLightmaps(int roomnum) {
     if (Rooms[roomnum].faces[t].lmi_handle != BAD_LMI_INDEX) {
       FreeLightmapInfo(Rooms[roomnum].faces[t].lmi_handle);
       Rooms[roomnum].faces[t].lmi_handle = BAD_LMI_INDEX;
-      Rooms[roomnum].faces[t].flags &= ~FF_LIGHTMAP;
+      Rooms[roomnum].faces[t].flags.lightmap = false;
     }
   }
 }
@@ -1173,7 +1173,7 @@ bool ChangeRoomFaceTexture(int room_num, int face_num, int texture) {
   face *fp = &rp->faces[face_num];
 
   fp->tmap = texture;
-  fp->flags |= FF_TEXTURE_CHANGED;
+  fp->flags.texture_changed = true;
   rp->room_change_flags |= RCF_TEXTURE;
   return true;
 }
@@ -1370,16 +1370,16 @@ byte_istream& operator>>(byte_istream& input, face& data) {
 
   input >> data.flags;
   if (alphaed)
-    data.flags |= FF_VERTEX_ALPHA;
+    data.flags.vertex_alpha = true;
   else
-    data.flags &= ~FF_VERTEX_ALPHA;
+    data.flags.vertex_alpha = false;
   input >> data.portal_num;
 
   // Level files hold the raw texture index; the loader maps it to the global
   // GameTextures[] slot (texture_xlate) after the whole room is read.
   input >> data.tmap;
 
-  if (data.flags & FF_LIGHTMAP) {
+  if (data.flags.lightmap) {
     input >> data.lmi_handle;
     for (int i = 0; i < data.num_verts; i++)
       input >> data.face_uvls[i].u2 >> data.face_uvls[i].v2;
@@ -1400,7 +1400,7 @@ byte_ostream& operator<<(byte_ostream& output, const face& data) {
     output << data.face_uvls[i].u << data.face_uvls[i].v << data.face_uvls[i].alpha;
   }
   output << data.flags << data.portal_num << data.tmap;
-  if (data.flags & FF_LIGHTMAP) {
+  if (data.flags.lightmap) {
     output << data.lmi_handle;
     for (int i = 0; i < data.num_verts; i++)
       output << data.face_uvls[i].u2 << data.face_uvls[i].v2;
@@ -1415,7 +1415,8 @@ byte_ostream& operator<<(byte_ostream& output, const face& data) {
 //-----------------------------------------------------------------------------
 
 byte_istream& operator>>(byte_istream& input, portal& data) {
-  input >> data.flags >> data.portal_face;
+  input >> data.flags;
+  input >> data.portal_face;
   // croom/cportal are stored as int32 on disk (matching the engine writer);
   // the struct holds them as int16.
   int32_t room = 0;
@@ -1494,11 +1495,7 @@ byte_istream& operator>>(byte_istream& input, room& data) {
   for (int i = 0; i < data.num_portals; i++)
     input >> data.portals[i];
 
-  uint32_t flags_host = 0;
-  input.read(&flags_host, sizeof(flags_host));
-  flags_host = le_to_host(flags_host);
-  std::memcpy(&data.flags, &flags_host, sizeof(data.flags));
-
+  input >> data.flags;
   input >> data.pulse_time >> data.pulse_offset >> data.mirror_face;
 
   if (data.flags.door) {
@@ -1551,11 +1548,7 @@ byte_ostream& operator<<(byte_ostream& output, const room& data) {
   for (int i = 0; i < data.num_portals; i++)
     output << data.portals[i];
 
-  uint32_t flags_host = 0;
-  std::memcpy(&flags_host, &data.flags, sizeof(flags_host));
-  flags_host = host_to_le(flags_host);
-  output.write(&flags_host, sizeof(flags_host));
-
+  output << data.flags;
   output << data.pulse_time << data.pulse_offset << data.mirror_face;
 
   if (data.flags.door) {

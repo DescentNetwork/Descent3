@@ -212,11 +212,11 @@ int Num_mirror_rooms = 0;
 //					fp - pointer to the face in question
 static inline bool FaceIsRenderable(room *rp, face *fp) {
   // Check for a floating trigger, which doesn't get rendered
-  if ((fp->flags & FF_FLOATING_TRIG) && (!In_editor_mode || !Render_floating_triggers))
+  if ((fp->flags.floating_trig) && (!In_editor_mode || !Render_floating_triggers))
     return 0;
   // Check for face that's part of a portal
   if (fp->portal_num != -1) {
-    if (rp->portals[fp->portal_num].flags & PF_RENDER_FACES)
+    if (rp->portals[fp->portal_num].flags.render_faces)
       return 1;
     if (rp->flags.fog && !In_editor_mode)
       return 1;
@@ -256,7 +256,7 @@ static inline int GetFaceAlpha(face *fp, int bm_handle) {
 // Returns:		true if you should render the room to which the portal connects
 static inline bool RenderPastPortal(room *rp, portal *pp) {
   // If we don't render the portal's faces, then we see through it
-  if (!(pp->flags & PF_RENDER_FACES))
+  if (!(pp->flags.render_faces))
     return 1;
   if (!UseHardware) // Don't render alpha stuff in software
     return 0;
@@ -308,7 +308,7 @@ void OutlineCurrentFace(room *rp, int facenum, int edgenum, int vertnum, ddgr_co
     }
   }
   // Draw upper left cross
-  if (Outline_lightmaps && (rp->faces[facenum].flags & FF_LIGHTMAP)) {
+  if (Outline_lightmaps && (rp->faces[facenum].flags.lightmap)) {
     Q_ASSERT(rp->faces[facenum].lmi_handle != BAD_LMI_INDEX);
 
     p0.p3_flags = 0;
@@ -541,13 +541,13 @@ void MarkFacingFaces(int roomnum, const vector3 *world_verts) {
 
       tvec = Viewer_eye - world_verts[fp->face_verts[0]];
       if (vm_Dot3Product(tvec, incident_norm) <= 0)
-        fp->flags |= FF_NOT_FACING;
+        fp->flags.not_facing = true;
     }
   } else {
     for (int i = 0; i < rp->num_faces; i++, fp++) {
       tvec = Viewer_eye - world_verts[fp->face_verts[0]];
       if (vm_Dot3Product(tvec, fp->normal) <= 0)
-        fp->flags |= FF_NOT_FACING;
+        fp->flags.not_facing = true;
     }
   }
 }
@@ -594,7 +594,7 @@ void MarkFacesForRendering(int roomnum, clip_wnd *wnd) {
   }
   if (rp->flags.door) {
     for (i = 0; i < rp->num_faces; i++)
-      rp->faces[i].flags |= FF_VISIBLE;
+      rp->faces[i].flags.visible = true;
   } else {
     // If this room contains a mirror, just mark all faces as visible
     // Else go through and figure out which ones are visible from the current portal
@@ -606,11 +606,11 @@ void MarkFacesForRendering(int roomnum, clip_wnd *wnd) {
       }
       face *fp = &rp->faces[0];
       for (i = 0; i < rp->num_faces; i++, fp++) {
-        if (fp->flags & (FF_NOT_FACING | FF_VISIBLE))
+        if (fp->flags.not_facing || fp->flags.visible)
           continue; // this face is a backface
 
         if (FaceIntersectsPortal(rp, fp, wnd))
-          fp->flags |= FF_VISIBLE;
+          fp->flags.visible = true;
       }
     } else {
       if (rp->flags.mirror_visible) // If this room is already mirror, just return
@@ -634,16 +634,16 @@ void MarkFacesForRendering(int roomnum, clip_wnd *wnd) {
       {
         fp = &rp->faces[0];
         for (i = 0; i < rp->num_faces; i++, fp++) {
-          fp->flags |= FF_VISIBLE;
+          fp->flags.visible = true;
         }
       } else {
         fp = &rp->faces[0];
         for (i = 0; i < rp->num_faces; i++, fp++) {
-          if (fp->flags & (FF_NOT_FACING | FF_VISIBLE))
+          if (fp->flags.not_facing || fp->flags.visible)
             continue; // this face is a backface
 
           if (FaceIntersectsPortal(rp, fp, wnd))
-            fp->flags |= FF_VISIBLE;
+            fp->flags.visible = true;
         }
       }
     }
@@ -838,7 +838,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
     face *fp = &rp->faces[pp->portal_face];
 
     // See if portal is facing toward us
-    if (!external_door_hack && !(pp->flags & PF_COMBINED)) {
+    if (!external_door_hack && !(pp->flags.combined)) {
       vector3 check_v = Viewer_eye - rp->verts[fp->face_verts[0]];
       if (vm_Dot3Product(check_v, fp->normal) <= 0) {
         // not facing us
@@ -853,13 +853,13 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
 
     // Code the face points
     // If this is a combined portal, then do that
-    if ((pp->flags & PF_COMBINED) && !(Rooms[croom].flags.fog)) {
+    if ((pp->flags.combined) && !(Rooms[croom].flags.fog)) {
       // If this isn't the portal-combine master, then skip it
       if (pp->combine_master != t)
         continue;
       int num_points = 0;
       for (i = 0; i < rp->num_portals; i++) {
-        if (((rp->portals[i].flags & PF_COMBINED) == 0) || rp->portals[i].combine_master != t)
+        if ((!rp->portals[i].flags.combined) || rp->portals[i].combine_master != t)
           continue;
 
         int k;
@@ -1096,12 +1096,12 @@ void BuildRoomList(int start_room_num) {
   Global_buffer_index = 0;
   // Mark all the faces in our start room as renderable
   for (i = 0; i < rp->num_faces; i++)
-    rp->faces[i].flags |= FF_VISIBLE;
+    rp->faces[i].flags.visible = true;
 
   MarkFacingFaces(start_room_num, rp->verts.data());
   // Enable mirror if there is one
   if (rp->mirror_face != -1 && Detail_settings.Mirrored_surfaces &&
-      !(rp->faces[rp->mirror_face].flags & FF_NOT_FACING)) {
+      !(rp->faces[rp->mirror_face].flags.not_facing)) {
     rp->flags.mirror_visible = 1;
     Mirror_rooms[Num_mirror_rooms++] = start_room_num;
   }
@@ -1140,7 +1140,7 @@ void BuildRoomList(int start_room_num) {
       for (i = 0, rp = Rooms; i <= Highest_room_index; i++, rp++) {
         if (rp->used && (rp->flags.external)) {
           for (int t = 0; t < rp->num_faces; t++)
-            rp->faces[t].flags |= FF_VISIBLE;
+            rp->faces[t].flags.visible = true;
           MarkFacingFaces(i, rp->verts.data());
 
           if (!Rooms_visited[i])
@@ -1289,7 +1289,7 @@ void RenderSpecularFacesFlat(room *rp) {
   if (Num_real_specular_faces_to_render == 0) {
     for (i = 0; i < Num_specular_faces_to_render; i++) {
       face *fp = &rp->faces[Specular_faces[i]];
-      fp->flags &= ~FF_SPEC_INVISIBLE;
+      fp->flags.spec_invisible = false;
     }
     return;
   }
@@ -1325,7 +1325,7 @@ void RenderSpecularFacesFlat(room *rp) {
     else if (GameTextures[fp->tmap].flags.marble)
       material_type = 2;
     int bm_handle = GetTextureBitmap(fp->tmap, 0);
-    if ((fp->flags & FF_DESTROYED) && GameTextures[fp->tmap].flags.destroyable)
+    if ((fp->flags.destroyed) && GameTextures[fp->tmap].flags.destroyable)
       bm_handle = GetTextureBitmap(GameTextures[fp->tmap].destroy_handle, 0);
     if (bm_format(bm_handle) != BITMAP_FORMAT_4444)
       continue;
@@ -1472,24 +1472,24 @@ void RenderSpecularFacesFlat(room *rp) {
       smooth_faces[num_smooth_faces] = fp - rp->faces.data();
       num_smooth_faces++;
     } else {
-      if (fp->flags & FF_TRIANGULATED)
+      if (fp->flags.triangulated)
         g3_SetTriangulationTest(1);
 
       g3_DrawPoly(fp->num_verts, pointlist, bm_handle);
 
-      if (fp->flags & FF_TRIANGULATED)
+      if (fp->flags.triangulated)
         g3_SetTriangulationTest(0);
     }
   }
   // Now draw smooth specular faces
   for (i = 0; i < num_smooth_faces; i++) {
     face *fp = &rp->faces[smooth_faces[i]];
-    if (fp->flags & FF_SPEC_INVISIBLE) {
-      fp->flags &= ~(FF_SPEC_INVISIBLE);
+    if (fp->flags.spec_invisible) {
+      fp->flags.spec_invisible = false;
       continue;
     }
     int bm_handle = GetTextureBitmap(fp->tmap, 0);
-    if ((fp->flags & FF_DESTROYED) && (GameTextures[fp->tmap].flags.destroyable))
+    if ((fp->flags.destroyed) && (GameTextures[fp->tmap].flags.destroyable))
       bm_handle = GetTextureBitmap(GameTextures[fp->tmap].destroy_handle, 0);
     if (bm_format(bm_handle) != BITMAP_FORMAT_4444)
       continue;
@@ -1507,12 +1507,12 @@ void RenderSpecularFacesFlat(room *rp) {
       p->p3_flags |= PF_RGBA | PF_UV;
     }
 
-    if (fp->flags & FF_TRIANGULATED)
+    if (fp->flags.triangulated)
       g3_SetTriangulationTest(1);
 
     g3_DrawPoly(fp->num_verts, pointlist, bm_handle);
 
-    if (fp->flags & FF_TRIANGULATED)
+    if (fp->flags.triangulated)
       g3_SetTriangulationTest(0);
   }
   for (i = 0; i < num_smooth_used; i++) {
@@ -1536,7 +1536,7 @@ void UpdateSpecularFace(room *rp, face *fp) {
     return;
   Specular_faces[n] = fp - rp->faces.data();
   Num_specular_faces_to_render++;
-  if (!(fp->flags & FF_SPEC_INVISIBLE))
+  if (!(fp->flags.spec_invisible))
     Num_real_specular_faces_to_render++;
 }
 
@@ -1606,10 +1606,10 @@ void RenderFogFaces(room *rp) {
 
       p->p3_flags |= PF_RGBA;
     }
-    if (fp->flags & FF_TRIANGULATED)
+    if (fp->flags.triangulated)
       g3_SetTriangulationTest(1);
     g3_DrawPoly(fp->num_verts, pointlist, 0);
-    if (fp->flags & FF_TRIANGULATED)
+    if (fp->flags.triangulated)
       g3_SetTriangulationTest(0);
   }
 
@@ -1653,7 +1653,7 @@ void RenderLightmapFace(room *rp, int facenum) {
     return;
   if (fp->lmi_handle == BAD_LMI_INDEX)
     return;
-  if (!(fp->flags & FF_LIGHTMAP))
+  if (!(fp->flags.lightmap))
     return;
   // check for render windows hack
   if (No_render_windows_hack == 1) {
@@ -1705,11 +1705,11 @@ void RenderLightmapFace(room *rp, int facenum) {
   if (face_code) // This entire face is off the scren
     return;
   rend_SetAlphaValue(GameTextures[fp->tmap].alpha * 255);
-  if (fp->flags & FF_TRIANGULATED)
+  if (fp->flags.triangulated)
     g3_SetTriangulationTest(1);
   // Draw the damn thing
   drawn = g3_DrawPoly(fp->num_verts, pointlist, lm_handle, MAP_TYPE_LIGHTMAP);
-  if (fp->flags & FF_TRIANGULATED)
+  if (fp->flags.triangulated)
     g3_SetTriangulationTest(0);
   // Restore if using saturated blending
   if (GameTextures[fp->tmap].flags.saturate_lightmap)
@@ -1734,13 +1734,13 @@ void RenderFace(room *rp, int facenum) {
   face_cc.cc_and = 0xff;
   face_cc.cc_or = 0;
 #ifdef EDITOR
-  if (fp->flags & FF_FLOATING_TRIG) {
+  if (fp->flags.floating_trig) {
     RenderFloatingTrig(rp, fp);
     return;
   }
 #endif
   // Clear triangulation flag
-  fp->flags &= ~FF_TRIANGULATED;
+  fp->flags.triangulated = false;
   // check for render windows hack
   if (No_render_windows_hack == 1) {
     if (fp->portal_num != -1)
@@ -1778,7 +1778,7 @@ void RenderFace(room *rp, int facenum) {
 
       p->p3_flags |= PF_UV + PF_L + PF_UV2; // has uv and l set
 #ifndef RELEASE
-      if ((fp->flags & FF_LIGHTMAP) && UseHardware)
+      if ((fp->flags.lightmap) && UseHardware)
         p->p3_uvl.l = Room_light_val;
       else
         p->p3_uvl.l = 1.0;
@@ -1805,7 +1805,7 @@ void RenderFace(room *rp, int facenum) {
 
       p->p3_flags |= PF_UV + PF_L + PF_UV2; // has uv and l set
 #ifndef RELEASE
-      if ((fp->flags & FF_LIGHTMAP) && UseHardware)
+      if ((fp->flags.lightmap) && UseHardware)
         p->p3_uvl.l = Room_light_val;
       else
         p->p3_uvl.l = 1.0;
@@ -1823,7 +1823,7 @@ void RenderFace(room *rp, int facenum) {
   if (face_cc.cc_and) // This entire face is off the screen
   {
     if (spec_face && GameTextures[fp->tmap].flags.smooth_specular) {
-      fp->flags |= FF_SPEC_INVISIBLE;
+      fp->flags.spec_invisible = true;
       UpdateSpecularFace(rp, fp);
     }
     return;
@@ -1839,7 +1839,7 @@ void RenderFace(room *rp, int facenum) {
       }
     }
 
-    if (fp->flags & FF_LIGHTMAP) {
+    if (fp->flags.lightmap) {
       int lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
       uint16_t *data = (uint16_t *)lm_data(lm_handle);
       int w = lm_w(lm_handle);
@@ -1871,7 +1871,7 @@ void RenderFace(room *rp, int facenum) {
     }
   }
   // Get bitmap handle
-  if ((fp->flags & FF_DESTROYED) && (GameTextures[fp->tmap].flags.destroyable)) {
+  if ((fp->flags.destroyed) && (GameTextures[fp->tmap].flags.destroyable)) {
     bm_handle = GetTextureBitmap(GameTextures[fp->tmap].destroy_handle, 0);
     Q_ASSERT(bm_handle != -1);
   } else
@@ -1904,7 +1904,7 @@ void RenderFace(room *rp, int facenum) {
   else
     rend_SetColorModel(CM_RGB);
   // Set lighting map
-  if ((fp->flags & FF_LIGHTMAP) != 0) {
+  if ((fp->flags.lightmap) != 0) {
     if (GameTextures[fp->tmap].flags.saturate)
       rend_SetOverlayType(OT_NONE);
     else
@@ -1933,12 +1933,12 @@ void RenderFace(room *rp, int facenum) {
       do_triangle_test = 1;
   }
   if (do_triangle_test) {
-    fp->flags |= FF_TRIANGULATED;
+    fp->flags.triangulated = true;
     g3_SetTriangulationTest(1);
   }
   // Do special fog stuff for portal faces
   if (rp->flags.fog && !In_editor_mode) {
-    if (fp->portal_num != -1 && !(rp->portals[fp->portal_num].flags & PF_RENDER_FACES)) {
+    if (fp->portal_num != -1 && !(rp->portals[fp->portal_num].flags.render_faces)) {
       drawn = 1;
       goto draw_fog;
     }
@@ -1957,7 +1957,7 @@ void RenderFace(room *rp, int facenum) {
 
   // Do light saturation
   if (!Render_mirror_for_room && Rendering_main_view && drawn && fp->portal_num == -1 &&
-      ((fp->flags & FF_CORONA) || FastCoronas) && (fp->flags & FF_LIGHTMAP) && UseHardware &&
+      ((fp->flags.corona) || FastCoronas) && (fp->flags.lightmap) && UseHardware &&
       (GameTextures[fp->tmap].flags.light)) {
     if (Num_glows_this_frame < MAX_LIGHT_GLOWS && Detail_settings.Coronas_enabled) {
       LightGlowsThisFrame[Num_glows_this_frame].roomnum = rp - Rooms;
@@ -1971,14 +1971,14 @@ void RenderFace(room *rp, int facenum) {
       UpdateSpecularFace(rp, fp);
     else {
       if (GameTextures[fp->tmap].flags.smooth_specular) {
-        fp->flags |= FF_SPEC_INVISIBLE;
+        fp->flags.spec_invisible = true;
         UpdateSpecularFace(rp, fp);
       }
     }
   }
 
   // Draw scorches, if any
-  if (drawn && fp->flags & FF_SCORCHED && !Render_mirror_for_room) {
+  if (drawn && fp->flags.scorched && !Render_mirror_for_room) {
     if (!StateLimited)
       DrawScorches(ROOMNUM(rp), facenum);
     else {
@@ -2017,7 +2017,7 @@ draw_fog:
         g3_DrawLine(GR_RGB(255, 255, 255), pointlist[i], pointlist[(i + 1) % fp->num_verts]);
       }
     }
-    if ((fp->flags & FF_HAS_TRIGGER) && (fp->num_verts > 3)) {
+    if ((fp->flags.has_trigger) && (fp->num_verts > 3)) {
       g3_DrawLine(CUREDGE_COLOR, pointlist[0], pointlist[2]);
       g3_DrawLine(CUREDGE_COLOR, pointlist[1], pointlist[3]);
     }
@@ -2046,7 +2046,7 @@ draw_fog:
   if (Outline_lightmaps) {
     rend_SetTextureType(TT_FLAT);
     rend_SetAlphaType(AT_ALWAYS);
-    if (fp == &Curroomp->faces[Curface] && (fp->flags & FF_LIGHTMAP)) {
+    if (fp == &Curroomp->faces[Curface] && (fp->flags.lightmap)) {
       Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
 
       lightmap_info *lmi = &LightmapInfo[fp->lmi_handle];
@@ -2158,20 +2158,22 @@ void RenderRoomSorted(room *rp) {
   for (fn = rcount = 0; fn < rp->num_faces; fn++) {
     face *fp = &rp->faces[fn];
 
-    if ((!(fp->flags & FF_VISIBLE)) || ((fp->flags & FF_NOT_FACING))) {
-      fp->flags &= ~(FF_NOT_FACING | FF_VISIBLE);
+    if ((!(fp->flags.visible)) || ((fp->flags.not_facing))) {
+      fp->flags.not_facing = false;
+      fp->flags.visible = false;
       continue; // this guy shouldn't be rendered
     }
     // Clear visibility flags
-    fp->flags &= ~(FF_VISIBLE | FF_NOT_FACING);
+    fp->flags.visible = false;
+    fp->flags.not_facing = false;
 
     if (!FaceIsRenderable(rp, fp))
       continue; // skip this face
 #ifdef EDITOR
     if (In_editor_mode) {
-      if ((Shell_render_flag & SRF_NO_NON_SHELL) && (fp->flags & FF_NOT_SHELL))
+      if ((Shell_render_flag & SRF_NO_NON_SHELL) && (fp->flags.not_shell))
         continue;
-      if ((Shell_render_flag & SRF_NO_SHELL) && !(fp->flags & FF_NOT_SHELL))
+      if ((Shell_render_flag & SRF_NO_SHELL) && !(fp->flags.not_shell))
         continue;
     }
 #endif
@@ -2268,22 +2270,24 @@ void RenderRoomUnsorted(room *rp) {
     face *fp = &rp->faces[fn];
     int fogged_portal = 0;
 
-    if (!(fp->flags & FF_VISIBLE) || (fp->flags & FF_NOT_FACING)) {
+    if (!(fp->flags.visible) || (fp->flags.not_facing)) {
       if (GameTextures[fp->tmap].flags.smooth_specular) {
         if (!Render_mirror_for_room && Detail_settings.Specular_lighting &&
             (GameTextures[fp->tmap].flags.smooth_specular) &&
             ((fp->special_handle != BAD_SPECIAL_FACE_INDEX) || (rp->flags.external))) {
-          fp->flags |= FF_SPEC_INVISIBLE;
+          fp->flags.spec_invisible = true;
           UpdateSpecularFace(rp, fp);
         }
       }
-      fp->flags &= ~(FF_NOT_FACING | FF_VISIBLE);
+      fp->flags.not_facing = false;
+      fp->flags.visible = false;
       continue; // this guy shouldn't be rendered
     }
 
     // Clear visibility flags
     if (Render_mirror_for_room == false) {
-      fp->flags &= ~(FF_VISIBLE | FF_NOT_FACING);
+      fp->flags.visible = false;
+    fp->flags.not_facing = false;
     } else {
       if (rp == &Rooms[Mirror_room]) {
         if (rp->faces[fn].tmap == rp->faces[rp->mirror_face].tmap)
@@ -2296,14 +2300,14 @@ void RenderRoomUnsorted(room *rp) {
 
 #ifdef EDITOR
     if (In_editor_mode) {
-      if ((Shell_render_flag & SRF_NO_NON_SHELL) && (fp->flags & FF_NOT_SHELL))
+      if ((Shell_render_flag & SRF_NO_NON_SHELL) && (fp->flags.not_shell))
         continue;
-      if ((Shell_render_flag & SRF_NO_SHELL) && !(fp->flags & FF_NOT_SHELL))
+      if ((Shell_render_flag & SRF_NO_SHELL) && !(fp->flags.not_shell))
         continue;
     }
 #endif
 
-    if (fp->portal_num != -1 && !(rp->portals[fp->portal_num].flags & PF_RENDER_FACES) && (rp->flags.fog)) {
+    if (fp->portal_num != -1 && !(rp->portals[fp->portal_num].flags.render_faces) && (rp->flags.fog)) {
       fogged_portal = 1;
     }
 
@@ -2326,7 +2330,7 @@ void RenderRoomUnsorted(room *rp) {
       } else {
         // setup order list
         State_elements[rcount].facenum = fn;
-        if (fp->flags & FF_LIGHTMAP)
+        if (fp->flags.lightmap)
           State_elements[rcount].sort_key = (LightmapInfo[fp->lmi_handle].lm_handle * MAX_TEXTURES) + fp->tmap;
         else
           State_elements[rcount].sort_key = fp->tmap;
@@ -2852,7 +2856,7 @@ void RenderMirroredRoom(room *rp) {
 #if (defined(RELEASE) && defined(KATMAI))
   vector4 kat_vecs[MAX_VERTS_PER_ROOM];
 #endif
-  uint16_t save_flags[MAX_FACES_PER_ROOM];
+  face_flags_t save_flags[MAX_FACES_PER_ROOM];
   bool restore_index = true;
 
   // Save old rotated points
@@ -2868,8 +2872,8 @@ void RenderMirroredRoom(room *rp) {
   face *fp = &rp->faces[0];
   for (i = 0; i < rp->num_faces; i++, fp++) {
     save_flags[i] = fp->flags;
-    fp->flags &= ~FF_NOT_FACING;
-    fp->flags |= FF_VISIBLE;
+    fp->flags.not_facing = false;
+    fp->flags.visible = true;
   }
   room *mirror_rp = &Rooms[Mirror_room];
   vector3 *mirror_vec = &mirror_rp->verts[mirror_rp->faces[mirror_rp->mirror_face].face_verts[0]];
@@ -3372,7 +3376,7 @@ void RenderRoomOutline(room *rp) {
     for (v = 0; v < fp->num_verts; v++) {
       c0 = g3_RotatePoint(&p0, &rp->verts[fp->face_verts[v]]);
       c1 = g3_RotatePoint(&p1, &rp->verts[fp->face_verts[(v + 1) % fp->num_verts]]);
-      if ((!(fp->flags & FF_VISIBLE)) || ((fp->flags & FF_NOT_FACING))) {
+      if ((!(fp->flags.visible)) || ((fp->flags.not_facing))) {
         // wouldn't normally be rendered
         color = back_line_color;
       } else {

@@ -2003,7 +2003,7 @@ int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face
           } else
             num_faces++;
 
-          cur_room->faces[i].flags |= FF_TOUCHED;
+          cur_room->faces[i].flags.touched = true;
 
           portal_num = cur_room->faces[i].portal_num;
           if (portal_num >= 0) {
@@ -2250,9 +2250,9 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
         int connect_room;
 
         if (f_stop_at_closed_doors) {
-          if (((cur_room->portals[x].flags & PF_RENDER_FACES) &&
-              !(cur_room->portals[x].flags & PF_RENDERED_FLYTHROUGH)) ||
-               (cur_room->portals[x].flags & PF_BLOCK)) {
+          if (((cur_room->portals[x].flags.render_faces) &&
+              !(cur_room->portals[x].flags.rendered_flythrough)) ||
+               (cur_room->portals[x].flags.block)) {
             continue;
           }
         }
@@ -2378,7 +2378,7 @@ internal_try_again:
         int16_t count;
         bool f_backface;
 
-        if (cur_room->faces[i].flags & FF_NOT_SHELL)
+        if (cur_room->faces[i].flags.not_shell)
           continue;
 
         if (!room_manual_AABB(&cur_room->faces[i], &min_xyz, &max_xyz))
@@ -4390,7 +4390,7 @@ void fvi_rooms_objs(void) {
 inline int GetFaceAlpha(const face *fp, int bm_handle) {
   int ret = AT_ALWAYS;
   if (GameTextures[fp->tmap].flags.saturate) {
-    if (fp->flags & FF_VERTEX_ALPHA)
+    if (fp->flags.vertex_alpha)
       ret = AT_SATURATE_TEXTURE_VERTEX;
     else
       ret = AT_SATURATE_TEXTURE;
@@ -4401,7 +4401,7 @@ inline int GetFaceAlpha(const face *fp, int bm_handle) {
 
     // Someday we'll probably check the bitmap's alpha, too
     // Check for vertex alpha flag
-    if (fp->flags & FF_VERTEX_ALPHA)
+    if (fp->flags.vertex_alpha)
       ret |= ATF_VERTEX;
 
     // Check for transparency
@@ -4414,7 +4414,7 @@ inline int GetFaceAlpha(const face *fp, int bm_handle) {
 
 bool PhysPastPortal(const room *rp, const portal *pp) {
   // If we don't render the portal's faces, then we see through it
-  if (!(pp->flags & PF_RENDER_FACES))
+  if (!pp->flags.render_faces)
     return true;
 
   // Check if the face's texture has transparency

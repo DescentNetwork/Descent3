@@ -1005,15 +1005,15 @@ void CalculateFormFactorsRaycast() {
 
     if (rad_MaxSurface->surface_type == ST_ROOM || rad_MaxSurface->surface_type == ST_ROOM_OBJECT) {
       if (dest_surf->surface_type == ST_ROOM) {
-        if (!(Rooms[dest_surf->roomnum].faces[dest_surf->facenum].flags & FF_TOUCHED))
+        if (!Rooms[dest_surf->roomnum].faces[dest_surf->facenum].flags.touched)
           ignore = 1;
 
-        Rooms[dest_surf->roomnum].faces[dest_surf->facenum].flags &= ~FF_TOUCHED;
+        Rooms[dest_surf->roomnum].faces[dest_surf->facenum].flags.touched = false;
       }
     }
 
     if (dest_surf->surface_type == ST_ROOM)
-      Rooms[dest_surf->roomnum].faces[dest_surf->facenum].flags &= ~FF_TOUCHED;
+      Rooms[dest_surf->roomnum].faces[dest_surf->facenum].flags.touched = false;
 
     int dest_num_elements = dest_surf->xresolution * dest_surf->yresolution;
 

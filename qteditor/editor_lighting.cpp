@@ -202,7 +202,7 @@ void CopySqueezeDataForRooms(int roomnum, int facenum, uint16_t *dest_data, int 
 
     for (int j = 0; j < this_rp->num_faces; j++) {
 
-      if (!(this_rp->faces[j].flags & FF_LIGHTMAP))
+      if (!this_rp->faces[j].flags.lightmap)
         continue;
 
       if (this_rp->faces[j].lmi_handle == BAD_LMI_INDEX)
@@ -322,7 +322,7 @@ void ClearCombinePortals(int terrain) {
 
     for (int t = 0; t < rp->num_portals; t++) {
       portal *portal_a = &rp->portals[t];
-      portal_a->flags &= ~PF_COMBINED;
+      portal_a->flags.combined = false;
     }
   }
 }
@@ -350,7 +350,7 @@ void CheckCombinePortals(int terrain) {
       portal *portal_a = &rp->portals[t];
       face *face_a = &rp->faces[portal_a->portal_face];
 
-      if (portal_a->flags & PF_COMBINED)
+      if (portal_a->flags.combined)
         continue;
 
       // Don't combine if face is breakable
@@ -363,11 +363,11 @@ void CheckCombinePortals(int terrain) {
         portal *portal_b = &rp->portals[k];
         face *face_b = &rp->faces[portal_b->portal_face];
 
-        if (portal_b->flags & PF_COMBINED)
+        if (portal_b->flags.combined)
           continue;
 
         // Don't combine if one portal is render-faces and the other is not
-        if ((portal_a->flags & PF_RENDER_FACES) != (portal_b->flags & PF_RENDER_FACES))
+        if (portal_a->flags.render_faces != portal_b->flags.render_faces)
           continue;
 
         // Don't combine if face is breakable
@@ -413,8 +413,8 @@ void CheckCombinePortals(int terrain) {
                 continue;
 
         // Hurray! These portals can be combined*/
-        portal_a->flags |= PF_COMBINED;
-        portal_b->flags |= PF_COMBINED;
+        portal_a->flags.combined = true;
+        portal_b->flags.combined = true;
 
         portal_a->combine_master = t;
         portal_b->combine_master = t;
@@ -464,7 +464,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
       face *fp = &rp->faces[t];
       int lmi_handle = fp->lmi_handle;
 
-      if (!(fp->flags & FF_LIGHTMAP))
+      if (!fp->flags.lightmap)
         continue;
 
       if (lmi_handle == BAD_LMI_INDEX)
@@ -494,7 +494,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
           face *fp = &rp->faces[k];
           int lmi_handle = fp->lmi_handle;
 
-          if (!(fp->flags & FF_LIGHTMAP))
+          if (!fp->flags.lightmap)
             continue;
           if (lmi_handle == BAD_LMI_INDEX)
             continue;
@@ -989,8 +989,8 @@ void DoRadiosityForRooms() {
         Light_surfaces[surface_index].flags.touches_terrain = 0;
 
         if (Rooms[i].faces[t].portal_num != -1 &&
-            (((Rooms[i].portals[Rooms[i].faces[t].portal_num].flags & PF_RENDER_FACES) == 0) ||
-             ((Rooms[i].portals[Rooms[i].faces[t].portal_num].flags & PF_RENDER_FACES) &&
+            (((Rooms[i].portals[Rooms[i].faces[t].portal_num].flags.render_faces == 0)) ||
+             ((Rooms[i].portals[Rooms[i].faces[t].portal_num].flags.render_faces) &&
               (GameTextures[Rooms[i].faces[t].tmap].flags.tmap2))))
 
         {
@@ -1210,8 +1210,8 @@ void DoRadiosityForCurrentRoom(room *rp) {
       LOG_INFO("Room=%d Face %d is slivered!\n", rp - Rooms, t);
     }
 
-    if (rp->faces[t].portal_num != -1 && (((rp->portals[rp->faces[t].portal_num].flags & PF_RENDER_FACES) == 0) ||
-                                          ((rp->portals[rp->faces[t].portal_num].flags & PF_RENDER_FACES) &&
+    if (rp->faces[t].portal_num != -1 && (((rp->portals[rp->faces[t].portal_num].flags.render_faces == 0)) ||
+                                          ((rp->portals[rp->faces[t].portal_num].flags.render_faces) &&
                                            (GameTextures[rp->faces[t].tmap].flags.tmap2)))) {
       Light_surfaces[surface_index].surface_type = ST_PORTAL;
       Light_surfaces[surface_index].emittance.r = 0;
@@ -1310,7 +1310,7 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
     use_lightmap = 1;
 
   if (use_lightmap)
-    fp->flags |= FF_LIGHTMAP;
+    fp->flags.lightmap = true;
 
   for (i = 0; i < yres; i++) {
     for (t = 0; t < xres; t++) {
@@ -1970,7 +1970,7 @@ void DoRadiosityForTerrain() {
                                                    Light_surfaces[surf_index].yresolution);
 
         if (Rooms[i].faces[t].portal_num != -1 &&
-            !(Rooms[i].portals[Rooms[i].faces[t].portal_num].flags & PF_RENDER_FACES))
+            !(Rooms[i].portals[Rooms[i].faces[t].portal_num].flags.render_faces))
         {
           Light_surfaces[surf_index].surface_type = ST_PORTAL;
           Light_surfaces[surf_index].emittance.r = 0;

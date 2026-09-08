@@ -239,27 +239,27 @@ bool BOA_PassablePortal(int room, int portal_index, bool f_for_sound, bool f_mak
       return false;
 
     if (!f_for_sound) {
-      if (Rooms[room].portals[portal_index].flags & PF_TOO_SMALL_FOR_ROBOT)
+      if (Rooms[room].portals[portal_index].flags.too_small_for_robot)
         return false;
     }
 
-    if ((Rooms[room].portals[portal_index].flags & PF_RENDER_FACES) &&
-            !(Rooms[room].portals[portal_index].flags & PF_RENDERED_FLYTHROUGH) ||
-        (Rooms[room].portals[portal_index].flags & PF_BLOCK)) {
+    if ((Rooms[room].portals[portal_index].flags.render_faces) &&
+            !(Rooms[room].portals[portal_index].flags.rendered_flythrough) ||
+        (Rooms[room].portals[portal_index].flags.block)) {
       return false;
     }
   } else {
     if (f_making_robot_path_invalid_list) {
-      if (Rooms[room].portals[portal_index].flags & PF_TOO_SMALL_FOR_ROBOT)
+      if (Rooms[room].portals[portal_index].flags.too_small_for_robot)
         return false;
     }
 
-    if ((Rooms[room].portals[portal_index].flags & PF_BLOCK) &&
-        !(Rooms[room].portals[portal_index].flags & PF_BLOCK_REMOVABLE))
+    if ((Rooms[room].portals[portal_index].flags.block) &&
+        !(Rooms[room].portals[portal_index].flags.block_removable))
       return false;
 
-    if ((Rooms[room].portals[portal_index].flags & PF_RENDER_FACES) &&
-        !(Rooms[room].portals[portal_index].flags & PF_RENDERED_FLYTHROUGH)) {
+    if ((Rooms[room].portals[portal_index].flags.render_faces) &&
+        !(Rooms[room].portals[portal_index].flags.rendered_flythrough)) {
       if (!GameTextures[fp->tmap].flags.breakable &&
           !GameTextures[fp->tmap].flags.forcefield)
         return false;
@@ -1217,11 +1217,8 @@ int BOAGetMineChecksum() {
 
         total += fp->portal_num;
 
-        int flags = pp->flags;
-
-        flags &= (PF_BLOCK | PF_BLOCK_REMOVABLE | PF_RENDERED_FLYTHROUGH);
-
-        total += flags;
+        total += ((pp->flags.block ? 32 : 0) | (pp->flags.block_removable ? 64 : 0) |
+                  (pp->flags.rendered_flythrough ? 2 : 0));
       }
     }
     total += rp->num_faces << 8;
@@ -1945,9 +1942,9 @@ void find_small_portals() {
 
         if (xdiff < 6.0f || ydiff < 6.0f) {
           counter++;
-          Rooms[i].portals[j].flags |= PF_TOO_SMALL_FOR_ROBOT;
+          Rooms[i].portals[j].flags.too_small_for_robot = true;
         } else {
-          Rooms[i].portals[j].flags &= (~PF_TOO_SMALL_FOR_ROBOT);
+          Rooms[i].portals[j].flags.too_small_for_robot = false;
         }
       }
     }

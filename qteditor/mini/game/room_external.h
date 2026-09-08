@@ -112,24 +112,56 @@
 #define MAX_VERTS_PER_FACE 64    // max vertices per face
 
 // Face flags
-// NOTE:  If you add a flag here, please check the function CopyFaceFlags()
-#define FF_LIGHTMAP 0x0001        // Render this face with a lightmap on top
-#define FF_VERTEX_ALPHA 0x0002    // This face has vertex alpha blending
-#define FF_CORONA 0x0004          // This face has a lighting corona
-#define FF_TEXTURE_CHANGED 0x0008 // The texture on this face has changed
-#define FF_HAS_TRIGGER 0x0010     // This face has a trigger
-#define FF_SPEC_INVISIBLE 0x0020  // This face needs to be not rendered during specularity pass
-#define FF_FLOATING_TRIG 0x0040   // This face only exists as a floating trigger
-#define FF_DESTROYED 0x0080       // This face has been blown up
-#define FF_VOLUMETRIC 0x0100      // This face is a volumetric face
-#define FF_TRIANGULATED 0x0200    // ??
-#define FF_VISIBLE 0x0400         // This face is visible this frame (Valid only during render)
-#define FF_NOT_SHELL 0x0800       // This face is not part of the room shell
-#define FF_TOUCHED 0x1000         // This face has been touched by fvi_QuickDistFaceList
-#define FF_GOALFACE 0x2000        // This face is a goal texture face
-#define FF_NOT_FACING 0x4000      // This face is not facing us this frame (Valid only during render)
-#define FF_SCORCHED 0x8000        // This face has one or more scorch marks
-// NOTE:  If you add a flag here, please check the function CopyFaceFlags()
+struct [[gnu::packed]] face_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint16_t scorched : 1;          // This face has one or more scorch marks
+  uint16_t not_facing : 1;        // This face is not facing us this frame (Valid only during render)
+  uint16_t goalface : 1;          // This face is a goal texture face
+  uint16_t touched : 1;           // This face has been touched by fvi_QuickDistFaceList
+  uint16_t not_shell : 1;         // This face is not part of the room shell
+  uint16_t visible : 1;           // This face is visible this frame (Valid only during render)
+  uint16_t triangulated : 1;      // ??
+  uint16_t volumetric : 1;        // This face is a volumetric face
+  uint16_t destroyed : 1;         // This face has been blown up
+  uint16_t floating_trig : 1;     // This face only exists as a floating trigger
+  uint16_t spec_invisible : 1;    // This face needs to be not rendered during specularity pass
+  uint16_t has_trigger : 1;       // This face has a trigger
+  uint16_t texture_changed : 1;   // The texture on this face has changed
+  uint16_t corona : 1;            // This face has a lighting corona
+  uint16_t vertex_alpha : 1;      // This face has vertex alpha blending
+  uint16_t lightmap : 1;          // Render this face with a lightmap on top
+#else
+  uint16_t lightmap : 1;          // Render this face with a lightmap on top
+  uint16_t vertex_alpha : 1;      // This face has vertex alpha blending
+  uint16_t corona : 1;            // This face has a lighting corona
+  uint16_t texture_changed : 1;   // The texture on this face has changed
+  uint16_t has_trigger : 1;       // This face has a trigger
+  uint16_t spec_invisible : 1;    // This face needs to be not rendered during specularity pass
+  uint16_t floating_trig : 1;     // This face only exists as a floating trigger
+  uint16_t destroyed : 1;         // This face has been blown up
+  uint16_t volumetric : 1;        // This face is a volumetric face
+  uint16_t triangulated : 1;      // ??
+  uint16_t visible : 1;           // This face is visible this frame (Valid only during render)
+  uint16_t not_shell : 1;         // This face is not part of the room shell
+  uint16_t touched : 1;           // This face has been touched by fvi_QuickDistFaceList
+  uint16_t goalface : 1;          // This face is a goal texture face
+  uint16_t not_facing : 1;        // This face is not facing us this frame (Valid only during render)
+  uint16_t scorched : 1;          // This face has one or more scorch marks
+#endif
+};
+static_assert(sizeof(face_flags_t) == sizeof(uint16_t));
+
+// Serialized as the raw uint16 face-flag word on disk.
+inline byte_istream& operator>>(byte_istream& input, face_flags_t& data) {
+  uint16_t raw = 0;
+  input >> raw;
+  data = std::bit_cast<face_flags_t>(raw);
+  return input;
+}
+inline byte_ostream& operator<<(byte_ostream& output, const face_flags_t& data) {
+  return output << std::bit_cast<uint16_t>(data);
+}
 
 // UVLs for room verts
 struct roomUVL {
@@ -140,7 +172,7 @@ struct roomUVL {
 
 // an n-sided polygon used as part of a room or portal
 struct face {
-  uint16_t flags;     // flags for this face (see above)
+  face_flags_t flags;         // flags for this face (see above)
   uint8_t num_verts;  // how many vertices in this face
   int8_t portal_num; // which portal this face is part of, or -1 if none
 
@@ -156,17 +188,44 @@ struct face {
 };
 
 // Portal flags
-#define PF_RENDER_FACES 1        // render the face(s) in the portal
-#define PF_RENDERED_FLYTHROUGH 2 // allow flythrough of rendered faces
-#define PF_TOO_SMALL_FOR_ROBOT 4 // Too small for a robot to use for path following (like a small window)
-#define PF_COMBINED 8            // This portal has been combined with another for rendering purposes
-#define PF_CHANGED 16            // Used for multiplayer - this portal has been changed
-#define PF_BLOCK 32
-#define PF_BLOCK_REMOVABLE 64
+struct [[gnu::packed]] portal_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 25;
+  uint32_t block_removable : 1;
+  uint32_t block : 1;              // This portal is blocked
+  uint32_t changed : 1;            // Used for multiplayer - this portal has been changed
+  uint32_t combined : 1;           // This portal has been combined with another for rendering purposes
+  uint32_t too_small_for_robot : 1; // Too small for a robot to use for path following
+  uint32_t rendered_flythrough : 1; // allow flythrough of rendered faces
+  uint32_t render_faces : 1;       // render the face(s) in the portal
+#else
+  uint32_t render_faces : 1;       // render the face(s) in the portal
+  uint32_t rendered_flythrough : 1; // allow flythrough of rendered faces
+  uint32_t too_small_for_robot : 1; // Too small for a robot to use for path following
+  uint32_t combined : 1;           // This portal has been combined with another for rendering purposes
+  uint32_t changed : 1;            // Used for multiplayer - this portal has been changed
+  uint32_t block : 1;              // This portal is blocked
+  uint32_t block_removable : 1;
+  uint32_t padding : 25;
+#endif
+};
+static_assert(sizeof(portal_flags_t) == sizeof(uint32_t));
+
+// Serialized as the raw uint32 portal-flag word on disk.
+inline byte_istream& operator>>(byte_istream& input, portal_flags_t& data) {
+  uint32_t raw = 0;
+  input >> raw;
+  data = std::bit_cast<portal_flags_t>(raw);
+  return input;
+}
+inline byte_ostream& operator<<(byte_ostream& output, const portal_flags_t& data) {
+  return output << std::bit_cast<uint32_t>(data);
+}
 
 // a connection between two rooms
 struct portal {
-  int flags;         // flags for this portal
+  portal_flags_t flags;      // flags for this portal
   int16_t portal_face; // the face for this portal
   int16_t croom;       // the room this portal connects to
   int16_t cportal;     // the portal in croom this portal connects to
@@ -240,6 +299,17 @@ struct [[gnu::packed]] room_flags_t
 #endif
 };
 static_assert(sizeof(room_flags_t) == sizeof(uint32_t));
+
+// Serialized as the raw uint32 room-flag word on disk.
+inline byte_istream& operator>>(byte_istream& input, room_flags_t& data) {
+  uint32_t raw = 0;
+  input >> raw;
+  data = std::bit_cast<room_flags_t>(raw);
+  return input;
+}
+inline byte_ostream& operator<<(byte_ostream& output, const room_flags_t& data) {
+  return output << std::bit_cast<uint32_t>(data);
+}
 
 // the basic building-block of a Descent 3 level
 struct room {

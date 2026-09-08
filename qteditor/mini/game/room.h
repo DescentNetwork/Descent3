@@ -519,14 +519,14 @@ static inline int GetFacePhysicsFlags(const room *rp, const face *fp) {
   int ret = 0;
 
   // If face is a trigger, must record
-  if (fp->flags & FF_HAS_TRIGGER)
+  if (fp->flags.has_trigger)
     ret |= FPF_RECORD;
 
   // If it's a floating trigger, then we're done
-  if (fp->flags & FF_FLOATING_TRIG)
+  if (fp->flags.floating_trig)
     return ret;
 
-  if (fp->flags & FF_VOLUMETRIC)
+  if (fp->flags.volumetric)
     return ret;
 
   // Deal with faces that are part of a portal
@@ -537,7 +537,7 @@ static inline int GetFacePhysicsFlags(const room *rp, const face *fp) {
     ret |= FPF_PORTAL;
 
     // Face is flythrough if we don't render the portal faces, or it's marked rendered flythrough
-    if (!(pp->flags & PF_RENDER_FACES) || (pp->flags & PF_RENDERED_FLYTHROUGH))
+    if (!(pp->flags.render_faces) || (pp->flags.rendered_flythrough))
       return ret;
   }
 

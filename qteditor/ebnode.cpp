@@ -115,18 +115,18 @@ bool EBNode_VerifyGraph() {
         } else if (Rooms[i].portals[j].bnode_index < 0) {
           bool f_add = true;
 
-          if (!((rp->portals[j].flags & PF_BLOCK) && !(rp->portals[j].flags & PF_BLOCK_REMOVABLE))) {
+          if (!((rp->portals[j].flags.block) && !(rp->portals[j].flags.block_removable))) {
             f_add = false;
           }
 
-          if ((rp->portals[j].flags & PF_RENDER_FACES) && !(rp->portals[j].flags & PF_RENDERED_FLYTHROUGH)) {
+          if ((rp->portals[j].flags.render_faces) && !(rp->portals[j].flags.rendered_flythrough)) {
             if (!(GameTextures[rp->faces[rp->portals[j].portal_face].tmap].flags.breakable ||
               GameTextures[rp->faces[rp->portals[j].portal_face].tmap].flags.forcefield)) {
               f_add = false;
             }
           }
 
-          if (rp->portals[j].flags & PF_TOO_SMALL_FOR_ROBOT) {
+          if (rp->portals[j].flags.too_small_for_robot) {
             f_add = false;
           }
 
@@ -171,7 +171,7 @@ bool EBNode_VerifyGraph() {
         continue;
 
       for (int j = 0; j < Rooms[i].num_portals; j++) {
-        if ((Rooms[i].portals[j].flags & PF_BLOCK) && !(Rooms[i].portals[j].flags & PF_BLOCK_REMOVABLE)) {
+        if ((Rooms[i].portals[j].flags.block) && !(Rooms[i].portals[j].flags.block_removable)) {
           if (Rooms[i].portals[j].bnode_index >= 0) {
             LOG_INFO("EBNode Verify: Removed a node.\n");
             EBNode_RemoveNode(i, Rooms[i].portals[j].bnode_index);
@@ -179,7 +179,7 @@ bool EBNode_VerifyGraph() {
           continue;
         }
 
-        if ((Rooms[i].portals[j].flags & PF_RENDER_FACES) && !(Rooms[i].portals[j].flags & PF_RENDERED_FLYTHROUGH)) {
+        if ((Rooms[i].portals[j].flags.render_faces) && !(Rooms[i].portals[j].flags.rendered_flythrough)) {
           if (!(GameTextures[Rooms[i].faces[Rooms[i].portals[j].portal_face].tmap].flags.breakable ||
                 GameTextures[Rooms[i].faces[Rooms[i].portals[j].portal_face].tmap].flags.forcefield)) {
             if (Rooms[i].portals[j].bnode_index >= 0) {
@@ -190,7 +190,7 @@ bool EBNode_VerifyGraph() {
           }
         }
 
-        if (Rooms[i].portals[j].flags & PF_TOO_SMALL_FOR_ROBOT) {
+        if (Rooms[i].portals[j].flags.too_small_for_robot) {
           if (Rooms[i].portals[j].bnode_index >= 0) {
             LOG_INFO("EBNode Verify: Removed a node.\n");
             EBNode_RemoveNode(i, Rooms[i].portals[j].bnode_index);
@@ -666,8 +666,8 @@ void EBNode_MakeDefaultInterRoomEdges(int roomnum) {
   for (int i = 0; i < Rooms[roomnum].num_portals; i++) {
     if (Rooms[roomnum].portals[i].cportal >= 0 && Rooms[roomnum].portals[i].croom > roomnum &&
         !(Rooms[Rooms[roomnum].portals[i].croom].flags.external)) {
-      if ((Rooms[roomnum].portals[i].flags & PF_RENDER_FACES) &&
-          !(Rooms[roomnum].portals[i].flags & PF_RENDERED_FLYTHROUGH)) {
+      if ((Rooms[roomnum].portals[i].flags.render_faces) &&
+          !(Rooms[roomnum].portals[i].flags.rendered_flythrough)) {
         if (!(GameTextures[Rooms[roomnum].faces[Rooms[roomnum].portals[i].portal_face].tmap].flags.breakable ||
               GameTextures[Rooms[roomnum].faces[Rooms[roomnum].portals[i].portal_face].tmap].flags.forcefield))
           continue;
@@ -682,13 +682,13 @@ static void EBNode_RemoveNodesAtUnopenablePortals(int roomnum) {
   Q_ASSERT(Rooms[roomnum].num_portals + 1 == (int)Rooms[roomnum].bn_info.nodes.size());
 
   for (int i = Rooms[roomnum].num_portals - 1; i >= 0; i--) {
-    if ((Rooms[roomnum].portals[i].flags & PF_BLOCK) && !(Rooms[roomnum].portals[i].flags & PF_BLOCK_REMOVABLE)) {
+    if ((Rooms[roomnum].portals[i].flags.block) && !(Rooms[roomnum].portals[i].flags.block_removable)) {
       EBNode_RemoveNode(roomnum, i);
       continue;
     }
 
-    if ((Rooms[roomnum].portals[i].flags & PF_RENDER_FACES) &&
-        !(Rooms[roomnum].portals[i].flags & PF_RENDERED_FLYTHROUGH)) {
+    if ((Rooms[roomnum].portals[i].flags.render_faces) &&
+        !(Rooms[roomnum].portals[i].flags.rendered_flythrough)) {
       if (!(GameTextures[Rooms[roomnum].faces[Rooms[roomnum].portals[i].portal_face].tmap].flags.breakable ||
             GameTextures[Rooms[roomnum].faces[Rooms[roomnum].portals[i].portal_face].tmap].flags.forcefield)) {
         EBNode_RemoveNode(roomnum, i);
@@ -696,7 +696,7 @@ static void EBNode_RemoveNodesAtUnopenablePortals(int roomnum) {
       }
     }
 
-    if (Rooms[roomnum].portals[i].flags & PF_TOO_SMALL_FOR_ROBOT) {
+    if (Rooms[roomnum].portals[i].flags.too_small_for_robot) {
       EBNode_RemoveNode(roomnum, i);
       continue;
     }

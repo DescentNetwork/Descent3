@@ -165,7 +165,7 @@ void DeleteScorch(int index) {
   }
 
   // If we're here, there are no other scorches on the face, so clear the flag
-  Rooms[RF_ROOM(roomface)].faces[RF_FACE(roomface)].flags &= ~FF_SCORCHED;
+  Rooms[RF_ROOM(roomface)].faces[RF_FACE(roomface)].flags.scorched = false;
   // mprintf(0,"Clearing scorch flag from %d:%d\n",RF_ROOM(roomface),RF_FACE(roomface));
 }
 
@@ -278,7 +278,7 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
   sp->uz = m.uvec.z() * 127;
 
   // Flag this face as being scorched
-  fp->flags |= FF_SCORCHED;
+  fp->flags.scorched = true;
 }
 
 // The UVs for the blob bitmap

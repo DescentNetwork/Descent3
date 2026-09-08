@@ -1160,7 +1160,7 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
       else
         Sound_system.Play3dSound(sound_override_glass_breaking, SND_PRIORITY_HIGH, weapon);
 
-      fp->flags |= FF_DESTROYED;
+      fp->flags.destroyed = true;
     }
 
     // Check for a breakable face: If the texture is breakable and it's on a portal

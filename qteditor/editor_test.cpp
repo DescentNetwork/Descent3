@@ -1954,7 +1954,7 @@ private slots:
     face src, dst;
     memset(&src, 0, sizeof(src));
     InitRoomFace(&src, 4);
-    src.flags = FF_GOALFACE;
+    src.flags.goalface = true;
     src.portal_num = 5;
     src.tmap = 42;
     src.light_multiple = 3;
@@ -1972,9 +1972,9 @@ private slots:
     QCOMPARE(dst.tmap, 42);
     QCOMPARE(dst.light_multiple, 3);
     QCOMPARE(dst.portal_num, -1);  // always cleared
-    QVERIFY(dst.flags & FF_GOALFACE);
-    QVERIFY(!(dst.flags & FF_LIGHTMAP));   // cleared
-    QVERIFY(!(dst.flags & FF_HAS_TRIGGER)); // cleared
+    QVERIFY(dst.flags.goalface);
+    QVERIFY(!dst.flags.lightmap);   // cleared
+    QVERIFY(!dst.flags.has_trigger); // cleared
     for (int i = 0; i < 4; i++) {
       QCOMPARE(dst.face_verts[i], src.face_verts[i]);
       QCOMPARE(dst.face_uvls[i].u, src.face_uvls[i].u);
@@ -4292,7 +4292,7 @@ private slots:
 
     if (portalFace >= 0) {
       rp->faces[portalFace].portal_num = 0;
-      rp->portals[0].flags = 0;
+      rp->portals[0].flags = {};
       rp->portals[0].croom = (int16_t)otherIdx;
       rp->portals[0].cportal = 0;
       rp->portals[0].portal_face = (int16_t)portalFace;

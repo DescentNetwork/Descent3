@@ -57,7 +57,7 @@ static void EditorDeleteTrigger(int trig_num) {
   trigger *tp = &Triggers[trig_num];
   room *rp = &Rooms[tp->roomnum];
   face *fp = &rp->faces[tp->facenum];
-  fp->flags &= ~FF_HAS_TRIGGER;
+  fp->flags.has_trigger = false;
   for (int i = trig_num; i < Num_triggers - 1; i++)
     Triggers[i] = Triggers[i + 1];
   Num_triggers--;
@@ -168,8 +168,8 @@ void CopyFace(face *dfp, face *sfp) {
   dfp->tmap = sfp->tmap;
   dfp->light_multiple = sfp->light_multiple;
 
-  dfp->flags &= ~FF_LIGHTMAP;
-  dfp->flags &= ~FF_HAS_TRIGGER;
+  dfp->flags.lightmap = false;
+  dfp->flags.has_trigger = false;
 
   for (int i = 0; i < sfp->num_verts; i++) {
     dfp->face_verts[i] = sfp->face_verts[i];
@@ -182,9 +182,9 @@ void CopyFace(face *dfp, face *sfp) {
 // Copy goal face flags from one face to another.
 // ============================================================================
 void CopyFaceFlags(face *dfp, face *sfp) {
-  dfp->flags = 0;
-  if (sfp->flags & FF_GOALFACE)
-    dfp->flags |= FF_GOALFACE;
+  dfp->flags = {};
+  if (sfp->flags.goalface)
+    dfp->flags.goalface = true;
 }
 
 // ============================================================================
@@ -296,7 +296,7 @@ bool FindSharedEdge(face *fp0, face *fp1, int *vn0, int *vn1) {
 void DeleteRoomFace(room *rp, int facenum) {
   int f, i, t;
 
-  if (rp->faces[facenum].flags & FF_HAS_TRIGGER)
+  if (rp->faces[facenum].flags.has_trigger)
     EditorDeleteTriggerByRoomFace(ROOMNUM(rp), facenum);
 
   for (int p = 0; p < rp->num_portals; p++) {
@@ -365,7 +365,7 @@ void DeleteRoomPortal(room *rp, int portalnum) {
 // ============================================================================
 int AddPortal(room *rp) {
   rp->portals.resize(rp->num_portals + 1);
-  rp->portals[rp->num_portals].flags = 0;
+  rp->portals[rp->num_portals].flags = {};
   rp->portals[rp->num_portals].bnode_index = -1;
 
   return rp->num_portals++;

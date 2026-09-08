@@ -295,7 +295,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     }
 
     // Make sure there already is a lightmap for this face
-    if (!(fp->flags & FF_LIGHTMAP))
+    if (!fp->flags.lightmap)
       continue;
 
     if (Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))
@@ -1090,7 +1090,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     }
 
     // Make sure there already is a lightmap for this face
-    if (!(fp->flags & FF_LIGHTMAP))
+    if (!fp->flags.lightmap)
       continue;
 
     if (Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))
@@ -2042,7 +2042,7 @@ void DestroyLight(int roomnum, int facenum) {
     Q_ASSERT(facelist[i].face_index < Rooms[facelist[i].room_index].num_faces);
 
     // Make sure there already is a lightmap for this face
-    if (!(fp->flags & FF_LIGHTMAP))
+    if (!fp->flags.lightmap)
       continue;
 
     if (GameTextures[fp->tmap].flags.light)

@@ -560,7 +560,7 @@ void EditorView::renderRooms() {
 
         // Floating trigger: draw edges directly in red, including the two
         // diagonals the Win32 editor adds (DrawRoom, drawworld.cpp:618-622).
-        if (fp->flags & FF_FLOATING_TRIG) {
+        if (fp->flags.floating_trig) {
           glColor3fv(kWfFloatTrigColor);
           glLineWidth(1.0f);
           glBegin(GL_LINE_LOOP);
@@ -618,7 +618,7 @@ void EditorView::renderRooms() {
         resetEdgeTable();
         for (int i = 0; i < rp->num_faces; i++) {
           face *fp = &rp->faces[i];
-          if ((fp->flags & FF_FLOATING_TRIG) || fp->portal_num != -1)
+          if ((fp->flags.floating_trig) || fp->portal_num != -1)
             continue;
           int fnv = fp->num_verts;
           if (fnv > 16)
@@ -857,7 +857,7 @@ void EditorView::renderOverlays() {
     glLineWidth(1.0f);
     for (int i = 0; i < Curroomp->num_faces; i++) {
       face *fp = &Curroomp->faces[i];
-      if ((fp->flags & FF_FLOATING_TRIG) || fp->portal_num != -1)
+      if ((fp->flags.floating_trig) || fp->portal_num != -1)
         continue;
       float sx[16], sy[16];
       int nv = fp->num_verts;
