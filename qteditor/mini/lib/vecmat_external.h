@@ -461,3 +461,9 @@ inline byte_istream& operator >>(byte_istream& input, vector3& data)
 
 inline byte_ostream& operator <<(byte_ostream& output, const vector3& data)
   { return output << data.x() << data.y() << data.z(); }
+
+inline byte_istream& operator >>(byte_istream& input, matrix& data)
+  { return input >> data.rvec >> data.uvec >> data.fvec; }
+
+inline byte_ostream& operator <<(byte_ostream& output, const matrix& data)
+  { return output << data.rvec << data.uvec << data.fvec; }
