@@ -101,27 +101,31 @@ int GetTextureBitmap(int handle, int framenum, bool force) {
     if (GameTextures[handle].procedural == NULL)
       AllocateProceduralForTexture(handle);
 
-    if (GameTextures[handle].procedural->last_procedural_frame == FrameCount)
-      do_eval = false;
-
-    if (d3::chrono::last_update() <
-        GameTextures[handle].procedural->last_evaluation_time + GameTextures[handle].procedural->evaluation_time)
-      do_eval = false;
-
-    if (!force) // && !Detail_settings.Procedurals_enabled)
-    {
-      if (d3::chrono::last_update() < GameTextures[handle].procedural->last_evaluation_time + 10.0)
+    // The procedural machinery is only partially ported (AllocateProceduralForTexture
+    // can fail and leave the pointer null); fall back to the static bitmap in that case.
+    if (GameTextures[handle].procedural != NULL) {
+      if (GameTextures[handle].procedural->last_procedural_frame == FrameCount)
         do_eval = false;
-    }
 
-    if (do_eval) {
-      //EvaluateProcedural(handle);
-      GameTextures[handle].procedural->last_procedural_frame = FrameCount;
-      GameTextures[handle].procedural->last_evaluation_time = d3::chrono::last_update();
-      src_bitmap = GameTextures[handle].procedural->procedural_bitmap;
-      GameBitmaps[src_bitmap].flags |= BF_CHANGED;
-    } else
-      src_bitmap = GameTextures[handle].procedural->procedural_bitmap;
+      if (d3::chrono::last_update() <
+          GameTextures[handle].procedural->last_evaluation_time + GameTextures[handle].procedural->evaluation_time)
+        do_eval = false;
+
+      if (!force) // && !Detail_settings.Procedurals_enabled)
+      {
+        if (d3::chrono::last_update() < GameTextures[handle].procedural->last_evaluation_time + 10.0)
+          do_eval = false;
+      }
+
+      if (do_eval) {
+        //EvaluateProcedural(handle);
+        GameTextures[handle].procedural->last_procedural_frame = FrameCount;
+        GameTextures[handle].procedural->last_evaluation_time = d3::chrono::last_update();
+        src_bitmap = GameTextures[handle].procedural->procedural_bitmap;
+        GameBitmaps[src_bitmap].flags |= BF_CHANGED;
+      } else
+        src_bitmap = GameTextures[handle].procedural->procedural_bitmap;
+    }
   }
 
   return src_bitmap;

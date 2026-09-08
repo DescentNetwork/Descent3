@@ -965,35 +965,3 @@ int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname,
 
   return src_bm;
 }
-
-// Loads the frame 0 image of an Outrage animation file (.oaf) vclip container
-// held fully in memory (a HOG entry).  OAF files are containers: a short
-// header (mirrors the engine's vclip.cpp PageInVClip) followed by one
-// contiguous OGF/TGA bitmap per frame.  The editor renders an animated texture
-// from a single frame, so frame 0's bitmap handle is returned.  Returns -1 on
-// any error.
-int bm_LoadOAFFromMemory(const uint8_t *data, size_t size, const std::string &fname, int format) {
-  posix_istream infile(const_cast<uint8_t *>(data), size, std::ios_base::in);
-  if (!infile.is_open()) {
-    LOG_ERROR("bm_LoadOAFFromMemory: Can't open in-memory stream for %s.", fname.c_str());
-    return -1;
-  }
-
-  // Vclip container header (engine vclip.cpp PageInVClip):
-  //   versioned: 0x7f version num_frames frame_time(float32)
-  //   legacy:    num_frames frame_time(float32) unknown(float32) unknown(int32) unknown(float32)
-  if (rdByte(infile) == 127) {
-    rdByte(infile);  // version
-    rdByte(infile);  // num_frames
-    rdIntLE(infile); // frame_time bits
-  } else {
-    rdIntLE(infile); // legacy header: all remaining fields are 32-bit words
-    rdIntLE(infile);
-    rdIntLE(infile);
-    rdIntLE(infile);
-  }
-
-  // Every remaining byte belongs to frame 0; decode it as a plain OGF/TGA.
-  const size_t frame_start = static_cast<size_t>(infile.tell());
-  return bm_LoadBitmapFromMemory(data + frame_start, size - frame_start, fname.c_str(), format, 0);
-}

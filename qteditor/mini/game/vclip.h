@@ -18,6 +18,8 @@
 #ifndef VCLIP_H
 #define VCLIP_H
 
+#include <cstddef>
+#include <cstdint>
 #include <filesystem>
 
 #include "fix.h"
@@ -79,5 +81,10 @@ int FindVClipName(const std::string& name);
 
 // Pages in a vclip if it needs to be
 void PageInVClip(int vcnum);
+
+// Allocs and loads a fully-resident vclip from an in-memory OAF payload (a HOG
+// entry): parses the container header and pages every frame into GameVClips[].
+// Returns the vclip index, or -1 on error.
+int LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &name, int format);
 
 #endif

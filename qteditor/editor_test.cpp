@@ -142,6 +142,7 @@ bool EBNode_VerifyGraph();
 #include "hog2_format.h"
 #include "iff.h"
 #include "posix_stream.h"
+#include "vclip.h"
 #include "table_manage.h"
 
 #include <algorithm>
@@ -798,9 +799,11 @@ private slots:
     // A nonzero fraction of textures must have a real, resident bitmap whose
     // dimensions are known (bm_w/bm_h > 0).  The stub decoder returned 0 for
     // everything, so a healthy count proves the ported decoder works.
+    // GetTextureBitmap resolves both static bitmaps and animated vclips to the
+    // bitmap actually used for rendering.
     int withBitmap = 0, nonProcedural = 0;
     for (int i = 0; i < Num_textures; i++) {
-      const int bm = GameTextures[i].bm_handle;
+      const int bm = GetTextureBitmap(i, 0);
       if (GameTextures[i].flags.procedural) { nonProcedural++; continue; }
       nonProcedural++;
       if (bm >= 0 && bm_w(bm, 0) > 0 && bm_h(bm, 0) > 0) withBitmap++;
@@ -810,13 +813,23 @@ private slots:
     // returned 0 for everything, so a healthy fraction proves the ported decoder works.
     QVERIFY(withBitmap > nonProcedural / 2);
 
+    // Every animated texture must hold a paged-in vclip with a frame list.
+    for (int i = 0; i < Num_textures; i++) {
+      if (!GameTextures[i].flags.animated || GameTextures[i].bm_handle < 0)
+        continue;
+      const vclip &vc = GameVClips[GameTextures[i].bm_handle];
+      QVERIFY(vc.used >= 1);
+      QVERIFY(!(vc.flags & VCF_NOT_RESIDENT));
+      QVERIFY(vc.num_frames >= 2);
+    }
+
     errno = 0;
   }
 
   // Animated texture files (.oaf) are vclip containers: a short header followed
-  // by one OGF bitmap per frame.  Ensure frame 0 is decoded (previously the
-  // whole container was fed to the TGA decoder and rejected with "Can't read
-  // this type of TGA").
+  // by one OGF bitmap per frame.  Ensure every frame is decoded into a
+  // GameVClips entry (previously the whole container was fed to the TGA
+  // decoder and rejected with "Can't read this type of TGA").
   void testOafVClipTextureLoads()
   {
     const std::filesystem::path hog = "/mnt/media/games/pc/Descent 3/d3.hog";
@@ -848,12 +861,43 @@ private slots:
     in.seek(archive.fileOffset(entry), std::ios_base::beg);
     in.read(buf.data(), entry->len);
 
-    const int bm = bm_LoadOAFFromMemory(buf.data(), buf.size(), "pillar.oaf", BITMAP_FORMAT_1555);
-    QVERIFY2(bm >= 0, "frame 0 of the OAF container should decode as an OGF bitmap");
+    const int vc = LoadVClipFromMemory(buf.data(), buf.size(), "pillar.oaf", BITMAP_FORMAT_1555);
+    QVERIFY2(vc >= 0, "OAF containers should page in as a resident vclip");
 
-    // pillar.oaf is an 8-frame 1555 mipmapped vclip whose frames are 128x128.
-    QCOMPARE(bm_w(bm, 0), 128);
-    QCOMPARE(bm_h(bm, 0), 128);
+    // pillar.oaf is an 8-frame 1555 vclip whose frames are all 128x128.
+    QVERIFY(GameVClips[vc].used >= 1);
+    QVERIFY(!(GameVClips[vc].flags & VCF_NOT_RESIDENT));
+    QCOMPARE(GameVClips[vc].num_frames, 8);
+    for (int i = 0; i < GameVClips[vc].num_frames; i++) {
+      const int bm = GameVClips[vc].frames[i];
+      QVERIFY(bm >= 0);
+      QCOMPARE(bm_w(bm, 0), 128);
+      QCOMPARE(bm_h(bm, 0), 128);
+    }
+
+    // Loading the same vclip again returns the existing (resident) entry.
+    const int again = LoadVClipFromMemory(buf.data(), buf.size(), "pillar.oaf", BITMAP_FORMAT_1555);
+    QCOMPARE(again, vc);
+
+    // explosion.oaf uses the legacy, non-versioned container header (num_frames
+    // byte, not 0x7f) followed by four 32-bit words; 12 frames.
+    auto legacy = archive.end();
+    for (auto it = archive.begin(); it != archive.end(); ++it) {
+      if (lowercase(it->name.string()) == "explosion.oaf") {
+        legacy = it;
+        break;
+      }
+    }
+    QVERIFY(legacy != archive.end());
+    std::vector<uint8_t> legacy_buf(legacy->len);
+    in.seek(archive.fileOffset(legacy), std::ios_base::beg);
+    in.read(legacy_buf.data(), legacy->len);
+    const int legacy_vc = LoadVClipFromMemory(legacy_buf.data(), legacy_buf.size(), "explosion.oaf", BITMAP_FORMAT_1555);
+    QVERIFY2(legacy_vc >= 0, "legacy OAF containers should page in as a resident vclip");
+    QVERIFY(!(GameVClips[legacy_vc].flags & VCF_NOT_RESIDENT));
+    QCOMPARE(GameVClips[legacy_vc].num_frames, 12);
+    for (int i = 0; i < GameVClips[legacy_vc].num_frames; i++)
+      QVERIFY(GameVClips[legacy_vc].frames[i] >= 0);
 
     errno = 0;
   }

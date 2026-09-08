@@ -59,6 +59,7 @@
 #include "megacell.h"
 #include "iff.h"
 #include "bitmap.h"
+#include "vclip.h"
 
 #include "string_helpers.h"
 
@@ -113,9 +114,10 @@ static int loadTextureFromArchive(hog2::archive_t &archive, posix_istream &hogin
 
   // Animated texture containers (.oaf) lead with a vclip header followed by
   // one OGF bitmap per frame; the TGA decoder would reject the container, so
-  // route them through the OAF loader which returns frame 0's bitmap.
+  // route them through the vclip loader.  The returned index is the vclip,
+  // which animated textures store in bm_handle (see GetTextureBitmap).
   if (lowercase(img).ends_with(".oaf"))
-    return bm_LoadOAFFromMemory(buf.data(), buf.size(), img, format);
+    return LoadVClipFromMemory(buf.data(), buf.size(), img, format);
 
   return bm_LoadBitmapFromMemory(buf.data(), buf.size(), img.c_str(), format, 0);
 }
@@ -195,8 +197,13 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
         GameTextures[Num_textures].bm_handle = -1;
         if (!texpage.bitmap_name.empty()) {
           int bm = loadTextureFromArchive(archive, hogin, texpage.bitmap_name, BITMAP_FORMAT_1555);
-          if (bm >= 0)
+          if (bm >= 0) {
             GameTextures[Num_textures].bm_handle = bm;
+            // .oaf textures are vclips: bm_handle holds the vclip index and the
+            // animated flag makes GetTextureBitmap cycle through its frames.
+            if (lowercase(texpage.bitmap_name).ends_with(".oaf"))
+              GameTextures[Num_textures].flags.animated = true;
+          }
         }
         Num_textures++;
       } else {

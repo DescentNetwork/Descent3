@@ -165,6 +165,7 @@
 #include "ddio.h"
 #include "game.h"
 #include "gametexture.h"
+#include "iff.h"
 #include "log.h"
 #include "mem.h"
 #include "pstypes.h"
@@ -285,131 +286,94 @@ int SaveVClip(const std::filesystem::path& filename, int num) {
 
 extern int Low_vidmem;
 // Pages in a vclip if it needs to be
-void PageInVClip(int vcnum)
-{
-#if 0
-  Q_ASSERT(GameVClips[vcnum].used);
+void PageInVClip(int vcnum) {
+  Q_ASSERT(GameVClips[vcnum].used >= 1);
   if (!(GameVClips[vcnum].flags & VCF_NOT_RESIDENT))
     return;
 
-  int mipped = 0;
-  int texture_size = GameVClips[vcnum].target_size;
-  vclip *vc = &GameVClips[vcnum];
-  if (vc->flags & VCF_WANTS_MIPPED)
-    mipped = 1;
-
-  CFILE *infile = (CFILE *)cfopen(vc->name, "rb");
-  if (!infile) {
-    // due to a bug in some 3rd party tablefile editors, full paths might
-    // have been used when they shouldn't have been
-    char *end_ptr, *start_ptr;
-    start_ptr = vc->name;
-    end_ptr = start_ptr + strlen(start_ptr) - 1;
-    while ((end_ptr >= start_ptr) && (*end_ptr != '\\'))
-      end_ptr--;
-    if (end_ptr < start_ptr) {
-      LOG_WARNING("Couldn't load vclip %s!", vc->name);
-      return;
-    }
-
-    Q_ASSERT(*end_ptr == '\\');
-    end_ptr++;
-
-    infile = (CFILE *)cfopen(end_ptr, "rb");
-    if (!infile) {
-      LOG_WARNING("Couldn't load vclip %s!", vc->name);
-      return;
-    }
-  }
-
-  LOG_DEBUG("Paging in vclip %s!", vc->name);
-
-  uint8_t start_val = cf_ReadByte(infile);
-  int version = 0;
-  if (start_val != 127) {
-    version = 0;
-    vc->num_frames = start_val;
-    cf_ReadFloat(infile);
-    vc->frame_time = cf_ReadFloat(infile);
-    cf_ReadInt(infile);
-    cf_ReadFloat(infile);
-    vc->frame_time = DEFAULT_FRAMETIME;
-  } else {
-    version = cf_ReadByte(infile);
-    vc->num_frames = cf_ReadByte(infile);
-    vc->frame_time = cf_ReadFloat(infile);
-    vc->frame_time = DEFAULT_FRAMETIME;
-  }
-
-  for (int i = 0; i < vc->num_frames; i++) {
-    int n = bm_AllocLoadBitmap(infile, mipped);
-
-    Q_ASSERT(n > 0);
-
-    int w, h;
-
-    if (texture_size == NORMAL_TEXTURE) {
-      w = TEXTURE_WIDTH;
-      h = TEXTURE_HEIGHT;
-
-#ifndef EDITOR
-      if (Mem_low_memory_mode || Low_vidmem)
-      {
-        w = TEXTURE_WIDTH / 2;
-        h = TEXTURE_HEIGHT / 2;
-      }
-#endif
-    } else if (texture_size == SMALL_TEXTURE) {
-      // Make small textures a quarter of the size of normal textures
-      w = TEXTURE_WIDTH / 2;
-      h = TEXTURE_HEIGHT / 2;
-
-#ifndef EDITOR
-      if (Mem_low_memory_mode || Low_vidmem)
-      {
-        w = TEXTURE_WIDTH / 4;
-        h = TEXTURE_HEIGHT / 4;
-      }
-#endif
-    } else if (texture_size == TINY_TEXTURE) {
-      // Make these tinys an eigth of the size of normal textures
-      w = TEXTURE_WIDTH / 4;
-      h = TEXTURE_HEIGHT / 4;
-    } else if (texture_size == HUGE_TEXTURE) {
-      // Make these tinys an eigth of the size of normal textures
-      w = TEXTURE_WIDTH * 2;
-      h = TEXTURE_HEIGHT * 2;
-    } else {
-      w = bm_w(n, 0);
-      h = bm_h(n, 0);
-    }
-
-    // If differing size, resize!
-    if (w != bm_w(n, 0) || h != bm_h(n, 0)) {
-      int dest_bm;
-
-      dest_bm = bm_AllocBitmap(w, h, mipped * ((w * h * 2) / 3));
-      Q_ASSERT(dest_bm >= 0);
-      if (mipped)
-        GameBitmaps[dest_bm].flags |= BF_MIPMAPPED;
-      GameBitmaps[dest_bm].format = GameBitmaps[n].format;
-
-      bm_ScaleBitmapToBitmap(dest_bm, n);
-      strcpy(GameBitmaps[dest_bm].name, GameBitmaps[n].name);
-      bm_FreeBitmap(n);
-
-      n = dest_bm;
-    }
-
-    Q_ASSERT(n >= 0);
-    vc->frames[i] = n; // assign frame to bitmap
-  }
-
-  cfclose(infile);
-
-  vc->flags &= ~VCF_NOT_RESIDENT;
-#endif
+  // The mini editor pages every vclip in eagerly through LoadVClipFromMemory,
+  // so a non-resident vclip here means the loading flow changed (e.g. a
+  // lazily-paged vclip was created without a payload).  There is no CFILE/HOG
+  // re-open helper in the mini, so this cannot be satisfied on demand.
   Q_ASSERT(false);
+}
+
+// Reads one 32-bit little-endian word (used for the OAF container header).
+static uint32_t readOafWord(posix_istream &in) {
+  uint8_t b[4]{};
+  in.read(reinterpret_cast<char *>(b), sizeof(b));
+  return (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
+}
+
+// Allocs and loads a fully-resident vclip from an in-memory OAF payload (a HOG
+// entry).  This is the mini port of the engine's AllocLoadVClip + PageInVClip
+// pair (Descent3/vclip.cpp): the OAF container leads with a vclip header
+//   versioned: 0x7f version num_frames frame_time(float32, unused)
+//   legacy:    num_frames frame_time(float32) (float32) (int32) (float32)
+// followed by num_frames contiguous OGF/TGA bitmaps, each decoded with
+// bm_tga_alloc_file (which leaves the stream positioned past its frame).  All
+// frames are stored in GameVClips[].  Returns the vclip index, or -1 on error.
+int LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &name, int format) {
+  if (size < 7)
+    return -1;
+
+  // If this vclip is already in memory, just reference it again.
+  for (int i = 0; i < MAX_VCLIPS; i++) {
+    if (GameVClips[i].used && match(GameVClips[i].name, name)) {
+      GameVClips[i].used++;
+      return i;
+    }
+  }
+
+  posix_istream infile(const_cast<uint8_t *>(data), size, std::ios_base::in);
+  if (!infile.is_open()) {
+    LOG_ERROR("LoadVClipFromMemory: Can't open in-memory stream for %s.", name.c_str());
+    return -1;
+  }
+
+  const int vcnum = AllocVClip();
+  if (vcnum < 0)
+    return -1;
+
+  vclip *vc = &GameVClips[vcnum];
+  vc->name = name;
+
+  // Container header (engine Descent3/vclip.cpp PageInVClip).
+  int num_frames = (uint8_t)infile.get();
+  if (num_frames == 127) {
+    infile.get();     // version
+    num_frames = (uint8_t)infile.get();
+    readOafWord(infile); // frame_time bits (the engine always uses DEFAULT_FRAMETIME)
+  } else {
+    readOafWord(infile); // legacy header: frame_time + two unknown words + light value
+    readOafWord(infile);
+    readOafWord(infile);
+    readOafWord(infile);
+  }
+
+  if (num_frames <= 0 || num_frames > VCLIP_MAX_FRAMES) {
+    LOG_ERROR("LoadVClipFromMemory: Bad frame count %d in %s.", num_frames, name.c_str());
+    FreeVClip(vcnum);
+    return -1;
+  }
+
+  for (int i = 0; i < num_frames; i++) {
+    std::string frame_name(BITMAP_NAME_LEN, '\0');
+    int n = bm_tga_alloc_file(infile, frame_name.data(), format);
+    if (n < 0) {
+      LOG_ERROR("LoadVClipFromMemory: Couldn't load frame %d of %s.", i, name.c_str());
+      for (int j = 0; j < i; j++)
+        bm_FreeBitmap(vc->frames[j]);
+      FreeVClip(vcnum);
+      return -1;
+    }
+    vc->frames[i] = (int16_t)n;
+  }
+
+  vc->num_frames = (int16_t)num_frames;
+  vc->frame_time = DEFAULT_FRAMETIME;
+  vc->flags &= ~VCF_NOT_RESIDENT;
+  return vcnum;
 }
 
 // Allocs and loads a vclip from the file named "filename"
