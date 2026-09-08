@@ -453,6 +453,7 @@ bool PhysCalcGround(vector3& ground_point, vector3& ground_normal, object& obj, 
 void ClearAllEvents() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== FVI ====================
+bool Tracking_FVI = false; // FVI debug flag (GameLoop in the full engine toggles it)
 /*
 int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face_room_list *quick_fr_list, int max_elements) { PRINT_STUB(__FUNCTION__); return 0; }
 bool fvi_QuickRoomCheck(vector3 *pos, room *cur_room, bool try_again) { PRINT_STUB(__FUNCTION__); return false; }

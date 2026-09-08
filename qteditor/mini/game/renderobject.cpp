@@ -1191,7 +1191,7 @@ void RenderObject(object& obj) {
   float normalized_time[MAX_SUBOBJECTS];
   bool render_it = false;
   if (obj.type == OBJ_NONE) {
-    LOG_FATAL("ERROR!!! Bogus obj %d in room %d is rendering!", OBJNUM(obj), obj.roomnum);
+    LOG_FATAL("ERROR!!! Bogus obj %d in room %d is rendering!", OBJNUM(&obj), obj.roomnum);
     Q_ASSERT(false);
     return;
   }

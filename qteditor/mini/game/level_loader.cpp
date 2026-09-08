@@ -26,7 +26,9 @@
 //   TXNM  - skipped (no texture xlate table in the mini; raw indices survive)
 //   ROOM  - room geometry (verts, faces, portals), Comp face normals after
 //   RWND  - per-room wind vectors
-//   OBJS  - minimal object placement data (type/id/roomnum/pos/orient)
+//   OBJS  - object placement data.  Each record is the engine's handle
+//           (object number in the low bits) followed by the placement
+//           prefix the mini keeps: type/id/name/flags/roomnum/pos/orient.
 //   TRIG  - trigger table
 //   INFO  - level name/designer/copyright/notes + level physics params
 //   PSTR  - skipped (player starts are editor-only; ignored on load)
@@ -47,6 +49,7 @@
 #include "findintersection.h"
 #include "gametexture.h"
 #include "string_helpers.h"
+#include "log.h"
 
 #include <cstring>
 #include <cstdio>
@@ -748,31 +751,72 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
         ifile >> num;
         int n = num;
         for (int i = 0; i < n; i++) {
-          int32_t objnum32 = 0;
-          ifile >> objnum32;
-          int objnum = objnum32;
+          // Each record begins with the object's 32-bit handle (not its
+          // index); the object number lives in the low bits.  This mirrors
+          // the engine's LoadLevel (version >= 45).
+          int32_t handle32 = 0;
+          ifile >> handle32;
+          int handle = handle32;
+          int objnum = (version >= 45) ? (handle & HANDLE_OBJNUM_MASK) : i;
           if (objnum < 0 || objnum >= MAX_OBJECTS)
             continue;
           object *obj = &Objects[objnum];
-          // Value-initialise (NOT memset: object contains a std::string name).
+          // Value-initialise (NOT memset: object contains std::string members).
           *obj = object{};
+
           int8_t ty = 0;
           ifile >> ty;
           obj->type = ty;
-          ifile >> obj->id;
+          obj->id = 0;
+          if (version >= 34) {
+            ifile >> obj->id;
+          } else {
+            uint8_t idb = 0;
+            ifile >> idb;
+            obj->id = idb;
+          }
+
+          // Object name (engine writes a null-terminated string since v95).
+          if (version >= 95) {
+            std::string nam;
+            ifile >> nam;
+            obj->name = nam;
+          }
+
+          // Object flags (int32 since v101, uint16 before that).
+          obj->flags = 0;
+          if (version >= 101) {
+            int32_t flags32 = 0;
+            ifile >> flags32;
+            obj->flags = static_cast<uint32_t>(flags32);
+          } else {
+            uint16_t flags16 = 0;
+            ifile >> flags16;
+            obj->flags = flags16;
+          }
+
+          // Door shields (engine writes a short since v109).
+          if (obj->type == OBJ_DOOR && version >= 109) {
+            int16_t shields = 0;
+            ifile >> shields;
+            obj->shields = static_cast<float>(shields);
+          }
+
           int32_t roomnum = 0;
           ifile >> roomnum;
           LL_ReadVector(ifile, obj->pos);
           LL_ReadMatrix(ifile, obj->orient);
+          LOG_DEBUG("OBJS[%d]: type=%d id=%d name='%s' flags=%u room=%d pos=(%f,%f,%f)",
+                    objnum, (int)obj->type, (int)obj->id, obj->name.c_str(), (unsigned)obj->flags, roomnum,
+                    (double)obj->pos.x(), (double)obj->pos.y(), (double)obj->pos.z());
           // Give the object a usable handle and link it into the mine, exactly
           // as the original LL_ReadObjects does (object.cpp / LoadLevel.cpp).
-          obj->handle = objnum + HANDLE_COUNT_INCREMENT;
+          obj->handle = (version >= 45) ? handle : (objnum + HANDLE_COUNT_INCREMENT);
           obj->roomnum = -1; // ObjLink() expects the roomnum to be -1
-          if ((roomnum > Highest_room_index) && !ROOMNUM_OUTSIDE(roomnum)) {
+          if ((roomnum > Highest_room_index) && !ROOMNUM_OUTSIDE(roomnum))
             obj->type = OBJ_NONE; // loading object with invalid room number
-          } else {
+          else
             ObjLink(objnum, roomnum);
-          }
           if (objnum > Highest_object_index)
             Highest_object_index = objnum;
         }
@@ -915,10 +959,15 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
       for (int i = 0; i <= Highest_object_index; i++) {
         if (Objects[i].type == OBJ_NONE)
           continue;
-        out << i;
+        // Engine-compatible record: handle first (low bits = object index),
+        // then the placement prefix fields the reader above consumes.
+        out << (int32_t)(i + HANDLE_COUNT_INCREMENT);
         out << Objects[i].type;
-        int16_t id = (int16_t)Objects[i].id;
-        out << id;
+        out << Objects[i].id;
+        out << Objects[i].name;
+        out << (int32_t)Objects[i].flags;
+        if (Objects[i].type == OBJ_DOOR)
+          out << (int16_t)Objects[i].shields;
         out << Objects[i].roomnum;
         LL_WriteVector(out, Objects[i].pos);
         LL_WriteMatrix(out, Objects[i].orient);

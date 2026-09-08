@@ -12,6 +12,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 option(FORCE_QT5_EDITOR "Build the editor with Qt5" ON)
+option(ENABLE_LOGGER "Enable logging to the terminal (LOG_* output via mini/logger)" OFF)
 
 # Try Qt6 first, fall back to Qt5
 if(NOT FORCE_QT5_EDITOR)
@@ -259,5 +260,19 @@ if(BUILD_EDITOR_TESTS)
       QT_WIDGETS_LIB
       QT_OPENGL_LIB
     )
+  endif()
+endif()
+
+# ---------------------------------------------------------------------------
+# Optional logging.  The LOG_* macros in mini/lib/log.h and mini/logger/log.h
+# only compile to real output when LOGGER is defined; the LOGGER define and the
+# WriteLog/InitLog backend source are supplied here.
+# ---------------------------------------------------------------------------
+if(ENABLE_LOGGER)
+  add_compile_definitions(LOGGER)
+  set(LOGGER_SOURCES ${MINI_SRC}/logger/log.cpp)
+  target_sources(qteditor PRIVATE ${LOGGER_SOURCES})
+  if(BUILD_EDITOR_TESTS)
+    target_sources(qteditor_tests PRIVATE ${LOGGER_SOURCES})
   endif()
 endif()
