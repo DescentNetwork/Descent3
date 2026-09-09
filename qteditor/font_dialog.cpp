@@ -37,7 +37,7 @@ FontDialog::FontDialog(QWidget *parent)
   connect(ui->IDC_SAVE, &QPushButton::clicked, this, &FontDialog::onOk);
   connect(ui->IDC_SAVEAS, &QPushButton::clicked, this, &FontDialog::onOk);
 
-  connect(this, &QDialog::accept, this, &FontDialog::onOk);
+  connect(this, &QDialog::accepted, this, &FontDialog::onOk);
 
   updateDialog();
 }

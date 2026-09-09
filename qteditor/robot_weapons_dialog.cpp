@@ -102,7 +102,7 @@ RobotEditWeaponsDialog::RobotEditWeaponsDialog(otype_wb_info *static_wb, poly_mo
 
   loadData();
 
-  connect(this, &QDialog::accept, this, [this]() { getData(); accept(); });
+  connect(this, &QDialog::accepted, this, [this]() { getData(); accept(); });
 }
 
 RobotEditWeaponsDialog::~RobotEditWeaponsDialog() { delete ui; }

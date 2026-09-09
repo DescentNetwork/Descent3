@@ -87,7 +87,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
     PltClearList();
   }
 
-  connect(this, &QDialog::accept, this, &PreferencesDialog::onOk);
+  connect(this, &QDialog::accepted, this, &PreferencesDialog::onOk);
 
   if (D3EditState.game_render_mode == GM_FULLSCREEN_HW)
     enableHardwareOptions();

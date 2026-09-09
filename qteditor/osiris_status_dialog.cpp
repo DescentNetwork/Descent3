@@ -28,7 +28,7 @@ OsirisStatusDialog::OsirisStatusDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::OsirisStatusDialog)
 {
   ui->setupUi(this);
-  connect(ui->IDC_OSIRIS_DONE, &QPushButton::clicked, this, &QDialog::accept);
+  connect(ui->IDC_OSIRIS_DONE, &QPushButton::clicked, this, &QDialog::accepted);
   ui->IDC_OSIRIS_PROGRESS->setText("Idle");
   ui->IDC_OSIRIS_ERROR->setReadOnly(true);
 }

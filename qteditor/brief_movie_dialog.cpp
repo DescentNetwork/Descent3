@@ -67,7 +67,7 @@ BriefMovieDialog::BriefMovieDialog(TCMOVIEDESC *desc, QWidget *parent)
   if (auto *btn = ui->IDC_MISSIONFLAGS)
     connect(btn, &QPushButton::clicked, this, &BriefMovieDialog::onMissionFlags);
 
-  connect(this, &QDialog::accept, this, &BriefMovieDialog::onOk);
+  connect(this, &QDialog::accepted, this, &BriefMovieDialog::onOk);
 }
 
 BriefMovieDialog::~BriefMovieDialog() { delete ui; }

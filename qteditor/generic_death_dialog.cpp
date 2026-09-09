@@ -44,7 +44,7 @@ GenericDeathDialog::GenericDeathDialog(object_info *objinfo, QWidget *parent)
   ui->IDC_GENEREIC_DEATH_PROB3->setText(QString::number(m_prob[2]));
   ui->IDC_GENEREIC_DEATH_PROB4->setText(QString::number(m_prob[3]));
 
-  connect(this, &QDialog::accept, this, &GenericDeathDialog::onOk);
+  connect(this, &QDialog::accepted, this, &GenericDeathDialog::onOk);
   connect(ui->IDC_GENERIC_DEATH_EDIT1, &QPushButton::clicked, this, &GenericDeathDialog::onEdit1);
   connect(ui->IDC_GENERIC_DEATH_EDIT2, &QPushButton::clicked, this, &GenericDeathDialog::onEdit2);
   connect(ui->IDC_GENERIC_DEATH_EDIT3, &QPushButton::clicked, this, &GenericDeathDialog::onEdit3);

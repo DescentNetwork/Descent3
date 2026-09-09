@@ -70,7 +70,7 @@ PropertyPhysicsDialog::PropertyPhysicsDialog(physics_info *physInfo, QWidget *pa
     m_physInfo->wiggles_per_sec = ui->IDC_PWIGGLES_PER_SECOND->text().toFloat();
   });
 
-  connect(this, &QDialog::accept, this, &PropertyPhysicsDialog::onOk);
+  connect(this, &QDialog::accepted, this, &PropertyPhysicsDialog::onOk);
 
   updateDialog();
 }

@@ -35,7 +35,7 @@ SoundSourceDialog::SoundSourceDialog(soundsource_info_s *data, QWidget *parent)
 {
   ui->setupUi(this);
 
-  connect(this, &QDialog::accept, this, &SoundSourceDialog::onOk);
+  connect(this, &QDialog::accepted, this, &SoundSourceDialog::onOk);
 
   connect(ui->IDC_SELECT, &QPushButton::clicked, this, &SoundSourceDialog::onSelect);
   {
@@ -64,7 +64,7 @@ void SoundSourceDialog::onSelect() {
   layout->addWidget(pickCombo);
   auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &picker);
   layout->addWidget(buttons);
-  connect(buttons, &QDialogButtonBox::accepted, &picker, &QDialog::accept);
+  connect(buttons, &QDialogButtonBox::accepted, &picker, &QDialog::accepted);
   connect(buttons, &QDialogButtonBox::rejected, &picker, &QDialog::reject);
 
   if (picker.exec() == QDialog::Accepted)

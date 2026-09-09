@@ -54,7 +54,7 @@ PhysicsDialog::PhysicsDialog(physics_info *physInfo, QWidget *parent)
   ui->setupUi(this);
   setPhysicsData(physInfo);
 
-  connect(this, &QDialog::accept, this, &PhysicsDialog::onOk);
+  connect(this, &QDialog::accepted, this, &PhysicsDialog::onOk);
 
   connect(ui->IDC_PHYSICS_COPY, &QPushButton::clicked, this, &PhysicsDialog::onCopy);
   {

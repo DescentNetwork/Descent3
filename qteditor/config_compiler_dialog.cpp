@@ -75,5 +75,5 @@ void ConfigCompilerDialog::accept() {
   QSettings settings;
   ScriptCompilerSettings::save(settings, ui->IDC_COMPILER ? ui->IDC_COMPILER->text() : QString(), warning, debug);
 
-  QDialog::accept();
+  QDialog::accepted();
 }

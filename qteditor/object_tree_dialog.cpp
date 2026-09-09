@@ -57,7 +57,7 @@ ObjectTreeDialog::ObjectTreeDialog(QWidget *parent)
   connect(ui->IDC_CLEAR, &QPushButton::clicked, this, &ObjectTreeDialog::onClearAll);
 
   if (auto *okBtn = findChild<QPushButton *>(QStringLiteral("IDOK")))
-    connect(okBtn, &QPushButton::clicked, this, &QDialog::accept);
+    connect(okBtn, &QPushButton::clicked, this, &QDialog::accepted);
   if (auto *cancelBtn = findChild<QPushButton *>(QStringLiteral("IDCANCEL")))
     connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
 

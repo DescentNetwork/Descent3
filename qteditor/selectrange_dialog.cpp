@@ -35,7 +35,7 @@ SelectRangeDialog::SelectRangeDialog(QWidget *parent)
 {
   ui->setupUi(this);
 
-  connect(this, &QDialog::accept, this, &SelectRangeDialog::onOk);
+  connect(this, &QDialog::accepted, this, &SelectRangeDialog::onOk);
   connect(ui->IDC_LOWER_BOUND_EDIT, &QLineEdit::editingFinished, this, &SelectRangeDialog::onLowerBoundChanged);
   connect(ui->IDC_UPPER_BOUND_EDIT, &QLineEdit::editingFinished, this, &SelectRangeDialog::onUpperBoundChanged);
   connect(ui->IDC_SLOPE_EDIT, &QLineEdit::editingFinished, this, &SelectRangeDialog::onSlopeChanged);

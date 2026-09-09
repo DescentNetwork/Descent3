@@ -166,7 +166,7 @@ BriefBitmapDialog::BriefBitmapDialog(TCBMPDESC *desc, QWidget *parent)
   if (auto *btn = ui->IDC_MISSIONFLAGS)
     connect(btn, &QPushButton::clicked, this, &BriefBitmapDialog::onMissionFlags);
 
-  connect(this, &QDialog::accept, this, &BriefBitmapDialog::onOk);
+  connect(this, &QDialog::accepted, this, &BriefBitmapDialog::onOk);
 }
 
 BriefBitmapDialog::~BriefBitmapDialog() { delete ui; }

@@ -38,7 +38,7 @@ LevelInfoDialog::LevelInfoDialog(level_info *li, QWidget *parent)
   if (auto *edit = ui->IDC_NOTES)
     edit->setPlainText(QString::fromStdString(li->notes));
 
-  connect(this, &QDialog::accept, this, &LevelInfoDialog::onOk);
+  connect(this, &QDialog::accepted, this, &LevelInfoDialog::onOk);
 }
 
 LevelInfoDialog::~LevelInfoDialog() { delete ui; }

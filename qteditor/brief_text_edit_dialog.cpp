@@ -210,7 +210,7 @@ BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const st
   if (auto *btn = ui->IDC_MISSIONFLAGS)
     connect(btn, &QPushButton::clicked, this, &BriefTextEditDialog::onMissionFlags);
 
-  connect(this, &QDialog::accept, this, &BriefTextEditDialog::onOk);
+  connect(this, &QDialog::accepted, this, &BriefTextEditDialog::onOk);
 }
 
 BriefTextEditDialog::~BriefTextEditDialog() { delete ui; }

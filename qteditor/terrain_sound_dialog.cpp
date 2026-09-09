@@ -39,7 +39,7 @@ TerrainSoundDialog::TerrainSoundDialog(QWidget *parent)
   for (int b = 0; b < NUM_TERRAIN_SOUND_BANDS; b++)
     m_bands[b] = Terrain_sound_bands[b];
 
-  connect(this, &QDialog::accept, this, &TerrainSoundDialog::onOk);
+  connect(this, &QDialog::accepted, this, &TerrainSoundDialog::onOk);
   connect(ui->IDC_TERRAIN_SOUND_NEXT, &QPushButton::clicked, this, &TerrainSoundDialog::onNext);
   connect(ui->IDC_TERRAIN_SOUND_PREV, &QPushButton::clicked, this, &TerrainSoundDialog::onPrev);
   connect(ui->IDC_TERRAIN_SOUND_COMBO, qOverload<int>(&QComboBox::currentIndexChanged), this, &TerrainSoundDialog::onSoundChanged);
