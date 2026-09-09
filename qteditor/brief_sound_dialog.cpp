@@ -62,7 +62,7 @@ BriefSoundDialog::BriefSoundDialog(TCSNDDESC *desc, QWidget *parent)
   if (auto *btn = ui->IDC_MISSIONFLAGS)
     connect(btn, &QPushButton::clicked, this, &BriefSoundDialog::onMissionFlags);
 
-  connect(this, &QDialog::accepted, this, &BriefSoundDialog::onOk);
+  connect(ui->IDOK, &QPushButton::clicked, this, &BriefSoundDialog::onOk);
 }
 
 BriefSoundDialog::~BriefSoundDialog() { delete ui; }

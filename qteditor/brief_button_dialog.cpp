@@ -107,7 +107,7 @@ BriefButtonDialog::BriefButtonDialog(TCBUTTONDESC *desc, QWidget *parent)
 
   updateStates();
 
-  connect(this, &QDialog::accepted, this, &BriefButtonDialog::onOk);
+  connect(ui->IDOK, &QPushButton::clicked, this, &BriefButtonDialog::onOk);
 }
 
 BriefButtonDialog::~BriefButtonDialog() { delete ui; }

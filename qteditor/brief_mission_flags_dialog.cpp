@@ -48,7 +48,7 @@ BriefMissionFlagsDialog::BriefMissionFlagsDialog(uint32_t setflags, uint32_t uns
       d->setChecked(true);
   }
 
-  connect(this, &QDialog::accepted, this, &BriefMissionFlagsDialog::onOk);
+  connect(ui->IDOK, &QPushButton::clicked, this, &BriefMissionFlagsDialog::onOk);
 }
 
 BriefMissionFlagsDialog::~BriefMissionFlagsDialog() { delete ui; }

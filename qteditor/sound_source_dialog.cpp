@@ -35,7 +35,7 @@ SoundSourceDialog::SoundSourceDialog(soundsource_info_s *data, QWidget *parent)
 {
   ui->setupUi(this);
 
-  connect(this, &QDialog::accepted, this, &SoundSourceDialog::onOk);
+  connect(ui->IDOK, &QPushButton::clicked, this, &SoundSourceDialog::onOk);
 
   connect(ui->IDC_SELECT, &QPushButton::clicked, this, &SoundSourceDialog::onSelect);
   {
