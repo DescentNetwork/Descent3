@@ -1,14 +1,17 @@
 <?xml version="1.0"?>
 <ui version="4.0">
   <class>Form</class>
-  <widget class="QDialog" name="IDD_KEYPAD_DLGBAR">
+  <widget class="QDialog" name="IDD_FLOATING_KEYPAD">
     <property name="geometry">
       <rect>
-        <x>0</x>
+        <x>109</x>
         <y>0</y>
-        <width>302</width>
-        <height>712</height>
+        <width>353</width>
+        <height>294</height>
       </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Keypad</string>
     </property>
     <property name="font">
       <font>
@@ -21,13 +24,16 @@
     <property name="enabled">
       <bool>true</bool>
     </property>
-    <widget class="QTabWidget" name="IDC_KEYPADS">
+    <property name="windowFlags">
+      <set>Qt::Tool</set>
+    </property>
+    <widget class="QTabWidget" name="IDC_FLOATING_KEYPAD_TAB">
       <property name="geometry">
         <rect>
-          <x>0</x>
+          <x>6</x>
           <y>6</y>
-          <width>301</width>
-          <height>701</height>
+          <width>342</width>
+          <height>281</height>
         </rect>
       </property>
       <property name="visible">
