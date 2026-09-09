@@ -186,13 +186,16 @@ static byte_ostream& writeObjectLightmaps(byte_ostream& output, const object& da
 
   output << static_cast<uint8_t>(1);
   output << data.lm_object.num_models;
-  for (const auto &faces : data.lm_object.lightmap_faces)
+  for (size_t m = 0; m < data.lm_object.lightmap_faces.size(); m++) {
+    output << static_cast<int16_t>(data.lm_object.num_faces[m]);
+    const auto &faces = data.lm_object.lightmap_faces[m];
     for (const lightmap_object_face &f : faces) {
       output << f.lmi_handle << f.rvec << f.uvec;
       output << f.num_verts;
       for (int k = 0; k < f.num_verts; k++)
         output << f.u2[k] << f.v2[k];
     }
+  }
   return output;
 }
 
