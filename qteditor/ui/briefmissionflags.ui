@@ -49,14 +49,7 @@
         </rect>
       </property>
       <property name="text">
-        <string>N
-o
-t
- 
-U
-s
-e
-d</string>
+        <string>Not Used</string>
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -78,14 +71,7 @@ d</string>
         </rect>
       </property>
       <property name="text">
-        <string>N
-o
-t
- 
-U
-s
-e
-d</string>
+        <string>Not Used</string>
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -107,14 +93,7 @@ d</string>
         </rect>
       </property>
       <property name="text">
-        <string>N
-O
-T
- 
-S
-e
-t
-</string>
+        <string>Not Set</string>
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -136,14 +115,7 @@ t
         </rect>
       </property>
       <property name="text">
-        <string>N
-O
-T
- 
-S
-e
-t
-</string>
+        <string>Not Set</string>
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -165,12 +137,7 @@ t
         </rect>
       </property>
       <property name="text">
-        <string>B
-E
- 
-S
-e
-t</string>
+        <string>Is Set</string>
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -192,12 +159,7 @@ t</string>
         </rect>
       </property>
       <property name="text">
-        <string>B
-E
- 
-S
-e
-t</string>
+        <string>Is Set</string>
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -1638,7 +1600,7 @@ t</string>
           <y>284</y>
           <width>19</width>
           <height>15</height>
-        </rect>
+        </rect>QSlantedLabel
       </property>
       <property name="visible">
         <bool>true</bool>
@@ -2500,4 +2462,11 @@ t</string>
       </property>
     </widget>
   </widget>
+  <customwidgets>
+    <customwidget>
+      <class>QSlantedLabel</class>
+      <extends>QLabel</extends>
+      <header>slanted_label.h</header>
+    </customwidget>
+  </customwidgets>
 </ui>

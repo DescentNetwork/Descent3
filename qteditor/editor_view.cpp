@@ -45,6 +45,7 @@
 
 #include "room.h"
 #include "terrain.h"
+#include "log.h"
 
 uint8_t Show_invisible_terrain = 0;
 uint8_t Fast_terrain = 1;
@@ -1115,17 +1116,28 @@ void EditorView::renderObjects() {
   if (Editor_view_mode == VM_TERRAIN || Editor_view_mode == VM_ROOM)
     return;
   if (!D3EditState.objects_in_wireframe)
+  {
+    LOG_DEBUG("Objects in wireframe mode not enabled");
     return;
+  }
   if (!m_wireframe || !(Outline_mode & OM_ON))
+  {
+    LOG_DEBUG("Wireframe mode not enabled");
     return;
+  }
   if (!(Outline_mode & OM_OBJECTS))
+  {
+    LOG_DEBUG("Outline mode: objects not displayed");
     return;
+  }
 
   const float w = width() > 0 ? static_cast<float>(width()) : 640.0f;
   const float h = height() > 0 ? static_cast<float>(height()) : 480.0f;
   const float halfFovY = kFovY * 0.5f;
   const float halfFovX = std::atan(std::tan(halfFovY) * (w / h));
   const float focalX = (w * 0.5f) / std::tan(halfFovX);
+
+  LOG_DEBUG("Rendering %i objects", Highest_object_index);
 
   for (int i = 0; i <= Highest_object_index; i++) {
     object *obj = &Objects[i];

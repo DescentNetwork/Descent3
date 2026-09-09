@@ -218,6 +218,8 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
     while (!ifile.eof()) {
       char chunk_name[4];
       ifile.read(chunk_name, 4);
+      if (ifile.eof()) // Run off the end of the file on a chunk boundary
+        break;
       long chunk_start = static_cast<long>(ifile.tell());
       int32_t chunk_size32 = 0;
       ifile >> chunk_size32;

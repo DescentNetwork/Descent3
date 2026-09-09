@@ -423,6 +423,7 @@ static int ObjInitTypeSpecific(object& obj, bool reinitializing) {
     return 0;
 
   object_info *oi = &Object_info[obj.id];
+  fprintf(stderr, "DBGIIS id=%d type_in=%d oi_type=%d\n", obj.id, (int)obj.type, oi ? (int)oi->type : -999);
 
   // Deal with deleted type
   if (oi->type == OBJ_NONE)

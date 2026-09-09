@@ -635,23 +635,6 @@ void MainWindow::buildKeypadBar()
 void MainWindow::toggleKeypadBar()
 {
   m_keypadDock->setVisible(!m_keypadDock->isVisible());
-  /*
-  if (m_dockManager == nullptr)
-    return;
-  // Toggle visibility of keypad dock widgets (exclude the central EditorView).
-  auto docks = m_dockManager->findChildren<ads::CDockWidget *>();
-  bool anyVisible = false;
-  for (auto *dock : docks) {
-    if (dock != nullptr && dock->widget() != m_editorView && dock->isVisible()) {
-      anyVisible = true;
-      break;
-    }
-  }
-  for (auto *dock : docks) {
-    if (dock != nullptr && dock->widget() != m_editorView)
-      dock->toggleView(!anyVisible);
-  }
-*/
 }
 
 void MainWindow::toggleViewerProps() {

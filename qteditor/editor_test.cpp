@@ -394,6 +394,7 @@ private slots:
   // and object/trigger counts reproduce.
   void testLevelLoadSaveRoundTrip()
   {
+    fprintf(stderr, "DBGTOP Object_info[1].type=%d [2].type=%d [7].type=%d sizeof(oi)=%zu\n", Object_info[1].type, Object_info[2].type, Object_info[7].type, sizeof(Object_info[0]));
     InitRooms();
     for (int i = 0; i < MAX_OBJECTS; i++) {
       Objects[i] = object{};

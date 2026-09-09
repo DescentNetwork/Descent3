@@ -42,7 +42,8 @@ class grSurface;
 class grViewport;
 
 // Structure to store various editor state & preference values
-struct d3edit_state {
+struct d3edit_state
+{
 
   // Values for current item in the various dialogs
   int texdlg_texture;   // current texture in texdialog
