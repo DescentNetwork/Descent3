@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vecmat.h"
-#include <stdlib.h>
+#include <filesystem>
 
 // Define group & room structs so we don't have to include group.h & room.h
 struct group;
@@ -41,9 +41,21 @@ enum { GM_WINDOWED, GM_FULLSCREEN_SW, GM_FULLSCREEN_HW }; // values for game_ren
 class grSurface;
 class grViewport;
 
-// Structure to store various editor state & preference values
-struct d3edit_state {
+namespace state
+{
+  // Which mode we're currently in
+  enum class viewer
+  {
+    mine,
+    terrain,
+    room,
+    invalid
+  };
 
+}
+// Structure to store various editor state & preference values
+struct d3edit_state
+{
   // Values for current item in the various dialogs
   int texdlg_texture;   // current texture in texdialog
   int current_obj_type; // current type of object
@@ -95,10 +107,14 @@ struct d3edit_state {
   float texscale;            // the scalar for moving texture UVs
   bool joy_slewing;          // shall we allow joystick slewing?
   bool objects_in_wireframe; // should we draw objects in the wireframe view?
+
+
+  state::viewer view_mode = state::viewer::mine;
+
 };
 
 //	Editor.cpp:: Current state of the editor UI.
-extern d3edit_state D3EditState;
+extern d3edit_state app;
 
 //	Editor.cpp:: Surface describing the actual desktop where the editor is running.
 extern grSurface *Desktop_surf;
@@ -146,9 +162,9 @@ extern group *Placed_group;
 extern int Placed_room_face;
 extern int Placed_door;
 extern float Placed_room_angle;
-extern vector Placed_room_origin;
+extern vector3 Placed_room_origin;
 extern matrix Placed_room_orient;
-extern vector Placed_room_attachpoint;
+extern vector3 Placed_room_attachpoint;
 extern matrix Placed_room_rotmat;
 extern room *Placed_baseroomp;
 extern int Placed_baseface;
@@ -169,13 +185,12 @@ extern group *Scrap;
 // Pointer to the scripts for this level
 extern char *Current_level_script;
 
-// What mode we're currently in
-enum { VM_MINE, VM_TERRAIN, VM_ROOM, NUM_VIEW_MODES };
-extern int Editor_view_mode;
 
 // The ID of the most recent viewer object (not counting room view)
 extern int Editor_viewer_id;
 
+extern int paged_in_count;
+extern int paged_in_num;
 
 
 //	object id clipboard.
@@ -184,7 +199,7 @@ extern int Copied_object_id;
 //	FUNCTIONS
 void EditorStatus(const char *format, ...);
 void SplashMessage(const char *format, ...);
-void StartEditorFrame(grViewport *vp, vector *view_vec, matrix *id_mat, float zoom);
+void StartEditorFrame(grViewport *vp, vector3 *view_vec, matrix *id_mat, float zoom);
 void EndEditorFrame();
 
 // Set the editor error message.  A function that's going to return a failure
@@ -194,4 +209,13 @@ void SetErrorMessage(const char *fmt, ...);
 // Get the error message from the last function that returned failure
 const char *GetErrorMessage();
 
-//#endif
+static inline std::filesystem::path original_pwd(void)
+{
+  extern std::filesystem::path orig_pwd;
+  return orig_pwd;
+}
+
+// Initializes the Descent 3 core in editor mode, mirroring the original MFC
+// editor's startup sequence (CMainFrame::OnCreateClient). Must be called once
+// after the QApplication has been constructed.
+void initD3Core(int argc, char *argv[]);

@@ -12,6 +12,8 @@ class ConfigCompilerDialog : public QDialog {
 public:
   explicit ConfigCompilerDialog(QWidget *parent = nullptr);
   ~ConfigCompilerDialog();
+protected:
+  void accept() override;
 private:
   Ui::ConfigCompilerDialog *ui;
 };

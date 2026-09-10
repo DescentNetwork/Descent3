@@ -88,7 +88,7 @@ struct spectra {
 #define EF_SMALL 2 // Don't blend this one into the lightmap - it will corrupt!
 
 struct rad_element {
-  vector *verts;
+  std::vector<vector3> verts;
   spectra exitance;
   float area;
   uint8_t num_verts;
@@ -99,7 +99,7 @@ struct rad_element {
 
 struct volume_element {
   spectra color;
-  vector pos;
+  vector3 pos;
   uint8_t flags;
 };
 
@@ -114,6 +114,20 @@ struct volume_element {
 #define SF_TOUCHES_TERRAIN 1
 #define SF_LIGHTSOURCE 2
 
+
+struct [[gnu::packed]] surface_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 6;           // Unused padding
+  uint8_t lightsource : 1;       // surface emits light
+  uint8_t touches_terrain : 1;   // surface contacts with terrain
+#else
+  uint8_t touches_terrain : 1;   // surface contacts with terrain
+  uint8_t lightsource : 1;       // surface emits light
+  uint8_t padding : 6;           // Unused padding
+#endif
+};
+
 struct rad_surface {
   float area;
   spectra emittance;
@@ -121,16 +135,16 @@ struct rad_surface {
   float reflectivity;  // how much light bounces off
   uint8_t xresolution; // how many elements (resolution x resolution) for this face
   uint8_t yresolution;
-  rad_element *elements; // list of elements for this surface
-  vector normal;         // normal of this surface
-  vector *verts;
+  std::vector<rad_element> elements; // list of elements for this surface
+  vector3 normal;         // normal of this surface
+  std::vector<vector3> verts;
 
   uint8_t surface_type; // See ST_ types above
 
   int facenum; // facenumber of room
   int roomnum; // The roomnumber or terrain segment number
   uint8_t num_verts;
-  uint8_t flags;
+  surface_flags_t flags;
 
   float surface_area, element_area;
 
@@ -138,14 +152,14 @@ struct rad_surface {
 };
 
 struct rad_point {
-  vector pos;
+  vector3 pos;
   uint8_t code;
 };
 
 extern float *Room_strongest_value[][4];
 
-extern int Ignore_terrain;
-extern int Ignore_satellites;
+extern bool Ignore_terrain;
+extern bool Ignore_satellites;
 
 extern float Ignore_limit;
 extern float rad_TotalFlux;
@@ -162,7 +176,7 @@ extern rad_surface *rad_MaxSurface;
 extern int rad_NumSurfaces;
 extern int rad_NumElements;
 
-extern float *rad_FormFactors;
+extern std::vector<float> rad_FormFactors;
 extern rad_surface *rad_Surfaces;
 extern volume_element *Volume_elements[];
 
@@ -174,7 +188,7 @@ extern int Shoot_from_patch;
 // Tells radiosity renderer to do volume lighting
 extern int Do_volume_lighting;
 
-int DoRadiosityRun(int method, rad_surface *light_surfaces, int count);
+int DoRadiosityRun(int method, std::vector<rad_surface>& light_surfaces, int count);
 // Sets up our radiosity run
 void InitRadiosityRun();
 
@@ -194,13 +208,13 @@ void UpdateUnsentValues();
 int DoRadiosityIteration();
 
 // Finds the world coordinate center of a element
-void GetCenterOfElement(rad_element *ep, vector *dest);
+void GetCenterOfElement(rad_element *ep, vector3 *dest);
 
 // Finds the world coordinate center of a surface
-void GetCenterOfSurface(rad_surface *ep, vector *dest);
+void GetCenterOfSurface(rad_surface *ep, vector3 *dest);
 
 // Returns 1 if a src vector can hit dest vector unobstructed
-int ShootRayFromPoint(vector *src, vector *dest, rad_surface *src_surf, rad_surface *dest_surf);
+int ShootRayFromPoint(vector3 *src, vector3 *dest, rad_surface *src_surf, rad_surface *dest_surf);
 
 // Shoots a ray from the center of the max surface to center of every other element
 // Also updates the exitances of elements that get hit

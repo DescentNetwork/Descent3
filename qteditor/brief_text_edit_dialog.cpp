@@ -28,18 +28,12 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QStringList>
-#include <cstdio>
-#include <cstring>
+
+#include <array>
 
 #include "brief_mission_flags_dialog.h"
 #include "gamefont.h"
 #include "grdefs.h"
-
-
-BriefLayoutScreen *PBlayouts = nullptr;
-int *PBnum_layouts = nullptr;
-BriefScreen Briefing_screens[kMaxTelcomScreens]{
-};
 
 namespace {
 constexpr int kMaxTabStops = 10;
@@ -47,23 +41,23 @@ constexpr int kMaxTabStops = 10;
 int effectTypeToRadio(TCTEXTDESC *desc) {
   switch (desc->type) {
   case TC_TEXT_SCROLL:
-    switch (desc->flags) {
-    case TC_TEXTF_L2R:
+    switch (desc->mode) {
+    case tc_text_mode::scroll_l2r:
       return 4;
-    case TC_TEXTF_R2L:
+    case tc_text_mode::scroll_r2l:
       return 5;
-    case TC_TEXTF_T2B:
+    case tc_text_mode::scroll_t2b:
       return 6;
-    case TC_TEXTF_B2T:
+    case tc_text_mode::scroll_b2t:
       return 7;
     default:
       return 4;
     }
   case TC_TEXT_FADE:
-    switch (desc->flags) {
-    case TC_TEXTF_IN:
+    switch (desc->mode) {
+    case tc_text_mode::fade_in:
       return 2;
-    case TC_TEXTF_OUT:
+    case tc_text_mode::fade_out:
       return 3;
     default:
       return 2;
@@ -85,39 +79,39 @@ void radioToEffectType(int effectType, TCTEXTDESC *desc) {
     break;
   case 2:
     desc->type = TC_TEXT_FADE;
-    desc->flags = TC_TEXTF_IN;
+    desc->mode = tc_text_mode::fade_in;
     break;
   case 3:
     desc->type = TC_TEXT_FADE;
-    desc->flags = TC_TEXTF_OUT;
+    desc->mode = tc_text_mode::fade_out;
     break;
   case 4:
     desc->type = TC_TEXT_SCROLL;
-    desc->flags = TC_TEXTF_L2R;
+    desc->mode = tc_text_mode::scroll_l2r;
     break;
   case 5:
     desc->type = TC_TEXT_SCROLL;
-    desc->flags = TC_TEXTF_R2L;
+    desc->mode = tc_text_mode::scroll_r2l;
     break;
   case 6:
     desc->type = TC_TEXT_SCROLL;
-    desc->flags = TC_TEXTF_T2B;
+    desc->mode = tc_text_mode::scroll_t2b;
     break;
   case 7:
     desc->type = TC_TEXT_SCROLL;
-    desc->flags = TC_TEXTF_B2T;
+    desc->mode = tc_text_mode::scroll_b2t;
     break;
   }
 }
 } // namespace
 
-BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const char *text_buffer,
+BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const std::string &text,
                                          int id, QWidget *parent)
     : QDialog(parent), ui(new Ui::BriefTextDialog), m_screen(currScreen), m_text(""), m_id(id),
       m_effectType(0), m_richEdit(nullptr)
 {
   ui->setupUi(this);
-  std::memset(&m_desc, 0, sizeof(TCTEXTDESC));
+  m_desc = TCTEXTDESC{};
   m_desc.type = TC_TEXT_STATIC;
   m_desc.font = BRIEF_FONT_INDEX;
   m_desc.color = GR_GREEN;
@@ -132,25 +126,24 @@ BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const ch
 
   if (d) {
     m_desc.caps = d->caps;
-    m_desc.flags = d->flags;
+    m_desc.mode = d->mode;
     m_desc.type = d->type;
-    if (d->caps & TCTD_FONT)
+    if (d->caps.font)
       m_desc.font = d->font;
-    if (d->caps & TCTD_COLOR)
+    if (d->caps.color)
       m_desc.color = d->color;
-    if (d->caps & TCTD_SPEED)
+    if (d->caps.speed)
       m_desc.speed = d->speed;
-    if (d->caps & TCTD_LOOPING)
+    if (d->caps.looping)
       m_desc.looping = d->looping;
-    if (d->caps & TCTD_TEXTBOX)
-      std::memcpy(&m_desc.textbox, &d->textbox, sizeof(tc_text));
-    if (d->caps & TCTD_WAITTIME)
+    if (d->caps.textbox)
+      m_desc.textbox = d->textbox;
+    if (d->caps.waittime)
       m_desc.waittime = d->waittime;
     m_desc.mission_mask_set = d->mission_mask_set;
     m_desc.mission_mask_unset = d->mission_mask_unset;
   }
-  if (text_buffer)
-    m_text = text_buffer;
+  m_text = QString::fromStdString(text);
 
   m_effectType = effectTypeToRadio(&m_desc);
 
@@ -169,17 +162,20 @@ BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const ch
   if (auto *edit = ui->IDC_BRIEF_T_UL_X)
     edit->setText(QString::number(m_desc.textbox.left));
   if (auto *edit = ui->IDC_BRIEF_T_DESC)
-    edit->setText(m_desc.caps ? "" : "");
+    edit->setText((m_desc.caps.font || m_desc.caps.color || m_desc.caps.speed || m_desc.caps.looping ||
+                   m_desc.caps.waittime || m_desc.caps.textbox || m_desc.caps.scroll || m_desc.caps.tabstop)
+                      ? ""
+                      : "");
 
-  const char *effectRadios[] = {"IDC_BRIEF_T_STATIC", "IDC_BRIEF_T_FLASH", "IDC_BRIEF_T_FADEIN",
-                                "IDC_BRIEF_T_FADEOUT", "IDC_BRIEF_T_SL2R", "IDC_BRIEF_T_SR2L",
-                                "IDC_BRIEF_T_ST2B", "IDC_BRIEF_T_SB2T"};
-  if (m_effectType >= 0 && m_effectType < 8) {
-    if (auto *rb = findChild<QRadioButton*>(effectRadios[m_effectType]))
-      rb->setChecked(true);
-  }
+  ui->IDC_BRIEF_T_STATIC->setChecked(m_effectType == 0);
+  ui->IDC_BRIEF_T_FADEIN->setChecked(m_effectType == 2);
+  ui->IDC_BRIEF_T_FADEOUT->setChecked(m_effectType == 3);
+  ui->IDC_BRIEF_T_SL2R->setChecked(m_effectType == 4);
+  ui->IDC_BRIEF_T_SR2L->setChecked(m_effectType == 5);
+  ui->IDC_BRIEF_T_ST2B->setChecked(m_effectType == 6);
+  ui->IDC_BRIEF_T_SB2T->setChecked(m_effectType == 7);
 
-  ui->IDC_TABSTOP->setChecked((m_desc.caps & TCTD_TABSTOP) != 0);
+  ui->IDC_TABSTOP->setChecked(m_desc.caps.tabstop);
   ui->IDC_BRIEF_COLOR_R->setText(QString::number((m_desc.color >> 16) & 0xff));
   ui->IDC_BRIEF_COLOR_G->setText(QString::number((m_desc.color >> 8) & 0xff));
   ui->IDC_BRIEF_COLOR_B->setText(QString::number(m_desc.color & 0xff));
@@ -214,7 +210,7 @@ BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const ch
   if (auto *btn = ui->IDC_MISSIONFLAGS)
     connect(btn, &QPushButton::clicked, this, &BriefTextEditDialog::onMissionFlags);
 
-  connect(this, &QDialog::accept, this, &BriefTextEditDialog::onOk);
+  connect(ui->IDOK, &QPushButton::clicked, this, &BriefTextEditDialog::onOk);
 }
 
 BriefTextEditDialog::~BriefTextEditDialog() { delete ui; }
@@ -224,18 +220,16 @@ void BriefTextEditDialog::populatePredefs() {
     combo->clear();
     combo->addItem("<Raw>");
     int layout = -1;
-    if (PBlayouts && PBnum_layouts) {
-      for (int i = 0; i < *PBnum_layouts; i++) {
-        if (std::strcmp(Briefing_screens[m_screen].layout, PBlayouts[i].filename) == 0)
-          layout = i;
+    if (!PBlayouts.empty()) {
+      for (size_t i = 0; i < PBlayouts.size(); i++) {
+        if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
+          layout = (int)i;
       }
       if (layout != -1) {
         for (int j = 0; j < PBlayouts[layout].num_texts; j++) {
-          char buffer[100];
-          std::sprintf(buffer, "(%d,%d)->(%d,%d)", PBlayouts[layout].texts[j].lx,
-                       PBlayouts[layout].texts[j].ty, PBlayouts[layout].texts[j].rx,
-                       PBlayouts[layout].texts[j].by);
-          combo->addItem(buffer);
+          const auto &t = PBlayouts[layout].texts[j];
+          combo->addItem(
+              QString("(%1,%2)->(%3,%4)").arg(t.lx).arg(t.ty).arg(t.rx).arg(t.by));
         }
       }
     }
@@ -248,11 +242,11 @@ void BriefTextEditDialog::onPredefChanged(int index) {
   if (!combo || index <= 0)
     return;
   int layout = -1;
-  if (!PBlayouts || !PBnum_layouts)
+  if (PBlayouts.empty())
     return;
-  for (int i = 0; i < *PBnum_layouts; i++) {
-    if (std::strcmp(Briefing_screens[m_screen].layout, PBlayouts[i].filename) == 0)
-      layout = i;
+  for (size_t i = 0; i < PBlayouts.size(); i++) {
+    if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
+      layout = (int)i;
   }
   if (layout != -1) {
     ui->IDC_BRIEF_T_UL_X->setText(QString::number(PBlayouts[layout].texts[index - 1].lx));
@@ -284,8 +278,13 @@ void BriefTextEditDialog::onMissionFlags() {
 }
 
 void BriefTextEditDialog::onOk() {
-  m_desc.caps = TCTD_FONT | TCTD_COLOR | TCTD_SPEED | TCTD_LOOPING | TCTD_WAITTIME | TCTD_TEXTBOX |
-                TCTD_SCROLL;
+  m_desc.caps.font = true;
+  m_desc.caps.color = true;
+  m_desc.caps.speed = true;
+  m_desc.caps.looping = true;
+  m_desc.caps.waittime = true;
+  m_desc.caps.textbox = true;
+  m_desc.caps.scroll = true;
   m_desc.textbox.bottom = ui->IDC_BRIEF_T_LR_Y->text().toInt();
   m_desc.textbox.right = ui->IDC_BRIEF_T_LR_X->text().toInt();
   m_desc.textbox.top = ui->IDC_BRIEF_T_UL_Y->text().toInt();
@@ -296,21 +295,26 @@ void BriefTextEditDialog::onOk() {
                         ui->IDC_BRIEF_COLOR_G->text().toInt(),
                         ui->IDC_BRIEF_COLOR_B->text().toInt());
   if (ui->IDC_TABSTOP->isChecked())
-    m_desc.caps |= TCTD_TABSTOP;
+    m_desc.caps.tabstop = true;
 
   auto *combo = ui->IDC_BRIEF_T_FONT;
   m_desc.font = (combo && combo->currentIndex() == 1) ? BBRIEF_FONT_INDEX : BRIEF_FONT_INDEX;
 
   int effectType = 0;
-  const char *effectRadios[] = {"IDC_BRIEF_T_STATIC", "IDC_BRIEF_T_FLASH", "IDC_BRIEF_T_FADEIN",
-                                "IDC_BRIEF_T_FADEOUT", "IDC_BRIEF_T_SL2R", "IDC_BRIEF_T_SR2L",
-                                "IDC_BRIEF_T_ST2B", "IDC_BRIEF_T_SB2T"};
-  for (int i = 0; i < 8; i++) {
-    if (auto *rb = findChild<QRadioButton*>(effectRadios[i]); rb && rb->isChecked()) {
-      effectType = i;
-      break;
-    }
-  }
+  if (ui->IDC_BRIEF_T_STATIC->isChecked())
+    effectType = 0;
+  else if (ui->IDC_BRIEF_T_FADEIN->isChecked())
+    effectType = 2;
+  else if (ui->IDC_BRIEF_T_FADEOUT->isChecked())
+    effectType = 3;
+  else if (ui->IDC_BRIEF_T_SL2R->isChecked())
+    effectType = 4;
+  else if (ui->IDC_BRIEF_T_SR2L->isChecked())
+    effectType = 5;
+  else if (ui->IDC_BRIEF_T_ST2B->isChecked())
+    effectType = 6;
+  else if (ui->IDC_BRIEF_T_SB2T->isChecked())
+    effectType = 7;
   radioToEffectType(effectType, &m_desc);
 
   if (m_richEdit)

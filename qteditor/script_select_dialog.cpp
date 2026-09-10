@@ -34,12 +34,9 @@ ScriptSelectDialog::ScriptSelectDialog(QWidget *parent)
   ui->setupUi(this);
   m_list = ui->IDC_SCRIPTSEL_LISTBOX;
   populate();
-  if (QPushButton *b = ui->IDC_SCRIPTSEL_ADD)
-    connect(b, &QPushButton::clicked, this, &ScriptSelectDialog::onAdd);
-  if (QPushButton *b = ui->IDC_EDITSCRIPT)
-    connect(b, &QPushButton::clicked, this, &ScriptSelectDialog::onEdit);
-  if (QPushButton *b = ui->IDC_PARAMETERS)
-    connect(b, &QPushButton::clicked, this, &ScriptSelectDialog::onParameters);
+  connect(ui->IDC_SCRIPTSEL_ADD, &QPushButton::clicked, this, &ScriptSelectDialog::onAdd);
+  connect(ui->IDC_EDITSCRIPT, &QPushButton::clicked, this, &ScriptSelectDialog::onEdit);
+  connect(ui->IDC_PARAMETERS, &QPushButton::clicked, this, &ScriptSelectDialog::onParameters);
 }
 
 ScriptSelectDialog::~ScriptSelectDialog() { delete ui; }
@@ -48,7 +45,7 @@ void ScriptSelectDialog::populate() {
   if (m_list == nullptr)
     return;
   m_list->clear();
-  QDir dir(LocalScriptDir);
+  QDir dir(QString::fromStdString(LocalScriptDir.string()));
   const QStringList names = dir.entryList(QStringList() << "*.dll", QDir::Files);
   for (const QString &n : names)
     m_list->addItem(QFileInfo(n).completeBaseName());

@@ -22,7 +22,7 @@
 #include <QListWidget>
 #include <QPushButton>
 
-#include "hlsoundlib.h"
+#include "sndlib/hlsoundlib.h"
 #include "ssl_lib.h"
 
 
@@ -34,12 +34,10 @@ DallasSoundDialog::DallasSoundDialog(QWidget *parent)
   if (m_list != nullptr) {
     for (int i = 0; i < MAX_SOUNDS; i++)
       if (Sounds[i].used)
-        m_list->addItem(Sounds[i].name);
+        m_list->addItem(QString::fromStdString(Sounds[i].name));
   }
-  if (QPushButton *b = ui->IDC_PLAY_SOUND_BUTTON)
-    connect(b, &QPushButton::clicked, this, &DallasSoundDialog::onPlay);
-  if (QPushButton *b = ui->IDC_STOP_SOUNDS_BUTTON)
-    connect(b, &QPushButton::clicked, this, &DallasSoundDialog::onStop);
+  connect(ui->IDC_PLAY_SOUND_BUTTON, &QPushButton::clicked, this, &DallasSoundDialog::onPlay);
+  connect(ui->IDC_STOP_SOUNDS_BUTTON, &QPushButton::clicked, this, &DallasSoundDialog::onStop);
 }
 
 DallasSoundDialog::~DallasSoundDialog() { delete ui; }

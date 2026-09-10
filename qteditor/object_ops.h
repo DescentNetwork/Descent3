@@ -47,7 +47,7 @@ int GetSelectedTerrainCell();
 
 // Movement.
 void HObjectMove(int objnum, float dx, float dy, float dz);
-void HObjectMoveToViewer(object *objp);
+void HObjectMoveToViewer(object& objp);
 
 // Rotation.
 void HObjectIncreaseBank();
@@ -65,8 +65,8 @@ void HObjectFlip();
 void HObjectDelete();
 
 // Terrain ground re-alignment.
-void ResetGroundObject(object *objp);
+void ResetGroundObject(object& objp);
 
 // Internal helpers (exposed for testing).
-bool MoveObject(object *obj, vector *newpos);
+bool MoveObject(object& obj, vector3& newpos);
 bool RotateObject(int objnum, angle p, angle h, angle b);

@@ -35,16 +35,16 @@ SoundSourceDialog::SoundSourceDialog(soundsource_info_s *data, QWidget *parent)
 {
   ui->setupUi(this);
 
-  connect(this, &QDialog::accept, this, &SoundSourceDialog::onOk);
+  connect(ui->IDOK, &QPushButton::clicked, this, &SoundSourceDialog::onOk);
 
-  if (QPushButton *select = ui->IDC_SELECT)
-    connect(select, &QPushButton::clicked, this, &SoundSourceDialog::onSelect);
-  if (QLineEdit *edit = ui->IDC_VOLUME)
+  connect(ui->IDC_SELECT, &QPushButton::clicked, this, &SoundSourceDialog::onSelect);
+  {
+    QLineEdit *edit = ui->IDC_VOLUME;
     edit->setValidator(new QDoubleValidator(0.0, 1.0, 2, edit));
+  }
 
   populateSoundCombo(ui->IDC_SOUND_COMBO, m_data->sound_index);
-  if (QLineEdit *edit = ui->IDC_VOLUME)
-    edit->setText(QString::number(m_data->volume));
+  ui->IDC_VOLUME->setText(QString::number(m_data->volume));
 }
 
 SoundSourceDialog::~SoundSourceDialog() { delete ui; }
@@ -64,7 +64,7 @@ void SoundSourceDialog::onSelect() {
   layout->addWidget(pickCombo);
   auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &picker);
   layout->addWidget(buttons);
-  connect(buttons, &QDialogButtonBox::accepted, &picker, &QDialog::accept);
+  connect(buttons, &QDialogButtonBox::accepted, &picker, &QDialog::accepted);
   connect(buttons, &QDialogButtonBox::rejected, &picker, &QDialog::reject);
 
   if (picker.exec() == QDialog::Accepted)

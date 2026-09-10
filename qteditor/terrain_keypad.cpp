@@ -22,6 +22,7 @@
 #include "logger/log.h"
 
 #include <algorithm>
+#include <cstring>
 
 #include <QMessageBox>
 #include <QCheckBox>
@@ -53,91 +54,74 @@ TerrainKeypad::TerrainKeypad(QWidget *parent)
 {
   ui->setupUi(this);
 
-  auto connectBtn = [this](const char *name, auto slot) {
-    if (QPushButton *b = findChild<QPushButton*>(name))
-      connect(b, &QPushButton::clicked, this, slot);
-  };
-  auto connectEdit = [this](const char *name, auto slot) {
-    if (QLineEdit *e = findChild<QLineEdit*>(name))
-      connect(e, &QLineEdit::editingFinished, this, slot);
-  };
-  auto connectCheck = [this](const char *name, auto slot) {
-    if (QCheckBox *c = findChild<QCheckBox*>(name))
-      connect(c, &QCheckBox::toggled, this, slot);
-  };
-  auto connectRadio = [this](const char *name, auto slot) {
-    if (QRadioButton *r = findChild<QRadioButton*>(name))
-      connect(r, &QRadioButton::clicked, this, slot);
-  };
-
-  connectBtn("IDC_TERRPAD_MOVE_UP", &TerrainKeypad::onMoveUp);
-  connectBtn("IDC_TERRPAD_MOVE_DOWN", &TerrainKeypad::onMoveDown);
-  connectBtn("IDC_TERRPAD_RAISE10", &TerrainKeypad::onRaise10);
-  connectBtn("IDC_TERRPAD_LOWER10", &TerrainKeypad::onLower10);
-  connectBtn("IDC_TERRPAD_SELECT_NONE", &TerrainKeypad::onSelectNone);
-  connectBtn("IDC_TERR_SELECT_ALL", &TerrainKeypad::onSelectAll);
-  connectBtn("IDC_TERRPAD_MAKE_MAX", &TerrainKeypad::onMakeMax);
-  connectBtn("IDC_TERRPAD_MAKE_MIN", &TerrainKeypad::onMakeMin);
-  connectBtn("IDC_TERRPAD_MAKE_ZERO", &TerrainKeypad::onMakeZero);
-  connectBtn("IDC_TERRPAD_FILL_AREA", &TerrainKeypad::onFillArea);
-  connectBtn("IDC_TERRPAD_PYRAMID", &TerrainKeypad::onPyramid);
-  connectBtn("IDC_TERRPAD_PANCAKES", &TerrainKeypad::onPancakes);
-  connectBtn("IDC_TERRPAD_RENORMALIZE", &TerrainKeypad::onRenormalize);
-  connectBtn("IDC_TERRPAD_ROT_TEXTURE", &TerrainKeypad::onRotTexture);
-  connectBtn("IDC_TERRPAD_REDO_TOPMAP", &TerrainKeypad::onRedoTopmap);
-  connectBtn("IDC_TILE_MORE", &TerrainKeypad::onTileMore);
-  connectBtn("IDC_TILE_LESS", &TerrainKeypad::onTileLess);
-  connectBtn("IDC_TERRPAD_SELECTRANGE", [this]() {
+  connect(ui->IDC_TERRPAD_MOVE_UP, &QPushButton::clicked, this, &TerrainKeypad::onMoveUp);
+  connect(ui->IDC_TERRPAD_MOVE_DOWN, &QPushButton::clicked, this, &TerrainKeypad::onMoveDown);
+  connect(ui->IDC_TERRPAD_RAISE10, &QPushButton::clicked, this, &TerrainKeypad::onRaise10);
+  connect(ui->IDC_TERRPAD_LOWER10, &QPushButton::clicked, this, &TerrainKeypad::onLower10);
+  connect(ui->IDC_TERRPAD_SELECT_NONE, &QPushButton::clicked, this, &TerrainKeypad::onSelectNone);
+  connect(ui->IDC_TERR_SELECT_ALL, &QPushButton::clicked, this, &TerrainKeypad::onSelectAll);
+  connect(ui->IDC_TERRPAD_MAKE_MAX, &QPushButton::clicked, this, &TerrainKeypad::onMakeMax);
+  connect(ui->IDC_TERRPAD_MAKE_MIN, &QPushButton::clicked, this, &TerrainKeypad::onMakeMin);
+  connect(ui->IDC_TERRPAD_MAKE_ZERO, &QPushButton::clicked, this, &TerrainKeypad::onMakeZero);
+  connect(ui->IDC_TERRPAD_FILL_AREA, &QPushButton::clicked, this, &TerrainKeypad::onFillArea);
+  connect(ui->IDC_TERRPAD_PYRAMID, &QPushButton::clicked, this, &TerrainKeypad::onPyramid);
+  connect(ui->IDC_TERRPAD_PANCAKES, &QPushButton::clicked, this, &TerrainKeypad::onPancakes);
+  connect(ui->IDC_TERRPAD_RENORMALIZE, &QPushButton::clicked, this, &TerrainKeypad::onRenormalize);
+  connect(ui->IDC_TERRPAD_ROT_TEXTURE, &QPushButton::clicked, this, &TerrainKeypad::onRotTexture);
+  connect(ui->IDC_TERRPAD_REDO_TOPMAP, &QPushButton::clicked, this, &TerrainKeypad::onRedoTopmap);
+  connect(ui->IDC_TILE_MORE, &QPushButton::clicked, this, &TerrainKeypad::onTileMore);
+  connect(ui->IDC_TILE_LESS, &QPushButton::clicked, this, &TerrainKeypad::onTileLess);
+  connect(ui->IDC_TERRPAD_SELECTRANGE, &QPushButton::clicked, this, [this]() {
     SelectRangeDialog dlg(this);
     dlg.exec();
     World_changed = true;
   });
-  connectBtn("IDC_TERR_MORE_MOONS", &TerrainKeypad::onMoreMoons);
-  connectBtn("IDC_TERR_LESS_MOONS", &TerrainKeypad::onLessMoons);
-  connectBtn("IDC_TERR_NEXT_MOON", &TerrainKeypad::onNextMoon);
-  connectBtn("IDC_TERR_PREV_MOON", &TerrainKeypad::onPrevMoon);
-  connectBtn("IDC_MOVE_SAT_UP", &TerrainKeypad::onMoveSatUp);
-  connectBtn("IDC_MOVE_SAT_DOWN", &TerrainKeypad::onMoveSatDown);
-  connectBtn("IDC_MOVE_SAT_LEFT", &TerrainKeypad::onMoveSatLeft);
-  connectBtn("IDC_MOVE_SAT_RIGHT", &TerrainKeypad::onMoveSatRight);
-  connectBtn("IDC_TERR_MOVE_MOON", &TerrainKeypad::onMoveMoonCloser);
-  connectBtn("IDC_TERR_MOVE_MOON_AWAY", &TerrainKeypad::onMoveMoonFarther);
-  connectBtn("IDC_SKY_NEARER", &TerrainKeypad::onSkyNearer);
-  connectBtn("IDC_SKY_FARTHER", &TerrainKeypad::onSkyFarther);
-  connectBtn("IDC_TERR_RANDOMIZE_SKY", &TerrainKeypad::onRandomizeSky);
-  connectBtn("IDC_SMOOTH_TERRAIN", &TerrainKeypad::onSmoothTerrain);
-  connectBtn("IDC_DROP_TERRAIN", &TerrainKeypad::onDropTerrain);
-  connectBtn("IDC_TERRAIN_OCCLUSION", &TerrainKeypad::onTerrainOcclusion);
-  connectBtn("IDC_TOGGLE_VISIBILITY", &TerrainKeypad::onToggleVisibility);
+  connect(ui->IDC_TERR_MORE_MOONS, &QPushButton::clicked, this, &TerrainKeypad::onMoreMoons);
+  connect(ui->IDC_TERR_LESS_MOONS, &QPushButton::clicked, this, &TerrainKeypad::onLessMoons);
+  connect(ui->IDC_TERR_NEXT_MOON, &QPushButton::clicked, this, &TerrainKeypad::onNextMoon);
+  connect(ui->IDC_TERR_PREV_MOON, &QPushButton::clicked, this, &TerrainKeypad::onPrevMoon);
+  connect(ui->IDC_MOVE_SAT_UP, &QPushButton::clicked, this, &TerrainKeypad::onMoveSatUp);
+  connect(ui->IDC_MOVE_SAT_DOWN, &QPushButton::clicked, this, &TerrainKeypad::onMoveSatDown);
+  connect(ui->IDC_MOVE_SAT_LEFT, &QPushButton::clicked, this, &TerrainKeypad::onMoveSatLeft);
+  connect(ui->IDC_MOVE_SAT_RIGHT, &QPushButton::clicked, this, &TerrainKeypad::onMoveSatRight);
+  connect(ui->IDC_TERR_MOVE_MOON, &QPushButton::clicked, this, &TerrainKeypad::onMoveMoonCloser);
+  connect(ui->IDC_TERR_MOVE_MOON_AWAY, &QPushButton::clicked, this, &TerrainKeypad::onMoveMoonFarther);
+  connect(ui->IDC_SKY_NEARER, &QPushButton::clicked, this, &TerrainKeypad::onSkyNearer);
+  connect(ui->IDC_SKY_FARTHER, &QPushButton::clicked, this, &TerrainKeypad::onSkyFarther);
+  connect(ui->IDC_TERR_RANDOMIZE_SKY, &QPushButton::clicked, this, &TerrainKeypad::onRandomizeSky);
+  connect(ui->IDC_SMOOTH_TERRAIN, &QPushButton::clicked, this, &TerrainKeypad::onSmoothTerrain);
+  connect(ui->IDC_DROP_TERRAIN, &QPushButton::clicked, this, &TerrainKeypad::onDropTerrain);
+  connect(ui->IDC_TERRAIN_OCCLUSION, &QPushButton::clicked, this, &TerrainKeypad::onTerrainOcclusion);
+  connect(ui->IDC_TOGGLE_VISIBILITY, &QPushButton::clicked, this, &TerrainKeypad::onToggleVisibility);
 
-  connectEdit("IDC_FOG_DISTANCE_EDIT", &TerrainKeypad::onFogDistanceEdited);
-  connectEdit("IDC_PIXEL_ERROR_EDIT", &TerrainKeypad::onPixelErrorEdited);
-  connectEdit("IDC_FOG_SCALAR_EDIT", &TerrainKeypad::onFogScalarEdited);
-  connectEdit("IDC_DAMAGE_PER_SEC_EDIT", &TerrainKeypad::onDamagePerSecEdited);
-  connectEdit("IDC_ROTATE_SPEED_EDIT", &TerrainKeypad::onRotateSpeedEdited);
-  connectEdit("IDC_SKY_RED_EDIT", &TerrainKeypad::onSkyRedEdited);
-  connectEdit("IDC_SKY_GREEN_EDIT", &TerrainKeypad::onSkyGreenEdited);
-  connectEdit("IDC_SKY_BLUE_EDIT", &TerrainKeypad::onSkyBlueEdited);
+  connect(ui->IDC_FOG_DISTANCE_EDIT, &QLineEdit::editingFinished, this, &TerrainKeypad::onFogDistanceEdited);
+  connect(ui->IDC_PIXEL_ERROR_EDIT, &QLineEdit::editingFinished, this, &TerrainKeypad::onPixelErrorEdited);
+  connect(ui->IDC_FOG_SCALAR_EDIT, &QLineEdit::editingFinished, this, &TerrainKeypad::onFogScalarEdited);
+  connect(ui->IDC_DAMAGE_PER_SEC_EDIT, &QLineEdit::editingFinished, this, &TerrainKeypad::onDamagePerSecEdited);
+  connect(ui->IDC_ROTATE_SPEED_EDIT, &QLineEdit::editingFinished, this, &TerrainKeypad::onRotateSpeedEdited);
+  connect(ui->IDC_SKY_RED_EDIT, &QLineEdit::editingFinished, this, &TerrainKeypad::onSkyRedEdited);
+  connect(ui->IDC_SKY_GREEN_EDIT, &QLineEdit::editingFinished, this, &TerrainKeypad::onSkyGreenEdited);
+  connect(ui->IDC_SKY_BLUE_EDIT, &QLineEdit::editingFinished, this, &TerrainKeypad::onSkyBlueEdited);
 
-  connectCheck("IDC_STARS_CHECK", &TerrainKeypad::onStarsToggled);
-  connectCheck("IDC_SATELLITE_CHECK", &TerrainKeypad::onSatelliteToggled);
-  connectCheck("IDC_TEXTURE_SKY", &TerrainKeypad::onTexturedSkyToggled);
-  connectCheck("IDC_USE_FOG", &TerrainKeypad::onUseFogToggled);
-  connectCheck("IDC_USE_HALO", &TerrainKeypad::onUseHaloToggled);
-  connectCheck("IDC_USE_ATMOSPHERE", &TerrainKeypad::onUseAtmosphereToggled);
-  connectCheck("IDC_ROTATE_STARS", &TerrainKeypad::onRotateStarsToggled);
-  connectCheck("IDC_ROTATE_SKY", &TerrainKeypad::onRotateSkyToggled);
-  connectCheck("IDC_SHOW_TERRAIN", &TerrainKeypad::onShowTerrainToggled);
-  connectCheck("IDC_FLAT_SHADE_TERRAIN_CHECK", &TerrainKeypad::onFlatShadeToggled);
-  connectCheck("IDC_NO_LOD_ENGINE", &TerrainKeypad::onNoLodToggled);
-  connectCheck("IDC_TERRAIN_2D", &TerrainKeypad::onTerrain2dToggled);
-  connectCheck("IDC_SHOW_INVISIBLE", &TerrainKeypad::onShowInvisibleToggled);
-  connectCheck("IDC_NO_EXT_ROOMS_OBJS", &TerrainKeypad::onNoExtRoomsObjsToggled);
+  connect(ui->IDC_STARS_CHECK, &QCheckBox::toggled, this, &TerrainKeypad::onStarsToggled);
+  connect(ui->IDC_SATELLITE_CHECK, &QCheckBox::toggled, this, &TerrainKeypad::onSatelliteToggled);
+  connect(ui->IDC_TEXTURE_SKY, &QCheckBox::toggled, this, &TerrainKeypad::onTexturedSkyToggled);
+  connect(ui->IDC_USE_FOG, &QCheckBox::toggled, this, &TerrainKeypad::onUseFogToggled);
+  connect(ui->IDC_USE_HALO, &QCheckBox::toggled, this, &TerrainKeypad::onUseHaloToggled);
+  connect(ui->IDC_USE_ATMOSPHERE, &QCheckBox::toggled, this, &TerrainKeypad::onUseAtmosphereToggled);
+  connect(ui->IDC_ROTATE_STARS, &QCheckBox::toggled, this, &TerrainKeypad::onRotateStarsToggled);
+  connect(ui->IDC_ROTATE_SKY, &QCheckBox::toggled, this, &TerrainKeypad::onRotateSkyToggled);
+  connect(ui->IDC_SHOW_TERRAIN, &QCheckBox::toggled, this, &TerrainKeypad::onShowTerrainToggled);
+  connect(ui->IDC_FLAT_SHADE_TERRAIN_CHECK, &QCheckBox::toggled, this, &TerrainKeypad::onFlatShadeToggled);
+  connect(ui->IDC_NO_LOD_ENGINE, &QCheckBox::toggled, this, &TerrainKeypad::onNoLodToggled);
+  connect(ui->IDC_TERRAIN_2D, &QCheckBox::toggled, this, &TerrainKeypad::onTerrain2dToggled);
+  connect(ui->IDC_SHOW_INVISIBLE, &QCheckBox::toggled, this, &TerrainKeypad::onShowInvisibleToggled);
+  connect(ui->IDC_NO_EXT_ROOMS_OBJS, &QCheckBox::toggled, this, &TerrainKeypad::onNoExtRoomsObjsToggled);
 
-  connectRadio("IDC_SKY_RADIO", &TerrainKeypad::onSkyRadio);
-  connectRadio("IDC_HORIZON_RADIO", &TerrainKeypad::onHorizonRadio);
-  connectRadio("IDC_FOG_RADIO", &TerrainKeypad::onFogRadio);
-  connectRadio("IDC_SATELLITE_RADIO", &TerrainKeypad::onSatelliteRadio);
+  connect(ui->IDC_SKY_RADIO, &QRadioButton::clicked, this, &TerrainKeypad::onSkyRadio);
+  connect(ui->IDC_HORIZON_RADIO, &QRadioButton::clicked, this, &TerrainKeypad::onHorizonRadio);
+  connect(ui->IDC_FOG_RADIO, &QRadioButton::clicked, this, &TerrainKeypad::onFogRadio);
+  connect(ui->IDC_SATELLITE_RADIO, &QRadioButton::clicked, this, &TerrainKeypad::onSatelliteRadio);
 
   updateDialog();
 }
@@ -148,19 +132,20 @@ int TerrainKeypad::currentSat() const { return m_currentSatellite; }
 
 void TerrainKeypad::updateDialog() {
   const bool hasTerrain = (Num_terrain_selected > 0);
-  const char *names[] = {"IDC_TERRPAD_MOVE_UP",    "IDC_TERRPAD_MOVE_DOWN", "IDC_TERRPAD_RAISE10",
-                         "IDC_TERRPAD_LOWER10",    "IDC_TERRPAD_MAKE_MAX",  "IDC_TERRPAD_MAKE_MIN",
-                         "IDC_TERRPAD_MAKE_ZERO",  "IDC_TERRPAD_FILL_AREA"};
-  for (const char *name : names)
-    if (QWidget *w = findChild<QWidget*>(name))
-      w->setEnabled(hasTerrain);
+  ui->IDC_TERRPAD_MOVE_UP->setEnabled(hasTerrain);
+  ui->IDC_TERRPAD_MOVE_DOWN->setEnabled(hasTerrain);
+  ui->IDC_TERRPAD_RAISE10->setEnabled(hasTerrain);
+  ui->IDC_TERRPAD_LOWER10->setEnabled(hasTerrain);
+  ui->IDC_TERRPAD_MAKE_MAX->setEnabled(hasTerrain);
+  ui->IDC_TERRPAD_MAKE_MIN->setEnabled(hasTerrain);
+  ui->IDC_TERRPAD_MAKE_ZERO->setEnabled(hasTerrain);
+  ui->IDC_TERRPAD_FILL_AREA->setEnabled(hasTerrain);
 
-  if (QLabel *label = ui->IDC_NUM_MOONS_STATIC)
-    label->setText(QString("Num of sats:%1").arg(Terrain_sky.num_satellites));
-  if (QLabel *label = ui->IDC_CUR_MOON_STATIC)
-    label->setText(QString("Current sat:%1").arg(m_currentSatellite));
+  ui->IDC_NUM_MOONS_STATIC->setText(QString("Num of sats:%1").arg(Terrain_sky.num_satellites));
+  ui->IDC_CUR_MOON_STATIC->setText(QString("Current sat:%1").arg(m_currentSatellite));
 
-  if (QLineEdit *e = ui->IDC_SKY_RED_EDIT) {
+  {
+    QLineEdit *e = ui->IDC_SKY_RED_EDIT;
     int r = 0, g = 0, b = 0;
     if (m_ccMode != ColorMode_Sat) {
       uint32_t color = (m_ccMode == ColorMode_Sky) ? Terrain_sky.sky_color
@@ -173,44 +158,37 @@ void TerrainKeypad::updateDialog() {
     } else {
       e->setText(QString::number(Terrain_sky.satellite_r[m_currentSatellite], 'f', 2));
     }
-    if (QLineEdit *e2 = ui->IDC_SKY_GREEN_EDIT)
-      e2->setText(m_ccMode != ColorMode_Sat ? QString::number(g) : QString::number(Terrain_sky.satellite_g[m_currentSatellite], 'f', 2));
-    if (QLineEdit *e3 = ui->IDC_SKY_BLUE_EDIT)
-      e3->setText(m_ccMode != ColorMode_Sat ? QString::number(b) : QString::number(Terrain_sky.satellite_b[m_currentSatellite], 'f', 2));
+    ui->IDC_SKY_GREEN_EDIT->setText(m_ccMode != ColorMode_Sat ? QString::number(g) : QString::number(Terrain_sky.satellite_g[m_currentSatellite], 'f', 2));
+    ui->IDC_SKY_BLUE_EDIT->setText(m_ccMode != ColorMode_Sat ? QString::number(b) : QString::number(Terrain_sky.satellite_b[m_currentSatellite], 'f', 2));
   }
 
-  if (QLineEdit *e = ui->IDC_FOG_DISTANCE_EDIT)
-    e->setText(QString::number(Detail_settings.Terrain_render_distance / TERRAIN_SIZE, 'f', 1));
-  if (QLineEdit *e = ui->IDC_PIXEL_ERROR_EDIT)
-    e->setText(QString::number(Detail_settings.Pixel_error, 'f', 1));
-  if (QLineEdit *e = ui->IDC_FOG_SCALAR_EDIT)
-    e->setText(QString::number(Terrain_sky.fog_scalar, 'f', 3));
-  if (QLineEdit *e = ui->IDC_DAMAGE_PER_SEC_EDIT)
-    e->setText(QString::number(Terrain_sky.damage_per_second, 'f', 3));
-  if (QLineEdit *e = ui->IDC_ROTATE_SPEED_EDIT)
-    e->setText(QString::number(Terrain_sky.rotate_rate, 'f', 2));
+  ui->IDC_FOG_DISTANCE_EDIT->setText(QString::number(Detail_settings.Terrain_render_distance / TERRAIN_SIZE, 'f', 1));
+  ui->IDC_PIXEL_ERROR_EDIT->setText(QString::number(Detail_settings.Pixel_error, 'f', 1));
+  ui->IDC_FOG_SCALAR_EDIT->setText(QString::number(Terrain_sky.fog_scalar, 'f', 3));
+  ui->IDC_DAMAGE_PER_SEC_EDIT->setText(QString::number(Terrain_sky.damage_per_second, 'f', 3));
+  ui->IDC_ROTATE_SPEED_EDIT->setText(QString::number(Terrain_sky.rotate_rate, 'f', 2));
 
-  if (QCheckBox *c = ui->IDC_STARS_CHECK) c->setChecked(Terrain_sky.flags & TF_STARS);
-  if (QCheckBox *c = ui->IDC_SATELLITE_CHECK) c->setChecked(Terrain_sky.flags & TF_SATELLITES);
-  if (QCheckBox *c = ui->IDC_TEXTURE_SKY) c->setChecked(Terrain_sky.textured);
-  if (QCheckBox *c = ui->IDC_USE_FOG) c->setChecked(Terrain_sky.flags & TF_FOG);
-  if (QCheckBox *c = ui->IDC_ROTATE_STARS) c->setChecked(Terrain_sky.flags & TF_ROTATE_STARS);
-  if (QCheckBox *c = ui->IDC_ROTATE_SKY) c->setChecked(Terrain_sky.flags & TF_ROTATE_SKY);
+  ui->IDC_STARS_CHECK->setChecked(Terrain_sky.flags.stars);
+  ui->IDC_SATELLITE_CHECK->setChecked(Terrain_sky.flags.satellites);
+  ui->IDC_TEXTURE_SKY->setChecked(Terrain_sky.textured);
+  ui->IDC_USE_FOG->setChecked(Terrain_sky.flags.fog);
+  ui->IDC_ROTATE_STARS->setChecked(Terrain_sky.flags.rotate_stars);
+  ui->IDC_ROTATE_SKY->setChecked(Terrain_sky.flags.rotate_sky);
   if (m_currentSatellite >= 0 && m_currentSatellite < 5) {
-    if (QCheckBox *c = ui->IDC_USE_HALO) c->setChecked(Terrain_sky.satellite_flags[m_currentSatellite] & TSF_HALO);
-    if (QCheckBox *c = ui->IDC_USE_ATMOSPHERE) c->setChecked(Terrain_sky.satellite_flags[m_currentSatellite] & TSF_ATMOSPHERE);
+    ui->IDC_USE_HALO->setChecked(Terrain_sky.satellite_flags[m_currentSatellite].halo);
+    ui->IDC_USE_ATMOSPHERE->setChecked(Terrain_sky.satellite_flags[m_currentSatellite].atmosphere);
   }
-  if (QCheckBox *c = ui->IDC_SHOW_TERRAIN) c->setChecked(D3EditState.terrain_dots);
-  if (QCheckBox *c = ui->IDC_FLAT_SHADE_TERRAIN_CHECK) c->setChecked(D3EditState.terrain_flat_shade);
-  if (QCheckBox *c = ui->IDC_NO_LOD_ENGINE) c->setChecked(Editor_LOD_engine_off);
-  if (QCheckBox *c = ui->IDC_TERRAIN_2D) c->setChecked(Flat_terrain);
-  if (QCheckBox *c = ui->IDC_SHOW_INVISIBLE) c->setChecked(Show_invisible_terrain);
-  if (QCheckBox *c = ui->IDC_NO_EXT_ROOMS_OBJS) c->setChecked(!Terrain_render_ext_room_objs);
+  ui->IDC_SHOW_TERRAIN->setChecked(app.terrain_dots);
+  ui->IDC_FLAT_SHADE_TERRAIN_CHECK->setChecked(app.terrain_flat_shade);
+  ui->IDC_NO_LOD_ENGINE->setChecked(Editor_LOD_engine_off);
+  ui->IDC_TERRAIN_2D->setChecked(Flat_terrain);
+  ui->IDC_SHOW_INVISIBLE->setChecked(Show_invisible_terrain);
+  ui->IDC_NO_EXT_ROOMS_OBJS->setChecked(!Terrain_render_ext_room_objs);
 
-  if (QRadioButton *r = ui->IDC_SKY_RADIO) r->setChecked(m_ccMode == ColorMode_Sky);
-  if (QRadioButton *r = ui->IDC_HORIZON_RADIO) r->setChecked(m_ccMode == ColorMode_Horizon);
-  if (QRadioButton *r = ui->IDC_FOG_RADIO) r->setChecked(m_ccMode == ColorMode_Fog);
-  if (QRadioButton *r = ui->IDC_SATELLITE_RADIO) r->setChecked(m_ccMode == ColorMode_Sat);
+  ui->IDC_SKY_RADIO->setChecked(m_ccMode == ColorMode_Sky);
+  ui->IDC_HORIZON_RADIO->setChecked(m_ccMode == ColorMode_Horizon);
+  ui->IDC_FOG_RADIO->setChecked(m_ccMode == ColorMode_Fog);
+  ui->IDC_SATELLITE_RADIO->setChecked(m_ccMode == ColorMode_Sat);
 }
 
 void TerrainKeypad::changeSelectedHeights(int delta, bool toAbsolute, int absoluteValue) {
@@ -278,7 +256,7 @@ void TerrainKeypad::onFillArea() {
   const int count = TERRAIN_WIDTH * TERRAIN_DEPTH;
   for (int i = 0; i < count; i++)
     if (TerrainSelected[i])
-      Terrain_tex_seg[Terrain_seg[i].texseg_index].tex_index = D3EditState.texdlg_texture;
+      Terrain_tex_seg[Terrain_seg[i].texseg_index].tex_index = app.texdlg_texture;
   World_changed = true;
 }
 
@@ -312,10 +290,10 @@ void TerrainKeypad::moveSat(int pitch, int heading) {
   int n = m_currentSatellite;
   matrix rot_matrix;
   vm_AnglesToMatrix(&rot_matrix, pitch, heading, 0);
-  vector sat_vec = Terrain_sky.satellite_vectors[n] - Viewer_object->pos;
+  vector3 sat_vec = Terrain_sky.satellite_vectors[n] - Viewer_object->pos;
   float mag = vm_GetMagnitude(&sat_vec);
   vm_NormalizeVector(&sat_vec);
-  vector rot_vec;
+  vector3 rot_vec;
   vm_MatrixMulVector(&rot_vec, &sat_vec, &rot_matrix);
   Terrain_sky.satellite_vectors[n] = Viewer_object->pos + (rot_vec * mag);
   TV_changed = true;
@@ -364,31 +342,41 @@ void TerrainKeypad::onRotTexture() {
 void TerrainKeypad::onRedoTopmap() { World_changed = true; }
 
 void TerrainKeypad::onTileMore() {
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
   if (Terrain_sky.radius > 500) {
-    SetupSky(Terrain_sky.radius - 500, Terrain_sky.flags);
+    SetupSky(Terrain_sky.radius - 500, flags_raw);
     TV_changed = true;
   }
 }
 
 void TerrainKeypad::onTileLess() {
-  SetupSky(Terrain_sky.radius + 500, Terrain_sky.flags);
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
+  SetupSky(Terrain_sky.radius + 500, flags_raw);
   TV_changed = true;
 }
 
 void TerrainKeypad::onSkyNearer() {
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
   if (Terrain_sky.radius > 500) {
-    SetupSky(Terrain_sky.radius - 500, Terrain_sky.flags);
+    SetupSky(Terrain_sky.radius - 500, flags_raw);
     TV_changed = true;
   }
 }
 
 void TerrainKeypad::onSkyFarther() {
-  SetupSky(Terrain_sky.radius + 500, Terrain_sky.flags);
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
+  SetupSky(Terrain_sky.radius + 500, flags_raw);
   TV_changed = true;
 }
 
 void TerrainKeypad::onRandomizeSky() {
-  SetupSky(Terrain_sky.radius, Terrain_sky.flags, 1);
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
+  SetupSky(Terrain_sky.radius, flags_raw, 1);
   TV_changed = true;
 }
 
@@ -450,8 +438,7 @@ void TerrainKeypad::onSmoothTerrain() {
 
   const int w = TERRAIN_WIDTH;
   const int h = TERRAIN_DEPTH;
-  uint8_t *src = (uint8_t *)mem_malloc(w * h);
-  if (!src) return;
+  std::vector<uint8_t> src(w * h);
 
   for (int i = 0; i < w * h; i++)
     src[i] = Terrain_seg[i].ypos;
@@ -475,7 +462,6 @@ void TerrainKeypad::onSmoothTerrain() {
     }
   }
 
-  mem_free(src);
   BuildMinMaxTerrain();
   QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Terrain smoothed!");
   World_changed = true;
@@ -511,9 +497,9 @@ void TerrainKeypad::onDropTerrain() {
 
   for (int o = 0; o <= Highest_object_index; o++) {
     if (Objects[o].type != OBJ_NONE) {
-      vector new_pos = Objects[o].pos;
+      vector3 new_pos = Objects[o].pos;
       new_pos.y() += delta_y;
-      ObjSetPos(&Objects[o], &new_pos, Objects[o].roomnum, NULL, false);
+      ObjSetPos(Objects[o], new_pos, Objects[o].roomnum, nullptr, false);
     }
   }
 
@@ -534,10 +520,7 @@ void TerrainKeypad::onToggleVisibility() {
   const int count = TERRAIN_WIDTH * TERRAIN_DEPTH;
   for (int i = 0; i < count; i++) {
     if (TerrainSelected[i]) {
-      if (Terrain_seg[i].flags & TF_INVISIBLE)
-        Terrain_seg[i].flags &= ~TF_INVISIBLE;
-      else
-        Terrain_seg[i].flags |= TF_INVISIBLE;
+      Terrain_seg[i].flags.invisible = ~Terrain_seg[i].flags.invisible;
       World_changed = true;
     }
   }
@@ -609,7 +592,8 @@ void TerrainKeypad::onSkyBlueEdited() {
 }
 
 void TerrainKeypad::onFogDistanceEdited() {
-  if (QLineEdit *edit = ui->IDC_FOG_DISTANCE_EDIT) {
+  {
+    QLineEdit *edit = ui->IDC_FOG_DISTANCE_EDIT;
     float predist = edit->text().toFloat();
     if (predist < 20) predist = 20;
     if (predist > 200) predist = 200;
@@ -619,7 +603,8 @@ void TerrainKeypad::onFogDistanceEdited() {
 }
 
 void TerrainKeypad::onPixelErrorEdited() {
-  if (QLineEdit *edit = ui->IDC_PIXEL_ERROR_EDIT) {
+  {
+    QLineEdit *edit = ui->IDC_PIXEL_ERROR_EDIT;
     float err = edit->text().toFloat();
     if (err < 0) err = 0;
     if (err > 64) err = 64;
@@ -629,34 +614,35 @@ void TerrainKeypad::onPixelErrorEdited() {
 }
 
 void TerrainKeypad::onFogScalarEdited() {
-  if (QLineEdit *edit = ui->IDC_FOG_SCALAR_EDIT) {
+  {
+    QLineEdit *edit = ui->IDC_FOG_SCALAR_EDIT;
     Terrain_sky.fog_scalar = edit->text().toFloat();
     World_changed = true;
   }
 }
 
 void TerrainKeypad::onDamagePerSecEdited() {
-  if (QLineEdit *edit = ui->IDC_DAMAGE_PER_SEC_EDIT) {
+  {
+    QLineEdit *edit = ui->IDC_DAMAGE_PER_SEC_EDIT;
     Terrain_sky.damage_per_second = edit->text().toFloat();
     World_changed = true;
   }
 }
 
 void TerrainKeypad::onRotateSpeedEdited() {
-  if (QLineEdit *edit = ui->IDC_ROTATE_SPEED_EDIT) {
+  {
+    QLineEdit *edit = ui->IDC_ROTATE_SPEED_EDIT;
     Terrain_sky.rotate_rate = edit->text().toFloat();
     World_changed = true;
   }
 }
 
 void TerrainKeypad::onStarsToggled(bool checked) {
-  if (checked) Terrain_sky.flags |= TF_STARS;
-  else Terrain_sky.flags &= ~TF_STARS;
+  Terrain_sky.flags.stars = checked;
   TV_changed = true;
 }
 void TerrainKeypad::onSatelliteToggled(bool checked) {
-  if (checked) Terrain_sky.flags |= TF_SATELLITES;
-  else Terrain_sky.flags &= ~TF_SATELLITES;
+  Terrain_sky.flags.satellites = checked;
   TV_changed = true;
 }
 void TerrainKeypad::onTexturedSkyToggled(bool checked) {
@@ -664,32 +650,27 @@ void TerrainKeypad::onTexturedSkyToggled(bool checked) {
   World_changed = true;
 }
 void TerrainKeypad::onUseFogToggled(bool checked) {
-  if (checked) Terrain_sky.flags |= TF_FOG;
-  else Terrain_sky.flags &= ~TF_FOG;
+  Terrain_sky.flags.fog = checked;
   World_changed = true;
 }
 void TerrainKeypad::onUseHaloToggled(bool checked) {
   if (m_currentSatellite >= 0 && m_currentSatellite < 5) {
-    if (checked) Terrain_sky.satellite_flags[m_currentSatellite] |= TSF_HALO;
-    else Terrain_sky.satellite_flags[m_currentSatellite] &= ~TSF_HALO;
+    Terrain_sky.satellite_flags[m_currentSatellite].halo = checked;
     World_changed = true;
   }
 }
 void TerrainKeypad::onUseAtmosphereToggled(bool checked) {
   if (m_currentSatellite >= 0 && m_currentSatellite < 5) {
-    if (checked) Terrain_sky.satellite_flags[m_currentSatellite] |= TSF_ATMOSPHERE;
-    else Terrain_sky.satellite_flags[m_currentSatellite] &= ~TSF_ATMOSPHERE;
+    Terrain_sky.satellite_flags[m_currentSatellite].atmosphere = checked;
     World_changed = true;
   }
 }
 void TerrainKeypad::onRotateStarsToggled(bool checked) {
-  if (checked) Terrain_sky.flags |= TF_ROTATE_STARS;
-  else Terrain_sky.flags &= ~TF_ROTATE_STARS;
+  Terrain_sky.flags.rotate_stars = checked;
   TV_changed = true;
 }
 void TerrainKeypad::onRotateSkyToggled(bool checked) {
-  if (checked) Terrain_sky.flags |= TF_ROTATE_SKY;
-  else Terrain_sky.flags &= ~TF_ROTATE_SKY;
+  Terrain_sky.flags.rotate_sky = checked;
   TV_changed = true;
 }
 void TerrainKeypad::onFastTerrainToggled(bool checked) {
@@ -697,11 +678,11 @@ void TerrainKeypad::onFastTerrainToggled(bool checked) {
   TV_changed = true;
 }
 void TerrainKeypad::onShowTerrainToggled(bool checked) {
-  D3EditState.terrain_dots = checked;
+  app.terrain_dots = checked;
   State_changed = true;
 }
 void TerrainKeypad::onFlatShadeToggled(bool checked) {
-  D3EditState.terrain_flat_shade = checked;
+  app.terrain_flat_shade = checked;
   if (checked) {
     Terrain_texture_distance = 0;
     Detail_settings.Terrain_render_distance = DEFAULT_VISIBLE_TERRAIN_DISTANCE * 2;

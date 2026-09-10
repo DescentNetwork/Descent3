@@ -19,6 +19,8 @@
 #include "object_keypad.h"
 #include "ui_objectkeypad.h"
 
+#include <bit>
+#include <cstring>
 #include <QMessageBox>
 #include <QCheckBox>
 #include <QComboBox>
@@ -46,8 +48,7 @@ ObjectKeypad::ObjectKeypad(QWidget *parent) : QDialog(parent), ui(new Ui::Object
   connect(ui->IDC_OBJPAD_SETDEFAULT, &QPushButton::clicked, this, &ObjectKeypad::onSetDefault);
   connect(ui->IDC_OBJ_ROT90, &QPushButton::clicked, this, &ObjectKeypad::onRot90);
   connect(ui->IDC_OBJPAD_DELETEALL, &QPushButton::clicked, this, &ObjectKeypad::onDeleteAll);
-  if (QCheckBox *cb = ui->IDC_OBJECT_PUSHTHROUGHWALLS)
-    connect(cb, &QCheckBox::toggled, this, &ObjectKeypad::onPushThroughWalls);
+  connect(ui->IDC_OBJECT_PUSHTHROUGHWALLS, &QCheckBox::toggled, this, &ObjectKeypad::onPushThroughWalls);
   connect(ui->IDC_OBJMOVEX, &QPushButton::clicked, this, &ObjectKeypad::onAxisX);
   connect(ui->IDC_OBJMOVEY, &QPushButton::clicked, this, &ObjectKeypad::onAxisY);
   connect(ui->IDC_OBJMOVEZ, &QPushButton::clicked, this, &ObjectKeypad::onAxisZ);
@@ -55,8 +56,7 @@ ObjectKeypad::ObjectKeypad(QWidget *parent) : QDialog(parent), ui(new Ui::Object
   connect(ui->IDC_OBJMOVEH, &QPushButton::clicked, this, &ObjectKeypad::onAxisH);
   connect(ui->IDC_OBJMOVEB, &QPushButton::clicked, this, &ObjectKeypad::onAxisB);
 
-  if (QCheckBox *cb = ui->IDC_OBJECT_PUSHTHROUGHWALLS)
-    cb->setChecked(f_allow_objects_to_be_pushed_through_walls);
+  ui->IDC_OBJECT_PUSHTHROUGHWALLS->setChecked(f_allow_objects_to_be_pushed_through_walls);
 
   updateDialog();
 }
@@ -64,32 +64,30 @@ ObjectKeypad::ObjectKeypad(QWidget *parent) : QDialog(parent), ui(new Ui::Object
 ObjectKeypad::~ObjectKeypad() { delete ui; }
 
 void ObjectKeypad::setMoveAxis(int axis) {
-  D3EditState.object_move_axis = axis;
+  app.object_move_axis = axis;
   updateDialog();
 }
 
 void ObjectKeypad::updateDialog() {
   const bool hasObject = (Cur_object_index >= 0 && Cur_object_index <= Highest_object_index &&
                           Objects[Cur_object_index].type != OBJ_NONE);
-  const char *names[] = {"IDC_OBJPAD_FLIPOBJ", "IDC_OBJ_DELOBJ", "IDC_OBJPAD_NEXTOBJ",
-                         "IDC_OBJPAD_SETDEFAULT", "IDC_OBJ_ROT90"};
-  for (const char *name : names)
-    if (QWidget *w = findChild<QWidget*>(name))
-      w->setEnabled(hasObject);
+  ui->IDC_OBJPAD_FLIPOBJ->setEnabled(hasObject);
+  ui->IDC_OBJ_DELOBJ->setEnabled(hasObject);
+  ui->IDC_OBJPAD_NEXTOBJ->setEnabled(hasObject);
+  ui->IDC_OBJPAD_SETDEFAULT->setEnabled(hasObject);
+  ui->IDC_OBJ_ROT90->setEnabled(hasObject);
 
-  const struct {
-    const char *name;
-    int axis;
-  } axes[] = {{"IDC_OBJMOVEX", 0}, {"IDC_OBJMOVEY", 1}, {"IDC_OBJMOVEZ", 2},
-              {"IDC_OBJMOVEP", 3}, {"IDC_OBJMOVEH", 4}, {"IDC_OBJMOVEB", 5}};
-  for (const auto &a : axes)
-    if (QPushButton *b = findChild<QPushButton*>(a.name))
-      b->setChecked(D3EditState.object_move_axis == a.axis);
+  ui->IDC_OBJMOVEX->setChecked(app.object_move_axis == 0);
+  ui->IDC_OBJMOVEY->setChecked(app.object_move_axis == 1);
+  ui->IDC_OBJMOVEZ->setChecked(app.object_move_axis == 2);
+  ui->IDC_OBJMOVEP->setChecked(app.object_move_axis == 3);
+  ui->IDC_OBJMOVEH->setChecked(app.object_move_axis == 4);
+  ui->IDC_OBJMOVEB->setChecked(app.object_move_axis == 5);
 }
 
 void ObjectKeypad::onPlaceObject() {
   // HObjectPlace handles all the validation internally.
-  if (HObjectPlace(D3EditState.current_obj_type, D3EditState.current_obj_id)) {
+  if (HObjectPlace(app.current_obj_type, app.current_obj_id)) {
     Mine_changed = true;
     updateDialog();
   }
@@ -139,7 +137,9 @@ void ObjectKeypad::onResetObjects() {
     const int type = Objects[i].type;
     if (type < 0 || type >= MAX_OBJECT_TYPES || Object_info[type].type == OBJ_NONE)
       continue;
-    Objects[i].flags = Object_info[type].flags;
+    uint32_t obj_flags = 0;
+    std::memcpy(&obj_flags, &Object_info[type].flags, sizeof(obj_flags));
+    Objects[i].flags = std::bit_cast<object_flags_t>(obj_flags);
     Objects[i].size = Object_info[type].size;
   }
   Mine_changed = true;

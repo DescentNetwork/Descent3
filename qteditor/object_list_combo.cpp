@@ -23,6 +23,8 @@
 #include "object.h"
 #include "object_external.h"
 
+using namespace std::string_literals;
+
 void populateObjectCombo(QComboBox *combo, int type, int selected_handle) {
   if (combo == nullptr)
     return;
@@ -33,10 +35,12 @@ void populateObjectCombo(QComboBox *combo, int type, int selected_handle) {
   for (int i = 0; i <= Highest_object_index; i++) {
     if (Objects[i].type == OBJ_NONE)
       continue;
-    if (Objects[i].name && (type == OBJ_NONE || Objects[i].type == type)) {
-      char str[100];
-      snprintf(str, sizeof(str), "%s (%s, %x)", Objects[i].name ? Objects[i].name : "<no name>",
-               Object_type_names[Objects[i].type], Objects[i].handle);
+    if (!Objects[i].name.empty() && (type == OBJ_NONE || Objects[i].type == type))
+    {
+      QString str = QString("%1 (%2, %3)")
+                        .arg(QString::fromStdString(Objects[i].name.empty() ? "<no name>"s : Objects[i].name))
+                        .arg(QString::fromStdString(Object_type_names[Objects[i].type]))
+                        .arg(Objects[i].handle, 8, 16);
       int index = combo->count();
       combo->addItem(str, Objects[i].handle);
       if (Objects[i].handle == selected_handle)

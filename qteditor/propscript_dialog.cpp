@@ -36,15 +36,13 @@ PropScriptDialog::PropScriptDialog(QWidget *parent)
   if (m_list != nullptr) {
     // Scripts are loaded through the OSIRIS module system; list compiled
     // modules present in the local scripts directory.
-    QDir dir(LocalScriptDir);
+    QDir dir(QString::fromStdString(LocalScriptDir.string()));
     const QStringList names = dir.entryList(QStringList() << "*.dll", QDir::Files);
     for (const QString &n : names)
       m_list->addItem(QFileInfo(n).completeBaseName());
   }
-  if (QPushButton *b = ui->IDC_PARAMETERS)
-    connect(b, &QPushButton::clicked, this, &PropScriptDialog::onParameters);
-  if (QPushButton *b = ui->IDC_SCRIPTSEL_SCRIPT_WIZ)
-    connect(b, &QPushButton::clicked, this, &PropScriptDialog::onScriptWizard);
+  connect(ui->IDC_PARAMETERS, &QPushButton::clicked, this, &PropScriptDialog::onParameters);
+  connect(ui->IDC_SCRIPTSEL_SCRIPT_WIZ, &QPushButton::clicked, this, &PropScriptDialog::onScriptWizard);
 }
 
 PropScriptDialog::~PropScriptDialog() { delete ui; }

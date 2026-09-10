@@ -41,14 +41,9 @@ private slots:
   void onNextInRoom();
   void onNextPortal();
   void onOneshotToggled(bool checked);
-  void onActivatorToggled();
 
 private:
   void updateDialog();
-  void setActivator(uint16_t flag, const char *checkName, bool checked);
-
-  template <typename T>
-  T *find(const QString &name) const { return findChild<T *>(name); }
 
   Ui::TriggerKeypad *ui;
 };

@@ -30,27 +30,25 @@ GenericDeathDialog::GenericDeathDialog(object_info *objinfo, QWidget *parent)
     : QDialog(parent), ui(new Ui::GenericDeathDialog), m_objinfo(objinfo)
 {
   ui->setupUi(this);
-  for (int i = 0; i < MAX_DEATH_TYPES; i++) {
-    m_death_types[i] = objinfo->death_types[i];
-    m_prob[i] = objinfo->death_probabilities[i];
-  }
+  m_death_types[0] = objinfo->death_types[0];
+  m_prob[0] = objinfo->death_probabilities[0];
+  m_death_types[1] = objinfo->death_types[1];
+  m_prob[1] = objinfo->death_probabilities[1];
+  m_death_types[2] = objinfo->death_types[2];
+  m_prob[2] = objinfo->death_probabilities[2];
+  m_death_types[3] = objinfo->death_types[3];
+  m_prob[3] = objinfo->death_probabilities[3];
 
-  const char *probNames[MAX_DEATH_TYPES] = {"IDC_GENEREIC_DEATH_PROB1", "IDC_GENEREIC_DEATH_PROB2",
-                                            "IDC_GENEREIC_DEATH_PROB3", "IDC_GENEREIC_DEATH_PROB4"};
-  for (int i = 0; i < MAX_DEATH_TYPES; i++) {
-    if (QLineEdit *edit = findChild<QLineEdit*>(probNames[i]))
-      edit->setText(QString::number(m_prob[i]));
-  }
+  ui->IDC_GENEREIC_DEATH_PROB1->setText(QString::number(m_prob[0]));
+  ui->IDC_GENEREIC_DEATH_PROB2->setText(QString::number(m_prob[1]));
+  ui->IDC_GENEREIC_DEATH_PROB3->setText(QString::number(m_prob[2]));
+  ui->IDC_GENEREIC_DEATH_PROB4->setText(QString::number(m_prob[3]));
 
-  connect(this, &QDialog::accept, this, &GenericDeathDialog::onOk);
-  if (QPushButton *b = ui->IDC_GENERIC_DEATH_EDIT1)
-    connect(b, &QPushButton::clicked, this, &GenericDeathDialog::onEdit1);
-  if (QPushButton *b = ui->IDC_GENERIC_DEATH_EDIT2)
-    connect(b, &QPushButton::clicked, this, &GenericDeathDialog::onEdit2);
-  if (QPushButton *b = ui->IDC_GENERIC_DEATH_EDIT3)
-    connect(b, &QPushButton::clicked, this, &GenericDeathDialog::onEdit3);
-  if (QPushButton *b = ui->IDC_GENERIC_DEATH_EDIT4)
-    connect(b, &QPushButton::clicked, this, &GenericDeathDialog::onEdit4);
+  connect(ui->IDOK, &QPushButton::clicked, this, &GenericDeathDialog::onOk);
+  connect(ui->IDC_GENERIC_DEATH_EDIT1, &QPushButton::clicked, this, &GenericDeathDialog::onEdit1);
+  connect(ui->IDC_GENERIC_DEATH_EDIT2, &QPushButton::clicked, this, &GenericDeathDialog::onEdit2);
+  connect(ui->IDC_GENERIC_DEATH_EDIT3, &QPushButton::clicked, this, &GenericDeathDialog::onEdit3);
+  connect(ui->IDC_GENERIC_DEATH_EDIT4, &QPushButton::clicked, this, &GenericDeathDialog::onEdit4);
 }
 
 GenericDeathDialog::~GenericDeathDialog() { delete ui; }
@@ -73,23 +71,29 @@ void GenericDeathDialog::onEdit4() {
 }
 
 void GenericDeathDialog::onOk() {
-  const char *probNames[MAX_DEATH_TYPES] = {"IDC_GENEREIC_DEATH_PROB1", "IDC_GENEREIC_DEATH_PROB2",
-                                            "IDC_GENEREIC_DEATH_PROB3", "IDC_GENEREIC_DEATH_PROB4"};
   int total_prob = 0;
-  for (int i = 0; i < MAX_DEATH_TYPES; i++) {
-    m_prob[i] = findChild<QLineEdit*>(probNames[i])->text().toInt();
-    total_prob += m_prob[i];
-  }
+  m_prob[0] = ui->IDC_GENEREIC_DEATH_PROB1->text().toInt();
+  total_prob += m_prob[0];
+  m_prob[1] = ui->IDC_GENEREIC_DEATH_PROB2->text().toInt();
+  total_prob += m_prob[1];
+  m_prob[2] = ui->IDC_GENEREIC_DEATH_PROB3->text().toInt();
+  total_prob += m_prob[2];
+  m_prob[3] = ui->IDC_GENEREIC_DEATH_PROB4->text().toInt();
+  total_prob += m_prob[3];
 
   if (total_prob != 100 && total_prob != 0) {
     QMessageBox::warning(this, "Generic Death", "The total of all death probabilities must be 100 or 0.");
     return;
   }
 
-  for (int i = 0; i < MAX_DEATH_TYPES; i++) {
-    m_objinfo->death_types[i] = m_death_types[i];
-    m_objinfo->death_probabilities[i] = m_prob[i];
-  }
+  m_objinfo->death_types[0] = m_death_types[0];
+  m_objinfo->death_probabilities[0] = m_prob[0];
+  m_objinfo->death_types[1] = m_death_types[1];
+  m_objinfo->death_probabilities[1] = m_prob[1];
+  m_objinfo->death_types[2] = m_death_types[2];
+  m_objinfo->death_probabilities[2] = m_prob[2];
+  m_objinfo->death_types[3] = m_death_types[3];
+  m_objinfo->death_probabilities[3] = m_prob[3];
 
   accept();
 }

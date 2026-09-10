@@ -28,7 +28,6 @@
 #include "d3edit.h"
 #include "object.h"
 #include "object_ops.h"
-#include "ddio.h"
 
 ObjectMoveManager ObjMoveManager;
 
@@ -37,7 +36,7 @@ ObjectMoveManager::ObjectMoveManager() {
   m_MoveAxis = OBJMOVEAXIS_X;
 }
 
-void ObjectMoveManager::Start(int view_width, int view_height, vector *view_pos, matrix *view_mat, int x, int y) {
+void ObjectMoveManager::Start(int view_width, int view_height, vector3 *view_pos, matrix *view_mat, int x, int y) {
   if (Cur_object_index < 0 || Cur_object_index >= Highest_object_index + 1)
     return;
   if (Objects[Cur_object_index].type == OBJ_DOOR)
@@ -60,14 +59,13 @@ void ObjectMoveManager::End() {
 
 #define ROTATE_SCALE (256.0f * 20.0f / ((obj->size < 10.0f) ? 10.0f : obj->size))
 
-void ObjectMoveManager::Defer() {
+void ObjectMoveManager::Defer(int dsx, int dsy, bool leftDown) {
   if (m_DragState != 1)
     return;
 
-  int x, y, dsx, dsy;
   Object_moved = false;
 
-  if (ddio_MouseGetState(&x, &y, &dsx, &dsy) & MOUSE_LB) {
+  if (leftDown) {
     object *obj = &Objects[m_ObjNum];
 
     if (!dsx && !dsy)
@@ -129,7 +127,7 @@ void ObjectMoveManager::Defer() {
 }
 
 void ObjectMoveManager::GetObjectDeltas(float *dx, float *dy, object *obj, int dsx, int dsy) {
-  vector pos;
+  vector3 pos;
   pos = obj->pos - m_ViewPos;
   pos = pos * m_ViewMat;
 

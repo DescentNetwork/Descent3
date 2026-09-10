@@ -32,8 +32,8 @@ void EBNode_ClearLevel();
 void EBNode_MakeDefaultIntraRoomNodes(int roomnum);
 void EBNode_MakeDefaultInterRoomEdges(int roomnum);
 void EBNode_MakeFirstPass();
-void EBNode_Move(bool f_offset, int roomnum, int pnt, vector *pos);
-int EBNode_AddNode(int roomnum, vector *pnt, bool f_from_editor, bool f_check_for_close_nodes);
+void EBNode_Move(bool f_offset, int roomnum, int pnt, vector3 *pos);
+int EBNode_AddNode(int roomnum, vector3 *pnt, bool f_from_editor, bool f_check_for_close_nodes);
 void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_make_reverse = true,
                     float computed_max_rad = -1.0f);
 void EBNode_RemoveEdge(int spnt, int sroom, int epnt, int eroom, bool f_remove_reverse = true);

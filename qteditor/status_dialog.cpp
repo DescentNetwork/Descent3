@@ -40,7 +40,8 @@ int StatusDialog::step() {
 }
 
 void StatusDialog::init(int min, int max, int delta) {
-  if (QProgressBar *progress = ui->IDC_STATUSPROGRESS) {
+  {
+    QProgressBar *progress = ui->IDC_STATUSPROGRESS;
     progress->setRange(min, max);
     progress->setValue(min);
     m_step = delta;
@@ -53,8 +54,7 @@ void StatusDialog::text(const QString &string) {
 }
 
 void StatusDialog::setTo(int value) {
-  if (QProgressBar *progress = ui->IDC_STATUSPROGRESS)
-    progress->setValue(value);
+  ui->IDC_STATUSPROGRESS->setValue(value);
 }
 
 Progress::~Progress() { destroyProgress(); }
