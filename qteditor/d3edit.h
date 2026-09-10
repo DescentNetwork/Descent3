@@ -219,4 +219,3 @@ static inline std::filesystem::path original_pwd(void)
 // editor's startup sequence (CMainFrame::OnCreateClient). Must be called once
 // after the QApplication has been constructed.
 void initD3Core(int argc, char *argv[]);
-

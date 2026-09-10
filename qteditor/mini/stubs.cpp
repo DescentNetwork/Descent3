@@ -55,7 +55,6 @@
 #include "object_external_struct.h"
 #include "joystick.h"
 #include "chrono_timer.h"
-#include "args.h"
 
 #include <cstdint>
 #include <cstring>
@@ -72,11 +71,6 @@
 #include <cstdio>
 #include <cstdlib>
 
-//#include "default_base_directories.h"
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 #define PRINT_STUB(x) \
 { \
@@ -318,14 +312,6 @@ namespace D3 {
 const std::vector<std::filesystem::path> Default_read_only_base_directories;
 }
 
-// ==================== ChronoTimer ====================
-
-
-// ==================== Init ====================
-// Command-line argument store. GatherArgs collects the argv tokens (including
-// argv[0] as index 0) so FindArg/GetArg can be used to pass options such as
-// "-datadir <path>" to locate the game data files.
-char GameArgs[MAX_ARGS][MAX_CHARS_PER_ARG] = {};
 
 // Second-phase system init. In the Win32 editor this is where the gamedata
 // table files are loaded (mng_LoadTableFiles) so levels opened later can

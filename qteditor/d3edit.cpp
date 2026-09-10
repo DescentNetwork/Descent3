@@ -19,8 +19,21 @@
 // Editor-wide state that the original MFC editor keeps in EDVARS.cpp/editor.cpp.
 // The D3 core is compiled without the EDITOR define, so this is re-provided
 // here for the Qt port.
+
+#include <QSettings>
+#include <QtGlobal>
+#include <QMessageBox>
+#include <QApplication>
+#include <cstdarg>
+#include <atomic>
+#include <cstring>
+#include <filesystem>
+#include <memory>
+
 #include "editor_room_state.h"
 #include "mem/mem.h"
+
+#include "vecmat.h"
 #include "terrain.h"
 #include "slew.h"
 #include "manage.h"
@@ -30,21 +43,103 @@
 #include "gamepath.h"
 #include "findintersection.h"
 #include "room.h"
-#include "vecmat.h"
-#include <cstdarg>
-#include <atomic>
-#include <cstring>
-#include <filesystem>
-#include <QtGlobal>
-#include <QMessageBox>
-#include <QApplication>
+
+#include "appdatabase.h"
+#include "application.h"
+#include "d3_version.h"
+
+#include "descent.h"
+#include "editor_settings.h"
+#include "gamedata_loader.h"
+#include "init.h"
+#include "lnxapp.h"
+#include "program.h"
 
 #include "d3edit.h"
-#include "vecmat.h"
+
+#include "lightmap_info.h"
+
+#ifdef LOGGER
+#include "log.h"
+#endif
+
+
+#define MAX_ARGS 30
+#define MAX_CHARS_PER_ARG 100
+char GameArgs[MAX_ARGS][MAX_CHARS_PER_ARG];
+
+
+// Command-line argument store. GatherArgs collects the argv tokens (including
+// argv[0] as index 0) so FindArg/GetArg can be used to pass options such as
+// "-datadir <path>" to locate the game data files.
+
+void GatherArgs(char **argv) {
+  if (argv == nullptr)
+    return;
+  int n = 0;
+  for (int i = 0; argv[i] && i < MAX_ARGS; i++) {
+    std::strncpy(GameArgs[n++], argv[i], MAX_CHARS_PER_ARG - 1);
+    GameArgs[n - 1][MAX_CHARS_PER_ARG - 1] = '\0';
+  }
+}
+
+void GatherArgs(const char *str) {
+  if (str == nullptr)
+    return;
+  int n = 0;
+  const char *p = str;
+  while (*p && n < MAX_ARGS) {
+    while (*p == ' ')
+      p++;
+    if (!*p)
+      break;
+    int len = 0;
+    while (p[len] && p[len] != ' ' && len < MAX_CHARS_PER_ARG - 1)
+      len++;
+    std::memcpy(GameArgs[n], p, len);
+    GameArgs[n][len] = '\0';
+    n++;
+    p += len;
+  }
+}
+
+int FindArg(const char *which, int start = 0) {
+  if (which == nullptr)
+    return 0;
+  for (int i = start; i < MAX_ARGS; i++) {
+    if (GameArgs[i][0] && strcasecmp(GameArgs[i], which) == 0)
+      return i;
+  }
+  return 0;
+}
+
+int FindArgChar(const char *which, char singleCharArg) { return FindArg(which); }
+
+const char *GetArg(int index) {
+  if (index < 0 || index >= MAX_ARGS)
+    return "";
+  return GameArgs[index];
+}
+
+// Minimal pre-init: establish the memory and error subsystems that the
+// ported engine code relies on before anything else runs.
+void PreInitD3Systems() {
+  if (FindArg("-lowmem") || FindArg("-dedicated"))
+    Mem_low_memory_mode = true;
+  if (FindArg("-superlowmem")) {
+    Mem_low_memory_mode = true;
+    Mem_superlow_memory_mode = true;
+  }
+  if (FindArg("-himem")) {
+    Mem_low_memory_mode = false;
+    Mem_superlow_memory_mode = false;
+  }
+}
+
+
 
 d3edit_state app;
 bool World_changed = false;
-
 
 // Editor-only state flags declared in d3edit.h (defined in the MFC editor's
 // editor.cpp/EDVARS.cpp).
@@ -468,144 +563,8 @@ const char *GetErrorMessage() { return Editor_error_message; }
 
 
 
-#include <QSettings>
-#include <memory>
-
-#include "appdatabase.h"
-#include "application.h"
-#include "args.h"
-#include "d3_version.h"
-
-#include "descent.h"
-#include "editor_settings.h"
-#include "gamedata_loader.h"
-#include "init.h"
-#include "lnxapp.h"
-#include "program.h"
-
-#include "d3edit.h"
-
-#include "lightmap_info.h"
-
-
-#ifdef LOGGER
-#include "log.h"
-#endif
-
-
-
-
-
-void GatherArgs(char **argv) {
-  if (argv == nullptr)
-    return;
-  int n = 0;
-  for (int i = 0; argv[i] && i < MAX_ARGS; i++) {
-    std::strncpy(GameArgs[n++], argv[i], MAX_CHARS_PER_ARG - 1);
-    GameArgs[n - 1][MAX_CHARS_PER_ARG - 1] = '\0';
-  }
-}
-
-void GatherArgs(const char *str) {
-  if (str == nullptr)
-    return;
-  int n = 0;
-  const char *p = str;
-  while (*p && n < MAX_ARGS) {
-    while (*p == ' ')
-      p++;
-    if (!*p)
-      break;
-    int len = 0;
-    while (p[len] && p[len] != ' ' && len < MAX_CHARS_PER_ARG - 1)
-      len++;
-    std::memcpy(GameArgs[n], p, len);
-    GameArgs[n][len] = '\0';
-    n++;
-    p += len;
-  }
-}
-
-int FindArg(const char *which, int start) {
-  if (which == nullptr)
-    return 0;
-  for (int i = start; i < MAX_ARGS; i++) {
-    if (GameArgs[i][0] && strcasecmp(GameArgs[i], which) == 0)
-      return i;
-  }
-  return 0;
-}
-
-int FindArgChar(const char *which, char singleCharArg) { return FindArg(which); }
-
-const char *GetArg(int index) {
-  if (index < 0 || index >= MAX_ARGS)
-    return "";
-  return GameArgs[index];
-}
-
-// Minimal pre-init: establish the memory and error subsystems that the
-// ported engine code relies on before anything else runs.
-void PreInitD3Systems() {
-  if (FindArg("-lowmem") || FindArg("-dedicated"))
-    Mem_low_memory_mode = true;
-  if (FindArg("-superlowmem")) {
-    Mem_low_memory_mode = true;
-    Mem_superlow_memory_mode = true;
-  }
-  if (FindArg("-himem")) {
-    Mem_low_memory_mode = false;
-    Mem_superlow_memory_mode = false;
-  }
-}
-
-// First-phase system init. The decoupled editor replaces the full game's I/O,
-// graphics, sound and network stacks with Qt + OpenGL and a HOG-capable
-// cfile; here we initialise the data structures the editor core uses.
-void InitD3Systems1(bool /*editor*/) {
-  InitLightmapInfo();
-  InitRooms();
-  ResetObjectList();
-}
-
 
 std::filesystem::path orig_pwd;
-
-#if 0
-void initD3Core(int argc, char *argv[]) {
-  GatherArgs(argv);
-
-  orig_pwd = std::filesystem::current_path();
-
-#ifdef LOGGER
-  InitLog(LogSeverity::debug, false, false);
-#endif
-
-  SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO);
-
-  PreInitD3Systems();
-
-  tLnxAppInfo appinfo{};
-  appinfo.flags = APPFLAG_WINDOWEDMODE | APPFLAG_NOSHAREDMEMORY;
-  Descent = std::make_unique<oeLnxApplication>(&appinfo);
-  Database = std::make_unique<oeLnxAppDatabase>();
-
-  ProgramVersion(DEVELOPMENT_VERSION, 0, 0, 0);
-
-  InitD3Systems1(true);
-  InitD3Systems2(true);
-
-  // Pull the user's saved UI state on top of the zero defaults so Preferences
-  // (and the texture/wireframe/keypad visibility flags) reflect what they
-  // closed the editor with. Only loads keys that exist; an empty store is a
-  // no-op equivalent to the Win32 "registry is empty" path.
-  QSettings settings;
-  loadEditorSettings(settings, app);
-
-  errno = 0; // clear any errno states
-}
-
-#else
 
 // Try to locate the directory that contains the game data files (d3.hog).
 // The user can override via -datadir <path>; otherwise a small set of common
@@ -650,8 +609,9 @@ void initD3Core(int argc, char *argv[]) {
 
   ProgramVersion(DEVELOPMENT_VERSION, 0, 0, 0);
 
-  InitD3Systems1(true);
-  InitD3Systems2(true);
+  InitLightmapInfo();
+  InitRooms();
+  ResetObjectList();
 
   // Load the gamedata tables (d3.hog -> Table.gam) so levels opening later
   // can reference object/ship/weapon/sound/texture metadata. This is what the
@@ -673,4 +633,3 @@ void initD3Core(int argc, char *argv[]) {
 
   errno = 0; // clear any errno states
 }
-#endif
