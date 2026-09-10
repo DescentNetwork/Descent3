@@ -137,7 +137,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
       return false;
     }
 
-    int ship_num = D3EditState.current_ship;
+    int ship_num = app.current_ship;
     if (ship_num == -1) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have a current player ship selected for this operation.");
       return false;
@@ -164,7 +164,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
     vector3 pos;
     int roomnum;
 
-    if (Editor_view_mode == VM_TERRAIN) {
+    if (app.view_mode == state::viewer::terrain) {
       int cellnum = GetSelectedTerrainCell();
       if (cellnum == -1) {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have a terrain cell selected to place an object.");
@@ -291,7 +291,7 @@ void HObjectMove(int objnum, float dx, float dy, float dz) {
   }
 
   object& obj = Objects[objnum];
-  matrix& mat = (D3EditState.object_move_mode == REL_VIEWER) ? Viewer_object->orient : obj.orient;
+  matrix& mat = (app.object_move_mode == REL_VIEWER) ? Viewer_object->orient : obj.orient;
 
   vector3 newpos = obj.pos + (mat.rvec * dx) + (mat.uvec * dy) + (mat.fvec * -dz);
 

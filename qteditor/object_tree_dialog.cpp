@@ -142,10 +142,10 @@ void ObjectTreeDialog::onGoTo() {
   if (!obj)
     return;
 
-  if (OBJECT_OUTSIDE(obj) && Editor_view_mode != VM_TERRAIN) {
-    Editor_view_mode = VM_TERRAIN;
-  } else if (!OBJECT_OUTSIDE(obj) && Editor_view_mode != VM_MINE) {
-    Editor_view_mode = VM_MINE;
+  if (OBJECT_OUTSIDE(obj) && app.view_mode != state::viewer::terrain) {
+    app.view_mode = state::viewer::terrain;
+  } else if (!OBJECT_OUTSIDE(obj) && app.view_mode != state::viewer::mine) {
+    app.view_mode = state::viewer::mine;
   }
 
   ObjSetPos(*Viewer_object, obj->pos, obj->roomnum, &obj->orient, false);

@@ -1075,7 +1075,7 @@ void DoRadiosityForRooms() {
 
   LOG_INFO("This radiosity run is using %d lightmaps.\n", Lightmaps_for_rad);
   LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
-  if (D3EditState.hemicube_radiosity)
+  if (app.hemicube_radiosity)
     DoRadiosityRun(SM_HEMICUBE, Light_surfaces, facecount);
   else
     DoRadiosityRun(SM_RAYCAST, Light_surfaces, facecount);
@@ -1243,7 +1243,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
   ComputeSurfacesForObjectsForSingleRoom(surface_index, rp - Rooms);
 
   LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
-  if (D3EditState.hemicube_radiosity)
+  if (app.hemicube_radiosity)
     DoRadiosityRun(SM_HEMICUBE, Light_surfaces, facecount);
   else
     DoRadiosityRun(SM_RAYCAST, Light_surfaces, facecount);
@@ -2010,7 +2010,7 @@ void DoRadiosityForTerrain() {
 
   LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
 
-  if (D3EditState.hemicube_radiosity)
+  if (app.hemicube_radiosity)
     DoRadiosityRun(SM_SWITCH_AFTER_SATELLITES, Light_surfaces, total_surfaces);
   else
     DoRadiosityRun(SM_RAYCAST, Light_surfaces, total_surfaces);

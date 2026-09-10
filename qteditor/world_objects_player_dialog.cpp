@@ -69,18 +69,18 @@ WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent)
     &WorldObjectsPlayerDialog::onPshipPulldownChanged);
 
   connect(ui->IDC_PSHIP_NAME_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.current_ship;
+    const int n = app.current_ship;
     if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
       return;
   });
   connect(ui->IDC_PSHIP_COCKPIT_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.current_ship;
+    const int n = app.current_ship;
     if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
       return;
     Ships[n].cockpit_name = ui->IDC_PSHIP_COCKPIT_EDIT->text().toStdString();
   });
   connect(ui->IDC_SHIP_ARMOR_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.current_ship;
+    const int n = app.current_ship;
     if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
       return;
     float val = ui->IDC_SHIP_ARMOR_EDIT->text().toFloat();
@@ -92,7 +92,7 @@ WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent)
     updateDialog();
   });
   connect(ui->IDC_LOD_DISTANCE_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.current_ship;
+    const int n = app.current_ship;
     if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
       return;
     const float dist = ui->IDC_LOD_DISTANCE_EDIT->text().toFloat();
@@ -128,9 +128,9 @@ void WorldObjectsPlayerDialog::updateDialog() {
   if (Num_ships < 1)
     return;
 
-  int n = D3EditState.current_ship;
+  int n = app.current_ship;
   if (!Ships[n].used)
-    n = D3EditState.current_ship = GetNextShip(n);
+    n = app.current_ship = GetNextShip(n);
 
   ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(Ships[n].name));
 
@@ -254,13 +254,13 @@ void WorldObjectsPlayerDialog::onAddPship() {
   std::filesystem::copy(pathFs, (destname), std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(cur_name, PAGETYPE_SHIP);
-  D3EditState.current_ship = ship_handle;
+  app.current_ship = ship_handle;
   RemapShips();
   updateDialog();
 }
 
 void WorldObjectsPlayerDialog::onPshipDelete() {
-  const int n = D3EditState.current_ship;
+  const int n = app.current_ship;
   if (Num_ships < 1)
     return;
 
@@ -291,7 +291,7 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
     mng_DeletePagelock(Ships[n].name, PAGETYPE_SHIP);
   }
 
-  D3EditState.current_ship = GetNextShip(n);
+  app.current_ship = GetNextShip(n);
   if (Ships[n].model_handle >= 0 && Ships[n].model_handle < MAX_POLY_MODELS && Poly_models[Ships[n].model_handle].used)
     FreePolyModel(Ships[n].model_handle);
   if (Ships[n].dying_model_handle != -1)
@@ -306,7 +306,7 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
 }
 
 void WorldObjectsPlayerDialog::onPshipLock() {
-  const int n = D3EditState.current_ship;
+  const int n = app.current_ship;
   mngs_Pagelock temp_pl;
   mngs_ship_page shippage;
 
@@ -358,7 +358,7 @@ void WorldObjectsPlayerDialog::onPshipLock() {
 }
 
 void WorldObjectsPlayerDialog::onPshipCheckin() {
-  const int n = D3EditState.current_ship;
+  const int n = app.current_ship;
   mngs_Pagelock temp_pl;
 
   if (Num_ships < 1)
@@ -436,13 +436,13 @@ void WorldObjectsPlayerDialog::onPshipsOut() {
 }
 
 void WorldObjectsPlayerDialog::onPshipNext() {
-  D3EditState.current_ship = GetNextShip(D3EditState.current_ship);
+  app.current_ship = GetNextShip(app.current_ship);
   m_lod = 0;
   updateDialog();
 }
 
 void WorldObjectsPlayerDialog::onPshipPrev() {
-  D3EditState.current_ship = GetPrevShip(D3EditState.current_ship);
+  app.current_ship = GetPrevShip(app.current_ship);
   m_lod = 0;
   updateDialog();
 }
@@ -454,7 +454,7 @@ void WorldObjectsPlayerDialog::onPshipPulldownChanged() {
   const int i = FindShipName(combo->currentText().toStdString());
   if (i == -1)
     return;
-  D3EditState.current_ship = i;
+  app.current_ship = i;
   updateDialog();
 }
 
@@ -472,7 +472,7 @@ void WorldObjectsPlayerDialog::onPshipLoadModel() {
     return;
   }
 
-  const int ship_handle = D3EditState.current_ship;
+  const int ship_handle = app.current_ship;
   if (m_lod == 0) {
     ChangeOldModelsForObjects(Ships[ship_handle].model_handle, img_handle);
     if (Ships[ship_handle].model_handle >= 0 && Ships[ship_handle].model_handle < MAX_POLY_MODELS && Poly_models[Ships[ship_handle].model_handle].used)
@@ -513,7 +513,7 @@ void WorldObjectsPlayerDialog::onPshipDyingModel() {
     return;
   }
 
-  const int ship_handle = D3EditState.current_ship;
+  const int ship_handle = app.current_ship;
   Ships[ship_handle].dying_model_handle = img_handle;
   std::filesystem::path curname = LocalModelsDir / Poly_models[Ships[ship_handle].dying_model_handle].name;
   std::filesystem::copy(pathFs, (curname), std::filesystem::copy_options::overwrite_existing);
@@ -521,7 +521,7 @@ void WorldObjectsPlayerDialog::onPshipDyingModel() {
 }
 
 void WorldObjectsPlayerDialog::onNullDying() {
-  const int n = D3EditState.current_ship;
+  const int n = app.current_ship;
   Ships[n].dying_model_handle = -1;
   updateDialog();
 }
@@ -529,7 +529,7 @@ void WorldObjectsPlayerDialog::onNullDying() {
 void WorldObjectsPlayerDialog::onEditWeapons() {
   // Ported in the player_weapons_dialog module (PlayerWeaponsDialog).
   extern void editPlayerWeapons(int shipHandle, QWidget *parent);
-  editPlayerWeapons(D3EditState.current_ship, this);
+  editPlayerWeapons(app.current_ship, this);
 }
 
 void WorldObjectsPlayerDialog::onPshipCockpit()
@@ -546,7 +546,7 @@ void WorldObjectsPlayerDialog::onPshipCockpit()
   if (cockpitFile.empty())
     return;
 
-  ship &shp = Ships[D3EditState.current_ship];
+  ship &shp = Ships[app.current_ship];
   shp.cockpit_name = cockpitFile;
 
   // Copy the picked file into the local misc dir under its relative name.
@@ -557,13 +557,13 @@ void WorldObjectsPlayerDialog::onPshipCockpit()
 }
 
 void WorldObjectsPlayerDialog::onPshipEditPhysics() {
-  const int n = D3EditState.current_ship;
+  const int n = app.current_ship;
   PhysicsDialog dlg(&Ships[n].phys_info, this);
   dlg.exec();
 }
 
 void WorldObjectsPlayerDialog::onKillfocusName() {
-  const int n = D3EditState.current_ship;
+  const int n = app.current_ship;
   QLineEdit *edit = ui->IDC_PSHIP_NAME_EDIT;
   if (edit == nullptr)
     return;
@@ -614,12 +614,12 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
 }
 
 void WorldObjectsPlayerDialog::onKillfocusCockpit() {
-  const int n = D3EditState.current_ship;
+  const int n = app.current_ship;
   Ships[n].cockpit_name = ui->IDC_PSHIP_COCKPIT_EDIT->text().toStdString();
 }
 
 void WorldObjectsPlayerDialog::onKillfocusArmor() {
-  const int n = D3EditState.current_ship;
+  const int n = app.current_ship;
   {
     QLineEdit *edit = ui->IDC_SHIP_ARMOR_EDIT;
     float val = edit->text().toFloat();
@@ -633,7 +633,7 @@ void WorldObjectsPlayerDialog::onKillfocusArmor() {
 }
 
 void WorldObjectsPlayerDialog::onKillfocusLodDistance() {
-  const int n = D3EditState.current_ship;
+  const int n = app.current_ship;
   {
     QLineEdit *edit = ui->IDC_LOD_DISTANCE_EDIT;
     const float dist = edit->text().toFloat();
@@ -648,7 +648,7 @@ void WorldObjectsPlayerDialog::onKillfocusLodDistance() {
 }
 
 void WorldObjectsPlayerDialog::onDefaultAllowToggled(bool checked) {
-  const int n = D3EditState.current_ship;
+  const int n = app.current_ship;
   if (checked)
     Ships[n].flags |= SF_DEFAULT_ALLOW;
   else
@@ -671,7 +671,7 @@ void WorldObjectsPlayerDialog::onLoresRadio() {
 }
 
 void WorldObjectsPlayerDialog::onNolod() {
-  const int n = D3EditState.current_ship;
+  const int n = app.current_ship;
   if (m_lod == 0) {
     QMessageBox::warning(this, "No LOD", "You must have a hi-res model.");
     return;

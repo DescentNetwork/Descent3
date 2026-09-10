@@ -1696,7 +1696,7 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
   index = 0;
   for (int i = 0; i < shell_sm->num_faces; i++, index++) {
     InitRoomFace(&rp->faces[index], shell_sm->faces[i].nverts);
-    rp->faces[index].tmap = D3EditState.texdlg_texture;
+    rp->faces[index].tmap = app.texdlg_texture;
     for (int t = 0; t < rp->faces[index].num_verts; t++)
       rp->faces[index].face_verts[t] = shell_sm->faces[i].vertnums[t];
   }
@@ -1705,7 +1705,7 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
   int front_face_index = index;
   Q_ASSERT(front_sm->num_faces == 1);
   InitRoomFace(&rp->faces[index], front_sm->faces[0].nverts);
-  rp->faces[index].tmap = D3EditState.texdlg_texture;
+  rp->faces[index].tmap = app.texdlg_texture;
 
   // Remap front face vertices to match the shell
   int front_remap[30];

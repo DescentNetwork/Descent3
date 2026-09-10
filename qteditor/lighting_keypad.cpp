@@ -53,7 +53,7 @@ LightingKeypad::~LightingKeypad() { delete ui; }
 void LightingKeypad::updateDialog() {
   ui->IDC_SHOW_LIGHTMAPS->setChecked(Outline_lightmaps);
   ui->IDC_BESTFIT_CHECK->setChecked(BestFit != 0);
-  ui->IDC_HEMICUBE_CHECK->setChecked(D3EditState.hemicube_radiosity != 0);
+  ui->IDC_HEMICUBE_CHECK->setChecked(app.hemicube_radiosity != 0);
   ui->IDC_ELEMENT_CHECK->setChecked(Shoot_from_patch == 0);
   ui->IDC_IGNORE_TERRAIN->setChecked(Ignore_terrain);
   ui->IDC_IGNORE_SATELLITES->setChecked(Ignore_satellites);
@@ -69,7 +69,7 @@ void LightingKeypad::onBestFit(bool checked) {
   State_changed = true;
 }
 void LightingKeypad::onHemicube(bool checked) {
-  D3EditState.hemicube_radiosity = checked ? 1 : 0;
+  app.hemicube_radiosity = checked ? 1 : 0;
   State_changed = true;
 }
 void LightingKeypad::onElement(bool checked) { Shoot_from_patch = checked ? 0 : 1; }

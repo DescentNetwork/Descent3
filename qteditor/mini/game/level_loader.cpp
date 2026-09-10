@@ -324,6 +324,13 @@ int handle = handle32;
       if (cb_fn)
         cb_fn(chunk_name, chunk_size, (int)filelen);
     }
+  } catch (const std::runtime_error &e) {
+    // A well-formed D3LV header with an unsupported version is a *distinct*
+    // failure from a corrupt/unrecognized file: propagate it so callers can
+    // tell the user the exact reason instead of the generic "false" path.
+    (void)e;
+    ifile.close();
+    throw;
   } catch (std::exception &) {
     ifile.close();
     return false;

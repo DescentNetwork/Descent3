@@ -88,8 +88,8 @@ public:
   // render radius rad (Z+Shift+drag).
   void moveWorld(int dx, int dy, bool ctrlDown, bool shiftDown, bool zDown);
 
-  // The active wireframe view state (mine view for VM_MINE/VM_TERRAIN, room
-  // view for VM_ROOM).
+  // The active wireframe view state (mine view for state::viewer::mine/state::viewer::terrain, room
+  // view for state::viewer::room).
   const WireframeViewState &activeWireframeView() const;
 
   bool isWireframe() const { return m_wireframe; }
@@ -187,7 +187,7 @@ private:
   int m_frameCount = 0;
 
   // Turntable camera state (Win32 wireframe_view).  m_viewMine is used for
-  // VM_MINE and VM_TERRAIN; m_viewRoom for VM_ROOM (editor/MainFrm.cpp:2948).
+  // state::viewer::mine and state::viewer::terrain; m_viewRoom for state::viewer::room (editor/MainFrm.cpp:2948).
   WireframeViewState m_viewMine;
   WireframeViewState m_viewRoom;
   WireframeViewState *activeView();

@@ -34,7 +34,7 @@ QT_END_NAMESPACE
 
 
 // Constant set for the editor's view mode. Mirrors the Win32 enum in
-// editor/d3edit.h (VM_MINE, VM_TERRAIN, VM_ROOM). Used by SetViewMode and
+// editor/d3edit.h (state::viewer::mine, state::viewer::terrain, state::viewer::room). Used by SetViewMode and
 // the View menu's ID_MINE_VIEW / ID_TERRAIN_VIEW / ID_ROOM_VIEW handlers.
 enum class view_mode_t
 {

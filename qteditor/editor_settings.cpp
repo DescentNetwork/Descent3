@@ -85,7 +85,7 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
 
   settings.setValue(QStringLiteral("texture_display_flags"), state.texture_display_flags);
 
-  // Slew_key_speed lives outside D3EditState in d3edit.h but is part of the
+  // Slew_key_speed lives outside app in d3edit.h but is part of the
   // editor preferences surface; persist it under the same group so a one-stop
   // QSettings backup covers the editor UI tweaks.
   settings.setValue(QStringLiteral("slew_key_speed"),        Slew_key_speed);

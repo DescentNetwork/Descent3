@@ -64,62 +64,62 @@ WorldTexturesDialog::WorldTexturesDialog(QWidget *parent)
     &WorldTexturesDialog::onAmbientSoundChanged);
 
   connect(ui->IDC_REFLECT, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.texdlg_texture;
+    const int n = app.texdlg_texture;
     if (n < 0 || n >= MAX_TEXTURES || !GameTextures[n].used)
       return;
     GameTextures[n].reflectivity = ui->IDC_REFLECT->text().toFloat();
   });
   connect(ui->IDC_RED_LIGHTING, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.texdlg_texture;
+    const int n = app.texdlg_texture;
     if (n < 0 || n >= MAX_TEXTURES || !GameTextures[n].used)
       return;
     GameTextures[n].r = ui->IDC_RED_LIGHTING->text().toFloat();
   });
   connect(ui->IDC_GREEN_LIGHTING, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.texdlg_texture;
+    const int n = app.texdlg_texture;
     if (n < 0 || n >= MAX_TEXTURES || !GameTextures[n].used)
       return;
     GameTextures[n].g = ui->IDC_GREEN_LIGHTING->text().toFloat();
   });
   connect(ui->IDC_BLUE_LIGHTING, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.texdlg_texture;
+    const int n = app.texdlg_texture;
     if (n < 0 || n >= MAX_TEXTURES || !GameTextures[n].used)
       return;
     GameTextures[n].b = ui->IDC_BLUE_LIGHTING->text().toFloat();
   });
   connect(ui->IDC_SLIDEU, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.texdlg_texture;
+    const int n = app.texdlg_texture;
     if (n < 0 || n >= MAX_TEXTURES || !GameTextures[n].used)
       return;
     GameTextures[n].slide_u = ui->IDC_SLIDEU->text().toFloat();
   });
   connect(ui->IDC_SLIDEV, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.texdlg_texture;
+    const int n = app.texdlg_texture;
     if (n < 0 || n >= MAX_TEXTURES || !GameTextures[n].used)
       return;
     GameTextures[n].slide_v = ui->IDC_SLIDEV->text().toFloat();
   });
   connect(ui->IDC_ALPHA_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.texdlg_texture;
+    const int n = app.texdlg_texture;
     if (n < 0 || n >= MAX_TEXTURES || !GameTextures[n].used)
       return;
     GameTextures[n].alpha = ui->IDC_ALPHA_EDIT->text().toFloat();
   });
   connect(ui->IDC_SPEED_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.texdlg_texture;
+    const int n = app.texdlg_texture;
     if (n < 0 || n >= MAX_TEXTURES || !GameTextures[n].used)
       return;
     GameTextures[n].speed = ui->IDC_SPEED_EDIT->text().toFloat();
   });
   connect(ui->IDC_TEXTURE_AMBIENT_SOUND_VOLUME, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.texdlg_texture;
+    const int n = app.texdlg_texture;
     if (n < 0 || n >= MAX_TEXTURES || !GameTextures[n].used)
       return;
     GameTextures[n].sound_volume = ui->IDC_TEXTURE_AMBIENT_SOUND_VOLUME->text().toFloat();
   });
 
       connect(ui->IDC_DAMAGE, &QLineEdit::editingFinished, this, [this]() {
-    const int n = D3EditState.texdlg_texture;
+    const int n = app.texdlg_texture;
     if (n >= 0 && n < MAX_TEXTURES && GameTextures[n].used)
     GameTextures[n].damage = ui->IDC_DAMAGE->text().toInt();
     });
@@ -127,7 +127,7 @@ WorldTexturesDialog::WorldTexturesDialog(QWidget *parent)
   // Flag checkboxes.
   #define CONNECT_TEXTURE_FLAG(IDC, MEMBER)                                                        \
     connect(ui->IDC, &QCheckBox::toggled, this, [this](bool checked) {                            \
-      const int n = D3EditState.texdlg_texture;                                                   \
+      const int n = app.texdlg_texture;                                                   \
       if (n < 0 || n >= MAX_TEXTURES || !GameTextures[n].used)                                     \
         return;                                                                                    \
       GameTextures[n].flags.MEMBER = checked;                                                      \
@@ -174,7 +174,7 @@ void WorldTexturesDialog::saveTexturesOnClose() {
 }
 
 void WorldTexturesDialog::updateDialog() {
-  const int n = D3EditState.texdlg_texture;
+  const int n = app.texdlg_texture;
 
   ui->IDC_NEXT->setEnabled(Num_textures >= 1);
   ui->IDC_PREVIOUS->setEnabled(Num_textures >= 1);
@@ -281,12 +281,12 @@ void WorldTexturesDialog::onAddNew() {
   GameTextures[handle].name = fileInfo.baseName().toStdString();
   GameTextures[handle].bm_handle = bm;
   mng_AllocTrackLock(GameTextures[handle].name, PAGETYPE_TEXTURE);
-  D3EditState.texdlg_texture = handle;
+  app.texdlg_texture = handle;
   updateDialog();
 }
 
 void WorldTexturesDialog::onDelete() {
-  const int n = D3EditState.texdlg_texture;
+  const int n = app.texdlg_texture;
   const int tl = mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE);
   if (tl == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This texture is not yours to delete.  Lock first.");
@@ -310,7 +310,7 @@ void WorldTexturesDialog::onDelete() {
     mng_DeletePage(GameTextures[n].name, PAGETYPE_TEXTURE, 0);
     mng_DeletePagelock(GameTextures[n].name, PAGETYPE_TEXTURE);
   }
-  D3EditState.texdlg_texture = GetNextTexture(n);
+  app.texdlg_texture = GetNextTexture(n);
   FreeTexture(n);
   mng_EraseLocker();
   QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Texture deleted.");
@@ -318,7 +318,7 @@ void WorldTexturesDialog::onDelete() {
 }
 
 void WorldTexturesDialog::onLock() {
-  const int n = D3EditState.texdlg_texture;
+  const int n = app.texdlg_texture;
   if (!mng_MakeLocker())
     return;
   mngs_Pagelock temp_pl;
@@ -366,7 +366,7 @@ void WorldTexturesDialog::onLock() {
 }
 
 void WorldTexturesDialog::onCheckin() {
-  const int n = D3EditState.texdlg_texture;
+  const int n = app.texdlg_texture;
   if (!mng_MakeLocker())
     return;
   mngs_Pagelock temp_pl;
@@ -414,7 +414,7 @@ void WorldTexturesDialog::onCheckedOut() {
 }
 
 void WorldTexturesDialog::onOverride() {
-  const int n = D3EditState.texdlg_texture;
+  const int n = app.texdlg_texture;
   mngs_Pagelock temp_pl;
   temp_pl.name = GameTextures[n].name;
   temp_pl.pagetype = PAGETYPE_TEXTURE;
@@ -422,7 +422,7 @@ void WorldTexturesDialog::onOverride() {
 }
 
 void WorldTexturesDialog::onChangeName() {
-  const int n = D3EditState.texdlg_texture;
+  const int n = app.texdlg_texture;
   const int p = mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE);
   if (p == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this texture if you wish to change its name.");
@@ -444,7 +444,7 @@ void WorldTexturesDialog::onChangeName() {
 }
 
 void WorldTexturesDialog::onLoadBitmap() {
-  const int n = D3EditState.texdlg_texture;
+  const int n = app.texdlg_texture;
   QString Current_bitmap_dir; // get from settings
   const QString pathname =
       QFileDialog::getOpenFileName(this, "Load bitmap", Current_bitmap_dir, "Images (*.pcx *.tga *.bmp)");
@@ -459,16 +459,16 @@ void WorldTexturesDialog::onLoadBitmap() {
 }
 
 void WorldTexturesDialog::onCurrent() {
-  if (D3EditState.texdlg_texture >= 0)
+  if (app.texdlg_texture >= 0)
     updateDialog();
 }
 
 void WorldTexturesDialog::onNext() {
-  D3EditState.texdlg_texture = GetNextTexture(D3EditState.texdlg_texture);
+  app.texdlg_texture = GetNextTexture(app.texdlg_texture);
   updateDialog();
 }
 void WorldTexturesDialog::onPrev() {
-  D3EditState.texdlg_texture = GetPreviousTexture(D3EditState.texdlg_texture);
+  app.texdlg_texture = GetPreviousTexture(app.texdlg_texture);
   updateDialog();
 }
 
@@ -477,12 +477,12 @@ void WorldTexturesDialog::onTexListChanged() {
   const int i = FindTextureName(combo->currentText().toStdString());
   if (i == -1)
     return;
-  D3EditState.texdlg_texture = i;
+  app.texdlg_texture = i;
   updateDialog();
 }
 
 void WorldTexturesDialog::onAmbientSoundChanged() {
-  const int n = D3EditState.texdlg_texture;
+  const int n = app.texdlg_texture;
   GameTextures[n].sound = soundComboSelected(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN);
 }
 

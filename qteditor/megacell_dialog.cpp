@@ -49,7 +49,7 @@ MegacellDialog::~MegacellDialog() { delete ui; }
 void MegacellDialog::updateDialog() {
   if (Num_megacells < 1)
     return;
-  const int n = D3EditState.current_megacell;
+  const int n = app.current_megacell;
   if (auto *label = ui->IDC_MEGACELL_NAME_EDIT)
     label->setText(QString::fromStdString(Megacells[n].name));
 }
@@ -64,7 +64,7 @@ void MegacellDialog::onNew() {
       Megacells[i].name = name.toStdString();
       Megacells[i].used = true;
       Num_megacells++;
-      D3EditState.current_megacell = i;
+      app.current_megacell = i;
       updateDialog();
       return;
     }
@@ -75,10 +75,10 @@ void MegacellDialog::onNew() {
 void MegacellDialog::onDelete() {
   if (Num_megacells < 1)
     return;
-  const int n = D3EditState.current_megacell;
+  const int n = app.current_megacell;
   Megacells[n].used = false;
   Num_megacells--;
-  D3EditState.current_megacell = GetNextMegacell(n);
+  app.current_megacell = GetNextMegacell(n);
   updateDialog();
 }
 
@@ -97,14 +97,14 @@ void MegacellDialog::onCheckin() {
 void MegacellDialog::onPrev() {
   if (Num_megacells < 1)
     return;
-  D3EditState.current_megacell = GetPrevMegacell(D3EditState.current_megacell);
+  app.current_megacell = GetPrevMegacell(app.current_megacell);
   updateDialog();
 }
 
 void MegacellDialog::onNext() {
   if (Num_megacells < 1)
     return;
-  D3EditState.current_megacell = GetNextMegacell(D3EditState.current_megacell);
+  app.current_megacell = GetNextMegacell(app.current_megacell);
   updateDialog();
 }
 

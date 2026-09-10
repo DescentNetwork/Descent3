@@ -192,8 +192,7 @@
  * $NoKeywords: $
  */
 
-#include "editor/mainfrm.h"
-#include "editor/d3edit.h"
+#include "d3edit.h"
 
 #include <cstdlib>
 #include <QMessageBox>
@@ -222,7 +221,7 @@ int Joystick_active = -1;
 void SlewControlInit() {
   Joystick_active = -1;
 
-  if (!D3EditState.joy_slewing)
+  if (!app.joy_slewing)
     return;
 
   if (joy_IsValid(JOYSTICK_1)) {
@@ -385,7 +384,7 @@ int SlewFrame(object *obj, int movement_limitations) {
     LOG_DEBUG("SLEW: Moved");
 
 
-    if (Editor_view_mode == VM_ROOM) {
+    if (app.view_mode == state::viewer::room) {
       // Room number is bogus in room view, so don't update it
       new_room = obj->roomnum;
     } else

@@ -59,7 +59,7 @@
  * 3     8/01/97 2:36p Jeff
  *
  * 2     7/24/97 2:58p Matt
- * Added functions to load and save D3EditState variables from/to the
+ * Added functions to load and save app variables from/to the
  * registry
  *
  * 13    6/30/97 3:55p Jeff
@@ -79,7 +79,7 @@
  * Added document variable and set modification flag.
  *
  * 8     1/21/97 12:48p Samir
- * Added InitEditorState to define D3EditState info
+ * Added InitEditorState to define app info
  *
  * $NoKeywords: $
  */

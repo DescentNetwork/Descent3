@@ -125,13 +125,6 @@
 #include <QtGlobal>
 #include <QMessageBox>
 
-#ifdef EDITOR
-//#include "editor/d3edit.h"
-#endif
-#ifdef NEWEDITOR
-//#include "neweditor/globals.h"
-#endif
-
 #include "BOA.h"
 #include "vecmat.h"
 #include "room.h"
@@ -1490,9 +1483,6 @@ void ComputeBOAVisFaceUpperLeft(room *rp, face *fp, vector3 *upper_left, float *
 
 
 #ifdef NEWEDITOR
-#include "neweditor/stdafx.h"
-#include "neweditor/resource.h"
-#include "neweditor/ProgressDialog.h"
 
 // Displays/Updates the Visibility Progress bar
 // state = 0 //create

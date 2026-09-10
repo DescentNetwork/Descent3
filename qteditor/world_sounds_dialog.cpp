@@ -112,7 +112,7 @@ void WorldSoundsDialog::saveSoundsOnClose() {
 }
 
 void WorldSoundsDialog::setFlag(uint32_t flag, const char *checkName, bool checked) {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   if (n < 0 || n >= MAX_SOUNDS || !Sounds[n].used)
     return;
   if (checked)
@@ -123,19 +123,19 @@ void WorldSoundsDialog::setFlag(uint32_t flag, const char *checkName, bool check
 
 void WorldSoundsDialog::setConeLink(int value) {
   setFlag(SPFT_CONE_LINK_MASK, "", true);
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   if (n >= 0 && n < MAX_SOUNDS)
     Sounds[n].flags = (Sounds[n].flags & ~SPFT_CONE_LINK_MASK) | value;
 }
 
 void WorldSoundsDialog::setConeDir(int value) {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   if (n >= 0 && n < MAX_SOUNDS)
     Sounds[n].flags = (Sounds[n].flags & ~SPFT_CONE_DIR_MASK) | value;
 }
 
 void WorldSoundsDialog::updateDialog() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
 
   ui->IDC_NEXT_SOUND->setEnabled(Num_sounds >= 1);
   ui->IDC_PREV_SOUND->setEnabled(Num_sounds >= 1);
@@ -149,10 +149,10 @@ void WorldSoundsDialog::updateDialog() {
     return;
 
   if (!Sounds[n].used)
-    D3EditState.current_sound = GetNextSound(n);
+    app.current_sound = GetNextSound(n);
 
-  Sound_system.CheckAndForceSoundDataAlloc(D3EditState.current_sound);
-  const int s = D3EditState.current_sound;
+  Sound_system.CheckAndForceSoundDataAlloc(app.current_sound);
+  const int s = app.current_sound;
 
   int total_memory = 0;
   for (int i = 0; i < MAX_SOUNDS; i++)
@@ -290,9 +290,9 @@ void WorldSoundsDialog::onAddSound() {
   std::filesystem::copy(std::filesystem::path(pathname.toStdString()), (destname), std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(cur_name, PAGETYPE_SOUND);
-  D3EditState.current_sound = sound_handle;
+  app.current_sound = sound_handle;
   RemapSounds();
-  Sound_system.CheckAndForceSoundDataAlloc(D3EditState.current_sound);
+  Sound_system.CheckAndForceSoundDataAlloc(app.current_sound);
   Sounds[sound_handle].loop_end = SoundFiles[Sounds[sound_handle].sample_index].np_sample_length - 1;
   updateDialog();
 }
@@ -305,7 +305,7 @@ void WorldSoundsDialog::onLoadSound() {
       QFileDialog::getOpenFileName(this, "Load sound", Current_sounds_dir, "Descent III files (*.wav)");
   if (pathname.isEmpty())
     return;
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   if (n < 0 || n >= MAX_SOUNDS || !Sounds[n].used)
     return;
   const QByteArray pathBytes = pathname.toLocal8Bit();
@@ -318,16 +318,16 @@ void WorldSoundsDialog::onLoadSound() {
 }
 
 void WorldSoundsDialog::onNextSound() {
-  D3EditState.current_sound = GetNextSound(D3EditState.current_sound);
+  app.current_sound = GetNextSound(app.current_sound);
   updateDialog();
 }
 void WorldSoundsDialog::onPrevSound() {
-  D3EditState.current_sound = GetPrevSound(D3EditState.current_sound);
+  app.current_sound = GetPrevSound(app.current_sound);
   updateDialog();
 }
 
 void WorldSoundsDialog::onDeleteSound() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   if (Num_sounds < 1)
     return;
   const int tl = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
@@ -356,7 +356,7 @@ void WorldSoundsDialog::onDeleteSound() {
     mng_DeletePagelock(Sounds[n].name, PAGETYPE_SOUND);
   }
 
-  D3EditState.current_sound = GetNextSound(n);
+  app.current_sound = GetNextSound(n);
   FreeSound(n);
   mng_EraseLocker();
   QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound deleted.");
@@ -365,7 +365,7 @@ void WorldSoundsDialog::onDeleteSound() {
 }
 
 void WorldSoundsDialog::onLockSound() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   if (Num_sounds < 1)
     return;
   if (!mng_MakeLocker())
@@ -417,7 +417,7 @@ void WorldSoundsDialog::onLockSound() {
 }
 
 void WorldSoundsDialog::onCheckinSound() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   if (Num_sounds < 1)
     return;
   if (!mng_MakeLocker())
@@ -455,7 +455,7 @@ void WorldSoundsDialog::onCheckinSound() {
 }
 
 void WorldSoundsDialog::onPlaysound() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   if (Num_sounds < 1)
     return;
   Sound_system.BeginSoundFrame();
@@ -471,7 +471,7 @@ void WorldSoundsDialog::onKillsounds() {
 }
 
 void WorldSoundsDialog::onOverride() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   mngs_Pagelock temp_pl;
   temp_pl.name = Sounds[n].name;
   temp_pl.pagetype = PAGETYPE_SOUND;
@@ -479,7 +479,7 @@ void WorldSoundsDialog::onOverride() {
 }
 
 void WorldSoundsDialog::onChangeName() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   const int p = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
   if (p == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this sound if you wish to change its name.");
@@ -528,40 +528,40 @@ void WorldSoundsDialog::onSoundPulldownChanged() {
   const int i = FindSoundName(combo->currentText().toStdString());
   if (i == -1)
     return;
-  D3EditState.current_sound = i;
+  app.current_sound = i;
   updateDialog();
 }
 
 void WorldSoundsDialog::onMaxDistEdited() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   Sounds[n].max_distance = ui->IDC_SOUNDMAXDIST_EDIT->text().toFloat();
 }
 void WorldSoundsDialog::onMinDistEdited() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   Sounds[n].min_distance = ui->IDC_SOUNDMINDIST_EDIT->text().toFloat();
 }
 void WorldSoundsDialog::onInnerConeEdited() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   Sounds[n].inner_cone_angle = ui->IDC_SOUNDINNERCONEANGLE_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onOuterConeAngleEdited() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   Sounds[n].outer_cone_angle = ui->IDC_SOUNDOUTERCONEANGLE_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onOuterConeVolEdited() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   Sounds[n].outer_cone_volume = ui->IDC_SOUNDOUTERCONEVOL_EDIT->text().toFloat() / 100.0f;
 }
 void WorldSoundsDialog::onLoopStartEdited() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   Sounds[n].loop_start = ui->IDC_SOUNDLOOPSTART_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onLoopEndEdited() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   Sounds[n].loop_end = ui->IDC_SOUNDLOOPEND_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onImportVolumeEdited() {
-  const int n = D3EditState.current_sound;
+  const int n = app.current_sound;
   Sounds[n].import_volume = ui->IDC_SOUND_IMPORT_VOLUME_EDIT->text().toFloat() / 100.0f;
 }
 

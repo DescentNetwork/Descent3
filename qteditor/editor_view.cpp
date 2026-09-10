@@ -341,13 +341,13 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
 
   int projStart = 0;
   int projEnd = Highest_room_index;
-  if (Editor_view_mode == VM_ROOM) {
-    if (D3EditState.current_room >= 0 && D3EditState.current_room <= Highest_room_index) {
-      projStart = D3EditState.current_room;
-      projEnd = D3EditState.current_room;
+  if (app.view_mode == state::viewer::room) {
+    if (app.current_room >= 0 && app.current_room <= Highest_room_index) {
+      projStart = app.current_room;
+      projEnd = app.current_room;
     }
   }
-  if (Editor_view_mode == VM_TERRAIN)
+  if (app.view_mode == state::viewer::terrain)
     return;
 
   for (int r = projStart; r <= projEnd; r++) {
@@ -447,24 +447,24 @@ void EditorView::renderRooms() {
     return;
 
   // Determine which rooms to render based on view mode.
-  if (Editor_view_mode == VM_TERRAIN)
+  if (app.view_mode == state::viewer::terrain)
     return;
 
   int renderStart = 0;
   int renderEnd = Highest_room_index;
-  if (Editor_view_mode == VM_ROOM) {
-    if (D3EditState.current_room < 0 || D3EditState.current_room > Highest_room_index)
+  if (app.view_mode == state::viewer::room) {
+    if (app.current_room < 0 || app.current_room > Highest_room_index)
       return;
-    if (!Rooms[D3EditState.current_room].used)
+    if (!Rooms[app.current_room].used)
       return;
-    renderStart = D3EditState.current_room;
-    renderEnd = D3EditState.current_room;
+    renderStart = app.current_room;
+    renderEnd = app.current_room;
   }
 
   // In the Win32 mine view the terrain dots are drawn before all the rooms
   // (DrawTerrainPoints before DrawAllRooms, editor/drawworld.cpp:811-819),
   // gated on the wireframe (DrawWorld) pass only.
-  if (Editor_view_mode != VM_ROOM && m_wireframe && D3EditState.terrain_dots)
+  if (app.view_mode != state::viewer::room && m_wireframe && app.terrain_dots)
     drawTerrainDots();
 
   // For solid (textured) mode, occlusion is resolved the way the Win32
@@ -520,7 +520,7 @@ void EditorView::renderRooms() {
     if (m_wireframe) {
       // The Win32 wireframe view only draws rooms within the view radius of
       // the target (DrawAllRooms, editor/drawworld.cpp:745-759).
-      if (Editor_view_mode != VM_ROOM && rp->num_verts > 0 &&
+      if (app.view_mode != state::viewer::room && rp->num_verts > 0 &&
           vm_VectorDistance(&rp->verts[0], &m_target) >= m_rad)
         continue;
 
@@ -761,18 +761,18 @@ void EditorView::renderRooms() {
 }
 
 void EditorView::renderOverlays() {
-  if (Editor_view_mode == VM_TERRAIN)
+  if (app.view_mode == state::viewer::terrain)
     return;
   // ---- Pass 2: selection highlights (always on top) ----
-  // In VM_ROOM the Win32 wireframe view draws only the palette room plus its
+  // In state::viewer::room the Win32 wireframe view draws only the palette room plus its
   // yellow current face; there are no current-room / marked-room overlays
-  // (DrawWorld VM_ROOM branch, editor/drawworld.cpp:800-810).  The Qt port
+  // (DrawWorld state::viewer::room branch, editor/drawworld.cpp:800-810).  The Qt port
   // keeps the current-face selection in Curface.
-  if (Editor_view_mode == VM_ROOM) {
+  if (app.view_mode == state::viewer::room) {
     // (The yellow current-face highlight is drawn below — the Win32 room view
     // has no current-room or marked-room overlays.)
     if (Curroomp != nullptr && Curroomp->used &&
-        Curroomp == &Rooms[D3EditState.current_room] && Curface >= 0 &&
+        Curroomp == &Rooms[app.current_room] && Curface >= 0 &&
         Curface < Curroomp->num_faces) {
       face *fp = &Curroomp->faces[Curface];
       float sx[16], sy[16];
@@ -1109,13 +1109,13 @@ void EditorView::renderTerrain() {
 
 // Draws the objects in each rendered room as filled disks, matching the
 // Win32 DrawRoomObjects (editor/drawworld.cpp:705-743): gated by
-// D3EditState.objects_in_wireframe, doors are skipped, and each object is a
-// filled circle whose screen radius is size * focal / depth.  In VM_ROOM the
-// legacy room view draws no objects (DrawWorld VM_ROOM branch).
+// app.objects_in_wireframe, doors are skipped, and each object is a
+// filled circle whose screen radius is size * focal / depth.  In state::viewer::room the
+// legacy room view draws no objects (DrawWorld state::viewer::room branch).
 void EditorView::renderObjects() {
-  if (Editor_view_mode == VM_TERRAIN || Editor_view_mode == VM_ROOM)
+  if (app.view_mode == state::viewer::terrain || app.view_mode == state::viewer::room)
     return;
-  if (!D3EditState.objects_in_wireframe)
+  if (!app.objects_in_wireframe)
   {
     LOG_DEBUG("Objects in wireframe mode not enabled");
     return;
@@ -1207,7 +1207,7 @@ int GetNextPath(int n);
 void EditorView::renderPaths() {
   if (!Show_paths)
     return;
-  if (Editor_view_mode == VM_TERRAIN)
+  if (app.view_mode == state::viewer::terrain)
     return;
 
   glLineWidth(1.5f);
@@ -1224,7 +1224,7 @@ void EditorView::renderPaths() {
     if (!gp->used || gp->num_nodes == 0)
       continue;
 
-    bool isCurrent = (current_path_index == D3EditState.current_path);
+    bool isCurrent = (current_path_index == app.current_path);
 
     for (int t = 0; t < gp->num_nodes - 1; t++) {
       float ax, ay, az, bx, by, bz;
@@ -1251,7 +1251,7 @@ void EditorView::renderPaths() {
       if (size < 3.0f)
         size = 3.0f;
 
-      bool isNodeCurrent = isCurrent && (t == D3EditState.current_node);
+      bool isNodeCurrent = isCurrent && (t == app.current_node);
       if (isNodeCurrent)
         glColor3f(0.39f, 0.50f, 1.0f);
       else
@@ -1301,7 +1301,7 @@ extern char EBN_draw_type;
 void EditorView::renderBNodes() {
   if (EBN_draw_type == EBDRAW_NONE)
     return;
-  if (Editor_view_mode == VM_TERRAIN)
+  if (app.view_mode == state::viewer::terrain)
     return;
 
   glLineWidth(1.5f);
@@ -1384,11 +1384,11 @@ void EditorView::renderBNodes() {
 }
 
 EditorView::WireframeViewState *EditorView::activeView() {
-  return Editor_view_mode == VM_ROOM ? &m_viewRoom : &m_viewMine;
+  return app.view_mode == state::viewer::room ? &m_viewRoom : &m_viewMine;
 }
 
 const EditorView::WireframeViewState *EditorView::activeView() const {
-  return Editor_view_mode == VM_ROOM ? &m_viewRoom : &m_viewMine;
+  return app.view_mode == state::viewer::room ? &m_viewRoom : &m_viewMine;
 }
 
 const EditorView::WireframeViewState &EditorView::activeWireframeView() const {
@@ -1467,7 +1467,7 @@ void EditorView::moveWorld(int dx, int dy, bool ctrlDown, bool shiftDown, bool z
   // applies the same camera motion on plain mouse movement over the view.
   if (dx == 0 && dy == 0)
     return;
-  if (Editor_view_mode == VM_TERRAIN)
+  if (app.view_mode == state::viewer::terrain)
     return;
 
   WireframeViewState *v = activeView();
@@ -1570,9 +1570,9 @@ void EditorView::paintGL() {
     return;
 
   // Distinct background per view mode.
-  if (Editor_view_mode == VM_TERRAIN)
+  if (app.view_mode == state::viewer::terrain)
     glClearColor(0.05f, 0.10f, 0.25f, 1.0f); // dark blue for terrain
-  else if (Editor_view_mode == VM_ROOM)
+  else if (app.view_mode == state::viewer::room)
     glClearColor(0.14f, 0.12f, 0.10f, 1.0f); // warm grey for room
   else
     glClearColor(0.10f, 0.12f, 0.18f, 1.0f); // default mine
@@ -1588,7 +1588,7 @@ void EditorView::paintGL() {
 
   updateCamera();
 
-  if (Editor_view_mode == VM_TERRAIN)
+  if (app.view_mode == state::viewer::terrain)
     renderTerrain();
   else
     renderRooms();
@@ -1815,13 +1815,13 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
   // In room mode, only pick from the current palette room.
   int pickStart = 0;
   int pickEnd = Highest_room_index;
-  if (Editor_view_mode == VM_TERRAIN)
+  if (app.view_mode == state::viewer::terrain)
     return best;
-  if (Editor_view_mode == VM_ROOM) {
-    if (D3EditState.current_room < 0 || D3EditState.current_room > Highest_room_index)
+  if (app.view_mode == state::viewer::room) {
+    if (app.current_room < 0 || app.current_room > Highest_room_index)
       return best;
-    pickStart = D3EditState.current_room;
-    pickEnd = D3EditState.current_room;
+    pickStart = app.current_room;
+    pickEnd = app.current_room;
   }
 
   const float rad2 = m_rad * m_rad;
@@ -1832,9 +1832,9 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
 
     // Win32 DrawAllRooms gating: only rooms whose first vertex lies within the
     // wireframe render radius of the orbit target are candidates, except the
-    // current room, which is always a candidate (VM_ROOM already restricts to
-    // a single room, so this only matters in VM_MINE).
-    const bool isCurrent = (D3EditState.current_room == r);
+    // current room, which is always a candidate (state::viewer::room already restricts to
+    // a single room, so this only matters in state::viewer::mine).
+    const bool isCurrent = (app.current_room == r);
     if (!isCurrent && rp->num_verts > 0 &&
         (vm_VectorDistance(&rp->verts[0], &m_target) * vm_VectorDistance(&rp->verts[0], &m_target)) > rad2)
       continue;

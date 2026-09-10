@@ -36,7 +36,7 @@ MegacellKeypad::MegacellKeypad(QWidget *parent)
   connect(ui->IDC_PREV_MEGA_SET, &QPushButton::clicked, this, &MegacellKeypad::onPrevMegaSet);
   {
     QCheckBox *cb = ui->IDC_RANDOMIZE_MEGACELL_CHECK;
-    cb->setChecked(D3EditState.randomize_megacell);
+    cb->setChecked(app.randomize_megacell);
     connect(cb, &QCheckBox::toggled, this, &MegacellKeypad::onRandomizeToggled);
   }
   connect(ui->IDC_X_GRANULAR_EDIT, &QLineEdit::editingFinished, this, &MegacellKeypad::onXGranularEdited);
@@ -50,10 +50,10 @@ MegacellKeypad::~MegacellKeypad() { delete ui; }
 void MegacellKeypad::updateDialog() {
   if (Num_megacells < 1)
     return;
-  int n = D3EditState.current_megacell;
+  int n = app.current_megacell;
   if (!Megacells[n].used) {
     n = GetNextMegacell(n);
-    D3EditState.current_megacell = n;
+    app.current_megacell = n;
   }
   ui->IDC_MEGACELL_NAME_STATIC->setText(QString("Megacell name: %1").arg(QString::fromStdString(Megacells[n].name)));
   ui->IDC_MEGA_WIDTH_STATIC->setText(QString("Width: %1").arg(Megacells[n].width));
@@ -63,21 +63,21 @@ void MegacellKeypad::updateDialog() {
 }
 
 void MegacellKeypad::onNextMegaSet() {
-  D3EditState.current_megacell = GetNextMegacell(D3EditState.current_megacell);
+  app.current_megacell = GetNextMegacell(app.current_megacell);
   m_xgran = m_ygran = 1;
   updateDialog();
 }
 
 void MegacellKeypad::onPrevMegaSet() {
-  D3EditState.current_megacell = GetPrevMegacell(D3EditState.current_megacell);
+  app.current_megacell = GetPrevMegacell(app.current_megacell);
   m_xgran = m_ygran = 1;
   updateDialog();
 }
 
-void MegacellKeypad::onRandomizeToggled(bool checked) { D3EditState.randomize_megacell = checked; }
+void MegacellKeypad::onRandomizeToggled(bool checked) { app.randomize_megacell = checked; }
 
 void MegacellKeypad::onXGranularEdited() {
-  const int n = D3EditState.current_megacell;
+  const int n = app.current_megacell;
   int val = ui->IDC_X_GRANULAR_EDIT->text().toInt();
   if (val < 1)
     val = 1;
@@ -88,7 +88,7 @@ void MegacellKeypad::onXGranularEdited() {
 }
 
 void MegacellKeypad::onYGranularEdited() {
-  const int n = D3EditState.current_megacell;
+  const int n = app.current_megacell;
   int val = ui->IDC_Y_GRANULAR_EDIT->text().toInt();
   if (val < 1)
     val = 1;

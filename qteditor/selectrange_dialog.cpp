@@ -126,7 +126,7 @@ void SelectRangeDialog::runSelection() {
     }
 
     if (cur_texture) {
-      if (Terrain_tex_seg[Terrain_seg[i].texseg_index].tex_index != D3EditState.texdlg_texture)
+      if (Terrain_tex_seg[Terrain_seg[i].texseg_index].tex_index != app.texdlg_texture)
         selected = 0;
     }
 

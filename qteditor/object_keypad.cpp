@@ -63,7 +63,7 @@ ObjectKeypad::ObjectKeypad(QWidget *parent) : QDialog(parent), ui(new Ui::Object
 ObjectKeypad::~ObjectKeypad() { delete ui; }
 
 void ObjectKeypad::setMoveAxis(int axis) {
-  D3EditState.object_move_axis = axis;
+  app.object_move_axis = axis;
   updateDialog();
 }
 
@@ -76,17 +76,17 @@ void ObjectKeypad::updateDialog() {
   ui->IDC_OBJPAD_SETDEFAULT->setEnabled(hasObject);
   ui->IDC_OBJ_ROT90->setEnabled(hasObject);
 
-  ui->IDC_OBJMOVEX->setChecked(D3EditState.object_move_axis == 0);
-  ui->IDC_OBJMOVEY->setChecked(D3EditState.object_move_axis == 1);
-  ui->IDC_OBJMOVEZ->setChecked(D3EditState.object_move_axis == 2);
-  ui->IDC_OBJMOVEP->setChecked(D3EditState.object_move_axis == 3);
-  ui->IDC_OBJMOVEH->setChecked(D3EditState.object_move_axis == 4);
-  ui->IDC_OBJMOVEB->setChecked(D3EditState.object_move_axis == 5);
+  ui->IDC_OBJMOVEX->setChecked(app.object_move_axis == 0);
+  ui->IDC_OBJMOVEY->setChecked(app.object_move_axis == 1);
+  ui->IDC_OBJMOVEZ->setChecked(app.object_move_axis == 2);
+  ui->IDC_OBJMOVEP->setChecked(app.object_move_axis == 3);
+  ui->IDC_OBJMOVEH->setChecked(app.object_move_axis == 4);
+  ui->IDC_OBJMOVEB->setChecked(app.object_move_axis == 5);
 }
 
 void ObjectKeypad::onPlaceObject() {
   // HObjectPlace handles all the validation internally.
-  if (HObjectPlace(D3EditState.current_obj_type, D3EditState.current_obj_id)) {
+  if (HObjectPlace(app.current_obj_type, app.current_obj_id)) {
     Mine_changed = true;
     updateDialog();
   }

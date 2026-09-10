@@ -203,7 +203,7 @@
  * cascading
  *
  * 7     1/21/97 12:51p Samir
- * GrWnds created based on D3EditState info
+ * GrWnds created based on app info
  *
  * $NoKeywords: $
  */

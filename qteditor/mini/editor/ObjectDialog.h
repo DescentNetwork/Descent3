@@ -69,7 +69,7 @@
  *
  * 2     7/24/97 2:54p Matt
  * Got rid of some member variables that kept track of current robot,
- * powerup, & object type, and used variables in D3EditState instead.
+ * powerup, & object type, and used variables in app instead.
  *
  * 19    6/04/97 11:56a Samir
  * Added PowerupProp Dialog.

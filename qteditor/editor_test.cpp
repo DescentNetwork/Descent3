@@ -50,6 +50,7 @@
 #include <QToolBar>
 
 #include <cerrno>
+#include <stdexcept>
 
 #include "d3edit.h"
 
@@ -315,8 +316,8 @@ struct PickFixture {
     Viewer_object->orient.rvec = vector3{0, 0, 1};
     Viewer_object->orient.uvec = vector3{0, 1, 0};
     Viewer_object->orient.fvec = vector3{1, 0, 0};
-    Editor_view_mode = VM_MINE;
-    D3EditState.current_room = -1;
+    app.view_mode = state::viewer::mine;
+    app.current_room = -1;
     view.resize(640, 480);
     view.show();
     QCoreApplication::processEvents();
@@ -670,6 +671,40 @@ private slots:
     QFile::remove(f2);
     QFile::remove(f3);
     QDir::current().rmdir(tmp);
+  }
+
+  // A well-formed D3LV header whose version the mini cannot read is a *distinct*
+  // failure from a corrupt or unrecognized file: LoadLevel throws
+  // std::runtime_error instead of returning false, so callers can report the
+  // exact "unsupported version" reason.  Both too-old legacy layouts and
+  // future-version files must throw.
+  void testLevelLoadUnsupportedVersionThrows()
+  {
+    const QString oldf = QDir::tempPath() + "/_test_level_v26.d3l";
+    const QString newf = QDir::tempPath() + "/_test_level_v9999.d3l";
+    QFile::remove(oldf);
+    QFile::remove(newf);
+
+    {
+      QFile f(oldf);
+      f.open(QIODevice::WriteOnly);
+      f.write("D3LV", 4);
+      const quint32 v26 = 26;
+      f.write(reinterpret_cast<const char *>(&v26), 4);
+    }
+    {
+      QFile f(newf);
+      f.open(QIODevice::WriteOnly);
+      f.write("D3LV", 4);
+      const quint32 vnew = 9999;
+      f.write(reinterpret_cast<const char *>(&vnew), 4);
+    }
+
+    QVERIFY_THROW(LoadLevel(std::filesystem::path(oldf.toStdString()), nullptr), std::runtime_error);
+    QVERIFY_THROW(LoadLevel(std::filesystem::path(newf.toStdString()), nullptr), std::runtime_error);
+
+    QFile::remove(oldf);
+    QFile::remove(newf);
   }
 
   // Loads a real Descent 3 level shipped in the repo and verifies the room
@@ -1579,7 +1614,7 @@ private slots:
     Curportal = 42;
     Num_triggers = 7;
     Current_trigger = 9;
-    Editor_view_mode = 2;
+    app.view_mode = 2;
     Editor_viewer_id = 5;
     New_mine = false;
     World_changed = true;
@@ -1588,7 +1623,7 @@ private slots:
     QCOMPARE(Curportal, -1);
     QCOMPARE(Num_triggers, 0);
     QCOMPARE(Current_trigger, -1);
-    QCOMPARE(Editor_view_mode, int(VM_MINE));
+    QCOMPARE(app.view_mode, state::viewer::mine);
     // CreateNewMine spawns a viewer for the level (Win32 HFile.cpp:478
     // SetEditorViewer), so the id/object are non-empty afterwards.
     QCOMPARE(Editor_viewer_id, 0);
@@ -1625,7 +1660,7 @@ private slots:
     Highest_room_index = -1;
     Viewer_object = nullptr;
     Editor_viewer_id = -1;
-    Editor_view_mode = VM_MINE;
+    app.view_mode = state::viewer::mine;
 
     // A single interior room (flags.external is false after InitRoom).
     const vector3 quadV[4] = {
@@ -1644,7 +1679,7 @@ private slots:
     Highest_room_index = 0;
 
     // A saved viewer at a known pose inside room 0.
-    const vector3 savedPos{1, 2, 3};
+    const vector3 savedstate::viewer::mine2, 3};
     const int viewerSlot = 0;
     Objects[viewerSlot].type = OBJ_VIEWER;
     Objects[viewerSlot].id = 4;
@@ -1678,7 +1713,7 @@ private slots:
     Highest_room_index = -1;
     Viewer_object = nullptr;
     Editor_viewer_id = -1;
-    Editor_view_mode = VM_MINE;
+    app.view_mode = state::viewer::mine;
 
     const vector3 quadV[4] = {
       {2048 + 10, -5, 2048 - 10}, {2048 + 0, -5, 2048 - 10},
@@ -1742,11 +1777,11 @@ private slots:
       }
       break;
     }
-    QVERIFY(a_toolbar != nullptr);
+    QVERstate::viewer::mineoolbar != nullptr);
     QVERIFY(a_showobjs != nullptr);
     QVERIFY(a_mine != nullptr);
     QVERIFY(a_terrain != nullptr);
-    QVERIFY(a_room != nullptr);
+    QVERIFY(a_room != nstate::viewer::mine;
 
     // ID_VIEW_TOOLBAR flips the main toolbar. Start visible, toggle, expect
     // hidden, toggle again, expect visible.
@@ -1762,25 +1797,25 @@ private slots:
 
     // ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW flips the flag captured by the
     // QSettings round-trip.
-    const bool objs_before = D3EditState.objects_in_wireframe;
+    const bool objs_before = app.objects_in_wireframe;
     a_showobjs->trigger();
     QCoreApplication::processEvents();
-    QCOMPARE(D3EditState.objects_in_wireframe, !objs_before);
+    QCOMPARE(app.objects_in_wireframe, !objs_before);
     a_showobjs->trigger();
     QCoreApplication::processEvents();
-    QCOMPARE(D3EditState.objects_in_wireframe, objs_before);
+    QCOMPARE(app.objects_in_wireframe, objs_before);
 
-    // View-mode handlers update both Editor_view_mode and the status bar.
+    // View-mode handlers update both app.view_mode and the status bar.
     a_mine->trigger();
     QCoreApplication::processEvents();
-    QCOMPARE(Editor_view_mode, int(VM_MINE));
+    QCOMPARE(app.view_mode, int(state::viewer::mine));
     a_terrain->trigger();
     QCoreApplication::processEvents();
-    QCOMPARE(Editor_view_mode, int(VM_TERRAIN));
+    QCOMPARE(app.view_mode, int(state::viewer::terrain));
     a_room->trigger();
     QCoreApplication::processEvents();
-    QCOMPARE(Editor_view_mode, int(VM_ROOM));
-    Editor_view_mode = VM_MINE;
+    QCOMPARE(app.view_mode, int(state::viewer::room));
+    app.view_mode = state::viewer::mine;
   }
 
   // Verifies the Win32->Qt port of the editor's central OpenGL surface
@@ -2052,10 +2087,10 @@ private slots:
     QVERIFY(Viewer_object->roomnum == 0);
     QVERIFY(Viewer_object->pos.x() >= 0.0f && Viewer_object->pos.x() <= 1.0f);
 
-    // ResetViewRadius pins D3EditState.texscale to 1.0f on each call.
-    D3EditState.texscale = 7.0f;
+    // ResetViewRadius pins app.texscale to 1.0f on each call.
+    app.texscale = 7.0f;
     ResetViewRadius();
-    QCOMPARE(D3EditState.texscale, 1.0f);
+    QCOMPARE(app.texscale, 1.0f);
 
     // CenterViewOnObject drops Cur_object_index onto the viewer. Live
     // calls with the freshly-init Objects[] above trip ObjUnlink's
@@ -3006,7 +3041,7 @@ private slots:
 
     // Pick at the projected centroid of the nearest face.
     QVERIFY2(bestRoom >= 0, "no face projected in front of the camera");
-    pickX = qBound(0.0f, pickX, static_cast<float>(view.width() - 1));
+    pickX = qBound(0.0fstate::viewer::mine, static_cast<float>(view.width() - 1));
     pickY = qBound(0.0f, pickY, static_cast<float>(view.height() - 1));
     EditorView::PickResult pick = view.pickAt(static_cast<int>(pickX), static_cast<int>(pickY));
     qInfo() << "picking near face r=" << bestRoom << "f=" << bestFace << " at (" << pickX << "," << pickY
@@ -3040,7 +3075,7 @@ private slots:
     Viewer_object->orient.rvec = vector3{0, 0, 1};
     Viewer_object->orient.uvec = vector3{0, 1, 0};
     Viewer_object->orient.fvec = vector3{1, 0, 0};
-    Editor_view_mode = VM_MINE;
+    app.view_mode = state::viewer::mine;
 
     auto setFaceQuad = [](room *rp, const std::vector<vector3>& verts) {
       InitRoomFace(&rp->faces[0], 4);
@@ -3085,7 +3120,7 @@ private slots:
     for (int i = 0; i < 20 && view.frameCount() < 1; i++)
       QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     QCoreApplication::processEvents();
-    QVERIFY(view.frameCount() >= 1);
+    QVERIFY(view.frameCstate::viewer::mine>= 1);
 
     // Screen centre maps into both faces; the foreground angled face (room 0)
     // must win even though its average vertex depth is larger.
@@ -3119,7 +3154,7 @@ private slots:
     Viewer_object->orient.rvec = vector3{0, 0, 1};
     Viewer_object->orient.uvec = vector3{0, 1, 0};
     Viewer_object->orient.fvec = vector3{1, 0, 0};
-    Editor_view_mode = VM_MINE;
+    app.view_mode = state::viewer::mine;
 
     auto setFlatQuad = [](room *rp, const std::vector<vector3>& verts) {
       InitRoomFace(&rp->faces[0], 4);
@@ -3290,7 +3325,7 @@ private slots:
 
     // Even though room 1 is far, it must be picked when it is the current room
     // (the current room bypasses the radius gate).
-    D3EditState.current_room = 1;
+    app.current_room = 1;
     // Put the near room beyond the radius so only the current room is a
     // candidate under the centre pixel; both are still on the centre ray.
     // Simpler: shrink the radius below the near room's distance.
@@ -3405,7 +3440,7 @@ private slots:
   // changes rad but not dist/target.
   void testMoveWorldZoomAndRadius() {
     PickFixture fix;
-    fix.setup();
+  state::viewer::mineetup();
     fix.view.resetCamera();
     const EditorView::WireframeViewState base = fix.view.activeWireframeView();
 
@@ -3436,9 +3471,9 @@ private slots:
     const EditorView::WireframeViewState mineBefore = fix.view.activeWireframeView();
     fix.view.moveWorld(10, 5, /*ctrl*/ true, /*shift*/ false, /*z*/ false);
 
-    Editor_view_mode = VM_ROOM;
+    app.view_mode = state::viewer::room;
     const EditorView::WireframeViewState roomState = fix.view.activeWireframeView();
-    Editor_view_mode = VM_MINE;
+    app.view_mode = state::viewer::mine;
     const EditorView::WireframeViewState mineAfter = fix.view.activeWireframeView();
 
     // Room view still holds the identity/default state from reset (mutable
@@ -4036,7 +4071,7 @@ private slots:
     ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
     Cur_object_index = 1;
-    D3EditState.object_move_mode = REL_OBJECT;
+    app.object_move_mode = REL_OBJECT;
     Object_moved = false;
 
     HObjectMove(1, 1.0f, 0.0f, 0.0f);
@@ -4206,7 +4241,7 @@ private slots:
     ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
     Cur_object_index = 1;
-    D3EditState.object_move_mode = REL_OBJECT;
+    app.object_move_mode = REL_OBJECT;
     ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_X);
 
     matrix viewMat = IDENTITY_MATRIX;
@@ -4270,7 +4305,7 @@ private slots:
     ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
     Cur_object_index = 1;
-    D3EditState.object_move_mode = REL_OBJECT;
+    app.object_move_mode = REL_OBJECT;
     ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_H);
 
     matrix viewMat = IDENTITY_MATRIX;
@@ -4302,7 +4337,7 @@ private slots:
     FreeRoom(&Rooms[0]);
   }
 
-  // End-to-end widget-level drag: press on a projected object, drag, release,
+  // End-to-end widget-state::viewer::minerag: press on a projected object, drag, release,
   // and verify the object moved in world space.
   void testEditorViewDragMovesObject() {
     for (int i = 0; i < MAX_OBJECTS; ++i)
@@ -4336,9 +4371,9 @@ private slots:
     vector3 origin{};
     ObjSetPos(Objects[0], origin, 0, nullptr, false);
 
-    Editor_view_mode = VM_MINE;
+    app.view_mode = state::viewer::mine;
     Cur_object_index = -1;
-    D3EditState.object_move_mode = REL_OBJECT;
+    app.object_move_mode = REL_OBJECT;
     ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_X);
     // Use the orbit camera (not the viewer) so the eye is not co-located
     // with the object at Mine_origin; otherwise it renders unprojectable.
@@ -4353,7 +4388,7 @@ private slots:
     QCoreApplication::processEvents();
     QVERIFY2(view.frameCount() >= 1, "view never painted");
 
-    float screenX = 0.0f, screenY = 0.0f, depth = 0.0f;
+    float screenX = 0.state::viewer::mineeenY = 0.0f, depth = 0.0f;
     QVERIFY2(view.projectWorldToScreen(Objects[0].pos, &screenX, &screenY, &depth),
              "object not projectable");
     const int px = qBound(0, static_cast<int>(screenX), view.width() - 1);
@@ -4386,7 +4421,7 @@ private slots:
 
     Cur_object_index = -1;
     Objects[0].type = OBJ_NONE;
-    Editor_view_mode = VM_MINE;
+    app.view_mode = state::viewer::mine;
     ResetObjectList();
     Highest_object_index = -1;
     FreeRoom(&Rooms[0]);
@@ -4551,8 +4586,8 @@ private slots:
     int idx = AllocGamePath();
     QVERIFY(idx >= 0);
 
-    int s0 = D3EditState.current_path;
-    D3EditState.current_path = idx;
+    int s0 = app.current_path;
+    app.current_path = idx;
 
     matrix orient = IDENTITY_MATRIX;
     vector3 pos{10.0f, 20.0f, 30.0f};
@@ -4568,7 +4603,7 @@ private slots:
     DeleteNodeFromPath(idx, 0);
     QCOMPARE(GamePaths[idx].num_nodes, 1);
 
-    D3EditState.current_path = s0;
+    app.current_path = s0;
     FreeGamePath(idx);
   }
 

@@ -103,15 +103,15 @@ void DoorwayKeypad::updateDialog() {
 }
 
 void DoorwayKeypad::onNextDoor() {
-  if (D3EditState.current_door >= 0) {
-    D3EditState.current_door = GetNextDoor(D3EditState.current_door);
+  if (app.current_door >= 0) {
+    app.current_door = GetNextDoor(app.current_door);
     updateDialog();
   }
 }
 
 void DoorwayKeypad::onPrevDoor() {
-  if (D3EditState.current_door >= 0) {
-    D3EditState.current_door = GetPrevDoor(D3EditState.current_door);
+  if (app.current_door >= 0) {
+    app.current_door = GetPrevDoor(app.current_door);
     updateDialog();
   }
 }
@@ -217,11 +217,11 @@ void DoorwayKeypad::onPlaceDoor() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place a door on a portal face.");
     return;
   }
-  if (D3EditState.current_door < 0 || !Doors[D3EditState.current_door].used) {
+  if (app.current_door < 0 || !Doors[app.current_door].used) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No door selected. Use the World Objects Door dialog first.");
     return;
   }
-  PlaceDoor(Curroomp, Curface, D3EditState.current_door);
+  PlaceDoor(Curroomp, Curface, app.current_door);
   updateDialog();
 }
 

@@ -3,10 +3,14 @@
 #include <QPainter>
 #include <QFontMetrics>
 #include <QtMath>
+#include <QStyleOption>
+#include "log.h"
 
 QSlantedLabel::QSlantedLabel(QWidget *parent)
     : QLabel(parent)
-{}
+{
+  LOG_DEBUG("Using QSlantedLabel");
+}
 
 void QSlantedLabel::setRotation(qreal degrees)
 {
@@ -42,6 +46,7 @@ QSize QSlantedLabel::sizeHint() const
 
 void QSlantedLabel::paintEvent(QPaintEvent * /*event*/)
 {
+  LOG_DEBUG("Painting QSlantedLabel");
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
     p.setRenderHint(QPainter::TextAntialiasing);

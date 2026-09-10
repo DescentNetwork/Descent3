@@ -42,7 +42,7 @@
 #include "d3edit.h"
 #include "vecmat.h"
 
-d3edit_state D3EditState;
+d3edit_state app;
 bool World_changed = false;
 
 
@@ -89,7 +89,6 @@ matrix Placed_room_rotmat = IDENTITY_MATRIX;
 room *Placed_baseroomp = nullptr;
 int Placed_baseface = 0;
 bool Mine_changed = false;
-int Editor_view_mode = 0; // VM_MINE
 int Editor_viewer_id = -1;
 int paged_in_count = 0;
 int paged_in_num = 0;
@@ -601,7 +600,7 @@ void initD3Core(int argc, char *argv[]) {
   // closed the editor with. Only loads keys that exist; an empty store is a
   // no-op equivalent to the Win32 "registry is empty" path.
   QSettings settings;
-  loadEditorSettings(settings, D3EditState);
+  loadEditorSettings(settings, app);
 
   errno = 0; // clear any errno states
 }
@@ -670,7 +669,7 @@ void initD3Core(int argc, char *argv[]) {
   // closed the editor with. Only loads keys that exist; an empty store is a
   // no-op equivalent to the Win32 "registry is empty" path.
   QSettings settings;
-  loadEditorSettings(settings, D3EditState);
+  loadEditorSettings(settings, app);
 
   errno = 0; // clear any errno states
 }

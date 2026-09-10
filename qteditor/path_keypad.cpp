@@ -70,22 +70,22 @@ PathKeypad::PathKeypad(QWidget *parent)
 
 PathKeypad::~PathKeypad() { delete ui; }
 
-int PathKeypad::currentPath() { return D3EditState.current_path; }
+int PathKeypad::currentPath() { return app.current_path; }
 
 int PathKeypad::currentNode() {
   const int p = currentPath();
   if (p < 0 || p >= MAX_GAME_PATHS || !GamePaths[p].used)
     return -1;
-  if (D3EditState.current_node >= GamePaths[p].num_nodes)
-    D3EditState.current_node = GamePaths[p].num_nodes - 1;
-  return D3EditState.current_node;
+  if (app.current_node >= GamePaths[p].num_nodes)
+    app.current_node = GamePaths[p].num_nodes - 1;
+  return app.current_node;
 }
 
 void PathKeypad::updateDialog() {
   // Win32 disables path editing when there is no current path (requires a
   // loaded level with paths).
-  const bool active = (D3EditState.current_path >= 0 && D3EditState.current_path < MAX_GAME_PATHS &&
-                       GamePaths[D3EditState.current_path].used);
+  const bool active = (app.current_path >= 0 && app.current_path < MAX_GAME_PATHS &&
+                       GamePaths[app.current_path].used);
   const QList<QWidget *> all = this->findChildren<QWidget *>();
   for (QWidget *w : all) {
     if (w->objectName().startsWith("IDC_PATHPAD") || w->objectName().startsWith("IDC_DELETE_PATH") ||
@@ -126,8 +126,8 @@ void PathKeypad::onAddPath() {
   if (pathnum == -1)
     return;
   GamePaths[pathnum].name = name.toStdString();
-  D3EditState.current_path = pathnum;
-  D3EditState.current_node = 0;
+  app.current_path = pathnum;
+  app.current_node = 0;
   updateDialog();
 }
 
@@ -136,8 +136,8 @@ void PathKeypad::onDeletePath() {
   if (p < 0)
     return;
   FreeGamePath(p);
-  D3EditState.current_path = GetNextPath(p);
-  D3EditState.current_node = 0;
+  app.current_path = GetNextPath(p);
+  app.current_node = 0;
   updateDialog();
 }
 
@@ -146,8 +146,8 @@ void PathKeypad::onPathPulldownChanged() {
   const int i = FindGamePathName(combo->currentText().toStdString());
   if (i == -1)
     return;
-  D3EditState.current_path = i;
-  D3EditState.current_node = 0;
+  app.current_path = i;
+  app.current_node = 0;
   updateDialog();
 }
 
@@ -157,7 +157,7 @@ void PathKeypad::onNextNode() {
     return;
   if (GamePaths[p].num_nodes == 0)
     return;
-  D3EditState.current_node = (D3EditState.current_node + 1) % GamePaths[p].num_nodes;
+  app.current_node = (app.current_node + 1) % GamePaths[p].num_nodes;
   updateDialog();
 }
 
@@ -167,8 +167,8 @@ void PathKeypad::onPrevNode() {
     return;
   if (GamePaths[p].num_nodes == 0)
     return;
-  D3EditState.current_node =
-      (D3EditState.current_node <= 0) ? (GamePaths[p].num_nodes - 1) : (D3EditState.current_node - 1);
+  app.current_node =
+      (app.current_node <= 0) ? (GamePaths[p].num_nodes - 1) : (app.current_node - 1);
   updateDialog();
 }
 
@@ -181,7 +181,7 @@ void PathKeypad::onCurrentNodeEdited() {
     n = 0;
   if (n >= GamePaths[p].num_nodes)
     n = GamePaths[p].num_nodes - 1;
-  D3EditState.current_node = n;
+  app.current_node = n;
   updateDialog();
 }
 
@@ -196,7 +196,7 @@ void PathKeypad::onInsertNode() {
   vm_MakeZero(&zero_pos);
   const int newnode = InsertNodeIntoPath(p, n, 0, 0, zero_pos, orient);
   if (newnode != -1)
-    D3EditState.current_node = newnode;
+    app.current_node = newnode;
   updateDialog();
 }
 
@@ -210,8 +210,8 @@ void PathKeypad::onDeleteNode() {
     return;
   }
   DeleteNodeFromPath(p, n);
-  if (D3EditState.current_node >= GamePaths[p].num_nodes)
-    D3EditState.current_node = GamePaths[p].num_nodes - 1;
+  if (app.current_node >= GamePaths[p].num_nodes)
+    app.current_node = GamePaths[p].num_nodes - 1;
   updateDialog();
 }
 

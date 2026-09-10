@@ -24,7 +24,7 @@ struct d3edit_state;
 
 
 // Qt port of editor.cpp::SaveEditorSettings / LoadEditorSettings. The Win32
-// helpers wrote every D3EditState field to the Windows registry via
+// helpers wrote every app field to the Windows registry via
 // oeLnxAppDatabase; the Qt port writes the same field set to a QSettings
 // store, so on Linux it lands under
 // ~/.config/DescentDevelopers/Descent 3 Editor.conf, on macOS in a property

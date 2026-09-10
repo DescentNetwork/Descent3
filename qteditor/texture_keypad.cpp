@@ -55,7 +55,7 @@ TextureKeypad::TextureKeypad(QWidget *parent)
   connect(ui->IDC_FACE_MAP, &QPushButton::clicked, this, &TextureKeypad::onFaceMap);
   connect(ui->IDC_TEXSCALE_EDIT, &QLineEdit::editingFinished, this, &TextureKeypad::onTexScaleEdited);
 
-  ui->IDC_TEXSCALE_EDIT->setText(QString::number(D3EditState.texscale));
+  ui->IDC_TEXSCALE_EDIT->setText(QString::number(app.texscale));
 
   updateDialog();
 }
@@ -76,12 +76,12 @@ void TextureKeypad::updateDialog() {
     ui->IDC_CURRENT_TEXTURE_NAME->setText("No face selected");
 }
 
-void TextureKeypad::onSlideLeft() { HTextureSlide(Curroomp, Curface, -1.0f * D3EditState.texscale, 0); }
-void TextureKeypad::onSlideRight() { HTextureSlide(Curroomp, Curface, 1.0f * D3EditState.texscale, 0); }
-void TextureKeypad::onSlideUp() { HTextureSlide(Curroomp, Curface, 0, 1.0f * D3EditState.texscale); }
-void TextureKeypad::onSlideDown() { HTextureSlide(Curroomp, Curface, 0, -1.0f * D3EditState.texscale); }
-void TextureKeypad::onRotLeft() { HTextureRotate(Curroomp, Curface, -0.1f * D3EditState.texscale); }
-void TextureKeypad::onRotRight() { HTextureRotate(Curroomp, Curface, 0.1f * D3EditState.texscale); }
+void TextureKeypad::onSlideLeft() { HTextureSlide(Curroomp, Curface, -1.0f * app.texscale, 0); }
+void TextureKeypad::onSlideRight() { HTextureSlide(Curroomp, Curface, 1.0f * app.texscale, 0); }
+void TextureKeypad::onSlideUp() { HTextureSlide(Curroomp, Curface, 0, 1.0f * app.texscale); }
+void TextureKeypad::onSlideDown() { HTextureSlide(Curroomp, Curface, 0, -1.0f * app.texscale); }
+void TextureKeypad::onRotLeft() { HTextureRotate(Curroomp, Curface, -0.1f * app.texscale); }
+void TextureKeypad::onRotRight() { HTextureRotate(Curroomp, Curface, 0.1f * app.texscale); }
 void TextureKeypad::onRotate90() { HTextureRotate(Curroomp, Curface, 3.14159f / 2.0f); }
 void TextureKeypad::onFlipX() { HTextureFlipX(Curroomp, Curface); }
 void TextureKeypad::onFlipY() { HTextureFlipY(Curroomp, Curface); }
@@ -89,27 +89,27 @@ void TextureKeypad::onExpandU() { ScaleFaceUVs(Curroomp, Curface, 1.1f); }
 void TextureKeypad::onContractU() { ScaleFaceUVs(Curroomp, Curface, 1.0f / 1.1f); }
 void TextureKeypad::onExpandV() { ScaleFaceUVs(Curroomp, Curface, 1.1f); }
 void TextureKeypad::onContractV() { ScaleFaceUVs(Curroomp, Curface, 1.0f / 1.1f); }
-void TextureKeypad::onStretchLess() { HTextureStretchLess(Curroomp, Curface, Curedge, D3EditState.texscale); }
-void TextureKeypad::onStretchMore() { HTextureStretchMore(Curroomp, Curface, Curedge, D3EditState.texscale); }
+void TextureKeypad::onStretchLess() { HTextureStretchLess(Curroomp, Curface, Curedge, app.texscale); }
+void TextureKeypad::onStretchMore() { HTextureStretchMore(Curroomp, Curface, Curedge, app.texscale); }
 
 void TextureKeypad::onSetDefault() { HTextureSetDefault(Curroomp, Curface); }
 
 void TextureKeypad::onGrab() {
   if (Curroomp != nullptr && Curface >= 0)
-    D3EditState.texdlg_texture = Curroomp->faces[Curface].tmap;
+    app.texdlg_texture = Curroomp->faces[Curface].tmap;
 }
 
 void TextureKeypad::onReplace() {
   if (Curroomp != nullptr && Curface >= 0)
-    Curroomp->faces[Curface].tmap = D3EditState.texdlg_texture;
+    Curroomp->faces[Curface].tmap = app.texdlg_texture;
 }
 
 void TextureKeypad::onFaceMap() { onSetDefault(); }
 
 void TextureKeypad::onTexScaleEdited() {
-  D3EditState.texscale = ui->IDC_TEXSCALE_EDIT->text().toFloat();
-  if (D3EditState.texscale <= 0)
-    D3EditState.texscale = 1.0f;
+  app.texscale = ui->IDC_TEXSCALE_EDIT->text().toFloat();
+  if (app.texscale <= 0)
+    app.texscale = 1.0f;
 }
 
 

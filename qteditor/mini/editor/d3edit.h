@@ -139,10 +139,10 @@
  * added gamefile field to d3editstate
  *
  * 10    7/24/97 2:56p Matt
- * Got rid of D3EditState fields that duplicated other variables
+ * Got rid of app fields that duplicated other variables
  *
  * 9     7/22/97 7:07p Matt
- * Cleaned up D3EditState, moving some vars in and some out, and renaming
+ * Cleaned up app, moving some vars in and some out, and renaming
  * and changing a few others
  *
  * 8     7/17/97 7:21p Matt
@@ -395,7 +395,7 @@ struct d3edit_state {
 };
 
 //	Editor.cpp:: Current state of the editor UI.
-extern d3edit_state D3EditState;
+extern d3edit_state app;
 
 //	Editor.cpp:: Surface describing the actual desktop where the editor is running.
 extern grSurface *Desktop_surf;
@@ -463,8 +463,8 @@ extern group *Scrap;
 extern char *Current_level_script;
 
 // What mode we're currently in
-enum { VM_MINE, VM_TERRAIN, VM_ROOM, NUM_VIEW_MODES };
-extern int Editor_view_mode;
+enum { state::viewer::mine, state::viewer::terrain, state::viewer::room, NUM_VIEW_MODES };
+extern int app.view_mode;
 
 // The ID of the most recent viewer object (not counting room view)
 extern int Editor_viewer_id;

@@ -178,8 +178,8 @@ void TerrainKeypad::updateDialog() {
     ui->IDC_USE_HALO->setChecked(Terrain_sky.satellite_flags[m_currentSatellite].halo);
     ui->IDC_USE_ATMOSPHERE->setChecked(Terrain_sky.satellite_flags[m_currentSatellite].atmosphere);
   }
-  ui->IDC_SHOW_TERRAIN->setChecked(D3EditState.terrain_dots);
-  ui->IDC_FLAT_SHADE_TERRAIN_CHECK->setChecked(D3EditState.terrain_flat_shade);
+  ui->IDC_SHOW_TERRAIN->setChecked(app.terrain_dots);
+  ui->IDC_FLAT_SHADE_TERRAIN_CHECK->setChecked(app.terrain_flat_shade);
   ui->IDC_NO_LOD_ENGINE->setChecked(Editor_LOD_engine_off);
   ui->IDC_TERRAIN_2D->setChecked(Flat_terrain);
   ui->IDC_SHOW_INVISIBLE->setChecked(Show_invisible_terrain);
@@ -256,7 +256,7 @@ void TerrainKeypad::onFillArea() {
   const int count = TERRAIN_WIDTH * TERRAIN_DEPTH;
   for (int i = 0; i < count; i++)
     if (TerrainSelected[i])
-      Terrain_tex_seg[Terrain_seg[i].texseg_index].tex_index = D3EditState.texdlg_texture;
+      Terrain_tex_seg[Terrain_seg[i].texseg_index].tex_index = app.texdlg_texture;
   World_changed = true;
 }
 
@@ -678,11 +678,11 @@ void TerrainKeypad::onFastTerrainToggled(bool checked) {
   TV_changed = true;
 }
 void TerrainKeypad::onShowTerrainToggled(bool checked) {
-  D3EditState.terrain_dots = checked;
+  app.terrain_dots = checked;
   State_changed = true;
 }
 void TerrainKeypad::onFlatShadeToggled(bool checked) {
-  D3EditState.terrain_flat_shade = checked;
+  app.terrain_flat_shade = checked;
   if (checked) {
     Terrain_texture_distance = 0;
     Detail_settings.Terrain_render_distance = DEFAULT_VISIBLE_TERRAIN_DISTANCE * 2;

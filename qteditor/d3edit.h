@@ -41,10 +41,21 @@ enum { GM_WINDOWED, GM_FULLSCREEN_SW, GM_FULLSCREEN_HW }; // values for game_ren
 class grSurface;
 class grViewport;
 
+namespace state
+{
+  // Which mode we're currently in
+  enum class viewer
+  {
+    mine,
+    terrain,
+    room,
+    invalid
+  };
+
+}
 // Structure to store various editor state & preference values
 struct d3edit_state
 {
-
   // Values for current item in the various dialogs
   int texdlg_texture;   // current texture in texdialog
   int current_obj_type; // current type of object
@@ -96,10 +107,14 @@ struct d3edit_state
   float texscale;            // the scalar for moving texture UVs
   bool joy_slewing;          // shall we allow joystick slewing?
   bool objects_in_wireframe; // should we draw objects in the wireframe view?
+
+
+  state::viewer view_mode = state::viewer::mine;
+
 };
 
 //	Editor.cpp:: Current state of the editor UI.
-extern d3edit_state D3EditState;
+extern d3edit_state app;
 
 //	Editor.cpp:: Surface describing the actual desktop where the editor is running.
 extern grSurface *Desktop_surf;
@@ -170,9 +185,6 @@ extern group *Scrap;
 // Pointer to the scripts for this level
 extern char *Current_level_script;
 
-// What mode we're currently in
-enum { VM_MINE, VM_TERRAIN, VM_ROOM, NUM_VIEW_MODES };
-extern int Editor_view_mode;
 
 // The ID of the most recent viewer object (not counting room view)
 extern int Editor_viewer_id;

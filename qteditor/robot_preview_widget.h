@@ -24,7 +24,7 @@
 #include "vecmat.h"
 
 // RobotPreviewWidget renders the poly model of the robot currently selected in
-// the object/robot page (Object_info[D3EditState.current_robot].render_handle)
+// the object/robot page (Object_info[app.current_robot].render_handle)
 // into a QOpenGLWidget, using the standard D3 frame contract:
 //   g3_StartFrame(...) + DrawPolygonModel(...) + g3_EndFrame()
 // inside paintGL.  This mirrors the legacy Win32

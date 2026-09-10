@@ -1133,7 +1133,7 @@ void BuildRoomList(int start_room_num) {
 // mprintf(0,"N_render_rooms = %d ",N_render_rooms);
 #ifdef EDITOR
   // Add all external rooms to render list if that flag set
-  if (Editor_view_mode == VM_MINE && In_editor_mode) {
+  if (app.view_mode == state::viewer::mine && In_editor_mode) {
     if (Render_all_external_rooms) {
       int i;
       room *rp;

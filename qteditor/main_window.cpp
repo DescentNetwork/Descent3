@@ -248,16 +248,16 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->ID_TOOLS_WORLD_TEXTURES, &QAction::triggered, this, &MainWindow::showWorldTextures);
   connect(ui->ID_EDITORS_MEGACELLS, &QAction::triggered, this, &MainWindow::showMegacells);
   connect(ui->ID_TOOLS_WORLD_OBJECTS_ROBOTS, &QAction::triggered, this, [this]() {
-    showGenericObject(OBJ_ROBOT, D3EditState.current_robot);
+    showGenericObject(OBJ_ROBOT, app.current_robot);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_POWERUPS, &QAction::triggered, this, [this]() {
-    showGenericObject(OBJ_POWERUP, D3EditState.current_powerup);
+    showGenericObject(OBJ_POWERUP, app.current_powerup);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_BUILDINGS, &QAction::triggered, this, [this]() {
-    showGenericObject(OBJ_BUILDING, D3EditState.current_building);
+    showGenericObject(OBJ_BUILDING, app.current_building);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_CLUTTER, &QAction::triggered, this, [this]() {
-    showGenericObject(OBJ_CLUTTER, D3EditState.current_clutter);
+    showGenericObject(OBJ_CLUTTER, app.current_clutter);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_PLAYER, &QAction::triggered, this, &MainWindow::showWorldObjectsPlayer);
   connect(ui->ID_TOOLS_WORLD_WEAPONS, &QAction::triggered, this, &MainWindow::showWorldWeapons);
@@ -470,7 +470,7 @@ void MainWindow::onFileFixCracks() {
 void MainWindow::onViewMine()
 {
   m_view_mode = view_mode_t::VIEW_MODE_MINE;
-  Editor_view_mode = VM_MINE;
+  app.view_mode = state::viewer::mine;
   statusBar()->showMessage(QStringLiteral("View: Mine"));
   if (m_editorView)
     m_editorView->update();
@@ -479,7 +479,7 @@ void MainWindow::onViewMine()
 void MainWindow::onViewTerrain()
 {
   m_view_mode = view_mode_t::VIEW_MODE_TERRAIN;
-  Editor_view_mode = VM_TERRAIN;
+  app.view_mode = state::viewer::terrain;
   statusBar()->showMessage(QStringLiteral("View: Terrain"));
   if (m_editorView)
     m_editorView->update();
@@ -488,7 +488,7 @@ void MainWindow::onViewTerrain()
 void MainWindow::onViewRoom()
 {
   m_view_mode = view_mode_t::VIEW_MODE_ROOM;
-  Editor_view_mode = VM_ROOM;
+  app.view_mode = state::viewer::room;
   statusBar()->showMessage(QStringLiteral("View: Room"));
   if (m_editorView)
     m_editorView->update();
@@ -546,10 +546,10 @@ void MainWindow::onButtonOutline() {
 }
 
 void MainWindow::onViewShowObjectsInWireframe() {
-  D3EditState.objects_in_wireframe = !D3EditState.objects_in_wireframe;
+  app.objects_in_wireframe = !app.objects_in_wireframe;
   statusBar()->showMessage(
       QStringLiteral("Objects in wireframe: %1")
-          .arg(D3EditState.objects_in_wireframe
+          .arg(app.objects_in_wireframe
                    ? QStringLiteral("on")
                    : QStringLiteral("off")));
   m_editorView->update();
@@ -697,9 +697,9 @@ void MainWindow::showGenericObject(int objType, int current) {
   WorldObjectsGenericDialog dlg(objType, current, this);
   dlg.exec();
   if (objType == OBJ_BUILDING)
-    D3EditState.current_building = dlg.current();
+    app.current_building = dlg.current();
   else if (objType == OBJ_CLUTTER)
-    D3EditState.current_clutter = dlg.current();
+    app.current_clutter = dlg.current();
 }
 
 void MainWindow::showLevelProperties() {
@@ -827,7 +827,7 @@ constexpr float kDefaultViewRadius = 1.0f;
 // Move the viewer object (port of editor/editor.cpp:1141 MoveViewer).  This
 // should be called whenever the viewer object is moved.  ObjSetPos relinks the
 // viewer into the mine/terrain; when it crosses the boundary the global view
-// mode follows (VM_TERRAIN <-> VM_MINE), mirroring SetViewMode().
+// mode follows (state::viewer::terrain <-> state::viewer::mine), mirroring SetViewMode().
 static void moveViewer(vector3& pos, int roomnum, matrix* orient) {
   if (Viewer_object == nullptr)
     return;
@@ -836,9 +836,9 @@ static void moveViewer(vector3& pos, int roomnum, matrix* orient) {
   ObjSetPos(*Viewer_object, pos, roomnum, orient, false);
 
   if (OBJECT_OUTSIDE(Viewer_object) && !was_outside)
-    Editor_view_mode = VM_TERRAIN;
+    app.view_mode = state::viewer::terrain;
   else if (!OBJECT_OUTSIDE(Viewer_object) && was_outside)
-    Editor_view_mode = VM_MINE;
+    app.view_mode = state::viewer::mine;
 }
 
 // Set the viewer in the specified room facing the specified face (port of
@@ -916,7 +916,7 @@ static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
   }
 
   // Reset viewer
-  if (Editor_view_mode == VM_ROOM) {
+  if (app.view_mode == state::viewer::room) {
     Viewer_object->pos = newpos;
     Viewer_object->orient = orient;
   } else
@@ -944,10 +944,10 @@ void MainWindow::onCenterViewOnCube() {
   // (editor/MainFrm.cpp:2218): re-aim the wireframe view at the current
   // room's center without changing distance or orientation.
   room *rp;
-  if (Editor_view_mode == VM_ROOM) {
-    if (D3EditState.current_room < 0 || D3EditState.current_room > Highest_room_index)
+  if (app.view_mode == state::viewer::room) {
+    if (app.current_room < 0 || app.current_room > Highest_room_index)
       return;
-    rp = &Rooms[D3EditState.current_room];
+    rp = &Rooms[app.current_room];
   } else {
     rp = Curroomp;
   }
@@ -975,12 +975,12 @@ void MainWindow::onCenterViewOnObject() {
 void MainWindow::onResetViewRadius() {
   // Win32 OnViewResetViewRadius re-resets the wireframe view's zoom
   // radius to D3_DEFAULT_ZOOM. The Qt port can't drive WireframeGrWnd
-  // (no GL surface yet) but updates D3EditState.texscale so the editor
+  // (no GL surface yet) but updates app.texscale so the editor
   // state round-trips through QSettings cleanly.
-  D3EditState.texscale = kDefaultViewRadius;
+  app.texscale = kDefaultViewRadius;
   State_changed = true;
   std::fprintf(stderr, "[viewer_ops] ResetViewRadius -> %g\n",
-               D3EditState.texscale);
+               app.texscale);
 
   m_editorView->update();
 }
@@ -1142,7 +1142,7 @@ int MainWindow::onPlaceCameraAtViewer() {
             &Viewer_object->orient, false);
 
   Cur_object_index = slot;
-  D3EditState.current_room = Viewer_object->roomnum;
+  app.current_room = Viewer_object->roomnum;
   Mine_changed = true;
   New_mine = true;
 
@@ -1793,7 +1793,7 @@ bool MainWindow::onAddRoom()
   Curroomp = rp;
   Curface = Curedge = Curvert = Curportal = 0;
   onMarkRoom();
-  D3EditState.current_room = slot;
+  app.current_room = slot;
 
   Mine_changed = true;
   New_mine = true;
@@ -1832,11 +1832,11 @@ bool MainWindow::onDeleteRoom() {
   // Pick a sensible successor selection: previous used slot, or -1.
   Curroomp = nullptr;
   Curface = Curedge = Curvert = Curportal = -1;
-  D3EditState.current_room = -1;
+  app.current_room = -1;
   for (int s = slot - 1; s >= 0; --s) {
     if (Rooms[s].used) {
       Curroomp = &Rooms[s];
-      D3EditState.current_room = s;
+      app.current_room = s;
       break;
     }
   }
@@ -1884,7 +1884,7 @@ int MainWindow::onSelectRoomByNumber() {
   }
   Curroomp = &Rooms[value];
   Curface = Curedge = Curvert = Curportal = 0;
-  D3EditState.current_room = value;
+  app.current_room = value;
   return value;
 }
 
