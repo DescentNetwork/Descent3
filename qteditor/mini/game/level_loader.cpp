@@ -26,6 +26,7 @@
 //   TXNM  - skipped (no texture xlate table in the mini; raw indices survive)
 //   ROOM  - room geometry (verts, faces, portals), Comp face normals after
 //   RWND  - per-room wind vectors
+//   TERR  - exterior terrain (heights, texmaps/flags, sky & lighting)
 //   OBJS  - object placement data.  Each record is the engine's handle
 //           (object number in the low bits) followed by the placement
 //           prefix the mini keeps: type/id/name/flags/roomnum/pos/orient.
@@ -59,6 +60,10 @@
 #include <cstring>
 #include <cstdio>
 #include <stdexcept>
+
+#include <algorithm>
+#include <bit>
+#include <vector>
 
 #define LL_TAG "D3LV"
 
@@ -170,6 +175,357 @@ static void LL_WriteInfo(posix_ostream &ofile) {
 }
 
 // ---------------------------------------------------------------------------
+// Terrain (TERR) chunk: heights, texmaps/flags and sky/lighting.  The engine
+// stores these as sub-chunks (TERH/TETM/TSKY) inside one TERR container, which
+// ends with a TEND terminator.  Only the version >= 127 layouts are live:
+// LoadLevel() rejects anything older, so the engine's ancient version gates
+// (31/41/56/69/72/74/75/87/88/102/104/114/116) all collapse onto this shape.
+
+// RLE byte array format shared with the engine (cf. room.cpp volume lights): a
+// leading flag byte (0 = raw, 1 = run-length encoded) followed by either
+// `total` raw values or command bytes (0 = single raw value follows, 2..250 =
+// run of that many copies of the next byte).
+static void LL_ReadCompressedByte(posix_istream &ifile, uint8_t *vals, int total) {
+  uint8_t compressed = 0;
+  ifile >> compressed;
+  int count = 0;
+  if (compressed == 0) {
+    for (int i = 0; i < total; i++)
+      ifile >> vals[i];
+    return;
+  }
+  while (count != total) {
+    uint8_t command = 0;
+    ifile >> command;
+    if (command == 0) {
+      ifile >> vals[count];
+      count++;
+    } else if (command >= 2 && command <= 250) {
+      uint8_t value = 0;
+      ifile >> value;
+      for (int k = 0; k < command && count < total; k++) {
+        vals[count] = value;
+        count++;
+      }
+    } else {
+      break; // corrupt RLE stream
+    }
+  }
+}
+
+// Same scheme for uint16_t values (terrain texmap indices).
+static void LL_ReadCompressedShort(posix_istream &ifile, uint16_t *vals, int total) {
+  uint8_t compressed = 0;
+  ifile >> compressed;
+  int count = 0;
+  if (compressed == 0) {
+    for (int i = 0; i < total; i++)
+      ifile >> vals[i];
+    return;
+  }
+  while (count != total) {
+    uint8_t command = 0;
+    ifile >> command;
+    if (command == 0) {
+      ifile >> vals[count];
+      count++;
+    } else if (command >= 2 && command <= 250) {
+      uint16_t value = 0;
+      ifile >> value;
+      for (int k = 0; k < command && count < total; k++) {
+        vals[count] = value;
+        count++;
+      }
+    } else {
+      break; // corrupt RLE stream
+    }
+  }
+}
+
+// The engine emits whichever of raw/RLE is smaller; the mini (like the room
+// volume lights) always writes raw (flag byte 0), which every reader -- ours
+// and the engine's -- accepts.
+static void LL_WriteCompressedByte(posix_ostream &ofile, const uint8_t *vals, int total) {
+  ofile.put(0);
+  for (int i = 0; i < total; i++)
+    ofile.put(vals[i]);
+}
+
+static void LL_WriteCompressedShort(posix_ostream &ofile, const uint16_t *vals, int total) {
+  ofile.put(0);
+  for (int i = 0; i < total; i++)
+    ofile << vals[i];
+}
+
+// Maps a level-local texture index read from the file to a global
+// GameTextures[] slot.  texture_xlate is built from the TXNM chunk; a missing
+// or unmapped index (raw -1 / out of range) becomes 0, as in the engine.
+static int16_t LL_TranslateTerrainTexture(int raw) {
+  int g = (raw >= 0 && raw < MAX_TEXTURES) ? texture_xlate[raw] : -1;
+  return (g >= 0) ? static_cast<int16_t>(g) : 0;
+}
+
+static void LL_ReadTerrainHeightChunk(posix_istream &ifile, int) {
+  // The engine also folds the heights into a level checksum; the mini keeps no
+  // level checksum, so the values are the only thing we retain.
+  std::vector<uint8_t> byte_vals(TERRAIN_DEPTH * TERRAIN_WIDTH);
+  LL_ReadCompressedByte(ifile, byte_vals.data(), static_cast<int>(byte_vals.size()));
+  for (size_t i = 0; i < byte_vals.size(); i++)
+    Terrain_seg[i].ypos = byte_vals[i];
+}
+
+static void LL_ReadTerrainSkyAndLightChunk(posix_istream &ifile, int) {
+  ifile >> Terrain_sky.fog_scalar;
+  ifile >> Terrain_sky.damage_per_second;
+
+  uint8_t textured = 0;
+  ifile >> textured;
+  Terrain_sky.textured = textured;
+
+  int16_t dome = 0;
+  ifile >> dome;
+  Terrain_sky.dome_texture = LL_TranslateTerrainTexture(dome);
+
+  int32_t c = 0;
+  ifile >> c;
+  Terrain_sky.sky_color = static_cast<ddgr_color>(c);
+  ifile >> c;
+  Terrain_sky.horizon_color = static_cast<ddgr_color>(c);
+  ifile >> c;
+  Terrain_sky.fog_color = static_cast<ddgr_color>(c);
+
+  uint32_t flags32 = 0;
+  ifile >> flags32;
+  Terrain_sky.flags = std::bit_cast<terrain_sky_flags_t>(flags32);
+
+  ifile >> Terrain_sky.radius;
+  SetupSky(Terrain_sky.radius, static_cast<int>(flags32), 1);
+
+  ifile >> Terrain_sky.rotate_rate;
+
+  int32_t num_sats = 0;
+  ifile >> num_sats;
+  Terrain_sky.num_satellites = static_cast<uint8_t>(std::min(num_sats, static_cast<int>(MAX_SATELLITES)));
+
+  for (int i = 0; i < num_sats; i++) {
+    int16_t tex = 0;
+    ifile >> tex;
+    if (i < MAX_SATELLITES)
+      Terrain_sky.satellite_texture[i] = LL_TranslateTerrainTexture(tex);
+
+    vector3 satvec{};
+    ifile >> satvec;
+    if (i < MAX_SATELLITES)
+      Terrain_sky.satellite_vectors[i] = satvec;
+
+    uint8_t sf = 0;
+    ifile >> sf;
+    if (i < MAX_SATELLITES)
+      Terrain_sky.satellite_flags[i] = std::bit_cast<terrain_satellite_flags_t>(sf);
+
+    float sz = 0.0f;
+    ifile >> sz;
+    if (i < MAX_SATELLITES)
+      Terrain_sky.satellite_size[i] = sz;
+
+    float r = 0.0f, g = 0.0f, b = 0.0f;
+    ifile >> r >> g >> b;
+    if (i < MAX_SATELLITES) {
+      Terrain_sky.satellite_r[i] = r;
+      Terrain_sky.satellite_g[i] = g;
+      Terrain_sky.satellite_b[i] = b;
+    }
+  }
+
+  const int total = TERRAIN_DEPTH * TERRAIN_WIDTH;
+  std::vector<uint8_t> byte_vals(total);
+  LL_ReadCompressedByte(ifile, byte_vals.data(), total);
+  for (int i = 0; i < total; i++)
+    Terrain_seg[i].l = byte_vals[i];
+  LL_ReadCompressedByte(ifile, byte_vals.data(), total);
+  for (int i = 0; i < total; i++)
+    Terrain_seg[i].r = byte_vals[i];
+  LL_ReadCompressedByte(ifile, byte_vals.data(), total);
+  for (int i = 0; i < total; i++)
+    Terrain_seg[i].g = byte_vals[i];
+  LL_ReadCompressedByte(ifile, byte_vals.data(), total);
+  for (int i = 0; i < total; i++)
+    Terrain_seg[i].b = byte_vals[i];
+  LL_ReadCompressedByte(ifile, byte_vals.data(), total);
+  for (int i = 0; i < total; i++)
+    Terrain_dynamic_table[i] = byte_vals[i];
+
+  // Terrain occlusion cutaway table.  OCCLUSION_SIZE is 16; the on-disk block
+  // is OCCLUSION_SIZE*OCCLUSION_SIZE*32 bytes packed into a [row][col] grid
+  // with 32 columns.
+  ifile >> Terrain_occlusion_checksum;
+  constexpr int occ_total = OCCLUSION_SIZE * OCCLUSION_SIZE * 32;
+  std::vector<uint8_t> occlusion(occ_total);
+  LL_ReadCompressedByte(ifile, occlusion.data(), occ_total);
+  for (int i = 0; i < occ_total; i++)
+    Terrain_occlusion_map[i / 32][i % 32] = occlusion[i];
+}
+
+static void LL_ReadTerrainTmapFlagChunk(posix_istream &ifile, int) {
+  constexpr int tex_total = TERRAIN_TEX_DEPTH * TERRAIN_TEX_WIDTH;
+  std::vector<uint16_t> short_vals(tex_total);
+  LL_ReadCompressedShort(ifile, short_vals.data(), tex_total);
+  for (int i = 0; i < tex_total; i++)
+    Terrain_tex_seg[i].tex_index = LL_TranslateTerrainTexture(short_vals[i]);
+
+  std::vector<uint8_t> byte_vals(tex_total);
+  LL_ReadCompressedByte(ifile, byte_vals.data(), tex_total);
+  for (int i = 0; i < tex_total; i++) {
+    Terrain_tex_seg[i].rotation = byte_vals[i];
+    if ((Terrain_tex_seg[i].rotation >> 4) == 0)
+      Terrain_tex_seg[i].rotation |= (1 << 4);
+  }
+
+  const int total = TERRAIN_DEPTH * TERRAIN_WIDTH;
+  std::vector<uint8_t> flags(total);
+  LL_ReadCompressedByte(ifile, flags.data(), total);
+  for (int i = 0; i < total; i++)
+    Terrain_seg[i].flags = std::bit_cast<terrain_segment_flags_t>(flags[i]);
+}
+
+// Reads the TERR container: sub-chunks until the TEND terminator, then
+// regenerates derived data (AABB, normals, lightmaps).
+static void LL_ReadTerrainChunks(posix_istream &ifile, int version) {
+  ResetTerrain();
+
+  while (true) {
+    char chunk_name[4];
+    ifile.read(chunk_name, 4);
+    if (ifile.eof())
+      break;
+    const long chunk_start = static_cast<long>(ifile.tell());
+    int32_t size32 = 0;
+    ifile >> size32;
+    const long body_end = chunk_start + size32;
+
+    if (IsChunk(chunk_name, "TERH"))
+      LL_ReadTerrainHeightChunk(ifile, version);
+    else if (IsChunk(chunk_name, "TETM"))
+      LL_ReadTerrainTmapFlagChunk(ifile, version);
+    else if (IsChunk(chunk_name, "TSKY"))
+      LL_ReadTerrainSkyAndLightChunk(ifile, version);
+    else if (IsChunk(chunk_name, "TEND"))
+      break;
+
+    if (ifile.tell() != body_end)
+      ifile.seek(body_end, std::ios_base::beg);
+  }
+
+  BuildMinMaxTerrain();
+  BuildTerrainNormals();
+  UpdateTerrainLightmaps();
+
+  memset(TerrainSelected, 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
+  Num_terrain_selected = 0;
+}
+
+static void LL_WriteTerrainHeightChunk(posix_ostream &ofile) {
+  const int total = TERRAIN_DEPTH * TERRAIN_WIDTH;
+  int start = LL_StartChunk(ofile, "TERH");
+
+  std::vector<uint8_t> heightvals(total);
+  for (int i = 0; i < total; i++)
+    heightvals[i] = Terrain_seg[i].ypos;
+  LL_WriteCompressedByte(ofile, heightvals.data(), total);
+
+  LL_EndChunk(ofile, start);
+}
+
+static void LL_WriteTerrainTmapChunk(posix_ostream &ofile) {
+  constexpr int tex_total = TERRAIN_TEX_DEPTH * TERRAIN_TEX_WIDTH;
+  const int total = TERRAIN_DEPTH * TERRAIN_WIDTH;
+  int start = LL_StartChunk(ofile, "TETM");
+
+  std::vector<uint16_t> short_vals(tex_total);
+  for (int i = 0; i < tex_total; i++)
+    short_vals[i] = static_cast<uint16_t>(Terrain_tex_seg[i].tex_index);
+  LL_WriteCompressedShort(ofile, short_vals.data(), tex_total);
+
+  std::vector<uint8_t> byte_vals(tex_total);
+  for (int i = 0; i < tex_total; i++)
+    byte_vals[i] = Terrain_tex_seg[i].rotation;
+  LL_WriteCompressedByte(ofile, byte_vals.data(), tex_total);
+
+  byte_vals.assign(total, 0);
+  for (int i = 0; i < total; i++)
+    byte_vals[i] = std::bit_cast<uint8_t>(Terrain_seg[i].flags);
+  LL_WriteCompressedByte(ofile, byte_vals.data(), total);
+
+  LL_EndChunk(ofile, start);
+}
+
+static void LL_WriteTerrainSkyAndLightChunk(posix_ostream &ofile) {
+  int start = LL_StartChunk(ofile, "TSKY");
+
+  ofile << Terrain_sky.fog_scalar;
+  ofile << Terrain_sky.damage_per_second;
+  ofile.put(static_cast<uint8_t>(Terrain_sky.textured));
+  ofile << Terrain_sky.dome_texture;
+
+  ofile << static_cast<int32_t>(Terrain_sky.sky_color);
+  ofile << static_cast<int32_t>(Terrain_sky.horizon_color);
+  ofile << static_cast<int32_t>(Terrain_sky.fog_color);
+
+  ofile << std::bit_cast<int32_t>(Terrain_sky.flags);
+  ofile << Terrain_sky.radius;
+  ofile << Terrain_sky.rotate_rate;
+
+  ofile << static_cast<int32_t>(Terrain_sky.num_satellites);
+  for (int i = 0; i < Terrain_sky.num_satellites; i++) {
+    ofile << Terrain_sky.satellite_texture[i];
+    ofile << Terrain_sky.satellite_vectors[i];
+    ofile.put(std::bit_cast<uint8_t>(Terrain_sky.satellite_flags[i]));
+    ofile << Terrain_sky.satellite_size[i];
+    ofile << Terrain_sky.satellite_r[i];
+    ofile << Terrain_sky.satellite_g[i];
+    ofile << Terrain_sky.satellite_b[i];
+  }
+
+  const int total = TERRAIN_DEPTH * TERRAIN_WIDTH;
+  std::vector<uint8_t> byte_vals(total);
+  for (int i = 0; i < total; i++)
+    byte_vals[i] = Terrain_seg[i].l;
+  LL_WriteCompressedByte(ofile, byte_vals.data(), total);
+  for (int i = 0; i < total; i++)
+    byte_vals[i] = Terrain_seg[i].r;
+  LL_WriteCompressedByte(ofile, byte_vals.data(), total);
+  for (int i = 0; i < total; i++)
+    byte_vals[i] = Terrain_seg[i].g;
+  LL_WriteCompressedByte(ofile, byte_vals.data(), total);
+  for (int i = 0; i < total; i++)
+    byte_vals[i] = Terrain_seg[i].b;
+  LL_WriteCompressedByte(ofile, byte_vals.data(), total);
+  for (int i = 0; i < total; i++)
+    byte_vals[i] = Terrain_dynamic_table[i];
+  LL_WriteCompressedByte(ofile, byte_vals.data(), total);
+
+  ofile << Terrain_occlusion_checksum;
+  constexpr int occ_total = OCCLUSION_SIZE * OCCLUSION_SIZE * 32;
+  std::vector<uint8_t> occlusion(occ_total);
+  for (int i = 0; i < occ_total; i++)
+    occlusion[i] = Terrain_occlusion_map[i / 32][i % 32];
+  LL_WriteCompressedByte(ofile, occlusion.data(), occ_total);
+
+  LL_EndChunk(ofile, start);
+}
+
+// TERR container.  Must be saved before OBJS: loading it runs ResetTerrain(),
+// which clears the per-segment object links just before OBJS re-links them.
+static void LL_WriteTerrainChunks(posix_ostream &ofile) {
+  LL_WriteTerrainHeightChunk(ofile);
+  LL_WriteTerrainTmapChunk(ofile);
+  LL_WriteTerrainSkyAndLightChunk(ofile);
+
+  int start = LL_StartChunk(ofile, "TEND");
+  LL_EndChunk(ofile, start);
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -257,6 +613,8 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
           ifile >> roomnum;
           ifile >> Rooms[roomnum].wind;
         }
+      } else if (IsChunk(chunk_name, "TERR")) {
+        LL_ReadTerrainChunks(ifile, version);
       } else if (IsChunk(chunk_name, "OBJS")) {
         int32_t num = 0;
         ifile >> num;
@@ -416,6 +774,13 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
         }
         LL_EndChunk(out, start);
       }
+    }
+
+    // TERR (exterior terrain: heights, texmaps, sky/lighting)
+    {
+      int start = LL_StartChunk(out, "TERR");
+      LL_WriteTerrainChunks(out);
+      LL_EndChunk(out, start);
     }
 
     // OBJS

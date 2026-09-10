@@ -209,7 +209,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
     // No ground plane — move in front of viewer, facing viewer
     vector3 pos;
 
-    if (Viewer_object->flags & OF_OUTSIDE_MINE) {
+    if (Viewer_object->flags.outside_mine) {
       ObjDelete(objnum);
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place the object here: the viewer is outside the mine.");
       return false;

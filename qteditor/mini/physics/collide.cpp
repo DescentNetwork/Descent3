@@ -1203,7 +1203,7 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
   check_for_special_surface(weapon, tmap, wall_normal, hit_dot);
 
   // If dead, we're done
-  if (weapon->flags & OF_DEAD)
+  if (weapon->flags.dead)
     return true;
 
   // If done bouncing, kill the weapon
@@ -1280,7 +1280,7 @@ void collide_player_and_wall(object *playerobj, float hitspeed, int hitseg, int 
   bool flags.forcefield;
   int tmap;
 
-  if (playerobj->flags & OF_DYING)
+  if (playerobj->flags.dying)
     playerobj->ctype.dying_info.delay_time *= 0.9f;
 
   // Check for a trigger on this wall
@@ -1714,7 +1714,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
       luke_test = vm_GetMagnitude(&t->mtype.phys_info.velocity);
     }
 
-    if (!(t->flags & OF_DEAD)) {
+    if (!(t->flags.dead)) {
       // Find hit speed
       moved_v = t->pos - t->last_pos;
       wall_part = vm_Dot3Product(*collision_normal, t->mtype.phys_info.velocity);
@@ -1726,7 +1726,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
         if ((t->mtype.phys_info.flags.bounce) && (t->mtype.phys_info.num_bounces != PHYSICS_UNLIMITED_BOUNCE)) {
           if (t->mtype.phys_info.num_bounces == 0) {
             Q_ASSERT(t->type != OBJ_PLAYER);
-            if (t->flags & OF_DYING) {
+            if (t->flags.dying) {
               Q_ASSERT((t->control_type == CT_DYING) || (t->control_type == CT_DYING_AND_AI));
               DestroyObject(t, 50.0, t->ctype.dying_info.death_flags);
             } else
@@ -1971,11 +1971,11 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
   // Catch things on fire if possible
   if (object0->effect_info && object1->effect_info) {
     // One of these objects must be burning
-    if ((object0->effect_info->type_flags & EF_NAPALMED) || (object1->effect_info->type_flags & EF_NAPALMED)) {
+    if ((object0->effect_info->type_flags.napalmed) || (object1->effect_info->type_flags.napalmed)) {
       // Both cannot be burning
-      if (!(object0->effect_info->type_flags & EF_NAPALMED) || !(object1->effect_info->type_flags & EF_NAPALMED)) {
+      if (!(object0->effect_info->type_flags.napalmed) || !(object1->effect_info->type_flags.napalmed)) {
         object *src_obj, *dest_obj;
-        if (object0->effect_info->type_flags & EF_NAPALMED) {
+        if (object0->effect_info->type_flags.napalmed) {
           src_obj = object0;
           dest_obj = object1;
         } else {
@@ -1983,7 +1983,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
           dest_obj = object0;
         }
 
-        dest_obj->effect_info->type_flags |= EF_NAPALMED;
+        dest_obj->effect_info->type_flags.napalmed = true;
 
         dest_obj->effect_info->damage_time = std::max(1.0f, src_obj->effect_info->damage_time / 3.0f);
         dest_obj->effect_info->damage_per_second = src_obj->effect_info->damage_per_second;
@@ -2140,7 +2140,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
     check_for_special_surface(weapon, tmap, normal, 1.0);
 
     // If object died, stop processing
-    if (weapon->flags & OF_DEAD)
+  if (weapon->flags.dead)
       return;
   }
 
@@ -2156,7 +2156,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
   if (f_reverse_normal)
     *collision_normal *= -1.0f;
 
-  if (robotobj->flags & OF_DYING)
+  if (robotobj->flags.dying)
     robotobj->ctype.dying_info.delay_time *= 0.975f;
 
   if (Weapons[weapon->id].sounds[WSI_IMPACT_WALL] != SOUND_NONE_INDEX) {
@@ -2333,9 +2333,9 @@ void collide_player_and_weapon(object *playerobj, object *weapon, vector3 *colli
     break;
 
 void check_lg_inform(object *A, object *B) {
-  if (A->flags & (OF_INFORM_PLAYER_COLLIDE_TO_LG | OF_INFORM_PLAYER_WEAPON_COLLIDE_TO_LG)) {
+  if (A->flags.inform_player_collide_to_lg || A->flags.inform_player_weapon_collide_to_lg) {
     if (B->type == OBJ_PLAYER) {
-      bool f_pwc = (A->flags & OF_INFORM_PLAYER_WEAPON_COLLIDE_TO_LG) != 0;
+      bool f_pwc = A->flags.inform_player_weapon_collide_to_lg;
       int type;
 
       if (f_pwc) {
@@ -2348,7 +2348,7 @@ void check_lg_inform(object *A, object *B) {
     }
   }
 
-  if (A->flags & OF_INFORM_PLAYER_WEAPON_COLLIDE_TO_LG) {
+  if (A->flags.inform_player_weapon_collide_to_lg) {
     if (B->type == OBJ_WEAPON) {
       object *parent = ObjGetUltimateParent(B);
 
@@ -2430,8 +2430,8 @@ void collide_two_objects(object *A, object *B, vector3 *collision_point, vector3
     bump_two_objects(A, B, collision_point, collision_normal, 1);
   }
 
-  if ((A->type == OBJ_PLAYER && B->type == OBJ_POWERUP && (B->flags & OF_DEAD)) ||
-      (B->type == OBJ_PLAYER && A->type == OBJ_POWERUP && (A->flags & OF_DEAD))) {
+  if ((A->type == OBJ_PLAYER && B->type == OBJ_POWERUP && (B->flags.dead)) ||
+      (B->type == OBJ_PLAYER && A->type == OBJ_POWERUP && (A->flags.dead))) {
     ain_hear hear;
     hear.f_directly_player = true;
     hear.hostile_level = 0.05f;

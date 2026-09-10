@@ -5,8 +5,8 @@
 #include "object_external_struct.h"
 
 static bool AreObjectsAttached(const object *obj1, const object *obj2) {
-  const bool f_o1_a = (obj1->flags & OF_ATTACHED) != 0;
-  const bool f_o2_a = (obj2->flags & OF_ATTACHED) != 0;
+  const bool f_o1_a = obj1->flags.attached;
+  const bool f_o2_a = obj2->flags.attached;
 
   if (f_o1_a || f_o2_a) {
     const int o1_uh = obj1->attach_ultimate_handle;

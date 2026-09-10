@@ -1046,7 +1046,7 @@ bool SetupTerrainObject(object& obj) {
     return false;
 #endif
 
-  obj.flags |= OF_SAFE_TO_RENDER;
+  obj.flags.safe_to_render = true;
   RenderObject_SetLightDirection(&camlight);
   rend_SetColorModel(CM_MONO);
   if (obj.render_type == RT_POLYOBJ ||
@@ -1062,7 +1062,7 @@ bool SetupTerrainObject(object& obj) {
       scalar_b = 1.0;
     } else {
       scalar = GetTerrainDynamicScalar(obj.pos, CELLNUM(obj.roomnum));
-      if (obj.effect_info && (obj.effect_info->type_flags & EF_VOLUME_LIT)) {
+      if (obj.effect_info && (obj.effect_info->type_flags.volume_lit)) {
         scalar_r = std::min<float>(1, scalar + (obj.effect_info->dynamic_red));
         scalar_g = std::min<float>(1, scalar + (obj.effect_info->dynamic_green));
         scalar_b = std::min<float>(1, scalar + (obj.effect_info->dynamic_blue));
@@ -1112,12 +1112,12 @@ bool SetupMineObject(object& obj) {
     vector3 lightdir = {0, -1.0, 0}; // straight down for now
 
     // Get the volume light for this object
-    if (obj.effect_info && (obj.effect_info->type_flags & EF_VOLUME_LIT) &&
+    if (obj.effect_info && (obj.effect_info->type_flags.volume_lit) &&
         !(Rooms[obj.roomnum].flags.external)) {
       vector3 vpos = obj.pos;
       if (Render_mirror_for_room)
         vpos = obj.last_pos;
-      if (obj.effect_info->type_flags & EF_VOLUME_CHANGING) {
+      if (obj.effect_info->type_flags.volume_changing) {
         float old_r, old_g, old_b;
         float new_r, new_g, new_b;
         GetRoomDynamicScalar(&obj.effect_info->volume_old_pos, &Rooms[obj.effect_info->volume_old_room], &old_r,
@@ -1197,7 +1197,7 @@ void RenderObject(object& obj) {
   }
   if (obj.type == OBJ_DUMMY)
     return;
-  if (obj.flags & OF_ATTACHED) {
+  if (obj.flags.attached) {
     // See if we should be rendered, because our attach parent might be invisible
     object *parent_obj = ObjGet(obj.attach_ultimate_handle);
     if (!parent_obj)
@@ -1212,13 +1212,13 @@ void RenderObject(object& obj) {
     render_it = SetupMineObject(obj);
   if (!render_it)
     return;
-  if (!(obj.flags & OF_SAFE_TO_RENDER))
+  if (!obj.flags.safe_to_render)
     return;
   // Mark this a rendered this frame
-  obj.flags |= OF_RENDERED;
+  obj.flags.rendered = true;
   // If we're not rendering from a mirror, mark this object as rendered
   if (Render_mirror_for_room == false)
-    obj.flags &= ~OF_SAFE_TO_RENDER;
+    obj.flags.safe_to_render = false;
   obj.renderframe = FrameCount % 65536;
   if (obj.control_type == CT_AI) {
     AI_RenderedList[AI_NumRendered] = OBJNUM(&obj);
@@ -1480,17 +1480,17 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
 
   // Do cloak effect on player
   if (UseHardware) {
-    if (obj->effect_info && (obj->effect_info->type_flags & EF_FADING_OUT)) {
+    if (obj->effect_info && (obj->effect_info->type_flags.fading_out)) {
       pe.type = PEF_ALPHA;
       pe.alpha = .08 + (.92 * (obj->effect_info->fade_time / obj->effect_info->fade_max_time));
       use_effect = 1;
     }
-    if (obj->effect_info && (obj->effect_info->type_flags & EF_FADING_IN)) {
+    if (obj->effect_info && (obj->effect_info->type_flags.fading_in)) {
       pe.type = PEF_ALPHA;
       pe.alpha = .08 + (.92 * (1.0 - (obj->effect_info->fade_time / obj->effect_info->fade_max_time)));
       use_effect = 1;
     }
-    if (obj->effect_info && (obj->effect_info->type_flags & EF_CLOAKED)) {
+    if (obj->effect_info && (obj->effect_info->type_flags.cloaked)) {
       pe.type = PEF_ALPHA | PEF_DEFORM;
       pe.alpha = .13f;
       pe.deform_range = .1f;
@@ -1516,7 +1516,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
       }
     }
     // Deform this object if needed
-    if (obj->effect_info && (obj->effect_info->type_flags & EF_DEFORM)) {
+    if (obj->effect_info && (obj->effect_info->type_flags.deform)) {
       pe.type |= PEF_DEFORM;
       pe.deform_range = obj->effect_info->deform_range * obj->effect_info->deform_time;
       float val = obj->effect_info->deform_time;
@@ -1531,7 +1531,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
       use_effect = 1;
     }
     // If the viewer is deformed, warp his view somewhat
-    if (Viewer_object->effect_info && (Viewer_object->effect_info->type_flags & EF_DEFORM)) {
+    if (Viewer_object->effect_info && (Viewer_object->effect_info->type_flags.deform)) {
       pe.type |= PEF_DEFORM;
       pe.deform_range = Viewer_object->effect_info->deform_range * Viewer_object->effect_info->deform_time;
       float val = Viewer_object->effect_info->deform_time;
@@ -1546,7 +1546,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
       obj_pos.z() += (((d3::rand() % 1000) - 500) / 500.0) * moveval;
     }
     // If this is a powerup, fade it out near the end of its life
-    if (obj->type == OBJ_POWERUP && (obj->flags & OF_USES_LIFELEFT) && obj->lifeleft < 5) {
+    if (obj->type == OBJ_POWERUP && obj->flags.uses_lifeleft && obj->lifeleft < 5) {
       pe.type |= PEF_ALPHA | PEF_DEFORM;
       pe.alpha = obj->lifeleft / 5.0;
       pe.deform_range = .2f * (1.0 - (obj->lifeleft / 5.0));
@@ -1570,7 +1570,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
     }
     // Apply specularity from dynamic lights
     if (obj->effect_info) {
-      if ((obj->effect_info->type_flags & EF_SPECULAR)) {
+      if ((obj->effect_info->type_flags.specular)) {
         if (obj->type == OBJ_POWERUP)
           pe.type |= PEF_SPECULAR_MODEL;
         else
@@ -1587,7 +1587,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
     // Apply specularity from outdoor satellites
     if (OBJECT_OUTSIDE(obj) && obj->lighting_render_type == LRT_GOURAUD && Detail_settings.Specular_lighting &&
         !(Object_info[obj->id].lighting_info.flags & OLF_NO_SPECULARITY)) {
-      if (obj->effect_info && !(obj->effect_info->type_flags & EF_SPECULAR)) {
+      if (obj->effect_info && !(obj->effect_info->type_flags.specular)) {
         if (obj->type == OBJ_POWERUP)
           pe.type |= PEF_SPECULAR_MODEL;
         else
@@ -1672,7 +1672,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
       model_num = obj->rtype.pobj_info().model_num;
   } else
     model_num = obj->rtype.pobj_info().model_num;
-  if (obj->type == OBJ_BUILDING && obj->flags & OF_USE_DESTROYED_POLYMODEL) {
+  if (obj->type == OBJ_BUILDING && obj->flags.use_destroyed_polymodel) {
     if (Object_info[obj->id].lo_render_handle != -1)
       model_num = Object_info[obj->id].lo_render_handle;
   }
@@ -1923,7 +1923,7 @@ void DrawPlayerTypingIndicator(object *obj) {
   uint32_t bit = (0x01 << slot);
   if (!(Players_typing & bit))
     return;
-  if (obj->effect_info && obj->effect_info->type_flags & EF_CLOAKED)
+  if (obj->effect_info && obj->effect_info->type_flags.cloaked)
     return;
   static int type_indicator_model = -2;
   if (type_indicator_model == -2)
@@ -2026,7 +2026,7 @@ void DrawPlayerNameOnHud(object *obj) {
     return;
   if (HudNameTan <= 0)
     return;
-  if (obj->effect_info && obj->effect_info->type_flags & EF_CLOAKED)
+  if (obj->effect_info && obj->effect_info->type_flags.cloaked)
     return;
 
   // Get color to draw this name in

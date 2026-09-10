@@ -2941,7 +2941,7 @@ void ComputeAABB(bool f_full) {
 
   for (i = 0; i <= Highest_object_index; i++) {
     if (Objects[i].type != OBJ_NONE) {
-      if (!(Objects[i].flags & OF_BIG_OBJECT))
+      if (!Objects[i].flags.big_object)
         if (Objects[i].size >= MIN_BIG_OBJ_RAD)
           BigObjAdd(i);
 

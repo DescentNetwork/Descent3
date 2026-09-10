@@ -103,7 +103,7 @@ void ObjectTreeDialog::Refresh() {
     topItems[i] = new QTreeWidgetItem(tree, {QString::fromLatin1(kCategoryNames[i])});
 
   for (int i = 0; i <= Highest_object_index; i++) {
-    if (Objects[i].flags & OF_DEAD)
+    if (Objects[i].flags.dead)
       continue;
 
     int cat = categoryForType(Objects[i].type);

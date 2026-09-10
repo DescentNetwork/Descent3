@@ -19,6 +19,7 @@
 #include "object_keypad.h"
 #include "ui_objectkeypad.h"
 
+#include <bit>
 #include <cstring>
 #include <QMessageBox>
 #include <QCheckBox>
@@ -138,7 +139,7 @@ void ObjectKeypad::onResetObjects() {
       continue;
     uint32_t obj_flags = 0;
     std::memcpy(&obj_flags, &Object_info[type].flags, sizeof(obj_flags));
-    Objects[i].flags = obj_flags;
+    Objects[i].flags = std::bit_cast<object_flags_t>(obj_flags);
     Objects[i].size = Object_info[type].size;
   }
   Mine_changed = true;

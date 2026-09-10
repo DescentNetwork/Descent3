@@ -213,7 +213,7 @@ byte_istream& operator>>(byte_istream& input, object& data) {
   data.id = 0;
   input >> data.id;
   input >> data.name;
-  data.flags = 0;
+  data.flags = {};
   input >> data.flags;
 
   if (data.type == OBJ_DOOR) {

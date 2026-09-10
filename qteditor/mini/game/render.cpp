@@ -59,7 +59,6 @@
 //#include "postrender.h"
 #include "mem.h"
 #include "player.h"
-#include "args.h"
 #include "chrono_timer.h"
 #include "d3edit.h"
 #include "rand.h"
@@ -489,7 +488,7 @@ void MakePointsFromMinMax(vector3 *corners, vector3 *minp, vector3 *maxp) {
 void RotateRoomPoints(room *rp, const vector3 *world_vecs) {
   int i;
   // Jig the vertices a bit if being deformed
-  if (Viewer_object->effect_info && (Viewer_object->effect_info->type_flags & EF_DEFORM)) {
+  if (Viewer_object->effect_info && (Viewer_object->effect_info->type_flags.deform)) {
     for (i = 0; i < rp->num_verts; i++) {
       vector3 vec = world_vecs[i];
       float val = ((d3::rand() % 1000) - 500.0) / 500.0;
@@ -659,12 +658,12 @@ void MarkFacesForRendering(int roomnum, clip_wnd *wnd) {
     uint8_t code;
     if (rp->flags.door) // Render all objects in a door room
     {
-      obj->flags |= OF_SAFE_TO_RENDER;
+      obj->flags.safe_to_render = true;
       continue;
     }
     if (rp->flags.mirror_visible) // Render all objects if this mirror is visible
     {
-      obj->flags |= OF_SAFE_TO_RENDER;
+      obj->flags.safe_to_render = true;
       continue;
     }
 
@@ -680,7 +679,7 @@ void MarkFacesForRendering(int roomnum, clip_wnd *wnd) {
 
     if (!anded) {
       // Object is visible
-      obj->flags |= OF_SAFE_TO_RENDER;
+      obj->flags.safe_to_render = true;
     }
   }
 }
@@ -1123,7 +1122,7 @@ void BuildRoomList(int start_room_num) {
 
   // Mark all objects in this room as visible
   for (int objnum = rp->objects; (objnum != -1); objnum = Objects[objnum].next)
-    Objects[objnum].flags |= OF_SAFE_TO_RENDER;
+    Objects[objnum].flags.safe_to_render = true;
 
   // Initial clip window is whole screen
   wnd.left = wnd.top = 0.0;
@@ -3203,15 +3202,15 @@ void RenderRoomObjects(room *rp) {
         dest_matrix.fvec = objp->orient.fvec * temp_mat;
         objp->orient = dest_matrix;
         bool save_render = false;
-        if (objp->flags & OF_SAFE_TO_RENDER)
+        if (objp->flags.safe_to_render)
           save_render = true;
-        objp->flags |= OF_SAFE_TO_RENDER;
+        objp->flags.safe_to_render = true;
 
         RenderObject(*objp);
         if (save_render)
-          objp->flags |= OF_SAFE_TO_RENDER;
+          objp->flags.safe_to_render = true;
         else
-          objp->flags &= ~OF_SAFE_TO_RENDER;
+          objp->flags.safe_to_render = false;
         objp->pos = save_vec;
         objp->orient = save_orient;
       }
@@ -3398,6 +3397,7 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
 #ifdef EDITOR
   In_editor_mode = 1;
 #endif
+#if 0
   // check to see if we should render windows
   if (No_render_windows_hack == -1) {
     if (FindArg("-NoRenderWindows"))
@@ -3405,6 +3405,7 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
     else
       No_render_windows_hack = 0;
   }
+#endif
   // Get the viewer eye so functions down the line can look at it
   g3_GetViewPosition(&Viewer_eye);
   g3_GetUnscaledMatrix(&Viewer_orient);

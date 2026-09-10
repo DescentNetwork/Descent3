@@ -1753,7 +1753,7 @@ int check_vector_to_object(vector3 *intp, float *col_dist, vector3 *p0, vector3 
 
   int fvi_objnum = fvi_query_ptr->thisobjnum;
 
-  if ((still_obj->flags & OF_POLYGON_OBJECT) && still_obj->type != OBJ_POWERUP && still_obj->type != OBJ_WEAPON &&
+  if ((still_obj->flags.polygon_object) && still_obj->type != OBJ_POWERUP && still_obj->type != OBJ_WEAPON &&
       still_obj->type != OBJ_DEBRIS && still_obj->type != OBJ_ROOM && still_obj->type != OBJ_PLAYER) {
     still_size = Poly_models[still_obj->rtype.pobj_info().model_num].anim_size;
     still_pos += still_obj->anim_sphere_offset;
@@ -2155,7 +2155,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
                 Objects[cur_obj_index].ai_info) {
               if (!(f_lightmap_only && (Objects[cur_obj_index].lighting_render_type != LRT_LIGHTMAPS) &&
                     Objects[cur_obj_index].type != OBJ_ROOM)) {
-                if (object_movement_AABB(&Objects[cur_obj_index]) && !(Objects[cur_obj_index].flags & OF_BIG_OBJECT)) {
+                if (object_movement_AABB(&Objects[cur_obj_index]) && !(Objects[cur_obj_index].flags.big_object)) {
                   object_index_list[num_objects++] = cur_obj_index;
                   Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
                 }
@@ -2649,7 +2649,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
   }
   last_sim_trigger_faces = Fvi_num_recorded_faces;
 
-  if ((this_obj) && (this_obj->flags & OF_POLYGON_OBJECT) && this_obj->type != OBJ_WEAPON &&
+  if ((this_obj) && (this_obj->flags.polygon_object) && this_obj->type != OBJ_WEAPON &&
       this_obj->type != OBJ_POWERUP && this_obj->type != OBJ_DEBRIS && this_obj->type != OBJ_ROOM &&
       this_obj->type != OBJ_PLAYER && fq->rad == this_obj->size) {
     if (this_obj->mtype.phys_info.flags.point_collide_walls) {
@@ -3312,10 +3312,10 @@ void check_hit_obj(int objnum) {
   if ((fvi_query_ptr->flags & (FQ_IGNORE_EXTERNAL_ROOMS)) && (obj->type == OBJ_ROOM))
     return;
 
-  if (obj->flags & OF_NO_OBJECT_COLLISIONS)
+  if (obj->flags.no_object_collisions)
     return;
 
-  if (!(obj->flags & OF_DEAD)) {
+  if (!(obj->flags.dead)) {
     if (m_obj_index != objnum) {
       if (!((m_obj_index > -1) && ((collision_type = CollisionResult[m_obj->type][obj->type]) == RESULT_NOTHING) &&
             (CollisionResult[obj->type][m_obj->type] == RESULT_NOTHING))) {
@@ -3440,7 +3440,7 @@ void check_hit_obj(int objnum) {
                 //									vector3 pos;
                 //									float size;
 
-                if (!(obj->flags & OF_POLYGON_OBJECT))
+                if (!(obj->flags.polygon_object))
                   goto sphere_sphere;
 
                 //									pos = obj->pos +
@@ -3464,7 +3464,7 @@ void check_hit_obj(int objnum) {
 
               case RESULT_CHECK_POLY_SPHERE:
               case RESULT_CHECK_POLY_BBOX: {
-                if (!(m_obj->flags & OF_POLYGON_OBJECT))
+                if (!(m_obj->flags.polygon_object))
                   goto sphere_sphere;
 
                 // Save the Fvi information pointers.
@@ -3542,7 +3542,7 @@ void check_hit_obj(int objnum) {
                     hit_obj_pos = obj->pos + obj->anim_sphere_offset;
                     pos_hit = hit_point - hit_obj_pos;
 
-                    if ((obj->flags & OF_POLYGON_OBJECT) && obj->type != OBJ_ROOM && obj->type != OBJ_WEAPON &&
+                    if ((obj->flags.polygon_object) && obj->type != OBJ_ROOM && obj->type != OBJ_WEAPON &&
                         obj->type != OBJ_POWERUP && obj->type != OBJ_DEBRIS && obj->type != OBJ_PLAYER) {
                       hit_obj_size = Poly_models[obj->rtype.pobj_info().model_num].anim_size;
                     } else {
@@ -3667,7 +3667,7 @@ void check_hit_obj(int objnum) {
                                         for (objnum = Col_terrain_seg[cur_col_node].objects; objnum != -1; objnum =
    Objects[objnum].next)
                                         {
-                                                if(!(Objects[objnum].flags & OF_BIG_OBJECT))
+                                                if(!(Objects[objnum].flags.big_object))
                                                         check_hit_obj(objnum);
                                         }
                                 }
@@ -3803,7 +3803,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
     if (fvi_query_ptr->flags & FQ_CHECK_OBJS) {
       for (objnum = Terrain_seg[cur_node].objects; objnum != -1; objnum = Objects[objnum].next) {
         Q_ASSERT(objnum != -1);
-        if (!(Objects[objnum].flags & OF_BIG_OBJECT))
+        if (!(Objects[objnum].flags.big_object))
           check_hit_obj(objnum);
       }
     } else {
@@ -3811,7 +3811,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
       if (!(fvi_query_ptr->flags & FQ_IGNORE_EXTERNAL_ROOMS))
         for (objnum = Terrain_seg[cur_node].objects; objnum != -1; objnum = Objects[objnum].next) {
           Q_ASSERT(objnum != -1);
-          if ((Objects[objnum].type == OBJ_ROOM) && !(Objects[objnum].flags & OF_BIG_OBJECT))
+          if ((Objects[objnum].type == OBJ_ROOM) && !(Objects[objnum].flags.big_object))
             check_hit_obj(objnum);
         }
     }
@@ -3912,7 +3912,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
             (Objects[fvi_query_ptr->thisobjnum].mtype.phys_info.flags.point_collide_walls)) {
           face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, fvi_query_ptr->p0,
                                              &fvi_hit_data_ptr->hit_pnt, &face_normal, vertex_ptr_list, 3, 0.0f);
-        } else if ((this_obj) && (this_obj->flags & OF_POLYGON_OBJECT)) {
+          } else if ((this_obj) && (this_obj->flags.polygon_object)) {
           face_hit_type =
               check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, &fvi_wall_sphere_p0, &fvi_wall_sphere_p1,
                                  &face_normal, vertex_ptr_list, 3, fvi_wall_sphere_rad);
@@ -4653,7 +4653,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
             face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, fvi_query_ptr->p0,
                                                &fvi_hit_data_ptr->hit_pnt, &face_normal, vertex_ptr_list,
                                                cur_face->num_verts, 0.0f);
-          } else if ((this_obj) && (this_obj->flags & OF_POLYGON_OBJECT)) {
+        } else if ((this_obj) && (this_obj->flags.polygon_object)) {
             face_hit_type =
                 check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, &fvi_wall_sphere_p0, &fvi_wall_sphere_p1,
                                    &face_normal, vertex_ptr_list, cur_face->num_verts, fvi_wall_sphere_rad);

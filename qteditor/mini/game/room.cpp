@@ -1123,7 +1123,7 @@ void CreateRoomObjects() {
       Objects[objnum].wall_sphere_offset = vector3{};
       Objects[objnum].anim_sphere_offset = vector3{};
 
-      if ((rad >= MIN_BIG_OBJ_RAD) && !(Objects[objnum].flags & OF_BIG_OBJECT)) {
+      if ((rad >= MIN_BIG_OBJ_RAD) && !(Objects[objnum].flags.big_object)) {
         BigObjAdd(objnum);
       }
       // Type specific should have set up the size, so now we can compute the bounding box.

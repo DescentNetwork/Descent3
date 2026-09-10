@@ -1424,24 +1424,24 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
   case OBJV_V_POS:
     if (op == VF_SET) {
       ObjSetPos(obj, (vector3 *)ptr, obj->roomnum, NULL, true);
-      obj->flags |= OF_MOVED_THIS_FRAME;
-      obj->flags &= ~OF_STOPPED_THIS_FRAME;
+      obj->flags.moved_this_frame = true;
+      obj->flags.stopped_this_frame = false;
     } else if (op == VF_GET)
       *(vector3 *)ptr = obj->pos;
     break;
   case OBJV_M_ORIENT:
     if (op == VF_SET) {
       ObjSetPos(obj, &obj->pos, obj->roomnum, (matrix *)ptr, true);
-      obj->flags |= OF_MOVED_THIS_FRAME;
-      obj->flags &= ~OF_STOPPED_THIS_FRAME;
+      obj->flags.moved_this_frame = true;
+      obj->flags.stopped_this_frame = false;
     } else if (op == VF_GET)
       *(matrix *)ptr = obj->orient;
     break;
   case OBJV_I_ROOMNUM:
     if (op == VF_SET) {
       ObjSetPos(obj, &obj->pos, *(int *)ptr, NULL, false);
-      obj->flags |= OF_MOVED_THIS_FRAME;
-      obj->flags &= ~OF_STOPPED_THIS_FRAME;
+      obj->flags.moved_this_frame = true;
+      obj->flags.stopped_this_frame = false;
     } else if (op == VF_GET)
       *(int *)ptr = obj->roomnum;
     break;
@@ -1602,14 +1602,14 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
       return;
 
     if (op == VF_GET) {
-      (*(char *)ptr) = (obj->effect_info->type_flags & EF_VIRUS_INFECTED) ? 1 : 0;
+      (*(char *)ptr) = (obj->effect_info->type_flags.virus_infected) ? 1 : 0;
     } else if (op == VF_SET) {
       bool enable = (*(char *)ptr) ? true : false;
 
       if (enable) {
-        obj->effect_info->type_flags |= EF_VIRUS_INFECTED;
+        obj->effect_info->type_flags.virus_infected = true;
       } else {
-        obj->effect_info->type_flags &= ~EF_VIRUS_INFECTED;
+        obj->effect_info->type_flags.virus_infected = false;
       }
     }
   } break;
@@ -1619,7 +1619,7 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
       if (!obj->effect_info) {
         (*(char *)ptr) = 0;
       } else {
-        (*(char *)ptr) = (obj->effect_info->type_flags & EF_CLOAKED) ? 1 : 0;
+        (*(char *)ptr) = (obj->effect_info->type_flags.cloaked) ? 1 : 0;
       }
     }
     break;
@@ -1630,14 +1630,14 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
       return;
 
     if (op == VF_GET) {
-      (*(char *)ptr) = (obj->effect_info->type_flags & EF_NEGATIVE_LIGHT) ? 1 : 0;
+      (*(char *)ptr) = (obj->effect_info->type_flags.negative_light) ? 1 : 0;
     } else if (op == VF_SET) {
       bool enable = (*(char *)ptr) ? true : false;
 
       if (enable) {
-        obj->effect_info->type_flags |= EF_NEGATIVE_LIGHT;
+        obj->effect_info->type_flags.negative_light = true;
       } else {
-        obj->effect_info->type_flags &= ~EF_NEGATIVE_LIGHT;
+        obj->effect_info->type_flags.negative_light = false;
       }
     }
 
@@ -2143,7 +2143,7 @@ uint8_t osipf_IsRoomValid(int roomnum) {
 int osipf_GetAttachParent(int childhandle) {
   object *child = ObjGet(childhandle);
 
-  if ((child) && (child->flags & OF_ATTACHED)) {
+  if ((child) && (child->flags.attached)) {
     return (child->attach_parent_handle);
   }
 
@@ -2153,7 +2153,7 @@ int osipf_GetAttachParent(int childhandle) {
 int osipf_GetNumAttachSlots(int objhandle) {
   object *parent = ObjGet(objhandle);
 
-  if ((parent) && (parent->flags & OF_POLYGON_OBJECT)) {
+  if ((parent) && (parent->flags.polygon_object)) {
     poly_model *parent_pm = &Poly_models[parent->rtype.pobj_info().model_num];
     return (parent_pm->n_attach);
   }
@@ -2165,7 +2165,7 @@ int osipf_GetAttachChildHandle(int objhandle, char attachpoint) {
   object *parent = ObjGet(objhandle);
   int8_t parent_ap = attachpoint;
 
-  if ((parent) && (parent->flags & OF_POLYGON_OBJECT)) {
+  if ((parent) && (parent->flags.polygon_object)) {
     poly_model *parent_pm = &Poly_models[parent->rtype.pobj_info().model_num];
     if (parent_ap >= 0 && parent_ap < parent_pm->n_attach) {
       return (parent->attach_children[parent_ap]);
@@ -2180,7 +2180,7 @@ int osipf_AttachObjectAP(int parenthandle, char parent_ap, int childhandle, char
   object *parent = ObjGet(parenthandle);
   object *child = ObjGet(childhandle);
 
-  if ((parent) && (parent->flags & OF_POLYGON_OBJECT) && (child) && (child->flags & OF_POLYGON_OBJECT)) {
+  if ((parent) && (parent->flags.polygon_object) && (child) && (child->flags.polygon_object)) {
     return AttachObject(parent, parent_ap, child, child_ap, (bool)(f_use_aligned != 0));
   }
 
@@ -2191,7 +2191,7 @@ int osipf_AttachObjectRad(int parenthandle, char parent_ap, int childhandle, flo
   object *parent = ObjGet(parenthandle);
   object *child = ObjGet(childhandle);
 
-  if ((parent) && (parent->flags & OF_POLYGON_OBJECT) && (child) && (child->flags & OF_POLYGON_OBJECT)) {
+  if ((parent) && (parent->flags.polygon_object) && (child) && (child->flags.polygon_object)) {
     return AttachObject(parent, parent_ap, child, percent_rad);
   }
 
@@ -2201,7 +2201,7 @@ int osipf_AttachObjectRad(int parenthandle, char parent_ap, int childhandle, flo
 void osipf_UnattachFromParent(int objhandle) {
   object *child = ObjGet(objhandle);
 
-  if ((child) && (child->flags & OF_POLYGON_OBJECT)) {
+  if ((child) && (child->flags.polygon_object)) {
     UnattachFromParent(child);
   }
 }
@@ -2209,7 +2209,7 @@ void osipf_UnattachFromParent(int objhandle) {
 void osipf_UnattachChild(int objhandle, char parent_ap) {
   object *parent = ObjGet(objhandle);
 
-  if ((parent) && (parent->flags & OF_POLYGON_OBJECT)) {
+  if ((parent) && (parent->flags.polygon_object)) {
     UnattachChild(parent, parent_ap);
   }
 }
@@ -2217,8 +2217,8 @@ void osipf_UnattachChild(int objhandle, char parent_ap) {
 void osipf_UnattachChildren(int objhandle) {
   object *parent = ObjGet(objhandle);
 
-  if ((parent) && (parent->flags & OF_POLYGON_OBJECT)) {
-    UnattachChildren(parent);
+  if ((parent) && (parent->flags.polygon_object)) {
+    UnattachChildren(parent, parent_ap);
   }
 }
 
@@ -2882,7 +2882,7 @@ void osipf_ObjBurning(int handle, float time, float damage_per_second) {
   object *obj = ObjGet(handle);
   if (obj && obj->effect_info) {
     if (time > 0.0) {
-      obj->effect_info->type_flags |= EF_NAPALMED;
+      obj->effect_info->type_flags.napalmed = true;
 
       obj->effect_info->damage_time = time;
       obj->effect_info->damage_per_second = damage_per_second;
@@ -2894,7 +2894,7 @@ void osipf_ObjBurning(int handle, float time, float damage_per_second) {
       if (obj->effect_info->sound_handle == SOUND_NONE_INDEX)
         obj->effect_info->sound_handle = Sound_system.Play3dSound(SOUND_PLAYER_BURNING, SND_PRIORITY_HIGHEST, obj);
     } else {
-      obj->effect_info->type_flags &= (~EF_NAPALMED);
+      obj->effect_info->type_flags.napalmed = false;
       obj->effect_info->last_damage_time = 0;
       Sound_system.StopSoundLooping(obj->effect_info->sound_handle);
       obj->effect_info->sound_handle = SOUND_NONE_INDEX;
@@ -2904,7 +2904,7 @@ void osipf_ObjBurning(int handle, float time, float damage_per_second) {
 
 bool osipf_ObjIsEffect(int handle, int type_flag) {
   object *obj = ObjGet(handle);
-  return (obj && obj->effect_info && (obj->effect_info->type_flags & type_flag));
+  return (obj && obj->effect_info && (std::bit_cast<uint32_t>(obj->effect_info->type_flags) & type_flag));
 }
 
 void *osipf_CFopen(const char *filename, const char *mode) { return cfopen(filename, mode); }
@@ -3340,7 +3340,7 @@ int osipf_AIGetNearbyObjs(vector3 *pos, int init_roomnum, float rad, int *object
                                       f_only_players_and_ais, f_include_non_collide_objects, f_stop_at_closed_doors);
   Q_ASSERT(num_close <= max_elements);
   for (i = 0; i < num_close; i++) {
-    if (!(Objects[s_list[i]].flags & OF_DEAD) && Objects[s_list[i]].render_type != RT_NONE) {
+    if (!Objects[s_list[i]].flags.dead && Objects[s_list[i]].render_type != RT_NONE) {
       object_handle_list[count++] = Objects[s_list[i]].handle;
     }
   }

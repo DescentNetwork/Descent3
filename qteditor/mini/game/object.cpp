@@ -61,12 +61,12 @@ void BigObjAdd(int objnum) {
   if (Num_big_objects >= MAX_BIG_OBJECTS)
     return;
 
-  Objects[objnum].flags |= OF_BIG_OBJECT;
+  Objects[objnum].flags.big_object = true;
   BigObjectList[Num_big_objects++] = objnum;
 }
 
 void BigObjRemove(int objnum) {
-  Objects[objnum].flags &= (~OF_BIG_OBJECT);
+  Objects[objnum].flags.big_object = false;
 
   int i = 0;
   for (i = 0; i < Num_big_objects; i++)
@@ -135,7 +135,7 @@ int FreeObjectSlots(int num_used) {
     return 0;
 
   for (i = 0; i <= Highest_object_index; i++) {
-    if (Objects[i].flags & OF_DEAD) {
+    if (Objects[i].flags.dead) {
       num_already_free++;
       if (MAX_OBJECTS - num_already_free < num_used)
         return num_already_free;
@@ -226,7 +226,7 @@ void ObjLink(int objnum, int roomnum) {
   if (objnum == -1)
     return;
 
-  if (obj->roomnum != -1 || (obj->flags & OF_BIG_OBJECT))
+  if (obj->roomnum != -1 || (obj->flags.big_object))
     return;
 
   if ((obj->size >= MIN_BIG_OBJ_RAD) && (!ROOMNUM_OUTSIDE(roomnum)))
@@ -264,7 +264,7 @@ void ObjUnlink(int objnum) {
   if (obj->roomnum == -1)
     return;
 
-  if (obj->flags & OF_BIG_OBJECT)
+  if (obj->flags.big_object)
     BigObjRemove(objnum);
 
   if (OBJECT_OUTSIDE(obj)) {
@@ -368,7 +368,7 @@ void ObjSetAABB(object& obj) {
   if (obj.type == OBJ_ROOM && obj.id >= 0 && obj.id < MAX_ROOMS) {
     obj.min_xyz = Rooms[obj.id].min_xyz;
     obj.max_xyz = Rooms[obj.id].max_xyz;
-  } else if (obj.flags & OF_POLYGON_OBJECT && obj.type != OBJ_WEAPON && obj.type != OBJ_DEBRIS &&
+  } else if (obj.flags.polygon_object && obj.type != OBJ_WEAPON && obj.type != OBJ_DEBRIS &&
              obj.type != OBJ_POWERUP && obj.type != OBJ_PLAYER) {
     vector3 offset_pos;
 
@@ -397,11 +397,11 @@ void ObjSetAABB(object& obj) {
 static void ObjSetRenderPolyobj(object& obj, int handle) {
   if (handle == -1) {
     obj.render_type = RT_NONE;
-    obj.flags &= ~OF_POLYGON_OBJECT;
+    obj.flags.polygon_object = false;
     obj.rtype.pobj_info().model_num = -1;
   } else {
     obj.render_type = RT_POLYOBJ;
-    obj.flags |= OF_POLYGON_OBJECT;
+    obj.flags.polygon_object = true;
     obj.rtype.pobj_info().model_num = handle;
   }
 
@@ -501,7 +501,7 @@ int ObjInit(object& obj, int type, int id, int handle, vector3& pos, float creat
   obj.orient = Identity_matrix;
   obj.next = obj.prev = -1;
   obj.dummy_type = OBJ_NONE;
-  obj.flags = 0;
+  obj.flags = {};
   obj.size = 0;
   obj.change_flags = 0;
   obj.generic_nonvis_flags = 0;
@@ -594,7 +594,7 @@ void ObjDelete(int objnum) {
   if (obj->type == OBJ_NONE)
     return;
 
-  if (obj->flags & OF_POLYGON_OBJECT) {
+  if (obj->flags.polygon_object) {
     polyobj_info *p_info = &obj->rtype.pobj_info();
     p_info->multi_turret_info.keyframes.clear();
     p_info->multi_turret_info.last_keyframes.clear();
@@ -633,8 +633,8 @@ void ObjDelete(int objnum) {
 void FreeAllObjects() {
   for (int objnum = 0; objnum <= Highest_object_index; objnum++)
     if (Objects[objnum].type != OBJ_NONE) {
-      Objects[objnum].flags |= OF_SERVER_SAYS_DELETE;
-      Objects[objnum].flags &= ~OF_INPLAYERINVENTORY;
+      Objects[objnum].flags.server_says_delete = true;
+      Objects[objnum].flags.inplayer_inventory = false;
       ObjDelete(objnum);
     }
 }
@@ -650,7 +650,7 @@ void ObjSetOrient(object& obj, const matrix& orient) {
   obj.orient = orient;
 
   // Recompute the orientation dependent information
-  if (obj.flags & OF_POLYGON_OBJECT) {
+  if (obj.flags.polygon_object) {
     if (obj.type != OBJ_WEAPON && obj.type != OBJ_DEBRIS && obj.type != OBJ_POWERUP && obj.type != OBJ_ROOM) {
       int mn = obj.rtype.pobj_info().model_num;
       if (mn >= 0 && mn < MINI_POLY_MODELS) {
@@ -685,7 +685,7 @@ void ObjSetPos(object& obj, vector3& pos, int roomnum, matrix* orient, bool f_up
     ObjSetOrient(obj, *orient);
 
   // Clear the outside-mine flag
-  obj.flags &= ~OF_OUTSIDE_MINE;
+  obj.flags.outside_mine = false;
 
   // If changed rooms, do a bunch of stuff
   if (obj.roomnum != roomnum) {
@@ -696,16 +696,16 @@ void ObjSetPos(object& obj, vector3& pos, int roomnum, matrix* orient, bool f_up
     ObjRelink(OBJNUM(&obj), roomnum);
 
     // Slowly change volume lighting if going between rooms, if not in the editor
-    if ((obj.effect_info != nullptr) && (obj.effect_info->type_flags & EF_VOLUME_LIT)) {
+    if ((obj.effect_info != nullptr) && (obj.effect_info->type_flags.volume_lit)) {
       if (!ROOMNUM_OUTSIDE(oldroomnum) && !ROOMNUM_OUTSIDE(roomnum)) {
-        if (!(obj.effect_info->type_flags & EF_VOLUME_CHANGING)) {
-          obj.effect_info->type_flags |= EF_VOLUME_CHANGING;
+        if (!(obj.effect_info->type_flags.volume_changing)) {
+          obj.effect_info->type_flags.volume_changing = true;
           obj.effect_info->volume_change_time = 1.0f;
           obj.effect_info->volume_old_room = oldroomnum;
           obj.effect_info->volume_old_pos = old_pos;
         }
       } else // either old or new room was outside, so don't do volume changing
-        obj.effect_info->type_flags &= ~EF_VOLUME_CHANGING;
+        obj.effect_info->type_flags.volume_changing = false;
     }
   }
 }
@@ -790,12 +790,12 @@ void SetObjectDeadFlag(object& obj, bool tell_clients_to_remove, bool play_sound
   if (obj.type == OBJ_NONE)
     return;
 
-  obj.flags |= OF_DEAD;
+  obj.flags.dead = true;
 
   if (tell_clients_to_remove) {
     if (play_sound_on_clients)
-      obj.flags |= OF_SEND_MULTI_REMOVE_ON_DEATHWS;
+      obj.flags.send_multi_remove_on_deathws = true;
     else
-      obj.flags |= OF_SEND_MULTI_REMOVE_ON_DEATH;
+      obj.flags.send_multi_remove_on_death = true;
   }
 }

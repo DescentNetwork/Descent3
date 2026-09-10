@@ -92,6 +92,7 @@
  */
 
 #include <array>
+#include <bit>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -159,8 +160,136 @@ struct light_info {
 byte_istream& operator >>(byte_istream& input, light_info& data);
 byte_ostream& operator <<(byte_ostream& output, const light_info& data);
 
+// Object-misc flags (object.flags), bit packed from the old OF_* macros.
+struct [[gnu::packed]] object_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t clientdemo_object : 1;
+  uint32_t inform_destroy_to_lg : 1;
+  uint32_t inform_player_weapon_collide_to_lg : 1;
+  uint32_t inform_player_collide_to_lg : 1;
+  uint32_t inplayer_inventory : 1;
+  uint32_t predicted : 1;
+  uint32_t send_multi_remove_on_deathws : 1;
+  uint32_t send_multi_remove_on_death : 1;
+  uint32_t ai_death : 1;
+  uint32_t ping_accelerate : 1;
+  uint32_t server_object : 1;
+  uint32_t server_says_delete : 1;
+  uint32_t client_knows : 1;
+  uint32_t temp_gravity : 1;
+  uint32_t stuck_on_portal : 1;
+  uint32_t no_object_collisions : 1;
+  uint32_t rendered : 1;
+  uint32_t use_destroyed_polymodel : 1;
+  uint32_t dying : 1;
+  uint32_t polygon_object : 1;
+  uint32_t big_object : 1;
+  uint32_t destroyable : 1;
+  uint32_t outside_mine : 1;
+  uint32_t safe_to_render : 1;
+  uint32_t uses_lifeleft : 1;
+  uint32_t ai_do_death : 1;
+  uint32_t moved_this_frame : 1;
+  uint32_t attached : 1;
+  uint32_t stopped_this_frame : 1;
+  uint32_t destroyed : 1;
+  uint32_t dead : 1;
+  uint32_t force_ceiling_check : 1;
+#else
+  uint32_t force_ceiling_check : 1;
+  uint32_t dead : 1;
+  uint32_t destroyed : 1;
+  uint32_t stopped_this_frame : 1;
+  uint32_t attached : 1;
+  uint32_t moved_this_frame : 1;
+  uint32_t ai_do_death : 1;
+  uint32_t uses_lifeleft : 1;
+  uint32_t safe_to_render : 1;
+  uint32_t outside_mine : 1;
+  uint32_t destroyable : 1;
+  uint32_t big_object : 1;
+  uint32_t polygon_object : 1;
+  uint32_t dying : 1;
+  uint32_t use_destroyed_polymodel : 1;
+  uint32_t rendered : 1;
+  uint32_t no_object_collisions : 1;
+  uint32_t stuck_on_portal : 1;
+  uint32_t temp_gravity : 1;
+  uint32_t client_knows : 1;
+  uint32_t server_says_delete : 1;
+  uint32_t server_object : 1;
+  uint32_t ping_accelerate : 1;
+  uint32_t ai_death : 1;
+  uint32_t send_multi_remove_on_death : 1;
+  uint32_t send_multi_remove_on_deathws : 1;
+  uint32_t predicted : 1;
+  uint32_t inplayer_inventory : 1;
+  uint32_t inform_player_collide_to_lg : 1;
+  uint32_t inform_player_weapon_collide_to_lg : 1;
+  uint32_t inform_destroy_to_lg : 1;
+  uint32_t clientdemo_object : 1;
+#endif
+};
+static_assert(sizeof(object_flags_t) == sizeof(uint32_t));
+
+inline byte_istream& operator >>(byte_istream& input, object_flags_t& data) {
+  uint32_t raw = 0;
+  input >> raw;
+  data = std::bit_cast<object_flags_t>(raw);
+  return input;
+}
+inline byte_ostream& operator <<(byte_ostream& output, const object_flags_t& data) {
+  return output << std::bit_cast<uint32_t>(data);
+}
+
+// Effect-type flags (effect_info_s.type_flags), bit packed from the old EF_* macros.
+struct [[gnu::packed]] effect_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 15;
+  uint32_t virus_infected : 1;
+  uint32_t negative_light : 1;
+  uint32_t bumpmapped : 1;
+  uint32_t sparking : 1;
+  uint32_t cloak_with_msg : 1;
+  uint32_t liquid : 1;
+  uint32_t fading_out : 1;
+  uint32_t fading_in : 1;
+  uint32_t specular : 1;
+  uint32_t line_attach : 1;
+  uint32_t freeze : 1;
+  uint32_t volume_changing : 1;
+  uint32_t volume_lit : 1;
+  uint32_t napalmed : 1;
+  uint32_t colored : 1;
+  uint32_t deform : 1;
+  uint32_t cloaked : 1;
+#else
+  uint32_t cloaked : 1;
+  uint32_t deform : 1;
+  uint32_t colored : 1;
+  uint32_t napalmed : 1;
+  uint32_t volume_lit : 1;
+  uint32_t volume_changing : 1;
+  uint32_t freeze : 1;
+  uint32_t line_attach : 1;
+  uint32_t specular : 1;
+  uint32_t fading_in : 1;
+  uint32_t fading_out : 1;
+  uint32_t liquid : 1;
+  uint32_t cloak_with_msg : 1;
+  uint32_t sparking : 1;
+  uint32_t bumpmapped : 1;
+  uint32_t negative_light : 1;
+  uint32_t virus_infected : 1;
+  uint32_t padding : 15;
+#endif
+};
+static_assert(sizeof(effect_flags_t) == sizeof(uint32_t));
+
 struct effect_info_s {
-  int32_t type_flags; // see EF_FLAGS above
+  effect_flags_t type_flags; // effect (EF_) flags
 
   float alpha;        // alpha value
   float deform_range; // how many units to deform when drawing
@@ -519,7 +648,7 @@ struct object {
   uint8_t type;       // what type of object this is... robot, weapon, hostage, powerup, fireball
   uint8_t dummy_type; // stored type of an OBJ_DUMMY
   uint16_t id;        // which form of object...which powerup, robot, etc.
-  uint32_t flags;
+  object_flags_t flags;
 
   std::string name; // the name of this object, or NULL
 

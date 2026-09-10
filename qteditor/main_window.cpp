@@ -39,6 +39,7 @@
 #include <QIcon>
 
 #include <algorithm>
+#include <bit>
 #include <cstring>
 
 #include "ui_mainwindow.h"
@@ -923,7 +924,7 @@ static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
     moveViewer(newpos, roomnum, &orient);
 
   if (outside_mine)
-    Viewer_object->flags |= OF_OUTSIDE_MINE;
+    Viewer_object->flags.outside_mine = true;
 
   Viewer_moved = true;
 }
@@ -1482,7 +1483,7 @@ static QByteArray serializeObject(const object &obj) {
   QDataStream out(&data, QIODevice::WriteOnly);
   out.setVersion(QDataStream::Qt_5_0);
 
-  out << quint8(obj.type) << quint8(obj.dummy_type) << quint16(obj.id) << quint32(obj.flags);
+  out << quint8(obj.type) << quint8(obj.dummy_type) << quint16(obj.id) << quint32(std::bit_cast<uint32_t>(obj.flags));
   out << QString::fromStdString(obj.name);
   out << qint32(obj.handle) << qint16(obj.next) << qint16(obj.prev);
   out << quint8(obj.control_type) << quint8(obj.movement_type) << quint8(obj.render_type)
@@ -1541,7 +1542,7 @@ static object deserializeObject(const QByteArray &data) {
   in >> b8; obj.type = b8;
   in >> b8; obj.dummy_type = b8;
   in >> u16; obj.id = u16;
-  in >> u32; obj.flags = u32;
+  in >> u32; obj.flags = std::bit_cast<object_flags_t>(u32);
   QString name;
   in >> name; obj.name = name.toStdString();
   in >> i32; obj.handle = i32;

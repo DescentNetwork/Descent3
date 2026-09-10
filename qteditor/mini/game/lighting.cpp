@@ -967,7 +967,7 @@ void ApplyVolumeLightToObject(vector3 *pos, object *obj, float light_dist, float
   // See if this specular light source is greater than our current one
   if ((light_dist - mag) > obj->effect_info->spec_mag && Detail_settings.Specular_lighting &&
       !(Object_info[obj->id].lighting_info.flags & OLF_NO_SPECULARITY)) {
-    obj->effect_info->type_flags |= EF_SPECULAR;
+    obj->effect_info->type_flags.specular = true;
     obj->effect_info->spec_mag = light_dist - mag;
     obj->effect_info->spec_pos = *pos;
     obj->effect_info->spec_r = red_scale;
@@ -975,7 +975,7 @@ void ApplyVolumeLightToObject(vector3 *pos, object *obj, float light_dist, float
     obj->effect_info->spec_b = blue_scale;
   }
 
-  if (obj->effect_info->type_flags & EF_VOLUME_LIT) {
+  if (obj->effect_info->type_flags.volume_lit) {
     obj->effect_info->dynamic_red = std::min<float>(1, obj->effect_info->dynamic_red + (scalar * red_scale));
     obj->effect_info->dynamic_green = std::min<float>(1, obj->effect_info->dynamic_green + (scalar * green_scale));
     obj->effect_info->dynamic_blue = std::min<float>(1, obj->effect_info->dynamic_blue + (scalar * blue_scale));
@@ -1006,7 +1006,7 @@ void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float r
     }
 
     if (obj->lm_object.used == 0) {
-      if (obj->effect_info && ((obj->effect_info->type_flags & EF_VOLUME_LIT) ||
+      if (obj->effect_info && ((obj->effect_info->type_flags.volume_lit) ||
                                obj->lighting_render_type == LRT_GOURAUD || obj->type == OBJ_POWERUP)) {
         ApplyVolumeLightToObject(pos, obj, light_dist, red_scale, green_scale, blue_scale, light_direction, dot_range);
         continue;
@@ -1371,7 +1371,7 @@ void ClearDynamicLightmaps() {
     if (obj->type == OBJ_NONE || obj->handle != Dynamic_volume_object_list[i].handle)
       continue; // object was destroyed this frame
 
-    obj->effect_info->type_flags &= ~EF_SPECULAR;
+    obj->effect_info->type_flags.specular = false;
     obj->effect_info->dynamic_this_frame = 0;
     obj->effect_info->dynamic_red = 0;
     obj->effect_info->dynamic_green = 0;

@@ -397,7 +397,7 @@ bool PolyCollideObject(object& obj) {
   View_position = obj.pos;
   View_matrix = obj.orient;
 
-  Q_ASSERT(obj.flags & OF_POLYGON_OBJECT);
+  Q_ASSERT(obj.flags.polygon_object);
 
 #ifndef NED_PHYSICS
   if (obj.type == OBJ_PLAYER || obj.type == OBJ_ROBOT || obj.type == OBJ_DEBRIS || obj.type == OBJ_DOOR ||

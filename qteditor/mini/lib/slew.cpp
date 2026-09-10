@@ -379,7 +379,7 @@ int SlewFrame(object *obj, int movement_limitations) {
     ret_flags |= SLEW_MOVE;
 
   if (ret_flags & SLEW_MOVE) { // Get the new room
-    bool outside_mine = ((obj->flags & OF_OUTSIDE_MINE) != 0);
+    bool outside_mine = obj->flags.outside_mine;
 
     LOG_DEBUG("SLEW: Moved");
 
@@ -469,7 +469,7 @@ int SlewFrame(object *obj, int movement_limitations) {
 
     // Set outside-mine flag if we're outside
     if (outside_mine)
-      obj->flags |= OF_OUTSIDE_MINE;
+      obj->flags.outside_mine = true;
   }
 
   // Set flag if rotation changed
