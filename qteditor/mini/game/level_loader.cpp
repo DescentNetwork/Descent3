@@ -24,6 +24,7 @@
 // subset of chunks the editor needs to RENDER and round-trip:
 //
 //   PATH  - game paths (named navigation-path table)
+//   NLMP  - room/terrain lightmaps (textures + lightmap-info records)
 //   TXNM  - skipped (no texture xlate table in the mini; raw indices survive)
 //   ROOM  - room geometry (verts, faces, portals), Comp face normals after
 //   RWND  - per-room wind vectors
@@ -52,6 +53,8 @@
 #include "findintersection.h"
 #include "gametexture.h"
 #include "gamepath.h"
+#include "lightmap.h"
+#include "lightmap_info.h"
 #include "string_helpers.h"
 #include "log.h"
 #include "d3x_op.h"
@@ -245,6 +248,220 @@ static void LL_WriteGamePathsChunk(posix_ostream &ofile) {
       ofile << nd.uvec;
     }
   }
+  LL_EndChunk(ofile, start);
+}
+
+// ---------------------------------------------------------------------------
+// Lightmaps (NLMP) chunk: the room/terrain lightmap table.  Two sections: a
+// list of unique raw lightmap textures (each RLE-compressed as uint16_t), then
+// the lightmap-info records that reference a texture by ordinal and carry the
+// mapping geometry (spacing, upper-left corner, normal).  Faces in the ROOM
+// and OBJS chunks reference the info *ordinals*; because the mini allocates
+// infos sequentially in file order, ordinals and store slots coincide, so
+// faces round-trip unchanged.
+
+// The engine emits whichever of raw/RLE is smaller: command bytes (0 = single
+// raw value, 2..250 = run of copies) each cost one command byte + a uint16_t.
+static int LL_CountCompressShort(const uint16_t *val, int total) {
+  int curptr = 0;
+  int written = 0;
+  while (curptr < total) {
+    const int count = [&] {
+      uint16_t curval = val[curptr];
+      int c = 1;
+      while ((curptr + c) < total && val[curptr + c] == curval && c < 250)
+        c++;
+      return c;
+    }();
+    written += 3;
+    curptr += count;
+  }
+  return written;
+}
+
+static void LL_WriteCompressShort(posix_ostream &ofile, const uint16_t *val, int total, bool compressed) {
+  if (!compressed) {
+    ofile.put(0); // NO_COMPRESS
+    for (int i = 0; i < total; i++)
+      ofile << val[i];
+    return;
+  }
+
+  ofile.put(1); // COMPRESS
+  int curptr = 0;
+  while (curptr < total) {
+    const uint16_t curval = val[curptr];
+    int count = 1;
+    while ((curptr + count) < total && val[curptr + count] == curval && count < 250)
+      count++;
+    if (count == 1) {
+      ofile.put(0);
+      ofile << curval;
+    } else {
+      ofile.put(static_cast<uint8_t>(count));
+      ofile << curval;
+    }
+    curptr += count;
+  }
+}
+
+static void LL_CheckToWriteCompressShort(posix_ostream &ofile, const uint16_t *vals, int total) {
+  if (total <= 0)
+    return;
+  if (LL_CountCompressShort(vals, total) >= total)
+    LL_WriteCompressShort(ofile, vals, total, false);
+  else
+    LL_WriteCompressShort(ofile, vals, total, true);
+}
+
+static void LL_ReadCompressedShortArray(posix_istream &ifile, uint16_t *vals, int total) {
+  uint8_t compressed = 0;
+  ifile >> compressed;
+  if (compressed == 0) {
+    for (int i = 0; i < total; i++)
+      ifile >> vals[i];
+    return;
+  }
+  int count = 0;
+  while (count != total) {
+    uint8_t command = 0;
+    ifile >> command;
+    if (command == 0) {
+      ifile >> vals[count];
+      count++;
+    } else if (command >= 2 && command <= 250) {
+      uint16_t value = 0;
+      ifile >> value;
+      for (int k = 0; k < command && count < total; k++) {
+        vals[count] = value;
+        count++;
+      }
+    } else {
+      break; // corrupt RLE stream
+    }
+  }
+}
+
+static void LL_ReadNewLightmapChunk(posix_istream &ifile, int version) {
+  Num_of_lightmap_info = 0;
+  int32_t nummaps = 0;
+  ifile >> nummaps;
+  if (nummaps < 0 || nummaps > static_cast<int32_t>(MAX_LIGHTMAPS))
+    nummaps = 0;
+  const int num_raw = nummaps;
+
+  // ordinal -> GameLightmaps handle for the raw-texture section.
+  std::vector<uint16_t> lightmap_remap(static_cast<size_t>(std::max(0, num_raw)));
+  for (int i = 0; i < num_raw; i++) {
+    int16_t map_w = 0, map_h = 0;
+    ifile >> map_w;
+    ifile >> map_h;
+    if (map_w < 2 || map_h < 2)
+      map_w = map_h = 2;
+    int lm_handle = lm_AllocLightmap(map_w, map_h);
+    if (lm_handle == BAD_LM_INDEX)
+      lm_handle = 0;
+    lightmap_remap[i] = static_cast<uint16_t>(lm_handle);
+    LL_ReadCompressedShortArray(ifile, lm_data(lm_handle), map_w * map_h);
+  }
+
+  int32_t ninfos = 0;
+  ifile >> ninfos;
+  if (ninfos < 0 || ninfos > static_cast<int32_t>(MAX_LIGHTMAP_INFOS))
+    ninfos = 0;
+  Num_lightmap_infos_read = ninfos;
+
+  for (int i = 0; i < ninfos; i++) {
+    int16_t remap_handle = 0, w = 0, h = 0;
+    ifile >> remap_handle;
+    ifile >> w;
+    ifile >> h;
+    uint8_t type = 0;
+    ifile >> type;
+
+    int lmi = AllocLightmapInfo(w, h, type, false);
+    if (lmi == BAD_LMI_INDEX)
+      continue;
+    const size_t remap_idx = (remap_handle >= 0 && remap_handle < (int32_t)num_raw)
+                                 ? static_cast<size_t>(remap_handle)
+                                 : 0;
+    LightmapInfo[lmi].lm_handle = lightmap_remap[remap_idx];
+
+    if (version >= 91) {
+      int16_t x1 = 0, y1 = 0;
+      ifile >> x1;
+      ifile >> y1;
+      LightmapInfo[lmi].x1 = static_cast<uint8_t>(x1);
+      LightmapInfo[lmi].y1 = static_cast<uint8_t>(y1);
+    }
+
+    uint8_t xspacing = 0, yspacing = 0;
+    ifile >> xspacing;
+    ifile >> yspacing;
+    LightmapInfo[lmi].xspacing = xspacing;
+    LightmapInfo[lmi].yspacing = yspacing;
+    ifile >> LightmapInfo[lmi].upper_left;
+    ifile >> LightmapInfo[lmi].normal;
+  }
+}
+
+static void LL_WriteLightmapChunk(posix_ostream &ofile) {
+  // Build the lm_handle -> ordinal remap and count infos, exactly as the
+  // engine's WriteLightmapChunk does (dynamic infos are excluded).
+  const int MAXLMS = MAX_LIGHTMAPS;
+  const int MAXINFOS = MAX_LIGHTMAP_INFOS;
+  std::vector<uint16_t> lightmap_remap(MAXLMS, 0);
+  std::vector<uint8_t> lightmap_spoken_for(MAXLMS, 0);
+  int lightmap_count = 0;
+  int lightmap_info_count = 0;
+
+  for (int i = 0; i < MAXINFOS; i++) {
+    if (LightmapInfo[i].used && LightmapInfo[i].type != LMI_DYNAMIC) {
+      const uint16_t lm_handle = LightmapInfo[i].lm_handle;
+      if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
+        lightmap_spoken_for[lm_handle] = 1;
+        lightmap_remap[lm_handle] = static_cast<uint16_t>(lightmap_count);
+        lightmap_count++;
+      }
+      lightmap_info_count++;
+    }
+  }
+  std::fill(lightmap_spoken_for.begin(), lightmap_spoken_for.end(), 0);
+
+  int start = LL_StartChunk(ofile, "NLMP");
+
+  ofile << (int32_t)lightmap_count;
+  for (int i = 0; i < MAXINFOS; i++) {
+    if (LightmapInfo[i].used && LightmapInfo[i].type != LMI_DYNAMIC) {
+      const uint16_t lm_handle = LightmapInfo[i].lm_handle;
+      if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
+        lightmap_spoken_for[lm_handle] = 1;
+        const int map_w = lm_w(lm_handle);
+        const int map_h = lm_h(lm_handle);
+        ofile << (int16_t)map_w;
+        ofile << (int16_t)map_h;
+        LL_CheckToWriteCompressShort(ofile, lm_data(lm_handle), map_w * map_h);
+      }
+    }
+  }
+
+  ofile << (int32_t)lightmap_info_count;
+  for (int i = 0; i < MAXINFOS; i++) {
+    if (LightmapInfo[i].used && LightmapInfo[i].type != LMI_DYNAMIC) {
+      const lightmap_info &info = LightmapInfo[i];
+      ofile << (int16_t)lightmap_remap[info.lm_handle];
+      ofile << (int16_t)lmi_w(i);
+      ofile << (int16_t)lmi_h(i);
+      ofile << info.type;
+      ofile << (int16_t)info.x1;
+      ofile << (int16_t)info.y1;
+      ofile << info.xspacing;
+      ofile << info.yspacing;
+      ofile << info.upper_left;
+      ofile << info.normal;
+    }
+  }
+
   LL_EndChunk(ofile, start);
 }
 
@@ -630,6 +847,14 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
   // the chunk loop, so paths from a previous level can't leak into this one).
   InitGamePaths();
 
+  // Reset the lightmap state: the NLMP chunk (and any app-side allocations)
+  // must start from an empty table.  lm_InitLightmaps() also (re)builds the
+  // free list if this is the first use.
+  lm_ShutdownLightmaps();
+  lm_InitLightmaps();
+  InitLightmapInfo();
+  Num_lightmap_infos_read = 0;
+
   const size_t filelen = ifile.size();
 
   try {
@@ -665,6 +890,8 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
 
       if (IsChunk(chunk_name, "PATH")) {
         LL_ReadGamePathsChunk(ifile, version);
+      } else if (IsChunk(chunk_name, "NLMP")) {
+        LL_ReadNewLightmapChunk(ifile, version);
       } else if (IsChunk(chunk_name, "ROOM")) {
         int32_t num = 0;
         ifile >> num;
@@ -806,6 +1033,10 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     // PATH: the engine writes the game-path table first, before any other
     // geometry chunk.
     LL_WriteGamePathsChunk(out);
+
+    // NLMP: room/terrain lightmaps (engine order: after terrain sounds, before
+    // the texture list).
+    LL_WriteLightmapChunk(out);
 
     // TXNM: no texture names; write an empty list.
     {

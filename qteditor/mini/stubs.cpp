@@ -193,7 +193,6 @@ std::filesystem::path LocalScriptDir;
 
 // ==================== Game data arrays ====================
 bms_bitmap GameBitmaps[MAX_BITMAPS];
-bms_lightmap GameLightmaps[MAX_LIGHTMAPS];
 texture GameTextures[MAX_TEXTURES];
 //vclip GameVClips[MAX_VCLIPS];
 //poly_model Poly_models[500];
@@ -210,23 +209,11 @@ sound_info Sounds[MAX_SOUNDS] = {};
 sound_file_info SoundFiles[MAX_SOUND_FILES] = {};
 
 // ==================== Lighting ====================
-lightmap_info LightmapInfoStore[MAX_LIGHTMAP_INFOS] = {};
-lightmap_info *LightmapInfo = LightmapInfoStore;
-int Num_of_lightmap_info = 0;
-int Num_lightmap_infos_read = 0;
 void FreeLightmapMemory() { PRINT_STUB(__FUNCTION__); }
-void FreeLightmapInfo(int handle) { PRINT_STUB(__FUNCTION__); }
 void ClearAllObjectLightmaps(int n) { PRINT_STUB(__FUNCTION__); }
 void BlurLightmapInfos(int n) { PRINT_STUB(__FUNCTION__); }
 void ShadeLightmapInfoEdges(int n) { PRINT_STUB(__FUNCTION__); }
 void EnableLightmapGen() { PRINT_STUB(__FUNCTION__); }
-int lm_AllocLightmap(int w, int h) { PRINT_STUB(__FUNCTION__); return -1; }
-void lm_FreeLightmap(int n) { PRINT_STUB(__FUNCTION__); }
-uint16_t *lm_data(int handle) { PRINT_STUB(__FUNCTION__); return nullptr; }
-int lm_w(int n) { PRINT_STUB(__FUNCTION__); return 0; }
-int lm_h(int n) { PRINT_STUB(__FUNCTION__); return 0; }
-int lmi_h(int n) { PRINT_STUB(__FUNCTION__); return 0; }
-int lmi_w(int n) { PRINT_STUB(__FUNCTION__); return 0; }
 void SetupObjectLightmapMemory(object *obj) { PRINT_STUB(__FUNCTION__); }
 //void ClearAllVolumeLights() { PRINT_STUB(__FUNCTION__); }
 
@@ -383,7 +370,6 @@ int AllocTexture() {  PRINT_STUB(__FUNCTION__); return -1; }
 void FreeTexture(int n) { PRINT_STUB(__FUNCTION__); }
 int AllocWeapon() { PRINT_STUB(__FUNCTION__); return -1; }
 void FreeWeapon(int n) { PRINT_STUB(__FUNCTION__); }
-int AllocLightmapInfo(int a, int b, int c, bool d) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== GetNext/Prev ====================
 //int GetNextDoor(int n) { PRINT_STUB(__FUNCTION__); return -1; }

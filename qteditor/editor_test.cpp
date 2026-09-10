@@ -208,6 +208,8 @@ bool EBNode_VerifyGraph();
 #include "worldobjectslight_dialog.h"
 #include "level_ops.h"
 #include "level_loader.h"
+#include "lightmap.h"
+#include "lightmap_info.h"
 #include "d3edit.h"
 
 static constexpr double kPi = 3.14159265358979323846;
@@ -950,6 +952,101 @@ private slots:
     const QByteArray bb = b.readAll();
     QCOMPARE(bb.size(), ba.size());
     QVERIFY2(ba == bb, "game-path save/load round trip is not byte-stable");
+
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QDir::current().rmdir(tmp);
+
+    // Clean teardown.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    InitGamePaths();
+  }
+  // The NLMP chunk holds the level's raw lightmap textures (RLE-compressed
+  // uint16_t) plus the lightmap-info records that reference a texture by
+  // ordinal and carry the mapping geometry (spacing, corner, normal).  Faces in
+  // the ROOM/OBJS chunks reference the info ordinals, so a faithful round-trip
+  // of the lightmap table is required for the level as a whole to save
+  // byte-stably.  Load a real level's large lightmap table, sanity-check the
+  // decoded textures, then prove save -> reload -> save is byte-identical.
+  void testLightmapRoundTrip()
+  {
+    const std::filesystem::path lvl = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    if (!std::filesystem::exists(lvl)) {
+      QSKIP("level1.d3l not found; skipping lightmap test.");
+      return;
+    }
+
+    QVERIFY2(LoadLevel(lvl, nullptr), "LoadLevel(level1.d3l) failed");
+
+    // level1.d3l carries 49 raw lightmap textures referenced by a large info
+    // table; the reload-sensitive counters must reflect the parsed chunk.
+    QVERIFY2(Num_lightmap_infos_read > 0, "level1.d3l should carry a lightmap table");
+    int usedInfos = 0;
+    for (int i = 0; i < Num_of_lightmap_info; i++)
+      if (LightmapInfo[i].used)
+        usedInfos++;
+    QCOMPARE(Num_lightmap_infos_read, usedInfos);
+    QVERIFY(Num_of_lightmap_info <= MAX_LIGHTMAP_INFOS);
+
+    // Every info references a used raw texture whose decoded pixels are
+    // non-degenerate (catches a reader/writer that truncates the RLE stream to
+    // the wrong value count).
+    int nonTrivial = 0;
+    for (int i = 0; i < Num_of_lightmap_info; i++) {
+      if (!LightmapInfo[i].used)
+        continue;
+      const int lm_handle = LightmapInfo[i].lm_handle;
+      QVERIFY(lm_handle >= 0 && lm_handle < MAX_LIGHTMAPS);
+      QVERIFY(GameLightmaps[lm_handle].used > 0);
+      const int w = lm_w(lm_handle);
+      const int h = lm_h(lm_handle);
+      QVERIFY(w > 1 && h > 1);
+      const uint16_t *data = lm_data(lm_handle);
+      QVERIFY(data != nullptr);
+      if (data[0] != 0 || data[w * (h - 1)] != 0)
+        nonTrivial++;
+    }
+    QVERIFY2(nonTrivial > 0, "decoded lightmaps are uniformly zero");
+
+    // Save -> reload -> save must reproduce byte-identical output.
+    const QString tmp = QDir::tempPath() + "/_test_lm_roundtrip";
+    QDir::current().mkpath(tmp);
+    const QString f1 = tmp + "/lm1.d3l";
+    const QString f2 = tmp + "/lm2.d3l";
+    QFile::remove(f1);
+    QFile::remove(f2);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
+
+    // Simulate a fresh level before loading the first save back.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    InitGamePaths();
+
+    QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
+    QVERIFY2(Num_lightmap_infos_read > 0, "reloaded lightmap table is empty");
+    QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
+
+    QFile a(f1), b(f2);
+    QVERIFY(a.open(QIODevice::ReadOnly));
+    QVERIFY(b.open(QIODevice::ReadOnly));
+    const QByteArray ba = a.readAll();
+    const QByteArray bb = b.readAll();
+    QCOMPARE(bb.size(), ba.size());
+    QVERIFY2(ba == bb, "lightmap save/load round trip is not byte-stable");
 
     QFile::remove(f1);
     QFile::remove(f2);
