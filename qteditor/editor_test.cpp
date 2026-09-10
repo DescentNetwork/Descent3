@@ -700,8 +700,20 @@ private slots:
       f.write(reinterpret_cast<const char *>(&vnew), 4);
     }
 
-    QVERIFY_THROW(LoadLevel(std::filesystem::path(oldf.toStdString()), nullptr), std::runtime_error);
-    QVERIFY_THROW(LoadLevel(std::filesystem::path(newf.toStdString()), nullptr), std::runtime_error);
+    // QVERIFY_THROW does not exist in Qt5, so assert the throws manually.
+    bool threwOld = false, threwNew = false;
+    try {
+      LoadLevel(std::filesystem::path(oldf.toStdString()), nullptr);
+    } catch (const std::runtime_error &) {
+      threwOld = true;
+    }
+    try {
+      LoadLevel(std::filesystem::path(newf.toStdString()), nullptr);
+    } catch (const std::runtime_error &) {
+      threwNew = true;
+    }
+    QVERIFY2(threwOld, "LoadLevel did not throw for legacy (v26) file");
+    QVERIFY2(threwNew, "LoadLevel did not throw for future (v9999) file");
 
     QFile::remove(oldf);
     QFile::remove(newf);
@@ -1614,7 +1626,7 @@ private slots:
     Curportal = 42;
     Num_triggers = 7;
     Current_trigger = 9;
-    app.view_mode = 2;
+    app.view_mode = state::viewer::room;
     Editor_viewer_id = 5;
     New_mine = false;
     World_changed = true;
@@ -1679,7 +1691,7 @@ private slots:
     Highest_room_index = 0;
 
     // A saved viewer at a known pose inside room 0.
-    const vector3 savedstate::viewer::mine2, 3};
+    const vector3 savedPos{1, 2, 3};
     const int viewerSlot = 0;
     Objects[viewerSlot].type = OBJ_VIEWER;
     Objects[viewerSlot].id = 4;
@@ -1777,11 +1789,11 @@ private slots:
       }
       break;
     }
-    QVERstate::viewer::mineoolbar != nullptr);
+    QVERIFY(a_toolbar != nullptr);
     QVERIFY(a_showobjs != nullptr);
     QVERIFY(a_mine != nullptr);
     QVERIFY(a_terrain != nullptr);
-    QVERIFY(a_room != nstate::viewer::mine;
+    QVERIFY(a_room != nullptr);
 
     // ID_VIEW_TOOLBAR flips the main toolbar. Start visible, toggle, expect
     // hidden, toggle again, expect visible.
@@ -1808,13 +1820,13 @@ private slots:
     // View-mode handlers update both app.view_mode and the status bar.
     a_mine->trigger();
     QCoreApplication::processEvents();
-    QCOMPARE(app.view_mode, int(state::viewer::mine));
+    QCOMPARE(app.view_mode, state::viewer::mine);
     a_terrain->trigger();
     QCoreApplication::processEvents();
-    QCOMPARE(app.view_mode, int(state::viewer::terrain));
+    QCOMPARE(app.view_mode, state::viewer::terrain);
     a_room->trigger();
     QCoreApplication::processEvents();
-    QCOMPARE(app.view_mode, int(state::viewer::room));
+    QCOMPARE(app.view_mode, state::viewer::room);
     app.view_mode = state::viewer::mine;
   }
 
@@ -2837,18 +2849,20 @@ private slots:
   }
 
   // Regression test for the File>Open camera path: the mine must render right
-  // after loading with the GUI viewport (no auto-fit).  testdata/level1.d3l
-  // ships an OBJ_VIEWER whose orientation matrix is all zeros; following such
-  // a degenerate viewer as the camera gives a zero forward vector so every
-  // world point projects behind the eye and the view stays blank.  updateCamera
-  // must instead fall back to the orbit camera (Mine_origin target, +Z fwd).
+  // after loading with the GUI viewport (no auto-fit).  If the active editor
+  // camera carries a degenerate (all-zero) orientation matrix, following it as
+  // the camera gives a zero forward vector so every world point projects behind
+  // the eye and the view stays blank.  updateCamera must instead fall back to
+  // the orbit camera (Mine_origin target, +Z fwd).  The degenerate pose is
+  // forced here on the bound viewer so the fallback is exercised regardless of
+  // what orientation the loaded level file ships.
   void testOpenPathFallsBackFromDegenerateViewer() {
     const QString level = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
     QVERIFY2(EditorLoadLevel(std::filesystem::path(level.toStdString())), "EditorLoadLevel failed");
     QVERIFY(Viewer_object != nullptr);
-    // level1.d3l's saved viewer carries a zero orientation matrix.
-    QVERIFY(Viewer_object->orient.fvec.x() == 0.0f && Viewer_object->orient.fvec.y() == 0.0f &&
-            Viewer_object->orient.fvec.z() == 0.0f);
+    Viewer_object->orient.rvec = vector3{};
+    Viewer_object->orient.uvec = vector3{};
+    Viewer_object->orient.fvec = vector3{};
 
     EditorView view;
     view.resize(640, 480);
@@ -3041,7 +3055,7 @@ private slots:
 
     // Pick at the projected centroid of the nearest face.
     QVERIFY2(bestRoom >= 0, "no face projected in front of the camera");
-    pickX = qBound(0.0fstate::viewer::mine, static_cast<float>(view.width() - 1));
+    pickX = qBound(0.0f, pickX, static_cast<float>(view.width() - 1));
     pickY = qBound(0.0f, pickY, static_cast<float>(view.height() - 1));
     EditorView::PickResult pick = view.pickAt(static_cast<int>(pickX), static_cast<int>(pickY));
     qInfo() << "picking near face r=" << bestRoom << "f=" << bestFace << " at (" << pickX << "," << pickY
@@ -3120,7 +3134,7 @@ private slots:
     for (int i = 0; i < 20 && view.frameCount() < 1; i++)
       QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     QCoreApplication::processEvents();
-    QVERIFY(view.frameCstate::viewer::mine>= 1);
+    QVERIFY(view.frameCount() >= 1);
 
     // Screen centre maps into both faces; the foreground angled face (room 0)
     // must win even though its average vertex depth is larger.
@@ -3440,7 +3454,7 @@ private slots:
   // changes rad but not dist/target.
   void testMoveWorldZoomAndRadius() {
     PickFixture fix;
-  state::viewer::mineetup();
+    fix.setup();
     fix.view.resetCamera();
     const EditorView::WireframeViewState base = fix.view.activeWireframeView();
 
@@ -4388,7 +4402,7 @@ private slots:
     QCoreApplication::processEvents();
     QVERIFY2(view.frameCount() >= 1, "view never painted");
 
-    float screenX = 0.state::viewer::mineeenY = 0.0f, depth = 0.0f;
+    float screenX = 0.0f, screenY = 0.0f, depth = 0.0f;
     QVERIFY2(view.projectWorldToScreen(Objects[0].pos, &screenX, &screenY, &depth),
              "object not projectable");
     const int px = qBound(0, static_cast<int>(screenX), view.width() - 1);

@@ -209,7 +209,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
     // engine on-disk format for version >= 127.  Reject anything older (or
     // newer than we can write) instead of mis-parsing a legacy layout.
     if (version > LEVEL_FILE_VERSION || version < 127) {
-      ifile.close();
+      // Let the catch block below close the (still-open) stream once.
       throw std::runtime_error(
           std::string("Unsupported level file version ") + std::to_string(version) +
           " (expected between 127 and " + std::to_string(LEVEL_FILE_VERSION) + ")");
@@ -278,8 +278,8 @@ int handle = handle32;
 
           int roomnum = obj->roomnum;
           LOG_DEBUG("OBJS[%d]: type=%d id=%d name='%s' flags=%u room=%d pos=(%f,%f,%f)",
-                    objnum, (int)obj->type, (int)obj->id, obj->name.c_str(), (unsigned)obj->flags, roomnum,
-                    (double)obj->pos.x(), (double)obj->pos.y(), (double)obj->pos.z());
+                    objnum, (int)obj->type, (int)obj->id, obj->name.c_str(), std::bit_cast<uint32_t>(obj->flags),
+                    roomnum, (double)obj->pos.x(), (double)obj->pos.y(), (double)obj->pos.z());
           // Give the object a usable handle and link it into the mine, exactly
           // as the original LL_ReadObjects does (object.cpp / LoadLevel.cpp).
           obj->handle = (version >= 45) ? handle : (objnum + HANDLE_COUNT_INCREMENT);
