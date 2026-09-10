@@ -319,7 +319,6 @@ const std::vector<std::filesystem::path> Default_read_only_base_directories;
 // the same in initD3Core via loadGameDataTable() (the data dir must be
 // resolved there first); this hook preserves the original two-phase shape.
 void InitD3Systems2(bool /*editor*/) { PRINT_STUB(__FUNCTION__); }
-void InitGamePaths() { PRINT_STUB(__FUNCTION__); }
 void ProgramVersion(int a, unsigned char b, unsigned char c, unsigned char d) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Application ====================

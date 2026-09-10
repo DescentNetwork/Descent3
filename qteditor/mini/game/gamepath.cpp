@@ -34,3 +34,26 @@ void FreeGamePath(int n) {
   GamePaths[n].used = 0;
   Num_game_paths--;
 }
+
+// Clears every path slot.  Ported from the engine's InitGamePaths: a fresh
+// level (or one whose PATH chunk references a subset of slots) must start from
+// an empty table, otherwise stale paths leak across loads.
+void InitGamePaths() {
+  static bool f_game_paths_init = false;
+
+  if (f_game_paths_init) {
+    // Clear out the current path info
+    for (int i = 0; i < MAX_GAME_PATHS; i++) {
+      FreeGamePath(i);
+    }
+  }
+
+  f_game_paths_init = true;
+
+  for (int i = 0; i < MAX_GAME_PATHS; i++) {
+    GamePaths[i].num_nodes = 0;
+    GamePaths[i].used = 0;
+  }
+
+  Num_game_paths = 0;
+}

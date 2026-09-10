@@ -52,6 +52,10 @@ int16_t Terrain_seg_render_objs[TERRAIN_WIDTH * TERRAIN_DEPTH];
 // Our lighting maps for the terrain, one for each quadrant (starting at lower left)
 int TerrainLightmaps[4];
 
+// Only InitTerrain() allocates the lightmap slots; the Qt editor never runs it,
+// so UpdateTerrainLightmaps() (and friends) must no-op until they exist.
+static bool terrain_lightmaps_created = false;
+
 // A list of terrain to render
 terrain_render_info Terrain_list[MAX_CELLS_TO_RENDER];
 
@@ -988,6 +992,7 @@ void InitTerrain(void) {
     Q_ASSERT(TerrainLightmaps[i] != BAD_LM_INDEX);
     GameLightmaps[TerrainLightmaps[i]].flags |= LF_WRAP;
   }
+  terrain_lightmaps_created = true;
 
   for (i = 0; i < MAX_TERRAIN_LOD; i++) {
     int simplemul = 1 << ((MAX_TERRAIN_LOD - 1) - i);
@@ -1042,6 +1047,11 @@ void UpdateSingleTerrainLightmap(int which) {
 // Generates lightmaps based on the info given by the .light field of each Terrain_seg
 void UpdateTerrainLightmaps() {
   int i, t;
+
+  // The lightmap slots are only allocated by InitTerrain(); without them
+  // (the Qt editor never runs InitTerrain) there is nowhere to draw.
+  if (!terrain_lightmaps_created)
+    return;
 
   // First make the wraparounds work right
 

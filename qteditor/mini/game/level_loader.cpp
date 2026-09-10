@@ -23,6 +23,7 @@
 // here are faithful, chunk-based ports of the engine's LoadLevel.cpp for the
 // subset of chunks the editor needs to RENDER and round-trip:
 //
+//   PATH  - game paths (named navigation-path table)
 //   TXNM  - skipped (no texture xlate table in the mini; raw indices survive)
 //   ROOM  - room geometry (verts, faces, portals), Comp face normals after
 //   RWND  - per-room wind vectors
@@ -50,6 +51,7 @@
 #include "terrain.h"
 #include "findintersection.h"
 #include "gametexture.h"
+#include "gamepath.h"
 #include "string_helpers.h"
 #include "log.h"
 #include "d3x_op.h"
@@ -172,6 +174,78 @@ static void LL_WriteInfo(posix_ostream &ofile) {
   v = (int)FVI_always_check_ceiling;
   ofile << v;
   ofile << Ceiling_height;
+}
+
+// ---------------------------------------------------------------------------
+// Game paths (PATH) chunk: the level's named navigation-path table.
+static void LL_ReadGamePathsChunk(posix_istream &ifile, int version) {
+  int16_t np = 0;
+  ifile >> np;
+  Num_game_paths = np;
+  if (Num_game_paths < 0 || Num_game_paths > MAX_GAME_PATHS) {
+    // Corrupt count: bail out before indexing GamePaths[] out of range; the
+    // chunk framer then skips the remaining body bytes.
+    Num_game_paths = 0;
+    return;
+  }
+
+  for (int i = 0; i < Num_game_paths; i++) {
+    game_path &p = GamePaths[i];
+    // Value-initialise (NOT memset: game_path contains std::string members).
+    p = game_path{};
+    p.used = true;
+
+    // Null-terminated path name, then the node count and path flags.
+    ifile >> p.name;
+    int32_t nnodes = 0;
+    ifile >> nnodes;
+    p.num_nodes = std::max(0, std::min<int>((int)nnodes, MAX_NODES_PER_PATH));
+    ifile >> p.flags;
+
+    p.pathnodes.resize(p.num_nodes);
+    for (int j = 0; j < p.num_nodes; j++) {
+      node &nd = p.pathnodes[j];
+      ifile >> nd.pos;
+      ifile >> nd.roomnum;
+      ifile >> nd.flags;
+      if (version >= 51) {
+        ifile >> nd.fvec;
+        ifile >> nd.uvec;
+      } else {
+        nd.fvec = vector3::id(2);
+        nd.uvec = vector3::id(1);
+      }
+    }
+  }
+}
+
+static void LL_WriteGamePathsChunk(posix_ostream &ofile) {
+  int npaths = 0;
+  for (int i = 0; i < MAX_GAME_PATHS; i++)
+    if (GamePaths[i].used)
+      npaths++;
+
+  int start = LL_StartChunk(ofile, "PATH");
+  ofile << (int16_t)npaths;
+  for (int i = 0; i < MAX_GAME_PATHS; i++) {
+    const game_path &p = GamePaths[i];
+    if (!p.used)
+      continue;
+
+    ofile << p.name;
+    ofile << (int32_t)p.num_nodes;
+    ofile << p.flags;
+
+    for (int j = 0; j < p.num_nodes; j++) {
+      const node &nd = p.pathnodes[j];
+      ofile << nd.pos;
+      ofile << nd.roomnum;
+      ofile << nd.flags;
+      ofile << nd.fvec;
+      ofile << nd.uvec;
+    }
+  }
+  LL_EndChunk(ofile, start);
 }
 
 // ---------------------------------------------------------------------------
@@ -391,7 +465,11 @@ static void LL_ReadTerrainTmapFlagChunk(posix_istream &ifile, int) {
 // Reads the TERR container: sub-chunks until the TEND terminator, then
 // regenerates derived data (AABB, normals, lightmaps).
 static void LL_ReadTerrainChunks(posix_istream &ifile, int version) {
-  ResetTerrain();
+  // Force-reset so the min/max quadtree + LOD delta arrays are sized: the
+  // mini never runs InitTerrain(), and the height/light sub-chunk readers and
+  // BuildMinMaxTerrain() below write through them.  The height chunk re-fills
+  // the ypos values that the force path zeroes.
+  ResetTerrain(1);
 
   while (true) {
     char chunk_name[4];
@@ -548,6 +626,10 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
   ResetObjectList();
   Num_triggers = 0;
 
+  // Reset the game-path table (engine LoadLevel calls InitGamePaths() before
+  // the chunk loop, so paths from a previous level can't leak into this one).
+  InitGamePaths();
+
   const size_t filelen = ifile.size();
 
   try {
@@ -581,7 +663,9 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
       ifile >> chunk_size32;
       int chunk_size = chunk_size32;
 
-      if (IsChunk(chunk_name, "ROOM")) {
+      if (IsChunk(chunk_name, "PATH")) {
+        LL_ReadGamePathsChunk(ifile, version);
+      } else if (IsChunk(chunk_name, "ROOM")) {
         int32_t num = 0;
         ifile >> num;
         int num_rooms = num;
@@ -718,6 +802,10 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     out.write("D3LV", 4);
     int32_t ver = LEVEL_FILE_VERSION;
     out << ver;
+
+    // PATH: the engine writes the game-path table first, before any other
+    // geometry chunk.
+    LL_WriteGamePathsChunk(out);
 
     // TXNM: no texture names; write an empty list.
     {

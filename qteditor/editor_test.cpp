@@ -782,7 +782,190 @@ private slots:
     errno = 0;
   }
 
-  // CAddScriptDialog (IDD_ADDSCRIPT) gates the name length at 32 chars via
+  // The TERR chunk (heights, texmap/flag table and sky/lighting) is read
+  // through RLE-decompressed arrays and then regenerates normals/min-max/LOD
+  // data, exactly like the engine's ReadTerrainChunks.  Load a real level's
+  // terrain, sanity-check the fields, then prove a save of it round-trips to a
+  // byte-identical second save.
+  void testTerrainLoadAndSaveRoundTrip()
+  {
+    const std::filesystem::path lvl = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    if (!std::filesystem::exists(lvl)) {
+      QSKIP("level1.d3l not found; skipping terrain test.");
+      return;
+    }
+
+    QVERIFY2(LoadLevel(lvl, nullptr), "LoadLevel(level1.d3l) failed");
+
+    // A loaded level's terrain is not a flat zero-field: the height chunk must
+    // have reached Terrain_seg[].ypos.
+    int minh = 255, maxh = 0;
+    constexpr int total = TERRAIN_DEPTH * TERRAIN_WIDTH;
+    for (int i = 0; i < total; i++) {
+      const int h = Terrain_seg[i].ypos;
+      if (h < minh) minh = h;
+      if (h > maxh) maxh = h;
+    }
+    QVERIFY2(maxh > minh, "terrain height field is flat after load");
+
+    // y is the floating-point mirror of ypos (BuildMinMaxTerrain() recomputes
+    // it); make sure the load pipeline ran it.
+    QCOMPARE(Terrain_seg[0].y, Terrain_seg[0].ypos * TERRAIN_HEIGHT_INCREMENT);
+
+    // Sky/lighting and occlusion came out of their sub-chunks.
+    QVERIFY(std::isfinite(Terrain_sky.fog_scalar));
+    QVERIFY(Terrain_sky.num_satellites <= MAX_SATELLITES);
+    QVERIFY(Terrain_seg[123].l != 0 || Terrain_seg[123].r != 0 || Terrain_seg[123].g != 0 ||
+            Terrain_seg[123].b != 0);
+
+    // Save -> reload -> save must reproduce byte-identical terrain (and all
+    // other chunks).  Compare the second and third passes, which run against
+    // an already-normalized in-memory model.
+    const QString tmp = QDir::tempPath() + "/_test_terrain_roundtrip";
+    QDir::current().mkpath(tmp);
+    const QString f1 = tmp + "/terrain1.d3l";
+    const QString f2 = tmp + "/terrain2.d3l";
+    QFile::remove(f1);
+    QFile::remove(f2);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
+
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+
+    QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
+    QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
+
+    QFile a(f1), b(f2);
+    QVERIFY(a.open(QIODevice::ReadOnly));
+    QVERIFY(b.open(QIODevice::ReadOnly));
+    const QByteArray ba = a.readAll();
+    const QByteArray bb = b.readAll();
+    QCOMPARE(bb.size(), ba.size());
+    if (ba != bb) {
+      const int n = std::min(ba.size(), bb.size());
+      int first = -1;
+      for (int i = 0; i < n; i++)
+        if (ba[i] != bb[i]) { first = i; break; }
+      fprintf(stderr, "TERRAIN first diff at %d (pass1=%02x pass2=%02x) sizes %d/%d\n", first,
+              first >= 0 ? (uint8_t)ba[first] : 0, first >= 0 ? (uint8_t)bb[first] : 0, int(ba.size()), int(bb.size()));
+    }
+    QVERIFY2(ba == bb, "terrain save/load round trip is not byte-stable");
+
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QDir::current().rmdir(tmp);
+
+    // Clean teardown.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+  }
+
+  // The PATH chunk carries the level's navigation-path table.  The engine
+  // writes it as the first chunk: int16 count, then per used path a
+  // null-terminated name, int32 node count, uint8 flags, then per node
+  // pos/roomnum/flags/fvec/uvec.  level1.d3l carries four paths whose first
+  // node album starts with "PlayerEndPath".
+  void testGamePathRoundTrip()
+  {
+    const std::filesystem::path lvl = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    if (!std::filesystem::exists(lvl)) {
+      QSKIP("level1.d3l not found; skipping game-path test.");
+      return;
+    }
+
+    // A real reset (InitGamePaths): the loader must not leak a previous
+    // level's path table.
+    InitGamePaths();
+    QCOMPARE(Num_game_paths, 0);
+
+    QVERIFY2(LoadLevel(lvl, nullptr), "LoadLevel(level1.d3l) failed");
+
+    QVERIFY2(Num_game_paths > 0, "level1.d3l should carry a game-path table");
+    QVERIFY(Num_game_paths <= MAX_GAME_PATHS);
+
+    const game_path &first = GamePaths[0];
+    QVERIFY(first.used);
+    QCOMPARE(first.name, std::string("PlayerEndPath"));
+    QVERIFY(first.num_nodes > 0 && first.num_nodes <= MAX_NODES_PER_PATH);
+    QCOMPARE(int(first.pathnodes.size()), first.num_nodes);
+    QCOMPARE(int(first.flags), 0);
+
+    for (int i = 0; i < Num_game_paths; i++) {
+      const game_path &p = GamePaths[i];
+      QVERIFY(p.used);
+      QVERIFY(p.num_nodes >= 0 && p.num_nodes <= MAX_NODES_PER_PATH);
+      QCOMPARE(int(p.pathnodes.size()), p.num_nodes);
+      if (p.num_nodes > 0)
+        QVERIFY(std::isfinite(p.pathnodes[0].pos.x()) && std::isfinite(p.pathnodes[0].pos.y()) &&
+                std::isfinite(p.pathnodes[0].pos.z()));
+    }
+    QVERIFY(first.pathnodes[0].roomnum != 0);
+
+    // Save -> reload -> save is byte-stable with the path table included
+    // (the full second save also exercises TXNM/ROOM/TERR/OBJS/TRIG/INFO).
+    const QString tmp = QDir::tempPath() + "/_test_gp_roundtrip";
+    QDir::current().mkpath(tmp);
+    const QString f1 = tmp + "/gp1.d3l";
+    const QString f2 = tmp + "/gp2.d3l";
+    QFile::remove(f1);
+    QFile::remove(f2);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
+
+    // Simulate a fresh level (also resets the path table) before loading back.
+    InitGamePaths();
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+
+    QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
+    QVERIFY2(Num_game_paths > 0, "reloaded game-path table is empty");
+    QCOMPARE(GamePaths[0].name, std::string("PlayerEndPath"));
+    QCOMPARE(GamePaths[0].num_nodes, first.num_nodes);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
+
+    QFile a(f1), b(f2);
+    QVERIFY(a.open(QIODevice::ReadOnly));
+    QVERIFY(b.open(QIODevice::ReadOnly));
+    const QByteArray ba = a.readAll();
+    const QByteArray bb = b.readAll();
+    QCOMPARE(bb.size(), ba.size());
+    QVERIFY2(ba == bb, "game-path save/load round trip is not byte-stable");
+
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QDir::current().rmdir(tmp);
+
+    // Clean teardown.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    InitGamePaths();
+  }
   // DDV_MaxChars in Win32 and via setMaxLength on the Qt line edit here. It
   // also always-defaults IDC_TYPESEL to "object" before "trigger". This test
   // pins both behaviours so the Win32 contract survives the port.
