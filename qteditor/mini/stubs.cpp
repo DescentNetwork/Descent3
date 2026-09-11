@@ -48,6 +48,7 @@
 #include "descent.h"
 #include "doorpage.h"
 #include "genericpage.h"
+#include "string_helpers.h"
 #include "shippage.h"
 #include "soundpage.h"
 #include "texpage.h"
@@ -351,7 +352,12 @@ std::unique_ptr<oeAppDatabase> Database;
 
 // ==================== Find* ====================
 
-int FindDoorName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
+int FindDoorName(const std::string &name) {
+  for (int i = 0; i < MAX_DOORS; i++)
+    if (Doors[i].used && match(name, Doors[i].name))
+      return i;
+  return -1;
+}
 int FindShipName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Alloc/Free ====================
@@ -359,7 +365,14 @@ int FindShipName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1;
 //void FreeDoor(int n) { PRINT_STUB(__FUNCTION__);}
 int AllocObjectID(int id, bool a, bool b, bool c) { PRINT_STUB(__FUNCTION__); return -1; }
 void FreeObjectID(int n) { PRINT_STUB(__FUNCTION__); }
-int GetObjectID(int n) { PRINT_STUB(__FUNCTION__); return -1; }
+// First object page slot with the given type (the engine's objinfo.cpp
+// GetObjectID), used by FindValidID during level object-id translation.
+int GetObjectID(int type) {
+  for (int i = 0; i < MAX_OBJECT_IDS; i++)
+    if (Object_info[i].type == type)
+      return i;
+  return -1;
+}
 int AllocShip() { PRINT_STUB(__FUNCTION__); return -1; }
 void FreeShip(int n) { PRINT_STUB(__FUNCTION__); }
 int AllocSound() { PRINT_STUB(__FUNCTION__); return -1; }

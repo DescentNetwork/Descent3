@@ -62,6 +62,7 @@
 #include "object_lighting.h"
 #include "object_ops.h"
 #include "obj_move_manager.h"
+#include "objinfo.h"
 #include "findintersection.h"
 #include "mem.h"
 #include "ScriptCompilerAPI.h"
@@ -719,6 +720,139 @@ private slots:
 
     QFile::remove(oldf);
     QFile::remove(newf);
+  }
+
+  // GNNM/DRNM name tables let a level reference object/door pages by name so
+  // ids can be remapped onto the currently loaded game tables (the engine's
+  // BuildXlateTable + ReadObject translation).  Build a level whose powerup is
+  // page 3, then reload it with the game table re-ordered so that name lives at
+  // page 0: the reloaded object must move to page 0, and re-saving must settle
+  // on a byte-stable layout across further reloads.
+  void testObjectNameXlateRoundTrip()
+  {
+    extern int Num_objects;
+    std::vector<object_info> savedInfo(MAX_OBJECT_IDS);
+    for (int i = 0; i < MAX_OBJECT_IDS; i++)
+      savedInfo[i] = Object_info[i];
+    const int savedNumObjects = Num_objects;
+
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+
+    // "Loaded game tables" for the save: page 3 is the powerup page.
+    for (int i = 0; i < MAX_OBJECT_IDS; i++)
+      Object_info[i] = object_info{};
+    Object_info[3].type = OBJ_POWERUP;
+    Object_info[3].name = "XlatePowerup";
+
+    // Room 0: single 4-vert quad.
+    room *r0 = &Rooms[0];
+    *r0 = room{};
+    InitRoom(r0, 4, 1, 0);
+    r0->verts[0] = vector3{(float)10, 0, (float)-10};
+    r0->verts[1] = vector3{0, 0, (float)-10};
+    r0->verts[2] = vector3{0, 0, (float)10};
+    r0->verts[3] = vector3{(float)10, 0, (float)10};
+    InitRoomFace(&r0->faces[0], 4);
+    for (int i = 0; i < 4; i++)
+      r0->faces[0].face_verts[i] = (int16_t)i;
+    r0->faces[0].tmap = 2;
+    r0->name.clear();
+    Highest_room_index = 0;
+
+    // The powerup references page 3 in the level file.
+    Objects[0].type = OBJ_POWERUP;
+    Objects[0].id = 3;
+    Objects[0].roomnum = 0;
+    Objects[0].pos = vector3{(float)5, (float)1, (float)-5};
+    Objects[0].orient.rvec = vector3{(float)1, 0, 0};
+    Objects[0].orient.uvec = vector3{0, (float)1, 0};
+    Objects[0].orient.fvec = vector3{0, 0, (float)1};
+    Highest_object_index = 0;
+
+    const QString tmp = QDir::tempPath() + "/_test_generic_names_roundtrip";
+    QDir::current().mkpath(tmp);
+    const QString f1 = tmp + "/gn1.d3l";
+    const QString f2 = tmp + "/gn2.d3l";
+    const QString f3 = tmp + "/gn3.d3l";
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
+
+    // Simulated re-ordered gamedata: the same page name now lives at page 0,
+    // and page 3 no longer exists.
+    for (int i = 0; i < MAX_OBJECT_IDS; i++)
+      Object_info[i] = object_info{};
+    Object_info[0].type = OBJ_POWERUP;
+    Object_info[0].name = "XlatePowerup";
+
+    // Reload: the GNNM name table must map the file's page 3 to page 0.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+
+    QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
+    QVERIFY(Highest_object_index >= 0);
+    QCOMPARE(int(Objects[0].id), 0); // remapped via the GNNM name table
+    QCOMPARE(int(Objects[0].type), int(OBJ_POWERUP));
+
+    // Re-save and confirm the remapped id is stable: pass2 and pass3 are
+    // byte-identical, and reloading pass2 keeps page 0.
+    QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
+    QCOMPARE(int(Objects[0].id), 0);
+    QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
+
+    QFile a(f2), b(f3);
+    QVERIFY(a.open(QIODevice::ReadOnly));
+    QVERIFY(b.open(QIODevice::ReadOnly));
+    const QByteArray ba = a.readAll();
+    const QByteArray bb = b.readAll();
+    QCOMPARE(bb.size(), ba.size());
+    QVERIFY2(ba == bb, "object-id xlate round trip is not byte-stable");
+
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+    QDir::current().rmdir(tmp);
+
+    // Restore the surrounding game-table state so later tests (which rely on
+    // the startup gamedata table) see it unchanged.
+    for (int i = 0; i < MAX_OBJECT_IDS; i++)
+      Object_info[i] = std::move(savedInfo[i]);
+    Num_objects = savedNumObjects;
+
+    // Clean teardown.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
   }
 
   // Loads a real Descent 3 level shipped in the repo and verifies the room

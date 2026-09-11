@@ -59,6 +59,8 @@
 #include "log.h"
 #include "d3x_op.h"
 #include "object_external_struct.h"
+#include "objinfo.h"
+#include "door.h"
 
 #include <QtGlobal>
 
@@ -110,6 +112,87 @@ static void LL_ReadTextureList(posix_istream &ifile, int chunk_size) {
     if (ifile.tell() >= end)
       break;
   }
+}
+
+// ---------------------------------------------------------------------------
+// GNNM/DRNM name tables.
+//
+// A level names the object pages (GNNM) and door pages (DRNM) it references;
+// those names let the loader map the file's page index to the index of the
+// matching page in the currently loaded game tables.  This is the engine's
+// BuildXlateTable + ReadObject translation: OBJ_ROBOT/POWERUP/BUILDING/CLUTTER
+// ids go through generic_xlate[MAX_OBJECT_IDS], OBJ_DOOR through
+// door_xlate[MAX_DOORS].  Reset to -1 (no mapping) before every LoadLevel so
+// a level without the name chunks keeps the raw page indices it was saved
+// with.
+static int16_t generic_xlate[MAX_OBJECT_IDS];
+static int16_t door_xlate[MAX_DOORS];
+
+// Reads a GNNM/DRNM chunk body: an int32 count, then that many null-terminated
+// page names.  Each name is resolved through lookup(); an empty name (an
+// unused slot) is never looked up and maps to -1, exactly as in the engine's
+// BuildXlateTable.  The trailing entries up to max_items are cleared to -1 so
+// a partially filled table never leaks indices from a previous level.
+static void LL_ReadNameXlateChunk(posix_istream &ifile, int chunk_size,
+                                  int (*lookup)(const std::string &), int16_t *xlate, int max_items) {
+  int32_t n32 = 0;
+  ifile >> n32;
+  int n = n32;
+  if (n < 0 || n > max_items)
+    n = max_items;
+  long end = ifile.tell() + (chunk_size - 4);
+  for (int i = 0; i < n; i++) {
+    std::string name;
+    ifile >> name;
+    if (!name.empty())
+      xlate[i] = lookup(name);
+    else
+      xlate[i] = -1;
+    if (ifile.tell() >= end)
+      break;
+  }
+  for (int i = n; i < max_items; i++)
+    xlate[i] = -1;
+}
+
+// First used page of the given type, the engine's FindValidID() fallback for
+// a name-mapping miss (GetObjectID for the generic types, the first used door
+// slot for OBJ_DOOR).  Returns -1 when no game table provides one.
+static int FindValidID(int type) {
+  switch (type) {
+  case OBJ_ROBOT:
+  case OBJ_POWERUP:
+  case OBJ_BUILDING:
+  case OBJ_CLUTTER:
+    return GetObjectID(type);
+  case OBJ_DOOR:
+    for (int i = 0; i < MAX_DOORS; i++)
+      if (Doors[i].used)
+        return i;
+    return -1;
+  default:
+    return -1;
+  }
+}
+
+// Applies the GNNM/DRNM id translation the engine performs in ReadObject() for
+// the generic object types and doors.  On a lookup miss the engine picks the
+// first valid page of the object's type; when no game table is loaded the raw
+// file id is kept so the level still renders.
+static int TranslateObjectId(int type, int id) {
+  int xid = -1;
+  if (type == OBJ_ROBOT || type == OBJ_POWERUP || type == OBJ_BUILDING || type == OBJ_CLUTTER)
+    xid = (id < MAX_OBJECT_IDS) ? static_cast<int>(generic_xlate[id]) : -1;
+  else if (type == OBJ_DOOR)
+    xid = (id < MAX_DOORS) ? static_cast<int>(door_xlate[id]) : -1;
+  else
+    return id;
+
+  if (xid != -1)
+    return xid;
+
+  const int valid = FindValidID(type);
+  return (valid != -1) ? valid : id;
 }
 
 // Writes a chunk header (4-char name + size placeholder), returns the position
@@ -835,6 +918,13 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
   for (int i = 0; i < MAX_TEXTURES; i++)
     texture_xlate[i] = i;
 
+  // Default object/door mapping is "no translation" so a level without GNNM /
+  // DRNM chunks keeps the page indices it was saved with.
+  for (int i = 0; i < MAX_OBJECT_IDS; i++)
+    generic_xlate[i] = -1;
+  for (int i = 0; i < MAX_DOORS; i++)
+    door_xlate[i] = -1;
+
   FreeAllRooms();
 
   // Reset the object table (matches the original's ResetObjectList: handles,
@@ -915,6 +1005,12 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
         // Level-local texture name list.  Builds the level->global texture
         // index so faces (ReadFace's raw tmap index) resolve correctly.
         LL_ReadTextureList(ifile, chunk_size);
+      } else if (IsChunk(chunk_name, CHUNK_GENERIC_NAMES)) {
+        // Object page names; maps file object ids to the loaded game tables.
+        LL_ReadNameXlateChunk(ifile, chunk_size, FindObjectIDName, generic_xlate, MAX_OBJECT_IDS);
+      } else if (IsChunk(chunk_name, CHUNK_DOOR_NAMES)) {
+        // Door page names; maps file door ids to the loaded game tables.
+        LL_ReadNameXlateChunk(ifile, chunk_size, FindDoorName, door_xlate, MAX_DOORS);
       } else if (IsChunk(chunk_name, "RWND")) {
         int32_t num = 0;
         ifile >> num;
@@ -944,6 +1040,10 @@ int handle = handle32;
           // Value-initialise (NOT memset: object contains std::string members).
           *obj = object{};
           ifile >> *obj;
+
+          // GNNM/DRNM name tables map the file's page index to the page index
+          // in the loaded game tables, exactly as the engine's ReadObject does.
+          obj->id = static_cast<uint16_t>(TranslateObjectId(obj->type, obj->id));
 
           int roomnum = obj->roomnum;
           LOG_DEBUG("OBJS[%d]: type=%d id=%d name='%s' flags=%u room=%d pos=(%f,%f,%f)",
@@ -1043,6 +1143,33 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
       int start = LL_StartChunk(out, "TXNM");
       int32_t zero = 0;
       out << zero;
+      LL_EndChunk(out, start);
+    }
+
+    // GNNM: object page names for id mapping on load; only the used slots up
+    // to the highest used page are written (WRITE_DATA_NAMES_GENERIC).
+    {
+      int start = LL_StartChunk(out, CHUNK_GENERIC_NAMES);
+      int highest = -1;
+      for (int i = 0; i < MAX_OBJECT_IDS; i++)
+        if (Object_info[i].type != OBJ_NONE)
+          highest = i;
+      out << (int32_t)(highest + 1);
+      for (int i = 0; i <= highest; i++)
+        out << (Object_info[i].type != OBJ_NONE ? Object_info[i].name : std::string());
+      LL_EndChunk(out, start);
+    }
+
+    // DRNM: door page names for id mapping on load (WRITE_DATA_NAMES).
+    {
+      int start = LL_StartChunk(out, CHUNK_DOOR_NAMES);
+      int highest = -1;
+      for (int i = 0; i < MAX_DOORS; i++)
+        if (Doors[i].used)
+          highest = i;
+      out << (int32_t)(highest + 1);
+      for (int i = 0; i <= highest; i++)
+        out << (Doors[i].used ? Doors[i].name : std::string());
       LL_EndChunk(out, start);
     }
 

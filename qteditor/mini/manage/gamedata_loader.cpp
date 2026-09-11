@@ -293,6 +293,17 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       break;
   }
 
+  // Refresh the per-type page counts from the current table.  The engine
+  // maintains Num_object_ids as pages are loaded / freed (objinfo.cpp); the
+  // mini's loader is the only page source, and GetNextObjectID /
+  // GetPrevObjectID / countLockedItems depend on these counts being nonzero
+  // for every type present in the table.
+  for (int i = 0; i < MAX_OBJECTS; i++)
+    Num_object_ids[i] = 0;
+  for (int i = 0; i < MAX_OBJECT_IDS; i++)
+    if (Object_info[i].type != OBJ_NONE && Object_info[i].type >= 0 && Object_info[i].type < MAX_OBJECTS)
+      Num_object_ids[Object_info[i].type]++;
+
   hogin.close();
 
   return ok;
@@ -304,8 +315,11 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 //-----------------------------------------------------------------------------
 
 // Searches all object ids for a specific name.  Returns the found id, or -1.
+// The whole table is scanned by its OBJ_NONE marker (not a loaded-page count)
+// exactly like the engine's objinfo.cpp FindObjectIDName: page lookups must
+// work even while a level is loading when Num_objects is temporarily reset.
 int FindObjectIDName(const std::string &name) {
-  for (int i = 0; i < Num_objects; i++)
+  for (int i = 0; i < MAX_OBJECT_IDS; i++)
     if ((Object_info[i].type != OBJ_NONE) && match(name, Object_info[i].name))
       return i;
 
