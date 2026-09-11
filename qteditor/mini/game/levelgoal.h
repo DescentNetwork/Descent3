@@ -23,7 +23,7 @@
 #include <array>
 #include <string>
 #include "object.h"
-#include "cfile.h"
+#include "posix_stream.h"
 #include <cstdlib>
 #include "mem/mem.h"
 #include "levelgoal_external.h"
@@ -59,6 +59,9 @@ private:
                          // once.
   int m_priority;
   uint32_t m_flags;
+
+  // levelgoals owns the m_goal[] array and implements its serialization.
+  friend class levelgoals;
 
   void GoalComplete(int handle, bool announce);
   void SendMultiUpdate(int handle);
@@ -146,8 +149,8 @@ public:
 
   int GetNumGoals();
 
-  bool SaveLevelGoalInfo(struct CFILE* fptr);
-  bool LoadLevelGoalInfo(struct CFILE* fptr);
+  bool SaveLevelGoalInfo(posix_ostream &ofile) const;
+  bool LoadLevelGoalInfo(posix_istream &ifile);
 
   bool LGStatus(char operation, int *value);
 

@@ -63,6 +63,7 @@
 #include "objinfo.h"
 #include "door.h"
 #include "matcen.h"
+#include "levelgoal.h"
 
 #include <QtGlobal>
 
@@ -1245,6 +1246,8 @@ int handle = handle32;
         LL_ReadRoomAABBChunk(ifile);
       } else if (IsChunk(chunk_name, CHUNK_MATCEN_DATA)) {
         LL_ReadMatcenChunk(ifile);
+      } else if (IsChunk(chunk_name, CHUNK_LEVEL_GOALS)) {
+        Level_goals.LoadLevelGoalInfo(ifile);
       } else if (IsChunk(chunk_name, "INFO")) {
         LL_ReadInfo(ifile, version);
       } else {
@@ -1447,6 +1450,14 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     // not Reset() (see mini/editor/matcen.cpp) so a re-saved level keeps the
     // stored field values byte-stable.
     LL_WriteMatcenChunk(out);
+
+    // LVLG (level goals).  Written between MTCN and INFO, matching the
+    // engine's relative order.
+    {
+      int start = LL_StartChunk(out, CHUNK_LEVEL_GOALS);
+      Level_goals.SaveLevelGoalInfo(out);
+      LL_EndChunk(out, start);
+    }
 
     // INFO
     {

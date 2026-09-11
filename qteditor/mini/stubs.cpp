@@ -243,7 +243,6 @@ matcen *Matcen[MAX_MATCENS] = {};
 // ==================== Level ====================
 levelgoals Level_goals;
 level_info Level_info;
-void levelgoals::CleanupAfterLevel() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Ambient ====================
 ambient_life a_life;
