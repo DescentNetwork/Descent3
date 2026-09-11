@@ -64,6 +64,8 @@
 #include "door.h"
 #include "matcen.h"
 #include "levelgoal.h"
+#include "soundload.h"
+#include "ssl_lib.h"
 
 #include <QtGlobal>
 
@@ -379,6 +381,78 @@ static void LL_WriteMatcenChunk(posix_ostream &ofile) {
   }
 
   LL_EndChunk(ofile, start);
+}
+
+// TSND (terrain sound bands).  Reader/writer (LoadLevel.cpp:3957 across,
+// WriteLevel :5125).  Each band stores a sound (translated through the loaded
+// sound table), a low/high altitude pair and a low/high volume pair.  The
+// writer emits only the used bands (sound_index != -1), so the reader clears
+// the table first and the reload re-emits the same used set byte-stably.
+static void LL_ReadTerrainSoundChunk(posix_istream &ifile, int version) {
+  int32_t n_bands = 0;
+  ifile >> n_bands;
+  if (n_bands < 0)
+    n_bands = 0;
+  if (n_bands > NUM_TERRAIN_SOUND_BANDS)
+    n_bands = NUM_TERRAIN_SOUND_BANDS;
+
+  ClearTerrainSound();
+
+  for (int b = 0; b < n_bands; b++) {
+    terrain_sound_band &band = Terrain_sound_bands[b];
+
+    if (version < 119) {
+      ifile >> band.sound_index;
+    } else {
+      std::string soundname;
+      ifile >> soundname; // NUL-terminated, consuming the whole field
+      band.sound_index = FindSoundName(soundname);
+    }
+
+    int8_t low_alt = 0, high_alt = 0;
+    ifile >> low_alt;
+    ifile >> high_alt;
+    band.low_alt = static_cast<uint8_t>(low_alt);
+    band.high_alt = static_cast<uint8_t>(high_alt);
+
+    ifile >> band.low_volume;
+    ifile >> band.high_volume;
+  }
+}
+
+static void LL_WriteTerrainSoundChunk(posix_ostream &ofile) {
+  int start = LL_StartChunk(ofile, CHUNK_TERRAIN_SOUND);
+
+  int32_t n_bands = 0;
+  for (int b = 0; b < NUM_TERRAIN_SOUND_BANDS; b++)
+    if (Terrain_sound_bands[b].sound_index != -1)
+      n_bands++;
+  ofile << n_bands;
+
+  for (int b = 0; b < NUM_TERRAIN_SOUND_BANDS; b++) {
+    if (Terrain_sound_bands[b].sound_index == -1)
+      continue;
+
+    const terrain_sound_band &band = Terrain_sound_bands[b];
+    ofile << Sounds[band.sound_index].name; // NUL-terminated, like cf_WriteString
+    ofile << static_cast<int8_t>(band.low_alt);
+    ofile << static_cast<int8_t>(band.high_alt);
+    ofile << band.low_volume;
+    ofile << band.high_volume;
+  }
+
+  LL_EndChunk(ofile, start);
+}
+
+// Clears all terrain sound bands (engine GameLoop.cpp:2839).
+void ClearTerrainSound() {
+  for (int b = 0; b < NUM_TERRAIN_SOUND_BANDS; b++) {
+    Terrain_sound_bands[b].sound_index = -1;
+    Terrain_sound_bands[b].low_alt = 0;
+    Terrain_sound_bands[b].high_alt = 0;
+    Terrain_sound_bands[b].low_volume = 0.0f;
+    Terrain_sound_bands[b].high_volume = 0.0f;
+  }
 }
 
 static void LL_ReadInfo(posix_istream &ifile, int) {
@@ -1126,6 +1200,8 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
 
       if (IsChunk(chunk_name, "PATH")) {
         LL_ReadGamePathsChunk(ifile, version);
+      } else if (IsChunk(chunk_name, CHUNK_TERRAIN_SOUND)) {
+        LL_ReadTerrainSoundChunk(ifile, version);
       } else if (IsChunk(chunk_name, "NLMP")) {
         LL_ReadNewLightmapChunk(ifile, version);
       } else if (IsChunk(chunk_name, "ROOM")) {
@@ -1302,6 +1378,9 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     // PATH: the engine writes the game-path table first, before any other
     // geometry chunk.
     LL_WriteGamePathsChunk(out);
+
+    // TSND: terrain sound bands (engine order: right after PATH).
+    LL_WriteTerrainSoundChunk(out);
 
     // NLMP: room/terrain lightmaps (engine order: after terrain sounds, before
     // the texture list).

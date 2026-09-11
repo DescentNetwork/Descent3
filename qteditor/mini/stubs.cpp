@@ -114,7 +114,7 @@ bool Dedicated_server = false;
 function_mode View_mode = EDITOR_MODE;
 
 // ==================== Terrain ====================
-terrain_sound_band Terrain_sound_bands[256] = {};
+terrain_sound_band Terrain_sound_bands[NUM_TERRAIN_SOUND_BANDS] = {};
 /*
 int Terrain_checksum = 0;
 uint8_t Terrain_dynamic_table[16] = {};
@@ -137,7 +137,6 @@ void ResetTerrain(int terrain_size) { PRINT_STUB(__FUNCTION__); }
 void SetupSky(float t, int tmap, unsigned char layer) { PRINT_STUB(__FUNCTION__); }
 void UpdateTerrainLightmaps() { PRINT_STUB(__FUNCTION__); }
 */
-void ClearTerrainSound() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Terrain search / render ====================
 bool Check_terrain_portal = false;
