@@ -58,6 +58,7 @@
 #include "doorway.h"
 #include "gamepath.h"
 #include "manage.h"
+#include "matcen.h"
 #include "object.h"
 #include "object_lighting.h"
 #include "object_ops.h"
@@ -1142,6 +1143,131 @@ private slots:
     Highest_object_index = -1;
     Highest_room_index = -1;
     Num_triggers = 0;
+  }
+
+  // Matcens (MTCN chunk): the per-record SaveData/LoadData must round-trip
+  // byte-stably for both a synthetic scene and real levels, restoring names
+  // and counts on reload.
+  void testMatcenChunkRoundTrip()
+  {
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    DestroyAllMatcens();
+
+    // A minimal used room (identical to testRoomAABBChunkRoundTrip) so the
+    // writer emits a well-framed AABB chunk.
+    room *r0 = &Rooms[0];
+    *r0 = room{};
+    InitRoom(r0, 4, 2, 0);
+    for (int i = 0; i < 4; i++) {
+      r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
+      InitRoomFace(&r0->faces[i / 2], 4);
+      for (int j = 0; j < 4; j++)
+        r0->faces[i / 2].face_verts[j] = (int16_t)j;
+    }
+    r0->faces[0].tmap = 2;
+    r0->faces[1].tmap = 2;
+    r0->name.clear();
+    Highest_room_index = 0;
+
+    // One default-constructed matcen with a distinguishing name.
+    matcen *m = new matcen;
+    QVERIFY2(m->SetName("TestMatcen"), "SetName failed");
+    Matcen[0] = m;
+    Num_matcens = 1;
+
+    const QString tmp = QDir::tempPath() + "/_test_matcen_roundtrip";
+    QDir::current().mkpath(tmp);
+    const QString f1 = tmp + "/matcen1.d3l";
+    const QString f2 = tmp + "/matcen2.d3l";
+    const QString f3 = tmp + "/matcen3.d3l";
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
+
+    // Reload must restore the matcen table including the name.
+    DestroyAllMatcens();
+    QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
+    QCOMPARE(Num_matcens, 1);
+    QVERIFY(Matcen[0]);
+    QCOMPARE(QString::fromStdString(Matcen[0]->GetName()), QString("TestMatcen"));
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
+
+    DestroyAllMatcens();
+    QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
+    QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
+
+    QFile a(f2), b(f3);
+    QVERIFY(a.open(QIODevice::ReadOnly));
+    QVERIFY(b.open(QIODevice::ReadOnly));
+    const QByteArray ba = a.readAll();
+    const QByteArray bb = b.readAll();
+    QCOMPARE(bb.size(), ba.size());
+    QVERIFY2(ba == bb, "matcen round trip is not byte-stable");
+
+    // Real levels carry MTCN chunks (multi-record, with production types and
+    // sounds resolved against the loaded game tables); they must load and
+    // re-emit identically.
+    const std::filesystem::path lvl3 = "/home/gravis/project/D3rebuild/testdata/level3.d3l";
+    const std::filesystem::path lvl1 = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    for (const std::filesystem::path &lvl : {lvl3, lvl1}) {
+      if (!std::filesystem::exists(lvl))
+        continue;
+
+      const QString g1 = tmp + "/matcenr1.d3l";
+      const QString g2 = tmp + "/matcenr2.d3l";
+      QFile::remove(g1);
+      QFile::remove(g2);
+
+      DestroyAllMatcens();
+      QVERIFY2(LoadLevel(lvl, nullptr), "LoadLevel(real) failed");
+      if (Num_matcens > 0)
+        QVERIFY2(!Matcen[0]->GetName().empty(), "first matcen loaded without a name");
+      QVERIFY2(SaveLevel(std::filesystem::path(g1.toStdString()), true), "SaveLevel real passA failed");
+
+      QFile raw(g1);
+      QVERIFY(raw.open(QIODevice::ReadOnly));
+      const QByteArray bytes = raw.readAll();
+      QVERIFY2(bytes.indexOf("MTCN") >= 0, "saved level is missing its MTCN chunk");
+
+      DestroyAllMatcens();
+      QVERIFY2(LoadLevel(std::filesystem::path(g1.toStdString()), nullptr), "LoadLevel real passA failed");
+      QVERIFY2(SaveLevel(std::filesystem::path(g2.toStdString()), true), "SaveLevel real passB failed");
+      QFile ca(g1), cb(g2);
+      QVERIFY(ca.open(QIODevice::ReadOnly));
+      QVERIFY(cb.open(QIODevice::ReadOnly));
+      const QByteArray cba = ca.readAll();
+      const QByteArray cbb = cb.readAll();
+      QCOMPARE(cbb.size(), cba.size());
+      QVERIFY2(cba == cbb, "real-level matcen round trip is not byte-stable");
+    }
+
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+    QDir::current().rmdir(tmp);
+
+    // Clean teardown.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    DestroyAllMatcens();
   }
 
   // Loads a real Descent 3 level shipped in the repo and verifies the room

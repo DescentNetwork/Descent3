@@ -62,6 +62,7 @@
 #include "object_external_struct.h"
 #include "objinfo.h"
 #include "door.h"
+#include "matcen.h"
 
 #include <QtGlobal>
 
@@ -336,6 +337,44 @@ static void LL_WriteRoomAABBChunk(posix_ostream &ofile) {
       ofile << Rooms[i].bbf_list_max_xyz[j];
       ofile << Rooms[i].bbf_list_sector[j];
     }
+  }
+
+  LL_EndChunk(ofile, start);
+}
+
+// ---------------------------------------------------------------------------
+// MTCN (matcen data).  matcen::LoadData/SaveData (mini/editor/matcen.cpp) do
+// the per-record I/O; these helpers frame the table.  The engine reads the
+// count then instantiates each entry; the in-memory table is rebuilt fresh to
+// avoid leaking entries from a previously loaded level.
+static void LL_ReadMatcenChunk(posix_istream &ifile) {
+  int32_t count = 0;
+  ifile >> count;
+
+  DestroyAllMatcens();
+
+  Num_matcens = (count < 0) ? 0 : count;
+  if (Num_matcens > MAX_MATCENS) {
+    // Corrupt count: only load what the fixed-size table can hold; the chunk
+    // framer skips the remaining body bytes.
+    Num_matcens = MAX_MATCENS;
+  }
+
+  for (int i = 0; i < Num_matcens; i++) {
+    matcen *mp = new matcen;
+    mp->LoadData(ifile, texture_xlate);
+    Matcen[i] = mp;
+  }
+}
+
+static void LL_WriteMatcenChunk(posix_ostream &ofile) {
+  int start = LL_StartChunk(ofile, CHUNK_MATCEN_DATA);
+
+  ofile << static_cast<int32_t>(Num_matcens);
+
+  for (int i = 0; i < Num_matcens; i++) {
+    Q_ASSERT(Matcen[i]);
+    Matcen[i]->SaveData(ofile);
   }
 
   LL_EndChunk(ofile, start);
@@ -1204,6 +1243,8 @@ int handle = handle32;
         }
       } else if (IsChunk(chunk_name, CHUNK_ROOM_AABB)) {
         LL_ReadRoomAABBChunk(ifile);
+      } else if (IsChunk(chunk_name, CHUNK_MATCEN_DATA)) {
+        LL_ReadMatcenChunk(ifile);
       } else if (IsChunk(chunk_name, "INFO")) {
         LL_ReadInfo(ifile, version);
       } else {
@@ -1401,6 +1442,11 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
 
     // AABB (room bounding boxes / BBF region lists)
     LL_WriteRoomAABBChunk(out);
+
+    // MTCN (matcen data).  Written unconditionally; per-record SaveData does
+    // not Reset() (see mini/editor/matcen.cpp) so a re-saved level keeps the
+    // stored field values byte-stable.
+    LL_WriteMatcenChunk(out);
 
     // INFO
     {

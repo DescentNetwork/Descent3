@@ -20,7 +20,9 @@
 #define _MATCEN_H_
 
 #include <cstdint>
-#include "cfile.h"
+#include <string>
+#include <vector>
+#include "posix_stream.h"
 #include "vecmat.h"
 #include "matcen_external.h"
 
@@ -56,7 +58,7 @@ extern char *MatcenEffectStrings[NUM_MATCEN_EFFECTS];
 class matcen {
 private:
   // Static data -- only changes by OSIRIS
-  char m_name[MAX_MATCEN_NAME_LEN];
+  std::string m_name;
 
   char m_num_prod_types;
   char m_control_type;
@@ -89,7 +91,7 @@ private:
 
   int16_t m_max_alive_children;
   int16_t m_num_alive;
-  int *m_alive_list; // list of alive children
+  std::vector<int> m_alive_list; // list of alive children
 
   float m_preprod_time;
   float m_postprod_time;
@@ -159,8 +161,8 @@ public:
   int GetSpawnPnt(int8_t s_index);
   bool SetSpawnPnt(int8_t s_index, int s_value);
 
-  void SaveData(struct CFILE* fptr);
-  void LoadData(struct CFILE* fptr);
+  void SaveData(posix_ostream &ofile) const;
+  void LoadData(posix_istream &ifile, const int *texture_xlate);
 
   std::string GetName(void);
   bool SetName(const std::string& name);

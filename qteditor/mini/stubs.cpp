@@ -427,7 +427,6 @@ void ChangeOldModelsForObjects(int a, int b) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Misc ====================
 int CreateMatcen(const char *name, bool *flag) { PRINT_STUB(__FUNCTION__); return -1; }
-void DestroyAllMatcens() { PRINT_STUB(__FUNCTION__); }
 void FreeAllGamePaths() { PRINT_STUB(__FUNCTION__); }
 //int FindPointRoom(vector3 *pnt) { PRINT_STUB(__FUNCTION__); return -1; }
 int GetTerrainRoomFromPos_ret(vector3& pos) { PRINT_STUB(__FUNCTION__); return -1; }
@@ -470,7 +469,3 @@ hlsSystem::hlsSystem() { PRINT_STUB(__FUNCTION__); }
 void hlsSystem::KillSoundLib(bool f_kill_sound_list) { PRINT_STUB(__FUNCTION__); }
 int hlsSystem::Play2dSound(int sound_index, float volume, float pan, unsigned short flags) { PRINT_STUB(__FUNCTION__); return 0; }
 bool hlsSystem::CheckAndForceSoundDataAlloc(int sound_file_index) { PRINT_STUB(__FUNCTION__); return false; }
-
-// ==================== matcen methods ====================
-std::string matcen::GetName(void) { PRINT_STUB(__FUNCTION__); return std::string(); }
-bool matcen::SetName(const std::string& name) { PRINT_STUB(__FUNCTION__); return false; }
