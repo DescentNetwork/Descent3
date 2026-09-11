@@ -1022,6 +1022,23 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
         }
       } else if (IsChunk(chunk_name, "TERR")) {
         LL_ReadTerrainChunks(ifile, version);
+      } else if (IsChunk(chunk_name, CHUNK_OBJECT_HANDLES)) {
+        // Object handles for deleted (OBJ_NONE) slots whose handle count part
+        // is non-zero, so a freed slot's identity survives a save/load cycle.
+        // Matches the engine's inline OHND reader.
+        int32_t nh = 0;
+        ifile >> nh;
+        uint8_t already_loaded[MAX_OBJECTS] = {};
+        for (int i = 0; i < nh; i++) {
+          int32_t handle32 = 0;
+          ifile >> handle32;
+          int objnum = handle32 & HANDLE_OBJNUM_MASK;
+          if (objnum < 0 || objnum >= MAX_OBJECTS)
+            continue;
+          Q_ASSERT(already_loaded[objnum] == 0);
+          already_loaded[objnum] = 1;
+          Objects[objnum].handle = handle32;
+        }
       } else if (IsChunk(chunk_name, "OBJS")) {
         int32_t num = 0;
         ifile >> num;
@@ -1226,6 +1243,23 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     {
       int start = LL_StartChunk(out, "TERR");
       LL_WriteTerrainChunks(out);
+      LL_EndChunk(out, start);
+    }
+
+    // OHND (object handles): persist the handles of deleted object slots so
+    // their count part survives a save/load cycle.  Written unconditionally
+    // (may be an empty list), like the engine.
+    {
+      int handleCount = 0;
+      for (int i = 0; i < MAX_OBJECTS; i++)
+        if (Objects[i].type == OBJ_NONE && (Objects[i].handle & HANDLE_COUNT_MASK) != 0)
+          handleCount++;
+      int start = LL_StartChunk(out, CHUNK_OBJECT_HANDLES);
+      out << handleCount;
+      for (int i = 0; i < MAX_OBJECTS; i++) {
+        if (Objects[i].type == OBJ_NONE && (Objects[i].handle & HANDLE_COUNT_MASK) != 0)
+          out << (int32_t)Objects[i].handle;
+      }
       LL_EndChunk(out, start);
     }
 

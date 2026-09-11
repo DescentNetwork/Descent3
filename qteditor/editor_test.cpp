@@ -855,6 +855,153 @@ private slots:
     Num_triggers = 0;
   }
 
+  // Object handles for deleted slots (OHND): a freed object slot keeps a
+  // handle whose count part says how often the slot has been re-used, so
+  // stale references never alias a recycled slot.  Saving must persist those
+  // handles and loading must restore them.  Exercises both a synthetic scene
+  // and level3.d3l (which carries 275 real deleted-slot handles).
+  void testObjectHandlesRoundTrip()
+  {
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+
+    // Minimal room so an object is legal to place.
+    room *r0 = &Rooms[0];
+    *r0 = room{};
+    InitRoom(r0, 4, 1, 0);
+    r0->verts[0] = vector3{(float)10, 0, (float)-10};
+    r0->verts[1] = vector3{0, 0, (float)-10};
+    r0->verts[2] = vector3{0, 0, (float)10};
+    r0->verts[3] = vector3{(float)10, 0, (float)10};
+    InitRoomFace(&r0->faces[0], 4);
+    for (int i = 0; i < 4; i++)
+      r0->faces[0].face_verts[i] = (int16_t)i;
+    r0->faces[0].tmap = 2;
+    r0->name.clear();
+    Highest_room_index = 0;
+
+    Objects[0].type = OBJ_POWERUP;
+    Objects[0].id = 0;
+    Objects[0].roomnum = 0;
+    Objects[0].pos = vector3{(float)5, (float)1, (float)-5};
+    Objects[0].orient.rvec = vector3{(float)1, 0, 0};
+    Objects[0].orient.uvec = vector3{0, (float)1, 0};
+    Objects[0].orient.fvec = vector3{0, 0, (float)1};
+    Highest_object_index = 0;
+
+    // Slot 7 is deleted but was freed twice, so it carries a count part.
+    Objects[7].type = OBJ_NONE;
+    Objects[7].handle = 7 + 2 * HANDLE_COUNT_INCREMENT;
+
+    const QString tmp = QDir::tempPath() + "/_test_object_handles_roundtrip";
+    QDir::current().mkpath(tmp);
+    const QString f1 = tmp + "/oh1.d3l";
+    const QString f2 = tmp + "/oh2.d3l";
+    const QString f3 = tmp + "/oh3.d3l";
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
+
+    // Reload must restore the deleted slot's handle (type stays OBJ_NONE).
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
+    QCOMPARE(int(Objects[7].type), int(OBJ_NONE));
+    QCOMPARE(int(Objects[7].handle), int(7 + 2 * HANDLE_COUNT_INCREMENT));
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
+
+    // A further reload/save cycle must settle on byte-identical output (the
+    // same pass2/pass3 comparison the other round-trip tests use).
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
+    QCOMPARE(int(Objects[7].handle), int(7 + 2 * HANDLE_COUNT_INCREMENT));
+    QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
+
+    QFile a(f2), b(f3);
+    QVERIFY(a.open(QIODevice::ReadOnly));
+    QVERIFY(b.open(QIODevice::ReadOnly));
+    const QByteArray ba = a.readAll();
+    const QByteArray bb = b.readAll();
+    QCOMPARE(bb.size(), ba.size());
+    QVERIFY2(ba == bb, "deleted-object-handle round trip is not byte-stable");
+
+    // Real level: level3.d3l ships 275 deleted-slot handles.  Loading it and
+    // re-saving must emit OHND again so the handles survive, byte-stably.
+    const std::filesystem::path lvl3 = "/home/gravis/project/D3rebuild/testdata/level3.d3l";
+    if (std::filesystem::exists(lvl3)) {
+      const QString g1 = tmp + "/ohl3.d3l";
+      const QString g2 = tmp + "/ohl4.d3l";
+      QFile::remove(g1);
+      QFile::remove(g2);
+      QVERIFY2(LoadLevel(lvl3, nullptr), "LoadLevel(level3.d3l) failed");
+      QVERIFY2(SaveLevel(std::filesystem::path(g1.toStdString()), true), "SaveLevel level3 passA failed");
+
+      // The saved file must contain a non-empty OHND chunk.
+      QFile raw(g1);
+      QVERIFY(raw.open(QIODevice::ReadOnly));
+      const QByteArray bytes = raw.readAll();
+      const int ohnd = bytes.indexOf("OHND");
+      QVERIFY2(ohnd >= 0, "saved level3.d3l is missing its OHND chunk");
+      if (ohnd >= 0) {
+        Q_ASSERT(ohnd + 8 + 4 <= bytes.size());
+        const int nhandles = (quint8(bytes.at(ohnd + 8)) | (quint8(bytes.at(ohnd + 9)) << 8) |
+                              (quint8(bytes.at(ohnd + 10)) << 16) | (quint8(bytes.at(ohnd + 11)) << 24));
+        QVERIFY2(nhandles > 0, "saved level3.d3l emitted an empty OHND chunk");
+      }
+
+      QVERIFY2(LoadLevel(std::filesystem::path(g1.toStdString()), nullptr), "LoadLevel passA failed");
+      QVERIFY2(SaveLevel(std::filesystem::path(g2.toStdString()), true), "SaveLevel level3 passB failed");
+      QFile ca(g1), cb(g2);
+      QVERIFY(ca.open(QIODevice::ReadOnly));
+      QVERIFY(cb.open(QIODevice::ReadOnly));
+      const QByteArray cba = ca.readAll();
+      const QByteArray cbb = cb.readAll();
+      QCOMPARE(cbb.size(), cba.size());
+      QVERIFY2(cba == cbb, "level3.d3l OHND round trip is not byte-stable");
+    }
+
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+    QDir::current().rmdir(tmp);
+
+    // Clean teardown.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+  }
+
   // Loads a real Descent 3 level shipped in the repo and verifies the room
   // geometry populated into Rooms[] — the data EditorView::renderRooms()
   // draws. This is the end-to-end check that a real .d3l (versioned, with
