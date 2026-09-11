@@ -41,6 +41,7 @@
 
 #include "level_loader.h"
 #include "room.h"
+#include "BOA.h"
 #include "trigger.h"
 #include "object.h"
 #include "objinit.h"
@@ -233,6 +234,111 @@ static int LL_ReadRoom(posix_istream &ifile, room *rp, int /*version*/) {
   }
 
   return 1;
+}
+
+// AABB (room bounding boxes).  Per-face min/max extents (FVI), per-room
+// bbf_min/max_xyz, and the BSP back-face (BBF) region lists used by BOA /
+// visibility queries.  The engine's ReadRoomAABBChunk / WriteRoomAABBChunk
+// store these per room; the mini keeps the arrays as vectors instead of the
+// engine's malloc'd pointers.
+static void LL_ReadRoomAABBChunk(posix_istream &ifile) {
+  int32_t save_hri = 0;
+  ifile >> save_hri;
+  if (save_hri < 0 || save_hri >= MAX_ROOMS)
+    save_hri = Highest_room_index;
+
+  for (int i = 0; i <= save_hri; i++)
+    ifile >> BOA_AABB_ROOM_checksum[i];
+
+  for (int i = 0; i <= Highest_room_index; i++) {
+    int32_t used = 0;
+    ifile >> used;
+    Q_ASSERT(Rooms[i].used == used);
+    if (!used) {
+      BOA_AABB_ROOM_checksum[i] = 0; // Not used
+      continue;
+    }
+
+    int32_t n_faces = 0;
+    ifile >> n_faces;
+    Q_ASSERT(Rooms[i].num_faces == n_faces);
+    for (int j = 0; j < Rooms[i].num_faces; j++) {
+      ifile >> Rooms[i].faces[j].min_xyz;
+      ifile >> Rooms[i].faces[j].max_xyz;
+    }
+
+    ifile >> BOA_AABB_ROOM_checksum[i];
+    ifile >> Rooms[i].bbf_min_xyz;
+    ifile >> Rooms[i].bbf_max_xyz;
+
+    ifile >> Rooms[i].num_bbf_regions;
+    int nregions = Rooms[i].num_bbf_regions;
+    if (nregions < 0 || nregions > 200)
+      nregions = 0; // sanity cap, mirrors the engine's MAX_REGIONS_PER_ROOM
+    Rooms[i].num_bbf_regions = static_cast<int16_t>(nregions);
+
+    Rooms[i].num_bbf.assign(nregions, 0);
+    Rooms[i].bbf_list.assign(nregions, std::vector<int16_t>());
+    Rooms[i].bbf_list_min_xyz.resize(nregions);
+    Rooms[i].bbf_list_max_xyz.resize(nregions);
+    Rooms[i].bbf_list_sector.resize(nregions);
+
+    for (int j = 0; j < nregions; j++)
+      ifile >> Rooms[i].num_bbf[j];
+
+    for (int j = 0; j < nregions; j++) {
+      const int nfaces = Rooms[i].num_bbf[j];
+      if (nfaces < 0 || nfaces > Rooms[i].num_faces)
+        continue;
+      Rooms[i].bbf_list[j].resize(nfaces);
+      for (int k = 0; k < nfaces; k++)
+        ifile >> Rooms[i].bbf_list[j][k];
+      ifile >> Rooms[i].bbf_list_min_xyz[j];
+      ifile >> Rooms[i].bbf_list_max_xyz[j];
+      ifile >> Rooms[i].bbf_list_sector[j];
+    }
+  }
+}
+
+static void LL_WriteRoomAABBChunk(posix_ostream &ofile) {
+  int start = LL_StartChunk(ofile, CHUNK_ROOM_AABB);
+
+  ofile << (int32_t)Highest_room_index;
+  for (int i = 0; i <= Highest_room_index; i++)
+    ofile << BOA_AABB_ROOM_checksum[i];
+
+  for (int i = 0; i <= Highest_room_index; i++) {
+    if (!Rooms[i].used) {
+      ofile << (int32_t)0; // Not used
+      continue;
+    }
+
+    ofile << (int32_t)1; // used
+    ofile << (int32_t)Rooms[i].num_faces;
+    for (int j = 0; j < Rooms[i].num_faces; j++) {
+      ofile << Rooms[i].faces[j].min_xyz;
+      ofile << Rooms[i].faces[j].max_xyz;
+    }
+
+    ofile << BOA_AABB_ROOM_checksum[i];
+    ofile << Rooms[i].bbf_min_xyz;
+    ofile << Rooms[i].bbf_max_xyz;
+    ofile << Rooms[i].num_bbf_regions;
+
+    const int nregions = Rooms[i].num_bbf_regions;
+    for (int j = 0; j < nregions; j++)
+      ofile << (int16_t)Rooms[i].bbf_list[j].size();
+
+    for (int j = 0; j < nregions; j++) {
+      for (int k = 0; k < (int)Rooms[i].bbf_list[j].size(); k++)
+        ofile << Rooms[i].bbf_list[j][k];
+      ofile << Rooms[i].bbf_list_min_xyz[j];
+      ofile << Rooms[i].bbf_list_max_xyz[j];
+      ofile << Rooms[i].bbf_list_sector[j];
+    }
+  }
+
+  LL_EndChunk(ofile, start);
 }
 
 static void LL_ReadInfo(posix_istream &ifile, int) {
@@ -1096,6 +1202,8 @@ int handle = handle32;
           *tp = trigger{};
           ifile >> *tp;
         }
+      } else if (IsChunk(chunk_name, CHUNK_ROOM_AABB)) {
+        LL_ReadRoomAABBChunk(ifile);
       } else if (IsChunk(chunk_name, "INFO")) {
         LL_ReadInfo(ifile, version);
       } else {
@@ -1290,6 +1398,9 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
         out << Triggers[i];
       LL_EndChunk(out, start);
     }
+
+    // AABB (room bounding boxes / BBF region lists)
+    LL_WriteRoomAABBChunk(out);
 
     // INFO
     {

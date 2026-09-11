@@ -78,6 +78,7 @@ bool EBNode_VerifyGraph();
 #include "ship.h"
 #include "ssl_lib.h"
 #include "terrain.h"
+#include "BOA.h"
 #include "trigger.h"
 #include "weapon.h"
 
@@ -983,6 +984,147 @@ private slots:
       const QByteArray cbb = cb.readAll();
       QCOMPARE(cbb.size(), cba.size());
       QVERIFY2(cba == cbb, "level3.d3l OHND round trip is not byte-stable");
+    }
+
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+    QDir::current().rmdir(tmp);
+
+    // Clean teardown.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+  }
+
+  // Room AABBs (AABB chunk): per-face min/max extents plus per-room BBF
+  // (BSP back-face) region lists.  These must round-trip byte-stably and be
+  // restored on reload, for both a synthetic scene and a real level.
+  void testRoomAABBChunkRoundTrip()
+  {
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+
+    // One room, one quad face with real min/max extents, plus a BBF region.
+    room *r0 = &Rooms[0];
+    *r0 = room{};
+    InitRoom(r0, 4, 2, 0);
+    for (int i = 0; i < 4; i++) {
+      r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
+      InitRoomFace(&r0->faces[i / 2], 4);
+      for (int j = 0; j < 4; j++)
+        r0->faces[i / 2].face_verts[j] = (int16_t)j;
+    }
+    r0->faces[0].tmap = 2;
+    r0->faces[1].tmap = 2;
+    r0->name.clear();
+    Highest_room_index = 0;
+
+    r0->faces[0].min_xyz = vector3{(float)0, 0, (float)-10};
+    r0->faces[0].max_xyz = vector3{(float)10, 0, (float)10};
+    r0->faces[1].min_xyz = vector3{(float)0, 0, (float)-10};
+    r0->faces[1].max_xyz = vector3{(float)5, 0, (float)10};
+    r0->bbf_min_xyz = vector3{(float)0, 0, (float)-10};
+    r0->bbf_max_xyz = vector3{(float)10, 0, (float)10};
+    r0->num_bbf_regions = 1;
+    r0->num_bbf = {2};
+    r0->bbf_list = {{0, 1}};
+    r0->bbf_list_min_xyz = {vector3{(float)0, 0, (float)-10}};
+    r0->bbf_list_max_xyz = {vector3{(float)10, 0, (float)10}};
+    r0->bbf_list_sector = {7};
+    BOA_AABB_ROOM_checksum[0] = 0x12345678;
+
+    const QString tmp = QDir::tempPath() + "/_test_room_aabb_roundtrip";
+    QDir::current().mkpath(tmp);
+    const QString f1 = tmp + "/aabb1.d3l";
+    const QString f2 = tmp + "/aabb2.d3l";
+    const QString f3 = tmp + "/aabb3.d3l";
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
+
+    // Reload must restore the face extents, BBF regions, and checksum.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
+    QCOMPARE(int(Rooms[0].num_bbf_regions), 1);
+    QCOMPARE(int(Rooms[0].bbf_list[0].size()), 2);
+    QCOMPARE(int(Rooms[0].num_bbf[0]), 2);
+    QCOMPARE(int(Rooms[0].bbf_list_sector[0]), 7);
+    QCOMPARE(int(BOA_AABB_ROOM_checksum[0]), int(0x12345678));
+    QVERIFY((Rooms[0].faces[0].min_xyz == vector3{(float)0, 0, (float)-10}));
+    QVERIFY((Rooms[0].faces[0].max_xyz == vector3{(float)10, 0, (float)10}));
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
+
+    // And a third reload/save cycle must settle on byte-identical output.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
+    QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
+
+    QFile a(f2), b(f3);
+    QVERIFY(a.open(QIODevice::ReadOnly));
+    QVERIFY(b.open(QIODevice::ReadOnly));
+    const QByteArray ba = a.readAll();
+    const QByteArray bb = b.readAll();
+    QCOMPARE(bb.size(), ba.size());
+    QVERIFY2(ba == bb, "room-AABB round trip is not byte-stable");
+
+    // Real level: level1.d3l carries an AABB chunk.  It must be preserved and
+    // re-emitted identically across a load/save/load/save cycle.
+    const std::filesystem::path lvl1 = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    if (std::filesystem::exists(lvl1)) {
+      const QString g1 = tmp + "/aabbr1.d3l";
+      const QString g2 = tmp + "/aabbr2.d3l";
+      QFile::remove(g1);
+      QFile::remove(g2);
+      QVERIFY2(LoadLevel(lvl1, nullptr), "LoadLevel(level1.d3l) failed");
+      QVERIFY2(SaveLevel(std::filesystem::path(g1.toStdString()), true), "SaveLevel level1 passA failed");
+
+      QFile raw(g1);
+      QVERIFY(raw.open(QIODevice::ReadOnly));
+      const QByteArray bytes = raw.readAll();
+      QVERIFY2(bytes.indexOf("AABB") >= 0, "saved level1.d3l is missing its AABB chunk");
+
+      QVERIFY2(LoadLevel(std::filesystem::path(g1.toStdString()), nullptr), "LoadLevel passA failed");
+      QVERIFY2(SaveLevel(std::filesystem::path(g2.toStdString()), true), "SaveLevel level1 passB failed");
+      QFile ca(g1), cb(g2);
+      QVERIFY(ca.open(QIODevice::ReadOnly));
+      QVERIFY(cb.open(QIODevice::ReadOnly));
+      const QByteArray cba = ca.readAll();
+      const QByteArray cbb = cb.readAll();
+      QCOMPARE(cbb.size(), cba.size());
+      QVERIFY2(cba == cbb, "level1.d3l AABB round trip is not byte-stable");
     }
 
     QFile::remove(f1);
