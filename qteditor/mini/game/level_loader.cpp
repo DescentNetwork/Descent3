@@ -38,6 +38,8 @@
 //   OSND  - override (force-field/glass-breaking) sound names
 //   FFTM  - force-field bounce texture multipliers (sets TF_FORCEFIELD)
 //   INFO  - level name/designer/copyright/notes + level physics params
+//   EDIT  - editor state (current/marked selection, wireframe view, lighting
+//           globals); always the last chunk in a file
 //
 // All other chunks are skipped by seeking to chunk_start + chunk_size.
 // SaveLevel writes those chunks in the same format so LoadLevel round-trips.
@@ -71,6 +73,8 @@
 #include "player.h"
 #include "soundload.h"
 #include "ssl_lib.h"
+#include "d3edit.h"
+#include "moveworld.h">
 
 #include <QtGlobal>
 
@@ -83,6 +87,18 @@
 #include <vector>
 
 #define LL_TAG "D3LV"
+
+// Editor-lighting globals defined in the Qt app layer (editor_lighting.cpp /
+// rad_init.cpp); their headers can't be pulled into this TU (editor_lighting.h
+// re-declares SaveLevel with a default argument, radiosity.h needs a <vector>
+// include this file orders after its own headers).  Declared here so the EDIT
+// chunk can round-trip them.
+extern float Room_multiplier[];
+extern float Room_ambience_r[], Room_ambience_g[], Room_ambience_b[];
+extern int LightSpacing;
+extern float GlobalMultiplier;
+extern float Ambient_red, Ambient_green, Ambient_blue;
+extern int rad_MaxStep;
 
 
 static bool IsChunk(const char *chunk_name, const char *id) { return chunk_name[0] == id[0] && chunk_name[1] == id[1] && chunk_name[2] == id[2] && chunk_name[3] == id[3]; }
@@ -556,6 +572,132 @@ static void LL_WriteFFTMChunk(posix_ostream &ofile) {
       ofile << std::string();
     }
   }
+
+  LL_EndChunk(ofile, start);
+}
+
+// EDIT (editor state: current/marked room & selection, wireframe view,
+// per-room multipliers/ambience and the lighting globals).  Engine reader
+// inline (:4026-4089, #ifdef EDITOR), writer (:5313, always the LAST chunk).
+static void LL_ReadEditorInfoChunk(posix_istream &ifile, int version) {
+  auto lookup_room = [](int16_t idx) -> room * {
+    if (idx >= 0 && idx <= Highest_room_index && Rooms[idx].used)
+      return &Rooms[idx];
+    return nullptr;
+  };
+
+  int16_t room_idx = 0;
+  ifile >> room_idx;
+  Curroomp = lookup_room(room_idx);
+  int16_t sel = 0;
+  ifile >> sel;
+  Curface = sel;
+  if (version >= 81) {
+    ifile >> sel;
+    Curedge = sel;
+    ifile >> sel;
+    Curvert = sel;
+  }
+
+  ifile >> room_idx;
+  Markedroomp = lookup_room(room_idx);
+  ifile >> sel;
+  Markedface = sel;
+  if (version >= 81) {
+    ifile >> sel;
+    Markededge = sel;
+    ifile >> sel;
+    Markedvert = sel;
+  }
+
+  int32_t nsr = 0;
+  ifile >> nsr;
+  N_selected_rooms = std::min<int32_t>(nsr, MAX_ROOMS);
+  for (int i = 0; i < N_selected_rooms; i++) {
+    ifile >> sel;
+    Selected_rooms[i] = sel;
+  }
+
+  if (version >= 14) {
+    ifile >> Cur_object_index;
+    ifile >> Current_trigger;
+    int32_t tmp = 0;
+    if (version < 106)
+      ifile >> tmp; // was Current_doorway
+    ifile >> tmp;
+    if (tmp >= static_cast<int>(state::viewer::mine) && tmp <= static_cast<int>(state::viewer::room))
+      app.view_mode = static_cast<state::viewer>(tmp);
+    ifile >> Editor_viewer_id;
+    if (version < 47)
+      ifile >> tmp; // was Editor_viewer_id[VM_TERRAIN]
+  }
+
+  if (version >= 55) {
+    ifile >> Wireframe_view_mine.target;
+    ifile >> Wireframe_view_mine.orient;
+    ifile >> Wireframe_view_mine.dist;
+  }
+
+  if (version >= 113) {
+    for (int i = 0; i < MAX_ROOMS; i++) {
+      ifile >> Room_multiplier[i];
+      if (version >= 118) {
+        ifile >> Room_ambience_r[i];
+        ifile >> Room_ambience_g[i];
+        ifile >> Room_ambience_b[i];
+      }
+    }
+  }
+  if (version >= 126)
+    ifile >> LightSpacing;
+
+  if (version >= 128) {
+    ifile >> GlobalMultiplier;
+    ifile >> Ambient_red;
+    ifile >> Ambient_green;
+    ifile >> Ambient_blue;
+    ifile >> rad_MaxStep;
+  }
+}
+
+static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
+  int start = LL_StartChunk(ofile, CHUNK_EDITOR_INFO);
+
+  ofile << static_cast<int16_t>(Curroomp ? ROOMNUM(Curroomp) : -1);
+  ofile << static_cast<int16_t>(Curface);
+  ofile << static_cast<int16_t>(Curedge);
+  ofile << static_cast<int16_t>(Curvert);
+  ofile << static_cast<int16_t>(Markedroomp ? ROOMNUM(Markedroomp) : -1);
+  ofile << static_cast<int16_t>(Markedface);
+  ofile << static_cast<int16_t>(Markededge);
+  ofile << static_cast<int16_t>(Markedvert);
+
+  ofile << static_cast<int32_t>(N_selected_rooms);
+  for (int i = 0; i < N_selected_rooms; i++)
+    ofile << static_cast<int16_t>(Selected_rooms[i]);
+
+  ofile << static_cast<int32_t>(Cur_object_index);
+  ofile << static_cast<int32_t>(Current_trigger);
+  ofile << static_cast<int32_t>(app.view_mode);
+  ofile << static_cast<int32_t>(Editor_viewer_id);
+
+  ofile << Wireframe_view_mine.target;
+  ofile << Wireframe_view_mine.orient;
+  ofile << Wireframe_view_mine.dist;
+
+  for (int i = 0; i < MAX_ROOMS; i++) {
+    ofile << Room_multiplier[i];
+    ofile << Room_ambience_r[i];
+    ofile << Room_ambience_g[i];
+    ofile << Room_ambience_b[i];
+  }
+
+  ofile << static_cast<int32_t>(LightSpacing);
+  ofile << GlobalMultiplier;
+  ofile << Ambient_red;
+  ofile << Ambient_green;
+  ofile << Ambient_blue;
+  ofile << static_cast<int32_t>(rad_MaxStep);
 
   LL_EndChunk(ofile, start);
 }
@@ -1439,6 +1581,8 @@ int handle = handle32;
         LL_ReadFFTMChunk(ifile, version);
       } else if (IsChunk(chunk_name, "INFO")) {
         LL_ReadInfo(ifile, version);
+      } else if (IsChunk(chunk_name, CHUNK_EDITOR_INFO)) {
+        LL_ReadEditorInfoChunk(ifile, version);
       } else {
         // unknown / skipped chunk (PSTR, lightmaps, ...)
       }
@@ -1672,6 +1816,9 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
       LL_WriteInfo(out);
       LL_EndChunk(out, start);
     }
+
+    // EDIT — editor state; the engine always writes this as the last chunk.
+    LL_WriteEditorInfoChunk(out);
   } catch (std::exception &) {
     out.close();
     return false;

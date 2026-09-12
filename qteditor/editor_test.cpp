@@ -53,6 +53,7 @@
 #include <stdexcept>
 
 #include "d3edit.h"
+#include "moveworld.h"
 
 #include "door.h"
 #include "doorway.h"
@@ -1883,6 +1884,189 @@ private slots:
     DestroyAllMatcens();
   }
 
+  void testEditorInfoChunkRoundTrip()
+  {
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    DestroyAllMatcens();
+
+    // A minimal used room (identical to the other chunk round-trip tests).
+    room *r0 = &Rooms[0];
+    *r0 = room{};
+    InitRoom(r0, 4, 2, 0);
+    for (int i = 0; i < 4; i++) {
+      r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
+      InitRoomFace(&r0->faces[i / 2], 4);
+      for (int j = 0; j < 4; j++)
+        r0->faces[i / 2].face_verts[j] = (int16_t)j;
+    }
+    r0->faces[0].tmap = 2;
+    r0->faces[1].tmap = 2;
+    r0->name.clear();
+    Highest_room_index = 0;
+
+    // editor_lighting.h can't be included next to level_loader.h (SaveLevel
+    // default-argument clash), so bring in its globals directly; they are
+    // linked from editor_lighting.cpp / rad_init.cpp.
+    extern float Room_multiplier[];
+    extern float Room_ambience_r[], Room_ambience_g[], Room_ambience_b[];
+    extern int LightSpacing;
+    extern float GlobalMultiplier;
+    extern float Ambient_red, Ambient_green, Ambient_blue;
+    extern int rad_MaxStep;
+
+    Curroomp = &Rooms[0];
+    Curface = 1;
+    Curedge = 2;
+    Curvert = 3;
+    Markedroomp = &Rooms[0];
+    Markedface = 4;
+    Markededge = 5;
+    Markedvert = 6;
+    N_selected_rooms = 2;
+    Selected_rooms[0] = 0;
+    Selected_rooms[1] = 1;
+    Cur_object_index = 7;
+    Current_trigger = 8;
+    app.view_mode = state::viewer::terrain;
+    Editor_viewer_id = 9;
+
+    Wireframe_view_mine.target = vector3{1, 2, 3};
+    Wireframe_view_mine.orient = IDENTITY_MATRIX;
+    Wireframe_view_mine.orient.fvec = vector3{0, 0, 1};
+    Wireframe_view_mine.dist = 50;
+
+    for (int i = 0; i < MAX_ROOMS; i++) {
+      Room_multiplier[i] = 1.0f + i;
+      Room_ambience_r[i] = 0.01f * i;
+      Room_ambience_g[i] = 0.02f * i;
+      Room_ambience_b[i] = 0.03f * i;
+    }
+    LightSpacing = 40;
+    GlobalMultiplier = 2.5f;
+    Ambient_red = 0.1f;
+    Ambient_green = 0.2f;
+    Ambient_blue = 0.3f;
+    rad_MaxStep = 16;
+
+    const QString tmp = QDir::tempPath() + "/_test_edit_roundtrip";
+    QDir::current().mkpath(tmp);
+    const QString f1 = tmp + "/edit1.d3l";
+    const QString f2 = tmp + "/edit2.d3l";
+    const QString f3 = tmp + "/edit3.d3l";
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
+
+    QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
+    QCOMPARE(Curroomp, &Rooms[0]);
+    QCOMPARE(Curface, 1);
+    QCOMPARE(Curedge, 2);
+    QCOMPARE(Curvert, 3);
+    QCOMPARE(Markedroomp, &Rooms[0]);
+    QCOMPARE(Markedface, 4);
+    QCOMPARE(Markededge, 5);
+    QCOMPARE(Markedvert, 6);
+    QCOMPARE(N_selected_rooms, 2);
+    QCOMPARE(Selected_rooms[0], 0);
+    QCOMPARE(Selected_rooms[1], 1);
+    QCOMPARE(Cur_object_index, 7);
+    QCOMPARE(Current_trigger, 8);
+    QCOMPARE(app.view_mode, state::viewer::terrain);
+    QCOMPARE(Editor_viewer_id, 9);
+    QCOMPARE(Wireframe_view_mine.dist, 50);
+    QCOMPARE(Wireframe_view_mine.orient.fvec.z(), 1);
+    QCOMPARE(LightSpacing, 40);
+    QCOMPARE(GlobalMultiplier, 2.5f);
+    QCOMPARE(Ambient_red, 0.1f);
+    QCOMPARE(Ambient_green, 0.2f);
+    QCOMPARE(Ambient_blue, 0.3f);
+    QCOMPARE(rad_MaxStep, 16);
+    QCOMPARE(Room_multiplier[3], 4.0f);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
+
+    QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
+    QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
+
+    QFile a(f2), b(f3);
+    QVERIFY(a.open(QIODevice::ReadOnly));
+    QVERIFY(b.open(QIODevice::ReadOnly));
+    const QByteArray ba = a.readAll();
+    const QByteArray bb = b.readAll();
+    QCOMPARE(bb.size(), ba.size());
+    QVERIFY2(ba == bb, "EDIT round trip is not byte-stable");
+
+    // Real testdata levels carry EDIT chunks (always the last chunk); they
+    // must reload and re-emit byte-stably.
+    const std::filesystem::path lvl1 = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    const std::filesystem::path lvl3 = "/home/gravis/project/D3rebuild/testdata/level3.d3l";
+    const std::filesystem::path lvl4 = "/home/gravis/project/D3rebuild/testdata/level4.d3l";
+    for (const std::filesystem::path &lvl : {lvl1, lvl3, lvl4}) {
+      if (!std::filesystem::exists(lvl))
+        continue;
+
+      const QString g1 = tmp + "/editr1.d3l";
+      const QString g2 = tmp + "/editr2.d3l";
+      QFile::remove(g1);
+      QFile::remove(g2);
+
+      QVERIFY2(LoadLevel(lvl, nullptr), "LoadLevel(real) failed");
+      QVERIFY2(SaveLevel(std::filesystem::path(g1.toStdString()), true), "SaveLevel real passA failed");
+
+      QFile raw(g1);
+      QVERIFY(raw.open(QIODevice::ReadOnly));
+      const QByteArray bytes = raw.readAll();
+      QVERIFY2(bytes.indexOf("EDIT") >= 0, "saved level is missing its EDIT chunk");
+
+      QVERIFY2(LoadLevel(std::filesystem::path(g1.toStdString()), nullptr), "LoadLevel real passA failed");
+      QVERIFY2(SaveLevel(std::filesystem::path(g2.toStdString()), true), "SaveLevel real passB failed");
+      QFile ca(g1), cb(g2);
+      QVERIFY(ca.open(QIODevice::ReadOnly));
+      QVERIFY(cb.open(QIODevice::ReadOnly));
+      const QByteArray cba = ca.readAll();
+      const QByteArray cbb = cb.readAll();
+      QCOMPARE(cbb.size(), cba.size());
+      QVERIFY2(cba == cbb, "real-level EDIT round trip is not byte-stable");
+    }
+
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+    QDir::current().rmdir(tmp);
+
+    // Restore the "no level loaded" editor defaults (later tests assume a
+    // null Curroomp for their UI gating assertions).
+    Curroomp = nullptr;
+    Markedroomp = nullptr;
+    N_selected_rooms = 0;
+    Cur_object_index = -1;
+    Current_trigger = -1;
+    Editor_viewer_id = -1;
+    app.view_mode = state::viewer::mine;
+
+    // Clean teardown.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    DestroyAllMatcens();
+  }
+
   // Loads a real Descent 3 level shipped in the repo and verifies the room
   // geometry populated into Rooms[] — the data EditorView::renderRooms()
   // draws. This is the end-to-end check that a real .d3l (versioned, with
@@ -2708,7 +2892,11 @@ private slots:
   // loaded. This test runs with no level, so those controls must be disabled.
   void testLevelGatedEnabledStates()
   {
-    const bool levelLoaded = (Curroomp != nullptr);
+    // The doorway editing controls are gated on the current room actually
+    // bearing doorway data (DoorwayKeypad::updateDialog()), not merely on a
+    // level being loaded: the EDIT chunk can restore a Curroomp whose room is
+    // not a doorway, in which case the controls stay disabled.
+    const bool levelLoaded = (Curroomp != nullptr && Curroomp->doorway_data != nullptr);
 
     for (const DialogInstance &d : g_dialogs)
     {

@@ -32,6 +32,7 @@
 
 #include "editor_room_state.h"
 #include "mem/mem.h"
+#include "moveworld.h"
 
 #include "vecmat.h"
 #include "terrain.h"
@@ -185,6 +186,10 @@ room *Placed_baseroomp = nullptr;
 int Placed_baseface = 0;
 bool Mine_changed = false;
 int Editor_viewer_id = -1;
+// Wireframe (chase-cam) views declared in moveworld.h; now defined here so the
+// EDIT level chunk can round-trip them.
+wireframe_view Wireframe_view_mine = {IDENTITY_MATRIX, {0, 0, 0}, 0, 0};
+wireframe_view Wireframe_view_room = {IDENTITY_MATRIX, {0, 0, 0}, 0, 0};
 int paged_in_count = 0;
 int paged_in_num = 0;
 
