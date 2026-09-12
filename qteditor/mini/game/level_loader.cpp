@@ -64,6 +64,7 @@
 #include "door.h"
 #include "matcen.h"
 #include "levelgoal.h"
+#include "aiambient.h"
 #include "soundload.h"
 #include "ssl_lib.h"
 
@@ -1324,6 +1325,8 @@ int handle = handle32;
         LL_ReadMatcenChunk(ifile);
       } else if (IsChunk(chunk_name, CHUNK_LEVEL_GOALS)) {
         Level_goals.LoadLevelGoalInfo(ifile);
+      } else if (IsChunk(chunk_name, CHUNK_ALIFE_DATA)) {
+        a_life.LoadData(ifile);
       } else if (IsChunk(chunk_name, "INFO")) {
         LL_ReadInfo(ifile, version);
       } else {
@@ -1535,6 +1538,13 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     {
       int start = LL_StartChunk(out, CHUNK_LEVEL_GOALS);
       Level_goals.SaveLevelGoalInfo(out);
+      LL_EndChunk(out, start);
+    }
+
+    // LIFE (ambient life data).  Engine order: after matcen/goals, before INFO.
+    {
+      int start = LL_StartChunk(out, CHUNK_ALIFE_DATA);
+      a_life.SaveData(out);
       LL_EndChunk(out, start);
     }
 

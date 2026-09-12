@@ -21,7 +21,7 @@
 
 #include <array>
 #include <cstdint>
-#include "cfile.h"
+#include <posix_stream.h>
 
 #define MAX_AL_TYPES 6
 #define MAX_ALS_PER_TYPE 130
@@ -49,7 +49,8 @@ class ambient_life {
   std::array<uint8_t, MAX_AL_TYPES> m_cur_num;
   std::array<std::array<int, MAX_ALS_PER_TYPE>, MAX_AL_TYPES> m_handle;
 
-  // Don't save these...
+  // Runtime-only state that is saved per type (m_next_size, m_next_do_time):
+  // the engine's SaveData/LoadData serialize them alongside the editor values.
   std::array<uint8_t, MAX_AL_TYPES> m_next_size;
   std::array<float, MAX_AL_TYPES> m_next_do_time;
 
@@ -60,8 +61,8 @@ public:
 
   void GetALValue(int8_t index, char field, void *ptr);
   void SetALValue(int8_t index, char field, void *ptr);
-  void SaveData(struct CFILE* fptr);
-  void LoadData(struct CFILE* fptr);
+  void SaveData(posix_ostream &ofile) const;
+  void LoadData(posix_istream &ifile);
 
   void DoFrame();
   void InitForLevel(void);

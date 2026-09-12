@@ -245,7 +245,6 @@ level_info Level_info;
 
 // ==================== Ambient ====================
 ambient_life a_life;
-void ambient_life::ALReset() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Manage ====================
 mngs_track_lock GlobalTrackLocks[MAX_TRACKLOCKS] = {};
