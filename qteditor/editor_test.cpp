@@ -61,6 +61,7 @@
 #include "matcen.h"
 #include "levelgoal.h"
 #include "aiambient.h"
+#include "player.h"
 #include "object.h"
 #include "object_lighting.h"
 #include "object_ops.h"
@@ -1607,6 +1608,117 @@ private slots:
       const QByteArray cbb = cb.readAll();
       QCOMPARE(cbb.size(), cba.size());
       QVERIFY2(cba == cbb, "real-level LIFE round trip is not byte-stable");
+    }
+
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+    QDir::current().rmdir(tmp);
+
+    // Clean teardown.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    DestroyAllMatcens();
+  }
+
+  void testPlayerStartsChunkRoundTrip()
+  {
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    DestroyAllMatcens();
+
+    // A minimal used room (identical to the other chunk round-trip tests) so
+    // the writer emits a well-framed AABB chunk.
+    room *r0 = &Rooms[0];
+    *r0 = room{};
+    InitRoom(r0, 4, 2, 0);
+    for (int i = 0; i < 4; i++) {
+      r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
+      InitRoomFace(&r0->faces[i / 2], 4);
+      for (int j = 0; j < 4; j++)
+        r0->faces[i / 2].face_verts[j] = (int16_t)j;
+    }
+    r0->faces[0].tmap = 2;
+    r0->faces[1].tmap = 2;
+    r0->name.clear();
+    Highest_room_index = 0;
+
+    // Distinct per-player start flags so the round-trip is provably real.
+    for (int i = 0; i < MAX_PLAYERS; i++)
+      Players[i].startpos_flags = 0x1000 + i;
+
+    const QString tmp = QDir::tempPath() + "/_test_pstr_roundtrip";
+    QDir::current().mkpath(tmp);
+    const QString f1 = tmp + "/pstr1.d3l";
+    const QString f2 = tmp + "/pstr2.d3l";
+    const QString f3 = tmp + "/pstr3.d3l";
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
+
+    QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
+    for (int i = 0; i < MAX_PLAYERS; i++)
+      QCOMPARE(Players[i].startpos_flags, static_cast<int32_t>(0x1000 + i));
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
+
+    QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
+    QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
+
+    QFile a(f2), b(f3);
+    QVERIFY(a.open(QIODevice::ReadOnly));
+    QVERIFY(b.open(QIODevice::ReadOnly));
+    const QByteArray ba = a.readAll();
+    const QByteArray bb = b.readAll();
+    QCOMPARE(bb.size(), ba.size());
+    QVERIFY2(ba == bb, "PSTR round trip is not byte-stable");
+
+    // Real levels carry PSTR chunks; they must load and re-emit identically.
+    const std::filesystem::path lvl1 = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    const std::filesystem::path lvl3 = "/home/gravis/project/D3rebuild/testdata/level3.d3l";
+    const std::filesystem::path lvl4 = "/home/gravis/project/D3rebuild/testdata/level4.d3l";
+    for (const std::filesystem::path &lvl : {lvl1, lvl3, lvl4}) {
+      if (!std::filesystem::exists(lvl))
+        continue;
+
+      const QString g1 = tmp + "/pstrr1.d3l";
+      const QString g2 = tmp + "/pstrr2.d3l";
+      QFile::remove(g1);
+      QFile::remove(g2);
+
+      QVERIFY2(LoadLevel(lvl, nullptr), "LoadLevel(real) failed");
+      QVERIFY2(SaveLevel(std::filesystem::path(g1.toStdString()), true), "SaveLevel real passA failed");
+
+      QFile raw(g1);
+      QVERIFY(raw.open(QIODevice::ReadOnly));
+      const QByteArray bytes = raw.readAll();
+      QVERIFY2(bytes.indexOf("PSTR") >= 0, "saved level is missing its PSTR chunk");
+
+      QVERIFY2(LoadLevel(std::filesystem::path(g1.toStdString()), nullptr), "LoadLevel real passA failed");
+      QVERIFY2(SaveLevel(std::filesystem::path(g2.toStdString()), true), "SaveLevel real passB failed");
+      QFile ca(g1), cb(g2);
+      QVERIFY(ca.open(QIODevice::ReadOnly));
+      QVERIFY(cb.open(QIODevice::ReadOnly));
+      const QByteArray cba = ca.readAll();
+      const QByteArray cbb = cb.readAll();
+      QCOMPARE(cbb.size(), cba.size());
+      QVERIFY2(cba == cbb, "real-level PSTR round trip is not byte-stable");
     }
 
     QFile::remove(f1);

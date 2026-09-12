@@ -24,7 +24,9 @@
 // subset of chunks the editor needs to RENDER and round-trip:
 //
 //   PATH  - game paths (named navigation-path table)
+//   TSND  - terrain sound bands (used bands: sound + altitude/volume range)
 //   NLMP  - room/terrain lightmaps (textures + lightmap-info records)
+//   PSTR  - player start position flags (passed through untouched)
 //   TXNM  - skipped (no texture xlate table in the mini; raw indices survive)
 //   ROOM  - room geometry (verts, faces, portals), Comp face normals after
 //   RWND  - per-room wind vectors
@@ -34,7 +36,6 @@
 //           prefix the mini keeps: type/id/name/flags/roomnum/pos/orient.
 //   TRIG  - trigger table
 //   INFO  - level name/designer/copyright/notes + level physics params
-//   PSTR  - skipped (player starts are editor-only; ignored on load)
 //
 // All other chunks are skipped by seeking to chunk_start + chunk_size.
 // SaveLevel writes those chunks in the same format so LoadLevel round-trips.
@@ -65,6 +66,7 @@
 #include "matcen.h"
 #include "levelgoal.h"
 #include "aiambient.h"
+#include "player.h"
 #include "soundload.h"
 #include "ssl_lib.h"
 
@@ -454,6 +456,36 @@ void ClearTerrainSound() {
     Terrain_sound_bands[b].low_volume = 0.0f;
     Terrain_sound_bands[b].high_volume = 0.0f;
   }
+}
+
+// PSTR (player starts).  Reader/writer (LoadLevel.cpp:3499 / :5062).  A short
+// player count (>= 120; legacy files used a fixed 32) then that many start
+// position flag words.  The editor passes these through untouched.
+static void LL_ReadPlayerStartsChunk(posix_istream &ifile, int version) {
+  int n = MAX_PLAYERS;
+  if (version >= 120) {
+    int16_t n16 = 0;
+    ifile >> n16;
+    n = n16;
+  }
+  if (n < 0)
+    n = 0;
+  if (n > MAX_PLAYERS)
+    n = MAX_PLAYERS;
+
+  for (int i = 0; i < n; i++)
+    ifile >> Players[i].startpos_flags;
+}
+
+static void LL_WritePlayerStartsChunk(posix_ostream &ofile) {
+  int start = LL_StartChunk(ofile, CHUNK_PLAYER_STARTS);
+
+  ofile << static_cast<int16_t>(MAX_PLAYERS);
+
+  for (int i = 0; i < MAX_PLAYERS; i++)
+    ofile << Players[i].startpos_flags;
+
+  LL_EndChunk(ofile, start);
 }
 
 static void LL_ReadInfo(posix_istream &ifile, int) {
@@ -1203,6 +1235,8 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
         LL_ReadGamePathsChunk(ifile, version);
       } else if (IsChunk(chunk_name, CHUNK_TERRAIN_SOUND)) {
         LL_ReadTerrainSoundChunk(ifile, version);
+      } else if (IsChunk(chunk_name, CHUNK_PLAYER_STARTS)) {
+        LL_ReadPlayerStartsChunk(ifile, version);
       } else if (IsChunk(chunk_name, "NLMP")) {
         LL_ReadNewLightmapChunk(ifile, version);
       } else if (IsChunk(chunk_name, "ROOM")) {
@@ -1388,6 +1422,9 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     // NLMP: room/terrain lightmaps (engine order: after terrain sounds, before
     // the texture list).
     LL_WriteLightmapChunk(out);
+
+    // PSTR: player start flags (engine order: right after the lightmaps).
+    LL_WritePlayerStartsChunk(out);
 
     // TXNM: no texture names; write an empty list.
     {
