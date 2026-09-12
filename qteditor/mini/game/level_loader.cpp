@@ -35,6 +35,8 @@
 //           (object number in the low bits) followed by the placement
 //           prefix the mini keeps: type/id/name/flags/roomnum/pos/orient.
 //   TRIG  - trigger table
+//   OSND  - override (force-field/glass-breaking) sound names
+//   FFTM  - force-field bounce texture multipliers (sets TF_FORCEFIELD)
 //   INFO  - level name/designer/copyright/notes + level physics params
 //
 // All other chunks are skipped by seeking to chunk_start + chunk_size.
@@ -484,6 +486,76 @@ static void LL_WritePlayerStartsChunk(posix_ostream &ofile) {
 
   for (int i = 0; i < MAX_PLAYERS; i++)
     ofile << Players[i].startpos_flags;
+
+  LL_EndChunk(ofile, start);
+}
+
+// OSND (override sounds) / FFTM (force-field bounce texture multipliers).
+// Reader/writer pairs (LoadLevel.cpp:2956/:2970, writers :4593/:4612).  The
+// engine's NEWEDITOR build only *reads* these (for v1.2 compatibility it does
+// not re-write them); the mini writes them so an engine-made level with such
+// chunks round-trips losslessly.
+static void LL_ReadOverrideSoundChunk(posix_istream &ifile) {
+  sound_override_force_field = -1;
+  sound_override_glass_breaking = -1;
+
+  std::string soundname;
+  ifile >> soundname;
+  if (!soundname.empty())
+    sound_override_force_field = FindSoundName(soundname);
+
+  ifile >> soundname;
+  if (!soundname.empty())
+    sound_override_glass_breaking = FindSoundName(soundname);
+}
+
+static void LL_WriteOverrideSoundChunk(posix_ostream &ofile) {
+  int start = LL_StartChunk(ofile, CHUNK_OVERRIDE_SOUNDS);
+
+  ofile << (sound_override_force_field != -1 ? Sounds[sound_override_force_field].name
+                                             : std::string());
+  ofile << (sound_override_glass_breaking != -1 ? Sounds[sound_override_glass_breaking].name
+                                                : std::string());
+
+  LL_EndChunk(ofile, start);
+}
+
+static void LL_ReadFFTMChunk(posix_istream &ifile, int version) {
+  for (int i = 0; i < MAX_FORCE_FIELD_BOUNCE_TEXTURES; i++) {
+    force_field_bounce_texture[i] = -1;
+    force_field_bounce_multiplier[i] = 0.0f;
+  }
+
+  int num_items = MAX_FORCE_FIELD_BOUNCE_TEXTURES;
+  if (version < 132)
+    num_items = 2;
+
+  for (int i = 0; i < num_items; i++) {
+    std::string texturename;
+    ifile >> texturename;
+    if (texturename.empty())
+      continue;
+
+    const int idx = FindTextureName(texturename);
+    force_field_bounce_texture[i] = idx;
+    ifile >> force_field_bounce_multiplier[i];
+
+    if (idx >= 0 && idx < MAX_TEXTURES)
+      GameTextures[idx].flags.forcefield = true;
+  }
+}
+
+static void LL_WriteFFTMChunk(posix_ostream &ofile) {
+  int start = LL_StartChunk(ofile, CHUNK_FFT_MOD);
+
+  for (int i = 0; i < MAX_FORCE_FIELD_BOUNCE_TEXTURES; i++) {
+    if (force_field_bounce_texture[i] != -1) {
+      ofile << GameTextures[force_field_bounce_texture[i]].name;
+      ofile << force_field_bounce_multiplier[i];
+    } else {
+      ofile << std::string();
+    }
+  }
 
   LL_EndChunk(ofile, start);
 }
@@ -1361,6 +1433,10 @@ int handle = handle32;
         Level_goals.LoadLevelGoalInfo(ifile);
       } else if (IsChunk(chunk_name, CHUNK_ALIFE_DATA)) {
         a_life.LoadData(ifile);
+      } else if (IsChunk(chunk_name, CHUNK_OVERRIDE_SOUNDS)) {
+        LL_ReadOverrideSoundChunk(ifile);
+      } else if (IsChunk(chunk_name, CHUNK_FFT_MOD)) {
+        LL_ReadFFTMChunk(ifile, version);
       } else if (IsChunk(chunk_name, "INFO")) {
         LL_ReadInfo(ifile, version);
       } else {
@@ -1564,6 +1640,11 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
 
     // AABB (room bounding boxes / BBF region lists)
     LL_WriteRoomAABBChunk(out);
+
+    // OSND / FFTM (override sounds + force-field bounce textures).  Engine
+    // (game build) order: after the BOA/BNode chunks, before AABB.
+    LL_WriteOverrideSoundChunk(out);
+    LL_WriteFFTMChunk(out);
 
     // MTCN (matcen data).  Written unconditionally; per-record SaveData does
     // not Reset() (see mini/editor/matcen.cpp) so a re-saved level keeps the

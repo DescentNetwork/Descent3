@@ -82,6 +82,8 @@ bool EBNode_VerifyGraph();
 #include "ship.h"
 #include "game.h"
 #include "ssl_lib.h"
+#include "soundload.h"
+#include "gametexture.h"
 #include "terrain.h"
 #include "BOA.h"
 #include "trigger.h"
@@ -1719,6 +1721,148 @@ private slots:
       const QByteArray cbb = cb.readAll();
       QCOMPARE(cbb.size(), cba.size());
       QVERIFY2(cba == cbb, "real-level PSTR round trip is not byte-stable");
+    }
+
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+    QDir::current().rmdir(tmp);
+
+    // Clean teardown.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    DestroyAllMatcens();
+  }
+
+  void testOverrideSoundFFTMChunkRoundTrip()
+  {
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+    DestroyAllMatcens();
+
+    // A minimal used room (identical to the other chunk round-trip tests) so
+    // the writer emits a well-framed AABB chunk.
+    room *r0 = &Rooms[0];
+    *r0 = room{};
+    InitRoom(r0, 4, 2, 0);
+    for (int i = 0; i < 4; i++) {
+      r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
+      InitRoomFace(&r0->faces[i / 2], 4);
+      for (int j = 0; j < 4; j++)
+        r0->faces[i / 2].face_verts[j] = (int16_t)j;
+    }
+    r0->faces[0].tmap = 2;
+    r0->faces[1].tmap = 2;
+    r0->name.clear();
+    Highest_room_index = 0;
+
+    // Distinct override sounds and a force-field bounce texture so both
+    // chunks carry provably real payloads instead of all-empty defaults.
+    for (int i = 0; i < MAX_FORCE_FIELD_BOUNCE_TEXTURES; i++) {
+      force_field_bounce_texture[i] = -1;
+      force_field_bounce_multiplier[i] = 0.0f;
+    }
+    sound_override_force_field = -1;
+    sound_override_glass_breaking = -1;
+
+    Sounds[4].name = "Custom Force Sound";
+    Sounds[5].name = "Custom Glass Sound";
+    sound_override_force_field = 4;
+    sound_override_glass_breaking = 5;
+
+    GameTextures[7].name = "GMISS07";
+    force_field_bounce_texture[0] = 7;
+    force_field_bounce_multiplier[0] = 0.6f;
+
+    const QString tmp = QDir::tempPath() + "/_test_osnd_fftm_roundtrip";
+    QDir::current().mkpath(tmp);
+    const QString f1 = tmp + "/osnd1.d3l";
+    const QString f2 = tmp + "/osnd2.d3l";
+    const QString f3 = tmp + "/osnd3.d3l";
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
+
+    QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
+    QCOMPARE(sound_override_force_field, 4);
+    QCOMPARE(sound_override_glass_breaking, 5);
+    QCOMPARE(force_field_bounce_texture[0], 7);
+    QCOMPARE(force_field_bounce_multiplier[0], 0.6f);
+    QVERIFY2(GameTextures[7].flags.forcefield, "FFTM chunk did not set TF_FORCEFIELD");
+    QCOMPARE(force_field_bounce_texture[1], -1);
+    QCOMPARE(force_field_bounce_texture[2], -1);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
+
+    QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
+    QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
+
+    QFile a(f2), b(f3);
+    QVERIFY(a.open(QIODevice::ReadOnly));
+    QVERIFY(b.open(QIODevice::ReadOnly));
+    const QByteArray ba = a.readAll();
+    const QByteArray bb = b.readAll();
+    QCOMPARE(bb.size(), ba.size());
+    QVERIFY2(ba == bb, "OSND/FFTM round trip is not byte-stable");
+
+    // Real testdata levels carry no OSND/FFTM chunks; the mini still emits
+    // them (all-empty) and the emitted files must round-trip byte-stably.
+    const std::filesystem::path lvl1 = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    const std::filesystem::path lvl3 = "/home/gravis/project/D3rebuild/testdata/level3.d3l";
+    const std::filesystem::path lvl4 = "/home/gravis/project/D3rebuild/testdata/level4.d3l";
+    for (const std::filesystem::path &lvl : {lvl1, lvl3, lvl4}) {
+      if (!std::filesystem::exists(lvl))
+        continue;
+
+      const QString g1 = tmp + "/osndr1.d3l";
+      const QString g2 = tmp + "/osndr2.d3l";
+      QFile::remove(g1);
+      QFile::remove(g2);
+
+      QVERIFY2(LoadLevel(lvl, nullptr), "LoadLevel(real) failed");
+
+      // Real testdata levels carry no OSND/FFTM data; reset the override
+      // tables to their defaults so each emitted file is deterministic.
+      for (int i = 0; i < MAX_FORCE_FIELD_BOUNCE_TEXTURES; i++) {
+        force_field_bounce_texture[i] = -1;
+        force_field_bounce_multiplier[i] = 0.0f;
+      }
+      sound_override_force_field = -1;
+      sound_override_glass_breaking = -1;
+
+      QVERIFY2(SaveLevel(std::filesystem::path(g1.toStdString()), true), "SaveLevel real passA failed");
+
+      QFile raw(g1);
+      QVERIFY(raw.open(QIODevice::ReadOnly));
+      const QByteArray bytes = raw.readAll();
+      QVERIFY2(bytes.indexOf("OSND") >= 0, "saved level is missing its OSND chunk");
+      QVERIFY2(bytes.indexOf("FFTM") >= 0, "saved level is missing its FFTM chunk");
+
+      QVERIFY2(LoadLevel(std::filesystem::path(g1.toStdString()), nullptr), "LoadLevel real passA failed");
+      QVERIFY2(SaveLevel(std::filesystem::path(g2.toStdString()), true), "SaveLevel real passB failed");
+      QFile ca(g1), cb(g2);
+      QVERIFY(ca.open(QIODevice::ReadOnly));
+      QVERIFY(cb.open(QIODevice::ReadOnly));
+      const QByteArray cba = ca.readAll();
+      const QByteArray cbb = cb.readAll();
+      QCOMPARE(cbb.size(), cba.size());
+      QVERIFY2(cba == cbb, "real-level OSND/FFTM round trip is not byte-stable");
     }
 
     QFile::remove(f1);
