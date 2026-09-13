@@ -1123,6 +1123,7 @@ private slots:
       QVERIFY(raw.open(QIODevice::ReadOnly));
       const QByteArray bytes = raw.readAll();
       QVERIFY2(bytes.indexOf("AABB") >= 0, "saved level1.d3l is missing its AABB chunk");
+      QVERIFY2(bytes.indexOf("CBOA") >= 0, "saved level1.d3l is missing its CBOA (BOA) chunk");
 
       QVERIFY2(LoadLevel(std::filesystem::path(g1.toStdString()), nullptr), "LoadLevel passA failed");
       QVERIFY2(SaveLevel(std::filesystem::path(g2.toStdString()), true), "SaveLevel level1 passB failed");

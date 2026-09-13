@@ -77,7 +77,7 @@
 #include "moveworld.h"
 
 #include <QtGlobal>
-
+#include <posix_stream.h>
 #include <cstring>
 #include <cstdio>
 #include <stdexcept>
@@ -127,6 +127,125 @@ static int LL_FindTextureName(const std::string& name) {
   return -1;
 }
 
+static int LL_StartChunk(posix_ostream &ofile, const char *chunk_name);
+static void LL_EndChunk(posix_ostream &ofile, int chunk_start_pos);
+
+static void LL_ReadBOAChunk(posix_istream &ifile, uint32_t version)
+{
+  int i, j;
+  int max_rooms;
+  int max_path_portals;
+  int16_t sval = 0;
+
+  // Get the number of paths
+  int32_t checksum_seed = 0;
+  ifile >> checksum_seed;
+  BOA_AABB_checksum = BOA_mine_checksum = static_cast<int>(checksum_seed);
+
+  if (version >= 76)
+    ifile >> BOA_vis_checksum;
+  else
+    BOA_vis_checksum = 0;
+
+  ifile >> max_rooms;
+
+  if (version < 62) {
+    ifile.seek(sizeof(int16_t) * max_rooms * max_rooms, std::ios_base::cur);
+
+    LOG_DEBUG("We will need to remake boa.  New cost structure added");
+    BOA_AABB_checksum = BOA_mine_checksum = 0;
+  } else {
+    ifile >> max_path_portals;
+
+    Q_ASSERT(max_rooms - 1 <= MAX_ROOMS + 8);
+
+    if (version < 110 || (max_path_portals != MAX_PATH_PORTALS)) {
+      ifile.seek(sizeof(int16_t) * max_rooms * max_rooms + max_rooms * max_path_portals * sizeof(float),
+                 std::ios_base::cur);
+
+      if (version >= 107) {
+        // Read BOA terrain info (temporary, just so vis data works with multiplay)
+        ifile.seek(max_rooms * sizeof(float), std::ios_base::cur);
+      }
+
+      LOG_DEBUG("We will need to remake boa.  Data size changed");
+      BOA_AABB_checksum = BOA_mine_checksum = 0;
+    } else {
+      for (i = 0; i <= max_rooms; i++) {
+        for (j = 0; j <= max_rooms; j++) {
+          ifile >> sval;
+          BOA_Array[i][j] = static_cast<uint16_t>(sval);
+        }
+      }
+
+      for (i = 0; i <= max_rooms; i++) {
+        for (j = 0; j < max_path_portals; j++) {
+          ifile >> BOA_cost_array[i][j];
+        }
+      }
+
+      ifile >> BOA_num_mines;
+      ifile >> BOA_num_terrain_regions;
+
+      if (version < 112) {
+        LOG_DEBUG("We will need to remake boa.");
+        BOA_AABB_checksum = BOA_mine_checksum = 0;
+      } else {
+        for (i = 0; i < BOA_num_terrain_regions; i++) {
+          ifile >> BOA_num_connect[i];
+
+          for (j = 0; j < BOA_num_connect[i]; j++) {
+            ifile >> BOA_connect[i][j].roomnum;
+            ifile >> BOA_connect[i][j].portal;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+// Writes the CBOA (BOA) chunk.  Engine counterpart WriteBOAChunk
+// (LoadLevel.cpp:4675).  mine/vis checksums, room count (incl. +8 for the path
+// portals) and MAX_PATH_PORTALS, then the full BOA_Array grid of cost int16s,
+// the BOA_cost_array of floats, then mine/terrain-region counts and the
+// terrain-region connectivity list.  Written unconditionally in the current
+// format (no version gates, like the engine writer).
+static void LL_WriteBOAChunk(posix_ostream &ofile) {
+  int start = LL_StartChunk(ofile, CHUNK_BOA);
+  int i, j;
+
+  ofile << BOA_mine_checksum;
+  ofile << BOA_vis_checksum;
+  ofile << (Highest_room_index + 8);
+  ofile << static_cast<int>(MAX_PATH_PORTALS);
+
+  for (i = 0; i <= Highest_room_index + 8; i++) {
+    for (j = 0; j <= Highest_room_index + 8; j++) {
+      ofile << static_cast<int16_t>(BOA_Array[i][j]);
+    }
+  }
+
+  for (i = 0; i <= Highest_room_index + 8; i++) {
+    for (j = 0; j < MAX_PATH_PORTALS; j++) {
+      ofile << BOA_cost_array[i][j];
+    }
+  }
+
+  ofile << BOA_num_mines;
+  ofile << BOA_num_terrain_regions;
+
+  for (i = 0; i < BOA_num_terrain_regions; i++) {
+    ofile << BOA_num_connect[i];
+
+    for (j = 0; j < BOA_num_connect[i]; j++) {
+      ofile << BOA_connect[i][j].roomnum;
+      ofile << BOA_connect[i][j].portal;
+    }
+  }
+
+  LL_EndChunk(ofile, start);
+}
 
 // Reads a TXNM chunk: an int32 count, then that many null-terminated texture
 // names.  Builds texture_xlate[] so faces can map level-texture-index → global
@@ -256,7 +375,7 @@ static void LL_EndChunk(posix_ostream &ofile, int chunk_start_pos) {
 
 // RLE byte compression used by the engine inside ROOM for volume lights.
 
-static int LL_ReadRoom(posix_istream &ifile, room *rp, int /*version*/) {
+static int LL_ReadRoom(posix_istream &ifile, room *rp, uint32_t /*version*/) {
   // Current canonical layout: the room stream operator reads every field
   // (verts, faces, portals, lights, ...) exactly as the engine writes it.
   ifile >> *rp;
@@ -1596,6 +1715,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
         break;
       }
       case "AABB"_ID: LL_ReadRoomAABBChunk(ifile); break;
+      case "CBOA"_ID: LL_ReadBOAChunk(ifile, version); break;
       case "MTCN"_ID: LL_ReadMatcenChunk(ifile); break;
       case "LVLG"_ID: Level_goals.LoadLevelGoalInfo(ifile); break;
       case "LIFE"_ID: a_life.LoadData(ifile); break;
@@ -1795,6 +1915,11 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
         out << Triggers[i];
       LL_EndChunk(out, start);
     }
+
+    // CBOA (automatic path point / BOA data).  Written after the TRIG block,
+    // before AABB — mirrors engine SaveLevel relative order and keeps BOA
+    // fields alive across a read->write round trip.
+    LL_WriteBOAChunk(out);
 
     // AABB (room bounding boxes / BBF region lists)
     LL_WriteRoomAABBChunk(out);
