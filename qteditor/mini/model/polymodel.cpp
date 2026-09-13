@@ -635,29 +635,29 @@ int Instance_vec_cnt = 0;
 bool Polymodel_outline_mode = false;
 #endif
 
-constexpr char32_t operator "" _ID(const char* const str, std::size_t len) {
+constexpr uint32_t operator "" _ID(const char* const str, std::size_t len) {
   if (len != 4)
-    throw "FourCC requires exactly 4 characters";
-  return (static_cast<char32_t>(str[0]) << 24) |
-         (static_cast<char32_t>(str[1]) << 16) |
-         (static_cast<char32_t>(str[2]) << 8)  |
-         static_cast<char32_t>(str[3]);
+    throw "ID strings requires exactly 4 characters";
+  return (static_cast<uint32_t>(str[3]) << 24) |
+         (static_cast<uint32_t>(str[2]) << 16) |
+         (static_cast<uint32_t>(str[1]) << 8)  |
+         static_cast<uint32_t>(str[0]);
 }
 
-#define ID_OHDR "RDHO"_ID           // POF file header
-#define ID_SOBJ "JBOS"_ID           // Subobject header
-#define ID_IDTA "ATDI"_ID           // Interpreter data
-#define ID_TXTR "RTXT"_ID           // Texture filename list
-#define ID_INFO "FNIP"_ID           // POF file information, like command line, etc
-#define ID_GRID "DIRG"_ID           // Grid information
-#define ID_GPNT "TNPG"_ID           // gun points
-#define ID_ROT_ANIM "INAR"_ID       // angular animation data
-#define ID_POS_ANIM "INAP"_ID       // positional animation data
-#define ID_ANIM "MINA"_ID           // angular information
-#define ID_WBS "TABW"_ID            // Weapon Battery Info
-#define ID_GROUND "DNRG"_ID         // Ground Plane info
-#define ID_ATTACH "HCTA"_ID         // Attach points
-#define ID_ATTACH_NORMALS "HTAN"_ID // Attach uvecs
+#define ID_OHDR "0HDR"_ID           // POF file header
+#define ID_SOBJ "SOBJ"_ID           // Subobject header
+#define ID_IDTA "IDTA"_ID           // Interpreter data
+#define ID_TXTR "TXTR"_ID           // Texture filename list
+#define ID_INFO "PINF"_ID           // POF file information, like command line, etc
+#define ID_GRID "GRID"_ID           // Grid information
+#define ID_GPNT "GPNT"_ID           // gun points
+#define ID_ROT_ANIM "RNAI"_ID       // angular animation data
+#define ID_POS_ANIM "PANI"_ID       // positional animation data
+#define ID_ANIM "ANIM"_ID           // angular information
+#define ID_WBS "WBAT"_ID            // Weapon Battery Info
+#define ID_GROUND "GRND"_ID         // Ground Plane info
+#define ID_ATTACH "ATCH"_ID         // Attach points
+#define ID_ATTACH_NORMALS "NATH"_ID // Attach uvecs
 
 static_assert(sizeof("1234"_ID) == sizeof(uint32_t));
 
@@ -833,7 +833,7 @@ std::string ReadModelStringLen(byte_istream &infile) {
 // models textures with the bitmaps with have in memory
 int ReloadModelTextures(int modelnum, byte_istream &infile) {
   int done = 0, len;
-  char32_t id;
+  uint32_t id;
   poly_model *pm = &Poly_models[modelnum];
 
   Q_ASSERT(!(Poly_models[modelnum].flags & PMF_NOT_RESIDENT));
@@ -842,7 +842,7 @@ int ReloadModelTextures(int modelnum, byte_istream &infile) {
   id = 0;
   infile >> id;
 
-  if (id != "OPSP"_ID)
+  if (id != "PSPO"_ID)
   {
     LOG_ERROR("Bad ID in model file!");
   }
@@ -1191,7 +1191,7 @@ int ReadNewModelFile(int polynum, byte_istream &infile) {
 
   infile >> id;
 
-  if (id != "OPSP"_ID)
+  if (id != "PSPO"_ID)
   {
     LOG_ERROR("Bad ID in model file!");
     Q_ASSERT(false);

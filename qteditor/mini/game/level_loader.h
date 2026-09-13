@@ -650,7 +650,7 @@ bool LoadLevelInfo(const std::filesystem::path& filename, level_info &info);
 //	parm1 = -1, for 1st just opened level
 //	parm2 = -2, for done loading.
 //bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *, int, int) = NULL);
-bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *, int, int) = NULL);
+bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, uint32_t, uint32_t) = nullptr);
 
 // Save a level file
 // Returns 1 if file saved ok, else 0

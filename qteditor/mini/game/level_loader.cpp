@@ -74,7 +74,7 @@
 #include "soundload.h"
 #include "ssl_lib.h"
 #include "d3edit.h"
-#include "moveworld.h">
+#include "moveworld.h"
 
 #include <QtGlobal>
 
@@ -85,6 +85,15 @@
 #include <algorithm>
 #include <bit>
 #include <vector>
+
+constexpr uint32_t operator "" _ID(const char* const str, std::size_t len) {
+  if (len != 4)
+    throw "ID strings requires exactly 4 characters";
+  return (static_cast<uint32_t>(str[3]) << 24) |
+         (static_cast<uint32_t>(str[2]) << 16) |
+         (static_cast<uint32_t>(str[1]) << 8)  |
+         static_cast<uint32_t>(str[0]);
+}
 
 #define LL_TAG "D3LV"
 
@@ -409,7 +418,7 @@ static void LL_WriteMatcenChunk(posix_ostream &ofile) {
 // sound table), a low/high altitude pair and a low/high volume pair.  The
 // writer emits only the used bands (sound_index != -1), so the reader clears
 // the table first and the reload re-emits the same used set byte-stably.
-static void LL_ReadTerrainSoundChunk(posix_istream &ifile, int version) {
+static void LL_ReadTerrainSoundChunk(posix_istream &ifile, uint32_t version) {
   int32_t n_bands = 0;
   ifile >> n_bands;
   if (n_bands < 0)
@@ -479,7 +488,7 @@ void ClearTerrainSound() {
 // PSTR (player starts).  Reader/writer (LoadLevel.cpp:3499 / :5062).  A short
 // player count (>= 120; legacy files used a fixed 32) then that many start
 // position flag words.  The editor passes these through untouched.
-static void LL_ReadPlayerStartsChunk(posix_istream &ifile, int version) {
+static void LL_ReadPlayerStartsChunk(posix_istream &ifile, uint32_t version) {
   int n = MAX_PLAYERS;
   if (version >= 120) {
     int16_t n16 = 0;
@@ -536,7 +545,7 @@ static void LL_WriteOverrideSoundChunk(posix_ostream &ofile) {
   LL_EndChunk(ofile, start);
 }
 
-static void LL_ReadFFTMChunk(posix_istream &ifile, int version) {
+static void LL_ReadFFTMChunk(posix_istream &ifile, uint32_t version) {
   for (int i = 0; i < MAX_FORCE_FIELD_BOUNCE_TEXTURES; i++) {
     force_field_bounce_texture[i] = -1;
     force_field_bounce_multiplier[i] = 0.0f;
@@ -579,7 +588,7 @@ static void LL_WriteFFTMChunk(posix_ostream &ofile) {
 // EDIT (editor state: current/marked room & selection, wireframe view,
 // per-room multipliers/ambience and the lighting globals).  Engine reader
 // inline (:4026-4089, #ifdef EDITOR), writer (:5313, always the LAST chunk).
-static void LL_ReadEditorInfoChunk(posix_istream &ifile, int version) {
+static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
   auto lookup_room = [](int16_t idx) -> room * {
     if (idx >= 0 && idx <= Highest_room_index && Rooms[idx].used)
       return &Rooms[idx];
@@ -731,7 +740,7 @@ static void LL_WriteInfo(posix_ostream &ofile) {
 
 // ---------------------------------------------------------------------------
 // Game paths (PATH) chunk: the level's named navigation-path table.
-static void LL_ReadGamePathsChunk(posix_istream &ifile, int version) {
+static void LL_ReadGamePathsChunk(posix_istream &ifile, uint32_t version) {
   int16_t np = 0;
   ifile >> np;
   Num_game_paths = np;
@@ -892,7 +901,7 @@ static void LL_ReadCompressedShortArray(posix_istream &ifile, uint16_t *vals, in
   }
 }
 
-static void LL_ReadNewLightmapChunk(posix_istream &ifile, int version) {
+static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
   Num_of_lightmap_info = 0;
   int32_t nummaps = 0;
   ifile >> nummaps;
@@ -1231,7 +1240,7 @@ static void LL_ReadTerrainTmapFlagChunk(posix_istream &ifile, int) {
 
 // Reads the TERR container: sub-chunks until the TEND terminator, then
 // regenerates derived data (AABB, normals, lightmaps).
-static void LL_ReadTerrainChunks(posix_istream &ifile, int version) {
+static void LL_ReadTerrainChunks(posix_istream &ifile, uint32_t version) {
   // Force-reset so the min/max quadtree + LOD delta arrays are sized: the
   // mini never runs InitTerrain(), and the height/light sub-chunk readers and
   // BuildMinMaxTerrain() below write through them.  The height chunk re-fills
@@ -1375,8 +1384,9 @@ static void LL_WriteTerrainChunks(posix_ostream &ofile) {
 // ---------------------------------------------------------------------------
 
 
-bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *, int, int)) {
-  posix_istream ifile;
+bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, uint32_t, uint32_t))
+{
+  posix_istream ifile; // automatically closed by destructor
   if (!ifile.open(filename, std::ios_base::in))
     return false;
 
@@ -1414,75 +1424,84 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
 
   const size_t filelen = ifile.size();
 
-  try {
-    char tag[4];
-    ifile.read(tag, 4);
-    if (tag[0] != 'D' || tag[1] != '3' || tag[2] != 'L' || tag[3] != 'V') {
-      ifile.close();
-      return false;
-    }
-    int32_t version32 = 0;
-    ifile >> version32;
-    int version = version32;
-    // The editor writes the current LEVEL_FILE_VERSION layout via the stream
-    // operators, whose room/face/portal/object/trigger serializers match the
-    // engine on-disk format for version >= 127.  Reject anything older (or
-    // newer than we can write) instead of mis-parsing a legacy layout.
-    if (version > LEVEL_FILE_VERSION || version < 127) {
-      // Let the catch block below close the (still-open) stream once.
-      throw std::runtime_error(
-          std::string("Unsupported level file version ") + std::to_string(version) +
-          " (expected between 127 and " + std::to_string(LEVEL_FILE_VERSION) + ")");
-    }
+  uint32_t id;
+  ifile >> id;
+  if(id != "D3LV"_ID){
+    LOG_DEBUG("BAD MAGIC: %c%c%c%c",
+              (char)((id>>0) & 0xFF),
+              (char)((id>>8) & 0xFF),
+              (char)((id>>16) & 0xFF),
+              (char)((id>>24) & 0xFF));
+    ifile.close();
+    return false;
+  }
+  uint32_t version = 0;
+  ifile >> version;
+  // The editor writes the current LEVEL_FILE_VERSION layout via the stream
+  // operators, whose room/face/portal/object/trigger serializers match the
+  // engine on-disk format for version >= 127.  Reject anything older (or
+  // newer than we can write) instead of mis-parsing a legacy layout.
+  if (version > LEVEL_FILE_VERSION || version < 127) {
+    throw std::runtime_error(
+        std::string("Unsupported level file version ") + std::to_string(version) +
+        " (expected between 127 and " + std::to_string(LEVEL_FILE_VERSION) + ")");
+  }
 
-    while (!ifile.eof()) {
-      char chunk_name[4];
-      ifile.read(chunk_name, 4);
-      if (ifile.eof()) // Run off the end of the file on a chunk boundary
-        break;
-      long chunk_start = static_cast<long>(ifile.tell());
-      int32_t chunk_size32 = 0;
-      ifile >> chunk_size32;
-      int chunk_size = chunk_size32;
+  while (!(ifile >> id).eof())
+  {
+    LOG_DEBUG("Processing chunk: %c%c%c%c",
+              (char)((id>>0) & 0xFF),
+              (char)((id>>8) & 0xFF),
+              (char)((id>>16) & 0xFF),
+              (char)((id>>24) & 0xFF));
 
-      if (IsChunk(chunk_name, "PATH")) {
-        LL_ReadGamePathsChunk(ifile, version);
-      } else if (IsChunk(chunk_name, CHUNK_TERRAIN_SOUND)) {
-        LL_ReadTerrainSoundChunk(ifile, version);
-      } else if (IsChunk(chunk_name, CHUNK_PLAYER_STARTS)) {
-        LL_ReadPlayerStartsChunk(ifile, version);
-      } else if (IsChunk(chunk_name, "NLMP")) {
-        LL_ReadNewLightmapChunk(ifile, version);
-      } else if (IsChunk(chunk_name, "ROOM")) {
-        int32_t num = 0;
-        ifile >> num;
-        int num_rooms = num;
-        int32_t t;
-        ifile >> t; // nverts
-        ifile >> t; // nfaces
-        ifile >> t; // nfaceverts
-        ifile >> t; // nportals
-        int roomnum = 0;
-        for (int i = 0; i < num_rooms; i++) {
-          int16_t room = 0;
-          ifile >> room;
-          roomnum = room;
-          LL_ReadRoom(ifile, &Rooms[roomnum], version);
+    long chunk_start = static_cast<long>(ifile.tell());
+    uint32_t chunk_size = 0;
+    ifile >> chunk_size;
+
+    switch(id)
+    {
+      case "PATH"_ID: LL_ReadGamePathsChunk(ifile, version); break;
+      case "TSND"_ID: LL_ReadTerrainSoundChunk(ifile, version); break;
+      case "PSTR"_ID: LL_ReadPlayerStartsChunk(ifile, version); break;
+      case "NLMP"_ID: LL_ReadNewLightmapChunk(ifile, version); break;
+      case "ROOM"_ID:
+        {
+          int32_t num = 0;
+          ifile >> num;
+          int num_rooms = num;
+          int32_t t;
+          ifile >> t; // nverts
+          ifile >> t; // nfaces
+          ifile >> t; // nfaceverts
+          ifile >> t; // nportals
+          int roomnum = 0;
+          for (int i = 0; i < num_rooms; i++) {
+            int16_t room = 0;
+            ifile >> room;
+            roomnum = room;
+            LL_ReadRoom(ifile, &Rooms[roomnum], version);
+          }
+          Highest_room_index = roomnum;
+          if (Highest_room_index < 0 || Highest_room_index >= MAX_ROOMS)
+            Highest_room_index = MAX_ROOMS - 1;
+          break;
         }
-        Highest_room_index = roomnum;
-        if (Highest_room_index < 0 || Highest_room_index >= MAX_ROOMS)
-          Highest_room_index = MAX_ROOMS - 1;
-      } else if (IsChunk(chunk_name, "TXNM")) {
+      case "TXNM"_ID:
         // Level-local texture name list.  Builds the level->global texture
         // index so faces (ReadFace's raw tmap index) resolve correctly.
         LL_ReadTextureList(ifile, chunk_size);
-      } else if (IsChunk(chunk_name, CHUNK_GENERIC_NAMES)) {
+        break;
+      case "GNNM"_ID:
         // Object page names; maps file object ids to the loaded game tables.
         LL_ReadNameXlateChunk(ifile, chunk_size, FindObjectIDName, generic_xlate, MAX_OBJECT_IDS);
-      } else if (IsChunk(chunk_name, CHUNK_DOOR_NAMES)) {
+        break;
+      case "DRNM"_ID:
         // Door page names; maps file door ids to the loaded game tables.
         LL_ReadNameXlateChunk(ifile, chunk_size, FindDoorName, door_xlate, MAX_DOORS);
-      } else if (IsChunk(chunk_name, "RWND")) {
+        break;
+      case "RWND"_ID:
+      {
         int32_t num = 0;
         ifile >> num;
         int nrooms = num;
@@ -1491,9 +1510,11 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
           ifile >> roomnum;
           ifile >> Rooms[roomnum].wind;
         }
-      } else if (IsChunk(chunk_name, "TERR")) {
-        LL_ReadTerrainChunks(ifile, version);
-      } else if (IsChunk(chunk_name, CHUNK_OBJECT_HANDLES)) {
+        break;
+      }
+      case "TERR"_ID: LL_ReadTerrainChunks(ifile, version); break;
+      case "OHND"_ID:
+      {
         // Object handles for deleted (OBJ_NONE) slots whose handle count part
         // is non-zero, so a freed slot's identity survives a save/load cycle.
         // Matches the engine's inline OHND reader.
@@ -1510,17 +1531,19 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(const char *
           already_loaded[objnum] = 1;
           Objects[objnum].handle = handle32;
         }
-      } else if (IsChunk(chunk_name, "OBJS")) {
-        int32_t num = 0;
+        break;
+      }
+      case "OBJS"_ID:
+      {
+        uint32_t num = 0;
         ifile >> num;
-        int n = num;
-        for (int i = 0; i < n; i++) {
+        for (uint32_t i = 0; i < num; i++) {
           // Each record begins with the object's 32-bit handle (not its
           // index); the object number lives in the low bits.  This mirrors
           // the engine's LoadLevel (version >= 45).
-          int32_t handle32 = 0;
-          ifile >> handle32;
-int handle = handle32;
+          uint32_t handle = 0;
+          ifile >> handle;
+
            int objnum = handle & HANDLE_OBJNUM_MASK;
           if (objnum < 0 || objnum >= MAX_OBJECTS)
             continue;
@@ -1555,7 +1578,10 @@ int handle = handle32;
         // the object_info page for each loaded object, matching the engine's
         // ReadObject which calls ObjInit() (and thus ObjInitTypeSpecific).
         ObjReInitAll();
-      } else if (IsChunk(chunk_name, "TRIG")) {
+        break;
+      }
+      case "TRIG"_ID:
+      {
         int32_t nt = 0;
         ifile >> nt;
         Num_triggers = nt;
@@ -1567,44 +1593,32 @@ int handle = handle32;
           *tp = trigger{};
           ifile >> *tp;
         }
-      } else if (IsChunk(chunk_name, CHUNK_ROOM_AABB)) {
-        LL_ReadRoomAABBChunk(ifile);
-      } else if (IsChunk(chunk_name, CHUNK_MATCEN_DATA)) {
-        LL_ReadMatcenChunk(ifile);
-      } else if (IsChunk(chunk_name, CHUNK_LEVEL_GOALS)) {
-        Level_goals.LoadLevelGoalInfo(ifile);
-      } else if (IsChunk(chunk_name, CHUNK_ALIFE_DATA)) {
-        a_life.LoadData(ifile);
-      } else if (IsChunk(chunk_name, CHUNK_OVERRIDE_SOUNDS)) {
-        LL_ReadOverrideSoundChunk(ifile);
-      } else if (IsChunk(chunk_name, CHUNK_FFT_MOD)) {
-        LL_ReadFFTMChunk(ifile, version);
-      } else if (IsChunk(chunk_name, "INFO")) {
-        LL_ReadInfo(ifile, version);
-      } else if (IsChunk(chunk_name, CHUNK_EDITOR_INFO)) {
-        LL_ReadEditorInfoChunk(ifile, version);
-      } else {
-        // unknown / skipped chunk (PSTR, lightmaps, ...)
+        break;
       }
-
-      // Seek past any leftover body bytes to the next chunk boundary.
-      long body_end = chunk_start + chunk_size;
-      if (ifile.tell() != body_end)
-        ifile.seek(body_end, std::ios_base::beg);
-
-      if (cb_fn)
-        cb_fn(chunk_name, chunk_size, (int)filelen);
+      case "AABB"_ID: LL_ReadRoomAABBChunk(ifile); break;
+      case "MTCN"_ID: LL_ReadMatcenChunk(ifile); break;
+      case "LVLG"_ID: Level_goals.LoadLevelGoalInfo(ifile); break;
+      case "LIFE"_ID: a_life.LoadData(ifile); break;
+      case "OSND"_ID: LL_ReadOverrideSoundChunk(ifile); break;
+      case "FFTM"_ID: LL_ReadFFTMChunk(ifile, version); break;
+      case "INFO"_ID: LL_ReadInfo(ifile, version); break;
+      case "EDIT"_ID: LL_ReadEditorInfoChunk(ifile, version); break;
+      default: // unknown / skipped chunk (PSTR, lightmaps, ...)
+        LOG_DEBUG("UNHANDLED CHUNK: %c%c%c%c",
+                  (char)((id>>0) & 0xFF),
+                  (char)((id>>8) & 0xFF),
+                  (char)((id>>16) & 0xFF),
+                  (char)((id>>24) & 0xFF));
+        break;
     }
-  } catch (const std::runtime_error &e) {
-    // A well-formed D3LV header with an unsupported version is a *distinct*
-    // failure from a corrupt/unrecognized file: propagate it so callers can
-    // tell the user the exact reason instead of the generic "false" path.
-    (void)e;
-    ifile.close();
-    throw;
-  } catch (std::exception &) {
-    ifile.close();
-    return false;
+
+    // Seek past any leftover body bytes to the next chunk boundary.
+    long body_end = chunk_start + chunk_size;
+    if (ifile.tell() != body_end)
+      ifile.seek(body_end, std::ios_base::beg);
+
+    if (cb_fn)
+      cb_fn(id, chunk_size, static_cast<uint32_t>(filelen));
   }
 
   ifile.close();

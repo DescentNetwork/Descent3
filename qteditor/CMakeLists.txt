@@ -12,7 +12,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 option(FORCE_QT5_EDITOR "Build the editor with Qt5" ON)
-option(ENABLE_LOGGER "Enable logging to the terminal (LOG_* output via mini/logger)" OFF)
+option(ENABLE_LOGGER "Enable logging to the terminal (LOG_* output via mini/logger)" ON)
 
 # Try Qt6 first, fall back to Qt5
 if(NOT FORCE_QT5_EDITOR)
@@ -269,6 +269,7 @@ endif()
 # WriteLog/InitLog backend source are supplied here.
 # ---------------------------------------------------------------------------
 if(ENABLE_LOGGER)
+  message(STATUS "Logging is enabled")
   add_compile_definitions(LOGGER)
   set(LOGGER_SOURCES ${MINI_SRC}/logger/log.cpp)
   target_sources(qteditor PRIVATE ${LOGGER_SOURCES})
