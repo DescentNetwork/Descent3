@@ -29,14 +29,11 @@ LevelInfoDialog::LevelInfoDialog(level_info *li, QWidget *parent)
     : QDialog(parent), ui(new Ui::LevelInfoDialog), m_levelInfo(li)
 {
   ui->setupUi(this);
-  if (auto *edit = ui->IDC_LEVEL_NAME)
-    edit->setText(QString::fromStdString(li->name));
-  if (auto *edit = ui->IDC_DESIGNER)
-    edit->setText(QString::fromStdString(li->designer));
-  if (auto *edit = ui->IDC_COPYRIGHT)
-    edit->setText(QString::fromStdString(li->copyright));
-  if (auto *edit = ui->IDC_NOTES)
-    edit->setPlainText(QString::fromStdString(li->notes));
+
+  ui->IDC_LEVEL_NAME->setText(QString::fromStdString(li->name));
+  ui->IDC_DESIGNER->setText(QString::fromStdString(li->designer));
+  ui->IDC_COPYRIGHT->setText(QString::fromStdString(li->copyright));
+  ui->IDC_NOTES->setPlainText(QString::fromStdString(li->notes));
 
   connect(ui->IDOK, &QPushButton::clicked, this, &LevelInfoDialog::onOk);
 }
@@ -44,6 +41,7 @@ LevelInfoDialog::LevelInfoDialog(level_info *li, QWidget *parent)
 LevelInfoDialog::~LevelInfoDialog() { delete ui; }
 
 void LevelInfoDialog::getLevelInfo(level_info *li) {
+  Q_ASSERT(li != nullptr);
   li->name = ui->IDC_LEVEL_NAME->text().toStdString();
   li->designer = ui->IDC_DESIGNER->text().toStdString();
   li->copyright = ui->IDC_COPYRIGHT->text().toStdString();
