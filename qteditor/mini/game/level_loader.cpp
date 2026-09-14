@@ -47,6 +47,7 @@
 #include "level_loader.h"
 #include "room.h"
 #include "BOA.h"
+#include "bsp.h"
 #include "trigger.h"
 #include "object.h"
 #include "objinit.h"
@@ -135,7 +136,6 @@ static void LL_ReadBOAChunk(posix_istream &ifile, uint32_t version)
   int i, j;
   int max_rooms;
   int max_path_portals;
-  int16_t sval = 0;
 
   // Get the number of paths
   int32_t checksum_seed = 0;
@@ -173,8 +173,7 @@ static void LL_ReadBOAChunk(posix_istream &ifile, uint32_t version)
     } else {
       for (i = 0; i <= max_rooms; i++) {
         for (j = 0; j <= max_rooms; j++) {
-          ifile >> sval;
-          BOA_Array[i][j] = static_cast<uint16_t>(sval);
+          ifile >> BOA_Array[i][j];
         }
       }
 
@@ -250,6 +249,257 @@ static void LL_WriteBOAChunk(posix_ostream &ofile) {
 // Reads a TXNM chunk: an int32 count, then that many null-terminated texture
 // names.  Builds texture_xlate[] so faces can map level-texture-index → global
 // GameTextures index.
+// Reads a NODE ("NODE") chunk: B-node / automatic path-point graph.
+// Engine counterpart ReadBNodeChunk (LoadLevel.cpp:2991).
+//   int16 hr_index (== Highest_room_index + 8)
+//   per room slot i in [0 .. hr_index]:
+//     byte    f_good_room
+//     if f_good_room (BNode_GetBNListPtr(i, true) to materialize):
+//       int16 num_nodes
+//       if num_nodes, per node j:
+//         vector3 pos  (3 floats)
+//         int16  num_edges
+//         if num_edges, per edge k:
+//           int16  end_room
+//           byte   end_index
+//           if (version < 125) byte throwaway
+//           int16  flags
+//           int16  cost   (clamp: cost < 1 -> cost = 1)
+//           float  max_rad
+//   tail (version <= 123): BNode_verified = false
+//   else: byte b; BNode_verified = (b != 0)
+//   BNode_allocated = true
+static void LL_ReadBNodeChunk(posix_istream &ifile, uint32_t version) {
+  int16_t hr_index = 0;
+  ifile >> hr_index;
+  Q_ASSERT(hr_index == Highest_room_index + 8);
+
+  for (int32_t i = 0; i <= hr_index; i++) {
+    uint8_t f_good_room = 0;
+    ifile >> f_good_room;
+    if (f_good_room) {
+      bn_list *bnlist = BNode_GetBNListPtr(i, true);
+
+      int16_t num_nodes = 0;
+      ifile >> num_nodes;
+      if (num_nodes) {
+        bnlist->nodes.resize(num_nodes);
+        for (int32_t j = 0; j < num_nodes; j++) {
+          bn_node &node = bnlist->nodes[j];
+          ifile >> node.pos;
+
+          int16_t num_edges = 0;
+          ifile >> num_edges;
+          if (num_edges) {
+            node.edges.resize(num_edges);
+            for (int32_t k = 0; k < num_edges; k++) {
+              bn_edge &edge = node.edges[k];
+              ifile >> edge.end_room;
+              uint8_t eidx = 0;
+              ifile >> eidx;
+              edge.end_index = static_cast<char>(eidx);
+
+              if (version < 125) {
+                uint8_t bv = 0;
+                ifile >> bv;
+              }
+
+              ifile >> edge.flags;
+              ifile >> edge.cost;
+              if (edge.cost < 1)
+                edge.cost = 1;
+
+              ifile >> edge.max_rad;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (version <= 123) {
+    BNode_verified = false;
+  } else {
+    uint8_t bval = 0;
+    ifile >> bval;
+    BNode_verified = (bval != 0);
+  }
+
+  BNode_allocated = true;
+}
+
+
+// Writes a NODE (\"NODE\") chunk: automatic path-point (B-node) graph.
+// Engine counterpart WriteBNodeChunk (Descent3/LoadLevel.cpp:4630).
+//
+// Layout (little-endian, posix stream) — mirror of LL_ReadBNodeChunk:
+//   int16  hr_index == Highest_room_index + 8
+//   per i in [0 .. hr_index]:
+//     byte    f_good_room  (Rooms[i].used if i <= Highest_room_index, else 1)
+//     if f_good_room (uses BNode_GetBNListPtr(i, true)):
+//       int16  num_nodes   (bnlist->nodes.size())
+//       if num_nodes, per node j:
+//         bn_node.pos   (whole vector3)
+//         int16 num_edges  (node.edges.size())
+//         if num_edges, per edge k:
+//           int16 end_room
+//           byte  end_index
+//           int16 flags
+//           int16 cost
+//           float max_rad
+//   byte BNode_verified ? 1 : 0
+static void LL_WriteBNodeChunk(posix_ostream &ofile) {
+  int start = LL_StartChunk(ofile, "NODE");
+
+  ofile << static_cast<int16_t>(Highest_room_index + 8);
+
+  for (int32_t i = 0; i <= Highest_room_index + 8; i++) {
+    if (i <= Highest_room_index && !Rooms[i].used) {
+      ofile << static_cast<uint8_t>(0);
+    } else {
+      ofile << static_cast<uint8_t>(1);
+      bn_list *bnlist = BNode_GetBNListPtr(i, true);
+
+      ofile << static_cast<int16_t>(bnlist->nodes.size());
+      if (bnlist->nodes.size()) {
+        for (int32_t j = 0; j < static_cast<int32_t>(bnlist->nodes.size()); j++) {
+          bn_node &node = bnlist->nodes[j];
+          ofile << node.pos;
+
+          ofile << static_cast<int16_t>(node.edges.size());
+          if (node.edges.size()) {
+            for (int32_t k = 0; k < static_cast<int32_t>(node.edges.size()); k++) {
+              bn_edge &edge = node.edges[k];
+              ofile << edge.end_room;
+              ofile << static_cast<uint8_t>(edge.end_index);
+              ofile << edge.flags;
+              ofile << edge.cost;
+              ofile << edge.max_rad;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  ofile << static_cast<uint8_t>(BNode_verified ? 1 : 0);
+  LL_EndChunk(ofile, start);
+}
+
+// Reads/writes the CNBS chunk: the mine's indoor BSP (collision/visibility)
+// tree.  Engine counterpart InitDefaultBSP + LoadBSPNode / SaveBSPNode
+// (Descent3/LoadLevel.cpp:3952-3956, bsp.cpp:189-242).  The chunk body is an
+// int32 BSPChecksum followed by the root node in recursive pre-order.
+//
+//   uint8 type             BSP_NODE (0) / BSP_EMPTY_LEAF (1) / BSP_SOLID_LEAF (2)
+//   leaves:                (no further data)
+//   node:                  plane.a/b/c/d (float), node_roomnum (int16),
+//                          node_facenum (int16), node_subnum (int8),
+//                          front subtree, back subtree
+//
+// Loaded trees only carry node structure (never polygon lists), so the engine
+// mem-style NewBSPNode/DestroyBSPNode reduce to new/delete here.
+
+// BSP tree state for the CNBS chunk (extern-declared in mini/lib/bsp.h).  The
+// tree object itself (MineBSP) is a game-table global defined in stubs.cpp;
+// the serialization state lives with the loader that owns it.
+int BSPChecksum = -1;
+bool BSP_initted = false;
+
+static bspnode *LL_NewBSPNode() {
+  // Value-initialise: type -> BSP_NODE (0), plane/indices -> 0, front/back ->
+  // nullptr, polylist -> nullptr (matches the engine's NewBSPNode zeroing).
+  return new bspnode{};
+}
+
+static void LL_DestroyBSPNode(bspnode *node) {
+  if (!node)
+    return;
+  if (node->type == BSP_NODE) {
+    LL_DestroyBSPNode(node->front);
+    LL_DestroyBSPNode(node->back);
+  }
+  delete node;
+}
+
+// Resets the mine BSP table to a fresh, empty state before reading a new
+// tree (the engine's InitDefaultBSP without the atexit hook).
+static void LL_DefaultBSPTree() {
+  LL_DestroyBSPNode(MineBSP.root);
+  MineBSP.root = nullptr;
+  MineBSP.polylist = nullptr;
+  MineBSP.vertlist = nullptr;
+}
+
+static void LL_ReadBSPNode(posix_istream &ifile, bspnode *&node_out) {
+  uint8_t type = 0;
+  ifile >> type;
+  bspnode *node = LL_NewBSPNode();
+  node->type = type;
+  node_out = node;
+
+  if (type == BSP_EMPTY_LEAF || type == BSP_SOLID_LEAF)
+    return;
+
+  ifile >> node->plane.a;
+  ifile >> node->plane.b;
+  ifile >> node->plane.c;
+  ifile >> node->plane.d;
+
+  int16_t roomnum = 0;
+  ifile >> roomnum;
+  node->node_roomnum = static_cast<uint16_t>(roomnum);
+
+  int16_t facenum = 0;
+  ifile >> facenum;
+  node->node_facenum = static_cast<uint16_t>(facenum);
+
+  ifile >> node->node_subnum;
+
+  LL_ReadBSPNode(ifile, node->front);
+  LL_ReadBSPNode(ifile, node->back);
+}
+
+static void LL_WriteBSPNode(posix_ostream &ofile, const bspnode *node) {
+  ofile << node->type;
+
+  if (node->type == BSP_EMPTY_LEAF || node->type == BSP_SOLID_LEAF)
+    return;
+
+  ofile << node->plane.a;
+  ofile << node->plane.b;
+  ofile << node->plane.c;
+  ofile << node->plane.d;
+  ofile << static_cast<int16_t>(node->node_roomnum);
+  ofile << static_cast<int16_t>(node->node_facenum);
+  ofile << node->node_subnum;
+
+  LL_WriteBSPNode(ofile, node->front);
+  LL_WriteBSPNode(ofile, node->back);
+}
+
+// Reads a CNBS chunk: clears any prior tree, stores the checksum, then loads
+// the tree into MineBSP.root.  BSP_initted ends up true (tree present).
+static void LL_ReadBSPChunk(posix_istream &ifile) {
+  LL_DefaultBSPTree();
+
+  ifile >> BSPChecksum;
+  LL_ReadBSPNode(ifile, MineBSP.root);
+
+  BSP_initted = true;
+}
+
+// Writes a CNBS chunk: checksum then the whole tree.  Caller decides whether
+// the chunk is emitted (engine writes it only when BSP_initted).
+static void LL_WriteBSPChunk(posix_ostream &ofile) {
+  int start = LL_StartChunk(ofile, CHUNK_NEW_BSP);
+
+  ofile << BSPChecksum;
+  LL_WriteBSPNode(ofile, MineBSP.root);
+
+  LL_EndChunk(ofile, start);
+}
+
 static void LL_ReadTextureList(posix_istream &ifile, int chunk_size) {
   int32_t n32 = 0;
   ifile >> n32;
@@ -1586,19 +1836,16 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
       case "NLMP"_ID: LL_ReadNewLightmapChunk(ifile, version); break;
       case "ROOM"_ID:
         {
-          int32_t num = 0;
-          ifile >> num;
-          int num_rooms = num;
-          int32_t t;
+          uint32_t num_rooms = 0;
+          ifile >> num_rooms;
+          uint32_t t;
           ifile >> t; // nverts
           ifile >> t; // nfaces
           ifile >> t; // nfaceverts
           ifile >> t; // nportals
-          int roomnum = 0;
+          uint16_t roomnum = 0;
           for (int i = 0; i < num_rooms; i++) {
-            int16_t room = 0;
-            ifile >> room;
-            roomnum = room;
+            ifile >> roomnum;
             LL_ReadRoom(ifile, &Rooms[roomnum], version);
           }
           Highest_room_index = roomnum;
@@ -1715,7 +1962,9 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
         break;
       }
       case "AABB"_ID: LL_ReadRoomAABBChunk(ifile); break;
+      case "CNBS"_ID: LL_ReadBSPChunk(ifile); break;
       case "CBOA"_ID: LL_ReadBOAChunk(ifile, version); break;
+      case "NODE"_ID: LL_ReadBNodeChunk(ifile, version); break;
       case "MTCN"_ID: LL_ReadMatcenChunk(ifile); break;
       case "LVLG"_ID: Level_goals.LoadLevelGoalInfo(ifile); break;
       case "LIFE"_ID: a_life.LoadData(ifile); break;
@@ -1916,10 +2165,19 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
       LL_EndChunk(out, start);
     }
 
+    // CNBS (new BSP tree): written right after TRIG, only when a tree is
+    // present — mirrors the engine's `if (BSP_initted)` gate and keeps the
+    // chunk order (CNBS CBOA NODE) identical to the engine's WriteLevel.
+    if (BSP_initted)
+      LL_WriteBSPChunk(out);
+
     // CBOA (automatic path point / BOA data).  Written after the TRIG block,
     // before AABB — mirrors engine SaveLevel relative order and keeps BOA
     // fields alive across a read->write round trip.
     LL_WriteBOAChunk(out);
+
+    if (BNode_allocated)
+      LL_WriteBNodeChunk(out);
 
     // AABB (room bounding boxes / BBF region lists)
     LL_WriteRoomAABBChunk(out);

@@ -50,6 +50,7 @@
 #include <QToolBar>
 
 #include <cerrno>
+#include <functional>
 #include <stdexcept>
 
 #include "d3edit.h"
@@ -87,6 +88,7 @@ bool EBNode_VerifyGraph();
 #include "gametexture.h"
 #include "terrain.h"
 #include "BOA.h"
+#include "bsp.h"
 #include "trigger.h"
 #include "weapon.h"
 
@@ -1124,6 +1126,8 @@ private slots:
       const QByteArray bytes = raw.readAll();
       QVERIFY2(bytes.indexOf("AABB") >= 0, "saved level1.d3l is missing its AABB chunk");
       QVERIFY2(bytes.indexOf("CBOA") >= 0, "saved level1.d3l is missing its CBOA (BOA) chunk");
+      QVERIFY2(bytes.indexOf("NODE") >= 0, "saved level1.d3l is missing its NODE (B-node) chunk");
+      QVERIFY2(bytes.indexOf("CNBS") >= 0, "saved level1.d3l is missing its CNBS (BSP) chunk");
 
       QVERIFY2(LoadLevel(std::filesystem::path(g1.toStdString()), nullptr), "LoadLevel passA failed");
       QVERIFY2(SaveLevel(std::filesystem::path(g2.toStdString()), true), "SaveLevel level1 passB failed");
@@ -1142,6 +1146,202 @@ private slots:
     QDir::current().rmdir(tmp);
 
     // Clean teardown.
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+  }
+
+  // The CNBS chunk carries the mine's indoor BSP (collision/visibility) tree:
+  // an int32 BSPChecksum followed by a recursive pre-order node stream
+  // (BSP_NODE = plane + room/face/subnum + front/back subtrees; the two leaf
+  // tags terminate a branch).  It must survive a load/save cycle value-for-
+  // value, and a real level's tree must be re-emitted identically.
+  void testBSPChunkRoundTrip()
+  {
+    // Local recursive free so this test fully controls the global BSP state
+    // (the loader's own destroy helper is static to level_loader.cpp).
+    std::function<void(bspnode *)> freeTree = [&freeTree](bspnode *n) {
+      if (!n)
+        return;
+      if (n->type == BSP_NODE) {
+        freeTree(n->front);
+        freeTree(n->back);
+      }
+      delete n;
+    };
+
+    InitRooms();
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+      Objects[i] = object{};
+      Objects[i].type = OBJ_NONE;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    Highest_room_index = -1;
+    Num_triggers = 0;
+
+    // Minimal used room so SaveLevel has a valid ROOM chunk.
+    room *r0 = &Rooms[0];
+    *r0 = room{};
+    InitRoom(r0, 4, 1, 0);
+    r0->verts[0] = vector3{(float)10, 0, (float)-10};
+    r0->verts[1] = vector3{0, 0, (float)-10};
+    r0->verts[2] = vector3{0, 0, (float)10};
+    r0->verts[3] = vector3{(float)10, 0, (float)10};
+    InitRoomFace(&r0->faces[0], 4);
+    for (int i = 0; i < 4; i++)
+      r0->faces[0].face_verts[i] = (int16_t)i;
+    r0->faces[0].tmap = 2;
+    r0->name.clear();
+    Highest_room_index = 0;
+    Level_info.name = "BSPRoundTrip";
+
+    // Start from a clean BSP table.
+    freeTree(MineBSP.root);
+    MineBSP.root = nullptr;
+    BSP_initted = false;
+    BSPChecksum = -1;
+
+    // Build a synthetic tree: root node -> node -> [empty, solid] leaves, plus
+    // a solid leaf on the root's back side.
+    bspnode *root = new bspnode{};
+    root->type = BSP_NODE;
+    root->plane = bspplane{1.0f, 0.0f, 0.0f, -100.0f, 0};
+    root->node_roomnum = 3;
+    root->node_facenum = 4;
+    root->node_subnum = -2;
+
+    bspnode *front = new bspnode{};
+    front->type = BSP_NODE;
+    front->plane = bspplane{0.0f, 1.0f, 0.0f, -50.0f, 0};
+    front->node_roomnum = 5;
+    front->node_facenum = 6;
+    front->node_subnum = 1;
+    front->front = new bspnode{};
+    front->front->type = BSP_EMPTY_LEAF;
+    front->back = new bspnode{};
+    front->back->type = BSP_SOLID_LEAF;
+    root->front = front;
+    root->back = new bspnode{};
+    root->back->type = BSP_SOLID_LEAF;
+    MineBSP.root = root;
+    BSP_initted = true;
+    BSPChecksum = 0xBADF00D;
+
+    const QString tmp = QDir::tempPath() + "/_test_bsp_roundtrip";
+    QDir::current().mkpath(tmp);
+    const QString f1 = tmp + "/bsp1.d3l";
+    const QString f2 = tmp + "/bsp2.d3l";
+    const QString f3 = tmp + "/bsp3.d3l";
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
+
+    // Tear the tree down, then reload: the CNBS reader must rebuild it.
+    freeTree(MineBSP.root);
+    MineBSP.root = nullptr;
+    BSP_initted = false;
+    BSPChecksum = -1;
+
+    QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
+    QVERIFY2(BSP_initted, "CNBS chunk did not flag the BSP tree as initialized");
+    QVERIFY(MineBSP.root != nullptr);
+    QCOMPARE(int(BSPChecksum), int(0xBADF00D));
+    QCOMPARE(int(MineBSP.root->type), int(BSP_NODE));
+    QCOMPARE(MineBSP.root->plane.a, 1.0f);
+    QCOMPARE(MineBSP.root->plane.d, -100.0f);
+    QCOMPARE(int(MineBSP.root->node_roomnum), 3);
+    QCOMPARE(int(MineBSP.root->node_facenum), 4);
+    QCOMPARE(int(MineBSP.root->node_subnum), -2);
+    QVERIFY(MineBSP.root->front != nullptr);
+    QCOMPARE(int(MineBSP.root->front->type), int(BSP_NODE));
+    QCOMPARE(MineBSP.root->front->plane.b, 1.0f);
+    QCOMPARE(int(MineBSP.root->front->node_roomnum), 5);
+    QCOMPARE(int(MineBSP.root->front->node_subnum), 1);
+    QVERIFY(MineBSP.root->front->front != nullptr);
+    QCOMPARE(int(MineBSP.root->front->front->type), int(BSP_EMPTY_LEAF));
+    QVERIFY(MineBSP.root->front->back != nullptr);
+    QCOMPARE(int(MineBSP.root->front->back->type), int(BSP_SOLID_LEAF));
+    QVERIFY(MineBSP.root->back != nullptr);
+    QCOMPARE(int(MineBSP.root->back->type), int(BSP_SOLID_LEAF));
+
+    // save -> reload -> save: the second and third passes must be byte-identical.
+    QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
+
+    freeTree(MineBSP.root);
+    MineBSP.root = nullptr;
+    BSP_initted = false;
+    BSPChecksum = -1;
+
+    QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
+    QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
+
+    QFile a(f2), b(f3);
+    QVERIFY(a.open(QIODevice::ReadOnly));
+    QVERIFY(b.open(QIODevice::ReadOnly));
+    const QByteArray ba = a.readAll();
+    const QByteArray bb = b.readAll();
+    QCOMPARE(bb.size(), ba.size());
+    QVERIFY2(ba == bb, "BSP round trip is not byte-stable");
+
+    // Real level: level1.d3l carries a CNBS chunk whose tree must be parsed and
+    // re-emitted identically across a load/save/load/save cycle.
+    const std::filesystem::path lvl1 = "/home/gravis/project/D3rebuild/testdata/level1.d3l";
+    if (std::filesystem::exists(lvl1)) {
+      freeTree(MineBSP.root);
+      MineBSP.root = nullptr;
+      BSP_initted = false;
+      BSPChecksum = -1;
+
+      QVERIFY2(LoadLevel(lvl1, nullptr), "LoadLevel(level1.d3l) failed");
+      QVERIFY2(BSP_initted, "level1.d3l CNBS chunk did not load its BSP tree");
+      QVERIFY(MineBSP.root != nullptr);
+
+      const QString g1 = tmp + "/bspr1.d3l";
+      const QString g2 = tmp + "/bspr2.d3l";
+      QFile::remove(g1);
+      QFile::remove(g2);
+      QVERIFY2(SaveLevel(std::filesystem::path(g1.toStdString()), true), "SaveLevel level1 passA failed");
+
+      QFile raw(g1);
+      QVERIFY(raw.open(QIODevice::ReadOnly));
+      const QByteArray bytes = raw.readAll();
+      QVERIFY2(bytes.indexOf("CNBS") >= 0, "saved level1.d3l is missing its CNBS (BSP) chunk");
+
+      freeTree(MineBSP.root);
+      MineBSP.root = nullptr;
+      BSP_initted = false;
+      BSPChecksum = -1;
+
+      QVERIFY2(LoadLevel(std::filesystem::path(g1.toStdString()), nullptr), "LoadLevel passA failed");
+      QVERIFY2(SaveLevel(std::filesystem::path(g2.toStdString()), true), "SaveLevel level1 passB failed");
+      QFile ca(g1), cb(g2);
+      QVERIFY(ca.open(QIODevice::ReadOnly));
+      QVERIFY(cb.open(QIODevice::ReadOnly));
+      const QByteArray cba = ca.readAll();
+      const QByteArray cbb = cb.readAll();
+      QCOMPARE(cbb.size(), cba.size());
+      QVERIFY2(cba == cbb, "level1.d3l BSP round trip is not byte-stable");
+    }
+
+    QFile::remove(f1);
+    QFile::remove(f2);
+    QFile::remove(f3);
+    QDir::current().rmdir(tmp);
+
+    // Clean teardown: restore the BSP table AND the object/room tables.
+    freeTree(MineBSP.root);
+    MineBSP.root = nullptr;
+    BSP_initted = false;
+    BSPChecksum = -1;
     InitRooms();
     for (int i = 0; i < MAX_OBJECTS; i++) {
       Objects[i] = object{};
