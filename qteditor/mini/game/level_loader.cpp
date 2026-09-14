@@ -507,7 +507,6 @@ static void LL_ReadTextureList(posix_istream &ifile, int chunk_size) {
   long end = ifile.tell() + (chunk_size - 4);
   for (int i = 0; i < n; i++) {
     std::string name;
-    std::string s;
     ifile >> name;
     int g = LL_FindTextureName(name);
     if (g < 0)

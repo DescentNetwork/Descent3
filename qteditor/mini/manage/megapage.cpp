@@ -31,15 +31,13 @@
 //-----------------------------------------------------------------------------
 
 int mng_ReadNewMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage) {
-  int i;
   *megacellpage = mngs_megacell_page{};
   /* int version = */ int16_t v; infile >> v;
 
   infile >> megacellpage->megacell_struct.name;
 
-  // Write out its cell names
-  for (i = 0; i < MAX_MEGACELL_WIDTH * MAX_MEGACELL_HEIGHT; i++)
-    infile >> megacellpage->cellname[i];
+  // Read in its cell names
+  infile >> megacellpage->cellname;
 
   infile >> megacellpage->megacell_struct.width;
   infile >> megacellpage->megacell_struct.height;

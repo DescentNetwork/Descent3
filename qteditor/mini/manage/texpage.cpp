@@ -91,12 +91,7 @@ byte_istream& operator>>(byte_istream& input, mngs_texture_page& data) {
   }
 
   if (data.tex_struct.flags.procedural) {
-    data.proc_palette.fill(0);
-    for (int i = 0; i < 255; i++) {
-      uint16_t val = 0;
-      input >> val;
-      data.proc_palette[i] = val;
-    }
+    input >> data.proc_palette;
 
     input >> data.proc_heat
           >> data.proc_light
@@ -189,8 +184,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_texture_page& data) {
   }
 
   if (data.tex_struct.flags.procedural) {
-    for (int i = 0; i < 255; i++)
-      output << data.proc_palette[i];
+    output << data.proc_palette;
 
     output << data.proc_heat
            << data.proc_light
