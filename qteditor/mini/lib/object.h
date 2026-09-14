@@ -687,7 +687,7 @@ extern const char *Object_type_names[MAX_OBJECT_TYPES];
  *		VARIABLES
  */
 
-extern object Objects[];
+extern std::array<object, MAX_OBJECTS> Objects;
 extern int Highest_object_index; // highest objnum
 
 extern object *Player_object; // the object that is the player
@@ -698,7 +698,7 @@ extern int Num_big_objects;
 extern int16_t BigObjectList[MAX_BIG_OBJECTS]; // DAJ_MR utb int
 
 // Compute the object number from an object pointer
-#define OBJNUM(objp) (objp - Objects)
+#define OBJNUM(objp) (objp - Objects.data())
 #define OBJHANDLE(objp) ((objp) ? (objp)->handle : 0)
 
 /*

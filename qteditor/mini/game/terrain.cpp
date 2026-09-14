@@ -39,9 +39,9 @@
 
 // How far we can see (in world coordinates)
 float VisibleTerrainZ;
+std::array<terrain_segment, (TERRAIN_WIDTH+1) * (TERRAIN_DEPTH+1)> Terrain_seg;
 
-terrain_segment Terrain_seg[(TERRAIN_WIDTH+1) * (TERRAIN_DEPTH+1)];
-terrain_tex_segment Terrain_tex_seg[TERRAIN_TEX_WIDTH * TERRAIN_TEX_DEPTH];
+std::array<terrain_tex_segment, TERRAIN_TEX_WIDTH * TERRAIN_TEX_DEPTH> Terrain_tex_seg;
 terrain_sky Terrain_sky;
 
 #if (!defined(RELEASE) || defined(NEWEDITOR))
@@ -68,7 +68,7 @@ std::array<std::vector<uint8_t>, 7> Terrain_max_height_int;
 // Texture values for a particular region
 
 // Terrain dynamic lighting table
-uint8_t Terrain_dynamic_table[TERRAIN_WIDTH * TERRAIN_DEPTH];
+std::array<uint8_t, TERRAIN_WIDTH * TERRAIN_DEPTH> Terrain_dynamic_table;
 
 // Terrain normals depending on LOD
 std::array<std::vector<terrain_normals>, MAX_TERRAIN_LOD> TerrainNormals;
@@ -83,7 +83,7 @@ uint8_t TerrainJoinMap[TERRAIN_WIDTH * TERRAIN_DEPTH];
 float Terrain_y_values[256];
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
-uint8_t TerrainSelected[TERRAIN_WIDTH * TERRAIN_DEPTH];
+std::array<uint8_t, TERRAIN_WIDTH * TERRAIN_DEPTH> TerrainSelected;
 int Num_terrain_selected = 0;
 int Editor_LOD_engine_off = 1;
 bool Terrain_render_ext_room_objs = true;
@@ -100,7 +100,7 @@ uint8_t TerrainEdgeJump[MAX_TERRAIN_LOD];
 int Terrain_checksum = -1;
 
 // Occlusion data for knowing what to draw
-uint8_t Terrain_occlusion_map[256][32];
+std::array<std::array<uint8_t, 32>, 256> Terrain_occlusion_map;
 int Terrain_occlusion_checksum = -2;
 
 // returns the index of the highest float
@@ -851,7 +851,7 @@ int LoadPCXTerrain(char *filename) {
   GenerateTerrainLight();
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
-  memset(TerrainSelected, 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
+  memset(TerrainSelected.data(), 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
   Num_terrain_selected = 0;
   World_changed = true;
 #endif
@@ -925,7 +925,7 @@ void ResetTerrain(int force) {
   GenerateTerrainLight();
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
-  memset(TerrainSelected, 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
+  memset(TerrainSelected.data(), 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
 #endif
 
   memset(TerrainJoinMap, 0, TERRAIN_WIDTH * TERRAIN_DEPTH);

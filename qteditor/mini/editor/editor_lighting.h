@@ -30,8 +30,8 @@ extern vector3 ScratchRVecs[MAX_LIGHTMAP_INFOS];
 extern vector3 ScratchUVecs[MAX_LIGHTMAP_INFOS];
 extern int AllowCombining;
 
-extern float Room_multiplier[];
-extern float Room_ambience_r[], Room_ambience_g[], Room_ambience_b[];
+extern std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_multiplier;
+extern std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_ambience_r, Room_ambience_g, Room_ambience_b;
 
 void DoRadiosityForRooms();
 void DoRadiosityForTerrain();

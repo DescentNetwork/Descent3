@@ -163,14 +163,14 @@ static const uint8_t bbf_lookup[27] = {(0),
                                      (0x08 | 0x02 | 0x20),
                                      (0x08 | 0x04 | 0x10),
                                      (0x08 | 0x10 | 0x20)};
+std::array<std::array<uint16_t, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS>, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS> BOA_Array;
 
-uint16_t BOA_Array[MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS][MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS];
-float BOA_cost_array[MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS][MAX_PATH_PORTALS];
+std::array<std::array<float, MAX_PATH_PORTALS>, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS> BOA_cost_array;
 int BOA_mine_checksum = 0;
 int BOA_vis_checksum = 0; // this checksum is for the VIS bit of the boa array
 bool BOA_vis_valid = 0;   // Is the vis table up to date and valid to use?
 int BOA_AABB_checksum = 0;
-int BOA_AABB_ROOM_checksum[MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS];
+std::array<int, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS> BOA_AABB_ROOM_checksum;
 
 static bool BOA_f_making_boa = false;
 
@@ -178,7 +178,7 @@ int BOA_num_mines = 0;
 int BOA_num_terrain_regions = 0;
 
 int BOA_num_connect[MAX_BOA_TERRAIN_REGIONS];
-connect_data BOA_connect[MAX_BOA_TERRAIN_REGIONS][MAX_PATH_PORTALS];
+std::array<std::array<connect_data, MAX_PATH_PORTALS>, MAX_BOA_TERRAIN_REGIONS> BOA_connect;
 
 static void add_mine_room(int room, int mine, char *checked);
 static void compute_mine_info();

@@ -152,7 +152,7 @@ bool New_mine = false;
 
 // Room selection list (defined in the MFC editor's EDVARS.cpp).
 int N_selected_rooms = 0;
-int Selected_rooms[MAX_ROOMS];
+std::array<int, MAX_ROOMS> Selected_rooms;
 
 // Slew movement limitations flag (defined in the MFC editor's editor.cpp).
 int Slew_limitations = 0;

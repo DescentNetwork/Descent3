@@ -1394,8 +1394,8 @@ void MainWindow::onDeleteCurrentViewer() {
   // available OBJ_VIEWER (or clear Viewer_object if none).
   int cur_slot = -1;
   // Find Viewer_object's slot lookup: Viewer_object - Objects.
-  if (Viewer_object >= Objects && Viewer_object <= &Objects[MAX_OBJECTS - 1]) {
-    cur_slot = static_cast<int>(Viewer_object - Objects);
+  if (Viewer_object >= Objects.data() && Viewer_object <= &Objects[MAX_OBJECTS - 1]) {
+    cur_slot = static_cast<int>(Viewer_object - Objects.data());
   }
   if (cur_slot >= 0) {
     Objects[cur_slot].type = OBJ_NONE;

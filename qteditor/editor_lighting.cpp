@@ -76,9 +76,8 @@ vector3 ScratchCenters[MAX_LIGHTMAP_INFOS];
 vector3 ScratchRVecs[MAX_LIGHTMAP_INFOS];
 vector3 ScratchUVecs[MAX_LIGHTMAP_INFOS];
 
-float Room_multiplier[MAX_ROOMS + MAX_PALETTE_ROOMS];
-float Room_ambience_r[MAX_ROOMS + MAX_PALETTE_ROOMS], Room_ambience_g[MAX_ROOMS + MAX_PALETTE_ROOMS],
-    Room_ambience_b[MAX_ROOMS + MAX_PALETTE_ROOMS];
+std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_multiplier;
+std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_ambience_r, Room_ambience_g, Room_ambience_b;
 
 uint8_t *TerrainLightSpeedup[MAX_SATELLITES];
 
@@ -258,7 +257,7 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, uint16_t *de
   float u_scalar = (float)w / 128.0;
   float v_scalar = (float)h / 128.0;
 
-  for (int objnum = obj - Objects; objnum != -1; objnum = Objects[objnum].next) {
+  for (int objnum = obj - Objects.data(); objnum != -1; objnum = Objects[objnum].next) {
     object *this_obj = &Objects[objnum];
 
     if (this_obj->lighting_render_type != LRT_LIGHTMAPS)
@@ -1137,7 +1136,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
   int surface_index = 0;
   int max_index;
 
-  if (!CheckForBadFaces(rp - Rooms)) {
+  if (!CheckForBadFaces(rp - Rooms.data())) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You have bad faces in your level.  Please execute 'Verify Level'.");
     return;
   }
@@ -1158,11 +1157,11 @@ void DoRadiosityForCurrentRoom(room *rp) {
   }
 
   // Build bsp tree
-  BuildSingleBSPTree(rp - Rooms);
+  BuildSingleBSPTree(rp - Rooms.data());
 
-  ClearRoomLightmaps(rp - Rooms);
+  ClearRoomLightmaps(rp - Rooms.data());
   for (t = 0; t <= Highest_object_index; t++) {
-    if (Objects[t].type != OBJ_NONE && (Objects[t].roomnum == rp - Rooms))
+    if (Objects[t].type != OBJ_NONE && (Objects[t].roomnum == rp - Rooms.data()))
       ClearObjectLightmaps(&Objects[t]);
   }
 
@@ -1173,7 +1172,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
     for (int k = 0; k < rp->faces[t].num_verts; k++)
       verts[k] = rp->verts[rp->faces[t].face_verts[k]];
 
-    room_list[0] = rp - Rooms;
+    room_list[0] = rp - Rooms.data();
     face_list[0] = t;
 
     BuildLightmapUVs(room_list, face_list, 1, verts, rp->faces[t].num_verts, 0);
@@ -1183,7 +1182,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
   facecount += rp->num_faces;
 
   // Do objects
-  facecount += GetTotalObjectFacesForSingleRoom(rp - Rooms);
+  facecount += GetTotalObjectFacesForSingleRoom(rp - Rooms.data());
 
   // Allocate enough memory to hold all surfaces
 
@@ -1199,7 +1198,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
       Light_surfaces[surface_index].verts.resize(rp->faces[t].num_verts);
     } else {
       Light_surfaces[surface_index].verts.clear();
-      LOG_INFO("Room=%d Face %d has no verts!\n", rp - Rooms, t);
+      LOG_INFO("Room=%d Face %d has no verts!\n", rp - Rooms.data(), t);
     }
 
     if (Light_surfaces[surface_index].xresolution * Light_surfaces[surface_index].yresolution) {
@@ -1207,7 +1206,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
                                                     Light_surfaces[surface_index].yresolution);
     } else {
       Light_surfaces[surface_index].elements.clear();
-      LOG_INFO("Room=%d Face %d is slivered!\n", rp - Rooms, t);
+      LOG_INFO("Room=%d Face %d is slivered!\n", rp - Rooms.data(), t);
     }
 
     if (rp->faces[t].portal_num != -1 && (((rp->portals[rp->faces[t].portal_num].flags.render_faces == 0)) ||
@@ -1219,7 +1218,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
       Light_surfaces[surface_index].emittance.b = 0;
     } else {
       float mul = ((float)rp->faces[t].light_multiple) / 4.0;
-      mul *= GlobalMultiplier * Room_multiplier[rp - Rooms];
+      mul *= GlobalMultiplier * Room_multiplier[rp - Rooms.data()];
       Light_surfaces[surface_index].emittance.r = (float)GameTextures[rp->faces[t].tmap].r * mul;
       Light_surfaces[surface_index].emittance.g = (float)GameTextures[rp->faces[t].tmap].g * mul;
       Light_surfaces[surface_index].emittance.b = (float)GameTextures[rp->faces[t].tmap].b * mul;
@@ -1233,14 +1232,14 @@ void DoRadiosityForCurrentRoom(room *rp) {
     Light_surfaces[surface_index].reflectivity = GameTextures[rp->faces[t].tmap].reflectivity;
 
     // Set the vertices for each element
-    BuildElementListForRoomFace(rp - Rooms, t, &Light_surfaces[surface_index]);
+    BuildElementListForRoomFace(rp - Rooms.data(), t, &Light_surfaces[surface_index]);
 
     int xres = Light_surfaces[surface_index].xresolution;
     int yres = Light_surfaces[surface_index].yresolution;
   }
 
   // Setup Objects
-  ComputeSurfacesForObjectsForSingleRoom(surface_index, rp - Rooms);
+  ComputeSurfacesForObjectsForSingleRoom(surface_index, rp - Rooms.data());
 
   LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
   if (app.hemicube_radiosity)
@@ -1253,10 +1252,10 @@ void DoRadiosityForCurrentRoom(room *rp) {
 
   // Assign lightap properties
   for (t = 0; t < rp->num_faces; t++, surface_index++) {
-    AssignRoomSurfaceToLightmap(rp - Rooms, t, &Light_surfaces[surface_index]);
+    AssignRoomSurfaceToLightmap(rp - Rooms.data(), t, &Light_surfaces[surface_index]);
   }
 
-  AssignLightmapsToObjectSurfacesForSingleRoom(surface_index, rp - Rooms);
+  AssignLightmapsToObjectSurfacesForSingleRoom(surface_index, rp - Rooms.data());
 
   // BlurLightmapInfos (LMI_ROOM);
   // BlurLightmapInfos (LMI_ROOM_OBJECT);
@@ -1269,7 +1268,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
   Light_surfaces.clear();
 
   // Finally, squeeze the lightmaps
-  SqueezeLightmaps(0, rp - Rooms);
+  SqueezeLightmaps(0, rp - Rooms.data());
 
   QMessageBox::information(nullptr, "Success", "Room radiosity complete!");
 }
@@ -1705,7 +1704,7 @@ void DoTerrainDynamicTable() {
   LOG_INFO("Calculating dynamic light table for %d points...\n", maxrays);
   LOG_INFO("Press tilde key to abort!\n");
 
-  memset(Terrain_dynamic_table, 0, (TERRAIN_DEPTH * TERRAIN_WIDTH));
+  memset(Terrain_dynamic_table.data(), 0, (TERRAIN_DEPTH * TERRAIN_WIDTH));
 
   for (i = 0; i < AREA_Z; i++) {
     // Qt handles keyboard events natively - abort logic should be moved to UI

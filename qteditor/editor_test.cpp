@@ -2116,8 +2116,8 @@ private slots:
     // editor_lighting.h can't be included next to level_loader.h (SaveLevel
     // default-argument clash), so bring in its globals directly; they are
     // linked from editor_lighting.cpp / rad_init.cpp.
-    extern float Room_multiplier[];
-    extern float Room_ambience_r[], Room_ambience_g[], Room_ambience_b[];
+    extern std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_multiplier;
+    extern std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_ambience_r, Room_ambience_g, Room_ambience_b;
     extern int LightSpacing;
     extern float GlobalMultiplier;
     extern float Ambient_red, Ambient_green, Ambient_blue;
@@ -3534,7 +3534,7 @@ private slots:
 
     // The camera must bind to the saved viewer, not a fresh creation.
     QVERIFY(Viewer_object != nullptr);
-    QCOMPARE(int(Viewer_object - Objects), viewerSlot);
+    QCOMPARE(int(Viewer_object - Objects.data()), viewerSlot);
     QCOMPARE(Viewer_object->id, 4);
     QCOMPARE(Editor_viewer_id, 4);
     QVERIFY(Viewer_object->pos.x() == savedPos.x());
@@ -4077,7 +4077,7 @@ private slots:
     }
 
     // Link rooms
-    LinkRooms(Rooms, 0, 0, 1, 0);
+    LinkRooms(Rooms.data(), 0, 0, 1, 0);
     QCOMPARE(r0->num_portals, 1);
     QCOMPARE(r1->num_portals, 1);
     QCOMPARE(r0->portals[0].croom, 1);
@@ -4196,7 +4196,7 @@ private slots:
     ComputeFaceNormal(r1, 0);
     AssignDefaultUVsToRoomFace(r1, 0);
 
-    LinkRooms(Rooms, 0, 0, 1, 0);
+    LinkRooms(Rooms.data(), 0, 0, 1, 0);
 
     Curroomp = r0;
     Curface = 0;

@@ -174,10 +174,12 @@ byte_ostream& operator<<(byte_ostream& output, const trigger& data);
 extern int Num_triggers;
 
 // The list of triggers for the mine
-extern trigger Triggers[];
+#define MAX_TRIGGERS 500
+
+extern std::array<trigger, MAX_TRIGGERS> Triggers;
 
 // Macro to get trigger number
-#define TRIGNUM(tp) (tp) ? ((tp)-Triggers) : -1
+#define TRIGNUM(tp) (tp) ? ((tp)-Triggers.data()) : -1
 
 //	initializes trigger system
 void InitTriggers();

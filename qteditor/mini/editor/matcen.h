@@ -203,7 +203,7 @@ public:
   void Reset();
 };
 
-extern matcen *Matcen[MAX_MATCENS];
+extern std::array<matcen *, MAX_MATCENS> Matcen;
 int FindMatcenIndex(const char *name);
 int CreateMatcen(const char *name, bool *f_name_changed);
 void InitMatcens();

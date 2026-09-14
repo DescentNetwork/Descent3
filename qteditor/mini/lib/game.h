@@ -247,9 +247,9 @@ extern int sound_override_force_field;
 extern int sound_override_glass_breaking;
 
 #define MAX_FORCE_FIELD_BOUNCE_TEXTURES 3
-extern int force_field_bounce_texture[MAX_FORCE_FIELD_BOUNCE_TEXTURES];
-extern float force_field_bounce_multiplier[MAX_FORCE_FIELD_BOUNCE_TEXTURES];
+extern std::array<int, MAX_FORCE_FIELD_BOUNCE_TEXTURES> force_field_bounce_texture;
 
+extern std::array<float, MAX_FORCE_FIELD_BOUNCE_TEXTURES> force_field_bounce_multiplier;
 extern bool Level_powerups_ignore_wind;
 
 extern bool IsCheater;
@@ -314,7 +314,7 @@ struct terrain_sound_band {
 #define NUM_TERRAIN_SOUND_BANDS 5
 
 // The terrain sound bands for the current level
-extern terrain_sound_band Terrain_sound_bands[];
+extern std::array<terrain_sound_band, NUM_TERRAIN_SOUND_BANDS> Terrain_sound_bands;
 
 // Clear out all the terrain sound bands
 void ClearTerrainSound();

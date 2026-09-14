@@ -706,7 +706,7 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   for (int i = 0; i < Markedroomp->num_portals; i++) {
-    if (Markedroomp->portals[i].croom == (Curroomp - Rooms)) {
+    if (Markedroomp->portals[i].croom == (Curroomp - Rooms.data())) {
       marked_portalnum = i;
       break;
     }
@@ -718,7 +718,7 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   for (int i = 0; i < Curroomp->num_portals; i++) {
-    if (Curroomp->portals[i].croom == (Markedroomp - Rooms)) {
+    if (Curroomp->portals[i].croom == (Markedroomp - Rooms.data())) {
       cur_portalnum = i;
       break;
     }
@@ -732,10 +732,10 @@ void RotateRooms(angle p, angle h, angle b) {
   SaveRoomSelectedList();
 
   Curroomp->portals[cur_portalnum].croom = -1;
-  SelectConnectedRooms(Curroomp - Rooms);
-  Curroomp->portals[cur_portalnum].croom = Markedroomp - Rooms;
+  SelectConnectedRooms(Curroomp - Rooms.data());
+  Curroomp->portals[cur_portalnum].croom = Markedroomp - Rooms.data();
 
-  if (IsRoomSelected(Markedroomp - Rooms)) {
+  if (IsRoomSelected(Markedroomp - Rooms.data())) {
     RestoreRoomSelectedList();
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot rotate: rooms connect back to base room.");
     return;
@@ -822,7 +822,7 @@ void ConnectPortal(room *rp, int portal_num, int dest_room) {
     return;
   }
 
-  LinkRooms(Rooms, ROOMNUM(rp), pp->portal_face, dest_room, dest_face);
+  LinkRooms(Rooms.data(), ROOMNUM(rp), pp->portal_face, dest_room, dest_face);
 
   World_changed = true;
   EditorStatus("Connected room %d to room %d.", ROOMNUM(rp), dest_room);
@@ -1304,7 +1304,7 @@ void AttachRoom() {
 
     MatchPortalFaces(baseroomp, baseface, newroomp, attface);
 
-    LinkRooms(Rooms, ROOMNUM(baseroomp), baseface, ROOMNUM(newroomp), attface);
+    LinkRooms(Rooms.data(), ROOMNUM(baseroomp), baseface, ROOMNUM(newroomp), attface);
 
     // If there is a door, place it
     if (Placed_door != -1) {

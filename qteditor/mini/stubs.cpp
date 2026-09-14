@@ -96,7 +96,7 @@ bool grHardwareSurface::create(int w, int h, int bpp, unsigned flags, const std:
 //float Float_to_ubyte(float f) { PRINT_STUB(__FUNCTION__); return f; }
 
 // ==================== Object ====================
-object Objects[MAX_OBJECTS];
+std::array<object, MAX_OBJECTS> Objects;
 int Highest_object_index = -1;
 object *Viewer_object = &Objects[0];
 object *Player_object = &Objects[0];
@@ -114,7 +114,7 @@ bool Dedicated_server = false;
 function_mode View_mode = EDITOR_MODE;
 
 // ==================== Terrain ====================
-terrain_sound_band Terrain_sound_bands[NUM_TERRAIN_SOUND_BANDS] = {};
+std::array<terrain_sound_band, NUM_TERRAIN_SOUND_BANDS> Terrain_sound_bands = {};
 /*
 int Terrain_checksum = 0;
 uint8_t Terrain_dynamic_table[16] = {};
@@ -171,8 +171,8 @@ float Gravity_strength = 9.8f;
 int Cinematics_enabled = 0;
 renderer_type PreferredRenderer = {};
 int Detail_settings = 0;
-float force_field_bounce_multiplier[MAX_FORCE_FIELD_BOUNCE_TEXTURES] = {};
-int force_field_bounce_texture[MAX_FORCE_FIELD_BOUNCE_TEXTURES] = {};
+std::array<float, MAX_FORCE_FIELD_BOUNCE_TEXTURES> force_field_bounce_multiplier = {};
+std::array<int, MAX_FORCE_FIELD_BOUNCE_TEXTURES> force_field_bounce_texture = {};
 //float Ceiling_height = 100.0f;
 renderer_preferred_state Render_preferred_state = {};
 int sound_override_force_field = -1;
@@ -197,7 +197,7 @@ texture GameTextures[MAX_TEXTURES];
 //vclip GameVClips[MAX_VCLIPS];
 //poly_model Poly_models[500];
 std::array<game_path, MAX_GAME_PATHS> GamePaths;
-trigger Triggers[500];
+std::array<trigger, MAX_TRIGGERS> Triggers;
 special_face SpecialFaces[MAX_SPECIAL_FACES];
 
 // ==================== Sound ====================
@@ -218,7 +218,7 @@ void SetupObjectLightmapMemory(object *obj) { PRINT_STUB(__FUNCTION__); }
 //void ClearAllVolumeLights() { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Player/ship ====================
-player Players[MAX_PLAYERS] = {};
+std::array<player, MAX_PLAYERS> Players = {};
 int Num_player_shapes = 0;
 ship Ships[MAX_SHIPS] = {};
 
@@ -237,7 +237,7 @@ void WBClearInfo(otype_wb_info *wb) { PRINT_STUB(__FUNCTION__); }
 megacell Megacells[MAX_MEGACELLS] = {};
 
 // ==================== Matcen ====================
-matcen *Matcen[MAX_MATCENS] = {};
+std::array<matcen *, MAX_MATCENS> Matcen = {};
 
 // ==================== Level ====================
 levelgoals Level_goals;

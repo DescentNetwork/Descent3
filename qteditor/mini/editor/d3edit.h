@@ -448,7 +448,7 @@ extern int Placed_baseface;
 
 // Vars for the list of selected rooms
 extern int N_selected_rooms;
-extern int Selected_rooms[];
+extern std::array<int, 400> Selected_rooms;
 
 // Flag for if mine has changed (& thus needs to be saved)
 extern int Mine_changed;

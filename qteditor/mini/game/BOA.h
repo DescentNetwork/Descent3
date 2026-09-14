@@ -125,14 +125,14 @@
 
 #define MAX_PATH_PORTALS 40
 #define MAX_BOA_TERRAIN_REGIONS 8
+extern std::array<std::array<float, MAX_PATH_PORTALS>, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS> BOA_cost_array;
 
-extern float BOA_cost_array[MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS][MAX_PATH_PORTALS];
-extern uint16_t BOA_Array[MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS][MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS];
+extern std::array<std::array<uint16_t, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS>, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS> BOA_Array;
 extern int BOA_mine_checksum;
 extern int BOA_AABB_checksum;
 extern int BOA_vis_checksum;
 extern bool BOA_vis_valid;
-extern int BOA_AABB_ROOM_checksum[MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS];
+extern std::array<int, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS> BOA_AABB_ROOM_checksum;
 
 //--  Priority Queue
 class q_item {
@@ -245,7 +245,7 @@ struct connect_data {
 extern int BOA_num_mines;
 extern int BOA_num_terrain_regions;
 extern int BOA_num_connect[MAX_BOA_TERRAIN_REGIONS];
-extern connect_data BOA_connect[MAX_BOA_TERRAIN_REGIONS][MAX_PATH_PORTALS];
+extern std::array<std::array<connect_data, MAX_PATH_PORTALS>, MAX_BOA_TERRAIN_REGIONS> BOA_connect;
 
 void MakeBOA(void);
 

@@ -236,11 +236,11 @@ struct terrain_normals {
   vector3 normal2; // Lower right triangle
 };
 
-extern uint8_t Terrain_dynamic_table[];
+extern std::array<uint8_t, TERRAIN_WIDTH * TERRAIN_DEPTH> Terrain_dynamic_table;
 extern std::array<std::vector<terrain_normals>, MAX_TERRAIN_LOD> TerrainNormals;
 
 // Occlusion data for knowing what to draw
-extern uint8_t Terrain_occlusion_map[256][32];
+extern std::array<std::array<uint8_t, 32>, 256> Terrain_occlusion_map;
 extern int Terrain_occlusion_checksum;
 
 extern bool Check_terrain_portal;
@@ -263,8 +263,8 @@ extern bool Terrain_from_mine;
 
 extern float Last_terrain_render_time;
 
-extern terrain_segment Terrain_seg[(TERRAIN_WIDTH+1) * (TERRAIN_DEPTH+1)];
-extern terrain_tex_segment Terrain_tex_seg[TERRAIN_TEX_WIDTH * TERRAIN_TEX_DEPTH];
+extern std::array<terrain_segment, (TERRAIN_WIDTH+1) * (TERRAIN_DEPTH+1)> Terrain_seg;
+extern std::array<terrain_tex_segment, TERRAIN_TEX_WIDTH * TERRAIN_TEX_DEPTH> Terrain_tex_seg;
 
 // first object to render after cell has been rendered (only used for SW renderer)
 extern int16_t Terrain_seg_render_objs[];
@@ -291,7 +291,7 @@ extern uint8_t Show_invisible_terrain;
 extern int Camera_direction, Sort_direction;
 
 #if (defined(_DEBUG) || defined(EDITOR) || defined(NEWEDITOR))
-extern uint8_t TerrainSelected[];
+extern std::array<uint8_t, TERRAIN_WIDTH * TERRAIN_DEPTH> TerrainSelected;
 extern int Num_terrain_selected;
 #endif
 

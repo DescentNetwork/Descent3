@@ -400,7 +400,7 @@ struct room_changes {
 // Globals
 //
 
-extern room Rooms[];           // global sparse array of rooms
+extern std::array<room, MAX_ROOMS + MAX_PALETTE_ROOMS> Rooms;           // global sparse array of rooms
 extern int Highest_room_index; // index of highest-numbered room
 
 //
@@ -408,7 +408,7 @@ extern int Highest_room_index; // index of highest-numbered room
 //
 
 // Handy macro to convert a room ptr to a room number
-#define ROOMNUM(r) (r - Rooms)
+#define ROOMNUM(r) (r - Rooms.data())
 
 // The mine index of a room (the 5-bit `mine` field of its room_flags_t)
 #define MINE_INDEX(x) (Rooms[x].flags.mine)

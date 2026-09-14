@@ -103,8 +103,8 @@ constexpr uint32_t operator "" _ID(const char* const str, std::size_t len) {
 // re-declares SaveLevel with a default argument, radiosity.h needs a <vector>
 // include this file orders after its own headers).  Declared here so the EDIT
 // chunk can round-trip them.
-extern float Room_multiplier[];
-extern float Room_ambience_r[], Room_ambience_g[], Room_ambience_b[];
+extern std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_multiplier;
+extern std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_ambience_r, Room_ambience_g, Room_ambience_b;
 extern int LightSpacing;
 extern float GlobalMultiplier;
 extern float Ambient_red, Ambient_green, Ambient_blue;
@@ -118,7 +118,7 @@ static bool IsChunk(const char *chunk_name, const char *id) { return chunk_name[
 // the corresponding slot in the global GameTextures[] (matched by name).
 // Reset to identity before each LoadLevel so the raw index survives when no
 // TXNM list is present (e.g. our own saved files).
-static int texture_xlate[MAX_TEXTURES];
+static std::array<int, MAX_TEXTURES> texture_xlate;
 
 static int LL_FindTextureName(const std::string& name) {
   for (int i = 0; i < Num_textures; i++) {
@@ -529,9 +529,9 @@ static void LL_ReadTextureList(posix_istream &ifile, int chunk_size) {
 // door_xlate[MAX_DOORS].  Reset to -1 (no mapping) before every LoadLevel so
 // a level without the name chunks keeps the raw page indices it was saved
 // with.
-static int16_t generic_xlate[MAX_OBJECT_IDS];
-static int16_t door_xlate[MAX_DOORS];
+static std::array<int16_t, MAX_OBJECT_IDS> generic_xlate;
 
+static std::array<int16_t, MAX_DOORS> door_xlate;
 // Reads a GNNM/DRNM chunk body: an int32 count, then that many null-terminated
 // page names.  Each name is resolved through lookup(); an empty name (an
 // unused slot) is never looked up and maps to -1, exactly as in the engine's
@@ -764,7 +764,7 @@ static void LL_ReadMatcenChunk(posix_istream &ifile) {
 
   for (int i = 0; i < Num_matcens; i++) {
     matcen *mp = new matcen;
-    mp->LoadData(ifile, texture_xlate);
+    mp->LoadData(ifile, texture_xlate.data());
     Matcen[i] = mp;
   }
 }
@@ -1643,7 +1643,7 @@ static void LL_ReadTerrainChunks(posix_istream &ifile, uint32_t version) {
   BuildTerrainNormals();
   UpdateTerrainLightmaps();
 
-  memset(TerrainSelected, 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
+  memset(TerrainSelected.data(), 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
   Num_terrain_selected = 0;
 }
 
@@ -1860,19 +1860,18 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
         break;
       case "GNNM"_ID:
         // Object page names; maps file object ids to the loaded game tables.
-        LL_ReadNameXlateChunk(ifile, chunk_size, FindObjectIDName, generic_xlate, MAX_OBJECT_IDS);
+        LL_ReadNameXlateChunk(ifile, chunk_size, FindObjectIDName, generic_xlate.data(), MAX_OBJECT_IDS);
         break;
       case "DRNM"_ID:
         // Door page names; maps file door ids to the loaded game tables.
-        LL_ReadNameXlateChunk(ifile, chunk_size, FindDoorName, door_xlate, MAX_DOORS);
+        LL_ReadNameXlateChunk(ifile, chunk_size, FindDoorName, door_xlate.data(), MAX_DOORS);
         break;
       case "RWND"_ID:
       {
-        int32_t num = 0;
+        uint32_t num = 0;
         ifile >> num;
-        int nrooms = num;
-        for (int i = 0; i < nrooms; i++) {
-          int16_t roomnum = 0;
+        for (uint32_t i = 0; i < num; i++) {
+          uint16_t roomnum = 0;
           ifile >> roomnum;
           ifile >> Rooms[roomnum].wind;
         }

@@ -362,7 +362,7 @@ bool PolyCollideObject(object& obj) {
   bool f_use_big_sphere = false;
   float addition;
 
-  Q_ASSERT(&obj >= Objects && &obj <= &Objects[Highest_object_index]);
+  Q_ASSERT(&obj >= Objects.data() && &obj <= &Objects[Highest_object_index]);
 
 #ifndef NED_PHYSICS
   if (fvi_moveobj >= 0 && Objects[fvi_moveobj].type == OBJ_WEAPON &&

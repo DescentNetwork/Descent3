@@ -109,7 +109,7 @@
 #include "BOA.h"
 #include "rand.h"
 
-bn_list BNode_terrain_list[8];
+std::array<bn_list, 8> BNode_terrain_list;
 bool BNode_allocated = false;
 bool BNode_verified = false;
 

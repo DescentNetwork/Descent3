@@ -228,7 +228,7 @@ void CreateNewMine() {
 void CheckLevelNames() {
   int i;
   object *objp;
-  for (i = 0, objp = Objects; i <= Highest_object_index; i++, objp++) {
+  for (i = 0, objp = Objects.data(); i <= Highest_object_index; i++, objp++) {
     if (objp->type != OBJ_NONE && !objp->name.empty()) {
       const int handle = osipf_FindObjectName(objp->name);
       if (handle != objp->handle)
@@ -237,7 +237,7 @@ void CheckLevelNames() {
     }
   }
   trigger *tp;
-  for (i = 0, tp = Triggers; i < Num_triggers; i++, tp++) {
+  for (i = 0, tp = Triggers.data(); i < Num_triggers; i++, tp++) {
     if (tp != nullptr && !tp->name.empty()) {
       const int n = osipf_FindTriggerName(tp->name);
       if (n != i)
@@ -246,7 +246,7 @@ void CheckLevelNames() {
     }
   }
   room *rp;
-  for (i = 0, rp = Rooms; i <= Highest_room_index; i++, rp++) {
+  for (i = 0, rp = Rooms.data(); i <= Highest_room_index; i++, rp++) {
     if (rp->used && !rp->name.empty()) {
       const int n = osipf_FindRoomName(rp->name);
       if (n != i)
@@ -497,7 +497,7 @@ std::string RenderLevelStats() {
 
   int i;
   room *rp;
-  for (i = 0, rp = Rooms; i <= Highest_room_index; i++, rp++) {
+  for (i = 0, rp = Rooms.data(); i <= Highest_room_index; i++, rp++) {
     if (!rp->used)
       continue;
     n_rooms++;
@@ -541,7 +541,7 @@ std::string RenderLevelStats() {
       num_yellowgoals++;
   }
   object *objp;
-  for (i = 0, objp = Objects; i <= Highest_object_index; i++, objp++) {
+  for (i = 0, objp = Objects.data(); i <= Highest_object_index; i++, objp++) {
     if (objp->type == OBJ_NONE || objp->type == OBJ_ROOM)
       continue;
     if (objp->render_type != RT_POLYOBJ)

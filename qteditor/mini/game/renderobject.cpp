@@ -1406,9 +1406,9 @@ void RenderObject(object& obj) {
 #ifdef NEWDEMO
   if (obj.render_type != RT_NONE)
     if (Newdemo_state == ND_STATE_RECORDING) {
-      if (!WasRecorded[obj - Objects]) {
+      if (!WasRecorded[obj - Objects.data()]) {
         newdemo_record_RenderObject(obj);
-        WasRecorded[obj - Objects] = 1;
+        WasRecorded[obj - Objects.data()] = 1;
       }
     }
 #endif
@@ -1953,7 +1953,7 @@ void DrawPlayerTypingIndicator(object *obj) {
   fq.ignore_obj_list = NULL;
   fq.flags = FQ_CHECK_OBJS | FQ_IGNORE_POWERUPS | FQ_IGNORE_WEAPONS;
   fate = fvi_FindIntersection(&fq, &hit_data);
-  if (fate == HIT_NONE || (fate == HIT_SPHERE_2_POLY_OBJECT && hit_data.hit_object[0] == (obj - Objects))) {
+  if (fate == HIT_NONE || (fate == HIT_SPHERE_2_POLY_OBJECT && hit_data.hit_object[0] == (obj - Objects.data()))) {
     // Draw this indicator on the hud
     g3Point pnt;
     int bmh, bmw;
@@ -2053,7 +2053,7 @@ void DrawPlayerNameOnHud(object *obj) {
   fq.ignore_obj_list = NULL;
   fq.flags = FQ_CHECK_OBJS | FQ_IGNORE_POWERUPS | FQ_IGNORE_WEAPONS;
   fate = fvi_FindIntersection(&fq, &hit_data);
-  if (fate == HIT_NONE || (fate == HIT_SPHERE_2_POLY_OBJECT && hit_data.hit_object[0] == (obj - Objects))) {
+  if (fate == HIT_NONE || (fate == HIT_SPHERE_2_POLY_OBJECT && hit_data.hit_object[0] == (obj - Objects.data()))) {
     int half = Game_window_w / 2;
     // Draw this name on the hud
     g3Point pnt;

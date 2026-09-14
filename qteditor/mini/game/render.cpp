@@ -1136,7 +1136,7 @@ void BuildRoomList(int start_room_num) {
     if (Render_all_external_rooms) {
       int i;
       room *rp;
-      for (i = 0, rp = Rooms; i <= Highest_room_index; i++, rp++) {
+      for (i = 0, rp = Rooms.data(); i <= Highest_room_index; i++, rp++) {
         if (rp->used && (rp->flags.external)) {
           for (int t = 0; t < rp->num_faces; t++)
             rp->faces[t].flags.visible = true;
@@ -1948,7 +1948,7 @@ void RenderFace(room *rp, int facenum) {
   if (TSearch_on) {
     if (rend_GetPixel(TSearch_x, TSearch_y) != oldcolor) {
       TSearch_found_type = TSEARCH_FOUND_MINE;
-      TSearch_seg = rp - Rooms;
+      TSearch_seg = rp - Rooms.data();
       TSearch_face = facenum;
     }
   }
@@ -1959,7 +1959,7 @@ void RenderFace(room *rp, int facenum) {
       ((fp->flags.corona) || FastCoronas) && (fp->flags.lightmap) && UseHardware &&
       (GameTextures[fp->tmap].flags.light)) {
     if (Num_glows_this_frame < MAX_LIGHT_GLOWS && Detail_settings.Coronas_enabled) {
-      LightGlowsThisFrame[Num_glows_this_frame].roomnum = rp - Rooms;
+      LightGlowsThisFrame[Num_glows_this_frame].roomnum = rp - Rooms.data();
       LightGlowsThisFrame[Num_glows_this_frame].facenum = facenum;
       Num_glows_this_frame++;
     }
@@ -2202,7 +2202,7 @@ void SetupRoomFog(room *rp, vector3 *eye, matrix *orient, int viewer_room) {
     return;
   }
 
-  if (viewer_room == (rp - Rooms)) {
+  if (viewer_room == (rp - Rooms.data())) {
     // viewer is in the room
     vector3 *vec = eye;
     Room_fog_plane_check = 1;
@@ -2214,7 +2214,7 @@ void SetupRoomFog(room *rp, vector3 *eye, matrix *orient, int viewer_room) {
   // find the 'fogroom' number (we should have put it in here if we will render the room)
   int found_room = -1;
   for (int i = 0; i < Num_fogged_rooms_this_frame && found_room == -1; i++) {
-    if (Fog_portal_data[i].roomnum == rp - Rooms) {
+    if (Fog_portal_data[i].roomnum == rp - Rooms.data()) {
       found_room = i;
       break;
     }
@@ -2318,7 +2318,7 @@ void RenderRoomUnsorted(room *rp) {
       //     face_depth[fn] += World_point_buffer[rp->wpb_index + fp->face_verts[vn]].p3_z;
       //   }
       //   Postrender_list[Num_postrenders].type = PRT_WALL;
-      //   Postrender_list[Num_postrenders].roomnum = rp - Rooms;
+      //   Postrender_list[Num_postrenders].roomnum = rp - Rooms.data();
       //   Postrender_list[Num_postrenders].facenum = fn;
       //   Postrender_list[Num_postrenders++].z = face_depth[fn] /= fp->num_verts;
       //   ;
@@ -2368,12 +2368,12 @@ void ComputeRoomPulseLight(room *rp) {
   }
 
   if (rp->flags.strobe) {
-    int val = (d3::chrono::last_update() * 10) + (rp - Rooms);
+    int val = (d3::chrono::last_update() * 10) + (rp - Rooms.data());
     if (val % 2)
       Room_light_val = 0;
   }
   if (rp->flags.flicker) {
-    d3::srand((d3::chrono::last_update() * 1000) + (rp - Rooms));
+    d3::srand((d3::chrono::last_update() * 1000) + (rp - Rooms.data()));
     if (d3::rand() % 2)
       Room_light_val = 0;
   }
@@ -2554,7 +2554,7 @@ void CheckLightGlowsForRoom(room *rp) {
     // shoot a ray from the light position to the current vertex
     if (FastCoronas) {
       if (rp->flags.external) {
-        SetGlowStatus(rp - Rooms, LightGlowsThisFrame[i].facenum, &center, size, FastCoronas);
+        SetGlowStatus(rp - Rooms.data(), LightGlowsThisFrame[i].facenum, &center, size, FastCoronas);
         continue;
       }
       vector3 subvec = Viewer_eye - center;
@@ -2563,7 +2563,7 @@ void CheckLightGlowsForRoom(room *rp) {
       subvec += center;
       fq.p0 = &center;
       fq.p1 = &subvec;
-      fq.startroom = rp - Rooms;
+      fq.startroom = rp - Rooms.data();
     } else {
       fq.p0 = &Viewer_eye;
       fq.p1 = &center;
@@ -2577,7 +2577,7 @@ void CheckLightGlowsForRoom(room *rp) {
     int fate = fvi_FindIntersection(&fq, &hit_info);
     if (fate != HIT_NONE)
       continue;
-    SetGlowStatus(rp - Rooms, LightGlowsThisFrame[i].facenum, &center, size, FastCoronas);
+    SetGlowStatus(rp - Rooms.data(), LightGlowsThisFrame[i].facenum, &center, size, FastCoronas);
   }
 }
 // Called before a frame starts to render - sets all of our light glows to decreasing
@@ -2908,11 +2908,11 @@ void RenderMirroredRoom(room *rp) {
     RotateRoomPoints(rp, mirror_dest_vecs);
 
   // Mark facing faces
-  int save_frame = Facing_visited[rp - Rooms];
-  Facing_visited[rp - Rooms] = 0;
+  int save_frame = Facing_visited[rp - Rooms.data()];
+  Facing_visited[rp - Rooms.data()] = 0;
 
-  MarkFacingFaces(rp - Rooms, mirror_dest_vecs);
-  Facing_visited[rp - Rooms] = save_frame;
+  MarkFacingFaces(rp - Rooms.data(), mirror_dest_vecs);
+  Facing_visited[rp - Rooms.data()] = save_frame;
   // Render the mirror room
   rend_SetColorModel(CM_MONO);
   rend_SetLighting(LS_GOURAUD);
@@ -2950,7 +2950,7 @@ void RenderRoom(room *rp) {
   ComputeRoomPulseLight(rp);
 
   // Mark it visible for automap
-  AutomapVisMap[rp - Rooms] = 1;
+  AutomapVisMap[rp - Rooms.data()] = 1;
 
 #ifdef EDITOR
   if (!UseHardware) {
@@ -3323,7 +3323,7 @@ void RenderMirrorRooms() {
     if (do_mirror_face) // This room has a mirror...render it first
     {
       Render_mirror_for_room = true;
-      Mirror_room = rp - Rooms;
+      Mirror_room = rp - Rooms.data();
 
       BuildMirroredRoomList();
       for (int t = Num_mirrored_rooms - 1; t >= 0; t--)

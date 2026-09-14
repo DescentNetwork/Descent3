@@ -421,7 +421,7 @@
 #include "chrono_timer.h"
 
 // Global array of rooms
-room Rooms[MAX_ROOMS + MAX_PALETTE_ROOMS];
+std::array<room, MAX_ROOMS + MAX_PALETTE_ROOMS> Rooms;
 room_changes Room_changes[MAX_ROOM_CHANGES];
 
 extern int Cur_selected_room, Cur_selected_face;
@@ -525,7 +525,7 @@ void InitRoom(room *rp, int nverts, int nfaces, int nportals) {
   // global Rooms[] array.  Guard against rooms that live elsewhere (e.g.
   // stack/temporary rooms used by the tests): the pointer subtraction would
   // otherwise produce a wild index and corrupt memory.
-  const std::ptrdiff_t room_slot = rp - Rooms;
+  const std::ptrdiff_t room_slot = rp - Rooms.data();
   if (room_slot >= 0 && room_slot < MAX_ROOMS + MAX_PALETTE_ROOMS) {
     Room_multiplier[room_slot] = 1.0;
 
@@ -628,7 +628,7 @@ void FreeAllRooms() {
   int rn;
   room *rp;
   LOG_DEBUG("Freeing rooms... Higest_room_index %d", Highest_room_index);
-  for (rn = 0, rp = Rooms; rn <= Highest_room_index; rn++, rp++) {
+  for (rn = 0, rp = Rooms.data(); rn <= Highest_room_index; rn++, rp++) {
     if (rp->used) {
       //			mprintf(2, "rn %d\n", rn);
       FreeRoom(rp);
@@ -1106,7 +1106,7 @@ void CreateRoomObjects() {
       ObjDelete(objnum);
 
   // Now go through all rooms & create objects for external ones
-  for (r = 0, rp = Rooms; r <= Highest_room_index; r++, rp++)
+  for (r = 0, rp = Rooms.data(); r <= Highest_room_index; r++, rp++)
     if (rp->used && rp->flags.external) {
       vector3 pos;
       float rad;

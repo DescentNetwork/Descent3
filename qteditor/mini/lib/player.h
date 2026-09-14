@@ -423,7 +423,7 @@ extern int Default_ship_permission;
 extern object *Player_object;
 
 extern int Num_teams, Team_game;
-extern player Players[];
+extern std::array<player, MAX_PLAYERS> Players;
 extern team Teams[];
 extern float HudNameTan;
 extern int Current_waypoint;
