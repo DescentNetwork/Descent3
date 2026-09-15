@@ -238,6 +238,15 @@ struct DialogInstance
 
 QList<DialogInstance> g_dialogs;
 
+// The pooled dialogs stay alive for the whole test run, so the structs they
+// write into (via their constructors' out-pointers) must outlive
+// testDialogsConstruct() too. File-scope storage keeps them valid.
+static death_info g_dialog_death_info{};
+static object_info g_dialog_object_info{};
+static soundsource_info_s g_dialog_soundsource_info{};
+static physics_info g_dialog_physics_info{};
+static level_info g_dialog_level_info{};
+
 void addDialog(const char *name, QWidget *handle) { g_dialogs.append({name, handle}); }
 
 void collectInteractive(QWidget *root, QList<QWidget *> *out)
@@ -2995,11 +3004,11 @@ private slots:
 
   void testDialogsConstruct()
   {
-    death_info di{};
-    object_info oi{};
-    soundsource_info_s ssi{};
-    physics_info pi{};
-    level_info li{};
+    death_info &di = g_dialog_death_info;
+    object_info &oi = g_dialog_object_info;
+    soundsource_info_s &ssi = g_dialog_soundsource_info;
+    physics_info &pi = g_dialog_physics_info;
+    level_info &li = g_dialog_level_info;
 
     auto make = [&](const char *name, QWidget *w) { addDialog(name, w); };
 

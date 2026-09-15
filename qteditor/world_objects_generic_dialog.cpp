@@ -1001,10 +1001,14 @@ void WorldObjectsGenericDialog::onNolod() {
     return;
   }
   if (m_lod == 1) {
-    FreePolyModel(Object_info[m_current].med_render_handle);
+    if (Object_info[m_current].med_render_handle >= 0 && Object_info[m_current].med_render_handle < MAX_POLY_MODELS &&
+        Poly_models[Object_info[m_current].med_render_handle].used)
+      FreePolyModel(Object_info[m_current].med_render_handle);
     Object_info[m_current].med_render_handle = -1;
   } else {
-    FreePolyModel(Object_info[m_current].lo_render_handle);
+    if (Object_info[m_current].lo_render_handle >= 0 && Object_info[m_current].lo_render_handle < MAX_POLY_MODELS &&
+        Poly_models[Object_info[m_current].lo_render_handle].used)
+      FreePolyModel(Object_info[m_current].lo_render_handle);
     Object_info[m_current].lo_render_handle = -1;
   }
   updateDialog();
