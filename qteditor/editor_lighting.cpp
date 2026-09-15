@@ -124,7 +124,8 @@ int FindEmptyMaskSpot(int w, int h, int *dest_x, int *dest_y) {
   return 0;
 }
 
-void CopySqueezeBodyAndEdges(uint16_t *dest_data, uint16_t *src_data, int w, int h, int dest_x, int dest_y) {
+void CopySqueezeBodyAndEdges(std::vector<std::vector<uint16_t>> &dest_data, const std::vector<std::vector<uint16_t>> &src_data,
+                             int w, int h, int dest_x, int dest_y) {
   int i, t;
 
   Q_ASSERT(w + dest_x <= 126);
@@ -134,7 +135,7 @@ void CopySqueezeBodyAndEdges(uint16_t *dest_data, uint16_t *src_data, int w, int
   // First copy the main body
   for (i = 0; i < h; i++) {
     for (t = 0; t < w; t++) {
-      dest_data[((dest_y + 1 + i) * 128) + (dest_x + 1 + t)] = src_data[(w * i) + t];
+      dest_data[dest_y + 1 + i][dest_x + 1 + t] = src_data[i][t];
       Lightmap_mask[((dest_y + i + 1) * 128) + dest_x + 1 + t] = 1;
     }
   }
@@ -142,44 +143,45 @@ void CopySqueezeBodyAndEdges(uint16_t *dest_data, uint16_t *src_data, int w, int
   // Now copy the edges
   // Left edge
   for (i = 0; i < h; i++) {
-    dest_data[((dest_y + 1 + i) * 128) + (dest_x + 0)] = src_data[(w * i) + 0];
+    dest_data[dest_y + 1 + i][dest_x + 0] = src_data[i][0];
     Lightmap_mask[((dest_y + i + 1) * 128) + dest_x + 0] = 1;
   }
   // Right edge
   for (i = 0; i < h; i++) {
-    dest_data[((dest_y + 1 + i) * 128) + (dest_x + w + 1)] = src_data[(w * i) + (w - 1)];
+    dest_data[dest_y + 1 + i][dest_x + w + 1] = src_data[i][w - 1];
     Lightmap_mask[((dest_y + i + 1) * 128) + dest_x + w + 1] = 1;
   }
   // Top edge
   for (i = 0; i < w; i++) {
-    dest_data[(dest_y * 128) + (dest_x + i + 1)] = src_data[i];
+    dest_data[dest_y][dest_x + i + 1] = src_data[0][i];
     Lightmap_mask[(dest_y * 128) + (dest_x + i + 1)] = 1;
   }
   // Bottom edge
   for (i = 0; i < w; i++) {
-    dest_data[((dest_y + 1 + h) * 128) + (dest_x + i + 1)] = src_data[(w * (h - 1)) + i];
+    dest_data[dest_y + 1 + h][dest_x + i + 1] = src_data[h - 1][i];
     Lightmap_mask[((dest_y + 1 + h) * 128) + (dest_x + i + 1)] = 1;
   }
 
   // Now copy the corners
   // Upper left
-  dest_data[(dest_y * 128) + (dest_x)] = src_data[0];
+  dest_data[dest_y][dest_x] = src_data[0][0];
   Lightmap_mask[(dest_y * 128) + (dest_x)] = 1;
   // Upper right
-  dest_data[(dest_y * 128) + (dest_x + w + 1)] = src_data[w - 1];
+  dest_data[dest_y][dest_x + w + 1] = src_data[0][w - 1];
   Lightmap_mask[(dest_y * 128) + (dest_x + w + 1)] = 1;
   // Lower left
-  dest_data[((dest_y + h + 1) * 128) + (dest_x)] = src_data[w * (h - 1)];
+  dest_data[dest_y + h + 1][dest_x] = src_data[h - 1][0];
   Lightmap_mask[((dest_y + h + 1) * 128) + (dest_x)] = 1;
   // Lower right
-  dest_data[((dest_y + h + 1) * 128) + (dest_x + w + 1)] = src_data[(w * (h - 1)) + (w - 1)];
+  dest_data[dest_y + h + 1][dest_x + w + 1] = src_data[h - 1][w - 1];
   Lightmap_mask[((dest_y + h + 1) * 128) + (dest_x + w + 1)] = 1;
 }
 
-void CopySqueezeDataForRooms(int roomnum, int facenum, uint16_t *dest_data, int dest_x, int dest_y) {
+void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<uint16_t>> &dest_data, int dest_x,
+                             int dest_y) {
   room *rp = &Rooms[roomnum];
   lightmap_info *lmi_ptr = &LightmapInfo[rp->faces[facenum].lmi_handle];
-  uint16_t *src_data = (uint16_t *)lm_data(lmi_ptr->lm_handle);
+  const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi_ptr->lm_handle);
 
   int w = lmi_ptr->width;
   int h = lmi_ptr->height;
@@ -238,10 +240,11 @@ void CopySqueezeDataForRooms(int roomnum, int facenum, uint16_t *dest_data, int 
   GameLightmaps[Squeeze_lightmap_handle].used++;
 }
 
-void CopySqueezeDataForObject(object *obj, int subnum, int facenum, uint16_t *dest_data, int dest_x, int dest_y) {
+void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<std::vector<uint16_t>> &dest_data,
+                              int dest_x, int dest_y) {
   lightmap_object_face *fp = &obj->lm_object.lightmap_faces[subnum][facenum];
   lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
-  uint16_t *src_data = (uint16_t *)lm_data(lmi_ptr->lm_handle);
+  const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi_ptr->lm_handle);
   int t, k;
 
   int w = lmi_ptr->width;
@@ -480,8 +483,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
       if (Squeeze_lightmap_handle == -1) {
         memset(Lightmap_mask, 0, 128 * 128);
         Squeeze_lightmap_handle = lm_AllocLightmap(128, 128);
-        uint16_t *fill_data = (uint16_t *)lm_data(Squeeze_lightmap_handle);
-        memset(fill_data, 0, 128 * 128 * 2);
+        
       }
 
       if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
@@ -517,8 +519,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
         memset(Lightmap_mask, 0, 128 * 128);
         Squeeze_lightmap_handle = lm_AllocLightmap(128, 128);
-        uint16_t *fill_data = (uint16_t *)lm_data(Squeeze_lightmap_handle);
-        memset(fill_data, 0, 128 * 128 * 2);
+        
 
         Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
 
@@ -559,8 +560,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
           if (Squeeze_lightmap_handle == -1) {
             memset(Lightmap_mask, 0, 128 * 128);
             Squeeze_lightmap_handle = lm_AllocLightmap(128, 128);
-            uint16_t *fill_data = (uint16_t *)lm_data(Squeeze_lightmap_handle);
-            memset(fill_data, 0, 128 * 128 * 2);
+            
           }
 
           if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
@@ -606,8 +606,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
             memset(Lightmap_mask, 0, 128 * 128);
             Squeeze_lightmap_handle = lm_AllocLightmap(128, 128);
-            uint16_t *fill_data = (uint16_t *)lm_data(Squeeze_lightmap_handle);
-            memset(fill_data, 0, 128 * 128 * 2);
+            
 
             Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
 
@@ -663,8 +662,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
           if (Squeeze_lightmap_handle == -1) {
             memset(Lightmap_mask, 0, 128 * 128);
             Squeeze_lightmap_handle = lm_AllocLightmap(128, 128);
-            uint16_t *fill_data = (uint16_t *)lm_data(Squeeze_lightmap_handle);
-            memset(fill_data, 0, 128 * 128 * 2);
+            
           }
 
           if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
@@ -710,8 +708,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
             memset(Lightmap_mask, 0, 128 * 128);
             Squeeze_lightmap_handle = lm_AllocLightmap(128, 128);
-            uint16_t *fill_data = (uint16_t *)lm_data(Squeeze_lightmap_handle);
-            memset(fill_data, 0, 128 * 128 * 2);
+            
 
             Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
 
@@ -1300,7 +1297,7 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
   Q_ASSERT(lw >= 2);
   Q_ASSERT(lh >= 2);
 
-  uint16_t *dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
+  std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
 
   // Set face pointer
   if (GameTextures[fp->tmap].flags.alpha)
@@ -1314,14 +1311,14 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
   for (i = 0; i < yres; i++) {
     for (t = 0; t < xres; t++) {
       if (!(sp->elements[i * xres + t].flags & EF_IGNORE)) {
-        ddgr_color color = GR_16_TO_COLOR(dest_data[(i + y1) * lw + (t + x1)]);
+        ddgr_color color = GR_16_TO_COLOR(dest_data[i + y1][t + x1]);
         int red = GR_COLOR_RED(color);
         int green = GR_COLOR_GREEN(color);
         int blue = GR_COLOR_BLUE(color);
 
         float fr, fg, fb;
 
-        if (!(dest_data[(i + y1) * lw + (t + x1)] & OPAQUE_FLAG)) {
+        if (!(dest_data[i + y1][t + x1] & OPAQUE_FLAG)) {
           red = green = blue = 0;
         }
 
@@ -1337,7 +1334,7 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
         green += (int)fg;
         blue += (int)fb;
 
-        if (dest_data[(i + y1) * lw + (t + x1)] & OPAQUE_FLAG) {
+        if (dest_data[i + y1][t + x1] & OPAQUE_FLAG) {
 
           red /= 2;
           green /= 2;
@@ -1350,7 +1347,7 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
 
         uint16_t texel = OPAQUE_FLAG | GR_RGB16(red, green, blue);
 
-        dest_data[(i + y1) * lw + (t + x1)] = texel;
+        dest_data[i + y1][t + x1] = texel;
       }
     }
   }
@@ -1704,7 +1701,7 @@ void DoTerrainDynamicTable() {
   LOG_INFO("Calculating dynamic light table for %d points...\n", maxrays);
   LOG_INFO("Press tilde key to abort!\n");
 
-  memset(Terrain_dynamic_table.data(), 0, (TERRAIN_DEPTH * TERRAIN_WIDTH));
+  std::ranges::fill(Terrain_dynamic_table, 0);
 
   for (i = 0; i < AREA_Z; i++) {
     // Qt handles keyboard events natively - abort logic should be moved to UI

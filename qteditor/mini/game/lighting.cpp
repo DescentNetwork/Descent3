@@ -214,15 +214,11 @@ void BlendLightingEdges(lightmap_info *lmi_ptr) {
   int h = lmi_h(lmi_handle);
   int w = lmi_w(lmi_handle);
   int lm_handle = lmi_ptr->lm_handle;
-  uint16_t *dest_data = (uint16_t *)lm_data(lm_handle);
-  uint16_t *src_data = dest_data;
+  std::vector<std::vector<uint16_t>> &dest_data = lm_data(lm_handle);
+  std::vector<std::vector<uint16_t>> &src_data = dest_data;
   int dest_x = lmi_ptr->x1 - 1;
   int dest_y = lmi_ptr->y1 - 1;
   int i;
-
-  Q_ASSERT(dest_data);
-  if (!dest_data)
-    return;
 
   Q_ASSERT(dest_x >= 0 && dest_y >= 0);
   Q_ASSERT(dest_x + w < 127);
@@ -230,34 +226,33 @@ void BlendLightingEdges(lightmap_info *lmi_ptr) {
 
   for (i = 0; i < h; i++) {
     // Left edge
-    dest_data[((dest_y + 1 + i) * 128) + dest_x] = src_data[((dest_y + 1 + i) * 128) + dest_x + 1];
+    dest_data[dest_y + 1 + i][dest_x] = src_data[dest_y + 1 + i][dest_x + 1];
     // Right edge
-    dest_data[((dest_y + 1 + i) * 128) + dest_x + w + 1] = src_data[((dest_y + 1 + i) * 128) + dest_x + w];
+    dest_data[dest_y + 1 + i][dest_x + w + 1] = src_data[dest_y + 1 + i][dest_x + w];
   }
 
   for (i = 0; i < w; i++) {
     // Top edge
-    dest_data[(dest_y * 128) + (dest_x + i + 1)] = src_data[((dest_y + 1) * 128) + (dest_x + i + 1)];
+    dest_data[dest_y][dest_x + i + 1] = src_data[dest_y + 1][dest_x + i + 1];
     // Bottom edge
-    dest_data[((dest_y + 1 + h) * 128) + (dest_x + i + 1)] = src_data[((dest_y + h) * 128) + (dest_x + i + 1)];
+    dest_data[dest_y + 1 + h][dest_x + i + 1] = src_data[dest_y + h][dest_x + i + 1];
   }
 
   // Now copy the corners
   // Upper left
-  dest_data[(dest_y * 128) + (dest_x)] = src_data[((dest_y + 1) * 128) + (dest_x + 1)];
+  dest_data[dest_y][dest_x] = src_data[dest_y + 1][dest_x + 1];
   // Upper right
-  dest_data[(dest_y * 128) + (dest_x + w + 1)] = src_data[((dest_y + 1) * 128) + (dest_x + w)];
+  dest_data[dest_y][dest_x + w + 1] = src_data[dest_y + 1][dest_x + w];
   // Lower left
-  dest_data[((dest_y + h + 1) * 128) + (dest_x)] = src_data[((dest_y + h) * 128) + (dest_x + 1)];
+  dest_data[dest_y + h + 1][dest_x] = src_data[dest_y + h][dest_x + 1];
   // Lower right
-  dest_data[((dest_y + h + 1) * 128) + (dest_x + w + 1)] = src_data[((dest_y + h) * 128) + (dest_x + w)];
+  dest_data[dest_y + h + 1][dest_x + w + 1] = src_data[dest_y + h][dest_x + w];
 }
 
 // Does lighting for the passed in external room
 void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, float red_scale, float green_scale,
                                  float blue_scale, vector3 *light_direction, float dot_range) {
   int i, lm_handle, t;
-  uint16_t *dest_data;
   vector3 rad;
   room *rp = &Rooms[roomnum];
   vector3 Light_min_xyz;
@@ -305,8 +300,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     int yres = lmi_h(fp->lmi_handle);
 
     lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
-    // Lightmap width and height
-    int lmw = lm_w(lmi_ptr->lm_handle);
+    
 
     // Check for backfaces
     vector3 subvec = *pos - lmi_ptr->upper_left;
@@ -385,7 +379,6 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     if (lmi_ptr->dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
       lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
-      dest_data = (uint16_t *)lm_data(lm_handle);
 
       if (start_x + lmi_ptr->x1 < GameLightmaps[lm_handle].cx1)
         GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
@@ -415,18 +408,15 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      uint16_t *src_data;
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
+      uint16_t *dyn_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
 
-      src_data = (uint16_t *)lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
-      dest_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
-
-      for (int y = 0, index = 0; y < yres; y++) {
-        for (int x = 0; x < xres; x++, index++) {
-          dest_data[index] = src_data[((lmi_ptr->y1 + y) * lmw) + lmi_ptr->x1 + x];
+      for (int y = 0; y < yres; y++) {
+        for (int x = 0; x < xres; x++) {
+          dyn_data[y * xres + x] = src_data[lmi_ptr->y1 + y][lmi_ptr->x1 + x];
         }
       }
 
-      dest_data = src_data;
       lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
 
       // Mark it as changed
@@ -473,14 +463,12 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     // Go through and change each element of this lightmap
     // SLOW!
 
-    int texel_num = ((start_y + lmi_ptr->y1) * lmw) + start_x + lmi_ptr->x1;
-    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr->yspacing), texel_num += lmw) {
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
+    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr->yspacing)) {
       element_vec = base_vector;
 
       for (int x = 0; x < width; x++, element_vec += (facematrix.rvec * lmi_ptr->xspacing)) {
-        int lightmap_texel_num = texel_num + x;
-
-        uint16_t lightmap_texel = dest_data[lightmap_texel_num];
+        uint16_t &lightmap_texel = dest_data[start_y + lmi_ptr->y1 + y][start_x + lmi_ptr->x1 + x];
 
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
@@ -533,8 +521,6 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
         }
 
         lightmap_texel = OPAQUE_FLAG | (r << 10) | (g << 5) | b;
-
-        dest_data[lightmap_texel_num] = lightmap_texel;
       }
     }
   }
@@ -601,7 +587,6 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
   int i, t;
   int subnum = sm - pm->submodel.data();
   int lm_handle;
-  uint16_t *dest_data;
   uint16_t lmilist[MAX_DYNAMIC_FACES];
   int num_spoken_for = 0;
 
@@ -651,8 +636,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
     int yres = lmi_h(fp->lmi_handle);
 
     lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
-    // Lightmap width and height
-    int lmw = lm_w(lmi_ptr->lm_handle);
+    
 
     // Check for backfaces
     // Get upper left vector3 of face
@@ -732,7 +716,6 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
     if (lmi_ptr->dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
       lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
-      dest_data = (uint16_t *)lm_data(lm_handle);
 
       if (start_x + lmi_ptr->x1 < GameLightmaps[lm_handle].cx1)
         GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
@@ -764,18 +747,15 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      uint16_t *src_data;
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
+      uint16_t *dyn_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
 
-      src_data = (uint16_t *)lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
-      dest_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
-
-      for (int y = 0, index = 0; y < yres; y++) {
-        for (int x = 0; x < xres; x++, index++) {
-          dest_data[index] = src_data[((lmi_ptr->y1 + y) * lmw) + lmi_ptr->x1 + x];
+      for (int y = 0; y < yres; y++) {
+        for (int x = 0; x < xres; x++) {
+          dyn_data[y * xres + x] = src_data[lmi_ptr->y1 + y][lmi_ptr->x1 + x];
         }
       }
 
-      dest_data = src_data;
       lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
 
       // Mark it as changed
@@ -822,14 +802,12 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
     // Go through and change each element of this lightmap
     // SLOW!
 
-    int texel_num = ((start_y + lmi_ptr->y1) * lmw) + start_x + lmi_ptr->x1;
-    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr->yspacing), texel_num += lmw) {
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
+    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr->yspacing)) {
       element_vec = base_vector;
 
       for (int x = 0; x < width; x++, element_vec += (facematrix.rvec * lmi_ptr->xspacing)) {
-        int lightmap_texel_num = texel_num + x;
-
-        uint16_t lightmap_texel = dest_data[lightmap_texel_num];
+        uint16_t &lightmap_texel = dest_data[start_y + lmi_ptr->y1 + y][start_x + lmi_ptr->x1 + x];
 
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
@@ -879,8 +857,6 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
         }
 
         lightmap_texel = OPAQUE_FLAG | (r << 10) | (g << 5) | b;
-
-        dest_data[lightmap_texel_num] = lightmap_texel;
       }
     }
   }
@@ -1053,7 +1029,6 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
   int num_spoken_for = 0;
 
   int num_faces, i, t, lm_handle;
-  uint16_t *dest_data;
 
   if (Dedicated_server)
     return;
@@ -1100,8 +1075,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     int yres = lmi_h(fp->lmi_handle);
 
     lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
-    // Lightmap width and height
-    int lmw = lm_w(lmi_ptr->lm_handle);
+    
 
     // Check for backfaces
     vector3 subvec = *pos - lmi_ptr->upper_left;
@@ -1186,7 +1160,6 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     if (lmi_ptr->dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
       lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
-      dest_data = (uint16_t *)lm_data(lm_handle);
 
       if (start_x + lmi_ptr->x1 < GameLightmaps[lm_handle].cx1)
         GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
@@ -1216,18 +1189,15 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      uint16_t *src_data;
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
+      uint16_t *dyn_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
 
-      src_data = (uint16_t *)lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
-      dest_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
-
-      for (int y = 0, index = 0; y < yres; y++) {
-        for (int x = 0; x < xres; x++, index++) {
-          dest_data[index] = src_data[((lmi_ptr->y1 + y) * lmw) + lmi_ptr->x1 + x];
+      for (int y = 0; y < yres; y++) {
+        for (int x = 0; x < xres; x++) {
+          dyn_data[y * xres + x] = src_data[lmi_ptr->y1 + y][lmi_ptr->x1 + x];
         }
       }
 
-      dest_data = src_data;
       lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
 
       // Mark it as changed
@@ -1274,14 +1244,12 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     // Go through and change each element of this lightmap
     // SLOW!
 
-    int texel_num = ((start_y + lmi_ptr->y1) * lmw) + start_x + lmi_ptr->x1;
-    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr->yspacing), texel_num += lmw) {
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
+    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr->yspacing)) {
       element_vec = base_vector;
 
       for (int x = 0; x < width; x++, element_vec += (facematrix.rvec * lmi_ptr->xspacing)) {
-        int lightmap_texel_num = texel_num + x;
-
-        uint16_t lightmap_texel = dest_data[lightmap_texel_num];
+        uint16_t &lightmap_texel = dest_data[start_y + lmi_ptr->y1 + y][start_x + lmi_ptr->x1 + x];
 
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
@@ -1336,8 +1304,6 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
         }
 
         lightmap_texel = OPAQUE_FLAG | (r << 10) | (g << 5) | b;
-
-        dest_data[lightmap_texel_num] = lightmap_texel;
       }
     }
   }
@@ -1400,15 +1366,11 @@ void ClearDynamicLightmaps() {
     lightmap_info *lmi_ptr = &LightmapInfo[lmi_handle];
 
     uint16_t *src_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
-    uint16_t *dest_data = (uint16_t *)lm_data(lm_handle);
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(lm_handle);
 
-    int lmw = lm_w(lm_handle);
-
-    dest_data += (lmi_ptr->y1 * lmw);
-
-    for (int y = 0; y < lmi_ptr->height; y++, dest_data += lmw) {
+    for (int y = 0; y < lmi_ptr->height; y++) {
       for (int x = 0; x < lmi_ptr->width; x++) {
-        dest_data[lmi_ptr->x1 + x] = src_data[y * lmi_ptr->width + x];
+        dest_data[lmi_ptr->y1 + y][lmi_ptr->x1 + x] = src_data[y * lmi_ptr->width + x];
       }
     }
 
@@ -1437,9 +1399,9 @@ void ClearDynamicLightmaps() {
     whichmap = TerrainLightmaps[whichmap];
 
     uint16_t color = OPAQUE_FLAG | GR_RGB16(Terrain_seg[cellnum].r, Terrain_seg[cellnum].g, Terrain_seg[cellnum].b);
-    uint16_t *data = lm_data(whichmap);
+    std::vector<std::vector<uint16_t>> &data = lm_data(whichmap);
 
-    data[subz * 128 + subx] = color;
+    data[subz][subx] = color;
 
     GameLightmaps[whichmap].flags |= (LF_LIMITS | LF_CHANGED);
   }
@@ -1585,11 +1547,11 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
     }
 
     uint16_t color = OPAQUE_FLAG | GR_RGB16(tseg->r, tseg->g, tseg->b);
-    uint16_t *data = lm_data(whichmap);
+    std::vector<std::vector<uint16_t>> &data = lm_data(whichmap);
 
-    Q_ASSERT(data);
+    Q_ASSERT(!data.empty());
 
-    data[subz * 128 + subx] = color;
+    data[subz][subx] = color;
   }
 }
 
@@ -2056,8 +2018,6 @@ void DestroyLight(int roomnum, int facenum) {
 
     lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
 
-    int lmw = lm_w(lmi_ptr->lm_handle);
-
     vector3 subvec = center - lmi_ptr->upper_left;
     float dist_from_plane = vm_DotProduct(&subvec, &lmi_ptr->normal);
 
@@ -2126,9 +2086,7 @@ void DestroyLight(int roomnum, int facenum) {
     Q_ASSERT(height > 0);
 
     // Now copy our source data to our dest data so we have a base to work with
-    uint16_t *dest_data;
 
-    dest_data = (uint16_t *)lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
     int lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
 
     if (!(GameLightmaps[lm_handle].flags & LF_LIMITS)) {
@@ -2165,14 +2123,12 @@ void DestroyLight(int roomnum, int facenum) {
     // Go through and change each element of this lightmap
     // SLOW!
 
-    int texel_num = ((start_y + lmi_ptr->y1) * lmw) + start_x + lmi_ptr->x1;
-    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr->yspacing), texel_num += lmw) {
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
+    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr->yspacing)) {
       element_vec = base_vector;
 
       for (int x = 0; x < width; x++, element_vec += (facematrix.rvec * lmi_ptr->xspacing)) {
-        int lightmap_texel_num = texel_num + x;
-
-        uint16_t lightmap_texel = dest_data[lightmap_texel_num];
+        uint16_t &lightmap_texel = dest_data[start_y + lmi_ptr->y1 + y][start_x + lmi_ptr->x1 + x];
 
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
@@ -2197,8 +2153,6 @@ void DestroyLight(int roomnum, int facenum) {
           b = std::max<float>(0, b - (scalar * blue_scale * 31));
 
         lightmap_texel = OPAQUE_FLAG | (r << 10) | (g << 5) | b;
-
-        dest_data[lightmap_texel_num] = lightmap_texel;
       }
     }
 

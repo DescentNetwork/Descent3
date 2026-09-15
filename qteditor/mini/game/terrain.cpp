@@ -851,7 +851,7 @@ int LoadPCXTerrain(char *filename) {
   GenerateTerrainLight();
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
-  memset(TerrainSelected.data(), 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
+  std::ranges::fill(TerrainSelected, 0);
   Num_terrain_selected = 0;
   World_changed = true;
 #endif
@@ -925,7 +925,7 @@ void ResetTerrain(int force) {
   GenerateTerrainLight();
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
-  memset(TerrainSelected.data(), 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
+  std::ranges::fill(TerrainSelected, 0);
 #endif
 
   memset(TerrainJoinMap, 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
@@ -1020,7 +1020,6 @@ void InitTerrain(void) {
 }
 
 void UpdateSingleTerrainLightmap(int which) {
-  int w = lm_w(TerrainLightmaps[which]);
   int i, t;
 
   GameLightmaps[TerrainLightmaps[which]].flags |= LF_CHANGED;
@@ -1034,12 +1033,12 @@ void UpdateSingleTerrainLightmap(int which) {
       terrain_segment *tp = &Terrain_seg[tseg];
 
       uint16_t color = GR_RGB16(tp->r, tp->g, tp->b);
-      uint16_t *data = lm_data(TerrainLightmaps[which]);
+      std::vector<std::vector<uint16_t>> &data = lm_data(TerrainLightmaps[which]);
 
       int x = t % 128;
       int y = 127 - (i % 128);
 
-      data[y * w + x] = OPAQUE_FLAG | color;
+      data[y][x] = OPAQUE_FLAG | color;
     }
   }
 }
@@ -1099,8 +1098,6 @@ void UpdateTerrainLightmaps() {
     Terrain_seg[255 * TERRAIN_WIDTH + i + 128].b = Terrain_seg[127 * TERRAIN_WIDTH + i + 128].b;
   }
 
-  int w = lm_w(TerrainLightmaps[0]);
-
   for (i = 0; i < TERRAIN_DEPTH; i++) {
     for (t = 0; t < TERRAIN_WIDTH; t++) {
       int tseg = i * TERRAIN_WIDTH + t;
@@ -1110,9 +1107,9 @@ void UpdateTerrainLightmaps() {
       int which = ((i / 128) * 2) + (t / 128);
 
       uint16_t color = GR_RGB16(tp->r, tp->g, tp->b);
-      uint16_t *data = lm_data(TerrainLightmaps[which]);
+      std::vector<std::vector<uint16_t>> &data = lm_data(TerrainLightmaps[which]);
 
-      data[y * w + x] = OPAQUE_FLAG | color;
+      data[y][x] = OPAQUE_FLAG | color;
     }
   }
 

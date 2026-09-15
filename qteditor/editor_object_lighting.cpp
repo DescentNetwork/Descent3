@@ -105,19 +105,19 @@ void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surf
   Q_ASSERT(lw >= 2);
   Q_ASSERT(lh >= 2);
 
-  uint16_t *dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
+  std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
 
   for (i = 0; i < yres; i++) {
     for (t = 0; t < xres; t++) {
       if (!(sp->elements[i * xres + t].flags & EF_IGNORE)) {
-        ddgr_color color = GR_16_TO_COLOR(dest_data[(i + y1) * lw + (t + x1)]);
+        ddgr_color color = GR_16_TO_COLOR(dest_data[i + y1][t + x1]);
         int red = GR_COLOR_RED(color);
         int green = GR_COLOR_GREEN(color);
         int blue = GR_COLOR_BLUE(color);
 
         float fr, fg, fb;
 
-        if (!(dest_data[(i + y1) * lw + (t + x1)] & OPAQUE_FLAG)) {
+        if (!(dest_data[i + y1][t + x1] & OPAQUE_FLAG)) {
           red = green = blue = 0;
         }
 
@@ -133,7 +133,7 @@ void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surf
         green += (int)fg;
         blue += (int)fb;
 
-        if (dest_data[(i + y1) * lw + (t + x1)] & OPAQUE_FLAG) {
+        if (dest_data[i + y1][t + x1] & OPAQUE_FLAG) {
 
           red /= 2;
           green /= 2;
@@ -144,7 +144,7 @@ void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surf
         green = std::min(green, 255);
         blue = std::min(blue, 255);
 
-        dest_data[(i + y1) * lw + (t + x1)] = OPAQUE_FLAG | GR_RGB16(red, green, blue);
+        dest_data[i + y1][t + x1] = OPAQUE_FLAG | GR_RGB16(red, green, blue);
       }
     }
   }

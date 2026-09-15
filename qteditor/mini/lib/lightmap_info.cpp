@@ -57,9 +57,6 @@ int AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap) {
   if (alloc_lightmap) {
     LightmapInfo[n].lm_handle = lm_AllocLightmap(w, h);
     Q_ASSERT(LightmapInfo[n].lm_handle != BAD_LM_INDEX);
-
-    uint16_t *dest_data = lm_data(LightmapInfo[n].lm_handle);
-    memset(dest_data, 0, static_cast<size_t>(w) * h * 2);
   }
 
   LightmapInfo[n].used = 1;

@@ -2555,9 +2555,9 @@ private slots:
       const int w = lm_w(lm_handle);
       const int h = lm_h(lm_handle);
       QVERIFY(w > 1 && h > 1);
-      const uint16_t *data = lm_data(lm_handle);
-      QVERIFY(data != nullptr);
-      if (data[0] != 0 || data[w * (h - 1)] != 0)
+      const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
+      QVERIFY(!data.empty());
+      if (data[0][0] != 0 || data[h - 1][0] != 0)
         nonTrivial++;
     }
     QVERIFY2(nonTrivial > 0, "decoded lightmaps are uniformly zero");

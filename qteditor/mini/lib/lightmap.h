@@ -21,6 +21,8 @@
 
 #include "pstypes.h"
 
+#include <vector>
+
 #define MAX_LIGHTMAPS (65534)
 #define BAD_LM_INDEX 65535
 
@@ -32,7 +34,7 @@
 
 struct bms_lightmap {
   uint8_t width, height; // Width and height in pixels
-  uint16_t *data;        // 16bit data
+  std::vector<std::vector<uint16_t>> data; // height rows, each width 16bit texels wide
 
   uint16_t used;
   uint8_t flags;
@@ -61,7 +63,7 @@ int lm_w(int handle);
 // returns a lightmaps height , else -1 if something is wrong
 int lm_h(int handle);
 
-// returns a lightmaps data else NULL if something is wrong
-uint16_t *lm_data(int handle);
+// returns a lightmaps data as height rows of width texels
+std::vector<std::vector<uint16_t>> &lm_data(int handle);
 
 #endif

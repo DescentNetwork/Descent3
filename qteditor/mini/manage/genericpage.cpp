@@ -184,7 +184,7 @@ static void mng_InitGenericPage(mngs_generic_page *genericpage) {
   genericpage->objinfo_struct.module_name[0] = '\0';
 
   for (i = 0; i < MAX_DEATH_TYPES; i++) {
-    memset(&genericpage->objinfo_struct.death_types[i].flags, 0, sizeof(uint32_t));
+    genericpage->objinfo_struct.death_types[i].flags = {};
     genericpage->objinfo_struct.death_types[i].delay_min = 0.0;
     genericpage->objinfo_struct.death_types[i].delay_max = 0.0;
     genericpage->objinfo_struct.death_probabilities[i] = 0;

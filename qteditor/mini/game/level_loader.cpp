@@ -1289,7 +1289,11 @@ static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
     if (lm_handle == BAD_LM_INDEX)
       lm_handle = 0;
     lightmap_remap[i] = static_cast<uint16_t>(lm_handle);
-    LL_ReadCompressedShortArray(ifile, lm_data(lm_handle), map_w * map_h);
+    std::vector<uint16_t> flat(static_cast<size_t>(map_w) * map_h);
+    LL_ReadCompressedShortArray(ifile, flat.data(), static_cast<int>(flat.size()));
+    std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
+    for (int y = 0; y < map_h; y++)
+      std::copy_n(flat.begin() + y * map_w, map_w, data[y].begin());
   }
 
   int32_t ninfos = 0;
@@ -1367,7 +1371,11 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
         const int map_h = lm_h(lm_handle);
         ofile << (int16_t)map_w;
         ofile << (int16_t)map_h;
-        LL_CheckToWriteCompressShort(ofile, lm_data(lm_handle), map_w * map_h);
+        const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
+        std::vector<uint16_t> flat(static_cast<size_t>(map_w) * map_h);
+        for (int y = 0; y < map_h; y++)
+          std::copy(data[y].begin(), data[y].end(), flat.begin() + y * map_w);
+        LL_CheckToWriteCompressShort(ofile, flat.data(), map_w * map_h);
       }
     }
   }
@@ -1642,7 +1650,7 @@ static void LL_ReadTerrainChunks(posix_istream &ifile, uint32_t version) {
   BuildTerrainNormals();
   UpdateTerrainLightmaps();
 
-  memset(TerrainSelected.data(), 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
+  std::ranges::fill(TerrainSelected, 0);
   Num_terrain_selected = 0;
 }
 

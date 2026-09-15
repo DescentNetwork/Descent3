@@ -1330,7 +1330,6 @@ void RenderSpecularFacesFlat(room *rp) {
       continue;
 
     int lm_handle;
-    uint16_t *data;
     int w, h;
 
     if (fp->lmi_handle == 65535) {
@@ -1339,7 +1338,7 @@ void RenderSpecularFacesFlat(room *rp) {
     }
 
     lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
-    data = (uint16_t *)lm_data(lm_handle);
+    const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
     w = lm_w(lm_handle);
     h = lm_h(lm_handle);
 
@@ -1357,7 +1356,7 @@ void RenderSpecularFacesFlat(room *rp) {
       v = fp->face_uvls[vn].v2 * h;
       int_u = u;
       int_v = v;
-      texel = data[int_v * w + int_u];
+texel = data[int_v][int_u];
       r = (texel >> 10) & 0x1f;
       g = (texel >> 5) & 0x1f;
       b = (texel) & 0x1f;
@@ -1840,7 +1839,7 @@ void RenderFace(room *rp, int facenum) {
 
     if (fp->flags.lightmap) {
       int lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
-      uint16_t *data = (uint16_t *)lm_data(lm_handle);
+      const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
       int w = lm_w(lm_handle);
       int h = lm_h(lm_handle);
 
@@ -1850,7 +1849,7 @@ void RenderFace(room *rp, int facenum) {
         g3Point *p = &pointbuffer[i];
         int int_u = u;
         int int_v = v;
-        uint16_t texel = data[int_v * w + int_u];
+        uint16_t texel = data[int_v][int_u];
         int r = (texel >> 10) & 0x1f;
         int g = (texel >> 5) & 0x1f;
         int b = (texel) & 0x1f;
@@ -2049,7 +2048,7 @@ draw_fog:
       Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
 
       lightmap_info *lmi = &LightmapInfo[fp->lmi_handle];
-      uint16_t *src_data = (uint16_t *)lm_data(lmi->lm_handle);
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi->lm_handle);
       matrix facematrix;
       vector3 fvec = -lmi->normal;
       vm_VectorToMatrix(&facematrix, &fvec, NULL, NULL);
@@ -2077,7 +2076,7 @@ draw_fog:
         g3_RotatePoint(&epoints[3], &evec[3]);
         pointlist[3] = &epoints[3];
 
-        if (!(src_data[y * w + x] & OPAQUE_FLAG)) {
+        if (!(src_data[y][x] & OPAQUE_FLAG)) {
           for (t = 0; t < 4; t++)
             g3_DrawLine(GR_RGB(255, 0, 255), pointlist[t], pointlist[(t + 1) % 4]);
         } else {

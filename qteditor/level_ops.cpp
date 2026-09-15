@@ -570,16 +570,18 @@ std::string RenderLevelStats() {
   for (i = 0; i < MAX_LIGHTMAPS; i++) {
     if (!lightmaps_used[i])
       continue;
-    uint16_t *data = lm_data(i);
+    const std::vector<std::vector<uint16_t>> &data = lm_data(i);
     const int w = lm_w(i);
     const int h = lm_h(i);
-    if (data == nullptr || w <= 0 || h <= 0)
+    if (w <= 0 || h <= 0)
       continue;
-    for (int j = 0; j < w * h; j++) {
-      if (!(data[j] & OPAQUE_FLAG))
-        bytes_wasted += 2;
-      else
-        lm_bytes += 2;
+    for (int y = 0; y < h; y++) {
+      for (int x = 0; x < w; x++) {
+        if (!(data[y][x] & OPAQUE_FLAG))
+          bytes_wasted += 2;
+        else
+          lm_bytes += 2;
+      }
     }
   }
 
