@@ -102,7 +102,7 @@ void PathKeypad::updateDialog() {
     QComboBox *combo = ui->IDC_PATHPAD_PULLDOWN;
     QSignalBlocker blocker(combo);
     combo->clear();
-    for (int i = 0; i < MAX_GAME_PATHS; i++)
+    for (int i = 0; i < (int)GamePaths.size(); i++)
       if (GamePaths[i].used)
         combo->addItem(QString::fromStdString(GamePaths[i].name));
     combo->setCurrentText(QString::fromStdString(GamePaths[p].name));

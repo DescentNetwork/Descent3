@@ -35,7 +35,7 @@ byte_istream& operator>>(byte_istream& input, otype_wb_info& data) {
 
   input >> data.gp_weapon_index;
 
-  for (int j = 0; j < MAX_WB_FIRING_MASKS; j++)
+  for (int j = 0; j < (int)data.gp_fire_masks.size(); j++)
     input >> data.gp_fire_masks[j]
           >> data.gp_fire_wait[j]
           >> data.anim_time[j]
@@ -64,7 +64,7 @@ byte_ostream& operator<<(byte_ostream& output, const otype_wb_info& data) {
 
   output << data.gp_weapon_index;
 
-  for (int j = 0; j < MAX_WB_FIRING_MASKS; j++)
+  for (int j = 0; j < (int)data.gp_fire_masks.size(); j++)
     output << data.gp_fire_masks[j]
            << data.gp_fire_wait[j]
            << data.anim_time[j]

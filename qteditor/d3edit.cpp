@@ -281,7 +281,7 @@ void DeleteNodeFromPath(int pathnum, int nodenum) {
 }
 
 int AllocGamePath() {
-  for (int i = 0; i < MAX_GAME_PATHS; i++) {
+  for (int i = 0; i < (int)GamePaths.size(); i++) {
     if (!GamePaths[i].used) {
       GamePaths[i].used = true;
       GamePaths[i].name.clear();
@@ -380,7 +380,7 @@ int GetPrevPath(int n) {
 }
 
 int GetFirstPath() {
-  for (int i = 0; i < MAX_GAME_PATHS; i++)
+  for (int i = 0; i < (int)GamePaths.size(); i++)
     if (GamePaths[i].used)
       return i;
   return -1;

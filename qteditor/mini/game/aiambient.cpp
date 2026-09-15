@@ -30,10 +30,10 @@ constexpr int32_t AL_VERSION = 1;
 
 // Resets every ambient-life slot to a clean state (engine aiambient.cpp:115).
 void ambient_life::ALReset() {
-  for (int i = 0; i < MAX_AL_TYPES; i++) {
+  for (int i = 0; i < (int)m_type.size(); i++) {
     m_type[i] = -1;
 
-    for (int j = 0; j < MAX_ALS_PER_TYPE; j++)
+    for (int j = 0; j < (int)m_handle[i].size(); j++)
       m_handle[i][j] = 0;
 
     m_total[i] = 0;
@@ -64,7 +64,7 @@ void ambient_life::ComputeNextSize(int8_t i) {
 // Called at level start.  Nowhere near gameplay (the mini is an editor), but
 // ported for completeness: the engine initializes the per-type next-values.
 void ambient_life::InitForLevel() {
-  for (int i = 0; i < MAX_AL_TYPES; i++) {
+  for (int i = 0; i < (int)m_type.size(); i++) {
     ComputeNextSize(static_cast<int8_t>(i));
     m_cur_num[i] = 0;
     m_next_do_time[i] = d3::chrono::last_update();
@@ -79,7 +79,7 @@ void ambient_life::InitForLevel() {
 void ambient_life::SaveData(posix_ostream &ofile) const {
   ofile << AL_VERSION;
 
-  for (int i = 0; i < MAX_AL_TYPES; i++) {
+  for (int i = 0; i < (int)m_type.size(); i++) {
     const int type = m_type[i];
 
     if (type >= 0) {
@@ -101,7 +101,7 @@ void ambient_life::SaveData(posix_ostream &ofile) const {
     ofile << m_next_do_time[i];
   }
 
-  for (int i = 0; i < MAX_AL_TYPES; i++) {
+  for (int i = 0; i < (int)m_type.size(); i++) {
     ofile << m_cur_num[i];
 
     for (int j = 0; j < m_cur_num[i]; j++)
@@ -121,7 +121,7 @@ void ambient_life::LoadData(posix_istream &ifile) {
   if (version < 1)
     return;
 
-  for (int i = 0; i < MAX_AL_TYPES; i++) {
+  for (int i = 0; i < (int)m_type.size(); i++) {
     int16_t len = 0;
     ifile >> len;
     if (len < 0)
@@ -145,7 +145,7 @@ void ambient_life::LoadData(posix_istream &ifile) {
     ifile >> m_next_do_time[i];
   }
 
-  for (int i = 0; i < MAX_AL_TYPES; i++) {
+  for (int i = 0; i < (int)m_type.size(); i++) {
     ifile >> m_cur_num[i];
 
     for (int j = 0; j < m_cur_num[i]; j++)

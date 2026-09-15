@@ -1122,7 +1122,7 @@ int MainWindow::onPlaceCameraAtViewer() {
 
   // Find an unused object slot to host the camera.
   int slot = -1;
-  for (int i = 0; i < MAX_OBJECTS; ++i) {
+  for (int i = 0; i < (int)Objects.size(); ++i) {
     if (Objects[i].type == OBJ_NONE) {
       slot = i;
       break;
@@ -1326,7 +1326,7 @@ int MainWindow::onSpawnNewViewer() {
   // touch ObjCreate because the engine-side path is gated on MFC code
   // paths in editor/HView.cpp; this Qt-stub is honest about that.
   int slot = -1;
-  for (int i = 0; i < MAX_OBJECTS; ++i) {
+  for (int i = 0; i < (int)Objects.size(); ++i) {
     if (Objects[i].type == OBJ_NONE) {
       slot = i;
       break;
@@ -1366,7 +1366,7 @@ int MainWindow::onSelectNextViewer() {
     return -1;
   const int cur_id = Viewer_object->id;
   int best = -1;
-  for (int i = 0; i < MAX_OBJECTS; ++i) {
+  for (int i = 0; i < (int)Objects.size(); ++i) {
     if (Objects[i].type != OBJ_VIEWER)
       continue;
     if (Objects[i].id == cur_id)
@@ -1402,7 +1402,7 @@ void MainWindow::onDeleteCurrentViewer() {
     Objects[cur_slot].id = -1;
   }
   // Auto-pick the remaining OBJ_VIEWER if any.
-  for (int i = 0; i < MAX_OBJECTS; ++i) {
+  for (int i = 0; i < (int)Objects.size(); ++i) {
     if (Objects[i].type == OBJ_VIEWER) {
       Viewer_object = &Objects[i];
       Editor_viewer_id = Objects[i].id;
@@ -1628,7 +1628,7 @@ void MainWindow::onPasteObjectFromClipboard() {
     return;
   // Find the first unused slot.
   int slot = -1;
-  for (int i = 0; i < MAX_OBJECTS; ++i) {
+  for (int i = 0; i < (int)Objects.size(); ++i) {
     if (Objects[i].type == OBJ_NONE) {
       slot = i;
       break;

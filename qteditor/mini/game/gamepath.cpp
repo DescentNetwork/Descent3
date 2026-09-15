@@ -13,7 +13,7 @@
 
 // Returns the index of the game path whose name matches, or -1 if not found.
 int FindGamePathName(const std::string &name) {
-  for (int i = 0; i < MAX_GAME_PATHS; i++) {
+  for (int i = 0; i < (int)GamePaths.size(); i++) {
     if (GamePaths[i].used && match(GamePaths[i].name, name))
       return i;
   }
@@ -43,14 +43,14 @@ void InitGamePaths() {
 
   if (f_game_paths_init) {
     // Clear out the current path info
-    for (int i = 0; i < MAX_GAME_PATHS; i++) {
+    for (int i = 0; i < (int)GamePaths.size(); i++) {
       FreeGamePath(i);
     }
   }
 
   f_game_paths_init = true;
 
-  for (int i = 0; i < MAX_GAME_PATHS; i++) {
+  for (int i = 0; i < (int)GamePaths.size(); i++) {
     GamePaths[i].num_nodes = 0;
     GamePaths[i].used = 0;
   }

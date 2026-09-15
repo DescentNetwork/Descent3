@@ -877,7 +877,7 @@ static void LL_WritePlayerStartsChunk(posix_ostream &ofile) {
 
   ofile << static_cast<int16_t>(MAX_PLAYERS);
 
-  for (int i = 0; i < MAX_PLAYERS; i++)
+  for (int i = 0; i < (int)Players.size(); i++)
     ofile << Players[i].startpos_flags;
 
   LL_EndChunk(ofile, start);
@@ -914,7 +914,7 @@ static void LL_WriteOverrideSoundChunk(posix_ostream &ofile) {
 }
 
 static void LL_ReadFFTMChunk(posix_istream &ifile, uint32_t version) {
-  for (int i = 0; i < MAX_FORCE_FIELD_BOUNCE_TEXTURES; i++) {
+  for (int i = 0; i < (int)force_field_bounce_texture.size(); i++) {
     force_field_bounce_texture[i] = -1;
     force_field_bounce_multiplier[i] = 0.0f;
   }
@@ -941,7 +941,7 @@ static void LL_ReadFFTMChunk(posix_istream &ifile, uint32_t version) {
 static void LL_WriteFFTMChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_FFT_MOD);
 
-  for (int i = 0; i < MAX_FORCE_FIELD_BOUNCE_TEXTURES; i++) {
+  for (int i = 0; i < (int)force_field_bounce_texture.size(); i++) {
     if (force_field_bounce_texture[i] != -1) {
       ofile << GameTextures[force_field_bounce_texture[i]].name;
       ofile << force_field_bounce_multiplier[i];
@@ -1151,13 +1151,13 @@ static void LL_ReadGamePathsChunk(posix_istream &ifile, uint32_t version) {
 
 static void LL_WriteGamePathsChunk(posix_ostream &ofile) {
   int npaths = 0;
-  for (int i = 0; i < MAX_GAME_PATHS; i++)
+  for (int i = 0; i < (int)GamePaths.size(); i++)
     if (GamePaths[i].used)
       npaths++;
 
   int start = LL_StartChunk(ofile, "PATH");
   ofile << (int16_t)npaths;
-  for (int i = 0; i < MAX_GAME_PATHS; i++) {
+  for (int i = 0; i < (int)GamePaths.size(); i++) {
     const game_path &p = GamePaths[i];
     if (!p.used)
       continue;
@@ -1760,14 +1760,14 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
 
   // Default texture mapping is identity so faces that precede a TXNM chunk
   // (or files without one) still index GameTextures[] directly.
-  for (int i = 0; i < MAX_TEXTURES; i++)
+  for (int i = 0; i < (int)texture_xlate.size(); i++)
     texture_xlate[i] = i;
 
   // Default object/door mapping is "no translation" so a level without GNNM /
   // DRNM chunks keeps the page indices it was saved with.
-  for (int i = 0; i < MAX_OBJECT_IDS; i++)
+  for (int i = 0; i < (int)generic_xlate.size(); i++)
     generic_xlate[i] = -1;
-  for (int i = 0; i < MAX_DOORS; i++)
+  for (int i = 0; i < (int)door_xlate.size(); i++)
     door_xlate[i] = -1;
 
   FreeAllRooms();
@@ -2123,12 +2123,12 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     // (may be an empty list), like the engine.
     {
       int handleCount = 0;
-      for (int i = 0; i < MAX_OBJECTS; i++)
+      for (int i = 0; i < (int)Objects.size(); i++)
         if (Objects[i].type == OBJ_NONE && (Objects[i].handle & HANDLE_COUNT_MASK) != 0)
           handleCount++;
       int start = LL_StartChunk(out, CHUNK_OBJECT_HANDLES);
       out << handleCount;
-      for (int i = 0; i < MAX_OBJECTS; i++) {
+      for (int i = 0; i < (int)Objects.size(); i++) {
         if (Objects[i].type == OBJ_NONE && (Objects[i].handle & HANDLE_COUNT_MASK) != 0)
           out << (int32_t)Objects[i].handle;
       }

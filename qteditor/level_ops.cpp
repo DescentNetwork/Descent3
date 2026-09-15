@@ -202,7 +202,7 @@ void CreateNewMine() {
   // Reset sound overrides and force field bounces.
   sound_override_force_field = -1;
   sound_override_glass_breaking = -1;
-  for (int i = 0; i < MAX_FORCE_FIELD_BOUNCE_TEXTURES; i++) {
+  for (int i = 0; i < (int)force_field_bounce_texture.size(); i++) {
     force_field_bounce_texture[i] = -1;
     force_field_bounce_multiplier[i] = 1.0f;
   }
@@ -339,7 +339,7 @@ static int createViewerObject(state::viewer view_mode, vector3& pos, int roomnum
 
   // Create the new object
   objnum = -1;
-  for (int i = 0; i < MAX_OBJECTS; ++i) {
+  for (int i = 0; i < (int)Objects.size(); ++i) {
     if (Objects[i].type == OBJ_NONE) {
       objnum = i;
       break;

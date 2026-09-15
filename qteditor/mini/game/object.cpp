@@ -92,7 +92,7 @@ void BigObjRemove(int objnum) {
 // & sets roomnums to -1.  Called by the editor to init a new level.
 void ResetObjectList() {
   // Init data for each object
-  for (int i = 0; i < MAX_OBJECTS; i++) {
+  for (int i = 0; i < (int)Objects.size(); i++) {
     Objects[i].handle = i;
     Objects[i].type = OBJ_NONE;
     Objects[i].roomnum = -1;

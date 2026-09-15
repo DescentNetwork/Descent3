@@ -317,7 +317,7 @@ struct PickFixture {
   EditorView view;
   void setup() {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -411,7 +411,7 @@ private slots:
   void testLevelLoadSaveRoundTrip()
   {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -488,7 +488,7 @@ private slots:
 
     // Tear down the in-memory world so LoadLevel must rebuild it from disk.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -530,7 +530,7 @@ private slots:
 
     // Clean teardown so later tests see pristine globals.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -551,7 +551,7 @@ private slots:
   void testSaveLoadSaveByteStable()
   {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -636,7 +636,7 @@ private slots:
 
     // Tear down the world, reload from disk, and save again.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -652,7 +652,7 @@ private slots:
     // we seeded), so compare stability between pass2 and pass3 where the
     // in-memory model has already converged to its canonical form.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -679,7 +679,7 @@ private slots:
     }
     QVERIFY2(ba == bb, "pass2 vs pass3 differ; save/load not byte-stable");
 
-    for (int i = 0; i < MAX_OBJECTS; i++)
+    for (int i = 0; i < (int)Objects.size(); i++)
       ClearObjectLightmaps(&Objects[i]);
     QFile::remove(f1);
     QFile::remove(f2);
@@ -748,7 +748,7 @@ private slots:
     const int savedNumObjects = Num_objects;
 
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -808,7 +808,7 @@ private slots:
 
     // Reload: the GNNM name table must map the file's page 3 to page 0.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -825,7 +825,7 @@ private slots:
     // byte-identical, and reloading pass2 keeps page 0.
     QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -857,7 +857,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -874,7 +874,7 @@ private slots:
   void testObjectHandlesRoundTrip()
   {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -924,7 +924,7 @@ private slots:
 
     // Reload must restore the deleted slot's handle (type stays OBJ_NONE).
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -941,7 +941,7 @@ private slots:
     // A further reload/save cycle must settle on byte-identical output (the
     // same pass2/pass3 comparison the other round-trip tests use).
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1003,7 +1003,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1019,7 +1019,7 @@ private slots:
   void testRoomAABBChunkRoundTrip()
   {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1070,7 +1070,7 @@ private slots:
 
     // Reload must restore the face extents, BBF regions, and checksum.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1091,7 +1091,7 @@ private slots:
 
     // And a third reload/save cycle must settle on byte-identical output.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1147,7 +1147,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1177,7 +1177,7 @@ private slots:
     };
 
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1343,7 +1343,7 @@ private slots:
     BSP_initted = false;
     BSPChecksum = -1;
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1359,7 +1359,7 @@ private slots:
   void testMatcenChunkRoundTrip()
   {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1467,7 +1467,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1481,7 +1481,7 @@ private slots:
   void testLevelGoalsChunkRoundTrip()
   {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1583,7 +1583,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1607,7 +1607,7 @@ private slots:
   void testTerrainSoundChunkRoundTrip()
   {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1710,7 +1710,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1724,7 +1724,7 @@ private slots:
   void testAlifeChunkRoundTrip()
   {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1821,7 +1821,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1835,7 +1835,7 @@ private slots:
   void testPlayerStartsChunkRoundTrip()
   {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1862,7 +1862,7 @@ private slots:
     Highest_room_index = 0;
 
     // Distinct per-player start flags so the round-trip is provably real.
-    for (int i = 0; i < MAX_PLAYERS; i++)
+    for (int i = 0; i < (int)Players.size(); i++)
       Players[i].startpos_flags = 0x1000 + i;
 
     const QString tmp = QDir::tempPath() + "/_test_pstr_roundtrip";
@@ -1877,7 +1877,7 @@ private slots:
     QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
-    for (int i = 0; i < MAX_PLAYERS; i++)
+    for (int i = 0; i < (int)Players.size(); i++)
       QCOMPARE(Players[i].startpos_flags, static_cast<int32_t>(0x1000 + i));
 
     QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
@@ -1932,7 +1932,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1946,7 +1946,7 @@ private slots:
   void testOverrideSoundFFTMChunkRoundTrip()
   {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -1974,7 +1974,7 @@ private slots:
 
     // Distinct override sounds and a force-field bounce texture so both
     // chunks carry provably real payloads instead of all-empty defaults.
-    for (int i = 0; i < MAX_FORCE_FIELD_BOUNCE_TEXTURES; i++) {
+    for (int i = 0; i < (int)force_field_bounce_texture.size(); i++) {
       force_field_bounce_texture[i] = -1;
       force_field_bounce_multiplier[i] = 0.0f;
     }
@@ -2041,7 +2041,7 @@ private slots:
 
       // Real testdata levels carry no OSND/FFTM data; reset the override
       // tables to their defaults so each emitted file is deterministic.
-      for (int i = 0; i < MAX_FORCE_FIELD_BOUNCE_TEXTURES; i++) {
+      for (int i = 0; i < (int)force_field_bounce_texture.size(); i++) {
         force_field_bounce_texture[i] = -1;
         force_field_bounce_multiplier[i] = 0.0f;
       }
@@ -2074,7 +2074,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -2088,7 +2088,7 @@ private slots:
   void testEditorInfoChunkRoundTrip()
   {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -2257,7 +2257,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
       Objects[i].handle = i;
@@ -2380,7 +2380,7 @@ private slots:
     QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
 
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -2413,7 +2413,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -2477,7 +2477,7 @@ private slots:
     // Simulate a fresh level (also resets the path table) before loading back.
     InitGamePaths();
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -2506,7 +2506,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -2574,7 +2574,7 @@ private slots:
 
     // Simulate a fresh level before loading the first save back.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -2601,7 +2601,7 @@ private slots:
 
     // Clean teardown.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -3495,7 +3495,7 @@ private slots:
   // position/orientation/roomnum instead of falling back to the orbit camera.
   void testSetEditorViewerBindsSavedViewer() {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; ++i) {
+    for (int i = 0; i < (int)Objects.size(); ++i) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -3548,7 +3548,7 @@ private slots:
   // and the editor binds to it.
   void testSetEditorViewerCreatesAtRoomCenter() {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; ++i) {
+    for (int i = 0; i < (int)Objects.size(); ++i) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -3801,7 +3801,7 @@ private slots:
   // Cur_object_index / Objects[] / Mine_changed / Player_object.
   void testObjectOpsContract() {
     // Reset the object table for the test.
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     // Rebuild the engine object free-list so the direct table pokes below
     // do not trip ObjLink/ObjRelink assertions in the core.
@@ -3814,7 +3814,7 @@ private slots:
     // Spin up a stand-in viewer at origin and provision a player object
     // so PlaceCameraAtViewer and friends have something to act on.
     int viewer_slot = -1, player_slot = -1;
-    for (int i = 0; i < MAX_OBJECTS; ++i) {
+    for (int i = 0; i < (int)Objects.size(); ++i) {
       if (viewer_slot < 0) {
         Objects[i].type = OBJ_VIEWER;
         Objects[i].render_type = RT_POLYOBJ;
@@ -3914,7 +3914,7 @@ private slots:
     Curroomp = &Rooms[0];
 
     // Stand up a viewer object so ObjSetPos has somewhere to write to.
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     // Rebuild the engine object free-list so the direct table pokes below
     // do not trip ObjLink/ObjRelink assertions in the core.
@@ -4454,7 +4454,7 @@ private slots:
   // Calls private MainWindow members (onSpawnNewViewer, onSelectNextViewer,
   // onDeleteCurrentViewer).
   void testViewerSpawnSelectDelete() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -4492,7 +4492,7 @@ private slots:
     win.ClearClipboard();
     QVERIFY(!win.HasClipboardObject());
 
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Objects[2].type = OBJ_PLAYER;
@@ -4507,13 +4507,13 @@ private slots:
     QVERIFY(Cur_object_index == 2);
 
     int pre_count = 0;
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       if (Objects[i].type != OBJ_NONE)
         ++pre_count;
 
     win.onPasteObjectFromClipboard();
     int n = 0;
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       if (Objects[i].type != OBJ_NONE)
         ++n;
     QCOMPARE(n, pre_count + 1);
@@ -4907,7 +4907,7 @@ private slots:
     // Deterministic camera: eye at origin looking down +X with identity
     // view axes, so world x = depth, world y = up, world z = right.
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -4986,7 +4986,7 @@ private slots:
   // renderer did, so the displayed surface matches what picking returns.
   void testRenderShowsForegroundFaceOverOccluded() {
     InitRooms();
-    for (int i = 0; i < MAX_OBJECTS; i++) {
+    for (int i = 0; i < (int)Objects.size(); i++) {
       Objects[i] = object{};
       Objects[i].type = OBJ_NONE;
     }
@@ -5632,7 +5632,7 @@ private slots:
   }
 
   void testRotateObjectIdentity() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -5657,7 +5657,7 @@ private slots:
   }
 
   void testRotateObjectChangesOrientation() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -5691,7 +5691,7 @@ private slots:
   }
 
   void testHObjectSetDefault() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -5729,7 +5729,7 @@ private slots:
   }
 
   void testHObjectFlip() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -5764,7 +5764,7 @@ private slots:
   }
 
   void testHObjectDeleteNonPlayer() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -5798,7 +5798,7 @@ private slots:
   }
 
   void testHObjectDeletePlayerBlocked() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -5833,7 +5833,7 @@ private slots:
   }
 
   void testMoveObjectBasic() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -5881,7 +5881,7 @@ private slots:
   }
 
   void testHObjectMove() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -5933,7 +5933,7 @@ private slots:
   }
 
   void testObjMoveManagerStartEnd() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -5991,7 +5991,7 @@ private slots:
   }
 
   void testObjMoveManagerSkipsDoor() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -6051,7 +6051,7 @@ private slots:
   // Verifies that a rightward drag actually translates the object via the
   // event-driven Defer(int,int,bool) overload.
   void testObjMoveManagerDeferTranslatesAndReleases() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -6115,7 +6115,7 @@ private slots:
 
   // Verifies that dragging with OBJMOVEAXIS_H rotates the object.
   void testObjMoveManagerDeferRotates() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -6185,7 +6185,7 @@ private slots:
   // End-to-end widget-state::viewer::minerag: press on a projected object, drag, release,
   // and verify the object moved in world space.
   void testEditorViewDragMovesObject() {
-    for (int i = 0; i < MAX_OBJECTS; ++i)
+    for (int i = 0; i < (int)Objects.size(); ++i)
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;

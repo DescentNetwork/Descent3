@@ -3384,7 +3384,7 @@ int osipf_FindTriggerName(const std::string &name) {
 }
 
 int osipf_FindObjectName(const std::string &name) {
-  for (int i = 0; i < MAX_OBJECTS; i++) {
+  for (int i = 0; i < (int)Objects.size(); i++) {
     if (Objects[i].type != OBJ_NONE && !Objects[i].name.empty()) {
       if (match(name, Objects[i].name))
         return Objects[i].handle;
