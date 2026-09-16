@@ -71,11 +71,11 @@ bool ObjectsAreRelated(int o1, int o2) {
   }
 
   if (obj1->type == OBJ_WEAPON && obj1->movement_type == MT_PHYSICS && obj1->mtype.phys_info.flags.persistent &&
-      obj1->ctype.laser_info.last_hit_handle == obj2->handle)
+      obj1->ctype.laser_info().last_hit_handle == obj2->handle)
     return true;
 
   if (obj2->type == OBJ_WEAPON && obj2->movement_type == MT_PHYSICS && obj2->mtype.phys_info.flags.persistent &&
-      obj2->ctype.laser_info.last_hit_handle == obj1->handle)
+      obj2->ctype.laser_info().last_hit_handle == obj1->handle)
     return true;
 
   // See if o2 is the parent of o1

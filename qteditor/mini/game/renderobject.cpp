@@ -1586,7 +1586,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
     }
     // Apply specularity from outdoor satellites
     if (OBJECT_OUTSIDE(obj) && obj->lighting_render_type == LRT_GOURAUD && Detail_settings.Specular_lighting &&
-        !(Object_info[obj->id].lighting_info.flags & OLF_NO_SPECULARITY)) {
+        !Object_info[obj->id].lighting_info.flags.no_specularity) {
       if (obj->effect_info && !(obj->effect_info->type_flags.specular)) {
         if (obj->type == OBJ_POWERUP)
           pe.type |= PEF_SPECULAR_MODEL;

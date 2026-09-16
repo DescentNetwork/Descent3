@@ -946,7 +946,7 @@ void MainWindow::onCenterViewOnCube() {
   // room's center without changing distance or orientation.
   room *rp;
   if (app.view_mode == state::viewer::room) {
-    if (app.current_room < 0 || app.current_room > Highest_room_index)
+    if (app.current_room < 0 || app.current_room > ((int)Rooms.size() - 1))
       return;
     rp = &Rooms[app.current_room];
   } else {
@@ -1339,10 +1339,10 @@ int MainWindow::onSpawnNewViewer() {
   Objects[slot].orient = Viewer_object->orient;
   Editor_viewer_id = (Editor_viewer_id < 0) ? 0 : Editor_viewer_id + 1;
   Objects[slot].id = Editor_viewer_id;
-  // ObjSetPos relinks the object into its room, and ObjRelink asserts that
-  // objnum <= Highest_object_index, so bump it before positioning the object.
-  if (slot > Highest_object_index)
-    Highest_object_index = slot;
+  // The slot was carved straight out of Objects[], so re-sync the free list /
+  // object count with the type table (this also sets Highest_object_index,
+  // which ObjRelink's assert below relies on).
+  ResetFreeObjects();
   ObjSetPos(Objects[slot], Viewer_object->pos, Viewer_object->roomnum,
             &Viewer_object->orient, false);
   Mine_changed = true;
@@ -1680,20 +1680,6 @@ namespace {
   // current face's normal by this amount.
   constexpr float kDefaultRoomLength = 20.0f;
 
-  // Find the first free slot in Rooms[]. Returns the index or -1 if every
-  // slot is in use. Walks Highest_room_index + 1 first so newly freed
-  // slots get re-used before we extend the high-water mark.
-  int find_free_room_slot() {
-    const int limit = std::min(Highest_room_index + 1, MAX_ROOMS - 1);
-    for (int i = 0; i <= limit; ++i)
-      if (!Rooms[i].used)
-        return i;
-    for (int i = limit + 1; i < MAX_ROOMS; ++i)
-      if (!Rooms[i].used)
-        return i;
-    return -1;
-  }
-
 } // namespace
 
 
@@ -1727,7 +1713,7 @@ bool MainWindow::onAddRoom()
     return false;
   }
   const int nfaces = cnv + 2;
-  const int slot = find_free_room_slot();
+  const int slot = FindFreeRoomSlot();
   if (slot < 0) {
     std::fprintf(stderr, "[room_ops] AddRoom: no free slot\n");
     return false;
@@ -1750,8 +1736,6 @@ bool MainWindow::onAddRoom()
   delete rp;
 
   rp = &Rooms[slot];
-  if (slot > Highest_room_index)
-    Highest_room_index = slot;
 
   // Geometry: extrude the current face's verts outward by `kDefaultRoomLength`
   // along the face normal so the new room extends from the existing face.

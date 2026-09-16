@@ -23,6 +23,9 @@
 // re-implemented here with the same semantics.  Only the editor-specific
 // helpers (LevelTexIncrementTexture, etc.) are stubbed/skipped.
 
+#include <algorithm>
+#include <utility>
+
 #include "editor_room_state.h"
 
 #include <QtGlobal>
@@ -1254,14 +1257,9 @@ void AttachRoom() {
   vector3 attcenter = Placed_room_origin;
   vector3 basecenter = Placed_room_attachpoint;
 
-  // Find a free slot in Rooms[]
-  int slot = -1;
-  for (int i = 0; i < MAX_ROOMS; i++) {
-    if (!Rooms[i].used) {
-      slot = i;
-      break;
-    }
-  }
+  // Find a free slot in Rooms[] (grows the table on demand; the first unused
+  // slot may be a hole in [0, size()) or a fresh index appended at the end).
+  const int slot = FindFreeRoomSlot();
   if (slot == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot attach room: No free rooms.");
     return;
@@ -1678,8 +1676,22 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
   int total_verts = num_verts;
   int total_faces = num_faces;
 
+  // CreateNewRoom value-initialises a heap room; the door room must live in
+  // Rooms[] (ROOMNUM() is a pointer difference against Rooms.data()), so
+  // move it into the first free slot and orphan the heap copy, matching
+  // AddRoom.  The room table grows on demand (size() == high-water mark + 1).
+  const int slot = FindFreeRoomSlot();
+  if (slot < 0) {
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No free room slot for the door.");
+    return;
+  }
+
   room *rp = CreateNewRoom(total_verts, total_faces);
   Q_ASSERT(rp != nullptr);
+
+  Rooms[slot] = std::move(*rp);
+  delete rp;
+  rp = &Rooms[slot];
 
   int index = 0;
 

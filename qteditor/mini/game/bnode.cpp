@@ -208,7 +208,7 @@ static void BNode_UpdatePathInfo(pq_item **node_list, int start, int end) {
   */
 }
 
-// Ok to use Highest_room_index offset stuff
+// Ok to use ((int)Rooms.size() - 1) offset stuff
 bool BNode_FindPath(int start_room, int i, int j, float rad) {
   if (start_room == -1)
     return false;
@@ -342,7 +342,7 @@ retry:
           fvi_info hit_info;
 
           fq.p0 = &pos;
-          fq.startroom = (roomnum > Highest_room_index && roomnum <= Highest_room_index + 8)
+          fq.startroom = (roomnum > ((int)Rooms.size() - 1) && roomnum <= ((int)Rooms.size() - 1) + 8)
                              ? GetTerrainRoomFromPos(pos)
                              : roomnum;
           fq.p1 = &bnlist->nodes[i].pos;
@@ -428,7 +428,7 @@ retry:
 
         if (!f_retry) {
           fq.p0 = &pos;
-          fq.startroom = (roomnum > Highest_room_index && roomnum <= Highest_room_index + 8)
+          fq.startroom = (roomnum > ((int)Rooms.size() - 1) && roomnum <= ((int)Rooms.size() - 1) + 8)
                              ? GetTerrainRoomFromPos(pos)
                              : roomnum;
           fq.p1 = &bnlist->nodes[i].pos;
@@ -464,7 +464,7 @@ retry:
 bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level) {
   if (roomnum == -1) {
     return NULL;
-  } else if (roomnum >= 0 && roomnum <= Highest_room_index) {
+  } else if (roomnum >= 0 && roomnum <= ((int)Rooms.size() - 1)) {
     //		if(!f_in_load_level)
     //		{
     //			Q_ASSERT(!(Rooms[roomnum].flags2.external));
@@ -478,8 +478,8 @@ bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level) {
     return &rp->bn_info;
   } else if (ROOMNUM_OUTSIDE(roomnum)) {
     return &BNode_terrain_list[Terrain_seg[roomnum].flags.region];
-  } else if (roomnum <= Highest_room_index + 8) {
-    return &BNode_terrain_list[roomnum - Highest_room_index - 1];
+  } else if (roomnum <= ((int)Rooms.size() - 1) + 8) {
+    return &BNode_terrain_list[roomnum - ((int)Rooms.size() - 1) - 1];
   }
 
   return NULL;

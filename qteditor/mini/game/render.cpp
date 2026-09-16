@@ -518,7 +518,7 @@ void ReflectRay(vector3 *dest, vector3 *src, vector3 *mirror_norm) {
 
 // This is needed for small view cameras
 // It clears the facing array so that it is recomputed
-void ResetFacings() { memset(Facing_visited, 0, sizeof(int) * (Highest_room_index + 1)); }
+void ResetFacings() { memset(Facing_visited, 0, sizeof(int) * (((int)Rooms.size() - 1) + 1)); }
 
 // Marks all the faces facing us as drawable
 void MarkFacingFaces(int roomnum, const vector3 *world_verts) {
@@ -693,7 +693,7 @@ void RotateAllExternalRooms() {
     N_external_rooms = 0;
 
     int i;
-    for (i = 0; i <= Highest_room_index; i++) {
+    for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
       if ((Rooms[i].flags.external) && Rooms[i].used) {
         External_room_list[N_external_rooms++] = i;
       }
@@ -1081,7 +1081,7 @@ void BuildRoomList(int start_room_num) {
   room *rp = &Rooms[start_room_num];
   int i;
   // For now, render all connected rooms
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
     Rooms_visited[i] = 0;
     Room_depth_list[i] = 255;
     Rooms[i].wpb_index = -1;
@@ -1136,7 +1136,7 @@ void BuildRoomList(int start_room_num) {
     if (Render_all_external_rooms) {
       int i;
       room *rp;
-      for (i = 0, rp = Rooms.data(); i <= Highest_room_index; i++, rp++) {
+      for (i = 0, rp = Rooms.data(); i <= ((int)Rooms.size() - 1); i++, rp++) {
         if (rp->used && (rp->flags.external)) {
           for (int t = 0; t < rp->num_faces; t++)
             rp->faces[t].flags.visible = true;
@@ -2451,11 +2451,11 @@ void RenderSingleLightGlow2(int index) {
   texture *texp = &GameTextures[fp->tmap];
 
   if (first) {
-    int texhandle = FindTextureName("LongCorona");
-    if (texhandle == -1)
+    std::optional<uint32_t> texhandle = FindTextureName("LongCorona");
+    if(!texhandle)
       star_handle = 0;
     else
-      star_handle = GetTextureBitmap(texhandle, 0);
+      star_handle = GetTextureBitmap(*texhandle, 0);
     first = 0;
   }
   rend_SetAlphaValue(.4 * 255);
@@ -3430,7 +3430,7 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
   if (Must_render_terrain && !Called_from_terrain && !(In_editor_mode && Render_inside_only)) {
     RenderTerrain(1, Terrain_portal_left, Terrain_portal_top, Terrain_portal_right, Terrain_portal_bottom);
     // Mark all room points to be rerotated due to terrain trashing our point list
-    for (int i = 0; i <= Highest_room_index; i++) {
+    for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
       Rooms[i].wpb_index = -1;
       Global_buffer_index = 0;
     }

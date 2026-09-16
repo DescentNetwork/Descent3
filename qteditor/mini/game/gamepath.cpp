@@ -12,12 +12,12 @@
 #include "string_helpers.h"
 
 // Returns the index of the game path whose name matches, or -1 if not found.
-int FindGamePathName(const std::string &name) {
-  for (int i = 0; i < (int)GamePaths.size(); i++) {
+std::optional<uint32_t> FindGamePathName(const std::string &name) {
+  for (uint32_t i = 0; i < GamePaths.size(); i++) {
     if (GamePaths[i].used && match(GamePaths[i].name, name))
       return i;
   }
-  return -1;
+  return std::nullopt;
 }
 
 // Frees gamepath n for future use

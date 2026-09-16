@@ -174,6 +174,7 @@
 #define __OSIRIS_PREDEF_H_
 
 #include <cstdint>
+#include <optional>
 #include "osiris_dll.h"
 #include "object_external.h"
 #include "vecmat_external.h"
@@ -192,12 +193,12 @@ bool osipf_CallTriggerEvent(int trignum, int event, tOSIRISEventInfo *ei);
 void osipf_SoundTouch(const std::string &str);
 
 // searches for an object id given its name
-int osipf_ObjectFindID(const std::string& name);
+std::optional<uint32_t> osipf_ObjectFindID(const std::string& name);
 
 int osipf_ObjectFindType(const std::string& name);
 
 // searches through the weapons for a name and returns the id
-int osipf_WeaponFindID(const std::string& name);
+std::optional<uint32_t> osipf_WeaponFindID(const std::string& name);
 
 // returns how long an object has lived
 float osipf_ObjectGetTimeLived(int objhandle);
@@ -226,7 +227,7 @@ int osipf_RayCast(int objhandle, vector3 *p0, vector3 *p1, int start_roomnum, fl
 
 // searches through GamePath index and returns index of path matching name
 // returns -1 if not found
-int osipf_AIGetPathID(const std::string &string);
+std::optional<uint32_t> osipf_AIGetPathID(const std::string &string);
 vector3 osipf_AIFindHidePos(int hideobjhandle, int viewobjhandle, float time, int *hide_room);
 int osipf_AIFindObjOfType(int objhandle, int type, int id, bool f_ignore_init_room,
                           int parent_handle = OBJECT_HANDLE_NONE);
@@ -394,15 +395,15 @@ int osipf_AIGetNearbyObjs(vector3 *pos, int init_roomnum, float rad, int *object
                           bool f_include_non_collide_objects = false, bool f_stop_at_closed_doors = true);
 char osipf_AIGetCurGoalIndex(int obj_handle);
 
-int osipf_FindSoundName(const std::string& name);
+std::optional<uint32_t> osipf_FindSoundName(const std::string& name);
 int osipf_FindRoomName(const std::string& name);
 int osipf_FindTriggerName(const std::string& name);
 int osipf_FindObjectName(const std::string& name);
 int osipf_GetTriggerRoom(int trigger_id);
 int osipf_GetTriggerFace(int trigger_id);
 int osipf_FindDoorName(const std::string& name);
-int osipf_FindTextureName(const std::string& name);
-int osipf_FindPathName(const std::string& name);
+std::optional<uint32_t> osipf_FindTextureName(const std::string& name);
+std::optional<uint32_t> osipf_FindPathName(const std::string& name);
 int osipf_FindLevelGoalName(const std::string& name);
 
 void osipf_CreateRandomSparks(int num_sparks, vector3 *pos, int roomnum, int which_index, float force_scalar);

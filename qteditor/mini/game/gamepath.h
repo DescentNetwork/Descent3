@@ -83,6 +83,6 @@ void InitGamePaths();
 
 // searches through GamePath index and returns index of path matching name
 // returns -1 if not found
-int FindGamePathName(const std::string &name);
+std::optional<uint32_t> FindGamePathName(const std::string &name);
 
 #endif

@@ -572,7 +572,7 @@ int GetPrevObjectID(int n);
 
 // Searches thru all object ids for a specific name
 // Returns the found id, or -1 if not found
-int FindObjectIDName(const std::string &name);
+std::optional<uint32_t> FindObjectIDName(const std::string &name);
 
 // Given an object handle, returns an index to that object's model
 int GetObjectImage(int handle);

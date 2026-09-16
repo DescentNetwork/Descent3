@@ -134,7 +134,6 @@ float GetTerrainGroundPoint(vector3 *in, vector3 *out) { PRINT_STUB(__FUNCTION__
 void BuildMinMaxTerrain() { PRINT_STUB(__FUNCTION__); }
 void BuildTerrainNormals() { PRINT_STUB(__FUNCTION__); }
 void ResetTerrain(int terrain_size) { PRINT_STUB(__FUNCTION__); }
-void SetupSky(float t, int tmap, unsigned char layer) { PRINT_STUB(__FUNCTION__); }
 void UpdateTerrainLightmaps() { PRINT_STUB(__FUNCTION__); }
 */
 
@@ -155,13 +154,13 @@ void BuildSingleBSPTree(int n) { PRINT_STUB(__FUNCTION__); }
 // ==================== Game globals ====================
 float Frametime = 0.0f;
 
-int Num_textures = 0;
-int Num_sounds = 0;
+uint32_t Num_textures = 0;
+uint32_t Num_sounds = 0;
 int Num_weapons = 0;
 //int Num_doors = 0;
 int Num_ships = 0;
 int Num_megacells = 0;
-int Num_objects = 0;
+uint32_t Num_objects = 0;
 int Num_triggers = 0;
 int Num_game_paths = 0;
 int Num_matcens = 0;
@@ -171,12 +170,13 @@ float Gravity_strength = 9.8f;
 int Cinematics_enabled = 0;
 renderer_type PreferredRenderer = {};
 int Detail_settings = 0;
-std::array<float, MAX_FORCE_FIELD_BOUNCE_TEXTURES> force_field_bounce_multiplier = {};
-std::array<int, MAX_FORCE_FIELD_BOUNCE_TEXTURES> force_field_bounce_texture = {};
+
+std::array<std::optional<force_field_bounce_t>, MAX_FORCE_FIELD_BOUNCE_TEXTURES> force_field_bounce = {};
+
 //float Ceiling_height = 100.0f;
 renderer_preferred_state Render_preferred_state = {};
-int sound_override_force_field = -1;
-int sound_override_glass_breaking = -1;
+std::optional<uint32_t> sound_override_force_field;
+std::optional<uint32_t> sound_override_glass_breaking;
 bool Level_powerups_ignore_wind = false;
 
 QString InfoString;
@@ -248,9 +248,9 @@ ambient_life a_life;
 
 // ==================== Manage ====================
 mngs_track_lock GlobalTrackLocks[MAX_TRACKLOCKS] = {};
-int mng_AllocTrackLock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return -1; }
-void mng_FreeTrackLock(int n) { PRINT_STUB(__FUNCTION__); }
-int mng_FindTrackLock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return -1; }
+std::optional<uint32_t> mng_AllocTrackLock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return std::nullopt; }
+void mng_FreeTrackLock(uint32_t n) { PRINT_STUB(__FUNCTION__); }
+std::optional<uint32_t> mng_FindTrackLock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return std::nullopt; }
 int mng_CheckIfPageLocked(mngs_Pagelock *p) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_CheckIfPageOwned(mngs_Pagelock *p, const std::string &a) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_DeletePage(const std::string &a, int b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
@@ -349,12 +349,7 @@ std::unique_ptr<oeAppDatabase> Database;
 
 // ==================== Find* ====================
 
-int FindDoorName(const std::string &name) {
-  for (int i = 0; i < MAX_DOORS; i++)
-    if (Doors[i].used && match(name, Doors[i].name))
-      return i;
-  return -1;
-}
+
 int FindShipName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Alloc/Free ====================

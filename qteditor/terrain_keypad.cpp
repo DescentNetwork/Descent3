@@ -342,41 +342,31 @@ void TerrainKeypad::onRotTexture() {
 void TerrainKeypad::onRedoTopmap() { World_changed = true; }
 
 void TerrainKeypad::onTileMore() {
-  uint32_t flags_raw = 0;
-  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
   if (Terrain_sky.radius > 500) {
-    SetupSky(Terrain_sky.radius - 500, flags_raw);
+    SetupSky(Terrain_sky.radius - 500, Terrain_sky.flags);
     TV_changed = true;
   }
 }
 
 void TerrainKeypad::onTileLess() {
-  uint32_t flags_raw = 0;
-  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
-  SetupSky(Terrain_sky.radius + 500, flags_raw);
+  SetupSky(Terrain_sky.radius + 500, Terrain_sky.flags);
   TV_changed = true;
 }
 
 void TerrainKeypad::onSkyNearer() {
-  uint32_t flags_raw = 0;
-  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
   if (Terrain_sky.radius > 500) {
-    SetupSky(Terrain_sky.radius - 500, flags_raw);
+    SetupSky(Terrain_sky.radius - 500, Terrain_sky.flags);
     TV_changed = true;
   }
 }
 
 void TerrainKeypad::onSkyFarther() {
-  uint32_t flags_raw = 0;
-  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
-  SetupSky(Terrain_sky.radius + 500, flags_raw);
+  SetupSky(Terrain_sky.radius + 500, Terrain_sky.flags);
   TV_changed = true;
 }
 
 void TerrainKeypad::onRandomizeSky() {
-  uint32_t flags_raw = 0;
-  std::memcpy(&flags_raw, &Terrain_sky.flags, sizeof(flags_raw));
-  SetupSky(Terrain_sky.radius, flags_raw, 1);
+  SetupSky(Terrain_sky.radius, Terrain_sky.flags, 1);
   TV_changed = true;
 }
 
@@ -489,7 +479,7 @@ void TerrainKeypad::onDropTerrain() {
   BuildMinMaxTerrain();
   float delta_y = (float)(delta * TERRAIN_HEIGHT_INCREMENT);
 
-  for (int r = 0; r <= Highest_room_index; r++) {
+  for (int r = 0; r <= ((int)Rooms.size() - 1); r++) {
     if (!Rooms[r].used) continue;
     for (int v = 0; v < Rooms[r].num_verts; v++)
       Rooms[r].verts[v].y() += delta_y;

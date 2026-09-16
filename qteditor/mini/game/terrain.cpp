@@ -656,10 +656,7 @@ void SetupSkyTexture() {
   int first_top_texture;
 
   // Find first sky texture
-  first_top_texture = FindTextureName("CloudySky");
-  if (first_top_texture < 0)
-    first_top_texture = 0;
-
+  first_top_texture = FindTextureName("CloudySky").value_or(0);
   Terrain_sky.dome_texture = first_top_texture;
 
   // Figure out the sky color
@@ -675,14 +672,14 @@ void SetupSkyTexture() {
 }
 
 // Compute a parametric sphere for our sky.
-void SetupSky(float radius, int flags, uint8_t randit) {
+void SetupSky(float radius, terrain_sky_flags_t flags, uint8_t randit) {
   int jump = 65536 / MAX_HORIZON_PIECES;
   int top = ((65536 / 4) * 3) + (65536 / 8);
 
   int i, t;
 
   Terrain_sky.radius = radius;
-  Terrain_sky.flags = std::bit_cast<terrain_sky_flags_t>(flags);
+  Terrain_sky.flags = flags;
 
   int horizon_r = GR_COLOR_RED(Terrain_sky.horizon_color);
   int horizon_g = GR_COLOR_GREEN(Terrain_sky.horizon_color);
@@ -861,11 +858,8 @@ int LoadPCXTerrain(char *filename) {
 #endif
 // Called whenever a new level is initted
 void ResetTerrain(int force) {
-  int i, t;
-  int tex_index = FindTextureName("RainbowTexture");
-
-  if (tex_index < 0)
-    tex_index = 4; // stuff some random value
+  uint32_t i, t;
+  uint32_t tex_index = FindTextureName("RainbowTexture").value_or(4); // valur or stuff some random value
 
   for (i = 0; i < TERRAIN_DEPTH; i++) {
     for (t = 0; t < TERRAIN_WIDTH; t++) {
@@ -883,7 +877,7 @@ void ResetTerrain(int force) {
 
   for (i = 0; i < TERRAIN_TEX_DEPTH; i++) {
     for (t = 0; t < TERRAIN_TEX_WIDTH; t++) {
-      int s = i * TERRAIN_TEX_WIDTH + t;
+      uint32_t s = i * TERRAIN_TEX_WIDTH + t;
       Terrain_tex_seg[s].tex_index = tex_index;
       Terrain_tex_seg[s].rotation = (1 << 4);
     }
@@ -900,7 +894,7 @@ void ResetTerrain(int force) {
     }
 
     for (i = 0; i < 7; i++) {
-      int size = 1 << i;
+      uint32_t size = 1 << i;
       // Terrain_min/max_height_int are allocated by InitTerrain(); the Qt
       // editor never runs it, so the vectors stay empty. Skip them.
       Terrain_min_height_int[i].assign(size * size, 0);
@@ -908,8 +902,8 @@ void ResetTerrain(int force) {
     }
 
     for (i = 0; i < MAX_TERRAIN_LOD - 1; i++) {
-      int w = TERRAIN_WIDTH >> ((MAX_TERRAIN_LOD - 1) - i);
-      int h = TERRAIN_DEPTH >> ((MAX_TERRAIN_LOD - 1) - i);
+      uint32_t w = TERRAIN_WIDTH >> ((MAX_TERRAIN_LOD - 1) - i);
+      uint32_t h = TERRAIN_DEPTH >> ((MAX_TERRAIN_LOD - 1) - i);
 
       TerrainDeltaBlocks[i].assign(w * h, 0.0f);
     }
@@ -984,7 +978,10 @@ void InitTerrain(void) {
   Terrain_sky.num_satellites = 1;
   Terrain_sky.damage_per_second = 0;
 
-  SetupSky(SKY_RADIUS, TF_STARS | TF_SATELLITES, 1);
+  terrain_sky_flags_t flags;
+  flags.stars = 1;
+  flags.satellites = 1;
+  SetupSky(SKY_RADIUS, flags, 1);
   GenerateLightSource();
 
   for (i = 0; i < 4; i++) {

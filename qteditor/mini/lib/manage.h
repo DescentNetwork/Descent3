@@ -23,6 +23,7 @@
 #include <filesystem>
 #include <string>
 #include <QString>
+#include <optional>
 
 #include "cfile.h"
 #include <posix_stream.h>
@@ -216,14 +217,14 @@ void mng_InitTrackLocks();
 
 // Given a name, returns the index of the tracklock with that name
 // -1 indicates that it wasn't found
-int mng_FindTrackLock(const std::string &name, int pagetype);
+std::optional<uint32_t> mng_FindTrackLock(const std::string &name, int pagetype);
 
 // Searches through global array of tracklocks and returns first free one
 // returns -1 if none free
-int mng_AllocTrackLock(const std::string &name, int pagetype);
+std::optional<uint32_t> mng_AllocTrackLock(const std::string &name, int pagetype);
 
 // Frees a tracklock
-void mng_FreeTrackLock(int n);
+void mng_FreeTrackLock(uint32_t n);
 
 //----------------------------------------------------------------
 

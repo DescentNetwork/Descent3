@@ -21,20 +21,19 @@
 
 #include "ssl_lib.h"
 
-extern int Num_sounds;
-extern int Num_sound_files;
+extern uint32_t Num_sounds;
 
 // Allocs a sound file for use, returns -1 if error, else index on success
 int AllocSoundFile();
 
 // Frees sound index n
-void FreeSoundFile(int n);
+void FreeSoundFile(uint32_t n);
 
 // Gets next sound file from n that has actually been alloced
-int GetNextSoundFile(int n);
+int GetNextSoundFile(uint32_t n);
 
 // Gets previous sound file from n that has actually been alloced
-int GetPrevSoundFile(int n);
+int GetPrevSoundFile(uint32_t n);
 
 // Searches thru all sounds for a specific name, returns -1 if not found
 // or index of sound with name
@@ -60,7 +59,7 @@ int GetPrevSound(int n);
 
 // Searches thru all sounds for a specific name, returns -1 if not found
 // or index of sound with name
-int FindSoundName(const std::string& name);
+std::optional<uint32_t> FindSoundName(const std::string& name);
 
 // Given a filename, loads the sound.
 int LoadSound(const char *filename);

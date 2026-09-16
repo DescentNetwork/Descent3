@@ -120,6 +120,7 @@
 #include "player.h"
 #include <array>
 #include <string>
+#include <optional>
 
 #define MAX_SHIPS 30
 

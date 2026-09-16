@@ -54,9 +54,7 @@ matcen::matcen() {
   m_creation_effect = MEFFECT_LINE_LIGHTNING;
 
   // Get lightning handle in case we need it
-  m_creation_texture = FindTextureName("Matcen Lightning");
-  if (m_creation_texture == -1)
-    m_creation_texture = 0;
+  m_creation_texture = FindTextureName("Matcen Lightning").value_or(0);
 
   m_num_spawn_pnts = 0;
 
@@ -74,9 +72,9 @@ matcen::matcen() {
     m_max_prod_type[i] = 3;
   }
 
-  m_sounds[MATCEN_ACTIVE_SOUND] = FindSoundName("AmbMatCenRun");
+  m_sounds[MATCEN_ACTIVE_SOUND] = FindSoundName("AmbMatCenRun").value_or(-1);
   m_sounds[MATCEN_DISABLE_SOUND] = -1;
-  m_sounds[MATCEN_PROD_SOUND] = FindSoundName("AmbMatCenProduce");
+  m_sounds[MATCEN_PROD_SOUND] = FindSoundName("AmbMatCenProduce").value_or(-1);
 
   m_speed_multi = 1.0f;
 
@@ -309,7 +307,7 @@ void matcen::LoadData(posix_istream &ifile, const int *texture_xlate) {
 
   for (int i = 0; i < max_prod_types; i++) {
     const std::string prod_name = readLevelName(ifile);
-    m_prod_type[i] = FindObjectIDName(prod_name);
+    m_prod_type[i] = FindObjectIDName(prod_name).value_or(-1);
 
     ifile >> m_prod_time[i];
     ifile >> m_prod_priority[i];
@@ -336,7 +334,7 @@ void matcen::LoadData(posix_istream &ifile, const int *texture_xlate) {
   // Convert these to names
   for (int i = 0; i < max_matcen_sounds; i++) {
     const std::string sound_name = readLevelName(ifile);
-    m_sounds[i] = FindSoundName(sound_name);
+    m_sounds[i] = FindSoundName(sound_name).value_or(-1);
   }
 
   ifile >> m_speed_multi;

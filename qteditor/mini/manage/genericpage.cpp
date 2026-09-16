@@ -102,34 +102,27 @@ void mng_ReadWeaponBatteryChunk(otype_wb_info *static_wb, posix_istream &infile,
   infile >> static_wb->aiming_3d_dot;
   infile >> static_wb->aiming_3d_dist;
   infile >> static_wb->aiming_XZ_dot;
-  if (version >= 2) {
-    uint16_t flags_raw = 0;
-    infile >> flags_raw;
-    std::memcpy(&static_wb->flags, &flags_raw, sizeof(flags_raw));
-  } else {
-    uint8_t b = 0;
-    infile >> b;
-    uint16_t flags_raw = b;
-    std::memcpy(&static_wb->flags, &flags_raw, sizeof(flags_raw));
-  }
+
+  infile >> reinterpret_cast<uint16_t&>(static_wb->flags);
   infile >> static_wb->gp_quad_fire_mask;
 }
 
 void mng_ReadLightingChunk(light_info *lighting_info, posix_istream &infile) {
-  infile >> lighting_info->light_distance;
-  infile >> lighting_info->red_light1;
-  infile >> lighting_info->green_light1;
-  infile >> lighting_info->blue_light1;
-  infile >> lighting_info->time_interval;
-  infile >> lighting_info->flicker_distance;
-  infile >> lighting_info->directional_dot;
-  infile >> lighting_info->red_light2;
-  infile >> lighting_info->green_light2;
-  infile >> lighting_info->blue_light2;
-  infile >> lighting_info->flags;
-  infile >> lighting_info->timebits;
-  infile >> lighting_info->angle;
-  infile >> lighting_info->lighting_render_type;
+  infile
+      >> lighting_info->light_distance
+      >> lighting_info->red_light1
+      >> lighting_info->green_light1
+      >> lighting_info->blue_light1
+      >> lighting_info->time_interval
+      >> lighting_info->flicker_distance
+      >> lighting_info->directional_dot
+      >> lighting_info->red_light2
+      >> lighting_info->green_light2
+      >> lighting_info->blue_light2
+      >> reinterpret_cast<uint32_t&>(lighting_info->flags)
+      >> lighting_info->timebits
+      >> lighting_info->angle
+      >> lighting_info->lighting_render_type;
 }
 
 //-----------------------------------------------------------------------------
@@ -525,36 +518,39 @@ int mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage
 //-----------------------------------------------------------------------------
 
 static void mng_WritePhysicsChunk(byte_ostream &outfile, const physics_info *phys_info) {
-  outfile << phys_info->mass;
-  outfile << phys_info->drag;
-  outfile << phys_info->full_thrust;
-  outfile << phys_info->flags;
-  outfile << phys_info->rotdrag;
-  outfile << phys_info->full_rotthrust;
-  outfile << phys_info->num_bounces;
-  outfile << phys_info->velocity.z();
-  outfile << phys_info->rotvel.x() << phys_info->rotvel.y() << phys_info->rotvel.z();
-  outfile << phys_info->wiggle_amplitude;
-  outfile << phys_info->wiggles_per_sec;
-  outfile << phys_info->coeff_restitution;
-  outfile << phys_info->hit_die_dot;
-  outfile << phys_info->max_turnroll_rate;
-  outfile << phys_info->turnroll_ratio;
+  outfile << phys_info->mass
+          << phys_info->drag
+          << phys_info->full_thrust
+          << phys_info->flags
+          << phys_info->rotdrag
+          << phys_info->full_rotthrust
+          << phys_info->num_bounces
+          << phys_info->velocity.z()
+          << phys_info->rotvel.x()
+          << phys_info->rotvel.y()
+          << phys_info->rotvel.z()
+          << phys_info->wiggle_amplitude
+          << phys_info->wiggles_per_sec
+          << phys_info->coeff_restitution
+          << phys_info->hit_die_dot
+          << phys_info->max_turnroll_rate
+          << phys_info->turnroll_ratio;
 }
 
 static void mng_WriteLightingChunk(byte_ostream &outfile, const light_info *lighting_info) {
-  outfile << lighting_info->light_distance;
-  outfile << lighting_info->red_light1;
-  outfile << lighting_info->green_light1;
-  outfile << lighting_info->blue_light1;
-  outfile << lighting_info->time_interval;
-  outfile << lighting_info->flicker_distance;
-  outfile << lighting_info->directional_dot;
-  outfile << lighting_info->red_light2;
-  outfile << lighting_info->green_light2;
-  outfile << lighting_info->blue_light2;
-  outfile << lighting_info->flags;
-  outfile << lighting_info->timebits;
+  outfile
+      << lighting_info->light_distance
+      << lighting_info->red_light1
+      << lighting_info->green_light1
+      << lighting_info->blue_light1
+      << lighting_info->time_interval
+      << lighting_info->flicker_distance
+      << lighting_info->directional_dot
+      << lighting_info->red_light2
+      << lighting_info->green_light2
+      << lighting_info->blue_light2
+      << reinterpret_cast<const uint32_t&>(lighting_info->flags)
+      << lighting_info->timebits;
   outfile.put(lighting_info->angle);
   outfile.put(lighting_info->lighting_render_type);
 }

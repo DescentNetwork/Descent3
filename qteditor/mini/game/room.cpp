@@ -420,35 +420,47 @@
 #include "editor_lighting.h"
 #include "chrono_timer.h"
 
-// Global array of rooms
-std::array<room, MAX_ROOMS + MAX_PALETTE_ROOMS> Rooms;
+// Global array of rooms.  A dynamically grown vector whose size is the
+// high-water mark + 1; individual slots can be free (used == 0) holes below
+// it.  Reserved to the full capacity up front so `Rooms.data()` (and any
+// room*) stays stable for the life of the process.
+std::vector<room> Rooms;
+
 room_changes Room_changes[MAX_ROOM_CHANGES];
 
 extern int Cur_selected_room, Cur_selected_face;
 
-int Highest_room_index = -1;
+// Clears the room table (keeping capacity) so the next room occupies slot 0.
+void RoomsReset() {
+  Rooms.clear();
+  Rooms.reserve(MAX_ROOMS + MAX_PALETTE_ROOMS);
+}
 
-void FreePaletteRooms();
+// Grows Rooms so index `roomnum` is valid.  Mirrors the Win32 fixed array
+// (whose slots were pre-zeroed with objects == -1) by initialising the newly
+// appended slots' object/vis-effect chains to the empty state.
+bool RoomsEnsureIndex(int roomnum) {
+  const int cap = MAX_ROOMS + MAX_PALETTE_ROOMS;
+  if (roomnum < 0 || roomnum >= cap)
+    return false;
+  if (Rooms.size() > static_cast<size_t>(roomnum))
+    return true;
+
+  const size_t old_size = Rooms.size();
+  Rooms.resize(roomnum + 1);
+  for (size_t i = old_size; i < Rooms.size(); ++i) {
+    Rooms[i].objects = -1;
+    Rooms[i].vis_effects = -1;
+  }
+  return true;
+}
 
 // Zeroes out the rooms array
 void InitRooms() {
-  int i;
-  for (i = 0; i < MAX_ROOMS + MAX_PALETTE_ROOMS; i++) {
-    // `room` contains std::string members; memset would corrupt their
-    // internal state (later name.clear()/assign on such a room crashes).
-    // Value-initialise instead: zeroes the POD fields and properly
-    // constructs/destroys the strings.
-    Rooms[i] = room{};
-    Rooms[i].objects = -1;     // DAJ
-    Rooms[i].vis_effects = -1; // DAJ
-  }
+  RoomsReset();
 
   atexit(FreeAllRooms);
   atexit(BNode_ClearBNodeInfo); // DAJ
-
-#ifdef EDITOR
-  atexit(FreePaletteRooms);
-#endif
 }
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
@@ -566,7 +578,7 @@ int FindPointRoom(vector3 *pnt) {
 
   Q_ASSERT(pnt != NULL);
 
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i < static_cast<int>(Rooms.size()); i++) {
     if ((Rooms[i].used) && !Rooms[i].flags.external) {
       bool f_in_room;
 
@@ -583,7 +595,7 @@ int FindPointRoom(vector3 *pnt) {
 // Frees a room, deallocating its memory and marking it as unused
 void FreeRoom(room *rp) {
   int i;
-  int old_hri = Highest_room_index;
+  const int old_hri = static_cast<int>(Rooms.size()) - 1;
 
   Q_ASSERT(rp->used != 0); // make sure room is un use
 
@@ -615,42 +627,30 @@ void FreeRoom(room *rp) {
 
   rp->used = 0;
 
-  // Update Highest_room_index
-  if (ROOMNUM(rp) == Highest_room_index)
-    while ((Highest_room_index >= 0) && (!Rooms[Highest_room_index].used))
-      Highest_room_index--;
+  // Update the high-water mark: Rooms.size() is the watermark + 1, so drop any
+  // unused tail slots just like the Win32 room-free path trimmed the watermark.
+  if (ROOMNUM(rp) == static_cast<int>(Rooms.size()) - 1)
+    while (!Rooms.empty() && !Rooms.back().used)
+      Rooms.pop_back();
 
-  BNode_RemapTerrainRooms(old_hri, Highest_room_index);
+  BNode_RemapTerrainRooms(old_hri, static_cast<int>(Rooms.size()) - 1);
 }
 
 // Frees all the rooms currently in use, deallocating their memory and marking them as unused
 void FreeAllRooms() {
-  int rn;
-  room *rp;
-  LOG_DEBUG("Freeing rooms... Higest_room_index %d", Highest_room_index);
-  for (rn = 0, rp = Rooms.data(); rn <= Highest_room_index; rn++, rp++) {
-    if (rp->used) {
-      //			mprintf(2, "rn %d\n", rn);
+  LOG_DEBUG("Freeing rooms... Rooms.size() %zu", Rooms.size());
+  while (!Rooms.empty()) {
+    room *rp = &Rooms.back();
+    if (rp->used)
       FreeRoom(rp);
-    }
+    else
+      Rooms.pop_back();
   }
 
-  Q_ASSERT(Highest_room_index == -1);
+  Q_ASSERT(Rooms.empty());
 
   //	mprintf(2,"Done\n");
 }
-
-#ifdef EDITOR
-// Frees rooms that are in the room palette
-void FreePaletteRooms() {
-  int rn;
-  room *rp;
-
-  for (rn = MAX_ROOMS, rp = &Rooms[MAX_ROOMS]; rn < MAX_ROOMS + MAX_PALETTE_ROOMS; rn++, rp++)
-    if (rp->used)
-      FreeRoom(rp);
-}
-#endif
 
 // Free the memory used by a room face structure
 void FreeRoomFace(face *fp) {
@@ -946,7 +946,7 @@ void FindPointUV(float *u, float *v, const vector3 *pnt, const room *rp, const f
   int t;
 
   // Make sure we have a valid room
-  Q_ASSERT((roomnum >= 0) && (roomnum <= Highest_room_index));
+  Q_ASSERT((roomnum >= 0) && (roomnum < static_cast<int>(Rooms.size())));
 
   // Find what plane to project this wall onto to make it a 2d case
   GetIJ(fp->normal, ii, jj);
@@ -1106,7 +1106,7 @@ void CreateRoomObjects() {
       ObjDelete(objnum);
 
   // Now go through all rooms & create objects for external ones
-  for (r = 0, rp = Rooms.data(); r <= Highest_room_index; r++, rp++)
+  for (r = 0, rp = Rooms.data(); r < static_cast<int>(Rooms.size()); r++, rp++)
     if (rp->used && rp->flags.external) {
       vector3 pos;
       float rad;
@@ -1135,7 +1135,7 @@ void CreateRoomObjects() {
 int FindFirstUsedRoom() {
   int i;
 
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i < static_cast<int>(Rooms.size()); i++) {
     if (Rooms[i].used) {
       return i;
     }
@@ -1148,7 +1148,7 @@ int FindFirstUsedRoom() {
 // Changes a face's texture within a room
 //	returns true on successs
 bool ChangeRoomFaceTexture(int room_num, int face_num, int texture) {
-  if ((room_num < 0) || (room_num > Highest_room_index) || ROOMNUM_OUTSIDE(room_num) || (!Rooms[room_num].used)) {
+  if ((room_num < 0) || (room_num >= static_cast<int>(Rooms.size())) || ROOMNUM_OUTSIDE(room_num) || (!Rooms[room_num].used)) {
     LOG_FATAL("Invalid room passed to ChangeRoomFaceTexture");
     Q_ASSERT(false);
     return false;

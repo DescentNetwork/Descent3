@@ -386,7 +386,7 @@ int GetPrevWeapon(int n);
 
 // Searches thru all weapons for a specific name, returns -1 if not found
 // or index of weapon with name
-int FindWeaponName(const std::string &name);
+std::optional<uint32_t> FindWeaponName(const std::string &name);
 
 // Given a filename, loads either the model or vclip found in that file.  If type
 // is not NULL, sets it to 1 if file is model, otherwise sets it to zero

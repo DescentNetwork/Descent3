@@ -400,8 +400,22 @@ struct room_changes {
 // Globals
 //
 
-extern std::array<room, MAX_ROOMS + MAX_PALETTE_ROOMS> Rooms;           // global sparse array of rooms
-extern int Highest_room_index; // index of highest-numbered room
+extern std::vector<room> Rooms; // global array of rooms; grown on demand.  Slots
+                               // may be free (used == 0) holes below the
+                               // high-water mark; Rooms.size() is the
+                               // high-water mark + 1.  Reserved once at startup
+                               // to MAX_ROOMS + MAX_PALETTE_ROOMS so room
+                               // pointers stay valid across growth.
+
+// Clears the room table (keeping its reserved capacity) so the next room
+// occupies slot 0 again.
+void RoomsReset();
+
+// Grows Rooms so index `roomnum` is valid, initialising any new slots so their
+// object/vis-effect chains are empty (objects == vis_effects == -1).  Returns
+// false when roomnum lies outside [0, MAX_ROOMS + MAX_PALETTE_ROOMS); in that
+// case Rooms is left unchanged.
+bool RoomsEnsureIndex(int roomnum);
 
 //
 // Macros

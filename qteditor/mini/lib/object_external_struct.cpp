@@ -78,13 +78,13 @@ byte_ostream& operator<<(byte_ostream& output, const physics_info& data) {
 byte_istream& operator>>(byte_istream& input, light_info& data) {
   return input >> data.light_distance >> data.red_light1 >> data.green_light1 >> data.blue_light1 >>
          data.time_interval >> data.flicker_distance >> data.directional_dot >> data.red_light2 >> data.green_light2 >>
-         data.blue_light2 >> data.flags >> data.timebits >> data.angle >> data.lighting_render_type;
+         data.blue_light2 >> reinterpret_cast<uint32_t&>(data.flags) >> data.timebits >> data.angle >> data.lighting_render_type;
 }
 
 byte_ostream& operator<<(byte_ostream& output, const light_info& data) {
   return output << data.light_distance << data.red_light1 << data.green_light1 << data.blue_light1 <<
          data.time_interval << data.flicker_distance << data.directional_dot << data.red_light2 << data.green_light2 <<
-         data.blue_light2 << data.flags << data.timebits << data.angle << data.lighting_render_type;
+         data.blue_light2 << reinterpret_cast<const uint32_t&>(data.flags) << data.timebits << data.angle << data.lighting_render_type;
 }
 
 //-----------------------------------------------------------------------------
@@ -207,14 +207,11 @@ static byte_ostream& writeObjectLightmaps(byte_ostream& output, const object& da
 //-----------------------------------------------------------------------------
 
 byte_istream& operator>>(byte_istream& input, object& data) {
-  uint8_t type = 0;
-  input >> type;
-  data.type = type;
-  data.id = 0;
-  input >> data.id;
-  input >> data.name;
-  data.flags = {};
-  input >> data.flags;
+
+  input >> data.type
+      >> data.id
+      >> data.name
+      >> reinterpret_cast<uint32_t&>(data.flags);
 
   if (data.type == OBJ_DOOR) {
     int16_t shields = 0;
@@ -222,26 +219,21 @@ byte_istream& operator>>(byte_istream& input, object& data) {
     data.shields = static_cast<float>(shields);
   }
 
-  input >> data.roomnum;
-  input >> data.pos;
-  input >> data.orient;
-
-  int8_t c = 0;
-  input >> c;
-  data.contains_type = c;
-  input >> c;
-  data.contains_id = c;
-  input >> c;
-  data.contains_count = c;
-
-  input >> data.lifeleft;
+  input >> data.roomnum
+      >> data.pos
+      >> data.orient
+      >> data.contains_type
+      >> data.contains_id
+      >> data.contains_count
+      >> data.lifeleft;
 
   // Sound-source objects carry their sound by name plus a volume.
-  if (data.type == OBJ_SOUNDSOURCE) {
+  if (data.type == OBJ_SOUNDSOURCE)
+  {
     std::string soundname;
     input >> soundname;
-    data.ctype.soundsource_info.sound_index = soundname.empty() ? -1 : FindSoundName(soundname);
-    input >> data.ctype.soundsource_info.volume;
+    data.ctype.soundsource_info().sound_index = FindSoundName(soundname);
+    input >> data.ctype.soundsource_info().volume;
   }
 
   readByteString(input, data.custom_default_script_name);
@@ -255,17 +247,16 @@ byte_istream& operator>>(byte_istream& input, object& data) {
 }
 
 byte_ostream& operator<<(byte_ostream& output, const object& data) {
-  output << data.type << data.id << data.name << data.flags;
+  output << data.type << data.id << data.name << reinterpret_cast<const uint32_t&>(data.flags);
   if (data.type == OBJ_DOOR)
     output << static_cast<int16_t>(data.shields);
   output << data.roomnum << data.pos << data.orient;
   output << data.contains_type << data.contains_id << data.contains_count << data.lifeleft;
 
   if (data.type == OBJ_SOUNDSOURCE) {
-    const std::string &soundname = (data.ctype.soundsource_info.sound_index < 0)
-                                       ? ""
-                                       : Sounds[data.ctype.soundsource_info.sound_index].name;
-    output << soundname << data.ctype.soundsource_info.volume;
+    const std::string &soundname = data.ctype.soundsource_info().sound_index
+                                       ? Sounds[*data.ctype.soundsource_info().sound_index].name : "";
+    output << soundname << data.ctype.soundsource_info().volume;
   }
 
   writeByteString(output, data.custom_default_script_name);

@@ -212,7 +212,7 @@ void WorldObjectsDoorDialog::updateDialog() {
 
   {
     QPushButton *checkin = ui->IDC_CHECKIN_DOOR;
-    if (mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR) == -1) {
+    if (!mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR)) {
       checkin->setEnabled(false);
       ui->IDC_LOCK_DOOR->setEnabled(true);
     } else {
@@ -302,8 +302,8 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
   if (Num_doors < 1)
     return;
 
-  int tl = mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR);
-  if (tl == -1) {
+  std::optional<uint32_t> tl = mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR);
+  if (!tl) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This door is not yours to delete.  Lock first.");
     return;
   }
@@ -320,10 +320,10 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
   pl.pagetype = PAGETYPE_DOOR;
 
   if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
-    mng_FreeTrackLock(tl);
+    mng_FreeTrackLock(*tl);
     Q_ASSERT(mng_DeletePage(Doors[n].name, PAGETYPE_DOOR, 1));
   } else {
-    mng_FreeTrackLock(tl);
+    mng_FreeTrackLock(*tl);
     mng_DeletePage(Doors[n].name, PAGETYPE_DOOR, 1);
     mng_DeletePage(Doors[n].name, PAGETYPE_DOOR, 0);
     mng_DeletePagelock(Doors[n].name, PAGETYPE_DOOR);
@@ -431,7 +431,7 @@ void WorldObjectsDoorDialog::onCheckinDoor() {
         Q_ASSERT(dret == 1);
         mng_EraseLocker();
 
-        const int p = mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR);
+        const int p = mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR).value_or(-1);
         Q_ASSERT(p != -1);
         mng_FreeTrackLock(p);
         updateDialog();
@@ -470,7 +470,7 @@ void WorldObjectsDoorDialog::onDoorPulldownChanged() {
   QComboBox *combo = ui->IDC_DOOR_PULLDOWN;
   if (combo == nullptr)
     return;
-  const int i = FindDoorName(combo->currentText().toStdString());
+  const int i = FindDoorName(combo->currentText().toStdString()).value_or(-1);
   if (i == -1)
     return;
   app.current_door = i;

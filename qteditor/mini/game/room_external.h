@@ -315,9 +315,9 @@ inline byte_ostream& operator<<(byte_ostream& output, const room_flags_t& data) 
 struct room {
   room_flags_t flags;
 
-  int num_faces;   // how many poygons in this room
-  int num_portals; // how many connections in this room
-  int num_verts;   // how many verts in the room
+  int32_t num_faces;   // how many poygons in this room
+  int32_t num_portals; // how many connections in this room
+  int32_t num_verts;   // how many verts in the room
   std::vector<face> faces;     // list of faces (num_faces)
   std::vector<portal> portals; // list of portals (num_portals)
   std::vector<vector3> verts;  // array of vertices for this room (num_verts)
@@ -325,7 +325,7 @@ struct room {
 
   std::unique_ptr<doorway> doorway_data;   // this room's doorway data, or null if not a doorway
   std::string name;              // name of this room, or NULL
-  int objects;             // index of first object in this room
+  int32_t objects;             // index of first object in this room
   vector3 max_xyz, min_xyz; // for external room visibility checking
 
   float last_render_time; // Last time we rendered this room
@@ -334,7 +334,7 @@ struct room {
   vector3 bbf_min_xyz;
   vector3 bbf_max_xyz;
   int16_t num_bbf_regions;
-  int16_t pad1;
+  //int16_t pad1;
   std::vector<std::vector<int16_t>> bbf_list; // faces per region (num_bbf_regions lists)
   std::vector<int16_t> num_bbf;               // face count per region
   std::vector<vector3> bbf_list_min_xyz;       // min extent per region
@@ -347,7 +347,7 @@ struct room {
   uint8_t pulse_time;          // each room can has a pulse time
   uint8_t pulse_offset;        // each room has a timer offset for which it pulses
   vector3 wind;               // Wind vector for the room
-  int ambient_sound;         // Index of ambient sound pattern for this room, or -1 if none
+  int32_t ambient_sound;         // Index of ambient sound pattern for this room, or -1 if none
   int16_t vis_effects;         // index of first visual effect in this room
   int16_t mirror_face;         // Index of face that this room is to be mirrored by
   uint8_t num_mirror_faces;    // Number of faces in this room that have the same texture as the mirror

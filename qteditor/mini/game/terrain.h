@@ -54,31 +54,32 @@
 #define MAX_STARS 600    // how many stars in our sky
 #define MAX_SATELLITES 5 // max satellites in our sky
 #define MAX_HORIZON_PIECES 16 // how many segments of the horizon there are around our sphere
-
+/*
 // Sky flags
 #define TF_STARS 1      // whether or not our terrain is starred
 #define TF_SATELLITES 2 // Draw satellites or no?
 #define TF_FOG 4        // Draw fog?
 #define TF_ROTATE_STARS 8
 #define TF_ROTATE_SKY 16
-
+*/
+/*
 // Satellite flags
 #define TSF_HALO 1       // Draw halo?
 #define TSF_ATMOSPHERE 2 // Draw atmosphere
-
+*/
 // occlusion stuff
 #define OCCLUSION_SIZE 16
 
 // Mine/terrain joining
 #define MAX_LINK_TILES 4 // how many terrain segments can be attached to mines
-
+/*
 // Terrain segment flags
 #define TF_DYNAMIC 1
 #define TF_SPECIAL_WATER 4 // Water
 #define TF_SPECIAL_MINE 8  // This segment has a mine attached to it
 #define TF_INVISIBLE 16    // This segment is invisible
 #define TFM_REGION_MASK (32 + 64 + 128)
-
+*/
 
 struct [[gnu::packed]] terrain_segment_flags_t
 {
@@ -128,7 +129,7 @@ struct terrain_tex_segment {
 
 // Data for LOD shutoff code
 struct lodoff {
-  int cellnum;
+  uint32_t cellnum;
   float save_delta[MAX_TERRAIN_LOD];
 };
 
@@ -347,7 +348,7 @@ void ComputeTerrainSegmentCenter(vector3& pos, int segnum);
 // Also now can return the normal at that ground point
 float GetTerrainGroundPoint(vector3& pos, vector3* normal);
 
-void SetupSky(float radius, int flags, uint8_t randit = 0);
+void SetupSky(float radius, terrain_sky_flags_t flags, uint8_t randit = 0);
 
 // Builds the surface normal for terrain segment n
 void BuildNormalForTerrainSegment(int n);
@@ -374,7 +375,7 @@ void UpdateTerrainLightmaps();
 float GetTerrainDynamicScalar(vector3& pos, int seg);
 
 // Shuts off LOD for a given cell
-void TurnOffLODForCell(int cellnum);
+void TurnOffLODForCell(uint32_t cellnum);
 
 // Restores the terrain deltas to their original state
 void ClearLODOffs();

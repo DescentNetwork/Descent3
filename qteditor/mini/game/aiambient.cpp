@@ -22,6 +22,7 @@
 #include "chrono_timer.h"
 #include "rand.h"
 #include <posix_stream.h>
+#include "string_helpers.h"
 
 namespace {
 // On-disk version of the LIFE chunk (engine aiambient.cpp:29).
@@ -30,8 +31,9 @@ constexpr int32_t AL_VERSION = 1;
 
 // Resets every ambient-life slot to a clean state (engine aiambient.cpp:115).
 void ambient_life::ALReset() {
-  for (int i = 0; i < (int)m_type.size(); i++) {
-    m_type[i] = -1;
+  for (size_t i = 0; i < m_type.size(); i++)
+  {
+    m_type[i].reset();
 
     for (int j = 0; j < (int)m_handle[i].size(); j++)
       m_handle[i][j] = 0;
@@ -64,7 +66,8 @@ void ambient_life::ComputeNextSize(int8_t i) {
 // Called at level start.  Nowhere near gameplay (the mini is an editor), but
 // ported for completeness: the engine initializes the per-type next-values.
 void ambient_life::InitForLevel() {
-  for (int i = 0; i < (int)m_type.size(); i++) {
+  for (size_t i = 0; i < m_type.size(); i++)
+  {
     ComputeNextSize(static_cast<int8_t>(i));
     m_cur_num[i] = 0;
     m_next_do_time[i] = d3::chrono::last_update();
@@ -77,21 +80,15 @@ void ambient_life::InitForLevel() {
 // (short length + name bytes including the NUL), then five byte fields and a
 // float; afterwards the per-type live-resident counts and their object handles.
 void ambient_life::SaveData(posix_ostream &ofile) const {
+  static std::string empty_string;
   ofile << AL_VERSION;
 
-  for (int i = 0; i < (int)m_type.size(); i++) {
-    const int type = m_type[i];
-
-    if (type >= 0) {
-      const std::string &name = Object_info[type].name;
-      ofile << static_cast<int16_t>(static_cast<int>(name.size()) + 1); // + NUL
-      if (!name.empty())
-        ofile.write(name.data(), name.size());
-      ofile.put('\0');
-    } else {
-      ofile << static_cast<int16_t>(1);
-      ofile.put('\0');
-    }
+  for (size_t i = 0; i < m_type.size(); i++)
+  {
+    if (m_type[i])
+      ofile << pascal_string(Object_info[*m_type[i]].name);
+    else
+      ofile << pascal_string(empty_string);
 
     ofile << m_total[i];
     ofile << m_flags[i];
@@ -101,9 +98,9 @@ void ambient_life::SaveData(posix_ostream &ofile) const {
     ofile << m_next_do_time[i];
   }
 
-  for (int i = 0; i < (int)m_type.size(); i++) {
+  for (size_t i = 0; i < m_type.size(); i++)
+  {
     ofile << m_cur_num[i];
-
     for (int j = 0; j < m_cur_num[i]; j++)
       ofile << m_handle[i][j];
   }
@@ -122,20 +119,11 @@ void ambient_life::LoadData(posix_istream &ifile) {
     return;
 
   for (int i = 0; i < (int)m_type.size(); i++) {
-    int16_t len = 0;
-    ifile >> len;
-    if (len < 0)
-      len = 0;
-    if (len > 1024) // the engine reads into a 256-byte temp buffer
-      len = 1024;
-
-    std::string raw(static_cast<size_t>(len), '\0');
-    if (len > 0)
-      ifile.read(&raw[0], len);
-
+    std::string raw;
+    ifile >> pascal_string(raw);
     // The name field is NUL-terminated; anything after the first NUL is
     // ignored, exactly like the engine's C-string FindObjectIDName().
-    m_type[i] = FindObjectIDName(std::string(raw.c_str()));
+    m_type[i] = FindObjectIDName(raw);
 
     ifile >> m_total[i];
     ifile >> m_flags[i];

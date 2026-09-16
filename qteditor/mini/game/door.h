@@ -159,7 +159,7 @@ int GetNextDoor(int n);
 int GetPrevDoor(int n);
 // Searches thru all doors for a specific name, returns -1 if not found
 // or index of door with name
-int FindDoorName(const std::string &name);
+std::optional<uint32_t> FindDoorName(const std::string &name);
 
 // Given a filename, loads the model found in that file
 int LoadDoorImage(const std::filesystem::path &filename, int pageable = 1);

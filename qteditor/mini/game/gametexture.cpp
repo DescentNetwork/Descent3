@@ -15,38 +15,39 @@
 #include <string>
 #include <stdexcept>
 
-int FindTextureName(const std::string &name) {
-  for (int i = 0; i < Num_textures; i++) {
-    if (!GameTextures[i].name.empty() && name == GameTextures[i].name)
-      return i;
-  }
+std::optional<uint32_t> FindTextureName(const std::string &name) {
+  if(!name.empty())
+    for (uint32_t i = 0; i < Num_textures; i++)
+      if (!GameTextures[i].name.empty() && name == GameTextures[i].name)
+        return i;
   std::runtime_error("texture not found!");
-  return -1;
+  return std::nullopt;
 }
 
 // Searches thru all textures for a bitmap of a specific name, returns -1 if
 // not found or index of texture with name
-int FindTextureBitmapName(const std::string &name) {
-  for (int i = 0; i < Num_textures; i++) {
-    if (!GameTextures[i].used)
-      continue;
+std::optional<uint32_t> FindTextureBitmapName(const std::string &name) {
+  if(!name.empty())
+    for (uint32_t i = 0; i < Num_textures; i++) {
+      if (!GameTextures[i].used)
+        continue;
 
-    if (GameTextures[i].flags.animated) {
-      PageInVClip(GameTextures[i].bm_handle);
-      vclip *vc = &GameVClips[GameTextures[i].bm_handle];
-      if (vc->used) {
-        for (int t = 0; t < vc->num_frames; t++) {
-          if (match(GameBitmaps[vc->frames[t]].name, name))
-            return i;
+      if (GameTextures[i].flags.animated) {
+        PageInVClip(GameTextures[i].bm_handle);
+        vclip *vc = &GameVClips[GameTextures[i].bm_handle];
+        if (vc->used) {
+          for (int t = 0; t < vc->num_frames; t++) {
+            if (match(GameBitmaps[vc->frames[t]].name, name))
+              return i;
+          }
         }
+      } else {
+        if (match(GameBitmaps[GameTextures[i].bm_handle].name, name))
+          return i;
       }
-    } else {
-      if (match(GameBitmaps[GameTextures[i].bm_handle].name, name))
-        return i;
     }
-  }
 
-  return -1;
+  return std::nullopt;
 }
 
 

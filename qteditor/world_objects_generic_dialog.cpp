@@ -296,7 +296,7 @@ WorldObjectsGenericDialog::~WorldObjectsGenericDialog() {
 void WorldObjectsGenericDialog::setCurrent(int id) { m_current = id; }
 
 bool WorldObjectsGenericDialog::isLocked(int n) {
-  return n != -1 && mng_FindTrackLock(Object_info[n].name, PAGETYPE_GENERIC) != -1;
+  return n != -1 && mng_FindTrackLock(Object_info[n].name, PAGETYPE_GENERIC).value_or(-1) != -1;
 }
 
 int WorldObjectsGenericDialog::countLockedItems() {
@@ -614,41 +614,33 @@ void WorldObjectsGenericDialog::onAddNew() {
   }
 
   QString Current_model_dir; // get from settings
-  const QString pathname =
-      QFileDialog::getOpenFileName(this, "Select model", Current_model_dir, "Descent III files (*.pof *.oof)");
-  if (pathname.isEmpty())
+  std::filesystem::path pathname =
+      QFileDialog::getOpenFileName(this, "Select model", Current_model_dir, "Descent III files (*.pof *.oof)").toStdString();
+  if (pathname.empty())
     return;
 
-  QFileInfo fileInfo(pathname);
-  const QByteArray pathBytes = pathname.toLocal8Bit();
-  const char *fname = fileInfo.baseName().toLocal8Bit().constData();
-
-  std::filesystem::path tmp = ChangePolyModelName(pathname.toStdString());
-  if (FindPolyModelName(fname) != -1) {
+  //std::filesystem::path tmp = ChangePolyModelName(pathname);
+  if (FindPolyModelName(pathname.stem())) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must rename your model to something else because there is already a model with that name!");
     return;
   }
 
-  const int img_handle = LoadPolyModel(pathname.toStdString(), 0);
+  const int img_handle = LoadPolyModel(pathname, 0);
   if (img_handle < 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't open that model file.");
     return;
   }
 
-  char cur_name[100];
-  snprintf(cur_name, sizeof(cur_name), "%s", fname);
-  char *t = strchr(cur_name, '.');
-  if (t == nullptr)
-    t = cur_name + strlen(cur_name);
-  *t = 0;
-
   // Make sure the name isn't already in use.
-  int c = 1;
-  while (FindObjectIDName(std::string(cur_name)) != -1)
-    snprintf(cur_name, sizeof(cur_name), "%s%d", fname, ++c);
-  cur_name[0] = toupper(cur_name[0]);
+  std::string current_name = pathname.stem();
+  if(FindObjectIDName(current_name))
+  {
+    uint32_t counter = 0;
+    while(FindObjectIDName(current_name + std::to_string(++counter)));
+    current_name += std::to_string(counter);
+  }
 
-  if (FindObjectIDName(std::string(cur_name)) != -1) {
+  if (FindObjectIDName(current_name)) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
@@ -659,7 +651,7 @@ void WorldObjectsGenericDialog::onAddNew() {
     return;
   }
 
-  Object_info[object_handle].name = cur_name;
+  Object_info[object_handle].name = current_name;
   Object_info[object_handle].render_handle = img_handle;
   ComputeDefaultSize(Object_info[object_handle].type, img_handle, &Object_info[object_handle].size);
   Object_info[object_handle].flags = object_info_flags_t{};
@@ -671,9 +663,9 @@ void WorldObjectsGenericDialog::onAddNew() {
       (m_type == OBJ_BUILDING) ? LRT_LIGHTMAPS : LRT_GOURAUD;
 
   std::filesystem::path destname = LocalModelsDir / Poly_models[Object_info[object_handle].render_handle].name;
-  std::filesystem::copy(std::filesystem::path(pathname.toStdString()), (destname), std::filesystem::copy_options::overwrite_existing);
+  std::filesystem::copy(pathname, destname, std::filesystem::copy_options::overwrite_existing);
 
-  mng_AllocTrackLock(cur_name, PAGETYPE_GENERIC);
+  mng_AllocTrackLock(current_name, PAGETYPE_GENERIC);
   m_current = object_handle;
   RemapStaticIDs();
   updateDialog();
@@ -684,7 +676,7 @@ void WorldObjectsGenericDialog::onCheckedOut() {
   int total = 0;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
     if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == PAGETYPE_GENERIC) {
-      const int n = FindObjectIDName(GlobalTrackLocks[i].name);
+      const int n = FindObjectIDName(GlobalTrackLocks[i].name).value_or(-1);
       if (n != -1 && Object_info[n].type == m_type) {
         str += "   ";
         str += QString::fromStdString(GlobalTrackLocks[i].name);
@@ -738,9 +730,9 @@ void WorldObjectsGenericDialog::onCheckIn() {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object checked in.");
       Q_ASSERT(mng_DeletePage(Object_info[m_current].name, PAGETYPE_GENERIC, 1) == 1);
       mng_EraseLocker();
-      const int p = mng_FindTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC);
-      Q_ASSERT(p != -1);
-      mng_FreeTrackLock(p);
+      const auto p = mng_FindTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC);
+      Q_ASSERT(p);
+      mng_FreeTrackLock(*p);
     }
   }
   mng_EraseLocker();
@@ -756,7 +748,7 @@ void WorldObjectsGenericDialog::onDefineAnimStates() {
 void WorldObjectsGenericDialog::onDelete() {
   if (m_current == -1)
     return;
-  const int tl = mng_FindTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC);
+  const int tl = mng_FindTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC).value_or(-1);
   if (tl == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This object is not yours to delete.  Lock first.");
     return;
@@ -852,7 +844,7 @@ void WorldObjectsGenericDialog::onLock() {
 void WorldObjectsGenericDialog::onUndoLock() {
   if (m_current == -1)
     return;
-  const int tl = mng_FindTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC);
+  const int tl = mng_FindTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC).value_or(-1);
   if (tl == -1)
     return;
   if (QMessageBox::question(this, "Are you sure?",
@@ -888,7 +880,7 @@ void WorldObjectsGenericDialog::onPrev() {
 
 void WorldObjectsGenericDialog::onNamePulldownChanged() {
   QComboBox *combo = ui->IDC_NAME_PULLDOWN;
-  const int i = FindObjectIDName(combo->currentText().toStdString());
+  const int i = FindObjectIDName(combo->currentText().toStdString()).value_or(-1);
   if (i == -1)
     return;
   m_current = i;
@@ -918,10 +910,11 @@ void WorldObjectsGenericDialog::onPaste() {
   }
 
   std::string temp_name = Copy_object.name;
-  if (FindObjectIDName(temp_name) != -1) {
+  if (FindObjectIDName(temp_name))
+  {
     int c = 2;
     temp_name = "CopyOf" + Copy_object.name;
-    while (FindObjectIDName(temp_name) != -1)
+    while (FindObjectIDName(temp_name))
       temp_name = "Copy" + std::to_string(c++) + "Of" + Copy_object.name;
   }
 
@@ -1202,7 +1195,7 @@ void WorldObjectsGenericDialog::saveGenericsOnClose() {
     return;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
     if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == PAGETYPE_GENERIC) {
-      const int t = FindObjectIDName(GlobalTrackLocks[i].name);
+      const int t = FindObjectIDName(GlobalTrackLocks[i].name).value_or(-1);
       if (t != -1)
         mng_ReplacePage(Object_info[t].name, Object_info[t].name, t, PAGETYPE_GENERIC, 1);
     }

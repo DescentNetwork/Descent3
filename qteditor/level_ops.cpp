@@ -90,18 +90,10 @@ static vector3 Mine_origin = {float(TERRAIN_WIDTH * (TERRAIN_SIZE / 2)),
                              -100,
                              float(TERRAIN_DEPTH * (TERRAIN_SIZE / 2))};
 
-// Find the first unused slot in Rooms[]. Returns -1 if all slots are in use.
-static int GetEditorFreeRoom() {
-  for (int i = 0; i < MAX_ROOMS; i++)
-    if (!Rooms[i].used)
-      return i;
-  return -1;
-}
-
 // Create a default octagonal prism room for a new mine.
 // Port of editor/HFile.cpp:CreateDefaultRoom().
 static room *CreateDefaultRoom() {
-  const int slot = GetEditorFreeRoom();
+  const int slot = FindFreeRoomSlot();
   if (slot < 0)
     return nullptr;
 
@@ -137,9 +129,6 @@ static room *CreateDefaultRoom() {
     rp->faces[i].tmap = i + 1;
     AssignDefaultUVsToRoomFace(rp, i);
   }
-
-  if (slot > Highest_room_index)
-    Highest_room_index = slot;
 
   return rp;
 }
@@ -200,12 +189,9 @@ void CreateNewMine() {
   Ceiling_height = MAX_TERRAIN_HEIGHT;
 
   // Reset sound overrides and force field bounces.
-  sound_override_force_field = -1;
-  sound_override_glass_breaking = -1;
-  for (int i = 0; i < (int)force_field_bounce_texture.size(); i++) {
-    force_field_bounce_texture[i] = -1;
-    force_field_bounce_multiplier[i] = 1.0f;
-  }
+  sound_override_force_field.reset();
+  sound_override_glass_breaking.reset();
+  std::ranges::fill(force_field_bounce, std::nullopt);
   Level_powerups_ignore_wind = false;
 
   // BOA checksums.
@@ -246,7 +232,7 @@ void CheckLevelNames() {
     }
   }
   room *rp;
-  for (i = 0, rp = Rooms.data(); i <= Highest_room_index; i++, rp++) {
+  for (i = 0, rp = Rooms.data(); i <= ((int)Rooms.size() - 1); i++, rp++) {
     if (rp->used && !rp->name.empty()) {
       const int n = osipf_FindRoomName(rp->name);
       if (n != i)
@@ -354,10 +340,11 @@ static int createViewerObject(state::viewer view_mode, vector3& pos, int roomnum
   Objects[objnum].render_type = RT_POLYOBJ;
   Objects[objnum].id = id;
 
-  // ObjSetPos relinks the object into its room, and ObjRelink asserts that
-  // objnum <= Highest_object_index, so bump it before positioning the object.
-  if (objnum > Highest_object_index)
-    Highest_object_index = objnum;
+  // The slot was carved straight out of Objects[] (ObjCreate is MFC gated),
+  // so re-sync the free list / object count with the type table, exactly as
+  // the OBJS loader does after its in-place writes.  This also sets
+  // Highest_object_index (used by ObjRelink's assert below).
+  ResetFreeObjects();
 
   ObjSetPos(Objects[objnum], pos, roomnum, nullptr, false);
 
@@ -404,12 +391,12 @@ void SetEditorViewer() {
       pos.z() = TERRAIN_SIZE * TERRAIN_DEPTH / 2;
       roomnum = MAKE_ROOMNUM(0); // any value ok, so long as it has terrain flag
     } else if (app.view_mode == state::viewer::mine) { // if mine, put in center of any room
-      for (roomnum = 0; roomnum <= Highest_room_index; roomnum++)
+      for (roomnum = 0; roomnum <= ((int)Rooms.size() - 1); roomnum++)
         if (Rooms[roomnum].used && !Rooms[roomnum].flags.external) {
           ComputeRoomCenter(&pos, &Rooms[roomnum]);
           break;
         }
-      Q_ASSERT(roomnum <= Highest_room_index);
+      Q_ASSERT(roomnum <= ((int)Rooms.size() - 1));
     } else if (app.view_mode == state::viewer::room) { // if room, put at 0,0,0
       pos = vector3{};
       roomnum = MAKE_ROOMNUM(0);
@@ -497,7 +484,7 @@ std::string RenderLevelStats() {
 
   int i;
   room *rp;
-  for (i = 0, rp = Rooms.data(); i <= Highest_room_index; i++, rp++) {
+  for (i = 0, rp = Rooms.data(); i <= ((int)Rooms.size() - 1); i++, rp++) {
     if (!rp->used)
       continue;
     n_rooms++;

@@ -141,16 +141,39 @@
  *    STRUCTURES
  */
 
+struct [[gnu::packed]] light_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 25;                  // Unused bits (Bits 7 - 31)
+  uint32_t no_specularity : 1;            // Object does not have specular light cast on it (0x40)
+  uint32_t directional : 1;               // Directional light - casts light in a cone (0x20)
+  uint32_t flicker_slightly : 1;          // (0x10)
+  uint32_t pulse_to_second : 1;           // (0x08)
+  uint32_t pulse : 1;                     // (0x04)
+  uint32_t timebits : 1;                  // (0x02)
+  uint32_t flickering : 1;                // (0x01)
+#else
+  uint32_t flickering : 1;                // (0x01)
+  uint32_t timebits : 1;                  // (0x02)
+  uint32_t pulse : 1;                     // (0x04)
+  uint32_t pulse_to_second : 1;           // (0x08)
+  uint32_t flicker_slightly : 1;          // (0x10)
+  uint32_t directional : 1;               // Directional light - casts light in a cone (0x20)
+  uint32_t no_specularity : 1;            // Object does not have specular light cast on it (0x40)
+  uint32_t padding : 25;                  // Unused bits (Bits 7 - 31)
+#endif
+};
+static_assert(sizeof(light_flags_t) == sizeof(uint32_t));
+
 // lighting info
 struct light_info {
-  int32_t flags; // see above
+  light_flags_t flags; // see above
   float light_distance;
   float red_light1, green_light1, blue_light1;
   float red_light2, green_light2, blue_light2;
   float time_interval;
   float flicker_distance;
   float directional_dot;
-  int32_t timebits;
+  uint32_t timebits;
   uint8_t angle;
   uint8_t lighting_render_type;
 };
@@ -232,16 +255,6 @@ struct [[gnu::packed]] object_flags_t
 #endif
 };
 static_assert(sizeof(object_flags_t) == sizeof(uint32_t));
-
-inline byte_istream& operator >>(byte_istream& input, object_flags_t& data) {
-  uint32_t raw = 0;
-  input >> raw;
-  data = std::bit_cast<object_flags_t>(raw);
-  return input;
-}
-inline byte_ostream& operator <<(byte_ostream& output, const object_flags_t& data) {
-  return output << std::bit_cast<uint32_t>(data);
-}
 
 // Effect-type flags (effect_info_s.type_flags), bit packed from the old EF_* macros.
 struct [[gnu::packed]] effect_flags_t
@@ -458,7 +471,7 @@ struct splinter_info_s {
 
 // Data for sourcesource objects
 struct soundsource_info_s {
-  int32_t sound_index;
+  std::optional<uint32_t> sound_index;
   float volume;
 };
 
@@ -643,6 +656,43 @@ struct object_rtype {
   const uint32_t &sphere_color() const { return std::get<uint32_t>(v); }
 };
 
+// Control info, determined by CONTROL_TYPE.  Stored as a std::variant (like
+// object_rtype above) so the union can hold the non-trivially-copyable
+// `soundsource_info_s`; the accessors activate (and therefore default-
+// construct) the requested alternative.  Default-constructs to laser_info,
+// matching the legacy value-initialized union (first member).
+struct object_ctype {
+  // The union's members were always readable regardless of which one the
+  // object actually used; the non-const accessors therefore activate (and
+  // default-construct) the requested alternative so a write never throws.
+  // Reads of a non-active alternative keep the strict std::get behavior.
+  std::variant<laser_info_s, powerup_info_s, splinter_info_s, blast_info_s,
+               dying_info_s, debris_info_s, soundsource_info_s> v;
+
+  laser_info_s &laser_info() { return activate<laser_info_s>(v); }
+  const laser_info_s &laser_info() const { return std::get<laser_info_s>(v); }
+  powerup_info_s &powerup_info() { return activate<powerup_info_s>(v); }
+  const powerup_info_s &powerup_info() const { return std::get<powerup_info_s>(v); }
+  splinter_info_s &splinter_info() { return activate<splinter_info_s>(v); }
+  const splinter_info_s &splinter_info() const { return std::get<splinter_info_s>(v); }
+  blast_info_s &blast_info() { return activate<blast_info_s>(v); }
+  const blast_info_s &blast_info() const { return std::get<blast_info_s>(v); }
+  dying_info_s &dying_info() { return activate<dying_info_s>(v); }
+  const dying_info_s &dying_info() const { return std::get<dying_info_s>(v); }
+  debris_info_s &debris_info() { return activate<debris_info_s>(v); }
+  const debris_info_s &debris_info() const { return std::get<debris_info_s>(v); }
+  soundsource_info_s &soundsource_info() { return activate<soundsource_info_s>(v); }
+  const soundsource_info_s &soundsource_info() const { return std::get<soundsource_info_s>(v); }
+
+private:
+  template <typename T> static T &activate(std::variant<laser_info_s, powerup_info_s,
+      splinter_info_s, blast_info_s, dying_info_s, debris_info_s, soundsource_info_s> &var) {
+    if (!std::holds_alternative<T>(var))
+      var = T{};
+    return std::get<T>(var);
+  }
+};
+
 // The data for an object
 struct object {
   uint8_t type;       // what type of object this is... robot, weapon, hostage, powerup, fireball
@@ -727,16 +777,8 @@ struct object {
 
   lightmap_object lm_object; // The lightmap object for this object
 
-  // Control info, determined by CONTROL_TYPE
-  union {
-    laser_info_s laser_info;
-    powerup_info_s powerup_info;
-    splinter_info_s splinter_info;
-    blast_info_s blast_info;
-    dying_info_s dying_info;
-    debris_info_s debris_info;
-    soundsource_info_s soundsource_info;
-  } ctype;
+// Control info, determined by CONTROL_TYPE; see object_ctype for accessors
+  object_ctype ctype;
 
   std::unique_ptr<ai_frame> ai_info; // AI information pointer
 

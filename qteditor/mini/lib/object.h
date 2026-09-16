@@ -668,6 +668,7 @@ extern const char *Object_type_names[MAX_OBJECT_TYPES];
 #define FMT_NEW_DATA 1
 #define FMT_UPDATING 2
 
+/*
 // object light info flags
 #define OLF_FLICKERING 1
 #define OLF_TIMEBITS 2
@@ -676,7 +677,7 @@ extern const char *Object_type_names[MAX_OBJECT_TYPES];
 #define OLF_FLICKER_SLIGHTLY 16
 #define OLF_DIRECTIONAL 32    // Directional light - casts light in a cone
 #define OLF_NO_SPECULARITY 64 // Object does not have specular light cast on it
-
+*/
 // OSIRIS defines
 
 

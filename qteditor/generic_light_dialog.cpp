@@ -31,18 +31,22 @@ GenericLightDialog::GenericLightDialog(light_info *lightinfo, QWidget *parent)
     : QDialog(parent), ui(new Ui::GenericLightDialog), m_lightinfo(lightinfo)
 {
   ui->setupUi(this);
-  connect(ui->IDC_ALWAYS_ON_RADIO, &QRadioButton::clicked, this, &GenericLightDialog::onAlwaysOnRadio);
-  connect(ui->IDC_FLICKER_RADIO, &QRadioButton::clicked, this, &GenericLightDialog::onFlickerRadio);
-  connect(ui->IDC_USE_TIMEBITS_RADIO, &QRadioButton::clicked, this, &GenericLightDialog::onUseTimebitsRadio);
-  connect(ui->IDC_RENDER_STATIC, &QRadioButton::clicked, this, &GenericLightDialog::onRenderStatic);
-  connect(ui->IDC_RENDER_GOURAUD, &QRadioButton::clicked, this, &GenericLightDialog::onRenderGouraud);
-  connect(ui->IDC_RENDER_LIGHTMAPS, &QRadioButton::clicked, this, &GenericLightDialog::onRenderLightmaps);
 
-  connect(ui->IDC_PULSE, &QCheckBox::toggled, this, &GenericLightDialog::onPulseToggled);
-  connect(ui->IDC_PULSE_TO_SECOND, &QCheckBox::toggled, this, &GenericLightDialog::onPulseToSecondToggled);
-  connect(ui->IDC_FLICKER_SLIGHTLY_CHECK, &QCheckBox::toggled, this, &GenericLightDialog::onFlickerSlightlyToggled);
-  connect(ui->IDC_DIRECTIONAL, &QCheckBox::toggled, this, &GenericLightDialog::onDirectionalToggled);
-  connect(ui->IDC_NO_SPECULAR_CHECK, &QCheckBox::toggled, this, &GenericLightDialog::onNoSpecularToggled);
+  auto& rt = m_lightinfo->lighting_render_type;
+  connect(ui->IDC_RENDER_STATIC,    &QRadioButton::clicked, [&rt](){ rt = LRT_STATIC; });
+  connect(ui->IDC_RENDER_GOURAUD,   &QRadioButton::clicked, [&rt](){ rt = LRT_GOURAUD; });
+  connect(ui->IDC_RENDER_LIGHTMAPS, &QRadioButton::clicked, [&rt](){ rt = LRT_LIGHTMAPS; });
+
+  auto& flags = m_lightinfo->flags;
+  connect(ui->IDC_ALWAYS_ON_RADIO,    &QRadioButton::clicked, [&flags](){ flags.flickering = 0; flags.timebits = 0; });
+  connect(ui->IDC_USE_TIMEBITS_RADIO, &QRadioButton::clicked, [&flags](){ flags.flickering = 0; flags.timebits = 1; });
+  connect(ui->IDC_FLICKER_RADIO,      &QRadioButton::clicked, [&flags](){ flags.flickering = 1; flags.timebits = 1; });
+
+  connect(ui->IDC_PULSE,                  &QCheckBox::toggled, [&flags](){ flags.pulse            ^= flags.pulse; });
+  connect(ui->IDC_PULSE_TO_SECOND,        &QCheckBox::toggled, [&flags](){ flags.pulse_to_second  ^= flags.pulse_to_second; });
+  connect(ui->IDC_FLICKER_SLIGHTLY_CHECK, &QCheckBox::toggled, [&flags](){ flags.flicker_slightly ^= flags.flicker_slightly; });
+  connect(ui->IDC_DIRECTIONAL,            &QCheckBox::toggled, [&flags](){ flags.directional      ^= flags.directional; });
+  connect(ui->IDC_NO_SPECULAR_CHECK,      &QCheckBox::toggled, [&flags](){ flags.no_specularity   ^= flags.no_specularity; });
 
   connect(ui->IDC_TIME_CHECK1, &QCheckBox::toggled, this, &GenericLightDialog::onTimeCheck);
   connect(ui->IDC_TIME_CHECK2, &QCheckBox::toggled, this, &GenericLightDialog::onTimeCheck);
@@ -69,24 +73,18 @@ GenericLightDialog::GenericLightDialog(light_info *lightinfo, QWidget *parent)
 
 GenericLightDialog::~GenericLightDialog() { delete ui; }
 
-void GenericLightDialog::setFlag(int32_t flag, const char *checkName, bool checked) {
-  if (checked)
-    m_lightinfo->flags |= flag;
-  else
-    m_lightinfo->flags &= ~flag;
-}
 
 void GenericLightDialog::updateDialog() {
   light_info *li = m_lightinfo;
-  ui->IDC_DIRECTIONAL->setChecked(li->flags & OLF_DIRECTIONAL);
-  ui->IDC_NO_SPECULAR_CHECK->setChecked(li->flags & OLF_NO_SPECULARITY);
-  ui->IDC_PULSE->setChecked(li->flags & OLF_PULSE);
-  ui->IDC_PULSE_TO_SECOND->setChecked(li->flags & OLF_PULSE_TO_SECOND);
-  ui->IDC_FLICKER_SLIGHTLY_CHECK->setChecked(li->flags & OLF_FLICKER_SLIGHTLY);
+  ui->IDC_DIRECTIONAL->setChecked(li->flags.directional);
+  ui->IDC_NO_SPECULAR_CHECK->setChecked(li->flags.no_specularity);
+  ui->IDC_PULSE->setChecked(li->flags.pulse);
+  ui->IDC_PULSE_TO_SECOND->setChecked(li->flags.pulse_to_second);
+  ui->IDC_FLICKER_SLIGHTLY_CHECK->setChecked(li->flags.flicker_slightly);
 
-  ui->IDC_FLICKER_RADIO->setChecked(li->flags & OLF_FLICKERING);
-  ui->IDC_USE_TIMEBITS_RADIO->setChecked(li->flags & OLF_TIMEBITS);
-  ui->IDC_ALWAYS_ON_RADIO->setChecked(!(li->flags & (OLF_FLICKERING | OLF_TIMEBITS)));
+  ui->IDC_FLICKER_RADIO->setChecked(li->flags.flickering);
+  ui->IDC_USE_TIMEBITS_RADIO->setChecked(li->flags.timebits);
+  ui->IDC_ALWAYS_ON_RADIO->setChecked(!li->flags.flickering && !li->flags.timebits);
 
   ui->IDC_TIME_CHECK1->setChecked((li->timebits & (1 << 0)) != 0);
   ui->IDC_TIME_CHECK2->setChecked((li->timebits & (1 << 1)) != 0);
@@ -113,23 +111,6 @@ void GenericLightDialog::updateDialog() {
   ui->IDC_FLICKER_SLIGHTLY_EDIT->setText(QString::number(li->flicker_distance));
 }
 
-void GenericLightDialog::onFlickerRadio() {
-  m_lightinfo->flags |= OLF_FLICKERING;
-  m_lightinfo->flags &= ~OLF_TIMEBITS;
-}
-void GenericLightDialog::onAlwaysOnRadio() {
-  m_lightinfo->flags &= ~(OLF_FLICKERING | OLF_TIMEBITS);
-}
-void GenericLightDialog::onUseTimebitsRadio() {
-  m_lightinfo->flags |= OLF_TIMEBITS;
-  m_lightinfo->flags &= ~OLF_FLICKERING;
-}
-void GenericLightDialog::onPulseToggled(bool checked) { setFlag(OLF_PULSE, "", checked); }
-void GenericLightDialog::onPulseToSecondToggled(bool checked) { setFlag(OLF_PULSE_TO_SECOND, "", checked); }
-void GenericLightDialog::onFlickerSlightlyToggled(bool checked) { setFlag(OLF_FLICKER_SLIGHTLY, "", checked); }
-void GenericLightDialog::onDirectionalToggled(bool checked) { setFlag(OLF_DIRECTIONAL, "", checked); }
-void GenericLightDialog::onNoSpecularToggled(bool checked) { setFlag(OLF_NO_SPECULARITY, "", checked); }
-
 void GenericLightDialog::onTimeCheck() {
   int bits = 0;
   if (ui->IDC_TIME_CHECK1->isChecked())
@@ -151,9 +132,6 @@ void GenericLightDialog::onTimeCheck() {
   m_lightinfo->timebits = bits;
 }
 
-void GenericLightDialog::onRenderStatic() { m_lightinfo->lighting_render_type = LRT_STATIC; }
-void GenericLightDialog::onRenderGouraud() { m_lightinfo->lighting_render_type = LRT_GOURAUD; }
-void GenericLightDialog::onRenderLightmaps() { m_lightinfo->lighting_render_type = LRT_LIGHTMAPS; }
 
 void GenericLightDialog::onFieldEdited() {
   light_info *li = m_lightinfo;

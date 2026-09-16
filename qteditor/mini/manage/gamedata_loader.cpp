@@ -70,7 +70,7 @@ int Old_table_method = 0;
 
 // The mini tree defines `object_info Object_info[MAX_OBJECTS];` in stubs.cpp
 // but no header declares the count; declare it here so the loader can track it.
-extern int Num_objects;
+extern uint32_t Num_objects;
 
 //-----------------------------------------------------------------------------
 // Top-level loader
@@ -318,28 +318,31 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 // The whole table is scanned by its OBJ_NONE marker (not a loaded-page count)
 // exactly like the engine's objinfo.cpp FindObjectIDName: page lookups must
 // work even while a level is loading when Num_objects is temporarily reset.
-int FindObjectIDName(const std::string &name) {
-  for (int i = 0; i < MAX_OBJECT_IDS; i++)
-    if ((Object_info[i].type != OBJ_NONE) && match(name, Object_info[i].name))
-      return i;
+std::optional<uint32_t> FindObjectIDName(const std::string &name) {
+  if(!name.empty())
+    for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++)
+      if ((Object_info[i].type != OBJ_NONE) && match(name, Object_info[i].name))
+        return i;
 
-  return -1;
+  return std::nullopt;
 }
 
 // Searches the weapons table for a matching name.  Returns the id, or -1.
-int FindWeaponName(const std::string &name) {
-  for (int i = 0; i < Num_weapons; i++)
-    if (Weapons[i].used && match(name, Weapons[i].name))
-      return i;
+std::optional<uint32_t> FindWeaponName(const std::string &name) {
+  if(!name.empty())
+    for (uint32_t i = 0; i < Num_weapons; i++)
+      if (Weapons[i].used && match(name, Weapons[i].name))
+        return i;
 
-  return -1;
+  return std::nullopt;
 }
 
 // Searches the sound table for a matching name.  Returns the id, or -1.
-int FindSoundName(const std::string &name) {
-  for (int i = 0; i < Num_sounds; i++)
-    if (Sounds[i].used && match(name, Sounds[i].name))
-      return i;
+std::optional<uint32_t> FindSoundName(const std::string &name) {
+  if(!name.empty())
+    for (uint32_t i = 0; i < Num_sounds; i++)
+      if (Sounds[i].used && match(name, Sounds[i].name))
+        return i;
 
-  return -1;
+  return std::nullopt;
 }

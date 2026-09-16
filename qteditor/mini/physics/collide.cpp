@@ -1281,7 +1281,7 @@ void collide_player_and_wall(object *playerobj, float hitspeed, int hitseg, int 
   int tmap;
 
   if (playerobj->flags.dying)
-    playerobj->ctype.dying_info.delay_time *= 0.9f;
+    playerobj->ctype.dying_info().delay_time *= 0.9f;
 
   // Check for a trigger on this wall
   if (!ROOMNUM_OUTSIDE(hitseg)) // Make sure we've hit a wall, and not terrain
@@ -1728,7 +1728,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
             Q_ASSERT(t->type != OBJ_PLAYER);
             if (t->flags.dying) {
               Q_ASSERT((t->control_type == CT_DYING) || (t->control_type == CT_DYING_AND_AI));
-              DestroyObject(t, 50.0, t->ctype.dying_info.death_flags);
+              DestroyObject(t, 50.0, t->ctype.dying_info().death_flags);
             } else
               SetObjectDeadFlag(t);
           }
@@ -2157,7 +2157,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
     *collision_normal *= -1.0f;
 
   if (robotobj->flags.dying)
-    robotobj->ctype.dying_info.delay_time *= 0.975f;
+    robotobj->ctype.dying_info().delay_time *= 0.975f;
 
   if (Weapons[weapon->id].sounds[WSI_IMPACT_WALL] != SOUND_NONE_INDEX) {
     Sound_system.Play3dSound(Weapons[weapon->id].sounds[WSI_IMPACT_WALL], SND_PRIORITY_HIGH, weapon);
@@ -2209,7 +2209,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
     damage_to_apply = Weapons[weapon->id].generic_damage;
 
   // Factor in multiplier
-  damage_to_apply *= weapon->ctype.laser_info.multiplier;
+  damage_to_apply *= weapon->ctype.laser_info().multiplier;
 
   if (ApplyDamageToGeneric(robotobj, weapon, damage_type, damage_to_apply)) {
     if (Weapons[weapon->id].sounds[WSI_IMPACT_ROBOT] != SOUND_NONE_INDEX) {
@@ -2279,7 +2279,7 @@ void collide_player_and_weapon(object *playerobj, object *weapon, vector3 *colli
     damage_to_apply = Weapons[weapon->id].player_damage;
 
   // Factor in multiplier
-  damage_to_apply *= weapon->ctype.laser_info.multiplier;
+  damage_to_apply *= weapon->ctype.laser_info().multiplier;
 
   int damage_type = electrical ? PD_ENERGY_WEAPON : PD_MATTER_WEAPON;
 

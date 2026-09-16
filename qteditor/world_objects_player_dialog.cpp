@@ -174,7 +174,7 @@ void WorldObjectsPlayerDialog::updateDialog() {
 
   {
     QPushButton *checkin = ui->IDC_PSHIP_CHECKIN;
-    if (mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP) == -1) {
+    if (!mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP) ) {
       checkin->setEnabled(false);
       ui->IDC_PSHIP_LOCK->setEnabled(true);
     } else {
@@ -264,8 +264,8 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
   if (Num_ships < 1)
     return;
 
-  const int tl = mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP);
-  if (tl == -1) {
+  const auto tl = mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP);
+  if (!tl) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This ship is not yours to delete.  Lock first.");
     return;
   }
@@ -282,10 +282,10 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
   pl.pagetype = PAGETYPE_SHIP;
 
   if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
-    mng_FreeTrackLock(tl);
+    mng_FreeTrackLock(*tl);
     Q_ASSERT(mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 1));
   } else {
-    mng_FreeTrackLock(tl);
+    mng_FreeTrackLock(*tl);
     mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 0);
     mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 1);
     mng_DeletePagelock(Ships[n].name, PAGETYPE_SHIP);
@@ -412,9 +412,9 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
       Q_ASSERT(mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 1) == 1);
       mng_EraseLocker();
 
-      const int p = mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP);
-      Q_ASSERT(p != -1);
-      mng_FreeTrackLock(p);
+      const auto p = mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP);
+      Q_ASSERT(p);
+      mng_FreeTrackLock(*p);
       updateDialog();
     }
   }
@@ -564,22 +564,19 @@ void WorldObjectsPlayerDialog::onPshipEditPhysics() {
 
 void WorldObjectsPlayerDialog::onKillfocusName() {
   const int n = app.current_ship;
-  QLineEdit *edit = ui->IDC_PSHIP_NAME_EDIT;
-  if (edit == nullptr)
-    return;
 
-  const int p = mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP);
-  if (p == -1) {
+  const auto p = mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP);
+  if (!p)
+  {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this ship if you wish to change its name.");
-    edit->setText(QString::fromStdString(Ships[n].name));
+    ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(Ships[n].name));
     return;
   }
 
-  std::string name;
-  name = edit->text().toStdString();
+  std::string name = ui->IDC_PSHIP_NAME_EDIT->text().toStdString();
   if (FindShipName(name) != -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There already is a ship with that name...choose another name.");
-    edit->setText(QString::fromStdString(Ships[n].name));
+    ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(Ships[n].name));
     return;
   }
 
@@ -602,11 +599,11 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
     mng_ReplacePage(oldname, Ships[n].name, n, PAGETYPE_SHIP, 1);
   } else if (ret == 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You don't own this page.  Get Jason now!");
-    mng_FreeTrackLock(p);
+    mng_FreeTrackLock(*p);
     return;
   }
 
-  GlobalTrackLocks[p].name = name;
+  GlobalTrackLocks[*p].name = name;
   Ships[n].name = name;
   mng_EraseLocker();
   RemapShips();

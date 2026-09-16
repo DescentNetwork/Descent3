@@ -190,6 +190,7 @@
 
 #ifndef GAMETEXTURE_H
 #define GAMETEXTURE_H
+#include <optional>
 
 #ifdef NEWEDITOR /* only include tablefile header (manage stuff for NEWEDITOR) */
 #include "..\neweditor\ned_TableFile.h"
@@ -345,7 +346,7 @@ struct texture {
 };
 
 extern texture GameTextures[MAX_TEXTURES];
-extern int Num_textures;
+extern uint32_t Num_textures;
 
 // Inits the texture system, returning 1 if successful
 int InitTextures();
@@ -364,11 +365,11 @@ int GetPreviousTexture(int n);
 
 // Searches thru all textures for a specific name, returns -1 if not found
 // or index of texture with name
-int FindTextureName(const std::string &name);
+std::optional<uint32_t> FindTextureName(const std::string &name);
 
 // Searches thru all textures for a bitmap of a specific name, returns -1 if not found
 // or index of texture with name
-int FindTextureBitmapName(const std::string& name);
+std::optional<uint32_t> FindTextureBitmapName(const std::string& name);
 
 // Given a texture handle, returns that textures bitmap
 // If the texture is animated, returns framenum mod num_of_frames in the animation

@@ -72,6 +72,7 @@
 #include "findintersection.h"
 #include "mem.h"
 #include "ScriptCompilerAPI.h"
+#include "polymodel.h"
 
 int AllocGamePath();
 void FreeGamePath(int n);
@@ -331,7 +332,7 @@ struct PickFixture {
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     Viewer_object = &Objects[0];
     Viewer_object->type = OBJ_VIEWER;
@@ -349,6 +350,7 @@ struct PickFixture {
     QCoreApplication::processEvents();
   }
   static void addQuadRoom(int roomIndex, const std::vector<vector3>& verts) {
+    RoomsEnsureIndex(roomIndex);
     room *rp = &Rooms[roomIndex];
     *rp = room{};
     InitRoom(rp, 4, 1, 0);
@@ -358,8 +360,7 @@ struct PickFixture {
       rp->faces[0].face_verts[i] = (int16_t)i;
     }
     rp->used = 1;
-    if (roomIndex > Highest_room_index)
-      Highest_room_index = roomIndex;
+    RoomsEnsureIndex(roomIndex);
   }
 
   // Builds the collision tables (BBF regions and face/room bounds) that the
@@ -429,6 +430,7 @@ private slots:
     Num_triggers = 0;
 
     // Room 0: single 4-vert quad.
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *(r0) = room{};
     InitRoom(r0, 4, 1, 0);
@@ -445,6 +447,7 @@ private slots:
     r0->name.clear();
 
     // Room 1: triangle.
+    RoomsEnsureIndex(1);
     room *r1 = &Rooms[1];
     *(r1) = room{};
     InitRoom(r1, 3, 1, 0);
@@ -455,7 +458,7 @@ private slots:
     for (int i = 0; i < 3; i++)
       r1->faces[0].face_verts[i] = (int16_t)i;
     r1->faces[0].tmap = 3;
-    Highest_room_index = 1;
+    RoomsEnsureIndex(1);
 
     // Objects.
     Objects[0].type = OBJ_POWERUP;
@@ -502,13 +505,13 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
 
     QVERIFY2(LoadLevel(std::filesystem::path(file.toStdString()), nullptr),
              qPrintable("LoadLevel failed"));
 
-    QVERIFY(Highest_room_index >= 1);
+    QVERIFY((int)Rooms.size() - 1 >= 1);
     QVERIFY(Rooms[0].used);
     QVERIFY(Rooms[1].used);
     QCOMPARE(Rooms[0].num_verts, 4);
@@ -544,7 +547,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     Level_info.name.clear();
 
@@ -569,6 +572,7 @@ private slots:
     Num_triggers = 0;
 
     // Simple quad room.
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *(r0) = room{};
     InitRoom(r0, 4, 1, 0);
@@ -583,7 +587,7 @@ private slots:
     r0->faces[0].face_uvls[0].u = 0.5f;
     r0->wind = vector3{(float)1, 0, 0};
     r0->name.clear();
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     // A lightmapped robot: two models carrying per-face u2/v2 data.  This is
     // the record shape that exercises the per-model num_faces write.
@@ -650,7 +654,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
@@ -666,7 +670,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
 
     QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
@@ -750,7 +754,7 @@ private slots:
   // on a byte-stable layout across further reloads.
   void testObjectNameXlateRoundTrip()
   {
-    extern int Num_objects;
+    extern uint32_t Num_objects;
     std::vector<object_info> savedInfo(MAX_OBJECT_IDS);
     for (int i = 0; i < MAX_OBJECT_IDS; i++)
       savedInfo[i] = Object_info[i];
@@ -763,7 +767,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
 
     // "Loaded game tables" for the save: page 3 is the powerup page.
@@ -773,6 +777,7 @@ private slots:
     Object_info[3].name = "XlatePowerup";
 
     // Room 0: single 4-vert quad.
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *r0 = room{};
     InitRoom(r0, 4, 1, 0);
@@ -785,7 +790,7 @@ private slots:
       r0->faces[0].face_verts[i] = (int16_t)i;
     r0->faces[0].tmap = 2;
     r0->name.clear();
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     // The powerup references page 3 in the level file.
     Objects[0].type = OBJ_POWERUP;
@@ -822,7 +827,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
@@ -839,7 +844,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
     QCOMPARE(int(Objects[0].id), 0);
@@ -871,7 +876,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
   }
 
@@ -889,10 +894,11 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
 
     // Minimal room so an object is legal to place.
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *r0 = room{};
     InitRoom(r0, 4, 1, 0);
@@ -905,7 +911,7 @@ private slots:
       r0->faces[0].face_verts[i] = (int16_t)i;
     r0->faces[0].tmap = 2;
     r0->name.clear();
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     Objects[0].type = OBJ_POWERUP;
     Objects[0].id = 0;
@@ -939,7 +945,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QCOMPARE(int(Objects[7].type), int(OBJ_NONE));
@@ -956,7 +962,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
     QCOMPARE(int(Objects[7].handle), int(7 + 2 * HANDLE_COUNT_INCREMENT));
@@ -1018,7 +1024,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
   }
 
@@ -1034,10 +1040,11 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
 
     // One room, one quad face with real min/max extents, plus a BBF region.
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *r0 = room{};
     InitRoom(r0, 4, 2, 0);
@@ -1050,7 +1057,7 @@ private slots:
     r0->faces[0].tmap = 2;
     r0->faces[1].tmap = 2;
     r0->name.clear();
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     r0->faces[0].min_xyz = vector3{(float)0, 0, (float)-10};
     r0->faces[0].max_xyz = vector3{(float)10, 0, (float)10};
@@ -1085,7 +1092,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QCOMPARE(int(Rooms[0].num_bbf_regions), 1);
@@ -1106,7 +1113,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
     QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
@@ -1162,7 +1169,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
   }
 
@@ -1192,10 +1199,11 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
 
     // Minimal used room so SaveLevel has a valid ROOM chunk.
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *r0 = room{};
     InitRoom(r0, 4, 1, 0);
@@ -1208,7 +1216,7 @@ private slots:
       r0->faces[0].face_verts[i] = (int16_t)i;
     r0->faces[0].tmap = 2;
     r0->name.clear();
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
     Level_info.name = "BSPRoundTrip";
 
     // Start from a clean BSP table.
@@ -1358,7 +1366,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
   }
 
@@ -1374,12 +1382,13 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
 
     // A minimal used room (identical to testRoomAABBChunkRoundTrip) so the
     // writer emits a well-framed AABB chunk.
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *r0 = room{};
     InitRoom(r0, 4, 2, 0);
@@ -1392,7 +1401,7 @@ private slots:
     r0->faces[0].tmap = 2;
     r0->faces[1].tmap = 2;
     r0->name.clear();
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     // One default-constructed matcen with a distinguishing name.
     matcen *m = new matcen;
@@ -1482,7 +1491,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
   }
@@ -1496,7 +1505,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
 
@@ -1505,6 +1514,7 @@ private slots:
 
     // A minimal used room (identical to testMatcenChunkRoundTrip) so the
     // writer emits a well-framed AABB chunk.
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *r0 = room{};
     InitRoom(r0, 4, 2, 0);
@@ -1517,7 +1527,7 @@ private slots:
     r0->faces[0].tmap = 2;
     r0->faces[1].tmap = 2;
     r0->name.clear();
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     // The level goals table starts empty: the LVLG chunk must still save,
     // load, and round-trip byte-stably as a zero-goal record.
@@ -1598,7 +1608,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
   }
@@ -1622,12 +1632,13 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
 
     // A minimal used room (identical to the other chunk round-trip tests) so
     // the writer emits a well-framed AABB chunk.
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *r0 = room{};
     InitRoom(r0, 4, 2, 0);
@@ -1640,7 +1651,7 @@ private slots:
     r0->faces[0].tmap = 2;
     r0->faces[1].tmap = 2;
     r0->name.clear();
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     // A cleared band table must save, load, and round-trip byte-stably as a
     // zero-record TSND chunk, exactly like the engine writes for no bands.
@@ -1725,7 +1736,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
   }
@@ -1739,12 +1750,13 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
 
     // A minimal used room (identical to the other chunk round-trip tests) so
     // the writer emits a well-framed AABB chunk.
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *r0 = room{};
     InitRoom(r0, 4, 2, 0);
@@ -1757,7 +1769,7 @@ private slots:
     r0->faces[0].tmap = 2;
     r0->faces[1].tmap = 2;
     r0->name.clear();
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     // a_life is a cross-test global; the save path must write the reset table
     // and every subsequent load must re-save it byte-stably.
@@ -1836,7 +1848,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
   }
@@ -1850,12 +1862,13 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
 
     // A minimal used room (identical to the other chunk round-trip tests) so
     // the writer emits a well-framed AABB chunk.
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *r0 = room{};
     InitRoom(r0, 4, 2, 0);
@@ -1868,7 +1881,7 @@ private slots:
     r0->faces[0].tmap = 2;
     r0->faces[1].tmap = 2;
     r0->name.clear();
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     // Distinct per-player start flags so the round-trip is provably real.
     for (int i = 0; i < (int)Players.size(); i++)
@@ -1947,7 +1960,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
   }
@@ -1961,12 +1974,13 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
 
     // A minimal used room (identical to the other chunk round-trip tests) so
     // the writer emits a well-framed AABB chunk.
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *r0 = room{};
     InitRoom(r0, 4, 2, 0);
@@ -1979,16 +1993,14 @@ private slots:
     r0->faces[0].tmap = 2;
     r0->faces[1].tmap = 2;
     r0->name.clear();
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     // Distinct override sounds and a force-field bounce texture so both
     // chunks carry provably real payloads instead of all-empty defaults.
-    for (int i = 0; i < (int)force_field_bounce_texture.size(); i++) {
-      force_field_bounce_texture[i] = -1;
-      force_field_bounce_multiplier[i] = 0.0f;
-    }
-    sound_override_force_field = -1;
-    sound_override_glass_breaking = -1;
+    std::ranges::fill(force_field_bounce, std::nullopt);
+
+    sound_override_force_field.reset();
+    sound_override_glass_breaking.reset();
 
     Sounds[4].name = "Custom Force Sound";
     Sounds[5].name = "Custom Glass Sound";
@@ -1996,8 +2008,9 @@ private slots:
     sound_override_glass_breaking = 5;
 
     GameTextures[7].name = "GMISS07";
-    force_field_bounce_texture[0] = 7;
-    force_field_bounce_multiplier[0] = 0.6f;
+    force_field_bounce[0].emplace();
+    force_field_bounce[0]->texture = 7;
+    force_field_bounce[0]->multiplier = 0.6f;
 
     const QString tmp = QDir::tempPath() + "/_test_osnd_fftm_roundtrip";
     QDir::current().mkpath(tmp);
@@ -2013,11 +2026,11 @@ private slots:
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QCOMPARE(sound_override_force_field, 4);
     QCOMPARE(sound_override_glass_breaking, 5);
-    QCOMPARE(force_field_bounce_texture[0], 7);
-    QCOMPARE(force_field_bounce_multiplier[0], 0.6f);
+    QCOMPARE(force_field_bounce[0]->texture, 7);
+    QCOMPARE(force_field_bounce[0]->multiplier, 0.6f);
     QVERIFY2(GameTextures[7].flags.forcefield, "FFTM chunk did not set TF_FORCEFIELD");
-    QCOMPARE(force_field_bounce_texture[1], -1);
-    QCOMPARE(force_field_bounce_texture[2], -1);
+    QCOMPARE(force_field_bounce[1].operator bool(), false);
+    QCOMPARE(force_field_bounce[2].operator bool(), false);
 
     QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
 
@@ -2050,12 +2063,11 @@ private slots:
 
       // Real testdata levels carry no OSND/FFTM data; reset the override
       // tables to their defaults so each emitted file is deterministic.
-      for (int i = 0; i < (int)force_field_bounce_texture.size(); i++) {
-        force_field_bounce_texture[i] = -1;
-        force_field_bounce_multiplier[i] = 0.0f;
+      for (size_t i = 0; i < force_field_bounce.size(); i++) {
+        force_field_bounce[i].reset();
       }
-      sound_override_force_field = -1;
-      sound_override_glass_breaking = -1;
+      sound_override_force_field.reset();
+      sound_override_glass_breaking.reset();
 
       QVERIFY2(SaveLevel(std::filesystem::path(g1.toStdString()), true), "SaveLevel real passA failed");
 
@@ -2089,7 +2101,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
   }
@@ -2103,11 +2115,12 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
 
     // A minimal used room (identical to the other chunk round-trip tests).
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *r0 = room{};
     InitRoom(r0, 4, 2, 0);
@@ -2120,7 +2133,7 @@ private slots:
     r0->faces[0].tmap = 2;
     r0->faces[1].tmap = 2;
     r0->name.clear();
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     // editor_lighting.h can't be included next to level_loader.h (SaveLevel
     // default-argument clash), so bring in its globals directly; they are
@@ -2272,7 +2285,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     DestroyAllMatcens();
   }
@@ -2290,7 +2303,7 @@ private slots:
       return;
     }
 
-    Highest_room_index = -1;
+    RoomsReset();
     QVERIFY(LoadLevel(lvl, nullptr));
 
     // Load gamedata so GameTextures[].bm_handle has real loaded bitmaps
@@ -2302,9 +2315,9 @@ private slots:
 
     // A real mission level has many rooms with faces; confirm we actually
     // read geometry (not an empty table) so renderRooms() has something to draw.
-    QVERIFY(Highest_room_index > 0);
+    QVERIFY((int)Rooms.size() - 1 > 0);
     int usedRooms = 0, totalFaces = 0;
-    for (int i = 0; i <= Highest_room_index && i < MAX_ROOMS; i++) {
+    for (int i = 0; i <= (int)Rooms.size() - 1 && i < MAX_ROOMS; i++) {
       if (Rooms[i].used) {
         usedRooms++;
         totalFaces += Rooms[i].num_faces;
@@ -2317,7 +2330,7 @@ private slots:
     // verify at least one loaded face references a texture that now has real pixel
     // dimensions (the ported OGF/TGA decoder) rather than a 0-sized stub.
     int texturedFaces = 0;
-    for (int r = 0; r <= Highest_room_index && r < MAX_ROOMS; r++) {
+    for (int r = 0; r <= (int)Rooms.size() - 1 && r < MAX_ROOMS; r++) {
       if (!Rooms[r].used) continue;
       for (int f = 0; f < Rooms[r].num_faces; f++) {
         const int bm = GameTextures[Rooms[r].faces[f].tmap].bm_handle;
@@ -2327,7 +2340,7 @@ private slots:
     QVERIFY(texturedFaces > 0);
 
     // Spot-check a few loaded rooms have non-degenerate verts so they'd project.
-    for (int i = 0; i <= Highest_room_index && i < MAX_ROOMS; i++) {
+    for (int i = 0; i <= (int)Rooms.size() - 1 && i < MAX_ROOMS; i++) {
       if (Rooms[i].used && Rooms[i].num_verts > 0) {
         QVERIFY(std::isfinite(Rooms[i].verts[0].x()) && std::isfinite(Rooms[i].verts[0].z()));
         break;
@@ -2336,7 +2349,7 @@ private slots:
 
     // Clean teardown.
     FreeAllRooms();
-    Highest_room_index = -1;
+    RoomsReset();
     errno = 0;
   }
 
@@ -2394,7 +2407,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
@@ -2427,7 +2440,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
   }
 
@@ -2491,7 +2504,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
@@ -2520,7 +2533,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     InitGamePaths();
   }
@@ -2588,7 +2601,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     InitGamePaths();
 
@@ -2615,7 +2628,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     InitGamePaths();
   }
@@ -2791,8 +2804,8 @@ private slots:
 
     QVERIFY(loadGameDataTable(hog));
 
-    extern int Num_objects;
-    extern int Num_sounds;
+    extern uint32_t Num_objects;
+    extern uint32_t Num_sounds;
 
     // The real game ships thousands of table records; sanity-check that each
     // editor-critical array was populated with more than a trivially empty set.
@@ -2826,7 +2839,7 @@ private slots:
     QVERIFY(loadGameDataTable(hog));
 
     // Metadata must be populated before we can inspect texture bitmaps.
-    QVERIFY(Num_textures > 0);
+    QVERIFY(Num_textures);
 
     // A nonzero fraction of textures must have a real, resident bitmap whose
     // dimensions are known (bm_w/bm_h > 0).  The stub decoder returned 0 for
@@ -2834,7 +2847,7 @@ private slots:
     // GetTextureBitmap resolves both static bitmaps and animated vclips to the
     // bitmap actually used for rendering.
     int withBitmap = 0, nonProcedural = 0;
-    for (int i = 0; i < Num_textures; i++) {
+    for (uint32_t i = 0; i < Num_textures; i++) {
       const int bm = GetTextureBitmap(i, 0);
       if (GameTextures[i].flags.procedural) { nonProcedural++; continue; }
       nonProcedural++;
@@ -2846,7 +2859,7 @@ private slots:
     QVERIFY(withBitmap > nonProcedural / 2);
 
     // Every animated texture must hold a paged-in vclip with a frame list.
-    for (int i = 0; i < Num_textures; i++) {
+    for (uint32_t i = 0; i < Num_textures; i++) {
       if (!GameTextures[i].flags.animated || GameTextures[i].bm_handle < 0)
         continue;
       const vclip &vc = GameVClips[GameTextures[i].bm_handle];
@@ -3509,7 +3522,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Viewer_object = nullptr;
     Editor_viewer_id = -1;
     app.view_mode = state::viewer::mine;
@@ -3519,6 +3532,7 @@ private slots:
       {2048 + 10, 0, 2048 - 10}, {2048 + 0, 0, 2048 - 10},
       {2048 + 0, 0, 2048 + 10}, {2048 + 10, 0, 2048 + 10},
     };
+    RoomsEnsureIndex(0);
     room *rp = &Rooms[0];
     *rp = room{};
     InitRoom(rp, 4, 1, 0);
@@ -3528,7 +3542,7 @@ private slots:
       rp->faces[0].face_verts[i] = (int16_t)i;
     }
     rp->used = 1;
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     // A saved viewer at a known pose inside room 0.
     const vector3 savedPos{1, 2, 3};
@@ -3562,7 +3576,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Viewer_object = nullptr;
     Editor_viewer_id = -1;
     app.view_mode = state::viewer::mine;
@@ -3571,6 +3585,7 @@ private slots:
       {2048 + 10, -5, 2048 - 10}, {2048 + 0, -5, 2048 - 10},
       {2048 + 0, -5, 2048 + 10}, {2048 + 10, -5, 2048 + 10},
     };
+    RoomsEnsureIndex(0);
     room *rp = &Rooms[0];
     *rp = room{};
     InitRoom(rp, 4, 1, 0);
@@ -3580,7 +3595,7 @@ private slots:
       rp->faces[0].face_verts[i] = (int16_t)i;
     }
     rp->used = 1;
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     SetEditorViewer();
 
@@ -3736,15 +3751,14 @@ private slots:
     // extruding the current face outward. Build a minimal current room
     // first (4 verts, 5 faces — one quad face with a portal-able normal)
     // so AddRoom has something to extrude from.
-    for (int i = 0; i < MAX_ROOMS; ++i)
-      Rooms[i].used = 0;
-    Highest_room_index = -1;
+    RoomsReset();
 
     // Manually drop the created room into slot 0 so we have a current
     // room to extrude from.
     {
       room *rp = CreateNewRoom(8, 3, false);
       QVERIFY(rp != nullptr);
+      RoomsEnsureIndex(0);
       Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
@@ -3765,7 +3779,7 @@ private slots:
       Rooms[0].faces[2].face_verts[1] = 1;
       Rooms[0].faces[2].face_verts[2] = 2;
       Rooms[0].faces[2].face_verts[3] = 3;
-      Highest_room_index = 0;
+      RoomsEnsureIndex(0);
     }
     Curroomp = &Rooms[0];
     Curface = 2;
@@ -3851,6 +3865,7 @@ private slots:
     // clean state is essential.)
     {
       room *rp = CreateNewRoom(8, 3, false);
+      RoomsEnsureIndex(0);
       Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
@@ -3859,7 +3874,7 @@ private slots:
       // Default-construct each vertex so the room has a valid normal flow.
       for (int v = 0; v < 8; ++v)
         Rooms[0].verts[v] = vector3{};
-      Highest_room_index = 0;
+      RoomsEnsureIndex(0);
     }
     Curroomp = &Rooms[0];
     // PlaceCameraAtViewer returns -1 on Linux until the ObjCreate path
@@ -3902,12 +3917,10 @@ private slots:
   void testViewerOpsContract() {
     // Spin up a single room with valid verts so CenterViewOnMine /
     // MoveViewToSelectedRoom produce a non-degenerate centroid.
-    for (int i = 0; i < MAX_ROOMS; ++i) {
-      Rooms[i] = room{};
-    }
-    Highest_room_index = -1;
+    RoomsReset();
     {
       room *rp = CreateNewRoom(4, 1, false);
+      RoomsEnsureIndex(0);
       Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
@@ -3918,7 +3931,7 @@ private slots:
       Rooms[0].verts[1] = {1, 0, 0};
       Rooms[0].verts[2] = {1, 0, 1};
       Rooms[0].verts[3] = {0, 0, 1};
-      Highest_room_index = 0;
+      RoomsEnsureIndex(0);
     }
     Curroomp = &Rooms[0];
 
@@ -4064,7 +4077,9 @@ private slots:
 
   void testLinkRoomsAndDeletePortal() {
     // Create two rooms with single 4-vert quad faces
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
+    RoomsEnsureIndex(1);
     room *r1 = &Rooms[1];
     *(r0) = room{};
     *(r1) = room{};
@@ -4106,6 +4121,7 @@ private slots:
   }
 
   void testFlipFace() {
+    RoomsEnsureIndex(0);
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 3, 1, 0);
@@ -4134,6 +4150,7 @@ private slots:
 
   void testCombineFacesCoplanar() {
     // Create a room with two adjacent coplanar triangles sharing edge 1-2
+    RoomsEnsureIndex(0);
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 4, 2, 0);
@@ -4165,7 +4182,9 @@ private slots:
   }
 
   void testRotateRooms() {
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
+    RoomsEnsureIndex(1);
     room *r1 = &Rooms[1];
     *(r0) = room{};
     *(r1) = room{};
@@ -4231,6 +4250,7 @@ private slots:
 
   void testAttachRoomTerrain() {
     // AttachRoom to terrain (baseroomp == NULL) — simplest path
+    RoomsEnsureIndex(0);
     room *r0 = &Rooms[0];
     *(r0) = room{};
     InitRoom(r0, 4, 1, 0);
@@ -4276,7 +4296,9 @@ private slots:
   void testAttachRoomMine() {
     // AttachRoom to a mine room with portal clipping.
     // The attach face must have opposite winding to the base face.
+    RoomsEnsureIndex(0);
     room *base = &Rooms[0];
+    RoomsEnsureIndex(1);
     room *att = &Rooms[1];
     *(base) = room{};
     *(att) = room{};
@@ -4342,6 +4364,7 @@ private slots:
   }
 
   void testUVSlide() {
+    RoomsEnsureIndex(0);
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
@@ -4376,6 +4399,7 @@ private slots:
   }
 
   void testUVFlip() {
+    RoomsEnsureIndex(0);
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
@@ -4401,6 +4425,7 @@ private slots:
   }
 
   void testUVScaleFromCenter() {
+    RoomsEnsureIndex(0);
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
@@ -4435,6 +4460,7 @@ private slots:
   }
 
   void testSetDefaultUVs() {
+    RoomsEnsureIndex(0);
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
@@ -4542,6 +4568,7 @@ private slots:
     // they would in the legacy editor rather than tripping heap corruption on
     // whatever the earlier direct-manipulation tests left behind.
     ResetObjectList();
+    RoomsEnsureIndex(MAX_ROOMS - 1);
     for (int i = 0; i < MAX_ROOMS; i++) {
       Rooms[i].objects = -1;
       Rooms[i].vis_effects = -1;
@@ -4624,7 +4651,7 @@ private slots:
     QVERIFY2(EditorLoadLevel(std::filesystem::path(level.toStdString())), "EditorLoadLevel failed");
 
     int nRooms = 0, nFaces = 0;
-    for (int r = 0; r <= Highest_room_index; r++) {
+    for (int r = 0; r <= (int)Rooms.size() - 1; r++) {
       if (!Rooms[r].used)
         continue;
       nRooms++;
@@ -4802,7 +4829,7 @@ private slots:
     QVERIFY(v.rad == 5000.0f); // File>Open keeps the default view radius
     // Find a screen point that actually shows a face of the mine and click it.
     bool pickedSomething = false;
-    for (int r = 0; r <= Highest_room_index && !pickedSomething; r++) {
+    for (int r = 0; r <= (int)Rooms.size() - 1 && !pickedSomething; r++) {
       room *rp = &Rooms[r];
       if (!rp->used)
         continue;
@@ -4853,7 +4880,7 @@ private slots:
     int bestRoom = -1, bestFace = -1;
     float bestZ = 1e30f;
     float pickX = -1.0f, pickY = -1.0f;
-    for (int r = 0; r <= Highest_room_index; r++) {
+    for (int r = 0; r <= (int)Rooms.size() - 1; r++) {
       room *rp = &Rooms[r];
       if (!rp->used)
         continue;
@@ -4921,7 +4948,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     Viewer_object = &Objects[0];
     Viewer_object->type = OBJ_VIEWER;
@@ -4944,6 +4971,7 @@ private slots:
     // vertices recede to depth x=68, so its average vertex depth (~31) is
     // greater than the occluded face's average (~25).
     {
+      RoomsEnsureIndex(0);
       room *r0 = &Rooms[0];
       *r0 = room{};
       InitRoom(r0, 4, 1, 0);
@@ -4956,6 +4984,7 @@ private slots:
     // Room 1: small flat occluded face perpendicular to the view at depth
     // x=25, behind the click point.
     {
+      RoomsEnsureIndex(1);
       room *r1 = &Rooms[1];
       *r1 = room{};
       InitRoom(r1, 4, 1, 0);
@@ -4965,7 +4994,13 @@ private slots:
       setFaceQuad(r1, v);
       r1->used = 1;
     }
-    Highest_room_index = 1;
+    RoomsEnsureIndex(1);
+
+    // Pin the editor "current room" to the live room 0 for the view's overlay
+    // pass: Curroomp is a global that earlier tests may have left dangling
+    // (the room buffer is reused by RoomsReset), and renderOverlays derefs it
+    // on the view's first paint.
+    Curroomp = &Rooms[0];
 
     EditorView view;
     view.resize(640, 480);
@@ -5000,7 +5035,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     }
     Highest_object_index = -1;
-    Highest_room_index = -1;
+    RoomsReset();
     Num_triggers = 0;
     Viewer_object = &Objects[0];
     Viewer_object->type = OBJ_VIEWER;
@@ -5022,6 +5057,7 @@ private slots:
 
     // Room 0 (foreground): angled quad crossing the view axis at depth x=8.
     {
+      RoomsEnsureIndex(0);
       room *r0 = &Rooms[0];
       *r0 = room{};
       InitRoom(r0, 4, 1, 0);
@@ -5032,6 +5068,7 @@ private slots:
     // Room 1 (background): flat quad perpendicular to the view at depth x=25,
     // drawn AFTER room 0 in scene order (so without depth it would overwrite it).
     {
+      RoomsEnsureIndex(1);
       room *r1 = &Rooms[1];
       *r1 = room{};
       InitRoom(r1, 4, 1, 0);
@@ -5039,7 +5076,12 @@ private slots:
       setFlatQuad(r1, v);
       r1->used = 1;
     }
-    Highest_room_index = 1;
+    RoomsEnsureIndex(1);
+
+    // Pin the editor "current room" to the live room 0 for the view's overlay
+    // pass, exactly as testPickPrefersForegroundFaceOverOccluded does (see the
+    // comment there for why Curroomp cannot be left to prior-test state).
+    Curroomp = &Rooms[0];
 
     EditorView view;
     view.resize(640, 480);
@@ -5386,7 +5428,7 @@ private slots:
 
     int bestR = -1, bestF = -1;
     float bestT = 1e30f;
-    for (int r = 0; r <= Highest_room_index; r++) {
+    for (int r = 0; r <= (int)Rooms.size() - 1; r++) {
       room *rp = &Rooms[r];
       if (!rp->used)
         continue;
@@ -5558,7 +5600,9 @@ private slots:
   }
 
   void testPlaceRoomSetsGlobals() {
+    RoomsEnsureIndex(0);
     room *base = &Rooms[0];
+    RoomsEnsureIndex(1);
     room *att = &Rooms[1];
     *(base) = room{};
     *(att) = room{};
@@ -5608,7 +5652,90 @@ private slots:
     FreeRoom(att);
   }
 
+  void testPlaceDoorWritesRoomIntoRooms() {
+    // PlaceDoor must deposit the door room inside Rooms[] (ROOMNUM(rp) is a
+    // pointer difference against Rooms.data()). Regression: the port built
+    // the room on the heap with CreateNewRoom and leaked it, while
+    // PlaceRoom stored the room index of a bogus pointer difference.
+    RoomsReset();
+
+    // Base room in slot 1 so slot 0 stays free for the door.
+    RoomsEnsureIndex(1);
+    room *base = &Rooms[1];
+    InitRoom(base, 4, 1, 0);
+    base->verts[0] = vector3{(float)0, (float)0, (float)0};
+    base->verts[1] = vector3{(float)10, (float)0, (float)0};
+    base->verts[2] = vector3{(float)10, (float)0, (float)-10};
+    base->verts[3] = vector3{(float)0, (float)0, (float)-10};
+    InitRoomFace(&base->faces[0], 4);
+    for (int i = 0; i < 4; i++) base->faces[0].face_verts[i] = i;
+    ComputeFaceNormal(base, 0);
+    base->faces[0].portal_num = -1;
+    base->used = true;
+
+    // Synthetic door model: shell + front face submodels.
+    poly_model *po = &Poly_models[0];
+    *po = poly_model{};
+    po->n_models = 2;
+    po->submodel.resize(2);
+
+    bsp_info *shell = &po->submodel[0];
+    *shell = bsp_info{};
+    shell->flags = SOF_SHELL;
+    shell->nverts = 4;
+    shell->verts = {
+        vector3{(float)0, (float)0, (float)0},
+        vector3{(float)10, (float)0, (float)0},
+        vector3{(float)10, (float)0, (float)10},
+        vector3{(float)0, (float)0, (float)10},
+    };
+    shell->num_faces = 1;
+    shell->faces.resize(1);
+    shell->faces[0].nverts = 4;
+    shell->faces[0].vertnums = {0, 1, 2, 3};
+
+    bsp_info *front = &po->submodel[1];
+    *front = bsp_info{};
+    front->flags = SOF_FRONTFACE;
+    front->nverts = 4;
+    front->verts = shell->verts;
+    front->num_faces = 1;
+    front->faces.resize(1);
+    front->faces[0].nverts = 4;
+    front->faces[0].vertnums = {0, 1, 2, 3};
+
+    Doors[0].used = 1;
+    Doors[0].model_handle = 0;
+
+    Placed_room = -1;
+    PlaceDoor(base, 0, 0);
+
+    // The door room must occupy a real Rooms[] slot (ROOMNUM(rp) is a pointer
+    // difference against Rooms.data()).  Rooms no longer keeps a separate
+    // palette region: slots are allocated from the first unused hole, which is
+    // 0 here (base occupies slot 1), and the high-water mark is undisturbed.
+    QCOMPARE(Placed_room, 0);
+    QCOMPARE(static_cast<int>(Rooms.size()), 2);
+    QVERIFY(Rooms[Placed_room].used);
+    QCOMPARE(Rooms[Placed_room].num_verts, 8);
+    QCOMPARE(Rooms[Placed_room].num_faces, 2);
+    QCOMPARE(Placed_baseroomp, base);
+    QCOMPARE(Placed_door, 0);
+    // Front face verts remap onto the shell (same positions).
+    for (int i = 0; i < 4; ++i)
+      QCOMPARE(Rooms[Placed_room].faces[1].face_verts[i], i);
+
+    FreeRoom(&Rooms[Placed_room]);
+    FreeRoom(base);
+    *po = poly_model{};
+    Doors[0] = door{};
+    RoomsReset();
+    Placed_room = -1;
+    Placed_baseroomp = nullptr;
+  }
+
   void testComputePlacedRoomMatrixIdentity() {
+    RoomsEnsureIndex(0);
     room *rp = &Rooms[0];
     *(rp) = room{};
     InitRoom(rp, 4, 1, 0);
@@ -5786,6 +5913,11 @@ private slots:
     Objects[1].render_type = RT_POLYOBJ;
     Highest_object_index = 1;
 
+    // The slots above were carved straight out of Objects[], so re-sync the
+    // free list / object count (matching the OBJS loader's convention); a
+    // delete below must drain exactly the accounts used.
+    ResetFreeObjects();
+
     Cur_object_index = 1;
 
     HObjectDelete();
@@ -5850,6 +5982,7 @@ private slots:
     
     {
       room *rp = CreateNewRoom(8, 1, false);
+      RoomsEnsureIndex(0);
       Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
@@ -5859,7 +5992,7 @@ private slots:
         Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     Objects[0].type = OBJ_VIEWER;
     Objects[0].render_type = RT_POLYOBJ;
@@ -5898,6 +6031,7 @@ private slots:
     
     {
       room *rp = CreateNewRoom(8, 1, false);
+      RoomsEnsureIndex(0);
       Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
@@ -5907,7 +6041,7 @@ private slots:
         Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     Objects[0].type = OBJ_VIEWER;
     Objects[0].render_type = RT_POLYOBJ;
@@ -5950,6 +6084,7 @@ private slots:
     
     {
       room *rp = CreateNewRoom(8, 1, false);
+      RoomsEnsureIndex(0);
       Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
@@ -5959,7 +6094,7 @@ private slots:
         Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     Objects[0].type = OBJ_VIEWER;
     Objects[0].render_type = RT_POLYOBJ;
@@ -6008,6 +6143,7 @@ private slots:
     
     {
       room *rp = CreateNewRoom(8, 1, false);
+      RoomsEnsureIndex(0);
       Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
@@ -6017,7 +6153,7 @@ private slots:
         Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     Objects[0].type = OBJ_VIEWER;
     Objects[0].render_type = RT_POLYOBJ;
@@ -6068,6 +6204,7 @@ private slots:
     
     {
       room *rp = CreateNewRoom(8, 1, false);
+      RoomsEnsureIndex(0);
       Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
@@ -6077,7 +6214,7 @@ private slots:
         Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     Objects[0].type = OBJ_VIEWER;
     Objects[0].render_type = RT_POLYOBJ;
@@ -6132,6 +6269,7 @@ private slots:
     
     {
       room *rp = CreateNewRoom(8, 1, false);
+      RoomsEnsureIndex(0);
       Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
@@ -6141,7 +6279,7 @@ private slots:
         Rooms[0].verts[v] = vector3{};
       ComputeFaceNormal(&Rooms[0], 0);
     }
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     Objects[0].type = OBJ_VIEWER;
     Objects[0].render_type = RT_POLYOBJ;
@@ -6202,6 +6340,7 @@ private slots:
     
     {
       room *rp = CreateNewRoom(8, 1, false);
+      RoomsEnsureIndex(0);
       Rooms[0] = std::move(*rp);
       delete rp;
       Rooms[0].used = 1;
@@ -6214,7 +6353,7 @@ private slots:
         Rooms[0].faces[0].face_verts[i] = (int16_t)i;
       ComputeFaceNormal(&Rooms[0], 0);
     }
-    Highest_room_index = 0;
+    RoomsEnsureIndex(0);
 
     Objects[0].type = OBJ_POWERUP;
     Objects[0].render_type = RT_POLYOBJ;
@@ -6287,6 +6426,7 @@ private slots:
   // Remaining fences become either walls or (if makePortal is true) a portal
   // linking to Rooms[otherIdx].  Used to exercise fvi_FindIntersection directly.
   int buildBoxRoom(int roomIdx, vector3 min, vector3 max, int portalFace, int otherIdx) {
+    RoomsEnsureIndex(roomIdx);
     room *rp = &Rooms[roomIdx];
     *(rp) = room{};
     InitRoom(rp, 8, 6, portalFace >= 0 ? 1 : 0);
@@ -6341,9 +6481,7 @@ private slots:
   // Exercises fvi_FindIntersection: wall stopping, portal traversal and the
   // FQ_IGNORE_WALLS flag against two connected box rooms.
   void testFviWallAndPortal() {
-    for (int i = 0; i < MAX_ROOMS; ++i)
-      Rooms[i] = room{};
-    Highest_room_index = 1;
+    RoomsReset();
 
     // Portal between room0 (+X face at x=15) and room1 (-X face at x=15).
     int p0 = buildBoxRoom(0, vector3{-5, -5, -5}, vector3{15, 5, 5}, 1, 1);
@@ -6417,9 +6555,7 @@ private slots:
 
     FreeRoom(&Rooms[0]);
     FreeRoom(&Rooms[1]);
-    for (int i = 0; i < MAX_ROOMS; ++i)
-      Rooms[i] = room{};
-    Highest_room_index = 0;
+    RoomsReset();
   }
 
   void testAllocFreeGamePath() {
@@ -6842,7 +6978,7 @@ int main(int argc, char *argv[])
         Rooms[i].vis_effects = -1;
       }
       Highest_object_index = -1;
-      Highest_room_index = -1;
+      RoomsReset();
     }
   } editorTestCleanup;
 

@@ -141,14 +141,14 @@ void PathKeypad::onDeletePath() {
   updateDialog();
 }
 
-void PathKeypad::onPathPulldownChanged() {
-  QComboBox *combo = ui->IDC_PATHPAD_PULLDOWN;
-  const int i = FindGamePathName(combo->currentText().toStdString());
-  if (i == -1)
-    return;
-  app.current_path = i;
-  app.current_node = 0;
-  updateDialog();
+void PathKeypad::onPathPulldownChanged()
+{
+  if (const auto idx = FindGamePathName(ui->IDC_PATHPAD_PULLDOWN->currentText().toStdString()); idx)
+  {
+    app.current_path = *idx;
+    app.current_node = 0;
+    updateDialog();
+  }
 }
 
 void PathKeypad::onNextNode() {

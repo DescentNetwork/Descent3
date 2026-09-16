@@ -219,17 +219,15 @@ int GetPrevDoor(int n) {
 }
 // Searches thru all doors for a specific name, returns -1 if not found
 // or index of door with name
-int FindDoorName(const char *name) {
-  int i;
-
-  Q_ASSERT(name != NULL);
-
-  for (i = 0; i < MAX_DOORS; i++)
-    if (Doors[i].used && !match(name, Doors[i].name))
-      return i;
-
-  return -1;
+std::optional<uint32_t> FindDoorName(const std::string &name)
+{
+  if(!name.empty())
+    for (int i = 0; i < MAX_DOORS; i++)
+      if (Doors[i].used && match(name, Doors[i].name))
+        return i;
+  return std::nullopt;
 }
+
 
 // Given a filename, loads the model found in that file
 

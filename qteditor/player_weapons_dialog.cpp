@@ -114,24 +114,21 @@ void PlayerWeaponsDialog::updateDialog() {
   ui->IDC_RELEASE_SOUND_PULLDOWN->setEnabled(release_sound != -1);
 
   {
-    QComboBox *combo = ui->IDC_FIRING_SOUND_PULLDOWN;
-    QSignalBlocker blocker(combo);
-    setSoundComboSelected(combo, firing_sound);
+    QSignalBlocker blocker(ui->IDC_FIRING_SOUND_PULLDOWN);
+    setSoundComboSelected(ui->IDC_FIRING_SOUND_PULLDOWN, firing_sound);
   }
   {
-    QComboBox *combo = ui->IDC_RELEASE_SOUND_PULLDOWN;
-    QSignalBlocker blocker(combo);
-    setSoundComboSelected(combo, release_sound);
+    QSignalBlocker blocker(ui->IDC_RELEASE_SOUND_PULLDOWN);
+    setSoundComboSelected(ui->IDC_RELEASE_SOUND_PULLDOWN, release_sound);
   }
 
   {
-    QComboBox *combo = ui->IDC_SPEW_POWERUP_PULLDOWN;
-    QSignalBlocker blocker(combo);
+    QSignalBlocker blocker(ui->IDC_SPEW_POWERUP_PULLDOWN);
     const int spew = Ships[m_current_ship].spew_powerup[index];
     if (spew == -1)
-      combo->setCurrentIndex(0);
+      ui->IDC_SPEW_POWERUP_PULLDOWN->setCurrentIndex(0);
     else
-      combo->setCurrentIndex(combo->findData(spew));
+      ui->IDC_SPEW_POWERUP_PULLDOWN->setCurrentIndex(ui->IDC_SPEW_POWERUP_PULLDOWN->findData(spew));
   }
 
   ui->IDC_MAX_AMMO->setText(QString::number(shp->max_ammo[index]));
@@ -187,9 +184,7 @@ void PlayerWeaponsDialog::onReleaseSoundChanged() {
 }
 
 void PlayerWeaponsDialog::onSpewPowerupChanged() {
-  QComboBox *combo = ui->IDC_SPEW_POWERUP_PULLDOWN;
-  const int i = currentWBIndex();
-  Ships[m_current_ship].spew_powerup[i] = combo->currentData().toInt();
+  Ships[m_current_ship].spew_powerup[currentWBIndex()] = ui->IDC_SPEW_POWERUP_PULLDOWN->currentData().toInt();
 }
 
 void PlayerWeaponsDialog::onOnOff() {

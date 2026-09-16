@@ -104,7 +104,7 @@ void WorldSoundsDialog::saveSoundsOnClose() {
     return;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
     if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == PAGETYPE_SOUND) {
-      const int t = FindSoundName(GlobalTrackLocks[i].name);
+      const int t = FindSoundName(GlobalTrackLocks[i].name).value_or(-1);
       if (t != -1)
         mng_ReplacePage(Sounds[t].name, Sounds[t].name, t, PAGETYPE_SOUND, 1);
     }
@@ -137,15 +137,15 @@ void WorldSoundsDialog::setConeDir(int value) {
 void WorldSoundsDialog::updateDialog() {
   const int n = app.current_sound;
 
-  ui->IDC_NEXT_SOUND->setEnabled(Num_sounds >= 1);
-  ui->IDC_PREV_SOUND->setEnabled(Num_sounds >= 1);
+  ui->IDC_NEXT_SOUND->setEnabled(Num_sounds);
+  ui->IDC_PREV_SOUND->setEnabled(Num_sounds);
   if (!Network_up) {
     ui->IDC_LOCK_SOUND->setEnabled(false);
     ui->IDC_CHECKIN_SOUND->setEnabled(false);
     ui->IDC_OVERRIDE->setEnabled(false);
     return;
   }
-  if (Num_sounds < 1)
+  if (!Num_sounds)
     return;
 
   if (!Sounds[n].used)
@@ -223,7 +223,7 @@ void WorldSoundsDialog::updateDialog() {
 
   {
     QPushButton *checkin = ui->IDC_CHECKIN_SOUND;
-    if (mng_FindTrackLock(Sounds[s].name, PAGETYPE_SOUND) == -1) {
+    if (!mng_FindTrackLock(Sounds[s].name, PAGETYPE_SOUND)) {
       checkin->setEnabled(false);
       ui->IDC_LOCK_SOUND->setEnabled(true);
       ui->IDC_SOUND_CHANGE_NAME->setEnabled(false);
@@ -277,7 +277,7 @@ void WorldSoundsDialog::onAddSound() {
       snprintf(cur_name, sizeof(cur_name), "%s", fname);
     else
       snprintf(cur_name, sizeof(cur_name), "%s%d", fname, c);
-    if (FindSoundName(std::string(cur_name)) != -1)
+    if (!FindSoundName(std::string(cur_name)))
       c++;
     else
       finding_name = false;
@@ -328,9 +328,9 @@ void WorldSoundsDialog::onPrevSound() {
 
 void WorldSoundsDialog::onDeleteSound() {
   const int n = app.current_sound;
-  if (Num_sounds < 1)
+  if (!Num_sounds)
     return;
-  const int tl = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
+  const int tl = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND).value_or(-1);
   if (tl == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This sound is not yours to delete.  Lock first.");
     return;
@@ -366,7 +366,7 @@ void WorldSoundsDialog::onDeleteSound() {
 
 void WorldSoundsDialog::onLockSound() {
   const int n = app.current_sound;
-  if (Num_sounds < 1)
+  if (!Num_sounds)
     return;
   if (!mng_MakeLocker())
     return;
@@ -418,7 +418,7 @@ void WorldSoundsDialog::onLockSound() {
 
 void WorldSoundsDialog::onCheckinSound() {
   const int n = app.current_sound;
-  if (Num_sounds < 1)
+  if (!Num_sounds)
     return;
   if (!mng_MakeLocker())
     return;
@@ -445,7 +445,7 @@ void WorldSoundsDialog::onCheckinSound() {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound checked in.");
       Q_ASSERT(mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 1) == 1);
       mng_EraseLocker();
-      const int p = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
+      const int p = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND).value_or(-1);
       Q_ASSERT(p != -1);
       mng_FreeTrackLock(p);
     }
@@ -456,7 +456,7 @@ void WorldSoundsDialog::onCheckinSound() {
 
 void WorldSoundsDialog::onPlaysound() {
   const int n = app.current_sound;
-  if (Num_sounds < 1)
+  if (!Num_sounds)
     return;
   Sound_system.BeginSoundFrame();
   Sound_system.Play2dSound(n);
@@ -480,8 +480,8 @@ void WorldSoundsDialog::onOverride() {
 
 void WorldSoundsDialog::onChangeName() {
   const int n = app.current_sound;
-  const int p = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
-  if (p == -1) {
+  const auto p = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
+  if (!p) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this sound if you wish to change its name.");
     return;
   }
@@ -490,7 +490,7 @@ void WorldSoundsDialog::onChangeName() {
                                        QLineEdit::Normal, QString::fromStdString(Sounds[n].name), &ok);
   if (!ok)
     return;
-  if (FindSoundName(name.toStdString()) != -1) {
+  if (!FindSoundName(name.toStdString())) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
@@ -508,15 +508,15 @@ void WorldSoundsDialog::onChangeName() {
   else if (ret == 1)
     mng_RenamePage(Sounds[n].name, newNameBuf, PAGETYPE_SOUND);
   else if (ret == 2) {
-    GlobalTrackLocks[p].name = newName.constData();
-    mng_ReplacePage(GlobalTrackLocks[p].name, newNameBuf, n, PAGETYPE_SOUND, 1);
+    GlobalTrackLocks[*p].name = newName.constData();
+    mng_ReplacePage(GlobalTrackLocks[*p].name, newNameBuf, n, PAGETYPE_SOUND, 1);
   } else if (ret == 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You don't own this page.  Get Jason now!");
-    mng_FreeTrackLock(p);
+    mng_FreeTrackLock(*p);
     mng_EraseLocker();
     return;
   }
-  GlobalTrackLocks[p].name = newName.constData();
+  GlobalTrackLocks[*p].name = newName.constData();
   Sounds[n].name = newName.constData();
   mng_EraseLocker();
   RemapSounds();
@@ -525,7 +525,7 @@ void WorldSoundsDialog::onChangeName() {
 
 void WorldSoundsDialog::onSoundPulldownChanged() {
   QComboBox *combo = ui->IDC_SOUND_PULLDOWN;
-  const int i = FindSoundName(combo->currentText().toStdString());
+  const int i = FindSoundName(combo->currentText().toStdString()).value_or(-1);
   if (i == -1)
     return;
   app.current_sound = i;

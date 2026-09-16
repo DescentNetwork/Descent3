@@ -956,7 +956,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
   }
 
   if (Multicolor_texture == -1 && Polymodel_use_effect && (Polymodel_effect.type & PEF_CUSTOM_COLOR))
-    Multicolor_texture = FindTextureName("MultiColor");
+    Multicolor_texture = FindTextureName("MultiColor").value_or(-1);
 
   rend_SetColorModel(CM_RGB);
   StartPolyModelPosInstance(&sm->mod_pos);

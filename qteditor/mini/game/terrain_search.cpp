@@ -865,18 +865,18 @@ int EvaluateBlock(int x, int z, int lod) {
 }
 
 // Shuts off LOD for a given cell
-void TurnOffLODForCell(int cellnum) {
+void TurnOffLODForCell(uint32_t cellnum) {
 
   Q_ASSERT(cellnum >= 0 && cellnum < (TERRAIN_WIDTH * TERRAIN_DEPTH));
-  int x = cellnum % TERRAIN_WIDTH;
-  int z = cellnum / TERRAIN_WIDTH;
+  uint32_t x = cellnum % TERRAIN_WIDTH;
+  uint32_t z = cellnum / TERRAIN_WIDTH;
 
   Q_ASSERT(Num_lodoffs < MAX_LODOFFS);
   LODOffs[Num_lodoffs].cellnum = cellnum;
 
-  for (int i = 0; i < MAX_TERRAIN_LOD - 1; i++) {
+  for (uint32_t i = 0; i < MAX_TERRAIN_LOD - 1; i++) {
     float delta;
-    int simplemul = 1 << ((MAX_TERRAIN_LOD - 1) - i);
+    uint32_t simplemul = 1 << ((MAX_TERRAIN_LOD - 1) - i);
 
     delta = TerrainDeltaBlocks[i][((z / simplemul) * (TERRAIN_WIDTH / simplemul)) + (x / simplemul)];
     LODOffs[Num_lodoffs].save_delta[i] = delta;
@@ -889,13 +889,13 @@ void TurnOffLODForCell(int cellnum) {
 // Restores the terrain deltas to their original state
 void ClearLODOffs() {
   for (int t = Num_lodoffs - 1; t >= 0; t--) {
-    int cellnum = LODOffs[t].cellnum;
+    uint32_t cellnum = LODOffs[t].cellnum;
 
-    int x = cellnum % TERRAIN_WIDTH;
-    int z = cellnum / TERRAIN_WIDTH;
+    uint32_t x = cellnum % TERRAIN_WIDTH;
+    uint32_t z = cellnum / TERRAIN_WIDTH;
 
-    for (int i = 0; i < MAX_TERRAIN_LOD - 1; i++) {
-      int simplemul = 1 << ((MAX_TERRAIN_LOD - 1) - i);
+    for (uint32_t i = 0; i < MAX_TERRAIN_LOD - 1; i++) {
+      uint32_t simplemul = 1 << ((MAX_TERRAIN_LOD - 1) - i);
       TerrainDeltaBlocks[i][((z / simplemul) * (TERRAIN_WIDTH / simplemul)) + (x / simplemul)] =
           LODOffs[t].save_delta[i];
     }

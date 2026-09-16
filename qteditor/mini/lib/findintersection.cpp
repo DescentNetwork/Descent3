@@ -950,10 +950,10 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *ans, bool no_subdivision) {
   const vector3 seg = p1 - p0;
   const float segLen = vm_GetMagnitude(&seg);
 
-  if (fq->startroom < 0 || fq->startroom > Highest_room_index) {
+  if (fq->startroom < 0 || fq->startroom > ((int)Rooms.size() - 1)) {
     // Starting outside the mine: treat as a free move, but report the room the
     // endpoint landed in, if any.
-    for (int r = 0; r <= Highest_room_index; ++r) {
+    for (int r = 0; r <= ((int)Rooms.size() - 1); ++r) {
       if (Rooms[r].used && pointInsideRoom(&Rooms[r], p1)) {
         ans->hit_pnt = p1;
         ans->hit_room = r;
@@ -985,7 +985,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *ans, bool no_subdivision) {
     ans->roomlist[roomCount++] = roomIdx;
 
   for (int iter = 0; iter < MAX_FVI_SEGS; ++iter) {
-    if (roomIdx < 0 || roomIdx > Highest_room_index) {
+    if (roomIdx < 0 || roomIdx > ((int)Rooms.size() - 1)) {
       ans->hit_pnt = p1;
       ans->n_rooms = roomCount;
       return HIT_NONE;

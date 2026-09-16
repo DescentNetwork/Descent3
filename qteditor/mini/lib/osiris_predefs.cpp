@@ -551,7 +551,7 @@ bool osipf_CallTriggerEvent(int trignum, int event, tOSIRISEventInfo *ei) {
 
 // searches through GamePath index and returns index of path matching name
 // returns -1 if not found
-int osipf_AIGetPathID(const std::string &string) {
+std::optional<uint32_t> osipf_AIGetPathID(const std::string &string) {
   //	extract string reference
   return FindGamePathName(string);
 }
@@ -609,7 +609,7 @@ int osipf_AIPowerSwitch(int objhandle, uint8_t f_power_on) {
 
 // Touches a sound file so it loads into memory
 void osipf_SoundTouch(const std::string &str) {
-  int id = FindSoundName(IGNORE_TABLE(str));
+  int id = FindSoundName(IGNORE_TABLE(str)).value_or(-1);
 
   if (id == -1) {
     LOG_FATAL("Sound %s was not found. Unable to touch.", str.c_str());
@@ -620,7 +620,7 @@ void osipf_SoundTouch(const std::string &str) {
 #if 0
 // Gets room values
 void osipf_RoomValue(int roomnum, char op, char vtype, void *ptr, int index) {
-  if (roomnum < 0 || roomnum > Highest_room_index || !Rooms[roomnum].used) {
+  if (roomnum < 0 || roomnum > ((int)Rooms.size() - 1) || !Rooms[roomnum].used) {
     if (vtype == RMV_C_USED)
       *(char *)ptr = 0;
     else
@@ -924,21 +924,21 @@ void osipf_ObjectCustomAnim(int handle, float start, float end, float time, char
 extern void AIUpdateAnim(object *obj);
 
 // searches for an object id given its name
-int osipf_ObjectFindID(const std::string &name) { return FindObjectIDName(IGNORE_TABLE(name)); }
+std::optional<uint32_t> osipf_ObjectFindID(const std::string &name) { return FindObjectIDName(IGNORE_TABLE(name)); }
 
 // searches for an object id given its name
 int osipf_ObjectFindType(const std::string &name) {
-  int id = FindObjectIDName(IGNORE_TABLE(name));
+  auto id = FindObjectIDName(IGNORE_TABLE(name));
 
-  if (id >= 0) {
-    return Object_info[id].type;
+  if (id) {
+    return Object_info[*id].type;
   }
 
   return OBJ_NONE;
 }
 
 // searches through the weapons for a name and returns the id
-int osipf_WeaponFindID(const std::string &name) { return FindWeaponName(IGNORE_TABLE(name)); }
+std::optional<uint32_t> osipf_WeaponFindID(const std::string &name) { return FindWeaponName(IGNORE_TABLE(name)); }
 
 #if 0
 // returns how long an object has lived
@@ -2004,7 +2004,7 @@ vector3 osipf_AIGetRoomPathPoint(int roomnum) {
 
       return pos;
     }
-  } else if (roomnum <= Highest_room_index && Rooms[roomnum].used) {
+  } else if (roomnum <= ((int)Rooms.size() - 1) && Rooms[roomnum].used) {
     return Rooms[roomnum].path_pnt;
   }
 
@@ -2129,7 +2129,7 @@ uint8_t osipf_IsRoomValid(int roomnum) {
       return 1;
     }
   } else {
-    if (roomnum < 0 || roomnum > Highest_room_index || Rooms[roomnum].used == 0) {
+    if (roomnum < 0 || roomnum > ((int)Rooms.size() - 1) || Rooms[roomnum].used == 0) {
       return 0;
     } else {
       return 2;
@@ -2593,7 +2593,7 @@ int osipf_ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3 *pos, const 
   if (id == 65535) // since it is a uint16_t, this is == -1
     return OBJECT_HANDLE_NONE;
 
-  if (((roomnum >= 0) && (roomnum <= Highest_room_index) && (Rooms[roomnum].used)) || (ROOMNUM_OUTSIDE(roomnum))) {
+  if (((roomnum >= 0) && (roomnum <= ((int)Rooms.size() - 1)) && (Rooms[roomnum].used)) || (ROOMNUM_OUTSIDE(roomnum))) {
     if (IS_GENERIC(type)) {
       // Make sure the scripts aren't creating objects that have lightmaps!
       Q_ASSERT(Object_info[id].lighting_info.lighting_render_type != LRT_LIGHTMAPS);
@@ -3361,10 +3361,10 @@ char osipf_AIGetCurGoalIndex(int obj_handle) {
   return -1;
 }
 #endif
-int osipf_FindSoundName(const std::string &name) { return FindSoundName(IGNORE_TABLE(name)); }
+std::optional<uint32_t> osipf_FindSoundName(const std::string &name) { return FindSoundName(IGNORE_TABLE(name)); }
 
 int osipf_FindRoomName(const std::string &name) {
-  for (int i = 0; i <= Highest_room_index; i++) {
+  for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
     if (Rooms[i].used && !Rooms[i].name.empty()) {
       if (match(name, Rooms[i].name))
         return i;
@@ -3416,9 +3416,9 @@ int osipf_FindDoorName(const std::string &name) {
   return OBJECT_HANDLE_NONE;
 }
 
-int osipf_FindTextureName(const std::string &name) { return FindTextureName(IGNORE_TABLE(name)); }
+std::optional<uint32_t> osipf_FindTextureName(const std::string &name) { return FindTextureName(IGNORE_TABLE(name)); }
 
-int osipf_FindPathName(const std::string &name) { return FindGamePathName(name); }
+std::optional<uint32_t> osipf_FindPathName(const std::string &name) { return FindGamePathName(name); }
 
 int osipf_FindLevelGoalName(const std::string &name) { return Level_goals.GoalFindId(name); }
 #if 0

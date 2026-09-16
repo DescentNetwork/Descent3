@@ -43,6 +43,11 @@ void RestoreRoomSelectedList();
 room *CreateNewRoom(int nverts, int nfaces, bool palette_room = false);
 void DestroyRoom(int roomnum);
 
+// Mirrors GetFreeRoom(): linear scan for the first unused slot, else append a
+// fresh slot at the end of Rooms (which is the high-water mark + 1).  Returns
+// the slot index or -1 when the room capacity limit is reached.
+int FindFreeRoomSlot();
+
 // Port of editor/Erooms.cpp:AssignDefaultUVsToRoomFace — projects each
 // vertex onto the face's normal plane and assigns UVs with a 1/20.0 scale.
 void AssignDefaultUVsToRoomFace(room *rp, int facenum);

@@ -29,6 +29,7 @@
 #include <cstring>
 #include <filesystem>
 #include <memory>
+#include <algorithm>
 
 #include "editor_room_state.h"
 #include "mem/mem.h"
@@ -412,13 +413,32 @@ room *CreateNewRoom(int nverts, int nfaces, bool palette_room) {
   return rp;
 }
 
+// Mirrors GetFreeRoom() in editor/Erooms.cpp:579: a linear scan for the first
+// unused slot, else a fresh slot appended at the end of the room table.  The
+// vector's size tracks the high-water mark (size() == watermark + 1), so no
+// separate watermark update is needed.  The Win32 BNode terrain remap and
+// Current_faces touch-up are editor UI side-effects and are skipped.  Returns
+// the slot index or -1 when the room capacity limit is reached.
+int FindFreeRoomSlot() {
+  for (int roomnum = 0; roomnum < static_cast<int>(Rooms.size()); ++roomnum)
+    if (!Rooms[roomnum].used)
+      return roomnum;
+
+  const int slot = static_cast<int>(Rooms.size());
+  if (!RoomsEnsureIndex(slot))
+    return -1;
+  return slot;
+}
+
 // Counterpart of CreateNewRoom() that releases the per-room vectors/faces
 // array and marks the slot free. The full Win32 path also walks the
 // portal list, recycles to the free list, and detaches from the marked
 // room; the Qt port stops at "free the slot" because Curroomp tracking
 // lives at the qteditor level, not in Descent3Core.
 void DestroyRoom(int roomnum) {
-  if (roomnum < 0 || roomnum >= MAX_ROOMS)
+  if (roomnum < 0)
+    return;
+  if (static_cast<size_t>(roomnum) >= Rooms.size())
     return;
   room *rp = &Rooms[roomnum];
   if (!rp->used)
@@ -436,6 +456,11 @@ void DestroyRoom(int roomnum) {
   rp->num_verts = 0;
   rp->num_faces = 0;
   rp->num_portals = 0;
+
+  // Rooms.size() == high-water mark + 1, so pop the unused tail (matching
+  // the Win32 room free path's trim loop).
+  while (!Rooms.empty() && !Rooms.back().used)
+    Rooms.pop_back();
 }
 
 void AssignDefaultUVsToRoomFace(room *rp, int facenum) {

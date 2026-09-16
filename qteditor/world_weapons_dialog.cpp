@@ -95,9 +95,9 @@ void WorldWeaponsDialog::saveWeaponsOnClose() {
     return;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
     if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == PAGETYPE_WEAPON) {
-      const int t = FindWeaponName(GlobalTrackLocks[i].name);
-      if (t != -1)
-        mng_ReplacePage(Weapons[t].name, Weapons[t].name, t, PAGETYPE_WEAPON, 1);
+      const std::optional<uint32_t> t = FindWeaponName(GlobalTrackLocks[i].name);
+      if (t)
+        mng_ReplacePage(Weapons[*t].name, Weapons[*t].name, *t, PAGETYPE_WEAPON, 1);
     }
   }
 }
@@ -361,7 +361,7 @@ const weapon_flags_t *wflags = CurWeaponFlags();
 
   {
     QPushButton *checkin = ui->IDC_CHECKIN_WEAPON;
-    if (mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON) == -1) {
+    if (!mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON)) {
       checkin->setEnabled(false);
       ui->IDC_LOCK_WEAPON->setEnabled(true);
     } else {
@@ -396,7 +396,7 @@ void WorldWeaponsDialog::onAddWeapon() {
       QInputDialog::getText(this, "Weapon", "Enter a name for your weapon:", QLineEdit::Normal, "", &ok);
   if (!ok || name.isEmpty())
     return;
-  if (FindWeaponName(name.toStdString()) != -1) {
+  if (FindWeaponName(name.toStdString())) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There is already a weapon with that name.");
     return;
   }
@@ -416,7 +416,7 @@ void WorldWeaponsDialog::onDeleteWeapon() {
   const int n = app.current_weapon;
   if (Num_weapons < 1)
     return;
-  const int tl = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON);
+  const int tl = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON).value_or(-1);
   if (tl == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This weapon is not yours to delete.  Lock first.");
     return;
@@ -524,7 +524,7 @@ void WorldWeaponsDialog::onCheckinWeapon() {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Weapon checked in.");
       Q_ASSERT(mng_DeletePage(Weapons[n].name, PAGETYPE_WEAPON, 1) == 1);
       mng_EraseLocker();
-      const int p = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON);
+      const int p = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON).value_or(-1);
       Q_ASSERT(p != -1);
       mng_FreeTrackLock(p);
     }
@@ -556,13 +556,13 @@ void WorldWeaponsDialog::onPrevWeapon() {
   updateDialog();
 }
 
-void WorldWeaponsDialog::onWeaponPulldownChanged() {
-  QComboBox *combo = ui->IDC_WEAPON_PULLDOWN;
-  const int i = FindWeaponName(combo->currentText().toStdString());
-  if (i == -1)
-    return;
-  app.current_weapon = i;
-  updateDialog();
+void WorldWeaponsDialog::onWeaponPulldownChanged()
+{
+  if (const auto i = FindWeaponName(ui->IDC_WEAPON_PULLDOWN->currentText().toStdString()); i)
+  {
+    app.current_weapon = *i;
+    updateDialog();
+  }
 }
 
 void WorldWeaponsDialog::onOverride() {
@@ -574,7 +574,7 @@ void WorldWeaponsDialog::onOverride() {
 }
 
 void WorldWeaponsDialog::onCopy() {
-  if (mng_FindTrackLock(Weapons[app.current_weapon].name, PAGETYPE_WEAPON) == -1) {
+  if (!mng_FindTrackLock(Weapons[app.current_weapon].name, PAGETYPE_WEAPON)) {
     QMessageBox::warning(this, "Unable to copy", "You must lock this weapon before you can copy it.");
     return;
   }
@@ -585,8 +585,8 @@ void WorldWeaponsDialog::onPaste() { QMessageBox::critical(nullptr, QString("%1 
 
 void WorldWeaponsDialog::onChangeName() {
   const int n = app.current_weapon;
-  const int p = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON);
-  if (p == -1) {
+  const auto p = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON);
+  if (!p) {
     QMessageBox::warning(this, "Unable to rename", "You must lock this weapon if you wish to change its name.");
     return;
   }
@@ -595,12 +595,13 @@ void WorldWeaponsDialog::onChangeName() {
                                              QLineEdit::Normal, QString::fromStdString(Weapons[n].name), &ok);
   if (!ok || name.isEmpty())
     return;
-  if (FindWeaponName(name.toStdString()) != -1) {
+  if (FindWeaponName(name.toStdString()))
+  {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
   Weapons[n].name = name.toStdString();
-  GlobalTrackLocks[p].name = Weapons[n].name;
+  GlobalTrackLocks[*p].name = Weapons[n].name;
   RemapWeapons();
   updateDialog();
 }
@@ -621,39 +622,30 @@ void WorldWeaponsDialog::onEnergyRadio() { if (weapon_flags_t *fl = CurWeaponFla
 void WorldWeaponsDialog::onMatterRadio() { if (weapon_flags_t *fl = CurWeaponFlags()) fl->matter_weapon = true; }
 
 void WorldWeaponsDialog::onFireSoundChanged() {
-  const int n = app.current_weapon;
-  Weapons[n].sounds[WSI_FIRE] = soundComboSelected(ui->IDC_FIRE_SOUND_PULLDOWN);
+  Weapons[app.current_weapon].sounds[WSI_FIRE] = ui->IDC_FIRE_SOUND_PULLDOWN->currentData().toInt();
 }
 void WorldWeaponsDialog::onWallSoundChanged() {
-  const int n = app.current_weapon;
-  Weapons[n].sounds[WSI_IMPACT_WALL] = soundComboSelected(ui->IDC_WEAPON_WALL_SOUND_PULLDOWN);
+  Weapons[app.current_weapon].sounds[WSI_IMPACT_WALL] = ui->IDC_WEAPON_WALL_SOUND_PULLDOWN->currentData().toInt();
 }
 void WorldWeaponsDialog::onFlyingSoundChanged() {
-  const int n = app.current_weapon;
-  Weapons[n].sounds[WSI_FLYING] = soundComboSelected(ui->IDC_FLYING_SOUND_PULLDOWN);
+  Weapons[app.current_weapon].sounds[WSI_FLYING] = ui->IDC_FLYING_SOUND_PULLDOWN->currentData().toInt();
 }
 void WorldWeaponsDialog::onBounceSoundChanged() {
-  const int n = app.current_weapon;
-  Weapons[n].sounds[WSI_BOUNCE] = soundComboSelected(ui->IDC_WEAPON_BOUNCE_SOUND_COMBO);
+  Weapons[app.current_weapon].sounds[WSI_BOUNCE] = ui->IDC_WEAPON_BOUNCE_SOUND_COMBO->currentData().toInt();
 }
 void WorldWeaponsDialog::onExplodeChanged() {
-  const int n = app.current_weapon;
-  Weapons[n].explode_image_handle = ui->IDC_EXPLODE_PULLDOWN->currentData().toInt();
+  Weapons[app.current_weapon].explode_image_handle = ui->IDC_EXPLODE_PULLDOWN->currentData().toInt();
 }
 void WorldWeaponsDialog::onSmokeChanged() {
-  const int n = app.current_weapon;
-  Weapons[n].smoke_handle = ui->IDC_SMOKE_PULLDOWN->currentData().toInt();
+  Weapons[app.current_weapon].smoke_handle = ui->IDC_SMOKE_PULLDOWN->currentData().toInt();
 }
 void WorldWeaponsDialog::onParticleChanged() {
-  const int n = app.current_weapon;
-  Weapons[n].particle_handle = ui->IDC_PARTICLE_PULLDOWN->currentData().toInt();
+  Weapons[app.current_weapon].particle_handle = ui->IDC_PARTICLE_PULLDOWN->currentData().toInt();
 }
 void WorldWeaponsDialog::onSpawnChanged() {
-  const int n = app.current_weapon;
-  Weapons[n].spawn_handle = ui->IDC_WEAPON_SPAWN_PULLDOWN->currentData().toInt();
+  Weapons[app.current_weapon].spawn_handle = ui->IDC_WEAPON_SPAWN_PULLDOWN->currentData().toInt();
 }
 void WorldWeaponsDialog::onSpawnRobotChanged() {
-  const int n = app.current_weapon;
-  Weapons[n].robot_spawn_handle = ui->IDC_SPAWN_ROBOT_PULLDOWN->currentData().toInt();
+  Weapons[app.current_weapon].robot_spawn_handle = ui->IDC_SPAWN_ROBOT_PULLDOWN->currentData().toInt();
 }
 

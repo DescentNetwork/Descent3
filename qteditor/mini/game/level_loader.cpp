@@ -45,6 +45,7 @@
 // SaveLevel writes those chunks in the same format so LoadLevel round-trips.
 
 #include "level_loader.h"
+#include "doorway.h"
 #include "room.h"
 #include "BOA.h"
 #include "bsp.h"
@@ -120,12 +121,12 @@ static bool IsChunk(const char *chunk_name, const char *id) { return chunk_name[
 // TXNM list is present (e.g. our own saved files).
 static std::array<int, MAX_TEXTURES> texture_xlate;
 
-static int LL_FindTextureName(const std::string& name) {
-  for (int i = 0; i < Num_textures; i++) {
+static std::optional<uint32_t> LL_FindTextureName(const std::string& name)
+{
+  for (uint32_t i = 0; i < Num_textures; i++)
     if (match(GameTextures[i].name, name))
       return i;
-  }
-  return -1;
+  return std::nullopt;
 }
 
 static int LL_StartChunk(posix_ostream &ofile, const char *chunk_name);
@@ -216,16 +217,16 @@ static void LL_WriteBOAChunk(posix_ostream &ofile) {
 
   ofile << BOA_mine_checksum;
   ofile << BOA_vis_checksum;
-  ofile << (Highest_room_index + 8);
+  ofile << (((int)Rooms.size() - 1) + 8);
   ofile << static_cast<int>(MAX_PATH_PORTALS);
 
-  for (i = 0; i <= Highest_room_index + 8; i++) {
-    for (j = 0; j <= Highest_room_index + 8; j++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1) + 8; i++) {
+    for (j = 0; j <= ((int)Rooms.size() - 1) + 8; j++) {
       ofile << static_cast<int16_t>(BOA_Array[i][j]);
     }
   }
 
-  for (i = 0; i <= Highest_room_index + 8; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1) + 8; i++) {
     for (j = 0; j < MAX_PATH_PORTALS; j++) {
       ofile << BOA_cost_array[i][j];
     }
@@ -251,7 +252,7 @@ static void LL_WriteBOAChunk(posix_ostream &ofile) {
 // GameTextures index.
 // Reads a NODE ("NODE") chunk: B-node / automatic path-point graph.
 // Engine counterpart ReadBNodeChunk (LoadLevel.cpp:2991).
-//   int16 hr_index (== Highest_room_index + 8)
+//   int16 hr_index (== ((int)Rooms.size() - 1) + 8)
 //   per room slot i in [0 .. hr_index]:
 //     byte    f_good_room
 //     if f_good_room (BNode_GetBNListPtr(i, true) to materialize):
@@ -272,7 +273,7 @@ static void LL_WriteBOAChunk(posix_ostream &ofile) {
 static void LL_ReadBNodeChunk(posix_istream &ifile, uint32_t version) {
   int16_t hr_index = 0;
   ifile >> hr_index;
-  Q_ASSERT(hr_index == Highest_room_index + 8);
+  Q_ASSERT(hr_index == ((int)Rooms.size() - 1) + 8);
 
   for (int32_t i = 0; i <= hr_index; i++) {
     uint8_t f_good_room = 0;
@@ -333,9 +334,9 @@ static void LL_ReadBNodeChunk(posix_istream &ifile, uint32_t version) {
 // Engine counterpart WriteBNodeChunk (Descent3/LoadLevel.cpp:4630).
 //
 // Layout (little-endian, posix stream) — mirror of LL_ReadBNodeChunk:
-//   int16  hr_index == Highest_room_index + 8
+//   int16  hr_index == ((int)Rooms.size() - 1) + 8
 //   per i in [0 .. hr_index]:
-//     byte    f_good_room  (Rooms[i].used if i <= Highest_room_index, else 1)
+//     byte    f_good_room  (Rooms[i].used if i <= ((int)Rooms.size() - 1), else 1)
 //     if f_good_room (uses BNode_GetBNListPtr(i, true)):
 //       int16  num_nodes   (bnlist->nodes.size())
 //       if num_nodes, per node j:
@@ -351,10 +352,10 @@ static void LL_ReadBNodeChunk(posix_istream &ifile, uint32_t version) {
 static void LL_WriteBNodeChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, "NODE");
 
-  ofile << static_cast<int16_t>(Highest_room_index + 8);
+  ofile << static_cast<int16_t>(((int)Rooms.size() - 1) + 8);
 
-  for (int32_t i = 0; i <= Highest_room_index + 8; i++) {
-    if (i <= Highest_room_index && !Rooms[i].used) {
+  for (int32_t i = 0; i <= ((int)Rooms.size() - 1) + 8; i++) {
+    if (i <= ((int)Rooms.size() - 1) && !Rooms[i].used) {
       ofile << static_cast<uint8_t>(0);
     } else {
       ofile << static_cast<uint8_t>(1);
@@ -508,10 +509,7 @@ static void LL_ReadTextureList(posix_istream &ifile, int chunk_size) {
   for (int i = 0; i < n; i++) {
     std::string name;
     ifile >> name;
-    int g = LL_FindTextureName(name);
-    if (g < 0)
-      g = 0;
-    texture_xlate[i] = g;
+    texture_xlate[i] = LL_FindTextureName(name).value_or(0);
     if (ifile.tell() >= end)
       break;
   }
@@ -537,7 +535,7 @@ static std::array<int16_t, MAX_DOORS> door_xlate;
 // BuildXlateTable.  The trailing entries up to max_items are cleared to -1 so
 // a partially filled table never leaks indices from a previous level.
 static void LL_ReadNameXlateChunk(posix_istream &ifile, int chunk_size,
-                                  int (*lookup)(const std::string &), int16_t *xlate, int max_items) {
+                                  std::optional<uint32_t> (*lookup)(const std::string &), int16_t *xlate, int max_items) {
   int32_t n32 = 0;
   ifile >> n32;
   int n = n32;
@@ -548,7 +546,7 @@ static void LL_ReadNameXlateChunk(posix_istream &ifile, int chunk_size,
     std::string name;
     ifile >> name;
     if (!name.empty())
-      xlate[i] = lookup(name);
+      xlate[i] = lookup(name).value_or(-1);
     else
       xlate[i] = -1;
     if (ifile.tell() >= end)
@@ -647,12 +645,12 @@ static void LL_ReadRoomAABBChunk(posix_istream &ifile) {
   int32_t save_hri = 0;
   ifile >> save_hri;
   if (save_hri < 0 || save_hri >= MAX_ROOMS)
-    save_hri = Highest_room_index;
+    save_hri = ((int)Rooms.size() - 1);
 
   for (int i = 0; i <= save_hri; i++)
     ifile >> BOA_AABB_ROOM_checksum[i];
 
-  for (int i = 0; i <= Highest_room_index; i++) {
+  for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
     int32_t used = 0;
     ifile >> used;
     Q_ASSERT(Rooms[i].used == used);
@@ -705,11 +703,11 @@ static void LL_ReadRoomAABBChunk(posix_istream &ifile) {
 static void LL_WriteRoomAABBChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_ROOM_AABB);
 
-  ofile << (int32_t)Highest_room_index;
-  for (int i = 0; i <= Highest_room_index; i++)
+  ofile << (int32_t)((int)Rooms.size() - 1);
+  for (int i = 0; i <= ((int)Rooms.size() - 1); i++)
     ofile << BOA_AABB_ROOM_checksum[i];
 
-  for (int i = 0; i <= Highest_room_index; i++) {
+  for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
     if (!Rooms[i].used) {
       ofile << (int32_t)0; // Not used
       continue;
@@ -804,7 +802,7 @@ static void LL_ReadTerrainSoundChunk(posix_istream &ifile, uint32_t version) {
     } else {
       std::string soundname;
       ifile >> soundname; // NUL-terminated, consuming the whole field
-      band.sound_index = FindSoundName(soundname);
+      band.sound_index = FindSoundName(soundname).value_or(-1);
     }
 
     int8_t low_alt = 0, high_alt = 0;
@@ -889,8 +887,8 @@ static void LL_WritePlayerStartsChunk(posix_ostream &ofile) {
 // not re-write them); the mini writes them so an engine-made level with such
 // chunks round-trips losslessly.
 static void LL_ReadOverrideSoundChunk(posix_istream &ifile) {
-  sound_override_force_field = -1;
-  sound_override_glass_breaking = -1;
+  sound_override_force_field.reset();
+  sound_override_glass_breaking.reset();
 
   std::string soundname;
   ifile >> soundname;
@@ -905,47 +903,55 @@ static void LL_ReadOverrideSoundChunk(posix_istream &ifile) {
 static void LL_WriteOverrideSoundChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_OVERRIDE_SOUNDS);
 
-  ofile << (sound_override_force_field != -1 ? Sounds[sound_override_force_field].name
-                                             : std::string());
-  ofile << (sound_override_glass_breaking != -1 ? Sounds[sound_override_glass_breaking].name
-                                                : std::string());
+  if(sound_override_force_field)
+    ofile << Sounds[*sound_override_force_field].name;
+  else
+    ofile << std::string();
+
+  if(sound_override_glass_breaking)
+    ofile << Sounds[*sound_override_glass_breaking].name;
+  else
+    ofile << std::string();
 
   LL_EndChunk(ofile, start);
 }
 
-static void LL_ReadFFTMChunk(posix_istream &ifile, uint32_t version) {
-  for (int i = 0; i < (int)force_field_bounce_texture.size(); i++) {
-    force_field_bounce_texture[i] = -1;
-    force_field_bounce_multiplier[i] = 0.0f;
-  }
+static void LL_ReadFFTMChunk(posix_istream &ifile, uint32_t version) {  
+  std::ranges::fill(force_field_bounce, std::nullopt);
 
-  int num_items = MAX_FORCE_FIELD_BOUNCE_TEXTURES;
+  size_t num_items = MAX_FORCE_FIELD_BOUNCE_TEXTURES;
   if (version < 132)
     num_items = 2;
 
-  for (int i = 0; i < num_items; i++) {
+  for (size_t i = 0; i < num_items; i++)
+  {
+    auto& bounce = force_field_bounce[i];
     std::string texturename;
     ifile >> texturename;
-    if (texturename.empty())
-      continue;
+    if(!texturename.empty())
+      ifile >> bounce->multiplier;
 
-    const int idx = FindTextureName(texturename);
-    force_field_bounce_texture[i] = idx;
-    ifile >> force_field_bounce_multiplier[i];
-
-    if (idx >= 0 && idx < MAX_TEXTURES)
-      GameTextures[idx].flags.forcefield = true;
+    if(auto idx = FindTextureName(texturename); idx)
+    {
+      bounce->texture = *idx;
+      if(*idx < MAX_TEXTURES)
+        GameTextures[*idx].flags.forcefield = true;
+    }
   }
 }
 
 static void LL_WriteFFTMChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_FFT_MOD);
 
-  for (int i = 0; i < (int)force_field_bounce_texture.size(); i++) {
-    if (force_field_bounce_texture[i] != -1) {
-      ofile << GameTextures[force_field_bounce_texture[i]].name;
-      ofile << force_field_bounce_multiplier[i];
-    } else {
+  for(auto& bounce : force_field_bounce)
+  {
+    if (bounce)
+    {
+      ofile << GameTextures[bounce->texture].name;
+      ofile << bounce->multiplier;
+    }
+    else
+    {
       ofile << std::string();
     }
   }
@@ -958,7 +964,7 @@ static void LL_WriteFFTMChunk(posix_ostream &ofile) {
 // inline (:4026-4089, #ifdef EDITOR), writer (:5313, always the LAST chunk).
 static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
   auto lookup_room = [](int16_t idx) -> room * {
-    if (idx >= 0 && idx <= Highest_room_index && Rooms[idx].used)
+    if (idx >= 0 && idx <= ((int)Rooms.size() - 1) && Rooms[idx].used)
       return &Rooms[idx];
     return nullptr;
   };
@@ -1512,20 +1518,14 @@ static void LL_ReadTerrainSkyAndLightChunk(posix_istream &ifile, int) {
   ifile >> dome;
   Terrain_sky.dome_texture = LL_TranslateTerrainTexture(dome);
 
-  int32_t c = 0;
-  ifile >> c;
-  Terrain_sky.sky_color = static_cast<ddgr_color>(c);
-  ifile >> c;
-  Terrain_sky.horizon_color = static_cast<ddgr_color>(c);
-  ifile >> c;
-  Terrain_sky.fog_color = static_cast<ddgr_color>(c);
+  ifile >> Terrain_sky.sky_color;
+  ifile >> Terrain_sky.horizon_color;
+  ifile >> Terrain_sky.fog_color;
+  ifile >> reinterpret_cast<uint32_t&>(Terrain_sky.flags);
 
-  uint32_t flags32 = 0;
-  ifile >> flags32;
-  Terrain_sky.flags = std::bit_cast<terrain_sky_flags_t>(flags32);
 
   ifile >> Terrain_sky.radius;
-  SetupSky(Terrain_sky.radius, static_cast<int>(flags32), 1);
+  SetupSky(Terrain_sky.radius, Terrain_sky.flags, 1);
 
   ifile >> Terrain_sky.rotate_rate;
 
@@ -1853,11 +1853,22 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
           uint16_t roomnum = 0;
           for (int i = 0; i < num_rooms; i++) {
             ifile >> roomnum;
+            if (!RoomsEnsureIndex(roomnum)) {
+              ifile.close();
+              throw std::runtime_error("Level room index exceeds the room capacity");
+            }
             LL_ReadRoom(ifile, &Rooms[roomnum], version);
           }
-          Highest_room_index = roomnum;
-          if (Highest_room_index < 0 || Highest_room_index >= MAX_ROOMS)
-            Highest_room_index = MAX_ROOMS - 1;
+          // Smallest index after the rooms read is the high-water mark + 1.
+          // Win32 clamped the watermark to MAX_ROOMS - 1; rooms above that
+          // were palette-region scratch that never made it into the saved
+          // mine, so drop them the same way.
+          if (Rooms.size() > MAX_ROOMS) {
+            for (int i = (int)Rooms.size() - 1; i >= MAX_ROOMS; --i)
+              if (Rooms[i].used)
+                FreeRoom(&Rooms[i]);
+            Rooms.resize(MAX_ROOMS);
+          }
           break;
         }
       case "TXNM"_ID:
@@ -1936,7 +1947,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
           // as the original LL_ReadObjects does (object.cpp / LoadLevel.cpp).
           obj->handle = (version >= 45) ? handle : (objnum + HANDLE_COUNT_INCREMENT);
           obj->roomnum = -1; // ObjLink() expects the roomnum to be -1
-          if ((roomnum > Highest_room_index) && !ROOMNUM_OUTSIDE(roomnum))
+          if ((roomnum > ((int)Rooms.size() - 1)) && !ROOMNUM_OUTSIDE(roomnum))
             obj->type = OBJ_NONE; // loading object with invalid room number
           else
             ObjLink(objnum, roomnum);
@@ -2000,7 +2011,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
 
   // Recompute face normals for any room still missing them and find first used
   // indices after the sparse room load.
-  for (int i = 0; i <= Highest_room_index; i++) {
+  for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
     if (!Rooms[i].used)
       continue;
     for (int f = 0; f < Rooms[i].num_faces; f++)
@@ -2074,7 +2085,7 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     {
       int start = LL_StartChunk(out, CHUNK_ROOMS);
       int nrooms = 0, nverts = 0, nfaces = 0, nfaceverts = 0, nportals = 0;
-      for (int i = 0; i <= Highest_room_index; i++) {
+      for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
         if (!Rooms[i].used)
           continue;
         nrooms++;
@@ -2089,7 +2100,7 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
       out << nfaces;
       out << nfaceverts;
       out << nportals;
-      for (int i = 0; i <= Highest_room_index; i++) {
+      for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
         if (!Rooms[i].used)
           continue;
         int16_t room = (int16_t)i;
@@ -2102,13 +2113,13 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     // RWND (room wind)
     {
       int nwind = 0;
-      for (int i = 0; i <= Highest_room_index; i++)
+      for (int i = 0; i <= ((int)Rooms.size() - 1); i++)
         if (Rooms[i].used && (Rooms[i].wind.x() != 0.0f || Rooms[i].wind.y() != 0.0f || Rooms[i].wind.z() != 0.0f))
           nwind++;
       if (nwind) {
         int start = LL_StartChunk(out, CHUNK_ROOM_WIND);
         out << nwind;
-        for (int i = 0; i <= Highest_room_index; i++) {
+        for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
           if (Rooms[i].used && (Rooms[i].wind.x() != 0.0f || Rooms[i].wind.y() != 0.0f || Rooms[i].wind.z() != 0.0f)) {
             int16_t room = (int16_t)i;
             out << room;

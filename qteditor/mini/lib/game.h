@@ -243,13 +243,18 @@ extern int Max_window_w, Max_window_h;
 
 extern int Difficulty_level;
 
-extern int sound_override_force_field;
-extern int sound_override_glass_breaking;
+extern std::optional<uint32_t> sound_override_force_field;
+extern std::optional<uint32_t> sound_override_glass_breaking;
 
 #define MAX_FORCE_FIELD_BOUNCE_TEXTURES 3
-extern std::array<int, MAX_FORCE_FIELD_BOUNCE_TEXTURES> force_field_bounce_texture;
 
-extern std::array<float, MAX_FORCE_FIELD_BOUNCE_TEXTURES> force_field_bounce_multiplier;
+struct force_field_bounce_t
+{
+  uint32_t texture;
+  float multiplier;
+};
+
+extern std::array<std::optional<force_field_bounce_t>, MAX_FORCE_FIELD_BOUNCE_TEXTURES> force_field_bounce;
 extern bool Level_powerups_ignore_wind;
 
 extern bool IsCheater;

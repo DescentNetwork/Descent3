@@ -22,7 +22,7 @@
 #include <cstring>
 
 // The mini defines Num_objects in stubs.cpp without a header declaration.
-extern int Num_objects;
+extern uint32_t Num_objects;
 
 // Big-object tracking, declared extern in object.h but not defined elsewhere
 // in the mini tree.
@@ -242,7 +242,7 @@ void ObjLink(int objnum, int roomnum) {
     obj->next = Terrain_seg[cellnum].objects;
     Terrain_seg[cellnum].objects = objnum;
   } else {
-    if (roomnum < 0 || roomnum > Highest_room_index)
+    if (roomnum < 0 || roomnum > ((int)Rooms.size() - 1))
       return;
 
     obj->next = Rooms[roomnum].objects;
@@ -282,7 +282,7 @@ void ObjUnlink(int objnum) {
     if (obj->next != -1)
       Objects[obj->next].prev = obj->prev;
   } else {
-    if (obj->roomnum < 0 || obj->roomnum > Highest_room_index)
+    if (obj->roomnum < 0 || obj->roomnum > ((int)Rooms.size() - 1))
       return;
 
     room *rp = &Rooms[obj->roomnum];

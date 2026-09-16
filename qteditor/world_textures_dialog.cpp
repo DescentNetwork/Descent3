@@ -166,9 +166,9 @@ void WorldTexturesDialog::saveTexturesOnClose() {
     return;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
     if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == PAGETYPE_TEXTURE) {
-      const int t = FindTextureName(GlobalTrackLocks[i].name);
-      if (t != -1)
-        mng_ReplacePage(GameTextures[t].name, GameTextures[t].name, t, PAGETYPE_TEXTURE, 1);
+      const auto t = FindTextureName(GlobalTrackLocks[i].name);
+      if (t)
+        mng_ReplacePage(GameTextures[*t].name, GameTextures[*t].name, *t, PAGETYPE_TEXTURE, 1);
     }
   }
 }
@@ -176,82 +176,75 @@ void WorldTexturesDialog::saveTexturesOnClose() {
 void WorldTexturesDialog::updateDialog() {
   const int n = app.texdlg_texture;
 
-  ui->IDC_NEXT->setEnabled(Num_textures >= 1);
-  ui->IDC_PREVIOUS->setEnabled(Num_textures >= 1);
-  if (!Network_up) {
-    ui->IDC_LOCK->setEnabled(false);
-    ui->IDC_CHECKIN->setEnabled(false);
-    ui->IDC_OVERRIDE->setEnabled(false);
-    return;
-  }
-  if (Num_textures < 1)
-    return;
-
-
-  ui->IDC_TEX_NUM->setText(QString::number(n));
-
-  ui->IDC_REFLECT->setText(QString::number(GameTextures[n].reflectivity));
-  ui->IDC_RED_LIGHTING->setText(QString::number(GameTextures[n].r));
-  ui->IDC_GREEN_LIGHTING->setText(QString::number(GameTextures[n].g));
-  ui->IDC_BLUE_LIGHTING->setText(QString::number(GameTextures[n].b));
-  ui->IDC_SLIDEU->setText(QString::number(GameTextures[n].slide_u));
-  ui->IDC_SLIDEV->setText(QString::number(GameTextures[n].slide_v));
-  ui->IDC_ALPHA_EDIT->setText(QString::number(GameTextures[n].alpha));
-  ui->IDC_SPEED_EDIT->setText(QString::number(GameTextures[n].speed));
-  ui->IDC_TEXTURE_AMBIENT_SOUND_VOLUME->setText(QString::number(GameTextures[n].sound_volume));
-
-  ui->IDC_MINE_TEXTURE->setChecked(GameTextures[n].flags.mine);
-  ui->IDC_OBJECT_TEXTURE->setChecked(GameTextures[n].flags.object);
-  ui->IDC_TERRAIN_TEXTURE->setChecked(GameTextures[n].flags.terrain);
-  ui->IDC_EFFECT_TEXTURE->setChecked(GameTextures[n].flags.effect);
-  ui->IDC_HUD_COCKPIT_TEXTURE->setChecked(GameTextures[n].flags.hud_cockpit);
-  ui->IDC_LIGHT_TEXTURE->setChecked(GameTextures[n].flags.light);
-  ui->IDC_WATER->setChecked(GameTextures[n].flags.water);
-  ui->IDC_VOLATILE->setChecked(GameTextures[n].flags.explosive);
-  ui->IDC_SATURATE->setChecked(GameTextures[n].flags.saturate);
-  ui->IDC_MARBLE_CHECK->setChecked(GameTextures[n].flags.marble);
-  ui->IDC_TEXTURE_FLY_THRU_CHECK->setChecked(GameTextures[n].flags.fly_thru);
-  ui->IDC_FORCEFIELD->setChecked(GameTextures[n].flags.forcefield);
-  ui->IDC_METAL_CHECK->setChecked(GameTextures[n].flags.metal);
-  ui->IDC_PLASTIC_CHECK->setChecked(GameTextures[n].flags.plastic);
-  ui->IDC_CHECK_ANIMATE->setChecked(GameTextures[n].flags.animated);
-  ui->IDC_PING_PONG->setChecked(GameTextures[n].flags.ping_pong);
-  ui->IDC_CHECK_TMAP2->setChecked(GameTextures[n].flags.tmap2);
-  ui->IDC_CHECK_DESTROY->setChecked(GameTextures[n].flags.destroyable);
-  ui->IDC_CHECK_BREAKABLE->setChecked(GameTextures[n].flags.breakable);
-  ui->IDC_LAVA_CHECKBOX->setChecked(GameTextures[n].flags.lava);
-  ui->IDC_RUBBLE_CHECKBOX->setChecked(GameTextures[n].flags.rubble);
-  ui->IDC_SMOOTH_SPEC_CHECK->setChecked(GameTextures[n].flags.smooth_specular);
-
+  if(Num_textures)
   {
-    QLineEdit *edit = ui->IDC_BITMAP_NAME;
-    const int bm = GameTextures[n].bm_handle;
-    if (bm >= 0)
-      edit->setText(QString::fromStdString(GameBitmaps[bm].name));
-  }
+    ui->IDC_NEXT->setEnabled(Num_textures);
+    ui->IDC_PREVIOUS->setEnabled(Num_textures);
+    if (!Network_up) {
+      ui->IDC_LOCK->setEnabled(false);
+      ui->IDC_CHECKIN->setEnabled(false);
+      ui->IDC_OVERRIDE->setEnabled(false);
+    }
 
-  {
-    QPushButton *checkin = ui->IDC_CHECKIN;
-    if (mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE) == -1) {
-      checkin->setEnabled(false);
+    ui->IDC_TEX_NUM->setText(QString::number(n));
+
+    ui->IDC_REFLECT->setText(QString::number(GameTextures[n].reflectivity));
+    ui->IDC_RED_LIGHTING->setText(QString::number(GameTextures[n].r));
+    ui->IDC_GREEN_LIGHTING->setText(QString::number(GameTextures[n].g));
+    ui->IDC_BLUE_LIGHTING->setText(QString::number(GameTextures[n].b));
+    ui->IDC_SLIDEU->setText(QString::number(GameTextures[n].slide_u));
+    ui->IDC_SLIDEV->setText(QString::number(GameTextures[n].slide_v));
+    ui->IDC_ALPHA_EDIT->setText(QString::number(GameTextures[n].alpha));
+    ui->IDC_SPEED_EDIT->setText(QString::number(GameTextures[n].speed));
+    ui->IDC_TEXTURE_AMBIENT_SOUND_VOLUME->setText(QString::number(GameTextures[n].sound_volume));
+
+    ui->IDC_MINE_TEXTURE->setChecked(GameTextures[n].flags.mine);
+    ui->IDC_OBJECT_TEXTURE->setChecked(GameTextures[n].flags.object);
+    ui->IDC_TERRAIN_TEXTURE->setChecked(GameTextures[n].flags.terrain);
+    ui->IDC_EFFECT_TEXTURE->setChecked(GameTextures[n].flags.effect);
+    ui->IDC_HUD_COCKPIT_TEXTURE->setChecked(GameTextures[n].flags.hud_cockpit);
+    ui->IDC_LIGHT_TEXTURE->setChecked(GameTextures[n].flags.light);
+    ui->IDC_WATER->setChecked(GameTextures[n].flags.water);
+    ui->IDC_VOLATILE->setChecked(GameTextures[n].flags.explosive);
+    ui->IDC_SATURATE->setChecked(GameTextures[n].flags.saturate);
+    ui->IDC_MARBLE_CHECK->setChecked(GameTextures[n].flags.marble);
+    ui->IDC_TEXTURE_FLY_THRU_CHECK->setChecked(GameTextures[n].flags.fly_thru);
+    ui->IDC_FORCEFIELD->setChecked(GameTextures[n].flags.forcefield);
+    ui->IDC_METAL_CHECK->setChecked(GameTextures[n].flags.metal);
+    ui->IDC_PLASTIC_CHECK->setChecked(GameTextures[n].flags.plastic);
+    ui->IDC_CHECK_ANIMATE->setChecked(GameTextures[n].flags.animated);
+    ui->IDC_PING_PONG->setChecked(GameTextures[n].flags.ping_pong);
+    ui->IDC_CHECK_TMAP2->setChecked(GameTextures[n].flags.tmap2);
+    ui->IDC_CHECK_DESTROY->setChecked(GameTextures[n].flags.destroyable);
+    ui->IDC_CHECK_BREAKABLE->setChecked(GameTextures[n].flags.breakable);
+    ui->IDC_LAVA_CHECKBOX->setChecked(GameTextures[n].flags.lava);
+    ui->IDC_RUBBLE_CHECKBOX->setChecked(GameTextures[n].flags.rubble);
+    ui->IDC_SMOOTH_SPEC_CHECK->setChecked(GameTextures[n].flags.smooth_specular);
+
+    if (const int bm = GameTextures[n].bm_handle; bm >= 0)
+      ui->IDC_BITMAP_NAME->setText(QString::fromStdString(GameBitmaps[bm].name));
+
+    if (Network_up && !mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE))
+    {
+      ui->IDC_CHECKIN->setEnabled(false);
       ui->IDC_LOCK->setEnabled(true);
     } else {
-      checkin->setEnabled(true);
+      ui->IDC_CHECKIN->setEnabled(false);
       ui->IDC_LOCK->setEnabled(false);
     }
-  }
 
-  {
-    QComboBox *combo = ui->IDC_TEX_LIST;
-    QSignalBlocker blocker(combo);
-    combo->clear();
-    for (int i = 0; i < MAX_TEXTURES; i++)
-      if (GameTextures[i].used)
-        combo->addItem(QString::fromStdString(GameTextures[i].name));
-    combo->setCurrentText(QString::fromStdString(GameTextures[n].name));
-  }
+    {
+      QComboBox *combo = ui->IDC_TEX_LIST;
+      QSignalBlocker blocker(combo);
+      combo->clear();
+      for (int i = 0; i < MAX_TEXTURES; i++)
+        if (GameTextures[i].used)
+          combo->addItem(QString::fromStdString(GameTextures[i].name));
+      combo->setCurrentText(QString::fromStdString(GameTextures[n].name));
+    }
 
-  populateSoundCombo(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN, GameTextures[n].sound);
+    populateSoundCombo(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN, GameTextures[n].sound);
+  }
 }
 
 void WorldTexturesDialog::onAddNew() {
@@ -287,8 +280,8 @@ void WorldTexturesDialog::onAddNew() {
 
 void WorldTexturesDialog::onDelete() {
   const int n = app.texdlg_texture;
-  const int tl = mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE);
-  if (tl == -1) {
+  const auto tl = mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE);
+  if (!tl) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This texture is not yours to delete.  Lock first.");
     return;
   }
@@ -302,10 +295,10 @@ void WorldTexturesDialog::onDelete() {
   pl.name = GameTextures[n].name;
   pl.pagetype = PAGETYPE_TEXTURE;
   if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
-    mng_FreeTrackLock(tl);
+    mng_FreeTrackLock(*tl);
     Q_ASSERT(mng_DeletePage(GameTextures[n].name, PAGETYPE_TEXTURE, 1));
   } else {
-    mng_FreeTrackLock(tl);
+    mng_FreeTrackLock(*tl);
     mng_DeletePage(GameTextures[n].name, PAGETYPE_TEXTURE, 1);
     mng_DeletePage(GameTextures[n].name, PAGETYPE_TEXTURE, 0);
     mng_DeletePagelock(GameTextures[n].name, PAGETYPE_TEXTURE);
@@ -390,7 +383,7 @@ void WorldTexturesDialog::onCheckin() {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Texture checked in.");
       Q_ASSERT(mng_DeletePage(GameTextures[n].name, PAGETYPE_TEXTURE, 1) == 1);
       mng_EraseLocker();
-      const int p = mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE);
+      const int p = mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE).value_or(-1);
       Q_ASSERT(p != -1);
       mng_FreeTrackLock(p);
     }
@@ -423,8 +416,8 @@ void WorldTexturesDialog::onOverride() {
 
 void WorldTexturesDialog::onChangeName() {
   const int n = app.texdlg_texture;
-  const int p = mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE);
-  if (p == -1) {
+  const auto p = mng_FindTrackLock(GameTextures[n].name, PAGETYPE_TEXTURE);
+  if (!p) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this texture if you wish to change its name.");
     return;
   }
@@ -438,7 +431,7 @@ void WorldTexturesDialog::onChangeName() {
     return;
   }
   const std::string newName = name.toStdString();
-  GlobalTrackLocks[p].name = newName;
+  GlobalTrackLocks[*p].name = newName;
   GameTextures[n].name = newName;
   updateDialog();
 }
@@ -472,17 +465,17 @@ void WorldTexturesDialog::onPrev() {
   updateDialog();
 }
 
-void WorldTexturesDialog::onTexListChanged() {
-  QComboBox *combo = ui->IDC_TEX_LIST;
-  const int i = FindTextureName(combo->currentText().toStdString());
-  if (i == -1)
-    return;
-  app.texdlg_texture = i;
-  updateDialog();
+void WorldTexturesDialog::onTexListChanged()
+{
+  if(const auto i = FindTextureName(ui->IDC_TEX_LIST->currentText().toStdString()); i)
+  {
+    app.texdlg_texture = *i;
+    updateDialog();
+  }
 }
 
-void WorldTexturesDialog::onAmbientSoundChanged() {
-  const int n = app.texdlg_texture;
-  GameTextures[n].sound = soundComboSelected(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN);
+void WorldTexturesDialog::onAmbientSoundChanged()
+{
+  GameTextures[app.texdlg_texture].sound = soundComboSelected(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN);
 }
 

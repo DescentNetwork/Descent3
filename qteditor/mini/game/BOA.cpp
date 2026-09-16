@@ -207,10 +207,10 @@ bool BOA_PassablePortal(int room, int portal_index, bool f_for_sound, bool f_mak
 
   room = BOA_INDEX(room);
 
-  if (room > Highest_room_index && room <= Highest_room_index + BOA_num_terrain_regions) {
+  if (room > ((int)Rooms.size() - 1) && room <= ((int)Rooms.size() - 1) + BOA_num_terrain_regions) {
     int tr;
 
-    tr = room - Highest_room_index - 1;
+    tr = room - ((int)Rooms.size() - 1) - 1;
 
     // Inside room/portal
     int temp_room = BOA_connect[tr][portal_index].roomnum;
@@ -221,14 +221,14 @@ bool BOA_PassablePortal(int room, int portal_index, bool f_for_sound, bool f_mak
     portal_index = Rooms[temp_room].portals[temp_portal_index].cportal;
   }
 
-  Q_ASSERT(room >= 0 && room <= Highest_room_index && Rooms[room].used);
+  Q_ASSERT(room >= 0 && room <= ((int)Rooms.size() - 1) && Rooms[room].used);
   face *fp = &Rooms[room].faces[Rooms[room].portals[portal_index].portal_face];
 
   if (Rooms[room].portals[portal_index].croom < 0)
     return false;
 
   if (!BOA_f_making_boa) {
-    if (BOA_cost_array[room][portal_index] < 0.0f && !(room <= Highest_room_index && Rooms[room].flags.external))
+    if (BOA_cost_array[room][portal_index] < 0.0f && !(room <= ((int)Rooms.size() - 1) && Rooms[room].flags.external))
       return false;
 
     if (!f_for_sound) {
@@ -265,7 +265,7 @@ bool BOA_PassablePortal(int room, int portal_index, bool f_for_sound, bool f_mak
 extern object *GetDoorObject(room *rp);
 
 //bool BOA_LockedDoor(object *obj, int roomnum) {
-//  if (roomnum >= 0 && roomnum <= Highest_room_index && Rooms[roomnum].used && Rooms[roomnum].flags.door) {
+//  if (roomnum >= 0 && roomnum <= ((int)Rooms.size() - 1) && Rooms[roomnum].used && Rooms[roomnum].flags.door) {
 //    if (!obj) {
 //      return DoorwayLocked(&Rooms[roomnum]) && DoorwayPosition(&Rooms[roomnum]) < 0.5f;
 //    } else {
@@ -298,7 +298,7 @@ extern object *GetDoorObject(room *rp);
 //
 //	int last_room;
 //	int next_room = start_room;
-//	Q_ASSERT(next_room >= 0 && next_room <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
+//	Q_ASSERT(next_room >= 0 && next_room <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS);
 //
 //	while(BOA_INDEX(next_room) != BOA_INDEX(start_room) && (BOA_INDEX(next_room) != BOA_INDEX(end_room)) &&
 //(next_room != BOA_NO_PATH))
@@ -326,18 +326,18 @@ int BOA_DetermineStartRoomPortal(int start_room, vector3 *start_pos, int end_roo
 
   if (start_room == -1 || end_room == -1)
     return -1;
-  if (start_room > Highest_room_index && end_room > Highest_room_index)
+  if (start_room > ((int)Rooms.size() - 1) && end_room > ((int)Rooms.size() - 1))
     return -1;
 
   start_room = BOA_INDEX(start_room);
   end_room = BOA_INDEX(end_room);
 
-  if (start_room <= Highest_room_index) {
+  if (start_room <= ((int)Rooms.size() - 1)) {
     for (i = 0; i < Rooms[start_room].num_portals; i++) {
       if (!BOA_PassablePortal(start_room, i, f_for_sound, f_making_robot_path_invalid_list))
         continue;
 
-      if (end_room <= Highest_room_index) {
+      if (end_room <= ((int)Rooms.size() - 1)) {
         if (Rooms[start_room].portals[i].croom == end_room)
           break;
       } else {
@@ -345,7 +345,7 @@ int BOA_DetermineStartRoomPortal(int start_room, vector3 *start_pos, int end_roo
           int cell = GetTerrainCellFromPos(Rooms[start_room].portals[i].path_pnt);
           Q_ASSERT(cell != -1); // DAJ -1FIX
 
-          if (Highest_room_index + Terrain_seg[cell].flags.region + 1 == end_room)
+          if (((int)Rooms.size() - 1) + Terrain_seg[cell].flags.region + 1 == end_room)
             break;
         }
       }
@@ -354,11 +354,11 @@ int BOA_DetermineStartRoomPortal(int start_room, vector3 *start_pos, int end_roo
     if (i >= Rooms[start_room].num_portals)
       i = -1;
   } else {
-    for (i = 0; i < BOA_num_connect[start_room - Highest_room_index - 1]; i++) {
-      Q_ASSERT(end_room <= Highest_room_index);
+    for (i = 0; i < BOA_num_connect[start_room - ((int)Rooms.size() - 1) - 1]; i++) {
+      Q_ASSERT(end_room <= ((int)Rooms.size() - 1));
 
-      if (BOA_connect[start_room - Highest_room_index - 1][i].roomnum == end_room) {
-        int next_portal = BOA_connect[start_room - Highest_room_index - 1][i].portal;
+      if (BOA_connect[start_room - ((int)Rooms.size() - 1) - 1][i].roomnum == end_room) {
+        int next_portal = BOA_connect[start_room - ((int)Rooms.size() - 1) - 1][i].portal;
         int external_room = Rooms[end_room].portals[next_portal].croom;
         int external_portal = Rooms[end_room].portals[next_portal].cportal;
 
@@ -368,7 +368,7 @@ int BOA_DetermineStartRoomPortal(int start_room, vector3 *start_pos, int end_roo
       }
     }
 
-    if (i >= BOA_num_connect[start_room - Highest_room_index - 1])
+    if (i >= BOA_num_connect[start_room - ((int)Rooms.size() - 1) - 1])
       i = -1;
   }
 
@@ -385,11 +385,11 @@ bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, floa
     return true;
   }
 
-  if (start_room == Highest_room_index + 1 && end_room > Highest_room_index) {
+  if (start_room == ((int)Rooms.size() - 1) + 1 && end_room > ((int)Rooms.size() - 1)) {
     return true;
   }
 
-  if (end_room == Highest_room_index + 1 && start_room > Highest_room_index) {
+  if (end_room == ((int)Rooms.size() - 1) + 1 && start_room > ((int)Rooms.size() - 1)) {
     return true;
   }
 
@@ -400,21 +400,21 @@ bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, floa
     return false;
   }
 
-  if (start_room > Highest_room_index + BOA_num_terrain_regions ||
-      end_room > Highest_room_index + BOA_num_terrain_regions) {
+  if (start_room > ((int)Rooms.size() - 1) + BOA_num_terrain_regions ||
+      end_room > ((int)Rooms.size() - 1) + BOA_num_terrain_regions) {
     return false;
   }
 
-  if (start_room <= Highest_room_index && !Rooms[start_room].used)
+  if (start_room <= ((int)Rooms.size() - 1) && !Rooms[start_room].used)
     return false;
 
-  if (end_room <= Highest_room_index && !Rooms[end_room].used)
+  if (end_room <= ((int)Rooms.size() - 1) && !Rooms[end_room].used)
     return false;
 
   do {
     last_room = cur_room;
 
-    if (cur_room <= Highest_room_index && num_blockages && Rooms[cur_room].flags.door &&
+    if (cur_room <= ((int)Rooms.size() - 1) && num_blockages && Rooms[cur_room].flags.door &&
         (cur_room != end_room)) {
       float door_position = DoorwayGetPosition(&Rooms[cur_room]);
 
@@ -468,24 +468,24 @@ bool BOA_IsSoundAudible(int start_room, int end_room) {
     return false;
   }
 
-  if ((!ROOMNUM_OUTSIDE(s_index)) && s_index <= Highest_room_index) {
+  if ((!ROOMNUM_OUTSIDE(s_index)) && s_index <= ((int)Rooms.size() - 1)) {
     if (!Rooms[s_index].used) {
       return false;
     }
   } else if (ROOMNUM_OUTSIDE(s_index)) {
-    s_index = Terrain_seg[start_room].flags.region + Highest_room_index + 1;
+    s_index = Terrain_seg[start_room].flags.region + ((int)Rooms.size() - 1) + 1;
   } else {
-    Q_ASSERT(s_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
+    Q_ASSERT(s_index <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS);
   }
 
-  if ((!ROOMNUM_OUTSIDE(e_index)) && e_index <= Highest_room_index) {
+  if ((!ROOMNUM_OUTSIDE(e_index)) && e_index <= ((int)Rooms.size() - 1)) {
     if (!Rooms[e_index].used) {
       return false;
     }
   } else if (ROOMNUM_OUTSIDE(e_index)) {
-    e_index = Terrain_seg[end_room].flags.region + Highest_room_index + 1;
+    e_index = Terrain_seg[end_room].flags.region + ((int)Rooms.size() - 1) + 1;
   } else {
-    Q_ASSERT(e_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
+    Q_ASSERT(e_index <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS);
   }
 
   return ((BOA_Array[s_index][e_index] & BOA_SOUND_PROP) != 0);
@@ -499,24 +499,24 @@ bool BOA_HasPossibleBlockage(int start_room, int end_room) {
     return false;
   }
 
-  if ((!ROOMNUM_OUTSIDE(s_index)) && s_index <= Highest_room_index) {
+  if ((!ROOMNUM_OUTSIDE(s_index)) && s_index <= ((int)Rooms.size() - 1)) {
     if (!Rooms[s_index].used) {
       return false;
     }
   } else if (ROOMNUM_OUTSIDE(s_index)) {
-    s_index = Terrain_seg[start_room].flags.region + Highest_room_index + 1;
+    s_index = Terrain_seg[start_room].flags.region + ((int)Rooms.size() - 1) + 1;
   } else {
-    Q_ASSERT(s_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
+    Q_ASSERT(s_index <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS);
   }
 
-  if ((!ROOMNUM_OUTSIDE(e_index)) && e_index <= Highest_room_index) {
+  if ((!ROOMNUM_OUTSIDE(e_index)) && e_index <= ((int)Rooms.size() - 1)) {
     if (!Rooms[e_index].used) {
       return false;
     }
   } else if (ROOMNUM_OUTSIDE(e_index)) {
-    e_index = Terrain_seg[end_room].flags.region + Highest_room_index + 1;
+    e_index = Terrain_seg[end_room].flags.region + ((int)Rooms.size() - 1) + 1;
   } else {
-    Q_ASSERT(e_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
+    Q_ASSERT(e_index <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS);
   }
 
   return ((BOA_Array[s_index][e_index] & BOAF_BLOCKAGE) != 0);
@@ -535,24 +535,24 @@ bool BOA_IsVisible(int start_room, int end_room) {
     return false;
   }
 
-  if ((!ROOMNUM_OUTSIDE(s_index)) && s_index <= Highest_room_index) {
+  if ((!ROOMNUM_OUTSIDE(s_index)) && s_index <= ((int)Rooms.size() - 1)) {
     if (!Rooms[s_index].used) {
       return false;
     }
   } else if (ROOMNUM_OUTSIDE(s_index)) {
-    s_index = Terrain_seg[start_room].flags.region + Highest_room_index + 1;
+    s_index = Terrain_seg[start_room].flags.region + ((int)Rooms.size() - 1) + 1;
   } else {
-    Q_ASSERT(s_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
+    Q_ASSERT(s_index <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS);
   }
 
-  if ((!ROOMNUM_OUTSIDE(e_index)) && e_index <= Highest_room_index) {
+  if ((!ROOMNUM_OUTSIDE(e_index)) && e_index <= ((int)Rooms.size() - 1)) {
     if (!Rooms[e_index].used) {
       return false;
     }
   } else if (ROOMNUM_OUTSIDE(e_index)) {
-    e_index = Terrain_seg[end_room].flags.region + Highest_room_index + 1;
+    e_index = Terrain_seg[end_room].flags.region + ((int)Rooms.size() - 1) + 1;
   } else {
-    Q_ASSERT(e_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
+    Q_ASSERT(e_index <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS);
   }
 
   return ((BOA_Array[s_index][e_index] & BOAF_VIS) != 0);
@@ -566,24 +566,24 @@ int BOA_GetNextRoom(int start_room, int end_room) {
     return BOA_NO_PATH;
   }
 
-  if ((!ROOMNUM_OUTSIDE(s_index)) && s_index <= Highest_room_index) {
+  if ((!ROOMNUM_OUTSIDE(s_index)) && s_index <= ((int)Rooms.size() - 1)) {
     if (!Rooms[s_index].used) {
       return BOA_NO_PATH;
     }
   } else if (ROOMNUM_OUTSIDE(s_index)) {
-    s_index = Terrain_seg[start_room].flags.region + Highest_room_index + 1;
+    s_index = Terrain_seg[start_room].flags.region + ((int)Rooms.size() - 1) + 1;
   } else {
-    Q_ASSERT(s_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
+    Q_ASSERT(s_index <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS);
   }
 
-  if ((!ROOMNUM_OUTSIDE(e_index)) && e_index <= Highest_room_index) {
+  if ((!ROOMNUM_OUTSIDE(e_index)) && e_index <= ((int)Rooms.size() - 1)) {
     if (!Rooms[e_index].used) {
       return BOA_NO_PATH;
     }
   } else if (ROOMNUM_OUTSIDE(e_index)) {
-    e_index = Terrain_seg[end_room].flags.region + Highest_room_index + 1;
+    e_index = Terrain_seg[end_room].flags.region + ((int)Rooms.size() - 1) + 1;
   } else {
-    Q_ASSERT(e_index <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
+    Q_ASSERT(e_index <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS);
   }
 
   return ((BOA_Array[s_index][e_index] & BOA_ROOM_MASK));
@@ -609,7 +609,7 @@ void compute_mine_info() {
   int first_free;
   int cur_mine = 0;
 
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
     room *rp = &Rooms[i];
 
     if (rp->used) {
@@ -624,7 +624,7 @@ void compute_mine_info() {
 
     done = true;
 
-    for (i = 0; i <= Highest_room_index; i++) {
+    for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
       room *rp = &Rooms[i];
 
       if (rp->used && !checked[i]) {
@@ -750,7 +750,7 @@ void compute_terrain_region_info() {
     BOA_num_connect[i] = 0;
   }
 
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
     if ((Rooms[i].used) && Rooms[i].flags.external) {
       int j;
 
@@ -798,19 +798,19 @@ void compute_sound_dist_info() {
   int i;
   int j;
 
-  for (i = 0; i <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS; i++) {
     for (j = 0; j <= i; j++) {
       BOA_Array[i][j] |= BOA_SOUND_PROP;
       BOA_Array[j][i] |= BOA_SOUND_PROP;
 
-      if ((i > Highest_room_index || j > Highest_room_index) && (i != j)) {
+      if ((i > ((int)Rooms.size() - 1) || j > ((int)Rooms.size() - 1)) && (i != j)) {
         BOA_Array[i][j] &= ~BOA_SOUND_PROP;
         BOA_Array[j][i] &= ~BOA_SOUND_PROP;
       }
     }
   }
 
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
     for (j = 0; j < i; j++) {
       float dist;
       bool f_ok = BOA_ComputeMinDist(i, j, MAX_SOUND_PROP_DIST, &dist);
@@ -829,10 +829,10 @@ void compute_sound_dist_info() {
     for (j = 0; j < BOA_num_connect[i]; j++) {
       int croom = BOA_connect[i][j].roomnum;
 
-      for (k = 0; k <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS; k++) {
+      for (k = 0; k <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS; k++) {
         if (BOA_Array[croom][k] & BOA_SOUND_PROP) {
-          BOA_Array[Highest_room_index + i + 1][k] |= BOA_SOUND_PROP;
-          BOA_Array[k][Highest_room_index + i + 1] |= BOA_SOUND_PROP;
+          BOA_Array[((int)Rooms.size() - 1) + i + 1][k] |= BOA_SOUND_PROP;
+          BOA_Array[k][((int)Rooms.size() - 1) + i + 1] |= BOA_SOUND_PROP;
         }
       }
     }
@@ -842,8 +842,8 @@ void compute_sound_dist_info() {
 void clear_BOA() {
   int i, j;
 
-  for (i = 0; i <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS; i++) {
-    for (j = 0; j <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS; j++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS; i++) {
+    for (j = 0; j <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS; j++) {
       BOA_Array[i][j] = i; // No flags are set and i to j points to i (so, no path exists)
     }
   }
@@ -861,7 +861,7 @@ void compute_costs() {
   vector3 from_pnt; //, to_pnt;
   vector3 portal_pnt;
 
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
 
     if (Rooms[i].used) {
       Q_ASSERT(Rooms[i].num_portals <= MAX_PATH_PORTALS);
@@ -885,7 +885,7 @@ void compute_costs() {
     }
   }
 
-  for (i = Highest_room_index + 1; i <= Highest_room_index + BOA_num_terrain_regions; i++) {
+  for (i = ((int)Rooms.size() - 1) + 1; i <= ((int)Rooms.size() - 1) + BOA_num_terrain_regions; i++) {
     int j;
     for (j = 0; j < BOA_num_connect[i]; j++) {
       BOA_cost_array[i][j] = 100000.0f;
@@ -928,12 +928,12 @@ void FindPath(int i, int j) {
   memset(node_list, 0, sizeof(q_item *) * (MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS));
 
   PQPath.push(start_node);
-  Q_ASSERT(start_node->roomnum <= Highest_room_index + BOA_num_terrain_regions);
+  Q_ASSERT(start_node->roomnum <= ((int)Rooms.size() - 1) + BOA_num_terrain_regions);
 
   while ((cur_node = PQPath.pop())) {
     node_list[BOA_INDEX(cur_node->roomnum)] = cur_node;
     Q_ASSERT(BOA_INDEX(cur_node->roomnum) >= 0 &&
-           BOA_INDEX(cur_node->roomnum) <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS);
+           BOA_INDEX(cur_node->roomnum) <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS);
 
     if (cur_node->roomnum == j) {
       update_path_info(node_list, i, j);
@@ -945,10 +945,10 @@ void FindPath(int i, int j) {
       bool f_room = true;
       int t_index;
 
-      if (cur_node->roomnum <= Highest_room_index) {
+      if (cur_node->roomnum <= ((int)Rooms.size() - 1)) {
         num_portals = Rooms[cur_node->roomnum].num_portals;
       } else {
-        t_index = cur_node->roomnum - Highest_room_index - 1;
+        t_index = cur_node->roomnum - ((int)Rooms.size() - 1) - 1;
         num_portals = BOA_num_connect[t_index];
         f_room = false;
       }
@@ -969,14 +969,14 @@ void FindPath(int i, int j) {
         if (next_room < 0 || next_room == BOA_NO_PATH)
           continue;
 
-        if ((next_room <= Highest_room_index) && Rooms[next_room].flags.external) {
-          Q_ASSERT(cur_node->roomnum <= Highest_room_index);
+        if ((next_room <= ((int)Rooms.size() - 1)) && Rooms[next_room].flags.external) {
+          Q_ASSERT(cur_node->roomnum <= ((int)Rooms.size() - 1));
 
           int cell = GetTerrainCellFromPos(Rooms[cur_node->roomnum].portals[counter].path_pnt);
           Q_ASSERT(cell >= 0 && cell < TERRAIN_WIDTH * TERRAIN_DEPTH);
 
-          next_room = Highest_room_index + Terrain_seg[cell].flags.region + 1;
-          Q_ASSERT(next_room <= Highest_room_index + BOA_num_terrain_regions);
+          next_room = ((int)Rooms.size() - 1) + Terrain_seg[cell].flags.region + 1;
+          Q_ASSERT(next_room <= ((int)Rooms.size() - 1) + BOA_num_terrain_regions);
         }
 
         int next_portal;
@@ -995,7 +995,7 @@ void FindPath(int i, int j) {
           list_item = new q_item(BOA_INDEX(next_room), cur_node->roomnum, new_cost);
           node_list[BOA_INDEX(next_room)] = list_item;
           PQPath.push(list_item);
-          Q_ASSERT(list_item->roomnum <= Highest_room_index + BOA_num_terrain_regions);
+          Q_ASSERT(list_item->roomnum <= ((int)Rooms.size() - 1) + BOA_num_terrain_regions);
         } else {
           list_item->cost = new_cost;
           list_item->parent = cur_node->roomnum;
@@ -1006,10 +1006,10 @@ void FindPath(int i, int j) {
       bool f_room = true;
       int t_index;
 
-      if (cur_node->roomnum <= Highest_room_index) {
+      if (cur_node->roomnum <= ((int)Rooms.size() - 1)) {
         num_portals = Rooms[cur_node->roomnum].num_portals;
       } else {
-        t_index = cur_node->roomnum - Highest_room_index - 1;
+        t_index = cur_node->roomnum - ((int)Rooms.size() - 1) - 1;
         num_portals = BOA_num_connect[t_index];
         f_room = false;
       }
@@ -1030,11 +1030,11 @@ void FindPath(int i, int j) {
         if (next_room < 0 || next_room == BOA_NO_PATH)
           continue;
 
-        if ((next_room <= Highest_room_index) && Rooms[next_room].flags.external) {
-          Q_ASSERT(cur_node->roomnum <= Highest_room_index);
+        if ((next_room <= ((int)Rooms.size() - 1)) && Rooms[next_room].flags.external) {
+          Q_ASSERT(cur_node->roomnum <= ((int)Rooms.size() - 1));
           int cell = GetTerrainCellFromPos(Rooms[cur_node->roomnum].portals[counter].path_pnt);
           Q_ASSERT(cell != -1); // DAJ -1FIX
-          next_room = Highest_room_index + Terrain_seg[cell].flags.region + 1;
+          next_room = ((int)Rooms.size() - 1) + Terrain_seg[cell].flags.region + 1;
         }
 
         int next_portal;
@@ -1053,7 +1053,7 @@ void FindPath(int i, int j) {
           list_item = new q_item(BOA_INDEX(next_room), cur_node->roomnum, new_cost);
           node_list[BOA_INDEX(next_room)] = list_item;
           PQPath.push(list_item);
-          Q_ASSERT(list_item->roomnum <= Highest_room_index + BOA_num_terrain_regions);
+          Q_ASSERT(list_item->roomnum <= ((int)Rooms.size() - 1) + BOA_num_terrain_regions);
         } else {
           list_item->cost = new_cost;
           list_item->parent = cur_node->roomnum;
@@ -1066,7 +1066,7 @@ void FindPath(int i, int j) {
   BOA_Array[i][j] = BOA_NO_PATH;
 
 done:
-  for (counter = 0; counter <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS; counter++) {
+  for (counter = 0; counter <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS; counter++) {
     if (node_list[counter])
       delete node_list[counter];
   }
@@ -1077,33 +1077,33 @@ done:
 void compute_next_segs() {
   int i, j;
 
-  for (i = 0; i <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS; i++) {
-    if (i <= Highest_room_index && (!Rooms[i].used))
+  for (i = 0; i <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS; i++) {
+    if (i <= ((int)Rooms.size() - 1) && (!Rooms[i].used))
       continue;
 
-    if (i <= Highest_room_index && Rooms[i].flags.external)
+    if (i <= ((int)Rooms.size() - 1) && Rooms[i].flags.external)
       continue;
 
-    if (i > Highest_room_index + BOA_num_terrain_regions)
+    if (i > ((int)Rooms.size() - 1) + BOA_num_terrain_regions)
       continue;
 
-    for (j = Highest_room_index + MAX_BOA_TERRAIN_REGIONS; j >= 0; j--) {
-      if (j <= Highest_room_index && (!Rooms[j].used))
+    for (j = ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS; j >= 0; j--) {
+      if (j <= ((int)Rooms.size() - 1) && (!Rooms[j].used))
         continue;
 
-      if (j <= Highest_room_index && Rooms[j].flags.external)
+      if (j <= ((int)Rooms.size() - 1) && Rooms[j].flags.external)
         continue;
 
-      if (j > Highest_room_index + BOA_num_terrain_regions)
+      if (j > ((int)Rooms.size() - 1) + BOA_num_terrain_regions)
         continue;
 
-      if (i == Highest_room_index + 1 && j > Highest_room_index) {
+      if (i == ((int)Rooms.size() - 1) + 1 && j > ((int)Rooms.size() - 1)) {
         BOA_Array[i][j] = j;
         BOA_Array[j][i] = i;
         continue;
       }
 
-      if (j == Highest_room_index + 1 && i > Highest_room_index) {
+      if (j == ((int)Rooms.size() - 1) + 1 && i > ((int)Rooms.size() - 1)) {
         BOA_Array[i][j] = j;
         BOA_Array[j][i] = i;
         continue;
@@ -1120,39 +1120,39 @@ void compute_next_segs() {
 void compute_blockage_info() {
   int i, j;
 
-  for (i = 0; i <= Highest_room_index + BOA_num_terrain_regions; i++) {
-    if (i <= Highest_room_index && (!Rooms[i].used))
+  for (i = 0; i <= ((int)Rooms.size() - 1) + BOA_num_terrain_regions; i++) {
+    if (i <= ((int)Rooms.size() - 1) && (!Rooms[i].used))
       continue;
 
-    if (i <= Highest_room_index && Rooms[i].flags.external)
+    if (i <= ((int)Rooms.size() - 1) && Rooms[i].flags.external)
       continue;
 
-    if (i > Highest_room_index + BOA_num_terrain_regions)
+    if (i > ((int)Rooms.size() - 1) + BOA_num_terrain_regions)
       continue;
 
-    for (j = 0; j <= Highest_room_index + BOA_num_terrain_regions; j++) {
+    for (j = 0; j <= ((int)Rooms.size() - 1) + BOA_num_terrain_regions; j++) {
       int cur_room = i;
 
       if (i == j)
         continue;
 
-      if (i == Highest_room_index + 1 && j > Highest_room_index)
+      if (i == ((int)Rooms.size() - 1) + 1 && j > ((int)Rooms.size() - 1))
         continue;
 
-      if (j == Highest_room_index + 1 && i > Highest_room_index)
+      if (j == ((int)Rooms.size() - 1) + 1 && i > ((int)Rooms.size() - 1))
         continue;
 
-      if (j <= Highest_room_index && (!Rooms[i].used))
+      if (j <= ((int)Rooms.size() - 1) && (!Rooms[i].used))
         continue;
 
-      if (j <= Highest_room_index && Rooms[i].flags.external)
+      if (j <= ((int)Rooms.size() - 1) && Rooms[i].flags.external)
         continue;
 
       if (BOA_NEXT_ROOM(cur_room, j) != BOA_NO_PATH && BOA_NEXT_ROOM(cur_room, j) != cur_room) {
         int last_room = cur_room;
 
         do {
-          if (cur_room <= Highest_room_index && Rooms[cur_room].flags.door) {
+          if (cur_room <= ((int)Rooms.size() - 1) && Rooms[cur_room].flags.door) {
             BOA_Array[i][j] |= BOAF_BLOCKAGE;
             break;
           }
@@ -1185,7 +1185,7 @@ int BOAGetMineChecksum() {
   int i, t, k;
   int total = 0;
 
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
     room *rp = &Rooms[i];
 
     if (!Rooms[i].used)
@@ -1352,7 +1352,7 @@ void BOA_ComputePathPoints(char *message, int len) {
   int i;
   int j;
 
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
     if (Rooms[i].used) {
       for (j = 0; j < Rooms[i].num_portals; j++) {
         ComputePortalCenter(&Rooms[i].portals[j].path_pnt, &Rooms[i], j);
@@ -1561,10 +1561,10 @@ void MakeBOAVisTable(bool from_lighting) {
   // Now compute all room to room visibility stuff
   int i, t, j;
 
-  LOG_DEBUG("Computing visibility for %d rooms.", Highest_room_index);
+  LOG_DEBUG("Computing visibility for %d rooms.", ((int)Rooms.size() - 1));
 
-  for (i = 0; i <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS; i++) {
-    for (t = 0; t <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS; t++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS; i++) {
+    for (t = 0; t <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS; t++) {
       BOA_Array[i][t] &= ~BOAF_VIS;
       precomputed[i][t] = 255;
     }
@@ -1576,14 +1576,14 @@ void MakeBOAVisTable(bool from_lighting) {
   DoBOAVisProgressDialog(0.0f, 0, "Computing BOA Vis. Table");
 #endif
 
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
     if (Rooms[i].used == 0)
       continue;
 
     room *rp = &Rooms[i];
 
 #ifdef NEWEDITOR
-    DoBOAVisProgressDialog((float)(i + 1) / (float)(Highest_room_index + 1), 1);
+    DoBOAVisProgressDialog((float)(i + 1) / (float)(((int)Rooms.size() - 1) + 1), 1);
 #endif
     if (rp->flags.external)
       continue;
@@ -1607,17 +1607,17 @@ void MakeBOAVisTable(bool from_lighting) {
           int cp;
           int xxx;
 
-          BOA_Array[i][Highest_room_index + 1] |= BOAF_VIS;
+          BOA_Array[i][((int)Rooms.size() - 1) + 1] |= BOAF_VIS;
 
           for (xxx = 0; xxx < Rooms[croom].num_portals; xxx++) {
             int cell = GetTerrainCellFromPos(Rooms[croom].portals[xxx].path_pnt);
             Q_ASSERT(cell != -1); // DAJ -1FIX
             int region = Terrain_seg[cell].flags.region;
 
-            BOA_Array[i][Highest_room_index + region + 1] |= BOAF_VIS;
+            BOA_Array[i][((int)Rooms.size() - 1) + region + 1] |= BOAF_VIS;
           }
 
-          for (cp = 0; cp <= Highest_room_index; cp++) {
+          for (cp = 0; cp <= ((int)Rooms.size() - 1); cp++) {
             if (Rooms[cp].used && Rooms[cp].flags.external && !already_checked[cp]) {
               vis_stack[stack_count] = cp;
               stack_count++;
@@ -1818,17 +1818,17 @@ void MakeBOAVisTable(bool from_lighting) {
                       int cp;
                       int xxx;
 
-                      BOA_Array[i][Highest_room_index + 1] |= BOAF_VIS;
+                      BOA_Array[i][((int)Rooms.size() - 1) + 1] |= BOAF_VIS;
 
                       for (xxx = 0; xxx < Rooms[check_room].num_portals; xxx++) {
                         int cell = GetTerrainCellFromPos(Rooms[check_room].portals[xxx].path_pnt);
                         Q_ASSERT(cell != -1); // DAJ -1FIX
                         int region = Terrain_seg[cell].flags.region;
 
-                        BOA_Array[i][Highest_room_index + region + 1] |= BOAF_VIS;
+                        BOA_Array[i][((int)Rooms.size() - 1) + region + 1] |= BOAF_VIS;
                       }
 
-                      for (cp = 0; cp <= Highest_room_index; cp++) {
+                      for (cp = 0; cp <= ((int)Rooms.size() - 1); cp++) {
                         if (Rooms[cp].used && Rooms[cp].flags.external && !already_checked[cp]) {
                           vis_stack[stack_count] = cp;
                           stack_count++;
@@ -1854,11 +1854,11 @@ void MakeBOAVisTable(bool from_lighting) {
     }
   }
 
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
     if (Rooms[i].used == 0)
       continue;
 
-    for (t = 0; t <= Highest_room_index + MAX_BOA_TERRAIN_REGIONS; t++) {
+    for (t = 0; t <= ((int)Rooms.size() - 1) + MAX_BOA_TERRAIN_REGIONS; t++) {
       if ((BOA_Array[i][t] & BOAF_VIS)) {
         BOA_Array[t][i] |= BOAF_VIS;
       }
@@ -1881,25 +1881,25 @@ void verify_connections() {
   int i;
   int j;
 
-  for (i = 0; i <= Highest_room_index + BOA_num_terrain_regions; i++) {
-    if (i <= Highest_room_index && (!Rooms[i].used))
+  for (i = 0; i <= ((int)Rooms.size() - 1) + BOA_num_terrain_regions; i++) {
+    if (i <= ((int)Rooms.size() - 1) && (!Rooms[i].used))
       continue;
 
-    if (i <= Highest_room_index && Rooms[i].flags.external)
+    if (i <= ((int)Rooms.size() - 1) && Rooms[i].flags.external)
       continue;
 
-    for (j = 0; j <= Highest_room_index + BOA_num_terrain_regions; j++) {
-      if (j <= Highest_room_index && !Rooms[j].used)
+    for (j = 0; j <= ((int)Rooms.size() - 1) + BOA_num_terrain_regions; j++) {
+      if (j <= ((int)Rooms.size() - 1) && !Rooms[j].used)
         continue;
 
-      if (j <= Highest_room_index && Rooms[j].flags.external)
+      if (j <= ((int)Rooms.size() - 1) && Rooms[j].flags.external)
         continue;
 
-      if (i == Highest_room_index + 1 && j > Highest_room_index) {
+      if (i == ((int)Rooms.size() - 1) + 1 && j > ((int)Rooms.size() - 1)) {
         continue;
       }
 
-      if (j == Highest_room_index + 1 && i > Highest_room_index) {
+      if (j == ((int)Rooms.size() - 1) + 1 && i > ((int)Rooms.size() - 1)) {
         continue;
       }
 
@@ -1921,7 +1921,7 @@ void find_small_portals() {
   int i, j;
   int counter = 0;
 
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
     if (Rooms[i].used) {
       for (j = 0; j < Rooms[i].num_portals; j++) {
         face *fp = &Rooms[i].faces[Rooms[i].portals[j].portal_face];
@@ -1946,32 +1946,32 @@ void find_small_portals() {
 void compute_robot_path_info() {
   int i, j;
 
-  for (i = 0; i <= Highest_room_index + BOA_num_terrain_regions; i++) {
-    if (i <= Highest_room_index && (!Rooms[i].used))
+  for (i = 0; i <= ((int)Rooms.size() - 1) + BOA_num_terrain_regions; i++) {
+    if (i <= ((int)Rooms.size() - 1) && (!Rooms[i].used))
       continue;
 
-    if (i <= Highest_room_index && Rooms[i].flags.external)
+    if (i <= ((int)Rooms.size() - 1) && Rooms[i].flags.external)
       continue;
 
-    if (i > Highest_room_index + BOA_num_terrain_regions)
+    if (i > ((int)Rooms.size() - 1) + BOA_num_terrain_regions)
       continue;
 
-    for (j = 0; j <= Highest_room_index + BOA_num_terrain_regions; j++) {
+    for (j = 0; j <= ((int)Rooms.size() - 1) + BOA_num_terrain_regions; j++) {
       int cur_room = i;
 
-      if (j <= Highest_room_index && !Rooms[i].used)
+      if (j <= ((int)Rooms.size() - 1) && !Rooms[i].used)
         continue;
 
-      if (j <= Highest_room_index && Rooms[i].flags.external)
+      if (j <= ((int)Rooms.size() - 1) && Rooms[i].flags.external)
         continue;
 
       if (i == j)
         continue;
 
-      if (i == Highest_room_index + 1 && j > Highest_room_index)
+      if (i == ((int)Rooms.size() - 1) + 1 && j > ((int)Rooms.size() - 1))
         continue;
 
-      if (j == Highest_room_index + 1 && i > Highest_room_index)
+      if (j == ((int)Rooms.size() - 1) + 1 && i > ((int)Rooms.size() - 1))
         continue;
 
       if (BOA_NEXT_ROOM(cur_room, j) != BOA_NO_PATH && BOA_NEXT_ROOM(cur_room, j) != cur_room) {
@@ -2115,10 +2115,10 @@ void ComputeAABB(bool f_full) {
       }
     }
 
-    std::vector<int16_t> num_structs_per_room(Highest_room_index + 1, 0);
-    std::vector<std::vector<int16_t>> r_struct_list(Highest_room_index + 1);
+    std::vector<int16_t> num_structs_per_room(((int)Rooms.size() - 1) + 1, 0);
+    std::vector<std::vector<int16_t>> r_struct_list(((int)Rooms.size() - 1) + 1);
 
-    for (i = 0; i <= Highest_room_index; i++) {
+    for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
       if (Rooms[i].used) {
         if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
           continue;
@@ -2132,7 +2132,7 @@ void ComputeAABB(bool f_full) {
     BOA_AABB_checksum = cur_check;
     LOG_DEBUG("Computing AABB's (full)!");
 
-    for (i = 0; i <= Highest_room_index; i++) {
+    for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
       Current_sort_room = i;
       if (Rooms[i].used) {
         float average_y;
@@ -2205,7 +2205,7 @@ void ComputeAABB(bool f_full) {
     }
 
     // Determine number of independent structures and classify each face
-    for (i = 0; i <= Highest_room_index; i++) {
+    for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
       if (Rooms[i].used) {
         room *rp = &Rooms[i];
         int num_struct = 0;
@@ -2271,7 +2271,7 @@ void ComputeAABB(bool f_full) {
     }
 
     // Determine Area of each region for external shell remap
-    for (i = 0; i <= Highest_room_index; i++) {
+    for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
       if (Rooms[i].used) {
         room *rp = &Rooms[i];
 
@@ -2346,7 +2346,7 @@ void ComputeAABB(bool f_full) {
     }
 
     // Breaks up the main shell by cube and pushes faces into the appropriate region list
-    for (i = 0; i <= Highest_room_index; i++) {
+    for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
       if (Rooms[i].used) {
         int x;
         Current_sort_room = i;
@@ -2592,7 +2592,7 @@ void ComputeAABB(bool f_full) {
     r_struct_list.clear();
 
     // Finds the min/max of each region
-    for (i = 0; i <= Highest_room_index; i++) {
+    for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
       if (Rooms[i].used) {
         room *rp = &Rooms[i];
 
@@ -2629,7 +2629,7 @@ void ComputeAABB(bool f_full) {
     }
 
     // Remove unnecessary groups
-    for (count = 0; count <= Highest_room_index; count++) {
+    for (count = 0; count <= ((int)Rooms.size() - 1); count++) {
       if (Rooms[count].used) {
         if (BOA_AABB_ROOM_checksum[count] != 0 && BOA_AABB_ROOM_checksum[count] == computed_room_check[count])
           continue;
@@ -2654,7 +2654,7 @@ void ComputeAABB(bool f_full) {
     }
 
     // Sub-divide structures
-    for (i = 0; i <= Highest_room_index; i++) {
+    for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
       if (Rooms[i].used) {
         room *rp = &Rooms[i];
         int original_bbf_regions = rp->num_bbf_regions;
@@ -2750,7 +2750,7 @@ void ComputeAABB(bool f_full) {
     }
 
     // Remove unnecessary groups
-    for (count = 0; count <= Highest_room_index; count++) {
+    for (count = 0; count <= ((int)Rooms.size() - 1); count++) {
       if (Rooms[count].used) {
         if (BOA_AABB_ROOM_checksum[count] != 0 && BOA_AABB_ROOM_checksum[count] == computed_room_check[count])
           continue;
@@ -2775,7 +2775,7 @@ void ComputeAABB(bool f_full) {
     }
 
     // Finds the min/max of each region
-    for (i = 0; i <= Highest_room_index; i++) {
+    for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
       if (Rooms[i].used) {
         room *rp = &Rooms[i];
 
@@ -2812,7 +2812,7 @@ void ComputeAABB(bool f_full) {
     }
 
     // Remaps all the regions to their best sectors
-    for (i = 0; i <= Highest_room_index; i++) {
+    for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
       if (Rooms[i].used) {
         room *rp = &Rooms[i];
         vector3 min_xyz = rp->bbf_min_xyz;
@@ -2868,7 +2868,7 @@ void ComputeAABB(bool f_full) {
 
     // Reallocate remaining data structures
     // Remove extra slots
-    for (count = 0; count <= Highest_room_index; count++) {
+    for (count = 0; count <= ((int)Rooms.size() - 1); count++) {
       if (Rooms[count].used) {
         room *rp = &Rooms[count];
         if (BOA_AABB_ROOM_checksum[count] != 0 && BOA_AABB_ROOM_checksum[count] == computed_room_check[count])
@@ -2887,7 +2887,7 @@ void ComputeAABB(bool f_full) {
     }
 
     //	// Print out remaining groups
-    //	for(count = 0; count <= Highest_room_index; count++)
+    //	for(count = 0; count <= ((int)Rooms.size() - 1); count++)
     //	{
     //		if(Rooms[count].used)
     //		{
@@ -2908,7 +2908,7 @@ void ComputeAABB(bool f_full) {
   }
 
   // I had to add it :(  Rooms need this done even the checksum is correct
-  for (i = 0; i <= Highest_room_index; i++) {
+  for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
     if (Rooms[i].used) {
       room *rp = &Rooms[i];
 

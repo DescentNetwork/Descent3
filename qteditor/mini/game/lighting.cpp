@@ -942,7 +942,7 @@ void ApplyVolumeLightToObject(vector3 *pos, object *obj, float light_dist, float
 
   // See if this specular light source is greater than our current one
   if ((light_dist - mag) > obj->effect_info->spec_mag && Detail_settings.Specular_lighting &&
-      !(Object_info[obj->id].lighting_info.flags & OLF_NO_SPECULARITY)) {
+      !(Object_info[obj->id].lighting_info.flags.no_specularity)) {
     obj->effect_info->type_flags.specular = true;
     obj->effect_info->spec_mag = light_dist - mag;
     obj->effect_info->spec_pos = *pos;

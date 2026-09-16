@@ -75,6 +75,19 @@ const float kObjPowerupColor[3] = {0.0f, 0.0f, 1.0f};
 const float kObjMiscColor[3] = {0.0f, 100.0f / 255, 100.0f / 255};
 const float kObjCameraColor[3] = {1.0f, 1.0f, 0.0f};
 
+// Returns true when `rp` still points inside a live slot of the Rooms vector.
+// Curroomp/Markedroomp are raw pointers kept across RoomsReset()/clear(), so
+// after a reset they can dangle (buffer reallocated for a different size) or
+// alias a freshly reinitialised slot.  The Win32 fixed array granted validity
+// for free; the vector needs this explicit range check before dereferencing.
+bool liveRoom(const room *rp) {
+  if (rp == nullptr)
+    return false;
+  const room *const beg = Rooms.data();
+  const room *const end = beg + Rooms.size();
+  return (rp >= beg) && (rp < end);
+}
+
 // Returns true when `m` is a usable camera basis (a right-handed orthonormal
 // rotation).  Degenerate orientation data in a saved level (e.g. level1.d3l's
 // shipped viewer has an all-zero matrix) must not be followed as the camera:
@@ -340,9 +353,9 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
   outFaces->clear();
 
   int projStart = 0;
-  int projEnd = Highest_room_index;
+  int projEnd = ((int)Rooms.size() - 1);
   if (app.view_mode == state::viewer::room) {
-    if (app.current_room >= 0 && app.current_room <= Highest_room_index) {
+    if (app.current_room >= 0 && app.current_room <= ((int)Rooms.size() - 1)) {
       projStart = app.current_room;
       projEnd = app.current_room;
     }
@@ -451,9 +464,9 @@ void EditorView::renderRooms() {
     return;
 
   int renderStart = 0;
-  int renderEnd = Highest_room_index;
+  int renderEnd = ((int)Rooms.size() - 1);
   if (app.view_mode == state::viewer::room) {
-    if (app.current_room < 0 || app.current_room > Highest_room_index)
+    if (app.current_room < 0 || app.current_room > ((int)Rooms.size() - 1))
       return;
     if (!Rooms[app.current_room].used)
       return;
@@ -771,7 +784,7 @@ void EditorView::renderOverlays() {
   if (app.view_mode == state::viewer::room) {
     // (The yellow current-face highlight is drawn below — the Win32 room view
     // has no current-room or marked-room overlays.)
-    if (Curroomp != nullptr && Curroomp->used &&
+    if (liveRoom(Curroomp) && Curroomp->used &&
         Curroomp == &Rooms[app.current_room] && Curface >= 0 &&
         Curface < Curroomp->num_faces) {
       face *fp = &Curroomp->faces[Curface];
@@ -802,7 +815,7 @@ void EditorView::renderOverlays() {
   // Marked room/face/edge/vert in the Win32 order: the marked elements are
   // drawn BEFORE the current room so the white current-room wireframe draws
   // over them where they overlap (DrawWorld, editor/drawworld.cpp:851-863).
-  if (Markedroomp != nullptr && Markedroomp->used) {
+  if (liveRoom(Markedroomp) && Markedroomp->used) {
     if (Markedface >= 0 && Markedface < Markedroomp->num_faces) {
       face *fp = &Markedroomp->faces[Markedface];
       float sx[16], sy[16];
@@ -848,7 +861,7 @@ void EditorView::renderOverlays() {
     }
   }
 
-  if (Curroomp != nullptr && Curroomp->used) {
+  if (liveRoom(Curroomp) && Curroomp->used) {
     // Current room wireframe in white (DrawRoom(Curroomp, CURROOM_COLOR)).
     // Like the legacy DrawRoom edge table, floating-trigger faces (drawn
     // red) and room portal faces (terrain portals drawn blue) are skipped so
@@ -1146,7 +1159,7 @@ void EditorView::renderObjects() {
 
     // A room is only drawn when its verts[0] is within the render radius
     // (DrawAllRooms); objects live in rooms and follow the same gate.
-    if (obj->roomnum < 0 || obj->roomnum > Highest_room_index)
+    if (obj->roomnum < 0 || obj->roomnum > ((int)Rooms.size() - 1))
       continue;
     room *rp = &Rooms[obj->roomnum];
     if (!rp->used || rp->num_verts == 0)
@@ -1310,7 +1323,7 @@ void EditorView::renderBNodes() {
   const float focal = (h * 0.5f) / std::tan(kFovY * 0.5f);
 
   int room_start = 0;
-  int room_end = Highest_room_index;
+  int room_end = ((int)Rooms.size() - 1);
 
   if (EBN_draw_type == EBDRAW_ROOM || EBDRAW_ROOM_AND_NEXT_ROOMS) {
     if (Viewer_object != nullptr)
@@ -1526,7 +1539,7 @@ void EditorView::setPickRadius(float radius) {
 void EditorView::fitToMine() {
   vector3 mn{1e30f, 1e30f, 1e30f}, mx{-1e30f, -1e30f, -1e30f};
   bool any = false;
-  for (int r = 0; r <= Highest_room_index; r++) {
+  for (int r = 0; r <= ((int)Rooms.size() - 1); r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
       continue;
@@ -1814,11 +1827,11 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
   // In terrain mode, no room picking (terrain not rendered).
   // In room mode, only pick from the current palette room.
   int pickStart = 0;
-  int pickEnd = Highest_room_index;
+  int pickEnd = ((int)Rooms.size() - 1);
   if (app.view_mode == state::viewer::terrain)
     return best;
   if (app.view_mode == state::viewer::room) {
-    if (app.current_room < 0 || app.current_room > Highest_room_index)
+    if (app.current_room < 0 || app.current_room > ((int)Rooms.size() - 1))
       return best;
     pickStart = app.current_room;
     pickEnd = app.current_room;

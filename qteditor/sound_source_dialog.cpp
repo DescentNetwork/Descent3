@@ -43,7 +43,7 @@ SoundSourceDialog::SoundSourceDialog(soundsource_info_s *data, QWidget *parent)
     edit->setValidator(new QDoubleValidator(0.0, 1.0, 2, edit));
   }
 
-  populateSoundCombo(ui->IDC_SOUND_COMBO, m_data->sound_index);
+  populateSoundCombo(ui->IDC_SOUND_COMBO, m_data->sound_index.value_or(-1));
   ui->IDC_VOLUME->setText(QString::number(m_data->volume));
 }
 

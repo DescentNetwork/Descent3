@@ -873,24 +873,24 @@ int ReloadModelTextures(int modelnum, byte_istream &infile) {
       }
 
       for (i = 0; i < n; i++) {
-        int ret;
+        std::optional<uint32_t> ret;
 
         // Read the name of this texture
         std::string name_buf = ReadModelStringLen(infile);
         std::string temp = name_buf + ".ogf";
 
         ret = FindTextureBitmapName(temp);
-        if (ret == -1) {
+        if (!ret) {
           // See if it is already in memory
           ret = FindTextureName(name_buf);
-          if (ret == -1) {
+          if (!ret) {
             ret = 0;
             // mprintf(0,"Object texture %s is not in memory!\n",name_buf);
           }
         }
 
-        pm->textures[i] = ret;
-        if (GameTextures[ret].alpha < .99)
+        pm->textures[i] = *ret;
+        if (GameTextures[*ret].alpha < .99)
           pm->flags |= PMF_ALPHA;
       }
 
@@ -1658,24 +1658,24 @@ int ReadNewModelFile(int polynum, byte_istream &infile) {
       Q_ASSERT(n < MAX_MODEL_TEXTURES);
 
       for (i = 0; i < n; i++) {
-        int ret;
+        std::optional<uint32_t> ret;
 
         // Read the name of this texture
         std::string name_buf = ReadModelStringLen(infile);
         std::string temp = name_buf + ".OGF";
 
         ret = FindTextureBitmapName(temp);
-        if (ret == -1) {
+        if (!ret) {
           // See if it is already in memory
           ret = FindTextureName(name_buf);
-          if (ret == -1) {
+          if (!ret) {
             ret = 0;
             // mprintf(0,"Object texture %s is not in memory!\n",name_buf);
           }
         }
 
-        pm->textures[i] = ret;
-        if (GameTextures[ret].alpha < .99)
+        pm->textures[i] = *ret;
+        if (GameTextures[*ret].alpha < .99)
           pm->flags |= PMF_ALPHA;
       }
 

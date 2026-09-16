@@ -22,6 +22,7 @@
 #include <array>
 #include <cstdint>
 #include <posix_stream.h>
+#include <optional>
 
 #define MAX_AL_TYPES 6
 #define MAX_ALS_PER_TYPE 130
@@ -37,9 +38,21 @@
 #define CHECK_INTERVAL_MIN 5.0f
 #define CHECK_INTERVAL_MAX 10.0f
 
+struct ambient_life_t
+{
+  //std::string name;
+  uint32_t object_id;
+  uint8_t total;
+  uint8_t max;
+  uint8_t min;
+  uint8_t flags;
+  uint8_t next_size;
+  float next_do_time;
+};
+
 class ambient_life {
   // Editor settable values
-  std::array<int, MAX_AL_TYPES> m_type;
+  std::array<std::optional<uint32_t>, MAX_AL_TYPES> m_type;
   std::array<uint8_t, MAX_AL_TYPES> m_total;
   std::array<uint8_t, MAX_AL_TYPES> m_max;
   std::array<uint8_t, MAX_AL_TYPES> m_min;
