@@ -927,14 +927,14 @@ extern void AIUpdateAnim(object *obj);
 std::optional<uint32_t> osipf_ObjectFindID(const std::string &name) { return FindObjectIDName(IGNORE_TABLE(name)); }
 
 // searches for an object id given its name
-int osipf_ObjectFindType(const std::string &name) {
+std::optional<uint32_t> osipf_ObjectFindType(const std::string &name) {
   auto id = FindObjectIDName(IGNORE_TABLE(name));
 
   if (id) {
-    return Object_info[*id].type;
+    return static_cast<uint32_t>(Object_info[*id].type);
   }
 
-  return OBJ_NONE;
+  return std::nullopt;
 }
 
 // searches through the weapons for a name and returns the id
@@ -2599,7 +2599,7 @@ int osipf_ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3 *pos, const 
       Q_ASSERT(Object_info[id].lighting_info.lighting_render_type != LRT_LIGHTMAPS);
     }
 
-    objnum = ObjCreate(type, id, roomnum, pos, orient, parent_handle);
+    objnum = ObjCreate(type, id, roomnum, pos, orient, parent_handle).value_or(-1);
 
     if (objnum == -1) {
       return OBJECT_HANDLE_NONE;
@@ -3363,64 +3363,64 @@ char osipf_AIGetCurGoalIndex(int obj_handle) {
 #endif
 std::optional<uint32_t> osipf_FindSoundName(const std::string &name) { return FindSoundName(IGNORE_TABLE(name)); }
 
-int osipf_FindRoomName(const std::string &name) {
+std::optional<uint32_t> osipf_FindRoomName(const std::string &name) {
   for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
     if (Rooms[i].used && !Rooms[i].name.empty()) {
       if (match(name, Rooms[i].name))
-        return i;
+        return static_cast<uint32_t>(i);
     }
   }
-  return -1;
+  return std::nullopt;
 }
 
-int osipf_FindTriggerName(const std::string &name) {
+std::optional<uint32_t> osipf_FindTriggerName(const std::string &name) {
   for (int i = 0; i < Num_triggers; i++) {
     if (!Triggers[i].name.empty()) {
       if (match(name, Triggers[i].name))
-        return i;
+        return static_cast<uint32_t>(i);
     }
   }
-  return -1;
+  return std::nullopt;
 }
 
-int osipf_FindObjectName(const std::string &name) {
+std::optional<uint32_t> osipf_FindObjectName(const std::string &name) {
   for (int i = 0; i < (int)Objects.size(); i++) {
     if (Objects[i].type != OBJ_NONE && !Objects[i].name.empty()) {
       if (match(name, Objects[i].name))
-        return Objects[i].handle;
+        return static_cast<uint32_t>(Objects[i].handle);
     }
   }
-  return OBJECT_HANDLE_NONE;
+  return std::nullopt;
 }
 
-int osipf_GetTriggerRoom(int trigger_id) {
+std::optional<uint32_t> osipf_GetTriggerRoom(int trigger_id) {
   if (trigger_id < 0 || trigger_id >= Num_triggers)
-    return -1;
+    return std::nullopt;
 
-  return Triggers[trigger_id].roomnum;
+  return static_cast<uint32_t>(Triggers[trigger_id].roomnum);
 }
 
-int osipf_GetTriggerFace(int trigger_id) {
+std::optional<uint32_t> osipf_GetTriggerFace(int trigger_id) {
   if (trigger_id < 0 || trigger_id >= Num_triggers)
-    return -1;
+    return std::nullopt;
 
-  return Triggers[trigger_id].facenum;
+  return static_cast<uint32_t>(Triggers[trigger_id].facenum);
 }
 
-int osipf_FindDoorName(const std::string &name) {
+std::optional<uint32_t> osipf_FindDoorName(const std::string &name) {
   for (int i = 0; i <= MAX_OBJECTS; i++) {
     if (Objects[i].type == OBJ_DOOR && !Objects[i].name.empty() && match(Objects[i].name, name)) {
-      return Objects[i].handle;
+      return static_cast<uint32_t>(Objects[i].handle);
     }
   }
-  return OBJECT_HANDLE_NONE;
+  return std::nullopt;
 }
 
 std::optional<uint32_t> osipf_FindTextureName(const std::string &name) { return FindTextureName(IGNORE_TABLE(name)); }
 
 std::optional<uint32_t> osipf_FindPathName(const std::string &name) { return FindGamePathName(name); }
 
-int osipf_FindLevelGoalName(const std::string &name) { return Level_goals.GoalFindId(name); }
+std::optional<uint32_t> osipf_FindLevelGoalName(const std::string &name) { return Level_goals.GoalFindId(name); }
 #if 0
 void osipf_CreateRandomSparks(int num_sparks, vector3 *pos, int roomnum, int which_index, float force_scalar) {
   CreateRandomSparks(num_sparks, pos, roomnum, which_index, force_scalar);

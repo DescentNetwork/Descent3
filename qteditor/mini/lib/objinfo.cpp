@@ -22,6 +22,15 @@
 
 #include "objinfo.h"
 
+// First object page slot with the given type (the engine's objinfo.cpp
+// GetObjectID), used by FindValidID during level object-id translation.
+std::optional<uint32_t> GetObjectID(int type) {
+  for (int i = 0; i < MAX_OBJECT_IDS; i++)
+    if (Object_info[i].type == type)
+      return i;
+  return std::nullopt;
+}
+
 //-----------------------------------------------------------------------------
 // Animation glue (generic pages)
 //-----------------------------------------------------------------------------

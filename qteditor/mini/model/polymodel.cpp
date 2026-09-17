@@ -675,16 +675,16 @@ vector3 *Polymodel_light_direction, Polymodel_fog_plane, Polymodel_specular_pos,
 static inline void RecursiveAssignWB(poly_model *pm, int sm_index, int wb_index);
 static void FindWBSubobjects(poly_model *pm);
 /// Sets aside a polymodel for use.
-/// Errors and returns -1 if none free.
-static int AllocPolyModel();
+/// Errors and returns nullopt if none free.
+static std::optional<uint32_t> AllocPolyModel();
 static std::string ReadModelStringLen(byte_istream &infile);
 /// Given a modelnumber, opens the original pof file and attempts to rematch that
 /// models textures with the bitmaps with have in memory.
-static int ReloadModelTextures(int modelnum, byte_istream &infile);
+static bool ReloadModelTextures(int modelnum, byte_istream &infile);
 static void SetPolymodelProperties(bsp_info *subobj, const std::string &props);
 static void MinMaxSubmodel(poly_model *pm, bsp_info *sm, vector3 offset);
 static void FindMinMaxForModel(poly_model *pm);
-static int ReadNewModelFile(int polynum, byte_istream &infile);
+static bool ReadNewModelFile(int polynum, byte_istream &infile);
 static void SetNormalizedTimeObjTimed(object& obj, float *normalized_time);
 static void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, poly_model *pm);
 static void FreeAllModels();
@@ -742,20 +742,20 @@ void FindWBSubobjects(poly_model *pm) {
 }
 
 // Sets aside a polymodel for use
-// Errors and returns -1 if none free
-int AllocPolyModel() {
+// Errors and returns nullopt if none free
+std::optional<uint32_t> AllocPolyModel() {
   for (int i = 0; i < MAX_POLY_MODELS; i++)
     if (Poly_models[i].used == 0) {
       WBClearInfo(&Poly_models[i]);
       Poly_models[i] = poly_model{};
       Poly_models[i].used = 1;
       Poly_models[i].flags |= PMF_NOT_RESIDENT; // not in memory yet!
-      return i;
+      return static_cast<uint32_t>(i);
     }
 
   LOG_ERROR("Couldn't find a free polymodel!");
   Q_ASSERT(false);
-  return -1;
+  return std::nullopt;
 }
 
 // Frees all the polymodel data, but doesn't free the actual polymodel itself
@@ -831,7 +831,7 @@ std::string ReadModelStringLen(byte_istream &infile) {
 
 // Given a modelnumber, opens the original pof file and attempts to rematch that
 // models textures with the bitmaps with have in memory
-int ReloadModelTextures(int modelnum, byte_istream &infile) {
+bool ReloadModelTextures(int modelnum, byte_istream &infile) {
   int done = 0, len;
   uint32_t id;
   poly_model *pm = &Poly_models[modelnum];
@@ -869,7 +869,7 @@ int ReloadModelTextures(int modelnum, byte_istream &infile) {
       infile >> n;
       if (n != pm->n_textures) {
         Q_ASSERT(false); // Get Jason, new model doesn't match old model!!!
-        return 0;
+        return false;
       }
 
       for (i = 0; i < n; i++) {
@@ -904,7 +904,7 @@ int ReloadModelTextures(int modelnum, byte_istream &infile) {
     }
   }
 
-  return 1;
+  return true;
 }
 
 void BuildModelAngleMatrix(matrix *mat, angle ang, vector3 *axis) {
@@ -1181,7 +1181,7 @@ void FindMinMaxForModel(poly_model *pm) {
   }
 }
 
-int ReadNewModelFile(int polynum, byte_istream &infile) {
+bool ReadNewModelFile(int polynum, byte_istream &infile) {
   int version, done = 0, i, t, version_major;
   int id, len;
   poly_model *pm = &Poly_models[polynum];
@@ -1210,7 +1210,7 @@ int ReadNewModelFile(int polynum, byte_istream &infile) {
   if (version < PM_COMPATIBLE_VERSION || version > PM_OBJFILE_VERSION) {
     LOG_ERROR("Bad version (%d) in model file!", version);
     Q_ASSERT(false);
-    return 0;
+    return false;
   }
 
   pm->version = version;
@@ -1941,15 +1941,15 @@ int ReadNewModelFile(int polynum, byte_istream &infile) {
     LOG_ERROR("This model has more than the max number of subobjects! (%d)", MAX_SUBOBJECTS);
     Q_ASSERT(false);
     FreePolyModel(pm - Poly_models);
-    return 0;
+    return false;
   }
 
-  return 1;
+  return true;
 }
 
 // given a filename, reads in a POF and returns an index into the Poly_models array
 // returns -1 if something is wrong
-int LoadPolyModel(const std::filesystem::path &filename, int pageable) {
+std::optional<uint32_t> LoadPolyModel(const std::filesystem::path &filename, int pageable) {
   int i, polynum = -1;
   std::unique_ptr<posix_istream> infile;
   int overlay = 0;
@@ -1960,11 +1960,12 @@ int LoadPolyModel(const std::filesystem::path &filename, int pageable) {
   std::filesystem::path name = ChangePolyModelName(filename);
 
   // If this polymodel is already in memory, just use that index
-  i = FindPolyModelName(name);
-  if (i != -1) {
+  const std::optional<uint32_t> existing = FindPolyModelName(name);
+  if (existing.has_value()) {
+    i = static_cast<int>(*existing);
 #ifdef RELEASE
     Poly_models[i].used++;
-    return i;
+    return *existing;
 #endif
 
     int old_used = Poly_models[i].used;
@@ -1997,7 +1998,7 @@ int LoadPolyModel(const std::filesystem::path &filename, int pageable) {
   }
 
   if (!overlay)
-    polynum = AllocPolyModel();
+    polynum = static_cast<int>(AllocPolyModel().value_or(-1));
   else {
     if (!(Poly_models[polynum].flags & PMF_NOT_RESIDENT)) {
       if (pageable) {
@@ -2025,20 +2026,20 @@ int LoadPolyModel(const std::filesystem::path &filename, int pageable) {
 
   Poly_models[polynum].name = name.string();
 
-  int ret = 0;
+  bool ret = false;
   if (!pageable)
     ret = ReadNewModelFile(polynum, *infile);
   else
-    ret = 1;
+    ret = true;
 
   infile.reset();
 
   Poly_models[polynum].id = polynum;
 
   if (ret)
-    return polynum; // loaded successfully
+    return static_cast<uint32_t>(polynum); // loaded successfully
 
-  return -1; // damn, didn't load
+  return std::nullopt; // damn, didn't load
 }
 
 // Pages in a polymodel if it is not already in memory
@@ -2075,10 +2076,10 @@ void PageInPolymodel(int polynum, int type, float *size_ptr) {
 
   //	Q_ASSERT(infile);
 
-  int ret = ReadNewModelFile(polynum, infile);
+  bool ret = ReadNewModelFile(polynum, infile);
 
   infile.close();
-  Q_ASSERT(ret > 0);
+  Q_ASSERT(ret);
 
   // See if textures need to be remapped
   int remap = 0;
@@ -2116,16 +2117,16 @@ std::filesystem::path ChangePolyModelName(const std::filesystem::path &src) {
   return filename;
 }
 
-// Searches thru all polymodels for a specific name, returns -1 if not found
+// Searches thru all polymodels for a specific name, returns nullopt if not found
 // or index of polymodel with name
-int FindPolyModelName(const std::filesystem::path &name) {
+std::optional<uint32_t> FindPolyModelName(const std::filesystem::path &name) {
   for (int i = 0; i < MAX_POLY_MODELS; i++) {
     if (Poly_models[i].used && match(Poly_models[i].name, name.string())) {
-      return i;
+      return static_cast<uint32_t>(i);
     }
   }
 
-  return -1;
+  return std::nullopt;
 }
 
 // Sets a positional instance

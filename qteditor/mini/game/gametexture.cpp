@@ -11,9 +11,16 @@
 #include "vclip.h"
 #include "game.h"
 #include "string_helpers.h"
+#include "bitmap.h"
+#include "renderer.h"
+#include "log.h"
 
+#include <QtGlobal>
 #include <string>
+#include <vector>
 #include <stdexcept>
+#include <fstream>
+#include <filesystem>
 
 std::optional<uint32_t> FindTextureName(const std::string &name) {
   if(!name.empty())
@@ -135,5 +142,86 @@ int GetTextureBitmap(int handle, int framenum, bool force) {
 int AllocateProceduralForTexture(int handle)
 {
   return -1;
+}
+
+// Given a filename, loads either the bitmap or vclip found in that file.  If
+// type is not NULL, sets it to 1 if the file is an animation, otherwise sets it
+// to zero.  Returns the bitmap/vclip handle, or -1 on error.
+int LoadTextureImage(const std::filesystem::path &filename, int *type, int texture_size, int mipped, int pageable,
+                     int format) {
+  // Animation containers (.oaf/.ifl/.abm) page in as a vclip.
+  std::string ext = filename.extension().string();
+  if (!ext.empty() && ext[0] == '.')
+    ext.erase(ext.begin());
+  const bool anim = match(ext, "oaf") || match(ext, "ifl") || match(ext, "abm");
+
+  if (type != nullptr)
+    *type = anim ? 1 : 0;
+
+  // Read the whole file into a buffer and hand it to the in-memory decoders
+  // (bm_LoadBitmapFromMemory / LoadVClipFromMemory), matching how HOG entries
+  // are loaded elsewhere in the mini port.
+  std::ifstream in(filename, std::ios::binary | std::ios::ate);
+  if (!in.is_open()) {
+    LOG_ERROR("LoadTextureImage: cannot open %s.", filename.c_str());
+    return -1;
+  }
+  const std::streamsize size = in.tellg();
+  if (size < 0)
+    return -1;
+  in.seekg(0, std::ios::beg);
+  std::vector<uint8_t> buf(static_cast<size_t>(size));
+  if (!in.read(reinterpret_cast<char *>(buf.data()), size))
+    return -1;
+
+  const std::string name = filename.filename().string();
+
+  if (anim) {
+    const std::optional<uint32_t> vc = LoadVClipFromMemory(buf.data(), buf.size(), name, format);
+    return vc.has_value() ? static_cast<int>(*vc) : -1;
+  }
+
+  int bm_handle = bm_LoadBitmapFromMemory(buf.data(), buf.size(), name.c_str(), format, mipped);
+  if (bm_handle < 1)
+    return -1;
+
+  int w = 0, h = 0;
+  if (texture_size == NORMAL_TEXTURE) {
+    w = TEXTURE_WIDTH;
+    h = TEXTURE_HEIGHT;
+  } else if (texture_size == SMALL_TEXTURE) {
+    w = TEXTURE_WIDTH / 2;
+    h = TEXTURE_HEIGHT / 2;
+  } else if (texture_size == TINY_TEXTURE) {
+    w = TEXTURE_WIDTH / 4;
+    h = TEXTURE_HEIGHT / 4;
+  } else if (texture_size == HUGE_TEXTURE) {
+    w = TEXTURE_WIDTH * 2;
+    h = TEXTURE_HEIGHT * 2;
+  } else {
+    return bm_handle;
+  }
+
+  // If a differing size is requested, scale to it.
+  if (!pageable && (w != bm_w(bm_handle, 0) || h != bm_h(bm_handle, 0))) {
+    LOG_WARNING("Resizing bitmap %s from %d x %d to %d x %d!",
+                GameBitmaps[bm_handle].name, bm_w(bm_handle, 0), bm_h(bm_handle, 0), w, h);
+
+    int dest_bm = bm_AllocBitmap(w, h, mipped * ((w * h * 2) / 3)).value_or(-1);
+    Q_ASSERT(dest_bm >= 0);
+
+    if (mipped)
+      GameBitmaps[dest_bm].flags |= BF_MIPMAPPED;
+    GameBitmaps[dest_bm].format = format;
+
+    bm_ScaleBitmapToBitmap(dest_bm, bm_handle);
+    strncpy(GameBitmaps[dest_bm].name, GameBitmaps[bm_handle].name, BITMAP_NAME_LEN - 1);
+    GameBitmaps[dest_bm].name[BITMAP_NAME_LEN - 1] = 0;
+    bm_FreeBitmap(bm_handle);
+
+    bm_handle = dest_bm;
+  }
+
+  return bm_handle;
 }
 

@@ -466,7 +466,7 @@ void WorldObjectsPlayerDialog::onPshipLoadModel() {
     return;
 
   const std::filesystem::path pathFs(pathname.toStdString());
-  const int img_handle = LoadPolyModel(pathFs, 0);
+  const int img_handle = static_cast<int>(LoadPolyModel(pathFs, 0).value_or(-1));
   if (img_handle < 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't open that animation/model file.");
     return;

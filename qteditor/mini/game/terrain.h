@@ -336,11 +336,11 @@ int LoadPCXTerrain(char *);
 
 // Given a position, returns the terrain segment that that position is in/over
 // The return value is a pure cell number, meaning it doesn't have the outside flag set
-int GetTerrainCellFromPos(vector3& pos);
+std::optional<uint32_t> GetTerrainCellFromPos(vector3& pos);
 
 // Given a position, returns the terrain segment that that position is in/over
 // The return value is a valid room number, meaning it has the outside flag set
-int GetTerrainRoomFromPos(vector3& pos);
+std::optional<uint32_t> GetTerrainRoomFromPos(vector3& pos);
 
 // Computes the center of the segment in x,z and also sets y touching the ground
 void ComputeTerrainSegmentCenter(vector3& pos, int segnum);

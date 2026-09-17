@@ -21,6 +21,7 @@
 
 #include "pstypes.h"
 
+#include <optional>
 #include <vector>
 
 #define MAX_LIGHTMAPS (65534)
@@ -51,17 +52,17 @@ void lm_InitLightmaps();
 void lm_ShutdownLightmaps(void);
 
 // Allocs a lightmap of w x h size
-// Returns lightmap handle if successful, -1 if otherwise
-int lm_AllocLightmap(int w, int h);
+// Returns lightmap handle if successful, nullopt if otherwise
+std::optional<uint32_t> lm_AllocLightmap(int w, int h);
 
 // Given a handle, frees the lightmap memory and flags this lightmap as unused
 void lm_FreeLightmap(int handle);
 
-// returns a lightmaps width  else -1 if something is wrong
-int lm_w(int handle);
+// returns a lightmaps width  else nullopt if something is wrong
+std::optional<uint32_t> lm_w(int handle);
 
-// returns a lightmaps height , else -1 if something is wrong
-int lm_h(int handle);
+// returns a lightmaps height , else nullopt if something is wrong
+std::optional<uint32_t> lm_h(int handle);
 
 // returns a lightmaps data as height rows of width texels
 std::vector<std::vector<uint16_t>> &lm_data(int handle);

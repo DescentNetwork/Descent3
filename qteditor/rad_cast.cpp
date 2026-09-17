@@ -228,7 +228,7 @@ int ShootRayToVolumePoint(vector3& src, vector3& dest, int start_room) {
   fvi_query fq;
 
   if (UseBSP) {
-    int fate = BSPRayOccluded(src, dest, MineBSP.root);
+    const bool fate = BSPRayOccluded(src, dest, MineBSP.root);
     if (!fate)
       return 1;
     return 0;
@@ -347,7 +347,7 @@ int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_su
   if (UseBSP) {
     if (dest_surf->surface_type == ST_ROOM || dest_surf->surface_type == ST_ROOM_OBJECT) {
       if (src_surf->surface_type == ST_ROOM || src_surf->surface_type == ST_ROOM_OBJECT) {
-        int fate = BSPRayOccluded(src, dest, MineBSP.root);
+        bool fate = BSPRayOccluded(src, dest, MineBSP.root);
         if (!fate)
           return 1;
         return 0;
@@ -377,7 +377,7 @@ int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_su
       ClipSatelliteToTerrain(temp_src, src, temp_dest);
     } else {
       ClipSatelliteToTerrain(temp_src, src, temp_dest);
-      int src_cell = GetTerrainCellFromPos(temp_src);
+      int src_cell = GetTerrainCellFromPos(temp_src).value_or(-1);
 
       if (src_cell < 0) {
         src_cell = 0;
@@ -393,7 +393,7 @@ int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_su
   fq.p1 = &temp_dest;
 
   if (src_surf->surface_type == ST_EXTERNAL_ROOM)
-    fq.startroom = GetTerrainRoomFromPos(src);
+    fq.startroom = GetTerrainRoomFromPos(src).value_or(-1);
   else
     fq.startroom = src_surf->roomnum;
 

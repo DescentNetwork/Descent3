@@ -236,13 +236,13 @@ void SlewControlInit() {
   }
 }
 
-int SlewStop(object *obj) {
+bool SlewStop(object *obj) {
   if (!obj)
-    return 0;
+    return false;
 
   vm_MakeZero(&obj->mtype.phys_info.velocity);
 
-  return 1;
+  return true;
 }
 
 // Resets object's orientation
@@ -393,7 +393,7 @@ int SlewFrame(object *obj, int movement_limitations) {
       if (outside_mine) { // starting outside the mine?
 
         // See if we've moved back into a room
-        new_room = FindPointRoom(&new_pos);
+        new_room = FindPointRoom(&new_pos).value_or(-1);
 
         if (new_room != -1) { // back in the mine
           outside_mine = 0;
@@ -439,7 +439,7 @@ int SlewFrame(object *obj, int movement_limitations) {
           LOG_DEBUG("SLEW: hit wall");
 
           // Check if we're in a room
-          t = FindPointRoom(&new_pos);
+          t = FindPointRoom(&new_pos).value_or(-1);
 
           if (t != -1) { // We're in a room
             new_room = t;

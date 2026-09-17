@@ -965,18 +965,18 @@ static void do_fvi_rooms(int initial_room_index);
 /// - parameter p1: are the ends of the line.
 ///
 /// Assumes that the initial point is not intersecting the plane.
-static inline int find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *plane_pnt, const vector3 *plane_norm,
-                                               const vector3 *p0, const vector3 *p1, float rad);
+static inline bool find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *plane_pnt, const vector3 *plane_norm,
+                                                const vector3 *p0, const vector3 *p1, float rad);
 static bool IsPointInCylinder(vector3& normal, vector3 *cylinder_pnt, vector3 *edir, float elen, const float rad,
                               const vector3 *pnt, vector3 *mdir, bool *f_collide);
 
 //! check if a sphere intersects a face -- this can be optimized (only need 2d stuff after rotation)
-static int check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
-                                    const vector3 *p1, float rad, vector3 *ep0, vector3 *ep1);
+static bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
+                                     const vector3 *p1, float rad, vector3 *ep0, vector3 *ep1);
 
 //! check if a sphere intersects a face.
-static int check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
-                                const vector3 *p1, vector3 *face_normal, int nv, float rad, vector3 **vertex_ptr_list);
+static bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
+                                 const vector3 *p1, vector3 *face_normal, int nv, float rad, vector3 **vertex_ptr_list);
 static void fvi_rooms_objs(void);
 static int obj_in_list(int objnum, int *obj_list);
 static void make_trigger_face_list(int last_sim_faces);
@@ -998,8 +998,8 @@ void InitFVI() {
 // plane_pnt & plane_norm describe the plane
 // p0 & p1 are the ends of the line
 // Assumes that the initial point is not intersecting the plane
-inline int find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *plane_pnt, const vector3 *plane_norm,
-                                        const vector3 *p0, const vector3 *p1, float rad) {
+inline bool find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *plane_pnt, const vector3 *plane_norm,
+                                         const vector3 *p0, const vector3 *p1, float rad) {
   vector3 line_vec;             // Vector from p0 to p1
   vector3 point_plane_vec;      // Vector from p0 to a point on the plane
   float proj_dist_line;        // Distance projection of line onto the plane normal
@@ -1015,7 +1015,7 @@ inline int find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *p
   // Negative because if the object is moving toward the plane, it is moving in the opposite direction of the normal
   proj_dist_line = vm_Dot3Product(*plane_norm, line_vec);
   if (proj_dist_line >= 0.0f)
-    return 0;
+    return false;
 
   //  Vector from p0 to a point on the plane
   point_plane_vec = *plane_pnt - *p0;
@@ -1023,7 +1023,7 @@ inline int find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *p
 
   // Throw out any sphere who's centerpoint is initially behind the face
   if (proj_dist_point_plane > 0.0)
-    return 0;
+    return false;
 
   // Use the distance from the edge of the sphere to the plane.  If the new proj_dist_point_plane is
   // negative, then the sphere pokes thru the edge at the initial position
@@ -1033,12 +1033,12 @@ inline int find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *p
     *intp = *p0;
     *colp = *intp + *plane_norm * (-rad + proj_dist_point_plane);
 
-    return 1;
+    return true;
   }
 
   // cannot intersect wall if we are more than a rad away (closest point check)
   if (proj_dist_point_plane <= proj_dist_line) {
-    return 0;
+    return false;
   }
 
   // If we are moving almost parallal to the plane, then make sure we are a rad away form it
@@ -1049,7 +1049,7 @@ inline int find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *p
 
     plane_dist = vm_Dot3Product((*p1 - *plane_pnt),*plane_norm);
     if (plane_dist >= rad)
-      return 0;
+      return false;
 
     *intp = *p1 + (rad - plane_dist) * (*plane_norm);
 
@@ -1067,7 +1067,7 @@ inline int find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *p
   // Collision point is a rad. closer in the direction of the normal
   *colp = *intp + *plane_norm * -rad;
 
-  return 1;
+  return true;
 }
 
 struct vec2d {
@@ -1168,11 +1168,11 @@ uint32_t check_point_to_face(vector3 *colp, vector3 *face_normal, int nv, vector
 // decide if it's close enough to hit
 // determine if and where a vector3 intersects with a sphere
 // vector3 defined by p0,p1
-// if there is an intersection this function returns 1, fills in intp, and col_dist else it returns 0
+// if there is an intersection this function returns true, fills in intp, and col_dist else it returns false
 // NOTE:  Caller should account for the radius of the vector3 (i.e. no rad. for the vector3 is passed
 //        to this function -- the 2 radii are additive to it is trial and it saves 1 parameter
-int check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, const vector3 *p1, vector3 *sphere_pos,
-                             float sphere_rad, bool f_correcting, bool f_init_collisions) {
+bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, const vector3 *p1, vector3 *sphere_pos,
+                              float sphere_rad, bool f_correcting, bool f_init_collisions) {
   vector3 line_vec;            // Vector direction of line from p0 to p1
   vector3 normalized_line_vec; // Normalized line vector3
   float mag_line;             // Length of the line
@@ -1192,7 +1192,7 @@ int check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, 
   point_to_center_vec = *sphere_pos - *p0;
 
   if (vm_Dot3Product(line_vec, point_to_center_vec) <= 0.0f)
-    return 0;
+    return false;
 
   // Get the magnitude and direction of the line vector3
   normalized_line_vec = line_vec;
@@ -1204,7 +1204,7 @@ int check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, 
   // We check for an initial hit, so if closest_point is negative distance, it was a miss (think about it)
   // Otherwise, make sure it is not any farther than would for a collision to happen
   if (closest_point_dist < 0.0 || closest_point_dist >= mag_line + sphere_rad)
-    return 0;
+    return false;
 
   // Is the initial p0 position an intersection?  If so, warn us and collide immediately.
   if (vm_Dot3Product(point_to_center_vec, point_to_center_vec) < sphere_rad * sphere_rad) {
@@ -1223,15 +1223,15 @@ int check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, 
           *p0 - n_ptc * (sphere_rad - (scalar)sqrt(sphere_rad * sphere_rad - vm_Dot3Product(point_to_center_vec, point_to_center_vec)));
 
       *col_dist = 0.0;
-      return 1;
+      return true;
     } else if (f_init_collisions) {
       *intp = *p0;
       *col_dist = 0.0;
 
-      return 1;
+      return true;
     } else {
       // If not correcting, ignore initial point collisions, as they make no sense.
-      return 0;
+      return false;
     }
   }
 
@@ -1240,7 +1240,7 @@ int check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, 
 
   // We are not moving close enough to collide with the circle
   if (closest_mag_to_center >= sphere_rad)
-    return 0;
+    return false;
 
   // Pathagorithm Theorom -- the radius is the hypothenus, the other two sides are the distance
   // from the point to the line, and the amount we should subtract from the line to account
@@ -1248,13 +1248,13 @@ int check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, 
   shorten = sqrt(sphere_rad * sphere_rad - closest_mag_to_center * closest_mag_to_center);
   *col_dist = closest_point_dist - shorten;
   if (*col_dist > mag_line)
-    return 0;
+    return false;
 
   // Actual collision distance
   *intp = *p0 + *col_dist * normalized_line_vec;
 
   // Actual collision point
-  return 1;
+  return true;
 }
 
 bool IsPointInCylinder(vector3& normal, vector3 *cylinder_pnt, vector3 *edir, float elen, const float rad,
@@ -1281,8 +1281,8 @@ bool IsPointInCylinder(vector3& normal, vector3 *cylinder_pnt, vector3 *edir, fl
 }
 
 // check if a sphere intersects a face -- this can be optimized (only need 2d stuff after rotation)
-int check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
-                             const vector3 *p1, float rad, vector3 *ep0, vector3 *ep1) {
+bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
+                              const vector3 *p1, float rad, vector3 *ep0, vector3 *ep1) {
   matrix edge_orient;
   vector3 po0, po1;
   vector3 edgevec = *ep1 - *ep0;
@@ -1332,7 +1332,7 @@ int check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vect
 
     dist_from_origin = vm_GetMagnitude(&closest_pnt);
     if (dist_from_origin >= rad)
-      return 0;
+      return false;
 
     dist_to_intersection = sqrt(rad * rad - dist_from_origin * dist_from_origin);
 
@@ -1393,7 +1393,7 @@ int check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vect
     }
 
     if (valid_hit == 0)
-      return 0;
+      return false;
 
     int best_hit_index = -1;
     for (i = 0; i < 4; i++) {
@@ -1415,7 +1415,7 @@ int check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vect
 
     // mprintf(0, "We hit at %f,%f,%f \nwith %f,%f,%f on face\n", XYZ(intp), XYZ(colp));
 
-    return 1;
+    return true;
   } else {
     if (f_init_collide) {
       *col_dist = 0.0f;
@@ -1423,9 +1423,9 @@ int check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vect
       *colp = *p0 - init_normal * rad;
       *intp = *p0;
 
-      return 1;
+      return true;
     } else {
-      return 0;
+      return false;
     }
   }
 }
@@ -1593,8 +1593,8 @@ float rad, vector3 *ep0, vector3 *ep1)
 */
 
 // check if a sphere intersects a face
-int check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
-                         const vector3 *p1, vector3 *face_normal, int nv, float rad, vector3 **vertex_ptr_list) {
+bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
+                          const vector3 *p1, vector3 *face_normal, int nv, float rad, vector3 **vertex_ptr_list) {
   uint32_t edgemask;
 
   Q_ASSERT(nv > 0 && nv <= 32); // otherwise, we overflow the edgemask -- if we hit this we need to make edgemask a long
@@ -1608,7 +1608,7 @@ int check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 
     //		mprintf(0, "CSTF Hit Face\n");
     *col_dist = vm_VectorDistance(p0, intp);
     *wall_norm = *face_normal;
-    return IT_FACE;
+    return true;
   } else {
     // Although the plane collision point is not in the face, we might hit an edge.
     // If the checkpoint collides with the edge of a face, it could
@@ -1620,7 +1620,7 @@ int check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 
 
     // If we have no radius we could only hit the face and not an edge or point
     if (rad == 0.0)
-      return IT_NONE;
+      return false;
 
     int f_hit = 0;
     vector3 c_end = *p1;
@@ -1640,7 +1640,7 @@ int check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 
       edgemask = edgemask >> 1;
     }
 
-    return f_hit;
+    return f_hit != 0;
   } /*	checkvec = *p0 - *v0;
            edgevec = *v1 - *v0;
            edgelen = vm_NormalizeVector(&edgevec);
@@ -1683,9 +1683,9 @@ int check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 
 // point on plane, whether or not line intersects side
 // facenum determines which of four possible faces we have
 // note: the seg parm is temporary, until the face itself has a point field
-int check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
-                       const vector3 *p1, vector3 *face_normal, vector3 **vertex_ptr_list, const int nv, const float rad) {
-  int f_pli; // Flag for if a plane that defines the face intersects with the line
+bool check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
+                        const vector3 *p1, vector3 *face_normal, vector3 **vertex_ptr_list, const int nv, const float rad) {
+  bool f_pli; // Flag for if a plane that defines the face intersects with the line
   int vertnum = 0;
   vector3* test = vertex_ptr_list[0];
   int i;
@@ -1705,7 +1705,7 @@ int check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *w
   f_pli = find_plane_line_intersection(newp, colp, vertex_ptr_list[vertnum], face_normal, p0, p1, rad);
 
   if (!f_pli)
-    return IT_NONE;
+    return false;
 
   // This is the edge point where the actual intersection with the plane is occuring
   //	*colp = *newp;
@@ -1744,9 +1744,9 @@ bool check_line_to_line(scalar *t1, scalar *t2, vector3 *p1, vector3 *v1, vector
 }
 
 // determine if a vector intersects with an object
-// if no intersects, returns 0, else fills in intp and returns dist
-int check_vector_to_object(vector3 *intp, float *col_dist, vector3 *p0, vector3 *p1, float rad, object *still_obj,
-                           object *fvi_obj) {
+// if no intersects, returns false, else fills in intp
+bool check_vector_to_object(vector3 *intp, float *col_dist, vector3 *p0, vector3 *p1, float rad, object *still_obj,
+                            object *fvi_obj) {
   float still_size;
   vector3 still_pos = still_obj->pos;
   float total_size;
@@ -1777,7 +1777,7 @@ int check_vector_to_object(vector3 *intp, float *col_dist, vector3 *p0, vector3 
 #endif
 #endif
 
-        return 0;
+        return false;
       }
     }
   }
@@ -1791,7 +1791,7 @@ int check_vector_to_object(vector3 *intp, float *col_dist, vector3 *p0, vector3 
     else
       LOG_DEBUG("Get Chris: A non-object tried to hit a zero radii object of type %d", still_obj->type);
 #endif
-    return 0;
+    return false;
   }
 
   // Account for the radius of the vector.
@@ -2747,7 +2747,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
       fvi_new_query.p1 = &new_p1;
 
       for (i = 0; i < num_subdivisions; i++) {
-        fvi_new_query.startroom = GetTerrainRoomFromPos(new_p0);
+        fvi_new_query.startroom = GetTerrainRoomFromPos(new_p0).value_or(-1);
 
         //				mprintf(0, "S %d F %f,%f,%f to %f,%f,%f\n", i, XYZ(&new_p0), XYZ(&new_p1));
         s_hit_type = fvi_FindIntersection(&fvi_new_query, &fvi_new_hit_data, true);
@@ -2832,7 +2832,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
         }
 
         // Determine if we are within the valid terrain bounds
-        hit_data->hit_room = GetTerrainRoomFromPos(hit_data->hit_pnt);
+        hit_data->hit_room = GetTerrainRoomFromPos(hit_data->hit_pnt).value_or(-1);
         if (hit_data->hit_room == -1) {
           hit_data->hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
         }
@@ -2894,7 +2894,7 @@ int obj_in_list(int objnum, int *obj_list) {
 
 // new function for Mike
 // note: n_segs_visited must be set to zero before this is called
-int sphere_intersects_wall(vector3 *pnt, int segnum, float rad) {
+bool sphere_intersects_wall(vector3 *pnt, int segnum, float rad) {
   /*
           int facemask;
           segment *seg;
@@ -2954,7 +2954,7 @@ int sphere_intersects_wall(vector3 *pnt, int segnum, float rad) {
                   }
           }
   */
-  return 0;
+  return false;
 }
 
 static const int bbox_edges[12][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {3, 4}, {2, 5},
@@ -3291,12 +3291,12 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
 }
 
 // Returns true if the object is through any walls
-int object_intersects_wall(object *objp) {
+bool object_intersects_wall(object *objp) {
   //	n_segs_visited = 0;
   //
   //	return sphere_intersects_wall(&objp->pos,objp->segnum,objp->size);
   Q_ASSERT(0);
-  return 0;
+  return false;
 }
 
 void check_hit_obj(int objnum) {
@@ -4162,7 +4162,7 @@ int do_fvi_terrain() {
   f_check_terrain = false;
 
   // We need to know the endpoint
-  fvi_hit_data_ptr->hit_room = GetTerrainRoomFromPos(fvi_hit_data_ptr->hit_pnt);
+  fvi_hit_data_ptr->hit_room = GetTerrainRoomFromPos(fvi_hit_data_ptr->hit_pnt).value_or(-1);
 
   // End point is out of bounds, so clip it.
   if (fvi_hit_data_ptr->hit_room == -1) {
@@ -4192,7 +4192,7 @@ int do_fvi_terrain() {
     fvi_hit_data_ptr->hit_pnt = *fvi_query_ptr->p0 + delta * movement;
     fvi_collision_dist = vm_VectorDistance(&fvi_hit_data_ptr->hit_pnt, fvi_query_ptr->p0);
 
-    fvi_hit_data_ptr->hit_room = GetTerrainRoomFromPos(fvi_hit_data_ptr->hit_pnt);
+    fvi_hit_data_ptr->hit_room = GetTerrainRoomFromPos(fvi_hit_data_ptr->hit_pnt).value_or(-1);
 
     fvi_hit_data_ptr->hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
 
@@ -4802,12 +4802,12 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
         fvi_hit_data_ptr = &hit_data_terrain;
         fvi_query_ptr = &query_terrain;
 
-        query_terrain.startroom = GetTerrainRoomFromPos(*query_terrain.p0);
+        query_terrain.startroom = GetTerrainRoomFromPos(*query_terrain.p0).value_or(-1);
 
         //			mprintf(0, "We might go outside\n");
 
         // This is quick, so do it here.
-        hit_data_terrain.hit_room = GetTerrainRoomFromPos(hit_data_terrain.hit_pnt);
+        hit_data_terrain.hit_room = GetTerrainRoomFromPos(hit_data_terrain.hit_pnt).value_or(-1);
 
         if (hit_data_terrain.hit_room == -1)
           hit_data_terrain.hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
@@ -4816,7 +4816,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
         do_fvi_terrain();
 
         // This is quick, so do it here.
-        hit_data_terrain.hit_room = GetTerrainRoomFromPos(hit_data_terrain.hit_pnt);
+        hit_data_terrain.hit_room = GetTerrainRoomFromPos(hit_data_terrain.hit_pnt).value_or(-1);
         if (hit_data_terrain.hit_room == -1)
           hit_data_terrain.hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
 

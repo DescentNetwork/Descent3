@@ -418,12 +418,12 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
 
 extern uint32_t check_point_to_face(vector3 *colp, vector3 *face_normal, int nv, vector3 **vertex_ptr_list);
 
-extern int check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, const vector3 *p1,
-                                    vector3 *sphere_pos, float sphere_rad, bool f_correcting, bool f_init_collisions);
+extern bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, const vector3 *p1,
+                                     vector3 *sphere_pos, float sphere_rad, bool f_correcting, bool f_init_collisions);
 
-extern int check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
-                              const vector3 *p1, vector3 *face_normal, vector3 **vertex_ptr_list, const int nv,
-                              const float rad);
+extern bool check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
+                               const vector3 *p1, vector3 *face_normal, vector3 **vertex_ptr_list, const int nv,
+                               const float rad);
 extern void InitFVI();
 
 // Types of supported collisions

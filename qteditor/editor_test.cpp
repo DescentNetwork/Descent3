@@ -2574,8 +2574,8 @@ private slots:
       const int lm_handle = LightmapInfo[i].lm_handle;
       QVERIFY(lm_handle >= 0 && lm_handle < MAX_LIGHTMAPS);
       QVERIFY(GameLightmaps[lm_handle].used > 0);
-      const int w = lm_w(lm_handle);
-      const int h = lm_h(lm_handle);
+      const int w = static_cast<int>(lm_w(lm_handle).value_or(-1));
+      const int h = static_cast<int>(lm_h(lm_handle).value_or(-1));
       QVERIFY(w > 1 && h > 1);
       const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
       QVERIFY(!data.empty());
@@ -2906,7 +2906,7 @@ private slots:
     in.seek(archive.fileOffset(entry), std::ios_base::beg);
     in.read(buf.data(), entry->len);
 
-    const int vc = LoadVClipFromMemory(buf.data(), buf.size(), "pillar.oaf", BITMAP_FORMAT_1555);
+    const int vc = LoadVClipFromMemory(buf.data(), buf.size(), "pillar.oaf", BITMAP_FORMAT_1555).value_or(-1);
     QVERIFY2(vc >= 0, "OAF containers should page in as a resident vclip");
 
     // pillar.oaf is an 8-frame 1555 vclip whose frames are all 128x128.
@@ -2921,7 +2921,7 @@ private slots:
     }
 
     // Loading the same vclip again returns the existing (resident) entry.
-    const int again = LoadVClipFromMemory(buf.data(), buf.size(), "pillar.oaf", BITMAP_FORMAT_1555);
+    const int again = LoadVClipFromMemory(buf.data(), buf.size(), "pillar.oaf", BITMAP_FORMAT_1555).value_or(-1);
     QCOMPARE(again, vc);
 
     // explosion.oaf uses the legacy, non-versioned container header (num_frames
@@ -2937,7 +2937,7 @@ private slots:
     std::vector<uint8_t> legacy_buf(legacy->len);
     in.seek(archive.fileOffset(legacy), std::ios_base::beg);
     in.read(legacy_buf.data(), legacy->len);
-    const int legacy_vc = LoadVClipFromMemory(legacy_buf.data(), legacy_buf.size(), "explosion.oaf", BITMAP_FORMAT_1555);
+    const int legacy_vc = LoadVClipFromMemory(legacy_buf.data(), legacy_buf.size(), "explosion.oaf", BITMAP_FORMAT_1555).value_or(-1);
     QVERIFY2(legacy_vc >= 0, "legacy OAF containers should page in as a resident vclip");
     QVERIFY(!(GameVClips[legacy_vc].flags & VCF_NOT_RESIDENT));
     QCOMPARE(GameVClips[legacy_vc].num_frames, 12);

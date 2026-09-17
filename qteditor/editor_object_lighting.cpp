@@ -40,8 +40,8 @@ void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int fac
   int i;
   float left = 1.1f, right = -1, top = 1.1f, bottom = -1;
   lightmap_object_face *lfp = &obj->lm_object.lightmap_faces[subnum][facenum];
-  int lw = lmi_w(lfp->lmi_handle);
-  int lh = lmi_h(lfp->lmi_handle);
+  int lw = static_cast<int>(lmi_w(lfp->lmi_handle).value_or(0));
+  int lh = static_cast<int>(lmi_h(lfp->lmi_handle).value_or(0));
 
   for (i = 0; i < lfp->num_verts; i++) {
     if (lfp->u2[i] < left)
@@ -96,8 +96,8 @@ void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surf
   Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
   lmi_handle = fp->lmi_handle;
 
-  lw = lmi_w(lmi_handle);
-  lh = lmi_h(lmi_handle);
+  lw = static_cast<int>(lmi_w(lmi_handle).value_or(0));
+  lh = static_cast<int>(lmi_h(lmi_handle).value_or(0));
 
   Q_ASSERT((xres + x1) <= lw);
   Q_ASSERT((yres + y1) <= lh);
@@ -661,7 +661,7 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
                   }
           }*/
 
-  lmi_handle = AllocLightmapInfo(lightmap_x_res, lightmap_y_res, lm_type);
+  lmi_handle = static_cast<int>(AllocLightmapInfo(lightmap_x_res, lightmap_y_res, lm_type).value_or(BAD_LMI_INDEX));
   Q_ASSERT(lmi_handle != BAD_LMI_INDEX);
 
   // Now do best fit spacing

@@ -35,7 +35,7 @@
 void SlewResetOrient(object *obj); // Resets the object's orientation
 int SlewFrame(object *obj,
               int movement_limitations = 0); // Moves the object for one frame  (returns flags.  1=MOVED 2=KEY_ACTION
-int SlewStop(object *obj);                   // Stop the object
+bool SlewStop(object *obj);                   // Stop the object
 void SlewControlInit();                      // initializes controller system for slewer
 
 extern float Slew_key_speed;

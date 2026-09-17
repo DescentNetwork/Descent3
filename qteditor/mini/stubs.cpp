@@ -145,7 +145,7 @@ uint8_t CodeTerrainPoint(g3Point *p) { PRINT_STUB(__FUNCTION__); return 0; }
 
 // ==================== BSP ====================
 void InitBSP() { PRINT_STUB(__FUNCTION__); }
-int BSPRayOccluded(vector3& a, vector3& b, bspnode *n) { PRINT_STUB(__FUNCTION__); return 0; }
+bool BSPRayOccluded(vector3& a, vector3& b, bspnode *n) { PRINT_STUB(__FUNCTION__); return false; }
 bsptree MineBSP = {};
 bool UseBSP = false;
 void BuildBSPTree() { PRINT_STUB(__FUNCTION__); }
@@ -357,14 +357,6 @@ int FindShipName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1;
 //void FreeDoor(int n) { PRINT_STUB(__FUNCTION__);}
 int AllocObjectID(int id, bool a, bool b, bool c) { PRINT_STUB(__FUNCTION__); return -1; }
 void FreeObjectID(int n) { PRINT_STUB(__FUNCTION__); }
-// First object page slot with the given type (the engine's objinfo.cpp
-// GetObjectID), used by FindValidID during level object-id translation.
-int GetObjectID(int type) {
-  for (int i = 0; i < MAX_OBJECT_IDS; i++)
-    if (Object_info[i].type == type)
-      return i;
-  return -1;
-}
 int AllocShip() { PRINT_STUB(__FUNCTION__); return -1; }
 void FreeShip(int n) { PRINT_STUB(__FUNCTION__); }
 int AllocSound() { PRINT_STUB(__FUNCTION__); return -1; }
@@ -401,7 +393,7 @@ void RemapWeapons() { PRINT_STUB(__FUNCTION__); }
 //int LoadPolyModel(const std::filesystem::path& name, int f_module) { PRINT_STUB(__FUNCTION__); return -1; }
 int LoadShipImage(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return -1; }
 int LoadSoundFile(const char *name, float vol, bool b) { PRINT_STUB(__FUNCTION__); return -1; }
-int LoadTextureImage(const std::filesystem::path& name, int *handle, int a, int b, int c, int d) { PRINT_STUB(__FUNCTION__); return -1; }
+//int LoadTextureImage(const std::filesystem::path& name, int *handle, int a, int b, int c, int d) { PRINT_STUB(__FUNCTION__); return -1; }
 //int GetDoorImage(int n) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== Polymodel ====================

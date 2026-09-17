@@ -104,14 +104,14 @@ void DoorwayKeypad::updateDialog() {
 
 void DoorwayKeypad::onNextDoor() {
   if (app.current_door >= 0) {
-    app.current_door = GetNextDoor(app.current_door);
+    app.current_door = GetNextDoor(app.current_door).value_or(-1);
     updateDialog();
   }
 }
 
 void DoorwayKeypad::onPrevDoor() {
   if (app.current_door >= 0) {
-    app.current_door = GetPrevDoor(app.current_door);
+    app.current_door = GetPrevDoor(app.current_door).value_or(-1);
     updateDialog();
   }
 }

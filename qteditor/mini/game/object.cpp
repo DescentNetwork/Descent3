@@ -182,13 +182,13 @@ int FreeObjectSlots(int num_used) {
 // returns the number of a free object, updating Highest_object_index.
 // Generally, ObjCreate() should be called to get an object, since it
 // fills in important fields and does the linking.
-// returns -1 if no free objects
-int ObjAllocate(void) {
+// returns std::nullopt if no free objects
+std::optional<uint32_t> ObjAllocate(void) {
   if (Num_objects >= MAX_OBJECTS - 2)
     FreeObjectSlots(MAX_OBJECTS - 10);
 
   if (Num_objects >= MAX_OBJECTS)
-    return -1;
+    return std::nullopt;
 
   int objnum = free_obj_list[Num_objects++];
 
@@ -416,17 +416,17 @@ static void ObjSetRenderPolyobj(object& obj, int handle) {
 // The original (ObjInitTypeSpecific / ObjInitGeneric, ObjInit.cpp) also wires
 // AI, weapons, animation timers and model paging — all runtime systems the
 // mini omits.  This is the editor-relevant subset.
-static int ObjInitTypeSpecific(object& obj, bool reinitializing) {
+static bool ObjInitTypeSpecific(object& obj, bool reinitializing) {
   (void)reinitializing;
 
   if (obj.id < 0 || obj.id >= MAX_OBJECTS)
-    return 0;
+    return false;
 
   object_info *oi = &Object_info[obj.id];
 
   // Deal with deleted type
   if (oi->type == OBJ_NONE)
-    return 0;
+    return false;
 
   if (oi->type != obj.type)
     obj.type = oi->type;
@@ -474,15 +474,15 @@ static int ObjInitTypeSpecific(object& obj, bool reinitializing) {
     // Runtime systems only; keep the object inert in the editor.
     break;
   default:
-    return 0;
+    return false;
   }
 
-  return 1;
+  return true;
 }
 
 // Initializes a new object.  All fields not passed in are set to defaults.
 // Returns 1 if ok, 0 if error
-int ObjInit(object& obj, int type, int id, int handle, vector3& pos, float creation_time, int parent_handle) {
+bool ObjInit(object& obj, int type, int id, int handle, vector3& pos, float creation_time, int parent_handle) {
   // Zero out the object structure.  The original uses memset() here; the mini
   // object holds a std::string (name) so a value-initialized temporary is used
   // instead — equivalent zeroing without clobbering the string.
@@ -529,33 +529,35 @@ void ObjReInitAll() {
 // ---------------------------------------------------------------------------
 
 // Initializes a new object.  Adds it to the list for the given room.
-// Returns the object number, or -1 on failure.
-int ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3& pos, const matrix *orient, int parent_handle) {
+// Returns the object number, or std::nullopt on failure.
+std::optional<uint32_t> ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3& pos, const matrix *orient,
+                                  int parent_handle) {
   if (type == OBJ_NONE)
-    return -1;
+    return std::nullopt;
 
   if (ROOMNUM_OUTSIDE(roomnum)) {
     int cellnum = CELLNUM(roomnum);
     if (cellnum < 0 || cellnum > TERRAIN_WIDTH * TERRAIN_DEPTH)
-      return -1;
+      return std::nullopt;
 
-    roomnum = GetTerrainRoomFromPos(pos);
+    roomnum = GetTerrainRoomFromPos(pos).value_or(-1);
     if (roomnum == -1)
-      return -1;
+      return std::nullopt;
   }
 
   // Get next free object
-  int objnum = ObjAllocate();
-  if (objnum == -1) // no free objects
-    return -1;
+  const std::optional<uint32_t> objnum_opt = ObjAllocate();
+  if (!objnum_opt.has_value()) // no free objects
+    return std::nullopt;
 
+  const int objnum = static_cast<int>(*objnum_opt);
   object& obj = Objects[objnum];
 
   // Make sure the object is ok
   if (obj.type != OBJ_NONE)
-    return -1;
+    return std::nullopt;
   if (obj.roomnum != -1)
-    return -1;
+    return std::nullopt;
 
   // Compute the new handle
   int handle = obj.handle + HANDLE_COUNT_INCREMENT;
@@ -566,7 +568,7 @@ int ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3& pos, const matrix
   if (!ObjInit(obj, type, id, handle, pos, 0.0f, parent_handle)) { // Couldn't init!
     obj.type = OBJ_NONE;                                          // mark as unused
     ObjFree(objnum);                                               // de-allocate object
-    return -1;
+    return std::nullopt;
   }
 
   // Set the object's orientation
@@ -582,7 +584,7 @@ int ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3& pos, const matrix
 
   ObjInitPositionHistory(obj);
 
-  return objnum;
+  return static_cast<uint32_t>(objnum);
 }
 
 // Removes an object from the world.

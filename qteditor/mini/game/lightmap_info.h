@@ -40,6 +40,8 @@
 // Lightmap info header
 
 #include <cstdint>
+#include <optional>
+
 #include "vecmat.h"
 
 #define BAD_LMI_INDEX 65535
@@ -76,17 +78,17 @@ extern int Num_lightmap_infos_read;
 void InitLightmapInfo(int nummaps = 0);
 
 // Allocs a lightmap of w x h size
-// Returns lightmap handle if successful, -1 if otherwise
-int AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap = true);
+// Returns lightmap handle if successful, nullopt if otherwise
+std::optional<uint32_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap = true);
 
 // Given a handle, frees the lightmap memory and flags this lightmap as unused
 void FreeLightmapInfo(int handle);
 
 // Gets the width of this lightmap_info handle
-int lmi_w(int handle);
+std::optional<uint32_t> lmi_w(int handle);
 
 // Gets the height of this lightmap_info handle
-int lmi_h(int handle);
+std::optional<uint32_t> lmi_h(int handle);
 
 void CloseLightmapInfos();
 

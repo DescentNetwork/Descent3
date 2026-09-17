@@ -39,12 +39,12 @@ void InitLightmapInfo(int nummaps) {
 }
 
 // Allocs a lightmap of w x h size, optionally allocating its backing texture.
-// Returns lightmap info handle if successful, -1 if otherwise
-int AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap) {
+// Returns lightmap info handle if successful, nullopt if otherwise
+std::optional<uint32_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap) {
   int n;
 
   if (Num_of_lightmap_info >= static_cast<int>(MAX_LIGHTMAP_INFOS))
-    return BAD_LMI_INDEX; // Ran out of lightmap infos!
+    return std::nullopt; // Ran out of lightmap infos!
 
   n = Free_lmi_list[Num_of_lightmap_info++];
   Q_ASSERT(n >= 0 && n < static_cast<int>(MAX_LIGHTMAP_INFOS));
@@ -55,8 +55,9 @@ int AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap) {
   Q_ASSERT(w >= 2 && h >= 2);
 
   if (alloc_lightmap) {
-    LightmapInfo[n].lm_handle = lm_AllocLightmap(w, h);
-    Q_ASSERT(LightmapInfo[n].lm_handle != BAD_LM_INDEX);
+    const std::optional<uint32_t> lm = lm_AllocLightmap(w, h);
+    Q_ASSERT(lm.has_value());
+    LightmapInfo[n].lm_handle = static_cast<uint16_t>(lm.value_or(BAD_LM_INDEX));
   }
 
   LightmapInfo[n].used = 1;
@@ -68,7 +69,7 @@ int AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap) {
   LightmapInfo[n].x1 = 0;
   LightmapInfo[n].y1 = 0;
 
-  return n;
+  return static_cast<uint32_t>(n);
 }
 
 // Given a handle, frees the lightmap info (and its lightmap) if it is the last
@@ -90,15 +91,15 @@ void FreeLightmapInfo(int handle) {
 }
 
 // Gets the width of this lightmap_info handle
-int lmi_w(int handle) {
+std::optional<uint32_t> lmi_w(int handle) {
   if (!LightmapInfo[handle].used)
-    return 0;
-  return (LightmapInfo[handle].width);
+    return std::nullopt;
+  return LightmapInfo[handle].width;
 }
 
 // Gets the height of this lightmap_info handle
-int lmi_h(int handle) {
+std::optional<uint32_t> lmi_h(int handle) {
   if (!LightmapInfo[handle].used)
-    return 0;
-  return (LightmapInfo[handle].height);
+    return std::nullopt;
+  return LightmapInfo[handle].height;
 }

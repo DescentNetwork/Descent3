@@ -14,6 +14,7 @@
 #include <QtGlobal>
 
 #include <algorithm>
+#include <optional>
 
 static int Num_of_lightmaps = 0;
 static uint16_t Free_lightmap_list[MAX_LIGHTMAPS];
@@ -42,13 +43,13 @@ void lm_ShutdownLightmaps(void) {
 }
 
 // Allocs a lightmap of w x h size
-// Returns lightmap handle if successful, -1 if otherwise
-int lm_AllocLightmap(int w, int h) {
+// Returns lightmap handle if successful, nullopt if otherwise
+std::optional<uint32_t> lm_AllocLightmap(int w, int h) {
   if (!f_lm_initialized)
     lm_InitLightmaps();
 
   if (Num_of_lightmaps == static_cast<int>(MAX_LIGHTMAPS))
-    return BAD_LM_INDEX; // Ran out of lightmaps!
+    return std::nullopt; // Ran out of lightmaps!
 
   int n = Free_lightmap_list[Num_of_lightmaps++];
   Q_ASSERT(GameLightmaps[n].used == 0);
@@ -75,7 +76,7 @@ int lm_AllocLightmap(int w, int h) {
   Q_ASSERT(lightmap_res >= 2 && lightmap_res <= 128);
   GameLightmaps[n].square_res = lightmap_res;
 
-  return n;
+  return static_cast<uint32_t>(n);
 }
 
 // Given a handle, frees the lightmap memory and flags this lightmap as unused
@@ -93,17 +94,17 @@ void lm_FreeLightmap(int handle) {
   }
 }
 
-// returns a lightmaps width  else -1 if something is wrong
-int lm_w(int handle) {
+// returns a lightmaps width  else nullopt if something is wrong
+std::optional<uint32_t> lm_w(int handle) {
   if (!GameLightmaps[handle].used)
-    return -1;
+    return std::nullopt;
   return GameLightmaps[handle].width;
 }
 
-// returns a lightmaps height , else -1 if something is wrong
-int lm_h(int handle) {
+// returns a lightmaps height , else nullopt if something is wrong
+std::optional<uint32_t> lm_h(int handle) {
   if (!GameLightmaps[handle].used)
-    return -1;
+    return std::nullopt;
   return GameLightmaps[handle].height;
 }
 

@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <array>
+#include <optional>
 #include <string>
 #include "object.h"
 #include "posix_stream.h"
@@ -143,7 +144,7 @@ public:
   bool GoalGoalList(int goal_index, char operation, int8_t *value);
   bool GoalStatus(int goal_index, char operation, int *value, bool announce = true);
 
-  int GoalFindId(const std::string &goal_name);
+  std::optional<uint32_t> GoalFindId(const std::string &goal_name);
 
   int GoalGetNumItems(int goal_index);
 

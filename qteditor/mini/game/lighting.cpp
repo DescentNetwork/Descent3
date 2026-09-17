@@ -94,7 +94,7 @@ static int Destroyed_light_rooms_this_frame[MAX_DESTROYED_LIGHTS_PER_FRAME];
 static int Destroyed_light_faces_this_frame[MAX_DESTROYED_LIGHTS_PER_FRAME];
 
 static void FreeLighting();
-static int GetFreeDynamicLightmap(int w, int h);
+static std::optional<uint32_t> GetFreeDynamicLightmap(int w, int h);
 static void BlendLightingEdges(lightmap_info *lmi_ptr);
 static void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, float red_scale, float green_scale,
                                         float blue_scale, vector3 *light_direction, float dot_range);
@@ -128,7 +128,7 @@ void InitDynamicLighting() {
     Light_component_scalar[i] = 1.0;
 
   for (cl = 0, size = 128; size >= 2; size >>= 1, cl++) {
-    Specular_maps[cl] = lm_AllocLightmap(size, size);
+    Specular_maps[cl] = static_cast<int>(lm_AllocLightmap(size, size).value_or(BAD_LM_INDEX));
     Q_ASSERT(Specular_maps[cl] != BAD_LM_INDEX);
   }
 
@@ -185,15 +185,15 @@ uint8_t Float_to_ubyte(float fnum) {
 }
 
 // Returns an index into the Dynamic_lightmaps array.  Index returned is marked as unused
-int GetFreeDynamicLightmap(int w, int h) {
+std::optional<uint32_t> GetFreeDynamicLightmap(int w, int h) {
   int total = w * h * 2;
 
   if (Num_dynamic_lightmaps == MAX_DYNAMIC_LIGHTMAPS)
-    return -1;
+    return std::nullopt;
 
   if (total + Cur_dynamic_mem_ptr > DYNAMIC_LIGHTMAP_MEMORY) {
     LOG_WARNING("Ran out of lightmap memory (%d)", DYNAMIC_LIGHTMAP_MEMORY);
-    return -1;
+    return std::nullopt;
   }
 
   int n = Num_dynamic_lightmaps++;
@@ -211,8 +211,8 @@ int GetFreeDynamicLightmap(int w, int h) {
 // Makes all the edges of dynamic lighting blend into the body of the lightmap
 void BlendLightingEdges(lightmap_info *lmi_ptr) {
   int lmi_handle = lmi_ptr - LightmapInfo;
-  int h = lmi_h(lmi_handle);
-  int w = lmi_w(lmi_handle);
+  int h = static_cast<int>(lmi_h(lmi_handle).value_or(0));
+  int w = static_cast<int>(lmi_w(lmi_handle).value_or(0));
   int lm_handle = lmi_ptr->lm_handle;
   std::vector<std::vector<uint16_t>> &dest_data = lm_data(lm_handle);
   std::vector<std::vector<uint16_t>> &src_data = dest_data;
@@ -296,8 +296,8 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     if (Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))
       continue;
 
-    int xres = lmi_w(fp->lmi_handle);
-    int yres = lmi_h(fp->lmi_handle);
+    int xres = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
+    int yres = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
 
     lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
     
@@ -400,16 +400,16 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     } else // Start a new dynamic lightmap
     {
       // First find a suitable dynamic lightmap to work with
-      int dynamic_handle = GetFreeDynamicLightmap(xres, yres);
+      const std::optional<uint32_t> dynamic_handle = GetFreeDynamicLightmap(xres, yres);
 
-      if (dynamic_handle < 0) {
+      if (!dynamic_handle.has_value()) {
         LOG_WARNING("No free dynamic maps!");
         return; // None free!
       }
 
       // Now copy our source data to our dest data so we have a base to work with
       const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
-      uint16_t *dyn_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
+      uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
         for (int x = 0; x < xres; x++) {
@@ -420,7 +420,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
       lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
 
       // Mark it as changed
-      lmi_ptr->dynamic = dynamic_handle;
+      lmi_ptr->dynamic = static_cast<uint16_t>(*dynamic_handle);
 
       if (!(GameLightmaps[lm_handle].flags & LF_LIMITS)) {
         GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
@@ -632,8 +632,8 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
     if (Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))
       continue;
 
-    int xres = lmi_w(fp->lmi_handle);
-    int yres = lmi_h(fp->lmi_handle);
+    int xres = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
+    int yres = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
 
     lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
     
@@ -737,9 +737,9 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
     } else // Start a new dynamic lightmap
     {
       // First find a suitable dynamic lightmap to work with
-      int dynamic_handle = GetFreeDynamicLightmap(xres, yres);
+      const std::optional<uint32_t> dynamic_handle = GetFreeDynamicLightmap(xres, yres);
 
-      if (dynamic_handle < 0) {
+      if (!dynamic_handle.has_value()) {
         LOG_WARNING("No free dynamic maps!");
         DoneLightingInstance();
 
@@ -748,7 +748,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
 
       // Now copy our source data to our dest data so we have a base to work with
       const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
-      uint16_t *dyn_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
+      uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
         for (int x = 0; x < xres; x++) {
@@ -759,7 +759,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
       lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
 
       // Mark it as changed
-      lmi_ptr->dynamic = dynamic_handle;
+      lmi_ptr->dynamic = static_cast<uint16_t>(*dynamic_handle);
 
       if (!(GameLightmaps[lm_handle].flags & LF_LIMITS)) {
         GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
@@ -1071,8 +1071,8 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     if (Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))
       continue;
 
-    int xres = lmi_w(fp->lmi_handle);
-    int yres = lmi_h(fp->lmi_handle);
+    int xres = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
+    int yres = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
 
     lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
     
@@ -1181,16 +1181,16 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     } else // Start a new dynamic lightmap
     {
       // First find a suitable dynamic lightmap to work with
-      int dynamic_handle = GetFreeDynamicLightmap(xres, yres);
+      const std::optional<uint32_t> dynamic_handle = GetFreeDynamicLightmap(xres, yres);
 
-      if (dynamic_handle < 0) {
+      if (!dynamic_handle.has_value()) {
         LOG_WARNING("No free dynamic maps!");
         return; // None free!
       }
 
       // Now copy our source data to our dest data so we have a base to work with
       const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
-      uint16_t *dyn_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
+      uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
         for (int x = 0; x < xres; x++) {
@@ -1201,7 +1201,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
       lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
 
       // Mark it as changed
-      lmi_ptr->dynamic = dynamic_handle;
+      lmi_ptr->dynamic = static_cast<uint16_t>(*dynamic_handle);
 
       if (!(GameLightmaps[lm_handle].flags & LF_LIMITS)) {
         GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
@@ -1585,8 +1585,8 @@ int GetVolumeSizeOfRoom(room *rp, int *w, int *h, int *d) {
 // Returns a lightmap that can be applied for specular lighting
 int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 {
-        int xres=lmi_w(fp->lmi_handle);
-        int yres=lmi_h(fp->lmi_handle);
+        int xres=static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
+        int yres=static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
         lightmap_info *lmi_ptr=&LightmapInfo[fp->lmi_handle];
 
         matrix facematrix;
@@ -1741,8 +1741,8 @@ incident_norm=element_vec-SpecialFaces[fp->special_handle].spec_instance[i].brig
 int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 {
 
-        int xres=lmi_w(fp->lmi_handle);
-        int yres=lmi_h(fp->lmi_handle);
+        int xres=static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
+        int yres=static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
         lightmap_info *lmi_ptr=&LightmapInfo[fp->lmi_handle];
         vector3 center=SpecialFaces[fp->special_handle].center;
 
@@ -2013,8 +2013,8 @@ void DestroyLight(int roomnum, int facenum) {
     if (Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))
       continue;
 
-    int xres = lmi_w(fp->lmi_handle);
-    int yres = lmi_h(fp->lmi_handle);
+    int xres = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
+    int yres = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
 
     lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
 

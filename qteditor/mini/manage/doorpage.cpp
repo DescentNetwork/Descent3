@@ -68,17 +68,17 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_door_page& data) {
          << data.door_struct.module_name;
 }
 
-int mng_ReadNewDoorPage(posix_istream &infile, mngs_door_page *doorpage) {
+bool mng_ReadNewDoorPage(posix_istream &infile, mngs_door_page *doorpage) {
   infile >> *doorpage;
 
   // This is a valid new page
   doorpage->door_struct.used = 1;
 
-  return 1; // successfully read
+  return true; // successfully read
 }
 
-int mng_ReadDoorPage(posix_istream &infile, mngs_door_page *doorpage) {
+bool mng_ReadDoorPage(posix_istream &infile, mngs_door_page *doorpage) {
   if (!Old_table_method)
     return mng_ReadNewDoorPage(infile, doorpage);
-  return 0; // old command-based table not supported in mini build
+  return false; // old command-based table not supported in mini build
 }

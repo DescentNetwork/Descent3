@@ -301,7 +301,7 @@ bool WorldObjectsGenericDialog::isLocked(int n) {
 
 int WorldObjectsGenericDialog::countLockedItems() {
   int count = 0;
-  int first = GetObjectID(m_type);
+  int first = GetObjectID(m_type).value_or(-1);
   if (first == -1)
     return 0;
   int n = first;
@@ -527,7 +527,7 @@ void WorldObjectsGenericDialog::updateDialog() {
     QComboBox *combo = ui->IDC_NAME_PULLDOWN;
     QSignalBlocker blocker(combo);
     combo->clear();
-    const int first = GetObjectID(m_type);
+    const int first = GetObjectID(m_type).value_or(-1);
     if (first != -1) {
       int i = first;
       do {
@@ -620,12 +620,12 @@ void WorldObjectsGenericDialog::onAddNew() {
     return;
 
   //std::filesystem::path tmp = ChangePolyModelName(pathname);
-  if (FindPolyModelName(pathname.stem())) {
+  if (FindPolyModelName(pathname.stem()) != std::nullopt) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must rename your model to something else because there is already a model with that name!");
     return;
   }
 
-  const int img_handle = LoadPolyModel(pathname, 0);
+  const int img_handle = static_cast<int>(LoadPolyModel(pathname, 0).value_or(-1));
   if (img_handle < 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't open that model file.");
     return;

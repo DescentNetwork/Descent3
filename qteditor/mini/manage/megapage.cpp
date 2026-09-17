@@ -30,7 +30,7 @@
 // Megacell page (ported from megapage.cpp : 175-192)
 //-----------------------------------------------------------------------------
 
-int mng_ReadNewMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage) {
+bool mng_ReadNewMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage) {
   *megacellpage = mngs_megacell_page{};
   /* int version = */ int16_t v; infile >> v;
 
@@ -43,11 +43,11 @@ int mng_ReadNewMegacellPage(posix_istream &infile, mngs_megacell_page *megacellp
   infile >> megacellpage->megacell_struct.height;
   // This is a valid new page
   megacellpage->megacell_struct.used = 1;
-  return 1; // successfully read
+  return true; // successfully read
 }
 
-int mng_ReadMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage) {
+bool mng_ReadMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage) {
   if (!Old_table_method)
     return mng_ReadNewMegacellPage(infile, megacellpage);
-  return 0; // old command-based table not supported in mini build
+  return false; // old command-based table not supported in mini build
 }

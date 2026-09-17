@@ -109,7 +109,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_ship_page& data) {
   return output;
 }
 
-int mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage) {
+bool mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage) {
   // Clear the page record.  The embedded ship holds std::string members, so
   // use member-wise reset rather than memset (which would corrupt them).
   *shippage = mngs_ship_page{};
@@ -136,11 +136,11 @@ int mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage) {
     // Any other ship: nothing to bash.
   }
 
-  return 1; // successfully read
+  return true; // successfully read
 }
 
-int mng_ReadShipPage(posix_istream &infile, mngs_ship_page *shippage) {
+bool mng_ReadShipPage(posix_istream &infile, mngs_ship_page *shippage) {
   if (!Old_table_method)
     return mng_ReadNewShipPage(infile, shippage);
-  return 0; // old command-based table not supported in mini build
+  return false; // old command-based table not supported in mini build
 }

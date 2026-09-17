@@ -25,14 +25,14 @@ std::string levelgoals::GoalGetName(int goal_index) const {
   return m_goal[goal_index].GetName();
 }
 
-// Returns the index of the goal with the given name, or -1 if not found.
-int levelgoals::GoalFindId(const std::string &goal_name) {
+// Returns the index of the goal with the given name, or nullopt if not found.
+std::optional<uint32_t> levelgoals::GoalFindId(const std::string &goal_name) {
   for (int i = 0; i < (int)m_num_goals; i++) {
     if (match(GoalGetName(i), goal_name))
-      return i;
+      return static_cast<uint32_t>(i);
   }
 
-  return -1;
+  return std::nullopt;
 }
 
 // Returns the number of goals.

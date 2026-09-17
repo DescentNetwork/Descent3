@@ -343,7 +343,7 @@ retry:
 
           fq.p0 = &pos;
           fq.startroom = (roomnum > ((int)Rooms.size() - 1) && roomnum <= ((int)Rooms.size() - 1) + 8)
-                             ? GetTerrainRoomFromPos(pos)
+                             ? GetTerrainRoomFromPos(pos).value_or(-1)
                              : roomnum;
           fq.p1 = &bnlist->nodes[i].pos;
           fq.rad = min_bn_rad;
@@ -429,7 +429,7 @@ retry:
         if (!f_retry) {
           fq.p0 = &pos;
           fq.startroom = (roomnum > ((int)Rooms.size() - 1) && roomnum <= ((int)Rooms.size() - 1) + 8)
-                             ? GetTerrainRoomFromPos(pos)
+                             ? GetTerrainRoomFromPos(pos).value_or(-1)
                              : roomnum;
           fq.p1 = &bnlist->nodes[i].pos;
           fq.rad = min_bn_rad;

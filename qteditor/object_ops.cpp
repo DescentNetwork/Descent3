@@ -150,7 +150,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
     orient = Viewer_object->orient;
   }
 
-  objnum = ObjCreate(obj_type, obj_id, Viewer_object->roomnum, Viewer_object->pos, &orient);
+  objnum = ObjCreate(obj_type, obj_id, Viewer_object->roomnum, Viewer_object->pos, &orient).value_or(-1);
   if (objnum == -1)
     return false;
 
@@ -186,7 +186,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
       roomnum = ROOMNUM(Curroomp);
 
       if (Rooms[roomnum].flags.external)
-        roomnum = GetTerrainRoomFromPos(pos);
+        roomnum = GetTerrainRoomFromPos(pos).value_or(-1);
     }
 
     matrix groundplane_orient, surface_orient, object_orient;

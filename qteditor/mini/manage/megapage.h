@@ -45,10 +45,10 @@ struct mngs_megacell_page {
 byte_istream& operator >>(byte_istream& input, mngs_megacell_page& data);
 byte_ostream& operator <<(byte_ostream& output, const mngs_megacell_page& data);
 
-// Reads a megacell page from an open file.  Returns 0 on error.
-int mng_ReadMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage);
+// Reads a megacell page from an open file.  Returns false on error.
+bool mng_ReadMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage);
 
-// Reads a (new-style, net table) megacell page from an open file.  Returns 0 on error.
-int mng_ReadNewMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage);
+// Reads a (new-style, net table) megacell page from an open file.  Returns false on error.
+bool mng_ReadNewMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage);
 
 #endif

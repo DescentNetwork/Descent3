@@ -199,8 +199,8 @@ void InitVClips() {
 }
 
 // Allocs a vclip for use
-// Returns -1 on error
-int AllocVClip() {
+// Returns std::nullopt on error
+std::optional<uint32_t> AllocVClip() {
   int i;
 
   for (i = 0; i < MAX_VCLIPS; i++) {
@@ -216,7 +216,7 @@ int AllocVClip() {
   }
 
   Q_ASSERT(false); // Ran out of vclips.  What the hell are you doing?  Get Jason
-  return -1;
+  return std::nullopt;
 }
 
 void FreeVClip(int num) {
@@ -241,7 +241,7 @@ void FreeVClip(int num) {
 // Saves a given video clip to a file
 // Returns 1 if everything ok, 0 otherwise
 // "num" is index into GameVClip array
-int SaveVClip(const std::filesystem::path& filename, int num) {
+bool SaveVClip(const std::filesystem::path& filename, int num) {
 #if 0
   CFILE *outfile;
   vclip *vc = &GameVClips[num];
@@ -281,7 +281,7 @@ int SaveVClip(const std::filesystem::path& filename, int num) {
   return 1;
 #endif
   Q_ASSERT(false);
-  return 0;
+  return false;
 }
 
 extern int Low_vidmem;
@@ -312,10 +312,10 @@ static uint32_t readOafWord(posix_istream &in) {
 //   legacy:    num_frames frame_time(float32) (float32) (int32) (float32)
 // followed by num_frames contiguous OGF/TGA bitmaps, each decoded with
 // bm_tga_alloc_file (which leaves the stream positioned past its frame).  All
-// frames are stored in GameVClips[].  Returns the vclip index, or -1 on error.
-int LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &name, int format) {
+// frames are stored in GameVClips[].  Returns the vclip index, or std::nullopt on error.
+std::optional<uint32_t> LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &name, int format) {
   if (size < 7)
-    return -1;
+    return std::nullopt;
 
   // If this vclip is already in memory, just reference it again.
   for (int i = 0; i < MAX_VCLIPS; i++) {
@@ -328,14 +328,14 @@ int LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &nam
   posix_istream infile(const_cast<uint8_t *>(data), size, std::ios_base::in);
   if (!infile.is_open()) {
     LOG_ERROR("LoadVClipFromMemory: Can't open in-memory stream for %s.", name.c_str());
-    return -1;
+    return std::nullopt;
   }
 
-  const int vcnum = AllocVClip();
-  if (vcnum < 0)
-    return -1;
+  const std::optional<uint32_t> vcnum = AllocVClip();
+  if (!vcnum.has_value())
+    return std::nullopt;
 
-  vclip *vc = &GameVClips[vcnum];
+  vclip *vc = &GameVClips[*vcnum];
   vc->name = name;
 
   // Container header (engine Descent3/vclip.cpp PageInVClip).
@@ -353,8 +353,8 @@ int LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &nam
 
   if (num_frames <= 0 || num_frames > VCLIP_MAX_FRAMES) {
     LOG_ERROR("LoadVClipFromMemory: Bad frame count %d in %s.", num_frames, name.c_str());
-    FreeVClip(vcnum);
-    return -1;
+    FreeVClip(static_cast<int>(*vcnum));
+    return std::nullopt;
   }
 
   for (int i = 0; i < num_frames; i++) {
@@ -364,8 +364,8 @@ int LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &nam
       LOG_ERROR("LoadVClipFromMemory: Couldn't load frame %d of %s.", i, name.c_str());
       for (int j = 0; j < i; j++)
         bm_FreeBitmap(vc->frames[j]);
-      FreeVClip(vcnum);
-      return -1;
+      FreeVClip(static_cast<int>(*vcnum));
+      return std::nullopt;
     }
     vc->frames[i] = (int16_t)n;
   }
@@ -373,7 +373,7 @@ int LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &nam
   vc->num_frames = (int16_t)num_frames;
   vc->frame_time = DEFAULT_FRAMETIME;
   vc->flags &= ~VCF_NOT_RESIDENT;
-  return vcnum;
+  return *vcnum;
 }
 
 // Allocs and loads a vclip from the file named "filename"
@@ -603,14 +603,14 @@ void ChangeVClipName(const std::filesystem::path&  src, std::string& dest)
   strcat(dest, ".oaf");
 */
 }
-// Searches thru all vclips for a specific name, returns -1 if not found
+// Searches thru all vclips for a specific name, returns std::nullopt if not found
 // or index of vclip with name
-int FindVClipName(const std::string& name) {
+std::optional<uint32_t> FindVClipName(const std::string& name) {
   int i;
 
   for (i = 0; i < MAX_VCLIPS; i++)
     if (GameVClips[i].used && match(GameVClips[i].name, name))
       return i;
   Q_ASSERT(false);
-  return -1;
+  return std::nullopt;
 }

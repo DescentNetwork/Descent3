@@ -230,7 +230,7 @@
 //#include "dedicated_server.h"
 
 
-static int EvaluateBlock(int x, int z, int lod);
+static std::optional<uint32_t> EvaluateBlock(int x, int z, int lod);
 
 uint16_t TS_FrameCount = 0xFFFF;
 
@@ -546,7 +546,7 @@ int SearchQuadTree(int x1, int y1, int x2, int y2, int dir, int *ccount) {
     }
 
     else if ((x2 - x1) == 8) {
-      answer = EvaluateBlock(x1, y1, MAX_TERRAIN_LOD - 4);
+      answer = EvaluateBlock(x1, y1, MAX_TERRAIN_LOD - 4).value_or(-1);
       if (answer == -1)
         continue;
       else if (answer == 1) {
@@ -557,7 +557,7 @@ int SearchQuadTree(int x1, int y1, int x2, int y2, int dir, int *ccount) {
     }
 
     else if ((x2 - x1) == 4) {
-      answer = EvaluateBlock(x1, y1, MAX_TERRAIN_LOD - 3);
+      answer = EvaluateBlock(x1, y1, MAX_TERRAIN_LOD - 3).value_or(-1);
       if (answer == -1)
         continue;
       else if (answer == 1) {
@@ -568,7 +568,7 @@ int SearchQuadTree(int x1, int y1, int x2, int y2, int dir, int *ccount) {
     }
 
     else if ((x2 - x1) == 2) {
-      answer = EvaluateBlock(x1, y1, MAX_TERRAIN_LOD - 2);
+      answer = EvaluateBlock(x1, y1, MAX_TERRAIN_LOD - 2).value_or(-1);
       if (answer == -1)
         continue;
       else if (answer == 1) {
@@ -724,18 +724,23 @@ int SearchQuadTree(int x1, int y1, int x2, int y2, int dir, int *ccount) {
 }
 
 // Given a position, returns the terrain segment that that position is in/over
-// returns -1 if not over terrain
-int GetTerrainCellFromPos(vector3& pos) {
+// returns std::nullopt if not over terrain
+std::optional<uint32_t> GetTerrainCellFromPos(vector3& pos) {
   int x = pos.x() / TERRAIN_SIZE;
   int z = pos.z() / TERRAIN_SIZE;
 
   if (x < 0 || x >= TERRAIN_WIDTH || z < 0 || z >= TERRAIN_DEPTH)
-    return -1;
+    return std::nullopt;
 
   return (z * TERRAIN_WIDTH + x);
 }
 
-int GetTerrainRoomFromPos(vector3& pos) { return MAKE_ROOMNUM(GetTerrainCellFromPos(pos)); }
+std::optional<uint32_t> GetTerrainRoomFromPos(vector3& pos) {
+  const std::optional<uint32_t> cell = GetTerrainCellFromPos(pos);
+  if (!cell.has_value())
+    return std::nullopt;
+  return MAKE_ROOMNUM(*cell);
+}
 
 // Computes the center of the segment in x,z and also sets y touching the ground
 void ComputeTerrainSegmentCenter(vector3& pos, int segnum) {
@@ -836,9 +841,9 @@ int SimplifyVertex(int x, int z, float delta) {
 
 // Returns 1 if the given block (specified by the upper left corder x,z) lod can
 // be simplified
-// Returns -1 if the block is invisible
+// Returns std::nullopt if the block is invisible
 // Returns 0 if not
-int EvaluateBlock(int x, int z, int lod) {
+std::optional<uint32_t> EvaluateBlock(int x, int z, int lod) {
   float delta;
   int simplemul = 1 << ((MAX_TERRAIN_LOD - 1) - lod);
 
@@ -853,7 +858,7 @@ int EvaluateBlock(int x, int z, int lod) {
   delta = TerrainDeltaBlocks[lod][((z / simplemul) * (TERRAIN_WIDTH / simplemul)) + (x / simplemul)];
 
   if (delta == SHUTOFF_LOD_INVISIBLE)
-    return -1; // This block is completely invisible
+    return std::nullopt; // This block is completely invisible
 
   // if (SimplifyVertexSlow (x+(simplemul/2),z+(simplemul/2),delta))
   //	return 1;

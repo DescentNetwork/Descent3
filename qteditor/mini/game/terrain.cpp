@@ -985,7 +985,7 @@ void InitTerrain(void) {
   GenerateLightSource();
 
   for (i = 0; i < 4; i++) {
-    TerrainLightmaps[i] = lm_AllocLightmap(128, 128);
+    TerrainLightmaps[i] = static_cast<int>(lm_AllocLightmap(128, 128).value_or(BAD_LM_INDEX));
     Q_ASSERT(TerrainLightmaps[i] != BAD_LM_INDEX);
     GameLightmaps[TerrainLightmaps[i]].flags |= LF_WRAP;
   }

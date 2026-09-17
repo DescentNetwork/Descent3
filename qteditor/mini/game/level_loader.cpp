@@ -558,8 +558,8 @@ static void LL_ReadNameXlateChunk(posix_istream &ifile, int chunk_size,
 
 // First used page of the given type, the engine's FindValidID() fallback for
 // a name-mapping miss (GetObjectID for the generic types, the first used door
-// slot for OBJ_DOOR).  Returns -1 when no game table provides one.
-static int FindValidID(int type) {
+// slot for OBJ_DOOR).  Returns std::nullopt when no game table provides one.
+static std::optional<uint32_t> FindValidID(int type) {
   switch (type) {
   case OBJ_ROBOT:
   case OBJ_POWERUP:
@@ -570,9 +570,9 @@ static int FindValidID(int type) {
     for (int i = 0; i < MAX_DOORS; i++)
       if (Doors[i].used)
         return i;
-    return -1;
+    return std::nullopt;
   default:
-    return -1;
+    return std::nullopt;
   }
 }
 
@@ -592,8 +592,8 @@ static int TranslateObjectId(int type, int id) {
   if (xid != -1)
     return xid;
 
-  const int valid = FindValidID(type);
-  return (valid != -1) ? valid : id;
+  const std::optional<uint32_t> valid = FindValidID(type);
+  return valid.has_value() ? static_cast<int>(*valid) : id;
 }
 
 // Writes a chunk header (4-char name + size placeholder), returns the position
@@ -1291,7 +1291,7 @@ static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
     ifile >> map_h;
     if (map_w < 2 || map_h < 2)
       map_w = map_h = 2;
-    int lm_handle = lm_AllocLightmap(map_w, map_h);
+    int lm_handle = static_cast<int>(lm_AllocLightmap(map_w, map_h).value_or(BAD_LM_INDEX));
     if (lm_handle == BAD_LM_INDEX)
       lm_handle = 0;
     lightmap_remap[i] = static_cast<uint16_t>(lm_handle);
@@ -1316,7 +1316,7 @@ static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
     uint8_t type = 0;
     ifile >> type;
 
-    int lmi = AllocLightmapInfo(w, h, type, false);
+    int lmi = static_cast<int>(AllocLightmapInfo(w, h, type, false).value_or(BAD_LMI_INDEX));
     if (lmi == BAD_LMI_INDEX)
       continue;
     const size_t remap_idx = (remap_handle >= 0 && remap_handle < (int32_t)num_raw)
@@ -1373,8 +1373,8 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
       const uint16_t lm_handle = LightmapInfo[i].lm_handle;
       if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
         lightmap_spoken_for[lm_handle] = 1;
-        const int map_w = lm_w(lm_handle);
-        const int map_h = lm_h(lm_handle);
+        const int map_w = static_cast<int>(lm_w(lm_handle).value_or(-1));
+        const int map_h = static_cast<int>(lm_h(lm_handle).value_or(-1));
         ofile << (int16_t)map_w;
         ofile << (int16_t)map_h;
         const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
@@ -1391,8 +1391,8 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
     if (LightmapInfo[i].used && LightmapInfo[i].type != LMI_DYNAMIC) {
       const lightmap_info &info = LightmapInfo[i];
       ofile << (int16_t)lightmap_remap[info.lm_handle];
-      ofile << (int16_t)lmi_w(i);
-      ofile << (int16_t)lmi_h(i);
+      ofile << (int16_t)lmi_w(i).value_or(0);
+      ofile << (int16_t)lmi_h(i).value_or(0);
       ofile << info.type;
       ofile << (int16_t)info.x1;
       ofile << (int16_t)info.y1;

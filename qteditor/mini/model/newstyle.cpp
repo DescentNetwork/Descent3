@@ -410,8 +410,8 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
                     int lmi_handle=Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle;
                     lightmap_object_face *lfp=&Polylighting_lightmap_object->lightmap_faces[modelnum][facenum];
                     lightmap_info *lmi_ptr=&LightmapInfo[lmi_handle];
-                    int w=lmi_w (lmi_handle);
-                    int h=lmi_h (lmi_handle);
+                    int w=static_cast<int>(lmi_w (lmi_handle).value_or(0));
+                    int h=static_cast<int>(lmi_h (lmi_handle).value_or(0));
                     vector3 rvec=lfp->rvec*lmi_ptr->xspacing;
                     vector3 uvec=lfp->uvec*lmi_ptr->yspacing;
                     uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr->lm_handle);

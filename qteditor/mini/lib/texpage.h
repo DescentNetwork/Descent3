@@ -67,16 +67,16 @@ byte_ostream& operator <<(byte_ostream& output, const mngs_texture_page& data);
 // Texture page functions
 //---------------------------------------------------------------
 
-// Reads a texture page from an open file.  Returns 0 on error.
+// Reads a texture page from an open file.  Returns false on error.
 
-int mng_ReadTexturePage(posix_istream &infile, mngs_texture_page *texpage);
+bool mng_ReadTexturePage(posix_istream &infile, mngs_texture_page *texpage);
 
 // Given an open file pointer and a texture handle, writes that texture page out
 void mng_WriteTexturePage(struct CFILE* outfile, mngs_texture_page *texpage);
 
-// Reads a texture page from an open file.  Returns 0 on error.
+// Reads a texture page from an open file.  Returns false on error.
 
-int mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage);
+bool mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage);
 
 // Given an open file pointer and a texture handle, writes that texture page out
 void mng_WriteNewTexturePage(struct CFILE* outfile, mngs_texture_page *texpage);

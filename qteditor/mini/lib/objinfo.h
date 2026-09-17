@@ -561,8 +561,8 @@ int AllocObjectID(int type, bool f_anim, bool f_weapons, bool f_ai);
 // Frees object index n
 void FreeObjectID(int n);
 
-// Find an object with the given type.  Returns -1 if none found.
-int GetObjectID(int type);
+// Find an object with the given type.  Returns std::nullopt if none found.
+std::optional<uint32_t> GetObjectID(int type);
 
 // Gets next object from n of the same type as n
 int GetNextObjectID(int n);

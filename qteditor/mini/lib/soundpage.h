@@ -46,12 +46,12 @@ byte_ostream& operator <<(byte_ostream& output, const mngs_sound_page& data);
 void mng_WriteSoundPage(struct CFILE* outfile, mngs_sound_page *soundpage);
 
 // Reads a sound page from an open file.  Returns 0 on error.
-int mng_ReadSoundPage(posix_istream &infile, mngs_sound_page *soundpage);
+bool mng_ReadSoundPage(posix_istream &infile, mngs_sound_page *soundpage);
 // Given an open file pointer and a sound_page struct, writes that soundpage out
 void mng_WriteNewSoundPage(struct CFILE* outfile, mngs_sound_page *soundpage);
 
 // Reads a sound page from an open file.  Returns 0 on error.
-int mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage);
+bool mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage);
 
 // Reads in the soundpage named "name" into soundpage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

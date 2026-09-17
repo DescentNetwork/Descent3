@@ -482,7 +482,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
       if (Squeeze_lightmap_handle == -1) {
         memset(Lightmap_mask, 0, 128 * 128);
-        Squeeze_lightmap_handle = lm_AllocLightmap(128, 128);
+        Squeeze_lightmap_handle = static_cast<int>(lm_AllocLightmap(128, 128).value_or(-1));
         
       }
 
@@ -518,7 +518,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
         GameLightmaps[Squeeze_lightmap_handle].used--;
 
         memset(Lightmap_mask, 0, 128 * 128);
-        Squeeze_lightmap_handle = lm_AllocLightmap(128, 128);
+        Squeeze_lightmap_handle = static_cast<int>(lm_AllocLightmap(128, 128).value_or(-1));
         
 
         Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
@@ -559,7 +559,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
           if (Squeeze_lightmap_handle == -1) {
             memset(Lightmap_mask, 0, 128 * 128);
-            Squeeze_lightmap_handle = lm_AllocLightmap(128, 128);
+            Squeeze_lightmap_handle = static_cast<int>(lm_AllocLightmap(128, 128).value_or(-1));
             
           }
 
@@ -605,7 +605,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             GameLightmaps[Squeeze_lightmap_handle].used--;
 
             memset(Lightmap_mask, 0, 128 * 128);
-            Squeeze_lightmap_handle = lm_AllocLightmap(128, 128);
+            Squeeze_lightmap_handle = static_cast<int>(lm_AllocLightmap(128, 128).value_or(-1));
             
 
             Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
@@ -661,7 +661,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
           if (Squeeze_lightmap_handle == -1) {
             memset(Lightmap_mask, 0, 128 * 128);
-            Squeeze_lightmap_handle = lm_AllocLightmap(128, 128);
+            Squeeze_lightmap_handle = static_cast<int>(lm_AllocLightmap(128, 128).value_or(-1));
             
           }
 
@@ -707,7 +707,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             GameLightmaps[Squeeze_lightmap_handle].used--;
 
             memset(Lightmap_mask, 0, 128 * 128);
-            Squeeze_lightmap_handle = lm_AllocLightmap(128, 128);
+            Squeeze_lightmap_handle = static_cast<int>(lm_AllocLightmap(128, 128).value_or(-1));
             
 
             Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
@@ -737,8 +737,8 @@ void ComputeSurfaceRes(rad_surface *surf, room *rp, int facenum) {
   int i;
   float left = 1.1f, right = -1, top = 1.1f, bottom = -1;
   face *fp = &rp->faces[facenum];
-  int lw = lmi_w(fp->lmi_handle);
-  int lh = lmi_h(fp->lmi_handle);
+  int lw = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
+  int lh = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
 
   for (i = 0; i < fp->num_verts; i++) {
     if (fp->face_uvls[i].u2 < left)
@@ -921,7 +921,7 @@ void DoRadiosityForRooms() {
 
             Volume_elements[roomnum][(i * vw * vh) + (t * vw) + j].pos = dest_vec;
 
-            if (FindPointRoom(&dest_vec) != roomnum) {
+            if (FindPointRoom(&dest_vec).value_or(-1) != roomnum) {
               Volume_elements[roomnum][(i * vw * vh) + (t * vw) + j].color.r = 0;
               Volume_elements[roomnum][(i * vw * vh) + (t * vw) + j].flags = VEF_REVERSE_SHOOT;
             } else {
@@ -1288,8 +1288,8 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
   Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
   lmi_handle = fp->lmi_handle;
 
-  lw = lmi_w(lmi_handle);
-  lh = lmi_h(lmi_handle);
+  lw = static_cast<int>(lmi_w(lmi_handle).value_or(0));
+  lh = static_cast<int>(lmi_h(lmi_handle).value_or(0));
 
   Q_ASSERT((xres + x1) <= lw);
   Q_ASSERT((yres + y1) <= lh);
@@ -2446,9 +2446,9 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
   }*/
 
   if (external)
-    lmi_handle = AllocLightmapInfo(lightmap_x_res, lightmap_y_res, LMI_EXTERNAL_ROOM);
+    lmi_handle = static_cast<int>(AllocLightmapInfo(lightmap_x_res, lightmap_y_res, LMI_EXTERNAL_ROOM).value_or(BAD_LMI_INDEX));
   else
-    lmi_handle = AllocLightmapInfo(lightmap_x_res, lightmap_y_res, LMI_ROOM);
+    lmi_handle = static_cast<int>(AllocLightmapInfo(lightmap_x_res, lightmap_y_res, LMI_ROOM).value_or(BAD_LMI_INDEX));
 
   Q_ASSERT(lmi_handle != BAD_LMI_INDEX);
   Q_ASSERT(lmi_handle >= 0 && lmi_handle <= MAX_LIGHTMAP_INFOS);
@@ -2979,8 +2979,8 @@ void GetSpecularVertexOrdering(spec_vertex *verts, int nv, int *vlt, int *vlb, i
 // Used in specular mapping
 void CreateNormalMapForFace (room *rp,face *fp)
 {
-        int w=lmi_w(fp->lmi_handle);
-        int h=lmi_h(fp->lmi_handle);
+        int w = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
+        int h = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
         special_face *sfp=&SpecialFaces[fp->special_handle];
         spec_vertex spec_verts[MAX_VERTS_PER_FACE];
         vector3 vertnorms[MAX_VERTS_PER_FACE];

@@ -216,7 +216,7 @@ void CheckLevelNames() {
   object *objp;
   for (i = 0, objp = Objects.data(); i <= Highest_object_index; i++, objp++) {
     if (objp->type != OBJ_NONE && !objp->name.empty()) {
-      const int handle = osipf_FindObjectName(objp->name);
+      const int handle = static_cast<int>(osipf_FindObjectName(objp->name).value_or(-1));
       if (handle != objp->handle)
         std::fprintf(stderr, "[level_io] duplicate object name \"%s\"\n",
                      objp->name);
@@ -225,7 +225,7 @@ void CheckLevelNames() {
   trigger *tp;
   for (i = 0, tp = Triggers.data(); i < Num_triggers; i++, tp++) {
     if (tp != nullptr && !tp->name.empty()) {
-      const int n = osipf_FindTriggerName(tp->name);
+      const int n = static_cast<int>(osipf_FindTriggerName(tp->name).value_or(-1));
       if (n != i)
         std::fprintf(stderr, "[level_io] duplicate trigger name \"%s\"\n",
                      tp->name.c_str());
@@ -234,7 +234,7 @@ void CheckLevelNames() {
   room *rp;
   for (i = 0, rp = Rooms.data(); i <= ((int)Rooms.size() - 1); i++, rp++) {
     if (rp->used && !rp->name.empty()) {
-      const int n = osipf_FindRoomName(rp->name);
+      const int n = static_cast<int>(osipf_FindRoomName(rp->name).value_or(-1));
       if (n != i)
         std::fprintf(stderr, "[level_io] duplicate room name \"%s\"\n",
                      rp->name);
@@ -558,8 +558,8 @@ std::string RenderLevelStats() {
     if (!lightmaps_used[i])
       continue;
     const std::vector<std::vector<uint16_t>> &data = lm_data(i);
-    const int w = lm_w(i);
-    const int h = lm_h(i);
+    const int w = static_cast<int>(lm_w(i).value_or(-1));
+    const int h = static_cast<int>(lm_h(i).value_or(-1));
     if (w <= 0 || h <= 0)
       continue;
     for (int y = 0; y < h; y++) {

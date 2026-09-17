@@ -216,7 +216,7 @@ static void GenericPageSetPowerupDefaultAmmo(object_info *ip) {
 }
 
 // Reads a generic page from an open file.  Returns 0 on error.
-int mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage) {
+bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage) {
   int i, j;
 
   mng_InitGenericPage(genericpage);
@@ -509,7 +509,7 @@ int mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage
 
   Q_ASSERT(genericpage->objinfo_struct.type != OBJ_NONE);
 
-  return 1; // successfully read
+  return true; // successfully read
 }
 
 //-----------------------------------------------------------------------------
@@ -802,9 +802,9 @@ void mng_WriteNewGenericPage(byte_ostream &outfile, mngs_generic_page *genericpa
   outfile.write(buffer.data(), bytes);
 }
 
-// Reads a generic page from an open file.  Returns 0 on error.
-int mng_ReadGenericPage(posix_istream &infile, mngs_generic_page *genericpage) {
+// Reads a generic page from an open file.  Returns false on error.
+bool mng_ReadGenericPage(posix_istream &infile, mngs_generic_page *genericpage) {
   if (!Old_table_method)
     return mng_ReadNewGenericPage(infile, genericpage);
-  return 0; // old command-based table method not supported in mini build
+  return false; // old command-based table method not supported in mini build
 }

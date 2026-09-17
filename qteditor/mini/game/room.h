@@ -438,7 +438,7 @@ void InitRooms();
 // Allows a spew'er to find out if he is in a room or external to the mine
 // NOTE:  THIS FUNCTION IS NOT FOR IN GAME STUFF.  It is REALLY SLOW and accurate.
 // Talk to Chris if you need something like this function.
-int FindPointRoom(vector3 *pnt);
+std::optional<uint32_t> FindPointRoom(vector3 *pnt);
 
 // Put this here so we don't need to include render.h
 extern bool Render_floating_triggers;
@@ -584,8 +584,8 @@ void CreateRoomObjects();
 // Clears lightmaps for a single room
 void ClearRoomLightmaps(int roomnum);
 
-// returns the index of the first room that is being used.  Returns -1 if there are none
-int FindFirstUsedRoom();
+// returns the index of the first room that is being used.  Returns std::nullopt if there are none
+std::optional<uint32_t> FindFirstUsedRoom();
 
 // Clears specmaps for a single room
 void ClearRoomSpecmaps(int roomnum);
@@ -603,13 +603,13 @@ bool ChangeRoomFaceTexture(int room_num, int face_num, int texture);
 // Clears the data for room changes
 void ClearRoomChanges();
 
-// Returns index of room change allocatd, else -1 on error
-int AllocRoomChange();
+// Returns index of room change allocated, else std::nullopt on error
+std::optional<uint32_t> AllocRoomChange();
 
 // Does whatever fading/changing of room stuff that needs to be done this frame
 void DoRoomChangeFrame();
 
 // Sets up a room to change its fog or wind over time
-int SetRoomChangeOverTime(int roomnum, bool fog, vector3 *end, float depth_end, float time);
+std::optional<uint32_t> SetRoomChangeOverTime(int roomnum, bool fog, vector3 *end, float depth_end, float time);
 
 #endif

@@ -883,7 +883,7 @@ static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
 
       orient = Identity_matrix;
 
-      roomnum = GetTerrainRoomFromPos(newpos);
+      roomnum = GetTerrainRoomFromPos(newpos).value_or(-1);
     } else {
       // Get orientation: vector from center of room to face
       vp -= newpos;
@@ -906,9 +906,9 @@ static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
         newpos.z() = 1.0f;
       if (newpos.z() > TERRAIN_DEPTH * TERRAIN_SIZE - 1.0f)
         newpos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
-      roomnum = GetTerrainRoomFromPos(newpos);
+      roomnum = GetTerrainRoomFromPos(newpos).value_or(-1);
     } else {
-      int new_roomnum = FindPointRoom(&newpos);
+      int new_roomnum = FindPointRoom(&newpos).value_or(-1);
       if (new_roomnum == -1)
         outside_mine = true;
       else

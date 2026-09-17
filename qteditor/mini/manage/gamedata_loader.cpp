@@ -93,8 +93,8 @@ static void discardBytes(posix_istream &infile, int count) {
 // Locates `img` inside the open HOG `archive`, reads its full payload from the
 // still-open HOG stream `hogin`, and hands the bytes to the decoder via
 // bm_LoadBitmapFromMemory (fmemopen posix_istream).  Returns the bitmap handle,
-// or -1 if the image is not in the Hog or fails to decode.
-static int loadTextureFromArchive(hog2::archive_t &archive, posix_istream &hogin, const std::string &img, int format) {
+// or std::nullopt if the image is not in the Hog or fails to decode.
+static std::optional<uint32_t> loadTextureFromArchive(hog2::archive_t &archive, posix_istream &hogin, const std::string &img, int format) {
   auto entry = archive.end();
   const std::string needle = lowercase(img);
   for (auto it = archive.begin(); it != archive.end(); ++it) {
@@ -104,7 +104,7 @@ static int loadTextureFromArchive(hog2::archive_t &archive, posix_istream &hogin
     }
   }
   if (entry == archive.end())
-    return -1;
+    return std::nullopt;
 
   const size_t off = archive.fileOffset(entry);
   const size_t len = entry->len;
@@ -119,7 +119,10 @@ static int loadTextureFromArchive(hog2::archive_t &archive, posix_istream &hogin
   if (lowercase(img).ends_with(".oaf"))
     return LoadVClipFromMemory(buf.data(), buf.size(), img, format);
 
-  return bm_LoadBitmapFromMemory(buf.data(), buf.size(), img.c_str(), format, 0);
+  const int bm = bm_LoadBitmapFromMemory(buf.data(), buf.size(), img.c_str(), format, 0);
+  if (bm < 0)
+    return std::nullopt;
+  return static_cast<uint32_t>(bm);
 }
 
 bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
@@ -196,9 +199,9 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
         // read straight out of the open d3.hog archive and decoded from memory.
         GameTextures[Num_textures].bm_handle = -1;
         if (!texpage.bitmap_name.empty()) {
-          int bm = loadTextureFromArchive(archive, hogin, texpage.bitmap_name, BITMAP_FORMAT_1555);
-          if (bm >= 0) {
-            GameTextures[Num_textures].bm_handle = bm;
+          const std::optional<uint32_t> bm = loadTextureFromArchive(archive, hogin, texpage.bitmap_name, BITMAP_FORMAT_1555);
+          if (bm.has_value()) {
+            GameTextures[Num_textures].bm_handle = static_cast<int>(*bm);
             // .oaf textures are vclips: bm_handle holds the vclip index and the
             // animated flag makes GetTextureBitmap cycle through its frames.
             if (lowercase(texpage.bitmap_name).ends_with(".oaf"))

@@ -504,7 +504,7 @@ int bm_iff_alloc_file(posix_istream &ifile) {
   }
 
   // Alloc our bitmap
-  src_bm = bm_AllocBitmap(bmheader.w, bmheader.h, 0);
+  src_bm = bm_AllocBitmap(bmheader.w, bmheader.h, 0).value_or(-1);
   if (src_bm < 0)
     return -1;
 
@@ -748,7 +748,7 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, int format) {
   for (i = 0; i < image_id_len; i++)
     rdByte(infile);
 
-  n = bm_AllocBitmap(width, height, mipped * ((width * height * 2) / 3));
+  n = bm_AllocBitmap(width, height, mipped * ((width * height * 2) / 3)).value_or(-1);
 
   if (format == BITMAP_FORMAT_4444 || image_type == OUTRAGE_4444_COMPRESSED_MIPPED)
     GameBitmaps[n].format = BITMAP_FORMAT_4444;

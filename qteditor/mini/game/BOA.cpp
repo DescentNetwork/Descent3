@@ -320,14 +320,15 @@ extern object *GetDoorObject(room *rp);
 //	return true;
 //}
 
-int BOA_DetermineStartRoomPortal(int start_room, vector3 *start_pos, int end_room, vector3 *end_pos, bool f_for_sound,
-                                 bool f_making_robot_path_invalid_list, int *blocked_portal) {
+std::optional<uint32_t> BOA_DetermineStartRoomPortal(int start_room, vector3 *start_pos, int end_room, vector3 *end_pos,
+                                                     bool f_for_sound, bool f_making_robot_path_invalid_list,
+                                                     int *blocked_portal) {
   int i;
 
   if (start_room == -1 || end_room == -1)
-    return -1;
+    return std::nullopt;
   if (start_room > ((int)Rooms.size() - 1) && end_room > ((int)Rooms.size() - 1))
-    return -1;
+    return std::nullopt;
 
   start_room = BOA_INDEX(start_room);
   end_room = BOA_INDEX(end_room);
@@ -342,7 +343,7 @@ int BOA_DetermineStartRoomPortal(int start_room, vector3 *start_pos, int end_roo
           break;
       } else {
         if (Rooms[Rooms[start_room].portals[i].croom].flags.external) {
-          int cell = GetTerrainCellFromPos(Rooms[start_room].portals[i].path_pnt);
+          int cell = GetTerrainCellFromPos(Rooms[start_room].portals[i].path_pnt).value_or(-1);
           Q_ASSERT(cell != -1); // DAJ -1FIX
 
           if (((int)Rooms.size() - 1) + Terrain_seg[cell].flags.region + 1 == end_room)
@@ -372,7 +373,9 @@ int BOA_DetermineStartRoomPortal(int start_room, vector3 *start_pos, int end_roo
       i = -1;
   }
 
-  return i;
+  if (i == -1)
+    return std::nullopt;
+  return static_cast<uint32_t>(i);
 }
 
 bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, float *dist, int *num_blockages) {
@@ -428,11 +431,11 @@ bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, floa
       return false;
 
     if (BOA_INDEX(last_room) != BOA_INDEX(cur_room)) {
-      last_portal = BOA_DetermineStartRoomPortal(last_room, NULL, cur_room, NULL);
+      last_portal = BOA_DetermineStartRoomPortal(last_room, NULL, cur_room, NULL).value_or(-1);
     }
 
     if (last_room == end_room) {
-      int this_portal = BOA_DetermineStartRoomPortal(cur_room, NULL, last_room, NULL);
+      int this_portal = BOA_DetermineStartRoomPortal(cur_room, NULL, last_room, NULL).value_or(-1);
 
       if (cur_room != start_room && this_portal >= 0)
         *dist += BOA_cost_array[cur_room][this_portal];
@@ -443,7 +446,7 @@ bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, floa
       if (max_check_dist > 0.0 && max_check_dist < *dist)
         return false;
     } else if ((cur_room != last_room) && (cur_room != BOA_NO_PATH)) {
-      int this_portal = BOA_DetermineStartRoomPortal(cur_room, NULL, last_room, NULL);
+      int this_portal = BOA_DetermineStartRoomPortal(cur_room, NULL, last_room, NULL).value_or(-1);
       if (last_portal >= 0 && this_portal >= 0) {
 
         *dist += BOA_cost_array[last_room][last_portal] + BOA_cost_array[cur_room][this_portal];
@@ -558,17 +561,17 @@ bool BOA_IsVisible(int start_room, int end_room) {
   return ((BOA_Array[s_index][e_index] & BOAF_VIS) != 0);
 }
 
-int BOA_GetNextRoom(int start_room, int end_room) {
+std::optional<uint32_t> BOA_GetNextRoom(int start_room, int end_room) {
   int s_index = start_room;
   int e_index = end_room;
 
   if (start_room == -1 || end_room == -1) {
-    return BOA_NO_PATH;
+    return std::nullopt;
   }
 
   if ((!ROOMNUM_OUTSIDE(s_index)) && s_index <= ((int)Rooms.size() - 1)) {
     if (!Rooms[s_index].used) {
-      return BOA_NO_PATH;
+      return std::nullopt;
     }
   } else if (ROOMNUM_OUTSIDE(s_index)) {
     s_index = Terrain_seg[start_room].flags.region + ((int)Rooms.size() - 1) + 1;
@@ -578,7 +581,7 @@ int BOA_GetNextRoom(int start_room, int end_room) {
 
   if ((!ROOMNUM_OUTSIDE(e_index)) && e_index <= ((int)Rooms.size() - 1)) {
     if (!Rooms[e_index].used) {
-      return BOA_NO_PATH;
+      return std::nullopt;
     }
   } else if (ROOMNUM_OUTSIDE(e_index)) {
     e_index = Terrain_seg[end_room].flags.region + ((int)Rooms.size() - 1) + 1;
@@ -755,7 +758,7 @@ void compute_terrain_region_info() {
       int j;
 
       for (j = 0; j < Rooms[i].num_portals; j++) {
-        int cell = GetTerrainCellFromPos(Rooms[i].portals[j].path_pnt);
+        int cell = GetTerrainCellFromPos(Rooms[i].portals[j].path_pnt).value_or(-1);
         Q_ASSERT(cell != -1); // DAJ -1FIX
 
         int region = Terrain_seg[cell].flags.region;
@@ -972,7 +975,7 @@ void FindPath(int i, int j) {
         if ((next_room <= ((int)Rooms.size() - 1)) && Rooms[next_room].flags.external) {
           Q_ASSERT(cur_node->roomnum <= ((int)Rooms.size() - 1));
 
-          int cell = GetTerrainCellFromPos(Rooms[cur_node->roomnum].portals[counter].path_pnt);
+          int cell = GetTerrainCellFromPos(Rooms[cur_node->roomnum].portals[counter].path_pnt).value_or(-1);
           Q_ASSERT(cell >= 0 && cell < TERRAIN_WIDTH * TERRAIN_DEPTH);
 
           next_room = ((int)Rooms.size() - 1) + Terrain_seg[cell].flags.region + 1;
@@ -981,7 +984,7 @@ void FindPath(int i, int j) {
 
         int next_portal;
         if (BOA_INDEX(next_room) != BOA_INDEX(cur_node->roomnum)) {
-          next_portal = BOA_DetermineStartRoomPortal(next_room, NULL, cur_node->roomnum, NULL);
+          next_portal = BOA_DetermineStartRoomPortal(next_room, NULL, cur_node->roomnum, NULL).value_or(-1);
         }
 
         new_cost = cur_node->cost + BOA_cost_array[BOA_INDEX(cur_node->roomnum)][counter] +
@@ -1032,14 +1035,14 @@ void FindPath(int i, int j) {
 
         if ((next_room <= ((int)Rooms.size() - 1)) && Rooms[next_room].flags.external) {
           Q_ASSERT(cur_node->roomnum <= ((int)Rooms.size() - 1));
-          int cell = GetTerrainCellFromPos(Rooms[cur_node->roomnum].portals[counter].path_pnt);
+          int cell = GetTerrainCellFromPos(Rooms[cur_node->roomnum].portals[counter].path_pnt).value_or(-1);
           Q_ASSERT(cell != -1); // DAJ -1FIX
           next_room = ((int)Rooms.size() - 1) + Terrain_seg[cell].flags.region + 1;
         }
 
         int next_portal;
         if (BOA_INDEX(next_room) != BOA_INDEX(cur_node->roomnum)) {
-          next_portal = BOA_DetermineStartRoomPortal(next_room, NULL, cur_node->roomnum, NULL);
+          next_portal = BOA_DetermineStartRoomPortal(next_room, NULL, cur_node->roomnum, NULL).value_or(-1);
         }
 
         new_cost = cur_node->cost + BOA_cost_array[BOA_INDEX(cur_node->roomnum)][counter] +
@@ -1162,7 +1165,7 @@ void compute_blockage_info() {
 
           if (last_room != cur_room) {
             BOA_f_making_boa = false;
-            if (BOA_DetermineStartRoomPortal(last_room, NULL, cur_room, NULL, true) == -1) {
+            if (BOA_DetermineStartRoomPortal(last_room, NULL, cur_room, NULL, true).value_or(-1) == -1) {
               BOA_Array[i][j] |= BOAF_BLOCKAGE;
               BOA_f_making_boa = true;
               break;
@@ -1610,7 +1613,7 @@ void MakeBOAVisTable(bool from_lighting) {
           BOA_Array[i][((int)Rooms.size() - 1) + 1] |= BOAF_VIS;
 
           for (xxx = 0; xxx < Rooms[croom].num_portals; xxx++) {
-            int cell = GetTerrainCellFromPos(Rooms[croom].portals[xxx].path_pnt);
+            int cell = GetTerrainCellFromPos(Rooms[croom].portals[xxx].path_pnt).value_or(-1);
             Q_ASSERT(cell != -1); // DAJ -1FIX
             int region = Terrain_seg[cell].flags.region;
 
@@ -1821,7 +1824,7 @@ void MakeBOAVisTable(bool from_lighting) {
                       BOA_Array[i][((int)Rooms.size() - 1) + 1] |= BOAF_VIS;
 
                       for (xxx = 0; xxx < Rooms[check_room].num_portals; xxx++) {
-                        int cell = GetTerrainCellFromPos(Rooms[check_room].portals[xxx].path_pnt);
+                        int cell = GetTerrainCellFromPos(Rooms[check_room].portals[xxx].path_pnt).value_or(-1);
                         Q_ASSERT(cell != -1); // DAJ -1FIX
                         int region = Terrain_seg[cell].flags.region;
 
@@ -1910,8 +1913,8 @@ void verify_connections() {
 
       if (next_room != i && next_room != BOA_NO_PATH) {
         int portal;
-        portal = BOA_DetermineStartRoomPortal(i, NULL, next_room, NULL);
-        portal = BOA_DetermineStartRoomPortal(next_room, NULL, i, NULL);
+        portal = BOA_DetermineStartRoomPortal(i, NULL, next_room, NULL).value_or(-1);
+        portal = BOA_DetermineStartRoomPortal(next_room, NULL, i, NULL).value_or(-1);
       }
     }
   }
@@ -1982,7 +1985,7 @@ void compute_robot_path_info() {
           cur_room = BOA_NEXT_ROOM(cur_room, j);
 
           if (last_room != cur_room) {
-            if (BOA_DetermineStartRoomPortal(last_room, NULL, cur_room, NULL, false, true) == -1) {
+            if (BOA_DetermineStartRoomPortal(last_room, NULL, cur_room, NULL, false, true).value_or(-1) == -1) {
               BOA_Array[i][j] |= BOAF_TOO_SMALL_FOR_ROBOT;
               break;
             }

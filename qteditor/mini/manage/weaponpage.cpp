@@ -266,7 +266,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_weapon_page& data) {
   return output;
 }
 
-int mng_ReadNewWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) {
+bool mng_ReadNewWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) {
   mng_InitWeaponPage(weaponpage);
 
   infile >> *weaponpage;
@@ -279,12 +279,12 @@ int mng_ReadNewWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) {
     weaponpage->weapon_struct.life_time = 1.7f;
   }
 
-  return 1; // successfully read
+  return true; // successfully read
 }
 
-// Reads a weapon page from an open file.  Returns 0 on error.
-int mng_ReadWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) {
+// Reads a weapon page from an open file.  Returns false on error.
+bool mng_ReadWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) {
   if (!Old_table_method)
     return mng_ReadNewWeaponPage(infile, weaponpage);
-  return 0; // old command-based method not supported in mini build
+  return false; // old command-based method not supported in mini build
 }

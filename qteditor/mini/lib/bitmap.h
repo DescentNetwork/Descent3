@@ -21,6 +21,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 
 #define MAX_BITMAPS 5000
 #define NUM_MIP_LEVELS 5
@@ -80,7 +81,7 @@ void bm_ShutdownBitmaps(void);
 // If add_mem is nonzero, adds that to the amount alloced
 // (added due to the way the tmapper works)
 // Returns bitmap handle if successful, -1 if otherwise
-int bm_AllocBitmap(int w, int h, int add_mem);
+std::optional<uint32_t> bm_AllocBitmap(int w, int h, int add_mem);
 // Given a handle, frees the bitmap memory and flags this bitmap as unused
 void bm_FreeBitmap(int handle);
 // Allocs and loads a bitmap from a fully-resident in-memory payload (a HOG

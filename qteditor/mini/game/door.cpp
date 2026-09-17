@@ -149,8 +149,8 @@ void InitDoors() {
   Num_doors = 0;
 }
 
-// Allocs a door for use, returns -1 if error, else index on success
-int AllocDoor() {
+// Allocs a door for use, returns std::nullopt if error, else index on success
+std::optional<uint32_t> AllocDoor() {
   for (int i = 0; i < MAX_DOORS; i++) {
     if (Doors[i].used == 0) {
       Doors[i].used = 1;
@@ -163,7 +163,7 @@ int AllocDoor() {
   }
 
   Q_ASSERT(false); // No doors free!
-  return -1;
+  return std::nullopt;
 }
 
 // Frees door index n
@@ -176,13 +176,13 @@ void FreeDoor(int n) {
 }
 
 // Gets next door from n that has actually been alloced
-int GetNextDoor(int n) {
+std::optional<uint32_t> GetNextDoor(int n) {
   int i;
 
   Q_ASSERT(n >= 0 && n < MAX_DOORS);
 
   if (Num_doors == 0)
-    return -1;
+    return std::nullopt;
 
   for (i = n + 1; i < MAX_DOORS; i++)
     if (Doors[i].used)
@@ -197,13 +197,13 @@ int GetNextDoor(int n) {
 }
 
 // Gets previous door from n that has actually been alloced
-int GetPrevDoor(int n) {
+std::optional<uint32_t> GetPrevDoor(int n) {
   int i;
 
   Q_ASSERT(n >= 0 && n < MAX_DOORS);
 
   if (Num_doors == 0)
-    return -1;
+    return std::nullopt;
 
   for (i = n - 1; i >= 0; i--) {
     if (Doors[i].used)
@@ -234,7 +234,7 @@ std::optional<uint32_t> FindDoorName(const std::string &name)
 int LoadDoorImage(const std::filesystem::path& filename, int pageable) {
   int img_handle;
 
-  img_handle = LoadPolyModel(filename, pageable);
+  img_handle = static_cast<int>(LoadPolyModel(filename, pageable).value_or(-1));
 
   return img_handle;
 }

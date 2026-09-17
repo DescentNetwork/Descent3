@@ -209,7 +209,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_texture_page& data) {
   return output;
 }
 
-int mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
+bool mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
   int i;
 
   mng_InitTexturePage(texpage);
@@ -218,11 +218,11 @@ int mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
 
   texpage->tex_struct.used = 1;
 
-  return 1; // successfully read
+  return true; // successfully read
 }
 
-int mng_ReadTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
+bool mng_ReadTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
   if (!Old_table_method)
     return mng_ReadNewTexturePage(infile, texpage);
-  return 0; // old command-based table not supported in mini build
+  return false; // old command-based table not supported in mini build
 }

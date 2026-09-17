@@ -1262,10 +1262,10 @@ void RenderSpecularFaces(room *rp) {
       p->p3_flags |= PF_UV;
     }
 
-    int save_w = lm_w(lm_handle);
-    int save_h = lm_h(lm_handle);
-    GameLightmaps[lm_handle].width = lm_w(LightmapInfo[fp->lmi_handle].lm_handle);
-    GameLightmaps[lm_handle].height = lm_h(LightmapInfo[fp->lmi_handle].lm_handle);
+    int save_w = static_cast<int>(lm_w(lm_handle).value_or(-1));
+    int save_h = static_cast<int>(lm_h(lm_handle).value_or(-1));
+    GameLightmaps[lm_handle].width = static_cast<uint8_t>(lm_w(LightmapInfo[fp->lmi_handle].lm_handle).value_or(0));
+    GameLightmaps[lm_handle].height = static_cast<uint8_t>(lm_h(LightmapInfo[fp->lmi_handle].lm_handle).value_or(0));
     g3_DrawPoly(fp->num_verts, pointlist, lm_handle, MAP_TYPE_LIGHTMAP);
     GameLightmaps[lm_handle].width = save_w;
     GameLightmaps[lm_handle].height = save_h;
@@ -1339,8 +1339,8 @@ void RenderSpecularFacesFlat(room *rp) {
 
     lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
     const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
-    w = lm_w(lm_handle);
-    h = lm_h(lm_handle);
+    w = static_cast<int>(lm_w(lm_handle).value_or(-1));
+    h = static_cast<int>(lm_h(lm_handle).value_or(-1));
 
     for (vn = 0; vn < fp->num_verts; vn++) {
 
@@ -1840,8 +1840,8 @@ void RenderFace(room *rp, int facenum) {
     if (fp->flags.lightmap) {
       int lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
       const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
-      int w = lm_w(lm_handle);
-      int h = lm_h(lm_handle);
+      int w = static_cast<int>(lm_w(lm_handle).value_or(-1));
+      int h = static_cast<int>(lm_h(lm_handle).value_or(-1));
 
       for (int i = 0; i < fp->num_verts; i++) {
         float u = fp->face_uvls[i].u2 * (w - 1);
@@ -2055,8 +2055,8 @@ draw_fog:
       vector3 rvec = facematrix.rvec * lmi->xspacing;
       vector3 uvec = facematrix.uvec * lmi->yspacing;
       vm_TransposeMatrix(&facematrix);
-      int w = lm_w(lmi->lm_handle);
-      int h = lm_h(lmi->lm_handle);
+      int w = static_cast<int>(lm_w(lmi->lm_handle).value_or(-1));
+      int h = static_cast<int>(lm_h(lmi->lm_handle).value_or(-1));
       for (int i = 0; i < w * h; i++) {
         int t;
         g3Point epoints[20];

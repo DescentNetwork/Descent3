@@ -191,7 +191,7 @@ void WorldObjectsDoorDialog::updateDialog() {
 
   int n = app.current_door;
   if (!Doors[n].used)
-    n = app.current_door = GetNextDoor(n);
+    n = app.current_door = GetNextDoor(n).value_or(-1);
 
   ui->IDC_TRANSPARENCY->setChecked(Doors[n].flags & DF_SEETHROUGH);
   ui->IDC_DOOR_BLASTABLE->setChecked(Doors[n].flags & DF_BLASTABLE);
@@ -268,7 +268,7 @@ void WorldObjectsDoorDialog::onAddDoor() {
     return;
   }
 
-  int door_handle = AllocDoor();
+  int door_handle = AllocDoor().value_or(-1);
   int c = 1;
   bool finding_name = true;
   const std::string base = pathFs.stem().string();
@@ -329,7 +329,7 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
     mng_DeletePagelock(Doors[n].name, PAGETYPE_DOOR);
   }
 
-  app.current_door = GetNextDoor(n);
+  app.current_door = GetNextDoor(n).value_or(-1);
 
   if (Doors[n].model_handle >= 0 && Doors[n].model_handle < MAX_POLY_MODELS && Poly_models[Doors[n].model_handle].used)
     FreePolyModel(Doors[n].model_handle);
@@ -457,12 +457,12 @@ void WorldObjectsDoorDialog::onDoorsOut() {
 }
 
 void WorldObjectsDoorDialog::onDoorNext() {
-  app.current_door = GetNextDoor(app.current_door);
+  app.current_door = GetNextDoor(app.current_door).value_or(-1);
   updateDialog();
 }
 
 void WorldObjectsDoorDialog::onDoorPrev() {
-  app.current_door = GetPrevDoor(app.current_door);
+  app.current_door = GetPrevDoor(app.current_door).value_or(-1);
   updateDialog();
 }
 

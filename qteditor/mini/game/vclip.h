@@ -49,8 +49,8 @@ extern int Num_vclips;
 void InitVClips();
 
 // Allocs a vclip for use
-// Returns -1 on error
-int AllocVClip();
+// Returns std::nullopt on error
+std::optional<uint32_t> AllocVClip();
 
 // Frees a vclip
 void FreeVClip(int num);
@@ -58,7 +58,7 @@ void FreeVClip(int num);
 // Saves a given video clip to a file
 // Returns 1 if everything ok, 0 otherwise
 // "num" is index into GameVClip array
-int SaveVClip(const std::filesystem::path& filename, int num);
+bool SaveVClip(const std::filesystem::path& filename, int num);
 
 // Allocs and loads a vclip from the file named "filename"
 // Returns -1 on error, index into GameVClip array on success
@@ -75,16 +75,16 @@ int AllocLoadIFLVClip(const std::filesystem::path& filename, int texture_size, i
 // gets the filename from a path, plus appends our .oaf extension
 void ChangeVClipName(const std::filesystem::path& src, std::string& dest);
 
-// Searches thru all vclips for a specific name, returns -1 if not found
+// Searches thru all vclips for a specific name, returns std::nullopt if not found
 // or index of vclip with name
-int FindVClipName(const std::string& name);
+std::optional<uint32_t> FindVClipName(const std::string& name);
 
 // Pages in a vclip if it needs to be
 void PageInVClip(int vcnum);
 
 // Allocs and loads a fully-resident vclip from an in-memory OAF payload (a HOG
 // entry): parses the container header and pages every frame into GameVClips[].
-// Returns the vclip index, or -1 on error.
-int LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &name, int format);
+// Returns the vclip index, or std::nullopt on error.
+std::optional<uint32_t> LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &name, int format);
 
 #endif

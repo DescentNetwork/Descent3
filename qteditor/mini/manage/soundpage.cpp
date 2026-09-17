@@ -71,16 +71,16 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_sound_page& data) {
          << data.sound_struct.import_volume;
 }
 
-int mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
+bool mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
   infile >> *soundpage;
 
   // This is a valid new page
   soundpage->sound_struct.used = 1;
-  return 1; // successfully read
+  return true; // successfully read
 }
 
-int mng_ReadSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
+bool mng_ReadSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
   if (!Old_table_method)
     return mng_ReadNewSoundPage(infile, soundpage);
-  return 0; // old command-based table not supported in mini build
+  return false; // old command-based table not supported in mini build
 }

@@ -147,16 +147,16 @@ extern door Doors[];
 // Sets all doors to unused
 void InitDoors();
 
-// Allocs a door for use, returns -1 if error, else index on success
-int AllocDoor();
+// Allocs a door for use, returns std::nullopt if error, else index on success
+std::optional<uint32_t> AllocDoor();
 
 // Frees door index n
 void FreeDoor(int n);
 
 // Gets next door from n that has actually been alloced
-int GetNextDoor(int n);
+std::optional<uint32_t> GetNextDoor(int n);
 // Gets previous door from n that has actually been alloced
-int GetPrevDoor(int n);
+std::optional<uint32_t> GetPrevDoor(int n);
 // Searches thru all doors for a specific name, returns -1 if not found
 // or index of door with name
 std::optional<uint32_t> FindDoorName(const std::string &name);

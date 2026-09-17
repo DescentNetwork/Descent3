@@ -195,7 +195,7 @@ void osipf_SoundTouch(const std::string &str);
 // searches for an object id given its name
 std::optional<uint32_t> osipf_ObjectFindID(const std::string& name);
 
-int osipf_ObjectFindType(const std::string& name);
+std::optional<uint32_t> osipf_ObjectFindType(const std::string& name);
 
 // searches through the weapons for a name and returns the id
 std::optional<uint32_t> osipf_WeaponFindID(const std::string& name);
@@ -396,15 +396,15 @@ int osipf_AIGetNearbyObjs(vector3 *pos, int init_roomnum, float rad, int *object
 char osipf_AIGetCurGoalIndex(int obj_handle);
 
 std::optional<uint32_t> osipf_FindSoundName(const std::string& name);
-int osipf_FindRoomName(const std::string& name);
-int osipf_FindTriggerName(const std::string& name);
-int osipf_FindObjectName(const std::string& name);
-int osipf_GetTriggerRoom(int trigger_id);
-int osipf_GetTriggerFace(int trigger_id);
-int osipf_FindDoorName(const std::string& name);
+std::optional<uint32_t> osipf_FindRoomName(const std::string& name);
+std::optional<uint32_t> osipf_FindTriggerName(const std::string& name);
+std::optional<uint32_t> osipf_FindObjectName(const std::string& name);
+std::optional<uint32_t> osipf_GetTriggerRoom(int trigger_id);
+std::optional<uint32_t> osipf_GetTriggerFace(int trigger_id);
+std::optional<uint32_t> osipf_FindDoorName(const std::string& name);
 std::optional<uint32_t> osipf_FindTextureName(const std::string& name);
 std::optional<uint32_t> osipf_FindPathName(const std::string& name);
-int osipf_FindLevelGoalName(const std::string& name);
+std::optional<uint32_t> osipf_FindLevelGoalName(const std::string& name);
 
 void osipf_CreateRandomSparks(int num_sparks, vector3 *pos, int roomnum, int which_index, float force_scalar);
 
