@@ -176,7 +176,7 @@ void WorldTexturesDialog::saveTexturesOnClose() {
     return;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
     if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == PAGETYPE_TEXTURE) {
-      const auto t = FindTextureName(GlobalTrackLocks[i].name);
+      const std::optional<uint32_t> t = FindTextureName(GlobalTrackLocks[i].name);
       if (t)
         mng_ReplacePage(GameTextures[*t].name, GameTextures[*t].name, *t, PAGETYPE_TEXTURE, 1);
     }
@@ -290,7 +290,7 @@ void WorldTexturesDialog::onAddNew() {
 
 void WorldTexturesDialog::onDelete() {
   const int n = app.texdlg_texture;
-  const auto tl = mng_FindTrackLock(textureRef(n).name, PAGETYPE_TEXTURE);
+  const std::optional<uint32_t> tl = mng_FindTrackLock(textureRef(n).name, PAGETYPE_TEXTURE);
   if (!tl) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This texture is not yours to delete.  Lock first.");
     return;
@@ -425,24 +425,23 @@ void WorldTexturesDialog::onOverride() {
 }
 
 void WorldTexturesDialog::onChangeName() {
-  const int n = app.texdlg_texture;
-  const auto p = mng_FindTrackLock(textureRef(n).name, PAGETYPE_TEXTURE);
+  const std::optional<uint32_t> p = mng_FindTrackLock(textureRef(app.texdlg_texture).name, PAGETYPE_TEXTURE);
   if (!p) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this texture if you wish to change its name.");
     return;
   }
   bool ok = false;
   const QString name = QInputDialog::getText(this, "Texture name", "Enter a new name for this texture:",
-                                             QLineEdit::Normal, QString::fromStdString(textureRef(n).name), &ok);
+                                             QLineEdit::Normal, QString::fromStdString(textureRef(app.texdlg_texture).name), &ok);
   if (!ok || name.isEmpty())
     return;
-  if (FindTextureName(name.toStdString()) != -1) {
+  if (!FindTextureName(name.toStdString())) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
   const std::string newName = name.toStdString();
   GlobalTrackLocks[*p].name = newName;
-  textureRef(n).name = newName;
+  textureRef(app.texdlg_texture).name = newName;
   updateDialog();
 }
 
@@ -477,7 +476,7 @@ void WorldTexturesDialog::onPrev() {
 
 void WorldTexturesDialog::onTexListChanged()
 {
-  if(const auto i = FindTextureName(ui->IDC_TEX_LIST->currentText().toStdString()); i)
+  if(const std::optional<uint32_t> i = FindTextureName(ui->IDC_TEX_LIST->currentText().toStdString()); i)
   {
     app.texdlg_texture = *i;
     updateDialog();

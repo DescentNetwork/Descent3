@@ -143,7 +143,7 @@ void PathKeypad::onDeletePath() {
 
 void PathKeypad::onPathPulldownChanged()
 {
-  if (const auto idx = FindGamePathName(ui->IDC_PATHPAD_PULLDOWN->currentText().toStdString()); idx)
+  if (const std::optional<uint32_t> idx = FindGamePathName(ui->IDC_PATHPAD_PULLDOWN->currentText().toStdString()); idx)
   {
     app.current_path = *idx;
     app.current_node = 0;

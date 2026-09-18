@@ -730,7 +730,7 @@ void WorldObjectsGenericDialog::onCheckIn() {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object checked in.");
       Q_ASSERT(mng_DeletePage(Object_info[m_current].name, PAGETYPE_GENERIC, 1) == 1);
       mng_EraseLocker();
-      const auto p = mng_FindTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC);
+      const std::optional<uint32_t> p = mng_FindTrackLock(Object_info[m_current].name, PAGETYPE_GENERIC);
       Q_ASSERT(p);
       mng_FreeTrackLock(*p);
     }

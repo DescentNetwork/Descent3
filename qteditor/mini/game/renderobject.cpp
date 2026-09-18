@@ -1895,7 +1895,7 @@ void DrawPlayerRotatingBall(object *obj) {
   rend_SetAlphaValue(.3 * 255);
   rend_SetZBufferWriteMask(0);
   if (first) {
-    int texhandle = FindTextureName("WhiteGlowingBall");
+    int texhandle = FindTextureName("WhiteGlowingBall").value_or(-1);
     if (texhandle == -1)
       bm_handle = 0;
     else

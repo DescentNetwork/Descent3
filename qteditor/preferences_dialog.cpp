@@ -77,7 +77,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
   {
     QComboBox *combo = ui->IDC_DEFAULT_PILOT;
     const std::vector<std::string> pilotlist = PltGetPilots();
-    for (const auto &pilot : pilotlist)
+    for (const std::string &pilot : pilotlist)
       combo->addItem(QString::fromStdString(pilot));
     if (!pilotlist.empty()) {
       const int idx = combo->findText(QString::fromStdString(Default_pilot));

@@ -483,15 +483,14 @@ void WorldSoundsDialog::onOverride() {
 }
 
 void WorldSoundsDialog::onChangeName() {
-  const int n = app.current_sound;
-  const auto p = mng_FindTrackLock(soundRef(n).name, PAGETYPE_SOUND);
+  const std::optional<uint32_t> p = mng_FindTrackLock(soundRef(app.current_sound).name, PAGETYPE_SOUND);
   if (!p) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this sound if you wish to change its name.");
     return;
   }
   bool ok = false;
   QString name = QInputDialog::getText(this, "Sound name", "Enter a new name for this sound:",
-                                       QLineEdit::Normal, QString::fromStdString(soundRef(n).name), &ok);
+                                       QLineEdit::Normal, QString::fromStdString(soundRef(app.current_sound).name), &ok);
   if (!ok)
     return;
   if (!FindSoundName(name.toStdString())) {
@@ -501,7 +500,7 @@ void WorldSoundsDialog::onChangeName() {
   if (!mng_MakeLocker())
     return;
   mngs_Pagelock pl;
-  pl.name = soundRef(n).name;
+  pl.name = soundRef(app.current_sound).name;
   pl.pagetype = PAGETYPE_SOUND;
   const QByteArray newName = name.toLocal8Bit();
   std::string newNameBuf;
@@ -510,10 +509,10 @@ void WorldSoundsDialog::onChangeName() {
   if (ret < 0)
     QMessageBox::critical(this, "Error!", ErrorString);
   else if (ret == 1)
-    mng_RenamePage(soundRef(n).name, newNameBuf, PAGETYPE_SOUND);
+    mng_RenamePage(soundRef(app.current_sound).name, newNameBuf, PAGETYPE_SOUND);
   else if (ret == 2) {
     GlobalTrackLocks[*p].name = newName.constData();
-    mng_ReplacePage(GlobalTrackLocks[*p].name, newNameBuf, n, PAGETYPE_SOUND, 1);
+    mng_ReplacePage(GlobalTrackLocks[*p].name, newNameBuf, app.current_sound, PAGETYPE_SOUND, 1);
   } else if (ret == 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You don't own this page.  Get Jason now!");
     mng_FreeTrackLock(*p);
@@ -521,7 +520,7 @@ void WorldSoundsDialog::onChangeName() {
     return;
   }
   GlobalTrackLocks[*p].name = newName.constData();
-  soundRef(n).name = newName.constData();
+  soundRef(app.current_sound).name = newName.constData();
   mng_EraseLocker();
   RemapSounds();
   updateDialog();

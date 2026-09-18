@@ -565,7 +565,7 @@ void WorldWeaponsDialog::onPrevWeapon() {
 
 void WorldWeaponsDialog::onWeaponPulldownChanged()
 {
-  if (const auto i = FindWeaponName(ui->IDC_WEAPON_PULLDOWN->currentText().toStdString()); i)
+  if (const std::optional<uint32_t> i = FindWeaponName(ui->IDC_WEAPON_PULLDOWN->currentText().toStdString()); i)
   {
     app.current_weapon = *i;
     updateDialog();
@@ -591,15 +591,15 @@ void WorldWeaponsDialog::onCopy() {
 void WorldWeaponsDialog::onPaste() { QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Weapon pasted."); }
 
 void WorldWeaponsDialog::onChangeName() {
-  const int n = app.current_weapon;
-  const auto p = mng_FindTrackLock(weaponRef(n).name, PAGETYPE_WEAPON);
+
+  const std::optional<uint32_t> p = mng_FindTrackLock(weaponRef(app.current_weapon).name, PAGETYPE_WEAPON);
   if (!p) {
     QMessageBox::warning(this, "Unable to rename", "You must lock this weapon if you wish to change its name.");
     return;
   }
   bool ok = false;
   const QString name = QInputDialog::getText(this, "Weapon name", "Enter a new name for this weapon:",
-                                             QLineEdit::Normal, QString::fromStdString(weaponRef(n).name), &ok);
+                                             QLineEdit::Normal, QString::fromStdString(weaponRef(app.current_weapon).name), &ok);
   if (!ok || name.isEmpty())
     return;
   if (FindWeaponName(name.toStdString()))
@@ -607,8 +607,8 @@ void WorldWeaponsDialog::onChangeName() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
-  weaponRef(n).name = name.toStdString();
-  GlobalTrackLocks[*p].name = weaponRef(n).name;
+  weaponRef(app.current_weapon).name = name.toStdString();
+  GlobalTrackLocks[*p].name = weaponRef(app.current_weapon).name;
   RemapWeapons();
   updateDialog();
 }
