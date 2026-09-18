@@ -52,17 +52,18 @@ void lm_InitLightmaps();
 void lm_ShutdownLightmaps(void);
 
 // Allocs a lightmap of w x h size
-// Returns lightmap handle if successful, nullopt if otherwise
-std::optional<uint32_t> lm_AllocLightmap(int w, int h);
+// Returns 16-bit lightmap handle (index into GameLightmaps[MAX_LIGHTMAPS]) if
+// successful, nullopt if otherwise
+std::optional<uint16_t> lm_AllocLightmap(int w, int h);
 
 // Given a handle, frees the lightmap memory and flags this lightmap as unused
 void lm_FreeLightmap(int handle);
 
-// returns a lightmaps width  else nullopt if something is wrong
-std::optional<uint32_t> lm_w(int handle);
+// returns a lightmaps width (stored as uint8) else nullopt if something is wrong
+std::optional<uint8_t> lm_w(int handle);
 
-// returns a lightmaps height , else nullopt if something is wrong
-std::optional<uint32_t> lm_h(int handle);
+// returns a lightmaps height (stored as uint8), else nullopt if something is wrong
+std::optional<uint8_t> lm_h(int handle);
 
 // returns a lightmaps data as height rows of width texels
 std::vector<std::vector<uint16_t>> &lm_data(int handle);

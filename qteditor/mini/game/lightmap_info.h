@@ -78,17 +78,18 @@ extern int Num_lightmap_infos_read;
 void InitLightmapInfo(int nummaps = 0);
 
 // Allocs a lightmap of w x h size
-// Returns lightmap handle if successful, nullopt if otherwise
-std::optional<uint32_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap = true);
+// Returns 16-bit lightmap_info handle (index into LightmapInfo) if
+// successful, nullopt if otherwise
+std::optional<uint16_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap = true);
 
 // Given a handle, frees the lightmap memory and flags this lightmap as unused
 void FreeLightmapInfo(int handle);
 
-// Gets the width of this lightmap_info handle
-std::optional<uint32_t> lmi_w(int handle);
+// Gets the width of this lightmap_info handle (stored as uint8)
+std::optional<uint8_t> lmi_w(int handle);
 
-// Gets the height of this lightmap_info handle
-std::optional<uint32_t> lmi_h(int handle);
+// Gets the height of this lightmap_info handle (stored as uint8)
+std::optional<uint8_t> lmi_h(int handle);
 
 void CloseLightmapInfos();
 

@@ -87,7 +87,7 @@ static std::vector<int> Destroyed_light_rooms_this_frame;
 static std::vector<int> Destroyed_light_faces_this_frame;
 
 static void FreeLighting();
-static std::optional<uint32_t> GetFreeDynamicLightmap(int w, int h);
+static std::optional<uint16_t> GetFreeDynamicLightmap(int w, int h);
 static void BlendLightingEdges(lightmap_info *lmi_ptr);
 static void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, float red_scale, float green_scale,
                                         float blue_scale, vector3 *light_direction, float dot_range);
@@ -178,7 +178,7 @@ uint8_t Float_to_ubyte(float fnum) {
 }
 
 // Returns an index into the Dynamic_lightmaps array.  Index returned is marked as unused
-std::optional<uint32_t> GetFreeDynamicLightmap(int w, int h) {
+std::optional<uint16_t> GetFreeDynamicLightmap(int w, int h) {
   int total = w * h * 2;
 
   if (Num_dynamic_lightmaps == MAX_DYNAMIC_LIGHTMAPS)
@@ -198,7 +198,7 @@ std::optional<uint32_t> GetFreeDynamicLightmap(int w, int h) {
 
   Cur_dynamic_mem_ptr += total;
 
-  return n;
+  return static_cast<uint16_t>(n);
 }
 
 // Makes all the edges of dynamic lighting blend into the body of the lightmap
@@ -388,7 +388,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     } else // Start a new dynamic lightmap
     {
       // First find a suitable dynamic lightmap to work with
-      const std::optional<uint32_t> dynamic_handle = GetFreeDynamicLightmap(xres, yres);
+      const std::optional<uint16_t> dynamic_handle = GetFreeDynamicLightmap(xres, yres);
 
       if (!dynamic_handle.has_value()) {
         LOG_WARNING("No free dynamic maps!");
@@ -718,7 +718,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
     } else // Start a new dynamic lightmap
     {
       // First find a suitable dynamic lightmap to work with
-      const std::optional<uint32_t> dynamic_handle = GetFreeDynamicLightmap(xres, yres);
+      const std::optional<uint16_t> dynamic_handle = GetFreeDynamicLightmap(xres, yres);
 
       if (!dynamic_handle.has_value()) {
         LOG_WARNING("No free dynamic maps!");
@@ -1156,7 +1156,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     } else // Start a new dynamic lightmap
     {
       // First find a suitable dynamic lightmap to work with
-      const std::optional<uint32_t> dynamic_handle = GetFreeDynamicLightmap(xres, yres);
+      const std::optional<uint16_t> dynamic_handle = GetFreeDynamicLightmap(xres, yres);
 
       if (!dynamic_handle.has_value()) {
         LOG_WARNING("No free dynamic maps!");

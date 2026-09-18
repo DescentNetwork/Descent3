@@ -927,11 +927,11 @@ extern void AIUpdateAnim(object *obj);
 std::optional<uint32_t> osipf_ObjectFindID(const std::string &name) { return FindObjectIDName(IGNORE_TABLE(name)); }
 
 // searches for an object id given its name
-std::optional<uint32_t> osipf_ObjectFindType(const std::string &name) {
+std::optional<uint8_t> osipf_ObjectFindType(const std::string &name) {
   auto id = FindObjectIDName(IGNORE_TABLE(name));
 
   if (id) {
-    return static_cast<uint32_t>(Object_info[*id].type);
+    return Object_info[*id].type;
   }
 
   return std::nullopt;

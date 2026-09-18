@@ -43,8 +43,8 @@ void lm_ShutdownLightmaps(void) {
 }
 
 // Allocs a lightmap of w x h size
-// Returns lightmap handle if successful, nullopt if otherwise
-std::optional<uint32_t> lm_AllocLightmap(int w, int h) {
+// Returns 16-bit lightmap handle if successful, nullopt if otherwise
+std::optional<uint16_t> lm_AllocLightmap(int w, int h) {
   if (!f_lm_initialized)
     lm_InitLightmaps();
 
@@ -76,7 +76,7 @@ std::optional<uint32_t> lm_AllocLightmap(int w, int h) {
   Q_ASSERT(lightmap_res >= 2 && lightmap_res <= 128);
   GameLightmaps[n].square_res = lightmap_res;
 
-  return static_cast<uint32_t>(n);
+  return static_cast<uint16_t>(n);
 }
 
 // Given a handle, frees the lightmap memory and flags this lightmap as unused
@@ -95,14 +95,14 @@ void lm_FreeLightmap(int handle) {
 }
 
 // returns a lightmaps width  else nullopt if something is wrong
-std::optional<uint32_t> lm_w(int handle) {
+std::optional<uint8_t> lm_w(int handle) {
   if (!GameLightmaps[handle].used)
     return std::nullopt;
   return GameLightmaps[handle].width;
 }
 
 // returns a lightmaps height , else nullopt if something is wrong
-std::optional<uint32_t> lm_h(int handle) {
+std::optional<uint8_t> lm_h(int handle) {
   if (!GameLightmaps[handle].used)
     return std::nullopt;
   return GameLightmaps[handle].height;

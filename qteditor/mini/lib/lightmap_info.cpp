@@ -39,8 +39,8 @@ void InitLightmapInfo(int nummaps) {
 }
 
 // Allocs a lightmap of w x h size, optionally allocating its backing texture.
-// Returns lightmap info handle if successful, nullopt if otherwise
-std::optional<uint32_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap) {
+// Returns 16-bit lightmap info handle if successful, nullopt if otherwise
+std::optional<uint16_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap) {
   int n;
 
   if (Num_of_lightmap_info >= static_cast<int>(MAX_LIGHTMAP_INFOS))
@@ -55,9 +55,9 @@ std::optional<uint32_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lig
   Q_ASSERT(w >= 2 && h >= 2);
 
   if (alloc_lightmap) {
-    const std::optional<uint32_t> lm = lm_AllocLightmap(w, h);
+    const std::optional<uint16_t> lm = lm_AllocLightmap(w, h);
     Q_ASSERT(lm.has_value());
-    LightmapInfo[n].lm_handle = static_cast<uint16_t>(lm.value_or(BAD_LM_INDEX));
+    LightmapInfo[n].lm_handle = lm.value_or(BAD_LM_INDEX);
   }
 
   LightmapInfo[n].used = 1;
@@ -69,7 +69,7 @@ std::optional<uint32_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lig
   LightmapInfo[n].x1 = 0;
   LightmapInfo[n].y1 = 0;
 
-  return static_cast<uint32_t>(n);
+  return static_cast<uint16_t>(n);
 }
 
 // Given a handle, frees the lightmap info (and its lightmap) if it is the last
@@ -90,15 +90,15 @@ void FreeLightmapInfo(int handle) {
   }
 }
 
-// Gets the width of this lightmap_info handle
-std::optional<uint32_t> lmi_w(int handle) {
+// Gets the width of this lightmap_info handle (stored as uint8)
+std::optional<uint8_t> lmi_w(int handle) {
   if (!LightmapInfo[handle].used)
     return std::nullopt;
   return LightmapInfo[handle].width;
 }
 
-// Gets the height of this lightmap_info handle
-std::optional<uint32_t> lmi_h(int handle) {
+// Gets the height of this lightmap_info handle (stored as uint8)
+std::optional<uint8_t> lmi_h(int handle) {
   if (!LightmapInfo[handle].used)
     return std::nullopt;
   return LightmapInfo[handle].height;

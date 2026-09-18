@@ -94,6 +94,14 @@ uint8_t *Lightmap_mask = NULL;
 static uint8_t *Lmi_spoken_for;
 int Squeeze_lightmap_handle = -1;
 
+// Allocates the shared "squeeze" lightmap.  lm_AllocLightmap now returns a
+// 16-bit handle (std::optional<uint16_t>), so the -1 failure sentinel must be
+// derived explicitly rather than via value_or(-1).
+static int AllocSqueezeLightmap() {
+  const std::optional<uint16_t> lm = lm_AllocLightmap(128, 128);
+  return lm.has_value() ? static_cast<int>(*lm) : -1;
+}
+
 int FindEmptyMaskSpot(int w, int h, int *dest_x, int *dest_y) {
   int cur_x = 0, cur_y = 0;
   int i, t;
@@ -482,7 +490,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
       if (Squeeze_lightmap_handle == -1) {
         memset(Lightmap_mask, 0, 128 * 128);
-        Squeeze_lightmap_handle = static_cast<int>(lm_AllocLightmap(128, 128).value_or(-1));
+        Squeeze_lightmap_handle = AllocSqueezeLightmap();
         
       }
 
@@ -518,7 +526,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
         GameLightmaps[Squeeze_lightmap_handle].used--;
 
         memset(Lightmap_mask, 0, 128 * 128);
-        Squeeze_lightmap_handle = static_cast<int>(lm_AllocLightmap(128, 128).value_or(-1));
+        Squeeze_lightmap_handle = AllocSqueezeLightmap();
         
 
         Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
@@ -559,7 +567,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
           if (Squeeze_lightmap_handle == -1) {
             memset(Lightmap_mask, 0, 128 * 128);
-            Squeeze_lightmap_handle = static_cast<int>(lm_AllocLightmap(128, 128).value_or(-1));
+            Squeeze_lightmap_handle = AllocSqueezeLightmap();
             
           }
 
@@ -605,7 +613,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             GameLightmaps[Squeeze_lightmap_handle].used--;
 
             memset(Lightmap_mask, 0, 128 * 128);
-            Squeeze_lightmap_handle = static_cast<int>(lm_AllocLightmap(128, 128).value_or(-1));
+            Squeeze_lightmap_handle = AllocSqueezeLightmap();
             
 
             Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
@@ -661,7 +669,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
           if (Squeeze_lightmap_handle == -1) {
             memset(Lightmap_mask, 0, 128 * 128);
-            Squeeze_lightmap_handle = static_cast<int>(lm_AllocLightmap(128, 128).value_or(-1));
+            Squeeze_lightmap_handle = AllocSqueezeLightmap();
             
           }
 
@@ -707,7 +715,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             GameLightmaps[Squeeze_lightmap_handle].used--;
 
             memset(Lightmap_mask, 0, 128 * 128);
-            Squeeze_lightmap_handle = static_cast<int>(lm_AllocLightmap(128, 128).value_or(-1));
+            Squeeze_lightmap_handle = AllocSqueezeLightmap();
             
 
             Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);

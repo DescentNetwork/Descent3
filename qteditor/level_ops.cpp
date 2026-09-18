@@ -558,8 +558,8 @@ std::string RenderLevelStats() {
     if (!lightmaps_used[i])
       continue;
     const std::vector<std::vector<uint16_t>> &data = lm_data(i);
-    const int w = static_cast<int>(lm_w(i).value_or(-1));
-    const int h = static_cast<int>(lm_h(i).value_or(-1));
+    const int w = static_cast<int>(lm_w(i).value_or(0));
+    const int h = static_cast<int>(lm_h(i).value_or(0));
     if (w <= 0 || h <= 0)
       continue;
     for (int y = 0; y < h; y++) {

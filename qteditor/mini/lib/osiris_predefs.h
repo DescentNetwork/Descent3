@@ -195,7 +195,8 @@ void osipf_SoundTouch(const std::string &str);
 // searches for an object id given its name
 std::optional<uint32_t> osipf_ObjectFindID(const std::string& name);
 
-std::optional<uint32_t> osipf_ObjectFindType(const std::string& name);
+// returns the 8-bit object type (OBJ_NONE=255 when not found, as nullopt)
+std::optional<uint8_t> osipf_ObjectFindType(const std::string& name);
 
 // searches through the weapons for a name and returns the id
 std::optional<uint32_t> osipf_WeaponFindID(const std::string& name);
