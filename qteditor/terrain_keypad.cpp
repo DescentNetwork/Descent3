@@ -479,7 +479,7 @@ void TerrainKeypad::onDropTerrain() {
   BuildMinMaxTerrain();
   float delta_y = (float)(delta * TERRAIN_HEIGHT_INCREMENT);
 
-  for (int r = 0; r <= ((int)Rooms.size() - 1); r++) {
+  for (int r = 0; r < Rooms.size(); r++) {
     if (!Rooms[r].used) continue;
     for (int v = 0; v < Rooms[r].num_verts; v++)
       Rooms[r].verts[v].y() += delta_y;

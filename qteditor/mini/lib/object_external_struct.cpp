@@ -247,16 +247,25 @@ byte_istream& operator>>(byte_istream& input, object& data) {
 }
 
 byte_ostream& operator<<(byte_ostream& output, const object& data) {
-  output << data.type << data.id << data.name << reinterpret_cast<const uint32_t&>(data.flags);
+  output << data.type
+         << data.id
+         << data.name
+         << reinterpret_cast<const uint32_t&>(data.flags);
   if (data.type == OBJ_DOOR)
     output << static_cast<int16_t>(data.shields);
-  output << data.roomnum << data.pos << data.orient;
-  output << data.contains_type << data.contains_id << data.contains_count << data.lifeleft;
+  output << data.roomnum
+         << data.pos
+         << data.orient
+         << data.contains_type
+         << data.contains_id
+         << data.contains_count
+         << data.lifeleft;
 
   if (data.type == OBJ_SOUNDSOURCE) {
     const std::string &soundname = data.ctype.soundsource_info().sound_index
                                        ? Sounds[*data.ctype.soundsource_info().sound_index].name : "";
-    output << soundname << data.ctype.soundsource_info().volume;
+    output << soundname
+           << data.ctype.soundsource_info().volume;
   }
 
   writeByteString(output, data.custom_default_script_name);

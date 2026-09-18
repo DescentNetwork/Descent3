@@ -2004,7 +2004,7 @@ vector3 osipf_AIGetRoomPathPoint(int roomnum) {
 
       return pos;
     }
-  } else if (roomnum <= ((int)Rooms.size() - 1) && Rooms[roomnum].used) {
+  } else if (roomnum < Rooms.size() && Rooms[roomnum].used) {
     return Rooms[roomnum].path_pnt;
   }
 
@@ -2593,7 +2593,7 @@ int osipf_ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3 *pos, const 
   if (id == 65535) // since it is a uint16_t, this is == -1
     return OBJECT_HANDLE_NONE;
 
-  if (((roomnum >= 0) && (roomnum <= ((int)Rooms.size() - 1)) && (Rooms[roomnum].used)) || (ROOMNUM_OUTSIDE(roomnum))) {
+  if (((roomnum >= 0) && (roomnum < Rooms.size()) && (Rooms[roomnum].used)) || (ROOMNUM_OUTSIDE(roomnum))) {
     if (IS_GENERIC(type)) {
       // Make sure the scripts aren't creating objects that have lightmaps!
       Q_ASSERT(Object_info[id].lighting_info.lighting_render_type != LRT_LIGHTMAPS);
@@ -3364,7 +3364,7 @@ char osipf_AIGetCurGoalIndex(int obj_handle) {
 std::optional<uint32_t> osipf_FindSoundName(const std::string &name) { return FindSoundName(IGNORE_TABLE(name)); }
 
 std::optional<uint32_t> osipf_FindRoomName(const std::string &name) {
-  for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
+  for (int i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used && !Rooms[i].name.empty()) {
       if (match(name, Rooms[i].name))
         return static_cast<uint32_t>(i);

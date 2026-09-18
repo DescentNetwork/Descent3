@@ -1917,7 +1917,7 @@ int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face
 
   // Q_ASSERT(quick_fr_list != NULL);
   Q_ASSERT(pos != nullptr);
-  Q_ASSERT(init_room_index >= 0 && init_room_index <= ((int)Rooms.size() - 1) && Rooms[init_room_index].used != 0);
+  Q_ASSERT(init_room_index >= 0 && init_room_index < Rooms.size() && Rooms[init_room_index].used != 0);
   Q_ASSERT(rad >= 0.0f);
 
   // Quick volume
@@ -2200,7 +2200,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
     int i;
 
     Q_ASSERT(pos != nullptr);
-    Q_ASSERT(init_room_index >= 0 && init_room_index <= ((int)Rooms.size() - 1) && Rooms[init_room_index].used != 0);
+    Q_ASSERT(init_room_index >= 0 && init_room_index < Rooms.size() && Rooms[init_room_index].used != 0);
     Q_ASSERT(rad >= 0.0f);
 
     // Initially this is the only room in the list
@@ -4368,7 +4368,7 @@ void fvi_rooms_objs(void) {
   for (i = 0; i < fvi_num_rooms_visited; i++) {
     cur_room = &Rooms[fvi_rooms_visited[i]];
     Q_ASSERT((fvi_visit_list[ROOMNUM(cur_room) >> 3] & (0x01 << (ROOMNUM(cur_room) % 8))) != 0);
-    Q_ASSERT(ROOMNUM(cur_room) >= 0 && ROOMNUM(cur_room) <= ((int)Rooms.size() - 1) && cur_room->used);
+    Q_ASSERT(ROOMNUM(cur_room) >= 0 && ROOMNUM(cur_room) < Rooms.size() && cur_room->used);
 
     for (objnum = cur_room->objects; objnum != -1; objnum = Objects[objnum].next) {
       Q_ASSERT(objnum != -1);
@@ -4465,7 +4465,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
   else
     this_obj = nullptr;
 
-  Q_ASSERT(room_index >= 0 && room_index <= ((int)Rooms.size() - 1));
+  Q_ASSERT(room_index >= 0 && room_index < Rooms.size());
   Q_ASSERT(Rooms[room_index].used);
   Q_ASSERT((fvi_visit_list[room_index >> 3] & (0x01 << (room_index % 8))) == 0);
 

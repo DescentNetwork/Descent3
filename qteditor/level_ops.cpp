@@ -232,7 +232,7 @@ void CheckLevelNames() {
     }
   }
   room *rp;
-  for (i = 0, rp = Rooms.data(); i <= ((int)Rooms.size() - 1); i++, rp++) {
+  for (i = 0, rp = Rooms.data(); i < Rooms.size(); i++, rp++) {
     if (rp->used && !rp->name.empty()) {
       const int n = static_cast<int>(osipf_FindRoomName(rp->name).value_or(-1));
       if (n != i)
@@ -391,12 +391,12 @@ void SetEditorViewer() {
       pos.z() = TERRAIN_SIZE * TERRAIN_DEPTH / 2;
       roomnum = MAKE_ROOMNUM(0); // any value ok, so long as it has terrain flag
     } else if (app.view_mode == state::viewer::mine) { // if mine, put in center of any room
-      for (roomnum = 0; roomnum <= ((int)Rooms.size() - 1); roomnum++)
+      for (roomnum = 0; roomnum < Rooms.size(); roomnum++)
         if (Rooms[roomnum].used && !Rooms[roomnum].flags.external) {
           ComputeRoomCenter(&pos, &Rooms[roomnum]);
           break;
         }
-      Q_ASSERT(roomnum <= ((int)Rooms.size() - 1));
+      Q_ASSERT(roomnum < Rooms.size());
     } else if (app.view_mode == state::viewer::room) { // if room, put at 0,0,0
       pos = vector3{};
       roomnum = MAKE_ROOMNUM(0);
@@ -484,7 +484,7 @@ std::string RenderLevelStats() {
 
   int i;
   room *rp;
-  for (i = 0, rp = Rooms.data(); i <= ((int)Rooms.size() - 1); i++, rp++) {
+  for (i = 0, rp = Rooms.data(); i < Rooms.size(); i++, rp++) {
     if (!rp->used)
       continue;
     n_rooms++;

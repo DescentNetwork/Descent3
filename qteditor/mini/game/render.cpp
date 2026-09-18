@@ -689,7 +689,7 @@ void RotateAllExternalRooms() {
     N_external_rooms = 0;
 
     int i;
-    for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
+    for (i = 0; i < Rooms.size(); i++) {
       if ((Rooms[i].flags.external) && Rooms[i].used) {
         External_room_list[N_external_rooms++] = i;
       }
@@ -1074,7 +1074,7 @@ void BuildRoomList(int start_room_num) {
   room *rp = &Rooms[start_room_num];
   int i;
   // For now, render all connected rooms
-  for (i = 0; i <= ((int)Rooms.size() - 1); i++) {
+  for (i = 0; i < Rooms.size(); i++) {
     Rooms_visited[i] = 0;
     Room_depth_list[i] = 255;
     Rooms[i].wpb_index = -1;
@@ -1129,7 +1129,7 @@ void BuildRoomList(int start_room_num) {
     if (Render_all_external_rooms) {
       int i;
       room *rp;
-      for (i = 0, rp = Rooms.data(); i <= ((int)Rooms.size() - 1); i++, rp++) {
+      for (i = 0, rp = Rooms.data(); i < Rooms.size(); i++, rp++) {
         if (rp->used && (rp->flags.external)) {
           for (int t = 0; t < rp->num_faces; t++)
             rp->faces[t].flags.visible = true;
@@ -3429,7 +3429,7 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
   if (Must_render_terrain && !Called_from_terrain && !(In_editor_mode && Render_inside_only)) {
     RenderTerrain(1, Terrain_portal_left, Terrain_portal_top, Terrain_portal_right, Terrain_portal_bottom);
     // Mark all room points to be rerotated due to terrain trashing our point list
-    for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
+    for (int i = 0; i < Rooms.size(); i++) {
       Rooms[i].wpb_index = -1;
       Global_buffer_index = 0;
     }

@@ -342,7 +342,7 @@ retry:
           fvi_info hit_info;
 
           fq.p0 = &pos;
-          fq.startroom = (roomnum > ((int)Rooms.size() - 1) && roomnum <= ((int)Rooms.size() - 1) + 8)
+          fq.startroom = (roomnum > ((int)Rooms.size() - 1) && roomnum < Rooms.size() + 8)
                              ? GetTerrainRoomFromPos(pos).value_or(-1)
                              : roomnum;
           fq.p1 = &bnlist->nodes[i].pos;
@@ -428,7 +428,7 @@ retry:
 
         if (!f_retry) {
           fq.p0 = &pos;
-          fq.startroom = (roomnum > ((int)Rooms.size() - 1) && roomnum <= ((int)Rooms.size() - 1) + 8)
+          fq.startroom = (roomnum > ((int)Rooms.size() - 1) && roomnum < Rooms.size() + 8)
                              ? GetTerrainRoomFromPos(pos).value_or(-1)
                              : roomnum;
           fq.p1 = &bnlist->nodes[i].pos;
@@ -464,7 +464,7 @@ retry:
 bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level) {
   if (roomnum == -1) {
     return NULL;
-  } else if (roomnum >= 0 && roomnum <= ((int)Rooms.size() - 1)) {
+  } else if (roomnum >= 0 && roomnum < Rooms.size()) {
     //		if(!f_in_load_level)
     //		{
     //			Q_ASSERT(!(Rooms[roomnum].flags2.external));
@@ -478,7 +478,7 @@ bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level) {
     return &rp->bn_info;
   } else if (ROOMNUM_OUTSIDE(roomnum)) {
     return &BNode_terrain_list[Terrain_seg[roomnum].flags.region];
-  } else if (roomnum <= ((int)Rooms.size() - 1) + 8) {
+  } else if (roomnum < Rooms.size() + 8) {
     return &BNode_terrain_list[roomnum - ((int)Rooms.size() - 1) - 1];
   }
 

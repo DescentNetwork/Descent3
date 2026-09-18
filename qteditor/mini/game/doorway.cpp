@@ -377,7 +377,7 @@ void DoorwayDeactivateAll() {
   room *rp;
 
   // Go through all rooms and deactivate doors
-  for (r = 0, rp = Rooms; r <= ((int)Rooms.size() - 1); r++) {
+  for (r = 0, rp = Rooms; r < Rooms.size(); r++) {
     if (rp->used && rp->flags.door) {
       if (rp->doorway_data->state != DOORWAY_STOPPED) {
         doorway *dp = rp->doorway_data;
@@ -625,7 +625,7 @@ void DoorwayRebuildActiveList() {
   Num_active_doorways = 0;
 
   // Go through all rooms and look for active doors
-  for (r = 0, rp = Rooms; r <= ((int)Rooms.size() - 1); r++) {
+  for (r = 0, rp = Rooms; r < Rooms.size(); r++) {
     if (rp->used && rp->flags.door) {
       Q_ASSERT(rp->doorway_data != NULL);
       if (rp->doorway_data->state != DOORWAY_STOPPED)

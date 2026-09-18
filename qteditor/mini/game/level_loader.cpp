@@ -220,13 +220,13 @@ static void LL_WriteBOAChunk(posix_ostream &ofile) {
   ofile << (((int)Rooms.size() - 1) + 8);
   ofile << static_cast<int>(MAX_PATH_PORTALS);
 
-  for (i = 0; i <= ((int)Rooms.size() - 1) + 8; i++) {
-    for (j = 0; j <= ((int)Rooms.size() - 1) + 8; j++) {
+  for (i = 0; i < Rooms.size() + 8; i++) {
+    for (j = 0; j < Rooms.size() + 8; j++) {
       ofile << static_cast<int16_t>(BOA_Array[i][j]);
     }
   }
 
-  for (i = 0; i <= ((int)Rooms.size() - 1) + 8; i++) {
+  for (i = 0; i < Rooms.size() + 8; i++) {
     for (j = 0; j < MAX_PATH_PORTALS; j++) {
       ofile << BOA_cost_array[i][j];
     }
@@ -336,7 +336,7 @@ static void LL_ReadBNodeChunk(posix_istream &ifile, uint32_t version) {
 // Layout (little-endian, posix stream) — mirror of LL_ReadBNodeChunk:
 //   int16  hr_index == ((int)Rooms.size() - 1) + 8
 //   per i in [0 .. hr_index]:
-//     byte    f_good_room  (Rooms[i].used if i <= ((int)Rooms.size() - 1), else 1)
+//     byte    f_good_room  (Rooms[i].used if i < Rooms.size(), else 1)
 //     if f_good_room (uses BNode_GetBNListPtr(i, true)):
 //       int16  num_nodes   (bnlist->nodes.size())
 //       if num_nodes, per node j:
@@ -354,8 +354,8 @@ static void LL_WriteBNodeChunk(posix_ostream &ofile) {
 
   ofile << static_cast<int16_t>(((int)Rooms.size() - 1) + 8);
 
-  for (int32_t i = 0; i <= ((int)Rooms.size() - 1) + 8; i++) {
-    if (i <= ((int)Rooms.size() - 1) && !Rooms[i].used) {
+  for (int32_t i = 0; i < Rooms.size() + 8; i++) {
+    if (i < Rooms.size() && !Rooms[i].used) {
       ofile << static_cast<uint8_t>(0);
     } else {
       ofile << static_cast<uint8_t>(1);
@@ -650,7 +650,7 @@ static void LL_ReadRoomAABBChunk(posix_istream &ifile) {
   for (int i = 0; i <= save_hri; i++)
     ifile >> BOA_AABB_ROOM_checksum[i];
 
-  for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
+  for (int i = 0; i < Rooms.size(); i++) {
     int32_t used = 0;
     ifile >> used;
     Q_ASSERT(Rooms[i].used == used);
@@ -704,10 +704,10 @@ static void LL_WriteRoomAABBChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_ROOM_AABB);
 
   ofile << (int32_t)((int)Rooms.size() - 1);
-  for (int i = 0; i <= ((int)Rooms.size() - 1); i++)
+  for (int i = 0; i < Rooms.size(); i++)
     ofile << BOA_AABB_ROOM_checksum[i];
 
-  for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
+  for (int i = 0; i < Rooms.size(); i++) {
     if (!Rooms[i].used) {
       ofile << (int32_t)0; // Not used
       continue;
@@ -964,7 +964,7 @@ static void LL_WriteFFTMChunk(posix_ostream &ofile) {
 // inline (:4026-4089, #ifdef EDITOR), writer (:5313, always the LAST chunk).
 static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
   auto lookup_room = [](int16_t idx) -> room * {
-    if (idx >= 0 && idx <= ((int)Rooms.size() - 1) && Rooms[idx].used)
+    if (idx >= 0 && idx < Rooms.size() && Rooms[idx].used)
       return &Rooms[idx];
     return nullptr;
   };
@@ -2009,7 +2009,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
 
   // Recompute face normals for any room still missing them and find first used
   // indices after the sparse room load.
-  for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
+  for (int i = 0; i < Rooms.size(); i++) {
     if (!Rooms[i].used)
       continue;
     for (int f = 0; f < Rooms[i].num_faces; f++)
@@ -2083,7 +2083,7 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     {
       int start = LL_StartChunk(out, CHUNK_ROOMS);
       int nrooms = 0, nverts = 0, nfaces = 0, nfaceverts = 0, nportals = 0;
-      for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
+      for (int i = 0; i < Rooms.size(); i++) {
         if (!Rooms[i].used)
           continue;
         nrooms++;
@@ -2098,7 +2098,7 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
       out << nfaces;
       out << nfaceverts;
       out << nportals;
-      for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
+      for (int i = 0; i < Rooms.size(); i++) {
         if (!Rooms[i].used)
           continue;
         int16_t room = (int16_t)i;
@@ -2111,13 +2111,13 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     // RWND (room wind)
     {
       int nwind = 0;
-      for (int i = 0; i <= ((int)Rooms.size() - 1); i++)
+      for (int i = 0; i < Rooms.size(); i++)
         if (Rooms[i].used && (Rooms[i].wind.x() != 0.0f || Rooms[i].wind.y() != 0.0f || Rooms[i].wind.z() != 0.0f))
           nwind++;
       if (nwind) {
         int start = LL_StartChunk(out, CHUNK_ROOM_WIND);
         out << nwind;
-        for (int i = 0; i <= ((int)Rooms.size() - 1); i++) {
+        for (int i = 0; i < Rooms.size(); i++) {
           if (Rooms[i].used && (Rooms[i].wind.x() != 0.0f || Rooms[i].wind.y() != 0.0f || Rooms[i].wind.z() != 0.0f)) {
             int16_t room = (int16_t)i;
             out << room;

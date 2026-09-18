@@ -355,7 +355,7 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
   int projStart = 0;
   int projEnd = ((int)Rooms.size() - 1);
   if (app.view_mode == state::viewer::room) {
-    if (app.current_room >= 0 && app.current_room <= ((int)Rooms.size() - 1)) {
+    if (app.current_room >= 0 && app.current_room < Rooms.size()) {
       projStart = app.current_room;
       projEnd = app.current_room;
     }
@@ -1539,7 +1539,7 @@ void EditorView::setPickRadius(float radius) {
 void EditorView::fitToMine() {
   vector3 mn{1e30f, 1e30f, 1e30f}, mx{-1e30f, -1e30f, -1e30f};
   bool any = false;
-  for (int r = 0; r <= ((int)Rooms.size() - 1); r++) {
+  for (int r = 0; r < Rooms.size(); r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
       continue;

@@ -953,7 +953,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *ans, bool no_subdivision) {
   if (fq->startroom < 0 || fq->startroom > ((int)Rooms.size() - 1)) {
     // Starting outside the mine: treat as a free move, but report the room the
     // endpoint landed in, if any.
-    for (int r = 0; r <= ((int)Rooms.size() - 1); ++r) {
+    for (int r = 0; r < Rooms.size(); ++r) {
       if (Rooms[r].used && pointInsideRoom(&Rooms[r], p1)) {
         ans->hit_pnt = p1;
         ans->hit_room = r;
