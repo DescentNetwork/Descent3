@@ -72,26 +72,19 @@ float Ubyte_to_float[256];
 static uint8_t Lmi_spoken_for[MAX_LIGHTMAP_INFOS / 8];
 
 static std::vector<dynamic_lightmap> Dynamic_lightmaps;
-static dynamic_face Dynamic_face_list[MAX_DYNAMIC_FACES];
-static uint16_t Specular_face_list[MAX_DYNAMIC_FACES];
-static volume_object Dynamic_volume_object_list[MAX_VOLUME_OBJECTS];
-static dynamic_cell Dynamic_cell_list[MAX_DYNAMIC_CELLS];
+static std::vector<dynamic_face> Dynamic_face_list;
+static std::vector<uint16_t> Specular_face_list;
+static std::vector<volume_object> Dynamic_volume_object_list;
+static std::vector<dynamic_cell> Dynamic_cell_list;
 static int Specular_maps[NUM_DYNAMIC_CLASSES];
 
-static uint16_t Edges_to_blend[MAX_DYNAMIC_LIGHTMAPS];
-static int Num_edges_to_blend = 0;
+static std::vector<uint16_t> Edges_to_blend;
 
-static int Num_specular_faces = 0;
-static int Num_dynamic_faces = 0;
 static int Num_dynamic_lightmaps = 0;
 static int Cur_dynamic_mem_ptr = 0;
-static int Num_volume_objects = 0;
-static int Num_dynamic_cells = 0;
-static int Num_destroyed_lights_this_frame = 0;
 
-#define MAX_DESTROYED_LIGHTS_PER_FRAME 20
-static int Destroyed_light_rooms_this_frame[MAX_DESTROYED_LIGHTS_PER_FRAME];
-static int Destroyed_light_faces_this_frame[MAX_DESTROYED_LIGHTS_PER_FRAME];
+static std::vector<int> Destroyed_light_rooms_this_frame;
+static std::vector<int> Destroyed_light_faces_this_frame;
 
 static void FreeLighting();
 static std::optional<uint32_t> GetFreeDynamicLightmap(int w, int h);
@@ -284,11 +277,6 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     if (fp->renderframe != ((FrameCount - 1) % 256))
       continue;
 
-    if (Num_dynamic_faces >= MAX_DYNAMIC_FACES) {
-      LOG_WARNING("Too many dynamic faces!");
-      return;
-    }
-
     // Make sure there already is a lightmap for this face
     if (!fp->flags.lightmap)
       continue;
@@ -441,15 +429,14 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
 
       GameLightmaps[lm_handle].flags |= (LF_LIMITS | LF_CHANGED);
 
-      Dynamic_face_list[Num_dynamic_faces].lmi_handle = fp->lmi_handle;
-      Num_dynamic_faces++;
+      Dynamic_face_list.push_back(dynamic_face{fp->lmi_handle});
 
       lmilist[num_spoken_for] = fp->lmi_handle;
       Lmi_spoken_for[fp->lmi_handle / 8] |= (1 << (fp->lmi_handle % 8));
       num_spoken_for++;
 
       // Setup edge blending
-      Edges_to_blend[Num_edges_to_blend++] = fp->lmi_handle;
+      Edges_to_blend.push_back(fp->lmi_handle);
     }
 
     vector3 element_vec;
@@ -621,12 +608,6 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
       continue;
 
     // Ok, now we know that this light touches this face
-    if (Num_dynamic_faces >= MAX_DYNAMIC_FACES) {
-      LOG_WARNING("Too many dynamic faces!");
-      DoneLightingInstance();
-      return;
-    }
-
     lightmap_object_face *fp = &obj->lm_object.lightmap_faces[subnum][i];
 
     if (Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))
@@ -780,15 +761,14 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
 
       GameLightmaps[lm_handle].flags |= (LF_LIMITS | LF_CHANGED);
 
-      Dynamic_face_list[Num_dynamic_faces].lmi_handle = fp->lmi_handle;
-      Num_dynamic_faces++;
+      Dynamic_face_list.push_back(dynamic_face{fp->lmi_handle});
 
       lmilist[num_spoken_for] = fp->lmi_handle;
       Lmi_spoken_for[fp->lmi_handle / 8] |= (1 << (fp->lmi_handle % 8));
       num_spoken_for++;
 
       // Setup edge blending
-      Edges_to_blend[Num_edges_to_blend++] = fp->lmi_handle;
+      Edges_to_blend.push_back(fp->lmi_handle);
     }
 
     vector3 element_vec;
@@ -931,13 +911,13 @@ void ApplyVolumeLightToObject(vector3 *pos, object *obj, float light_dist, float
   Q_ASSERT(obj->effect_info != NULL);
 
   if (!obj->effect_info->dynamic_this_frame) {
-    if (Num_volume_objects < MAX_VOLUME_OBJECTS) {
-      Dynamic_volume_object_list[Num_volume_objects].handle = obj->handle;
-      Dynamic_volume_object_list[Num_volume_objects++].objnum = obj - Objects.data();
-      obj->effect_info->spec_mag = -100000;
+    volume_object vol_obj;
+    vol_obj.handle = obj->handle;
+    vol_obj.objnum = static_cast<int>(obj - Objects.data());
+    Dynamic_volume_object_list.push_back(vol_obj);
+    obj->effect_info->spec_mag = -100000;
 
-      obj->effect_info->dynamic_this_frame = 1;
-    }
+    obj->effect_info->dynamic_this_frame = 1;
   }
 
   // See if this specular light source is greater than our current one
@@ -1058,11 +1038,6 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     // Make sure face was rendered
     if (fp->renderframe != ((FrameCount - 1) % 256))
       continue;
-
-    if (Num_dynamic_faces >= MAX_DYNAMIC_FACES) {
-      LOG_WARNING("Too many dynamic faces!");
-      return;
-    }
 
     // Make sure there already is a lightmap for this face
     if (!fp->flags.lightmap)
@@ -1222,15 +1197,14 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
 
       GameLightmaps[lm_handle].flags |= (LF_LIMITS | LF_CHANGED);
 
-      Dynamic_face_list[Num_dynamic_faces].lmi_handle = fp->lmi_handle;
-      Num_dynamic_faces++;
+      Dynamic_face_list.push_back(dynamic_face{fp->lmi_handle});
 
       lmilist[num_spoken_for] = fp->lmi_handle;
       Lmi_spoken_for[fp->lmi_handle / 8] |= (1 << (fp->lmi_handle % 8));
       num_spoken_for++;
 
       // Setup edge blending
-      Edges_to_blend[Num_edges_to_blend++] = fp->lmi_handle;
+      Edges_to_blend.push_back(fp->lmi_handle);
     }
 
     vector3 element_vec;
@@ -1316,10 +1290,10 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
 
 // Blends all the edges that need blending for this frame
 void BlendAllLightingEdges() {
-  for (int i = 0; i < Num_edges_to_blend; i++) {
-    if (LightmapInfo[Edges_to_blend[i]].used < 1)
+  for (uint16_t edge : Edges_to_blend) {
+    if (LightmapInfo[edge].used < 1)
       continue; // this face was killed last frame.  This can happen with objects
-    BlendLightingEdges(&LightmapInfo[Edges_to_blend[i]]);
+    BlendLightingEdges(&LightmapInfo[edge]);
   }
 }
 
@@ -1332,9 +1306,9 @@ void ClearDynamicLightmaps() {
     Dynamic_lightmaps[i].used = 0;
 
   // Reset volume lights
-  for (i = 0; i < Num_volume_objects; i++) {
-    object *obj = &Objects[Dynamic_volume_object_list[i].objnum];
-    if (obj->type == OBJ_NONE || obj->handle != Dynamic_volume_object_list[i].handle)
+  for (auto &vol_obj : Dynamic_volume_object_list) {
+    object *obj = &Objects[vol_obj.objnum];
+    if (obj->type == OBJ_NONE || obj->handle != vol_obj.handle)
       continue; // object was destroyed this frame
 
     obj->effect_info->type_flags.specular = false;
@@ -1344,24 +1318,24 @@ void ClearDynamicLightmaps() {
     obj->effect_info->dynamic_blue = 0;
   }
 
-  Num_volume_objects = 0;
+  Dynamic_volume_object_list.clear();
 
   // Reset specular faces
-  for (i = 0; i < Num_specular_faces; i++) {
-    int n = Specular_face_list[i];
+  for (auto handle : Specular_face_list) {
+    int n = handle;
     SpecialFaces[n].flags = 0;
     // LightmapInfo[n].spec_map=-1;
   }
 
-  Num_specular_faces = 0;
+  Specular_face_list.clear();
 
   // Clear diffuse faces
-  for (i = 0; i < Num_dynamic_faces; i++) {
-    if (LightmapInfo[Dynamic_face_list[i].lmi_handle].used == 0)
+  for (auto &dyn_face : Dynamic_face_list) {
+    if (LightmapInfo[dyn_face.lmi_handle].used == 0)
       continue; // this face was killed last frame.  This can happen with objects
 
-    int dynamic_handle = LightmapInfo[Dynamic_face_list[i].lmi_handle].dynamic;
-    int lmi_handle = Dynamic_face_list[i].lmi_handle;
+    int dynamic_handle = LightmapInfo[dyn_face.lmi_handle].dynamic;
+    int lmi_handle = dyn_face.lmi_handle;
     int lm_handle = LightmapInfo[lmi_handle].lm_handle;
     lightmap_info *lmi_ptr = &LightmapInfo[lmi_handle];
 
@@ -1378,16 +1352,16 @@ void ClearDynamicLightmaps() {
     LightmapInfo[lmi_handle].dynamic = BAD_LMI_INDEX;
   }
 
-  Num_dynamic_faces = 0;
+  Dynamic_face_list.clear();
 
   // Now do terrain
 
-  for (i = 0; i < Num_dynamic_cells; i++) {
-    int cellnum = Dynamic_cell_list[i].cellnum;
+  for (auto &dyn_cell : Dynamic_cell_list) {
+    int cellnum = dyn_cell.cellnum;
     Terrain_seg[cellnum].flags.dynamic = 0;
-    Terrain_seg[cellnum].r = Dynamic_cell_list[i].r;
-    Terrain_seg[cellnum].g = Dynamic_cell_list[i].g;
-    Terrain_seg[cellnum].b = Dynamic_cell_list[i].b;
+    Terrain_seg[cellnum].r = dyn_cell.r;
+    Terrain_seg[cellnum].g = dyn_cell.g;
+    Terrain_seg[cellnum].b = dyn_cell.b;
 
     int seg_x = cellnum % TERRAIN_WIDTH;
     int seg_z = cellnum / TERRAIN_WIDTH;
@@ -1406,13 +1380,13 @@ void ClearDynamicLightmaps() {
     GameLightmaps[whichmap].flags |= (LF_LIMITS | LF_CHANGED);
   }
 
-  Num_dynamic_cells = 0;
+  Dynamic_cell_list.clear();
 
   Num_dynamic_lightmaps = 0;
   Cur_dynamic_mem_ptr = 0;
 
   BlendAllLightingEdges();
-  Num_edges_to_blend = 0;
+  Edges_to_blend.clear();
 }
 
 // Changes the terrain shading to approximate lighting
@@ -1457,11 +1431,6 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
     // if (tseg->renderframe!=((FrameCount-1)%256))
     //	continue;
 
-    if (Num_dynamic_cells >= MAX_DYNAMIC_CELLS) {
-      LOG_WARNING("Too many dynamic cells!");
-      return;
-    }
-
     // Check for backfaces
     vector3 tpos;
 
@@ -1491,12 +1460,8 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
 
     // Add a new face to our list
     if (!(tseg->flags.dynamic)) {
-      Dynamic_cell_list[Num_dynamic_cells].cellnum = cellnum;
-      Dynamic_cell_list[Num_dynamic_cells].r = tseg->r;
-      Dynamic_cell_list[Num_dynamic_cells].g = tseg->g;
-      Dynamic_cell_list[Num_dynamic_cells].b = tseg->b;
+      Dynamic_cell_list.push_back(dynamic_cell{static_cast<uint16_t>(cellnum), tseg->r, tseg->g, tseg->b});
       tseg->flags.dynamic = 1;
-      Num_dynamic_cells++;
 
       if (GameLightmaps[whichmap].flags & LF_LIMITS) {
         if (subx < GameLightmaps[whichmap].cx1)
@@ -1633,8 +1598,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 
                 memset (dest_data,0,xres*yres*2);
 
-                Specular_face_list[Num_specular_faces]=fp->lmi_handle;
-                Num_specular_faces++;
+                Specular_face_list.push_back(fp->lmi_handle);
         }
         else
         {
@@ -1796,8 +1760,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 
                 memset (dest_data,0,xres*yres*2);
 
-                Specular_face_list[Num_specular_faces]=fp->lmi_handle;
-                Num_specular_faces++;
+                Specular_face_list.push_back(fp->lmi_handle);
         }
         else
         {
@@ -2168,25 +2131,20 @@ void DestroyLight(int roomnum, int facenum) {
 // TODO: MTS: unused?
 // Adds to our list of destroyable lights that got destroyed this frame
 void AddToDestroyableLightList(int roomnum, int facenum) {
-  if (Num_destroyed_lights_this_frame >= MAX_DESTROYED_LIGHTS_PER_FRAME) {
-    LOG_WARNING("Ran out of destroyable light slots!");
-    return;
-  }
-
   LOG_INFO("Destroying light.  Room=%d face=%d", roomnum, facenum);
 
-  Destroyed_light_rooms_this_frame[Num_destroyed_lights_this_frame] = roomnum;
-  Destroyed_light_faces_this_frame[Num_destroyed_lights_this_frame++] = facenum;
+  Destroyed_light_rooms_this_frame.push_back(roomnum);
+  Destroyed_light_faces_this_frame.push_back(facenum);
 }
 
 // Goes through our destroyable light list and actually kills all the lights
 void DoDestroyedLightsForFrame() {
-  int i;
-  for (i = 0; i < Num_destroyed_lights_this_frame; i++) {
+  for (size_t i = 0; i < Destroyed_light_rooms_this_frame.size(); i++) {
     int roomnum = Destroyed_light_rooms_this_frame[i];
     int facenum = Destroyed_light_faces_this_frame[i];
     DestroyLight(roomnum, facenum);
   }
 
-  Num_destroyed_lights_this_frame = 0;
+  Destroyed_light_rooms_this_frame.clear();
+  Destroyed_light_faces_this_frame.clear();
 }
