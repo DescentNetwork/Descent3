@@ -167,6 +167,8 @@
 
 #include "3d.h"
 
+#include <vector>
+
 // Variables for debug/test
 #if (defined(_DEBUG) || defined(NEWEDITOR) || defined(EDITOR))
 
@@ -223,9 +225,7 @@ struct fog_portal_data {
   face *close_face;
 };
 
-extern fog_portal_data Fog_portal_data[];
-
-extern int Num_fogged_rooms_this_frame;
+extern std::vector<fog_portal_data> Fog_portal_data;
 
 // Sets fogzone start and end points
 void SetFogZoneStart(float z);

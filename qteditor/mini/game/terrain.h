@@ -209,15 +209,16 @@ struct terrain_sky {
   terrain_sky_flags_t flags;
 };
 
-struct link_tile {
+struct link_tile
+{
   int mine_seg;
   int mine_side;
   int portal_num;
   int terrain_seg;
-
 };
 
-struct terrain_mine_list {
+struct terrain_mine_list
+{
   int terrain_seg;
   uint8_t num_segs;
   int16_t mine_segs[50];

@@ -157,9 +157,7 @@ smooth_spec_vert Smooth_verts[MAX_VERTS_PER_ROOM];
 uint16_t Scorches_to_render[MAX_FACES_PER_ROOM];
 int Num_scorches_to_render = 0;
 // For rendering volumetric fog
-#define MAX_FOGGED_ROOMS_PER_FRAME 8
-fog_portal_data Fog_portal_data[MAX_FOGGED_ROOMS_PER_FRAME];
-int Num_fogged_rooms_this_frame = 0;
+std::vector<fog_portal_data> Fog_portal_data;
 float Room_light_val = 0;
 int Room_fog_plane_check = 0;
 float Room_fog_distance = 0;
@@ -738,7 +736,7 @@ void CheckFogPortalExtents(int roomnum, int portalnum) {
   Q_ASSERT(rp->flags.fog);
 
   int i, found_room = -1;
-  for (i = 0; i < Num_fogged_rooms_this_frame; ++i) {
+  for (i = 0; i < static_cast<int>(Fog_portal_data.size()); ++i) {
     if (Fog_portal_data[i].roomnum != roomnum)
       continue;
 
@@ -748,15 +746,12 @@ void CheckFogPortalExtents(int roomnum, int portalnum) {
 
   if (found_room == -1) {
     // Couldn't find this room in our list, so make a new one
-    if (Num_fogged_rooms_this_frame >= MAX_FOGGED_ROOMS_PER_FRAME) {
-      LOG_WARNING("Too many fogged rooms in view cone!");
-      return;
-    }
-
-    found_room = Num_fogged_rooms_this_frame++;
-    Fog_portal_data[found_room].close_face = NULL;
-    Fog_portal_data[found_room].close_dist = 10000000.0f;
-    Fog_portal_data[found_room].roomnum = roomnum;
+    fog_portal_data fpd;
+    fpd.close_face = NULL;
+    fpd.close_dist = 10000000.0f;
+    fpd.roomnum = static_cast<int16_t>(roomnum);
+    Fog_portal_data.push_back(fpd);
+    found_room = static_cast<int>(Fog_portal_data.size()) - 1;
   }
 
   // get the portal face
@@ -2210,7 +2205,7 @@ void SetupRoomFog(room *rp, vector3 *eye, matrix *orient, int viewer_room) {
 
   // find the 'fogroom' number (we should have put it in here if we will render the room)
   int found_room = -1;
-  for (int i = 0; i < Num_fogged_rooms_this_frame && found_room == -1; i++) {
+  for (int i = 0; i < static_cast<int>(Fog_portal_data.size()) && found_room == -1; i++) {
     if (Fog_portal_data[i].roomnum == rp - Rooms.data()) {
       found_room = i;
       break;
@@ -3422,6 +3417,11 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
     Terrain_portal_right = 0;
     Terrain_portal_left = Render_width;
   }
+  // Reset the per-frame fogged-room table (engine did this in GameLoop before
+  // g3_StartFrame; must happen before BuildRoomList fills it via
+  // CheckFogPortalExtents).
+  Fog_portal_data.clear();
+
   // Build the list of visible rooms
   BuildRoomList(viewer_roomnum); // fills in Render_list & N_render_segs
 
