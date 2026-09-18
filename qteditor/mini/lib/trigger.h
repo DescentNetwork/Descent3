@@ -89,6 +89,7 @@
 #include "object_external_struct.h"
 #include "vecmat.h"
 #include <posix_stream.h>
+#include <vector>
 
 // Trigger flags
 #define TF_UNUSED 1                 //
@@ -170,13 +171,10 @@ struct trigger {
 byte_istream& operator>>(byte_istream& input, trigger& data);
 byte_ostream& operator<<(byte_ostream& output, const trigger& data);
 
-// The number of triggers currently in the mine
-extern int Num_triggers;
-
 // The list of triggers for the mine
 #define MAX_TRIGGERS 500
 
-extern std::array<trigger, MAX_TRIGGERS> Triggers;
+extern std::vector<trigger> Triggers;
 
 // Macro to get trigger number
 #define TRIGNUM(tp) (tp) ? ((tp)-Triggers.data()) : -1

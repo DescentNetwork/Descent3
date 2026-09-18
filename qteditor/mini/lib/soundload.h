@@ -1,8 +1,6 @@
 #ifndef SOUNDLOAD_H_
 #define SOUNDLOAD_H_
 
-extern uint32_t Num_sounds;
-
 int AllocSound();
 void FreeSound(int n);
 int GetNextSound(int n);

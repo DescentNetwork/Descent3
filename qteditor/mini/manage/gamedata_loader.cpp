@@ -190,25 +190,25 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 
     switch (pagetype) {
     case PAGETYPE_TEXTURE:
-      if (Num_textures < MAX_TEXTURES) {
+      // MAX_TEXTURES bounds the global table because level texture-name
+      // translation (texture_xlate) is indexed by the on-disk tmap value.
+      if (GameTextures.size() < MAX_TEXTURES) {
         if (!mng_ReadNewTexturePage(infile, &texpage))
           ok = false;
-        GameTextures[Num_textures] = texpage.tex_struct;
-        GameTextures[Num_textures].name = texpage.tex_struct.name;
+        GameTextures.push_back(texpage.tex_struct);
         // Load the texture's image so textured faces render: the payload is
         // read straight out of the open d3.hog archive and decoded from memory.
-        GameTextures[Num_textures].bm_handle = -1;
+        GameTextures.back().bm_handle = -1;
         if (!texpage.bitmap_name.empty()) {
           const std::optional<uint32_t> bm = loadTextureFromArchive(archive, hogin, texpage.bitmap_name, BITMAP_FORMAT_1555);
           if (bm.has_value()) {
-            GameTextures[Num_textures].bm_handle = static_cast<int>(*bm);
+            GameTextures.back().bm_handle = static_cast<int>(*bm);
             // .oaf textures are vclips: bm_handle holds the vclip index and the
             // animated flag makes GetTextureBitmap cycle through its frames.
             if (lowercase(texpage.bitmap_name).ends_with(".oaf"))
-              GameTextures[Num_textures].flags.animated = true;
+              GameTextures.back().flags.animated = true;
           }
         }
-        Num_textures++;
       } else {
         // Metadata only: we do NOT load bitmaps/procedurals, so just discard.
         discardBytes(infile, len);
@@ -216,14 +216,9 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       break;
 
     case PAGETYPE_WEAPON:
-      if (Num_weapons < MAX_WEAPONS) {
-        if (!mng_ReadNewWeaponPage(infile, &weaponpage))
-          ok = false;
-        Weapons[Num_weapons] = weaponpage.weapon_struct;
-        Num_weapons++;
-      } else {
-        discardBytes(infile, len);
-      }
+      if (!mng_ReadNewWeaponPage(infile, &weaponpage))
+        ok = false;
+      Weapons.push_back(weaponpage.weapon_struct);
       break;
 
     case PAGETYPE_DOOR:
@@ -238,25 +233,15 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       break;
 
     case PAGETYPE_SHIP:
-      if (Num_ships < MAX_SHIPS) {
-        if (!mng_ReadNewShipPage(infile, &shippage))
-          ok = false;
-        Ships[Num_ships] = shippage.ship_struct;
-        Num_ships++;
-      } else {
-        discardBytes(infile, len);
-      }
+      if (!mng_ReadNewShipPage(infile, &shippage))
+        ok = false;
+      Ships.push_back(shippage.ship_struct);
       break;
 
     case PAGETYPE_SOUND:
-      if (Num_sounds < MAX_SOUNDS) {
-        if (!mng_ReadNewSoundPage(infile, &soundpage))
-          ok = false;
-        Sounds[Num_sounds] = soundpage.sound_struct;
-        Num_sounds++;
-      } else {
-        discardBytes(infile, len);
-      }
+      if (!mng_ReadNewSoundPage(infile, &soundpage))
+        ok = false;
+      Sounds.push_back(soundpage.sound_struct);
       break;
 
     case PAGETYPE_GENERIC:
@@ -333,7 +318,7 @@ std::optional<uint32_t> FindObjectIDName(const std::string &name) {
 // Searches the weapons table for a matching name.  Returns the id, or -1.
 std::optional<uint32_t> FindWeaponName(const std::string &name) {
   if(!name.empty())
-    for (uint32_t i = 0; i < Num_weapons; i++)
+    for (uint32_t i = 0; i < static_cast<int>(Weapons.size()); i++)
       if (Weapons[i].used && match(name, Weapons[i].name))
         return i;
 
@@ -343,7 +328,7 @@ std::optional<uint32_t> FindWeaponName(const std::string &name) {
 // Searches the sound table for a matching name.  Returns the id, or -1.
 std::optional<uint32_t> FindSoundName(const std::string &name) {
   if(!name.empty())
-    for (uint32_t i = 0; i < Num_sounds; i++)
+    for (uint32_t i = 0; i < static_cast<int>(Sounds.size()); i++)
       if (Sounds[i].used && match(name, Sounds[i].name))
         return i;
 

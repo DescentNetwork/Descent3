@@ -154,14 +154,8 @@ void BuildSingleBSPTree(int n) { PRINT_STUB(__FUNCTION__); }
 // ==================== Game globals ====================
 float Frametime = 0.0f;
 
-uint32_t Num_textures = 0;
-uint32_t Num_sounds = 0;
-int Num_weapons = 0;
-//int Num_doors = 0;
-int Num_ships = 0;
 int Num_megacells = 0;
 uint32_t Num_objects = 0;
-int Num_triggers = 0;
 int Num_game_paths = 0;
 int Num_matcens = 0;
 int Num_object_ids[1500] = {};
@@ -193,11 +187,11 @@ std::filesystem::path LocalScriptDir;
 
 // ==================== Game data arrays ====================
 bms_bitmap GameBitmaps[MAX_BITMAPS];
-texture GameTextures[MAX_TEXTURES];
+std::vector<texture> GameTextures;
 //vclip GameVClips[MAX_VCLIPS];
 //poly_model Poly_models[500];
 std::array<game_path, MAX_GAME_PATHS> GamePaths;
-std::array<trigger, MAX_TRIGGERS> Triggers;
+std::vector<trigger> Triggers;
 special_face SpecialFaces[MAX_SPECIAL_FACES];
 
 // ==================== Sound ====================
@@ -205,7 +199,7 @@ hlsSystem Sound_system;
 void hlsSystem::BeginSoundFrame(bool f_force) { PRINT_STUB(__FUNCTION__); }
 void hlsSystem::EndSoundFrame() { PRINT_STUB(__FUNCTION__); }
 void hlsSystem::StopAllSounds() { PRINT_STUB(__FUNCTION__); }
-sound_info Sounds[MAX_SOUNDS] = {};
+std::vector<sound_info> Sounds;
 sound_file_info SoundFiles[MAX_SOUND_FILES] = {};
 
 // ==================== Lighting ====================
@@ -220,14 +214,14 @@ void SetupObjectLightmapMemory(object *obj) { PRINT_STUB(__FUNCTION__); }
 // ==================== Player/ship ====================
 std::array<player, MAX_PLAYERS> Players = {};
 int Num_player_shapes = 0;
-ship Ships[MAX_SHIPS] = {};
+std::vector<ship> Ships;
 
 // ==================== Door ====================
 //door Doors[MAX_DOORS];
 //doorway *DoorwayAdd(room *rp, int doornum) { PRINT_STUB(__FUNCTION__); return nullptr; }
 
 // ==================== Weapon ====================
-weapon Weapons[MAX_WEAPONS] = {};
+std::vector<weapon> Weapons;
 // Sentinel-terminated list (empty) so callers strcmp("", name[i]) cleanly.
 const char *const Static_weapon_names[] = {""};
 const int Static_weapon_names_msg[] = {0};

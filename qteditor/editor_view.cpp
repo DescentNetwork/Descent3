@@ -736,7 +736,7 @@ void EditorView::renderRooms() {
 
         // Texture the face if possible.
         int bm = -1;
-        if (fp->tmap >= 0 && fp->tmap < MAX_TEXTURES && GameTextures[fp->tmap].used)
+        if (fp->tmap >= 0 && fp->tmap < static_cast<int>(GameTextures.size()) && GameTextures[fp->tmap].used)
           bm = GameTextures[fp->tmap].bm_handle;
         if (bm >= 0) {
           ensureTexture(bm);
@@ -1060,7 +1060,7 @@ void EditorView::renderTerrain() {
       int bm = -1;
       if (texsegIdx >= 0 && texsegIdx < TERRAIN_TEX_WIDTH * TERRAIN_TEX_DEPTH) {
         const int texIdx = Terrain_tex_seg[texsegIdx].tex_index;
-        if (texIdx >= 0 && texIdx < MAX_TEXTURES && GameTextures[texIdx].used)
+        if (texIdx >= 0 && texIdx < static_cast<int>(GameTextures.size()) && GameTextures[texIdx].used)
           bm = GameTextures[texIdx].bm_handle;
       }
 

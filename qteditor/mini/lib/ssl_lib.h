@@ -252,6 +252,7 @@
 #ifndef __SSL_LIB_H__
 #define __SSL_LIB_H__
 
+#include <vector>
 #include "vecmat.h"
 
 #ifndef NEWEDITOR
@@ -577,7 +578,7 @@ public:
 #ifndef NEWEDITOR
 #define MAX_SOUNDS 1000
 #define MAX_SOUND_FILES 1000
-extern sound_info Sounds[MAX_SOUNDS];
+extern std::vector<sound_info> Sounds;
 #else
 #include "..\neweditor\ned_Sound.h"
 #endif

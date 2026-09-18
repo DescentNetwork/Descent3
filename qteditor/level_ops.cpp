@@ -167,7 +167,7 @@ void CreateNewMine() {
   Placed_group = nullptr;
 
   // Reset triggers.
-  Num_triggers = 0;
+  Triggers.clear();
   Current_trigger = -1;
 
   // Reset terrain.
@@ -223,7 +223,7 @@ void CheckLevelNames() {
     }
   }
   trigger *tp;
-  for (i = 0, tp = Triggers.data(); i < Num_triggers; i++, tp++) {
+  for (i = 0, tp = Triggers.data(); i < static_cast<int>(Triggers.size()); i++, tp++) {
     if (tp != nullptr && !tp->name.empty()) {
       const int n = static_cast<int>(osipf_FindTriggerName(tp->name).value_or(-1));
       if (n != i)

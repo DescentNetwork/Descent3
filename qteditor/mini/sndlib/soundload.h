@@ -21,8 +21,6 @@
 
 #include "ssl_lib.h"
 
-extern uint32_t Num_sounds;
-
 // Allocs a sound file for use, returns -1 if error, else index on success
 int AllocSoundFile();
 

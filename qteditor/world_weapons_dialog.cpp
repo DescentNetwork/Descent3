@@ -47,14 +47,21 @@ struct EditBinding {
   void (WorldWeaponsDialog::*noop)() = nullptr;
 };
 
+// Returns the indexed weapon, or a shared zero-initialized fallback when the
+// index is stale/out of range.
+weapon &weaponRef(int n) {
+  static weapon fallback{};
+  return (n >= 0 && n < static_cast<int>(Weapons.size())) ? Weapons[n] : fallback;
+}
+
 // Returns the current weapon's flag fields, or nullptr when none is selected.
 weapon_flags_t *CurWeaponFlags() {
   const int n = app.current_weapon;
-  return (n >= 0 && n < MAX_WEAPONS && Weapons[n].used) ? &Weapons[n].flags : nullptr;
+  return (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used) ? &weaponRef(n).flags : nullptr;
 }
 physics_flags_t *CurWeaponPhysFlags() {
   const int n = app.current_weapon;
-  return (n >= 0 && n < MAX_WEAPONS && Weapons[n].used) ? &Weapons[n].phys_info.flags : nullptr;
+  return (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used) ? &weaponRef(n).phys_info.flags : nullptr;
 }
 } // namespace
 
@@ -104,128 +111,128 @@ void WorldWeaponsDialog::saveWeaponsOnClose() {
 void WorldWeaponsDialog::bindEdits() {
   connect(ui->IDC_WEAPON_DAMAGE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].player_damage = ui->IDC_WEAPON_DAMAGE_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).player_damage = ui->IDC_WEAPON_DAMAGE_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_GENERIC_DAMAGE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].generic_damage = ui->IDC_WEAPON_GENERIC_DAMAGE_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).generic_damage = ui->IDC_WEAPON_GENERIC_DAMAGE_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_ALPHA_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].alpha = ui->IDC_WEAPON_ALPHA_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).alpha = ui->IDC_WEAPON_ALPHA_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_BLOB_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].size = ui->IDC_WEAPON_BLOB_SIZE_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).size = ui->IDC_WEAPON_BLOB_SIZE_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_LIFE_TIME_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].life_time = ui->IDC_WEAPON_LIFE_TIME_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).life_time = ui->IDC_WEAPON_LIFE_TIME_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_THRUST_TIME_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].thrust_time = ui->IDC_WEAPON_THRUST_TIME_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).thrust_time = ui->IDC_WEAPON_THRUST_TIME_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_IMPACT_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].impact_size = ui->IDC_WEAPON_IMPACT_SIZE_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).impact_size = ui->IDC_WEAPON_IMPACT_SIZE_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_IMPACT_TIME_EDIT2, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].impact_time = ui->IDC_WEAPON_IMPACT_TIME_EDIT2->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).impact_time = ui->IDC_WEAPON_IMPACT_TIME_EDIT2->text().toFloat();
   });
   connect(ui->IDC_WEAPON_IMPACT_DAMAGE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].impact_player_damage = ui->IDC_WEAPON_IMPACT_DAMAGE_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).impact_player_damage = ui->IDC_WEAPON_IMPACT_DAMAGE_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_IMPACT_GENERIC_DAMAGE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].impact_generic_damage = ui->IDC_WEAPON_IMPACT_GENERIC_DAMAGE_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).impact_generic_damage = ui->IDC_WEAPON_IMPACT_GENERIC_DAMAGE_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_IMPACT_FORCE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].impact_force = ui->IDC_WEAPON_IMPACT_FORCE_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).impact_force = ui->IDC_WEAPON_IMPACT_FORCE_EDIT->text().toFloat();
   });
   connect(ui->IDC_EXPLODE_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].explode_size = ui->IDC_EXPLODE_SIZE_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).explode_size = ui->IDC_EXPLODE_SIZE_EDIT->text().toFloat();
   });
   connect(ui->IDC_EXPLODE_TIME_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].explode_time = ui->IDC_EXPLODE_TIME_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).explode_time = ui->IDC_EXPLODE_TIME_EDIT->text().toFloat();
   });
   connect(ui->IDC_PARTICLE_LIFE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].particle_life = ui->IDC_PARTICLE_LIFE_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).particle_life = ui->IDC_PARTICLE_LIFE_EDIT->text().toFloat();
   });
   connect(ui->IDC_PARTICLE_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].particle_size = ui->IDC_PARTICLE_SIZE_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).particle_size = ui->IDC_PARTICLE_SIZE_EDIT->text().toFloat();
   });
   connect(ui->IDC_GRAVITY_SIZE, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].gravity_size = ui->IDC_GRAVITY_SIZE->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).gravity_size = ui->IDC_GRAVITY_SIZE->text().toFloat();
   });
   connect(ui->IDC_GRAVITY_TIME, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].gravity_time = ui->IDC_GRAVITY_TIME->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).gravity_time = ui->IDC_GRAVITY_TIME->text().toFloat();
   });
   connect(ui->IDC_CUSTOM_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].custom_size = ui->IDC_CUSTOM_SIZE_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).custom_size = ui->IDC_CUSTOM_SIZE_EDIT->text().toFloat();
   });
   connect(ui->IDC_HOMING_FOV_TEXT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].homing_fov = ui->IDC_HOMING_FOV_TEXT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).homing_fov = ui->IDC_HOMING_FOV_TEXT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_SCORCH_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].scorch_size = ui->IDC_WEAPON_SCORCH_SIZE_EDIT->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).scorch_size = ui->IDC_WEAPON_SCORCH_SIZE_EDIT->text().toFloat();
   });
   connect(ui->IDC_TERRIAN_DAMAGE_SIZE, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].terrain_damage_size = ui->IDC_TERRIAN_DAMAGE_SIZE->text().toFloat();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).terrain_damage_size = ui->IDC_TERRIAN_DAMAGE_SIZE->text().toFloat();
   });
   connect(ui->IDC_WEAPON_SPAWN_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].spawn_count = (uint8_t)ui->IDC_WEAPON_SPAWN_EDIT->text().toInt();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).spawn_count = (uint8_t)ui->IDC_WEAPON_SPAWN_EDIT->text().toInt();
   });
   connect(ui->IDC_ALTERNATE_CHANCE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].alternate_chance = (uint8_t)ui->IDC_ALTERNATE_CHANCE_EDIT->text().toInt();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).alternate_chance = (uint8_t)ui->IDC_ALTERNATE_CHANCE_EDIT->text().toInt();
   });
   connect(ui->IDC_PARTICLE_COUNT_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].particle_count = (uint8_t)ui->IDC_PARTICLE_COUNT_EDIT->text().toInt();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).particle_count = (uint8_t)ui->IDC_PARTICLE_COUNT_EDIT->text().toInt();
   });
   connect(ui->IDC_TERRAIN_DAMAGE_DEPTH, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < MAX_WEAPONS && Weapons[n].used)
-      Weapons[n].terrain_damage_depth = (uint8_t)ui->IDC_TERRAIN_DAMAGE_DEPTH->text().toInt();
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+      weaponRef(n).terrain_damage_depth = (uint8_t)ui->IDC_TERRAIN_DAMAGE_DEPTH->text().toInt();
   });
 }
 
@@ -277,47 +284,47 @@ void WorldWeaponsDialog::bindCombos() {
 }
 
 void WorldWeaponsDialog::updateDialog() {
-  ui->IDC_NEXT_WEAPON->setEnabled(Num_weapons >= 1);
-  ui->IDC_PREV_WEAPON->setEnabled(Num_weapons >= 1);
+  ui->IDC_NEXT_WEAPON->setEnabled(static_cast<int>(Weapons.size()) >= 1);
+  ui->IDC_PREV_WEAPON->setEnabled(static_cast<int>(Weapons.size()) >= 1);
   if (!Network_up) {
     ui->IDC_LOCK_WEAPON->setEnabled(false);
     ui->IDC_CHECKIN_WEAPON->setEnabled(false);
     ui->IDC_OVERRIDE->setEnabled(false);
     return;
   }
-  if (Num_weapons < 1)
+  if (static_cast<int>(Weapons.size()) < 1)
     return;
 
   int n = app.current_weapon;
-  if (!Weapons[n].used)
+  if (!weaponRef(n).used)
     n = app.current_weapon = GetNextWeapon(n);
 
-  ui->IDC_WEAPON_DAMAGE_EDIT->setText(QString::number(Weapons[n].player_damage));
-  ui->IDC_WEAPON_GENERIC_DAMAGE_EDIT->setText(QString::number(Weapons[n].generic_damage));
-  ui->IDC_WEAPON_ALPHA_EDIT->setText(QString::number(Weapons[n].alpha));
-  ui->IDC_WEAPON_BLOB_SIZE_EDIT->setText(QString::number(Weapons[n].size));
-  ui->IDC_WEAPON_LIFE_TIME_EDIT->setText(QString::number(Weapons[n].life_time));
-  ui->IDC_WEAPON_THRUST_TIME_EDIT->setText(QString::number(Weapons[n].thrust_time));
-  ui->IDC_WEAPON_IMPACT_SIZE_EDIT->setText(QString::number(Weapons[n].impact_size));
-  ui->IDC_WEAPON_IMPACT_TIME_EDIT2->setText(QString::number(Weapons[n].impact_time));
-  ui->IDC_WEAPON_IMPACT_DAMAGE_EDIT->setText(QString::number(Weapons[n].impact_player_damage));
-  ui->IDC_WEAPON_IMPACT_GENERIC_DAMAGE_EDIT->setText(QString::number(Weapons[n].impact_generic_damage));
-  ui->IDC_WEAPON_IMPACT_FORCE_EDIT->setText(QString::number(Weapons[n].impact_force));
-  ui->IDC_EXPLODE_SIZE_EDIT->setText(QString::number(Weapons[n].explode_size));
-  ui->IDC_EXPLODE_TIME_EDIT->setText(QString::number(Weapons[n].explode_time));
-  ui->IDC_PARTICLE_LIFE_EDIT->setText(QString::number(Weapons[n].particle_life));
-  ui->IDC_PARTICLE_SIZE_EDIT->setText(QString::number(Weapons[n].particle_size));
-  ui->IDC_GRAVITY_SIZE->setText(QString::number(Weapons[n].gravity_size));
-  ui->IDC_GRAVITY_TIME->setText(QString::number(Weapons[n].gravity_time));
-  ui->IDC_CUSTOM_SIZE_EDIT->setText(QString::number(Weapons[n].custom_size));
-  ui->IDC_HOMING_FOV_TEXT->setText(QString::number(Weapons[n].homing_fov));
-  ui->IDC_WEAPON_SCORCH_SIZE_EDIT->setText(QString::number(Weapons[n].scorch_size));
-  ui->IDC_TERRIAN_DAMAGE_SIZE->setText(QString::number(Weapons[n].terrain_damage_size));
+  ui->IDC_WEAPON_DAMAGE_EDIT->setText(QString::number(weaponRef(n).player_damage));
+  ui->IDC_WEAPON_GENERIC_DAMAGE_EDIT->setText(QString::number(weaponRef(n).generic_damage));
+  ui->IDC_WEAPON_ALPHA_EDIT->setText(QString::number(weaponRef(n).alpha));
+  ui->IDC_WEAPON_BLOB_SIZE_EDIT->setText(QString::number(weaponRef(n).size));
+  ui->IDC_WEAPON_LIFE_TIME_EDIT->setText(QString::number(weaponRef(n).life_time));
+  ui->IDC_WEAPON_THRUST_TIME_EDIT->setText(QString::number(weaponRef(n).thrust_time));
+  ui->IDC_WEAPON_IMPACT_SIZE_EDIT->setText(QString::number(weaponRef(n).impact_size));
+  ui->IDC_WEAPON_IMPACT_TIME_EDIT2->setText(QString::number(weaponRef(n).impact_time));
+  ui->IDC_WEAPON_IMPACT_DAMAGE_EDIT->setText(QString::number(weaponRef(n).impact_player_damage));
+  ui->IDC_WEAPON_IMPACT_GENERIC_DAMAGE_EDIT->setText(QString::number(weaponRef(n).impact_generic_damage));
+  ui->IDC_WEAPON_IMPACT_FORCE_EDIT->setText(QString::number(weaponRef(n).impact_force));
+  ui->IDC_EXPLODE_SIZE_EDIT->setText(QString::number(weaponRef(n).explode_size));
+  ui->IDC_EXPLODE_TIME_EDIT->setText(QString::number(weaponRef(n).explode_time));
+  ui->IDC_PARTICLE_LIFE_EDIT->setText(QString::number(weaponRef(n).particle_life));
+  ui->IDC_PARTICLE_SIZE_EDIT->setText(QString::number(weaponRef(n).particle_size));
+  ui->IDC_GRAVITY_SIZE->setText(QString::number(weaponRef(n).gravity_size));
+  ui->IDC_GRAVITY_TIME->setText(QString::number(weaponRef(n).gravity_time));
+  ui->IDC_CUSTOM_SIZE_EDIT->setText(QString::number(weaponRef(n).custom_size));
+  ui->IDC_HOMING_FOV_TEXT->setText(QString::number(weaponRef(n).homing_fov));
+  ui->IDC_WEAPON_SCORCH_SIZE_EDIT->setText(QString::number(weaponRef(n).scorch_size));
+  ui->IDC_TERRIAN_DAMAGE_SIZE->setText(QString::number(weaponRef(n).terrain_damage_size));
 
-  ui->IDC_WEAPON_SPAWN_EDIT->setText(QString::number(Weapons[n].spawn_count));
-  ui->IDC_ALTERNATE_CHANCE_EDIT->setText(QString::number(Weapons[n].alternate_chance));
-  ui->IDC_PARTICLE_COUNT_EDIT->setText(QString::number(Weapons[n].particle_count));
-  ui->IDC_TERRAIN_DAMAGE_DEPTH->setText(QString::number(Weapons[n].terrain_damage_depth));
+  ui->IDC_WEAPON_SPAWN_EDIT->setText(QString::number(weaponRef(n).spawn_count));
+  ui->IDC_ALTERNATE_CHANCE_EDIT->setText(QString::number(weaponRef(n).alternate_chance));
+  ui->IDC_PARTICLE_COUNT_EDIT->setText(QString::number(weaponRef(n).particle_count));
+  ui->IDC_TERRAIN_DAMAGE_DEPTH->setText(QString::number(weaponRef(n).terrain_damage_depth));
 
 const weapon_flags_t *wflags = CurWeaponFlags();
   const physics_flags_t *pflags = CurWeaponPhysFlags();
@@ -356,12 +363,12 @@ const weapon_flags_t *wflags = CurWeaponFlags();
     ui->IDC_WEAPON_USE_PARENT_VELOCITY_CHECK->setChecked(pflags->uses_parent_velocity);
   }
 
-  ui->IDC_ENERGY_RADIO->setChecked(!Weapons[n].flags.matter_weapon);
-  ui->IDC_MATTER_RADIO->setChecked(Weapons[n].flags.matter_weapon);
+  ui->IDC_ENERGY_RADIO->setChecked(!weaponRef(n).flags.matter_weapon);
+  ui->IDC_MATTER_RADIO->setChecked(weaponRef(n).flags.matter_weapon);
 
   {
     QPushButton *checkin = ui->IDC_CHECKIN_WEAPON;
-    if (!mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON)) {
+    if (!mng_FindTrackLock(weaponRef(n).name, PAGETYPE_WEAPON)) {
       checkin->setEnabled(false);
       ui->IDC_LOCK_WEAPON->setEnabled(true);
     } else {
@@ -374,16 +381,16 @@ const weapon_flags_t *wflags = CurWeaponFlags();
     QComboBox *combo = ui->IDC_WEAPON_PULLDOWN;
     QSignalBlocker blocker(combo);
     combo->clear();
-    for (int i = 0; i < MAX_WEAPONS; i++)
+    for (int i = 0; i < static_cast<int>(Weapons.size()); i++)
       if (Weapons[i].used)
         combo->addItem(QString::fromStdString(Weapons[i].name));
-    combo->setCurrentText(QString::fromStdString(Weapons[n].name));
+    combo->setCurrentText(QString::fromStdString(weaponRef(n).name));
   }
 
-  populateSoundCombo(ui->IDC_FIRE_SOUND_PULLDOWN, Weapons[n].sounds[WSI_FIRE]);
-  populateSoundCombo(ui->IDC_WEAPON_WALL_SOUND_PULLDOWN, Weapons[n].sounds[WSI_IMPACT_WALL]);
-  populateSoundCombo(ui->IDC_FLYING_SOUND_PULLDOWN, Weapons[n].sounds[WSI_FLYING]);
-  populateSoundCombo(ui->IDC_WEAPON_BOUNCE_SOUND_COMBO, Weapons[n].sounds[WSI_BOUNCE]);
+  populateSoundCombo(ui->IDC_FIRE_SOUND_PULLDOWN, weaponRef(n).sounds[WSI_FIRE]);
+  populateSoundCombo(ui->IDC_WEAPON_WALL_SOUND_PULLDOWN, weaponRef(n).sounds[WSI_IMPACT_WALL]);
+  populateSoundCombo(ui->IDC_FLYING_SOUND_PULLDOWN, weaponRef(n).sounds[WSI_FLYING]);
+  populateSoundCombo(ui->IDC_WEAPON_BOUNCE_SOUND_COMBO, weaponRef(n).sounds[WSI_BOUNCE]);
 }
 
 void WorldWeaponsDialog::onAddWeapon() {
@@ -405,8 +412,8 @@ void WorldWeaponsDialog::onAddWeapon() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot add weapon: There are no free weapon slots.");
     return;
   }
-  Weapons[handle].name = name.toStdString();
-  mng_AllocTrackLock(Weapons[handle].name, PAGETYPE_WEAPON);
+  weaponRef(handle).name = name.toStdString();
+  mng_AllocTrackLock(weaponRef(handle).name, PAGETYPE_WEAPON);
   app.current_weapon = handle;
   RemapWeapons();
   updateDialog();
@@ -414,30 +421,30 @@ void WorldWeaponsDialog::onAddWeapon() {
 
 void WorldWeaponsDialog::onDeleteWeapon() {
   const int n = app.current_weapon;
-  if (Num_weapons < 1)
+  if (static_cast<int>(Weapons.size()) < 1)
     return;
-  const int tl = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON).value_or(-1);
+  const int tl = mng_FindTrackLock(weaponRef(n).name, PAGETYPE_WEAPON).value_or(-1);
   if (tl == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This weapon is not yours to delete.  Lock first.");
     return;
   }
   if (QMessageBox::question(this, "Delete weapon",
-                            QString("Are you sure you want to delete this weapon? %1").arg(QString::fromStdString(Weapons[n].name))) !=
+                            QString("Are you sure you want to delete this weapon? %1").arg(QString::fromStdString(weaponRef(n).name))) !=
       QMessageBox::Yes)
     return;
   if (!mng_MakeLocker())
     return;
   mngs_Pagelock pl;
-  pl.name = Weapons[n].name;
+  pl.name = weaponRef(n).name;
   pl.pagetype = PAGETYPE_WEAPON;
   if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
     mng_FreeTrackLock(tl);
-    Q_ASSERT(mng_DeletePage(Weapons[n].name, PAGETYPE_WEAPON, 1));
+    Q_ASSERT(mng_DeletePage(weaponRef(n).name, PAGETYPE_WEAPON, 1));
   } else {
     mng_FreeTrackLock(tl);
-    mng_DeletePage(Weapons[n].name, PAGETYPE_WEAPON, 1);
-    mng_DeletePage(Weapons[n].name, PAGETYPE_WEAPON, 0);
-    mng_DeletePagelock(Weapons[n].name, PAGETYPE_WEAPON);
+    mng_DeletePage(weaponRef(n).name, PAGETYPE_WEAPON, 1);
+    mng_DeletePage(weaponRef(n).name, PAGETYPE_WEAPON, 0);
+    mng_DeletePagelock(weaponRef(n).name, PAGETYPE_WEAPON);
   }
   app.current_weapon = GetNextWeapon(n);
   FreeWeapon(n);
@@ -449,13 +456,13 @@ void WorldWeaponsDialog::onDeleteWeapon() {
 
 void WorldWeaponsDialog::onLockWeapon() {
   const int n = app.current_weapon;
-  if (Num_weapons < 1)
+  if (static_cast<int>(Weapons.size()) < 1)
     return;
   if (!mng_MakeLocker())
     return;
   mngs_Pagelock temp_pl;
   mngs_weapon_page weaponpage;
-  temp_pl.name = Weapons[n].name;
+  temp_pl.name = weaponRef(n).name;
   temp_pl.pagetype = PAGETYPE_WEAPON;
   const int r = mng_CheckIfPageLocked(&temp_pl);
   if (r == 2) {
@@ -479,7 +486,7 @@ void WorldWeaponsDialog::onLockWeapon() {
     }
     if (mng_FindSpecificWeaponPage(temp_pl.name, &weaponpage, 0)) {
       if (mng_AssignWeaponPageToWeapon(&weaponpage, n)) {
-        if (!mng_ReplacePage(Weapons[n].name, Weapons[n].name, n, PAGETYPE_WEAPON, 1)) {
+        if (!mng_ReplacePage(weaponRef(n).name, weaponRef(n).name, n, PAGETYPE_WEAPON, 1)) {
           QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
           mng_EraseLocker();
           return;
@@ -488,7 +495,7 @@ void WorldWeaponsDialog::onLockWeapon() {
       } else {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this weapon.");
       }
-      mng_AllocTrackLock(Weapons[n].name, PAGETYPE_WEAPON);
+      mng_AllocTrackLock(weaponRef(n).name, PAGETYPE_WEAPON);
     } else {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that weapon in the table file!");
     }
@@ -499,12 +506,12 @@ void WorldWeaponsDialog::onLockWeapon() {
 
 void WorldWeaponsDialog::onCheckinWeapon() {
   const int n = app.current_weapon;
-  if (Num_weapons < 1)
+  if (static_cast<int>(Weapons.size()) < 1)
     return;
   if (!mng_MakeLocker())
     return;
   mngs_Pagelock temp_pl;
-  temp_pl.name = Weapons[n].name;
+  temp_pl.name = weaponRef(n).name;
   temp_pl.pagetype = PAGETYPE_WEAPON;
   const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
   if (r < 0)
@@ -518,13 +525,13 @@ void WorldWeaponsDialog::onCheckinWeapon() {
       mng_EraseLocker();
       return;
     }
-    if (!mng_ReplacePage(Weapons[n].name, Weapons[n].name, n, PAGETYPE_WEAPON, 0))
+    if (!mng_ReplacePage(weaponRef(n).name, weaponRef(n).name, n, PAGETYPE_WEAPON, 0))
       QMessageBox::critical(this, "Error!", ErrorString);
     else {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Weapon checked in.");
-      Q_ASSERT(mng_DeletePage(Weapons[n].name, PAGETYPE_WEAPON, 1) == 1);
+      Q_ASSERT(mng_DeletePage(weaponRef(n).name, PAGETYPE_WEAPON, 1) == 1);
       mng_EraseLocker();
-      const int p = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON).value_or(-1);
+      const int p = mng_FindTrackLock(weaponRef(n).name, PAGETYPE_WEAPON).value_or(-1);
       Q_ASSERT(p != -1);
       mng_FreeTrackLock(p);
     }
@@ -568,7 +575,7 @@ void WorldWeaponsDialog::onWeaponPulldownChanged()
 void WorldWeaponsDialog::onOverride() {
   const int n = app.current_weapon;
   mngs_Pagelock temp_pl;
-  temp_pl.name = Weapons[n].name;
+  temp_pl.name = weaponRef(n).name;
   temp_pl.pagetype = PAGETYPE_WEAPON;
   mng_OverrideToUnlocked(&temp_pl);
 }
@@ -585,14 +592,14 @@ void WorldWeaponsDialog::onPaste() { QMessageBox::critical(nullptr, QString("%1 
 
 void WorldWeaponsDialog::onChangeName() {
   const int n = app.current_weapon;
-  const auto p = mng_FindTrackLock(Weapons[n].name, PAGETYPE_WEAPON);
+  const auto p = mng_FindTrackLock(weaponRef(n).name, PAGETYPE_WEAPON);
   if (!p) {
     QMessageBox::warning(this, "Unable to rename", "You must lock this weapon if you wish to change its name.");
     return;
   }
   bool ok = false;
   const QString name = QInputDialog::getText(this, "Weapon name", "Enter a new name for this weapon:",
-                                             QLineEdit::Normal, QString::fromStdString(Weapons[n].name), &ok);
+                                             QLineEdit::Normal, QString::fromStdString(weaponRef(n).name), &ok);
   if (!ok || name.isEmpty())
     return;
   if (FindWeaponName(name.toStdString()))
@@ -600,21 +607,21 @@ void WorldWeaponsDialog::onChangeName() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
     return;
   }
-  Weapons[n].name = name.toStdString();
-  GlobalTrackLocks[*p].name = Weapons[n].name;
+  weaponRef(n).name = name.toStdString();
+  GlobalTrackLocks[*p].name = weaponRef(n).name;
   RemapWeapons();
   updateDialog();
 }
 
 void WorldWeaponsDialog::onEditPhysics() {
   const int n = app.current_weapon;
-  PhysicsDialog dlg(&Weapons[n].phys_info, this);
+  PhysicsDialog dlg(&weaponRef(n).phys_info, this);
   dlg.exec();
 }
 
 void WorldWeaponsDialog::onDefaultSize() {
   const int n = app.current_weapon;
-  ComputeDefaultSize(OBJ_WEAPON, Weapons[n].fire_image_handle, &Weapons[n].size);
+  ComputeDefaultSize(OBJ_WEAPON, weaponRef(n).fire_image_handle, &weaponRef(n).size);
   updateDialog();
 }
 

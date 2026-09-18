@@ -494,7 +494,7 @@ bool osipf_CallObjectEvent(int objhandle, int event, tOSIRISEventInfo *ei) {
 //	Sends an event to a trigger.  Returns true if the default action should
 //	continue to process.
 bool osipf_CallTriggerEvent(int trignum, int event, tOSIRISEventInfo *ei) {
-  if (trignum < 0 || trignum >= Num_triggers)
+  if (trignum < 0 || trignum >= static_cast<int>(Triggers.size()))
     return false;
 
   return Osiris_CallTriggerEvent(trignum, event, ei);
@@ -3374,7 +3374,7 @@ std::optional<uint32_t> osipf_FindRoomName(const std::string &name) {
 }
 
 std::optional<uint32_t> osipf_FindTriggerName(const std::string &name) {
-  for (int i = 0; i < Num_triggers; i++) {
+  for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
     if (!Triggers[i].name.empty()) {
       if (match(name, Triggers[i].name))
         return static_cast<uint32_t>(i);
@@ -3394,14 +3394,14 @@ std::optional<uint32_t> osipf_FindObjectName(const std::string &name) {
 }
 
 std::optional<uint32_t> osipf_GetTriggerRoom(int trigger_id) {
-  if (trigger_id < 0 || trigger_id >= Num_triggers)
+  if (trigger_id < 0 || trigger_id >= static_cast<int>(Triggers.size()))
     return std::nullopt;
 
   return static_cast<uint32_t>(Triggers[trigger_id].roomnum);
 }
 
 std::optional<uint32_t> osipf_GetTriggerFace(int trigger_id) {
-  if (trigger_id < 0 || trigger_id >= Num_triggers)
+  if (trigger_id < 0 || trigger_id >= static_cast<int>(Triggers.size()))
     return std::nullopt;
 
   return static_cast<uint32_t>(Triggers[trigger_id].facenum);

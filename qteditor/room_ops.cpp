@@ -61,13 +61,11 @@ static void EditorDeleteTrigger(int trig_num) {
   room *rp = &Rooms[tp->roomnum];
   face *fp = &rp->faces[tp->facenum];
   fp->flags.has_trigger = false;
-  for (int i = trig_num; i < Num_triggers - 1; i++)
-    Triggers[i] = Triggers[i + 1];
-  Num_triggers--;
+  Triggers.erase(Triggers.begin() + trig_num);
 }
 
 static void EditorDeleteTriggerByRoomFace(int roomnum, int facenum) {
-  for (int i = 0; i < Num_triggers; i++) {
+  for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
     if (Triggers[i].roomnum == roomnum && Triggers[i].facenum == facenum) {
       EditorDeleteTrigger(i);
       return;
@@ -309,7 +307,7 @@ void DeleteRoomFace(room *rp, int facenum) {
       pp->portal_face--;
   }
 
-  for (t = 0; t < Num_triggers; t++) {
+  for (t = 0; t < static_cast<int>(Triggers.size()); t++) {
     trigger *tp = &Triggers[t];
     if (tp->roomnum == ROOMNUM(rp)) {
       Q_ASSERT(tp->facenum != facenum);

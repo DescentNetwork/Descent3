@@ -46,6 +46,10 @@
 
 namespace {
 // Writes a single float/int field back into the current sound.
+sound_info &soundRef(int n) {
+  static sound_info fallback{};
+  return (n >= 0 && n < static_cast<int>(Sounds.size())) ? Sounds[n] : fallback;
+}
 } // namespace
 
 WorldSoundsDialog::WorldSoundsDialog(QWidget *parent)
@@ -113,85 +117,85 @@ void WorldSoundsDialog::saveSoundsOnClose() {
 
 void WorldSoundsDialog::setFlag(uint32_t flag, const char *checkName, bool checked) {
   const int n = app.current_sound;
-  if (n < 0 || n >= MAX_SOUNDS || !Sounds[n].used)
+  if (n < 0 || n >= static_cast<int>(Sounds.size()) || !soundRef(n).used)
     return;
   if (checked)
-    Sounds[n].flags |= flag;
+    soundRef(n).flags |= flag;
   else
-    Sounds[n].flags &= ~flag;
+    soundRef(n).flags &= ~flag;
 }
 
 void WorldSoundsDialog::setConeLink(int value) {
   setFlag(SPFT_CONE_LINK_MASK, "", true);
   const int n = app.current_sound;
-  if (n >= 0 && n < MAX_SOUNDS)
-    Sounds[n].flags = (Sounds[n].flags & ~SPFT_CONE_LINK_MASK) | value;
+  if (n >= 0 && n < static_cast<int>(Sounds.size()))
+    soundRef(n).flags = (soundRef(n).flags & ~SPFT_CONE_LINK_MASK) | value;
 }
 
 void WorldSoundsDialog::setConeDir(int value) {
   const int n = app.current_sound;
-  if (n >= 0 && n < MAX_SOUNDS)
-    Sounds[n].flags = (Sounds[n].flags & ~SPFT_CONE_DIR_MASK) | value;
+  if (n >= 0 && n < static_cast<int>(Sounds.size()))
+    soundRef(n).flags = (soundRef(n).flags & ~SPFT_CONE_DIR_MASK) | value;
 }
 
 void WorldSoundsDialog::updateDialog() {
   const int n = app.current_sound;
 
-  ui->IDC_NEXT_SOUND->setEnabled(Num_sounds);
-  ui->IDC_PREV_SOUND->setEnabled(Num_sounds);
+  ui->IDC_NEXT_SOUND->setEnabled(static_cast<int>(Sounds.size()));
+  ui->IDC_PREV_SOUND->setEnabled(static_cast<int>(Sounds.size()));
   if (!Network_up) {
     ui->IDC_LOCK_SOUND->setEnabled(false);
     ui->IDC_CHECKIN_SOUND->setEnabled(false);
     ui->IDC_OVERRIDE->setEnabled(false);
     return;
   }
-  if (!Num_sounds)
+  if (!static_cast<int>(Sounds.size()))
     return;
 
-  if (!Sounds[n].used)
+  if (!soundRef(n).used)
     app.current_sound = GetNextSound(n);
 
   Sound_system.CheckAndForceSoundDataAlloc(app.current_sound);
   const int s = app.current_sound;
 
   int total_memory = 0;
-  for (int i = 0; i < MAX_SOUNDS; i++)
+  for (int i = 0; i < static_cast<int>(Sounds.size()); i++)
     if (Sounds[i].used)
       total_memory += SoundFiles[Sounds[i].sample_index].sample_length * 2;
 
-  ui->IDC_SOUNDMAXDIST_EDIT->setText(QString::number(Sounds[s].max_distance));
-  ui->IDC_SOUNDMINDIST_EDIT->setText(QString::number(Sounds[s].min_distance));
-  ui->IDC_SOUNDINNERCONEANGLE_EDIT->setText(QString::number(Sounds[s].inner_cone_angle));
-  ui->IDC_SOUNDOUTERCONEANGLE_EDIT->setText(QString::number(Sounds[s].outer_cone_angle));
-  ui->IDC_SOUNDOUTERCONEVOL_EDIT->setText(QString::number(Sounds[s].outer_cone_volume * 100.0f));
-  ui->IDC_SOUNDLOOPSTART_EDIT->setText(QString::number(Sounds[s].loop_start));
+  ui->IDC_SOUNDMAXDIST_EDIT->setText(QString::number(soundRef(s).max_distance));
+  ui->IDC_SOUNDMINDIST_EDIT->setText(QString::number(soundRef(s).min_distance));
+  ui->IDC_SOUNDINNERCONEANGLE_EDIT->setText(QString::number(soundRef(s).inner_cone_angle));
+  ui->IDC_SOUNDOUTERCONEANGLE_EDIT->setText(QString::number(soundRef(s).outer_cone_angle));
+  ui->IDC_SOUNDOUTERCONEVOL_EDIT->setText(QString::number(soundRef(s).outer_cone_volume * 100.0f));
+  ui->IDC_SOUNDLOOPSTART_EDIT->setText(QString::number(soundRef(s).loop_start));
 
-  if (Sounds[s].loop_end >= SoundFiles[Sounds[s].sample_index].np_sample_length)
-    Sounds[s].loop_end = SoundFiles[Sounds[s].sample_index].np_sample_length - 1;
-  if (Sounds[s].loop_start > Sounds[s].loop_end)
-    Sounds[s].loop_start = 0;
-  ui->IDC_SOUNDLOOPEND_EDIT->setText(QString::number(Sounds[s].loop_end));
+  if (soundRef(s).loop_end >= SoundFiles[soundRef(s).sample_index].np_sample_length)
+    soundRef(s).loop_end = SoundFiles[soundRef(s).sample_index].np_sample_length - 1;
+  if (soundRef(s).loop_start > soundRef(s).loop_end)
+    soundRef(s).loop_start = 0;
+  ui->IDC_SOUNDLOOPEND_EDIT->setText(QString::number(soundRef(s).loop_end));
 
-  ui->IDC_SOUND_IMPORT_VOLUME_EDIT->setText(QString::number(Sounds[s].import_volume * 100.0f));
-  ui->IDC_RAW_NAME_EDIT->setText(QString::fromStdString(SoundFiles[Sounds[s].sample_index].name));
+  ui->IDC_SOUND_IMPORT_VOLUME_EDIT->setText(QString::number(soundRef(s).import_volume * 100.0f));
+  ui->IDC_RAW_NAME_EDIT->setText(QString::fromStdString(SoundFiles[soundRef(s).sample_index].name));
 
   ui->IDC_SOUND_MEMORY_STATIC->setText(QString("%1, %2 H, %3 Total")
-    .arg(SoundFiles[Sounds[s].sample_index].sample_length / 512)
+    .arg(SoundFiles[soundRef(s).sample_index].sample_length / 512)
     .arg(0)
     .arg(total_memory / 1024));
 
-  ui->IDC_SOUNDHALLEFFECT_CHECK->setChecked(!(Sounds[s].flags & SPF_FIXED_FREQ));
-  ui->IDC_SOUNDFOREVER_CHECK->setChecked(Sounds[s].flags & SPF_FOREVER);
-  ui->IDC_SOUND_ONCE_PER_OBJ_CHECK->setChecked(Sounds[s].flags & SPF_ONCE_PER_OBJ);
-  ui->IDC_SOUNDEXCLUSIVE_CHECK->setChecked(Sounds[s].flags & SPF_PLAYS_EXCLUSIVELY);
-  ui->IDC_SOUND_NO_UPDATE->setChecked(Sounds[s].flags & SPF_LISTENER_UPDATE);
-  ui->IDC_SOUNDONCE_CHECK->setChecked(Sounds[s].flags & SPF_PLAYS_ONCE);
-  ui->IDC_LOOPING_CHECK->setChecked(Sounds[s].flags & SPF_LOOPED);
+  ui->IDC_SOUNDHALLEFFECT_CHECK->setChecked(!(soundRef(s).flags & SPF_FIXED_FREQ));
+  ui->IDC_SOUNDFOREVER_CHECK->setChecked(soundRef(s).flags & SPF_FOREVER);
+  ui->IDC_SOUND_ONCE_PER_OBJ_CHECK->setChecked(soundRef(s).flags & SPF_ONCE_PER_OBJ);
+  ui->IDC_SOUNDEXCLUSIVE_CHECK->setChecked(soundRef(s).flags & SPF_PLAYS_EXCLUSIVELY);
+  ui->IDC_SOUND_NO_UPDATE->setChecked(soundRef(s).flags & SPF_LISTENER_UPDATE);
+  ui->IDC_SOUNDONCE_CHECK->setChecked(soundRef(s).flags & SPF_PLAYS_ONCE);
+  ui->IDC_LOOPING_CHECK->setChecked(soundRef(s).flags & SPF_LOOPED);
 
-  ui->IDC_SOUNDOBJATTACH_RADIO->setChecked(Sounds[s].flags & SPF_OBJ_UPDATE);
-  ui->IDC_SOUNDPOSATTACH_RADIO->setChecked(!(Sounds[s].flags & SPF_OBJ_UPDATE));
+  ui->IDC_SOUNDOBJATTACH_RADIO->setChecked(soundRef(s).flags & SPF_OBJ_UPDATE);
+  ui->IDC_SOUNDPOSATTACH_RADIO->setChecked(!(soundRef(s).flags & SPF_OBJ_UPDATE));
 
-  switch (SPFT_CONE_LINK_MASK & Sounds[s].flags) {
+  switch (SPFT_CONE_LINK_MASK & soundRef(s).flags) {
   case SPFT_CONE_LINK_TURRET1:
     ui->IDC_SOUNDTURRET1_RADIO->setChecked(true);
     break;
@@ -206,7 +210,7 @@ void WorldSoundsDialog::updateDialog() {
     break;
   }
 
-  switch (SPFT_CONE_DIR_MASK & Sounds[s].flags) {
+  switch (SPFT_CONE_DIR_MASK & soundRef(s).flags) {
   case SPFT_CONE_DIR_BACKWARD:
     ui->IDC_SOUNDBACKWARD_RADIO->setChecked(true);
     break;
@@ -223,7 +227,7 @@ void WorldSoundsDialog::updateDialog() {
 
   {
     QPushButton *checkin = ui->IDC_CHECKIN_SOUND;
-    if (!mng_FindTrackLock(Sounds[s].name, PAGETYPE_SOUND)) {
+    if (!mng_FindTrackLock(soundRef(s).name, PAGETYPE_SOUND)) {
       checkin->setEnabled(false);
       ui->IDC_LOCK_SOUND->setEnabled(true);
       ui->IDC_SOUND_CHANGE_NAME->setEnabled(false);
@@ -238,10 +242,10 @@ void WorldSoundsDialog::updateDialog() {
     QComboBox *combo = ui->IDC_SOUND_PULLDOWN;
     QSignalBlocker blocker(combo);
     combo->clear();
-    for (int i = 0; i < MAX_SOUNDS; i++)
+    for (int i = 0; i < static_cast<int>(Sounds.size()); i++)
       if (Sounds[i].used)
         combo->addItem(QString::fromStdString(Sounds[i].name));
-    combo->setCurrentText(QString::fromStdString(Sounds[s].name));
+    combo->setCurrentText(QString::fromStdString(soundRef(s).name));
   }
 }
 
@@ -283,17 +287,17 @@ void WorldSoundsDialog::onAddSound() {
       finding_name = false;
   }
 
-  Sounds[sound_handle].name = cur_name;
-  Sounds[sound_handle].sample_index = raw_handle;
+  soundRef(sound_handle).name = cur_name;
+  soundRef(sound_handle).sample_index = raw_handle;
 
-  std::filesystem::path destname = LocalSoundsDir / SoundFiles[Sounds[sound_handle].sample_index].name;
+  std::filesystem::path destname = LocalSoundsDir / SoundFiles[soundRef(sound_handle).sample_index].name;
   std::filesystem::copy(std::filesystem::path(pathname.toStdString()), (destname), std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(cur_name, PAGETYPE_SOUND);
   app.current_sound = sound_handle;
   RemapSounds();
   Sound_system.CheckAndForceSoundDataAlloc(app.current_sound);
-  Sounds[sound_handle].loop_end = SoundFiles[Sounds[sound_handle].sample_index].np_sample_length - 1;
+  soundRef(sound_handle).loop_end = SoundFiles[soundRef(sound_handle).sample_index].np_sample_length - 1;
   updateDialog();
 }
 
@@ -306,14 +310,14 @@ void WorldSoundsDialog::onLoadSound() {
   if (pathname.isEmpty())
     return;
   const int n = app.current_sound;
-  if (n < 0 || n >= MAX_SOUNDS || !Sounds[n].used)
+  if (n < 0 || n >= static_cast<int>(Sounds.size()) || !soundRef(n).used)
     return;
   const QByteArray pathBytes = pathname.toLocal8Bit();
-  const int raw_handle = LoadSoundFile(pathBytes.constData(), Sounds[n].import_volume, false);
+  const int raw_handle = LoadSoundFile(pathBytes.constData(), soundRef(n).import_volume, false);
   if (raw_handle < 0)
     return;
-  Sounds[n].sample_index = raw_handle;
-  Sounds[n].loop_end = SoundFiles[raw_handle].np_sample_length - 1;
+  soundRef(n).sample_index = raw_handle;
+  soundRef(n).loop_end = SoundFiles[raw_handle].np_sample_length - 1;
   updateDialog();
 }
 
@@ -328,32 +332,32 @@ void WorldSoundsDialog::onPrevSound() {
 
 void WorldSoundsDialog::onDeleteSound() {
   const int n = app.current_sound;
-  if (!Num_sounds)
+  if (!static_cast<int>(Sounds.size()))
     return;
-  const int tl = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND).value_or(-1);
+  const int tl = mng_FindTrackLock(soundRef(n).name, PAGETYPE_SOUND).value_or(-1);
   if (tl == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This sound is not yours to delete.  Lock first.");
     return;
   }
   if (QMessageBox::question(this, "Delete sound",
-                            QString("Are you sure you want to delete this sound? %1").arg(QString::fromStdString(Sounds[n].name))) !=
+                            QString("Are you sure you want to delete this sound? %1").arg(QString::fromStdString(soundRef(n).name))) !=
       QMessageBox::Yes)
     return;
   if (!mng_MakeLocker())
     return;
 
   mngs_Pagelock pl;
-  pl.name = Sounds[n].name;
+  pl.name = soundRef(n).name;
   pl.pagetype = PAGETYPE_SOUND;
 
   if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
     mng_FreeTrackLock(tl);
-    Q_ASSERT(mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 1));
+    Q_ASSERT(mng_DeletePage(soundRef(n).name, PAGETYPE_SOUND, 1));
   } else {
     mng_FreeTrackLock(tl);
-    mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 1);
-    mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 0);
-    mng_DeletePagelock(Sounds[n].name, PAGETYPE_SOUND);
+    mng_DeletePage(soundRef(n).name, PAGETYPE_SOUND, 1);
+    mng_DeletePage(soundRef(n).name, PAGETYPE_SOUND, 0);
+    mng_DeletePagelock(soundRef(n).name, PAGETYPE_SOUND);
   }
 
   app.current_sound = GetNextSound(n);
@@ -366,14 +370,14 @@ void WorldSoundsDialog::onDeleteSound() {
 
 void WorldSoundsDialog::onLockSound() {
   const int n = app.current_sound;
-  if (!Num_sounds)
+  if (!static_cast<int>(Sounds.size()))
     return;
   if (!mng_MakeLocker())
     return;
 
   mngs_Pagelock temp_pl;
   mngs_sound_page soundpage;
-  temp_pl.name = Sounds[n].name;
+  temp_pl.name = soundRef(n).name;
   temp_pl.pagetype = PAGETYPE_SOUND;
 
   const int r = mng_CheckIfPageLocked(&temp_pl);
@@ -398,7 +402,7 @@ void WorldSoundsDialog::onLockSound() {
     }
     if (mng_FindSpecificSoundPage(temp_pl.name, &soundpage)) {
       if (mng_AssignSoundPageToSound(&soundpage, n)) {
-        if (!mng_ReplacePage(Sounds[n].name, Sounds[n].name, n, PAGETYPE_SOUND, 1)) {
+        if (!mng_ReplacePage(soundRef(n).name, soundRef(n).name, n, PAGETYPE_SOUND, 1)) {
           QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
           mng_EraseLocker();
           return;
@@ -407,7 +411,7 @@ void WorldSoundsDialog::onLockSound() {
       } else {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this sound.");
       }
-      mng_AllocTrackLock(Sounds[n].name, PAGETYPE_SOUND);
+      mng_AllocTrackLock(soundRef(n).name, PAGETYPE_SOUND);
     } else {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that sound in the table file!");
     }
@@ -418,13 +422,13 @@ void WorldSoundsDialog::onLockSound() {
 
 void WorldSoundsDialog::onCheckinSound() {
   const int n = app.current_sound;
-  if (!Num_sounds)
+  if (!static_cast<int>(Sounds.size()))
     return;
   if (!mng_MakeLocker())
     return;
 
   mngs_Pagelock temp_pl;
-  temp_pl.name = Sounds[n].name;
+  temp_pl.name = soundRef(n).name;
   temp_pl.pagetype = PAGETYPE_SOUND;
 
   const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
@@ -439,13 +443,13 @@ void WorldSoundsDialog::onCheckinSound() {
       mng_EraseLocker();
       return;
     }
-    if (!mng_ReplacePage(Sounds[n].name, Sounds[n].name, n, PAGETYPE_SOUND, 0))
+    if (!mng_ReplacePage(soundRef(n).name, soundRef(n).name, n, PAGETYPE_SOUND, 0))
       QMessageBox::critical(this, "Error!", ErrorString);
     else {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound checked in.");
-      Q_ASSERT(mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 1) == 1);
+      Q_ASSERT(mng_DeletePage(soundRef(n).name, PAGETYPE_SOUND, 1) == 1);
       mng_EraseLocker();
-      const int p = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND).value_or(-1);
+      const int p = mng_FindTrackLock(soundRef(n).name, PAGETYPE_SOUND).value_or(-1);
       Q_ASSERT(p != -1);
       mng_FreeTrackLock(p);
     }
@@ -456,7 +460,7 @@ void WorldSoundsDialog::onCheckinSound() {
 
 void WorldSoundsDialog::onPlaysound() {
   const int n = app.current_sound;
-  if (!Num_sounds)
+  if (!static_cast<int>(Sounds.size()))
     return;
   Sound_system.BeginSoundFrame();
   Sound_system.Play2dSound(n);
@@ -473,21 +477,21 @@ void WorldSoundsDialog::onKillsounds() {
 void WorldSoundsDialog::onOverride() {
   const int n = app.current_sound;
   mngs_Pagelock temp_pl;
-  temp_pl.name = Sounds[n].name;
+  temp_pl.name = soundRef(n).name;
   temp_pl.pagetype = PAGETYPE_SOUND;
   mng_OverrideToUnlocked(&temp_pl);
 }
 
 void WorldSoundsDialog::onChangeName() {
   const int n = app.current_sound;
-  const auto p = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
+  const auto p = mng_FindTrackLock(soundRef(n).name, PAGETYPE_SOUND);
   if (!p) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this sound if you wish to change its name.");
     return;
   }
   bool ok = false;
   QString name = QInputDialog::getText(this, "Sound name", "Enter a new name for this sound:",
-                                       QLineEdit::Normal, QString::fromStdString(Sounds[n].name), &ok);
+                                       QLineEdit::Normal, QString::fromStdString(soundRef(n).name), &ok);
   if (!ok)
     return;
   if (!FindSoundName(name.toStdString())) {
@@ -497,7 +501,7 @@ void WorldSoundsDialog::onChangeName() {
   if (!mng_MakeLocker())
     return;
   mngs_Pagelock pl;
-  pl.name = Sounds[n].name;
+  pl.name = soundRef(n).name;
   pl.pagetype = PAGETYPE_SOUND;
   const QByteArray newName = name.toLocal8Bit();
   std::string newNameBuf;
@@ -506,7 +510,7 @@ void WorldSoundsDialog::onChangeName() {
   if (ret < 0)
     QMessageBox::critical(this, "Error!", ErrorString);
   else if (ret == 1)
-    mng_RenamePage(Sounds[n].name, newNameBuf, PAGETYPE_SOUND);
+    mng_RenamePage(soundRef(n).name, newNameBuf, PAGETYPE_SOUND);
   else if (ret == 2) {
     GlobalTrackLocks[*p].name = newName.constData();
     mng_ReplacePage(GlobalTrackLocks[*p].name, newNameBuf, n, PAGETYPE_SOUND, 1);
@@ -517,7 +521,7 @@ void WorldSoundsDialog::onChangeName() {
     return;
   }
   GlobalTrackLocks[*p].name = newName.constData();
-  Sounds[n].name = newName.constData();
+  soundRef(n).name = newName.constData();
   mng_EraseLocker();
   RemapSounds();
   updateDialog();
@@ -534,35 +538,35 @@ void WorldSoundsDialog::onSoundPulldownChanged() {
 
 void WorldSoundsDialog::onMaxDistEdited() {
   const int n = app.current_sound;
-  Sounds[n].max_distance = ui->IDC_SOUNDMAXDIST_EDIT->text().toFloat();
+  soundRef(n).max_distance = ui->IDC_SOUNDMAXDIST_EDIT->text().toFloat();
 }
 void WorldSoundsDialog::onMinDistEdited() {
   const int n = app.current_sound;
-  Sounds[n].min_distance = ui->IDC_SOUNDMINDIST_EDIT->text().toFloat();
+  soundRef(n).min_distance = ui->IDC_SOUNDMINDIST_EDIT->text().toFloat();
 }
 void WorldSoundsDialog::onInnerConeEdited() {
   const int n = app.current_sound;
-  Sounds[n].inner_cone_angle = ui->IDC_SOUNDINNERCONEANGLE_EDIT->text().toInt();
+  soundRef(n).inner_cone_angle = ui->IDC_SOUNDINNERCONEANGLE_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onOuterConeAngleEdited() {
   const int n = app.current_sound;
-  Sounds[n].outer_cone_angle = ui->IDC_SOUNDOUTERCONEANGLE_EDIT->text().toInt();
+  soundRef(n).outer_cone_angle = ui->IDC_SOUNDOUTERCONEANGLE_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onOuterConeVolEdited() {
   const int n = app.current_sound;
-  Sounds[n].outer_cone_volume = ui->IDC_SOUNDOUTERCONEVOL_EDIT->text().toFloat() / 100.0f;
+  soundRef(n).outer_cone_volume = ui->IDC_SOUNDOUTERCONEVOL_EDIT->text().toFloat() / 100.0f;
 }
 void WorldSoundsDialog::onLoopStartEdited() {
   const int n = app.current_sound;
-  Sounds[n].loop_start = ui->IDC_SOUNDLOOPSTART_EDIT->text().toInt();
+  soundRef(n).loop_start = ui->IDC_SOUNDLOOPSTART_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onLoopEndEdited() {
   const int n = app.current_sound;
-  Sounds[n].loop_end = ui->IDC_SOUNDLOOPEND_EDIT->text().toInt();
+  soundRef(n).loop_end = ui->IDC_SOUNDLOOPEND_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onImportVolumeEdited() {
   const int n = app.current_sound;
-  Sounds[n].import_volume = ui->IDC_SOUND_IMPORT_VOLUME_EDIT->text().toFloat() / 100.0f;
+  soundRef(n).import_volume = ui->IDC_SOUND_IMPORT_VOLUME_EDIT->text().toFloat() / 100.0f;
 }
 
 void WorldSoundsDialog::onHallEffectToggled(bool checked) { setFlag(SPF_FIXED_FREQ, "", !checked); }

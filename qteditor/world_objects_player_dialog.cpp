@@ -46,6 +46,15 @@
 #include "shippage.h"
 #include "d3edit.h"
 
+namespace {
+// Returns the indexed ship, or a shared zero-initialized fallback when the
+// index is stale/out of range.
+ship &shipRef(int n) {
+  static ship fallback{};
+  return (n >= 0 && n < static_cast<int>(Ships.size())) ? Ships[n] : fallback;
+}
+} // namespace
+
 WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::WorldObjectsPlayerDialog)
 {
@@ -70,38 +79,38 @@ WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent)
 
   connect(ui->IDC_PSHIP_NAME_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_ship;
-    if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
+    if (n < 0 || n >= static_cast<int>(Ships.size()) || !shipRef(n).used)
       return;
   });
   connect(ui->IDC_PSHIP_COCKPIT_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_ship;
-    if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
+    if (n < 0 || n >= static_cast<int>(Ships.size()) || !shipRef(n).used)
       return;
-    Ships[n].cockpit_name = ui->IDC_PSHIP_COCKPIT_EDIT->text().toStdString();
+    shipRef(n).cockpit_name = ui->IDC_PSHIP_COCKPIT_EDIT->text().toStdString();
   });
   connect(ui->IDC_SHIP_ARMOR_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_ship;
-    if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
+    if (n < 0 || n >= static_cast<int>(Ships.size()) || !shipRef(n).used)
       return;
     float val = ui->IDC_SHIP_ARMOR_EDIT->text().toFloat();
     if (val < .05f)
       val = .05f;
     if (val > 10)
       val = 10;
-    Ships[n].armor_scalar = val;
+    shipRef(n).armor_scalar = val;
     updateDialog();
   });
   connect(ui->IDC_LOD_DISTANCE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_ship;
-    if (n < 0 || n >= MAX_SHIPS || !Ships[n].used)
+    if (n < 0 || n >= static_cast<int>(Ships.size()) || !shipRef(n).used)
       return;
     const float dist = ui->IDC_LOD_DISTANCE_EDIT->text().toFloat();
     if (dist < 0)
       return;
     if (m_lod == 1)
-      Ships[n].med_lod_distance = dist;
+      shipRef(n).med_lod_distance = dist;
     else if (m_lod == 2)
-      Ships[n].lo_lod_distance = dist;
+      shipRef(n).lo_lod_distance = dist;
   });
 
   connect(ui->IDC_DEFAULTALLOW, &QCheckBox::toggled, this, &WorldObjectsPlayerDialog::onDefaultAllowToggled);
@@ -117,38 +126,38 @@ WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent)
 WorldObjectsPlayerDialog::~WorldObjectsPlayerDialog() { delete ui; }
 
 void WorldObjectsPlayerDialog::updateDialog() {
-  ui->IDC_PSHIP_NEXT->setEnabled(Num_ships >= 1);
-  ui->IDC_PSHIP_PREV->setEnabled(Num_ships >= 1);
-  ui->IDC_PSHIP_COCKPIT->setEnabled(Num_ships >= 1);
+  ui->IDC_PSHIP_NEXT->setEnabled(static_cast<int>(Ships.size()) >= 1);
+  ui->IDC_PSHIP_PREV->setEnabled(static_cast<int>(Ships.size()) >= 1);
+  ui->IDC_PSHIP_COCKPIT->setEnabled(static_cast<int>(Ships.size()) >= 1);
   if (!Network_up) {
     ui->IDC_PSHIP_LOCK->setEnabled(false);
     ui->IDC_PSHIP_CHECKIN->setEnabled(false);
     return;
   }
-  if (Num_ships < 1)
+  if (static_cast<int>(Ships.size()) < 1)
     return;
 
   int n = app.current_ship;
-  if (!Ships[n].used)
+  if (!shipRef(n).used)
     n = app.current_ship = GetNextShip(n);
 
-  ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(Ships[n].name));
+  ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(shipRef(n).name));
 
   {
     QLineEdit *edit = ui->IDC_PSHIP_MODEL_NAME_EDIT;
     if (m_lod == 0)
-      edit->setText(QString::fromStdString(Poly_models[Ships[n].model_handle].name));
+      edit->setText(QString::fromStdString(Poly_models[shipRef(n).model_handle].name));
     else if (m_lod == 1)
     {
-      if(Ships[n].med_render_handle == -1)
+      if(shipRef(n).med_render_handle == -1)
         edit->setText("No model defined");
       else
-        edit->setText(QString::fromStdString(Poly_models[Ships[n].med_render_handle].name));
+        edit->setText(QString::fromStdString(Poly_models[shipRef(n).med_render_handle].name));
     } else {
-      if(Ships[n].lo_render_handle == -1)
+      if(shipRef(n).lo_render_handle == -1)
         edit->setText("No model defined");
       else
-        edit->setText(QString::fromStdString(Poly_models[Ships[n].lo_render_handle].name));
+        edit->setText(QString::fromStdString(Poly_models[shipRef(n).lo_render_handle].name));
     }
   }
 
@@ -157,24 +166,24 @@ void WorldObjectsPlayerDialog::updateDialog() {
     if (m_lod == 0)
       edit->setText("0");
     else if (m_lod == 1)
-      edit->setText(QString::number(Ships[n].med_lod_distance));
+      edit->setText(QString::number(shipRef(n).med_lod_distance));
     else
-      edit->setText(QString::number(Ships[n].lo_lod_distance));
+      edit->setText(QString::number(shipRef(n).lo_lod_distance));
   }
 
   {
     QLineEdit *edit = ui->IDC_PSHIP_DYING_MODEL_NAME_EDIT;
-    if(Ships[n].dying_model_handle == -1)
+    if(shipRef(n).dying_model_handle == -1)
       edit->setText("<none>");
     else
-      edit->setText(QString::fromStdString(Poly_models[Ships[n].dying_model_handle].name));
+      edit->setText(QString::fromStdString(Poly_models[shipRef(n).dying_model_handle].name));
   }
-  ui->IDC_PSHIP_COCKPIT_EDIT->setText(QString::fromStdString(Ships[n].cockpit_name));
-  ui->IDC_SHIP_ARMOR_EDIT->setText(QString::number(Ships[n].armor_scalar));
+  ui->IDC_PSHIP_COCKPIT_EDIT->setText(QString::fromStdString(shipRef(n).cockpit_name));
+  ui->IDC_SHIP_ARMOR_EDIT->setText(QString::number(shipRef(n).armor_scalar));
 
   {
     QPushButton *checkin = ui->IDC_PSHIP_CHECKIN;
-    if (!mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP) ) {
+    if (!mng_FindTrackLock(shipRef(n).name, PAGETYPE_SHIP) ) {
       checkin->setEnabled(false);
       ui->IDC_PSHIP_LOCK->setEnabled(true);
     } else {
@@ -183,16 +192,16 @@ void WorldObjectsPlayerDialog::updateDialog() {
     }
   }
 
-  ui->IDC_DEFAULTALLOW->setChecked(Ships[n].flags & SF_DEFAULT_ALLOW);
+  ui->IDC_DEFAULTALLOW->setChecked(shipRef(n).flags & SF_DEFAULT_ALLOW);
 
   {
     QComboBox *combo = ui->IDC_PSHIP_PULLDOWN;
     QSignalBlocker blocker(combo);
     combo->clear();
-    for (int i = 0; i < MAX_SHIPS; i++)
+    for (int i = 0; i < static_cast<int>(Ships.size()); i++)
       if (Ships[i].used)
         combo->addItem(QString::fromStdString(Ships[i].name));
-    combo->setCurrentText(QString::fromStdString(Ships[n].name));
+    combo->setCurrentText(QString::fromStdString(shipRef(n).name));
   }
 
   {
@@ -200,9 +209,9 @@ void WorldObjectsPlayerDialog::updateDialog() {
     if (m_lod == 0)
       nolod->setEnabled(false);
     else if (m_lod == 1)
-      nolod->setEnabled(Ships[n].med_render_handle != -1);
+      nolod->setEnabled(shipRef(n).med_render_handle != -1);
     else
-      nolod->setEnabled(Ships[n].lo_render_handle != -1);
+      nolod->setEnabled(shipRef(n).lo_render_handle != -1);
   }
 
   ui->IDC_HIRES_RADIO->setChecked(m_lod == 0);
@@ -247,10 +256,10 @@ void WorldObjectsPlayerDialog::onAddPship() {
       finding_name = false;
   }
 
-  Ships[ship_handle].name = cur_name;
-  Ships[ship_handle].model_handle = img_handle;
+  shipRef(ship_handle).name = cur_name;
+  shipRef(ship_handle).model_handle = img_handle;
 
-  std::filesystem::path destname = LocalModelsDir / Poly_models[Ships[ship_handle].model_handle].name;
+  std::filesystem::path destname = LocalModelsDir / Poly_models[shipRef(ship_handle).model_handle].name;
   std::filesystem::copy(pathFs, (destname), std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(cur_name, PAGETYPE_SHIP);
@@ -261,16 +270,16 @@ void WorldObjectsPlayerDialog::onAddPship() {
 
 void WorldObjectsPlayerDialog::onPshipDelete() {
   const int n = app.current_ship;
-  if (Num_ships < 1)
+  if (static_cast<int>(Ships.size()) < 1)
     return;
 
-  const auto tl = mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP);
+  const auto tl = mng_FindTrackLock(shipRef(n).name, PAGETYPE_SHIP);
   if (!tl) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This ship is not yours to delete.  Lock first.");
     return;
   }
 
-  if (QMessageBox::question(this, "Delete ship", QString("Are you sure you want to delete this ship? %1").arg(QString::fromStdString(Ships[n].name))) !=
+  if (QMessageBox::question(this, "Delete ship", QString("Are you sure you want to delete this ship? %1").arg(QString::fromStdString(shipRef(n).name))) !=
       QMessageBox::Yes)
     return;
 
@@ -278,25 +287,25 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
     return;
 
   mngs_Pagelock pl;
-  pl.name = Ships[n].name;
+  pl.name = shipRef(n).name;
   pl.pagetype = PAGETYPE_SHIP;
 
   if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
     mng_FreeTrackLock(*tl);
-    Q_ASSERT(mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 1));
+    Q_ASSERT(mng_DeletePage(shipRef(n).name, PAGETYPE_SHIP, 1));
   } else {
     mng_FreeTrackLock(*tl);
-    mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 0);
-    mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 1);
-    mng_DeletePagelock(Ships[n].name, PAGETYPE_SHIP);
+    mng_DeletePage(shipRef(n).name, PAGETYPE_SHIP, 0);
+    mng_DeletePage(shipRef(n).name, PAGETYPE_SHIP, 1);
+    mng_DeletePagelock(shipRef(n).name, PAGETYPE_SHIP);
   }
 
   app.current_ship = GetNextShip(n);
-  if (Ships[n].model_handle >= 0 && Ships[n].model_handle < MAX_POLY_MODELS && Poly_models[Ships[n].model_handle].used)
-    FreePolyModel(Ships[n].model_handle);
-  if (Ships[n].dying_model_handle != -1)
-    if (Ships[n].dying_model_handle >= 0 && Ships[n].dying_model_handle < MAX_POLY_MODELS && Poly_models[Ships[n].dying_model_handle].used)
-      FreePolyModel(Ships[n].dying_model_handle);
+  if (shipRef(n).model_handle >= 0 && shipRef(n).model_handle < MAX_POLY_MODELS && Poly_models[shipRef(n).model_handle].used)
+    FreePolyModel(shipRef(n).model_handle);
+  if (shipRef(n).dying_model_handle != -1)
+    if (shipRef(n).dying_model_handle >= 0 && shipRef(n).dying_model_handle < MAX_POLY_MODELS && Poly_models[shipRef(n).dying_model_handle].used)
+      FreePolyModel(shipRef(n).dying_model_handle);
   FreeShip(n);
   mng_EraseLocker();
 
@@ -310,12 +319,12 @@ void WorldObjectsPlayerDialog::onPshipLock() {
   mngs_Pagelock temp_pl;
   mngs_ship_page shippage;
 
-  if (Num_ships < 1)
+  if (static_cast<int>(Ships.size()) < 1)
     return;
   if (!mng_MakeLocker())
     return;
 
-  temp_pl.name = Ships[n].name;
+  temp_pl.name = shipRef(n).name;
   temp_pl.pagetype = PAGETYPE_SHIP;
 
   const int r = mng_CheckIfPageLocked(&temp_pl);
@@ -339,7 +348,7 @@ void WorldObjectsPlayerDialog::onPshipLock() {
       return;
     } else if (mng_FindSpecificShipPage(temp_pl.name, &shippage)) {
       if (mng_AssignShipPageToShip(&shippage, n)) {
-        if (!mng_ReplacePage(Ships[n].name, Ships[n].name, n, PAGETYPE_SHIP, 1)) {
+        if (!mng_ReplacePage(shipRef(n).name, shipRef(n).name, n, PAGETYPE_SHIP, 1)) {
           QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
           mng_EraseLocker();
           return;
@@ -348,7 +357,7 @@ void WorldObjectsPlayerDialog::onPshipLock() {
       } else {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this ship.");
       }
-      mng_AllocTrackLock(Ships[n].name, PAGETYPE_SHIP);
+      mng_AllocTrackLock(shipRef(n).name, PAGETYPE_SHIP);
       updateDialog();
     } else {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that ship in the table file!");
@@ -361,12 +370,12 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
   const int n = app.current_ship;
   mngs_Pagelock temp_pl;
 
-  if (Num_ships < 1)
+  if (static_cast<int>(Ships.size()) < 1)
     return;
   if (!mng_MakeLocker())
     return;
 
-  temp_pl.name = Ships[n].name;
+  temp_pl.name = shipRef(n).name;
   temp_pl.pagetype = PAGETYPE_SHIP;
 
   const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
@@ -380,39 +389,39 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
       QMessageBox::critical(this, "Error!", ErrorString);
       mng_EraseLocker();
       return;
-    } else if (!mng_ReplacePage(Ships[n].name, Ships[n].name, n, PAGETYPE_SHIP, 0)) {
+    } else if (!mng_ReplacePage(shipRef(n).name, shipRef(n).name, n, PAGETYPE_SHIP, 0)) {
       QMessageBox::critical(this, "Error!", ErrorString);
     } else {
-      std::filesystem::path srcname = LocalModelsDir / Poly_models[Ships[n].model_handle].name;
-      std::filesystem::path destname = NetModelsDir / Poly_models[Ships[n].model_handle].name;
+      std::filesystem::path srcname = LocalModelsDir / Poly_models[shipRef(n).model_handle].name;
+      std::filesystem::path destname = NetModelsDir / Poly_models[shipRef(n).model_handle].name;
       std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
-      if (Ships[n].dying_model_handle != -1) {
-        srcname = LocalModelsDir / Poly_models[Ships[n].dying_model_handle].name;
-        destname = NetModelsDir / Poly_models[Ships[n].dying_model_handle].name;
+      if (shipRef(n).dying_model_handle != -1) {
+        srcname = LocalModelsDir / Poly_models[shipRef(n).dying_model_handle].name;
+        destname = NetModelsDir / Poly_models[shipRef(n).dying_model_handle].name;
         std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
       }
-      if (Ships[n].med_render_handle != -1) {
-        srcname = LocalModelsDir / Poly_models[Ships[n].med_render_handle].name;
-        destname = NetModelsDir / Poly_models[Ships[n].med_render_handle].name;
+      if (shipRef(n).med_render_handle != -1) {
+        srcname = LocalModelsDir / Poly_models[shipRef(n).med_render_handle].name;
+        destname = NetModelsDir / Poly_models[shipRef(n).med_render_handle].name;
         std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
       }
-      if (Ships[n].lo_render_handle != -1) {
-        srcname = LocalModelsDir / Poly_models[Ships[n].lo_render_handle].name;
-        destname = NetModelsDir / Poly_models[Ships[n].lo_render_handle].name;
+      if (shipRef(n).lo_render_handle != -1) {
+        srcname = LocalModelsDir / Poly_models[shipRef(n).lo_render_handle].name;
+        destname = NetModelsDir / Poly_models[shipRef(n).lo_render_handle].name;
         std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
       }
-      if (!Ships[n].cockpit_name.empty()) {
-        srcname = LocalMiscDir / Ships[n].cockpit_name;
-        destname = NetMiscDir / Ships[n].cockpit_name;
+      if (!shipRef(n).cockpit_name.empty()) {
+        srcname = LocalMiscDir / shipRef(n).cockpit_name;
+        destname = NetMiscDir / shipRef(n).cockpit_name;
         std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
       }
 
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Ship checked in.");
 
-      Q_ASSERT(mng_DeletePage(Ships[n].name, PAGETYPE_SHIP, 1) == 1);
+      Q_ASSERT(mng_DeletePage(shipRef(n).name, PAGETYPE_SHIP, 1) == 1);
       mng_EraseLocker();
 
-      const auto p = mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP);
+      const auto p = mng_FindTrackLock(shipRef(n).name, PAGETYPE_SHIP);
       Q_ASSERT(p);
       mng_FreeTrackLock(*p);
       updateDialog();
@@ -474,24 +483,24 @@ void WorldObjectsPlayerDialog::onPshipLoadModel() {
 
   const int ship_handle = app.current_ship;
   if (m_lod == 0) {
-    ChangeOldModelsForObjects(Ships[ship_handle].model_handle, img_handle);
-    if (Ships[ship_handle].model_handle >= 0 && Ships[ship_handle].model_handle < MAX_POLY_MODELS && Poly_models[Ships[ship_handle].model_handle].used)
-      FreePolyModel(Ships[ship_handle].model_handle);
-    Ships[ship_handle].model_handle = img_handle;
+    ChangeOldModelsForObjects(shipRef(ship_handle).model_handle, img_handle);
+    if (shipRef(ship_handle).model_handle >= 0 && shipRef(ship_handle).model_handle < MAX_POLY_MODELS && Poly_models[shipRef(ship_handle).model_handle].used)
+      FreePolyModel(shipRef(ship_handle).model_handle);
+    shipRef(ship_handle).model_handle = img_handle;
   } else if (m_lod == 1) {
-    if (Ships[ship_handle].med_render_handle != -1)
-      if (Ships[ship_handle].med_render_handle >= 0 && Ships[ship_handle].med_render_handle < MAX_POLY_MODELS && Poly_models[Ships[ship_handle].med_render_handle].used)
-        FreePolyModel(Ships[ship_handle].med_render_handle);
-    Ships[ship_handle].med_render_handle = img_handle;
+    if (shipRef(ship_handle).med_render_handle != -1)
+      if (shipRef(ship_handle).med_render_handle >= 0 && shipRef(ship_handle).med_render_handle < MAX_POLY_MODELS && Poly_models[shipRef(ship_handle).med_render_handle].used)
+        FreePolyModel(shipRef(ship_handle).med_render_handle);
+    shipRef(ship_handle).med_render_handle = img_handle;
   } else {
-    if (Ships[ship_handle].lo_render_handle != -1)
-      if (Ships[ship_handle].lo_render_handle >= 0 && Ships[ship_handle].lo_render_handle < MAX_POLY_MODELS && Poly_models[Ships[ship_handle].lo_render_handle].used)
-        FreePolyModel(Ships[ship_handle].lo_render_handle);
-    Ships[ship_handle].lo_render_handle = img_handle;
+    if (shipRef(ship_handle).lo_render_handle != -1)
+      if (shipRef(ship_handle).lo_render_handle >= 0 && shipRef(ship_handle).lo_render_handle < MAX_POLY_MODELS && Poly_models[shipRef(ship_handle).lo_render_handle].used)
+        FreePolyModel(shipRef(ship_handle).lo_render_handle);
+    shipRef(ship_handle).lo_render_handle = img_handle;
   }
 
   if (QMessageBox::question(this, "Are you sure?", "Would you like to clear the weapon battery info?") == QMessageBox::Yes) {
-    WBClearInfo(Ships[ship_handle].static_wb.data());
+    WBClearInfo(shipRef(ship_handle).static_wb.data());
   }
 
   std::filesystem::path curname = LocalModelsDir / Poly_models[img_handle].name;
@@ -514,15 +523,15 @@ void WorldObjectsPlayerDialog::onPshipDyingModel() {
   }
 
   const int ship_handle = app.current_ship;
-  Ships[ship_handle].dying_model_handle = img_handle;
-  std::filesystem::path curname = LocalModelsDir / Poly_models[Ships[ship_handle].dying_model_handle].name;
+  shipRef(ship_handle).dying_model_handle = img_handle;
+  std::filesystem::path curname = LocalModelsDir / Poly_models[shipRef(ship_handle).dying_model_handle].name;
   std::filesystem::copy(pathFs, (curname), std::filesystem::copy_options::overwrite_existing);
   updateDialog();
 }
 
 void WorldObjectsPlayerDialog::onNullDying() {
   const int n = app.current_ship;
-  Ships[n].dying_model_handle = -1;
+  shipRef(n).dying_model_handle = -1;
   updateDialog();
 }
 
@@ -558,25 +567,25 @@ void WorldObjectsPlayerDialog::onPshipCockpit()
 
 void WorldObjectsPlayerDialog::onPshipEditPhysics() {
   const int n = app.current_ship;
-  PhysicsDialog dlg(&Ships[n].phys_info, this);
+  PhysicsDialog dlg(&shipRef(n).phys_info, this);
   dlg.exec();
 }
 
 void WorldObjectsPlayerDialog::onKillfocusName() {
   const int n = app.current_ship;
 
-  const auto p = mng_FindTrackLock(Ships[n].name, PAGETYPE_SHIP);
+  const auto p = mng_FindTrackLock(shipRef(n).name, PAGETYPE_SHIP);
   if (!p)
   {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this ship if you wish to change its name.");
-    ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(Ships[n].name));
+    ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(shipRef(n).name));
     return;
   }
 
   std::string name = ui->IDC_PSHIP_NAME_EDIT->text().toStdString();
   if (FindShipName(name) != -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There already is a ship with that name...choose another name.");
-    ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(Ships[n].name));
+    ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(shipRef(n).name));
     return;
   }
 
@@ -584,19 +593,19 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
     return;
 
   mngs_Pagelock pl;
-  pl.name = Ships[n].name;
+  pl.name = shipRef(n).name;
   pl.pagetype = PAGETYPE_SHIP;
 
   const int ret = mng_CheckIfPageOwned(&pl, TableUser.toStdString());
   if (ret < 0)
     QMessageBox::critical(this, "Error!", ErrorString);
   else if (ret == 1)
-    mng_RenamePage(Ships[n].name, name, PAGETYPE_SHIP);
+    mng_RenamePage(shipRef(n).name, name, PAGETYPE_SHIP);
   else if (ret == 2) {
     std::string oldname;
-    oldname = Ships[n].name;
-    Ships[n].name = name;
-    mng_ReplacePage(oldname, Ships[n].name, n, PAGETYPE_SHIP, 1);
+    oldname = shipRef(n).name;
+    shipRef(n).name = name;
+    mng_ReplacePage(oldname, shipRef(n).name, n, PAGETYPE_SHIP, 1);
   } else if (ret == 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You don't own this page.  Get Jason now!");
     mng_FreeTrackLock(*p);
@@ -604,7 +613,7 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
   }
 
   GlobalTrackLocks[*p].name = name;
-  Ships[n].name = name;
+  shipRef(n).name = name;
   mng_EraseLocker();
   RemapShips();
   updateDialog();
@@ -612,7 +621,7 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
 
 void WorldObjectsPlayerDialog::onKillfocusCockpit() {
   const int n = app.current_ship;
-  Ships[n].cockpit_name = ui->IDC_PSHIP_COCKPIT_EDIT->text().toStdString();
+  shipRef(n).cockpit_name = ui->IDC_PSHIP_COCKPIT_EDIT->text().toStdString();
 }
 
 void WorldObjectsPlayerDialog::onKillfocusArmor() {
@@ -624,7 +633,7 @@ void WorldObjectsPlayerDialog::onKillfocusArmor() {
       val = .05f;
     if (val > 10)
       val = 10;
-    Ships[n].armor_scalar = val;
+    shipRef(n).armor_scalar = val;
     updateDialog();
   }
 }
@@ -637,9 +646,9 @@ void WorldObjectsPlayerDialog::onKillfocusLodDistance() {
     if (dist < 0)
       return;
     if (m_lod == 1)
-      Ships[n].med_lod_distance = dist;
+      shipRef(n).med_lod_distance = dist;
     else if (m_lod == 2)
-      Ships[n].lo_lod_distance = dist;
+      shipRef(n).lo_lod_distance = dist;
     updateDialog();
   }
 }
@@ -647,9 +656,9 @@ void WorldObjectsPlayerDialog::onKillfocusLodDistance() {
 void WorldObjectsPlayerDialog::onDefaultAllowToggled(bool checked) {
   const int n = app.current_ship;
   if (checked)
-    Ships[n].flags |= SF_DEFAULT_ALLOW;
+    shipRef(n).flags |= SF_DEFAULT_ALLOW;
   else
-    Ships[n].flags &= ~SF_DEFAULT_ALLOW;
+    shipRef(n).flags &= ~SF_DEFAULT_ALLOW;
 }
 
 void WorldObjectsPlayerDialog::onHiresRadio() {
@@ -674,13 +683,13 @@ void WorldObjectsPlayerDialog::onNolod() {
     return;
   }
   if (m_lod == 1) {
-    if (Ships[n].med_render_handle >= 0 && Ships[n].med_render_handle < MAX_POLY_MODELS && Poly_models[Ships[n].med_render_handle].used)
-      FreePolyModel(Ships[n].med_render_handle);
-    Ships[n].med_render_handle = -1;
+    if (shipRef(n).med_render_handle >= 0 && shipRef(n).med_render_handle < MAX_POLY_MODELS && Poly_models[shipRef(n).med_render_handle].used)
+      FreePolyModel(shipRef(n).med_render_handle);
+    shipRef(n).med_render_handle = -1;
   } else {
-    if (Ships[n].lo_render_handle >= 0 && Ships[n].lo_render_handle < MAX_POLY_MODELS && Poly_models[Ships[n].lo_render_handle].used)
-      FreePolyModel(Ships[n].lo_render_handle);
-    Ships[n].lo_render_handle = -1;
+    if (shipRef(n).lo_render_handle >= 0 && shipRef(n).lo_render_handle < MAX_POLY_MODELS && Poly_models[shipRef(n).lo_render_handle].used)
+      FreePolyModel(shipRef(n).lo_render_handle);
+    shipRef(n).lo_render_handle = -1;
   }
   updateDialog();
 }

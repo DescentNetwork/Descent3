@@ -333,7 +333,7 @@ struct PickFixture {
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     Viewer_object = &Objects[0];
     Viewer_object->type = OBJ_VIEWER;
     Viewer_object->pos = vector3{0, 0, 0};
@@ -427,7 +427,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Num_triggers = 0;
+    Triggers.clear();
 
     // Room 0: single 4-vert quad.
     RoomsEnsureIndex(0);
@@ -475,7 +475,7 @@ private slots:
     Highest_object_index = 1;
 
     // Trigger.
-    Num_triggers = 1;
+    Triggers.resize(1);
     Triggers[0].name = "trig0";
     Triggers[0].roomnum = 0;
     Triggers[0].facenum = 0;
@@ -506,7 +506,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
 
     QVERIFY2(LoadLevel(std::filesystem::path(file.toStdString()), nullptr),
              qPrintable("LoadLevel failed"));
@@ -536,7 +536,7 @@ private slots:
     QCOMPARE(int(Objects[1].type), int(Object_info[Objects[1].id].type));
     QCOMPARE(Objects[1].roomnum, 1);
 
-    QCOMPARE(Num_triggers, 1);
+    QCOMPARE(static_cast<int>(Triggers.size()), 1);
     QVERIFY(Triggers[0].name == "trig0");
     QVERIFY(Level_info.name == "RoundTrip");
 
@@ -548,7 +548,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     Level_info.name.clear();
 
     QFile::remove(file);
@@ -569,7 +569,7 @@ private slots:
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
-    Num_triggers = 0;
+    Triggers.clear();
 
     // Simple quad room.
     RoomsEnsureIndex(0);
@@ -623,7 +623,7 @@ private slots:
     Highest_object_index = 0;
 
     // Trigger + level info so every chunk carries non-trivial data.
-    Num_triggers = 1;
+    Triggers.resize(1);
     Triggers[0].name = "trig0";
     Triggers[0].roomnum = 0;
     Triggers[0].facenum = 0;
@@ -655,7 +655,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
@@ -671,7 +671,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
 
     QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
     QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
@@ -768,7 +768,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
 
     // "Loaded game tables" for the save: page 3 is the powerup page.
     for (int i = 0; i < MAX_OBJECT_IDS; i++)
@@ -828,7 +828,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QVERIFY(Highest_object_index >= 0);
@@ -845,7 +845,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
     QCOMPARE(int(Objects[0].id), 0);
     QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
@@ -877,7 +877,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
   }
 
   // Object handles for deleted slots (OHND): a freed object slot keeps a
@@ -895,7 +895,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
 
     // Minimal room so an object is legal to place.
     RoomsEnsureIndex(0);
@@ -946,7 +946,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QCOMPARE(int(Objects[7].type), int(OBJ_NONE));
     QCOMPARE(int(Objects[7].handle), int(7 + 2 * HANDLE_COUNT_INCREMENT));
@@ -963,7 +963,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
     QCOMPARE(int(Objects[7].handle), int(7 + 2 * HANDLE_COUNT_INCREMENT));
     QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
@@ -1025,7 +1025,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
   }
 
   // Room AABBs (AABB chunk): per-face min/max extents plus per-room BBF
@@ -1041,7 +1041,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
 
     // One room, one quad face with real min/max extents, plus a BBF region.
     RoomsEnsureIndex(0);
@@ -1093,7 +1093,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QCOMPARE(int(Rooms[0].num_bbf_regions), 1);
     QCOMPARE(int(Rooms[0].bbf_list[0].size()), 2);
@@ -1114,7 +1114,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
     QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
 
@@ -1170,7 +1170,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
   }
 
   // The CNBS chunk carries the mine's indoor BSP (collision/visibility) tree:
@@ -1200,7 +1200,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
 
     // Minimal used room so SaveLevel has a valid ROOM chunk.
     RoomsEnsureIndex(0);
@@ -1367,7 +1367,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
   }
 
   // Matcens (MTCN chunk): the per-record SaveData/LoadData must round-trip
@@ -1383,7 +1383,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
 
     // A minimal used room (identical to testRoomAABBChunkRoundTrip) so the
@@ -1492,7 +1492,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
   }
 
@@ -1506,7 +1506,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
 
     // The goals table is a cross-test global; start from a known empty state.
@@ -1609,7 +1609,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
   }
 
@@ -1633,7 +1633,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
 
     // A minimal used room (identical to the other chunk round-trip tests) so
@@ -1737,7 +1737,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
   }
 
@@ -1751,7 +1751,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
 
     // A minimal used room (identical to the other chunk round-trip tests) so
@@ -1849,7 +1849,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
   }
 
@@ -1863,7 +1863,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
 
     // A minimal used room (identical to the other chunk round-trip tests) so
@@ -1961,7 +1961,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
   }
 
@@ -1975,7 +1975,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
 
     // A minimal used room (identical to the other chunk round-trip tests) so
@@ -2102,7 +2102,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
   }
 
@@ -2116,7 +2116,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
 
     // A minimal used room (identical to the other chunk round-trip tests).
@@ -2286,7 +2286,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     DestroyAllMatcens();
   }
 
@@ -2408,7 +2408,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
@@ -2441,7 +2441,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
   }
 
   // The PATH chunk carries the level's navigation-path table.  The engine
@@ -2505,7 +2505,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QVERIFY2(Num_game_paths > 0, "reloaded game-path table is empty");
@@ -2534,7 +2534,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     InitGamePaths();
   }
   // The NLMP chunk holds the level's raw lightmap textures (RLE-compressed
@@ -2602,7 +2602,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     InitGamePaths();
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
@@ -2629,7 +2629,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     InitGamePaths();
   }
   // DDV_MaxChars in Win32 and via setMaxLength on the Qt line edit here. It
@@ -2805,15 +2805,14 @@ private slots:
     QVERIFY(loadGameDataTable(hog));
 
     extern uint32_t Num_objects;
-    extern uint32_t Num_sounds;
 
     // The real game ships thousands of table records; sanity-check that each
     // editor-critical array was populated with more than a trivially empty set.
-    QVERIFY(Num_textures > 100);
+    QVERIFY(static_cast<int>(GameTextures.size()) > 100);
     QVERIFY(Num_objects > 50);
-    QVERIFY(Num_ships > 0);
-    QVERIFY(Num_weapons > 0);
-    QVERIFY(Num_sounds > 0);
+    QVERIFY(static_cast<int>(Ships.size()) > 0);
+    QVERIFY(static_cast<int>(Weapons.size()) > 0);
+    QVERIFY(static_cast<int>(Sounds.size()) > 0);
     QVERIFY(Num_doors > 0);
 
     // Megacells are optional in newer table files; don't hard-fail on them.
@@ -2839,7 +2838,7 @@ private slots:
     QVERIFY(loadGameDataTable(hog));
 
     // Metadata must be populated before we can inspect texture bitmaps.
-    QVERIFY(Num_textures);
+    QVERIFY(static_cast<int>(GameTextures.size()));
 
     // A nonzero fraction of textures must have a real, resident bitmap whose
     // dimensions are known (bm_w/bm_h > 0).  The stub decoder returned 0 for
@@ -2847,7 +2846,7 @@ private slots:
     // GetTextureBitmap resolves both static bitmaps and animated vclips to the
     // bitmap actually used for rendering.
     int withBitmap = 0, nonProcedural = 0;
-    for (uint32_t i = 0; i < Num_textures; i++) {
+    for (uint32_t i = 0; i < static_cast<int>(GameTextures.size()); i++) {
       const int bm = GetTextureBitmap(i, 0);
       if (GameTextures[i].flags.procedural) { nonProcedural++; continue; }
       nonProcedural++;
@@ -2859,7 +2858,7 @@ private slots:
     QVERIFY(withBitmap > nonProcedural / 2);
 
     // Every animated texture must hold a paged-in vclip with a frame list.
-    for (uint32_t i = 0; i < Num_textures; i++) {
+    for (uint32_t i = 0; i < static_cast<int>(GameTextures.size()); i++) {
       if (!GameTextures[i].flags.animated || GameTextures[i].bm_handle < 0)
         continue;
       const vclip &vc = GameVClips[GameTextures[i].bm_handle];
@@ -3145,7 +3144,7 @@ private slots:
       {
         QList<QWidget *> ws;
         collectInteractive(d.handle, &ws);
-        const bool hasTriggers = Num_triggers > 0 && levelLoaded;
+        const bool hasTriggers = static_cast<int>(Triggers.size()) > 0 && levelLoaded;
         for (QWidget *w : ws)
         {
           if (w->objectName().startsWith("IDC_TRIG"))
@@ -3461,7 +3460,7 @@ private slots:
 
   // Verifies the Qt port of editor/HFile.cpp:
   //   - CreateNewMine resets the editor-only globals exposed in
-  //     qteditor/d3_editor_state.cpp (Curface, Num_triggers, …) and calls
+  //     qteditor/d3_editor_state.cpp (Curface, static_cast<int>(Triggers.size()), …) and calls
   //     FreeAllRooms / FreeAllObjects on Descent3Core without exploding.
   //   - RenderLevelStats returns a non-empty buffer whose first three lines
   //     are the "Level Stats:" header the Win32 EditorMessageBox got.
@@ -3477,7 +3476,7 @@ private slots:
     Curedge = 99;
     Curvert = 99;
     Curportal = 42;
-    Num_triggers = 7;
+    Triggers.resize(7);
     Current_trigger = 9;
     app.view_mode = state::viewer::room;
     Editor_viewer_id = 5;
@@ -3486,7 +3485,7 @@ private slots:
     CreateNewMine();
     QCOMPARE(Curface, 0);
     QCOMPARE(Curportal, -1);
-    QCOMPARE(Num_triggers, 0);
+    QCOMPARE(static_cast<int>(Triggers.size()), 0);
     QCOMPARE(Current_trigger, -1);
     QCOMPARE(app.view_mode, state::viewer::mine);
     // CreateNewMine spawns a viewer for the level (Win32 HFile.cpp:478
@@ -4949,7 +4948,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     Viewer_object = &Objects[0];
     Viewer_object->type = OBJ_VIEWER;
     Viewer_object->pos = vector3{0, 0, 0};
@@ -5036,7 +5035,7 @@ private slots:
     }
     Highest_object_index = -1;
     RoomsReset();
-    Num_triggers = 0;
+    Triggers.clear();
     Viewer_object = &Objects[0];
     Viewer_object->type = OBJ_VIEWER;
     Viewer_object->pos = vector3{0, 0, 0};

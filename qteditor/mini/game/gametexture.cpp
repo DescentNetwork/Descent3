@@ -24,7 +24,7 @@
 
 std::optional<uint32_t> FindTextureName(const std::string &name) {
   if(!name.empty())
-    for (uint32_t i = 0; i < Num_textures; i++)
+    for (uint32_t i = 0; i < static_cast<int>(GameTextures.size()); i++)
       if (!GameTextures[i].name.empty() && name == GameTextures[i].name)
         return i;
   std::runtime_error("texture not found!");
@@ -35,7 +35,7 @@ std::optional<uint32_t> FindTextureName(const std::string &name) {
 // not found or index of texture with name
 std::optional<uint32_t> FindTextureBitmapName(const std::string &name) {
   if(!name.empty())
-    for (uint32_t i = 0; i < Num_textures; i++) {
+    for (uint32_t i = 0; i < static_cast<int>(GameTextures.size()); i++) {
       if (!GameTextures[i].used)
         continue;
 

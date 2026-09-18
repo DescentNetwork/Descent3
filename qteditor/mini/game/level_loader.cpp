@@ -123,7 +123,7 @@ static std::array<int, MAX_TEXTURES> texture_xlate;
 
 static std::optional<uint32_t> LL_FindTextureName(const std::string& name)
 {
-  for (uint32_t i = 0; i < Num_textures; i++)
+  for (uint32_t i = 0; i < static_cast<int>(GameTextures.size()); i++)
     if (match(GameTextures[i].name, name))
       return i;
   return std::nullopt;
@@ -1784,7 +1784,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
   // OBJ_NONE markers, roomnums -1, the free-object list, big-object list and
   // position-history state).
   ResetObjectList();
-  Num_triggers = 0;
+  Triggers.clear();
 
   // Reset the game-path table (engine LoadLevel calls InitGamePaths() before
   // the chunk loop, so paths from a previous level can't leak into this one).
@@ -1967,10 +1967,8 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
       {
         int32_t nt = 0;
         ifile >> nt;
-        Num_triggers = nt;
-        if (Num_triggers > 500)
-          Num_triggers = 500;
-        for (int i = 0; i < Num_triggers; i++) {
+        Triggers.resize(nt);
+        for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
           trigger *tp = &Triggers[i];
           // Value-initialise (NOT memset: trigger contains a std::string name).
           *tp = trigger{};
@@ -2176,8 +2174,8 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     // TRIG
     {
       int start = LL_StartChunk(out, CHUNK_TRIGGERS);
-      out << Num_triggers;
-      for (int i = 0; i < Num_triggers; i++)
+      out << static_cast<int>(Triggers.size());
+      for (int i = 0; i < static_cast<int>(Triggers.size()); i++)
         out << Triggers[i];
       LL_EndChunk(out, start);
     }

@@ -198,6 +198,7 @@
 #include "object.h"
 #include "objinfo.h"
 #include "weapon_external.h"
+#include <vector>
 
 #define MAX_PRIMARY_WEAPONS 10
 #define MAX_SECONDARY_WEAPONS 10
@@ -363,8 +364,7 @@ struct fusion_effect {
 
 extern float Primary_ramp_time, Secondary_ramp_time;
 
-extern int Num_weapons;
-extern weapon Weapons[MAX_WEAPONS];
+extern std::vector<weapon> Weapons;
 extern const char *const Static_weapon_names[];
 extern const int Static_weapon_names_msg[];
 extern const int Static_weapon_ckpt_names[][2];

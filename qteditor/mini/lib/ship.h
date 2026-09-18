@@ -121,6 +121,7 @@
 #include <array>
 #include <string>
 #include <optional>
+#include <vector>
 
 #define MAX_SHIPS 30
 
@@ -176,8 +177,7 @@ struct ship {
   uint8_t used;
 };
 
-extern int Num_ships;
-extern ship Ships[MAX_SHIPS];
+extern std::vector<ship> Ships;
 
 extern const char *AllowedShips[];
 

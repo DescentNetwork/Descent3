@@ -132,7 +132,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
 
   // Special stuff for player ship
   if (obj_type == OBJ_PLAYER) {
-    if (!Num_ships) {
+    if (!static_cast<int>(Ships.size())) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place a player: There are no player ships.");
       return false;
     }

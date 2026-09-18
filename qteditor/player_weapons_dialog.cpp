@@ -36,6 +36,16 @@
 
 namespace {
 const char *const *weaponListText() { return Static_weapon_names; }
+
+// Ships is loaded from the game tables; before that (or if the table lacks the
+// requested entry) index it through a shared zero-initialised fallback, which
+// is what the old fixed-size array provided.
+ship &shipRef(int index) {
+  static ship fallback{};
+  if (index >= 0 && index < static_cast<int>(Ships.size()))
+    return Ships[index];
+  return fallback;
+}
 } // namespace
 
 PlayerWeaponsDialog::PlayerWeaponsDialog(int current_ship, QWidget *parent)
@@ -97,16 +107,16 @@ int PlayerWeaponsDialog::currentWBIndex() const {
 
 void PlayerWeaponsDialog::updateDialog() {
   const int index = currentWBIndex();
-  ship *shp = &Ships[m_current_ship];
-  const int fire_flags = Ships[m_current_ship].fire_flags[index];
+  ship *shp = &shipRef(m_current_ship);
+  const int fire_flags = shipRef(m_current_ship).fire_flags[index];
 
   ui->IDC_FIRES_FUSION->setChecked(fire_flags & SFF_FUSION);
   ui->IDC_ONOFF->setChecked(shp->static_wb[index].flags.on_off);
   ui->IDC_ZOOM->setChecked(fire_flags & SFF_ZOOM);
   ui->IDC_SHOW_TENTHS->setChecked(fire_flags & SFF_TENTHS);
 
-  const int firing_sound = Ships[m_current_ship].firing_sound[index];
-  const int release_sound = Ships[m_current_ship].firing_release_sound[index];
+  const int firing_sound = shipRef(m_current_ship).firing_sound[index];
+  const int release_sound = shipRef(m_current_ship).firing_release_sound[index];
 
   ui->IDC_CONTINUOUS_FIRING_SOUND->setChecked(firing_sound != -1);
   ui->IDC_FIRING_SOUND_PULLDOWN->setEnabled(firing_sound != -1);
@@ -124,7 +134,7 @@ void PlayerWeaponsDialog::updateDialog() {
 
   {
     QSignalBlocker blocker(ui->IDC_SPEW_POWERUP_PULLDOWN);
-    const int spew = Ships[m_current_ship].spew_powerup[index];
+    const int spew = shipRef(m_current_ship).spew_powerup[index];
     if (spew == -1)
       ui->IDC_SPEW_POWERUP_PULLDOWN->setCurrentIndex(0);
     else
@@ -137,7 +147,7 @@ void PlayerWeaponsDialog::updateDialog() {
 void PlayerWeaponsDialog::onEditWbButton() {
   const int i = currentWBIndex();
   extern void editRobotWeapons(otype_wb_info *wb, poly_model *pm, QWidget *parent);
-  editRobotWeapons(&Ships[m_current_ship].static_wb[i], GetPolymodelPointer(Ships[m_current_ship].model_handle),
+  editRobotWeapons(&shipRef(m_current_ship).static_wb[i], GetPolymodelPointer(shipRef(m_current_ship).model_handle),
                    this);
 }
 
@@ -151,21 +161,21 @@ void PlayerWeaponsDialog::onCurrentWeaponChanged() {
 
 void PlayerWeaponsDialog::onFiresFusion() {
   const int i = currentWBIndex();
-  Ships[m_current_ship].fire_flags[i] &= ~SFF_ZOOM;
-  Ships[m_current_ship].static_wb[i].flags.on_off = false;
-  Ships[m_current_ship].fire_flags[i] |= SFF_FUSION;
+  shipRef(m_current_ship).fire_flags[i] &= ~SFF_ZOOM;
+  shipRef(m_current_ship).static_wb[i].flags.on_off = false;
+  shipRef(m_current_ship).fire_flags[i] |= SFF_FUSION;
   updateDialog();
 }
 
 void PlayerWeaponsDialog::onContinuousFiringSound(bool checked) {
   const int i = currentWBIndex();
-  Ships[m_current_ship].firing_sound[i] = checked ? 0 : -1;
+  shipRef(m_current_ship).firing_sound[i] = checked ? 0 : -1;
   updateDialog();
 }
 
 void PlayerWeaponsDialog::onFiringReleaseSound(bool checked) {
   const int i = currentWBIndex();
-  Ships[m_current_ship].firing_release_sound[i] = checked ? 0 : -1;
+  shipRef(m_current_ship).firing_release_sound[i] = checked ? 0 : -1;
   updateDialog();
 }
 
@@ -173,46 +183,46 @@ void PlayerWeaponsDialog::onFiringSoundChanged() {
   const int i = currentWBIndex();
   const int s = soundComboSelected(ui->IDC_FIRING_SOUND_PULLDOWN);
   if (s >= 0)
-    Ships[m_current_ship].firing_sound[i] = s;
+    shipRef(m_current_ship).firing_sound[i] = s;
 }
 
 void PlayerWeaponsDialog::onReleaseSoundChanged() {
   const int i = currentWBIndex();
   const int s = soundComboSelected(ui->IDC_RELEASE_SOUND_PULLDOWN);
   if (s >= 0)
-    Ships[m_current_ship].firing_release_sound[i] = s;
+    shipRef(m_current_ship).firing_release_sound[i] = s;
 }
 
 void PlayerWeaponsDialog::onSpewPowerupChanged() {
-  Ships[m_current_ship].spew_powerup[currentWBIndex()] = ui->IDC_SPEW_POWERUP_PULLDOWN->currentData().toInt();
+  shipRef(m_current_ship).spew_powerup[currentWBIndex()] = ui->IDC_SPEW_POWERUP_PULLDOWN->currentData().toInt();
 }
 
 void PlayerWeaponsDialog::onOnOff() {
   const int i = currentWBIndex();
-  Ships[m_current_ship].fire_flags[i] &= ~(SFF_FUSION | SFF_ZOOM);
-  Ships[m_current_ship].static_wb[i].flags.on_off = true;
+  shipRef(m_current_ship).fire_flags[i] &= ~(SFF_FUSION | SFF_ZOOM);
+  shipRef(m_current_ship).static_wb[i].flags.on_off = true;
   updateDialog();
 }
 
 void PlayerWeaponsDialog::onZoom() {
   const int i = currentWBIndex();
-  Ships[m_current_ship].fire_flags[i] &= ~SFF_FUSION;
-  Ships[m_current_ship].static_wb[i].flags.on_off = false;
-  Ships[m_current_ship].fire_flags[i] |= SFF_ZOOM;
+  shipRef(m_current_ship).fire_flags[i] &= ~SFF_FUSION;
+  shipRef(m_current_ship).static_wb[i].flags.on_off = false;
+  shipRef(m_current_ship).fire_flags[i] |= SFF_ZOOM;
   updateDialog();
 }
 
 void PlayerWeaponsDialog::onMaxAmmoEdited() {
   const int i = currentWBIndex();
-  Ships[m_current_ship].max_ammo[i] = ui->IDC_MAX_AMMO->text().toInt();
+  shipRef(m_current_ship).max_ammo[i] = ui->IDC_MAX_AMMO->text().toInt();
 }
 
 void PlayerWeaponsDialog::onShowTenths(bool checked) {
   const int i = currentWBIndex();
   if (checked)
-    Ships[m_current_ship].fire_flags[i] |= SFF_TENTHS;
+    shipRef(m_current_ship).fire_flags[i] |= SFF_TENTHS;
   else
-    Ships[m_current_ship].fire_flags[i] &= ~SFF_TENTHS;
+    shipRef(m_current_ship).fire_flags[i] &= ~SFF_TENTHS;
   updateDialog();
 }
 
