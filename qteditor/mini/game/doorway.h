@@ -90,6 +90,7 @@
 #define DOORWAY_H
 
 #include "pstypes.h"
+#include <vector>
 
 // IMPORTANT!!!!!!!!!!!
 // "Doors" refers to a predefined door that is in memory
@@ -117,10 +118,7 @@
 #define KF_KEY3 4
 #define KF_KEY4 8
 
-#define MAX_ACTIVE_DOORWAYS 30
-
-extern int Num_active_doorways; // number of active doors in game
-extern int Active_doorways[MAX_ACTIVE_DOORWAYS];
+extern std::vector<int> Active_doorways; // active doors in game
 
 // A doorway (room) in the mine
 struct doorway {

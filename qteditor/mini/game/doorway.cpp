@@ -141,8 +141,7 @@
 //	---------------------------------------------------------------------------
 //	Globals
 
-int Num_active_doorways; // number of active doors in game
-int Active_doorways[MAX_ACTIVE_DOORWAYS];
+std::vector<int> Active_doorways; // active doors in game
 
 // This is a mask of all keys held by all players. Robots use this to determine if a door is openable.
 int Global_keys;
@@ -395,7 +394,7 @@ void DoorwayDeactivateAll() {
     }
   }
 
-  Num_active_doorways = 0;
+  Active_doorways.clear();
 }
 
 // Sets the corresponding door objects animation frame
@@ -424,10 +423,7 @@ void DoorwayUpdateAnimation(room *rp) {
 
 //	Update all doorways currently active in the mine
 void DoorwayDoFrame() {
-  int i_doorway;
-
-  for (i_doorway = 0; i_doorway < Num_active_doorways; i_doorway++) {
-    int roomnum = Active_doorways[i_doorway];
+  for (int roomnum : Active_doorways) {
     room *rp = &Rooms[roomnum];
     Q_ASSERT(rp->flags.door);
     doorway *dway = rp->doorway_data;
