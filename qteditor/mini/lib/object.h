@@ -629,6 +629,7 @@
 #define _OBJECT_H
 
 #include <cstdint>
+#include <vector>
 #include <fixed_string.h>
 
 #include "object_external_struct.h"
@@ -694,9 +695,7 @@ extern int Highest_object_index; // highest objnum
 extern object *Player_object; // the object that is the player
 extern object *Viewer_object; // which object we are seeing from
 
-#define MAX_BIG_OBJECTS 350
-extern int Num_big_objects;
-extern int16_t BigObjectList[MAX_BIG_OBJECTS]; // DAJ_MR utb int
+extern std::vector<int16_t> BigObjectList; // DAJ_MR utb int
 
 // Compute the object number from an object pointer
 #define OBJNUM(objp) (objp - Objects.data())

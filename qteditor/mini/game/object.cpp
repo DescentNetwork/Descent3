@@ -19,15 +19,16 @@
 
 #include "object_lighting.h"
 
+#include <algorithm>
 #include <cstring>
+#include <vector>
 
 // The mini defines Num_objects in stubs.cpp without a header declaration.
 extern uint32_t Num_objects;
 
 // Big-object tracking, declared extern in object.h but not defined elsewhere
 // in the mini tree.
-int Num_big_objects = 0;
-int16_t BigObjectList[MAX_BIG_OBJECTS];
+std::vector<int16_t> BigObjectList;
 
 // The mini defines the in-memory model table with this many slots
 // (see stubs.cpp).  Guards model lookups against the original's
@@ -55,33 +56,19 @@ static int Num_free_object_position_history = 0;
 // Big objects
 // ---------------------------------------------------------------------------
 
-void InitBigObjects() { Num_big_objects = 0; }
+void InitBigObjects() { BigObjectList.clear(); }
 
 void BigObjAdd(int objnum) {
-  if (Num_big_objects >= MAX_BIG_OBJECTS)
-    return;
-
   Objects[objnum].flags.big_object = true;
-  BigObjectList[Num_big_objects++] = objnum;
+  BigObjectList.push_back(static_cast<int16_t>(objnum));
 }
 
 void BigObjRemove(int objnum) {
   Objects[objnum].flags.big_object = false;
 
-  int i = 0;
-  for (i = 0; i < Num_big_objects; i++)
-    if (BigObjectList[i] == objnum)
-      break;
-
-  if (i == Num_big_objects)
-    return; // wasn't in the list
-
-  Num_big_objects--;
-
-  while (i < Num_big_objects) {
-    BigObjectList[i] = BigObjectList[i + 1];
-    i++;
-  }
+  const auto found = std::find(BigObjectList.begin(), BigObjectList.end(), static_cast<int16_t>(objnum));
+  if (found != BigObjectList.end())
+    BigObjectList.erase(found);
 }
 
 // ---------------------------------------------------------------------------

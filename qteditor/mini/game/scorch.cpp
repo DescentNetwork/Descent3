@@ -106,6 +106,7 @@
 #include "object_external_struct.h" //for ROOMNUM_OUTSIDE macro
 
 #include <algorithm>
+#include <vector>
 
 // Structure for storing scorch marks
 struct scorch {
@@ -127,9 +128,7 @@ scorch Scorches[MAX_SCORCHES];
 int Scorch_start, Scorch_end;
 
 // Bitmap handles for scorches
-#define MAX_SCORCH_TEXTURES 10
-int Num_scorch_textures = 0;
-int Scorch_texture_handles[MAX_SCORCH_TEXTURES];
+std::vector<int> Scorch_texture_handles;
 
 // Pack & unpack roomnum & facenum into an int
 #define ROOMFACE(r, f) ((r << 16) + f)
@@ -251,16 +250,14 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
   Q_ASSERT((size >= 0.0) && (size < 15.0));
   sp->size = size * 16.0;
 
+  // Get index for handle, adding it if this texture hasn't been seen yet
+  const auto found = std::find(Scorch_texture_handles.begin(), Scorch_texture_handles.end(), texture_handle);
   int handle_index;
-
-  // Get index for handle
-  for (handle_index = 0; handle_index < Num_scorch_textures; handle_index++)
-    if (Scorch_texture_handles[handle_index] == texture_handle)
-      break;
-  if (handle_index == Num_scorch_textures) { // didn't find one, so add
-    Q_ASSERT(Num_scorch_textures < MAX_SCORCH_TEXTURES);
-    Scorch_texture_handles[handle_index] = texture_handle;
-    Num_scorch_textures++;
+  if (found == Scorch_texture_handles.end()) {
+    Scorch_texture_handles.push_back(texture_handle);
+    handle_index = static_cast<int>(Scorch_texture_handles.size()) - 1;
+  } else {
+    handle_index = static_cast<int>(std::distance(Scorch_texture_handles.begin(), found));
   }
   sp->handle_index = handle_index;
 

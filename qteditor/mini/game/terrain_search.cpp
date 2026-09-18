@@ -217,6 +217,7 @@
  */
 
 #include <cstdlib>
+#include <vector>
 #include <QtGlobal>
 
 #include "terrain.h"
@@ -239,9 +240,7 @@ int GlobalTransCount = 0;
 int TotalDepth;
 
 // LOD shutoff stuff
-#define MAX_LODOFFS 100
-static lodoff LODOffs[MAX_LODOFFS];
-static int Num_lodoffs = 0;
+static std::vector<lodoff> LODOffs;
 
 // Render the terrain as flat?
 uint8_t Flat_terrain = 0;
@@ -876,35 +875,33 @@ void TurnOffLODForCell(uint32_t cellnum) {
   uint32_t x = cellnum % TERRAIN_WIDTH;
   uint32_t z = cellnum / TERRAIN_WIDTH;
 
-  Q_ASSERT(Num_lodoffs < MAX_LODOFFS);
-  LODOffs[Num_lodoffs].cellnum = cellnum;
+  LODOffs.emplace_back();
+  lodoff &lo = LODOffs.back();
+  lo.cellnum = cellnum;
 
   for (uint32_t i = 0; i < MAX_TERRAIN_LOD - 1; i++) {
     float delta;
     uint32_t simplemul = 1 << ((MAX_TERRAIN_LOD - 1) - i);
 
     delta = TerrainDeltaBlocks[i][((z / simplemul) * (TERRAIN_WIDTH / simplemul)) + (x / simplemul)];
-    LODOffs[Num_lodoffs].save_delta[i] = delta;
+    lo.save_delta[i] = delta;
     TerrainDeltaBlocks[i][((z / simplemul) * (TERRAIN_WIDTH / simplemul)) + (x / simplemul)] = SHUTOFF_LOD_DELTA;
   }
-
-  Num_lodoffs++;
 }
 
 // Restores the terrain deltas to their original state
 void ClearLODOffs() {
-  for (int t = Num_lodoffs - 1; t >= 0; t--) {
-    uint32_t cellnum = LODOffs[t].cellnum;
+  for (auto it = LODOffs.rbegin(); it != LODOffs.rend(); ++it) {
+    uint32_t cellnum = it->cellnum;
 
     uint32_t x = cellnum % TERRAIN_WIDTH;
     uint32_t z = cellnum / TERRAIN_WIDTH;
 
     for (uint32_t i = 0; i < MAX_TERRAIN_LOD - 1; i++) {
       uint32_t simplemul = 1 << ((MAX_TERRAIN_LOD - 1) - i);
-      TerrainDeltaBlocks[i][((z / simplemul) * (TERRAIN_WIDTH / simplemul)) + (x / simplemul)] =
-          LODOffs[t].save_delta[i];
+      TerrainDeltaBlocks[i][((z / simplemul) * (TERRAIN_WIDTH / simplemul)) + (x / simplemul)] = it->save_delta[i];
     }
   }
 
-  Num_lodoffs = 0;
+  LODOffs.clear();
 }

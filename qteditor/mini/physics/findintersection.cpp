@@ -2176,7 +2176,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
     }
 
     // Do big object stuff
-    for (x = 0; x < Num_big_objects; x++) {
+    for (x = 0; x < static_cast<int>(BigObjectList.size()); x++) {
       if (num_objects >= max_elements)
         break;
 
@@ -4335,14 +4335,14 @@ int do_fvi_terrain() {
 
 check_big_objs: // Check Big objects
   if (fvi_query_ptr->flags & FQ_CHECK_OBJS) {
-    for (i = 0; i < Num_big_objects; i++) {
+    for (i = 0; i < static_cast<int>(BigObjectList.size()); i++) {
       Q_ASSERT(BigObjectList[i] >= 0);
       check_hit_obj(BigObjectList[i]);
       //		mprintf(0, "CHecking BIG %d\n", i);
     }
   } else {
     if (!(fvi_query_ptr->flags & FQ_IGNORE_EXTERNAL_ROOMS))
-      for (i = 0; i < Num_big_objects; i++) {
+      for (i = 0; i < static_cast<int>(BigObjectList.size()); i++) {
         if (Objects[BigObjectList[i]].type == OBJ_ROOM)
           check_hit_obj(BigObjectList[i]);
         //		mprintf(0, "CHecking BIG %d\n", i);
