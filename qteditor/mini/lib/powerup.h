@@ -101,8 +101,6 @@ struct powerup {
 
 };
 
-extern int Num_powerups;
-extern powerup Powerups[MAX_POWERUPS];
 extern char *Static_powerup_names[MAX_STATIC_POWERUPS];
 
 // Sets all powerups to unused

@@ -50,7 +50,6 @@ struct special_face {
 };
 
 extern special_face SpecialFaces[];
-extern int Num_of_special_faces;
 
 // Sets all the special faces to unused
 void InitSpecialFaces();

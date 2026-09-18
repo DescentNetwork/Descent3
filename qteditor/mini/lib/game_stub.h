@@ -15,7 +15,6 @@ extern float Frametime;
 extern int Object_next_signature;
 
 // Level/room stubs
-extern int Num_rooms;
 extern int Current_level;
 
 // Rendering stubs

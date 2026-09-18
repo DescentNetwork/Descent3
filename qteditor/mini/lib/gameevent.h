@@ -72,7 +72,6 @@ int FindEventID(int id);
 // Frees an event for use by others
 void FreeEvent(int index);
 
-extern game_event GameEvent[MAX_EVENTS];
-extern int Num_events;
+
 
 #endif

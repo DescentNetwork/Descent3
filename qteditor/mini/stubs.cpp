@@ -213,7 +213,6 @@ void SetupObjectLightmapMemory(object *obj) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Player/ship ====================
 std::array<player, MAX_PLAYERS> Players = {};
-int Num_player_shapes = 0;
 std::vector<ship> Ships;
 
 // ==================== Door ====================
