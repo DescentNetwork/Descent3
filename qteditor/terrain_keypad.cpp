@@ -532,7 +532,7 @@ void TerrainKeypad::onSkyRedEdited() {
   if (!e) return;
   float fv = e->text().toFloat();
   if (m_ccMode != ColorMode_Sat) {
-    int r = std::clamp((int)fv, 0, 255);
+    int r = std::clamp(int(fv), 0, 255);
     int g, b;
     if (m_ccMode == ColorMode_Sky) { g = GR_COLOR_GREEN(Terrain_sky.sky_color); b = GR_COLOR_BLUE(Terrain_sky.sky_color); Terrain_sky.sky_color = makeRGB(r, g, b); }
     else if (m_ccMode == ColorMode_Horizon) { g = GR_COLOR_GREEN(Terrain_sky.horizon_color); b = GR_COLOR_BLUE(Terrain_sky.horizon_color); Terrain_sky.horizon_color = makeRGB(r, g, b); }
@@ -550,7 +550,7 @@ void TerrainKeypad::onSkyGreenEdited() {
   if (!e) return;
   float fv = e->text().toFloat();
   if (m_ccMode != ColorMode_Sat) {
-    int g = std::clamp((int)fv, 0, 255);
+    int g = std::clamp(int(fv), 0, 255);
     int r, b;
     if (m_ccMode == ColorMode_Sky) { r = GR_COLOR_RED(Terrain_sky.sky_color); b = GR_COLOR_BLUE(Terrain_sky.sky_color); Terrain_sky.sky_color = makeRGB(r, g, b); }
     else if (m_ccMode == ColorMode_Horizon) { r = GR_COLOR_RED(Terrain_sky.horizon_color); b = GR_COLOR_BLUE(Terrain_sky.horizon_color); Terrain_sky.horizon_color = makeRGB(r, g, b); }
@@ -568,7 +568,7 @@ void TerrainKeypad::onSkyBlueEdited() {
   if (!e) return;
   float fv = e->text().toFloat();
   if (m_ccMode != ColorMode_Sat) {
-    int b = std::clamp((int)fv, 0, 255);
+    int b = std::clamp(int(fv), 0, 255);
     int r, g;
     if (m_ccMode == ColorMode_Sky) { r = GR_COLOR_RED(Terrain_sky.sky_color); g = GR_COLOR_GREEN(Terrain_sky.sky_color); Terrain_sky.sky_color = makeRGB(r, g, b); }
     else if (m_ccMode == ColorMode_Horizon) { r = GR_COLOR_RED(Terrain_sky.horizon_color); g = GR_COLOR_GREEN(Terrain_sky.horizon_color); Terrain_sky.horizon_color = makeRGB(r, g, b); }

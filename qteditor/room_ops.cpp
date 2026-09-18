@@ -1522,7 +1522,7 @@ void HTextureStretchMore(room *rp, int facenum, int edge, float texscale) {
 
 // HTextureStretchLess — editor/HTexture.cpp:408
 void HTextureStretchLess(room *rp, int facenum, int edge, float texscale) {
-  HTextureRoomStretch(rp, facenum, edge, (int)(-1 * texscale));
+  HTextureRoomStretch(rp, facenum, edge, int(-1 * texscale));
 }
 
 // HTextureSetDefault — editor/HTexture.cpp:416

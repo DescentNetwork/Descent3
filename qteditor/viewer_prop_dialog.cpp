@@ -83,9 +83,9 @@ void ViewerPropDialog::updateOrientation() {
   angvec angs;
   vm_ExtractAnglesFromMatrix(&angs, &Viewer_object->orient);
 
-  ui->IDC_PITCH_EDIT->setText(QString::number((int)angs.p() * kDegreesPerAngle));
-  ui->IDC_HEADING_EDIT->setText(QString::number((int)angs.h() * kDegreesPerAngle));
-  ui->IDC_BANK_EDIT->setText(QString::number((int)angs.b() * kDegreesPerAngle));
+  ui->IDC_PITCH_EDIT->setText(QString::number(angs.p() * kDegreesPerAngle));
+  ui->IDC_HEADING_EDIT->setText(QString::number(angs.h() * kDegreesPerAngle));
+  ui->IDC_BANK_EDIT->setText(QString::number(angs.b() * kDegreesPerAngle));
 }
 
 void ViewerPropDialog::updatePosition() {

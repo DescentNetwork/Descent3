@@ -620,7 +620,7 @@ void osipf_SoundTouch(const std::string &str) {
 #if 0
 // Gets room values
 void osipf_RoomValue(int roomnum, char op, char vtype, void *ptr, int index) {
-  if (roomnum < 0 || roomnum > ((int)Rooms.size() - 1) || !Rooms[roomnum].used) {
+  if (roomnum < 0 || roomnum >= Rooms.size() || !Rooms[roomnum].used) {
     if (vtype == RMV_C_USED)
       *(char *)ptr = 0;
     else
@@ -2129,7 +2129,7 @@ uint8_t osipf_IsRoomValid(int roomnum) {
       return 1;
     }
   } else {
-    if (roomnum < 0 || roomnum > ((int)Rooms.size() - 1) || Rooms[roomnum].used == 0) {
+    if (roomnum < 0 || roomnum >= Rooms.size() || Rooms[roomnum].used == 0) {
       return 0;
     } else {
       return 2;
@@ -3384,7 +3384,7 @@ std::optional<uint32_t> osipf_FindTriggerName(const std::string &name) {
 }
 
 std::optional<uint32_t> osipf_FindObjectName(const std::string &name) {
-  for (int i = 0; i < (int)Objects.size(); i++) {
+  for (size_t i = 0; i < Objects.size(); i++) {
     if (Objects[i].type != OBJ_NONE && !Objects[i].name.empty()) {
       if (match(name, Objects[i].name))
         return static_cast<uint32_t>(Objects[i].handle);

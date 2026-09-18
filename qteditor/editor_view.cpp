@@ -466,7 +466,7 @@ void EditorView::renderRooms() {
   int renderStart = 0;
   int renderEnd = ((int)Rooms.size() - 1);
   if (app.view_mode == state::viewer::room) {
-    if (app.current_room < 0 || app.current_room > ((int)Rooms.size() - 1))
+    if (app.current_room < 0 || app.current_room >= Rooms.size())
       return;
     if (!Rooms[app.current_room].used)
       return;
@@ -1159,7 +1159,7 @@ void EditorView::renderObjects() {
 
     // A room is only drawn when its verts[0] is within the render radius
     // (DrawAllRooms); objects live in rooms and follow the same gate.
-    if (obj->roomnum < 0 || obj->roomnum > ((int)Rooms.size() - 1))
+    if (obj->roomnum < 0 || obj->roomnum >= Rooms.size())
       continue;
     room *rp = &Rooms[obj->roomnum];
     if (!rp->used || rp->num_verts == 0)
@@ -1831,7 +1831,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
   if (app.view_mode == state::viewer::terrain)
     return best;
   if (app.view_mode == state::viewer::room) {
-    if (app.current_room < 0 || app.current_room > ((int)Rooms.size() - 1))
+    if (app.current_room < 0 || app.current_room >= Rooms.size())
       return best;
     pickStart = app.current_room;
     pickEnd = app.current_room;

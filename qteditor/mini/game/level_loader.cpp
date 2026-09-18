@@ -593,7 +593,7 @@ static int TranslateObjectId(int type, int id) {
     return xid;
 
   const std::optional<uint32_t> valid = FindValidID(type);
-  return valid.value_or(id)
+  return valid.value_or(id);
 }
 
 // Writes a chunk header (4-char name + size placeholder), returns the position
@@ -1157,13 +1157,13 @@ static void LL_ReadGamePathsChunk(posix_istream &ifile, uint32_t version) {
 
 static void LL_WriteGamePathsChunk(posix_ostream &ofile) {
   int npaths = 0;
-  for (int i = 0; i < (int)GamePaths.size(); i++)
+  for (size_t i = 0; i < GamePaths.size(); i++)
     if (GamePaths[i].used)
       npaths++;
 
   int start = LL_StartChunk(ofile, "PATH");
   ofile << (int16_t)npaths;
-  for (int i = 0; i < (int)GamePaths.size(); i++) {
+  for (size_t i = 0; i < GamePaths.size(); i++) {
     const game_path &p = GamePaths[i];
     if (!p.used)
       continue;
@@ -1947,7 +1947,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
           // as the original LL_ReadObjects does (object.cpp / LoadLevel.cpp).
           obj->handle = (version >= 45) ? handle : (objnum + HANDLE_COUNT_INCREMENT);
           obj->roomnum = -1; // ObjLink() expects the roomnum to be -1
-          if ((roomnum > ((int)Rooms.size() - 1)) && !ROOMNUM_OUTSIDE(roomnum))
+          if ((roomnum >= Rooms.size()) && !ROOMNUM_OUTSIDE(roomnum))
             obj->type = OBJ_NONE; // loading object with invalid room number
           else
             ObjLink(objnum, roomnum);
@@ -2140,12 +2140,12 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     // (may be an empty list), like the engine.
     {
       int handleCount = 0;
-      for (int i = 0; i < (int)Objects.size(); i++)
+      for (size_t i = 0; i < Objects.size(); i++)
         if (Objects[i].type == OBJ_NONE && (Objects[i].handle & HANDLE_COUNT_MASK) != 0)
           handleCount++;
       int start = LL_StartChunk(out, CHUNK_OBJECT_HANDLES);
       out << handleCount;
-      for (int i = 0; i < (int)Objects.size(); i++) {
+      for (size_t i = 0; i < Objects.size(); i++) {
         if (Objects[i].type == OBJ_NONE && (Objects[i].handle & HANDLE_COUNT_MASK) != 0)
           out << (int32_t)Objects[i].handle;
       }

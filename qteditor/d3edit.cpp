@@ -261,7 +261,7 @@ int GetPrevObjectID(int n) {
 uint8_t Show_paths = 1;
 
 int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient) {
-  if ((int)GamePaths[pathnum].pathnodes.size() >= MAX_NODES_PER_PATH) {
+  if (GamePaths[pathnum].pathnodes.size() >= MAX_NODES_PER_PATH) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Path already has its maximum amount of nodes.");
     return -1;
   }
@@ -282,7 +282,7 @@ void DeleteNodeFromPath(int pathnum, int nodenum) {
 }
 
 int AllocGamePath() {
-  for (int i = 0; i < (int)GamePaths.size(); i++) {
+  for (size_t i = 0; i < GamePaths.size(); i++) {
     if (!GamePaths[i].used) {
       GamePaths[i].used = true;
       GamePaths[i].name.clear();
@@ -381,7 +381,7 @@ int GetPrevPath(int n) {
 }
 
 int GetFirstPath() {
-  for (int i = 0; i < (int)GamePaths.size(); i++)
+  for (size_t i = 0; i < GamePaths.size(); i++)
     if (GamePaths[i].used)
       return i;
   return -1;

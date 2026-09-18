@@ -82,7 +82,7 @@ extern uint32_t Num_objects;
 static void discardBytes(posix_istream &infile, int count) {
   uint8_t buf[4096];
   while (count > 0) {
-    int take = count > (int)sizeof(buf) ? (int)sizeof(buf) : count;
+    size_t take = count > sizeof(buf) ? sizeof(buf) : count;
     infile.read(buf, take);
     if (infile.eof())
       break;

@@ -325,7 +325,7 @@ static int createViewerObject(state::viewer view_mode, vector3& pos, int roomnum
 
   // Create the new object
   objnum = -1;
-  for (int i = 0; i < (int)Objects.size(); ++i) {
+  for (size_t i = 0; i < Objects.size(); ++i) {
     if (Objects[i].type == OBJ_NONE) {
       objnum = i;
       break;

@@ -122,15 +122,15 @@ bool mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage) {
   // Bash Fusion recharge times for the ships
   if (shippage->ship_struct.name == "Pyro-GL") {
     // Pyro-GL
-    for (int j = 0; j < (int)shippage->ship_struct.static_wb[FUSION_INDEX].gp_fire_wait.size(); j++)
+    for (size_t j = 0; j < shippage->ship_struct.static_wb[FUSION_INDEX].gp_fire_wait.size(); j++)
       shippage->ship_struct.static_wb[FUSION_INDEX].gp_fire_wait[j] = 0.66f;
   } else if (shippage->ship_struct.name == "Phoenix") {
     // Phoenix
-    for (int j = 0; j < (int)shippage->ship_struct.static_wb[FUSION_INDEX].gp_fire_wait.size(); j++)
+    for (size_t j = 0; j < shippage->ship_struct.static_wb[FUSION_INDEX].gp_fire_wait.size(); j++)
       shippage->ship_struct.static_wb[FUSION_INDEX].gp_fire_wait[j] = 0.792f;
   } else if (shippage->ship_struct.name == "Magnum-AHT") {
     // Magnum
-    for (int j = 0; j < (int)shippage->ship_struct.static_wb[FUSION_INDEX].gp_fire_wait.size(); j++)
+    for (size_t j = 0; j < shippage->ship_struct.static_wb[FUSION_INDEX].gp_fire_wait.size(); j++)
       shippage->ship_struct.static_wb[FUSION_INDEX].gp_fire_wait[j] = 1.122f;
   } else {
     // Any other ship: nothing to bash.

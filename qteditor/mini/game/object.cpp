@@ -79,7 +79,7 @@ void BigObjRemove(int objnum) {
 // & sets roomnums to -1.  Called by the editor to init a new level.
 void ResetObjectList() {
   // Init data for each object
-  for (int i = 0; i < (int)Objects.size(); i++) {
+  for (size_t i = 0; i < Objects.size(); i++) {
     Objects[i].handle = i;
     Objects[i].type = OBJ_NONE;
     Objects[i].roomnum = -1;
@@ -229,7 +229,7 @@ void ObjLink(int objnum, int roomnum) {
     obj->next = Terrain_seg[cellnum].objects;
     Terrain_seg[cellnum].objects = objnum;
   } else {
-    if (roomnum < 0 || roomnum > ((int)Rooms.size() - 1))
+    if (roomnum < 0 || roomnum >= Rooms.size())
       return;
 
     obj->next = Rooms[roomnum].objects;
@@ -269,7 +269,7 @@ void ObjUnlink(int objnum) {
     if (obj->next != -1)
       Objects[obj->next].prev = obj->prev;
   } else {
-    if (obj->roomnum < 0 || obj->roomnum > ((int)Rooms.size() - 1))
+    if (obj->roomnum < 0 || obj->roomnum >= Rooms.size())
       return;
 
     room *rp = &Rooms[obj->roomnum];

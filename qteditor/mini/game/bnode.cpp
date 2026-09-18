@@ -342,7 +342,7 @@ retry:
           fvi_info hit_info;
 
           fq.p0 = &pos;
-          fq.startroom = (roomnum > ((int)Rooms.size() - 1) && roomnum < Rooms.size() + 8)
+          fq.startroom = (roomnum >= Rooms.size() && roomnum < Rooms.size() + 8)
                              ? GetTerrainRoomFromPos(pos).value_or(-1)
                              : roomnum;
           fq.p1 = &bnlist->nodes[i].pos;
@@ -428,7 +428,7 @@ retry:
 
         if (!f_retry) {
           fq.p0 = &pos;
-          fq.startroom = (roomnum > ((int)Rooms.size() - 1) && roomnum < Rooms.size() + 8)
+          fq.startroom = (roomnum >= Rooms.size() && roomnum < Rooms.size() + 8)
                              ? GetTerrainRoomFromPos(pos).value_or(-1)
                              : roomnum;
           fq.p1 = &bnlist->nodes[i].pos;

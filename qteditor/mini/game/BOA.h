@@ -197,7 +197,7 @@ public:
 #define BOA_ROOM_MASK 0x03FF
 
 #define BOA_TERRAIN_INDEX (((int)Rooms.size() - 1) + 1)
-#define BOA_INDEX(x) ((ROOMNUM_OUTSIDE(x) ? (Terrain_seg[x].flags.region + ((int)Rooms.size() - 1) + 1) : x))
+#define BOA_INDEX(x) ((ROOMNUM_OUTSIDE(x) ? (Terrain_seg[x].flags.region + Rooms.size()) : x))
 #define BOA_NO_PATH (((int)Rooms.size() - 1) + 9)
 
 #define BOA_NEXT_ROOM(a, b) (BOA_Array[a][b] & BOA_ROOM_MASK)

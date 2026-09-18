@@ -54,14 +54,14 @@ bool EBNode_VerifyGraph() {
 
   MakeBOA();
 
-  for (int i = ((int)Rooms.size() - 1) + 1; i < Rooms.size() + BOA_num_terrain_regions; i++) {
+  for (size_t i = Rooms.size(); i < Rooms.size() + BOA_num_terrain_regions; i++) {
     bn_list *nlist = BNode_GetBNListPtr(i);
-    int cur_region = i - ((int)Rooms.size() - 1) - 1;
+    size_t cur_region = i - Rooms.size() - 2;
 
-    for (int j = (int)nlist->nodes.size() - 1; j >= 0; j--) {
+    for (size_t j = nlist->nodes.size() - 1; j >= 0; j--) {
       int cell = GetTerrainRoomFromPos(nlist->nodes[j].pos).value_or(-1);
       if (cur_region != Terrain_seg[cell].flags.region) {
-        for (int k = 0; k < (int)nlist->nodes[j].edges.size(); k++) {
+        for (size_t k = 0; k < nlist->nodes[j].edges.size(); k++) {
           if (BOA_INDEX(nlist->nodes[j].edges[k].end_room) >= 0 &&
               BOA_INDEX(nlist->nodes[j].edges[k].end_room) < Rooms.size()) {
             int r = nlist->nodes[j].edges[k].end_room;
@@ -91,8 +91,8 @@ bool EBNode_VerifyGraph() {
 
     nlist = BNode_GetBNListPtr(i);
 
-    for (int j = 0; j < (int)nlist->nodes.size(); j++) {
-      for (int k = 0; k < (int)nlist->nodes[j].edges.size(); k++) {
+    for (size_t j = 0; j < nlist->nodes.size(); j++) {
+      for (size_t k = 0; k < nlist->nodes[j].edges.size(); k++) {
         if (nlist->nodes[j].edges[k].max_rad < 5.0f) {
           LOG_INFO("EBNode Verify: Removed a skinny edge.\n");
           EBNode_RemoveEdge(j, i, nlist->nodes[j].edges[k].end_index, nlist->nodes[j].edges[k].end_room);
@@ -109,7 +109,7 @@ bool EBNode_VerifyGraph() {
         continue;
 
       for (int j = 0; j < Rooms[i].num_portals; j++) {
-        if (Rooms[i].portals[j].bnode_index >= 0 && Rooms[i].portals[j].bnode_index >= (int)Rooms[i].bn_info.nodes.size()) {
+        if (Rooms[i].portals[j].bnode_index >= 0 && Rooms[i].portals[j].bnode_index >= Rooms[i].bn_info.nodes.size()) {
           LOG_INFO("EBNode: Bashed an invalid node\n");
           Rooms[i].portals[j].bnode_index = -1;
         } else if (Rooms[i].portals[j].bnode_index < 0) {
@@ -156,9 +156,9 @@ bool EBNode_VerifyGraph() {
 
       if (Rooms[external_room].portals[external_portal].bnode_index < 0) {
         Rooms[external_room].portals[external_portal].bnode_index =
-            EBNode_AddNode(((int)Rooms.size() - 1) + region + 1, &pos, false, false);
+            EBNode_AddNode(Rooms.size() + region, &pos, false, false);
         if (Rooms[end_room].portals[p].bnode_index >= 0)
-          EBNode_AddEdge(Rooms[external_room].portals[external_portal].bnode_index, ((int)Rooms.size() - 1) + region + 1,
+          EBNode_AddEdge(Rooms[external_room].portals[external_portal].bnode_index, Rooms.size() + region,
                          Rooms[end_room].portals[p].bnode_index, end_room);
       }
     }
@@ -272,8 +272,8 @@ bool EBNode_VerifyGraph() {
 
     nlist = BNode_GetBNListPtr(i);
 
-    for (int j = 0; j < (int)nlist->nodes.size(); j++) {
-      for (int k = 0; k < (int)nlist->nodes[j].edges.size(); k++) {
+    for (size_t j = 0; j < nlist->nodes.size(); j++) {
+      for (size_t k = 0; k < nlist->nodes[j].edges.size(); k++) {
         if (nlist->nodes[j].edges[k].max_rad < 5.0f) {
           LOG_INFO("EBNode Verify: Removed a skinny edge.\n");
           EBNode_RemoveEdge(j, i, nlist->nodes[j].edges[k].end_index, nlist->nodes[j].edges[k].end_room);
@@ -281,7 +281,7 @@ bool EBNode_VerifyGraph() {
         }
       }
 
-      for (int k = 0; k < (int)nlist->nodes[j].edges.size(); k++) {
+      for (size_t k = 0; k < nlist->nodes[j].edges.size(); k++) {
         if (nlist->nodes[j].edges[k].end_room < Rooms.size() &&
             !Rooms[nlist->nodes[j].edges[k].end_room].used) {
           LOG_INFO("EBNode Verify: Removed a edge to a non-existant room. Room %d, node %d, edge %d\n", i, j, k);
@@ -302,8 +302,8 @@ bool EBNode_VerifyGraph() {
 
     nlist = BNode_GetBNListPtr(i);
 
-    for (int j = 0; j < (int)nlist->nodes.size(); j++) {
-      for (int k = 0; k < (int)nlist->nodes[j].edges.size(); k++) {
+    for (size_t j = 0; j < nlist->nodes.size(); j++) {
+      for (size_t k = 0; k < nlist->nodes[j].edges.size(); k++) {
         if (nlist->nodes[j].edges[k].max_rad < 5.0f) {
           LOG_INFO("Skinny Edge - from r%d n%d to r%d n%d\n", i, j, nlist->nodes[j].edges[k].end_room,
                   nlist->nodes[j].edges[k].end_index);
@@ -322,8 +322,8 @@ bool EBNode_VerifyGraph() {
     bn_list *nlist = BNode_GetBNListPtr(i);
     Q_ASSERT(nlist);
 
-    for (int j = 0; j < (int)nlist->nodes.size(); j++) {
-      for (int k = j + 1; k < (int)nlist->nodes.size(); k++) {
+    for (size_t j = 0; j < nlist->nodes.size(); j++) {
+      for (size_t k = j + 1; k < nlist->nodes.size(); k++) {
         if (!BNode_FindPath(i, j, k, 0.0f)) {
           LOG_INFO("BNODE ERROR: No path from %d to %d in room %d\n", j + 1, k + 1, i);
           f_verified = false;
@@ -368,8 +368,8 @@ static void RemapEdgeNodesEqualAndAbove(int croom, int sroom, int spnt) {
   if (!cnlist)
     return;
 
-  for (int i = 0; i < (int)cnlist->nodes.size(); i++) {
-    for (int j = 0; j < (int)cnlist->nodes[i].edges.size(); j++) {
+  for (size_t i = 0; i < cnlist->nodes.size(); i++) {
+    for (size_t j = 0; j < cnlist->nodes[i].edges.size(); j++) {
       if (cnlist->nodes[i].edges[j].end_room == sroom && cnlist->nodes[i].edges[j].end_index >= spnt) {
         Q_ASSERT(cnlist->nodes[i].edges[j].end_index != spnt);
         cnlist->nodes[i].edges[j].end_index--;
@@ -390,7 +390,7 @@ static void RemapPortalNodeIndices(int roomnum, int pnt) {
       }
     }
   } else {
-    int region = BOA_INDEX(roomnum) - ((int)Rooms.size() - 1) - 1;
+    size_t region = BOA_INDEX(roomnum) - Rooms.size() - 2;
 
     for (int i = 0; i < BOA_num_connect[region]; i++) {
       int r = BOA_connect[region][i].roomnum;
@@ -416,9 +416,9 @@ void EBNode_RemoveNode(int roomnum, int pnt) {
   if (!nlist)
     return;
 
-  Q_ASSERT(pnt >= 0 && pnt < (int)nlist->nodes.size());
+  Q_ASSERT(pnt >= 0 && pnt < nlist->nodes.size());
 
-  for (int i = (int)nlist->nodes[pnt].edges.size() - 1; i >= 0; i--)
+  for (size_t i = nlist->nodes[pnt].edges.size() - 1; i >= 0; i--)
     EBNode_RemoveEdge(pnt, roomnum, nlist->nodes[pnt].edges[i].end_index, nlist->nodes[pnt].edges[i].end_room);
 
   nlist->nodes.erase(nlist->nodes.begin() + pnt);
@@ -447,7 +447,7 @@ void EBNode_RemoveEdge(int spnt, int sroom, int epnt, int eroom, bool f_remove_r
   bool f_exists = false;
   int e_index = 0;
 
-  for (int i = 0; i < (int)snlist->nodes[spnt].edges.size(); i++) {
+  for (size_t i = 0; i < snlist->nodes[spnt].edges.size(); i++) {
     if (snlist->nodes[spnt].edges[i].end_index == epnt && snlist->nodes[spnt].edges[i].end_room == eroom) {
       e_index = i;
       f_exists = true;
@@ -478,7 +478,7 @@ int EBNode_AddNode(int roomnum, vector3 *pnt, bool f_from_editor, bool f_check_f
   bool f_really_close_neighbor = false;
 
   if (f_check_for_close_nodes) {
-    for (int i = 0; i < (int)nlist->nodes.size(); i++) {
+    for (size_t i = 0; i < nlist->nodes.size(); i++) {
       if (vm_VectorDistance(&nlist->nodes[i].pos, pnt) <= BNODE_VERY_CLOSE_DIST) {
         f_really_close_neighbor = true;
         break;
@@ -492,7 +492,7 @@ int EBNode_AddNode(int roomnum, vector3 *pnt, bool f_from_editor, bool f_check_f
     }
   }
 
-  int new_node = (int)nlist->nodes.size();
+  size_t new_node = nlist->nodes.size();
   nlist->nodes.push_back(bn_node{});
   nlist->nodes[new_node].pos = *pnt;
 
@@ -515,7 +515,7 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
   do {
     fq.p0 = &snlist->nodes[spnt].pos;
     fq.p1 = &enlist->nodes[epnt].pos;
-    fq.startroom = (sroom > ((int)Rooms.size() - 1) && sroom < Rooms.size() + 8)
+    fq.startroom = (sroom > (Rooms.size() - 1) && sroom < Rooms.size() + 8)
                        ? GetTerrainRoomFromPos(snlist->nodes[spnt].pos).value_or(-1)
                        : sroom;
     fq.rad = size;
@@ -525,7 +525,7 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
     if (fate == HIT_NONE) {
       fq.p0 = &enlist->nodes[epnt].pos;
       fq.p1 = &snlist->nodes[spnt].pos;
-      fq.startroom = (eroom > ((int)Rooms.size() - 1) && eroom < Rooms.size() + 8)
+      fq.startroom = (eroom > (Rooms.size() - 1) && eroom < Rooms.size() + 8)
                          ? GetTerrainRoomFromPos(enlist->nodes[epnt].pos).value_or(-1)
                          : eroom;
       fq.rad = size;
@@ -546,14 +546,14 @@ void EBNode_AutoEdgeNode(int spnt, int sroom) {
 
   bn_list *snlist = BNode_GetBNListPtr(sroom);
 
-  for (int i = 0; i < (int)snlist->nodes.size(); i++) {
+  for (size_t i = 0; i < snlist->nodes.size(); i++) {
     if (i != spnt) {
       fvi_info hit_info;
       fvi_query fq;
 
       fq.p0 = &snlist->nodes[spnt].pos;
       fq.p1 = &snlist->nodes[i].pos;
-      fq.startroom = (sroom > ((int)Rooms.size() - 1) && sroom < Rooms.size() + 8)
+      fq.startroom = (sroom > (Rooms.size() - 1) && sroom < Rooms.size() + 8)
                          ? GetTerrainRoomFromPos(snlist->nodes[spnt].pos).value_or(-1)
                          : sroom;
 
@@ -581,7 +581,7 @@ void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_add_reverse
 
   bool f_exists = false;
 
-  for (int i = 0; i < (int)snlist->nodes[spnt].edges.size(); i++) {
+  for (size_t i = 0; i < snlist->nodes[spnt].edges.size(); i++) {
     if (snlist->nodes[spnt].edges[i].end_index == epnt && snlist->nodes[spnt].edges[i].end_room == eroom) {
       f_exists = true;
       break;
@@ -589,7 +589,7 @@ void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_add_reverse
   }
 
   if (!f_exists) {
-    int new_edge = (int)snlist->nodes[spnt].edges.size();
+    size_t new_edge = snlist->nodes[spnt].edges.size();
     snlist->nodes[spnt].edges.push_back(bn_edge{});
 
     float cost = vm_VectorDistance(&snlist->nodes[spnt].pos, &enlist->nodes[epnt].pos);
@@ -622,9 +622,9 @@ void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
 
   EBNode_AddNode(roomnum, &rp->path_pnt, false, false);
 
-  for (int i = 0; i < (int)rp->bn_info.nodes.size(); i++) {
-    for (int j = i + 1; j < (int)rp->bn_info.nodes.size(); j++) {
-      if (i < (int)rp->bn_info.nodes.size() - 1 && j < (int)rp->bn_info.nodes.size() - 1) {
+  for (size_t i = 0; i < rp->bn_info.nodes.size(); i++) {
+    for (size_t j = i + 1; j < rp->bn_info.nodes.size(); j++) {
+      if (i < rp->bn_info.nodes.size() - 1 && j < rp->bn_info.nodes.size() - 1) {
         vector3 vec = rp->portals[j].path_pnt - rp->portals[i].path_pnt;
         vector3 cvec = rp->path_pnt - rp->portals[i].path_pnt;
 
@@ -645,7 +645,7 @@ void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
 
       fq.p0 = &Rooms[roomnum].bn_info.nodes[i].pos;
       fq.p1 = &Rooms[roomnum].bn_info.nodes[j].pos;
-      fq.startroom = (roomnum > ((int)Rooms.size() - 1) && roomnum < Rooms.size() + 8)
+      fq.startroom = (roomnum > (Rooms.size() - 1) && roomnum < Rooms.size() + 8)
                          ? GetTerrainRoomFromPos(Rooms[roomnum].bn_info.nodes[i].pos).value_or(-1)
                          : roomnum;
 
@@ -679,7 +679,7 @@ void EBNode_MakeDefaultInterRoomEdges(int roomnum) {
 }
 
 static void EBNode_RemoveNodesAtUnopenablePortals(int roomnum) {
-  Q_ASSERT(Rooms[roomnum].num_portals + 1 == (int)Rooms[roomnum].bn_info.nodes.size());
+  Q_ASSERT(Rooms[roomnum].num_portals + 1 == Rooms[roomnum].bn_info.nodes.size());
 
   for (int i = Rooms[roomnum].num_portals - 1; i >= 0; i--) {
     if ((Rooms[roomnum].portals[i].flags.block) && !(Rooms[roomnum].portals[i].flags.block_removable)) {
@@ -721,13 +721,13 @@ static void EBNode_MakeDefaultTerrainNodes(int region) {
     Q_ASSERT(Rooms[external_room].flags.external);
     Rooms[external_room].portals[external_portal].bnode_index = i;
 
-    EBNode_AddNode(((int)Rooms.size() - 1) + region + 1, &pos, false, false);
-    EBNode_AddEdge(i, ((int)Rooms.size() - 1) + region + 1, p, end_room);
+    EBNode_AddNode(Rooms.size() + region, &pos, false, false);
+    EBNode_AddEdge(i, Rooms.size() + region, p, end_room);
   }
 
   for (int i = 0; i < BOA_num_connect[region]; i++) {
     for (int j = i + 1; j < BOA_num_connect[region]; j++)
-      EBNode_AddEdge(i, ((int)Rooms.size() - 1) + region + 1, j, ((int)Rooms.size() - 1) + region + 1);
+      EBNode_AddEdge(i, Rooms.size() + region, j, Rooms.size() + region);
   }
 }
 
@@ -766,8 +766,8 @@ void EBNode_MakeFirstPass() {
 
     nlist = BNode_GetBNListPtr(i);
 
-    for (int j = 0; j < (int)nlist->nodes.size(); j++) {
-      for (int k = 0; k < (int)nlist->nodes[j].edges.size(); k++) {
+    for (size_t j = 0; j < nlist->nodes.size(); j++) {
+      for (size_t k = 0; k < nlist->nodes[j].edges.size(); k++) {
         if (nlist->nodes[j].edges[k].max_rad < 5.0f) {
           EBNode_RemoveEdge(j, i, nlist->nodes[j].edges[k].end_index, nlist->nodes[j].edges[k].end_room);
           k--;
@@ -807,7 +807,7 @@ int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom) {
 
     fq.p0 = &snlist->nodes[spnt].pos;
     fq.p1 = &enlist->nodes[epnt].pos;
-    fq.startroom = (sroom > ((int)Rooms.size() - 1) && sroom < Rooms.size() + 8)
+    fq.startroom = (sroom >= Rooms.size() && sroom < Rooms.size() + 8)
                        ? GetTerrainRoomFromPos(snlist->nodes[spnt].pos).value_or(-1)
                        : sroom;
 
@@ -875,7 +875,7 @@ void EBNode_Move(bool f_offset, int roomnum, int pnt, vector3 *pos) {
 
     fq.p0 = &nlist->nodes[pnt].pos;
     fq.p1 = &npos;
-    fq.startroom = (roomnum > ((int)Rooms.size() - 1) && roomnum < Rooms.size() + 8)
+    fq.startroom = (roomnum >= Rooms.size() && roomnum < Rooms.size() + 8)
                        ? GetTerrainRoomFromPos(nlist->nodes[pnt].pos).value_or(-1)
                        : roomnum;
 

@@ -219,19 +219,19 @@ void BriefTextEditDialog::populatePredefs() {
   if (auto *combo = ui->IDC_BRIEF_T_PREDEF) {
     combo->clear();
     combo->addItem("<Raw>");
-    int layout = -1;
-    if (!PBlayouts.empty()) {
-      for (size_t i = 0; i < PBlayouts.size(); i++) {
+    if (!PBlayouts.empty())
+    {
+      size_t layout_idx = SIZE_MAX;
+      for (size_t i = 0; i < PBlayouts.size(); i++)
         if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
-          layout = (int)i;
-      }
-      if (layout != -1) {
-        for (int j = 0; j < PBlayouts[layout].num_texts; j++) {
-          const auto &t = PBlayouts[layout].texts[j];
-          combo->addItem(
-              QString("(%1,%2)->(%3,%4)").arg(t.lx).arg(t.ty).arg(t.rx).arg(t.by));
+          layout_idx = i;
+
+      if (layout_idx != SIZE_MAX)
+        for (int j = 0; j < PBlayouts[layout_idx].num_texts; j++)
+        {
+          const auto &t = PBlayouts[layout_idx].texts[j];
+          combo->addItem(QString("(%1,%2)->(%3,%4)").arg(t.lx).arg(t.ty).arg(t.rx).arg(t.by));
         }
-      }
     }
     combo->setCurrentIndex(0);
   }
@@ -241,18 +241,18 @@ void BriefTextEditDialog::onPredefChanged(int index) {
   auto *combo = ui->IDC_BRIEF_T_PREDEF;
   if (!combo || index <= 0)
     return;
-  int layout = -1;
   if (PBlayouts.empty())
     return;
-  for (size_t i = 0; i < PBlayouts.size(); i++) {
+  size_t layout_idx = SIZE_MAX;
+  for (size_t i = 0; i < PBlayouts.size(); i++)
     if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
-      layout = (int)i;
-  }
-  if (layout != -1) {
-    ui->IDC_BRIEF_T_UL_X->setText(QString::number(PBlayouts[layout].texts[index - 1].lx));
-    ui->IDC_BRIEF_T_UL_Y->setText(QString::number(PBlayouts[layout].texts[index - 1].ty));
-    ui->IDC_BRIEF_T_LR_X->setText(QString::number(PBlayouts[layout].texts[index - 1].rx));
-    ui->IDC_BRIEF_T_LR_Y->setText(QString::number(PBlayouts[layout].texts[index - 1].by));
+      layout_idx = i;
+  if (layout_idx != SIZE_MAX)
+  {
+    ui->IDC_BRIEF_T_UL_X->setText(QString::number(PBlayouts[layout_idx].texts[index - 1].lx));
+    ui->IDC_BRIEF_T_UL_Y->setText(QString::number(PBlayouts[layout_idx].texts[index - 1].ty));
+    ui->IDC_BRIEF_T_LR_X->setText(QString::number(PBlayouts[layout_idx].texts[index - 1].rx));
+    ui->IDC_BRIEF_T_LR_Y->setText(QString::number(PBlayouts[layout_idx].texts[index - 1].by));
   }
 }
 

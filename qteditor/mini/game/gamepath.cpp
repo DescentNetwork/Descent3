@@ -43,14 +43,14 @@ void InitGamePaths() {
 
   if (f_game_paths_init) {
     // Clear out the current path info
-    for (int i = 0; i < (int)GamePaths.size(); i++) {
+    for (size_t i = 0; i < GamePaths.size(); i++) {
       FreeGamePath(i);
     }
   }
 
   f_game_paths_init = true;
 
-  for (int i = 0; i < (int)GamePaths.size(); i++) {
+  for (size_t i = 0; i < GamePaths.size(); i++) {
     GamePaths[i].num_nodes = 0;
     GamePaths[i].used = 0;
   }

@@ -103,18 +103,25 @@ BriefBitmapDialog::BriefBitmapDialog(TCBMPDESC *desc, QWidget *parent)
   m_desc = TCBMPDESC{};
   m_desc.type = TC_BMP_STATIC;
 
-  if (desc) {
+  if (desc)
+  {
     m_desc.caps = desc->caps;
-    if (desc->caps.xy) {
+
+    if (desc->caps.xy)
+    {
       m_desc.x = desc->x;
       m_desc.y = desc->y;
     }
+
     if (desc->caps.looping)
       m_desc.looping = desc->looping;
+
     if (desc->caps.waittime)
       m_desc.waittime = desc->waittime;
+
     if (desc->caps.speed)
       m_desc.speed = desc->speed;
+
     m_desc.type = desc->type;
     m_desc.mode = desc->mode;
     m_desc.no_early_render = desc->no_early_render;
@@ -141,19 +148,21 @@ BriefBitmapDialog::BriefBitmapDialog(TCBMPDESC *desc, QWidget *parent)
   ui->IDC_BRIEF_B_STRETCHIN->setChecked(m_effectType == 7);
   ui->IDC_BRIEF_B_STRETCHOUT->setChecked(m_effectType == 8);
 
-  if (auto *combo = ui->IDC_BRIEF_B_PREDEF) {
+  if (auto *combo = ui->IDC_BRIEF_B_PREDEF)
+  {
     combo->clear();
     combo->addItem("<Raw>");
-    int layout = -1;
-    if (!PBlayouts.empty()) {
-      for (size_t i = 0; i < PBlayouts.size(); i++) {
+    if (!PBlayouts.empty())
+    {
+      size_t layout_idx = SIZE_MAX;
+      for (size_t i = 0; i < PBlayouts.size(); i++)
         if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
-          layout = (int)i;
-      }
-      if (layout != -1) {
-        for (int j = 0; j < PBlayouts[layout].num_bmps; j++)
-          combo->addItem(QString("(%1,%2)").arg(PBlayouts[layout].bmps[j].x)
-                                .arg(PBlayouts[layout].bmps[j].y));
+          layout_idx = i;
+
+      if (layout_idx != SIZE_MAX) {
+        for (int j = 0; j < PBlayouts[layout_idx].num_bmps; j++)
+          combo->addItem(QString("(%1,%2)").arg(PBlayouts[layout_idx].bmps[j].x)
+                                .arg(PBlayouts[layout_idx].bmps[j].y));
       }
     }
     combo->setCurrentIndex(0);
@@ -171,19 +180,20 @@ BriefBitmapDialog::BriefBitmapDialog(TCBMPDESC *desc, QWidget *parent)
 
 BriefBitmapDialog::~BriefBitmapDialog() { delete ui; }
 
-void BriefBitmapDialog::onPredefChanged(int index) {
-  if (index <= 0)
-    return;
-  int layout = -1;
-  if (PBlayouts.empty())
-    return;
-  for (size_t i = 0; i < PBlayouts.size(); i++) {
-    if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
-      layout = (int)i;
-  }
-  if (layout != -1 && index - 1 < PBlayouts[layout].num_bmps) {
-    ui->IDC_BRIEF_B_X->setText(QString::number(PBlayouts[layout].bmps[index - 1].x));
-    ui->IDC_BRIEF_B_Y->setText(QString::number(PBlayouts[layout].bmps[index - 1].y));
+void BriefBitmapDialog::onPredefChanged(int index)
+{
+  if (index > 0 && PBlayouts.empty())
+  {
+    size_t layout_idx = SIZE_MAX;
+    for (size_t i = 0; i < PBlayouts.size(); i++)
+      if (Briefing_screens[m_screen].layout == PBlayouts[i].filename)
+        layout_idx = i;
+
+    if (layout_idx != SIZE_MAX && index - 1 < PBlayouts[layout_idx].num_bmps)
+    {
+      ui->IDC_BRIEF_B_X->setText(QString::number(PBlayouts[layout_idx].bmps[index - 1].x));
+      ui->IDC_BRIEF_B_Y->setText(QString::number(PBlayouts[layout_idx].bmps[index - 1].y));
+    }
   }
 }
 
