@@ -1267,7 +1267,7 @@ std::optional<uint32_t> SetRoomChangeOverTime(int roomnum, bool fog, vector3 *en
 
   if (!found) {
     const std::optional<uint32_t> alloc = AllocRoomChange();
-    if (!alloc.has_value())
+    if (!alloc)
       return std::nullopt; // failed get free slot!
     index = static_cast<int>(*alloc);
   }

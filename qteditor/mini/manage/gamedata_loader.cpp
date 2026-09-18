@@ -201,7 +201,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
         GameTextures.back().bm_handle = -1;
         if (!texpage.bitmap_name.empty()) {
           const std::optional<uint32_t> bm = loadTextureFromArchive(archive, hogin, texpage.bitmap_name, BITMAP_FORMAT_1555);
-          if (bm.has_value()) {
+          if (bm) {
             GameTextures.back().bm_handle = static_cast<int>(*bm);
             // .oaf textures are vclips: bm_handle holds the vclip index and the
             // animated flag makes GetTextureBitmap cycle through its frames.

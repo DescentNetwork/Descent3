@@ -56,7 +56,7 @@ std::optional<uint16_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lig
 
   if (alloc_lightmap) {
     const std::optional<uint16_t> lm = lm_AllocLightmap(w, h);
-    Q_ASSERT(lm.has_value());
+    Q_ASSERT(lm);
     LightmapInfo[n].lm_handle = lm.value_or(BAD_LM_INDEX);
   }
 

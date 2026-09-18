@@ -178,7 +178,7 @@ int LoadTextureImage(const std::filesystem::path &filename, int *type, int textu
 
   if (anim) {
     const std::optional<uint32_t> vc = LoadVClipFromMemory(buf.data(), buf.size(), name, format);
-    return vc.has_value() ? static_cast<int>(*vc) : -1;
+    return vc.value_or(-1);
   }
 
   int bm_handle = bm_LoadBitmapFromMemory(buf.data(), buf.size(), name.c_str(), format, mipped);

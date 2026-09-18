@@ -332,7 +332,7 @@ std::optional<uint32_t> LoadVClipFromMemory(const uint8_t *data, size_t size, co
   }
 
   const std::optional<uint32_t> vcnum = AllocVClip();
-  if (!vcnum.has_value())
+  if (!vcnum)
     return std::nullopt;
 
   vclip *vc = &GameVClips[*vcnum];

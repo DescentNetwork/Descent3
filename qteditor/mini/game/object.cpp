@@ -534,7 +534,7 @@ std::optional<uint32_t> ObjCreate(uint8_t type, uint16_t id, int roomnum, vector
 
   // Get next free object
   const std::optional<uint32_t> objnum_opt = ObjAllocate();
-  if (!objnum_opt.has_value()) // no free objects
+  if (!objnum_opt) // no free objects
     return std::nullopt;
 
   const int objnum = static_cast<int>(*objnum_opt);

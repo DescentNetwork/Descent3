@@ -593,7 +593,7 @@ static int TranslateObjectId(int type, int id) {
     return xid;
 
   const std::optional<uint32_t> valid = FindValidID(type);
-  return valid.has_value() ? static_cast<int>(*valid) : id;
+  return valid.value_or(id)
 }
 
 // Writes a chunk header (4-char name + size placeholder), returns the position

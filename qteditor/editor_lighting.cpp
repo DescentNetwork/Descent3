@@ -99,7 +99,7 @@ int Squeeze_lightmap_handle = -1;
 // derived explicitly rather than via value_or(-1).
 static int AllocSqueezeLightmap() {
   const std::optional<uint16_t> lm = lm_AllocLightmap(128, 128);
-  return lm.has_value() ? static_cast<int>(*lm) : -1;
+  return lm.value_or(-1);
 }
 
 int FindEmptyMaskSpot(int w, int h, int *dest_x, int *dest_y) {

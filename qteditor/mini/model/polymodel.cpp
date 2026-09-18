@@ -1961,7 +1961,7 @@ std::optional<uint32_t> LoadPolyModel(const std::filesystem::path &filename, int
 
   // If this polymodel is already in memory, just use that index
   const std::optional<uint32_t> existing = FindPolyModelName(name);
-  if (existing.has_value()) {
+  if (existing) {
     i = static_cast<int>(*existing);
 #ifdef RELEASE
     Poly_models[i].used++;

@@ -390,7 +390,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
       // First find a suitable dynamic lightmap to work with
       const std::optional<uint16_t> dynamic_handle = GetFreeDynamicLightmap(xres, yres);
 
-      if (!dynamic_handle.has_value()) {
+      if (!dynamic_handle) {
         LOG_WARNING("No free dynamic maps!");
         return; // None free!
       }
@@ -720,7 +720,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
       // First find a suitable dynamic lightmap to work with
       const std::optional<uint16_t> dynamic_handle = GetFreeDynamicLightmap(xres, yres);
 
-      if (!dynamic_handle.has_value()) {
+      if (!dynamic_handle) {
         LOG_WARNING("No free dynamic maps!");
         DoneLightingInstance();
 
@@ -1158,7 +1158,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
       // First find a suitable dynamic lightmap to work with
       const std::optional<uint16_t> dynamic_handle = GetFreeDynamicLightmap(xres, yres);
 
-      if (!dynamic_handle.has_value()) {
+      if (!dynamic_handle) {
         LOG_WARNING("No free dynamic maps!");
         return; // None free!
       }

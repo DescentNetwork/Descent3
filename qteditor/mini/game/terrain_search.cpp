@@ -736,7 +736,7 @@ std::optional<uint32_t> GetTerrainCellFromPos(vector3& pos) {
 
 std::optional<uint32_t> GetTerrainRoomFromPos(vector3& pos) {
   const std::optional<uint32_t> cell = GetTerrainCellFromPos(pos);
-  if (!cell.has_value())
+  if (!cell)
     return std::nullopt;
   return MAKE_ROOMNUM(*cell);
 }
