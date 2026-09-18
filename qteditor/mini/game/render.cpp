@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <vector>
 
 #include "render.h"
 #include "3d.h"
@@ -187,8 +188,6 @@ light_glow LightGlows[MAX_LIGHT_GLOWS];
 light_glow LightGlowsThisFrame[MAX_LIGHT_GLOWS];
 int FastCoronas = 0;
 int Num_glows = 0, Num_glows_this_frame = 0;
-// For sorting our textures in state limited environments
-state_limited_element State_elements[MAX_STATE_ELEMENTS];
 // For terrain portals
 int Terrain_portal_left, Terrain_portal_right, Terrain_portal_top, Terrain_portal_bottom;
 // For deformation effect
@@ -201,8 +200,7 @@ int Mirror_room;
 int Num_mirrored_rooms;
 int16_t Mirrored_room_list[MAX_ROOMS];
 uint8_t Mirrored_room_checked[MAX_ROOMS];
-int16_t Mirror_rooms[MAX_ROOMS];
-int Num_mirror_rooms = 0;
+std::vector<int16_t> Mirror_rooms;
 //
 //  UTILITY FUNCS
 //
@@ -624,7 +622,7 @@ void MarkFacesForRendering(int roomnum, clip_wnd *wnd) {
         fp = &rp->faces[rp->mirror_faces_list[i]];
         if (FaceIntersectsPortal(rp, fp, wnd)) {
           rp->flags.mirror_visible = 1;
-          Mirror_rooms[Num_mirror_rooms++] = roomnum;
+          Mirror_rooms.push_back(static_cast<int16_t>(roomnum));
           done = 1;
         }
       }
@@ -1102,7 +1100,7 @@ void BuildRoomList(int start_room_num) {
   if (rp->mirror_face != -1 && Detail_settings.Mirrored_surfaces &&
       !(rp->faces[rp->mirror_face].flags.not_facing)) {
     rp->flags.mirror_visible = 1;
-    Mirror_rooms[Num_mirror_rooms++] = start_room_num;
+    Mirror_rooms.push_back(static_cast<int16_t>(start_room_num));
   }
 
   // Get our points rotated, and update the global point list
@@ -2237,7 +2235,7 @@ void SetupRoomFog(room *rp, vector3 *eye, matrix *orient, int viewer_room) {
 // Renders the faces in a room without worrying about sorting.  Used in the game when Z-buffering is active
 void RenderRoomUnsorted(room *rp) {
   int fn;
-  int rcount = 0;
+  std::vector<state_limited_element> state_elements;
   Q_ASSERT(rp->num_faces <= MAX_FACES_PER_ROOM);
 
   // Rotate points in this room if need be
@@ -2327,24 +2325,25 @@ void RenderRoomUnsorted(room *rp) {
         RenderFace(rp, fn);
       } else {
         // setup order list
-        State_elements[rcount].facenum = fn;
+        state_limited_element state_element;
+        state_element.facenum = fn;
         if (fp->flags.lightmap)
-          State_elements[rcount].sort_key = (LightmapInfo[fp->lmi_handle].lm_handle * MAX_TEXTURES) + fp->tmap;
+          state_element.sort_key = (LightmapInfo[fp->lmi_handle].lm_handle * MAX_TEXTURES) + fp->tmap;
         else
-          State_elements[rcount].sort_key = fp->tmap;
-        rcount++;
+          state_element.sort_key = fp->tmap;
+        state_elements.push_back(state_element);
       }
     }
   }
 
   if (StateLimited) {
     // Sort the faces
-    SortStates(State_elements, rcount);
+    SortStates(state_elements.data(), static_cast<int>(state_elements.size()));
 
     // Render the faces
     int i;
-    for (i = rcount - 1; i >= 0; i--) {
-      RenderFace(rp, State_elements[i].facenum);
+    for (i = static_cast<int>(state_elements.size()) - 1; i >= 0; i--) {
+      RenderFace(rp, state_elements[i].facenum);
     }
   }
 }
@@ -3285,9 +3284,9 @@ void RenderMirrorRooms() {
   int i;
   if (!UseHardware || !Detail_settings.Mirrored_surfaces)
     return;
-  if (Num_mirror_rooms == 0)
+  if (Mirror_rooms.empty())
     return;
-  for (i = 0; i < Num_mirror_rooms; i++) {
+  for (i = 0; i < static_cast<int>(Mirror_rooms.size()); i++) {
     room *rp = &Rooms[Mirror_rooms[i]];
     // Reset mirrors
     Render_mirror_for_room = false;
@@ -3335,7 +3334,7 @@ void RenderMirrorRooms() {
   rend_SetZBufferWriteMask(1);
   rend_SetZBufferState(1);
   // Draw mirror faces now
-  for (i = 0; i < Num_mirror_rooms; i++) {
+  for (i = 0; i < static_cast<int>(Mirror_rooms.size()); i++) {
     room *rp = &Rooms[Mirror_rooms[i]];
     face *fp = &rp->faces[rp->mirror_face];
     g3Point save_points[MAX_VERTS_PER_FACE];
@@ -3447,7 +3446,7 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
   // First render mirrored rooms
   RenderMirrorRooms();
 
-  Num_mirror_rooms = 0;
+  Mirror_rooms.clear();
 
   // Render the list of rooms
   for (int nn = N_render_rooms - 1; nn >= 0; nn--) {

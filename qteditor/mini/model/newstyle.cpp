@@ -78,6 +78,7 @@
  */
 
 #include <QtGlobal>
+#include <vector>
 
 #include "3d.h"
 #include "findintersection.h"
@@ -686,7 +687,7 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
   int i;
   int modelnum = sm - pm->submodel.data();
   int16_t alpha_faces[MAX_FACES_PER_ROOM], num_alpha_faces = 0;
-  int rcount = 0;
+  std::vector<state_limited_element> state_elements;
   vector3 view_pos;
 
   g3_GetViewPosition(&view_pos);
@@ -723,17 +724,18 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
     }
 
     if (StateLimited) {
-      State_elements[rcount].facenum = i;
-      State_elements[rcount].sort_key = pm->textures[fp->texnum];
-      rcount++;
+      state_limited_element state_element;
+      state_element.facenum = i;
+      state_element.sort_key = pm->textures[fp->texnum];
+      state_elements.push_back(state_element);
     } else
       RenderSubmodelFace(pm, sm, i);
   }
 
   if (StateLimited) {
-    SortStates(State_elements, rcount);
-    for (i = rcount - 1; i >= 0; i--) {
-      int facenum = State_elements[i].facenum;
+    SortStates(state_elements.data(), static_cast<int>(state_elements.size()));
+    for (i = static_cast<int>(state_elements.size()) - 1; i >= 0; i--) {
+      int facenum = state_elements[i].facenum;
       RenderSubmodelFace(pm, sm, facenum);
     }
   }

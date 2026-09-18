@@ -245,9 +245,6 @@ struct obj_sort_item {
   float dist;
 };
 
-#define MAX_STATE_ELEMENTS 8000
-extern state_limited_element State_elements[MAX_STATE_ELEMENTS];
-
 extern g3Point SolidFogPoints[], AlphaFogPoints[];
 
 // Takes a face and adds the appropriate vertices for drawing in the fog zone
