@@ -1373,8 +1373,8 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
       const uint16_t lm_handle = LightmapInfo[i].lm_handle;
       if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
         lightmap_spoken_for[lm_handle] = 1;
-        const int map_w = static_cast<int>(lm_w(lm_handle).value_or(0));
-        const int map_h = static_cast<int>(lm_h(lm_handle).value_or(0));
+        const int map_w = static_cast<int>(lm_w(lm_handle).value_or(255));
+        const int map_h = static_cast<int>(lm_h(lm_handle).value_or(255));
         ofile << (int16_t)map_w;
         ofile << (int16_t)map_h;
         const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);

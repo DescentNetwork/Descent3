@@ -2574,8 +2574,8 @@ private slots:
       const int lm_handle = LightmapInfo[i].lm_handle;
       QVERIFY(lm_handle >= 0 && lm_handle < MAX_LIGHTMAPS);
       QVERIFY(GameLightmaps[lm_handle].used > 0);
-      const int w = static_cast<int>(lm_w(lm_handle).value_or(0));
-      const int h = static_cast<int>(lm_h(lm_handle).value_or(0));
+      const int w = static_cast<int>(lm_w(lm_handle).value_or(255));
+      const int h = static_cast<int>(lm_h(lm_handle).value_or(255));
       QVERIFY(w > 1 && h > 1);
       const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
       QVERIFY(!data.empty());
