@@ -1349,13 +1349,12 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
   // Build the lm_handle -> ordinal remap and count infos, exactly as the
   // engine's WriteLightmapChunk does (dynamic infos are excluded).
   const int MAXLMS = MAX_LIGHTMAPS;
-  const int MAXINFOS = MAX_LIGHTMAP_INFOS;
   std::vector<uint16_t> lightmap_remap(MAXLMS, 0);
   std::vector<uint8_t> lightmap_spoken_for(MAXLMS, 0);
   int lightmap_count = 0;
   int lightmap_info_count = 0;
 
-  for (int i = 0; i < MAXINFOS; i++) {
+  for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
     if (LightmapInfo[i].used && LightmapInfo[i].type != LMI_DYNAMIC) {
       const uint16_t lm_handle = LightmapInfo[i].lm_handle;
       if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
@@ -1371,7 +1370,7 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, "NLMP");
 
   ofile << (int32_t)lightmap_count;
-  for (int i = 0; i < MAXINFOS; i++) {
+  for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
     if (LightmapInfo[i].used && LightmapInfo[i].type != LMI_DYNAMIC) {
       const uint16_t lm_handle = LightmapInfo[i].lm_handle;
       if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
@@ -1390,7 +1389,7 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
   }
 
   ofile << (int32_t)lightmap_info_count;
-  for (int i = 0; i < MAXINFOS; i++) {
+  for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
     if (LightmapInfo[i].used && LightmapInfo[i].type != LMI_DYNAMIC) {
       const lightmap_info &info = LightmapInfo[i];
       ofile << (int16_t)lightmap_remap[info.lm_handle];

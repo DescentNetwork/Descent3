@@ -44,7 +44,10 @@ struct bms_lightmap {
   uint8_t cx1, cy1, cx2, cy2; // Change x and y coords
 };
 
-extern bms_lightmap GameLightmaps[MAX_LIGHTMAPS];
+// The lightmap table.  Grows on demand as fresh handles are created (the
+// original's MAX_LIGHTMAPS array is kept as a hard upper bound so handles stay
+// inside uint16_t range; the test suite asserts handles < MAX_LIGHTMAPS).
+extern std::vector<bms_lightmap> GameLightmaps;
 
 // Sets all the lightmaps to unused
 void lm_InitLightmaps();
@@ -52,7 +55,7 @@ void lm_InitLightmaps();
 void lm_ShutdownLightmaps(void);
 
 // Allocs a lightmap of w x h size
-// Returns 16-bit lightmap handle (index into GameLightmaps[MAX_LIGHTMAPS]) if
+// Returns 16-bit lightmap handle (index into GameLightmaps) if
 // successful, nullopt if otherwise
 std::optional<uint16_t> lm_AllocLightmap(int w, int h);
 

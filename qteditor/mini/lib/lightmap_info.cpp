@@ -4,7 +4,7 @@
  * Copyright (C) 2024-2026 Descent Developers
  *
  * Qt-neutral lightmap info (ported from the original lightmap_info.cpp).  The
- * store table is static storage owned by the mini; slots are handed out in
+ * store table is auto-sized storage owned by the mini; slots are handed out in
  * sequential order via a free list so the level loader's NLMP round-trip can
  * treat file ordinals and store slots interchangeably.
  */
@@ -15,42 +15,45 @@
 
 #include <QtGlobal>
 
-#include <cstring>
-
 // The lightmap info store table and its globals.
-lightmap_info LightmapInfoStore[MAX_LIGHTMAP_INFOS];
-lightmap_info *LightmapInfo = LightmapInfoStore;
+std::vector<lightmap_info> LightmapInfo;
 int Num_of_lightmap_info = 0;
 int Num_lightmap_infos_read = 0;
 
-static uint16_t Free_lmi_list[MAX_LIGHTMAP_INFOS];
+static std::vector<uint16_t> Free_lmi_list;
 
 void CloseLightmapInfos() {
-  // The mini keeps lightmap info storage statically; nothing is freed at exit.
+  // The mini keeps lightmap info storage in auto-sized vectors; nothing is
+  // freed at exit.
 }
 
 // Sets all the lightmaps to unused
 void InitLightmapInfo(int nummaps) {
   (void)nummaps;
-  memset(LightmapInfoStore, 0, sizeof(LightmapInfoStore));
-  for (uint32_t i = 0; i < MAX_LIGHTMAP_INFOS; i++)
-    Free_lmi_list[i] = static_cast<uint16_t>(i);
+  LightmapInfo.clear();
+  Free_lmi_list.clear();
   Num_of_lightmap_info = 0;
 }
 
 // Allocs a lightmap of w x h size, optionally allocating its backing texture.
 // Returns 16-bit lightmap info handle if successful, nullopt if otherwise
 std::optional<uint16_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap) {
-  int n;
+  // The free list hands out fresh handles as identity values (its slot index).
+  // When the cursor reaches the current frontier the table must first grow by
+  // one slot whose free-list value equals its own index; MAX_LIGHTMAP_INFOS
+  // stays as the hard cap keeping handles inside uint16_t range.
+  if (Num_of_lightmap_info == static_cast<int>(LightmapInfo.size())) {
+    if (LightmapInfo.size() >= MAX_LIGHTMAP_INFOS)
+      return std::nullopt; // Ran out of lightmap infos!
+    LightmapInfo.push_back(lightmap_info{});
+    Free_lmi_list.push_back(static_cast<uint16_t>(Num_of_lightmap_info));
+  }
 
-  if (Num_of_lightmap_info >= static_cast<int>(MAX_LIGHTMAP_INFOS))
-    return std::nullopt; // Ran out of lightmap infos!
-
-  n = Free_lmi_list[Num_of_lightmap_info++];
-  Q_ASSERT(n >= 0 && n < static_cast<int>(MAX_LIGHTMAP_INFOS));
+  int n = Free_lmi_list[Num_of_lightmap_info++];
+  Q_ASSERT(n >= 0 && n < static_cast<int>(LightmapInfo.size()));
   Q_ASSERT(LightmapInfo[n].used == 0);
 
-  memset(&LightmapInfo[n], 0, sizeof(lightmap_info));
+  LightmapInfo[n] = lightmap_info{};
 
   Q_ASSERT(w >= 2 && h >= 2);
 
@@ -75,7 +78,7 @@ std::optional<uint16_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lig
 // Given a handle, frees the lightmap info (and its lightmap) if it is the last
 // reference.
 void FreeLightmapInfo(int handle) {
-  if (handle < 0 || handle >= static_cast<int>(MAX_LIGHTMAP_INFOS))
+  if (handle < 0 || handle >= static_cast<int>(LightmapInfo.size()))
     return;
 
   if (LightmapInfo[handle].used < 1)
@@ -86,12 +89,15 @@ void FreeLightmapInfo(int handle) {
   if (LightmapInfo[handle].used == 0) {
     lm_FreeLightmap(LightmapInfo[handle].lm_handle);
 
+    Q_ASSERT(Num_of_lightmap_info > 0);
     Free_lmi_list[--Num_of_lightmap_info] = static_cast<uint16_t>(handle);
   }
 }
 
 // Gets the width of this lightmap_info handle (stored as uint8)
 std::optional<uint8_t> lmi_w(int handle) {
+  if (handle < 0 || handle >= static_cast<int>(LightmapInfo.size()))
+    return std::nullopt;
   if (!LightmapInfo[handle].used)
     return std::nullopt;
   return LightmapInfo[handle].width;
@@ -99,6 +105,8 @@ std::optional<uint8_t> lmi_w(int handle) {
 
 // Gets the height of this lightmap_info handle (stored as uint8)
 std::optional<uint8_t> lmi_h(int handle) {
+  if (handle < 0 || handle >= static_cast<int>(LightmapInfo.size()))
+    return std::nullopt;
   if (!LightmapInfo[handle].used)
     return std::nullopt;
   return LightmapInfo[handle].height;

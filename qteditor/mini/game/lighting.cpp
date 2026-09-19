@@ -88,7 +88,7 @@ static std::vector<int> Destroyed_light_faces_this_frame;
 
 static void FreeLighting();
 static std::optional<uint16_t> GetFreeDynamicLightmap(int w, int h);
-static void BlendLightingEdges(lightmap_info *lmi_ptr);
+static void BlendLightingEdges(int lmi_handle);
 static void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, float red_scale, float green_scale,
                                         float blue_scale, vector3 *light_direction, float dot_range);
 static void StartLightingInstance(vector3 *pos, matrix *orient);
@@ -202,15 +202,15 @@ std::optional<uint16_t> GetFreeDynamicLightmap(int w, int h) {
 }
 
 // Makes all the edges of dynamic lighting blend into the body of the lightmap
-void BlendLightingEdges(lightmap_info *lmi_ptr) {
-  int lmi_handle = lmi_ptr - LightmapInfo;
-  int h = static_cast<int>(lmi_h(lmi_handle).value_or(0));
-  int w = static_cast<int>(lmi_w(lmi_handle).value_or(0));
-  int lm_handle = lmi_ptr->lm_handle;
+void BlendLightingEdges(int lmi_handle_in) {
+  lightmap_info &lmi = LightmapInfo[lmi_handle_in];
+  int h = static_cast<int>(lmi_h(lmi_handle_in).value_or(0));
+  int w = static_cast<int>(lmi_w(lmi_handle_in).value_or(0));
+  int lm_handle = lmi.lm_handle;
   std::vector<std::vector<uint16_t>> &dest_data = lm_data(lm_handle);
   std::vector<std::vector<uint16_t>> &src_data = dest_data;
-  int dest_x = lmi_ptr->x1 - 1;
-  int dest_y = lmi_ptr->y1 - 1;
+  int dest_x = lmi.x1 - 1;
+  int dest_y = lmi.y1 - 1;
   int i;
 
   Q_ASSERT(dest_x >= 0 && dest_y >= 0);
@@ -1293,7 +1293,7 @@ void BlendAllLightingEdges() {
   for (uint16_t edge : Edges_to_blend) {
     if (LightmapInfo[edge].used < 1)
       continue; // this face was killed last frame.  This can happen with objects
-    BlendLightingEdges(&LightmapInfo[edge]);
+    BlendLightingEdges(edge);
   }
 }
 
@@ -2119,7 +2119,7 @@ void DestroyLight(int roomnum, int facenum) {
       }
     }
 
-    BlendLightingEdges(lmi_ptr);
+    BlendLightingEdges(fp->lmi_handle);
   }
 
   for (i = 0; i < num_spoken_for; i++) {

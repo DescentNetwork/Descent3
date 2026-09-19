@@ -546,7 +546,7 @@ std::string RenderLevelStats() {
     }
   }
 
-  for (i = 0; i < MAX_LIGHTMAP_INFOS; i++) {
+  for (i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
     if (!LightmapInfo[i].used)
       continue;
     if (LightmapInfo[i].type == LMI_DYNAMIC ||
@@ -554,7 +554,7 @@ std::string RenderLevelStats() {
       continue;
     lightmaps_used[LightmapInfo[i].lm_handle] = 1;
   }
-  for (i = 0; i < MAX_LIGHTMAPS; i++) {
+  for (i = 0; i < static_cast<int>(GameLightmaps.size()); i++) {
     if (!lightmaps_used[i])
       continue;
     const std::vector<std::vector<uint16_t>> &data = lm_data(i);

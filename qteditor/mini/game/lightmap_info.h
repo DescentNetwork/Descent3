@@ -41,6 +41,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <vector>
 
 #include "vecmat.h"
 
@@ -68,7 +69,10 @@ struct lightmap_info {
   uint8_t type; // see LMI_types above
 };
 
-extern lightmap_info *LightmapInfo;
+// The lightmap-info table.  Grows on demand as fresh handles are created (the
+// original's MAX_LIGHTMAP_INFOS array is kept as a hard upper bound so handles
+// stay inside uint16_t range; the test suite asserts handles <= MAX_LIGHTMAP_INFOS).
+extern std::vector<lightmap_info> LightmapInfo;
 extern int Num_of_lightmap_info;
 extern int Num_lightmap_infos_read;
 
