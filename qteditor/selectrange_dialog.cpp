@@ -35,7 +35,7 @@ SelectRangeDialog::SelectRangeDialog(QWidget *parent)
 {
   ui->setupUi(this);
 
-  connect(this, &QDialog::accept, this, &SelectRangeDialog::onOk);
+  connect(ui->IDOK, &QPushButton::clicked, this, &SelectRangeDialog::onOk);
   connect(ui->IDC_LOWER_BOUND_EDIT, &QLineEdit::editingFinished, this, &SelectRangeDialog::onLowerBoundChanged);
   connect(ui->IDC_UPPER_BOUND_EDIT, &QLineEdit::editingFinished, this, &SelectRangeDialog::onUpperBoundChanged);
   connect(ui->IDC_SLOPE_EDIT, &QLineEdit::editingFinished, this, &SelectRangeDialog::onSlopeChanged);
@@ -126,7 +126,7 @@ void SelectRangeDialog::runSelection() {
     }
 
     if (cur_texture) {
-      if (Terrain_tex_seg[Terrain_seg[i].texseg_index].tex_index != D3EditState.texdlg_texture)
+      if (Terrain_tex_seg[Terrain_seg[i].texseg_index].tex_index != app.texdlg_texture)
         selected = 0;
     }
 

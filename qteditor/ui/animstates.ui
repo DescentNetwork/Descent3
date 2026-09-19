@@ -7,7 +7,7 @@
         <x>0</x>
         <y>0</y>
         <width>685</width>
-        <height>734</height>
+        <height>600</height>
       </rect>
     </property>
     <property name="windowTitle">
@@ -30,13 +30,13 @@
     <property name="minimumSize">
       <size>
         <width>685</width>
-        <height>734</height>
+        <height>600</height>
       </size>
     </property>
     <property name="maximumSize">
       <size>
         <width>685</width>
-        <height>734</height>
+        <height>600</height>
       </size>
     </property>
     <widget class="QGroupBox" name="IDC_STATIC">
@@ -45,7 +45,7 @@
           <x>27</x>
           <y>34</y>
           <width>459</width>
-          <height>700</height>
+          <height>566</height>
         </rect>
       </property>
       <property name="title">
@@ -224,7 +224,7 @@
             <x>8</x>
             <y>53</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -242,7 +242,7 @@
           <rect>
             <x>123</x>
             <y>53</y>
-            <width>44</width>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -263,7 +263,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>73</y>
+            <y>67</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -279,7 +279,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>73</y>
+            <y>67</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -295,7 +295,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>73</y>
+            <y>67</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -314,7 +314,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>73</y>
+            <y>67</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -333,9 +333,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>80</y>
+            <y>74</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -352,8 +352,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>80</y>
-            <width>44</width>
+            <y>74</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -374,7 +374,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>100</y>
+            <y>88</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -390,7 +390,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>100</y>
+            <y>88</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -406,7 +406,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>100</y>
+            <y>88</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -425,7 +425,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>100</y>
+            <y>88</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -444,9 +444,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>105</y>
+            <y>93</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -463,8 +463,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>105</y>
-            <width>44</width>
+            <y>93</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -485,7 +485,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>125</y>
+            <y>108</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -501,7 +501,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>125</y>
+            <y>108</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -517,7 +517,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>125</y>
+            <y>108</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -536,7 +536,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>125</y>
+            <y>108</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -555,9 +555,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>132</y>
+            <y>115</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -574,8 +574,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>132</y>
-            <width>44</width>
+            <y>115</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -596,7 +596,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>152</y>
+            <y>129</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -612,7 +612,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>152</y>
+            <y>129</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -628,7 +628,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>152</y>
+            <y>129</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -647,7 +647,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>152</y>
+            <y>129</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -666,9 +666,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>159</y>
+            <y>136</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -685,8 +685,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>159</y>
-            <width>44</width>
+            <y>136</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -707,7 +707,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>176</y>
+            <y>150</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -723,7 +723,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>176</y>
+            <y>150</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -739,7 +739,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>176</y>
+            <y>150</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -758,7 +758,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>176</y>
+            <y>150</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -777,9 +777,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>189</y>
+            <y>160</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -796,8 +796,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>189</y>
-            <width>44</width>
+            <y>160</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -818,7 +818,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>206</y>
+            <y>174</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -834,7 +834,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>206</y>
+            <y>174</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -850,7 +850,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>206</y>
+            <y>174</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -869,7 +869,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>206</y>
+            <y>174</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -888,9 +888,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>216</y>
+            <y>181</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -907,8 +907,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>216</y>
-            <width>44</width>
+            <y>181</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -929,7 +929,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>236</y>
+            <y>195</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -945,7 +945,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>236</y>
+            <y>195</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -961,7 +961,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>236</y>
+            <y>195</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -980,7 +980,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>236</y>
+            <y>195</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -999,9 +999,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>243</y>
+            <y>202</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -1018,8 +1018,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>243</y>
-            <width>44</width>
+            <y>202</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -1040,7 +1040,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>263</y>
+            <y>216</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -1059,7 +1059,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>263</y>
+            <y>216</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -1078,7 +1078,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>265</y>
+            <y>218</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1094,7 +1094,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>265</y>
+            <y>218</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1110,9 +1110,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>272</y>
+            <y>225</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -1129,8 +1129,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>272</y>
-            <width>44</width>
+            <y>225</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -1151,7 +1151,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>289</y>
+            <y>239</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1167,7 +1167,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>289</y>
+            <y>239</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1183,7 +1183,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>289</y>
+            <y>239</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -1202,7 +1202,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>289</y>
+            <y>239</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -1221,9 +1221,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>299</y>
+            <y>246</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -1240,8 +1240,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>299</y>
-            <width>44</width>
+            <y>246</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -1262,7 +1262,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>319</y>
+            <y>260</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1278,7 +1278,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>319</y>
+            <y>260</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1294,7 +1294,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>319</y>
+            <y>260</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -1313,7 +1313,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>319</y>
+            <y>260</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -1332,9 +1332,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>324</y>
+            <y>265</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -1351,8 +1351,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>324</y>
-            <width>44</width>
+            <y>265</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -1373,7 +1373,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>344</y>
+            <y>280</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -1392,7 +1392,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>344</y>
+            <y>280</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -1411,7 +1411,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>346</y>
+            <y>282</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1427,7 +1427,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>346</y>
+            <y>282</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1443,9 +1443,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>351</y>
+            <y>287</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -1462,8 +1462,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>351</y>
-            <width>44</width>
+            <y>287</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -1484,7 +1484,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>371</y>
+            <y>301</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1500,7 +1500,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>371</y>
+            <y>301</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1516,7 +1516,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>371</y>
+            <y>301</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -1535,7 +1535,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>371</y>
+            <y>301</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -1554,9 +1554,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>378</y>
+            <y>308</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -1573,8 +1573,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>378</y>
-            <width>44</width>
+            <y>308</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -1595,7 +1595,7 @@
         <property name="geometry">
           <rect>
             <x>82</x>
-            <y>395</y>
+            <y>322</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1611,7 +1611,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>395</y>
+            <y>322</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1627,7 +1627,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>395</y>
+            <y>322</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -1646,7 +1646,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>395</y>
+            <y>322</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -1665,9 +1665,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>408</y>
+            <y>332</y>
             <width>75</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -1684,8 +1684,8 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>408</y>
-            <width>44</width>
+            <y>332</y>
+            <width>41</width>
             <height>13</height>
           </rect>
         </property>
@@ -1706,7 +1706,7 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>425</y>
+            <y>346</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1722,7 +1722,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>425</y>
+            <y>346</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1738,7 +1738,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>425</y>
+            <y>346</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -1757,7 +1757,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>425</y>
+            <y>346</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -1776,8 +1776,8 @@
         <property name="geometry">
           <rect>
             <x>157</x>
-            <y>435</y>
-            <width>44</width>
+            <y>353</y>
+            <width>13</width>
             <height>11</height>
           </rect>
         </property>
@@ -1798,9 +1798,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>436</y>
+            <y>354</y>
             <width>108</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -1817,7 +1817,7 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>456</y>
+            <y>368</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1833,7 +1833,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>456</y>
+            <y>368</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1849,7 +1849,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>456</y>
+            <y>368</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -1868,7 +1868,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>456</y>
+            <y>368</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -1887,9 +1887,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>463</y>
+            <y>375</y>
             <width>101</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -1906,8 +1906,8 @@
         <property name="geometry">
           <rect>
             <x>157</x>
-            <y>463</y>
-            <width>44</width>
+            <y>375</y>
+            <width>13</width>
             <height>11</height>
           </rect>
         </property>
@@ -1928,7 +1928,7 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>483</y>
+            <y>389</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1944,7 +1944,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>483</y>
+            <y>389</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -1960,7 +1960,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>483</y>
+            <y>389</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -1979,7 +1979,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>483</y>
+            <y>389</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -1998,8 +1998,8 @@
         <property name="geometry">
           <rect>
             <x>157</x>
-            <y>490</y>
-            <width>44</width>
+            <y>396</y>
+            <width>13</width>
             <height>11</height>
           </rect>
         </property>
@@ -2020,9 +2020,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>492</y>
+            <y>398</y>
             <width>108</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -2039,7 +2039,7 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>509</y>
+            <y>412</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2055,7 +2055,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>509</y>
+            <y>412</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2071,7 +2071,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>509</y>
+            <y>412</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -2090,7 +2090,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>509</y>
+            <y>412</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -2109,9 +2109,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>519</y>
+            <y>419</y>
             <width>101</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -2128,8 +2128,8 @@
         <property name="geometry">
           <rect>
             <x>157</x>
-            <y>519</y>
-            <width>44</width>
+            <y>419</y>
+            <width>13</width>
             <height>11</height>
           </rect>
         </property>
@@ -2150,7 +2150,7 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>539</y>
+            <y>433</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2166,7 +2166,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>539</y>
+            <y>433</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2182,7 +2182,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>539</y>
+            <y>433</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -2201,7 +2201,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>539</y>
+            <y>433</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -2220,9 +2220,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>544</y>
+            <y>438</y>
             <width>108</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -2239,8 +2239,8 @@
         <property name="geometry">
           <rect>
             <x>157</x>
-            <y>544</y>
-            <width>44</width>
+            <y>438</y>
+            <width>13</width>
             <height>11</height>
           </rect>
         </property>
@@ -2261,7 +2261,7 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>569</y>
+            <y>460</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2277,7 +2277,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>569</y>
+            <y>460</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2293,7 +2293,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>569</y>
+            <y>460</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -2312,7 +2312,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>569</y>
+            <y>460</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -2331,9 +2331,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>576</y>
+            <y>467</y>
             <width>109</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -2350,8 +2350,8 @@
         <property name="geometry">
           <rect>
             <x>157</x>
-            <y>576</y>
-            <width>44</width>
+            <y>467</y>
+            <width>13</width>
             <height>11</height>
           </rect>
         </property>
@@ -2375,7 +2375,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>593</y>
+            <y>481</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -2394,7 +2394,7 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>598</y>
+            <y>483</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2410,7 +2410,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>598</y>
+            <y>483</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2426,7 +2426,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>598</y>
+            <y>483</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -2442,9 +2442,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>605</y>
+            <y>490</y>
             <width>109</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -2461,8 +2461,8 @@
         <property name="geometry">
           <rect>
             <x>157</x>
-            <y>605</y>
-            <width>44</width>
+            <y>490</y>
+            <width>13</width>
             <height>11</height>
           </rect>
         </property>
@@ -2483,7 +2483,7 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>625</y>
+            <y>504</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2499,7 +2499,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>625</y>
+            <y>504</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2515,7 +2515,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>625</y>
+            <y>504</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -2534,7 +2534,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>625</y>
+            <y>504</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -2553,9 +2553,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>632</y>
+            <y>511</y>
             <width>109</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -2572,8 +2572,8 @@
         <property name="geometry">
           <rect>
             <x>157</x>
-            <y>632</y>
-            <width>44</width>
+            <y>511</y>
+            <width>13</width>
             <height>11</height>
           </rect>
         </property>
@@ -2594,7 +2594,7 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>652</y>
+            <y>525</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2610,7 +2610,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>652</y>
+            <y>525</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2626,7 +2626,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>652</y>
+            <y>525</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -2645,7 +2645,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>652</y>
+            <y>525</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -2664,9 +2664,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>659</y>
+            <y>532</y>
             <width>109</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -2683,8 +2683,8 @@
         <property name="geometry">
           <rect>
             <x>157</x>
-            <y>659</y>
-            <width>44</width>
+            <y>532</y>
+            <width>13</width>
             <height>11</height>
           </rect>
         </property>
@@ -2705,7 +2705,7 @@
         <property name="geometry">
           <rect>
             <x>123</x>
-            <y>679</y>
+            <y>546</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2721,7 +2721,7 @@
         <property name="geometry">
           <rect>
             <x>172</x>
-            <y>679</y>
+            <y>546</y>
             <width>34</width>
             <height>20</height>
           </rect>
@@ -2737,7 +2737,7 @@
         <property name="geometry">
           <rect>
             <x>246</x>
-            <y>679</y>
+            <y>546</y>
             <width>47</width>
             <height>20</height>
           </rect>
@@ -2756,7 +2756,7 @@
         <property name="geometry">
           <rect>
             <x>308</x>
-            <y>679</y>
+            <y>546</y>
             <width>142</width>
             <height>19</height>
           </rect>
@@ -2775,9 +2775,9 @@
         <property name="geometry">
           <rect>
             <x>8</x>
-            <y>684</y>
+            <y>551</y>
             <width>109</width>
-            <height>16</height>
+            <height>13</height>
           </rect>
         </property>
         <property name="text">
@@ -2794,8 +2794,8 @@
         <property name="geometry">
           <rect>
             <x>157</x>
-            <y>684</y>
-            <width>44</width>
+            <y>551</y>
+            <width>13</width>
             <height>11</height>
           </rect>
         </property>
@@ -2958,7 +2958,7 @@
       <property name="geometry">
         <rect>
           <x>493</x>
-          <y>259</y>
+          <y>224</y>
           <width>54</width>
           <height>22</height>
         </rect>
@@ -2983,7 +2983,7 @@
       <property name="geometry">
         <rect>
           <x>548</x>
-          <y>259</y>
+          <y>224</y>
           <width>130</width>
           <height>19</height>
         </rect>
@@ -3002,7 +3002,7 @@
       <property name="geometry">
         <rect>
           <x>493</x>
-          <y>299</y>
+          <y>252</y>
           <width>75</width>
           <height>27</height>
         </rect>
@@ -3027,7 +3027,7 @@
       <property name="geometry">
         <rect>
           <x>596</x>
-          <y>299</y>
+          <y>252</y>
           <width>82</width>
           <height>27</height>
         </rect>
@@ -3048,952 +3048,5 @@
         <bool>false</bool>
       </property>
     </widget>
-    <action name="IDD_ORPHANHUNTER">
-      <property name="text">
-        <string>Orphan Hunter</string>
-      </property>
-    </action>
-    <action name="IDD_REORDER_PAGES">
-      <property name="text">
-        <string>Reorder Net Pages</string>
-      </property>
-    </action>
-    <action name="IDD_SHOW_ALL_CHECKED_OUT">
-      <property name="text">
-        <string>Show All Pages Checked Out</string>
-      </property>
-    </action>
-    <action name="IDM_IMPORT_BITMAP">
-      <property name="text">
-        <string>Bitmap/Animation Converter...</string>
-      </property>
-    </action>
-    <action name="ID_APP_ABOUT">
-      <property name="text">
-        <string>&amp;About editor...</string>
-      </property>
-    </action>
-    <action name="ID_APP_EXIT">
-      <property name="text">
-        <string>E&amp;xit</string>
-      </property>
-      <property name="shortcut">
-        <string>Alt+X</string>
-      </property>
-    </action>
-    <action name="ID_BRIEFING_EDITOR">
-      <property name="text">
-        <string>Briefing Editor...</string>
-      </property>
-    </action>
-    <action name="ID_BUTTON_LIGHTING">
-      <property name="text">
-        <string>ID_BUTTON_LIGHTING</string>
-      </property>
-    </action>
-    <action name="ID_BUTTON_OUTLINE">
-      <property name="text">
-        <string>ID_BUTTON_OUTLINE</string>
-      </property>
-    </action>
-    <action name="ID_BUTTON_WINDOWSELECTION">
-      <property name="text">
-        <string>ID_BUTTON_WINDOWSELECTION</string>
-      </property>
-    </action>
-    <action name="ID_D3HELP">
-      <property name="text">
-        <string>Help on D3 Editor</string>
-      </property>
-    </action>
-    <action name="ID_EDITORS_AIPROPERTIES">
-      <property name="text">
-        <string>AI Properties...</string>
-      </property>
-    </action>
-    <action name="ID_EDITORS_AMBIENTSOUNDS">
-      <property name="text">
-        <string>Ambient Sounds...</string>
-      </property>
-    </action>
-    <action name="ID_EDITORS_DALLAS">
-      <property name="text">
-        <string>Dallas Graphical Script Editor...</string>
-      </property>
-    </action>
-    <action name="ID_EDITORS_FILES">
-      <property name="text">
-        <string>Files...</string>
-      </property>
-    </action>
-    <action name="ID_EDITORS_MEGACELLS">
-      <property name="text">
-        <string>Megacells...</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_ADDSELECT">
-      <property name="text">
-        <string>Add Current Room to Selected List</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_ATTACH">
-      <property name="text">
-        <string>&amp;Attach</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_CLEARSELECTED">
-      <property name="text">
-        <string>Clear Selected List</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_COPY">
-      <property name="text">
-        <string>&amp;Copy</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+Ins</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_CUT">
-      <property name="text">
-        <string>Cu&amp;t</string>
-      </property>
-      <property name="shortcut">
-        <string>Shift+Del</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_DELETE">
-      <property name="text">
-        <string>&amp;Delete</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_LOADSCRAP">
-      <property name="text">
-        <string>Load Scrap from Disk</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_PASTE">
-      <property name="text">
-        <string>&amp;Paste</string>
-      </property>
-      <property name="shortcut">
-        <string>Shift+Ins</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_PLACE">
-      <property name="text">
-        <string>&amp;Place in Mine</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_PLACE_TERRAIN">
-      <property name="text">
-        <string>&amp;Place on Terrain</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_REMOVESELECT">
-      <property name="text">
-        <string>Remove Current Room from Selected List</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_SAVESCRAP">
-      <property name="text">
-        <string>Save Scrap to Disk</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_SELECTATTACHED">
-      <property name="text">
-        <string>Select All Rooms Attached to Current Room</string>
-      </property>
-    </action>
-    <action name="ID_EDIT_UNDO">
-      <property name="text">
-        <string>&amp;Undo</string>
-      </property>
-      <property name="shortcut">
-        <string>Alt+Backspace</string>
-      </property>
-    </action>
-    <action name="ID_FILE_AUTOSAVE">
-      <property name="text">
-        <string>Autosave</string>
-      </property>
-      <property name="checkable">
-        <bool>true</bool>
-      </property>
-    </action>
-    <action name="ID_FILE_CHECKMINE">
-      <property name="text">
-        <string>&amp;Check Mine</string>
-      </property>
-    </action>
-    <action name="ID_FILE_FIXCRACKS">
-      <property name="text">
-        <string>Fix Level Cracks</string>
-      </property>
-    </action>
-    <action name="ID_FILE_FIXDEGENERATEFACES">
-      <property name="text">
-        <string>Fix/Remove Degenerate Faces</string>
-      </property>
-    </action>
-    <action name="ID_FILE_IMPORT_ROOM">
-      <property name="text">
-        <string>Import 3DSMax Room</string>
-      </property>
-    </action>
-    <action name="ID_FILE_INFORMATION">
-      <property name="text">
-        <string>&amp;Information</string>
-      </property>
-      <property name="shortcut">
-        <string>Alt+I</string>
-      </property>
-    </action>
-    <action name="ID_FILE_LEAVE_EDITOR">
-      <property name="text">
-        <string>Go to main menu...</string>
-      </property>
-    </action>
-    <action name="ID_FILE_LEVELPROPS">
-      <property name="text">
-        <string>Set Selected Room(s) Properties</string>
-      </property>
-    </action>
-    <action name="ID_FILE_LEVEL_INFO">
-      <property name="text">
-        <string>Edit Level Info...</string>
-      </property>
-    </action>
-    <action name="ID_FILE_MRU_FILE1">
-      <property name="text">
-        <string>Recent File</string>
-      </property>
-      <property name="enabled">
-        <bool>false</bool>
-      </property>
-    </action>
-    <action name="ID_FILE_NEW">
-      <property name="text">
-        <string>&amp;New</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+N</string>
-      </property>
-    </action>
-    <action name="ID_FILE_OPEN">
-      <property name="text">
-        <string>&amp;Open...</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+O</string>
-      </property>
-    </action>
-    <action name="ID_FILE_PLAY640X480">
-      <property name="text">
-        <string>&amp;Play in 640 x 480</string>
-      </property>
-      <property name="shortcut">
-        <string>Alt+P</string>
-      </property>
-    </action>
-    <action name="ID_FILE_PREFERENCES">
-      <property name="text">
-        <string>Preferences</string>
-      </property>
-    </action>
-    <action name="ID_FILE_PRINT">
-      <property name="text">
-        <string>&amp;Print...</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+P</string>
-      </property>
-    </action>
-    <action name="ID_FILE_PRINT_PREVIEW">
-      <property name="text">
-        <string>Print Pre&amp;view</string>
-      </property>
-    </action>
-    <action name="ID_FILE_PRINT_SETUP">
-      <property name="text">
-        <string>P&amp;rint Setup...</string>
-      </property>
-    </action>
-    <action name="ID_FILE_REMOVEDUPLICATEFACESFROMCURRENTROOM">
-      <property name="text">
-        <string>Remove Duplicate Faces from Current Room</string>
-      </property>
-    </action>
-    <action name="ID_FILE_REMOVEEXTRAPOINTS">
-      <property name="text">
-        <string>Remove Extra Points</string>
-      </property>
-    </action>
-    <action name="ID_FILE_RESTOREGAMESTATE">
-      <property name="text">
-        <string>Restore Gamestate</string>
-      </property>
-    </action>
-    <action name="ID_FILE_SAVE">
-      <property name="text">
-        <string>&amp;Save</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+S</string>
-      </property>
-    </action>
-    <action name="ID_FILE_SAVEGOALTEXT">
-      <property name="text">
-        <string>Save Goal Text to File</string>
-      </property>
-    </action>
-    <action name="ID_FILE_SAVE_AS">
-      <property name="text">
-        <string>Save &amp;As...</string>
-      </property>
-    </action>
-    <action name="ID_FILE_SAVE_COPY_AS">
-      <property name="text">
-        <string>Save Copy &amp;As...</string>
-      </property>
-    </action>
-    <action name="ID_FILE_STATS">
-      <property name="text">
-        <string>Show Level Stats</string>
-      </property>
-    </action>
-    <action name="ID_FILE_UPDATE">
-      <property name="text">
-        <string>&amp;Update</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+S</string>
-      </property>
-    </action>
-    <action name="ID_FILE_VERIFY_LEVEL">
-      <property name="text">
-        <string>Verify Level</string>
-      </property>
-    </action>
-    <action name="ID_HOTSPOT_TGA">
-      <property name="text">
-        <string>HotSpot TGA Extractor...</string>
-      </property>
-    </action>
-    <action name="ID_MINE_VIEW">
-      <property name="text">
-        <string>Mine View</string>
-      </property>
-      <property name="shortcut">
-        <string>F2</string>
-      </property>
-    </action>
-    <action name="ID_OBJBUTTON">
-      <property name="text">
-        <string>ID_OBJBUTTON</string>
-      </property>
-    </action>
-    <action name="ID_OBJECT_DELETEOBJECT">
-      <property name="text">
-        <string>Delete Object</string>
-      </property>
-      <property name="shortcut">
-        <string>Del</string>
-      </property>
-    </action>
-    <action name="ID_OBJECT_MOVEPLAYER">
-      <property name="text">
-        <string>Move Player 0 to Viewer</string>
-      </property>
-    </action>
-    <action name="ID_OBJECT_PLACECAMERAATCURRENTFACE">
-      <property name="text">
-        <string>Create New Camera at Current Face</string>
-      </property>
-    </action>
-    <action name="ID_OBJECT_PLACECAMERAATVIEWER">
-      <property name="text">
-        <string>Create New Camera at Viewer</string>
-      </property>
-    </action>
-    <action name="ID_OBJECT_PLACEOBJECT">
-      <property name="text">
-        <string>Place Object</string>
-      </property>
-      <property name="shortcut">
-        <string>Ins</string>
-      </property>
-    </action>
-    <action name="ID_OBJECT_PLACESOUNDSOURCEATVIEWER">
-      <property name="text">
-        <string>Create SoundSource at Viewer</string>
-      </property>
-    </action>
-    <action name="ID_OBJECT_PLACEWAYPOINTATVIEWER">
-      <property name="text">
-        <string>Place Waypoint at Viewer</string>
-      </property>
-    </action>
-    <action name="ID_OBJECT_SELECTBYNUMBER">
-      <property name="text">
-        <string>Select Object By Number</string>
-      </property>
-    </action>
-    <action name="ID_OBJECT_SETCAMERAFROMVIEWER">
-      <property name="text">
-        <string>Move Camera to Viewer</string>
-      </property>
-    </action>
-    <action name="ID_OBJECT_SETVIEWERFROMCAMERA">
-      <property name="text">
-        <string>Move Viewer to Camera</string>
-      </property>
-    </action>
-    <action name="ID_OSIRISCOMPILE">
-      <property name="text">
-        <string>ID_OSIRISCOMPILE</string>
-      </property>
-    </action>
-    <action name="ID_REINIT_OPENGL">
-      <property name="text">
-        <string>ID_REINIT_OPENGL</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_ADD">
-      <property name="text">
-        <string>&amp;Add Room at Current Face</string>
-      </property>
-      <property name="shortcut">
-        <string>Shift+A</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_ADDVERTTONEWFACE">
-      <property name="text">
-        <string>Add Vert to New Face</string>
-      </property>
-      <property name="shortcut">
-        <string>Shift+V</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_ATTACHROOM">
-      <property name="text">
-        <string>Attach Room</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_BUILDBRIDGE">
-      <property name="text">
-        <string>&amp;Build Bridge</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_BUILDSMOOTHBRIDGE">
-      <property name="text">
-        <string>Build Smooth Bridge</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+B</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_CLEARCENTERPOINT">
-      <property name="text">
-        <string>Clear Center Point</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_COMBINE">
-      <property name="text">
-        <string>Combine Rooms</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_DELETE">
-      <property name="text">
-        <string>Delete Current Room</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_DELETECONNECTEDFACES">
-      <property name="text">
-        <string>Delete Connected Faces</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_DELETEFACE">
-      <property name="text">
-        <string>Delete Current Face</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_DELETEPORTAL">
-      <property name="text">
-        <string>Delete Current Portal</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_DELETEVERT">
-      <property name="text">
-        <string>Delete Current Vert From Face</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_DROPROOM">
-      <property name="text">
-        <string>Drop Room</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_FACE_ADDVERTTOEDGE">
-      <property name="text">
-        <string>Add Vert To Edge</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_FACE_DELETEVERTONEDGE">
-      <property name="text">
-        <string>Delete Vert on Edge</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_FACE_MOVEVERTONEDGE">
-      <property name="text">
-        <string>Move Vert on Edge</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_FACE_SPLITFACE">
-      <property name="text">
-        <string>Split Face</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_FINISHNEWFACE">
-      <property name="text">
-        <string>Add Last Point to New Face (Finish Face)</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_GRABTEXTURE">
-      <property name="text">
-        <string>Grab Texture</string>
-      </property>
-      <property name="shortcut">
-        <string>G</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_JOINROOMS">
-      <property name="text">
-        <string>Join Rooms</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_JOINROOMSEXACT">
-      <property name="text">
-        <string>Join Rooms Exact</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_JOIN_ADJACENT_FACES">
-      <property name="text">
-        <string>Join Adjacent Faces</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_LINKTONEWEXTERNAL">
-      <property name="text">
-        <string>Link Room to New External Room</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_MARK">
-      <property name="text">
-        <string>&amp;Mark Room/Face</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+M</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_MERGEOBJECTINTOROOM">
-      <property name="text">
-        <string>Merge Object into Room</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_NEXTFACE">
-      <property name="text">
-        <string>Next Face</string>
-      </property>
-      <property name="shortcut">
-        <string>F</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_PLACEROOM">
-      <property name="text">
-        <string>Place Room at Current Room</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_PLACETERRAINROOM">
-      <property name="text">
-        <string>Place Room at Current Terrain Cell</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_PREVIOUSFACE">
-      <property name="text">
-        <string>Previous Face</string>
-      </property>
-      <property name="shortcut">
-        <string>Shift+F</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_PROPAGATETOADJACENTCOPLANARFACES">
-      <property name="text">
-        <string>Propagate to Adjacent Coplanar Faces</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+F</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_PROPAGATETOALL">
-      <property name="text">
-        <string>Propagate to All Faces in Room</string>
-      </property>
-      <property name="shortcut">
-        <string>Shift+R</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_RENAMEROOM">
-      <property name="text">
-        <string>Rename Room</string>
-      </property>
-      <property name="shortcut">
-        <string>Ctrl+R</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_ROTATEPLACEDROOM45DEGREES">
-      <property name="text">
-        <string>Rotate Placed Room 45 Degrees</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_SAVECURRENTROOM">
-      <property name="text">
-        <string>Save Current Room</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_SELECTBYNUMBER">
-      <property name="text">
-        <string>Select Room by Number</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_SELECTFACEBYNUMBER">
-      <property name="text">
-        <string>Select Face by Number</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_SETCENTERFROMVIEWER">
-      <property name="text">
-        <string>Set Room Center from Viewer</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_SNAPPLACEDROOM">
-      <property name="text">
-        <string>Snap Placed Room</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_SNAPPOINTTOEDGE">
-      <property name="text">
-        <string>Snap Point to Edge</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_SNAPPOINTTOFACE">
-      <property name="text">
-        <string>Snap Point to Face</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_SNAPPOINTTOPOINT">
-      <property name="text">
-        <string>Snap Point to Point</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_SPLITFACE">
-      <property name="text">
-        <string>Triangulate face</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_STARTNEWFACE">
-      <property name="text">
-        <string>Add First Point to New Face (Start Face)</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_SWAPMAKEDANDCURRENTROOMFACE">
-      <property name="text">
-        <string>Swap Marked and Current Room/Face</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_UNDOSNAP">
-      <property name="text">
-        <string>Undo Snap</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_UNPLACEROOM">
-      <property name="text">
-        <string>Un-place Room/Group/Door</string>
-      </property>
-    </action>
-    <action name="ID_ROOM_VIEW">
-      <property name="text">
-        <string>Room View</string>
-      </property>
-      <property name="shortcut">
-        <string>F4</string>
-      </property>
-    </action>
-    <action name="ID_SCRIPT_LEVEL_INTERFACE">
-      <property name="text">
-        <string>Levels and Scripts...</string>
-      </property>
-    </action>
-    <action name="ID_SUBEDITORS_FONT">
-      <property name="text">
-        <string>Font Editor...</string>
-      </property>
-    </action>
-    <action name="ID_SUBEDITORS_HOGMAKER">
-      <property name="text">
-        <string>Hog Maker...</string>
-      </property>
-    </action>
-    <action name="ID_SUBEDITORS_TABLEFILEEDIT">
-      <property name="text">
-        <string>Table File Text Editor...</string>
-      </property>
-    </action>
-    <action name="ID_SUBEDITORS_TABLEFILEFILTER">
-      <property name="text">
-        <string>Table File Filter...</string>
-      </property>
-    </action>
-    <action name="ID_TABLEEDIT_FILE_EXIT">
-      <property name="text">
-        <string>&amp;Exit</string>
-      </property>
-    </action>
-    <action name="ID_TABLEEDIT_FILE_LOAD">
-      <property name="text">
-        <string>&amp;Load...</string>
-      </property>
-    </action>
-    <action name="ID_TABLEEDIT_FILE_SAVE">
-      <property name="text">
-        <string>&amp;Save</string>
-      </property>
-    </action>
-    <action name="ID_TABLEEDIT_FILE_SAVE_AS">
-      <property name="text">
-        <string>S&amp;ave as...</string>
-      </property>
-    </action>
-    <action name="ID_TABLEFILTER_FILE_EXIT">
-      <property name="text">
-        <string>Exit</string>
-      </property>
-    </action>
-    <action name="ID_TABLEFILTER_FILE_LOAD">
-      <property name="text">
-        <string>Load...</string>
-      </property>
-    </action>
-    <action name="ID_TABLEFILTER_FILE_NEW">
-      <property name="text">
-        <string>New</string>
-      </property>
-    </action>
-    <action name="ID_TABLEFILTER_FILE_SAVE">
-      <property name="text">
-        <string>Save</string>
-      </property>
-    </action>
-    <action name="ID_TABLEFILTER_FILE_SAVEAS">
-      <property name="text">
-        <string>Save as...</string>
-      </property>
-    </action>
-    <action name="ID_TERRAIN_VIEW">
-      <property name="text">
-        <string>Terrain View</string>
-      </property>
-      <property name="shortcut">
-        <string>F3</string>
-      </property>
-    </action>
-    <action name="ID_TEST_TEST1">
-      <property name="text">
-        <string>Test function 1</string>
-      </property>
-    </action>
-    <action name="ID_TEST_TEST2">
-      <property name="text">
-        <string>Test function 2</string>
-      </property>
-    </action>
-    <action name="ID_TEST_TEST3">
-      <property name="text">
-        <string>Test function 3</string>
-      </property>
-    </action>
-    <action name="ID_TOOLS_WORLD_OBJECTS_BUILDINGS">
-      <property name="text">
-        <string>Buildings...</string>
-      </property>
-    </action>
-    <action name="ID_TOOLS_WORLD_OBJECTS_CLUTTER">
-      <property name="text">
-        <string>Clutter...</string>
-      </property>
-    </action>
-    <action name="ID_TOOLS_WORLD_OBJECTS_DOOR">
-      <property name="text">
-        <string>Doors...</string>
-      </property>
-    </action>
-    <action name="ID_TOOLS_WORLD_OBJECTS_LIGHTS">
-      <property name="text">
-        <string>Lights...</string>
-      </property>
-    </action>
-    <action name="ID_TOOLS_WORLD_OBJECTS_PLAYER">
-      <property name="text">
-        <string>Player Ships...</string>
-      </property>
-    </action>
-    <action name="ID_TOOLS_WORLD_OBJECTS_POWERUPS">
-      <property name="text">
-        <string>Powerups...</string>
-      </property>
-    </action>
-    <action name="ID_TOOLS_WORLD_OBJECTS_ROBOTS">
-      <property name="text">
-        <string>Robots...</string>
-      </property>
-    </action>
-    <action name="ID_TOOLS_WORLD_OBJECTS_SOUND">
-      <property name="text">
-        <string>Sounds...</string>
-      </property>
-    </action>
-    <action name="ID_TOOLS_WORLD_TEXTURES">
-      <property name="text">
-        <string>Textures...</string>
-      </property>
-    </action>
-    <action name="ID_TOOLS_WORLD_WEAPONS">
-      <property name="text">
-        <string>Weapons...</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_CENTERONCUBE">
-      <property name="text">
-        <string>Center on Current &amp;Room</string>
-      </property>
-      <property name="shortcut">
-        <string>Home</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_CENTERONMINE">
-      <property name="text">
-        <string>Center on &amp;Mine Origin</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_CENTERONOBJECT">
-      <property name="text">
-        <string>Center on Current &amp;Object</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_DELETEVIEWER">
-      <property name="text">
-        <string>Delete Viewer</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_FLIP">
-      <property name="text">
-        <string>Flip Viewer</string>
-      </property>
-      <property name="shortcut">
-        <string>/</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_KEYPAD_TOGGLE">
-      <property name="text">
-        <string>Keypad</string>
-      </property>
-      <property name="shortcut">
-        <string>F10</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_MOVECAMERATOCURRENTOBJECT">
-      <property name="text">
-        <string>Move camera to Current Object</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_MOVECAMERATOSELECTEDFACE">
-      <property name="text">
-        <string>Move camera to &amp;Current Face</string>
-      </property>
-      <property name="shortcut">
-        <string>Shift+C</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_MOVECAMERATOSELECTEDROOM">
-      <property name="text">
-        <string>Move camera to &amp;Current Room</string>
-      </property>
-      <property name="shortcut">
-        <string>C</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_NEWVIEWER">
-      <property name="text">
-        <string>New Viewer</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_NEXTVIEWER">
-      <property name="text">
-        <string>Next Viewer</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_RESETVIEWRADIUS">
-      <property name="text">
-        <string>Reset View Radius</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW">
-      <property name="text">
-        <string>Show objects in Wireframe view</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_SHOWVIEWERFORWARDVECTOR">
-      <property name="text">
-        <string>Show Viewer Forward Vector</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_STATUS_BAR">
-      <property name="text">
-        <string>&amp;Status Bar</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_TEXTUREMINE">
-      <property name="text">
-        <string>Te&amp;xtured view</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_TOOLBAR">
-      <property name="text">
-        <string>&amp;Toolbar</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_VIEWPROP">
-      <property name="text">
-        <string>Display Viewer Properties</string>
-      </property>
-    </action>
-    <action name="ID_VIEW_WIREFRAMEMINE">
-      <property name="text">
-        <string>&amp;Wireframe view</string>
-      </property>
-    </action>
-    <action name="ID_WINDOW_CASCADE">
-      <property name="text">
-        <string>&amp;Cascade</string>
-      </property>
-    </action>
-    <action name="ID_WINDOW_TILE">
-      <property name="text">
-        <string>&amp;Tile</string>
-      </property>
-    </action>
-    <action name="ID_ZBUTTON">
-      <property name="text">
-        <string>ID_ZBUTTON</string>
-      </property>
-    </action>
   </widget>
 </ui>

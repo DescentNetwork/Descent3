@@ -31,7 +31,7 @@ namespace {
 float levelCeiling() {
   float maxy = -1e30f;
   bool any = false;
-  for (int r = 0; r <= Highest_room_index; r++) {
+  for (int r = 0; r < Rooms.size(); r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
       continue;
@@ -50,10 +50,8 @@ LevelKeypad::LevelKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::LevelKeypad)
 {
   ui->setupUi(this);
-  if (QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT)
-    connect(edit, &QLineEdit::editingFinished, this, &LevelKeypad::onGravityEdited);
-  if (QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT)
-    connect(edit, &QLineEdit::editingFinished, this, &LevelKeypad::onCeilingEdited);
+  connect(ui->IDC_LEVEL_GRAVITY_EDIT, &QLineEdit::editingFinished, this, &LevelKeypad::onGravityEdited);
+  connect(ui->IDC_LEVEL_CEILING_EDIT, &QLineEdit::editingFinished, this, &LevelKeypad::onCeilingEdited);
 
   updateDialog();
 }
@@ -61,26 +59,24 @@ LevelKeypad::LevelKeypad(QWidget *parent)
 LevelKeypad::~LevelKeypad() { delete ui; }
 
 void LevelKeypad::updateDialog() {
-  if (QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT)
-    edit->setText(QString::number(Gravity_strength));
-  if (QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT)
-    edit->setText(QString::number(levelCeiling()));
+  ui->IDC_LEVEL_GRAVITY_EDIT->setText(QString::number(Gravity_strength));
+  ui->IDC_LEVEL_CEILING_EDIT->setText(QString::number(levelCeiling()));
 }
 
 void LevelKeypad::onGravityEdited() {
-  if (QLineEdit *edit = ui->IDC_LEVEL_GRAVITY_EDIT)
-    Gravity_strength = edit->text().toFloat();
+  Gravity_strength = ui->IDC_LEVEL_GRAVITY_EDIT->text().toFloat();
   World_changed = true;
 }
 
 void LevelKeypad::onCeilingEdited() {
   // Setting the ceiling shifts all rooms' vertices so their max Y equals the
   // entered value (a simple uniform fit; the Win32 editor did per-room).
-  if (QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT) {
+  {
+    QLineEdit *edit = ui->IDC_LEVEL_CEILING_EDIT;
     const float target = edit->text().toFloat();
     const float cur = levelCeiling();
     const float delta = target - cur;
-    for (int r = 0; r <= Highest_room_index; r++) {
+    for (int r = 0; r < Rooms.size(); r++) {
       room *rp = &Rooms[r];
       if (!rp->used)
         continue;

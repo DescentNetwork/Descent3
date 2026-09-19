@@ -32,26 +32,34 @@ TriggerKeypad::TriggerKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::TriggerKeypad)
 {
   ui->setupUi(this);
-  if (QPushButton *b = ui->IDC_TRIG_DELETE)
-    connect(b, &QPushButton::clicked, this, &TriggerKeypad::onDelete);
-  if (QPushButton *b = ui->IDC_TRIG_PREV_IN_MINE)
-    connect(b, &QPushButton::clicked, this, &TriggerKeypad::onPrevInMine);
-  if (QPushButton *b = ui->IDC_TRIG_NEXT_IN_MINE)
-    connect(b, &QPushButton::clicked, this, &TriggerKeypad::onNextInMine);
-  if (QPushButton *b = ui->IDC_TRIG_PREV_IN_ROOM)
-    connect(b, &QPushButton::clicked, this, &TriggerKeypad::onPrevInRoom);
-  if (QPushButton *b = ui->IDC_TRIG_NEXT_IN_ROOM)
-    connect(b, &QPushButton::clicked, this, &TriggerKeypad::onNextInRoom);
-  if (QPushButton *b = ui->IDC_TRIG_NEXT_PORTAL)
-    connect(b, &QPushButton::clicked, this, &TriggerKeypad::onNextPortal);
-  if (QCheckBox *cb = ui->IDC_TRIG_ONESHOT)
-    connect(cb, &QCheckBox::toggled, this, &TriggerKeypad::onOneshotToggled);
+  connect(ui->IDC_TRIG_DELETE, &QPushButton::clicked, this, &TriggerKeypad::onDelete);
+  connect(ui->IDC_TRIG_PREV_IN_MINE, &QPushButton::clicked, this, &TriggerKeypad::onPrevInMine);
+  connect(ui->IDC_TRIG_NEXT_IN_MINE, &QPushButton::clicked, this, &TriggerKeypad::onNextInMine);
+  connect(ui->IDC_TRIG_PREV_IN_ROOM, &QPushButton::clicked, this, &TriggerKeypad::onPrevInRoom);
+  connect(ui->IDC_TRIG_NEXT_IN_ROOM, &QPushButton::clicked, this, &TriggerKeypad::onNextInRoom);
+  connect(ui->IDC_TRIG_NEXT_PORTAL, &QPushButton::clicked, this, &TriggerKeypad::onNextPortal);
+  connect(ui->IDC_TRIG_ONESHOT, &QCheckBox::toggled, this, &TriggerKeypad::onOneshotToggled);
 
-  const char *activators[] = {"IDC_TRIG_ACTIV_PLAYER", "IDC_TRIG_ACTIV_PLAYER_WEAPONS",
-                              "IDC_TRIG_ACTIV_ROBOTS", "IDC_TRIG_ACTIV_ROBOT_WEAPONS", "IDC_TRIG_ACTIV_CLUTTER"};
-  for (const char *name : activators)
-    if (QCheckBox *cb = findChild<QCheckBox*>(name))
-      connect(cb, &QCheckBox::toggled, this, &TriggerKeypad::onActivatorToggled);
+  connect(ui->IDC_TRIG_ACTIV_PLAYER, &QCheckBox::toggled, this, [this](bool checked) {
+    if (Current_trigger >= 0 && Current_trigger < static_cast<int>(Triggers.size()))
+      Triggers[Current_trigger].activator.player = checked;
+  });
+  connect(ui->IDC_TRIG_ACTIV_PLAYER_WEAPONS, &QCheckBox::toggled, this, [this](bool checked) {
+    if (Current_trigger >= 0 && Current_trigger < static_cast<int>(Triggers.size()))
+      Triggers[Current_trigger].activator.player_weapon = checked;
+  });
+  connect(ui->IDC_TRIG_ACTIV_ROBOTS, &QCheckBox::toggled, this, [this](bool checked) {
+    if (Current_trigger >= 0 && Current_trigger < static_cast<int>(Triggers.size()))
+      Triggers[Current_trigger].activator.robot = checked;
+  });
+  connect(ui->IDC_TRIG_ACTIV_ROBOT_WEAPONS, &QCheckBox::toggled, this, [this](bool checked) {
+    if (Current_trigger >= 0 && Current_trigger < static_cast<int>(Triggers.size()))
+      Triggers[Current_trigger].activator.robot_weapon = checked;
+  });
+  connect(ui->IDC_TRIG_ACTIV_CLUTTER, &QCheckBox::toggled, this, [this](bool checked) {
+    if (Current_trigger >= 0 && Current_trigger < static_cast<int>(Triggers.size()))
+      Triggers[Current_trigger].activator.clutter = checked;
+  });
 
   updateDialog();
 }
@@ -61,7 +69,7 @@ TriggerKeypad::~TriggerKeypad() { delete ui; }
 void TriggerKeypad::updateDialog() {
   // Win32 disables trigger editing when there is no current trigger (which
   // requires a loaded level with triggers).
-  const bool active = (Current_trigger >= 0 && Current_trigger < Num_triggers);
+  const bool active = (Current_trigger >= 0 && Current_trigger < static_cast<int>(Triggers.size()));
   const QList<QWidget *> all = this->findChildren<QWidget *>();
   for (QWidget *w : all)
     if (w->objectName().startsWith("IDC_TRIG"))
@@ -70,100 +78,57 @@ void TriggerKeypad::updateDialog() {
     return;
   trigger *tp = &Triggers[Current_trigger];
 
-  if (QLabel *label = ui->IDC_TRIG_CURRENT_NAME)
-    label->setText(tp->name);
-  if (QLabel *label = ui->IDC_TRIG_CURRENT_NUM)
-    label->setText(QString::number(Current_trigger));
-  if (QLabel *label = ui->IDC_TRIG_CURRENT_ROOM)
-    label->setText(QString::number(tp->roomnum));
-  if (QLabel *label = ui->IDC_TRIG_CURRENT_FACE)
-    label->setText(QString::number(tp->facenum));
+  ui->IDC_TRIG_CURRENT_NAME->setText(QString::fromStdString(tp->name));
+  ui->IDC_TRIG_CURRENT_NUM->setText(QString::number(Current_trigger));
+  ui->IDC_TRIG_CURRENT_ROOM->setText(QString::number(tp->roomnum));
+  ui->IDC_TRIG_CURRENT_FACE->setText(QString::number(tp->facenum));
 
-  if (QCheckBox *cb = ui->IDC_TRIG_ONESHOT)
-    cb->setChecked(tp->flags & TF_ONESHOT);
+  ui->IDC_TRIG_ONESHOT->setChecked(tp->flags.oneshot);
 
-  const struct {
-    const char *name;
-    uint16_t flag;
-  } act[] = {
-      {"IDC_TRIG_ACTIV_PLAYER", AF_PLAYER},
-      {"IDC_TRIG_ACTIV_PLAYER_WEAPONS", AF_PLAYER_WEAPON},
-      {"IDC_TRIG_ACTIV_ROBOTS", AF_ROBOT},
-      {"IDC_TRIG_ACTIV_ROBOT_WEAPONS", AF_ROBOT_WEAPON},
-      {"IDC_TRIG_ACTIV_CLUTTER", AF_CLUTTER},
-  };
-  for (const auto &a : act)
-    if (QCheckBox *cb = findChild<QCheckBox*>(a.name))
-      cb->setChecked(tp->activator & a.flag);
-}
-
-void TriggerKeypad::setActivator(uint16_t flag, const char *checkName, bool checked) {
-  if (Current_trigger < 0 || Current_trigger >= Num_triggers)
-    return;
-  if (checked)
-    Triggers[Current_trigger].activator |= flag;
-  else
-    Triggers[Current_trigger].activator &= ~flag;
+  ui->IDC_TRIG_ACTIV_PLAYER->setChecked(tp->activator.player);
+  ui->IDC_TRIG_ACTIV_PLAYER_WEAPONS->setChecked(tp->activator.player_weapon);
+  ui->IDC_TRIG_ACTIV_ROBOTS->setChecked(tp->activator.robot);
+  ui->IDC_TRIG_ACTIV_ROBOT_WEAPONS->setChecked(tp->activator.robot_weapon);
+  ui->IDC_TRIG_ACTIV_CLUTTER->setChecked(tp->activator.clutter);
 }
 
 void TriggerKeypad::onOneshotToggled(bool checked) {
-  if (Current_trigger < 0 || Current_trigger >= Num_triggers)
+  if (Current_trigger < 0 || Current_trigger >= static_cast<int>(Triggers.size()))
     return;
-  if (checked)
-    Triggers[Current_trigger].flags |= TF_ONESHOT;
-  else
-    Triggers[Current_trigger].flags &= ~TF_ONESHOT;
-}
-
-void TriggerKeypad::onActivatorToggled() {
-  const struct {
-    const char *name;
-    uint16_t flag;
-  } act[] = {
-      {"IDC_TRIG_ACTIV_PLAYER", AF_PLAYER},
-      {"IDC_TRIG_ACTIV_PLAYER_WEAPONS", AF_PLAYER_WEAPON},
-      {"IDC_TRIG_ACTIV_ROBOTS", AF_ROBOT},
-      {"IDC_TRIG_ACTIV_ROBOT_WEAPONS", AF_ROBOT_WEAPON},
-      {"IDC_TRIG_ACTIV_CLUTTER", AF_CLUTTER},
-  };
-  for (const auto &a : act)
-    if (QCheckBox *cb = findChild<QCheckBox*>(a.name))
-      setActivator(a.flag, a.name, cb->isChecked());
+  Triggers[Current_trigger].flags.oneshot = checked;
 }
 
 void TriggerKeypad::onDelete() {
-  if (Current_trigger < 0 || Current_trigger >= Num_triggers)
+  if (Current_trigger < 0 || Current_trigger >= static_cast<int>(Triggers.size()))
     return;
-  // Mirror the original: mark unused and renumber triggers above it.
-  Triggers[Current_trigger].flags |= TF_UNUSED;
-  for (int i = Current_trigger + 1; i < Num_triggers; i++)
-    Triggers[i - 1] = Triggers[i];
-  Num_triggers--;
-  if (Current_trigger >= Num_triggers)
-    Current_trigger = Num_triggers - 1;
+  // Mirror the original: mark unused and remove it, pulling the rest down.
+  Triggers[Current_trigger].flags.unused = true;
+  Triggers.erase(Triggers.begin() + Current_trigger);
+  if (Current_trigger >= static_cast<int>(Triggers.size()))
+    Current_trigger = static_cast<int>(Triggers.size()) - 1;
   updateDialog();
 }
 
 void TriggerKeypad::onPrevInMine() {
-  if (Num_triggers <= 0)
+  if (static_cast<int>(Triggers.size()) <= 0)
     return;
-  Current_trigger = (Current_trigger <= 0) ? (Num_triggers - 1) : (Current_trigger - 1);
+  Current_trigger = (Current_trigger <= 0) ? (static_cast<int>(Triggers.size()) - 1) : (Current_trigger - 1);
   updateDialog();
 }
 
 void TriggerKeypad::onNextInMine() {
-  if (Num_triggers <= 0)
+  if (static_cast<int>(Triggers.size()) <= 0)
     return;
-  Current_trigger = (Current_trigger + 1) % Num_triggers;
+  Current_trigger = (Current_trigger + 1) % static_cast<int>(Triggers.size());
   updateDialog();
 }
 
 void TriggerKeypad::onPrevInRoom() {
-  if (Num_triggers <= 0)
+  if (static_cast<int>(Triggers.size()) <= 0)
     return;
   int n = Current_trigger;
-  for (int i = Num_triggers; i > 0; i--) {
-    n = (n <= 0) ? (Num_triggers - 1) : (n - 1);
+  for (int i = static_cast<int>(Triggers.size()); i > 0; i--) {
+    n = (n <= 0) ? (static_cast<int>(Triggers.size()) - 1) : (n - 1);
     if (Triggers[n].roomnum == (Curroomp != nullptr ? ROOMNUM(Curroomp) : Triggers[Current_trigger].roomnum)) {
       Current_trigger = n;
       break;
@@ -173,11 +138,11 @@ void TriggerKeypad::onPrevInRoom() {
 }
 
 void TriggerKeypad::onNextInRoom() {
-  if (Num_triggers <= 0)
+  if (static_cast<int>(Triggers.size()) <= 0)
     return;
   int n = Current_trigger;
-  for (int i = 0; i < Num_triggers; i++) {
-    n = (n + 1) % Num_triggers;
+  for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
+    n = (n + 1) % static_cast<int>(Triggers.size());
     if (Triggers[n].roomnum == (Curroomp != nullptr ? ROOMNUM(Curroomp) : Triggers[Current_trigger].roomnum)) {
       Current_trigger = n;
       break;
@@ -187,11 +152,11 @@ void TriggerKeypad::onNextInRoom() {
 }
 
 void TriggerKeypad::onNextPortal() {
-  if (Current_trigger < 0 || Current_trigger >= Num_triggers)
+  if (Current_trigger < 0 || Current_trigger >= static_cast<int>(Triggers.size()))
     return;
   // Advance to the next trigger attached to a portal (face with a portal).
-  for (int i = 1; i < Num_triggers; i++) {
-    const int n = (Current_trigger + i) % Num_triggers;
+  for (int i = 1; i < static_cast<int>(Triggers.size()); i++) {
+    const int n = (Current_trigger + i) % static_cast<int>(Triggers.size());
     if (Triggers[n].roomnum >= 0 && Triggers[n].roomnum < MAX_ROOMS &&
         Rooms[Triggers[n].roomnum].faces[Triggers[n].facenum].portal_num != -1) {
       Current_trigger = n;

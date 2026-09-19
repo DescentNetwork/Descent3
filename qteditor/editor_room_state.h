@@ -19,7 +19,7 @@
 #pragma once
 
 #include "fix.h"
-#include "vecmat.h"
+#include "vecmat_external.h"
 
 struct face;
 struct room;
@@ -43,6 +43,11 @@ void RestoreRoomSelectedList();
 room *CreateNewRoom(int nverts, int nfaces, bool palette_room = false);
 void DestroyRoom(int roomnum);
 
+// Mirrors GetFreeRoom(): linear scan for the first unused slot, else append a
+// fresh slot at the end of Rooms (which is the high-water mark + 1).  Returns
+// the slot index or -1 when the room capacity limit is reached.
+int FindFreeRoomSlot();
+
 // Port of editor/Erooms.cpp:AssignDefaultUVsToRoomFace — projects each
 // vertex onto the face's normal plane and assigns UVs with a 1/20.0 scale.
 void AssignDefaultUVsToRoomFace(room *rp, int facenum);
@@ -55,8 +60,8 @@ void ReInitRoomFace(face *fp, int nverts);
 int RoomAddVertices(room *rp, int num_new_verts);
 int RoomAddFaces(room *rp, int num_new_faces);
 bool ResetRoomFaceNormals(room *rp);
-bool FaceIsPlanar(int nv, int16_t *face_verts, vector *normal, vector *verts);
-int CheckFaceConcavity(int num_verts, int16_t *face_verts, vector *normal, vector *verts);
+bool FaceIsPlanar(int nv, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts);
+int CheckFaceConcavity(int num_verts, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts);
 bool FindSharedEdge(face *fp0, face *fp1, int *vn0, int *vn1);
 void DeleteRoomFace(room *rp, int facenum);
 void DeleteRoomPortal(room *rp, int portalnum);

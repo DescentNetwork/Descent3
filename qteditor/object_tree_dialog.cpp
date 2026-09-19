@@ -10,6 +10,8 @@
 #include "object_ops.h"
 
 
+using namespace std::string_literals;
+
 namespace {
 const char *kCategoryNames[] = {
     "Clipboard", "Powerups", "Robots", "Buildings", "Door",
@@ -55,7 +57,7 @@ ObjectTreeDialog::ObjectTreeDialog(QWidget *parent)
   connect(ui->IDC_CLEAR, &QPushButton::clicked, this, &ObjectTreeDialog::onClearAll);
 
   if (auto *okBtn = findChild<QPushButton *>(QStringLiteral("IDOK")))
-    connect(okBtn, &QPushButton::clicked, this, &QDialog::accept);
+    connect(okBtn, &QPushButton::clicked, this, &QDialog::accepted);
   if (auto *cancelBtn = findChild<QPushButton *>(QStringLiteral("IDCANCEL")))
     connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
 
@@ -71,16 +73,16 @@ QString ObjectTreeDialog::makeInfoStr(const object *obj) {
     str = QString("%1-(0x%2)[%3](%4) ")
               .arg(static_cast<int>(OBJNUM(obj)))
               .arg(obj->handle, 0, 16)
-              .arg(QString::fromLatin1(Object_info[obj->id].name))
-              .arg(obj->name ? QString::fromLatin1(obj->name) : "No Name Given");
+              .arg(QString::fromStdString(Object_info[obj->id].name))
+              .arg(QString::fromStdString(obj->name.empty() ? "No Name Given"s : obj->name));
   } else {
-    const char *typeName =
+    QString typeName =
         (obj->type >= 0 && obj->type < MAX_OBJECT_TYPES) ? Object_type_names[obj->type] : "Unnamed type";
     str = QString("%1-(0x%2)[%3](%4) ")
               .arg(static_cast<int>(OBJNUM(obj)))
               .arg(obj->handle, 0, 16)
-              .arg(QString::fromLatin1(typeName))
-              .arg(obj->name ? QString::fromLatin1(obj->name) : "No Name Given");
+              .arg(typeName)
+              .arg(QString::fromStdString(obj->name.empty() ? "No Name Given"s : obj->name));
   }
 
   if (OBJECT_OUTSIDE(obj))
@@ -101,7 +103,7 @@ void ObjectTreeDialog::Refresh() {
     topItems[i] = new QTreeWidgetItem(tree, {QString::fromLatin1(kCategoryNames[i])});
 
   for (int i = 0; i <= Highest_object_index; i++) {
-    if (Objects[i].flags & OF_DEAD)
+    if (Objects[i].flags.dead)
       continue;
 
     int cat = categoryForType(Objects[i].type);
@@ -140,13 +142,13 @@ void ObjectTreeDialog::onGoTo() {
   if (!obj)
     return;
 
-  if (OBJECT_OUTSIDE(obj) && Editor_view_mode != VM_TERRAIN) {
-    Editor_view_mode = VM_TERRAIN;
-  } else if (!OBJECT_OUTSIDE(obj) && Editor_view_mode != VM_MINE) {
-    Editor_view_mode = VM_MINE;
+  if (OBJECT_OUTSIDE(obj) && app.view_mode != state::viewer::terrain) {
+    app.view_mode = state::viewer::terrain;
+  } else if (!OBJECT_OUTSIDE(obj) && app.view_mode != state::viewer::mine) {
+    app.view_mode = state::viewer::mine;
   }
 
-  ObjSetPos(Viewer_object, &obj->pos, obj->roomnum, &obj->orient, false);
+  ObjSetPos(*Viewer_object, obj->pos, obj->roomnum, &obj->orient, false);
   EditorStatus("Viewer moved to object %d", OBJNUM(obj));
   Viewer_moved = true;
 }

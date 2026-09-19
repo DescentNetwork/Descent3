@@ -27,168 +27,122 @@
 #include "object.h"
 
 
-namespace {
-const char *kTimeChecks[8] = {"IDC_TIME_CHECK1", "IDC_TIME_CHECK2", "IDC_TIME_CHECK3", "IDC_TIME_CHECK4",
-                              "IDC_TIME_CHECK5", "IDC_TIME_CHECK6", "IDC_TIME_CHECK7", "IDC_TIME_CHECK8"};
-} // namespace
-
 GenericLightDialog::GenericLightDialog(light_info *lightinfo, QWidget *parent)
     : QDialog(parent), ui(new Ui::GenericLightDialog), m_lightinfo(lightinfo)
 {
   ui->setupUi(this);
-  if (QRadioButton *rb = ui->IDC_ALWAYS_ON_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &GenericLightDialog::onAlwaysOnRadio);
-  if (QRadioButton *rb = ui->IDC_FLICKER_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &GenericLightDialog::onFlickerRadio);
-  if (QRadioButton *rb = ui->IDC_USE_TIMEBITS_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &GenericLightDialog::onUseTimebitsRadio);
-  if (QRadioButton *rb = ui->IDC_RENDER_STATIC)
-    connect(rb, &QRadioButton::clicked, this, &GenericLightDialog::onRenderStatic);
-  if (QRadioButton *rb = ui->IDC_RENDER_GOURAUD)
-    connect(rb, &QRadioButton::clicked, this, &GenericLightDialog::onRenderGouraud);
-  if (QRadioButton *rb = ui->IDC_RENDER_LIGHTMAPS)
-    connect(rb, &QRadioButton::clicked, this, &GenericLightDialog::onRenderLightmaps);
 
-  const struct {
-    const char *name;
-    void (GenericLightDialog::*slot)(bool);
-    int32_t flag;
-  } checks[] = {
-      {"IDC_PULSE", &GenericLightDialog::onPulseToggled, OLF_PULSE},
-      {"IDC_PULSE_TO_SECOND", &GenericLightDialog::onPulseToSecondToggled, OLF_PULSE_TO_SECOND},
-      {"IDC_FLICKER_SLIGHTLY_CHECK", &GenericLightDialog::onFlickerSlightlyToggled, OLF_FLICKER_SLIGHTLY},
-      {"IDC_DIRECTIONAL", &GenericLightDialog::onDirectionalToggled, OLF_DIRECTIONAL},
-      {"IDC_NO_SPECULAR_CHECK", &GenericLightDialog::onNoSpecularToggled, OLF_NO_SPECULARITY},
-  };
-  for (const auto &c : checks)
-    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
-      connect(cb, &QCheckBox::toggled, this, c.slot);
+  auto& rt = m_lightinfo->lighting_render_type;
+  connect(ui->IDC_RENDER_STATIC,    &QRadioButton::clicked, [&rt](){ rt = LRT_STATIC; });
+  connect(ui->IDC_RENDER_GOURAUD,   &QRadioButton::clicked, [&rt](){ rt = LRT_GOURAUD; });
+  connect(ui->IDC_RENDER_LIGHTMAPS, &QRadioButton::clicked, [&rt](){ rt = LRT_LIGHTMAPS; });
 
-  for (const char *name : kTimeChecks)
-    if (QCheckBox *cb = findChild<QCheckBox*>(name))
-      connect(cb, &QCheckBox::toggled, this, &GenericLightDialog::onTimeCheck);
+  auto& flags = m_lightinfo->flags;
+  connect(ui->IDC_ALWAYS_ON_RADIO,    &QRadioButton::clicked, [&flags](){ flags.flickering = 0; flags.timebits = 0; });
+  connect(ui->IDC_USE_TIMEBITS_RADIO, &QRadioButton::clicked, [&flags](){ flags.flickering = 0; flags.timebits = 1; });
+  connect(ui->IDC_FLICKER_RADIO,      &QRadioButton::clicked, [&flags](){ flags.flickering = 1; flags.timebits = 1; });
 
-  const char *fields[] = {"IDC_GENERIC_LIGHT_DISTANCE", "IDC_GENERIC_PULSE_TIME", "IDC_GENERIC_RED_LIGHT",
-                          "IDC_GENERIC_GREEN_LIGHT", "IDC_GENERIC_BLUE_LIGHT", "IDC_GENERIC_RED_LIGHT2",
-                          "IDC_GENERIC_GREEN_LIGHT2", "IDC_GENERIC_BLUE_LIGHT2", "IDC_FLICKER_SLIGHTLY_EDIT",
-                          "IDC_FOV_EDIT"};
-  for (const char *name : fields)
-    if (QLineEdit *edit = findChild<QLineEdit*>(name))
-      connect(edit, &QLineEdit::editingFinished, this, &GenericLightDialog::onFieldEdited);
+  connect(ui->IDC_PULSE,                  &QCheckBox::toggled, [&flags](){ flags.pulse            ^= flags.pulse; });
+  connect(ui->IDC_PULSE_TO_SECOND,        &QCheckBox::toggled, [&flags](){ flags.pulse_to_second  ^= flags.pulse_to_second; });
+  connect(ui->IDC_FLICKER_SLIGHTLY_CHECK, &QCheckBox::toggled, [&flags](){ flags.flicker_slightly ^= flags.flicker_slightly; });
+  connect(ui->IDC_DIRECTIONAL,            &QCheckBox::toggled, [&flags](){ flags.directional      ^= flags.directional; });
+  connect(ui->IDC_NO_SPECULAR_CHECK,      &QCheckBox::toggled, [&flags](){ flags.no_specularity   ^= flags.no_specularity; });
+
+  connect(ui->IDC_TIME_CHECK1, &QCheckBox::toggled, this, &GenericLightDialog::onTimeCheck);
+  connect(ui->IDC_TIME_CHECK2, &QCheckBox::toggled, this, &GenericLightDialog::onTimeCheck);
+  connect(ui->IDC_TIME_CHECK3, &QCheckBox::toggled, this, &GenericLightDialog::onTimeCheck);
+  connect(ui->IDC_TIME_CHECK4, &QCheckBox::toggled, this, &GenericLightDialog::onTimeCheck);
+  connect(ui->IDC_TIME_CHECK5, &QCheckBox::toggled, this, &GenericLightDialog::onTimeCheck);
+  connect(ui->IDC_TIME_CHECK6, &QCheckBox::toggled, this, &GenericLightDialog::onTimeCheck);
+  connect(ui->IDC_TIME_CHECK7, &QCheckBox::toggled, this, &GenericLightDialog::onTimeCheck);
+  connect(ui->IDC_TIME_CHECK8, &QCheckBox::toggled, this, &GenericLightDialog::onTimeCheck);
+
+  connect(ui->IDC_GENERIC_LIGHT_DISTANCE, &QLineEdit::editingFinished, this, &GenericLightDialog::onFieldEdited);
+  connect(ui->IDC_GENERIC_PULSE_TIME, &QLineEdit::editingFinished, this, &GenericLightDialog::onFieldEdited);
+  connect(ui->IDC_GENERIC_RED_LIGHT, &QLineEdit::editingFinished, this, &GenericLightDialog::onFieldEdited);
+  connect(ui->IDC_GENERIC_GREEN_LIGHT, &QLineEdit::editingFinished, this, &GenericLightDialog::onFieldEdited);
+  connect(ui->IDC_GENERIC_BLUE_LIGHT, &QLineEdit::editingFinished, this, &GenericLightDialog::onFieldEdited);
+  connect(ui->IDC_GENERIC_RED_LIGHT2, &QLineEdit::editingFinished, this, &GenericLightDialog::onFieldEdited);
+  connect(ui->IDC_GENERIC_GREEN_LIGHT2, &QLineEdit::editingFinished, this, &GenericLightDialog::onFieldEdited);
+  connect(ui->IDC_GENERIC_BLUE_LIGHT2, &QLineEdit::editingFinished, this, &GenericLightDialog::onFieldEdited);
+  connect(ui->IDC_FLICKER_SLIGHTLY_EDIT, &QLineEdit::editingFinished, this, &GenericLightDialog::onFieldEdited);
+  connect(ui->IDC_FOV_EDIT, &QLineEdit::editingFinished, this, &GenericLightDialog::onFieldEdited);
 
   updateDialog();
 }
 
 GenericLightDialog::~GenericLightDialog() { delete ui; }
 
-void GenericLightDialog::setFlag(int32_t flag, const char *checkName, bool checked) {
-  if (checked)
-    m_lightinfo->flags |= flag;
-  else
-    m_lightinfo->flags &= ~flag;
-}
 
 void GenericLightDialog::updateDialog() {
   light_info *li = m_lightinfo;
-  if (QCheckBox *cb = ui->IDC_DIRECTIONAL)
-    cb->setChecked(li->flags & OLF_DIRECTIONAL);
-  if (QCheckBox *cb = ui->IDC_NO_SPECULAR_CHECK)
-    cb->setChecked(li->flags & OLF_NO_SPECULARITY);
-  if (QCheckBox *cb = ui->IDC_PULSE)
-    cb->setChecked(li->flags & OLF_PULSE);
-  if (QCheckBox *cb = ui->IDC_PULSE_TO_SECOND)
-    cb->setChecked(li->flags & OLF_PULSE_TO_SECOND);
-  if (QCheckBox *cb = ui->IDC_FLICKER_SLIGHTLY_CHECK)
-    cb->setChecked(li->flags & OLF_FLICKER_SLIGHTLY);
+  ui->IDC_DIRECTIONAL->setChecked(li->flags.directional);
+  ui->IDC_NO_SPECULAR_CHECK->setChecked(li->flags.no_specularity);
+  ui->IDC_PULSE->setChecked(li->flags.pulse);
+  ui->IDC_PULSE_TO_SECOND->setChecked(li->flags.pulse_to_second);
+  ui->IDC_FLICKER_SLIGHTLY_CHECK->setChecked(li->flags.flicker_slightly);
 
-  if (QRadioButton *rb = ui->IDC_FLICKER_RADIO)
-    rb->setChecked(li->flags & OLF_FLICKERING);
-  if (QRadioButton *rb = ui->IDC_USE_TIMEBITS_RADIO)
-    rb->setChecked(li->flags & OLF_TIMEBITS);
-  if (QRadioButton *rb = ui->IDC_ALWAYS_ON_RADIO)
-    rb->setChecked(!(li->flags & (OLF_FLICKERING | OLF_TIMEBITS)));
+  ui->IDC_FLICKER_RADIO->setChecked(li->flags.flickering);
+  ui->IDC_USE_TIMEBITS_RADIO->setChecked(li->flags.timebits);
+  ui->IDC_ALWAYS_ON_RADIO->setChecked(!li->flags.flickering && !li->flags.timebits);
 
-  for (int i = 0; i < 8; i++)
-    if (QCheckBox *cb = findChild<QCheckBox*>(kTimeChecks[i]))
-      cb->setChecked((li->timebits & (1 << i)) != 0);
+  ui->IDC_TIME_CHECK1->setChecked((li->timebits & (1 << 0)) != 0);
+  ui->IDC_TIME_CHECK2->setChecked((li->timebits & (1 << 1)) != 0);
+  ui->IDC_TIME_CHECK3->setChecked((li->timebits & (1 << 2)) != 0);
+  ui->IDC_TIME_CHECK4->setChecked((li->timebits & (1 << 3)) != 0);
+  ui->IDC_TIME_CHECK5->setChecked((li->timebits & (1 << 4)) != 0);
+  ui->IDC_TIME_CHECK6->setChecked((li->timebits & (1 << 5)) != 0);
+  ui->IDC_TIME_CHECK7->setChecked((li->timebits & (1 << 6)) != 0);
+  ui->IDC_TIME_CHECK8->setChecked((li->timebits & (1 << 7)) != 0);
 
   const int rt = li->lighting_render_type;
-  if (QRadioButton *rb = ui->IDC_RENDER_STATIC)
-    rb->setChecked(rt == LRT_STATIC);
-  if (QRadioButton *rb = ui->IDC_RENDER_GOURAUD)
-    rb->setChecked(rt == LRT_GOURAUD);
-  if (QRadioButton *rb = ui->IDC_RENDER_LIGHTMAPS)
-    rb->setChecked(rt == LRT_LIGHTMAPS);
+  ui->IDC_RENDER_STATIC->setChecked(rt == LRT_STATIC);
+  ui->IDC_RENDER_GOURAUD->setChecked(rt == LRT_GOURAUD);
+  ui->IDC_RENDER_LIGHTMAPS->setChecked(rt == LRT_LIGHTMAPS);
 
-  if (QLineEdit *e = ui->IDC_GENERIC_LIGHT_DISTANCE)
-    e->setText(QString::number(li->light_distance));
-  if (QLineEdit *e = ui->IDC_GENERIC_PULSE_TIME)
-    e->setText(QString::number(li->time_interval));
-  if (QLineEdit *e = ui->IDC_GENERIC_RED_LIGHT)
-    e->setText(QString::number(li->red_light1));
-  if (QLineEdit *e = ui->IDC_GENERIC_GREEN_LIGHT)
-    e->setText(QString::number(li->green_light1));
-  if (QLineEdit *e = ui->IDC_GENERIC_BLUE_LIGHT)
-    e->setText(QString::number(li->blue_light1));
-  if (QLineEdit *e = ui->IDC_GENERIC_RED_LIGHT2)
-    e->setText(QString::number(li->red_light2));
-  if (QLineEdit *e = ui->IDC_GENERIC_GREEN_LIGHT2)
-    e->setText(QString::number(li->green_light2));
-  if (QLineEdit *e = ui->IDC_GENERIC_BLUE_LIGHT2)
-    e->setText(QString::number(li->blue_light2));
-  if (QLineEdit *e = ui->IDC_FLICKER_SLIGHTLY_EDIT)
-    e->setText(QString::number(li->flicker_distance));
+  ui->IDC_GENERIC_LIGHT_DISTANCE->setText(QString::number(li->light_distance));
+  ui->IDC_GENERIC_PULSE_TIME->setText(QString::number(li->time_interval));
+  ui->IDC_GENERIC_RED_LIGHT->setText(QString::number(li->red_light1));
+  ui->IDC_GENERIC_GREEN_LIGHT->setText(QString::number(li->green_light1));
+  ui->IDC_GENERIC_BLUE_LIGHT->setText(QString::number(li->blue_light1));
+  ui->IDC_GENERIC_RED_LIGHT2->setText(QString::number(li->red_light2));
+  ui->IDC_GENERIC_GREEN_LIGHT2->setText(QString::number(li->green_light2));
+  ui->IDC_GENERIC_BLUE_LIGHT2->setText(QString::number(li->blue_light2));
+  ui->IDC_FLICKER_SLIGHTLY_EDIT->setText(QString::number(li->flicker_distance));
 }
-
-void GenericLightDialog::onFlickerRadio() {
-  m_lightinfo->flags |= OLF_FLICKERING;
-  m_lightinfo->flags &= ~OLF_TIMEBITS;
-}
-void GenericLightDialog::onAlwaysOnRadio() {
-  m_lightinfo->flags &= ~(OLF_FLICKERING | OLF_TIMEBITS);
-}
-void GenericLightDialog::onUseTimebitsRadio() {
-  m_lightinfo->flags |= OLF_TIMEBITS;
-  m_lightinfo->flags &= ~OLF_FLICKERING;
-}
-void GenericLightDialog::onPulseToggled(bool checked) { setFlag(OLF_PULSE, "", checked); }
-void GenericLightDialog::onPulseToSecondToggled(bool checked) { setFlag(OLF_PULSE_TO_SECOND, "", checked); }
-void GenericLightDialog::onFlickerSlightlyToggled(bool checked) { setFlag(OLF_FLICKER_SLIGHTLY, "", checked); }
-void GenericLightDialog::onDirectionalToggled(bool checked) { setFlag(OLF_DIRECTIONAL, "", checked); }
-void GenericLightDialog::onNoSpecularToggled(bool checked) { setFlag(OLF_NO_SPECULARITY, "", checked); }
 
 void GenericLightDialog::onTimeCheck() {
   int bits = 0;
-  for (int i = 0; i < 8; i++)
-    if (QCheckBox *cb = findChild<QCheckBox*>(kTimeChecks[i]))
-      if (cb->isChecked())
-        bits |= (1 << i);
+  if (ui->IDC_TIME_CHECK1->isChecked())
+    bits |= (1 << 0);
+  if (ui->IDC_TIME_CHECK2->isChecked())
+    bits |= (1 << 1);
+  if (ui->IDC_TIME_CHECK3->isChecked())
+    bits |= (1 << 2);
+  if (ui->IDC_TIME_CHECK4->isChecked())
+    bits |= (1 << 3);
+  if (ui->IDC_TIME_CHECK5->isChecked())
+    bits |= (1 << 4);
+  if (ui->IDC_TIME_CHECK6->isChecked())
+    bits |= (1 << 5);
+  if (ui->IDC_TIME_CHECK7->isChecked())
+    bits |= (1 << 6);
+  if (ui->IDC_TIME_CHECK8->isChecked())
+    bits |= (1 << 7);
   m_lightinfo->timebits = bits;
 }
 
-void GenericLightDialog::onRenderStatic() { m_lightinfo->lighting_render_type = LRT_STATIC; }
-void GenericLightDialog::onRenderGouraud() { m_lightinfo->lighting_render_type = LRT_GOURAUD; }
-void GenericLightDialog::onRenderLightmaps() { m_lightinfo->lighting_render_type = LRT_LIGHTMAPS; }
 
 void GenericLightDialog::onFieldEdited() {
   light_info *li = m_lightinfo;
-  if (QLineEdit *e = ui->IDC_GENERIC_LIGHT_DISTANCE)
-    li->light_distance = e->text().toFloat();
-  if (QLineEdit *e = ui->IDC_GENERIC_PULSE_TIME)
-    li->time_interval = e->text().toFloat();
-  if (QLineEdit *e = ui->IDC_GENERIC_RED_LIGHT)
-    li->red_light1 = e->text().toFloat();
-  if (QLineEdit *e = ui->IDC_GENERIC_GREEN_LIGHT)
-    li->green_light1 = e->text().toFloat();
-  if (QLineEdit *e = ui->IDC_GENERIC_BLUE_LIGHT)
-    li->blue_light1 = e->text().toFloat();
-  if (QLineEdit *e = ui->IDC_GENERIC_RED_LIGHT2)
-    li->red_light2 = e->text().toFloat();
-  if (QLineEdit *e = ui->IDC_GENERIC_GREEN_LIGHT2)
-    li->green_light2 = e->text().toFloat();
-  if (QLineEdit *e = ui->IDC_GENERIC_BLUE_LIGHT2)
-    li->blue_light2 = e->text().toFloat();
-  if (QLineEdit *e = ui->IDC_FLICKER_SLIGHTLY_EDIT)
-    li->flicker_distance = e->text().toFloat();
+  li->light_distance = ui->IDC_GENERIC_LIGHT_DISTANCE->text().toFloat();
+  li->time_interval = ui->IDC_GENERIC_PULSE_TIME->text().toFloat();
+  li->red_light1 = ui->IDC_GENERIC_RED_LIGHT->text().toFloat();
+  li->green_light1 = ui->IDC_GENERIC_GREEN_LIGHT->text().toFloat();
+  li->blue_light1 = ui->IDC_GENERIC_BLUE_LIGHT->text().toFloat();
+  li->red_light2 = ui->IDC_GENERIC_RED_LIGHT2->text().toFloat();
+  li->green_light2 = ui->IDC_GENERIC_GREEN_LIGHT2->text().toFloat();
+  li->blue_light2 = ui->IDC_GENERIC_BLUE_LIGHT2->text().toFloat();
+  li->flicker_distance = ui->IDC_FLICKER_SLIGHTLY_EDIT->text().toFloat();
 }
 

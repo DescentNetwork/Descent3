@@ -53,13 +53,12 @@ private:
   void enableDisableBounce();
   void enableDisableTurnRoll();
   void enableDisableThrust();
-  void setWidgetEnabled(const char *name, bool enabled);
 
   void setPhysicsData(const physics_info *physInfo);
   void getPhysicsData(physics_info *physInfo) const;
 
   Ui::PhysicsDialog *ui;
   physics_info *m_physInfo;
-  int m_gravityFlag;
+  int m_gravityFlag;   // tri-state: 0=none,  ​1=forward,2=reverse
 };
 

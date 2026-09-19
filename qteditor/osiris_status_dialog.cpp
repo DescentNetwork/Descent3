@@ -28,28 +28,22 @@ OsirisStatusDialog::OsirisStatusDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::OsirisStatusDialog)
 {
   ui->setupUi(this);
-  if (QPushButton *done = ui->IDC_OSIRIS_DONE)
-    connect(done, &QPushButton::clicked, this, &QDialog::accept);
-  if (QLabel *progress = ui->IDC_OSIRIS_PROGRESS)
-    progress->setText("Idle");
-  if (QTextEdit *err = ui->IDC_OSIRIS_ERROR)
-    err->setReadOnly(true);
+  connect(ui->IDC_OSIRIS_DONE, &QPushButton::clicked, this, &QDialog::accepted);
+  ui->IDC_OSIRIS_PROGRESS->setText("Idle");
+  ui->IDC_OSIRIS_ERROR->setReadOnly(true);
 }
 
 OsirisStatusDialog::~OsirisStatusDialog() { delete ui; }
 
 void OsirisStatusDialog::setProgress(const QString &text) {
-  if (QLabel *progress = ui->IDC_OSIRIS_PROGRESS)
-    progress->setText(text);
+  ui->IDC_OSIRIS_PROGRESS->setText(text);
 }
 
 void OsirisStatusDialog::appendError(const QString &text) {
-  if (QTextEdit *err = ui->IDC_OSIRIS_ERROR)
-    err->append(text);
+  ui->IDC_OSIRIS_ERROR->append(text);
 }
 
 void OsirisStatusDialog::done() {
-  if (QLabel *progress = ui->IDC_OSIRIS_PROGRESS)
-    progress->setText("Done");
+  ui->IDC_OSIRIS_PROGRESS->setText("Done");
 }
 

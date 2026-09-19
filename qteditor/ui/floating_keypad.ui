@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<ui version="4.0">
+  <class>Form</class>
+  <widget class="QDialog" name="IDD_FLOATING_KEYPAD">
+    <property name="geometry">
+      <rect>
+        <x>109</x>
+        <y>0</y>
+        <width>353</width>
+        <height>294</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Keypad</string>
+    </property>
+    <property name="font">
+      <font>
+        <family>Liberation Sans</family>
+        <pointsize>7</pointsize>
+        <bold>false</bold>
+        <italic>false</italic>
+      </font>
+    </property>
+    <property name="enabled">
+      <bool>true</bool>
+    </property>
+    <property name="windowFlags">
+      <set>Qt::Tool</set>
+    </property>
+    <widget class="QTabWidget" name="IDC_FLOATING_KEYPAD_TAB">
+      <property name="geometry">
+        <rect>
+          <x>6</x>
+          <y>6</y>
+          <width>342</width>
+          <height>281</height>
+        </rect>
+      </property>
+      <property name="visible">
+        <bool>true</bool>
+      </property>
+      <property name="enabled">
+        <bool>true</bool>
+      </property>
+    </widget>
+  </widget>
+</ui>

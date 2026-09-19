@@ -24,6 +24,7 @@
 #include <QDialog>
 #include <QWidget>
 #include <QTimer>
+#include <QFileInfo>
 //#include <DockManager.h>
 //#include <DockWidget.h>
 
@@ -33,7 +34,7 @@ QT_END_NAMESPACE
 
 
 // Constant set for the editor's view mode. Mirrors the Win32 enum in
-// editor/d3edit.h (VM_MINE, VM_TERRAIN, VM_ROOM). Used by SetViewMode and
+// editor/d3edit.h (state::viewer::mine, state::viewer::terrain, state::viewer::room). Used by SetViewMode and
 // the View menu's ID_MINE_VIEW / ID_TERRAIN_VIEW / ID_ROOM_VIEW handlers.
 enum class view_mode_t
 {
@@ -130,6 +131,14 @@ private:
   void onViewShowObjectsInWireframe();
   void onButtonOutline();
 
+  // Object context-menu (right-click on an object in the editor view) actions,
+  // mirroring the Win32 CTextureGrWnd popup.
+  void onObjectRename();
+  void onObjectSound();
+  void onObjectEditScripts();
+  void onObjectNewScript();
+  void onObjectCustomDefaultScript();
+
   // Room menu slots that delegate to room_ops. The Room menu has many more
   // items than this list — they route through wireNotPorted() above — but
   // these ones have real Qt-side implementations.
@@ -147,9 +156,13 @@ private:
 
   // ====== VIEWER OPERATIONS ======
   void onCenterViewOnMine();
+  void onCenterViewOnCube();
   void onCenterViewOnObject();
   void onResetViewRadius();
   void onMoveViewToSelectedRoom();
+  void onMoveCameraToSelectedFace();
+  void onMoveCameraToCurrentObject();
+  void onFlipViewer();
 
   // ====== OBJECT OPERATIONS ======
   int onPlaceCameraAtViewer();

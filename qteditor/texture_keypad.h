@@ -57,10 +57,6 @@ private slots:
 
 private:
   void updateDialog();
-
-  template <typename T>
-  T *find(const QString &name) const { return findChild<T *>(name); }
-
   Ui::TextureKeypad *ui;
 };
 
