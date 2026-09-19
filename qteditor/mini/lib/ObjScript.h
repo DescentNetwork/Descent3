@@ -97,7 +97,8 @@
 #ifndef OBJSCRIPT_H
 #define OBJSCRIPT_H
 
-#include "pstypes.h"
+#include <cstdint>
+
 #include "d3x_op.h"
 #include "vecmat.h"
 

@@ -117,7 +117,7 @@ typedef uintptr_t DWORD;
 typedef int HANDLE;
 #endif
 
-#include "pstypes.h"
+
 #include "manage_external.h"
 #include "cfile.h"
 #include "networking.h"

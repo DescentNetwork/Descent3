@@ -370,7 +370,8 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
-#include "pstypes.h"
+#include <cstdint>
+
 #include "Inventory.h"
 
 #include "robotfirestruct.h"

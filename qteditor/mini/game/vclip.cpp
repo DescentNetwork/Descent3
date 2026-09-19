@@ -168,7 +168,7 @@
 #include "iff.h"
 #include "log.h"
 #include "mem.h"
-#include "pstypes.h"
+
 #include "vclip.h"
 #include "string_helpers.h"
 

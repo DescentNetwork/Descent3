@@ -19,14 +19,14 @@
 #ifndef TEXPAGE_H
 #define TEXPAGE_H
 
-#include "manage.h"
-#include "cfile.h"
-#include <posix_stream.h>
-#include "pstypes.h"
-#include "procedurals.h"
+#include <cstdint>
 #include <array>
 #include <string>
 #include <vector>
+#include <posix_stream.h>
+
+#include "manage.h"
+#include "procedurals.h"
 
 struct mngs_texture_page {
   std::string bitmap_name;  // filename for the bitmap associated with this texture

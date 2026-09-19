@@ -19,8 +19,7 @@
 #ifndef LIGHTMAP_H
 #define LIGHTMAP_H
 
-#include "pstypes.h"
-
+#include <cstdint>
 #include <optional>
 #include <vector>
 

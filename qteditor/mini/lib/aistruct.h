@@ -393,7 +393,7 @@
 #define AISTRUCT_H_
 
 #include <cstdint>
-#include "pstypes.h"
+
 #include "vecmat.h"
 #include "aistruct_external.h"
 #include "room.h"

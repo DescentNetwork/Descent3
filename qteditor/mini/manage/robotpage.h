@@ -23,7 +23,6 @@
 #include "robot.h"
 #include "cfile.h"
 #include <posix_stream.h>
-#include "pstypes.h"
 #include "objinfo.h"
 
 struct mngs_robot_page {

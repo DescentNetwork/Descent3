@@ -19,14 +19,15 @@
 #ifndef TERRAIN_H
 #define TERRAIN_H
 
+#include <cstdint>
+#include <array>
+#include <vector>
+
 #include "vecmat.h"
-#include "pstypes.h"
 #include "3d.h"
 #include "grdefs.h"
 #include "object.h"
 
-#include <array>
-#include <vector>
 
 // How far we texture out to...after this distance we draw flat shaded polygons
 #define DEFAULT_TEXTURE_DISTANCE 9999

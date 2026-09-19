@@ -19,12 +19,11 @@
 #ifndef DOORPAGE_H
 #define DOORPAGE_H
 
-#include "manage.h"
-#include "door.h"
-#include "cfile.h"
 #include <posix_stream.h>
 #include <string>
-#include "pstypes.h"
+
+#include "manage.h"
+#include "door.h"
 
 struct mngs_door_page {
   door door_struct;

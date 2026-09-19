@@ -20,10 +20,10 @@
 #define POWERPAGE_H
 
 #include <array>
+
 #include "manage.h"
 #include "cfile.h"
 #include <posix_stream.h>
-#include "pstypes.h"
 #include "powerup.h"
 
 struct mngs_power_page {

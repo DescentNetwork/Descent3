@@ -295,7 +295,8 @@
 #define RENDERER_H
 
 #include <memory>
-#include "pstypes.h"
+#include <cstdint>
+
 #include "grdefs.h"
 
 // Declare this here so we don't need to include 3d.h
@@ -342,8 +343,9 @@ void rend_SetRendererType(renderer_type state);
 #define MAP_TYPE_LIGHTMAP 1
 
 // lighting state
-enum light_state {
-  LS_NONE,        // no lighting, fully lit rendering
+enum light_state : uint32_t
+{
+  LS_NONE = 0,        // no lighting, fully lit rendering
   LS_GOURAUD,     // Gouraud shading
   LS_PHONG,       // Phong shading
   LS_FLAT_GOURAUD // Take color from flat color
@@ -351,8 +353,9 @@ enum light_state {
 
 void rend_SetLighting(light_state);
 
-enum color_model {
-  CM_MONO, // monochromatic (intensity) model - default
+enum color_model : uint32_t
+{
+  CM_MONO = 0, // monochromatic (intensity) model - default
   CM_RGB,  // RGB model
 };
 

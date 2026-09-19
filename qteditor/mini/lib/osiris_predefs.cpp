@@ -439,7 +439,7 @@
 #include "object.h"
 #include "log.h"
 #include "trigger.h"
-#include "pstypes.h"
+
 #include "hlsoundlib.h"
 #include "gamepath.h"
 //#include "AIGoal.h"
@@ -472,6 +472,7 @@
 //#include "localization.h"
 #include "demofile.h"
 #include "osiris_common.h"
+
 #include "string_helpers.h"
 #include "chrono_timer.h"
 #include "rand.h"

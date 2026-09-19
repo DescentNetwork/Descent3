@@ -89,7 +89,7 @@
 #ifndef DOORWAY_H
 #define DOORWAY_H
 
-#include "pstypes.h"
+#include <cstdint>
 #include <vector>
 
 // IMPORTANT!!!!!!!!!!!

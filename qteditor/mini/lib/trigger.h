@@ -84,13 +84,14 @@
 #ifndef TRIGGER_H
 #define TRIGGER_H
 
-#include "pstypes.h"
-#include "ObjScript.h"
-#include "object_external_struct.h"
-#include "vecmat.h"
+#include <cstdint>
 #include <posix_stream.h>
 #include <vector>
 
+#include "ObjScript.h"
+#include "object_external_struct.h"
+#include "vecmat.h"
+/*
 // Trigger flags
 #define TF_UNUSED 1                 //
 #define TF_DISABLED 2               // This trigger is currently not active
@@ -104,7 +105,7 @@
 #define AF_ROBOT 4         // A robot can activate this trigger
 #define AF_ROBOT_WEAPON 8  // A robot's weapon can activate this trigger
 #define AF_CLUTTER 16      // A piece of clutter
-
+*/
 // Declare this here so we don't have to include the header file
 //@$-struct tD3XThread;
 

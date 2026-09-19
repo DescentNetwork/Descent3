@@ -181,8 +181,7 @@
 #ifndef __INVENTORY_H__
 #define __INVENTORY_H__
 
-#include "pstypes.h"
-#include "cfile.h"
+#include <cstdint>
 
 struct object;
 

@@ -19,10 +19,10 @@
 #ifndef GAMEFILEPAGE_H
 #define GAMEFILEPAGE_H
 
+#include <cstdint>
 #include "manage.h"
-#include "cfile.h"
+
 #include <posix_stream.h>
-#include "pstypes.h"
 #include "gamefile.h"
 
 struct mngs_gamefile_page {

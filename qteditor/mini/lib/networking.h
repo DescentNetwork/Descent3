@@ -156,7 +156,6 @@
 #ifndef NETWORKING_H
 #define NETWORKING_H
 
-#include "pstypes.h"
 #include <cstdint>
 
 #if defined(WIN32)

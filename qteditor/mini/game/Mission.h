@@ -169,10 +169,11 @@
 
 #include <vector>
 #include <string>
+#include <cstdint>
 
-#include "pstypes.h"
+#include <posix_stream.h>
+
 #include "descent.h"
-#include "posix_stream.h"
 
 //	*** CONSTANTS ***
 #define LOAD_PROGRESS_START 1

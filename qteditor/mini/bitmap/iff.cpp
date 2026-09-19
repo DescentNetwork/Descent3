@@ -43,8 +43,6 @@
 #include "mem.h"
 #include "iff.h"
 #include "byteswap.h"
-#include "cfile.h"
-#include "pstypes.h"
 #include "bitmap.h"
 #include "log.h"
 #include "grdefs.h"

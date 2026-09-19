@@ -19,7 +19,8 @@
 #ifndef MEGACELL_H
 #define MEGACELL_H
 
-#include "pstypes.h"
+#include <cstdint>
+
 #include "manage.h"
 #include "gametexture.h"
 

@@ -19,11 +19,11 @@
 #ifndef SHIPPAGE_H
 #define SHIPPAGE_H
 
+#include <cstdint>
+#include <posix_stream.h>
+
 #include "manage.h"
 #include "ship.h"
-#include "cfile.h"
-#include <posix_stream.h>
-#include "pstypes.h"
 
 struct mngs_ship_page {
   ship ship_struct;

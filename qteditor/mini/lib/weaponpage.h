@@ -20,11 +20,12 @@
 #ifndef WEAPONPAGE_H
 #define WEAPONPAGE_H
 
+#include <cstdint>
+#include <string>
+#include <posix_stream.h>
+
 #include "manage.h"
 #include "weapon.h"
-#include "cfile.h"
-#include <posix_stream.h>
-#include "pstypes.h"
 
 struct mngs_weapon_page {
   weapon weapon_struct;

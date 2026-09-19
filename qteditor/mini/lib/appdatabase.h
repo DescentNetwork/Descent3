@@ -51,7 +51,8 @@
 #ifndef APPDATABASE
 #define APPDATABASE
 
-#include "pstypes.h"
+#include <cstdint>
+
 
 /* oeAppDatabase
         to get info about the application from a managed database (or a custom info file)

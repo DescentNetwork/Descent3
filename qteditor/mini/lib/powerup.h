@@ -21,7 +21,8 @@
 
 #include <array>
 #include <string>
-#include "pstypes.h"
+#include <cstdint>
+
 #include "manage.h"
 #include "object.h"
 

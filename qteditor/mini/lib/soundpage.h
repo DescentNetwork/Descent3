@@ -19,11 +19,11 @@
 #ifndef SOUNDPAGE_H
 #define SOUNDPAGE_H
 
+#include <cstdint>
+#include <posix_stream.h>
+
 #include "manage.h"
 #include "soundload.h"
-#include "cfile.h"
-#include <posix_stream.h>
-#include "pstypes.h"
 
 struct mngs_sound_page {
   sound_info sound_struct;

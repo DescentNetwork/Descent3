@@ -87,18 +87,18 @@
 #ifndef __PILOT_CLASS_H_
 #define __PILOT_CLASS_H_
 
-#include "pstypes.h"
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include "controls.h"
 #include "controller.h"
-#include "cfile.h"
 #include "weapon.h"
 #include "config.h"
 
 // YUCK!
 #include "descent.h" //just for MSN_NAMELEN
 
-#include <string>
-#include <vector>
 
 /*
 =======================================================================

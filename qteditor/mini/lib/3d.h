@@ -182,7 +182,8 @@
 #ifndef _3D_H
 #define _3D_H
 
-#include "pstypes.h"
+#include <cstdint>
+
 #include "vecmat.h" //the vector/matrix library
 #include "grdefs.h"
 #include "float.h"

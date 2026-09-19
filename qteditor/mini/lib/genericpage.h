@@ -19,10 +19,11 @@
 #ifndef GENERICPAGE_H
 #define GENERICPAGE_H
 
+#include <cstdint>
+#include <posix_stream.h>
+
 #include "manage.h"
 #include "cfile.h"
-#include <posix_stream.h>
-#include "pstypes.h"
 #include "objinfo.h"
 #include "robotfirestruct.h"
 

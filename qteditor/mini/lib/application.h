@@ -66,7 +66,9 @@
  */
 #ifndef APP_H
 #define APP_H
-#include "pstypes.h"
+
+#include <cstdint>
+
 /*	Basic Application data types */
 /*	Application Object
                 This object entails initialization and cleanup of all operating system

@@ -19,7 +19,7 @@
 #ifndef GAME2DLL_H
 #define GAME2DLL_H
 
-#include "pstypes.h"
+#include <cstdint>
 
 #include "d3events.h"
 #include "vecmat.h"

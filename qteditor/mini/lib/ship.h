@@ -113,15 +113,17 @@
 #ifndef SHIP_H
 #define SHIP_H
 
-#include "pstypes.h"
-#include "manage.h"
-#include "object.h"
-#include "robotfirestruct.h"
-#include "player.h"
+#include <cstdint>
 #include <array>
 #include <string>
 #include <optional>
 #include <vector>
+
+#include "manage.h"
+#include "object.h"
+#include "robotfirestruct.h"
+#include "player.h"
+
 
 #define MAX_SHIPS 30
 

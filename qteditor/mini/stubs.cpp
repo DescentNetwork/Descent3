@@ -1,7 +1,6 @@
 // Stub implementations for all symbols referenced by qteditor
 // but not provided by any source in mini/.
 
-#include "pstypes.h"
 #include "fix.h"
 #include "vecmat.h"
 #include "gr.h"

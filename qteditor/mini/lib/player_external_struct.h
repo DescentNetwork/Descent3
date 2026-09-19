@@ -77,7 +77,6 @@
 
 #include <cstdint>
 
-#include "pstypes.h"
 #include "vecmat_external.h"
 #include "object_external_struct.h"
 #include "multi_external.h"
