@@ -270,10 +270,9 @@ void RobotEditWeaponsDialog::loadData() {
   ui->IDC_VIEW_CONE_ANGLE_CHECK->setChecked(wb->flags.use_custom_fov);
   ui->IDC_MAX_DISTANCE_CHECK->setChecked(wb->flags.use_custom_max_dist);
 
-  const int anim_type = (wb->flags.anim_local ? WBF_ANIM_LOCAL : 0) | (wb->flags.anim_full ? WBF_ANIM_FULL : 0);
-  ui->IDC_WB_NO_ANIM_RADIO->setChecked(anim_type == 0);
-  ui->IDC_WB_LOCAL_ANIM_RADIO->setChecked(anim_type == WBF_ANIM_LOCAL);
-  ui->IDC_WB_MODEL_ANIM_RADIO->setChecked(anim_type == WBF_ANIM_FULL);
+  ui->IDC_WB_NO_ANIM_RADIO->setChecked(!wb->flags.anim_local && !wb->flags.anim_full);
+  ui->IDC_WB_LOCAL_ANIM_RADIO->setChecked(wb->flags.anim_local);
+  ui->IDC_WB_MODEL_ANIM_RADIO->setChecked(wb->flags.anim_full);
 
   updateDialog();
 }
