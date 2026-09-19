@@ -25,8 +25,8 @@
 #include <QString>
 #include <optional>
 
-#include "cfile.h"
 #include <posix_stream.h>
+
 #include "bitmap.h"
 #include "manage_external.h"
 

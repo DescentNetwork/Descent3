@@ -34,8 +34,6 @@
 #include <cstring>
 #include <filesystem>
 
-#include "cfile.h"
-
 #include "d3edit.h"
 
 #include "manage.h"

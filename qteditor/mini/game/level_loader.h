@@ -443,7 +443,6 @@
  * $NoKeywords: $
  */
 
-#include "cfile.h"
 #include "Mission.h"
 #include "room.h"
 

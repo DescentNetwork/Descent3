@@ -19,11 +19,11 @@
 #ifndef POWERPAGE_H
 #define POWERPAGE_H
 
+#include <cstdint>
 #include <array>
+#include <posix_stream.h>
 
 #include "manage.h"
-#include "cfile.h"
-#include <posix_stream.h>
 #include "powerup.h"
 
 struct mngs_power_page {

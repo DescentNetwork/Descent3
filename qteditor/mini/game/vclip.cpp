@@ -161,7 +161,6 @@
 #include <filesystem>
 
 #include "bitmap.h"
-#include "cfile.h"
 #include "ddio.h"
 #include "game.h"
 #include "gametexture.h"

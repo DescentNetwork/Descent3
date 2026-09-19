@@ -54,7 +54,6 @@
 #include "objinit.h"
 #include "Mission.h"
 #include "mem/mem.h"
-#include "cfile.h"
 #include "game.h"
 #include "physics.h"
 #include "terrain.h"

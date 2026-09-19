@@ -205,7 +205,6 @@ bool EBNode_VerifyGraph();
 // ---- Decoupled-mini-only includes (cfile/gamedata level-loading) ----
 #include <filesystem>
 
-#include "cfile.h"
 #include "gamedata_loader.h"
 #include "brief_model.h"
 

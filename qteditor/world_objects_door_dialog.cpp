@@ -30,8 +30,6 @@
 #include <QMessageBox>
 #include <QPushButton>
 
-#include "cfile.h"
-
 #include "d3edit.h"
 
 #include "ddio.h"

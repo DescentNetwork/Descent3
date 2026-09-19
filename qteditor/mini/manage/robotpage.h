@@ -19,10 +19,12 @@
 #ifndef ROBOTPAGE_H
 #define ROBOTPAGE_H
 
+#include <cstdint>
+#include <string>
+#include <posix_stream.h>
+
 #include "manage.h"
 #include "robot.h"
-#include "cfile.h"
-#include <posix_stream.h>
 #include "objinfo.h"
 
 struct mngs_robot_page {

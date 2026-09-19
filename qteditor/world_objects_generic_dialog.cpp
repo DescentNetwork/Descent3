@@ -37,7 +37,6 @@
 #include <QFileInfo>
 
 #include "bitmap.h"
-#include "cfile.h"
 #include "d3edit.h"
 
 

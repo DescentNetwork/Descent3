@@ -1,6 +1,22 @@
 // Stub implementations for all symbols referenced by qteditor
 // but not provided by any source in mini/.
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
+#include <cstring>
+#include <cctype>
+#include <cstdarg>
+#include <cmath>
+
+#include <string>
+#include <algorithm>
+#include <vector>
+#include <filesystem>
+
+#include <QDebug>
+#include <QtGlobal>
+
 #include "fix.h"
 #include "vecmat.h"
 #include "gr.h"
@@ -10,7 +26,6 @@
 #include "gametexture.h"
 #include "polymodel.h"
 #include "lightmap_info.h"
-#include "cfile.h"
 #include "dedicated_server.h"
 #include "3d.h"
 #include "grtext.h"
@@ -55,21 +70,6 @@
 #include "object_external_struct.h"
 #include "joystick.h"
 #include "chrono_timer.h"
-
-#include <cstdint>
-#include <cstring>
-#include <string>
-#include <algorithm>
-#include <cctype>
-#include <vector>
-#include <filesystem>
-#include <cstdarg>
-#include <cmath>
-
-#include <QDebug>
-#include <QtGlobal>
-#include <cstdio>
-#include <cstdlib>
 
 
 #define PRINT_STUB(x) \

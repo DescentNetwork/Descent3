@@ -119,7 +119,6 @@ typedef int HANDLE;
 
 
 #include "manage_external.h"
-#include "cfile.h"
 #include "networking.h"
 #include "win32_types_stub.h"
 #include "../game/descent.h" //for MSN_NAMELEN

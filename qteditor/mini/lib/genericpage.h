@@ -23,7 +23,6 @@
 #include <posix_stream.h>
 
 #include "manage.h"
-#include "cfile.h"
 #include "objinfo.h"
 #include "robotfirestruct.h"
 

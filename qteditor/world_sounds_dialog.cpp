@@ -30,10 +30,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
-
 #include <QFileInfo>
-
-#include "cfile.h"
 
 #include "d3edit.h"
 

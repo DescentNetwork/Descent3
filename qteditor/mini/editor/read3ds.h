@@ -32,7 +32,6 @@
 #ifndef READ3DS_H
 #define READ3DS_H
 
-#include "cfile.h"
 #include "room.h"
 
 // Opens and reads a 3dsmax file for our rooms.  Reads this file into the passed room
