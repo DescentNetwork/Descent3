@@ -192,7 +192,6 @@ std::vector<texture> GameTextures;
 //poly_model Poly_models[500];
 std::vector<game_path> GamePaths;
 std::vector<trigger> Triggers;
-special_face SpecialFaces[MAX_SPECIAL_FACES];
 
 // ==================== Sound ====================
 hlsSystem Sound_system;
@@ -354,8 +353,6 @@ int AllocShip() { PRINT_STUB(__FUNCTION__); return -1; }
 void FreeShip(int n) { PRINT_STUB(__FUNCTION__); }
 int AllocSound() { PRINT_STUB(__FUNCTION__); return -1; }
 void FreeSound(int n) { PRINT_STUB(__FUNCTION__); }
-int AllocSpecialFace(int a, int b, bool c, int d) { PRINT_STUB(__FUNCTION__); return -1; }
-void FreeSpecialFace(int n) { PRINT_STUB(__FUNCTION__); }
 int AllocTexture() {  PRINT_STUB(__FUNCTION__); return -1; }
 void FreeTexture(int n) { PRINT_STUB(__FUNCTION__); }
 int AllocWeapon() { PRINT_STUB(__FUNCTION__); return -1; }

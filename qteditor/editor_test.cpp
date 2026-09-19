@@ -87,6 +87,7 @@ bool EBNode_VerifyGraph();
 #include "ssl_lib.h"
 #include "soundload.h"
 #include "gametexture.h"
+#include "special_face.h"
 #include "terrain.h"
 #include "BOA.h"
 #include "bsp.h"
@@ -6569,6 +6570,22 @@ private slots:
     FreeGamePath(idx);
     QVERIFY(!GamePaths[idx].used);
     QCOMPARE(Num_game_paths, saved_num);
+  }
+
+  void testAllocFreeSpecialFace() {
+    InitSpecialFaces();
+    int saved_num = Num_of_special_faces;
+    int idx = AllocSpecialFace(SFT_SPECULAR, 4);
+    QVERIFY(idx >= 0);
+    QVERIFY(SpecialFaces[idx].used == 1);
+    QVERIFY(SpecialFaces[idx].num == 4);
+    QVERIFY(SpecialFaces[idx].spec_instance.size() == 4);
+    QCOMPARE(Num_of_special_faces, saved_num + 1);
+
+    FreeSpecialFace(idx);
+    QVERIFY(SpecialFaces[idx].used == 0);
+    QVERIFY(SpecialFaces[idx].spec_instance.empty());
+    QCOMPARE(Num_of_special_faces, saved_num);
   }
 
   void testInsertAndDeleteNode() {

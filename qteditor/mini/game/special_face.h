@@ -21,6 +21,8 @@
 
 #include <cstdint>
 
+#include <vector>
+
 #include "vecmat.h"
 
 #define BAD_SPECIAL_FACE_INDEX -1
@@ -43,13 +45,15 @@ struct special_face {
   uint8_t used;
   uint8_t flags;
 
-  specular_instance *spec_instance;
+  std::vector<specular_instance> spec_instance;
 
   std::vector<vector3> vertnorms;
 
 };
 
-extern special_face SpecialFaces[];
+extern std::vector<special_face> SpecialFaces;
+
+extern int Num_of_special_faces;
 
 // Sets all the special faces to unused
 void InitSpecialFaces();

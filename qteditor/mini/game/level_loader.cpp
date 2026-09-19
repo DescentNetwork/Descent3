@@ -61,6 +61,7 @@
 #include "findintersection.h"
 #include "gametexture.h"
 #include "gamepath.h"
+#include "special_face.h"
 #include "lightmap.h"
 #include "lightmap_info.h"
 #include "string_helpers.h"
@@ -1791,6 +1792,12 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
   // Reset the game-path table (engine LoadLevel calls InitGamePaths() before
   // the chunk loop, so paths from a previous level can't leak into this one).
   InitGamePaths();
+
+  // Reset the special-face table: special faces are a purely in-memory,
+  // per-level registry (face::special_handle) created during lightmap
+  // computation, never persisted by the loader, so a stale frontier must not
+  // survive into the next level.
+  InitSpecialFaces();
 
   // Reset the lightmap state: the NLMP chunk (and any app-side allocations)
   // must start from an empty table.  lm_InitLightmaps() also (re)builds the
