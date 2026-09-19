@@ -3464,7 +3464,7 @@ void osipf_SetPlayerControlMode(int pnum, bool set_to_ai) {
 //	point: which path point
 // returns true if operation was successful
 bool osipf_PathGetInformation(int pathid, int point, vector3 *pos, int *room, matrix *orient) {
-  if (pathid < 0 || pathid >= MAX_GAME_PATHS)
+  if (pathid < 0 || pathid >= static_cast<int>(GamePaths.size()))
     return false;
 
   if (!GamePaths[pathid].used)

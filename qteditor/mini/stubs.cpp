@@ -190,7 +190,7 @@ bms_bitmap GameBitmaps[MAX_BITMAPS];
 std::vector<texture> GameTextures;
 //vclip GameVClips[MAX_VCLIPS];
 //poly_model Poly_models[500];
-std::array<game_path, MAX_GAME_PATHS> GamePaths;
+std::vector<game_path> GamePaths;
 std::vector<trigger> Triggers;
 special_face SpecialFaces[MAX_SPECIAL_FACES];
 
@@ -230,7 +230,7 @@ void WBClearInfo(otype_wb_info *wb) { PRINT_STUB(__FUNCTION__); }
 megacell Megacells[MAX_MEGACELLS] = {};
 
 // ==================== Matcen ====================
-std::array<matcen *, MAX_MATCENS> Matcen = {};
+std::vector<matcen *> Matcen;
 
 // ==================== Level ====================
 levelgoals Level_goals;

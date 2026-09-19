@@ -74,7 +74,7 @@ int PathKeypad::currentPath() { return app.current_path; }
 
 int PathKeypad::currentNode() {
   const int p = currentPath();
-  if (p < 0 || p >= MAX_GAME_PATHS || !GamePaths[p].used)
+  if (p < 0 || p >= (int)GamePaths.size() || !GamePaths[p].used)
     return -1;
   if (app.current_node >= GamePaths[p].num_nodes)
     app.current_node = GamePaths[p].num_nodes - 1;
@@ -84,7 +84,7 @@ int PathKeypad::currentNode() {
 void PathKeypad::updateDialog() {
   // Win32 disables path editing when there is no current path (requires a
   // loaded level with paths).
-  const bool active = (app.current_path >= 0 && app.current_path < MAX_GAME_PATHS &&
+  const bool active = (app.current_path >= 0 && app.current_path < (int)GamePaths.size() &&
                        GamePaths[app.current_path].used);
   const QList<QWidget *> all = this->findChildren<QWidget *>();
   for (QWidget *w : all) {
@@ -95,7 +95,7 @@ void PathKeypad::updateDialog() {
   if (!active)
     return;
   const int p = currentPath();
-  if (p < 0 || p >= MAX_GAME_PATHS || !GamePaths[p].used)
+  if (p < 0 || p >= (int)GamePaths.size() || !GamePaths[p].used)
     return;
 
   {

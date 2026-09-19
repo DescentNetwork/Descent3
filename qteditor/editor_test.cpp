@@ -1406,6 +1406,7 @@ private slots:
     // One default-constructed matcen with a distinguishing name.
     matcen *m = new matcen;
     QVERIFY2(m->SetName("TestMatcen"), "SetName failed");
+    Matcen.resize(1);
     Matcen[0] = m;
     Num_matcens = 1;
 

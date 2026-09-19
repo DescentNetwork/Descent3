@@ -38,7 +38,6 @@
 #ifndef GAME_PATH_H
 #define GAME_PATH_H
 
-#include <array>
 #include <cstdlib>
 
 #include "3d.h"
@@ -76,7 +75,7 @@ public:
   bool used;               // if this path is in use
 };
 
-extern std::array<game_path, MAX_GAME_PATHS> GamePaths;
+extern std::vector<game_path> GamePaths;
 extern int Num_game_paths;
 
 void InitGamePaths();

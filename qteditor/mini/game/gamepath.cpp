@@ -22,7 +22,7 @@ std::optional<uint32_t> FindGamePathName(const std::string &name) {
 
 // Frees gamepath n for future use
 void FreeGamePath(int n) {
-  if (n < 0 || n >= MAX_GAME_PATHS)
+  if (n < 0 || n >= static_cast<int>(GamePaths.size()))
     return;
 
   if (!GamePaths[n].used)

@@ -290,11 +290,15 @@ int AllocGamePath() {
       GamePaths[i].flags = 0;
       GamePaths[i].pathnodes.clear();
       Num_game_paths++;
-      return i;
+      return (int)i;
     }
   }
-  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Too many paths to add another.");
-  return -1;
+  // No free slot anywhere: grow the table by one at the frontier.
+  GamePaths.push_back(game_path{});
+  int i = (int)GamePaths.size() - 1;
+  GamePaths[i].used = true;
+  Num_game_paths++;
+  return i;
 }
 
 int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
@@ -355,10 +359,10 @@ int MovePathNode(int pathnum, int nodenum, vector3 *delta_pos) {
 }
 
 int GetNextPath(int n) {
-  Q_ASSERT(n >= 0 && n < MAX_GAME_PATHS);
+  Q_ASSERT(n >= 0 && n < (int)GamePaths.size());
   if (Num_game_paths == 0)
     return -1;
-  for (int i = n + 1; i < MAX_GAME_PATHS; i++)
+  for (int i = n + 1; i < (int)GamePaths.size(); i++)
     if (GamePaths[i].used)
       return i;
   for (int i = 0; i < n; i++)
@@ -368,13 +372,13 @@ int GetNextPath(int n) {
 }
 
 int GetPrevPath(int n) {
-  Q_ASSERT(n >= 0 && n < MAX_GAME_PATHS);
+  Q_ASSERT(n >= 0 && n < (int)GamePaths.size());
   if (Num_game_paths == 0)
     return -1;
   for (int i = n - 1; i >= 0; i--)
     if (GamePaths[i].used)
       return i;
-  for (int i = MAX_GAME_PATHS - 1; i > n; i--)
+  for (int i = (int)GamePaths.size() - 1; i > n; i--)
     if (GamePaths[i].used)
       return i;
   return n;
