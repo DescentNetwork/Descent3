@@ -535,37 +535,29 @@ void WorldSoundsDialog::onSoundPulldownChanged() {
   updateDialog();
 }
 
-void WorldSoundsDialog::onMaxDistEdited() {
-  const int n = app.current_sound;
-  soundRef(n).max_distance = ui->IDC_SOUNDMAXDIST_EDIT->text().toFloat();
+void WorldSoundsDialog::onMaxDistEdited() {  
+  soundRef(app.current_sound).max_distance = ui->IDC_SOUNDMAXDIST_EDIT->text().toFloat();
 }
 void WorldSoundsDialog::onMinDistEdited() {
-  const int n = app.current_sound;
-  soundRef(n).min_distance = ui->IDC_SOUNDMINDIST_EDIT->text().toFloat();
+  soundRef(app.current_sound).min_distance = ui->IDC_SOUNDMINDIST_EDIT->text().toFloat();
 }
 void WorldSoundsDialog::onInnerConeEdited() {
-  const int n = app.current_sound;
-  soundRef(n).inner_cone_angle = ui->IDC_SOUNDINNERCONEANGLE_EDIT->text().toInt();
+  soundRef(app.current_sound).inner_cone_angle = ui->IDC_SOUNDINNERCONEANGLE_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onOuterConeAngleEdited() {
-  const int n = app.current_sound;
-  soundRef(n).outer_cone_angle = ui->IDC_SOUNDOUTERCONEANGLE_EDIT->text().toInt();
+  soundRef(app.current_sound).outer_cone_angle = ui->IDC_SOUNDOUTERCONEANGLE_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onOuterConeVolEdited() {
-  const int n = app.current_sound;
-  soundRef(n).outer_cone_volume = ui->IDC_SOUNDOUTERCONEVOL_EDIT->text().toFloat() / 100.0f;
+  soundRef(app.current_sound).outer_cone_volume = ui->IDC_SOUNDOUTERCONEVOL_EDIT->text().toFloat() / 100.0f;
 }
 void WorldSoundsDialog::onLoopStartEdited() {
-  const int n = app.current_sound;
-  soundRef(n).loop_start = ui->IDC_SOUNDLOOPSTART_EDIT->text().toInt();
+  soundRef(app.current_sound).loop_start = ui->IDC_SOUNDLOOPSTART_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onLoopEndEdited() {
-  const int n = app.current_sound;
-  soundRef(n).loop_end = ui->IDC_SOUNDLOOPEND_EDIT->text().toInt();
+  soundRef(app.current_sound).loop_end = ui->IDC_SOUNDLOOPEND_EDIT->text().toInt();
 }
 void WorldSoundsDialog::onImportVolumeEdited() {
-  const int n = app.current_sound;
-  soundRef(n).import_volume = ui->IDC_SOUND_IMPORT_VOLUME_EDIT->text().toFloat() / 100.0f;
+  soundRef(app.current_sound).import_volume = ui->IDC_SOUND_IMPORT_VOLUME_EDIT->text().toFloat() / 100.0f;
 }
 
 void WorldSoundsDialog::onHallEffectToggled(bool checked) { setFlag(SPF_FIXED_FREQ, "", !checked); }
