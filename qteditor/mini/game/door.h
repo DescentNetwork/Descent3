@@ -121,11 +121,12 @@
 
 //	DOOR STRUCTURES
 
-struct door {
+struct door
+{
   std::string name; // name of the door
   uint8_t used;              // if this door is in use
   uint8_t flags;             // flags for this door
-  uint8_t pad;               // keep alignment (pagename is 35 chars long)
+
   int16_t hit_points;        // for blastable doors
   float total_open_time;   // time of animation to open door
   float total_close_time;  // time of animation to close door
@@ -136,7 +137,6 @@ struct door {
 
   // OSIRIS information
   std::string module_name;
-
 };
 
 // The max number of predefined doors

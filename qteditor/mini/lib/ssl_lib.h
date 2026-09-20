@@ -322,6 +322,42 @@ struct sound_file_info {
 
 };
 
+// Sound Properties Flags.  Replaces the SPF_* / SPFT_* macros.  The cone-link
+// selector's low bit is bit 8, which is the same bit as SPF_ONCE_PER_OBJ in the
+// original format (both the "once per object" flag and SPFT_CONE_LINK_TURRET1
+// were 0x100), so setting TURRET1 also sets once_per_obj and vice versa.
+struct [[gnu::packed]] sound_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t : 20;                   // reserved
+  uint32_t cone_dir : 2;           // SPFT_CONE_DIR_* selector (0-3)
+  uint32_t cone_link : 1;          // SPFT_CONE_LINK high bit (TURRET2)
+  uint32_t once_per_obj : 1;       // SPF_ONCE_PER_OBJ (== cone-link low bit)
+  uint32_t listener_update : 1;    // SPF_LISTENER_UPDATE
+  uint32_t use_cone : 1;           // SPF_USE_CONE
+  uint32_t plays_once : 1;         // SPF_PLAYS_ONCE
+  uint32_t plays_exclusively : 1;  // SPF_PLAYS_EXCLUSIVELY
+  uint32_t plays_forever : 1;     // SPF_FOREVER
+  uint32_t obj_update : 1;         // SPF_OBJ_UPDATE
+  uint32_t fixed_freq : 1;         // SPF_FIXED_FREQ
+  uint32_t looped : 1;             // SPF_LOOPED
+#else
+  uint32_t looped : 1;             // SPF_LOOPED
+  uint32_t fixed_freq : 1;         // SPF_FIXED_FREQ
+  uint32_t obj_update : 1;         // SPF_OBJ_UPDATE
+  uint32_t plays_forever : 1;     // SPF_FOREVER
+  uint32_t plays_exclusively : 1;  // SPF_PLAYS_EXCLUSIVELY
+  uint32_t plays_once : 1;         // SPF_PLAYS_ONCE
+  uint32_t use_cone : 1;           // SPF_USE_CONE
+  uint32_t listener_update : 1;    // SPF_LISTENER_UPDATE
+  uint32_t once_per_obj : 1;       // SPF_ONCE_PER_OBJ (== cone-link low bit)
+  uint32_t cone_link : 1;          // SPFT_CONE_LINK high bit (TURRET2)
+  uint32_t cone_dir : 2;           // SPFT_CONE_DIR_* selector (0-3)
+  uint32_t : 20;                   // reserved
+#endif
+};
+static_assert(sizeof(sound_flags_t) == sizeof(uint32_t));
+
 struct sound_info {
   std::string name;
   char used;
@@ -330,7 +366,7 @@ struct sound_info {
 
   int loop_start;          // Start byte of repeated loop for looping samples
   int loop_end;            // End byte of repeating loop for looping samples
-  uint32_t flags;      // 2d/3d, variable frequency
+  sound_flags_t flags; // 2d/3d, variable frequency
   float max_distance;      // Maximum distance in which a sound is heard
   float min_distance;      // Sound gets no louder at min_distance
   int inner_cone_angle;    // Angle in which sound is played at full base volume
@@ -363,17 +399,6 @@ struct sound_info {
 #define SLF_GOOD_2D 256  // all linked sounds update position
 #define SLF_OK_2D 512    // if a sound is longer than a threshold, it updates
 
-// Sound Properties Flags
-#define SPF_LOOPED 1     // Sound is looped
-#define SPF_FIXED_FREQ 2 // No doppler shift
-#define SPF_OBJ_UPDATE 4 // Sound updates with attached object movements
-#define SPF_FOREVER 8    // Always plays in high-level, this flag should be ignored in low-level
-#define SPF_PLAYS_EXCLUSIVELY 16
-#define SPF_PLAYS_ONCE 32
-#define SPF_USE_CONE 64
-#define SPF_LISTENER_UPDATE 128 // Sound updates with listener movements
-#define SPF_ONCE_PER_OBJ 256
-
 // Sound Instance flags (Move this out of here)
 #define SIF_UNUSED 0     // Not a valid sound item
 #define SIF_PLAYING_2D 1 // Sound is currently playing
@@ -387,20 +412,6 @@ struct sound_info {
 #define SIF_STREAMING_8_S 256
 #define SIF_STREAMING_16_S 512
 #define SIF_STREAMING (64 | 128 | 256 | 512)
-
-// What is the sound cone linked to (and mask to make it else to look at the important bits)
-#define SPFT_CONE_LINK_MASK 0x00000300
-#define SPFT_CONE_LINK_OBJECT 0x00000000
-#define SPFT_CONE_LINK_TURRET1 0x00000100
-#define SPFT_CONE_LINK_TURRET2 0x00000200
-#define SPFT_CONE_LINK_TURRET3 0x00000300
-
-// Direction of the sound cone relative to its link (and mask to make it else to look at the important bits)
-#define SPFT_CONE_DIR_MASK 0x00000C00
-#define SPFT_CONE_DIR_FORWARD 0x00000000
-#define SPFT_CONE_DIR_BACKWARD 0x00000400
-#define SPFT_CONE_DIR_UPWARD 0x00000800
-#define SPFT_CONE_DIR_DOWNWARD 0x00000C00
 
 // Sound kill types
 #define SKT_STOP_AFTER_LOOP 0  // Allows a looping sample to play until the end of the sample

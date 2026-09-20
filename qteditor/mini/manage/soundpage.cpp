@@ -22,6 +22,7 @@
 //#include "soundload.h"
 
 #include <cstdint>
+#include <cstring>
 #include <string>
 
 #include "manage.h"
@@ -41,10 +42,14 @@ byte_istream& operator>>(byte_istream& input, mngs_sound_page& data) {
   int16_t version = 0;
   input >> version;
 
+  input >> data.sound_struct.name
+        >> data.raw_name;
+
+  uint32_t flags_raw = 0;
+  input >> flags_raw;
+  std::memcpy(&data.sound_struct.flags, &flags_raw, sizeof(flags_raw));
+
   return input
-         >> data.sound_struct.name
-         >> data.raw_name
-         >> data.sound_struct.flags
          >> data.sound_struct.loop_start
          >> data.sound_struct.loop_end
          >> data.sound_struct.outer_cone_volume
@@ -56,11 +61,14 @@ byte_istream& operator>>(byte_istream& input, mngs_sound_page& data) {
 }
 
 byte_ostream& operator<<(byte_ostream& output, const mngs_sound_page& data) {
+  uint32_t flags_raw = 0;
+  std::memcpy(&flags_raw, &data.sound_struct.flags, sizeof(flags_raw));
+
   return output
          << static_cast<int16_t>(SOUNDPAGE_VERSION)
          << data.sound_struct.name
          << data.raw_name
-         << data.sound_struct.flags
+         << flags_raw
          << data.sound_struct.loop_start
          << data.sound_struct.loop_end
          << data.sound_struct.outer_cone_volume
