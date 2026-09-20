@@ -53,8 +53,6 @@ WorldSoundsDialog::WorldSoundsDialog(QWidget *parent)
   ui->setupUi(this);
 
   m_snd = soundPtr(app.current_sound);
-  if(m_snd != nullptr)
-    m_sf = m_snd->flags;
 
   connect(ui->IDC_ADD_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onAddSound);
   connect(ui->IDC_LOAD_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onLoadSound);
@@ -79,24 +77,24 @@ WorldSoundsDialog::WorldSoundsDialog(QWidget *parent)
   connect(ui->IDC_SOUNDLOOPEND_EDIT,&QLineEdit::editingFinished,this,&WorldSoundsDialog::onLoopEndEdited);
   connect(ui->IDC_SOUND_IMPORT_VOLUME_EDIT,&QLineEdit::editingFinished,this,&WorldSoundsDialog::onImportVolumeEdited);
 
-  connect(ui->IDC_SOUNDHALLEFFECT_CHECK,    &QCheckBox::toggled, [this](bool checked){ m_sf.fixed_freq        = !checked; });
-  connect(ui->IDC_LOOPING_CHECK,            &QCheckBox::toggled, [this](bool checked){ m_sf.looped            = checked; });
-  connect(ui->IDC_SOUNDFOREVER_CHECK,       &QCheckBox::toggled, [this](bool checked){ m_sf.plays_forever     = checked; });
-  connect(ui->IDC_SOUNDEXCLUSIVE_CHECK,     &QCheckBox::toggled, [this](bool checked){ m_sf.plays_exclusively = checked; });
-  connect(ui->IDC_SOUNDONCE_CHECK,          &QCheckBox::toggled, [this](bool checked){ m_sf.plays_once        = checked; });
-  connect(ui->IDC_SOUND_ONCE_PER_OBJ_CHECK, &QCheckBox::toggled, [this](bool checked){ m_sf.once_per_obj      = checked; });
-  connect(ui->IDC_SOUND_NO_UPDATE,          &QCheckBox::toggled, [this](bool checked){ m_sf.listener_update   = checked; });
+  connect(ui->IDC_SOUNDHALLEFFECT_CHECK,    &QCheckBox::toggled, [this](bool checked){ if(m_snd) { m_snd->flags.fixed_freq        = !checked; } });
+  connect(ui->IDC_LOOPING_CHECK,            &QCheckBox::toggled, [this](bool checked){ if(m_snd) { m_snd->flags.looped            = checked; } });
+  connect(ui->IDC_SOUNDFOREVER_CHECK,       &QCheckBox::toggled, [this](bool checked){ if(m_snd) { m_snd->flags.plays_forever     = checked; } });
+  connect(ui->IDC_SOUNDEXCLUSIVE_CHECK,     &QCheckBox::toggled, [this](bool checked){ if(m_snd) { m_snd->flags.plays_exclusively = checked; } });
+  connect(ui->IDC_SOUNDONCE_CHECK,          &QCheckBox::toggled, [this](bool checked){ if(m_snd) { m_snd->flags.plays_once        = checked; } });
+  connect(ui->IDC_SOUND_ONCE_PER_OBJ_CHECK, &QCheckBox::toggled, [this](bool checked){ if(m_snd) { m_snd->flags.once_per_obj      = checked; } });
+  connect(ui->IDC_SOUND_NO_UPDATE,          &QCheckBox::toggled, [this](bool checked){ if(m_snd) { m_snd->flags.listener_update   = checked; } });
 
-  connect(ui->IDC_SOUNDOBJATTACH_RADIO, &QRadioButton::clicked, [this](){ m_sf.obj_update = true; });
-  connect(ui->IDC_SOUNDPOSATTACH_RADIO, &QRadioButton::clicked, [this](){ m_sf.obj_update = false; });
-  connect(ui->IDC_SOUNDOBJECT_RADIO,    &QRadioButton::clicked, [this](){ m_sf.cone_link = 0; m_sf.once_per_obj = 0; });
-  connect(ui->IDC_SOUNDTURRET1_RADIO,   &QRadioButton::clicked, [this](){ m_sf.cone_link = 0; m_sf.once_per_obj = 1; });
-  connect(ui->IDC_SOUNDTURRET2_RADIO,   &QRadioButton::clicked, [this](){ m_sf.cone_link = 1; m_sf.once_per_obj = 0; });
-  connect(ui->IDC_SOUNDTURRET3_RADIO,   &QRadioButton::clicked, [this](){ m_sf.cone_link = 1; m_sf.once_per_obj = 1; });
-  connect(ui->IDC_SOUNDFORWARD_RADIO,   &QRadioButton::clicked, [this](){ m_sf.cone_dir = 0; });
-  connect(ui->IDC_SOUNDBACKWARD_RADIO,  &QRadioButton::clicked, [this](){ m_sf.cone_dir = 1; });
-  connect(ui->IDC_SOUNDUPWARD_RADIO,    &QRadioButton::clicked, [this](){ m_sf.cone_dir = 2; });
-  connect(ui->IDC_SOUNDDOWNWARD_RADIO,  &QRadioButton::clicked, [this](){ m_sf.cone_dir = 3; });
+  connect(ui->IDC_SOUNDOBJATTACH_RADIO, &QRadioButton::clicked, [this](){ if(m_snd) { m_snd->flags.obj_update = true; } });
+  connect(ui->IDC_SOUNDPOSATTACH_RADIO, &QRadioButton::clicked, [this](){ if(m_snd) { m_snd->flags.obj_update = false; } });
+  connect(ui->IDC_SOUNDOBJECT_RADIO,    &QRadioButton::clicked, [this](){ if(m_snd) { m_snd->flags.cone_link = 0; m_snd->flags.once_per_obj = 0; } });
+  connect(ui->IDC_SOUNDTURRET1_RADIO,   &QRadioButton::clicked, [this](){ if(m_snd) { m_snd->flags.cone_link = 0; m_snd->flags.once_per_obj = 1; } });
+  connect(ui->IDC_SOUNDTURRET2_RADIO,   &QRadioButton::clicked, [this](){ if(m_snd) { m_snd->flags.cone_link = 1; m_snd->flags.once_per_obj = 0; } });
+  connect(ui->IDC_SOUNDTURRET3_RADIO,   &QRadioButton::clicked, [this](){ if(m_snd) { m_snd->flags.cone_link = 1; m_snd->flags.once_per_obj = 1; } });
+  connect(ui->IDC_SOUNDFORWARD_RADIO,   &QRadioButton::clicked, [this](){ if(m_snd) { m_snd->flags.cone_dir = 0; } });
+  connect(ui->IDC_SOUNDBACKWARD_RADIO,  &QRadioButton::clicked, [this](){ if(m_snd) { m_snd->flags.cone_dir = 1; } });
+  connect(ui->IDC_SOUNDUPWARD_RADIO,    &QRadioButton::clicked, [this](){ if(m_snd) { m_snd->flags.cone_dir = 2; } });
+  connect(ui->IDC_SOUNDDOWNWARD_RADIO,  &QRadioButton::clicked, [this](){ if(m_snd) { m_snd->flags.cone_dir = 3; } });
 
   updateDialog();
 }
@@ -138,7 +136,6 @@ void WorldSoundsDialog::updateDialog()
   if(m_snd == nullptr)
     return;
 
-  m_sf = m_snd->flags;
 
   int total_memory = 0;
   for (int i = 0; i < static_cast<int>(Sounds.size()); i++)
@@ -167,29 +164,30 @@ void WorldSoundsDialog::updateDialog()
     .arg(0)
     .arg(total_memory / 1024));
 
-  ui->IDC_SOUNDHALLEFFECT_CHECK->setChecked(!m_sf.fixed_freq);
-  ui->IDC_SOUNDFOREVER_CHECK->setChecked(m_sf.plays_forever);
-  ui->IDC_SOUND_ONCE_PER_OBJ_CHECK->setChecked(m_sf.once_per_obj);
-  ui->IDC_SOUNDEXCLUSIVE_CHECK->setChecked(m_sf.plays_exclusively);
-  ui->IDC_SOUND_NO_UPDATE->setChecked(m_sf.listener_update);
-  ui->IDC_SOUNDONCE_CHECK->setChecked(m_sf.plays_once);
-  ui->IDC_LOOPING_CHECK->setChecked(m_sf.looped);
 
-  ui->IDC_SOUNDOBJATTACH_RADIO->setChecked(m_sf.obj_update);
-  ui->IDC_SOUNDPOSATTACH_RADIO->setChecked(!m_sf.obj_update);
+  ui->IDC_SOUNDHALLEFFECT_CHECK->setChecked(!m_snd->flags.fixed_freq);
+  ui->IDC_SOUNDFOREVER_CHECK->setChecked(m_snd->flags.plays_forever);
+  ui->IDC_SOUND_ONCE_PER_OBJ_CHECK->setChecked(m_snd->flags.once_per_obj);
+  ui->IDC_SOUNDEXCLUSIVE_CHECK->setChecked(m_snd->flags.plays_exclusively);
+  ui->IDC_SOUND_NO_UPDATE->setChecked(m_snd->flags.listener_update);
+  ui->IDC_SOUNDONCE_CHECK->setChecked(m_snd->flags.plays_once);
+  ui->IDC_LOOPING_CHECK->setChecked(m_snd->flags.looped);
+
+  ui->IDC_SOUNDOBJATTACH_RADIO->setChecked(m_snd->flags.obj_update);
+  ui->IDC_SOUNDPOSATTACH_RADIO->setChecked(!m_snd->flags.obj_update);
 
   // The cone-link selector shares its low bit with once_per_obj; recompose
   // the 2-bit selector the same way SPFT_CONE_LINK_* did.
-  if (m_sf.cone_link && m_sf.once_per_obj)
+  if (m_snd->flags.cone_link && m_snd->flags.once_per_obj)
     ui->IDC_SOUNDTURRET3_RADIO->setChecked(true);
-  else if (m_sf.cone_link)
+  else if (m_snd->flags.cone_link)
     ui->IDC_SOUNDTURRET2_RADIO->setChecked(true);
-  else if (m_sf.once_per_obj)
+  else if (m_snd->flags.once_per_obj)
     ui->IDC_SOUNDTURRET1_RADIO->setChecked(true);
   else
     ui->IDC_SOUNDOBJECT_RADIO->setChecked(true);
 
-  switch (m_sf.cone_dir) {
+  switch (m_snd->flags.cone_dir) {
   case 1: // SPFT_CONE_DIR_BACKWARD
     ui->IDC_SOUNDBACKWARD_RADIO->setChecked(true);
     break;
@@ -265,18 +263,18 @@ void WorldSoundsDialog::onAddSound() {
       finding_name = false;
   }
 
-  auto* snd = soundPtr(sound_handle);
-  snd->name = cur_name;
-  snd->sample_index = raw_handle;
+  m_snd = soundPtr(sound_handle);
+  m_snd->name = cur_name;
+  m_snd->sample_index = raw_handle;
 
-  std::filesystem::path destname = LocalSoundsDir / SoundFiles[snd->sample_index].name;
+  std::filesystem::path destname = LocalSoundsDir / SoundFiles[m_snd->sample_index].name;
   std::filesystem::copy(std::filesystem::path(pathname.toStdString()), (destname), std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(cur_name, PAGETYPE_SOUND);
   app.current_sound = sound_handle;
   RemapSounds();
   Sound_system.CheckAndForceSoundDataAlloc(app.current_sound);
-  snd->loop_end = SoundFiles[snd->sample_index].np_sample_length - 1;
+  m_snd->loop_end = SoundFiles[m_snd->sample_index].np_sample_length - 1;
   updateDialog();
 }
 

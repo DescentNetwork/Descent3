@@ -63,6 +63,5 @@ private:
 private:
   Ui::WorldSoundsDialog *ui;
   sound_info* m_snd = nullptr;
-  sound_flags_t m_sf;
 };
 
