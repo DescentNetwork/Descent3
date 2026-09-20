@@ -26,7 +26,9 @@
 
 #include <QAbstractButton>
 #include <QAction>
+#include <QCheckBox>
 #include <QComboBox>
+#include <QRadioButton>
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDockWidget>
@@ -86,6 +88,7 @@ bool EBNode_VerifyGraph();
 #include "game.h"
 #include "ssl_lib.h"
 #include "soundload.h"
+#include "soundpage.h"
 #include "gametexture.h"
 #include "special_face.h"
 #include "terrain.h"
@@ -2105,6 +2108,242 @@ private slots:
     RoomsReset();
     Triggers.clear();
     DestroyAllMatcens();
+  }
+
+  // sound_flags_t must pack the original SPF_* / SPFT_* bits byte-for-byte, so
+  // that page serialization (which memcpy's the struct to/from a uint32_t)
+  // stays .loc-table compatible with the legacy editor.  Verify each named
+  // member lands on the same bit the macros used.
+  void testSoundFlagsStructLayout()
+  {
+    static_assert(sizeof(sound_flags_t) == sizeof(uint32_t),
+                  "sound_flags_t must fit into one uint32_t");
+    QCOMPARE(static_cast<int>(sizeof(sound_flags_t)),
+             static_cast<int>(sizeof(uint32_t)));
+
+    const auto raw = [](const sound_flags_t &f) {
+      uint32_t v = 0;
+      std::memcpy(&v, &f, sizeof(v));
+      return v;
+    };
+
+    // The exact values of the SPF_* / SPFT_* macros the struct replaces.
+    const uint32_t SPF_LOOPED = 0x001;
+    const uint32_t SPF_FIXED_FREQ = 0x002;
+    const uint32_t SPF_OBJ_UPDATE = 0x004;
+    const uint32_t SPF_FOREVER = 0x008;
+    const uint32_t SPF_PLAYS_EXCLUSIVELY = 0x010;
+    const uint32_t SPF_PLAYS_ONCE = 0x020;
+    const uint32_t SPF_USE_CONE = 0x040;
+    const uint32_t SPF_LISTENER_UPDATE = 0x080;
+    const uint32_t SPF_ONCE_PER_OBJ = 0x100;
+    const uint32_t SPFT_CONE_LINK_TURRET2 = 0x200;
+    const uint32_t SPFT_CONE_DIR_DOWNWARD = 0xC00;
+
+    // Setting just one named field must light up exactly its legacy bit.
+    // (Bit positions mirror the macro values on little-endian hosts; the
+    // struct's big-endian variant swaps the member order to compensate.)
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    sound_flags_t f{};
+    f.looped = 1;                 QCOMPARE(raw(f), SPF_LOOPED);            f = {};
+    f.fixed_freq = 1;             QCOMPARE(raw(f), SPF_FIXED_FREQ);        f = {};
+    f.obj_update = 1;             QCOMPARE(raw(f), SPF_OBJ_UPDATE);        f = {};
+    f.plays_forever = 1;          QCOMPARE(raw(f), SPF_FOREVER);           f = {};
+    f.plays_exclusively = 1;      QCOMPARE(raw(f), SPF_PLAYS_EXCLUSIVELY); f = {};
+    f.plays_once = 1;             QCOMPARE(raw(f), SPF_PLAYS_ONCE);        f = {};
+    f.use_cone = 1;               QCOMPARE(raw(f), SPF_USE_CONE);          f = {};
+    f.listener_update = 1;        QCOMPARE(raw(f), SPF_LISTENER_UPDATE);   f = {};
+    f.once_per_obj = 1;           QCOMPARE(raw(f), SPF_ONCE_PER_OBJ);      f = {};
+    f.cone_link = 1;              QCOMPARE(raw(f), SPFT_CONE_LINK_TURRET2); f = {};
+
+    f.cone_dir = 1;               QCOMPARE(raw(f), SPFT_CONE_DIR_DOWNWARD & 0x400); f = {};
+    f.cone_dir = 2;               QCOMPARE(raw(f), SPFT_CONE_DIR_DOWNWARD & 0x800); f = {};
+    f.cone_dir = 3;               QCOMPARE(raw(f), SPFT_CONE_DIR_DOWNWARD);          f = {};
+
+    // The cone-link selector reuses SPF_ONCE_PER_OBJ as its low bit: the
+    // dialog recomposes the 2-bit selector as (cone_link << 1) | once_per_obj
+    // -> OBJECT=0, TURRET1=0x100, TURRET2=0x200, TURRET3=0x300.
+    f = {};
+    f.once_per_obj = 1; f.cone_link = 0;
+    QCOMPARE(raw(f), SPF_ONCE_PER_OBJ); // == SPFT_CONE_LINK_TURRET1
+    f = {};
+    f.once_per_obj = 0; f.cone_link = 1;
+    QCOMPARE(raw(f), SPFT_CONE_LINK_TURRET2);
+    f = {};
+    f.once_per_obj = 1; f.cone_link = 1;
+    QCOMPARE(raw(f), SPF_ONCE_PER_OBJ | SPFT_CONE_LINK_TURRET2); // == TURRET3
+
+    // Reserved bits must never leak into the serialized value.
+    f = {};
+    f.looped = f.fixed_freq = f.plays_forever = 1;
+    QCOMPARE(raw(f) & 0xFFFFF000u, 0u);
+#endif
+  }
+
+  // The sound page serializer carries flags as one raw uint32_t (memcpy, read
+  // after name/raw_name).  Round-trip a page with a realistic flag mix and
+  // verify every named field survives with the exact bits set.
+  void testSoundPageFlagsRoundTrip()
+  {
+    std::vector<uint8_t> buffer(4096);
+    posix_ostream out(buffer.data(), buffer.size(), std::ios_base::out);
+
+    mngs_sound_page page{};
+    page.sound_struct.name = "roundtrip_sound";
+    page.raw_name = "ROUNDTRIP_SOUND.WAV";
+    page.sound_struct.used = 1;
+    page.sound_struct.sample_index = 0;
+    page.sound_struct.loop_start = 100;
+    page.sound_struct.loop_end = 200;
+    page.sound_struct.flags.looped = 1;
+    page.sound_struct.flags.fixed_freq = 1;
+    page.sound_struct.flags.once_per_obj = 1;
+    page.sound_struct.flags.cone_link = 1;
+    page.sound_struct.flags.cone_dir = 3;
+    page.sound_struct.flags.plays_exclusively = 1;
+    page.sound_struct.flags.listener_update = 1;
+    page.sound_struct.flags.plays_once = 0;
+    page.sound_struct.flags.obj_update = 0;
+    page.sound_struct.max_distance = 64.0f;
+    page.sound_struct.min_distance = 2.0f;
+    page.sound_struct.inner_cone_angle = 30;
+    page.sound_struct.outer_cone_angle = 60;
+    page.sound_struct.outer_cone_volume = 0.5f;
+    page.sound_struct.import_volume = 0.9f;
+
+    out << page;
+    const size_t bytes = static_cast<size_t>(out.tell());
+    QVERIFY(bytes > 0);
+    out.close();
+
+    posix_istream in(buffer.data(), bytes, std::ios_base::in);
+    mngs_sound_page got{};
+    in >> got;
+
+    // Names must be read from the correct stream position (the flags must be
+    // read AFTER name/raw_name, mirroring the writer).
+    QCOMPARE(got.sound_struct.name, page.sound_struct.name);
+    QCOMPARE(got.raw_name, page.raw_name);
+
+    // Every flag bit set above must reproduce.
+    QCOMPARE(static_cast<int>(got.sound_struct.flags.looped), 1);
+    QCOMPARE(static_cast<int>(got.sound_struct.flags.fixed_freq), 1);
+    QCOMPARE(static_cast<int>(got.sound_struct.flags.once_per_obj), 1);
+    QCOMPARE(static_cast<int>(got.sound_struct.flags.cone_link), 1);
+    QCOMPARE(static_cast<int>(got.sound_struct.flags.cone_dir), 3);
+    QCOMPARE(static_cast<int>(got.sound_struct.flags.plays_exclusively), 1);
+    QCOMPARE(static_cast<int>(got.sound_struct.flags.listener_update), 1);
+    QCOMPARE(static_cast<int>(got.sound_struct.flags.plays_once), 0);
+    QCOMPARE(static_cast<int>(got.sound_struct.flags.obj_update), 0);
+
+    // Unset flags must not come back set, and the scalar fields must survive.
+    QCOMPARE(got.sound_struct.name, page.sound_struct.name);
+    QCOMPARE(got.sound_struct.max_distance, 64.0f);
+    QCOMPARE(got.sound_struct.min_distance, 2.0f);
+    QCOMPARE(got.sound_struct.inner_cone_angle, 30);
+    QCOMPARE(got.sound_struct.outer_cone_angle, 60);
+    QCOMPARE(got.sound_struct.outer_cone_volume, 0.5f);
+    QCOMPARE(got.sound_struct.import_volume, 0.9f);
+  }
+
+  // Drives every flag control of the WorldSoundsDialog against a live sound
+  // entry and verifies the same named bitfields that serialization reads are
+  // toggled (i.e. the slots write CurSoundFlags() named members, not some
+  // unrelated state).
+  void testWorldSoundsDialogFlagToggles()
+  {
+    const int saved_network = Network_up;
+    const int saved_sound = app.current_sound;
+    std::vector<sound_info> saved_sounds = Sounds;
+
+    // One used sound at index 0; the dialog edits Sounds[app.current_sound].
+    Sounds.clear();
+    Sounds.push_back(sound_info{});
+    Sounds[0].used = 1;
+    Sounds[0].name = "toggle_sound";
+    Sounds[0].sample_index = 0;
+    app.current_sound = 0;
+    Network_up = 1;
+
+    {
+      WorldSoundsDialog dlg;
+      dlg.show();
+
+      auto *looping = dlg.findChild<QCheckBox *>("IDC_LOOPING_CHECK");
+      QVERIFY(looping);
+      looping->setChecked(true);
+      QCOMPARE(static_cast<int>(Sounds[0].flags.looped), 1);
+
+      auto *hall = dlg.findChild<QCheckBox *>("IDC_SOUNDHALLEFFECT_CHECK");
+      QVERIFY(hall);
+      hall->setChecked(false); // inverted: off -> fixed frequency
+      QCOMPARE(static_cast<int>(Sounds[0].flags.fixed_freq), 1);
+      hall->setChecked(true);
+      QCOMPARE(static_cast<int>(Sounds[0].flags.fixed_freq), 0);
+
+      auto *playsForever = dlg.findChild<QCheckBox *>("IDC_SOUNDFOREVER_CHECK");
+      QVERIFY(playsForever);
+      playsForever->setChecked(true);
+      QCOMPARE(static_cast<int>(Sounds[0].flags.plays_forever), 1);
+
+      auto *exclusive = dlg.findChild<QCheckBox *>("IDC_SOUNDEXCLUSIVE_CHECK");
+      QVERIFY(exclusive);
+      exclusive->setChecked(true);
+      QCOMPARE(static_cast<int>(Sounds[0].flags.plays_exclusively), 1);
+
+      auto *once = dlg.findChild<QCheckBox *>("IDC_SOUNDONCE_CHECK");
+      QVERIFY(once);
+      once->setChecked(true);
+      QCOMPARE(static_cast<int>(Sounds[0].flags.plays_once), 1);
+
+      auto *once_per_obj = dlg.findChild<QCheckBox *>("IDC_SOUND_ONCE_PER_OBJ_CHECK");
+      QVERIFY(once_per_obj);
+      once_per_obj->setChecked(true);
+      QCOMPARE(static_cast<int>(Sounds[0].flags.once_per_obj), 1);
+
+      auto *no_update = dlg.findChild<QCheckBox *>("IDC_SOUND_NO_UPDATE");
+      QVERIFY(no_update);
+      no_update->setChecked(true);
+      QCOMPARE(static_cast<int>(Sounds[0].flags.listener_update), 1);
+
+      auto *obj_attach = dlg.findChild<QRadioButton *>("IDC_SOUNDOBJATTACH_RADIO");
+      auto *pos_attach = dlg.findChild<QRadioButton *>("IDC_SOUNDPOSATTACH_RADIO");
+      QVERIFY(obj_attach);
+      QVERIFY(pos_attach);
+      obj_attach->click();
+      QCOMPARE(static_cast<int>(Sounds[0].flags.obj_update), 1);
+      pos_attach->click();
+      QCOMPARE(static_cast<int>(Sounds[0].flags.obj_update), 0);
+
+      auto *turret1 = dlg.findChild<QRadioButton *>("IDC_SOUNDTURRET1_RADIO");
+      auto *turret3 = dlg.findChild<QRadioButton *>("IDC_SOUNDTURRET3_RADIO");
+      QVERIFY(turret1);
+      QVERIFY(turret3);
+      turret1->click();
+      QCOMPARE(static_cast<int>(Sounds[0].flags.cone_link), 0);
+      QCOMPARE(static_cast<int>(Sounds[0].flags.once_per_obj), 1);
+      turret3->click();
+      QCOMPARE(static_cast<int>(Sounds[0].flags.cone_link), 1);
+      QCOMPARE(static_cast<int>(Sounds[0].flags.once_per_obj), 1);
+
+      auto *forward = dlg.findChild<QRadioButton *>("IDC_SOUNDFORWARD_RADIO");
+      auto *backward = dlg.findChild<QRadioButton *>("IDC_SOUNDBACKWARD_RADIO");
+      auto *downward = dlg.findChild<QRadioButton *>("IDC_SOUNDDOWNWARD_RADIO");
+      QVERIFY(forward);
+      QVERIFY(backward);
+      QVERIFY(downward);
+      forward->click();
+      QCOMPARE(static_cast<int>(Sounds[0].flags.cone_dir), 0);
+      backward->click();
+      QCOMPARE(static_cast<int>(Sounds[0].flags.cone_dir), 1);
+      downward->click();
+      QCOMPARE(static_cast<int>(Sounds[0].flags.cone_dir), 3);
+    }
+
+    // Restore global state so the rest of the suite is unaffected.
+    Network_up = saved_network;
+    app.current_sound = saved_sound;
+    Sounds = std::move(saved_sounds);
   }
 
   void testEditorInfoChunkRoundTrip()
