@@ -305,6 +305,7 @@ struct [[gnu::packed]] weapon_flags_t
   uint32_t custom_size : 1;      // This weapon uses a custom size
 #endif
 };
+static_assert(sizeof(weapon_flags_t) == sizeof(uint32_t));
 
 struct weapon {
   std::string name;

@@ -126,6 +126,7 @@ struct [[gnu::packed]] surface_flags_t
   uint8_t padding : 6;           // Unused padding
 #endif
 };
+static_assert(sizeof(surface_flags_t) == sizeof(uint8_t));
 
 struct rad_surface {
   float area;

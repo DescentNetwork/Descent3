@@ -50,9 +50,7 @@ byte_istream& operator>>(byte_istream& input, otype_wb_info& data) {
   input >> data.aiming_3d_dist;
   input >> data.aiming_XZ_dot;
 
-  uint16_t raw_flags = 0;
-  input >> raw_flags;
-  std::memcpy(&data.flags, &raw_flags, sizeof(raw_flags));
+  input >> reinterpret_cast<uint16_t&>(data.flags);
   input >> data.gp_quad_fire_mask;
 
   return input;
@@ -79,9 +77,7 @@ byte_ostream& operator<<(byte_ostream& output, const otype_wb_info& data) {
          << data.aiming_3d_dist
          << data.aiming_XZ_dot;
 
-  uint16_t raw_flags = 0;
-  std::memcpy(&raw_flags, &data.flags, sizeof(raw_flags));
-  output << raw_flags;
+  output << reinterpret_cast<const uint16_t&>(data.flags);
   output << data.gp_quad_fire_mask;
 
   return output;

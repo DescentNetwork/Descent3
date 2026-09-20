@@ -86,9 +86,7 @@ byte_istream& operator>>(byte_istream& input, mngs_weapon_page& data) {
   input >> data.weapon_struct.particle_size;
 
   // Read flags
-  uint32_t flags_raw = 0;
-  input >> flags_raw;
-  std::memcpy(&data.weapon_struct.flags, &flags_raw, sizeof(flags_raw));
+  input >> reinterpret_cast<uint32_t&>(data.weapon_struct.flags);
 
   // Read spawn data
   input >> data.spawn_name;
@@ -192,9 +190,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_weapon_page& data) {
   output << data.weapon_struct.particle_size;
 
   // Write out flags
-  uint32_t flags_raw = 0;
-  std::memcpy(&flags_raw, &data.weapon_struct.flags, sizeof(flags_raw));
-  output << flags_raw;
+  output << reinterpret_cast<const uint32_t&>(data.weapon_struct.flags);
 
   // Write out spawn data
   output << data.spawn_name;

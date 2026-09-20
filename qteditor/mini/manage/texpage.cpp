@@ -84,11 +84,7 @@ byte_istream& operator>>(byte_istream& input, mngs_texture_page& data) {
         >> data.tex_struct.reflectivity
         >> data.tex_struct.corona_type
         >> data.tex_struct.damage;
-  {
-    uint32_t raw_flags = 0;
-    input >> raw_flags;
-    std::memcpy(&data.tex_struct.flags, &raw_flags, sizeof(raw_flags));
-  }
+  input >> reinterpret_cast<uint32_t&>(data.tex_struct.flags);
 
   if (data.tex_struct.flags.procedural) {
     input >> data.proc_palette;
@@ -177,11 +173,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_texture_page& data) {
          << data.tex_struct.reflectivity
          << data.tex_struct.corona_type
          << data.tex_struct.damage;
-  {
-    uint32_t raw_flags = 0;
-    std::memcpy(&raw_flags, &data.tex_struct.flags, sizeof(raw_flags));
-    output << raw_flags;
-  }
+  output << reinterpret_cast<const uint32_t&>(data.tex_struct.flags);
 
   if (data.tex_struct.flags.procedural) {
     output << data.proc_palette;

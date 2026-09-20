@@ -141,7 +141,7 @@
  *    STRUCTURES
  */
 
-struct [[gnu::packed]] light_flags_t {
+struct [[gnu::packed]] light_flags_t{
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
   uint32_t padding : 25;                  // Unused bits (Bits 7 - 31)
   uint32_t no_specularity : 1;            // Object does not have specular light cast on it (0x40)
@@ -545,6 +545,7 @@ struct [[gnu::packed]] physics_flags_t
   uint32_t no_door_collisions : 1;          // No collisions occur with doors
 #endif
 };
+static_assert(sizeof(physics_flags_t) == sizeof(uint32_t));
 
 // True when any of the six lock flags (x/y/z/p/h/b) are set; mirrors the old
 // PF_LOCK_MASK check.
@@ -607,11 +608,6 @@ struct physics_info {
 // quirk preserved: only the z component of velocity is stored on disk.
 byte_istream& operator >>(byte_istream& input, physics_info& data);
 byte_ostream& operator <<(byte_ostream& output, const physics_info& data);
-
-// The physics flags bitfield is stored on disk as a single little-endian
-// uint32, mirroring the original engine layout.
-byte_istream& operator >>(byte_istream& input, physics_flags_t& data);
-byte_ostream& operator <<(byte_ostream& output, const physics_flags_t& data);
 
 struct shockwave_info {
   uint32_t damaged_list[(MAX_OBJECTS / 32) + 1];

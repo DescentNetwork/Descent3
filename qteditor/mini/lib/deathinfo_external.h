@@ -167,6 +167,7 @@ struct [[gnu::packed]] death_flags_t
   uint32_t padding : 3;
 #endif
 };
+static_assert(sizeof(death_flags_t) == sizeof(uint32_t));
 
 // Death info for an object type
 struct death_info {

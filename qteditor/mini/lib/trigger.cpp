@@ -33,22 +33,15 @@ byte_istream& operator>>(byte_istream& input, trigger& data) {
   int16_t face = 0;
   input >> face;
   data.facenum = face;
-  uint16_t flags_raw = 0;
-  input >> flags_raw;
-  std::memcpy(&data.flags, &flags_raw, sizeof(flags_raw));
-  uint16_t activator_raw = 0;
-  input >> activator_raw;
-  std::memcpy(&data.activator, &activator_raw, sizeof(activator_raw));
+  input >> reinterpret_cast<uint16_t&>(data.flags);
+  input >> reinterpret_cast<uint16_t&>(data.activator);
   return input;
 }
 
 byte_ostream& operator<<(byte_ostream& output, const trigger& data) {
   output << data.name;
   output << static_cast<int16_t>(data.roomnum) << static_cast<int16_t>(data.facenum);
-  uint16_t flags_raw = 0;
-  std::memcpy(&flags_raw, &data.flags, sizeof(flags_raw));
-  output << flags_raw;
-  uint16_t activator_raw = 0;
-  std::memcpy(&activator_raw, &data.activator, sizeof(activator_raw));
-  return output << activator_raw;
+  return output
+         << reinterpret_cast<const uint16_t&>(data.flags)
+         << reinterpret_cast<const uint16_t&>(data.activator);
 }

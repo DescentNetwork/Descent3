@@ -57,10 +57,11 @@ constexpr size_t kGenericPageBufferSize = 1u << 20;
 //-----------------------------------------------------------------------------
 
 void mng_ReadPhysicsChunk(physics_info *phys_info, posix_istream &infile) {
+
   infile >> phys_info->mass;
   infile >> phys_info->drag;
   infile >> phys_info->full_thrust;
-  infile >> phys_info->flags;
+  infile >> reinterpret_cast<uint32_t&>(phys_info->flags);
   infile >> phys_info->rotdrag;
   infile >> phys_info->full_rotthrust;
   infile >> phys_info->num_bounces;
@@ -314,11 +315,9 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
   // Read hit points
   infile >> genericpage->objinfo_struct.hit_points;
 
-  // Read flags (stored as a raw 32-bit value on disk; copy into the packed
-  // bitfield preserving its layout).
-  uint32_t raw_flags = 0;
-  infile >> raw_flags;
-  std::memcpy(&genericpage->objinfo_struct.flags, &raw_flags, sizeof(raw_flags));
+  // Read flags (stored as a raw 32-bit value on disk; the packed bitfield
+  // struct shares its storage, so it can be streamed in directly).
+  infile >> reinterpret_cast<uint32_t&>(genericpage->objinfo_struct.flags);
 
   // Read AI info
   infile >> genericpage->ai_info.flags;
@@ -477,24 +476,22 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
     int n_death_types = n;
     for (i = 0; i < n_death_types; i++)
     {
-      uint32_t flags = 0;
-      infile >> flags;
+      infile >> reinterpret_cast<uint32_t&>(genericpage->objinfo_struct.death_types[i].flags);
       if (version == 22) { // translate death flags
         Q_ASSERT(false);            // this version no longer supported
       }
 
-      memcpy(&genericpage->objinfo_struct.death_types[i].flags, &flags, sizeof(uint32_t));
       infile >> genericpage->objinfo_struct.death_types[i].delay_min;
       infile >> genericpage->objinfo_struct.death_types[i].delay_max;
       infile >> genericpage->objinfo_struct.death_probabilities[i];
 
       // Fix up for changed flags
       if (version < 27) {
+        const uint32_t flags = std::bit_cast<uint32_t>(genericpage->objinfo_struct.death_types[i].flags);
         if ((flags & OLD_DF_DELAY_MASK) != OLD_DF_DELAY_MIN_MAX) {
           genericpage->objinfo_struct.death_types[i].delay_min = 0.0;
           genericpage->objinfo_struct.death_types[i].delay_max = 0.0;
         }
-        flags &= ~DF_UNUSED;
       }
     }
   }
@@ -521,7 +518,7 @@ static void mng_WritePhysicsChunk(byte_ostream &outfile, const physics_info *phy
   outfile << phys_info->mass
           << phys_info->drag
           << phys_info->full_thrust
-          << phys_info->flags
+          << reinterpret_cast<const uint32_t&>(phys_info->flags)
           << phys_info->rotdrag
           << phys_info->full_rotthrust
           << phys_info->num_bounces
@@ -579,9 +576,7 @@ static void mng_WriteWeaponBatteryChunk(byte_ostream &outfile, const otype_wb_in
   outfile << static_wb->aiming_3d_dot;
   outfile << static_wb->aiming_3d_dist;
   outfile << static_wb->aiming_XZ_dot;
-  uint16_t flags_raw = 0;
-  std::memcpy(&flags_raw, &static_wb->flags, sizeof(flags_raw));
-  outfile << flags_raw;
+  outfile << reinterpret_cast<const uint16_t&>(static_wb->flags);
   outfile.put(static_wb->gp_quad_fire_mask);
 }
 
@@ -660,11 +655,9 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
   // Write hit points
   outfile << genericpage->objinfo_struct.hit_points;
 
-  // Write flags (the on-disk form is a raw 32-bit value; the struct packs it
-  // in a bitfield, so copy the bit pattern out).
-  uint32_t raw_flags = 0;
-  std::memcpy(&raw_flags, &genericpage->objinfo_struct.flags, sizeof(raw_flags));
-  outfile << raw_flags;
+  // Write flags (the on-disk form is a raw 32-bit value; the packed bitfield
+  // struct shares storage, so it can be streamed out directly).
+  outfile << reinterpret_cast<const uint32_t&>(genericpage->objinfo_struct.flags);
 
   // Write AI info
   outfile << genericpage->ai_info.flags;
@@ -767,9 +760,7 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
     outfile << n;
   }
   for (i = 0; i < MAX_DEATH_TYPES; i++) {
-    uint32_t flags = 0;
-    std::memcpy(&flags, &genericpage->objinfo_struct.death_types[i].flags, sizeof(uint32_t));
-    outfile << flags;
+    outfile << reinterpret_cast<const uint32_t&>(genericpage->objinfo_struct.death_types[i].flags);
     outfile << genericpage->objinfo_struct.death_types[i].delay_min;
     outfile << genericpage->objinfo_struct.death_types[i].delay_max;
     outfile.put(genericpage->objinfo_struct.death_probabilities[i]);
