@@ -193,8 +193,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       // MAX_TEXTURES bounds the global table because level texture-name
       // translation (texture_xlate) is indexed by the on-disk tmap value.
       if (GameTextures.size() < MAX_TEXTURES) {
-        if (!mng_ReadNewTexturePage(infile, &texpage))
-          ok = false;
+        ok = mng_ReadNewTexturePage(infile, &texpage);
         GameTextures.push_back(texpage.tex_struct);
         // Load the texture's image so textured faces render: the payload is
         // read straight out of the open d3.hog archive and decoded from memory.

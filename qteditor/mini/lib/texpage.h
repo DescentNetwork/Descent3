@@ -34,29 +34,19 @@ struct mngs_texture_page {
   std::string sound_name;   // filename for the sound
   texture tex_struct;
 
-  int num_proc_elements;
+  procedurals_t procs;
+  /*
+  uint16_t num_proc_elements;
 
   uint8_t proc_heat, proc_light, proc_thickness, osc_value;
 
   float proc_evaluation_time, osc_time;
 
-  std::vector<uint8_t> proc_type;
-
-  std::vector<uint8_t> proc_frequency;
-  std::vector<uint8_t> proc_speed;
-
-  std::vector<uint8_t> proc_size;
-
-  std::vector<uint8_t> proc_x1;
-  std::vector<uint8_t> proc_y1;
-  std::vector<uint8_t> proc_x2;
-  std::vector<uint8_t> proc_y2;
+  std::vector<procedural_t> procs;
 
   std::array<uint16_t, 255> proc_palette;
+*/
 };
-
-// Current version of the texture page (matches the original manage/texpage.cpp)
-#define TEXPAGE_VERSION 7
 
 // Table-file serialization; operator>> reads any version from the stream and
 // operator<< writes the current (TEXPAGE_VERSION) layout.  The read is the

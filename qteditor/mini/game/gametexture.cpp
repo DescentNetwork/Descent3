@@ -225,3 +225,36 @@ int LoadTextureImage(const std::filesystem::path &filename, int *type, int textu
   return bm_handle;
 }
 
+
+byte_istream& operator>>(byte_istream& input, texture& data)
+{
+  return input
+          >> data.r
+          >> data.g
+          >> data.b
+          >> data.alpha
+          >> data.speed
+          >> data.slide_u
+          >> data.slide_v
+          >> data.reflectivity
+          >> data.corona_type
+          >> data.damage
+          >> reinterpret_cast<uint32_t&>(data.flags);
+}
+
+byte_ostream& operator<<(byte_ostream& output, const texture& data)
+{
+  return output
+          << data.r
+          << data.g
+          << data.b
+          << data.alpha
+          << data.speed
+          << data.slide_u
+          << data.slide_v
+          << data.reflectivity
+          << data.corona_type
+          << data.damage
+          << reinterpret_cast<const uint32_t&>(data.flags);
+}
+

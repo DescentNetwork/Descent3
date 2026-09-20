@@ -192,6 +192,7 @@
 #define GAMETEXTURE_H
 #include <optional>
 #include <vector>
+#include <posix_stream.h>
 
 #ifdef NEWEDITOR /* only include tablefile header (manage stuff for NEWEDITOR) */
 #include "..\neweditor\ned_TableFile.h"
@@ -321,30 +322,40 @@ struct [[gnu::packed]] texture_flags_t
 static_assert(sizeof(texture_flags_t) == sizeof(uint32_t));
 
 
-struct texture {
+struct texture
+{
   std::string name; // this textures name
-  texture_flags_t flags;   // values defined above
-  int bm_handle;           // handle which shows what this texture looks like
-  int destroy_handle;      // handle which denotes the destroyed image
+  texture_flags_t flags = {};   // values defined above
+  int bm_handle = -1;           // handle which shows what this texture looks like
+  int destroy_handle = -1;      // handle which denotes the destroyed image
 
-  int damage;
-  float reflectivity;
-  float r, g, b; // colored lighting	 (0 to 100%)
+  int damage = -1;
+  float reflectivity = 0.5f;
 
-  float slide_u, slide_v; // How many times this texture slides during a second
-  float alpha;            // alpha value (from 0 to 1)
-  float speed;            // how fast this texture animates
+   // colored lighting	 (0 to 100%)
+  float r = 0.0f;
+  float g = 0.0f;
+  float b = 0.0f;
 
-  proc_struct *procedural;
+  float slide_u = 0.0f;
+  float slide_v = 0.0f; // How many times this texture slides during a second
+  float alpha = 1.0f;            // alpha value (from 0 to 1)
+  float speed = 1.0f;            // how fast this texture animates
 
-  int sound;          // The sound this texture makes
-  float sound_volume; // The volume for this texture's sound
+  proc_struct *procedural = nullptr;
 
-  int16_t bumpmap;     // The bumpmap for this texture, or -1 if there is none
-  uint8_t corona_type; // what type of corona this thing uses
-  uint8_t used;        // is this texture free to be allocated?
+  int sound = -1;          // The sound this texture makes
+  float sound_volume = 1.0f; // The volume for this texture's sound
+
+  int16_t bumpmap = -1;     // The bumpmap for this texture, or -1 if there is none
+  uint8_t corona_type = 0; // what type of corona this thing uses
+  uint8_t used = 0;        // is this texture free to be allocated?
 
 };
+
+byte_istream& operator>>(byte_istream& input, texture& data);
+byte_ostream& operator<<(byte_ostream& output, const texture& data);
+
 
 extern std::vector<texture> GameTextures;
 

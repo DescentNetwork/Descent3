@@ -153,6 +153,60 @@ struct glowinfo {
   vector3 center, normal;
 };
 
+struct [[gnu::packed]] subobject_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t : 6;               // Unused bits (26-31)
+  uint32_t headlight : 1;     // This subobject is a headlight
+  uint32_t jitter : 1;        // This object jitters by itself
+  uint32_t thruster : 1;      // This is a thruster subobject
+  uint32_t custom : 1;        // This subobject has textures/colors that are customizable
+  uint32_t glow : 1;          // This subobject glows
+  uint32_t : 5;               // Unused bits for gap (16-20)
+  uint32_t wb : 1;            // This subobject is part of a weapon battery
+  uint32_t layer : 1;         // This subobject is marked as part of possible secondary model rendering
+  uint32_t viewer : 1;        // This subobject is marked as a 'viewer'
+  uint32_t facing : 1;        // This subobject always faces you
+  uint32_t monitor8 : 1;      // This subobject contains its eighth monitor
+  uint32_t monitor7 : 1;      // This subobject contains its seventh monitor
+  uint32_t monitor6 : 1;      // This subobject contains its sixth monitor
+  uint32_t monitor5 : 1;      // This subobject contains its fifth monitor
+  uint32_t monitor4 : 1;      // This subobject contains its fourth monitor
+  uint32_t monitor3 : 1;      // This subobject contains its third monitor
+  uint32_t monitor2 : 1;      // This subobject contains its second monitor
+  uint32_t monitor1 : 1;      // This subobject contains its first monitor
+  uint32_t frontface : 1;     // This subobject contains the front face for the door
+  uint32_t shell : 1;         // This subobject is a door housing
+  uint32_t turret : 1;        // This subobject is a turret that tracks
+  uint32_t rotate : 1;        // This subobject is a rotator
+#else
+  uint32_t rotate : 1;        // This subobject is a rotator
+  uint32_t turret : 1;        // This subobject is a turret that tracks
+  uint32_t shell : 1;         // This subobject is a door housing
+  uint32_t frontface : 1;     // This subobject contains the front face for the door
+  uint32_t monitor1 : 1;      // This subobject contains its first monitor
+  uint32_t monitor2 : 1;      // This subobject contains its second monitor
+  uint32_t monitor3 : 1;      // This subobject contains its third monitor
+  uint32_t monitor4 : 1;      // This subobject contains its fourth monitor
+  uint32_t monitor5 : 1;      // This subobject contains its fifth monitor
+  uint32_t monitor6 : 1;      // This subobject contains its sixth monitor
+  uint32_t monitor7 : 1;      // This subobject contains its seventh monitor
+  uint32_t monitor8 : 1;      // This subobject contains its eighth monitor
+  uint32_t facing : 1;        // This subobject always faces you
+  uint32_t viewer : 1;        // This subobject is marked as a 'viewer'
+  uint32_t layer : 1;         // This subobject is marked as part of possible secondary model rendering
+  uint32_t wb : 1;            // This subobject is part of a weapon battery
+  uint32_t : 5;               // Unused bits for gap (16-20)
+  uint32_t glow : 1;          // This subobject glows
+  uint32_t custom : 1;        // This subobject has textures/colors that are customizable
+  uint32_t thruster : 1;      // This is a thruster subobject
+  uint32_t jitter : 1;        // This object jitters by itself
+  uint32_t headlight : 1;     // This subobject is a headlight
+  uint32_t : 6;               // Unused bits (26-31)
+#endif
+};
+static_assert(sizeof(subobject_flags_t) == sizeof(uint32_t));
+
 // bsp information
 struct bsp_info {
   std::string name; // name of the subsystem.  Probably displayed on HUD
@@ -220,12 +274,36 @@ struct bsp_info {
   std::vector<glowinfo> glow_info;
 };
 
+// polymodel flags
 #define PMF_LIGHTMAP_RES 1
 #define PMF_TIMED 2          // Uses new timed animation
 #define PMF_ALPHA 4          // Has alpha per vertex qualities
 #define PMF_FACING 8         // Has a submodel that is always facing
 #define PMF_NOT_RESIDENT 16  // This polymodel is not in memory
 #define PMF_SIZE_COMPUTED 32 // This polymodel's size is computed
+
+
+struct [[gnu::packed]] polymodel_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t : 26;              // Unused bits (6-31)
+  uint32_t size_computed : 1; // This polymodel's size is computed
+  uint32_t not_resident : 1;  // This polymodel is not in memory
+  uint32_t facing : 1;        // Has a submodel that is always facing
+  uint32_t alpha : 1;         // Has alpha per vertex qualities
+  uint32_t timed : 1;         // Uses new timed animation
+  uint32_t lightmap_res : 1;
+#else
+  uint32_t lightmap_res : 1;
+  uint32_t timed : 1;         // Uses new timed animation
+  uint32_t alpha : 1;         // Has alpha per vertex qualities
+  uint32_t facing : 1;        // Has a submodel that is always facing
+  uint32_t not_resident : 1;  // This polymodel is not in memory
+  uint32_t size_computed : 1; // This polymodel's size is computed
+  uint32_t : 26;              // Unused bits (6-31)
+#endif
+};
+static_assert(sizeof(polymodel_flags_t) == sizeof(uint32_t));
 
 static_assert(sizeof(bool) == sizeof(uint8_t));
 // used to describe a polygon model
@@ -275,7 +353,6 @@ struct poly_model {
   std::vector<poly_wb_info> poly_wb; // array of weapon batteries
 
   std::vector<int> render_order; // internal use
-
 };
 
 // Which kind of lighting model for this polymodel
@@ -304,6 +381,51 @@ enum polymodel_light_type {
 #define PEF_NO_GLOWS (8192 << 1)
 #define PEF_CUSTOM_GLOW (8192 << 2)
 #define PEF_BUMPMAPPED (8192 << 3)
+
+struct [[gnu::packed]] polymodel_effects_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t : 15;              // Unused bits (17-31)
+  uint32_t bumpmapped : 1;
+  uint32_t custom_glow : 1;
+  uint32_t no_glows : 1;
+  uint32_t draw_headlights : 1;
+  uint32_t thruster_scalar : 1;
+  uint32_t glow_scalar : 1;
+  uint32_t specular_faces : 1;
+  uint32_t specular_model : 1;
+  uint32_t fogged_model : 1;
+  uint32_t custom_texture : 1;
+  uint32_t custom_color : 1;
+  uint32_t fog : 1;
+  uint32_t lo_res : 1;
+  uint32_t med_res : 1;
+  uint32_t color : 1;
+  uint32_t deform : 1;
+  uint32_t alpha : 1;
+#else
+  uint32_t alpha : 1;
+  uint32_t deform : 1;
+  uint32_t color : 1;
+  uint32_t med_res : 1;
+  uint32_t lo_res : 1;
+  uint32_t fog : 1;
+  uint32_t custom_color : 1;
+  uint32_t custom_texture : 1;
+  uint32_t fogged_model : 1;
+  uint32_t specular_model : 1;
+  uint32_t specular_faces : 1;
+  uint32_t glow_scalar : 1;
+  uint32_t thruster_scalar : 1;
+  uint32_t draw_headlights : 1;
+  uint32_t no_glows : 1;
+  uint32_t custom_glow : 1;
+  uint32_t bumpmapped : 1;
+  uint32_t : 15;              // Unused bits (17-31)
+#endif
+};
+static_assert(sizeof(polymodel_effects_flags_t) == sizeof(uint32_t));
+
 
 struct polymodel_effect {
   int type;

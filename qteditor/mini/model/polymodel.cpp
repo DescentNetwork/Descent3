@@ -616,9 +616,10 @@
 #include "mem.h"
 #include "objinfo.h"
 #include "polymodel.h"
+
+#include "d3edit.h"
 #include "chrono_timer.h"
 #include "string_helpers.h"
-#include "d3edit.h"
 #include <posix_stream.h>
 
 int Num_poly_models = 0;
@@ -657,7 +658,7 @@ constexpr uint32_t operator "" _ID(const char* const str, std::size_t len) {
 #define ID_WBS "WBAT"_ID            // Weapon Battery Info
 #define ID_GROUND "GRND"_ID         // Ground Plane info
 #define ID_ATTACH "ATCH"_ID         // Attach points
-#define ID_ATTACH_NORMALS "NATH"_ID // Attach uvecs
+#define ID_ATTACH_NORMALS "NATH"_ID // Attach nomals (uvecs)
 
 static_assert(sizeof("1234"_ID) == sizeof(uint32_t));
 
@@ -861,8 +862,10 @@ bool ReloadModelTextures(int modelnum, byte_istream &infile) {
     infile >> id;  // read chunk type
     infile >> len; // read chunk length
 
-    switch (id) {
-    case ID_TXTR: {
+    switch (id)
+    {
+      case "TXTR"_ID: // Texture filename list
+    {
       // Texture filename list
       int i, n;
 
@@ -1238,8 +1241,10 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
     infile >> id;
     infile >> len;
 
-    switch (id) {
-    case ID_OHDR: {
+    switch (id)
+    {
+      case "0HDR"_ID:           // POF file header
+    {
       // Object header
 
       // mprintf(0,"Object header...\n");
@@ -1274,7 +1279,8 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       break;
     }
 
-    case ID_SOBJ: {
+    case "SOBJ"_ID:           // Subobject header
+    {
       // Subobject header
       int n;
       float d;
@@ -1524,7 +1530,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       break;
     }
 
-    case ID_GPNT:
+    case "GPNT"_ID: // gun points
       infile >> pm->n_guns;
       pm->gun_slots.resize(pm->n_guns);
       Q_ASSERT(pm->gun_slots.size() == (size_t)pm->n_guns);
@@ -1544,7 +1550,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       }
       break;
 
-    case ID_ATTACH:
+    case "ATCH"_ID: // Attach points
       infile >> pm->n_attach;
       if (pm->n_attach) {
         pm->attach_slots.resize(pm->n_attach);
@@ -1561,7 +1567,8 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       }
       break;
 
-    case ID_ATTACH_NORMALS: {
+    case "NATH"_ID: // Attach nomals (uvecs)
+    {
       bool f_uvec = false;
       int num_normals = 0;
 
@@ -1594,7 +1601,8 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       break;
     }
 
-    case ID_WBS: {
+    case "WBAT"_ID:            // Weapon Battery Info:
+    {
       int i;
       int j;
 
@@ -1632,7 +1640,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       break;
     }
 
-    case ID_GROUND:
+    case "GRND"_ID: // Ground Plane info
       infile >> pm->n_ground;
       pm->ground_slots.resize(pm->n_ground);
       Q_ASSERT(pm->ground_slots.size() == (size_t)pm->n_ground);
@@ -1647,7 +1655,8 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       }
       break;
 
-    case ID_TXTR: {
+    case "TXTR"_ID:           // Texture filename list
+    {
       // Texture filename list
       int i, n;
 
@@ -1682,8 +1691,9 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       break;
     }
 
-    case ID_ROT_ANIM:
-    case ID_ANIM: {
+    case "RNAI"_ID:       // rotational/angular animation data
+    case "ANIM"_ID:           // angular information
+    {
       int nframes = 0;
       // mprintf(0,"ROT ANIM chunk!!!\n");
 
@@ -1759,7 +1769,8 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       break;
     }
 
-    case ID_POS_ANIM: {
+    case "PANI"_ID:       // positional animation data
+    {
       int nframes = 0;
 
       // mprintf(0,"POS ANIM chunk!!!\n");
@@ -2143,7 +2154,7 @@ void DonePolyModelPosInstance() {
   Instance_vec_cnt--;
 
   if (Instance_vec_cnt == 0)
-    memset(&Interp_pos_instance_vec, 0, sizeof(vector3));
+    Interp_pos_instance_vec = {};
   else
     Interp_pos_instance_vec = Instance_vec_stack[Instance_vec_cnt];
 }
@@ -2759,7 +2770,7 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
           vector3 save_offset = po->submodel[i].offset;
           vm_MakeZero(&po->submodel[i].offset);
           vm_MakeZero(&po->submodel[i].mod_pos);
-          memset(&po->submodel[i].angs, 0, sizeof(angvec));
+          po->submodel[i].angs = {};
           ofs *= -1;
 
           po->submodel[i].offset = ofs;
@@ -2836,7 +2847,7 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
           vector3 save_offset = po->submodel[i].offset;
           vm_MakeZero(&po->submodel[i].offset);
           vm_MakeZero(&po->submodel[i].mod_pos);
-          memset(&po->submodel[i].angs, 0, sizeof(angvec));
+          po->submodel[i].angs = {};
           ofs *= -1;
 
           po->submodel[i].offset = ofs;

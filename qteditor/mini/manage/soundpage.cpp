@@ -39,28 +39,24 @@
 // import_volume.
 
 byte_istream& operator>>(byte_istream& input, mngs_sound_page& data) {
-  int16_t version = 0;
-  input >> version;
-
-  input >> data.sound_struct.name
-        >> data.raw_name;
-
-  input >> reinterpret_cast<uint32_t&>(data.sound_struct.flags);
-
   return input
-         >> data.sound_struct.loop_start
-         >> data.sound_struct.loop_end
-         >> data.sound_struct.outer_cone_volume
-         >> data.sound_struct.inner_cone_angle
-         >> data.sound_struct.outer_cone_angle
-         >> data.sound_struct.max_distance
-         >> data.sound_struct.min_distance
-         >> data.sound_struct.import_volume;
+        >> version_t { 1 }
+        >> data.sound_struct.name
+        >> data.raw_name
+        >> reinterpret_cast<uint32_t&>(data.sound_struct.flags)
+        >> data.sound_struct.loop_start
+        >> data.sound_struct.loop_end
+        >> data.sound_struct.outer_cone_volume
+        >> data.sound_struct.inner_cone_angle
+        >> data.sound_struct.outer_cone_angle
+        >> data.sound_struct.max_distance
+        >> data.sound_struct.min_distance
+        >> data.sound_struct.import_volume;
 }
 
 byte_ostream& operator<<(byte_ostream& output, const mngs_sound_page& data) {
   return output
-         << static_cast<int16_t>(SOUNDPAGE_VERSION)
+         << version_t { 1 }
          << data.sound_struct.name
          << data.raw_name
          << reinterpret_cast<const uint32_t&>(data.sound_struct.flags)

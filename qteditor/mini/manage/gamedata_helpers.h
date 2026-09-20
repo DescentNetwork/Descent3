@@ -30,6 +30,22 @@
 #include <cctype>
 #include <cstring>
 #include <string>
+#include <posix_stream.h>
+
+struct version_t { uint16_t ver = 0; };
+
+inline byte_istream& operator>>(byte_istream& input, version_t&& data)
+{
+  uint16_t ver = 0;
+  input >> ver;
+  Q_ASSERT(ver == data.ver);
+  return input;
+}
+
+inline byte_ostream& operator << (byte_ostream& input, const version_t& data)
+{
+  return input << data.ver;
+}
 
 // Case-insensitive prefix equality (replaces strnicmp(a.c_str(), b, strlen(b))).
 inline bool ieq_prefix(const std::string &a, const char *b) {
