@@ -28,7 +28,7 @@
 #include <QPushButton>
 
 #include "d3edit.h"
-#include "debug.h"
+//#include "debug.h"
 #include "objinfo.h"
 #include "object.h"
 #include "object_ops.h"
