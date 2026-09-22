@@ -228,7 +228,7 @@ void DestroyObject(object *objp, float explosion_mag, int death_flags);
 
 // Creates a debris piece that goes off in a given direction, with a given magnitude
 object *CreateSubobjectDebrisDirected(object *parent, int subobj_num, vector3 *dir, float explosion_mag,
-                                      int death_flags = DF_DEBRIS_SMOKES);
+                                      int death_flags);
 
 //	Creates nifty splinters that shoot out from the body, I figure.
 void CreateSplintersFromBody(object *obj, float explosion_mag, float lifetime);

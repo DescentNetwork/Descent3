@@ -30,7 +30,6 @@
 
 class CRegistry;
 
-#include "Macros.h"
 #include "appdatabase.h"
 
 /* oeLnxAppDatabase
