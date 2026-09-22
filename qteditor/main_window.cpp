@@ -470,7 +470,6 @@ void MainWindow::onFileFixCracks() {
 
 void MainWindow::onViewMine()
 {
-  m_view_mode = view_mode_t::VIEW_MODE_MINE;
   app.view_mode = state::viewer::mine;
   statusBar()->showMessage(QStringLiteral("View: Mine"));
   if (m_editorView)
@@ -479,7 +478,6 @@ void MainWindow::onViewMine()
 
 void MainWindow::onViewTerrain()
 {
-  m_view_mode = view_mode_t::VIEW_MODE_TERRAIN;
   app.view_mode = state::viewer::terrain;
   statusBar()->showMessage(QStringLiteral("View: Terrain"));
   if (m_editorView)
@@ -488,7 +486,6 @@ void MainWindow::onViewTerrain()
 
 void MainWindow::onViewRoom()
 {
-  m_view_mode = view_mode_t::VIEW_MODE_ROOM;
   app.view_mode = state::viewer::room;
   statusBar()->showMessage(QStringLiteral("View: Room"));
   if (m_editorView)

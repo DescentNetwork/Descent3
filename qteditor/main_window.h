@@ -33,17 +33,6 @@ namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 
-// Constant set for the editor's view mode. Mirrors the Win32 enum in
-// editor/d3edit.h (state::viewer::mine, state::viewer::terrain, state::viewer::room). Used by SetViewMode and
-// the View menu's ID_MINE_VIEW / ID_TERRAIN_VIEW / ID_ROOM_VIEW handlers.
-enum class view_mode_t
-{
-  VIEW_MODE_MINE = 0,
-  VIEW_MODE_TERRAIN,
-  VIEW_MODE_ROOM,
-};
-
-
 class KeypadBar;
 class ViewerPropDialog;
 class EditorView;
@@ -204,7 +193,6 @@ private:
   QDialog *m_aboutBox = nullptr;
   ViewerPropDialog *m_viewerProps = nullptr;
   EditorView *m_editorView = nullptr;
-  view_mode_t m_view_mode = view_mode_t::VIEW_MODE_MINE;
 
   // Path of the currently open .d3l, or empty if none / untitled. Updated by
   // onFileOpen / onFileSaveAs and cleared by onFileNew.
