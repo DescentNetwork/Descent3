@@ -45,6 +45,7 @@
 #include <QRegularExpression>
 #include <QPushButton>
 #include <QSettings>
+#include <QSignalSpy>
 #include <QTextEdit>
 #include <cmath>
 #include <QSlider>
@@ -3348,6 +3349,68 @@ private slots:
 
     for (const DialogInstance &d : g_dialogs)
       QVERIFY2(d.handle != nullptr, qPrintable("dialog failed to load: " + d.name));
+  }
+
+  // The "Done" button (Win32 DEFPUSHBUTTON "Done",IDOK) must save/close its
+  // dialog.  In the Qt port it is a plain QPushButton, so each dialog must
+  // explicitly link it to QDialog::accept(); otherwise clicking it is a no-op.
+  void testDialogDoneButtonAccepts()
+  {
+    struct Case {
+      const char *name;
+      QDialog *dlg;
+      const char *button;
+    };
+    const auto run = [](const char *name, QDialog *dlg, const char *objectName) {
+      QSignalSpy spy(dlg, &QDialog::accepted);
+      QPushButton *btn = dlg->findChild<QPushButton *>(QString::fromLatin1(objectName));
+      QVERIFY2(btn != nullptr, qPrintable(QString("no %1 button in %2").arg(objectName, name)));
+      btn->click();
+      QCOMPARE(spy.count(), 1);
+      QCOMPARE(dlg->result(), QDialog::Accepted);
+      delete dlg;
+    };
+    run("world_objects_door", new WorldObjectsDoorDialog, "IDOK");
+    run("world_textures", new WorldTexturesDialog, "IDOK");
+    run("world_objects_generic", new WorldObjectsGenericDialog(OBJ_BUILDING, 0), "IDOK");
+    run("osiris_status", new OsirisStatusDialog, "IDC_OSIRIS_DONE");
+  }
+
+  // The OK buttons of other dialogs must also drive QDialog::accept() (not the
+  // accepted signal) so the dialog closes and exec() returns Accepted.
+  void testDialogOkButtonAccepts()
+  {
+    // ConfigCompilerDialog::accept() saves to app-wide QSettings; keep the
+    // test hermetic by pointing it at a private temp INI.
+    QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, dir.path());
+    {
+      QDialog *dlg = new ConfigCompilerDialog;
+      QSignalSpy spy(dlg, &QDialog::accepted);
+      QPushButton *ok = dlg->findChild<QPushButton *>(QStringLiteral("IDOK"));
+      QVERIFY2(ok != nullptr, "no IDOK button in config compiler dialog");
+      ok->click();
+      QCOMPARE(spy.count(), 1);
+      QCOMPARE(dlg->result(), QDialog::Accepted);
+      delete dlg;
+    }
+    QSettings::setDefaultFormat(QSettings::NativeFormat);
+
+    // RobotEditWeaponsDialog must calls getData() on OK and then accept().
+    otype_wb_info wb{};
+    poly_model pm{};
+    {
+      RobotEditWeaponsDialog dlg(&wb, &pm);
+      QSignalSpy spy(&dlg, &QDialog::accepted);
+      QPushButton *ok = dlg.findChild<QPushButton *>(QStringLiteral("IDOK"));
+      QVERIFY2(ok != nullptr, "no IDOK button in robot weapons dialog");
+      QCOMPARE(dlg.result(), QDialog::Rejected);
+      ok->click();
+      QCOMPARE(spy.count(), 1);
+      QCOMPARE(dlg.result(), QDialog::Accepted);
+    }
   }
 
   // The Win32 editor only enables room/object/viewer editing once a level is

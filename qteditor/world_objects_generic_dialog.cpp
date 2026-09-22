@@ -64,6 +64,7 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int current, Q
     : QDialog(parent), ui(new Ui::WorldObjectsGenericDialog), m_type(objType), m_current(current)
 {
   ui->setupUi(this);
+  connect(ui->IDOK, &QPushButton::clicked, this, &QDialog::accept);
   connect(ui->IDC_GENERIC_EDIT_AI, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onEditAI);
   connect(ui->IDC_GENERIC_EDIT_PHYSICS, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onEditPhysics);
   connect(ui->IDC_GENERIC_ADD_NEW, &QPushButton::clicked, this, &WorldObjectsGenericDialog::onAddNew);

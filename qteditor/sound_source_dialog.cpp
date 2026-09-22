@@ -64,7 +64,7 @@ void SoundSourceDialog::onSelect() {
   layout->addWidget(pickCombo);
   auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &picker);
   layout->addWidget(buttons);
-  connect(buttons, &QDialogButtonBox::accepted, &picker, &QDialog::accepted);
+  connect(buttons, &QDialogButtonBox::accepted, &picker, &QDialog::accept);
   connect(buttons, &QDialogButtonBox::rejected, &picker, &QDialog::reject);
 
   if (picker.exec() == QDialog::Accepted)

@@ -114,6 +114,7 @@ WorldObjectsDoorDialog::WorldObjectsDoorDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::WorldObjectsDoorDialog)
 {
   ui->setupUi(this);
+  connect(ui->IDOK, &QPushButton::clicked, this, &QDialog::accept);
   connect(ui->IDC_ADD_DOOR, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onAddDoor);
   connect(ui->IDC_DELETE_DOOR, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onDeleteDoor);
   connect(ui->IDC_LOCK_DOOR, &QPushButton::clicked, this, &WorldObjectsDoorDialog::onLockDoor);

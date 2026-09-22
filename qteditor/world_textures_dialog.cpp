@@ -54,6 +54,7 @@ WorldTexturesDialog::WorldTexturesDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::WorldTexturesDialog)
 {
   ui->setupUi(this);
+  connect(ui->IDOK, &QPushButton::clicked, this, &QDialog::accept);
   connect(ui->IDC_ADD_NEW_HUGE, &QPushButton::clicked, this, &WorldTexturesDialog::onAddNew);
   connect(ui->IDC_ADD_NEW_SMALL, &QPushButton::clicked, this, &WorldTexturesDialog::onAddNew);
   connect(ui->IDC_ADD_NEW_TINY, &QPushButton::clicked, this, &WorldTexturesDialog::onAddNew);
