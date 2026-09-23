@@ -41,7 +41,6 @@
 #include "gamepath.h"
 #include "obj_move_manager.h"
 #include "object.h"
-#include "render.h"
 
 #include "room.h"
 #include "terrain.h"
@@ -1122,9 +1121,10 @@ void EditorView::renderTerrain() {
 
 // Draws the objects in each rendered room as filled disks, matching the
 // Win32 DrawRoomObjects (editor/drawworld.cpp:705-743): gated by
-// app.objects_in_wireframe, doors are skipped, and each object is a
-// filled circle whose screen radius is size * focal / depth.  In state::viewer::room the
-// legacy room view draws no objects (DrawWorld state::viewer::room branch).
+// app.objects_in_wireframe within the wireframe pass, doors are skipped, and
+// each object is a filled circle whose screen radius is size * focal / depth.
+// In state::viewer::room the legacy room view draws no objects (DrawWorld
+// state::viewer::room branch).
 void EditorView::renderObjects() {
   if (app.view_mode == state::viewer::terrain || app.view_mode == state::viewer::room)
     return;
@@ -1133,14 +1133,9 @@ void EditorView::renderObjects() {
     LOG_DEBUG("Objects in wireframe mode not enabled");
     return;
   }
-  if (!m_wireframe || !(Outline_mode & OM_ON))
+  if (!m_wireframe)
   {
     LOG_DEBUG("Wireframe mode not enabled");
-    return;
-  }
-  if (!(Outline_mode & OM_OBJECTS))
-  {
-    LOG_DEBUG("Outline mode: objects not displayed");
     return;
   }
 
