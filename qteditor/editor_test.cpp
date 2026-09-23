@@ -3413,6 +3413,72 @@ private slots:
     }
   }
 
+  // The Cancel (IDCANCEL) buttons of dialogs that also expose OK/Done must
+  // drive QDialog::reject() (not the rejected signal) so the dialog closes
+  // without saving and result() reads Rejected.
+  void testDialogCancelButtonRejects()
+  {
+    // RobotEditWeaponsDialog connects IDCANCEL to reject() explicitly.
+    {
+      otype_wb_info wb{};
+      poly_model pm{};
+      RobotEditWeaponsDialog dlg(&wb, &pm);
+      QSignalSpy spy(&dlg, &QDialog::rejected);
+      QPushButton *cancel = dlg.findChild<QPushButton *>(QStringLiteral("IDCANCEL"));
+      QVERIFY2(cancel != nullptr, "no IDCANCEL button in robot weapons dialog");
+      QCOMPARE(dlg.result(), QDialog::Rejected);
+      cancel->click();
+      QCOMPARE(spy.count(), 1);
+      QCOMPARE(dlg.result(), QDialog::Rejected);
+    }
+
+    // The two dialogs below rebuild the object table into a controlled state,
+    // so snapshot the global object state first and restore it afterwards.
+    const int savedHighest = Highest_object_index;
+    auto savedObjects = std::move(Objects);
+    const object_info savedObjInfo0 = Object_info[0];
+    Highest_object_index = -1;
+
+    // ObjectTreeDialog links its IDCANCEL child to reject() in the ctor.  The
+    // dialog enumerates live objects, so start from an empty object table.
+    {
+      ObjectTreeDialog dlg;
+      QSignalSpy spy(&dlg, &QDialog::rejected);
+      QPushButton *cancel = dlg.findChild<QPushButton *>(QStringLiteral("IDCANCEL"));
+      QVERIFY2(cancel != nullptr, "no IDCANCEL button in object tree dialog");
+      cancel->click();
+      QCOMPARE(spy.count(), 1);
+      QCOMPARE(dlg.result(), QDialog::Rejected);
+    }
+
+    // ObjectPropertiesDialog only wires IDOK/IDCANCEL when built against a
+    // live object (ObjProp constructor returns early for OBJ_NONE), so give it
+    // a valid building object whose Object_info row is OBJ_NONE (avoids
+    // constructing the physics tab) and verify Cancel rejects.
+    {
+      Objects[0].id = 0;
+      Objects[0].type = OBJ_BUILDING;
+      Highest_object_index = 0;
+      // A default object_info{} has type 0 (OBJ_WALL); use OBJ_NONE so the
+      // ctor's physics-tab branch is skipped and the test stays hermetic.
+      Object_info[0] = object_info{};
+      Object_info[0].type = OBJ_NONE;
+
+      ObjectPropertiesDialog dlg(0);
+      QSignalSpy spy(&dlg, &QDialog::rejected);
+      QPushButton *cancel = dlg.findChild<QPushButton *>(QStringLiteral("IDCANCEL"));
+      QVERIFY2(cancel != nullptr, "no IDCANCEL button in object properties dialog");
+      cancel->click();
+      QCOMPARE(spy.count(), 1);
+      QCOMPARE(dlg.result(), QDialog::Rejected);
+    }
+
+    // Restore the global object state so later tests are unaffected.
+    Object_info[0] = savedObjInfo0;
+    Objects = std::move(savedObjects);
+    Highest_object_index = savedHighest;
+  }
+
   // The Win32 editor only enables room/object/viewer editing once a level is
   // loaded. This test runs with no level, so those controls must be disabled.
   void testLevelGatedEnabledStates()
