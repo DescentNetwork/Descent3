@@ -34,38 +34,87 @@
 // physics_info chunk (generic + ship + weapon pages)
 //-----------------------------------------------------------------------------
 
-byte_istream& operator>>(byte_istream& input, physics_info& data) {
+byte_istream& operator>>(byte_istream& input, physics_info& data)
+{
   // Historical quirk preserved: only the z component of velocity is stored.
-  input >> data.mass >> data.drag >> data.full_thrust >> reinterpret_cast<uint32_t&>(data.flags) >> data.rotdrag >> data.full_rotthrust >>
-      data.num_bounces >> data.velocity.z();
-  float a, b, c;
-  input >> a >> b >> c;
-  data.rotvel = {a, b, c};
-  return input >> data.wiggle_amplitude >> data.wiggles_per_sec >> data.coeff_restitution >> data.hit_die_dot >>
-         data.max_turnroll_rate >> data.turnroll_ratio;
+  return input
+         >> data.mass
+         >> data.drag
+         >> data.full_thrust
+         >> reinterpret_cast<uint32_t&>(data.flags)
+         >> data.rotdrag
+         >> data.full_rotthrust
+         >> data.num_bounces
+         >> data.velocity.z()
+         >> data.rotvel
+         >> data.wiggle_amplitude
+         >> data.wiggles_per_sec
+         >> data.coeff_restitution
+         >> data.hit_die_dot
+         >> data.max_turnroll_rate
+         >> data.turnroll_ratio;
 }
 
-byte_ostream& operator<<(byte_ostream& output, const physics_info& data) {
-  return output << data.mass << data.drag << data.full_thrust << reinterpret_cast<const uint32_t&>(data.flags) << data.rotdrag << data.full_rotthrust <<
-         data.num_bounces << data.velocity.z() << data.rotvel.x() << data.rotvel.y() << data.rotvel.z() <<
-         data.wiggle_amplitude << data.wiggles_per_sec << data.coeff_restitution << data.hit_die_dot <<
-         data.max_turnroll_rate << data.turnroll_ratio;
+byte_ostream& operator<<(byte_ostream& output, const physics_info& data)
+{
+  return output
+         << data.mass
+         << data.drag
+         << data.full_thrust
+         << reinterpret_cast<const uint32_t&>(data.flags)
+         << data.rotdrag
+         << data.full_rotthrust
+         << data.num_bounces
+         << data.velocity.z()
+         << data.rotvel
+         << data.wiggle_amplitude
+         << data.wiggles_per_sec
+         << data.coeff_restitution
+         << data.hit_die_dot
+         << data.max_turnroll_rate
+         << data.turnroll_ratio;
 }
 
 //-----------------------------------------------------------------------------
 // light_info chunk (generic + weapon pages)
 //-----------------------------------------------------------------------------
 
-byte_istream& operator>>(byte_istream& input, light_info& data) {
-  return input >> data.light_distance >> data.red_light1 >> data.green_light1 >> data.blue_light1 >>
-         data.time_interval >> data.flicker_distance >> data.directional_dot >> data.red_light2 >> data.green_light2 >>
-         data.blue_light2 >> reinterpret_cast<uint32_t&>(data.flags) >> data.timebits >> data.angle >> data.lighting_render_type;
+byte_istream& operator>>(byte_istream& input, light_info& data)
+{
+  return input
+         >> data.light_distance
+         >> data.red_light1
+         >> data.green_light1
+         >> data.blue_light1
+         >> data.time_interval
+         >> data.flicker_distance
+         >> data.directional_dot
+         >> data.red_light2
+         >> data.green_light2
+         >> data.blue_light2
+         >> reinterpret_cast<uint32_t&>(data.flags)
+         >> data.timebits
+         >> data.angle
+         >> data.lighting_render_type;
 }
 
-byte_ostream& operator<<(byte_ostream& output, const light_info& data) {
-  return output << data.light_distance << data.red_light1 << data.green_light1 << data.blue_light1 <<
-         data.time_interval << data.flicker_distance << data.directional_dot << data.red_light2 << data.green_light2 <<
-         data.blue_light2 << reinterpret_cast<const uint32_t&>(data.flags) << data.timebits << data.angle << data.lighting_render_type;
+byte_ostream& operator<<(byte_ostream& output, const light_info& data)
+{
+  return output
+         << data.light_distance
+         << data.red_light1
+         << data.green_light1
+         << data.blue_light1
+         << data.time_interval
+         << data.flicker_distance
+         << data.directional_dot
+         << data.red_light2
+         << data.green_light2
+         << data.blue_light2
+         << reinterpret_cast<const uint32_t&>(data.flags)
+         << data.timebits
+         << data.angle
+         << data.lighting_render_type;
 }
 
 //-----------------------------------------------------------------------------
@@ -187,15 +236,16 @@ static byte_ostream& writeObjectLightmaps(byte_ostream& output, const object& da
 // the canonical representation).
 //-----------------------------------------------------------------------------
 
-byte_istream& operator>>(byte_istream& input, object& data) {
-
+byte_istream& operator>>(byte_istream& input, object& data)
+{
   input >> data.type
       >> data.id
       >> data.name
       >> reinterpret_cast<uint32_t&>(data.flags);
 
-  if (data.type == OBJ_DOOR) {
-    int16_t shields = 0;
+  if (data.type == OBJ_DOOR)
+  {
+    uint16_t shields = 0;
     input >> shields;
     data.shields = static_cast<float>(shields);
   }

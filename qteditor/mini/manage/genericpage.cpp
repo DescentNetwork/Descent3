@@ -57,73 +57,15 @@ constexpr size_t kGenericPageBufferSize = 1u << 20;
 //-----------------------------------------------------------------------------
 
 void mng_ReadPhysicsChunk(physics_info *phys_info, posix_istream &infile) {
-
-  infile >> phys_info->mass;
-  infile >> phys_info->drag;
-  infile >> phys_info->full_thrust;
-  infile >> reinterpret_cast<uint32_t&>(phys_info->flags);
-  infile >> phys_info->rotdrag;
-  infile >> phys_info->full_rotthrust;
-  infile >> phys_info->num_bounces;
-  infile >> phys_info->velocity.z();
-  {
-    float a, b, c;
-    infile >> a >> b >> c;
-    phys_info->rotvel = {a, b, c};
-  }
-  infile >> phys_info->wiggle_amplitude;
-  infile >> phys_info->wiggles_per_sec;
-  infile >> phys_info->coeff_restitution;
-  infile >> phys_info->hit_die_dot;
-  infile >> phys_info->max_turnroll_rate;
-  infile >> phys_info->turnroll_ratio;
+  infile >> *phys_info;
 }
 
-void mng_ReadWeaponBatteryChunk(otype_wb_info *static_wb, posix_istream &infile, int version) {
-  int j;
-
-  infile >> static_wb->energy_usage;
-  infile >> static_wb->ammo_usage;
-
-  for (j = 0; j < MAX_WB_GUNPOINTS; j++) {
-    infile >> static_wb->gp_weapon_index[j];
-  }
-
-  for (j = 0; j < MAX_WB_FIRING_MASKS; j++) {
-    infile >> static_wb->gp_fire_masks[j];
-    infile >> static_wb->gp_fire_wait[j];
-    infile >> static_wb->anim_time[j];
-    infile >> static_wb->anim_start_frame[j];
-    infile >> static_wb->anim_fire_frame[j];
-    infile >> static_wb->anim_end_frame[j];
-  }
-  infile >> static_wb->num_masks;
-  infile >> static_wb->aiming_gp_index;
-  infile >> static_wb->aiming_flags;
-  infile >> static_wb->aiming_3d_dot;
-  infile >> static_wb->aiming_3d_dist;
-  infile >> static_wb->aiming_XZ_dot;
-
-  infile >> reinterpret_cast<uint16_t&>(static_wb->flags);
-  infile >> static_wb->gp_quad_fire_mask;
+void mng_ReadWeaponBatteryChunk(otype_wb_info *static_wb, posix_istream &infile) {
+  infile >> *static_wb;
 }
 
 void mng_ReadLightingChunk(light_info *lighting_info, posix_istream &infile) {
-  infile
-      >> lighting_info->light_distance
-      >> lighting_info->red_light1
-      >> lighting_info->green_light1
-      >> lighting_info->blue_light1
-      >> lighting_info->time_interval
-      >> lighting_info->flicker_distance
-      >> lighting_info->directional_dot
-      >> lighting_info->red_light2
-      >> lighting_info->green_light2
-      >> lighting_info->blue_light2
-      >> reinterpret_cast<uint32_t&>(lighting_info->flags)
-      >> lighting_info->timebits
-      >> lighting_info->angle
-      >> lighting_info->lighting_render_type;
+  infile >> *lighting_info;
 }
 
 //-----------------------------------------------------------------------------
@@ -277,11 +219,8 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
     genericpage->objinfo_struct.module_name[0] = '\0';
   }
 
-  if (version >= 19) {
+  if (version >= 19)
     infile >> genericpage->objinfo_struct.script_name_override;
-  } else {
-    genericpage->objinfo_struct.script_name_override[0] = '\0';
-  }
 
   int desc = 0;
   {
@@ -410,30 +349,23 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
 
   // Read out animation info
   for (i = 0; i < NUM_MOVEMENT_CLASSES; i++) {
-    for (j = 0; j < NUM_ANIMS_PER_CLASS; j++) {
-      if (version < 20) {
+    if (version < 20) {
+      for (j = 0; j < NUM_ANIMS_PER_CLASS; j++) {
         uint8_t f = 0, t = 0;
         infile >> f;
         infile >> t;
         genericpage->anim[i].elem[j].from = f;
         genericpage->anim[i].elem[j].to = t;
-      } else {
-        int16_t f = 0, t = 0;
-        infile >> f;
-        infile >> t;
-        genericpage->anim[i].elem[j].from = f;
-        genericpage->anim[i].elem[j].to = t;
+        infile >> genericpage->anim[i].elem[j].spc;
       }
-      infile >> genericpage->anim[i].elem[j].spc;
+    } else {
+      infile >> genericpage->anim[i];
     }
   }
 
   // read weapon batteries
   for (i = 0; i < MAX_WBS_PER_OBJ; i++) {
-    if (version >= 15)
-      mng_ReadWeaponBatteryChunk(&genericpage->static_wb[i], infile, 2);
-    else
-      mng_ReadWeaponBatteryChunk(&genericpage->static_wb[i], infile, 1);
+    mng_ReadWeaponBatteryChunk(&genericpage->static_wb[i], infile);
   }
 
   // read weapon names
@@ -515,69 +447,15 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
 //-----------------------------------------------------------------------------
 
 static void mng_WritePhysicsChunk(byte_ostream &outfile, const physics_info *phys_info) {
-  outfile << phys_info->mass
-          << phys_info->drag
-          << phys_info->full_thrust
-          << reinterpret_cast<const uint32_t&>(phys_info->flags)
-          << phys_info->rotdrag
-          << phys_info->full_rotthrust
-          << phys_info->num_bounces
-          << phys_info->velocity.z()
-          << phys_info->rotvel.x()
-          << phys_info->rotvel.y()
-          << phys_info->rotvel.z()
-          << phys_info->wiggle_amplitude
-          << phys_info->wiggles_per_sec
-          << phys_info->coeff_restitution
-          << phys_info->hit_die_dot
-          << phys_info->max_turnroll_rate
-          << phys_info->turnroll_ratio;
+  outfile << *phys_info;
 }
 
 static void mng_WriteLightingChunk(byte_ostream &outfile, const light_info *lighting_info) {
-  outfile
-      << lighting_info->light_distance
-      << lighting_info->red_light1
-      << lighting_info->green_light1
-      << lighting_info->blue_light1
-      << lighting_info->time_interval
-      << lighting_info->flicker_distance
-      << lighting_info->directional_dot
-      << lighting_info->red_light2
-      << lighting_info->green_light2
-      << lighting_info->blue_light2
-      << reinterpret_cast<const uint32_t&>(lighting_info->flags)
-      << lighting_info->timebits;
-  outfile.put(lighting_info->angle);
-  outfile.put(lighting_info->lighting_render_type);
+  outfile << *lighting_info;
 }
 
 static void mng_WriteWeaponBatteryChunk(byte_ostream &outfile, const otype_wb_info *static_wb) {
-  int j;
-
-  outfile << static_wb->energy_usage;
-  outfile << static_wb->ammo_usage;
-
-  for (j = 0; j < MAX_WB_GUNPOINTS; j++) {
-    outfile << static_wb->gp_weapon_index[j];
-  }
-
-  for (j = 0; j < MAX_WB_FIRING_MASKS; j++) {
-    outfile.put(static_wb->gp_fire_masks[j]);
-    outfile << static_wb->gp_fire_wait[j];
-    outfile << static_wb->anim_time[j];
-    outfile << static_wb->anim_start_frame[j];
-    outfile << static_wb->anim_fire_frame[j];
-    outfile << static_wb->anim_end_frame[j];
-  }
-  outfile.put(static_wb->num_masks);
-  outfile << static_wb->aiming_gp_index;
-  outfile.put(static_wb->aiming_flags);
-  outfile << static_wb->aiming_3d_dot;
-  outfile << static_wb->aiming_3d_dist;
-  outfile << static_wb->aiming_XZ_dot;
-  outfile << reinterpret_cast<const uint16_t&>(static_wb->flags);
-  outfile.put(static_wb->gp_quad_fire_mask);
+  outfile << *static_wb;
 }
 
 // Serializes one page (header + payload) into a concrete posix_ostream with
@@ -587,7 +465,7 @@ static void mng_WriteWeaponBatteryChunk(byte_ostream &outfile, const otype_wb_in
 static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_page *genericpage) {
   int i, j;
 
-  outfile.put(PAGETYPE_GENERIC);
+  outfile << static_cast<uint8_t>(PAGETYPE_GENERIC);
   const off_t chunk_start_pos = outfile.tell();
   int32_t idum = 0; // placeholder for chunk len
   outfile << idum;
@@ -595,7 +473,7 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
   int16_t version = GENERICFILE_VERSION;
   outfile << version;
 
-  outfile.put(static_cast<uint8_t>(genericpage->objinfo_struct.type));
+  outfile << static_cast<uint8_t>(genericpage->objinfo_struct.type);
 
   // Write object name
   outfile << genericpage->objinfo_struct.name;
@@ -631,10 +509,10 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
 
   if (!genericpage->objinfo_struct.description.empty()) {
     // Write description if there is one
-    outfile.put(1);
+    outfile << static_cast<uint8_t>(1);
     outfile << genericpage->objinfo_struct.description;
   } else
-    outfile.put(0);
+    outfile << static_cast<uint8_t>(0);
 
   // Write icon name
   outfile << genericpage->objinfo_struct.icon_name;
@@ -661,10 +539,10 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
 
   // Write AI info
   outfile << genericpage->ai_info.flags;
-  outfile.put(static_cast<uint8_t>(genericpage->ai_info.ai_class));
-  outfile.put(static_cast<uint8_t>(genericpage->ai_info.ai_type));
-  outfile.put(static_cast<uint8_t>(genericpage->ai_info.movement_type));
-  outfile.put(static_cast<uint8_t>(genericpage->ai_info.movement_subtype));
+  outfile << static_cast<uint8_t>(genericpage->ai_info.ai_class);
+  outfile << static_cast<uint8_t>(genericpage->ai_info.ai_type);
+  outfile << static_cast<uint8_t>(genericpage->ai_info.movement_type);
+  outfile << static_cast<uint8_t>(genericpage->ai_info.movement_subtype);
   outfile << genericpage->ai_info.fov;
 
   outfile << genericpage->ai_info.max_velocity;
@@ -709,20 +587,15 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
 
   // Write out objects spewed
   for (i = 0; i < MAX_DSPEW_TYPES; i++) {
-    outfile.put(static_cast<uint8_t>(genericpage->objinfo_struct.f_dspew));
+    outfile << static_cast<uint8_t>(genericpage->objinfo_struct.f_dspew);
     outfile << genericpage->objinfo_struct.dspew_percent[i];
     outfile << genericpage->objinfo_struct.dspew_number[i];
     outfile << genericpage->dspew_name[i];
   }
 
   // Write out animation info
-  for (i = 0; i < NUM_MOVEMENT_CLASSES; i++) {
-    for (j = 0; j < NUM_ANIMS_PER_CLASS; j++) {
-      outfile << genericpage->anim[i].elem[j].from;
-      outfile << genericpage->anim[i].elem[j].to;
-      outfile << genericpage->anim[i].elem[j].spc;
-    }
-  }
+  for (i = 0; i < NUM_MOVEMENT_CLASSES; i++)
+    outfile << genericpage->anim[i];
 
   // Write out weapon batteries
   for (i = 0; i < MAX_WBS_PER_OBJ; i++)
@@ -763,7 +636,7 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
     outfile << reinterpret_cast<const uint32_t&>(genericpage->objinfo_struct.death_types[i].flags);
     outfile << genericpage->objinfo_struct.death_types[i].delay_min;
     outfile << genericpage->objinfo_struct.death_types[i].delay_max;
-    outfile.put(genericpage->objinfo_struct.death_probabilities[i]);
+    outfile << genericpage->objinfo_struct.death_probabilities[i];
   }
 
   // Fill in page length when done writing
