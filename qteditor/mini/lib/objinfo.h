@@ -437,8 +437,6 @@ struct t_ai_info {
   float biased_flight_max;
 };
 
-#ifndef NEWEDITOR
-
 
 struct object_info_flags_t
 {
@@ -546,7 +544,6 @@ struct object_info {
 // The big array of object info
 extern object_info Object_info[];
 
-#endif
 
 // Sets all objects to unused
 void InitObjectInfo();
