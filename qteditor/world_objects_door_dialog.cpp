@@ -54,7 +54,7 @@ bool verifyDoorModel(int handle) {
   for (int s = 0; s < pm->n_models; s++) {
     bsp_info *sm = &pm->submodel[s];
 
-    if (sm->flags & SOF_FRONTFACE) {
+    if (sm->flags.frontface) {
       if (sm->num_faces != 1) {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("Invalid door model: Frontface has %1 faces; must have 1.").arg(sm->num_faces));
         return false;
@@ -66,7 +66,7 @@ bool verifyDoorModel(int handle) {
       found_frontface = true;
     }
 
-    if (sm->flags & SOF_SHELL) {
+    if (sm->flags.shell) {
       if (sm->num_children != 0) {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid door model: Shell cannot have submodels.");
         return false;

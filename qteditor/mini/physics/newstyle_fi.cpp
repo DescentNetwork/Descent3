@@ -308,7 +308,7 @@ static void newstyle_DoneInstance() {
 
 void CollideSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
   // Don't collide with door housings (That is the 'room' portion of the door)
-  if ((sm->flags & SOF_SHELL) || (sm->flags & SOF_FRONTFACE))
+  if ((sm->flags.shell) || (sm->flags.frontface))
     return;
 
   StartPolyModelPosInstance(&sm->mod_pos);

@@ -1481,17 +1481,18 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
   // Do cloak effect on player
   if (UseHardware) {
     if (obj->effect_info && (obj->effect_info->type_flags.fading_out)) {
-      pe.type = PEF_ALPHA;
+      pe.type.alpha = true;
       pe.alpha = .08 + (.92 * (obj->effect_info->fade_time / obj->effect_info->fade_max_time));
       use_effect = 1;
     }
     if (obj->effect_info && (obj->effect_info->type_flags.fading_in)) {
-      pe.type = PEF_ALPHA;
+      pe.type.alpha = true;
       pe.alpha = .08 + (.92 * (1.0 - (obj->effect_info->fade_time / obj->effect_info->fade_max_time)));
       use_effect = 1;
     }
     if (obj->effect_info && (obj->effect_info->type_flags.cloaked)) {
-      pe.type = PEF_ALPHA | PEF_DEFORM;
+      pe.type.alpha = true;
+      pe.type.deform = true;
       pe.alpha = .13f;
       pe.deform_range = .1f;
 
@@ -1499,7 +1500,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
     }
     if (obj->type == OBJ_PLAYER) {
       // Draw thrust/afterburner cooler
-      pe.type |= PEF_GLOW_SCALAR;
+      pe.type.glow_scalar = true;
       pe.glow_length_scalar = (Players[obj->id].thrust_mag);
       pe.glow_size_scalar = (Players[obj->id].thrust_mag);
 
@@ -1517,13 +1518,13 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
     }
     // Deform this object if needed
     if (obj->effect_info && (obj->effect_info->type_flags.deform)) {
-      pe.type |= PEF_DEFORM;
+      pe.type.deform = true;
       pe.deform_range = obj->effect_info->deform_range * obj->effect_info->deform_time;
       float val = obj->effect_info->deform_time;
       if (val > 1)
         val = 1;
 
-      pe.type |= PEF_COLOR;
+      pe.type.color = true;
       pe.r = 1.0;
       pe.g = 1 - (val / 2);
       pe.b = 1 - (val / 2);
@@ -1532,7 +1533,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
     }
     // If the viewer is deformed, warp his view somewhat
     if (Viewer_object->effect_info && (Viewer_object->effect_info->type_flags.deform)) {
-      pe.type |= PEF_DEFORM;
+      pe.type.deform = true;
       pe.deform_range = Viewer_object->effect_info->deform_range * Viewer_object->effect_info->deform_time;
       float val = Viewer_object->effect_info->deform_time;
       if (val > 1)
@@ -1547,7 +1548,8 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
     }
     // If this is a powerup, fade it out near the end of its life
     if (obj->type == OBJ_POWERUP && obj->flags.uses_lifeleft && obj->lifeleft < 5) {
-      pe.type |= PEF_ALPHA | PEF_DEFORM;
+      pe.type.alpha = true;
+      pe.type.deform = true;
       pe.alpha = obj->lifeleft / 5.0;
       pe.deform_range = .2f * (1.0 - (obj->lifeleft / 5.0));
 
@@ -1555,7 +1557,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
     }
     // Fog this object if needed
     if (!OBJECT_OUTSIDE(obj) && (Rooms[obj->roomnum].flags.fog) && Room_fog_plane_check != -1) {
-      pe.type |= PEF_FOGGED_MODEL;
+      pe.type.fogged_model = true;
       pe.fog_distance = Room_fog_distance;
       pe.fog_eye_distance = Room_fog_eye_distance;
       pe.fog_plane_check = Room_fog_plane_check;
@@ -1572,9 +1574,9 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
     if (obj->effect_info) {
       if ((obj->effect_info->type_flags.specular)) {
         if (obj->type == OBJ_POWERUP)
-          pe.type |= PEF_SPECULAR_MODEL;
+          pe.type.specular_model = true;
         else
-          pe.type |= PEF_SPECULAR_FACES;
+          pe.type.specular_faces = true;
 
         pe.spec_light_pos = obj->effect_info->spec_pos;
         pe.spec_r = obj->effect_info->spec_r;
@@ -1589,9 +1591,9 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
         !Object_info[obj->id].lighting_info.flags.no_specularity) {
       if (obj->effect_info && !(obj->effect_info->type_flags.specular)) {
         if (obj->type == OBJ_POWERUP)
-          pe.type |= PEF_SPECULAR_MODEL;
+          pe.type.specular_model = true;
         else
-          pe.type |= PEF_SPECULAR_FACES;
+          pe.type.specular_faces = true;
 
         pe.spec_light_pos = Terrain_sky.satellite_vectors[0];
         pe.spec_r = 1.0;
@@ -1605,7 +1607,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
       pe.bump_light_pos = obj->pos;
       pe.bump_light_pos.y() += 100;
       pe.bump_scalar = 1;
-      pe.type |= PEF_BUMPMAPPED;
+      pe.type.bumpmapped = true;
       use_effect = 1;
     }
   }

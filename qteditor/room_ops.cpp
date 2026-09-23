@@ -1652,13 +1652,13 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
 
   for (int i = 0; i < po->n_models; i++) {
     bsp_info *sm = &po->submodel[i];
-    if (sm->flags & SOF_SHELL) {
+    if (sm->flags.shell) {
       got_shell = 1;
       num_verts += sm->nverts;
       num_faces += sm->num_faces;
       shell_sm = sm;
     }
-    if (sm->flags & SOF_FRONTFACE) {
+    if (sm->flags.frontface) {
       got_front = 1;
       num_verts += sm->nverts;
       num_faces++; // front face is always one face

@@ -6049,7 +6049,7 @@ private slots:
 
     bsp_info *shell = &po->submodel[0];
     *shell = bsp_info{};
-    shell->flags = SOF_SHELL;
+    shell->flags.shell = true;
     shell->nverts = 4;
     shell->verts = {
         vector3{(float)0, (float)0, (float)0},
@@ -6064,7 +6064,7 @@ private slots:
 
     bsp_info *front = &po->submodel[1];
     *front = bsp_info{};
-    front->flags = SOF_FRONTFACE;
+    front->flags.frontface = true;
     front->nverts = 4;
     front->verts = shell->verts;
     front->num_faces = 1;

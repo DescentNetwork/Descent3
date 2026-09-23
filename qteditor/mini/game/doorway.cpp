@@ -415,7 +415,7 @@ void DoorwayUpdateAnimation(room *rp) {
 
   norm = DoorwayPosition(rp);
 
-  if (pm->flags & PMF_TIMED)
+  if (pm->flags.timed)
     objp->rtype.pobj_info().anim_frame = pm->frame_max * norm;
   else
     objp->rtype.pobj_info().anim_frame = pm->max_keys * norm;

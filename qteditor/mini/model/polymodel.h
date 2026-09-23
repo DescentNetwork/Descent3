@@ -306,11 +306,6 @@
 #define PM_COMPATIBLE_VERSION 1807
 #define PM_OBJFILE_VERSION 2300
 
-#define WB_INDEX_SHIFT 16      // bits to shift over to get the weapon battery index (after masking out flags)
-#define SOF_WB_MASKS 0x01F0000 // Room for 32 weapon batteries (currently we only use 21 slots)
-
-#define SOF_MONITOR_MASK 0x0ff0 // mask for monitors
-
 extern int Num_poly_models;
 extern poly_model Poly_models[];
 

@@ -191,14 +191,14 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
 
   triangulated_faces[facenum] = 0;
 
-  if (sm->flags & SOF_CUSTOM)
+  if (sm->flags.custom)
     custom = 1;
 
   // Setup texturing
   if (fp->texnum != -1)
     texp = &GameTextures[pm->textures[fp->texnum]];
 
-  if (texp && custom && Polymodel_use_effect && (Polymodel_effect.type & PEF_CUSTOM_TEXTURE))
+  if (texp && custom && Polymodel_use_effect && (Polymodel_effect.type.custom_texture))
     texp = &GameTextures[Polymodel_effect.custom_texture];
 
   // Set radiosity lightmaps if needed
@@ -208,7 +208,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
   }
 
   // Do bump mapping
-  if ((Polymodel_effect.type & PEF_BUMPMAPPED) && texp && texp->bumpmap != -1 &&
+  if ((Polymodel_effect.type.bumpmapped) && texp && texp->bumpmap != -1 &&
       Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
     rend_SetOverlayType(OT_NONE);
     rend_SetBumpmapReadyState(1, texp->bumpmap);
@@ -248,7 +248,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
       p->p3_flags |= PF_UV + PF_RGBA + PF_L;
 
       // Assign bump mapping coords
-      if ((Polymodel_effect.type & PEF_BUMPMAPPED) && texp->bumpmap != -1 &&
+      if ((Polymodel_effect.type.bumpmapped) && texp->bumpmap != -1 &&
           Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
         p->p3_flags |= PF_UV2;
 
@@ -296,7 +296,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
   }
 
   if (face_cc.cc_or && Polymodel_use_effect &&
-      (Polymodel_effect.type & (PEF_FOGGED_MODEL | PEF_SPECULAR_MODEL | PEF_SPECULAR_FACES))) {
+      ((Polymodel_effect.type.fogged_model || Polymodel_effect.type.specular_model || Polymodel_effect.type.specular_faces))) {
     triface = 1;
     triangulated_faces[facenum] = 1;
   }
@@ -316,7 +316,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
     }
 
     // Setup custom color if there is one
-    if (Polymodel_use_effect && (Polymodel_effect.type & PEF_CUSTOM_COLOR) &&
+    if (Polymodel_use_effect && (Polymodel_effect.type.custom_color) &&
         (static_cast<int>(texp - GameTextures.data())) == Multicolor_texture) {
       int r, g, b;
 
@@ -327,7 +327,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
       b = GR_COLOR_BLUE(Polymodel_effect.custom_color);
 
       if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
-        if (Polymodel_use_effect && Polymodel_effect.type & PEF_COLOR) {
+        if (Polymodel_use_effect && Polymodel_effect.type.color) {
           r = Polymodel_effect.r * (float)r * Polylighting_static_red;
           g = Polymodel_effect.g * (float)g * Polylighting_static_green;
           b = Polymodel_effect.b * (float)b * Polylighting_static_blue;
@@ -341,7 +341,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
       rend_SetFlatColor(GR_RGB(r, g, b));
     }
 
-    if (Polymodel_use_effect && (Polymodel_effect.type & PEF_ALPHA))
+    if (Polymodel_use_effect && (Polymodel_effect.type.alpha))
       rend_SetAlphaValue(texp->alpha * Polymodel_effect.alpha * 255);
     else
       rend_SetAlphaValue(texp->alpha * 255);
@@ -349,14 +349,14 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
     if (texp->flags.saturate)
       rend_SetAlphaType(AT_SATURATE_CONSTANT_VERTEX);
     else {
-      if (texp->flags.alpha || (Polymodel_use_effect && (Polymodel_effect.type & PEF_ALPHA)))
+      if (texp->flags.alpha || (Polymodel_use_effect && (Polymodel_effect.type.alpha)))
         rend_SetAlphaType(ATF_CONSTANT + ATF_VERTEX);
       else
         rend_SetAlphaType(ATF_TEXTURE + ATF_VERTEX);
     }
   } else {
     rend_SetAlphaType(ATF_CONSTANT + ATF_VERTEX);
-    if (Polymodel_use_effect && (Polymodel_effect.type & PEF_ALPHA))
+    if (Polymodel_use_effect && (Polymodel_effect.type.alpha))
       rend_SetAlphaValue(Polymodel_effect.alpha * 255);
     else
       rend_SetAlphaValue(255);
@@ -371,7 +371,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
     b = GR_COLOR_BLUE(fp->color);
 
     if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
-      if (Polymodel_use_effect && Polymodel_effect.type & PEF_COLOR) {
+      if (Polymodel_use_effect && Polymodel_effect.type.color) {
         r = Polymodel_effect.r * (float)r * Polylighting_static_red;
         g = Polymodel_effect.g * (float)g * Polylighting_static_green;
         b = Polymodel_effect.b * (float)b * Polylighting_static_blue;
@@ -395,7 +395,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
   if (triface)
     g3_SetTriangulationTest(0);
 
-  if (texp && (Polymodel_effect.type & PEF_BUMPMAPPED) && texp->bumpmap != -1 &&
+  if (texp && (Polymodel_effect.type.bumpmapped) && texp->bumpmap != -1 &&
       Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
     rend_SetBumpmapReadyState(0, 0);
   }
@@ -566,7 +566,7 @@ inline void RenderSubmodelFaceSpecular(poly_model *pm, bsp_info *sm, int facenum
   int t;
   bool smooth = 0;
 
-  if ((Polymodel_effect.type & PEF_SPECULAR_FACES) && GameTextures[fp->texnum].flags.smooth_specular)
+  if ((Polymodel_effect.type.specular_faces) && GameTextures[fp->texnum].flags.smooth_specular)
     smooth = 1;
 
   for (t = 0; t < fp->nverts; t++) {
@@ -701,7 +701,7 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
     return;
   }
 
-  if (sm->flags & SOF_CUSTOM)
+  if (sm->flags.custom)
     rend_SetZBias(-.5);
 
   for (i = 0; i < sm->num_faces; i++) {
@@ -746,11 +746,11 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
     RenderSubmodelFace(pm, sm, alpha_faces[i]);
   // rend_SetZBufferWriteMask (1);
 
-  if (sm->flags & SOF_CUSTOM)
+  if (sm->flags.custom)
     rend_SetZBias(0);
 
   // Draw specular faces if needed
-  if (Polymodel_use_effect && Polymodel_effect.type & (PEF_SPECULAR_MODEL | PEF_SPECULAR_FACES)) {
+  if (Polymodel_use_effect && (Polymodel_effect.type.specular_model || Polymodel_effect.type.specular_faces)) {
     rend_SetOverlayType(OT_NONE);
     rend_SetTextureType(TT_FLAT);
     rend_SetLighting(LS_NONE);
@@ -772,7 +772,7 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
               if ((fp->normal * subvec)> 0)
                       continue;*/
 
-      if ((Polymodel_effect.type & PEF_SPECULAR_MODEL) ||
+      if ((Polymodel_effect.type.specular_model) ||
           (fp->texnum != -1 && GameTextures[pm->textures[fp->texnum]].flags.smooth_specular))
         RenderSubmodelFaceSpecular(pm, sm, i);
     }
@@ -781,7 +781,7 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
   }
 
   // Draw fog if need be
-  if (Polymodel_use_effect && Polymodel_effect.type & PEF_FOGGED_MODEL) {
+  if (Polymodel_use_effect && Polymodel_effect.type.fogged_model) {
     matrix mat;
 
     g3_GetUnscaledMatrix(&mat);
@@ -825,7 +825,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
 
   // Figure out lighting
   if (Polymodel_light_type == POLYMODEL_LIGHTING_STATIC) {
-    if ((Polymodel_use_effect && (Polymodel_effect.type & PEF_DEFORM)) || (sm->flags & SOF_JITTER)) {
+    if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
       for (int i = 0; i < sm->nverts; i++) {
         vector3 vec = sm->verts[i];
 
@@ -839,7 +839,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         g3_RotatePoint(&Robot_points[i], &sm->verts[i]);
     }
   } else if (Polymodel_light_type == POLYMODEL_LIGHTING_LIGHTMAP) {
-    if ((Polymodel_use_effect && (Polymodel_effect.type & PEF_DEFORM)) || (sm->flags & SOF_JITTER)) {
+    if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
       for (int i = 0; i < sm->nverts; i++) {
         vector3 vec = sm->verts[i];
         float val = ((d3::rand() % 1000) - 500.0) / 500.0;
@@ -860,8 +860,8 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
       }
     }
   } else if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
-    if (Polymodel_use_effect && Polymodel_effect.type & PEF_COLOR) {
-      if ((Polymodel_use_effect && (Polymodel_effect.type & PEF_DEFORM)) || (sm->flags & SOF_JITTER)) {
+    if (Polymodel_use_effect && Polymodel_effect.type.color) {
+      if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
         for (int i = 0; i < sm->nverts; i++) {
           vector3 vec = sm->verts[i];
           float val = ((d3::rand() % 1000) - 500.0) / 500.0;
@@ -877,7 +877,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
           Robot_points[i].p3_b = Polymodel_effect.b * val * Polylighting_static_blue;
         }
       } else {
-        if ((Polymodel_use_effect && (Polymodel_effect.type & PEF_DEFORM)) || (sm->flags & SOF_JITTER)) {
+        if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
           for (int i = 0; i < sm->nverts; i++) {
             vector3 vec = sm->verts[i];
             float val = ((d3::rand() % 1000) - 500.0) / 500.0;
@@ -905,7 +905,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         }
       }
     } else {
-      if ((Polymodel_use_effect && (Polymodel_effect.type & PEF_DEFORM)) || (sm->flags & SOF_JITTER)) {
+      if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
         for (int i = 0; i < sm->nverts; i++) {
           vector3 vec = sm->verts[i];
           float val = ((d3::rand() % 1000) - 500.0) / 500.0;
@@ -957,7 +957,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
     rend_SetOverlayType(OT_BLEND);
   }
 
-  if (Multicolor_texture == -1 && Polymodel_use_effect && (Polymodel_effect.type & PEF_CUSTOM_COLOR))
+  if (Multicolor_texture == -1 && Polymodel_use_effect && (Polymodel_effect.type.custom_color))
     Multicolor_texture = FindTextureName("MultiColor").value_or(-1);
 
   rend_SetColorModel(CM_RGB);
@@ -970,21 +970,21 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
 
   // Check my bit to see if I get drawn
   if (f_render_sub & (0x00000001 << (sm - pm->submodel.data()))) {
-    if (sm->flags & SOF_CUSTOM) {
-      if (!(Polymodel_effect.type & PEF_CUSTOM_TEXTURE))
+    if (sm->flags.custom) {
+      if (!(Polymodel_effect.type.custom_texture))
         goto pop_lighting;
     }
 
     // Check to draw glow faces
-    if (sm->flags & (SOF_GLOW | SOF_THRUSTER)) {
+    if (sm->flags.glow || sm->flags.thruster) {
       if (!FacingPass)
         goto pop_lighting;
 
       vector3 zero_pos = {0, 0, 0};
       rend_SetOverlayType(OT_NONE);
 
-      if (Polymodel_use_effect && Polymodel_effect.type & PEF_GLOW_SCALAR) {
-        if (Polymodel_effect.type & PEF_CUSTOM_GLOW)
+      if (Polymodel_use_effect && Polymodel_effect.type.glow_scalar) {
+        if (Polymodel_effect.type.custom_glow)
           DrawThrusterEffect(&zero_pos, Polymodel_effect.glow_r, Polymodel_effect.glow_g, Polymodel_effect.glow_b,
                              &sm->glow_info[0].normal, sm->glow_info[0].glow_size * Polymodel_effect.glow_size_scalar,
                              3 * Polymodel_effect.glow_length_scalar);
@@ -993,7 +993,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
                              &sm->glow_info[0].normal, sm->glow_info[0].glow_size * Polymodel_effect.glow_size_scalar,
                              3 * Polymodel_effect.glow_length_scalar);
       } else {
-        if (Polymodel_use_effect && Polymodel_effect.type & PEF_CUSTOM_GLOW)
+        if (Polymodel_use_effect && Polymodel_effect.type.custom_glow)
           DrawGlowEffect(&zero_pos, Polymodel_effect.glow_r, Polymodel_effect.glow_g, Polymodel_effect.glow_b,
                          &sm->glow_info[0].normal, sm->glow_info[0].glow_size);
         else
@@ -1002,7 +1002,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
       }
 
       goto pop_lighting;
-    } else if (sm->flags & SOF_FACING) {
+    } else if (sm->flags.facing) {
       if (!FacingPass)
         goto pop_lighting;
 
@@ -1065,7 +1065,7 @@ int RenderPolygonModel(poly_model *pm, uint32_t f_render_sub) {
   }
 
   // Now render any facing submodels
-  if (pm->flags & PMF_FACING) {
+  if (pm->flags.facing) {
     // Don't render if we have it set for no glows
     FacingPass = 1;
     rend_SetOverlayType(OT_NONE);
@@ -1260,7 +1260,7 @@ float ComputeDefaultSize(int type, int handle, float *size_ptr) {
     Poly_models[handle].anim_size_offset = vector3{};
   }
 
-  Poly_models[handle].flags |= PMF_SIZE_COMPUTED;
+  Poly_models[handle].flags.size_computed = true;
 
   return size;
 }

@@ -78,29 +78,6 @@
 #define MAX_SUBOBJECTS 30
 #define MAX_POINTS_PER_SUBOBJECT 300
 
-// Subobject flags
-#define SOF_ROTATE 0x01    // This subobject is a rotator
-#define SOF_TURRET 0x02    // This subobject is a turret that tracks
-#define SOF_SHELL 0x04     // This subobject is a door housing
-#define SOF_FRONTFACE 0x08 // This subobject contains the front face for the door
-#define SOF_MONITOR1 0x010 // This subobject contains its first monitor
-#define SOF_MONITOR2 0x020 // This subobject contains its second monitor
-#define SOF_MONITOR3 0x040 // This subobject contains its third monitor
-#define SOF_MONITOR4 0x080 // This subobject contains its fourth monitor
-#define SOF_MONITOR5 0x0100
-#define SOF_MONITOR6 0x0200
-#define SOF_MONITOR7 0x0400
-#define SOF_MONITOR8 0x0800
-#define SOF_FACING 0x01000       // This subobject always faces you
-#define SOF_VIEWER 0x02000       // This subobject is marked as a 'viewer'.
-#define SOF_LAYER 0x04000        // This subobject is marked as part of possible secondary model rendering.
-#define SOF_WB 0x08000           // This subobject is part of a weapon battery
-#define SOF_GLOW 0x0200000       // This subobject glows
-#define SOF_CUSTOM 0x0400000     // This subobject has textures/colors that are customizable
-#define SOF_THRUSTER 0x0800000   // This is a thruster subobject
-#define SOF_JITTER 0x01000000    // This object jitters by itself
-#define SOF_HEADLIGHT 0x02000000 // This suboject is a headlight
-
 // gun bank
 struct w_bank {
   int parent;
@@ -162,7 +139,7 @@ struct [[gnu::packed]] subobject_flags_t
   uint32_t thruster : 1;      // This is a thruster subobject
   uint32_t custom : 1;        // This subobject has textures/colors that are customizable
   uint32_t glow : 1;          // This subobject glows
-  uint32_t : 5;               // Unused bits for gap (16-20)
+  uint32_t wb_index : 5;      // Packed weapon-battery index (bits 16-20)
   uint32_t wb : 1;            // This subobject is part of a weapon battery
   uint32_t layer : 1;         // This subobject is marked as part of possible secondary model rendering
   uint32_t viewer : 1;        // This subobject is marked as a 'viewer'
@@ -196,7 +173,7 @@ struct [[gnu::packed]] subobject_flags_t
   uint32_t viewer : 1;        // This subobject is marked as a 'viewer'
   uint32_t layer : 1;         // This subobject is marked as part of possible secondary model rendering
   uint32_t wb : 1;            // This subobject is part of a weapon battery
-  uint32_t : 5;               // Unused bits for gap (16-20)
+  uint32_t wb_index : 5;      // Packed weapon-battery index (bits 16-20)
   uint32_t glow : 1;          // This subobject glows
   uint32_t custom : 1;        // This subobject has textures/colors that are customizable
   uint32_t thruster : 1;      // This is a thruster subobject
@@ -260,12 +237,12 @@ struct bsp_info {
   int num_key_angles;
   int num_key_pos;
 
-  int flags; // see SOF_FLAGS above
+  subobject_flags_t flags;
 
   int rot_track_min, rot_track_max;
   int pos_track_min, pos_track_max;
 
-  float rps;            // if SOF_ROTATE or SOF_TURRET is set, this is the rotations per second
+  float rps;            // if rotate or turret is set, this is the rotations per second
   float fov;            // Half the normalized angle that this turret is allowed to turn (amount in each direction)
   float think_interval; // How quickly a turret updates which way it should move
 
@@ -275,14 +252,6 @@ struct bsp_info {
 };
 
 // polymodel flags
-#define PMF_LIGHTMAP_RES 1
-#define PMF_TIMED 2          // Uses new timed animation
-#define PMF_ALPHA 4          // Has alpha per vertex qualities
-#define PMF_FACING 8         // Has a submodel that is always facing
-#define PMF_NOT_RESIDENT 16  // This polymodel is not in memory
-#define PMF_SIZE_COMPUTED 32 // This polymodel's size is computed
-
-
 struct [[gnu::packed]] polymodel_flags_t
 {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -310,7 +279,7 @@ static_assert(sizeof(bool) == sizeof(uint8_t));
 struct poly_model {
   uint16_t used;
 
-  int flags;       // PMF_flags, see above
+  polymodel_flags_t flags;
   uint8_t new_style; // if 1, then this polymodel is in the new outrage format (oof)
   int id;          // what the polygon model number is.  (Index in Poly_models)
   int version;
@@ -363,25 +332,6 @@ enum polymodel_light_type {
 };
 
 // polymodel effects stuff
-// Effect flags:
-#define PEF_ALPHA 1
-#define PEF_DEFORM 2
-#define PEF_COLOR 4
-#define PEF_MED_RES 8
-#define PEF_LO_RES 16
-#define PEF_FOG 32
-#define PEF_CUSTOM_COLOR 64
-#define PEF_CUSTOM_TEXTURE 128
-#define PEF_FOGGED_MODEL 256
-#define PEF_SPECULAR_MODEL 512
-#define PEF_SPECULAR_FACES 1024
-#define PEF_GLOW_SCALAR 2048
-#define PEF_THRUSTER_SCALAR 4096
-#define PEF_DRAW_HEADLIGHTS 8192
-#define PEF_NO_GLOWS (8192 << 1)
-#define PEF_CUSTOM_GLOW (8192 << 2)
-#define PEF_BUMPMAPPED (8192 << 3)
-
 struct [[gnu::packed]] polymodel_effects_flags_t
 {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -428,7 +378,7 @@ static_assert(sizeof(polymodel_effects_flags_t) == sizeof(uint32_t));
 
 
 struct polymodel_effect {
-  int type;
+  polymodel_effects_flags_t type;
   float alpha;
   float deform_range;
   float r, g, b;

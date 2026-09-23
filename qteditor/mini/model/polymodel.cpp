@@ -697,14 +697,12 @@ static void BuildModelAngleMatrix(matrix *mat, angle ang, vector3 *axis);
 void WBClearInfo(poly_model *pm) { pm->num_wbs = 0; }
 
 inline void RecursiveAssignWB(poly_model *pm, int sm_index, int wb_index) {
-  int flags;
   int i;
 
-  Q_ASSERT(!(pm->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(pm->flags.not_resident));
 
-  flags = wb_index << WB_INDEX_SHIFT;
-
-  pm->submodel[sm_index].flags |= flags | SOF_WB;
+  pm->submodel[sm_index].flags.wb = true;
+  pm->submodel[sm_index].flags.wb_index = wb_index;
 
   for (i = 0; i < pm->submodel[sm_index].num_children; i++) {
     RecursiveAssignWB(pm, pm->submodel[sm_index].children[i], wb_index);
@@ -715,10 +713,10 @@ void FindWBSubobjects(poly_model *pm) {
   int i;
   bool found;
 
-  Q_ASSERT(!(pm->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(pm->flags.not_resident));
 
   for (i = 0; i < pm->n_models; i++) {
-    if (pm->submodel[i].flags & SOF_TURRET) {
+    if (pm->submodel[i].flags.turret) {
       int j;
       found = false;
 
@@ -750,7 +748,7 @@ std::optional<uint32_t> AllocPolyModel() {
       WBClearInfo(&Poly_models[i]);
       Poly_models[i] = poly_model{};
       Poly_models[i].used = 1;
-      Poly_models[i].flags |= PMF_NOT_RESIDENT; // not in memory yet!
+      Poly_models[i].flags.not_resident = true; // not in memory yet!
       return static_cast<uint32_t>(i);
     }
 
@@ -778,7 +776,7 @@ void FreePolymodelData(int i) {
       Poly_models[i].submodel[t].u_memory.clear();
       Poly_models[i].submodel[t].v_memory.clear();
 
-      if (Poly_models[i].flags & PMF_TIMED) {
+      if (Poly_models[i].flags.timed) {
         Poly_models[i].submodel[t].rot_start_time.clear();
         Poly_models[i].submodel[t].pos_start_time.clear();
       }
@@ -798,7 +796,7 @@ void FreePolymodelData(int i) {
   Poly_models[i].ground_slots.clear();
   Poly_models[i].submodel.clear();
 
-  Poly_models[i].flags |= PMF_NOT_RESIDENT;
+  Poly_models[i].flags.not_resident = true;
   Poly_models[i].n_models = 0;
 }
 
@@ -814,7 +812,7 @@ void FreePolyModel(int i) {
   FreePolymodelData(i);
 
   Poly_models[i].used = 0;
-  Poly_models[i].flags |= PMF_NOT_RESIDENT;
+  Poly_models[i].flags.not_resident = true;
 }
 
 // ---- Byte-stream reader helpers (replace the CFILE cf_Read* family) ----
@@ -837,7 +835,7 @@ bool ReloadModelTextures(int modelnum, byte_istream &infile) {
   uint32_t id;
   poly_model *pm = &Poly_models[modelnum];
 
-  Q_ASSERT(!(Poly_models[modelnum].flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(Poly_models[modelnum].flags.not_resident));
 
 
   id = 0;
@@ -894,7 +892,7 @@ bool ReloadModelTextures(int modelnum, byte_istream &infile) {
 
         pm->textures[i] = *ret;
         if (GameTextures[*ret].alpha < .99)
-          pm->flags |= PMF_ALPHA;
+          pm->flags.alpha = true;
       }
 
       done = 1;
@@ -986,7 +984,7 @@ void SetPolymodelProperties(bsp_info *subobj, const std::string &props) {
     if (spinrate <= 0 || spinrate > 20)
       return; // bad data
 
-    subobj->flags |= SOF_ROTATE;
+    subobj->flags.rotate = true;
     subobj->rps = 1.0f / spinrate;
 
     return;
@@ -994,35 +992,35 @@ void SetPolymodelProperties(bsp_info *subobj, const std::string &props) {
 
   if (match_prefix(command, "$jitter")) {
     // this subobject is a jittery object
-    subobj->flags |= SOF_JITTER;
+    subobj->flags.jitter = true;
     return;
   }
 
   if (match_prefix(command, "$shell")) {
     // this subobject is a door shell
-    subobj->flags |= SOF_SHELL;
+    subobj->flags.shell = true;
     return;
   }
   if (match_prefix(command, "$facing")) {
     // this subobject always faces you
-    subobj->flags |= SOF_FACING;
+    subobj->flags.facing = true;
     return;
   }
 
   if (match_prefix(command, "$frontface")) {
     // this subobject is a door front
-    subobj->flags |= SOF_FRONTFACE;
+    subobj->flags.frontface = true;
     return;
   }
 
   if (match(command, "$glow=")) {
-    Q_ASSERT(!(subobj->flags & (SOF_GLOW | SOF_THRUSTER)));
+    Q_ASSERT(!(subobj->flags.glow || subobj->flags.thruster));
 
     std::vector<float> vals;
     if (!parse_floats(data, vals) || vals.size() != 4)
       return;
 
-    subobj->flags |= SOF_GLOW;
+    subobj->flags.glow = true;
 
     if (subobj->glow_info.empty()) // DAJ may already exist
       subobj->glow_info.resize(1);
@@ -1037,13 +1035,13 @@ void SetPolymodelProperties(bsp_info *subobj, const std::string &props) {
   }
 
   if (match(command, "$thruster=")) {
-    Q_ASSERT(!(subobj->flags & (SOF_GLOW | SOF_THRUSTER)));
+    Q_ASSERT(!(subobj->flags.glow || subobj->flags.thruster));
 
     std::vector<float> vals;
     if (!parse_floats(data, vals) || vals.size() != 4)
       return;
 
-    subobj->flags |= SOF_THRUSTER;
+    subobj->flags.thruster = true;
 
     if (subobj->glow_info.empty()) // DAJ may already exist
       subobj->glow_info.resize(1);
@@ -1086,7 +1084,7 @@ void SetPolymodelProperties(bsp_info *subobj, const std::string &props) {
       reaction_time = 10.0f;
     }
 
-    subobj->flags |= SOF_TURRET;
+    subobj->flags.turret = true;
     subobj->fov = fov_angle / 720.0f; // 720 = 360 * 2 and we want to make fov the amount we can move in either
                                       // direction it has a minimum value of (0.0) to [0.5]
     subobj->rps = 1.0f / turret_spr;  // convert spr to rps (rotations per second)
@@ -1096,50 +1094,50 @@ void SetPolymodelProperties(bsp_info *subobj, const std::string &props) {
   }
 
   if (match(command, "$monitor01")) {
-    subobj->flags |= SOF_MONITOR1;
+    subobj->flags.monitor1 = true;
     return;
   }
   if (match(command, "$monitor02")) {
-    subobj->flags |= SOF_MONITOR2;
+    subobj->flags.monitor2 = true;
     return;
   }
   if (match(command, "$monitor03")) {
-    subobj->flags |= SOF_MONITOR3;
+    subobj->flags.monitor3 = true;
     return;
   }
   if (match(command, "$monitor04")) {
-    subobj->flags |= SOF_MONITOR4;
+    subobj->flags.monitor4 = true;
     return;
   }
   if (match(command, "$monitor05")) {
-    subobj->flags |= SOF_MONITOR5;
+    subobj->flags.monitor5 = true;
     return;
   }
   if (match(command, "$monitor06")) {
-    subobj->flags |= SOF_MONITOR6;
+    subobj->flags.monitor6 = true;
     return;
   }
   if (match(command, "$monitor07")) {
-    subobj->flags |= SOF_MONITOR7;
+    subobj->flags.monitor7 = true;
     return;
   }
   if (match(command, "$monitor08")) {
-    subobj->flags |= SOF_MONITOR8;
+    subobj->flags.monitor8 = true;
     return;
   }
 
   if (match(command, "$viewer")) {
-    subobj->flags |= SOF_VIEWER;
+    subobj->flags.viewer = true;
     return;
   }
 
   if (match(command, "$layer")) {
-    subobj->flags |= SOF_LAYER;
+    subobj->flags.layer = true;
     return;
   }
 
   if (match(command, "$custom")) {
-    subobj->flags |= SOF_CUSTOM;
+    subobj->flags.custom = true;
     return;
   }
 }
@@ -1171,7 +1169,7 @@ void FindMinMaxForModel(poly_model *pm) {
 
   vector3 zero_vec;
 
-  Q_ASSERT(!(pm->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(pm->flags.not_resident));
 
   vm_MakeZero(&zero_vec);
   pm->mins.x() = pm->mins.y() = pm->mins.z() = 90000;
@@ -1220,10 +1218,10 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
   version_major = version / 100;
 
   if (version_major >= 21)
-    pm->flags |= PMF_LIGHTMAP_RES;
+    pm->flags.lightmap_res = true;
   if (version_major >= 22) {
     timed = 1;
-    pm->flags |= PMF_TIMED;
+    pm->flags.timed = true;
     pm->frame_min = 0;
     pm->frame_max = 0;
   }
@@ -1384,7 +1382,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
         for (i = 0; i < nverts; i++) {
           infile >> pm->submodel[n].alpha[i];
           if (pm->submodel[n].alpha[i] < .99)
-            pm->flags |= PMF_ALPHA;
+            pm->flags.alpha = true;
         }
       } else {
         for (i = 0; i < nverts; i++)
@@ -1685,7 +1683,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
 
         pm->textures[i] = *ret;
         if (GameTextures[*ret].alpha < .99)
-          pm->flags |= PMF_ALPHA;
+          pm->flags.alpha = true;
       }
 
       break;
@@ -1858,16 +1856,16 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       pm->submodel[parent].num_children++;
     }
 
-    if (pm->submodel[i].num_key_angles == 0 && (pm->submodel[i].flags & SOF_ROTATE)) {
+    if (pm->submodel[i].num_key_angles == 0 && (pm->submodel[i].flags.rotate)) {
       LOG_WARNING("You have a rotator that has no keyframe on model %s.", pm->name);
-      pm->submodel[i].flags &= ~SOF_ROTATE;
-    } else if (pm->submodel[i].num_key_angles == 0 && (pm->submodel[i].flags & SOF_TURRET)) {
+      pm->submodel[i].flags.rotate = false;
+    } else if (pm->submodel[i].num_key_angles == 0 && (pm->submodel[i].flags.turret)) {
       LOG_WARNING("You have a turret that has no keyframe on model %s.", pm->name);
-      pm->submodel[i].flags &= ~SOF_TURRET;
+      pm->submodel[i].flags.turret = false;
     }
 
     // Figure out the size of this facing subobject
-    if (pm->submodel[i].flags & SOF_FACING) {
+    if (pm->submodel[i].flags.facing) {
       Q_ASSERT(pm->submodel[i].num_faces == 1); // This facing has more than one face
       vector3 vecs[30];
       vector3 avg;
@@ -1878,10 +1876,10 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
 
       pm->submodel[i].rad = (sqrt(vm_GetCentroid(&avg, vecs, pm->submodel[i].faces[0].nverts)) / 2);
 
-      pm->flags |= PMF_FACING;
+      pm->flags.facing = true;
     }
 
-    if (pm->submodel[i].flags & (SOF_GLOW | SOF_THRUSTER)) {
+    if (pm->submodel[i].flags.glow || pm->submodel[i].flags.thruster) {
       Q_ASSERT(pm->submodel[i].num_faces == 1); // This glow has more than one face
       vector3 vecs[30];
 
@@ -1890,7 +1888,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
 
       vm_GetNormal(&pm->submodel[i].glow_info[0].normal, &vecs[0], &vecs[1], &vecs[2]);
 
-      pm->flags |= PMF_FACING; // Set this so we know when to draw
+      pm->flags.facing = true; // Set this so we know when to draw
     }
 
     // Now build the tick/keyframe remap list
@@ -1935,7 +1933,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
     }
   }
 
-  pm->flags &= ~PMF_NOT_RESIDENT; // mark it as in memory
+  pm->flags.not_resident = false; // mark it as in memory
 
   // Find Min/Max of whole model
   FindMinMaxForModel(pm);
@@ -1982,7 +1980,7 @@ std::optional<uint32_t> LoadPolyModel(const std::filesystem::path &filename, int
     int old_used = Poly_models[i].used;
     int not_res = 0;
 
-    if (Poly_models[i].flags & PMF_NOT_RESIDENT)
+    if (Poly_models[i].flags.not_resident)
       not_res = 1;
 
     LOG_DEBUG("Model '%s' usage count is now %d.", Poly_models[i].name, Poly_models[i].used + 1);
@@ -1994,7 +1992,7 @@ std::optional<uint32_t> LoadPolyModel(const std::filesystem::path &filename, int
     WBClearInfo(&Poly_models[i]);
     Poly_models[i].used = old_used + 1;
     if (not_res)
-      Poly_models[i].flags = PMF_NOT_RESIDENT;
+      Poly_models[i].flags.not_resident = true;
 
     overlay = 1;
     polynum = i;
@@ -2011,7 +2009,7 @@ std::optional<uint32_t> LoadPolyModel(const std::filesystem::path &filename, int
   if (!overlay)
     polynum = static_cast<int>(AllocPolyModel().value_or(-1));
   else {
-    if (!(Poly_models[polynum].flags & PMF_NOT_RESIDENT)) {
+if (!(Poly_models[polynum].flags.not_resident)) {
       if (pageable) {
         infile = std::make_unique<posix_istream>(filename, std::ios_base::in | std::ios_base::binary);
         if (!infile->is_open())
@@ -2055,8 +2053,8 @@ std::optional<uint32_t> LoadPolyModel(const std::filesystem::path &filename, int
 
 // Pages in a polymodel if it is not already in memory
 void PageInPolymodel(int polynum, int type, float *size_ptr) {
-  if (!(Poly_models[polynum].flags & PMF_NOT_RESIDENT)) {
-    if (!(Poly_models[polynum].flags & PMF_SIZE_COMPUTED))
+  if (!(Poly_models[polynum].flags.not_resident)) {
+    if (!(Poly_models[polynum].flags.size_computed))
       if (type != -1) {
         ComputeDefaultSize(type, polynum, size_ptr);
       }
@@ -2114,7 +2112,7 @@ void PageInPolymodel(int polynum, int type, float *size_ptr) {
 
 // Gets a pointer to a polymodel.  Pages it in if neccessary
 poly_model *GetPolymodelPointer(int polynum) {
-  if (Poly_models[polynum].flags & PMF_NOT_RESIDENT)
+  if (Poly_models[polynum].flags.not_resident)
     PageInPolymodel(polynum);
 
   return (&Poly_models[polynum]);
@@ -2172,10 +2170,10 @@ void SetNormalizedTimeObjTimed(object& obj, float *normalized_time) {
 
   for (i = 0; i < pm->n_models; i++) {
     bsp_info *sm = &pm->submodel[i];
-    int x = (sm->flags & SOF_WB_MASKS) >> WB_INDEX_SHIFT;
+    int x = sm->flags.wb_index;
 
-    if (!(sm->flags & SOF_TURRET) &&
-        !(sm->flags & SOF_WB) &&
+    if (!(sm->flags.turret) &&
+        !(sm->flags.wb) &&
         !obj_info->static_wb[x].flags.anim_local &&
         obj_info->static_wb[x].flags.anim_full)
     {
@@ -2187,7 +2185,7 @@ void SetNormalizedTimeObjTimed(object& obj, float *normalized_time) {
         float total_time = sm->rot_track_max - sm->rot_track_min;
         normalized_time[i] = (frame - sm->rot_track_min) / total_time;
       }
-    } else if ((sm->flags & SOF_WB) && !(sm->flags & SOF_TURRET)) {
+    } else if ((sm->flags.wb) && !(sm->flags.turret)) {
       static float w_frame;
       Q_ASSERT(x >= 0 && x < MAX_WBS_PER_OBJ);
 
@@ -2232,7 +2230,7 @@ void SetNormalizedTimeObjTimed(object& obj, float *normalized_time) {
 void SetNormalizedTimeObj(object *obj, float *normalized_time) {
   int i, j;
 
-  if (Poly_models[obj->rtype.pobj_info().model_num].flags & PMF_TIMED) {
+  if (Poly_models[obj->rtype.pobj_info().model_num].flags.timed) {
     SetNormalizedTimeObjTimed(*obj, normalized_time);
     return;
   }
@@ -2265,7 +2263,7 @@ void SetNormalizedTimeObj(object *obj, float *normalized_time) {
 void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, poly_model *pm) {
   int i, j;
 
-  Q_ASSERT(!(pm->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(pm->flags.not_resident));
 
   for (i = 0; i < pm->n_models; i++) {
     bsp_info *sm = &pm->submodel[i];
@@ -2295,11 +2293,11 @@ void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, poly_model 
 void SetNormalizedTimeAnim(float anim_frame, float *normalized_time, poly_model *pm) {
   int i, j;
 
-  Q_ASSERT(!(pm->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(pm->flags.not_resident));
 
   float norm_anim_frame = anim_frame / pm->max_keys;
 
-  if (pm->flags & PMF_TIMED) {
+  if (pm->flags.timed) {
     SetNormalizedTimeAnimTimed(anim_frame, normalized_time, pm);
     return;
   }
@@ -2324,7 +2322,7 @@ void SetNormalizedTimeAnim(float anim_frame, float *normalized_time, poly_model 
 void SetModelAngles(poly_model *po, const float *normalized_angles) {
   int i;
 
-  Q_ASSERT(!(po->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(po->flags.not_resident));
 
   if (po->num_key_angles > 0 && normalized_angles) {
     // get time per keyframe state
@@ -2335,7 +2333,7 @@ void SetModelAngles(poly_model *po, const float *normalized_angles) {
 
     for (i = 0; i < po->n_models; i++) {
       // Don't rotate turrets or auto-rotators or weapon battery submodels
-      if (!(po->submodel[i].flags & (SOF_ROTATE | SOF_TURRET))) {
+      if (!(po->submodel[i].flags.rotate || po->submodel[i].flags.turret)) {
 
         // Find out which keyframe we're at
 
@@ -2362,7 +2360,7 @@ void SetModelAngles(poly_model *po, const float *normalized_angles) {
         vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &dest_matrix);
         // po->submodel[i].mod_matrix=dest_matrix;
 
-      } else if (po->submodel[i].flags & SOF_ROTATE) {
+      } else if (po->submodel[i].flags.rotate) {
         float flrot = d3::chrono::last_update() * po->submodel[i].rps;
         int introt = flrot;
 
@@ -2380,7 +2378,7 @@ void SetModelAngles(poly_model *po, const float *normalized_angles) {
 
         BuildModelAngleMatrix(&temp_matrix, fdiff * 65535, &temp_vec);
         vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &temp_matrix);
-      } else if (po->submodel[i].flags & SOF_TURRET) {
+      } else if (po->submodel[i].flags.turret) {
         matrix temp_matrix;
         if (po->new_style)
           BuildModelAngleMatrix(&temp_matrix, normalized_angles[i] * 65535, &po->submodel[i].keyframe_axis[1]);
@@ -2392,7 +2390,7 @@ void SetModelAngles(poly_model *po, const float *normalized_angles) {
     }
   } else {
     for (i = 0; i < po->n_models; i++) {
-        if (po->submodel[i].flags & SOF_ROTATE) {
+        if (po->submodel[i].flags.rotate) {
         float flrot = d3::chrono::last_update() * po->submodel[i].rps;
         int introt = flrot;
 
@@ -2410,7 +2408,7 @@ void SetModelAngles(poly_model *po, const float *normalized_angles) {
 
         BuildModelAngleMatrix(&temp_matrix, fdiff * 65535, &temp_vec);
         vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &temp_matrix);
-      } else if (po->submodel[i].flags & SOF_TURRET) {
+      } else if (po->submodel[i].flags.turret) {
         // We need to find where in this rotation is relative to gametime
         float flrot = d3::chrono::last_update();
         int introt = flrot;
@@ -2437,7 +2435,7 @@ void SetModelAngles(poly_model *po, const float *normalized_angles) {
 void SetModelInterpPos(poly_model *po, const float *normalized_pos) {
   int i;
 
-  Q_ASSERT(!(po->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(po->flags.not_resident));
 
   if (normalized_pos && po->num_key_pos > 0) {
     for (i = 0; i < po->n_models; i++) {
@@ -2490,7 +2488,7 @@ void SetPolymodelEffect(polymodel_effect *poly_effect) { Polymodel_effect = *pol
 void SetModelAnglesAndPosTimed(poly_model *po, float *normalized_time, uint32_t subobj_flags) {
   int i;
 
-  Q_ASSERT(!(po->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(po->flags.not_resident));
 
   if (normalized_time) {
     // get time per keyframe state
@@ -2537,7 +2535,7 @@ void SetModelAnglesAndPosTimed(poly_model *po, float *normalized_time, uint32_t 
     // Now do angle stuff here
     do_angles:
       // Don't rotate turrets or auto-rotators
-      if (!(sm->flags & (SOF_TURRET | SOF_ROTATE))) {
+      if (!(sm->flags.turret || sm->flags.rotate)) {
         if (sm->num_key_angles <= 1) {
           sm->angs.p() = 0;
           sm->angs.h() = 0;
@@ -2577,7 +2575,7 @@ void SetModelAnglesAndPosTimed(poly_model *po, float *normalized_time, uint32_t 
 
       } else {
         // Adjust special subobjects
-      if (po->submodel[i].flags & SOF_ROTATE) {
+      if (po->submodel[i].flags.rotate) {
           float flrot = d3::chrono::last_update() * po->submodel[i].rps;
           int introt = flrot;
 
@@ -2595,7 +2593,7 @@ void SetModelAnglesAndPosTimed(poly_model *po, float *normalized_time, uint32_t 
 
           BuildModelAngleMatrix(&temp_matrix, fdiff * 65535, &temp_vec);
           vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &temp_matrix);
-        } else if (po->submodel[i].flags & SOF_TURRET) {
+        } else if (po->submodel[i].flags.turret) {
           matrix temp_matrix;
           if (po->new_style)
             BuildModelAngleMatrix(&temp_matrix, normalized_time[i] * 65535, &po->submodel[i].keyframe_axis[1]);
@@ -2617,9 +2615,9 @@ void SetModelAnglesAndPosTimed(poly_model *po, float *normalized_time, uint32_t 
 
 // Sets the position and rotation of a polymodel.  Used for rendering and collision detection
 void SetModelAnglesAndPos(poly_model *po, float *normalized_time, uint32_t subobj_flags) {
-  Q_ASSERT(!(po->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(po->flags.not_resident));
 
-  if (po->flags & PMF_TIMED) {
+  if (po->flags.timed) {
     SetModelAnglesAndPosTimed(po, normalized_time, subobj_flags);
     return;
   } else {
@@ -2641,11 +2639,11 @@ void StartLightInstance(vector3 *pos, matrix *orient) {
 
   if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD)
     gouraud = 1;
-  if (Polymodel_use_effect && Polymodel_effect.type & PEF_FOGGED_MODEL)
+  if (Polymodel_use_effect && Polymodel_effect.type.fogged_model)
     fogged = 1;
-  if (Polymodel_use_effect && Polymodel_effect.type & (PEF_SPECULAR_MODEL | PEF_SPECULAR_FACES))
+  if (Polymodel_use_effect && (Polymodel_effect.type.specular_model || Polymodel_effect.type.specular_faces))
     specular = 1;
-  if (Polymodel_use_effect && (Polymodel_effect.type & PEF_BUMPMAPPED))
+  if (Polymodel_use_effect && (Polymodel_effect.type.bumpmapped))
     bumped = 1;
 
   if (gouraud)
@@ -2696,15 +2694,15 @@ void DoneLightInstance() {
   if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD)
     *Polymodel_light_direction = Instance_light_stack[Instance_light_cnt];
 
-  if (Polymodel_use_effect && Polymodel_effect.type & PEF_FOGGED_MODEL) {
+  if (Polymodel_use_effect && Polymodel_effect.type.fogged_model) {
     Polymodel_fog_plane = Instance_fog_plane_stack[Instance_light_cnt];
     Polymodel_fog_portal_vert = Instance_fog_portal_vert_stack[Instance_light_cnt];
   }
 
-  if (Polymodel_use_effect && Polymodel_effect.type & (PEF_SPECULAR_MODEL | PEF_SPECULAR_FACES))
+  if (Polymodel_use_effect && (Polymodel_effect.type.specular_model || Polymodel_effect.type.specular_faces))
     Polymodel_specular_pos = Instance_specular_pos[Instance_light_cnt];
 
-  if (Polymodel_use_effect && (Polymodel_effect.type & PEF_BUMPMAPPED))
+  if (Polymodel_use_effect && (Polymodel_effect.type.bumpmapped))
     Polymodel_bump_pos = Instance_bump_pos[Instance_light_cnt];
 }
 
@@ -2718,7 +2716,7 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
   poly_model *po;
 
   Q_ASSERT(Poly_models[model_num].used);
-  Q_ASSERT(!(Poly_models[model_num].flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(Poly_models[model_num].flags.not_resident));
 
   GetPolymodelPointer(model_num);
 
@@ -2735,15 +2733,15 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
 
   g3_StartInstanceMatrix(pos, orient);
 
-  if (Polymodel_use_effect && Polymodel_effect.type & PEF_FOGGED_MODEL) {
+  if (Polymodel_use_effect && Polymodel_effect.type.fogged_model) {
     Polymodel_fog_plane = Polymodel_effect.fog_plane;
     Polymodel_fog_portal_vert = Polymodel_effect.fog_portal_vert;
   }
 
-  if (Polymodel_use_effect && Polymodel_effect.type & (PEF_SPECULAR_MODEL | PEF_SPECULAR_FACES))
+  if (Polymodel_use_effect && (Polymodel_effect.type.specular_model || Polymodel_effect.type.specular_faces))
     Polymodel_specular_pos = Polymodel_effect.spec_light_pos;
 
-  if (Polymodel_use_effect && (Polymodel_effect.type & PEF_BUMPMAPPED))
+  if (Polymodel_use_effect && (Polymodel_effect.type.bumpmapped))
     Polymodel_bump_pos = Polymodel_effect.bump_light_pos;
 
   StartLightInstance(pos, orient);
@@ -2796,7 +2794,7 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
   Polymodel_use_effect = use_effect;
 
   Q_ASSERT(Poly_models[model_num].used);
-  Q_ASSERT(!(Poly_models[model_num].flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(Poly_models[model_num].flags.not_resident));
 
   GetPolymodelPointer(model_num);
 
@@ -2811,15 +2809,15 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
 
   Polymodel_light_direction = &light_vec;
 
-  if (Polymodel_use_effect && Polymodel_effect.type & PEF_FOGGED_MODEL) {
+  if (Polymodel_use_effect && Polymodel_effect.type.fogged_model) {
     Polymodel_fog_plane = Polymodel_effect.fog_plane;
     Polymodel_fog_portal_vert = Polymodel_effect.fog_portal_vert;
   }
 
-  if (Polymodel_use_effect && Polymodel_effect.type & (PEF_SPECULAR_MODEL | PEF_SPECULAR_FACES))
+  if (Polymodel_use_effect && (Polymodel_effect.type.specular_model || Polymodel_effect.type.specular_faces))
     Polymodel_specular_pos = Polymodel_effect.spec_light_pos;
 
-  if (Polymodel_use_effect && (Polymodel_effect.type & PEF_BUMPMAPPED))
+  if (Polymodel_use_effect && (Polymodel_effect.type.bumpmapped))
     Polymodel_bump_pos = Polymodel_effect.bump_light_pos;
 
   g3_StartInstanceMatrix(pos, orient);
@@ -2870,7 +2868,7 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
   poly_model *po;
 
   Q_ASSERT(Poly_models[model_num].used);
-  Q_ASSERT(!(Poly_models[model_num].flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(Poly_models[model_num].flags.not_resident));
 
   GetPolymodelPointer(model_num);
 
@@ -2880,15 +2878,15 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
   Polymodel_light_type = POLYMODEL_LIGHTING_LIGHTMAP;
   Polylighting_lightmap_object = lm_object;
 
-  if (Polymodel_use_effect && Polymodel_effect.type & PEF_FOGGED_MODEL) {
+  if (Polymodel_use_effect && Polymodel_effect.type.fogged_model) {
     Polymodel_fog_plane = Polymodel_effect.fog_plane;
     Polymodel_fog_portal_vert = Polymodel_effect.fog_portal_vert;
   }
 
-  if (Polymodel_use_effect && Polymodel_effect.type & (PEF_SPECULAR_MODEL | PEF_SPECULAR_FACES))
+  if (Polymodel_use_effect && (Polymodel_effect.type.specular_model || Polymodel_effect.type.specular_faces))
     Polymodel_specular_pos = Polymodel_effect.spec_light_pos;
 
-  if (Polymodel_use_effect && (Polymodel_effect.type & PEF_BUMPMAPPED))
+  if (Polymodel_use_effect && (Polymodel_effect.type.bumpmapped))
     Polymodel_bump_pos = Polymodel_effect.bump_light_pos;
 
   g3_StartInstanceMatrix(pos, orient);
@@ -2963,7 +2961,7 @@ int InitModels() {
 float GetNormalizedKeyframe(int handle, float num) {
   poly_model *pm = &Poly_models[handle];
 
-  Q_ASSERT(!(pm->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(pm->flags.not_resident));
 
   Q_ASSERT(pm->used);
   Q_ASSERT(num >= 0 && num <= pm->max_keys);
@@ -2978,7 +2976,7 @@ void RemapPolyModels() {
   for (i = 0; i < MAX_POLY_MODELS; i++) {
     int remap = 0;
 
-    if (Poly_models[i].used == 0 || (Poly_models[i].flags & PMF_NOT_RESIDENT))
+    if (Poly_models[i].used == 0 || (Poly_models[i].flags.not_resident))
       continue;
 
     for (int t = 0; t < Poly_models[i].n_textures; t++)
@@ -3003,7 +3001,7 @@ int CountFacesInPolymodel(poly_model *pm) {
   Q_ASSERT(pm->used > 0);
   int count = 0;
 
-  Q_ASSERT(!(pm->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(pm->flags.not_resident));
 
   for (i = 0; i < pm->n_models; i++) {
     if (IsNonRenderableSubmodel(pm, i))
@@ -3022,7 +3020,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
   float normalized_time[MAX_SUBOBJECTS];
   int i;
 
-  Q_ASSERT(!(pm.flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(pm.flags.not_resident));
 
   if (!pm.new_style)
     return;
@@ -3070,7 +3068,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
 
 void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matrix& orient, int subnum,
                               float *normalized_time, vector3& pos, vector3 *norm) {
-  Q_ASSERT(!(pm.flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(pm.flags.not_resident));
 
   if (!pm.new_style)
     return;
@@ -3116,9 +3114,9 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
 // Returns 1 if this submodel shouldn't be rendered
 int IsNonRenderableSubmodel(poly_model *pm, int submodelnum) {
   Q_ASSERT(pm->used);
-  Q_ASSERT(!(pm->flags & PMF_NOT_RESIDENT));
+  Q_ASSERT(!(pm->flags.not_resident));
 
-  if ((pm->submodel[submodelnum].flags & SOF_FRONTFACE) || (pm->submodel[submodelnum].flags & SOF_SHELL))
+  if ((pm->submodel[submodelnum].flags.frontface) || (pm->submodel[submodelnum].flags.shell))
     return 1;
 
   if (pm->submodel[submodelnum].num_faces == 0)
