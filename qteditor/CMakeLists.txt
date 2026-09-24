@@ -94,7 +94,6 @@ file(GLOB QTEDITOR_SOURCES
 file(GLOB QTEDITOR_SUBDIR_SOURCES CONFIGURE_DEPENDS
     "${MINI_SRC}/*.cpp"
     "${MINI_SRC}/lib/*.cpp"
-    "${MINI_SRC}/editor/*.cpp"
     "${MINI_SRC}/game/*.cpp"
     "${MINI_SRC}/2dlib/*.cpp"
     "${MINI_SRC}/mem/*.cpp"
@@ -113,7 +112,6 @@ file(GLOB QTEDITOR_SUBDIR_SOURCES CONFIGURE_DEPENDS
 file(GLOB QTEDITOR_HEADERS
     "${MINI_SRC}/*.h"
     "${MINI_SRC}/lib/*.h"
-    "${MINI_SRC}/editor/*.h"
     "${MINI_SRC}/game/*.h"
     "${MINI_SRC}/2dlib/*.h"
     "${MINI_SRC}/mem/*.h"
