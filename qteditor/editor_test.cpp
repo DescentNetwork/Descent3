@@ -2800,22 +2800,22 @@ private slots:
     // table; the reload-sensitive counters must reflect the parsed chunk.
     QVERIFY2(Num_lightmap_infos_read > 0, "level1.d3l should carry a lightmap table");
     int usedInfos = 0;
-    for (int i = 0; i < Num_of_lightmap_info; i++)
-      if (LightmapInfo[i].used)
+    for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++)
+      if (LightmapInfo.is_used(i))
         usedInfos++;
     QCOMPARE(Num_lightmap_infos_read, usedInfos);
-    QVERIFY(Num_of_lightmap_info <= MAX_LIGHTMAP_INFOS);
+    QVERIFY(LightmapInfo.size() <= MAX_LIGHTMAP_INFOS);
 
     // Every info references a used raw texture whose decoded pixels are
     // non-degenerate (catches a reader/writer that truncates the RLE stream to
     // the wrong value count).
     int nonTrivial = 0;
-    for (int i = 0; i < Num_of_lightmap_info; i++) {
-      if (!LightmapInfo[i].used)
+    for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
+      if (LightmapInfo.is_unused(i))
         continue;
       const int lm_handle = LightmapInfo[i].lm_handle;
       QVERIFY(lm_handle >= 0 && lm_handle < MAX_LIGHTMAPS);
-      QVERIFY(GameLightmaps[lm_handle].used > 0);
+      QVERIFY(GameLightmaps.is_used(lm_handle));
       const int w = static_cast<int>(lm_w(lm_handle).value_or(255));
       const int h = static_cast<int>(lm_h(lm_handle).value_or(255));
       QVERIFY(w > 1 && h > 1);
@@ -6942,18 +6942,17 @@ private slots:
 
   void testAllocFreeSpecialFace() {
     InitSpecialFaces();
-    int saved_num = Num_of_special_faces;
     int idx = AllocSpecialFace(SFT_SPECULAR, 4);
     QVERIFY(idx >= 0);
-    QVERIFY(SpecialFaces[idx].used == 1);
+    QVERIFY(SpecialFaces.is_used(idx));
     QVERIFY(SpecialFaces[idx].num == 4);
     QVERIFY(SpecialFaces[idx].spec_instance.size() == 4);
-    QCOMPARE(Num_of_special_faces, saved_num + 1);
+    QCOMPARE(SpecialFaces.num_empty(), static_cast<decltype(SpecialFaces.num_empty())>(0));
 
     FreeSpecialFace(idx);
-    QVERIFY(SpecialFaces[idx].used == 0);
+    QVERIFY(SpecialFaces.is_unused(idx));
     QVERIFY(SpecialFaces[idx].spec_instance.empty());
-    QCOMPARE(Num_of_special_faces, saved_num);
+    QCOMPARE(SpecialFaces.num_empty(), static_cast<decltype(SpecialFaces.num_empty())>(1));
   }
 
   void testInsertAndDeleteNode() {

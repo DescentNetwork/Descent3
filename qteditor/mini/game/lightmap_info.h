@@ -43,6 +43,7 @@
 #include <optional>
 #include <vector>
 
+#include "slotvec.h"
 #include "vecmat.h"
 
 #define BAD_LMI_INDEX 65535
@@ -61,7 +62,6 @@ struct lightmap_info {
   uint16_t lm_handle;
   vector3 upper_left, normal;
   uint8_t width, height, x1, y1;
-  uint8_t used;
 
   uint16_t dynamic;
   int16_t spec_map;
@@ -72,8 +72,7 @@ struct lightmap_info {
 // The lightmap-info table.  Grows on demand as fresh handles are created (the
 // original's MAX_LIGHTMAP_INFOS array is kept as a hard upper bound so handles
 // stay inside uint16_t range; the test suite asserts handles <= MAX_LIGHTMAP_INFOS).
-extern std::vector<lightmap_info> LightmapInfo;
-extern int Num_of_lightmap_info;
+extern d3::slotvec_t<lightmap_info> LightmapInfo;
 extern int Num_lightmap_infos_read;
 
 #define MAX_LIGHTMAP_INFOS (65534)

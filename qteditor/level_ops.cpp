@@ -547,7 +547,7 @@ std::string RenderLevelStats() {
   }
 
   for (i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
-    if (!LightmapInfo[i].used)
+    if (LightmapInfo.is_unused(i))
       continue;
     if (LightmapInfo[i].type == LMI_DYNAMIC ||
         LightmapInfo[i].type == LMI_TERRAIN)

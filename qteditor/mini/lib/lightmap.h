@@ -23,6 +23,8 @@
 #include <optional>
 #include <vector>
 
+#include "slotvec.h"
+
 #define MAX_LIGHTMAPS (65534)
 #define BAD_LM_INDEX 65535
 
@@ -36,7 +38,6 @@ struct bms_lightmap {
   uint8_t width, height; // Width and height in pixels
   std::vector<std::vector<uint16_t>> data; // height rows, each width 16bit texels wide
 
-  uint16_t used;
   uint8_t flags;
   int16_t cache_slot;         // for the renderers use
   uint8_t square_res;         // for renderers use
@@ -46,7 +47,7 @@ struct bms_lightmap {
 // The lightmap table.  Grows on demand as fresh handles are created (the
 // original's MAX_LIGHTMAPS array is kept as a hard upper bound so handles stay
 // inside uint16_t range; the test suite asserts handles < MAX_LIGHTMAPS).
-extern std::vector<bms_lightmap> GameLightmaps;
+extern d3::slotvec_t<bms_lightmap> GameLightmaps;
 
 // Sets all the lightmaps to unused
 void lm_InitLightmaps();

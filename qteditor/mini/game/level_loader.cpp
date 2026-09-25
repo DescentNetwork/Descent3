@@ -1267,7 +1267,6 @@ static void LL_ReadCompressedShortArray(posix_istream &ifile, uint16_t *vals, in
 }
 
 static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
-  Num_of_lightmap_info = 0;
   int32_t nummaps = 0;
   ifile >> nummaps;
   if (nummaps < 0 || nummaps > static_cast<int32_t>(MAX_LIGHTMAPS))
@@ -1343,7 +1342,7 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
   int lightmap_info_count = 0;
 
   for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
-    if (LightmapInfo[i].used && LightmapInfo[i].type != LMI_DYNAMIC) {
+    if (LightmapInfo.is_used(i) && LightmapInfo[i].type != LMI_DYNAMIC) {
       const uint16_t lm_handle = LightmapInfo[i].lm_handle;
       if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
         lightmap_spoken_for[lm_handle] = 1;
@@ -1359,7 +1358,7 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
 
   ofile << (int32_t)lightmap_count;
   for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
-    if (LightmapInfo[i].used && LightmapInfo[i].type != LMI_DYNAMIC) {
+    if (LightmapInfo.is_used(i) && LightmapInfo[i].type != LMI_DYNAMIC) {
       const uint16_t lm_handle = LightmapInfo[i].lm_handle;
       if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
         lightmap_spoken_for[lm_handle] = 1;
@@ -1378,7 +1377,7 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
 
   ofile << (int32_t)lightmap_info_count;
   for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
-    if (LightmapInfo[i].used && LightmapInfo[i].type != LMI_DYNAMIC) {
+    if (LightmapInfo.is_used(i) && LightmapInfo[i].type != LMI_DYNAMIC) {
       const lightmap_info &info = LightmapInfo[i];
       ofile << (int16_t)lightmap_remap[info.lm_handle];
       ofile << (int16_t)lmi_w(i).value_or(0);

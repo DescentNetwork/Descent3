@@ -16,31 +16,17 @@
 
 #include "special_face.h"
 
-std::vector<special_face> SpecialFaces;
-int Num_of_special_faces = 0;
-static std::vector<uint16_t> Free_special_face_list;
+d3::slotvec_t<special_face> SpecialFaces;
 
 // Sets all the special faces to unused
 void InitSpecialFaces() {
   SpecialFaces.clear();
-  Free_special_face_list.clear();
-  Num_of_special_faces = 0;
 }
 
 // Returns an index into the special faces array
 int AllocSpecialFace(int type, int num, bool vertnorms, int num_vertnorms) {
-  // The free list hands out fresh handles as identity values (its slot index).
-  // When the cursor reaches the current frontier the table must first grow by
-  // one slot whose free-list value equals its own index; SpecialFaces grows
-  // without an arbitrary size cap.
-  if (Num_of_special_faces == static_cast<int>(SpecialFaces.size())) {
-    SpecialFaces.push_back(special_face{});
-    Free_special_face_list.push_back(static_cast<uint16_t>(SpecialFaces.size() - 1));
-  }
-
-  int n = Free_special_face_list[Num_of_special_faces++];
-  Q_ASSERT(n >= 0 && n < static_cast<int>(SpecialFaces.size()));
-  Q_ASSERT(SpecialFaces[n].used == 0);
+  const size_t n = SpecialFaces.next_slot();
+  Q_ASSERT(!SpecialFaces.is_used(n));
 
   special_face &sf = SpecialFaces[n] = special_face{};
   sf.spec_instance.assign(static_cast<size_t>(num), specular_instance{});
@@ -49,14 +35,14 @@ int AllocSpecialFace(int type, int num, bool vertnorms, int num_vertnorms) {
   sf.type = type;
   sf.num = num;
   sf.flags = 0;
-  sf.used = 1;
+  SpecialFaces.acquire(n);
 
   if (vertnorms) {
     sf.vertnorms.assign(static_cast<size_t>(num_vertnorms), vector3{});
     sf.flags |= SFF_SPEC_SMOOTH;
   }
 
-  return n;
+  return static_cast<int>(n);
 }
 
 // Given a handle, frees the special face
@@ -64,13 +50,12 @@ void FreeSpecialFace(int handle) {
   if (handle < 0 || handle >= static_cast<int>(SpecialFaces.size()))
     return;
 
-  if (SpecialFaces[handle].used < 1)
+  if (SpecialFaces.is_unused(handle))
     return;
 
-  SpecialFaces[handle].used--;
+  SpecialFaces.release(handle);
 
-  if (SpecialFaces[handle].used == 0) {
-    Free_special_face_list[--Num_of_special_faces] = static_cast<uint16_t>(handle);
+  if (SpecialFaces.is_unused(handle)) {
     SpecialFaces[handle].spec_instance.clear();
     SpecialFaces[handle].vertnorms.clear();
     SpecialFaces[handle].num = 0;

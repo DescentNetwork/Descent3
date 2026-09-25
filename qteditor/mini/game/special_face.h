@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "vecmat.h"
+#include "slotvec.h"
 
 #define BAD_SPECIAL_FACE_INDEX -1
 #define MAX_SPECIAL_FACES 13000 // made large enough for Josh's Mercenary level 3
@@ -42,7 +43,6 @@ struct specular_instance {
 struct special_face {
   uint8_t type; // See types (above)
   uint8_t num;  // Number of instances
-  uint8_t used;
   uint8_t flags;
 
   std::vector<specular_instance> spec_instance;
@@ -51,9 +51,7 @@ struct special_face {
 
 };
 
-extern std::vector<special_face> SpecialFaces;
-
-extern int Num_of_special_faces;
+extern d3::slotvec_t<special_face> SpecialFaces;
 
 // Sets all the special faces to unused
 void InitSpecialFaces();

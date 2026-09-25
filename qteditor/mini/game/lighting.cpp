@@ -1291,7 +1291,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
 // Blends all the edges that need blending for this frame
 void BlendAllLightingEdges() {
   for (uint16_t edge : Edges_to_blend) {
-    if (LightmapInfo[edge].used < 1)
+    if (LightmapInfo.is_unused(edge))
       continue; // this face was killed last frame.  This can happen with objects
     BlendLightingEdges(edge);
   }
@@ -1331,7 +1331,7 @@ void ClearDynamicLightmaps() {
 
   // Clear diffuse faces
   for (auto &dyn_face : Dynamic_face_list) {
-    if (LightmapInfo[dyn_face.lmi_handle].used == 0)
+    if (LightmapInfo.is_unused(dyn_face.lmi_handle))
       continue; // this face was killed last frame.  This can happen with objects
 
     int dynamic_handle = LightmapInfo[dyn_face.lmi_handle].dynamic;

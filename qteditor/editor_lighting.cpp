@@ -240,12 +240,14 @@ void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<u
 
   Lmi_spoken_for[rp->faces[facenum].lmi_handle] = 1;
 
-  // Free our old lightmap
-  GameLightmaps[lmi_ptr->lm_handle].used = 1;
+  // Free our old lightmap (the original overwrote the refcount with 1 and
+  // freed; dropping extra references first reproduces that forced release).
+  while (GameLightmaps.refs(lmi_ptr->lm_handle) > 1)
+    GameLightmaps.release(lmi_ptr->lm_handle);
   lm_FreeLightmap(lmi_ptr->lm_handle);
 
   lmi_ptr->lm_handle = Squeeze_lightmap_handle;
-  GameLightmaps[Squeeze_lightmap_handle].used++;
+  GameLightmaps.acquire(Squeeze_lightmap_handle);
 }
 
 void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<std::vector<uint16_t>> &dest_data,
@@ -308,12 +310,14 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<
   Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
   Lmi_spoken_for[fp->lmi_handle] = 1;
 
-  // Free our old lightmap
-  GameLightmaps[lmi_ptr->lm_handle].used = 1;
+  // Free our old lightmap (the original overwrote the refcount with 1 and
+  // freed; dropping extra references first reproduces that forced release).
+  while (GameLightmaps.refs(lmi_ptr->lm_handle) > 1)
+    GameLightmaps.release(lmi_ptr->lm_handle);
   lm_FreeLightmap(lmi_ptr->lm_handle);
 
   lmi_ptr->lm_handle = Squeeze_lightmap_handle;
-  GameLightmaps[Squeeze_lightmap_handle].used++;
+  GameLightmaps.acquire(Squeeze_lightmap_handle);
 }
 
 // Simply clears flags for combine portals
@@ -522,8 +526,8 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
         // Now, allocate a new lightmap and start over
         Q_ASSERT(Squeeze_lightmap_handle != -1);
-        Q_ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
-        GameLightmaps[Squeeze_lightmap_handle].used--;
+        Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
+        GameLightmaps.release(Squeeze_lightmap_handle);
 
         memset(Lightmap_mask, 0, 128 * 128);
         Squeeze_lightmap_handle = AllocSqueezeLightmap();
@@ -609,8 +613,8 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
             // Now, allocate a new lightmap and start over
             Q_ASSERT(Squeeze_lightmap_handle != -1);
-            Q_ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
-            GameLightmaps[Squeeze_lightmap_handle].used--;
+            Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
+            GameLightmaps.release(Squeeze_lightmap_handle);
 
             memset(Lightmap_mask, 0, 128 * 128);
             Squeeze_lightmap_handle = AllocSqueezeLightmap();
@@ -630,8 +634,8 @@ void SqueezeLightmaps(int external, int target_roomnum) {
   }
 
   if (Squeeze_lightmap_handle != -1) {
-    Q_ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
-    GameLightmaps[Squeeze_lightmap_handle].used--;
+    Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
+    GameLightmaps.release(Squeeze_lightmap_handle);
   }
 
   // Squeeze all terrain object lightmaps now
@@ -711,8 +715,8 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
             // Now, allocate a new lightmap and start over
             Q_ASSERT(Squeeze_lightmap_handle != -1);
-            Q_ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
-            GameLightmaps[Squeeze_lightmap_handle].used--;
+            Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
+            GameLightmaps.release(Squeeze_lightmap_handle);
 
             memset(Lightmap_mask, 0, 128 * 128);
             Squeeze_lightmap_handle = AllocSqueezeLightmap();
@@ -731,8 +735,8 @@ void SqueezeLightmaps(int external, int target_roomnum) {
     }
 
     if (Squeeze_lightmap_handle != -1) {
-      Q_ASSERT(GameLightmaps[Squeeze_lightmap_handle].used != 1);
-      GameLightmaps[Squeeze_lightmap_handle].used--;
+      Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
+      GameLightmaps.release(Squeeze_lightmap_handle);
     }
   }
 
