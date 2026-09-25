@@ -214,18 +214,19 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       // texture_xlate stays indexed by the on-disk tmap value.
       {
         ok = mng_ReadNewTexturePage(infile, &texpage);
-        GameTextures.push_back(texpage.tex_struct);
+        const size_t texn = GameTextures.add_slot(texpage.tex_struct);
+        GameTextures.acquire(texn);
         // Load the texture's image so textured faces render: the payload is
         // read straight out of the open d3.hog archive and decoded from memory.
-        GameTextures.back().bm_handle = -1;
+        GameTextures[texn].bm_handle = -1;
         if (!texpage.bitmap_name.empty()) {
           const std::optional<uint32_t> bm = loadTextureFromArchive(archive, hogin, texpage.bitmap_name, BITMAP_FORMAT_1555);
           if (bm) {
-            GameTextures.back().bm_handle = static_cast<int>(*bm);
+            GameTextures[texn].bm_handle = static_cast<int>(*bm);
             // .oaf textures are vclips: bm_handle holds the vclip index and the
             // animated flag makes GetTextureBitmap cycle through its frames.
             if (lowercase(texpage.bitmap_name).ends_with(".oaf"))
-              GameTextures.back().flags.animated = true;
+              GameTextures[texn].flags.animated = true;
           }
         }
       }
@@ -234,7 +235,10 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
     case PAGETYPE_WEAPON:
       if (!mng_ReadNewWeaponPage(infile, &weaponpage))
         ok = false;
-      Weapons.push_back(weaponpage.weapon_struct);
+      {
+        const size_t w = Weapons.add_slot(weaponpage.weapon_struct);
+        Weapons.acquire(w);
+      }
       break;
 
     case PAGETYPE_DOOR:
@@ -251,13 +255,19 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
     case PAGETYPE_SHIP:
       if (!mng_ReadNewShipPage(infile, &shippage))
         ok = false;
-      Ships.push_back(shippage.ship_struct);
+      {
+        const size_t s = Ships.add_slot(shippage.ship_struct);
+        Ships.acquire(s);
+      }
       break;
 
     case PAGETYPE_SOUND:
       if (!mng_ReadNewSoundPage(infile, &soundpage))
         ok = false;
-      Sounds.push_back(soundpage.sound_struct);
+      {
+        const size_t s = Sounds.add_slot(soundpage.sound_struct);
+        Sounds.acquire(s);
+      }
       break;
 
     case PAGETYPE_GENERIC:
@@ -334,8 +344,8 @@ std::optional<uint32_t> FindObjectIDName(const std::string &name) {
 // Searches the weapons table for a matching name.  Returns the id, or -1.
 std::optional<uint32_t> FindWeaponName(const std::string &name) {
   if(!name.empty())
-    for (uint32_t i = 0; i < static_cast<int>(Weapons.size()); i++)
-      if (Weapons[i].used && match(name, Weapons[i].name))
+    for (uint32_t i = 0; i < Weapons.size(); i++)
+      if (Weapons.is_used(i) && match(name, Weapons[i].name))
         return i;
 
   return std::nullopt;
@@ -344,8 +354,8 @@ std::optional<uint32_t> FindWeaponName(const std::string &name) {
 // Searches the sound table for a matching name.  Returns the id, or -1.
 std::optional<uint32_t> FindSoundName(const std::string &name) {
   if(!name.empty())
-    for (uint32_t i = 0; i < static_cast<int>(Sounds.size()); i++)
-      if (Sounds[i].used && match(name, Sounds[i].name))
+    for (uint32_t i = 0; i < Sounds.size(); i++)
+      if (Sounds.is_used(i) && match(name, Sounds[i].name))
         return i;
 
   return std::nullopt;

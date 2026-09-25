@@ -267,8 +267,6 @@ bool mng_ReadNewWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) 
 
   infile >> *weaponpage;
 
-  weaponpage->weapon_struct.used = 1;
-
   // OEM hack was omitted (OEM is never defined in the mini build).
 
   if (weaponpage->weapon_struct.name == "EMDBlob") {

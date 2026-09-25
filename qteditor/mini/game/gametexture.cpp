@@ -36,7 +36,7 @@ std::optional<uint32_t> FindTextureName(const std::string &name) {
 std::optional<uint32_t> FindTextureBitmapName(const std::string &name) {
   if(!name.empty())
     for (uint32_t i = 0; i < GameTextures.size(); i++) {
-      if (!GameTextures[i].used)
+      if (GameTextures.is_unused(i))
         continue;
 
       if (GameTextures[i].flags.animated) {
@@ -65,7 +65,7 @@ std::optional<uint32_t> FindTextureBitmapName(const std::string &name) {
 int GetTextureBitmap(int handle, int framenum, bool force) {
   int src_bitmap;
 
-  if (!GameTextures[handle].used)
+  if (GameTextures.is_unused(handle))
     return 0;
 
   if (GameTextures[handle].flags.animated) {

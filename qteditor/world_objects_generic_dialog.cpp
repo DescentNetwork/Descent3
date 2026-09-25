@@ -416,7 +416,7 @@ void WorldObjectsGenericDialog::updateDialog() {
             texture *texp = &GameTextures[texnum];
             if (texnum == 0)
               continue;
-            if (texp->used) {
+            if (GameTextures.is_unused(texnum)) {
               int mem_this_tex;
               if (texp->flags.animated) {
                 vclip *vc = &GameVClips[texp->bm_handle];

@@ -77,18 +77,18 @@ WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent)
 
   connect(ui->IDC_PSHIP_NAME_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_ship;
-    if (n < 0 || n >= static_cast<int>(Ships.size()) || !shipRef(n).used)
+    if (n < 0 || n >= static_cast<int>(Ships.size()) || Ships.is_unused(n))
       return;
   });
   connect(ui->IDC_PSHIP_COCKPIT_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_ship;
-    if (n < 0 || n >= static_cast<int>(Ships.size()) || !shipRef(n).used)
+    if (n < 0 || n >= static_cast<int>(Ships.size()) || Ships.is_unused(n))
       return;
     shipRef(n).cockpit_name = ui->IDC_PSHIP_COCKPIT_EDIT->text().toStdString();
   });
   connect(ui->IDC_SHIP_ARMOR_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_ship;
-    if (n < 0 || n >= static_cast<int>(Ships.size()) || !shipRef(n).used)
+    if (n < 0 || n >= static_cast<int>(Ships.size()) || Ships.is_unused(n))
       return;
     float val = ui->IDC_SHIP_ARMOR_EDIT->text().toFloat();
     if (val < .05f)
@@ -100,7 +100,7 @@ WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent)
   });
   connect(ui->IDC_LOD_DISTANCE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_ship;
-    if (n < 0 || n >= static_cast<int>(Ships.size()) || !shipRef(n).used)
+    if (n < 0 || n >= static_cast<int>(Ships.size()) || Ships.is_unused(n))
       return;
     const float dist = ui->IDC_LOD_DISTANCE_EDIT->text().toFloat();
     if (dist < 0)
@@ -136,7 +136,7 @@ void WorldObjectsPlayerDialog::updateDialog() {
     return;
 
   int n = app.current_ship;
-  if (!shipRef(n).used)
+  if (Ships.is_unused(n))
     n = app.current_ship = GetNextShip(n);
 
   ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(shipRef(n).name));
@@ -197,7 +197,7 @@ void WorldObjectsPlayerDialog::updateDialog() {
     QSignalBlocker blocker(combo);
     combo->clear();
     for (int i = 0; i < static_cast<int>(Ships.size()); i++)
-      if (Ships[i].used)
+      if (Ships.is_used(i))
         combo->addItem(QString::fromStdString(Ships[i].name));
     combo->setCurrentText(QString::fromStdString(shipRef(n).name));
   }

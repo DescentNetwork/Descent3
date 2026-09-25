@@ -3468,7 +3468,7 @@ bool osipf_PathGetInformation(int pathid, int point, vector3 *pos, int *room, ma
   if (pathid < 0 || pathid >= static_cast<int>(GamePaths.size()))
     return false;
 
-  if (!GamePaths[pathid].used)
+  if (!GamePaths.is_used(pathid))
     return false;
 
   if (point < 0 || point >= GamePaths[pathid].num_nodes)
@@ -3708,8 +3708,8 @@ void osipf_PathValue(int path_id, int node_id, char op, int changes, void *ptr) 
 
   game_path *cpath = &GamePaths[path_id];
 
-  Q_ASSERT(cpath->used);
-  if (!cpath->used)
+  Q_ASSERT(GamePaths.is_used(path_id));
+  if (!GamePaths.is_used(path_id))
     return;
 
   if (op == VF_GET) {

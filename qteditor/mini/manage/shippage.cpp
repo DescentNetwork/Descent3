@@ -116,9 +116,6 @@ bool mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage) {
 
   infile >> *shippage;
 
-  // Mark the newly filled structure as used
-  shippage->ship_struct.used = 1;
-
   // Bash Fusion recharge times for the ships
   if (shippage->ship_struct.name == "Pyro-GL") {
     // Pyro-GL

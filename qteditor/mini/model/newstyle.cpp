@@ -303,7 +303,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
 
   // If there is a texture, set it up
   if (texp) {
-    bm_handle = GetTextureBitmap(static_cast<int>(texp - GameTextures.data()), 0);
+    bm_handle = GetTextureBitmap(static_cast<int>(texp - &GameTextures.data()[0].second), 0);
 
     rend_SetTextureType(TT_LINEAR);
     if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD)
@@ -317,7 +317,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
 
     // Setup custom color if there is one
     if (Polymodel_use_effect && (Polymodel_effect.type.custom_color) &&
-        (static_cast<int>(texp - GameTextures.data())) == Multicolor_texture) {
+        (static_cast<int>(texp - &GameTextures.data()[0].second)) == Multicolor_texture) {
       int r, g, b;
 
       rend_SetLighting(LS_FLAT_GOURAUD);

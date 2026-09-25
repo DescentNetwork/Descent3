@@ -735,7 +735,7 @@ void EditorView::renderRooms() {
 
         // Texture the face if possible.
         int bm = -1;
-        if (fp->tmap >= 0 && fp->tmap < static_cast<int>(GameTextures.size()) && GameTextures[fp->tmap].used)
+        if (fp->tmap >= 0 && fp->tmap < static_cast<int>(GameTextures.size()) && GameTextures.is_used(fp->tmap))
           bm = GameTextures[fp->tmap].bm_handle;
         if (bm >= 0) {
           ensureTexture(bm);
@@ -1059,7 +1059,7 @@ void EditorView::renderTerrain() {
       int bm = -1;
       if (texsegIdx >= 0 && texsegIdx < TERRAIN_TEX_WIDTH * TERRAIN_TEX_DEPTH) {
         const int texIdx = Terrain_tex_seg[texsegIdx].tex_index;
-        if (texIdx >= 0 && texIdx < static_cast<int>(GameTextures.size()) && GameTextures[texIdx].used)
+        if (texIdx >= 0 && texIdx < static_cast<int>(GameTextures.size()) && GameTextures.is_used(texIdx))
           bm = GameTextures[texIdx].bm_handle;
       }
 
@@ -1229,7 +1229,7 @@ void EditorView::renderPaths() {
 
   for (int i = 0; i < Num_game_paths; i++, current_path_index = GetNextPath(current_path_index)) {
     game_path *gp = &GamePaths[current_path_index];
-    if (!gp->used || gp->num_nodes == 0)
+    if (!GamePaths.is_used(current_path_index) || gp->num_nodes == 0)
       continue;
 
     bool isCurrent = (current_path_index == app.current_path);

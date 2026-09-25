@@ -199,6 +199,7 @@
 #include "manage.h"
 #include "object.h"
 #include "objinfo.h"
+#include "slotvec.h"
 #include "weapon_external.h"
 
 #define MAX_PRIMARY_WEAPONS 10
@@ -326,8 +327,6 @@ struct weapon {
   uint8_t spawn_count;      // how many of spawn handle gets created
   uint8_t alternate_chance; // how often the alternate spawn weapon gets chosen (0 to 100)
 
-  uint16_t used;
-
   uint8_t particle_count;
   uint8_t terrain_damage_depth;
 
@@ -366,7 +365,7 @@ struct fusion_effect {
 
 extern float Primary_ramp_time, Secondary_ramp_time;
 
-extern std::vector<weapon> Weapons;
+extern d3::slotvec_t<weapon> Weapons;
 extern const char *const Static_weapon_names[];
 extern const int Static_weapon_names_msg[];
 extern const int Static_weapon_ckpt_names[][2];

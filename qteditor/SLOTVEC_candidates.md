@@ -34,11 +34,11 @@ slots are never freed individually → mechanical fit, drops the `used` member.
 
 | `std::vector<T>` table | element `used` member | where `used` is set |
 |---|---|---|
-| `GameTextures` (`std::vector<texture>`) | `texture::used` (gametexture.h:352) | texpage.cpp:97 |
-| `Weapons` (`std::vector<weapon>`) | `weapon::used` (weapon.h:329) | weaponpage.cpp:270 |
-| `Ships` (`std::vector<ship>`) | `ship::used` (ship.h:179) | shippage.cpp:120 |
-| `Sounds` (`std::vector<sound_info>`) | `sound_info::used` (ssl_lib.h:363) | soundpage.cpp:77 |
-| `GamePaths` (`std::vector<game_path>`) | `game_path::used` (gamepath.h:75) | level loader (`Num_game_paths` in level_loader.cpp:1116) |
+| `GameTextures` (`std::vector<texture>`) | `texture::used` (gametexture.h:352) | texpage.cpp:97 | **DONE** |
+| `Weapons` (`std::vector<weapon>`) | `weapon::used` (weapon.h:329) | weaponpage.cpp:270 | **DONE** |
+| `Ships` (`std::vector<ship>`) | `ship::used` (ship.h:179) | shippage.cpp:120 | **DONE** |
+| `Sounds` (`std::vector<sound_info>`) | `sound_info::used` (ssl_lib.h:363) | soundpage.cpp:77 | **DONE** |
+| `GamePaths` (`std::vector<game_path>`) | `game_path::used` (gamepath.h:75) | level loader (`Num_game_paths` in level_loader.cpp:1116) | **DONE** |
 
 For these, `used` was previously believed to be byte-for-byte level/table data
 on disk, but serialization audit proved it is **not**: the `used = 1` assignment
@@ -69,6 +69,9 @@ Adopt `slotvec_t` for these six `std::vector` tables first:
 5. `GameTextures` (occupancy only)
 6. `Weapons`, `Ships`, `Sounds`, `GamePaths` (occupancy only)
 
-Each drops its `used` member from the element struct (or keeps it only for
-on-disk serialization parity) and relies on `slotvec_t::acquire/release` plus
-`num_empty()` for free-list/scan behavior found today.
+All six are migrated: each drops its `used` member from the element struct and
+relies on `slotvec_t::acquire/release` plus `num_empty()` for free-list/scan
+behavior found today.  `GamePaths` keeps the `Num_game_paths` counter (used by
+the PATH chunk and Osiris predefs).  Tables are loaded slot-zero-relative via
+`GamePaths.resize(N)` + `acquire`, and `slotvec_t::resize` maintains the
+empty-slot count so a later `next_slot()`/`acquire` accounting stays correct.

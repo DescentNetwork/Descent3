@@ -128,7 +128,7 @@ void WorldSoundsDialog::updateDialog()
   if (!static_cast<int>(Sounds.size()))
     return;
 
-  if(m_snd == nullptr || !m_snd->used)
+  if(m_snd == nullptr || Sounds.is_unused(app.current_sound))
     app.current_sound = GetNextSound(app.current_sound);
 
   Sound_system.CheckAndForceSoundDataAlloc(app.current_sound);
@@ -139,7 +139,7 @@ void WorldSoundsDialog::updateDialog()
 
   int total_memory = 0;
   for (int i = 0; i < static_cast<int>(Sounds.size()); i++)
-    if (Sounds[i].used)
+    if (Sounds.is_used(i))
       total_memory += SoundFiles[Sounds[i].sample_index].sample_length * 2;
 
   ui->IDC_SOUNDMAXDIST_EDIT->setText(QString::number(m_snd->max_distance));
@@ -219,7 +219,7 @@ void WorldSoundsDialog::updateDialog()
     QSignalBlocker blocker(ui->IDC_SOUND_PULLDOWN);
     ui->IDC_SOUND_PULLDOWN->clear();
     for (int i = 0; i < static_cast<int>(Sounds.size()); i++)
-      if (Sounds[i].used)
+      if (Sounds.is_used(i))
         ui->IDC_SOUND_PULLDOWN->addItem(QString::fromStdString(Sounds[i].name));
     ui->IDC_SOUND_PULLDOWN->setCurrentText(QString::fromStdString(m_snd->name));
   }
@@ -287,7 +287,7 @@ void WorldSoundsDialog::onLoadSound() {
   if (pathname.isEmpty())
     return;
   const int n = app.current_sound;
-  if (n < 0 || n >= static_cast<int>(Sounds.size()) || !m_snd->used)
+  if (n < 0 || n >= static_cast<int>(Sounds.size()) || !m_snd || Sounds.is_unused(n))
     return;
   const QByteArray pathBytes = pathname.toLocal8Bit();
   const int raw_handle = LoadSoundFile(pathBytes.constData(), m_snd->import_volume, false);

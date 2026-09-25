@@ -94,7 +94,6 @@ bool mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage)
   //mng_InitTexturePage(texpage);
   *texpage = {};
   infile >> *texpage;
-  texpage->tex_struct.used = 1;
 
   return true; // successfully read
 }

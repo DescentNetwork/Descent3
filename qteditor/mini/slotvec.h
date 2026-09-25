@@ -88,6 +88,10 @@ namespace d3
     // index.
     size_type add_slot(T value = T());
 
+    // Resizes the table, keeping the empty-slot accounting accurate.  Newly
+    // grown slots start unreferenced; shrunk slots are dropped entirely.
+    void resize(size_type n);
+
     void clear() {
       base_type::clear();
       m_num_empty = 0;

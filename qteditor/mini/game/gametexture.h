@@ -193,6 +193,7 @@
 #include <optional>
 #include <vector>
 #include <posix_stream.h>
+#include "slotvec.h"
 
 #ifdef NEWEDITOR /* only include tablefile header (manage stuff for NEWEDITOR) */
 #include "..\neweditor\ned_TableFile.h"
@@ -349,7 +350,6 @@ struct texture
 
   int16_t bumpmap = -1;     // The bumpmap for this texture, or -1 if there is none
   uint8_t corona_type = 0; // what type of corona this thing uses
-  uint8_t used = 0;        // is this texture free to be allocated?
 
 };
 
@@ -357,7 +357,7 @@ byte_istream& operator>>(byte_istream& input, texture& data);
 byte_ostream& operator<<(byte_ostream& output, const texture& data);
 
 
-extern std::vector<texture> GameTextures;
+extern d3::slotvec_t<texture> GameTextures;
 
 // Inits the texture system, returning 1 if successful
 int InitTextures();

@@ -182,10 +182,10 @@ std::filesystem::path LocalScriptDir;
 
 // ==================== Game data arrays ====================
 d3::slotvec_t<bms_bitmap> GameBitmaps;
-std::vector<texture> GameTextures;
+d3::slotvec_t<texture> GameTextures;
 //vclip GameVClips[MAX_VCLIPS];
 //poly_model Poly_models[500];
-std::vector<game_path> GamePaths;
+d3::slotvec_t<game_path> GamePaths;
 std::vector<trigger> Triggers;
 
 // ==================== Sound ====================
@@ -193,7 +193,7 @@ hlsSystem Sound_system;
 void hlsSystem::BeginSoundFrame(bool f_force) { PRINT_STUB(__FUNCTION__); }
 void hlsSystem::EndSoundFrame() { PRINT_STUB(__FUNCTION__); }
 void hlsSystem::StopAllSounds() { PRINT_STUB(__FUNCTION__); }
-std::vector<sound_info> Sounds;
+d3::slotvec_t<sound_info> Sounds;
 sound_file_info SoundFiles[MAX_SOUND_FILES] = {};
 
 // ==================== Lighting ====================
@@ -207,14 +207,14 @@ void SetupObjectLightmapMemory(object *obj) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Player/ship ====================
 std::array<player, MAX_PLAYERS> Players = {};
-std::vector<ship> Ships;
+d3::slotvec_t<ship> Ships;
 
 // ==================== Door ====================
 //door Doors[MAX_DOORS];
 //doorway *DoorwayAdd(room *rp, int doornum) { PRINT_STUB(__FUNCTION__); return nullptr; }
 
 // ==================== Weapon ====================
-std::vector<weapon> Weapons;
+d3::slotvec_t<weapon> Weapons;
 // Sentinel-terminated list (empty) so callers strcmp("", name[i]) cleanly.
 const char *const Static_weapon_names[] = {""};
 const int Static_weapon_names_msg[] = {0};

@@ -121,8 +121,9 @@
 
 #include "manage.h"
 #include "object.h"
-#include "robotfirestruct.h"
 #include "player.h"
+#include "robotfirestruct.h"
+#include "slotvec.h"
 
 
 #define MAX_SHIPS 30
@@ -176,10 +177,9 @@ struct ship {
   float armor_scalar;
 
   int flags;
-  uint8_t used;
 };
 
-extern std::vector<ship> Ships;
+extern d3::slotvec_t<ship> Ships;
 
 extern const char *AllowedShips[];
 

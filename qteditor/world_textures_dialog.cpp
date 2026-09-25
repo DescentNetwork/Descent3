@@ -76,62 +76,62 @@ WorldTexturesDialog::WorldTexturesDialog(QWidget *parent)
 
   connect(ui->IDC_REFLECT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.texdlg_texture;
-    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || !textureRef(n).used)
+    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || GameTextures.is_unused(n))
       return;
     textureRef(n).reflectivity = ui->IDC_REFLECT->text().toFloat();
   });
   connect(ui->IDC_RED_LIGHTING, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.texdlg_texture;
-    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || !textureRef(n).used)
+    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || GameTextures.is_unused(n))
       return;
     textureRef(n).r = ui->IDC_RED_LIGHTING->text().toFloat();
   });
   connect(ui->IDC_GREEN_LIGHTING, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.texdlg_texture;
-    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || !textureRef(n).used)
+    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || GameTextures.is_unused(n))
       return;
     textureRef(n).g = ui->IDC_GREEN_LIGHTING->text().toFloat();
   });
   connect(ui->IDC_BLUE_LIGHTING, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.texdlg_texture;
-    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || !textureRef(n).used)
+    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || GameTextures.is_unused(n))
       return;
     textureRef(n).b = ui->IDC_BLUE_LIGHTING->text().toFloat();
   });
   connect(ui->IDC_SLIDEU, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.texdlg_texture;
-    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || !textureRef(n).used)
+    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || GameTextures.is_unused(n))
       return;
     textureRef(n).slide_u = ui->IDC_SLIDEU->text().toFloat();
   });
   connect(ui->IDC_SLIDEV, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.texdlg_texture;
-    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || !textureRef(n).used)
+    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || GameTextures.is_unused(n))
       return;
     textureRef(n).slide_v = ui->IDC_SLIDEV->text().toFloat();
   });
   connect(ui->IDC_ALPHA_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.texdlg_texture;
-    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || !textureRef(n).used)
+    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || GameTextures.is_unused(n))
       return;
     textureRef(n).alpha = ui->IDC_ALPHA_EDIT->text().toFloat();
   });
   connect(ui->IDC_SPEED_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.texdlg_texture;
-    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || !textureRef(n).used)
+    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || GameTextures.is_unused(n))
       return;
     textureRef(n).speed = ui->IDC_SPEED_EDIT->text().toFloat();
   });
   connect(ui->IDC_TEXTURE_AMBIENT_SOUND_VOLUME, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.texdlg_texture;
-    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || !textureRef(n).used)
+    if (n < 0 || n >= static_cast<int>(GameTextures.size()) || GameTextures.is_unused(n))
       return;
     textureRef(n).sound_volume = ui->IDC_TEXTURE_AMBIENT_SOUND_VOLUME->text().toFloat();
   });
 
       connect(ui->IDC_DAMAGE, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.texdlg_texture;
-    if (n >= 0 && n < static_cast<int>(GameTextures.size()) && textureRef(n).used)
+    if (n >= 0 && n < static_cast<int>(GameTextures.size()) && GameTextures.is_used(n))
     textureRef(n).damage = ui->IDC_DAMAGE->text().toInt();
     });
 
@@ -139,7 +139,7 @@ WorldTexturesDialog::WorldTexturesDialog(QWidget *parent)
   #define CONNECT_TEXTURE_FLAG(IDC, MEMBER)                                                        \
     connect(ui->IDC, &QCheckBox::toggled, this, [this](bool checked) {                            \
       const int n = app.texdlg_texture;                                                   \
-      if (n < 0 || n >= static_cast<int>(GameTextures.size()) || !textureRef(n).used)                                     \
+      if (n < 0 || n >= static_cast<int>(GameTextures.size()) || GameTextures.is_unused(n))                                     \
         return;                                                                                    \
       textureRef(n).flags.MEMBER = checked;                                                      \
     });
@@ -249,7 +249,7 @@ void WorldTexturesDialog::updateDialog() {
       QSignalBlocker blocker(combo);
       combo->clear();
       for (int i = 0; i < static_cast<int>(GameTextures.size()); i++)
-        if (GameTextures[i].used)
+        if (GameTextures.is_used(i))
           combo->addItem(QString::fromStdString(GameTextures[i].name));
       combo->setCurrentText(QString::fromStdString(textureRef(n).name));
     }

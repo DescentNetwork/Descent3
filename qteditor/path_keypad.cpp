@@ -74,7 +74,7 @@ int PathKeypad::currentPath() { return app.current_path; }
 
 int PathKeypad::currentNode() {
   const int p = currentPath();
-  if (p < 0 || p >= (int)GamePaths.size() || !GamePaths[p].used)
+  if (p < 0 || p >= (int)GamePaths.size() || GamePaths.is_unused(p))
     return -1;
   if (app.current_node >= GamePaths[p].num_nodes)
     app.current_node = GamePaths[p].num_nodes - 1;
@@ -85,7 +85,7 @@ void PathKeypad::updateDialog() {
   // Win32 disables path editing when there is no current path (requires a
   // loaded level with paths).
   const bool active = (app.current_path >= 0 && app.current_path < (int)GamePaths.size() &&
-                       GamePaths[app.current_path].used);
+                       GamePaths.is_used(app.current_path));
   const QList<QWidget *> all = this->findChildren<QWidget *>();
   for (QWidget *w : all) {
     if (w->objectName().startsWith("IDC_PATHPAD") || w->objectName().startsWith("IDC_DELETE_PATH") ||
@@ -95,7 +95,7 @@ void PathKeypad::updateDialog() {
   if (!active)
     return;
   const int p = currentPath();
-  if (p < 0 || p >= (int)GamePaths.size() || !GamePaths[p].used)
+  if (p < 0 || p >= (int)GamePaths.size() || GamePaths.is_unused(p))
     return;
 
   {
@@ -103,7 +103,7 @@ void PathKeypad::updateDialog() {
     QSignalBlocker blocker(combo);
     combo->clear();
     for (size_t i = 0; i < GamePaths.size(); i++)
-      if (GamePaths[i].used)
+      if (GamePaths.is_used(i))
         combo->addItem(QString::fromStdString(GamePaths[i].name));
     combo->setCurrentText(QString::fromStdString(GamePaths[p].name));
   }

@@ -33,7 +33,7 @@ DallasSoundDialog::DallasSoundDialog(QWidget *parent)
   m_list = ui->IDC_SOUND_LIST;
   if (m_list != nullptr) {
     for (int i = 0; i < static_cast<int>(Sounds.size()); i++)
-      if (Sounds[i].used)
+      if (Sounds.is_used(i))
         m_list->addItem(QString::fromStdString(Sounds[i].name));
   }
   connect(ui->IDC_PLAY_SOUND_BUTTON, &QPushButton::clicked, this, &DallasSoundDialog::onPlay);
@@ -47,7 +47,7 @@ int DallasSoundDialog::selectedSound() const {
     return -1;
   int usedCount = 0;
   for (int i = 0; i < static_cast<int>(Sounds.size()); i++) {
-    if (!Sounds[i].used)
+    if (!Sounds.is_used(i))
       continue;
     if (usedCount == m_list->currentRow())
       return i;

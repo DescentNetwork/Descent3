@@ -57,11 +57,11 @@ weapon &weaponRef(int n) {
 // Returns the current weapon's flag fields, or nullptr when none is selected.
 weapon_flags_t *CurWeaponFlags() {
   const int n = app.current_weapon;
-  return (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used) ? &weaponRef(n).flags : nullptr;
+  return (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n)) ? &weaponRef(n).flags : nullptr;
 }
 physics_flags_t *CurWeaponPhysFlags() {
   const int n = app.current_weapon;
-  return (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used) ? &weaponRef(n).phys_info.flags : nullptr;
+  return (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n)) ? &weaponRef(n).phys_info.flags : nullptr;
 }
 } // namespace
 
@@ -111,127 +111,127 @@ void WorldWeaponsDialog::saveWeaponsOnClose() {
 void WorldWeaponsDialog::bindEdits() {
   connect(ui->IDC_WEAPON_DAMAGE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).player_damage = ui->IDC_WEAPON_DAMAGE_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_GENERIC_DAMAGE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).generic_damage = ui->IDC_WEAPON_GENERIC_DAMAGE_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_ALPHA_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).alpha = ui->IDC_WEAPON_ALPHA_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_BLOB_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).size = ui->IDC_WEAPON_BLOB_SIZE_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_LIFE_TIME_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).life_time = ui->IDC_WEAPON_LIFE_TIME_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_THRUST_TIME_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).thrust_time = ui->IDC_WEAPON_THRUST_TIME_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_IMPACT_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).impact_size = ui->IDC_WEAPON_IMPACT_SIZE_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_IMPACT_TIME_EDIT2, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).impact_time = ui->IDC_WEAPON_IMPACT_TIME_EDIT2->text().toFloat();
   });
   connect(ui->IDC_WEAPON_IMPACT_DAMAGE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).impact_player_damage = ui->IDC_WEAPON_IMPACT_DAMAGE_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_IMPACT_GENERIC_DAMAGE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).impact_generic_damage = ui->IDC_WEAPON_IMPACT_GENERIC_DAMAGE_EDIT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_IMPACT_FORCE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).impact_force = ui->IDC_WEAPON_IMPACT_FORCE_EDIT->text().toFloat();
   });
   connect(ui->IDC_EXPLODE_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).explode_size = ui->IDC_EXPLODE_SIZE_EDIT->text().toFloat();
   });
   connect(ui->IDC_EXPLODE_TIME_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).explode_time = ui->IDC_EXPLODE_TIME_EDIT->text().toFloat();
   });
   connect(ui->IDC_PARTICLE_LIFE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).particle_life = ui->IDC_PARTICLE_LIFE_EDIT->text().toFloat();
   });
   connect(ui->IDC_PARTICLE_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).particle_size = ui->IDC_PARTICLE_SIZE_EDIT->text().toFloat();
   });
   connect(ui->IDC_GRAVITY_SIZE, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).gravity_size = ui->IDC_GRAVITY_SIZE->text().toFloat();
   });
   connect(ui->IDC_GRAVITY_TIME, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).gravity_time = ui->IDC_GRAVITY_TIME->text().toFloat();
   });
   connect(ui->IDC_CUSTOM_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).custom_size = ui->IDC_CUSTOM_SIZE_EDIT->text().toFloat();
   });
   connect(ui->IDC_HOMING_FOV_TEXT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).homing_fov = ui->IDC_HOMING_FOV_TEXT->text().toFloat();
   });
   connect(ui->IDC_WEAPON_SCORCH_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).scorch_size = ui->IDC_WEAPON_SCORCH_SIZE_EDIT->text().toFloat();
   });
   connect(ui->IDC_TERRIAN_DAMAGE_SIZE, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).terrain_damage_size = ui->IDC_TERRIAN_DAMAGE_SIZE->text().toFloat();
   });
   connect(ui->IDC_WEAPON_SPAWN_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).spawn_count = (uint8_t)ui->IDC_WEAPON_SPAWN_EDIT->text().toInt();
   });
   connect(ui->IDC_ALTERNATE_CHANCE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).alternate_chance = (uint8_t)ui->IDC_ALTERNATE_CHANCE_EDIT->text().toInt();
   });
   connect(ui->IDC_PARTICLE_COUNT_EDIT, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).particle_count = (uint8_t)ui->IDC_PARTICLE_COUNT_EDIT->text().toInt();
   });
   connect(ui->IDC_TERRAIN_DAMAGE_DEPTH, &QLineEdit::editingFinished, this, [this]() {
     const int n = app.current_weapon;
-    if (n >= 0 && n < static_cast<int>(Weapons.size()) && weaponRef(n).used)
+    if (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n))
       weaponRef(n).terrain_damage_depth = (uint8_t)ui->IDC_TERRAIN_DAMAGE_DEPTH->text().toInt();
   });
 }
@@ -296,7 +296,7 @@ void WorldWeaponsDialog::updateDialog() {
     return;
 
   int n = app.current_weapon;
-  if (!weaponRef(n).used)
+  if (Weapons.is_unused(n))
     n = app.current_weapon = GetNextWeapon(n);
 
   ui->IDC_WEAPON_DAMAGE_EDIT->setText(QString::number(weaponRef(n).player_damage));
@@ -382,7 +382,7 @@ const weapon_flags_t *wflags = CurWeaponFlags();
     QSignalBlocker blocker(combo);
     combo->clear();
     for (int i = 0; i < static_cast<int>(Weapons.size()); i++)
-      if (Weapons[i].used)
+      if (Weapons.is_used(i))
         combo->addItem(QString::fromStdString(Weapons[i].name));
     combo->setCurrentText(QString::fromStdString(weaponRef(n).name));
   }

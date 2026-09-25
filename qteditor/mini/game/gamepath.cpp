@@ -14,7 +14,7 @@
 // Returns the index of the game path whose name matches, or -1 if not found.
 std::optional<uint32_t> FindGamePathName(const std::string &name) {
   for (uint32_t i = 0; i < GamePaths.size(); i++) {
-    if (GamePaths[i].used && match(GamePaths[i].name, name))
+    if (GamePaths.is_used(i) && match(GamePaths[i].name, name))
       return i;
   }
   return std::nullopt;
@@ -25,13 +25,13 @@ void FreeGamePath(int n) {
   if (n < 0 || n >= static_cast<int>(GamePaths.size()))
     return;
 
-  if (!GamePaths[n].used)
+  if (GamePaths.is_unused(n))
     return;
 
   GamePaths[n].pathnodes.clear();
 
   GamePaths[n].num_nodes = 0;
-  GamePaths[n].used = 0;
+  GamePaths.release(n);
   Num_game_paths--;
 }
 
@@ -52,7 +52,6 @@ void InitGamePaths() {
 
   for (size_t i = 0; i < GamePaths.size(); i++) {
     GamePaths[i].num_nodes = 0;
-    GamePaths[i].used = 0;
   }
 
   Num_game_paths = 0;

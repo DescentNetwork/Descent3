@@ -45,6 +45,7 @@
 #include "3d.h"
 #include "manage.h"
 #include "mem/mem.h"
+#include "slotvec.h"
 #include "vecmat.h"
 
 // chrishack -- this could be dynamically allocated at the beginning of a level
@@ -63,19 +64,15 @@ struct node {
 
 class game_path {
 public:
-  game_path() {
-    num_nodes = 0;
-    used = false;
-  }
+  game_path() { num_nodes = 0; }
 
   std::vector<node> pathnodes; // how many nodes in this path? (count kept in num_nodes)
   int num_nodes;           // how many nodes in this path?
   std::string name; // the name of this path
   uint8_t flags;             // special properties of this path
-  bool used;               // if this path is in use
 };
 
-extern std::vector<game_path> GamePaths;
+extern d3::slotvec_t<game_path> GamePaths;
 extern int Num_game_paths;
 
 void InitGamePaths();

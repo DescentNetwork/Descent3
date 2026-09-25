@@ -283,8 +283,8 @@ void DeleteNodeFromPath(int pathnum, int nodenum) {
 
 int AllocGamePath() {
   for (size_t i = 0; i < GamePaths.size(); i++) {
-    if (!GamePaths[i].used) {
-      GamePaths[i].used = true;
+    if (GamePaths.is_unused(i)) {
+      GamePaths.acquire(i);
       GamePaths[i].name.clear();
       GamePaths[i].num_nodes = 0;
       GamePaths[i].flags = 0;
@@ -294,11 +294,10 @@ int AllocGamePath() {
     }
   }
   // No free slot anywhere: grow the table by one at the frontier.
-  GamePaths.push_back(game_path{});
-  int i = (int)GamePaths.size() - 1;
-  GamePaths[i].used = true;
+  const size_t i = GamePaths.add_slot(game_path{});
+  GamePaths.acquire(i);
   Num_game_paths++;
-  return i;
+  return (int)i;
 }
 
 int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
@@ -363,10 +362,10 @@ int GetNextPath(int n) {
   if (Num_game_paths == 0)
     return -1;
   for (int i = n + 1; i < (int)GamePaths.size(); i++)
-    if (GamePaths[i].used)
+    if (GamePaths.is_used(i))
       return i;
   for (int i = 0; i < n; i++)
-    if (GamePaths[i].used)
+    if (GamePaths.is_used(i))
       return i;
   return n;
 }
@@ -376,17 +375,17 @@ int GetPrevPath(int n) {
   if (Num_game_paths == 0)
     return -1;
   for (int i = n - 1; i >= 0; i--)
-    if (GamePaths[i].used)
+    if (GamePaths.is_used(i))
       return i;
   for (int i = (int)GamePaths.size() - 1; i > n; i--)
-    if (GamePaths[i].used)
+    if (GamePaths.is_used(i))
       return i;
   return n;
 }
 
 int GetFirstPath() {
   for (size_t i = 0; i < GamePaths.size(); i++)
-    if (GamePaths[i].used)
+    if (GamePaths.is_used(i))
       return i;
   return -1;
 }

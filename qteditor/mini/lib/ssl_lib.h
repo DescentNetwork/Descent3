@@ -360,7 +360,6 @@ static_assert(sizeof(sound_flags_t) == sizeof(uint32_t));
 
 struct sound_info {
   std::string name;
-  char used;
 
   int sample_index;
 
@@ -589,7 +588,7 @@ public:
 #ifndef NEWEDITOR
 #define MAX_SOUNDS 1000
 #define MAX_SOUND_FILES 1000
-extern std::vector<sound_info> Sounds;
+extern d3::slotvec_t<sound_info> Sounds;
 #else
 #include "..\neweditor\ned_Sound.h"
 #endif

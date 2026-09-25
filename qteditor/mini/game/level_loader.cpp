@@ -1120,7 +1120,7 @@ static void LL_ReadGamePathsChunk(posix_istream &ifile, uint32_t version) {
     game_path &p = GamePaths[i];
     // Value-initialise (NOT memset: game_path contains std::string members).
     p = game_path{};
-    p.used = true;
+    GamePaths.acquire(i);
 
     // Null-terminated path name, then the node count and path flags.
     ifile >> p.name;
@@ -1149,14 +1149,14 @@ static void LL_ReadGamePathsChunk(posix_istream &ifile, uint32_t version) {
 static void LL_WriteGamePathsChunk(posix_ostream &ofile) {
   int npaths = 0;
   for (size_t i = 0; i < GamePaths.size(); i++)
-    if (GamePaths[i].used)
+    if (GamePaths.is_used(i))
       npaths++;
 
   int start = LL_StartChunk(ofile, "PATH");
   ofile << (int16_t)npaths;
   for (size_t i = 0; i < GamePaths.size(); i++) {
     const game_path &p = GamePaths[i];
-    if (!p.used)
+    if (!GamePaths.is_used(i))
       continue;
 
     ofile << p.name;

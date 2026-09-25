@@ -2192,7 +2192,6 @@ private slots:
     mngs_sound_page page{};
     page.sound_struct.name = "roundtrip_sound";
     page.raw_name = "ROUNDTRIP_SOUND.WAV";
-    page.sound_struct.used = 1;
     page.sound_struct.sample_index = 0;
     page.sound_struct.loop_start = 100;
     page.sound_struct.loop_end = 200;
@@ -2255,12 +2254,12 @@ private slots:
   {
     const int saved_network = Network_up;
     const int saved_sound = app.current_sound;
-    std::vector<sound_info> saved_sounds = Sounds;
+    d3::slotvec_t<sound_info> saved_sounds = Sounds;
 
     // One used sound at index 0; the dialog edits Sounds[app.current_sound].
     Sounds.clear();
-    Sounds.push_back(sound_info{});
-    Sounds[0].used = 1;
+    const size_t snd_idx = Sounds.add_slot(sound_info{});
+    Sounds.acquire(snd_idx);
     Sounds[0].name = "toggle_sound";
     Sounds[0].sample_index = 0;
     app.current_sound = 0;
@@ -2710,7 +2709,7 @@ private slots:
     QVERIFY(Num_game_paths <= MAX_GAME_PATHS);
 
     const game_path &first = GamePaths[0];
-    QVERIFY(first.used);
+    QVERIFY(GamePaths.is_used(0));
     QCOMPARE(first.name, std::string("PlayerEndPath"));
     QVERIFY(first.num_nodes > 0 && first.num_nodes <= MAX_NODES_PER_PATH);
     QCOMPARE(int(first.pathnodes.size()), first.num_nodes);
@@ -2718,7 +2717,7 @@ private slots:
 
     for (int i = 0; i < Num_game_paths; i++) {
       const game_path &p = GamePaths[i];
-      QVERIFY(p.used);
+      QVERIFY(GamePaths.is_used(i));
       QVERIFY(p.num_nodes >= 0 && p.num_nodes <= MAX_NODES_PER_PATH);
       QCOMPARE(int(p.pathnodes.size()), p.num_nodes);
       if (p.num_nodes > 0)
@@ -6931,12 +6930,12 @@ private slots:
     int saved_num = Num_game_paths;
     int idx = AllocGamePath();
     QVERIFY(idx >= 0);
-    QVERIFY(GamePaths[idx].used);
+    QVERIFY(GamePaths.is_used(idx));
     QVERIFY(GamePaths[idx].num_nodes == 0);
     QCOMPARE(Num_game_paths, saved_num + 1);
 
     FreeGamePath(idx);
-    QVERIFY(!GamePaths[idx].used);
+    QVERIFY(GamePaths.is_unused(idx));
     QCOMPARE(Num_game_paths, saved_num);
   }
 

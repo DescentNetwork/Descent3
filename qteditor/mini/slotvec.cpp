@@ -2,10 +2,15 @@
 
 #include <QtGlobal>
 
+#include "game/gamepath.h"
+#include "game/gametexture.h"
 #include "game/lightmap_info.h"
 #include "game/special_face.h"
 #include "lib/bitmap.h"
 #include "lib/lightmap.h"
+#include "lib/ship.h"
+#include "lib/ssl_lib.h"
+#include "lib/weapon.h"
 
 namespace d3
 {
@@ -54,8 +59,26 @@ namespace d3
     return base_type::size() - 1;
   }
 
+  template <typename T>
+  void slotvec_t<T>::resize(size_type n)
+  {
+    base_type::resize(n);
+    // Rebuild the empty count from scratch: the grown tail is unreferenced and
+    // shrinking may have dropped referenced slots, so incremental adjustment
+    // would be wrong.  resize is rare (level-load time), so a recount is fine.
+    m_num_empty = 0;
+    for (size_type i = 0; i < n; ++i)
+      if (base_type::at(i).first == 0)
+        ++m_num_empty;
+  }
+
   template class slotvec_t<bms_bitmap>;
   template class slotvec_t<bms_lightmap>;
+  template class slotvec_t<game_path>;
   template class slotvec_t<lightmap_info>;
+  template class slotvec_t<ship>;
+  template class slotvec_t<sound_info>;
   template class slotvec_t<special_face>;
+  template class slotvec_t<texture>;
+  template class slotvec_t<weapon>;
 }

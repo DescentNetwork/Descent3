@@ -73,8 +73,6 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_sound_page& data) {
 bool mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
   infile >> *soundpage;
 
-  // This is a valid new page
-  soundpage->sound_struct.used = 1;
   return true; // successfully read
 }
 
