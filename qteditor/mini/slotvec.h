@@ -63,6 +63,10 @@ namespace d3
     // Reference count of slot i.
     int refs(size_type i) const { return base_type::at(i).first; }
 
+    // return if slot is used or not
+    bool is_used(size_type i) const { return refs(i); }
+    bool is_unused(size_type i) const { return !refs(i); }
+
     // Adds one reference to slot i.
     void acquire(size_type i);
 
@@ -72,7 +76,13 @@ namespace d3
     // -- empty-slot accounting ------------------------------------------------
 
     // Number of slots whose reference count is zero.
-    size_type num_empty() const { return m_num_empty; }
+    size_type num_empty(void) const { return m_num_empty; }
+
+    // returns if there are no empty spaces
+    bool is_full(void) const  { return !m_num_empty; }
+
+    // returns the position of the next availible slot (or makes one and returns it)
+    size_type next_slot(void);
 
     // Appends a new slot holding `value` with zero references and returns its
     // index.
