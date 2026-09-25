@@ -22,8 +22,8 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <vector>
 
-#define MAX_BITMAPS 5000
 #define NUM_MIP_LEVELS 5
 
 // It really doesn't matter what these are, as long as it is above 10
@@ -70,7 +70,7 @@ struct chunked_bitmap {
   int w, h;      // width and height in square bitmaps.
   int *bm_array; // array of bitmap handles.
 };
-extern bms_bitmap GameBitmaps[MAX_BITMAPS];
+extern std::vector<bms_bitmap> GameBitmaps;
 extern uint32_t Bitmap_memory_used;
 
 // Sets all the bitmaps to unused

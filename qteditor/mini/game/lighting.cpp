@@ -181,7 +181,7 @@ uint8_t Float_to_ubyte(float fnum) {
 std::optional<uint16_t> GetFreeDynamicLightmap(int w, int h) {
   int total = w * h * 2;
 
-  if (Num_dynamic_lightmaps == MAX_DYNAMIC_LIGHTMAPS)
+  if (Num_dynamic_lightmaps == Dynamic_lightmaps.size())
     return std::nullopt;
 
   if (total + Cur_dynamic_mem_ptr > DYNAMIC_LIGHTMAP_MEMORY) {

@@ -54,10 +54,9 @@ void ambient_life::DoFrame(void) {}
 
 // Picks a random resident count in [m_min, m_max] for slot i.
 void ambient_life::ComputeNextSize(int8_t i) {
-  const int diff = static_cast<int>(m_max[i]) - static_cast<int>(m_min[i]);
-  if (diff > 0) {
-    const int offset = d3::rand() % diff;
-    m_next_size[i] = static_cast<uint8_t>(static_cast<int>(m_min[i]) + offset);
+  if (m_max[i] > m_min[i])
+  {
+    m_next_size[i] = m_min[i] + static_cast<uint8_t>(d3::rand() % (m_max[i] - m_min[i]));
   } else {
     m_next_size[i] = m_max[i];
   }

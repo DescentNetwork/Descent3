@@ -39,6 +39,12 @@ static const int MINI_POLY_MODELS = 500;
 // Object globals (mirrors the file-scope globals from the original object.cpp)
 // ---------------------------------------------------------------------------
 
+std::array<object, MAX_OBJECTS> Objects;
+int Highest_object_index = -1;
+object *Viewer_object = &Objects[0];
+object *Player_object = &Objects[0];
+
+
 int free_obj_list[MAX_OBJECTS];
 int Highest_ever_object_index = -1;
 

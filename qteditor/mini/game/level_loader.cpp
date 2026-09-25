@@ -753,11 +753,6 @@ static void LL_ReadMatcenChunk(posix_istream &ifile) {
   DestroyAllMatcens();
 
   Num_matcens = (count < 0) ? 0 : count;
-  if (Num_matcens > MAX_MATCENS) {
-    // Corrupt count: only load what the table can hold; the chunk framer
-    // skips the remaining body bytes.
-    Num_matcens = MAX_MATCENS;
-  }
 
   Matcen.resize(Num_matcens);
   for (int i = 0; i < Num_matcens; i++) {
@@ -1119,13 +1114,6 @@ static void LL_ReadGamePathsChunk(posix_istream &ifile, uint32_t version) {
   int16_t np = 0;
   ifile >> np;
   Num_game_paths = np;
-  if (Num_game_paths < 0 || Num_game_paths > MAX_GAME_PATHS) {
-    // Corrupt count: bail out before indexing GamePaths[] out of range; the
-    // chunk framer then skips the remaining body bytes.
-    Num_game_paths = 0;
-    GamePaths.resize(0);
-    return;
-  }
 
   GamePaths.resize(Num_game_paths);
   for (int i = 0; i < Num_game_paths; i++) {

@@ -22,6 +22,8 @@
 
 #include "objinfo.h"
 
+object_info Object_info[MAX_OBJECTS];
+
 // First object page slot with the given type (the engine's objinfo.cpp
 // GetObjectID), used by FindValidID during level object-id translation.
 std::optional<uint32_t> GetObjectID(int type) {

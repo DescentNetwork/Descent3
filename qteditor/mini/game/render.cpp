@@ -170,7 +170,6 @@ vector3 External_room_corners[MAX_EXTERNAL_ROOMS][8];
 uint8_t External_room_codes[MAX_EXTERNAL_ROOMS];
 uint8_t External_room_project_net[MAX_EXTERNAL_ROOMS];
 // For light glows
-#define MAX_LIGHT_GLOWS 100
 #define LGF_USED 1
 #define LGF_INCREASING 2
 #define LGF_FAST 4
@@ -182,10 +181,9 @@ struct light_glow {
   float scalar;
   uint8_t flags;
 };
-light_glow LightGlows[MAX_LIGHT_GLOWS];
-light_glow LightGlowsThisFrame[MAX_LIGHT_GLOWS];
+std::vector<light_glow> LightGlows;
+std::vector<light_glow> LightGlowsThisFrame;
 int FastCoronas = 0;
-int Num_glows = 0, Num_glows_this_frame = 0;
 // For terrain portals
 int Terrain_portal_left, Terrain_portal_right, Terrain_portal_top, Terrain_portal_bottom;
 // For deformation effect
@@ -409,47 +407,37 @@ static inline bool FaceIntersectsPortal(room *rp, face *fp, clip_wnd *wnd) {
   return false;
 }
 // Sets the status of a glow light
-void SetGlowStatus(int roomnum, int facenum, vector3 *center, float size, int fast) {
-  int i;
-  int first = 1;
+void SetGlowStatus(int roomnum, int facenum, const vector3 &center, float size, int fast) {
   int first_free = -1;
-  int done = 0;
-  int count = 0;
   int found = 0;
-  for (i = 0; i < MAX_LIGHT_GLOWS && !done; i++) {
-    if (count >= Num_glows) {
-      if (first_free == -1)
-        first_free = i;
-      done = 1;
-      continue;
-    }
+  for (int i = 0; i < static_cast<int>(LightGlows.size()); i++) {
     if (LightGlows[i].flags & LGF_USED) {
-      count++;
       if (LightGlows[i].roomnum == roomnum && LightGlows[i].facenum == facenum) {
         found = 1;
         LightGlows[i].flags |= LGF_INCREASING;
-        done = 1;
+        break;
       }
-    } else {
-      if (first) {
-        first_free = i;
-        first = 0;
-      }
+    } else if (first_free == -1) {
+      first_free = i;
     }
   }
   if (!found) // couldn't find it - is it a new one?
   {
-    if (first_free == -1) // no free slots
-      return;
-    LightGlows[first_free].flags = LGF_USED | LGF_INCREASING;
+    int slot;
+    if (first_free == -1) {
+      slot = static_cast<int>(LightGlows.size());
+      LightGlows.push_back(light_glow{});
+    } else {
+      slot = first_free;
+    }
+    LightGlows[slot].flags = LGF_USED | LGF_INCREASING;
     if (fast)
-      LightGlows[first_free].flags |= LGF_FAST;
-    LightGlows[first_free].roomnum = roomnum;
-    LightGlows[first_free].facenum = facenum;
-    LightGlows[first_free].scalar = 0;
-    LightGlows[first_free].size = size;
-    LightGlows[first_free].center = *center;
-    Num_glows++;
+      LightGlows[slot].flags |= LGF_FAST;
+    LightGlows[slot].roomnum = roomnum;
+    LightGlows[slot].facenum = facenum;
+    LightGlows[slot].scalar = 0;
+    LightGlows[slot].size = size;
+    LightGlows[slot].center = center;
   }
 }
 // Takes a min,max vector and makes a surrounding cube from it
@@ -1950,10 +1938,10 @@ void RenderFace(room *rp, int facenum) {
   if (!Render_mirror_for_room && Rendering_main_view && drawn && fp->portal_num == -1 &&
       ((fp->flags.corona) || FastCoronas) && (fp->flags.lightmap) && UseHardware &&
       (GameTextures[fp->tmap].flags.light)) {
-    if (Num_glows_this_frame < MAX_LIGHT_GLOWS && Detail_settings.Coronas_enabled) {
-      LightGlowsThisFrame[Num_glows_this_frame].roomnum = rp - Rooms.data();
-      LightGlowsThisFrame[Num_glows_this_frame].facenum = facenum;
-      Num_glows_this_frame++;
+    if (Detail_settings.Coronas_enabled) {
+      LightGlowsThisFrame.push_back(light_glow{});
+      LightGlowsThisFrame.back().roomnum = rp - Rooms.data();
+      LightGlowsThisFrame.back().facenum = facenum;
     }
   }
   // Draw a specular face
@@ -2528,8 +2516,7 @@ void RenderSingleLightGlow2(int index) {
 }
 // Figures out if we can see the center of a light face and adds it to our globa list
 void CheckLightGlowsForRoom(room *rp) {
-  int i;
-  for (i = 0; i < Num_glows_this_frame; i++) {
+  for (int i = 0; i < static_cast<int>(LightGlowsThisFrame.size()); i++) {
     // For each light, see if we can cast a vector3 to it
     face *fp = &rp->faces[LightGlowsThisFrame[i].facenum];
     vector3 verts[MAX_VERTS_PER_FACE];
@@ -2547,7 +2534,7 @@ void CheckLightGlowsForRoom(room *rp) {
     // shoot a ray from the light position to the current vertex
     if (FastCoronas) {
       if (rp->flags.external) {
-        SetGlowStatus(rp - Rooms.data(), LightGlowsThisFrame[i].facenum, &center, size, FastCoronas);
+SetGlowStatus(rp - Rooms.data(), LightGlowsThisFrame[i].facenum, center, size, FastCoronas);
         continue;
       }
       vector3 subvec = Viewer_eye - center;
@@ -2570,42 +2557,34 @@ void CheckLightGlowsForRoom(room *rp) {
     int fate = fvi_FindIntersection(&fq, &hit_info);
     if (fate != HIT_NONE)
       continue;
-    SetGlowStatus(rp - Rooms.data(), LightGlowsThisFrame[i].facenum, &center, size, FastCoronas);
+    SetGlowStatus(rp - Rooms.data(), LightGlowsThisFrame[i].facenum, center, size, FastCoronas);
   }
 }
 // Called before a frame starts to render - sets all of our light glows to decreasing
 void PreUpdateAllLightGlows() {
-  int i, count;
-  for (i = 0, count = 0; i < MAX_LIGHT_GLOWS && count < Num_glows; i++) {
-    if (LightGlows[i].flags & LGF_USED) {
-      count++;
-      LightGlows[i].flags &= ~LGF_INCREASING;
+  for (auto &glow : LightGlows) {
+    if (glow.flags & LGF_USED) {
+      glow.flags &= ~LGF_INCREASING;
     }
   }
 }
 // Called after a frame has been rendered - slowly morphs our light glows into nothing
 void PostUpdateAllLightGlows() {
-  int i, count;
-  for (i = 0, count = 0; i < MAX_LIGHT_GLOWS && count < Num_glows; i++) {
-    if (LightGlows[i].flags & LGF_USED) {
-      count++;
-      if (LightGlows[i].flags & LGF_INCREASING) {
-        LightGlows[i].scalar += (Frametime * 4);
-        if (LightGlows[i].scalar > 1)
-          LightGlows[i].scalar = 1;
+  for (auto &glow : LightGlows) {
+    if (glow.flags & LGF_USED) {
+      if (glow.flags & LGF_INCREASING) {
+        glow.scalar += (Frametime * 4);
+        if (glow.scalar > 1)
+          glow.scalar = 1;
       } else {
-        LightGlows[i].scalar -= (Frametime * 4);
-        if (LightGlows[i].scalar < 0) {
-          LightGlows[i].scalar = 0;
-          LightGlows[i].flags &= ~LGF_USED;
-          Num_glows--;
-          count--;
+        glow.scalar -= (Frametime * 4);
+        if (glow.scalar < 0) {
+          glow.scalar = 0;
+          glow.flags &= ~LGF_USED;
         }
       }
     }
   }
-
-  Q_ASSERT(Num_glows >= 0);
 }
 // Recursive function that mirrored rooms use
 void BuildMirroredRoomListSub(int start_room_num, clip_wnd *wnd) {
@@ -2928,7 +2907,7 @@ void RenderMirroredRoom(room *rp) {
 // Renders a specific room.  If pos_offset is not NULL, adds that offset to each of the
 // rooms vertices
 void RenderRoom(room *rp) {
-  Num_glows_this_frame = 0;
+  LightGlowsThisFrame.clear();
 
   // Set up rendering states
   rend_SetColorModel(CM_MONO);
@@ -3484,9 +3463,8 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
 }
 // Simply sets the number of glows to zero
 void ResetLightGlows() {
-  Num_glows = 0;
-  for (int i = 0; i < MAX_LIGHT_GLOWS; i++) {
-    LightGlows[i].flags = 0;
+  for (auto &glow : LightGlows) {
+    glow.flags = 0;
   }
 }
 // Renders all the lights glows for this frame
@@ -3500,12 +3478,9 @@ void RenderLightGlows() {
   rend_SetAlphaType(AT_SATURATE_TEXTURE);
   rend_SetOverlayType(OT_NONE);
   rend_SetFogState(0);
-  int count = 0;
-
-  for (int i = 0; i < MAX_LIGHT_GLOWS && count < Num_glows; i++) {
+  for (size_t i = 0; i < LightGlows.size(); i++) {
     if (LightGlows[i].flags & LGF_USED) {
-      RenderSingleLightGlow(i);
-      count++;
+      RenderSingleLightGlow(static_cast<int>(i));
     }
   }
 

@@ -95,11 +95,7 @@ bool grHardwareSurface::create(int w, int h, int bpp, unsigned flags, const std:
 //float Float_to_ubyte(float f) { PRINT_STUB(__FUNCTION__); return f; }
 
 // ==================== Object ====================
-std::array<object, MAX_OBJECTS> Objects;
-int Highest_object_index = -1;
-object *Viewer_object = &Objects[0];
-object *Player_object = &Objects[0];
-object_info Object_info[MAX_OBJECTS];
+
 
 // Walks the object parent handle chain to the ultimate ancestor.  The mini
 // port has no parented-object state, so every object is treated as its own
@@ -185,7 +181,7 @@ std::filesystem::path LocalLevelsDir;
 std::filesystem::path LocalScriptDir;
 
 // ==================== Game data arrays ====================
-bms_bitmap GameBitmaps[MAX_BITMAPS];
+std::vector<bms_bitmap> GameBitmaps;
 std::vector<texture> GameTextures;
 //vclip GameVClips[MAX_VCLIPS];
 //poly_model Poly_models[500];

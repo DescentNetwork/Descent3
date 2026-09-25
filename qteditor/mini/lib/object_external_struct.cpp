@@ -26,6 +26,7 @@
 #include "soundload.h"
 #include "ssl_lib.h"
 #include "object_lighting.h"
+#include "string_helpers.h"
 
 #include <cstring>
 #include <limits>

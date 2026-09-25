@@ -132,18 +132,17 @@ bool HObjectPlace(int obj_type, int obj_id) {
 
   // Special stuff for player ship
   if (obj_type == OBJ_PLAYER) {
-    if (!static_cast<int>(Ships.size())) {
+    if (Ships.empty()) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place a player: There are no player ships.");
       return false;
     }
 
-    int ship_num = app.current_ship;
-    if (ship_num == -1) {
+    if (app.current_ship == -1) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have a current player ship selected for this operation.");
       return false;
     }
 
-    Players[obj_id].ship_index = ship_num;
+    Players[obj_id].ship_index = app.current_ship;
   }
 
   if (obj_type != OBJ_POWERUP) {

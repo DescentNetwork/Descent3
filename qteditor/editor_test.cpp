@@ -2661,6 +2661,7 @@ private slots:
     const QByteArray bb = b.readAll();
     QCOMPARE(bb.size(), ba.size());
     if (ba != bb) {
+      // Report the first divergence: useful when the round-trip is not stable.
       const int n = std::min(ba.size(), bb.size());
       int first = -1;
       for (int i = 0; i < n; i++)

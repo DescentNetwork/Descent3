@@ -2097,7 +2097,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
                             bool f_lightmap_only, bool f_only_players_and_ais, bool f_include_non_collide_objects,
                             bool f_stop_at_closed_doors) {
   int num_objects = 0;
-  int x; //, y;
+  size_t x; //, y;
   vector3 delta;
 
   // Quick volume
@@ -2176,7 +2176,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
     }
 
     // Do big object stuff
-    for (x = 0; x < static_cast<int>(BigObjectList.size()); x++) {
+    for (x = 0; x < BigObjectList.size(); x++) {
       if (num_objects >= max_elements)
         break;
 
@@ -4151,7 +4151,8 @@ f_check_next_ground);
 */
 
 int do_fvi_terrain() {
-  int x1, x2, y1, y2, x, y, delta_y, delta_x, change_x, change_y, length, cur_node, error_term, i;
+  int x1, x2, y1, y2, x, y, delta_y, delta_x, change_x, change_y, length, cur_node, error_term;
+  size_t i;
 
   int new_x, new_y;
   int counter;
@@ -4335,14 +4336,14 @@ int do_fvi_terrain() {
 
 check_big_objs: // Check Big objects
   if (fvi_query_ptr->flags & FQ_CHECK_OBJS) {
-    for (i = 0; i < static_cast<int>(BigObjectList.size()); i++) {
+    for (i = 0; i < BigObjectList.size(); i++) {
       Q_ASSERT(BigObjectList[i] >= 0);
       check_hit_obj(BigObjectList[i]);
       //		mprintf(0, "CHecking BIG %d\n", i);
     }
   } else {
     if (!(fvi_query_ptr->flags & FQ_IGNORE_EXTERNAL_ROOMS))
-      for (i = 0; i < static_cast<int>(BigObjectList.size()); i++) {
+      for (i = 0; i < BigObjectList.size(); i++) {
         if (Objects[BigObjectList[i]].type == OBJ_ROOM)
           check_hit_obj(BigObjectList[i]);
         //		mprintf(0, "CHecking BIG %d\n", i);

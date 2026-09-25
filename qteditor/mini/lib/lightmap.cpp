@@ -45,11 +45,8 @@ std::optional<uint16_t> lm_AllocLightmap(int w, int h) {
 
   // The free list hands out fresh handles as identity values (its slot index).
   // When the cursor reaches the current frontier the table must first grow by
-  // one slot whose free-list value equals its own index; MAX_LIGHTMAPS stays
-  // as the hard cap keeping handles inside uint16_t range.
+  // one slot whose free-list value equals its own index.
   if (Num_of_lightmaps == static_cast<int>(GameLightmaps.size())) {
-    if (GameLightmaps.size() >= MAX_LIGHTMAPS)
-      return std::nullopt; // Ran out of lightmaps!
     GameLightmaps.push_back(bms_lightmap{});
     Free_lightmap_list.push_back(static_cast<uint16_t>(GameLightmaps.size() - 1));
   }

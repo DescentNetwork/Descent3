@@ -4,8 +4,8 @@
  * Copyright (C) 2024-2026 Descent Developers
  *
  * Qt-neutral special-face table (ported from game/special_face.cpp).  The mini
- * keeps the same free-list + handle scheme; SpecialFaces grows on demand up to
- * MAX_SPECIAL_FACES (handles live in face::special_handle, an int16, with
+ * keeps the same free-list + handle scheme; SpecialFaces grows on demand
+ * (handles live in face::special_handle, an int16, with
  * BAD_SPECIAL_FACE_INDEX == -1).  Table is per-level: cleared by
  * InitSpecialFaces() at level load.
  */
@@ -31,13 +31,9 @@ void InitSpecialFaces() {
 int AllocSpecialFace(int type, int num, bool vertnorms, int num_vertnorms) {
   // The free list hands out fresh handles as identity values (its slot index).
   // When the cursor reaches the current frontier the table must first grow by
-  // one slot whose free-list value equals its own index; MAX_SPECIAL_FACES
-  // stays as the hard cap keeping handles inside int16_t range.
+  // one slot whose free-list value equals its own index; SpecialFaces grows
+  // without an arbitrary size cap.
   if (Num_of_special_faces == static_cast<int>(SpecialFaces.size())) {
-    if (SpecialFaces.size() >= MAX_SPECIAL_FACES) {
-      Q_ASSERT(false); // Ran out of special faces!
-      return BAD_SPECIAL_FACE_INDEX;
-    }
     SpecialFaces.push_back(special_face{});
     Free_special_face_list.push_back(static_cast<uint16_t>(SpecialFaces.size() - 1));
   }

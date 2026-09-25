@@ -172,6 +172,26 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
   // Always read new-style (net) pages.
   Old_table_method = 0;
 
+  // Reloading the same table must replace, not append: callers (the real
+  // editor's initD3Core and several tests) load table.gam more than once, and
+  // the engine's per-page readers overlay by name.  Reset every table the page
+  // loop grows so a second load produces the same arrays as the first.
+  GameTextures.clear();
+  Weapons.clear();
+  Ships.clear();
+  Sounds.clear();
+  Num_objects = 0;
+  for (int i = 0; i < MAX_OBJECT_IDS; i++) {
+    Object_info[i].type = OBJ_NONE;
+    Object_info[i].name.clear();
+  }
+  Num_doors = 0;
+  for (int i = 0; i < MAX_DOORS; i++)
+    Doors[i] = door{};
+  Num_megacells = 0;
+  for (auto &mg : Megacells)
+    mg = megacell{};
+
   // local page containers
   mngs_generic_page genericpage{};
   mngs_ship_page shippage{};
@@ -190,9 +210,9 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 
     switch (pagetype) {
     case PAGETYPE_TEXTURE:
-      // MAX_TEXTURES bounds the global table because level texture-name
-      // translation (texture_xlate) is indexed by the on-disk tmap value.
-      if (GameTextures.size() < MAX_TEXTURES) {
+      // GameTextures is a vector that grows to hold every paged texture;
+      // texture_xlate stays indexed by the on-disk tmap value.
+      {
         ok = mng_ReadNewTexturePage(infile, &texpage);
         GameTextures.push_back(texpage.tex_struct);
         // Load the texture's image so textured faces render: the payload is
@@ -208,9 +228,6 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
               GameTextures.back().flags.animated = true;
           }
         }
-      } else {
-        // Metadata only: we do NOT load bitmaps/procedurals, so just discard.
-        discardBytes(infile, len);
       }
       break;
 
@@ -227,7 +244,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
         Doors[Num_doors] = doorpage.door_struct;
         Num_doors++;
       } else {
-        discardBytes(infile, len);
+        discardBytes(infile, len - 4);
       }
       break;
 
@@ -251,7 +268,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
         Object_info[Num_objects].name = genericpage.objinfo_struct.name;
         Num_objects++;
       } else {
-        discardBytes(infile, len);
+        discardBytes(infile, len - 4);
       }
       break;
 
@@ -262,7 +279,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
         Megacells[Num_megacells] = megacellpage.megacell_struct;
         Num_megacells++;
       } else {
-        discardBytes(infile, len);
+        discardBytes(infile, len - 4);
       }
       break;
 
@@ -272,7 +289,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
     case PAGETYPE_UNKNOWN:
     default:
       // Unsupported/game-only page types: read and discard the payload.
-      discardBytes(infile, len);
+      discardBytes(infile, len - 4);
       break;
     }
 

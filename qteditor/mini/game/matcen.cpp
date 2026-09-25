@@ -158,13 +158,6 @@ static std::string readLevelName(posix_istream &ifile) {
   return std::string(raw.c_str());
 }
 
-// Writes a length-prefixed, NUL-terminated C-style name field matching the
-// engine's strlen()+1 convention.
-static void writeLevelName(posix_ostream &ofile, const std::string &name) {
-  ofile << static_cast<int16_t>(static_cast<int>(name.size()) + 1);
-  ofile << name;
-}
-
 void matcen::SaveData(posix_ostream &ofile) const {
   ofile << static_cast<int32_t>(MATCEN_LOADSAVE_VERSION);
 
@@ -172,7 +165,7 @@ void matcen::SaveData(posix_ostream &ofile) const {
   ofile << static_cast<int16_t>(MAX_PROD_TYPES);
   ofile << static_cast<int16_t>(MAX_MATCEN_SOUNDS);
 
-  writeLevelName(ofile, m_name);
+  ofile << static_cast<int16_t>(m_name.size() + 1) << m_name;
 
   ofile << static_cast<int8_t>(m_num_prod_types);
   ofile << static_cast<int8_t>(m_control_type);
@@ -183,7 +176,7 @@ void matcen::SaveData(posix_ostream &ofile) const {
   ofile << static_cast<int32_t>(m_num_spawn_pnts);
   ofile << static_cast<int32_t>(m_roomnum);
 
-  ofile << m_create_pnt.x() << m_create_pnt.y() << m_create_pnt.z();
+  ofile << m_create_pnt;
   ofile << static_cast<int32_t>(m_create_room);
 
   // The original engine writer duplicates x() for the z component of both
@@ -191,9 +184,9 @@ void matcen::SaveData(posix_ostream &ofile) const {
   // written here.  Load+Save is still an identity because LoadData stores the
   // stored z value and SaveData writes that same value back.
   for (int i = 0; i < MAX_SPAWN_PNTS; i++) {
-    ofile << static_cast<int32_t>(m_spawn_pnt[i]);
-    ofile << m_spawn_vec[i].x() << m_spawn_vec[i].y() << m_spawn_vec[i].z();
-    ofile << m_spawn_normal[i].x() << m_spawn_normal[i].y() << m_spawn_normal[i].z();
+    ofile << static_cast<int32_t>(m_spawn_pnt[i])
+          << m_spawn_vec[i]
+          << m_spawn_normal[i];
   }
 
   ofile << static_cast<int32_t>(m_max_prod);
@@ -201,7 +194,7 @@ void matcen::SaveData(posix_ostream &ofile) const {
   for (int i = 0; i < MAX_PROD_TYPES; i++) {
     const int type = m_prod_type[i];
     if (type >= 0 && type < MAX_OBJECT_IDS) {
-      writeLevelName(ofile, Object_info[type].name);
+      ofile << static_cast<int16_t>(Object_info[type].name.size() + 1) << Object_info[type].name;
     } else {
       ofile << static_cast<int16_t>(1);
       ofile.put(0);
@@ -227,7 +220,7 @@ void matcen::SaveData(posix_ostream &ofile) const {
       ofile << static_cast<int16_t>(0);
       continue;
     }
-    writeLevelName(ofile, Sounds[m_sounds[i]].name);
+    ofile << static_cast<int16_t>(Sounds[m_sounds[i]].name.size() + 1) << Sounds[m_sounds[i]].name;
   }
 
   ofile << m_speed_multi;

@@ -15,14 +15,16 @@
 
 std::optional<uint32_t> bm_AllocBitmap(int w, int h, int add_mem) {
   int n = -1;
-  for (int i = 0; i < MAX_BITMAPS; i++) {
+  for (int i = 0; i < static_cast<int>(GameBitmaps.size()); i++) {
     if (GameBitmaps[i].used == 0) {
       n = i;
       break;
     }
   }
-  if (n == -1)
-    return std::nullopt;
+  if (n == -1) {
+    n = static_cast<int>(GameBitmaps.size());
+    GameBitmaps.push_back(bms_bitmap{});
+  }
 
   GameBitmaps[n].width = (uint16_t)w;
   GameBitmaps[n].height = (uint16_t)h;
@@ -55,7 +57,7 @@ void bm_FreeBitmap(int handle) {
 
 
 uint16_t *bm_data(int handle, int miplevel) {
-  if (handle < 0 || handle >= MAX_BITMAPS)
+  if (handle < 0 || handle >= static_cast<int>(GameBitmaps.size()))
     return nullptr;
   const bms_bitmap &b = GameBitmaps[handle];
   if (!b.data16)
@@ -69,7 +71,7 @@ uint16_t *bm_data(int handle, int miplevel) {
   return b.data16.get() + offset;
 }
 int bm_w(int handle, int miplevel) {
-  if (handle < 0 || handle >= MAX_BITMAPS)
+  if (handle < 0 || handle >= static_cast<int>(GameBitmaps.size()))
     return 0;
   int w = GameBitmaps[handle].width;
   for (int m = 0; m < miplevel; m++) {
@@ -78,7 +80,7 @@ int bm_w(int handle, int miplevel) {
   return w;
 }
 int bm_h(int handle, int miplevel) {
-  if (handle < 0 || handle >= MAX_BITMAPS)
+  if (handle < 0 || handle >= static_cast<int>(GameBitmaps.size()))
     return 0;
   int h = GameBitmaps[handle].height;
   for (int m = 0; m < miplevel; m++) {
@@ -87,14 +89,14 @@ int bm_h(int handle, int miplevel) {
   return h;
 }
 int bm_mipped(int handle) {
-  if (handle < 0 || handle >= MAX_BITMAPS)
+  if (handle < 0 || handle >= static_cast<int>(GameBitmaps.size()))
     return 0;
   return GameBitmaps[handle].mip_levels > 1 ? 1 : 0;
 }
 
 // Returns the number of mipmap levels for a bitmap.
 int bm_miplevels(int handle) {
-  if (handle < 0 || handle >= MAX_BITMAPS)
+  if (handle < 0 || handle >= static_cast<int>(GameBitmaps.size()))
     return 0;
   const bms_bitmap &b = GameBitmaps[handle];
   if (b.mip_levels)
@@ -110,7 +112,8 @@ int bm_miplevels(int handle) {
 
 // Scales the data from src into the size of dest (nearest-neighbor).
 void bm_ScaleBitmapToBitmap(int dest, int src) {
-  if (dest < 0 || dest >= MAX_BITMAPS || src < 0 || src >= MAX_BITMAPS)
+  if (dest < 0 || dest >= static_cast<int>(GameBitmaps.size()) || src < 0 ||
+      src >= static_cast<int>(GameBitmaps.size()))
     return;
   uint16_t *dp = bm_data(dest, 0);
   uint16_t *sp = bm_data(src, 0);
