@@ -24,6 +24,8 @@
 #include <optional>
 #include <vector>
 
+#include "slotvec.h"
+
 #define NUM_MIP_LEVELS 5
 
 // It really doesn't matter what these are, as long as it is above 10
@@ -55,7 +57,6 @@
 struct bms_bitmap {
   std::unique_ptr<uint16_t[]> data16; // 16bit data
   uint16_t width, height; // Width and height in pixels
-  uint16_t used;          // Is this bitmap free to be allocated?
 
   int16_t cache_slot; // For use by the rendering lib
   uint8_t mip_levels;
@@ -70,7 +71,7 @@ struct chunked_bitmap {
   int w, h;      // width and height in square bitmaps.
   int *bm_array; // array of bitmap handles.
 };
-extern std::vector<bms_bitmap> GameBitmaps;
+extern d3::slotvec_t<bms_bitmap> GameBitmaps;
 extern uint32_t Bitmap_memory_used;
 
 // Sets all the bitmaps to unused

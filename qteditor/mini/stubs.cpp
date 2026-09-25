@@ -181,7 +181,7 @@ std::filesystem::path LocalLevelsDir;
 std::filesystem::path LocalScriptDir;
 
 // ==================== Game data arrays ====================
-std::vector<bms_bitmap> GameBitmaps;
+d3::slotvec_t<bms_bitmap> GameBitmaps;
 std::vector<texture> GameTextures;
 //vclip GameVClips[MAX_VCLIPS];
 //poly_model Poly_models[500];

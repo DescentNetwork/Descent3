@@ -86,7 +86,7 @@ namespace d3
 
     // Appends a new slot holding `value` with zero references and returns its
     // index.
-    size_type add_slot(const T &value = T());
+    size_type add_slot(T value = T());
 
     void clear() {
       base_type::clear();

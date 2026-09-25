@@ -14,17 +14,8 @@
 #include <cstring>
 
 std::optional<uint32_t> bm_AllocBitmap(int w, int h, int add_mem) {
-  int n = -1;
-  for (int i = 0; i < static_cast<int>(GameBitmaps.size()); i++) {
-    if (GameBitmaps[i].used == 0) {
-      n = i;
-      break;
-    }
-  }
-  if (n == -1) {
-    n = static_cast<int>(GameBitmaps.size());
-    GameBitmaps.push_back(bms_bitmap{});
-  }
+  const size_t n = GameBitmaps.next_slot();
+  Q_ASSERT(GameBitmaps.is_unused(n));
 
   GameBitmaps[n].width = (uint16_t)w;
   GameBitmaps[n].height = (uint16_t)h;
@@ -45,14 +36,14 @@ std::optional<uint32_t> bm_AllocBitmap(int w, int h, int add_mem) {
       GameBitmaps[n].mip_levels = 1; // marked mipped; actual count set by caller
   }
 
-  GameBitmaps[n].used = 1;
+  GameBitmaps.acquire(n);
   return static_cast<uint32_t>(n);
 }
 
 // Given a handle, frees the bitmap memory and flags this bitmap as unused
 void bm_FreeBitmap(int handle) {
-  if (handle != BAD_BITMAP_HANDLE && GameBitmaps[handle].used >= 1)
-    GameBitmaps[handle].used--;
+  if (handle != BAD_BITMAP_HANDLE && GameBitmaps.is_used(handle))
+    GameBitmaps.release(handle);
 }
 
 

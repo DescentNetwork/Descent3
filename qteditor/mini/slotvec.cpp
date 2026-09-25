@@ -4,6 +4,7 @@
 
 #include "game/lightmap_info.h"
 #include "game/special_face.h"
+#include "lib/bitmap.h"
 #include "lib/lightmap.h"
 
 namespace d3
@@ -46,13 +47,14 @@ namespace d3
   }
 
   template <typename T>
-  typename slotvec_t<T>::size_type slotvec_t<T>::add_slot(const T &value)
+  typename slotvec_t<T>::size_type slotvec_t<T>::add_slot(T value)
   {
-    base_type::emplace_back(0, value);
+    base_type::emplace_back(0, std::move(value));
     ++m_num_empty;
     return base_type::size() - 1;
   }
 
+  template class slotvec_t<bms_bitmap>;
   template class slotvec_t<bms_lightmap>;
   template class slotvec_t<lightmap_info>;
   template class slotvec_t<special_face>;
