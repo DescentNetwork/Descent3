@@ -1,5 +1,6 @@
 #include "slotvec.h"
 
+#include <algorithm>
 #include <QtGlobal>
 
 #include "game/gamepath.h"
@@ -49,6 +50,30 @@ namespace d3
       if (base_type::at(i).first == 0)
         return i;
     return add_slot();
+  }
+
+  template <typename T>
+  std::optional<typename slotvec_t<T>::size_type> slotvec_t<T>::next(size_type i) const
+  {
+    for (size_type j = i + 1; j < this->size(); ++j)
+      if (base_type::at(j).first != 0)
+        return j;
+    for (size_type j = 0; j < this->size() && j <= i; ++j)
+      if (base_type::at(j).first != 0)
+        return j;
+    return std::nullopt;
+  }
+
+  template <typename T>
+  std::optional<typename slotvec_t<T>::size_type> slotvec_t<T>::prev(size_type i) const
+  {
+    for (size_type j = std::min(i, this->size()); j-- > 0;)
+      if (base_type::at(j).first != 0)
+        return j;
+    for (size_type j = this->size(); j-- > i;)
+      if (base_type::at(j).first != 0)
+        return j;
+    return std::nullopt;
   }
 
   template <typename T>

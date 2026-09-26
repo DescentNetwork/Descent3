@@ -8,14 +8,9 @@
 
 #include "ship.h"
 #include "string_helpers.h"
-#include "robotfire.h"
 #include "objinfo.h"
 
 #include <QtGlobal>
-
-namespace {
-constexpr float DEFAULT_SHIP_SIZE = 4.0f;
-}
 
 // Allocs a ship for use, returns -1 if error, else index on success
 int AllocShip() {
@@ -23,25 +18,6 @@ int AllocShip() {
   Q_ASSERT(Ships.is_unused(n));
 
   Ships[n] = ship{};
-  Ships[n].size = DEFAULT_SHIP_SIZE;
-  Ships[n].dying_model_handle = -1;
-  Ships[n].med_render_handle = -1;
-  Ships[n].lo_render_handle = -1;
-  Ships[n].med_lod_distance = DEFAULT_MED_LOD_DISTANCE;
-  Ships[n].lo_lod_distance = DEFAULT_LO_LOD_DISTANCE;
-  Ships[n].model_handle = -1;
-  Ships[n].armor_scalar = 1.0f;
-  Ships[n].flags = 0;
-
-  Ships[n].phys_info.hit_die_dot = -1; // -1 means doesn't apply
-
-  // Make sure the weapon battery info is cleared for a new object
-  WBClearInfo(Ships[n].static_wb.data());
-
-  for (int w = 0; w < MAX_PLAYER_WEAPONS; w++) {
-    Ships[n].firing_sound[w] = -1;
-    Ships[n].firing_release_sound[w] = -1;
-  }
 
   Ships.acquire(n);
   return static_cast<int>(n);

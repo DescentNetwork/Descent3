@@ -19,6 +19,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -83,6 +84,17 @@ namespace d3
 
     // returns the position of the next availible slot (or makes one and returns it)
     size_type next_slot(void);
+
+    // Index of the first used slot cyclically after i: scans strictly above i,
+    // then wraps past the high end and scans up to and including i.  The
+    // cursor is the final slot examined, so the ring always terminates on a
+    // used slot when any exists; std::nullopt if the table is entirely unused.
+    std::optional<size_type> next(size_type i) const;
+    // Index of the first used slot cyclically before i: scans strictly below
+    // i, then wraps past the low end and scans down through i.  The cursor is
+    // the final slot examined; std::nullopt if the table is entirely unused.
+    std::optional<size_type> prev(size_type i) const;
+
 
     // Appends a new slot holding `value` with zero references and returns its
     // index.

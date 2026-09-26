@@ -271,16 +271,6 @@ int AllocTexture() {
   Q_ASSERT(GameTextures.is_unused(n));
 
   GameTextures[n] = texture{};
-  GameTextures[n].corona_type = 0;
-  GameTextures[n].bumpmap = -1;
-  GameTextures[n].procedural = nullptr;
-  GameTextures[n].name.clear();
-  GameTextures[n].flags = texture_flags_t{};
-  GameTextures[n].alpha = 1.0f;
-  GameTextures[n].speed = 1.0f;
-  GameTextures[n].reflectivity = 0.6f;
-  GameTextures[n].bm_handle = -1;
-  GameTextures[n].destroy_handle = -1;
 
   GameTextures.acquire(n);
   return static_cast<int>(n);

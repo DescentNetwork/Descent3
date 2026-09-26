@@ -331,7 +331,7 @@ struct texture
   int destroy_handle = -1;      // handle which denotes the destroyed image
 
   int damage = -1;
-  float reflectivity = 0.5f;
+  float reflectivity = 0.6f;
 
    // colored lighting	 (0 to 100%)
   float r = 0.0f;

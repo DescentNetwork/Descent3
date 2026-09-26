@@ -133,30 +133,6 @@ int AllocWeapon() {
   Q_ASSERT(Weapons.is_unused(n));
 
   Weapons[n] = weapon{};
-  for (int t = 0; t < MAX_WEAPON_SOUNDS; t++)
-    Weapons[n].sounds[t] = -1;
-  Weapons[n].alpha = 1.0f;
-  Weapons[n].hud_image_handle = -1;
-  Weapons[n].fire_image_handle = -1;
-  Weapons[n].explode_image_handle = -1;
-  Weapons[n].smoke_handle = -1;
-  Weapons[n].spawn_handle = -1;
-  Weapons[n].alternate_spawn_handle = -1;
-  Weapons[n].robot_spawn_handle = -1;
-  Weapons[n].particle_handle = -1;
-  Weapons[n].icon_handle = -1;
-  Weapons[n].scorch_handle = -1;
-  Weapons[n].gravity_size = 1.0f;
-  Weapons[n].gravity_time = 1.0f;
-  Weapons[n].explode_size = 1.0f;
-  Weapons[n].explode_time = 1.0f;
-  Weapons[n].particle_count = 0;
-  Weapons[n].particle_size = 1.0f;
-  Weapons[n].particle_life = 0.0f;
-  Weapons[n].alternate_chance = 0;
-  Weapons[n].terrain_damage_size = 0.0f;
-  Weapons[n].terrain_damage_depth = 0;
-  Weapons[n].recoil_force = 0.0f;
 
   Weapons.acquire(n);
   return static_cast<int>(n);

@@ -121,12 +121,16 @@
 
 #include "manage.h"
 #include "object.h"
+#include "objinfo.h"
 #include "player.h"
 #include "robotfirestruct.h"
 #include "slotvec.h"
 
 
 #define MAX_SHIPS 30
+
+// Default size of a newly allocated ship (AllocShip parity).
+constexpr float DEFAULT_SHIP_SIZE = 4.0f;
 
 // #ifdef DEMO //Demo2 will use GL
 // #define DEFAULT_SHIP "Pyro-SE"
@@ -151,32 +155,44 @@
 
 struct ship {
   std::string name; // name of this ship (variable-length on disk)
-  float size;
-  physics_info phys_info; // the physics data for this obj type.
-  int model_handle;       //  a polygon model
-  int dying_model_handle; // Dying polygon model
+  float size = DEFAULT_SHIP_SIZE;
+  physics_info phys_info = [] {
+    physics_info p{};
+    p.hit_die_dot = -1; // -1 means doesn't apply
+    return p;
+  }();
+  int model_handle = -1;       //  a polygon model
+  int dying_model_handle = -1; // Dying polygon model
 
-  int med_render_handle; // handle for med res version of this object
-  int lo_render_handle;  // handle for lo res version of this object
+  int med_render_handle = -1; // handle for med res version of this object
+  int lo_render_handle = -1;  // handle for lo res version of this object
 
-  float med_lod_distance;
-  float lo_lod_distance;
+  float med_lod_distance = DEFAULT_MED_LOD_DISTANCE;
+  float lo_lod_distance = DEFAULT_LO_LOD_DISTANCE;
 
   std::array<otype_wb_info, MAX_PLAYER_WEAPONS> static_wb;
   std::array<uint8_t, MAX_PLAYER_WEAPONS> fire_flags; // how a particular weapon fires
   std::array<int, MAX_PLAYER_WEAPONS> max_ammo;
 
-  std::array<int, MAX_PLAYER_WEAPONS> firing_sound;         // sound the weapon makes while button held down
-  std::array<int, MAX_PLAYER_WEAPONS> firing_release_sound; // sound the weapon makes when the button is released
+  std::array<int, MAX_PLAYER_WEAPONS> firing_sound = [] {
+    std::array<int, MAX_PLAYER_WEAPONS> a{};
+    a.fill(-1); // == no sound
+    return a;
+  }();
+  std::array<int, MAX_PLAYER_WEAPONS> firing_release_sound = [] {
+    std::array<int, MAX_PLAYER_WEAPONS> a{};
+    a.fill(-1); // == no sound
+    return a;
+  }();
 
   std::array<int, MAX_PLAYER_WEAPONS> spew_powerup; // which powerup to spew for each weapon
 
   std::string cockpit_name;    // name of cockpit.inf file
   std::string hud_config_name; // name of hud configuration file
 
-  float armor_scalar;
+  float armor_scalar = 1.0f;
 
-  int flags;
+  int flags = 0;
 };
 
 extern d3::slotvec_t<ship> Ships;

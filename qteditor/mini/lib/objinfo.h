@@ -315,6 +315,9 @@
 #include "DeathInfo.h"
 //#include <fixed_string.h>
 #include <string>
+#include <vector>
+
+#include "robotfirestruct.h" // otype_wb_info
 
 #ifdef NEWEDITOR
 #include "..\neweditor\ned_Object.h"
@@ -477,6 +480,12 @@ struct object_info_flags_t
 
 // Info for robots, powerups, debris, etc.
 struct object_info {
+  object_info() = default;
+  // Value-initializes the object (like object_info{}) and then applies the
+  // AllocObjectID defaults; keeps the f_anim/f_weapons/f_ai-dependent
+  // allocations so a default-constructed object_info stays cheap and zero.
+  object_info(int type, bool f_anim, bool f_weapons, bool f_ai);
+
   std::string name; // the name on the page
 
   int type;   // what type of object this is
@@ -529,11 +538,10 @@ struct object_info {
   uint8_t death_probabilities[MAX_DEATH_TYPES]; // how likely each death is, from 0-100 (percent)
 
   // Valid for AI objects only
-  t_ai_info *ai_info; // the AI info for this obj type
+  std::vector<t_ai_info> ai_info; // the AI info for this obj type; empty means none
 
   // Valid for polygon models with weapons
-  otype_wb_info *static_wb;
-  //	otype_wb_info static_wb[MAX_WBS_PER_OBJ];
+  std::vector<otype_wb_info> static_wb; // sized MAX_WBS_PER_OBJ when non-empty; empty means none
 
   // Valid for polygon model objects only
   anim_elem *anim; // which anim states are active

@@ -361,17 +361,21 @@ static_assert(sizeof(sound_flags_t) == sizeof(uint32_t));
 struct sound_info {
   std::string name;
 
-  int sample_index;
+  int sample_index = 0;
 
-  int loop_start;          // Start byte of repeated loop for looping samples
-  int loop_end;            // End byte of repeating loop for looping samples
-  sound_flags_t flags; // 2d/3d, variable frequency
-  float max_distance;      // Maximum distance in which a sound is heard
-  float min_distance;      // Sound gets no louder at min_distance
-  int inner_cone_angle;    // Angle in which sound is played at full base volume
-  int outer_cone_angle;    // Angle in which sound is at its lowest base volume
-  float outer_cone_volume; // A sounds lowest base volume level
-  float import_volume;     // Volume multiplier
+  int loop_start = 0;          // Start byte of repeated loop for looping samples
+  int loop_end = 0;            // End byte of repeating loop for looping samples
+  sound_flags_t flags = [] {
+    sound_flags_t f{};
+    f.listener_update = true; // SPF_LISTENER_UPDATE
+    return f;
+  }();                    // 2d/3d, variable frequency
+  float max_distance = 256.0f; // Maximum distance in which a sound is heard
+  float min_distance = 10.0f;  // Sound gets no louder at min_distance
+  int inner_cone_angle = 360;  // Angle in which sound is played at full base volume
+  int outer_cone_angle = 360;  // Angle in which sound is at its lowest base volume
+  float outer_cone_volume = 1.0f; // A sounds lowest base volume level
+  float import_volume = 1.0f;     // Volume multiplier
 };
 
 // Supported sound mixers

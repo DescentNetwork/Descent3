@@ -312,46 +312,46 @@ struct weapon {
   std::string name;
   float player_damage;             // how much damage a full impact causes a player
   float generic_damage;            // how much damage a full impact causes a robot
-  float alpha;                     // What alpha to draw this weapon with
-  int16_t sounds[MAX_WEAPON_SOUNDS]; // sounds for various things
-  int16_t hud_image_handle;          //  a handle to a bitmap or vclip for the hud display
-  int16_t fire_image_handle;         //  model or bitmap.  Shown when you fire this weapon
-  int16_t explode_image_handle;      //  exploding vclip
-  int16_t smoke_handle;              //  smoke trail handle to texture
-  int16_t spawn_handle;              // weapon handle that gets spawned
-  int16_t alternate_spawn_handle;    // weapon handle that gets spawned (sometimes)
-  int16_t robot_spawn_handle;        // robot that gets spawned as a countermeasure
-  int16_t particle_handle;           // particle handle to texture
-  int16_t icon_handle;
-  int16_t scorch_handle;    // handle for scorch bitmap, or -1 for none
-  uint8_t spawn_count;      // how many of spawn handle gets created
-  uint8_t alternate_chance; // how often the alternate spawn weapon gets chosen (0 to 100)
+  float alpha = 1.0f;              // What alpha to draw this weapon with
+  int16_t sounds[MAX_WEAPON_SOUNDS] = {-1, -1, -1, -1, -1, -1, -1}; // sounds for various things
+  int16_t hud_image_handle = -1;   //  a handle to a bitmap or vclip for the hud display
+  int16_t fire_image_handle = -1;  //  model or bitmap.  Shown when you fire this weapon
+  int16_t explode_image_handle = -1; //  exploding vclip
+  int16_t smoke_handle = -1;       //  smoke trail handle to texture
+  int16_t spawn_handle = -1;       // weapon handle that gets spawned
+  int16_t alternate_spawn_handle = -1; // weapon handle that gets spawned (sometimes)
+  int16_t robot_spawn_handle = -1; // robot that gets spawned as a countermeasure
+  int16_t particle_handle = -1;    // particle handle to texture
+  int16_t icon_handle = -1;
+  int16_t scorch_handle = -1;      // handle for scorch bitmap, or -1 for none
+  uint8_t spawn_count = 0;         // how many of spawn handle gets created
+  uint8_t alternate_chance = 0;    // how often the alternate spawn weapon gets chosen (0 to 100)
 
-  uint8_t particle_count;
-  uint8_t terrain_damage_depth;
+  uint8_t particle_count = 0;
+  uint8_t terrain_damage_depth = 0;
 
-  float terrain_damage_size;
+  float terrain_damage_size = 0.0f;
 
-  float scorch_size; // how big the scorch mark is
+  float scorch_size = 0.0f; // how big the scorch mark is
 
-  weapon_flags_t flags;
+  weapon_flags_t flags = {};
 
-  float size;
-  float life_time;
-  float thrust_time;
-  float impact_size;
-  float impact_time;
-  float impact_player_damage, impact_generic_damage;
-  float impact_force;
-  float explode_size;
-  float explode_time;
-  float particle_size;
-  float particle_life;
-  float gravity_size;
-  float gravity_time;
-  float custom_size;
-  float homing_fov;
-  float recoil_force;
+  float size = 0.0f;
+  float life_time = 0.0f;
+  float thrust_time = 0.0f;
+  float impact_size = 0.0f;
+  float impact_time = 0.0f;
+  float impact_player_damage = 0.0f, impact_generic_damage = 0.0f;
+  float impact_force = 0.0f;
+  float explode_size = 1.0f;
+  float explode_time = 1.0f;
+  float particle_size = 1.0f;
+  float particle_life = 0.0f;
+  float gravity_size = 1.0f;
+  float gravity_time = 1.0f;
+  float custom_size = 0.0f;
+  float homing_fov = 0.0f;
+  float recoil_force = 0.0f;
 
   light_info lighting_info;
   physics_info phys_info;

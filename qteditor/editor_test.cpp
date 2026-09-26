@@ -2111,6 +2111,51 @@ private slots:
     DestroyAllMatcens();
   }
 
+  // next/prev cycle through the used slots in a ring: next scans strictly after
+  // i, then wraps past the high end and scans up to and including i; prev
+  // scans strictly before i, then wraps past the low end and down through i.
+  // The cursor is the last slot examined, so any used slot (even the cursor
+  // alone) is found; an entirely unused table yields std::nullopt.
+  void testSlotvecNextPrev()
+  {
+    d3::slotvec_t<game_path> v;
+    v.add_slot();
+    v.add_slot();
+    v.add_slot();
+
+    // Nothing used anywhere: no result in either direction.
+    QVERIFY(!v.next(0));
+    QVERIFY(!v.next(2));
+    QVERIFY(!v.prev(0));
+    QVERIFY(!v.prev(2));
+
+    // A single used slot is reached by both directions after wrapping.
+    v.acquire(1);
+    QCOMPARE(*v.next(1), size_t(1)); // cursor reached after the full ring
+    QCOMPARE(*v.prev(1), size_t(1));
+    QCOMPARE(*v.next(0), size_t(1)); // up from an empty slot
+    QCOMPARE(*v.prev(2), size_t(1)); // down from an empty slot
+    QCOMPARE(*v.next(5), size_t(1)); // cursor beyond the table still finds it
+    QCOMPARE(*v.prev(0), size_t(1)); // wraps to the highest used slot
+
+    // Nearest used slot cyclically after/before the cursor.
+    v.acquire(0);
+    v.acquire(2);
+    QCOMPARE(*v.next(0), size_t(1));
+    QCOMPARE(*v.next(1), size_t(2));
+    QCOMPARE(*v.next(2), size_t(0)); // wraps to the lowest used slot
+    QCOMPARE(*v.prev(2), size_t(1));
+    QCOMPARE(*v.prev(1), size_t(0));
+    QCOMPARE(*v.prev(0), size_t(2)); // wraps to the highest used slot
+
+    // Releasing a slot removes it from navigation.
+    v.release(1);
+    QCOMPARE(*v.next(0), size_t(2));
+    QCOMPARE(*v.next(2), size_t(0)); // 0 and 2 cycle
+    QCOMPARE(*v.prev(2), size_t(0));
+    QCOMPARE(*v.prev(0), size_t(2));
+  }
+
   // sound_flags_t must pack the original SPF_* / SPFT_* bits byte-for-byte, so
   // that page serialization (which memcpy's the struct to/from a uint32_t)
   // stays .loc-table compatible with the legacy editor.  Verify each named

@@ -17,15 +17,6 @@ int AllocSound() {
 
   Sounds[n] = sound_info{};
 
-  Sounds[n].min_distance = 10.0f;
-  Sounds[n].max_distance = 256.0f;
-  Sounds[n].outer_cone_volume = 1.0f;
-  Sounds[n].inner_cone_angle = 360;
-  Sounds[n].outer_cone_angle = 360;
-  Sounds[n].import_volume = 1.0f;
-
-  Sounds[n].flags.listener_update = true; // SPF_LISTENER_UPDATE
-
   Sounds.acquire(n);
   return static_cast<int>(n);
 }

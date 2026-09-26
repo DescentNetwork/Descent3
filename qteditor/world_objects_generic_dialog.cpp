@@ -947,8 +947,8 @@ void WorldObjectsGenericDialog::onWeaponInfo() {
   if (m_current == -1)
     return;
   extern void editRobotWeapons(otype_wb_info *wb, poly_model *pm, QWidget *parent);
-  editRobotWeapons(Object_info[m_current].static_wb, GetPolymodelPointer(Object_info[m_current].render_handle),
-                   this);
+  editRobotWeapons(Object_info[m_current].static_wb.data(),
+                   GetPolymodelPointer(Object_info[m_current].render_handle), this);
 }
 
 void WorldObjectsGenericDialog::onLight() {
