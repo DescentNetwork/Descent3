@@ -36,14 +36,19 @@ namespace d3
   // The reference count is managed separately through acquire()/release()
   // (or observed with refs()); the number of slots whose reference count is
   // zero is tracked in num_empty().
+  //
+  // slotvec_base_t provides the storage plus reference accounting.  Traversal
+  // order (next()/prev()) is left as a pure interface so a derived table can
+  // impose its own cycliing rule (for example cycling only over slots whose
+  // contained value matches a sub-key instead of over every referenced slot).
   template <typename T>
-  class slotvec_t : public std::vector<std::pair<int, T>> {
+  class slotvec_base_t : public std::vector<std::pair<int, T>> {
   public:
     using base_type = std::vector<std::pair<int, T>>;
     using value_type = T;
     using size_type = typename base_type::size_type;
 
-    slotvec_t() = default;
+    slotvec_base_t() = default;
 
     // -- std::vector<T>-style value access (hides the pair storage) ----------
 
@@ -85,16 +90,14 @@ namespace d3
     // returns the position of the next availible slot (or makes one and returns it)
     size_type next_slot(void);
 
-    // Index of the first used slot cyclically after i: scans strictly above i,
-    // then wraps past the high end and scans up to and including i.  The
-    // cursor is the final slot examined, so the ring always terminates on a
-    // used slot when any exists; std::nullopt if the table is entirely unused.
-    std::optional<size_type> next(size_type i) const;
-    // Index of the first used slot cyclically before i: scans strictly below
-    // i, then wraps past the low end and scans down through i.  The cursor is
-    // the final slot examined; std::nullopt if the table is entirely unused.
-    std::optional<size_type> prev(size_type i) const;
-
+    // Index of the first used slot cyclically after i.  Defined by the derived
+    // class: the scan rule is allowed to be sub-key scoped rather than a plain
+    // ring over every referenced slot.  std::nullopt means the traversal found
+    // no usable slot.
+    virtual std::optional<size_type> next(size_type i) const = 0;
+    // Index of the first used slot cyclically before i.  Defined by the
+    // derived class; std::nullopt means the traversal found no usable slot.
+    virtual std::optional<size_type> prev(size_type i) const = 0;
 
     // Appends a new slot holding `value` with zero references and returns its
     // index.
@@ -109,7 +112,30 @@ namespace d3
       m_num_empty = 0;
     }
 
+    virtual ~slotvec_base_t() = default;
+
   private:
     size_type m_num_empty = 0; // slots whose reference count is zero
+  };
+
+  // Standard slot table: next()/prev() scan for the next referenced slot in a
+  // ring, regardless of the contained value.
+  template <typename T>
+  class slotvec_t : public slotvec_base_t<T> {
+  public:
+    using base_type = typename slotvec_base_t<T>::base_type;
+    using size_type = typename slotvec_base_t<T>::size_type;
+
+    slotvec_t() = default;
+
+    // Index of the first used slot cyclically after i: scans strictly above i,
+    // then wraps past the high end and scans up to and including i.  The
+    // cursor is the final slot examined, so the ring always terminates on a
+    // used slot when any exists; std::nullopt if the table is entirely unused.
+    std::optional<size_type> next(size_type i) const override;
+    // Index of the first used slot cyclically before i: scans strictly below
+    // i, then wraps past the low end and scans down through i.  The cursor is
+    // the final slot examined; std::nullopt if the table is entirely unused.
+    std::optional<size_type> prev(size_type i) const override;
   };
 }

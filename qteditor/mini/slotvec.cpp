@@ -16,7 +16,7 @@
 namespace d3
 {
   template <typename T>
-  void slotvec_t<T>::acquire(size_type i)
+  void slotvec_base_t<T>::acquire(size_type i)
   {
     Q_ASSERT(i < this->size());
     int &r = base_type::at(i).first;
@@ -28,7 +28,7 @@ namespace d3
   }
 
   template <typename T>
-  void slotvec_t<T>::release(size_type i)
+  void slotvec_base_t<T>::release(size_type i)
   {
     Q_ASSERT(i < this->size());
     int &r = base_type::at(i).first;
@@ -39,7 +39,7 @@ namespace d3
   }
 
   template <typename T>
-  typename slotvec_t<T>::size_type slotvec_t<T>::next_slot(void)
+  typename slotvec_base_t<T>::size_type slotvec_base_t<T>::next_slot(void)
   {
     // Fast path: no freed slots, so the frontier is the end of the table and a
     // scan is unnecessary.  This keeps the level-load allocation loop O(n)
@@ -77,7 +77,7 @@ namespace d3
   }
 
   template <typename T>
-  typename slotvec_t<T>::size_type slotvec_t<T>::add_slot(T value)
+  typename slotvec_base_t<T>::size_type slotvec_base_t<T>::add_slot(T value)
   {
     base_type::emplace_back(0, std::move(value));
     ++m_num_empty;
@@ -85,7 +85,7 @@ namespace d3
   }
 
   template <typename T>
-  void slotvec_t<T>::resize(size_type n)
+  void slotvec_base_t<T>::resize(size_type n)
   {
     base_type::resize(n);
     // Rebuild the empty count from scratch: the grown tail is unreferenced and
@@ -96,6 +96,16 @@ namespace d3
       if (base_type::at(i).first == 0)
         ++m_num_empty;
   }
+
+  template class slotvec_base_t<bms_bitmap>;
+  template class slotvec_base_t<bms_lightmap>;
+  template class slotvec_base_t<game_path>;
+  template class slotvec_base_t<lightmap_info>;
+  template class slotvec_base_t<ship>;
+  template class slotvec_base_t<sound_info>;
+  template class slotvec_base_t<special_face>;
+  template class slotvec_base_t<texture>;
+  template class slotvec_base_t<weapon>;
 
   template class slotvec_t<bms_bitmap>;
   template class slotvec_t<bms_lightmap>;
