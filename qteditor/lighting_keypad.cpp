@@ -62,27 +62,27 @@ void LightingKeypad::updateDialog() {
 
 void LightingKeypad::onShowLightmaps(bool checked) {
   Outline_lightmaps = checked ? 1 : 0;
-  State_changed = true;
+  app.State_changed = true;
 }
 void LightingKeypad::onBestFit(bool checked) {
   BestFit = checked;
-  State_changed = true;
+  app.State_changed = true;
 }
 void LightingKeypad::onHemicube(bool checked) {
   app.hemicube_radiosity = checked ? 1 : 0;
-  State_changed = true;
+  app.State_changed = true;
 }
 void LightingKeypad::onElement(bool checked) { Shoot_from_patch = checked ? 0 : 1; }
 void LightingKeypad::onIgnoreTerrain(bool checked) {
   Ignore_terrain = checked;
-  State_changed = true;
+  app.State_changed = true;
 }
 void LightingKeypad::onIgnoreSatellites(bool checked) {
   Ignore_satellites = checked ? 1 : 0;
-  State_changed = true;
+  app.State_changed = true;
 }
 void LightingKeypad::onUseBsp(bool checked) {
   UseBSP = checked;
-  State_changed = true;
+  app.State_changed = true;
 }
 

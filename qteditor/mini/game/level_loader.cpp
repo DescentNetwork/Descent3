@@ -77,6 +77,7 @@
 #include "ssl_lib.h"
 #include "d3edit.h"
 #include "moveworld.h"
+#include "editor_room_state.h"
 
 #include <QtGlobal>
 #include <posix_stream.h>
@@ -967,26 +968,26 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
 
   int16_t room_idx = 0;
   ifile >> room_idx;
-  Curroomp = lookup_room(room_idx);
+  app.Curroomp = lookup_room(room_idx);
   int16_t sel = 0;
   ifile >> sel;
-  Curface = sel;
+  app.Curface = sel;
   if (version >= 81) {
     ifile >> sel;
-    Curedge = sel;
+    app.Curedge = sel;
     ifile >> sel;
-    Curvert = sel;
+    app.Curvert = sel;
   }
 
   ifile >> room_idx;
-  Markedroomp = lookup_room(room_idx);
+  app.Markedroomp = lookup_room(room_idx);
   ifile >> sel;
-  Markedface = sel;
+  app.Markedface = sel;
   if (version >= 81) {
     ifile >> sel;
-    Markededge = sel;
+    app.Markededge = sel;
     ifile >> sel;
-    Markedvert = sel;
+    app.Markedvert = sel;
   }
 
   int32_t nsr = 0;
@@ -998,15 +999,15 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
   }
 
   if (version >= 14) {
-    ifile >> Cur_object_index;
-    ifile >> Current_trigger;
+    ifile >> app.Cur_object_index;
+    ifile >> app.Current_trigger;
     int32_t tmp = 0;
     if (version < 106)
       ifile >> tmp; // was Current_doorway
     ifile >> tmp;
     if (tmp >= static_cast<int>(state::viewer::mine) && tmp <= static_cast<int>(state::viewer::room))
       app.view_mode = static_cast<state::viewer>(tmp);
-    ifile >> Editor_viewer_id;
+    ifile >> app.Editor_viewer_id;
     if (version < 47)
       ifile >> tmp; // was Editor_viewer_id[VM_TERRAIN]
   }
@@ -1042,23 +1043,23 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
 static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_EDITOR_INFO);
 
-  ofile << static_cast<int16_t>(Curroomp ? ROOMNUM(Curroomp) : -1);
-  ofile << static_cast<int16_t>(Curface);
-  ofile << static_cast<int16_t>(Curedge);
-  ofile << static_cast<int16_t>(Curvert);
-  ofile << static_cast<int16_t>(Markedroomp ? ROOMNUM(Markedroomp) : -1);
-  ofile << static_cast<int16_t>(Markedface);
-  ofile << static_cast<int16_t>(Markededge);
-  ofile << static_cast<int16_t>(Markedvert);
+  ofile << static_cast<int16_t>(app.Curroomp ? ROOMNUM(app.Curroomp) : -1);
+  ofile << static_cast<int16_t>(app.Curface);
+  ofile << static_cast<int16_t>(app.Curedge);
+  ofile << static_cast<int16_t>(app.Curvert);
+  ofile << static_cast<int16_t>(app.Markedroomp ? ROOMNUM(app.Markedroomp) : -1);
+  ofile << static_cast<int16_t>(app.Markedface);
+  ofile << static_cast<int16_t>(app.Markededge);
+  ofile << static_cast<int16_t>(app.Markedvert);
 
   ofile << static_cast<int32_t>(N_selected_rooms);
   for (int i = 0; i < N_selected_rooms; i++)
     ofile << static_cast<int16_t>(Selected_rooms[i]);
 
-  ofile << static_cast<int32_t>(Cur_object_index);
-  ofile << static_cast<int32_t>(Current_trigger);
+  ofile << static_cast<int32_t>(app.Cur_object_index);
+  ofile << static_cast<int32_t>(app.Current_trigger);
   ofile << static_cast<int32_t>(app.view_mode);
-  ofile << static_cast<int32_t>(Editor_viewer_id);
+  ofile << static_cast<int32_t>(app.Editor_viewer_id);
 
   ofile << Wireframe_view_mine.target;
   ofile << Wireframe_view_mine.orient;

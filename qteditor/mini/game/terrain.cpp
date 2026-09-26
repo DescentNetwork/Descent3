@@ -850,7 +850,7 @@ int LoadPCXTerrain(char *filename) {
 #if (defined(EDITOR) || defined(NEWEDITOR))
   std::ranges::fill(TerrainSelected, 0);
   Num_terrain_selected = 0;
-  World_changed = true;
+  app.World_changed = true;
 #endif
 
   return (1);

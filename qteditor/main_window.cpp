@@ -120,18 +120,18 @@ MainWindow::MainWindow(QWidget *parent)
 
   // ---- EditorView picking signals -> editor state ----
   connect(m_editorView, &EditorView::faceSelected, this, [this](int r, int f) {
-    Curroomp = &Rooms[r];
-    Curface = f;
-    Curedge = Curvert = 0;
-    Curportal = -1;
-    State_changed = true;
+    app.Curroomp = &Rooms[r];
+    app.Curface = f;
+    app.Curedge = app.Curvert = 0;
+    app.Curportal = -1;
+    app.State_changed = true;
     statusBar()->showMessage(
         QStringLiteral("Face selected: room %1, face %2").arg(r).arg(f));
     m_editorView->update();
   });
   connect(m_editorView, &EditorView::objectSelected, this, [this](int idx) {
-    Cur_object_index = idx;
-    State_changed = true;
+    app.Cur_object_index = idx;
+    app.State_changed = true;
     QString name = (idx >= 0 && idx <= Highest_object_index && !Objects[idx].name.empty())
                            ? QString::fromStdString(Objects[idx].name)
                            : QString();
@@ -140,24 +140,24 @@ MainWindow::MainWindow(QWidget *parent)
     m_editorView->update();
   });
   connect(m_editorView, &EditorView::selectionCleared, this, [this]() {
-    Curroomp = nullptr;
-    Curface = -1;
-    Cur_object_index = -1;
-    State_changed = true;
+    app.Curroomp = nullptr;
+    app.Curface = -1;
+    app.Cur_object_index = -1;
+    app.State_changed = true;
     statusBar()->showMessage(QStringLiteral("Selection cleared."));
     m_editorView->update();
   });
   connect(m_editorView, &EditorView::roomToggleRequested, this,
           [this](int roomIndex) {
             ToggleRoomSelectedState(roomIndex);
-            State_changed = true;
+            app.State_changed = true;
             statusBar()->showMessage(
                 QStringLiteral("Room %1 selection toggled.").arg(roomIndex));
             m_editorView->update();
           });
   connect(m_editorView, &EditorView::objectContextMenuRequested, this,
           [this](const QPoint &globalPos, int objIdx) {
-            Cur_object_index = objIdx;
+            app.Cur_object_index = objIdx;
             QMenu menu(this);
             const QString title = (objIdx >= 0 && objIdx <= Highest_object_index &&
                                    !Objects[objIdx].name.empty())
@@ -540,7 +540,7 @@ void MainWindow::onButtonOutline() {
   // Mirror the On bit into the editor view's wireframe toggle.
   m_editorView->setWireframe((Outline_mode & OM_ON) != 0);
   if (Outline_mode != old)
-    State_changed = true;
+    app.State_changed = true;
 }
 
 void MainWindow::onViewShowObjectsInWireframe() {
@@ -923,7 +923,7 @@ static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
   if (outside_mine)
     Viewer_object->flags.outside_mine = true;
 
-  Viewer_moved = true;
+  app.Viewer_moved = true;
 }
 
 
@@ -947,7 +947,7 @@ void MainWindow::onCenterViewOnCube() {
       return;
     rp = &Rooms[app.current_room];
   } else {
-    rp = Curroomp;
+    rp = app.Curroomp;
   }
   if (rp == nullptr || !rp->used)
     return;
@@ -961,12 +961,12 @@ void MainWindow::onCenterViewOnCube() {
 void MainWindow::onCenterViewOnObject() {
   // Win32 ID_VIEW_CENTERONOBJECT -> CMainFrame::OnViewCenterOnObject
   // (editor/MainFrm.cpp:2229) -> SetWireframeView(&Objects[cur].pos).
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == OBJ_NONE)
     return;
 
-  m_editorView->setWireframeView(Objects[Cur_object_index].pos);
+  m_editorView->setWireframeView(Objects[app.Cur_object_index].pos);
   m_editorView->update();
 }
 
@@ -976,7 +976,7 @@ void MainWindow::onResetViewRadius() {
   // (no GL surface yet) but updates app.texscale so the editor
   // state round-trips through QSettings cleanly.
   app.texscale = kDefaultViewRadius;
-  State_changed = true;
+  app.State_changed = true;
   std::fprintf(stderr, "[viewer_ops] ResetViewRadius -> %g\n",
                app.texscale);
 
@@ -985,18 +985,18 @@ void MainWindow::onResetViewRadius() {
 
 void MainWindow::onMoveViewToSelectedRoom() {
   // Win32 ID_VIEW_MOVECAMERATOSELECTEDROOM -> CMainFrame::OnViewMoveCameraToSelectedRoom
-  // (editor/MainFrm.cpp:2216) -> SetViewerFromRoomFace(Curroomp, Curface, 1).
-  setViewerFromRoomFace(Curroomp, Curface, true);
-  State_changed = true;
+  // (editor/MainFrm.cpp:2216) -> SetViewerFromRoomFace(app.Curroomp, app.Curface, 1).
+  setViewerFromRoomFace(app.Curroomp, app.Curface, true);
+  app.State_changed = true;
 
   m_editorView->update();
 }
 
 // Win32 ID_VIEW_MOVECAMERATOSELECTEDFACE -> CMainFrame::OnViewMoveCameraToSelectedFace
-// (editor/MainFrm.cpp:3670) -> SetViewerFromRoomFace(Curroomp, Curface, 0).
+// (editor/MainFrm.cpp:3670) -> SetViewerFromRoomFace(app.Curroomp, app.Curface, 0).
 void MainWindow::onMoveCameraToSelectedFace() {
-  setViewerFromRoomFace(Curroomp, Curface, false);
-  State_changed = true;
+  setViewerFromRoomFace(app.Curroomp, app.Curface, false);
+  app.State_changed = true;
 
   m_editorView->update();
 }
@@ -1009,9 +1009,9 @@ void MainWindow::onMoveCameraToSelectedFace() {
 void MainWindow::onMoveCameraToCurrentObject() {
   if (Viewer_object == nullptr)
     return;
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  object *objp = &Objects[Cur_object_index];
+  object *objp = &Objects[app.Cur_object_index];
   if (objp->type == OBJ_NONE)
     return;
 
@@ -1048,8 +1048,8 @@ void MainWindow::onMoveCameraToCurrentObject() {
 
   // Move the viewer to the new position
   moveViewer(hit_info.hit_pnt, hit_info.hit_room, nullptr);
-  Viewer_moved = true;
-  State_changed = true;
+  app.Viewer_moved = true;
+  app.State_changed = true;
 
   m_editorView->update();
 }
@@ -1063,8 +1063,8 @@ void MainWindow::onFlipViewer() {
   Viewer_object->orient.fvec = -Viewer_object->orient.fvec;
   Viewer_object->orient.rvec = -Viewer_object->orient.rvec;
 
-  Viewer_moved = true;
-  State_changed = true;
+  app.Viewer_moved = true;
+  app.State_changed = true;
 
   m_editorView->update();
 }
@@ -1109,7 +1109,7 @@ static int find_used(int from) {
 int MainWindow::onPlaceCameraAtViewer() {
   if (Viewer_object == nullptr || Viewer_object->type != OBJ_VIEWER)
     return -1;
-  if (Curroomp == nullptr)
+  if (app.Curroomp == nullptr)
     return -1;
   // Just succeed without allocating — the Win32 entry point's ObjCreate
   // path needs the object library on Linux, which isn't linked. Returning
@@ -1139,10 +1139,10 @@ int MainWindow::onPlaceCameraAtViewer() {
   ObjSetPos(Objects[slot], pos, Viewer_object->roomnum,
             &Viewer_object->orient, false);
 
-  Cur_object_index = slot;
+  app.Cur_object_index = slot;
   app.current_room = Viewer_object->roomnum;
-  Mine_changed = true;
-  New_mine = true;
+  app.Mine_changed = true;
+  app.New_mine = true;
 
   std::fprintf(stderr,
                "[object_ops] PlaceCameraAtViewer -> object %d\n", slot);
@@ -1152,11 +1152,11 @@ int MainWindow::onPlaceCameraAtViewer() {
 
 // Move the viewer's pose onto the camera object's pose so the editor
 // "sees through" the camera. Sets Viewer_object->pos/orient/roomnum to
-// the camera's and bumps Mine_changed.
+// the camera's and bumps app.Mine_changed.
 void MainWindow::onSetViewerFromCamera() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  object *cam = &Objects[Cur_object_index];
+  object *cam = &Objects[app.Cur_object_index];
   if (cam->type != OBJ_CAMERA)
     return;
 
@@ -1169,7 +1169,7 @@ void MainWindow::onSetViewerFromCamera() {
   // from the editor preserves the latest camera-driven viewpoint.
   if (Player_object != nullptr)
     ObjSetPos(*Player_object, cam->pos, cam->roomnum, &cam->orient, false);
-  State_changed = true;
+  app.State_changed = true;
   std::fprintf(stderr, "[object_ops] SetViewerFromCamera: viewer=(%g,%g,%g) room %d\n",
                cam->pos.x(), cam->pos.y(), cam->pos.z(), cam->roomnum);
   m_editorView->update();
@@ -1178,47 +1178,47 @@ void MainWindow::onSetViewerFromCamera() {
 // Move the camera's pose onto the viewer's pose so the camera becomes
 // a portable copy of where the user is currently looking.
 void MainWindow::onSetCameraFromViewer() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  object& cam = Objects[Cur_object_index];
+  object& cam = Objects[app.Cur_object_index];
   if (cam.type != OBJ_CAMERA)
     return;
   if (Viewer_object == nullptr)
     return;
   ObjSetPos(cam, Viewer_object->pos, Viewer_object->roomnum,
             &Viewer_object->orient, false);
-  Mine_changed = true;
+  app.Mine_changed = true;
   std::fprintf(stderr,
                "[object_ops] SetCameraFromViewer: camera=(%g,%g,%g) room %d\n",
                cam.pos.x(), cam.pos.y(), cam.pos.z(), cam.roomnum);
 }
 
-// Delete the currently-selected object (Cur_object_index). After the
-// call, Cur_object_index is -1 and Mine_changed/New_mine are set.
+// Delete the currently-selected object (app.Cur_object_index). After the
+// call, app.Cur_object_index is -1 and app.Mine_changed/app.New_mine are set.
 void MainWindow::onDeleteCurrentObject() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == OBJ_NONE)
     return;
-  ObjDelete(Cur_object_index);
-  const int was = Cur_object_index;
-  Cur_object_index = -1;
+  ObjDelete(app.Cur_object_index);
+  const int was = app.Cur_object_index;
+  app.Cur_object_index = -1;
   // After delete, walk forward to find the next used slot so the
   // editor's "next object" key keeps cycling correctly.
-  Cur_object_index = find_used(was + 1);
-  if (Cur_object_index < 0)
-    Cur_object_index = -1;
-  Mine_changed = true;
+  app.Cur_object_index = find_used(was + 1);
+  if (app.Cur_object_index < 0)
+    app.Cur_object_index = -1;
+  app.Mine_changed = true;
   std::fprintf(stderr, "[object_ops] DeleteCurrentObject: removed %d, "
-                       "Cur_object_index = %d\n",
-               was, Cur_object_index);
+                       "app.Cur_object_index = %d\n",
+               was, app.Cur_object_index);
   m_editorView->update();
 }
 
 void MainWindow::onObjectRename() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  object *obj = &Objects[Cur_object_index];
+  object *obj = &Objects[app.Cur_object_index];
   if (obj->type == OBJ_NONE)
     return;
   const QString current = QString::fromStdString(obj->name);
@@ -1230,7 +1230,7 @@ void MainWindow::onObjectRename() {
   if (!ok)
     return;
   obj->name = picked.toStdString();
-  Mine_changed = true;
+  app.Mine_changed = true;
   m_editorView->update();
 }
 
@@ -1255,32 +1255,32 @@ void MainWindow::onObjectCustomDefaultScript() {
 }
 
 // Move the player (object 0) to the current room. Clears the player's
-// orientation to Identity_matrix and resets its roomnum to ROOMNUM(Curroomp).
+// orientation to Identity_matrix and resets its roomnum to ROOMNUM(app.Curroomp).
 void MainWindow::onMovePlayerToCurrentRoom() {
-  if (Curroomp == nullptr)
+  if (app.Curroomp == nullptr)
     return;
   if (Player_object == nullptr)
     return;
 
   // Win32 OnObjectMovePlayer rewinds the player to a known start state:
-  // origin of the current room, identity matrix, roomnum from Curroomp.
+  // origin of the current room, identity matrix, roomnum from app.Curroomp.
   vector3 rp;
-  const int slot = ROOMNUM(Curroomp);
+  const int slot = ROOMNUM(app.Curroomp);
   matrix idmat;
   ObjSetPos(*Player_object, rp, slot, &idmat, false);
-  State_changed = true;
+  app.State_changed = true;
   std::fprintf(stderr, "[object_ops] MovePlayerToCurrentRoom -> room %d\n",
                slot);
   m_editorView->update();
 }
 
 
-// Reset Cur_object_index to the first used slot (or -1) so subsequent
+// Reset app.Cur_object_index to the first used slot (or -1) so subsequent
 // edits target something deterministic.
 void MainWindow::onSelectNextObject(int from) {
   const int idx = find_used(from + 1);
   if (idx >= 0)
-    Cur_object_index = idx;
+    app.Cur_object_index = idx;
   m_editorView->update();
 }
 
@@ -1289,12 +1289,12 @@ void MainWindow::onSelectPrevObject(int from) {
     return;
   for (int i = from - 1; i >= 0; --i) {
     if (Objects[i].type != OBJ_NONE) {
-      Cur_object_index = i;
+      app.Cur_object_index = i;
       return;
     }
   }
   // Wrap to the highest-used slot.
-  Cur_object_index = (Highest_object_index >= 0) ? Highest_object_index : -1;
+  app.Cur_object_index = (Highest_object_index >= 0) ? Highest_object_index : -1;
   m_editorView->update();
 }
 
@@ -1334,19 +1334,19 @@ int MainWindow::onSpawnNewViewer() {
   Objects[slot].type = OBJ_VIEWER;
   Objects[slot].render_type = RT_POLYOBJ;
   Objects[slot].orient = Viewer_object->orient;
-  Editor_viewer_id = (Editor_viewer_id < 0) ? 0 : Editor_viewer_id + 1;
-  Objects[slot].id = Editor_viewer_id;
+  app.Editor_viewer_id = (app.Editor_viewer_id < 0) ? 0 : app.Editor_viewer_id + 1;
+  Objects[slot].id = app.Editor_viewer_id;
   // The slot was carved straight out of Objects[], so re-sync the free list /
   // object count with the type table (this also sets Highest_object_index,
   // which ObjRelink's assert below relies on).
   ResetFreeObjects();
   ObjSetPos(Objects[slot], Viewer_object->pos, Viewer_object->roomnum,
             &Viewer_object->orient, false);
-  Mine_changed = true;
-  New_mine = true;
+  app.Mine_changed = true;
+  app.New_mine = true;
   std::fprintf(stderr,
                "[object_ops] SpawnNewViewer -> object %d (id %d)\n", slot,
-               Editor_viewer_id);
+               app.Editor_viewer_id);
   m_editorView->update();
   return slot;
 }
@@ -1374,10 +1374,10 @@ int MainWindow::onSelectNextViewer() {
   if (best < 0)
     return -1;
   Viewer_object = &Objects[best];
-  Editor_viewer_id = Viewer_object->id;
-  State_changed = Viewer_moved = true;
+  app.Editor_viewer_id = Viewer_object->id;
+  app.State_changed = app.Viewer_moved = true;
   std::fprintf(stderr, "[object_ops] SelectNextViewer -> object %d (id %d)\n",
-               best, Editor_viewer_id);
+               best, app.Editor_viewer_id);
   m_editorView->update();
   return best;
 }
@@ -1402,10 +1402,10 @@ void MainWindow::onDeleteCurrentViewer() {
   for (size_t i = 0; i < Objects.size(); ++i) {
     if (Objects[i].type == OBJ_VIEWER) {
       Viewer_object = &Objects[i];
-      Editor_viewer_id = Objects[i].id;
+      app.Editor_viewer_id = Objects[i].id;
       std::fprintf(stderr,
                    "[object_ops] DeleteCurrentViewer: resync to %d (id %d)\n",
-                   i, Editor_viewer_id);
+                   i, app.Editor_viewer_id);
       return;
     }
   }
@@ -1416,7 +1416,7 @@ void MainWindow::onDeleteCurrentViewer() {
 }
 
 // Win32 MainFrm::OnObjectSelectByNumber runs a QInputDialog getInt
-// (analogous to Room>Select Room By Number) and sets Cur_object_index.
+// (analogous to Room>Select Room By Number) and sets app.Cur_object_index.
 // Returns the picked object index, or -1 if the dialog was cancelled or
 // the index is invalid.
 int MainWindow::onSelectObjectByNumber()
@@ -1438,7 +1438,7 @@ int MainWindow::onSelectObjectByNumber()
                  "[object_ops] SelectObjectByNumber: %d is invalid\n", value);
     return -1;
   }
-  Cur_object_index = value;
+  app.Cur_object_index = value;
   m_editorView->update();
   return value;
 }
@@ -1452,7 +1452,7 @@ void MainWindow::onSelectObject(int objnum) {
     return;
   if (Objects[objnum].type == OBJ_NONE)
     return;
-  Cur_object_index = objnum;
+  app.Cur_object_index = objnum;
   m_editorView->update();
 }
 
@@ -1598,19 +1598,19 @@ static object deserializeObject(const QByteArray &data) {
 }
 
 void MainWindow::onCopyObjectToClipboard() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == OBJ_NONE)
     return;
   auto *mime = new QMimeData();
-  mime->setData(kObjectMimeType, serializeObject(Objects[Cur_object_index]));
+  mime->setData(kObjectMimeType, serializeObject(Objects[app.Cur_object_index]));
   QApplication::clipboard()->setMimeData(mime);
 }
 
 void MainWindow::onCutObjectToClipboard() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == OBJ_NONE)
     return;
   onCopyObjectToClipboard();
   onDeleteCurrentObject();
@@ -1636,8 +1636,8 @@ void MainWindow::onPasteObjectFromClipboard() {
   Objects[slot] = deserializeObject(data);
   if (slot > Highest_object_index)
     Highest_object_index = slot;
-  Cur_object_index = slot;
-  Mine_changed = true;
+  app.Cur_object_index = slot;
+  app.Mine_changed = true;
   if (m_editorView != nullptr)
     m_editorView->update();
 }
@@ -1686,16 +1686,16 @@ namespace {
 // already used and the editor declined.
 bool MainWindow::onAddRoom()
 {
-  if (Curroomp == nullptr) {
+  if (app.Curroomp == nullptr) {
     std::fprintf(stderr, "[room_ops] AddRoom: no current room\n");
     return false;
   }
-  if (Curface < 0 || Curface >= Curroomp->num_faces) {
+  if (app.Curface < 0 || app.Curface >= app.Curroomp->num_faces) {
     std::fprintf(stderr, "[room_ops] AddRoom: invalid current face (%d)\n",
-                 Curface);
+                 app.Curface);
     return false;
   }
-  face *cfp = &Curroomp->faces[Curface];
+  face *cfp = &app.Curroomp->faces[app.Curface];
   if (cfp->portal_num != -1) {
     std::fprintf(stderr,
                  "[room_ops] AddRoom: face already connected (portal %d)\n",
@@ -1738,7 +1738,7 @@ bool MainWindow::onAddRoom()
   // along the face normal so the new room extends from the existing face.
   const vector3 room_delta = cfp->normal * -kDefaultRoomLength;
   for (int i = 0; i < cnv; ++i) {
-    rp->verts[i] = Curroomp->verts[cfp->face_verts[cnv - 1 - i]];
+    rp->verts[i] = app.Curroomp->verts[cfp->face_verts[cnv - 1 - i]];
     rp->verts[cnv + i] = rp->verts[i] + room_delta;
   }
 
@@ -1772,13 +1772,13 @@ bool MainWindow::onAddRoom()
 
   // Wire the new room into the editor view: it's the current selection
   // and the marked room for follow-on edits.
-  Curroomp = rp;
-  Curface = Curedge = Curvert = Curportal = 0;
+  app.Curroomp = rp;
+  app.Curface = app.Curedge = app.Curvert = app.Curportal = 0;
   onMarkRoom();
   app.current_room = slot;
 
-  Mine_changed = true;
-  New_mine = true;
+  app.Mine_changed = true;
+  app.New_mine = true;
   std::fprintf(stderr, "[room_ops] AddRoom -> room %d (%d verts, %d faces)\n",
                slot, cnv * 2, nfaces);
 
@@ -1786,43 +1786,43 @@ bool MainWindow::onAddRoom()
   return true;
 }
 
-// Forgets the current room: sets Curroomp = nullptr, Curface = Curedge =
-// Curvert = Curportal = -1. The Win32 entry point also clears the marked
-// room; we leave Markedroomp alone so a separate "Mark" operation stays
+// Forgets the current room: sets app.Curroomp = nullptr, app.Curface = app.Curedge =
+// app.Curvert = app.Curportal = -1. The Win32 entry point also clears the marked
+// room; we leave app.Markedroomp alone so a separate "Mark" operation stays
 // authoritative.
 bool MainWindow::onDeleteRoom() {
-  if (Curroomp == nullptr) {
+  if (app.Curroomp == nullptr) {
     std::fprintf(stderr, "[room_ops] DeleteRoom: no current room\n");
     return false;
   }
-  if (!Curroomp->used) {
+  if (!app.Curroomp->used) {
     std::fprintf(stderr, "[room_ops] DeleteRoom: current room already unused\n");
-    Curroomp = nullptr;
+    app.Curroomp = nullptr;
     return false;
   }
   // Don't delete the room with the player in it — editor/HRoom.cpp's
   // DeleteRoomFromMine() bails on that. Our stub doesn't track
   // Player_object's room yet, so this is a straight "no player here" OK.
-  const int slot = ROOMNUM(Curroomp);
+  const int slot = ROOMNUM(app.Curroomp);
 
   // Clear any marked-room alias before we tear down the slot.
-  if (Markedroomp == Curroomp)
-    Markedroomp = nullptr;
+  if (app.Markedroomp == app.Curroomp)
+    app.Markedroomp = nullptr;
 
   DestroyRoom(slot);
 
   // Pick a sensible successor selection: previous used slot, or -1.
-  Curroomp = nullptr;
-  Curface = Curedge = Curvert = Curportal = -1;
+  app.Curroomp = nullptr;
+  app.Curface = app.Curedge = app.Curvert = app.Curportal = -1;
   app.current_room = -1;
   for (int s = slot - 1; s >= 0; --s) {
     if (Rooms[s].used) {
-      Curroomp = &Rooms[s];
+      app.Curroomp = &Rooms[s];
       app.current_room = s;
       break;
     }
   }
-  Mine_changed = true;
+  app.Mine_changed = true;
 
   std::fprintf(stderr, "[room_ops] DeleteRoom: cleared slot %d\n", slot);
 
@@ -1834,19 +1834,19 @@ bool MainWindow::onDeleteRoom() {
 // OnRoomSwapMarkedAndCurrentRoomFace. Mirrors editor/selectedroom.cpp's
 // SetMarkedRoom() (which uses the MFC keypad "Mark" button).
 void MainWindow::onMarkRoom() {
-  // editor/selectedroom.cpp::SetMarkedRoom() captures (Curroomp,
-  // Curface, Curedge, Curvert); we mirror the same state but use the qteditor
+  // editor/selectedroom.cpp::SetMarkedRoom() captures (app.Curroomp,
+  // app.Curface, app.Curedge, app.Curvert); we mirror the same state but use the qteditor
   // globals From d3_editor_state.cpp.
-  Markedroomp = Curroomp;
-  Markedface = Curface;
-  Markededge = Curedge;
-  Markedvert = Curvert;
-  State_changed = true;
+  app.Markedroomp = app.Curroomp;
+  app.Markedface = app.Curface;
+  app.Markededge = app.Curedge;
+  app.Markedvert = app.Curvert;
+  app.State_changed = true;
   std::fprintf(stderr, "[room_ops] MarkRoom: slot %d face %d\n",
-               Curroomp ? ROOMNUM(Curroomp) : -1, Curface);
+               app.Curroomp ? ROOMNUM(app.Curroomp) : -1, app.Curface);
 }
 
-// Mark-by-number: prompts the user for a room index and updates Curroomp.
+// Mark-by-number: prompts the user for a room index and updates app.Curroomp.
 // Returns the number entered or -1 if the dialog was cancelled.
 int MainWindow::onSelectRoomByNumber() {
   // Use the MFC-equivalent of QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Select room number", "...").
@@ -1864,8 +1864,8 @@ int MainWindow::onSelectRoomByNumber() {
                  value);
     return -1;
   }
-  Curroomp = &Rooms[value];
-  Curface = Curedge = Curvert = Curportal = 0;
+  app.Curroomp = &Rooms[value];
+  app.Curface = app.Curedge = app.Curvert = app.Curportal = 0;
   app.current_room = value;
   return value;
 }
@@ -1874,19 +1874,19 @@ int MainWindow::onSelectRoomByNumber() {
 // existing name; returns true if the user picked a new value, false
 // otherwise (cancellation or no change).
 bool MainWindow::onRenameRoom() {
-  if (Curroomp == nullptr)
+  if (app.Curroomp == nullptr)
     return false;
   bool ok = false;
-  QString current = QString::fromStdString(Curroomp->name);
+  QString current = QString::fromStdString(app.Curroomp->name);
   const QString picked = QInputDialog::getText(
       nullptr, QStringLiteral("Rename Room"),
       QStringLiteral("New name:"), QLineEdit::Normal, current, &ok).trimmed();
   if (!ok || picked.isEmpty())
     return false;
 
-  Curroomp->name = picked.toStdString();
-  Mine_changed = true;
-  std::fprintf(stderr, "[room_ops] RenameRoom -> %s\n", Curroomp->name.c_str());
+  app.Curroomp->name = picked.toStdString();
+  app.Mine_changed = true;
+  std::fprintf(stderr, "[room_ops] RenameRoom -> %s\n", app.Curroomp->name.c_str());
   return true;
 }
 
@@ -1895,70 +1895,70 @@ bool MainWindow::onRenameRoom() {
 // under the .d3l filename). Until the engine-side room walker ships, this
 // is a status-bar-only stub that records what would have been written.
 bool MainWindow::onSaveCurrentRoom() {
-  if (Curroomp == nullptr)
+  if (app.Curroomp == nullptr)
     return false;
-  Mine_changed = true;
+  app.Mine_changed = true;
   std::fprintf(stderr,
                "[room_ops] SaveCurrentRoom: deferred to EditorSaveLevel\n");
   return true;
 }
 
 void MainWindow::onRoomDeleteFace() {
-  if (Curroomp == nullptr || Curface < 0 || Curface >= Curroomp->num_faces)
+  if (app.Curroomp == nullptr || app.Curface < 0 || app.Curface >= app.Curroomp->num_faces)
     return;
-  if (Curroomp->faces[Curface].portal_num != -1) {
+  if (app.Curroomp->faces[app.Curface].portal_num != -1) {
     onRoomDeletePortal();
     return;
   }
-  DeleteRoomFace(Curroomp, Curface);
-  if (Curface >= Curroomp->num_faces)
-    Curface = Curroomp->num_faces - 1;
-  Mine_changed = true;
+  DeleteRoomFace(app.Curroomp, app.Curface);
+  if (app.Curface >= app.Curroomp->num_faces)
+    app.Curface = app.Curroomp->num_faces - 1;
+  app.Mine_changed = true;
 }
 
 void MainWindow::onRoomDeletePortal() {
-  if (Curroomp == nullptr || Curface < 0 || Curface >= Curroomp->num_faces)
+  if (app.Curroomp == nullptr || app.Curface < 0 || app.Curface >= app.Curroomp->num_faces)
     return;
-  int pn = Curroomp->faces[Curface].portal_num;
+  int pn = app.Curroomp->faces[app.Curface].portal_num;
   if (pn == -1) {
     EditorStatus("Current face is not a portal.");
     return;
   }
-  DeletePortalPair(Curroomp, pn);
-  Mine_changed = true;
+  DeletePortalPair(app.Curroomp, pn);
+  app.Mine_changed = true;
 }
 
 void MainWindow::onRoomCombine() {
-  if (Curroomp == nullptr)
+  if (app.Curroomp == nullptr)
     return;
-  if (Markedroomp != Curroomp) {
+  if (app.Markedroomp != app.Curroomp) {
     EditorStatus("Mark and current must be the same room to combine.");
     return;
   }
-  if (Curface == Markedface) {
+  if (app.Curface == app.Markedface) {
     EditorStatus("Marked and current face must be different.");
     return;
   }
-  if (CombineFaces(Curroomp, Markedface, Curface)) {
-    Mine_changed = true;
+  if (CombineFaces(app.Curroomp, app.Markedface, app.Curface)) {
+    app.Mine_changed = true;
     EditorStatus("Faces combined.");
   }
 }
 
 void MainWindow::onRoomRotatePlaced45() {
-  if (Curroomp == nullptr || Markedroomp == nullptr) {
+  if (app.Curroomp == nullptr || app.Markedroomp == nullptr) {
     EditorStatus("No marked room.");
     return;
   }
   RotateRooms(8192, 0, 0);
-  Mine_changed = true;
+  app.Mine_changed = true;
 }
 
 void MainWindow::onRoomAttach() {
-  if (Placed_room == -1) {
+  if (app.Placed_room == -1) {
     EditorStatus("No room placed. Use Place Room first.");
     return;
   }
   AttachRoom();
-  Mine_changed = true;
+  app.Mine_changed = true;
 }

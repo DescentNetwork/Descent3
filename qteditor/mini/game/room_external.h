@@ -106,6 +106,10 @@
 
 #include "vecmat_external.h"
 #include "bnode.h"
+#include "doorway.h"
+
+// Sizes for some global arrays
+#define MAX_ROOMS 400 // max number of rooms in the world
 
 #define MAX_FACES_PER_ROOM 3000  // max number of faces per room
 #define MAX_VERTS_PER_ROOM 10000 // max vertices per room

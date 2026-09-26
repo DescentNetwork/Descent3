@@ -65,7 +65,7 @@ void LevelKeypad::updateDialog() {
 
 void LevelKeypad::onGravityEdited() {
   Gravity_strength = ui->IDC_LEVEL_GRAVITY_EDIT->text().toFloat();
-  World_changed = true;
+  app.World_changed = true;
 }
 
 void LevelKeypad::onCeilingEdited() {
@@ -83,7 +83,7 @@ void LevelKeypad::onCeilingEdited() {
       for (int v = 0; v < rp->num_verts; v++)
         rp->verts[v].y() += delta;
     }
-    World_changed = true;
+    app.World_changed = true;
   }
 }
 

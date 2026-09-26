@@ -85,10 +85,10 @@ protected:
   afx_msg void OnPaint();
   virtual BOOL OnInitDialog();
   afx_msg BOOL OnHelpInfo(HELPINFO *pHelpInfo);
-  afx_msg void OnTrigAddToCurface();
+  afx_msg void OnTrigAddToapp.Curface();
   afx_msg void OnTrigGoto();
   afx_msg void OnTrigDelete();
-  afx_msg void OnTrigAddToCurportal();
+  afx_msg void OnTrigAddToapp.Curportal();
   afx_msg void OnTrigAddFloating();
   afx_msg void OnTrigRenderFloating();
   afx_msg void OnTrigActivPlayer();

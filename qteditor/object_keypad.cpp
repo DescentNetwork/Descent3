@@ -69,8 +69,8 @@ void ObjectKeypad::setMoveAxis(int axis) {
 }
 
 void ObjectKeypad::updateDialog() {
-  const bool hasObject = (Cur_object_index >= 0 && Cur_object_index <= Highest_object_index &&
-                          Objects[Cur_object_index].type != OBJ_NONE);
+  const bool hasObject = (app.Cur_object_index >= 0 && app.Cur_object_index <= Highest_object_index &&
+                          Objects[app.Cur_object_index].type != OBJ_NONE);
   ui->IDC_OBJPAD_FLIPOBJ->setEnabled(hasObject);
   ui->IDC_OBJ_DELOBJ->setEnabled(hasObject);
   ui->IDC_OBJPAD_NEXTOBJ->setEnabled(hasObject);
@@ -88,33 +88,33 @@ void ObjectKeypad::updateDialog() {
 void ObjectKeypad::onPlaceObject() {
   // HObjectPlace handles all the validation internally.
   if (HObjectPlace(app.current_obj_type, app.current_obj_id)) {
-    Mine_changed = true;
+    app.Mine_changed = true;
     updateDialog();
   }
 }
 
 void ObjectKeypad::onDeleteObject() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == OBJ_NONE)
     return;
   HObjectDelete();
   updateDialog();
 }
 
 void ObjectKeypad::onNextObject() {
-  if (Cur_object_index < 0)
+  if (app.Cur_object_index < 0)
     return;
-  for (int i = Cur_object_index + 1; i <= Highest_object_index; i++) {
+  for (int i = app.Cur_object_index + 1; i <= Highest_object_index; i++) {
     if (Objects[i].type != OBJ_NONE && Objects[i].type != OBJ_ROOM) {
-      Cur_object_index = i;
+      app.Cur_object_index = i;
       updateDialog();
       return;
     }
   }
-  for (int i = 0; i <= Cur_object_index; i++) {
+  for (int i = 0; i <= app.Cur_object_index; i++) {
     if (Objects[i].type != OBJ_NONE && Objects[i].type != OBJ_ROOM) {
-      Cur_object_index = i;
+      app.Cur_object_index = i;
       updateDialog();
       return;
     }
@@ -122,9 +122,9 @@ void ObjectKeypad::onNextObject() {
 }
 
 void ObjectKeypad::onFlipObject() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == OBJ_NONE)
     return;
   HObjectFlip();
   updateDialog();
@@ -140,7 +140,7 @@ void ObjectKeypad::onResetObjects() {
     Objects[i].flags = {};
     Objects[i].size = Object_info[type].size;
   }
-  Mine_changed = true;
+  app.Mine_changed = true;
 }
 
 void ObjectKeypad::onSetDefault() {
@@ -149,13 +149,13 @@ void ObjectKeypad::onSetDefault() {
 }
 
 void ObjectKeypad::onRot90() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == OBJ_NONE)
     return;
   // Rotate 90 degrees (PI/2 radians = 8192 angle units in D3).
-  RotateObject(Cur_object_index, 8192, 0, 0);
-  World_changed = true;
+  RotateObject(app.Cur_object_index, 8192, 0, 0);
+  app.World_changed = true;
   updateDialog();
 }
 
@@ -172,8 +172,8 @@ void ObjectKeypad::onDeleteAll()
         continue;
       ObjDelete(i);
     }
-    Cur_object_index = -1;
-    World_changed = true;
+    app.Cur_object_index = -1;
+    app.World_changed = true;
     updateDialog();
   }
 }

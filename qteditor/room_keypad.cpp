@@ -42,23 +42,23 @@ RoomKeypad::RoomKeypad(QWidget *parent)
   connect(ui->IDC_ROOMPAD_EXPAND_ROOM, &QPushButton::clicked, this, &RoomKeypad::onExpandRoom);
   connect(ui->IDC_ROOMPAD_CONTRACT_ROOM, &QPushButton::clicked, this, &RoomKeypad::onContractRoom);
 
-  room *rp = Curroomp;
-  connect(ui->IDC_TOUCHES_OUTSIDE, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.touches_terrain = checked; World_changed = true; });
-  connect(ui->IDC_SECRET_CHECK, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.secret = checked; World_changed = true; });
-  connect(ui->IDC_EXTERNAL_ROOM, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.external = checked; World_changed = true; });
-  connect(ui->IDC_SPECIAL_1, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special1 = checked; World_changed = true; });
-  connect(ui->IDC_SPECIAL_2, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special2 = checked; World_changed = true; });
-  connect(ui->IDC_SPECIAL_3, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special3 = checked; World_changed = true; });
-  connect(ui->IDC_SPECIAL_4, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special4 = checked; World_changed = true; });
-  connect(ui->IDC_SPECIAL_5, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special5 = checked; World_changed = true; });
-  connect(ui->IDC_SPECIAL_6, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special6 = checked; World_changed = true; });
-  connect(ui->IDC_ROOM_SKIP_LIGHTING, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.no_light = checked; World_changed = true; });
-  connect(ui->IDC_ROOMPAD_REFUELING_CENTER, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.fuelcen = checked; World_changed = true; });
-  connect(ui->IDC_ROOMPAD_GOAL1, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.goal1 = checked; World_changed = true; });
-  connect(ui->IDC_ROOMPAD_GOAL2, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.goal2 = checked; World_changed = true; });
-  connect(ui->IDC_ROOMPAD_GOAL3, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.goal3 = checked; World_changed = true; });
-  connect(ui->IDC_ROOMPAD_GOAL4, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.goal4 = checked; World_changed = true; });
-  connect(ui->IDC_TRIANGULATE, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.triangulate = checked; World_changed = true; });
+  room *rp = app.Curroomp;
+  connect(ui->IDC_TOUCHES_OUTSIDE, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.touches_terrain = checked; app.World_changed = true; });
+  connect(ui->IDC_SECRET_CHECK, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.secret = checked; app.World_changed = true; });
+  connect(ui->IDC_EXTERNAL_ROOM, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.external = checked; app.World_changed = true; });
+  connect(ui->IDC_SPECIAL_1, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special1 = checked; app.World_changed = true; });
+  connect(ui->IDC_SPECIAL_2, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special2 = checked; app.World_changed = true; });
+  connect(ui->IDC_SPECIAL_3, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special3 = checked; app.World_changed = true; });
+  connect(ui->IDC_SPECIAL_4, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special4 = checked; app.World_changed = true; });
+  connect(ui->IDC_SPECIAL_5, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special5 = checked; app.World_changed = true; });
+  connect(ui->IDC_SPECIAL_6, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special6 = checked; app.World_changed = true; });
+  connect(ui->IDC_ROOM_SKIP_LIGHTING, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.no_light = checked; app.World_changed = true; });
+  connect(ui->IDC_ROOMPAD_REFUELING_CENTER, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.fuelcen = checked; app.World_changed = true; });
+  connect(ui->IDC_ROOMPAD_GOAL1, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.goal1 = checked; app.World_changed = true; });
+  connect(ui->IDC_ROOMPAD_GOAL2, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.goal2 = checked; app.World_changed = true; });
+  connect(ui->IDC_ROOMPAD_GOAL3, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.goal3 = checked; app.World_changed = true; });
+  connect(ui->IDC_ROOMPAD_GOAL4, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.goal4 = checked; app.World_changed = true; });
+  connect(ui->IDC_TRIANGULATE, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.triangulate = checked; app.World_changed = true; });
 
   updateDialog();
 }
@@ -67,13 +67,13 @@ RoomKeypad::~RoomKeypad() { delete ui; }
 
 void RoomKeypad::updateDialog() {
   // Win32 disables the room editing controls when no room is current.
-  const bool active = (Curroomp != nullptr && Curroomp->used);
+  const bool active = (app.Curroomp != nullptr && app.Curroomp->used);
   for (QWidget *w : findChildren<QWidget *>())
     if (w->objectName().startsWith("IDC_"))
       w->setEnabled(active);
   if (active)
   {
-    room *rp = Curroomp;
+    room *rp = app.Curroomp;
     ui->IDC_ROOM_NAME->setText(rp->name.empty() ? QString("<room %1>").arg(ROOMNUM(rp)) : QString::fromStdString(rp->name));
     ui->IDC_VERTEX_COUNT->setText(QString("Verts: %1").arg(rp->num_verts));
     ui->IDC_FACE_COUNT->setText(QString("Faces: %1").arg(rp->num_faces));
@@ -100,17 +100,17 @@ void RoomKeypad::updateDialog() {
 }
 
 void RoomKeypad::onMarkRoom() {
-  if (Curroomp != nullptr)
-    Markedroomp = Curroomp;
+  if (app.Curroomp != nullptr)
+    app.Markedroomp = app.Curroomp;
 }
 
 void RoomKeypad::expandGeometry(float scale) {
-  if (Curroomp == nullptr)
+  if (app.Curroomp == nullptr)
     return;
-  room *rp = Curroomp;
+  room *rp = app.Curroomp;
   for (int v = 0; v < rp->num_verts; v++)
     rp->verts[v] *= scale;
-  World_changed = true;
+  app.World_changed = true;
 }
 
 void RoomKeypad::onExpandEdge() { expandGeometry(1.02f); }

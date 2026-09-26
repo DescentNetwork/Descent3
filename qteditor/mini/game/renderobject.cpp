@@ -1252,7 +1252,7 @@ void RenderObject(object& obj) {
 
     break;
   case RT_POLYOBJ:
-    if (OBJNUM(&obj) == Cur_object_index)
+    if (OBJNUM(&obj) == app.Cur_object_index)
       DrawObjectSelectionBrackets(obj, 0); // draw back brackets
 
     if (obj.rtype.pobj_info().anim_frame || (Poly_models[obj.rtype.pobj_info().model_num].frame_max !=
@@ -1415,7 +1415,7 @@ void RenderObject(object& obj) {
     //??	Max_linear_depth = mld_save;
     // Mark selected objects
 
-  if (OBJNUM(&obj) == Cur_object_index)
+  if (OBJNUM(&obj) == app.Cur_object_index)
   {
     if (obj.render_type != RT_POLYOBJ) {
       g3Point pnt;

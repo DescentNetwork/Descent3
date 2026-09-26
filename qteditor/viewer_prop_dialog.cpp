@@ -107,7 +107,7 @@ void ViewerPropDialog::setOrientation(matrix &m) {
   if (Viewer_object == nullptr)
     return;
   vm_Orthogonalize(&m);
-  Viewer_moved = true;
+  app.Viewer_moved = true;
 }
 
 void ViewerPropDialog::onAlignUpYpos() {
@@ -207,7 +207,7 @@ void ViewerPropDialog::onOrientCommit() {
   vm_AnglesToMatrix(&Viewer_object->orient, pitch * kAnglesPerDegree, heading * kAnglesPerDegree,
                     bank * kAnglesPerDegree);
 
-  State_changed = Viewer_moved = false;
+  app.State_changed = app.Viewer_moved = false;
 }
 
 void ViewerPropDialog::onPosCommit() {
@@ -216,7 +216,7 @@ void ViewerPropDialog::onPosCommit() {
   Viewer_object->pos.x() = ui->IDC_XPOS_EDIT->text().toFloat();
   Viewer_object->pos.y() = ui->IDC_YPOS_EDIT->text().toFloat();
   Viewer_object->pos.z() = ui->IDC_ZPOS_EDIT->text().toFloat();
-  Viewer_moved = true;
+  app.Viewer_moved = true;
 }
 
 void ViewerPropDialog::onXMoveToggled(bool checked) {

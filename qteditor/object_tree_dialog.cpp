@@ -76,12 +76,10 @@ QString ObjectTreeDialog::makeInfoStr(const object *obj) {
               .arg(QString::fromStdString(Object_info[obj->id].name))
               .arg(QString::fromStdString(obj->name.empty() ? "No Name Given"s : obj->name));
   } else {
-    QString typeName =
-        (obj->type >= 0 && obj->type < MAX_OBJECT_TYPES) ? Object_type_names[obj->type] : "Unnamed type";
     str = QString("%1-(0x%2)[%3](%4) ")
               .arg(static_cast<int>(OBJNUM(obj)))
               .arg(obj->handle, 0, 16)
-              .arg(typeName)
+              .arg(QString::fromStdString(Object_type_names[obj->type]))
               .arg(QString::fromStdString(obj->name.empty() ? "No Name Given"s : obj->name));
   }
 
@@ -150,7 +148,7 @@ void ObjectTreeDialog::onGoTo() {
 
   ObjSetPos(*Viewer_object, obj->pos, obj->roomnum, &obj->orient, false);
   EditorStatus("Viewer moved to object %d", OBJNUM(obj));
-  Viewer_moved = true;
+  app.Viewer_moved = true;
 }
 
 void ObjectTreeDialog::onDelete() {
@@ -162,7 +160,7 @@ void ObjectTreeDialog::onDelete() {
   if (!obj)
     return;
 
-  Cur_object_index = OBJNUM(obj);
+  app.Cur_object_index = OBJNUM(obj);
   HObjectDelete();
   Refresh();
 }
@@ -182,8 +180,8 @@ void ObjectTreeDialog::onClearAll()
         ObjDelete(i);
     }
 
-    World_changed = true;
-    Cur_object_index = -1;
+    app.World_changed = true;
+    app.Cur_object_index = -1;
     Refresh();
   }
 }

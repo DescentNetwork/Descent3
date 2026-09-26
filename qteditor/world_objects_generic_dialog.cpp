@@ -201,7 +201,7 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int object_id,
     {
       data()->flags.control_ai = checked;
       ui->IDC_GENERIC_EDIT_AI->setEnabled(checked);
-      Mine_changed = true;
+      app.Mine_changed = true;
     }
   });
   connect(ui->IDC_GENERIC_USES_PHYSICS, &QCheckBox::toggled, this, [this](bool checked) {
@@ -209,7 +209,7 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int object_id,
     {
       data()->flags.uses_physics = checked;
       ui->IDC_GENERIC_EDIT_PHYSICS->setEnabled(checked);
-      Mine_changed = true;
+      app.Mine_changed = true;
     }
   });
   connect(ui->IDC_GENERIC_DESTROYABLE, &QCheckBox::toggled, this, [this](bool checked) {
@@ -218,38 +218,38 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int object_id,
       data()->flags.destroyable = checked;
       ui->IDC_GENERIC_HITPOINT_EDIT->setEnabled(checked);
       ui->IDC_GENERIC_SCORE_EDIT->setEnabled(checked);
-      Mine_changed = true;
+      app.Mine_changed = true;
     }
   });
   connect(ui->IDC_GENERIC_AI_SCRIPTED_DEATH, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.ai_scripted_death = checked, Mine_changed = true;
+    if (data()) data()->flags.ai_scripted_death = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_OBJ_CEILING_CHECK, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.do_ceiling_check = checked, Mine_changed = true;
+    if (data()) data()->flags.do_ceiling_check = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_OBJECT_FLY_THROUGH_RENDERED_PORTALS, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.ignore_forcefields_and_glass = checked, Mine_changed = true;
+    if (data()) data()->flags.ignore_forcefields_and_glass = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_NSC_BUTTON, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.no_diff_scale_damage = checked, Mine_changed = true;
+    if (data()) data()->flags.no_diff_scale_damage = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_DSMPBD_CHECK, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.no_diff_scale_move = checked, Mine_changed = true;
+    if (data()) data()->flags.no_diff_scale_move = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_GENERIC_AMBIENT, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.ambient_object = checked, Mine_changed = true;
+    if (data()) data()->flags.ambient_object = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_GENERIC_INVEN_SELECTABLE, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.inven_selectable = checked, Mine_changed = true;
+    if (data()) data()->flags.inven_selectable = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_GENERIC_INVEN_NONUSEABLE, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.inven_nonuseable = checked, Mine_changed = true;
+    if (data()) data()->flags.inven_nonuseable = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_INVEN_NOREMOVE, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.inven_noremove = checked, Mine_changed = true;
+    if (data()) data()->flags.inven_noremove = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_INVEN_VISWHENUSED, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.inven_viswhenused = checked, Mine_changed = true;
+    if (data()) data()->flags.inven_viswhenused = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_DEATH_POWERUP_USE2_IF_HAVE1_CHECK, &QCheckBox::toggled, this, &WorldObjectsGenericDialog::onDeathPowerupUse2);
   connect(ui->IDC_GENERIC_DEATH_SPEW_2_IF_ZERO_1, &QCheckBox::toggled, this, &WorldObjectsGenericDialog::onDeathSpew2IfZero1);
@@ -847,7 +847,8 @@ void WorldObjectsGenericDialog::onPaste() {
     return;
   if (Copy_object.type != m_type) {
     if (QMessageBox::question(this, "Are you sure?", "You are about to paste a %s object as a %s.  Is this OK?",
-                              Object_type_names[Copy_object.type], Object_type_names[m_type]) == QMessageBox::No)
+                              QString::fromStdString(Object_type_names[Copy_object.type]),
+                              QString::fromStdString(Object_type_names[m_type])) == QMessageBox::No)
       return;
   }
 

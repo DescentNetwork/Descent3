@@ -23,6 +23,39 @@
 #include <cstring>
 #include <vector>
 
+
+// Editor-only object helpers guarded by EDITOR in object.cpp/objinfo.cpp; the
+// D3 core is compiled without that define, so provide them here.
+const std::array<std::string, MAX_OBJECT_TYPES> Object_type_names = {
+    "WALL",        // OBJ_WALL         0
+    "FIREBALL",    // OBJ_FIREBALL     1
+    "ROBOT",       // OBJ_ROBOT        2
+    "SHARD",       // OBJ_SHARD        3
+    "PLAYER",      // OBJ_PLAYER       4
+    "WEAPON",      // OBJ_WEAPON       5
+    "VIEWER",      // OBJ_VIEWER       6
+    "POWERUP",     // OBJ_POWERUP      7
+    "DEBRIS",      // OBJ_DEBRIS       8
+    "CAMERA",      // OBJ_CAMERA       9
+    "SHOCKWV",     // OBJ_SHOCKWAVE    10
+    "CLUTTER",     // OBJ_CLUTTER      11
+    "GHOST",       // OBJ_GHOST        12
+    "LIGHT",       // OBJ_LIGHT        13
+    "COOP",        // OBJ_COOP         14
+    "UNUSED",      // OBJ_MARKER       15
+    "BUILDING",    // OBJ_BUILDING     16
+    "DOOR",        // OBJ_DOOR         17
+    "ROOM",        // OBJ_ROOM         18
+    "LINE",        // OBJ_PARTICLE     19
+    "SPLINTER",    // OBJ_SPLINTER     20
+    "DUMMY",       // OBJ_DUMMY        21
+    "OBSERVER",    // OBJ_OBSERVER     22
+    "DEBUG LINE",  // OBJ_DEBUG_LINE   23
+    "SOUNDSOURCE", // OBJ_SOUNDSOURCE  24
+    "WAYPOINT",    // OBJ_WAYPOINT     25
+};
+
+
 // The mini defines Num_objects in stubs.cpp without a header declaration.
 extern uint32_t Num_objects;
 

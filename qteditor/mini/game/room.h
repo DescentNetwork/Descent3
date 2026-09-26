@@ -374,8 +374,6 @@
 
 #include "room_external.h"
 
-// Sizes for some global arrays
-#define MAX_ROOMS 400 // max number of rooms in the world
 
 // Constants for room palette (editor-specific)
 #if (defined(EDITOR) || defined(NEWEDITOR))

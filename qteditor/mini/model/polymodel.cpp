@@ -2023,8 +2023,8 @@ if (!(Poly_models[polynum].flags.not_resident)) {
 
   // Used for progress bar when loading the level
   if (infile) {
-    paged_in_count += (int)infile->size();
-    paged_in_num++;
+    app.paged_in_count += (int)infile->size();
+    app.paged_in_num++;
   }
 
   // if this is an oof instead of a pof, flag it as such

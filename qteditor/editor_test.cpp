@@ -2156,6 +2156,45 @@ private slots:
     QCOMPARE(*v.prev(0), size_t(2));
   }
 
+  // pop_back mirrors std::vector::pop_back while keeping the empty-slot
+  // accounting (num_empty) accurate: popping an unreferenced tail slot frees
+  // one empty slot, popping a referenced one leaves the empty count alone.
+  void testSlotvecPopBack()
+  {
+    d3::slotvec_t<game_path> v;
+    v.add_slot();
+    v.add_slot();
+    v.add_slot();
+    QCOMPARE(int(v.num_empty()), 3);
+
+    // Popping an unused tail slot releases its empty-slot accounting.
+    v.pop_back();
+    QCOMPARE(int(v.num_empty()), 2);
+    QCOMPARE(int(v.size()), 2);
+
+    // Popping a referenced slot trims the used slot without touching empties.
+    v.acquire(1);
+    QCOMPARE(int(v.num_empty()), 1);
+    v.pop_back();
+    QCOMPARE(int(v.num_empty()), 1);
+    QCOMPARE(int(v.size()), 1);
+
+    // Popping the sole remaining (unused) slot empties the table, and
+    // navigation on the empty table reports nullopt.
+    v.pop_back();
+    QCOMPARE(int(v.num_empty()), 0);
+    QVERIFY(v.empty());
+    QVERIFY(!v.next(0));
+    QVERIFY(!v.prev(0));
+
+    // next_slot still appends correctly after trims.
+    v.add_slot();
+    QCOMPARE(int(v.num_empty()), 1);
+    v.acquire(0);
+    QCOMPARE(int(v.num_empty()), 0);
+    QCOMPARE(*v.next(0), size_t(0));
+  }
+
   // sound_flags_t must pack the original SPF_* / SPFT_* bits byte-for-byte, so
   // that page serialization (which memcpy's the struct to/from a uint32_t)
   // stays .loc-table compatible with the legacy editor.  Verify each named
@@ -2430,21 +2469,21 @@ private slots:
     extern float Ambient_red, Ambient_green, Ambient_blue;
     extern int rad_MaxStep;
 
-    Curroomp = &Rooms[0];
-    Curface = 1;
-    Curedge = 2;
-    Curvert = 3;
-    Markedroomp = &Rooms[0];
-    Markedface = 4;
-    Markededge = 5;
-    Markedvert = 6;
+    app.Curroomp = &Rooms[0];
+    app.Curface = 1;
+    app.Curedge = 2;
+    app.Curvert = 3;
+    app.Markedroomp = &Rooms[0];
+    app.Markedface = 4;
+    app.Markededge = 5;
+    app.Markedvert = 6;
     N_selected_rooms = 2;
     Selected_rooms[0] = 0;
     Selected_rooms[1] = 1;
-    Cur_object_index = 7;
-    Current_trigger = 8;
+    app.Cur_object_index = 7;
+    app.Current_trigger = 8;
     app.view_mode = state::viewer::terrain;
-    Editor_viewer_id = 9;
+    app.Editor_viewer_id = 9;
 
     Wireframe_view_mine.target = vector3{1, 2, 3};
     Wireframe_view_mine.orient = IDENTITY_MATRIX;
@@ -2476,21 +2515,21 @@ private slots:
     QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
-    QCOMPARE(Curroomp, &Rooms[0]);
-    QCOMPARE(Curface, 1);
-    QCOMPARE(Curedge, 2);
-    QCOMPARE(Curvert, 3);
-    QCOMPARE(Markedroomp, &Rooms[0]);
-    QCOMPARE(Markedface, 4);
-    QCOMPARE(Markededge, 5);
-    QCOMPARE(Markedvert, 6);
+    QCOMPARE(app.Curroomp, &Rooms[0]);
+    QCOMPARE(app.Curface, 1);
+    QCOMPARE(app.Curedge, 2);
+    QCOMPARE(app.Curvert, 3);
+    QCOMPARE(app.Markedroomp, &Rooms[0]);
+    QCOMPARE(app.Markedface, 4);
+    QCOMPARE(app.Markededge, 5);
+    QCOMPARE(app.Markedvert, 6);
     QCOMPARE(N_selected_rooms, 2);
     QCOMPARE(Selected_rooms[0], 0);
     QCOMPARE(Selected_rooms[1], 1);
-    QCOMPARE(Cur_object_index, 7);
-    QCOMPARE(Current_trigger, 8);
+    QCOMPARE(app.Cur_object_index, 7);
+    QCOMPARE(app.Current_trigger, 8);
     QCOMPARE(app.view_mode, state::viewer::terrain);
-    QCOMPARE(Editor_viewer_id, 9);
+    QCOMPARE(app.Editor_viewer_id, 9);
     QCOMPARE(Wireframe_view_mine.dist, 50);
     QCOMPARE(Wireframe_view_mine.orient.fvec.z(), 1);
     QCOMPARE(LightSpacing, 40);
@@ -2553,13 +2592,13 @@ private slots:
     QDir::current().rmdir(tmp);
 
     // Restore the "no level loaded" editor defaults (later tests assume a
-    // null Curroomp for their UI gating assertions).
-    Curroomp = nullptr;
-    Markedroomp = nullptr;
+    // null app.Curroomp for their UI gating assertions).
+    app.Curroomp = nullptr;
+    app.Markedroomp = nullptr;
     N_selected_rooms = 0;
-    Cur_object_index = -1;
-    Current_trigger = -1;
-    Editor_viewer_id = -1;
+    app.Cur_object_index = -1;
+    app.Current_trigger = -1;
+    app.Editor_viewer_id = -1;
     app.view_mode = state::viewer::mine;
 
     // Clean teardown.
@@ -3530,9 +3569,9 @@ private slots:
   {
     // The doorway editing controls are gated on the current room actually
     // bearing doorway data (DoorwayKeypad::updateDialog()), not merely on a
-    // level being loaded: the EDIT chunk can restore a Curroomp whose room is
+    // level being loaded: the EDIT chunk can restore a app.Curroomp whose room is
     // not a doorway, in which case the controls stay disabled.
-    const bool levelLoaded = (Curroomp != nullptr && Curroomp->doorway_data != nullptr);
+    const bool levelLoaded = (app.Curroomp != nullptr && app.Curroomp->doorway_data != nullptr);
 
     for (const DialogInstance &d : g_dialogs)
     {
@@ -3727,9 +3766,9 @@ private slots:
 
     // Center on Current Room: orbit target becomes the current room's center,
     // distance/orientation untouched.
-    QVERIFY(Curroomp != nullptr && Curroomp->used);
+    QVERIFY(app.Curroomp != nullptr && app.Curroomp->used);
     vector3 roomCenter;
-    ComputeRoomCenter(&roomCenter, Curroomp);
+    ComputeRoomCenter(&roomCenter, app.Curroomp);
     a_room->trigger();
     QCoreApplication::processEvents();
     {
@@ -3748,7 +3787,7 @@ private slots:
     const int selIdx = OBJNUM(Viewer_object);
     QVERIFY(selIdx >= 0);
     const vector3 selPos = Objects[selIdx].pos;
-    Cur_object_index = selIdx;
+    app.Cur_object_index = selIdx;
     a_object->trigger();
     QCoreApplication::processEvents();
     QVERIFY2(vm_VectorDistance(&selPos, &view->activeWireframeView().target) < 1e-3f,
@@ -3874,7 +3913,7 @@ private slots:
 
   // Verifies the Qt port of editor/HFile.cpp:
   //   - CreateNewMine resets the editor-only globals exposed in
-  //     qteditor/d3_editor_state.cpp (Curface, static_cast<int>(Triggers.size()), …) and calls
+  //     qteditor/d3_editor_state.cpp (app.Curface, static_cast<int>(Triggers.size()), …) and calls
   //     FreeAllRooms / FreeAllObjects on Descent3Core without exploding.
   //   - RenderLevelStats returns a non-empty buffer whose first three lines
   //     are the "Level Stats:" header the Win32 EditorMessageBox got.
@@ -3886,29 +3925,29 @@ private slots:
     // Capture the editor-only globals CreateNewMine() is supposed to reset,
     // seed them to sentinel values, then run the function and confirm they
     // came back to the documented defaults.
-    Curface = 99;
-    Curedge = 99;
-    Curvert = 99;
-    Curportal = 42;
+    app.Curface = 99;
+    app.Curedge = 99;
+    app.Curvert = 99;
+    app.Curportal = 42;
     Triggers.resize(7);
-    Current_trigger = 9;
+    app.Current_trigger = 9;
     app.view_mode = state::viewer::room;
-    Editor_viewer_id = 5;
-    New_mine = false;
-    World_changed = true;
+    app.Editor_viewer_id = 5;
+    app.New_mine = false;
+    app.World_changed = true;
     CreateNewMine();
-    QCOMPARE(Curface, 0);
-    QCOMPARE(Curportal, -1);
+    QCOMPARE(app.Curface, 0);
+    QCOMPARE(app.Curportal, -1);
     QCOMPARE(static_cast<int>(Triggers.size()), 0);
-    QCOMPARE(Current_trigger, -1);
+    QCOMPARE(app.Current_trigger, -1);
     QCOMPARE(app.view_mode, state::viewer::mine);
     // CreateNewMine spawns a viewer for the level (Win32 HFile.cpp:478
     // SetEditorViewer), so the id/object are non-empty afterwards.
-    QCOMPARE(Editor_viewer_id, 0);
+    QCOMPARE(app.Editor_viewer_id, 0);
     QVERIFY(Viewer_object != nullptr);
     QCOMPARE(int(Viewer_object->type), OBJ_VIEWER);
-    QCOMPARE(New_mine, true);
-    QCOMPARE(World_changed, false);
+    QCOMPARE(app.New_mine, true);
+    QCOMPARE(app.World_changed, false);
 
     // RenderLevelStats exercises the same Rooms[]/Objects[]/LightmapInfo[]
     // iteration as the Win32 ShowLevelStats and returns a heap buffer the
@@ -3937,7 +3976,7 @@ private slots:
     Highest_object_index = -1;
     RoomsReset();
     Viewer_object = nullptr;
-    Editor_viewer_id = -1;
+    app.Editor_viewer_id = -1;
     app.view_mode = state::viewer::mine;
 
     // A single interior room (flags.external is false after InitRoom).
@@ -3972,7 +4011,7 @@ private slots:
     QVERIFY(Viewer_object != nullptr);
     QCOMPARE(int(Viewer_object - Objects.data()), viewerSlot);
     QCOMPARE(Viewer_object->id, 4);
-    QCOMPARE(Editor_viewer_id, 4);
+    QCOMPARE(app.Editor_viewer_id, 4);
     QVERIFY(Viewer_object->pos.x() == savedPos.x());
     QVERIFY(Viewer_object->pos.y() == savedPos.y());
     QVERIFY(Viewer_object->pos.z() == savedPos.z());
@@ -3991,7 +4030,7 @@ private slots:
     Highest_object_index = -1;
     RoomsReset();
     Viewer_object = nullptr;
-    Editor_viewer_id = -1;
+    app.Editor_viewer_id = -1;
     app.view_mode = state::viewer::mine;
 
     const vector3 quadV[4] = {
@@ -4015,8 +4054,8 @@ private slots:
     QVERIFY(Viewer_object != nullptr);
     QCOMPARE(int(Viewer_object->type), OBJ_VIEWER);
     QCOMPARE(Viewer_object->roomnum, 0);
-    QCOMPARE(Editor_viewer_id, 0);
-    State_changed = Viewer_moved = false;
+    QCOMPARE(app.Editor_viewer_id, 0);
+    app.State_changed = app.Viewer_moved = false;
 
     // The new viewer lands at the room's centroid.
     const vector3 center =
@@ -4157,8 +4196,8 @@ private slots:
   // on the helpers' side-effects so the menu wiring has a deterministic
   // observable contract.
   void testRoomOpsContract() {
-    Curroomp = nullptr;
-    Markedroomp = nullptr;
+    app.Curroomp = nullptr;
+    app.Markedroomp = nullptr;
 
     // AddRoom provisions a brand-new room at the first free slot by
     // extruding the current face outward. Build a minimal current room
@@ -4194,38 +4233,38 @@ private slots:
       Rooms[0].faces[2].face_verts[3] = 3;
       RoomsEnsureIndex(0);
     }
-    Curroomp = &Rooms[0];
-    Curface = 2;
-    Curedge = Curvert = Curportal = 0;
+    app.Curroomp = &Rooms[0];
+    app.Curface = 2;
+    app.Curedge = app.Curvert = app.Curportal = 0;
 
-    New_mine = 0;
-    Mine_changed = 0;
+    app.New_mine = 0;
+    app.Mine_changed = 0;
     QVERIFY(AddRoom());
-    QCOMPARE(New_mine, 1);
-    QCOMPARE(Mine_changed, 1);
+    QCOMPARE(app.New_mine, 1);
+    QCOMPARE(app.Mine_changed, 1);
     // AddRoom wrote a fresh room into Rooms[] at a slot >0 and made it
     // the current selection.
-    QVERIFY(Curroomp != nullptr);
-    QVERIFY(Curroomp != &Rooms[0]);
-    QVERIFY(Curroomp->used);
-    QVERIFY(Curroomp->num_verts >= 8); // 4 (cnv) * 2 verts
-    QVERIFY(Curroomp->num_faces == 6); // cnv + 2
+    QVERIFY(app.Curroomp != nullptr);
+    QVERIFY(app.Curroomp != &Rooms[0]);
+    QVERIFY(app.Curroomp->used);
+    QVERIFY(app.Curroomp->num_verts >= 8); // 4 (cnv) * 2 verts
+    QVERIFY(app.Curroomp->num_faces == 6); // cnv + 2
 
     // DeleteRoom with no current selection is a no-op but must report
     // false so the menu's signal handler doesn't trigger a redraw.
-    Curroomp = nullptr;
+    app.Curroomp = nullptr;
     QVERIFY(!DeleteRoom());
 
-    // Set Curroomp to a dummy slot then DeleteRoom clears it.
-    Curroomp = &Rooms[0];
+    // Set app.Curroomp to a dummy slot then DeleteRoom clears it.
+    app.Curroomp = &Rooms[0];
     Rooms[0].used = 1;
     Rooms[0].name = const_cast<char *>("test-room");
-    Mine_changed = 0;
+    app.Mine_changed = 0;
     QVERIFY(DeleteRoom());
-    QVERIFY(Curroomp == nullptr);
-    QCOMPARE(Curface, -1);
-    QCOMPARE(Curportal, -1);
-    QCOMPARE(Mine_changed, 1);
+    QVERIFY(app.Curroomp == nullptr);
+    QCOMPARE(app.Curface, -1);
+    QCOMPARE(app.Curportal, -1);
+    QCOMPARE(app.Mine_changed, 1);
 
     // (testObjectOpsContract lives below; see line ~1090)
   }
@@ -4234,7 +4273,7 @@ private slots:
   // editor/editorView.cpp:PlaceCameraAtViewer, SetCameraFromViewer,
   // SetViewerFromCamera, DeleteCurrentObject, MovePlayerToCurrentRoom.
   // We exercise each in turn and inspect the side-effects on
-  // Cur_object_index / Objects[] / Mine_changed / Player_object.
+  // app.Cur_object_index / Objects[] / app.Mine_changed / Player_object.
   void testObjectOpsContract() {
     // Reset the object table for the test.
     for (size_t i = 0; i < Objects.size(); ++i)
@@ -4245,7 +4284,7 @@ private slots:
     Highest_object_index = -1;
     Player_object = nullptr;
     Viewer_object = nullptr;
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
 
     // Spin up a stand-in viewer at origin and provision a player object
     // so PlaceCameraAtViewer and friends have something to act on.
@@ -4289,7 +4328,7 @@ private slots:
         Rooms[0].verts[v] = vector3{};
       RoomsEnsureIndex(0);
     }
-    Curroomp = &Rooms[0];
+    app.Curroomp = &Rooms[0];
     // PlaceCameraAtViewer returns -1 on Linux until the ObjCreate path
     // links; verify the contract is honest.
     QCOMPARE(PlaceCameraAtViewer(), -1);
@@ -4310,11 +4349,11 @@ private slots:
     // DeleteCurrentObject / MovePlayerToCurrentRoom are exercised the same
     // way; left as comments so the contract intent is on record without
     // triggering ObjLink's debug Q_ASSERT on Objects[0].next.
-    // Cur_object_index = camera1;
+    // app.Cur_object_index = camera1;
     // DeleteCurrentObject();
     // QCOMPARE(Objects[camera1].type, OBJ_NONE);
-    // QVERIFY(Cur_object_index >= 0);
-    // QVERIFY(Mine_changed == 1);
+    // QVERIFY(app.Cur_object_index >= 0);
+    // QVERIFY(app.Mine_changed == 1);
 
     // ObjSetPos(*Player_object, &target, 0, &idmat, false);
     // MovePlayerToCurrentRoom();
@@ -4326,7 +4365,7 @@ private slots:
   // from editor/editorView.cpp::OnViewCenterOnMine / OnViewCenterOnObject /
   // OnViewResetViewRadius / OnViewMoveCameraToSelectedRoom. Each helper
   // ends up calling ObjSetPos on Viewer_object and updates
-  // State_changed so the EditorView repaints.
+  // app.State_changed so the EditorView repaints.
   void testViewerOpsContract() {
     // Spin up a single room with valid verts so CenterViewOnMine /
     // MoveViewToSelectedRoom produce a non-degenerate centroid.
@@ -4346,7 +4385,7 @@ private slots:
       Rooms[0].verts[3] = {0, 0, 1};
       RoomsEnsureIndex(0);
     }
-    Curroomp = &Rooms[0];
+    app.Curroomp = &Rooms[0];
 
     // Stand up a viewer object so ObjSetPos has somewhere to write to.
     for (size_t i = 0; i < Objects.size(); ++i)
@@ -4359,9 +4398,9 @@ private slots:
     Viewer_object = &Objects[0];
     Highest_object_index = 0;
 
-    State_changed = 0;
+    app.State_changed = false;
     CenterViewOnMine();
-    QCOMPARE(int(State_changed), 1);
+    QCOMPARE(int(app.State_changed), 1);
     QVERIFY(Viewer_object->roomnum == 0);
     QVERIFY(Viewer_object->pos.x() >= 0.0f && Viewer_object->pos.x() <= 1.0f);
 
@@ -4370,13 +4409,13 @@ private slots:
     ResetViewRadius();
     QCOMPARE(app.texscale, 1.0f);
 
-    // CenterViewOnObject drops Cur_object_index onto the viewer. Live
+    // CenterViewOnObject drops app.Cur_object_index onto the viewer. Live
     // calls with the freshly-init Objects[] above trip ObjUnlink's
     // invariant in object.cpp:1515 (Objects[0].next != 0) on Debug
     // builds, so we keep the assertion documented but skip the live call.
 
     // MoveViewToSelectedRoom refreshes Viewer_object->roomnum from
-    // Curroomp. Live calls are deferred until ObjLink's invariant
+    // app.Curroomp. Live calls are deferred until ObjLink's invariant
     // helpers let us start/stop the linked-list hooks cleanly.
   }
 #endif
@@ -4639,10 +4678,10 @@ private slots:
 
     LinkRooms(Rooms.data(), 0, 0, 1, 0);
 
-    Curroomp = r0;
-    Curface = 0;
-    Markedroomp = r1;
-    Markedface = 0;
+    app.Curroomp = r0;
+    app.Curface = 0;
+    app.Markedroomp = r1;
+    app.Markedface = 0;
 
     vector3 orig = r0->verts[6];
 
@@ -4657,8 +4696,8 @@ private slots:
     DeletePortalPair(r0, 0);
     FreeRoom(r0);
     FreeRoom(r1);
-    Curroomp = nullptr;
-    Markedroomp = nullptr;
+    app.Curroomp = nullptr;
+    app.Markedroomp = nullptr;
   }
 
   void testAttachRoomTerrain() {
@@ -4678,14 +4717,14 @@ private slots:
     r0->used = true;
 
     // Set up as a "placed room" for terrain attachment
-    Placed_room = 0;
-    Placed_baseroomp = nullptr;
-    Placed_baseface = -1;
-    Placed_room_face = 0;
-    Placed_room_origin = vector3{(float)150, (float)150, (float)0};
-    Placed_room_attachpoint = vector3{(float)0, (float)0, (float)0};
-    vm_MakeIdentity(&Placed_room_rotmat);
-    Placed_door = -1;
+    app.Placed_room = 0;
+    app.Placed_baseroomp = nullptr;
+    app.Placed_baseface = -1;
+    app.Placed_room_face = 0;
+    app.Placed_room_origin = vector3{(float)150, (float)150, (float)0};
+    app.Placed_room_attachpoint = vector3{(float)0, (float)0, (float)0};
+    vm_MakeIdentity(&app.Placed_room_rotmat);
+    app.Placed_door = -1;
 
     AttachRoom();
 
@@ -4703,7 +4742,7 @@ private slots:
 
     FreeRoom(&Rooms[newroom]);
     FreeRoom(r0);
-    Placed_room = -1;
+    app.Placed_room = -1;
   }
 
   void testAttachRoomMine() {
@@ -4744,14 +4783,14 @@ private slots:
     att->used = true;
 
     // Place att so its face overlaps with the base face
-    Placed_room = 1;
-    Placed_baseroomp = base;
-    Placed_baseface = 0;
-    Placed_room_face = 0;
-    Placed_room_origin = vector3{(float)5, (float)0, (float)-5};
-    Placed_room_attachpoint = vector3{(float)5, (float)0, (float)-5};
-    vm_MakeIdentity(&Placed_room_rotmat);
-    Placed_door = -1;
+    app.Placed_room = 1;
+    app.Placed_baseroomp = base;
+    app.Placed_baseface = 0;
+    app.Placed_room_face = 0;
+    app.Placed_room_origin = vector3{(float)5, (float)0, (float)-5};
+    app.Placed_room_attachpoint = vector3{(float)5, (float)0, (float)-5};
+    vm_MakeIdentity(&app.Placed_room_rotmat);
+    app.Placed_door = -1;
 
     AttachRoom();
 
@@ -4771,9 +4810,9 @@ private slots:
     FreeRoom(&Rooms[newroom]);
     FreeRoom(base);
     FreeRoom(att);
-    Placed_room = -1;
-    Curroomp = nullptr;
-    Markedroomp = nullptr;
+    app.Placed_room = -1;
+    app.Curroomp = nullptr;
+    app.Markedroomp = nullptr;
   }
 
   void testUVSlide() {
@@ -4906,7 +4945,7 @@ private slots:
       Objects[i].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
-    Editor_viewer_id = -1;
+    app.Editor_viewer_id = -1;
     Viewer_object = nullptr;
 
     MainWindow win;
@@ -4916,12 +4955,12 @@ private slots:
     Objects[0].id = 0;
     Viewer_object = &Objects[0];
     Highest_object_index = 0;
-    Editor_viewer_id = 0;
+    app.Editor_viewer_id = 0;
 
     const int viewer2 = win.onSpawnNewViewer();
     QVERIFY(viewer2 > 0);
     QCOMPARE(int(Objects[viewer2].type), OBJ_VIEWER);
-    QCOMPARE(int(Editor_viewer_id >= 1), 1);
+    QCOMPARE(int(app.Editor_viewer_id >= 1), 1);
 
     const int moved = win.onSelectNextViewer();
     QVERIFY(moved >= 0);
@@ -4947,12 +4986,12 @@ private slots:
     Objects[2].render_type = RT_POLYOBJ;
     Objects[2].id = 7;
     Objects[2].name = mem_strdup("clip-source");
-    Cur_object_index = 2;
+    app.Cur_object_index = 2;
     Highest_object_index = 2;
 
     win.onCopyObjectToClipboard();
     QVERIFY(win.HasClipboardObject());
-    QVERIFY(Cur_object_index == 2);
+    QVERIFY(app.Cur_object_index == 2);
 
     int pre_count = 0;
     for (size_t i = 0; i < Objects.size(); ++i)
@@ -4966,9 +5005,9 @@ private slots:
         ++n;
     QCOMPARE(n, pre_count + 1);
     QCOMPARE(int(Objects[2].type), OBJ_PLAYER);
-    QVERIFY(Cur_object_index >= 0);
+    QVERIFY(app.Cur_object_index >= 0);
 
-    Cur_object_index = 2;
+    app.Cur_object_index = 2;
     win.onCutObjectToClipboard();
     QVERIFY(win.HasClipboardObject());
     win.onPasteObjectFromClipboard();
@@ -5410,10 +5449,10 @@ private slots:
     RoomsEnsureIndex(1);
 
     // Pin the editor "current room" to the live room 0 for the view's overlay
-    // pass: Curroomp is a global that earlier tests may have left dangling
+    // pass: app.Curroomp is a global that earlier tests may have left dangling
     // (the room buffer is reused by RoomsReset), and renderOverlays derefs it
     // on the view's first paint.
-    Curroomp = &Rooms[0];
+    app.Curroomp = &Rooms[0];
 
     EditorView view;
     view.resize(640, 480);
@@ -5493,8 +5532,8 @@ private slots:
 
     // Pin the editor "current room" to the live room 0 for the view's overlay
     // pass, exactly as testPickPrefersForegroundFaceOverOccluded does (see the
-    // comment there for why Curroomp cannot be left to prior-test state).
-    Curroomp = &Rooms[0];
+    // comment there for why app.Curroomp cannot be left to prior-test state).
+    app.Curroomp = &Rooms[0];
 
     EditorView view;
     view.resize(640, 480);
@@ -5564,9 +5603,9 @@ private slots:
     QVERIFY2(view.frameCount() >= 1, "view never painted");
 
     // Clear selection first.
-    Curroomp = nullptr;
-    Curface = -1;
-    Cur_object_index = -1;
+    app.Curroomp = nullptr;
+    app.Curface = -1;
+    app.Cur_object_index = -1;
 
     bool faceFired = false;
     bool objectFired = false;
@@ -6045,22 +6084,22 @@ private slots:
 
     PlaceRoom(base, 0, 1, 0, -1);
 
-    QCOMPARE(Placed_room, 1);
-    QCOMPARE(Placed_room_face, 0);
-    QCOMPARE(Placed_baseroomp, base);
-    QCOMPARE(Placed_baseface, 0);
-    QCOMPARE(Placed_door, -1);
-    QCOMPARE(Placed_room_angle, 0.0f);
+    QCOMPARE(app.Placed_room, 1);
+    QCOMPARE(app.Placed_room_face, 0);
+    QCOMPARE(app.Placed_baseroomp, base);
+    QCOMPARE(app.Placed_baseface, 0);
+    QCOMPARE(app.Placed_door, -1);
+    QCOMPARE(app.Placed_room_angle, 0.0f);
 
-    // Placed_room_orient.fvec should match base face normal
+    // app.Placed_room_orient.fvec should match base face normal
     {
-      vector3 diff = Placed_room_orient.fvec - base->faces[0].normal;
+      vector3 diff = app.Placed_room_orient.fvec - base->faces[0].normal;
       float dist = vm_GetMagnitude(&diff);
       QVERIFY(dist < 0.01f);
     }
 
-    Placed_room = -1;
-    Placed_baseroomp = nullptr;
+    app.Placed_room = -1;
+    app.Placed_baseroomp = nullptr;
     FreeRoom(base);
     FreeRoom(att);
   }
@@ -6120,31 +6159,31 @@ private slots:
     Doors[0].used = 1;
     Doors[0].model_handle = 0;
 
-    Placed_room = -1;
+    app.Placed_room = -1;
     PlaceDoor(base, 0, 0);
 
     // The door room must occupy a real Rooms[] slot (ROOMNUM(rp) is a pointer
     // difference against Rooms.data()).  Rooms no longer keeps a separate
     // palette region: slots are allocated from the first unused hole, which is
     // 0 here (base occupies slot 1), and the high-water mark is undisturbed.
-    QCOMPARE(Placed_room, 0);
+    QCOMPARE(app.Placed_room, 0);
     QCOMPARE(static_cast<int>(Rooms.size()), 2);
-    QVERIFY(Rooms[Placed_room].used);
-    QCOMPARE(Rooms[Placed_room].num_verts, 8);
-    QCOMPARE(Rooms[Placed_room].num_faces, 2);
-    QCOMPARE(Placed_baseroomp, base);
-    QCOMPARE(Placed_door, 0);
+    QVERIFY(Rooms[app.Placed_room].used);
+    QCOMPARE(Rooms[app.Placed_room].num_verts, 8);
+    QCOMPARE(Rooms[app.Placed_room].num_faces, 2);
+    QCOMPARE(app.Placed_baseroomp, base);
+    QCOMPARE(app.Placed_door, 0);
     // Front face verts remap onto the shell (same positions).
     for (int i = 0; i < 4; ++i)
-      QCOMPARE(Rooms[Placed_room].faces[1].face_verts[i], i);
+      QCOMPARE(Rooms[app.Placed_room].faces[1].face_verts[i], i);
 
-    FreeRoom(&Rooms[Placed_room]);
+    FreeRoom(&Rooms[app.Placed_room]);
     FreeRoom(base);
     *po = poly_model{};
     Doors[0] = door{};
     RoomsReset();
-    Placed_room = -1;
-    Placed_baseroomp = nullptr;
+    app.Placed_room = -1;
+    app.Placed_baseroomp = nullptr;
   }
 
   void testComputePlacedRoomMatrixIdentity() {
@@ -6161,22 +6200,22 @@ private slots:
     ComputeFaceNormal(rp, 0);
     rp->used = true;
 
-    Placed_room = 0;
-    Placed_room_face = 0;
-    Placed_room_angle = 0;
-    vm_MakeIdentity(&Placed_room_orient);
+    app.Placed_room = 0;
+    app.Placed_room_face = 0;
+    app.Placed_room_angle = 0;
+    vm_MakeIdentity(&app.Placed_room_orient);
 
     ComputePlacedRoomMatrix();
 
     // rotmat should be a valid orthogonal matrix (fvec magnitude ~1)
-    float fmag = vm_GetMagnitude(&Placed_room_rotmat.fvec);
-    float rmag = vm_GetMagnitude(&Placed_room_rotmat.rvec);
-    float umag = vm_GetMagnitude(&Placed_room_rotmat.uvec);
+    float fmag = vm_GetMagnitude(&app.Placed_room_rotmat.fvec);
+    float rmag = vm_GetMagnitude(&app.Placed_room_rotmat.rvec);
+    float umag = vm_GetMagnitude(&app.Placed_room_rotmat.uvec);
     QVERIFY(fmag > 0.9f && fmag < 1.1f);
     QVERIFY(rmag > 0.9f && rmag < 1.1f);
     QVERIFY(umag > 0.9f && umag < 1.1f);
 
-    Placed_room = -1;
+    app.Placed_room = -1;
     FreeRoom(rp);
   }
 
@@ -6251,7 +6290,7 @@ private slots:
     Objects[0].orient = rotated;
     Highest_object_index = 0;
 
-    Cur_object_index = 0;
+    app.Cur_object_index = 0;
 
     HObjectSetDefault();
 
@@ -6261,20 +6300,20 @@ private slots:
     QCOMPARE(Objects[0].orient.rvec.x(), IDENTITY_MATRIX.rvec.x());
     QCOMPARE(Objects[0].orient.uvec.y(), IDENTITY_MATRIX.uvec.y());
 
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     Objects[0].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
   }
 
   void testHObjectSetDefaultNoopWhenNoSelection() {
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     matrix before{};
     vm_MakeIdentity(&before);
 
     HObjectSetDefault();
 
-    QCOMPARE(Cur_object_index, -1);
+    QCOMPARE(app.Cur_object_index, -1);
   }
 
   void testHObjectFlip() {
@@ -6286,7 +6325,7 @@ private slots:
     Objects[0].type = OBJ_POWERUP;
     Objects[0].orient = IDENTITY_MATRIX;
     Highest_object_index = 0;
-    Cur_object_index = 0;
+    app.Cur_object_index = 0;
 
     vector3 fvec_before = Objects[0].orient.fvec;
     vector3 rvec_before = Objects[0].orient.rvec;
@@ -6306,7 +6345,7 @@ private slots:
     QCOMPARE(Objects[0].orient.uvec.y(), -uvec_before.y());
     QCOMPARE(Objects[0].orient.uvec.z(), -uvec_before.z());
 
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     Objects[0].type = OBJ_NONE;
     ResetObjectList();
     Highest_object_index = -1;
@@ -6331,24 +6370,24 @@ private slots:
     // delete below must drain exactly the accounts used.
     ResetFreeObjects();
 
-    Cur_object_index = 1;
+    app.Cur_object_index = 1;
 
     HObjectDelete();
 
     QCOMPARE(Objects[1].type, OBJ_NONE);
-    QCOMPARE(Cur_object_index, -1);
+    QCOMPARE(app.Cur_object_index, -1);
 
     Objects[0].type = OBJ_NONE;
     Viewer_object = nullptr;
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     ResetObjectList();
     Highest_object_index = -1;
   }
 
   void testHObjectDeleteNoopWhenNoSelection() {
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     HObjectDelete();
-    QCOMPARE(Cur_object_index, -1);
+    QCOMPARE(app.Cur_object_index, -1);
   }
 
   void testHObjectDeletePlayerBlocked() {
@@ -6366,7 +6405,7 @@ private slots:
     Player_object = &Objects[1];
     Highest_object_index = 1;
 
-    Cur_object_index = 1;
+    app.Cur_object_index = 1;
 
     QTimer::singleShot(100, []() {
       if (auto *mb = qobject_cast<QMessageBox *>(QApplication::activeModalWidget()))
@@ -6377,7 +6416,7 @@ private slots:
 
     QCOMPARE(Objects[1].type, OBJ_PLAYER);
 
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     Objects[0].type = OBJ_NONE;
     Objects[1].type = OBJ_NONE;
     Viewer_object = nullptr;
@@ -6429,7 +6468,7 @@ private slots:
     Objects[0].type = OBJ_NONE;
     Objects[1].type = OBJ_NONE;
     Viewer_object = nullptr;
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     ResetObjectList();
     Highest_object_index = -1;
     FreeRoom(&Rooms[0]);
@@ -6471,15 +6510,15 @@ private slots:
     vector3 origin{};
     ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
-    Cur_object_index = 1;
+    app.Cur_object_index = 1;
     app.object_move_mode = REL_OBJECT;
-    Object_moved = false;
+    app.Object_moved = false;
 
     HObjectMove(1, 1.0f, 0.0f, 0.0f);
 
-    QVERIFY(Object_moved);
+    QVERIFY(app.Object_moved);
 
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     Objects[0].type = OBJ_NONE;
     Objects[1].type = OBJ_NONE;
     Viewer_object = nullptr;
@@ -6524,7 +6563,7 @@ private slots:
     vector3 origin{};
     ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
-    Cur_object_index = 1;
+    app.Cur_object_index = 1;
 
     QVERIFY(!ObjMoveManager.IsMoving());
 
@@ -6538,7 +6577,7 @@ private slots:
 
     QVERIFY(!ObjMoveManager.IsMoving());
 
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     Objects[0].type = OBJ_NONE;
     Objects[1].type = OBJ_NONE;
     Viewer_object = nullptr;
@@ -6583,7 +6622,7 @@ private slots:
     vector3 origin{};
     ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
-    Cur_object_index = 1;
+    app.Cur_object_index = 1;
 
     matrix viewMat = IDENTITY_MATRIX;
     vector3 viewPos{};
@@ -6591,7 +6630,7 @@ private slots:
 
     QVERIFY(!ObjMoveManager.IsMoving());
 
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     Objects[0].type = OBJ_NONE;
     Objects[1].type = OBJ_NONE;
     Viewer_object = nullptr;
@@ -6644,7 +6683,7 @@ private slots:
     vector3 origin{};
     ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
-    Cur_object_index = 1;
+    app.Cur_object_index = 1;
     app.object_move_mode = REL_OBJECT;
     ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_X);
 
@@ -6654,16 +6693,16 @@ private slots:
     QVERIFY(ObjMoveManager.IsMoving());
 
     const vector3 pos0 = Objects[1].pos;
-    Object_moved = false;
+    app.Object_moved = false;
     ObjMoveManager.Defer(10, 0, true);
     QVERIFY(ObjMoveManager.IsMoving());
-    QVERIFY(Object_moved);
+    QVERIFY(app.Object_moved);
     QVERIFY(vm_VectorDistance(&pos0, &Objects[1].pos) > 1e-3f);
 
     ObjMoveManager.Defer(0, 0, false);
     QVERIFY(!ObjMoveManager.IsMoving());
 
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     Objects[0].type = OBJ_NONE;
     Objects[1].type = OBJ_NONE;
     Viewer_object = nullptr;
@@ -6709,7 +6748,7 @@ private slots:
     vector3 origin{};
     ObjSetPos(Objects[1], origin, 0, nullptr, false);
 
-    Cur_object_index = 1;
+    app.Cur_object_index = 1;
     app.object_move_mode = REL_OBJECT;
     ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_H);
 
@@ -6733,7 +6772,7 @@ private slots:
     ObjMoveManager.Defer(0, 0, false);
     QVERIFY(!ObjMoveManager.IsMoving());
 
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     Objects[0].type = OBJ_NONE;
     Objects[1].type = OBJ_NONE;
     Viewer_object = nullptr;
@@ -6778,7 +6817,7 @@ private slots:
     ObjSetPos(Objects[0], origin, 0, nullptr, false);
 
     app.view_mode = state::viewer::mine;
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     app.object_move_mode = REL_OBJECT;
     ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_X);
     // Use the orbit camera (not the viewer) so the eye is not co-located
@@ -6804,7 +6843,7 @@ private slots:
                       Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
     QCoreApplication::sendEvent(&view, &press);
     QCoreApplication::processEvents();
-    QCOMPARE(Cur_object_index, 0);
+    QCOMPARE(app.Cur_object_index, 0);
     QVERIFY(ObjMoveManager.IsMoving());
 
     const vector3 pos0 = Objects[0].pos;
@@ -6825,7 +6864,7 @@ private slots:
     QVERIFY2(vm_VectorDistance(&pos0, &Objects[0].pos) > 1e-3f,
             "drag did not move the object");
 
-    Cur_object_index = -1;
+    app.Cur_object_index = -1;
     Objects[0].type = OBJ_NONE;
     app.view_mode = state::viewer::mine;
     ResetObjectList();

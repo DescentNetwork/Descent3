@@ -87,7 +87,7 @@ struct room;
 //	function to apply a texture to a segment side.
 void HTextureStretchLess(room *rp, int face, int edge);
 void HTextureStretchMore(room *rp, int face, int edge);
-void HTextureSetDefault(room *rp, int face = Curface);
+void HTextureSetDefault(room *rp, int face = app.Curface);
 void HTextureFlipX();
 void HTextureFlipY();
 void HTextureSlide(room *rp, int facenum, float right, float up);

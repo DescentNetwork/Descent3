@@ -157,3 +157,31 @@ void FreeObjectID(int n) {
   Object_info[n].ai_info = {};
   Object_info[n].static_wb = {};
 }
+
+int GetNextObjectID(int n) {
+  int type = Object_info[n].type;
+  Q_ASSERT(n >= 0 && n < MAX_OBJECT_IDS);
+  if (Num_object_ids[type] == 0)
+    return -1;
+  for (int i = n + 1; i < MAX_OBJECT_IDS; i++)
+    if (Object_info[i].type == Object_info[n].type)
+      return i;
+  for (int i = 0; i <= n; i++)
+    if (Object_info[i].type == Object_info[n].type)
+      return i;
+  return n;
+}
+
+int GetPrevObjectID(int n) {
+  int type = Object_info[n].type;
+  Q_ASSERT(n >= 0 && n < MAX_OBJECT_IDS);
+  if (Num_object_ids[type] == 0)
+    return -1;
+  for (int i = n - 1; i >= 0; i--)
+    if (Object_info[i].type == Object_info[n].type)
+      return i;
+  for (int i = MAX_OBJECT_IDS - 1; i >= n; i--)
+    if (Object_info[i].type == Object_info[n].type)
+      return i;
+  return n;
+}

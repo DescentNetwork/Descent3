@@ -192,8 +192,8 @@
  * Added variable & button to toggle object move state
  *
  * 37    4/02/97 3:24p Jason
- * got rid of WV_changed and made TV_changed update the textured view and
- * flag "World_changed"
+ * got rid of WV_changed and made app.TV_changed update the textured view and
+ * flag "app.World_changed"
  *
  * 36    3/31/97 5:57p Matt
  * Revamped mine update flags
@@ -238,7 +238,7 @@
  * Added doorway and terrain keypad tabs.
  *
  * 22    3/04/97 7:13p Samir
- * Added current_door and Current_trigger globals.
+ * Added current_door and app.Current_trigger globals.
  *
  * 21    2/28/97 6:37p Matt
  * Added variable & toggle button for box selection mode
@@ -262,10 +262,10 @@
  * Added a couple more vars
  *
  * 14    2/07/97 6:00p Matt
- * Added Mine_changed
+ * Added app.Mine_changed
  *
  * 13    2/06/97 11:59a Matt
- * Added externs for Cursegp,Curside,Curedge
+ * Added externs for Cursegp,Curside,app.Curedge
  *
  * 12    2/05/97 11:13a Samir
  * Added D3windowed preference
@@ -401,60 +401,60 @@ extern d3edit_state app;
 extern grSurface *Desktop_surf;
 
 // flags for the textured views changed
-extern bool TV_changed;
+extern bool app.TV_changed;
 
 // Set this flag if a new world is loaded/created
-extern bool New_mine;
+extern bool app.New_mine;
 
 // Set this when the mine has changed
-extern bool World_changed;
+extern bool app.World_changed;
 
 // Set this when the editor state (but not the world itself) has changed
-extern bool State_changed;
+extern bool app.State_changed;
 
 // Set this when the viewer (i.e., player) has moved
-extern bool Viewer_moved;
+extern bool app.Viewer_moved;
 
 // Set this when an object has moved
-extern bool Object_moved;
+extern bool app.Object_moved;
 
 // Set this when the editor viewpoint has changed
 extern bool Edview_changed;
 
 // Current room & face
-extern room *Curroomp;
-extern int Curface, Curedge, Curvert;
-extern int Curportal;
+extern room *app.Curroomp;
+extern int app.Curface, app.Curedge, app.Curvert;
+extern int app.Curportal;
 
 // Current object
-extern int Cur_object_index;
+extern int app.Cur_object_index;
 
 // Marked room & face
-extern room *Markedroomp;
-extern int Markedface, Markededge, Markedvert;
+extern room *app.Markedroomp;
+extern int app.Markedface, app.Markededge, app.Markedvert;
 
 // Placed room info
-extern int Placed_room;
+extern int app.Placed_room;
 extern group *Placed_group;
-extern int Placed_room_face;
-extern int Placed_door;
-extern float Placed_room_angle;
-extern vector3 Placed_room_origin;
-extern matrix Placed_room_orient;
-extern vector3 Placed_room_attachpoint;
-extern matrix Placed_room_rotmat;
-extern room *Placed_baseroomp;
-extern int Placed_baseface;
+extern int app.Placed_room_face;
+extern int app.Placed_door;
+extern float app.Placed_room_angle;
+extern vector3 app.Placed_room_origin;
+extern matrix app.Placed_room_orient;
+extern vector3 app.Placed_room_attachpoint;
+extern matrix app.Placed_room_rotmat;
+extern room *app.Placed_baseroomp;
+extern int app.Placed_baseface;
 
 // Vars for the list of selected rooms
 extern int N_selected_rooms;
 extern std::array<int, 400> Selected_rooms;
 
 // Flag for if mine has changed (& thus needs to be saved)
-extern int Mine_changed;
+extern int app.Mine_changed;
 
 //	Current trigger in mine displayed in trigger dialog
-extern int Current_trigger;
+extern int app.Current_trigger;
 
 // The scrap buffer
 extern group *Scrap;
@@ -464,7 +464,7 @@ extern char *Current_level_script;
 
 // What mode we're currently in
 enum { state::viewer::mine, state::viewer::terrain, state::viewer::room, NUM_VIEW_MODES };
-extern int app.view_mode;
+extern int view_mode;
 
 // The ID of the most recent viewer object (not counting room view)
 extern int Editor_viewer_id;
@@ -478,8 +478,6 @@ extern char Current_model_dir[_MAX_PATH];
 extern char Current_sounds_dir[_MAX_PATH];
 extern char Current_weapon_dir[_MAX_PATH];
 
-//	object id clipboard.
-extern int Copied_object_id;
 
 //	FUNCTIONS
 void EditorStatus(const char *format, ...);

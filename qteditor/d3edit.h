@@ -57,60 +57,144 @@ namespace state
 struct d3edit_state
 {
   // Values for current item in the various dialogs
-  int texdlg_texture;   // current texture in texdialog
-  int current_obj_type; // current type of object
-  int current_obj_id;   // current specific id of object within type
-  int current_powerup;  // current powerup id
-  int current_door;     // current door in door page dialog
-  int current_robot;    // current robot in robot page dialog
-  int current_ship;     // current ship in ship page dialog
-  int current_sound;    // current sound in sound page dialog
-  int current_weapon;   // current weapon in weapon page dialog
-  int current_path;     // currently selected path for a robot to follow
-  int current_node;     // currently selected node of preceding path
-  int current_megacell; // currently selected megacell
-  int current_room;     // currently selected room
-  int current_gamefile; // currently selected gamefile
-  int current_building; // currently selected building
-  int current_clutter;  // currently selected clutter
+  int texdlg_texture    = -1; // current texture in texdialog
+  int current_obj_type  = -1; // current type of object
+  int current_obj_id    = -1; // current specific id of object within type
+  int current_powerup   = -1; // current powerup id
+  int current_door      = -1; // current door in door page dialog
+  int current_robot     = -1; // current robot in robot page dialog
+  int current_ship      = -1; // current ship in ship page dialog
+  int current_sound     = -1; // current sound in sound page dialog
+  int current_weapon    = -1; // current weapon in weapon page dialog
+  int current_path      = -1; // currently selected path for a robot to follow
+  int current_node      = -1; // currently selected node of preceding path
+  int current_megacell  = -1; // currently selected megacell
+  int current_room      = -1; // currently selected room
+  int current_gamefile  = -1; // currently selected gamefile
+  int current_building  = -1; // currently selected building
+  int current_clutter   = -1; // currently selected clutter
 
   //	Values for the different editor windows
-  bool texscr_visible;                        // is texture mine view up?
-  int texscr_x, texscr_y, texscr_w, texscr_h; // dims of floating texture mine view
+  bool texscr_visible = false;                        // is texture mine view up?
+  int texscr_x,
+      texscr_y,
+      texscr_w,
+      texscr_h; // dims of floating texture mine view
 
-  bool wirescr_visible;                           // is wireframe model up?
-  int wirescr_x, wirescr_y, wirescr_w, wirescr_h; // dims of floating wireframe model
+  bool wirescr_visible = false;                           // is wireframe model up?
+  int wirescr_x,
+      wirescr_y,
+      wirescr_w,
+      wirescr_h; // dims of floating wireframe model
 
-  bool keypad_visible;                                                // is keypad visible?
-  int keypad_current;                                                 // which keypad tab are we on?
-  bool float_keypad_moved;                                            // has floating keypad moved?
-  int float_keypad_x, float_keypad_y, float_keypad_w, float_keypad_h; // floating keypad width and height, x, y
-  int objmodeless_x, objmodeless_y;                                   // object modeless list x and y.
-  bool objmodeless_on;                                                // is modeless on?
+  bool keypad_visible = false;                                                // is keypad visible?
+  int keypad_current = -1;                                                 // which keypad tab are we on?
+  bool float_keypad_moved = false;                                            // has floating keypad moved?
+  int float_keypad_x,
+      float_keypad_y,
+      float_keypad_w,
+      float_keypad_h; // floating keypad width and height, x, y
 
-  bool tile_views; // tile or floating view windows, keypad
+  int objmodeless_x,
+      objmodeless_y;                                   // object modeless list x and y.
+  bool objmodeless_on = false;                                                // is modeless on?
+
+  bool tile_views = false; // tile or floating view windows, keypad
 
   // Values for terrain renderer
-  bool terrain_dots;       // show terrain dots?
-  bool terrain_flat_shade; // flat shade terrain?
+  bool terrain_dots = false;       // show terrain dots?
+  bool terrain_flat_shade = false; // flat shade terrain?
 
   // Misc preferences
-  int game_render_mode;        // what mode to we play the game in?  See constants above.
-  bool randomize_megacell;     // randomize when placing a megacell?
-  int box_selection_mode;      // How editor box selection works.  See constants above.
-  int object_move_mode;        // How object movements works.  See constants above.
-  int object_move_axis;        // This is the axis on which objects move with mouse.
-  bool fullscreen_debug_state; // do we allow for fullscreen debugging?
-  bool hemicube_radiosity;
-  float node_movement_inc;
-  int texture_display_flags; // which textures to display on the texture tab
-  float texscale;            // the scalar for moving texture UVs
-  bool joy_slewing;          // shall we allow joystick slewing?
-  bool objects_in_wireframe; // should we draw objects in the wireframe view?
+  int game_render_mode    = -1;        // what mode to we play the game in?  See constants above.
+  bool randomize_megacell = false;     // randomize when placing a megacell?
+  int box_selection_mode  = -1;      // How editor box selection works.  See constants above.
+  int object_move_mode    = -1;        // How object movements works.  See constants above.
+  int object_move_axis    = -1;        // This is the axis on which objects move with mouse.
+  bool fullscreen_debug_state = false; // do we allow for fullscreen debugging?
+  bool hemicube_radiosity = false;
+  float node_movement_inc = 0.0;
+  int texture_display_flags = 0; // which textures to display on the texture tab
+  float texscale            = 0.0;            // the scalar for moving texture UVs
+  bool joy_slewing = false;          // shall we allow joystick slewing?
+  bool objects_in_wireframe = false; // should we draw objects in the wireframe view?
 
 
   state::viewer view_mode = state::viewer::mine;
 
+  // flags for the textured views changed
+  bool TV_changed = false;
+
+  // Set this flag if a new world is loaded/created
+  bool New_mine = false;
+
+  // Set this when the mine has changed
+  bool World_changed = false;
+
+  // Set this when the editor state (but not the world itself) has changed
+  bool State_changed = false;
+
+  // Set this when the viewer (i.e., player) has moved
+  bool Viewer_moved = false;
+
+  // Set this when an object has moved
+  bool Object_moved = false;
+
+  // Flag for if mine has changed (& thus needs to be saved)
+  bool Mine_changed = false;
+
+  // Current room & face
+  room *Curroomp = nullptr;
+  int Curface = -1;
+  int Curedge = 0;
+  int Curvert = 0;
+  int Curportal = -1;
+
+  // Current object
+  int Cur_object_index = -1;
+
+  //	Current trigger in mine displayed in trigger dialog
+  int Current_trigger = -1;
+
+  // The ID of the most recent viewer object (not counting room view)
+  int Editor_viewer_id = -1;
+
+  // Marked room & face
+  room* Markedroomp = nullptr;
+  int Markedface = 0;
+  int Markededge = 0;
+  int Markedvert = 0;
+
+  // Placed room info
+
+  int Placed_room = -1;
+  group* Placed_group = nullptr;
+
+  int Placed_room_face = 0;
+  int Placed_door = -1;
+
+  float Placed_room_angle = 0;
+  vector3 Placed_room_origin = {0, 0, 0};
+  matrix Placed_room_orient = IDENTITY_MATRIX;
+  vector3 Placed_room_attachpoint = {0, 0, 0};
+  matrix Placed_room_rotmat = IDENTITY_MATRIX;
+
+  room* Placed_baseroomp = nullptr;
+  int Placed_baseface = 0;
+
+  // The scrap buffer
+  group* Scrap = nullptr;
+
+  // Pointer to the scripts for this level
+  std::string Current_level_script;
+
+
+  int paged_in_count = 0;
+  int paged_in_num = 0;
+
+
+  //	object id clipboard.
+  int Copied_object_id = -1;
 };
 
 //	Editor.cpp:: Current state of the editor UI.
@@ -119,82 +203,15 @@ extern d3edit_state app;
 //	Editor.cpp:: Surface describing the actual desktop where the editor is running.
 extern grSurface *Desktop_surf;
 
-// flags for the textured views changed
-extern bool TV_changed;
-
 // Editor-only terrain globals (declared in terrain.h behind #ifdef EDITOR)
 extern int Editor_LOD_engine_off;
 extern bool Terrain_render_ext_room_objs;
 
-// Set this flag if a new world is loaded/created
-extern bool New_mine;
-
-// Set this when the mine has changed
-extern bool World_changed;
-
-// Set this when the editor state (but not the world itself) has changed
-extern bool State_changed;
-
-// Set this when the viewer (i.e., player) has moved
-extern bool Viewer_moved;
-
-// Set this when an object has moved
-extern bool Object_moved;
-
-// Set this when the editor viewpoint has changed
-extern bool Edview_changed;
-
-// Current room & face
-extern room *Curroomp;
-extern int Curface, Curedge, Curvert;
-extern int Curportal;
-
-// Current object
-extern int Cur_object_index;
-
-// Marked room & face
-extern room *Markedroomp;
-extern int Markedface, Markededge, Markedvert;
-
-// Placed room info
-extern int Placed_room;
-extern group *Placed_group;
-extern int Placed_room_face;
-extern int Placed_door;
-extern float Placed_room_angle;
-extern vector3 Placed_room_origin;
-extern matrix Placed_room_orient;
-extern vector3 Placed_room_attachpoint;
-extern matrix Placed_room_rotmat;
-extern room *Placed_baseroomp;
-extern int Placed_baseface;
-
-// Vars for the list of selected rooms
-extern int N_selected_rooms;
-extern std::array<int, 400> Selected_rooms;
-
-// Flag for if mine has changed (& thus needs to be saved)
-extern bool Mine_changed;
-
-//	Current trigger in mine displayed in trigger dialog
-extern int Current_trigger;
-
-// The scrap buffer
-extern group *Scrap;
-
-// Pointer to the scripts for this level
-extern char *Current_level_script;
 
 
-// The ID of the most recent viewer object (not counting room view)
-extern int Editor_viewer_id;
-
-extern int paged_in_count;
-extern int paged_in_num;
 
 
-//	object id clipboard.
-extern int Copied_object_id;
+
 
 //	FUNCTIONS
 void EditorStatus(const char *format, ...);

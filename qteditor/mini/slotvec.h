@@ -107,6 +107,11 @@ namespace d3
     // grown slots start unreferenced; shrunk slots are dropped entirely.
     void resize(size_type n);
 
+    // Removes the last slot, exactly like std::vector::pop_back, keeping the
+    // empty-slot accounting accurate (the popped slot may or may not have been
+    // referenced).
+    void pop_back(void);
+
     void clear() {
       base_type::clear();
       m_num_empty = 0;

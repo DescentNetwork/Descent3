@@ -97,6 +97,17 @@ namespace d3
         ++m_num_empty;
   }
 
+  template <typename T>
+  void slotvec_base_t<T>::pop_back(void)
+  {
+    Q_ASSERT(!this->empty());
+    if (base_type::back().first == 0) {
+      Q_ASSERT(m_num_empty > 0);
+      --m_num_empty;
+    }
+    base_type::pop_back();
+  }
+
   template class slotvec_base_t<bms_bitmap>;
   template class slotvec_base_t<bms_lightmap>;
   template class slotvec_base_t<game_path>;

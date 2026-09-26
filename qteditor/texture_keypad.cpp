@@ -64,44 +64,44 @@ TextureKeypad::~TextureKeypad() { delete ui; }
 
 void TextureKeypad::updateDialog() {
   // Editing a face's texture requires a current room + face.
-  const bool active = (Curroomp != nullptr && Curroomp->used && Curface >= 0 &&
-                       Curface < Curroomp->num_faces);
+  const bool active = (app.Curroomp != nullptr && app.Curroomp->used && app.Curface >= 0 &&
+                       app.Curface < app.Curroomp->num_faces);
   for (QWidget *w : findChildren<QWidget *>())
     if (w->objectName().startsWith("IDC_TEXPAD") || w->objectName().startsWith("IDC_FACE_MAP"))
       w->setEnabled(active);
 
   if (active)
-    ui->IDC_CURRENT_TEXTURE_NAME->setText(QString("Texture %1").arg(Curroomp->faces[Curface].tmap));
+    ui->IDC_CURRENT_TEXTURE_NAME->setText(QString("Texture %1").arg(app.Curroomp->faces[app.Curface].tmap));
   else
     ui->IDC_CURRENT_TEXTURE_NAME->setText("No face selected");
 }
 
-void TextureKeypad::onSlideLeft() { HTextureSlide(Curroomp, Curface, -1.0f * app.texscale, 0); }
-void TextureKeypad::onSlideRight() { HTextureSlide(Curroomp, Curface, 1.0f * app.texscale, 0); }
-void TextureKeypad::onSlideUp() { HTextureSlide(Curroomp, Curface, 0, 1.0f * app.texscale); }
-void TextureKeypad::onSlideDown() { HTextureSlide(Curroomp, Curface, 0, -1.0f * app.texscale); }
-void TextureKeypad::onRotLeft() { HTextureRotate(Curroomp, Curface, -0.1f * app.texscale); }
-void TextureKeypad::onRotRight() { HTextureRotate(Curroomp, Curface, 0.1f * app.texscale); }
-void TextureKeypad::onRotate90() { HTextureRotate(Curroomp, Curface, 3.14159f / 2.0f); }
-void TextureKeypad::onFlipX() { HTextureFlipX(Curroomp, Curface); }
-void TextureKeypad::onFlipY() { HTextureFlipY(Curroomp, Curface); }
-void TextureKeypad::onExpandU() { ScaleFaceUVs(Curroomp, Curface, 1.1f); }
-void TextureKeypad::onContractU() { ScaleFaceUVs(Curroomp, Curface, 1.0f / 1.1f); }
-void TextureKeypad::onExpandV() { ScaleFaceUVs(Curroomp, Curface, 1.1f); }
-void TextureKeypad::onContractV() { ScaleFaceUVs(Curroomp, Curface, 1.0f / 1.1f); }
-void TextureKeypad::onStretchLess() { HTextureStretchLess(Curroomp, Curface, Curedge, app.texscale); }
-void TextureKeypad::onStretchMore() { HTextureStretchMore(Curroomp, Curface, Curedge, app.texscale); }
+void TextureKeypad::onSlideLeft() { HTextureSlide(app.Curroomp, app.Curface, -1.0f * app.texscale, 0); }
+void TextureKeypad::onSlideRight() { HTextureSlide(app.Curroomp, app.Curface, 1.0f * app.texscale, 0); }
+void TextureKeypad::onSlideUp() { HTextureSlide(app.Curroomp, app.Curface, 0, 1.0f * app.texscale); }
+void TextureKeypad::onSlideDown() { HTextureSlide(app.Curroomp, app.Curface, 0, -1.0f * app.texscale); }
+void TextureKeypad::onRotLeft() { HTextureRotate(app.Curroomp, app.Curface, -0.1f * app.texscale); }
+void TextureKeypad::onRotRight() { HTextureRotate(app.Curroomp, app.Curface, 0.1f * app.texscale); }
+void TextureKeypad::onRotate90() { HTextureRotate(app.Curroomp, app.Curface, 3.14159f / 2.0f); }
+void TextureKeypad::onFlipX() { HTextureFlipX(app.Curroomp, app.Curface); }
+void TextureKeypad::onFlipY() { HTextureFlipY(app.Curroomp, app.Curface); }
+void TextureKeypad::onExpandU() { ScaleFaceUVs(app.Curroomp, app.Curface, 1.1f); }
+void TextureKeypad::onContractU() { ScaleFaceUVs(app.Curroomp, app.Curface, 1.0f / 1.1f); }
+void TextureKeypad::onExpandV() { ScaleFaceUVs(app.Curroomp, app.Curface, 1.1f); }
+void TextureKeypad::onContractV() { ScaleFaceUVs(app.Curroomp, app.Curface, 1.0f / 1.1f); }
+void TextureKeypad::onStretchLess() { HTextureStretchLess(app.Curroomp, app.Curface, app.Curedge, app.texscale); }
+void TextureKeypad::onStretchMore() { HTextureStretchMore(app.Curroomp, app.Curface, app.Curedge, app.texscale); }
 
-void TextureKeypad::onSetDefault() { HTextureSetDefault(Curroomp, Curface); }
+void TextureKeypad::onSetDefault() { HTextureSetDefault(app.Curroomp, app.Curface); }
 
 void TextureKeypad::onGrab() {
-  if (Curroomp != nullptr && Curface >= 0)
-    app.texdlg_texture = Curroomp->faces[Curface].tmap;
+  if (app.Curroomp != nullptr && app.Curface >= 0)
+    app.texdlg_texture = app.Curroomp->faces[app.Curface].tmap;
 }
 
 void TextureKeypad::onReplace() {
-  if (Curroomp != nullptr && Curface >= 0)
-    Curroomp->faces[Curface].tmap = app.texdlg_texture;
+  if (app.Curroomp != nullptr && app.Curface >= 0)
+    app.Curroomp->faces[app.Curface].tmap = app.texdlg_texture;
 }
 
 void TextureKeypad::onFaceMap() { onSetDefault(); }

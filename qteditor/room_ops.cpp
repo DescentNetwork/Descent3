@@ -320,11 +320,11 @@ void DeleteRoomFace(room *rp, int facenum) {
   rp->faces.erase(rp->faces.begin() + facenum);
   rp->num_faces--;
 
-  if (rp == Curroomp) {
-    if (Curface == rp->num_faces)
-      Curface = rp->num_faces - 1;
-    if (Markedface == rp->num_faces)
-      Markedface = rp->num_faces - 1;
+  if (rp == app.Curroomp) {
+    if (app.Curface == rp->num_faces)
+      app.Curface = rp->num_faces - 1;
+    if (app.Markedface == rp->num_faces)
+      app.Markedface = rp->num_faces - 1;
   }
 
   if (rp->num_bbf_regions) {
@@ -422,7 +422,7 @@ void DeletePortalPair(room *rp, int portalnum) {
 
   EditorStatus("Deleted room %d portal %d and room %d portal %d", roomnum, portalnum, croom, cportal);
 
-  World_changed = true;
+  app.World_changed = true;
 }
 
 // ============================================================================
@@ -447,7 +447,7 @@ void FlipFace(room *rp, int facenum) {
   if (!ComputeFaceNormal(rp, facenum))
     Q_ASSERT(false);
 
-  World_changed = true;
+  app.World_changed = true;
   EditorStatus("Room %d face %d flipped.", ROOMNUM(rp), facenum);
 }
 
@@ -684,7 +684,7 @@ bool CombineFaces(room *rp, int face0, int face1) {
 
   DeleteRoomFace(rp, face1);
 
-  World_changed = true;
+  app.World_changed = true;
   return true;
 }
 
@@ -701,13 +701,13 @@ void RotateRooms(angle p, angle h, angle b) {
   int marked_portalnum = -1;
   int cur_portalnum = -1;
 
-  if (Curroomp == Markedroomp || Markedroomp == NULL) {
+  if (app.Curroomp == app.Markedroomp || app.Markedroomp == NULL) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You do not have a valid room marked.");
     return;
   }
 
-  for (int i = 0; i < Markedroomp->num_portals; i++) {
-    if (Markedroomp->portals[i].croom == (Curroomp - Rooms.data())) {
+  for (int i = 0; i < app.Markedroomp->num_portals; i++) {
+    if (app.Markedroomp->portals[i].croom == (app.Curroomp - Rooms.data())) {
       marked_portalnum = i;
       break;
     }
@@ -718,8 +718,8 @@ void RotateRooms(angle p, angle h, angle b) {
     return;
   }
 
-  for (int i = 0; i < Curroomp->num_portals; i++) {
-    if (Curroomp->portals[i].croom == (Markedroomp - Rooms.data())) {
+  for (int i = 0; i < app.Curroomp->num_portals; i++) {
+    if (app.Curroomp->portals[i].croom == (app.Markedroomp - Rooms.data())) {
       cur_portalnum = i;
       break;
     }
@@ -732,20 +732,20 @@ void RotateRooms(angle p, angle h, angle b) {
 
   SaveRoomSelectedList();
 
-  Curroomp->portals[cur_portalnum].croom = -1;
-  SelectConnectedRooms(Curroomp - Rooms.data());
-  Curroomp->portals[cur_portalnum].croom = Markedroomp - Rooms.data();
+  app.Curroomp->portals[cur_portalnum].croom = -1;
+  SelectConnectedRooms(app.Curroomp - Rooms.data());
+  app.Curroomp->portals[cur_portalnum].croom = app.Markedroomp - Rooms.data();
 
-  if (IsRoomSelected(Markedroomp - Rooms.data())) {
+  if (IsRoomSelected(app.Markedroomp - Rooms.data())) {
     RestoreRoomSelectedList();
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot rotate: rooms connect back to base room.");
     return;
   }
 
-  ComputePortalCenter(&rotpoint, Curroomp, cur_portalnum);
+  ComputePortalCenter(&rotpoint, app.Curroomp, cur_portalnum);
   vm_AnglesToMatrix(&rotmat, p, h, b);
-  face *fp = &Curroomp->faces[Curroomp->portals[cur_portalnum].portal_face];
-  ComputeNormal(portal_normal, fp->num_verts, fp->face_verts, Curroomp->verts);
+  face *fp = &app.Curroomp->faces[app.Curroomp->portals[cur_portalnum].portal_face];
+  ComputeNormal(portal_normal, fp->num_verts, fp->face_verts, app.Curroomp->verts);
   portal_normal *= -1.0;
 
   vm_VectorToMatrix(&roommat, &portal_normal, NULL, NULL);
@@ -755,8 +755,8 @@ void RotateRooms(angle p, angle h, angle b) {
     room *rp = &Rooms[Selected_rooms[i]];
 
     for (int v = 0; v < rp->num_verts; v++) {
-      if (rp == Curroomp) {
-        face *cfp = &Curroomp->faces[Curroomp->portals[cur_portalnum].portal_face];
+      if (rp == app.Curroomp) {
+        face *cfp = &app.Curroomp->faces[app.Curroomp->portals[cur_portalnum].portal_face];
         for (int t = 0; t < cfp->num_verts; t++)
           if (v == cfp->face_verts[t])
             goto skip_vert;
@@ -771,17 +771,17 @@ void RotateRooms(angle p, angle h, angle b) {
 
   RestoreRoomSelectedList();
 
-  fp = &Curroomp->faces[Curroomp->portals[cur_portalnum].portal_face];
+  fp = &app.Curroomp->faces[app.Curroomp->portals[cur_portalnum].portal_face];
   for (int i = 0; i < fp->num_verts; i++) {
     int checkvert = fp->face_verts[i];
 
-    for (int t = 0; t < Curroomp->num_faces; t++) {
-      for (int l = 0; l < Curroomp->num_portals; l++)
-        if (Curroomp->portals[l].portal_face == t)
+    for (int t = 0; t < app.Curroomp->num_faces; t++) {
+      for (int l = 0; l < app.Curroomp->num_portals; l++)
+        if (app.Curroomp->portals[l].portal_face == t)
           goto skip_face;
 
-      for (int v = 0; v < Curroomp->faces[t].num_verts; v++) {
-        if (Curroomp->faces[t].face_verts[v] == checkvert) {
+      for (int v = 0; v < app.Curroomp->faces[t].num_verts; v++) {
+        if (app.Curroomp->faces[t].face_verts[v] == checkvert) {
           int k;
           for (k = 0; k < checkcount; k++)
             if (checkfaces[k] == t)
@@ -795,9 +795,9 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   if (checkcount > 0)
-    FixConcaveFaces(Curroomp, checkfaces, checkcount);
+    FixConcaveFaces(app.Curroomp, checkfaces, checkcount);
 
-  World_changed = true;
+  app.World_changed = true;
 }
 
 // ============================================================================
@@ -825,7 +825,7 @@ void ConnectPortal(room *rp, int portal_num, int dest_room) {
 
   LinkRooms(Rooms.data(), ROOMNUM(rp), pp->portal_face, dest_room, dest_face);
 
-  World_changed = true;
+  app.World_changed = true;
   EditorStatus("Connected room %d to room %d.", ROOMNUM(rp), dest_room);
 }
 
@@ -1241,19 +1241,19 @@ check_faces:;
 // ============================================================================
 // AttachRoom — port of editor/HRoom.cpp:703
 // Places a room that was placed via PlaceRoom, creating portals as
-// needed.  Requires Placed_room, Placed_baseroomp, Placed_baseface,
-// Placed_room_face, Placed_room_origin, Placed_room_attachpoint,
-// and Placed_room_rotmat to be set by the caller.
+// needed.  Requires app.Placed_room, app.Placed_baseroomp, app.Placed_baseface,
+// app.Placed_room_face, app.Placed_room_origin, app.Placed_room_attachpoint,
+// and app.Placed_room_rotmat to be set by the caller.
 // ============================================================================
 void AttachRoom() {
-  Q_ASSERT(Placed_room != -1);
+  Q_ASSERT(app.Placed_room != -1);
 
-  room *baseroomp = Placed_baseroomp;
-  int baseface = Placed_baseface;
-  room *attroomp = &Rooms[Placed_room];
-  int attface = Placed_room_face;
-  vector3 attcenter = Placed_room_origin;
-  vector3 basecenter = Placed_room_attachpoint;
+  room *baseroomp = app.Placed_baseroomp;
+  int baseface = app.Placed_baseface;
+  room *attroomp = &Rooms[app.Placed_room];
+  int attface = app.Placed_room_face;
+  vector3 attcenter = app.Placed_room_origin;
+  vector3 basecenter = app.Placed_room_attachpoint;
 
   // Find a free slot in Rooms[] (grows the table on demand; the first unused
   // slot may be a hole in [0, size()) or a fresh index appended at the end).
@@ -1271,7 +1271,7 @@ void AttachRoom() {
 
   // Rotate verts, copying into new room
   for (int i = 0; i < attroomp->num_verts; i++)
-    newroomp->verts[i] = ((attroomp->verts[i] - attcenter) * Placed_room_rotmat) + basecenter;
+    newroomp->verts[i] = ((attroomp->verts[i] - attcenter) * app.Placed_room_rotmat) + basecenter;
 
   // Copy faces to new room
   for (int i = 0; i < attroomp->num_faces; i++) {
@@ -1303,26 +1303,26 @@ void AttachRoom() {
     LinkRooms(Rooms.data(), ROOMNUM(baseroomp), baseface, ROOMNUM(newroomp), attface);
 
     // If there is a door, place it
-    if (Placed_door != -1) {
-      matrix orient = ~Placed_room_rotmat;
+    if (app.Placed_door != -1) {
+      matrix orient = ~app.Placed_room_rotmat;
       vector3 doorcenter = {0, 0, 0};
-      vector3 room_center = ((doorcenter - attcenter) * Placed_room_rotmat) + basecenter;
+      vector3 room_center = ((doorcenter - attcenter) * app.Placed_room_rotmat) + basecenter;
 
-      FreeRoom(&Rooms[Placed_room]);
+      FreeRoom(&Rooms[app.Placed_room]);
 
-      ObjCreate(OBJ_DOOR, Placed_door, ROOMNUM(newroomp), room_center, &orient);
+      ObjCreate(OBJ_DOOR, app.Placed_door, ROOMNUM(newroomp), room_center, &orient);
 
-      doorway *dp = DoorwayAdd(newroomp, Placed_door);
+      doorway *dp = DoorwayAdd(newroomp, app.Placed_door);
       (void)dp;
 
-      Placed_door = -1;
+      app.Placed_door = -1;
     }
   }
 
   // Un-place the room
-  Placed_room = -1;
+  app.Placed_room = -1;
 
-  World_changed = true;
+  app.World_changed = true;
 }
 
 // ============================================================================
@@ -1598,23 +1598,23 @@ void ComputePlacedRoomMatrix() {
   matrix srcmat;
   vector3 t;
 
-  if (Placed_room != -1) {
-    placedroomp = &Rooms[Placed_room];
-    placedface = Placed_room_face;
+  if (app.Placed_room != -1) {
+    placedroomp = &Rooms[app.Placed_room];
+    placedface = app.Placed_room_face;
   } else {
-    placedroomp = &Rooms[Placed_room];
-    placedface = Placed_room_face;
+    placedroomp = &Rooms[app.Placed_room];
+    placedface = app.Placed_room_face;
   }
 
   t = -placedroomp->faces[placedface].normal;
   vm_VectorToMatrix(&srcmat, &t, NULL, NULL);
-  vm_VectorAngleToMatrix(&Placed_room_orient, &Placed_room_orient.fvec, Placed_room_angle);
+  vm_VectorAngleToMatrix(&app.Placed_room_orient, &app.Placed_room_orient.fvec, app.Placed_room_angle);
 
   vm_Orthogonalize(&srcmat);
-  vm_Orthogonalize(&Placed_room_orient);
+  vm_Orthogonalize(&app.Placed_room_orient);
 
-  vm_MatrixMulTMatrix(&Placed_room_rotmat, &srcmat, &Placed_room_orient);
-  vm_Orthogonalize(&Placed_room_rotmat);
+  vm_MatrixMulTMatrix(&app.Placed_room_rotmat, &srcmat, &app.Placed_room_orient);
+  vm_Orthogonalize(&app.Placed_room_rotmat);
 }
 
 // PlaceRoom — editor/HRoom.cpp:585
@@ -1624,16 +1624,16 @@ void PlaceRoom(room *baseroomp, int baseface, int placed_room, int placed_room_f
 
   room *placedroomp = &Rooms[placed_room];
 
-  Placed_room = placed_room;
-  Placed_room_face = placed_room_face;
-  Placed_room_orient.fvec = baseroomp->faces[baseface].normal;
-  Placed_room_angle = 0;
-  Placed_baseroomp = baseroomp;
-  Placed_baseface = baseface;
-  Placed_door = placed_room_door;
+  app.Placed_room = placed_room;
+  app.Placed_room_face = placed_room_face;
+  app.Placed_room_orient.fvec = baseroomp->faces[baseface].normal;
+  app.Placed_room_angle = 0;
+  app.Placed_baseroomp = baseroomp;
+  app.Placed_baseface = baseface;
+  app.Placed_door = placed_room_door;
 
-  ComputeCenterPointOnFace(&Placed_room_attachpoint, baseroomp, baseface);
-  ComputeCenterPointOnFace(&Placed_room_origin, placedroomp, placed_room_face);
+  ComputeCenterPointOnFace(&app.Placed_room_attachpoint, baseroomp, baseface);
+  ComputeCenterPointOnFace(&app.Placed_room_origin, placedroomp, placed_room_face);
 
   ComputePlacedRoomMatrix();
 }

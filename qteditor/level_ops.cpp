@@ -143,32 +143,32 @@ void CreateNewMine() {
   Player_object = nullptr;
 
   // Create the default room (octagonal prism at Mine_origin).
-  Curroomp = CreateDefaultRoom();
+  app.Curroomp = CreateDefaultRoom();
 
   // Reset selection / viewer globals.
-  Curface = Curedge = Curvert = 0;
-  Curportal = -1;
-  New_mine = true;
-  World_changed = false;
+  app.Curface = app.Curedge = app.Curvert = 0;
+  app.Curportal = -1;
+  app.New_mine = true;
+  app.World_changed = false;
 
   // Reset the view position for the orbit camera.
   app.view_mode = state::viewer::mine;
-  Editor_viewer_id = -1;
+  app.Editor_viewer_id = -1;
 
   // Create a camera for this level (Win32 HFile.cpp:478 SetEditorViewer).
   SetEditorViewer();
 
   // Clear the marked room and selected segments.
-  Markedroomp = nullptr;
+  app.Markedroomp = nullptr;
   ClearRoomSelectedList();
 
   // Clear the placed room & group.
-  Placed_room = -1;
-  Placed_group = nullptr;
+  app.Placed_room = -1;
+  app.Placed_group = nullptr;
 
   // Reset triggers.
   Triggers.clear();
-  Current_trigger = -1;
+  app.Current_trigger = -1;
 
   // Reset terrain.
   ResetTerrain(1);
@@ -357,7 +357,7 @@ static void setViewer(int objnum) {
   Viewer_object = &Objects[objnum];
 
   if (app.view_mode != state::viewer::room)
-    Editor_viewer_id = Viewer_object->id;
+    app.Editor_viewer_id = Viewer_object->id;
 
   if ((app.view_mode == state::viewer::mine) && OBJECT_OUTSIDE(Viewer_object))
     app.view_mode = state::viewer::terrain;
@@ -365,7 +365,7 @@ static void setViewer(int objnum) {
   if ((app.view_mode == state::viewer::terrain) && !OBJECT_OUTSIDE(Viewer_object))
     app.view_mode = state::viewer::mine;
 
-  State_changed = Viewer_moved = true;
+  app.State_changed = app.Viewer_moved = true;
 }
 
 // Sets the viewer object for the editor, creating if not already in the
@@ -377,7 +377,7 @@ void SetEditorViewer() {
   if (app.view_mode == state::viewer::room)
     objnum = findViewerObject(ROOM_VIEWER_ID);
   else
-    objnum = findNextViewerObject(Editor_viewer_id, app.view_mode);
+    objnum = findNextViewerObject(app.Editor_viewer_id, app.view_mode);
 
   // If no viewer object, create one
   if (objnum == -1) {
@@ -413,7 +413,7 @@ void SetEditorViewer() {
       if (Viewer_object->type == OBJ_VIEWER)
         objnum = OBJNUM(Viewer_object);
       else {
-        objnum = findNextViewerObject(Editor_viewer_id, state::viewer::invalid);
+        objnum = findNextViewerObject(app.Editor_viewer_id, state::viewer::invalid);
         Q_ASSERT(objnum != -1);
       }
       ObjSetPos(Objects[objnum], pos, roomnum, nullptr, true);
@@ -447,7 +447,7 @@ bool EditorLoadLevel(const std::filesystem::path& filename) {
   // viewer must be re-established before the camera can render (Win32
   // calls SetEditorViewer() in EditorLoadLevel, HFile.cpp:623).
   CheckLevelNames();
-  New_mine = true;
+  app.New_mine = true;
   SetEditorViewer();
   return true;
 }
@@ -462,7 +462,7 @@ bool EditorSaveLevel(const std::filesystem::path& filename) {
   // have a Linux equivalent.
   if (!SaveLevel(filename, true))
     return false;
-  Mine_changed = false;
+  app.Mine_changed = false;
   return true;
 }
 

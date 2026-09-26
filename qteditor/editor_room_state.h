@@ -20,10 +20,15 @@
 
 #include "fix.h"
 #include "vecmat_external.h"
+#include "room_external.h"
 
 struct face;
-struct room;
 struct roomUVL;
+
+// Vars for the list of selected rooms
+extern int N_selected_rooms;
+extern std::array<int, MAX_ROOMS> Selected_rooms;
+
 
 // Room selection list (editor/selectedroom.cpp in Win32).
 int IsRoomSelected(int roomnum);

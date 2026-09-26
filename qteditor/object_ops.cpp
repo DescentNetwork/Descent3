@@ -116,7 +116,7 @@ bool RotateObject(int objnum, angle p, angle h, angle b) {
   vm_Orthogonalize(&obj.orient);
   ObjSetOrient(obj, obj.orient);
 
-  Object_moved = true;
+  app.Object_moved = true;
   return true;
 }
 
@@ -180,9 +180,9 @@ bool HObjectPlace(int obj_type, int obj_id) {
       surface_norm = &TerrainNormals[MAX_TERRAIN_LOD - 1][cellnum].normal1;
       roomnum = MAKE_ROOMNUM(cellnum);
     } else {
-      ComputeCenterPointOnFace(&pos, Curroomp, Curface);
-      surface_norm = &Curroomp->faces[Curface].normal;
-      roomnum = ROOMNUM(Curroomp);
+      ComputeCenterPointOnFace(&pos, app.Curroomp, app.Curface);
+      surface_norm = &app.Curroomp->faces[app.Curface].normal;
+      roomnum = ROOMNUM(app.Curroomp);
 
       if (Rooms[roomnum].flags.external)
         roomnum = GetTerrainRoomFromPos(pos).value_or(-1);
@@ -235,8 +235,8 @@ bool HObjectPlace(int obj_type, int obj_id) {
     vm_Orthogonalize(&Players[obj_id].start_orient);
   }
 
-  Cur_object_index = objnum;
-  World_changed = true;
+  app.Cur_object_index = objnum;
+  app.World_changed = true;
 
   return true;
 }
@@ -276,7 +276,7 @@ void ResetGroundObject(object& obj) {
 
   ObjSetPos(obj, pos, obj.roomnum, &object_orient, false);
 
-  World_changed = true;
+  app.World_changed = true;
 }
 
 // ============================================================================
@@ -295,28 +295,28 @@ void HObjectMove(int objnum, float dx, float dy, float dz) {
   vector3 newpos = obj.pos + (mat.rvec * dx) + (mat.uvec * dy) + (mat.fvec * -dz);
 
   MoveObject(obj, newpos);
-  Object_moved = true;
+  app.Object_moved = true;
 }
 
 // ============================================================================
 // Rotation functions — editor/HObject.cpp:503-513
 // ============================================================================
-void HObjectIncreaseBank() { RotateObject(Cur_object_index, 0, 0, Object_move_rotation); }
-void HObjectDecreaseBank() { RotateObject(Cur_object_index, 0, 0, -Object_move_rotation); }
-void HObjectIncreasePitch() { RotateObject(Cur_object_index, Object_move_rotation, 0, 0); }
-void HObjectDecreasePitch() { RotateObject(Cur_object_index, -Object_move_rotation, 0, 0); }
-void HObjectIncreaseHeading() { RotateObject(Cur_object_index, 0, Object_move_rotation, 0); }
-void HObjectDecreaseHeading() { RotateObject(Cur_object_index, 0, -Object_move_rotation, 0); }
+void HObjectIncreaseBank() { RotateObject(app.Cur_object_index, 0, 0, Object_move_rotation); }
+void HObjectDecreaseBank() { RotateObject(app.Cur_object_index, 0, 0, -Object_move_rotation); }
+void HObjectIncreasePitch() { RotateObject(app.Cur_object_index, Object_move_rotation, 0, 0); }
+void HObjectDecreasePitch() { RotateObject(app.Cur_object_index, -Object_move_rotation, 0, 0); }
+void HObjectIncreaseHeading() { RotateObject(app.Cur_object_index, 0, Object_move_rotation, 0); }
+void HObjectDecreaseHeading() { RotateObject(app.Cur_object_index, 0, -Object_move_rotation, 0); }
 
 // ============================================================================
 // HObjectDelete — editor/HObject.cpp:517
 // Deletes the currently selected object from the mine.
 // ============================================================================
 void HObjectDelete() {
-  if (Cur_object_index == -1)
+  if (app.Cur_object_index == -1)
     return;
 
-  int objnum = Cur_object_index;
+  int objnum = app.Cur_object_index;
 
   if (&Objects[objnum] == Player_object) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Can't delete Player object");
@@ -329,10 +329,10 @@ void HObjectDelete() {
   }
 
   ObjDelete(objnum);
-  if (objnum == Cur_object_index)
-    Cur_object_index = -1;
+  if (objnum == app.Cur_object_index)
+    app.Cur_object_index = -1;
 
-  World_changed = true;
+  app.World_changed = true;
 }
 
 // ============================================================================
@@ -340,11 +340,11 @@ void HObjectDelete() {
 // Sets default (identity) orientation for the current object.
 // ============================================================================
 void HObjectSetDefault() {
-  if (Cur_object_index == -1)
+  if (app.Cur_object_index == -1)
     return;
 
-  ObjSetOrient(Objects[Cur_object_index], Identity_matrix);
-  World_changed = true;
+  ObjSetOrient(Objects[app.Cur_object_index], Identity_matrix);
+  app.World_changed = true;
 }
 
 // ============================================================================
@@ -357,7 +357,7 @@ void HObjectMoveToViewer(object& objp) {
   vector3 pos = Viewer_object->pos + Viewer_object->orient.fvec * OBJECT_PLACE_DIST;
   MoveObject(objp, pos);
 
-  World_changed = true;
+  app.World_changed = true;
 }
 
 // ============================================================================
@@ -365,10 +365,10 @@ void HObjectMoveToViewer(object& objp) {
 // Flips the current object by negating its up and right vectors.
 // ============================================================================
 void HObjectFlip() {
-  matrix *m = &Objects[Cur_object_index].orient;
+  matrix *m = &Objects[app.Cur_object_index].orient;
 
   m->uvec = -m->uvec;
   m->rvec = -m->rvec;
 
-  World_changed = true;
+  app.World_changed = true;
 }
