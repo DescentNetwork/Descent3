@@ -21,6 +21,11 @@
 // anim_entry is stored on disk (anim_sound_index and used are runtime-only).
 
 #include "objinfo.h"
+#include "mem.h"
+#include "robotfire.h"
+#include "robotfirestruct.h"
+
+#include <cstring>
 
 object_info Object_info[MAX_OBJECTS];
 
@@ -55,4 +60,111 @@ byte_ostream& operator<<(byte_ostream& output, const anim_elem& data) {
   for (const anim_entry& e : data.elem)
     output << e;
   return output;
+}
+
+// ============================================================================
+// Object-id slot management (ported from the engine's objinfo.cpp).
+// ============================================================================
+
+namespace {
+constexpr float DEFAULT_OBJECT_SIZE = 4.0f;
+constexpr float DEFAULT_OBJECT_MASS = 1.0f;
+constexpr float DEFAULT_OBJECT_DRAG = 0.1f;
+constexpr float DEFAULT_OBJECT_ROTDRAG = 0.01f;
+}
+
+// Allocs a object for use, returns -1 if error, else index on success
+int AllocObjectID(int type, bool f_anim, bool f_weapons, bool f_ai) {
+  for (int i = 0; i < MAX_OBJECT_IDS; i++) {
+    if (Object_info[i].type == OBJ_NONE) {
+      Object_info[i] = object_info{};
+
+      if (f_ai) {
+        Object_info[i].ai_info = mem_rmalloc<t_ai_info>();
+        memset(Object_info[i].ai_info, 0, sizeof(t_ai_info));
+      }
+      // Make sure the weapon battery info is cleared for a new object
+      if (f_weapons) {
+        Object_info[i].static_wb = mem_rmalloc<otype_wb_info>(MAX_WBS_PER_OBJ);
+        memset(Object_info[i].static_wb, 0, sizeof(otype_wb_info) * MAX_WBS_PER_OBJ);
+        WBClearInfo(Object_info[i].static_wb);
+      }
+
+      if (f_anim) {
+        Object_info[i].anim = mem_rmalloc<anim_elem>(NUM_MOVEMENT_CLASSES);
+        memset(Object_info[i].anim, 0, sizeof(anim_elem) * NUM_MOVEMENT_CLASSES);
+        for (int j = 0; j < NUM_MOVEMENT_CLASSES; j++)
+          for (int k = 0; k < NUM_ANIMS_PER_CLASS; k++) {
+            Object_info[i].anim[j].elem[k].spc = 1.0f;
+            Object_info[i].anim[j].elem[k].anim_sound_index = -1;
+          }
+      }
+
+      Object_info[i].type = type;
+      Object_info[i].size = DEFAULT_OBJECT_SIZE;
+      Object_info[i].phys_info.mass = DEFAULT_OBJECT_MASS;
+      Object_info[i].phys_info.drag = DEFAULT_OBJECT_DRAG;
+      Object_info[i].phys_info.rotdrag = DEFAULT_OBJECT_ROTDRAG;
+
+      Object_info[i].phys_info.flags.bounce = true; // PF_BOUNCE
+      Object_info[i].phys_info.num_bounces = -1;
+      Object_info[i].phys_info.coeff_restitution = 1.0f;
+      Object_info[i].phys_info.hit_die_dot = -1; // -1 means doesn't apply
+
+      Object_info[i].med_render_handle = -1;
+      Object_info[i].lo_render_handle = -1;
+      Object_info[i].med_lod_distance = DEFAULT_MED_LOD_DISTANCE;
+      Object_info[i].lo_lod_distance = DEFAULT_LO_LOD_DISTANCE;
+      Object_info[i].respawn_scalar = 1.0f;
+
+      if (type == OBJ_CLUTTER || type == OBJ_ROBOT) {
+        Object_info[i].med_lod_distance *= 10;
+        Object_info[i].lo_lod_distance *= 10;
+      }
+
+      Object_info[i].icon_name.clear();
+      Object_info[i].flags.inven_selectable = true; // OIF_INVEN_SELECTABLE
+
+      // init spew types
+      for (int j = 0; j < MAX_DSPEW_TYPES; j++) {
+        Object_info[i].dspew[j] = -1;
+        Object_info[i].dspew_number[j] = 0;
+      }
+
+      // init ammo count
+      Object_info[i].ammo_count = 0;
+      Object_info[i].multi_allowed = true;
+      Num_object_ids[type]++;
+      return i;
+    }
+  }
+
+  Q_ASSERT(false); // No slots free!
+  return -1;
+}
+
+// Frees object index n
+void FreeObjectID(int n) {
+  Q_ASSERT(Object_info[n].type != OBJ_NONE);
+
+  Num_object_ids[Object_info[n].type]--;
+  Object_info[n].type = OBJ_NONE;
+  Object_info[n].name.clear();
+  Object_info[n].icon_name.clear();
+  Object_info[n].script_name_override.clear();
+  Object_info[n].module_name.clear();
+  Object_info[n].description.clear();
+
+  if (Object_info[n].anim) {
+    mem_free(Object_info[n].anim);
+    Object_info[n].anim = nullptr;
+  }
+  if (Object_info[n].ai_info) {
+    mem_free(Object_info[n].ai_info);
+    Object_info[n].ai_info = nullptr;
+  }
+  if (Object_info[n].static_wb) {
+    mem_free(Object_info[n].static_wb);
+    Object_info[n].static_wb = nullptr;
+  }
 }

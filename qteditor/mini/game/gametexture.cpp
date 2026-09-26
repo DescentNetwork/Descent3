@@ -258,3 +258,71 @@ byte_ostream& operator<<(byte_ostream& output, const texture& data)
           << reinterpret_cast<const uint32_t&>(data.flags);
 }
 
+// ============================================================================
+// Texture slot management (ported from the engine's gametexture.cpp).
+// ============================================================================
+
+// Set aside a texture for use
+int AllocTexture() {
+  if (GameTextures.num_empty() == 0 && GameTextures.size() >= MAX_TEXTURES)
+    return -1; // No textures free!
+
+  const size_t n = GameTextures.next_slot();
+  Q_ASSERT(GameTextures.is_unused(n));
+
+  GameTextures[n] = texture{};
+  GameTextures[n].corona_type = 0;
+  GameTextures[n].bumpmap = -1;
+  GameTextures[n].procedural = nullptr;
+  GameTextures[n].name.clear();
+  GameTextures[n].flags = texture_flags_t{};
+  GameTextures[n].alpha = 1.0f;
+  GameTextures[n].speed = 1.0f;
+  GameTextures[n].reflectivity = 0.6f;
+  GameTextures[n].bm_handle = -1;
+  GameTextures[n].destroy_handle = -1;
+
+  GameTextures.acquire(n);
+  return static_cast<int>(n);
+}
+
+// Frees a texture for future use
+void FreeTexture(int n) {
+  Q_ASSERT(GameTextures.is_used(n));
+
+  GameTextures[n] = texture{};
+  GameTextures.release(n);
+}
+
+// Given current index, gets index of next texture in use
+int GetNextTexture(int n) {
+  if ((n < 0) || (n >= static_cast<int>(GameTextures.size())))
+    n = -1;
+
+  for (int i = n + 1; i < static_cast<int>(GameTextures.size()); i++)
+    if (GameTextures.is_used(i))
+      return i;
+  for (int i = 0; i < n; i++)
+    if (GameTextures.is_used(i))
+      return i;
+
+  // this is the only one
+  return n;
+}
+
+// Given current index, gets index of prev texture in use
+int GetPreviousTexture(int n) {
+  if ((n < 0) || (n >= static_cast<int>(GameTextures.size())))
+    n = static_cast<int>(GameTextures.size());
+
+  for (int i = n - 1; i >= 0; i--)
+    if (GameTextures.is_used(i))
+      return i;
+  for (int i = static_cast<int>(GameTextures.size()) - 1; i > n; i--)
+    if (GameTextures.is_used(i))
+      return i;
+
+  // this is the only one
+  return n;
+}
+

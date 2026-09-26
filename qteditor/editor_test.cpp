@@ -6851,6 +6851,17 @@ private slots:
   void testFviWallAndPortal() {
     RoomsReset();
 
+    // buildBoxRoom() tags every box face with the engine's default texture
+    // slot 0 (InitRoomFace sets tmap=0), and fvi skips faces whose texture is
+    // marked fly-through/transparent.  Earlier interaction tests can leave the
+    // slot-0 texture with fly_thru set, so pin it to a plain solid texture
+    // here to keep this test independent of whatever else ran before it.
+    if (GameTextures.size() == 0)
+      GameTextures.add_slot();
+    if (GameTextures.is_unused(0))
+      GameTextures.acquire(0);
+    GameTextures[0].flags.fly_thru = false;
+
     // Portal between room0 (+X face at x=15) and room1 (-X face at x=15).
     int p0 = buildBoxRoom(0, vector3{-5, -5, -5}, vector3{15, 5, 5}, 1, 1);
     int p1 = buildBoxRoom(1, vector3{15, -5, -5}, vector3{35, 5, 5}, 0, 0);

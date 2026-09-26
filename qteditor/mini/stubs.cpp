@@ -334,39 +334,6 @@ void oeLnxAppDatabase::get_user_name(char *buffer, size_t *size) { PRINT_STUB(__
 std::unique_ptr<oeApplication> Descent;
 std::unique_ptr<oeAppDatabase> Database;
 
-// ==================== Find* ====================
-
-
-int FindShipName(const std::string &name) { PRINT_STUB(__FUNCTION__); return -1; }
-
-// ==================== Alloc/Free ====================
-//int AllocDoor() { PRINT_STUB(__FUNCTION__); return -1; }
-//void FreeDoor(int n) { PRINT_STUB(__FUNCTION__);}
-int AllocObjectID(int id, bool a, bool b, bool c) { PRINT_STUB(__FUNCTION__); return -1; }
-void FreeObjectID(int n) { PRINT_STUB(__FUNCTION__); }
-int AllocShip() { PRINT_STUB(__FUNCTION__); return -1; }
-void FreeShip(int n) { PRINT_STUB(__FUNCTION__); }
-int AllocSound() { PRINT_STUB(__FUNCTION__); return -1; }
-void FreeSound(int n) { PRINT_STUB(__FUNCTION__); }
-int AllocTexture() {  PRINT_STUB(__FUNCTION__); return -1; }
-void FreeTexture(int n) { PRINT_STUB(__FUNCTION__); }
-int AllocWeapon() { PRINT_STUB(__FUNCTION__); return -1; }
-void FreeWeapon(int n) { PRINT_STUB(__FUNCTION__); }
-
-// ==================== GetNext/Prev ====================
-//int GetNextDoor(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-//int GetPrevDoor(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetNextMegacell(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetPrevMegacell(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetNextShip(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetPrevShip(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetNextSound(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetPrevSound(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetNextTexture(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetPreviousTexture(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetNextWeapon(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-int GetPrevWeapon(int n) { PRINT_STUB(__FUNCTION__); return -1; }
-
 // ==================== Remap ====================
 void RemapShips() { PRINT_STUB(__FUNCTION__); }
 void RemapSounds() { PRINT_STUB(__FUNCTION__); }

@@ -122,3 +122,88 @@ bool ObjectsAreRelated(int o1, int o2) {
   // Otherwise, it is two weapons and by default, they should not collide
   return true;
 }
+
+// ============================================================================
+// Weapon slot management (ported from the engine's weapon.cpp).
+// ============================================================================
+
+// Allocs a weapon for use, returns -1 if error, else index on success
+int AllocWeapon() {
+  const size_t n = Weapons.next_slot();
+  Q_ASSERT(Weapons.is_unused(n));
+
+  Weapons[n] = weapon{};
+  for (int t = 0; t < MAX_WEAPON_SOUNDS; t++)
+    Weapons[n].sounds[t] = -1;
+  Weapons[n].alpha = 1.0f;
+  Weapons[n].hud_image_handle = -1;
+  Weapons[n].fire_image_handle = -1;
+  Weapons[n].explode_image_handle = -1;
+  Weapons[n].smoke_handle = -1;
+  Weapons[n].spawn_handle = -1;
+  Weapons[n].alternate_spawn_handle = -1;
+  Weapons[n].robot_spawn_handle = -1;
+  Weapons[n].particle_handle = -1;
+  Weapons[n].icon_handle = -1;
+  Weapons[n].scorch_handle = -1;
+  Weapons[n].gravity_size = 1.0f;
+  Weapons[n].gravity_time = 1.0f;
+  Weapons[n].explode_size = 1.0f;
+  Weapons[n].explode_time = 1.0f;
+  Weapons[n].particle_count = 0;
+  Weapons[n].particle_size = 1.0f;
+  Weapons[n].particle_life = 0.0f;
+  Weapons[n].alternate_chance = 0;
+  Weapons[n].terrain_damage_size = 0.0f;
+  Weapons[n].terrain_damage_depth = 0;
+  Weapons[n].recoil_force = 0.0f;
+
+  Weapons.acquire(n);
+  return static_cast<int>(n);
+}
+
+// Frees weapon index n and all associated images
+void FreeWeapon(int n) {
+  Q_ASSERT(Weapons.is_used(n));
+
+  Weapons[n] = weapon{};
+  Weapons.release(n);
+}
+
+// Gets next weapon from n that has actually been alloced
+int GetNextWeapon(int n) {
+  if (Weapons.size() == 0)
+    return -1;
+
+  if ((n < 0) || (n >= static_cast<int>(Weapons.size())))
+    n = -1;
+
+  for (int i = n + 1; i < static_cast<int>(Weapons.size()); i++)
+    if (Weapons.is_used(i))
+      return i;
+  for (int i = 0; i < n; i++)
+    if (Weapons.is_used(i))
+      return i;
+
+  // this is the only one
+  return n;
+}
+
+// Gets previous weapon from n that has actually been alloced
+int GetPrevWeapon(int n) {
+  if (Weapons.size() == 0)
+    return -1;
+
+  if ((n < 0) || (n >= static_cast<int>(Weapons.size())))
+    n = static_cast<int>(Weapons.size());
+
+  for (int i = n - 1; i >= 0; i--)
+    if (Weapons.is_used(i))
+      return i;
+  for (int i = static_cast<int>(Weapons.size()) - 1; i > n; i--)
+    if (Weapons.is_used(i))
+      return i;
+
+  // this is the only one
+  return n;
+}
