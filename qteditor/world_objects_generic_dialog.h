@@ -38,14 +38,9 @@ public:
   int current() const { return m_current; }
 
 private slots:
-  void onEditAI();
-  void onEditPhysics();
-  void onUsesAI(bool checked);
-  void onUsesPhysics(bool checked);
   void onAddNew();
   void onCheckedOut();
   void onCheckIn();
-  void onDefineAnimStates();
   void onDelete();
   void onLock();
   void onUndoLock();
@@ -55,59 +50,23 @@ private slots:
   void onKillfocusSize();
   void onCopy();
   void onPaste();
-  void onDestroyableToggled(bool checked);
-  void onKillfocusHitpoints();
   void onWeaponInfo();
   void onLight();
   void onDefaultRadius();
   void onSelScript();
-  void onKillfocusImpactDamage();
-  void onKillfocusImpactSize();
   void onNolod();
-  void onHiresRadio();
-  void onMedresRadio();
-  void onLoresRadio();
-  void onKillfocusImpactTime();
-  void onExplosionSoundChanged();
-  void onAmbientSoundChanged();
   void onKillfocusInvenDescription();
-  void onKillfocusInvenIconname();
   void onOverride();
-  void onInvenSelectable(bool checked);
-  void onInvenNonuseable(bool checked);
   void onKillfocusLodDistance();
-  void onInvtypeGame();
-  void onInvtypeMission();
-  void onInvenNoremove(bool checked);
-  void onInvenViswhenused(bool checked);
-  void onDeathPowerup1Changed();
-  void onDeathPowerup1NumEdited();
-  void onDeathPowerup1PercentEdited();
-  void onDeathPowerup2Changed();
-  void onDeathPowerup2NumEdited();
-  void onDeathPowerup2PercentEdited();
   void onDeathPowerupUse2(bool checked);
   void onDeathSpew2IfZero1(bool checked);
-  void onKillfocusScriptname();
-  void onCompilemodule();
-  void onKillfocusScriptOverride();
-  void onAiScriptedDeath(bool checked);
   void onKillfocusRespawnScalar();
-  void onGenericDeaths();
-  void onKillfocusScore();
-  void onKillfocusAmmo();
-  void onObjCeiling(bool checked);
-  void onFlyThroughRenderedPortals(bool checked);
-  void onNsc(bool checked);
-  void onDsmpbd(bool checked);
-  void onAmbient(bool checked);
 
 private:
   void updateDialog();
   void enableDisableAll(bool flag);
   bool isLocked(int n);
   int countLockedItems();
-  void setFlag(uint32_t flag, const char *checkName, bool checked);
   void setCurrent(int id);
   void saveGenericsOnClose();
 

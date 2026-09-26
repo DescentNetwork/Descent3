@@ -55,9 +55,6 @@ private:
   void updateDialog();
   void setMoveAxis(int axis);
 
-  template <typename T>
-  T *find(const QString &name) const { return findChild<T *>(name); }
-
   Ui::ObjectKeypad *ui;
 };
 

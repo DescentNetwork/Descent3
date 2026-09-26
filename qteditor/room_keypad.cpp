@@ -30,135 +30,78 @@
 #include "room_external.h"
 #include "room.h"
 
-
-namespace {
-const char *kFlagChecks[][2] = {
-    {"IDC_TOUCHES_OUTSIDE", "RF_TOUCHES_TERRAIN"}, {"IDC_SECRET_CHECK", "RF_SECRET"},
-    {"IDC_EXTERNAL_ROOM", "RF_EXTERNAL"},         {"IDC_SPECIAL_1", "RF_SPECIAL1"},
-    {"IDC_SPECIAL_2", "RF_SPECIAL2"},             {"IDC_SPECIAL_3", "RF_SPECIAL3"},
-    {"IDC_SPECIAL_4", "RF_SPECIAL4"},             {"IDC_SPECIAL_5", "RF_SPECIAL5"},
-    {"IDC_SPECIAL_6", "RF_SPECIAL6"},             {"IDC_ROOM_SKIP_LIGHTING", "RF_NO_LIGHT"},
-    {"IDC_ROOMPAD_REFUELING_CENTER", "RF_FUELCEN"}, {"IDC_ROOMPAD_GOAL1", "RF_GOAL1"},
-    {"IDC_ROOMPAD_GOAL2", "RF_GOAL2"},             {"IDC_ROOMPAD_GOAL3", "RF_GOAL3"},
-    {"IDC_ROOMPAD_GOAL4", "RF_GOAL4"},             {"IDC_TRIANGULATE", "RF_TRIANGULATE"},
-};
-
-uint32_t flagFor(const char *name) {
-  for (const auto &c : kFlagChecks)
-    if (strcmp(c[0], name) == 0) {
-      if (strcmp(c[1], "RF_TOUCHES_TERRAIN") == 0)
-        return RF_TOUCHES_TERRAIN;
-      if (strcmp(c[1], "RF_SECRET") == 0)
-        return RF_SECRET;
-      if (strcmp(c[1], "RF_EXTERNAL") == 0)
-        return RF_EXTERNAL;
-      if (strcmp(c[1], "RF_SPECIAL1") == 0)
-        return RF_SPECIAL1;
-      if (strcmp(c[1], "RF_SPECIAL2") == 0)
-        return RF_SPECIAL2;
-      if (strcmp(c[1], "RF_SPECIAL3") == 0)
-        return RF_SPECIAL3;
-      if (strcmp(c[1], "RF_SPECIAL4") == 0)
-        return RF_SPECIAL4;
-      if (strcmp(c[1], "RF_SPECIAL5") == 0)
-        return RF_SPECIAL5;
-      if (strcmp(c[1], "RF_SPECIAL6") == 0)
-        return RF_SPECIAL6;
-      if (strcmp(c[1], "RF_NO_LIGHT") == 0)
-        return RF_NO_LIGHT;
-      if (strcmp(c[1], "RF_FUELCEN") == 0)
-        return RF_FUELCEN;
-      if (strcmp(c[1], "RF_GOAL1") == 0)
-        return RF_GOAL1;
-      if (strcmp(c[1], "RF_GOAL2") == 0)
-        return RF_GOAL2;
-      if (strcmp(c[1], "RF_GOAL3") == 0)
-        return RF_GOAL3;
-      if (strcmp(c[1], "RF_GOAL4") == 0)
-        return RF_GOAL4;
-      if (strcmp(c[1], "RF_TRIANGULATE") == 0)
-        return RF_TRIANGULATE;
-    }
-  return 0;
-}
-
-} // namespace
-
 RoomKeypad::RoomKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::RoomKeypad)
 {
   ui->setupUi(this);
-  if (QPushButton *b = ui->IDC_MARK_ROOM)
-    connect(b, &QPushButton::clicked, this, &RoomKeypad::onMarkRoom);
-  if (QPushButton *b = ui->IDC_ROOMPAD_EXPAND_EDGE)
-    connect(b, &QPushButton::clicked, this, &RoomKeypad::onExpandEdge);
-  if (QPushButton *b = ui->IDC_ROOMPAD_CONTRACT_EDGE)
-    connect(b, &QPushButton::clicked, this, &RoomKeypad::onContractEdge);
-  if (QPushButton *b = ui->IDC_ROOMPAD_EXPAND_FACE)
-    connect(b, &QPushButton::clicked, this, &RoomKeypad::onExpandFace);
-  if (QPushButton *b = ui->IDC_ROOMPAD_CONTRACT_FACE)
-    connect(b, &QPushButton::clicked, this, &RoomKeypad::onContractFace);
-  if (QPushButton *b = ui->IDC_ROOMPAD_EXPAND_ROOM)
-    connect(b, &QPushButton::clicked, this, &RoomKeypad::onExpandRoom);
-  if (QPushButton *b = ui->IDC_ROOMPAD_CONTRACT_ROOM)
-    connect(b, &QPushButton::clicked, this, &RoomKeypad::onContractRoom);
+  connect(ui->IDC_MARK_ROOM, &QPushButton::clicked, this, &RoomKeypad::onMarkRoom);
+  connect(ui->IDC_ROOMPAD_EXPAND_EDGE, &QPushButton::clicked, this, &RoomKeypad::onExpandEdge);
+  connect(ui->IDC_ROOMPAD_CONTRACT_EDGE, &QPushButton::clicked, this, &RoomKeypad::onContractEdge);
+  connect(ui->IDC_ROOMPAD_EXPAND_FACE, &QPushButton::clicked, this, &RoomKeypad::onExpandFace);
+  connect(ui->IDC_ROOMPAD_CONTRACT_FACE, &QPushButton::clicked, this, &RoomKeypad::onContractFace);
+  connect(ui->IDC_ROOMPAD_EXPAND_ROOM, &QPushButton::clicked, this, &RoomKeypad::onExpandRoom);
+  connect(ui->IDC_ROOMPAD_CONTRACT_ROOM, &QPushButton::clicked, this, &RoomKeypad::onContractRoom);
 
-  for (const auto &c : kFlagChecks)
-    if (QCheckBox *cb = findChild<QCheckBox*>(c[0]))
-      connect(cb, &QCheckBox::toggled, this, &RoomKeypad::onFlagToggled);
+  room *rp = Curroomp;
+  connect(ui->IDC_TOUCHES_OUTSIDE, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.touches_terrain = checked; World_changed = true; });
+  connect(ui->IDC_SECRET_CHECK, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.secret = checked; World_changed = true; });
+  connect(ui->IDC_EXTERNAL_ROOM, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.external = checked; World_changed = true; });
+  connect(ui->IDC_SPECIAL_1, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special1 = checked; World_changed = true; });
+  connect(ui->IDC_SPECIAL_2, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special2 = checked; World_changed = true; });
+  connect(ui->IDC_SPECIAL_3, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special3 = checked; World_changed = true; });
+  connect(ui->IDC_SPECIAL_4, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special4 = checked; World_changed = true; });
+  connect(ui->IDC_SPECIAL_5, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special5 = checked; World_changed = true; });
+  connect(ui->IDC_SPECIAL_6, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.special6 = checked; World_changed = true; });
+  connect(ui->IDC_ROOM_SKIP_LIGHTING, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.no_light = checked; World_changed = true; });
+  connect(ui->IDC_ROOMPAD_REFUELING_CENTER, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.fuelcen = checked; World_changed = true; });
+  connect(ui->IDC_ROOMPAD_GOAL1, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.goal1 = checked; World_changed = true; });
+  connect(ui->IDC_ROOMPAD_GOAL2, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.goal2 = checked; World_changed = true; });
+  connect(ui->IDC_ROOMPAD_GOAL3, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.goal3 = checked; World_changed = true; });
+  connect(ui->IDC_ROOMPAD_GOAL4, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.goal4 = checked; World_changed = true; });
+  connect(ui->IDC_TRIANGULATE, &QCheckBox::toggled, this, [rp](bool checked){ rp->flags.triangulate = checked; World_changed = true; });
 
   updateDialog();
 }
 
 RoomKeypad::~RoomKeypad() { delete ui; }
 
-void RoomKeypad::setFlag(uint32_t flag, const char *checkName, bool checked) {
-  if (Curroomp == nullptr)
-    return;
-  if (checked)
-    Curroomp->flags |= flag;
-  else
-    Curroomp->flags &= ~flag;
-}
-
 void RoomKeypad::updateDialog() {
   // Win32 disables the room editing controls when no room is current.
   const bool active = (Curroomp != nullptr && Curroomp->used);
-  const QList<QWidget *> all = this->findChildren<QWidget *>();
-  for (QWidget *w : all)
+  for (QWidget *w : findChildren<QWidget *>())
     if (w->objectName().startsWith("IDC_"))
       w->setEnabled(active);
-  if (!active)
-    return;
+  if (active)
+  {
+    room *rp = Curroomp;
+    ui->IDC_ROOM_NAME->setText(rp->name.empty() ? QString("<room %1>").arg(ROOMNUM(rp)) : QString::fromStdString(rp->name));
+    ui->IDC_VERTEX_COUNT->setText(QString("Verts: %1").arg(rp->num_verts));
+    ui->IDC_FACE_COUNT->setText(QString("Faces: %1").arg(rp->num_faces));
+    ui->IDC_PORTAL_COUNT->setText(QString("Portals: %1").arg(rp->num_portals));
 
-  room *rp = Curroomp;
-  if (QLabel *label = ui->IDC_ROOM_NAME)
-    label->setText(rp->name ? rp->name : QString("<room %1>").arg(ROOMNUM(rp)));
-  if (QLabel *label = ui->IDC_VERTEX_COUNT)
-    label->setText(QString("Verts: %1").arg(rp->num_verts));
-  if (QLabel *label = ui->IDC_FACE_COUNT)
-    label->setText(QString("Faces: %1").arg(rp->num_faces));
-  if (QLabel *label = ui->IDC_PORTAL_COUNT)
-    label->setText(QString("Portals: %1").arg(rp->num_portals));
-
-  for (const auto &c : kFlagChecks) {
-    if (QCheckBox *cb = findChild<QCheckBox*>(c[0]))
-      cb->setChecked(rp->flags & flagFor(c[0]));
+    ui->IDC_TOUCHES_OUTSIDE->setChecked(rp->flags.touches_terrain);
+    ui->IDC_SECRET_CHECK->setChecked(rp->flags.secret);
+    ui->IDC_EXTERNAL_ROOM->setChecked(rp->flags.external);
+    ui->IDC_SPECIAL_1->setChecked(rp->flags.special1);
+    ui->IDC_SPECIAL_2->setChecked(rp->flags.special2);
+    ui->IDC_SPECIAL_3->setChecked(rp->flags.special3);
+    ui->IDC_SPECIAL_4->setChecked(rp->flags.special4);
+    ui->IDC_SPECIAL_5->setChecked(rp->flags.special5);
+    ui->IDC_SPECIAL_6->setChecked(rp->flags.special6);
+    ui->IDC_ROOM_SKIP_LIGHTING->setChecked(rp->flags.no_light);
+    ui->IDC_ROOMPAD_REFUELING_CENTER->setChecked(rp->flags.fuelcen);
+    ui->IDC_ROOMPAD_GOAL1->setChecked(rp->flags.goal1);
+    ui->IDC_ROOMPAD_GOAL2->setChecked(rp->flags.goal2);
+    ui->IDC_ROOMPAD_GOAL3->setChecked(rp->flags.goal3);
+    ui->IDC_ROOMPAD_GOAL4->setChecked(rp->flags.goal4);
+    ui->IDC_TRIANGULATE->setChecked(rp->flags.triangulate);
   }
+
 }
 
 void RoomKeypad::onMarkRoom() {
   if (Curroomp != nullptr)
     Markedroomp = Curroomp;
-}
-
-void RoomKeypad::onFlagToggled() {
-  QCheckBox *cb = qobject_cast<QCheckBox *>(sender());
-  if (cb == nullptr)
-    return;
-  setFlag(flagFor(cb->objectName().toLatin1().constData()),
-          cb->objectName().toLatin1().constData(), cb->isChecked());
-  World_changed = true;
 }
 
 void RoomKeypad::expandGeometry(float scale) {

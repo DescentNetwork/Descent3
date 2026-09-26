@@ -37,11 +37,9 @@ public:
 
 private slots:
   void onOk();
-  void onFlagToggled();
 
 private:
   void updateDialog();
-  void setFlag(uint32_t flag, const char *checkName, bool checked);
 
   Ui::PropertyPhysicsDialog *ui;
   physics_info *m_physInfo;

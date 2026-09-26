@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <ui version="4.0">
   <class>SelectRangeDialog</class>
-  <widget class="QDialog" name="SelectRangeDialog">
+  <widget class="QDialog" name="IDD_SELECTRANGE_DIALOG">
     <property name="geometry">
       <rect>
         <x>0</x>
         <y>0</y>
         <width>298</width>
-        <height>165</height>
+        <height>142</height>
       </rect>
     </property>
     <property name="windowTitle">
@@ -30,13 +30,13 @@
     <property name="minimumSize">
       <size>
         <width>298</width>
-        <height>165</height>
+        <height>142</height>
       </size>
     </property>
     <property name="maximumSize">
       <size>
         <width>298</width>
-        <height>165</height>
+        <height>142</height>
       </size>
     </property>
     <widget class="QLabel" name="IDC_STATIC">
@@ -146,7 +146,7 @@
           <x>8</x>
           <y>69</y>
           <width>149</width>
-          <height>19</height>
+          <height>16</height>
         </rect>
       </property>
       <property name="text">
@@ -165,7 +165,7 @@
           <x>160</x>
           <y>69</y>
           <width>104</width>
-          <height>19</height>
+          <height>16</height>
         </rect>
       </property>
       <property name="text">
@@ -182,9 +182,9 @@
       <property name="geometry">
         <rect>
           <x>160</x>
-          <y>93</y>
+          <y>85</y>
           <width>128</width>
-          <height>19</height>
+          <height>15</height>
         </rect>
       </property>
       <property name="text">
@@ -201,7 +201,7 @@
       <property name="geometry">
         <rect>
           <x>8</x>
-          <y>110</y>
+          <y>99</y>
           <width>64</width>
           <height>16</height>
         </rect>
@@ -223,7 +223,7 @@
       <property name="geometry">
         <rect>
           <x>72</x>
-          <y>110</y>
+          <y>99</y>
           <width>48</width>
           <height>21</height>
         </rect>
@@ -239,9 +239,9 @@
       <property name="geometry">
         <rect>
           <x>160</x>
-          <y>124</y>
+          <y>109</y>
           <width>96</width>
-          <height>19</height>
+          <height>16</height>
         </rect>
       </property>
       <property name="text">
@@ -258,9 +258,9 @@
       <property name="geometry">
         <rect>
           <x>160</x>
-          <y>146</y>
+          <y>127</y>
           <width>136</width>
-          <height>19</height>
+          <height>15</height>
         </rect>
       </property>
       <property name="text">

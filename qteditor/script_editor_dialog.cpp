@@ -25,25 +25,66 @@
 #include <QTextEdit>
 
 #include "manage.h"
+#include "ScriptCompilerAPI.h"
+
+#include <filesystem>
 
 
 ScriptEditorDialog::ScriptEditorDialog(const QString &module, QWidget *parent)
     : QDialog(parent), ui(new Ui::ScriptEditorDialog), m_module(module)
 {
   ui->setupUi(this);
-  if (QLabel *label = ui->IDC_SCRMOD_BOX)
-    label->setText(module.isEmpty() ? "(new script)" : module);
-  if (QPushButton *b = ui->IDC_SCRIPT_COMPILE)
-    connect(b, &QPushButton::clicked, this, &ScriptEditorDialog::onCompile);
+  ui->IDC_SCRMOD_BOX->setText(module.isEmpty() ? "(new script)" : module);
+  connect(ui->IDC_SCRIPT_COMPILE, &QPushButton::clicked, this, &ScriptEditorDialog::onCompile);
 }
 
 ScriptEditorDialog::~ScriptEditorDialog() { delete ui; }
 
 void ScriptEditorDialog::onCompile() {
-  // The OSIRIS script compiler is invoked through the module build step;
-  // report success and close like the Win32 dialog.
-  QMessageBox::information(this, "Compile",
-                           m_module.isEmpty() ? "Script compiled successfully." : QString("Compiled %1.").arg(m_module));
+  if (m_module.isEmpty()) {
+    QMessageBox::information(this, "Compile", "No script module specified.");
+    return;
+  }
+
+  const std::filesystem::path source = LocalScriptDir / (m_module.toStdString() + ".cpp");
+  tCompilerInfo ci;
+  ci.source_filename = source.string();
+  ci.script_type = ST_LEVEL;
+  ci.callback = nullptr;
+
+  // Capture output into the script view.
+  QTextEdit *view = ui->IDC_SCRIPVIEW;
+  if (view) {
+    ci.callback = [view](char *str) { view->append(QString::fromUtf8(str)); };
+  }
+
+  const int result = ScriptCompile(&ci);
+
+  QString text;
+  switch (result) {
+  case CERR_NOERR:
+    text = QString("Compiled %1.").arg(m_module);
+    break;
+  case CERR_SOURCENOEXIST:
+    text = QString("Source %1 does not exist.").arg(QString::fromStdString(source.string()));
+    break;
+  case CERR_NOCOMPILERDEFINED:
+    text = "No compiler configured. Use the Script/Level dialog to configure one.";
+    break;
+  case CERR_COMPILERMISSING:
+    text = "The configured compiler could not be found or launched.";
+    break;
+  default:
+    text = QString("Compile returned unknown result %1.").arg(result);
+    break;
+  }
+
+  if (result != CERR_NOERR) {
+    QMessageBox::warning(this, "Compile", text);
+    return;
+  }
+
+  if (view)
+    view->append(text);
   accept();
 }
-

@@ -20,6 +20,9 @@
 
 #include <QDialog>
 
+#include "weapon.h" // weapon_flags_t
+#include "object_external_struct.h" // physics_flags_t
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class WorldWeaponsDialog; }
 QT_END_NAMESPACE
@@ -64,8 +67,6 @@ private slots:
 private:
   void updateDialog();
   void saveWeaponsOnClose();
-  void setFlag(uint32_t flag, const char *checkName, bool checked);
-  void setPhysFlag(uint32_t flag, const char *checkName, bool checked);
   void bindEdits();
   void bindChecks();
   void bindCombos();

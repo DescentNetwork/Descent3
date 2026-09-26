@@ -29,25 +29,23 @@ LevelInfoDialog::LevelInfoDialog(level_info *li, QWidget *parent)
     : QDialog(parent), ui(new Ui::LevelInfoDialog), m_levelInfo(li)
 {
   ui->setupUi(this);
-  if (auto *edit = ui->IDC_LEVEL_NAME)
-    edit->setText(li->name);
-  if (auto *edit = ui->IDC_DESIGNER)
-    edit->setText(li->designer);
-  if (auto *edit = ui->IDC_COPYRIGHT)
-    edit->setText(li->copyright);
-  if (auto *edit = ui->IDC_NOTES)
-    edit->setPlainText(li->notes);
 
-  connect(this, &QDialog::accept, this, &LevelInfoDialog::onOk);
+  ui->IDC_LEVEL_NAME->setText(QString::fromStdString(li->name));
+  ui->IDC_DESIGNER->setText(QString::fromStdString(li->designer));
+  ui->IDC_COPYRIGHT->setText(QString::fromStdString(li->copyright));
+  ui->IDC_NOTES->setPlainText(QString::fromStdString(li->notes));
+
+  connect(ui->IDOK, &QPushButton::clicked, this, &LevelInfoDialog::onOk);
 }
 
 LevelInfoDialog::~LevelInfoDialog() { delete ui; }
 
 void LevelInfoDialog::getLevelInfo(level_info *li) {
-  std::strcpy(li->name, ui->IDC_LEVEL_NAME->text().toLocal8Bit().constData());
-  std::strcpy(li->designer, ui->IDC_DESIGNER->text().toLocal8Bit().constData());
-  std::strcpy(li->copyright, ui->IDC_COPYRIGHT->text().toLocal8Bit().constData());
-  std::strcpy(li->notes, ui->IDC_NOTES->toPlainText().toLocal8Bit().constData());
+  Q_ASSERT(li != nullptr);
+  li->name = ui->IDC_LEVEL_NAME->text().toStdString();
+  li->designer = ui->IDC_DESIGNER->text().toStdString();
+  li->copyright = ui->IDC_COPYRIGHT->text().toStdString();
+  li->notes = ui->IDC_NOTES->toPlainText().toStdString();
 }
 
 void LevelInfoDialog::onOk() {

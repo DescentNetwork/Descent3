@@ -32,18 +32,12 @@ FilePageDialog::FilePageDialog(QWidget *parent)
 {
   ui->setupUi(this);
   m_files = ui->IDC_FILELIST;
-  if (QPushButton *b = ui->IDC_ADD_FILE)
-    connect(b, &QPushButton::clicked, this, &FilePageDialog::onAddFile);
-  if (QPushButton *b = ui->IDC_DELETE_FILE)
-    connect(b, &QPushButton::clicked, this, &FilePageDialog::onDeleteFile);
-  if (QPushButton *b = ui->IDC_LOCK_FILE)
-    connect(b, &QPushButton::clicked, this, &FilePageDialog::onLockFile);
-  if (QPushButton *b = ui->IDC_CHECKIN_FILE)
-    connect(b, &QPushButton::clicked, this, &FilePageDialog::onCheckinFile);
-  if (QPushButton *b = ui->IDC_FILES_OUT)
-    connect(b, &QPushButton::clicked, this, &FilePageDialog::onFilesOut);
-  if (QPushButton *b = ui->IDC_OVERRIDE)
-    connect(b, &QPushButton::clicked, this, &FilePageDialog::onOverride);
+  connect(ui->IDC_ADD_FILE, &QPushButton::clicked, this, &FilePageDialog::onAddFile);
+  connect(ui->IDC_DELETE_FILE, &QPushButton::clicked, this, &FilePageDialog::onDeleteFile);
+  connect(ui->IDC_LOCK_FILE, &QPushButton::clicked, this, &FilePageDialog::onLockFile);
+  connect(ui->IDC_CHECKIN_FILE, &QPushButton::clicked, this, &FilePageDialog::onCheckinFile);
+  connect(ui->IDC_FILES_OUT, &QPushButton::clicked, this, &FilePageDialog::onFilesOut);
+  connect(ui->IDC_OVERRIDE, &QPushButton::clicked, this, &FilePageDialog::onOverride);
 
   updateDialog();
 }
@@ -57,7 +51,7 @@ void FilePageDialog::updateDialog() {
   // List the local table files managed by the pagelock system.
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
     if (GlobalTrackLocks[i].used)
-      m_files->addItem(GlobalTrackLocks[i].name);
+      m_files->addItem(QString::fromStdString(GlobalTrackLocks[i].name));
   }
 }
 
@@ -72,7 +66,7 @@ void FilePageDialog::onFilesOut() {
   QString str = "Files held locally:\n";
   for (int i = 0; i < MAX_TRACKLOCKS; i++)
     if (GlobalTrackLocks[i].used)
-      str += QString("  %1\n").arg(GlobalTrackLocks[i].name);
+      str += QString("  %1\n").arg(QString::fromStdString(GlobalTrackLocks[i].name));
   QMessageBox::information(this, "Files out", str);
 }
 void FilePageDialog::onOverride() { updateDialog(); }

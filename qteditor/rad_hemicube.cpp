@@ -24,9 +24,9 @@
 #include "radiosity.h"
 #include "hemicube.h"
 #include "d3edit.h"
-#include "mem.h"
+#include "mem/mem.h"
+#include "rand.h"
 
-#include <cstdlib>
 #include <algorithm>
 
 #define TOP_FACE 0
@@ -37,7 +37,7 @@
 
 float Hemicube_view_zoom = 1.0;
 
-int rad_Drawing = 0;
+bool rad_Drawing = false;
 
 g3Point Element_points[100];
 rad_element *rad_MaxElement;
@@ -50,7 +50,9 @@ int Cracks_this_frame, Cracks_this_side;
 
 float Highest_top_delta, Highest_side_delta;
 
+#ifndef PI
 #define PI 3.141592654
+#endif
 
 // Calculates delta form factors
 void CalculateDeltaFormFactors() {
@@ -156,7 +158,7 @@ void CalculateFormFactorsHemiCube() {
             continue;
 
           for (k = 0; k < ep->num_verts; k++) {
-            vector vec = ep->verts[k];
+            vector3 vec = ep->verts[k];
             g3_RotatePoint(&Element_points[k], &vec);
             Element_points[k].p3_flags = 0;
           }
@@ -232,20 +234,15 @@ void InitHemicube(int resolution) {
   // Make sure resolution is even
   Q_ASSERT(resolution % 2 == 0);
 
-  rad_Drawing = 1;
+  rad_Drawing = true;
 
   rad_Hemicube.ff_res = resolution;
   rad_Hemicube.grid_dim = resolution / 2;
 
-  rad_Hemicube.id_grid = (int *)mem_malloc(rad_Hemicube.ff_res * rad_Hemicube.ff_res * sizeof(int));
-  Q_ASSERT(rad_Hemicube.id_grid != NULL);
-  rad_Hemicube.depth_grid = (float *)mem_malloc(rad_Hemicube.ff_res * rad_Hemicube.ff_res * sizeof(float));
-  Q_ASSERT(rad_Hemicube.depth_grid != NULL);
-
-  rad_Hemicube.top_array = (float *)mem_malloc(rad_Hemicube.grid_dim * rad_Hemicube.grid_dim * sizeof(float));
-  Q_ASSERT(rad_Hemicube.top_array != NULL);
-  rad_Hemicube.side_array = (float *)mem_malloc(rad_Hemicube.grid_dim * rad_Hemicube.grid_dim * sizeof(float));
-  Q_ASSERT(rad_Hemicube.side_array != NULL);
+  rad_Hemicube.id_grid.resize(rad_Hemicube.ff_res * rad_Hemicube.ff_res);
+  rad_Hemicube.depth_grid.resize(rad_Hemicube.ff_res * rad_Hemicube.ff_res);
+  rad_Hemicube.top_array.resize(rad_Hemicube.grid_dim * rad_Hemicube.grid_dim);
+  rad_Hemicube.side_array.resize(rad_Hemicube.grid_dim * rad_Hemicube.grid_dim);
 
   CalculateDeltaFormFactors();
 
@@ -257,13 +254,7 @@ void InitHemicube(int resolution) {
 void CloseHemicube() {
   delete rad_Hemicube.vport;
   rad_Hemicube.drawing_surface.free();
-
-  mem_free(rad_Hemicube.depth_grid);
-  mem_free(rad_Hemicube.id_grid);
-  mem_free(rad_Hemicube.side_array);
-  mem_free(rad_Hemicube.top_array);
-
-  rad_Drawing = 0;
+  rad_Drawing = false;
 }
 
 void ClearHemicubeGrid() {
@@ -278,13 +269,13 @@ void ClearHemicubeGrid() {
 }
 
 void SetElementView(rad_element *ep) {
-  vector rv; // Random vector
-  vector u, v, n;
+  vector3 rv; // Random vector
+  vector3 u, v, n;
 
   // Select random vector for hemicube orientation
-  rv.x() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
-  rv.y() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
-  rv.z() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
+  rv.x() = (((scalar)d3::rand() / (scalar)d3::rand_max) * (scalar)2.0 - (scalar)1.0);
+  rv.y() = (((scalar)d3::rand() / (scalar)d3::rand_max) * (scalar)2.0 - (scalar)1.0);
+  rv.z() = (((scalar)d3::rand() / (scalar)d3::rand_max) * (scalar)2.0 - (scalar)1.0);
 
   n = rad_MaxSurface->normal; // Get patch normal
 
@@ -306,13 +297,13 @@ void SetElementView(rad_element *ep) {
 }
 
 void SetSurfaceView(rad_surface *surf) {
-  vector rv; // Random vector
-  vector u, v, n;
+  vector3 rv; // Random vector
+  vector3 u, v, n;
 
   // Select random vector for hemicube orientation
-  rv.x() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
-  rv.y() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
-  rv.z() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
+  rv.x() = (((scalar)d3::rand() / (scalar)d3::rand_max) * (scalar)2.0 - (scalar)1.0);
+  rv.y() = (((scalar)d3::rand() / (scalar)d3::rand_max) * (scalar)2.0 - (scalar)1.0);
+  rv.z() = (((scalar)d3::rand() / (scalar)d3::rand_max) * (scalar)2.0 - (scalar)1.0);
 
   n = rad_MaxSurface->normal; // Get patch normal
 
@@ -334,7 +325,7 @@ void SetSurfaceView(rad_surface *surf) {
 }
 
 // Build transformation matrix for our hemicube
-void BuildTransform(vector *nu, vector *nv, vector *nn) {
+void BuildTransform(vector3 *nu, vector3 *nv, vector3 *nn) {
   matrix *vm = &rad_Hemicube.view_matrix; // view matrix
 
   if (Shoot_from_patch)
@@ -364,9 +355,9 @@ void EndHemicubeDrawing(int face) {
 
     if (first) {
       for (i = 0; i < 9000; i++) {
-        int r = (rand() % 127) + 128;
-        int g = (rand() % 127) + 128;
-        int b = (rand() % 127) + 128;
+        int r = (d3::rand() % 127) + 128;
+        int g = (d3::rand() % 127) + 128;
+        int b = (d3::rand() % 127) + 128;
 
         surface_colors[i] = GR_RGB(r, g, b);
       }
@@ -427,7 +418,7 @@ void EndHemicubeDrawing(int face) {
 
 // Update hemicube view transformation matrix
 void UpdateView(int face_id) {
-  vector nu, nv, nn; // View space co-ordinates
+  vector3 nu, nv, nn; // View space co-ordinates
 
   switch (face_id) // Exchange co-ordinates
   {
@@ -879,7 +870,7 @@ float GetSideFactor(int row, int col) {
 }
 
 // Sums the delta form factors
-void SumDeltas(float *ff_array, int face_id) {
+void SumDeltas(std::vector<float>& ff_array, int face_id) {
   int poly_id;  // Polygon identifier
   int row, col; // Face cell indices
 

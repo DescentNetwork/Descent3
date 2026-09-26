@@ -53,8 +53,6 @@ private slots:
 private:
   void updateDialog();
   void saveTexturesOnClose();
-  void setFlag(uint32_t flag, const char *checkName, bool checked);
-  void bindFlag(const char *checkName, uint32_t flag);
   void bindEdit(const char *name, float texture::*field);
 private:
   Ui::WorldTexturesDialog *ui;

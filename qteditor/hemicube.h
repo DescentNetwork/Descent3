@@ -26,17 +26,17 @@
 struct rad_hemicube {
   matrix view_matrix;
   matrix head_matrix;
-  vector view_position;
+  vector3 view_position;
   rad_element *shooting_element;
   rad_surface *shooting_surface;
 
   grHardwareSurface drawing_surface;
   grViewport *vport;
-  int *id_grid;
-  float *depth_grid;
+  std::vector<int> id_grid;
+  std::vector<float> depth_grid;
 
-  float *top_array;
-  float *side_array;
+  std::vector<float> top_array;
+  std::vector<float> side_array;
 
   int ff_res;   // Form factor resolution
   int grid_dim; // Hemicube top/side array dimension
@@ -68,7 +68,7 @@ void SetElementView(rad_element *ep);
 void SetSurfaceView(rad_surface *ep);
 
 // Build transformation matrix for our hemicube
-void BuildTransform(vector *nu, vector *nv, vector *nn);
+void BuildTransform(vector3 *nu, vector3 *nv, vector3 *nn);
 
 // Gets our view system ready for drawing
 void StartHemicubeDrawing();
@@ -87,7 +87,7 @@ int PrevIndex(int val, int modulus);
 int NextIndex(int val, int modulus);
 
 // Sums the delta form factors
-void SumDeltas(float *ff_array, int face_id);
+void SumDeltas(std::vector<float>& ff_array, int face_id);
 
 float GetTopFactor(int row, int col);
 
