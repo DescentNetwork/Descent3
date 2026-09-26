@@ -188,24 +188,11 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
   infile >> genericpage->objinfo_struct.damage;
 
   // Read score
-  if (version >= 24) {
-    int16_t s = 0;
-    infile >> s;
-    genericpage->objinfo_struct.score = s;
-  } else {
-    uint8_t b = 0;
-    infile >> b;
-    genericpage->objinfo_struct.score = b;
-  }
+    infile >> genericpage->objinfo_struct.score;
 
   // Read ammo
   if (genericpage->objinfo_struct.type == OBJ_POWERUP) {
-    if (version >= 25) {
-      int16_t a = 0;
-      infile >> a;
-      genericpage->objinfo_struct.ammo_count = a;
-    } else
-      GenericPageSetPowerupDefaultAmmo(&genericpage->objinfo_struct);
+    infile >> genericpage->objinfo_struct.ammo_count;
   } else
     genericpage->objinfo_struct.ammo_count = 0;
 
@@ -260,26 +247,10 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
 
   // Read AI info
   infile >> genericpage->ai_info.flags;
-  {
-    int8_t b = 0;
-    infile >> b;
-    genericpage->ai_info.ai_class = b;
-  }
-  {
-    int8_t b = 0;
-    infile >> b;
-    genericpage->ai_info.ai_type = b;
-  }
-  {
-    int8_t b = 0;
-    infile >> b;
-    genericpage->ai_info.movement_type = b;
-  }
-  {
-    int8_t b = 0;
-    infile >> b;
-    genericpage->ai_info.movement_subtype = b;
-  }
+  infile >> genericpage->ai_info.ai_class;
+  infile >> genericpage->ai_info.ai_type;
+  infile >> genericpage->ai_info.movement_type;
+  infile >> genericpage->ai_info.movement_subtype;
   infile >> genericpage->ai_info.fov;
 
   infile >> genericpage->ai_info.max_velocity;
@@ -489,16 +460,11 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
   outfile << genericpage->objinfo_struct.damage;
 
   // Write score
-  {
-    int16_t s = static_cast<int16_t>(genericpage->objinfo_struct.score);
-    outfile << s;
-  }
+  outfile << genericpage->objinfo_struct.score;
 
   // Write ammo
-  if (genericpage->objinfo_struct.type == OBJ_POWERUP) {
-    int16_t a = static_cast<int16_t>(genericpage->objinfo_struct.ammo_count);
-    outfile << a;
-  }
+  if (genericpage->objinfo_struct.type == OBJ_POWERUP)
+    outfile << genericpage->objinfo_struct.ammo_count;
 
   // Write script name (discarded by the reader)
   outfile << std::string();
@@ -539,10 +505,10 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
 
   // Write AI info
   outfile << genericpage->ai_info.flags;
-  outfile << static_cast<uint8_t>(genericpage->ai_info.ai_class);
-  outfile << static_cast<uint8_t>(genericpage->ai_info.ai_type);
-  outfile << static_cast<uint8_t>(genericpage->ai_info.movement_type);
-  outfile << static_cast<uint8_t>(genericpage->ai_info.movement_subtype);
+  outfile << genericpage->ai_info.ai_class;
+  outfile << genericpage->ai_info.ai_type;
+  outfile << genericpage->ai_info.movement_type;
+  outfile << genericpage->ai_info.movement_subtype;
   outfile << genericpage->ai_info.fov;
 
   outfile << genericpage->ai_info.max_velocity;

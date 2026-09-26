@@ -109,7 +109,7 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int current, Q
     if (m_current == -1)
       return;
     object_info *oi = &Object_info[m_current];
-    oi->hit_points = ui->IDC_GENERIC_HITPOINT_EDIT->text().toInt();
+    oi->hit_points = ui->IDC_GENERIC_HITPOINT_EDIT->text().toUInt();
   });
   connect(ui->IDC_GENERIC_IMPACT_DAMAGE_EDIT, &QLineEdit::editingFinished, this, [this]() {
     if (m_current == -1)
@@ -182,13 +182,13 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int current, Q
     if (m_current == -1)
       return;
     object_info *oi = &Object_info[m_current];
-    oi->score = ui->IDC_GENERIC_SCORE_EDIT->text().toInt();
+    oi->score = ui->IDC_GENERIC_SCORE_EDIT->text().toUShort();
   });
   connect(ui->IDC_GENERIC_AMMO_EDIT, &QLineEdit::editingFinished, this, [this]() {
     if (m_current == -1)
       return;
     object_info *oi = &Object_info[m_current];
-    oi->ammo_count = ui->IDC_GENERIC_AMMO_EDIT->text().toInt();
+    oi->ammo_count = ui->IDC_GENERIC_AMMO_EDIT->text().toUShort();
   });
 
   connect(ui->IDC_GENERIC_USES_AI, &QCheckBox::toggled, this, [this](bool checked) {
@@ -940,7 +940,7 @@ void WorldObjectsGenericDialog::onPaste() {
 
 void WorldObjectsGenericDialog::onKillfocusHitpoints() {
   if (m_current != -1)
-    Object_info[m_current].hit_points = ui->IDC_GENERIC_HITPOINT_EDIT->text().toInt();
+    Object_info[m_current].hit_points = ui->IDC_GENERIC_HITPOINT_EDIT->text().toUInt();
 }
 
 void WorldObjectsGenericDialog::onWeaponInfo() {
@@ -1182,11 +1182,11 @@ void WorldObjectsGenericDialog::onGenericDeaths() {
 
 void WorldObjectsGenericDialog::onKillfocusScore() {
   if (m_current != -1)
-    Object_info[m_current].score = ui->IDC_GENERIC_SCORE_EDIT->text().toInt();
+    Object_info[m_current].score = ui->IDC_GENERIC_SCORE_EDIT->text().toUShort();
 }
 void WorldObjectsGenericDialog::onKillfocusAmmo() {
   if (m_current != -1)
-    Object_info[m_current].ammo_count = ui->IDC_GENERIC_AMMO_EDIT->text().toInt();
+    Object_info[m_current].ammo_count = ui->IDC_GENERIC_AMMO_EDIT->text().toUShort();
 }
 
 // Saves the locked generics to the local pagefile (original SaveGenericsOnClose).
