@@ -148,38 +148,16 @@ void FreeWeapon(int n) {
 
 // Gets next weapon from n that has actually been alloced
 int GetNextWeapon(int n) {
-  if (Weapons.size() == 0)
+  if (Weapons.empty())
     return -1;
-
-  if ((n < 0) || (n >= static_cast<int>(Weapons.size())))
-    n = -1;
-
-  for (int i = n + 1; i < static_cast<int>(Weapons.size()); i++)
-    if (Weapons.is_used(i))
-      return i;
-  for (int i = 0; i < n; i++)
-    if (Weapons.is_used(i))
-      return i;
-
-  // this is the only one
-  return n;
+  Q_ASSERT(n >= 0 && n < static_cast<int>(Weapons.size()));
+  return static_cast<int>(Weapons.next(static_cast<size_t>(n)).value_or(-1));
 }
 
 // Gets previous weapon from n that has actually been alloced
 int GetPrevWeapon(int n) {
-  if (Weapons.size() == 0)
+  if (Weapons.empty())
     return -1;
-
-  if ((n < 0) || (n >= static_cast<int>(Weapons.size())))
-    n = static_cast<int>(Weapons.size());
-
-  for (int i = n - 1; i >= 0; i--)
-    if (Weapons.is_used(i))
-      return i;
-  for (int i = static_cast<int>(Weapons.size()) - 1; i > n; i--)
-    if (Weapons.is_used(i))
-      return i;
-
-  // this is the only one
-  return n;
+  Q_ASSERT(n >= 0 && n < static_cast<int>(Weapons.size()));
+  return static_cast<int>(Weapons.prev(static_cast<size_t>(n)).value_or(-1));
 }

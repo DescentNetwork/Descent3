@@ -33,40 +33,18 @@ void FreeShip(int n) {
 
 // Gets next ship from n that has actually been alloced
 int GetNextShip(int n) {
-  if (Ships.size() == 0)
+  if (Ships.empty())
     return -1;
-
-  if ((n < 0) || (n >= static_cast<int>(Ships.size())))
-    n = -1;
-
-  for (int i = n + 1; i < static_cast<int>(Ships.size()); i++)
-    if (Ships.is_used(i))
-      return i;
-  for (int i = 0; i < n; i++)
-    if (Ships.is_used(i))
-      return i;
-
-  // this is the only one
-  return n;
+  Q_ASSERT(n >= 0 && n < static_cast<int>(Ships.size()));
+  return static_cast<int>(Ships.next(static_cast<size_t>(n)).value_or(-1));
 }
 
 // Gets previous ship from n that has actually been alloced
 int GetPrevShip(int n) {
-  if (Ships.size() == 0)
+  if (Ships.empty())
     return -1;
-
-  if ((n < 0) || (n >= static_cast<int>(Ships.size())))
-    n = static_cast<int>(Ships.size());
-
-  for (int i = n - 1; i >= 0; i--)
-    if (Ships.is_used(i))
-      return i;
-  for (int i = static_cast<int>(Ships.size()) - 1; i > n; i--)
-    if (Ships.is_used(i))
-      return i;
-
-  // this is the only one
-  return n;
+  Q_ASSERT(n >= 0 && n < static_cast<int>(Ships.size()));
+  return static_cast<int>(Ships.prev(static_cast<size_t>(n)).value_or(-1));
 }
 
 // Searches thru all ships for a specific name, returns -1 if not found

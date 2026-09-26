@@ -358,29 +358,17 @@ int MovePathNode(int pathnum, int nodenum, vector3 *delta_pos) {
 }
 
 int GetNextPath(int n) {
-  Q_ASSERT(n >= 0 && n < (int)GamePaths.size());
-  if (Num_game_paths == 0)
+  if (GamePaths.empty())
     return -1;
-  for (int i = n + 1; i < (int)GamePaths.size(); i++)
-    if (GamePaths.is_used(i))
-      return i;
-  for (int i = 0; i < n; i++)
-    if (GamePaths.is_used(i))
-      return i;
-  return n;
+  Q_ASSERT(n >= 0 && n < static_cast<int>(GamePaths.size()));
+  return static_cast<int>(GamePaths.next(static_cast<size_t>(n)).value_or(-1));
 }
 
 int GetPrevPath(int n) {
-  Q_ASSERT(n >= 0 && n < (int)GamePaths.size());
-  if (Num_game_paths == 0)
+  if (GamePaths.empty())
     return -1;
-  for (int i = n - 1; i >= 0; i--)
-    if (GamePaths.is_used(i))
-      return i;
-  for (int i = (int)GamePaths.size() - 1; i > n; i--)
-    if (GamePaths.is_used(i))
-      return i;
-  return n;
+  Q_ASSERT(n >= 0 && n < static_cast<int>(GamePaths.size()));
+  return static_cast<int>(GamePaths.prev(static_cast<size_t>(n)).value_or(-1));
 }
 
 int GetFirstPath() {

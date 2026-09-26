@@ -315,6 +315,7 @@
 #include "DeathInfo.h"
 //#include <fixed_string.h>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "robotfirestruct.h" // otype_wb_info
@@ -344,8 +345,8 @@
 // The number of ids of each type in the list
 extern int Num_object_ids[];
 
-extern const char * const Movement_class_names[];
-extern const char * const Anim_state_names[];
+extern const std::vector<std::string> Movement_class_names;
+extern const std::vector<std::string> Anim_state_names;
 
 // These defines must correspond to the Static_object_names array
 #define GENOBJ_GUIDEBOT 0 // NOTE: This must match ROBOT_GUIDEBOT

@@ -31,38 +31,16 @@ void FreeSound(int n) {
 
 // Gets next sound from n that has actually been alloced
 int GetNextSound(int n) {
-  if (Sounds.size() == 0)
+  if (Sounds.empty())
     return -1;
-
-  if ((n < 0) || (n >= static_cast<int>(Sounds.size())))
-    n = -1;
-
-  for (int i = n + 1; i < static_cast<int>(Sounds.size()); i++)
-    if (Sounds.is_used(i))
-      return i;
-  for (int i = 0; i < n; i++)
-    if (Sounds.is_used(i))
-      return i;
-
-  // this is the only one
-  return n;
+  Q_ASSERT(n >= 0 && n < static_cast<int>(Sounds.size()));
+  return static_cast<int>(Sounds.next(static_cast<size_t>(n)).value_or(-1));
 }
 
 // Gets previous sound from n that has actually been alloced
 int GetPrevSound(int n) {
-  if (Sounds.size() == 0)
+  if (Sounds.empty())
     return -1;
-
-  if ((n < 0) || (n >= static_cast<int>(Sounds.size())))
-    n = static_cast<int>(Sounds.size());
-
-  for (int i = n - 1; i >= 0; i--)
-    if (Sounds.is_used(i))
-      return i;
-  for (int i = static_cast<int>(Sounds.size()) - 1; i > n; i--)
-    if (Sounds.is_used(i))
-      return i;
-
-  // this is the only one
-  return n;
+  Q_ASSERT(n >= 0 && n < static_cast<int>(Sounds.size()));
+  return static_cast<int>(Sounds.prev(static_cast<size_t>(n)).value_or(-1));
 }

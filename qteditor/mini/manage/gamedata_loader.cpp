@@ -68,7 +68,7 @@
 // single translation-unit definition satisfies the extern (ODR) requirement.
 int Old_table_method = 0;
 
-// The mini tree defines `object_info Object_info[MAX_OBJECTS];` in stubs.cpp
+// The mini tree defines `object_info Object_info[MAX_OBJECTS];` in objinfo.cpp
 // but no header declares the count; declare it here so the loader can track it.
 extern uint32_t Num_objects;
 

@@ -113,12 +113,6 @@ int AllocPowerup();
 // Frees powerup index n
 void FreePowerup(int n);
 
-// Gets next powerup from n that has actually been alloced
-int GetNextPowerup(int n);
-
-// Gets previous powerup from n that has actually been alloced
-int GetPrevPowerup(int n);
-
 // Searches thru all powerups for a specific name, returns -1 if not found
 // or index of powerup with name
 int FindPowerupName(const std::string &name);

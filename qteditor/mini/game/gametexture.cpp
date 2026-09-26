@@ -286,33 +286,17 @@ void FreeTexture(int n) {
 
 // Given current index, gets index of next texture in use
 int GetNextTexture(int n) {
-  if ((n < 0) || (n >= static_cast<int>(GameTextures.size())))
-    n = -1;
-
-  for (int i = n + 1; i < static_cast<int>(GameTextures.size()); i++)
-    if (GameTextures.is_used(i))
-      return i;
-  for (int i = 0; i < n; i++)
-    if (GameTextures.is_used(i))
-      return i;
-
-  // this is the only one
-  return n;
+  if (GameTextures.empty())
+    return -1;
+  Q_ASSERT(n >= 0 && n < static_cast<int>(GameTextures.size()));
+  return static_cast<int>(GameTextures.next(static_cast<size_t>(n)).value_or(-1));
 }
 
 // Given current index, gets index of prev texture in use
 int GetPreviousTexture(int n) {
-  if ((n < 0) || (n >= static_cast<int>(GameTextures.size())))
-    n = static_cast<int>(GameTextures.size());
-
-  for (int i = n - 1; i >= 0; i--)
-    if (GameTextures.is_used(i))
-      return i;
-  for (int i = static_cast<int>(GameTextures.size()) - 1; i > n; i--)
-    if (GameTextures.is_used(i))
-      return i;
-
-  // this is the only one
-  return n;
+  if (GameTextures.empty())
+    return -1;
+  Q_ASSERT(n >= 0 && n < static_cast<int>(GameTextures.size()));
+  return static_cast<int>(GameTextures.prev(static_cast<size_t>(n)).value_or(-1));
 }
 
