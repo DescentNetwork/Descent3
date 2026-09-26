@@ -38,12 +38,9 @@ public:
   int current() const { return m_current; }
 
 private slots:
-  void onEditAI();
-  void onEditPhysics();
   void onAddNew();
   void onCheckedOut();
   void onCheckIn();
-  void onDefineAnimStates();
   void onDelete();
   void onLock();
   void onUndoLock();
@@ -53,41 +50,17 @@ private slots:
   void onKillfocusSize();
   void onCopy();
   void onPaste();
-  void onKillfocusHitpoints();
   void onWeaponInfo();
   void onLight();
   void onDefaultRadius();
   void onSelScript();
-  void onKillfocusImpactDamage();
-  void onKillfocusImpactSize();
   void onNolod();
-  void onHiresRadio();
-  void onMedresRadio();
-  void onLoresRadio();
-  void onKillfocusImpactTime();
-  void onExplosionSoundChanged();
-  void onAmbientSoundChanged();
   void onKillfocusInvenDescription();
-  void onKillfocusInvenIconname();
   void onOverride();
   void onKillfocusLodDistance();
-  void onInvtypeGame();
-  void onInvtypeMission();
-  void onDeathPowerup1Changed();
-  void onDeathPowerup1NumEdited();
-  void onDeathPowerup1PercentEdited();
-  void onDeathPowerup2Changed();
-  void onDeathPowerup2NumEdited();
-  void onDeathPowerup2PercentEdited();
   void onDeathPowerupUse2(bool checked);
   void onDeathSpew2IfZero1(bool checked);
-  void onKillfocusScriptname();
-  void onCompilemodule();
-  void onKillfocusScriptOverride();
   void onKillfocusRespawnScalar();
-  void onGenericDeaths();
-  void onKillfocusScore();
-  void onKillfocusAmmo();
 
 private:
   void updateDialog();
