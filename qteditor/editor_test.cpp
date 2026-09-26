@@ -3349,7 +3349,7 @@ private slots:
       make("editline", d);
     }
     {
-      auto *d = new GenericDeathDialog(&oi);
+      auto *d = new GenericDeathDialog(-1);
       make("generic_death", d);
     }
     make("hog", (new HogDialog));
@@ -3358,7 +3358,7 @@ private slots:
       make("level_info", d);
     }
     {
-      auto *d = new PhysicsDialog(&pi);
+      auto *d = new PhysicsDialog();
       make("physics", d);
     }
     {

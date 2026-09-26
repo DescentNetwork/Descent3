@@ -302,6 +302,7 @@
 #include "object_external_struct.h"
 #include "polymodel_external.h"
 #include "vecmat.h"
+#include "utils.h"
 
 #define PM_COMPATIBLE_VERSION 1807
 #define PM_OBJFILE_VERSION 2300
@@ -382,7 +383,7 @@ void SetNormalizedTimeAnim(float norm_anim_frame, float *normalized_time, poly_m
 void WBClearInfo(poly_model *pm);
 
 // Computes the size of a polymodel.
-float ComputeDefaultSize(int type, int handle, float *size_ptr);
+float ComputeDefaultSize(int type, int handle, optref<float> size_out);
 
 // Returns the total number of faces in a model
 int CountFacesInPolymodel(poly_model *pm);
@@ -404,7 +405,7 @@ int IsNonRenderableSubmodel(poly_model *pm, int submodelnum);
 void SetPolymodelEffect(polymodel_effect *);
 
 // Pages in a polymodel if it is not already in memory
-void PageInPolymodel(int polynum, int type = -1, float *size_ptr = nullptr);
+void PageInPolymodel(int polynum, int type = -1, optref<float> size_out = std::nullopt);
 
 // Gets a pointer to a polymodel.  Pages it in if neccessary
 poly_model *GetPolymodelPointer(int polynum);

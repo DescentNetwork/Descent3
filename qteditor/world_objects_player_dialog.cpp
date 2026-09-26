@@ -564,9 +564,10 @@ void WorldObjectsPlayerDialog::onPshipCockpit()
 }
 
 void WorldObjectsPlayerDialog::onPshipEditPhysics() {
-  const int n = app.current_ship;
-  PhysicsDialog dlg(&shipRef(n).phys_info, this);
-  dlg.exec();
+  PhysicsDialog dlg(this);
+  dlg.setData(shipRef(app.current_ship).phys_info);
+  if(dlg.exec() == QDialog::Accepted)
+    shipRef(app.current_ship).phys_info = dlg.getData();
 }
 
 void WorldObjectsPlayerDialog::onKillfocusName() {

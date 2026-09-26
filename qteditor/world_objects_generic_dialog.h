@@ -19,6 +19,8 @@
 #pragma once
 
 #include <QDialog>
+#include "utils.h"
+#include "objinfo.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class WorldObjectsGenericDialog; }
@@ -32,10 +34,10 @@ QT_END_NAMESPACE
 class WorldObjectsGenericDialog : public QDialog {
   Q_OBJECT
 public:
-  explicit WorldObjectsGenericDialog(int objType, int current, QWidget *parent = nullptr);
+  explicit WorldObjectsGenericDialog(int objType, int object_id, QWidget *parent = nullptr);
   ~WorldObjectsGenericDialog();
 
-  int current() const { return m_current; }
+  int objectId() const { return m_object_id; }
 
 private slots:
   void onAddNew();
@@ -47,7 +49,6 @@ private slots:
   void onNext();
   void onPrev();
   void onNamePulldownChanged();
-  void onKillfocusSize();
   void onCopy();
   void onPaste();
   void onWeaponInfo();
@@ -67,12 +68,13 @@ private:
   void enableDisableAll(bool flag);
   bool isLocked(int n);
   int countLockedItems();
-  void setCurrent(int id);
+  void setObjectId(int id);
   void saveGenericsOnClose();
+  optref<object_info> data(void);
 
   Ui::WorldObjectsGenericDialog *ui;
   int m_type;
-  int m_current;
+  int m_object_id;
   int m_lod = 0;
   int m_locked_count = 0;
 };

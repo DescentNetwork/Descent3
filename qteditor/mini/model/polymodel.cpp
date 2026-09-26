@@ -2052,11 +2052,11 @@ if (!(Poly_models[polynum].flags.not_resident)) {
 }
 
 // Pages in a polymodel if it is not already in memory
-void PageInPolymodel(int polynum, int type, float *size_ptr) {
+void PageInPolymodel(int polynum, int type, optref<float> size_out) {
   if (!(Poly_models[polynum].flags.not_resident)) {
     if (!(Poly_models[polynum].flags.size_computed))
       if (type != -1) {
-        ComputeDefaultSize(type, polynum, size_ptr);
+        ComputeDefaultSize(type, polynum, size_out);
       }
     return;
   }
@@ -2106,7 +2106,7 @@ void PageInPolymodel(int polynum, int type, float *size_ptr) {
   }
 
   if (type != -1) {
-    ComputeDefaultSize(type, polynum, size_ptr);
+    ComputeDefaultSize(type, polynum, size_out);
   }
 }
 

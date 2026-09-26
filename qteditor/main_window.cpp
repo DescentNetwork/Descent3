@@ -695,9 +695,9 @@ void MainWindow::showGenericObject(int objType, int current) {
   WorldObjectsGenericDialog dlg(objType, current, this);
   dlg.exec();
   if (objType == OBJ_BUILDING)
-    app.current_building = dlg.current();
+    app.current_building = dlg.objectId();
   else if (objType == OBJ_CLUTTER)
-    app.current_clutter = dlg.current();
+    app.current_clutter = dlg.objectId();
 }
 
 void MainWindow::showLevelProperties() {

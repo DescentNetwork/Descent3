@@ -26,18 +26,29 @@
 #include "death_dialog.h"
 
 
-GenericDeathDialog::GenericDeathDialog(object_info *objinfo, QWidget *parent)
-    : QDialog(parent), ui(new Ui::GenericDeathDialog), m_objinfo(objinfo)
+optref<object_info> GenericDeathDialog::data(void)
+{
+  if(m_object_id < 0)
+    return std::nullopt;
+  return Object_info[m_object_id];
+}
+
+GenericDeathDialog::GenericDeathDialog(int object_id, QWidget *parent)
+    : QDialog(parent), ui(new Ui::GenericDeathDialog), m_object_id(object_id)
 {
   ui->setupUi(this);
-  m_death_types[0] = objinfo->death_types[0];
-  m_prob[0] = objinfo->death_probabilities[0];
-  m_death_types[1] = objinfo->death_types[1];
-  m_prob[1] = objinfo->death_probabilities[1];
-  m_death_types[2] = objinfo->death_types[2];
-  m_prob[2] = objinfo->death_probabilities[2];
-  m_death_types[3] = objinfo->death_types[3];
-  m_prob[3] = objinfo->death_probabilities[3];
+
+  if(auto objinfo = data())
+  {
+    m_death_types[0] = objinfo->death_types[0];
+    m_prob[0] = objinfo->death_probabilities[0];
+    m_death_types[1] = objinfo->death_types[1];
+    m_prob[1] = objinfo->death_probabilities[1];
+    m_death_types[2] = objinfo->death_types[2];
+    m_prob[2] = objinfo->death_probabilities[2];
+    m_death_types[3] = objinfo->death_types[3];
+    m_prob[3] = objinfo->death_probabilities[3];
+  }
 
   ui->IDC_GENEREIC_DEATH_PROB1->setText(QString::number(m_prob[0]));
   ui->IDC_GENEREIC_DEATH_PROB2->setText(QString::number(m_prob[1]));
@@ -86,14 +97,17 @@ void GenericDeathDialog::onOk() {
     return;
   }
 
-  m_objinfo->death_types[0] = m_death_types[0];
-  m_objinfo->death_probabilities[0] = m_prob[0];
-  m_objinfo->death_types[1] = m_death_types[1];
-  m_objinfo->death_probabilities[1] = m_prob[1];
-  m_objinfo->death_types[2] = m_death_types[2];
-  m_objinfo->death_probabilities[2] = m_prob[2];
-  m_objinfo->death_types[3] = m_death_types[3];
-  m_objinfo->death_probabilities[3] = m_prob[3];
+  if(auto objinfo = data())
+  {
+    objinfo->death_types[0] = m_death_types[0];
+    objinfo->death_probabilities[0] = m_prob[0];
+    objinfo->death_types[1] = m_death_types[1];
+    objinfo->death_probabilities[1] = m_prob[1];
+    objinfo->death_types[2] = m_death_types[2];
+    objinfo->death_probabilities[2] = m_prob[2];
+    objinfo->death_types[3] = m_death_types[3];
+    objinfo->death_probabilities[3] = m_prob[3];
+  }
 
   accept();
 }

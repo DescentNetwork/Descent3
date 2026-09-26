@@ -352,7 +352,6 @@ int LoadSoundFile(const char *name, float vol, bool b) { PRINT_STUB(__FUNCTION__
 //poly_model *GetPolymodelPointer(int n) { PRINT_STUB(__FUNCTION__); return nullptr; }
 //int CountFacesInPolymodel(poly_model *pm) { PRINT_STUB(__FUNCTION__); return 0; }
 //float ComputeDefaultSize(int type, int handle, float *size) { PRINT_STUB(__FUNCTION__); return 0; }
-//void PageInPolymodel(int model_num, int f_damage, float *size) { PRINT_STUB(__FUNCTION__); }
 //void SetModelAnglesAndPos(poly_model *pm, float *anim, unsigned int flags) { PRINT_STUB(__FUNCTION__); }
 //int IsNonRenderableSubmodel(poly_model *pm, int index) { PRINT_STUB(__FUNCTION__); return 0; }
 void ChangeOldModelsForObjects(int a, int b) { PRINT_STUB(__FUNCTION__); }

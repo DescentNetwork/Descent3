@@ -94,6 +94,7 @@
 #include "chrono_timer.h"
 #include "log.h"
 #include "rand.h"
+#include "utils.h"
 
 static float face_depth[MAX_POLYGON_VECS];
 static uint8_t triangulated_faces[MAX_FACES_PER_ROOM];
@@ -123,8 +124,6 @@ static void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm);
 
 /// Rotates all of the points of a submodel, plus supplies color info.
 static void RotateModelPoints(poly_model *pm, bsp_info *sm);
-
-static float ComputeDefaultSizeFunc(int handle, float *size_ptr, vector3 *offset_ptr, bool f_use_all_frames);
 
 int ModelFaceSortFunc(const int16_t *a, const int16_t *b) {
   float az, bz;
@@ -1081,7 +1080,7 @@ int RenderPolygonModel(poly_model *pm, uint32_t f_render_sub) {
   return 1;
 }
 
-float ComputeDefaultSizeFunc(int handle, float *size_ptr, vector3 *offset_ptr, bool f_use_all_frames) {
+float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3> offset_ptr, bool f_use_all_frames) {
   poly_model *pm;
   matrix m;
   float normalized_time[MAX_SUBOBJECTS];
@@ -1236,12 +1235,12 @@ float ComputeDefaultSizeFunc(int handle, float *size_ptr, vector3 *offset_ptr, b
   return size;
 }
 
-float ComputeDefaultSize(int type, int handle, float *size_ptr) {
-  float size = ComputeDefaultSizeFunc(handle, size_ptr, nullptr, true);
+float ComputeDefaultSize(int type, int handle, optref<float> size_ptr) {
+  float size = ComputeDefaultSizeFunc(handle, size_ptr, std::nullopt, true);
 
   if (type != OBJ_WEAPON && type != OBJ_DEBRIS && type != OBJ_POWERUP) {
-    ComputeDefaultSizeFunc(handle, &Poly_models[handle].wall_size, &Poly_models[handle].wall_size_offset, false);
-    ComputeDefaultSizeFunc(handle, &Poly_models[handle].anim_size, &Poly_models[handle].anim_size_offset, true);
+    ComputeDefaultSizeFunc(handle, Poly_models[handle].wall_size, Poly_models[handle].wall_size_offset, false);
+    ComputeDefaultSizeFunc(handle, Poly_models[handle].anim_size, Poly_models[handle].anim_size_offset, true);
 
     if (type == OBJ_PLAYER) {
       Poly_models[handle].anim_size *= PLAYER_SIZE_SCALAR;

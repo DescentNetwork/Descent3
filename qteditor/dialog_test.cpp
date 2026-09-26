@@ -110,7 +110,7 @@ int runDialogTest() {
     check("editline", dlg != nullptr);
   }
   {
-    GenericDeathDialog* dlg = new GenericDeathDialog(&oi);
+    GenericDeathDialog* dlg = new GenericDeathDialog(-1);
     check("generic_death", dlg != nullptr);
   }
   construct<HogDialog>("hog", nullptr);
@@ -119,7 +119,7 @@ int runDialogTest() {
     check("level_info", dlg != nullptr);
   }
   {
-    PhysicsDialog* dlg = new PhysicsDialog(&pi);
+    PhysicsDialog* dlg = new PhysicsDialog();
     check("physics", dlg != nullptr);
   }
   {

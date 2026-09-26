@@ -615,13 +615,14 @@ void WorldWeaponsDialog::onChangeName() {
 
 void WorldWeaponsDialog::onEditPhysics() {
   const int n = app.current_weapon;
-  PhysicsDialog dlg(&weaponRef(n).phys_info, this);
-  dlg.exec();
+  PhysicsDialog dlg(this);
+  dlg.setData(weaponRef(n).phys_info);
+  if(dlg.exec() == QDialog::Accepted)
+    weaponRef(n).phys_info = dlg.getData();
 }
 
 void WorldWeaponsDialog::onDefaultSize() {
-  const int n = app.current_weapon;
-  ComputeDefaultSize(OBJ_WEAPON, weaponRef(n).fire_image_handle, &weaponRef(n).size);
+  ComputeDefaultSize(OBJ_WEAPON, weaponRef(app.current_weapon).fire_image_handle, weaponRef(app.current_weapon).size);
   updateDialog();
 }
 

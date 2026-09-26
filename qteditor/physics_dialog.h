@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include "object.h"
 #include <QDialog>
+#include "object.h"
+#include "utils.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class PhysicsDialog; }
@@ -30,8 +31,13 @@ QT_END_NAMESPACE
 class PhysicsDialog : public QDialog {
   Q_OBJECT
 public:
-  explicit PhysicsDialog(physics_info *physInfo, QWidget *parent = nullptr);
+  explicit PhysicsDialog(QWidget *parent = nullptr);
   ~PhysicsDialog();
+
+  void setData(const physics_info& physInfo)
+    { setPhysicsData(m_physInfo = physInfo); }
+  physics_info&& getData(void)
+    { return std::move(m_physInfo); }
 
 private slots:
   void onOk();
@@ -54,11 +60,11 @@ private:
   void enableDisableTurnRoll();
   void enableDisableThrust();
 
-  void setPhysicsData(const physics_info *physInfo);
-  void getPhysicsData(physics_info *physInfo) const;
+  void setPhysicsData(const physics_info& physInfo);
+  void getPhysicsData(physics_info& physInfo) const;
 
   Ui::PhysicsDialog *ui;
-  physics_info *m_physInfo;
+  physics_info m_physInfo;
   int m_gravityFlag;   // tri-state: 0=none,  ​1=forward,2=reverse
 };
 

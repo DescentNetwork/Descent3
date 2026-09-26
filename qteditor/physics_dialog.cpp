@@ -33,9 +33,9 @@ namespace {
 physics_info Paste_data{};
 bool Paste_data_used = false;
 
-constexpr int kNoGravity =0;
-constexpr int kForwardGravity =1;
-constexpr int kReverseGravity =2;
+constexpr int kNoGravity = 0;
+constexpr int kForwardGravity = 1;
+constexpr int kReverseGravity = 2;
 
 float editFloat(QWidget *w) {
   auto *edit = qobject_cast<QLineEdit *>(w);
@@ -48,11 +48,10 @@ void setEditFloat(QWidget *w, float value) {
 }
 } // namespace
 
-PhysicsDialog::PhysicsDialog(physics_info *physInfo, QWidget *parent)
-    : QDialog(parent), ui(new Ui::PhysicsDialog), m_physInfo(physInfo), m_gravityFlag(0)
+PhysicsDialog::PhysicsDialog(QWidget *parent)
+    : QDialog(parent), ui(new Ui::PhysicsDialog),  m_gravityFlag(0)
 {
   ui->setupUi(this);
-  setPhysicsData(physInfo);
 
   connect(ui->IDOK, &QPushButton::clicked, this, &PhysicsDialog::onOk);
 
@@ -151,50 +150,51 @@ void PhysicsDialog::updateTerminalText() {
   }
 }
 
-void PhysicsDialog::setPhysicsData(const physics_info *p) {
-  setEditFloat(ui->IDC_PHYSICS_MASS_EDIT, p->mass);
-  setEditFloat(ui->IDC_PHYSICS_DRAG_EDIT, p->drag);
-  setEditFloat(ui->IDC_PHYSICS_ROTDRAG_EDIT, p->rotdrag);
-  setEditFloat(ui->IDC_PHYSICS_MAXTHRUST_EDIT, p->full_thrust);
-  setEditFloat(ui->IDC_PHYSICS_ROTTHRUST_EDIT, p->full_rotthrust);
-  setEditFloat(ui->IDC_PHYSICS_MAXTURNROLLRATE_EDIT, p->max_turnroll_rate);
-  setEditFloat(ui->IDC_PHYSICS_TURNROLLRATIO_EDIT, p->turnroll_ratio);
-  setEditFloat(ui->IDC_PHYSICS_WIGGLESIZE_EDIT, p->wiggle_amplitude);
-  setEditFloat(ui->IDC_PHYSICS_WIGGLEFREQ_EDIT, p->wiggles_per_sec);
-  setEditFloat(ui->IDC_PHYSICS_INIT_VELOCITY_EDIT, p->velocity.z());
-  setEditFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_X_EDIT, p->rotvel.x());
-  setEditFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_Y_EDIT, p->rotvel.y());
-  setEditFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_Z_EDIT, p->rotvel.z());
-  setEditFloat(ui->IDC_PHYSICS_MAX_BOUNCES_EDIT, p->num_bounces);
+void PhysicsDialog::setPhysicsData(const physics_info& p)
+{
+  setEditFloat(ui->IDC_PHYSICS_MASS_EDIT, p.mass);
+  setEditFloat(ui->IDC_PHYSICS_DRAG_EDIT, p.drag);
+  setEditFloat(ui->IDC_PHYSICS_ROTDRAG_EDIT, p.rotdrag);
+  setEditFloat(ui->IDC_PHYSICS_MAXTHRUST_EDIT, p.full_thrust);
+  setEditFloat(ui->IDC_PHYSICS_ROTTHRUST_EDIT, p.full_rotthrust);
+  setEditFloat(ui->IDC_PHYSICS_MAXTURNROLLRATE_EDIT, p.max_turnroll_rate);
+  setEditFloat(ui->IDC_PHYSICS_TURNROLLRATIO_EDIT, p.turnroll_ratio);
+  setEditFloat(ui->IDC_PHYSICS_WIGGLESIZE_EDIT, p.wiggle_amplitude);
+  setEditFloat(ui->IDC_PHYSICS_WIGGLEFREQ_EDIT, p.wiggles_per_sec);
+  setEditFloat(ui->IDC_PHYSICS_INIT_VELOCITY_EDIT, p.velocity.z());
+  setEditFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_X_EDIT, p.rotvel.x());
+  setEditFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_Y_EDIT, p.rotvel.y());
+  setEditFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_Z_EDIT, p.rotvel.z());
+  setEditFloat(ui->IDC_PHYSICS_MAX_BOUNCES_EDIT, p.num_bounces);
   setEditFloat(ui->IDC_PHYSICS_PERCENT_LOSS_EDIT,
-               (scalar)100.0 - (p->coeff_restitution * (scalar)100.0));
+               (scalar)100.0 - (p.coeff_restitution * (scalar)100.0));
 
-  ui->IDC_PHYSICS_STICKY_CHECK->setChecked(p->flags.stick);
-  ui->IDC_PHYSICS_BOUNCY_CHECK->setChecked(p->flags.bounce);
-  ui->IDC_PHYSICS_THRUSTS_CHECK->setChecked(p->flags.uses_thrust);
-  ui->IDC_PHYSICS_FIXED_VELOCITY_CHECK->setChecked(p->flags.fixed_velocity);
-  ui->IDC_PHYSICS_FIXED_ROTATE_CHECK->setChecked(p->flags.fixed_rot_velocity);
-  ui->IDC_NO_COLLIDE_CHECK->setChecked(p->flags.no_collide);
-  ui->IDC_TURN_ROLL_CHECK->setChecked(p->flags.turnroll);
-  ui->IDC_PHYSICS_AUTO_LEVELING_CHECK->setChecked(p->flags.leveling);
-  ui->IDC_PHYSICS_POINT_WALL_CHECK->setChecked(p->flags.point_collide_walls);
-  ui->IDC_PHYSICS_IGNORE_ROBOTS_CHECK->setChecked(p->flags.no_robot_collisions);
-  ui->IDC_PHYSICS_IGNORE_SAME_CHECK->setChecked(p->flags.no_same_collisions);
-  ui->IDC_PHYSICS_IGNORE_DOOR_CHECK->setChecked(p->flags.no_door_collisions);
-  ui->IDC_PHYSICS_IGNORE_CONCUSSIVE_FORCES->setChecked(p->flags.ignore_concussive_forces);
-  ui->IDC_L_X_CHECK->setChecked(p->flags.lock_x);
-  ui->IDC_L_Y_CHECK->setChecked(p->flags.lock_y);
-  ui->IDC_L_Z_CHECK->setChecked(p->flags.lock_z);
-  ui->IDC_L_P_CHECK->setChecked(p->flags.lock_p);
-  ui->IDC_L_B_CHECK->setChecked(p->flags.lock_b);
-  ui->IDC_L_H_CHECK->setChecked(p->flags.lock_h);
-  ui->IDC_NO_BIG_SPHERE_CHECK->setChecked(p->flags.never_use_big_sphere);
-  ui->IDC_PHYSICS_WIGGLE_CHECK->setChecked(p->flags.wiggle);
-  ui->IDC_PHYSICS_MAGNETISM_CHECK->setChecked(p->flags.ignore_own_conc_forces);
-  ui->IDC_PHYSICS_WIND_CHECK->setChecked(p->flags.wind);
-  ui->IDC_PHYSICS_PERSISTENT_CHECK->setChecked(p->flags.persistent);
+  ui->IDC_PHYSICS_STICKY_CHECK->setChecked(p.flags.stick);
+  ui->IDC_PHYSICS_BOUNCY_CHECK->setChecked(p.flags.bounce);
+  ui->IDC_PHYSICS_THRUSTS_CHECK->setChecked(p.flags.uses_thrust);
+  ui->IDC_PHYSICS_FIXED_VELOCITY_CHECK->setChecked(p.flags.fixed_velocity);
+  ui->IDC_PHYSICS_FIXED_ROTATE_CHECK->setChecked(p.flags.fixed_rot_velocity);
+  ui->IDC_NO_COLLIDE_CHECK->setChecked(p.flags.no_collide);
+  ui->IDC_TURN_ROLL_CHECK->setChecked(p.flags.turnroll);
+  ui->IDC_PHYSICS_AUTO_LEVELING_CHECK->setChecked(p.flags.leveling);
+  ui->IDC_PHYSICS_POINT_WALL_CHECK->setChecked(p.flags.point_collide_walls);
+  ui->IDC_PHYSICS_IGNORE_ROBOTS_CHECK->setChecked(p.flags.no_robot_collisions);
+  ui->IDC_PHYSICS_IGNORE_SAME_CHECK->setChecked(p.flags.no_same_collisions);
+  ui->IDC_PHYSICS_IGNORE_DOOR_CHECK->setChecked(p.flags.no_door_collisions);
+  ui->IDC_PHYSICS_IGNORE_CONCUSSIVE_FORCES->setChecked(p.flags.ignore_concussive_forces);
+  ui->IDC_L_X_CHECK->setChecked(p.flags.lock_x);
+  ui->IDC_L_Y_CHECK->setChecked(p.flags.lock_y);
+  ui->IDC_L_Z_CHECK->setChecked(p.flags.lock_z);
+  ui->IDC_L_P_CHECK->setChecked(p.flags.lock_p);
+  ui->IDC_L_B_CHECK->setChecked(p.flags.lock_b);
+  ui->IDC_L_H_CHECK->setChecked(p.flags.lock_h);
+  ui->IDC_NO_BIG_SPHERE_CHECK->setChecked(p.flags.never_use_big_sphere);
+  ui->IDC_PHYSICS_WIGGLE_CHECK->setChecked(p.flags.wiggle);
+  ui->IDC_PHYSICS_MAGNETISM_CHECK->setChecked(p.flags.ignore_own_conc_forces);
+  ui->IDC_PHYSICS_WIND_CHECK->setChecked(p.flags.wind);
+  ui->IDC_PHYSICS_PERSISTENT_CHECK->setChecked(p.flags.persistent);
 
-  m_gravityFlag = p->flags.gravity ? kForwardGravity :(p->flags.reverse_gravity ? kReverseGravity : kNoGravity);
+  m_gravityFlag = p.flags.gravity ? kForwardGravity :(p.flags.reverse_gravity ? kReverseGravity : kNoGravity);
   if (m_gravityFlag == kForwardGravity)
     ui->IDC_PHYSICS_GRAVITY_RADIO->setChecked(true);
   else if (m_gravityFlag == kReverseGravity)
@@ -203,58 +203,58 @@ void PhysicsDialog::setPhysicsData(const physics_info *p) {
     ui->IDC_PHYSICS_NO_GRAVITY_RADIO->setChecked(true);
 
   setEditFloat(ui->IDC_PHYSICS_HIT_DIE_ANGLE,
-               (p->hit_die_dot == -1) ? 0.0f
-                                      : (float)(asin(p->hit_die_dot) * ((scalar)180.0 / (scalar)PI)));
-  ui->IDC_PHYSICS_HIT_DIE_ANGLE->setEnabled(p->hit_die_dot != -1);
+               (p.hit_die_dot == -1) ? 0.0f
+                                      : (float)(asin(p.hit_die_dot) * ((scalar)180.0 / (scalar)PI)));
+  ui->IDC_PHYSICS_HIT_DIE_ANGLE->setEnabled(p.hit_die_dot != -1);
 }
 
-void PhysicsDialog::getPhysicsData(physics_info *p) const {
-  p->mass = editFloat(ui->IDC_PHYSICS_MASS_EDIT);
-  p->drag = editFloat(ui->IDC_PHYSICS_DRAG_EDIT);
-  p->rotdrag = editFloat(ui->IDC_PHYSICS_ROTDRAG_EDIT);
-  p->full_thrust = editFloat(ui->IDC_PHYSICS_MAXTHRUST_EDIT);
-  p->full_rotthrust = editFloat(ui->IDC_PHYSICS_ROTTHRUST_EDIT);
-  p->max_turnroll_rate = editFloat(ui->IDC_PHYSICS_MAXTURNROLLRATE_EDIT);
-  p->turnroll_ratio = editFloat(ui->IDC_PHYSICS_TURNROLLRATIO_EDIT);
-  p->wiggle_amplitude = editFloat(ui->IDC_PHYSICS_WIGGLESIZE_EDIT);
-  p->wiggles_per_sec = editFloat(ui->IDC_PHYSICS_WIGGLEFREQ_EDIT);
-  p->velocity.z() = editFloat(ui->IDC_PHYSICS_INIT_VELOCITY_EDIT);
-  p->rotvel.x() = editFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_X_EDIT);
-  p->rotvel.y() = editFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_Y_EDIT);
-  p->rotvel.z() = editFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_Z_EDIT);
-  p->num_bounces = (int)editFloat(ui->IDC_PHYSICS_MAX_BOUNCES_EDIT);
-  p->coeff_restitution = ((scalar)100.0 - editFloat(ui->IDC_PHYSICS_PERCENT_LOSS_EDIT)) / (scalar)100.0;
-
+void PhysicsDialog::getPhysicsData(physics_info& p) const
+{
+  p.mass = editFloat(ui->IDC_PHYSICS_MASS_EDIT);
+  p.drag = editFloat(ui->IDC_PHYSICS_DRAG_EDIT);
+  p.rotdrag = editFloat(ui->IDC_PHYSICS_ROTDRAG_EDIT);
+  p.full_thrust = editFloat(ui->IDC_PHYSICS_MAXTHRUST_EDIT);
+  p.full_rotthrust = editFloat(ui->IDC_PHYSICS_ROTTHRUST_EDIT);
+  p.max_turnroll_rate = editFloat(ui->IDC_PHYSICS_MAXTURNROLLRATE_EDIT);
+  p.turnroll_ratio = editFloat(ui->IDC_PHYSICS_TURNROLLRATIO_EDIT);
+  p.wiggle_amplitude = editFloat(ui->IDC_PHYSICS_WIGGLESIZE_EDIT);
+  p.wiggles_per_sec = editFloat(ui->IDC_PHYSICS_WIGGLEFREQ_EDIT);
+  p.velocity.z() = editFloat(ui->IDC_PHYSICS_INIT_VELOCITY_EDIT);
+  p.rotvel.x() = editFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_X_EDIT);
+  p.rotvel.y() = editFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_Y_EDIT);
+  p.rotvel.z() = editFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_Z_EDIT);
+  p.num_bounces = (int)editFloat(ui->IDC_PHYSICS_MAX_BOUNCES_EDIT);
+  p.coeff_restitution = ((scalar)100.0 - editFloat(ui->IDC_PHYSICS_PERCENT_LOSS_EDIT)) / (scalar)100.0;
   
-  p->flags.stick = ui->IDC_PHYSICS_STICKY_CHECK->isChecked();
-  p->flags.bounce = ui->IDC_PHYSICS_BOUNCY_CHECK->isChecked();
-  p->flags.uses_thrust = ui->IDC_PHYSICS_THRUSTS_CHECK->isChecked();
-  p->flags.fixed_velocity = ui->IDC_PHYSICS_FIXED_VELOCITY_CHECK->isChecked();
-  p->flags.fixed_rot_velocity = ui->IDC_PHYSICS_FIXED_ROTATE_CHECK->isChecked();
-  p->flags.no_collide = ui->IDC_NO_COLLIDE_CHECK->isChecked();
-  p->flags.turnroll = ui->IDC_TURN_ROLL_CHECK->isChecked();
-  p->flags.leveling = ui->IDC_PHYSICS_AUTO_LEVELING_CHECK->isChecked();
-  p->flags.point_collide_walls = ui->IDC_PHYSICS_POINT_WALL_CHECK->isChecked();
-  p->flags.no_robot_collisions = ui->IDC_PHYSICS_IGNORE_ROBOTS_CHECK->isChecked();
-  p->flags.no_same_collisions = ui->IDC_PHYSICS_IGNORE_SAME_CHECK->isChecked();
-  p->flags.no_door_collisions = ui->IDC_PHYSICS_IGNORE_DOOR_CHECK->isChecked();
-  p->flags.ignore_concussive_forces = ui->IDC_PHYSICS_IGNORE_CONCUSSIVE_FORCES->isChecked();
-  p->flags.lock_x = ui->IDC_L_X_CHECK->isChecked();
-  p->flags.lock_y = ui->IDC_L_Y_CHECK->isChecked();
-  p->flags.lock_z = ui->IDC_L_Z_CHECK->isChecked();
-  p->flags.lock_p = ui->IDC_L_P_CHECK->isChecked();
-  p->flags.lock_b = ui->IDC_L_B_CHECK->isChecked();
-  p->flags.lock_h = ui->IDC_L_H_CHECK->isChecked();
-  p->flags.never_use_big_sphere = ui->IDC_NO_BIG_SPHERE_CHECK->isChecked();
-  p->flags.wiggle = ui->IDC_PHYSICS_WIGGLE_CHECK->isChecked();
-  p->flags.ignore_own_conc_forces = ui->IDC_PHYSICS_MAGNETISM_CHECK->isChecked();
-  p->flags.wind = ui->IDC_PHYSICS_WIND_CHECK->isChecked();
-  p->flags.persistent = ui->IDC_PHYSICS_PERSISTENT_CHECK->isChecked();
+  p.flags.stick = ui->IDC_PHYSICS_STICKY_CHECK->isChecked();
+  p.flags.bounce = ui->IDC_PHYSICS_BOUNCY_CHECK->isChecked();
+  p.flags.uses_thrust = ui->IDC_PHYSICS_THRUSTS_CHECK->isChecked();
+  p.flags.fixed_velocity = ui->IDC_PHYSICS_FIXED_VELOCITY_CHECK->isChecked();
+  p.flags.fixed_rot_velocity = ui->IDC_PHYSICS_FIXED_ROTATE_CHECK->isChecked();
+  p.flags.no_collide = ui->IDC_NO_COLLIDE_CHECK->isChecked();
+  p.flags.turnroll = ui->IDC_TURN_ROLL_CHECK->isChecked();
+  p.flags.leveling = ui->IDC_PHYSICS_AUTO_LEVELING_CHECK->isChecked();
+  p.flags.point_collide_walls = ui->IDC_PHYSICS_POINT_WALL_CHECK->isChecked();
+  p.flags.no_robot_collisions = ui->IDC_PHYSICS_IGNORE_ROBOTS_CHECK->isChecked();
+  p.flags.no_same_collisions = ui->IDC_PHYSICS_IGNORE_SAME_CHECK->isChecked();
+  p.flags.no_door_collisions = ui->IDC_PHYSICS_IGNORE_DOOR_CHECK->isChecked();
+  p.flags.ignore_concussive_forces = ui->IDC_PHYSICS_IGNORE_CONCUSSIVE_FORCES->isChecked();
+  p.flags.lock_x = ui->IDC_L_X_CHECK->isChecked();
+  p.flags.lock_y = ui->IDC_L_Y_CHECK->isChecked();
+  p.flags.lock_z = ui->IDC_L_Z_CHECK->isChecked();
+  p.flags.lock_p = ui->IDC_L_P_CHECK->isChecked();
+  p.flags.lock_b = ui->IDC_L_B_CHECK->isChecked();
+  p.flags.lock_h = ui->IDC_L_H_CHECK->isChecked();
+  p.flags.never_use_big_sphere = ui->IDC_NO_BIG_SPHERE_CHECK->isChecked();
+  p.flags.wiggle = ui->IDC_PHYSICS_WIGGLE_CHECK->isChecked();
+  p.flags.ignore_own_conc_forces = ui->IDC_PHYSICS_MAGNETISM_CHECK->isChecked();
+  p.flags.wind = ui->IDC_PHYSICS_WIND_CHECK->isChecked();
+  p.flags.persistent = ui->IDC_PHYSICS_PERSISTENT_CHECK->isChecked();
 
-  if (p->hit_die_dot != -1)
-    p->hit_die_dot = sin(editFloat(ui->IDC_PHYSICS_HIT_DIE_ANGLE) * (scalar)PI / (scalar)180.0);
-p->flags.gravity = (m_gravityFlag == kForwardGravity);
-  p->flags.reverse_gravity =(m_gravityFlag == kReverseGravity);
+  if (p.hit_die_dot != -1)
+    p.hit_die_dot = sin(editFloat(ui->IDC_PHYSICS_HIT_DIE_ANGLE) * (scalar)PI / (scalar)180.0);
+  p.flags.gravity = (m_gravityFlag == kForwardGravity);
+  p.flags.reverse_gravity =(m_gravityFlag == kReverseGravity);
 }
 
 void PhysicsDialog::onWiggleCheck() { enableDisableWiggle(); }
@@ -267,14 +267,14 @@ void PhysicsDialog::onThrustsCheck() { enableDisableThrust(); }
 void PhysicsDialog::onTerminalEditChanged() { updateTerminalText(); }
 
 void PhysicsDialog::onCopy() {
-  getPhysicsData(&Paste_data);
+  getPhysicsData(Paste_data);
   Paste_data_used = true;
   ui->IDC_PHYSICS_PASTE->setEnabled(true);
 }
 
 void PhysicsDialog::onPaste() {
   if (Paste_data_used) {
-    setPhysicsData(&Paste_data);
+    setPhysicsData(Paste_data);
     updateTerminalText();
     enableDisableFullPhysics();
     enableDisableWiggle();
