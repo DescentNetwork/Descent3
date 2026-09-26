@@ -310,13 +310,12 @@
 #ifndef _OBJINFO_H
 #define _OBJINFO_H
 
+#include <string>
+#include <vector>
+
 #include "object.h"
 #include "manage.h"
 #include "DeathInfo.h"
-//#include <fixed_string.h>
-#include <string>
-#include <string_view>
-#include <vector>
 
 #include "robotfirestruct.h" // otype_wb_info
 
@@ -391,8 +390,8 @@ byte_ostream& operator <<(byte_ostream& output, const anim_elem& data);
 // AI info for this object
 // This is the subset of ai_frame data that the user can edit for an object type
 struct t_ai_info {
-  char ai_class;
-  char ai_type;
+  uint8_t ai_class;
+  uint8_t ai_type;
 
   float max_velocity;
   float max_delta_velocity;
@@ -411,8 +410,8 @@ struct t_ai_info {
 
   int sound[MAX_AI_SOUNDS];
 
-  char movement_type;
-  char movement_subtype;
+  uint8_t movement_type;
+  uint8_t movement_subtype;
 
   int flags;
   int notify_flags;
@@ -501,14 +500,14 @@ struct object_info {
   float med_lod_distance; // The distance at which the med-res model takes over
   float lo_lod_distance;  // The distance at which the lo-res model takes over
 
-  int score; // how many points you get for killing/picking up
+  uint16_t score; // how many points you get for killing/picking up
 
-  int hit_points; // if destroyable, the hit points
+  uint32_t hit_points; // if destroyable, the hit points
   float damage;
   float impact_size;
   float impact_time;
 
-  int ammo_count; // if a powerup, how much ammo it has
+  uint16_t ammo_count; // if a powerup, how much ammo it has
 
   std::string description; // used for inventory
   std::string icon_name;    // used for inventory
@@ -545,8 +544,7 @@ struct object_info {
   std::vector<otype_wb_info> static_wb; // sized MAX_WBS_PER_OBJ when non-empty; empty means none
 
   // Valid for polygon model objects only
-  anim_elem *anim; // which anim states are active
-  //	anim_elem		anim[NUM_MOVEMENT_CLASSES];	// which anim states are active
+  std::vector<anim_elem> anim; // sized NUM_MOVEMENT_CLASSES when non-empty; empty means none
 
 };
 

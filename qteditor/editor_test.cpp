@@ -7284,6 +7284,59 @@ private slots:
     LocalScriptDir = savedScriptDir;
     QSettings::setDefaultFormat(QSettings::NativeFormat);
   }
+
+  // object_info::anim is a fixed-size std::vector (NUM_MOVEMENT_CLASSES) when
+  // the object was allocated with f_anim; it holds the engine-default anim
+  // element init (spc=1, anim_sound_index=-1).  Allocating without f_anim keeps
+  // it empty, and copies own their buffer (the old raw pointer could alias).
+  void testAllocFreeObjectIDAnim()
+  {
+    std::vector<object_info> savedInfo(MAX_OBJECT_IDS);
+    int savedNumIds[MAX_OBJECT_IDS];
+    for (int i = 0; i < MAX_OBJECT_IDS; i++) {
+      savedInfo[i] = Object_info[i];
+      savedNumIds[i] = Num_object_ids[i];
+    }
+    for (int i = 0; i < MAX_OBJECT_IDS; i++) {
+      Object_info[i] = object_info{};
+      Object_info[i].type = OBJ_NONE;
+    }
+
+    // f_anim: fixed-size anim table with the engine defaults.
+    const int ai = AllocObjectID(OBJ_POWERUP, true, false, false);
+    QVERIFY(ai >= 0);
+    QCOMPARE(int(Object_info[ai].anim.size()), int(NUM_MOVEMENT_CLASSES));
+    for (size_t j = 0; j < Object_info[ai].anim.size(); j++)
+      for (int k = 0; k < NUM_ANIMS_PER_CLASS; k++) {
+        QCOMPARE(Object_info[ai].anim[j].elem[k].spc, 1.0f);
+        QCOMPARE(Object_info[ai].anim[j].elem[k].anim_sound_index, -1);
+      }
+
+    // No anim requested: the table stays empty.
+    const int bi = AllocObjectID(OBJ_CLUTTER, false, false, false);
+    QVERIFY(bi >= 0);
+    QVERIFY(Object_info[bi].anim.empty());
+
+    // Copies get their own buffer (vector semantics, not a shared pointer).
+    const object_info copy = Object_info[ai];
+    QCOMPARE(int(copy.anim.size()), int(NUM_MOVEMENT_CLASSES));
+    QCOMPARE(copy.anim[0].elem[3].anim_sound_index, -1);
+    QCOMPARE(copy.anim[0].elem[3].spc, 1.0f);
+    QVERIFY(copy.anim.data() != Object_info[ai].anim.data());
+
+    // FreeObjectID releases the anim storage.
+    FreeObjectID(ai);
+    QVERIFY(Object_info[ai].anim.empty());
+    FreeObjectID(bi);
+    QVERIFY(Object_info[bi].anim.empty());
+
+    // Restore the surrounding game-table state so later tests (which rely on
+    // the startup gamedata table) see it unchanged.
+    for (int i = 0; i < MAX_OBJECT_IDS; i++) {
+      Object_info[i] = std::move(savedInfo[i]);
+      Num_object_ids[i] = savedNumIds[i];
+    }
+  }
 };
 // Force the offscreen QPA platform so the test binary never opens a real
 // window — even at the menu-wiring tests that walk the menubar, the file

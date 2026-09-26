@@ -21,11 +21,8 @@
 // anim_entry is stored on disk (anim_sound_index and used are runtime-only).
 
 #include "objinfo.h"
-#include "mem.h"
 #include "robotfire.h"
 #include "robotfirestruct.h"
-
-#include <cstring>
 
 object_info Object_info[MAX_OBJECTS];
 
@@ -89,8 +86,7 @@ object_info::object_info(int type, bool f_anim, bool f_weapons, bool f_ai) : obj
   }
 
   if (f_anim) {
-    anim = mem_rmalloc<anim_elem>(NUM_MOVEMENT_CLASSES);
-    memset(anim, 0, sizeof(anim_elem) * NUM_MOVEMENT_CLASSES);
+    anim.assign(NUM_MOVEMENT_CLASSES, anim_elem{});
     for (int j = 0; j < NUM_MOVEMENT_CLASSES; j++)
       for (int k = 0; k < NUM_ANIMS_PER_CLASS; k++) {
         anim[j].elem[k].spc = 1.0f;
@@ -157,10 +153,7 @@ void FreeObjectID(int n) {
   Object_info[n].module_name.clear();
   Object_info[n].description.clear();
 
-  if (Object_info[n].anim) {
-    mem_free(Object_info[n].anim);
-    Object_info[n].anim = nullptr;
-  }
+  Object_info[n].anim.clear();
   Object_info[n].ai_info = {};
   Object_info[n].static_wb = {};
 }
