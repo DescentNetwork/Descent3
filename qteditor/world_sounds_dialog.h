@@ -19,7 +19,9 @@
 #pragma once
 
 #include <QDialog>
-#include "ssl_lib.h"
+
+#include "ssl_lib.h" // sound_info
+#include "utils.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class WorldSoundsDialog; }
@@ -48,20 +50,13 @@ private slots:
   void onChangeName();
   void onSoundPulldownChanged();
 
-  void onMaxDistEdited();
-  void onMinDistEdited();
-  void onInnerConeEdited();
-  void onOuterConeAngleEdited();
-  void onOuterConeVolEdited();
-  void onLoopStartEdited();
-  void onLoopEndEdited();
-  void onImportVolumeEdited();
-
 private:
+  optref<sound_info> data(void);
   void updateDialog();
+  void bindEdits();
+  void bindChecks();
   void saveSoundsOnClose();
 private:
   Ui::WorldSoundsDialog *ui;
-  sound_info* m_snd = nullptr;
 };
 
