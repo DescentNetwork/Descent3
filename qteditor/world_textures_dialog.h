@@ -20,6 +20,8 @@
 
 #include <QDialog>
 
+#include "utils.h"
+
 struct texture;
 
 QT_BEGIN_NAMESPACE
@@ -44,16 +46,17 @@ private slots:
   void onOverride();
   void onChangeName();
   void onLoadBitmap();
-  void onCurrent();
   void onNext();
   void onPrev();
   void onTexListChanged();
-  void onAmbientSoundChanged();
 
 private:
   void updateDialog();
   void saveTexturesOnClose();
-  void bindEdit(const char *name, float texture::*field);
+  void bindEdits();
+  void bindChecks();
+  void bindCombos();
+  optref<texture> data(void);
 private:
   Ui::WorldTexturesDialog *ui;
 };
