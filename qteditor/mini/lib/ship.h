@@ -151,7 +151,17 @@ constexpr float DEFAULT_SHIP_SIZE = 4.0f;
 #define MAX_DEFAULT_SHIPS 3
 
 // Ship flags
-#define SF_DEFAULT_ALLOW 1 // Allowed by default
+struct [[gnu::packed]] ship_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t : 31;
+  uint32_t default_allowed : 1; // Allowed by default
+#else
+  uint32_t default_allowed : 1; // Allowed by default
+  uint32_t : 31;
+#endif
+};
+static_assert(sizeof(ship_flags_t) == sizeof(uint32_t));
 
 struct ship {
   std::string name; // name of this ship (variable-length on disk)
@@ -192,7 +202,7 @@ struct ship {
 
   float armor_scalar = 1.0f;
 
-  int flags = 0;
+  ship_flags_t flags = {}; // flags defined above
 };
 
 extern d3::slotvec_t<ship> Ships;

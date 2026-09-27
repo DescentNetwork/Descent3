@@ -54,7 +54,7 @@ byte_istream& operator>>(byte_istream& input, mngs_ship_page& data) {
         >> data.ship_struct.phys_info
         >> data.ship_struct.size
         >> data.ship_struct.armor_scalar
-        >> data.ship_struct.flags;
+        >> reinterpret_cast<uint32_t&>(data.ship_struct.flags);
 
   for (int i = 0; i < MAX_PLAYER_WEAPONS; i++) {
     input >> data.ship_struct.fire_flags[i]
@@ -89,7 +89,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_ship_page& data) {
          << data.ship_struct.phys_info
          << data.ship_struct.size
          << data.ship_struct.armor_scalar
-         << data.ship_struct.flags;
+         << reinterpret_cast<const uint32_t&>(data.ship_struct.flags);
 
   for (int i = 0; i < MAX_PLAYER_WEAPONS; i++) {
     output << data.ship_struct.fire_flags[i]
