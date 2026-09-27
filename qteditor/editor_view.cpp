@@ -1312,15 +1312,15 @@ void EditorView::renderBNodes() {
   const float h = height() > 0 ? static_cast<float>(height()) : 1.0f;
   const float focal = (h * 0.5f) / std::tan(kFovY * 0.5f);
 
-  int room_start = 0;
-  int room_end = ((int)Rooms.size() - 1);
+  size_t room_start = 0;
+  size_t room_end = Rooms.size() - 1;
 
   if (EBN_draw_type == EBDRAW_ROOM || EBDRAW_ROOM_AND_NEXT_ROOMS) {
     if (Viewer_object != nullptr)
       room_start = room_end = Viewer_object->roomnum;
   }
 
-  for (int roomnum = room_start; roomnum <= room_end; roomnum++) {
+  for (size_t roomnum = room_start; roomnum <= room_end; roomnum++) {
     if (!Rooms[roomnum].used || (Rooms[roomnum].flags.external))
       continue;
     if (EBN_draw_type == EBDRAW_ROOM && roomnum != room_start)
@@ -1332,8 +1332,8 @@ void EditorView::renderBNodes() {
 
     bool is_current_room = (Viewer_object != nullptr && roomnum == Viewer_object->roomnum);
 
-    for (int i = 0; i < (int)nlist->nodes.size(); i++) {
-      for (int e = 0; e < (int)nlist->nodes[i].edges.size(); e++) {
+    for (size_t i = 0; i < nlist->nodes.size(); i++) {
+      for (size_t e = 0; e < nlist->nodes[i].edges.size(); e++) {
         int eroom = nlist->nodes[i].edges[e].end_room;
         int eidx = nlist->nodes[i].edges[e].end_index;
         bn_list *enlist = BNode_GetBNListPtr(eroom);

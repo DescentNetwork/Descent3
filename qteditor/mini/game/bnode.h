@@ -83,9 +83,9 @@
 
 struct bn_edge {
   int16_t end_room;
-  char end_index;
+  int8_t end_index;
 
-  int16_t flags;
+  uint16_t flags;
   int16_t cost;
 
   float max_rad;

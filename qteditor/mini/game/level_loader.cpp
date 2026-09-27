@@ -297,9 +297,7 @@ static void LL_ReadBNodeChunk(posix_istream &ifile, uint32_t version) {
             for (int32_t k = 0; k < num_edges; k++) {
               bn_edge &edge = node.edges[k];
               ifile >> edge.end_room;
-              uint8_t eidx = 0;
-              ifile >> eidx;
-              edge.end_index = static_cast<char>(eidx);
+              ifile >> edge.end_index;
 
               if (version < 125) {
                 uint8_t bv = 0;
