@@ -48,22 +48,8 @@ private slots:
   void onWeaponPulldownChanged();
   void onOverride();
   void onCopy();
-  void onPaste();
   void onChangeName();
   void onEditPhysics();
-  void onDefaultSize();
-  void onEnergyRadio();
-  void onMatterRadio();
-
-  void onFireSoundChanged();
-  void onWallSoundChanged();
-  void onFlyingSoundChanged();
-  void onBounceSoundChanged();
-  void onExplodeChanged();
-  void onSmokeChanged();
-  void onParticleChanged();
-  void onSpawnChanged();
-  void onSpawnRobotChanged();
 
 private:
   void updateDialog();

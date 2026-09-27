@@ -85,13 +85,17 @@ WorldWeaponsDialog::WorldWeaponsDialog(QWidget *parent)
   connect(ui->IDC_PREV_WEAPON, &QPushButton::clicked, this, &WorldWeaponsDialog::onPrevWeapon);
   connect(ui->IDC_OVERRIDE, &QPushButton::clicked, this, &WorldWeaponsDialog::onOverride);
   connect(ui->IDC_WEAPON_COPY_BUTTON, &QPushButton::clicked, this, &WorldWeaponsDialog::onCopy);
-  connect(ui->IDC_WEAPON_PASTE_BUTTON, &QPushButton::clicked, this, &WorldWeaponsDialog::onPaste);
+  connect(ui->IDC_WEAPON_PASTE_BUTTON, &QPushButton::clicked, this, [this]() {
+    QMessageBox::critical(nullptr, "onPaste failure", "Weapon pasted.");
+  });
   connect(ui->IDC_CHANGE_NAME, &QPushButton::clicked, this, &WorldWeaponsDialog::onChangeName);
   connect(ui->IDC_EDIT_PHYSICS, &QPushButton::clicked, this, &WorldWeaponsDialog::onEditPhysics);
-  connect(ui->IDC_DEFAULT_SIZE, &QPushButton::clicked, this, &WorldWeaponsDialog::onDefaultSize);
+  connect(ui->IDC_DEFAULT_SIZE, &QPushButton::clicked, this, [this]() {
+    if (auto w = data()) ComputeDefaultSize(OBJ_WEAPON, w->fire_image_handle, w->size), updateDialog();
+  });
 
-  connect(ui->IDC_ENERGY_RADIO, &QRadioButton::clicked, this, &WorldWeaponsDialog::onEnergyRadio);
-  connect(ui->IDC_MATTER_RADIO, &QRadioButton::clicked, this, &WorldWeaponsDialog::onMatterRadio);
+  connect(ui->IDC_ENERGY_RADIO, &QRadioButton::clicked, this, [this]() { if (auto w = data()) w->flags.matter_weapon = false; });
+  connect(ui->IDC_MATTER_RADIO, &QRadioButton::clicked, this, [this]() { if (auto w = data()) w->flags.matter_weapon = true; });
 
   connect(ui->IDC_WEAPON_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this,
     &WorldWeaponsDialog::onWeaponPulldownChanged);
@@ -232,15 +236,33 @@ void WorldWeaponsDialog::bindChecks() {
 }
 
 void WorldWeaponsDialog::bindCombos() {
-  connect(ui->IDC_FIRE_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onFireSoundChanged);
-  connect(ui->IDC_WEAPON_WALL_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onWallSoundChanged);
-  connect(ui->IDC_FLYING_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onFlyingSoundChanged);
-  connect(ui->IDC_WEAPON_BOUNCE_SOUND_COMBO, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onBounceSoundChanged);
-  connect(ui->IDC_EXPLODE_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onExplodeChanged);
-  connect(ui->IDC_SMOKE_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onSmokeChanged);
-  connect(ui->IDC_PARTICLE_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onParticleChanged);
-  connect(ui->IDC_WEAPON_SPAWN_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onSpawnChanged);
-  connect(ui->IDC_SPAWN_ROBOT_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldWeaponsDialog::onSpawnRobotChanged);
+  connect(ui->IDC_FIRE_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+    if (auto w = data()) w->sounds[WSI_FIRE] = ui->IDC_FIRE_SOUND_PULLDOWN->currentData().toInt();
+  });
+  connect(ui->IDC_WEAPON_WALL_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+    if (auto w = data()) w->sounds[WSI_IMPACT_WALL] = ui->IDC_WEAPON_WALL_SOUND_PULLDOWN->currentData().toInt();
+  });
+  connect(ui->IDC_FLYING_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+    if (auto w = data()) w->sounds[WSI_FLYING] = ui->IDC_FLYING_SOUND_PULLDOWN->currentData().toInt();
+  });
+  connect(ui->IDC_WEAPON_BOUNCE_SOUND_COMBO, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+    if (auto w = data()) w->sounds[WSI_BOUNCE] = ui->IDC_WEAPON_BOUNCE_SOUND_COMBO->currentData().toInt();
+  });
+  connect(ui->IDC_EXPLODE_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+    if (auto w = data()) w->explode_image_handle = ui->IDC_EXPLODE_PULLDOWN->currentData().toInt();
+  });
+  connect(ui->IDC_SMOKE_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+    if (auto w = data()) w->smoke_handle = ui->IDC_SMOKE_PULLDOWN->currentData().toInt();
+  });
+  connect(ui->IDC_PARTICLE_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+    if (auto w = data()) w->particle_handle = ui->IDC_PARTICLE_PULLDOWN->currentData().toInt();
+  });
+  connect(ui->IDC_WEAPON_SPAWN_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+    if (auto w = data()) w->spawn_handle = ui->IDC_WEAPON_SPAWN_PULLDOWN->currentData().toInt();
+  });
+  connect(ui->IDC_SPAWN_ROBOT_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+    if (auto w = data()) w->robot_spawn_handle = ui->IDC_SPAWN_ROBOT_PULLDOWN->currentData().toInt();
+  });
 }
 
 void WorldWeaponsDialog::updateDialog()
@@ -365,8 +387,8 @@ void WorldWeaponsDialog::onAddWeapon() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot add weapon: There are no free weapon slots.");
     return;
   }
-  weaponRef(handle).name = name.toStdString();
-  mng_AllocTrackLock(weaponRef(handle).name, PAGETYPE_WEAPON);
+  Weapons[handle].name = name.toStdString();
+  mng_AllocTrackLock(Weapons[handle].name, PAGETYPE_WEAPON);
   app.current_weapon = handle;
   RemapWeapons();
   updateDialog();
@@ -376,6 +398,7 @@ void WorldWeaponsDialog::onAddWeapon() {
 void WorldWeaponsDialog::onDeleteWeapon() {
   if(auto w = data())
   {
+    const int n = app.current_weapon;
     const int tl = mng_FindTrackLock(w->name, PAGETYPE_WEAPON).value_or(-1);
     if (tl == -1) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This weapon is not yours to delete.  Lock first.");
@@ -412,6 +435,7 @@ void WorldWeaponsDialog::onLockWeapon()
 {
   if(auto w = data())
   {
+    const int n = app.current_weapon;
     if (!mng_MakeLocker())
       return;
     mngs_Pagelock temp_pl;
@@ -462,6 +486,7 @@ void WorldWeaponsDialog::onLockWeapon()
 void WorldWeaponsDialog::onCheckinWeapon() {
   if(auto w = data())
   {
+    const int n = app.current_weapon;
     if (!mng_MakeLocker())
       return;
     mngs_Pagelock temp_pl;
@@ -545,8 +570,6 @@ void WorldWeaponsDialog::onCopy() {
   }
 }
 
-void WorldWeaponsDialog::onPaste() { QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Weapon pasted."); }
-
 void WorldWeaponsDialog::onChangeName()
 {
   if(auto w = data())
@@ -581,40 +604,5 @@ void WorldWeaponsDialog::onEditPhysics() {
     if(dlg.exec() == QDialog::Accepted)
       w->phys_info = dlg.getData();
   }
-}
-
-void WorldWeaponsDialog::onDefaultSize() {
-  if(auto w = data()) ComputeDefaultSize(OBJ_WEAPON, w->fire_image_handle, w->size), updateDialog();
-}
-
-void WorldWeaponsDialog::onEnergyRadio() { if (auto w = data()) w->flags.matter_weapon = false; }
-void WorldWeaponsDialog::onMatterRadio() { if (auto w = data()) w->flags.matter_weapon = true; }
-
-void WorldWeaponsDialog::onFireSoundChanged() {
-  if(auto w = data()) w->sounds[WSI_FIRE] = ui->IDC_FIRE_SOUND_PULLDOWN->currentData().toInt();
-}
-void WorldWeaponsDialog::onWallSoundChanged() {
-  if(auto w = data()) w->sounds[WSI_IMPACT_WALL] = ui->IDC_WEAPON_WALL_SOUND_PULLDOWN->currentData().toInt();
-}
-void WorldWeaponsDialog::onFlyingSoundChanged() {
-  if(auto w = data()) w->sounds[WSI_FLYING] = ui->IDC_FLYING_SOUND_PULLDOWN->currentData().toInt();
-}
-void WorldWeaponsDialog::onBounceSoundChanged() {
-  if(auto w = data()) w->sounds[WSI_BOUNCE] = ui->IDC_WEAPON_BOUNCE_SOUND_COMBO->currentData().toInt();
-}
-void WorldWeaponsDialog::onExplodeChanged() {
-  if(auto w = data()) w->explode_image_handle = ui->IDC_EXPLODE_PULLDOWN->currentData().toInt();
-}
-void WorldWeaponsDialog::onSmokeChanged() {
-  if(auto w = data()) w->smoke_handle = ui->IDC_SMOKE_PULLDOWN->currentData().toInt();
-}
-void WorldWeaponsDialog::onParticleChanged() {
-  if(auto w = data()) w->particle_handle = ui->IDC_PARTICLE_PULLDOWN->currentData().toInt();
-}
-void WorldWeaponsDialog::onSpawnChanged() {
-  if(auto w = data()) w->spawn_handle = ui->IDC_WEAPON_SPAWN_PULLDOWN->currentData().toInt();
-}
-void WorldWeaponsDialog::onSpawnRobotChanged() {
-  if(auto w = data()) w->robot_spawn_handle = ui->IDC_SPAWN_ROBOT_PULLDOWN->currentData().toInt();
 }
 
