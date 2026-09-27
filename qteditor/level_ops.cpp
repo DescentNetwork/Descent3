@@ -92,13 +92,13 @@ static vector3 Mine_origin = {float(TERRAIN_WIDTH * (TERRAIN_SIZE / 2)),
 
 // Create a default octagonal prism room for a new mine.
 // Port of editor/HFile.cpp:CreateDefaultRoom().
-static room *CreateDefaultRoom() {
+static int CreateDefaultRoom() {
   const int slot = FindFreeRoomSlot();
   if (slot < 0)
-    return nullptr;
+    return -1;
 
   room *rp = &Rooms[slot];
-  InitRoom(rp, 16, 10, 0);
+  InitRoom(*rp, 16, 10, 0);
 
   // Set the 16 vertices, offset to Mine_origin.
   for (int i = 0; i < 16; i++)
@@ -125,12 +125,12 @@ static room *CreateDefaultRoom() {
 
   // Compute normals, assign textures and UVs for every face.
   for (int i = 0; i < 10; i++) {
-    ComputeFaceNormal(rp, i);
+    ComputeFaceNormal(slot, i);
     rp->faces[i].tmap = i + 1;
-    AssignDefaultUVsToRoomFace(rp, i);
+    AssignDefaultUVsToRoomFace(slot, i);
   }
 
-  return rp;
+  return slot;
 }
 
 // Build a fresh empty mine.
@@ -159,7 +159,7 @@ void CreateNewMine() {
   SetEditorViewer();
 
   // Clear the marked room and selected segments.
-  app.Markedroomp = nullptr;
+  app.Markedroomp = -1;
   ClearRoomSelectedList();
 
   // Clear the placed room & group.
@@ -231,13 +231,13 @@ void CheckLevelNames() {
                      tp->name.c_str());
     }
   }
-  room *rp;
-  for (i = 0, rp = Rooms.data(); i < Rooms.size(); i++, rp++) {
-    if (rp->used && !rp->name.empty()) {
-      const int n = static_cast<int>(osipf_FindRoomName(rp->name).value_or(-1));
+  for (i = 0; i < static_cast<int>(Rooms.size()); i++) {
+    const room &rp = Rooms[i];
+    if (rp.used && !rp.name.empty()) {
+      const int n = static_cast<int>(osipf_FindRoomName(rp.name).value_or(-1));
       if (n != i)
         std::fprintf(stderr, "[level_io] duplicate room name \"%s\"\n",
-                     rp->name);
+                     rp.name.c_str());
     }
   }
 }
@@ -393,7 +393,7 @@ void SetEditorViewer() {
     } else if (app.view_mode == state::viewer::mine) { // if mine, put in center of any room
       for (roomnum = 0; roomnum < Rooms.size(); roomnum++)
         if (Rooms[roomnum].used && !Rooms[roomnum].flags.external) {
-          ComputeRoomCenter(&pos, &Rooms[roomnum]);
+          ComputeRoomCenter(&pos, roomnum);
           break;
         }
       Q_ASSERT(roomnum < Rooms.size());
@@ -483,48 +483,48 @@ std::string RenderLevelStats() {
   uint8_t lightmaps_used[MAX_LIGHTMAPS]{};
 
   int i;
-  room *rp;
-  for (i = 0, rp = Rooms.data(); i < Rooms.size(); i++, rp++) {
-    if (!rp->used)
+  for (i = 0; i < static_cast<int>(Rooms.size()); i++) {
+    const room &rp = Rooms[i];
+    if (!rp.used)
       continue;
     n_rooms++;
-    n_verts += rp->num_verts;
-    n_faces += rp->num_faces;
-    n_portals += rp->num_portals;
-    if (rp->flags.external)
+    n_verts += rp.num_verts;
+    n_faces += rp.num_faces;
+    n_portals += rp.num_portals;
+    if (rp.flags.external)
       n_rooms_external++;
     else
-      total_volume_bytes += GetVolumeSizeOfRoom(rp);
+      total_volume_bytes += GetVolumeSizeOfRoom(i);
 
-    for (int t = 0; t < rp->num_faces; t++) {
-      face *fp = &rp->faces[t];
+    for (int t = 0; t < rp.num_faces; t++) {
+      const face *fp = &rp.faces[t];
       if (fp->special_handle != BAD_SPECIAL_FACE_INDEX &&
           (GameTextures[fp->tmap].flags.metal || GameTextures[fp->tmap].flags.marble ||
            GameTextures[fp->tmap].flags.plastic) &&
           fp->lmi_handle != BAD_LMI_INDEX)
         spec_faces++;
     }
-    if (rp->flags.door)
+    if (rp.flags.door)
       n_doors++;
-    if (rp->flags.special1)
+    if (rp.flags.special1)
       num_sp1++;
-    if (rp->flags.special2)
+    if (rp.flags.special2)
       num_sp2++;
-    if (rp->flags.special3)
+    if (rp.flags.special3)
       num_sp3++;
-    if (rp->flags.special4)
+    if (rp.flags.special4)
       num_sp4++;
-    if (rp->flags.special5)
+    if (rp.flags.special5)
       num_sp5++;
-    if (rp->flags.special6)
+    if (rp.flags.special6)
       num_sp6++;
-    if (rp->flags.goal1)
+    if (rp.flags.goal1)
       num_redgoals++;
-    if (rp->flags.goal2)
+    if (rp.flags.goal2)
       num_bluegoals++;
-    if (rp->flags.goal3)
+    if (rp.flags.goal3)
       num_greengoals++;
-    if (rp->flags.goal4)
+    if (rp.flags.goal4)
       num_yellowgoals++;
   }
   object *objp;

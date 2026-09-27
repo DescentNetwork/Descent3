@@ -28,6 +28,7 @@
 #include "d3edit.h"
 #include "editor_room_state.h"
 #include "room_external.h"
+#include "room.h"
 
 
 TextureKeypad::TextureKeypad(QWidget *parent)
@@ -64,14 +65,14 @@ TextureKeypad::~TextureKeypad() { delete ui; }
 
 void TextureKeypad::updateDialog() {
   // Editing a face's texture requires a current room + face.
-  const bool active = (app.Curroomp != nullptr && app.Curroomp->used && app.Curface >= 0 &&
-                       app.Curface < app.Curroomp->num_faces);
+  const bool active = (app.Curroomp >= 0 && Rooms[app.Curroomp].used && app.Curface >= 0 &&
+                       app.Curface < Rooms[app.Curroomp].num_faces);
   for (QWidget *w : findChildren<QWidget *>())
     if (w->objectName().startsWith("IDC_TEXPAD") || w->objectName().startsWith("IDC_FACE_MAP"))
       w->setEnabled(active);
 
   if (active)
-    ui->IDC_CURRENT_TEXTURE_NAME->setText(QString("Texture %1").arg(app.Curroomp->faces[app.Curface].tmap));
+    ui->IDC_CURRENT_TEXTURE_NAME->setText(QString("Texture %1").arg(Rooms[app.Curroomp].faces[app.Curface].tmap));
   else
     ui->IDC_CURRENT_TEXTURE_NAME->setText("No face selected");
 }
@@ -95,13 +96,13 @@ void TextureKeypad::onStretchMore() { HTextureStretchMore(app.Curroomp, app.Curf
 void TextureKeypad::onSetDefault() { HTextureSetDefault(app.Curroomp, app.Curface); }
 
 void TextureKeypad::onGrab() {
-  if (app.Curroomp != nullptr && app.Curface >= 0)
-    app.texdlg_texture = app.Curroomp->faces[app.Curface].tmap;
+  if (app.Curroomp >= 0 && app.Curface >= 0)
+    app.texdlg_texture = Rooms[app.Curroomp].faces[app.Curface].tmap;
 }
 
 void TextureKeypad::onReplace() {
-  if (app.Curroomp != nullptr && app.Curface >= 0)
-    app.Curroomp->faces[app.Curface].tmap = app.texdlg_texture;
+  if (app.Curroomp >= 0 && app.Curface >= 0)
+    Rooms[app.Curroomp].faces[app.Curface].tmap = app.texdlg_texture;
 }
 
 void TextureKeypad::onFaceMap() { onSetDefault(); }

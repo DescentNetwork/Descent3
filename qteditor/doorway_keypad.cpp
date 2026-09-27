@@ -63,9 +63,9 @@ DoorwayKeypad::DoorwayKeypad(QWidget *parent)
 DoorwayKeypad::~DoorwayKeypad() { delete ui; }
 
 doorway *currentDoorway() {
-  if (app.Curroomp == nullptr)
+  if (app.Curroomp < 0)
     return nullptr;
-  return app.Curroomp->doorway_data.get();
+  return Rooms[app.Curroomp].doorway_data.get();
 }
 
 void DoorwayKeypad::updateDialog() {
@@ -205,15 +205,15 @@ void DoorwayKeypad::onPosEdited() {
 }
 
 void DoorwayKeypad::onPlaceDoor() {
-  if (app.Curroomp == nullptr) {
+  if (app.Curroomp < 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No current room.");
     return;
   }
-  if (app.Curface < 0 || app.Curface >= app.Curroomp->num_faces) {
+  if (app.Curface < 0 || app.Curface >= Rooms[app.Curroomp].num_faces) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No current face.");
     return;
   }
-  if (app.Curroomp->faces[app.Curface].portal_num != -1) {
+  if (Rooms[app.Curroomp].faces[app.Curface].portal_num != -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place a door on a portal face.");
     return;
   }

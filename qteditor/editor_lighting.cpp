@@ -745,7 +745,8 @@ void SqueezeLightmaps(int external, int target_roomnum) {
   LOG_INFO("Done squeezing lightmaps.\n");
 }
 
-void ComputeSurfaceRes(rad_surface *surf, room *rp, int facenum) {
+void ComputeSurfaceRes(rad_surface *surf, int roomnum, int facenum) {
+  room *rp = &Rooms[roomnum];
   int i;
   float left = 1.1f, right = -1, top = 1.1f, bottom = -1;
   face *fp = &rp->faces[facenum];
@@ -910,7 +911,7 @@ void DoRadiosityForRooms() {
     Volume_elements[roomnum] = NULL;
 
     if (Rooms[roomnum].used && !Rooms[roomnum].flags.external && !Rooms[roomnum].flags.no_light) {
-      int num_bytes = GetVolumeSizeOfRoom(&Rooms[roomnum], &vw, &vh, &vd);
+      int num_bytes = GetVolumeSizeOfRoom(roomnum, &vw, &vh, &vd);
 
       Rooms[roomnum].volume_width = vw;
       Rooms[roomnum].volume_height = vh;
@@ -976,7 +977,7 @@ void DoRadiosityForRooms() {
 
       for (t = 0; t < Rooms[i].num_faces; t++, surface_index++, max_index++) {
 
-        ComputeSurfaceRes(&Light_surfaces[surface_index], &Rooms[i], t);
+        ComputeSurfaceRes(&Light_surfaces[surface_index], i, t);
 
         if (Rooms[i].faces[t].num_verts) {
           Light_surfaces[surface_index].verts.resize(Rooms[i].faces[t].num_verts);
@@ -1139,20 +1140,21 @@ void DoRadiosityForRooms() {
 }
 
 // Calculates radiosity and sets lightmaps for indoor faces only
-void DoRadiosityForCurrentRoom(room *rp) {
+void DoRadiosityForCurrentRoom(int roomnum) {
+  room *rp = &Rooms[roomnum];
   int t;
   int facecount = 0;
   int surface_index = 0;
   int max_index;
 
-  if (!CheckForBadFaces(rp - Rooms.data())) {
+  if (!CheckForBadFaces(roomnum)) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You have bad faces in your level.  Please execute 'Verify Level'.");
     return;
   }
 
   LOG_INFO("Setting up...\n");
 
-  Q_ASSERT(rp != NULL);
+  Q_ASSERT(roomnum >= 0);
   Q_ASSERT(rp->used);
 
   if (rp->flags.external) {
@@ -1166,11 +1168,11 @@ void DoRadiosityForCurrentRoom(room *rp) {
   }
 
   // Build bsp tree
-  BuildSingleBSPTree(rp - Rooms.data());
+  BuildSingleBSPTree(roomnum);
 
-  ClearRoomLightmaps(rp - Rooms.data());
+  ClearRoomLightmaps(roomnum);
   for (t = 0; t <= Highest_object_index; t++) {
-    if (Objects[t].type != OBJ_NONE && (Objects[t].roomnum == rp - Rooms.data()))
+    if (Objects[t].type != OBJ_NONE && (Objects[t].roomnum == roomnum))
       ClearObjectLightmaps(&Objects[t]);
   }
 
@@ -1181,7 +1183,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
     for (int k = 0; k < rp->faces[t].num_verts; k++)
       verts[k] = rp->verts[rp->faces[t].face_verts[k]];
 
-    room_list[0] = rp - Rooms.data();
+    room_list[0] = roomnum;
     face_list[0] = t;
 
     BuildLightmapUVs(room_list, face_list, 1, verts, rp->faces[t].num_verts, 0);
@@ -1191,7 +1193,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
   facecount += rp->num_faces;
 
   // Do objects
-  facecount += GetTotalObjectFacesForSingleRoom(rp - Rooms.data());
+  facecount += GetTotalObjectFacesForSingleRoom(roomnum);
 
   // Allocate enough memory to hold all surfaces
 
@@ -1201,13 +1203,13 @@ void DoRadiosityForCurrentRoom(room *rp) {
   max_index = surface_index = 0;
 
   for (t = 0; t < rp->num_faces; t++, surface_index++, max_index++) {
-    ComputeSurfaceRes(&Light_surfaces[surface_index], rp, t);
+    ComputeSurfaceRes(&Light_surfaces[surface_index], roomnum, t);
 
     if (rp->faces[t].num_verts) {
       Light_surfaces[surface_index].verts.resize(rp->faces[t].num_verts);
     } else {
       Light_surfaces[surface_index].verts.clear();
-      LOG_INFO("Room=%d Face %d has no verts!\n", rp - Rooms.data(), t);
+      LOG_INFO("Room=%d Face %d has no verts!\n", roomnum, t);
     }
 
     if (Light_surfaces[surface_index].xresolution * Light_surfaces[surface_index].yresolution) {
@@ -1215,7 +1217,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
                                                     Light_surfaces[surface_index].yresolution);
     } else {
       Light_surfaces[surface_index].elements.clear();
-      LOG_INFO("Room=%d Face %d is slivered!\n", rp - Rooms.data(), t);
+      LOG_INFO("Room=%d Face %d is slivered!\n", roomnum, t);
     }
 
     if (rp->faces[t].portal_num != -1 && (((rp->portals[rp->faces[t].portal_num].flags.render_faces == 0)) ||
@@ -1227,7 +1229,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
       Light_surfaces[surface_index].emittance.b = 0;
     } else {
       float mul = ((float)rp->faces[t].light_multiple) / 4.0;
-      mul *= GlobalMultiplier * Room_multiplier[rp - Rooms.data()];
+      mul *= GlobalMultiplier * Room_multiplier[roomnum];
       Light_surfaces[surface_index].emittance.r = (float)GameTextures[rp->faces[t].tmap].r * mul;
       Light_surfaces[surface_index].emittance.g = (float)GameTextures[rp->faces[t].tmap].g * mul;
       Light_surfaces[surface_index].emittance.b = (float)GameTextures[rp->faces[t].tmap].b * mul;
@@ -1235,20 +1237,20 @@ void DoRadiosityForCurrentRoom(room *rp) {
     }
 
     Light_surfaces[surface_index].normal = rp->faces[t].normal;
-    Light_surfaces[surface_index].roomnum = ROOMNUM(rp);
+    Light_surfaces[surface_index].roomnum = roomnum;
     Light_surfaces[surface_index].facenum = t;
 
     Light_surfaces[surface_index].reflectivity = GameTextures[rp->faces[t].tmap].reflectivity;
 
     // Set the vertices for each element
-    BuildElementListForRoomFace(rp - Rooms.data(), t, &Light_surfaces[surface_index]);
+    BuildElementListForRoomFace(roomnum, t, &Light_surfaces[surface_index]);
 
     int xres = Light_surfaces[surface_index].xresolution;
     int yres = Light_surfaces[surface_index].yresolution;
   }
 
   // Setup Objects
-  ComputeSurfacesForObjectsForSingleRoom(surface_index, rp - Rooms.data());
+  ComputeSurfacesForObjectsForSingleRoom(surface_index, roomnum);
 
   LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
   if (app.hemicube_radiosity)
@@ -1261,10 +1263,10 @@ void DoRadiosityForCurrentRoom(room *rp) {
 
   // Assign lightap properties
   for (t = 0; t < rp->num_faces; t++, surface_index++) {
-    AssignRoomSurfaceToLightmap(rp - Rooms.data(), t, &Light_surfaces[surface_index]);
+    AssignRoomSurfaceToLightmap(roomnum, t, &Light_surfaces[surface_index]);
   }
 
-  AssignLightmapsToObjectSurfacesForSingleRoom(surface_index, rp - Rooms.data());
+  AssignLightmapsToObjectSurfacesForSingleRoom(surface_index, roomnum);
 
   // BlurLightmapInfos (LMI_ROOM);
   // BlurLightmapInfos (LMI_ROOM_OBJECT);
@@ -1277,7 +1279,7 @@ void DoRadiosityForCurrentRoom(room *rp) {
   Light_surfaces.clear();
 
   // Finally, squeeze the lightmaps
-  SqueezeLightmaps(0, rp - Rooms.data());
+  SqueezeLightmaps(0, roomnum);
 
   QMessageBox::information(nullptr, "Success", "Room radiosity complete!");
 }
@@ -1971,7 +1973,7 @@ void DoRadiosityForTerrain() {
 
       for (t = 0; t < Rooms[i].num_faces; t++, surf_index++) {
 
-        ComputeSurfaceRes(&Light_surfaces[surf_index], &Rooms[i], t);
+        ComputeSurfaceRes(&Light_surfaces[surf_index], i, t);
 
         Light_surfaces[surf_index].verts.resize(Rooms[i].faces[t].num_verts);
         Light_surfaces[surf_index].elements.resize(Light_surfaces[surf_index].xresolution *
@@ -2989,8 +2991,9 @@ void GetSpecularVertexOrdering(spec_vertex *verts, int nv, int *vlt, int *vlb, i
 /*
 // Creates a map that contains all the interpolated normals for a particular face
 // Used in specular mapping
-void CreateNormalMapForFace (room *rp,face *fp)
+void CreateNormalMapForFace (int roomnum,face *fp)
 {
+        room *rp=&Rooms[roomnum];
         int w = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
         int h = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
         special_face *sfp=&SpecialFaces[fp->special_handle];

@@ -1522,7 +1522,8 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
 
 // TODO: MTS: Unused?
 // Sets pulse parameters for an entire room
-void SetRoomPulse(room *rp, uint8_t pulse_time, uint8_t pulse_offset) {
+void SetRoomPulse(int roomnum, uint8_t pulse_time, uint8_t pulse_offset) {
+  room *rp = &Rooms[roomnum];
   Q_ASSERT(rp->used);
 
   rp->pulse_time = pulse_time;
@@ -1531,7 +1532,8 @@ void SetRoomPulse(room *rp, uint8_t pulse_time, uint8_t pulse_offset) {
 
 // TODO: MTS: Unused?
 // Returns the total number of bytes needed for volume lighting in this room
-int GetVolumeSizeOfRoom(room *rp, int *w, int *h, int *d) {
+int GetVolumeSizeOfRoom(int roomnum, int *w, int *h, int *d) {
+  room *rp = &Rooms[roomnum];
   int width = ((rp->max_xyz.x() - rp->min_xyz.x()) / VOLUME_SPACING) + 1;
   int height = ((rp->max_xyz.y() - rp->min_xyz.y()) / VOLUME_SPACING) + 1;
   int depth = ((rp->max_xyz.z() - rp->min_xyz.z()) / VOLUME_SPACING) + 1;

@@ -87,7 +87,7 @@ bool verifyDoorModel(int handle) {
         if (polyface->nverts > 0)
           check_face->face_verts.assign(polyface->vertnums.data(), polyface->vertnums.data() + polyface->nverts);
 
-        if (!ComputeFaceNormal(&check_room, 0)) {
+        if (!ComputeFaceNormal(check_room, 0)) {
           QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("Invalid door model: Face %1 in shell has bad normal.").arg(f));
           return false;
         }

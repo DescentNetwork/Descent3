@@ -623,7 +623,8 @@ static void LL_EndChunk(posix_ostream &ofile, int chunk_start_pos) {
 
 // RLE byte compression used by the engine inside ROOM for volume lights.
 
-static int LL_ReadRoom(posix_istream &ifile, room *rp, uint32_t /*version*/) {
+static int LL_ReadRoom(posix_istream &ifile, int roomnum, uint32_t /*version*/) {
+  room *rp = &Rooms[roomnum];
   // Current canonical layout: the room stream operator reads every field
   // (verts, faces, portals, lights, ...) exactly as the engine writes it.
   ifile >> *rp;
@@ -960,10 +961,10 @@ static void LL_WriteFFTMChunk(posix_ostream &ofile) {
 // per-room multipliers/ambience and the lighting globals).  Engine reader
 // inline (:4026-4089, #ifdef EDITOR), writer (:5313, always the LAST chunk).
 static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
-  auto lookup_room = [](int16_t idx) -> room * {
+  auto lookup_room = [](int16_t idx) -> int {
     if (idx >= 0 && idx < Rooms.size() && Rooms[idx].used)
-      return &Rooms[idx];
-    return nullptr;
+      return idx;
+    return -1;
   };
 
   int16_t room_idx = 0;
@@ -1043,11 +1044,11 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
 static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_EDITOR_INFO);
 
-  ofile << static_cast<int16_t>(app.Curroomp ? ROOMNUM(app.Curroomp) : -1);
+  ofile << static_cast<int16_t>(app.Curroomp >= 0 ? app.Curroomp : -1);
   ofile << static_cast<int16_t>(app.Curface);
   ofile << static_cast<int16_t>(app.Curedge);
   ofile << static_cast<int16_t>(app.Curvert);
-  ofile << static_cast<int16_t>(app.Markedroomp ? ROOMNUM(app.Markedroomp) : -1);
+  ofile << static_cast<int16_t>(app.Markedroomp >= 0 ? app.Markedroomp : -1);
   ofile << static_cast<int16_t>(app.Markedface);
   ofile << static_cast<int16_t>(app.Markededge);
   ofile << static_cast<int16_t>(app.Markedvert);
@@ -1853,7 +1854,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
               ifile.close();
               throw std::runtime_error("Level room index exceeds the room capacity");
             }
-            LL_ReadRoom(ifile, &Rooms[roomnum], version);
+            LL_ReadRoom(ifile, roomnum, version);
           }
           // Smallest index after the rooms read is the high-water mark + 1.
           // Win32 clamped the watermark to MAX_ROOMS - 1; rooms above that
@@ -1862,7 +1863,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
           if (Rooms.size() > MAX_ROOMS) {
             for (int i = (int)Rooms.size() - 1; i >= MAX_ROOMS; --i)
               if (Rooms[i].used)
-                FreeRoom(&Rooms[i]);
+                FreeRoom(i);
             Rooms.resize(MAX_ROOMS);
           }
           break;
@@ -2009,7 +2010,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
     if (!Rooms[i].used)
       continue;
     for (int f = 0; f < Rooms[i].num_faces; f++)
-      ComputeFaceNormal(&Rooms[i], f);
+      ComputeFaceNormal(i, f);
   }
 
   return true;

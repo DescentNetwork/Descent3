@@ -53,10 +53,10 @@ bool ObjectsAreRelated(int o1, int o2) {
     return true;
   }
 
-  if (obj1->type == OBJ_DOOR && DoorwayGetPosition(&Rooms[obj1->roomnum]) == 1.0f && obj2->type == OBJ_ROBOT)
+  if (obj1->type == OBJ_DOOR && DoorwayPositionForRoom(obj1->roomnum) == 1.0f && obj2->type == OBJ_ROBOT)
     return true;
 
-  if (obj2->type == OBJ_DOOR && DoorwayGetPosition(&Rooms[obj2->roomnum]) == 1.0f && obj1->type == OBJ_ROBOT)
+  if (obj2->type == OBJ_DOOR && DoorwayPositionForRoom(obj2->roomnum) == 1.0f && obj1->type == OBJ_ROBOT)
     return true;
 
   if (AreObjectsAttached(obj1, obj2))

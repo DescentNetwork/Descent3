@@ -75,17 +75,15 @@ const float kObjPowerupColor[3] = {0.0f, 0.0f, 1.0f};
 const float kObjMiscColor[3] = {0.0f, 100.0f / 255, 100.0f / 255};
 const float kObjCameraColor[3] = {1.0f, 1.0f, 0.0f};
 
-// Returns true when `rp` still points inside a live slot of the Rooms vector.
-// app.Curroomp/app.Markedroomp are raw pointers kept across RoomsReset()/clear(), so
-// after a reset they can dangle (buffer reallocated for a different size) or
-// alias a freshly reinitialised slot.  The Win32 fixed array granted validity
-// for free; the vector needs this explicit range check before dereferencing.
-bool liveRoom(const room *rp) {
-  if (rp == nullptr)
+// Returns true when `roomnum` still names a live slot of the Rooms vector.
+// app.Curroomp/app.Markedroomp are room indices kept across RoomsReset()/clear(),
+// so after a reset they can be stale (out of range for a differently-sized
+// vector) or name a freshly reinitialised slot.  The Win32 fixed array granted
+// validity for free; the vector needs this explicit range check before use.
+bool liveRoom(int roomnum) {
+  if (roomnum < 0)
     return false;
-  const room *const beg = Rooms.data();
-  const room *const end = beg + Rooms.size();
-  return (rp >= beg) && (rp < end);
+  return static_cast<size_t>(roomnum) < Rooms.size();
 }
 
 // Returns true when `m` is a usable camera basis (a right-handed orthonormal
@@ -552,7 +550,7 @@ void EditorView::renderRooms() {
 
       // Determine the room's overlay color (selected = orange, else default).
       const bool selected = IsRoomSelected(r);
-      const bool isCurRoom = (rp == app.Curroomp);
+      const bool isCurRoom = (r == app.Curroomp);
 
       for (int i = 0; i < rp->num_faces; i++) {
         face *fp = &rp->faces[i];
@@ -784,17 +782,17 @@ void EditorView::renderOverlays() {
   if (app.view_mode == state::viewer::room) {
     // (The yellow current-face highlight is drawn below — the Win32 room view
     // has no current-room or marked-room overlays.)
-    if (liveRoom(app.Curroomp) && app.Curroomp->used &&
-        app.Curroomp == &Rooms[app.current_room] && app.Curface >= 0 &&
-        app.Curface < app.Curroomp->num_faces) {
-      face *fp = &app.Curroomp->faces[app.Curface];
+    if (liveRoom(app.Curroomp) && Rooms[app.Curroomp].used &&
+        app.Curroomp == app.current_room && app.Curface >= 0 &&
+        app.Curface < Rooms[app.Curroomp].num_faces) {
+      face *fp = &Rooms[app.Curroomp].faces[app.Curface];
       float sx[16], sy[16];
       int nv = fp->num_verts;
       if (nv > 16)
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(app.Curroomp->verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[app.Curroomp].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -815,16 +813,16 @@ void EditorView::renderOverlays() {
   // Marked room/face/edge/vert in the Win32 order: the marked elements are
   // drawn BEFORE the current room so the white current-room wireframe draws
   // over them where they overlap (DrawWorld, editor/drawworld.cpp:851-863).
-  if (liveRoom(app.Markedroomp) && app.Markedroomp->used) {
-    if (app.Markedface >= 0 && app.Markedface < app.Markedroomp->num_faces) {
-      face *fp = &app.Markedroomp->faces[app.Markedface];
+  if (liveRoom(app.Markedroomp) && Rooms[app.Markedroomp].used) {
+    if (app.Markedface >= 0 && app.Markedface < Rooms[app.Markedroomp].num_faces) {
+      face *fp = &Rooms[app.Markedroomp].faces[app.Markedface];
       float sx[16], sy[16];
       int nv = fp->num_verts;
       if (nv > 16)
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(app.Markedroomp->verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[app.Markedroomp].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -854,22 +852,22 @@ void EditorView::renderOverlays() {
         if (app.Markedvert >= 0 && app.Markedvert < fp->num_verts) {
           int vi = fp->face_verts[app.Markedvert];
           float vx, vy;
-          if (projectVertex(app.Markedroomp->verts[vi], &vx, &vy))
+          if (projectVertex(Rooms[app.Markedroomp].verts[vi], &vx, &vy))
             drawVertCross(vx, vy, kWfMarkedEdgeColor);
         }
       }
     }
   }
 
-  if (liveRoom(app.Curroomp) && app.Curroomp->used) {
+  if (liveRoom(app.Curroomp) && Rooms[app.Curroomp].used) {
     // Current room wireframe in white (DrawRoom(app.Curroomp, CURROOM_COLOR)).
     // Like the legacy DrawRoom edge table, floating-trigger faces (drawn
     // red) and room portal faces (terrain portals drawn blue) are skipped so
     // the white override does not cover them.
     glColor3fv(kWfCurRoomColor);
     glLineWidth(1.0f);
-    for (int i = 0; i < app.Curroomp->num_faces; i++) {
-      face *fp = &app.Curroomp->faces[i];
+    for (int i = 0; i < Rooms[app.Curroomp].num_faces; i++) {
+      face *fp = &Rooms[app.Curroomp].faces[i];
       if ((fp->flags.floating_trig) || fp->portal_num != -1)
         continue;
       float sx[16], sy[16];
@@ -878,7 +876,7 @@ void EditorView::renderOverlays() {
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(app.Curroomp->verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[app.Curroomp].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -892,17 +890,17 @@ void EditorView::renderOverlays() {
     }
 
     // Current portal face in purple (DrawRoomFace, CURPORTAL_COLOR).
-    if (app.Curportal >= 0 && app.Curportal < app.Curroomp->num_portals) {
-      int faceIdx = app.Curroomp->portals[app.Curportal].portal_face;
-      if (faceIdx >= 0 && faceIdx < app.Curroomp->num_faces) {
-        face *fp = &app.Curroomp->faces[faceIdx];
+    if (app.Curportal >= 0 && app.Curportal < Rooms[app.Curroomp].num_portals) {
+      int faceIdx = Rooms[app.Curroomp].portals[app.Curportal].portal_face;
+      if (faceIdx >= 0 && faceIdx < Rooms[app.Curroomp].num_faces) {
+        face *fp = &Rooms[app.Curroomp].faces[faceIdx];
         float sx[16], sy[16];
         int nv = fp->num_verts;
         if (nv > 16)
           nv = 16;
         bool ok = true;
         for (int v = 0; v < nv; v++) {
-          if (!projectVertex(app.Curroomp->verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+          if (!projectVertex(Rooms[app.Curroomp].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
             ok = false;
             break;
           }
@@ -920,15 +918,15 @@ void EditorView::renderOverlays() {
     }
 
     // Current face in yellow.
-    if (app.Curface >= 0 && app.Curface < app.Curroomp->num_faces) {
-      face *fp = &app.Curroomp->faces[app.Curface];
+    if (app.Curface >= 0 && app.Curface < Rooms[app.Curroomp].num_faces) {
+      face *fp = &Rooms[app.Curroomp].faces[app.Curface];
       float sx[16], sy[16];
       int nv = fp->num_verts;
       if (nv > 16)
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(app.Curroomp->verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[app.Curroomp].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -957,7 +955,7 @@ void EditorView::renderOverlays() {
         if (app.Curvert >= 0 && app.Curvert < fp->num_verts) {
           int vi = fp->face_verts[app.Curvert];
           float vx, vy;
-          if (projectVertex(app.Curroomp->verts[vi], &vx, &vy))
+          if (projectVertex(Rooms[app.Curroomp].verts[vi], &vx, &vy))
             drawVertCross(vx, vy, kWfCurEdgeColor);
         }
 
@@ -1940,7 +1938,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
       // the viewer's EYE to the (vertex-averaged) face center.  This is the
       // metric Win32 stores in Found_dist and uses to order FM_NEXT.
       vector3 center;
-      ComputeCenterPointOnFace(&center, rp, f);
+      ComputeCenterPointOnFace(&center, r, f);
       const float centerDist = vm_VectorDistance(&center, &m_eye);
 
       if (cycle) {

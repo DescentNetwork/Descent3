@@ -102,7 +102,7 @@ struct bn_list {
 
 struct room;
 
-extern void BNode_FreeRoom(room *rp);
+extern void BNode_FreeRoom(int roomnum);
 extern void BNode_ClearBNodeInfo(void);
 
 bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level = false);

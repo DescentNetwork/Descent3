@@ -150,10 +150,10 @@ int Global_keys;
 //	Prototypes
 
 // TODO: MTS: none of the following were found
-// void DoorwayOpen(room *rp);
-// void DoorwayClose(room *rp);
-// void DoorwayWait(room *rp);
-object *GetDoorObject(room *rp);
+// void DoorwayOpen(int roomnum);
+// void DoorwayClose(int roomnum);
+// void DoorwayWait(int roomnum);
+object *GetDoorObject(int roomnum);
 
 //	---------------------------------------------------------------------------
 //	Functions
@@ -207,7 +207,7 @@ doorway *GetDoorwayFromObject(int door_obj_handle) {
   room *rp = &Rooms[objp->roomnum];
 
   Q_ASSERT(rp->flags.door);
-  Q_ASSERT(rp->doorway_data.get() != nullptr);
+  Q_ASSERT(rp->doorway_data);
 
   return rp->doorway_data.get();
 }
@@ -373,11 +373,9 @@ void DoorwayDestroy(object *objp) {
 
 // Stop all doors
 void DoorwayDeactivateAll() {
-  int r;
-  room *rp;
-
   // Go through all rooms and deactivate doors
-  for (r = 0, rp = Rooms; r < Rooms.size(); r++) {
+  for (int r = 0; r < (int)Rooms.size(); r++) {
+    room *rp = &Rooms[r];
     if (rp->used && rp->flags.door) {
       if (rp->doorway_data->state != DOORWAY_STOPPED) {
         doorway *dp = rp->doorway_data;
@@ -389,7 +387,7 @@ void DoorwayDeactivateAll() {
           Sound_system.StopSoundImmediate(dp->sound_handle);
           dp->sound_handle = -1;
         }
-        DoorwayUpdateAnimation(rp);
+        DoorwayUpdateAnimation(r);
       }
     }
   }
@@ -398,7 +396,8 @@ void DoorwayDeactivateAll() {
 }
 
 // Sets the corresponding door objects animation frame
-void DoorwayUpdateAnimation(room *rp) {
+void DoorwayUpdateAnimation(int roomnum) {
+  room *rp = &Rooms[roomnum];
   doorway *dway;
   poly_model *pm;
   int doornum;
@@ -406,14 +405,14 @@ void DoorwayUpdateAnimation(room *rp) {
 
   dway = rp->doorway_data;
 
-  object *objp = GetDoorObject(rp);
+  object *objp = GetDoorObject(roomnum);
   if (!objp)
     return;
 
   doornum = objp->id;
   pm = &Poly_models[GetDoorImage(doornum)];
 
-  norm = DoorwayPosition(rp);
+  norm = DoorwayPositionForRoom(roomnum);
 
   if (pm->flags.timed)
     objp->rtype.pobj_info().anim_frame = pm->frame_max * norm;
@@ -463,7 +462,7 @@ void DoorwayDoFrame() {
         RemoveActiveDoorway(i_doorway);
 
         // Send notification event
-        object *objp = GetDoorObject(rp);
+        object *objp = GetDoorObject(roomnum);
         Q_ASSERT(objp != NULL);
         tOSIRISEventInfo ei;
         Osiris_CallEvent(objp, EVT_DOOR_CLOSE, &ei);
@@ -476,7 +475,7 @@ void DoorwayDoFrame() {
 
       if (dway->dest_pos <= 0.0) {
 
-        object *door_objp = GetDoorObject(rp);
+        object *door_objp = GetDoorObject(roomnum);
         Q_ASSERT(door_objp != NULL);
 
         // Time to start closing.  See if there's anything in the way
@@ -496,12 +495,13 @@ void DoorwayDoFrame() {
     }
 
     // Update the animation state
-    DoorwayUpdateAnimation(rp);
+    DoorwayUpdateAnimation(roomnum);
   }
 }
 #endif
 // returns a pointer to the door object for the specified doorway
-object *GetDoorObject(room *rp) {
+object *GetDoorObject(int roomnum) {
+  room *rp = &Rooms[roomnum];
   Q_ASSERT(rp->flags.door);
 
   for (int objnum = rp->objects; (objnum != -1); objnum = Objects[objnum].next)
@@ -521,8 +521,9 @@ bool DoorwayLocked(int door_obj_handle) {
   return ((dp->flags & DF_LOCKED) != 0);
 }
 
-// Returns true if the doorway is locked, else false
-bool DoorwayLocked(room *rp) {
+// Returns true if the doorway in the given room is locked, else false
+bool DoorwayLockedForRoom(int roomnum) {
+  room *rp = &Rooms[roomnum];
   Q_ASSERT(rp->flags.door);
 
   doorway *dp = rp->doorway_data.get();
@@ -599,14 +600,6 @@ void DoorwayLockUnlock(int door_obj_handle, bool state) {
 }
 
 // Returns the current position of the door.  0.0 = totally closed, 1.0 = totally open
-float DoorwayPosition(room *rp) {
-  Q_ASSERT(rp->flags.door);
-  Q_ASSERT(rp->doorway_data.get() != nullptr);
-
-  return rp->doorway_data->position;
-}
-
-// Returns the current position of the door.  0.0 = totally closed, 1.0 = totally open
 float DoorwayPosition(int door_obj_handle) {
   doorway *dp = GetDoorwayFromObject(door_obj_handle);
 
@@ -615,17 +608,24 @@ float DoorwayPosition(int door_obj_handle) {
 
   return dp->position;
 }
+// Returns the current position of the door.  0.0 = totally closed, 1.0 = totally open
+float DoorwayPositionForRoom(int roomnum) {
+  room *rp = &Rooms[roomnum];
+  Q_ASSERT(rp->flags.door);
+  Q_ASSERT(rp->doorway_data);
+
+  return rp->doorway_data->position;
+}
+
 #if 0
 // Called after loading a saved game to rebuild the active list
 void DoorwayRebuildActiveList() {
-  int r;
-  room *rp;
-
   // Reset active doorways count
   Num_active_doorways = 0;
 
   // Go through all rooms and look for active doors
-  for (r = 0, rp = Rooms; r < Rooms.size(); r++) {
+  for (int r = 0; r < (int)Rooms.size(); r++) {
+    room *rp = &Rooms[r];
     if (rp->used && rp->flags.door) {
       Q_ASSERT(rp->doorway_data != NULL);
       if (rp->doorway_data->state != DOORWAY_STOPPED)
@@ -637,8 +637,9 @@ void DoorwayRebuildActiveList() {
 
 // Adds a doorway to the specified room
 // Returns a pointer to the doorway struct
-doorway *DoorwayAdd(room *rp, int doornum) {
-  Q_ASSERT(rp->doorway_data.get() == nullptr);
+doorway *DoorwayAdd(int roomnum, int doornum) {
+  room *rp = &Rooms[roomnum];
+  Q_ASSERT(!rp->doorway_data);
 
   rp->flags.door = 1;
 

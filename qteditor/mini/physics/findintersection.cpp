@@ -980,7 +980,7 @@ static bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, 
 static void fvi_rooms_objs(void);
 static int obj_in_list(int objnum, int *obj_list);
 static void make_trigger_face_list(int last_sim_faces);
-static bool PhysPastPortal(const room *rp, const portal *pp);
+static bool PhysPastPortal(int roomnum, const portal *pp);
 
 //------------------------------------------------------------------------------------------
 // FVI FUNCTIONS
@@ -1941,7 +1941,8 @@ int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face
   fvi_num_rooms_visited = 1;
 
   while (num_faces < max_elements && cur_next_room_index <= highest_next_room_index) {
-    cur_room = &Rooms[next_rooms[cur_next_room_index]];
+    int cur_room_index = next_rooms[cur_next_room_index];
+    cur_room = &Rooms[cur_room_index];
 
     // sort shit
     uint8_t msector = 0;
@@ -1996,7 +1997,7 @@ int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face
           if (quick_fr_list != nullptr) {
             if (num_faces < max_elements) {
               quick_fr_list[num_faces].face_index = i;
-              quick_fr_list[num_faces].room_index = ROOMNUM(cur_room);
+              quick_fr_list[num_faces].room_index = cur_room_index;
               num_faces++;
             } else
               break;
@@ -2214,7 +2215,8 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
     fvi_num_rooms_visited = 1;
 
     while (num_objects <= max_elements && cur_next_room_index <= highest_next_room_index) {
-      cur_room = &Rooms[next_rooms[cur_next_room_index]];
+      int cur_room_index = next_rooms[cur_next_room_index];
+      cur_room = &Rooms[cur_room_index];
 
       // Do object stuff
       int cur_obj_index = cur_room->objects;
@@ -2241,7 +2243,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
 
       if (f_stop_at_closed_doors && cur_room->flags.door) {
         // Closed doors antenuate a lot
-        if (DoorwayGetPosition(cur_room) == 0.0)
+        if (DoorwayPositionForRoom(cur_room_index) == 0.0)
           goto skip_room_prop;
       }
 
@@ -2293,7 +2295,8 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
   return num_objects;
 }
 
-bool fvi_QuickRoomCheck(vector3 *pos, room *cur_room, bool try_again) {
+bool fvi_QuickRoomCheck(vector3 *pos, int roomnum, bool try_again) {
+  room *cur_room = &Rooms[roomnum];
   vector3 hit_point; // where we hit
   vector3 colp;
   float cur_dist; // distance to hit point
@@ -2817,7 +2820,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
 
       for (i = 0; i < fvi_num_rooms_visited && !f_found_room; i++) {
         if (!Rooms[fvi_rooms_visited[i]].flags.external)
-          if (fvi_QuickRoomCheck(&hit_data->hit_pnt, &Rooms[fvi_rooms_visited[i]])) {
+          if (fvi_QuickRoomCheck(&hit_data->hit_pnt, fvi_rooms_visited[i])) {
             f_found_room = true;
             hit_data->hit_room = fvi_rooms_visited[i];
           }
@@ -2840,7 +2843,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
         //				mprintf(0, "Attempting to patch\n");
         for (i = 0; i < fvi_num_rooms_visited && !f_found_room; i++) {
           if (!Rooms[fvi_rooms_visited[i]].flags.external)
-            if (fvi_QuickRoomCheck(&hit_data->hit_pnt, &Rooms[fvi_rooms_visited[i]]), true) {
+            if (fvi_QuickRoomCheck(&hit_data->hit_pnt, fvi_rooms_visited[i]), true) {
               f_found_room = true;
               hit_data->hit_room = fvi_rooms_visited[i];
               Q_ASSERT(!Rooms[hit_data->hit_room].flags.external);
@@ -4360,16 +4363,16 @@ check_big_objs: // Check Big objects
 void fvi_rooms_objs(void) {
   int objnum;
   int i;
-  room *cur_room;
 
   // first, see if vector hit any objects in this segment
   if (!(fvi_query_ptr->flags & FQ_CHECK_OBJS))
     return;
 
   for (i = 0; i < fvi_num_rooms_visited; i++) {
-    cur_room = &Rooms[fvi_rooms_visited[i]];
-    Q_ASSERT((fvi_visit_list[ROOMNUM(cur_room) >> 3] & (0x01 << (ROOMNUM(cur_room) % 8))) != 0);
-    Q_ASSERT(ROOMNUM(cur_room) >= 0 && ROOMNUM(cur_room) < Rooms.size() && cur_room->used);
+    int roomnum = fvi_rooms_visited[i];
+    room *cur_room = &Rooms[roomnum];
+    Q_ASSERT((fvi_visit_list[roomnum >> 3] & (0x01 << (roomnum % 8))) != 0);
+    Q_ASSERT(roomnum >= 0 && roomnum < Rooms.size() && cur_room->used);
 
     for (objnum = cur_room->objects; objnum != -1; objnum = Objects[objnum].next) {
       Q_ASSERT(objnum != -1);
@@ -4413,7 +4416,8 @@ inline int GetFaceAlpha(const face *fp, int bm_handle) {
   return ret;
 }
 
-bool PhysPastPortal(const room *rp, const portal *pp) {
+bool PhysPastPortal(int roomnum, const portal *pp) {
+  const room *rp = &Rooms[roomnum];
   // If we don't render the portal's faces, then we see through it
   if (!pp->flags.render_faces)
     return true;
@@ -4495,7 +4499,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
       if (!room_movement_AABB(&cur_room->faces[i]))
         continue;
 
-      face_info = GetFacePhysicsFlags(cur_room, &cur_room->faces[i]);
+      face_info = GetFacePhysicsFlags(room_index, &cur_room->faces[i]);
       if (face_info == FPT_IGNORE)
         continue;
 
@@ -4591,7 +4595,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
           if (portal_num >= 0 && portal_num == from_portal)
             continue;
 
-          face_info = GetFacePhysicsFlags(cur_room, cur_face);
+          face_info = GetFacePhysicsFlags(room_index, cur_face);
           if (face_info == FPT_IGNORE)
             continue;
 
@@ -4630,7 +4634,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
             }
 
             if ((fvi_query_ptr->flags & FQ_IGNORE_RENDER_THROUGH_PORTALS) &&
-                (PhysPastPortal(cur_room, &cur_room->portals[portal_num]))) {
+                (PhysPastPortal(room_index, &cur_room->portals[portal_num]))) {
               bool f_add_next_portal = true;
 
               for (next_portal_index = 0; next_portal_index < num_next_portals; next_portal_index++) {
@@ -4679,7 +4683,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
           }
 
           if (face_hit_type && (face_info & FPF_TRANSPARENT) && (fvi_query_ptr->flags & FQ_TRANSPOINT) &&
-              CheckTransparentPoint(&colp, cur_room, i)) {
+              CheckTransparentPoint(&colp, room_index, i)) {
             // Go through the hole
             face_hit_type = HIT_NONE;
           }

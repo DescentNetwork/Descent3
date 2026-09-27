@@ -181,8 +181,8 @@ bool HObjectPlace(int obj_type, int obj_id) {
       roomnum = MAKE_ROOMNUM(cellnum);
     } else {
       ComputeCenterPointOnFace(&pos, app.Curroomp, app.Curface);
-      surface_norm = &app.Curroomp->faces[app.Curface].normal;
-      roomnum = ROOMNUM(app.Curroomp);
+      surface_norm = &Rooms[app.Curroomp].faces[app.Curface].normal;
+      roomnum = app.Curroomp;
 
       if (Rooms[roomnum].flags.external)
         roomnum = GetTerrainRoomFromPos(pos).value_or(-1);

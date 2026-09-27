@@ -465,11 +465,12 @@ void InitRooms() {
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
 // Figures out how many verts there are in all the faces in a room
-int CountRoomFaceVerts(room *rp) {
+int CountRoomFaceVerts(int roomnum) {
   int n = 0;
 
-  for (int f = 0; f < rp->num_faces; f++)
-    n += rp->faces[f].num_verts;
+  room &rp = Rooms[roomnum];
+  for (int f = 0; f < rp.num_faces; f++)
+    n += rp.faces[f].num_verts;
 
   return n;
 }
@@ -477,67 +478,69 @@ int CountRoomFaceVerts(room *rp) {
 #endif
 
 // Initalize a room, allocating memory and filling in fields
-// Parameters:	rp - the room to be initialized
+// Parameters:	rp - the room to be initialized (any room object; not
+//              necessarily a slot in the Rooms table, e.g. a deserializer
+//              scratch room or a test room)
 //					nverts - how many vertices this room will have
 //					nfaces - how many faces this room wil have
 //					nportals - how many portals this room will have
-void InitRoom(room *rp, int nverts, int nfaces, int nportals) {
+void InitRoom(room &rp, int nverts, int nfaces, int nportals) {
   // initialize room fields
-  rp->flags = {};
-  rp->objects = -1;
-  rp->vis_effects = -1;
-  rp->volume_lights.clear();
-  rp->mirror_face = -1;
-  rp->num_mirror_faces = 0;
-  rp->mirror_faces_list.clear();
-  rp->room_change_flags = 0;
+  rp.flags = {};
+  rp.objects = -1;
+  rp.vis_effects = -1;
+  rp.volume_lights.clear();
+  rp.mirror_face = -1;
+  rp.num_mirror_faces = 0;
+  rp.mirror_faces_list.clear();
+  rp.room_change_flags = 0;
 
 #ifndef NEWEDITOR // the new editor must allow users to create a room from scratch
   Q_ASSERT(nverts > 0);
   Q_ASSERT(nfaces > 0);
 #endif
 
-  rp->wind = vector3{};
+  rp.wind = vector3{};
 
-  rp->num_faces = nfaces;
-  rp->num_verts = nverts;
-  rp->num_portals = nportals;
-  rp->last_render_time = 0;
-  rp->fog_depth = 100.0;
-  rp->fog_r = 1.0;
-  rp->fog_g = 1.0;
-  rp->fog_b = 1.0;
+  rp.num_faces = nfaces;
+  rp.num_verts = nverts;
+  rp.num_portals = nportals;
+  rp.last_render_time = 0;
+  rp.fog_depth = 100.0;
+  rp.fog_r = 1.0;
+  rp.fog_g = 1.0;
+  rp.fog_b = 1.0;
 
-  rp->faces.resize(nfaces);
-  rp->verts.resize(nverts);
-  rp->verts4.resize(Katmai ? nverts : 0);
+  rp.faces.resize(nfaces);
+  rp.verts.resize(nverts);
+  rp.verts4.resize(Katmai ? nverts : 0);
 
-  rp->num_bbf_regions = 0;
+  rp.num_bbf_regions = 0;
 
-  rp->pulse_time = 0;
-  rp->pulse_offset = 0;
+  rp.pulse_time = 0;
+  rp.pulse_offset = 0;
 
-  rp->portals.resize(nportals);
+  rp.portals.resize(nportals);
 
   // Default to no ambient sound
-  rp->ambient_sound = -1;
+  rp.ambient_sound = -1;
 
-  rp->name.clear();
-  rp->doorway_data.reset();
+  rp.name.clear();
+  rp.doorway_data.reset();
 
-  rp->env_reverb = 0; // reverb for sound system.
+  rp.env_reverb = 0; // reverb for sound system.
 
-  rp->damage = 0.0;          // room damage
-  rp->damage_type = PD_NONE; // room damage type
+  rp.damage = 0.0;          // room damage
+  rp.damage_type = PD_NONE; // room damage type
 
-  rp->bn_info.nodes.clear();
+  rp.bn_info.nodes.clear();
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
   // Room_multiplier / Room_ambience_* are indexed by the room's slot in the
   // global Rooms[] array.  Guard against rooms that live elsewhere (e.g.
   // stack/temporary rooms used by the tests): the pointer subtraction would
   // otherwise produce a wild index and corrupt memory.
-  const std::ptrdiff_t room_slot = rp - Rooms.data();
+  const std::ptrdiff_t room_slot = &rp - Rooms.data();
   if (room_slot >= 0 && room_slot < MAX_ROOMS + MAX_PALETTE_ROOMS) {
     Room_multiplier[room_slot] = 1.0;
 
@@ -547,7 +550,7 @@ void InitRoom(room *rp, int nverts, int nfaces, int nportals) {
   }
 #endif
 
-  rp->used = 1; // flag this room as used
+  rp.used = 1; // flag this room as used
 }
 
 // Initialize a room face structure.
@@ -582,7 +585,7 @@ std::optional<uint32_t> FindPointRoom(vector3 *pnt) {
     if ((Rooms[i].used) && !Rooms[i].flags.external) {
       bool f_in_room;
 
-      f_in_room = fvi_QuickRoomCheck(pnt, &Rooms[i]);
+      f_in_room = fvi_QuickRoomCheck(pnt, i);
 
       if (f_in_room == true)
         return i;
@@ -592,10 +595,12 @@ std::optional<uint32_t> FindPointRoom(vector3 *pnt) {
   return std::nullopt;
 }
 
-// Frees a room, deallocating its memory and marking it as unused
-void FreeRoom(room *rp) {
+// Frees a room in the Rooms table, deallocating its memory and marking it as unused
+void FreeRoom(int roomnum) {
   int i;
   const int old_hri = static_cast<int>(Rooms.size()) - 1;
+
+  room *rp = &Rooms[roomnum];
 
   Q_ASSERT(rp->used != 0); // make sure room is un use
 
@@ -619,7 +624,7 @@ void FreeRoom(room *rp) {
     rp->num_bbf_regions = 0;
   }
 
-  BNode_FreeRoom(rp);
+  BNode_FreeRoom(roomnum);
 
   rp->volume_lights.clear();
 
@@ -629,7 +634,7 @@ void FreeRoom(room *rp) {
 
   // Update the high-water mark: Rooms.size() is the watermark + 1, so drop any
   // unused tail slots just like the Win32 room-free path trimmed the watermark.
-  if (ROOMNUM(rp) == static_cast<int>(Rooms.size()) - 1)
+  if (roomnum == static_cast<int>(Rooms.size()) - 1)
     while (!Rooms.empty() && !Rooms.back().used)
       Rooms.pop_back();
 
@@ -640,9 +645,8 @@ void FreeRoom(room *rp) {
 void FreeAllRooms() {
   LOG_DEBUG("Freeing rooms... Rooms.size() %zu", Rooms.size());
   while (!Rooms.empty()) {
-    room *rp = &Rooms.back();
-    if (rp->used)
-      FreeRoom(rp);
+    if (Rooms.back().used)
+      FreeRoom(static_cast<int>(Rooms.size()) - 1);
     else
       Rooms.pop_back();
   }
@@ -672,29 +676,32 @@ void FreeRoomFace(face *fp) {
 // Finds the center point of a room
 // Parameters:	vp - filled in with the center point
 //					rp - the room whose center to find
-void ComputeRoomCenter(vector3 *vp, room *rp) {
+void ComputeRoomCenter(vector3 *vp, int roomnum) {
   int i;
+
+  room &rp = Rooms[roomnum];
 
   *vp = vector3{};
 
-  for (i = 0; i < rp->num_verts; i++)
-    *vp += rp->verts[i];
+  for (i = 0; i < rp.num_verts; i++)
+    *vp += rp.verts[i];
 
 #ifdef NEWEDITOR
-  if (rp->num_verts)
+  if (rp.num_verts)
 #endif
-    *vp /= rp->num_verts;
+    *vp /= rp.num_verts;
 }
 
 // Computes the center point on a face by averaging the points in the face
-void ComputeCenterPointOnFace(vector3 *vp, room *rp, int facenum) {
-  face *fp = &rp->faces[facenum];
+void ComputeCenterPointOnFace(vector3 *vp, int roomnum, int facenum) {
+  room &rp = Rooms[roomnum];
+  face *fp = &rp.faces[facenum];
   int i;
 
   *vp = vector3{};
 
   for (i = 0; i < fp->num_verts; i++)
-    *vp += rp->verts[fp->face_verts[i]];
+    *vp += rp.verts[fp->face_verts[i]];
 
   *vp /= fp->num_verts;
 }
@@ -708,14 +715,27 @@ void ComputeCenterPointOnFace(vector3 *vp, room *rp, int facenum) {
 // Parameters:	rp,facenum - the room and face to calculate the normal for
 // Returns:		true if the normal is ok
 //					false if the normal has a very small (pre-normalization) magnitude
-bool ComputeFaceNormal(room *rp, int facenum) {
-  face *fp = &rp->faces[facenum];
+bool ComputeFaceNormal(room &rp, int facenum) {
+  face *fp = &rp.faces[facenum];
   bool ok;
 
-  ok = ComputeNormal(fp->normal, fp->num_verts, fp->face_verts, rp->verts);
+  ok = ComputeNormal(fp->normal, fp->num_verts, fp->face_verts, rp.verts);
 
   if (!ok) {
-    LOG_WARNING("Warning: Low precision normal for room:face = %d:%d", ROOMNUM(rp), facenum);
+    LOG_WARNING("Warning: Low precision normal for a local room face.");
+  }
+
+  return ok;
+}
+
+bool ComputeFaceNormal(int roomnum, int facenum) {
+  room &rp = Rooms[roomnum];
+  bool ok;
+
+  ok = ComputeFaceNormal(rp, facenum);
+
+  if (!ok) {
+    LOG_WARNING("Warning: Low precision normal for room:face = %d:%d", roomnum, facenum);
   }
 
   return ok;
@@ -762,15 +782,16 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
 }
 
 // Computes the center point on a face by averaging the points in the portal
-void ComputePortalCenter(vector3 *vp, room *rp, int portal_index) {
-  portal *pp = &rp->portals[portal_index];
-  face *fp = &rp->faces[pp->portal_face];
+void ComputePortalCenter(vector3 *vp, int roomnum, int portal_index) {
+  room &rp = Rooms[roomnum];
+  portal *pp = &rp.portals[portal_index];
+  face *fp = &rp.faces[pp->portal_face];
   int i;
 
   vm_MakeZero(vp);
 
   for (i = 0; i < fp->num_verts; i++)
-    *vp += rp->verts[fp->face_verts[i]];
+    *vp += rp.verts[fp->face_verts[i]];
 
   *vp /= fp->num_verts;
 }
@@ -864,21 +885,23 @@ void ClearAllVolumeLights() {
 }
 
 // Returns the area taken up by a face
-float GetAreaForFace(room *rp, int facenum) {
-  Q_ASSERT(rp->used > 0);
-  Q_ASSERT(facenum >= 0 && facenum < rp->num_faces);
+float GetAreaForFace(int roomnum, int facenum) {
+  room &rp = Rooms[roomnum];
 
-  face *fp = &rp->faces[facenum];
+  Q_ASSERT(rp.used > 0);
+  Q_ASSERT(facenum >= 0 && facenum < rp.num_faces);
+
+  face *fp = &rp.faces[facenum];
   int i;
   vector3 normal;
   float area = 0;
 
-  vm_GetPerp(&normal, &rp->verts[fp->face_verts[0]], &rp->verts[fp->face_verts[1]], &rp->verts[fp->face_verts[2]]);
+  vm_GetPerp(&normal, &rp.verts[fp->face_verts[0]], &rp.verts[fp->face_verts[1]], &rp.verts[fp->face_verts[2]]);
   area = (vm_GetMagnitude(&normal) / 2);
 
   for (i = 2; i < fp->num_verts - 1; i++) {
-    vm_GetPerp(&normal, &rp->verts[fp->face_verts[0]], &rp->verts[fp->face_verts[i]],
-               &rp->verts[fp->face_verts[i + 1]]);
+    vm_GetPerp(&normal, &rp.verts[fp->face_verts[0]], &rp.verts[fp->face_verts[i]],
+               &rp.verts[fp->face_verts[i + 1]]);
     area += (vm_GetMagnitude(&normal) / 2);
   }
 
@@ -935,10 +958,10 @@ void GetIJ(const vector3& normal, int& ii, int& jj) {
 // Finds the uv coords of a given point on a room:face.  Fills in u & v.
 // Parameters:	u,v - pointers to variables to be filled in
 //					pnt - the point we're checking
-//					rp - pointer to the room that pnt is in
+//					roomnum - the Rooms slot that pnt is in
 //					fp - pointer to the face that pnt is on
-void FindPointUV(float *u, float *v, const vector3 *pnt, const room *rp, const face *fp) {
-  int roomnum = ROOMNUM(rp);
+void FindPointUV(float *u, float *v, const vector3 *pnt, int roomnum, const face *fp) {
+  const room &rp = Rooms[roomnum];
   int ii, jj;
   vector3 vec0, vec1;
   float *p1, *checkp, *v0, *v1;
@@ -952,11 +975,11 @@ void FindPointUV(float *u, float *v, const vector3 *pnt, const room *rp, const f
   GetIJ(fp->normal, ii, jj);
 
   // Compute delta vectors
-  vec0 = rp->verts[fp->face_verts[0]] - rp->verts[fp->face_verts[1]]; // vec from 1 -> 0
-  vec1 = rp->verts[fp->face_verts[2]] - rp->verts[fp->face_verts[1]]; // vec from 1 -> 0
+  vec0 = rp.verts[fp->face_verts[0]] - rp.verts[fp->face_verts[1]]; // vec from 1 -> 0
+  vec1 = rp.verts[fp->face_verts[2]] - rp.verts[fp->face_verts[1]]; // vec from 1 -> 0
 
   // Get pointers to referece our vectors as arrays of floats
-  p1 = (float *)&rp->verts[fp->face_verts[1]];
+  p1 = (float *)&rp.verts[fp->face_verts[1]];
   v0 = (float *)&vec0;
   v1 = (float *)&vec1;
   checkp = (float *)pnt;
@@ -975,19 +998,20 @@ void FindPointUV(float *u, float *v, const vector3 *pnt, const room *rp, const f
 
 // Check if a particular point on a wall is a transparent pixel
 // Parameters:	pnt - the point we're checking
-//					rp - pointer to the room that pnt is in
+//					roomnum - the Rooms slot that pnt is in
 //					facenum - the face that pnt is on
 // Returns:	true if can pass through the given point, else 0
-int CheckTransparentPoint(const vector3 *pnt, const room *rp, const int facenum) {
+int CheckTransparentPoint(const vector3 *pnt, int roomnum, const int facenum) {
   int bm_handle;
-  const face *fp = &rp->faces[facenum];
+  const room &rp = Rooms[roomnum];
+  const face *fp = &rp.faces[facenum];
   float u, v;
   int w, h, x, y;
 
   return false;
 
   // Get the UV coordindates of the point we hit
-  FindPointUV(&u, &v, pnt, rp, fp);
+  FindPointUV(&u, &v, pnt, roomnum, fp);
 
   // Get pointer to the bitmap data
   bm_handle = GetTextureBitmap(fp->tmap, 0);
@@ -1004,19 +1028,20 @@ int CheckTransparentPoint(const vector3 *pnt, const room *rp, const int facenum)
 
 // Computes a bounding sphere for the current room
 // Parameters: center - filled in with the center point of the sphere
-//		rp - the room we're bounding
+//		roomnum - the Rooms slot we're bounding
 // Returns: the radius of the bounding sphere
-float ComputeRoomBoundingSphere(vector3 *center, room *rp) {
+float ComputeRoomBoundingSphere(vector3 *center, int roomnum) {
   // This algorithm is from Graphics Gems I.  There's a better algorithm in Graphics Gems III that
   // we should probably implement sometime.
 
+  room &rp = Rooms[roomnum];
   vector3 *min_x, *max_x, *min_y, *max_y, *min_z, *max_z, *vp;
   float dx, dy, dz;
   float rad, rad2;
   int i;
 
 #ifdef NEWEDITOR
-  if (!rp->num_verts) {
+  if (!rp.num_verts) {
     center->x() = 0.0f;
     center->y() = 0.0f;
     center->z() = 0.0f;
@@ -1025,10 +1050,10 @@ float ComputeRoomBoundingSphere(vector3 *center, room *rp) {
 #endif
 
   // Initialize min, max vars
-  min_x = max_x = min_y = max_y = min_z = max_z = rp->verts.data();
+  min_x = max_x = min_y = max_y = min_z = max_z = rp.verts.data();
 
   // First, find the points with the min & max x,y, & z coordinates
-  for (i = 0, vp = rp->verts.data(); i < rp->num_verts; i++, vp++) {
+  for (i = 0, vp = rp.verts.data(); i < rp.num_verts; i++, vp++) {
 
     if (vp->x() < min_x->x())
       min_x = vp;
@@ -1073,7 +1098,7 @@ float ComputeRoomBoundingSphere(vector3 *center, room *rp) {
 
   // Go through all points and look for ones that don't fit
   rad2 = rad * rad;
-  for (i = 0, vp = rp->verts.data(); i < rp->num_verts; i++, vp++) {
+  for (i = 0, vp = rp.verts.data(); i < rp.num_verts; i++, vp++) {
     vector3 delta;
     float t2;
 
@@ -1098,7 +1123,6 @@ float ComputeRoomBoundingSphere(vector3 *center, room *rp) {
 // Create objects for the external rooms
 void CreateRoomObjects() {
   int objnum, r;
-  room *rp;
 
   // First delete any old room objects
   for (objnum = 0; objnum <= Highest_object_index; objnum++)
@@ -1106,13 +1130,14 @@ void CreateRoomObjects() {
       ObjDelete(objnum);
 
   // Now go through all rooms & create objects for external ones
-  for (r = 0, rp = Rooms.data(); r < static_cast<int>(Rooms.size()); r++, rp++)
-    if (rp->used && rp->flags.external) {
+  for (r = 0; r < static_cast<int>(Rooms.size()); r++) {
+    room &rp = Rooms[r];
+    if (rp.used && rp.flags.external) {
       vector3 pos;
       float rad;
       int roomnum, objnum;
 
-      rad = ComputeRoomBoundingSphere(&pos, rp);
+      rad = ComputeRoomBoundingSphere(&pos, r);
       roomnum = GetTerrainRoomFromPos(pos).value_or(-1);
 
       Q_ASSERT(roomnum != -1);
@@ -1129,6 +1154,7 @@ void CreateRoomObjects() {
       // Type specific should have set up the size, so now we can compute the bounding box.
       ObjSetAABB(Objects[objnum]);
     }
+  }
 }
 
 // returns the index of the first room that is being used.  Returns std::nullopt if there are none
@@ -1485,7 +1511,7 @@ byte_istream& operator>>(byte_istream& input, room& data) {
   int32_t nfaces = 0;
   int32_t nportals = 0;
   input >> nverts >> nfaces >> nportals;
-  InitRoom(&data, nverts, nfaces, nportals);
+  InitRoom(data, nverts, nfaces, nportals);
 
   input >> data.name >> data.path_pnt;
 

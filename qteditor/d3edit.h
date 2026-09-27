@@ -144,7 +144,7 @@ struct d3edit_state
   bool Mine_changed = false;
 
   // Current room & face
-  room *Curroomp = nullptr;
+  int Curroomp = -1;
   int Curface = -1;
   int Curedge = 0;
   int Curvert = 0;
@@ -160,7 +160,7 @@ struct d3edit_state
   int Editor_viewer_id = -1;
 
   // Marked room & face
-  room* Markedroomp = nullptr;
+  int Markedroomp = -1;
   int Markedface = 0;
   int Markededge = 0;
   int Markedvert = 0;
@@ -179,7 +179,7 @@ struct d3edit_state
   vector3 Placed_room_attachpoint = {0, 0, 0};
   matrix Placed_room_rotmat = IDENTITY_MATRIX;
 
-  room* Placed_baseroomp = nullptr;
+  int Placed_baseroomp = -1;
   int Placed_baseface = 0;
 
   // The scrap buffer

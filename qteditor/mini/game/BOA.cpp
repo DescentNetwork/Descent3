@@ -191,7 +191,7 @@ static void update_path_info(q_item *node_list[MAX_ROOMS], int start, int end);
 static void FindPath(int i, int j);
 static void compute_next_segs();
 static void compute_blockage_info();
-static void ComputeBOAVisFaceUpperLeft(room *rp, face *fp, vector3 *upper_left, float *xdiff, float *ydiff,
+static void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, float *xdiff, float *ydiff,
                                        vector3 *center);
 static int BOAGetRoomChecksum(int i);
 static bool IsPathPointValid(int room, vector3 *pos);
@@ -262,17 +262,17 @@ bool BOA_PassablePortal(int room, int portal_index, bool f_for_sound, bool f_mak
   return true;
 }
 
-extern object *GetDoorObject(room *rp);
+extern object *GetDoorObject(int roomnum);
 
 //bool BOA_LockedDoor(object *obj, int roomnum) {
 //  if (roomnum >= 0 && roomnum < Rooms.size() && Rooms[roomnum].used && Rooms[roomnum].flags.door) {
 //    if (!obj) {
-//      return DoorwayLocked(&Rooms[roomnum]) && DoorwayPosition(&Rooms[roomnum]) < 0.5f;
+//      return DoorwayLockedForRoom(roomnum) && DoorwayPositionForRoom(roomnum) < 0.5f;
 //    } else {
-//      object *d_obj = GetDoorObject(&Rooms[roomnum]);
+//      object *d_obj = GetDoorObject(roomnum);
 
 //      if (d_obj)
-//        return (!DoorwayOpenable(d_obj->handle, obj->handle)) && DoorwayPosition(&Rooms[roomnum]) < 0.5f;
+//        return (!DoorwayOpenable(d_obj->handle, obj->handle)) && DoorwayPositionForRoom(roomnum) < 0.5f;
 //      else
 //        return false;
 //    }
@@ -419,7 +419,7 @@ bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, floa
 
     if (cur_room < Rooms.size() && num_blockages && Rooms[cur_room].flags.door &&
         (cur_room != end_room)) {
-      float door_position = DoorwayGetPosition(&Rooms[cur_room]);
+      float door_position = DoorwayPositionForRoom(cur_room);
 
       *num_blockages += 1.0f - door_position;
     }
@@ -871,10 +871,10 @@ void compute_costs() {
 
       for (j = 0; j < Rooms[i].num_portals; j++) {
         if (BOA_PassablePortal(i, j)) {
-          ComputeRoomCenter(&from_pnt, &Rooms[i]);
-          // ComputeRoomCenter(&to_pnt, &Rooms[Rooms[i].portals[j].croom]);
+          ComputeRoomCenter(&from_pnt, i);
+          // ComputeRoomCenter(&to_pnt, Rooms[i].portals[j].croom);
 
-          ComputePortalCenter(&portal_pnt, &Rooms[i], j);
+          ComputePortalCenter(&portal_pnt, i, j);
 
           BOA_cost_array[i][j] = vm_VectorDistance(&from_pnt, &portal_pnt);
         } else {
@@ -1358,7 +1358,7 @@ void BOA_ComputePathPoints(char *message, int len) {
   for (i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used) {
       for (j = 0; j < Rooms[i].num_portals; j++) {
-        ComputePortalCenter(&Rooms[i].portals[j].path_pnt, &Rooms[i], j);
+        ComputePortalCenter(&Rooms[i].portals[j].path_pnt, i, j);
       }
 
       if (!Rooms[i].flags.manual_path_pnt) {
@@ -1370,7 +1370,8 @@ void BOA_ComputePathPoints(char *message, int len) {
 }
 
 // Given a face, computes the upper left corner of the face
-void ComputeBOAVisFaceUpperLeft(room *rp, face *fp, vector3 *upper_left, float *xdiff, float *ydiff, vector3 *center) {
+void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, float *xdiff, float *ydiff, vector3 *center) {
+  room *rp = &Rooms[roomnum];
   matrix face_matrix, trans_matrix;
   vector3 fvec;
   vector3 avg_vert;
@@ -1690,7 +1691,7 @@ void MakeBOAVisTable(bool from_lighting) {
         vector3 fvec = -src_fp->normal;
         vm_VectorToMatrix(&src_matrix, &fvec, NULL, NULL);
 
-        ComputeBOAVisFaceUpperLeft(rp, src_fp, &src_upper_left, &src_width, &src_height, &src_center);
+        ComputeBOAVisFaceUpperLeft(i, src_fp, &src_upper_left, &src_width, &src_height, &src_center);
 
         if (src_width > VIS_TABLE_RESOLUTION) {
           float num = src_width / VIS_TABLE_RESOLUTION;
@@ -1723,7 +1724,7 @@ void MakeBOAVisTable(bool from_lighting) {
           fvec = -dest_fp->normal;
           vm_VectorToMatrix(&dest_matrix, &fvec, NULL, NULL);
 
-          ComputeBOAVisFaceUpperLeft(&Rooms[check_room], dest_fp, &dest_upper_left, &dest_width, &dest_height,
+          ComputeBOAVisFaceUpperLeft(check_room, dest_fp, &dest_upper_left, &dest_width, &dest_height,
                                      &dest_center);
 
           if (dest_width > VIS_TABLE_RESOLUTION) {
@@ -1775,12 +1776,12 @@ void MakeBOAVisTable(bool from_lighting) {
                   if ((check_point_to_face(&dest_vector, &dest_fp->normal, dest_fp->num_verts, dest_vertp)))
                     continue;
 
-                  if (!fvi_QuickRoomCheck(&src2, rp, false) && !fvi_QuickRoomCheck(&src2, rp, true))
+                  if (!fvi_QuickRoomCheck(&src2, i, false) && !fvi_QuickRoomCheck(&src2, i, true))
                     continue;
 
                   if (!Rooms[check_room].flags.external &&
-                      (!fvi_QuickRoomCheck(&dest_vector, &Rooms[check_room], false) &&
-                       !fvi_QuickRoomCheck(&dest_vector, &Rooms[check_room], true)))
+                      (!fvi_QuickRoomCheck(&dest_vector, check_room, false) &&
+                       !fvi_QuickRoomCheck(&dest_vector, check_room, true)))
                     continue;
 
                   // Check to see if we can see to this portal point
@@ -1931,7 +1932,7 @@ void find_small_portals() {
 
         float xdiff;
         float ydiff;
-        ComputeBOAVisFaceUpperLeft(&Rooms[i], fp, NULL, &xdiff, &ydiff, NULL);
+        ComputeBOAVisFaceUpperLeft(i, fp, NULL, &xdiff, &ydiff, NULL);
 
         if (xdiff < 6.0f || ydiff < 6.0f) {
           counter++;

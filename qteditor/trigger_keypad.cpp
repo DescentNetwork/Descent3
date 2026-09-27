@@ -129,7 +129,7 @@ void TriggerKeypad::onPrevInRoom() {
   int n = app.Current_trigger;
   for (int i = static_cast<int>(Triggers.size()); i > 0; i--) {
     n = (n <= 0) ? (static_cast<int>(Triggers.size()) - 1) : (n - 1);
-    if (Triggers[n].roomnum == (app.Curroomp != nullptr ? ROOMNUM(app.Curroomp) : Triggers[app.Current_trigger].roomnum)) {
+    if (Triggers[n].roomnum == (app.Curroomp >= 0 ? app.Curroomp : Triggers[app.Current_trigger].roomnum)) {
       app.Current_trigger = n;
       break;
     }
@@ -143,7 +143,7 @@ void TriggerKeypad::onNextInRoom() {
   int n = app.Current_trigger;
   for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
     n = (n + 1) % static_cast<int>(Triggers.size());
-    if (Triggers[n].roomnum == (app.Curroomp != nullptr ? ROOMNUM(app.Curroomp) : Triggers[app.Current_trigger].roomnum)) {
+    if (Triggers[n].roomnum == (app.Curroomp >= 0 ? app.Curroomp : Triggers[app.Current_trigger].roomnum)) {
       app.Current_trigger = n;
       break;
     }

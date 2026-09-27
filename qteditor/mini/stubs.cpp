@@ -211,7 +211,7 @@ d3::slotvec_t<ship> Ships;
 
 // ==================== Door ====================
 //door Doors[MAX_DOORS];
-//doorway *DoorwayAdd(room *rp, int doornum) { PRINT_STUB(__FUNCTION__); return nullptr; }
+//doorway *DoorwayAdd(int roomnum, int doornum) { PRINT_STUB(__FUNCTION__); return nullptr; }
 
 // ==================== Weapon ====================
 d3::slotvec_t<weapon> Weapons;
@@ -373,7 +373,7 @@ void ClearAllEvents() { PRINT_STUB(__FUNCTION__); }
 bool Tracking_FVI = false; // FVI debug flag (GameLoop in the full engine toggles it)
 /*
 int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face_room_list *quick_fr_list, int max_elements) { PRINT_STUB(__FUNCTION__); return 0; }
-bool fvi_QuickRoomCheck(vector3 *pos, room *cur_room, bool try_again) { PRINT_STUB(__FUNCTION__); return false; }
+bool fvi_QuickRoomCheck(vector3 *pos, int roomnum, bool try_again) { PRINT_STUB(__FUNCTION__); return false; }
 int fvi_QuickDistObjectList(vector3 *pos, int init_roomnum, float rad, int16_t *object_index_list, int max_elements,
                             bool f_lightmap_only, bool f_only_players_and_ais,
                             bool f_include_non_collide_objects, bool f_stop_at_closed_doors) { PRINT_STUB(__FUNCTION__); return 0; }

@@ -658,16 +658,16 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB = tr
 
 // Reads a room from a disk file
 // Parameters:	ifile - file to read from
-//					rp - room to read
+//					roomnum - index of the room to read
 //					version - version number of file
 // Returns:		1 if read ok, else 0
-int ReadRoom(struct CFILE* ifile, room *rp, int version);
+int ReadRoom(struct CFILE* ifile, int roomnum, int version);
 
 // Writes a room to a disk file
 // Parameters:	ofile - file to write to
-//					rp - room to write
+//					roomnum - index of the room to write
 // Returns:		1 if written ok, else 0
-int WriteRoom(struct CFILE* ofile, room *rp);
+int WriteRoom(struct CFILE* ofile, int roomnum);
 
 // Write the texture names for remapping when level is loaded
 void WriteTextureList(struct CFILE* ofile);

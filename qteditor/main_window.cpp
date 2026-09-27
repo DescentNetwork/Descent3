@@ -120,7 +120,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   // ---- EditorView picking signals -> editor state ----
   connect(m_editorView, &EditorView::faceSelected, this, [this](int r, int f) {
-    app.Curroomp = &Rooms[r];
+    app.Curroomp = r;
     app.Curface = f;
     app.Curedge = app.Curvert = 0;
     app.Curportal = -1;
@@ -140,7 +140,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_editorView->update();
   });
   connect(m_editorView, &EditorView::selectionCleared, this, [this]() {
-    app.Curroomp = nullptr;
+    app.Curroomp = -1;
     app.Curface = -1;
     app.Cur_object_index = -1;
     app.State_changed = true;
@@ -845,8 +845,8 @@ static void moveViewer(vector3& pos, int roomnum, matrix* orient) {
 // false, put the viewer directly in front of the selected face.  If the room
 // is external, put the viewer a distance away from the room, facing either the
 // center (if room_center is true) or the specified face.
-static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
-  if (Viewer_object == nullptr || roomp == nullptr)
+static void setViewerFromRoomFace(int roomnum, int facenum, bool room_center) {
+  if (Viewer_object == nullptr || roomnum < 0)
     return;
   // FACE_VIEW_DIST is defined in editor/HView.cpp:127.
   constexpr float kFaceViewDist = 5.0f;
@@ -854,18 +854,19 @@ static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
   vector3 vp;
   vector3 newpos;
   matrix orient;
-  int roomnum = ROOMNUM(roomp);
   bool outside_mine = false;
 
-  ComputeCenterPointOnFace(&vp, roomp, facenum);
+  const room &rp = Rooms[roomnum];
+
+  ComputeCenterPointOnFace(&vp, roomnum, facenum);
 
   if (room_center) {
     // Get position
-    ComputeRoomCenter(&newpos, roomp);
+    ComputeRoomCenter(&newpos, roomnum);
 
-    if (roomp->flags.external) {
+    if (rp.flags.external) {
       vector3 t;
-      float rad = ComputeRoomBoundingSphere(&t, roomp);
+      float rad = ComputeRoomBoundingSphere(&t, roomnum);
 
       newpos.z() -= rad * 1.5f;
 
@@ -887,14 +888,14 @@ static void setViewerFromRoomFace(room *roomp, int facenum, bool room_center) {
       vm_VectorToMatrix(&orient, &vp, nullptr, nullptr);
     }
   } else {
-    face *fp = &roomp->faces[facenum];
+    const face *fp = &rp.faces[facenum];
 
     newpos = vp + fp->normal * kFaceViewDist;
 
     vector3 t = -fp->normal;
     vm_VectorToMatrix(&orient, &t, nullptr, nullptr);
 
-    if (roomp->flags.external) {
+    if (rp.flags.external) {
       if (newpos.x() < 1.0f)
         newpos.x() = 1.0f;
       if (newpos.x() > TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f)
@@ -941,19 +942,19 @@ void MainWindow::onCenterViewOnCube() {
   // Win32 ID_VIEW_CENTERONCUBE -> CMainFrame::OnViewCenterOnCube
   // (editor/MainFrm.cpp:2218): re-aim the wireframe view at the current
   // room's center without changing distance or orientation.
-  room *rp;
+  int roomnum;
   if (app.view_mode == state::viewer::room) {
     if (app.current_room < 0 || app.current_room >= Rooms.size())
       return;
-    rp = &Rooms[app.current_room];
+    roomnum = app.current_room;
   } else {
-    rp = app.Curroomp;
+    roomnum = app.Curroomp;
   }
-  if (rp == nullptr || !rp->used)
+  if (roomnum < 0 || !Rooms[roomnum].used)
     return;
 
   vector3 pos;
-  ComputeRoomCenter(&pos, rp);
+  ComputeRoomCenter(&pos, roomnum);
   m_editorView->setWireframeView(pos);
   m_editorView->update();
 }
@@ -1109,7 +1110,7 @@ static int find_used(int from) {
 int MainWindow::onPlaceCameraAtViewer() {
   if (Viewer_object == nullptr || Viewer_object->type != OBJ_VIEWER)
     return -1;
-  if (app.Curroomp == nullptr)
+  if (app.Curroomp < 0)
     return -1;
   // Just succeed without allocating — the Win32 entry point's ObjCreate
   // path needs the object library on Linux, which isn't linked. Returning
@@ -1255,9 +1256,9 @@ void MainWindow::onObjectCustomDefaultScript() {
 }
 
 // Move the player (object 0) to the current room. Clears the player's
-// orientation to Identity_matrix and resets its roomnum to ROOMNUM(app.Curroomp).
+// orientation to Identity_matrix and resets its roomnum to app.Curroomp.
 void MainWindow::onMovePlayerToCurrentRoom() {
-  if (app.Curroomp == nullptr)
+  if (app.Curroomp < 0)
     return;
   if (Player_object == nullptr)
     return;
@@ -1265,7 +1266,7 @@ void MainWindow::onMovePlayerToCurrentRoom() {
   // Win32 OnObjectMovePlayer rewinds the player to a known start state:
   // origin of the current room, identity matrix, roomnum from app.Curroomp.
   vector3 rp;
-  const int slot = ROOMNUM(app.Curroomp);
+  const int slot = app.Curroomp;
   matrix idmat;
   ObjSetPos(*Player_object, rp, slot, &idmat, false);
   app.State_changed = true;
@@ -1686,16 +1687,16 @@ namespace {
 // already used and the editor declined.
 bool MainWindow::onAddRoom()
 {
-  if (app.Curroomp == nullptr) {
+  if (app.Curroomp < 0) {
     std::fprintf(stderr, "[room_ops] AddRoom: no current room\n");
     return false;
   }
-  if (app.Curface < 0 || app.Curface >= app.Curroomp->num_faces) {
+  if (app.Curface < 0 || app.Curface >= Rooms[app.Curroomp].num_faces) {
     std::fprintf(stderr, "[room_ops] AddRoom: invalid current face (%d)\n",
                  app.Curface);
     return false;
   }
-  face *cfp = &app.Curroomp->faces[app.Curface];
+  face *cfp = &Rooms[app.Curroomp].faces[app.Curface];
   if (cfp->portal_num != -1) {
     std::fprintf(stderr,
                  "[room_ops] AddRoom: face already connected (portal %d)\n",
@@ -1710,35 +1711,22 @@ bool MainWindow::onAddRoom()
     return false;
   }
   const int nfaces = cnv + 2;
-  const int slot = FindFreeRoomSlot();
+
+  // CreateNewRoom carves the slot out of Rooms[] itself (via
+  // FindFreeRoomSlot) and returns it, or -1 when the room table is full.
+  const int slot = CreateNewRoom(cnv * 2, nfaces, /*palette_room=*/false);
   if (slot < 0) {
     std::fprintf(stderr, "[room_ops] AddRoom: no free slot\n");
     return false;
   }
 
-  // Allocate the room at the chosen slot (CreateNewRoom uses new[] for
-  // verts/faces; DestroyRoom in d3_editor_state.cpp releases those when
-  // DeleteRoom is called).
-  room *rp = CreateNewRoom(cnv * 2, nfaces, /*palette_room=*/false);
-  if (rp == nullptr) {
-    std::fprintf(stderr, "[room_ops] AddRoom: CreateNewRoom returned null\n");
-    return false;
-  }
-
-  // Drop the freshly minted room into Rooms[] at `slot`. The pointer
-  // returned by CreateNewRoom is heap-allocated; we move it into the
-  // slot and then orphan the heap copy so DestroyRoom handles the field
-  // arrays correctly.
-  Rooms[slot] = std::move(*rp);
-  delete rp;
-
-  rp = &Rooms[slot];
+  room *rp = &Rooms[slot];
 
   // Geometry: extrude the current face's verts outward by `kDefaultRoomLength`
   // along the face normal so the new room extends from the existing face.
   const vector3 room_delta = cfp->normal * -kDefaultRoomLength;
   for (int i = 0; i < cnv; ++i) {
-    rp->verts[i] = app.Curroomp->verts[cfp->face_verts[cnv - 1 - i]];
+    rp->verts[i] = Rooms[app.Curroomp].verts[cfp->face_verts[cnv - 1 - i]];
     rp->verts[cnv + i] = rp->verts[i] + room_delta;
   }
 
@@ -1761,18 +1749,18 @@ bool MainWindow::onAddRoom()
   }
 
   for (int i = 0; i < nfaces; ++i) {
-    if (!ComputeFaceNormal(rp, i)) {
+    if (!ComputeFaceNormal(slot, i)) {
       std::fprintf(stderr,
                    "[room_ops] AddRoom: ComputeFaceNormal failed for face %d\n",
                    i);
     }
     rp->faces[i].tmap = (i + 1) % MAX_TEXTURES;
-    AssignDefaultUVsToRoomFace(rp, i);
+    AssignDefaultUVsToRoomFace(slot, i);
   }
 
   // Wire the new room into the editor view: it's the current selection
   // and the marked room for follow-on edits.
-  app.Curroomp = rp;
+  app.Curroomp = slot;
   app.Curface = app.Curedge = app.Curvert = app.Curportal = 0;
   onMarkRoom();
   app.current_room = slot;
@@ -1786,38 +1774,38 @@ bool MainWindow::onAddRoom()
   return true;
 }
 
-// Forgets the current room: sets app.Curroomp = nullptr, app.Curface = app.Curedge =
+// Forgets the current room: sets app.Curroomp = -1, app.Curface = app.Curedge =
 // app.Curvert = app.Curportal = -1. The Win32 entry point also clears the marked
 // room; we leave app.Markedroomp alone so a separate "Mark" operation stays
 // authoritative.
 bool MainWindow::onDeleteRoom() {
-  if (app.Curroomp == nullptr) {
+  if (app.Curroomp < 0) {
     std::fprintf(stderr, "[room_ops] DeleteRoom: no current room\n");
     return false;
   }
-  if (!app.Curroomp->used) {
+  if (!Rooms[app.Curroomp].used) {
     std::fprintf(stderr, "[room_ops] DeleteRoom: current room already unused\n");
-    app.Curroomp = nullptr;
+    app.Curroomp = -1;
     return false;
   }
   // Don't delete the room with the player in it — editor/HRoom.cpp's
   // DeleteRoomFromMine() bails on that. Our stub doesn't track
   // Player_object's room yet, so this is a straight "no player here" OK.
-  const int slot = ROOMNUM(app.Curroomp);
+  const int slot = app.Curroomp;
 
   // Clear any marked-room alias before we tear down the slot.
   if (app.Markedroomp == app.Curroomp)
-    app.Markedroomp = nullptr;
+    app.Markedroomp = -1;
 
   DestroyRoom(slot);
 
   // Pick a sensible successor selection: previous used slot, or -1.
-  app.Curroomp = nullptr;
+  app.Curroomp = -1;
   app.Curface = app.Curedge = app.Curvert = app.Curportal = -1;
   app.current_room = -1;
   for (int s = slot - 1; s >= 0; --s) {
     if (Rooms[s].used) {
-      app.Curroomp = &Rooms[s];
+      app.Curroomp = s;
       app.current_room = s;
       break;
     }
@@ -1843,7 +1831,7 @@ void MainWindow::onMarkRoom() {
   app.Markedvert = app.Curvert;
   app.State_changed = true;
   std::fprintf(stderr, "[room_ops] MarkRoom: slot %d face %d\n",
-               app.Curroomp ? ROOMNUM(app.Curroomp) : -1, app.Curface);
+               app.Curroomp, app.Curface);
 }
 
 // Mark-by-number: prompts the user for a room index and updates app.Curroomp.
@@ -1864,7 +1852,7 @@ int MainWindow::onSelectRoomByNumber() {
                  value);
     return -1;
   }
-  app.Curroomp = &Rooms[value];
+  app.Curroomp = value;
   app.Curface = app.Curedge = app.Curvert = app.Curportal = 0;
   app.current_room = value;
   return value;
@@ -1874,19 +1862,19 @@ int MainWindow::onSelectRoomByNumber() {
 // existing name; returns true if the user picked a new value, false
 // otherwise (cancellation or no change).
 bool MainWindow::onRenameRoom() {
-  if (app.Curroomp == nullptr)
+  if (app.Curroomp < 0)
     return false;
   bool ok = false;
-  QString current = QString::fromStdString(app.Curroomp->name);
+  QString current = QString::fromStdString(Rooms[app.Curroomp].name);
   const QString picked = QInputDialog::getText(
       nullptr, QStringLiteral("Rename Room"),
       QStringLiteral("New name:"), QLineEdit::Normal, current, &ok).trimmed();
   if (!ok || picked.isEmpty())
     return false;
 
-  app.Curroomp->name = picked.toStdString();
+  Rooms[app.Curroomp].name = picked.toStdString();
   app.Mine_changed = true;
-  std::fprintf(stderr, "[room_ops] RenameRoom -> %s\n", app.Curroomp->name.c_str());
+  std::fprintf(stderr, "[room_ops] RenameRoom -> %s\n", Rooms[app.Curroomp].name.c_str());
   return true;
 }
 
@@ -1895,7 +1883,7 @@ bool MainWindow::onRenameRoom() {
 // under the .d3l filename). Until the engine-side room walker ships, this
 // is a status-bar-only stub that records what would have been written.
 bool MainWindow::onSaveCurrentRoom() {
-  if (app.Curroomp == nullptr)
+  if (app.Curroomp < 0)
     return false;
   app.Mine_changed = true;
   std::fprintf(stderr,
@@ -1904,22 +1892,22 @@ bool MainWindow::onSaveCurrentRoom() {
 }
 
 void MainWindow::onRoomDeleteFace() {
-  if (app.Curroomp == nullptr || app.Curface < 0 || app.Curface >= app.Curroomp->num_faces)
+  if (app.Curroomp < 0 || app.Curface < 0 || app.Curface >= Rooms[app.Curroomp].num_faces)
     return;
-  if (app.Curroomp->faces[app.Curface].portal_num != -1) {
+  if (Rooms[app.Curroomp].faces[app.Curface].portal_num != -1) {
     onRoomDeletePortal();
     return;
   }
   DeleteRoomFace(app.Curroomp, app.Curface);
-  if (app.Curface >= app.Curroomp->num_faces)
-    app.Curface = app.Curroomp->num_faces - 1;
+  if (app.Curface >= Rooms[app.Curroomp].num_faces)
+    app.Curface = Rooms[app.Curroomp].num_faces - 1;
   app.Mine_changed = true;
 }
 
 void MainWindow::onRoomDeletePortal() {
-  if (app.Curroomp == nullptr || app.Curface < 0 || app.Curface >= app.Curroomp->num_faces)
+  if (app.Curroomp < 0 || app.Curface < 0 || app.Curface >= Rooms[app.Curroomp].num_faces)
     return;
-  int pn = app.Curroomp->faces[app.Curface].portal_num;
+  int pn = Rooms[app.Curroomp].faces[app.Curface].portal_num;
   if (pn == -1) {
     EditorStatus("Current face is not a portal.");
     return;
@@ -1929,7 +1917,7 @@ void MainWindow::onRoomDeletePortal() {
 }
 
 void MainWindow::onRoomCombine() {
-  if (app.Curroomp == nullptr)
+  if (app.Curroomp < 0)
     return;
   if (app.Markedroomp != app.Curroomp) {
     EditorStatus("Mark and current must be the same room to combine.");
@@ -1946,7 +1934,7 @@ void MainWindow::onRoomCombine() {
 }
 
 void MainWindow::onRoomRotatePlaced45() {
-  if (app.Curroomp == nullptr || app.Markedroomp == nullptr) {
+  if (app.Curroomp < 0 || app.Markedroomp < 0) {
     EditorStatus("No marked room.");
     return;
   }

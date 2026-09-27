@@ -152,10 +152,10 @@ struct object;
 
 // Adds a doorway to the specified room
 // Returns a pointer to the doorway struct
-doorway *DoorwayAdd(room *rp, int doornum);
+doorway *DoorwayAdd(int roomnum, int doornum);
 
 // Updates the animation when the door position is changed
-void DoorwayUpdateAnimation(room *rp);
+void DoorwayUpdateAnimation(int roomnum);
 
 //
 // General Functions
@@ -194,8 +194,8 @@ void DoorwayDestroy(object *objp);
 // Returns true if the doorway is locked, else false
 bool DoorwayLocked(int door_obj_handle);
 
-// Returns true if the doorway is locked, else false
-bool DoorwayLocked(room *rp);
+// Returns true if the doorway in the given room is locked, else false
+bool DoorwayLockedForRoom(int roomnum);
 
 // Returns true if the doorway is openable by the specified player, else false
 bool DoorwayOpenable(int door_obj_handle, int opener_handle);
@@ -204,12 +204,14 @@ bool DoorwayOpenable(int door_obj_handle, int opener_handle);
 int DoorwayState(int door_obj_handle);
 
 // Returns the current position of the door.  0.0 = totally closed, 1.0 = totally open
-float DoorwayPosition(room *rp);
-
-// Returns the current position of the door.  0.0 = totally closed, 1.0 = totally open
 float DoorwayPosition(int door_obj_handle);
 
-// Make old name work
+// Returns the current position of the doorway in the given room.
+// 0.0 = totally closed, 1.0 = totally open
+float DoorwayPositionForRoom(int roomnum);
+
+// Make old names work
 #define DoorwayGetPosition DoorwayPosition
+#define DoorwayGetPositionForRoom DoorwayPositionForRoom
 
 #endif

@@ -81,7 +81,7 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum);
 void ComputeAllRoomLightmapUVs(int external);
 
 // Computes lightmap uv sharing for a single room
-void ComputeRoomLightmapUVs(room *rp);
+void ComputeRoomLightmapUVs(int roomnum);
 
 // Sets up radiosity surfaces for objects in the mine
 // Returns the number of new surfaces
@@ -108,7 +108,7 @@ void CleanupSpecularLighting(int external);
 void SetupSpecularLighting(int external);
 
 // Calculates radiosity and sets lightmaps for indoor faces only
-void DoRadiosityForCurrentRoom(room *rp);
+void DoRadiosityForCurrentRoom(int roomnum);
 
 extern rad_surface *Light_surfaces;
 extern rad_surface *Terrain_light_surfaces;

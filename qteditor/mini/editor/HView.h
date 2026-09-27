@@ -66,7 +66,7 @@ struct object;
 // If room_center is false, put the viewer directly in front of the selected face
 // If the room is external, put the viewer a distance away from the room,
 // facing either the center (if room_center is true) or the specified face
-void SetViewerFromRoomFace(room *roomp, int facenum, bool room_center);
+void SetViewerFromRoomFace(int roomnum, int facenum, bool room_center);
 
 // Returns the number (not the id) of the current viewer, in the range 0..MAX_VIEWERS
 int GetViewerNum();

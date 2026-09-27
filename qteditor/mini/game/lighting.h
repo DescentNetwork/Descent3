@@ -81,13 +81,13 @@ uint8_t Float_to_ubyte(float fnum);
 extern float Ubyte_to_float[];
 
 // Sets pulse parameters for an entire room
-void SetRoomPulse(room *rp, uint8_t pulse_time, uint8_t pulse_offset);
+void SetRoomPulse(int roomnum, uint8_t pulse_time, uint8_t pulse_offset);
 
 // Returns the total number of bytes needed for volume lighting in this room
-int GetVolumeSizeOfRoom(room *rp, int *w = NULL, int *h = NULL, int *d = NULL);
+int GetVolumeSizeOfRoom(int roomnum, int *w = NULL, int *h = NULL, int *d = NULL);
 
 // Returns a lightmap that can be applied for specular lighting
-int GetSpecularLightmapForFace(vector3 *pos, room *rp, face *fp);
+int GetSpecularLightmapForFace(vector3 *pos, int roomnum, face *fp);
 
 // Kills the lighting that a face casts and dampens all the faces that light influences
 void DestroyLight(int roomnum, int facenum);

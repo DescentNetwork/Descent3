@@ -403,7 +403,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_roomnum, float rad, int16_t *
 extern int FVI_counter;
 extern int FVI_room_counter;
 
-bool fvi_QuickRoomCheck(vector3 *pos, room *cur_room, bool try_again = false);
+bool fvi_QuickRoomCheck(vector3 *pos, int roomnum, bool try_again = false);
 
 extern fvi_info* fvi_hit_data_ptr;
 extern fvi_query* fvi_query_ptr;

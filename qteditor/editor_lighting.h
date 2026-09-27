@@ -62,7 +62,7 @@ int TestLightAdjacency(int roomnum, int facenum, int external);
 
 int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum);
 void ComputeAllRoomLightmapUVs(int external);
-void ComputeRoomLightmapUVs(room *rp);
+void ComputeRoomLightmapUVs(int roomnum);
 int ComputeSurfacesForObjects(int surface_index, int terrain);
 
 int GetTotalObjectFaces(int terrain);
@@ -73,12 +73,12 @@ void CombineObjectLightmapUVs(object& obj, int lmi_type);
 
 void CleanupSpecularLighting(int external);
 void SetupSpecularLighting(int external);
-void DoRadiosityForCurrentRoom(room *rp);
+void DoRadiosityForCurrentRoom(int roomnum);
 
 void SqueezeLightmaps(int external, int target_roomnum);
 void CheckCombinePortals(int terrain);
 void AssignVolumeSpectraToRoom(int roomnum);
-void ComputeSurfaceRes(rad_surface *surf, room *rp, int facenum);
+void ComputeSurfaceRes(rad_surface *surf, int roomnum, int facenum);
 void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int facenum);
 int CheckForBadFaces(int roomnum);
 void AddSpectra(spectra *dest, spectra *a, spectra *b);

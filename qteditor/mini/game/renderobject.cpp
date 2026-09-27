@@ -767,7 +767,8 @@ static inline bool object_object_AABB(object *obj1, object *obj2) {
   return overlap;
 }
 // Given a face, computes the upper left corner of the face
-void ComputeDebugVisFaceUpperLeft(room *rp, face *fp, vector3 *upper_left, float *xdiff, float *ydiff, vector3 *center) {
+void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, float *xdiff, float *ydiff, vector3 *center) {
+  room *rp = &Rooms[roomnum];
   matrix face_matrix, trans_matrix;
   vector3 fvec;
   vector3 avg_vert;
@@ -874,7 +875,7 @@ void DrawRoomVisPnts(object *obj) {
       }
       vector3 fvec = -src_fp->normal;
       vm_VectorToMatrix(&src_matrix, &fvec, NULL, NULL);
-      ComputeDebugVisFaceUpperLeft(rp, src_fp, &src_upper_left, &src_width, &src_height, &src_center);
+      ComputeDebugVisFaceUpperLeft(roomnum, src_fp, &src_upper_left, &src_width, &src_height, &src_center);
 
       if (src_width > VIS_TABLE_RESOLUTION) {
         float num = src_width / VIS_TABLE_RESOLUTION;
@@ -904,7 +905,7 @@ void DrawRoomVisPnts(object *obj) {
           }
 
           src2 += 0.1f * rp->faces[rp->portals[t].portal_face].normal;
-          if (!fvi_QuickRoomCheck(&src2, rp, false) && !fvi_QuickRoomCheck(&src2, rp, true)) {
+          if (!fvi_QuickRoomCheck(&src2, roomnum, false) && !fvi_QuickRoomCheck(&src2, roomnum, true)) {
             DrawColoredDisk(&src2, 0.0f, 1.0f, 0.0f, .1f, .7f, 0.25f, 1);
             continue;
           }
@@ -1120,9 +1121,9 @@ bool SetupMineObject(object& obj) {
       if (obj.effect_info->type_flags.volume_changing) {
         float old_r, old_g, old_b;
         float new_r, new_g, new_b;
-        GetRoomDynamicScalar(&obj.effect_info->volume_old_pos, &Rooms[obj.effect_info->volume_old_room], &old_r,
-                             &old_g, &old_b);
-        GetRoomDynamicScalar(&vpos, &Rooms[obj.roomnum], &new_r, &new_g, &new_b);
+        GetRoomDynamicScalar(&obj.effect_info->volume_old_pos, obj.effect_info->volume_old_room, &old_r, &old_g,
+                             &old_b);
+        GetRoomDynamicScalar(&vpos, obj.roomnum, &new_r, &new_g, &new_b);
         scalar_r =
             (old_r * obj.effect_info->volume_change_time) + ((1 - obj.effect_info->volume_change_time) * new_r);
         scalar_g =
@@ -1130,7 +1131,7 @@ bool SetupMineObject(object& obj) {
         scalar_b =
             (old_b * obj.effect_info->volume_change_time) + ((1 - obj.effect_info->volume_change_time) * new_b);
       } else
-        GetRoomDynamicScalar(&vpos, &Rooms[obj.roomnum], &scalar_r, &scalar_g, &scalar_b);
+        GetRoomDynamicScalar(&vpos, obj.roomnum, &scalar_r, &scalar_g, &scalar_b);
 
       scalar_r = std::min<float>(1, scalar_r + (obj.effect_info->dynamic_red));
       scalar_g = std::min<float>(1, scalar_g + (obj.effect_info->dynamic_green));

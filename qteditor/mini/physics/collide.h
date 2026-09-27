@@ -101,7 +101,7 @@ void collide_two_objects(object *A, object *B, vector3 *collision_point, vector3
 bool collide_object_with_wall(object *A, float hitspeed, int hitseg, int hitwall, vector3 *hitpt, vector3 *wall_normal,
                               float hit_dot);
 
-extern void FindHitpointUV(float *u, float *v, vector3 *point, room *rp, int facenum);
+extern void FindHitpointUV(float *u, float *v, vector3 *point, int roomnum, int facenum);
 
 void ConvertEulerToAxisAmount(vector3 *e, vector3 *n, float *w);
 void ConvertAxisAmountToEuler(vector3 *n, float *w, vector3 *e);

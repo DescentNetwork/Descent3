@@ -449,29 +449,30 @@ extern bool Render_floating_triggers;
 //					nverts - how many vertices this room will have
 //					nfaces - how many faces this room wil have
 //					nfaces - how many portals this room wil have
-void InitRoom(room *rp, int nverts, int nfaces, int nportals);
+void InitRoom(room &rp, int nverts, int nfaces, int nportals);
 
 // Initialize a room face structure, allocating memory for vertlist and uvls
 void InitRoomFace(face *fp, int nverts);
 
-// Frees a room, deallocating its memory and marking it as unused
-void FreeRoom(room *rp);
+// Frees a room in the Rooms table, deallocating its memory and marking it as unused
+void FreeRoom(int roomnum);
 
 // Frees all the rooms currently in use, deallocating their memory and marking them as unused
 void FreeAllRooms();
 
 // Finds the center point of a room
 // Parameters:	vp - filled in with the center point
-//					rp - the room whose center to find
-void ComputeRoomCenter(vector3 *vp, room *rp);
+//					roomnum - the Rooms slot whose center to find
+void ComputeRoomCenter(vector3 *vp, int roomnum);
 
 // Computes (fills in) the surface normal of a face.
 // Finds the best normal on this face by checking all sets of three vertices
 // IMPORTANT:  The caller should really check the return value of this function
-// Parameters:	rp,facenum - the room and face to calculate the normal for
+// Parameters:	roomnum, facenum - the Rooms slot and face to calculate the normal for
 // Returns:		true if the normal is ok
 //					false if the normal has a very small (pre-normalization) magnitude
-bool ComputeFaceNormal(room *rp, int facenum);
+bool ComputeFaceNormal(int roomnum, int facenum);
+bool ComputeFaceNormal(room &rp, int facenum);
 
 // Compute the surface normal from a list of vertices that determine a face
 // Finds the best normal on this face by checking all sets of three vertices
@@ -486,12 +487,12 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
 
 // Finds the center point of a portal by averaging the points in the portal
 // Parameters:	vp           - filled in with the center point
-//					rp           - the room
+//					roomnum      - the Rooms slot
 //					portal_index - the index of the portal whose center to find
-void ComputePortalCenter(vector3 *vp, room *rp, int portal_index);
+void ComputePortalCenter(vector3 *vp, int roomnum, int portal_index);
 
 // Computes the center point on a face by averaging the points in the face
-void ComputeCenterPointOnFace(vector3 *vp, room *rp, int facenum);
+void ComputeCenterPointOnFace(vector3 *vp, int roomnum, int facenum);
 
 // Free the memory used by a room face structure
 void FreeRoomFace(face *fp);
@@ -503,14 +504,14 @@ void ClearAllRoomLightmaps(int external);
 void ClearAllVolumeLights();
 
 // Returns the area taken up by a face
-float GetAreaForFace(room *rp, int facenum);
+float GetAreaForFace(int roomnum, int facenum);
 
 // Check if a particular point on a wall is a transparent pixel
 // Parameters:	pnt - the point we're checking
-//					rp - pointer to the room that pnt is in
+//					roomnum - the Rooms slot that pnt is in
 //					facenum - the face that pnt is on
 // Returns:	true if can pass through the given point, else 0
-int CheckTransparentPoint(const vector3 *pnt, const room *rp, const int facenum);
+int CheckTransparentPoint(const vector3 *pnt, int roomnum, const int facenum);
 
 // Face physics flags returned by GetFacePhysicsFlags()
 // Note that:
@@ -525,10 +526,10 @@ int CheckTransparentPoint(const vector3 *pnt, const room *rp, const int facenum)
 #define FPT_IGNORE 0 // completey ignore this face
 
 // Figure out how the physics should deal with a given face
-// Parameters:	rp - pointer to the room the face is in
+// Parameters:	roomnum - the Rooms slot the face's room occupies
 //					fp - the face we're interested in
 // Returns:	bitmask of flags (see above).
-static inline int GetFacePhysicsFlags(const room *rp, const face *fp) {
+static inline int GetFacePhysicsFlags(int roomnum, const face *fp) {
   int ret = 0;
 
   // If face is a trigger, must record
@@ -544,7 +545,7 @@ static inline int GetFacePhysicsFlags(const room *rp, const face *fp) {
 
   // Deal with faces that are part of a portal
   if (fp->portal_num != -1) {
-    const portal *pp = &rp->portals[fp->portal_num];
+    const portal *pp = &Rooms[roomnum].portals[fp->portal_num];
 
     // Mark as portal
     ret |= FPF_PORTAL;
@@ -573,9 +574,9 @@ static inline int GetFacePhysicsFlags(const room *rp, const face *fp) {
 
 // Computes a bounding sphere for the current room
 // Parameters: center - filled in with the center point of the sphere
-//		rp - the room we're bounding
+//		roomnum - the Rooms slot we're bounding
 // Returns: the radius of the bounding sphere
-float ComputeRoomBoundingSphere(vector3 *center, room *rp);
+float ComputeRoomBoundingSphere(vector3 *center, int roomnum);
 
 // Create objects for the external rooms
 void CreateRoomObjects();

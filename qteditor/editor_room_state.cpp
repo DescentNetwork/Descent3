@@ -12,17 +12,22 @@ std::array<int, MAX_ROOMS> Selected_rooms;
 // these to construct / tear down rooms with full geometry; they preserve
 // the public signatures so qteditor links cleanly.
 
-room *CreateNewRoom(int nverts, int nfaces, bool palette_room) {
+int CreateNewRoom(int nverts, int nfaces, bool palette_room) {
   (void)palette_room;
-  // `new room()` value-initialises (zeroing PODs, default-constructing the
+  const int slot = FindFreeRoomSlot();
+  if (slot < 0)
+    return -1;
+
+  // `room{}` value-initialises (zeroing PODs, default-constructing the
   // std::string name).  No memset — memset would corrupt the std::string.
-  room *rp = new room();
-  rp->used = 1;
-  rp->verts.resize(nverts);
-  rp->faces.resize(nfaces);
-  rp->num_verts = nverts;
-  rp->num_faces = nfaces;
-  return rp;
+  room &rp = Rooms[slot];
+  rp = room{};
+  rp.used = 1;
+  rp.verts.resize(nverts);
+  rp.faces.resize(nfaces);
+  rp.num_verts = nverts;
+  rp.num_faces = nfaces;
+  return slot;
 }
 
 // Mirrors GetFreeRoom() in editor/Erooms.cpp:579: a linear scan for the first
@@ -84,17 +89,17 @@ int IsRoomSelected(int roomnum) {
 }
 
 
-void AssignDefaultUVsToRoomFace(room *rp, int facenum) {
-  if (rp == nullptr || !rp->used)
+void AssignDefaultUVsToRoomFace(int roomnum, int facenum) {
+  if (roomnum < 0 || static_cast<size_t>(roomnum) >= Rooms.size() || !Rooms[roomnum].used)
     return;
-  if (facenum < 0 || facenum >= rp->num_faces)
+  if (facenum < 0 || facenum >= Rooms[roomnum].num_faces)
     return;
-  face *fp = &rp->faces[facenum];
+  face *fp = &Rooms[roomnum].faces[facenum];
   if (fp->num_verts < 3)
     return;
 
   for (int t = 0; t < fp->num_verts; t++) {
-    GetUVLForRoomPoint(ROOMNUM(rp), facenum, t, &fp->face_uvls[t]);
+    GetUVLForRoomPoint(roomnum, facenum, t, &fp->face_uvls[t]);
     fp->face_uvls[t].alpha = 255;
   }
 }

@@ -500,7 +500,8 @@ bool BNode_MakeSubPath(int16_t sroom, int16_t spnt, int16_t eroom, int16_t epnt,
   return false;
 }
 
-void BNode_FreeRoom(room *rp) {
+void BNode_FreeRoom(int roomnum) {
+  room *rp = &Rooms[roomnum];
   rp->bn_info.nodes.clear();
 }
 
