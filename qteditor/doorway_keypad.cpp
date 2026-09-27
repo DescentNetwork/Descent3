@@ -80,11 +80,11 @@ void DoorwayKeypad::updateDialog() {
   if (dp == nullptr)
     return;
 
-  ui->IDC_DOORWAY_LOCKED->setChecked(dp->flags & DF_LOCKED);
-  ui->IDC_DOORWAY_AUTO->setChecked(dp->flags & DF_AUTO);
-  ui->IDC_DOORWAY_GB_IGNORE_LOCKED->setChecked(dp->flags & DF_GB_IGNORE_LOCKED);
-  ui->IDC_DOORWAY_KEY_ALL->setChecked(!(dp->flags & DF_KEY_ONLY_ONE));
-  ui->IDC_DOORWAY_KEY_ONLY_ONE->setChecked(dp->flags & DF_KEY_ONLY_ONE);
+  ui->IDC_DOORWAY_LOCKED->setChecked(dp->flags.locked);
+  ui->IDC_DOORWAY_AUTO->setChecked(dp->flags.automatic);
+  ui->IDC_DOORWAY_GB_IGNORE_LOCKED->setChecked(dp->flags.gb_ignore_locked);
+  ui->IDC_DOORWAY_KEY_ALL->setChecked(!dp->flags.key_only_one);
+  ui->IDC_DOORWAY_KEY_ONLY_ONE->setChecked(dp->flags.key_only_one);
 
   ui->IDC_KEY1_CHECK->setChecked((dp->keys_needed & (1 << 0)) != 0);
   ui->IDC_KEY2_CHECK->setChecked((dp->keys_needed & (1 << 1)) != 0);
@@ -119,27 +119,24 @@ void DoorwayKeypad::onPrevDoor() {
 void DoorwayKeypad::onLockedToggled(bool checked) {
   if (doorway *dp = currentDoorway()) {
     if (checked)
-      dp->flags |= DF_LOCKED;
+      dp->flags.locked = true;
     else
-      dp->flags &= ~DF_LOCKED;
+      dp->flags.locked = false;
   }
 }
 
 void DoorwayKeypad::onAutoToggled(bool checked) {
   if (doorway *dp = currentDoorway()) {
     if (checked)
-      dp->flags |= DF_AUTO;
+      dp->flags.automatic = true;
     else
-      dp->flags &= ~DF_AUTO;
+      dp->flags.automatic = false;
   }
 }
 
 void DoorwayKeypad::onIgnoreLockedToggled(bool checked) {
   if (doorway *dp = currentDoorway()) {
-    if (checked)
-      dp->flags |= DF_GB_IGNORE_LOCKED;
-    else
-      dp->flags &= ~DF_GB_IGNORE_LOCKED;
+      dp->flags.gb_ignore_locked = checked;
   }
 }
 
@@ -180,7 +177,7 @@ void DoorwayKeypad::onKeyAll() {
   ui->IDC_KEY7_CHECK->setChecked(true);
   ui->IDC_KEY8_CHECK->setChecked(true);
   dp->keys_needed = 0xFF;
-  dp->flags &= ~DF_KEY_ONLY_ONE;
+  dp->flags.key_only_one = false;
 }
 
 void DoorwayKeypad::onKeyOnlyOne() {
@@ -196,7 +193,7 @@ void DoorwayKeypad::onKeyOnlyOne() {
   ui->IDC_KEY8_CHECK->setChecked(false);
   ui->IDC_KEY1_CHECK->setChecked(true);
   dp->keys_needed = 1;
-  dp->flags |= DF_KEY_ONLY_ONE;
+  dp->flags.key_only_one = true;
 }
 
 void DoorwayKeypad::onPosEdited() {

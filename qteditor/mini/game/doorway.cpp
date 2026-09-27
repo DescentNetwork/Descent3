@@ -264,7 +264,7 @@ void DoorwayActivate(int door_obj_handle) {
     return;
 
   // If already blasted, bail
-  if (dp->flags & DF_BLASTED)
+  if (dp->flags.blasted)
     return;
 
   // Get pointer to door
@@ -281,7 +281,7 @@ void DoorwayActivate(int door_obj_handle) {
   AddActiveDoorway(objp->roomnum);
 
   // Set new state
-  dp->state = (dp->flags & DF_AUTO) ? DOORWAY_OPENING_AUTO : DOORWAY_OPENING;
+  dp->state = dp->flags.automatic ? DOORWAY_OPENING_AUTO : DOORWAY_OPENING;
 
   // Play sound
   DoorwayPlaySound(objp);
@@ -362,7 +362,7 @@ void DoorwayDestroy(object *objp) {
   Q_ASSERT(rp->flags.door);
   Q_ASSERT(dp);
 
-  dp->flags |= DF_BLASTED;
+  dp->flags.blasted = true;
   dp->position = 1.0;
   dp->state = DOORWAY_STOPPED;
 
@@ -518,7 +518,7 @@ bool DoorwayLocked(int door_obj_handle) {
   if (!dp)
     return 0;
 
-  return ((dp->flags & DF_LOCKED) != 0);
+  return dp->flags.locked;
 }
 
 // Returns true if the doorway in the given room is locked, else false
@@ -529,7 +529,7 @@ bool DoorwayLockedForRoom(int roomnum) {
   doorway *dp = rp->doorway_data.get();
   Q_ASSERT(dp != NULL);
 
-  return ((dp->flags & DF_LOCKED) != 0);
+  return dp->flags.locked;
 }
 
 // Returns true if the doorway is openable by the specified object, else false
@@ -542,7 +542,7 @@ bool DoorwayOpenable(int door_obj_handle, int opener_handle) {
     return 0;
 
   // If locked, no one can open it
-  if (dp->flags & DF_LOCKED)
+  if (dp->flags.locked)
     return 0;
 
   // If no keys needed, anyone can open
@@ -570,7 +570,7 @@ bool DoorwayOpenable(int door_obj_handle, int opener_handle) {
     return 0; // If not a robot or a player, cannot open keyed doors
 
   // Door is openenable if have proper keys
-  if (dp->flags & DF_KEY_ONLY_ONE)
+  if (dp->flags.key_only_one)
     return ((keys & dp->keys_needed) != 0);
   else
     return ((keys & dp->keys_needed) == dp->keys_needed);
@@ -594,9 +594,9 @@ void DoorwayLockUnlock(int door_obj_handle, bool state) {
     return;
 
   if (state)
-    dp->flags |= DF_LOCKED;
+    dp->flags.locked = true;
   else
-    dp->flags &= ~DF_LOCKED;
+    dp->flags.locked = false;
 }
 
 // Returns the current position of the door.  0.0 = totally closed, 1.0 = totally open
@@ -650,7 +650,7 @@ doorway *DoorwayAdd(int roomnum, int doornum) {
   dp->doornum = doornum;
   dp->dest_pos = dp->position = 0.0;
   dp->state = DOORWAY_STOPPED;
-  dp->flags = DF_AUTO;
+  dp->flags.automatic = true;
   dp->keys_needed = 0;
   dp->activenum = -1;
   dp->sound_handle = -1;

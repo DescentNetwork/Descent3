@@ -106,11 +106,25 @@
 #define DOORWAY_OPENING_AUTO 4 // door is opening and will automatically close
 
 //	doorway flags
-#define DF_BLASTED 1           // it's been blasted away
-#define DF_AUTO 2              // doorway closes after time.
-#define DF_LOCKED 4            // doorway can't open for now
-#define DF_KEY_ONLY_ONE 8      // only one key is needed to open (not all keys)
-#define DF_GB_IGNORE_LOCKED 16 // the Guide-bot ignores the locked state of this door
+struct [[gnu::packed]] doorway_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t blasted : 1;          // it's been blasted away
+  uint8_t automatic : 1;            // doorway closes after time.
+  uint8_t locked : 1;           // doorway can't open for now
+  uint8_t key_only_one : 1;     // only one key is needed to open (not all keys)
+  uint8_t gb_ignore_locked : 1; // the Guide-bot ignores the locked state of this door
+  uint8_t padding : 3;          // unused
+#else
+  uint8_t padding : 3;          // unused
+  uint8_t gb_ignore_locked : 1; // the Guide-bot ignores the locked state of this door
+  uint8_t key_only_one : 1;     // only one key is needed to open (not all keys)
+  uint8_t locked : 1;           // doorway can't open for now
+  uint8_t automatic : 1;            // doorway closes after time.
+  uint8_t blasted : 1;          // it's been blasted away
+#endif
+};
+static_assert(sizeof(doorway_flags_t) == sizeof(uint8_t));
 
 //	keymasks
 #define KF_KEY1 1 // Each key is a bit in the key_mask set in the door/object
@@ -123,8 +137,8 @@ extern std::vector<int> Active_doorways; // active doors in game
 // A doorway (room) in the mine
 struct doorway {
   int doornum;       // door type of this doorway
-  uint8_t state;       // current state of doorway
-  uint8_t flags;       // flags associated with a doorway
+  uint8_t state;        // current state of doorway
+  doorway_flags_t flags = {}; // flags associated with a doorway
   uint8_t keys_needed; // used by trigger system.  these bits need to be set to activate door
   int8_t activenum;   // index into active doorways array, or -1 if not active
   float position;    // current position of door
@@ -209,9 +223,5 @@ float DoorwayPosition(int door_obj_handle);
 // Returns the current position of the doorway in the given room.
 // 0.0 = totally closed, 1.0 = totally open
 float DoorwayPositionForRoom(int roomnum);
-
-// Make old names work
-#define DoorwayGetPosition DoorwayPosition
-#define DoorwayGetPositionForRoom DoorwayPositionForRoom
 
 #endif
