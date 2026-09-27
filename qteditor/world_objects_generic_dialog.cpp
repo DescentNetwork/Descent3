@@ -79,12 +79,12 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int object_id,
   });
 
   connect(ui->IDC_GENERIC_EDIT_PHYSICS, &QPushButton::clicked, [this]() {
-    if (data())
+    if (auto d = data())
     {
       PhysicsDialog dlg(this);
-      dlg.setData(data()->phys_info);
+      dlg.setData(d->phys_info);
       if(dlg.exec() == QDialog::Accepted)
-        data()->phys_info = dlg.getData();
+        d->phys_info = dlg.getData();
     }
   });
 
@@ -130,126 +130,126 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int object_id,
           &WorldObjectsGenericDialog::onNamePulldownChanged);
 
   connect(ui->IDC_DEATH_POWERUP1_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
-    if (data()) data()->dspew[0] = ui->IDC_DEATH_POWERUP1_PULLDOWN->currentData().toInt();
+    if (auto d = data()) d->dspew[0] = ui->IDC_DEATH_POWERUP1_PULLDOWN->currentData().toInt();
   });
 
   connect(ui->IDC_DEATH_POWERUP2_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
-    if (data()) data()->dspew[1] = ui->IDC_DEATH_POWERUP2_PULLDOWN->currentData().toInt();
+    if (auto d = data()) d->dspew[1] = ui->IDC_DEATH_POWERUP2_PULLDOWN->currentData().toInt();
   });
 
   connect(ui->IDC_GENERIC_EXPLOSION_SOUND_COMBO, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
-    if (data()) data()->sounds[GSI_EXPLODE] = soundComboSelected(ui->IDC_GENERIC_EXPLOSION_SOUND_COMBO);
+    if (auto d = data()) d->sounds[GSI_EXPLODE] = soundComboSelected(ui->IDC_GENERIC_EXPLOSION_SOUND_COMBO);
   });
 
   connect(ui->IDC_GENERIC_AMBIENT_SOUND_COMBO, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
-    if (data()) data()->sounds[GSI_AMBIENT] = soundComboSelected(ui->IDC_GENERIC_AMBIENT_SOUND_COMBO);
+    if (auto d = data()) d->sounds[GSI_AMBIENT] = soundComboSelected(ui->IDC_GENERIC_AMBIENT_SOUND_COMBO);
   });
 
   connect(ui->IDC_GENERIC_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    if (data()) data()->size = ui->IDC_GENERIC_SIZE_EDIT->text().toFloat();
+    if (auto d = data()) d->size = ui->IDC_GENERIC_SIZE_EDIT->text().toFloat();
   });
 
   connect(ui->IDC_GENERIC_HITPOINT_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    if (data()) data()->hit_points = ui->IDC_GENERIC_HITPOINT_EDIT->text().toUInt();
+    if (auto d = data()) d->hit_points = ui->IDC_GENERIC_HITPOINT_EDIT->text().toUInt();
   });
 
   connect(ui->IDC_GENERIC_IMPACT_DAMAGE_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    if (data()) data()->damage = ui->IDC_GENERIC_IMPACT_DAMAGE_EDIT->text().toFloat();
+    if (auto d = data()) d->damage = ui->IDC_GENERIC_IMPACT_DAMAGE_EDIT->text().toFloat();
   });
 
   connect(ui->IDC_GENERIC_IMPACT_SIZE_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    if (data()) data()->impact_size = ui->IDC_GENERIC_IMPACT_SIZE_EDIT->text().toFloat();
+    if (auto d = data()) d->impact_size = ui->IDC_GENERIC_IMPACT_SIZE_EDIT->text().toFloat();
   });
 
   connect(ui->IDC_GENERIC_IMPACT_TIME_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    if (data()) data()->impact_time = ui->IDC_GENERIC_IMPACT_TIME_EDIT->text().toFloat();
+    if (auto d = data()) d->impact_time = ui->IDC_GENERIC_IMPACT_TIME_EDIT->text().toFloat();
   });
 
   connect(ui->IDC_GENERIC_INVEN_ICONNAME, &QLineEdit::editingFinished, [this]() {
-    if (data()) data()->icon_name = ui->IDC_GENERIC_INVEN_ICONNAME->text().toStdString();
+    if (auto d = data()) d->icon_name = ui->IDC_GENERIC_INVEN_ICONNAME->text().toStdString();
   });
 
   connect(ui->IDC_LOD_DISTANCE_EDIT, &QLineEdit::editingFinished, this, &WorldObjectsGenericDialog::onKillfocusLodDistance);
   connect(ui->IDC_DEATH_POWERUP1_NUM_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    if (data()) data()->dspew_number[0] = ui->IDC_DEATH_POWERUP1_NUM_EDIT->text().toInt();
+    if (auto d = data()) d->dspew_number[0] = ui->IDC_DEATH_POWERUP1_NUM_EDIT->text().toInt();
   });
   connect(ui->IDC_DEATH_POWERUP1_PERCENT_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    if (data()) data()->dspew_percent[0] = ui->IDC_DEATH_POWERUP1_PERCENT_EDIT->text().toFloat() / 100.0f;
+    if (auto d = data()) d->dspew_percent[0] = ui->IDC_DEATH_POWERUP1_PERCENT_EDIT->text().toFloat() / 100.0f;
   });
   connect(ui->IDC_DEATH_POWERUP2_NUM_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    if (data()) data()->dspew_number[1] = ui->IDC_DEATH_POWERUP2_NUM_EDIT->text().toInt();
+    if (auto d = data()) d->dspew_number[1] = ui->IDC_DEATH_POWERUP2_NUM_EDIT->text().toInt();
   });
   connect(ui->IDC_DEATH_POWERUP2_PERCENT_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    if (data()) data()->dspew_percent[1] = ui->IDC_DEATH_POWERUP2_PERCENT_EDIT->text().toFloat() / 100.0f;
+    if (auto d = data()) d->dspew_percent[1] = ui->IDC_DEATH_POWERUP2_PERCENT_EDIT->text().toFloat() / 100.0f;
   });
   connect(ui->IDC_SCRIPTNAME, &QLineEdit::editingFinished, [this]() {
-    if (data()) data()->module_name = ui->IDC_SCRIPTNAME->text().toStdString(), updateDialog();
+    if (auto d = data()) d->module_name = ui->IDC_SCRIPTNAME->text().toStdString(), updateDialog();
   });
   connect(ui->IDC_SCRIPT_OVERRIDE, &QLineEdit::editingFinished, [this]() {
-    if (data()) data()->script_name_override = ui->IDC_SCRIPT_OVERRIDE->text().toStdString(), updateDialog();
+    if (auto d = data()) d->script_name_override = ui->IDC_SCRIPT_OVERRIDE->text().toStdString(), updateDialog();
   });
   connect(ui->IDC_RESPAWN_SCALAR_EDIT, &QLineEdit::editingFinished, this, &WorldObjectsGenericDialog::onKillfocusRespawnScalar);
   connect(ui->IDC_GENERIC_SCORE_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    if (data()) data()->score = ui->IDC_GENERIC_SCORE_EDIT->text().toUShort();
+    if (auto d = data()) d->score = ui->IDC_GENERIC_SCORE_EDIT->text().toUShort();
   });
   connect(ui->IDC_GENERIC_AMMO_EDIT, &QLineEdit::editingFinished, this, [this]() {
-    if (data()) data()->ammo_count = ui->IDC_GENERIC_AMMO_EDIT->text().toUShort();
+    if (auto d = data()) d->ammo_count = ui->IDC_GENERIC_AMMO_EDIT->text().toUShort();
   });
 
   connect(ui->IDC_GENERIC_USES_AI, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data())
+    if (auto d = data())
     {
-      data()->flags.control_ai = checked;
+      d->flags.control_ai = checked;
       ui->IDC_GENERIC_EDIT_AI->setEnabled(checked);
       app.Mine_changed = true;
     }
   });
   connect(ui->IDC_GENERIC_USES_PHYSICS, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data())
+    if (auto d = data())
     {
-      data()->flags.uses_physics = checked;
+      d->flags.uses_physics = checked;
       ui->IDC_GENERIC_EDIT_PHYSICS->setEnabled(checked);
       app.Mine_changed = true;
     }
   });
   connect(ui->IDC_GENERIC_DESTROYABLE, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data())
+    if (auto d = data())
     {
-      data()->flags.destroyable = checked;
+      d->flags.destroyable = checked;
       ui->IDC_GENERIC_HITPOINT_EDIT->setEnabled(checked);
       ui->IDC_GENERIC_SCORE_EDIT->setEnabled(checked);
       app.Mine_changed = true;
     }
   });
   connect(ui->IDC_GENERIC_AI_SCRIPTED_DEATH, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.ai_scripted_death = checked, app.Mine_changed = true;
+    if (auto d = data()) d->flags.ai_scripted_death = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_OBJ_CEILING_CHECK, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.do_ceiling_check = checked, app.Mine_changed = true;
+    if (auto d = data()) d->flags.do_ceiling_check = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_OBJECT_FLY_THROUGH_RENDERED_PORTALS, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.ignore_forcefields_and_glass = checked, app.Mine_changed = true;
+    if (auto d = data()) d->flags.ignore_forcefields_and_glass = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_NSC_BUTTON, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.no_diff_scale_damage = checked, app.Mine_changed = true;
+    if (auto d = data()) d->flags.no_diff_scale_damage = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_DSMPBD_CHECK, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.no_diff_scale_move = checked, app.Mine_changed = true;
+    if (auto d = data()) d->flags.no_diff_scale_move = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_GENERIC_AMBIENT, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.ambient_object = checked, app.Mine_changed = true;
+    if (auto d = data()) d->flags.ambient_object = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_GENERIC_INVEN_SELECTABLE, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.inven_selectable = checked, app.Mine_changed = true;
+    if (auto d = data()) d->flags.inven_selectable = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_GENERIC_INVEN_NONUSEABLE, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.inven_nonuseable = checked, app.Mine_changed = true;
+    if (auto d = data()) d->flags.inven_nonuseable = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_INVEN_NOREMOVE, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.inven_noremove = checked, app.Mine_changed = true;
+    if (auto d = data()) d->flags.inven_noremove = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_INVEN_VISWHENUSED, &QCheckBox::toggled, this, [this](bool checked) {
-    if (data()) data()->flags.inven_viswhenused = checked, app.Mine_changed = true;
+    if (auto d = data()) d->flags.inven_viswhenused = checked, app.Mine_changed = true;
   });
   connect(ui->IDC_DEATH_POWERUP_USE2_IF_HAVE1_CHECK, &QCheckBox::toggled, this, &WorldObjectsGenericDialog::onDeathPowerupUse2);
   connect(ui->IDC_GENERIC_DEATH_SPEW_2_IF_ZERO_1, &QCheckBox::toggled, this, &WorldObjectsGenericDialog::onDeathSpew2IfZero1);
@@ -258,11 +258,11 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int object_id,
   connect(ui->IDC_MEDRES_RADIO, &QRadioButton::clicked, [this](){ m_lod = 1; updateDialog(); });
   connect(ui->IDC_LORES_RADIO, &QRadioButton::clicked, [this](){ m_lod = 2; updateDialog(); });
   connect(ui->IDC_INVTYPE_GAME, &QRadioButton::clicked, [this]() {
-    if (data()) data()->flags.inven_type_mission = false, updateDialog();
+    if (auto d = data()) d->flags.inven_type_mission = false, updateDialog();
   });
 
   connect(ui->IDC_INVTYPE_MISSION, &QRadioButton::clicked, [this]() {
-    if (data()) data()->flags.inven_type_mission = true, updateDialog();
+    if (auto d = data()) d->flags.inven_type_mission = true, updateDialog();
   });
 
   ui->IDC_GENERIC_TYPE_NAME->setText(QString::fromStdString(Object_type_names[m_type]));
@@ -692,125 +692,126 @@ void WorldObjectsGenericDialog::onCheckIn() {
   updateDialog();
 }
 
-void WorldObjectsGenericDialog::onDelete() {
-  if (!data())
-    return;
-  const int tl = mng_FindTrackLock(data()->name, PAGETYPE_GENERIC).value_or(-1);
-  if (tl == -1) {
-    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This object is not yours to delete.  Lock first.");
-    return;
+void WorldObjectsGenericDialog::onDelete()
+{
+  if (auto d = data())
+  {
+    const int tl = mng_FindTrackLock(d->name, PAGETYPE_GENERIC).value_or(-1);
+    if (tl == -1) {
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This object is not yours to delete.  Lock first.");
+      return;
+    }
+    if (QMessageBox::question(this, "Delete object",
+                              QString("Are you sure you want to delete this object? %1").arg(QString::fromStdString(d->name))) !=
+        QMessageBox::Yes)
+      return;
+    if (!mng_MakeLocker())
+      return;
+
+    mngs_Pagelock pl;
+    pl.name = d->name;
+    pl.pagetype = PAGETYPE_GENERIC;
+
+    if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
+      mng_FreeTrackLock(tl);
+      Q_ASSERT(mng_DeletePage(d->name, PAGETYPE_GENERIC, 1));
+    } else {
+      mng_FreeTrackLock(tl);
+      mng_DeletePage(d->name, PAGETYPE_GENERIC, 0);
+      mng_DeletePage(d->name, PAGETYPE_GENERIC, 1);
+      mng_DeletePagelock(d->name, PAGETYPE_GENERIC);
+    }
+
+    const int old_current = m_object_id;
+    m_object_id = GetNextObjectID(m_object_id);
+    if (m_object_id == old_current)
+      m_object_id = -1;
+    FreePolyModel(Object_info[old_current].render_handle);
+    if (Object_info[old_current].med_render_handle != -1)
+      FreePolyModel(Object_info[old_current].med_render_handle);
+    if (Object_info[old_current].lo_render_handle != -1)
+      FreePolyModel(Object_info[old_current].lo_render_handle);
+    FreeObjectID(old_current);
+    mng_EraseLocker();
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object deleted.");
+    RemapStaticIDs();
+    updateDialog();
   }
-  if (QMessageBox::question(this, "Delete object",
-                            QString("Are you sure you want to delete this object? %1").arg(QString::fromStdString(data()->name))) !=
-      QMessageBox::Yes)
-    return;
-  if (!mng_MakeLocker())
-    return;
-
-  mngs_Pagelock pl;
-  pl.name = data()->name;
-  pl.pagetype = PAGETYPE_GENERIC;
-
-  if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
-    mng_FreeTrackLock(tl);
-    Q_ASSERT(mng_DeletePage(data()->name, PAGETYPE_GENERIC, 1));
-  } else {
-    mng_FreeTrackLock(tl);
-    mng_DeletePage(data()->name, PAGETYPE_GENERIC, 0);
-    mng_DeletePage(data()->name, PAGETYPE_GENERIC, 1);
-    mng_DeletePagelock(data()->name, PAGETYPE_GENERIC);
-  }
-
-  const int old_current = m_object_id;
-  m_object_id = GetNextObjectID(m_object_id);
-  if (m_object_id == old_current)
-    m_object_id = -1;
-  FreePolyModel(Object_info[old_current].render_handle);
-  if (Object_info[old_current].med_render_handle != -1)
-    FreePolyModel(Object_info[old_current].med_render_handle);
-  if (Object_info[old_current].lo_render_handle != -1)
-    FreePolyModel(Object_info[old_current].lo_render_handle);
-  FreeObjectID(old_current);
-  mng_EraseLocker();
-  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object deleted.");
-  RemapStaticIDs();
-  updateDialog();
 }
 
 void WorldObjectsGenericDialog::onLock() {
-  if (!data())
-    return;
-  if (!mng_MakeLocker())
-    return;
+  if (auto d = data(); d && mng_MakeLocker())
+  {
+    mngs_Pagelock temp_pl;
+    mngs_generic_page page;
+    temp_pl.name = d->name;
+    temp_pl.pagetype = PAGETYPE_GENERIC;
 
-  mngs_Pagelock temp_pl;
-  mngs_generic_page page;
-  temp_pl.name = data()->name;
-  temp_pl.pagetype = PAGETYPE_GENERIC;
-
-  const int r = mng_CheckIfPageLocked(&temp_pl);
-  if (r == 2) {
-    if (QMessageBox::question(this, "Are you sure?",
-                          "This page is not even in the table file, or the database maybe corrupt.  Override to "
-                              "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
-      temp_pl.holder = "UNLOCKED";
-      if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
-        QMessageBox::critical(this, "Error!", ErrorString);
-    }
-  } else if (r < 0) {
-    QMessageBox::critical(this, "Error!", ErrorString);
-  } else if (r == 1) {
-    QMessageBox::information(this, "Information", InfoString);
-  } else {
-    temp_pl.holder = TableUser.toStdString();
-    if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(this, "Error!", ErrorString);
-      mng_EraseLocker();
-      return;
-    }
-    if (mng_FindSpecificGenericPage(temp_pl.name, &page)) {
-      if (mng_AssignGenericPageToObjInfo(&page, m_object_id)) {
-        if (!mng_ReplacePage(data()->name, data()->name, m_object_id, PAGETYPE_GENERIC, 1)) {
-          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
-          mng_EraseLocker();
-          return;
-        }
-        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object locked.");
-      } else {
-        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this object.");
+    const int r = mng_CheckIfPageLocked(&temp_pl);
+    if (r == 2) {
+      if (QMessageBox::question(this, "Are you sure?",
+                            "This page is not even in the table file, or the database maybe corrupt.  Override to "
+                                "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
+        temp_pl.holder = "UNLOCKED";
+        if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
+          QMessageBox::critical(this, "Error!", ErrorString);
       }
-      mng_AllocTrackLock(data()->name, PAGETYPE_GENERIC);
+    } else if (r < 0) {
+      QMessageBox::critical(this, "Error!", ErrorString);
+    } else if (r == 1) {
+      QMessageBox::information(this, "Information", InfoString);
     } else {
-      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that object in the table file!");
+      temp_pl.holder = TableUser.toStdString();
+      if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
+        QMessageBox::critical(this, "Error!", ErrorString);
+        mng_EraseLocker();
+        return;
+      }
+      if (mng_FindSpecificGenericPage(temp_pl.name, &page)) {
+        if (mng_AssignGenericPageToObjInfo(&page, m_object_id)) {
+          if (!mng_ReplacePage(d->name, d->name, m_object_id, PAGETYPE_GENERIC, 1)) {
+            QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
+            mng_EraseLocker();
+            return;
+          }
+          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object locked.");
+        } else {
+          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this object.");
+        }
+        mng_AllocTrackLock(d->name, PAGETYPE_GENERIC);
+      } else {
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that object in the table file!");
+      }
     }
+    mng_EraseLocker();
+    updateDialog();
   }
-  mng_EraseLocker();
-  updateDialog();
 }
 
 void WorldObjectsGenericDialog::onUndoLock() {
-  if (!data())
-    return;
-  const int tl = mng_FindTrackLock(data()->name, PAGETYPE_GENERIC).value_or(-1);
-  if (tl == -1)
-    return;
-  if (QMessageBox::question(this, "Are you sure?",
-                            "Are you sure you want to undo your lock and lose any changes you may have made?") == QMessageBox::No)
-    return;
-  if (!mng_MakeLocker())
-    return;
+  if (auto d = data())
+  {
+    const int tl = mng_FindTrackLock(d->name, PAGETYPE_GENERIC).value_or(-1);
+    if (tl == -1)
+      return;
+    if (QMessageBox::question(this, "Are you sure?",
+                              "Are you sure you want to undo your lock and lose any changes you may have made?") == QMessageBox::No)
+      return;
+    if (!mng_MakeLocker())
+      return;
 
-  mngs_Pagelock pl;
-  mngs_generic_page page;
-  pl.name = data()->name;
-  pl.pagetype = PAGETYPE_GENERIC;
+    mngs_Pagelock pl;
+    mngs_generic_page page;
+    pl.name = d->name;
+    pl.pagetype = PAGETYPE_GENERIC;
 
-  mng_FreeTrackLock(tl);
-  Q_ASSERT(mng_DeletePage(data()->name, PAGETYPE_GENERIC, 1));
-  Q_ASSERT(mng_FindSpecificGenericPage(pl.name, &page));
-  Q_ASSERT(mng_AssignGenericPageToObjInfo(&page, m_object_id));
-  mng_EraseLocker();
-  updateDialog();
+    mng_FreeTrackLock(tl);
+    Q_ASSERT(mng_DeletePage(d->name, PAGETYPE_GENERIC, 1));
+    Q_ASSERT(mng_FindSpecificGenericPage(pl.name, &page));
+    Q_ASSERT(mng_AssignGenericPageToObjInfo(&page, m_object_id));
+    mng_EraseLocker();
+    updateDialog();
+  }
 }
 
 void WorldObjectsGenericDialog::onNext() {
@@ -834,15 +835,16 @@ void WorldObjectsGenericDialog::onNamePulldownChanged() {
 }
 
 void WorldObjectsGenericDialog::onCopy() {
-  if (data())
+  if (auto d = data())
   {
-    Copy_object = *data();
+    Copy_object = *d;
     Copy_object_used = true;
     updateDialog();
   }
 }
 
-void WorldObjectsGenericDialog::onPaste() {
+void WorldObjectsGenericDialog::onPaste()
+{
   if (!Network_up || !Copy_object_used)
     return;
   if (Copy_object.type != m_type) {
@@ -883,11 +885,11 @@ void WorldObjectsGenericDialog::onPaste() {
 
 
 void WorldObjectsGenericDialog::onWeaponInfo() {
-  if (data())
+  if (auto d = data())
   {
     extern void editRobotWeapons(otype_wb_info *wb, poly_model *pm, QWidget *parent);
-    editRobotWeapons(data()->static_wb.data(),
-                     GetPolymodelPointer(data()->render_handle), this);
+    editRobotWeapons(d->static_wb.data(),
+                     GetPolymodelPointer(d->render_handle), this);
   }
 }
 
@@ -902,14 +904,14 @@ void WorldObjectsGenericDialog::onDefaultRadius() {
 }
 
 void WorldObjectsGenericDialog::onSelScript() {
-  if (data())
+  if (auto d = data())
   {
     const QString filename = QFileDialog::getOpenFileName(this, "Select script module", QString::fromStdString(LocalScriptDir.string()),
                                                          "D3 Compiled Scripts (*.dll)");
     if (!filename.isEmpty())
     {
       const QFileInfo info(filename);
-      data()->module_name = info.completeBaseName().toStdString() + ".dll";
+      d->module_name = info.completeBaseName().toStdString() + ".dll";
       updateDialog();
     }
   }
@@ -917,43 +919,43 @@ void WorldObjectsGenericDialog::onSelScript() {
 
 
 void WorldObjectsGenericDialog::onNolod() {
-  if (data())
+  if (auto d = data())
   {
     if (m_lod == 0) {
       QMessageBox::warning(this, "No LOD", "You must have a hi-res model.");
       return;
     }
     if (m_lod == 1) {
-      if (data()->med_render_handle >= 0 && data()->med_render_handle < MAX_POLY_MODELS &&
-          Poly_models[data()->med_render_handle].used)
-        FreePolyModel(data()->med_render_handle);
-      data()->med_render_handle = -1;
+      if (d->med_render_handle >= 0 && d->med_render_handle < MAX_POLY_MODELS &&
+          Poly_models[d->med_render_handle].used)
+        FreePolyModel(d->med_render_handle);
+      d->med_render_handle = -1;
     } else {
-      if (data()->lo_render_handle >= 0 && data()->lo_render_handle < MAX_POLY_MODELS &&
-          Poly_models[data()->lo_render_handle].used)
-        FreePolyModel(data()->lo_render_handle);
-      data()->lo_render_handle = -1;
+      if (d->lo_render_handle >= 0 && d->lo_render_handle < MAX_POLY_MODELS &&
+          Poly_models[d->lo_render_handle].used)
+        FreePolyModel(d->lo_render_handle);
+      d->lo_render_handle = -1;
     }
     updateDialog();
   }
 }
 
 void WorldObjectsGenericDialog::onKillfocusInvenDescription() {
-  if (data())
+  if (auto d = data())
   {
     auto *edit = ui->IDC_GENERIC_INVEN_DESCRIPTION;
     const QByteArray text = edit->toPlainText().toLocal8Bit();
     if (text.size() > 0 && QString::compare(text.constData(), "<no description>") != 0) {
-      data()->description = text.constData();
+      d->description = text.constData();
     } else {
-      data()->description.clear();
+      d->description.clear();
       edit->setText("<no description>");
     }
   }
 }
 
 void WorldObjectsGenericDialog::onOverride() {
-  if (data())
+  if (auto d = data())
   {
     mngs_Pagelock temp_pl;
     temp_pl.name = data()->name;
@@ -963,48 +965,48 @@ void WorldObjectsGenericDialog::onOverride() {
 }
 
 void WorldObjectsGenericDialog::onKillfocusLodDistance() {
-  if (data())
+  if (auto d = data())
   {
     const float dist = ui->IDC_LOD_DISTANCE_EDIT->text().toFloat();
     if (dist < 0)
       return;
     if (m_lod == 1)
-      data()->med_lod_distance = dist;
+      d->med_lod_distance = dist;
     else if (m_lod == 2)
-      data()->lo_lod_distance = dist;
+      d->lo_lod_distance = dist;
     updateDialog();
   }
 }
 
 void WorldObjectsGenericDialog::onDeathPowerupUse2(bool checked) {
-  if (data())
+  if (auto d = data())
   {
     if (checked)
-      data()->f_dspew |= DSF_ONLY_IF_PLAYER_HAS_OBJ_1;
+      d->f_dspew |= DSF_ONLY_IF_PLAYER_HAS_OBJ_1;
     else
-      data()->f_dspew &= ~DSF_ONLY_IF_PLAYER_HAS_OBJ_1;
+      d->f_dspew &= ~DSF_ONLY_IF_PLAYER_HAS_OBJ_1;
   }
 }
 
 void WorldObjectsGenericDialog::onDeathSpew2IfZero1(bool checked) {
-  if (data())
+  if (auto d = data())
   {
     if (checked)
-      data()->f_dspew |= DSF_ONLY_IF_NO_1;
+      d->f_dspew |= DSF_ONLY_IF_NO_1;
     else
-      data()->f_dspew &= ~DSF_ONLY_IF_NO_1;
+      d->f_dspew &= ~DSF_ONLY_IF_NO_1;
   }
 }
 
 void WorldObjectsGenericDialog::onKillfocusRespawnScalar() {
-  if (data())
+  if (auto d = data())
   {
     float val = ui->IDC_RESPAWN_SCALAR_EDIT->text().toFloat();
     if (val < -1)
       val = -1;
     if (val > 10000)
       val = 10000;
-    data()->respawn_scalar = val;
+    d->respawn_scalar = val;
     updateDialog();
   }
 }

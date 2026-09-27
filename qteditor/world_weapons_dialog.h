@@ -22,6 +22,7 @@
 
 #include "weapon.h" // weapon_flags_t
 #include "object_external_struct.h" // physics_flags_t
+#include "utils.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class WorldWeaponsDialog; }
@@ -70,6 +71,7 @@ private:
   void bindEdits();
   void bindChecks();
   void bindCombos();
+  optref<weapon> data(void);
 private:
   Ui::WorldWeaponsDialog *ui;
 };
