@@ -71,7 +71,7 @@ TerrainKeypad::TerrainKeypad(QWidget *parent)
   connect(ui->IDC_TERRPAD_REDO_TOPMAP, &QPushButton::clicked, this, &TerrainKeypad::onRedoTopmap);
   connect(ui->IDC_TILE_MORE, &QPushButton::clicked, this, &TerrainKeypad::onTileMore);
   connect(ui->IDC_TILE_LESS, &QPushButton::clicked, this, &TerrainKeypad::onTileLess);
-  connect(ui->IDC_TERRPAD_SELECTRANGE, &QPushButton::clicked, this, [this]() {
+  connect(ui->IDC_TERRPAD_SELECTRANGE, &QPushButton::clicked, [this]() {
     SelectRangeDialog dlg(this);
     dlg.exec();
     app.World_changed = true;

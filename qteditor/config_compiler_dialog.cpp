@@ -19,7 +19,7 @@ ConfigCompilerDialog::ConfigCompilerDialog(QWidget *parent)
 {
   ui->setupUi(this);
 
-      connect(ui->IDC_BROWSE, &QPushButton::clicked, this, [this]() {
+      connect(ui->IDC_BROWSE, &QPushButton::clicked, [this]() {
       const QString start = ui->IDC_COMPILER ? ui->IDC_COMPILER->text() : QString();
       const QString path = QFileDialog::getOpenFileName(
           this, tr("Select Script Compiler"), start, tr("Applications (*);;All files (*)"));

@@ -133,31 +133,31 @@ WorldObjectsDoorDialog::WorldObjectsDoorDialog(QWidget *parent)
       connect(ui->IDC_DOOR_CLOSE_SOUND, qOverload<int>(&QComboBox::currentIndexChanged), this,
     &WorldObjectsDoorDialog::onCloseSoundChanged);
 
-      connect(ui->IDC_DOOR_OPEN_TIME, &QLineEdit::editingFinished, this, [this]() {
+      connect(ui->IDC_DOOR_OPEN_TIME, &QLineEdit::editingFinished, [this]() {
       const int n = app.current_door;
       if (n < 0 || n >= MAX_DOORS || !Doors[n].used)
         return;
       Doors[n].total_open_time = ui->IDC_DOOR_OPEN_TIME->text().toFloat();
     });
-      connect(ui->IDC_DOOR_STAYS_OPEN, &QLineEdit::editingFinished, this, [this]() {
+      connect(ui->IDC_DOOR_STAYS_OPEN, &QLineEdit::editingFinished, [this]() {
       const int n = app.current_door;
       if (n < 0 || n >= MAX_DOORS || !Doors[n].used)
         return;
       Doors[n].total_time_open = ui->IDC_DOOR_STAYS_OPEN->text().toFloat();
     });
-      connect(ui->IDC_CLOSE_TIME, &QLineEdit::editingFinished, this, [this]() {
+      connect(ui->IDC_CLOSE_TIME, &QLineEdit::editingFinished, [this]() {
       const int n = app.current_door;
       if (n < 0 || n >= MAX_DOORS || !Doors[n].used)
         return;
       Doors[n].total_close_time = ui->IDC_CLOSE_TIME->text().toFloat();
     });
-      connect(ui->IDC_DOOR_HITPOINTS_EDIT, &QLineEdit::editingFinished, this, [this]() {
+      connect(ui->IDC_DOOR_HITPOINTS_EDIT, &QLineEdit::editingFinished, [this]() {
       const int n = app.current_door;
       if (n < 0 || n >= MAX_DOORS || !Doors[n].used)
         return;
       Doors[n].hit_points = ui->IDC_DOOR_HITPOINTS_EDIT->text().toInt();
     });
-      connect(ui->IDC_SCRIPTNAME, &QLineEdit::editingFinished, this, [this]() {
+      connect(ui->IDC_SCRIPTNAME, &QLineEdit::editingFinished, [this]() {
       const int n = app.current_door;
       if (n < 0 || n >= MAX_DOORS || !Doors[n].used)
         return;

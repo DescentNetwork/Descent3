@@ -40,23 +40,23 @@ TriggerKeypad::TriggerKeypad(QWidget *parent)
   connect(ui->IDC_TRIG_NEXT_PORTAL, &QPushButton::clicked, this, &TriggerKeypad::onNextPortal);
   connect(ui->IDC_TRIG_ONESHOT, &QCheckBox::toggled, this, &TriggerKeypad::onOneshotToggled);
 
-  connect(ui->IDC_TRIG_ACTIV_PLAYER, &QCheckBox::toggled, this, [this](bool checked) {
+  connect(ui->IDC_TRIG_ACTIV_PLAYER, &QCheckBox::toggled, [this](bool checked) {
     if (app.Current_trigger >= 0 && app.Current_trigger < static_cast<int>(Triggers.size()))
       Triggers[app.Current_trigger].activator.player = checked;
   });
-  connect(ui->IDC_TRIG_ACTIV_PLAYER_WEAPONS, &QCheckBox::toggled, this, [this](bool checked) {
+  connect(ui->IDC_TRIG_ACTIV_PLAYER_WEAPONS, &QCheckBox::toggled, [this](bool checked) {
     if (app.Current_trigger >= 0 && app.Current_trigger < static_cast<int>(Triggers.size()))
       Triggers[app.Current_trigger].activator.player_weapon = checked;
   });
-  connect(ui->IDC_TRIG_ACTIV_ROBOTS, &QCheckBox::toggled, this, [this](bool checked) {
+  connect(ui->IDC_TRIG_ACTIV_ROBOTS, &QCheckBox::toggled, [this](bool checked) {
     if (app.Current_trigger >= 0 && app.Current_trigger < static_cast<int>(Triggers.size()))
       Triggers[app.Current_trigger].activator.robot = checked;
   });
-  connect(ui->IDC_TRIG_ACTIV_ROBOT_WEAPONS, &QCheckBox::toggled, this, [this](bool checked) {
+  connect(ui->IDC_TRIG_ACTIV_ROBOT_WEAPONS, &QCheckBox::toggled, [this](bool checked) {
     if (app.Current_trigger >= 0 && app.Current_trigger < static_cast<int>(Triggers.size()))
       Triggers[app.Current_trigger].activator.robot_weapon = checked;
   });
-  connect(ui->IDC_TRIG_ACTIV_CLUTTER, &QCheckBox::toggled, this, [this](bool checked) {
+  connect(ui->IDC_TRIG_ACTIV_CLUTTER, &QCheckBox::toggled, [this](bool checked) {
     if (app.Current_trigger >= 0 && app.Current_trigger < static_cast<int>(Triggers.size()))
       Triggers[app.Current_trigger].activator.clutter = checked;
   });

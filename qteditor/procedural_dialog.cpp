@@ -66,7 +66,7 @@ ProceduralDialog::ProceduralDialog(QWidget *parent)
     combo->addItem("Line Lightning");
   }
 
-      connect(ui->IDC_CLEAR_PROCEDURALS, &QPushButton::clicked, this, [this]() {
+      connect(ui->IDC_CLEAR_PROCEDURALS, &QPushButton::clicked, [this]() {
       if (QMessageBox::question(this, "Clear procedurals", "Clear all procedural textures?") ==
           QMessageBox::Yes) {
         for (int i = 0; i < static_cast<int>(GameTextures.size()); i++)

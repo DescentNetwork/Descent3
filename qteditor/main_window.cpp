@@ -119,7 +119,7 @@ MainWindow::MainWindow(QWidget *parent)
   Q_ASSERT(m_editorView != nullptr);
 
   // ---- EditorView picking signals -> editor state ----
-  connect(m_editorView, &EditorView::faceSelected, this, [this](int r, int f) {
+  connect(m_editorView, &EditorView::faceSelected, [this](int r, int f) {
     app.Curroomp = r;
     app.Curface = f;
     app.Curedge = app.Curvert = 0;
@@ -129,7 +129,7 @@ MainWindow::MainWindow(QWidget *parent)
         QStringLiteral("Face selected: room %1, face %2").arg(r).arg(f));
     m_editorView->update();
   });
-  connect(m_editorView, &EditorView::objectSelected, this, [this](int idx) {
+  connect(m_editorView, &EditorView::objectSelected, [this](int idx) {
     app.Cur_object_index = idx;
     app.State_changed = true;
     QString name = (idx >= 0 && idx <= Highest_object_index && !Objects[idx].name.empty())
@@ -139,7 +139,7 @@ MainWindow::MainWindow(QWidget *parent)
         QStringLiteral("Object %1 selected (%2)").arg(idx).arg(name));
     m_editorView->update();
   });
-  connect(m_editorView, &EditorView::selectionCleared, this, [this]() {
+  connect(m_editorView, &EditorView::selectionCleared, [this]() {
     app.Curroomp = -1;
     app.Curface = -1;
     app.Cur_object_index = -1;
@@ -248,16 +248,16 @@ MainWindow::MainWindow(QWidget *parent)
   // -------------------------------------------------------------- Editors
   connect(ui->ID_TOOLS_WORLD_TEXTURES, &QAction::triggered, this, &MainWindow::showWorldTextures);
   connect(ui->ID_EDITORS_MEGACELLS, &QAction::triggered, this, &MainWindow::showMegacells);
-  connect(ui->ID_TOOLS_WORLD_OBJECTS_ROBOTS, &QAction::triggered, this, [this]() {
+  connect(ui->ID_TOOLS_WORLD_OBJECTS_ROBOTS, &QAction::triggered, [this]() {
     showGenericObject(OBJ_ROBOT, app.current_robot);
   });
-  connect(ui->ID_TOOLS_WORLD_OBJECTS_POWERUPS, &QAction::triggered, this, [this]() {
+  connect(ui->ID_TOOLS_WORLD_OBJECTS_POWERUPS, &QAction::triggered, [this]() {
     showGenericObject(OBJ_POWERUP, app.current_powerup);
   });
-  connect(ui->ID_TOOLS_WORLD_OBJECTS_BUILDINGS, &QAction::triggered, this, [this]() {
+  connect(ui->ID_TOOLS_WORLD_OBJECTS_BUILDINGS, &QAction::triggered, [this]() {
     showGenericObject(OBJ_BUILDING, app.current_building);
   });
-  connect(ui->ID_TOOLS_WORLD_OBJECTS_CLUTTER, &QAction::triggered, this, [this]() {
+  connect(ui->ID_TOOLS_WORLD_OBJECTS_CLUTTER, &QAction::triggered, [this]() {
     showGenericObject(OBJ_CLUTTER, app.current_clutter);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_PLAYER, &QAction::triggered, this, &MainWindow::showWorldObjectsPlayer);
@@ -286,7 +286,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->ID_TERRAIN_SOUNDS, &QAction::triggered, this, &MainWindow::showTerrainSound);
 
   // -------------------------------------------------------------- Window
-  connect(ui->ID_WINDOW_TILE, &QAction::triggered, this, [this]() {
+  connect(ui->ID_WINDOW_TILE, &QAction::triggered, [this]() {
     QList<QDockWidget *> docks = findChildren<QDockWidget *>();
     int n = docks.size();
     if (n == 0)
@@ -300,7 +300,7 @@ MainWindow::MainWindow(QWidget *parent)
       y += h;
     }
   });
-  connect(ui->ID_WINDOW_CASCADE, &QAction::triggered, this, [this]() {
+  connect(ui->ID_WINDOW_CASCADE, &QAction::triggered, [this]() {
     QList<QDockWidget *> docks = findChildren<QDockWidget *>();
     int n = docks.size();
     if (n == 0)
@@ -323,26 +323,26 @@ MainWindow::MainWindow(QWidget *parent)
   // ----------------------------------------------------------- Toolbar-only
   // Actions that appear only in the toolbar (not in any menu). Wire to
   // real handlers where possible; show "not yet ported" for the rest.
-  connect(ui->ID_FILE_PLAY640X480, &QAction::triggered, this, [this]() {
+  connect(ui->ID_FILE_PLAY640X480, &QAction::triggered, [this]() {
     showNotPorted("Play in 640x480");
   });
   connect(ui->ID_BUTTON_OUTLINE, &QAction::triggered, this, &MainWindow::onButtonOutline);
-  connect(ui->ID_BUTTON_WINDOWSELECTION, &QAction::triggered, this, [this]() {
+  connect(ui->ID_BUTTON_WINDOWSELECTION, &QAction::triggered, [this]() {
     showNotPorted("Window selection mode");
   });
-  connect(ui->ID_BUTTON_LIGHTING, &QAction::triggered, this, [this]() {
+  connect(ui->ID_BUTTON_LIGHTING, &QAction::triggered, [this]() {
     showNotPorted("Lighting mode");
   });
-  connect(ui->ID_ZBUTTON, &QAction::triggered, this, [this]() {
+  connect(ui->ID_ZBUTTON, &QAction::triggered, [this]() {
     showNotPorted("Z-button");
   });
-  connect(ui->ID_OBJBUTTON, &QAction::triggered, this, [this]() {
+  connect(ui->ID_OBJBUTTON, &QAction::triggered, [this]() {
     showNotPorted("Object mode");
   });
-  connect(ui->ID_REINIT_OPENGL, &QAction::triggered, this, [this]() {
+  connect(ui->ID_REINIT_OPENGL, &QAction::triggered, [this]() {
     showNotPorted("Reinitialize OpenGL");
   });
-  connect(ui->ID_OSIRISCOMPILE, &QAction::triggered, this, [this]() {
+  connect(ui->ID_OSIRISCOMPILE, &QAction::triggered, [this]() {
     showNotPorted("OSIRIS Compile");
   });
 

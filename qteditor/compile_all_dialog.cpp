@@ -20,7 +20,7 @@ CompileAllDialog::CompileAllDialog(QWidget *parent)
 
   {
     QPushButton *selectAll = ui->IDC_SELECTALL;
-    connect(selectAll, &QPushButton::clicked, this, [this]() {
+    connect(selectAll, &QPushButton::clicked, [this]() {
       if (ui->IDC_LIST)
         ui->IDC_LIST->selectAll();
     });

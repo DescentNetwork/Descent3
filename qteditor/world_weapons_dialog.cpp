@@ -41,31 +41,6 @@
 #include "weaponpage.h"
 #include "d3edit.h"
 
-
-namespace {
-struct EditBinding {
-  const char *name;
-  void (WorldWeaponsDialog::*noop)() = nullptr;
-};
-
-// Returns the indexed weapon, or a shared zero-initialized fallback when the
-// index is stale/out of range.
-weapon &weaponRef(int n) {
-  static weapon fallback{};
-return (n >= 0 && n < static_cast<int>(Weapons.size())) ? Weapons[n] : fallback;
-}
-
-// Returns the current weapon's flag fields, or nullptr when none is selected.
-weapon_flags_t *CurWeaponFlags() {
-  const int n = app.current_weapon;
-  return (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n)) ? &weaponRef(n).flags : nullptr;
-}
-physics_flags_t *CurWeaponPhysFlags() {
-  const int n = app.current_weapon;
-  return (n >= 0 && n < static_cast<int>(Weapons.size()) && Weapons.is_used(n)) ? &weaponRef(n).phys_info.flags : nullptr;
-}
-} // namespace
-
 optref<weapon> WorldWeaponsDialog::data(void)
 {
   if (app.current_weapon < 0 || app.current_weapon >= static_cast<int>(Weapons.size()))
@@ -85,17 +60,17 @@ WorldWeaponsDialog::WorldWeaponsDialog(QWidget *parent)
   connect(ui->IDC_PREV_WEAPON, &QPushButton::clicked, this, &WorldWeaponsDialog::onPrevWeapon);
   connect(ui->IDC_OVERRIDE, &QPushButton::clicked, this, &WorldWeaponsDialog::onOverride);
   connect(ui->IDC_WEAPON_COPY_BUTTON, &QPushButton::clicked, this, &WorldWeaponsDialog::onCopy);
-  connect(ui->IDC_WEAPON_PASTE_BUTTON, &QPushButton::clicked, this, [this]() {
+  connect(ui->IDC_WEAPON_PASTE_BUTTON, &QPushButton::clicked, [this]() {
     QMessageBox::critical(nullptr, "onPaste failure", "Weapon pasted.");
   });
   connect(ui->IDC_CHANGE_NAME, &QPushButton::clicked, this, &WorldWeaponsDialog::onChangeName);
   connect(ui->IDC_EDIT_PHYSICS, &QPushButton::clicked, this, &WorldWeaponsDialog::onEditPhysics);
-  connect(ui->IDC_DEFAULT_SIZE, &QPushButton::clicked, this, [this]() {
+  connect(ui->IDC_DEFAULT_SIZE, &QPushButton::clicked, [this]() {
     if (auto w = data()) ComputeDefaultSize(OBJ_WEAPON, w->fire_image_handle, w->size), updateDialog();
   });
 
-  connect(ui->IDC_ENERGY_RADIO, &QRadioButton::clicked, this, [this]() { if (auto w = data()) w->flags.matter_weapon = false; });
-  connect(ui->IDC_MATTER_RADIO, &QRadioButton::clicked, this, [this]() { if (auto w = data()) w->flags.matter_weapon = true; });
+  connect(ui->IDC_ENERGY_RADIO, &QRadioButton::clicked, [this]() { if (auto w = data()) w->flags.matter_weapon = false; });
+  connect(ui->IDC_MATTER_RADIO, &QRadioButton::clicked, [this]() { if (auto w = data()) w->flags.matter_weapon = true; });
 
   connect(ui->IDC_WEAPON_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this,
     &WorldWeaponsDialog::onWeaponPulldownChanged);
@@ -236,31 +211,31 @@ void WorldWeaponsDialog::bindChecks() {
 }
 
 void WorldWeaponsDialog::bindCombos() {
-  connect(ui->IDC_FIRE_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+  connect(ui->IDC_FIRE_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
     if (auto w = data()) w->sounds[WSI_FIRE] = ui->IDC_FIRE_SOUND_PULLDOWN->currentData().toInt();
   });
-  connect(ui->IDC_WEAPON_WALL_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+  connect(ui->IDC_WEAPON_WALL_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
     if (auto w = data()) w->sounds[WSI_IMPACT_WALL] = ui->IDC_WEAPON_WALL_SOUND_PULLDOWN->currentData().toInt();
   });
-  connect(ui->IDC_FLYING_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+  connect(ui->IDC_FLYING_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
     if (auto w = data()) w->sounds[WSI_FLYING] = ui->IDC_FLYING_SOUND_PULLDOWN->currentData().toInt();
   });
-  connect(ui->IDC_WEAPON_BOUNCE_SOUND_COMBO, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+  connect(ui->IDC_WEAPON_BOUNCE_SOUND_COMBO, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
     if (auto w = data()) w->sounds[WSI_BOUNCE] = ui->IDC_WEAPON_BOUNCE_SOUND_COMBO->currentData().toInt();
   });
-  connect(ui->IDC_EXPLODE_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+  connect(ui->IDC_EXPLODE_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
     if (auto w = data()) w->explode_image_handle = ui->IDC_EXPLODE_PULLDOWN->currentData().toInt();
   });
-  connect(ui->IDC_SMOKE_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+  connect(ui->IDC_SMOKE_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
     if (auto w = data()) w->smoke_handle = ui->IDC_SMOKE_PULLDOWN->currentData().toInt();
   });
-  connect(ui->IDC_PARTICLE_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+  connect(ui->IDC_PARTICLE_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
     if (auto w = data()) w->particle_handle = ui->IDC_PARTICLE_PULLDOWN->currentData().toInt();
   });
-  connect(ui->IDC_WEAPON_SPAWN_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+  connect(ui->IDC_WEAPON_SPAWN_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
     if (auto w = data()) w->spawn_handle = ui->IDC_WEAPON_SPAWN_PULLDOWN->currentData().toInt();
   });
-  connect(ui->IDC_SPAWN_ROBOT_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+  connect(ui->IDC_SPAWN_ROBOT_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
     if (auto w = data()) w->robot_spawn_handle = ui->IDC_SPAWN_ROBOT_PULLDOWN->currentData().toInt();
   });
 }

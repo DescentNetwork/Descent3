@@ -102,7 +102,7 @@ RobotEditWeaponsDialog::RobotEditWeaponsDialog(otype_wb_info *static_wb, poly_mo
 
   loadData();
 
-  connect(ui->IDOK, &QPushButton::clicked, this, [this]() { getData(); accept(); });
+  connect(ui->IDOK, &QPushButton::clicked, [this]() { getData(); accept(); });
   connect(ui->IDCANCEL, &QPushButton::clicked, this, &QDialog::reject);
 }
 

@@ -28,10 +28,10 @@ FontDialog::FontDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::FontDialog)
 {
   ui->setupUi(this);
-      connect(ui->IDC_NEW, &QPushButton::clicked, this, [this]() {
+      connect(ui->IDC_NEW, &QPushButton::clicked, [this]() {
     QMessageBox::critical(this, "Unimplemented functionality", "New font: not implemented (font engine pending).");
     });
-      connect(ui->IDC_OPEN, &QPushButton::clicked, this, [this]() {
+      connect(ui->IDC_OPEN, &QPushButton::clicked, [this]() {
     QMessageBox::critical(this, "Unimplemented functionality", "Open font: not implemented (font engine pending).");
     });
   connect(ui->IDC_SAVE, &QPushButton::clicked, this, &FontDialog::onOk);
