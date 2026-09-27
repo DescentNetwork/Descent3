@@ -682,7 +682,7 @@ void RotateAllExternalRooms() {
     g3_SetFarClipZ(zclip);
     N_external_rooms = 0;
 
-    int i;
+    size_t i;
     for (i = 0; i < Rooms.size(); i++) {
       if ((Rooms[i].flags.external) && Rooms[i].used) {
         External_room_list[N_external_rooms++] = i;
@@ -1121,8 +1121,8 @@ void BuildRoomList(int start_room_num) {
   // Add all external rooms to render list if that flag set
   if (app.view_mode == state::viewer::mine && In_editor_mode) {
     if (Render_all_external_rooms) {
-      int i;
-      for (i = 0; i < (int)Rooms.size(); i++) {
+      size_t i;
+      for (i = 0; i < Rooms.size(); i++) {
         room *rp = &Rooms[i];
         if (rp->used && (rp->flags.external)) {
           for (int t = 0; t < rp->num_faces; t++)
@@ -3433,7 +3433,7 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
   if (Must_render_terrain && !Called_from_terrain && !(In_editor_mode && Render_inside_only)) {
     RenderTerrain(1, Terrain_portal_left, Terrain_portal_top, Terrain_portal_right, Terrain_portal_bottom);
     // Mark all room points to be rerotated due to terrain trashing our point list
-    for (int i = 0; i < Rooms.size(); i++) {
+    for (size_t i = 0; i < Rooms.size(); i++) {
       Rooms[i].wpb_index = -1;
       Global_buffer_index = 0;
     }

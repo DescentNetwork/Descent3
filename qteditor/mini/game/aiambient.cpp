@@ -35,7 +35,7 @@ void ambient_life::ALReset() {
   {
     m_type[i].reset();
 
-    for (int j = 0; j < (int)m_handle[i].size(); j++)
+    for (size_t j = 0; j < m_handle[i].size(); j++)
       m_handle[i][j] = 0;
 
     m_total[i] = 0;
@@ -117,7 +117,7 @@ void ambient_life::LoadData(posix_istream &ifile) {
   if (version < 1)
     return;
 
-  for (int i = 0; i < (int)m_type.size(); i++) {
+  for (size_t i = 0; i < m_type.size(); i++) {
     std::string raw;
     ifile >> pascal_string(raw);
     // The name field is NUL-terminated; anything after the first NUL is
@@ -132,7 +132,7 @@ void ambient_life::LoadData(posix_istream &ifile) {
     ifile >> m_next_do_time[i];
   }
 
-  for (int i = 0; i < (int)m_type.size(); i++) {
+  for (size_t i = 0; i < m_type.size(); i++) {
     ifile >> m_cur_num[i];
 
     for (int j = 0; j < m_cur_num[i]; j++)

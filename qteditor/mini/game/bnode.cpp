@@ -406,7 +406,7 @@ int BNode_FindClosestLocalVisibleBNode(int roomnum, vector3& pos, float rad) {
 
 retry:
 
-  for (i = 0; i < (int)bnlist->nodes.size(); i++)
+  for (i = 0; i < bnlist->nodes.size(); i++)
   {
     float dist = BNode_QuickDist(bnlist->nodes[i].pos, pos);
 

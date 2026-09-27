@@ -30,10 +30,10 @@ void populateRoomCombo(QComboBox *combo, int selected) {
   combo->clear();
   combo->addItem("<none>", -1);
 
-  for (int i = 0; i < Rooms.size(); i++) {
+  for (size_t i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used && !Rooms[i].name.empty()) {
       int index = combo->count();
-      combo->addItem(QString::fromStdString(Rooms[i].name), i);
+      combo->addItem(QString::fromStdString(Rooms[i].name), static_cast<int>(i));
       if (selected == i)
         combo->setCurrentIndex(index);
     }

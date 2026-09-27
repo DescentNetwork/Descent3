@@ -515,7 +515,7 @@ private slots:
     QVERIFY2(LoadLevel(std::filesystem::path(file.toStdString()), nullptr),
              qPrintable("LoadLevel failed"));
 
-    QVERIFY((int)Rooms.size() - 1 >= 1);
+    QVERIFY(Rooms.size() - 1 >= 1);
     QVERIFY(Rooms[0].used);
     QVERIFY(Rooms[1].used);
     QCOMPARE(Rooms[0].num_verts, 4);
@@ -1889,7 +1889,7 @@ private slots:
     RoomsEnsureIndex(0);
 
     // Distinct per-player start flags so the round-trip is provably real.
-    for (int i = 0; i < (int)Players.size(); i++)
+    for (size_t i = 0; i < Players.size(); i++)
       Players[i].startpos_flags = 0x1000 + i;
 
     const QString tmp = QDir::tempPath() + "/_test_pstr_roundtrip";
@@ -1904,7 +1904,7 @@ private slots:
     QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
-    for (int i = 0; i < (int)Players.size(); i++)
+    for (size_t i = 0; i < Players.size(); i++)
       QCOMPARE(Players[i].startpos_flags, static_cast<int32_t>(0x1000 + i));
 
     QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
@@ -2639,9 +2639,9 @@ private slots:
 
     // A real mission level has many rooms with faces; confirm we actually
     // read geometry (not an empty table) so renderRooms() has something to draw.
-    QVERIFY((int)Rooms.size() - 1 > 0);
+    QVERIFY(Rooms.size() - 1 > 0);
     int usedRooms = 0, totalFaces = 0;
-    for (int i = 0; i <= (int)Rooms.size() - 1 && i < MAX_ROOMS; i++) {
+    for (size_t i = 0; i <= Rooms.size() - 1 && i < MAX_ROOMS; i++) {
       if (Rooms[i].used) {
         usedRooms++;
         totalFaces += Rooms[i].num_faces;
@@ -2654,7 +2654,7 @@ private slots:
     // verify at least one loaded face references a texture that now has real pixel
     // dimensions (the ported OGF/TGA decoder) rather than a 0-sized stub.
     int texturedFaces = 0;
-    for (int r = 0; r <= (int)Rooms.size() - 1 && r < MAX_ROOMS; r++) {
+    for (size_t r = 0; r <= Rooms.size() - 1 && r < MAX_ROOMS; r++) {
       if (!Rooms[r].used) continue;
       for (int f = 0; f < Rooms[r].num_faces; f++) {
         const int bm = GameTextures[Rooms[r].faces[f].tmap].bm_handle;
@@ -2664,7 +2664,7 @@ private slots:
     QVERIFY(texturedFaces > 0);
 
     // Spot-check a few loaded rooms have non-degenerate verts so they'd project.
-    for (int i = 0; i <= (int)Rooms.size() - 1 && i < MAX_ROOMS; i++) {
+    for (size_t i = 0; i <= Rooms.size() - 1 && i < MAX_ROOMS; i++) {
       if (Rooms[i].used && Rooms[i].num_verts > 0) {
         QVERIFY(std::isfinite(Rooms[i].verts[0].x()) && std::isfinite(Rooms[i].verts[0].z()));
         break;
@@ -5107,7 +5107,7 @@ private slots:
     QVERIFY2(EditorLoadLevel(std::filesystem::path(level.toStdString())), "EditorLoadLevel failed");
 
     int nRooms = 0, nFaces = 0;
-    for (int r = 0; r <= (int)Rooms.size() - 1; r++) {
+    for (size_t r = 0; r <= Rooms.size() - 1; r++) {
       if (!Rooms[r].used)
         continue;
       nRooms++;
@@ -5285,7 +5285,7 @@ private slots:
     QVERIFY(v.rad == 5000.0f); // File>Open keeps the default view radius
     // Find a screen point that actually shows a face of the mine and click it.
     bool pickedSomething = false;
-    for (int r = 0; r <= (int)Rooms.size() - 1 && !pickedSomething; r++) {
+    for (size_t r = 0; r <= Rooms.size() - 1 && !pickedSomething; r++) {
       room *rp = &Rooms[r];
       if (!rp->used)
         continue;
@@ -5336,7 +5336,7 @@ private slots:
     int bestRoom = -1, bestFace = -1;
     float bestZ = 1e30f;
     float pickX = -1.0f, pickY = -1.0f;
-    for (int r = 0; r <= (int)Rooms.size() - 1; r++) {
+    for (size_t r = 0; r <= Rooms.size() - 1; r++) {
       room *rp = &Rooms[r];
       if (!rp->used)
         continue;
@@ -5885,7 +5885,7 @@ private slots:
 
     int bestR = -1, bestF = -1;
     float bestT = 1e30f;
-    for (int r = 0; r <= (int)Rooms.size() - 1; r++) {
+    for (size_t r = 0; r <= Rooms.size() - 1; r++) {
       room *rp = &Rooms[r];
       if (!rp->used)
         continue;

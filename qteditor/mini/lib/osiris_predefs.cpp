@@ -3365,7 +3365,7 @@ char osipf_AIGetCurGoalIndex(int obj_handle) {
 std::optional<uint32_t> osipf_FindSoundName(const std::string &name) { return FindSoundName(IGNORE_TABLE(name)); }
 
 std::optional<uint32_t> osipf_FindRoomName(const std::string &name) {
-  for (int i = 0; i < Rooms.size(); i++) {
+  for (size_t i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used && !Rooms[i].name.empty()) {
       if (match(name, Rooms[i].name))
         return static_cast<uint32_t>(i);
@@ -3375,7 +3375,7 @@ std::optional<uint32_t> osipf_FindRoomName(const std::string &name) {
 }
 
 std::optional<uint32_t> osipf_FindTriggerName(const std::string &name) {
-  for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
+  for (size_t i = 0; i < Triggers.size(); i++) {
     if (!Triggers[i].name.empty()) {
       if (match(name, Triggers[i].name))
         return static_cast<uint32_t>(i);

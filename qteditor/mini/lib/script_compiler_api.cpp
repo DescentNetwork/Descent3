@@ -101,12 +101,13 @@ int ScriptCompile(tCompilerInfo *ci) {
       // Normalize newlines like the Win32 version (\n -> \r\n, drop lone \r).
       QByteArray out;
       out.reserve(chunk.size());
-      for (int i = 0; i < chunk.size(); ++i) {
-        if (chunk[i] == '\n') {
+      const char *cbuf = chunk.constData();
+      for (qsizetype i = 0; i < chunk.size(); ++i) {
+        if (cbuf[i] == '\n') {
           out.append('\r');
           out.append('\n');
-        } else if (chunk[i] != '\r') {
-          out.append(chunk[i]);
+        } else if (cbuf[i] != '\r') {
+          out.append(cbuf[i]);
         }
       }
       out.append('\0');

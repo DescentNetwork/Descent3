@@ -81,10 +81,10 @@ bool EBNode_VerifyGraph() {
     }
   }
 
-  for (int i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
+  for (size_t i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
     bn_list *nlist;
 
-    if (i >= 0 && i < Rooms.size() && !Rooms[i].used)
+    if (i < Rooms.size() && !Rooms[i].used)
       continue;
     if (i < Rooms.size() && Rooms[i].flags.external)
       continue;
@@ -102,7 +102,7 @@ bool EBNode_VerifyGraph() {
     }
   }
 
-  for (int i = 0; i < Rooms.size(); i++) {
+  for (size_t i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used) {
       room *rp = &Rooms[i];
       if (Rooms[i].flags.external)
@@ -164,7 +164,7 @@ bool EBNode_VerifyGraph() {
     }
   }
 
-  for (int i = 0; i < Rooms.size(); i++) {
+  for (size_t i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used) {
       room *rp = &Rooms[i];
       if (Rooms[i].flags.external)
@@ -262,12 +262,12 @@ bool EBNode_VerifyGraph() {
     }
   }
 
-  for (int i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
+  for (size_t i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
     bn_list *nlist;
 
-    if (i >= 0 && i < Rooms.size() && !Rooms[i].used)
+    if (i < Rooms.size() && !Rooms[i].used)
       continue;
-    if (i >= 0 && i < Rooms.size() && Rooms[i].flags.external)
+    if (i < Rooms.size() && Rooms[i].flags.external)
       continue;
 
     nlist = BNode_GetBNListPtr(i);
@@ -292,12 +292,12 @@ bool EBNode_VerifyGraph() {
     }
   }
 
-  for (int i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
+  for (size_t i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
     bn_list *nlist;
 
-    if (i >= 0 && i < Rooms.size() && !Rooms[i].used)
+    if (i < Rooms.size() && !Rooms[i].used)
       continue;
-    if (i >= 0 && i < Rooms.size() && Rooms[i].flags.external)
+    if (i < Rooms.size() && Rooms[i].flags.external)
       continue;
 
     nlist = BNode_GetBNListPtr(i);
@@ -313,10 +313,10 @@ bool EBNode_VerifyGraph() {
     }
   }
 
-  for (int i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
-    if (i >= 0 && i < Rooms.size() && !Rooms[i].used)
+  for (size_t i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
+    if (i < Rooms.size() && !Rooms[i].used)
       continue;
-    if (i >= 0 && i < Rooms.size() && Rooms[i].flags.external)
+    if (i < Rooms.size() && Rooms[i].flags.external)
       continue;
 
     bn_list *nlist = BNode_GetBNListPtr(i);
@@ -343,8 +343,8 @@ bool EBNode_VerifyGraph() {
 }
 
 void EBNode_ClearLevel() {
-  for (int i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
-    if (i >= 0 && i < Rooms.size()) {
+  for (size_t i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
+    if (i < Rooms.size()) {
       if (!Rooms[i].used) {
         continue;
       } else {
@@ -737,7 +737,7 @@ void EBNode_MakeFirstPass() {
     return;
   }
 
-  for (int i = 0; i < Rooms.size(); i++) {
+  for (size_t i = 0; i < Rooms.size(); i++) {
     Q_ASSERT(Rooms[i].bn_info.nodes.empty());
     if (Rooms[i].used && !Rooms[i].flags.external)
       EBNode_MakeDefaultIntraRoomNodes(i);
@@ -748,20 +748,20 @@ void EBNode_MakeFirstPass() {
     EBNode_MakeDefaultTerrainNodes(i);
   }
 
-  for (int i = 0; i < Rooms.size(); i++) {
+  for (size_t i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used && !Rooms[i].flags.external)
       EBNode_MakeDefaultInterRoomEdges(i);
   }
 
-  for (int i = 0; i < Rooms.size(); i++) {
+  for (size_t i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used && !Rooms[i].flags.external)
       EBNode_RemoveNodesAtUnopenablePortals(i);
   }
 
-  for (int i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
+  for (size_t i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
     bn_list *nlist;
 
-    if (i >= 0 && i < Rooms.size() && !Rooms[i].used)
+    if (i < Rooms.size() && !Rooms[i].used)
       continue;
 
     nlist = BNode_GetBNListPtr(i);
@@ -788,7 +788,7 @@ int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom) {
 
   bool f_exists = false;
 
-  for (int i = 0; i < (int)snlist->nodes[spnt].edges.size(); i++) {
+  for (size_t i = 0; i < snlist->nodes[spnt].edges.size(); i++) {
     if (snlist->nodes[spnt].edges[i].end_index == epnt && snlist->nodes[spnt].edges[i].end_room == eroom) {
       f_exists = true;
       break;
@@ -838,8 +838,8 @@ static void EBNode_ComputeEdgeCosts(int sroom, int spnt, int eroom, int epnt) {
   bn_list *snlist = BNode_GetBNListPtr(sroom);
   bn_list *enlist = BNode_GetBNListPtr(eroom);
 
-  for (int i = 0; i < (int)snlist->nodes[spnt].edges.size(); i++) {
-    for (int j = 0; j < (int)enlist->nodes[epnt].edges.size(); j++) {
+  for (size_t i = 0; i < snlist->nodes[spnt].edges.size(); i++) {
+    for (size_t j = 0; j < enlist->nodes[epnt].edges.size(); j++) {
       if ((snlist->nodes[spnt].edges[i].end_index == epnt && snlist->nodes[spnt].edges[i].end_room == eroom) &&
           (enlist->nodes[epnt].edges[j].end_index == spnt && enlist->nodes[epnt].edges[j].end_room == sroom)) {
         f_found = true;
@@ -891,7 +891,7 @@ void EBNode_Move(bool f_offset, int roomnum, int pnt, vector3 *pos) {
 
   nlist->nodes[pnt].pos = npos;
 
-  for (int i = 0; i < (int)nlist->nodes[pnt].edges.size(); i++) {
+  for (size_t i = 0; i < nlist->nodes[pnt].edges.size(); i++) {
     EBNode_ComputeEdgeCosts(roomnum, pnt, nlist->nodes[pnt].edges[i].end_room, nlist->nodes[pnt].edges[i].end_index);
     EBNode_ComputeEdgeCosts(nlist->nodes[pnt].edges[i].end_room, nlist->nodes[pnt].edges[i].end_index, roomnum, pnt);
   }

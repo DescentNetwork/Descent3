@@ -31,7 +31,7 @@ namespace {
 float levelCeiling() {
   float maxy = -1e30f;
   bool any = false;
-  for (int r = 0; r < Rooms.size(); r++) {
+  for (size_t r = 0; r < Rooms.size(); r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
       continue;
@@ -76,7 +76,7 @@ void LevelKeypad::onCeilingEdited() {
     const float target = edit->text().toFloat();
     const float cur = levelCeiling();
     const float delta = target - cur;
-    for (int r = 0; r < Rooms.size(); r++) {
+    for (size_t r = 0; r < Rooms.size(); r++) {
       room *rp = &Rooms[r];
       if (!rp->used)
         continue;

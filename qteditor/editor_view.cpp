@@ -350,8 +350,8 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
   const_cast<EditorView *>(this)->updateCamera();
   outFaces->clear();
 
-  int projStart = 0;
-  int projEnd = ((int)Rooms.size() - 1);
+  size_t projStart = 0;
+  size_t projEnd = Rooms.size() - 1;
   if (app.view_mode == state::viewer::room) {
     if (app.current_room >= 0 && app.current_room < Rooms.size()) {
       projStart = app.current_room;
@@ -360,8 +360,10 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
   }
   if (app.view_mode == state::viewer::terrain)
     return;
+  if (Rooms.empty())
+    return;
 
-  for (int r = projStart; r <= projEnd; r++) {
+  for (size_t r = projStart; r <= projEnd; r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
       continue;
@@ -460,9 +462,11 @@ void EditorView::renderRooms() {
   // Determine which rooms to render based on view mode.
   if (app.view_mode == state::viewer::terrain)
     return;
+  if (Rooms.empty())
+    return;
 
-  int renderStart = 0;
-  int renderEnd = ((int)Rooms.size() - 1);
+  size_t renderStart = 0;
+  size_t renderEnd = Rooms.size() - 1;
   if (app.view_mode == state::viewer::room) {
     if (app.current_room < 0 || app.current_room >= Rooms.size())
       return;
@@ -488,7 +492,7 @@ void EditorView::renderRooms() {
   // Precompute the global maximum view distance across the rendered rooms.
   float solidMaxDepth = 10.0f;
   if (!m_wireframe) {
-    for (int rr = renderStart; rr <= renderEnd; rr++) {
+    for (size_t rr = renderStart; rr <= renderEnd; rr++) {
       room *rpc = &Rooms[rr];
       if (!rpc->used)
         continue;
@@ -523,7 +527,7 @@ void EditorView::renderRooms() {
     // resolves occlusion between the remaining front-facing faces.
     glDisable(GL_CULL_FACE);
   }
-  for (int r = renderStart; r <= renderEnd; r++) {
+  for (size_t r = renderStart; r <= renderEnd; r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
       continue;
@@ -1306,6 +1310,8 @@ void EditorView::renderBNodes() {
     return;
   if (app.view_mode == state::viewer::terrain)
     return;
+  if (Rooms.empty())
+    return;
 
   glLineWidth(1.5f);
 
@@ -1359,7 +1365,7 @@ void EditorView::renderBNodes() {
       }
     }
 
-    for (int i = 0; i < (int)nlist->nodes.size(); i++) {
+    for (size_t i = 0; i < nlist->nodes.size(); i++) {
       float nx, ny, nz;
       if (!projectVertexDepth(nlist->nodes[i].pos, &nx, &ny, &nz))
         continue;
@@ -1529,7 +1535,7 @@ void EditorView::setPickRadius(float radius) {
 void EditorView::fitToMine() {
   vector3 mn{1e30f, 1e30f, 1e30f}, mx{-1e30f, -1e30f, -1e30f};
   bool any = false;
-  for (int r = 0; r < Rooms.size(); r++) {
+  for (size_t r = 0; r < Rooms.size(); r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
       continue;
@@ -1813,11 +1819,13 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
   const_cast<EditorView *>(this)->updateCamera();
   if (!m_cameraValid)
     return best;
+  if (Rooms.empty())
+    return best;
 
   // In terrain mode, no room picking (terrain not rendered).
   // In room mode, only pick from the current palette room.
-  int pickStart = 0;
-  int pickEnd = ((int)Rooms.size() - 1);
+  size_t pickStart = 0;
+  size_t pickEnd = Rooms.size() - 1;
   if (app.view_mode == state::viewer::terrain)
     return best;
   if (app.view_mode == state::viewer::room) {
@@ -1828,7 +1836,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
   }
 
   const float rad2 = m_rad * m_rad;
-  for (int r = pickStart; r <= pickEnd; r++) {
+  for (size_t r = pickStart; r <= pickEnd; r++) {
     room *rp = &Rooms[r];
     if (!rp->used)
       continue;

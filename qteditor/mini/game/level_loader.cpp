@@ -650,7 +650,7 @@ static void LL_ReadRoomAABBChunk(posix_istream &ifile) {
   for (int i = 0; i <= save_hri; i++)
     ifile >> BOA_AABB_ROOM_checksum[i];
 
-  for (int i = 0; i < Rooms.size(); i++) {
+  for (size_t i = 0; i < Rooms.size(); i++) {
     int32_t used = 0;
     ifile >> used;
     Q_ASSERT(Rooms[i].used == used);
@@ -704,10 +704,10 @@ static void LL_WriteRoomAABBChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_ROOM_AABB);
 
   ofile << (int32_t)((int)Rooms.size() - 1);
-  for (int i = 0; i < Rooms.size(); i++)
+  for (size_t i = 0; i < Rooms.size(); i++)
     ofile << BOA_AABB_ROOM_checksum[i];
 
-  for (int i = 0; i < Rooms.size(); i++) {
+  for (size_t i = 0; i < Rooms.size(); i++) {
     if (!Rooms[i].used) {
       ofile << (int32_t)0; // Not used
       continue;
@@ -730,7 +730,7 @@ static void LL_WriteRoomAABBChunk(posix_ostream &ofile) {
       ofile << (int16_t)Rooms[i].bbf_list[j].size();
 
     for (int j = 0; j < nregions; j++) {
-      for (int k = 0; k < (int)Rooms[i].bbf_list[j].size(); k++)
+      for (size_t k = 0; k < Rooms[i].bbf_list[j].size(); k++)
         ofile << Rooms[i].bbf_list[j][k];
       ofile << Rooms[i].bbf_list_min_xyz[j];
       ofile << Rooms[i].bbf_list_max_xyz[j];
@@ -871,7 +871,7 @@ static void LL_WritePlayerStartsChunk(posix_ostream &ofile) {
 
   ofile << static_cast<int16_t>(MAX_PLAYERS);
 
-  for (int i = 0; i < (int)Players.size(); i++)
+  for (size_t i = 0; i < Players.size(); i++)
     ofile << Players[i].startpos_flags;
 
   LL_EndChunk(ofile, start);
@@ -1757,14 +1757,14 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
 
   // Default texture mapping is identity so faces that precede a TXNM chunk
   // (or files without one) still index GameTextures[] directly.
-  for (int i = 0; i < (int)texture_xlate.size(); i++)
+  for (size_t i = 0; i < texture_xlate.size(); i++)
     texture_xlate[i] = i;
 
   // Default object/door mapping is "no translation" so a level without GNNM /
   // DRNM chunks keeps the page indices it was saved with.
-  for (int i = 0; i < (int)generic_xlate.size(); i++)
+  for (size_t i = 0; i < generic_xlate.size(); i++)
     generic_xlate[i] = -1;
-  for (int i = 0; i < (int)door_xlate.size(); i++)
+  for (size_t i = 0; i < door_xlate.size(); i++)
     door_xlate[i] = -1;
 
   FreeAllRooms();
@@ -2004,7 +2004,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
 
   // Recompute face normals for any room still missing them and find first used
   // indices after the sparse room load.
-  for (int i = 0; i < Rooms.size(); i++) {
+  for (size_t i = 0; i < Rooms.size(); i++) {
     if (!Rooms[i].used)
       continue;
     for (int f = 0; f < Rooms[i].num_faces; f++)
@@ -2078,7 +2078,7 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     {
       int start = LL_StartChunk(out, CHUNK_ROOMS);
       int nrooms = 0, nverts = 0, nfaces = 0, nfaceverts = 0, nportals = 0;
-      for (int i = 0; i < Rooms.size(); i++) {
+      for (size_t i = 0; i < Rooms.size(); i++) {
         if (!Rooms[i].used)
           continue;
         nrooms++;
@@ -2093,7 +2093,7 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
       out << nfaces;
       out << nfaceverts;
       out << nportals;
-      for (int i = 0; i < Rooms.size(); i++) {
+      for (size_t i = 0; i < Rooms.size(); i++) {
         if (!Rooms[i].used)
           continue;
         int16_t room = (int16_t)i;
@@ -2106,13 +2106,13 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     // RWND (room wind)
     {
       int nwind = 0;
-      for (int i = 0; i < Rooms.size(); i++)
+      for (size_t i = 0; i < Rooms.size(); i++)
         if (Rooms[i].used && (Rooms[i].wind.x() != 0.0f || Rooms[i].wind.y() != 0.0f || Rooms[i].wind.z() != 0.0f))
           nwind++;
       if (nwind) {
         int start = LL_StartChunk(out, CHUNK_ROOM_WIND);
         out << nwind;
-        for (int i = 0; i < Rooms.size(); i++) {
+        for (size_t i = 0; i < Rooms.size(); i++) {
           if (Rooms[i].used && (Rooms[i].wind.x() != 0.0f || Rooms[i].wind.y() != 0.0f || Rooms[i].wind.z() != 0.0f)) {
             int16_t room = (int16_t)i;
             out << room;

@@ -374,7 +374,7 @@ void DoorwayDestroy(object *objp) {
 // Stop all doors
 void DoorwayDeactivateAll() {
   // Go through all rooms and deactivate doors
-  for (int r = 0; r < (int)Rooms.size(); r++) {
+  for (size_t r = 0; r < Rooms.size(); r++) {
     room *rp = &Rooms[r];
     if (rp->used && rp->flags.door) {
       if (rp->doorway_data->state != DOORWAY_STOPPED) {

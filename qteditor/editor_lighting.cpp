@@ -204,7 +204,7 @@ void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<u
   float u_scalar = (float)w / 128.0;
   float v_scalar = (float)h / 128.0;
 
-  for (int t = roomnum; t < Rooms.size(); t++) {
+  for (size_t t = roomnum; t < Rooms.size(); t++) {
     room *this_rp = &Rooms[t];
     if (!this_rp->used)
       continue;
@@ -322,7 +322,7 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<
 
 // Simply clears flags for combine portals
 void ClearCombinePortals(int terrain) {
-  for (int i = 0; i < Rooms.size(); i++) {
+  for (size_t i = 0; i < Rooms.size(); i++) {
     room *rp = &Rooms[i];
 
     if (!rp->used)
@@ -348,7 +348,7 @@ void CheckCombinePortals(int terrain) {
   int combine_count = 0;
   LOG_INFO("Combining portals...");
 
-  for (int i = 0; i < Rooms.size(); i++) {
+  for (size_t i = 0; i < Rooms.size(); i++) {
     room *rp = &Rooms[i];
 
     if (!rp->used)
@@ -845,7 +845,8 @@ void AssignVolumeSpectraToRoom(int roomnum) {
 
 // Returns 0 if there are bad faces in this level
 int CheckForBadFaces(int roomnum) {
-  int i, t;
+  size_t i;
+  int t;
 
   for (i = 0; i < Rooms.size(); i++) {
     if (roomnum != -1 && i != roomnum)
