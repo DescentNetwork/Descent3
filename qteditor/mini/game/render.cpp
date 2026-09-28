@@ -2046,7 +2046,7 @@ draw_fog:
       const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi->lm_handle);
       matrix facematrix;
       vector3 fvec = -lmi->normal;
-      vm_VectorToMatrix(&facematrix, &fvec, NULL, NULL);
+      vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
       vector3 rvec = facematrix.rvec * lmi->xspacing;
       vector3 uvec = facematrix.uvec * lmi->yspacing;
       vm_TransposeMatrix(&facematrix);
@@ -2481,7 +2481,7 @@ void RenderSingleLightGlow2(int index) {
   vector3 fvec, uvec, temp_vec, rvec;
   temp_vec = -fp->normal;
 
-  vm_VectorToMatrix(&mat, NULL, &temp_vec, NULL);
+  vm_VectorToMatrix(mat, std::nullopt, temp_vec, std::nullopt);
 
   // Rotate view vector into billboard space
   fvec = Viewer_eye - corona_pos;
@@ -2495,7 +2495,7 @@ void RenderSingleLightGlow2(int index) {
   uvec.y() = 1;
   uvec.x() = 0;
   uvec.z() = 0;
-  vm_VectorToMatrix(&rot_mat, NULL, &uvec, &rvec);
+  vm_VectorToMatrix(rot_mat, std::nullopt, uvec, rvec);
   vm_TransposeMatrix(&mat);
   temp_vec = rot_mat.rvec * mat;
   rot_mat.rvec = temp_vec;
@@ -3150,10 +3150,10 @@ void RenderRoomObjects(int roomnum) {
     vector3 negz_vec = {0, 0, -1};
 
     matrix mirror_matrix, inv_mirror_matrix, dest_matrix, negz_matrix;
-    vm_VectorToMatrix(&mirror_matrix, norm, NULL, NULL);
+    vm_VectorToMatrix(mirror_matrix, *norm, std::nullopt, std::nullopt);
     inv_mirror_matrix = mirror_matrix;
     vm_TransposeMatrix(&inv_mirror_matrix);
-    vm_VectorToMatrix(&negz_matrix, &negz_vec, NULL, NULL);
+    vm_VectorToMatrix(negz_matrix, negz_vec, std::nullopt, std::nullopt);
     negz_matrix.rvec *= -1;
 
     for (i = n_objs - 1; i >= 0; i--) {

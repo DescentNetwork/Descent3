@@ -320,7 +320,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     // Compute face matrix
     matrix facematrix;
     vector3 fvec = -lmi_ptr->normal;
-    vm_VectorToMatrix(&facematrix, &fvec, NULL, NULL);
+    vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
     // Get upper left vector3 of face
     vector3 base_vector = lmi_ptr->upper_left;
@@ -653,7 +653,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
     // Compute face matrix
     matrix facematrix;
     vector3 fvec = -lmi_ptr->normal;
-    vm_VectorToMatrix(&facematrix, &fvec, NULL, NULL);
+    vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
     // Get the area of effect for this light
     float area_of_effect = (1.0 - (dist_from_plane / light_dist)) * light_dist;
@@ -1088,7 +1088,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     // Compute face matrix
     matrix facematrix;
     vector3 fvec = -lmi_ptr->normal;
-    vm_VectorToMatrix(&facematrix, &fvec, NULL, NULL);
+    vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
     // Get upper left vector3 of face
     vector3 base_vector = lmi_ptr->upper_left;
@@ -1558,7 +1558,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 
         matrix facematrix;
         vector3 fvec=-lmi_ptr->normal;
-        vm_VectorToMatrix(&facematrix,&fvec,NULL,NULL);
+        vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
         // Get upper left vector3 of face
         vector3 base_vector=lmi_ptr->upper_left;
@@ -1714,7 +1714,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 
         matrix facematrix;
         vector3 fvec=-lmi_ptr->normal;
-        vm_VectorToMatrix(&facematrix,&fvec,NULL,NULL);
+        vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
         // Get upper left vector3 of face
         vector3 base_vector=lmi_ptr->upper_left;
@@ -1998,7 +1998,7 @@ void DestroyLight(int roomnum, int facenum) {
     // Compute face matrix
     matrix facematrix;
     vector3 fvec = -lmi_ptr->normal;
-    vm_VectorToMatrix(&facematrix, &fvec, NULL, NULL);
+    vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
     // Get upper left vector3 of face
     vector3 base_vector = lmi_ptr->upper_left;

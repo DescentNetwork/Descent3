@@ -785,7 +785,7 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, fl
   // Reverse the normal because we're looking "at" the face, not from it
   fvec = -fp->normal;
 
-  vm_VectorToMatrix(&face_matrix, &fvec, NULL, NULL);
+  vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
   // Make the transformation matrix
 
   angvec avec;
@@ -874,7 +874,7 @@ void DrawRoomVisPnts(object *obj) {
         src_vertp[j] = &src_verts[j];
       }
       vector3 fvec = -src_fp->normal;
-      vm_VectorToMatrix(&src_matrix, &fvec, NULL, NULL);
+      vm_VectorToMatrix(src_matrix, fvec, std::nullopt, std::nullopt);
       ComputeDebugVisFaceUpperLeft(roomnum, src_fp, &src_upper_left, &src_width, &src_height, &src_center);
 
       if (src_width > VIS_TABLE_RESOLUTION) {

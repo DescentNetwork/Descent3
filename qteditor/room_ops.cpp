@@ -767,7 +767,7 @@ void RotateRooms(angle p, angle h, angle b) {
   ComputeNormal(portal_normal, fp->num_verts, fp->face_verts, curroomp.verts);
   portal_normal *= -1.0;
 
-  vm_VectorToMatrix(&roommat, &portal_normal, NULL, NULL);
+  vm_VectorToMatrix(roommat, portal_normal, std::nullopt, std::nullopt);
   rotmat = roommat * ~rotmat * ~roommat;
 
   for (int i = 0; i < N_selected_rooms; i++) {
@@ -1383,7 +1383,7 @@ void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
 
   // Make the orientation matrix (reverse the normal: looking "at" the face)
   fvec = -fp->normal;
-  vm_VectorToMatrix(&face_matrix, &fvec, nullptr, nullptr);
+  vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
 
   angvec avec;
   vm_ExtractAnglesFromMatrix(&avec, &face_matrix);
@@ -1646,7 +1646,7 @@ void ComputePlacedRoomMatrix() {
   vector3 t;
 
   t = -placedroomp.faces[placedface].normal;
-  vm_VectorToMatrix(&srcmat, &t, NULL, NULL);
+  vm_VectorToMatrix(srcmat, t, std::nullopt, std::nullopt);
   vm_VectorAngleToMatrix(&app.Placed_room_orient, &app.Placed_room_orient.fvec, app.Placed_room_angle);
 
   vm_Orthogonalize(&srcmat);

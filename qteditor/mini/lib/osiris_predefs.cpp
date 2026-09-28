@@ -1424,7 +1424,7 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
     break;
   case OBJV_V_POS:
     if (op == VF_SET) {
-      ObjSetPos(obj, (vector3 *)ptr, obj->roomnum, NULL, true);
+      ObjSetPos(obj, *(vector3 *)ptr, obj->roomnum, std::nullopt, true);
       obj->flags.moved_this_frame = true;
       obj->flags.stopped_this_frame = false;
     } else if (op == VF_GET)
@@ -1432,7 +1432,7 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
     break;
   case OBJV_M_ORIENT:
     if (op == VF_SET) {
-      ObjSetPos(obj, &obj->pos, obj->roomnum, (matrix *)ptr, true);
+      ObjSetPos(obj, obj->pos, obj->roomnum, *((matrix *)ptr), true);
       obj->flags.moved_this_frame = true;
       obj->flags.stopped_this_frame = false;
     } else if (op == VF_GET)
@@ -1440,7 +1440,7 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
     break;
   case OBJV_I_ROOMNUM:
     if (op == VF_SET) {
-      ObjSetPos(obj, &obj->pos, *(int *)ptr, NULL, false);
+      ObjSetPos(obj, obj->pos, *(int *)ptr, std::nullopt, false);
       obj->flags.moved_this_frame = true;
       obj->flags.stopped_this_frame = false;
     } else if (op == VF_GET)
@@ -1660,7 +1660,7 @@ uint8_t osipf_AITurnTowardsVectors(int objhandle, vector3 *fvec, vector3 *uvec) 
   }
 
   matrix g_orient;
-  vm_VectorToMatrix(&g_orient, fvec, uvec, NULL);
+  vm_VectorToMatrix(g_orient, *fvec, *uvec, std::nullopt);
 
   return AITurnTowardsMatrix(objp, objp->ai_info->max_turn_rate, &g_orient);
 }
@@ -3481,7 +3481,8 @@ bool osipf_PathGetInformation(int pathid, int point, vector3 *pos, int *room, ma
     *room = GamePaths[pathid].pathnodes[point].roomnum;
 
   if (orient)
-    vm_VectorToMatrix(orient, &GamePaths[pathid].pathnodes[point].fvec, &GamePaths[pathid].pathnodes[point].uvec, NULL);
+    vm_VectorToMatrix(*orient, GamePaths[pathid].pathnodes[point].fvec, GamePaths[pathid].pathnodes[point].uvec,
+                      std::nullopt);
 
   return true;
 }

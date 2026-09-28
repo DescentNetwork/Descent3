@@ -698,7 +698,7 @@ void ObjSetOrient(object& obj, const matrix& orient) {
 }
 
 // Sets the position of an object.  This should be called to move an object.
-void ObjSetPos(object& obj, vector3& pos, int roomnum, matrix* orient, bool f_update_attached_children) {
+void ObjSetPos(object& obj, vector3& pos, int roomnum, optref<matrix> orient, bool f_update_attached_children) {
   (void)f_update_attached_children;
 
   int oldroomnum = obj.roomnum;
@@ -709,7 +709,7 @@ void ObjSetPos(object& obj, vector3& pos, int roomnum, matrix* orient, bool f_up
   ObjSetAABB(obj);
 
   // Reset the orientation if changed
-  if (orient != nullptr)
+  if (orient.has_value())
     ObjSetOrient(obj, *orient);
 
   // Clear the outside-mine flag

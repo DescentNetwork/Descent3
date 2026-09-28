@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "TelComEfxStructs.h"
+#include "utils.h"
 
 // Maximum number of briefing screens and effects per screen.
 constexpr int MAX_TELCOM_SCREENS = 20;
@@ -153,8 +154,8 @@ void BriefEditFreeEffect(tBriefEffect *efx);
 void BriefEditFreeScreen(tBriefScreen *bscr);
 
 // Allocate / resolve effects.
-bool BriefEditAllocateEffect(int *ret_screen, int *ret_effect);
-void BriefEditGetCurScreenEffect(int *ret_screen, int *ret_effect);
+bool BriefEditAllocateEffect(optref<int> ret_screen, optref<int> ret_effect);
+void BriefEditGetCurScreenEffect(optref<int> ret_screen, optref<int> ret_effect);
 
 // Layout file parsing.
 void ParseLayoutScreenFile(const std::filesystem::path &filename);

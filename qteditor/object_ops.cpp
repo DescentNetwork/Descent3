@@ -98,7 +98,7 @@ bool MoveObject(object& obj, vector3& newpos) {
     if (vm_VectorDistance(&obj.pos, &hit_info.hit_pnt) < MOVE_EPSILON)
       return false;
 
-  ObjSetPos(obj, hit_info.hit_pnt, hit_info.hit_room, nullptr, false);
+  ObjSetPos(obj, hit_info.hit_pnt, hit_info.hit_room, std::nullopt, false);
   return true;
 }
 
@@ -199,11 +199,11 @@ bool HObjectPlace(int obj_type, int obj_id) {
     float dist = vm_Dot3Product(ground_normal, to_ground);
     pos += dist * (*surface_norm);
 
-    vm_VectorToMatrix(&groundplane_orient, &pm->ground_slots[0].norm, NULL, NULL);
-    vm_VectorToMatrix(&surface_orient, surface_norm);
+    vm_VectorToMatrix(groundplane_orient, pm->ground_slots[0].norm, std::nullopt, std::nullopt);
+    vm_VectorToMatrix(surface_orient, *surface_norm);
     vm_MatrixMulTMatrix(&object_orient, &surface_orient, &groundplane_orient);
 
-    ObjSetPos(obj, pos, roomnum, &object_orient, false);
+    ObjSetPos(obj, pos, roomnum, object_orient, false);
   } else {
     // No ground plane — move in front of viewer, facing viewer
     vector3 pos;
@@ -270,11 +270,11 @@ void ResetGroundObject(object& obj) {
 
   matrix groundplane_orient, surface_orient, object_orient;
 
-  vm_VectorToMatrix(&groundplane_orient, &pm->ground_slots[0].norm, NULL, NULL);
-  vm_VectorToMatrix(&surface_orient, &surface_norm);
+  vm_VectorToMatrix(groundplane_orient, pm->ground_slots[0].norm, std::nullopt, std::nullopt);
+  vm_VectorToMatrix(surface_orient, surface_norm);
   vm_MatrixMulTMatrix(&object_orient, &surface_orient, &groundplane_orient);
 
-  ObjSetPos(obj, pos, obj.roomnum, &object_orient, false);
+  ObjSetPos(obj, pos, obj.roomnum, object_orient, false);
 
   app.World_changed = true;
 }
@@ -352,7 +352,7 @@ void HObjectSetDefault() {
 // Teleports an object to in front of the viewer.
 // ============================================================================
 void HObjectMoveToViewer(object& objp) {
-  ObjSetPos(objp, Viewer_object->pos, Viewer_object->roomnum, nullptr, false);
+  ObjSetPos(objp, Viewer_object->pos, Viewer_object->roomnum, std::nullopt, false);
 
   vector3 pos = Viewer_object->pos + Viewer_object->orient.fvec * OBJECT_PLACE_DIST;
   MoveObject(objp, pos);

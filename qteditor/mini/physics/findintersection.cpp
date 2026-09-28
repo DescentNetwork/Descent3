@@ -1316,7 +1316,7 @@ bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vec
   bool f_init_collide;
 
   if (!IsPointInCylinder(init_normal, ep0, &edgevec, edge_len, rad, p0, &mvec3d, &f_init_collide)) {
-    vm_VectorToMatrix(&edge_orient, &edgevec, nullptr, nullptr);
+    vm_VectorToMatrix(edge_orient, edgevec, std::nullopt, std::nullopt);
 
     po0 = (*p0 - *ep0) * edge_orient;
     po1 = (*p1 - *ep0) * edge_orient;

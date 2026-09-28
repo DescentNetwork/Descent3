@@ -1397,7 +1397,7 @@ void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf) {
   // Reverse the normal because we're looking "at" the face, not from it
   fvec = -LightmapInfo[lmi_handle].normal;
 
-  vm_VectorToMatrix(&face_matrix, &fvec, NULL, NULL);
+  vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
   // Make the transformation matrix
 
   angvec avec;
@@ -2322,7 +2322,7 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
   // Reverse the normal because we're looking "at" the face, not from it
   fvec = -Rooms[room_list[0]].faces[face_list[0]].normal;
 
-  vm_VectorToMatrix(&face_matrix, &fvec, NULL, NULL);
+  vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
   // Make the transformation matrix
 
   angvec avec;
@@ -3007,7 +3007,7 @@ void CreateNormalMapForFace (int roomnum,face *fp)
 
         matrix facematrix;
         vector3 fvec=-lmi_ptr->normal;
-        vm_VectorToMatrix(&facematrix,&fvec,NULL,NULL);
+        vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
         sfp->normal_map=(uint8_t *)mem_malloc (w*h*3);
         Q_ASSERT (sfp->normal_map);

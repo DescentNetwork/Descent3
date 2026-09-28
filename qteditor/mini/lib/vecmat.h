@@ -153,6 +153,8 @@
 
 #include <cmath>
 
+#include "utils.h"
+
 // All structs, defines and inline functions are located in vecmat_external.h
 // vecmat_external.h is where anything that can be used by DLLs should be.
 #include "vecmat_external.h"
@@ -238,9 +240,11 @@ void vm_Orthogonalize(matrix *m);
 
 // Compute a matrix from one or two vectors.  At least one and at most two vectors must/can be specified.
 // Parameters:	m - filled in with the orienation matrix
-//					fvec,uvec,rvec - pointers to vectors that determine the matrix.
-//						One or two of these must be specified, with the other(s) set to NULL.
-void vm_VectorToMatrix(matrix *m, vector3 *fvec, vector3 *uvec = nullptr, vector3 *rvec = nullptr);
+//					fvec,uvec,rvec - vectors that determine the matrix.
+//						One or two of these must be specified.  fvec can be omitted
+//						when up/right vectors are supplied (the other(s) set to NULL).
+void vm_VectorToMatrix(matrix &m, optref<vector3> fvec, optref<vector3> uvec = std::nullopt,
+                       optref<vector3> rvec = std::nullopt);
 
 // Computes a matrix from a vector and and angle of rotation around that vector
 // Parameters:	m - filled in with the computed matrix

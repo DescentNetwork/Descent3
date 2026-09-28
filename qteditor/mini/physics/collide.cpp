@@ -1762,7 +1762,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
       // Weapons should face their new heading.  This is so missiles are pointing in the correct direct.
       if (t->type == OBJ_WEAPON &&
         (t->mtype.phys_info.flags.bounce || t->mtype.phys_info.flags.gravity || t->mtype.phys_info.flags.wind))
-        vm_VectorToMatrix(&t->orient, &t->mtype.phys_info.velocity, &t->orient.uvec, nullptr);
+        vm_VectorToMatrix(t->orient, t->mtype.phys_info.velocity, t->orient.uvec, std::nullopt);
     }
 
     // Return it to the original direction

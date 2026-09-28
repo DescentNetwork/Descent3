@@ -4308,7 +4308,7 @@ private slots:
     vector zero{};
     matrix idmat{};
     Objects[viewer_slot].roomnum = 0;
-    ObjSetPos(*Viewer_object, &zero, 0, &idmat, false);
+    ObjSetPos(*Viewer_object, zero, 0, idmat, std::nullopt);
 
     // PlaceCameraAtViewer creates a new OBJ_CAMERA slot adjacent to the
     // viewer. Allocate a fresh Rooms[0] with proper verts/faces so the
@@ -6460,7 +6460,7 @@ private slots:
     Highest_object_index = 1;
 
     vector3 origin{};
-    ObjSetPos(Objects[1], origin, 0, nullptr, false);
+    ObjSetPos(Objects[1], origin, 0, std::nullopt, false);
 
     vector3 newpos{(float)5, (float)0, (float)0};
     bool moved = MoveObject(Objects[1], newpos);
@@ -6509,7 +6509,7 @@ private slots:
     Highest_object_index = 1;
 
     vector3 origin{};
-    ObjSetPos(Objects[1], origin, 0, nullptr, false);
+    ObjSetPos(Objects[1], origin, 0, std::nullopt, false);
 
     app.Cur_object_index = 1;
     app.object_move_mode = REL_OBJECT;
@@ -6560,7 +6560,7 @@ private slots:
     Highest_object_index = 1;
 
     vector3 origin{};
-    ObjSetPos(Objects[1], origin, 0, nullptr, false);
+    ObjSetPos(Objects[1], origin, 0, std::nullopt, false);
 
     app.Cur_object_index = 1;
 
@@ -6617,7 +6617,7 @@ private slots:
     Highest_object_index = 1;
 
     vector3 origin{};
-    ObjSetPos(Objects[1], origin, 0, nullptr, false);
+    ObjSetPos(Objects[1], origin, 0, std::nullopt, false);
 
     app.Cur_object_index = 1;
 
@@ -6676,7 +6676,7 @@ private slots:
     Highest_object_index = 1;
 
     vector3 origin{};
-    ObjSetPos(Objects[1], origin, 0, nullptr, false);
+    ObjSetPos(Objects[1], origin, 0, std::nullopt, false);
 
     app.Cur_object_index = 1;
     app.object_move_mode = REL_OBJECT;
@@ -6739,7 +6739,7 @@ private slots:
     Highest_object_index = 1;
 
     vector3 origin{};
-    ObjSetPos(Objects[1], origin, 0, nullptr, false);
+    ObjSetPos(Objects[1], origin, 0, std::nullopt, false);
 
     app.Cur_object_index = 1;
     app.object_move_mode = REL_OBJECT;
@@ -6805,7 +6805,7 @@ private slots:
     Objects[0].size = 3.0f;
     Highest_object_index = 0;
     vector3 origin{};
-    ObjSetPos(Objects[0], origin, 0, nullptr, false);
+    ObjSetPos(Objects[0], origin, 0, std::nullopt, false);
 
     app.view_mode = state::viewer::mine;
     app.Cur_object_index = -1;

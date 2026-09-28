@@ -465,7 +465,7 @@ int SlewFrame(object *obj, int movement_limitations) {
       }
 
     // Now we have the new room, so update the object position
-    ObjSetPos(*obj, new_pos, new_room, nullptr, false);
+    ObjSetPos(*obj, new_pos, new_room, std::nullopt, false);
 
     // Set outside-mine flag if we're outside
     if (outside_mine)

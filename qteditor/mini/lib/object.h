@@ -631,9 +631,9 @@
 #include <cstdint>
 #include <vector>
 #include <fixed_string.h>
-
 #include "object_external_struct.h"
 #include "object_external.h"
+#include "utils.h"
 
 /*
  *		CONSTANTS
@@ -753,8 +753,8 @@ void ObjGotoNextViewer();
 // Parameters:	obj - the object being moved
 //					pos - the new position
 //					roomnum - the correct roomnum for pos.  No error checking is done.
-//					orient - if this is not null, the object's orientation is set to this.
-void ObjSetPos(object& obj, vector3& pos, int roomnum, matrix* orient, bool f_update_attached_children);
+//					orient - if set, the object's orientation is set to this.
+void ObjSetPos(object& obj, vector3& pos, int roomnum, optref<matrix> orient, bool f_update_attached_children);
 void ObjSetOrient(object& obj, const matrix& orient);
 
 // delete objects, such as weapons & explosions, that shouldn't stay between levels

@@ -518,7 +518,7 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
   fvec = -fvec;
 
   if ((vm_NormalizeVector(&fvec)) != 0)
-    vm_VectorToMatrix(&face_matrix, &fvec, NULL, NULL);
+    vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
   else
     vm_MakeIdentity(&face_matrix);
   // Make the transformation matrix
@@ -756,7 +756,7 @@ void BuildElementListForObjectFace(int objnum, int subnum, int facenum, rad_surf
   fvec = -LightmapInfo[lmi_handle].normal;
 
   if ((vm_NormalizeVector(&fvec)) != 0)
-    vm_VectorToMatrix(&face_matrix, &fvec, NULL, NULL);
+    vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
   else
     vm_MakeIdentity(&face_matrix);
 

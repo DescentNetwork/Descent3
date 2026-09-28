@@ -1390,7 +1390,7 @@ void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, floa
   // Reverse the normal because we're looking "at" the face, not from it
   fvec = -fp->normal;
 
-  vm_VectorToMatrix(&face_matrix, &fvec, NULL, NULL);
+  vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
   // Make the transformation matrix
 
   angvec avec;
@@ -1689,7 +1689,7 @@ void MakeBOAVisTable(bool from_lighting) {
         }
 
         vector3 fvec = -src_fp->normal;
-        vm_VectorToMatrix(&src_matrix, &fvec, NULL, NULL);
+        vm_VectorToMatrix(src_matrix, fvec, std::nullopt, std::nullopt);
 
         ComputeBOAVisFaceUpperLeft(i, src_fp, &src_upper_left, &src_width, &src_height, &src_center);
 
@@ -1722,7 +1722,7 @@ void MakeBOAVisTable(bool from_lighting) {
           }
 
           fvec = -dest_fp->normal;
-          vm_VectorToMatrix(&dest_matrix, &fvec, NULL, NULL);
+          vm_VectorToMatrix(dest_matrix, fvec, std::nullopt, std::nullopt);
 
           ComputeBOAVisFaceUpperLeft(check_room, dest_fp, &dest_upper_left, &dest_width, &dest_height,
                                      &dest_center);

@@ -57,10 +57,10 @@ void BriefEditFreeEffect(tBriefEffect *efx) {
 
 // Finds the first free effect slot in `screen` and links it into the screen's
 // effect list.  Returns false if no effect slot is free.
-static bool alloc_effect_in_screen(tBriefScreen *scr, int *out_eff) {
+static bool alloc_effect_in_screen(tBriefScreen &scr, optref<int> out_eff) {
   int chosen = -1;
   for (int i = 0; i < MAX_EFFECTS_PER_SCREEN; i++) {
-    if (!scr->effects[i].used) {
+    if (!scr.effects[i].used) {
       chosen = i;
       break;
     }
@@ -68,30 +68,30 @@ static bool alloc_effect_in_screen(tBriefScreen *scr, int *out_eff) {
   if (chosen == -1)
     return false;
 
-  tBriefEffect *efx = &scr->effects[chosen];
-  efx->init();
-  efx->used = true;
+  tBriefEffect &efx = scr.effects[chosen];
+  efx.init();
+  efx.used = true;
 
   // Link into list (append after root).
-  if (scr->root_effect == -1) {
-    scr->root_effect = chosen;
-    efx->prev = -1;
-    efx->next = -1;
+  if (scr.root_effect == -1) {
+    scr.root_effect = chosen;
+    efx.prev = -1;
+    efx.next = -1;
   } else {
-    efx->prev = -1;
-    efx->next = scr->root_effect;
-    scr->effects[scr->root_effect].prev = chosen;
-    scr->root_effect = chosen;
+    efx.prev = -1;
+    efx.next = scr.root_effect;
+    scr.effects[scr.root_effect].prev = chosen;
+    scr.root_effect = chosen;
   }
 
-  if (out_eff)
+  if (out_eff.has_value())
     *out_eff = chosen;
   return true;
 }
 
-bool BriefEditAllocateEffect(int *ret_screen, int *ret_effect) {
+bool BriefEditAllocateEffect(optref<int> ret_screen, optref<int> ret_effect) {
   int scr = -1;
-  BriefEditGetCurScreenEffect(&scr, nullptr);
+  BriefEditGetCurScreenEffect(scr, std::nullopt);
   if (scr < 0 || !Briefing_screens[scr].used) {
     for (int i = 0; i < MAX_TELCOM_SCREENS; i++) {
       if (Briefing_screens[i].used) {
@@ -102,12 +102,12 @@ bool BriefEditAllocateEffect(int *ret_screen, int *ret_effect) {
   }
   if (scr < 0)
     return false;
-  if (ret_screen)
+  if (ret_screen.has_value())
     *ret_screen = scr;
-  return alloc_effect_in_screen(&Briefing_screens[scr], ret_effect);
+  return alloc_effect_in_screen(Briefing_screens[scr], ret_effect);
 }
 
-void BriefEditGetCurScreenEffect(int *ret_screen, int *ret_effect) {
+void BriefEditGetCurScreenEffect(optref<int> ret_screen, optref<int> ret_effect) {
   int scr = (Briefing_root_screen >= 0) ? Briefing_root_screen : -1;
   if (scr < 0) {
     for (int i = 0; i < MAX_TELCOM_SCREENS; i++) {
@@ -117,9 +117,9 @@ void BriefEditGetCurScreenEffect(int *ret_screen, int *ret_effect) {
       }
     }
   }
-  if (ret_screen)
+  if (ret_screen.has_value())
     *ret_screen = scr;
-  if (ret_effect) {
+  if (ret_effect.has_value()) {
     *ret_effect = (scr >= 0) ? Briefing_screens[scr].root_effect : -1;
   }
 }
@@ -482,7 +482,7 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValu
                 cmd == "$button") && cur) {
       // Allocate a new effect on the current screen.
       int eff = -1;
-      if (!BriefEditAllocateEffect(nullptr, nullptr)) {
+      if (!BriefEditAllocateEffect(std::nullopt, std::nullopt)) {
         // find a free slot manually and set it used
         for (int i = 0; i < MAX_EFFECTS_PER_SCREEN; i++) {
           if (!cur->effects[i].used) {

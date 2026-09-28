@@ -291,7 +291,7 @@ void SetElementView(rad_element *ep) {
   rad_Hemicube.head_matrix.uvec = v;
   rad_Hemicube.head_matrix.fvec = n;
 
-  vm_VectorToMatrix(&rad_Hemicube.head_matrix, &n, NULL, NULL);
+  vm_VectorToMatrix(rad_Hemicube.head_matrix, n, std::nullopt, std::nullopt);
 
   rad_Hemicube.shooting_element = ep;
 }
@@ -319,7 +319,7 @@ void SetSurfaceView(rad_surface *surf) {
   rad_Hemicube.head_matrix.uvec = v;
   rad_Hemicube.head_matrix.fvec = n;
 
-  vm_VectorToMatrix(&rad_Hemicube.head_matrix, &n, NULL, NULL);
+  vm_VectorToMatrix(rad_Hemicube.head_matrix, n, std::nullopt, std::nullopt);
 
   rad_Hemicube.shooting_surface = surf;
 }

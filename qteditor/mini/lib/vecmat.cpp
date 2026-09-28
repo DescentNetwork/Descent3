@@ -8,6 +8,8 @@
 
 #include "vecmat.h"
 
+#include <QtGlobal>
+
 #include <algorithm>
 #include <cmath>
 
@@ -38,7 +40,7 @@ void vm_Orthogonalize(matrix *m) {
     return;
   m->rvec = vm_Cross3Product(m->uvec, m->fvec);
   if (vm_NormalizeVector(&m->rvec) == 0) {
-    vm_VectorToMatrix(m, &m->fvec, nullptr, nullptr);
+    vm_VectorToMatrix(*m, m->fvec, std::nullopt, std::nullopt);
     return;
   }
   m->uvec = vm_Cross3Product(m->fvec, m->rvec);
@@ -216,14 +218,35 @@ angvec *vm_ExtractAnglesFromMatrix(angvec *a, const matrix *m) {
   }
   return a;
 }
-void vm_VectorToMatrix(matrix *m, vector3 *fvec, vector3 *uvec, vector3 *rvec) {
-  if (m == nullptr || fvec == nullptr)
+void vm_VectorToMatrix(matrix &m, optref<vector3> fvec, optref<vector3> uvec, optref<vector3> rvec) {
+  if (!fvec.has_value()) {
+    // No forward vector: use the up and/or right vectors instead.
+    matrix tmatrix;
+    if (uvec.has_value()) {
+      // Got an up vector: use up and, if specified, right vectors.
+      vm_VectorToMatrix(tmatrix, uvec, std::nullopt, rvec);
+      m.fvec = -tmatrix.uvec;
+      m.uvec = tmatrix.fvec;
+      m.rvec = tmatrix.rvec;
+    } else {
+      // No up vector: use the right vector only.
+      Q_ASSERT(rvec.has_value());
+      vm_VectorToMatrix(tmatrix, rvec, std::nullopt, std::nullopt);
+      m.fvec = -tmatrix.rvec;
+      m.uvec = tmatrix.uvec;
+      m.rvec = tmatrix.fvec;
+    }
     return;
+  }
+
+  // A forward vector is present; at most one of uvec/rvec may accompany it.
+  Q_ASSERT(!uvec.has_value() || !rvec.has_value());
+
   matrix tmp;
   tmp.fvec = *fvec;
   if (vm_NormalizeVector(&tmp.fvec) == 0)
     return;
-  if (uvec != nullptr) {
+  if (uvec.has_value()) {
     tmp.uvec = *uvec;
     if (vm_NormalizeVector(&tmp.uvec) == 0)
       tmp.uvec = vector3{0, 1, 0};
@@ -231,7 +254,7 @@ void vm_VectorToMatrix(matrix *m, vector3 *fvec, vector3 *uvec, vector3 *rvec) {
     if (vm_NormalizeVector(&tmp.rvec) == 0)
       tmp.rvec = vector3{1, 0, 0};
     tmp.uvec = vm_Cross3Product(tmp.fvec, tmp.rvec);
-  } else if (rvec != nullptr) {
+  } else if (rvec.has_value()) {
     tmp.rvec = *rvec;
     if (vm_NormalizeVector(&tmp.rvec) == 0)
       tmp.rvec = vector3{1, 0, 0};
@@ -249,7 +272,7 @@ void vm_VectorToMatrix(matrix *m, vector3 *fvec, vector3 *uvec, vector3 *rvec) {
       tmp.uvec = vm_Cross3Product(tmp.fvec, tmp.rvec);
     }
   }
-  *m = tmp;
+  m = tmp;
 }
 void vm_VectorAngleToMatrix(matrix *m, vector3 *v, angle a) {
   if (m == nullptr || v == nullptr)
