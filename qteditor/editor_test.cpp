@@ -7100,9 +7100,16 @@ private slots:
     page.objinfo_struct.respawn_scalar = 1.0f;
     page.objinfo_struct.module_name = "roundtrip_module";
     page.objinfo_struct.script_name_override = "roundtrip_script";
-    page.ai_info.flags = (int)0xDEADBEEF;
+    page.ai_info.flags = std::bit_cast<ai_flags_t>(0xDEADBEEF);
     page.ai_info.ai_class = 3;
-    page.ai_info.notify_flags = 0x1F;
+    page.ai_info.notify_flags = std::bit_cast<ai_notify_flags_t>(0x1F);
+    page.ai_info.max_turn_rate = 7.5f;
+    page.ai_info.max_delta_turn_rate = 0.5f;
+    page.ai_info.circle_distance = 40.0f;
+    page.ai_info.avoid_friends_distance = 3.5f;
+    page.ai_info.biased_flight_importance = 0.8f;
+    page.ai_info.biased_flight_min = 12.0f;
+    page.ai_info.biased_flight_max = 60.0f;
     page.dspew_name = {"spew_one", "spew_two"};
     page.anim[0].elem[1].from = 2;
     page.anim[0].elem[1].to = 9;
@@ -7130,8 +7137,17 @@ private slots:
     QCOMPARE(got.image_name, page.image_name);
     QCOMPARE(got.objinfo_struct.module_name, page.objinfo_struct.module_name);
     QCOMPARE(got.objinfo_struct.hit_points, page.objinfo_struct.hit_points);
-    QCOMPARE(got.ai_info.flags, page.ai_info.flags);
+    QCOMPARE(reinterpret_cast<const uint32_t&>(got.ai_info.flags), reinterpret_cast<const uint32_t&>(page.ai_info.flags));
     QCOMPARE(got.ai_info.ai_class, page.ai_info.ai_class);
+    QCOMPARE(got.ai_info.max_turn_rate, page.ai_info.max_turn_rate);
+    QCOMPARE(got.ai_info.max_delta_turn_rate, page.ai_info.max_delta_turn_rate);
+    QCOMPARE(got.ai_info.circle_distance, page.ai_info.circle_distance);
+    QCOMPARE(got.ai_info.avoid_friends_distance, page.ai_info.avoid_friends_distance);
+    QCOMPARE(got.ai_info.biased_flight_importance, page.ai_info.biased_flight_importance);
+    QCOMPARE(got.ai_info.biased_flight_min, page.ai_info.biased_flight_min);
+    QCOMPARE(got.ai_info.biased_flight_max, page.ai_info.biased_flight_max);
+    QCOMPARE(reinterpret_cast<const uint32_t&>(got.ai_info.notify_flags),
+             reinterpret_cast<const uint32_t&>(page.ai_info.notify_flags) | static_cast<uint32_t>(AI_NOTIFIES_ALWAYS_ON));
     QCOMPARE(got.dspew_name[1], page.dspew_name[1]);
     QCOMPARE(got.anim[0].elem[1].spc, page.anim[0].elem[1].spc);
     QCOMPARE(static_cast<int>(got.static_wb[0].aiming_gp_index), 4);

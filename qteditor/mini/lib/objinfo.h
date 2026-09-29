@@ -413,32 +413,39 @@ struct t_ai_info {
   uint8_t movement_type;
   uint8_t movement_subtype;
 
-  int flags;
-  int notify_flags;
+  ai_flags_t flags;
+  ai_notify_flags_t notify_flags;
 
   float fov;
 
   float avoid_friends_distance;
 
-  float frustration;
-  float curiousity;
-  float life_preservation;
-  float aggression;
+  float frustration = 0.5f;
+  float curiousity = 0.5f;
+  float life_preservation = 0.0f;
+  float aggression = 0.5f;
 
-  float fire_spread;
-  float night_vision;
-  float fog_vision;
-  float lead_accuracy;
-  float lead_varience;
-  float fight_team;
-  float fight_same;
-  float hearing;
-  float roaming;
+  float fire_spread = 0.0f;
+  float night_vision = 0.7f;
+  float fog_vision = 0.7f;
+  float lead_accuracy = 1.0f;
+  float lead_varience = 0.0f;
+  float fight_team = 0.15f;
+  float fight_same = 0.8f;
+  float hearing = 1.0f;
+  float roaming = 0.5f;
 
   float biased_flight_importance;
   float biased_flight_min;
   float biased_flight_max;
 };
+
+// Table-file serialization for the current generic-page layout of t_ai_info.
+// notify_flags is stored with the AI_NOTIFIES_ALWAYS_ON bits cleared and
+// restored on read.  Older page layouts (pre-version-16 avoid_friends_distance,
+// pre-version-17 biased_flight_*) are not handled here.
+byte_istream& operator >>(byte_istream& input, t_ai_info& data);
+byte_ostream& operator <<(byte_ostream& output, const t_ai_info& data);
 
 
 struct object_info_flags_t

@@ -69,6 +69,9 @@
 #ifndef _AISTRUCT_EXTERNAL_H_
 #define _AISTRUCT_EXTERNAL_H_
 
+#include <bit>
+#include <cstdint>
+
 // AI Type -- make sure to update MAX_AI_TYPES if you add a new class
 
 #define AIT_FLYLANDER 0
@@ -380,6 +383,150 @@
 #define AIF_FORCE_AWARENESS 0x20000000
 #define AIF_UVEC_FOV 0x40000000
 #define AIF_AIM_PNT_FOV 0x80000000
+
+// Designer-editable AI flags (replaces AIF_* for t_ai_info::flags).
+struct ai_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t aim_pnt_fov : 1;                 // AIF_AIM_PNT_FOV
+  uint32_t uvec_fov : 1;                    // AIF_UVEC_FOV
+  uint32_t force_awareness : 1;             // AIF_FORCE_AWARENESS
+  uint32_t biased_flight_height : 1;        // AIF_BIASED_FLIGHT_HEIGHT
+  uint32_t track_closest_2_enemies : 1;     // AIF_TRACK_CLOSEST_2_ENEMIES
+  uint32_t track_closest_2_friends : 1;     // AIF_TRACK_CLOSEST_2_FRIENDS
+  uint32_t auto_avoid_friends : 1;          // AIF_AUTO_AVOID_FRIENDS
+  uint32_t disable_melee : 1;               // AIF_DISABLE_MELEE
+  uint32_t disable_firing : 1;              // AIF_DISABLE_FIRING
+  uint32_t target_by_dist : 1;              // AIF_TARGET_BY_DIST
+  uint32_t report_new_orient : 1;           // AIF_REPORT_NEW_ORIENT
+  uint32_t xz_dist : 1;                     // AIF_XZ_DIST
+  uint32_t orient_to_vel : 1;               // AIF_ORIENT_TO_VEL
+  uint32_t ordered_wb_firing : 1;           // AIF_ORDERED_WB_FIRING
+  uint32_t team : 2;                        // AIF_TEAM_* (PTMC/REBEL/HOSTILE/NEUTRAL)
+  uint32_t fluctuate_speed_properties : 1;  // AIF_FLUCTUATE_SPEED_PROPERTIES
+  uint32_t disabled : 1;                    // AIF_DISABLED
+  uint32_t avoid_walls : 1;                 // AIF_AVOID_WALLS
+  uint32_t only_taunt_at_death : 1;         // AIF_ONLY_TAUNT_AT_DEATH
+  uint32_t aim : 1;                         // AIF_AIM
+  uint32_t determine_target : 1;            // AIF_DETERMINE_TARGET
+  uint32_t flinch : 1;                      // AIF_FLINCH
+  uint32_t fire : 1;                        // AIF_FIRE
+  uint32_t dodge : 1;                       // AIF_DODGE
+  uint32_t persistant : 1;                  // AIF_PERSISTANT
+  uint32_t act_as_neutral_until_shot : 1;   // AIF_ACT_AS_NEUTRAL_UNTIL_SHOT
+  uint32_t stays_inout : 1;                 // AIF_STAYS_INOUT (also AIF_GB_MIMIC_PLAYER_FIRING_HACK)
+  uint32_t melee2 : 1;                      // AIF_MELEE2
+  uint32_t melee1 : 1;                      // AIF_MELEE1
+  uint32_t weapon2 : 1;                     // AIF_WEAPON2
+  uint32_t weapon1 : 1;                     // AIF_WEAPON1
+#else
+  uint32_t weapon1 : 1;                     // AIF_WEAPON1
+  uint32_t weapon2 : 1;                     // AIF_WEAPON2
+  uint32_t melee1 : 1;                      // AIF_MELEE1
+  uint32_t melee2 : 1;                      // AIF_MELEE2
+  uint32_t stays_inout : 1;                 // AIF_STAYS_INOUT (also AIF_GB_MIMIC_PLAYER_FIRING_HACK)
+  uint32_t act_as_neutral_until_shot : 1;   // AIF_ACT_AS_NEUTRAL_UNTIL_SHOT
+  uint32_t persistant : 1;                  // AIF_PERSISTANT
+  uint32_t dodge : 1;                       // AIF_DODGE
+  uint32_t fire : 1;                        // AIF_FIRE
+  uint32_t flinch : 1;                      // AIF_FLINCH
+  uint32_t determine_target : 1;            // AIF_DETERMINE_TARGET
+  uint32_t aim : 1;                         // AIF_AIM
+  uint32_t only_taunt_at_death : 1;         // AIF_ONLY_TAUNT_AT_DEATH
+  uint32_t avoid_walls : 1;                 // AIF_AVOID_WALLS
+  uint32_t disabled : 1;                    // AIF_DISABLED
+  uint32_t fluctuate_speed_properties : 1;  // AIF_FLUCTUATE_SPEED_PROPERTIES
+  uint32_t team : 2;                        // AIF_TEAM_* (PTMC/REBEL/HOSTILE/NEUTRAL)
+  uint32_t ordered_wb_firing : 1;           // AIF_ORDERED_WB_FIRING
+  uint32_t orient_to_vel : 1;               // AIF_ORIENT_TO_VEL
+  uint32_t xz_dist : 1;                     // AIF_XZ_DIST
+  uint32_t report_new_orient : 1;           // AIF_REPORT_NEW_ORIENT
+  uint32_t target_by_dist : 1;              // AIF_TARGET_BY_DIST
+  uint32_t disable_firing : 1;              // AIF_DISABLE_FIRING
+  uint32_t disable_melee : 1;               // AIF_DISABLE_MELEE
+  uint32_t auto_avoid_friends : 1;          // AIF_AUTO_AVOID_FRIENDS
+  uint32_t track_closest_2_friends : 1;     // AIF_TRACK_CLOSEST_2_FRIENDS
+  uint32_t track_closest_2_enemies : 1;     // AIF_TRACK_CLOSEST_2_ENEMIES
+  uint32_t biased_flight_height : 1;        // AIF_BIASED_FLIGHT_HEIGHT
+  uint32_t force_awareness : 1;             // AIF_FORCE_AWARENESS
+  uint32_t uvec_fov : 1;                    // AIF_UVEC_FOV
+  uint32_t aim_pnt_fov : 1;                 // AIF_AIM_PNT_FOV
+#endif
+};
+static_assert(sizeof(ai_flags_t) == sizeof(uint32_t));
+
+// Designer-editable AI notification flags (replaces notify_flags for
+// t_ai_info).  Bit N corresponds to AIN_N event; only events the AI is told
+// about are set.
+struct ai_notify_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding_h : 2;               // Unused padding to complete 32 bits
+  uint32_t fired_weapon : 1;            // AIN_FIRED_WEAPON
+  uint32_t movie_end : 1;               // AIN_MOVIE_END
+  uint32_t movie_start : 1;             // AIN_MOVIE_START
+  uint32_t scripted_orient : 1;         // AIN_SCRIPTED_ORIENT
+  uint32_t scripted_influence : 1;      // AIN_SCRIPTED_INFLUENCE
+  uint32_t melee_attack_frame : 1;      // AIN_MELEE_ATTACK_FRAME
+  uint32_t melee_hit : 1;               // AIN_MELEE_HIT
+  uint32_t bumped_obj : 1;              // AIN_BUMPED_OBJ
+  uint32_t anim_complete : 1;           // AIN_ANIM_COMPLETE
+  uint32_t scripted_enabler : 1;        // AIN_SCRIPTED_ENABLER
+  uint32_t scripted_goal : 1;           // AIN_SCRIPTED_GOAL
+  uint32_t goal_invalid : 1;            // AIN_GOAL_INVALID
+  uint32_t target_invalid : 1;          // AIN_TARGET_INVALID
+  uint32_t user_defined : 1;            // AIN_USER_DEFINED
+  uint32_t near_wall : 1;               // AIN_NEAR_WALL
+  uint32_t hit_by_weapon : 1;           // AIN_HIT_BY_WEAPON
+  uint32_t near_target : 1;             // AIN_NEAR_TARGET
+  uint32_t hear_noise : 1;              // AIN_HEAR_NOISE
+  uint32_t goal_error : 1;              // AIN_GOAL_ERROR
+  uint32_t goal_fail : 1;               // AIN_GOAL_FAIL
+  uint32_t goal_complete : 1;           // AIN_GOAL_COMPLETE
+  uint32_t obj_fired : 1;               // AIN_OBJ_FIRED
+  uint32_t target_died : 1;             // AIN_TARGET_DIED
+  uint32_t whit_object : 1;             // AIN_WHIT_OBJECT
+  uint32_t player_sees_you : 1;         // AIN_PLAYER_SEES_YOU
+  uint32_t see_target : 1;              // AIN_SEE_TARGET
+  uint32_t whit_by_obj : 1;             // AIN_WHIT_BY_OBJ
+  uint32_t obj_killed : 1;              // AIN_OBJ_KILLED
+  uint32_t new_movement : 1;            // AIN_NEW_MOVEMENT
+  uint32_t padding_l : 1;               // Unused padding (bit 0)
+#else
+  uint32_t padding_l : 1;               // Unused padding (bit 0)
+  uint32_t new_movement : 1;            // AIN_NEW_MOVEMENT
+  uint32_t obj_killed : 1;              // AIN_OBJ_KILLED
+  uint32_t whit_by_obj : 1;             // AIN_WHIT_BY_OBJ
+  uint32_t see_target : 1;              // AIN_SEE_TARGET
+  uint32_t player_sees_you : 1;         // AIN_PLAYER_SEES_YOU
+  uint32_t whit_object : 1;             // AIN_WHIT_OBJECT
+  uint32_t target_died : 1;             // AIN_TARGET_DIED
+  uint32_t obj_fired : 1;               // AIN_OBJ_FIRED
+  uint32_t goal_complete : 1;           // AIN_GOAL_COMPLETE
+  uint32_t goal_fail : 1;               // AIN_GOAL_FAIL
+  uint32_t goal_error : 1;              // AIN_GOAL_ERROR
+  uint32_t hear_noise : 1;              // AIN_HEAR_NOISE
+  uint32_t near_target : 1;             // AIN_NEAR_TARGET
+  uint32_t hit_by_weapon : 1;           // AIN_HIT_BY_WEAPON
+  uint32_t near_wall : 1;               // AIN_NEAR_WALL
+  uint32_t user_defined : 1;            // AIN_USER_DEFINED
+  uint32_t target_invalid : 1;          // AIN_TARGET_INVALID
+  uint32_t goal_invalid : 1;            // AIN_GOAL_INVALID
+  uint32_t scripted_goal : 1;           // AIN_SCRIPTED_GOAL
+  uint32_t scripted_enabler : 1;        // AIN_SCRIPTED_ENABLER
+  uint32_t anim_complete : 1;           // AIN_ANIM_COMPLETE
+  uint32_t bumped_obj : 1;              // AIN_BUMPED_OBJ
+  uint32_t melee_hit : 1;               // AIN_MELEE_HIT
+  uint32_t melee_attack_frame : 1;      // AIN_MELEE_ATTACK_FRAME
+  uint32_t scripted_influence : 1;      // AIN_SCRIPTED_INFLUENCE
+  uint32_t scripted_orient : 1;         // AIN_SCRIPTED_ORIENT
+  uint32_t movie_start : 1;             // AIN_MOVIE_START
+  uint32_t movie_end : 1;               // AIN_MOVIE_END
+  uint32_t fired_weapon : 1;            // AIN_FIRED_WEAPON
+  uint32_t padding_h : 2;               // Unused padding to complete 32 bits
+#endif
+};
+static_assert(sizeof(ai_notify_flags_t) == sizeof(uint32_t));
 
 #define AI_ATTACK_SOUND 0
 #define AI_SEE_SOUND 1

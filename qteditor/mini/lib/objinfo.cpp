@@ -59,6 +59,91 @@ byte_ostream& operator<<(byte_ostream& output, const anim_elem& data) {
   return output;
 }
 
+byte_istream& operator>>(byte_istream& input, t_ai_info& data) {
+  input >> reinterpret_cast<uint32_t&>(data.flags);
+  input >> data.ai_class;
+  input >> data.ai_type;
+  input >> data.movement_type;
+  input >> data.movement_subtype;
+  input >> data.fov;
+  input >> data.max_velocity;
+  input >> data.max_delta_velocity;
+  input >> data.max_turn_rate;
+  uint32_t raw_notify = 0;
+  input >> raw_notify;
+  raw_notify |= static_cast<uint32_t>(AI_NOTIFIES_ALWAYS_ON);
+  data.notify_flags = *reinterpret_cast<ai_notify_flags_t*>(&raw_notify);
+  input >> data.max_delta_turn_rate;
+  input >> data.circle_distance;
+  input >> data.attack_vel_percent;
+  input >> data.dodge_percent;
+  input >> data.dodge_vel_percent;
+  input >> data.flee_vel_percent;
+  input >> data.melee_damage[0];
+  input >> data.melee_damage[1];
+  input >> data.melee_latency[0];
+  input >> data.melee_latency[1];
+  input >> data.curiousity;
+  input >> data.night_vision;
+  input >> data.fog_vision;
+  input >> data.lead_accuracy;
+  input >> data.lead_varience;
+  input >> data.fire_spread;
+  input >> data.fight_team;
+  input >> data.fight_same;
+  input >> data.aggression;
+  input >> data.hearing;
+  input >> data.frustration;
+  input >> data.roaming;
+  input >> data.life_preservation;
+  input >> data.avoid_friends_distance;
+  input >> data.biased_flight_importance;
+  input >> data.biased_flight_min;
+  input >> data.biased_flight_max;
+  return input;
+}
+
+byte_ostream& operator<<(byte_ostream& output, const t_ai_info& data) {
+  output << reinterpret_cast<const uint32_t&>(data.flags);
+  output << data.ai_class;
+  output << data.ai_type;
+  output << data.movement_type;
+  output << data.movement_subtype;
+  output << data.fov;
+  output << data.max_velocity;
+  output << data.max_delta_velocity;
+  output << data.max_turn_rate;
+  output << (reinterpret_cast<const uint32_t&>(data.notify_flags) & ~static_cast<uint32_t>(AI_NOTIFIES_ALWAYS_ON));
+  output << data.max_delta_turn_rate;
+  output << data.circle_distance;
+  output << data.attack_vel_percent;
+  output << data.dodge_percent;
+  output << data.dodge_vel_percent;
+  output << data.flee_vel_percent;
+  output << data.melee_damage[0];
+  output << data.melee_damage[1];
+  output << data.melee_latency[0];
+  output << data.melee_latency[1];
+  output << data.curiousity;
+  output << data.night_vision;
+  output << data.fog_vision;
+  output << data.lead_accuracy;
+  output << data.lead_varience;
+  output << data.fire_spread;
+  output << data.fight_team;
+  output << data.fight_same;
+  output << data.aggression;
+  output << data.hearing;
+  output << data.frustration;
+  output << data.roaming;
+  output << data.life_preservation;
+  output << data.avoid_friends_distance;
+  output << data.biased_flight_importance;
+  output << data.biased_flight_min;
+  output << data.biased_flight_max;
+  return output;
+}
+
 // ============================================================================
 // Object-id slot management (ported from the engine's objinfo.cpp).
 // ============================================================================

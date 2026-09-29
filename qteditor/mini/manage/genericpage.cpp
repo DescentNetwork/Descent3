@@ -90,19 +90,8 @@ static void mng_InitGenericPage(mngs_generic_page *genericpage) {
   genericpage->objinfo_struct.phys_info.hit_die_dot = 1.0f;
   genericpage->objinfo_struct.respawn_scalar = 1.0f;
 
-  genericpage->ai_info.curiousity = .5f;
-  genericpage->ai_info.night_vision = .7f;
-  genericpage->ai_info.fog_vision = .7f;
-  genericpage->ai_info.lead_accuracy = 1.0f;
-  genericpage->ai_info.lead_varience = 0.0f;
-  genericpage->ai_info.fire_spread = 0.0f;
-  genericpage->ai_info.fight_team = 0.15f;
-  genericpage->ai_info.fight_same = 0.8f;
-  genericpage->ai_info.aggression = 0.5f;
-  genericpage->ai_info.hearing = 1.0f;
-  genericpage->ai_info.frustration = 0.5f;
-  genericpage->ai_info.roaming = 0.5f;
-  genericpage->ai_info.life_preservation = 0.0f;
+  // ai_info inherits its play-balance defaults from the t_ai_info declaration
+
   genericpage->objinfo_struct.module_name.clear();
 
   for (i = 0; i < MAX_DEATH_TYPES; i++) {
@@ -231,68 +220,9 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
   // struct shares its storage, so it can be streamed in directly).
   infile >> reinterpret_cast<uint32_t&>(genericpage->objinfo_struct.flags);
 
-  // Read AI info
-  infile >> genericpage->ai_info.flags;
-  infile >> genericpage->ai_info.ai_class;
-  infile >> genericpage->ai_info.ai_type;
-  infile >> genericpage->ai_info.movement_type;
-  infile >> genericpage->ai_info.movement_subtype;
-  infile >> genericpage->ai_info.fov;
-
-  infile >> genericpage->ai_info.max_velocity;
-  infile >> genericpage->ai_info.max_delta_velocity;
-  infile >> genericpage->ai_info.max_turn_rate;
-
-  // Makes sure there are no bugs as things are added and removed  -- ask chris
-  genericpage->ai_info.notify_flags &= ~AI_NOTIFIES_ALWAYS_ON;
-  infile >> genericpage->ai_info.notify_flags;
-  genericpage->ai_info.notify_flags |= AI_NOTIFIES_ALWAYS_ON;
-
-  infile >> genericpage->ai_info.max_delta_turn_rate;
-  infile >> genericpage->ai_info.circle_distance;
-  infile >> genericpage->ai_info.attack_vel_percent;
-  infile >> genericpage->ai_info.dodge_percent;
-  infile >> genericpage->ai_info.dodge_vel_percent;
-  infile >> genericpage->ai_info.flee_vel_percent;
-  infile >> genericpage->ai_info.melee_damage[0];
-  infile >> genericpage->ai_info.melee_damage[1];
-  infile >> genericpage->ai_info.melee_latency[0];
-  infile >> genericpage->ai_info.melee_latency[1];
-
-  infile >> genericpage->ai_info.curiousity;
-  infile >> genericpage->ai_info.night_vision;
-  infile >> genericpage->ai_info.fog_vision;
-  infile >> genericpage->ai_info.lead_accuracy;
-  infile >> genericpage->ai_info.lead_varience;
-  infile >> genericpage->ai_info.fire_spread;
-  infile >> genericpage->ai_info.fight_team;
-  infile >> genericpage->ai_info.fight_same;
-  infile >> genericpage->ai_info.aggression;
-  infile >> genericpage->ai_info.hearing;
-  infile >> genericpage->ai_info.frustration;
-  infile >> genericpage->ai_info.roaming;
-  infile >> genericpage->ai_info.life_preservation;
-
-  if (version >= 16) {
-    infile >> genericpage->ai_info.avoid_friends_distance;
-  } else if (genericpage->objinfo_struct.flags.uses_physics && genericpage->ai_info.max_velocity > 0.0f) {
-    genericpage->ai_info.flags |= AIF_AUTO_AVOID_FRIENDS;
-    genericpage->ai_info.avoid_friends_distance = genericpage->ai_info.circle_distance / 10.f;
-    if (genericpage->ai_info.avoid_friends_distance < 4.0f)
-      genericpage->ai_info.avoid_friends_distance = 4.0f;
-  } else {
-    genericpage->ai_info.avoid_friends_distance = 4.0f;
-  }
-
-  if (version >= 17) {
-    infile >> genericpage->ai_info.biased_flight_importance;
-    infile >> genericpage->ai_info.biased_flight_min;
-    infile >> genericpage->ai_info.biased_flight_max;
-  } else {
-    genericpage->ai_info.biased_flight_importance = .5f;
-    genericpage->ai_info.biased_flight_min = 10.0f;
-    genericpage->ai_info.biased_flight_max = 50.0f;
-  }
+  // Read AI info (current-version layout; AI_NOTIFIES_ALWAYS_ON is
+  // force-restored by the stream operator)
+  infile >> genericpage->ai_info;
 
   // Read out objects spewed
   for (i = 0; i < MAX_DSPEW_TYPES; i++) {
@@ -489,53 +419,9 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
   // struct shares storage, so it can be streamed out directly).
   outfile << reinterpret_cast<const uint32_t&>(genericpage->objinfo_struct.flags);
 
-  // Write AI info
-  outfile << genericpage->ai_info.flags;
-  outfile << genericpage->ai_info.ai_class;
-  outfile << genericpage->ai_info.ai_type;
-  outfile << genericpage->ai_info.movement_type;
-  outfile << genericpage->ai_info.movement_subtype;
-  outfile << genericpage->ai_info.fov;
-
-  outfile << genericpage->ai_info.max_velocity;
-  outfile << genericpage->ai_info.max_delta_velocity;
-  outfile << genericpage->ai_info.max_turn_rate;
-
-  // Makes sure there are no bugs as things are added and removed  -- ask chris
-  {
-    int notify_flags = genericpage->ai_info.notify_flags & ~AI_NOTIFIES_ALWAYS_ON;
-    outfile << notify_flags;
-  }
-
-  outfile << genericpage->ai_info.max_delta_turn_rate;
-  outfile << genericpage->ai_info.circle_distance;
-  outfile << genericpage->ai_info.attack_vel_percent;
-  outfile << genericpage->ai_info.dodge_percent;
-  outfile << genericpage->ai_info.dodge_vel_percent;
-  outfile << genericpage->ai_info.flee_vel_percent;
-  outfile << genericpage->ai_info.melee_damage[0];
-  outfile << genericpage->ai_info.melee_damage[1];
-  outfile << genericpage->ai_info.melee_latency[0];
-  outfile << genericpage->ai_info.melee_latency[1];
-
-  outfile << genericpage->ai_info.curiousity;
-  outfile << genericpage->ai_info.night_vision;
-  outfile << genericpage->ai_info.fog_vision;
-  outfile << genericpage->ai_info.lead_accuracy;
-  outfile << genericpage->ai_info.lead_varience;
-  outfile << genericpage->ai_info.fire_spread;
-  outfile << genericpage->ai_info.fight_team;
-  outfile << genericpage->ai_info.fight_same;
-  outfile << genericpage->ai_info.aggression;
-  outfile << genericpage->ai_info.hearing;
-  outfile << genericpage->ai_info.frustration;
-  outfile << genericpage->ai_info.roaming;
-  outfile << genericpage->ai_info.life_preservation;
-  outfile << genericpage->ai_info.avoid_friends_distance;
-
-  outfile << genericpage->ai_info.biased_flight_importance;
-  outfile << genericpage->ai_info.biased_flight_min;
-  outfile << genericpage->ai_info.biased_flight_max;
+  // Write AI info (current-version layout; the stream operator masks out
+  // AI_NOTIFIES_ALWAYS_ON so it round-trips a read-back page)
+  outfile << genericpage->ai_info;
 
   // Write out objects spewed
   for (i = 0; i < MAX_DSPEW_TYPES; i++) {
