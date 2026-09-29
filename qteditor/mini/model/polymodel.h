@@ -393,10 +393,10 @@ int RenderPolygonModel(poly_model *, uint32_t f_render_sub = 0xFFFFFFFF);
 void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub);
 
 //	returns point within polymodel/submodel in world coordinates.
-void GetPolyModelPointInWorld(vector3& dest, poly_model *pm, vector3 *wpos, matrix *orient, int subnum, vector3& pos,
-                              vector3 *norm = nullptr);
-void GetPolyModelPointInWorld(vector3& dest, poly_model *pm, vector3 *wpos, matrix *orient, int subnum,
-                              float *normalized_time, vector3& pos, vector3 *norm = nullptr);
+void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matrix& orient, int subnum, vector3& pos,
+                              optref<vector3> norm = std::nullopt);
+void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matrix& orient, int subnum,
+                              float *normalized_time, vector3& pos, optref<vector3> norm = std::nullopt);
 
 // Returns 1 if this submodel shouldn't be rendered
 int IsNonRenderableSubmodel(poly_model *pm, int submodelnum);
@@ -416,7 +416,7 @@ void FreePolymodelData(int i);
 // Sets the position and rotation of a polymodel.  Used for rendering and collision detection
 void SetModelAnglesAndPos(poly_model *po, float *normalized_time, uint32_t subobj_flags = 0xFFFFFFFF);
 
-extern void DoneLightInstance();
-extern void StartLightInstance(vector3 *, matrix *);
+void DoneLightInstance();
+void StartLightInstance(vector3 *, matrix *);
 
 #endif

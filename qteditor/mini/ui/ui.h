@@ -271,6 +271,7 @@
 
 #include "grdefs.h"
 #include "uires.h"
+#include "utils.h"
 
 //	Class identification
 
@@ -1087,11 +1088,11 @@ public:
 
   //	settings
   void SetFont(int handle);        // sets window's font.
-  void SetBackItem(UIItem *item) { // sets the background drawing item.
+  void SetBackItem(optref<UIItem> item) { // sets the background drawing item.
     if (m_BackItem)
       delete m_BackItem;
-    m_BackItem = NULL;
-    if (item)
+    m_BackItem = nullptr;
+    if (item.has_value())
       m_BackItem = item->CopyUIItem();
   };                                  //
   void SetBackColor(ddgr_color col) { // sets the background color.  this is ALWAYS first, then the backitem

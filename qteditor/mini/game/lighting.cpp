@@ -1016,7 +1016,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
 
   ApplyLightingToObjects(pos, roomnum, light_dist, red_scale, green_scale, blue_scale, light_direction, dot_range);
 
-  num_faces = fvi_QuickDistFaceList(roomnum, pos, light_dist, facelist, MAX_DYNAMIC_FACES);
+  num_faces = fvi_QuickDistFaceList(roomnum, *pos, light_dist, *facelist, MAX_DYNAMIC_FACES);
 
   LOG_DEBUG_IF(num_faces == MAX_DYNAMIC_FACES,
                "Dynamic light from 1 object is touching %d faces! dist=%f",
@@ -1960,7 +1960,7 @@ void DestroyLight(int roomnum, int facenum) {
 
   //	ApplyLightingToObjects (pos,roomnum,light_dist,red_scale,green_scale,blue_scale,light_direction,dot_range);
 
-  num_faces = fvi_QuickDistFaceList(roomnum, &center, sphere_dist, facelist, MAX_DYNAMIC_FACES);
+  num_faces = fvi_QuickDistFaceList(roomnum, center, sphere_dist, *facelist, MAX_DYNAMIC_FACES);
 
   for (i = 0; i < num_faces; i++) {
     room *rp = &Rooms[facelist[i].room_index];

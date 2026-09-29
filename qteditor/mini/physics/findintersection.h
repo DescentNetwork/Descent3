@@ -222,6 +222,7 @@
 #include "vecmat.h"
 #include "terrain.h"
 #include "findintersection_external.h"
+#include "utils.h"
 
 extern float Ceiling_height;
 
@@ -386,7 +387,7 @@ extern int Fvi_num_recorded_faces;
 
 // Generates a list of faces(with corresponding room numbers) within a given distance to a position.
 // Return value is the number of faces in the list
-extern int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face_room_list *quick_fr_list,
+extern int fvi_QuickDistFaceList(int init_room_index, vector3 &pos, float rad, optref<fvi_face_room_list> quick_fr_list,
                                  int max_elements);
 // Returns the number of cells that are approximately within the specified radius
 extern int fvi_QuickDistCellList(int init_cell_index, vector3 *pos, float rad, int *quick_cell_list, int max_elements);

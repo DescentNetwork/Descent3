@@ -811,7 +811,7 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
       memset(check_room, 0, MAX_VOLUME_ELEMENTS);
 
       // Build a list of rooms to check
-      int num_faces = fvi_QuickDistFaceList(rad_MaxSurface->roomnum, &src_center, sphere_dist, facelist, 4000);
+      int num_faces = fvi_QuickDistFaceList(rad_MaxSurface->roomnum, src_center, sphere_dist, *facelist, 4000);
       check_room[rad_MaxSurface->roomnum] = 1;
 
       for (i = 0; i < num_faces; i++) {
@@ -974,7 +974,7 @@ void CalculateFormFactorsRaycast() {
     express -= rad_MaxSurface->area;
     sphere_dist = sqrt(express);
     if (sphere_dist > 0)
-      fvi_QuickDistFaceList(rad_MaxSurface->roomnum, &src_center, sphere_dist, NULL, rad_NumSurfaces);
+      fvi_QuickDistFaceList(rad_MaxSurface->roomnum, src_center, sphere_dist, std::nullopt, rad_NumSurfaces);
   }
 
   // Do volume lighting

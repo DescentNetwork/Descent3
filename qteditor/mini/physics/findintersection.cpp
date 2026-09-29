@@ -870,6 +870,7 @@
 #include "room.h"
 #include "terrain.h"
 #include "weapon.h"
+#include "utils.h"
 
 #ifndef NED_PHYSICS
 #include "gametexture.h"
@@ -965,8 +966,8 @@ static void do_fvi_rooms(int initial_room_index);
 /// - parameter p1: are the ends of the line.
 ///
 /// Assumes that the initial point is not intersecting the plane.
-static inline bool find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *plane_pnt, const vector3 *plane_norm,
-                                                const vector3 *p0, const vector3 *p1, float rad);
+static inline bool find_plane_line_intersection(vector3 &intp, vector3 &colp, vector3 &plane_pnt, const vector3 &plane_norm,
+                                                const vector3 &p0, const vector3 &p1, float rad);
 static bool IsPointInCylinder(vector3& normal, vector3 *cylinder_pnt, vector3 *edir, float elen, const float rad,
                               const vector3 *pnt, vector3 *mdir, bool *f_collide);
 
@@ -998,28 +999,27 @@ void InitFVI() {
 // plane_pnt & plane_norm describe the plane
 // p0 & p1 are the ends of the line
 // Assumes that the initial point is not intersecting the plane
-inline bool find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *plane_pnt, const vector3 *plane_norm,
-                                         const vector3 *p0, const vector3 *p1, float rad) {
+inline bool find_plane_line_intersection(vector3 &intp, vector3 &colp, vector3 &plane_pnt, const vector3 &plane_norm,
+                                         const vector3 &p0, const vector3 &p1, float rad) {
   vector3 line_vec;             // Vector from p0 to p1
   vector3 point_plane_vec;      // Vector from p0 to a point on the plane
   float proj_dist_line;        // Distance projection of line onto the plane normal
   float proj_dist_point_plane; // Distance of the object from the plane
 
-  Q_ASSERT(intp != nullptr && plane_pnt != nullptr && colp != nullptr && plane_norm != nullptr && p0 != nullptr &&
-         p1 != nullptr && rad >= 0.0);
+  Q_ASSERT(rad >= 0.0);
 
   // Line direction
-  line_vec = *p1 - *p0;
+  line_vec = p1 - p0;
 
   // Compute the distance to the plane and the distance the line travels in the direction of the normal
   // Negative because if the object is moving toward the plane, it is moving in the opposite direction of the normal
-  proj_dist_line = vm_Dot3Product(*plane_norm, line_vec);
+  proj_dist_line = vm_Dot3Product(plane_norm, line_vec);
   if (proj_dist_line >= 0.0f)
     return false;
 
   //  Vector from p0 to a point on the plane
-  point_plane_vec = *plane_pnt - *p0;
-  proj_dist_point_plane = (vm_Dot3Product(*plane_norm, point_plane_vec));
+  point_plane_vec = plane_pnt - p0;
+  proj_dist_point_plane = (vm_Dot3Product(plane_norm, point_plane_vec));
 
   // Throw out any sphere who's centerpoint is initially behind the face
   if (proj_dist_point_plane > 0.0)
@@ -1030,8 +1030,8 @@ inline bool find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *
   proj_dist_point_plane += rad;
 
   if (proj_dist_point_plane > 0.0 && proj_dist_line < 0.0) {
-    *intp = *p0;
-    *colp = *intp + *plane_norm * (-rad + proj_dist_point_plane);
+    intp = p0;
+    colp = intp + plane_norm * (-rad + proj_dist_point_plane);
 
     return true;
   }
@@ -1047,25 +1047,25 @@ inline bool find_plane_line_intersection(vector3 *intp, vector3 *colp, vector3 *
   if (fabs(proj_dist_line) <= 0.00000000001) {
     scalar plane_dist;
 
-    plane_dist = vm_Dot3Product((*p1 - *plane_pnt),*plane_norm);
+    plane_dist = vm_Dot3Product((p1 - plane_pnt), plane_norm);
     if (plane_dist >= rad)
       return false;
 
-    *intp = *p1 + (rad - plane_dist) * (*plane_norm);
+    intp = p1 + (rad - plane_dist) * plane_norm;
 
     // Make sure the computed new position is not behind the wall.
-    Q_ASSERT(vm_Dot3Product((*intp - *plane_pnt), *plane_norm) >= -0.01);
+    Q_ASSERT(vm_Dot3Product((intp - plane_pnt), plane_norm) >= -0.01);
 
   } else {
     // The intersection of the line and the plane is a simple linear combination
-    *intp = *p0 + (proj_dist_point_plane / proj_dist_line) * line_vec;
+    intp = p0 + (proj_dist_point_plane / proj_dist_line) * line_vec;
   }
 
   // Make sure the computed new position is not colliding with the wall.
-  //	Q_ASSERT((*intp - *plane_pnt) * *plane_norm >= rad);
+  //	Q_ASSERT((intp - plane_pnt) * plane_norm >= rad);
 
   // Collision point is a rad. closer in the direction of the normal
-  *colp = *intp + *plane_norm * -rad;
+  colp = intp + plane_norm * -rad;
 
   return true;
 }
@@ -1702,7 +1702,7 @@ bool check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *
 
   // Determine the intersection point between the plane(of the face) and the line
   // This point is the center of the circle (not the edge)
-  f_pli = find_plane_line_intersection(newp, colp, vertex_ptr_list[vertnum], face_normal, p0, p1, rad);
+  f_pli = find_plane_line_intersection(*newp, *colp, *vertex_ptr_list[vertnum], *face_normal, *p0, *p1, rad);
 
   if (!f_pli)
     return false;
@@ -1905,7 +1905,7 @@ inline bool room_manual_AABB(const face *room_face, const vector3 *min_xyz, cons
 #define MAX_QUICK_ROOMS 20
 
 // Returns the number of faces that are approximately within the specified radius
-int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face_room_list *quick_fr_list,
+int fvi_QuickDistFaceList(int init_room_index, vector3 &pos, float rad, optref<fvi_face_room_list> quick_fr_list,
                           int max_elements) {
   int num_faces = 0;
   room* cur_room = nullptr;
@@ -1916,12 +1916,11 @@ int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face
   int i;
 
   // Q_ASSERT(quick_fr_list != NULL);
-  Q_ASSERT(pos != nullptr);
   Q_ASSERT(init_room_index >= 0 && init_room_index < Rooms.size() && Rooms[init_room_index].used != 0);
   Q_ASSERT(rad >= 0.0f);
 
   // Quick volume
-  min_xyz = max_xyz = *pos;
+  min_xyz = max_xyz = pos;
 
   min_xyz.x() -= rad;
   min_xyz.y() -= rad;
@@ -1994,10 +1993,11 @@ int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face
           if (!room_manual_AABB(&cur_room->faces[i], &min_xyz, &max_xyz))
             continue;
 
-          if (quick_fr_list != nullptr) {
+          if (quick_fr_list.has_value()) {
             if (num_faces < max_elements) {
-              quick_fr_list[num_faces].face_index = i;
-              quick_fr_list[num_faces].room_index = cur_room_index;
+              fvi_face_room_list *fr_list = &*quick_fr_list;
+              fr_list[num_faces].face_index = i;
+              fr_list[num_faces].room_index = cur_room_index;
               num_faces++;
             } else
               break;

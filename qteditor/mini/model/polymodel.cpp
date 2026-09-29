@@ -3016,7 +3016,7 @@ int CountFacesInPolymodel(poly_model *pm) {
 // Given an object, a submodel, and a vertex number, calculates the world position
 // of that point
 void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matrix& orient, int subnum, vector3& pos,
-                              vector3 *norm) {
+                              optref<vector3> norm) {
   float normalized_time[MAX_SUBOBJECTS];
   int i;
 
@@ -3034,7 +3034,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
   int mn = subnum;
   vector3 cur_norm;
 
-  if (norm != nullptr)
+  if (norm.has_value())
     cur_norm = *norm;
 
   matrix m;
@@ -3048,7 +3048,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
 
     tpnt = pnt * m;
 
-    if (norm != nullptr)
+    if (norm.has_value())
       cur_norm = cur_norm * m;
 
     pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
@@ -3060,14 +3060,14 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
   m = orient;
   vm_TransposeMatrix(&m);
 
-  if (norm != nullptr)
+  if (norm.has_value())
     *norm = (cur_norm * m);
   dest = pnt * m;
   dest += wpos;
 }
 
 void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matrix& orient, int subnum,
-                              float *normalized_time, vector3& pos, vector3 *norm) {
+                              float *normalized_time, vector3& pos, optref<vector3> norm) {
   Q_ASSERT(!(pm.flags.not_resident));
 
   if (!pm.new_style)
@@ -3079,7 +3079,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
   int mn = subnum;
   vector3 cur_norm;
 
-  if (norm != nullptr)
+  if (norm.has_value())
     cur_norm = *norm;
 
   matrix m;
@@ -3093,7 +3093,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
 
     tpnt = pnt * m;
 
-    if (norm != nullptr)
+    if (norm.has_value())
       cur_norm = cur_norm * m;
 
     pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
@@ -3105,7 +3105,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
   m = orient;
   vm_TransposeMatrix(&m);
 
-  if (norm != nullptr)
+  if (norm.has_value())
     *norm = (cur_norm * m);
   dest = pnt * m;
   dest += wpos;
