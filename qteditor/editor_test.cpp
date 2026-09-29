@@ -7103,8 +7103,7 @@ private slots:
     page.ai_info.flags = (int)0xDEADBEEF;
     page.ai_info.ai_class = 3;
     page.ai_info.notify_flags = 0x1F;
-    page.dspew_name[0] = "spew_one";
-    page.dspew_name[1] = "spew_two";
+    page.dspew_name = {"spew_one", "spew_two"};
     page.anim[0].elem[1].from = 2;
     page.anim[0].elem[1].to = 9;
     page.anim[0].elem[1].spc = 0.25f;

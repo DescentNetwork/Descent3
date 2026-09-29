@@ -19,7 +19,9 @@
 #ifndef GENERICPAGE_H
 #define GENERICPAGE_H
 
+#include <array>
 #include <cstdint>
+#include <string>
 #include <posix_stream.h>
 
 #include "manage.h"
@@ -32,17 +34,17 @@
 struct mngs_generic_page {
   object_info objinfo_struct;
   anim_elem anim[NUM_MOVEMENT_CLASSES];
-  otype_wb_info static_wb[MAX_WBS_PER_OBJ];
+  std::array<otype_wb_info, MAX_WBS_PER_OBJ> static_wb;
   t_ai_info ai_info;
   std::string image_name;
   std::string med_image_name;
   std::string lo_image_name;
-  std::string sound_name[MAX_OBJ_SOUNDS];
-  std::string ai_sound_name[MAX_AI_SOUNDS];
-  std::string weapon_name[MAX_WBS_PER_OBJ][MAX_WB_GUNPOINTS];
-  std::string fire_sound_name[MAX_WBS_PER_OBJ][MAX_WB_FIRING_MASKS];
-  std::string anim_sound_name[NUM_MOVEMENT_CLASSES][NUM_ANIMS_PER_CLASS];
-  std::string dspew_name[MAX_DSPEW_TYPES];
+  std::array<std::string, MAX_OBJ_SOUNDS> sound_name;
+  std::array<std::string, MAX_AI_SOUNDS> ai_sound_name;
+  std::array<std::array<std::string, MAX_WB_GUNPOINTS>, MAX_WBS_PER_OBJ> weapon_name;
+  std::array<std::array<std::string, MAX_WB_FIRING_MASKS>, MAX_WBS_PER_OBJ> fire_sound_name;
+  std::array<std::array<std::string, NUM_ANIMS_PER_CLASS>, NUM_MOVEMENT_CLASSES> anim_sound_name;
+  std::array<std::string, MAX_DSPEW_TYPES> dspew_name;
 };
 
 // Table-file serialization; operator>> reads any version from the stream and

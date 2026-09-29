@@ -81,22 +81,8 @@ static void mng_InitGenericPage(mngs_generic_page *genericpage) {
   genericpage->med_image_name.clear();
   genericpage->lo_image_name.clear();
 
-  for (i = 0; i < MAX_OBJ_SOUNDS; i++)
-    genericpage->sound_name[i].clear();
-
-  for (i = 0; i < MAX_AI_SOUNDS; i++)
-    genericpage->ai_sound_name[i].clear();
-
-  for (i = 0; i < MAX_DSPEW_TYPES; i++) {
-    genericpage->dspew_name[i].clear();
-  }
-
   genericpage->objinfo_struct.description.clear();
   genericpage->objinfo_struct.icon_name[0] = '\0';
-
-  for (i = 0; i < NUM_MOVEMENT_CLASSES; i++)
-    for (int j = 0; j < NUM_ANIMS_PER_CLASS; j++)
-      genericpage->anim_sound_name[i][j].clear();
 
   genericpage->objinfo_struct.med_lod_distance = DEFAULT_MED_LOD_DISTANCE;
   genericpage->objinfo_struct.lo_lod_distance = DEFAULT_LO_LOD_DISTANCE;
@@ -117,7 +103,7 @@ static void mng_InitGenericPage(mngs_generic_page *genericpage) {
   genericpage->ai_info.frustration = 0.5f;
   genericpage->ai_info.roaming = 0.5f;
   genericpage->ai_info.life_preservation = 0.0f;
-  genericpage->objinfo_struct.module_name[0] = '\0';
+  genericpage->objinfo_struct.module_name.clear();
 
   for (i = 0; i < MAX_DEATH_TYPES; i++) {
     genericpage->objinfo_struct.death_types[i].flags = {};
@@ -553,7 +539,7 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
 
   // Write out objects spewed
   for (i = 0; i < MAX_DSPEW_TYPES; i++) {
-    outfile << static_cast<uint8_t>(genericpage->objinfo_struct.f_dspew);
+    outfile << genericpage->objinfo_struct.f_dspew;
     outfile << genericpage->objinfo_struct.dspew_percent[i];
     outfile << genericpage->objinfo_struct.dspew_number[i];
     outfile << genericpage->dspew_name[i];
