@@ -6,6 +6,7 @@
  */
 
 #include "brief_model.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -26,17 +27,17 @@ void BriefEditInitScreens() {
   Briefing_globals = BriefGlobalValues{};
 }
 
-void BriefEditInitEffect(tBriefEffect *efx) {
-  if (efx)
+void BriefEditInitEffect(optref<tBriefEffect> efx) {
+  if (efx.has_value())
     efx->init();
 }
 
-void BriefEditFreeScreen(tBriefScreen *bscr) {
-  if (bscr == nullptr)
+void BriefEditFreeScreen(optref<tBriefScreen> bscr) {
+  if (!bscr.has_value())
     return;
   for (auto &e : bscr->effects) {
     if (e.used)
-      BriefEditFreeEffect(&e);
+      BriefEditFreeEffect(e);
   }
   bscr->init();
 }
@@ -44,13 +45,13 @@ void BriefEditFreeScreen(tBriefScreen *bscr) {
 void BriefEditFreeScreens() {
   for (auto &bscr : Briefing_screens)
     if (bscr.used)
-      BriefEditFreeScreen(&bscr);
+      BriefEditFreeScreen(bscr);
   Briefing_root_screen = -1;
   Briefing_globals = BriefGlobalValues{};
 }
 
-void BriefEditFreeEffect(tBriefEffect *efx) {
-  if (efx == nullptr)
+void BriefEditFreeEffect(optref<tBriefEffect> efx) {
+  if (!efx.has_value())
     return;
   efx->init();
 }
@@ -235,17 +236,16 @@ static std::string fontWord(int font) {
   return (font == 1) ? "lg_brief" : "sm_brief";
 }
 
-bool BriefEditSaveScreens(const std::filesystem::path &filename, BriefGlobalValues *glob) {
+bool BriefEditSaveScreens(const std::filesystem::path &filename, optref<BriefGlobalValues> glob) {
   std::ofstream out(filename);
   if (!out.is_open())
     return false;
 
-  if (glob == nullptr)
-    glob = &Briefing_globals;
+  BriefGlobalValues &g = glob.has_value() ? *glob : Briefing_globals;
 
-  out << "$title \"" << glob->title << "\"\n";
-  out << "$glitch " << glob->glitch_val << "\n";
-  out << "$static " << glob->static_val << "\n\n";
+  out << "$title \"" << g.title << "\"\n";
+  out << "$glitch " << g.glitch_val << "\n";
+  out << "$static " << g.static_val << "\n\n";
 
   int curr_screen = Briefing_root_screen;
   int screen_count = 0;
@@ -387,13 +387,12 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, BriefGlobalValu
 // Simple line-based .brf loader that round-trips what BriefEditSaveScreens
 // writes.  Screens are assigned by order; effects are appended to the current
 // screen's list.
-bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValues *glob) {
+bool BriefEditLoadScreens(const std::filesystem::path &filename, optref<BriefGlobalValues> glob) {
   std::ifstream in(filename);
   if (!in.is_open())
     return false;
 
-  if (glob == nullptr)
-    glob = &Briefing_globals;
+  BriefGlobalValues &g = glob.has_value() ? *glob : Briefing_globals;
 
   BriefEditFreeScreens();
   BriefEditInitScreens();
@@ -432,16 +431,16 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValu
     if (cmd == "$title") {
       std::string rest;
       std::getline(ss, rest);
-      glob->title = rest;
+      g.title = rest;
       // strip surrounding quotes
-      while (!glob->title.empty() && (glob->title.front() == '"' || glob->title.front() == ' '))
-        glob->title.erase(glob->title.begin());
-      while (!glob->title.empty() && (glob->title.back() == '"' || glob->title.back() == ' '))
-        glob->title.pop_back();
+      while (!g.title.empty() && (g.title.front() == '"' || g.title.front() == ' '))
+        g.title.erase(g.title.begin());
+      while (!g.title.empty() && (g.title.back() == '"' || g.title.back() == ' '))
+        g.title.pop_back();
     } else if (cmd == "$glitch") {
-      ss >> glob->glitch_val;
+      ss >> g.glitch_val;
     } else if (cmd == "$static") {
-      ss >> glob->static_val;
+      ss >> g.static_val;
     } else if (cmd == "$screen") {
       int idx = 0;
       ss >> idx;

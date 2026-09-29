@@ -21,6 +21,7 @@
 #include "log.h"
 #include "polymodel.h"
 #include "vecmat.h"
+#include "utils.h"
 
 #ifndef NED_PHYSICS
 //#include "multi.h"
@@ -58,10 +59,10 @@ static void CollideSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm);
 
 /// instance at specified point with specified orientation.
 /// if matrix==NULL, don't modify matrix.  This will be like doing an offset.
-static void newstyle_StartInstanceMatrix(vector3 *pos, matrix *orient);
+static void newstyle_StartInstanceMatrix(vector3 &pos, optref<matrix> orient);
 /// instance at specified point with specified orientation.
 /// if angles==NULL, don't modify matrix.  This will be like doing an offset.
-static void newstyle_StartInstanceAngles(vector3 *pos, angvec *angles);
+static void newstyle_StartInstanceAngles(vector3 &pos, optref<angvec> angles);
 
 /// pops the old context
 static void newstyle_DoneInstance();
@@ -230,7 +231,7 @@ static void CollideSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
 
 // instance at specified point with specified orientation
 // if matrix==NULL, don't modify matrix.  This will be like doing an offset
-void newstyle_StartInstanceMatrix(vector3 *pos, matrix *orient) {
+void newstyle_StartInstanceMatrix(vector3 &pos, optref<matrix> orient) {
   vector3 tempv, temp0, temp1;
   matrix tempm, tempm2;
 
@@ -248,11 +249,11 @@ void newstyle_StartInstanceMatrix(vector3 *pos, matrix *orient) {
 
   // step 1: subtract object position from view position
 
-  tempv = View_position - *pos;
-  temp0 = *fvi_query_ptr->p0 - *pos;
-  temp1 = *fvi_query_ptr->p1 - *pos;
+  tempv = View_position - pos;
+  temp0 = *fvi_query_ptr->p0 - pos;
+  temp1 = *fvi_query_ptr->p1 - pos;
 
-  if (orient) {
+  if (orient.has_value()) {
     // step 2: rotate view vector3 through object matrix
 
     View_position = tempv * *orient;
@@ -276,17 +277,17 @@ void newstyle_StartInstanceMatrix(vector3 *pos, matrix *orient) {
 
 // instance at specified point with specified orientation
 // if angles==NULL, don't modify matrix.  This will be like doing an offset
-static void newstyle_StartInstanceAngles(vector3 *pos, angvec *angles) {
+static void newstyle_StartInstanceAngles(vector3 &pos, optref<angvec> angles) {
   matrix tm;
 
-  if (angles == nullptr) {
-    newstyle_StartInstanceMatrix(pos, nullptr);
+  if (!angles.has_value()) {
+    newstyle_StartInstanceMatrix(pos, std::nullopt);
     return;
   }
 
   vm_AnglesToMatrix(&tm, angles->p(), angles->h(), angles->b());
 
-  newstyle_StartInstanceMatrix(pos, &tm);
+  newstyle_StartInstanceMatrix(pos, tm);
 }
 
 // pops the old context
@@ -313,7 +314,7 @@ void CollideSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
 
   StartPolyModelPosInstance(&sm->mod_pos);
   vector3 temp_vec = sm->mod_pos + sm->offset;
-  newstyle_StartInstanceAngles(&temp_vec, &sm->angs);
+  newstyle_StartInstanceAngles(temp_vec, sm->angs);
 
   // Check my bit to see if I get collided with.  :)
   if (f_render_sub & (0x00000001 << (sm - pm->submodel.data())))
@@ -337,7 +338,7 @@ void CollidePolygonModel(vector3 *pos, matrix *orient, int model_num, float *nor
 
   po = &Poly_models[model_num];
 
-  newstyle_StartInstanceMatrix(pos, orient);
+  newstyle_StartInstanceMatrix(*pos, *orient);
 
   SetModelAnglesAndPos(po, normalized_time);
 

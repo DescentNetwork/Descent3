@@ -194,6 +194,7 @@
 #include <vector>
 #include <posix_stream.h>
 #include "slotvec.h"
+#include "utils.h"
 
 #ifdef NEWEDITOR /* only include tablefile header (manage stuff for NEWEDITOR) */
 #include "..\neweditor\ned_TableFile.h"
@@ -388,7 +389,7 @@ int GetTextureBitmap(int handle, int framenum, bool force = false);
 
 // Given a filename, loads either the bitmap or vclip found in that file.  If type
 // is not NULL, sets it to 1 if file is animation, otherwise sets it to zero
-int LoadTextureImage(const std::filesystem::path &filename, int *type, int texture_size, int mipped, int pageable = 0, int format = 0);
+int LoadTextureImage(const std::filesystem::path &filename, optref<int> type, int texture_size, int mipped, int pageable = 0, int format = 0);
 
 // Goes through and marks a texture as a tmap2 if its bitmap(s) have transparency
 bool CheckIfTextureIsTmap2(int texnum);

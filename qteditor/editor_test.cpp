@@ -3314,10 +3314,10 @@ private slots:
     const QString file = tmp + "/roundtrip.brf";
     QFile::remove(file);
 
-    QVERIFY(BriefEditSaveScreens(std::filesystem::path(file.toStdString()), &Briefing_globals));
+    QVERIFY(BriefEditSaveScreens(std::filesystem::path(file.toStdString()), Briefing_globals));
 
     BriefEditInitScreens();
-    QVERIFY(BriefEditLoadScreens(std::filesystem::path(file.toStdString()), &Briefing_globals));
+    QVERIFY(BriefEditLoadScreens(std::filesystem::path(file.toStdString()), Briefing_globals));
 
     QCOMPARE(QString::fromStdString(Briefing_globals.title), QStringLiteral("Mission Brief"));
     QVERIFY(!Briefing_globals.title.empty());

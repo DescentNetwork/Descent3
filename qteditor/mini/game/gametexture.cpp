@@ -8,6 +8,7 @@
 
 #include "chrono_timer.h"
 #include "gametexture.h"
+#include "utils.h"
 #include "vclip.h"
 #include "game.h"
 #include "string_helpers.h"
@@ -147,7 +148,7 @@ int AllocateProceduralForTexture(int handle)
 // Given a filename, loads either the bitmap or vclip found in that file.  If
 // type is not NULL, sets it to 1 if the file is an animation, otherwise sets it
 // to zero.  Returns the bitmap/vclip handle, or -1 on error.
-int LoadTextureImage(const std::filesystem::path &filename, int *type, int texture_size, int mipped, int pageable,
+int LoadTextureImage(const std::filesystem::path &filename, optref<int> type, int texture_size, int mipped, int pageable,
                      int format) {
   // Animation containers (.oaf/.ifl/.abm) page in as a vclip.
   std::string ext = filename.extension().string();
@@ -155,7 +156,7 @@ int LoadTextureImage(const std::filesystem::path &filename, int *type, int textu
     ext.erase(ext.begin());
   const bool anim = match(ext, "oaf") || match(ext, "ifl") || match(ext, "abm");
 
-  if (type != nullptr)
+  if (type.has_value())
     *type = anim ? 1 : 0;
 
   // Read the whole file into a buffer and hand it to the in-memory decoders

@@ -27,6 +27,7 @@
 #include "object.h"
 #include "room.h"
 #include "terrain.h"
+#include "utils.h"
 
 #define MAX_LIGHT 1.0
 #define LIGHTMAP_SPACING 5.0
@@ -84,7 +85,8 @@ extern float Ubyte_to_float[];
 void SetRoomPulse(int roomnum, uint8_t pulse_time, uint8_t pulse_offset);
 
 // Returns the total number of bytes needed for volume lighting in this room
-int GetVolumeSizeOfRoom(int roomnum, int *w = NULL, int *h = NULL, int *d = NULL);
+int GetVolumeSizeOfRoom(int roomnum, optref<int> w = std::nullopt, optref<int> h = std::nullopt,
+                        optref<int> d = std::nullopt);
 
 // Returns a lightmap that can be applied for specular lighting
 int GetSpecularLightmapForFace(vector3 *pos, int roomnum, face *fp);

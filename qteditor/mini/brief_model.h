@@ -148,10 +148,10 @@ extern std::vector<tLayoutPredef> PBlayouts;
 
 // Lifecycle.
 void BriefEditInitScreens();
-void BriefEditInitEffect(tBriefEffect *efx);
+void BriefEditInitEffect(optref<tBriefEffect> efx);
 void BriefEditFreeScreens();
-void BriefEditFreeEffect(tBriefEffect *efx);
-void BriefEditFreeScreen(tBriefScreen *bscr);
+void BriefEditFreeEffect(optref<tBriefEffect> efx);
+void BriefEditFreeScreen(optref<tBriefScreen> bscr);
 
 // Allocate / resolve effects.
 bool BriefEditAllocateEffect(optref<int> ret_screen, optref<int> ret_effect);
@@ -161,7 +161,7 @@ void BriefEditGetCurScreenEffect(optref<int> ret_screen, optref<int> ret_effect)
 void ParseLayoutScreenFile(const std::filesystem::path &filename);
 
 // .brf serialization (text command format compatible with the game).
-bool BriefEditSaveScreens(const std::filesystem::path &filename, BriefGlobalValues *glob);
-bool BriefEditLoadScreens(const std::filesystem::path &filename, BriefGlobalValues *glob);
+bool BriefEditSaveScreens(const std::filesystem::path &filename, optref<BriefGlobalValues> glob);
+bool BriefEditLoadScreens(const std::filesystem::path &filename, optref<BriefGlobalValues> glob);
 
 #endif // BRIEF_MODEL_H

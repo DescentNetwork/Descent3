@@ -2731,7 +2731,7 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
 
   po = &Poly_models[model_num];
 
-  g3_StartInstanceMatrix(pos, orient);
+  g3_StartInstanceMatrix(*pos, *orient);
 
   if (Polymodel_use_effect && Polymodel_effect.type.fogged_model) {
     Polymodel_fog_plane = Polymodel_effect.fog_plane;
@@ -2820,7 +2820,7 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
   if (Polymodel_use_effect && (Polymodel_effect.type.bumpmapped))
     Polymodel_bump_pos = Polymodel_effect.bump_light_pos;
 
-  g3_StartInstanceMatrix(pos, orient);
+  g3_StartInstanceMatrix(*pos, *orient);
   StartLightInstance(pos, orient);
 
   po = &Poly_models[model_num];
@@ -2889,7 +2889,7 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
   if (Polymodel_use_effect && (Polymodel_effect.type.bumpmapped))
     Polymodel_bump_pos = Polymodel_effect.bump_light_pos;
 
-  g3_StartInstanceMatrix(pos, orient);
+  g3_StartInstanceMatrix(*pos, *orient);
   StartLightInstance(pos, orient);
 
   po = &Poly_models[model_num];

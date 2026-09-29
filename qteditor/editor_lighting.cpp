@@ -912,7 +912,7 @@ void DoRadiosityForRooms() {
     Volume_elements[roomnum] = NULL;
 
     if (Rooms[roomnum].used && !Rooms[roomnum].flags.external && !Rooms[roomnum].flags.no_light) {
-      int num_bytes = GetVolumeSizeOfRoom(roomnum, &vw, &vh, &vd);
+      int num_bytes = GetVolumeSizeOfRoom(roomnum, vw, vh, vd);
 
       Rooms[roomnum].volume_width = vw;
       Rooms[roomnum].volume_height = vh;
@@ -2189,12 +2189,12 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
 
                         pos1.x=(t*TERRAIN_SIZE)+(TERRAIN_SIZE/3);
                         pos1.z=(i*TERRAIN_SIZE)+(TERRAIN_SIZE * .66);
-                        pos1.y=GetTerrainGroundPoint (&pos1);
+                        pos1.y=GetTerrainGroundPoint (pos1, std::nullopt);
                         pos1+=((TerrainNormals[MAX_TERRAIN_LOD-1][tseg].normal1)/16);
 
                         pos2.x=(t*TERRAIN_SIZE)+(TERRAIN_SIZE * .66);
                         pos2.z=(i*TERRAIN_SIZE)+(TERRAIN_SIZE/3);
-                        pos2.y=GetTerrainGroundPoint (&pos2);
+                        pos2.y=GetTerrainGroundPoint (pos2, std::nullopt);
                         pos2+=((TerrainNormals[MAX_TERRAIN_LOD-1][tseg].normal2)/16);
 
                         for (j=0;j<Terrain_sky.num_satellites;j++)

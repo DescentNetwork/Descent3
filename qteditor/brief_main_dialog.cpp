@@ -199,7 +199,7 @@ void BriefMainDialog::onScreenDelete() {
   if (next != -1)
     Briefing_screens[next].prev = prev;
 
-  BriefEditFreeScreen(&Briefing_screens[scr]);
+  BriefEditFreeScreen(Briefing_screens[scr]);
   m_screen = 0;
   refreshScreenList();
 }
@@ -249,7 +249,7 @@ void BriefMainDialog::openEffectAdd(int effectType) {
       efx->id = dlg.id();
       efx->text = dlg.textBuffer();
     } else {
-      BriefEditFreeEffect(efx);
+      BriefEditFreeEffect(*efx);
     }
   } break;
   case BE_BMP: {
@@ -258,7 +258,7 @@ void BriefMainDialog::openEffectAdd(int effectType) {
       efx->desc.bmp_desc() = dlg.result();
       efx->description = dlg.description().toStdString();
     } else {
-      BriefEditFreeEffect(efx);
+      BriefEditFreeEffect(*efx);
     }
   } break;
   case BE_MOVIE: {
@@ -267,7 +267,7 @@ void BriefMainDialog::openEffectAdd(int effectType) {
       efx->desc.movie_desc() = dlg.result();
       efx->description = dlg.description().toStdString();
     } else {
-      BriefEditFreeEffect(efx);
+      BriefEditFreeEffect(*efx);
     }
   } break;
   case BE_SND: {
@@ -276,7 +276,7 @@ void BriefMainDialog::openEffectAdd(int effectType) {
       efx->desc.snd_desc() = dlg.result();
       efx->description = dlg.description().toStdString();
     } else {
-      BriefEditFreeEffect(efx);
+      BriefEditFreeEffect(*efx);
     }
   } break;
   case BE_BUTTON: {
@@ -285,7 +285,7 @@ void BriefMainDialog::openEffectAdd(int effectType) {
       efx->desc.button_desc() = dlg.result();
       efx->description = dlg.buttonDescription().toStdString();
     } else {
-      BriefEditFreeEffect(efx);
+      BriefEditFreeEffect(*efx);
     }
   } break;
   default:
@@ -383,7 +383,7 @@ void BriefMainDialog::onEffectDelete() {
         Briefing_screens[scr].effects[prev].next = next;
       if (next != -1)
         Briefing_screens[scr].effects[next].prev = prev;
-      BriefEditFreeEffect(&Briefing_screens[scr].effects[node]);
+      BriefEditFreeEffect(Briefing_screens[scr].effects[node]);
       break;
     }
     node = Briefing_screens[scr].effects[node].next;
@@ -398,7 +398,7 @@ void BriefMainDialog::onSave() {
   if (name.isEmpty())
     return;
   applyGlobals();
-  if (!BriefEditSaveScreens(std::filesystem::path(name.toStdString()), &Briefing_globals))
+  if (!BriefEditSaveScreens(std::filesystem::path(name.toStdString()), Briefing_globals))
     QMessageBox::information(this, "Error", "Could not save briefing.");
 }
 
@@ -406,7 +406,7 @@ void BriefMainDialog::onLoad() {
   QString name = QFileDialog::getOpenFileName(this, "Load Briefing", QString(), "Briefing (*.brf)");
   if (name.isEmpty())
     return;
-  if (!BriefEditLoadScreens(std::filesystem::path(name.toStdString()), &Briefing_globals)) {
+  if (!BriefEditLoadScreens(std::filesystem::path(name.toStdString()), Briefing_globals)) {
     QMessageBox::information(this, "Error", "Could not load briefing.");
     return;
   }

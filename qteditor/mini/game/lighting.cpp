@@ -34,6 +34,7 @@
 #include "3d.h"
 #include "gametexture.h"
 #include "lighting.h"
+#include "utils.h"
 #include "lightmap.h"
 #include "log.h"
 #include "game.h"
@@ -1532,17 +1533,17 @@ void SetRoomPulse(int roomnum, uint8_t pulse_time, uint8_t pulse_offset) {
 
 // TODO: MTS: Unused?
 // Returns the total number of bytes needed for volume lighting in this room
-int GetVolumeSizeOfRoom(int roomnum, int *w, int *h, int *d) {
+int GetVolumeSizeOfRoom(int roomnum, optref<int> w, optref<int> h, optref<int> d) {
   room *rp = &Rooms[roomnum];
   int width = ((rp->max_xyz.x() - rp->min_xyz.x()) / VOLUME_SPACING) + 1;
   int height = ((rp->max_xyz.y() - rp->min_xyz.y()) / VOLUME_SPACING) + 1;
   int depth = ((rp->max_xyz.z() - rp->min_xyz.z()) / VOLUME_SPACING) + 1;
 
-  if (w)
+  if (w.has_value())
     *w = width;
-  if (h)
+  if (h.has_value())
     *h = height;
-  if (d)
+  if (d.has_value())
     *d = depth;
 
   return (width * height * depth);

@@ -962,7 +962,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
   rend_SetColorModel(CM_RGB);
   StartPolyModelPosInstance(&sm->mod_pos);
   vector3 temp_vec = sm->mod_pos + sm->offset;
-  g3_StartInstanceAngles(&temp_vec, &sm->angs);
+  g3_StartInstanceAngles(temp_vec, sm->angs);
 
   vm_AnglesToMatrix(&lightmatrix, sm->angs.p(), sm->angs.h(), sm->angs.b());
   StartLightInstance(&temp_vec, &lightmatrix);

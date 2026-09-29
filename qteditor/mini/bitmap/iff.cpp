@@ -42,6 +42,7 @@
 
 #include "mem.h"
 #include "iff.h"
+#include "utils.h"
 #include "byteswap.h"
 #include "bitmap.h"
 #include "log.h"
@@ -128,7 +129,7 @@ static int bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_head
 static int bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bmheader);
 static void bm_iff_skip_chunk(posix_istream &ifile, uint32_t len);
 static int bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheader);
-static int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header *bmheader, iff_bitmap_header *prev_bm);
+static int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, optref<iff_bitmap_header> prev_bm);
 static void bm_iff_convert_8_to_16(int dest_bm, iff_bitmap_header *iffbm);
 
 int bm_iff_get_sig(posix_istream &f) {
@@ -352,7 +353,7 @@ int bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheade
 
 // read an PBM
 // Pass pointer to opened file, and to empty bitmap_header structure, and form length
-int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header *bmheader, iff_bitmap_header *prev_bm) {
+int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, optref<iff_bitmap_header> prev_bm) {
   uint32_t sig, len;
   int done = 0;
 
@@ -369,31 +370,31 @@ int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header *bmheader, iff_bit
     switch (sig) {
     case IFF_SIG_FORM: {
       bm_iff_get_sig(ifile);
-      bmheader->type = TYPE_PBM;
+      bmheader.type = TYPE_PBM;
       break;
     }
     case IFF_SIG_BMHD: {
       int ret;
 
-      ret = bm_iff_parse_bmhd(ifile, len, bmheader);
+      ret = bm_iff_parse_bmhd(ifile, len, &bmheader);
       if (ret != IFF_NO_ERROR)
         return ret;
       else {
-        bmheader->raw_data.resize(bmheader->w * bmheader->h);
+        bmheader.raw_data.resize(bmheader.w * bmheader.h);
       }
 
     } break;
     case IFF_SIG_ANHD: {
 
-      if (!prev_bm) {
+      if (!prev_bm.has_value()) {
         Q_ASSERT(false);
         return IFF_CORRUPT;
       }
 
-      bmheader->w = prev_bm->w;
-      bmheader->h = prev_bm->h;
-      bmheader->type = prev_bm->type;
-      bmheader->raw_data = prev_bm->raw_data;
+      bmheader.w = prev_bm->w;
+      bmheader.h = prev_bm->h;
+      bmheader.type = prev_bm->type;
+      bmheader.raw_data = prev_bm->raw_data;
 
       if (len & 1)
         len++;
@@ -411,11 +412,11 @@ int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header *bmheader, iff_bit
         g = (uint8_t)rdByte(ifile);
         b = (uint8_t)rdByte(ifile);
         r >>= 2;
-        bmheader->palette[cnum].r = r;
+        bmheader.palette[cnum].r = r;
         g >>= 2;
-        bmheader->palette[cnum].g = g;
+        bmheader.palette[cnum].g = g;
         b >>= 2;
-        bmheader->palette[cnum].b = b;
+        bmheader.palette[cnum].b = b;
       }
       if (len & 1)
         rdByte(ifile);
@@ -424,14 +425,14 @@ int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header *bmheader, iff_bit
 
     case IFF_SIG_BODY: {
       int r;
-      if ((r = bm_iff_parse_body(ifile, len, bmheader)) != IFF_NO_ERROR)
+      if ((r = bm_iff_parse_body(ifile, len, &bmheader)) != IFF_NO_ERROR)
         return r;
       done = 1;
       break;
     }
     case IFF_SIG_DELTA: {
       int r;
-      if ((r = bm_iff_parse_delta(ifile, len, bmheader)) != IFF_NO_ERROR)
+      if ((r = bm_iff_parse_delta(ifile, len, &bmheader)) != IFF_NO_ERROR)
         return r;
       done = 1;
       break;
@@ -494,7 +495,7 @@ int bm_iff_alloc_file(posix_istream &ifile) {
   }
   bmheader.type = TYPE_PBM;
 
-  ret = bm_iff_parse_file(ifile, &bmheader, NULL);
+  ret = bm_iff_parse_file(ifile, bmheader, std::nullopt);
 
   if (ret != IFF_NO_ERROR) {
     LOG_ERROR("Couldn't load IFF file.");

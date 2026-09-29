@@ -2040,7 +2040,7 @@ float osipf_AIGetDistToObj(int objhandle, int otherobjhandle) {
     return 0;
   }
 
-  BOA_ComputeMinDist(obj->roomnum, fobj->roomnum, 0.0f, &dist, NULL);
+  BOA_ComputeMinDist(obj->roomnum, fobj->roomnum, 0.0f, dist, std::nullopt);
 
   return dist;
 }

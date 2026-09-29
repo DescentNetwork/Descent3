@@ -247,7 +247,7 @@ void WorldTexturesDialog::onAddNew() {
   if (pathname.isEmpty())
     return;
   const std::filesystem::path pathFs(pathname.toStdString());
-  const int bm = LoadTextureImage(pathFs, 0, 0, 0);
+  const int bm = LoadTextureImage(pathFs, std::nullopt, 0, 0);
   if (bm < 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't load that bitmap.");
     return;
@@ -441,7 +441,7 @@ void WorldTexturesDialog::onLoadBitmap() {
     if (pathname.isEmpty())
       return;
     const std::filesystem::path pathFs(pathname.toStdString());
-    const int bm = LoadTextureImage(pathFs, 0, 0, 0);
+    const int bm = LoadTextureImage(pathFs, std::nullopt, 0, 0);
     if (bm < 0)
       return;
     t->bm_handle = bm;

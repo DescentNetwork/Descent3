@@ -128,6 +128,7 @@
 #include "BOA.h"
 #include "vecmat.h"
 #include "room.h"
+#include "utils.h"
 #include "object.h"
 #include "findintersection.h"
 #include "log.h"
@@ -311,7 +312,7 @@ extern object *GetDoorObject(int roomnum);
 //		last_room = next_room;
 //		next_room = BOA_GetNextRoom(next_room, end_room);
 //
-//		if(BOA_DetermineStartRoomPortal(last_room, NULL, next_room, NULL, false, NULL) == -1)
+//		if(BOA_DetermineStartRoomPortal(last_room, std::nullopt, next_room, std::nullopt, false, std::nullopt) == -1)
 //		{
 //			return false;
 //		}
@@ -320,9 +321,9 @@ extern object *GetDoorObject(int roomnum);
 //	return true;
 //}
 
-std::optional<uint32_t> BOA_DetermineStartRoomPortal(int start_room, vector3 *start_pos, int end_room, vector3 *end_pos,
-                                                     bool f_for_sound, bool f_making_robot_path_invalid_list,
-                                                     int *blocked_portal) {
+std::optional<uint32_t> BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, int end_room,
+                                                     optref<vector3> end_pos, bool f_for_sound,
+                                                     bool f_making_robot_path_invalid_list, optref<int> blocked_portal) {
   int i;
 
   if (start_room == -1 || end_room == -1)
@@ -378,8 +379,8 @@ std::optional<uint32_t> BOA_DetermineStartRoomPortal(int start_room, vector3 *st
   return static_cast<uint32_t>(i);
 }
 
-bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, float *dist, int *num_blockages) {
-  *dist = 0.0f;
+bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, float &dist, optref<int> num_blockages) {
+  dist = 0.0f;
 
   start_room = BOA_INDEX(start_room);
   end_room = BOA_INDEX(end_room);
@@ -417,7 +418,7 @@ bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, floa
   do {
     last_room = cur_room;
 
-    if (cur_room < Rooms.size() && num_blockages && Rooms[cur_room].flags.door &&
+    if (cur_room < Rooms.size() && num_blockages.has_value() && Rooms[cur_room].flags.door &&
         (cur_room != end_room)) {
       float door_position = DoorwayPositionForRoom(cur_room);
 
@@ -431,26 +432,26 @@ bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, floa
       return false;
 
     if (BOA_INDEX(last_room) != BOA_INDEX(cur_room)) {
-      last_portal = BOA_DetermineStartRoomPortal(last_room, NULL, cur_room, NULL).value_or(-1);
+      last_portal = BOA_DetermineStartRoomPortal(last_room, std::nullopt, cur_room, std::nullopt).value_or(-1);
     }
 
     if (last_room == end_room) {
-      int this_portal = BOA_DetermineStartRoomPortal(cur_room, NULL, last_room, NULL).value_or(-1);
+      int this_portal = BOA_DetermineStartRoomPortal(cur_room, std::nullopt, last_room, std::nullopt).value_or(-1);
 
       if (cur_room != start_room && this_portal >= 0)
-        *dist += BOA_cost_array[cur_room][this_portal];
-      if (max_check_dist > 0.0 && max_check_dist < *dist)
+        dist += BOA_cost_array[cur_room][this_portal];
+      if (max_check_dist > 0.0 && max_check_dist < dist)
         return false;
     } else if (cur_room == start_room) {
-      *dist += BOA_cost_array[last_room][last_portal];
-      if (max_check_dist > 0.0 && max_check_dist < *dist)
+      dist += BOA_cost_array[last_room][last_portal];
+      if (max_check_dist > 0.0 && max_check_dist < dist)
         return false;
     } else if ((cur_room != last_room) && (cur_room != BOA_NO_PATH)) {
-      int this_portal = BOA_DetermineStartRoomPortal(cur_room, NULL, last_room, NULL).value_or(-1);
+      int this_portal = BOA_DetermineStartRoomPortal(cur_room, std::nullopt, last_room, std::nullopt).value_or(-1);
       if (last_portal >= 0 && this_portal >= 0) {
 
-        *dist += BOA_cost_array[last_room][last_portal] + BOA_cost_array[cur_room][this_portal];
-        if (max_check_dist > 0.0f && max_check_dist < *dist)
+        dist += BOA_cost_array[last_room][last_portal] + BOA_cost_array[cur_room][this_portal];
+        if (max_check_dist > 0.0f && max_check_dist < dist)
           return false;
       }
     }
@@ -816,7 +817,7 @@ void compute_sound_dist_info() {
   for (i = 0; i < Rooms.size(); i++) {
     for (j = 0; j < i; j++) {
       float dist;
-      bool f_ok = BOA_ComputeMinDist(i, j, MAX_SOUND_PROP_DIST, &dist);
+      bool f_ok = BOA_ComputeMinDist(i, j, MAX_SOUND_PROP_DIST, dist);
 
       if (!f_ok || dist > MAX_SOUND_PROP_DIST) {
         BOA_Array[i][j] &= ~BOA_SOUND_PROP;
@@ -984,7 +985,7 @@ void FindPath(int i, int j) {
 
         int next_portal;
         if (BOA_INDEX(next_room) != BOA_INDEX(cur_node->roomnum)) {
-          next_portal = BOA_DetermineStartRoomPortal(next_room, NULL, cur_node->roomnum, NULL).value_or(-1);
+          next_portal = BOA_DetermineStartRoomPortal(next_room, std::nullopt, cur_node->roomnum, std::nullopt).value_or(-1);
         }
 
         new_cost = cur_node->cost + BOA_cost_array[BOA_INDEX(cur_node->roomnum)][counter] +
@@ -1042,7 +1043,7 @@ void FindPath(int i, int j) {
 
         int next_portal;
         if (BOA_INDEX(next_room) != BOA_INDEX(cur_node->roomnum)) {
-          next_portal = BOA_DetermineStartRoomPortal(next_room, NULL, cur_node->roomnum, NULL).value_or(-1);
+          next_portal = BOA_DetermineStartRoomPortal(next_room, std::nullopt, cur_node->roomnum, std::nullopt).value_or(-1);
         }
 
         new_cost = cur_node->cost + BOA_cost_array[BOA_INDEX(cur_node->roomnum)][counter] +
@@ -1165,7 +1166,7 @@ void compute_blockage_info() {
 
           if (last_room != cur_room) {
             BOA_f_making_boa = false;
-            if (BOA_DetermineStartRoomPortal(last_room, NULL, cur_room, NULL, true).value_or(-1) == -1) {
+            if (BOA_DetermineStartRoomPortal(last_room, std::nullopt, cur_room, std::nullopt, true).value_or(-1) == -1) {
               BOA_Array[i][j] |= BOAF_BLOCKAGE;
               BOA_f_making_boa = true;
               break;
@@ -1914,8 +1915,8 @@ void verify_connections() {
 
       if (next_room != i && next_room != BOA_NO_PATH) {
         int portal;
-        portal = BOA_DetermineStartRoomPortal(i, NULL, next_room, NULL).value_or(-1);
-        portal = BOA_DetermineStartRoomPortal(next_room, NULL, i, NULL).value_or(-1);
+        portal = BOA_DetermineStartRoomPortal(i, std::nullopt, next_room, std::nullopt).value_or(-1);
+        portal = BOA_DetermineStartRoomPortal(next_room, std::nullopt, i, std::nullopt).value_or(-1);
       }
     }
   }
@@ -1986,7 +1987,7 @@ void compute_robot_path_info() {
           cur_room = BOA_NEXT_ROOM(cur_room, j);
 
           if (last_room != cur_room) {
-            if (BOA_DetermineStartRoomPortal(last_room, NULL, cur_room, NULL, false, true).value_or(-1) == -1) {
+            if (BOA_DetermineStartRoomPortal(last_room, std::nullopt, cur_room, std::nullopt, false, true).value_or(-1) == -1) {
               BOA_Array[i][j] |= BOAF_TOO_SMALL_FOR_ROBOT;
               break;
             }

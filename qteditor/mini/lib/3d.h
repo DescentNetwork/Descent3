@@ -187,6 +187,7 @@
 #include "vecmat.h" //the vector/matrix library
 #include "grdefs.h"
 #include "float.h"
+#include "utils.h"
 
 extern vector3 Matrix_scale; // how the matrix is currently scaled
 
@@ -283,10 +284,10 @@ float g3_GetAspectRatio();
 // Instancing
 
 // instance at specified point with specified orientation
-void g3_StartInstanceMatrix(vector3 *pos, matrix *orient);
+void g3_StartInstanceMatrix(vector3 &pos, matrix &orient);
 
 // instance at specified point with specified orientation
-void g3_StartInstanceAngles(vector3 *pos, angvec *angles);
+void g3_StartInstanceAngles(vector3 &pos, optref<angvec> angles);
 
 // pops the old context
 void g3_DoneInstance();

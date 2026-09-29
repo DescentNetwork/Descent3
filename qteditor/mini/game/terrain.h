@@ -27,6 +27,7 @@
 #include "3d.h"
 #include "grdefs.h"
 #include "object.h"
+#include "utils.h"
 
 
 // How far we texture out to...after this distance we draw flat shaded polygons
@@ -348,7 +349,7 @@ std::optional<uint32_t> GetTerrainRoomFromPos(vector3& pos);
 void ComputeTerrainSegmentCenter(vector3& pos, int segnum);
 // Given an position, returns the terrain Y coord at that location
 // Also now can return the normal at that ground point
-float GetTerrainGroundPoint(vector3& pos, vector3* normal);
+float GetTerrainGroundPoint(vector3& pos, optref<vector3> normal);
 
 void SetupSky(float radius, terrain_sky_flags_t flags, uint8_t randit = 0);
 

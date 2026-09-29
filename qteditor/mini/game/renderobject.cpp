@@ -997,7 +997,7 @@ void DrawShardObject(object& obj) {
   g3Point rotated_points[3];
   g3Point *pointlist[3];
   uint8_t codes_and = 0xff;
-  g3_StartInstanceMatrix(&obj.pos, &obj.orient);
+  g3_StartInstanceMatrix(obj.pos, obj.orient);
   // Build list of points and UVLs for this face
   for (int i = 0; i < 3; i++) {
     uint8_t c;

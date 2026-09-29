@@ -221,6 +221,7 @@
 #include <QtGlobal>
 
 #include "terrain.h"
+#include "utils.h"
 #include "3d.h"
 #include "log.h"
 #include "vecmat.h"
@@ -748,11 +749,11 @@ void ComputeTerrainSegmentCenter(vector3& pos, int segnum) {
 
   pos.x() = (segx * TERRAIN_SIZE) + (TERRAIN_SIZE / 2);
   pos.z() = (segz * TERRAIN_SIZE) + (TERRAIN_SIZE / 2);
-  pos.y() = GetTerrainGroundPoint(pos, nullptr);
+  pos.y() = GetTerrainGroundPoint(pos, std::nullopt);
 }
 
 // Given an position, returns the terrain Y coord at that location
-float GetTerrainGroundPoint(vector3& pos, vector3* normal) {
+float GetTerrainGroundPoint(vector3& pos, optref<vector3> normal) {
   float y;
   vector3 pnt, norm;
   int t;
@@ -780,7 +781,7 @@ float GetTerrainGroundPoint(vector3& pos, vector3* normal) {
   y = -y;
   y += Terrain_seg[t].y;
 
-  if (normal != nullptr)
+  if (normal.has_value())
     *normal = norm;
 
   return (y);

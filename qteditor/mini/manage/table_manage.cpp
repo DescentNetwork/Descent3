@@ -17,6 +17,7 @@
 
 #include <posix_stream.h>
 #include "string_helpers.h"
+#include "utils.h"
 #include "mem.h"
 
 namespace {
@@ -37,13 +38,13 @@ bool CiStrLess(const std::string &a, const std::string &b) {
 // Reads the [len][data] payload of a non-generic page.  If outfile is
 // non-null, re-emits the page verbatim (pagetype byte + length + payload,
 // the analogue of the original mng_ReadWriteDummyPage).
-bool CopyPagePayload(byte_istream &infile, uint8_t pagetype, byte_ostream *outfile) {
+bool CopyPagePayload(byte_istream &infile, uint8_t pagetype, optref<byte_ostream> outfile) {
   int32_t len = 0;
   infile >> len;
   if (len < 0)
     return false;
 
-  if (outfile) {
+  if (outfile.has_value()) {
     outfile->put(pagetype);
     *outfile << len;
   }
@@ -53,7 +54,7 @@ bool CopyPagePayload(byte_istream &infile, uint8_t pagetype, byte_ostream *outfi
   while (passed < static_cast<size_t>(len)) {
     const size_t chunk = std::min<size_t>(static_cast<size_t>(len) - passed, buffer.size());
     infile.read(buffer.data(), chunk);
-    if (outfile)
+    if (outfile.has_value())
       outfile->write(buffer.data(), chunk);
     passed += chunk;
   }
@@ -184,7 +185,7 @@ bool GenericPageList::LoadTable(const std::string &table_filename) {
 
     // If not a generic page, just read it in and ignore it
     if (pagetype != PAGETYPE_GENERIC) {
-      if (!CopyPagePayload(infile, pagetype, nullptr))
+      if (!CopyPagePayload(infile, pagetype, std::nullopt))
         return false;
       page_id++;
       continue;
@@ -253,7 +254,7 @@ bool GenericPageList::SaveTable(const std::string &table_filename) {
 
     // If not a generic page, copy it through unchanged
     if (pagetype != PAGETYPE_GENERIC) {
-      if (!CopyPagePayload(infile, pagetype, &outfile))
+      if (!CopyPagePayload(infile, pagetype, outfile))
         return false;
       page_id++;
       continue;

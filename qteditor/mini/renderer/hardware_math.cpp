@@ -12,6 +12,7 @@
 #include "3d.h"
 #include "HardwareInternal.h"
 #include "renderer.h"
+#include "utils.h"
 #include <QtGlobal>
 
 #include <cstring>
@@ -407,8 +408,7 @@ static InstanceContext sInstanceStack[MAX_INSTANCE_DEPTH];
 static int sInstanceDepth = 0;
 
 // instance at specified point with specified orientation
-void g3_StartInstanceMatrix(vector3 *pos, matrix *orient) {
-  Q_ASSERT(orient != nullptr);
+void g3_StartInstanceMatrix(vector3 &pos, matrix &orient) {
   Q_ASSERT(sInstanceDepth < MAX_INSTANCE_DEPTH);
 
   sInstanceStack[sInstanceDepth].m_viewMatrix = View_matrix;
@@ -417,10 +417,10 @@ void g3_StartInstanceMatrix(vector3 *pos, matrix *orient) {
   memcpy(sInstanceStack[sInstanceDepth].m_modelView, gTransformModelView, sizeof(gTransformModelView));
   ++sInstanceDepth;
 
-  vector3 tempv = View_position - *pos;
-  View_position = tempv * *orient;
+  vector3 tempv = View_position - pos;
+  View_position = tempv * orient;
 
-  matrix tempm, tempm2 = ~*orient;
+  matrix tempm, tempm2 = ~orient;
   tempm = tempm2 * View_matrix;
   View_matrix = tempm;
   tempm = tempm2 * Unscaled_matrix;
@@ -431,16 +431,16 @@ void g3_StartInstanceMatrix(vector3 *pos, matrix *orient) {
 }
 
 // instance at specified point with specified angles
-void g3_StartInstanceAngles(vector3 *pos, angvec *angles) {
-  if (angles == nullptr) {
+void g3_StartInstanceAngles(vector3 &pos, optref<angvec> angles) {
+  if (!angles.has_value()) {
     matrix ident;
     vm_MakeIdentity(&ident);
-    g3_StartInstanceMatrix(pos, &ident);
+    g3_StartInstanceMatrix(pos, ident);
     return;
   }
   matrix tm;
   vm_AnglesToMatrix(&tm, angles->p(), angles->h(), angles->b());
-  g3_StartInstanceMatrix(pos, &tm);
+  g3_StartInstanceMatrix(pos, tm);
 }
 
 // pops the old context

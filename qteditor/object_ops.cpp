@@ -257,7 +257,7 @@ void ResetGroundObject(object& obj) {
 
   vector3 surface_norm;
   vector3 pos = obj.pos;
-  pos.y() = GetTerrainGroundPoint(pos, &surface_norm);
+  pos.y() = GetTerrainGroundPoint(pos, surface_norm);
 
   vector3 ground_point;
   vector3 ground_normal;
