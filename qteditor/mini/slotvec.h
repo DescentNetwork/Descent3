@@ -52,8 +52,8 @@ namespace d3
 
     // -- std::vector<T>-style value access (hides the pair storage) ----------
 
-    T &operator[](size_type i) { return base_type::operator[](i).second; }
-    const T &operator[](size_type i) const { return base_type::operator[](i).second; }
+    T &operator[](size_type i) { return base_type::at(i).second; }
+    const T &operator[](size_type i) const { return base_type::at(i).second; }
 
     T &at(size_type i) { return base_type::at(i).second; }
     const T &at(size_type i) const { return base_type::at(i).second; }
