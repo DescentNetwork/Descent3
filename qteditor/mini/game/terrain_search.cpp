@@ -229,6 +229,7 @@
 #include "game.h"
 //#include "gameloop.h"
 #include "config.h"
+#include "d3edit.h"
 //#include "dedicated_server.h"
 
 
@@ -242,9 +243,6 @@ int TotalDepth;
 
 // LOD shutoff stuff
 static std::vector<lodoff> LODOffs;
-
-// Render the terrain as flat?
-uint8_t Flat_terrain = 0;
 
 // Variables for LOD engine
 static float ViewDistance1 = .68f, ViewDistance2 = 1.0f;
@@ -307,7 +305,7 @@ static inline void GetPreRotatedPointFast(vector3 *dest, int x, int z, int yvalu
 
   // If the terrain is supposed to be flat, bash this to zero
 #ifdef EDITOR
-  if (Flat_terrain) {
+  if (app.Flat_terrain) {
     yvalue = 0;
   }
 #endif
@@ -322,7 +320,7 @@ void GetPreRotatedPoint(g3Point *dest, int x, int z, int yvalue) {
 
 // If the terrain is supposed to be flat, bash this to zero
 #ifdef EDITOR
-  if (Flat_terrain) {
+  if (app.Flat_terrain) {
     yvalue = 0;
   }
 #endif
@@ -439,7 +437,7 @@ __inline void CheckCellOccupancy(int x, int y, int *ccount, uint8_t lod) {
 
   n = y * TERRAIN_WIDTH + x;
 
-  if (Show_invisible_terrain == 0 && lod == MAX_TERRAIN_LOD - 1 && Terrain_seg[n].flags.invisible)
+  if (!app.Show_invisible_terrain && lod == MAX_TERRAIN_LOD - 1 && Terrain_seg[n].flags.invisible)
     return;
 
   (*ccount)++;
@@ -787,7 +785,7 @@ float GetTerrainGroundPoint(vector3& pos, optref<vector3> normal) {
   return (y);
 }
 
-int SimplifyVertexSlow(int x, int z, float delta) {
+bool SimplifyVertexSlow(int x, int z, float delta) {
   g3Point p1, p2;
 
   p1.p3_codes = 0;
@@ -806,9 +804,9 @@ int SimplifyVertexSlow(int x, int z, float delta) {
 #else
   if (len < (10.0f * 10.0f))
 #endif
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 int SimplifyVertex(int x, int z, float delta) {
@@ -848,11 +846,11 @@ std::optional<uint32_t> EvaluateBlock(int x, int z, int lod) {
   int simplemul = 1 << ((MAX_TERRAIN_LOD - 1) - lod);
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
-  if (View_mode == EDITOR_MODE && Editor_LOD_engine_off)
+  if (View_mode == EDITOR_MODE && app.Editor_LOD_engine_off)
     return 0;
 #endif
 
-  if (View_mode != EDITOR_MODE && Terrain_LOD_engine_off)
+  if (View_mode != EDITOR_MODE && app.Terrain_LOD_engine_off)
     return 0;
 
   delta = TerrainDeltaBlocks[lod][((z / simplemul) * (TERRAIN_WIDTH / simplemul)) + (x / simplemul)];

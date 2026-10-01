@@ -1,7 +1,10 @@
 #pragma once
 
-#include "vecmat.h"
+
 #include <filesystem>
+
+#include "vecmat.h"
+#include "terrain.h"
 
 // Define group & room structs so we don't have to include group.h & room.h
 struct group;
@@ -44,9 +47,9 @@ class grViewport;
 namespace state
 {
   // Which mode we're currently in
-  enum class viewer
+  enum class viewer : uint32_t
   {
-    mine,
+    mine = 0,
     terrain,
     room,
     invalid
@@ -195,6 +198,15 @@ struct d3edit_state
 
   //	object id clipboard.
   int Copied_object_id = -1;
+
+  bool Fast_terrain = true;
+  bool Flat_terrain = false; // Render the terrain as flat?
+  bool Show_invisible_terrain = false;
+  bool Editor_LOD_engine_off = true;
+  bool Terrain_LOD_engine_off = true;
+  bool Terrain_render_ext_room_objs = true;
+
+  float Terrain_texture_distance = DEFAULT_TEXTURE_DISTANCE; // how far we should texture before going to flat shad
 };
 
 //	Editor.cpp:: Current state of the editor UI.
@@ -202,16 +214,6 @@ extern d3edit_state app;
 
 //	Editor.cpp:: Surface describing the actual desktop where the editor is running.
 extern grSurface *Desktop_surf;
-
-// Editor-only terrain globals (declared in terrain.h behind #ifdef EDITOR)
-extern int Editor_LOD_engine_off;
-extern bool Terrain_render_ext_room_objs;
-
-
-
-
-
-
 
 //	FUNCTIONS
 void EditorStatus(const char *format, ...);

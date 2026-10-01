@@ -180,10 +180,10 @@ void TerrainKeypad::updateDialog() {
   }
   ui->IDC_SHOW_TERRAIN->setChecked(app.terrain_dots);
   ui->IDC_FLAT_SHADE_TERRAIN_CHECK->setChecked(app.terrain_flat_shade);
-  ui->IDC_NO_LOD_ENGINE->setChecked(Editor_LOD_engine_off);
-  ui->IDC_TERRAIN_2D->setChecked(Flat_terrain);
-  ui->IDC_SHOW_INVISIBLE->setChecked(Show_invisible_terrain);
-  ui->IDC_NO_EXT_ROOMS_OBJS->setChecked(!Terrain_render_ext_room_objs);
+  ui->IDC_NO_LOD_ENGINE->setChecked(app.Editor_LOD_engine_off);
+  ui->IDC_TERRAIN_2D->setChecked(app.Flat_terrain);
+  ui->IDC_SHOW_INVISIBLE->setChecked(app.Show_invisible_terrain);
+  ui->IDC_NO_EXT_ROOMS_OBJS->setChecked(!app.Terrain_render_ext_room_objs);
 
   ui->IDC_SKY_RADIO->setChecked(m_ccMode == ColorMode_Sky);
   ui->IDC_HORIZON_RADIO->setChecked(m_ccMode == ColorMode_Horizon);
@@ -527,54 +527,108 @@ static uint32_t makeRGB(int r, int g, int b) {
   return GR_RGB(r, g, b);
 }
 
-void TerrainKeypad::onSkyRedEdited() {
-  QLineEdit *e = ui->IDC_SKY_RED_EDIT;
-  if (!e) return;
-  float fv = e->text().toFloat();
-  if (m_ccMode != ColorMode_Sat) {
-    int r = std::clamp(int(fv), 0, 255);
-    int g, b;
-    if (m_ccMode == ColorMode_Sky) { g = GR_COLOR_GREEN(Terrain_sky.sky_color); b = GR_COLOR_BLUE(Terrain_sky.sky_color); Terrain_sky.sky_color = makeRGB(r, g, b); }
-    else if (m_ccMode == ColorMode_Horizon) { g = GR_COLOR_GREEN(Terrain_sky.horizon_color); b = GR_COLOR_BLUE(Terrain_sky.horizon_color); Terrain_sky.horizon_color = makeRGB(r, g, b); }
-    else { g = GR_COLOR_GREEN(Terrain_sky.fog_color); b = GR_COLOR_BLUE(Terrain_sky.fog_color); Terrain_sky.fog_color = makeRGB(r, g, b); }
-  } else {
-    if (fv < 0) fv = 0;
+void TerrainKeypad::onSkyRedEdited()
+{
+  float fv = ui->IDC_SKY_RED_EDIT->text().toFloat();
+  if (m_ccMode != ColorMode_Sat)
+  {
+    uint8_t r = std::clamp(int(fv), 0, 255);
+    uint8_t g, b;
+    if (m_ccMode == ColorMode_Sky)
+    {
+      g = GR_COLOR_GREEN(Terrain_sky.sky_color);
+      b = GR_COLOR_BLUE(Terrain_sky.sky_color);
+      Terrain_sky.sky_color = GR_RGB(r, g, b);
+    }
+    else if (m_ccMode == ColorMode_Horizon)
+    {
+      g = GR_COLOR_GREEN(Terrain_sky.horizon_color);
+      b = GR_COLOR_BLUE(Terrain_sky.horizon_color);
+      Terrain_sky.horizon_color = GR_RGB(r, g, b);
+    }
+    else
+    {
+      g = GR_COLOR_GREEN(Terrain_sky.fog_color);
+      b = GR_COLOR_BLUE(Terrain_sky.fog_color);
+      Terrain_sky.fog_color = GR_RGB(r, g, b);
+    }
+  }
+  else
+  {
+    if (fv < 0)
+      fv = 0;
     Terrain_sky.satellite_r[m_currentSatellite] = fv;
   }
   app.World_changed = true;
   updateDialog();
 }
 
-void TerrainKeypad::onSkyGreenEdited() {
-  QLineEdit *e = ui->IDC_SKY_GREEN_EDIT;
-  if (!e) return;
-  float fv = e->text().toFloat();
-  if (m_ccMode != ColorMode_Sat) {
-    int g = std::clamp(int(fv), 0, 255);
-    int r, b;
-    if (m_ccMode == ColorMode_Sky) { r = GR_COLOR_RED(Terrain_sky.sky_color); b = GR_COLOR_BLUE(Terrain_sky.sky_color); Terrain_sky.sky_color = makeRGB(r, g, b); }
-    else if (m_ccMode == ColorMode_Horizon) { r = GR_COLOR_RED(Terrain_sky.horizon_color); b = GR_COLOR_BLUE(Terrain_sky.horizon_color); Terrain_sky.horizon_color = makeRGB(r, g, b); }
-    else { r = GR_COLOR_RED(Terrain_sky.fog_color); b = GR_COLOR_BLUE(Terrain_sky.fog_color); Terrain_sky.fog_color = makeRGB(r, g, b); }
-  } else {
-    if (fv < 0) fv = 0;
+void TerrainKeypad::onSkyGreenEdited()
+{
+  float fv = ui->IDC_SKY_GREEN_EDIT->text().toFloat();
+  if (m_ccMode != ColorMode_Sat)
+  {
+    uint8_t g = std::clamp(int(fv), 0, 255);
+    uint8_t r, b;
+    if (m_ccMode == ColorMode_Sky)
+    {
+      r = GR_COLOR_RED(Terrain_sky.sky_color);
+      b = GR_COLOR_BLUE(Terrain_sky.sky_color);
+      Terrain_sky.sky_color = GR_RGB(r, g, b);
+    }
+    else if (m_ccMode == ColorMode_Horizon)
+    {
+      r = GR_COLOR_RED(Terrain_sky.horizon_color);
+      b = GR_COLOR_BLUE(Terrain_sky.horizon_color);
+      Terrain_sky.horizon_color = GR_RGB(r, g, b);
+    }
+    else
+    {
+      r = GR_COLOR_RED(Terrain_sky.fog_color);
+      b = GR_COLOR_BLUE(Terrain_sky.fog_color);
+      Terrain_sky.fog_color = GR_RGB(r, g, b);
+    }
+  }
+  else
+  {
+    if (fv < 0)
+      fv = 0;
     Terrain_sky.satellite_g[m_currentSatellite] = fv;
   }
   app.World_changed = true;
   updateDialog();
 }
 
-void TerrainKeypad::onSkyBlueEdited() {
-  QLineEdit *e = ui->IDC_SKY_BLUE_EDIT;
-  if (!e) return;
-  float fv = e->text().toFloat();
-  if (m_ccMode != ColorMode_Sat) {
-    int b = std::clamp(int(fv), 0, 255);
-    int r, g;
-    if (m_ccMode == ColorMode_Sky) { r = GR_COLOR_RED(Terrain_sky.sky_color); g = GR_COLOR_GREEN(Terrain_sky.sky_color); Terrain_sky.sky_color = makeRGB(r, g, b); }
-    else if (m_ccMode == ColorMode_Horizon) { r = GR_COLOR_RED(Terrain_sky.horizon_color); g = GR_COLOR_GREEN(Terrain_sky.horizon_color); Terrain_sky.horizon_color = makeRGB(r, g, b); }
-    else { r = GR_COLOR_RED(Terrain_sky.fog_color); g = GR_COLOR_GREEN(Terrain_sky.fog_color); Terrain_sky.fog_color = makeRGB(r, g, b); }
-  } else {
-    if (fv < 0) fv = 0;
+void TerrainKeypad::onSkyBlueEdited()
+{
+  float fv = ui->IDC_SKY_BLUE_EDIT->text().toFloat();
+  if (m_ccMode != ColorMode_Sat)
+  {
+    uint8_t b = std::clamp(int(fv), 0, 255);
+    uint8_t r, g;
+    if (m_ccMode == ColorMode_Sky)
+    {
+      r = GR_COLOR_RED(Terrain_sky.sky_color);
+      g = GR_COLOR_GREEN(Terrain_sky.sky_color);
+      Terrain_sky.sky_color = GR_RGB(r, g, b);
+    }
+    else if (m_ccMode == ColorMode_Horizon)
+    {
+      r = GR_COLOR_RED(Terrain_sky.horizon_color);
+      g = GR_COLOR_GREEN(Terrain_sky.horizon_color);
+      Terrain_sky.horizon_color = GR_RGB(r, g, b);
+    }
+    else
+    {
+      r = GR_COLOR_RED(Terrain_sky.fog_color);
+      g = GR_COLOR_GREEN(Terrain_sky.fog_color);
+      Terrain_sky.fog_color = GR_RGB(r, g, b);
+    }
+  }
+  else
+  {
+    if (fv < 0)
+      fv = 0;
     Terrain_sky.satellite_b[m_currentSatellite] = fv;
   }
   app.World_changed = true;
@@ -582,49 +636,34 @@ void TerrainKeypad::onSkyBlueEdited() {
 }
 
 void TerrainKeypad::onFogDistanceEdited() {
-  {
-    QLineEdit *edit = ui->IDC_FOG_DISTANCE_EDIT;
-    float predist = edit->text().toFloat();
-    if (predist < 20) predist = 20;
-    if (predist > 200) predist = 200;
-    Detail_settings.Terrain_render_distance = predist * TERRAIN_SIZE;
-    app.World_changed = true;
-  }
+  float predist = ui->IDC_FOG_DISTANCE_EDIT->text().toFloat();
+  if (predist < 20) predist = 20;
+  if (predist > 200) predist = 200;
+  Detail_settings.Terrain_render_distance = predist * TERRAIN_SIZE;
+  app.World_changed = true;
 }
 
 void TerrainKeypad::onPixelErrorEdited() {
-  {
-    QLineEdit *edit = ui->IDC_PIXEL_ERROR_EDIT;
-    float err = edit->text().toFloat();
-    if (err < 0) err = 0;
-    if (err > 64) err = 64;
-    Detail_settings.Pixel_error = err;
-    app.World_changed = true;
-  }
+  float err = ui->IDC_PIXEL_ERROR_EDIT->text().toFloat();
+  if (err < 0) err = 0;
+  if (err > 64) err = 64;
+  Detail_settings.Pixel_error = err;
+  app.World_changed = true;
 }
 
 void TerrainKeypad::onFogScalarEdited() {
-  {
-    QLineEdit *edit = ui->IDC_FOG_SCALAR_EDIT;
-    Terrain_sky.fog_scalar = edit->text().toFloat();
-    app.World_changed = true;
-  }
+  Terrain_sky.fog_scalar = ui->IDC_FOG_SCALAR_EDIT->text().toFloat();
+  app.World_changed = true;
 }
 
 void TerrainKeypad::onDamagePerSecEdited() {
-  {
-    QLineEdit *edit = ui->IDC_DAMAGE_PER_SEC_EDIT;
-    Terrain_sky.damage_per_second = edit->text().toFloat();
-    app.World_changed = true;
-  }
+  Terrain_sky.damage_per_second = ui->IDC_DAMAGE_PER_SEC_EDIT->text().toFloat();
+  app.World_changed = true;
 }
 
 void TerrainKeypad::onRotateSpeedEdited() {
-  {
-    QLineEdit *edit = ui->IDC_ROTATE_SPEED_EDIT;
-    Terrain_sky.rotate_rate = edit->text().toFloat();
-    app.World_changed = true;
-  }
+  Terrain_sky.rotate_rate = ui->IDC_ROTATE_SPEED_EDIT->text().toFloat();
+  app.World_changed = true;
 }
 
 void TerrainKeypad::onStarsToggled(bool checked) {
@@ -664,7 +703,7 @@ void TerrainKeypad::onRotateSkyToggled(bool checked) {
   app.TV_changed = true;
 }
 void TerrainKeypad::onFastTerrainToggled(bool checked) {
-  Fast_terrain = checked ? 1 : 0;
+  app.Fast_terrain = checked;
   app.TV_changed = true;
 }
 void TerrainKeypad::onShowTerrainToggled(bool checked) {
@@ -674,26 +713,26 @@ void TerrainKeypad::onShowTerrainToggled(bool checked) {
 void TerrainKeypad::onFlatShadeToggled(bool checked) {
   app.terrain_flat_shade = checked;
   if (checked) {
-    Terrain_texture_distance = 0;
+    app.Terrain_texture_distance = 0;
     Detail_settings.Terrain_render_distance = DEFAULT_VISIBLE_TERRAIN_DISTANCE * 2;
   } else {
-    Terrain_texture_distance = 9999999;
+    app.Terrain_texture_distance = 9999999;
     Detail_settings.Terrain_render_distance = DEFAULT_VISIBLE_TERRAIN_DISTANCE;
   }
   app.State_changed = true;
 }
 void TerrainKeypad::onNoLodToggled(bool checked) {
-  Editor_LOD_engine_off = checked;
+  app.Editor_LOD_engine_off = checked;
   app.State_changed = true;
 }
 void TerrainKeypad::onTerrain2dToggled(bool checked) {
-  Flat_terrain = checked ? 1 : 0;
+  app.Flat_terrain = checked;
   app.State_changed = true;
 }
 void TerrainKeypad::onShowInvisibleToggled(bool checked) {
-  Show_invisible_terrain = checked;
+  app.Show_invisible_terrain = checked;
   app.State_changed = true;
 }
 void TerrainKeypad::onNoExtRoomsObjsToggled(bool checked) {
-  Terrain_render_ext_room_objs = !checked;
+  app.Terrain_render_ext_room_objs = !checked;
 }

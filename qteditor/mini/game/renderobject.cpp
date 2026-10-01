@@ -1043,7 +1043,7 @@ bool SetupTerrainObject(object& obj) {
   vector3 camlight = Terrain_sky.lightsource;
   vm_NormalizeVector(&camlight);
 #ifdef EDITOR
-  if (!Terrain_render_ext_room_objs)
+  if (!app.Terrain_render_ext_room_objs)
     return false;
 #endif
 

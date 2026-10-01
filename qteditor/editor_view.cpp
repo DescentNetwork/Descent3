@@ -47,11 +47,6 @@
 #include "log.h"
 #include "gamepath.h"
 
-uint8_t Show_invisible_terrain = 0;
-uint8_t Fast_terrain = 1;
-float Terrain_texture_distance = DEFAULT_TEXTURE_DISTANCE;
-
-
 
 namespace {
 

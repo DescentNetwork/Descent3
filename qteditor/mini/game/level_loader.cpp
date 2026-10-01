@@ -794,11 +794,8 @@ static void LL_ReadTerrainSoundChunk(posix_istream &ifile, uint32_t version) {
       band.sound_index = FindSoundName(soundname).value_or(-1);
     }
 
-    int8_t low_alt = 0, high_alt = 0;
-    ifile >> low_alt;
-    ifile >> high_alt;
-    band.low_alt = static_cast<uint8_t>(low_alt);
-    band.high_alt = static_cast<uint8_t>(high_alt);
+    ifile >> band.low_alt;
+    ifile >> band.high_alt;
     ifile >> band.low_volume;
     ifile >> band.high_volume;
   }
@@ -819,8 +816,8 @@ static void LL_WriteTerrainSoundChunk(posix_ostream &ofile) {
 
     const terrain_sound_band &band = Terrain_sound_bands[b];
     ofile << Sounds[band.sound_index].name; // NUL-terminated, like cf_WriteString
-    ofile << static_cast<int8_t>(band.low_alt);
-    ofile << static_cast<int8_t>(band.high_alt);
+    ofile << band.low_alt;
+    ofile << band.high_alt;
     ofile << band.low_volume;
     ofile << band.high_volume;
   }

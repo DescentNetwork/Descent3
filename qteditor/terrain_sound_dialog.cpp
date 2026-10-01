@@ -90,8 +90,8 @@ void TerrainSoundDialog::copyToControls() {
 }
 
 bool TerrainSoundDialog::copyFromControls() {
-  m_bands[m_current].low_alt = ui->IDC_TERRAIN_SOUND_LOW_ALT->text().toInt();
-  m_bands[m_current].high_alt = ui->IDC_TERRAIN_SOUND_HIGH_ALT->text().toInt();
+  m_bands[m_current].low_alt = ui->IDC_TERRAIN_SOUND_LOW_ALT->text().toUInt();
+  m_bands[m_current].high_alt = ui->IDC_TERRAIN_SOUND_HIGH_ALT->text().toUInt();
   m_bands[m_current].low_volume = ui->IDC_TERRAIN_SOUND_LOW_VOLUME->text().toFloat();
   m_bands[m_current].high_volume = ui->IDC_TERRAIN_SOUND_HIGH_VOLUME->text().toFloat();
   m_bands[m_current].sound_index = soundComboSelected(ui->IDC_TERRAIN_SOUND_COMBO);

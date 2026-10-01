@@ -275,22 +275,11 @@ extern int16_t Terrain_seg_render_objs[];
 
 extern terrain_sky Terrain_sky;
 
-#if (defined(EDITOR) || defined(NEWEDITOR))
-extern int Editor_LOD_engine_off;
-extern bool Terrain_render_ext_room_objs;
-#endif
-
-extern int Terrain_LOD_engine_off;
-
-extern float Terrain_texture_distance; // how far we should texture before going to flat shad
-
 extern uint8_t TerrainJoinMap[];
 extern std::array<std::vector<float>, MAX_TERRAIN_LOD> TerrainDeltaBlocks;
 extern std::array<std::vector<uint8_t>, 7> Terrain_max_height_int;
 extern std::array<std::vector<uint8_t>, 7> Terrain_min_height_int;
-extern uint8_t Fast_terrain;
-extern uint8_t Flat_terrain;
-extern uint8_t Show_invisible_terrain;
+
 
 extern int Camera_direction, Sort_direction;
 

@@ -117,11 +117,7 @@ terrain_segment Terrain_seg[(TERRAIN_WIDTH+1) * (TERRAIN_DEPTH+1)] = {};
 terrain_tex_segment Terrain_tex_seg[TERRAIN_TEX_WIDTH * TERRAIN_TEX_DEPTH] = {};
 terrain_sky Terrain_sky = {};
 terrain_normals *TerrainNormals[MAX_TERRAIN_LOD] = {};
-float Terrain_texture_distance = 0;
 int16_t Terrain_seg_render_objs[(TERRAIN_WIDTH+1) * (TERRAIN_DEPTH+1)] = {};
-uint8_t Fast_terrain = 0;
-uint8_t Flat_terrain = 0;
-uint8_t Show_invisible_terrain = 0;
 
 int GetTerrainRoomFromPos(vector3 *pos) { PRINT_STUB(__FUNCTION__); return -1; }
 void ComputeTerrainSegmentCenter(vector3 *center, int seg) { PRINT_STUB(__FUNCTION__); *center = {}; }

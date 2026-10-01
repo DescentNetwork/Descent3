@@ -85,13 +85,9 @@ float Terrain_y_values[256];
 #if (defined(EDITOR) || defined(NEWEDITOR))
 std::array<uint8_t, TERRAIN_WIDTH * TERRAIN_DEPTH> TerrainSelected;
 int Num_terrain_selected = 0;
-int Editor_LOD_engine_off = 1;
-bool Terrain_render_ext_room_objs = true;
 #endif
 
 int TSearch_on = 0, TSearch_found_type, TSearch_x, TSearch_y, TSearch_seg, TSearch_face;
-
-int Terrain_LOD_engine_off = 0;
 
 int TerrainEdgeTest[MAX_TERRAIN_LOD][16];
 uint8_t TerrainEdgeJump[MAX_TERRAIN_LOD];
