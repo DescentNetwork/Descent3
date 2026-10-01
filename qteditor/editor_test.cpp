@@ -1408,11 +1408,8 @@ private slots:
     RoomsEnsureIndex(0);
 
     // One default-constructed matcen with a distinguishing name.
-    matcen *m = new matcen;
-    QVERIFY2(m->SetName("TestMatcen"), "SetName failed");
     Matcen.resize(1);
-    Matcen[0] = m;
-    Num_matcens = 1;
+    QVERIFY2(Matcen[0].SetName("TestMatcen"), "SetName failed");
 
     const QString tmp = QDir::tempPath() + "/_test_matcen_roundtrip";
     QDir::current().mkpath(tmp);
@@ -1428,9 +1425,8 @@ private slots:
     // Reload must restore the matcen table including the name.
     DestroyAllMatcens();
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
-    QCOMPARE(Num_matcens, 1);
-    QVERIFY(Matcen[0]);
-    QCOMPARE(QString::fromStdString(Matcen[0]->GetName()), QString("TestMatcen"));
+    QCOMPARE(static_cast<size_t>(1), Matcen.size());
+    QCOMPARE(QString::fromStdString(Matcen[0].GetName()), QString("TestMatcen"));
 
     QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
 
@@ -1462,8 +1458,8 @@ private slots:
 
       DestroyAllMatcens();
       QVERIFY2(LoadLevel(lvl, nullptr), "LoadLevel(real) failed");
-      if (Num_matcens > 0)
-        QVERIFY2(!Matcen[0]->GetName().empty(), "first matcen loaded without a name");
+      if (!Matcen.empty())
+        QVERIFY2(!Matcen[0].GetName().empty(), "first matcen loaded without a name");
       QVERIFY2(SaveLevel(std::filesystem::path(g1.toStdString()), true), "SaveLevel real passA failed");
 
       QFile raw(g1);

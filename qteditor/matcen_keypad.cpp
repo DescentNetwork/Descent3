@@ -47,12 +47,13 @@ MatcenKeypad::MatcenKeypad(QWidget *parent)
 MatcenKeypad::~MatcenKeypad() { delete ui; }
 
 void MatcenKeypad::updateDialog() {
-  if (Num_matcens <= 0 || m_matcenId >= Num_matcens)
+  const auto count = static_cast<int>(Matcen.size());
+  if (count <= 0 || m_matcenId >= count)
     return;
-  matcen *mc = Matcen[m_matcenId];
-  std::string name = mc->GetName();
+  matcen &mc = Matcen[m_matcenId];
+  std::string name = mc.GetName();
   ui->IDC_MAT_CUR_STATIC->setText(QString("Current Matcen: %1").arg(m_matcenId + 1));
-  ui->IDC_MAT_NUM_STATIC->setText(QString("Number of Matcens: %1").arg(Num_matcens));
+  ui->IDC_MAT_NUM_STATIC->setText(QString("Number of Matcens: %1").arg(count));
 
   // TODO: Once matcen API is fully ported, populate these labels.
   // if (QLabel *label = ui->IDC_MAT_NAME_STATIC)
@@ -64,16 +65,18 @@ void MatcenKeypad::updateDialog() {
 }
 
 void MatcenKeypad::onPrev() {
-  if (Num_matcens <= 0)
+  const auto count = static_cast<int>(Matcen.size());
+  if (count <= 0)
     return;
-  m_matcenId = (m_matcenId <= 0) ? (Num_matcens - 1) : (m_matcenId - 1);
+  m_matcenId = (m_matcenId <= 0) ? (count - 1) : (m_matcenId - 1);
   updateDialog();
 }
 
 void MatcenKeypad::onNext() {
-  if (Num_matcens <= 0)
+  const auto count = static_cast<int>(Matcen.size());
+  if (count <= 0)
     return;
-  m_matcenId = (m_matcenId + 1) % Num_matcens;
+  m_matcenId = (m_matcenId + 1) % count;
   updateDialog();
 }
 
@@ -92,16 +95,17 @@ void MatcenKeypad::onNew() {
 }
 
 void MatcenKeypad::onDelete() {
-  if (Num_matcens <= 0)
+  const auto count = static_cast<int>(Matcen.size());
+  if (count <= 0)
     return;
-  Matcen[m_matcenId]->SetName("deleted");
-  if (m_matcenId >= Num_matcens - 1)
+  Matcen[m_matcenId].SetName("deleted");
+  if (m_matcenId >= count - 1)
     m_matcenId = 0;
   updateDialog();
 }
 
 void MatcenKeypad::onCopy() {
-  if (Num_matcens <= 0)
+  if (Matcen.empty())
     return;
   QMessageBox::information(this, "Matcen", "Matcen copied.");
 }

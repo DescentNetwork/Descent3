@@ -152,7 +152,6 @@ float Frametime = 0.0f;
 int Num_megacells = 0;
 uint32_t Num_objects = 0;
 int Num_game_paths = 0;
-int Num_matcens = 0;
 int Num_object_ids[1500] = {};
 int Network_up = 0;
 float Gravity_strength = 9.8f;
@@ -224,7 +223,7 @@ void WBClearInfo(otype_wb_info *wb) { PRINT_STUB(__FUNCTION__); }
 megacell Megacells[MAX_MEGACELLS] = {};
 
 // ==================== Matcen ====================
-std::vector<matcen *> Matcen;
+std::vector<matcen> Matcen;
 
 // ==================== Level ====================
 levelgoals Level_goals;

@@ -1286,9 +1286,9 @@ void RenderSpecularFacesFlat(int roomnum) {
     first = 0;
     int i;
     for (i = 0; i < 32; i++) {
-      lm_red[i] = (float)i / 31.0;
-      lm_green[i] = (float)i / 31.0;
-      lm_blue[i] = (float)i / 31.0;
+      lm_red[i] = static_cast<float>(i) / 31.0;
+      lm_green[i] = static_cast<float>(i) / 31.0;
+      lm_blue[i] = static_cast<float>(i) / 31.0;
     }
     for (i = 0; i < MAX_VERTS_PER_ROOM; i++) {
       Smooth_verts[i].used = 0;
@@ -1394,12 +1394,12 @@ texel = data[int_v][int_u];
             dotp = 1;
 
           if (dotp > 0) {
-            int index = ((float)(MAX_SPECULAR_INCREMENTS - 1) * dotp);
+            int index = (static_cast<float>(MAX_SPECULAR_INCREMENTS - 1) * dotp);
             scalar = Specular_tables[material_type][index] * spec_scalar;
 
-            float cr = (float)((color >> 10) & 0x1f) / 31.0;
-            float cg = (float)((color >> 5) & 0x1f) / 31.0;
-            float cb = (float)(color & 0x1f) / 31.0;
+            float cr = static_cast<float>((color >> 10) & 0x1f) / 31.0;
+            float cg = static_cast<float>((color >> 5) & 0x1f) / 31.0;
+            float cb = static_cast<float>(color & 0x1f) / 31.0;
             rv = std::min<float>(1.0, (rv + (scalar * cr)));
             gv = std::min<float>(1.0, (gv + (scalar * cg)));
             bv = std::min<float>(1.0, (bv + (scalar * cb)));
@@ -1417,7 +1417,7 @@ texel = data[int_v][int_u];
           dotp = 1;
 
         if (dotp > 0) {
-          int index = ((float)(MAX_SPECULAR_INCREMENTS - 1) * dotp);
+          int index = (static_cast<float>(MAX_SPECULAR_INCREMENTS - 1) * dotp);
           scalar = Specular_tables[material_type][index];
           rv = scalar;
           gv = scalar;
@@ -1664,8 +1664,8 @@ void RenderLightmapFace(int roomnum, int facenum) {
     rend_SetAlphaType(AT_LIGHTMAP_BLEND_SATURATE);
   // Our lightmaps aren't square, but our destination texture surfaces are
   // Use these scalars to get them into the correct coordinates
-  float xscalar = (float)GameLightmaps[lm_handle].width / (float)GameLightmaps[lm_handle].square_res;
-  float yscalar = (float)GameLightmaps[lm_handle].height / (float)GameLightmaps[lm_handle].square_res;
+  float xscalar = static_cast<float>(GameLightmaps[lm_handle].width) / static_cast<float>(GameLightmaps[lm_handle].square_res);
+  float yscalar = static_cast<float>(GameLightmaps[lm_handle].height) / static_cast<float>(GameLightmaps[lm_handle].square_res);
   if (!Render_mirror_for_room) {
     for (vn = 0; vn < fp->num_verts; vn++) {
       pointbuffer[vn] = World_point_buffer[rp->wpb_index + fp->face_verts[vn]];
@@ -1826,9 +1826,9 @@ void RenderFace(int roomnum, int facenum) {
     if (first) {
       first = 0;
       for (int i = 0; i < 32; i++) {
-        lm_red[i] = (float)i / 31.0;
-        lm_green[i] = (float)i / 31.0;
-        lm_blue[i] = (float)i / 31.0;
+        lm_red[i] = static_cast<float>(i) / 31.0;
+        lm_green[i] = static_cast<float>(i) / 31.0;
+        lm_blue[i] = static_cast<float>(i) / 31.0;
       }
     }
 

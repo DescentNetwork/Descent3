@@ -33,7 +33,6 @@
 
 #define MAX_MATCEN_ALIVE_CHILDREN 32
 
-extern int Num_matcens;
 extern bool Matcen_created;
 
 #define MATCEN_OUTSIDE_NEAR_DIST 150.0f
@@ -203,7 +202,7 @@ public:
   void Reset();
 };
 
-extern std::vector<matcen *> Matcen;
+extern std::vector<matcen> Matcen;
 int FindMatcenIndex(const char *name);
 int CreateMatcen(const char *name, bool *f_name_changed);
 void InitMatcens();

@@ -747,29 +747,24 @@ static void LL_WriteRoomAABBChunk(posix_ostream &ofile) {
 // count then instantiates each entry; the in-memory table is rebuilt fresh to
 // avoid leaking entries from a previously loaded level.
 static void LL_ReadMatcenChunk(posix_istream &ifile) {
-  int32_t count = 0;
+  uint32_t count = 0;
   ifile >> count;
 
   DestroyAllMatcens();
 
-  Num_matcens = (count < 0) ? 0 : count;
-
-  Matcen.resize(Num_matcens);
-  for (int i = 0; i < Num_matcens; i++) {
-    matcen *mp = new matcen;
-    mp->LoadData(ifile, texture_xlate.data());
-    Matcen[i] = mp;
+  Matcen.resize(count);
+  for (matcen &m : Matcen) {
+    m.LoadData(ifile, texture_xlate.data());
   }
 }
 
 static void LL_WriteMatcenChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_MATCEN_DATA);
 
-  ofile << static_cast<int32_t>(Num_matcens);
+  ofile << static_cast<uint32_t>(Matcen.size());
 
-  for (int i = 0; i < Num_matcens; i++) {
-    Q_ASSERT(Matcen[i]);
-    Matcen[i]->SaveData(ofile);
+  for (const matcen &m : Matcen) {
+    m.SaveData(ofile);
   }
 
   LL_EndChunk(ofile, start);
@@ -781,10 +776,8 @@ static void LL_WriteMatcenChunk(posix_ostream &ofile) {
 // writer emits only the used bands (sound_index != -1), so the reader clears
 // the table first and the reload re-emits the same used set byte-stably.
 static void LL_ReadTerrainSoundChunk(posix_istream &ifile, uint32_t version) {
-  int32_t n_bands = 0;
+  uint32_t n_bands = 0;
   ifile >> n_bands;
-  if (n_bands < 0)
-    n_bands = 0;
   if (n_bands > NUM_TERRAIN_SOUND_BANDS)
     n_bands = NUM_TERRAIN_SOUND_BANDS;
 
@@ -806,7 +799,6 @@ static void LL_ReadTerrainSoundChunk(posix_istream &ifile, uint32_t version) {
     ifile >> high_alt;
     band.low_alt = static_cast<uint8_t>(low_alt);
     band.high_alt = static_cast<uint8_t>(high_alt);
-
     ifile >> band.low_volume;
     ifile >> band.high_volume;
   }
@@ -1267,24 +1259,29 @@ static void LL_ReadCompressedShortArray(posix_istream &ifile, uint16_t *vals, in
 }
 
 static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
-  int32_t nummaps = 0;
+  // The counts are written as int32 but are never negative in a valid file, so
+  // they are read unsigned: the byte layout is identical, and a corrupt count
+  // then fails the upper bound alone instead of also needing a negative check.
+  uint32_t nummaps = 0;
   ifile >> nummaps;
-  if (nummaps < 0 || nummaps > static_cast<int32_t>(MAX_LIGHTMAPS))
+  if (nummaps > MAX_LIGHTMAPS)
     nummaps = 0;
-  const int num_raw = nummaps;
+  const uint32_t num_raw = nummaps;
 
   // ordinal -> GameLightmaps handle for the raw-texture section.
-  std::vector<uint16_t> lightmap_remap(static_cast<size_t>(std::max(0, num_raw)));
-  for (int i = 0; i < num_raw; i++) {
+  std::vector<uint16_t> lightmap_remap(static_cast<size_t>(num_raw));
+  for (uint32_t i = 0; i < num_raw; i++) {
+    // Dimensions stay signed: a corrupt 0xFFFF width reads as -1 and is clamped
+    // to 2, whereas unsigned it would request a ~4G-element allocation.
     int16_t map_w = 0, map_h = 0;
     ifile >> map_w;
     ifile >> map_h;
     if (map_w < 2 || map_h < 2)
       map_w = map_h = 2;
-    int lm_handle = static_cast<int>(lm_AllocLightmap(map_w, map_h).value_or(BAD_LM_INDEX));
+    uint16_t lm_handle = lm_AllocLightmap(map_w, map_h).value_or(BAD_LM_INDEX);
     if (lm_handle == BAD_LM_INDEX)
       lm_handle = 0;
-    lightmap_remap[i] = static_cast<uint16_t>(lm_handle);
+    lightmap_remap[i] = lm_handle;
     std::vector<uint16_t> flat(static_cast<size_t>(map_w) * map_h);
     LL_ReadCompressedShortArray(ifile, flat.data(), static_cast<int>(flat.size()));
     std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
@@ -1292,14 +1289,18 @@ static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
       std::copy_n(flat.begin() + y * map_w, map_w, data[y].begin());
   }
 
-  int32_t ninfos = 0;
+  uint32_t ninfos = 0;
   ifile >> ninfos;
-  if (ninfos < 0 || ninfos > static_cast<int32_t>(MAX_LIGHTMAP_INFOS))
+  if (ninfos > MAX_LIGHTMAP_INFOS)
     ninfos = 0;
-  Num_lightmap_infos_read = ninfos;
+  Num_lightmap_infos_read = static_cast<int>(ninfos);
 
-  for (int i = 0; i < ninfos; i++) {
-    int16_t remap_handle = 0, w = 0, h = 0;
+  for (uint32_t i = 0; i < ninfos; i++) {
+    // remap_handle is a lightmap ordinal, not a lightmap handle, but it is
+    // unsigned all the same: reading it signed would decode ordinals above
+    // 32767 as negative and send them down the corrupt-data path.
+    uint16_t remap_handle = 0;
+    int16_t w = 0, h = 0;
     ifile >> remap_handle;
     ifile >> w;
     ifile >> h;
@@ -1309,9 +1310,7 @@ static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
     int lmi = static_cast<int>(AllocLightmapInfo(w, h, type, false).value_or(BAD_LMI_INDEX));
     if (lmi == BAD_LMI_INDEX)
       continue;
-    const size_t remap_idx = (remap_handle >= 0 && remap_handle < (int32_t)num_raw)
-                                 ? static_cast<size_t>(remap_handle)
-                                 : 0;
+    const size_t remap_idx = (remap_handle < num_raw) ? static_cast<size_t>(remap_handle) : 0;
     LightmapInfo[lmi].lm_handle = lightmap_remap[remap_idx];
 
     if (version >= 91) {
@@ -1335,13 +1334,13 @@ static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
 static void LL_WriteLightmapChunk(posix_ostream &ofile) {
   // Build the lm_handle -> ordinal remap and count infos, exactly as the
   // engine's WriteLightmapChunk does (dynamic infos are excluded).
-  const int MAXLMS = MAX_LIGHTMAPS;
+  const size_t MAXLMS = MAX_LIGHTMAPS;
   std::vector<uint16_t> lightmap_remap(MAXLMS, 0);
   std::vector<uint8_t> lightmap_spoken_for(MAXLMS, 0);
-  int lightmap_count = 0;
-  int lightmap_info_count = 0;
+  uint32_t lightmap_count = 0;
+  uint32_t lightmap_info_count = 0;
 
-  for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
+  for (uint32_t i = 0; i < static_cast<uint32_t>(LightmapInfo.size()); i++) {
     if (LightmapInfo.is_used(i) && LightmapInfo[i].type != LMI_DYNAMIC) {
       const uint16_t lm_handle = LightmapInfo[i].lm_handle;
       if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
@@ -1356,35 +1355,35 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
 
   int start = LL_StartChunk(ofile, "NLMP");
 
-  ofile << (int32_t)lightmap_count;
-  for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
+  ofile << lightmap_count;
+  for (uint32_t i = 0; i < static_cast<uint32_t>(LightmapInfo.size()); i++) {
     if (LightmapInfo.is_used(i) && LightmapInfo[i].type != LMI_DYNAMIC) {
       const uint16_t lm_handle = LightmapInfo[i].lm_handle;
       if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
         lightmap_spoken_for[lm_handle] = 1;
-        const int map_w = static_cast<int>(lm_w(lm_handle).value_or(255));
-        const int map_h = static_cast<int>(lm_h(lm_handle).value_or(255));
-        ofile << (int16_t)map_w;
-        ofile << (int16_t)map_h;
+        const uint32_t map_w = lm_w(lm_handle).value_or(255);
+        const uint32_t map_h = lm_h(lm_handle).value_or(255);
+        ofile << static_cast<int16_t>(map_w);
+        ofile << static_cast<int16_t>(map_h);
         const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
         std::vector<uint16_t> flat(static_cast<size_t>(map_w) * map_h);
-        for (int y = 0; y < map_h; y++)
+        for (uint32_t y = 0; y < map_h; y++)
           std::copy(data[y].begin(), data[y].end(), flat.begin() + y * map_w);
-        LL_CheckToWriteCompressShort(ofile, flat.data(), map_w * map_h);
+        LL_CheckToWriteCompressShort(ofile, flat.data(), static_cast<int32_t>(map_w * map_h));
       }
     }
   }
 
-  ofile << (int32_t)lightmap_info_count;
-  for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
+  ofile << lightmap_info_count;
+  for (uint32_t i = 0; i < static_cast<uint32_t>(LightmapInfo.size()); i++) {
     if (LightmapInfo.is_used(i) && LightmapInfo[i].type != LMI_DYNAMIC) {
       const lightmap_info &info = LightmapInfo[i];
-      ofile << (int16_t)lightmap_remap[info.lm_handle];
-      ofile << (int16_t)lmi_w(i).value_or(0);
-      ofile << (int16_t)lmi_h(i).value_or(0);
+      ofile << lightmap_remap[info.lm_handle];
+      ofile << static_cast<int16_t>(lmi_w(i).value_or(0));
+      ofile << static_cast<int16_t>(lmi_h(i).value_or(0));
       ofile << info.type;
-      ofile << (int16_t)info.x1;
-      ofile << (int16_t)info.y1;
+      ofile << static_cast<int16_t>(info.x1);
+      ofile << static_cast<int16_t>(info.y1);
       ofile << info.xspacing;
       ofile << info.yspacing;
       ofile << info.upper_left;

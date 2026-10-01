@@ -139,13 +139,13 @@ void InitDynamicLighting() {
 
   // Setup uint8_t to float
   for (i = 0; i < 256; i++)
-    Ubyte_to_float[i] = (float)i / 255.0;
+    Ubyte_to_float[i] = static_cast<float>(i) / 255.0;
 
   // Setup specular tables
   LOG_DEBUG("Building specular tables.");
 
   for (i = 0; i < MAX_SPECULAR_INCREMENTS; i++) {
-    float val = (float)i / (float)(MAX_SPECULAR_INCREMENTS - 1);
+    float val = static_cast<float>(i) / static_cast<float>(MAX_SPECULAR_INCREMENTS - 1);
 
     // Metal
     Specular_tables[0][i] = (val * val * val * val * val * val);
@@ -1572,8 +1572,8 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         //square_res*=2;
         //xres*=2;
         //yres*=2;
-        float xspacing=(float)lmi_ptr->xspacing;
-        float yspacing=(float)lmi_ptr->yspacing;
+        float xspacing = static_cast<float>(lmi_ptr->xspacing);
+        float yspacing = static_cast<float>(lmi_ptr->yspacing);
 
         int cl=GetLightmapClass (square_res);
         int lm_handle;
@@ -1677,7 +1677,7 @@ incident_norm=element_vec-SpecialFaces[fp->special_handle].spec_instance[i].brig
 
                                 if (dotp>0)
                                 {
-                                        int index=((float)(MAX_SPECULAR_INCREMENTS-1)*dotp);
+                                        int index = (static_cast<float>(MAX_SPECULAR_INCREMENTS - 1) * dotp);
                                         float val=Specular_tables[material_type][index];
 
                                         uint16_t color=SpecialFaces[fp->special_handle].spec_instance[i].bright_color;
@@ -1882,7 +1882,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 
                                 if (dotp>0)
                                 {
-                                        int index=((float)(MAX_SPECULAR_INCREMENTS-1)*dotp);
+                                        int index = (static_cast<float>(MAX_SPECULAR_INCREMENTS - 1) * dotp);
                                         float val=Specular_tables[material_type][index];
 
                                         uint16_t color=SpecialFaces[fp->special_handle].spec_instance[i].bright_color;
@@ -1924,7 +1924,7 @@ void DestroyLight(int roomnum, int facenum) {
   if (Dedicated_server)
     return;
 
-  float mul = ((float)destroy_fp->light_multiple) / 4.0;
+  float mul = (static_cast<float>(destroy_fp->light_multiple)) / 4.0;
 
   r = GameTextures[destroy_fp->tmap].r * mul;
   g = GameTextures[destroy_fp->tmap].g * mul;

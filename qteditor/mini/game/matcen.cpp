@@ -34,13 +34,7 @@
 #include <posix_stream.h>
 
 void DestroyAllMatcens() {
-  for (matcen *&mp : Matcen) {
-    delete mp;
-    mp = nullptr;
-  }
   Matcen.clear();
-
-  Num_matcens = 0;
 }
 
 matcen::matcen() {

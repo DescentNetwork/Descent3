@@ -2224,162 +2224,162 @@ void osipf_UnattachChildren(int objhandle) {
 }
 
 void osipf_MatcenValue(int matcen_id, char op, char var_handle, void *ptr, int index) {
-  if (matcen_id < 0 || matcen_id >= Num_matcens || !Matcen[matcen_id])
+  if (matcen_id < 0 || matcen_id >= static_cast<int>(Matcen.size()))
     return;
   switch (var_handle) {
   case MTNV_C_ATTACH_TYPE:
     if (op == VF_GET)
-      (*(char *)ptr) = Matcen[matcen_id]->GetAttachType();
+      (*(char *)ptr) = Matcen[matcen_id].GetAttachType();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetAttachType(*(char *)ptr);
+      Matcen[matcen_id].SetAttachType(*(char *)ptr);
     break;
   case MTNV_C_CONTROL_TYPE:
     if (op == VF_GET)
-      (*(char *)ptr) = Matcen[matcen_id]->GetControlType();
+      (*(char *)ptr) = Matcen[matcen_id].GetControlType();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetControlType(*(char *)ptr);
+      Matcen[matcen_id].SetControlType(*(char *)ptr);
     break;
   case MTNV_I_ATTACH:
     if (op == VF_GET)
-      (*(int *)ptr) = Matcen[matcen_id]->GetAttach();
+      (*(int *)ptr) = Matcen[matcen_id].GetAttach();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetAttach(*(int *)ptr);
+      Matcen[matcen_id].SetAttach(*(int *)ptr);
     break;
   case MTNV_V_CREATE_POINT:
     if (op == VF_GET)
-      Matcen[matcen_id]->GetCreatePnt((vector3 *)ptr);
+      Matcen[matcen_id].GetCreatePnt((vector3 *)ptr);
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetCreatePnt((vector3 *)ptr);
+      Matcen[matcen_id].SetCreatePnt((vector3 *)ptr);
     break;
   case MTNV_I_CREATE_ROOM:
     if (op == VF_GET)
-      (*(int *)ptr) = Matcen[matcen_id]->GetCreateRoom();
+      (*(int *)ptr) = Matcen[matcen_id].GetCreateRoom();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetCreateRoom(*(int *)ptr);
+      Matcen[matcen_id].SetCreateRoom(*(int *)ptr);
     break;
   case MTNV_PC_NAME:
     if (op == VF_GET)
-      Matcen[matcen_id]->GetName((char *)ptr);
+      Matcen[matcen_id].GetName((char *)ptr);
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetName((char *)ptr);
+      Matcen[matcen_id].SetName((char *)ptr);
     break;
   case MTNV_I_MAX_PROD:
     if (op == VF_GET)
-      (*(int *)ptr) = Matcen[matcen_id]->GetMaxProd();
+      (*(int *)ptr) = Matcen[matcen_id].GetMaxProd();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetMaxProd(*(int *)ptr);
+      Matcen[matcen_id].SetMaxProd(*(int *)ptr);
     break;
   case MTNV_F_PROD_MULTIPLIER:
     if (op == VF_GET)
-      (*(float *)ptr) = Matcen[matcen_id]->GetProdMultiplier();
+      (*(float *)ptr) = Matcen[matcen_id].GetProdMultiplier();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetProdMultiplier(*(float *)ptr);
+      Matcen[matcen_id].SetProdMultiplier(*(float *)ptr);
     break;
   case MTNV_I_STATUS:
     if (op == VF_GET)
-      (*(int *)ptr) = Matcen[matcen_id]->GetStatus();
+      (*(int *)ptr) = Matcen[matcen_id].GetStatus();
     else if (op == VF_SET_FLAGS)
-      Matcen[matcen_id]->SetStatus(*(int *)ptr, true);
+      Matcen[matcen_id].SetStatus(*(int *)ptr, true);
     else if (op == VF_CLEAR_FLAGS)
-      Matcen[matcen_id]->SetStatus(*(int *)ptr, false);
+      Matcen[matcen_id].SetStatus(*(int *)ptr, false);
     else if (op == VF_SET) {
-      int status = Matcen[matcen_id]->GetStatus();
+      int status = Matcen[matcen_id].GetStatus();
       int diff_flags = (*(int *)ptr) ^ status;
       int clear_flags = status & diff_flags;
       int set_flags = (~(status)) & diff_flags;
 
       if (set_flags)
-        Matcen[matcen_id]->SetStatus(set_flags, true);
+        Matcen[matcen_id].SetStatus(set_flags, true);
       if (clear_flags)
-        Matcen[matcen_id]->SetStatus(clear_flags, false);
+        Matcen[matcen_id].SetStatus(clear_flags, false);
     }
     break;
   case MTNV_C_CREATION_EFFECT:
     if (op == VF_GET)
-      (*(char *)ptr) = Matcen[matcen_id]->GetCreationEffect();
+      (*(char *)ptr) = Matcen[matcen_id].GetCreationEffect();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetCreationEffect(*(char *)ptr);
+      Matcen[matcen_id].SetCreationEffect(*(char *)ptr);
     break;
   case MTNV_I_MAX_ALIVE_CHILDREN:
     if (op == VF_GET)
-      (*(int *)ptr) = Matcen[matcen_id]->GetMaxAliveChildren();
+      (*(int *)ptr) = Matcen[matcen_id].GetMaxAliveChildren();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetMaxAliveChildren(*(int *)ptr);
+      Matcen[matcen_id].SetMaxAliveChildren(*(int *)ptr);
     break;
   case MTNV_F_PRE_PROD_TIME:
     if (op == VF_GET)
-      (*(float *)ptr) = Matcen[matcen_id]->GetPreProdTime();
+      (*(float *)ptr) = Matcen[matcen_id].GetPreProdTime();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetPreProdTime(*(float *)ptr);
+      Matcen[matcen_id].SetPreProdTime(*(float *)ptr);
     break;
   case MTNV_F_POST_PROD_TIME:
     if (op == VF_GET)
-      (*(float *)ptr) = Matcen[matcen_id]->GetPostProdTime();
+      (*(float *)ptr) = Matcen[matcen_id].GetPostProdTime();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetPostProdTime(*(float *)ptr);
+      Matcen[matcen_id].SetPostProdTime(*(float *)ptr);
     break;
   case MTNSV_I_SOUND:
     if (op == VF_GET)
-      (*(int *)ptr) = Matcen[matcen_id]->GetSound(index);
+      (*(int *)ptr) = Matcen[matcen_id].GetSound(index);
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetSound(index, (*(int *)ptr));
+      Matcen[matcen_id].SetSound(index, (*(int *)ptr));
     break;
   case MTNV_S_CREATION_TEXTURE:
     if (op == VF_GET)
-      (*(int16_t *)ptr) = Matcen[matcen_id]->GetCreationTexture();
+      (*(int16_t *)ptr) = Matcen[matcen_id].GetCreationTexture();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetCreationTexture(*(int16_t *)ptr);
+      Matcen[matcen_id].SetCreationTexture(*(int16_t *)ptr);
     break;
 
   case MTNV_C_NUM_SPAWN_PTS:
     if (op == VF_GET)
-      (*(char *)ptr) = Matcen[matcen_id]->GetNumSpawnPnts();
+      (*(char *)ptr) = Matcen[matcen_id].GetNumSpawnPnts();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetNumSpawnPnts(*(char *)ptr);
+      Matcen[matcen_id].SetNumSpawnPnts(*(char *)ptr);
     break;
   case MTNSV_I_SPAWN_POINT:
     if (op == VF_GET)
-      Matcen[matcen_id]->SetSpawnPnt(index, *(int *)ptr);
+      Matcen[matcen_id].SetSpawnPnt(index, *(int *)ptr);
     else if (op == VF_SET)
-      (*(int *)ptr) = Matcen[matcen_id]->GetSpawnPnt(index);
+      (*(int *)ptr) = Matcen[matcen_id].GetSpawnPnt(index);
     break;
 
   case MTNV_C_NUM_PROD_TYPES:
     if (op == VF_GET)
-      (*(char *)ptr) = Matcen[matcen_id]->GetNumProdTypes();
+      (*(char *)ptr) = Matcen[matcen_id].GetNumProdTypes();
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetNumSpawnPnts(*(char *)ptr);
+      Matcen[matcen_id].SetNumSpawnPnts(*(char *)ptr);
     break;
   case MTNSV_I_PROD_ITEM_ID:
     if (op == VF_GET)
-      Matcen[matcen_id]->GetProdInfo(index, (int *)ptr, NULL, NULL, NULL);
+      Matcen[matcen_id].GetProdInfo(index, (int *)ptr, NULL, NULL, NULL);
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetProdInfo(index, (int *)ptr, NULL, NULL, NULL);
+      Matcen[matcen_id].SetProdInfo(index, (int *)ptr, NULL, NULL, NULL);
     break;
   case MTNSV_I_PROD_ITEM_PRIORITY:
     if (op == VF_GET)
-      Matcen[matcen_id]->GetProdInfo(index, NULL, (int *)ptr, NULL, NULL);
+      Matcen[matcen_id].GetProdInfo(index, NULL, (int *)ptr, NULL, NULL);
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetProdInfo(index, NULL, (int *)ptr, NULL, NULL);
+      Matcen[matcen_id].SetProdInfo(index, NULL, (int *)ptr, NULL, NULL);
     break;
   case MTNSV_F_PROD_ITEM_TIME:
     if (op == VF_GET)
-      Matcen[matcen_id]->GetProdInfo(index, NULL, NULL, (float *)ptr, NULL);
+      Matcen[matcen_id].GetProdInfo(index, NULL, NULL, (float *)ptr, NULL);
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetProdInfo(index, NULL, NULL, (float *)ptr, NULL);
+      Matcen[matcen_id].SetProdInfo(index, NULL, NULL, (float *)ptr, NULL);
     break;
   case MTNSV_I_PROD_ITEM_MAX_PROD:
     if (op == VF_GET)
-      Matcen[matcen_id]->GetProdInfo(index, NULL, NULL, NULL, (int *)ptr);
+      Matcen[matcen_id].GetProdInfo(index, NULL, NULL, NULL, (int *)ptr);
     else if (op == VF_SET)
-      Matcen[matcen_id]->SetProdInfo(index, NULL, NULL, NULL, (int *)ptr);
+      Matcen[matcen_id].SetProdInfo(index, NULL, NULL, NULL, (int *)ptr);
     break;
   }
 }
 
 void osipf_MatcenReset(int matcen_id) {
-  if (matcen_id >= 0 && matcen_id < Num_matcens && Matcen[matcen_id]) {
-    Matcen[matcen_id]->Reset();
+  if (matcen_id >= 0 && matcen_id < static_cast<int>(Matcen.size())) {
+    Matcen[matcen_id].Reset();
   }
 }
 
@@ -2394,14 +2394,14 @@ int osipf_MatcenCreate(char *str) {
 }
 
 void osipf_MatcenCopy(int md_id, int ms_id) {
-  if (md_id >= 0 && md_id < Num_matcens && Matcen[md_id]) {
-    if (ms_id >= 0 && ms_id < Num_matcens && Matcen[ms_id]) {
+  if (md_id >= 0 && md_id < static_cast<int>(Matcen.size())) {
+    if (ms_id >= 0 && ms_id < static_cast<int>(Matcen.size())) {
       char name[MAX_MATCEN_NAME_LEN];
-      Matcen[md_id]->GetName(name);
+      Matcen[md_id].GetName(name);
 
-      *Matcen[md_id] = *Matcen[ms_id];
-      Matcen[md_id]->SetName(name);
-      Matcen[md_id]->Reset();
+      Matcen[md_id] = Matcen[ms_id];
+      Matcen[md_id].SetName(name);
+      Matcen[md_id].Reset();
     }
   }
 }
