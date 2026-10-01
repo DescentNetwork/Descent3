@@ -41,8 +41,12 @@ std::optional<uint16_t> lm_AllocLightmap(int w, int h) {
 
   // The table hands out fresh handles as identity values (its slot index);
   // next_slot() returns the lowest-numbered unused slot and grows the table by
-  // one slot when there are none.
+  // one slot when there are none.  Valid handles are 0..MAX_LIGHTMAPS-1, with
+  // BAD_LM_INDEX (65535) reserved as the "no lightmap" sentinel, so the table
+  // must never grow past MAX_LIGHTMAPS or the cast below would wrap.
   const size_t n = GameLightmaps.next_slot();
+  if (n >= MAX_LIGHTMAPS)
+    return std::nullopt;
   Q_ASSERT(GameLightmaps.is_unused(n));
 
   GameLightmaps[n] = {};

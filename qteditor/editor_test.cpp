@@ -7121,6 +7121,31 @@ private slots:
     QCOMPARE(Num_game_paths, saved_num);
   }
 
+  // Lightmap handles are uint16_t and must cover the full 0..MAX_LIGHTMAPS-1
+  // range.  This matters above 32767: a signed int16_t anywhere in the chain
+  // would sign-extend and turn a valid handle negative, and the allocation
+  // cast would wrap past 65535 into a valid-looking slot.
+  void testLightmapHandleUsesFullUint16Range() {
+    static_assert(std::is_same_v<decltype(lm_AllocLightmap(2, 2)), std::optional<uint16_t>>,
+                  "lm_AllocLightmap must return a 16-bit handle");
+    static_assert(std::numeric_limits<uint16_t>::max() == 65535, "handle must be 16-bit");
+    QCOMPARE(MAX_LIGHTMAPS, 65534);
+
+    // A handle with the high bit set must stay positive as an int, which is
+    // what every int-typed consumer (lm_data, Specular_maps, render) relies on.
+    const uint16_t high_bit_handle = 40000;
+    QVERIFY(static_cast<int>(high_bit_handle) > 0);
+    QVERIFY(static_cast<int>(high_bit_handle) < BAD_LM_INDEX);
+    QCOMPARE(static_cast<int16_t>(high_bit_handle), static_cast<int16_t>(-25536));
+
+    // lightmap_info stores its indices unsigned, so a high-bit value round-trips.
+    QCOMPARE(LightmapInfo[0].spec_map, BAD_LM_INDEX);
+    LightmapInfo[0].spec_map = high_bit_handle;
+    QCOMPARE(LightmapInfo[0].spec_map, high_bit_handle);
+    QVERIFY(static_cast<int>(LightmapInfo[0].spec_map) > 0);
+    LightmapInfo[0].spec_map = BAD_LM_INDEX;
+  }
+
   void testAllocFreeSpecialFace() {
     InitSpecialFaces();
     int idx = AllocSpecialFace(SFT_SPECULAR, 4);

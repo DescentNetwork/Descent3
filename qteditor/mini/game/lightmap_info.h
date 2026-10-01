@@ -64,7 +64,9 @@ struct lightmap_info {
   uint8_t width, height, x1, y1;
 
   uint16_t dynamic;
-  int16_t spec_map;
+  // Unsigned: holds a GameLightmaps index, so it must cover the full
+  // 0..MAX_LIGHTMAPS-1 range rather than wrapping negative at 32767.
+  uint16_t spec_map;
 
   uint8_t type; // see LMI_types above
 };

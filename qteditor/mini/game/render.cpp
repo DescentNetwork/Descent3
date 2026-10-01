@@ -1240,7 +1240,7 @@ void RenderSpecularFaces(int roomnum) {
   for (i = 0; i < Num_specular_faces_to_render; i++) {
     face *fp = &rp->faces[Specular_faces[i]];
     int lm_handle = LightmapInfo[fp->lmi_handle].spec_map;
-    Q_ASSERT(lm_handle != -1);
+    Q_ASSERT(lm_handle != BAD_LM_INDEX);
     for (vn = 0; vn < fp->num_verts; vn++) {
       pointbuffer[vn] = World_point_buffer[rp->wpb_index + fp->face_verts[vn]];
       g3Point *p = &pointbuffer[vn];

@@ -53,7 +53,7 @@ std::optional<uint16_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lig
   LightmapInfo.acquire(n);
   LightmapInfo[n].type = type;
   LightmapInfo[n].dynamic = BAD_LM_INDEX;
-  LightmapInfo[n].spec_map = -1;
+  LightmapInfo[n].spec_map = BAD_LM_INDEX;
   LightmapInfo[n].width = w;
   LightmapInfo[n].height = h;
   LightmapInfo[n].x1 = 0;

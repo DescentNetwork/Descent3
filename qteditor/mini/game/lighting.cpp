@@ -1325,7 +1325,7 @@ void ClearDynamicLightmaps() {
   for (auto handle : Specular_face_list) {
     int n = handle;
     SpecialFaces[n].flags = 0;
-    // LightmapInfo[n].spec_map=-1;
+    // LightmapInfo[n].spec_map=BAD_LM_INDEX;
   }
 
   Specular_face_list.clear();
@@ -1581,7 +1581,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         uint16_t *dest_data;
         uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr->lm_handle);
 
-        if (lmi_ptr->spec_map==-1)
+        if (lmi_ptr->spec_map == BAD_LM_INDEX)
         {
                 // Get a new specular map and clear it
                 int dynamic_handle=FindFreeDynamicLightmap (cl);
@@ -1743,7 +1743,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         uint16_t *dest_data;
         uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr->lm_handle);
 
-        if (lmi_ptr->spec_map==-1)
+        if (lmi_ptr->spec_map == BAD_LM_INDEX)
         {
                 // Get a new specular map and clear it
                 int dynamic_handle=FindFreeDynamicLightmap (cl);
