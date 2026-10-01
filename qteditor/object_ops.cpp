@@ -79,7 +79,7 @@ bool MoveObject(object& obj, vector3& newpos) {
   fvi_query fq;
   fvi_info hit_info;
 
-  bool use_radius = (obj.movement_type == MT_PHYSICS);
+  bool use_radius = (obj.movement_type == movement_type::physics);
 
   fq.p0 = &obj.pos;
   fq.startroom = obj.roomnum;
@@ -125,13 +125,13 @@ bool RotateObject(int objnum, angle p, angle h, angle b) {
 // Places a new object of the given type and ID into the world at the viewer's
 // location, then repositions it onto the current surface.
 // ============================================================================
-bool HObjectPlace(int obj_type, int obj_id) {
+bool HObjectPlace(object_type obj_type, int obj_id) {
   int objnum;
   poly_model *pm;
   matrix orient = IDENTITY_MATRIX;
 
   // Special stuff for player ship
-  if (obj_type == OBJ_PLAYER) {
+  if (obj_type == object_type::player) {
     if (Ships.empty()) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place a player: There are no player ships.");
       return false;
@@ -145,7 +145,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
     Players[obj_id].ship_index = app.current_ship;
   }
 
-  if (obj_type != OBJ_POWERUP) {
+  if (obj_type != object_type::powerup) {
     orient = Viewer_object->orient;
   }
 
@@ -156,7 +156,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
   object& obj = Objects[objnum];
 
   // If we have a ground plane, use current cell or face for position
-  if ((obj.render_type == RT_POLYOBJ) &&
+  if ((obj.render_type == render_type::polyobj) &&
       ((pm = GetPolymodelPointer(obj.rtype.pobj_info().model_num)) != nullptr) &&
       pm->n_ground) {
     vector3 *surface_norm;
@@ -228,7 +228,7 @@ bool HObjectPlace(int obj_type, int obj_id) {
   }
 
   // Deal with special stuff for player
-  if (obj_type == OBJ_PLAYER) {
+  if (obj_type == object_type::player) {
     Players[obj_id].start_pos = obj.pos;
     Players[obj_id].start_roomnum = obj.roomnum;
     Players[obj_id].start_orient = obj.orient;
@@ -250,7 +250,7 @@ void ResetGroundObject(object& obj) {
     return;
 
   poly_model *pm;
-  if (!((obj.render_type == RT_POLYOBJ) &&
+  if (!((obj.render_type == render_type::polyobj) &&
         ((pm = GetPolymodelPointer(obj.rtype.pobj_info().model_num)) != nullptr) &&
         pm->n_ground))
     return;
@@ -323,7 +323,7 @@ void HObjectDelete() {
     return;
   }
 
-  if (Objects[objnum].type == OBJ_DOOR) {
+  if (Objects[objnum].type == object_type::door) {
     if (QMessageBox::question(nullptr, "Are you sure?", "It's very, very bad to delete a door object.  Are you sure you want to do this?") == QMessageBox::No)
       return;
   }

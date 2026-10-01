@@ -23,6 +23,8 @@
 #include <QMessageBox>
 #include <QPushButton>
 
+#include <algorithm>
+
 #include "death_dialog.h"
 
 
@@ -38,16 +40,17 @@ GenericDeathDialog::GenericDeathDialog(int object_id, QWidget *parent)
 {
   ui->setupUi(this);
 
+  m_death_types.fill({});
+  m_prob.fill(0);
+
   if(auto objinfo = data())
   {
-    m_death_types[0] = objinfo->death_types[0];
-    m_prob[0] = objinfo->death_probabilities[0];
-    m_death_types[1] = objinfo->death_types[1];
-    m_prob[1] = objinfo->death_probabilities[1];
-    m_death_types[2] = objinfo->death_types[2];
-    m_prob[2] = objinfo->death_probabilities[2];
-    m_death_types[3] = objinfo->death_types[3];
-    m_prob[3] = objinfo->death_probabilities[3];
+    const size_t n = std::min(objinfo->death_types.size(),
+                              objinfo->death_probabilities.size());
+    for (size_t i = 0; i < n; i++) {
+      m_death_types[i] = objinfo->death_types[i];
+      m_prob[i] = objinfo->death_probabilities[i];
+    }
   }
 
   ui->IDC_GENEREIC_DEATH_PROB1->setText(QString::number(m_prob[0]));
@@ -99,14 +102,14 @@ void GenericDeathDialog::onOk() {
 
   if(auto objinfo = data())
   {
-    objinfo->death_types[0] = m_death_types[0];
-    objinfo->death_probabilities[0] = m_prob[0];
-    objinfo->death_types[1] = m_death_types[1];
-    objinfo->death_probabilities[1] = m_prob[1];
-    objinfo->death_types[2] = m_death_types[2];
-    objinfo->death_probabilities[2] = m_prob[2];
-    objinfo->death_types[3] = m_death_types[3];
-    objinfo->death_probabilities[3] = m_prob[3];
+    objinfo->death_types.clear();
+    objinfo->death_probabilities.clear();
+
+    for(int i = 0; i < MAX_DEATH_TYPES && m_prob[i]; ++i)
+    {
+      objinfo->death_types.emplace_back(m_death_types[i]);
+      objinfo->death_probabilities.emplace_back(m_prob[i]);
+    }
   }
 
   accept();

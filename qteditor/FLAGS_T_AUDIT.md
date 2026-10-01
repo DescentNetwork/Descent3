@@ -25,6 +25,7 @@ not yet used**.
 | `terrain_satellite_flags_t` | `game/terrain.h`          | yes — `terrain_satellite::satellite_flags` |
 | `terrain_sky_flags_t` | `game/terrain.h`               | yes — `terrain_sky::flags` |
 | `death_flags_t`       | `lib/deathinfo_external.h`      | yes — `death_info::flags` |
+| `death_spew_flags_t`         | `lib/objinfo.h`                 | yes — `object_info::f_dspew` |
 | `light_flags_t`       | `lib/object_external_struct.h`  | yes — `light_info::flags` |
 | `object_flags_t`      | `lib/object_external_struct.h`  | yes — `object::flags` |
 | `effect_flags_t`      | `lib/object_external_struct.h`  | yes — `effect::type_flags` |
@@ -39,18 +40,18 @@ not yet used**.
 
 ## Migration Status
 
-The three types below were the only `*_flags_t` types in the port that were
-**defined but never used as a field type**. All three have now been migrated;
-their `int` fields use the struct types, the raw macro sets (`SOF_*`, `PMF_*`,
-`PEF_*`) have been removed from the header, and the previously dead mask macros
-(`SOF_WB_MASKS`, `WB_INDEX_SHIFT`, `SOF_MONITOR_MASK` in `polymodel.h`) were
-deleted once nothing referenced them.
+The types below are the `*_flags_t` types in the port that were **defined but
+never used as a field type** (or that replaced a raw integer field). They have
+now been migrated; their raw integer fields use the struct types and the macro
+sets (`SOF_*`, `PMF_*`, `PEF_*`, `DF_*`) have been removed from the headers
+once nothing referenced them.
 
 | `*_flags_t` type | Macro set | Field migrated |
 |------------------|-----------|----------------|
 | `subobject_flags_t`        | `SOF_*` | `bsp_info::flags` — **done** |
 | `polymodel_flags_t`        | `PMF_*` | `poly_model::flags` — **done** |
 | `polymodel_effects_flags_t` | `PEF_*` | `polymodel_effect::type` — **done** |
+| `door_flags_t`              | `DF_*`  | `door::flags` — **done** |
 
 ### 1. `subobject_flags_t` → `bsp_info::flags`
 
@@ -82,11 +83,12 @@ across `model/newstyle.cpp`, `model/polymodel.cpp` and
 
 ## Conversion Notes
 
-- All three structs are `[[gnu::packed]]` bitfields with a `static_assert` that
+- All four structs are `[[gnu::packed]]` bitfields with a `static_assert` that
   their `sizeof` equals the underlying integer width, so they are byte-compatible
-  with the raw flag words. No disk-format `byte_istream`/`byte_ostream` operators
-  exist for these structs (their fields are never read/written directly by the
-  level editor serialization), so the migration is purely in-memory.
+  with the raw flag words. The `door_flags_t` byte is the one exception that is
+  read/written directly by the table-file serialization (`mngs_door_page`
+  operators), so it goes through `reinterpret_cast<uint8_t&>` exactly like the
+  other packed one-byte flag structs.
 - Each macro test/set is rewritten to the equivalent bitfield member access,
   e.g. `sm->flags & SOF_ROTATE` → `sm->flags.rotate`,
   `sm->flags |= SOF_ROTATE` → `sm->flags.rotate = true`,

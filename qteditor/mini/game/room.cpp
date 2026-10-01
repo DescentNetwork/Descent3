@@ -1126,7 +1126,7 @@ void CreateRoomObjects() {
 
   // First delete any old room objects
   for (objnum = 0; objnum <= Highest_object_index; objnum++)
-    if (Objects[objnum].type == OBJ_ROOM)
+    if (Objects[objnum].type == object_type::room)
       ObjDelete(objnum);
 
   // Now go through all rooms & create objects for external ones
@@ -1142,7 +1142,7 @@ void CreateRoomObjects() {
 
       Q_ASSERT(roomnum != -1);
 
-      objnum = ObjCreate(OBJ_ROOM, r, roomnum, pos, nullptr).value_or(-1);
+      objnum = ObjCreate(object_type::room, r, roomnum, pos, nullptr).value_or(-1);
       Q_ASSERT(objnum != -1); // DAJ -1FIX moved up
       Objects[objnum].size = rad;
       Objects[objnum].wall_sphere_offset = vector3{};

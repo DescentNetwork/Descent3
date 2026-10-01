@@ -149,103 +149,129 @@
 #ifndef OBJECT_EXTERNAL_H_
 #define OBJECT_EXTERNAL_H_
 
+#include <cstddef>
+#include <cstdint>
+
 // Use this handle when you want a handle that will never be a valid object
 #define OBJECT_HANDLE_BAD 0
 
 // Use this handle when you want a handle that will never be a valid object
 #define OBJECT_HANDLE_NONE -1
 
-// Object types
-#define OBJ_NONE 255        // unused object
-#define OBJ_WALL 0          // A wall... not really an object, but used for collisions
-#define OBJ_FIREBALL 1      // a fireball, part of an explosion
-#define OBJ_ROBOT 2         // an evil enemy
-#define OBJ_SHARD 3         // a piece of glass
-#define OBJ_PLAYER 4        // the player on the console
-#define OBJ_WEAPON 5        // a laser, missile, etc
-#define OBJ_VIEWER 6        // a viewed object in the editor
-#define OBJ_POWERUP 7       // a powerup you can pick up
-#define OBJ_DEBRIS 8        // a piece of robot
-#define OBJ_CAMERA 9        // a camera object in the game
-#define OBJ_SHOCKWAVE 10    // a shockwave
-#define OBJ_CLUTTER 11      // misc objects
-#define OBJ_GHOST 12        // what the player turns into when dead
-#define OBJ_LIGHT 13        // a light source, & not much else
-#define OBJ_COOP 14         // a cooperative player object.
-#define OBJ_MARKER 15       // a map marker
-#define OBJ_BUILDING 16     // a building
-#define OBJ_DOOR 17         // a door
-#define OBJ_ROOM 18         // a room, visible on the terrain
-#define OBJ_PARTICLE 19     // a particle
-#define OBJ_SPLINTER 20     // a splinter piece from an exploding object
-#define OBJ_DUMMY 21        // a dummy object, ignored by everything
-#define OBJ_OBSERVER 22     // an observer in a multiplayer game
-#define OBJ_DEBUG_LINE 23   // something for debugging, I guess.  I sure wish people would add comments.
-#define OBJ_SOUNDSOURCE 24  // an object that makes a sound but does nothing else
-#define OBJ_WAYPOINT 25     // a object that marks a waypoint
-#define MAX_OBJECT_TYPES 26 // Update this when adding new types
+// Object types (was the OBJ_* set of C macros)
+enum class object_type : uint8_t {
+  none = 255,       // unused object
+  wall = 0,         // A wall... not really an object, but used for collisions
+  fireball = 1,     // a fireball, part of an explosion
+  robot = 2,        // an evil enemy
+  shard = 3,        // a piece of glass
+  player = 4,       // the player on the console
+  weapon = 5,       // a laser, missile, etc
+  viewer = 6,       // a viewed object in the editor
+  powerup = 7,      // a powerup you can pick up
+  debris = 8,       // a piece of robot
+  camera = 9,       // a camera object in the game
+  shockwave = 10,   // a shockwave
+  clutter = 11,     // misc objects
+  ghost = 12,       // what the player turns into when dead
+  light = 13,       // a light source, & not much else
+  coop = 14,        // a cooperative player object.
+  marker = 15,      // a map marker
+  building = 16,    // a building
+  door = 17,        // a door
+  room = 18,        // a room, visible on the terrain
+  particle = 19,    // a particle
+  splinter = 20,    // a splinter piece from an exploding object
+  dummy = 21,       // a dummy object, ignored by everything
+  observer = 22,    // an observer in a multiplayer game
+  debug_line = 23,  // something for debugging, I guess.  I sure wish people would add comments.
+  soundsource = 24, // an object that makes a sound but does nothing else
+  waypoint = 25,    // a object that marks a waypoint
+};
 // NOTE: if you add a type here, you must add the name to Object_type_names[]
+inline constexpr size_t MAX_OBJECT_TYPES = 26; // Update this when adding new types
+
+// Index into the per-type arrays (Object_type_names, CollisionResult,
+// Num_object_ids, ...).  object_type::none (255) is a sentinel, not a valid
+// index, so callers must exclude it before using this.
+inline size_t obj_type_index(object_type type) { return static_cast<size_t>(type); }
 
 // Condition to check if the specified type in a generic type
 #define IS_GENERIC(type)                                                                                               \
-  ((type == OBJ_CLUTTER) || (type == OBJ_BUILDING) || (type == OBJ_ROBOT) || (type == OBJ_POWERUP))
+  ((type == object_type::clutter) || (type == object_type::building) || (type == object_type::robot) ||                \
+   (type == object_type::powerup))
 
 // Condition to check if the specified object is a robot (checks for buildings with AI)
-#define IS_ROBOT(objp) ((objp->type == OBJ_ROBOT) || ((objp->type == OBJ_BUILDING) && objp->ai_info))
+#define IS_ROBOT(objp) ((objp->type == object_type::robot) || ((objp->type == object_type::building) && objp->ai_info))
 
 // Control types - what tells this object what do do
-#define CT_NONE 0          // doesn't move (or change movement)
-#define CT_AI 1            // driven by AI
-#define CT_EXPLOSION 2     // explosion sequencer
-#define CT_FLYING 4        // the player is flying
-#define CT_SLEW 5          // slewing
-#define CT_FLYTHROUGH 6    // the flythrough system
-#define CT_WEAPON 9        // laser, etc.
-#define CT_DEBRIS 12       // this is a piece of debris
-#define CT_POWERUP 13      // animating powerup blob
-#define CT_SOAR 14         // Soar object
-#define CT_PARTICLE 15     // Particle
-#define CT_SPLINTER 16     // Splinter
-#define CT_SOUNDSOURCE 17  // SoundSource
-#define CT_DYING 18        // slowly dying
-#define CT_DYING_AND_AI 19 // dying with AI
+enum class control_type : uint8_t {
+  none = 0,          // doesn't move (or change movement)
+  ai = 1,            // driven by AI
+  explosion = 2,     // explosion sequencer
+  flying = 4,        // the player is flying
+  slew = 5,          // slewing
+  flythrough = 6,    // the flythrough system
+  weapon = 9,        // laser, etc.
+  debris = 12,       // this is a piece of debris
+  powerup = 13,      // animating powerup blob
+  soar = 14,         // Soar object
+  particle = 15,     // Particle
+  splinter = 16,     // Splinter
+  soundsource = 17,  // SoundSource
+  dying = 18,        // slowly dying
+  dying_and_ai = 19, // dying with AI
+};
 
 // Movement types
-#define MT_NONE 0    // Doesn't move
-#define MT_PHYSICS 1 // Moves by physics
-#define MT_WALKING 2 // Uses physics data structure, but uses a different physics code pipe
-#define MT_AT_REST 3
-#define MT_SHOCKWAVE                                                                                                   \
-  4                     // Moves like a shockwave
-                        // (actually this is for space conservation -
-                        //  it could be more logically used as a
-                        //  control type)
-#define MT_OBJ_LINKED 5 // Allows sticky objects to link to polymodel objects
+enum class movement_type : uint8_t {
+  none = 0,        // Doesn't move
+  physics = 1,     // Moves by physics
+  walking = 2,     // Uses physics data structure, but uses a different physics code pipe
+  at_rest = 3,     //
+  shockwave = 4,   // Moves like a shockwave
+                   // (actually this is for space conservation -
+                   //  it could be more logically used as a
+                   //  control type)
+  obj_linked = 5,  // Allows sticky objects to link to polymodel objects
+};
 
 // Movement classes
-#define MC_STANDING 0
-#define MC_FLYING 1
-#define MC_ROLLING 2
-#define MC_WALKING 3
-#define MC_JUMPING 4
+enum class movement_class : uint8_t {
+  standing = 0,
+  flying = 1,
+  rolling = 2,
+  walking = 3,
+  jumping = 4,
+};
 
 // Attach types
-#define AT_RAD 0
-#define AT_ALIGNED 1
-#define AT_UNALIGNED 2
+enum class attach_type : uint8_t {
+  rad = 0,
+  aligned = 1,
+  unaligned = 2,
+};
 
 // Render types
-#define RT_NONE 0          // does not render
-#define RT_POLYOBJ 1       // a polygon model
-#define RT_FIREBALL 2      // a fireball
-#define RT_WEAPON 3        // a non-polygonal weapon
-#define RT_LINE 4          // a line
-#define RT_PARTICLE 5      // render as particle type
-#define RT_SPLINTER 6      // render as a splinter
-#define RT_ROOM 7          // rendered as a room, not an object
-#define RT_EDITOR_SPHERE 8 // renderd as a sphere in the editor, else not rendered
-#define RT_SHARD 9         // bits of broken glass
+enum class render_type : uint8_t {
+  none = 0,          // does not render
+  polyobj = 1,       // a polygon model
+  fireball = 2,      // a fireball
+  weapon = 3,        // a non-polygonal weapon
+  line = 4,          // a line
+  particle = 5,      // render as particle type
+  splinter = 6,      // render as a splinter
+  room = 7,          // rendered as a room, not an object
+  editor_sphere = 8, // renderd as a sphere in the editor, else not rendered
+  shard = 9,         // bits of broken glass
+};
 
+// How an object (or an object_info's light) is lit.
+enum class lighting_render_type : uint8_t {
+  static_lights = 0,
+  gouraud = 1,
+  lightmaps = 2,
+};
 
 // Generic Sound indices
 #define GSI_AMBIENT 0

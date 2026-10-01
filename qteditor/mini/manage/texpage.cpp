@@ -97,9 +97,3 @@ bool mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage)
 
   return true; // successfully read
 }
-
-bool mng_ReadTexturePage(posix_istream &infile, mngs_texture_page *texpage) {
-  if (!Old_table_method)
-    return mng_ReadNewTexturePage(infile, texpage);
-  return false; // old command-based table not supported in mini build
-}

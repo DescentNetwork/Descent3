@@ -33,9 +33,9 @@
 
 struct mngs_generic_page {
   object_info objinfo_struct;
-  anim_elem anim[NUM_MOVEMENT_CLASSES];
+  std::array<anim_elem, NUM_MOVEMENT_CLASSES> anim;
   std::array<otype_wb_info, MAX_WBS_PER_OBJ> static_wb;
-  t_ai_info ai_info;
+  ai_info_t ai_info;
   std::string image_name;
   std::string med_image_name;
   std::string lo_image_name;
@@ -55,9 +55,6 @@ byte_ostream& operator <<(byte_ostream& output, const mngs_generic_page& data);
 
 // Generic page functions
 //---------------------------------------------------------------
-
-// Reads a generic page from an open file.  Returns false on error.
-bool mng_ReadGenericPage(posix_istream &infile, mngs_generic_page *genericpage);
 
 // Reads a generic page from an open file.  Returns false on error.
 bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage);

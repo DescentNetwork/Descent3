@@ -2945,12 +2945,12 @@ void ComputeAABB(bool f_full) {
   }
 
   for (i = 0; i <= Highest_object_index; i++) {
-    if (Objects[i].type != OBJ_NONE) {
+    if (Objects[i].type != object_type::none) {
       if (!Objects[i].flags.big_object)
         if (Objects[i].size >= MIN_BIG_OBJ_RAD)
           BigObjAdd(i);
 
-      if (Objects[i].type == OBJ_ROOM) {
+      if (Objects[i].type == object_type::room) {
         Objects[i].min_xyz = Rooms[Objects[i].id].min_xyz;
         Objects[i].max_xyz = Rooms[Objects[i].id].max_xyz;
       } else {

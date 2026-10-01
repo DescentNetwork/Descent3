@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Table-file serialization for the anim_entry / anim_elem animation glue
-// embedded in the generic page layout.  Only the from/to/spc triplet of each
-// anim_entry is stored on disk (anim_sound_index and used are runtime-only).
+// Table-file serialization for the ai_info_t animation/AI glue embedded in the
+// generic page layout.  Only the from/to/spc triplet of each anim_entry is
+// stored on disk (anim_sound_index and used are runtime-only).
 
 #include "objinfo.h"
 #include "robotfire.h"
@@ -28,7 +28,7 @@ object_info Object_info[MAX_OBJECTS];
 
 // First object page slot with the given type (the engine's objinfo.cpp
 // GetObjectID), used by FindValidID during level object-id translation.
-std::optional<uint32_t> GetObjectID(int type) {
+std::optional<uint32_t> GetObjectID(object_type type) {
   for (int i = 0; i < MAX_OBJECT_IDS; i++)
     if (Object_info[i].type == type)
       return i;
@@ -39,109 +39,80 @@ std::optional<uint32_t> GetObjectID(int type) {
 // Animation glue (generic pages)
 //-----------------------------------------------------------------------------
 
-byte_istream& operator>>(byte_istream& input, anim_entry& data) {
-  return input >> data.from >> data.to >> data.spc;
+byte_istream& operator>>(byte_istream& input, ai_info_t& data) {
+  return input >> reinterpret_cast<uint32_t&>(data.flags)
+         >> data.ai_class
+         >> data.ai_type
+         >> data.movement_type
+         >> data.movement_subtype
+         >> data.fov
+         >> data.max_velocity
+         >> data.max_delta_velocity
+         >> data.max_turn_rate
+         >> reinterpret_cast<uint32_t&>(data.notify_flags)
+         >> data.max_delta_turn_rate
+         >> data.circle_distance
+         >> data.attack_vel_percent
+         >> data.dodge_percent
+         >> data.dodge_vel_percent
+         >> data.flee_vel_percent
+         >> data.melee_damage
+         >> data.melee_latency
+         >> data.curiousity
+         >> data.night_vision
+         >> data.fog_vision
+         >> data.lead_accuracy
+         >> data.lead_varience
+         >> data.fire_spread
+         >> data.fight_team
+         >> data.fight_same
+         >> data.aggression
+         >> data.hearing
+         >> data.frustration
+         >> data.roaming
+         >> data.life_preservation
+         >> data.avoid_friends_distance
+         >> data.biased_flight_importance
+         >> data.biased_flight_min
+         >> data.biased_flight_max;
 }
 
-byte_ostream& operator<<(byte_ostream& output, const anim_entry& data) {
-  return output << data.from << data.to << data.spc;
-}
-
-byte_istream& operator>>(byte_istream& input, anim_elem& data) {
-  for (anim_entry& e : data.elem)
-    input >> e;
-  return input;
-}
-
-byte_ostream& operator<<(byte_ostream& output, const anim_elem& data) {
-  for (const anim_entry& e : data.elem)
-    output << e;
-  return output;
-}
-
-byte_istream& operator>>(byte_istream& input, t_ai_info& data) {
-  input >> reinterpret_cast<uint32_t&>(data.flags);
-  input >> data.ai_class;
-  input >> data.ai_type;
-  input >> data.movement_type;
-  input >> data.movement_subtype;
-  input >> data.fov;
-  input >> data.max_velocity;
-  input >> data.max_delta_velocity;
-  input >> data.max_turn_rate;
-  uint32_t raw_notify = 0;
-  input >> raw_notify;
-  raw_notify |= static_cast<uint32_t>(AI_NOTIFIES_ALWAYS_ON);
-  data.notify_flags = *reinterpret_cast<ai_notify_flags_t*>(&raw_notify);
-  input >> data.max_delta_turn_rate;
-  input >> data.circle_distance;
-  input >> data.attack_vel_percent;
-  input >> data.dodge_percent;
-  input >> data.dodge_vel_percent;
-  input >> data.flee_vel_percent;
-  input >> data.melee_damage[0];
-  input >> data.melee_damage[1];
-  input >> data.melee_latency[0];
-  input >> data.melee_latency[1];
-  input >> data.curiousity;
-  input >> data.night_vision;
-  input >> data.fog_vision;
-  input >> data.lead_accuracy;
-  input >> data.lead_varience;
-  input >> data.fire_spread;
-  input >> data.fight_team;
-  input >> data.fight_same;
-  input >> data.aggression;
-  input >> data.hearing;
-  input >> data.frustration;
-  input >> data.roaming;
-  input >> data.life_preservation;
-  input >> data.avoid_friends_distance;
-  input >> data.biased_flight_importance;
-  input >> data.biased_flight_min;
-  input >> data.biased_flight_max;
-  return input;
-}
-
-byte_ostream& operator<<(byte_ostream& output, const t_ai_info& data) {
-  output << reinterpret_cast<const uint32_t&>(data.flags);
-  output << data.ai_class;
-  output << data.ai_type;
-  output << data.movement_type;
-  output << data.movement_subtype;
-  output << data.fov;
-  output << data.max_velocity;
-  output << data.max_delta_velocity;
-  output << data.max_turn_rate;
-  output << (reinterpret_cast<const uint32_t&>(data.notify_flags) & ~static_cast<uint32_t>(AI_NOTIFIES_ALWAYS_ON));
-  output << data.max_delta_turn_rate;
-  output << data.circle_distance;
-  output << data.attack_vel_percent;
-  output << data.dodge_percent;
-  output << data.dodge_vel_percent;
-  output << data.flee_vel_percent;
-  output << data.melee_damage[0];
-  output << data.melee_damage[1];
-  output << data.melee_latency[0];
-  output << data.melee_latency[1];
-  output << data.curiousity;
-  output << data.night_vision;
-  output << data.fog_vision;
-  output << data.lead_accuracy;
-  output << data.lead_varience;
-  output << data.fire_spread;
-  output << data.fight_team;
-  output << data.fight_same;
-  output << data.aggression;
-  output << data.hearing;
-  output << data.frustration;
-  output << data.roaming;
-  output << data.life_preservation;
-  output << data.avoid_friends_distance;
-  output << data.biased_flight_importance;
-  output << data.biased_flight_min;
-  output << data.biased_flight_max;
-  return output;
+byte_ostream& operator<<(byte_ostream& output, const ai_info_t& data) {
+  return output << reinterpret_cast<const uint32_t&>(data.flags)
+         << data.ai_class
+         << data.ai_type
+         << data.movement_type
+         << data.movement_subtype
+         << data.fov
+         << data.max_velocity
+         << data.max_delta_velocity
+         << data.max_turn_rate
+         << reinterpret_cast<const uint32_t&>(data.notify_flags)
+         << data.max_delta_turn_rate
+         << data.circle_distance
+         << data.attack_vel_percent
+         << data.dodge_percent
+         << data.dodge_vel_percent
+         << data.flee_vel_percent
+         << data.melee_damage
+         << data.melee_latency
+         << data.curiousity
+         << data.night_vision
+         << data.fog_vision
+         << data.lead_accuracy
+         << data.lead_varience
+         << data.fire_spread
+         << data.fight_team
+         << data.fight_same
+         << data.aggression
+         << data.hearing
+         << data.frustration
+         << data.roaming
+         << data.life_preservation
+         << data.avoid_friends_distance
+         << data.biased_flight_importance
+         << data.biased_flight_min
+         << data.biased_flight_max;
 }
 
 // ============================================================================
@@ -158,12 +129,12 @@ constexpr float DEFAULT_OBJECT_ROTDRAG = 0.01f;
 // Builds a fresh object_info row as AllocObjectID does: value-initialized
 // first (so untouched members stay zero/empty), then the object-type
 // defaults and the f_anim/f_weapons/f_ai-dependent allocations.
-object_info::object_info(int type, bool f_anim, bool f_weapons, bool f_ai) : object_info{} {
+object_info::object_info(object_type type, bool f_anim, bool f_weapons, bool f_ai) : object_info{} {
   this->type = type;
   size = DEFAULT_OBJECT_SIZE;
 
   if (f_ai) {
-    ai_info = { t_ai_info{} };
+    ai_info = { ai_info_t{} };
   }
   // Make sure the weapon battery info is cleared for a new object
   if (f_weapons) {
@@ -171,12 +142,10 @@ object_info::object_info(int type, bool f_anim, bool f_weapons, bool f_ai) : obj
   }
 
   if (f_anim) {
+    // anim_entry carries the object's per-class defaults (spc = 1.0f,
+    // anim_sound_index = SOUND_NONE_INDEX), so a value-initialized
+    // anim_elem is already the correct "fresh object" state.
     anim.assign(NUM_MOVEMENT_CLASSES, anim_elem{});
-    for (int j = 0; j < NUM_MOVEMENT_CLASSES; j++)
-      for (int k = 0; k < NUM_ANIMS_PER_CLASS; k++) {
-        anim[j].elem[k].spc = 1.0f;
-        anim[j].elem[k].anim_sound_index = -1;
-      }
   }
 
   phys_info.mass = DEFAULT_OBJECT_MASS;
@@ -194,7 +163,7 @@ object_info::object_info(int type, bool f_anim, bool f_weapons, bool f_ai) : obj
   lo_lod_distance = DEFAULT_LO_LOD_DISTANCE;
   respawn_scalar = 1.0f;
 
-  if (type == OBJ_CLUTTER || type == OBJ_ROBOT) {
+  if (type == object_type::clutter || type == object_type::robot) {
     med_lod_distance *= 10;
     lo_lod_distance *= 10;
   }
@@ -213,11 +182,11 @@ object_info::object_info(int type, bool f_anim, bool f_weapons, bool f_ai) : obj
 }
 
 // Allocs a object for use, returns -1 if error, else index on success
-int AllocObjectID(int type, bool f_anim, bool f_weapons, bool f_ai) {
+int AllocObjectID(object_type type, bool f_anim, bool f_weapons, bool f_ai) {
   for (int i = 0; i < MAX_OBJECT_IDS; i++) {
-    if (Object_info[i].type == OBJ_NONE) {
+    if (Object_info[i].type == object_type::none) {
       Object_info[i] = object_info(type, f_anim, f_weapons, f_ai);
-      Num_object_ids[type]++;
+      Num_object_ids[obj_type_index(type)]++;
       return i;
     }
   }
@@ -228,10 +197,10 @@ int AllocObjectID(int type, bool f_anim, bool f_weapons, bool f_ai) {
 
 // Frees object index n
 void FreeObjectID(int n) {
-  Q_ASSERT(Object_info[n].type != OBJ_NONE);
+  Q_ASSERT(Object_info[n].type != object_type::none);
 
-  Num_object_ids[Object_info[n].type]--;
-  Object_info[n].type = OBJ_NONE;
+  Num_object_ids[obj_type_index(Object_info[n].type)]--;
+  Object_info[n].type = object_type::none;
   Object_info[n].name.clear();
   Object_info[n].icon_name.clear();
   Object_info[n].script_name_override.clear();
@@ -244,29 +213,29 @@ void FreeObjectID(int n) {
 }
 
 int GetNextObjectID(int n) {
-  int type = Object_info[n].type;
+  const object_type t = Object_info[n].type;
   Q_ASSERT(n >= 0 && n < MAX_OBJECT_IDS);
-  if (Num_object_ids[type] == 0)
+  if (Num_object_ids[obj_type_index(t)] == 0)
     return -1;
   for (int i = n + 1; i < MAX_OBJECT_IDS; i++)
-    if (Object_info[i].type == Object_info[n].type)
+    if (Object_info[i].type == t)
       return i;
   for (int i = 0; i <= n; i++)
-    if (Object_info[i].type == Object_info[n].type)
+    if (Object_info[i].type == t)
       return i;
   return n;
 }
 
 int GetPrevObjectID(int n) {
-  int type = Object_info[n].type;
+  const object_type t = Object_info[n].type;
   Q_ASSERT(n >= 0 && n < MAX_OBJECT_IDS);
-  if (Num_object_ids[type] == 0)
+  if (Num_object_ids[obj_type_index(t)] == 0)
     return -1;
   for (int i = n - 1; i >= 0; i--)
-    if (Object_info[i].type == Object_info[n].type)
+    if (Object_info[i].type == t)
       return i;
   for (int i = MAX_OBJECT_IDS - 1; i >= n; i--)
-    if (Object_info[i].type == Object_info[n].type)
+    if (Object_info[i].type == t)
       return i;
   return n;
 }

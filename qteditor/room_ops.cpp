@@ -1344,7 +1344,7 @@ void AttachRoom() {
 
       FreeRoom(app.Placed_room);
 
-      ObjCreate(OBJ_DOOR, app.Placed_door, slot, room_center, &orient);
+      ObjCreate(object_type::door, app.Placed_door, slot, room_center, &orient);
 
       doorway *dp = DoorwayAdd(slot, app.Placed_door);
       (void)dp;

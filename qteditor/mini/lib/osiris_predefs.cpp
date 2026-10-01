@@ -92,7 +92,7 @@
  * object was even created
  *
  * 107   5/12/99 6:18a Chris
- * GetNearby objects doesn't return dead or RT_NONE objects
+ * GetNearby objects doesn't return dead or render_type::none objects
  *
  * 106   5/10/99 8:21a Chris
  * FindNearby...  ignores dead objects (OF_DEAD)
@@ -123,8 +123,8 @@
  * Added support to find out if an object has wbs
  *
  * 97    4/28/99 2:26a Jeff
- * fixed places in code where only checking OBJ_PLAYER, added OBJ_GHOST
- * and OBJ_OBSERVER where applicable
+ * fixed places in code where only checking object_type::player, added object_type::ghost
+ * and object_type::observer where applicable
  *
  * 96    4/27/99 4:43a Jeff
  * changed to call msafe functions for guidebot name commands
@@ -309,7 +309,7 @@
  * AIG_WANDER improvements
  *
  * 36    1/26/99 9:31a Chris
- * Obj_Value now correctly return OBJ_NONE when doing a TYPE check on an
+ * Obj_Value now correctly return object_type::none when doing a TYPE check on an
  * invalid objref
  *
  * 35    1/25/99 6:13p Matt
@@ -572,7 +572,7 @@ int osipf_AIGoalFollowPathSimple(int objhandle, int path_id, int guid, int flags
     return -1;
   }
 
-  if (obj->control_type != CT_AI) {
+  if (obj->control_type != control_type::ai) {
     // Can happen if e.g. the object died this tick, and Osiris was called with EVT_INTERNAL in the same tick.
     LOG_ERROR("Illegal Object CT Passed To AIGoalFollowPathSimple");
     return -1;
@@ -749,7 +749,7 @@ void osipf_PlayerValue(int obj_handle, char op, char vhandle, void *ptr, int ind
   if (extract_info) {
     objp = ObjGet(obj_handle);
 
-    if (!objp || (!(objp->type == OBJ_PLAYER || objp->type == OBJ_GHOST || objp->type == OBJ_OBSERVER))) {
+    if (!objp || (!(objp->type == object_type::player || objp->type == object_type::ghost || objp->type == object_type::observer))) {
       LOG_ERROR("Player Value: Illegal Object Passed");
       return;
     }
@@ -932,7 +932,7 @@ std::optional<uint8_t> osipf_ObjectFindType(const std::string &name) {
   auto id = FindObjectIDName(IGNORE_TABLE(name));
 
   if (id) {
-    return Object_info[*id].type;
+    return static_cast<uint8_t>(Object_info[*id].type);
   }
 
   return std::nullopt;
@@ -964,7 +964,7 @@ void osipf_AIValue(int objhandle, char op, char vtype, void *ptr) {
     return;
   }
 
-  if ((objp->control_type != CT_AI) && (objp->control_type != CT_DYING_AND_AI)) {
+  if ((objp->control_type != control_type::ai) && (objp->control_type != control_type::dying_and_ai)) {
     LOG_ERROR("AIValue: Illegal Object CT Passed");
     return;
   }
@@ -1369,7 +1369,7 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
   object *obj = ObjGet(handle);
   if (!obj) {
     if (op == VF_GET && var_handle == OBJV_I_TYPE)
-      *(int *)ptr = (int)OBJ_NONE;
+      *(int *)ptr = (int)object_type::none;
 
     return;
   }
@@ -1554,7 +1554,7 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
     break;
   case OBJV_F_MAX_SHIELDS:
     if (op == VF_GET) {
-      if (obj->type == OBJ_PLAYER || obj->type == OBJ_GHOST || obj->type == OBJ_OBSERVER)
+      if (obj->type == object_type::player || obj->type == object_type::ghost || obj->type == object_type::observer)
         *(float *)ptr = 200.0f;
       else // chrishack -- make sure it is a generic object
         *(float *)ptr = Object_info[obj->id].hit_points;
@@ -1562,7 +1562,7 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
     break;
   case OBJV_PC_MARKER_MESSAGE:
     if (op == VF_GET) {
-      if (obj->type == OBJ_MARKER) {
+      if (obj->type == object_type::marker) {
         strcpy((char *)ptr, MarkerMessages[obj->id]);
       } else {
         ((char *)ptr)[0] = '\0';
@@ -1570,7 +1570,7 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
     }
     break;
   case OBJSV_F_ANIM_START:
-    if (obj->control_type != CT_AI)
+    if (obj->control_type != control_type::ai)
       return;
 
     if (op == VF_GET)
@@ -1579,7 +1579,7 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
       Object_info[obj->id].anim[obj->ai_info->movement_type].elem[index].from = (*(float *)ptr);
     break;
   case OBJSV_F_ANIM_END:
-    if (obj->control_type != CT_AI)
+    if (obj->control_type != control_type::ai)
       return;
 
     if (op == VF_GET)
@@ -1588,7 +1588,7 @@ void osipf_ObjectValue(int handle, char op, char var_handle, void *ptr, int inde
       Object_info[obj->id].anim[obj->ai_info->movement_type].elem[index].to = (*(float *)ptr);
     break;
   case OBJSV_F_ANIM_TIME:
-    if (obj->control_type != CT_AI)
+    if (obj->control_type != control_type::ai)
       return;
 
     if (op == VF_GET)
@@ -1654,7 +1654,7 @@ uint8_t osipf_AITurnTowardsVectors(int objhandle, vector3 *fvec, vector3 *uvec) 
     return 0;
   }
 
-  if (objp->control_type != CT_AI) {
+  if (objp->control_type != control_type::ai) {
     LOG_ERROR("AITurnTowardsVectors: Illegal Object CT Passed");
     return 0;
   }
@@ -1673,7 +1673,7 @@ void osipf_AISetType(int objhandle, int type) {
     return;
   }
 
-  if (objp->control_type != CT_AI) {
+  if (objp->control_type != control_type::ai) {
     LOG_ERROR("AISetType: Illegal Object CT Passed");
     return;
   }
@@ -1697,7 +1697,7 @@ vector3 osipf_AIFindHidePos(int hideobjhandle, int viewobjhandle, float time, in
     return vector3{};
   }
 
-  if (hide_obj->control_type != CT_AI) {
+  if (hide_obj->control_type != control_type::ai) {
     LOG_ERROR("Illegal Object CT Passed To AIFindHidePos");
     *hide_room = -1;
     return vector3{};
@@ -1798,7 +1798,7 @@ int osipf_AIGoalAdd(int objhandle, int goal_type, int level, float influence, in
     g_info.attach_info.rad = va_arg(marker, double);
 
     object *objp = ObjGet(g_info.handle);
-    if (objp && (objp->type == OBJ_POWERUP))
+    if (objp && (objp->type == object_type::powerup))
       g_info.attach_info.rad /= 2;
 
     if (va_arg(marker, int) != 0)
@@ -1923,7 +1923,7 @@ void osipf_AIGoalClear(int objhandle, int goal_index) {
     return;
   }
 
-  if (obj->control_type != CT_AI) {
+  if (obj->control_type != control_type::ai) {
     LOG_ERROR("AIGoalClear: Illegal Object CT Passed");
     return;
   }
@@ -1965,7 +1965,7 @@ int osipf_ObjMakeListOfType(int objhandle, int type, int id, bool f_ignore_init_
 
   for (i = 0; i <= Highest_object_index; i++) {
     if (Objects[i].type == type) {
-      if (Objects[i].type == OBJ_NONE)
+      if (Objects[i].type == object_type::none)
         continue;
 
       if (&Objects[i] == obj)
@@ -2053,7 +2053,7 @@ int osipf_AISetGoalFlags(int objhandle, int goal_handle, int flags, uint8_t f_en
     return 0;
   }
 
-  if (obj->control_type != CT_AI) {
+  if (obj->control_type != control_type::ai) {
     LOG_ERROR("Non-AI Object Passed To AISetGoalFlags");
     return 0;
   }
@@ -2078,7 +2078,7 @@ void osipf_AISetGoalCircleDist(int objhandle, int goal_handle, float dist) {
     return;
   }
 
-  if (obj->control_type != CT_AI) {
+  if (obj->control_type != control_type::ai) {
     LOG_ERROR("Non-AI Object Passed To AISetGoalCircleDist");
     return;
   }
@@ -2586,10 +2586,12 @@ void osipf_OpenMessageWindow(const char *title, ...) {
   Q_ASSERT(false); // ummm, this is a blank function, should we ever be calling it?
 }
 
-int osipf_ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3 *pos, const matrix *orient, int parent_handle,
+int osipf_ObjCreate(uint8_t raw_type, uint16_t id, int roomnum, vector3 *pos, const matrix *orient, int parent_handle,
                     vector3 *initial_velocity) {
   object *obj;
   int objnum;
+  // Script ABI passes the raw 8-bit object type; convert at this boundary.
+  const object_type type = static_cast<object_type>(raw_type);
 
   if (id == 65535) // since it is a uint16_t, this is == -1
     return OBJECT_HANDLE_NONE;
@@ -2597,7 +2599,7 @@ int osipf_ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3 *pos, const 
   if (((roomnum >= 0) && (roomnum < Rooms.size()) && (Rooms[roomnum].used)) || (ROOMNUM_OUTSIDE(roomnum))) {
     if (IS_GENERIC(type)) {
       // Make sure the scripts aren't creating objects that have lightmaps!
-      Q_ASSERT(Object_info[id].lighting_info.lighting_render_type != LRT_LIGHTMAPS);
+      Q_ASSERT(Object_info[id].lighting_info.lighting_render_type != lighting_render_type::lightmaps);
     }
 
     objnum = ObjCreate(type, id, roomnum, pos, orient, parent_handle).value_or(-1);
@@ -2610,7 +2612,7 @@ int osipf_ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3 *pos, const 
 
     // if there was an initial velocity, set it
     if (initial_velocity) {
-      Q_ASSERT(obj->movement_type == MT_PHYSICS);
+      Q_ASSERT(obj->movement_type == movement_type::physics);
       obj->mtype.phys_info.velocity = *initial_velocity;
     }
 
@@ -2652,7 +2654,7 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
     return;
   }
 
-  if (objp->control_type != CT_AI && objp->type != OBJ_PLAYER && objp->type != OBJ_OBSERVER) {
+  if (objp->control_type != control_type::ai && objp->type != object_type::player && objp->type != object_type::observer) {
     LOG_ERROR("Obj_WBValue: Illegal Object CT Passed");
     return;
   }
@@ -2666,7 +2668,7 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
   otype_wb_info *static_wb;
   poly_model *pm = &Poly_models[objp->rtype.pobj_info().model_num];
 
-  if (objp->type == OBJ_PLAYER || objp->type == OBJ_OBSERVER) {
+  if (objp->type == object_type::player || objp->type == object_type::observer) {
     ship *ship = &Ships[Players[objp->id].ship_index];
     static_wb = &ship->static_wb[wb_index];
   } else {
@@ -2674,7 +2676,7 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
     static_wb = &obj_info->static_wb[wb_index];
   }
 
-  if (objp->type == OBJ_BUILDING && (wb_index < 0 || wb_index > pm->num_wbs)) {
+  if (objp->type == object_type::building && (wb_index < 0 || wb_index > pm->num_wbs)) {
     return;
   }
 
@@ -2718,7 +2720,7 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
 
   case WBV_C_NUM_GUNPTS:
     if (op == VF_GET) {
-      if (objp->type == OBJ_PLAYER || objp->type == OBJ_OBSERVER) {
+      if (objp->type == object_type::player || objp->type == object_type::observer) {
         *((char *)ptr) = 8;
       } else {
         *((char *)ptr) = pm->poly_wb[wb_index].num_gps;
@@ -2734,7 +2736,7 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
     break;
   case WBSV_V_GUNPT_POS:
     if (op == VF_GET) {
-      if (objp->type == OBJ_PLAYER || objp->type == OBJ_OBSERVER)
+      if (objp->type == object_type::player || objp->type == object_type::observer)
         WeaponCalcGun(((vector3 *)ptr), NULL, objp, pm->poly_wb[0].gp_index[g_index]);
       else
         WeaponCalcGun(((vector3 *)ptr), NULL, objp, pm->poly_wb[wb_index].gp_index[g_index]);
@@ -3341,7 +3343,7 @@ int osipf_AIGetNearbyObjs(vector3 *pos, int init_roomnum, float rad, int *object
                                       f_only_players_and_ais, f_include_non_collide_objects, f_stop_at_closed_doors);
   Q_ASSERT(num_close <= max_elements);
   for (i = 0; i < num_close; i++) {
-    if (!Objects[s_list[i]].flags.dead && Objects[s_list[i]].render_type != RT_NONE) {
+    if (!Objects[s_list[i]].flags.dead && Objects[s_list[i]].render_type != render_type::none) {
       object_handle_list[count++] = Objects[s_list[i]].handle;
     }
   }
@@ -3386,7 +3388,7 @@ std::optional<uint32_t> osipf_FindTriggerName(const std::string &name) {
 
 std::optional<uint32_t> osipf_FindObjectName(const std::string &name) {
   for (size_t i = 0; i < Objects.size(); i++) {
-    if (Objects[i].type != OBJ_NONE && !Objects[i].name.empty()) {
+    if (Objects[i].type != object_type::none && !Objects[i].name.empty()) {
       if (match(name, Objects[i].name))
         return static_cast<uint32_t>(Objects[i].handle);
     }
@@ -3410,7 +3412,7 @@ std::optional<uint32_t> osipf_GetTriggerFace(int trigger_id) {
 
 std::optional<uint32_t> osipf_FindDoorName(const std::string &name) {
   for (int i = 0; i <= MAX_OBJECTS; i++) {
-    if (Objects[i].type == OBJ_DOOR && !Objects[i].name.empty() && match(Objects[i].name, name)) {
+    if (Objects[i].type == object_type::door && !Objects[i].name.empty() && match(Objects[i].name, name)) {
       return static_cast<uint32_t>(Objects[i].handle);
     }
   }
@@ -3632,13 +3634,13 @@ void osipf_ObjKill(int handle, int killer_handle, float damage, int flags, float
   if (obj == NULL)
     return;
 
-  if (obj->type == OBJ_PLAYER || obj->type == OBJ_GHOST || obj->type == OBJ_OBSERVER) {
-    if (obj->type != OBJ_PLAYER) {
+  if (obj->type == object_type::player || obj->type == object_type::ghost || obj->type == object_type::observer) {
+    if (obj->type != object_type::player) {
       Q_ASSERT(false);
     }
 
     KillPlayer(obj, killer, damage, -1);
-  } else if (IS_GENERIC(obj->type) || (obj->type == OBJ_DOOR)) {
+  } else if (IS_GENERIC(obj->type) || (obj->type == object_type::door)) {
 
     if (IS_GUIDEBOT(obj)) // Don't allow killing of the guidebot
       return;

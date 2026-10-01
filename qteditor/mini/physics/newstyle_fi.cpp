@@ -366,12 +366,12 @@ bool PolyCollideObject(object& obj) {
   Q_ASSERT(&obj >= Objects.data() && &obj <= &Objects[Highest_object_index]);
 
 #ifndef NED_PHYSICS
-  if (fvi_moveobj >= 0 && Objects[fvi_moveobj].type == OBJ_WEAPON &&
-      obj.type == OBJ_PLAYER)
+  if (fvi_moveobj >= 0 && Objects[fvi_moveobj].type == object_type::weapon &&
+      obj.type == object_type::player)
     f_use_big_sphere = true;
 #endif
 
-  fvi_do_orient = fvi_moveobj >= 0 && Objects[fvi_moveobj].type == OBJ_WEAPON;
+  fvi_do_orient = fvi_moveobj >= 0 && Objects[fvi_moveobj].type == object_type::weapon;
 
 #ifndef NED_PHYSICS
   if (f_use_big_sphere) {
@@ -401,8 +401,8 @@ bool PolyCollideObject(object& obj) {
   Q_ASSERT(obj.flags.polygon_object);
 
 #ifndef NED_PHYSICS
-  if (obj.type == OBJ_PLAYER || obj.type == OBJ_ROBOT || obj.type == OBJ_DEBRIS || obj.type == OBJ_DOOR ||
-      obj.type == OBJ_BUILDING || obj.type == OBJ_CLUTTER || obj.type == OBJ_BUILDING) {
+  if (obj.type == object_type::player || obj.type == object_type::robot || obj.type == object_type::debris || obj.type == object_type::door ||
+      obj.type == object_type::building || obj.type == object_type::clutter || obj.type == object_type::building) {
     SetNormalizedTimeObj(&obj, normalized_time);
     CollidePolygonModel(&obj.pos, &obj.orient, obj.rtype.pobj_info().model_num, normalized_time,
                         obj.rtype.pobj_info().subobj_flags);

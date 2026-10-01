@@ -25,7 +25,7 @@
 
 using namespace std::string_literals;
 
-void populateObjectCombo(QComboBox *combo, int type, int selected_handle) {
+void populateObjectCombo(QComboBox *combo, object_type type, int selected_handle) {
   if (combo == nullptr)
     return;
 
@@ -33,13 +33,13 @@ void populateObjectCombo(QComboBox *combo, int type, int selected_handle) {
   combo->addItem("<none>", OBJECT_HANDLE_NONE);
 
   for (int i = 0; i <= Highest_object_index; i++) {
-    if (Objects[i].type == OBJ_NONE)
+    if (Objects[i].type == object_type::none)
       continue;
-    if (!Objects[i].name.empty() && (type == OBJ_NONE || Objects[i].type == type))
+    if (!Objects[i].name.empty() && (type == object_type::none || Objects[i].type == type))
     {
       QString str = QString("%1 (%2, %3)")
                         .arg(QString::fromStdString(Objects[i].name.empty() ? "<no name>"s : Objects[i].name))
-                        .arg(QString::fromStdString(Object_type_names[Objects[i].type]))
+                        .arg(QString::fromStdString(Object_type_names[obj_type_index(Objects[i].type)]))
                         .arg(Objects[i].handle, 8, 16);
       int index = combo->count();
       combo->addItem(str, Objects[i].handle);

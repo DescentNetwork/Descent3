@@ -234,8 +234,8 @@ bool ScriptCreateEmptyScript(const std::string &filename, uint8_t script_type) {
   w("//	for that type/id of object within this DLL).  If a matching scriptname is found, a UNIQUE ID");
   w("//	is to be returned back to Descent 3.  This ID will be used from here on out for all future");
   w("//	interaction with the DLL.  Since doors are not part of the generic object's, it's possible");
-  w("//	for a door to have the same name as a generic object (OBJ_POWERUP, OBJ_BUILDING, OBJ_CLUTTER");
-  w("//	or OBJ_ROBOT), therefore, a 1 is passed in for isdoor if the given object name refers to a");
+  w("//	for a door to have the same name as a generic object (object_type::powerup, object_type::building, object_type::clutter");
+  w("//	or object_type::robot), therefore, a 1 is passed in for isdoor if the given object name refers to a");
   w("//	door, else it is a 0.  The return value is the unique identifier, else -1 if the script");
   w("//	does not exist in the DLL.");
   w("int STDCALL GetGOScriptID(const char *name,uint8_t isdoor)");

@@ -53,9 +53,6 @@ byte_ostream& operator <<(byte_ostream& output, const mngs_ship_page& data);
 // Given an open file pointer and a ship_page struct, writes that shippage out
 void mng_WriteShipPage(struct CFILE* outfile, mngs_ship_page *shippage);
 
-// Reads a ship page from an open file.  Returns false on error.
-bool mng_ReadShipPage(posix_istream &infile, mngs_ship_page *shippage);
-
 // Given an open file pointer and a ship_page struct, writes that shippage out
 void mng_WriteNewShipPage(struct CFILE* outfile, mngs_ship_page *shippage);
 

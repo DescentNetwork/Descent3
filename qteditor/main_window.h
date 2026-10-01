@@ -28,6 +28,8 @@
 //#include <DockManager.h>
 //#include <DockWidget.h>
 
+#include "object_external.h" // object_type
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -72,7 +74,7 @@ private:
   void showWorldObjectsSound();
   void showWorldWeapons();
   void showWorldTextures();
-  void showGenericObject(int objType, int current);
+  void showGenericObject(object_type objType, int current);
   void showLevelProperties();
   void showMegacells();
   void showAmbientSounds();

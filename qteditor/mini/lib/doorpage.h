@@ -47,9 +47,6 @@ byte_ostream& operator <<(byte_ostream& output, const mngs_door_page& data);
 // Given an open file pointer and a door_page struct, writes that doorpage out
 void mng_WriteDoorPage(struct CFILE* outfile, mngs_door_page *doorpage);
 
-// Reads a door page from an open file.  Returns false on error.
-bool mng_ReadDoorPage(posix_istream &infile, mngs_door_page *doorpage);
-
 // Given an open file pointer and a door_page struct, writes that doorpage out
 void mng_WriteNewDoorPage(struct CFILE* outfile, mngs_door_page *doorpage);
 

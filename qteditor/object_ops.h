@@ -19,6 +19,7 @@
 #pragma once
 
 #include "fix.h"
+#include "object_external.h" // object_type
 #include "vecmat.h"
 
 struct object;
@@ -42,7 +43,7 @@ extern float Object_move_scale;
 extern angle Object_move_rotation;
 
 // Placement.
-bool HObjectPlace(int obj_type, int obj_id);
+bool HObjectPlace(object_type obj_type, int obj_id);
 int GetSelectedTerrainCell();
 
 // Movement.

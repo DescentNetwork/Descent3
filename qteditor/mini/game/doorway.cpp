@@ -202,7 +202,7 @@ doorway *GetDoorwayFromObject(int door_obj_handle) {
   if (!objp)
     return NULL;
 
-  Q_ASSERT(objp->type == OBJ_DOOR);
+  Q_ASSERT(objp->type == object_type::door);
 
   room *rp = &Rooms[objp->roomnum];
 
@@ -257,7 +257,7 @@ void DoorwayActivate(int door_obj_handle) {
   if (!objp)
     return;
 
-  Q_ASSERT(objp->type == OBJ_DOOR);
+  Q_ASSERT(objp->type == object_type::door);
 
   dp = GetDoorwayFromObject(door_obj_handle);
   if (!dp)
@@ -303,7 +303,7 @@ void DoorwaySetPosition(int door_obj_handle, float pos) {
   if (!objp)
     return;
 
-  Q_ASSERT(objp->type == OBJ_DOOR);
+  Q_ASSERT(objp->type == object_type::door);
 
   // Get pointer to doorway
   dp = GetDoorwayFromObject(door_obj_handle);
@@ -505,7 +505,7 @@ object *GetDoorObject(int roomnum) {
   Q_ASSERT(rp->flags.door);
 
   for (int objnum = rp->objects; (objnum != -1); objnum = Objects[objnum].next)
-    if (Objects[objnum].type == OBJ_DOOR)
+    if (Objects[objnum].type == object_type::door)
       return &Objects[objnum];
 
   return NULL;
@@ -556,15 +556,15 @@ bool DoorwayOpenable(int door_obj_handle, int opener_handle) {
     return 0;
 
   // If a weapon, get the parent
-  if (opener->type == OBJ_WEAPON) {
+  if (opener->type == object_type::weapon) {
     opener = ObjGetUltimateParent(opener);
-    Q_ASSERT(opener && (opener->type != OBJ_WEAPON));
+    Q_ASSERT(opener && (opener->type != object_type::weapon));
   }
 
   // Get the opener's keys
-  if (opener->type == OBJ_PLAYER)
+  if (opener->type == object_type::player)
     keys = Players[opener->id].keys;
-  else if ((opener->type == OBJ_ROBOT) || ((opener->type == OBJ_BUILDING) && opener->ai_info))
+  else if ((opener->type == object_type::robot) || ((opener->type == object_type::building) && opener->ai_info))
     keys = Global_keys;
   else
     return 0; // If not a robot or a player, cannot open keyed doors

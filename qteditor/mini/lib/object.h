@@ -174,7 +174,7 @@
  * added ObjUnlink call.
  *
  * 130   8/12/98 6:37p Jeff
- * added functions to ghost an object (make its type to OBJ_DUMMY) and
+ * added functions to ghost an object (make its type to object_type::dummy) and
  * unghost
  *
  * 129   8/12/98 12:04p Chris
@@ -220,7 +220,7 @@
  * Improved the turret info passing in multiplayer
  *
  * 117   7/07/98 7:34p Jeff
- * created object type, OBJ_DUMMY
+ * created object type, object_type::dummy
  *
  * 116   7/07/98 3:26p Chris
  * Added changes for turret updates
@@ -365,7 +365,7 @@
  *
  * 69    2/09/98 7:28p Matt
  * Added a rendering type for external room so we could check against
- * render type == RT_NONE
+ * render type == render_type::none
  *
  * 68    2/06/98 2:57a Chris
  * Added point_collide_with_walls and ignore_robot_collisions
@@ -533,7 +533,7 @@
  * Added OF_DESTROYABLE flag
  *
  * 16    8/12/97 3:56p Matt
- * Added new object type: OBJ_BUILDING
+ * Added new object type: object_type::building
  *
  * 15    8/12/97 1:13p Chris
  * Added AABBs.
@@ -584,7 +584,7 @@
  * got fireball vclips working
  *
  * 16    4/14/97 3:48p Jason
- * changed RT_LASER to RT_WEAPON
+ * changed RT_LASER to render_type::weapon
  *
  * 15    4/09/97 9:57p Chris
  * Added more ability to customize ships/objects.
@@ -645,12 +645,7 @@
 #define HANDLE_COUNT_MASK 0xfffff800 // to maks off the count part of the handle
 #define HANDLE_COUNT_INCREMENT 0x800 // what gets added to the handle to increment it
 
-// See object external for OBJ_ types
-
-// Lighting render types
-#define LRT_STATIC 0
-#define LRT_GOURAUD 1
-#define LRT_LIGHTMAPS 2
+// See object external for object_type and lighting_render_type
 
 extern const std::array<std::string, MAX_OBJECT_TYPES> Object_type_names;
 
@@ -725,7 +720,7 @@ void ObjSetAABB(object& obj);
 
 // initialize a new object.  adds to the list for the given room
 // returns the object number
-std::optional<uint32_t> ObjCreate(uint8_t type, uint16_t id, int roomnum, vector3& pos, const matrix *orient, int parent_handle = OBJECT_HANDLE_NONE);
+std::optional<uint32_t> ObjCreate(object_type type, uint16_t id, int roomnum, vector3& pos, const matrix *orient, int parent_handle = OBJECT_HANDLE_NONE);
 
 // remove object from the world
 void ObjDelete(int objnum);
@@ -787,7 +782,7 @@ void ObjSetTurretUpdate(uint16_t objnum, multi_turret *multi_turret_info);
 // Returns the original parent for the given object.  Returns self if it has no parent
 object *ObjGetUltimateParent(object *child);
 
-// Sets an object to a type OBJ_DUMMY (saves its old type) so it won't be renderered, etc, but still alive
+// Sets an object to a type object_type::dummy (saves its old type) so it won't be renderered, etc, but still alive
 void ObjGhostObject(int objnum);
 
 // Restores a ghosted object back to its old type

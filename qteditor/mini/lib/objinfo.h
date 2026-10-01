@@ -105,7 +105,7 @@
  * changes for linux compile
  *
  * 60    4/14/99 10:31p Jeff
- * fixed name of ai_info struct to t_ai_info
+ * fixed name of ai_info struct to ai_info_t
  *
  * 59    4/10/99 6:39p Matt
  * Only save the designer-editable AI data in the Object_info array,
@@ -310,6 +310,7 @@
 #ifndef _OBJINFO_H
 #define _OBJINFO_H
 
+#include <array>
 #include <string>
 #include <vector>
 
@@ -353,7 +354,7 @@ extern const std::vector<std::string> Anim_state_names;
 #define GENOBJ_GUIDEBOTRED 2 // NOTE: This must match ROBOT_GUIDEBOTRED
 
 #define IS_GUIDEBOT(x)                                                                                                 \
-  (((object *)x)->type == OBJ_ROBOT &&                                                                                 \
+  (((object *)x)->type == object_type::robot &&                                                                                 \
    ((((object *)x)->id == ROBOT_GUIDEBOTRED) || (((object *)x)->id == ROBOT_GUIDEBOT)))
 
 // Animation constants
@@ -362,34 +363,62 @@ extern const std::vector<std::string> Anim_state_names;
 
 // Info for an animation state
 struct anim_entry {
-  int16_t from, to;
-  float spc;
-  int anim_sound_index;
-  uint8_t used;
+  int16_t from = 0;
+  int16_t to = 0;
+  float spc = 1.0f;
+  int anim_sound_index = -1; // SOUND_NONE_INDEX (not 0; the editor's sound handles are 1-based)
+  uint8_t used = 0;
 };
 
 // Table-file serialization: only the from/to/spc triplet is stored on disk
 // (anim_sound_index and used are runtime-only).
-byte_istream& operator >>(byte_istream& input, anim_entry& data);
-byte_ostream& operator <<(byte_ostream& output, const anim_entry& data);
+inline byte_istream& operator >>(byte_istream& input, anim_entry& data)
+{
+  return input >> data.from >> data.to >> data.spc;
+}
+
+inline byte_ostream& operator <<(byte_ostream& output, const anim_entry& data)
+{
+  return output << data.from << data.to << data.spc;
+}
 
 struct anim_elem {
-  anim_entry elem[NUM_ANIMS_PER_CLASS];
+  std::array<anim_entry, NUM_ANIMS_PER_CLASS> elem;
 };
 
-byte_istream& operator >>(byte_istream& input, anim_elem& data);
-byte_ostream& operator <<(byte_ostream& output, const anim_elem& data);
+inline byte_istream& operator >>(byte_istream& input, anim_elem& data)
+{
+  return input >> data.elem;
+}
+
+inline byte_ostream& operator <<(byte_ostream& output, const anim_elem& data)
+{
+  return output << data.elem;
+}
 
 #define MAX_DSPEW_TYPES 2
-#define DSF_ONLY_IF_PLAYER_HAS_OBJ_1 1
-#define DSF_ONLY_IF_NO_1 2
+
+// Death spew flags: control which death spew types spawn (see DoDeathSpew)
+struct [[gnu::packed]] death_spew_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 6;                 // Unused padding to complete 8 bits
+  uint8_t only_if_no_1 : 1;            // DSF_ONLY_IF_NO_1 (2)
+  uint8_t only_if_player_has_obj_1 : 1; // DSF_ONLY_IF_PLAYER_HAS_OBJ_1 (1)
+#else
+  uint8_t only_if_player_has_obj_1 : 1; // DSF_ONLY_IF_PLAYER_HAS_OBJ_1 (1)
+  uint8_t only_if_no_1 : 1;            // DSF_ONLY_IF_NO_1 (2)
+  uint8_t padding : 6;                 // Unused padding to complete 8 bits
+#endif
+};
+static_assert(sizeof(death_spew_flags_t) == sizeof(uint8_t));
 
 // How many different deaths each object can have
 #define MAX_DEATH_TYPES 4
 
 // AI info for this object
 // This is the subset of ai_frame data that the user can edit for an object type
-struct t_ai_info {
+struct ai_info_t {
   uint8_t ai_class;
   uint8_t ai_type;
 
@@ -405,8 +434,8 @@ struct t_ai_info {
   float circle_distance;
   float dodge_percent;
 
-  float melee_damage[2];
-  float melee_latency[2];
+  std::array<float, 2> melee_damage;
+  std::array<float, 2> melee_latency;
 
   int sound[MAX_AI_SOUNDS];
 
@@ -440,12 +469,13 @@ struct t_ai_info {
   float biased_flight_max;
 };
 
-// Table-file serialization for the current generic-page layout of t_ai_info.
-// notify_flags is stored with the AI_NOTIFIES_ALWAYS_ON bits cleared and
-// restored on read.  Older page layouts (pre-version-16 avoid_friends_distance,
+// Table-file serialization for the current generic-page layout of ai_info_t.
+// The always-enabled notification events (AI_NOTIFIES_ALWAYS_ON) are supplied
+// as defaults on ai_notify_flags_t; they are not forced on read or cleared on
+// write.  Older page layouts (pre-version-16 avoid_friends_distance,
 // pre-version-17 biased_flight_*) are not handled here.
-byte_istream& operator >>(byte_istream& input, t_ai_info& data);
-byte_ostream& operator <<(byte_ostream& output, const t_ai_info& data);
+byte_istream& operator >>(byte_istream& input, ai_info_t& data);
+byte_ostream& operator <<(byte_ostream& output, const ai_info_t& data);
 
 
 struct object_info_flags_t
@@ -485,17 +515,25 @@ struct object_info_flags_t
 #endif
 };
 
+struct object_death_info_t
+{
+  death_spew_flags_t flags;
+  float percent;
+  int16_t number;
+  std::string name;
+};
+
 // Info for robots, powerups, debris, etc.
 struct object_info {
   object_info() = default;
   // Value-initializes the object (like object_info{}) and then applies the
   // AllocObjectID defaults; keeps the f_anim/f_weapons/f_ai-dependent
   // allocations so a default-constructed object_info stays cheap and zero.
-  object_info(int type, bool f_anim, bool f_weapons, bool f_ai);
+  object_info(object_type type, bool f_anim, bool f_weapons, bool f_ai);
 
   std::string name; // the name on the page
 
-  int type;   // what type of object this is
+  object_type type; // what type of object this is
   float size; // size
   object_info_flags_t flags; // misc flags.  See above.
 
@@ -523,7 +561,7 @@ struct object_info {
   int16_t dspew[MAX_DSPEW_TYPES];
   float dspew_percent[MAX_DSPEW_TYPES];
   int16_t dspew_number[MAX_DSPEW_TYPES];
-  uint8_t f_dspew;
+  death_spew_flags_t f_dspew;
 
   // Valid for physics objects only
   physics_info phys_info; // the physics data for this obj type
@@ -541,11 +579,11 @@ struct object_info {
   std::string script_name_override;
 
   // Death information
-  death_info death_types[MAX_DEATH_TYPES];    // the ways this object can die
-  uint8_t death_probabilities[MAX_DEATH_TYPES]; // how likely each death is, from 0-100 (percent)
+  std::vector<death_info> death_types;    // the ways this object can die
+  std::vector<uint8_t> death_probabilities; // how likely each death is, from 0-100 (percent)
 
   // Valid for AI objects only
-  std::vector<t_ai_info> ai_info; // the AI info for this obj type; empty means none
+  std::vector<ai_info_t> ai_info; // the AI info for this obj type; empty means none
 
   // Valid for polygon models with weapons
   std::vector<otype_wb_info> static_wb; // sized MAX_WBS_PER_OBJ when non-empty; empty means none
@@ -566,14 +604,13 @@ void InitObjectInfo();
 void FreeObjectInfo(void);
 
 // Allocs a object for use, returns -1 if error, else index on success
-// int AllocObjectID(int type, int flags);
-int AllocObjectID(int type, bool f_anim, bool f_weapons, bool f_ai);
+int AllocObjectID(object_type type, bool f_anim, bool f_weapons, bool f_ai);
 
 // Frees object index n
 void FreeObjectID(int n);
 
 // Find an object with the given type.  Returns std::nullopt if none found.
-std::optional<uint32_t> GetObjectID(int type);
+std::optional<uint32_t> GetObjectID(object_type type);
 
 // Gets next object from n of the same type as n
 int GetNextObjectID(int n);

@@ -249,16 +249,16 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->ID_TOOLS_WORLD_TEXTURES, &QAction::triggered, this, &MainWindow::showWorldTextures);
   connect(ui->ID_EDITORS_MEGACELLS, &QAction::triggered, this, &MainWindow::showMegacells);
   connect(ui->ID_TOOLS_WORLD_OBJECTS_ROBOTS, &QAction::triggered, [this]() {
-    showGenericObject(OBJ_ROBOT, app.current_robot);
+    showGenericObject(object_type::robot, app.current_robot);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_POWERUPS, &QAction::triggered, [this]() {
-    showGenericObject(OBJ_POWERUP, app.current_powerup);
+    showGenericObject(object_type::powerup, app.current_powerup);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_BUILDINGS, &QAction::triggered, [this]() {
-    showGenericObject(OBJ_BUILDING, app.current_building);
+    showGenericObject(object_type::building, app.current_building);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_CLUTTER, &QAction::triggered, [this]() {
-    showGenericObject(OBJ_CLUTTER, app.current_clutter);
+    showGenericObject(object_type::clutter, app.current_clutter);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_PLAYER, &QAction::triggered, this, &MainWindow::showWorldObjectsPlayer);
   connect(ui->ID_TOOLS_WORLD_WEAPONS, &QAction::triggered, this, &MainWindow::showWorldWeapons);
@@ -691,12 +691,12 @@ void MainWindow::showWorldTextures() {
   dlg.exec();
 }
 
-void MainWindow::showGenericObject(int objType, int current) {
+void MainWindow::showGenericObject(object_type objType, int current) {
   WorldObjectsGenericDialog dlg(objType, current, this);
   dlg.exec();
-  if (objType == OBJ_BUILDING)
+  if (objType == object_type::building)
     app.current_building = dlg.objectId();
-  else if (objType == OBJ_CLUTTER)
+  else if (objType == object_type::clutter)
     app.current_clutter = dlg.objectId();
 }
 
@@ -964,7 +964,7 @@ void MainWindow::onCenterViewOnObject() {
   // (editor/MainFrm.cpp:2229) -> SetWireframeView(&Objects[cur].pos).
   if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[app.Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == object_type::none)
     return;
 
   m_editorView->setWireframeView(Objects[app.Cur_object_index].pos);
@@ -1013,7 +1013,7 @@ void MainWindow::onMoveCameraToCurrentObject() {
   if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
   object *objp = &Objects[app.Cur_object_index];
-  if (objp->type == OBJ_NONE)
+  if (objp->type == object_type::none)
     return;
 
   // OBJECT_PLACE_DIST is defined in editor/HObject.cpp:258 and reused by the
@@ -1094,7 +1094,7 @@ static int find_used(int from) {
   const int total = Highest_object_index + 1;
   for (int step = 0; step < total; ++step) {
     const int idx = (from + step) % total;
-    if (Objects[idx].type != OBJ_NONE)
+    if (Objects[idx].type != object_type::none)
       return idx;
   }
   return -1;
@@ -1108,7 +1108,7 @@ static int find_used(int from) {
 // Win32 OnObjectPlaceCameraAtViewer handler closely enough that
 // subsequent editor code (viewer-move-with-camera) keeps working.
 int MainWindow::onPlaceCameraAtViewer() {
-  if (Viewer_object == nullptr || Viewer_object->type != OBJ_VIEWER)
+  if (Viewer_object == nullptr || Viewer_object->type != object_type::viewer)
     return -1;
   if (app.Curroomp < 0)
     return -1;
@@ -1121,7 +1121,7 @@ int MainWindow::onPlaceCameraAtViewer() {
   // Find an unused object slot to host the camera.
   int slot = -1;
   for (size_t i = 0; i < Objects.size(); ++i) {
-    if (Objects[i].type == OBJ_NONE) {
+    if (Objects[i].type == object_type::none) {
       slot = i;
       break;
     }
@@ -1134,8 +1134,8 @@ int MainWindow::onPlaceCameraAtViewer() {
   // of the camera setup itself.
   vector3 pos = Viewer_object->pos;
   pos.z() += 1.0f;
-  Objects[slot].type = OBJ_CAMERA;
-  Objects[slot].render_type = RT_POLYOBJ;
+  Objects[slot].type = object_type::camera;
+  Objects[slot].render_type = render_type::polyobj;
   Objects[slot].name = "Cam";
   ObjSetPos(Objects[slot], pos, Viewer_object->roomnum,
             Viewer_object->orient, false);
@@ -1158,7 +1158,7 @@ void MainWindow::onSetViewerFromCamera() {
   if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
   object *cam = &Objects[app.Cur_object_index];
-  if (cam->type != OBJ_CAMERA)
+  if (cam->type != object_type::camera)
     return;
 
   // In Win32 OnObjectSetViewerFromCamera, the viewer's pos/orient/roomnum
@@ -1182,7 +1182,7 @@ void MainWindow::onSetCameraFromViewer() {
   if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
   object& cam = Objects[app.Cur_object_index];
-  if (cam.type != OBJ_CAMERA)
+  if (cam.type != object_type::camera)
     return;
   if (Viewer_object == nullptr)
     return;
@@ -1199,7 +1199,7 @@ void MainWindow::onSetCameraFromViewer() {
 void MainWindow::onDeleteCurrentObject() {
   if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[app.Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == object_type::none)
     return;
   ObjDelete(app.Cur_object_index);
   const int was = app.Cur_object_index;
@@ -1220,7 +1220,7 @@ void MainWindow::onObjectRename() {
   if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
   object *obj = &Objects[app.Cur_object_index];
-  if (obj->type == OBJ_NONE)
+  if (obj->type == object_type::none)
     return;
   const QString current = QString::fromStdString(obj->name);
   bool ok = false;
@@ -1289,7 +1289,7 @@ void MainWindow::onSelectPrevObject(int from) {
   if (from <= 0)
     return;
   for (int i = from - 1; i >= 0; --i) {
-    if (Objects[i].type != OBJ_NONE) {
+    if (Objects[i].type != object_type::none) {
       app.Cur_object_index = i;
       return;
     }
@@ -1307,33 +1307,33 @@ void MainWindow::onCreateNewViewer() {
   // ObjCreate on Linux; the menu slot is wired so the user can still
   // reach the Win32 entry point symbolically, but the actual spawn
   // happens through SpawnNewViewer() which writes a duplicate of the
-  // current viewer instead of bootstrapping a fresh OBJ_VIEWER via the
+  // current viewer instead of bootstrapping a fresh object_type::viewer via the
   // engine's ObjCreate path.
   std::fprintf(stderr,
                "[object_ops] CreateNewViewer: pending editor/ObjCreate\n");
   m_editorView->update();
 }
 
-// Pick the next OBJ_VIEWER slot and copy the viewer's pose onto it.
+// Pick the next object_type::viewer slot and copy the viewer's pose onto it.
 // Returns the new objnum or -1 on failure.
 int MainWindow::onSpawnNewViewer() {
-  if (Viewer_object == nullptr || Viewer_object->type != OBJ_VIEWER)
+  if (Viewer_object == nullptr || Viewer_object->type != object_type::viewer)
     return -1;
   // Walk Objects[] to find the first unused slot, then copy the current
-  // viewer's pose/orient/roomnum into a fresh OBJ_VIEWER slot. We don't
+  // viewer's pose/orient/roomnum into a fresh object_type::viewer slot. We don't
   // touch ObjCreate because the engine-side path is gated on MFC code
   // paths in editor/HView.cpp; this Qt-stub is honest about that.
   int slot = -1;
   for (size_t i = 0; i < Objects.size(); ++i) {
-    if (Objects[i].type == OBJ_NONE) {
+    if (Objects[i].type == object_type::none) {
       slot = i;
       break;
     }
   }
   if (slot < 0)
     return -1;
-  Objects[slot].type = OBJ_VIEWER;
-  Objects[slot].render_type = RT_POLYOBJ;
+  Objects[slot].type = object_type::viewer;
+  Objects[slot].render_type = render_type::polyobj;
   Objects[slot].orient = Viewer_object->orient;
   app.Editor_viewer_id = (app.Editor_viewer_id < 0) ? 0 : app.Editor_viewer_id + 1;
   Objects[slot].id = app.Editor_viewer_id;
@@ -1352,12 +1352,12 @@ int MainWindow::onSpawnNewViewer() {
   return slot;
 }
 
-// Walk Objects[] for an OBJ_VIEWER with a different id than the
+// Walk Objects[] for an object_type::viewer with a different id than the
 // current and select it. Returns the new objnum or -1 if no other
 // viewer exists.
 int MainWindow::onSelectNextViewer() {
-  // Win32 SelectNextViewer != SelectNextObject: it walks the OBJ_VIEWER
-  // slots (not OBJ_NONE ones) and swaps Viewer_object to the next one
+  // Win32 SelectNextViewer != SelectNextObject: it walks the object_type::viewer
+  // slots (not object_type::none ones) and swaps Viewer_object to the next one
   // so the user can flip through multiple cameras without choosing
   // world objects. We do the same here.
   if (Viewer_object == nullptr)
@@ -1365,7 +1365,7 @@ int MainWindow::onSelectNextViewer() {
   const int cur_id = Viewer_object->id;
   int best = -1;
   for (size_t i = 0; i < Objects.size(); ++i) {
-    if (Objects[i].type != OBJ_VIEWER)
+    if (Objects[i].type != object_type::viewer)
       continue;
     if (Objects[i].id == cur_id)
       continue;
@@ -1386,22 +1386,22 @@ int MainWindow::onSelectNextViewer() {
 // Drop the current Viewer_object from Objects and resync
 // Viewer_object to the next available viewer.
 void MainWindow::onDeleteCurrentViewer() {
-  if (Viewer_object == nullptr || Viewer_object->type != OBJ_VIEWER)
+  if (Viewer_object == nullptr || Viewer_object->type != object_type::viewer)
     return;
   // Mark the current viewer's slot freed and resync to the next
-  // available OBJ_VIEWER (or clear Viewer_object if none).
+  // available object_type::viewer (or clear Viewer_object if none).
   int cur_slot = -1;
   // Find Viewer_object's slot lookup: Viewer_object - Objects.
   if (Viewer_object >= Objects.data() && Viewer_object <= &Objects[MAX_OBJECTS - 1]) {
     cur_slot = static_cast<int>(Viewer_object - Objects.data());
   }
   if (cur_slot >= 0) {
-    Objects[cur_slot].type = OBJ_NONE;
+    Objects[cur_slot].type = object_type::none;
     Objects[cur_slot].id = -1;
   }
-  // Auto-pick the remaining OBJ_VIEWER if any.
+  // Auto-pick the remaining object_type::viewer if any.
   for (size_t i = 0; i < Objects.size(); ++i) {
-    if (Objects[i].type == OBJ_VIEWER) {
+    if (Objects[i].type == object_type::viewer) {
       Viewer_object = &Objects[i];
       app.Editor_viewer_id = Objects[i].id;
       std::fprintf(stderr,
@@ -1434,7 +1434,7 @@ int MainWindow::onSelectObjectByNumber()
       &ok);
   if (!ok)
     return -1;
-  if (value < 0 || value > Highest_object_index || Objects[value].type == OBJ_NONE) {
+  if (value < 0 || value > Highest_object_index || Objects[value].type == object_type::none) {
     std::fprintf(stderr,
                  "[object_ops] SelectObjectByNumber: %d is invalid\n", value);
     return -1;
@@ -1451,7 +1451,7 @@ int MainWindow::onSelectObjectByNumber()
 void MainWindow::onSelectObject(int objnum) {
   if (objnum < 0 || objnum > Highest_object_index)
     return;
-  if (Objects[objnum].type == OBJ_NONE)
+  if (Objects[objnum].type == object_type::none)
     return;
   app.Cur_object_index = objnum;
   m_editorView->update();
@@ -1537,8 +1537,8 @@ static object deserializeObject(const QByteArray &data) {
   qint32 i32 = 0;
   qint16 i16 = 0;
 
-  in >> b8; obj.type = b8;
-  in >> b8; obj.dummy_type = b8;
+  in >> b8; obj.type = static_cast<object_type>(b8);
+  in >> b8; obj.dummy_type = static_cast<object_type>(b8);
   in >> u16; obj.id = u16;
   in >> u32; obj.flags = std::bit_cast<object_flags_t>(u32);
   QString name;
@@ -1546,10 +1546,10 @@ static object deserializeObject(const QByteArray &data) {
   in >> i32; obj.handle = i32;
   in >> i16; obj.next = i16;
   in >> i16; obj.prev = i16;
-  in >> b8; obj.control_type = b8;
-  in >> b8; obj.movement_type = b8;
-  in >> b8; obj.render_type = b8;
-  in >> b8; obj.lighting_render_type = b8;
+  in >> b8; obj.control_type = static_cast<control_type>(b8);
+  in >> b8; obj.movement_type = static_cast<movement_type>(b8);
+  in >> b8; obj.render_type = static_cast<render_type>(b8);
+  in >> b8; obj.lighting_render_type = static_cast<lighting_render_type>(b8);
   in >> i32; obj.roomnum = i32;
   obj.pos = readVector(in);
   for (int i = 0; i < 9; ++i)
@@ -1573,7 +1573,7 @@ static object deserializeObject(const QByteArray &data) {
   for (int i = 0; i < int(children.size()); ++i)
     obj.attach_children[size_t(i)] = children[i];
   in >> b8; obj.weapon_fire_flags = b8;
-  in >> i8; obj.attach_type = i8;
+  in >> i8; obj.attach_type = static_cast<attach_type>(i8);
   in >> obj.attach_dist;
   obj.min_xyz = readVector(in);
   obj.max_xyz = readVector(in);
@@ -1601,7 +1601,7 @@ static object deserializeObject(const QByteArray &data) {
 void MainWindow::onCopyObjectToClipboard() {
   if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[app.Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == object_type::none)
     return;
   auto *mime = new QMimeData();
   mime->setData(kObjectMimeType, serializeObject(Objects[app.Cur_object_index]));
@@ -1611,7 +1611,7 @@ void MainWindow::onCopyObjectToClipboard() {
 void MainWindow::onCutObjectToClipboard() {
   if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[app.Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == object_type::none)
     return;
   onCopyObjectToClipboard();
   onDeleteCurrentObject();
@@ -1627,7 +1627,7 @@ void MainWindow::onPasteObjectFromClipboard() {
   // Find the first unused slot.
   int slot = -1;
   for (size_t i = 0; i < Objects.size(); ++i) {
-    if (Objects[i].type == OBJ_NONE) {
+    if (Objects[i].type == object_type::none) {
       slot = i;
       break;
     }

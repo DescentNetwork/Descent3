@@ -46,7 +46,7 @@ byte_istream& operator>>(byte_istream& input, mngs_door_page& data) {
          >> data.door_struct.total_open_time
          >> data.door_struct.total_close_time
          >> data.door_struct.total_time_open
-         >> data.door_struct.flags
+         >> reinterpret_cast<uint8_t&>(data.door_struct.flags)
          >> data.door_struct.hit_points
          >> data.open_sound_name
          >> data.close_sound_name
@@ -61,7 +61,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_door_page& data) {
          << data.door_struct.total_open_time
          << data.door_struct.total_close_time
          << data.door_struct.total_time_open
-         << data.door_struct.flags
+         << reinterpret_cast<const uint8_t&>(data.door_struct.flags)
          << data.door_struct.hit_points
          << data.open_sound_name
          << data.close_sound_name
@@ -71,14 +71,5 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_door_page& data) {
 bool mng_ReadNewDoorPage(posix_istream &infile, mngs_door_page *doorpage) {
   infile >> *doorpage;
 
-  // This is a valid new page
-  doorpage->door_struct.used = 1;
-
   return true; // successfully read
-}
-
-bool mng_ReadDoorPage(posix_istream &infile, mngs_door_page *doorpage) {
-  if (!Old_table_method)
-    return mng_ReadNewDoorPage(infile, doorpage);
-  return false; // old command-based table not supported in mini build
 }

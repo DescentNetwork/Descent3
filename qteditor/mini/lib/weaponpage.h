@@ -57,9 +57,6 @@ byte_ostream& operator <<(byte_ostream& output, const mngs_weapon_page& data);
 // Given an open file pointer and a weapon_page struct, writes that weaponpage out
 void mng_WriteWeaponPage(struct CFILE* outfile, mngs_weapon_page *weaponpage);
 
-// Reads a weapon page from an open file.  Returns false on error.
-bool mng_ReadWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage);
-
 // Given an open file pointer and a weapon_page struct, writes that weaponpage out
 void mng_WriteNewWeaponPage(struct CFILE* outfile, mngs_weapon_page *weaponpage);
 

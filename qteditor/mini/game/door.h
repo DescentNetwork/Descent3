@@ -107,6 +107,7 @@
 
 #include "manage.h"
 #include "object.h"
+#include "slotvec.h"
 
 // IMPORTANT!!!!!!!!!!!
 // "Doors" refers to a predefined door that is in memory
@@ -114,18 +115,27 @@
 // So, there can be several Doorways that all point to the same Door
 // Get it?  If not, talk to Samir or Jason
 
-// Door flags
-
-#define DF_BLASTABLE 1  // this door can be destroyed
-#define DF_SEETHROUGH 2 // this door can be seen through even when closed
-
 //	DOOR STRUCTURES
+
+// Door flags (was DF_BLASTABLE / DF_SEETHROUGH masks applied to door::flags).
+struct [[gnu::packed]] door_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 6;        // Unused padding to complete 8 bits
+  uint8_t seethrough : 1;     // DF_SEETHROUGH (2) — can be seen through even when closed
+  uint8_t blastable : 1;      // DF_BLASTABLE (1)  — this door can be destroyed
+#else
+  uint8_t blastable : 1;      // DF_BLASTABLE (1)  — this door can be destroyed
+  uint8_t seethrough : 1;     // DF_SEETHROUGH (2) — can be seen through even when closed
+  uint8_t padding : 6;        // Unused padding to complete 8 bits
+#endif
+};
+static_assert(sizeof(door_flags_t) == sizeof(uint8_t));
 
 struct door
 {
   std::string name; // name of the door
-  uint8_t used;              // if this door is in use
-  uint8_t flags;             // flags for this door
+  door_flags_t flags;        // flags for this door
 
   int16_t hit_points;        // for blastable doors
   float total_open_time;   // time of animation to open door
@@ -141,8 +151,7 @@ struct door
 
 // The max number of predefined doors
 #define MAX_DOORS 60
-extern int Num_doors; // number of actual doors in game.
-extern door Doors[];
+extern d3::slotvec_t<door> Doors;
 
 // Sets all doors to unused
 void InitDoors();

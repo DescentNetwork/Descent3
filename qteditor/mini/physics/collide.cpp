@@ -896,11 +896,11 @@ static void check_lg_inform(object *A, object *B);
 
 bool IsOKToApplyForce(object *objp) {
 
-  if (objp->type == OBJ_PLAYER) {
+  if (objp->type == object_type::player) {
     if (objp != Player_object)
       return false;
   } else {
-    if (objp->type != OBJ_WEAPON && objp->type != OBJ_POWERUP)
+    if (objp->type != object_type::weapon && objp->type != object_type::powerup)
       return false;
   }
 
@@ -908,7 +908,7 @@ bool IsOKToApplyForce(object *objp) {
   if (objp->mtype.phys_info.mass == 0.0)
     return false;
 
-  if (objp->movement_type != MT_PHYSICS && objp->movement_type != MT_WALKING)
+  if (objp->movement_type != movement_type::physics && objp->movement_type != movement_type::walking)
     return false;
 
   if (objp->mtype.phys_info.flags.persistent)
@@ -993,7 +993,7 @@ void DoWallEffects(object *weapon, int surface_tmap) {
         vis->lifetime = .9f;
         vis->lifeleft = .9f;
 
-        vis->movement_type = MT_PHYSICS;
+        vis->movement_type = movement_type::physics;
         vis->size = 3.0;
         vm_MakeZero(&vis->velocity);
         vis->velocity.y() = 10;
@@ -1015,7 +1015,7 @@ void DoWallEffects(object *weapon, int surface_tmap) {
         if (visnum >= 0) {
           vis_effect *vis = &VisEffects[visnum];
 
-          vis->movement_type = MT_PHYSICS;
+          vis->movement_type = movement_type::physics;
           vis->mass = 100;
           vis->drag = .1f;
 
@@ -1419,7 +1419,7 @@ void collide_generic_and_wall(object *genericobj, float hitspeed, int hitseg, in
     }
   }
 
-  if (genericobj->control_type != CT_AI) {
+  if (genericobj->control_type != control_type::ai) {
     if (!flags.forcefield && !flags.explosive && !flags.lava && hitspeed > MIN_WALL_HIT_SOUND_VEL) {
       if (hitspeed < MAX_WALL_HIT_SOUND_VEL) {
         volume =
@@ -1681,15 +1681,15 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
   object *other = nullptr;
 
   // Determine if a moving object hits a non-moving object
-  if ((object0->movement_type != MT_PHYSICS && object0->movement_type != MT_WALKING) ||
-      (object0->movement_type == MT_PHYSICS && object0->mtype.phys_info.velocity == vector3{} &&
+  if ((object0->movement_type != movement_type::physics && object0->movement_type != movement_type::walking) ||
+      (object0->movement_type == movement_type::physics && object0->mtype.phys_info.velocity == vector3{} &&
        physics_locked(object0->mtype.phys_info.flags) && (object0->mtype.phys_info.flags.point_collide_walls))) {
     t = object1;
     other = object0;
     *collision_normal *= -1.0f;
   }
-  if ((object1->movement_type != MT_PHYSICS && object1->movement_type != MT_WALKING) ||
-      (object1->movement_type == MT_PHYSICS && object1->mtype.phys_info.velocity == vector3{} &&
+  if ((object1->movement_type != movement_type::physics && object1->movement_type != movement_type::walking) ||
+      (object1->movement_type == movement_type::physics && object1->mtype.phys_info.velocity == vector3{} &&
        physics_locked(object1->mtype.phys_info.flags) && (object1->mtype.phys_info.flags.point_collide_walls))) {
     t = object0;
     other = object1;
@@ -1698,7 +1698,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
   // If we hit a non-moving object...
   if (t) {
     // chrishack -- walker hack
-    if (t->movement_type != MT_PHYSICS && t->movement_type != MT_WALKING) {
+    if (t->movement_type != movement_type::physics && t->movement_type != movement_type::walking) {
       t->mtype.phys_info.velocity = vector3{};
       return;
     }
@@ -1711,7 +1711,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
 
     float luke_test;
 
-    if (t->type == OBJ_PLAYER) {
+    if (t->type == object_type::player) {
       luke_test = vm_GetMagnitude(&t->mtype.phys_info.velocity);
     }
 
@@ -1726,9 +1726,9 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
         // New bounceness code
         if ((t->mtype.phys_info.flags.bounce) && (t->mtype.phys_info.num_bounces != PHYSICS_UNLIMITED_BOUNCE)) {
           if (t->mtype.phys_info.num_bounces == 0) {
-            Q_ASSERT(t->type != OBJ_PLAYER);
+            Q_ASSERT(t->type != object_type::player);
             if (t->flags.dying) {
-              Q_ASSERT((t->control_type == CT_DYING) || (t->control_type == CT_DYING_AND_AI));
+              Q_ASSERT((t->control_type == control_type::dying) || (t->control_type == control_type::dying_and_ai));
               DestroyObject(t, 50.0, t->ctype.dying_info().death_flags);
             } else
               SetObjectDeadFlag(t);
@@ -1750,7 +1750,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
         // Update velocity from wall hit.
         t->mtype.phys_info.velocity +=
             *collision_normal * (wall_part * -1.001); // 1.001 so that we are not quite tangential
-        if (t->type == OBJ_PLAYER) {
+        if (t->type == object_type::player) {
           float real_vel;
 
           real_vel = vm_NormalizeVector(&t->mtype.phys_info.velocity);
@@ -1760,13 +1760,13 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
       }
 
       // Weapons should face their new heading.  This is so missiles are pointing in the correct direct.
-      if (t->type == OBJ_WEAPON &&
+      if (t->type == object_type::weapon &&
         (t->mtype.phys_info.flags.bounce || t->mtype.phys_info.flags.gravity || t->mtype.phys_info.flags.wind))
         vm_VectorToMatrix(t->orient, t->mtype.phys_info.velocity, t->orient.uvec, std::nullopt);
     }
 
     // Return it to the original direction
-    if (object0->movement_type != MT_PHYSICS && object0->movement_type != MT_WALKING) {
+    if (object0->movement_type != movement_type::physics && object0->movement_type != movement_type::walking) {
       *collision_normal *= -1.0f;
     }
 
@@ -1774,7 +1774,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
     //-----------------------------------------
     if (ForceIsEnabled()) {
 
-      if (object0->type == OBJ_PLAYER && object0->id == Player_num) {
+      if (object0->type == object_type::player && object0->id == Player_num) {
       }
     }
     return;
@@ -1851,13 +1851,13 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
 
   float e;
 
-  if (object0->type == OBJ_PLAYER && object1->type == OBJ_PLAYER)
+  if (object0->type == object_type::player && object1->type == object_type::player)
     e = 0.015f;
-  else if ((object0->type == OBJ_WEAPON || object1->type == OBJ_WEAPON) &&
-           (object0->type != OBJ_PLAYER && object1->type != OBJ_PLAYER))
+  else if ((object0->type == object_type::weapon || object1->type == object_type::weapon) &&
+           (object0->type != object_type::player && object1->type != object_type::player))
     e = 1.0f;
-  else if ((object0->type == OBJ_CLUTTER && object1->type == OBJ_PLAYER) ||
-           (object0->type == OBJ_PLAYER && object1->type == OBJ_CLUTTER))
+  else if ((object0->type == object_type::clutter && object1->type == object_type::player) ||
+           (object0->type == object_type::player && object1->type == object_type::clutter))
     e = 0.5f;
   else
     e = 0.1f;
@@ -1919,12 +1919,12 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
 
   float rotscale1, rotscale2;
 
-  if (object0->type == OBJ_PLAYER)
+  if (object0->type == object_type::player)
     rotscale1 = PLAYER_ROTATION_BY_FORCE_SCALAR;
   else
     rotscale1 = NONPLAYER_ROTATION_BY_FORCE_SCALAR;
 
-  if (object1->type == OBJ_PLAYER)
+  if (object1->type == object_type::player)
     rotscale2 = PLAYER_ROTATION_BY_FORCE_SCALAR;
   else
     rotscale2 = NONPLAYER_ROTATION_BY_FORCE_SCALAR;
@@ -1952,14 +1952,14 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
   //-----------------------------------------
   if (ForceIsEnabled()) {
 
-    if (object0->type == OBJ_PLAYER && object0->id == Player_num) {
+    if (object0->type == object_type::player && object0->id == Player_num) {
       // v is the force vector3
       vector3 v;
       v = -1.0f * v_rel * (*collision_normal);
 
       // Was it weapon->player collide
       switch (object1->type) {
-      case OBJ_WEAPON:
+      case object_type::weapon:
         // Do force effect for player/weapon collision
         DoForceForWeapon(object0, object1, &v);
         break;
@@ -2041,7 +2041,7 @@ void collide_generic_and_player(object *robotobj, object *playerobj, vector3 *co
     *collision_normal *= -1.0f;
 
   vector3 rvel;
-  if (robotobj->movement_type == MT_PHYSICS || robotobj->movement_type == MT_WALKING) {
+  if (robotobj->movement_type == movement_type::physics || robotobj->movement_type == movement_type::walking) {
     rvel = robotobj->mtype.phys_info.velocity;
   } else {
     rvel = vector3{};
@@ -2059,7 +2059,7 @@ void collide_generic_and_player(object *robotobj, object *playerobj, vector3 *co
   }
 
   // Check for lava surface on an object
-  if ((robotobj->type == OBJ_BUILDING) && hit_info) {
+  if ((robotobj->type == object_type::building) && hit_info) {
     poly_model *pm = GetPolymodelPointer(robotobj->rtype.pobj_info().model_num);
     int tmap = pm->textures[pm->submodel[hit_info->hit_subobject[0]].faces[hit_info->hit_face[0]].texnum];
 
@@ -2088,7 +2088,7 @@ void collide_generic_and_player(object *robotobj, object *playerobj, vector3 *co
     hear.max_dist = Sounds[SOUND_PLAYER_HIT_WALL].max_distance * scalar;
     AINotify(playerobj, AIN_HEAR_NOISE, (void *)&hear);
 
-    if ((scalar > .25f && (robotobj->movement_type == MT_WALKING || robotobj->movement_type == MT_PHYSICS)) ||
+    if ((scalar > .25f && (robotobj->movement_type == movement_type::walking || robotobj->movement_type == movement_type::physics)) ||
         (physics_locked(robotobj->mtype.phys_info.flags) &&
          (robotobj->mtype.phys_info.flags.point_collide_walls))) {
       if (!(IS_GUIDEBOT(robotobj))) {
@@ -2106,7 +2106,7 @@ void collide_generic_and_player(object *robotobj, object *playerobj, vector3 *co
     }
   }
 
-  if (robotobj->control_type == CT_AI) {
+  if (robotobj->control_type == control_type::ai) {
     AINotify(robotobj, AIN_BUMPED_OBJ, (void *)playerobj);
   }
 
@@ -2119,7 +2119,7 @@ void MakeWeaponStick(object *weapon, object *parent, fvi_info *hit_info) {
   weapon->mtype.obj_link_info.uvec = hit_info->hit_subobj_uvec;
   weapon->mtype.obj_link_info.pos = hit_info->hit_subobj_pos;
   weapon->mtype.obj_link_info.sobj_index = hit_info->hit_subobject[0];
-  weapon->movement_type = MT_OBJ_LINKED;
+  weapon->movement_type = movement_type::obj_linked;
 }
 
 void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *collision_point, vector3 *collision_normal,
@@ -2131,7 +2131,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
   int damage_type;
 
   // Check for lava & volatile surfaces on an object
-  if ((robotobj->type == OBJ_BUILDING) && hit_info) {
+  if ((robotobj->type == object_type::building) && hit_info) {
     poly_model *pm = GetPolymodelPointer(robotobj->rtype.pobj_info().model_num);
     int tmap = pm->textures[pm->submodel[hit_info->hit_subobject[0]].faces[hit_info->hit_face[0]].texnum];
     vector3& normal = &hit_info->hit_wallnorm[0];
@@ -2165,10 +2165,10 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
 
     ain_hear hear;
     hear.f_directly_player = false;
-    if (robotobj->control_type == CT_AI) {
+    if (robotobj->control_type == control_type::ai) {
       hear.hostile_level = 1.0f;
       hear.curiosity_level = 0.1f;
-    } else if (robotobj->type == OBJ_DOOR) {
+    } else if (robotobj->type == object_type::door) {
       hear.hostile_level = 0.5f;
       hear.curiosity_level = 1.0f;
     } else {
@@ -2184,7 +2184,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
   DoWeaponExploded(weapon, collision_normal, collision_point);
 
   // Check to see if we should spawn
-  if (robotobj->type == OBJ_DOOR) {
+  if (robotobj->type == object_type::door) {
     if ((Weapons[weapon->id].flags.SPAWNS_IMPACT) && Weapons[weapon->id].spawn_count > 0 &&
         Weapons[weapon->id].spawn_handle >= 0)
       CreateImpactSpawnFromWeapon(weapon, collision_normal);
@@ -2196,11 +2196,11 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
 
   parent_obj = ObjGet(weapon->parent_handle);
 
-  if ((parent_obj) && (parent_obj->control_type == CT_AI)) {
+  if ((parent_obj) && (parent_obj->control_type == control_type::ai)) {
     AINotify(parent_obj, AIN_WHIT_OBJECT, (void *)robotobj);
   }
 
-  if (robotobj->control_type == CT_AI) {
+  if (robotobj->control_type == control_type::ai) {
     AINotify(robotobj, AIN_HIT_BY_WEAPON, (void *)weapon);
   }
 
@@ -2239,7 +2239,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
     bump_two_objects(robotobj, weapon, collision_point, collision_normal, 0);
 
     if (!f_stick || (hit_info == nullptr)) {
-      if ((robotobj->lighting_render_type == LRT_LIGHTMAPS) || !(weapon->mtype.phys_info.flags.persistent))
+      if ((robotobj->lighting_render_type == lighting_render_type::lightmaps) || !(weapon->mtype.phys_info.flags.persistent))
         SetObjectDeadFlag(weapon);
     } else {
       MakeWeaponStick(weapon, robotobj, hit_info);
@@ -2259,7 +2259,7 @@ void collide_player_and_weapon(object *playerobj, object *weapon, vector3 *colli
 
   parent_obj = ObjGet(weapon->parent_handle);
 
-  if ((parent_obj) && (parent_obj->control_type == CT_AI)) {
+  if ((parent_obj) && (parent_obj->control_type == control_type::ai)) {
     AINotify(parent_obj, AIN_WHIT_OBJECT, (void *)playerobj);
   }
 
@@ -2335,7 +2335,7 @@ void collide_player_and_weapon(object *playerobj, object *weapon, vector3 *colli
 
 void check_lg_inform(object *A, object *B) {
   if (A->flags.inform_player_collide_to_lg || A->flags.inform_player_weapon_collide_to_lg) {
-    if (B->type == OBJ_PLAYER) {
+    if (B->type == object_type::player) {
       bool f_pwc = A->flags.inform_player_weapon_collide_to_lg;
       int type;
 
@@ -2350,10 +2350,10 @@ void check_lg_inform(object *A, object *B) {
   }
 
   if (A->flags.inform_player_weapon_collide_to_lg) {
-    if (B->type == OBJ_WEAPON) {
+    if (B->type == object_type::weapon) {
       object *parent = ObjGetUltimateParent(B);
 
-      if (parent && parent->type == OBJ_PLAYER) {
+      if (parent && parent->type == object_type::player) {
         Level_goals.Inform(LIT_OBJECT, OF_INFORM_PLAYER_WEAPON_COLLIDE_TO_LG, A->handle);
       }
     }
@@ -2369,7 +2369,7 @@ void collide_two_objects(object *A, object *B, vector3 *collision_point, vector3
 
   // Only do omega particle collisions if specifically allowed
   extern bool Enable_omega_collions;
-  if (((A->type == OBJ_WEAPON) && (A->id == OMEGA_INDEX)) || ((B->type == OBJ_WEAPON) && (B->id == OMEGA_INDEX)))
+  if (((A->type == object_type::weapon) && (A->id == OMEGA_INDEX)) || ((B->type == object_type::weapon) && (B->id == OMEGA_INDEX)))
     if (!Enable_omega_collions)
       return;
 
@@ -2385,13 +2385,13 @@ void collide_two_objects(object *A, object *B, vector3 *collision_point, vector3
 
   // Call script only if it is ok to
   int ok_to_call_script = 1;
-  if (A->type == OBJ_PLAYER && (Players[A->id].flags & (PLAYER_FLAGS_DYING | PLAYER_FLAGS_DEAD)))
+  if (A->type == object_type::player && (Players[A->id].flags & (PLAYER_FLAGS_DYING | PLAYER_FLAGS_DEAD)))
     ok_to_call_script = 0;
-  if (B->type == OBJ_PLAYER && (Players[B->id].flags & (PLAYER_FLAGS_DYING | PLAYER_FLAGS_DEAD)))
+  if (B->type == object_type::player && (Players[B->id].flags & (PLAYER_FLAGS_DYING | PLAYER_FLAGS_DEAD)))
     ok_to_call_script = 0;
 
   // Check to see if we should call the script
-    if ((A->type == OBJ_POWERUP || B->type == OBJ_POWERUP) && (a_hittime_good == 0 || b_hittime_good == 0))
+    if ((A->type == object_type::powerup || B->type == object_type::powerup) && (a_hittime_good == 0 || b_hittime_good == 0))
       ok_to_call_script = 0;
 
   if (ok_to_call_script) {
@@ -2405,41 +2405,41 @@ void collide_two_objects(object *A, object *B, vector3 *collision_point, vector3
   }
 
   switch (collision_type) {
-    DO_COLLISION(OBJ_PLAYER, OBJ_WEAPON, collide_player_and_weapon)
-    DO_COLLISION(OBJ_PLAYER, OBJ_MARKER, collide_player_and_marker)
+    DO_COLLISION(object_type::player, object_type::weapon, collide_player_and_weapon)
+    DO_COLLISION(object_type::player, object_type::marker, collide_player_and_marker)
 
-    DO_COLLISION(OBJ_ROBOT, OBJ_PLAYER, collide_generic_and_player)
-    DO_COLLISION(OBJ_BUILDING, OBJ_PLAYER, collide_generic_and_player)
-    DO_COLLISION(OBJ_DOOR, OBJ_PLAYER, collide_generic_and_player)
-    DO_COLLISION(OBJ_ROOM, OBJ_VIEWER, collide_generic_and_player)
-    DO_COLLISION(OBJ_ROOM, OBJ_PLAYER, collide_generic_and_player)
-    DO_COLLISION(OBJ_CLUTTER, OBJ_PLAYER, collide_generic_and_player)
+    DO_COLLISION(object_type::robot, object_type::player, collide_generic_and_player)
+    DO_COLLISION(object_type::building, object_type::player, collide_generic_and_player)
+    DO_COLLISION(object_type::door, object_type::player, collide_generic_and_player)
+    DO_COLLISION(object_type::room, object_type::viewer, collide_generic_and_player)
+    DO_COLLISION(object_type::room, object_type::player, collide_generic_and_player)
+    DO_COLLISION(object_type::clutter, object_type::player, collide_generic_and_player)
 
-    DO_COLLISION(OBJ_ROBOT, OBJ_WEAPON, collide_generic_and_weapon)
-    DO_COLLISION(OBJ_CLUTTER, OBJ_WEAPON, collide_generic_and_weapon)
-    DO_COLLISION(OBJ_BUILDING, OBJ_WEAPON, collide_generic_and_weapon)
-    DO_COLLISION(OBJ_ROOM, OBJ_WEAPON, collide_generic_and_weapon)
-    DO_COLLISION(OBJ_DOOR, OBJ_WEAPON, collide_generic_and_weapon)
+    DO_COLLISION(object_type::robot, object_type::weapon, collide_generic_and_weapon)
+    DO_COLLISION(object_type::clutter, object_type::weapon, collide_generic_and_weapon)
+    DO_COLLISION(object_type::building, object_type::weapon, collide_generic_and_weapon)
+    DO_COLLISION(object_type::room, object_type::weapon, collide_generic_and_weapon)
+    DO_COLLISION(object_type::door, object_type::weapon, collide_generic_and_weapon)
 
-    DO_SAME_COLLISION(OBJ_PLAYER, OBJ_PLAYER, collide_player_and_player)
+    DO_SAME_COLLISION(object_type::player, object_type::player, collide_player_and_player)
 
     // Handled by the script, so no code
-    NO_COLLISION(OBJ_PLAYER, OBJ_POWERUP)
-    NO_COLLISION(OBJ_POWERUP, OBJ_WEAPON)
+    NO_COLLISION(object_type::player, object_type::powerup)
+    NO_COLLISION(object_type::powerup, object_type::weapon)
 
   default:
     bump_two_objects(A, B, collision_point, collision_normal, 1);
   }
 
-  if ((A->type == OBJ_PLAYER && B->type == OBJ_POWERUP && (B->flags.dead)) ||
-      (B->type == OBJ_PLAYER && A->type == OBJ_POWERUP && (A->flags.dead))) {
+  if ((A->type == object_type::player && B->type == object_type::powerup && (B->flags.dead)) ||
+      (B->type == object_type::player && A->type == object_type::powerup && (A->flags.dead))) {
     ain_hear hear;
     hear.f_directly_player = true;
     hear.hostile_level = 0.05f;
     hear.curiosity_level = 1.0f;
 
     hear.max_dist = Sounds[SOUND_POWERUP_PICKUP].max_distance;
-    if (A->type == OBJ_PLAYER)
+    if (A->type == object_type::player)
       AINotify(A, AIN_HEAR_NOISE, (void *)&hear);
     else
       AINotify(B, AIN_HEAR_NOISE, (void *)&hear);
@@ -2501,56 +2501,56 @@ void CollideInit() {
   for (i = 0; i < MAX_OBJECT_TYPES; i++) {
     CollisionRayResult[i] = RESULT_NOTHING;
   }
-  CollisionRayResult[OBJ_ROBOT] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[OBJ_PLAYER] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[OBJ_WEAPON] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[OBJ_POWERUP] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[OBJ_CLUTTER] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[OBJ_BUILDING] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[OBJ_DOOR] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[OBJ_ROOM] = RESULT_CHECK_SPHERE_POLY;
+  CollisionRayResult[object_type::robot] = RESULT_CHECK_SPHERE_POLY;
+  CollisionRayResult[object_type::player] = RESULT_CHECK_SPHERE_POLY;
+  CollisionRayResult[object_type::weapon] = RESULT_CHECK_SPHERE_POLY;
+  CollisionRayResult[object_type::powerup] = RESULT_CHECK_SPHERE_POLY;
+  CollisionRayResult[object_type::clutter] = RESULT_CHECK_SPHERE_POLY;
+  CollisionRayResult[object_type::building] = RESULT_CHECK_SPHERE_POLY;
+  CollisionRayResult[object_type::door] = RESULT_CHECK_SPHERE_POLY;
+  CollisionRayResult[object_type::room] = RESULT_CHECK_SPHERE_POLY;
 
   for (i = 0; i < MAX_OBJECT_TYPES; i++) {
-    ENABLE_COLLISION_SPHERE_ROOM(i, OBJ_ROOM)
+    ENABLE_COLLISION_SPHERE_ROOM(i, object_type::room)
   }
 
-  ENABLE_COLLISION_POLY_SPHERE(OBJ_WALL, OBJ_ROBOT)
-  ENABLE_COLLISION_POLY_SPHERE(OBJ_WALL, OBJ_WEAPON)
-  ENABLE_COLLISION_POLY_SPHERE(OBJ_WALL, OBJ_PLAYER)
-  ENABLE_COLLISION_SPHERE_SPHERE(OBJ_ROBOT, OBJ_ROBOT)
-  //	ENABLE_COLLISION_SPHERE_SPHERE( OBJ_BUILDING, OBJ_BUILDING )
-  ENABLE_COLLISION_POLY_SPHERE(OBJ_PLAYER, OBJ_FIREBALL)
-  ENABLE_COLLISION_SPHERE_SPHERE(OBJ_PLAYER, OBJ_PLAYER)
-  ENABLE_COLLISION_SPHERE_SPHERE(OBJ_PLAYER, OBJ_MARKER)
-  ENABLE_COLLISION_SPHERE_SPHERE(OBJ_MARKER, OBJ_PLAYER)
-  ENABLE_COLLISION_SPHERE_SPHERE(OBJ_WEAPON, OBJ_WEAPON)
-  ENABLE_COLLISION_POLY_SPHERE(OBJ_ROBOT, OBJ_PLAYER)
-  //	ENABLE_COLLISION_SPHERE_SPHERE( OBJ_ROBOT, OBJ_PLAYER )
-  ENABLE_COLLISION_POLY_SPHERE(OBJ_ROBOT, OBJ_WEAPON)
+  ENABLE_COLLISION_POLY_SPHERE(object_type::wall, object_type::robot)
+  ENABLE_COLLISION_POLY_SPHERE(object_type::wall, object_type::weapon)
+  ENABLE_COLLISION_POLY_SPHERE(object_type::wall, object_type::player)
+  ENABLE_COLLISION_SPHERE_SPHERE(object_type::robot, object_type::robot)
+  //	ENABLE_COLLISION_SPHERE_SPHERE( object_type::building, object_type::building )
+  ENABLE_COLLISION_POLY_SPHERE(object_type::player, object_type::fireball)
+  ENABLE_COLLISION_SPHERE_SPHERE(object_type::player, object_type::player)
+  ENABLE_COLLISION_SPHERE_SPHERE(object_type::player, object_type::marker)
+  ENABLE_COLLISION_SPHERE_SPHERE(object_type::marker, object_type::player)
+  ENABLE_COLLISION_SPHERE_SPHERE(object_type::weapon, object_type::weapon)
+  ENABLE_COLLISION_POLY_SPHERE(object_type::robot, object_type::player)
+  //	ENABLE_COLLISION_SPHERE_SPHERE( object_type::robot, object_type::player )
+  ENABLE_COLLISION_POLY_SPHERE(object_type::robot, object_type::weapon)
 
-  ENABLE_COLLISION_POLY_SPHERE(OBJ_PLAYER, OBJ_WEAPON)
-  ENABLE_COLLISION_SPHERE_SPHERE(OBJ_PLAYER, OBJ_POWERUP)
-  ENABLE_COLLISION_SPHERE_SPHERE(OBJ_POWERUP, OBJ_WALL)
-  ENABLE_COLLISION_SPHERE_POLY(OBJ_WEAPON, OBJ_CLUTTER)
-  ENABLE_COLLISION_SPHERE_POLY(OBJ_PLAYER, OBJ_CLUTTER)
-  ENABLE_COLLISION_SPHERE_SPHERE(OBJ_CLUTTER, OBJ_CLUTTER)
-  ENABLE_COLLISION_SPHERE_POLY(OBJ_ROBOT, OBJ_CLUTTER)
-  ENABLE_COLLISION_SPHERE_POLY(OBJ_PLAYER, OBJ_BUILDING)
-  ENABLE_COLLISION_SPHERE_POLY(OBJ_ROBOT, OBJ_BUILDING)
-  ENABLE_COLLISION_SPHERE_POLY(OBJ_WEAPON, OBJ_BUILDING)
-  ENABLE_COLLISION_SPHERE_POLY(OBJ_CLUTTER, OBJ_BUILDING)
-  ENABLE_COLLISION_SPHERE_POLY(OBJ_CLUTTER, OBJ_DOOR)
-  ENABLE_COLLISION_SPHERE_POLY(OBJ_BUILDING, OBJ_DOOR)
+  ENABLE_COLLISION_POLY_SPHERE(object_type::player, object_type::weapon)
+  ENABLE_COLLISION_SPHERE_SPHERE(object_type::player, object_type::powerup)
+  ENABLE_COLLISION_SPHERE_SPHERE(object_type::powerup, object_type::wall)
+  ENABLE_COLLISION_SPHERE_POLY(object_type::weapon, object_type::clutter)
+  ENABLE_COLLISION_SPHERE_POLY(object_type::player, object_type::clutter)
+  ENABLE_COLLISION_SPHERE_SPHERE(object_type::clutter, object_type::clutter)
+  ENABLE_COLLISION_SPHERE_POLY(object_type::robot, object_type::clutter)
+  ENABLE_COLLISION_SPHERE_POLY(object_type::player, object_type::building)
+  ENABLE_COLLISION_SPHERE_POLY(object_type::robot, object_type::building)
+  ENABLE_COLLISION_SPHERE_POLY(object_type::weapon, object_type::building)
+  ENABLE_COLLISION_SPHERE_POLY(object_type::clutter, object_type::building)
+  ENABLE_COLLISION_SPHERE_POLY(object_type::clutter, object_type::door)
+  ENABLE_COLLISION_SPHERE_POLY(object_type::building, object_type::door)
 
-  ENABLE_COLLISION_SPHERE_ROOM(OBJ_PLAYER, OBJ_ROOM)
-  ENABLE_COLLISION_SPHERE_ROOM(OBJ_ROBOT, OBJ_ROOM)
-  ENABLE_COLLISION_SPHERE_ROOM(OBJ_WEAPON, OBJ_ROOM)
-  ENABLE_COLLISION_SPHERE_ROOM(OBJ_VIEWER, OBJ_ROOM)
+  ENABLE_COLLISION_SPHERE_ROOM(object_type::player, object_type::room)
+  ENABLE_COLLISION_SPHERE_ROOM(object_type::robot, object_type::room)
+  ENABLE_COLLISION_SPHERE_ROOM(object_type::weapon, object_type::room)
+  ENABLE_COLLISION_SPHERE_ROOM(object_type::viewer, object_type::room)
 
-  ENABLE_COLLISION_SPHERE_POLY(OBJ_PLAYER, OBJ_DOOR)
-  ENABLE_COLLISION_SPHERE_POLY(OBJ_ROBOT, OBJ_DOOR)
-  ENABLE_COLLISION_SPHERE_POLY(OBJ_WEAPON, OBJ_DOOR)
-  DISABLE_COLLISION(OBJ_POWERUP, OBJ_POWERUP)
+  ENABLE_COLLISION_SPHERE_POLY(object_type::player, object_type::door)
+  ENABLE_COLLISION_SPHERE_POLY(object_type::robot, object_type::door)
+  ENABLE_COLLISION_SPHERE_POLY(object_type::weapon, object_type::door)
+  DISABLE_COLLISION(object_type::powerup, object_type::powerup)
 }
 
 // Process a collision between an object and a wall
@@ -2561,40 +2561,40 @@ bool collide_object_with_wall(object *A, float hitspeed, int hitseg, int hitwall
   bool ret = true;
 
   switch (A->type) {
-  case OBJ_NONE:
+  case object_type::none:
     LOG_ERROR("A object of type NONE hit a wall!\n");
     break;
-  case OBJ_PLAYER:
+  case object_type::player:
     collide_player_and_wall(A, hitspeed, hitseg, hitwall, hitpt, wall_normal, hit_dot);
     do_event = 1;
     break;
-  case OBJ_WEAPON:
+  case object_type::weapon:
     ret = collide_weapon_and_wall(A, hitspeed, hitseg, hitwall, hitpt, wall_normal, hit_dot);
     do_event = 1;
     break;
-  case OBJ_DEBRIS:
+  case object_type::debris:
     break; // chrishack -- collide_debris_and_wall(A,hitspeed,hitseg,hitwall,hitpt); break;
-  case OBJ_FIREBALL:
+  case object_type::fireball:
     break; // collide_fireball_and_wall(A,hitspeed,hitseg,hitwall,hitpt);
-  case OBJ_CLUTTER:
-  case OBJ_BUILDING:
-  case OBJ_ROBOT:
+  case object_type::clutter:
+  case object_type::building:
+  case object_type::robot:
     collide_generic_and_wall(A, hitspeed, hitseg, hitwall, hitpt, wall_normal, hit_dot);
     do_event = 1;
     break;
-  case OBJ_VIEWER:
+  case object_type::viewer:
     break; // collide_camera_and_wall(A,hitspeed,hitseg,hitwall,hitpt);
-  case OBJ_POWERUP:
+  case object_type::powerup:
     break; // collide_powerup_and_wall(A,hitspeed,hitseg,hitwall,hitpt);
-  case OBJ_GHOST:
+  case object_type::ghost:
     break; // do nothing
-  case OBJ_OBSERVER:
+  case object_type::observer:
     break; // do nothing
-  case OBJ_SPLINTER:
+  case object_type::splinter:
     break;
-  case OBJ_MARKER:
+  case object_type::marker:
     break;
-  case OBJ_SHARD:
+  case object_type::shard:
     if (sound_override_glass_breaking == -1)
       Sound_system.Play3dSound(SOUND_BREAKING_GLASS, SND_PRIORITY_NORMAL, A, MAX_GAME_VOLUME / 10);
     else

@@ -18,11 +18,13 @@
 
 #pragma once
 
+#include "object_external.h" // object_type
+
 class QComboBox;
 
 // Port of editor/ObjectListCombo.cpp: fills a QComboBox with a leading
 // "<none>" item (user data OBJECT_HANDLE_NONE) followed by all named
-// objects of the given type (or all types if type == OBJ_NONE).
-void populateObjectCombo(QComboBox *combo, int type, int selected_handle);
+// objects of the given type (or all types if type == object_type::none).
+void populateObjectCombo(QComboBox *combo, object_type type, int selected_handle);
 void setObjectComboSelected(QComboBox *combo, int selected_handle);
 int objectComboSelected(QComboBox *combo);

@@ -33,7 +33,7 @@
 class CAISettingsDlg : public CDialog {
   // Construction
 public:
-  CAISettingsDlg(t_ai_info *ai_info, CWnd *pParent = NULL); // standard constructor
+  CAISettingsDlg(ai_info_t *ai_info, CWnd *pParent = NULL); // standard constructor
 
   // Dialog Data
   //{{AFX_DATA(CAISettingsDlg)
@@ -124,7 +124,7 @@ protected:
   // Implementation
 protected:
   // The data we're editing
-  t_ai_info *m_ai_info;
+  ai_info_t *m_ai_info;
 
   // Generated message map functions
   //{{AFX_MSG(CAISettingsDlg)

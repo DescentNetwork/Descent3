@@ -793,7 +793,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
   // If this room is a closed (non-seethrough) door, don't check any of its portals,
   //...UNLESS this is the first room we're looking at (meaning the viewer is in this room)
   if ((rp->flags.door) && (rp->doorway_data->position == 0.0) &&
-      !(Doors[rp->doorway_data->doornum].flags & DF_SEETHROUGH))
+      !Doors[rp->doorway_data->doornum].flags.seethrough)
     if (depth != 0)
       return;
 
@@ -2618,7 +2618,7 @@ void BuildMirroredRoomListSub(int start_room_num, clip_wnd *wnd) {
   // If this room is a closed (non-seethrough) door, don't check any of its portals,
   //...UNLESS this is the first room we're looking at (meaning the viewer is in this room)
   if ((rp->flags.door) && (rp->doorway_data->position == 0.0) &&
-      !(Doors[rp->doorway_data->doornum].flags & DF_SEETHROUGH))
+      !Doors[rp->doorway_data->doornum].flags.seethrough)
     return;
   room *mirror_rp = &Rooms[Mirror_room];
   vector3 *mirror_vec = &mirror_rp->verts[mirror_rp->faces[mirror_rp->mirror_face].face_verts[0]];
@@ -3097,17 +3097,17 @@ void RenderRoomObjects(int roomnum) {
     Q_ASSERT(objnum != Objects[objnum].next);
     object *obj = &Objects[objnum];
 
-    if (obj->render_type == RT_NONE)
+    if (obj->render_type == render_type::none)
       continue;
     if (obj == Viewer_object && !Render_mirror_for_room)
       continue;
     float size = obj->size;
     // Special case weapons with streamers
-    if (obj->type == OBJ_WEAPON && Weapons[obj->id].flags.streamer)
+    if (obj->type == object_type::weapon && Weapons[obj->id].flags.streamer)
       size = Weapons[obj->id].phys_info.velocity.z();
     // Check if object is trivially rejected
     bool isVisible = IsPointVisible(&obj->pos, size, &zdist) ? true : false;
-    if (Render_mirror_for_room || (obj->type == OBJ_WEAPON && Weapons[obj->id].flags.electrical) || isVisible) {
+    if (Render_mirror_for_room || (obj->type == object_type::weapon && Weapons[obj->id].flags.electrical) || isVisible) {
       obj_sort_list[n_objs].vis_effect = 0;
       obj_sort_list[n_objs].objnum = objnum;
       obj_sort_list[n_objs].dist = zdist;
@@ -3238,20 +3238,20 @@ void CheckToRenderMineObjects(int roomnum) {
       return;
     for (index = Rooms[roomnum].objects; index != -1; index = Objects[index].next) {
       object *obj = &Objects[index];
-      if (Objects[index].render_type == RT_NONE)
+      if (Objects[index].render_type == render_type::none)
         continue;
       if (obj == Viewer_object)
         continue;
       // Don't draw piggybacked objects
-      if (Viewer_object->type == OBJ_OBSERVER && index == Players[Viewer_object->id].piggy_objnum)
+      if (Viewer_object->type == object_type::observer && index == Players[Viewer_object->id].piggy_objnum)
         continue;
       float size = Objects[index].size;
       // Special case weapons with streamers
-      if (Objects[index].type == OBJ_WEAPON && (Weapons[Objects[index].id].flags.streamer))
+      if (Objects[index].type == object_type::weapon && (Weapons[Objects[index].id].flags.streamer))
         size = Weapons[Objects[index].id].phys_info.velocity.z();
       // Check if object is trivially rejected
       int isVisible = IsPointVisible(&obj->pos, size, &zdist); // calculate zdist
-      if ((obj->type == OBJ_WEAPON && Weapons[obj->id].flags.electrical) || isVisible) {
+      if ((obj->type == object_type::weapon && Weapons[obj->id].flags.electrical) || isVisible) {
         // Stuff objects into our postrender list (disabled: post-render system not ported)
         // if (Num_postrenders < MAX_POSTRENDERS) {
         //   Postrender_list[Num_postrenders].type = PRT_OBJECT;

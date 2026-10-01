@@ -67,7 +67,7 @@ optref<object_info> WorldObjectsGenericDialog::data(void)
   return Object_info[m_object_id];
 }
 
-WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int object_id, QWidget *parent)
+WorldObjectsGenericDialog::WorldObjectsGenericDialog(object_type objType, int object_id, QWidget *parent)
     : QDialog(parent), ui(new Ui::WorldObjectsGenericDialog), m_type(objType), m_object_id(object_id)
 {
   ui->setupUi(this);
@@ -251,8 +251,12 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int object_id,
   connect(ui->IDC_INVEN_VISWHENUSED, &QCheckBox::toggled, [this](bool checked) {
     if (auto d = data()) d->flags.inven_viswhenused = checked, app.Mine_changed = true;
   });
-  connect(ui->IDC_DEATH_POWERUP_USE2_IF_HAVE1_CHECK, &QCheckBox::toggled, this, &WorldObjectsGenericDialog::onDeathPowerupUse2);
-  connect(ui->IDC_GENERIC_DEATH_SPEW_2_IF_ZERO_1, &QCheckBox::toggled, this, &WorldObjectsGenericDialog::onDeathSpew2IfZero1);
+  connect(ui->IDC_DEATH_POWERUP_USE2_IF_HAVE1_CHECK, &QCheckBox::toggled, [this](bool checked) {
+    if (auto d = data()) d->f_dspew.only_if_player_has_obj_1 = checked;
+  });
+  connect(ui->IDC_GENERIC_DEATH_SPEW_2_IF_ZERO_1, &QCheckBox::toggled, [this](bool checked) {
+    if (auto d = data()) d->f_dspew.only_if_no_1 = checked;
+  });
 
   connect(ui->IDC_HIRES_RADIO, &QRadioButton::clicked, [this](){ m_lod = 0; updateDialog(); } );
   connect(ui->IDC_MEDRES_RADIO, &QRadioButton::clicked, [this](){ m_lod = 1; updateDialog(); });
@@ -265,7 +269,7 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(int objType, int object_id,
     if (auto d = data()) d->flags.inven_type_mission = true, updateDialog();
   });
 
-  ui->IDC_GENERIC_TYPE_NAME->setText(QString::fromStdString(Object_type_names[m_type]));
+  ui->IDC_GENERIC_TYPE_NAME->setText(QString::fromStdString(Object_type_names[obj_type_index(m_type)]));
 
   m_locked_count = countLockedItems();
   updateDialog();
@@ -433,8 +437,8 @@ void WorldObjectsGenericDialog::updateDialog() {
   ui->IDC_GENERIC_USES_AI->setChecked(oi->flags.control_ai);
   ui->IDC_GENERIC_EDIT_AI->setEnabled(oi->flags.control_ai);
 
-  ui->IDC_DEATH_POWERUP_USE2_IF_HAVE1_CHECK->setChecked(oi->f_dspew & DSF_ONLY_IF_PLAYER_HAS_OBJ_1);
-  ui->IDC_GENERIC_DEATH_SPEW_2_IF_ZERO_1->setChecked(oi->f_dspew & DSF_ONLY_IF_NO_1);
+  ui->IDC_DEATH_POWERUP_USE2_IF_HAVE1_CHECK->setChecked(oi->f_dspew.only_if_player_has_obj_1);
+  ui->IDC_GENERIC_DEATH_SPEW_2_IF_ZERO_1->setChecked(oi->f_dspew.only_if_no_1);
 
   setSoundComboSelected(ui->IDC_GENERIC_EXPLOSION_SOUND_COMBO, oi->sounds[GSI_EXPLODE]);
   setSoundComboSelected(ui->IDC_GENERIC_AMBIENT_SOUND_COMBO, oi->sounds[GSI_AMBIENT]);
@@ -445,7 +449,7 @@ void WorldObjectsGenericDialog::updateDialog() {
     combo->clear();
     combo->addItem("<none>", -1);
     for (int i = 0; i < MAX_OBJECT_IDS; i++)
-      if (Object_info[i].type != OBJ_NONE)
+      if (Object_info[i].type != object_type::none)
         combo->addItem(QString::fromStdString(Object_info[i].name), i);
     const int sp1 = oi->dspew[0];
     combo->setCurrentIndex(combo->findData(sp1 >= 0 && sp1 < MAX_OBJECT_IDS ? sp1 : -1));
@@ -456,7 +460,7 @@ void WorldObjectsGenericDialog::updateDialog() {
     combo->clear();
     combo->addItem("<none>", -1);
     for (int i = 0; i < MAX_OBJECT_IDS; i++)
-      if (Object_info[i].type != OBJ_NONE)
+      if (Object_info[i].type != object_type::none)
         combo->addItem(QString::fromStdString(Object_info[i].name), i);
     const int sp2 = oi->dspew[1];
     combo->setCurrentIndex(combo->findData(sp2 >= 0 && sp2 < MAX_OBJECT_IDS ? sp2 : -1));
@@ -479,8 +483,8 @@ void WorldObjectsGenericDialog::updateDialog() {
   ui->IDC_GENERIC_SCORE_EDIT->setText(oi->flags.destroyable ? QString::number(oi->score) : "");
   ui->IDC_GENERIC_SCORE_EDIT->setEnabled(oi->flags.destroyable);
   ui->IDC_GENERIC_AMMO_EDIT->setText(QString::number(oi->ammo_count));
-  ui->IDC_GENERIC_AMMO_EDIT->setEnabled(oi->type == OBJ_POWERUP);
-  ui->IDC_GENERIC_AMMO_TEXT->setEnabled(oi->type == OBJ_POWERUP);
+  ui->IDC_GENERIC_AMMO_EDIT->setEnabled(oi->type == object_type::powerup);
+  ui->IDC_GENERIC_AMMO_TEXT->setEnabled(oi->type == object_type::powerup);
 
   ui->IDC_GENERIC_CHECKED_OUT->setEnabled(m_locked_count > 0);
   ui->IDC_GENERIC_ID_EDIT->setText(QString::number(m_object_id));
@@ -603,7 +607,7 @@ void WorldObjectsGenericDialog::onAddNew() {
   memset(&Object_info[object_handle].lighting_info, 0, sizeof(light_info));
   Object_info[object_handle].lighting_info.timebits = 0xFFFFFFFF;
   Object_info[object_handle].lighting_info.lighting_render_type =
-      (m_type == OBJ_BUILDING) ? LRT_LIGHTMAPS : LRT_GOURAUD;
+      (m_type == object_type::building) ? lighting_render_type::lightmaps : lighting_render_type::gouraud;
 
   std::filesystem::path destname = LocalModelsDir / Poly_models[Object_info[object_handle].render_handle].name;
   std::filesystem::copy(pathname, destname, std::filesystem::copy_options::overwrite_existing);
@@ -843,8 +847,8 @@ void WorldObjectsGenericDialog::onPaste()
     return;
   if (Copy_object.type != m_type) {
     if (QMessageBox::question(this, "Are you sure?", "You are about to paste a %s object as a %s.  Is this OK?",
-                              QString::fromStdString(Object_type_names[Copy_object.type]),
-                              QString::fromStdString(Object_type_names[m_type])) == QMessageBox::No)
+                              QString::fromStdString(Object_type_names[obj_type_index(Copy_object.type)]),
+                              QString::fromStdString(Object_type_names[obj_type_index(m_type)])) == QMessageBox::No)
       return;
   }
 
@@ -972,26 +976,6 @@ void WorldObjectsGenericDialog::onKillfocusLodDistance() {
   }
 }
 
-void WorldObjectsGenericDialog::onDeathPowerupUse2(bool checked) {
-  if (auto d = data())
-  {
-    if (checked)
-      d->f_dspew |= DSF_ONLY_IF_PLAYER_HAS_OBJ_1;
-    else
-      d->f_dspew &= ~DSF_ONLY_IF_PLAYER_HAS_OBJ_1;
-  }
-}
-
-void WorldObjectsGenericDialog::onDeathSpew2IfZero1(bool checked) {
-  if (auto d = data())
-  {
-    if (checked)
-      d->f_dspew |= DSF_ONLY_IF_NO_1;
-    else
-      d->f_dspew &= ~DSF_ONLY_IF_NO_1;
-  }
-}
-
 void WorldObjectsGenericDialog::onKillfocusRespawnScalar() {
   if (auto d = data())
   {
@@ -1018,7 +1002,7 @@ void WorldObjectsGenericDialog::saveGenericsOnClose() {
   }
 }
 
-int editGenericObject(int objType, int initialCurrent, QWidget *parent) {
+int editGenericObject(object_type objType, int initialCurrent, QWidget *parent) {
   WorldObjectsGenericDialog dlg(objType, initialCurrent, parent);
   dlg.exec();
   return dlg.objectId();

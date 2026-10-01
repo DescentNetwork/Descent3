@@ -152,7 +152,7 @@ the container type; the byte stream written/read is unchanged.
 | `ai_dynamic_path` (`lib/aistruct.h:861`) | `pos[MAX_NODES]` → `std::vector<vector3>` (MAX_NODES is large/runtime-sparse; prefer vector), `roomnum[MAX_NODES]` |
 | `object_info` (`lib/objinfo.h:486`) | `sounds[MAX_OBJ_SOUNDS]`, `dspew_percent[MAX_DSPEW_TYPES]`, `dspew_number[MAX_DSPEW_TYPES]` → `std::array<T,N>`. **Bias:** `dspew[MAX_DSPEW_TYPES]` and `death_types[MAX_DEATH_TYPES]`/`death_probabilities[MAX_DEATH_TYPES]` are NOT plain fixed-width `std::array` members — see note. | **A.1 HOG-loaded (Table.gam GENERIC page)** — reader `mng_ReadNewGenericPage` loops the full counts for `sounds`/`dspew_percent`/`dspew_number` (fixed width). **Note:** `dspew[]` itself is *not* serialized at all (the reader/writer only touches the scalar `f_dspew`), and `death_types[]`/`death_probabilities[]` are **count-prefixed** on disk (reader reads `n_death_types`; absent for version <22) → use `std::vector` sized to the count (clamp `MAX_DEATH_TYPES`). |
 | `anim_elem` (`lib/objinfo.h:381`) | `elem[NUM_ANIMS_PER_CLASS]` |
-| `t_ai_info` (`lib/objinfo.h:394`) | `melee_damage[2]`, `melee_latency[2]`, `sound[MAX_AI_SOUNDS]` |
+| `ai_info_t` (`lib/objinfo.h:394`) | `melee_damage[2]`, `melee_latency[2]`, `sound[MAX_AI_SOUNDS]` |
 | `ship` (`lib/ship.h:146`) | `static_wb[MAX_PLAYER_WEAPONS]`, `fire_flags[]`, `max_ammo[]`, `firing_sound[]`, `firing_release_sound[]`, `spew_powerup[]` | **A.1 HOG-loaded** ship page reader fills these; convert with reader. |
 | `weapon` (`lib/weapon.h:341`) | `sounds[MAX_WEAPON_SOUNDS]` | A.1 HOG-loaded. |
 | `powerup` (`lib/powerup.h:95`) | `sounds[MAX_POWERUP_SOUNDS]` |
@@ -243,12 +243,17 @@ The editor's world state still uses global fixed arrays with parallel `Num_*`
 counters: `room Rooms[MAX_ROOMS]`, `object Objects[MAX_OBJECTS]`,
 `trigger Triggers[500]`, `GameTextures[MAX_TEXTURES]`, `Weapons[MAX_WEAPONS]`,
 `Ships[MAX_SHIPS]`, `Object_info[MAX_OBJECTS]`, `Sounds[MAX_SOUNDS]`,
-`Doors[MAX_DOORS]`, `Megacells[MAX_MEGACELLS]`, `GameBitmaps[]`,
+`Megacells[MAX_MEGACELLS]`, `GameBitmaps[]`,
 `Poly_models[]`, `GamePaths[MAX_GAME_PATHS]`, `Players[MAX_PLAYERS]`,
 terrain segment arrays. Converting these globals to `std::vector<T>` is a
 larger architectural change (index stability, `OBJNUM`/`ROOMNUM` macros,
-`array-of-object-for-graphics` assumptions). It pairs naturally with the B.1
-member conversions but should be a separate work item.
+`array-of-object-for-graphics` assumptions). The slot list tables that the
+editor indexes by **slot** (`Doors`, `Ships`, `Weapons`, `Sounds`, and the
+page-driven array members below) convert to `d3::slotvec_t<T>` (reference-
+counted slots; `slotvec.h`) instead: the slot index stays the component's
+identity (`GetNextDoor`/`AllocDoor`/page tables), so a full vector conversion
+is not meaningful for them. `Doors` was converted to
+`d3::slotvec_t<door>` (its `used` flag and `Num_doors` counter removed).
 
 ---
 

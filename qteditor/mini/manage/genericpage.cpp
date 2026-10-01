@@ -25,6 +25,7 @@
 
 #include "genericpage.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -33,8 +34,8 @@
 
 #include "manage.h"
 #include "mem.h"     // mem_rmalloc
-#include "objinfo.h" // object_info, OBJ_POWERUP, ...
-#include "aistruct.h" // t_ai_info
+#include "objinfo.h" // object_info, object_type::powerup, ...
+#include "aistruct.h" // ai_info_t
 #include "aistruct_external.h"
 #include "object_external_struct.h" // physics_info, light_info, MAX_OBJECTS
 #include "gamedata_helpers.h"
@@ -51,22 +52,6 @@
 // original D3 tools) fit comfortably within this; any page that would not is
 // rejected by the Q_ASSERT in mng_WriteNewGenericPage.
 constexpr size_t kGenericPageBufferSize = 1u << 20;
-
-//-----------------------------------------------------------------------------
-// Chunk readers (used by the generic + weapon + ship readers).  Pure data.
-//-----------------------------------------------------------------------------
-
-void mng_ReadPhysicsChunk(physics_info *phys_info, posix_istream &infile) {
-  infile >> *phys_info;
-}
-
-void mng_ReadWeaponBatteryChunk(otype_wb_info *static_wb, posix_istream &infile) {
-  infile >> *static_wb;
-}
-
-void mng_ReadLightingChunk(light_info *lighting_info, posix_istream &infile) {
-  infile >> *lighting_info;
-}
 
 //-----------------------------------------------------------------------------
 // Generic page (manage/generic.cpp : 448-1337)
@@ -90,16 +75,9 @@ static void mng_InitGenericPage(mngs_generic_page *genericpage) {
   genericpage->objinfo_struct.phys_info.hit_die_dot = 1.0f;
   genericpage->objinfo_struct.respawn_scalar = 1.0f;
 
-  // ai_info inherits its play-balance defaults from the t_ai_info declaration
+  // ai_info inherits its play-balance defaults from the ai_info_t declaration
 
   genericpage->objinfo_struct.module_name.clear();
-
-  for (i = 0; i < MAX_DEATH_TYPES; i++) {
-    genericpage->objinfo_struct.death_types[i].flags = {};
-    genericpage->objinfo_struct.death_types[i].delay_min = 0.0;
-    genericpage->objinfo_struct.death_types[i].delay_max = 0.0;
-    genericpage->objinfo_struct.death_probabilities[i] = 0;
-  }
 }
 
 static void GenericPageSetPowerupDefaultAmmo(object_info *ip) {
@@ -146,7 +124,7 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
   {
     uint8_t b = 0;
     infile >> b;
-    genericpage->objinfo_struct.type = b;
+    genericpage->objinfo_struct.type = static_cast<object_type>(b);
   }
 
   // Read object name
@@ -166,7 +144,7 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
     infile >> genericpage->objinfo_struct.score;
 
   // Read ammo
-  if (genericpage->objinfo_struct.type == OBJ_POWERUP) {
+  if (genericpage->objinfo_struct.type == object_type::powerup) {
     infile >> genericpage->objinfo_struct.ammo_count;
   } else
     genericpage->objinfo_struct.ammo_count = 0;
@@ -205,13 +183,13 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
   infile >> genericpage->objinfo_struct.lo_lod_distance;
 
   // Read physics stuff
-  mng_ReadPhysicsChunk(&genericpage->objinfo_struct.phys_info, infile);
+  infile >> genericpage->objinfo_struct.phys_info;
 
   // Read size
   infile >> genericpage->objinfo_struct.size;
 
   // Read light info
-  mng_ReadLightingChunk(&genericpage->objinfo_struct.lighting_info, infile);
+  infile >> genericpage->objinfo_struct.lighting_info;
 
   // Read hit points
   infile >> genericpage->objinfo_struct.hit_points;
@@ -220,13 +198,12 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
   // struct shares its storage, so it can be streamed in directly).
   infile >> reinterpret_cast<uint32_t&>(genericpage->objinfo_struct.flags);
 
-  // Read AI info (current-version layout; AI_NOTIFIES_ALWAYS_ON is
-  // force-restored by the stream operator)
+  // Read AI info (current-version layout)
   infile >> genericpage->ai_info;
 
   // Read out objects spewed
   for (i = 0; i < MAX_DSPEW_TYPES; i++) {
-    infile >> genericpage->objinfo_struct.f_dspew;
+    infile >> reinterpret_cast<uint8_t&>(genericpage->objinfo_struct.f_dspew);
     infile >> genericpage->objinfo_struct.dspew_percent[i];
     infile >> genericpage->objinfo_struct.dspew_number[i];
 
@@ -235,8 +212,8 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
   }
 
   // Read out animation info
-  for (i = 0; i < NUM_MOVEMENT_CLASSES; i++) {
-    if (version < 20) {
+  if (version < 20) {
+    for (i = 0; i < NUM_MOVEMENT_CLASSES; i++) {
       for (j = 0; j < NUM_ANIMS_PER_CLASS; j++) {
         uint8_t f = 0, t = 0;
         infile >> f;
@@ -245,43 +222,30 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
         genericpage->anim[i].elem[j].to = t;
         infile >> genericpage->anim[i].elem[j].spc;
       }
-    } else {
-      infile >> genericpage->anim[i];
     }
+  } else {
+    infile >> genericpage->anim;
   }
 
   // read weapon batteries
-  for (i = 0; i < MAX_WBS_PER_OBJ; i++) {
-    mng_ReadWeaponBatteryChunk(&genericpage->static_wb[i], infile);
-  }
+  infile >> genericpage->static_wb;
 
   // read weapon names
-  for (i = 0; i < MAX_WBS_PER_OBJ; i++) {
-    for (j = 0; j < MAX_WB_GUNPOINTS; j++)
-      infile >> genericpage->weapon_name[i][j];
-  }
+  infile >> genericpage->weapon_name;
 
   // read sounds
   Q_ASSERT(MAX_OBJ_SOUNDS == 2);
-  for (i = 0; i < MAX_OBJ_SOUNDS; i++)
-    infile >> genericpage->sound_name[i];
+  infile >> genericpage->sound_name;
   if (version < 26) { // used to be three sounds
     std::string temp_sound_name;
     infile >> temp_sound_name;
   }
 
-  for (i = 0; i < MAX_AI_SOUNDS; i++)
-    infile >> genericpage->ai_sound_name[i];
+  infile >> genericpage->ai_sound_name;
 
-  for (i = 0; i < MAX_WBS_PER_OBJ; i++) {
-    for (j = 0; j < MAX_WB_FIRING_MASKS; j++)
-      infile >> genericpage->fire_sound_name[i][j];
-  }
+  infile >> genericpage->fire_sound_name;
 
-  for (i = 0; i < NUM_MOVEMENT_CLASSES; i++) {
-    for (j = 0; j < NUM_ANIMS_PER_CLASS; j++)
-      infile >> genericpage->anim_sound_name[i][j];
-  }
+  infile >> genericpage->anim_sound_name;
 
   // Read respawn scalar
   if (version >= 21)
@@ -292,24 +256,28 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
   if (version >= 22) {
     int16_t n = 0;
     infile >> n;
-    int n_death_types = n;
+    const int n_death_types = std::clamp(static_cast<int>(n), 0, MAX_DEATH_TYPES);
+    auto& death_types = genericpage->objinfo_struct.death_types;
+    auto& death_probabilities = genericpage->objinfo_struct.death_probabilities;
+    death_types.resize(n_death_types);
+    death_probabilities.resize(n_death_types);
     for (i = 0; i < n_death_types; i++)
     {
-      infile >> reinterpret_cast<uint32_t&>(genericpage->objinfo_struct.death_types[i].flags);
+      infile >> reinterpret_cast<uint32_t&>(death_types[i].flags);
       if (version == 22) { // translate death flags
         Q_ASSERT(false);            // this version no longer supported
       }
 
-      infile >> genericpage->objinfo_struct.death_types[i].delay_min;
-      infile >> genericpage->objinfo_struct.death_types[i].delay_max;
-      infile >> genericpage->objinfo_struct.death_probabilities[i];
+      infile >> death_types[i].delay_min;
+      infile >> death_types[i].delay_max;
+      infile >> death_probabilities[i];
 
       // Fix up for changed flags
       if (version < 27) {
-        const uint32_t flags = std::bit_cast<uint32_t>(genericpage->objinfo_struct.death_types[i].flags);
+        const uint32_t flags = std::bit_cast<uint32_t>(death_types[i].flags);
         if ((flags & OLD_DF_DELAY_MASK) != OLD_DF_DELAY_MIN_MAX) {
-          genericpage->objinfo_struct.death_types[i].delay_min = 0.0;
-          genericpage->objinfo_struct.death_types[i].delay_max = 0.0;
+          death_types[i].delay_min = 0.0;
+          death_types[i].delay_max = 0.0;
         }
       }
     }
@@ -317,13 +285,13 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
 
   // Set score from hitpoints if old version
   if (version < 24) {
-    if ((genericpage->objinfo_struct.type == OBJ_ROBOT) ||
-        (genericpage->objinfo_struct.type == OBJ_BUILDING && genericpage->objinfo_struct.flags.control_ai))
+    if ((genericpage->objinfo_struct.type == object_type::robot) ||
+        (genericpage->objinfo_struct.type == object_type::building && genericpage->objinfo_struct.flags.control_ai))
       if (genericpage->objinfo_struct.flags.destroyable)
         genericpage->objinfo_struct.score = 3 * genericpage->objinfo_struct.hit_points;
   }
 
-  Q_ASSERT(genericpage->objinfo_struct.type != OBJ_NONE);
+  Q_ASSERT(genericpage->objinfo_struct.type != object_type::none);
 
   return true; // successfully read
 }
@@ -332,18 +300,6 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
 // Chunk writers (the exact mirror of the readers above: same field order and
 // encodings, so SaveTable can round-trip pages it has loaded).
 //-----------------------------------------------------------------------------
-
-static void mng_WritePhysicsChunk(byte_ostream &outfile, const physics_info *phys_info) {
-  outfile << *phys_info;
-}
-
-static void mng_WriteLightingChunk(byte_ostream &outfile, const light_info *lighting_info) {
-  outfile << *lighting_info;
-}
-
-static void mng_WriteWeaponBatteryChunk(byte_ostream &outfile, const otype_wb_info *static_wb) {
-  outfile << *static_wb;
-}
 
 // Serializes one page (header + payload) into a concrete posix_ostream with
 // the [PAGETYPE_GENERIC][int32 len] frame back-patched, mirroring the
@@ -379,7 +335,7 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
   outfile << genericpage->objinfo_struct.score;
 
   // Write ammo
-  if (genericpage->objinfo_struct.type == OBJ_POWERUP)
+  if (genericpage->objinfo_struct.type == object_type::powerup)
     outfile << genericpage->objinfo_struct.ammo_count;
 
   // Write script name (discarded by the reader)
@@ -404,13 +360,13 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
   outfile << genericpage->objinfo_struct.lo_lod_distance;
 
   // Write physics stuff
-  mng_WritePhysicsChunk(outfile, &genericpage->objinfo_struct.phys_info);
+  outfile << genericpage->objinfo_struct.phys_info;
 
   // Write size
   outfile << genericpage->objinfo_struct.size;
 
   // Write light info
-  mng_WriteLightingChunk(outfile, &genericpage->objinfo_struct.lighting_info);
+  outfile << genericpage->objinfo_struct.lighting_info;
 
   // Write hit points
   outfile << genericpage->objinfo_struct.hit_points;
@@ -419,62 +375,52 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
   // struct shares storage, so it can be streamed out directly).
   outfile << reinterpret_cast<const uint32_t&>(genericpage->objinfo_struct.flags);
 
-  // Write AI info (current-version layout; the stream operator masks out
-  // AI_NOTIFIES_ALWAYS_ON so it round-trips a read-back page)
+  // Write AI info (current-version layout)
   outfile << genericpage->ai_info;
 
   // Write out objects spewed
   for (i = 0; i < MAX_DSPEW_TYPES; i++) {
-    outfile << genericpage->objinfo_struct.f_dspew;
+    outfile << reinterpret_cast<const uint8_t&>(genericpage->objinfo_struct.f_dspew);
     outfile << genericpage->objinfo_struct.dspew_percent[i];
     outfile << genericpage->objinfo_struct.dspew_number[i];
     outfile << genericpage->dspew_name[i];
   }
 
   // Write out animation info
-  for (i = 0; i < NUM_MOVEMENT_CLASSES; i++)
-    outfile << genericpage->anim[i];
+  outfile << genericpage->anim;
 
   // Write out weapon batteries
-  for (i = 0; i < MAX_WBS_PER_OBJ; i++)
-    mng_WriteWeaponBatteryChunk(outfile, &genericpage->static_wb[i]);
+  outfile << genericpage->static_wb;
 
   // Write out weapon names
-  for (i = 0; i < MAX_WBS_PER_OBJ; i++) {
-    for (j = 0; j < MAX_WB_GUNPOINTS; j++)
-      outfile << genericpage->weapon_name[i][j];
-  }
+  outfile << genericpage->weapon_name;
 
   // Write out sounds
-  for (i = 0; i < MAX_OBJ_SOUNDS; i++)
-    outfile << genericpage->sound_name[i];
+  outfile << genericpage->sound_name;
 
-  for (i = 0; i < MAX_AI_SOUNDS; i++)
-    outfile << genericpage->ai_sound_name[i];
+  outfile << genericpage->ai_sound_name;
 
-  for (i = 0; i < MAX_WBS_PER_OBJ; i++) {
-    for (j = 0; j < MAX_WB_FIRING_MASKS; j++)
-      outfile << genericpage->fire_sound_name[i][j];
-  }
+  outfile << genericpage->fire_sound_name;
 
-  for (i = 0; i < NUM_MOVEMENT_CLASSES; i++) {
-    for (j = 0; j < NUM_ANIMS_PER_CLASS; j++)
-      outfile << genericpage->anim_sound_name[i][j];
-  }
+  outfile << genericpage->anim_sound_name;
 
   // Write out respawn scalar
   outfile << genericpage->objinfo_struct.respawn_scalar;
 
-  // Write out death information
+  // Write out death information (count-prefixed like the reader: the number of
+  // entries actually stored, capped at MAX_DEATH_TYPES so a single page can
+  // never exceed the on-disk bound).
   {
-    int16_t n = MAX_DEATH_TYPES;
-    outfile << n;
-  }
-  for (i = 0; i < MAX_DEATH_TYPES; i++) {
-    outfile << reinterpret_cast<const uint32_t&>(genericpage->objinfo_struct.death_types[i].flags);
-    outfile << genericpage->objinfo_struct.death_types[i].delay_min;
-    outfile << genericpage->objinfo_struct.death_types[i].delay_max;
-    outfile << genericpage->objinfo_struct.death_probabilities[i];
+    const size_t n = std::min(genericpage->objinfo_struct.death_types.size(),
+                              genericpage->objinfo_struct.death_probabilities.size());
+    const int16_t nd = static_cast<int16_t>(std::min(n, static_cast<size_t>(MAX_DEATH_TYPES)));
+    outfile << nd;
+    for (int k = 0; k < nd; k++) {
+      outfile << reinterpret_cast<const uint32_t&>(genericpage->objinfo_struct.death_types[k].flags)
+              << genericpage->objinfo_struct.death_types[k].delay_min
+              << genericpage->objinfo_struct.death_types[k].delay_max
+              << genericpage->objinfo_struct.death_probabilities[k];
+    }
   }
 
   // Fill in page length when done writing
@@ -502,11 +448,4 @@ void mng_WriteNewGenericPage(byte_ostream &outfile, mngs_generic_page *genericpa
   // the caller-visible memory array on flush/close.
   scratch.close();
   outfile.write(buffer.data(), bytes);
-}
-
-// Reads a generic page from an open file.  Returns false on error.
-bool mng_ReadGenericPage(posix_istream &infile, mngs_generic_page *genericpage) {
-  if (!Old_table_method)
-    return mng_ReadNewGenericPage(infile, genericpage);
-  return false; // old command-based table method not supported in mini build
 }

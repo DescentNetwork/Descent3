@@ -75,9 +75,3 @@ bool mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
 
   return true; // successfully read
 }
-
-bool mng_ReadSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
-  if (!Old_table_method)
-    return mng_ReadNewSoundPage(infile, soundpage);
-  return false; // old command-based table not supported in mini build
-}

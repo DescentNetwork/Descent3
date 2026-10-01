@@ -47,7 +47,7 @@ private:
 private:
   Ui::GenericDeathDialog *ui;
   int m_object_id;
-  death_info m_death_types[MAX_DEATH_TYPES];
-  int m_prob[MAX_DEATH_TYPES];
+  std::array<death_info, MAX_DEATH_TYPES> m_death_types;
+  std::array<int, MAX_DEATH_TYPES> m_prob;
 };
 

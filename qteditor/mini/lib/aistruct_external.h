@@ -384,7 +384,7 @@
 #define AIF_UVEC_FOV 0x40000000
 #define AIF_AIM_PNT_FOV 0x80000000
 
-// Designer-editable AI flags (replaces AIF_* for t_ai_info::flags).
+// Designer-editable AI flags (replaces AIF_* for ai_info_t::flags).
 struct ai_flags_t
 {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -456,7 +456,7 @@ struct ai_flags_t
 static_assert(sizeof(ai_flags_t) == sizeof(uint32_t));
 
 // Designer-editable AI notification flags (replaces notify_flags for
-// t_ai_info).  Bit N corresponds to AIN_N event; only events the AI is told
+// ai_info_t).  Bit N corresponds to AIN_N event; only events the AI is told
 // about are set.
 struct ai_notify_flags_t
 {
@@ -467,63 +467,63 @@ struct ai_notify_flags_t
   uint32_t movie_start : 1;             // AIN_MOVIE_START
   uint32_t scripted_orient : 1;         // AIN_SCRIPTED_ORIENT
   uint32_t scripted_influence : 1;      // AIN_SCRIPTED_INFLUENCE
-  uint32_t melee_attack_frame : 1;      // AIN_MELEE_ATTACK_FRAME
-  uint32_t melee_hit : 1;               // AIN_MELEE_HIT
-  uint32_t bumped_obj : 1;              // AIN_BUMPED_OBJ
-  uint32_t anim_complete : 1;           // AIN_ANIM_COMPLETE
-  uint32_t scripted_enabler : 1;        // AIN_SCRIPTED_ENABLER
-  uint32_t scripted_goal : 1;           // AIN_SCRIPTED_GOAL
-  uint32_t goal_invalid : 1;            // AIN_GOAL_INVALID
-  uint32_t target_invalid : 1;          // AIN_TARGET_INVALID
-  uint32_t user_defined : 1;            // AIN_USER_DEFINED
-  uint32_t near_wall : 1;               // AIN_NEAR_WALL
-  uint32_t hit_by_weapon : 1;           // AIN_HIT_BY_WEAPON
-  uint32_t near_target : 1;             // AIN_NEAR_TARGET
-  uint32_t hear_noise : 1;              // AIN_HEAR_NOISE
-  uint32_t goal_error : 1;              // AIN_GOAL_ERROR
-  uint32_t goal_fail : 1;               // AIN_GOAL_FAIL
-  uint32_t goal_complete : 1;           // AIN_GOAL_COMPLETE
-  uint32_t obj_fired : 1;               // AIN_OBJ_FIRED
-  uint32_t target_died : 1;             // AIN_TARGET_DIED
-  uint32_t whit_object : 1;             // AIN_WHIT_OBJECT
-  uint32_t player_sees_you : 1;         // AIN_PLAYER_SEES_YOU
-  uint32_t see_target : 1;              // AIN_SEE_TARGET
-  uint32_t whit_by_obj : 1;             // AIN_WHIT_BY_OBJ
-  uint32_t obj_killed : 1;              // AIN_OBJ_KILLED
-  uint32_t new_movement : 1;            // AIN_NEW_MOVEMENT
-  uint32_t padding_l : 1;               // Unused padding (bit 0)
+  uint32_t melee_attack_frame : 1 = true;  // AIN_MELEE_ATTACK_FRAME
+  uint32_t melee_hit : 1 = true;           // AIN_MELEE_HIT
+  uint32_t bumped_obj : 1 = true;          // AIN_BUMPED_OBJ
+  uint32_t anim_complete : 1 = true;       // AIN_ANIM_COMPLETE
+  uint32_t scripted_enabler : 1;           // AIN_SCRIPTED_ENABLER
+  uint32_t scripted_goal : 1;              // AIN_SCRIPTED_GOAL
+  uint32_t goal_invalid : 1;               // AIN_GOAL_INVALID
+  uint32_t target_invalid : 1 = true;      // AIN_TARGET_INVALID
+  uint32_t user_defined : 1 = true;        // AIN_USER_DEFINED
+  uint32_t near_wall : 1;                  // AIN_NEAR_WALL
+  uint32_t hit_by_weapon : 1;              // AIN_HIT_BY_WEAPON
+  uint32_t near_target : 1;                // AIN_NEAR_TARGET
+  uint32_t hear_noise : 1;                 // AIN_HEAR_NOISE
+  uint32_t goal_error : 1 = true;          // AIN_GOAL_ERROR
+  uint32_t goal_fail : 1 = true;           // AIN_GOAL_FAIL
+  uint32_t goal_complete : 1 = true;       // AIN_GOAL_COMPLETE
+  uint32_t obj_fired : 1;                  // AIN_OBJ_FIRED
+  uint32_t target_died : 1 = true;         // AIN_TARGET_DIED
+  uint32_t whit_object : 1;                // AIN_WHIT_OBJECT
+  uint32_t player_sees_you : 1 = true;     // AIN_PLAYER_SEES_YOU
+  uint32_t see_target : 1;                 // AIN_SEE_TARGET
+  uint32_t whit_by_obj : 1;                // AIN_WHIT_BY_OBJ
+  uint32_t obj_killed : 1;                 // AIN_OBJ_KILLED
+  uint32_t new_movement : 1 = true;        // AIN_NEW_MOVEMENT
+  uint32_t padding_l : 1;                  // Unused padding (bit 0)
 #else
-  uint32_t padding_l : 1;               // Unused padding (bit 0)
-  uint32_t new_movement : 1;            // AIN_NEW_MOVEMENT
-  uint32_t obj_killed : 1;              // AIN_OBJ_KILLED
-  uint32_t whit_by_obj : 1;             // AIN_WHIT_BY_OBJ
-  uint32_t see_target : 1;              // AIN_SEE_TARGET
-  uint32_t player_sees_you : 1;         // AIN_PLAYER_SEES_YOU
-  uint32_t whit_object : 1;             // AIN_WHIT_OBJECT
-  uint32_t target_died : 1;             // AIN_TARGET_DIED
-  uint32_t obj_fired : 1;               // AIN_OBJ_FIRED
-  uint32_t goal_complete : 1;           // AIN_GOAL_COMPLETE
-  uint32_t goal_fail : 1;               // AIN_GOAL_FAIL
-  uint32_t goal_error : 1;              // AIN_GOAL_ERROR
-  uint32_t hear_noise : 1;              // AIN_HEAR_NOISE
-  uint32_t near_target : 1;             // AIN_NEAR_TARGET
-  uint32_t hit_by_weapon : 1;           // AIN_HIT_BY_WEAPON
-  uint32_t near_wall : 1;               // AIN_NEAR_WALL
-  uint32_t user_defined : 1;            // AIN_USER_DEFINED
-  uint32_t target_invalid : 1;          // AIN_TARGET_INVALID
-  uint32_t goal_invalid : 1;            // AIN_GOAL_INVALID
-  uint32_t scripted_goal : 1;           // AIN_SCRIPTED_GOAL
-  uint32_t scripted_enabler : 1;        // AIN_SCRIPTED_ENABLER
-  uint32_t anim_complete : 1;           // AIN_ANIM_COMPLETE
-  uint32_t bumped_obj : 1;              // AIN_BUMPED_OBJ
-  uint32_t melee_hit : 1;               // AIN_MELEE_HIT
-  uint32_t melee_attack_frame : 1;      // AIN_MELEE_ATTACK_FRAME
-  uint32_t scripted_influence : 1;      // AIN_SCRIPTED_INFLUENCE
-  uint32_t scripted_orient : 1;         // AIN_SCRIPTED_ORIENT
-  uint32_t movie_start : 1;             // AIN_MOVIE_START
-  uint32_t movie_end : 1;               // AIN_MOVIE_END
-  uint32_t fired_weapon : 1;            // AIN_FIRED_WEAPON
-  uint32_t padding_h : 2;               // Unused padding to complete 32 bits
+  uint32_t padding_l : 1;                  // Unused padding (bit 0)
+  uint32_t new_movement : 1 = true;        // AIN_NEW_MOVEMENT
+  uint32_t obj_killed : 1;                 // AIN_OBJ_KILLED
+  uint32_t whit_by_obj : 1;                // AIN_WHIT_BY_OBJ
+  uint32_t see_target : 1;                 // AIN_SEE_TARGET
+  uint32_t player_sees_you : 1 = true;     // AIN_PLAYER_SEES_YOU
+  uint32_t whit_object : 1;                // AIN_WHIT_OBJECT
+  uint32_t target_died : 1 = true;         // AIN_TARGET_DIED
+  uint32_t obj_fired : 1;                  // AIN_OBJ_FIRED
+  uint32_t goal_complete : 1 = true;       // AIN_GOAL_COMPLETE
+  uint32_t goal_fail : 1 = true;           // AIN_GOAL_FAIL
+  uint32_t goal_error : 1 = true;          // AIN_GOAL_ERROR
+  uint32_t hear_noise : 1;                 // AIN_HEAR_NOISE
+  uint32_t near_target : 1;                // AIN_NEAR_TARGET
+  uint32_t hit_by_weapon : 1;              // AIN_HIT_BY_WEAPON
+  uint32_t near_wall : 1;                  // AIN_NEAR_WALL
+  uint32_t user_defined : 1 = true;        // AIN_USER_DEFINED
+  uint32_t target_invalid : 1 = true;      // AIN_TARGET_INVALID
+  uint32_t goal_invalid : 1;               // AIN_GOAL_INVALID
+  uint32_t scripted_goal : 1;              // AIN_SCRIPTED_GOAL
+  uint32_t scripted_enabler : 1;           // AIN_SCRIPTED_ENABLER
+  uint32_t anim_complete : 1 = true;       // AIN_ANIM_COMPLETE
+  uint32_t bumped_obj : 1 = true;          // AIN_BUMPED_OBJ
+  uint32_t melee_hit : 1 = true;           // AIN_MELEE_HIT
+  uint32_t melee_attack_frame : 1 = true;  // AIN_MELEE_ATTACK_FRAME
+  uint32_t scripted_influence : 1;         // AIN_SCRIPTED_INFLUENCE
+  uint32_t scripted_orient : 1;            // AIN_SCRIPTED_ORIENT
+  uint32_t movie_start : 1;                // AIN_MOVIE_START
+  uint32_t movie_end : 1;                  // AIN_MOVIE_END
+  uint32_t fired_weapon : 1;               // AIN_FIRED_WEAPON
+  uint32_t padding_h : 2;                  // Unused padding to complete 32 bits
 #endif
 };
 static_assert(sizeof(ai_notify_flags_t) == sizeof(uint32_t));
@@ -538,16 +538,33 @@ static_assert(sizeof(ai_notify_flags_t) == sizeof(uint32_t));
 // AI Status Registers
 //-------------------------------------------------
 
-#define AISR_FLEE 0x00000001
-#define AISR_ATTACKING 0x00000002
-#define AISR_CIRCLE_DIST 0x00000004
-#define AISR_PATH 0x00000008
-#define AISR_MELEE 0x00000010
-#define AISR_RANGED_ATTACK 0x00000020 // Full body stuff
-#define AISR_SEES_GOAL 0x00000040
-#define AISR_OK_TO_FIRE_DURING_CINEMATICS                                                                              \
-  0x00000080 // Chrishack - this should be a flag and not an SR, but we are out of flag space and time is critical for
-             // the mission pack
+// Transient per-agent/goal AI state (replaces AISR_* for goal::status_reg and
+// ai_frame::status_reg).
+struct ai_status_reg_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 24;                 // Unused bits to complete 32
+  uint32_t ok_to_fire_during_cinematics : 1;  // AISR_OK_TO_FIRE_DURING_CINEMATICS
+  uint32_t sees_goal : 1;                // AISR_SEES_GOAL
+  uint32_t ranged_attack : 1;            // AISR_RANGED_ATTACK
+  uint32_t melee : 1;                    // AISR_MELEE
+  uint32_t path : 1;                     // AISR_PATH
+  uint32_t circle_dist : 1;              // AISR_CIRCLE_DIST
+  uint32_t attacking : 1;                // AISR_ATTACKING
+  uint32_t fleeing : 1;                  // AISR_FLEE
+#else
+  uint32_t fleeing : 1;                  // AISR_FLEE
+  uint32_t attacking : 1;                // AISR_ATTACKING
+  uint32_t circle_dist : 1;              // AISR_CIRCLE_DIST
+  uint32_t path : 1;                     // AISR_PATH
+  uint32_t melee : 1;                    // AISR_MELEE
+  uint32_t ranged_attack : 1;            // AISR_RANGED_ATTACK
+  uint32_t sees_goal : 1;                // AISR_SEES_GOAL
+  uint32_t ok_to_fire_during_cinematics : 1;  // AISR_OK_TO_FIRE_DURING_CINEMATICS
+  uint32_t padding : 24;                 // Unused bits to complete 32
+#endif
+};
+static_assert(sizeof(ai_status_reg_t) == sizeof(uint32_t));
 
 //-------------------------------------------------
 // AI Anim states

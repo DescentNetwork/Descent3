@@ -135,9 +135,3 @@ bool mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage) {
 
   return true; // successfully read
 }
-
-bool mng_ReadShipPage(posix_istream &infile, mngs_ship_page *shippage) {
-  if (!Old_table_method)
-    return mng_ReadNewShipPage(infile, shippage);
-  return false; // old command-based table not supported in mini build
-}

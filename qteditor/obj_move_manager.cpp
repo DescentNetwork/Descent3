@@ -39,7 +39,7 @@ ObjectMoveManager::ObjectMoveManager() {
 void ObjectMoveManager::Start(int view_width, int view_height, vector3 *view_pos, matrix *view_mat, int x, int y) {
   if (app.Cur_object_index < 0 || app.Cur_object_index >= Highest_object_index + 1)
     return;
-  if (Objects[app.Cur_object_index].type == OBJ_DOOR)
+  if (Objects[app.Cur_object_index].type == object_type::door)
     return;
 
   m_DragState = 1;

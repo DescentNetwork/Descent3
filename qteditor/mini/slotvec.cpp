@@ -12,6 +12,7 @@
 #include "lib/ship.h"
 #include "lib/ssl_lib.h"
 #include "lib/weapon.h"
+#include "game/door.h"
 
 namespace d3
 {
@@ -117,6 +118,7 @@ namespace d3
   template class slotvec_base_t<special_face>;
   template class slotvec_base_t<texture>;
   template class slotvec_base_t<weapon>;
+  template class slotvec_base_t<door>;
 
   template class slotvec_t<bms_bitmap>;
   template class slotvec_t<bms_lightmap>;
@@ -127,4 +129,5 @@ namespace d3
   template class slotvec_t<special_face>;
   template class slotvec_t<texture>;
   template class slotvec_t<weapon>;
+  template class slotvec_t<door>;
 }

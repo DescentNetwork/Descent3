@@ -38,7 +38,7 @@
 #include <hog2_format.h>
 
 #include "manage.h"
-#include "aistruct.h"  // t_ai_info
+#include "aistruct.h"  // ai_info_t
 #include "aistruct_external.h"
 #include "mem.h"     // mem_rmalloc
 #include "log.h"     // LOG_ERROR
@@ -62,11 +62,6 @@
 #include "vclip.h"
 
 #include "string_helpers.h"
-
-// The mini manage.h declares this extern but no mini source defines it.  Net
-// tables never use the old command-based method, so it is always 0 here.  A
-// single translation-unit definition satisfies the extern (ODR) requirement.
-int Old_table_method = 0;
 
 // The mini tree defines `object_info Object_info[MAX_OBJECTS];` in objinfo.cpp
 // but no header declares the count; declare it here so the loader can track it.
@@ -169,9 +164,6 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 
   posix_istream infile(payload.data(), payload.size(), std::ios_base::in);
 
-  // Always read new-style (net) pages.
-  Old_table_method = 0;
-
   // Reloading the same table must replace, not append: callers (the real
   // editor's initD3Core and several tests) load table.gam more than once, and
   // the engine's per-page readers overlay by name.  Reset every table the page
@@ -182,12 +174,11 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
   Sounds.clear();
   Num_objects = 0;
   for (int i = 0; i < MAX_OBJECT_IDS; i++) {
-    Object_info[i].type = OBJ_NONE;
+    Object_info[i].type = object_type::none;
     Object_info[i].name.clear();
   }
-  Num_doors = 0;
-  for (int i = 0; i < MAX_DOORS; i++)
-    Doors[i] = door{};
+  // Loop grows so a second load produces the same arrays as the first.
+  Doors.clear();
   Num_megacells = 0;
   for (auto &mg : Megacells)
     mg = megacell{};
@@ -242,13 +233,11 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       break;
 
     case PAGETYPE_DOOR:
-      if (Num_doors < MAX_DOORS) {
-        if (!mng_ReadNewDoorPage(infile, &doorpage))
-          ok = false;
-        Doors[Num_doors] = doorpage.door_struct;
-        Num_doors++;
-      } else {
-        discardBytes(infile, len - 4);
+      if (!mng_ReadNewDoorPage(infile, &doorpage))
+        ok = false;
+      {
+        const size_t d = Doors.add_slot(doorpage.door_struct);
+        Doors.acquire(d);
       }
       break;
 
@@ -314,9 +303,11 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
   // for every type present in the table.
   for (int i = 0; i < MAX_OBJECTS; i++)
     Num_object_ids[i] = 0;
-  for (int i = 0; i < MAX_OBJECT_IDS; i++)
-    if (Object_info[i].type != OBJ_NONE && Object_info[i].type >= 0 && Object_info[i].type < MAX_OBJECTS)
-      Num_object_ids[Object_info[i].type]++;
+  for (int i = 0; i < MAX_OBJECT_IDS; i++) {
+    const object_type type = Object_info[i].type;
+    if (type != object_type::none && obj_type_index(type) < MAX_OBJECT_TYPES)
+      Num_object_ids[obj_type_index(type)]++;
+  }
 
   hogin.close();
 
@@ -329,13 +320,13 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 //-----------------------------------------------------------------------------
 
 // Searches all object ids for a specific name.  Returns the found id, or -1.
-// The whole table is scanned by its OBJ_NONE marker (not a loaded-page count)
+// The whole table is scanned by its object_type::none marker (not a loaded-page count)
 // exactly like the engine's objinfo.cpp FindObjectIDName: page lookups must
 // work even while a level is loading when Num_objects is temporarily reset.
 std::optional<uint32_t> FindObjectIDName(const std::string &name) {
   if(!name.empty())
     for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++)
-      if ((Object_info[i].type != OBJ_NONE) && match(name, Object_info[i].name))
+      if ((Object_info[i].type != object_type::none) && match(name, Object_info[i].name))
         return i;
 
   return std::nullopt;

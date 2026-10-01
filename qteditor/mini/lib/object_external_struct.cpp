@@ -82,7 +82,8 @@ byte_ostream& operator<<(byte_ostream& output, const physics_info& data)
 
 byte_istream& operator>>(byte_istream& input, light_info& data)
 {
-  return input
+  uint8_t lrt = 0;
+  input
          >> data.light_distance
          >> data.red_light1
          >> data.green_light1
@@ -96,7 +97,9 @@ byte_istream& operator>>(byte_istream& input, light_info& data)
          >> reinterpret_cast<uint32_t&>(data.flags)
          >> data.timebits
          >> data.angle
-         >> data.lighting_render_type;
+         >> lrt;
+  data.lighting_render_type = static_cast<lighting_render_type>(lrt);
+  return input;
 }
 
 byte_ostream& operator<<(byte_ostream& output, const light_info& data)
@@ -115,7 +118,7 @@ byte_ostream& operator<<(byte_ostream& output, const light_info& data)
          << reinterpret_cast<const uint32_t&>(data.flags)
          << data.timebits
          << data.angle
-         << data.lighting_render_type;
+         << static_cast<uint8_t>(data.lighting_render_type);
 }
 
 //-----------------------------------------------------------------------------
@@ -239,12 +242,14 @@ static byte_ostream& writeObjectLightmaps(byte_ostream& output, const object& da
 
 byte_istream& operator>>(byte_istream& input, object& data)
 {
-  input >> data.type
-      >> data.id
+  uint8_t type = 0;
+  input >> type;
+  data.type = static_cast<object_type>(type);
+  input >> data.id
       >> data.name
       >> reinterpret_cast<uint32_t&>(data.flags);
 
-  if (data.type == OBJ_DOOR)
+  if (data.type == object_type::door)
   {
     uint16_t shields = 0;
     input >> shields;
@@ -260,7 +265,7 @@ byte_istream& operator>>(byte_istream& input, object& data)
       >> data.lifeleft;
 
   // Sound-source objects carry their sound by name plus a volume.
-  if (data.type == OBJ_SOUNDSOURCE)
+  if (data.type == object_type::soundsource)
   {
     std::string soundname;
     input >> soundname;
@@ -279,11 +284,11 @@ byte_istream& operator>>(byte_istream& input, object& data)
 }
 
 byte_ostream& operator<<(byte_ostream& output, const object& data) {
-  output << data.type
+  output << static_cast<uint8_t>(data.type)
          << data.id
          << data.name
          << reinterpret_cast<const uint32_t&>(data.flags);
-  if (data.type == OBJ_DOOR)
+  if (data.type == object_type::door)
     output << static_cast<int16_t>(data.shields);
   output << data.roomnum
          << data.pos
@@ -293,7 +298,7 @@ byte_ostream& operator<<(byte_ostream& output, const object& data) {
          << data.contains_count
          << data.lifeleft;
 
-  if (data.type == OBJ_SOUNDSOURCE) {
+  if (data.type == object_type::soundsource) {
     const std::string &soundname = data.ctype.soundsource_info().sound_index
                                        ? Sounds[*data.ctype.soundsource_info().sound_index].name : "";
     output << soundname

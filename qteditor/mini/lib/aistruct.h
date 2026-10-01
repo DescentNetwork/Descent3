@@ -245,8 +245,8 @@
  * 47    5/01/98 3:41p Chris
  *
  * 46    5/31/98 3:05p Chris
- * Allowed death anims (fixed problem with ctype union of CT_DEBRIS and
- * CT_AI)
+ * Allowed death anims (fixed problem with ctype union of control_type::debris and
+ * control_type::ai)
  *
  * 45    4/30/98 11:31a Chris
  * Massive upgrades to the AI system
@@ -642,7 +642,7 @@ struct goal {
   goal_enabler enabler[MAX_ENABLERS_PER_GOAL];
 
   float circle_distance;
-  int status_reg;
+  ai_status_reg_t status_reg;
 
   float start_time;
   float next_path_time; // used of goals with paths associated with them
@@ -736,8 +736,8 @@ struct ai_mem {
 //-------------------------------------------------
 
 struct ai_frame {
-  char ai_class; // Static, DLL, Soar, Flock, and other will be here -- chrishack
-  char ai_type;  // Used for some coded types
+  uint8_t ai_class; // Static, DLL, Soar, Flock, and other will be here -- chrishack
+  uint8_t ai_type;  // Used for some coded types
 
   ai_path_info path;
 
@@ -794,7 +794,7 @@ struct ai_frame {
   float last_render_time; // Last time I was rendered -- BAD IN MULTIPLAYER -- chrisnote
   float next_flinch_time; // Next valid time to flinch
 
-  int status_reg;
+  ai_status_reg_t status_reg;
 
   int flags;
   int notify_flags; // Agent is only notified of some event types

@@ -66,7 +66,7 @@ WorldWeaponsDialog::WorldWeaponsDialog(QWidget *parent)
   connect(ui->IDC_CHANGE_NAME, &QPushButton::clicked, this, &WorldWeaponsDialog::onChangeName);
   connect(ui->IDC_EDIT_PHYSICS, &QPushButton::clicked, this, &WorldWeaponsDialog::onEditPhysics);
   connect(ui->IDC_DEFAULT_SIZE, &QPushButton::clicked, [this]() {
-    if (auto w = data()) ComputeDefaultSize(OBJ_WEAPON, w->fire_image_handle, w->size), updateDialog();
+    if (auto w = data()) ComputeDefaultSize(object_type::weapon, w->fire_image_handle, w->size), updateDialog();
   });
 
   connect(ui->IDC_ENERGY_RADIO, &QRadioButton::clicked, [this]() { if (auto w = data()) w->flags.matter_weapon = false; });

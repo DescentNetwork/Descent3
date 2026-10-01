@@ -98,7 +98,7 @@ void DoorwayKeypad::updateDialog() {
   ui->IDC_DOORWAY_POS_EDIT->setText(QString::number(dp->position));
 
   ui->IDC_DOORWAY_ID->setText(QString::number(dp->doornum));
-  if (dp->doornum >= 0 && dp->doornum < MAX_DOORS && Doors[dp->doornum].used)
+  if (dp->doornum >= 0 && dp->doornum < static_cast<int>(Doors.size()) && Doors.is_used(dp->doornum))
       ui->IDC_DOORWAYSELEDIT->setText(QString::fromStdString(Doors[dp->doornum].name));
 }
 
@@ -214,7 +214,7 @@ void DoorwayKeypad::onPlaceDoor() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place a door on a portal face.");
     return;
   }
-  if (app.current_door < 0 || !Doors[app.current_door].used) {
+  if (app.current_door < 0 || app.current_door >= static_cast<int>(Doors.size()) || !Doors.is_used(app.current_door)) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No door selected. Use the World Objects Door dialog first.");
     return;
   }

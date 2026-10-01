@@ -76,7 +76,7 @@
 #define EVT_GAMECHECKBAN 0x511         // called to the dlls with a network address to determine if a player is banned
 #define EVT_GAMEDOCONTROLS 0x512       // called to the multiplayer games so they can do any controller related movement
 #define EVT_GAMEWALLCOLLIDE 0x513      // called when there is a collision between an object and a wall
-#define EVT_GAMEOBJCHANGESEG 0x514     // called when an object (other than OBJ_PLAYER) changes room/segment
+#define EVT_GAMEOBJCHANGESEG 0x514     // called when an object (other than object_type::player) changes room/segment
 #define EVT_GAMEOBJDESTROYED 0x515     // called when an object is about to be deleted
 #define EVT_GAMEOBJKILLED 0x516        // called when an object was killed by another object
 #define EVT_GAME_GET_PLAYER_TEAM 0x517 // called when the game needs to get the team of a player
@@ -119,7 +119,7 @@
 #define EVT_GAME_INTERVAL 0x624                   // The interval frame for a game
 #define EVT_GAME_DISCONNECTED 0x625               // Event called if you disconnect from the server
 #define EVT_CLIENT_GAMEWALLCOLLIDE 0x626          // called when there is a collision between an object and a wall
-#define EVT_CLIENT_GAMEOBJCHANGESEG 0x627         // called when an object (other than OBJ_PLAYER) changes room/segment
+#define EVT_CLIENT_GAMEOBJCHANGESEG 0x627         // called when an object (other than object_type::player) changes room/segment
 #define EVT_CLIENT_GAMEOBJDESTROYED 0x628         // called when an object is about to be killed
 #define EVT_CLIENT_GAMEOBJKILLED 0x629            // called when an object was killed by another object
 #define EVT_CLIENT_PLAYERPLAYSAUDIOTAUNT 0x62A    // called when a player is playing an audio taunt

@@ -275,10 +275,3 @@ bool mng_ReadNewWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) 
 
   return true; // successfully read
 }
-
-// Reads a weapon page from an open file.  Returns false on error.
-bool mng_ReadWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) {
-  if (!Old_table_method)
-    return mng_ReadNewWeaponPage(infile, weaponpage);
-  return false; // old command-based method not supported in mini build
-}

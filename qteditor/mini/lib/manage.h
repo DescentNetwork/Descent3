@@ -275,8 +275,6 @@ int mng_DeletePage(const std::string &name, int dest_pagetype, int local);
 
 void mng_FreePagetypePrimitives(int pagetype, char *name, int freetype);
 
-extern int Old_table_method;
-
 // Error reporting
 //void DataError(const char *fmt, ...);
 

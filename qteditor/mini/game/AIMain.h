@@ -181,7 +181,7 @@ void AITurnTowardsPosition(object *obj, /*velocity *new_vel,*/ vector3 *pos /*, 
 bool AIFindHidePos(object *hide_obj, object *view_obj, vector3 *hpos, int *hroom, float max_hide_time = 3.0f);
 int AIFindRoomWithFlag(object *obj, int flag);
 object *AIFindObjOfType(object *obj, int type, int id, bool f_ignore_init_room, int parent_handle = OBJECT_HANDLE_NONE);
-bool AIStatusCircleFrame(object *obj, object *g_obj, float dist, float c_dist, int *status_reg);
+bool AIStatusCircleFrame(object *obj, object *g_obj, float dist, float c_dist, ai_status_reg_t *status_reg);
 bool AIObjEnemy(object *obj, object *target);
 bool AISetTarget(object *obj, int handle);
 void AIDestroyObj(object *obj);

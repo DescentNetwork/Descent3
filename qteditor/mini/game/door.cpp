@@ -130,8 +130,7 @@
 //	---------------------------------------------------------------------------
 //	Globals
 
-door Doors[MAX_DOORS]; // door info.
-int Num_doors = 0;
+d3::slotvec_t<door> Doors;
 
 //	---------------------------------------------------------------------------
 //	Prototypes
@@ -141,89 +140,56 @@ int Num_doors = 0;
 
 // Sets all doors to unused
 void InitDoors() {
-  for (int i = 0; i < MAX_DOORS; i++) {
-    memset(&Doors[i], 0, sizeof(door));
+  for (int i = 0; i < static_cast<int>(Doors.size()); i++)
     Doors[i].model_handle = -1;
-    // Doors[i].script_name[0] = 0;
-  }
-  Num_doors = 0;
 }
 
 // Allocs a door for use, returns std::nullopt if error, else index on success
 std::optional<uint32_t> AllocDoor() {
-  for (int i = 0; i < MAX_DOORS; i++) {
-    if (Doors[i].used == 0) {
-      Doors[i].used = 1;
-      // Doors[i].script_name[0] = 0;
-      Doors[i].flags = 0;
-      Doors[i].hit_points = 0.0;
-      Num_doors++;
-      return i;
-    }
-  }
+  const size_t n = Doors.next_slot();
+  Q_ASSERT(Doors.is_unused(n));
 
-  Q_ASSERT(false); // No doors free!
-  return std::nullopt;
+  Doors[n] = door{};
+  Doors[n].flags = {};
+  Doors[n].hit_points = 0.0;
+
+  Doors.acquire(n);
+  return static_cast<uint32_t>(n);
 }
 
 // Frees door index n
 void FreeDoor(int n) {
-  Q_ASSERT(Doors[n].used > 0);
+  Q_ASSERT(n >= 0 && n < static_cast<int>(Doors.size()));
+  Q_ASSERT(Doors.is_used(n));
 
-  Doors[n].used = 0;
-  Doors[n].name[0] = 0;
-  Num_doors--;
+  Doors[n].name.clear();
+  Doors.release(static_cast<size_t>(n));
 }
 
 // Gets next door from n that has actually been alloced
 std::optional<uint32_t> GetNextDoor(int n) {
-  int i;
-
-  Q_ASSERT(n >= 0 && n < MAX_DOORS);
-
-  if (Num_doors == 0)
+  if (Doors.empty())
     return std::nullopt;
+  Q_ASSERT(n >= 0 && n < static_cast<int>(Doors.size()));
 
-  for (i = n + 1; i < MAX_DOORS; i++)
-    if (Doors[i].used)
-      return i;
-  for (i = 0; i < n; i++)
-    if (Doors[i].used)
-      return i;
-
-  // this is the only one
-
-  return n;
+  return Doors.next(static_cast<size_t>(n));
 }
 
 // Gets previous door from n that has actually been alloced
 std::optional<uint32_t> GetPrevDoor(int n) {
-  int i;
-
-  Q_ASSERT(n >= 0 && n < MAX_DOORS);
-
-  if (Num_doors == 0)
+  if (Doors.empty())
     return std::nullopt;
+  Q_ASSERT(n >= 0 && n < static_cast<int>(Doors.size()));
 
-  for (i = n - 1; i >= 0; i--) {
-    if (Doors[i].used)
-      return i;
-  }
-  for (i = MAX_DOORS - 1; i > n; i--) {
-    if (Doors[i].used)
-      return i;
-  }
-
-  // this is the only one
-  return n;
+  return Doors.prev(static_cast<size_t>(n));
 }
 // Searches thru all doors for a specific name, returns -1 if not found
 // or index of door with name
 std::optional<uint32_t> FindDoorName(const std::string &name)
 {
   if(!name.empty())
-    for (int i = 0; i < MAX_DOORS; i++)
-      if (Doors[i].used && match(name, Doors[i].name))
+    for (int i = 0; i < static_cast<int>(Doors.size()); i++)
+      if (Doors.is_used(i) && match(name, Doors[i].name))
         return i;
   return std::nullopt;
 }
@@ -241,7 +207,8 @@ int LoadDoorImage(const std::filesystem::path& filename, int pageable) {
 
 // Given a door handle, returns an index to that doors model
 int GetDoorImage(int handle) {
-  Q_ASSERT(Doors[handle].used > 0);
+  Q_ASSERT(handle >= 0 && handle < static_cast<int>(Doors.size()));
+  Q_ASSERT(Doors.is_used(handle));
 
   return (Doors[handle].model_handle);
 }
@@ -250,8 +217,8 @@ void RemapDoors() {
   // Now, if any doors are polygon models and those models don't have correct
   // textures, attempt to reload the model texture list
 
-  for (int i = 0; i < MAX_DOORS; i++) {
-    if (Doors[i].used) {
+  for (int i = 0; i < static_cast<int>(Doors.size()); i++) {
+    if (Doors.is_used(i)) {
       Q_ASSERT(Doors[i].model_handle != -1);
       // LoadPolyModel (Poly_models[Doors[i].model_handle].name);
     }

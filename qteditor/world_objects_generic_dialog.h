@@ -34,7 +34,7 @@ QT_END_NAMESPACE
 class WorldObjectsGenericDialog : public QDialog {
   Q_OBJECT
 public:
-  explicit WorldObjectsGenericDialog(int objType, int object_id, QWidget *parent = nullptr);
+  explicit WorldObjectsGenericDialog(object_type objType, int object_id, QWidget *parent = nullptr);
   ~WorldObjectsGenericDialog();
 
   int objectId() const { return m_object_id; }
@@ -59,8 +59,6 @@ private slots:
   void onKillfocusInvenDescription();
   void onOverride();
   void onKillfocusLodDistance();
-  void onDeathPowerupUse2(bool checked);
-  void onDeathSpew2IfZero1(bool checked);
   void onKillfocusRespawnScalar();
 
 private:
@@ -73,7 +71,7 @@ private:
   optref<object_info> data(void);
 
   Ui::WorldObjectsGenericDialog *ui;
-  int m_type;
+  object_type m_type;
   int m_object_id;
   int m_lod = 0;
   int m_locked_count = 0;
@@ -81,5 +79,5 @@ private:
 
 // Opens the generic object dialog for the given object type (matching the
 // original MainFrm handlers) and returns the resulting current id.
-int editGenericObject(int objType, int initialCurrent, QWidget *parent);
+int editGenericObject(object_type objType, int initialCurrent, QWidget *parent);
 

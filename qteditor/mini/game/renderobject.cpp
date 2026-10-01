@@ -64,7 +64,7 @@
  * changes for compiling on the Mac
  *
  * 170   5/12/99 3:25p Jason
- * don't render powerup glows if their render type is RT_NONE
+ * don't render powerup glows if their render type is render_type::none
  *
  * 169   5/08/99 1:50p Jason
  * fixed some player colors
@@ -307,7 +307,7 @@
  * made fogged objects render correctly
  *
  * 92    8/12/98 6:38p Jeff
- * don't render ghosted objects (type==OBJ_DUMMY)
+ * don't render ghosted objects (type==object_type::dummy)
  *
  * 91    8/03/98 3:59p Chris
  * Added support for FQ_IGNORE_WEAPONS, added .000001 attach code, fix a
@@ -919,7 +919,7 @@ void DrawDebugInfo(object *obj) {
   matrix m;
   m = obj->orient;
   vm_TransposeMatrix(&m);
-  if (obj->type == OBJ_ROOM) {
+  if (obj->type == object_type::room) {
     DrawColoredDisk(&obj->pos, 0.0f, 0.0f, 1.0f, .1f, .7f, obj->size, 1);
   } else {
     if (Game_show_sphere == 1) {
@@ -1050,13 +1050,13 @@ bool SetupTerrainObject(object& obj) {
   obj.flags.safe_to_render = true;
   RenderObject_SetLightDirection(&camlight);
   rend_SetColorModel(CM_MONO);
-  if (obj.render_type == RT_POLYOBJ ||
-      (obj.render_type == RT_WEAPON &&
+  if (obj.render_type == render_type::polyobj ||
+      (obj.render_type == render_type::weapon &&
        !Weapons[obj.id].flags.image_bitmap &&
        !Weapons[obj.id].flags.image_vclip))
   {
     float scalar_r, scalar_g, scalar_b, scalar;
-    if (obj.type == OBJ_POWERUP) {
+    if (obj.type == object_type::powerup) {
       scalar = 1.0;
       scalar_r = 1.0;
       scalar_g = 1.0;
@@ -1068,12 +1068,12 @@ bool SetupTerrainObject(object& obj) {
         scalar_g = std::min<float>(1, scalar + (obj.effect_info->dynamic_green));
         scalar_b = std::min<float>(1, scalar + (obj.effect_info->dynamic_blue));
         // If this is a robot, make it at least 10% for each RGB component
-        if (obj.type == OBJ_ROBOT) {
+        if (obj.type == object_type::robot) {
           scalar_r = std::max<float>(.1, scalar_r);
           scalar_g = std::max<float>(.1, scalar_g);
           scalar_b = std::max<float>(.1, scalar_b);
         }
-        if (obj.type == OBJ_PLAYER && ((Players[obj.id].flags & PLAYER_FLAGS_HEADLIGHT)))
+        if (obj.type == object_type::player && ((Players[obj.id].flags & PLAYER_FLAGS_HEADLIGHT)))
         {
           scalar_r = 1;
           scalar_g = 1;
@@ -1086,12 +1086,12 @@ bool SetupTerrainObject(object& obj) {
       }
     }
 
-    if (obj.lighting_render_type == LRT_STATIC || Poly_models[obj.rtype.pobj_info().model_num].new_style == 0)
+    if (obj.lighting_render_type == lighting_render_type::static_lights || Poly_models[obj.rtype.pobj_info().model_num].new_style == 0)
       RenderObject_SetStatic(scalar_r, scalar_g, scalar_b);
-    else if (obj.lighting_render_type == LRT_GOURAUD || NoLightmaps) {
+    else if (obj.lighting_render_type == lighting_render_type::gouraud || NoLightmaps) {
       vector3 lightdir = {0, -1.0, 0}; // straight down for now
       RenderObject_SetGouraud(&lightdir, scalar_r, scalar_g, scalar_b, scalar);
-    } else if (obj.lighting_render_type == LRT_LIGHTMAPS) {
+    } else if (obj.lighting_render_type == lighting_render_type::lightmaps) {
       if (obj.lm_object.used == 0)
         RenderObject_SetStatic(scalar_r, scalar_g, scalar_b);
       else
@@ -1105,9 +1105,9 @@ bool SetupTerrainObject(object& obj) {
 
 // Sets up the light states for an indoor object to be rendered
 bool SetupMineObject(object& obj) {
-  if (obj.lighting_render_type == LRT_STATIC || Poly_models[obj.rtype.pobj_info().model_num].new_style == 0) {
+  if (obj.lighting_render_type == lighting_render_type::static_lights || Poly_models[obj.rtype.pobj_info().model_num].new_style == 0) {
     RenderObject_SetStatic(1.0f, 1.0f, 1.0f);
-  } else if (obj.lighting_render_type == LRT_GOURAUD || NoLightmaps) {
+  } else if (obj.lighting_render_type == lighting_render_type::gouraud || NoLightmaps) {
     float scalar_r = 1.0, scalar_g = 1.0, scalar_b = 1.0;
 
     vector3 lightdir = {0, -1.0, 0}; // straight down for now
@@ -1137,20 +1137,20 @@ bool SetupMineObject(object& obj) {
       scalar_g = std::min<float>(1, scalar_g + (obj.effect_info->dynamic_green));
       scalar_b = std::min<float>(1, scalar_b + (obj.effect_info->dynamic_blue));
       // If this is a robot, make it at least 10% for each RGB component
-      if (obj.type == OBJ_ROBOT) {
+      if (obj.type == object_type::robot) {
         scalar_r = std::max<float>(.1, scalar_r);
         scalar_g = std::max<float>(.1, scalar_g);
         scalar_b = std::max<float>(.1, scalar_b);
       }
 
-      if (obj.type == OBJ_PLAYER && (Players[obj.id].flags & PLAYER_FLAGS_HEADLIGHT)) {
+      if (obj.type == object_type::player && (Players[obj.id].flags & PLAYER_FLAGS_HEADLIGHT)) {
         scalar_r = 1;
         scalar_g = 1;
         scalar_b = 1;
       }
     }
     RenderObject_SetGouraud(&lightdir, scalar_r, scalar_g, scalar_b);
-  } else if (obj.lighting_render_type == LRT_LIGHTMAPS) {
+  } else if (obj.lighting_render_type == lighting_render_type::lightmaps) {
     if (obj.lm_object.used == 0)
       RenderObject_SetStatic(1.0f, 1.0f, 1.0f);
     else
@@ -1191,20 +1191,20 @@ bool GetLinearPosition(vector3 *points, float *times, int num_points, float t, v
 void RenderObject(object& obj) {
   float normalized_time[MAX_SUBOBJECTS];
   bool render_it = false;
-  if (obj.type == OBJ_NONE) {
+  if (obj.type == object_type::none) {
     LOG_FATAL("ERROR!!! Bogus obj %d in room %d is rendering!", OBJNUM(&obj), obj.roomnum);
     Q_ASSERT(false);
     return;
   }
-  if (obj.type == OBJ_DUMMY)
+  if (obj.type == object_type::dummy)
     return;
   if (obj.flags.attached) {
     // See if we should be rendered, because our attach parent might be invisible
     object *parent_obj = ObjGet(obj.attach_ultimate_handle);
     if (!parent_obj)
       return;
-    if (parent_obj->render_type == RT_NONE && parent_obj->type != OBJ_POWERUP &&
-        (parent_obj->type == OBJ_PLAYER || parent_obj->movement_type != MT_NONE))
+    if (parent_obj->render_type == render_type::none && parent_obj->type != object_type::powerup &&
+        (parent_obj->type == object_type::player || parent_obj->movement_type != movement_type::none))
       return;
   }
   if (OBJECT_OUTSIDE(&obj))
@@ -1221,21 +1221,21 @@ void RenderObject(object& obj) {
   if (Render_mirror_for_room == false)
     obj.flags.safe_to_render = false;
   obj.renderframe = FrameCount % 65536;
-  if (obj.control_type == CT_AI) {
+  if (obj.control_type == control_type::ai) {
     AI_RenderedList[AI_NumRendered] = OBJNUM(&obj);
     AI_NumRendered += 1;
   }
 
   ddgr_color oldcolor;
-  if (TSearch_on && obj.type != OBJ_ROOM) {
+  if (TSearch_on && obj.type != object_type::room) {
     rend_SetPixel(GR_RGB(16, 255, 64), TSearch_x, TSearch_y);
     oldcolor = rend_GetPixel(TSearch_x, TSearch_y); // will be different in 15/16-bit color
   }
 
   switch (obj.render_type) {
-  case RT_NONE:
+  case render_type::none:
     break;
-  case RT_EDITOR_SPHERE: // to render objects in editor mode
+  case render_type::editor_sphere: // to render objects in editor mode
 
     if (!UseHardware) {
       g3Point sphere_point;
@@ -1252,7 +1252,7 @@ void RenderObject(object& obj) {
     }
 
     break;
-  case RT_POLYOBJ:
+  case render_type::polyobj:
     if (OBJNUM(&obj) == app.Cur_object_index)
       DrawObjectSelectionBrackets(obj, 0); // draw back brackets
 
@@ -1266,7 +1266,7 @@ void RenderObject(object& obj) {
 
     ////////////////////////////////////////////
     /////////////MOTION BLUR////////////////////
-    if (Use_motion_blur && (obj.type == OBJ_ROBOT || obj.type == OBJ_DEBRIS) &&
+    if (Use_motion_blur && (obj.type == object_type::robot || obj.type == object_type::debris) &&
         Object_map_position_history[OBJNUM(&obj)] != -1) {
       float vel_mag;                  // velocity magnitude
       float sphere_size_perc = 0.20f; // percentage of object size
@@ -1349,12 +1349,12 @@ void RenderObject(object& obj) {
 #endif
 
     // Render that powerup glow
-    if (obj.type == OBJ_POWERUP) {
+    if (obj.type == object_type::powerup) {
       DrawPowerupGlowDisk(&obj);
       DrawPowerupSparkles(&obj);
     }
 #if 0
-    if (obj.type == OBJ_PLAYER) {
+    if (obj.type == object_type::player) {
       DrawPlayerDamageDisk(&obj);
       DrawPlayerRotatingBall(&obj);
       DrawPlayerNameOnHud(&obj);
@@ -1362,16 +1362,16 @@ void RenderObject(object& obj) {
       DrawPlayerInvulSphere(&obj);
     }
 #endif
-    if (obj.type == OBJ_PLAYER || obj.type == OBJ_ROBOT || (obj.type == OBJ_BUILDING && obj.ai_info)) {
+    if (obj.type == object_type::player || obj.type == object_type::robot || (obj.type == object_type::building && obj.ai_info)) {
       DrawSparkyDamageLightning(&obj);
       DrawVirusLightning(&obj);
     }
 
     break;
-  case RT_FIREBALL:
+  case render_type::fireball:
     DrawFireballObject(&obj);
     break;
-  case RT_WEAPON:
+  case render_type::weapon:
     DrawWeaponObject(&obj);
 
 #ifdef _DEBUG
@@ -1381,15 +1381,15 @@ void RenderObject(object& obj) {
 #endif
     break;
 
-  case RT_SPLINTER:
+  case render_type::splinter:
 //    DrawSplinterObject(&obj);
     break;
-  case RT_SHARD:
+  case render_type::shard:
 //    DrawShardObject(&obj);
     break;
 
 #ifdef _DEBUG
-  case RT_LINE: {
+  case render_type::line: {
     g3Point g3p[2];
     memset(g3p, 0, 2 * sizeof(g3Point));
     // g3p[0].p3_vec = obj.pos;
@@ -1405,7 +1405,7 @@ void RenderObject(object& obj) {
     LOG_ERROR("Unknown render_type <%d>", obj.render_type);
   }
 #ifdef NEWDEMO
-  if (obj.render_type != RT_NONE)
+  if (obj.render_type != render_type::none)
     if (Newdemo_state == ND_STATE_RECORDING) {
       if (!WasRecorded[obj - Objects.data()]) {
         newdemo_record_RenderObject(obj);
@@ -1418,7 +1418,7 @@ void RenderObject(object& obj) {
 
   if (OBJNUM(&obj) == app.Cur_object_index)
   {
-    if (obj.render_type != RT_POLYOBJ) {
+    if (obj.render_type != render_type::polyobj) {
       g3Point pnt;
       g3_RotatePoint(&pnt, &obj.pos);
       g3_DrawBox(GR_RGB(255, 255, 255), &pnt, obj.size);
@@ -1499,7 +1499,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
 
       use_effect = 1;
     }
-    if (obj->type == OBJ_PLAYER) {
+    if (obj->type == object_type::player) {
       // Draw thrust/afterburner cooler
       pe.type.glow_scalar = true;
       pe.glow_length_scalar = (Players[obj->id].thrust_mag);
@@ -1548,7 +1548,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
       obj_pos.z() += (((d3::rand() % 1000) - 500) / 500.0) * moveval;
     }
     // If this is a powerup, fade it out near the end of its life
-    if (obj->type == OBJ_POWERUP && obj->flags.uses_lifeleft && obj->lifeleft < 5) {
+    if (obj->type == object_type::powerup && obj->flags.uses_lifeleft && obj->lifeleft < 5) {
       pe.type.alpha = true;
       pe.type.deform = true;
       pe.alpha = obj->lifeleft / 5.0;
@@ -1574,7 +1574,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
     // Apply specularity from dynamic lights
     if (obj->effect_info) {
       if ((obj->effect_info->type_flags.specular)) {
-        if (obj->type == OBJ_POWERUP)
+        if (obj->type == object_type::powerup)
           pe.type.specular_model = true;
         else
           pe.type.specular_faces = true;
@@ -1588,10 +1588,10 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
       }
     }
     // Apply specularity from outdoor satellites
-    if (OBJECT_OUTSIDE(obj) && obj->lighting_render_type == LRT_GOURAUD && Detail_settings.Specular_lighting &&
+    if (OBJECT_OUTSIDE(obj) && obj->lighting_render_type == lighting_render_type::gouraud && Detail_settings.Specular_lighting &&
         !Object_info[obj->id].lighting_info.flags.no_specularity) {
       if (obj->effect_info && !(obj->effect_info->type_flags.specular)) {
-        if (obj->type == OBJ_POWERUP)
+        if (obj->type == object_type::powerup)
           pe.type.specular_model = true;
         else
           pe.type.specular_faces = true;
@@ -1604,7 +1604,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
         use_effect = 1;
       }
     }
-    if (Detail_settings.Bumpmapping_enabled && (obj->type == OBJ_ROBOT || obj->type == OBJ_PLAYER)) {
+    if (Detail_settings.Bumpmapping_enabled && (obj->type == object_type::robot || obj->type == object_type::player)) {
       pe.bump_light_pos = obj->pos;
       pe.bump_light_pos.y() += 100;
       pe.bump_scalar = 1;
@@ -1613,8 +1613,8 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
     }
   }
   // Pick a lod model to use if eligible
-  if (obj->lighting_render_type == LRT_STATIC || obj->lighting_render_type == LRT_GOURAUD) {
-    if (obj->type == OBJ_POWERUP || obj->type == OBJ_ROBOT || obj->type == OBJ_CLUTTER) {
+  if (obj->lighting_render_type == lighting_render_type::static_lights || obj->lighting_render_type == lighting_render_type::gouraud) {
+    if (obj->type == object_type::powerup || obj->type == object_type::robot || obj->type == object_type::clutter) {
       g3Point pnt;
       float detail_scalar = 1.0;
       g3_RotatePoint(&pnt, &obj->pos);
@@ -1641,9 +1641,9 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
             model_num = obj->rtype.pobj_info().model_num;
         }
       }
-    } else if (obj->type == OBJ_MARKER) {
+    } else if (obj->type == object_type::marker) {
      // model_num = Marker_polynum;
-    } else if (obj->type == OBJ_PLAYER && !(Players[obj->id].flags & (PLAYER_FLAGS_DYING | PLAYER_FLAGS_DEAD))) {
+    } else if (obj->type == object_type::player && !(Players[obj->id].flags & (PLAYER_FLAGS_DYING | PLAYER_FLAGS_DEAD))) {
       g3Point pnt;
       g3_RotatePoint(&pnt, &obj->pos);
       int ship_num = Players[obj->id].ship_index;
@@ -1675,7 +1675,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
       model_num = obj->rtype.pobj_info().model_num;
   } else
     model_num = obj->rtype.pobj_info().model_num;
-  if (obj->type == OBJ_BUILDING && obj->flags.use_destroyed_polymodel) {
+  if (obj->type == object_type::building && obj->flags.use_destroyed_polymodel) {
     if (Object_info[obj->id].lo_render_handle != -1)
       model_num = Object_info[obj->id].lo_render_handle;
   }
@@ -1685,7 +1685,7 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
   if (RenderObjectType == RO_STATIC) {
     // Draw this object with static light
     int overlay = 0;
-    if ((obj->type == OBJ_ROBOT || obj->type == OBJ_PLAYER) && obj->rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
+    if ((obj->type == object_type::robot || obj->type == object_type::player) && obj->rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
       overlay = 1;
 
     DrawPolygonModel(&obj_pos, &obj->orient, model_num, normalized_times, 0, RenderObjectStaticRedValue,
@@ -1694,14 +1694,14 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
   } else if (RenderObjectType == RO_GOURAUD || NoLightmaps) {
     // Draw this object with gouraud static light
     int overlay = 0;
-    if ((obj->type == OBJ_ROBOT || obj->type == OBJ_PLAYER) && obj->rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
+    if ((obj->type == object_type::robot || obj->type == object_type::player) && obj->rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
       overlay = 1;
     DrawPolygonModel(&obj_pos, &obj->orient, model_num, normalized_times, 0, &RenderObject_LightDirection,
                      RenderObjectStaticRedValue, RenderObjectStaticGreenValue, RenderObjectStaticBlueValue,
                      obj->rtype.pobj_info().subobj_flags, use_effect, overlay);
   } else if (RenderObjectType == RO_LIGHTMAPS) {
     int overlay = 0;
-    if ((obj->type == OBJ_ROBOT || obj->type == OBJ_PLAYER) && obj->rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
+    if ((obj->type == object_type::robot || obj->type == object_type::player) && obj->rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
       overlay = 1;
     // If this object is a destroyed building then do something different with it
     DrawPolygonModel(&obj_pos, &obj->orient, model_num, normalized_times, 0, RenderObjectLightmapObject,
@@ -1718,7 +1718,7 @@ void obj_draw_blob(object *obj, int bmnum) {
   //	grs_bitmap * bm = &GameBitmaps[bmnum];
   //
   //
-  //	if (obj->type == OBJ_FIREBALL)
+  //	if (obj->type == object_type::fireball)
   //		orientation = (obj-Objects) & 7;
   //
   //	orientation = global_orientation;
@@ -1825,7 +1825,7 @@ void DrawPowerupGlowDisk(object *obj) {
 // Draws the glowing disk around a player indicating damage
 void DrawPlayerDamageDisk(object *obj) {
 
-  Q_ASSERT(obj->type == OBJ_PLAYER);
+  Q_ASSERT(obj->type == object_type::player);
   if (obj == Viewer_object)
     return; // don't do me
   float damage_norm = Players[obj->id].damage_magnitude / MAX_DAMAGE_MAG;
@@ -1856,7 +1856,7 @@ void DrawPlayerDamageDisk(object *obj) {
 // Draws the red sphere around a player indicating invulnerability
 void DrawPlayerInvulSphere(object *obj) {
 
-  Q_ASSERT(obj->type == OBJ_PLAYER);
+  Q_ASSERT(obj->type == object_type::player);
   if (Viewer_object == obj)
     return; // don't do me
   if (!(Players[obj->id].flags & PLAYER_FLAGS_INVULNERABLE))
@@ -1885,7 +1885,7 @@ void DrawPlayerInvulSphere(object *obj) {
 }
 // Draws a rotating ball around the player
 void DrawPlayerRotatingBall(object *obj) {
-  Q_ASSERT(obj->type == OBJ_PLAYER);
+  Q_ASSERT(obj->type == object_type::player);
   if (Players[obj->id].num_balls < 1)
     return;
   static int first = 1;

@@ -101,6 +101,7 @@
 
 #include <posix_stream.h>
 
+#include "object_external.h" // object_type
 #include "vecmat_external.h"
 #include "robotfirestruct.h"
 
@@ -175,7 +176,7 @@ struct light_info {
   float directional_dot;
   uint32_t timebits;
   uint8_t angle;
-  uint8_t lighting_render_type;
+  ::lighting_render_type lighting_render_type;
 };
 
 // Table-file (lighting chunk) serialization; the read is the exact mirror of
@@ -691,8 +692,8 @@ private:
 
 // The data for an object
 struct object {
-  uint8_t type;       // what type of object this is... robot, weapon, hostage, powerup, fireball
-  uint8_t dummy_type; // stored type of an OBJ_DUMMY
+  object_type type;       // what type of object this is... robot, weapon, hostage, powerup, fireball
+  object_type dummy_type; // stored type of an object_type::dummy
   uint16_t id;        // which form of object...which powerup, robot, etc.
   object_flags_t flags;
 
@@ -701,10 +702,10 @@ struct object {
   int32_t handle;       //  unique handle for this object.  See defines above
   int16_t next, prev;   // id of next and previous connected object in Objects, -1 = no connection
 
-  uint8_t control_type;         // how this object is controlled
-  uint8_t movement_type;        // how this object moves
-  uint8_t render_type;          //  how this object renders
-  uint8_t lighting_render_type; // how this object is lit.  See flags above
+  ::control_type control_type;         // how this object is controlled
+  ::movement_type movement_type;       // how this object moves
+  ::render_type render_type;           //  how this object renders
+  ::lighting_render_type lighting_render_type; // how this object is lit.  See flags above
 
   int32_t roomnum; // room number or terrain cell containing object
 
@@ -737,7 +738,7 @@ struct object {
 
   uint8_t weapon_fire_flags;  // Used to indicate special weapon effects.  See flags above.
 
-  int8_t attach_type;
+  ::attach_type attach_type;
   int16_t lowest_attached_vis;
   union {
     float attach_dist;
@@ -765,11 +766,11 @@ struct object {
   float impact_force;
 
   // Object change information
-  int32_t change_flags;
+  uint32_t change_flags;
 
   // object generic vis flags
-  int32_t generic_nonvis_flags;
-  int32_t generic_sent_nonvis;
+  uint32_t generic_nonvis_flags;
+  uint32_t generic_sent_nonvis;
 
   lightmap_object lm_object; // The lightmap object for this object
 
@@ -798,7 +799,7 @@ struct object {
 // Level-file (OBJS chunk) record serialization; read mirrors write.  This is
 // the current on-disk layout (matches the engine's WriteObject since file
 // version 119): type/id/name/flags, optional door shields, room/pos/orient,
-// container info, lifeleft, soundsource info for OBJ_SOUNDSOURCE, the custom
+// container info, lifeleft, soundsource info for object_type::soundsource, the custom
 // default script/module names, and the embedded object lightmap block.
 byte_istream& operator >>(byte_istream& input, object& data);
 byte_ostream& operator <<(byte_ostream& output, const object& data);

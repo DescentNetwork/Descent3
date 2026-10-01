@@ -33,9 +33,9 @@ GenericLightDialog::GenericLightDialog(light_info *lightinfo, QWidget *parent)
   ui->setupUi(this);
 
   auto& rt = m_lightinfo->lighting_render_type;
-  connect(ui->IDC_RENDER_STATIC,    &QRadioButton::clicked, [&rt](){ rt = LRT_STATIC; });
-  connect(ui->IDC_RENDER_GOURAUD,   &QRadioButton::clicked, [&rt](){ rt = LRT_GOURAUD; });
-  connect(ui->IDC_RENDER_LIGHTMAPS, &QRadioButton::clicked, [&rt](){ rt = LRT_LIGHTMAPS; });
+  connect(ui->IDC_RENDER_STATIC,    &QRadioButton::clicked, [&rt](){ rt = lighting_render_type::static_lights; });
+  connect(ui->IDC_RENDER_GOURAUD,   &QRadioButton::clicked, [&rt](){ rt = lighting_render_type::gouraud; });
+  connect(ui->IDC_RENDER_LIGHTMAPS, &QRadioButton::clicked, [&rt](){ rt = lighting_render_type::lightmaps; });
 
   auto& flags = m_lightinfo->flags;
   connect(ui->IDC_ALWAYS_ON_RADIO,    &QRadioButton::clicked, [&flags](){ flags.flickering = 0; flags.timebits = 0; });
@@ -95,10 +95,10 @@ void GenericLightDialog::updateDialog() {
   ui->IDC_TIME_CHECK7->setChecked((li->timebits & (1 << 6)) != 0);
   ui->IDC_TIME_CHECK8->setChecked((li->timebits & (1 << 7)) != 0);
 
-  const int rt = li->lighting_render_type;
-  ui->IDC_RENDER_STATIC->setChecked(rt == LRT_STATIC);
-  ui->IDC_RENDER_GOURAUD->setChecked(rt == LRT_GOURAUD);
-  ui->IDC_RENDER_LIGHTMAPS->setChecked(rt == LRT_LIGHTMAPS);
+  const lighting_render_type rt = li->lighting_render_type;
+  ui->IDC_RENDER_STATIC->setChecked(rt == lighting_render_type::static_lights);
+  ui->IDC_RENDER_GOURAUD->setChecked(rt == lighting_render_type::gouraud);
+  ui->IDC_RENDER_LIGHTMAPS->setChecked(rt == lighting_render_type::lightmaps);
 
   ui->IDC_GENERIC_LIGHT_DISTANCE->setText(QString::number(li->light_distance));
   ui->IDC_GENERIC_PULSE_TIME->setText(QString::number(li->time_interval));

@@ -1152,7 +1152,7 @@ void EditorView::renderObjects() {
 
   for (int i = 0; i <= Highest_object_index; i++) {
     object *obj = &Objects[i];
-    if (obj->type == OBJ_NONE || obj->type == OBJ_DOOR)
+    if (obj->type == object_type::none || obj->type == object_type::door)
       continue;
 
     // A room is only drawn when its verts[0] is within the render radius
@@ -1178,19 +1178,19 @@ void EditorView::renderObjects() {
 
     // Color by object type (DrawRoomObjects switch).  Doors were skipped above.
     switch (obj->type) {
-    case OBJ_PLAYER:
+    case object_type::player:
       glColor3f(0.0f, 1.0f, 0.0f); // PLAYER_COLOR GR_RGB(0,255,0)
       break;
-    case OBJ_ROBOT:
+    case object_type::robot:
       glColor3f(1.0f, 0.0f, 0.0f); // ROBOT_COLOR GR_RGB(255,0,0)
       break;
-    case OBJ_POWERUP:
+    case object_type::powerup:
       glColor3f(0.0f, 0.0f, 1.0f); // POWERUP_COLOR GR_RGB(0,0,255)
       break;
-    case OBJ_VIEWER:
+    case object_type::viewer:
       glColor3f(100.0f / 255, 0.0f, 100.0f / 255); // VIEWER_COLOR GR_RGB(100,0,100)
       break;
-    case OBJ_CAMERA:
+    case object_type::camera:
       glColor3f(1.0f, 1.0f, 0.0f); // CAMERA_COLOR GR_RGB(255,255,0)
       break;
     default:
@@ -1972,7 +1972,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
 
   for (int i = 0; i <= Highest_object_index; i++) {
     object *obj = &Objects[i];
-    if (obj->type == OBJ_NONE)
+    if (obj->type == object_type::none)
       continue;
 
     float ox, oy, oz;

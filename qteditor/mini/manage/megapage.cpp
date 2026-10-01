@@ -45,9 +45,3 @@ bool mng_ReadNewMegacellPage(posix_istream &infile, mngs_megacell_page *megacell
   megacellpage->megacell_struct.used = 1;
   return true; // successfully read
 }
-
-bool mng_ReadMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage) {
-  if (!Old_table_method)
-    return mng_ReadNewMegacellPage(infile, megacellpage);
-  return false; // old command-based table not supported in mini build
-}
