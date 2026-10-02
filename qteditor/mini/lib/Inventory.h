@@ -196,6 +196,32 @@ struct object;
 #define INVF_NOTSPEWABLE 0x0040   // this object should not spew...stay in inventory after death
 #define INVF_TIMEOUTONSPEW 0x0080 // this object/item times out when it's spewed
 
+// Inventory item flags (tInvenInfo::iflags).
+// INVF_SELECTABLE and INVF_USEABLE are both 0x0003, i.e. they share the same two
+// bits, so they cannot be separate members.
+struct [[gnu::packed]] tInvenInfo_iflags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint16_t padding : 8;
+  uint16_t timeout_on_spew : 1;       // INVF_TIMEOUTONSPEW (0x0080)
+  uint16_t not_spewable : 1;          // INVF_NOTSPEWABLE (0x0040)
+  uint16_t object : 1;                // INVF_OBJECT (0x0020)
+  uint16_t vis_when_used : 1;         // INVF_VISWHENUSED (0x0010)
+  uint16_t noremove_on_use : 1;       // INVF_NOREMOVEONUSE (0x0008)
+  uint16_t mission_item : 1;          // INVF_MISSIONITEM (0x0004)
+  uint16_t selectable_or_useable : 2; // INVF_SELECTABLE / INVF_USEABLE (0x0003)
+#else
+  uint16_t selectable_or_useable : 2; // INVF_SELECTABLE / INVF_USEABLE (0x0003)
+  uint16_t mission_item : 1;          // INVF_MISSIONITEM (0x0004)
+  uint16_t noremove_on_use : 1;       // INVF_NOREMOVEONUSE (0x0008)
+  uint16_t vis_when_used : 1;         // INVF_VISWHENUSED (0x0010)
+  uint16_t object : 1;                // INVF_OBJECT (0x0020)
+  uint16_t not_spewable : 1;          // INVF_NOTSPEWABLE (0x0040)
+  uint16_t timeout_on_spew : 1;       // INVF_TIMEOUTONSPEW (0x0080)
+  uint16_t padding : 8;
+#endif
+};
+static_assert(sizeof(tInvenInfo_iflags_t) == sizeof(uint16_t));
+
 // tInvenInfo::flags has no bit defined anywhere in the engine (it is only ever
 // set to 0), so the whole word is reserved.
 struct [[gnu::packed]] tInvenInfo_flags_t {
@@ -224,7 +250,7 @@ struct tInvenInfo {
   char *icon_name;
   char *name;
   tInvenInfo_flags_t flags;
-  uint16_t iflags; // Inventory item flags
+  tInvenInfo_iflags_t iflags; // Inventory item flags
   int type;
   int id;
 };
