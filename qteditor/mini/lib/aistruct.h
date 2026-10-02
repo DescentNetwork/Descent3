@@ -683,7 +683,7 @@ struct goal {
   float last_see_target_time;
   float next_target_update_time;
 
-  uint32_t flags;
+  goal_flags_t flags;
   int guid; // Designer assigned
 
   int goal_uid; // used by the AI system for paths

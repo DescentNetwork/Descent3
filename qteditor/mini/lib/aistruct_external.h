@@ -248,6 +248,82 @@
 #define GF_CLEAR_IF_NOT_CURRENT_GOAL 0x08000000 // Removes the goal if it isn't the current one
 #define GF_ORIENT_SET_FVEC 0x10000000           // Face the direction of the fvec
 #define GF_ORIENT_SET_FVEC_UVEC 0x20000000      // Face the fvec and uvec
+
+// Goal Flags (goal::flags)
+struct [[gnu::packed]] goal_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 2;
+  uint32_t orient_set_fvec_uvec : 1; // GF_ORIENT_SET_FVEC_UVEC (0x20000000)
+  uint32_t orient_set_fvec : 1;     // GF_ORIENT_SET_FVEC (0x10000000)
+  uint32_t clear_if_not_current_goal : 1; // GF_CLEAR_IF_NOT_CURRENT_GOAL (0x08000000)
+  uint32_t is_attach_child : 1;     // GF_IS_ATTACH_CHILD (0x04000000)
+  uint32_t in_clear : 1;            // GF_IN_CLEAR (0x02000000) (Internal flag) Accounts for new goals overriding
+                                    // old goals within a GoalClearGoal
+  uint32_t path_move_reverse_dir : 1; // GF_PATH_MOVE_REVERSE_DIR (0x01000000)
+  uint32_t path_circle_at_end : 1;  // GF_PATH_CIRCLE_AT_END (0x00800000)
+  uint32_t path_reverse_at_end : 1; // GF_PATH_REVERSE_AT_END (0x00400000)
+  uint32_t path_follow_exactly : 1; // GF_PATH_FOLLOW_EXACTLY (0x00200000)
+  uint32_t orient_path_node : 1;    // GF_ORIENT_PATH_NODE (0x00100000)
+  uint32_t orient_for_attach : 1;   // GF_ORIENT_FOR_ATTACH (0x00080000)
+  uint32_t orient_goal_obj : 1;     // GF_ORIENT_GOAL_OBJ (0x00040000)
+  uint32_t orient_scripted : 1;     // GF_ORIENT_SCRIPTED (0x00020000)
+  uint32_t orient_target : 1;       // GF_ORIENT_TARGET (0x00010000)
+  uint32_t scripted_influence : 1;  // GF_SCRIPTED_INFLUENCE (0x00008000)
+  uint32_t min_max_influence : 1;   // GF_MIN_MAX_INFLUENCE (0x00004000)
+  uint32_t ramped_influence : 1;    // GF_RAMPED_INFLUENCE (0x00002000)
+  uint32_t orient_velocity : 1;     // GF_ORIENT_VELOCITY (0x00001000) Defaults to target if there is one
+                                    // (otherwise, to velocity)  This flag forces velocity.
+  uint32_t objs_are_enemies : 1;    // GF_OBJS_ARE_ENEMIES (0x00000800)
+  uint32_t objs_are_species : 1;    // GF_OBJS_ARE_SPECIES (0x00000400)
+  uint32_t objs_are_friends : 1;    // GF_OBJS_ARE_FRIENDS (0x00000200)
+  uint32_t force_awareness : 1;     // GF_FORCE_AWARENESS (0x00000100)
+  uint32_t use_bline_if_sees_goal : 1; // GF_USE_BLINE_IF_SEES_GOAL (0x00000080)
+  uint32_t circle_pos : 1;          // GF_CIRCLE_POS (0x00000040)
+  uint32_t circle_obj : 1;          // GF_CIRCLE_OBJ (0x00000020)
+  uint32_t obj_is_target : 1;       // GF_OBJ_IS_TARGET (0x00000010)
+  uint32_t notifies : 1;            // GF_NOTIFIES (0x00000008) By default, goals do not notify (unless an
+                                    // error occurs)
+  uint32_t keep_at_completion : 1;  // GF_KEEP_AT_COMPLETION (0x00000004) Keeps the goal as long at it is valid
+  uint32_t has_path : 1;            // GF_HAS_PATH (0x00000002) This goal has a path (not used yet)
+  uint32_t nonflushable : 1;        // GF_NONFLUSHABLE (0x00000001) A perminent goal
+#else
+  uint32_t nonflushable : 1;        // GF_NONFLUSHABLE (0x00000001) A perminent goal
+  uint32_t has_path : 1;            // GF_HAS_PATH (0x00000002) This goal has a path (not used yet)
+  uint32_t keep_at_completion : 1;  // GF_KEEP_AT_COMPLETION (0x00000004) Keeps the goal as long at it is valid
+  uint32_t notifies : 1;            // GF_NOTIFIES (0x00000008) By default, goals do not notify (unless an
+                                    // error occurs)
+  uint32_t obj_is_target : 1;       // GF_OBJ_IS_TARGET (0x00000010)
+  uint32_t circle_obj : 1;          // GF_CIRCLE_OBJ (0x00000020)
+  uint32_t circle_pos : 1;          // GF_CIRCLE_POS (0x00000040)
+  uint32_t use_bline_if_sees_goal : 1; // GF_USE_BLINE_IF_SEES_GOAL (0x00000080)
+  uint32_t force_awareness : 1;     // GF_FORCE_AWARENESS (0x00000100)
+  uint32_t objs_are_friends : 1;    // GF_OBJS_ARE_FRIENDS (0x00000200)
+  uint32_t objs_are_species : 1;    // GF_OBJS_ARE_SPECIES (0x00000400)
+  uint32_t objs_are_enemies : 1;    // GF_OBJS_ARE_ENEMIES (0x00000800)
+  uint32_t orient_velocity : 1;     // GF_ORIENT_VELOCITY (0x00001000) Defaults to target if there is one
+                                    // (otherwise, to velocity)  This flag forces velocity.
+  uint32_t ramped_influence : 1;    // GF_RAMPED_INFLUENCE (0x00002000)
+  uint32_t min_max_influence : 1;   // GF_MIN_MAX_INFLUENCE (0x00004000)
+  uint32_t scripted_influence : 1;  // GF_SCRIPTED_INFLUENCE (0x00008000)
+  uint32_t orient_target : 1;       // GF_ORIENT_TARGET (0x00010000)
+  uint32_t orient_scripted : 1;     // GF_ORIENT_SCRIPTED (0x00020000)
+  uint32_t orient_goal_obj : 1;     // GF_ORIENT_GOAL_OBJ (0x00040000)
+  uint32_t orient_for_attach : 1;   // GF_ORIENT_FOR_ATTACH (0x00080000)
+  uint32_t orient_path_node : 1;    // GF_ORIENT_PATH_NODE (0x00100000)
+  uint32_t path_follow_exactly : 1; // GF_PATH_FOLLOW_EXACTLY (0x00200000)
+  uint32_t path_reverse_at_end : 1; // GF_PATH_REVERSE_AT_END (0x00400000)
+  uint32_t path_circle_at_end : 1;  // GF_PATH_CIRCLE_AT_END (0x00800000)
+  uint32_t path_move_reverse_dir : 1; // GF_PATH_MOVE_REVERSE_DIR (0x01000000)
+  uint32_t in_clear : 1;            // GF_IN_CLEAR (0x02000000) (Internal flag) Accounts for new goals overriding
+                                    // old goals within a GoalClearGoal
+  uint32_t is_attach_child : 1;     // GF_IS_ATTACH_CHILD (0x04000000)
+  uint32_t clear_if_not_current_goal : 1; // GF_CLEAR_IF_NOT_CURRENT_GOAL (0x08000000)
+  uint32_t orient_set_fvec : 1;     // GF_ORIENT_SET_FVEC (0x10000000)
+  uint32_t orient_set_fvec_uvec : 1; // GF_ORIENT_SET_FVEC_UVEC (0x20000000)
+  uint32_t padding : 2;
+#endif
+};
+static_assert(sizeof(goal_flags_t) == sizeof(uint32_t));
 #define GF_SPEED_MASK (0x40000000 | 0x80000000)
 #define GF_SPEED_NORMAL 0x00000000
 #define GF_SPEED_DODGE 0x40000000
