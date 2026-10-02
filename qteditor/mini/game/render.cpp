@@ -169,17 +169,29 @@ int Num_fog_faces_to_render = 0;
 vector3 External_room_corners[MAX_EXTERNAL_ROOMS][8];
 uint8_t External_room_codes[MAX_EXTERNAL_ROOMS];
 uint8_t External_room_project_net[MAX_EXTERNAL_ROOMS];
-// For light glows
-#define LGF_USED 1
-#define LGF_INCREASING 2
-#define LGF_FAST 4
+// Light glow flags
+struct [[gnu::packed]] light_glow_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 5;
+  uint8_t fast : 1;      // LGF_FAST (4)
+  uint8_t increasing : 1; // LGF_INCREASING (2)
+  uint8_t used : 1;      // LGF_USED (1)
+#else
+  uint8_t used : 1;      // LGF_USED (1)
+  uint8_t increasing : 1; // LGF_INCREASING (2)
+  uint8_t fast : 1;      // LGF_FAST (4)
+  uint8_t padding : 5;
+#endif
+};
+static_assert(sizeof(light_glow_flags_t) == sizeof(uint8_t));
+
 struct light_glow {
   int16_t roomnum;
   int16_t facenum;
   float size;
   vector3 center;
   float scalar;
-  uint8_t flags;
+  light_glow_flags_t flags;
 };
 std::vector<light_glow> LightGlows;
 std::vector<light_glow> LightGlowsThisFrame;
@@ -416,10 +428,10 @@ void SetGlowStatus(int roomnum, int facenum, const vector3 &center, float size, 
   int first_free = -1;
   int found = 0;
   for (int i = 0; i < static_cast<int>(LightGlows.size()); i++) {
-    if (LightGlows[i].flags & LGF_USED) {
+    if (LightGlows[i].flags.used) {
       if (LightGlows[i].roomnum == roomnum && LightGlows[i].facenum == facenum) {
         found = 1;
-        LightGlows[i].flags |= LGF_INCREASING;
+        LightGlows[i].flags.increasing = true;
         break;
       }
     } else if (first_free == -1) {
@@ -435,9 +447,10 @@ void SetGlowStatus(int roomnum, int facenum, const vector3 &center, float size, 
     } else {
       slot = first_free;
     }
-    LightGlows[slot].flags = LGF_USED | LGF_INCREASING;
+    LightGlows[slot].flags.used = true;
+    LightGlows[slot].flags.increasing = true;
     if (fast)
-      LightGlows[slot].flags |= LGF_FAST;
+      LightGlows[slot].flags.fast = true;
     LightGlows[slot].roomnum = roomnum;
     LightGlows[slot].facenum = facenum;
     LightGlows[slot].scalar = 0;
@@ -2426,7 +2439,7 @@ void RenderSingleLightGlow(int index) {
     g = texp->g;
     b = texp->b;
   }
-  if (LightGlows[index].flags & LGF_FAST) {
+  if (LightGlows[index].flags.fast) {
     rend_SetZBufferWriteMask(0);
     rend_SetZBias((-size / 2));
   } else {
@@ -2434,7 +2447,7 @@ void RenderSingleLightGlow(int index) {
   }
   ddgr_color color = GR_RGB(r * 255, g * 255, b * 255);
   g3_DrawBitmap(&center, size, (size * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle, color);
-  if (LightGlows[index].flags & LGF_FAST) {
+  if (LightGlows[index].flags.fast) {
     rend_SetZBufferWriteMask(1);
     rend_SetZBias(0);
   } else {
@@ -2582,16 +2595,16 @@ SetGlowStatus(roomnum, LightGlowsThisFrame[i].facenum, center, size, FastCoronas
 // Called before a frame starts to render - sets all of our light glows to decreasing
 void PreUpdateAllLightGlows() {
   for (auto &glow : LightGlows) {
-    if (glow.flags & LGF_USED) {
-      glow.flags &= ~LGF_INCREASING;
+    if (glow.flags.used) {
+      glow.flags.increasing = false;
     }
   }
 }
 // Called after a frame has been rendered - slowly morphs our light glows into nothing
 void PostUpdateAllLightGlows() {
   for (auto &glow : LightGlows) {
-    if (glow.flags & LGF_USED) {
-      if (glow.flags & LGF_INCREASING) {
+    if (glow.flags.used) {
+      if (glow.flags.increasing) {
         glow.scalar += (Frametime * 4);
         if (glow.scalar > 1)
           glow.scalar = 1;
@@ -2599,7 +2612,7 @@ void PostUpdateAllLightGlows() {
         glow.scalar -= (Frametime * 4);
         if (glow.scalar < 0) {
           glow.scalar = 0;
-          glow.flags &= ~LGF_USED;
+          glow.flags.used = false;
         }
       }
     }
@@ -3489,7 +3502,7 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
 // Simply sets the number of glows to zero
 void ResetLightGlows() {
   for (auto &glow : LightGlows) {
-    glow.flags = 0;
+    glow.flags = {};
   }
 }
 // Renders all the lights glows for this frame
@@ -3504,7 +3517,7 @@ void RenderLightGlows() {
   rend_SetOverlayType(OT_NONE);
   rend_SetFogState(0);
   for (size_t i = 0; i < LightGlows.size(); i++) {
-    if (LightGlows[i].flags & LGF_USED) {
+    if (LightGlows[i].flags.used) {
       RenderSingleLightGlow(static_cast<int>(i));
     }
   }
