@@ -44,6 +44,10 @@
 // All other chunks are skipped by seeking to chunk_start + chunk_size.
 // SaveLevel writes those chunks in the same format so LoadLevel round-trips.
 
+#include <QMessageBox>
+
+#include <limits>
+
 #include "level_loader.h"
 #include "doorway.h"
 #include "room.h"
@@ -1328,7 +1332,7 @@ static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
   }
 }
 
-static void LL_WriteLightmapChunk(posix_ostream &ofile) {
+static bool LL_WriteLightmapChunk(posix_ostream &ofile) {
   // Build the lm_handle -> ordinal remap and count infos, exactly as the
   // engine's WriteLightmapChunk does (dynamic infos are excluded).
   const size_t MAXLMS = MAX_LIGHTMAPS;
@@ -1349,6 +1353,23 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
     }
   }
   std::fill(lightmap_spoken_for.begin(), lightmap_spoken_for.end(), 0);
+
+  // The per-info ordinal below is a 16-bit field, and the engine reads it with
+  // cf_ReadShort (signed) and then indexes lightmap_remap[remap_handle] with no
+  // bounds check. An ordinal above INT16_MAX would therefore be read back as a
+  // negative index by the stock game. Refuse to write such a level rather than
+  // emitting a file that cannot be loaded. MAX_LIGHTMAPS is a much larger
+  // runtime bound, so this is a level-format limit rather than a table limit.
+  if (lightmap_count > static_cast<uint32_t>(std::numeric_limits<int16_t>::max())) {
+    QMessageBox::critical(nullptr, "Save Level",
+                          QString("This level has %1 unique lightmaps, but the level format "
+                                  "stores the lightmap ordinal in a signed 16-bit field, so at "
+                                  "most %2 can be saved. Reduce the number of lightmaps and try "
+                                  "again.")
+                              .arg(lightmap_count)
+                              .arg(std::numeric_limits<int16_t>::max()));
+    return false;
+  }
 
   int start = LL_StartChunk(ofile, "NLMP");
 
@@ -1389,6 +1410,7 @@ static void LL_WriteLightmapChunk(posix_ostream &ofile) {
   }
 
   LL_EndChunk(ofile, start);
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -2030,7 +2052,8 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
 
     // NLMP: room/terrain lightmaps (engine order: after terrain sounds, before
     // the texture list).
-    LL_WriteLightmapChunk(out);
+    if (!LL_WriteLightmapChunk(out))
+      return false;
 
     // PSTR: player start flags (engine order: right after the lightmaps).
     LL_WritePlayerStartsChunk(out);
