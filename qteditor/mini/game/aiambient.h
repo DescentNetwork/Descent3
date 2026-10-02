@@ -27,7 +27,18 @@
 #define MAX_AL_TYPES 6
 #define MAX_ALS_PER_TYPE 130
 
-#define ALF_INSIDE 0x01
+// ambient_life flags
+struct [[gnu::packed]] ambient_life_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 7;
+  uint8_t inside : 1; // ALF_INSIDE (0x01)
+#else
+  uint8_t inside : 1; // ALF_INSIDE (0x01)
+  uint8_t padding : 7;
+#endif
+};
+static_assert(sizeof(ambient_life_flags_t) == sizeof(uint8_t));
 
 #define ALI_TYPE 0
 #define ALI_TOTAL 1
@@ -45,7 +56,7 @@ struct ambient_life_t
   uint8_t total;
   uint8_t max;
   uint8_t min;
-  uint8_t flags;
+  ambient_life_flags_t flags;
   uint8_t next_size;
   float next_do_time;
 };
