@@ -29,15 +29,26 @@
 #define MAX_VCLIPS 200
 #define VCLIP_MAX_FRAMES 50
 
-#define VCF_NOT_RESIDENT 1
-#define VCF_WANTS_MIPPED 2
+// Video clip flags
+struct [[gnu::packed]] vclip_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 30;
+  uint32_t wants_mipped : 1; // VCF_WANTS_MIPPED (2)
+  uint32_t not_resident : 1; // VCF_NOT_RESIDENT (1)
+#else
+  uint32_t not_resident : 1; // VCF_NOT_RESIDENT (1)
+  uint32_t wants_mipped : 1; // VCF_WANTS_MIPPED (2)
+  uint32_t padding : 30;
+#endif
+};
+static_assert(sizeof(vclip_flags_t) == sizeof(uint32_t));
 
 struct vclip {
   std::string name;
   int16_t num_frames;
   std::vector<int16_t> frames; // bitmap indices
   float frame_time; // time (in seconds) of each frame
-  uint32_t flags;
+  vclip_flags_t flags;
   uint8_t target_size; // what size this vclip should use (texture wise)
   uint8_t used;        // Is this vclip in use?
 };

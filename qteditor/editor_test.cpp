@@ -3386,7 +3386,7 @@ private slots:
         continue;
       const vclip &vc = GameVClips[GameTextures[i].bm_handle];
       QVERIFY(vc.used >= 1);
-      QVERIFY(!(vc.flags & VCF_NOT_RESIDENT));
+      QVERIFY(!vc.flags.not_resident);
       QVERIFY(vc.num_frames >= 2);
     }
 
@@ -3433,7 +3433,7 @@ private slots:
 
     // pillar.oaf is an 8-frame 1555 vclip whose frames are all 128x128.
     QVERIFY(GameVClips[vc].used >= 1);
-    QVERIFY(!(GameVClips[vc].flags & VCF_NOT_RESIDENT));
+    QVERIFY(!GameVClips[vc].flags.not_resident);
     QCOMPARE(GameVClips[vc].num_frames, 8);
     for (int i = 0; i < GameVClips[vc].num_frames; i++) {
       const int bm = GameVClips[vc].frames[i];
@@ -3461,7 +3461,7 @@ private slots:
     in.read(legacy_buf.data(), legacy->len);
     const int legacy_vc = LoadVClipFromMemory(legacy_buf.data(), legacy_buf.size(), "explosion.oaf", BITMAP_FORMAT_1555).value_or(-1);
     QVERIFY2(legacy_vc >= 0, "legacy OAF containers should page in as a resident vclip");
-    QVERIFY(!(GameVClips[legacy_vc].flags & VCF_NOT_RESIDENT));
+    QVERIFY(!GameVClips[legacy_vc].flags.not_resident);
     QCOMPARE(GameVClips[legacy_vc].num_frames, 12);
     for (int i = 0; i < GameVClips[legacy_vc].num_frames; i++)
       QVERIFY(GameVClips[legacy_vc].frames[i] >= 0);

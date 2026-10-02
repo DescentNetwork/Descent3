@@ -207,7 +207,7 @@ std::optional<uint32_t> AllocVClip() {
       GameVClips[i] = vclip{};
       GameVClips[i].frames.resize(VCLIP_MAX_FRAMES);
       GameVClips[i].frame_time = DEFAULT_FRAMETIME;
-      GameVClips[i].flags = VCF_NOT_RESIDENT;
+      GameVClips[i].flags.not_resident = true;
       GameVClips[i].used = 1;
       Num_vclips++;
       return i;
@@ -225,7 +225,7 @@ void FreeVClip(int num) {
   if (GameVClips[num].used > 0)
     return; // other things are using this vclip
 
-  if (!(GameVClips[num].flags & VCF_NOT_RESIDENT)) {
+  if (!GameVClips[num].flags.not_resident) {
     for (int i = 0; i < GameVClips[num].num_frames; i++)
       bm_FreeBitmap(GameVClips[num].frames[i]);
   }
@@ -287,7 +287,7 @@ extern int Low_vidmem;
 // Pages in a vclip if it needs to be
 void PageInVClip(int vcnum) {
   Q_ASSERT(GameVClips[vcnum].used >= 1);
-  if (!(GameVClips[vcnum].flags & VCF_NOT_RESIDENT))
+  if (!GameVClips[vcnum].flags.not_resident)
     return;
 
   // The mini editor pages every vclip in eagerly through LoadVClipFromMemory,
@@ -371,7 +371,7 @@ std::optional<uint32_t> LoadVClipFromMemory(const uint8_t *data, size_t size, co
 
   vc->num_frames = (int16_t)num_frames;
   vc->frame_time = DEFAULT_FRAMETIME;
-  vc->flags &= ~VCF_NOT_RESIDENT;
+  vc->flags.not_resident = false;
   return *vcnum;
 }
 
@@ -409,7 +409,7 @@ int AllocLoadVClip(const std::filesystem::path& filename, int texture_size, int 
   strncpy(GameVClips[vcnum].name, name, PAGENAME_LEN);
 
   if (mipped)
-    GameVClips[vcnum].flags |= VCF_WANTS_MIPPED;
+    GameVClips[vcnum].flags.wants_mipped = true;
 
   GameVClips[vcnum].target_size = texture_size;
 
