@@ -86,7 +86,7 @@ int AllocGamePath() {
       GamePaths.acquire(i);
       GamePaths[i].name.clear();
       GamePaths[i].num_nodes = 0;
-      GamePaths[i].flags = 0;
+      GamePaths[i].flags = {};
       GamePaths[i].pathnodes.clear();
       Num_game_paths++;
       return (int)i;

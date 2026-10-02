@@ -74,6 +74,18 @@ struct node {
   vector3 uvec;
 };
 
+// Game-path flags.  No bits are currently defined; the field is reserved and
+// only ever set to 0 (AllocGamePath), but it is serialized in the PATH chunk so
+// its reserved bits are preserved.
+struct [[gnu::packed]] game_path_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 8; // Unused padding to complete 8 bits
+#else
+  uint8_t padding : 8; // Unused padding to complete 8 bits
+#endif
+};
+static_assert(sizeof(game_path_flags_t) == sizeof(uint8_t));
+
 class game_path {
 public:
   game_path() { num_nodes = 0; }
@@ -81,7 +93,7 @@ public:
   std::vector<node> pathnodes; // how many nodes in this path? (count kept in num_nodes)
   int num_nodes;           // how many nodes in this path?
   std::string name; // the name of this path
-  uint8_t flags;             // special properties of this path
+  game_path_flags_t flags;  // special properties of this path
 };
 
 extern d3::slotvec_t<game_path> GamePaths;

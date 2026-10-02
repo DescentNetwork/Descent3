@@ -2995,7 +2995,7 @@ private slots:
     QCOMPARE(first.name, std::string("PlayerEndPath"));
     QVERIFY(first.num_nodes > 0 && first.num_nodes <= MAX_NODES_PER_PATH);
     QCOMPARE(int(first.pathnodes.size()), first.num_nodes);
-    QCOMPARE(int(first.flags), 0);
+    QCOMPARE(reinterpret_cast<const uint8_t &>(first.flags), uint8_t(0));
 
     for (int i = 0; i < Num_game_paths; i++) {
       const game_path &p = GamePaths[i];

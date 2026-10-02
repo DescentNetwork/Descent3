@@ -1120,7 +1120,7 @@ static void LL_ReadGamePathsChunk(posix_istream &ifile, uint32_t version) {
     int32_t nnodes = 0;
     ifile >> nnodes;
     p.num_nodes = std::max(0, std::min<int>((int)nnodes, MAX_NODES_PER_PATH));
-    ifile >> p.flags;
+    ifile >> reinterpret_cast<uint8_t &>(p.flags);
 
     p.pathnodes.resize(p.num_nodes);
     for (int j = 0; j < p.num_nodes; j++) {
@@ -1154,7 +1154,7 @@ static void LL_WriteGamePathsChunk(posix_ostream &ofile) {
 
     ofile << p.name;
     ofile << (int32_t)p.num_nodes;
-    ofile << p.flags;
+    ofile << reinterpret_cast<const uint8_t &>(p.flags);
 
     for (int j = 0; j < p.num_nodes; j++) {
       const node &nd = p.pathnodes[j];
