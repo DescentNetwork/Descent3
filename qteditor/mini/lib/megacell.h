@@ -32,13 +32,24 @@
 #define MAX_MEGACELL_WIDTH 8
 #define MAX_MEGACELL_HEIGHT 8
 
+// megacell::flags has no bit defined anywhere in the game or manage code, so the
+// whole word is reserved.
+struct [[gnu::packed]] megacell_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 32; // Unused padding to complete 32 bits
+#else
+  uint32_t padding : 32; // Unused padding to complete 32 bits
+#endif
+};
+static_assert(sizeof(megacell_flags_t) == sizeof(uint32_t));
+
 struct megacell {
   std::string name;
   int8_t width;
   int8_t height;
 
   int16_t texture_handles[MAX_MEGACELL_WIDTH * MAX_MEGACELL_HEIGHT];
-  uint32_t flags;
+  megacell_flags_t flags;
   uint8_t used;
 };
 
