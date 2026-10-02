@@ -295,7 +295,7 @@ public:
   grSurface(int w, int h, int bpp, unsigned type, unsigned flags = 0, const char *name = NULL);
 
 public:
-  unsigned get_flags() const { return ddsfObj.flags; };
+  ddgr_surface_flags_t get_flags() const { return ddsfObj.flags; };
 
   void create(int w, int h, int bpp, unsigned type, unsigned flags = 0, const char *name = NULL);
 
@@ -318,7 +318,7 @@ public:
     if (!(m_SurfInit)) { LOG_ERROR("Assertion failed (%s) in %s:%d.", "m_SurfInit", __FILE__, __LINE__); }
     return ddsfObj.bpp;
   };
-  unsigned flags() const {
+  ddgr_surface_flags_t flags() const {
     if (!(m_SurfInit)) { LOG_ERROR("Assertion failed (%s) in %s:%d.", "m_SurfInit", __FILE__, __LINE__); }
     return ddsfObj.flags;
   };

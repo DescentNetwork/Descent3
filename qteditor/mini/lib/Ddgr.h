@@ -149,15 +149,26 @@ const int SURFTYPE_VIDEOSCREEN = 1, // This is equivical to the display.
                 Flags modify a surfaces behavior.  A surface may have a backbuffer, which is only really
                 useful for videoscreens.
 
-        SURFFLAG_BACKBUFFER:
+        backbuffer:
                 This surface has a backbuffer.
                         v2.0  Supported in only videoscreen surfaces.
 
-        SURFFLAG_COLORKEY:
+        colorkey:
                 This surface was created with colorkeying in mind.
                 Renderers should keep this in mind, and check this flag.
  */
-const int SURFFLAG_BACKBUFFER = 1, SURFFLAG_COLORKEY = 2;
+struct [[gnu::packed]] ddgr_surface_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint16_t padding : 14;
+  uint16_t colorkey : 1;   // SURFFLAG_COLORKEY (2)
+  uint16_t backbuffer : 1; // SURFFLAG_BACKBUFFER (1)
+#else
+  uint16_t backbuffer : 1; // SURFFLAG_BACKBUFFER (1)
+  uint16_t colorkey : 1;   // SURFFLAG_COLORKEY (2)
+  uint16_t padding : 14;
+#endif
+};
+static_assert(sizeof(ddgr_surface_flags_t) == sizeof(uint16_t));
 
 /*	Surface structures
                 The surface
@@ -169,7 +180,7 @@ struct ddgr_surface {
   char name[SURF_NAMELEN]; // name
   int w, h, bpp;           // width, height and bit depth
   uint16_t type;             // how driver handles this surface
-  uint16_t flags;            // colorkeying, etc.
+  ddgr_surface_flags_t flags; // colorkeying, etc.
   int locks;               // lock count.
 };
 
