@@ -196,6 +196,17 @@ struct object;
 #define INVF_NOTSPEWABLE 0x0040   // this object should not spew...stay in inventory after death
 #define INVF_TIMEOUTONSPEW 0x0080 // this object/item times out when it's spewed
 
+// tInvenInfo::flags has no bit defined anywhere in the engine (it is only ever
+// set to 0), so the whole word is reserved.
+struct [[gnu::packed]] tInvenInfo_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 32; // Unused padding to complete 32 bits
+#else
+  uint32_t padding : 32; // Unused padding to complete 32 bits
+#endif
+};
+static_assert(sizeof(tInvenInfo_flags_t) == sizeof(uint32_t));
+
 // Inventory reset stage settings
 #define INVRESET_ALL 0
 #define INVRESET_LEVELCHANGE 1
@@ -212,7 +223,7 @@ struct tInvenInfo {
   char *description;
   char *icon_name;
   char *name;
-  uint32_t flags;
+  tInvenInfo_flags_t flags;
   uint16_t iflags; // Inventory item flags
   int type;
   int id;
