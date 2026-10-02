@@ -394,13 +394,33 @@ struct custom_anim {
   int8_t next_anim_type;
 };
 
+// multi_turret::flags carries the FMA_* multi-player animation flags.
+struct [[gnu::packed]] multi_turret_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 3;
+  uint8_t has_ai : 1;   // FMA_HAS_AI (16)
+  uint8_t use_speed : 1; // FMA_USE_SPEED (8)
+  uint8_t looping : 1;  // FMA_LOOPING (4)
+  uint8_t current : 1;  // FMA_CURRENT (2)
+  uint8_t valid : 1;    // FMA_VALID (1)
+#else
+  uint8_t valid : 1;    // FMA_VALID (1)
+  uint8_t current : 1;  // FMA_CURRENT (2)
+  uint8_t looping : 1;  // FMA_LOOPING (4)
+  uint8_t use_speed : 1; // FMA_USE_SPEED (8)
+  uint8_t has_ai : 1;   // FMA_HAS_AI (16)
+  uint8_t padding : 3;
+#endif
+};
+static_assert(sizeof(multi_turret_flags_t) == sizeof(uint8_t));
+
 struct multi_turret {
   float time;
   float last_time;
   uint8_t num_turrets;
   std::vector<float> last_keyframes;
   std::vector<float> keyframes;
-  uint8_t flags;
+  multi_turret_flags_t flags;
 };
 
 // Information specific to objects that render as a polygon model
