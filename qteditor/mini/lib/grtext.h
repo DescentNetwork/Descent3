@@ -270,32 +270,6 @@ int grfont_GetTracking(int font);
 void grfont_Spew(int font, int x, int y);
 #endif
 
-struct tFontFileInfo2 // to maintain compatibility with older fonts (64 bytes long)
-{
-  int16_t tracking;
-  char reserved[62];
-};
-
-//	font data structure internal to library but available for font editors
-struct tFontFileInfo {
-  int16_t width, height; // width of widest character and height of longest char
-  uint16_t flags;         // flags used by the character renderer
-  int16_t baseline;      // pixels given to lowercase below script line start at baseline
-  uint8_t min_ascii;     // minimum ascii value used by font
-  uint8_t max_ascii;     // max ascii value used by the font
-  int16_t byte_width;    // width of a character in the font in bytes
-  uint8_t *raw_data;     // pixel, map data.
-  uint8_t **char_data;   // pointers to each character
-  uint8_t *char_widths;  // individual pixel widths of each character
-  uint8_t *kern_data;    // kerning information for specific letter combos
-
-  // FFI2 (newstyle) data
-  tFontFileInfo2 ffi2;
-
-  //	misc.
-  float brightness; // this IS NOT in the file, but a part of the baseline element. (upper 8bits)
-};
-
 // Font file flags (shared by gr_font_file_record and tFontFileInfo)
 struct [[gnu::packed]] font_file_flags_t {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -321,5 +295,33 @@ struct [[gnu::packed]] font_file_flags_t {
 #endif
 };
 static_assert(sizeof(font_file_flags_t) == sizeof(uint16_t));
+
+struct tFontFileInfo2 // to maintain compatibility with older fonts (64 bytes long)
+{
+  int16_t tracking;
+  char reserved[62];
+};
+
+//	font data structure internal to library but available for font editors
+struct tFontFileInfo {
+  int16_t width, height; // width of widest character and height of longest char
+  font_file_flags_t flags;         // flags used by the character renderer
+  int16_t baseline;      // pixels given to lowercase below script line start at baseline
+  uint8_t min_ascii;     // minimum ascii value used by font
+  uint8_t max_ascii;     // max ascii value used by the font
+  int16_t byte_width;    // width of a character in the font in bytes
+  uint8_t *raw_data;     // pixel, map data.
+  uint8_t **char_data;   // pointers to each character
+  uint8_t *char_widths;  // individual pixel widths of each character
+  uint8_t *kern_data;    // kerning information for specific letter combos
+
+  // FFI2 (newstyle) data
+  tFontFileInfo2 ffi2;
+
+  //	misc.
+  float brightness; // this IS NOT in the file, but a part of the baseline element. (upper 8bits)
+};
+
+
 
 #endif
