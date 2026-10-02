@@ -193,10 +193,35 @@ const int MSN_URLLEN = 256;
 //	increase this value if you are going to add more levels to a mission than the max.
 const int MAX_LEVELS_PER_MISSION = 30;
 
-//	mission flags.
-const unsigned LVLFLAG_STARTMOVIE = 1, LVLFLAG_ENDMOVIE = 2, LVLFLAG_BRIEFING = 4, LVLFLAG_SHIPSELECT = 8,
-               LVLFLAG_SPAWNSECRET = 16, LVLFLAG_SPECIALHOG = 32, LVLFLAG_BRANCH = 64, LVLFLAG_UNUSED = 128,
-               LVLFLAG_SCORE = 256, LVLFLAG_FINAL = 512;
+// Level flags (formerly LVLFLAG_*).
+struct [[gnu::packed]] level_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 22;     // Unused padding to complete 32 bits
+  uint32_t final : 1;        // LVLFLAG_FINAL (512)
+  uint32_t score : 1;        // LVLFLAG_SCORE (256)
+  uint32_t unused : 1;       // LVLFLAG_UNUSED (128)
+  uint32_t branch : 1;       // LVLFLAG_BRANCH (64)
+  uint32_t special_hog : 1;  // LVLFLAG_SPECIALHOG (32)
+  uint32_t spawn_secret : 1; // LVLFLAG_SPAWNSECRET (16)
+  uint32_t ship_select : 1;  // LVLFLAG_SHIPSELECT (8)
+  uint32_t briefing : 1;     // LVLFLAG_BRIEFING (4)
+  uint32_t end_movie : 1;    // LVLFLAG_ENDMOVIE (2)
+  uint32_t start_movie : 1;  // LVLFLAG_STARTMOVIE (1)
+#else
+  uint32_t start_movie : 1;  // LVLFLAG_STARTMOVIE (1)
+  uint32_t end_movie : 1;    // LVLFLAG_ENDMOVIE (2)
+  uint32_t briefing : 1;     // LVLFLAG_BRIEFING (4)
+  uint32_t ship_select : 1;  // LVLFLAG_SHIPSELECT (8)
+  uint32_t spawn_secret : 1; // LVLFLAG_SPAWNSECRET (16)
+  uint32_t special_hog : 1;  // LVLFLAG_SPECIALHOG (32)
+  uint32_t branch : 1;       // LVLFLAG_BRANCH (64)
+  uint32_t unused : 1;       // LVLFLAG_UNUSED (128)
+  uint32_t score : 1;        // LVLFLAG_SCORE (256)
+  uint32_t final : 1;        // LVLFLAG_FINAL (512)
+  uint32_t padding : 22;     // Unused padding to complete 32 bits
+#endif
+};
+static_assert(sizeof(level_flags_t) == sizeof(uint32_t));
 
 const int LVLOBJ_NUM = 4;
 const uint16_t LVLOBJF_SECONDARY1 = 1, LVLOBJF_SECONDARY2 = 2, LVLOBJF_SECONDARY3 = 4, LVLOBJF_SECONDARY4 = 8;
@@ -221,7 +246,7 @@ byte_ostream& operator <<(byte_ostream& output, const level_info& data);
 //	level information
 struct tLevelNode {
   // Level flags
-  uint32_t flags;           // level flags
+  level_flags_t flags;      // level flags
   uint32_t objective_flags; // level objective flags
 
   // Movies
