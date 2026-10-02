@@ -222,6 +222,23 @@ struct [[gnu::packed]] tInvenInfo_iflags_t {
 };
 static_assert(sizeof(tInvenInfo_iflags_t) == sizeof(uint16_t));
 
+// inven_item::flags ("misc flags").  The engine only ever assigns 0 to it and
+// tests INVF_OBJECT against it in Inventory::GetTypeIDCount; the bit itself is
+// actually assigned to inven_item::iflags in AddObjectItem, so keep it here for
+// that single test.
+struct [[gnu::packed]] inven_item_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 27;
+  uint32_t object : 1; // INVF_OBJECT (0x0020)
+  uint32_t unused : 4;
+#else
+  uint32_t unused : 4;
+  uint32_t object : 1; // INVF_OBJECT (0x0020)
+  uint32_t padding : 27;
+#endif
+};
+static_assert(sizeof(inven_item_flags_t) == sizeof(uint32_t));
+
 // tInvenInfo::flags has no bit defined anywhere in the engine (it is only ever
 // set to 0), so the whole word is reserved.
 struct [[gnu::packed]] tInvenInfo_flags_t {
@@ -263,7 +280,7 @@ struct inven_item {
   int id;      // which form of object...which powerup, robot, etc.
                // if INVF_OBJECT, this is -1
   int oid;     // countermeasure powerup id
-  uint32_t flags;   // misc flags
+  inven_item_flags_t flags;   // misc flags
   uint16_t pad2; // keep alignment
 
   int count; // how many of this type/id (not INVF_OBJECT)
