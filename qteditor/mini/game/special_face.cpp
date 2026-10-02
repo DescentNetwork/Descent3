@@ -34,12 +34,12 @@ int AllocSpecialFace(int type, int num, bool vertnorms, int num_vertnorms) {
 
   sf.type = type;
   sf.num = num;
-  sf.flags = 0;
+  sf.flags = {};
   SpecialFaces.acquire(n);
 
   if (vertnorms) {
     sf.vertnorms.assign(static_cast<size_t>(num_vertnorms), vector3{});
-    sf.flags |= SFF_SPEC_SMOOTH;
+    sf.flags.spec_smooth = true;
   }
 
   return static_cast<int>(n);

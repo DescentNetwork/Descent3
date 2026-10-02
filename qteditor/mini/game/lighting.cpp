@@ -1330,7 +1330,7 @@ void ClearDynamicLightmaps() {
   // Reset specular faces
   for (auto handle : Specular_face_list) {
     int n = handle;
-    SpecialFaces[n].flags = 0;
+    SpecialFaces[n].flags = {};
     // LightmapInfo[n].spec_map=BAD_LM_INDEX;
   }
 

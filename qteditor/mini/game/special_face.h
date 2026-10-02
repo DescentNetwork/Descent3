@@ -37,13 +37,24 @@ struct specular_instance {
   uint16_t bright_color;
 };
 
-#define SFF_SPEC_OBJECT 1
-#define SFF_SPEC_SMOOTH 2
+// Special face flags
+struct [[gnu::packed]] special_face_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 6;
+  uint8_t spec_smooth : 1; // SFF_SPEC_SMOOTH (2)
+  uint8_t spec_object : 1; // SFF_SPEC_OBJECT (1)
+#else
+  uint8_t spec_object : 1; // SFF_SPEC_OBJECT (1)
+  uint8_t spec_smooth : 1; // SFF_SPEC_SMOOTH (2)
+  uint8_t padding : 6;
+#endif
+};
+static_assert(sizeof(special_face_flags_t) == sizeof(uint8_t));
 
 struct special_face {
   uint8_t type; // See types (above)
   uint8_t num;  // Number of instances
-  uint8_t flags;
+  special_face_flags_t flags;
 
   std::vector<specular_instance> spec_instance;
 

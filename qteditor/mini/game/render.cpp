@@ -1394,7 +1394,7 @@ texel = data[int_v][int_u];
           float d;
           vector3 upvec;
           if ((GameTextures[fp->tmap].flags.smooth_specular) &&
-              (SpecialFaces[fp->special_handle].flags & SFF_SPEC_SMOOTH)) {
+              (SpecialFaces[fp->special_handle].flags.spec_smooth)) {
             d = vm_Dot3Product(incident_norm, SpecialFaces[fp->special_handle].vertnorms[vn]);
             upvec = d * SpecialFaces[fp->special_handle].vertnorms[vn];
           } else {
