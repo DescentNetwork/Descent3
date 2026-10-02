@@ -81,11 +81,24 @@
 // Not bigger than 127 - char bnode - in portal struct
 #define MAX_BNODES_PER_ROOM 127
 
+// BNode edge flags.  No bits are currently defined; the field is reserved and
+// always zero, but it is serialized in the BNODES chunk so its reserved bits
+// are preserved.  See the engine: the writer stores 0 and no reader inspects
+// any bit.
+struct [[gnu::packed]] bn_edge_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint16_t padding : 16; // Unused padding to complete 16 bits
+#else
+  uint16_t padding : 16; // Unused padding to complete 16 bits
+#endif
+};
+static_assert(sizeof(bn_edge_flags_t) == sizeof(uint16_t));
+
 struct bn_edge {
   int16_t end_room;
   int8_t end_index;
 
-  uint16_t flags;
+  bn_edge_flags_t flags;
   int16_t cost;
 
   float max_rad;

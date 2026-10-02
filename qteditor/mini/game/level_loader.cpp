@@ -308,7 +308,7 @@ static void LL_ReadBNodeChunk(posix_istream &ifile, uint32_t version) {
                 ifile >> bv;
               }
 
-              ifile >> edge.flags;
+              ifile >> reinterpret_cast<uint16_t &>(edge.flags);
               ifile >> edge.cost;
               if (edge.cost < 1)
                 edge.cost = 1;
@@ -376,7 +376,7 @@ static void LL_WriteBNodeChunk(posix_ostream &ofile) {
               bn_edge &edge = node.edges[k];
               ofile << edge.end_room;
               ofile << static_cast<uint8_t>(edge.end_index);
-              ofile << edge.flags;
+              ofile << reinterpret_cast<const uint16_t &>(edge.flags);
               ofile << edge.cost;
               ofile << edge.max_rad;
             }

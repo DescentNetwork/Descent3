@@ -599,7 +599,7 @@ void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_add_reverse
     snlist->nodes[spnt].edges[new_edge].cost = (cost < 32767.0f) ? (int16_t)cost : (int16_t)32767;
     snlist->nodes[spnt].edges[new_edge].end_index = epnt;
     snlist->nodes[spnt].edges[new_edge].end_room = BOA_INDEX(eroom);
-    snlist->nodes[spnt].edges[new_edge].flags = 0;
+    snlist->nodes[spnt].edges[new_edge].flags = {};
 
     if (f_add_reverse) {
       snlist->nodes[spnt].edges[new_edge].max_rad = EBNode_DetermineMaxSizeForEdge(spnt, sroom, epnt, eroom);
