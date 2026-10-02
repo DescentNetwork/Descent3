@@ -1788,7 +1788,7 @@ int osipf_AIGoalAdd(int objhandle, int goal_type, int level, float influence, in
   case AIG_ATTACH_TO_OBJ:
   case AIG_PLACE_OBJ_ON_OBJ: {
     goal_info g_info;
-    g_info.attach_info.flags = 0;
+    g_info.attach_info.flags = {};
 
     // Pop Goal Local Variables
     va_start(marker, flags);
@@ -1802,9 +1802,9 @@ int osipf_AIGoalAdd(int objhandle, int goal_type, int level, float influence, in
       g_info.attach_info.rad /= 2;
 
     if (va_arg(marker, int) != 0)
-      g_info.attach_info.flags = GAF_ALIGNED;
+      g_info.attach_info.flags.aligned = true;
     if (va_arg(marker, int) != 0)
-      g_info.attach_info.flags |= GAF_SPHERE;
+      g_info.attach_info.flags.sphere = true;
     va_end(marker);
 
     // Do the actual goal and return;
@@ -2386,11 +2386,10 @@ void osipf_MatcenReset(int matcen_id) {
 int osipf_MatcenCreate(char *str) {
   bool name_changed;
 
-  char name[MAX_MATCEN_NAME_LEN];
-  strncpy(name, str, MAX_MATCEN_NAME_LEN - 1);
-  name[MAX_MATCEN_NAME_LEN - 1] = '\0';
+  if (str == nullptr)
+    return MATCEN_ERROR;
 
-  return CreateMatcen(name, &name_changed);
+  return CreateMatcen(str, name_changed);
 }
 
 void osipf_MatcenCopy(int md_id, int ms_id) {
@@ -2407,11 +2406,10 @@ void osipf_MatcenCopy(int md_id, int ms_id) {
 }
 
 int osipf_MatcenFindId(char *str) {
-  char name[MAX_MATCEN_NAME_LEN];
-  strncpy(name, str, MAX_MATCEN_NAME_LEN - 1);
-  name[MAX_MATCEN_NAME_LEN - 1] = '\0';
+  if (str == nullptr)
+    return MATCEN_ERROR;
 
-  return FindMatcenIndex(name);
+  return FindMatcenIndex(str);
 }
 
 int osipf_RayCast(int objhandle, vector3 *p0, vector3 *p1, int start_roomnum, float rad, int flags, ray_info *ri) {
@@ -3113,11 +3111,11 @@ void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void
   } break;
   case AIGV_B_ATTACH_F_ALIGNED: {
     if (op == VF_GET)
-      *(bool *)ptr = (g_ptr->g_info.attach_info.flags & GAF_ALIGNED) != 0;
+      *reinterpret_cast<bool *>(ptr) = g_ptr->g_info.attach_info.flags.aligned;
   } break;
   case AIGV_B_ATTACH_F_SPHERE: {
     if (op == VF_GET)
-      *(bool *)ptr = (g_ptr->g_info.attach_info.flags & GAF_SPHERE) != 0;
+      *reinterpret_cast<bool *>(ptr) = g_ptr->g_info.attach_info.flags.sphere;
   } break;
   case AIGV_F_ATTACH_RAD: {
     if (op == VF_GET)
@@ -3150,14 +3148,15 @@ void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void
       g_ptr->g_info.wander_extra_info.max_rooms = *(char *)ptr;
   } break;
   case AIGV_C_WANDER_FLAGS: {
+    auto &flags = g_ptr->g_info.wander_extra_info.flags;
     if (op == VF_GET)
-      *(char *)ptr = g_ptr->g_info.wander_extra_info.flags;
+      *reinterpret_cast<uint8_t *>(ptr) = reinterpret_cast<uint8_t &>(flags);
     else if (op == VF_SET)
-      g_ptr->g_info.wander_extra_info.flags = *(char *)ptr;
+      flags = reinterpret_cast<g_wander_flags_t &>(*reinterpret_cast<uint8_t *>(ptr));
     else if (op == VF_SET_FLAGS)
-      g_ptr->g_info.wander_extra_info.flags |= *(char *)ptr;
+      reinterpret_cast<uint8_t &>(flags) |= *reinterpret_cast<uint8_t *>(ptr);
     else if (op == VF_CLEAR_FLAGS)
-      g_ptr->g_info.wander_extra_info.flags &= ~(*(char *)ptr);
+      reinterpret_cast<uint8_t &>(flags) &= ~(*reinterpret_cast<uint8_t *>(ptr));
   } break;
   case AIGV_C_WANDER_MINE_INDEX: {
     if (op == VF_GET)
@@ -3289,14 +3288,15 @@ void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void
       g_ptr->enabler[index].float_value = *(float *)ptr;
   } break;
   case AIGSV_I_ENABLER_FLAGS: {
+    auto &flags = g_ptr->enabler[index].flags;
     if (op == VF_GET)
-      *(int *)ptr = g_ptr->enabler[index].flags;
+      *reinterpret_cast<uint32_t *>(ptr) = reinterpret_cast<uint32_t &>(flags);
     else if (op == VF_SET)
-      g_ptr->enabler[index].flags = *(int *)ptr;
+      flags = reinterpret_cast<ai_status_reg_t &>(*reinterpret_cast<uint32_t *>(ptr));
     else if (op == VF_SET_FLAGS)
-      g_ptr->enabler[index].flags |= *(int *)ptr;
+      reinterpret_cast<uint32_t &>(flags) |= *reinterpret_cast<uint32_t *>(ptr);
     else if (op == VF_CLEAR_FLAGS)
-      g_ptr->enabler[index].flags &= ~(*(int *)ptr);
+      reinterpret_cast<uint32_t &>(flags) &= ~(*reinterpret_cast<uint32_t *>(ptr));
   } break;
   case AIGSV_F_ENABLER_DIST: {
     if (op == VF_GET)

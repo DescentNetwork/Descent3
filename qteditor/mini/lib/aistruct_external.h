@@ -254,10 +254,6 @@
 #define GF_SPEED_FLEE 0x80000000
 #define GF_SPEED_ATTACK (0x40000000 | 0x80000000)
 
-#define GWF_ONLY_IN_CUR_MINE 0x00
-#define GWF_ONLY_MINES 0x01
-#define GWF_ONLY_TERRAIN 0x02
-
 #define ISORIENTGOAL(x)                                                                                                \
   ((x)->flags & (GF_ORIENT_VELOCITY | GF_ORIENT_TARGET | GF_ORIENT_SCRIPTED | GF_ORIENT_GOAL_OBJ |                     \
                  GF_ORIENT_FOR_ATTACH | GF_ORIENT_PATH_NODE | GF_ORIENT_SET_FVEC | GF_ORIENT_SET_FVEC_UVEC))

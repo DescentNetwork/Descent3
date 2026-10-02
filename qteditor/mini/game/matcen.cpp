@@ -30,8 +30,52 @@
 #include "objinfo.h"
 #include "soundload.h"
 #include "ssl_lib.h"
+#include "string_helpers.h"
 
 #include <posix_stream.h>
+
+int FindMatcenIndex(const std::string &name) {
+  for (uint32_t i = 0; i < static_cast<uint32_t>(Matcen.size()); i++) {
+    if (match(Matcen[i].GetName(), name))
+      return static_cast<int>(i);
+  }
+  return MATCEN_ERROR;
+}
+
+int CreateMatcen(const std::string &name, bool &f_name_changed) {
+  if (Matcen.size() >= MAX_MATCENS)
+    return MATCEN_ERROR;
+
+  Matcen.emplace_back();
+  f_name_changed = !Matcen.back().SetName(name);
+
+  return static_cast<int>(Matcen.size() - 1);
+}
+
+void InitMatcens() { Matcen.clear(); }
+
+bool MatcenValid(int32_t id) {
+  return id >= 0 && id < static_cast<int32_t>(Matcen.size());
+}
+
+void InitMatcensForLevel() {
+  for (matcen &m : Matcen) {
+    m.Reset();
+  }
+}
+
+void DestroyMatcen(int32_t id, bool f_resort) {
+  if (!MatcenValid(id))
+    return;
+
+  if (f_resort) {
+    // Drop the entry and shift the tail down so the table stays dense: the
+    // matcen table is rebuilt wholesale on load and is indexed by position.
+    Matcen.erase(Matcen.begin() + id);
+  } else {
+    Matcen[id].Reset();
+  }
+}
 
 void DestroyAllMatcens() {
   Matcen.clear();

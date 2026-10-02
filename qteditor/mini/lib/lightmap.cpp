@@ -56,7 +56,8 @@ std::optional<uint16_t> lm_AllocLightmap(int w, int h) {
   GameLightmaps[n].height = h;
   GameLightmaps.acquire(n);
   GameLightmaps[n].cache_slot = -1;
-  GameLightmaps[n].flags = LF_CHANGED;
+  GameLightmaps[n].flags = {};
+  GameLightmaps[n].flags.changed = true;
   // Find power-of-2 "square" resolution, as the original does.
   int res = std::max(w, h);
   int lightmap_res = 2;

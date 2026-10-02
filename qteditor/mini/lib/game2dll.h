@@ -58,7 +58,7 @@ struct dllinfo {
 // this struct is used to return game specific information to Descent 3
 struct tDLLOptions {
   // general flags, also specifies what members of the structure are valid
-  int flags;
+  uint32_t flags;
 
   // 0 or 1 for non-team games...maximum value is 4.  If not specified, than it is assumed 0
   int max_teams;

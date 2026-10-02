@@ -1035,7 +1035,7 @@ void DoWallEffects(object *weapon, int surface_tmap) {
           vm_NormalizeVectorFast(&vis->velocity);
           vis->velocity *= 4 + (d3::rand() % 20);
           vis->size = .5 + (((d3::rand() % 11) - 5) * .05);
-          vis->flags |= VF_USES_LIFELEFT;
+          vis->flags.uses_lifeleft = true;
           scalar lifetime = 1.0 + (((d3::rand() % 11) - 5) * .1);
           vis->lifeleft = lifetime;
           vis->lifetime = lifetime;

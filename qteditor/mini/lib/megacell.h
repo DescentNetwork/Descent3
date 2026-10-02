@@ -38,7 +38,7 @@ struct megacell {
   int8_t height;
 
   int16_t texture_handles[MAX_MEGACELL_WIDTH * MAX_MEGACELL_HEIGHT];
-  int flags;
+  uint32_t flags;
   uint8_t used;
 };
 

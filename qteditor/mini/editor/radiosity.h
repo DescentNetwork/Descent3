@@ -83,23 +83,42 @@ struct spectra {
 };
 
 // element flags
-#define EF_IGNORE 1
-#define EF_SMALL 2 // Don't blend this one into the lightmap - it will corrupt!
+struct [[gnu::packed]] rad_element_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 6 = 0;
+  uint8_t small : 1 = 0;  // Don't blend this one into the lightmap - it will corrupt!
+  uint8_t ignore : 1 = 0;
+#else
+  uint8_t ignore : 1 = 0;
+  uint8_t small : 1 = 0; // Don't blend this one into the lightmap - it will corrupt!
+  uint8_t padding : 6 = 0;
+#endif
+};
+static_assert(sizeof(rad_element_flags_t) == sizeof(uint8_t));
 
 struct rad_element {
   std::vector<vector3>& verts;
   spectra exitance;
   float area;
   uint8_t num_verts;
-  uint8_t flags; // see above
+  rad_element_flags_t flags = {}; // see above
 };
 
-#define VEF_REVERSE_SHOOT 1
+struct [[gnu::packed]] volume_element_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 7 = 0;
+  uint8_t reverse_shoot : 1 = 0;
+#else
+  uint8_t reverse_shoot : 1 = 0;
+  uint8_t padding : 7 = 0;
+#endif
+};
+static_assert(sizeof(volume_element_flags_t) == sizeof(uint8_t));
 
 struct volume_element {
   spectra color;
   vector3 pos;
-  uint8_t flags;
+  volume_element_flags_t flags = {};
 };
 
 #define ST_ROOM 0           // This is a room surface

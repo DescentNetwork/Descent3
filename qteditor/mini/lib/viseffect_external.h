@@ -60,15 +60,32 @@
 #define VIS_FIREBALL 1
 
 // Flags
-#define VF_USES_LIFELEFT 1
-#define VF_WINDSHIELD_EFFECT 2
-#define VF_DEAD 4
-#define VF_PLANAR 8
-#define VF_REVERSE 16
-#define VF_EXPAND 32
-#define VF_ATTACHED 64
-#define VF_NO_Z_ADJUST 128
-#define VF_LINK_TO_VIEWER 256 // Always link into the room that the viewer is in
+struct [[gnu::packed]] vis_effect_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint16_t padding : 7 = 0;
+  uint16_t link_to_viewer : 1 = 0; // Always link into the room that the viewer is in
+  uint16_t no_z_adjust : 1 = 0;
+  uint16_t attached : 1 = 0;
+  uint16_t expand : 1 = 0;
+  uint16_t reverse : 1 = 0;
+  uint16_t planar : 1 = 0;
+  uint16_t dead : 1 = 0;
+  uint16_t windshield_effect : 1 = 0;
+  uint16_t uses_lifeleft : 1 = 0;
+#else
+  uint16_t uses_lifeleft : 1 = 0;
+  uint16_t windshield_effect : 1 = 0;
+  uint16_t dead : 1 = 0;
+  uint16_t planar : 1 = 0;
+  uint16_t reverse : 1 = 0;
+  uint16_t expand : 1 = 0;
+  uint16_t attached : 1 = 0;
+  uint16_t no_z_adjust : 1 = 0;
+  uint16_t link_to_viewer : 1 = 0; // Always link into the room that the viewer is in
+  uint16_t padding : 7 = 0;
+#endif
+};
+static_assert(sizeof(vis_effect_flags_t) == sizeof(uint16_t));
 
 extern uint16_t max_vis_effects;
 
@@ -109,7 +126,7 @@ struct vis_effect {
   int16_t custom_handle;
   uint16_t lighting_color;
 
-  uint16_t flags;
+  vis_effect_flags_t flags = {};
 
   int16_t next;
   int16_t prev;

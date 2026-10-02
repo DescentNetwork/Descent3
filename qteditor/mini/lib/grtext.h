@@ -279,7 +279,7 @@ struct tFontFileInfo2 // to maintain compatibility with older fonts (64 bytes lo
 //	font data structure internal to library but available for font editors
 struct tFontFileInfo {
   int16_t width, height; // width of widest character and height of longest char
-  int16_t flags;         // flags used by the character renderer
+  uint16_t flags;         // flags used by the character renderer
   int16_t baseline;      // pixels given to lowercase below script line start at baseline
   uint8_t min_ascii;     // minimum ascii value used by font
   uint8_t max_ascii;     // max ascii value used by the font

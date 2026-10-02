@@ -356,7 +356,6 @@ void ChangeOldModelsForObjects(int a, int b) { PRINT_STUB(__FUNCTION__); }
 //void SetNormalizedTimeObj(object *obj, float *normalized_time) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Misc ====================
-int CreateMatcen(const char *name, bool *flag) { PRINT_STUB(__FUNCTION__); return -1; }
 void FreeAllGamePaths() { PRINT_STUB(__FUNCTION__); }
 //int FindPointRoom(vector3 *pnt) { PRINT_STUB(__FUNCTION__); return -1; }
 int GetTerrainRoomFromPos_ret(vector3& pos) { PRINT_STUB(__FUNCTION__); return -1; }

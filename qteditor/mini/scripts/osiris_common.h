@@ -1296,7 +1296,7 @@ struct msafe_struct {
   float size;
   float speed;
   int32_t count;
-  int32_t flags;
+  uint32_t flags;
   void *list;
   uint32_t control_mask;
   uint8_t control_val;
@@ -1345,7 +1345,7 @@ struct ray_info {
 struct osiris_path_node_info {
   vector3 pos;      // where this node is in the world
   int32_t roomnum; // what room?
-  int32_t flags;   // if this point lives over the terrain, etc
+  uint32_t flags;   // if this point lives over the terrain, etc
   vector3 fvec;
   vector3 uvec;
 };

@@ -87,7 +87,7 @@ void MatcenKeypad::onNew() {
   if (!ok || name.isEmpty())
     return;
   bool nameChanged = false;
-  const int id = CreateMatcen(name.toLocal8Bit().constData(), &nameChanged);
+  const int id = CreateMatcen(name.toStdString(), nameChanged);
   if (id >= 0) {
     m_matcenId = id;
     updateDialog();
@@ -95,11 +95,10 @@ void MatcenKeypad::onNew() {
 }
 
 void MatcenKeypad::onDelete() {
-  const auto count = static_cast<int>(Matcen.size());
-  if (count <= 0)
+  if (Matcen.empty())
     return;
-  Matcen[m_matcenId].SetName("deleted");
-  if (m_matcenId >= count - 1)
+  DestroyMatcen(m_matcenId, true);
+  if (m_matcenId >= static_cast<int>(Matcen.size()))
     m_matcenId = 0;
   updateDialog();
 }

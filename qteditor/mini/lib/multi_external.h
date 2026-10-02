@@ -261,7 +261,7 @@ struct netgame_info {
   uint8_t server_sequence;
   float last_server_time;   // last time we got a packet from the server
   uint8_t packets_per_second; // how many packets per second we'll send out
-  int flags;
+  uint32_t flags;
   int timelimit; // how many minutes to play this level
   int killgoal;  // kill goal for this level
   int respawn_time;

@@ -212,7 +212,7 @@ struct tInvenInfo {
   char *description;
   char *icon_name;
   char *name;
-  int flags;
+  uint32_t flags;
   uint16_t iflags; // Inventory item flags
   int type;
   int id;
@@ -226,7 +226,7 @@ struct inven_item {
   int id;      // which form of object...which powerup, robot, etc.
                // if INVF_OBJECT, this is -1
   int oid;     // countermeasure powerup id
-  int flags;   // misc flags
+  uint32_t flags;   // misc flags
   uint16_t pad2; // keep alignment
 
   int count; // how many of this type/id (not INVF_OBJECT)

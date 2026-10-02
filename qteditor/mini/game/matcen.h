@@ -203,15 +203,15 @@ public:
 };
 
 extern std::vector<matcen> Matcen;
-int FindMatcenIndex(const char *name);
-int CreateMatcen(const char *name, bool *f_name_changed);
+int FindMatcenIndex(const std::string &name);
+int CreateMatcen(const std::string &name, bool &f_name_changed);
 void InitMatcens();
 
 void DestroyAllMatcens();
 
-void DestroyMatcen(int id, bool f_resort);
+void DestroyMatcen(int32_t id, bool f_resort);
 
-bool MatcenValid(int id);
+bool MatcenValid(int32_t id);
 
 void DoMatcensFrame();
 void DoMatcensRenderFrame();

@@ -349,7 +349,7 @@ struct fvi_query
   float rad;
   int16_t thisobjnum;
   int* ignore_obj_list = nullptr;
-  int flags;
+  uint32_t flags;
 
   // BBox stuff...
   matrix* o_orient = nullptr;

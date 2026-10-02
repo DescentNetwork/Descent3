@@ -37,7 +37,7 @@ struct vclip {
   int16_t num_frames;
   std::vector<int16_t> frames; // bitmap indices
   float frame_time; // time (in seconds) of each frame
-  int flags;
+  uint32_t flags;
   uint8_t target_size; // what size this vclip should use (texture wise)
   uint8_t used;        // Is this vclip in use?
 };

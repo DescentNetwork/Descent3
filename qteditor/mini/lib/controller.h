@@ -152,7 +152,7 @@ struct ct_function {
 struct ct_packet {
   ct_format format; // format of value.
   float value;      // time value for buttons, absolute value for axis values
-  unsigned flags;   // additional information (see below)
+  uint32_t flags;   // additional information (see below)
 };
 
 typedef unsigned ct_config_data; // passed by controller system to the outside, and back to controller system

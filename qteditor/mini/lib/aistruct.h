@@ -528,7 +528,7 @@ struct goal_enabler {
     float float_value;
     float time;
     char movement_type;
-    int flags; // Flags that enable/disable this goal
+    ai_status_reg_t flags; // Status bits that enable/disable this goal
     float dist;
     int awareness;
   };
@@ -568,23 +568,51 @@ struct g_floats {
   float fp3;
 };
 
+// Wander region selection.  The all-zero value means "only the current mine",
+// which is why this is a small selection field rather than a general bitmask.
+struct [[gnu::packed]] g_wander_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 6 = 0;
+  uint8_t only_terrain : 1 = 0; // GWF_ONLY_TERRAIN
+  uint8_t only_mines : 1 = 0;   // GWF_ONLY_MINES
+#else
+  uint8_t only_mines : 1 = 0;   // GWF_ONLY_MINES
+  uint8_t only_terrain : 1 = 0; // GWF_ONLY_TERRAIN
+  uint8_t padding : 6 = 0;
+#endif
+};
+static_assert(sizeof(g_wander_flags_t) == sizeof(uint8_t));
+
 struct g_wander_extra {
   int avoid_handle;
-  char min_rooms;
-  char max_rooms;
-  char flags;
-  char mine_index; // Used for if this object accidently goes on to the terrain
+  uint8_t min_rooms;
+  uint8_t max_rooms;
+  g_wander_flags_t flags = {};
+  uint8_t mine_index; // Used for if this object accidently goes on to the terrain
 };
 
-#define GAF_ALIGNED 0x01
-#define GAF_SPHERE 0x02
-#define GAF_TEMP_CLEAR_AUTOLEVEL 0x04
-#define GAF_TEMP_CLEAR_ROBOT_COLLISIONS 0x08
-#define GAF_TEMP_POINT_COLLIDE_WALLS 0x10
+struct [[gnu::packed]] g_attach_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint16_t padding : 11 = 0;
+  uint16_t temp_point_collide_walls : 1 = 0;    // GAF_TEMP_POINT_COLLIDE_WALLS
+  uint16_t temp_clear_robot_collisions : 1 = 0; // GAF_TEMP_CLEAR_ROBOT_COLLISIONS
+  uint16_t temp_clear_autolevel : 1 = 0;        // GAF_TEMP_CLEAR_AUTOLEVEL
+  uint16_t sphere : 1 = 0;                      // GAF_SPHERE
+  uint16_t aligned : 1 = 0;                     // GAF_ALIGNED
+#else
+  uint16_t aligned : 1 = 0;                     // GAF_ALIGNED
+  uint16_t sphere : 1 = 0;                      // GAF_SPHERE
+  uint16_t temp_clear_autolevel : 1 = 0;        // GAF_TEMP_CLEAR_AUTOLEVEL
+  uint16_t temp_clear_robot_collisions : 1 = 0; // GAF_TEMP_CLEAR_ROBOT_COLLISIONS
+  uint16_t temp_point_collide_walls : 1 = 0;    // GAF_TEMP_POINT_COLLIDE_WALLS
+  uint16_t padding : 11 = 0;
+#endif
+};
+static_assert(sizeof(g_attach_flags_t) == sizeof(uint16_t));
 
 struct g_attach {
   float rad;
-  int16_t flags;
+  g_attach_flags_t flags = {};
   char parent_ap;
   char child_ap;
 };
@@ -655,7 +683,7 @@ struct goal {
   float last_see_target_time;
   float next_target_update_time;
 
-  int flags;
+  uint32_t flags;
   int guid; // Designer assigned
 
   int goal_uid; // used by the AI system for paths
@@ -796,8 +824,8 @@ struct ai_frame {
 
   ai_status_reg_t status_reg;
 
-  int flags;
-  int notify_flags; // Agent is only notified of some event types
+  uint32_t flags;
+  uint32_t notify_flags; // Agent is only notified of some event types
 
   // Normalized movement and facing information
   vector3 movement_dir;

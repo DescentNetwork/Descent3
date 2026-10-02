@@ -29,16 +29,28 @@
 #define BAD_LM_INDEX 65535
 
 // lightmap flags
-#define LF_CHANGED 1   // this bitmap has changed since last frame (useful for hardware cacheing)
-#define LF_LIMITS 2    // This lightmap has a specific area that has changed since last frame
-#define LF_WRAP 4      // This lightmap should be drawn with wrapping (not clamping)
-#define LF_BRAND_NEW 8 // This lightmap is brand new and hasn't been to the video card yet
+struct [[gnu::packed]] lightmap_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 4 = 0;
+  uint8_t brand_new : 1 = 0; // This lightmap is brand new and hasn't been to the video card yet
+  uint8_t wrap : 1 = 0;      // This lightmap should be drawn with wrapping (not clamping)
+  uint8_t limits : 1 = 0;    // This lightmap has a specific area that has changed since last frame
+  uint8_t changed : 1 = 0;   // this bitmap has changed since last frame (useful for hardware cacheing)
+#else
+  uint8_t changed : 1 = 0;   // this bitmap has changed since last frame (useful for hardware cacheing)
+  uint8_t limits : 1 = 0;    // This lightmap has a specific area that has changed since last frame
+  uint8_t wrap : 1 = 0;      // This lightmap should be drawn with wrapping (not clamping)
+  uint8_t brand_new : 1 = 0; // This lightmap is brand new and hasn't been to the video card yet
+  uint8_t padding : 4 = 0;
+#endif
+};
+static_assert(sizeof(lightmap_flags_t) == sizeof(uint8_t));
 
 struct bms_lightmap {
   uint8_t width, height; // Width and height in pixels
   std::vector<std::vector<uint16_t>> data; // height rows, each width 16bit texels wide
 
-  uint8_t flags;
+  lightmap_flags_t flags = {};
   int16_t cache_slot;         // for the renderers use
   uint8_t square_res;         // for renderers use
   uint8_t cx1, cy1, cx2, cy2; // Change x and y coords

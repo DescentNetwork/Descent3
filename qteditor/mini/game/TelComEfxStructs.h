@@ -377,7 +377,7 @@ struct TCPOLYDESC {
   // orientation
   float ori_x, ori_y, ori_z;
   // flags to use
-  int flags;
+  uint32_t flags;
   // how long to wait until effect starts
   float waittime;
   // polymodel name

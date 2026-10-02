@@ -462,13 +462,13 @@ struct sound_info {
 #define ENV3DVALF_GEOMETRY 2
 
 struct t3dEnvironmentValues {
-  int flags; // use flags above
+  uint32_t flags; // use flags above
 
   float doppler_scalar; // values from 0.0f to ???? (1.0f = normal)
 };
 
 struct t3dEnvironmentToggles {
-  int flags;     // use flags above
+  uint32_t flags;     // use flags above
   int supported; // returns flag values to inform caller of supported features (doppler, ie.)
 
   bool doppler;  // state of doppler effects

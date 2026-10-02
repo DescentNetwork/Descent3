@@ -227,6 +227,8 @@ bool EBNode_VerifyGraph();
 #include "level_loader.h"
 #include "lightmap.h"
 #include "lightmap_info.h"
+#include "aistruct.h"
+#include "viseffect_external.h"
 #include "d3edit.h"
 
 static constexpr double kPi = 3.14159265358979323846;
@@ -1495,6 +1497,116 @@ private slots:
     RoomsReset();
     Triggers.clear();
     DestroyAllMatcens();
+  }
+
+  void testMatcenLifecycleApi() {
+    DestroyAllMatcens();
+    QVERIFY(Matcen.empty());
+
+    // CreateMatcen appends and reports the new index; names are unique.
+    bool changed = true;
+    const int a = CreateMatcen("Alpha", changed);
+    QCOMPARE(a, 0);
+    QVERIFY(!changed);
+    const int b = CreateMatcen("Beta", changed);
+    QCOMPARE(b, 1);
+    QCOMPARE(static_cast<size_t>(2), Matcen.size());
+
+    // A name that is too long is reported via f_name_changed.
+    changed = false;
+    const std::string too_long(MAX_MATCEN_NAME_LEN + 1, 'x');
+    const int c = CreateMatcen(too_long, changed);
+    QVERIFY(c >= 0);
+    QVERIFY(changed);
+
+    QVERIFY(MatcenValid(a));
+    QVERIFY(MatcenValid(b));
+    QVERIFY(!MatcenValid(-1));
+    QVERIFY(!MatcenValid(static_cast<int>(Matcen.size())));
+
+    // Lookups are case-insensitive and report MATCEN_ERROR when absent.
+    QCOMPARE(FindMatcenIndex("Alpha"), 0);
+    QCOMPARE(FindMatcenIndex("alpha"), 0);
+    QCOMPARE(FindMatcenIndex("Beta"), 1);
+    QCOMPARE(FindMatcenIndex("Gamma"), MATCEN_ERROR);
+
+    // InitMatcensForLevel resets state but keeps the table.
+    const size_t before = Matcen.size();
+    InitMatcensForLevel();
+    QCOMPARE(Matcen.size(), before);
+
+    // DestroyMatcen(id, resort=true) removes the slot and shifts the tail.
+    DestroyMatcen(0, true);
+    QCOMPARE(static_cast<size_t>(before - 1), Matcen.size());
+    QCOMPARE(Matcen[0].GetName(), std::string("Beta"));
+    QVERIFY(!MatcenValid(static_cast<int32_t>(Matcen.size())));
+
+    // Out-of-range ids are ignored.
+    DestroyMatcen(-1, true);
+    DestroyMatcen(static_cast<int32_t>(Matcen.size()), true);
+    QCOMPARE(Matcen.size(), before - 1);
+
+    // The table caps at MAX_MATCENS.
+    DestroyAllMatcens();
+    for (int i = 0; i < MAX_MATCENS; i++)
+      QVERIFY(CreateMatcen("m" + std::to_string(i), changed) == i);
+    QCOMPARE(CreateMatcen("overflow", changed), MATCEN_ERROR);
+
+    // InitMatcens clears everything.
+    InitMatcens();
+    QVERIFY(Matcen.empty());
+  }
+
+  void testBitFlagStructs() {
+    // Every converted flags type must keep the exact size of the integer it
+    // replaced so existing serialization/script reinterpret_casts stay valid.
+    static_assert(sizeof(lightmap_flags_t) == sizeof(uint8_t));
+    static_assert(sizeof(vis_effect_flags_t) == sizeof(uint16_t));
+    static_assert(sizeof(g_wander_flags_t) == sizeof(uint8_t));
+    static_assert(sizeof(g_attach_flags_t) == sizeof(uint16_t));
+    static_assert(sizeof(ai_status_reg_t) == sizeof(uint32_t));
+
+    lightmap_flags_t lm{};
+    QCOMPARE(reinterpret_cast<uint8_t &>(lm), static_cast<uint8_t>(0));
+    lm.changed = true;
+    lm.limits = true;
+    QCOMPARE(reinterpret_cast<uint8_t &>(lm), static_cast<uint8_t>(3));
+    lm.limits = false;
+    QCOMPARE(reinterpret_cast<uint8_t &>(lm), static_cast<uint8_t>(1));
+
+    vis_effect_flags_t vf{};
+    QCOMPARE(reinterpret_cast<uint16_t &>(vf), static_cast<uint16_t>(0));
+    vf.uses_lifeleft = true;
+    vf.dead = true;
+    QCOMPARE(reinterpret_cast<uint16_t &>(vf), static_cast<uint16_t>(1 | 4));
+    vf.dead = false;
+    QCOMPARE(reinterpret_cast<uint16_t &>(vf), static_cast<uint16_t>(1));
+
+    // g_wander: all-zero means "current mine"; the two bits are independent.
+    g_wander_flags_t gw{};
+    QCOMPARE(reinterpret_cast<uint8_t &>(gw), static_cast<uint8_t>(0));
+    gw.only_mines = true;
+    QCOMPARE(reinterpret_cast<uint8_t &>(gw), static_cast<uint8_t>(1));
+    gw.only_mines = false;
+    gw.only_terrain = true;
+    QCOMPARE(reinterpret_cast<uint8_t &>(gw), static_cast<uint8_t>(2));
+
+    g_attach_flags_t ga{};
+    QCOMPARE(reinterpret_cast<uint16_t &>(ga), static_cast<uint16_t>(0));
+    ga.aligned = true;
+    ga.sphere = true;
+    QCOMPARE(reinterpret_cast<uint16_t &>(ga), static_cast<uint16_t>(1 | 2));
+    ga.temp_clear_autolevel = true;
+    ga.temp_clear_robot_collisions = true;
+    ga.temp_point_collide_walls = true;
+    QCOMPARE(reinterpret_cast<uint16_t &>(ga), static_cast<uint16_t>(0x1F));
+
+    // goal_enabler::flags reuses the AI status register bits.
+    goal_enabler en{};
+    QCOMPARE(reinterpret_cast<uint32_t &>(en.flags), static_cast<uint32_t>(0));
+    en.flags.fleeing = true;
+    en.flags.sees_goal = true;
+    QCOMPARE(reinterpret_cast<uint32_t &>(en.flags), static_cast<uint32_t>(0x41));
   }
 
   void testLevelGoalsChunkRoundTrip()

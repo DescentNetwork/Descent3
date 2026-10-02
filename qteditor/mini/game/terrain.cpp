@@ -983,7 +983,7 @@ void InitTerrain(void) {
   for (i = 0; i < 4; i++) {
     TerrainLightmaps[i] = static_cast<int>(lm_AllocLightmap(128, 128).value_or(BAD_LM_INDEX));
     Q_ASSERT(TerrainLightmaps[i] != BAD_LM_INDEX);
-    GameLightmaps[TerrainLightmaps[i]].flags |= LF_WRAP;
+    GameLightmaps[TerrainLightmaps[i]].flags.wrap = true;
   }
   terrain_lightmaps_created = true;
 
@@ -1015,7 +1015,7 @@ void InitTerrain(void) {
 void UpdateSingleTerrainLightmap(int which) {
   int i, t;
 
-  GameLightmaps[TerrainLightmaps[which]].flags |= LF_CHANGED;
+  GameLightmaps[TerrainLightmaps[which]].flags.changed = true;
 
   int sx = (which % 2) * 128;
   int sz = (which / 2) * 128;
@@ -1107,8 +1107,8 @@ void UpdateTerrainLightmaps() {
   }
 
   for (i = 0; i < 4; i++) {
-    GameLightmaps[TerrainLightmaps[i]].flags |= LF_CHANGED;
-    GameLightmaps[TerrainLightmaps[i]].flags &= ~LF_LIMITS;
+    GameLightmaps[TerrainLightmaps[i]].flags.changed = true;
+    GameLightmaps[TerrainLightmaps[i]].flags.limits = false;
   }
 }
 

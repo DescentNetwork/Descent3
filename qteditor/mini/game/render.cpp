@@ -3117,7 +3117,7 @@ void RenderRoomObjects(int roomnum) {
   // Add vis effects to sort list
   for (visnum = rp->vis_effects; (visnum != -1) && (n_objs < MAX_OBJECTS_PER_ROOM); visnum = VisEffects[visnum].next) {
     Q_ASSERT(visnum != VisEffects[visnum].next);
-    if (VisEffects[visnum].type == VIS_NONE || VisEffects[visnum].flags & VF_DEAD)
+    if (VisEffects[visnum].type == VIS_NONE || VisEffects[visnum].flags.dead)
       continue;
 
     bool pointIsVisible = IsPointVisible(&VisEffects[visnum].pos, VisEffects[visnum].size, &zdist) ? true : false;
@@ -3262,7 +3262,7 @@ void CheckToRenderMineObjects(int roomnum) {
     }
     // Now do viseffects
     for (index = Rooms[roomnum].vis_effects; index != -1; index = VisEffects[index].next) {
-      if (VisEffects[index].type == VIS_NONE || VisEffects[index].flags & VF_DEAD)
+      if (VisEffects[index].type == VIS_NONE || VisEffects[index].flags.dead)
         continue;
 
       if (IsPointVisible(&VisEffects[index].pos, VisEffects[index].size, &zdist)) {

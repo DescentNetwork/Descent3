@@ -379,7 +379,8 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
       if (lmi_ptr->y1 + start_y + height > GameLightmaps[lm_handle].cy2)
         GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
 
-      GameLightmaps[lm_handle].flags |= (LF_CHANGED | LF_LIMITS);
+      GameLightmaps[lm_handle].flags.changed = true;
+      GameLightmaps[lm_handle].flags.limits = true;
 
       if (!(Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))) {
         lmilist[num_spoken_for] = fp->lmi_handle;
@@ -411,7 +412,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
       // Mark it as changed
       lmi_ptr->dynamic = static_cast<uint16_t>(*dynamic_handle);
 
-      if (!(GameLightmaps[lm_handle].flags & LF_LIMITS)) {
+      if (!GameLightmaps[lm_handle].flags.limits) {
         GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
         GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
         GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
@@ -428,7 +429,8 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
           GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
       }
 
-      GameLightmaps[lm_handle].flags |= (LF_LIMITS | LF_CHANGED);
+      GameLightmaps[lm_handle].flags.changed = true;
+      GameLightmaps[lm_handle].flags.limits = true;
 
       Dynamic_face_list.push_back(dynamic_face{fp->lmi_handle});
 
@@ -709,7 +711,8 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
       if (lmi_ptr->y1 + start_y + height > GameLightmaps[lm_handle].cy2)
         GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
 
-      GameLightmaps[lm_handle].flags |= (LF_CHANGED | LF_LIMITS);
+      GameLightmaps[lm_handle].flags.changed = true;
+      GameLightmaps[lm_handle].flags.limits = true;
 
       if (!(Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))) {
         lmilist[num_spoken_for] = fp->lmi_handle;
@@ -743,7 +746,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
       // Mark it as changed
       lmi_ptr->dynamic = static_cast<uint16_t>(*dynamic_handle);
 
-      if (!(GameLightmaps[lm_handle].flags & LF_LIMITS)) {
+      if (!GameLightmaps[lm_handle].flags.limits) {
         GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
         GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
         GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
@@ -760,7 +763,8 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
           GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
       }
 
-      GameLightmaps[lm_handle].flags |= (LF_LIMITS | LF_CHANGED);
+      GameLightmaps[lm_handle].flags.changed = true;
+      GameLightmaps[lm_handle].flags.limits = true;
 
       Dynamic_face_list.push_back(dynamic_face{fp->lmi_handle});
 
@@ -1147,7 +1151,8 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
       if (lmi_ptr->y1 + start_y + height > GameLightmaps[lm_handle].cy2)
         GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
 
-      GameLightmaps[lm_handle].flags |= (LF_CHANGED | LF_LIMITS);
+      GameLightmaps[lm_handle].flags.changed = true;
+      GameLightmaps[lm_handle].flags.limits = true;
 
       if (!(Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))) {
         lmilist[num_spoken_for] = fp->lmi_handle;
@@ -1179,7 +1184,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
       // Mark it as changed
       lmi_ptr->dynamic = static_cast<uint16_t>(*dynamic_handle);
 
-      if (!(GameLightmaps[lm_handle].flags & LF_LIMITS)) {
+      if (!GameLightmaps[lm_handle].flags.limits) {
         GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
         GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
         GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
@@ -1196,7 +1201,8 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
           GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
       }
 
-      GameLightmaps[lm_handle].flags |= (LF_LIMITS | LF_CHANGED);
+      GameLightmaps[lm_handle].flags.changed = true;
+      GameLightmaps[lm_handle].flags.limits = true;
 
       Dynamic_face_list.push_back(dynamic_face{fp->lmi_handle});
 
@@ -1349,7 +1355,8 @@ void ClearDynamicLightmaps() {
       }
     }
 
-    GameLightmaps[lm_handle].flags |= (LF_LIMITS | LF_CHANGED);
+    GameLightmaps[lm_handle].flags.changed = true;
+    GameLightmaps[lm_handle].flags.limits = true;
     LightmapInfo[lmi_handle].dynamic = BAD_LMI_INDEX;
   }
 
@@ -1378,7 +1385,8 @@ void ClearDynamicLightmaps() {
 
     data[subz][subx] = color;
 
-    GameLightmaps[whichmap].flags |= (LF_LIMITS | LF_CHANGED);
+    GameLightmaps[whichmap].flags.changed = true;
+    GameLightmaps[whichmap].flags.limits = true;
   }
 
   Dynamic_cell_list.clear();
@@ -1464,7 +1472,7 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
       Dynamic_cell_list.push_back(dynamic_cell{static_cast<uint16_t>(cellnum), tseg->r, tseg->g, tseg->b});
       tseg->flags.dynamic = 1;
 
-      if (GameLightmaps[whichmap].flags & LF_LIMITS) {
+      if (GameLightmaps[whichmap].flags.limits) {
         if (subx < GameLightmaps[whichmap].cx1)
           GameLightmaps[whichmap].cx1 = subx;
         if (subx > GameLightmaps[whichmap].cx2)
@@ -1480,7 +1488,8 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
         GameLightmaps[whichmap].cx2 = subx + 1;
         GameLightmaps[whichmap].cy1 = subz;
         GameLightmaps[whichmap].cy2 = subz + 1;
-        GameLightmaps[whichmap].flags |= (LF_LIMITS | LF_CHANGED);
+        GameLightmaps[whichmap].flags.changed = true;
+        GameLightmaps[whichmap].flags.limits = true;
       }
     }
 
@@ -1608,8 +1617,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
                 return 1;// already done for this face
         }
 
-        GameLightmaps[lm_handle].flags|=LF_CHANGED;
-
+        GameLightmaps[lm_handle].flags.changed = true;
         vector3 element_vec;
 
         // Choose material
@@ -1772,8 +1780,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         }
 
 
-        GameLightmaps[lm_handle].flags|=LF_CHANGED;
-
+        GameLightmaps[lm_handle].flags.changed = true;
         // Rotate the base_vector, the eyepoint, face normal and the lightsource into the Z plane
         vector3 tempvec,eye_pos,light_pos[4];
         vector3 norm;
@@ -2055,7 +2062,7 @@ void DestroyLight(int roomnum, int facenum) {
 
     int lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
 
-    if (!(GameLightmaps[lm_handle].flags & LF_LIMITS)) {
+    if (!GameLightmaps[lm_handle].flags.limits) {
       GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
       GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
       GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
@@ -2072,7 +2079,8 @@ void DestroyLight(int roomnum, int facenum) {
         GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
     }
 
-    GameLightmaps[lm_handle].flags |= (LF_LIMITS | LF_CHANGED);
+    GameLightmaps[lm_handle].flags.changed = true;
+    GameLightmaps[lm_handle].flags.limits = true;
 
     lmilist[num_spoken_for] = fp->lmi_handle;
     Lmi_spoken_for[fp->lmi_handle / 8] |= (1 << (fp->lmi_handle % 8));
