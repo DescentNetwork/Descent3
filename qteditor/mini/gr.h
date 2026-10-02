@@ -107,6 +107,7 @@
 #include "logger/log.h"
 #include "Ddgr.h"
 #include "fix.h"
+#include "grtext.h"
 #include <string>
 
 class grMemorySurface;
@@ -152,7 +153,7 @@ const int MAX_FONTS = 16, MAX_FONT_BITMAPS = 12;
 
 struct gr_font_file_record {
   int16_t width, height;      // width of widest character and height of longest char
-  uint16_t flags;             // flags used by the character renderer
+  font_file_flags_t flags;     // flags used by the character renderer
   int16_t baseline;           // pixels given to lowercase below script line start at baseline
   uint8_t min_ascii;          // minimum ascii value used by font
   uint8_t max_ascii;          // max ascii value used by the font

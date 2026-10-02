@@ -296,11 +296,30 @@ struct tFontFileInfo {
   float brightness; // this IS NOT in the file, but a part of the baseline element. (upper 8bits)
 };
 
-#define FT_COLOR 1
-#define FT_PROPORTIONAL 2
-#define FT_KERNED 4
-#define FT_GRADIENT 8
-#define FT_FMT4444 16
-#define FT_FFI2 32 // all fonts made after D3 should have this flag set.
+// Font file flags (shared by gr_font_file_record and tFontFileInfo)
+struct [[gnu::packed]] font_file_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint16_t padding : 8;
+  uint16_t uppercase : 1; // FT_UPPERCASE (128)
+  uint16_t undefined_6 : 1;
+  uint16_t ffi2 : 1;      // FT_FFI2 (32)  all fonts made after D3 should have this flag set.
+  uint16_t fmt4444 : 1;   // FT_FMT4444 (16)
+  uint16_t gradient : 1;  // FT_GRADIENT (8)
+  uint16_t kerned : 1;    // FT_KERNED (4)
+  uint16_t proportional : 1; // FT_PROPORTIONAL (2)
+  uint16_t color : 1;     // FT_COLOR (1)
+#else
+  uint16_t color : 1;        // FT_COLOR (1)
+  uint16_t proportional : 1; // FT_PROPORTIONAL (2)
+  uint16_t kerned : 1;       // FT_KERNED (4)
+  uint16_t gradient : 1;     // FT_GRADIENT (8)
+  uint16_t fmt4444 : 1;      // FT_FMT4444 (16)
+  uint16_t ffi2 : 1;         // FT_FFI2 (32) all fonts made after D3 should have this flag set.
+  uint16_t undefined_6 : 1;
+  uint16_t uppercase : 1;    // FT_UPPERCASE (128)
+  uint16_t padding : 8;
+#endif
+};
+static_assert(sizeof(font_file_flags_t) == sizeof(uint16_t));
 
 #endif
