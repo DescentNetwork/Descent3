@@ -358,6 +358,27 @@ struct effect_info_s {
 
 };
 
+// custom_anim::flags.  The engine assigns custom_anim::flags straight into
+// polyobj_info::anim_flags, so it carries the AIAF_* animation flags.
+struct [[gnu::packed]] custom_anim_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 3;
+  uint8_t immediate : 1; // AIAF_IMMEDIATE (16) Force to not tile and set immediately
+  uint8_t use_speed : 1; // AIAF_USE_SPEED (8)
+  uint8_t update_wbs : 1; // AIAF_UPDATE_WBS (4)
+  uint8_t notify : 1;     // AIAF_NOTIFY (2)
+  uint8_t looping : 1;    // AIAF_LOOPING (1)
+#else
+  uint8_t looping : 1;    // AIAF_LOOPING (1)
+  uint8_t notify : 1;     // AIAF_NOTIFY (2)
+  uint8_t update_wbs : 1; // AIAF_UPDATE_WBS (4)
+  uint8_t use_speed : 1;  // AIAF_USE_SPEED (8)
+  uint8_t immediate : 1;  // AIAF_IMMEDIATE (16) Force to not tile and set immediately
+  uint8_t padding : 3;
+#endif
+};
+static_assert(sizeof(custom_anim_flags_t) == sizeof(uint8_t));
+
 // Describes the next animation state for a robot
 struct custom_anim {
   float server_time;
@@ -369,7 +390,7 @@ struct custom_anim {
   float max_speed;
 
   int16_t anim_sound_index;
-  uint8_t flags;
+  custom_anim_flags_t flags;
   int8_t next_anim_type;
 };
 
