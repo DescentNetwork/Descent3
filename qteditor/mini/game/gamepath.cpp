@@ -68,7 +68,7 @@ int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3
   node &newnode_ref = GamePaths[pathnum].pathnodes[nodenum + 1];
   newnode_ref.pos = pos;
   newnode_ref.roomnum = roomnum;
-  newnode_ref.flags = flags;
+  reinterpret_cast<uint32_t &>(newnode_ref.flags) = static_cast<uint32_t>(flags);
   newnode_ref.fvec = orient.fvec;
   newnode_ref.uvec = orient.uvec;
   GamePaths[pathnum].num_nodes++;

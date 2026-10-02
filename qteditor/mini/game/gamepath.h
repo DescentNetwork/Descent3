@@ -54,10 +54,22 @@
 #define MAX_GAME_PATHS 300
 #define MAX_NODES_PER_PATH 100
 
+// Game-path node flags.  No bits are currently defined; the field is reserved
+// and only ever stores the value passed to InsertNodeIntoPath (callers pass 0),
+// but it is serialized in the PATH chunk so its reserved bits are preserved.
+struct [[gnu::packed]] node_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 32; // Unused padding to complete 32 bits
+#else
+  uint32_t padding : 32; // Unused padding to complete 32 bits
+#endif
+};
+static_assert(sizeof(node_flags_t) == sizeof(uint32_t));
+
 struct node {
   vector3 pos;  // where this node is in the world
   int roomnum; // what room?
-  uint32_t flags;   // if this point lives over the terrain, etc
+  node_flags_t flags;   // if this point lives over the terrain, etc
   vector3 fvec;
   vector3 uvec;
 };

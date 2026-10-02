@@ -1127,7 +1127,7 @@ static void LL_ReadGamePathsChunk(posix_istream &ifile, uint32_t version) {
       node &nd = p.pathnodes[j];
       ifile >> nd.pos;
       ifile >> nd.roomnum;
-      ifile >> nd.flags;
+      ifile >> reinterpret_cast<uint32_t &>(nd.flags);
       if (version >= 51) {
         ifile >> nd.fvec;
         ifile >> nd.uvec;
@@ -1160,7 +1160,7 @@ static void LL_WriteGamePathsChunk(posix_ostream &ofile) {
       const node &nd = p.pathnodes[j];
       ofile << nd.pos;
       ofile << nd.roomnum;
-      ofile << nd.flags;
+      ofile << reinterpret_cast<const uint32_t &>(nd.flags);
       ofile << nd.fvec;
       ofile << nd.uvec;
     }
