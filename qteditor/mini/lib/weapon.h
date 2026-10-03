@@ -373,17 +373,17 @@ extern const int Static_weapon_ckpt_names[][2];
 // Sets all weapons to unused
 void InitWeapons();
 
-// Allocs a weapon for use, returns -1 if error, else index on success
-int AllocWeapon();
+// Allocs a weapon for use, returns std::nullopt if error, else index on success
+std::optional<uint32_t> AllocWeapon();
 
 // Frees weapon index n
-void FreeWeapon(int n);
+void FreeWeapon(uint32_t n);
 
 // Gets next weapon from n that has actually been alloced
-int GetNextWeapon(int n);
+std::optional<uint32_t> GetNextWeapon(uint32_t n);
 
 // Gets previous weapon from n that has actually been alloced
-int GetPrevWeapon(int n);
+std::optional<uint32_t> GetPrevWeapon(uint32_t n);
 
 // Searches thru all weapons for a specific name, returns -1 if not found
 // or index of weapon with name

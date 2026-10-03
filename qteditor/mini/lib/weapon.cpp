@@ -128,18 +128,18 @@ bool ObjectsAreRelated(int o1, int o2) {
 // ============================================================================
 
 // Allocs a weapon for use, returns -1 if error, else index on success
-int AllocWeapon() {
+std::optional<uint32_t> AllocWeapon() {
   const size_t n = Weapons.next_slot();
   Q_ASSERT(Weapons.is_unused(n));
 
   Weapons[n] = weapon{};
 
   Weapons.acquire(n);
-  return static_cast<int>(n);
+  return static_cast<uint32_t>(n);
 }
 
 // Frees weapon index n and all associated images
-void FreeWeapon(int n) {
+void FreeWeapon(uint32_t n) {
   Q_ASSERT(Weapons.is_used(n));
 
   Weapons[n] = weapon{};
@@ -147,17 +147,11 @@ void FreeWeapon(int n) {
 }
 
 // Gets next weapon from n that has actually been alloced
-int GetNextWeapon(int n) {
-  if (Weapons.empty())
-    return -1;
-  Q_ASSERT(n >= 0 && n < static_cast<int>(Weapons.size()));
-  return static_cast<int>(Weapons.next(static_cast<size_t>(n)).value_or(-1));
+std::optional<uint32_t> GetNextWeapon(uint32_t n) {
+  return Weapons.next(n);
 }
 
 // Gets previous weapon from n that has actually been alloced
-int GetPrevWeapon(int n) {
-  if (Weapons.empty())
-    return -1;
-  Q_ASSERT(n >= 0 && n < static_cast<int>(Weapons.size()));
-  return static_cast<int>(Weapons.prev(static_cast<size_t>(n)).value_or(-1));
+std::optional<uint32_t> GetPrevWeapon(uint32_t n) {
+  return Weapons.prev(n);
 }

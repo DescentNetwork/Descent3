@@ -2307,6 +2307,55 @@ private slots:
   // The Doors table is a d3::slotvec_t whose use/reference state lives in the
   // slotvec itself (the former "used" flag was removed from the door struct),
   // exposed through AllocDoor/FreeDoor/GetNextDoor/GetPrevDoor/FindDoorName.
+  void testWeaponSlotvecAccounting()
+  {
+    const d3::slotvec_t<weapon> saved_weapons = Weapons;
+
+    Weapons.clear();
+    QVERIFY(Weapons.empty());
+    QVERIFY(!GetNextWeapon(0));
+    QVERIFY(!GetPrevWeapon(0));
+
+    const std::optional<uint32_t> w0 = AllocWeapon();
+    const std::optional<uint32_t> w1 = AllocWeapon();
+    const std::optional<uint32_t> w2 = AllocWeapon();
+    QCOMPARE(*w0, 0u);
+    QCOMPARE(*w1, 1u);
+    QCOMPARE(*w2, 2u);
+    QCOMPARE(static_cast<int>(Weapons.size()), 3);
+    QVERIFY(Weapons.is_full());
+    QVERIFY(Weapons[0].name.empty());
+
+    // Cyclic traversal across every used slot.
+    QCOMPARE(*GetNextWeapon(0), 1u);
+    QCOMPARE(*GetNextWeapon(2), 0u); // wraps
+    QCOMPARE(*GetPrevWeapon(0), 2u); // wraps
+    QCOMPARE(*GetPrevWeapon(2), 1u);
+
+    // Freeing unuses the slot without shrinking; traversal skips it.
+    FreeWeapon(1);
+    QCOMPARE(static_cast<int>(Weapons.size()), 3);
+    QVERIFY(Weapons.is_unused(1));
+    QCOMPARE(*GetNextWeapon(0), 2u);
+
+    // The freed slot is reused by the next allocation.
+    QCOMPARE(*AllocWeapon(), 1u);
+    QCOMPARE(static_cast<int>(Weapons.size()), 3);
+
+    // FindWeaponName matches case-insensitively and only reports used slots.
+    Weapons[0].name = "Concussion";
+    QCOMPARE(*FindWeaponName("concussion"), 0u);
+    QVERIFY(!FindWeaponName("missing"));
+
+    FreeWeapon(0);
+    FreeWeapon(1);
+    FreeWeapon(2);
+    QVERIFY(!GetNextWeapon(0));
+    QVERIFY(!GetPrevWeapon(2));
+
+    Weapons = saved_weapons;
+  }
+
   void testShipSlotvecAccounting()
   {
     const d3::slotvec_t<ship> saved_ships = Ships;
