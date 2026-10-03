@@ -136,7 +136,8 @@ void WorldObjectsPlayerDialog::updateDialog() {
     return;
 
   if (Ships.is_unused(app.current_ship))
-    app.current_ship = GetNextShip(app.current_ship);
+    if (const std::optional<uint32_t> next = GetNextShip(static_cast<uint32_t>(app.current_ship)))
+      app.current_ship = static_cast<int>(*next);
 
   if (auto s = data())
   {
@@ -227,7 +228,7 @@ void WorldObjectsPlayerDialog::onAddPship() {
     return;
   }
 
-  int ship_handle = AllocShip();
+  const std::optional<uint32_t> ship_handle = AllocShip();
   int c = 1;
   bool finding_name = true;
   std::string cur_name;
@@ -236,27 +237,27 @@ void WorldObjectsPlayerDialog::onAddPship() {
       cur_name = fname;
     else
       cur_name = fname + std::to_string(c);
-    if (FindShipName(cur_name) != -1)
+    if (FindShipName(cur_name))
       c++;
     else
       finding_name = false;
   }
 
-  Ships[ship_handle].name = cur_name;
-  Ships[ship_handle].model_handle = img_handle;
+  Ships[*ship_handle].name = cur_name;
+  Ships[*ship_handle].model_handle = img_handle;
 
-  std::filesystem::path destname = LocalModelsDir / Poly_models[Ships[ship_handle].model_handle].name;
+  std::filesystem::path destname = LocalModelsDir / Poly_models[Ships[*ship_handle].model_handle].name;
   std::filesystem::copy(pathFs, (destname), std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(cur_name, PAGETYPE_SHIP);
-  app.current_ship = ship_handle;
+  app.current_ship = static_cast<int>(*ship_handle);
   RemapShips();
   updateDialog();
 }
 
 void WorldObjectsPlayerDialog::onPshipDelete() {
   if (auto s = data()) {
-    const int n = app.current_ship;
+    const uint32_t n = static_cast<uint32_t>(app.current_ship);
     const std::optional<uint32_t> tl = mng_FindTrackLock(s->name, PAGETYPE_SHIP);
     if (!tl) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This ship is not yours to delete.  Lock first.");
@@ -284,7 +285,8 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
       mng_DeletePagelock(s->name, PAGETYPE_SHIP);
     }
 
-    app.current_ship = GetNextShip(n);
+    if (const std::optional<uint32_t> next = GetNextShip(n))
+      app.current_ship = static_cast<int>(*next);
     if (s->model_handle >= 0 && s->model_handle < MAX_POLY_MODELS && Poly_models[s->model_handle].used)
       FreePolyModel(s->model_handle);
     if (s->dying_model_handle != -1)
@@ -428,22 +430,24 @@ void WorldObjectsPlayerDialog::onPshipsOut() {
 }
 
 void WorldObjectsPlayerDialog::onPshipNext() {
-  app.current_ship = GetNextShip(app.current_ship);
+  if (const std::optional<uint32_t> next = GetNextShip(static_cast<uint32_t>(app.current_ship)))
+    app.current_ship = static_cast<int>(*next);
   m_lod = 0;
   updateDialog();
 }
 
 void WorldObjectsPlayerDialog::onPshipPrev() {
-  app.current_ship = GetPrevShip(app.current_ship);
+  if (const std::optional<uint32_t> prev = GetPrevShip(static_cast<uint32_t>(app.current_ship)))
+    app.current_ship = static_cast<int>(*prev);
   m_lod = 0;
   updateDialog();
 }
 
 void WorldObjectsPlayerDialog::onPshipPulldownChanged() {
-  const int i = FindShipName(ui->IDC_PSHIP_PULLDOWN->currentText().toStdString());
-  if (i != -1)
+  const std::optional<uint32_t> i = FindShipName(ui->IDC_PSHIP_PULLDOWN->currentText().toStdString());
+  if (i)
   {
-    app.current_ship = i;
+    app.current_ship = static_cast<int>(*i);
     updateDialog();
   }
 }
@@ -566,7 +570,7 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
     }
 
     std::string name = ui->IDC_PSHIP_NAME_EDIT->text().toStdString();
-    if (FindShipName(name) != -1) {
+    if (FindShipName(name)) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There already is a ship with that name...choose another name.");
       ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(s->name));
       return;

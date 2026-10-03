@@ -212,21 +212,21 @@ extern const char *AllowedShips[];
 // Sets all ships to unused
 void InitShips();
 
-// Allocs a ship for use, returns -1 if error, else index on success
-int AllocShip();
+// Allocs a ship for use, returns std::nullopt if error, else index on success
+std::optional<uint32_t> AllocShip();
 
 // Frees ship index n
-void FreeShip(int n);
+void FreeShip(uint32_t n);
 
 // Gets next ship from n that has actually been alloced
-int GetNextShip(int n);
+std::optional<uint32_t> GetNextShip(uint32_t n);
 
 // Gets previous ship from n that has actually been alloced
-int GetPrevShip(int n);
+std::optional<uint32_t> GetPrevShip(uint32_t n);
 
-// Searches thru all ships for a specific name, returns -1 if not found
-// or index of ship with name
-int FindShipName(const std::string &name);
+// Searches thru all ships for a specific name, returns std::nullopt if not
+// found or index of ship with name
+std::optional<uint32_t> FindShipName(const std::string &name);
 
 // Given a filename, loads either the model or vclip found in that file.  If type
 // is not NULL, sets it to 1 if file is model, otherwise sets it to zero

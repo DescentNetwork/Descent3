@@ -2307,6 +2307,71 @@ private slots:
   // The Doors table is a d3::slotvec_t whose use/reference state lives in the
   // slotvec itself (the former "used" flag was removed from the door struct),
   // exposed through AllocDoor/FreeDoor/GetNextDoor/GetPrevDoor/FindDoorName.
+  void testShipSlotvecAccounting()
+  {
+    const d3::slotvec_t<ship> saved_ships = Ships;
+
+    Ships.clear();
+    QVERIFY(Ships.empty());
+    QVERIFY(!GetNextShip(0));
+    QVERIFY(!GetPrevShip(0));
+
+    // Allocating appends used slots.
+    const std::optional<uint32_t> s0 = AllocShip();
+    QVERIFY(s0.has_value());
+    QCOMPARE(*s0, 0u);
+    QCOMPARE(static_cast<int>(Ships.size()), 1);
+    QVERIFY(Ships.is_used(0));
+
+    const std::optional<uint32_t> s1 = AllocShip();
+    const std::optional<uint32_t> s2 = AllocShip();
+    QCOMPARE(*s1, 1u);
+    QCOMPARE(*s2, 2u);
+    QCOMPARE(static_cast<int>(Ships.size()), 3);
+    QVERIFY(Ships.is_full());
+
+    // A freshly allocated ship is clear.
+    QVERIFY(Ships[0].name.empty());
+
+    // Cyclic traversal across every used slot.
+    QCOMPARE(*GetNextShip(0), 1u);
+    QCOMPARE(*GetNextShip(1), 2u);
+    QCOMPARE(*GetNextShip(2), 0u); // wraps
+    QCOMPARE(*GetPrevShip(2), 1u);
+    QCOMPARE(*GetPrevShip(1), 0u);
+    QCOMPARE(*GetPrevShip(0), 2u); // wraps
+
+    // Freeing a slot unuses it without shrinking the table, and traversal
+    // then skips it.
+    FreeShip(1);
+    QCOMPARE(static_cast<int>(Ships.size()), 3);
+    QVERIFY(Ships.is_unused(1));
+    QCOMPARE(*GetNextShip(0), 2u);
+    QCOMPARE(*GetPrevShip(0), 2u);
+
+    // The freed slot is reused by the next allocation.
+    QCOMPARE(*AllocShip(), 1u);
+    QVERIFY(Ships.is_used(1));
+    QCOMPARE(static_cast<int>(Ships.size()), 3);
+
+    // FindShipName matches case-insensitively and only reports used slots.
+    Ships[0].name = "Pyro";
+    QCOMPARE(*FindShipName("pyro"), 0u);
+    QCOMPARE(*FindShipName("PYRO"), 0u);
+    QVERIFY(!FindShipName("missing"));
+
+    // Freeing every slot leaves an empty (but not cleared) table; traversal
+    // then reports nothing.
+    FreeShip(0);
+    FreeShip(1);
+    FreeShip(2);
+    QCOMPARE(static_cast<int>(Ships.size()), 3);
+    QVERIFY(!GetNextShip(0));
+    QVERIFY(!GetPrevShip(2));
+
+    Ships = saved_ships;
+  }
+
   void testDoorSlotvecAccounting()
   {
     const d3::slotvec_t<door> saved_doors = Doors;
