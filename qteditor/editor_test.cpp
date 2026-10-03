@@ -2307,6 +2307,46 @@ private slots:
   // The Doors table is a d3::slotvec_t whose use/reference state lives in the
   // slotvec itself (the former "used" flag was removed from the door struct),
   // exposed through AllocDoor/FreeDoor/GetNextDoor/GetPrevDoor/FindDoorName.
+  void testTextureSlotvecAccounting()
+  {
+    const d3::slotvec_t<texture> saved = GameTextures;
+
+    GameTextures.clear();
+    QVERIFY(GameTextures.empty());
+    QVERIFY(!GetNextTexture(0));
+    QVERIFY(!GetPreviousTexture(0));
+
+    const std::optional<uint32_t> t0 = AllocTexture();
+    const std::optional<uint32_t> t1 = AllocTexture();
+    QCOMPARE(*t0, 0u);
+    QCOMPARE(*t1, 1u);
+    QCOMPARE(static_cast<int>(GameTextures.size()), 2);
+    QVERIFY(GameTextures[0].name.empty());
+
+    QCOMPARE(*GetNextTexture(0), 1u);
+    QCOMPARE(*GetNextTexture(1), 0u); // wraps
+    QCOMPARE(*GetPreviousTexture(0), 1u); // wraps
+    QCOMPARE(*GetPreviousTexture(1), 0u);
+
+    FreeTexture(0);
+    QVERIFY(GameTextures.is_unused(0));
+    QCOMPARE(static_cast<int>(GameTextures.size()), 2);
+    QCOMPARE(*GetNextTexture(1), 1u); // only slot 1 is used
+
+    QCOMPARE(*AllocTexture(), 0u); // reuse the freed slot
+    QCOMPARE(static_cast<int>(GameTextures.size()), 2);
+
+    GameTextures[0].name = "Stone";
+    QCOMPARE(*FindTextureName("Stone"), 0u);
+    QVERIFY(!FindTextureName("missing"));
+
+    FreeTexture(0);
+    FreeTexture(1);
+    QVERIFY(!GetNextTexture(0));
+
+    GameTextures = saved;
+  }
+
   void testWeaponSlotvecAccounting()
   {
     const d3::slotvec_t<weapon> saved_weapons = Weapons;

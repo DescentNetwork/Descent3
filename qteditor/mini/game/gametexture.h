@@ -363,17 +363,18 @@ extern d3::slotvec_t<texture> GameTextures;
 // Inits the texture system, returning 1 if successful
 int InitTextures();
 
-// Set aside a texture for use
-int AllocTexture(void);
+// Set aside a texture for use, returns std::nullopt if error, else index on
+// success
+std::optional<uint32_t> AllocTexture(void);
 
 // Frees a texture for future use
-void FreeTexture(int);
+void FreeTexture(uint32_t n);
 
 // Given current index, gets index of next texture in use
-int GetNextTexture(int n);
+std::optional<uint32_t> GetNextTexture(uint32_t n);
 
 // Given current index, gets index of prev texture in use
-int GetPreviousTexture(int n);
+std::optional<uint32_t> GetPreviousTexture(uint32_t n);
 
 // Searches thru all textures for a specific name, returns -1 if not found
 // or index of texture with name

@@ -264,9 +264,9 @@ byte_ostream& operator<<(byte_ostream& output, const texture& data)
 // ============================================================================
 
 // Set aside a texture for use
-int AllocTexture() {
+std::optional<uint32_t> AllocTexture() {
   if (GameTextures.num_empty() == 0 && GameTextures.size() >= MAX_TEXTURES)
-    return -1; // No textures free!
+    return std::nullopt; // No textures free!
 
   const size_t n = GameTextures.next_slot();
   Q_ASSERT(GameTextures.is_unused(n));
@@ -274,11 +274,11 @@ int AllocTexture() {
   GameTextures[n] = texture{};
 
   GameTextures.acquire(n);
-  return static_cast<int>(n);
+  return static_cast<uint32_t>(n);
 }
 
 // Frees a texture for future use
-void FreeTexture(int n) {
+void FreeTexture(uint32_t n) {
   Q_ASSERT(GameTextures.is_used(n));
 
   GameTextures[n] = texture{};
@@ -286,18 +286,12 @@ void FreeTexture(int n) {
 }
 
 // Given current index, gets index of next texture in use
-int GetNextTexture(int n) {
-  if (GameTextures.empty())
-    return -1;
-  Q_ASSERT(n >= 0 && n < static_cast<int>(GameTextures.size()));
-  return static_cast<int>(GameTextures.next(static_cast<size_t>(n)).value_or(-1));
+std::optional<uint32_t> GetNextTexture(uint32_t n) {
+  return GameTextures.next(n);
 }
 
 // Given current index, gets index of prev texture in use
-int GetPreviousTexture(int n) {
-  if (GameTextures.empty())
-    return -1;
-  Q_ASSERT(n >= 0 && n < static_cast<int>(GameTextures.size()));
-  return static_cast<int>(GameTextures.prev(static_cast<size_t>(n)).value_or(-1));
+std::optional<uint32_t> GetPreviousTexture(uint32_t n) {
+  return GameTextures.prev(n);
 }
 
