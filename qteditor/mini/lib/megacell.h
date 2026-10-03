@@ -47,8 +47,8 @@ static_assert(sizeof(megacell_flags_t) == sizeof(uint32_t));
 
 struct megacell {
   std::string name;
-  int8_t width;
-  int8_t height;
+  uint8_t width;
+  uint8_t height;
 
   int16_t texture_handles[MAX_MEGACELL_WIDTH * MAX_MEGACELL_HEIGHT];
   megacell_flags_t flags;

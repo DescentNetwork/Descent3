@@ -3092,8 +3092,8 @@ private slots:
 
     for (uint32_t i = 0; i < 3; i++) {
       QCOMPARE(Megacells[i].used, uint8_t(1));
-      QCOMPARE(int(Megacells[i].width), DEFAULT_MEGACELL_WIDTH);
-      QCOMPARE(int(Megacells[i].height), DEFAULT_MEGACELL_HEIGHT);
+      QCOMPARE(Megacells[i].width, uint8_t(DEFAULT_MEGACELL_WIDTH));
+      QCOMPARE(Megacells[i].height, uint8_t(DEFAULT_MEGACELL_HEIGHT));
     }
 
     // Freshly allocated slots start out unnamed.
@@ -3137,7 +3137,7 @@ private slots:
     const std::optional<uint32_t> d = AllocMegacell();
     QCOMPARE(*d, 1u);
     QCOMPARE(Num_megacells, 3u);
-    QCOMPARE(Megacells[*d].width, int8_t(DEFAULT_MEGACELL_WIDTH));
+    QCOMPARE(Megacells[*d].width, uint8_t(DEFAULT_MEGACELL_WIDTH));
     QVERIFY(Megacells[*d].name.empty());
 
     // Fill the rest of the table; every slot is handed out exactly once and the
