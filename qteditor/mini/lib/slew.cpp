@@ -422,7 +422,8 @@ int SlewFrame(object *obj, int movement_limitations) {
         fq.rad = 0;
         fq.thisobjnum = OBJNUM(obj);
         fq.ignore_obj_list = NULL;
-        fq.flags = FQ_IGNORE_RENDER_THROUGH_PORTALS;
+        fq.flags = fvi_query_flags_t{};
+        fq.flags.ignore_render_through_portals = true;
         fate = fvi_FindIntersection(&fq, &hit_info);
 
         // If bad room, don't move

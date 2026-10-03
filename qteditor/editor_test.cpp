@@ -7269,7 +7269,6 @@ private slots:
       fq.rad = 0.0f;
       fq.thisobjnum = -1;
       fq.ignore_obj_list = nullptr;
-      fq.flags = 0;
       fvi_info info{};
       int fate = fvi_FindIntersection(&fq, &info);
       QCOMPARE(fate, HIT_NONE);
@@ -7289,7 +7288,6 @@ private slots:
       fq.rad = 0.0f;
       fq.thisobjnum = -1;
       fq.ignore_obj_list = nullptr;
-      fq.flags = 0;
       fvi_info info{};
       int fate = fvi_FindIntersection(&fq, &info);
       QCOMPARE(fate, HIT_WALL);
@@ -7309,7 +7307,8 @@ private slots:
       fq.rad = 0.0f;
       fq.thisobjnum = -1;
       fq.ignore_obj_list = nullptr;
-      fq.flags = FQ_IGNORE_WALLS;
+      fq.flags = fvi_query_flags_t{};
+      fq.flags.ignore_walls = true;
       fvi_info info{};
       int fate = fvi_FindIntersection(&fq, &info);
       QCOMPARE(fate, HIT_NONE);

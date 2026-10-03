@@ -176,7 +176,7 @@ static void CollideSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
 
           face_hit_type = check_line_to_face(&newp, &colp, &col_dist, &wall_norm, fvi_query_ptr->p0, fvi_query_ptr->p1,
                                              &fp->normal, vertex_list, fp->nverts, fvi_query_ptr->rad);
-          if ((fvi_query_ptr->flags & FQ_OBJ_BACKFACE) && (!face_hit_type)) {
+          if ((fvi_query_ptr->flags.obj_backface) && (!face_hit_type)) {
             vector3 face_normal = fp->normal;
             int count;
 

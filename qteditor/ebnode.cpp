@@ -508,7 +508,8 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
   fvi_query fq;
   int fate;
 
-  fq.flags = FQ_IGNORE_RENDER_THROUGH_PORTALS;
+  fq.flags = fvi_query_flags_t{};
+  fq.flags.ignore_render_through_portals = true;
   fq.thisobjnum = -1;
   fq.ignore_obj_list = NULL;
 
@@ -558,7 +559,8 @@ void EBNode_AutoEdgeNode(int spnt, int sroom) {
                          : sroom;
 
       fq.rad = 3.0f;
-      fq.flags = FQ_NO_RELINK;
+      fq.flags = fvi_query_flags_t{};
+      fq.flags.no_relink = true;
       fq.thisobjnum = -1;
       fq.ignore_obj_list = NULL;
 
@@ -650,7 +652,9 @@ void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
                          : roomnum;
 
       fq.rad = 0.1f;
-      fq.flags = FQ_SOLID_PORTALS | FQ_NO_RELINK;
+      fq.flags = fvi_query_flags_t{};
+      fq.flags.solid_portals = true;
+      fq.flags.no_relink = true;
       fq.thisobjnum = -1;
       fq.ignore_obj_list = NULL;
 
@@ -812,7 +816,8 @@ int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom) {
                        : sroom;
 
     fq.rad = 0.0f;
-    fq.flags = FQ_IGNORE_RENDER_THROUGH_PORTALS;
+    fq.flags = fvi_query_flags_t{};
+    fq.flags.ignore_render_through_portals = true;
     fq.thisobjnum = -1;
     fq.ignore_obj_list = NULL;
 
@@ -880,7 +885,9 @@ void EBNode_Move(bool f_offset, int roomnum, int pnt, vector3 *pos) {
                        : roomnum;
 
     fq.rad = 0.25f;
-    fq.flags = FQ_SOLID_PORTALS | FQ_NO_RELINK;
+    fq.flags = fvi_query_flags_t{};
+    fq.flags.solid_portals = true;
+    fq.flags.no_relink = true;
     fq.thisobjnum = -1;
     fq.ignore_obj_list = NULL;
 

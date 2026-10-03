@@ -2489,7 +2489,7 @@ void check_ceiling() {
 
   if (face_hit_type) {
     if (cur_dist <= fvi_collision_dist) {
-      if ((cur_dist < fvi_collision_dist) || !(fvi_query_ptr->flags & FQ_MULTI_POINT)) {
+      if ((cur_dist < fvi_collision_dist) || !(fvi_query_ptr->flags.multi_point)) {
         fvi_hit_data_ptr->num_hits = 0;
 
         fvi_hit_data_ptr->hit_pnt = hit_point;
@@ -2649,7 +2649,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
 
   // mprintf(0, "FVI:----New search----\n");
   // mprintf(0, "FVI: P0 is %f, %f, %f\n", XYZ(fq->p0));
-  if (fq->flags & FQ_NEW_RECORD_LIST) {
+  if (fq->flags.new_record_list) {
     Fvi_num_recorded_faces = 0;
   }
   last_sim_trigger_faces = Fvi_num_recorded_faces;
@@ -2757,7 +2757,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
         //				mprintf(0, "S %d F %f,%f,%f to %f,%f,%f\n", i, XYZ(&new_p0), XYZ(&new_p1));
         s_hit_type = fvi_FindIntersection(&fvi_new_query, &fvi_new_hit_data, true);
 
-        fvi_new_query.flags &= (~FQ_NEW_RECORD_LIST);
+        fvi_new_query.flags.new_record_list = false;
 
         if (s_hit_type != HIT_NONE) {
           // mprintf(0, "Hit %d at %f, %f, %f\n", s_hit_type, XYZ(&fvi_new_hit_data.hit_pnt));
@@ -2800,14 +2800,14 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
   // Check objects in rooms we visited
   fvi_rooms_objs();
 
-  if (FVI_always_check_ceiling && (fq->flags & FQ_CHECK_CEILING)) {
+  if (FVI_always_check_ceiling && (fq->flags.check_ceiling)) {
     check_ceiling();
   }
 
   // Determine hit seg.
 
   // Only do this if not running radiosity
-  if (!(fq->flags & FQ_NO_RELINK)) {
+  if (!(fq->flags.no_relink)) {
     if (fvi_num_rooms_visited == 1 && fvi_num_cells_visited == 0) {
       hit_data->hit_room = fvi_rooms_visited[0];
     } else if ((hit_data->hit_type[0] == HIT_WALL || hit_data->hit_type[0] == HIT_TERRAIN) &&
@@ -2832,7 +2832,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
         // We must be outside
 
         // Check the ceiling too
-        if (!FVI_always_check_ceiling && (fq->flags & FQ_CHECK_CEILING)) {
+        if (!FVI_always_check_ceiling && (fq->flags.check_ceiling)) {
           check_ceiling();
         }
 
@@ -2875,7 +2875,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
     fvi_visit_list[fvi_rooms_visited[i] >> 3] = 0;
   }
 
-  if (fvi_query_ptr->flags & FQ_RECORD) {
+  if (fvi_query_ptr->flags.record) {
     make_trigger_face_list(last_sim_trigger_faces);
   }
 
@@ -3312,9 +3312,9 @@ void check_hit_obj(int objnum) {
   int m_obj_index = fvi_query_ptr->thisobjnum;
   object *m_obj = &Objects[m_obj_index];
 
-  if (!(fvi_query_ptr->flags & FQ_CHECK_OBJS) && (obj->type != object_type::room))
+  if (!(fvi_query_ptr->flags.check_objs) && (obj->type != object_type::room))
     return;
-  if ((fvi_query_ptr->flags & (FQ_IGNORE_EXTERNAL_ROOMS)) && (obj->type == object_type::room))
+  if ((fvi_query_ptr->flags.ignore_external_rooms) && (obj->type == object_type::room))
     return;
 
   if (obj->flags.no_object_collisions)
@@ -3347,19 +3347,19 @@ void check_hit_obj(int objnum) {
               if (m_obj_index < 0) {
                 switch (obj->type) {
                 case object_type::room:
-                  if (fvi_query_ptr->flags & FQ_EXTERNAL_ROOMS_AS_SPHERE)
+                  if (fvi_query_ptr->flags.external_rooms_as_sphere)
                     collision_type = RESULT_CHECK_SPHERE_SPHERE;
                   else
                     collision_type = RESULT_CHECK_SPHERE_ROOM;
                   break;
                 case object_type::player:
-                  if (fvi_query_ptr->flags & FQ_PLAYERS_AS_SPHERE)
+                  if (fvi_query_ptr->flags.players_as_sphere)
                     collision_type = RESULT_CHECK_SPHERE_SPHERE;
                   else
                     collision_type = RESULT_CHECK_SPHERE_POLY;
                   break;
                 case object_type::robot:
-                  if (fvi_query_ptr->flags & FQ_ROBOTS_AS_SPHERE)
+                  if (fvi_query_ptr->flags.robots_as_sphere)
                     collision_type = RESULT_CHECK_SPHERE_SPHERE;
                   else
                     collision_type = RESULT_CHECK_SPHERE_POLY;
@@ -3399,36 +3399,36 @@ void check_hit_obj(int objnum) {
                 }
               }
 
-              if (fvi_query_ptr->flags & FQ_IGNORE_NON_LIGHTMAP_OBJECTS)
+              if (fvi_query_ptr->flags.ignore_non_lightmap_objects)
                 if (obj->lighting_render_type != lighting_render_type::lightmaps && obj->type != object_type::room)
                   return;
 
-              if (fvi_query_ptr->flags & FQ_IGNORE_POWERUPS)
+              if (fvi_query_ptr->flags.ignore_powerups)
                 if (obj->type == object_type::powerup)
                   return;
 
-              if (fvi_query_ptr->flags & FQ_IGNORE_WEAPONS)
+              if (fvi_query_ptr->flags.ignore_weapons)
                 if (obj->type == object_type::weapon || obj->type == object_type::fireball || obj->type == object_type::shard ||
                     obj->type == object_type::shockwave)
                   return;
 
-              if (fvi_query_ptr->flags & FQ_IGNORE_MOVING_OBJECTS)
+              if (fvi_query_ptr->flags.ignore_moving_objects)
                 if (obj->movement_type == movement_type::physics || obj->movement_type == movement_type::walking)
                   return;
 
               if (obj->type != object_type::room) {
-                if (fvi_query_ptr->flags & FQ_ONLY_PLAYER_OBJ)
+                if (fvi_query_ptr->flags.only_player_obj)
                   if (obj->type != object_type::player)
                     return;
 
-                if (fvi_query_ptr->flags & FQ_ONLY_DOOR_OBJ)
+                if (fvi_query_ptr->flags.only_door_obj)
                   if (obj->type != object_type::door)
                     return;
               }
 
-              if (obj->type == object_type::player && (fvi_query_ptr->flags & FQ_PLAYERS_AS_SPHERE))
+              if (obj->type == object_type::player && (fvi_query_ptr->flags.players_as_sphere))
                 collision_type = RESULT_CHECK_SPHERE_SPHERE;
-              if (obj->type == object_type::robot && (fvi_query_ptr->flags & FQ_ROBOTS_AS_SPHERE))
+              if (obj->type == object_type::robot && (fvi_query_ptr->flags.robots_as_sphere))
                 collision_type = RESULT_CHECK_SPHERE_SPHERE;
 
               switch (collision_type) {
@@ -3488,7 +3488,6 @@ void check_hit_obj(int objnum) {
                 fq.p1 = &relative_pos;
                 fq.rad = obj->size;
                 fq.thisobjnum = objnum;
-                fq.flags = 0;
 
                 hit_info.num_hits = 0;
                 hit_info.hit_type[0] = HIT_NONE;
@@ -3525,7 +3524,7 @@ void check_hit_obj(int objnum) {
                     fvi_hit_data_ptr->num_hits++;
                   }
 
-                  Q_ASSERT(!(fvi_hit_data_ptr->num_hits > 1 && !(fvi_query_ptr->flags & FQ_MULTI_POINT)));
+                  Q_ASSERT(!(fvi_hit_data_ptr->num_hits > 1 && !(fvi_query_ptr->flags.multi_point)));
                 }
               } break;
 
@@ -3627,7 +3626,7 @@ void check_hit_obj(int objnum) {
 #endif
   }
 
-  Q_ASSERT(!(fvi_hit_data_ptr->num_hits > 1 && !(fvi_query_ptr->flags & FQ_MULTI_POINT)));
+  Q_ASSERT(!(fvi_hit_data_ptr->num_hits > 1 && !(fvi_query_ptr->flags.multi_point)));
 }
 
 /*	// Check each terrain cell
@@ -3805,7 +3804,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
     fvi_cells_obj_visited[fvi_num_cells_obj_visited] = cur_node;
     fvi_num_cells_obj_visited++;
 
-    if (fvi_query_ptr->flags & FQ_CHECK_OBJS) {
+    if (fvi_query_ptr->flags.check_objs) {
       for (objnum = Terrain_seg[cur_node].objects; objnum != -1; objnum = Objects[objnum].next) {
         Q_ASSERT(objnum != -1);
         if (!(Objects[objnum].flags.big_object))
@@ -3813,7 +3812,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
       }
     } else {
 
-      if (!(fvi_query_ptr->flags & FQ_IGNORE_EXTERNAL_ROOMS))
+      if (!(fvi_query_ptr->flags.ignore_external_rooms))
         for (objnum = Terrain_seg[cur_node].objects; objnum != -1; objnum = Objects[objnum].next) {
           Q_ASSERT(objnum != -1);
           if ((Objects[objnum].type == object_type::room) && !(Objects[objnum].flags.big_object))
@@ -3843,7 +3842,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
                  fvi_query_ptr->rad >=
              fvi_query_ptr->p1->y()) &&
         !(Terrain_seg[cur_node].flags.invisible) &&
-        !(fvi_query_ptr->flags & (FQ_IGNORE_WALLS | FQ_IGNORE_TERRAIN))) {
+        !(fvi_query_ptr->flags.ignore_walls || fvi_query_ptr->flags.ignore_terrain)) {
 
       // check this node for ground collision
       for (i = 0; i < 2; i++) {
@@ -3999,7 +3998,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
         // If we hit the face...
         if (face_hit_type) {
           if (cur_dist <= fvi_collision_dist) {
-            if ((cur_dist < fvi_collision_dist) || !(fvi_query_ptr->flags & FQ_MULTI_POINT)) {
+            if ((cur_dist < fvi_collision_dist) || !(fvi_query_ptr->flags.multi_point)) {
               fvi_hit_data_ptr->num_hits = 0;
 
               fvi_collision_dist = cur_dist;
@@ -4033,7 +4032,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
     tercheck_x = check_x = fvi_query_ptr->rad / TERRAIN_SIZE + 1;
     tercheck_y = check_y = fvi_query_ptr->rad / TERRAIN_SIZE + 1;
 
-    if (fvi_query_ptr->flags & FQ_CHECK_OBJS) {
+    if (fvi_query_ptr->flags.check_objs) {
       check_x += CELLS_PER_COL_CELL;
       check_y += CELLS_PER_COL_CELL;
     }
@@ -4097,7 +4096,7 @@ inline void check_square_node(int x, int y, int width)
         tercheck_x = check_x = fvi_query_ptr->rad/TERRAIN_SIZE + 1;
         tercheck_y = check_y = fvi_query_ptr->rad/TERRAIN_SIZE + 1;
 
-                if(fvi_query_ptr->flags & FQ_CHECK_OBJS)
+                if(fvi_query_ptr->flags.check_objs)
                 {
                         check_x += CELLS_PER_COL_CELL;
                         check_y += CELLS_PER_COL_CELL;
@@ -4340,14 +4339,14 @@ int do_fvi_terrain() {
   Q_ASSERT(x == x2 && y == y2);
 
 check_big_objs: // Check Big objects
-  if (fvi_query_ptr->flags & FQ_CHECK_OBJS) {
+  if (fvi_query_ptr->flags.check_objs) {
     for (i = 0; i < BigObjectList.size(); i++) {
       Q_ASSERT(BigObjectList[i] >= 0);
       check_hit_obj(BigObjectList[i]);
       //		mprintf(0, "CHecking BIG %d\n", i);
     }
   } else {
-    if (!(fvi_query_ptr->flags & FQ_IGNORE_EXTERNAL_ROOMS))
+    if (!(fvi_query_ptr->flags.ignore_external_rooms))
       for (i = 0; i < BigObjectList.size(); i++) {
         if (Objects[BigObjectList[i]].type == object_type::room)
           check_hit_obj(BigObjectList[i]);
@@ -4367,7 +4366,7 @@ void fvi_rooms_objs(void) {
   int i;
 
   // first, see if vector hit any objects in this segment
-  if (!(fvi_query_ptr->flags & FQ_CHECK_OBJS))
+  if (!(fvi_query_ptr->flags.check_objs))
     return;
 
   for (i = 0; i < fvi_num_rooms_visited; i++) {
@@ -4484,7 +4483,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
     Q_ASSERT(fvi_num_rooms_visited <= MAX_ROOMS);
   }
 
-  if (fvi_query_ptr->flags & FQ_IGNORE_WALLS) {
+  if (fvi_query_ptr->flags.ignore_walls) {
     vector3 face_normal;
     vector3 *vertex_ptr_list[MAX_VERTS_PER_FACE];
     int16_t count;
@@ -4518,7 +4517,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
       // Add the portal if we are within a AABB of it.
       if ((face_info & FPF_PORTAL)) {
         // If we can cross a portal, add it to the next portal list if it is not already there
-        if (!(face_info & FPF_SOLID) && !(fvi_query_ptr->flags & FQ_SOLID_PORTALS)) {
+        if (!(face_info & FPF_SOLID) && !(fvi_query_ptr->flags.solid_portals)) {
           bool f_add_next_portal;
 
           f_add_next_portal = true;
@@ -4532,7 +4531,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
             Q_ASSERT(num_next_portals < MAX_NEXT_PORTALS);
             next_portals[num_next_portals++] = portal_num;
 
-            if ((fvi_query_ptr->flags & FQ_RECORD) && (face_info & FPF_RECORD)) {
+            if ((fvi_query_ptr->flags.record) && (face_info & FPF_RECORD)) {
               Q_ASSERT(Fvi_num_recorded_faces < MAX_RECORDED_FACES);
               if (Fvi_num_recorded_faces < MAX_RECORDED_FACES) {
                 Fvi_recorded_faces[Fvi_num_recorded_faces].face_index = i;
@@ -4610,7 +4609,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
 
           // Add the portal if we are within a AABB of it.
           if ((face_info & FPF_PORTAL)) {
-            if ((fvi_query_ptr->flags & FQ_RECORD) && (face_info & FPF_RECORD)) {
+            if ((fvi_query_ptr->flags.record) && (face_info & FPF_RECORD)) {
               Q_ASSERT(Fvi_num_recorded_faces < MAX_RECORDED_FACES);
               if (Fvi_num_recorded_faces < MAX_RECORDED_FACES) {
                 Fvi_recorded_faces[Fvi_num_recorded_faces].face_index = i;
@@ -4619,7 +4618,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
             }
 
             // If we can cross a portal, add it to the next portal list if it is not already there
-            if (!(face_info & FPF_SOLID) && !(fvi_query_ptr->flags & FQ_SOLID_PORTALS)) {
+            if (!(face_info & FPF_SOLID) && !(fvi_query_ptr->flags.solid_portals)) {
               bool f_add_next_portal = true;
 
               for (next_portal_index = 0; next_portal_index < num_next_portals; next_portal_index++) {
@@ -4635,7 +4634,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
               }
             }
 
-            if ((fvi_query_ptr->flags & FQ_IGNORE_RENDER_THROUGH_PORTALS) &&
+            if ((fvi_query_ptr->flags.ignore_render_through_portals) &&
                 (PhysPastPortal(room_index, &cur_room->portals[portal_num]))) {
               bool f_add_next_portal = true;
 
@@ -4671,8 +4670,8 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
                                                cur_face->num_verts, fvi_query_ptr->rad);
           }
 
-          if ((((fvi_query_ptr->flags & FQ_OBJ_BACKFACE) && cur_room->flags.external) ||
-               ((fvi_query_ptr->flags & FQ_BACKFACE) && !cur_room->flags.external)) &&
+          if ((((fvi_query_ptr->flags.obj_backface) && cur_room->flags.external) ||
+               ((fvi_query_ptr->flags.backface) && !cur_room->flags.external)) &&
               (!face_hit_type)) {
             face_normal *= -1.0f;
             for (count = 0; count < cur_face->num_verts; count++)
@@ -4684,7 +4683,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
             f_backface = true;
           }
 
-          if (face_hit_type && (face_info & FPF_TRANSPARENT) && (fvi_query_ptr->flags & FQ_TRANSPOINT) &&
+          if (face_hit_type && (face_info & FPF_TRANSPARENT) && (fvi_query_ptr->flags.transpoint) &&
               CheckTransparentPoint(&colp, room_index, i)) {
             // Go through the hole
             face_hit_type = HIT_NONE;
@@ -4692,7 +4691,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
 
           // If we hit the face...
           if (face_hit_type) {
-            if ((fvi_query_ptr->flags & FQ_RECORD) && (face_info & FPF_RECORD) &&
+            if ((fvi_query_ptr->flags.record) && (face_info & FPF_RECORD) &&
                 !(Fvi_num_recorded_faces > 0 &&
                   Fvi_recorded_faces[Fvi_num_recorded_faces - 1].face_index == i &&
                   Fvi_recorded_faces[Fvi_num_recorded_faces - 1].room_index == room_index)) {
@@ -4705,7 +4704,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
 
             if (cur_dist <= fvi_collision_dist && (face_info & (FPF_SOLID | FPF_TRANSPARENT))) {
 
-              if ((cur_dist < fvi_collision_dist) || !(fvi_query_ptr->flags & FQ_MULTI_POINT)) {
+              if ((cur_dist < fvi_collision_dist) || !(fvi_query_ptr->flags.multi_point)) {
                 fvi_hit_data_ptr->num_hits = 0;
 
                 fvi_collision_dist = cur_dist;
@@ -4761,7 +4760,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
           }
   */
 
-  if (!(fvi_query_ptr->flags & FQ_SOLID_PORTALS)) {
+  if (!(fvi_query_ptr->flags.solid_portals)) {
     // Accounts for doors that leave a
     for (i = 0; i < cur_room->num_portals; i++) {
       int c_room = cur_room->portals[i].croom;

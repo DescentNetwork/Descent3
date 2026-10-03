@@ -347,7 +347,10 @@ retry:
           fq.rad = min_bn_rad;
           fq.thisobjnum = -1;
           fq.ignore_obj_list = NULL;
-          fq.flags = FQ_CHECK_OBJS | FQ_NO_RELINK | FQ_IGNORE_NON_LIGHTMAP_OBJECTS;
+          fq.flags = fvi_query_flags_t{};
+          fq.flags.check_objs = true;
+          fq.flags.no_relink = true;
+          fq.flags.ignore_non_lightmap_objects = true;
 
           if (fvi_FindIntersection(&fq, &hit_info) == HIT_NONE) {
             BNode_vis[i] = VIS_OK;
@@ -432,7 +435,6 @@ retry:
           fq.rad = min_bn_rad;
           fq.thisobjnum = -1;
           fq.ignore_obj_list = nullptr;
-          fq.flags = 0;
         }
 
         if (f_retry || fvi_FindIntersection(&fq, &hit_info) == HIT_NONE) {

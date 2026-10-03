@@ -241,7 +241,11 @@ int ShootRayToVolumePoint(vector3& src, vector3& dest, int start_room) {
   fq.startroom = start_room;
 
   fq.rad = 0.0f;
-  fq.flags = FQ_CHECK_OBJS | FQ_IGNORE_NON_LIGHTMAP_OBJECTS | FQ_NO_RELINK | FQ_IGNORE_RENDER_THROUGH_PORTALS;
+  fq.flags = fvi_query_flags_t{};
+  fq.flags.check_objs = true;
+  fq.flags.ignore_non_lightmap_objects = true;
+  fq.flags.no_relink = true;
+  fq.flags.ignore_render_through_portals = true;
   fq.thisobjnum = -1;
   fq.ignore_obj_list = NULL;
 
@@ -398,7 +402,11 @@ int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_su
     fq.startroom = src_surf->roomnum;
 
   fq.rad = 0.0f;
-  fq.flags = FQ_CHECK_OBJS | FQ_IGNORE_NON_LIGHTMAP_OBJECTS | FQ_NO_RELINK | FQ_IGNORE_RENDER_THROUGH_PORTALS;
+  fq.flags = fvi_query_flags_t{};
+  fq.flags.check_objs = true;
+  fq.flags.ignore_non_lightmap_objects = true;
+  fq.flags.no_relink = true;
+  fq.flags.ignore_render_through_portals = true;
   fq.thisobjnum = -1;
   fq.ignore_obj_list = NULL;
 

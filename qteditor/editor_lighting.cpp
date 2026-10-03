@@ -1686,8 +1686,12 @@ int ShootRayForTerrainLight(vector3 *src, vector3 *dest, int cellnum) {
   fq.startroom = MAKE_ROOMNUM(cellnum);
 
   fq.rad = 0.0f;
-  fq.flags = FQ_CHECK_OBJS | FQ_IGNORE_NON_LIGHTMAP_OBJECTS | FQ_OBJ_BACKFACE | FQ_NO_RELINK |
-             FQ_IGNORE_RENDER_THROUGH_PORTALS;
+  fq.flags = fvi_query_flags_t{};
+  fq.flags.check_objs = true;
+  fq.flags.ignore_non_lightmap_objects = true;
+  fq.flags.obj_backface = true;
+  fq.flags.no_relink = true;
+  fq.flags.ignore_render_through_portals = true;
   fq.thisobjnum = -1;
   fq.ignore_obj_list = NULL;
 

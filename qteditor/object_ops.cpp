@@ -86,11 +86,14 @@ bool MoveObject(object& obj, vector3& newpos) {
   fq.p1 = &newpos;
   fq.thisobjnum = OBJNUM(&obj);
   fq.ignore_obj_list = NULL;
-  fq.flags = FQ_IGNORE_RENDER_THROUGH_PORTALS;
+  fq.flags = fvi_query_flags_t{};
+  fq.flags.ignore_render_through_portals = true;
   fq.rad = use_radius ? obj.size : 0.0f;
 
   if (f_allow_objects_to_be_pushed_through_walls)
-    fq.flags |= (FQ_IGNORE_WALLS | FQ_IGNORE_TERRAIN | FQ_IGNORE_EXTERNAL_ROOMS);
+    fq.flags.ignore_walls = true;
+    fq.flags.ignore_terrain = true;
+    fq.flags.ignore_external_rooms = true;
 
   int fate = fvi_FindIntersection(&fq, &hit_info);
 

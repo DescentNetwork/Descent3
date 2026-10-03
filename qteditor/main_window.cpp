@@ -1043,7 +1043,6 @@ void MainWindow::onMoveCameraToCurrentObject() {
   fq.p1 = &pos;
   fq.thisobjnum = OBJNUM(Viewer_object);
   fq.ignore_obj_list = nullptr;
-  fq.flags = 0;
   fq.rad = 0.0f;
   fvi_FindIntersection(&fq, &hit_info);
 

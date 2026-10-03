@@ -2583,7 +2583,12 @@ SetGlowStatus(roomnum, LightGlowsThisFrame[i].facenum, center, size, FastCoronas
     }
 
     fq.rad = 0.0f;
-    fq.flags = FQ_CHECK_OBJS | FQ_NO_RELINK | FQ_IGNORE_WEAPONS | FQ_ROBOTS_AS_SPHERE | FQ_PLAYERS_AS_SPHERE;
+    fq.flags = fvi_query_flags_t{};
+    fq.flags.check_objs = true;
+    fq.flags.no_relink = true;
+    fq.flags.ignore_weapons = true;
+    fq.flags.robots_as_sphere = true;
+    fq.flags.players_as_sphere = true;
     fq.thisobjnum = -1;
     fq.ignore_obj_list = NULL;
     int fate = fvi_FindIntersection(&fq, &hit_info);

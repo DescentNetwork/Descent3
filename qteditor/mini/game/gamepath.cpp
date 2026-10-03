@@ -109,7 +109,9 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
   fq.rad = 0.0f;
   fq.thisobjnum = -1;
   fq.ignore_obj_list = NULL;
-  fq.flags = FQ_TRANSPOINT | FQ_IGNORE_RENDER_THROUGH_PORTALS;
+  fq.flags = fvi_query_flags_t{};
+  fq.flags.transpoint = true;
+  fq.flags.ignore_render_through_portals = true;
   fvi_FindIntersection(&fq, &hit_info);
 
   if (nodenum >= 1) {
@@ -121,7 +123,9 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
     fq1.rad = 0.0f;
     fq1.thisobjnum = -1;
     fq1.ignore_obj_list = NULL;
-    fq1.flags = FQ_TRANSPOINT | FQ_IGNORE_RENDER_THROUGH_PORTALS;
+    fq1.flags = fvi_query_flags_t{};
+    fq1.flags.transpoint = true;
+    fq1.flags.ignore_render_through_portals = true;
     fvi_FindIntersection(&fq1, &hit_info1);
     if (vm_VectorDistance(&hit_info.hit_pnt, &hit_info1.hit_pnt) > .005) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot move point.  No line of sight from the previous node to the new position.");
@@ -138,7 +142,9 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
     fq1.rad = 0.0f;
     fq1.thisobjnum = -1;
     fq1.ignore_obj_list = NULL;
-    fq1.flags = FQ_TRANSPOINT | FQ_IGNORE_RENDER_THROUGH_PORTALS;
+    fq1.flags = fvi_query_flags_t{};
+    fq1.flags.transpoint = true;
+    fq1.flags.ignore_render_through_portals = true;
     fvi_FindIntersection(&fq1, &hit_info1);
     if (vm_VectorDistance(&hit_info.hit_pnt, &hit_info1.hit_pnt) > .005) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot move point.  No line of sight from the next node to the new position.");

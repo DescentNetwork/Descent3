@@ -1954,7 +1954,10 @@ void DrawPlayerTypingIndicator(object *obj) {
   fq.rad = 0;
   fq.thisobjnum = -1;
   fq.ignore_obj_list = NULL;
-  fq.flags = FQ_CHECK_OBJS | FQ_IGNORE_POWERUPS | FQ_IGNORE_WEAPONS;
+  fq.flags = fvi_query_flags_t{};
+  fq.flags.check_objs = true;
+  fq.flags.ignore_powerups = true;
+  fq.flags.ignore_weapons = true;
   fate = fvi_FindIntersection(&fq, &hit_data);
   if (fate == HIT_NONE || (fate == HIT_SPHERE_2_POLY_OBJECT && hit_data.hit_object[0] == (obj - Objects.data()))) {
     // Draw this indicator on the hud
@@ -2054,7 +2057,10 @@ void DrawPlayerNameOnHud(object *obj) {
   fq.rad = 0;
   fq.thisobjnum = -1;
   fq.ignore_obj_list = NULL;
-  fq.flags = FQ_CHECK_OBJS | FQ_IGNORE_POWERUPS | FQ_IGNORE_WEAPONS;
+  fq.flags = fvi_query_flags_t{};
+  fq.flags.check_objs = true;
+  fq.flags.ignore_powerups = true;
+  fq.flags.ignore_weapons = true;
   fate = fvi_FindIntersection(&fq, &hit_data);
   if (fate == HIT_NONE || (fate == HIT_SPHERE_2_POLY_OBJECT && hit_data.hit_object[0] == (obj - Objects.data()))) {
     int half = Game_window_w / 2;
