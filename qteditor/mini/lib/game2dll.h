@@ -53,12 +53,26 @@ struct dllinfo {
 
 #define MAX_GAMENAME_LEN 32
 #define MAX_REQUIREMENT_LEN 384
-#define DOF_MAXTEAMS 0x0001 // max_teams member is valid
-#define DOF_MINTEAMS 0x0002
+
+// tDLLOptions::flags, which also specifies what members of the structure are
+// valid.
+struct [[gnu::packed]] tDLLOptions_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 30;
+  uint32_t min_teams : 1; // DOF_MINTEAMS (0x0002)
+  uint32_t max_teams : 1; // DOF_MAXTEAMS (0x0001) max_teams member is valid
+#else
+  uint32_t max_teams : 1; // DOF_MAXTEAMS (0x0001) max_teams member is valid
+  uint32_t min_teams : 1; // DOF_MINTEAMS (0x0002)
+  uint32_t padding : 30;
+#endif
+};
+static_assert(sizeof(tDLLOptions_flags_t) == sizeof(uint32_t));
+
 // this struct is used to return game specific information to Descent 3
 struct tDLLOptions {
   // general flags, also specifies what members of the structure are valid
-  uint32_t flags;
+  tDLLOptions_flags_t flags;
 
   // 0 or 1 for non-team games...maximum value is 4.  If not specified, than it is assumed 0
   int max_teams;
