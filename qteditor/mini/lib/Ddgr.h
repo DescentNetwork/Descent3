@@ -159,13 +159,17 @@ const int SURFTYPE_VIDEOSCREEN = 1, // This is equivical to the display.
  */
 struct [[gnu::packed]] ddgr_surface_flags_t {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-  uint16_t padding : 14;
+  uint16_t padding2 : 7;
+  uint16_t renderer : 1;    // SURFFLAG_RENDERER (256)
+  uint16_t padding : 6;
   uint16_t colorkey : 1;   // SURFFLAG_COLORKEY (2)
   uint16_t backbuffer : 1; // SURFFLAG_BACKBUFFER (1)
 #else
   uint16_t backbuffer : 1; // SURFFLAG_BACKBUFFER (1)
   uint16_t colorkey : 1;   // SURFFLAG_COLORKEY (2)
-  uint16_t padding : 14;
+  uint16_t padding : 6;
+  uint16_t renderer : 1;   // SURFFLAG_RENDERER (256)
+  uint16_t padding2 : 7;
 #endif
 };
 static_assert(sizeof(ddgr_surface_flags_t) == sizeof(uint16_t));

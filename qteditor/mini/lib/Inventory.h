@@ -187,15 +187,6 @@ struct object;
 
 #define MAX_UNIQUE_INVEN_ITEMS 10
 
-#define INVF_SELECTABLE 0x0003  // old 1
-#define INVF_USEABLE 0x0003     // old 2
-#define INVF_MISSIONITEM 0x0004 // this item lasts across levels
-#define INVF_NOREMOVEONUSE 0x0008
-#define INVF_VISWHENUSED 0x0010
-#define INVF_OBJECT 0x0020        // this item isn't a type/id...but an objhandle
-#define INVF_NOTSPEWABLE 0x0040   // this object should not spew...stay in inventory after death
-#define INVF_TIMEOUTONSPEW 0x0080 // this object/item times out when it's spewed
-
 // Inventory item flags (tInvenInfo::iflags).
 // INVF_SELECTABLE and INVF_USEABLE are both 0x0003, i.e. they share the same two
 // bits, so they cannot be separate members.

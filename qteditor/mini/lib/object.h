@@ -655,12 +655,6 @@ extern const std::array<std::string, MAX_OBJECT_TYPES> Object_type_names;
 #define WPC_NO_COLLISIONS 1
 #define WPC_HIT_WALL 2
 
-#define FMA_VALID 1
-#define FMA_CURRENT 2
-#define FMA_LOOPING 4
-#define FMA_USE_SPEED 8
-#define FMA_HAS_AI 16
-
 #define FMT_NEW_DATA 1
 #define FMT_UPDATING 2
 

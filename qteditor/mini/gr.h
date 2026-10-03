@@ -248,8 +248,6 @@ struct ddgr_surface_node {
 
 const int SURFTYPE_MEMORY = 256;
 
-const int SURFFLAG_RENDERER = 256; // SURFACE will use renderer functions.
-
 class grSurface {
 public:
   static void init_system(); // initializes some global stuff for surface system
