@@ -59,7 +59,7 @@ private:
                          // been completed, else we *possibly* can complete the goal more than
                          // once.
   int m_priority;
-  uint32_t m_flags;
+  lgoal_flags_t m_flags;
 
   // levelgoals owns the m_goal[] array and implements its serialization.
   friend class levelgoals;
@@ -72,7 +72,10 @@ public:
     m_num_items = 0;
     m_priority = 0;
     m_g_list = 0;
-    m_flags = LGF_ENABLED | LGF_TELCOM_LISTS;
+    // Every bit is initialized, then the two the game sets by default.
+    m_flags = lgoal_flags_t{};
+    m_flags.enabled = true;
+    m_flags.telcom_lists = true;
     m_modified = 0;
     m_goal_completed = false;
   };

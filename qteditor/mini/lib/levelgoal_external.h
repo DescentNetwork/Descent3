@@ -19,6 +19,47 @@
 #ifndef LEVELGOALEXTERNAL_H_
 #define LEVELGOALEXTERNAL_H_
 
+#include <cstdint>
+
+// lgoal::m_flags.  Bits 8-13 are the six independent LGF_COMP_* completion
+// triggers, so they stay separate bits rather than one field.
+struct [[gnu::packed]] lgoal_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 18;           // Unused padding to complete 32 bits
+  uint32_t comp_dallas : 1;        // LGF_COMP_DALLAS (0x2000)
+  uint32_t comp_player : 1;        // LGF_COMP_PLAYER (0x1000)
+  uint32_t comp_player_weapon : 1; // LGF_COMP_PLAYER_WEAPON (0x0800)
+  uint32_t comp_destroy : 1;       // LGF_COMP_DESTROY (0x0400)
+  uint32_t comp_enter : 1;         // LGF_COMP_ENTER (0x0200)
+  uint32_t comp_activate : 1;      // LGF_COMP_ACTIVATE (0x0100)
+  uint32_t failed : 1;             // LGF_FAILED (0x0080)
+  uint32_t not_loc_based : 1;      // LGF_NOT_LOC_BASED (0x0040)
+  uint32_t gb_doesnt_know_loc : 1; // LGF_GB_DOESNT_KNOW_LOC (0x0020)
+  uint32_t telcom_lists : 1;       // LGF_TELCOM_LISTS (0x0010)
+  uint32_t completed : 1;          // LGF_COMPLETED (0x0008)
+  uint32_t enabled : 1;            // LGF_ENABLED (0x0004)
+  uint32_t secondary_goal : 1;     // LGF_SECONDARY_GOAL (0x0002)
+  uint32_t blank1 : 1;             // LGF_BLANK1 (0x0001)
+#else
+  uint32_t blank1 : 1;             // LGF_BLANK1 (0x0001)
+  uint32_t secondary_goal : 1;     // LGF_SECONDARY_GOAL (0x0002)
+  uint32_t enabled : 1;            // LGF_ENABLED (0x0004)
+  uint32_t completed : 1;          // LGF_COMPLETED (0x0008)
+  uint32_t telcom_lists : 1;       // LGF_TELCOM_LISTS (0x0010)
+  uint32_t gb_doesnt_know_loc : 1; // LGF_GB_DOESNT_KNOW_LOC (0x0020)
+  uint32_t not_loc_based : 1;      // LGF_NOT_LOC_BASED (0x0040)
+  uint32_t failed : 1;             // LGF_FAILED (0x0080)
+  uint32_t comp_activate : 1;      // LGF_COMP_ACTIVATE (0x0100)
+  uint32_t comp_enter : 1;         // LGF_COMP_ENTER (0x0200)
+  uint32_t comp_destroy : 1;       // LGF_COMP_DESTROY (0x0400)
+  uint32_t comp_player_weapon : 1; // LGF_COMP_PLAYER_WEAPON (0x0800)
+  uint32_t comp_player : 1;        // LGF_COMP_PLAYER (0x1000)
+  uint32_t comp_dallas : 1;        // LGF_COMP_DALLAS (0x2000)
+  uint32_t padding : 18;           // Unused padding to complete 32 bits
+#endif
+};
+static_assert(sizeof(lgoal_flags_t) == sizeof(uint32_t));
+
 #define LF_AUTO_END_LEVEL 0x01
 #define LF_ALL_PRIMARIES_DONE 0x02
 
@@ -33,31 +74,6 @@
 #define LO_SET_SPECIFIED 0
 #define LO_GET_SPECIFIED 1
 #define LO_CLEAR_SPECIFIED 2
-
-// Level Goal Flags
-#define LGF_BLANK1 0x00000001
-#define LGF_SECONDARY_GOAL 0x00000002
-#define LGF_ENABLED 0x00000004
-#define LGF_COMPLETED 0x00000008
-#define LGF_TELCOM_LISTS 0x00000010
-#define LGF_GB_DOESNT_KNOW_LOC 0x00000020
-#define LGF_NOT_LOC_BASED 0x00000040
-#define LGF_FAILED 0x00000080
-#define LGF_COMP_ACTIVATE 0x00000100
-#define LGF_COMP_ENTER 0x00000200
-#define LGF_COMP_DESTROY 0x00000400
-#define LGF_COMP_PLAYER_WEAPON 0x00000800
-#define LGF_COMP_PLAYER 0x00001000
-#define LGF_COMP_DALLAS 0x00002000
-
-#define LGF_COMP_MASK                                                                                                  \
-  (LGF_COMP_ACTIVATE | LGF_COMP_ENTER | LGF_COMP_DESTROY | LGF_COMP_PLAYER_WEAPON | LGF_COMP_PLAYER | LGF_COMP_DALLAS)
-
-#define LGF_COMP_TERRAIN_MASK (LGF_COMP_ENTER | LGF_COMP_DALLAS)
-#define LGF_COMP_ROOM_MASK (LGF_COMP_ENTER | LGF_COMP_DALLAS)
-#define LGF_COMP_OBJECT_MASK (LGF_COMP_DESTROY | LGF_COMP_PLAYER_WEAPON | LGF_COMP_PLAYER | LGF_COMP_DALLAS)
-#define LGF_COMP_TRIGGER_MASK (LGF_COMP_ACTIVATE | LGF_COMP_DALLAS)
-#define LGF_COMP_MINE_MASK (LGF_COMP_ENTER | LGF_COMP_DALLAS)
 
 #define MAX_GOAL_ITEMS 12
 #define MAX_LEVEL_GOALS 32

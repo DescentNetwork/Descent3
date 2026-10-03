@@ -10,6 +10,7 @@
 
 #include "levelgoal.h"
 
+#include <cstdint>
 #include <string>
 
 #include "string_helpers.h"
@@ -93,7 +94,7 @@ bool levelgoals::SaveLevelGoalInfo(posix_ostream &ofile) const {
   for (int i = 0; i < m_num_goals; i++) {
     const lgoal &g = m_goal[i];
 
-    ofile << static_cast<int32_t>(g.m_flags);
+    ofile << static_cast<int32_t>(reinterpret_cast<const uint32_t &>(g.m_flags));
     ofile << static_cast<int32_t>(g.m_priority);
     ofile << static_cast<int8_t>(g.m_g_list);
 
@@ -135,7 +136,8 @@ bool levelgoals::LoadLevelGoalInfo(posix_istream &ifile) {
 
     int32_t status = 0;
     ifile >> status;
-    g.m_flags = static_cast<uint32_t>(status);
+    const uint32_t raw_flags = static_cast<uint32_t>(status);
+    g.m_flags = reinterpret_cast<const lgoal_flags_t &>(raw_flags);
 
     ifile >> g.m_priority;
 
