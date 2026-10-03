@@ -111,7 +111,7 @@ class levelgoals {
 private:
   int m_num_goals;
   std::array<lgoal, MAX_LEVEL_GOALS> m_goal;
-  int m_flags;
+  levelgoals_flags_t m_flags;
 
   int m_num_active_primaries;
   std::array<int, MAX_LEVEL_GOALS> m_active_primaries;
@@ -123,7 +123,7 @@ public:
     m_num_goals = 0;
     m_num_active_primaries = 0;
     m_num_active_secondaries = 0;
-    m_flags = 0;
+    m_flags = levelgoals_flags_t{};
   };
 
   int AddGoal(bool f_from_editor);

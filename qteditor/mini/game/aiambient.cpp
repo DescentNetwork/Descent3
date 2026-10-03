@@ -53,7 +53,7 @@ void ambient_life::ALReset() {
 void ambient_life::DoFrame(void) {}
 
 // Picks a random resident count in [m_min, m_max] for slot i.
-void ambient_life::ComputeNextSize(int8_t i) {
+void ambient_life::ComputeNextSize(uint8_t i) {
   if (m_max[i] > m_min[i])
   {
     m_next_size[i] = m_min[i] + static_cast<uint8_t>(d3::rand() % (m_max[i] - m_min[i]));
@@ -67,7 +67,7 @@ void ambient_life::ComputeNextSize(int8_t i) {
 void ambient_life::InitForLevel() {
   for (size_t i = 0; i < m_type.size(); i++)
   {
-    ComputeNextSize(static_cast<int8_t>(i));
+    ComputeNextSize(static_cast<uint8_t>(i));
     m_cur_num[i] = 0;
     m_next_do_time[i] = d3::chrono::last_update();
   }

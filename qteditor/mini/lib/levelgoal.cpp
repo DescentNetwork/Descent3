@@ -48,7 +48,7 @@ void levelgoals::CleanupAfterLevel() {
   m_num_goals = 0;
   m_num_active_primaries = 0;
   m_num_active_secondaries = 0;
-  m_flags = 0;
+  m_flags = levelgoals_flags_t{};
 }
 
 // ---------------------------------------------------------------------------
@@ -112,7 +112,7 @@ bool levelgoals::SaveLevelGoalInfo(posix_ostream &ofile) const {
     }
   }
 
-  ofile << static_cast<int32_t>(m_flags);
+  ofile << static_cast<int32_t>(reinterpret_cast<const uint32_t &>(m_flags));
 
   return true;
 }
@@ -185,9 +185,10 @@ bool levelgoals::LoadLevelGoalInfo(posix_istream &ifile) {
   if (version >= 2) {
     int32_t lvl_flags = 0;
     ifile >> lvl_flags;
-    m_flags = static_cast<uint32_t>(lvl_flags);
+    const uint32_t raw_flags = static_cast<uint32_t>(lvl_flags);
+    m_flags = reinterpret_cast<const levelgoals_flags_t &>(raw_flags);
   } else {
-    m_flags = 0;
+    m_flags = levelgoals_flags_t{};
   }
 
   return true;

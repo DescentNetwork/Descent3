@@ -78,7 +78,7 @@ class ambient_life {
   std::array<uint8_t, MAX_AL_TYPES> m_next_size;
   std::array<float, MAX_AL_TYPES> m_next_do_time;
 
-  void ComputeNextSize(int8_t index);
+  void ComputeNextSize(uint8_t index);
 
 public:
   ambient_life() { ALReset(); }

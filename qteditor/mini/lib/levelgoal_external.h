@@ -60,8 +60,19 @@ struct [[gnu::packed]] lgoal_flags_t {
 };
 static_assert(sizeof(lgoal_flags_t) == sizeof(uint32_t));
 
-#define LF_AUTO_END_LEVEL 0x01
-#define LF_ALL_PRIMARIES_DONE 0x02
+// levelgoals::m_flags.
+struct [[gnu::packed]] levelgoals_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 30;        // Unused padding to complete 32 bits
+  uint32_t all_primaries_done : 1; // LF_ALL_PRIMARIES_DONE (0x02)
+  uint32_t auto_end_level : 1;     // LF_AUTO_END_LEVEL (0x01)
+#else
+  uint32_t auto_end_level : 1;     // LF_AUTO_END_LEVEL (0x01)
+  uint32_t all_primaries_done : 1; // LF_ALL_PRIMARIES_DONE (0x02)
+  uint32_t padding : 30;        // Unused padding to complete 32 bits
+#endif
+};
+static_assert(sizeof(levelgoals_flags_t) == sizeof(uint32_t));
 
 // Level Item Types
 #define LIT_TERRAIN_CELL 0
