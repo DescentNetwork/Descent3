@@ -456,6 +456,85 @@ static_assert(sizeof(goal_flags_t) == sizeof(uint32_t));
 #define AIF_UVEC_FOV 0x40000000
 #define AIF_AIM_PNT_FOV 0x80000000
 
+// ai_frame::flags.  Bits 16/17 are AIF_TEAM_MASK, a two-bit value field holding
+// AIF_TEAM_PTMC/REBEL/HOSTILE/NEUTRAL rather than independent flags, so they are
+// named team.  AIF_STAYS_INOUT and AIF_GB_MIMIC_PLAYER_FIRING_HACK are the same
+// bit (0x10), so that one is named stays_inout with the alias noted.
+struct [[gnu::packed]] ai_frame_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t aim_pnt_fov : 1;           // AIF_AIM_PNT_FOV (0x80000000)
+  uint32_t uvec_fov : 1;              // AIF_UVEC_FOV (0x40000000)
+  uint32_t force_awareness : 1;       // AIF_FORCE_AWARENESS (0x20000000)
+  uint32_t biased_flight_height : 1;  // AIF_BIASED_FLIGHT_HEIGHT (0x10000000)
+  uint32_t track_closest_2_enemies : 1; // AIF_TRACK_CLOSEST_2_ENEMIES (0x08000000)
+  uint32_t track_closest_2_friends : 1; // AIF_TRACK_CLOSEST_2_FRIENDS (0x04000000)
+  uint32_t auto_avoid_friends : 1;    // AIF_AUTO_AVOID_FRIENDS (0x02000000)
+  uint32_t disable_melee : 1;         // AIF_DISABLE_MELEE (0x01000000)
+  uint32_t disable_firing : 1;        // AIF_DISABLE_FIRING (0x00800000)
+  uint32_t target_by_dist : 1;        // AIF_TARGET_BY_DIST (0x00400000)
+  uint32_t report_new_orient : 1;     // AIF_REPORT_NEW_ORIENT (0x00200000)
+  uint32_t xz_dist : 1;               // AIF_XZ_DIST (0x00100000)
+  uint32_t orient_to_vel : 1;         // AIF_ORIENT_TO_VEL (0x00080000)
+  uint32_t ordered_wb_firing : 1;     // AIF_ORDERED_WB_FIRING (0x00040000)
+  uint32_t team : 2;                  // AIF_TEAM_MASK (0x00030000): AIF_TEAM_PTMC (0x00000000),
+                                      // AIF_TEAM_REBEL (0x00010000), AIF_TEAM_HOSTILE (0x00020000),
+                                      // AIF_TEAM_NEUTRAL (0x00030000)
+  uint32_t fluctuate_speed_properties : 1; // AIF_FLUCTUATE_SPEED_PROPERTIES (0x00008000)
+  uint32_t disabled : 1;              // AIF_DISABLED (0x00004000)
+  uint32_t avoid_walls : 1;           // AIF_AVOID_WALLS (0x00002000)
+  uint32_t only_taunt_at_death : 1;   // AIF_ONLY_TAUNT_AT_DEATH (0x00001000)
+  uint32_t aim : 1;                   // AIF_AIM (0x00000800)
+  uint32_t determine_target : 1;      // AIF_DETERMINE_TARGET (0x00000400)
+  uint32_t flinch : 1;                // AIF_FLINCH (0x00000200)
+  uint32_t fire : 1;                  // AIF_FIRE (0x00000100)
+  uint32_t dodge : 1;                 // AIF_DODGE (0x00000080)
+  uint32_t persistant : 1;            // AIF_PERSISTANT (0x00000040)
+  uint32_t act_as_neutral_until_shot : 1; // AIF_ACT_AS_NEUTRAL_UNTIL_SHOT (0x00000020)
+  uint32_t stays_inout : 1;           // AIF_STAYS_INOUT (0x00000010), alias
+                                      // AIF_GB_MIMIC_PLAYER_FIRING_HACK (0x00000010)
+  uint32_t melee2 : 1;                // AIF_MELEE2 (0x00000008)
+  uint32_t melee1 : 1;                // AIF_MELEE1 (0x00000004)
+  uint32_t weapon2 : 1;               // AIF_WEAPON2 (0x00000002)
+  uint32_t weapon1 : 1;               // AIF_WEAPON1 (0x00000001)
+#else
+  uint32_t weapon1 : 1;               // AIF_WEAPON1 (0x00000001)
+  uint32_t weapon2 : 1;               // AIF_WEAPON2 (0x00000002)
+  uint32_t melee1 : 1;                // AIF_MELEE1 (0x00000004)
+  uint32_t melee2 : 1;                // AIF_MELEE2 (0x00000008)
+  uint32_t stays_inout : 1;           // AIF_STAYS_INOUT (0x00000010), alias
+                                      // AIF_GB_MIMIC_PLAYER_FIRING_HACK (0x00000010)
+  uint32_t act_as_neutral_until_shot : 1; // AIF_ACT_AS_NEUTRAL_UNTIL_SHOT (0x00000020)
+  uint32_t persistant : 1;            // AIF_PERSISTANT (0x00000040)
+  uint32_t dodge : 1;                 // AIF_DODGE (0x00000080)
+  uint32_t fire : 1;                  // AIF_FIRE (0x00000100)
+  uint32_t flinch : 1;                // AIF_FLINCH (0x00000200)
+  uint32_t determine_target : 1;      // AIF_DETERMINE_TARGET (0x00000400)
+  uint32_t aim : 1;                   // AIF_AIM (0x00000800)
+  uint32_t only_taunt_at_death : 1;   // AIF_ONLY_TAUNT_AT_DEATH (0x00001000)
+  uint32_t avoid_walls : 1;           // AIF_AVOID_WALLS (0x00002000)
+  uint32_t disabled : 1;              // AIF_DISABLED (0x00004000)
+  uint32_t fluctuate_speed_properties : 1; // AIF_FLUCTUATE_SPEED_PROPERTIES (0x00008000)
+  uint32_t team : 2;                  // AIF_TEAM_MASK (0x00030000): AIF_TEAM_PTMC (0x00000000),
+                                      // AIF_TEAM_REBEL (0x00010000), AIF_TEAM_HOSTILE (0x00020000),
+                                      // AIF_TEAM_NEUTRAL (0x00030000)
+  uint32_t ordered_wb_firing : 1;     // AIF_ORDERED_WB_FIRING (0x00040000)
+  uint32_t orient_to_vel : 1;         // AIF_ORIENT_TO_VEL (0x00080000)
+  uint32_t xz_dist : 1;               // AIF_XZ_DIST (0x00100000)
+  uint32_t report_new_orient : 1;     // AIF_REPORT_NEW_ORIENT (0x00200000)
+  uint32_t target_by_dist : 1;        // AIF_TARGET_BY_DIST (0x00400000)
+  uint32_t disable_firing : 1;        // AIF_DISABLE_FIRING (0x00800000)
+  uint32_t disable_melee : 1;         // AIF_DISABLE_MELEE (0x01000000)
+  uint32_t auto_avoid_friends : 1;    // AIF_AUTO_AVOID_FRIENDS (0x02000000)
+  uint32_t track_closest_2_friends : 1; // AIF_TRACK_CLOSEST_2_FRIENDS (0x04000000)
+  uint32_t track_closest_2_enemies : 1; // AIF_TRACK_CLOSEST_2_ENEMIES (0x08000000)
+  uint32_t biased_flight_height : 1;  // AIF_BIASED_FLIGHT_HEIGHT (0x10000000)
+  uint32_t force_awareness : 1;       // AIF_FORCE_AWARENESS (0x20000000)
+  uint32_t uvec_fov : 1;              // AIF_UVEC_FOV (0x40000000)
+  uint32_t aim_pnt_fov : 1;           // AIF_AIM_PNT_FOV (0x80000000)
+#endif
+};
+static_assert(sizeof(ai_frame_flags_t) == sizeof(uint32_t));
+
 // Designer-editable AI flags (replaces AIF_* for ai_info_t::flags).
 struct ai_flags_t
 {

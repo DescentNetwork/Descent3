@@ -824,7 +824,7 @@ struct ai_frame {
 
   ai_status_reg_t status_reg;
 
-  uint32_t flags;
+  ai_frame_flags_t flags;
   uint32_t notify_flags; // Agent is only notified of some event types
 
   // Normalized movement and facing information
