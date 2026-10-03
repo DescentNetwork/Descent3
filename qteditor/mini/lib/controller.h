@@ -149,17 +149,29 @@ struct ct_function {
   uint8_t flags[2];   // flags.
 };
 
+//	values for ct_packet.flags
+struct [[gnu::packed]] ct_packet_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 30;
+  uint32_t mouse : 1;        // CTPK_MOUSE (0x2) this is coming from a mouse device. default is joystick/keyboard.
+  uint32_t element_active : 1; // CTPK_ELEMENTACTIVE (0x1) indicates element was activated but no time/analog
+                               // information is available.
+#else
+  uint32_t element_active : 1; // CTPK_ELEMENTACTIVE (0x1) indicates element was activated but no time/analog
+                               // information is available.
+  uint32_t mouse : 1;        // CTPK_MOUSE (0x2) this is coming from a mouse device. default is joystick/keyboard.
+  uint32_t padding : 30;
+#endif
+};
+static_assert(sizeof(ct_packet_flags_t) == sizeof(uint32_t));
+
 struct ct_packet {
   ct_format format; // format of value.
   float value;      // time value for buttons, absolute value for axis values
-  uint32_t flags;   // additional information (see below)
+  ct_packet_flags_t flags;   // additional information (see below)
 };
 
 typedef unsigned ct_config_data; // passed by controller system to the outside, and back to controller system
-
-//	values for ct_packet.flags
-#define CTPK_ELEMENTACTIVE 0x1 // indicates element was activated but no time/analog information is available.
-#define CTPK_MOUSE 0x2         // this is coming from a mouse device. default is joystick/keyboard.
 
 //	element values
 const uint8_t CT_X_AXIS = 1, // AXIS constants for ctAxis
