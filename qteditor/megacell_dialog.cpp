@@ -19,6 +19,9 @@
 #include "megacell_dialog.h"
 #include "ui_megacell.h"
 
+#include <optional>
+#include <string>
+
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QLabel>
@@ -59,25 +62,36 @@ void MegacellDialog::onNew() {
   const QString name = QInputDialog::getText(this, "New megacell", "Name:", QLineEdit::Normal, "", &ok);
   if (!ok || name.isEmpty())
     return;
-  for (int i = 0; i < MAX_MEGACELLS; i++) {
-    if (!Megacells[i].used) {
-      Megacells[i].name = name.toStdString();
-      Megacells[i].used = true;
-      Num_megacells++;
-      app.current_megacell = i;
-      updateDialog();
-      return;
-    }
+
+  const std::optional<uint32_t> cell_handle = AllocMegacell();
+  if (!cell_handle) {
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No free megacell slots.");
+    return;
   }
-  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No free megacell slots.");
+
+  // Give the cell a name that is not already taken by some other cell, the same
+  // way the legacy editor does (CMegacellDialog::OnNewMegacell): append an
+  // increasing counter until the candidate is unused.
+  const std::string base = name.toStdString();
+  std::string unique;
+  for (int c = 1;; c++) {
+    unique = base + std::to_string(c);
+    if (!FindMegacellName(unique))
+      break;
+  }
+
+  Megacells[*cell_handle].name = unique;
+  app.current_megacell = static_cast<int>(*cell_handle);
+  updateDialog();
 }
 
 void MegacellDialog::onDelete() {
   if (Num_megacells < 1)
     return;
   const int n = app.current_megacell;
-  Megacells[n].used = false;
-  Num_megacells--;
+  if (n < 0 || !Megacells[n].used)
+    return;
+  FreeMegacell(static_cast<uint32_t>(n));
   app.current_megacell = GetNextMegacell(n);
   updateDialog();
 }

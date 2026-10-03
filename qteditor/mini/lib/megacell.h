@@ -20,6 +20,8 @@
 #define MEGACELL_H
 
 #include <cstdint>
+#include <optional>
+#include <string>
 
 #include "manage.h"
 #include "gametexture.h"
@@ -53,26 +55,28 @@ struct megacell {
   uint8_t used;
 };
 
-extern int Num_megacells;
+extern uint32_t Num_megacells;
 extern megacell Megacells[MAX_MEGACELLS];
 
 // Sets all MEGACELLs to unused
 void InitMegacells();
 
-// Allocs a MEGACELL for use, returns -1 if error, else index on success
-int AllocMegacell();
+// Allocs a MEGACELL for use, returns std::nullopt if error, else index on success
+std::optional<uint32_t> AllocMegacell();
 
 // Frees MEGACELL index n
-void FreeMegacell(int n);
+void FreeMegacell(uint32_t n);
 
 // Gets next MEGACELL from n that has actually been alloced
-int GetNextMegacell(int n);
+// n is signed because it may be the -1 "nothing selected" sentinel
+int32_t GetNextMegacell(int32_t n);
 
 // Gets previous MEGACELL from n that has actually been alloced
-int GetPrevMegacell(int n);
+// n is signed because it may be the -1 "nothing selected" sentinel
+int32_t GetPrevMegacell(int32_t n);
 
-// Searches thru all MEGACELLs for a specific name, returns -1 if not found
-// or index of MEGACELL with name
-int FindMegacellName(char *name);
+// Searches thru all MEGACELLs for a specific name, returns std::nullopt if not
+// found or the index of the MEGACELL with that name
+std::optional<uint32_t> FindMegacellName(const std::string &name);
 
 #endif

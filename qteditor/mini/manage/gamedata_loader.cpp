@@ -179,9 +179,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
   }
   // Loop grows so a second load produces the same arrays as the first.
   Doors.clear();
-  Num_megacells = 0;
-  for (auto &mg : Megacells)
-    mg = megacell{};
+  InitMegacells();
 
   // local page containers
   mngs_generic_page genericpage{};

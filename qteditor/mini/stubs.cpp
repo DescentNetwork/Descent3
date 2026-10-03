@@ -38,7 +38,6 @@
 #include "doorway.h"
 #include "weapon.h"
 #include "ship.h"
-#include "megacell.h"
 #include "trigger.h"
 #include "BOA.h"
 #include "bnode.h"
@@ -145,7 +144,6 @@ void BuildSingleBSPTree(int n) { PRINT_STUB(__FUNCTION__); }
 // ==================== Game globals ====================
 float Frametime = 0.0f;
 
-int Num_megacells = 0;
 uint32_t Num_objects = 0;
 int Num_game_paths = 0;
 int Num_object_ids[1500] = {};
@@ -214,9 +212,6 @@ d3::slotvec_t<weapon> Weapons;
 const char *const Static_weapon_names[] = {""};
 const int Static_weapon_names_msg[] = {0};
 void WBClearInfo(otype_wb_info *wb) { PRINT_STUB(__FUNCTION__); }
-
-// ==================== Megacell ====================
-megacell Megacells[MAX_MEGACELLS] = {};
 
 // ==================== Matcen ====================
 std::vector<matcen> Matcen;
