@@ -34,12 +34,12 @@
 #include "vecmat.h"
 
 // Editor-side path helpers provided in d3_editor_state.cpp.
-int AllocGamePath();
-void FreeGamePath(int n);
+std::optional<uint32_t> AllocGamePath();
+void FreeGamePath(uint32_t n);
 int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient);
 void DeleteNodeFromPath(int pathnum, int nodenum);
-int GetNextPath(int n);
-int GetPrevPath(int n);
+std::optional<uint32_t> GetNextPath(uint32_t n);
+std::optional<uint32_t> GetPrevPath(uint32_t n);
 int GetFirstPath();
 
 
@@ -122,11 +122,11 @@ void PathKeypad::onAddPath() {
                                              &ok);
   if (!ok || name.isEmpty())
     return;
-  int pathnum = AllocGamePath();
-  if (pathnum == -1)
+  const std::optional<uint32_t> pathnum = AllocGamePath();
+  if (!pathnum)
     return;
-  GamePaths[pathnum].name = name.toStdString();
-  app.current_path = pathnum;
+  GamePaths[*pathnum].name = name.toStdString();
+  app.current_path = static_cast<int>(*pathnum);
   app.current_node = 0;
   updateDialog();
 }
@@ -135,8 +135,9 @@ void PathKeypad::onDeletePath() {
   const int p = currentPath();
   if (p < 0)
     return;
-  FreeGamePath(p);
-  app.current_path = GetNextPath(p);
+  FreeGamePath(static_cast<uint32_t>(p));
+  if (const std::optional<uint32_t> next = GetNextPath(static_cast<uint32_t>(p)))
+    app.current_path = static_cast<int>(*next);
   app.current_node = 0;
   updateDialog();
 }

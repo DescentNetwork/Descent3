@@ -77,8 +77,8 @@
 #include "ScriptCompilerAPI.h"
 #include "polymodel.h"
 
-int AllocGamePath();
-void FreeGamePath(int n);
+std::optional<uint32_t> AllocGamePath();
+void FreeGamePath(uint32_t n);
 int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient);
 void DeleteNodeFromPath(int pathnum, int nodenum);
 void EBNode_ClearLevel();
@@ -7476,8 +7476,7 @@ private slots:
 
   void testAllocFreeGamePath() {
     int saved_num = Num_game_paths;
-    int idx = AllocGamePath();
-    QVERIFY(idx >= 0);
+    const uint32_t idx = *AllocGamePath();
     QVERIFY(GamePaths.is_used(idx));
     QVERIFY(GamePaths[idx].num_nodes == 0);
     QCOMPARE(Num_game_paths, saved_num + 1);
@@ -7529,11 +7528,10 @@ private slots:
 
   void testInsertAndDeleteNode() {
     int saved_num = Num_game_paths;
-    int idx = AllocGamePath();
-    QVERIFY(idx >= 0);
+    const uint32_t idx = *AllocGamePath();
 
     int s0 = app.current_path;
-    app.current_path = idx;
+    app.current_path = static_cast<int>(idx);
 
     matrix orient = IDENTITY_MATRIX;
     vector3 pos{10.0f, 20.0f, 30.0f};

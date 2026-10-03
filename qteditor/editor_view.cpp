@@ -1206,6 +1206,14 @@ void EditorView::renderObjects() {
   }
 }
 
+// GetNextPath reports std::nullopt once traversal runs off the end of the used
+// slots; renderPaths drives it from a for-statement increment, so the "no more
+// paths" case is carried as -1 and breaks the loop on the next turn.
+static int NextPathIndex(int cur) {
+  const std::optional<uint32_t> next = GetNextPath(static_cast<uint32_t>(cur));
+  return next ? static_cast<int>(*next) : -1;
+}
+
 void EditorView::renderPaths() {
   if (!Show_paths)
     return;
@@ -1221,7 +1229,10 @@ void EditorView::renderPaths() {
   const float h = height() > 0 ? static_cast<float>(height()) : 1.0f;
   const float focal = (h * 0.5f) / std::tan(kFovY * 0.5f);
 
-  for (int i = 0; i < Num_game_paths; i++, current_path_index = GetNextPath(current_path_index)) {
+  for (int i = 0; i < Num_game_paths; i++, current_path_index = NextPathIndex(current_path_index)) {
+    if (current_path_index < 0)
+      break;
+
     game_path *gp = &GamePaths[current_path_index];
     if (!GamePaths.is_used(current_path_index) || gp->num_nodes == 0)
       continue;

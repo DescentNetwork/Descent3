@@ -19,10 +19,7 @@ std::optional<uint32_t> FindGamePathName(const std::string &name) {
 }
 
 // Frees gamepath n for future use
-void FreeGamePath(int n) {
-  if (n < 0 || n >= static_cast<int>(GamePaths.size()))
-    return;
-
+void FreeGamePath(uint32_t n) {
   if (GamePaths.is_unused(n))
     return;
 
@@ -80,7 +77,7 @@ void DeleteNodeFromPath(int pathnum, int nodenum) {
   GamePaths[pathnum].num_nodes--;
 }
 
-int AllocGamePath() {
+std::optional<uint32_t> AllocGamePath() {
   for (size_t i = 0; i < GamePaths.size(); i++) {
     if (GamePaths.is_unused(i)) {
       GamePaths.acquire(i);
@@ -89,14 +86,14 @@ int AllocGamePath() {
       GamePaths[i].flags = {};
       GamePaths[i].pathnodes.clear();
       Num_game_paths++;
-      return (int)i;
+      return static_cast<uint32_t>(i);
     }
   }
   // No free slot anywhere: grow the table by one at the frontier.
   const size_t i = GamePaths.add_slot(game_path{});
   GamePaths.acquire(i);
   Num_game_paths++;
-  return (int)i;
+  return static_cast<uint32_t>(i);
 }
 
 int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
@@ -162,18 +159,12 @@ int MovePathNode(int pathnum, int nodenum, vector3 *delta_pos) {
   return MovePathNodeToPos(pathnum, nodenum, &attempted_pos);
 }
 
-int GetNextPath(int n) {
-  if (GamePaths.empty())
-    return -1;
-  Q_ASSERT(n >= 0 && n < static_cast<int>(GamePaths.size()));
-  return static_cast<int>(GamePaths.next(static_cast<size_t>(n)).value_or(-1));
+std::optional<uint32_t> GetNextPath(uint32_t n) {
+  return GamePaths.next(n);
 }
 
-int GetPrevPath(int n) {
-  if (GamePaths.empty())
-    return -1;
-  Q_ASSERT(n >= 0 && n < static_cast<int>(GamePaths.size()));
-  return static_cast<int>(GamePaths.prev(static_cast<size_t>(n)).value_or(-1));
+std::optional<uint32_t> GetPrevPath(uint32_t n) {
+  return GamePaths.prev(n);
 }
 
 int GetFirstPath() {

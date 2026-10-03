@@ -43,7 +43,7 @@ extern uint8_t Show_paths;
 
 // Allocs a gamepath that a robot will follow.  Returns an index into the GamePaths
 // array
-int AllocGamePath(void);
+std::optional<uint32_t> AllocGamePath(void);
 
 // Given a path number, and a node number in that path, adds another node after the
 // specified node
@@ -52,7 +52,7 @@ int AllocGamePath(void);
 // Flags are passed via the flags field
 int InsertNodeIntoPath(int pathnum, int nodenum, int flags);
 
-void FreeGamePath(int n);
+void FreeGamePath(uint32_t n);
 
 // Given a pathnum and a node index, deletes that node and moves all the following nodes down
 // by one
@@ -65,9 +65,9 @@ int MovePathNode(int pathnum, int nodenum, vector3 *delta_pos);
 int MovePathNodeToPos(int pathnum, int nodenum, vector3 *pos);
 
 // Gets next path from n that has actually been alloced
-int GetNextPath(int n);
+std::optional<uint32_t> GetNextPath(uint32_t n);
 // Gets previous path from n that has actually been alloced
-int GetPrevPath(int n);
+std::optional<uint32_t> GetPrevPath(uint32_t n);
 
 // returns the index of the first path (from 0) alloced
 // returns -1 if there are no paths
