@@ -563,7 +563,7 @@ static inline int GetFacePhysicsFlags(int roomnum, const face *fp) {
 
   // Check if the face is solid or transparent
   int bm_handle = GetTextureBitmap(fp->tmap, 0);
-  if (GameBitmaps[bm_handle].flags & BF_TRANSPARENT)
+  if (GameBitmaps[bm_handle].flags.transparent)
     ret |= FPF_TRANSPARENT;
   else
     ret |= FPF_SOLID;

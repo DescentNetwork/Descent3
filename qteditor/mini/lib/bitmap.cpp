@@ -20,7 +20,9 @@ std::optional<uint32_t> bm_AllocBitmap(int w, int h, int add_mem) {
   GameBitmaps[n].width = (uint16_t)w;
   GameBitmaps[n].height = (uint16_t)h;
   GameBitmaps[n].format = BITMAP_FORMAT_STANDARD;
-  GameBitmaps[n].flags = BF_CHANGED | BF_BRAND_NEW;
+  GameBitmaps[n].flags = {};
+  GameBitmaps[n].flags.changed = true;
+  GameBitmaps[n].flags.brand_new = true;
   GameBitmaps[n].cache_slot = -1;
   GameBitmaps[n].data16.reset();
   GameBitmaps[n].mip_levels = 0;
@@ -92,7 +94,7 @@ int bm_miplevels(int handle) {
   const bms_bitmap &b = GameBitmaps[handle];
   if (b.mip_levels)
     return b.mip_levels;
-  if (b.flags & BF_MIPMAPPED) {
+  if (b.flags.mipmapped) {
     int levels = 0;
     for (int tmp = b.width; tmp > 0; tmp >>= 1)
       levels++;
@@ -130,7 +132,7 @@ void bm_ScaleBitmapToBitmap(int dest, int src) {
       dh = bm_h(dest, i);
       memcpy(ddata, sdata, dw * dh * sizeof(uint16_t));
     }
-    GameBitmaps[dest].flags |= BF_CHANGED;
+    GameBitmaps[dest].flags.changed = true;
     return;
   }
 
@@ -155,5 +157,5 @@ void bm_ScaleBitmapToBitmap(int dest, int src) {
         ddata[i * dw + t] = sdata[static_cast<int>(yoff) * sw + static_cast<int>(xoff)];
     }
   }
-  GameBitmaps[dest].flags |= BF_CHANGED;
+  GameBitmaps[dest].flags.changed = true;
 }

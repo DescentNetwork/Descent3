@@ -554,7 +554,7 @@ int AllocLoadIFLVClip(const char *filename, int texture_size, int mipped, int fo
         dest_bm = bm_AllocBitmap(w, h, mipped * ((w * h) / 3));
         Q_ASSERT(dest_bm >= 0);
         if (mipped)
-          GameBitmaps[dest_bm].flags |= BF_MIPMAPPED;
+          GameBitmaps[dest_bm].flags.mipmapped = true;
         GameBitmaps[dest_bm].format = GameBitmaps[bm].format;
 
         bm_ScaleBitmapToBitmap(dest_bm, bm);

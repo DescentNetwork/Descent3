@@ -39,15 +39,31 @@
 #define BITMAP_NAME_LEN 35
 #define BAD_BITMAP_HANDLE 0
 
-// Bitmap flags
-#define BF_TRANSPARENT 1
-#define BF_CHANGED 2        // this bitmap has changed since last frame (useful for hardware cacheing)
-#define BF_MIPMAPPED 4      // This bitmap has mip levels
-#define BF_NOT_RESIDENT 8   // This bitmap is not paged in
-#define BF_WANTS_MIP 16     // Calculate mip levels when this bitmap is paged in
-#define BF_WANTS_4444 32    // Read data as 4444 when this bitmap is paged in
-#define BF_BRAND_NEW 64     // This bitmap was just allocated and hasn't been to the video card
-#define BF_COMPRESSABLE 128 // This bitmap is compressable for 3dhardware that supports it
+// Bitmap flags (bms_bitmap::flags)
+struct [[gnu::packed]] bitmap_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t compressable : 1; // BF_COMPRESSABLE (128) This bitmap is compressable for 3dhardware that supports it
+  uint8_t brand_new : 1;    // BF_BRAND_NEW (64) This bitmap was just allocated and hasn't been to the video card
+  uint8_t wants_4444 : 1;   // BF_WANTS_4444 (32) Read data as 4444 when this bitmap is paged in
+  uint8_t wants_mip : 1;    // BF_WANTS_MIP (16) Calculate mip levels when this bitmap is paged in
+  uint8_t not_resident : 1; // BF_NOT_RESIDENT (8) This bitmap is not paged in
+  uint8_t mipmapped : 1;     // BF_MIPMAPPED (4) This bitmap has mip levels
+  uint8_t changed : 1;      // BF_CHANGED (2) this bitmap has changed since last frame (useful for hardware
+                            // cacheing)
+  uint8_t transparent : 1;   // BF_TRANSPARENT (1)
+#else
+  uint8_t transparent : 1;   // BF_TRANSPARENT (1)
+  uint8_t changed : 1;      // BF_CHANGED (2) this bitmap has changed since last frame (useful for hardware
+                            // cacheing)
+  uint8_t mipmapped : 1;     // BF_MIPMAPPED (4) This bitmap has mip levels
+  uint8_t not_resident : 1; // BF_NOT_RESIDENT (8) This bitmap is not paged in
+  uint8_t wants_mip : 1;    // BF_WANTS_MIP (16) Calculate mip levels when this bitmap is paged in
+  uint8_t wants_4444 : 1;   // BF_WANTS_4444 (32) Read data as 4444 when this bitmap is paged in
+  uint8_t brand_new : 1;    // BF_BRAND_NEW (64) This bitmap was just allocated and hasn't been to the video card
+  uint8_t compressable : 1; // BF_COMPRESSABLE (128) This bitmap is compressable for 3dhardware that supports it
+#endif
+};
+static_assert(sizeof(bitmap_flags_t) == sizeof(uint8_t));
 
 // Bitmap priorities
 #define BITMAP_FORMAT_STANDARD 0
@@ -60,7 +76,7 @@ struct bms_bitmap {
 
   int16_t cache_slot; // For use by the rendering lib
   uint8_t mip_levels;
-  uint8_t flags;
+  bitmap_flags_t flags;
 
   uint8_t format;               // See bitmap format types above
   char name[BITMAP_NAME_LEN]; // Whats the name of this bitmap? (ie SteelWall)

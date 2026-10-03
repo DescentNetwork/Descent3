@@ -131,7 +131,7 @@ int GetTextureBitmap(int handle, int framenum, bool force) {
         GameTextures[handle].procedural->last_procedural_frame = FrameCount;
         GameTextures[handle].procedural->last_evaluation_time = d3::chrono::last_update();
         src_bitmap = GameTextures[handle].procedural->procedural_bitmap;
-        GameBitmaps[src_bitmap].flags |= BF_CHANGED;
+        GameBitmaps[src_bitmap].flags.changed = true;
       } else
         src_bitmap = GameTextures[handle].procedural->procedural_bitmap;
     }
@@ -212,7 +212,7 @@ int LoadTextureImage(const std::filesystem::path &filename, optref<int> type, in
     Q_ASSERT(dest_bm >= 0);
 
     if (mipped)
-      GameBitmaps[dest_bm].flags |= BF_MIPMAPPED;
+      GameBitmaps[dest_bm].flags.mipmapped = true;
     GameBitmaps[dest_bm].format = format;
 
     bm_ScaleBitmapToBitmap(dest_bm, bm_handle);

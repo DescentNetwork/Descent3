@@ -756,7 +756,7 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, int format) {
   strcpy(GameBitmaps[n].name, name);
 
   if (mipped)
-    GameBitmaps[n].flags |= BF_MIPMAPPED;
+    GameBitmaps[n].flags.mipmapped = true;
 
   if (n < 0) {
     LOG_ERROR("bm_tga: Failed to allocate memory.");
