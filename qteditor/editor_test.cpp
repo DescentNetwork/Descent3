@@ -2347,6 +2347,46 @@ private slots:
     GameTextures = saved;
   }
 
+  void testSoundSlotvecAccounting()
+  {
+    const d3::slotvec_t<sound_info> saved_sounds = Sounds;
+
+    Sounds.clear();
+    QVERIFY(Sounds.empty());
+    QVERIFY(!GetNextSound(0));
+    QVERIFY(!GetPrevSound(0));
+
+    const std::optional<uint32_t> s0 = AllocSound();
+    const std::optional<uint32_t> s1 = AllocSound();
+    QCOMPARE(*s0, 0u);
+    QCOMPARE(*s1, 1u);
+    QCOMPARE(static_cast<int>(Sounds.size()), 2);
+    QVERIFY(Sounds[0].name.empty());
+
+    QCOMPARE(*GetNextSound(0), 1u);
+    QCOMPARE(*GetNextSound(1), 0u); // wraps
+    QCOMPARE(*GetPrevSound(0), 1u); // wraps
+    QCOMPARE(*GetPrevSound(1), 0u);
+
+    FreeSound(0);
+    QVERIFY(Sounds.is_unused(0));
+    QCOMPARE(static_cast<int>(Sounds.size()), 2);
+    QCOMPARE(*GetNextSound(1), 1u); // only slot 1 is used
+
+    QCOMPARE(*AllocSound(), 0u); // reuse the freed slot
+    QCOMPARE(static_cast<int>(Sounds.size()), 2);
+
+    Sounds[0].name = "Boom";
+    QCOMPARE(*FindSoundName("Boom"), 0u);
+    QVERIFY(!FindSoundName("missing"));
+
+    FreeSound(0);
+    FreeSound(1);
+    QVERIFY(!GetNextSound(0));
+
+    Sounds = saved_sounds;
+  }
+
   void testWeaponSlotvecAccounting()
   {
     const d3::slotvec_t<weapon> saved_weapons = Weapons;
