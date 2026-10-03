@@ -535,6 +535,77 @@ struct [[gnu::packed]] ai_frame_flags_t {
 };
 static_assert(sizeof(ai_frame_flags_t) == sizeof(uint32_t));
 
+// ai_frame::notify_flags.  Bit N corresponds to the AIN_* notify type N (the
+// engine tests "(0x00000001 << notify_type) & notify_flags").
+struct [[gnu::packed]] ai_frame_notify_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 2;
+  uint32_t fired_weapon : 1;        // AIN_FIRED_WEAPON (29)
+  uint32_t movie_end : 1;            // AIN_MOVIE_END (28)
+  uint32_t movie_start : 1;          // AIN_MOVIE_START (27)
+  uint32_t scripted_orient : 1;      // AIN_SCRIPTED_ORIENT (26)
+  uint32_t scripted_influence : 1;   // AIN_SCRIPTED_INFLUENCE (25)
+  uint32_t melee_attack_frame : 1;   // AIN_MELEE_ATTACK_FRAME (24)
+  uint32_t melee_hit : 1;            // AIN_MELEE_HIT (23)
+  uint32_t bumped_obj : 1;           // AIN_BUMPED_OBJ (22)
+  uint32_t anim_complete : 1;        // AIN_ANIM_COMPLETE (21)
+  uint32_t scripted_enabler : 1;     // AIN_SCRIPTED_ENABLER (20)
+  uint32_t scripted_goal : 1;        // AIN_SCRIPTED_GOAL (19)
+  uint32_t goal_invalid : 1;         // AIN_GOAL_INVALID (18)
+  uint32_t target_invalid : 1;       // AIN_TARGET_INVALID (17)
+  uint32_t user_defined : 1;         // AIN_USER_DEFINED (16)
+  uint32_t near_wall : 1;            // AIN_NEAR_WALL (15)
+  uint32_t hit_by_weapon : 1;        // AIN_HIT_BY_WEAPON (14)
+  uint32_t near_target : 1;          // AIN_NEAR_TARGET (13)
+  uint32_t hear_noise : 1;           // AIN_HEAR_NOISE (12)
+  uint32_t goal_error : 1;           // AIN_GOAL_ERROR (11)
+  uint32_t goal_fail : 1;            // AIN_GOAL_FAIL (10)
+  uint32_t goal_complete : 1;        // AIN_GOAL_COMPLETE (9)
+  uint32_t obj_fired : 1;            // AIN_OBJ_FIRED (8)
+  uint32_t target_died : 1;          // AIN_TARGET_DIED (7)
+  uint32_t whit_object : 1;          // AIN_WHIT_OBJECT (6)
+  uint32_t player_sees_you : 1;      // AIN_PLAYER_SEES_YOU (5)
+  uint32_t see_target : 1;           // AIN_SEE_TARGET (4)
+  uint32_t whit_by_obj : 1;          // AIN_WHIT_BY_OBJ (3)
+  uint32_t obj_killed : 1;           // AIN_OBJ_KILLED (2)
+  uint32_t new_movement : 1;         // AIN_NEW_MOVEMENT (1)
+  uint32_t unused_bit_0 : 1;
+#else
+  uint32_t unused_bit_0 : 1;
+  uint32_t new_movement : 1;         // AIN_NEW_MOVEMENT (1)
+  uint32_t obj_killed : 1;           // AIN_OBJ_KILLED (2)
+  uint32_t whit_by_obj : 1;          // AIN_WHIT_BY_OBJ (3)
+  uint32_t see_target : 1;           // AIN_SEE_TARGET (4)
+  uint32_t player_sees_you : 1;      // AIN_PLAYER_SEES_YOU (5)
+  uint32_t whit_object : 1;          // AIN_WHIT_OBJECT (6)
+  uint32_t target_died : 1;          // AIN_TARGET_DIED (7)
+  uint32_t obj_fired : 1;            // AIN_OBJ_FIRED (8)
+  uint32_t goal_complete : 1;        // AIN_GOAL_COMPLETE (9)
+  uint32_t goal_fail : 1;            // AIN_GOAL_FAIL (10)
+  uint32_t goal_error : 1;           // AIN_GOAL_ERROR (11)
+  uint32_t hear_noise : 1;           // AIN_HEAR_NOISE (12)
+  uint32_t near_target : 1;          // AIN_NEAR_TARGET (13)
+  uint32_t hit_by_weapon : 1;        // AIN_HIT_BY_WEAPON (14)
+  uint32_t near_wall : 1;            // AIN_NEAR_WALL (15)
+  uint32_t user_defined : 1;         // AIN_USER_DEFINED (16)
+  uint32_t target_invalid : 1;       // AIN_TARGET_INVALID (17)
+  uint32_t goal_invalid : 1;         // AIN_GOAL_INVALID (18)
+  uint32_t scripted_goal : 1;        // AIN_SCRIPTED_GOAL (19)
+  uint32_t scripted_enabler : 1;     // AIN_SCRIPTED_ENABLER (20)
+  uint32_t anim_complete : 1;        // AIN_ANIM_COMPLETE (21)
+  uint32_t bumped_obj : 1;           // AIN_BUMPED_OBJ (22)
+  uint32_t melee_hit : 1;            // AIN_MELEE_HIT (23)
+  uint32_t melee_attack_frame : 1;   // AIN_MELEE_ATTACK_FRAME (24)
+  uint32_t scripted_influence : 1;   // AIN_SCRIPTED_INFLUENCE (25)
+  uint32_t scripted_orient : 1;      // AIN_SCRIPTED_ORIENT (26)
+  uint32_t movie_start : 1;          // AIN_MOVIE_START (27)
+  uint32_t movie_end : 1;            // AIN_MOVIE_END (28)
+  uint32_t fired_weapon : 1;         // AIN_FIRED_WEAPON (29)
+  uint32_t padding : 2;
+#endif
+};
+static_assert(sizeof(ai_frame_notify_flags_t) == sizeof(uint32_t));
+
 // Designer-editable AI flags (replaces AIF_* for ai_info_t::flags).
 struct ai_flags_t
 {

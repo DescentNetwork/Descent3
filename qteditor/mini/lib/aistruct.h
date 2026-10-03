@@ -825,7 +825,7 @@ struct ai_frame {
   ai_status_reg_t status_reg;
 
   ai_frame_flags_t flags;
-  uint32_t notify_flags; // Agent is only notified of some event types
+  ai_frame_notify_flags_t notify_flags; // Agent is only notified of some event types
 
   // Normalized movement and facing information
   vector3 movement_dir;
