@@ -160,12 +160,12 @@ void InitDoors();
 std::optional<uint32_t> AllocDoor();
 
 // Frees door index n
-void FreeDoor(int n);
+void FreeDoor(uint32_t n);
 
 // Gets next door from n that has actually been alloced
-std::optional<uint32_t> GetNextDoor(int n);
+std::optional<uint32_t> GetNextDoor(uint32_t n);
 // Gets previous door from n that has actually been alloced
-std::optional<uint32_t> GetPrevDoor(int n);
+std::optional<uint32_t> GetPrevDoor(uint32_t n);
 // Searches thru all doors for a specific name, returns -1 if not found
 // or index of door with name
 std::optional<uint32_t> FindDoorName(const std::string &name);

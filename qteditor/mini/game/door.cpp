@@ -140,7 +140,7 @@ d3::slotvec_t<door> Doors;
 
 // Sets all doors to unused
 void InitDoors() {
-  for (int i = 0; i < static_cast<int>(Doors.size()); i++)
+  for (size_t i = 0; i < Doors.size(); i++)
     Doors[i].model_handle = -1;
 }
 
@@ -158,30 +158,22 @@ std::optional<uint32_t> AllocDoor() {
 }
 
 // Frees door index n
-void FreeDoor(int n) {
-  Q_ASSERT(n >= 0 && n < static_cast<int>(Doors.size()));
+void FreeDoor(uint32_t n) {
+  Q_ASSERT(n < Doors.size());
   Q_ASSERT(Doors.is_used(n));
 
   Doors[n].name.clear();
-  Doors.release(static_cast<size_t>(n));
+  Doors.release(n);
 }
 
 // Gets next door from n that has actually been alloced
-std::optional<uint32_t> GetNextDoor(int n) {
-  if (Doors.empty())
-    return std::nullopt;
-  Q_ASSERT(n >= 0 && n < static_cast<int>(Doors.size()));
-
-  return Doors.next(static_cast<size_t>(n));
+std::optional<uint32_t> GetNextDoor(uint32_t n) {
+  return Doors.next(n);
 }
 
 // Gets previous door from n that has actually been alloced
-std::optional<uint32_t> GetPrevDoor(int n) {
-  if (Doors.empty())
-    return std::nullopt;
-  Q_ASSERT(n >= 0 && n < static_cast<int>(Doors.size()));
-
-  return Doors.prev(static_cast<size_t>(n));
+std::optional<uint32_t> GetPrevDoor(uint32_t n) {
+  return Doors.prev(n);
 }
 // Searches thru all doors for a specific name, returns -1 if not found
 // or index of door with name
