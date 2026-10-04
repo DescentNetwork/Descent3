@@ -149,8 +149,8 @@ struct d3edit_state
   // Current room & face
   int Curroomp = -1;
   int Curface = -1;
-  int Curedge = 0;
-  int Curvert = 0;
+  int Curedge = -1;
+  int Curvert = -1;
   int Curportal = -1;
 
   // Current object
@@ -164,16 +164,16 @@ struct d3edit_state
 
   // Marked room & face
   int Markedroomp = -1;
-  int Markedface = 0;
-  int Markededge = 0;
-  int Markedvert = 0;
+  int Markedface = -1;
+  int Markededge = -1;
+  int Markedvert = -1;
 
   // Placed room info
 
   int Placed_room = -1;
   group* Placed_group = nullptr;
 
-  int Placed_room_face = 0;
+  int Placed_room_face = -1;
   int Placed_door = -1;
 
   float Placed_room_angle = 0;
