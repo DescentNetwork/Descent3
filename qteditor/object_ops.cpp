@@ -75,30 +75,33 @@ int GetSelectedTerrainCell() {
 // MoveObject (internal) — editor/HObject.cpp:575
 // Attempt to set new object position using FVI.  Returns true if moved.
 // ============================================================================
-bool MoveObject(object *obj, vector *newpos) {
+bool MoveObject(object& obj, vector3& newpos) {
   fvi_query fq;
   fvi_info hit_info;
 
-  bool use_radius = (obj->movement_type == MT_PHYSICS);
+  bool use_radius = (obj.movement_type == movement_type::physics);
 
-  fq.p0 = &obj->pos;
-  fq.startroom = obj->roomnum;
-  fq.p1 = newpos;
-  fq.thisobjnum = OBJNUM(obj);
+  fq.p0 = &obj.pos;
+  fq.startroom = obj.roomnum;
+  fq.p1 = &newpos;
+  fq.thisobjnum = OBJNUM(&obj);
   fq.ignore_obj_list = NULL;
-  fq.flags = FQ_IGNORE_RENDER_THROUGH_PORTALS;
-  fq.rad = use_radius ? obj->size : 0.0f;
+  fq.flags = fvi_query_flags_t{};
+  fq.flags.ignore_render_through_portals = true;
+  fq.rad = use_radius ? obj.size : 0.0f;
 
   if (f_allow_objects_to_be_pushed_through_walls)
-    fq.flags |= (FQ_IGNORE_WALLS | FQ_IGNORE_TERRAIN | FQ_IGNORE_EXTERNAL_ROOMS);
+    fq.flags.ignore_walls = true;
+    fq.flags.ignore_terrain = true;
+    fq.flags.ignore_external_rooms = true;
 
   int fate = fvi_FindIntersection(&fq, &hit_info);
 
   if (fate == HIT_WALL)
-    if (vm_VectorDistance(&obj->pos, &hit_info.hit_pnt) < MOVE_EPSILON)
+    if (vm_VectorDistance(&obj.pos, &hit_info.hit_pnt) < MOVE_EPSILON)
       return false;
 
-  ObjSetPos(obj, &hit_info.hit_pnt, hit_info.hit_room, NULL, false);
+  ObjSetPos(obj, hit_info.hit_pnt, hit_info.hit_room, std::nullopt, false);
   return true;
 }
 
@@ -107,16 +110,16 @@ bool MoveObject(object *obj, vector *newpos) {
 // Applies a rotation to the specified object.
 // ============================================================================
 bool RotateObject(int objnum, angle p, angle h, angle b) {
-  object *obj = &Objects[objnum];
+  object& obj = Objects[objnum];
   matrix rotmat;
 
   vm_AnglesToMatrix(&rotmat, p, h, b);
-  obj->orient *= rotmat;
+  obj.orient *= rotmat;
 
-  vm_Orthogonalize(&obj->orient);
-  ObjSetOrient(obj, &obj->orient);
+  vm_Orthogonalize(&obj.orient);
+  ObjSetOrient(obj, obj.orient);
 
-  Object_moved = true;
+  app.Object_moved = true;
   return true;
 }
 
@@ -125,47 +128,45 @@ bool RotateObject(int objnum, angle p, angle h, angle b) {
 // Places a new object of the given type and ID into the world at the viewer's
 // location, then repositions it onto the current surface.
 // ============================================================================
-bool HObjectPlace(int obj_type, int obj_id) {
+bool HObjectPlace(object_type obj_type, int obj_id) {
   int objnum;
-  object *objp;
   poly_model *pm;
   matrix orient = IDENTITY_MATRIX;
 
   // Special stuff for player ship
-  if (obj_type == OBJ_PLAYER) {
-    if (!Num_ships) {
+  if (obj_type == object_type::player) {
+    if (Ships.empty()) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place a player: There are no player ships.");
       return false;
     }
 
-    int ship_num = D3EditState.current_ship;
-    if (ship_num == -1) {
+    if (app.current_ship == -1) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have a current player ship selected for this operation.");
       return false;
     }
 
-    Players[obj_id].ship_index = ship_num;
+    Players[obj_id].ship_index = app.current_ship;
   }
 
-  if (obj_type != OBJ_POWERUP) {
+  if (obj_type != object_type::powerup) {
     orient = Viewer_object->orient;
   }
 
-  objnum = ObjCreate(obj_type, obj_id, Viewer_object->roomnum, &Viewer_object->pos, &orient);
+  objnum = ObjCreate(obj_type, obj_id, Viewer_object->roomnum, Viewer_object->pos, &orient).value_or(-1);
   if (objnum == -1)
     return false;
 
-  objp = &Objects[objnum];
+  object& obj = Objects[objnum];
 
   // If we have a ground plane, use current cell or face for position
-  if ((objp->render_type == RT_POLYOBJ) &&
-      ((pm = GetPolymodelPointer(objp->rtype.pobj_info.model_num)) != nullptr) &&
+  if ((obj.render_type == render_type::polyobj) &&
+      ((pm = GetPolymodelPointer(obj.rtype.pobj_info().model_num)) != nullptr) &&
       pm->n_ground) {
-    vector *surface_norm;
-    vector pos;
+    vector3 *surface_norm;
+    vector3 pos;
     int roomnum;
 
-    if (Editor_view_mode == VM_TERRAIN) {
+    if (app.view_mode == state::viewer::terrain) {
       int cellnum = GetSelectedTerrainCell();
       if (cellnum == -1) {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have a terrain cell selected to place an object.");
@@ -178,51 +179,51 @@ bool HObjectPlace(int obj_type, int obj_id) {
         return false;
       }
 
-      ComputeTerrainSegmentCenter(&pos, cellnum);
+      ComputeTerrainSegmentCenter(pos, cellnum);
       surface_norm = &TerrainNormals[MAX_TERRAIN_LOD - 1][cellnum].normal1;
       roomnum = MAKE_ROOMNUM(cellnum);
     } else {
-      ComputeCenterPointOnFace(&pos, Curroomp, Curface);
-      surface_norm = &Curroomp->faces[Curface].normal;
-      roomnum = ROOMNUM(Curroomp);
+      ComputeCenterPointOnFace(&pos, app.Curroomp, app.Curface);
+      surface_norm = &Rooms[app.Curroomp].faces[app.Curface].normal;
+      roomnum = app.Curroomp;
 
-      if (Rooms[roomnum].flags & RF_EXTERNAL)
-        roomnum = GetTerrainRoomFromPos(&pos);
+      if (Rooms[roomnum].flags.external)
+        roomnum = GetTerrainRoomFromPos(pos).value_or(-1);
     }
 
     matrix groundplane_orient, surface_orient, object_orient;
 
-    vector ground_point;
-    vector ground_normal;
-    vector to_ground;
+    vector3 ground_point;
+    vector3 ground_normal;
+    vector3 to_ground;
 
-    PhysCalcGround(&ground_point, &ground_normal, objp, 0);
-    to_ground = objp->pos - ground_point;
+    PhysCalcGround(ground_point, ground_normal, obj, 0);
+    to_ground = obj.pos - ground_point;
     float dist = vm_Dot3Product(ground_normal, to_ground);
     pos += dist * (*surface_norm);
 
-    vm_VectorToMatrix(&groundplane_orient, &pm->ground_slots[0].norm, NULL, NULL);
-    vm_VectorToMatrix(&surface_orient, surface_norm);
+    vm_VectorToMatrix(groundplane_orient, pm->ground_slots[0].norm, std::nullopt, std::nullopt);
+    vm_VectorToMatrix(surface_orient, *surface_norm);
     vm_MatrixMulTMatrix(&object_orient, &surface_orient, &groundplane_orient);
 
-    ObjSetPos(objp, &pos, roomnum, &object_orient, false);
+    ObjSetPos(obj, pos, roomnum, object_orient, false);
   } else {
     // No ground plane — move in front of viewer, facing viewer
-    vector pos;
+    vector3 pos;
 
-    if (Viewer_object->flags & OF_OUTSIDE_MINE) {
+    if (Viewer_object->flags.outside_mine) {
       ObjDelete(objnum);
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place the object here: the viewer is outside the mine.");
       return false;
     }
 
-    objp->orient.fvec = -objp->orient.fvec;
-    objp->orient.rvec = -objp->orient.rvec;
-    ObjSetOrient(objp, &objp->orient);
+    obj.orient.fvec = -obj.orient.fvec;
+    obj.orient.rvec = -obj.orient.rvec;
+    ObjSetOrient(obj, obj.orient);
 
     pos = Viewer_object->pos + Viewer_object->orient.fvec * OBJECT_PLACE_DIST;
 
-    if (!MoveObject(objp, &pos)) {
+    if (!MoveObject(obj, pos)) {
       ObjDelete(objnum);
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place the object here: collides with wall.");
       return false;
@@ -230,15 +231,15 @@ bool HObjectPlace(int obj_type, int obj_id) {
   }
 
   // Deal with special stuff for player
-  if (obj_type == OBJ_PLAYER) {
-    Players[obj_id].start_pos = objp->pos;
-    Players[obj_id].start_roomnum = objp->roomnum;
-    Players[obj_id].start_orient = objp->orient;
+  if (obj_type == object_type::player) {
+    Players[obj_id].start_pos = obj.pos;
+    Players[obj_id].start_roomnum = obj.roomnum;
+    Players[obj_id].start_orient = obj.orient;
     vm_Orthogonalize(&Players[obj_id].start_orient);
   }
 
-  Cur_object_index = objnum;
-  World_changed = true;
+  app.Cur_object_index = objnum;
+  app.World_changed = true;
 
   return true;
 }
@@ -247,38 +248,38 @@ bool HObjectPlace(int obj_type, int obj_id) {
 // ResetGroundObject — editor/HObject.cpp:430
 // Adjusts an object so it's at the ground level.
 // ============================================================================
-void ResetGroundObject(object *objp) {
-  if (!OBJECT_OUTSIDE(objp))
+void ResetGroundObject(object& obj) {
+  if (!OBJECT_OUTSIDE(&obj))
     return;
 
   poly_model *pm;
-  if (!((objp->render_type == RT_POLYOBJ) &&
-        ((pm = GetPolymodelPointer(objp->rtype.pobj_info.model_num)) != nullptr) &&
+  if (!((obj.render_type == render_type::polyobj) &&
+        ((pm = GetPolymodelPointer(obj.rtype.pobj_info().model_num)) != nullptr) &&
         pm->n_ground))
     return;
 
-  vector surface_norm;
-  vector pos = objp->pos;
-  pos.y() = GetTerrainGroundPoint(&pos, &surface_norm);
+  vector3 surface_norm;
+  vector3 pos = obj.pos;
+  pos.y() = GetTerrainGroundPoint(pos, surface_norm);
 
-  vector ground_point;
-  vector ground_normal;
-  vector to_ground;
+  vector3 ground_point;
+  vector3 ground_normal;
+  vector3 to_ground;
 
-  PhysCalcGround(&ground_point, &ground_normal, objp, 0);
-  to_ground = objp->pos - ground_point;
+  PhysCalcGround(ground_point, ground_normal, obj, 0);
+  to_ground = obj.pos - ground_point;
   float dist = vm_Dot3Product(ground_normal, to_ground);
   pos += dist * surface_norm;
 
   matrix groundplane_orient, surface_orient, object_orient;
 
-  vm_VectorToMatrix(&groundplane_orient, &pm->ground_slots[0].norm, NULL, NULL);
-  vm_VectorToMatrix(&surface_orient, &surface_norm);
+  vm_VectorToMatrix(groundplane_orient, pm->ground_slots[0].norm, std::nullopt, std::nullopt);
+  vm_VectorToMatrix(surface_orient, surface_norm);
   vm_MatrixMulTMatrix(&object_orient, &surface_orient, &groundplane_orient);
 
-  ObjSetPos(objp, &pos, objp->roomnum, &object_orient, false);
+  ObjSetPos(obj, pos, obj.roomnum, object_orient, false);
 
-  World_changed = true;
+  app.World_changed = true;
 }
 
 // ============================================================================
@@ -291,51 +292,50 @@ void HObjectMove(int objnum, float dx, float dy, float dz) {
     return;
   }
 
-  object *obj = &Objects[objnum];
-  object *ref_obj = (D3EditState.object_move_mode == REL_VIEWER) ? Viewer_object : obj;
-  matrix *mat = &ref_obj->orient;
+  object& obj = Objects[objnum];
+  matrix& mat = (app.object_move_mode == REL_VIEWER) ? Viewer_object->orient : obj.orient;
 
-  vector newpos = obj->pos + (mat->rvec * dx) + (mat->uvec * dy) + (mat->fvec * -dz);
+  vector3 newpos = obj.pos + (mat.rvec * dx) + (mat.uvec * dy) + (mat.fvec * -dz);
 
-  MoveObject(obj, &newpos);
-  Object_moved = true;
+  MoveObject(obj, newpos);
+  app.Object_moved = true;
 }
 
 // ============================================================================
 // Rotation functions — editor/HObject.cpp:503-513
 // ============================================================================
-void HObjectIncreaseBank() { RotateObject(Cur_object_index, 0, 0, Object_move_rotation); }
-void HObjectDecreaseBank() { RotateObject(Cur_object_index, 0, 0, -Object_move_rotation); }
-void HObjectIncreasePitch() { RotateObject(Cur_object_index, Object_move_rotation, 0, 0); }
-void HObjectDecreasePitch() { RotateObject(Cur_object_index, -Object_move_rotation, 0, 0); }
-void HObjectIncreaseHeading() { RotateObject(Cur_object_index, 0, Object_move_rotation, 0); }
-void HObjectDecreaseHeading() { RotateObject(Cur_object_index, 0, -Object_move_rotation, 0); }
+void HObjectIncreaseBank() { RotateObject(app.Cur_object_index, 0, 0, Object_move_rotation); }
+void HObjectDecreaseBank() { RotateObject(app.Cur_object_index, 0, 0, -Object_move_rotation); }
+void HObjectIncreasePitch() { RotateObject(app.Cur_object_index, Object_move_rotation, 0, 0); }
+void HObjectDecreasePitch() { RotateObject(app.Cur_object_index, -Object_move_rotation, 0, 0); }
+void HObjectIncreaseHeading() { RotateObject(app.Cur_object_index, 0, Object_move_rotation, 0); }
+void HObjectDecreaseHeading() { RotateObject(app.Cur_object_index, 0, -Object_move_rotation, 0); }
 
 // ============================================================================
 // HObjectDelete — editor/HObject.cpp:517
 // Deletes the currently selected object from the mine.
 // ============================================================================
 void HObjectDelete() {
-  if (Cur_object_index == -1)
+  if (app.Cur_object_index == -1)
     return;
 
-  int objnum = Cur_object_index;
+  int objnum = app.Cur_object_index;
 
   if (&Objects[objnum] == Player_object) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Can't delete Player object");
     return;
   }
 
-  if (Objects[objnum].type == OBJ_DOOR) {
+  if (Objects[objnum].type == object_type::door) {
     if (QMessageBox::question(nullptr, "Are you sure?", "It's very, very bad to delete a door object.  Are you sure you want to do this?") == QMessageBox::No)
       return;
   }
 
   ObjDelete(objnum);
-  if (objnum == Cur_object_index)
-    Cur_object_index = -1;
+  if (objnum == app.Cur_object_index)
+    app.Cur_object_index = -1;
 
-  World_changed = true;
+  app.World_changed = true;
 }
 
 // ============================================================================
@@ -343,24 +343,24 @@ void HObjectDelete() {
 // Sets default (identity) orientation for the current object.
 // ============================================================================
 void HObjectSetDefault() {
-  if (Cur_object_index == -1)
+  if (app.Cur_object_index == -1)
     return;
 
-  ObjSetOrient(&Objects[Cur_object_index], &Identity_matrix);
-  World_changed = true;
+  ObjSetOrient(Objects[app.Cur_object_index], Identity_matrix);
+  app.World_changed = true;
 }
 
 // ============================================================================
 // HObjectMoveToViewer — editor/HObject.cpp:554
 // Teleports an object to in front of the viewer.
 // ============================================================================
-void HObjectMoveToViewer(object *objp) {
-  ObjSetPos(objp, &Viewer_object->pos, Viewer_object->roomnum, NULL, false);
+void HObjectMoveToViewer(object& objp) {
+  ObjSetPos(objp, Viewer_object->pos, Viewer_object->roomnum, std::nullopt, false);
 
-  vector pos = Viewer_object->pos + Viewer_object->orient.fvec * OBJECT_PLACE_DIST;
-  MoveObject(objp, &pos);
+  vector3 pos = Viewer_object->pos + Viewer_object->orient.fvec * OBJECT_PLACE_DIST;
+  MoveObject(objp, pos);
 
-  World_changed = true;
+  app.World_changed = true;
 }
 
 // ============================================================================
@@ -368,10 +368,10 @@ void HObjectMoveToViewer(object *objp) {
 // Flips the current object by negating its up and right vectors.
 // ============================================================================
 void HObjectFlip() {
-  matrix *m = &Objects[Cur_object_index].orient;
+  matrix *m = &Objects[app.Cur_object_index].orient;
 
   m->uvec = -m->uvec;
   m->rvec = -m->rvec;
 
-  World_changed = true;
+  app.World_changed = true;
 }

@@ -10,30 +10,32 @@
 #include "object_ops.h"
 
 
+using namespace std::string_literals;
+
 namespace {
 const char *kCategoryNames[] = {
     "Clipboard", "Powerups", "Robots", "Buildings", "Door",
     "Clutter", "Players", "Cameras", "Sound sources", "Miscellaneous"};
 
-int categoryForType(uint8_t type) {
+int categoryForType(object_type type) {
   switch (type) {
-  case OBJ_POWERUP:
+  case object_type::powerup:
     return 1;
-  case OBJ_ROBOT:
+  case object_type::robot:
     return 2;
-  case OBJ_BUILDING:
+  case object_type::building:
     return 3;
-  case OBJ_CLUTTER:
+  case object_type::clutter:
     return 5;
-  case OBJ_DOOR:
+  case object_type::door:
     return 4;
-  case OBJ_PLAYER:
+  case object_type::player:
     return 6;
-  case OBJ_CAMERA:
+  case object_type::camera:
     return 7;
-  case OBJ_SOUNDSOURCE:
+  case object_type::soundsource:
     return 8;
-  case OBJ_VIEWER:
+  case object_type::viewer:
     return -1;
   default:
     return 9;
@@ -66,21 +68,19 @@ ObjectTreeDialog::~ObjectTreeDialog() { delete ui; }
 
 QString ObjectTreeDialog::makeInfoStr(const object *obj) {
   QString str;
-  if (obj->type == OBJ_POWERUP || obj->type == OBJ_ROBOT || obj->type == OBJ_BUILDING ||
-      obj->type == OBJ_CLUTTER) {
+  if (obj->type == object_type::powerup || obj->type == object_type::robot || obj->type == object_type::building ||
+      obj->type == object_type::clutter) {
     str = QString("%1-(0x%2)[%3](%4) ")
               .arg(static_cast<int>(OBJNUM(obj)))
               .arg(obj->handle, 0, 16)
-              .arg(QString::fromLatin1(Object_info[obj->id].name))
-              .arg(obj->name ? QString::fromLatin1(obj->name) : "No Name Given");
+              .arg(QString::fromStdString(Object_info[obj->id].name))
+              .arg(QString::fromStdString(obj->name.empty() ? "No Name Given"s : obj->name));
   } else {
-    const char *typeName =
-        (obj->type >= 0 && obj->type < MAX_OBJECT_TYPES) ? Object_type_names[obj->type] : "Unnamed type";
     str = QString("%1-(0x%2)[%3](%4) ")
               .arg(static_cast<int>(OBJNUM(obj)))
               .arg(obj->handle, 0, 16)
-              .arg(QString::fromLatin1(typeName))
-              .arg(obj->name ? QString::fromLatin1(obj->name) : "No Name Given");
+              .arg(QString::fromStdString(Object_type_names[obj_type_index(obj->type)]))
+              .arg(QString::fromStdString(obj->name.empty() ? "No Name Given"s : obj->name));
   }
 
   if (OBJECT_OUTSIDE(obj))
@@ -101,7 +101,7 @@ void ObjectTreeDialog::Refresh() {
     topItems[i] = new QTreeWidgetItem(tree, {QString::fromLatin1(kCategoryNames[i])});
 
   for (int i = 0; i <= Highest_object_index; i++) {
-    if (Objects[i].flags & OF_DEAD)
+    if (Objects[i].flags.dead)
       continue;
 
     int cat = categoryForType(Objects[i].type);
@@ -140,15 +140,15 @@ void ObjectTreeDialog::onGoTo() {
   if (!obj)
     return;
 
-  if (OBJECT_OUTSIDE(obj) && Editor_view_mode != VM_TERRAIN) {
-    Editor_view_mode = VM_TERRAIN;
-  } else if (!OBJECT_OUTSIDE(obj) && Editor_view_mode != VM_MINE) {
-    Editor_view_mode = VM_MINE;
+  if (OBJECT_OUTSIDE(obj) && app.view_mode != state::viewer::terrain) {
+    app.view_mode = state::viewer::terrain;
+  } else if (!OBJECT_OUTSIDE(obj) && app.view_mode != state::viewer::mine) {
+    app.view_mode = state::viewer::mine;
   }
 
-  ObjSetPos(Viewer_object, &obj->pos, obj->roomnum, &obj->orient, false);
+  ObjSetPos(*Viewer_object, obj->pos, obj->roomnum, obj->orient, false);
   EditorStatus("Viewer moved to object %d", OBJNUM(obj));
-  Viewer_moved = true;
+  app.Viewer_moved = true;
 }
 
 void ObjectTreeDialog::onDelete() {
@@ -160,7 +160,7 @@ void ObjectTreeDialog::onDelete() {
   if (!obj)
     return;
 
-  Cur_object_index = OBJNUM(obj);
+  app.Cur_object_index = OBJNUM(obj);
   HObjectDelete();
   Refresh();
 }
@@ -174,14 +174,14 @@ void ObjectTreeDialog::onClearAll()
         continue;
       if (&Objects[i] == Viewer_object)
         continue;
-      if (Objects[i].type == OBJ_DOOR)
+      if (Objects[i].type == object_type::door)
         continue;
-      if (Objects[i].type != OBJ_NONE)
+      if (Objects[i].type != object_type::none)
         ObjDelete(i);
     }
 
-    World_changed = true;
-    Cur_object_index = -1;
+    app.World_changed = true;
+    app.Cur_object_index = -1;
     Refresh();
   }
 }

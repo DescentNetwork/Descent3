@@ -19,6 +19,7 @@
 #pragma once
 
 #include "fix.h"
+#include "object_external.h" // object_type
 #include "vecmat.h"
 
 struct object;
@@ -42,12 +43,12 @@ extern float Object_move_scale;
 extern angle Object_move_rotation;
 
 // Placement.
-bool HObjectPlace(int obj_type, int obj_id);
+bool HObjectPlace(object_type obj_type, int obj_id);
 int GetSelectedTerrainCell();
 
 // Movement.
 void HObjectMove(int objnum, float dx, float dy, float dz);
-void HObjectMoveToViewer(object *objp);
+void HObjectMoveToViewer(object& objp);
 
 // Rotation.
 void HObjectIncreaseBank();
@@ -65,8 +66,8 @@ void HObjectFlip();
 void HObjectDelete();
 
 // Terrain ground re-alignment.
-void ResetGroundObject(object *objp);
+void ResetGroundObject(object& objp);
 
 // Internal helpers (exposed for testing).
-bool MoveObject(object *obj, vector *newpos);
+bool MoveObject(object& obj, vector3& newpos);
 bool RotateObject(int objnum, angle p, angle h, angle b);

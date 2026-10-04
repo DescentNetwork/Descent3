@@ -23,6 +23,9 @@
 // re-implemented here with the same semantics.  Only the editor-specific
 // helpers (LevelTexIncrementTexture, etc.) are stubbed/skipped.
 
+#include <algorithm>
+#include <utility>
+
 #include "editor_room_state.h"
 
 #include <QtGlobal>
@@ -33,7 +36,7 @@
 #include "d3edit.h"
 #include "door.h"
 #include "doorway.h"
-#include "mem.h"
+#include "mem/mem.h"
 
 #include "object.h"
 #include "polymodel.h"
@@ -57,14 +60,12 @@ static void EditorDeleteTrigger(int trig_num) {
   trigger *tp = &Triggers[trig_num];
   room *rp = &Rooms[tp->roomnum];
   face *fp = &rp->faces[tp->facenum];
-  fp->flags &= ~FF_HAS_TRIGGER;
-  for (int i = trig_num; i < Num_triggers - 1; i++)
-    Triggers[i] = Triggers[i + 1];
-  Num_triggers--;
+  fp->flags.has_trigger = false;
+  Triggers.erase(Triggers.begin() + trig_num);
 }
 
 static void EditorDeleteTriggerByRoomFace(int roomnum, int facenum) {
-  for (int i = 0; i < Num_triggers; i++) {
+  for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
     if (Triggers[i].roomnum == roomnum && Triggers[i].facenum == facenum) {
       EditorDeleteTrigger(i);
       return;
@@ -82,7 +83,7 @@ static void EditorDeleteTriggerByRoomFace(int roomnum, int facenum) {
 // ============================================================================
 // Helper: NormalsAreSame
 // ============================================================================
-static inline bool NormalsAreSame(const vector *n0, const vector *n1) {
+static inline bool NormalsAreSame(const vector3 *n0, const vector3 *n1) {
   scalar d = vm_Dot3Product(*n0, *n1);
   return (d > 0.999f);
 }
@@ -97,80 +98,62 @@ void ReInitRoomFace(face *fp, int nverts) {
 
   fp->num_verts = nverts;
 
-  mem_free(fp->face_verts);
-  mem_free(fp->face_uvls);
-
-  fp->face_verts = (int16_t *)mem_malloc(nverts * sizeof(*fp->face_verts));
-  Q_ASSERT(fp->face_verts != NULL);
-  fp->face_uvls = mem_rmalloc<roomUVL>(nverts);
-  Q_ASSERT(fp->face_uvls != NULL);
+  fp->face_verts.assign(static_cast<size_t>(nverts), 0);
+  fp->face_uvls.resize(nverts);
 }
 
 // ============================================================================
 // RoomAddVertices — editor/Erooms.cpp:1394
 // Create space for additional vertices in a room.
 // ============================================================================
-int RoomAddVertices(room *rp, int num_new_verts) {
+int RoomAddVertices(int roomnum, int num_new_verts) {
   if (num_new_verts == 0)
     return 0;
 
-  auto newverts = mem_rmalloc<vector>(rp->num_verts + num_new_verts);
-  Q_ASSERT(newverts != NULL);
+  room &rp = Rooms[roomnum];
+  rp.verts.resize(rp.num_verts + num_new_verts);
+  rp.num_verts += num_new_verts;
 
-  for (int i = 0; i < rp->num_verts; i++)
-    newverts[i] = rp->verts[i];
-
-  mem_free(rp->verts);
-  rp->verts = newverts;
-  rp->num_verts += num_new_verts;
-
-  return (rp->num_verts - num_new_verts);
+  return (rp.num_verts - num_new_verts);
 }
 
 // ============================================================================
 // RoomAddFaces — editor/Erooms.cpp:1421
 // Create space for additional faces in a room.
 // ============================================================================
-int RoomAddFaces(room *rp, int num_new_faces) {
+int RoomAddFaces(int roomnum, int num_new_faces) {
   if (num_new_faces == 0)
     return 0;
 
-  auto newfaces = mem_rmalloc<face>(rp->num_faces + num_new_faces);
-  Q_ASSERT(newfaces != NULL);
+  room &rp = Rooms[roomnum];
+  rp.faces.resize(rp.num_faces + num_new_faces);
+  rp.num_faces += num_new_faces;
 
-  for (int i = 0; i < rp->num_faces; i++)
-    newfaces[i] = rp->faces[i];
-
-  mem_free(rp->faces);
-  rp->faces = newfaces;
-  rp->num_faces += num_new_faces;
-
-  if (rp->num_bbf_regions) {
-    for (int i = 0; i < rp->num_bbf_regions; i++)
-      mem_free(rp->bbf_list[i]);
-    mem_free(rp->bbf_list);
-    mem_free(rp->num_bbf);
-    mem_free(rp->bbf_list_min_xyz);
-    mem_free(rp->bbf_list_max_xyz);
-    mem_free(rp->bbf_list_sector);
-    rp->num_bbf_regions = 0;
+  if (rp.num_bbf_regions) {
+    rp.bbf_list.clear();
+    rp.num_bbf.clear();
+    rp.bbf_list_min_xyz.clear();
+    rp.bbf_list_max_xyz.clear();
+    rp.bbf_list_sector.clear();
+    rp.num_bbf_regions = 0;
   }
 
-  return (rp->num_faces - num_new_faces);
+  return (rp.num_faces - num_new_faces);
 }
 
 // ============================================================================
 // ResetRoomFaceNormals — editor/Erooms.cpp:1154
 // ============================================================================
-bool ResetRoomFaceNormals(room *rp) {
+bool ResetRoomFaceNormals(int roomnum) {
   int bad_normals = 0;
 
-  for (int i = 0; i < rp->num_faces; i++)
-    if (!ComputeFaceNormal(rp, i))
+  room &rp = Rooms[roomnum];
+  for (int i = 0; i < rp.num_faces; i++)
+    if (!ComputeFaceNormal(roomnum, i))
       bad_normals++;
 
   if (bad_normals > 0) {
-    LOG_WARNING("Warning: Room %d has %d bad or low-precision normals\n", ROOMNUM(rp), bad_normals);
+    LOG_WARNING("Warning: Room %d has %d bad or low-precision normals\n", roomnum, bad_normals);
     return false;
   }
   return true;
@@ -189,8 +172,8 @@ void CopyFace(face *dfp, face *sfp) {
   dfp->tmap = sfp->tmap;
   dfp->light_multiple = sfp->light_multiple;
 
-  dfp->flags &= ~FF_LIGHTMAP;
-  dfp->flags &= ~FF_HAS_TRIGGER;
+  dfp->flags.lightmap = false;
+  dfp->flags.has_trigger = false;
 
   for (int i = 0; i < sfp->num_verts; i++) {
     dfp->face_verts[i] = sfp->face_verts[i];
@@ -203,30 +186,32 @@ void CopyFace(face *dfp, face *sfp) {
 // Copy goal face flags from one face to another.
 // ============================================================================
 void CopyFaceFlags(face *dfp, face *sfp) {
-  dfp->flags = 0;
-  if (sfp->flags & FF_GOALFACE)
-    dfp->flags |= FF_GOALFACE;
+  dfp->flags = {};
+  if (sfp->flags.goalface)
+    dfp->flags.goalface = true;
 }
 
 // ============================================================================
 // CopyRoom — editor/Erooms.cpp:1941
 // Deep-copies a room (verts, faces, doorway, flags).  Portals are not copied.
 // ============================================================================
-void CopyRoom(room *destp, room *srcp) {
-  InitRoom(destp, srcp->num_verts, srcp->num_faces, 0);
+void CopyRoom(int destroom, int srcroom) {
+  room &destp = Rooms[destroom];
+  room &srcp = Rooms[srcroom];
 
-  for (int i = 0; i < destp->num_faces; i++)
-    CopyFace(&destp->faces[i], &srcp->faces[i]);
+  InitRoom(destp, srcp.num_verts, srcp.num_faces, 0);
 
-  for (int i = 0; i < destp->num_verts; i++)
-    destp->verts[i] = srcp->verts[i];
+  for (int i = 0; i < destp.num_faces; i++)
+    CopyFace(&destp.faces[i], &srcp.faces[i]);
 
-  if (srcp->doorway_data) {
-    destp->doorway_data = mem_rmalloc<doorway>();
-    *destp->doorway_data = *srcp->doorway_data;
+  for (int i = 0; i < destp.num_verts; i++)
+    destp.verts[i] = srcp.verts[i];
+
+  if (srcp.doorway_data) {
+    destp.doorway_data = std::make_unique<doorway>(*srcp.doorway_data);
   }
 
-  destp->flags = srcp->flags;
+  destp.flags = srcp.flags;
 
   // Editor-lighting arrays (Room_multiplier, Room_ambience_*) live in the
   // editor lib and are not linked; skip.
@@ -235,17 +220,17 @@ void CopyRoom(room *destp, room *srcp) {
 // ============================================================================
 // FaceIsPlanar — editor/Erooms.cpp:1194
 // ============================================================================
-bool FaceIsPlanar(int nv, int16_t *face_verts, vector *normal, vector *verts) {
+bool FaceIsPlanar(int nv, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts) {
   if (nv == 3)
     return true;
 
   float average_d = 0;
   for (int v = 0; v < nv; v++)
-    average_d += vm_Dot3Product(verts[face_verts[v]], *normal);
+    average_d += vm_Dot3Product(verts[face_verts[v]], normal);
   average_d /= nv;
 
   for (int v = 0; v < nv; v++) {
-    float d = vm_Dot3Product(verts[face_verts[v]], *normal);
+    float d = vm_Dot3Product(verts[face_verts[v]], normal);
     if (fabs(d - average_d) > POINT_TO_PLANE_EPSILON)
       return false;
   }
@@ -256,12 +241,12 @@ bool FaceIsPlanar(int nv, int16_t *face_verts, vector *normal, vector *verts) {
 // CheckFaceConcavity — editor/Erooms.cpp:1108
 // Returns the index of the vertex causing concavity, or -1 if convex.
 // ============================================================================
-int CheckFaceConcavity(int num_verts, int16_t *face_verts, vector *normal, vector *verts) {
+int CheckFaceConcavity(int num_verts, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts) {
   int ii, jj;
   float i0, j0, i1, j1;
   float *v0, *v1;
 
-  GetIJ(normal, &ii, &jj);
+  GetIJ(normal, ii, jj);
 
   v0 = (float *)&verts[face_verts[num_verts - 1]];
   v1 = (float *)&verts[face_verts[0]];
@@ -315,57 +300,48 @@ bool FindSharedEdge(face *fp0, face *fp1, int *vn0, int *vn1) {
 // Simplified version: deletes a face from a room, adjusts portal/trigger
 // face indices.  Skips texture accounting (LevelTexDecrementTexture).
 // ============================================================================
-void DeleteRoomFace(room *rp, int facenum) {
+void DeleteRoomFace(int roomnum, int facenum) {
   int f, i, t;
 
-  if (rp->faces[facenum].flags & FF_HAS_TRIGGER)
-    EditorDeleteTriggerByRoomFace(ROOMNUM(rp), facenum);
+  room &rp = Rooms[roomnum];
 
-  for (int p = 0; p < rp->num_portals; p++) {
-    portal *pp = &rp->portals[p];
+  if (rp.faces[facenum].flags.has_trigger)
+    EditorDeleteTriggerByRoomFace(roomnum, facenum);
+
+  for (int p = 0; p < rp.num_portals; p++) {
+    portal *pp = &rp.portals[p];
     Q_ASSERT(pp->portal_face != facenum);
     if (pp->portal_face > facenum)
       pp->portal_face--;
   }
 
-  for (t = 0; t < Num_triggers; t++) {
+  for (t = 0; t < static_cast<int>(Triggers.size()); t++) {
     trigger *tp = &Triggers[t];
-    if (tp->roomnum == ROOMNUM(rp)) {
+    if (tp->roomnum == roomnum) {
       Q_ASSERT(tp->facenum != facenum);
       if (tp->facenum > facenum)
         tp->facenum--;
     }
   }
 
-  face *newfaces = mem_rmalloc<face>(rp->num_faces - 1);
-  Q_ASSERT(newfaces != NULL);
+  FreeRoomFace(&rp.faces[facenum]);
+  rp.faces.erase(rp.faces.begin() + facenum);
+  rp.num_faces--;
 
-  for (f = 0; f < facenum; f++)
-    newfaces[f] = rp->faces[f];
-  for (f = facenum + 1; f < rp->num_faces; f++)
-    newfaces[f - 1] = rp->faces[f];
-
-  FreeRoomFace(&rp->faces[facenum]);
-  mem_free(rp->faces);
-  rp->faces = newfaces;
-  rp->num_faces--;
-
-  if (rp == Curroomp) {
-    if (Curface == rp->num_faces)
-      Curface = rp->num_faces - 1;
-    if (Markedface == rp->num_faces)
-      Markedface = rp->num_faces - 1;
+  if (roomnum == app.Curroomp) {
+    if (app.Curface == rp.num_faces)
+      app.Curface = rp.num_faces - 1;
+    if (app.Markedface == rp.num_faces)
+      app.Markedface = rp.num_faces - 1;
   }
 
-  if (rp->num_bbf_regions) {
-    for (i = 0; i < rp->num_bbf_regions; i++)
-      mem_free(rp->bbf_list[i]);
-    mem_free(rp->bbf_list);
-    mem_free(rp->num_bbf);
-    mem_free(rp->bbf_list_min_xyz);
-    mem_free(rp->bbf_list_max_xyz);
-    mem_free(rp->bbf_list_sector);
-    rp->num_bbf_regions = 0;
+  if (rp.num_bbf_regions) {
+    rp.bbf_list.clear();
+    rp.num_bbf.clear();
+    rp.bbf_list_min_xyz.clear();
+    rp.bbf_list_max_xyz.clear();
+    rp.bbf_list_sector.clear();
+    rp.num_bbf_regions = 0;
   }
 }
 
@@ -373,92 +349,72 @@ void DeleteRoomFace(room *rp, int facenum) {
 // DeleteRoomPortal — editor/Erooms.cpp:1787
 // Deletes a portal from a room (does not delete the connecting side).
 // ============================================================================
-void DeleteRoomPortal(room *rp, int portalnum) {
-  portal *pp = &rp->portals[portalnum];
-  face *fp = &rp->faces[pp->portal_face];
+void DeleteRoomPortal(int roomnum, int portalnum) {
+  room &rp = Rooms[roomnum];
+  portal *pp = &rp.portals[portalnum];
+  face *fp = &rp.faces[pp->portal_face];
 
   Q_ASSERT(fp->portal_num == portalnum);
   fp->portal_num = -1;
 
-  for (int p = portalnum + 1; p < rp->num_portals; p++) {
-    portal *tp = &rp->portals[p];
-    Q_ASSERT(rp->faces[tp->portal_face].portal_num == p);
-    rp->faces[tp->portal_face].portal_num--;
+  for (int p = portalnum + 1; p < rp.num_portals; p++) {
+    portal *tp = &rp.portals[p];
+    Q_ASSERT(rp.faces[tp->portal_face].portal_num == p);
+    rp.faces[tp->portal_face].portal_num--;
     if (tp->croom != -1)
       Rooms[tp->croom].portals[tp->cportal].cportal--;
   }
 
-  portal *newportals;
-  if (rp->num_portals == 1)
-    newportals = NULL;
-  else {
-    newportals = mem_rmalloc<portal>(rp->num_portals - 1);
-    Q_ASSERT(newportals != NULL);
-  }
-
-  for (int p = 0; p < portalnum; p++)
-    newportals[p] = rp->portals[p];
-  for (int p = portalnum + 1; p < rp->num_portals; p++)
-    newportals[p - 1] = rp->portals[p];
-
-  mem_free(rp->portals);
-  rp->portals = newportals;
-  rp->num_portals--;
+  rp.portals.erase(rp.portals.begin() + portalnum);
+  rp.num_portals--;
 }
 
 // ============================================================================
 // AddPortal — editor/Erooms.cpp:1975
 // Adds a new portal to a room.  Returns the portal number.
 // ============================================================================
-int AddPortal(room *rp) {
-  auto newlist = mem_rmalloc<portal>(rp->num_portals + 1);
+int AddPortal(int roomnum) {
+  room &rp = Rooms[roomnum];
+  rp.portals.resize(rp.num_portals + 1);
+  rp.portals[rp.num_portals].flags = {};
+  rp.portals[rp.num_portals].bnode_index = -1;
 
-  if (rp->num_portals) {
-    for (int i = 0; i < rp->num_portals; i++)
-      newlist[i] = rp->portals[i];
-    mem_free(rp->portals);
-  }
-
-  rp->portals = newlist;
-  rp->portals[rp->num_portals].flags = 0;
-  rp->portals[rp->num_portals].bnode_index = -1;
-
-  return rp->num_portals++;
+  return rp.num_portals++;
 }
 
 // ============================================================================
 // LinkRooms / LinkRoomsSimple — editor/Erooms.cpp:2001
 // Links two rooms by creating portals on the specified faces.
 // ============================================================================
-void LinkRooms(room *roomlist, int room0, int face0, int room1, int face1) {
-  room *rp0 = &roomlist[room0];
-  room *rp1 = &roomlist[room1];
+void LinkRooms(int room0, int face0, int room1, int face1) {
+  room &rp0 = Rooms[room0];
+  room &rp1 = Rooms[room1];
 
-  Q_ASSERT(rp0->faces[face0].portal_num == -1);
-  Q_ASSERT(rp1->faces[face1].portal_num == -1);
+  Q_ASSERT(rp0.faces[face0].portal_num == -1);
+  Q_ASSERT(rp1.faces[face1].portal_num == -1);
 
-  int pn0 = AddPortal(rp0);
-  int pn1 = AddPortal(rp1);
+  int pn0 = AddPortal(room0);
+  int pn1 = AddPortal(room1);
 
-  rp0->portals[pn0].croom = room1;
-  rp0->portals[pn0].cportal = pn1;
-  rp1->portals[pn1].croom = room0;
-  rp1->portals[pn1].cportal = pn0;
+  rp0.portals[pn0].croom = room1;
+  rp0.portals[pn0].cportal = pn1;
+  rp1.portals[pn1].croom = room0;
+  rp1.portals[pn1].cportal = pn0;
 
-  rp0->portals[pn0].portal_face = face0;
-  rp1->portals[pn1].portal_face = face1;
+  rp0.portals[pn0].portal_face = face0;
+  rp1.portals[pn1].portal_face = face1;
 
-  rp0->faces[face0].portal_num = pn0;
-  rp1->faces[face1].portal_num = pn1;
+  rp0.faces[face0].portal_num = pn0;
+  rp1.faces[face1].portal_num = pn1;
 }
 
 // ============================================================================
 // DeletePortalPair — editor/HRoom.cpp:2186
 // Deletes a portal pair (both sides of a connection).
 // ============================================================================
-void DeletePortalPair(room *rp, int portalnum) {
-  int roomnum = ROOMNUM(rp);
-  portal *pp = &rp->portals[portalnum];
+void DeletePortalPair(int roomnum, int portalnum) {
+  room &rp = Rooms[roomnum];
+  portal *pp = &rp.portals[portalnum];
   int croom = pp->croom, cportal = pp->cportal;
 
   if ((Rooms[croom].portals[cportal].croom != roomnum) || (Rooms[croom].portals[cportal].cportal != portalnum)) {
@@ -466,25 +422,26 @@ void DeletePortalPair(room *rp, int portalnum) {
     return;
   }
 
-  if (rp->faces[pp->portal_face].portal_num != portalnum) {
+  if (rp.faces[pp->portal_face].portal_num != portalnum) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot delete this portal: its face does not point back at it.");
     return;
   }
 
-  DeleteRoomPortal(rp, portalnum);
-  DeleteRoomPortal(&Rooms[croom], cportal);
+  DeleteRoomPortal(roomnum, portalnum);
+  DeleteRoomPortal(croom, cportal);
 
   EditorStatus("Deleted room %d portal %d and room %d portal %d", roomnum, portalnum, croom, cportal);
 
-  World_changed = true;
+  app.World_changed = true;
 }
 
 // ============================================================================
 // FlipFace — editor/HRoom.cpp:2211
 // Flips the winding order of a face and recomputes its normal.
 // ============================================================================
-void FlipFace(room *rp, int facenum) {
-  face *fp = &rp->faces[facenum];
+void FlipFace(int roomnum, int facenum) {
+  room &rp = Rooms[roomnum];
+  face *fp = &rp.faces[facenum];
 
   Q_ASSERT(fp->portal_num == -1);
 
@@ -498,22 +455,23 @@ void FlipFace(room *rp, int facenum) {
     fp->face_uvls[fp->num_verts - 1 - i] = uvl;
   }
 
-  if (!ComputeFaceNormal(rp, facenum))
+  if (!ComputeFaceNormal(roomnum, facenum))
     Q_ASSERT(false);
 
-  World_changed = true;
-  EditorStatus("Room %d face %d flipped.", ROOMNUM(rp), facenum);
+  app.World_changed = true;
+  EditorStatus("Room %d face %d flipped.", roomnum, facenum);
 }
 
 // ============================================================================
 // AssignUVsToFace — editor/RoomUVs.cpp:75
 // Given u,v coordinates at two vertices, assign u,v to all other vertices.
 // ============================================================================
-void AssignUVsToFace(room *rp, int facenum, roomUVL *uva, roomUVL *uvb, int va, int vb) {
-  face *fp = &rp->faces[facenum];
+void AssignUVsToFace(int roomnum, int facenum, roomUVL *uva, roomUVL *uvb, int va, int vb) {
+  room &rp = Rooms[roomnum];
+  face *fp = &rp.faces[facenum];
   int nv = fp->num_verts;
   int vlo, vhi;
-  vector fvec, rvec, tvec;
+  vector3 fvec, rvec, tvec;
   roomUVL ruvmag, fuvmag, uvlo, uvhi;
   float fmag, mag01;
 
@@ -549,14 +507,14 @@ void AssignUVsToFace(room *rp, int facenum, roomUVL *uva, roomUVL *uvb, int va, 
     fuvmag.v = uvhi.v - uvlo.v;
   }
 
-  vector *vv0 = &rp->verts[fp->face_verts[vlo]];
-  vector *vv1 = &rp->verts[fp->face_verts[vhi]];
+  vector3 *vv0 = &rp.verts[fp->face_verts[vlo]];
+  vector3 *vv1 = &rp.verts[fp->face_verts[vhi]];
 
   fvec = *vv1 - *vv0;
   mag01 = vm_NormalizeVector(&fvec);
 
   if (mag01 < 0.001f) {
-    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "U, V bogosity in room #%i, probably on face #%i.", ROOMNUM(rp), facenum);
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("U, V bogosity in room #%1, probably on face #%2.").arg(roomnum).arg(facenum));
     return;
   }
 
@@ -571,7 +529,7 @@ void AssignUVsToFace(room *rp, int facenum, roomUVL *uva, roomUVL *uvb, int va, 
     int fv = (vhi + i) % nv;
     int rv = fp->face_verts[fv];
 
-    tvec = rp->verts[rv] - *vv0;
+    tvec = rp.verts[rv] - *vv0;
 
     scalar rproj = vm_Dot3Product(tvec, rvec);
     scalar fproj = vm_Dot3Product(tvec, fvec);
@@ -584,104 +542,79 @@ void AssignUVsToFace(room *rp, int facenum, roomUVL *uva, roomUVL *uvb, int va, 
 // ============================================================================
 // AssignDefaultUVsToRoom — editor/Erooms.cpp:748
 // ============================================================================
-void AssignDefaultUVsToRoom(room *rp) {
-  for (int i = 0; i < rp->num_faces; i++)
-    AssignDefaultUVsToRoomFace(rp, i);
+void AssignDefaultUVsToRoom(int roomnum) {
+  room &rp = Rooms[roomnum];
+  for (int i = 0; i < rp.num_faces; i++)
+    AssignDefaultUVsToRoomFace(roomnum, i);
 }
 
 // ============================================================================
 // FixConcaveFaces — editor/Erooms.cpp:1218
 // Triangulates concave/nonplanar faces in a room.
 // ============================================================================
-void FixConcaveFaces(room *rp, int *facelist, int facecount) {
+void FixConcaveFaces(int roomnum, int *facelist, int facecount) {
+  room &rp = Rooms[roomnum];
+
   for (int i = 0; i < facecount; i++) {
-    face *fp = &rp->faces[facelist[i]];
-    if (!FaceIsPlanar(fp->num_verts, fp->face_verts, &fp->normal, rp->verts)) {
+    face *fp = &rp.faces[facelist[i]];
+    if (!FaceIsPlanar(fp->num_verts, fp->face_verts, fp->normal, rp.verts)) {
       int concave_verts[MAX_VERTS_PER_FACE];
-      int concave_count = rp->faces[facelist[i]].num_verts;
-      int old_tmap = rp->faces[facelist[i]].tmap;
+      int concave_count = rp.faces[facelist[i]].num_verts;
+      int old_tmap = rp.faces[facelist[i]].tmap;
       int num_new_faces = concave_count - 3;
       Q_ASSERT(num_new_faces > 0);
 
       for (int t = 0; t < concave_count; t++)
-        concave_verts[t] = rp->faces[facelist[i]].face_verts[t];
+        concave_verts[t] = rp.faces[facelist[i]].face_verts[t];
 
-      int old_num_faces = rp->num_faces;
-      int nfaces = rp->num_faces + num_new_faces;
+      int old_num_faces = rp.num_faces;
+      int nfaces = rp.num_faces + num_new_faces;
 
-      face *newfaces = mem_rmalloc<face>(nfaces);
-      Q_ASSERT(newfaces != NULL);
+      rp.faces.resize(nfaces);
 
-      for (int t = 0; t < rp->num_faces; t++) {
+      for (int t = 0; t < rp.num_faces; t++) {
         if (t != facelist[i]) {
-          int nverts = rp->faces[t].num_verts;
-
-          newfaces[t].face_verts = mem_rmalloc<int16_t>(nverts);
-          newfaces[t].face_uvls = mem_rmalloc<roomUVL>(nverts);
-          newfaces[t].normal = rp->faces[t].normal;
-          newfaces[t].tmap = rp->faces[t].tmap;
-          newfaces[t].flags = rp->faces[t].flags;
-          newfaces[t].portal_num = rp->faces[t].portal_num;
-          newfaces[t].num_verts = rp->faces[t].num_verts;
-          newfaces[t].special_handle = BAD_SPECIAL_FACE_INDEX;
-
-          for (int k = 0; k < nverts; k++) {
-            newfaces[t].face_verts[k] = rp->faces[t].face_verts[k];
-            newfaces[t].face_uvls[k] = rp->faces[t].face_uvls[k];
-          }
+          rp.faces[t].special_handle = BAD_SPECIAL_FACE_INDEX;
         } else {
-          newfaces[t].face_verts = mem_rmalloc<int16_t>(3);
-          newfaces[t].face_uvls = mem_rmalloc<roomUVL>(3);
-          newfaces[t].tmap = rp->faces[t].tmap;
-          newfaces[t].flags = rp->faces[t].flags;
-          newfaces[t].portal_num = rp->faces[t].portal_num;
-          newfaces[t].num_verts = 3;
-          newfaces[t].special_handle = BAD_SPECIAL_FACE_INDEX;
+          rp.faces[t].face_verts.resize(3);
+          rp.faces[t].face_uvls.resize(3);
+          rp.faces[t].num_verts = 3;
+          rp.faces[t].special_handle = BAD_SPECIAL_FACE_INDEX;
 
-          for (int k = 0; k < 3; k++) {
-            newfaces[t].face_verts[k] = rp->faces[t].face_verts[k];
-            newfaces[t].face_uvls[k] = rp->faces[t].face_uvls[k];
-          }
-
-          if (!ComputeFaceNormal(rp, t))
+          if (!ComputeFaceNormal(roomnum, t))
             Q_ASSERT(false);
-          newfaces[t].normal = rp->faces[t].normal;
         }
       }
 
-      mem_free(rp->faces);
-      rp->faces = newfaces;
-      rp->num_faces = nfaces;
+      rp.num_faces = nfaces;
 
-      if (rp->num_bbf_regions) {
-        for (int j = 0; j < rp->num_bbf_regions; j++)
-          mem_free(rp->bbf_list[j]);
-        mem_free(rp->bbf_list);
-        mem_free(rp->num_bbf);
-        mem_free(rp->bbf_list_min_xyz);
-        mem_free(rp->bbf_list_max_xyz);
-        mem_free(rp->bbf_list_sector);
-        rp->num_bbf_regions = 0;
+      if (rp.num_bbf_regions) {
+        rp.bbf_list.clear();
+        rp.num_bbf.clear();
+        rp.bbf_list_min_xyz.clear();
+        rp.bbf_list_max_xyz.clear();
+        rp.bbf_list_sector.clear();
+        rp.num_bbf_regions = 0;
       }
 
       for (int t = 0; t < num_new_faces; t++)
-        InitRoomFace(&rp->faces[old_num_faces + t], 3);
+        InitRoomFace(&rp.faces[old_num_faces + t], 3);
 
       for (int t = 0; t < concave_count - 3; t++) {
-        rp->faces[old_num_faces + t].face_verts[0] = concave_verts[0];
-        rp->faces[old_num_faces + t].face_verts[1] = concave_verts[2 + t];
-        rp->faces[old_num_faces + t].face_verts[2] = concave_verts[3 + t];
-        rp->faces[old_num_faces + t].tmap = old_tmap;
+        rp.faces[old_num_faces + t].face_verts[0] = concave_verts[0];
+        rp.faces[old_num_faces + t].face_verts[1] = concave_verts[2 + t];
+        rp.faces[old_num_faces + t].face_verts[2] = concave_verts[3 + t];
+        rp.faces[old_num_faces + t].tmap = old_tmap;
 
-        if (!ComputeFaceNormal(rp, old_num_faces + t))
+        if (!ComputeFaceNormal(roomnum, old_num_faces + t))
           Q_ASSERT(false);
 
-        AssignDefaultUVsToRoomFace(rp, old_num_faces + t);
+        AssignDefaultUVsToRoomFace(roomnum, old_num_faces + t);
       }
     }
   }
 
-  if (!ResetRoomFaceNormals(rp))
+  if (!ResetRoomFaceNormals(roomnum))
     Q_ASSERT(false);
 }
 
@@ -689,11 +622,12 @@ void FixConcaveFaces(room *rp, int *facelist, int facecount) {
 // CombineFaces — editor/HRoom.cpp:1552
 // Merges two coplanar, convex faces that share an edge.
 // ============================================================================
-bool CombineFaces(room *rp, int face0, int face1) {
-  face *fp0 = &rp->faces[face0], *fp1 = &rp->faces[face1];
+bool CombineFaces(int roomnum, int face0, int face1) {
+  room &rp = Rooms[roomnum];
+  face *fp0 = &rp.faces[face0], *fp1 = &rp.faces[face1];
   int nv0 = fp0->num_verts, nv1 = fp1->num_verts;
   int v0, v1;
-  int16_t vertlist[MAX_VERTS_PER_FACE];
+  std::vector<int16_t> vertlist(MAX_VERTS_PER_FACE);
   roomUVL uvllist[MAX_VERTS_PER_FACE];
   int nv;
 
@@ -741,15 +675,15 @@ bool CombineFaces(room *rp, int face0, int face1) {
     nv++;
   }
 
-  vector new_normal;
-  ComputeNormal(&new_normal, nv, vertlist, rp->verts);
+  vector3 new_normal;
+  ComputeNormal(new_normal, nv, vertlist, rp.verts);
 
-  if (!FaceIsPlanar(nv, vertlist, &new_normal, rp->verts)) {
+  if (!FaceIsPlanar(nv, vertlist, new_normal, rp.verts)) {
     SetErrorMessage("The new face would not be planar.");
     return false;
   }
 
-  if (CheckFaceConcavity(nv, vertlist, &new_normal, rp->verts) != -1) {
+  if (CheckFaceConcavity(nv, vertlist, new_normal, rp.verts) != -1) {
     SetErrorMessage("The new face would be concave.");
     return false;
   }
@@ -762,11 +696,11 @@ bool CombineFaces(room *rp, int face0, int face1) {
 
   fp0->normal = new_normal;
 
-  AssignUVsToFace(rp, face0, &fp0->face_uvls[0], &fp0->face_uvls[1], 0, 1);
+  AssignUVsToFace(roomnum, face0, &fp0->face_uvls[0], &fp0->face_uvls[1], 0, 1);
 
-  DeleteRoomFace(rp, face1);
+  DeleteRoomFace(roomnum, face1);
 
-  World_changed = true;
+  app.World_changed = true;
   return true;
 }
 
@@ -779,17 +713,20 @@ void RotateRooms(angle p, angle h, angle b) {
   int checkfaces[MAX_FACES_PER_ROOM];
   int checkcount = 0;
   matrix rotmat, roommat;
-  vector rotpoint, portal_normal;
+  vector3 rotpoint, portal_normal;
   int marked_portalnum = -1;
   int cur_portalnum = -1;
 
-  if (Curroomp == Markedroomp || Markedroomp == NULL) {
+  if (app.Curroomp == app.Markedroomp || app.Markedroomp < 0) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You do not have a valid room marked.");
     return;
   }
 
-  for (int i = 0; i < Markedroomp->num_portals; i++) {
-    if (Markedroomp->portals[i].croom == (Curroomp - Rooms)) {
+  room &markedroomp = Rooms[app.Markedroomp];
+  room &curroomp = Rooms[app.Curroomp];
+
+  for (int i = 0; i < markedroomp.num_portals; i++) {
+    if (markedroomp.portals[i].croom == app.Curroomp) {
       marked_portalnum = i;
       break;
     }
@@ -800,8 +737,8 @@ void RotateRooms(angle p, angle h, angle b) {
     return;
   }
 
-  for (int i = 0; i < Curroomp->num_portals; i++) {
-    if (Curroomp->portals[i].croom == (Markedroomp - Rooms)) {
+  for (int i = 0; i < curroomp.num_portals; i++) {
+    if (curroomp.portals[i].croom == app.Markedroomp) {
       cur_portalnum = i;
       break;
     }
@@ -814,56 +751,59 @@ void RotateRooms(angle p, angle h, angle b) {
 
   SaveRoomSelectedList();
 
-  Curroomp->portals[cur_portalnum].croom = -1;
-  SelectConnectedRooms(Curroomp - Rooms);
-  Curroomp->portals[cur_portalnum].croom = Markedroomp - Rooms;
+  curroomp.portals[cur_portalnum].croom = -1;
+  SelectConnectedRooms(app.Curroomp);
+  curroomp.portals[cur_portalnum].croom = app.Markedroomp;
 
-  if (IsRoomSelected(Markedroomp - Rooms)) {
+  if (IsRoomSelected(app.Markedroomp)) {
     RestoreRoomSelectedList();
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot rotate: rooms connect back to base room.");
     return;
   }
 
-  ComputePortalCenter(&rotpoint, Curroomp, cur_portalnum);
+  ComputePortalCenter(&rotpoint, app.Curroomp, cur_portalnum);
   vm_AnglesToMatrix(&rotmat, p, h, b);
-  face *fp = &Curroomp->faces[Curroomp->portals[cur_portalnum].portal_face];
-  ComputeNormal(&portal_normal, fp->num_verts, fp->face_verts, Curroomp->verts);
+  face *fp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
+  ComputeNormal(portal_normal, fp->num_verts, fp->face_verts, curroomp.verts);
   portal_normal *= -1.0;
 
-  vm_VectorToMatrix(&roommat, &portal_normal, NULL, NULL);
+  vm_VectorToMatrix(roommat, portal_normal, std::nullopt, std::nullopt);
   rotmat = roommat * ~rotmat * ~roommat;
 
   for (int i = 0; i < N_selected_rooms; i++) {
-    room *rp = &Rooms[Selected_rooms[i]];
+    room &rp = Rooms[Selected_rooms[i]];
 
-    for (int v = 0; v < rp->num_verts; v++) {
-      if (rp == Curroomp) {
-        face *cfp = &Curroomp->faces[Curroomp->portals[cur_portalnum].portal_face];
+    if (Selected_rooms[i] == app.Curroomp) {
+      face *cfp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
+      for (int v = 0; v < rp.num_verts; v++) {
         for (int t = 0; t < cfp->num_verts; t++)
           if (v == cfp->face_verts[t])
             goto skip_vert;
+        rp.verts[v] = ((rp.verts[v] - rotpoint) * rotmat) + rotpoint;
+      skip_vert:;
       }
-      rp->verts[v] = ((rp->verts[v] - rotpoint) * rotmat) + rotpoint;
-    skip_vert:;
+    } else {
+      for (int v = 0; v < rp.num_verts; v++)
+        rp.verts[v] = ((rp.verts[v] - rotpoint) * rotmat) + rotpoint;
     }
 
-    for (int t = 0; t < rp->num_faces; t++)
-      rp->faces[t].normal = rp->faces[t].normal * rotmat;
+    for (int t = 0; t < rp.num_faces; t++)
+      rp.faces[t].normal = rp.faces[t].normal * rotmat;
   }
 
   RestoreRoomSelectedList();
 
-  fp = &Curroomp->faces[Curroomp->portals[cur_portalnum].portal_face];
+  fp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
   for (int i = 0; i < fp->num_verts; i++) {
     int checkvert = fp->face_verts[i];
 
-    for (int t = 0; t < Curroomp->num_faces; t++) {
-      for (int l = 0; l < Curroomp->num_portals; l++)
-        if (Curroomp->portals[l].portal_face == t)
+    for (int t = 0; t < curroomp.num_faces; t++) {
+      for (int l = 0; l < curroomp.num_portals; l++)
+        if (curroomp.portals[l].portal_face == t)
           goto skip_face;
 
-      for (int v = 0; v < Curroomp->faces[t].num_verts; v++) {
-        if (Curroomp->faces[t].face_verts[v] == checkvert) {
+      for (int v = 0; v < curroomp.faces[t].num_verts; v++) {
+        if (curroomp.faces[t].face_verts[v] == checkvert) {
           int k;
           for (k = 0; k < checkcount; k++)
             if (checkfaces[k] == t)
@@ -877,21 +817,23 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   if (checkcount > 0)
-    FixConcaveFaces(Curroomp, checkfaces, checkcount);
+    FixConcaveFaces(app.Curroomp, checkfaces, checkcount);
 
-  World_changed = true;
+  app.World_changed = true;
 }
 
 // ============================================================================
 // ConnectPortal — simplified wrapper to link two rooms via portal
 // ============================================================================
-void ConnectPortal(room *rp, int portal_num, int dest_room) {
-  if (portal_num < 0 || portal_num >= rp->num_portals) {
+void ConnectPortal(int roomnum, int portal_num, int dest_room) {
+  room &rp = Rooms[roomnum];
+
+  if (portal_num < 0 || portal_num >= rp.num_portals) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid portal number.");
     return;
   }
 
-  portal *pp = &rp->portals[portal_num];
+  portal *pp = &rp.portals[portal_num];
   int dest_face = pp->portal_face;
 
   if (pp->croom != -1) {
@@ -899,34 +841,36 @@ void ConnectPortal(room *rp, int portal_num, int dest_room) {
     return;
   }
 
-  room *destp = &Rooms[dest_room];
-  if (destp->faces[dest_face].portal_num != -1) {
+  room &destp = Rooms[dest_room];
+  if (destp.faces[dest_face].portal_num != -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Destination face is already a portal.");
     return;
   }
 
-  LinkRooms(Rooms, ROOMNUM(rp), pp->portal_face, dest_room, dest_face);
+  LinkRooms(roomnum, pp->portal_face, dest_room, dest_face);
 
-  World_changed = true;
-  EditorStatus("Connected room %d to room %d.", ROOMNUM(rp), dest_room);
+  app.World_changed = true;
+  EditorStatus("Connected room %d to room %d.", roomnum, dest_room);
 }
 
 // ============================================================================
 // DetachPortal — disconnect a portal pair
 // ============================================================================
-void DetachPortal(room *rp, int portal_num) {
-  if (portal_num < 0 || portal_num >= rp->num_portals) {
+void DetachPortal(int roomnum, int portal_num) {
+  room &rp = Rooms[roomnum];
+
+  if (portal_num < 0 || portal_num >= rp.num_portals) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid portal number.");
     return;
   }
 
-  portal *pp = &rp->portals[portal_num];
+  portal *pp = &rp.portals[portal_num];
   if (pp->croom == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This portal is not connected.");
     return;
   }
 
-  DeletePortalPair(rp, portal_num);
+  DeletePortalPair(roomnum, portal_num);
 }
 
 // ============================================================================
@@ -935,19 +879,19 @@ void DetachPortal(room *rp, int portal_num) {
 // ============================================================================
 
 struct clip_vertex {
-  vector vec;
+  vector3 vec;
   roomUVL uvl;
 };
 
 #define POINT_TO_EDGE_EPSILON 0.1f
 
-static bool PointsAreSame(const vector *v0, const vector *v1) {
+static bool PointsAreSame(const vector3 *v0, const vector3 *v1) {
   return vm_VectorDistance(v0, v1) < POINT_TO_POINT_EPSILON;
 }
 
-static int CheckPointAgainstEdge(const vector *checkv, const vector *v0, const vector *v1, const vector *normal) {
+static int CheckPointAgainstEdge(const vector3 *checkv, const vector3 *v0, const vector3 *v1, const vector3& normal) {
   int ii, jj;
-  GetIJ(normal, &ii, &jj);
+  GetIJ(normal, ii, jj);
 
   float edge_i = ((const float *)v1)[ii] - ((const float *)v0)[ii];
   float edge_j = ((const float *)v1)[jj] - ((const float *)v0)[jj];
@@ -966,10 +910,10 @@ static int CheckPointAgainstEdge(const vector *checkv, const vector *v0, const v
     return 0;
 }
 
-static void ClipEdge(const vector *normal, const clip_vertex *v0, const clip_vertex *v1,
-                     const vector *v2, const vector *v3, clip_vertex *newv) {
+static void ClipEdge(const vector3& normal, const clip_vertex *v0, const clip_vertex *v1,
+                     const vector3 *v2, const vector3 *v3, clip_vertex *newv) {
   int ii, jj;
-  GetIJ(normal, &ii, &jj);
+  GetIJ(normal, ii, jj);
 
   const float *vv0 = (const float *)&v0->vec;
   const float *vv1 = (const float *)&v1->vec;
@@ -998,8 +942,9 @@ static void ClipEdge(const vector *normal, const clip_vertex *v0, const clip_ver
 // ============================================================================
 // AddVertToFace — insert a vertex into a face after a given position
 // ============================================================================
-static void AddVertToFace(room *rp, int facenum, int new_v, int after_v) {
-  face *fp = &rp->faces[facenum];
+static void AddVertToFace(int roomnum, int facenum, int new_v, int after_v) {
+  room &rp = Rooms[roomnum];
+  face *fp = &rp.faces[facenum];
   int old_verts[MAX_VERTS_PER_FACE];
   roomUVL old_uvls[MAX_VERTS_PER_FACE];
   int t;
@@ -1024,9 +969,9 @@ static void AddVertToFace(room *rp, int facenum, int new_v, int after_v) {
   }
 
   // Compute UV for the new vert by interpolating along the edge
-  vector *va = &rp->verts[fp->face_verts[after_v]];
-  vector *vb = &rp->verts[fp->face_verts[(after_v + 2) % fp->num_verts]];
-  vector *vn = &rp->verts[fp->face_verts[after_v + 1]];
+  vector3 *va = &rp.verts[fp->face_verts[after_v]];
+  vector3 *vb = &rp.verts[fp->face_verts[(after_v + 2) % fp->num_verts]];
+  vector3 *vn = &rp.verts[fp->face_verts[after_v + 1]];
   roomUVL *uva = &fp->face_uvls[after_v];
   roomUVL *uvb = &fp->face_uvls[(after_v + 2) % fp->num_verts];
 
@@ -1042,22 +987,24 @@ static void AddVertToFace(room *rp, int facenum, int new_v, int after_v) {
 // ============================================================================
 // AddVertToAllEdges / AddPointToAllEdges
 // ============================================================================
-static void AddVertToAllEdges(room *rp, int v0, int v1, int new_v) {
-  for (int f = 0; f < rp->num_faces; f++) {
-    face *fp = &rp->faces[f];
+static void AddVertToAllEdges(int roomnum, int v0, int v1, int new_v) {
+  room &rp = Rooms[roomnum];
+  for (int f = 0; f < rp.num_faces; f++) {
+    face *fp = &rp.faces[f];
     for (int v = 0; v < fp->num_verts; v++) {
       int cur = fp->face_verts[v];
       int nxt = fp->face_verts[(v + 1) % fp->num_verts];
       if ((cur == v0 && nxt == v1) || (cur == v1 && nxt == v0))
-        AddVertToFace(rp, f, new_v, v);
+        AddVertToFace(roomnum, f, new_v, v);
     }
   }
 }
 
-static void AddPointToAllEdges(room *rp, int v0, int v1, const vector *new_v) {
-  int newvertnum = RoomAddVertices(rp, 1);
-  rp->verts[newvertnum] = *new_v;
-  AddVertToAllEdges(rp, v0, v1, newvertnum);
+static void AddPointToAllEdges(int roomnum, int v0, int v1, const vector3 *new_v) {
+  room &rp = Rooms[roomnum];
+  int newvertnum = RoomAddVertices(roomnum, 1);
+  rp.verts[newvertnum] = *new_v;
+  AddVertToAllEdges(roomnum, v0, v1, newvertnum);
 }
 
 // ============================================================================
@@ -1080,7 +1027,7 @@ static void AddEdgeInsert(int v0, int v1, int new_v) {
 }
 
 static void ClipAgainstEdge(int nv, int16_t *vertnums, clip_vertex *vertices, int *num_vertices,
-                            const vector *v0, const vector *v1, const vector *normal,
+                            const vector3 *v0, const vector3 *v1, const vector3& normal,
                             int16_t *inbuf, int *inv, int16_t *outbuf, int *onv) {
   int16_t *ip = inbuf, *op = outbuf;
   int inside_points = 0, outside_points = 0;
@@ -1131,9 +1078,11 @@ static void ClipAgainstEdge(int nv, int16_t *vertnums, clip_vertex *vertices, in
 // ClipFace — clips one face against another, producing the intersection
 // polygon plus zero or more outside polygons.
 // ============================================================================
-static bool ClipFace(room *arp, int afacenum, room *brp, int bfacenum) {
-  face *afp = &arp->faces[afacenum];
-  face *bfp = &brp->faces[bfacenum];
+static bool ClipFace(int aroom, int afacenum, int broom, int bfacenum) {
+  room &arp = Rooms[aroom];
+  room &brp = Rooms[broom];
+  face *afp = &arp.faces[afacenum];
+  face *bfp = &brp.faces[bfacenum];
   int16_t vbuf0[MAX_VERTS_PER_FACE], vbuf1[MAX_VERTS_PER_FACE];
   int16_t newface_verts[MAX_VERTS_PER_FACE][MAX_VERTS_PER_FACE];
   int newface_nvs[MAX_VERTS_PER_FACE];
@@ -1150,7 +1099,7 @@ static bool ClipFace(room *arp, int afacenum, room *brp, int bfacenum) {
   Num_edge_inserts = 0;
 
   for (int i = 0; i < nv; i++) {
-    newverts[i].vec = arp->verts[afp->face_verts[i]];
+    newverts[i].vec = arp.verts[afp->face_verts[i]];
     newverts[i].uvl = afp->face_uvls[i];
     newvertnums[i] = afp->face_verts[i];
     src[i] = i;
@@ -1158,12 +1107,12 @@ static bool ClipFace(room *arp, int afacenum, room *brp, int bfacenum) {
   num_newverts = nv;
 
   for (int edgenum = 0; edgenum < bfp->num_verts; edgenum++) {
-    vector *ev0 = &brp->verts[bfp->face_verts[(bfp->num_verts - edgenum) % bfp->num_verts]];
-    vector *ev1 = &brp->verts[bfp->face_verts[bfp->num_verts - edgenum - 1]];
+    vector3 *ev0 = &brp.verts[bfp->face_verts[(bfp->num_verts - edgenum) % bfp->num_verts]];
+    vector3 *ev1 = &brp.verts[bfp->face_verts[bfp->num_verts - edgenum - 1]];
     int16_t *outbuf = newface_verts[num_newfaces];
     int *onv = &newface_nvs[num_newfaces];
 
-    ClipAgainstEdge(nv, src, newverts, &num_newverts, ev0, ev1, &afp->normal, dest, &nv, outbuf, onv);
+    ClipAgainstEdge(nv, src, newverts, &num_newverts, ev0, ev1, afp->normal, dest, &nv, outbuf, onv);
 
     if (nv <= 2)
       return false;
@@ -1175,10 +1124,10 @@ static bool ClipFace(room *arp, int afacenum, room *brp, int bfacenum) {
       num_newfaces++;
   }
 
-  int first_new_vert = RoomAddVertices(arp, num_newverts - afp->num_verts);
+  int first_new_vert = RoomAddVertices(aroom, num_newverts - afp->num_verts);
 
   for (int i = 0; i < num_newverts - afp->num_verts; i++) {
-    arp->verts[first_new_vert + i] = newverts[afp->num_verts + i].vec;
+    arp.verts[first_new_vert + i] = newverts[afp->num_verts + i].vec;
     newvertnums[afp->num_verts + i] = first_new_vert + i;
   }
 
@@ -1187,29 +1136,29 @@ static bool ClipFace(room *arp, int afacenum, room *brp, int bfacenum) {
     afp->face_verts[i] = newvertnums[src[i]];
     afp->face_uvls[i] = newverts[src[i]].uvl;
   }
-  if (!ComputeFaceNormal(arp, afacenum))
+  if (!ComputeFaceNormal(aroom, afacenum))
     Q_ASSERT(0);
 
-  int first_new_face = RoomAddFaces(arp, num_newfaces);
+  int first_new_face = RoomAddFaces(aroom, num_newfaces);
 
   for (int i = 0; i < num_newfaces; i++) {
-    face *fp = &arp->faces[first_new_face + i];
+    face *fp = &arp.faces[first_new_face + i];
     InitRoomFace(fp, newface_nvs[i]);
     for (int j = 0; j < newface_nvs[i]; j++) {
       fp->face_verts[j] = newvertnums[newface_verts[i][j]];
       fp->face_uvls[j] = newverts[newface_verts[i][j]].uvl;
     }
-    if (!ComputeFaceNormal(arp, first_new_face + i))
+    if (!ComputeFaceNormal(aroom, first_new_face + i))
       Q_ASSERT(0);
-    fp->tmap = arp->faces[afacenum].tmap;
-    CopyFaceFlags(fp, &arp->faces[afacenum]);
+    fp->tmap = arp.faces[afacenum].tmap;
+    CopyFaceFlags(fp, &arp.faces[afacenum]);
   }
 
   for (int i = 0; i < Num_edge_inserts; i++) {
     int v0 = newvertnums[Edge_inserts[i].v0];
     int v1 = newvertnums[Edge_inserts[i].v1];
     int new_v = newvertnums[Edge_inserts[i].new_v];
-    AddVertToAllEdges(arp, v0, v1, new_v);
+    AddVertToAllEdges(aroom, v0, v1, new_v);
   }
 
   return true;
@@ -1218,17 +1167,19 @@ static bool ClipFace(room *arp, int afacenum, room *brp, int bfacenum) {
 // ============================================================================
 // ClipFacePair — clips two faces against each other
 // ============================================================================
-static bool ClipFacePair(room *rp0, int face0, room *rp1, int face1) {
-  return ClipFace(rp0, face0, rp1, face1) && ClipFace(rp1, face1, rp0, face0);
+static bool ClipFacePair(int room0, int face0, int room1, int face1) {
+  return ClipFace(room0, face0, room1, face1) && ClipFace(room1, face1, room0, face0);
 }
 
 // ============================================================================
 // MatchPortalFaces — makes two portal faces match exactly by adding
 // points where needed.  Returns number of points added.
 // ============================================================================
-static int MatchPortalFaces(room *rp0, int facenum0, room *rp1, int facenum1, bool check_only = false) {
-  face *fp0 = &rp0->faces[facenum0];
-  face *fp1 = &rp1->faces[facenum1];
+static int MatchPortalFaces(int room0, int facenum0, int room1, int facenum1, bool check_only = false) {
+  room &rp0 = Rooms[room0];
+  room &rp1 = Rooms[room1];
+  face *fp0 = &rp0.faces[facenum0];
+  face *fp1 = &rp1.faces[facenum1];
   int n0, n1, i, j, prev_vn0, prev_vn1, max_nv;
   int points_added = 0;
 
@@ -1237,7 +1188,7 @@ check_faces:;
   // Find one point in common
   for (i = 0; i < fp0->num_verts; i++) {
     for (j = 0; j < fp1->num_verts; j++)
-      if (PointsAreSame(&rp0->verts[fp0->face_verts[i]], &rp1->verts[fp1->face_verts[j]]))
+      if (PointsAreSame(&rp0.verts[fp0->face_verts[i]], &rp1.verts[fp1->face_verts[j]]))
         break;
     if (j < fp1->num_verts)
       break;
@@ -1252,7 +1203,7 @@ check_faces:;
   prev_vn1 = fp1->face_verts[j];
 
   if (!check_only) {
-    rp0->verts[prev_vn0] = rp1->verts[prev_vn1];
+    rp0.verts[prev_vn0] = rp1.verts[prev_vn1];
   }
 
   max_nv = std::max(fp0->num_verts, fp1->num_verts);
@@ -1262,27 +1213,27 @@ check_faces:;
     int vn0 = fp0->face_verts[(i + n0) % fp0->num_verts];
     int vn1 = fp1->face_verts[(j - n1 + fp1->num_verts) % fp1->num_verts];
 
-    vector *v0 = &rp0->verts[vn0];
-    vector *v1 = &rp1->verts[vn1];
+    vector3 *v0 = &rp0.verts[vn0];
+    vector3 *v1 = &rp1.verts[vn1];
 
     if (PointsAreSame(v0, v1)) {
       if (!check_only)
         *v0 = *v1;
     } else {
-      vector *prev_v0 = &rp0->verts[prev_vn0];
-      vector *prev_v1 = &rp1->verts[prev_vn1];
+      vector3 *prev_v0 = &rp0.verts[prev_vn0];
+      vector3 *prev_v1 = &rp1.verts[prev_vn1];
 
       float d0 = vm_VectorDistance(v0, prev_v0);
       float d1 = vm_VectorDistance(v1, prev_v1);
 
       if (d0 > d1) {
-        if (CheckPointAgainstEdge(v1, prev_v0, v0, &fp0->normal)) {
+        if (CheckPointAgainstEdge(v1, prev_v0, v0, fp0->normal)) {
           if (check_only)
             return 0;
           Q_ASSERT(0);
         } else {
           if (!check_only) {
-            AddPointToAllEdges(rp0, prev_vn0, vn0, v1);
+            AddPointToAllEdges(room0, prev_vn0, vn0, v1);
             points_added++;
           } else {
             n1++;
@@ -1290,13 +1241,13 @@ check_faces:;
           }
         }
       } else {
-        if (CheckPointAgainstEdge(v0, prev_v1, v1, &fp1->normal)) {
+        if (CheckPointAgainstEdge(v0, prev_v1, v1, fp1->normal)) {
           if (check_only)
             return 0;
           Q_ASSERT(0);
         } else {
           if (!check_only) {
-            AddPointToAllEdges(rp1, prev_vn1, vn1, v0);
+            AddPointToAllEdges(room1, prev_vn1, vn1, v0);
             points_added++;
           } else {
             n0++;
@@ -1323,92 +1274,89 @@ check_faces:;
 // ============================================================================
 // AttachRoom — port of editor/HRoom.cpp:703
 // Places a room that was placed via PlaceRoom, creating portals as
-// needed.  Requires Placed_room, Placed_baseroomp, Placed_baseface,
-// Placed_room_face, Placed_room_origin, Placed_room_attachpoint,
-// and Placed_room_rotmat to be set by the caller.
+// needed.  Requires app.Placed_room, app.Placed_baseroomp, app.Placed_baseface,
+// app.Placed_room_face, app.Placed_room_origin, app.Placed_room_attachpoint,
+// and app.Placed_room_rotmat to be set by the caller.
 // ============================================================================
 void AttachRoom() {
-  Q_ASSERT(Placed_room != -1);
+  Q_ASSERT(app.Placed_room != -1);
 
-  room *baseroomp = Placed_baseroomp;
-  int baseface = Placed_baseface;
-  room *attroomp = &Rooms[Placed_room];
-  int attface = Placed_room_face;
-  vector attcenter = Placed_room_origin;
-  vector basecenter = Placed_room_attachpoint;
+  int baseroomp = app.Placed_baseroomp;
+  int baseface = app.Placed_baseface;
+  int attroomp = app.Placed_room;
+  int attface = app.Placed_room_face;
+  vector3 attcenter = app.Placed_room_origin;
+  vector3 basecenter = app.Placed_room_attachpoint;
 
-  // Find a free slot in Rooms[]
-  int slot = -1;
-  for (int i = 0; i < MAX_ROOMS; i++) {
-    if (!Rooms[i].used) {
-      slot = i;
-      break;
-    }
-  }
+  // Find a free slot in Rooms[] (grows the table on demand; the first unused
+  // slot may be a hole in [0, size()) or a fresh index appended at the end).
+  const int slot = FindFreeRoomSlot();
   if (slot == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot attach room: No free rooms.");
     return;
   }
 
-  // Initialize the room directly in the slot (avoids heap alloc + copy)
-  room *newroomp = &Rooms[slot];
-  memset(newroomp, 0, sizeof(room));
-  InitRoom(newroomp, attroomp->num_verts, attroomp->num_faces, 0);
+  // Initialize the room directly in the slot (avoids heap alloc + copy).
+  // InitRoom fully initialises the room (including std::string members), so no
+  // memset is done here (memset would corrupt the std::string members).
+  room &newroomp = Rooms[slot];
+  room &attroom = Rooms[attroomp];
+  InitRoom(newroomp, attroom.num_verts, attroom.num_faces, 0);
 
   // Rotate verts, copying into new room
-  for (int i = 0; i < attroomp->num_verts; i++)
-    newroomp->verts[i] = ((attroomp->verts[i] - attcenter) * Placed_room_rotmat) + basecenter;
+  for (int i = 0; i < attroom.num_verts; i++)
+    newroomp.verts[i] = ((attroom.verts[i] - attcenter) * app.Placed_room_rotmat) + basecenter;
 
   // Copy faces to new room
-  for (int i = 0; i < attroomp->num_faces; i++) {
-    CopyFace(&newroomp->faces[i], &attroomp->faces[i]);
+  for (int i = 0; i < attroom.num_faces; i++) {
+    CopyFace(&newroomp.faces[i], &attroom.faces[i]);
   }
 
   // Recompute normals
-  if (!ResetRoomFaceNormals(newroomp))
+  if (!ResetRoomFaceNormals(slot))
     Q_ASSERT(0);
 
   // Copy other room values
-  newroomp->flags = attroomp->flags;
-  newroomp->num_portals = 0;
+  newroomp.flags = attroom.flags;
+  newroomp.num_portals = 0;
 
-  if (baseroomp == NULL) {
+  if (baseroomp < 0) {
     // Terrain room — flag as external and delete the attach face
-    newroomp->flags |= RF_EXTERNAL;
-    DeleteRoomFace(newroomp, attface);
+    newroomp.flags.external = 1;
+    DeleteRoomFace(slot, attface);
   } else {
     // Mine room — clip the connecting faces against each other
-    if (!ClipFacePair(newroomp, attface, baseroomp, baseface)) {
+    if (!ClipFacePair(slot, attface, baseroomp, baseface)) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Error making portal -- faces probably don't overlap.");
-      FreeRoom(newroomp);
+      FreeRoom(slot);
       return;
     }
 
-    MatchPortalFaces(baseroomp, baseface, newroomp, attface);
+    MatchPortalFaces(baseroomp, baseface, slot, attface);
 
-    LinkRooms(Rooms, ROOMNUM(baseroomp), baseface, ROOMNUM(newroomp), attface);
+    LinkRooms(baseroomp, baseface, slot, attface);
 
     // If there is a door, place it
-    if (Placed_door != -1) {
-      matrix orient = ~Placed_room_rotmat;
-      vector doorcenter = {0, 0, 0};
-      vector room_center = ((doorcenter - attcenter) * Placed_room_rotmat) + basecenter;
+    if (app.Placed_door != -1) {
+      matrix orient = ~app.Placed_room_rotmat;
+      vector3 doorcenter = {0, 0, 0};
+      vector3 room_center = ((doorcenter - attcenter) * app.Placed_room_rotmat) + basecenter;
 
-      FreeRoom(&Rooms[Placed_room]);
+      FreeRoom(app.Placed_room);
 
-      ObjCreate(OBJ_DOOR, Placed_door, ROOMNUM(newroomp), &room_center, &orient);
+      ObjCreate(object_type::door, app.Placed_door, slot, room_center, &orient);
 
-      doorway *dp = DoorwayAdd(newroomp, Placed_door);
+      doorway *dp = DoorwayAdd(slot, app.Placed_door);
       (void)dp;
 
-      Placed_door = -1;
+      app.Placed_door = -1;
     }
   }
 
   // Un-place the room
-  Placed_room = -1;
+  app.Placed_room = -1;
 
-  World_changed = true;
+  app.World_changed = true;
 }
 
 // ============================================================================
@@ -1418,24 +1366,24 @@ void AttachRoom() {
 // GetUVLForRoomPoint — editor/Erooms.cpp:640
 // Given a room, face, and vertex index, compute the default UV coordinates.
 void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
-  room *rp = &Rooms[roomnum];
-  face *fp = &rp->faces[facenum];
+  room &rp = Rooms[roomnum];
+  face *fp = &rp.faces[facenum];
   int nv = fp->num_verts;
 
   matrix face_matrix, trans_matrix;
-  vector fvec, avg_vert, rot_vert;
-  vector verts[MAX_VERTS_PER_FACE];
+  vector3 fvec, avg_vert, rot_vert;
+  vector3 verts[MAX_VERTS_PER_FACE];
 
   // find the center point of this face
   vm_MakeZero(&avg_vert);
   int i;
   for (i = 0; i < nv; i++)
-    avg_vert += rp->verts[fp->face_verts[i]];
+    avg_vert += rp.verts[fp->face_verts[i]];
   avg_vert /= static_cast<float>(i);
 
   // Make the orientation matrix (reverse the normal: looking "at" the face)
   fvec = -fp->normal;
-  vm_VectorToMatrix(&face_matrix, &fvec, nullptr, nullptr);
+  vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
 
   angvec avec;
   vm_ExtractAnglesFromMatrix(&avec, &face_matrix);
@@ -1443,7 +1391,7 @@ void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
 
   // Rotate all the points
   for (i = 0; i < nv; i++) {
-    vector vert = rp->verts[fp->face_verts[i]];
+    vector3 vert = rp.verts[fp->face_verts[i]];
     vert -= avg_vert;
     vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
     verts[i] = rot_vert;
@@ -1470,7 +1418,7 @@ void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
   }
 
   // now set the base vertex
-  vector base_vector;
+  vector3 base_vector;
   base_vector.x() = verts[leftmost_point].x();
   base_vector.y() = verts[topmost_point].y();
   base_vector.z() = 0;
@@ -1483,8 +1431,9 @@ void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
 // StretchRoomUVs — editor/RoomUVs.cpp:168
 // Stretches the UVs of a face along the selected edge.
 // Edge is the vertex index — the edge is (edge, edge+1).
-void StretchRoomUVs(room *rp, int facenum, int edge) {
-  face *fp = &rp->faces[facenum];
+void StretchRoomUVs(int roomnum, int facenum, int edge) {
+  room &rp = Rooms[roomnum];
+  face *fp = &rp.faces[facenum];
   int nv = fp->num_verts;
   int v0 = edge;
   int v1 = (v0 + 1) % nv;
@@ -1492,13 +1441,14 @@ void StretchRoomUVs(room *rp, int facenum, int edge) {
   roomUVL uv0 = fp->face_uvls[v0];
   roomUVL uv1 = fp->face_uvls[v1];
 
-  AssignUVsToFace(rp, facenum, &uv0, &uv1, v0, v1);
+  AssignUVsToFace(roomnum, facenum, &uv0, &uv1, v0, v1);
 }
 
 // ScaleFaceUVs — editor/RoomUVs.cpp:195
 // Scale all UV values in a face from the center point (average of u,v).
-void ScaleFaceUVs(room *rp, int facenum, float scale) {
-  face *fp = &rp->faces[facenum];
+void ScaleFaceUVs(int roomnum, int facenum, float scale) {
+  room &rp = Rooms[roomnum];
+  face *fp = &rp.faces[facenum];
   int nv = fp->num_verts;
 
   float midu = 0, midv = 0;
@@ -1517,21 +1467,23 @@ void ScaleFaceUVs(room *rp, int facenum, float scale) {
 
 // HTextureSlide — editor/HTexture.cpp:334
 // Slide all UVs on a face by (right, up) in 1/128th texture units.
-void HTextureSlide(room *rp, int facenum, float right, float up) {
-  if (!rp || !rp->used)
+void HTextureSlide(int roomnum, int facenum, float right, float up) {
+  room &rp = Rooms[roomnum];
+  if (!rp.used)
     return;
-  for (int i = 0; i < rp->faces[facenum].num_verts; i++) {
-    rp->faces[facenum].face_uvls[i].u -= right / 128.0f;
-    rp->faces[facenum].face_uvls[i].v += up / 128.0f;
+  for (int i = 0; i < rp.faces[facenum].num_verts; i++) {
+    rp.faces[facenum].face_uvls[i].u -= right / 128.0f;
+    rp.faces[facenum].face_uvls[i].v += up / 128.0f;
   }
 }
 
 // HTextureRotate — editor/HTexture.cpp:371
 // Rotate all UVs on a face by the given angle (in radians).
-void HTextureRotate(room *rp, int facenum, float angle_rad) {
-  if (!rp || !rp->used)
+void HTextureRotate(int roomnum, int facenum, float angle_rad) {
+  room &rp = Rooms[roomnum];
+  if (!rp.used)
     return;
-  face *fp = &rp->faces[facenum];
+  face *fp = &rp.faces[facenum];
   int nv = fp->num_verts;
   if (nv <= 0)
     return;
@@ -1557,26 +1509,29 @@ void HTextureRotate(room *rp, int facenum, float angle_rad) {
 
 // HTextureFlipX — editor/HTexture.cpp:274
 // Flip the U coordinate: u = 1 - u.
-void HTextureFlipX(room *rp, int facenum) {
-  if (!rp || !rp->used)
+void HTextureFlipX(int roomnum, int facenum) {
+  room &rp = Rooms[roomnum];
+  if (!rp.used)
     return;
-  for (int i = 0; i < rp->faces[facenum].num_verts; i++)
-    rp->faces[facenum].face_uvls[i].u = 1 - rp->faces[facenum].face_uvls[i].u;
+  for (int i = 0; i < rp.faces[facenum].num_verts; i++)
+    rp.faces[facenum].face_uvls[i].u = 1 - rp.faces[facenum].face_uvls[i].u;
 }
 
 // HTextureFlipY — editor/HTexture.cpp:304
 // Flip the V coordinate: v = 1 - v.
-void HTextureFlipY(room *rp, int facenum) {
-  if (!rp || !rp->used)
+void HTextureFlipY(int roomnum, int facenum) {
+  room &rp = Rooms[roomnum];
+  if (!rp.used)
     return;
-  for (int i = 0; i < rp->faces[facenum].num_verts; i++)
-    rp->faces[facenum].face_uvls[i].v = 1 - rp->faces[facenum].face_uvls[i].v;
+  for (int i = 0; i < rp.faces[facenum].num_verts; i++)
+    rp.faces[facenum].face_uvls[i].v = 1 - rp.faces[facenum].face_uvls[i].v;
 }
 
 // HTextureRoomStretch — editor/HTexture.cpp:480
 // Stretch UVs perpendicular to the selected edge. direction = +1 or -1.
-void HTextureRoomStretch(room *rp, int facenum, int edge, int direction) {
-  face *fp = &rp->faces[facenum];
+void HTextureRoomStretch(int roomnum, int facenum, int edge, int direction) {
+  room &rp = Rooms[roomnum];
+  face *fp = &rp.faces[facenum];
   int nv = fp->num_verts;
   int next_edge = (edge + 1) % nv;
 
@@ -1602,35 +1557,38 @@ void HTextureRoomStretch(room *rp, int facenum, int edge, int direction) {
 }
 
 // HTextureStretchMore — editor/HTexture.cpp:400
-void HTextureStretchMore(room *rp, int facenum, int edge, float texscale) {
-  HTextureRoomStretch(rp, facenum, edge, (int)(1 * texscale));
+void HTextureStretchMore(int roomnum, int facenum, int edge, float texscale) {
+  HTextureRoomStretch(roomnum, facenum, edge, (int)(1 * texscale));
 }
 
 // HTextureStretchLess — editor/HTexture.cpp:408
-void HTextureStretchLess(room *rp, int facenum, int edge, float texscale) {
-  HTextureRoomStretch(rp, facenum, edge, (int)(-1 * texscale));
+void HTextureStretchLess(int roomnum, int facenum, int edge, float texscale) {
+  HTextureRoomStretch(roomnum, facenum, edge, int(-1 * texscale));
 }
 
 // HTextureSetDefault — editor/HTexture.cpp:416
 // Reset UVs to defaults using GetUVLForRoomPoint.
-void HTextureSetDefault(room *rp, int facenum) {
-  if (!rp || !rp->used)
+void HTextureSetDefault(int roomnum, int facenum) {
+  room &rp = Rooms[roomnum];
+  if (!rp.used)
     return;
-  for (int i = 0; i < rp->faces[facenum].num_verts; i++) {
-    float saveu2 = rp->faces[facenum].face_uvls[i].u2;
-    float savev2 = rp->faces[facenum].face_uvls[i].v2;
-    GetUVLForRoomPoint(ROOMNUM(rp), facenum, i, &rp->faces[facenum].face_uvls[i]);
-    rp->faces[facenum].face_uvls[i].u2 = saveu2;
-    rp->faces[facenum].face_uvls[i].v2 = savev2;
+  for (int i = 0; i < rp.faces[facenum].num_verts; i++) {
+    float saveu2 = rp.faces[facenum].face_uvls[i].u2;
+    float savev2 = rp.faces[facenum].face_uvls[i].v2;
+    GetUVLForRoomPoint(roomnum, facenum, i, &rp.faces[facenum].face_uvls[i]);
+    rp.faces[facenum].face_uvls[i].u2 = saveu2;
+    rp.faces[facenum].face_uvls[i].v2 = savev2;
   }
 }
 
 // HTexturePropagateToFace — editor/HTexture.cpp:215
 // Copy texture from current face to adjacent face, tiling UVs.
 // tex = true also copies the texture assignment.
-int HTexturePropagateToFace(room *destrp, int destface, room *srcrp, int srcface, bool tex) {
-  face *dfp = &destrp->faces[destface];
-  face *sfp = &srcrp->faces[srcface];
+int HTexturePropagateToFace(int destroom, int destface, int srcroom, int srcface, bool tex) {
+  room &destrp = Rooms[destroom];
+  room &srcrp = Rooms[srcroom];
+  face *dfp = &destrp.faces[destface];
+  face *sfp = &srcrp.faces[srcface];
   int v0, v1;
 
   if (!FindSharedEdge(dfp, sfp, &v0, &v1))
@@ -1639,7 +1597,7 @@ int HTexturePropagateToFace(room *destrp, int destface, room *srcrp, int srcface
   if (tex)
     dfp->tmap = sfp->tmap;
 
-  AssignUVsToFace(destrp, destface, &sfp->face_uvls[(v1 + 1) % sfp->num_verts], &sfp->face_uvls[v1], v0,
+  AssignUVsToFace(destroom, destface, &sfp->face_uvls[(v1 + 1) % sfp->num_verts], &sfp->face_uvls[v1], v0,
                   (v0 + 1) % dfp->num_verts);
 
   return 1;
@@ -1647,9 +1605,11 @@ int HTexturePropagateToFace(room *destrp, int destface, room *srcrp, int srcface
 
 // HTextureCopyUVsToFace — editor/HTexture.cpp:251
 // Copy texture UVs from one face to another with offset.
-int HTextureCopyUVsToFace(room *destrp, int destface, room *srcrp, int srcface, int offset) {
-  face *dfp = &destrp->faces[destface];
-  face *sfp = &srcrp->faces[srcface];
+int HTextureCopyUVsToFace(int destroom, int destface, int srcroom, int srcface, int offset) {
+  room &destrp = Rooms[destroom];
+  room &srcrp = Rooms[srcroom];
+  face *dfp = &destrp.faces[destface];
+  face *sfp = &srcrp.faces[srcface];
 
   if (dfp->num_verts != sfp->num_verts)
     return 0;
@@ -1663,10 +1623,11 @@ int HTextureCopyUVsToFace(room *destrp, int destface, room *srcrp, int srcface, 
 }
 
 // HTextureApplyToRoomFace — editor/HTexture.cpp:198
-void HTextureApplyToRoomFace(room *rp, int facenum, int tnum) {
-  if (!rp || !rp->used)
+void HTextureApplyToRoomFace(int roomnum, int facenum, int tnum) {
+  room &rp = Rooms[roomnum];
+  if (!rp.used)
     return;
-  rp->faces[facenum].tmap = tnum;
+  rp.faces[facenum].tmap = tnum;
 }
 
 // ============================================================================
@@ -1679,47 +1640,40 @@ void HTextureApplyToRoomFace(room *rp, int facenum, int tnum) {
 // ============================================================================
 
 void ComputePlacedRoomMatrix() {
-  room *placedroomp;
-  int placedface;
+  room &placedroomp = Rooms[app.Placed_room];
+  int placedface = app.Placed_room_face;
   matrix srcmat;
-  vector t;
+  vector3 t;
 
-  if (Placed_room != -1) {
-    placedroomp = &Rooms[Placed_room];
-    placedface = Placed_room_face;
-  } else {
-    placedroomp = &Rooms[Placed_room];
-    placedface = Placed_room_face;
-  }
-
-  t = -placedroomp->faces[placedface].normal;
-  vm_VectorToMatrix(&srcmat, &t, NULL, NULL);
-  vm_VectorAngleToMatrix(&Placed_room_orient, &Placed_room_orient.fvec, Placed_room_angle);
+  t = -placedroomp.faces[placedface].normal;
+  vm_VectorToMatrix(srcmat, t, std::nullopt, std::nullopt);
+  vm_VectorAngleToMatrix(&app.Placed_room_orient, &app.Placed_room_orient.fvec, app.Placed_room_angle);
 
   vm_Orthogonalize(&srcmat);
-  vm_Orthogonalize(&Placed_room_orient);
+  vm_Orthogonalize(&app.Placed_room_orient);
 
-  vm_MatrixMulTMatrix(&Placed_room_rotmat, &srcmat, &Placed_room_orient);
-  vm_Orthogonalize(&Placed_room_rotmat);
+  vm_MatrixMulTMatrix(&app.Placed_room_rotmat, &srcmat, &app.Placed_room_orient);
+  vm_Orthogonalize(&app.Placed_room_rotmat);
 }
 
 // PlaceRoom — editor/HRoom.cpp:585
 // Sets up globals for interactive room placement.
-void PlaceRoom(room *baseroomp, int baseface, int placed_room, int placed_room_face, int placed_room_door) {
-  Q_ASSERT(baseroomp->faces[baseface].portal_num == -1);
+void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face, int placed_room_door) {
+  room &baseroomp = Rooms[baseroom];
+  Q_ASSERT(baseroomp.faces[baseface].portal_num == -1);
 
-  room *placedroomp = &Rooms[placed_room];
+  room &placedroomp = Rooms[placed_room];
 
-  Placed_room = placed_room;
-  Placed_room_face = placed_room_face;
-  Placed_room_orient.fvec = baseroomp->faces[baseface].normal;
-  Placed_room_angle = 0;
-  Placed_baseroomp = baseroomp;
-  Placed_baseface = baseface;
-  Placed_door = placed_room_door;
+  app.Placed_room = placed_room;
+  app.Placed_room_face = placed_room_face;
+  app.Placed_room_orient.fvec = baseroomp.faces[baseface].normal;
+  app.Placed_room_angle = 0;
+  app.Placed_baseroomp = baseroom;
+  app.Placed_baseface = baseface;
+  app.Placed_door = placed_room_door;
 
-  ComputeCenterPointOnFace(&Placed_room_attachpoint, baseroomp, baseface);
-  ComputeCenterPointOnFace(&Placed_room_origin, placedroomp, placed_room_face);
+  ComputeCenterPointOnFace(&app.Placed_room_attachpoint, baseroom, baseface);
+  ComputeCenterPointOnFace(&app.Placed_room_origin, placed_room, placed_room_face);
 
   ComputePlacedRoomMatrix();
 }
@@ -1727,7 +1681,7 @@ void PlaceRoom(room *baseroomp, int baseface, int placed_room, int placed_room_f
 // PlaceDoor — editor/edoors.cpp:36
 // Creates a room from a door polymodel (shell + front face submodels) and
 // places it for interactive positioning.
-void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
+void PlaceDoor(int baseroom, int baseface, int placed_door) {
   poly_model *po = GetPolymodelPointer(GetDoorImage(placed_door));
   if (po == nullptr)
     return;
@@ -1738,13 +1692,13 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
 
   for (int i = 0; i < po->n_models; i++) {
     bsp_info *sm = &po->submodel[i];
-    if (sm->flags & SOF_SHELL) {
+    if (sm->flags.shell) {
       got_shell = 1;
       num_verts += sm->nverts;
       num_faces += sm->num_faces;
       shell_sm = sm;
     }
-    if (sm->flags & SOF_FRONTFACE) {
+    if (sm->flags.frontface) {
       got_front = 1;
       num_verts += sm->nverts;
       num_faces++; // front face is always one face
@@ -1760,45 +1714,46 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
   int total_verts = num_verts;
   int total_faces = num_faces;
 
-  room *rp = CreateNewRoom(total_verts, total_faces);
-  Q_ASSERT(rp != nullptr);
+  int rp = CreateNewRoom(total_verts, total_faces);
+  Q_ASSERT(rp >= 0);
+  room &newroom = Rooms[rp];
 
   int index = 0;
 
   // Copy shell vertices
   for (int i = 0; i < shell_sm->nverts; i++, index++) {
-    rp->verts[index] = shell_sm->verts[i];
+    newroom.verts[index] = shell_sm->verts[i];
   }
   // Copy front face vertices
   for (int i = 0; i < front_sm->nverts; i++, index++) {
-    rp->verts[index] = front_sm->verts[i];
+    newroom.verts[index] = front_sm->verts[i];
   }
 
   // Create faces from shell
   index = 0;
   for (int i = 0; i < shell_sm->num_faces; i++, index++) {
-    InitRoomFace(&rp->faces[index], shell_sm->faces[i].nverts);
-    rp->faces[index].tmap = D3EditState.texdlg_texture;
-    for (int t = 0; t < rp->faces[index].num_verts; t++)
-      rp->faces[index].face_verts[t] = shell_sm->faces[i].vertnums[t];
+    InitRoomFace(&newroom.faces[index], shell_sm->faces[i].nverts);
+    newroom.faces[index].tmap = app.texdlg_texture;
+    for (int t = 0; t < newroom.faces[index].num_verts; t++)
+      newroom.faces[index].face_verts[t] = shell_sm->faces[i].vertnums[t];
   }
 
   // Create the front face (always one face)
   int front_face_index = index;
   Q_ASSERT(front_sm->num_faces == 1);
-  InitRoomFace(&rp->faces[index], front_sm->faces[0].nverts);
-  rp->faces[index].tmap = D3EditState.texdlg_texture;
+  InitRoomFace(&newroom.faces[index], front_sm->faces[0].nverts);
+  newroom.faces[index].tmap = app.texdlg_texture;
 
   // Remap front face vertices to match the shell
   int front_remap[30];
   for (int i = 0; i < front_sm->nverts; i++)
     front_remap[i] = -1;
 
-  vector diff_vec = front_sm->offset - shell_sm->offset;
+  vector3 diff_vec = front_sm->offset - shell_sm->offset;
 
   for (int i = 0; i < shell_sm->nverts; i++) {
     for (int t = 0; t < front_sm->nverts; t++) {
-      vector testvec = front_sm->verts[t] + diff_vec;
+      vector3 testvec = front_sm->verts[t] + diff_vec;
       if (PointsAreSame(&shell_sm->verts[i], &testvec))
         front_remap[t] = i;
     }
@@ -1807,8 +1762,8 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
   for (int i = 0; i < front_sm->nverts; i++)
     Q_ASSERT(front_remap[i] != -1);
 
-  for (int t = 0; t < rp->faces[front_face_index].num_verts; t++)
-    rp->faces[front_face_index].face_verts[t] = front_remap[front_sm->faces[0].vertnums[t]];
+  for (int t = 0; t < newroom.faces[front_face_index].num_verts; t++)
+    newroom.faces[front_face_index].face_verts[t] = front_remap[front_sm->faces[0].vertnums[t]];
 
   // Compute normals and UVs
   if (!ResetRoomFaceNormals(rp))
@@ -1817,5 +1772,5 @@ void PlaceDoor(room *baseroomp, int baseface, int placed_door) {
   AssignDefaultUVsToRoom(rp);
 
   // Now call PlaceRoom to set up interactive placement
-  PlaceRoom(baseroomp, baseface, ROOMNUM(rp), front_face_index, placed_door);
+  PlaceRoom(baseroom, baseface, rp, front_face_index, placed_door);
 }

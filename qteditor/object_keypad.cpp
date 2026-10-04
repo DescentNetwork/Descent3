@@ -19,6 +19,8 @@
 #include "object_keypad.h"
 #include "ui_objectkeypad.h"
 
+#include <bit>
+#include <cstring>
 #include <QMessageBox>
 #include <QCheckBox>
 #include <QComboBox>
@@ -26,7 +28,7 @@
 #include <QPushButton>
 
 #include "d3edit.h"
-#include "debug.h"
+//#include "debug.h"
 #include "objinfo.h"
 #include "object.h"
 #include "object_ops.h"
@@ -46,8 +48,7 @@ ObjectKeypad::ObjectKeypad(QWidget *parent) : QDialog(parent), ui(new Ui::Object
   connect(ui->IDC_OBJPAD_SETDEFAULT, &QPushButton::clicked, this, &ObjectKeypad::onSetDefault);
   connect(ui->IDC_OBJ_ROT90, &QPushButton::clicked, this, &ObjectKeypad::onRot90);
   connect(ui->IDC_OBJPAD_DELETEALL, &QPushButton::clicked, this, &ObjectKeypad::onDeleteAll);
-  if (QCheckBox *cb = ui->IDC_OBJECT_PUSHTHROUGHWALLS)
-    connect(cb, &QCheckBox::toggled, this, &ObjectKeypad::onPushThroughWalls);
+  connect(ui->IDC_OBJECT_PUSHTHROUGHWALLS, &QCheckBox::toggled, this, &ObjectKeypad::onPushThroughWalls);
   connect(ui->IDC_OBJMOVEX, &QPushButton::clicked, this, &ObjectKeypad::onAxisX);
   connect(ui->IDC_OBJMOVEY, &QPushButton::clicked, this, &ObjectKeypad::onAxisY);
   connect(ui->IDC_OBJMOVEZ, &QPushButton::clicked, this, &ObjectKeypad::onAxisZ);
@@ -55,8 +56,7 @@ ObjectKeypad::ObjectKeypad(QWidget *parent) : QDialog(parent), ui(new Ui::Object
   connect(ui->IDC_OBJMOVEH, &QPushButton::clicked, this, &ObjectKeypad::onAxisH);
   connect(ui->IDC_OBJMOVEB, &QPushButton::clicked, this, &ObjectKeypad::onAxisB);
 
-  if (QCheckBox *cb = ui->IDC_OBJECT_PUSHTHROUGHWALLS)
-    cb->setChecked(f_allow_objects_to_be_pushed_through_walls);
+  ui->IDC_OBJECT_PUSHTHROUGHWALLS->setChecked(f_allow_objects_to_be_pushed_through_walls);
 
   updateDialog();
 }
@@ -64,59 +64,57 @@ ObjectKeypad::ObjectKeypad(QWidget *parent) : QDialog(parent), ui(new Ui::Object
 ObjectKeypad::~ObjectKeypad() { delete ui; }
 
 void ObjectKeypad::setMoveAxis(int axis) {
-  D3EditState.object_move_axis = axis;
+  app.object_move_axis = axis;
   updateDialog();
 }
 
 void ObjectKeypad::updateDialog() {
-  const bool hasObject = (Cur_object_index >= 0 && Cur_object_index <= Highest_object_index &&
-                          Objects[Cur_object_index].type != OBJ_NONE);
-  const char *names[] = {"IDC_OBJPAD_FLIPOBJ", "IDC_OBJ_DELOBJ", "IDC_OBJPAD_NEXTOBJ",
-                         "IDC_OBJPAD_SETDEFAULT", "IDC_OBJ_ROT90"};
-  for (const char *name : names)
-    if (QWidget *w = findChild<QWidget*>(name))
-      w->setEnabled(hasObject);
+  const bool hasObject = (app.Cur_object_index >= 0 && app.Cur_object_index <= Highest_object_index &&
+                          Objects[app.Cur_object_index].type != object_type::none);
+  ui->IDC_OBJPAD_FLIPOBJ->setEnabled(hasObject);
+  ui->IDC_OBJ_DELOBJ->setEnabled(hasObject);
+  ui->IDC_OBJPAD_NEXTOBJ->setEnabled(hasObject);
+  ui->IDC_OBJPAD_SETDEFAULT->setEnabled(hasObject);
+  ui->IDC_OBJ_ROT90->setEnabled(hasObject);
 
-  const struct {
-    const char *name;
-    int axis;
-  } axes[] = {{"IDC_OBJMOVEX", 0}, {"IDC_OBJMOVEY", 1}, {"IDC_OBJMOVEZ", 2},
-              {"IDC_OBJMOVEP", 3}, {"IDC_OBJMOVEH", 4}, {"IDC_OBJMOVEB", 5}};
-  for (const auto &a : axes)
-    if (QPushButton *b = findChild<QPushButton*>(a.name))
-      b->setChecked(D3EditState.object_move_axis == a.axis);
+  ui->IDC_OBJMOVEX->setChecked(app.object_move_axis == 0);
+  ui->IDC_OBJMOVEY->setChecked(app.object_move_axis == 1);
+  ui->IDC_OBJMOVEZ->setChecked(app.object_move_axis == 2);
+  ui->IDC_OBJMOVEP->setChecked(app.object_move_axis == 3);
+  ui->IDC_OBJMOVEH->setChecked(app.object_move_axis == 4);
+  ui->IDC_OBJMOVEB->setChecked(app.object_move_axis == 5);
 }
 
 void ObjectKeypad::onPlaceObject() {
   // HObjectPlace handles all the validation internally.
-  if (HObjectPlace(D3EditState.current_obj_type, D3EditState.current_obj_id)) {
-    Mine_changed = true;
+  if (app.current_obj_type >= 0 && HObjectPlace(static_cast<object_type>(app.current_obj_type), app.current_obj_id)) {
+    app.Mine_changed = true;
     updateDialog();
   }
 }
 
 void ObjectKeypad::onDeleteObject() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == object_type::none)
     return;
   HObjectDelete();
   updateDialog();
 }
 
 void ObjectKeypad::onNextObject() {
-  if (Cur_object_index < 0)
+  if (app.Cur_object_index < 0)
     return;
-  for (int i = Cur_object_index + 1; i <= Highest_object_index; i++) {
-    if (Objects[i].type != OBJ_NONE && Objects[i].type != OBJ_ROOM) {
-      Cur_object_index = i;
+  for (int i = app.Cur_object_index + 1; i <= Highest_object_index; i++) {
+    if (Objects[i].type != object_type::none && Objects[i].type != object_type::room) {
+      app.Cur_object_index = i;
       updateDialog();
       return;
     }
   }
-  for (int i = 0; i <= Cur_object_index; i++) {
-    if (Objects[i].type != OBJ_NONE && Objects[i].type != OBJ_ROOM) {
-      Cur_object_index = i;
+  for (int i = 0; i <= app.Cur_object_index; i++) {
+    if (Objects[i].type != object_type::none && Objects[i].type != object_type::room) {
+      app.Cur_object_index = i;
       updateDialog();
       return;
     }
@@ -124,9 +122,9 @@ void ObjectKeypad::onNextObject() {
 }
 
 void ObjectKeypad::onFlipObject() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == object_type::none)
     return;
   HObjectFlip();
   updateDialog();
@@ -134,15 +132,15 @@ void ObjectKeypad::onFlipObject() {
 
 void ObjectKeypad::onResetObjects() {
   for (int i = 0; i <= Highest_object_index; i++) {
-    if (Objects[i].type == OBJ_NONE)
+    if (Objects[i].type == object_type::none)
       continue;
-    const int type = Objects[i].type;
-    if (type < 0 || type >= MAX_OBJECT_TYPES || Object_info[type].type == OBJ_NONE)
+    const object_type type = Objects[i].type;
+    if (type == object_type::none || Object_info[obj_type_index(type)].type == object_type::none)
       continue;
-    Objects[i].flags = Object_info[type].flags;
-    Objects[i].size = Object_info[type].size;
+    Objects[i].flags = {};
+    Objects[i].size = Object_info[obj_type_index(type)].size;
   }
-  Mine_changed = true;
+  app.Mine_changed = true;
 }
 
 void ObjectKeypad::onSetDefault() {
@@ -151,13 +149,13 @@ void ObjectKeypad::onSetDefault() {
 }
 
 void ObjectKeypad::onRot90() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == object_type::none)
     return;
   // Rotate 90 degrees (PI/2 radians = 8192 angle units in D3).
-  RotateObject(Cur_object_index, 8192, 0, 0);
-  World_changed = true;
+  RotateObject(app.Cur_object_index, 8192, 0, 0);
+  app.World_changed = true;
   updateDialog();
 }
 
@@ -166,16 +164,16 @@ void ObjectKeypad::onDeleteAll()
   if(QMessageBox::question(this, "Are you sure?", "Delete all objects except the player?") == QMessageBox::Yes)
   {
     for (int i = 0; i <= Highest_object_index; i++) {
-      if (Objects[i].type == OBJ_NONE || Objects[i].type == OBJ_ROOM)
+      if (Objects[i].type == object_type::none || Objects[i].type == object_type::room)
         continue;
       if (&Objects[i] == Player_object)
         continue;
-      if (Objects[i].type == OBJ_PLAYER)
+      if (Objects[i].type == object_type::player)
         continue;
       ObjDelete(i);
     }
-    Cur_object_index = -1;
-    World_changed = true;
+    app.Cur_object_index = -1;
+    app.World_changed = true;
     updateDialog();
   }
 }

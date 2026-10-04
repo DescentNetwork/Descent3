@@ -19,8 +19,9 @@
 #pragma once
 
 #include <QDialog>
-
-struct physics_info;
+#include <optional>
+#include "utils.h"
+#include "object_external_struct.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class PropertyPhysicsDialog; }
@@ -32,18 +33,18 @@ QT_END_NAMESPACE
 class PropertyPhysicsDialog : public QDialog {
   Q_OBJECT
 public:
-  explicit PropertyPhysicsDialog(physics_info *physInfo, QWidget *parent = nullptr);
+  explicit PropertyPhysicsDialog(int object_id, QWidget *parent = nullptr);
   ~PropertyPhysicsDialog();
 
 private slots:
   void onOk();
-  void onFlagToggled();
 
 private:
+  optref<physics_info> data(void);
   void updateDialog();
-  void setFlag(uint32_t flag, const char *checkName, bool checked);
 
   Ui::PropertyPhysicsDialog *ui;
-  physics_info *m_physInfo;
+  //physics_info *m_physInfo;
+  int m_object_id;
 };
 

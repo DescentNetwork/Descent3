@@ -1,3 +1,4 @@
+#include <QtGlobal>
 /*
  * Descent 3
  * Copyright (C) 2024 Descent Developers
@@ -22,6 +23,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
+#include <QDataStream>
 #include <QFileInfo>
 #include <QMenu>
 #include <QDockWidget>
@@ -37,6 +39,7 @@
 #include <QIcon>
 
 #include <algorithm>
+#include <bit>
 #include <cstring>
 
 #include "ui_mainwindow.h"
@@ -45,11 +48,13 @@
 #include "about_dialog.h"
 
 
-#include "editor_file_dialogs.h"
 #include "editor_view.h"
+#include "editor_room_state.h"
+#include "doorway.h"
 #include "hog_dialog.h"
-#include "level_io.h"
+#include "level_ops.h"
 #include "object.h"
+#include "render.h"
 #include "ai_settings_dialog.h"
 #include "ambient_sound_patterns_dialog.h"
 #include "brief_main_dialog.h"
@@ -75,6 +80,13 @@
 #include "world_sounds_dialog.h"
 #include "world_textures_dialog.h"
 #include "world_weapons_dialog.h"
+#include "addscript_dialog.h"
+#include "createscript_dialog.h"
+#include "cust_default_script_dialog.h"
+#include "dallas_sound_dialog.h"
+#include "object_properties_dialog.h"
+#include "propscript_dialog.h"
+#include "script_editor_dialog.h"
 
 #include "ui_keypads.h"
 #include "d3edit.h"
@@ -107,42 +119,63 @@ MainWindow::MainWindow(QWidget *parent)
   Q_ASSERT(m_editorView != nullptr);
 
   // ---- EditorView picking signals -> editor state ----
-  connect(m_editorView, &EditorView::faceSelected, this, [this](int r, int f) {
-    Curroomp = &Rooms[r];
-    Curface = f;
-    Curedge = Curvert = 0;
-    Curportal = -1;
-    State_changed = true;
+  connect(m_editorView, &EditorView::faceSelected, [this](int r, int f) {
+    app.Curroomp = r;
+    app.Curface = f;
+    app.Curedge = app.Curvert = 0;
+    app.Curportal = -1;
+    app.State_changed = true;
     statusBar()->showMessage(
         QStringLiteral("Face selected: room %1, face %2").arg(r).arg(f));
-    m_editorView->requestRedraw();
+    m_editorView->update();
   });
-  connect(m_editorView, &EditorView::objectSelected, this, [this](int idx) {
-    Cur_object_index = idx;
-    State_changed = true;
-    const char *name = (idx >= 0 && idx <= Highest_object_index && Objects[idx].name)
-                           ? Objects[idx].name
-                           : "";
+  connect(m_editorView, &EditorView::objectSelected, [this](int idx) {
+    app.Cur_object_index = idx;
+    app.State_changed = true;
+    QString name = (idx >= 0 && idx <= Highest_object_index && !Objects[idx].name.empty())
+                           ? QString::fromStdString(Objects[idx].name)
+                           : QString();
     statusBar()->showMessage(
         QStringLiteral("Object %1 selected (%2)").arg(idx).arg(name));
-    m_editorView->requestRedraw();
+    m_editorView->update();
   });
-  connect(m_editorView, &EditorView::selectionCleared, this, [this]() {
-    Curroomp = nullptr;
-    Curface = -1;
-    Cur_object_index = -1;
-    State_changed = true;
+  connect(m_editorView, &EditorView::selectionCleared, [this]() {
+    app.Curroomp = -1;
+    app.Curface = -1;
+    app.Cur_object_index = -1;
+    app.State_changed = true;
     statusBar()->showMessage(QStringLiteral("Selection cleared."));
-    m_editorView->requestRedraw();
+    m_editorView->update();
   });
+  connect(m_editorView, &EditorView::roomToggleRequested, this,
+          [this](int roomIndex) {
+            ToggleRoomSelectedState(roomIndex);
+            app.State_changed = true;
+            statusBar()->showMessage(
+                QStringLiteral("Room %1 selection toggled.").arg(roomIndex));
+            m_editorView->update();
+          });
   connect(m_editorView, &EditorView::objectContextMenuRequested, this,
           [this](const QPoint &globalPos, int objIdx) {
-            Cur_object_index = objIdx;
+            app.Cur_object_index = objIdx;
             QMenu menu(this);
+            const QString title = (objIdx >= 0 && objIdx <= Highest_object_index &&
+                                   !Objects[objIdx].name.empty())
+                                      ? QString::fromStdString(Objects[objIdx].name)
+                                      : QStringLiteral("(no name)");
+            QAction *titleAct = menu.addAction(title);
+            titleAct->setEnabled(false);
+            menu.addSeparator();
             menu.addAction("Copy", this, &MainWindow::onCopyObjectToClipboard);
             menu.addAction("Cut", this, &MainWindow::onCutObjectToClipboard);
             menu.addAction("Paste", this, &MainWindow::onPasteObjectFromClipboard);
             menu.addAction("Delete", this, &MainWindow::onDeleteCurrentObject);
+            menu.addSeparator();
+            menu.addAction("Edit Name", this, &MainWindow::onObjectRename);
+            menu.addAction("Sound", this, &MainWindow::onObjectSound);
+            menu.addAction("Edit Dallas Scripts", this, &MainWindow::onObjectEditScripts);
+            menu.addAction("New Dallas Script", this, &MainWindow::onObjectNewScript);
+            menu.addAction("Set a custom default script", this, &MainWindow::onObjectCustomDefaultScript);
             menu.exec(globalPos);
           });
 
@@ -169,8 +202,9 @@ MainWindow::MainWindow(QWidget *parent)
   // ----------------------------------------------------------------- View
   connect(ui->ID_VIEW_KEYPAD_TOGGLE, &QAction::triggered, this, &MainWindow::toggleKeypadBar);
   connect(ui->ID_VIEW_CENTERONMINE, &QAction::triggered, this, &MainWindow::onCenterViewOnMine);
+  connect(ui->ID_VIEW_CENTERONCUBE, &QAction::triggered, this, &MainWindow::onCenterViewOnCube);
   connect(ui->ID_VIEW_CENTERONOBJECT, &QAction::triggered, this, &MainWindow::onCenterViewOnObject);
-  connect(ui->ID_VIEW_RESETVIEWRADIUS, &QAction::triggered, this, &MainWindow::onMoveViewToSelectedRoom);
+  connect(ui->ID_VIEW_RESETVIEWRADIUS, &QAction::triggered, this, &MainWindow::onResetViewRadius);
   connect(ui->ID_VIEW_TOOLBAR, &QAction::triggered, this, &MainWindow::onViewToolbar);
   connect(ui->ID_VIEW_SHOWOBJECTSINWIREFRAMEVIEW, &QAction::triggered, this, &MainWindow::onViewShowObjectsInWireframe);
   connect(ui->ID_MINE_VIEW, &QAction::triggered, this, &MainWindow::onViewMine);
@@ -181,6 +215,10 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->ID_VIEW_DELETEVIEWER, &QAction::triggered, this, &MainWindow::onDeleteCurrentViewer);
   connect(ui->ID_VIEW_NEXTVIEWER, &QAction::triggered, this, &MainWindow::onSelectNextViewer);
   connect(ui->ID_VIEW_VIEWPROP, &QAction::triggered, this, &MainWindow::toggleViewerProps);
+  connect(ui->ID_VIEW_MOVECAMERATOSELECTEDROOM, &QAction::triggered, this, &MainWindow::onMoveViewToSelectedRoom);
+  connect(ui->ID_VIEW_MOVECAMERATOSELECTEDFACE, &QAction::triggered, this, &MainWindow::onMoveCameraToSelectedFace);
+  connect(ui->ID_VIEW_MOVECAMERATOCURRENTOBJECT, &QAction::triggered, this, &MainWindow::onMoveCameraToCurrentObject);
+  connect(ui->ID_VIEW_FLIP, &QAction::triggered, this, &MainWindow::onFlipViewer);
 
   connect(ui->ID_VIEW_TEXTUREMINE, &QAction::triggered, m_editorView, &EditorView::disableWireframeMode);
   connect(ui->ID_VIEW_WIREFRAMEMINE, &QAction::triggered, m_editorView, &EditorView::enableWireframeMode);
@@ -210,17 +248,17 @@ MainWindow::MainWindow(QWidget *parent)
   // -------------------------------------------------------------- Editors
   connect(ui->ID_TOOLS_WORLD_TEXTURES, &QAction::triggered, this, &MainWindow::showWorldTextures);
   connect(ui->ID_EDITORS_MEGACELLS, &QAction::triggered, this, &MainWindow::showMegacells);
-  connect(ui->ID_TOOLS_WORLD_OBJECTS_ROBOTS, &QAction::triggered, this, [this]() {
-    showGenericObject(OBJ_ROBOT, D3EditState.current_robot);
+  connect(ui->ID_TOOLS_WORLD_OBJECTS_ROBOTS, &QAction::triggered, [this]() {
+    showGenericObject(object_type::robot, app.current_robot);
   });
-  connect(ui->ID_TOOLS_WORLD_OBJECTS_POWERUPS, &QAction::triggered, this, [this]() {
-    showGenericObject(OBJ_POWERUP, D3EditState.current_powerup);
+  connect(ui->ID_TOOLS_WORLD_OBJECTS_POWERUPS, &QAction::triggered, [this]() {
+    showGenericObject(object_type::powerup, app.current_powerup);
   });
-  connect(ui->ID_TOOLS_WORLD_OBJECTS_BUILDINGS, &QAction::triggered, this, [this]() {
-    showGenericObject(OBJ_BUILDING, D3EditState.current_building);
+  connect(ui->ID_TOOLS_WORLD_OBJECTS_BUILDINGS, &QAction::triggered, [this]() {
+    showGenericObject(object_type::building, app.current_building);
   });
-  connect(ui->ID_TOOLS_WORLD_OBJECTS_CLUTTER, &QAction::triggered, this, [this]() {
-    showGenericObject(OBJ_CLUTTER, D3EditState.current_clutter);
+  connect(ui->ID_TOOLS_WORLD_OBJECTS_CLUTTER, &QAction::triggered, [this]() {
+    showGenericObject(object_type::clutter, app.current_clutter);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_PLAYER, &QAction::triggered, this, &MainWindow::showWorldObjectsPlayer);
   connect(ui->ID_TOOLS_WORLD_WEAPONS, &QAction::triggered, this, &MainWindow::showWorldWeapons);
@@ -248,7 +286,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->ID_TERRAIN_SOUNDS, &QAction::triggered, this, &MainWindow::showTerrainSound);
 
   // -------------------------------------------------------------- Window
-  connect(ui->ID_WINDOW_TILE, &QAction::triggered, this, [this]() {
+  connect(ui->ID_WINDOW_TILE, &QAction::triggered, [this]() {
     QList<QDockWidget *> docks = findChildren<QDockWidget *>();
     int n = docks.size();
     if (n == 0)
@@ -262,7 +300,7 @@ MainWindow::MainWindow(QWidget *parent)
       y += h;
     }
   });
-  connect(ui->ID_WINDOW_CASCADE, &QAction::triggered, this, [this]() {
+  connect(ui->ID_WINDOW_CASCADE, &QAction::triggered, [this]() {
     QList<QDockWidget *> docks = findChildren<QDockWidget *>();
     int n = docks.size();
     if (n == 0)
@@ -285,31 +323,41 @@ MainWindow::MainWindow(QWidget *parent)
   // ----------------------------------------------------------- Toolbar-only
   // Actions that appear only in the toolbar (not in any menu). Wire to
   // real handlers where possible; show "not yet ported" for the rest.
-  connect(ui->ID_FILE_PLAY640X480, &QAction::triggered, this, [this]() {
+  connect(ui->ID_FILE_PLAY640X480, &QAction::triggered, [this]() {
     showNotPorted("Play in 640x480");
   });
   connect(ui->ID_BUTTON_OUTLINE, &QAction::triggered, this, &MainWindow::onButtonOutline);
-  connect(ui->ID_BUTTON_WINDOWSELECTION, &QAction::triggered, this, [this]() {
+  connect(ui->ID_BUTTON_WINDOWSELECTION, &QAction::triggered, [this]() {
     showNotPorted("Window selection mode");
   });
-  connect(ui->ID_BUTTON_LIGHTING, &QAction::triggered, this, [this]() {
+  connect(ui->ID_BUTTON_LIGHTING, &QAction::triggered, [this]() {
     showNotPorted("Lighting mode");
   });
-  connect(ui->ID_ZBUTTON, &QAction::triggered, this, [this]() {
+  connect(ui->ID_ZBUTTON, &QAction::triggered, [this]() {
     showNotPorted("Z-button");
   });
-  connect(ui->ID_OBJBUTTON, &QAction::triggered, this, [this]() {
+  connect(ui->ID_OBJBUTTON, &QAction::triggered, [this]() {
     showNotPorted("Object mode");
   });
-  connect(ui->ID_REINIT_OPENGL, &QAction::triggered, this, [this]() {
+  connect(ui->ID_REINIT_OPENGL, &QAction::triggered, [this]() {
     showNotPorted("Reinitialize OpenGL");
   });
-  connect(ui->ID_OSIRISCOMPILE, &QAction::triggered, this, [this]() {
+  connect(ui->ID_OSIRISCOMPILE, &QAction::triggered, [this]() {
     showNotPorted("OSIRIS Compile");
   });
 
   setCentralWidget(m_editorView);
   buildKeypadBar();
+
+  // Win32 CEditorDoc::OnNewDocument (editor/editorDoc.cpp:186) runs
+  // CreateNewMine() at editor startup, which aims the wireframe view at
+  // Mine_origin (CreateNewMine -> ResetWireframeView).  Replicating that
+  // here means a later File>Open (which only resets the view radius,
+  // HFile.cpp:626) keeps the camera aimed at Mine_origin, where loaded
+  // levels are built.  Without it the fresh default aim (0,0,0) leaves the
+  // mine projecting off-screen and the level appears blank after Open.
+  onFileNew();
+  m_editorView->update();
 
   // The EditorView is now the central dock widget inside the dock manager.
   // All previously existing dock/undock/visibility logic stays the same.
@@ -340,7 +388,7 @@ void MainWindow::onFileNew() {
   m_currentLevelFile.clear();
   if (m_editorView != nullptr) {
     m_editorView->resetCamera();
-    m_editorView->requestRedraw();
+    m_editorView->update();
   }
   statusBar()->showMessage(QStringLiteral("Created new level."));
 }
@@ -348,35 +396,29 @@ void MainWindow::onFileNew() {
 void MainWindow::onFileOpen() {
   // Use the editor's LocalLevelsDir rather than the install root so the file
   // dialog opens where the user actually keeps their .d3l files.
-  static char initial_dir[PATH_MAX];
-  if (m_currentLevelFile.isEmpty()) {
-    std::strncpy(initial_dir, LocalLevelsDir, sizeof(initial_dir) - 1);
-    initial_dir[sizeof(initial_dir) - 1] = '\0';
-  } else {
-    const QByteArray current = QFileInfo(m_currentLevelFile).absolutePath().toLatin1();
-    std::strncpy(initial_dir, current.constData(), sizeof(initial_dir) - 1);
-    initial_dir[sizeof(initial_dir) - 1] = '\0';
-  }
-  char picked[PATH_MAX] = "";
-  const char *filter = "Descent 3 Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
-  if (!OpenFileDialog(this, filter, picked, initial_dir,
-                                int {sizeof(initial_dir)})) {
+  std::filesystem::path initial_dir = m_currentLevelFile.isEmpty()
+                                          ? LocalLevelsDir
+                                          : std::filesystem::path(m_currentLevelFile.toStdString()).parent_path();
+  const QString picked =
+      QFileDialog::getOpenFileName(this, QStringLiteral("Open Level"),
+                                   QString::fromStdString(initial_dir.string()),
+                                   QStringLiteral("Descent 3 Level Files (*.d3l);;All Files (*.*)"));
+  if (picked.isEmpty()) {
     statusBar()->showMessage(QStringLiteral("Open cancelled."));
     return;
   }
-  m_currentLevelFile = QString::fromLatin1(picked);
+  m_currentLevelFile = picked;
   setWindowTitle(QStringLiteral("Descent 3 Editor - %1").arg(m_currentLevelFile));
-  EditorLoadLevel(picked);
+  EditorLoadLevel(std::filesystem::path(picked.toStdString()));
   if (m_editorView != nullptr) {
-    m_editorView->resetCamera();
-    m_editorView->requestRedraw();
+    // Win32 OnOpenDocument -> EditorLoadLevel resets only the view radius
+    // (HFile.cpp:626 ResetWireframeViewRad); the camera binds to the level's
+    // saved viewer via SetEditorViewer() inside EditorLoadLevel.
+    m_editorView->resetWireframeViewRad();
+    m_editorView->update();
   }
   statusBar()->showMessage(
       QStringLiteral("Opened %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
-}
-
-void MainWindow::onRoomSelectByNumber() {
-  onSelectRoomByNumber();
 }
 
 void MainWindow::onFileSave() {
@@ -384,32 +426,26 @@ void MainWindow::onFileSave() {
     onFileSaveAs();
     return;
   }
-  const QByteArray path = m_currentLevelFile.toLatin1();
-  EditorSaveLevel(path.constData());
+  EditorSaveLevel(std::filesystem::path(m_currentLevelFile.toStdString()));
   statusBar()->showMessage(
       QStringLiteral("Saved %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
 }
 
 void MainWindow::onFileSaveAs() {
-  static char initial_dir[PATH_MAX];
-  if (m_currentLevelFile.isEmpty()) {
-    std::strncpy(initial_dir, LocalLevelsDir, sizeof(initial_dir) - 1);
-    initial_dir[sizeof(initial_dir) - 1] = '\0';
-  } else {
-    const QByteArray current = QFileInfo(m_currentLevelFile).absolutePath().toLatin1();
-    std::strncpy(initial_dir, current.constData(), sizeof(initial_dir) - 1);
-    initial_dir[sizeof(initial_dir) - 1] = '\0';
-  }
-  char picked[PATH_MAX] = "";
-  const char *filter = "Descent 3 Level Files (*.d3l)|*.d3l|All Files (*.*)|*.*||";
-  if (!SaveFileDialog(this, filter, picked, initial_dir,
-                                int {sizeof(initial_dir)})) {
+  std::filesystem::path initial_dir = m_currentLevelFile.isEmpty()
+                                          ? LocalLevelsDir
+                                          : std::filesystem::path(m_currentLevelFile.toStdString()).parent_path();
+  const QString picked =
+      QFileDialog::getSaveFileName(this, QStringLiteral("Save Level As"),
+                                   QString::fromStdString(initial_dir.string()),
+                                   QStringLiteral("Descent 3 Level Files (*.d3l);;All Files (*.*)"));
+  if (picked.isEmpty()) {
     statusBar()->showMessage(QStringLiteral("Save As cancelled."));
     return;
   }
-  m_currentLevelFile = QString::fromLatin1(picked);
+  m_currentLevelFile = picked;
   setWindowTitle(QStringLiteral("Descent 3 Editor - %1").arg(m_currentLevelFile));
-  EditorSaveLevel(picked);
+  EditorSaveLevel(std::filesystem::path(picked.toStdString()));
   statusBar()->showMessage(
       QStringLiteral("Saved as %1.").arg(QFileInfo(m_currentLevelFile).fileName()));
 }
@@ -419,15 +455,9 @@ void MainWindow::onFileStats() {
   // is built on top of the same Rooms[]/Objects[] iteration the Win32
   // entry point did; the dialog surface just got swapped from
   // OutrageMessageBox to QMessageBox::information.
-  char *text = RenderLevelStats();
-  if (text == nullptr) {
-    QMessageBox::information(this, QStringLiteral("Level stats"),
-                              QStringLiteral("Level stats unavailable."));
-    return;
-  }
+  const std::string text = RenderLevelStats();
   QMessageBox::information(this, QStringLiteral("Level stats"),
-                            QString::fromUtf8(text));
-  delete[] text;
+                            QString::fromStdString(text));
 }
 
 void MainWindow::onFileVerifyLevel() {
@@ -440,29 +470,26 @@ void MainWindow::onFileFixCracks() {
 
 void MainWindow::onViewMine()
 {
-  m_view_mode = view_mode_t::VIEW_MODE_MINE;
-  Editor_view_mode = VM_MINE;
+  app.view_mode = state::viewer::mine;
   statusBar()->showMessage(QStringLiteral("View: Mine"));
   if (m_editorView)
-    m_editorView->requestRedraw();
+    m_editorView->update();
 }
 
 void MainWindow::onViewTerrain()
 {
-  m_view_mode = view_mode_t::VIEW_MODE_TERRAIN;
-  Editor_view_mode = VM_TERRAIN;
+  app.view_mode = state::viewer::terrain;
   statusBar()->showMessage(QStringLiteral("View: Terrain"));
   if (m_editorView)
-    m_editorView->requestRedraw();
+    m_editorView->update();
 }
 
 void MainWindow::onViewRoom()
 {
-  m_view_mode = view_mode_t::VIEW_MODE_ROOM;
-  Editor_view_mode = VM_ROOM;
+  app.view_mode = state::viewer::room;
   statusBar()->showMessage(QStringLiteral("View: Room"));
   if (m_editorView)
-    m_editorView->requestRedraw();
+    m_editorView->update();
 }
 
 void MainWindow::onViewToolbar() {
@@ -473,20 +500,57 @@ void MainWindow::onViewToolbar() {
 void MainWindow::onButtonOutline() {
   if (m_editorView == nullptr)
     return;
-  m_editorView->setWireframe(!m_editorView->isWireframe());
-  statusBar()->showMessage(
-      QStringLiteral("Wireframe: %1")
-          .arg(m_editorView->isWireframe() ? QStringLiteral("on")
-                                            : QStringLiteral("off")));
+  QMenu popup(this);
+  const bool on = (Outline_mode & OM_ON) != 0;
+  QAction *onAct = popup.addAction("On");
+  onAct->setCheckable(true);
+  onAct->setChecked(on);
+  QAction *mineAct = popup.addAction("Mine");
+  mineAct->setCheckable(true);
+  mineAct->setChecked((Outline_mode & OM_MINE) != 0);
+  mineAct->setEnabled(on);
+  QAction *terrainAct = popup.addAction("Terrain");
+  terrainAct->setCheckable(true);
+  terrainAct->setChecked((Outline_mode & OM_TERRAIN) != 0);
+  terrainAct->setEnabled(on);
+  QAction *skyAct = popup.addAction("Sky");
+  skyAct->setCheckable(true);
+  skyAct->setChecked((Outline_mode & OM_SKY) != 0);
+  skyAct->setEnabled(on);
+  QAction *objectsAct = popup.addAction("Objects");
+  objectsAct->setCheckable(true);
+  objectsAct->setChecked((Outline_mode & OM_OBJECTS) != 0);
+  objectsAct->setEnabled(on);
+
+  QAction *chosen = popup.exec(QCursor::pos());
+  if (chosen == nullptr)
+    return;
+  const int old = Outline_mode;
+  if (chosen == onAct)
+    Outline_mode ^= OM_ON;
+  else if (chosen == mineAct)
+    Outline_mode ^= OM_MINE;
+  else if (chosen == terrainAct)
+    Outline_mode ^= OM_TERRAIN;
+  else if (chosen == skyAct)
+    Outline_mode ^= OM_SKY;
+  else if (chosen == objectsAct)
+    Outline_mode ^= OM_OBJECTS;
+
+  // Mirror the On bit into the editor view's wireframe toggle.
+  m_editorView->setWireframe((Outline_mode & OM_ON) != 0);
+  if (Outline_mode != old)
+    app.State_changed = true;
 }
 
 void MainWindow::onViewShowObjectsInWireframe() {
-  D3EditState.objects_in_wireframe = !D3EditState.objects_in_wireframe;
+  app.objects_in_wireframe = !app.objects_in_wireframe;
   statusBar()->showMessage(
       QStringLiteral("Objects in wireframe: %1")
-          .arg(D3EditState.objects_in_wireframe
+          .arg(app.objects_in_wireframe
                    ? QStringLiteral("on")
                    : QStringLiteral("off")));
+  m_editorView->update();
 }
 
 void MainWindow::saveWindowState() {
@@ -569,23 +633,6 @@ void MainWindow::buildKeypadBar()
 void MainWindow::toggleKeypadBar()
 {
   m_keypadDock->setVisible(!m_keypadDock->isVisible());
-  /*
-  if (m_dockManager == nullptr)
-    return;
-  // Toggle visibility of keypad dock widgets (exclude the central EditorView).
-  auto docks = m_dockManager->findChildren<ads::CDockWidget *>();
-  bool anyVisible = false;
-  for (auto *dock : docks) {
-    if (dock != nullptr && dock->widget() != m_editorView && dock->isVisible()) {
-      anyVisible = true;
-      break;
-    }
-  }
-  for (auto *dock : docks) {
-    if (dock != nullptr && dock->widget() != m_editorView)
-      dock->toggleView(!anyVisible);
-  }
-*/
 }
 
 void MainWindow::toggleViewerProps() {
@@ -644,13 +691,13 @@ void MainWindow::showWorldTextures() {
   dlg.exec();
 }
 
-void MainWindow::showGenericObject(int objType, int current) {
+void MainWindow::showGenericObject(object_type objType, int current) {
   WorldObjectsGenericDialog dlg(objType, current, this);
   dlg.exec();
-  if (objType == OBJ_BUILDING)
-    D3EditState.current_building = dlg.current();
-  else if (objType == OBJ_CLUTTER)
-    D3EditState.current_clutter = dlg.current();
+  if (objType == object_type::building)
+    app.current_building = dlg.objectId();
+  else if (objType == object_type::clutter)
+    app.current_clutter = dlg.objectId();
 }
 
 void MainWindow::showLevelProperties() {
@@ -719,7 +766,7 @@ void MainWindow::showReorderPages() {
   QString text;
   for (int i = 0; i < MAX_TRACKLOCKS; i++)
     if (GlobalTrackLocks[i].used)
-      text += QString("%1  %2\n").arg(i).arg(GlobalTrackLocks[i].name);
+      text += QString("%1  %2\n").arg(i).arg(QString::fromStdString(GlobalTrackLocks[i].name));
   if (text.isEmpty())
     text = QStringLiteral("No pages checked out.");
   QMessageBox::information(this, QStringLiteral("Reorder Net Pages"), text);
@@ -730,7 +777,7 @@ void MainWindow::showAllCheckedOut() {
   int total = 0;
   for (int i = 0; i < MAX_TRACKLOCKS; i++)
     if (GlobalTrackLocks[i].used) {
-      text += QString("%1\n").arg(GlobalTrackLocks[i].name);
+      text += QString("%1\n").arg(QString::fromStdString(GlobalTrackLocks[i].name));
       total++;
     }
   if (total == 0)
@@ -746,8 +793,8 @@ void MainWindow::showBitmapImporter() {
                                                     QStringLiteral("Images (*.pcx *.tga *.bmp)"));
   if (path.isEmpty())
     return;
-  const QByteArray pathBytes = path.toLocal8Bit();
-  const int bm = LoadTextureImage(pathBytes.constData(), nullptr, 0, 0);
+  const std::filesystem::path pathFs(path.toStdString());
+  const int bm = LoadTextureImage(pathFs, std::nullopt, 0, 0);
   if (bm < 0) {
     QMessageBox::warning(this, QStringLiteral("Import Bitmap"), QStringLiteral("Could not load %1.").arg(path));
     return;
@@ -771,99 +818,255 @@ void MainWindow::showHotSpotTGA() {
 // 1.0f (D3_DEFAULT_ZOOM in editor/editorView.cpp).
 constexpr float kDefaultViewRadius = 1.0f;
 
+#include "findintersection.h"
+#include "terrain.h"
+#include "vecmat.h"
 
-void MainWindow::onCenterViewOnMine() {
+// Move the viewer object (port of editor/editor.cpp:1141 MoveViewer).  This
+// should be called whenever the viewer object is moved.  ObjSetPos relinks the
+// viewer into the mine/terrain; when it crosses the boundary the global view
+// mode follows (state::viewer::terrain <-> state::viewer::mine), mirroring SetViewMode().
+static void moveViewer(vector3& pos, int roomnum, optref<matrix> orient) {
   if (Viewer_object == nullptr)
     return;
-  // Editor_view_mode determines whether the editor mines-terrain split
-  // is meaningful. We only recentre when the mode is VM_MINE; other
-  // modes are left as-is so the viewport doesn't snap while the user
-  // is poking at terrain.
-  if (Editor_view_mode != VM_MINE)
+  const bool was_outside = OBJECT_OUTSIDE(Viewer_object);
+
+  ObjSetPos(*Viewer_object, pos, roomnum, orient, false);
+
+  if (OBJECT_OUTSIDE(Viewer_object) && !was_outside)
+    app.view_mode = state::viewer::terrain;
+  else if (!OBJECT_OUTSIDE(Viewer_object) && was_outside)
+    app.view_mode = state::viewer::mine;
+}
+
+// Set the viewer in the specified room facing the specified face (port of
+// editor/HView.cpp:134 SetViewerFromRoomFace).  If room_center is true, put
+// the viewer at the center of the room facing the face; if room_center is
+// false, put the viewer directly in front of the selected face.  If the room
+// is external, put the viewer a distance away from the room, facing either the
+// center (if room_center is true) or the specified face.
+static void setViewerFromRoomFace(int roomnum, int facenum, bool room_center) {
+  if (Viewer_object == nullptr || roomnum < 0)
     return;
-  if (Curroomp == nullptr || Curroomp->num_verts <= 0)
+  // FACE_VIEW_DIST is defined in editor/HView.cpp:127.
+  constexpr float kFaceViewDist = 5.0f;
+
+  vector3 vp;
+  vector3 newpos;
+  matrix orient;
+  bool outside_mine = false;
+
+  const room &rp = Rooms[roomnum];
+
+  ComputeCenterPointOnFace(&vp, roomnum, facenum);
+
+  if (room_center) {
+    // Get position
+    ComputeRoomCenter(&newpos, roomnum);
+
+    if (rp.flags.external) {
+      vector3 t;
+      float rad = ComputeRoomBoundingSphere(&t, roomnum);
+
+      newpos.z() -= rad * 1.5f;
+
+      if (newpos.x() < 1.0f)
+        newpos.x() = 1.0f;
+      if (newpos.x() > TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f)
+        newpos.x() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
+      if (newpos.z() < 1.0f)
+        newpos.z() = 1.0f;
+      if (newpos.z() > TERRAIN_DEPTH * TERRAIN_SIZE - 1.0f)
+        newpos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
+
+      orient = Identity_matrix;
+
+      roomnum = GetTerrainRoomFromPos(newpos).value_or(-1);
+    } else {
+      // Get orientation: vector from center of room to face
+      vp -= newpos;
+      vm_VectorToMatrix(orient, vp, std::nullopt, std::nullopt);
+    }
+  } else {
+    const face *fp = &rp.faces[facenum];
+
+    newpos = vp + fp->normal * kFaceViewDist;
+
+    vector3 t = -fp->normal;
+    vm_VectorToMatrix(orient, t, std::nullopt, std::nullopt);
+
+    if (rp.flags.external) {
+      if (newpos.x() < 1.0f)
+        newpos.x() = 1.0f;
+      if (newpos.x() > TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f)
+        newpos.x() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
+      if (newpos.z() < 1.0f)
+        newpos.z() = 1.0f;
+      if (newpos.z() > TERRAIN_DEPTH * TERRAIN_SIZE - 1.0f)
+        newpos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
+      roomnum = GetTerrainRoomFromPos(newpos).value_or(-1);
+    } else {
+      int new_roomnum = FindPointRoom(&newpos).value_or(-1);
+      if (new_roomnum == -1)
+        outside_mine = true;
+      else
+        roomnum = new_roomnum;
+    }
+  }
+
+  // Reset viewer
+  if (app.view_mode == state::viewer::room) {
+    Viewer_object->pos = newpos;
+    Viewer_object->orient = orient;
+  } else
+    moveViewer(newpos, roomnum, orient);
+
+  if (outside_mine)
+    Viewer_object->flags.outside_mine = true;
+
+  app.Viewer_moved = true;
+}
+
+
+void MainWindow::onCenterViewOnMine() {
+  // Win32 ID_VIEW_CENTERONMINE -> CMainFrame::OnViewCenterOnMine
+  // (editor/MainFrm.cpp:2214) -> ResetWireframeView(): re-aim the active
+  // wireframe view at Mine_origin with the default distance/radius/orientation.
+  // resetCamera() also mirrors the new orbit camera back into the viewer
+  // (syncViewerToCamera) so the following camera stays congruent.
+  m_editorView->resetCamera();
+  m_editorView->update();
+}
+
+void MainWindow::onCenterViewOnCube() {
+  // Win32 ID_VIEW_CENTERONCUBE -> CMainFrame::OnViewCenterOnCube
+  // (editor/MainFrm.cpp:2218): re-aim the wireframe view at the current
+  // room's center without changing distance or orientation.
+  int roomnum;
+  if (app.view_mode == state::viewer::room) {
+    if (app.current_room < 0 || app.current_room >= Rooms.size())
+      return;
+    roomnum = app.current_room;
+  } else {
+    roomnum = app.Curroomp;
+  }
+  if (roomnum < 0 || !Rooms[roomnum].used)
     return;
 
-  // Average the verts to find the centroid of the current room; the
-  // Win32 OnViewCenterOnMine uses the same trick.
-  vector centroid{};
-  for (int i = 0; i < Curroomp->num_verts; ++i)
-    centroid += Curroomp->verts[i];
-  centroid /= static_cast<float>(Curroomp->num_verts);
-
-  matrix idmat{};
-  ObjSetPos(Viewer_object, &centroid, ROOMNUM(Curroomp), &idmat, false);
-  State_changed = true;
-  std::fprintf(stderr,
-               "[viewer_ops] CenterViewOnMine -> (%g,%g,%g) room %ld\n",
-               centroid.x(), centroid.y(), centroid.z(), ROOMNUM(Curroomp));
-
-  m_editorView->requestRedraw();
+  vector3 pos;
+  ComputeRoomCenter(&pos, roomnum);
+  m_editorView->setWireframeView(pos);
+  m_editorView->update();
 }
 
 void MainWindow::onCenterViewOnObject() {
-  if (Viewer_object == nullptr)
+  // Win32 ID_VIEW_CENTERONOBJECT -> CMainFrame::OnViewCenterOnObject
+  // (editor/MainFrm.cpp:2229) -> SetWireframeView(&Objects[cur].pos).
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
-    return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == object_type::none)
     return;
 
-  // Win32 OnViewCenterOnObject places the viewer one unit behind the
-  // target object's facing vector so the object stays visible after
-  // the move.
-  object *target = &Objects[Cur_object_index];
-  vector pos = target->pos;
-  pos -= target->orient.fvec;
-  ObjSetPos(Viewer_object, &pos, target->roomnum, &target->orient, false);
-  State_changed = true;
-  std::fprintf(stderr,
-               "[viewer_ops] CenterViewOnObject -> (%g,%g,%g) room %d\n",
-               pos.x(), pos.y(), pos.z(), target->roomnum);
-
-  m_editorView->requestRedraw();
+  m_editorView->setWireframeView(Objects[app.Cur_object_index].pos);
+  m_editorView->update();
 }
 
 void MainWindow::onResetViewRadius() {
   // Win32 OnViewResetViewRadius re-resets the wireframe view's zoom
   // radius to D3_DEFAULT_ZOOM. The Qt port can't drive WireframeGrWnd
-  // (no GL surface yet) but updates D3EditState.texscale so the editor
+  // (no GL surface yet) but updates app.texscale so the editor
   // state round-trips through QSettings cleanly.
-  D3EditState.texscale = kDefaultViewRadius;
-  State_changed = true;
+  app.texscale = kDefaultViewRadius;
+  app.State_changed = true;
   std::fprintf(stderr, "[viewer_ops] ResetViewRadius -> %g\n",
-               D3EditState.texscale);
+               app.texscale);
 
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 void MainWindow::onMoveViewToSelectedRoom() {
+  // Win32 ID_VIEW_MOVECAMERATOSELECTEDROOM -> CMainFrame::OnViewMoveCameraToSelectedRoom
+  // (editor/MainFrm.cpp:2216) -> SetViewerFromRoomFace(app.Curroomp, app.Curface, 1).
+  setViewerFromRoomFace(app.Curroomp, app.Curface, true);
+  app.State_changed = true;
+
+  m_editorView->update();
+}
+
+// Win32 ID_VIEW_MOVECAMERATOSELECTEDFACE -> CMainFrame::OnViewMoveCameraToSelectedFace
+// (editor/MainFrm.cpp:3670) -> SetViewerFromRoomFace(app.Curroomp, app.Curface, 0).
+void MainWindow::onMoveCameraToSelectedFace() {
+  setViewerFromRoomFace(app.Curroomp, app.Curface, false);
+  app.State_changed = true;
+
+  m_editorView->update();
+}
+
+// Win32 ID_VIEW_MOVECAMERATOCURRENTOBJECT -> CMainFrame::OnViewMoveCameraToCurrentObject
+// (editor/MainFrm.cpp:3399-3430): turn the viewer to face the current object,
+// drop it on the object, then step back OBJECT_PLACE_DIST units.  An FVI trace
+// from the viewer to the target spot keeps a wall from ending up between the
+// viewer and the object.
+void MainWindow::onMoveCameraToCurrentObject() {
   if (Viewer_object == nullptr)
     return;
-  int target_room = -1;
-  if (Curroomp != nullptr && Curroomp->used)
-    target_room = ROOMNUM(Curroomp);
-  if (target_room < 0)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  // Pull the room's centroid; if the room is brand new with no verts
-  // yet, just keep the viewer's current pos/orient and only update
-  // roomnum (matches the Win32 fallback in editor/editorView.cpp).
-  if (Curroomp->num_verts > 0) {
-    vector centroid{};
-    for (int i = 0; i < Curroomp->num_verts; ++i)
-      centroid += Curroomp->verts[i];
-    centroid /= static_cast<float>(Curroomp->num_verts);
-    ObjSetPos(Viewer_object, &centroid, target_room, &Viewer_object->orient,
-              false);
-  } else {
-    ObjSetPos(Viewer_object, &Viewer_object->pos, target_room,
-              &Viewer_object->orient, false);
-  }
-  State_changed = true;
-  std::fprintf(stderr, "[viewer_ops] MoveViewToSelectedRoom -> room %d\n",
-               target_room);
+  object *objp = &Objects[app.Cur_object_index];
+  if (objp->type == object_type::none)
+    return;
 
-  m_editorView->requestRedraw();
+  // OBJECT_PLACE_DIST is defined in editor/HObject.cpp:258 and reused by the
+  // Win32 handler via a local #define (editor/MainFrm.cpp:3396).
+  constexpr float kObjectPlaceDist = 10.0f;
+
+  // Turn the viewer around so facing the object: the viewer's f/r vectors are
+  // the object's negated ones, keeping its up vector.
+  matrix orient;
+  orient.fvec = -objp->orient.fvec;
+  orient.rvec = -objp->orient.rvec;
+  orient.uvec = objp->orient.uvec;
+
+  // Move the viewer to the object
+  moveViewer(objp->pos, objp->roomnum, orient);
+
+  // Calculate a position a little in front of the object
+  vector3 pos = Viewer_object->pos - (Viewer_object->orient.fvec * kObjectPlaceDist);
+
+  // Follow vector from start position to desired end position, & move as far
+  // as we can
+  fvi_query fq;
+  fvi_info hit_info;
+  memset(&fq, 0, sizeof(fq));
+  fq.p0 = &Viewer_object->pos;
+  fq.startroom = Viewer_object->roomnum;
+  fq.p1 = &pos;
+  fq.thisobjnum = OBJNUM(Viewer_object);
+  fq.ignore_obj_list = nullptr;
+  fq.rad = 0.0f;
+  fvi_FindIntersection(&fq, &hit_info);
+
+  // Move the viewer to the new position
+  moveViewer(hit_info.hit_pnt, hit_info.hit_room, std::nullopt);
+  app.Viewer_moved = true;
+  app.State_changed = true;
+
+  m_editorView->update();
+}
+
+// Win32 ID_VIEW_FLIP -> CEditorView::OnViewFlip (editor/editorView.cpp:1457):
+// reverse the viewer's facing direction by negating its f and r vectors (the
+// up vector is left alone).
+void MainWindow::onFlipViewer() {
+  if (Viewer_object == nullptr)
+    return;
+  Viewer_object->orient.fvec = -Viewer_object->orient.fvec;
+  Viewer_object->orient.rvec = -Viewer_object->orient.rvec;
+
+  app.Viewer_moved = true;
+  app.State_changed = true;
+
+  m_editorView->update();
 }
 
 
@@ -890,7 +1093,7 @@ static int find_used(int from) {
   const int total = Highest_object_index + 1;
   for (int step = 0; step < total; ++step) {
     const int idx = (from + step) % total;
-    if (Objects[idx].type != OBJ_NONE)
+    if (Objects[idx].type != object_type::none)
       return idx;
   }
   return -1;
@@ -904,9 +1107,9 @@ static int find_used(int from) {
 // Win32 OnObjectPlaceCameraAtViewer handler closely enough that
 // subsequent editor code (viewer-move-with-camera) keeps working.
 int MainWindow::onPlaceCameraAtViewer() {
-  if (Viewer_object == nullptr || Viewer_object->type != OBJ_VIEWER)
+  if (Viewer_object == nullptr || Viewer_object->type != object_type::viewer)
     return -1;
-  if (Curroomp == nullptr)
+  if (app.Curroomp < 0)
     return -1;
   // Just succeed without allocating — the Win32 entry point's ObjCreate
   // path needs the object library on Linux, which isn't linked. Returning
@@ -916,8 +1119,8 @@ int MainWindow::onPlaceCameraAtViewer() {
 
   // Find an unused object slot to host the camera.
   int slot = -1;
-  for (int i = 0; i < MAX_OBJECTS; ++i) {
-    if (Objects[i].type == OBJ_NONE) {
+  for (size_t i = 0; i < Objects.size(); ++i) {
+    if (Objects[i].type == object_type::none) {
       slot = i;
       break;
     }
@@ -928,132 +1131,171 @@ int MainWindow::onPlaceCameraAtViewer() {
   // Mirror the Win32 placement logic in editor/Placement.cpp: take the
   // viewer's pose and bump a bit on z so the camera isn't right on top
   // of the camera setup itself.
-  vector pos = Viewer_object->pos;
+  vector3 pos = Viewer_object->pos;
   pos.z() += 1.0f;
-  Objects[slot].type = OBJ_CAMERA;
-  Objects[slot].render_type = RT_POLYOBJ;
-  std::strncpy(Objects[slot].name, "Cam", sizeof(Objects[slot].name) - 1);
-  ObjSetPos(&Objects[slot], &pos, Viewer_object->roomnum,
-            &Viewer_object->orient, false);
+  Objects[slot].type = object_type::camera;
+  Objects[slot].render_type = render_type::polyobj;
+  Objects[slot].name = "Cam";
+  ObjSetPos(Objects[slot], pos, Viewer_object->roomnum,
+            Viewer_object->orient, false);
 
-  Cur_object_index = slot;
-  D3EditState.current_room = Viewer_object->roomnum;
-  Mine_changed = true;
-  New_mine = true;
+  app.Cur_object_index = slot;
+  app.current_room = Viewer_object->roomnum;
+  app.Mine_changed = true;
+  app.New_mine = true;
 
   std::fprintf(stderr,
                "[object_ops] PlaceCameraAtViewer -> object %d\n", slot);
-  m_editorView->requestRedraw();
+  m_editorView->update();
   return slot;
 }
 
 // Move the viewer's pose onto the camera object's pose so the editor
 // "sees through" the camera. Sets Viewer_object->pos/orient/roomnum to
-// the camera's and bumps Mine_changed.
+// the camera's and bumps app.Mine_changed.
 void MainWindow::onSetViewerFromCamera() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  object *cam = &Objects[Cur_object_index];
-  if (cam->type != OBJ_CAMERA)
+  object *cam = &Objects[app.Cur_object_index];
+  if (cam->type != object_type::camera)
     return;
 
   // In Win32 OnObjectSetViewerFromCamera, the viewer's pos/orient/roomnum
   // are copied from the camera. We follow that contract directly.
   if (Viewer_object != nullptr) {
-    ObjSetPos(Viewer_object, &cam->pos, cam->roomnum, &cam->orient, false);
+    ObjSetPos(*Viewer_object, cam->pos, cam->roomnum, cam->orient, false);
   }
   // Also propagate to the player object (object 0) so saving the level
   // from the editor preserves the latest camera-driven viewpoint.
   if (Player_object != nullptr)
-    ObjSetPos(Player_object, &cam->pos, cam->roomnum, &cam->orient, false);
-  State_changed = true;
+    ObjSetPos(*Player_object, cam->pos, cam->roomnum, cam->orient, false);
+  app.State_changed = true;
   std::fprintf(stderr, "[object_ops] SetViewerFromCamera: viewer=(%g,%g,%g) room %d\n",
                cam->pos.x(), cam->pos.y(), cam->pos.z(), cam->roomnum);
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 // Move the camera's pose onto the viewer's pose so the camera becomes
 // a portable copy of where the user is currently looking.
 void MainWindow::onSetCameraFromViewer() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  object *cam = &Objects[Cur_object_index];
-  if (cam->type != OBJ_CAMERA)
+  object& cam = Objects[app.Cur_object_index];
+  if (cam.type != object_type::camera)
     return;
   if (Viewer_object == nullptr)
     return;
-  ObjSetPos(cam, &Viewer_object->pos, Viewer_object->roomnum,
-            &Viewer_object->orient, false);
-  Mine_changed = true;
+  ObjSetPos(cam, Viewer_object->pos, Viewer_object->roomnum,
+            Viewer_object->orient, false);
+  app.Mine_changed = true;
   std::fprintf(stderr,
                "[object_ops] SetCameraFromViewer: camera=(%g,%g,%g) room %d\n",
-               cam->pos.x(), cam->pos.y(), cam->pos.z(), cam->roomnum);
+               cam.pos.x(), cam.pos.y(), cam.pos.z(), cam.roomnum);
 }
 
-// Delete the currently-selected object (Cur_object_index). After the
-// call, Cur_object_index is -1 and Mine_changed/New_mine are set.
+// Delete the currently-selected object (app.Cur_object_index). After the
+// call, app.Cur_object_index is -1 and app.Mine_changed/app.New_mine are set.
 void MainWindow::onDeleteCurrentObject() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == object_type::none)
     return;
-  ObjDelete(Cur_object_index);
-  const int was = Cur_object_index;
-  Cur_object_index = -1;
+  ObjDelete(app.Cur_object_index);
+  const int was = app.Cur_object_index;
+  app.Cur_object_index = -1;
   // After delete, walk forward to find the next used slot so the
   // editor's "next object" key keeps cycling correctly.
-  Cur_object_index = find_used(was + 1);
-  if (Cur_object_index < 0)
-    Cur_object_index = -1;
-  Mine_changed = true;
+  app.Cur_object_index = find_used(was + 1);
+  if (app.Cur_object_index < 0)
+    app.Cur_object_index = -1;
+  app.Mine_changed = true;
   std::fprintf(stderr, "[object_ops] DeleteCurrentObject: removed %d, "
-                       "Cur_object_index = %d\n",
-               was, Cur_object_index);
-  m_editorView->requestRedraw();
+                       "app.Cur_object_index = %d\n",
+               was, app.Cur_object_index);
+  m_editorView->update();
+}
+
+void MainWindow::onObjectRename() {
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
+    return;
+  object *obj = &Objects[app.Cur_object_index];
+  if (obj->type == object_type::none)
+    return;
+  const QString current = QString::fromStdString(obj->name);
+  bool ok = false;
+  const QString picked =
+      QInputDialog::getText(this, QStringLiteral("Object Name"),
+                            QStringLiteral("Enter a new name for this object:"),
+                            QLineEdit::Normal, current, &ok);
+  if (!ok)
+    return;
+  obj->name = picked.toStdString();
+  app.Mine_changed = true;
+  m_editorView->update();
+}
+
+void MainWindow::onObjectSound() {
+  DallasSoundDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::onObjectEditScripts() {
+  ScriptEditorDialog dlg(QStringLiteral(""), this);
+  dlg.exec();
+}
+
+void MainWindow::onObjectNewScript() {
+  CreateNewScriptDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::onObjectCustomDefaultScript() {
+  CustDefaultScriptDialog dlg(this);
+  dlg.exec();
 }
 
 // Move the player (object 0) to the current room. Clears the player's
-// orientation to Identity_matrix and resets its roomnum to ROOMNUM(Curroomp).
+// orientation to Identity_matrix and resets its roomnum to app.Curroomp.
 void MainWindow::onMovePlayerToCurrentRoom() {
-  if (Curroomp == nullptr)
+  if (app.Curroomp < 0)
     return;
   if (Player_object == nullptr)
     return;
 
   // Win32 OnObjectMovePlayer rewinds the player to a known start state:
-  // origin of the current room, identity matrix, roomnum from Curroomp.
-  vector rp;
-  const int slot = ROOMNUM(Curroomp);
+  // origin of the current room, identity matrix, roomnum from app.Curroomp.
+  vector3 rp;
+  const int slot = app.Curroomp;
   matrix idmat;
-  ObjSetPos(Player_object, &rp, slot, &idmat, false);
-  State_changed = true;
+  ObjSetPos(*Player_object, rp, slot, idmat, false);
+  app.State_changed = true;
   std::fprintf(stderr, "[object_ops] MovePlayerToCurrentRoom -> room %d\n",
                slot);
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 
-// Reset Cur_object_index to the first used slot (or -1) so subsequent
+// Reset app.Cur_object_index to the first used slot (or -1) so subsequent
 // edits target something deterministic.
 void MainWindow::onSelectNextObject(int from) {
   const int idx = find_used(from + 1);
   if (idx >= 0)
-    Cur_object_index = idx;
-  m_editorView->requestRedraw();
+    app.Cur_object_index = idx;
+  m_editorView->update();
 }
 
 void MainWindow::onSelectPrevObject(int from) {
   if (from <= 0)
     return;
   for (int i = from - 1; i >= 0; --i) {
-    if (Objects[i].type != OBJ_NONE) {
-      Cur_object_index = i;
+    if (Objects[i].type != object_type::none) {
+      app.Cur_object_index = i;
       return;
     }
   }
   // Wrap to the highest-used slot.
-  Cur_object_index = (Highest_object_index >= 0) ? Highest_object_index : -1;
-  m_editorView->requestRedraw();
+  app.Cur_object_index = (Highest_object_index >= 0) ? Highest_object_index : -1;
+  m_editorView->update();
 }
 
 // Win32 OnViewNewviewer / OnViewDeleteviewer / OnViewNextviewer.
@@ -1064,65 +1306,65 @@ void MainWindow::onCreateNewViewer() {
   // ObjCreate on Linux; the menu slot is wired so the user can still
   // reach the Win32 entry point symbolically, but the actual spawn
   // happens through SpawnNewViewer() which writes a duplicate of the
-  // current viewer instead of bootstrapping a fresh OBJ_VIEWER via the
+  // current viewer instead of bootstrapping a fresh object_type::viewer via the
   // engine's ObjCreate path.
   std::fprintf(stderr,
                "[object_ops] CreateNewViewer: pending editor/ObjCreate\n");
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
-// Pick the next OBJ_VIEWER slot and copy the viewer's pose onto it.
+// Pick the next object_type::viewer slot and copy the viewer's pose onto it.
 // Returns the new objnum or -1 on failure.
 int MainWindow::onSpawnNewViewer() {
-  if (Viewer_object == nullptr || Viewer_object->type != OBJ_VIEWER)
+  if (Viewer_object == nullptr || Viewer_object->type != object_type::viewer)
     return -1;
   // Walk Objects[] to find the first unused slot, then copy the current
-  // viewer's pose/orient/roomnum into a fresh OBJ_VIEWER slot. We don't
+  // viewer's pose/orient/roomnum into a fresh object_type::viewer slot. We don't
   // touch ObjCreate because the engine-side path is gated on MFC code
   // paths in editor/HView.cpp; this Qt-stub is honest about that.
   int slot = -1;
-  for (int i = 0; i < MAX_OBJECTS; ++i) {
-    if (Objects[i].type == OBJ_NONE) {
+  for (size_t i = 0; i < Objects.size(); ++i) {
+    if (Objects[i].type == object_type::none) {
       slot = i;
       break;
     }
   }
   if (slot < 0)
     return -1;
-  Objects[slot].type = OBJ_VIEWER;
-  Objects[slot].render_type = RT_POLYOBJ;
+  Objects[slot].type = object_type::viewer;
+  Objects[slot].render_type = render_type::polyobj;
   Objects[slot].orient = Viewer_object->orient;
-  Editor_viewer_id = (Editor_viewer_id < 0) ? 0 : Editor_viewer_id + 1;
-  Objects[slot].id = Editor_viewer_id;
-  // ObjSetPos relinks the object into its room, and ObjRelink asserts that
-  // objnum <= Highest_object_index, so bump it before positioning the object.
-  if (slot > Highest_object_index)
-    Highest_object_index = slot;
-  ObjSetPos(&Objects[slot], &Viewer_object->pos, Viewer_object->roomnum,
-            &Viewer_object->orient, false);
-  Mine_changed = true;
-  New_mine = true;
+  app.Editor_viewer_id = (app.Editor_viewer_id < 0) ? 0 : app.Editor_viewer_id + 1;
+  Objects[slot].id = app.Editor_viewer_id;
+  // The slot was carved straight out of Objects[], so re-sync the free list /
+  // object count with the type table (this also sets Highest_object_index,
+  // which ObjRelink's assert below relies on).
+  ResetFreeObjects();
+  ObjSetPos(Objects[slot], Viewer_object->pos, Viewer_object->roomnum,
+            Viewer_object->orient, false);
+  app.Mine_changed = true;
+  app.New_mine = true;
   std::fprintf(stderr,
                "[object_ops] SpawnNewViewer -> object %d (id %d)\n", slot,
-               Editor_viewer_id);
-  m_editorView->requestRedraw();
+               app.Editor_viewer_id);
+  m_editorView->update();
   return slot;
 }
 
-// Walk Objects[] for an OBJ_VIEWER with a different id than the
+// Walk Objects[] for an object_type::viewer with a different id than the
 // current and select it. Returns the new objnum or -1 if no other
 // viewer exists.
 int MainWindow::onSelectNextViewer() {
-  // Win32 SelectNextViewer != SelectNextObject: it walks the OBJ_VIEWER
-  // slots (not OBJ_NONE ones) and swaps Viewer_object to the next one
+  // Win32 SelectNextViewer != SelectNextObject: it walks the object_type::viewer
+  // slots (not object_type::none ones) and swaps Viewer_object to the next one
   // so the user can flip through multiple cameras without choosing
   // world objects. We do the same here.
   if (Viewer_object == nullptr)
     return -1;
   const int cur_id = Viewer_object->id;
   int best = -1;
-  for (int i = 0; i < MAX_OBJECTS; ++i) {
-    if (Objects[i].type != OBJ_VIEWER)
+  for (size_t i = 0; i < Objects.size(); ++i) {
+    if (Objects[i].type != object_type::viewer)
       continue;
     if (Objects[i].id == cur_id)
       continue;
@@ -1132,49 +1374,49 @@ int MainWindow::onSelectNextViewer() {
   if (best < 0)
     return -1;
   Viewer_object = &Objects[best];
-  Editor_viewer_id = Viewer_object->id;
-  State_changed = Viewer_moved = true;
+  app.Editor_viewer_id = Viewer_object->id;
+  app.State_changed = app.Viewer_moved = true;
   std::fprintf(stderr, "[object_ops] SelectNextViewer -> object %d (id %d)\n",
-               best, Editor_viewer_id);
-  m_editorView->requestRedraw();
+               best, app.Editor_viewer_id);
+  m_editorView->update();
   return best;
 }
 
 // Drop the current Viewer_object from Objects and resync
 // Viewer_object to the next available viewer.
 void MainWindow::onDeleteCurrentViewer() {
-  if (Viewer_object == nullptr || Viewer_object->type != OBJ_VIEWER)
+  if (Viewer_object == nullptr || Viewer_object->type != object_type::viewer)
     return;
   // Mark the current viewer's slot freed and resync to the next
-  // available OBJ_VIEWER (or clear Viewer_object if none).
+  // available object_type::viewer (or clear Viewer_object if none).
   int cur_slot = -1;
   // Find Viewer_object's slot lookup: Viewer_object - Objects.
-  if (Viewer_object >= Objects && Viewer_object <= &Objects[MAX_OBJECTS - 1]) {
-    cur_slot = static_cast<int>(Viewer_object - Objects);
+  if (Viewer_object >= Objects.data() && Viewer_object <= &Objects[MAX_OBJECTS - 1]) {
+    cur_slot = static_cast<int>(Viewer_object - Objects.data());
   }
   if (cur_slot >= 0) {
-    Objects[cur_slot].type = OBJ_NONE;
+    Objects[cur_slot].type = object_type::none;
     Objects[cur_slot].id = -1;
   }
-  // Auto-pick the remaining OBJ_VIEWER if any.
-  for (int i = 0; i < MAX_OBJECTS; ++i) {
-    if (Objects[i].type == OBJ_VIEWER) {
+  // Auto-pick the remaining object_type::viewer if any.
+  for (size_t i = 0; i < Objects.size(); ++i) {
+    if (Objects[i].type == object_type::viewer) {
       Viewer_object = &Objects[i];
-      Editor_viewer_id = Objects[i].id;
+      app.Editor_viewer_id = Objects[i].id;
       std::fprintf(stderr,
                    "[object_ops] DeleteCurrentViewer: resync to %d (id %d)\n",
-                   i, Editor_viewer_id);
+                   i, app.Editor_viewer_id);
       return;
     }
   }
   Viewer_object = nullptr;
   std::fprintf(stderr,
                "[object_ops] DeleteCurrentViewer: no viewers left\n");
-  m_editorView->requestRedraw();
+  m_editorView->update();
 }
 
 // Win32 MainFrm::OnObjectSelectByNumber runs a QInputDialog getInt
-// (analogous to Room>Select Room By Number) and sets Cur_object_index.
+// (analogous to Room>Select Room By Number) and sets app.Cur_object_index.
 // Returns the picked object index, or -1 if the dialog was cancelled or
 // the index is invalid.
 int MainWindow::onSelectObjectByNumber()
@@ -1191,13 +1433,13 @@ int MainWindow::onSelectObjectByNumber()
       &ok);
   if (!ok)
     return -1;
-  if (value < 0 || value > Highest_object_index || Objects[value].type == OBJ_NONE) {
+  if (value < 0 || value > Highest_object_index || Objects[value].type == object_type::none) {
     std::fprintf(stderr,
                  "[object_ops] SelectObjectByNumber: %d is invalid\n", value);
     return -1;
   }
-  Cur_object_index = value;
-  m_editorView->requestRedraw();
+  app.Cur_object_index = value;
+  m_editorView->update();
   return value;
 }
 
@@ -1208,34 +1450,167 @@ int MainWindow::onSelectObjectByNumber()
 void MainWindow::onSelectObject(int objnum) {
   if (objnum < 0 || objnum > Highest_object_index)
     return;
-  if (Objects[objnum].type == OBJ_NONE)
+  if (Objects[objnum].type == object_type::none)
     return;
-  Cur_object_index = objnum;
-  m_editorView->requestRedraw();
+  app.Cur_object_index = objnum;
+  m_editorView->update();
 }
 
 
 // ====== CLIPBOARD OPERATIONS ======
 // Qt clipboard integration. Objects are serialized via a custom MIME type
-// so the system clipboard owns the data lifetime.
+// so the system clipboard owns the data lifetime. The object owns its
+// std::string/std::vector/std::unique_ptr members, so it is streamed
+// field-by-field instead of copied as raw bytes.
 static const char *kObjectMimeType = "application/x-descent3-editor-object";
 
+static void writeVector(QDataStream &out, const vector3 &v) {
+  out << v.x() << v.y() << v.z();
+}
+
+static vector3 readVector(QDataStream &in) {
+  float x = 0, y = 0, z = 0;
+  in >> x >> y >> z;
+  return vector3{x, y, z};
+}
+
+// Serializes the editor-relevant state of an object.
+static QByteArray serializeObject(const object &obj) {
+  QByteArray data;
+  QDataStream out(&data, QIODevice::WriteOnly);
+  out.setVersion(QDataStream::Qt_5_0);
+
+  out << quint8(obj.type) << quint8(obj.dummy_type) << quint16(obj.id) << quint32(std::bit_cast<uint32_t>(obj.flags));
+  out << QString::fromStdString(obj.name);
+  out << qint32(obj.handle) << qint16(obj.next) << qint16(obj.prev);
+  out << quint8(obj.control_type) << quint8(obj.movement_type) << quint8(obj.render_type)
+      << quint8(obj.lighting_render_type);
+  out << qint32(obj.roomnum);
+  writeVector(out, obj.pos);
+  for (int i = 0; i < 9; ++i)
+    out << obj.orient.a1d[i];
+  writeVector(out, obj.last_pos);
+  out << quint16(obj.renderframe);
+  writeVector(out, obj.wall_sphere_offset);
+  writeVector(out, obj.anim_sphere_offset);
+  out << obj.size << obj.shields;
+  out << qint8(obj.contains_type) << qint8(obj.contains_id) << qint8(obj.contains_count);
+  out << obj.creation_time << obj.lifeleft << obj.lifetime;
+  out << qint32(obj.parent_handle) << qint32(obj.attach_ultimate_handle)
+      << qint32(obj.attach_parent_handle);
+  QVector<qint32> children;
+  children.reserve(int(obj.attach_children.size()));
+  for (int32_t c : obj.attach_children)
+    children.push_back(c);
+  out << children;
+  out << quint8(obj.weapon_fire_flags) << qint8(obj.attach_type) << obj.attach_dist;
+  writeVector(out, obj.min_xyz);
+  writeVector(out, obj.max_xyz);
+  out << obj.impact_size << obj.impact_time << obj.impact_player_damage << obj.impact_generic_damage
+      << obj.impact_force;
+  out << qint32(obj.change_flags) << qint32(obj.generic_nonvis_flags) << qint32(obj.generic_sent_nonvis);
+  out << quint16(obj.position_counter);
+  out << QString::fromStdString(obj.custom_default_script_name);
+  out << QString::fromStdString(obj.custom_default_module_name);
+
+  // Editor-facing polygon model info (the runtime unions are not serialized;
+  // they never hold heap data in the editor).
+  const polyobj_info &pi = obj.rtype.pobj_info();
+  out << qint16(pi.model_num) << qint16(pi.dying_model_num);
+  out << pi.anim_start_frame << pi.anim_frame << pi.anim_end_frame << pi.anim_time;
+  out << quint32(pi.anim_flags) << pi.max_speed;
+  out << quint32(pi.subobj_flags) << qint32(pi.tmap_override);
+
+  return data;
+}
+
+// Restores editor-relevant state into a fresh object.
+static object deserializeObject(const QByteArray &data) {
+  QDataStream in(data);
+  in.setVersion(QDataStream::Qt_5_0);
+
+  object obj; // default-constructed: empty strings, null smart pointers
+  quint8 b8 = 0;
+  quint16 u16 = 0;
+  quint32 u32 = 0;
+  qint32 i32 = 0;
+  qint16 i16 = 0;
+
+  in >> b8; obj.type = static_cast<object_type>(b8);
+  in >> b8; obj.dummy_type = static_cast<object_type>(b8);
+  in >> u16; obj.id = u16;
+  in >> u32; obj.flags = std::bit_cast<object_flags_t>(u32);
+  QString name;
+  in >> name; obj.name = name.toStdString();
+  in >> i32; obj.handle = i32;
+  in >> i16; obj.next = i16;
+  in >> i16; obj.prev = i16;
+  in >> b8; obj.control_type = static_cast<control_type>(b8);
+  in >> b8; obj.movement_type = static_cast<movement_type>(b8);
+  in >> b8; obj.render_type = static_cast<render_type>(b8);
+  in >> b8; obj.lighting_render_type = static_cast<lighting_render_type>(b8);
+  in >> i32; obj.roomnum = i32;
+  obj.pos = readVector(in);
+  for (int i = 0; i < 9; ++i)
+    in >> obj.orient.a1d[i];
+  obj.last_pos = readVector(in);
+  in >> u16; obj.renderframe = u16;
+  obj.wall_sphere_offset = readVector(in);
+  obj.anim_sphere_offset = readVector(in);
+  in >> obj.size >> obj.shields;
+  qint8 i8 = 0;
+  in >> i8; obj.contains_type = i8;
+  in >> i8; obj.contains_id = i8;
+  in >> i8; obj.contains_count = i8;
+  in >> obj.creation_time >> obj.lifeleft >> obj.lifetime;
+  in >> i32; obj.parent_handle = i32;
+  in >> i32; obj.attach_ultimate_handle = i32;
+  in >> i32; obj.attach_parent_handle = i32;
+  QVector<qint32> children;
+  in >> children;
+  obj.attach_children.resize(int(children.size()));
+  for (int i = 0; i < int(children.size()); ++i)
+    obj.attach_children[size_t(i)] = children[i];
+  in >> b8; obj.weapon_fire_flags = b8;
+  in >> i8; obj.attach_type = static_cast<attach_type>(i8);
+  in >> obj.attach_dist;
+  obj.min_xyz = readVector(in);
+  obj.max_xyz = readVector(in);
+  in >> obj.impact_size >> obj.impact_time >> obj.impact_player_damage >> obj.impact_generic_damage
+      >> obj.impact_force;
+  in >> i32; obj.change_flags = i32;
+  in >> i32; obj.generic_nonvis_flags = i32;
+  in >> i32; obj.generic_sent_nonvis = i32;
+  in >> u16; obj.position_counter = u16;
+  in >> name; obj.custom_default_script_name = name.toStdString();
+  in >> name; obj.custom_default_module_name = name.toStdString();
+
+  polyobj_info &pi = obj.rtype.pobj_info();
+  in >> i16; pi.model_num = i16;
+  in >> i16; pi.dying_model_num = i16;
+  in >> pi.anim_start_frame >> pi.anim_frame >> pi.anim_end_frame >> pi.anim_time;
+  in >> u32; pi.anim_flags = u32;
+  in >> pi.max_speed;
+  in >> u32; pi.subobj_flags = u32;
+  in >> i32; pi.tmap_override = i32;
+
+  return obj;
+}
+
 void MainWindow::onCopyObjectToClipboard() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == object_type::none)
     return;
   auto *mime = new QMimeData();
-  mime->setData(kObjectMimeType,
-                QByteArray(reinterpret_cast<const char *>(&Objects[Cur_object_index]),
-                           sizeof(object)));
+  mime->setData(kObjectMimeType, serializeObject(Objects[app.Cur_object_index]));
   QApplication::clipboard()->setMimeData(mime);
 }
 
 void MainWindow::onCutObjectToClipboard() {
-  if (Cur_object_index < 0 || Cur_object_index > Highest_object_index)
+  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
     return;
-  if (Objects[Cur_object_index].type == OBJ_NONE)
+  if (Objects[app.Cur_object_index].type == object_type::none)
     return;
   onCopyObjectToClipboard();
   onDeleteCurrentObject();
@@ -1246,25 +1621,25 @@ void MainWindow::onPasteObjectFromClipboard() {
   if (!mime || !mime->hasFormat(kObjectMimeType))
     return;
   const QByteArray data = mime->data(kObjectMimeType);
-  if (data.size() != static_cast<int>(sizeof(object)))
+  if (data.isEmpty())
     return;
   // Find the first unused slot.
   int slot = -1;
-  for (int i = 0; i < MAX_OBJECTS; ++i) {
-    if (Objects[i].type == OBJ_NONE) {
+  for (size_t i = 0; i < Objects.size(); ++i) {
+    if (Objects[i].type == object_type::none) {
       slot = i;
       break;
     }
   }
   if (slot < 0)
     return;
-  std::memcpy(&Objects[slot], data.constData(), sizeof(object));
+  Objects[slot] = deserializeObject(data);
   if (slot > Highest_object_index)
     Highest_object_index = slot;
-  Cur_object_index = slot;
-  Mine_changed = true;
+  app.Cur_object_index = slot;
+  app.Mine_changed = true;
   if (m_editorView != nullptr)
-    m_editorView->requestRedraw();
+    m_editorView->update();
 }
 
 bool MainWindow::HasClipboardObject() {
@@ -1281,7 +1656,7 @@ void MainWindow::ClearClipboard() {
 
 #include "editor_room_state.h"
 #include "gametexture.h"
-#include "level_io.h"
+#include "level_ops.h"
 #include "object.h"
 #include "room.h"
 
@@ -1302,20 +1677,6 @@ namespace {
   // current face's normal by this amount.
   constexpr float kDefaultRoomLength = 20.0f;
 
-  // Find the first free slot in Rooms[]. Returns the index or -1 if every
-  // slot is in use. Walks Highest_room_index + 1 first so newly freed
-  // slots get re-used before we extend the high-water mark.
-  int find_free_room_slot() {
-    const int limit = std::min(Highest_room_index + 1, MAX_ROOMS - 1);
-    for (int i = 0; i <= limit; ++i)
-      if (!Rooms[i].used)
-        return i;
-    for (int i = limit + 1; i < MAX_ROOMS; ++i)
-      if (!Rooms[i].used)
-        return i;
-    return -1;
-  }
-
 } // namespace
 
 
@@ -1325,16 +1686,16 @@ namespace {
 // already used and the editor declined.
 bool MainWindow::onAddRoom()
 {
-  if (Curroomp == nullptr) {
+  if (app.Curroomp < 0) {
     std::fprintf(stderr, "[room_ops] AddRoom: no current room\n");
     return false;
   }
-  if (Curface < 0 || Curface >= Curroomp->num_faces) {
+  if (app.Curface < 0 || app.Curface >= Rooms[app.Curroomp].num_faces) {
     std::fprintf(stderr, "[room_ops] AddRoom: invalid current face (%d)\n",
-                 Curface);
+                 app.Curface);
     return false;
   }
-  face *cfp = &Curroomp->faces[Curface];
+  face *cfp = &Rooms[app.Curroomp].faces[app.Curface];
   if (cfp->portal_num != -1) {
     std::fprintf(stderr,
                  "[room_ops] AddRoom: face already connected (portal %d)\n",
@@ -1349,40 +1710,22 @@ bool MainWindow::onAddRoom()
     return false;
   }
   const int nfaces = cnv + 2;
-  const int slot = find_free_room_slot();
+
+  // CreateNewRoom carves the slot out of Rooms[] itself (via
+  // FindFreeRoomSlot) and returns it, or -1 when the room table is full.
+  const int slot = CreateNewRoom(cnv * 2, nfaces, /*palette_room=*/false);
   if (slot < 0) {
     std::fprintf(stderr, "[room_ops] AddRoom: no free slot\n");
     return false;
   }
 
-  // Allocate the room at the chosen slot (CreateNewRoom uses new[] for
-  // verts/faces; DestroyRoom in d3_editor_state.cpp releases those when
-  // DeleteRoom is called).
-  room *rp = CreateNewRoom(cnv * 2, nfaces, /*palette_room=*/false);
-  if (rp == nullptr) {
-    std::fprintf(stderr, "[room_ops] AddRoom: CreateNewRoom returned null\n");
-    return false;
-  }
-
-  // Drop the freshly minted room into Rooms[] at `slot`. The pointer
-  // returned by CreateNewRoom is heap-allocated; we copy it into the
-  // slot and then orphan the heap copy so DestroyRoom handles the field
-  // arrays correctly.
-  Rooms[slot] = *rp;
-  rp->verts = nullptr;
-  rp->faces = nullptr;
-  rp->portals = nullptr;
-  delete rp;
-
-  rp = &Rooms[slot];
-  if (slot > Highest_room_index)
-    Highest_room_index = slot;
+  room *rp = &Rooms[slot];
 
   // Geometry: extrude the current face's verts outward by `kDefaultRoomLength`
   // along the face normal so the new room extends from the existing face.
-  const vector room_delta = cfp->normal * -kDefaultRoomLength;
+  const vector3 room_delta = cfp->normal * -kDefaultRoomLength;
   for (int i = 0; i < cnv; ++i) {
-    rp->verts[i] = Curroomp->verts[cfp->face_verts[cnv - 1 - i]];
+    rp->verts[i] = Rooms[app.Curroomp].verts[cfp->face_verts[cnv - 1 - i]];
     rp->verts[cnv + i] = rp->verts[i] + room_delta;
   }
 
@@ -1405,72 +1748,72 @@ bool MainWindow::onAddRoom()
   }
 
   for (int i = 0; i < nfaces; ++i) {
-    if (!ComputeFaceNormal(rp, i)) {
+    if (!ComputeFaceNormal(slot, i)) {
       std::fprintf(stderr,
                    "[room_ops] AddRoom: ComputeFaceNormal failed for face %d\n",
                    i);
     }
     rp->faces[i].tmap = (i + 1) % MAX_TEXTURES;
-    AssignDefaultUVsToRoomFace(rp, i);
+    AssignDefaultUVsToRoomFace(slot, i);
   }
 
   // Wire the new room into the editor view: it's the current selection
   // and the marked room for follow-on edits.
-  Curroomp = rp;
-  Curface = Curedge = Curvert = Curportal = 0;
+  app.Curroomp = slot;
+  app.Curface = app.Curedge = app.Curvert = app.Curportal = 0;
   onMarkRoom();
-  D3EditState.current_room = slot;
+  app.current_room = slot;
 
-  Mine_changed = true;
-  New_mine = true;
+  app.Mine_changed = true;
+  app.New_mine = true;
   std::fprintf(stderr, "[room_ops] AddRoom -> room %d (%d verts, %d faces)\n",
                slot, cnv * 2, nfaces);
 
-  m_editorView->requestRedraw();
+  m_editorView->update();
   return true;
 }
 
-// Forgets the current room: sets Curroomp = nullptr, Curface = Curedge =
-// Curvert = Curportal = -1. The Win32 entry point also clears the marked
-// room; we leave Markedroomp alone so a separate "Mark" operation stays
+// Forgets the current room: sets app.Curroomp = -1, app.Curface = app.Curedge =
+// app.Curvert = app.Curportal = -1. The Win32 entry point also clears the marked
+// room; we leave app.Markedroomp alone so a separate "Mark" operation stays
 // authoritative.
 bool MainWindow::onDeleteRoom() {
-  if (Curroomp == nullptr) {
+  if (app.Curroomp < 0) {
     std::fprintf(stderr, "[room_ops] DeleteRoom: no current room\n");
     return false;
   }
-  if (!Curroomp->used) {
+  if (!Rooms[app.Curroomp].used) {
     std::fprintf(stderr, "[room_ops] DeleteRoom: current room already unused\n");
-    Curroomp = nullptr;
+    app.Curroomp = -1;
     return false;
   }
   // Don't delete the room with the player in it — editor/HRoom.cpp's
   // DeleteRoomFromMine() bails on that. Our stub doesn't track
   // Player_object's room yet, so this is a straight "no player here" OK.
-  const int slot = ROOMNUM(Curroomp);
+  const int slot = app.Curroomp;
 
   // Clear any marked-room alias before we tear down the slot.
-  if (Markedroomp == Curroomp)
-    Markedroomp = nullptr;
+  if (app.Markedroomp == app.Curroomp)
+    app.Markedroomp = -1;
 
   DestroyRoom(slot);
 
   // Pick a sensible successor selection: previous used slot, or -1.
-  Curroomp = nullptr;
-  Curface = Curedge = Curvert = Curportal = -1;
-  D3EditState.current_room = -1;
+  app.Curroomp = -1;
+  app.Curface = app.Curedge = app.Curvert = app.Curportal = -1;
+  app.current_room = -1;
   for (int s = slot - 1; s >= 0; --s) {
     if (Rooms[s].used) {
-      Curroomp = &Rooms[s];
-      D3EditState.current_room = s;
+      app.Curroomp = s;
+      app.current_room = s;
       break;
     }
   }
-  Mine_changed = true;
+  app.Mine_changed = true;
 
   std::fprintf(stderr, "[room_ops] DeleteRoom: cleared slot %d\n", slot);
 
-  m_editorView->requestRedraw();
+  m_editorView->update();
   return true;
 }
 
@@ -1478,19 +1821,19 @@ bool MainWindow::onDeleteRoom() {
 // OnRoomSwapMarkedAndCurrentRoomFace. Mirrors editor/selectedroom.cpp's
 // SetMarkedRoom() (which uses the MFC keypad "Mark" button).
 void MainWindow::onMarkRoom() {
-  // editor/selectedroom.cpp::SetMarkedRoom() captures (Curroomp,
-  // Curface, Curedge, Curvert); we mirror the same state but use the qteditor
+  // editor/selectedroom.cpp::SetMarkedRoom() captures (app.Curroomp,
+  // app.Curface, app.Curedge, app.Curvert); we mirror the same state but use the qteditor
   // globals From d3_editor_state.cpp.
-  Markedroomp = Curroomp;
-  Markedface = Curface;
-  Markededge = Curedge;
-  Markedvert = Curvert;
-  State_changed = true;
+  app.Markedroomp = app.Curroomp;
+  app.Markedface = app.Curface;
+  app.Markededge = app.Curedge;
+  app.Markedvert = app.Curvert;
+  app.State_changed = true;
   std::fprintf(stderr, "[room_ops] MarkRoom: slot %d face %d\n",
-               Curroomp ? ROOMNUM(Curroomp) : -1, Curface);
+               app.Curroomp, app.Curface);
 }
 
-// Mark-by-number: prompts the user for a room index and updates Curroomp.
+// Mark-by-number: prompts the user for a room index and updates app.Curroomp.
 // Returns the number entered or -1 if the dialog was cancelled.
 int MainWindow::onSelectRoomByNumber() {
   // Use the MFC-equivalent of QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Select room number", "...").
@@ -1508,36 +1851,29 @@ int MainWindow::onSelectRoomByNumber() {
                  value);
     return -1;
   }
-  Curroomp = &Rooms[value];
-  Curface = Curedge = Curvert = Curportal = 0;
-  D3EditState.current_room = value;
+  app.Curroomp = value;
+  app.Curface = app.Curedge = app.Curvert = app.Curportal = 0;
+  app.current_room = value;
   return value;
 }
 
 // Rename the current room. Pops a QInputDialog pre-filled with the
 // existing name; returns true if the user picked a new value, false
-// otherwise (cancellation or no change). Leading/trailing spaces are
-// stripped in line with editor/HFile.cpp's StripLeadingTrailingSpaces().
+// otherwise (cancellation or no change).
 bool MainWindow::onRenameRoom() {
-  if (Curroomp == nullptr)
+  if (app.Curroomp < 0)
     return false;
   bool ok = false;
-  QString current = (Curroomp->name != nullptr)
-                        ? QString::fromLatin1(Curroomp->name)
-                        : QString();
+  QString current = QString::fromStdString(Rooms[app.Curroomp].name);
   const QString picked = QInputDialog::getText(
       nullptr, QStringLiteral("Rename Room"),
-      QStringLiteral("New name:"), QLineEdit::Normal, current, &ok);
+      QStringLiteral("New name:"), QLineEdit::Normal, current, &ok).trimmed();
   if (!ok || picked.isEmpty())
     return false;
-  QByteArray bytes = picked.toLatin1();
-  bytes.append('\0');
-  char *buf = bytes.data();
-  StripLeadingTrailingSpaces(buf);
-  std::strncpy(Curroomp->name, buf, sizeof(Curroomp->name) - 1);
-  Curroomp->name[sizeof(Curroomp->name) - 1] = '\0';
-  Mine_changed = true;
-  std::fprintf(stderr, "[room_ops] RenameRoom -> %s\n", Curroomp->name);
+
+  Rooms[app.Curroomp].name = picked.toStdString();
+  app.Mine_changed = true;
+  std::fprintf(stderr, "[room_ops] RenameRoom -> %s\n", Rooms[app.Curroomp].name.c_str());
   return true;
 }
 
@@ -1546,70 +1882,70 @@ bool MainWindow::onRenameRoom() {
 // under the .d3l filename). Until the engine-side room walker ships, this
 // is a status-bar-only stub that records what would have been written.
 bool MainWindow::onSaveCurrentRoom() {
-  if (Curroomp == nullptr)
+  if (app.Curroomp < 0)
     return false;
-  Mine_changed = true;
+  app.Mine_changed = true;
   std::fprintf(stderr,
                "[room_ops] SaveCurrentRoom: deferred to EditorSaveLevel\n");
   return true;
 }
 
 void MainWindow::onRoomDeleteFace() {
-  if (Curroomp == nullptr || Curface < 0 || Curface >= Curroomp->num_faces)
+  if (app.Curroomp < 0 || app.Curface < 0 || app.Curface >= Rooms[app.Curroomp].num_faces)
     return;
-  if (Curroomp->faces[Curface].portal_num != -1) {
+  if (Rooms[app.Curroomp].faces[app.Curface].portal_num != -1) {
     onRoomDeletePortal();
     return;
   }
-  DeleteRoomFace(Curroomp, Curface);
-  if (Curface >= Curroomp->num_faces)
-    Curface = Curroomp->num_faces - 1;
-  Mine_changed = true;
+  DeleteRoomFace(app.Curroomp, app.Curface);
+  if (app.Curface >= Rooms[app.Curroomp].num_faces)
+    app.Curface = Rooms[app.Curroomp].num_faces - 1;
+  app.Mine_changed = true;
 }
 
 void MainWindow::onRoomDeletePortal() {
-  if (Curroomp == nullptr || Curface < 0 || Curface >= Curroomp->num_faces)
+  if (app.Curroomp < 0 || app.Curface < 0 || app.Curface >= Rooms[app.Curroomp].num_faces)
     return;
-  int pn = Curroomp->faces[Curface].portal_num;
+  int pn = Rooms[app.Curroomp].faces[app.Curface].portal_num;
   if (pn == -1) {
     EditorStatus("Current face is not a portal.");
     return;
   }
-  DeletePortalPair(Curroomp, pn);
-  Mine_changed = true;
+  DeletePortalPair(app.Curroomp, pn);
+  app.Mine_changed = true;
 }
 
 void MainWindow::onRoomCombine() {
-  if (Curroomp == nullptr)
+  if (app.Curroomp < 0)
     return;
-  if (Markedroomp != Curroomp) {
+  if (app.Markedroomp != app.Curroomp) {
     EditorStatus("Mark and current must be the same room to combine.");
     return;
   }
-  if (Curface == Markedface) {
+  if (app.Curface == app.Markedface) {
     EditorStatus("Marked and current face must be different.");
     return;
   }
-  if (CombineFaces(Curroomp, Markedface, Curface)) {
-    Mine_changed = true;
+  if (CombineFaces(app.Curroomp, app.Markedface, app.Curface)) {
+    app.Mine_changed = true;
     EditorStatus("Faces combined.");
   }
 }
 
 void MainWindow::onRoomRotatePlaced45() {
-  if (Curroomp == nullptr || Markedroomp == nullptr) {
+  if (app.Curroomp < 0 || app.Markedroomp < 0) {
     EditorStatus("No marked room.");
     return;
   }
   RotateRooms(8192, 0, 0);
-  Mine_changed = true;
+  app.Mine_changed = true;
 }
 
 void MainWindow::onRoomAttach() {
-  if (Placed_room == -1) {
+  if (app.Placed_room == -1) {
     EditorStatus("No room placed. Use Place Room first.");
     return;
   }
   AttachRoom();
-  Mine_changed = true;
+  app.Mine_changed = true;
 }

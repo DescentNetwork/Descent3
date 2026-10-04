@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include "objinfo.h"
 #include <QDialog>
+#include "objinfo.h"
+#include "utils.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class GenericDeathDialog; }
@@ -31,7 +32,7 @@ QT_END_NAMESPACE
 class GenericDeathDialog : public QDialog {
   Q_OBJECT
 public:
-  explicit GenericDeathDialog(object_info *objinfo, QWidget *parent = nullptr);
+  explicit GenericDeathDialog(int object_id, QWidget *parent = nullptr);
   ~GenericDeathDialog();
 
 private slots:
@@ -42,9 +43,11 @@ private slots:
   void onOk();
 
 private:
+  optref<object_info> data(void);
+private:
   Ui::GenericDeathDialog *ui;
-  object_info *m_objinfo;
-  death_info m_death_types[MAX_DEATH_TYPES];
-  int m_prob[MAX_DEATH_TYPES];
+  int m_object_id;
+  std::array<death_info, MAX_DEATH_TYPES> m_death_types;
+  std::array<int, MAX_DEATH_TYPES> m_prob;
 };
 

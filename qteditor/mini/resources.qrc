@@ -1,0 +1,146 @@
+<RCC>
+    <qresource prefix="/ui">
+        <file alias="aboutbox.ui">ui/aboutbox.ui</file>
+        <file alias="addscript.ui">ui/addscript.ui</file>
+        <file alias="ai.ui">ui/ai.ui</file>
+        <file alias="ambientsoundelement.ui">ui/ambientsoundelement.ui</file>
+        <file alias="ambientsoundpatterns.ui">ui/ambientsoundpatterns.ui</file>
+        <file alias="animstates.ui">ui/animstates.ui</file>
+        <file alias="brief_addbitmap.ui">ui/brief_addbitmap.ui</file>
+        <file alias="brief_addbutton.ui">ui/brief_addbutton.ui</file>
+        <file alias="brief_addmovie.ui">ui/brief_addmovie.ui</file>
+        <file alias="brief_addscreen.ui">ui/brief_addscreen.ui</file>
+        <file alias="brief_addsound.ui">ui/brief_addsound.ui</file>
+        <file alias="brief_addtext.ui">ui/brief_addtext.ui</file>
+        <file alias="brief_main.ui">ui/brief_main.ui</file>
+        <file alias="brief_manage.ui">ui/brief_manage.ui</file>
+        <file alias="briefmissionflags.ui">ui/briefmissionflags.ui</file>
+        <file alias="compileall.ui">ui/compileall.ui</file>
+        <file alias="configcompiler.ui">ui/configcompiler.ui</file>
+        <file alias="createscript.ui">ui/createscript.ui</file>
+        <file alias="custdefscript.ui">ui/custdefscript.ui</file>
+        <file alias="customize_object.ui">ui/customize_object.ui</file>
+        <file alias="dallas_flag_dialog.ui">ui/dallas_flag_dialog.ui</file>
+        <file alias="dallas_generic_prompt_dialog.ui">ui/dallas_generic_prompt_dialog.ui</file>
+        <file alias="dallas_import_dialog.ui">ui/dallas_import_dialog.ui</file>
+        <file alias="dallas_main_dialog.ui">ui/dallas_main_dialog.ui</file>
+        <file alias="dallas_sound_dialog.ui">ui/dallas_sound_dialog.ui</file>
+        <file alias="dallas_strm_audio_dialog.ui">ui/dallas_strm_audio_dialog.ui</file>
+        <file alias="dallas_texture_dialog.ui">ui/dallas_texture_dialog.ui</file>
+        <file alias="dallas_usertypes_dialog.ui">ui/dallas_usertypes_dialog.ui</file>
+        <file alias="dallas_vector_dialog.ui">ui/dallas_vector_dialog.ui</file>
+        <file alias="death_dialog.ui">ui/death_dialog.ui</file>
+        <file alias="doorwaykeypad.ui">ui/doorwaykeypad.ui</file>
+        <file alias="editlinedlg.ui">ui/editlinedlg.ui</file>
+        <file alias="filepage.ui">ui/filepage.ui</file>
+        <file alias="filepageadd.ui">ui/filepageadd.ui</file>
+        <file alias="font_dialog.ui">ui/font_dialog.ui</file>
+        <file alias="generic_deaths.ui">ui/generic_deaths.ui</file>
+        <file alias="genericlight.ui">ui/genericlight.ui</file>
+        <file alias="hogdialog.ui">ui/hogdialog.ui</file>
+        <file alias="keypad_dlgbar.ui">ui/keypad_dlgbar.ui</file>
+        <file alias="level_info.ui">ui/level_info.ui</file>
+        <file alias="levelkeypad.ui">ui/levelkeypad.ui</file>
+        <file alias="mainwindow.ui">ui/mainwindow.ui</file>
+        <file alias="levelkeypad_layout.ui">ui/levelkeypad_layout.ui</file>
+        <file alias="levelproperties.ui">ui/levelproperties.ui</file>
+        <file alias="lightingkeypad.ui">ui/lightingkeypad.ui</file>
+        <file alias="lightingstatus.ui">ui/lightingstatus.ui</file>
+        <file alias="localizescript.ui">ui/localizescript.ui</file>
+        <file alias="matcenkeypad.ui">ui/matcenkeypad.ui</file>
+        <file alias="megacell.ui">ui/megacell.ui</file>
+        <file alias="megakeypad.ui">ui/megakeypad.ui</file>
+        <file alias="multicheck.ui">ui/multicheck.ui</file>
+        <file alias="objectkeypad.ui">ui/objectkeypad.ui</file>
+        <file alias="objectproperties.ui">ui/objectproperties.ui</file>
+        <file alias="objtreedlg.ui">ui/objtreedlg.ui</file>
+        <file alias="orphan.ui">ui/orphan.ui</file>
+        <file alias="osiris_status.ui">ui/osiris_status.ui</file>
+        <file alias="pathkeypad.ui">ui/pathkeypad.ui</file>
+        <file alias="physics.ui">ui/physics.ui</file>
+        <file alias="player_weapons.ui">ui/player_weapons.ui</file>
+        <file alias="powprop_dialog.ui">ui/powprop_dialog.ui</file>
+        <file alias="preferences.ui">ui/preferences.ui</file>
+        <file alias="procedural_dialog.ui">ui/procedural_dialog.ui</file>
+        <file alias="propai.ui">ui/propai.ui</file>
+        <file alias="propphysics.ui">ui/propphysics.ui</file>
+        <file alias="propscript.ui">ui/propscript.ui</file>
+        <file alias="robot_weapon_dialog.ui">ui/robot_weapon_dialog.ui</file>
+        <file alias="roomkeypad.ui">ui/roomkeypad.ui</file>
+        <file alias="scripteditor.ui">ui/scripteditor.ui</file>
+        <file alias="scriptinterface.ui">ui/scriptinterface.ui</file>
+        <file alias="scriptparms.ui">ui/scriptparms.ui</file>
+        <file alias="scriptselect.ui">ui/scriptselect.ui</file>
+        <file alias="scriptstudio.ui">ui/scriptstudio.ui</file>
+        <file alias="scriptwiz.ui">ui/scriptwiz.ui</file>
+        <file alias="selectrange_dialog.ui">ui/selectrange_dialog.ui</file>
+        <file alias="soundsource_dialog.ui">ui/soundsource_dialog.ui</file>
+        <file alias="status.ui">ui/status.ui</file>
+        <file alias="statusdlg.ui">ui/statusdlg.ui</file>
+        <file alias="syncscripts.ui">ui/syncscripts.ui</file>
+        <file alias="table_file_editor.ui">ui/table_file_editor.ui</file>
+        <file alias="table_file_filter.ui">ui/table_file_filter.ui</file>
+        <file alias="tablefilefilter_addpage_dlg.ui">ui/tablefilefilter_addpage_dlg.ui</file>
+        <file alias="terrain_sound_dialog.ui">ui/terrain_sound_dialog.ui</file>
+        <file alias="terrainkeypad.ui">ui/terrainkeypad.ui</file>
+        <file alias="texturekeypad.ui">ui/texturekeypad.ui</file>
+        <file alias="triggerkeypad.ui">ui/triggerkeypad.ui</file>
+        <file alias="viewer_dialog.ui">ui/viewer_dialog.ui</file>
+        <file alias="water_procedural.ui">ui/water_procedural.ui</file>
+        <file alias="worldobjectsdoor.ui">ui/worldobjectsdoor.ui</file>
+        <file alias="worldobjectsgeneric.ui">ui/worldobjectsgeneric.ui</file>
+        <file alias="worldobjectslight.ui">ui/worldobjectslight.ui</file>
+        <file alias="worldobjectsplayer.ui">ui/worldobjectsplayer.ui</file>
+        <file alias="worldsounds.ui">ui/worldsounds.ui</file>
+        <file alias="worldtextures.ui">ui/worldtextures.ui</file>
+        <file alias="worldweapons.ui">ui/worldweapons.ui</file>
+        <file alias="IDR_MAINFRAME_ICON">images/editor.png</file>
+        <file alias="IDR_EDITORTYPE">images/editorDoc.png</file>
+        <file alias="IDR_SRVR_INPLACE">images/IToolbar.png</file>
+        <file alias="IDB_MATTHEAD">images/Matt2.png</file>
+        <file alias="IDB_D3SPLASH">images/D3.png</file>
+        <file alias="IDB_NORTH">images/north.png</file>
+        <file alias="IDB_EAST">images/east.png</file>
+        <file alias="IDB_SOUTH">images/south.png</file>
+        <file alias="IDB_WEST">images/west.png</file>
+        <file alias="IDB_ROTATELEFT">images/rotleft.png</file>
+        <file alias="IDB_ROTATERIGHT">images/rotright.png</file>
+        <file alias="IDB_OUTARROW">images/outarrow.png</file>
+        <file alias="IDB_INARROW">images/inarrow.png</file>
+        <file alias="IDB_DALLAS_TREE_ICONS_BITMAP">images/DallasTreeIcons.png</file>
+        <file alias="IDB_ORPHREMOVE">images/orphremo.png</file>
+        <file>images/Toolbar/6.png</file>
+        <file>images/Toolbar/7.png</file>
+        <file>images/Toolbar/8.png</file>
+        <file>images/Toolbar/9.png</file>
+        <file>images/Toolbar/10.png</file>
+        <file>images/Toolbar/11.png</file>
+        <file>images/Toolbar/12.png</file>
+        <file>images/Toolbar/13.png</file>
+        <file>images/Toolbar/14.png</file>
+        <file>images/IToolbar/0.png</file>
+        <file>images/IToolbar/1.png</file>
+        <file>images/IToolbar/2.png</file>
+        <file>images/IToolbar/3.png</file>
+        <file>images/DallasTreeIcons/0.png</file>
+        <file>images/DallasTreeIcons/1.png</file>
+        <file>images/DallasTreeIcons/2.png</file>
+        <file>images/DallasTreeIcons/3.png</file>
+        <file>images/DallasTreeIcons/4.png</file>
+        <file>images/DallasTreeIcons/5.png</file>
+        <file>images/DallasTreeIcons/6.png</file>
+        <file>images/DallasTreeIcons/7.png</file>
+        <file>images/DallasTreeIcons/8.png</file>
+        <file>images/DallasTreeIcons/9.png</file>
+        <file>images/DallasTreeIcons/10.png</file>
+        <file>images/DallasTreeIcons/11.png</file>
+        <file>images/DallasTreeIcons/12.png</file>
+        <file>images/DallasTreeIcons/13.png</file>
+        <file>images/DallasTreeIcons/14.png</file>
+        <file>images/DallasTreeIcons/15.png</file>
+        <file>images/DallasTreeIcons/16.png</file>
+        <file>images/DallasTreeIcons/17.png</file>
+        <file>images/DallasTreeIcons/18.png</file>
+        <file>images/DallasTreeIcons/19.png</file>
+    </qresource>
+</RCC>

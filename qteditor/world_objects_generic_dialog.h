@@ -19,6 +19,8 @@
 #pragma once
 
 #include <QDialog>
+#include "utils.h"
+#include "objinfo.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class WorldObjectsGenericDialog; }
@@ -32,93 +34,50 @@ QT_END_NAMESPACE
 class WorldObjectsGenericDialog : public QDialog {
   Q_OBJECT
 public:
-  explicit WorldObjectsGenericDialog(int objType, int current, QWidget *parent = nullptr);
+  explicit WorldObjectsGenericDialog(object_type objType, int object_id, QWidget *parent = nullptr);
   ~WorldObjectsGenericDialog();
 
-  int current() const { return m_current; }
+  int objectId() const { return m_object_id; }
 
 private slots:
-  void onEditAI();
-  void onEditPhysics();
-  void onUsesAI(bool checked);
-  void onUsesPhysics(bool checked);
   void onAddNew();
   void onCheckedOut();
   void onCheckIn();
-  void onDefineAnimStates();
   void onDelete();
   void onLock();
   void onUndoLock();
   void onNext();
   void onPrev();
   void onNamePulldownChanged();
-  void onKillfocusSize();
   void onCopy();
   void onPaste();
-  void onDestroyableToggled(bool checked);
-  void onKillfocusHitpoints();
   void onWeaponInfo();
   void onLight();
   void onDefaultRadius();
   void onSelScript();
-  void onKillfocusImpactDamage();
-  void onKillfocusImpactSize();
   void onNolod();
-  void onHiresRadio();
-  void onMedresRadio();
-  void onLoresRadio();
-  void onKillfocusImpactTime();
-  void onExplosionSoundChanged();
-  void onAmbientSoundChanged();
   void onKillfocusInvenDescription();
-  void onKillfocusInvenIconname();
   void onOverride();
-  void onInvenSelectable(bool checked);
-  void onInvenNonuseable(bool checked);
   void onKillfocusLodDistance();
-  void onInvtypeGame();
-  void onInvtypeMission();
-  void onInvenNoremove(bool checked);
-  void onInvenViswhenused(bool checked);
-  void onDeathPowerup1Changed();
-  void onDeathPowerup1NumEdited();
-  void onDeathPowerup1PercentEdited();
-  void onDeathPowerup2Changed();
-  void onDeathPowerup2NumEdited();
-  void onDeathPowerup2PercentEdited();
-  void onDeathPowerupUse2(bool checked);
-  void onDeathSpew2IfZero1(bool checked);
-  void onKillfocusScriptname();
-  void onCompilemodule();
-  void onKillfocusScriptOverride();
-  void onAiScriptedDeath(bool checked);
   void onKillfocusRespawnScalar();
-  void onGenericDeaths();
-  void onKillfocusScore();
-  void onKillfocusAmmo();
-  void onObjCeiling(bool checked);
-  void onFlyThroughRenderedPortals(bool checked);
-  void onNsc(bool checked);
-  void onDsmpbd(bool checked);
-  void onAmbient(bool checked);
 
 private:
   void updateDialog();
   void enableDisableAll(bool flag);
   bool isLocked(int n);
   int countLockedItems();
-  void setFlag(uint32_t flag, const char *checkName, bool checked);
-  void setCurrent(int id);
+  void setObjectId(int id);
   void saveGenericsOnClose();
+  optref<object_info> data(void);
 
   Ui::WorldObjectsGenericDialog *ui;
-  int m_type;
-  int m_current;
+  object_type m_type;
+  int m_object_id;
   int m_lod = 0;
   int m_locked_count = 0;
 };
 
 // Opens the generic object dialog for the given object type (matching the
 // original MainFrm handlers) and returns the resulting current id.
-int editGenericObject(int objType, int initialCurrent, QWidget *parent);
+int editGenericObject(object_type objType, int initialCurrent, QWidget *parent);
 

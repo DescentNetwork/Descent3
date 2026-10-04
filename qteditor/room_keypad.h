@@ -35,7 +35,6 @@ public:
 
 private slots:
   void onMarkRoom();
-  void onFlagToggled();
   void onExpandEdge();
   void onContractEdge();
   void onExpandFace();
@@ -45,11 +44,7 @@ private slots:
 
 private:
   void updateDialog();
-  void setFlag(uint32_t flag, const char *checkName, bool checked);
   void expandGeometry(float scale);
-
-  template <typename T>
-  T *find(const QString &name) const { return findChild<T *>(name); }
 
   Ui::RoomKeypad *ui;
 };

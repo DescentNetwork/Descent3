@@ -30,10 +30,10 @@ void populateSoundCombo(QComboBox *combo, int selected) {
   combo->clear();
   combo->addItem("<none>", -1);
 
-  for (int i = 0; i < MAX_SOUNDS; i++) {
-    if (Sounds[i].used) {
+  for (int i = 0; i < static_cast<int>(Sounds.size()); i++) {
+    if (Sounds.is_used(i)) {
       int index = combo->count();
-      combo->addItem(Sounds[i].name, i);
+      combo->addItem(QString::fromStdString(Sounds[i].name), i);
       if (selected == i)
         combo->setCurrentIndex(index);
     }
