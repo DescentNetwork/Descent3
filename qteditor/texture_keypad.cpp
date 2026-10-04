@@ -97,12 +97,12 @@ void TextureKeypad::onSetDefault() { HTextureSetDefault(app.Curroomp, app.Curfac
 
 void TextureKeypad::onGrab() {
   if (app.Curroomp >= 0 && app.Curface >= 0)
-    app.texdlg_texture = Rooms[app.Curroomp].faces[app.Curface].tmap;
+    app.texdlg_texture = static_cast<uint32_t>(Rooms[app.Curroomp].faces[app.Curface].tmap);
 }
 
 void TextureKeypad::onReplace() {
   if (app.Curroomp >= 0 && app.Curface >= 0)
-    Rooms[app.Curroomp].faces[app.Curface].tmap = app.texdlg_texture;
+    Rooms[app.Curroomp].faces[app.Curface].tmap = app.texdlg_texture.value_or(-1);
 }
 
 void TextureKeypad::onFaceMap() { onSetDefault(); }

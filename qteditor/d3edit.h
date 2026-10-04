@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include <optional>
 #include <filesystem>
 
 #include "vecmat.h"
@@ -60,7 +61,7 @@ namespace state
 struct d3edit_state
 {
   // Values for current item in the various dialogs
-  int texdlg_texture    = -1; // current texture in texdialog
+  std::optional<uint32_t> texdlg_texture; // current texture in texdialog
   int current_obj_type  = -1; // current type of object
   int current_obj_id    = -1; // current specific id of object within type
   int current_powerup   = -1; // current powerup id

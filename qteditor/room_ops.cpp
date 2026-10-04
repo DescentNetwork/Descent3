@@ -1733,7 +1733,7 @@ void PlaceDoor(int baseroom, int baseface, int placed_door) {
   index = 0;
   for (int i = 0; i < shell_sm->num_faces; i++, index++) {
     InitRoomFace(&newroom.faces[index], shell_sm->faces[i].nverts);
-    newroom.faces[index].tmap = app.texdlg_texture;
+    newroom.faces[index].tmap = static_cast<int16_t>(app.texdlg_texture.value_or(0xFFFFu));
     for (int t = 0; t < newroom.faces[index].num_verts; t++)
       newroom.faces[index].face_verts[t] = shell_sm->faces[i].vertnums[t];
   }
@@ -1742,7 +1742,7 @@ void PlaceDoor(int baseroom, int baseface, int placed_door) {
   int front_face_index = index;
   Q_ASSERT(front_sm->num_faces == 1);
   InitRoomFace(&newroom.faces[index], front_sm->faces[0].nverts);
-  newroom.faces[index].tmap = app.texdlg_texture;
+  newroom.faces[index].tmap = static_cast<int16_t>(app.texdlg_texture.value_or(0xFFFFu));
 
   // Remap front face vertices to match the shell
   int front_remap[30];

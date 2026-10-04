@@ -41,10 +41,11 @@
 // Returns the current texture, or nullopt when the index is stale or the slot is unused.
 optref<texture> WorldTexturesDialog::data(void)
 {
-  if (app.texdlg_texture < 0 || app.texdlg_texture >= static_cast<int>(GameTextures.size()) ||
-      GameTextures.is_unused(app.texdlg_texture))
+  if (!app.texdlg_texture.has_value()) return std::nullopt;
+  uint32_t idx = *app.texdlg_texture;
+  if (idx >= static_cast<uint32_t>(GameTextures.size()) || GameTextures.is_unused(idx))
     return std::nullopt;
-  return GameTextures[app.texdlg_texture];
+  return GameTextures[idx];
 }
 
 WorldTexturesDialog::WorldTexturesDialog(QWidget *parent)
@@ -63,7 +64,7 @@ WorldTexturesDialog::WorldTexturesDialog(QWidget *parent)
   connect(ui->IDC_TEXTURE_CHANGE_NAME, &QPushButton::clicked, this, &WorldTexturesDialog::onChangeName);
   connect(ui->IDC_LOAD_BITMAP, &QPushButton::clicked, this, &WorldTexturesDialog::onLoadBitmap);
   connect(ui->IDC_TEXTURE_CURRENT, &QPushButton::clicked, [this]() {
-    if (app.texdlg_texture >= 0) updateDialog();
+    if (app.texdlg_texture) updateDialog();
   });
   connect(ui->IDC_NEXT, &QPushButton::clicked, this, &WorldTexturesDialog::onNext);
   connect(ui->IDC_PREVIOUS, &QPushButton::clicked, this, &WorldTexturesDialog::onPrev);
@@ -172,7 +173,7 @@ void WorldTexturesDialog::updateDialog() {
   }
   else if (auto t = data())
   {
-    ui->IDC_TEX_NUM->setText(QString::number(app.texdlg_texture));
+    if (app.texdlg_texture) ui->IDC_TEX_NUM->setText(QString::number(*app.texdlg_texture));
 
     ui->IDC_REFLECT->setText(QString::number(t->reflectivity));
     ui->IDC_RED_LIGHTING->setText(QString::number(t->r));
@@ -261,14 +262,14 @@ void WorldTexturesDialog::onAddNew() {
   GameTextures[*handle].name = fileInfo.baseName().toStdString();
   GameTextures[*handle].bm_handle = bm;
   mng_AllocTrackLock(GameTextures[*handle].name, PAGETYPE_TEXTURE);
-  app.texdlg_texture = static_cast<int>(*handle);
+  app.texdlg_texture = *handle;
   updateDialog();
 }
 
 void WorldTexturesDialog::onDelete() {
   if (auto t = data())
   {
-    const uint32_t n = static_cast<uint32_t>(app.texdlg_texture);
+    const uint32_t n = *app.texdlg_texture;
     const int tl = mng_FindTrackLock(t->name, PAGETYPE_TEXTURE).value_or(-1);
     if (tl == -1) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This texture is not yours to delete.  Lock first.");
@@ -304,7 +305,7 @@ void WorldTexturesDialog::onDelete() {
 void WorldTexturesDialog::onLock() {
   if (auto t = data())
   {
-    const int n = app.texdlg_texture;
+    const int n = *app.texdlg_texture;
     if (!mng_MakeLocker())
       return;
     mngs_Pagelock temp_pl;
@@ -355,7 +356,7 @@ void WorldTexturesDialog::onLock() {
 void WorldTexturesDialog::onCheckin() {
   if (auto t = data())
   {
-    const int n = app.texdlg_texture;
+    const int n = *app.texdlg_texture;
     if (!mng_MakeLocker())
       return;
     mngs_Pagelock temp_pl;
@@ -451,13 +452,17 @@ void WorldTexturesDialog::onLoadBitmap() {
 }
 
 void WorldTexturesDialog::onNext() {
-  if (const std::optional<uint32_t> next = GetNextTexture(static_cast<uint32_t>(app.texdlg_texture)))
-    app.texdlg_texture = static_cast<int>(*next);
+  if (app.texdlg_texture) {
+    if (const std::optional<uint32_t> next = GetNextTexture(*app.texdlg_texture))
+      app.texdlg_texture = *next;
+  }
   updateDialog();
 }
 void WorldTexturesDialog::onPrev() {
-  if (const std::optional<uint32_t> prev = GetPreviousTexture(static_cast<uint32_t>(app.texdlg_texture)))
-    app.texdlg_texture = static_cast<int>(*prev);
+  if (app.texdlg_texture) {
+    if (const std::optional<uint32_t> prev = GetPreviousTexture(*app.texdlg_texture))
+      app.texdlg_texture = *prev;
+  }
   updateDialog();
 }
 

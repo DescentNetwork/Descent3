@@ -294,6 +294,7 @@
 #ifndef _D3EDIT_H
 #define _D3EDIT_H
 
+#include <optional>
 #include "pstypes.h"
 #include "descent.h"
 #include "vecmat.h"
@@ -343,7 +344,7 @@ class grViewport;
 struct d3edit_state {
 
   // Values for current item in the various dialogs
-  int texdlg_texture;   // current texture in texdialog
+  std::optional<uint32_t> texdlg_texture;   // current texture in texdialog
   int current_obj_type; // current type of object
   int current_powerup;  // current powerup id
   int current_door;     // current door in door page dialog

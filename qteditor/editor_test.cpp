@@ -4365,7 +4365,7 @@ private slots:
     QSettings::setDefaultFormat(QSettings::IniFormat);
 
     d3edit_state out{};
-    out.texdlg_texture = 42;
+    out.texdlg_texture = 42u;
     out.current_obj_type = 3;
     out.current_powerup = 7;
     out.texscr_visible = true;

@@ -256,7 +256,7 @@ void TerrainKeypad::onFillArea() {
   const int count = TERRAIN_WIDTH * TERRAIN_DEPTH;
   for (int i = 0; i < count; i++)
     if (TerrainSelected[i])
-      Terrain_tex_seg[Terrain_seg[i].texseg_index].tex_index = app.texdlg_texture;
+      if (app.texdlg_texture) Terrain_tex_seg[Terrain_seg[i].texseg_index].tex_index = *app.texdlg_texture;
   app.World_changed = true;
 }
 
