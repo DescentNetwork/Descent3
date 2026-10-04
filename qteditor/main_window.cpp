@@ -252,7 +252,7 @@ MainWindow::MainWindow(QWidget *parent)
     showGenericObject(object_type::robot, app.current_robot);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_POWERUPS, &QAction::triggered, [this]() {
-    showGenericObject(object_type::powerup, app.current_powerup);
+    showGenericObject(object_type::powerup, app.current_powerup.value_or(-1));
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_BUILDINGS, &QAction::triggered, [this]() {
     showGenericObject(object_type::building, app.current_building);

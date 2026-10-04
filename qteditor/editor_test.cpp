@@ -4367,7 +4367,7 @@ private slots:
     d3edit_state out{};
     out.texdlg_texture = 42u;
     out.current_obj_type = static_cast<object_type>(3);
-    out.current_powerup = 7;
+    out.current_powerup = 7u;
     out.texscr_visible = true;
     out.texscr_x = 17;
     out.texscr_y = 23;

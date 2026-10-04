@@ -33,10 +33,19 @@
 void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   settings.beginGroup(QStringLiteral("editor"));
 
-  if (state.texdlg_texture  ) settings.setValue(QStringLiteral("texdlg_texture"), *state.texdlg_texture);
-  if (state.current_obj_type) settings.setValue(QStringLiteral("current_obj_type"), std::to_underlying(*state.current_obj_type));
-  if (state.current_obj_id  ) settings.setValue(QStringLiteral("current_obj_id"), *state.current_obj_id);
-  settings.setValue(QStringLiteral("current_powerup"),       state.current_powerup);
+
+  auto setval = [&settings]<typename T>(const char* const name, std::optional<T> val) {
+    if constexpr (std::is_enum_v<T>) {
+      settings.setValue(name, std::to_underlying(*val));
+    } else {
+      settings.setValue(name, *val);
+    }
+  };
+
+  setval("texdlg_texture", state.texdlg_texture);
+  setval("current_obj_type", state.current_obj_type);
+  setval("current_obj_id", state.current_obj_id);
+  setval("current_powerup", state.current_powerup);
   settings.setValue(QStringLiteral("current_door"),          state.current_door);
   settings.setValue(QStringLiteral("current_robot"),         state.current_robot);
   settings.setValue(QStringLiteral("current_ship"),          state.current_ship);
@@ -102,16 +111,21 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
   settings.beginGroup(QStringLiteral("editor"));
 
   auto getval = [&settings]<typename Ret>(const char* const name) -> std::optional<Ret> {
-    QVariant val = settings.value(QStringLiteral(name));
-    if(val.isNull())
+    QVariant val = settings.value(name);
+    if (val.isNull())
       return std::nullopt;
-    return val.value<Ret>();
+    if constexpr (std::is_enum_v<Ret>) {
+      // Fetch the underlying type (e.g., int/uint), then cast back to the enum
+      return static_cast<Ret>(val.value<std::underlying_type_t<Ret>>());
+    } else {
+      return val.value<Ret>();
+    }
   };
 
-  { int v = settings.value(QStringLiteral("texdlg_texture"), -1).toInt(); if (v >= 0) state.texdlg_texture = static_cast<uint32_t>(v); else state.texdlg_texture.reset(); }
-  { int v = settings.value(QStringLiteral("current_obj_type"), -1).toInt(); if (v >= 0) state.current_obj_type = static_cast<object_type>(v); else state.current_obj_type.reset(); }
-  { int v = settings.value(QStringLiteral("current_obj_id"), -1).toInt(); if (v >= 0) state.current_obj_id = v; else state.current_obj_id.reset(); }
-  state.current_powerup   = settings.value(QStringLiteral("current_powerup"),  0).toInt();
+  state.texdlg_texture    = getval.operator()<uint32_t>("texdlg_texture");
+  state.current_obj_type  = getval.operator()<object_type>("current_obj_type");
+  state.current_obj_id    = getval.operator()<uint16_t>("current_obj_id");
+  state.current_powerup   = getval.operator()<uint16_t>("current_powerup");
   state.current_door      = settings.value(QStringLiteral("current_door"),     0).toInt();
   state.current_robot     = settings.value(QStringLiteral("current_robot"),    0).toInt();
   state.current_ship      = settings.value(QStringLiteral("current_ship"),     0).toInt();
