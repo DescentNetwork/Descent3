@@ -32,13 +32,11 @@ MegacellKeypad::MegacellKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::MegacellKeypad)
 {
   ui->setupUi(this);
+  ui->IDC_RANDOMIZE_MEGACELL_CHECK->setChecked(app.randomize_megacell);
+
   connect(ui->IDC_NEXT_MEGA_SET, &QPushButton::clicked, this, &MegacellKeypad::onNextMegaSet);
   connect(ui->IDC_PREV_MEGA_SET, &QPushButton::clicked, this, &MegacellKeypad::onPrevMegaSet);
-  {
-    QCheckBox *cb = ui->IDC_RANDOMIZE_MEGACELL_CHECK;
-    cb->setChecked(app.randomize_megacell);
-    connect(cb, &QCheckBox::toggled, this, &MegacellKeypad::onRandomizeToggled);
-  }
+  connect(ui->IDC_RANDOMIZE_MEGACELL_CHECK, &QCheckBox::toggled, this, &MegacellKeypad::onRandomizeToggled);
   connect(ui->IDC_X_GRANULAR_EDIT, &QLineEdit::editingFinished, this, &MegacellKeypad::onXGranularEdited);
   connect(ui->IDC_Y_GRANULAR_EDIT, &QLineEdit::editingFinished, this, &MegacellKeypad::onYGranularEdited);
 
@@ -50,30 +48,33 @@ MegacellKeypad::~MegacellKeypad() { delete ui; }
 void MegacellKeypad::updateDialog() {
   if (!GetNextMegacell(0))
     return;
-  int n = app.current_megacell;
-  if (!Megacells.is_used(n)) {
-    if (const auto nxt = GetNextMegacell(static_cast<uint32_t>(n))) {
-      n = static_cast<int>(*nxt);
-      app.current_megacell = n;
-    } else {
-      return;
-    }
+  std::optional<uint32_t> nxt;
+
+  if(Megacells.is_used(app.current_megacell))
+    nxt = app.current_megacell;
+  else if (nxt = GetNextMegacell(static_cast<uint32_t>(app.current_megacell)))
+    app.current_megacell = static_cast<int>(*nxt);
+
+  if(nxt)
+  {
+    ui->IDC_MEGACELL_NAME_STATIC->setText(QString("Megacell name: %1").arg(QString::fromStdString(Megacells[*nxt].name)));
+    ui->IDC_MEGA_WIDTH_STATIC->setText(QString("Width: %1").arg(Megacells[*nxt].width));
+    ui->IDC_MEGA_HEIGHT_STATIC->setText(QString("Height: %1").arg(Megacells[*nxt].height));
+    ui->IDC_X_GRANULAR_EDIT->setText(QString::number(m_xgran));
+    ui->IDC_Y_GRANULAR_EDIT->setText(QString::number(m_ygran));
   }
-  ui->IDC_MEGACELL_NAME_STATIC->setText(QString("Megacell name: %1").arg(QString::fromStdString(Megacells[n].name)));
-  ui->IDC_MEGA_WIDTH_STATIC->setText(QString("Width: %1").arg(Megacells[n].width));
-  ui->IDC_MEGA_HEIGHT_STATIC->setText(QString("Height: %1").arg(Megacells[n].height));
-  ui->IDC_X_GRANULAR_EDIT->setText(QString::number(m_xgran));
-  ui->IDC_Y_GRANULAR_EDIT->setText(QString::number(m_ygran));
 }
 
 void MegacellKeypad::onNextMegaSet() {
-  if (const auto nxt = GetNextMegacell(static_cast<uint32_t>(app.current_megacell))) app.current_megacell = static_cast<int>(*nxt);
+  if (const auto nxt = GetNextMegacell(static_cast<uint32_t>(app.current_megacell)))
+    app.current_megacell = static_cast<int>(*nxt);
   m_xgran = m_ygran = 1;
   updateDialog();
 }
 
 void MegacellKeypad::onPrevMegaSet() {
-  if (const auto prv = GetPrevMegacell(static_cast<uint32_t>(app.current_megacell))) app.current_megacell = static_cast<int>(*prv);
+  if (const auto prv = GetPrevMegacell(static_cast<uint32_t>(app.current_megacell)))
+    app.current_megacell = static_cast<int>(*prv);
   m_xgran = m_ygran = 1;
   updateDialog();
 }
@@ -82,6 +83,7 @@ void MegacellKeypad::onRandomizeToggled(bool checked) { app.randomize_megacell =
 
 void MegacellKeypad::onXGranularEdited() {
   const int n = app.current_megacell;
+  Q_ASSERT(Megacells.is_used(n));
   int val = ui->IDC_X_GRANULAR_EDIT->text().toInt();
   if (val < 1)
     val = 1;
@@ -93,6 +95,7 @@ void MegacellKeypad::onXGranularEdited() {
 
 void MegacellKeypad::onYGranularEdited() {
   const int n = app.current_megacell;
+  Q_ASSERT(Megacells.is_used(n));
   int val = ui->IDC_Y_GRANULAR_EDIT->text().toInt();
   if (val < 1)
     val = 1;
