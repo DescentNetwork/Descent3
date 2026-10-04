@@ -33,7 +33,7 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   settings.beginGroup(QStringLiteral("editor"));
 
   if (state.texdlg_texture) settings.setValue(QStringLiteral("texdlg_texture"), *state.texdlg_texture); else settings.setValue(QStringLiteral("texdlg_texture"), -1);
-  settings.setValue(QStringLiteral("current_obj_type"),      state.current_obj_type);
+  if (state.current_obj_type) settings.setValue(QStringLiteral("current_obj_type"), static_cast<int>(*state.current_obj_type)); else settings.setValue(QStringLiteral("current_obj_type"), -1);
   settings.setValue(QStringLiteral("current_obj_id"),        state.current_obj_id);
   settings.setValue(QStringLiteral("current_powerup"),       state.current_powerup);
   settings.setValue(QStringLiteral("current_door"),          state.current_door);
@@ -101,7 +101,7 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
   settings.beginGroup(QStringLiteral("editor"));
 
   { int v = settings.value(QStringLiteral("texdlg_texture"), -1).toInt(); if (v >= 0) state.texdlg_texture = static_cast<uint32_t>(v); else state.texdlg_texture.reset(); }
-  state.current_obj_type  = settings.value(QStringLiteral("current_obj_type"), 0).toInt();
+  { int v = settings.value(QStringLiteral("current_obj_type"), -1).toInt(); if (v >= 0) state.current_obj_type = static_cast<object_type>(v); else state.current_obj_type.reset(); }
   state.current_obj_id    = settings.value(QStringLiteral("current_obj_id"),   0).toInt();
   state.current_powerup   = settings.value(QStringLiteral("current_powerup"),  0).toInt();
   state.current_door      = settings.value(QStringLiteral("current_door"),     0).toInt();

@@ -298,6 +298,7 @@
 #include "pstypes.h"
 #include "descent.h"
 #include "vecmat.h"
+#include "object_external.h"
 
 #include <stdlib.h>
 
@@ -345,7 +346,7 @@ struct d3edit_state {
 
   // Values for current item in the various dialogs
   std::optional<uint32_t> texdlg_texture;   // current texture in texdialog
-  int current_obj_type; // current type of object
+  std::optional<object_type> current_obj_type; // current type of object
   int current_powerup;  // current powerup id
   int current_door;     // current door in door page dialog
   int current_robot;    // current robot in robot page dialog
