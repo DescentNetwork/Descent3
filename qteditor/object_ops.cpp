@@ -128,7 +128,7 @@ bool RotateObject(int objnum, angle p, angle h, angle b) {
 // Places a new object of the given type and ID into the world at the viewer's
 // location, then repositions it onto the current surface.
 // ============================================================================
-bool HObjectPlace(object_type obj_type, int obj_id) {
+bool HObjectPlace(object_type obj_type, uint16_t obj_id) {
   int objnum;
   poly_model *pm;
   matrix orient = IDENTITY_MATRIX;

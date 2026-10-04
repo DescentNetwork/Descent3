@@ -64,7 +64,7 @@ struct d3edit_state
   // Values for current item in the various dialogs
   std::optional<uint32_t> texdlg_texture; // current texture in texdialog
   std::optional<object_type> current_obj_type; // current type of object
-  int current_obj_id    = -1; // current specific id of object within type
+  std::optional<uint16_t> current_obj_id; // current specific id of object within type
   int current_powerup   = -1; // current powerup id
   int current_door      = -1; // current door in door page dialog
   int current_robot     = -1; // current robot in robot page dialog

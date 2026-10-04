@@ -43,7 +43,7 @@ extern float Object_move_scale;
 extern angle Object_move_rotation;
 
 // Placement.
-bool HObjectPlace(object_type obj_type, int obj_id);
+bool HObjectPlace(object_type obj_type, uint16_t obj_id);
 int GetSelectedTerrainCell();
 
 // Movement.

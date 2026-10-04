@@ -87,7 +87,7 @@ void ObjectKeypad::updateDialog() {
 
 void ObjectKeypad::onPlaceObject() {
   // HObjectPlace handles all the validation internally.
-  if (app.current_obj_type && HObjectPlace(*app.current_obj_type, app.current_obj_id)) {
+  if (app.current_obj_type && app.current_obj_id && HObjectPlace(*app.current_obj_type, *app.current_obj_id)) {
     app.Mine_changed = true;
     updateDialog();
   }
