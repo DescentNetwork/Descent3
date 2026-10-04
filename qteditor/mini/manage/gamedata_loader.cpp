@@ -270,13 +270,17 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       break;
 
     case PAGETYPE_MEGACELL:
-      if (Num_megacells < MAX_MEGACELLS) {
+      {
+        const size_t slot = Megacells.next_slot();
         if (!mng_ReadNewMegacellPage(infile, &megacellpage))
           ok = false;
-        Megacells[Num_megacells] = megacellpage.megacell_struct;
-        Num_megacells++;
-      } else {
-        discardBytes(infile, len - 4);
+        if (slot >= Megacells.size()) {
+          Megacells.add_slot(megacellpage.megacell_struct);
+          Megacells.acquire(slot);
+        } else {
+          Megacells[slot] = megacellpage.megacell_struct;
+          Megacells.acquire(slot);
+        }
       }
       break;
 

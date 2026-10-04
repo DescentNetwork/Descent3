@@ -24,7 +24,7 @@
 #include <string>
 
 #include "manage.h"
-#include "gametexture.h"
+#include "slotvec.h"
 
 #define MAX_MEGACELLS 100
 
@@ -52,11 +52,9 @@ struct megacell {
 
   int16_t texture_handles[MAX_MEGACELL_WIDTH * MAX_MEGACELL_HEIGHT];
   megacell_flags_t flags;
-  uint8_t used;
 };
 
-extern uint32_t Num_megacells;
-extern megacell Megacells[MAX_MEGACELLS];
+extern d3::slotvec_t<megacell> Megacells;
 
 // Sets all MEGACELLs to unused
 void InitMegacells();
@@ -68,12 +66,11 @@ std::optional<uint32_t> AllocMegacell();
 void FreeMegacell(uint32_t n);
 
 // Gets next MEGACELL from n that has actually been alloced
-// n is signed because it may be the -1 "nothing selected" sentinel
-int32_t GetNextMegacell(int32_t n);
+// Gets next MEGACELL from n that has actually been alloced
+std::optional<uint32_t> GetNextMegacell(uint32_t n);
 
 // Gets previous MEGACELL from n that has actually been alloced
-// n is signed because it may be the -1 "nothing selected" sentinel
-int32_t GetPrevMegacell(int32_t n);
+std::optional<uint32_t> GetPrevMegacell(uint32_t n);
 
 // Searches thru all MEGACELLs for a specific name, returns std::nullopt if not
 // found or the index of the MEGACELL with that name

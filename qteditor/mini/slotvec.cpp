@@ -13,6 +13,7 @@
 #include "lib/ssl_lib.h"
 #include "lib/weapon.h"
 #include "game/door.h"
+#include "lib/megacell.h"
 
 namespace d3
 {
@@ -129,5 +130,8 @@ namespace d3
   template class slotvec_t<special_face>;
   template class slotvec_t<texture>;
   template class slotvec_t<weapon>;
+  
   template class slotvec_t<door>;
+  template class slotvec_base_t<megacell>;
+  template class slotvec_t<megacell>;
 }

@@ -36,7 +36,7 @@
 #include "gamepath.h"
 #include "soundload.h"
 #include "doorway.h"
-#include "weapon.h"
+#include "megacell.h"
 #include "ship.h"
 #include "trigger.h"
 #include "BOA.h"
@@ -188,6 +188,7 @@ void hlsSystem::EndSoundFrame() { PRINT_STUB(__FUNCTION__); }
 void hlsSystem::StopAllSounds() { PRINT_STUB(__FUNCTION__); }
 d3::slotvec_t<sound_info> Sounds;
 sound_file_info SoundFiles[MAX_SOUND_FILES] = {};
+d3::slotvec_t<megacell> Megacells;
 
 // ==================== Lighting ====================
 void FreeLightmapMemory() { PRINT_STUB(__FUNCTION__); }

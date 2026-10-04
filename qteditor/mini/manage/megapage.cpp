@@ -42,6 +42,6 @@ bool mng_ReadNewMegacellPage(posix_istream &infile, mngs_megacell_page *megacell
   infile >> megacellpage->megacell_struct.width;
   infile >> megacellpage->megacell_struct.height;
   // This is a valid new page
-  megacellpage->megacell_struct.used = 1;
+
   return true; // successfully read
 }

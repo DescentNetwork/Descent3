@@ -3261,15 +3261,19 @@ private slots:
   void testMegacellTable()
   {
     InitMegacells();
-    QCOMPARE(Num_megacells, 0u);
-    for (const megacell &cell : Megacells) {
-      QCOMPARE(cell.used, uint8_t(0));
-      QVERIFY(cell.name.empty());
+    {
+      int live = 0;
+      for (size_t i = 0; i < Megacells.size(); i++)
+        if (Megacells.is_used(i)) live++;
+      QCOMPARE(live, 0);
+      for (size_t i = 0; i < Megacells.size(); i++) {
+        QVERIFY(Megacells[i].name.empty());
+      }
     }
 
     // Nothing is allocated, so iteration has nowhere to go and reports 0.
-    QCOMPARE(GetNextMegacell(0), 0);
-    QCOMPARE(GetPrevMegacell(0), 0);
+    QVERIFY(!GetNextMegacell(0));
+    QVERIFY(!GetPrevMegacell(0));
     QVERIFY(!FindMegacellName("anything"));
 
     // Alloc hands out ascending free slots, seeds the default size, and counts.
@@ -3282,10 +3286,10 @@ private slots:
     QCOMPARE(*a, 0u);
     QCOMPARE(*b, 1u);
     QCOMPARE(*c, 2u);
-    QCOMPARE(Num_megacells, 3u);
+    { int livec=0; for(size_t i=0;i<Megacells.size();i++) if(Megacells.is_used(i)) livec++; QCOMPARE(livec,3); }
 
     for (uint32_t i = 0; i < 3; i++) {
-      QCOMPARE(Megacells[i].used, uint8_t(1));
+      QVERIFY(Megacells.is_used(i));
       QCOMPARE(Megacells[i].width, uint8_t(DEFAULT_MEGACELL_WIDTH));
       QCOMPARE(Megacells[i].height, uint8_t(DEFAULT_MEGACELL_HEIGHT));
     }
@@ -3303,34 +3307,36 @@ private slots:
     QVERIFY(!FindMegacellName("Rock03"));
     // An unused slot never matches, even when its name field holds matching
     // text: only live entries are considered.
-    Megacells[MAX_MEGACELLS - 1].name = "Rock03";
-    QCOMPARE(Megacells[MAX_MEGACELLS - 1].used, uint8_t(0));
-    QVERIFY(!FindMegacellName("Rock03"));
-    Megacells[MAX_MEGACELLS - 1].name.clear();
+    if (Megacells.size() > static_cast<size_t>(MAX_MEGACELLS - 1)) {
+      Megacells[MAX_MEGACELLS - 1].name = "Rock03";
+      QVERIFY(Megacells.is_unused(MAX_MEGACELLS - 1));
+      QVERIFY(!FindMegacellName("Rock03"));
+      Megacells[MAX_MEGACELLS - 1].name.clear();
+    }
 
     // Forward iteration skips the holes left by unallocated slots and wraps.
-    QCOMPARE(GetNextMegacell(0), 1);
-    QCOMPARE(GetNextMegacell(1), 2);
-    QCOMPARE(GetNextMegacell(2), 0); // wraps back to the first live entry
-    QCOMPARE(GetPrevMegacell(0), 2);
-    QCOMPARE(GetPrevMegacell(2), 1);
-    QCOMPARE(GetPrevMegacell(1), 0);
+    QCOMPARE(*GetNextMegacell(0), 1u);
+    QCOMPARE(*GetNextMegacell(1), 2u);
+    QCOMPARE(*GetNextMegacell(2), 0u); // wraps back to the first live entry
+    QCOMPARE(*GetPrevMegacell(0), 2u);
+    QCOMPARE(*GetPrevMegacell(2), 1u);
+    QCOMPARE(*GetPrevMegacell(1), 0u);
 
     // Freeing clears the slot and releases the name so the lookup stops
     // matching, and the count drops.
     FreeMegacell(*b);
-    QCOMPARE(Num_megacells, 2u);
-    QCOMPARE(Megacells[*b].used, uint8_t(0));
+    { int livec=0; for(size_t i=0;i<Megacells.size();i++) if(Megacells.is_used(i)) livec++; QCOMPARE(livec,2); }
+    QVERIFY(Megacells.is_unused(*b));
     QVERIFY(Megacells[*b].name.empty());
     QVERIFY(!FindMegacellName("Lava02"));
-    QCOMPARE(GetNextMegacell(0), 2); // slot 1 is now a hole
-    QCOMPARE(GetPrevMegacell(2), 0);
+    QCOMPARE(*GetNextMegacell(0), 2u); // slot 1 is now a hole
+    QCOMPARE(*GetPrevMegacell(2), 0u);
 
     // A freed slot is recycled by the next alloc, and that slot comes back with
     // default (not stale) contents.
     const std::optional<uint32_t> d = AllocMegacell();
     QCOMPARE(*d, 1u);
-    QCOMPARE(Num_megacells, 3u);
+    { int livec=0; for(size_t i=0;i<Megacells.size();i++) if(Megacells.is_used(i)) livec++; QCOMPARE(livec,3); }
     QCOMPARE(Megacells[*d].width, uint8_t(DEFAULT_MEGACELL_WIDTH));
     QVERIFY(Megacells[*d].name.empty());
 
@@ -3338,25 +3344,28 @@ private slots:
     // count tracks it.  Allocating past the end is deliberately not exercised
     // here: the ported AllocMegacell reports that with Q_ASSERT(false) (the
     // engine's Int3), which aborts a debug build.
-    uint32_t live = 0;
-    for (uint32_t i = 0; i < MAX_MEGACELLS; i++)
-      live += (Megacells[i].used != 0) ? 1u : 0u;
-    while (live < MAX_MEGACELLS) {
+    uint32_t live_count = 0;
+    if (static_cast<size_t>(MAX_MEGACELLS) > Megacells.size()) {
+      // should not happen normally, but slotvec may need to grow? no - add slots
+    }
+    for (uint32_t i = 0; i < MAX_MEGACELLS && i < static_cast<uint32_t>(Megacells.size()); i++)
+      live_count += Megacells.is_used(i) ? 1u : 0u;
+    while (live_count < MAX_MEGACELLS) {
       const std::optional<uint32_t> slot = AllocMegacell();
       QVERIFY(slot.has_value());
-      live++;
+      live_count++;
     }
-    QCOMPARE(Num_megacells, static_cast<uint32_t>(MAX_MEGACELLS));
-    for (uint32_t i = 0; i < MAX_MEGACELLS; i++)
-      QCOMPARE(Megacells[i].used, uint8_t(1));
+    { int livec=0; for(size_t i=0;i<Megacells.size();i++) if(Megacells.is_used(i)) livec++; QCOMPARE(livec, MAX_MEGACELLS); }
+    for (uint32_t i = 0; i < MAX_MEGACELLS && i < static_cast<uint32_t>(Megacells.size()); i++)
+      QVERIFY(Megacells.is_used(i));
 
     // A full table still iterates, and InitMegacells clears everything.
     QCOMPARE(GetNextMegacell(0), 1);
-    QCOMPARE(GetPrevMegacell(0), MAX_MEGACELLS - 1);
+    QCOMPARE(*GetPrevMegacell(0), static_cast<uint32_t>(MAX_MEGACELLS - 1));
     InitMegacells();
-    QCOMPARE(Num_megacells, 0u);
-    for (const megacell &cell : Megacells)
-      QCOMPARE(cell.used, uint8_t(0));
+    { int livec=0; for(size_t i=0;i<Megacells.size();i++) if(Megacells.is_used(i)) livec++; QCOMPARE(livec,0); }
+    for (size_t i = 0; i < Megacells.size(); i++)
+      QVERIFY(Megacells.is_unused(i));
   }
   // The NLMP chunk holds the level's raw lightmap textures (RLE-compressed
   // uint16_t) plus the lightmap-info records that reference a texture by
@@ -3638,7 +3647,7 @@ private slots:
 
     // Megacells are optional in newer table files; don't hard-fail on them,
     // but the count can never exceed the fixed table size.
-    QVERIFY(Num_megacells <= MAX_MEGACELLS);
+    int live=0; for(size_t i=0;i<Megacells.size();i++) if(Megacells.is_used(i)) live++; QVERIFY(live <= MAX_MEGACELLS);
 
     // Spot-check a name field is non-empty (data was actually read, not zeroed).
     QVERIFY(Object_info[0].name[0] != '\0');

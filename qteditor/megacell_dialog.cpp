@@ -50,7 +50,7 @@ MegacellDialog::MegacellDialog(QWidget *parent)
 MegacellDialog::~MegacellDialog() { delete ui; }
 
 void MegacellDialog::updateDialog() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
   const int n = app.current_megacell;
   if (auto *label = ui->IDC_MEGACELL_NAME_EDIT)
@@ -86,39 +86,39 @@ void MegacellDialog::onNew() {
 }
 
 void MegacellDialog::onDelete() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
   const int n = app.current_megacell;
-  if (n < 0 || !Megacells[n].used)
+  if (n < 0 || !Megacells.is_used(n))
     return;
   FreeMegacell(static_cast<uint32_t>(n));
-  app.current_megacell = GetNextMegacell(n);
+  if (const auto nxt = GetNextMegacell(static_cast<uint32_t>(n))) app.current_megacell = static_cast<int>(*nxt); else app.current_megacell = -1;
   updateDialog();
 }
 
 void MegacellDialog::onLock() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
   QMessageBox::information(this, "Success", "Megacell locked.");
 }
 
 void MegacellDialog::onCheckin() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
   QMessageBox::information(this, "Success", "Megacell checked in.");
 }
 
 void MegacellDialog::onPrev() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
-  app.current_megacell = GetPrevMegacell(app.current_megacell);
+  if (const auto prv = GetPrevMegacell(static_cast<uint32_t>(app.current_megacell))) app.current_megacell = static_cast<int>(*prv);
   updateDialog();
 }
 
 void MegacellDialog::onNext() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
-  app.current_megacell = GetNextMegacell(app.current_megacell);
+  if (const auto nxt = GetNextMegacell(static_cast<uint32_t>(app.current_megacell))) app.current_megacell = static_cast<int>(*nxt);
   updateDialog();
 }
 

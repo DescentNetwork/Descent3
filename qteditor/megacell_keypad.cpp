@@ -48,12 +48,16 @@ MegacellKeypad::MegacellKeypad(QWidget *parent)
 MegacellKeypad::~MegacellKeypad() { delete ui; }
 
 void MegacellKeypad::updateDialog() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
   int n = app.current_megacell;
-  if (!Megacells[n].used) {
-    n = GetNextMegacell(n);
-    app.current_megacell = n;
+  if (!Megacells.is_used(n)) {
+    if (const auto nxt = GetNextMegacell(static_cast<uint32_t>(n))) {
+      n = static_cast<int>(*nxt);
+      app.current_megacell = n;
+    } else {
+      return;
+    }
   }
   ui->IDC_MEGACELL_NAME_STATIC->setText(QString("Megacell name: %1").arg(QString::fromStdString(Megacells[n].name)));
   ui->IDC_MEGA_WIDTH_STATIC->setText(QString("Width: %1").arg(Megacells[n].width));
@@ -63,13 +67,13 @@ void MegacellKeypad::updateDialog() {
 }
 
 void MegacellKeypad::onNextMegaSet() {
-  app.current_megacell = GetNextMegacell(app.current_megacell);
+  if (const auto nxt = GetNextMegacell(static_cast<uint32_t>(app.current_megacell))) app.current_megacell = static_cast<int>(*nxt);
   m_xgran = m_ygran = 1;
   updateDialog();
 }
 
 void MegacellKeypad::onPrevMegaSet() {
-  app.current_megacell = GetPrevMegacell(app.current_megacell);
+  if (const auto prv = GetPrevMegacell(static_cast<uint32_t>(app.current_megacell))) app.current_megacell = static_cast<int>(*prv);
   m_xgran = m_ygran = 1;
   updateDialog();
 }
