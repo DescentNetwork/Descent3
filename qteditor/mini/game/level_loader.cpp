@@ -922,7 +922,7 @@ static void LL_ReadFFTMChunk(posix_istream &ifile, uint32_t version) {
     if(!texturename.empty())
       ifile >> bounce->multiplier;
 
-    if(auto idx = FindTextureName(texturename); idx)
+    if(auto idx = FindTextureName(texturename))
     {
       bounce->texture = *idx;
       if(*idx < MAX_TEXTURES)

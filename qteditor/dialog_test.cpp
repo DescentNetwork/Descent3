@@ -110,7 +110,7 @@ int runDialogTest() {
     check("editline", dlg != nullptr);
   }
   {
-    GenericDeathDialog* dlg = new GenericDeathDialog(-1);
+    GenericDeathDialog* dlg = new GenericDeathDialog(std::nullopt);
     check("generic_death", dlg != nullptr);
   }
   construct<HogDialog>("hog", nullptr);
