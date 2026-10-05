@@ -960,17 +960,26 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
     return -1;
   };
 
+  auto load_optional = [](int16_t v) -> std::optional<int> {
+    if (v < 0)
+      return std::nullopt;
+    return v;
+  };
+
   int16_t room_idx = 0;
   ifile >> room_idx;
-  app.Curroomp = lookup_room(room_idx);
+  {
+    const int cur_room = lookup_room(room_idx);
+    app.Curroomp = cur_room < 0 ? std::optional<int>() : std::optional<int>(cur_room);
+  }
   int16_t sel = 0;
   ifile >> sel;
-  app.Curface = sel;
+  app.Curface = load_optional(sel);
   if (version >= 81) {
     ifile >> sel;
-    app.Curedge = sel;
+    app.Curedge = load_optional(sel);
     ifile >> sel;
-    app.Curvert = sel;
+    app.Curvert = load_optional(sel);
   }
 
   ifile >> room_idx;
@@ -993,7 +1002,9 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
   }
 
   if (version >= 14) {
-    ifile >> app.Cur_object_index;
+    int32_t cur_obj_index = 0;
+    ifile >> cur_obj_index;
+    app.Cur_object_index = cur_obj_index < 0 ? std::optional<int>() : std::optional<int>(cur_obj_index);
     ifile >> app.Current_trigger;
     int32_t tmp = 0;
     if (version < 106)
@@ -1050,7 +1061,7 @@ static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
   for (int i = 0; i < N_selected_rooms; i++)
     ofile << static_cast<int16_t>(Selected_rooms[i]);
 
-  ofile << static_cast<int32_t>(app.Cur_object_index);
+  ofile << static_cast<int32_t>(app.Cur_object_index.value_or(-1));
   ofile << static_cast<int32_t>(app.Current_trigger);
   ofile << static_cast<int32_t>(app.view_mode);
   ofile << static_cast<int32_t>(app.Editor_viewer_id);

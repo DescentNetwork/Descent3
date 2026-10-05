@@ -2919,7 +2919,7 @@ private slots:
     QCOMPARE(N_selected_rooms, 2);
     QCOMPARE(Selected_rooms[0], 0);
     QCOMPARE(Selected_rooms[1], 1);
-    QCOMPARE(app.Cur_object_index, 7);
+    QCOMPARE(app.Cur_object_index.value_or(-1), 7);
     QCOMPARE(app.Current_trigger, 8);
     QCOMPARE(app.view_mode, state::viewer::terrain);
     QCOMPARE(app.Editor_viewer_id, 9);
@@ -2989,7 +2989,7 @@ private slots:
     app.Curroomp.reset();
     app.Markedroomp = -1;
     N_selected_rooms = 0;
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     app.Current_trigger = -1;
     app.Editor_viewer_id = -1;
     app.view_mode = state::viewer::mine;
@@ -4779,7 +4779,7 @@ private slots:
   // editor/editorView.cpp:PlaceCameraAtViewer, SetCameraFromViewer,
   // SetViewerFromCamera, DeleteCurrentObject, MovePlayerToCurrentRoom.
   // We exercise each in turn and inspect the side-effects on
-  // app.Cur_object_index / Objects[] / app.Mine_changed / Player_object.
+  // app.Cur_object_index.value_or(-1) / Objects[] / app.Mine_changed / Player_object.
   void testObjectOpsContract() {
     // Reset the object table for the test.
     for (size_t i = 0; i < Objects.size(); ++i)
@@ -4790,7 +4790,7 @@ private slots:
     Highest_object_index = -1;
     Player_object = nullptr;
     Viewer_object = nullptr;
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
 
     // Spin up a stand-in viewer at origin and provision a player object
     // so PlaceCameraAtViewer and friends have something to act on.
@@ -4858,7 +4858,7 @@ private slots:
     // app.Cur_object_index = camera1;
     // DeleteCurrentObject();
     // QCOMPARE(Objects[camera1].type, object_type::none);
-    // QVERIFY(app.Cur_object_index >= 0);
+    // QVERIFY(app.Cur_object_index.has_value());
     // QVERIFY(app.Mine_changed == 1);
 
     // ObjSetPos(*Player_object, &target, 0, &idmat, false);
@@ -4915,7 +4915,7 @@ private slots:
     ResetViewRadius();
     QCOMPARE(app.texscale, 1.0f);
 
-    // CenterViewOnObject drops app.Cur_object_index onto the viewer. Live
+    // CenterViewOnObject drops app.Cur_object_index.value_or(-1) onto the viewer. Live
     // calls with the freshly-init Objects[] above trip ObjUnlink's
     // invariant in object.cpp:1515 (Objects[0].next != 0) on Debug
     // builds, so we keep the assertion documented but skip the live call.
@@ -5515,7 +5515,7 @@ private slots:
         ++n;
     QCOMPARE(n, pre_count + 1);
     QCOMPARE(int(Objects[2].type), int(object_type::player));
-    QVERIFY(app.Cur_object_index >= 0);
+    QVERIFY(app.Cur_object_index.has_value());
 
     app.Cur_object_index = 2;
     win.onCutObjectToClipboard();
@@ -6116,7 +6116,7 @@ private slots:
     // Clear selection first.
     app.Curroomp.reset();
     app.Curface.reset();
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
 
     bool faceFired = false;
     bool objectFired = false;
@@ -6817,20 +6817,20 @@ private slots:
     QCOMPARE(Objects[0].orient.rvec.x(), IDENTITY_MATRIX.rvec.x());
     QCOMPARE(Objects[0].orient.uvec.y(), IDENTITY_MATRIX.uvec.y());
 
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     Objects[0].type = object_type::none;
     ResetObjectList();
     Highest_object_index = -1;
   }
 
   void testHObjectSetDefaultNoopWhenNoSelection() {
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     matrix before{};
     vm_MakeIdentity(&before);
 
     HObjectSetDefault();
 
-    QCOMPARE(app.Cur_object_index, -1);
+    QCOMPARE(app.Cur_object_index.value_or(-1), -1);
   }
 
   void testHObjectFlip() {
@@ -6862,7 +6862,7 @@ private slots:
     QCOMPARE(Objects[0].orient.uvec.y(), -uvec_before.y());
     QCOMPARE(Objects[0].orient.uvec.z(), -uvec_before.z());
 
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     Objects[0].type = object_type::none;
     ResetObjectList();
     Highest_object_index = -1;
@@ -6892,19 +6892,19 @@ private slots:
     HObjectDelete();
 
     QCOMPARE(Objects[1].type, object_type::none);
-    QCOMPARE(app.Cur_object_index, -1);
+    QCOMPARE(app.Cur_object_index.value_or(-1), -1);
 
     Objects[0].type = object_type::none;
     Viewer_object = nullptr;
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     ResetObjectList();
     Highest_object_index = -1;
   }
 
   void testHObjectDeleteNoopWhenNoSelection() {
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     HObjectDelete();
-    QCOMPARE(app.Cur_object_index, -1);
+    QCOMPARE(app.Cur_object_index.value_or(-1), -1);
   }
 
   void testHObjectDeletePlayerBlocked() {
@@ -6933,7 +6933,7 @@ private slots:
 
     QCOMPARE(Objects[1].type, object_type::player);
 
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     Objects[0].type = object_type::none;
     Objects[1].type = object_type::none;
     Viewer_object = nullptr;
@@ -6983,7 +6983,7 @@ private slots:
     Objects[0].type = object_type::none;
     Objects[1].type = object_type::none;
     Viewer_object = nullptr;
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     ResetObjectList();
     Highest_object_index = -1;
     FreeRoom(roomnum);
@@ -7031,7 +7031,7 @@ private slots:
 
     QVERIFY(app.Object_moved);
 
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     Objects[0].type = object_type::none;
     Objects[1].type = object_type::none;
     Viewer_object = nullptr;
@@ -7088,7 +7088,7 @@ private slots:
 
     QVERIFY(!ObjMoveManager.IsMoving());
 
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     Objects[0].type = object_type::none;
     Objects[1].type = object_type::none;
     Viewer_object = nullptr;
@@ -7139,7 +7139,7 @@ private slots:
 
     QVERIFY(!ObjMoveManager.IsMoving());
 
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     Objects[0].type = object_type::none;
     Objects[1].type = object_type::none;
     Viewer_object = nullptr;
@@ -7209,7 +7209,7 @@ private slots:
     ObjMoveManager.Defer(0, 0, false);
     QVERIFY(!ObjMoveManager.IsMoving());
 
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     Objects[0].type = object_type::none;
     Objects[1].type = object_type::none;
     Viewer_object = nullptr;
@@ -7277,7 +7277,7 @@ private slots:
     ObjMoveManager.Defer(0, 0, false);
     QVERIFY(!ObjMoveManager.IsMoving());
 
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     Objects[0].type = object_type::none;
     Objects[1].type = object_type::none;
     Viewer_object = nullptr;
@@ -7320,7 +7320,7 @@ private slots:
     ObjSetPos(Objects[0], origin, 0, std::nullopt, false);
 
     app.view_mode = state::viewer::mine;
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     app.object_move_mode = REL_OBJECT;
     ObjMoveManager.SetMoveAxis(OBJMOVEAXIS_X);
     // Use the orbit camera (not the viewer) so the eye is not co-located
@@ -7346,7 +7346,7 @@ private slots:
                       Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
     QCoreApplication::sendEvent(&view, &press);
     QCoreApplication::processEvents();
-    QCOMPARE(app.Cur_object_index, 0);
+    QCOMPARE(app.Cur_object_index.value_or(-1), 0);
     QVERIFY(ObjMoveManager.IsMoving());
 
     const vector3 pos0 = Objects[0].pos;
@@ -7367,7 +7367,7 @@ private slots:
     QVERIFY2(vm_VectorDistance(&pos0, &Objects[0].pos) > 1e-3f,
             "drag did not move the object");
 
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     Objects[0].type = object_type::none;
     app.view_mode = state::viewer::mine;
     ResetObjectList();

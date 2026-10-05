@@ -181,7 +181,7 @@ void ObjectTreeDialog::onClearAll()
     }
 
     app.World_changed = true;
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     Refresh();
   }
 }

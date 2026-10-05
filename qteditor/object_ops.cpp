@@ -309,22 +309,22 @@ void HObjectMove(int objnum, float dx, float dy, float dz) {
 // ============================================================================
 // Rotation functions — editor/HObject.cpp:503-513
 // ============================================================================
-void HObjectIncreaseBank() { RotateObject(app.Cur_object_index, 0, 0, Object_move_rotation); }
-void HObjectDecreaseBank() { RotateObject(app.Cur_object_index, 0, 0, -Object_move_rotation); }
-void HObjectIncreasePitch() { RotateObject(app.Cur_object_index, Object_move_rotation, 0, 0); }
-void HObjectDecreasePitch() { RotateObject(app.Cur_object_index, -Object_move_rotation, 0, 0); }
-void HObjectIncreaseHeading() { RotateObject(app.Cur_object_index, 0, Object_move_rotation, 0); }
-void HObjectDecreaseHeading() { RotateObject(app.Cur_object_index, 0, -Object_move_rotation, 0); }
+void HObjectIncreaseBank() { RotateObject(app.Cur_object_index.value_or(-1), 0, 0, Object_move_rotation); }
+void HObjectDecreaseBank() { RotateObject(app.Cur_object_index.value_or(-1), 0, 0, -Object_move_rotation); }
+void HObjectIncreasePitch() { RotateObject(app.Cur_object_index.value_or(-1), Object_move_rotation, 0, 0); }
+void HObjectDecreasePitch() { RotateObject(app.Cur_object_index.value_or(-1), -Object_move_rotation, 0, 0); }
+void HObjectIncreaseHeading() { RotateObject(app.Cur_object_index.value_or(-1), 0, Object_move_rotation, 0); }
+void HObjectDecreaseHeading() { RotateObject(app.Cur_object_index.value_or(-1), 0, -Object_move_rotation, 0); }
 
 // ============================================================================
 // HObjectDelete — editor/HObject.cpp:517
 // Deletes the currently selected object from the mine.
 // ============================================================================
 void HObjectDelete() {
-  if (app.Cur_object_index == -1)
+  if (!app.Cur_object_index)
     return;
 
-  int objnum = app.Cur_object_index;
+  int objnum = *app.Cur_object_index;
 
   if (&Objects[objnum] == Player_object) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Can't delete Player object");
@@ -337,8 +337,8 @@ void HObjectDelete() {
   }
 
   ObjDelete(objnum);
-  if (objnum == app.Cur_object_index)
-    app.Cur_object_index = -1;
+  if (objnum == app.Cur_object_index.value_or(-1))
+    app.Cur_object_index.reset();
 
   app.World_changed = true;
 }
@@ -348,10 +348,10 @@ void HObjectDelete() {
 // Sets default (identity) orientation for the current object.
 // ============================================================================
 void HObjectSetDefault() {
-  if (app.Cur_object_index == -1)
+  if (!app.Cur_object_index)
     return;
 
-  ObjSetOrient(Objects[app.Cur_object_index], Identity_matrix);
+  ObjSetOrient(Objects[*app.Cur_object_index], Identity_matrix);
   app.World_changed = true;
 }
 
@@ -373,7 +373,7 @@ void HObjectMoveToViewer(object& objp) {
 // Flips the current object by negating its up and right vectors.
 // ============================================================================
 void HObjectFlip() {
-  matrix *m = &Objects[app.Cur_object_index].orient;
+  matrix *m = &Objects[*app.Cur_object_index].orient;
 
   m->uvec = -m->uvec;
   m->rvec = -m->rvec;

@@ -37,15 +37,15 @@ ObjectMoveManager::ObjectMoveManager() {
 }
 
 void ObjectMoveManager::Start(int view_width, int view_height, vector3 *view_pos, matrix *view_mat, int x, int y) {
-  if (app.Cur_object_index < 0 || app.Cur_object_index >= Highest_object_index + 1)
+  if (!app.Cur_object_index || app.Cur_object_index.value_or(-1) >= Highest_object_index + 1)
     return;
-  if (Objects[app.Cur_object_index].type == object_type::door)
+  if (Objects[*app.Cur_object_index].type == object_type::door)
     return;
 
   m_DragState = 1;
   m_WindowW2 = view_width / 2.0f;
   m_WindowH2 = view_height / 2.0f;
-  m_ObjNum = app.Cur_object_index;
+  m_ObjNum = app.Cur_object_index.value_or(-1);
 
   m_ViewPos = *view_pos;
   m_ViewMat = *view_mat;
@@ -76,16 +76,16 @@ void ObjectMoveManager::Defer(int dsx, int dsy, bool leftDown) {
 
     switch (m_MoveAxis) {
     case OBJMOVEAXIS_X:
-      HObjectMove(app.Cur_object_index, dx, 0, 0);
+      HObjectMove(app.Cur_object_index.value_or(-1), dx, 0, 0);
       break;
     case OBJMOVEAXIS_Y:
-      HObjectMove(app.Cur_object_index, 0, -dy, 0);
+      HObjectMove(app.Cur_object_index.value_or(-1), 0, -dy, 0);
       break;
     case OBJMOVEAXIS_Z:
-      HObjectMove(app.Cur_object_index, 0, 0, dy);
+      HObjectMove(app.Cur_object_index.value_or(-1), 0, 0, dy);
       break;
     case OBJMOVEAXIS_XY:
-      HObjectMove(app.Cur_object_index, dx, -dy, 0);
+      HObjectMove(app.Cur_object_index.value_or(-1), dx, -dy, 0);
       break;
     case OBJMOVEAXIS_P:
       Object_move_rotation = fabs(-dy) * ROTATE_SCALE;

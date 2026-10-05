@@ -156,7 +156,7 @@ struct d3edit_state
   std::optional<int> Curportal;
 
   // Current object
-  int Cur_object_index = -1;
+  std::optional<int> Cur_object_index;
 
   //	Current trigger in mine displayed in trigger dialog
   int Current_trigger = -1;

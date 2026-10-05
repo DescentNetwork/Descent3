@@ -142,7 +142,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(m_editorView, &EditorView::selectionCleared, [this]() {
     app.Curroomp.reset();
     app.Curface.reset();
-    app.Cur_object_index = -1;
+    app.Cur_object_index.reset();
     app.State_changed = true;
     statusBar()->showMessage(QStringLiteral("Selection cleared."));
     m_editorView->update();
@@ -962,12 +962,12 @@ void MainWindow::onCenterViewOnCube() {
 void MainWindow::onCenterViewOnObject() {
   // Win32 ID_VIEW_CENTERONOBJECT -> CMainFrame::OnViewCenterOnObject
   // (editor/MainFrm.cpp:2229) -> SetWireframeView(&Objects[cur].pos).
-  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
+  if (!app.Cur_object_index || app.Cur_object_index.value_or(-1) > Highest_object_index)
     return;
-  if (Objects[app.Cur_object_index].type == object_type::none)
+  if (Objects[*app.Cur_object_index].type == object_type::none)
     return;
 
-  m_editorView->setWireframeView(Objects[app.Cur_object_index].pos);
+  m_editorView->setWireframeView(Objects[*app.Cur_object_index].pos);
   m_editorView->update();
 }
 
@@ -1010,9 +1010,9 @@ void MainWindow::onMoveCameraToSelectedFace() {
 void MainWindow::onMoveCameraToCurrentObject() {
   if (Viewer_object == nullptr)
     return;
-  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
+  if (!app.Cur_object_index || app.Cur_object_index.value_or(-1) > Highest_object_index)
     return;
-  object *objp = &Objects[app.Cur_object_index];
+  object *objp = &Objects[*app.Cur_object_index];
   if (objp->type == object_type::none)
     return;
 
@@ -1154,9 +1154,9 @@ int MainWindow::onPlaceCameraAtViewer() {
 // "sees through" the camera. Sets Viewer_object->pos/orient/roomnum to
 // the camera's and bumps app.Mine_changed.
 void MainWindow::onSetViewerFromCamera() {
-  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
+  if (!app.Cur_object_index || app.Cur_object_index.value_or(-1) > Highest_object_index)
     return;
-  object *cam = &Objects[app.Cur_object_index];
+  object *cam = &Objects[*app.Cur_object_index];
   if (cam->type != object_type::camera)
     return;
 
@@ -1178,9 +1178,9 @@ void MainWindow::onSetViewerFromCamera() {
 // Move the camera's pose onto the viewer's pose so the camera becomes
 // a portable copy of where the user is currently looking.
 void MainWindow::onSetCameraFromViewer() {
-  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
+  if (!app.Cur_object_index || app.Cur_object_index.value_or(-1) > Highest_object_index)
     return;
-  object& cam = Objects[app.Cur_object_index];
+  object& cam = Objects[*app.Cur_object_index];
   if (cam.type != object_type::camera)
     return;
   if (Viewer_object == nullptr)
@@ -1193,32 +1193,32 @@ void MainWindow::onSetCameraFromViewer() {
                cam.pos.x(), cam.pos.y(), cam.pos.z(), cam.roomnum);
 }
 
-// Delete the currently-selected object (app.Cur_object_index). After the
-// call, app.Cur_object_index is -1 and app.Mine_changed/app.New_mine are set.
+// Delete the currently-selected object (app.Cur_object_index.value_or(-1)). After the
+// call, app.Cur_object_index.value_or(-1) is -1 and app.Mine_changed/app.New_mine are set.
 void MainWindow::onDeleteCurrentObject() {
-  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
+  if (!app.Cur_object_index || app.Cur_object_index.value_or(-1) > Highest_object_index)
     return;
-  if (Objects[app.Cur_object_index].type == object_type::none)
+  if (Objects[*app.Cur_object_index].type == object_type::none)
     return;
-  ObjDelete(app.Cur_object_index);
-  const int was = app.Cur_object_index;
-  app.Cur_object_index = -1;
+  ObjDelete(app.Cur_object_index.value_or(-1));
+  const int was = app.Cur_object_index.value_or(-1);
+  app.Cur_object_index.reset();
   // After delete, walk forward to find the next used slot so the
   // editor's "next object" key keeps cycling correctly.
   app.Cur_object_index = find_used(was + 1);
-  if (app.Cur_object_index < 0)
-    app.Cur_object_index = -1;
+  if (!app.Cur_object_index)
+    app.Cur_object_index.reset();
   app.Mine_changed = true;
   std::fprintf(stderr, "[object_ops] DeleteCurrentObject: removed %d, "
                        "app.Cur_object_index = %d\n",
-               was, app.Cur_object_index);
+               was, app.Cur_object_index.value_or(-1));
   m_editorView->update();
 }
 
 void MainWindow::onObjectRename() {
-  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
+  if (!app.Cur_object_index || app.Cur_object_index.value_or(-1) > Highest_object_index)
     return;
-  object *obj = &Objects[app.Cur_object_index];
+  object *obj = &Objects[*app.Cur_object_index];
   if (obj->type == object_type::none)
     return;
   const QString current = QString::fromStdString(obj->name);
@@ -1275,7 +1275,7 @@ void MainWindow::onMovePlayerToCurrentRoom() {
 }
 
 
-// Reset app.Cur_object_index to the first used slot (or -1) so subsequent
+// Reset app.Cur_object_index.value_or(-1) to the first used slot (or -1) so subsequent
 // edits target something deterministic.
 void MainWindow::onSelectNextObject(int from) {
   const int idx = find_used(from + 1);
@@ -1598,19 +1598,19 @@ static object deserializeObject(const QByteArray &data) {
 }
 
 void MainWindow::onCopyObjectToClipboard() {
-  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
+  if (!app.Cur_object_index || app.Cur_object_index.value_or(-1) > Highest_object_index)
     return;
-  if (Objects[app.Cur_object_index].type == object_type::none)
+  if (Objects[*app.Cur_object_index].type == object_type::none)
     return;
   auto *mime = new QMimeData();
-  mime->setData(kObjectMimeType, serializeObject(Objects[app.Cur_object_index]));
+  mime->setData(kObjectMimeType, serializeObject(Objects[*app.Cur_object_index]));
   QApplication::clipboard()->setMimeData(mime);
 }
 
 void MainWindow::onCutObjectToClipboard() {
-  if (app.Cur_object_index < 0 || app.Cur_object_index > Highest_object_index)
+  if (!app.Cur_object_index || app.Cur_object_index.value_or(-1) > Highest_object_index)
     return;
-  if (Objects[app.Cur_object_index].type == object_type::none)
+  if (Objects[*app.Cur_object_index].type == object_type::none)
     return;
   onCopyObjectToClipboard();
   onDeleteCurrentObject();
