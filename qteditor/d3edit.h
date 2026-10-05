@@ -115,7 +115,7 @@ struct d3edit_state
   bool randomize_megacell = false;     // randomize when placing a megacell?
   std::optional<int> box_selection_mode;      // How editor box selection works.  See constants above.
   std::optional<int> object_move_mode;        // How object movements works.  See constants above.
-  int object_move_axis    = -1;        // This is the axis on which objects move with mouse.
+  std::optional<int> object_move_axis;        // This is the axis on which objects move with mouse.
   bool fullscreen_debug_state = false; // do we allow for fullscreen debugging?
   bool hemicube_radiosity = false;
   float node_movement_inc = 0.0;
