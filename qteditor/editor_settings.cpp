@@ -88,7 +88,7 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
 
   settings.setValue(QStringLiteral("randomize_megacell"),    state.randomize_megacell);
   if (state.box_selection_mode) settings.setValue(QStringLiteral("box_selection_mode"), *state.box_selection_mode); else settings.setValue(QStringLiteral("box_selection_mode"), -1);
-  settings.setValue(QStringLiteral("object_move_mode"),      state.object_move_mode);
+  if (state.object_move_mode) settings.setValue(QStringLiteral("object_move_mode"), *state.object_move_mode); else settings.setValue(QStringLiteral("object_move_mode"), -1);
   settings.setValue(QStringLiteral("object_move_axis"),      state.object_move_axis);
   settings.setValue(QStringLiteral("fullscreen_debug_state"), state.fullscreen_debug_state);
 
@@ -168,7 +168,7 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
 
   state.randomize_megacell      = settings.value(QStringLiteral("randomize_megacell"),      false).toBool();
   { auto v = getval.template operator()<int>("box_selection_mode"); if (v) state.box_selection_mode = *v; }
-  state.object_move_mode        = settings.value(QStringLiteral("object_move_mode"),        0).toInt();
+  { auto v = getval.template operator()<int>("object_move_mode"); if (v) state.object_move_mode = *v; }
   state.object_move_axis        = settings.value(QStringLiteral("object_move_axis"),        0).toInt();
   state.fullscreen_debug_state  = settings.value(QStringLiteral("fullscreen_debug_state"),  false).toBool();
 
