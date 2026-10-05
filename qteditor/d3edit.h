@@ -159,7 +159,7 @@ struct d3edit_state
   std::optional<int> Cur_object_index;
 
   //	Current trigger in mine displayed in trigger dialog
-  int Current_trigger = -1;
+  std::optional<int> Current_trigger;
 
   // The ID of the most recent viewer object (not counting room view)
   int Editor_viewer_id = -1;

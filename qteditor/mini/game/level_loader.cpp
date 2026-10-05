@@ -1005,7 +1005,9 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
     int32_t cur_obj_index = 0;
     ifile >> cur_obj_index;
     app.Cur_object_index = cur_obj_index < 0 ? std::optional<int>() : std::optional<int>(cur_obj_index);
-    ifile >> app.Current_trigger;
+    int32_t current_trigger = 0;
+    ifile >> current_trigger;
+    app.Current_trigger = current_trigger < 0 ? std::optional<int>() : std::optional<int>(current_trigger);
     int32_t tmp = 0;
     if (version < 106)
       ifile >> tmp; // was Current_doorway
@@ -1062,7 +1064,7 @@ static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
     ofile << static_cast<int16_t>(Selected_rooms[i]);
 
   ofile << static_cast<int32_t>(app.Cur_object_index.value_or(-1));
-  ofile << static_cast<int32_t>(app.Current_trigger);
+  ofile << static_cast<int32_t>(app.Current_trigger.value_or(-1));
   ofile << static_cast<int32_t>(app.view_mode);
   ofile << static_cast<int32_t>(app.Editor_viewer_id);
 

@@ -2920,7 +2920,7 @@ private slots:
     QCOMPARE(Selected_rooms[0], 0);
     QCOMPARE(Selected_rooms[1], 1);
     QCOMPARE(app.Cur_object_index.value_or(-1), 7);
-    QCOMPARE(app.Current_trigger, 8);
+    QCOMPARE(app.Current_trigger.value_or(-1), 8);
     QCOMPARE(app.view_mode, state::viewer::terrain);
     QCOMPARE(app.Editor_viewer_id, 9);
     QCOMPARE(Wireframe_view_mine.dist, 50);
@@ -2990,7 +2990,7 @@ private slots:
     app.Markedroomp = -1;
     N_selected_rooms = 0;
     app.Cur_object_index.reset();
-    app.Current_trigger = -1;
+    app.Current_trigger.reset();
     app.Editor_viewer_id = -1;
     app.view_mode = state::viewer::mine;
 
@@ -4445,7 +4445,7 @@ private slots:
     QCOMPARE(app.Curface.value_or(-1), 0);
     QCOMPARE(app.Curportal.value_or(-1), -1);
     QCOMPARE(static_cast<int>(Triggers.size()), 0);
-    QCOMPARE(app.Current_trigger, -1);
+    QCOMPARE(app.Current_trigger.value_or(-1), -1);
     QCOMPARE(app.view_mode, state::viewer::mine);
     // CreateNewMine spawns a viewer for the level (Win32 HFile.cpp:478
     // SetEditorViewer), so the id/object are non-empty afterwards.

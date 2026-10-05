@@ -168,7 +168,7 @@ void CreateNewMine() {
 
   // Reset triggers.
   Triggers.clear();
-  app.Current_trigger = -1;
+  app.Current_trigger.reset();
 
   // Reset terrain.
   ResetTerrain(1);
