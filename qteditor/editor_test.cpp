@@ -4443,7 +4443,7 @@ private slots:
     app.World_changed = true;
     CreateNewMine();
     QCOMPARE(app.Curface.value_or(-1), 0);
-    QCOMPARE(app.Curportal, -1);
+    QCOMPARE(app.Curportal.value_or(-1), -1);
     QCOMPARE(static_cast<int>(Triggers.size()), 0);
     QCOMPARE(app.Current_trigger, -1);
     QCOMPARE(app.view_mode, state::viewer::mine);
@@ -4769,7 +4769,7 @@ private slots:
     QVERIFY(DeleteRoom());
     QVERIFY(app.Curroomp == nullptr);
     QCOMPARE(app.Curface.value_or(-1), -1);
-    QCOMPARE(app.Curportal, -1);
+    QCOMPARE(app.Curportal.value_or(-1), -1);
     QCOMPARE(app.Mine_changed, 1);
 
     // (testObjectOpsContract lives below; see line ~1090)

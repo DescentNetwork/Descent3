@@ -123,7 +123,7 @@ MainWindow::MainWindow(QWidget *parent)
     app.Curroomp = r;
     app.Curface = f;
     app.Curedge = app.Curvert = 0;
-    app.Curportal = -1;
+    app.Curportal.reset();
     app.State_changed = true;
     statusBar()->showMessage(
         QStringLiteral("Face selected: room %1, face %2").arg(r).arg(f));
@@ -1800,7 +1800,10 @@ bool MainWindow::onDeleteRoom() {
 
   // Pick a sensible successor selection: previous used slot, or -1.
   app.Curroomp.reset();
-  app.Curface = app.Curedge = app.Curvert = app.Curportal = -1;
+  app.Curface.reset();
+  app.Curedge.reset();
+  app.Curvert.reset();
+  app.Curportal.reset();
   app.current_room = -1;
   for (int s = slot - 1; s >= 0; --s) {
     if (Rooms[s].used) {

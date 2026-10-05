@@ -147,7 +147,7 @@ void CreateNewMine() {
 
   // Reset selection / viewer globals.
   app.Curface = app.Curedge = app.Curvert = 0;
-  app.Curportal = -1;
+  app.Curportal.reset();
   app.New_mine = true;
   app.World_changed = false;
 

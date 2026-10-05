@@ -889,8 +889,8 @@ void EditorView::renderOverlays() {
     }
 
     // Current portal face in purple (DrawRoomFace, CURPORTAL_COLOR).
-    if (app.Curportal >= 0 && app.Curportal < Rooms[*app.Curroomp].num_portals) {
-      int faceIdx = Rooms[*app.Curroomp].portals[app.Curportal].portal_face;
+    if (app.Curportal.has_value() && app.Curportal.value_or(-1) < Rooms[*app.Curroomp].num_portals) {
+      int faceIdx = Rooms[*app.Curroomp].portals[*app.Curportal].portal_face;
       if (faceIdx >= 0 && faceIdx < Rooms[*app.Curroomp].num_faces) {
         face *fp = &Rooms[*app.Curroomp].faces[faceIdx];
         float sx[16], sy[16];
