@@ -140,12 +140,12 @@ bool HObjectPlace(object_type obj_type, uint16_t obj_id) {
       return false;
     }
 
-    if (app.current_ship == -1) {
+    if (!app.current_ship) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have a current player ship selected for this operation.");
       return false;
     }
 
-    Players[obj_id].ship_index = app.current_ship;
+    Players[obj_id].ship_index = *app.current_ship;
   }
 
   if (obj_type != object_type::powerup) {

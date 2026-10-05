@@ -46,9 +46,9 @@
 
 optref<ship> WorldObjectsPlayerDialog::data(void)
 {
-  if (app.current_ship < 0 || app.current_ship >= static_cast<int>(Ships.size()) || Ships.is_unused(app.current_ship))
+  if (!app.current_ship || *app.current_ship >= static_cast<uint32_t>(Ships.size()) || Ships.is_unused(*app.current_ship))
     return std::nullopt;
-  return Ships[app.current_ship];
+  return Ships[*app.current_ship];
 }
 
 WorldObjectsPlayerDialog::WorldObjectsPlayerDialog(QWidget *parent)
@@ -135,9 +135,9 @@ void WorldObjectsPlayerDialog::updateDialog() {
   if (static_cast<int>(Ships.size()) < 1)
     return;
 
-  if (Ships.is_unused(app.current_ship))
-    if (const std::optional<uint32_t> next = GetNextShip(static_cast<uint32_t>(app.current_ship)))
-      app.current_ship = static_cast<int>(*next);
+  if (app.current_ship && Ships.is_unused(*app.current_ship)) {
+    if (auto next = GetNextShip(*app.current_ship)) app.current_ship = *next;
+  }
 
   if (auto s = data())
   {
@@ -257,7 +257,7 @@ void WorldObjectsPlayerDialog::onAddPship() {
 
 void WorldObjectsPlayerDialog::onPshipDelete() {
   if (auto s = data()) {
-    const uint32_t n = static_cast<uint32_t>(app.current_ship);
+    const uint32_t n = app.current_ship ? *app.current_ship : 0;
     const std::optional<uint32_t> tl = mng_FindTrackLock(s->name, PAGETYPE_SHIP);
     if (!tl) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This ship is not yours to delete.  Lock first.");
@@ -332,7 +332,7 @@ void WorldObjectsPlayerDialog::onPshipLock() {
         mng_EraseLocker();
         return;
       } else if (mng_FindSpecificShipPage(temp_pl.name, &shippage)) {
-        if (mng_AssignShipPageToShip(&shippage, app.current_ship)) {
+        if (app.current_ship && mng_AssignShipPageToShip(&shippage, static_cast<int>(*app.current_ship))) {
           if (!mng_ReplacePage(s->name, s->name, app.current_ship, PAGETYPE_SHIP, 1)) {
             QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
             mng_EraseLocker();
@@ -430,15 +430,13 @@ void WorldObjectsPlayerDialog::onPshipsOut() {
 }
 
 void WorldObjectsPlayerDialog::onPshipNext() {
-  if (const std::optional<uint32_t> next = GetNextShip(static_cast<uint32_t>(app.current_ship)))
-    app.current_ship = static_cast<int>(*next);
+  if (app.current_ship) { auto next = GetNextShip(*app.current_ship); if (next) app.current_ship = *next; }
   m_lod = 0;
   updateDialog();
 }
 
 void WorldObjectsPlayerDialog::onPshipPrev() {
-  if (const std::optional<uint32_t> prev = GetPrevShip(static_cast<uint32_t>(app.current_ship)))
-    app.current_ship = static_cast<int>(*prev);
+  if (app.current_ship) { auto prev = GetPrevShip(*app.current_ship); if (prev) app.current_ship = *prev; }
   m_lod = 0;
   updateDialog();
 }
@@ -522,7 +520,7 @@ void WorldObjectsPlayerDialog::onNullDying() {
 void WorldObjectsPlayerDialog::onEditWeapons() {
   // Ported in the player_weapons_dialog module (PlayerWeaponsDialog).
   extern void editPlayerWeapons(int shipHandle, QWidget *parent);
-  editPlayerWeapons(app.current_ship, this);
+  editPlayerWeapons(app.current_ship ? static_cast<int>(*app.current_ship) : -1, this);
 }
 
 void WorldObjectsPlayerDialog::onPshipCockpit()

@@ -47,7 +47,7 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   setval("current_powerup",   state.current_powerup);
   setval("current_door",      state.current_door);
   setval("current_robot",      state.current_robot);
-  settings.setValue(QStringLiteral("current_ship"),          state.current_ship);
+  if (state.current_ship) settings.setValue(QStringLiteral("current_ship"), *state.current_ship); else settings.setValue(QStringLiteral("current_ship"), -1);
   if (state.current_sound) settings.setValue(QStringLiteral("current_sound"), *state.current_sound); else settings.setValue(QStringLiteral("current_sound"), -1);
   if (state.current_weapon) settings.setValue(QStringLiteral("current_weapon"), *state.current_weapon); else settings.setValue(QStringLiteral("current_weapon"), -1);
   settings.setValue(QStringLiteral("current_path"),          state.current_path);
@@ -127,7 +127,7 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
   state.current_powerup   = getval.operator()<uint16_t>("current_powerup");
   state.current_door      = getval.operator()<uint32_t>("current_door");
   state.current_robot     = getval.operator()<uint32_t>("current_robot");
-  state.current_ship      = settings.value(QStringLiteral("current_ship"),     0).toInt();
+  { auto v = getval.template operator()<uint32_t>("current_ship"); if (v) state.current_ship = *v; }
   { auto v = getval.template operator()<uint32_t>("current_sound"); if (v) state.current_sound = *v; }
   { auto v = getval.template operator()<uint32_t>("current_weapon"); if (v) state.current_weapon = *v; }
   state.current_path      = settings.value(QStringLiteral("current_path"),     0).toInt();

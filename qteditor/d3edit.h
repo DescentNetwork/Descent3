@@ -68,7 +68,7 @@ struct d3edit_state
   std::optional<uint16_t> current_powerup; // current powerup id
   std::optional<uint32_t> current_door; // current door in door page dialog
   std::optional<uint32_t> current_robot; // current robot in robot page dialog
-  int current_ship      = -1; // current ship in ship page dialog
+  std::optional<uint32_t> current_ship; // current ship in ship page dialog
   std::optional<uint32_t> current_sound; // current sound in sound page dialog
   std::optional<uint32_t> current_weapon; // current weapon in weapon page dialog
   int current_path      = -1; // currently selected path for a robot to follow
