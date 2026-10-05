@@ -183,9 +183,14 @@ bool HObjectPlace(object_type obj_type, uint16_t obj_id) {
       surface_norm = &TerrainNormals[MAX_TERRAIN_LOD - 1][cellnum].normal1;
       roomnum = MAKE_ROOMNUM(cellnum);
     } else {
-      ComputeCenterPointOnFace(&pos, app.Curroomp, app.Curface);
-      surface_norm = &Rooms[app.Curroomp].faces[app.Curface].normal;
-      roomnum = app.Curroomp;
+      if (!app.Curroomp) {
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have a current room selected for this operation.");
+        ObjDelete(objnum);
+        return false;
+      }
+      ComputeCenterPointOnFace(&pos, *app.Curroomp, app.Curface);
+      surface_norm = &Rooms[*app.Curroomp].faces[app.Curface].normal;
+      roomnum = app.Curroomp.value_or(-1);
 
       if (Rooms[roomnum].flags.external)
         roomnum = GetTerrainRoomFromPos(pos).value_or(-1);

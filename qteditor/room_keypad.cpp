@@ -42,7 +42,7 @@ RoomKeypad::RoomKeypad(QWidget *parent)
   connect(ui->IDC_ROOMPAD_EXPAND_ROOM, &QPushButton::clicked, this, &RoomKeypad::onExpandRoom);
   connect(ui->IDC_ROOMPAD_CONTRACT_ROOM, &QPushButton::clicked, this, &RoomKeypad::onContractRoom);
 
-  const int roomnum = app.Curroomp;
+  const int roomnum = app.Curroomp.value_or(-1);
   connect(ui->IDC_TOUCHES_OUTSIDE, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.touches_terrain = checked; app.World_changed = true; });
   connect(ui->IDC_SECRET_CHECK, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.secret = checked; app.World_changed = true; });
   connect(ui->IDC_EXTERNAL_ROOM, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.external = checked; app.World_changed = true; });
@@ -67,14 +67,14 @@ RoomKeypad::~RoomKeypad() { delete ui; }
 
 void RoomKeypad::updateDialog() {
   // Win32 disables the room editing controls when no room is current.
-  const bool active = (app.Curroomp >= 0 && Rooms[app.Curroomp].used);
+  const bool active = (app.Curroomp.has_value() && Rooms[*app.Curroomp].used);
   for (QWidget *w : findChildren<QWidget *>())
     if (w->objectName().startsWith("IDC_"))
       w->setEnabled(active);
   if (active)
   {
-    room &rp = Rooms[app.Curroomp];
-    ui->IDC_ROOM_NAME->setText(rp.name.empty() ? QString("<room %1>").arg(app.Curroomp) : QString::fromStdString(rp.name));
+    room &rp = Rooms[*app.Curroomp];
+    ui->IDC_ROOM_NAME->setText(rp.name.empty() ? QString("<room %1>").arg(app.Curroomp.value_or(-1)) : QString::fromStdString(rp.name));
     ui->IDC_VERTEX_COUNT->setText(QString("Verts: %1").arg(rp.num_verts));
     ui->IDC_FACE_COUNT->setText(QString("Faces: %1").arg(rp.num_faces));
     ui->IDC_PORTAL_COUNT->setText(QString("Portals: %1").arg(rp.num_portals));
@@ -100,14 +100,14 @@ void RoomKeypad::updateDialog() {
 }
 
 void RoomKeypad::onMarkRoom() {
-  if (app.Curroomp >= 0)
-    app.Markedroomp = app.Curroomp;
+  if (app.Curroomp.has_value())
+    app.Markedroomp = app.Curroomp.value_or(-1);
 }
 
 void RoomKeypad::expandGeometry(float scale) {
-  if (app.Curroomp < 0)
+  if (!app.Curroomp)
     return;
-  room &rp = Rooms[app.Curroomp];
+  room &rp = Rooms[*app.Curroomp];
   for (int v = 0; v < rp.num_verts; v++)
     rp.verts[v] *= scale;
   app.World_changed = true;

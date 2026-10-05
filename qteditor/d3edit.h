@@ -149,7 +149,7 @@ struct d3edit_state
   bool Mine_changed = false;
 
   // Current room & face
-  int Curroomp = -1;
+  std::optional<int> Curroomp;
   int Curface = -1;
   int Curedge = -1;
   int Curvert = -1;

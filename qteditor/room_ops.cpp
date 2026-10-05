@@ -329,7 +329,7 @@ void DeleteRoomFace(int roomnum, int facenum) {
   rp.faces.erase(rp.faces.begin() + facenum);
   rp.num_faces--;
 
-  if (roomnum == app.Curroomp) {
+  if (roomnum == app.Curroomp.value_or(-1)) {
     if (app.Curface == rp.num_faces)
       app.Curface = rp.num_faces - 1;
     if (app.Markedface == rp.num_faces)
@@ -724,10 +724,10 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   room &markedroomp = Rooms[app.Markedroomp];
-  room &curroomp = Rooms[app.Curroomp];
+  room &curroomp = Rooms[*app.Curroomp];
 
   for (int i = 0; i < markedroomp.num_portals; i++) {
-    if (markedroomp.portals[i].croom == app.Curroomp) {
+    if (markedroomp.portals[i].croom == app.Curroomp.value_or(-1)) {
       marked_portalnum = i;
       break;
     }
@@ -753,7 +753,7 @@ void RotateRooms(angle p, angle h, angle b) {
   SaveRoomSelectedList();
 
   curroomp.portals[cur_portalnum].croom = -1;
-  SelectConnectedRooms(app.Curroomp);
+  SelectConnectedRooms(app.Curroomp.value_or(-1));
   curroomp.portals[cur_portalnum].croom = app.Markedroomp;
 
   if (IsRoomSelected(app.Markedroomp)) {
@@ -762,7 +762,7 @@ void RotateRooms(angle p, angle h, angle b) {
     return;
   }
 
-  ComputePortalCenter(&rotpoint, app.Curroomp, cur_portalnum);
+  ComputePortalCenter(&rotpoint, app.Curroomp.value_or(-1), cur_portalnum);
   vm_AnglesToMatrix(&rotmat, p, h, b);
   face *fp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
   ComputeNormal(portal_normal, fp->num_verts, fp->face_verts, curroomp.verts);
@@ -774,7 +774,7 @@ void RotateRooms(angle p, angle h, angle b) {
   for (int i = 0; i < N_selected_rooms; i++) {
     room &rp = Rooms[Selected_rooms[i]];
 
-    if (Selected_rooms[i] == app.Curroomp) {
+    if (Selected_rooms[i] == app.Curroomp.value_or(-1)) {
       face *cfp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
       for (int v = 0; v < rp.num_verts; v++) {
         for (int t = 0; t < cfp->num_verts; t++)
@@ -818,7 +818,7 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   if (checkcount > 0)
-    FixConcaveFaces(app.Curroomp, checkfaces, checkcount);
+    FixConcaveFaces(app.Curroomp.value_or(-1), checkfaces, checkcount);
 
   app.World_changed = true;
 }

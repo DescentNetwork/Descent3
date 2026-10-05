@@ -1037,7 +1037,7 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
 static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_EDITOR_INFO);
 
-  ofile << static_cast<int16_t>(app.Curroomp >= 0 ? app.Curroomp : -1);
+  ofile << static_cast<int16_t>(app.Curroomp.has_value() ? app.Curroomp.value_or(-1) : -1);
   ofile << static_cast<int16_t>(app.Curface);
   ofile << static_cast<int16_t>(app.Curedge);
   ofile << static_cast<int16_t>(app.Curvert);

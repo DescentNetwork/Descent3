@@ -2908,7 +2908,7 @@ private slots:
     QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
-    QCOMPARE(app.Curroomp, 0);
+    QCOMPARE(app.Curroomp.value_or(-1), 0);
     QCOMPARE(app.Curface, 1);
     QCOMPARE(app.Curedge, 2);
     QCOMPARE(app.Curvert, 3);
@@ -2986,7 +2986,7 @@ private slots:
 
     // Restore the "no level loaded" editor defaults (later tests assume a
     // null app.Curroomp for their UI gating assertions).
-    app.Curroomp = -1;
+    app.Curroomp.reset();
     app.Markedroomp = -1;
     N_selected_rooms = 0;
     app.Cur_object_index = -1;
@@ -4077,7 +4077,7 @@ private slots:
     // bearing doorway data (DoorwayKeypad::updateDialog()), not merely on a
     // level being loaded: the EDIT chunk can restore a app.Curroomp whose room is
     // not a doorway, in which case the controls stay disabled.
-    const bool levelLoaded = (app.Curroomp >= 0 && Rooms[app.Curroomp].doorway_data != nullptr);
+    const bool levelLoaded = (app.Curroomp.has_value() && Rooms[*app.Curroomp].doorway_data != nullptr);
 
     for (const DialogInstance &d : g_dialogs)
     {
@@ -4272,9 +4272,9 @@ private slots:
 
     // Center on Current Room: orbit target becomes the current room's center,
     // distance/orientation untouched.
-    QVERIFY(app.Curroomp >= 0 && Rooms[app.Curroomp].used);
+    QVERIFY(app.Curroomp.has_value() && Rooms[*app.Curroomp].used);
     vector3 roomCenter;
-    ComputeRoomCenter(&roomCenter, app.Curroomp);
+    ComputeRoomCenter(&roomCenter, app.Curroomp.value_or(-1));
     a_room->trigger();
     QCoreApplication::processEvents();
     {
@@ -4750,11 +4750,11 @@ private slots:
     QCOMPARE(app.Mine_changed, 1);
     // AddRoom wrote a fresh room into Rooms[] at a slot >0 and made it
     // the current selection.
-    QVERIFY(app.Curroomp != nullptr);
-    QVERIFY(app.Curroomp != &Rooms[0]);
-    QVERIFY(app.Curroomp->used);
-    QVERIFY(app.Curroomp->num_verts >= 8); // 4 (cnv) * 2 verts
-    QVERIFY(app.Curroomp->num_faces == 6); // cnv + 2
+    QVERIFY(app.Curroomp.value_or(-1) != nullptr);
+    QVERIFY(app.Curroomp.value_or(-1) != &Rooms[0]);
+    QVERIFY(app.Curroomp.value_or(-1)->used);
+    QVERIFY(app.Curroomp.value_or(-1)->num_verts >= 8); // 4 (cnv) * 2 verts
+    QVERIFY(app.Curroomp.value_or(-1)->num_faces == 6); // cnv + 2
 
     // DeleteRoom with no current selection is a no-op but must report
     // false so the menu's signal handler doesn't trigger a redraw.
@@ -5206,7 +5206,7 @@ private slots:
     DeletePortalPair(0, 0);
     FreeRoom(0);
     FreeRoom(1);
-    app.Curroomp = -1;
+    app.Curroomp.reset();
     app.Markedroomp = -1;
   }
 
@@ -5321,7 +5321,7 @@ private slots:
     FreeRoom(0);
     FreeRoom(1);
     app.Placed_room = -1;
-    app.Curroomp = -1;
+    app.Curroomp.reset();
     app.Markedroomp = -1;
   }
 
@@ -6114,7 +6114,7 @@ private slots:
     QVERIFY2(view.frameCount() >= 1, "view never painted");
 
     // Clear selection first.
-    app.Curroomp = -1;
+    app.Curroomp.reset();
     app.Curface = -1;
     app.Cur_object_index = -1;
 

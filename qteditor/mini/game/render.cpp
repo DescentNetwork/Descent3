@@ -2052,7 +2052,7 @@ draw_fog:
   if (Outline_lightmaps) {
     rend_SetTextureType(TT_FLAT);
     rend_SetAlphaType(AT_ALWAYS);
-    if (fp == &Rooms[app.Curroomp].faces[app.Curface] && (fp->flags.lightmap)) {
+    if (fp == &Rooms[*app.Curroomp].faces[app.Curface] && (fp->flags.lightmap)) {
       Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
 
       lightmap_info *lmi = &LightmapInfo[fp->lmi_handle];
@@ -3495,7 +3495,7 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
 
 #ifdef EDITOR
   if (OUTLINE_ON(OM_MINE)) {
-    OutlineCurrentFace(app.Curroomp, app.Curface, app.Curedge, app.Curvert, CURFACE_COLOR, CUREDGE_COLOR);
+    OutlineCurrentFace(app.Curroomp.value_or(-1), app.Curface, app.Curedge, app.Curvert, CURFACE_COLOR, CUREDGE_COLOR);
     if (app.Markedroomp != -1)
       OutlineCurrentFace(app.Markedroomp, app.Markedface, app.Markededge, app.Markedvert, MARKEDFACE_COLOR, MARKEDEDGE_COLOR);
     if (app.Placed_room != -1)
