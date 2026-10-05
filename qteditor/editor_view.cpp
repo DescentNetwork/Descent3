@@ -950,9 +950,9 @@ void EditorView::renderOverlays() {
         }
 
         // Current vertex cross in green (DrawVertBox at
-        // faces[*app.Curface].face_verts[app.Curvert], CUREDGE_COLOR).
-        if (app.Curvert >= 0 && app.Curvert < fp->num_verts) {
-          int vi = fp->face_verts[app.Curvert];
+        // faces[*app.Curface].face_verts[*app.Curvert], CUREDGE_COLOR).
+        if (app.Curvert.has_value() && app.Curvert.value_or(-1) < fp->num_verts) {
+          int vi = fp->face_verts[*app.Curvert];
           float vx, vy;
           if (projectVertex(Rooms[*app.Curroomp].verts[vi], &vx, &vy))
             drawVertCross(vx, vy, kWfCurEdgeColor);

@@ -152,7 +152,7 @@ struct d3edit_state
   std::optional<int> Curroomp;
   std::optional<int> Curface;
   std::optional<int> Curedge;
-  int Curvert = -1;
+  std::optional<int> Curvert;
   int Curportal = -1;
 
   // Current object
