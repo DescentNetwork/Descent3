@@ -50,10 +50,10 @@ void MegacellKeypad::updateDialog() {
     return;
   std::optional<uint32_t> nxt;
 
-  if(Megacells.is_used(app.current_megacell))
-    nxt = app.current_megacell;
-  else if (nxt = GetNextMegacell(static_cast<uint32_t>(app.current_megacell)))
-    app.current_megacell = static_cast<int>(*nxt);
+  if(app.current_megacell && Megacells.is_used(*app.current_megacell))
+    nxt = *app.current_megacell;
+  else if (app.current_megacell && (nxt = GetNextMegacell(*app.current_megacell)))
+    app.current_megacell = *nxt;
 
   if(nxt)
   {
@@ -66,15 +66,13 @@ void MegacellKeypad::updateDialog() {
 }
 
 void MegacellKeypad::onNextMegaSet() {
-  if (const auto nxt = GetNextMegacell(static_cast<uint32_t>(app.current_megacell)))
-    app.current_megacell = static_cast<int>(*nxt);
+  if (app.current_megacell) { auto nxt = GetNextMegacell(*app.current_megacell); if (nxt) app.current_megacell = *nxt; }
   m_xgran = m_ygran = 1;
   updateDialog();
 }
 
 void MegacellKeypad::onPrevMegaSet() {
-  if (const auto prv = GetPrevMegacell(static_cast<uint32_t>(app.current_megacell)))
-    app.current_megacell = static_cast<int>(*prv);
+  if (app.current_megacell) { auto prv = GetPrevMegacell(*app.current_megacell); if (prv) app.current_megacell = *prv; }
   m_xgran = m_ygran = 1;
   updateDialog();
 }
@@ -82,7 +80,7 @@ void MegacellKeypad::onPrevMegaSet() {
 void MegacellKeypad::onRandomizeToggled(bool checked) { app.randomize_megacell = checked; }
 
 void MegacellKeypad::onXGranularEdited() {
-  const int n = app.current_megacell;
+  const uint32_t n = app.current_megacell ? *app.current_megacell : 0;
   Q_ASSERT(Megacells.is_used(n));
   int val = ui->IDC_X_GRANULAR_EDIT->text().toInt();
   if (val < 1)
@@ -94,7 +92,7 @@ void MegacellKeypad::onXGranularEdited() {
 }
 
 void MegacellKeypad::onYGranularEdited() {
-  const int n = app.current_megacell;
+  const uint32_t n = app.current_megacell ? *app.current_megacell : 0;
   Q_ASSERT(Megacells.is_used(n));
   int val = ui->IDC_Y_GRANULAR_EDIT->text().toInt();
   if (val < 1)

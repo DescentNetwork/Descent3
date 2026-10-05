@@ -52,7 +52,7 @@ MegacellDialog::~MegacellDialog() { delete ui; }
 void MegacellDialog::updateDialog() {
   if (!GetNextMegacell(0))
     return;
-  const int n = app.current_megacell;
+  const uint32_t n = app.current_megacell ? *app.current_megacell : 0;
   if (auto *label = ui->IDC_MEGACELL_NAME_EDIT)
     label->setText(QString::fromStdString(Megacells[n].name));
 }
@@ -81,18 +81,18 @@ void MegacellDialog::onNew() {
   }
 
   Megacells[*cell_handle].name = unique;
-  app.current_megacell = static_cast<int>(*cell_handle);
+  app.current_megacell = *cell_handle;
   updateDialog();
 }
 
 void MegacellDialog::onDelete() {
   if (!GetNextMegacell(0))
     return;
-  const int n = app.current_megacell;
+  const uint32_t n = app.current_megacell ? *app.current_megacell : 0;
   if (n < 0 || !Megacells.is_used(n))
     return;
   FreeMegacell(static_cast<uint32_t>(n));
-  if (const auto nxt = GetNextMegacell(static_cast<uint32_t>(n))) app.current_megacell = static_cast<int>(*nxt); else app.current_megacell = -1;
+  if (auto nxt = GetNextMegacell(n)) app.current_megacell = *nxt; else app.current_megacell.reset();
   updateDialog();
 }
 
@@ -111,14 +111,14 @@ void MegacellDialog::onCheckin() {
 void MegacellDialog::onPrev() {
   if (!GetNextMegacell(0))
     return;
-  if (const auto prv = GetPrevMegacell(static_cast<uint32_t>(app.current_megacell))) app.current_megacell = static_cast<int>(*prv);
+  if (app.current_megacell) { auto prv = GetPrevMegacell(*app.current_megacell); if (prv) app.current_megacell = *prv; }
   updateDialog();
 }
 
 void MegacellDialog::onNext() {
   if (!GetNextMegacell(0))
     return;
-  if (const auto nxt = GetNextMegacell(static_cast<uint32_t>(app.current_megacell))) app.current_megacell = static_cast<int>(*nxt);
+  if (app.current_megacell) { auto nxt = GetNextMegacell(*app.current_megacell); if (nxt) app.current_megacell = *nxt; }
   updateDialog();
 }
 

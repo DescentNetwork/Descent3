@@ -73,7 +73,7 @@ struct d3edit_state
   std::optional<uint32_t> current_weapon; // current weapon in weapon page dialog
   std::optional<uint32_t> current_path; // currently selected path for a robot to follow
   std::optional<uint16_t> current_node; // currently selected node of preceding path
-  int current_megacell  = -1; // currently selected megacell
+  std::optional<uint32_t> current_megacell; // currently selected megacell
   int current_room      = -1; // currently selected room
   int current_gamefile  = -1; // currently selected gamefile
   std::optional<uint32_t> current_building; // currently selected building
