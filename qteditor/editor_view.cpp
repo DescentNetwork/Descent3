@@ -1210,7 +1210,7 @@ void EditorView::renderObjects() {
 // slots; renderPaths drives it from a for-statement increment, so the "no more
 // paths" case is carried as -1 and breaks the loop on the next turn.
 static int NextPathIndex(int cur) {
-  const std::optional<uint32_t> next = GetNextPath(static_cast<uint32_t>(cur));
+  const index_t next = GetNextPath(static_cast<uint32_t>(cur));
   return next ? static_cast<int>(*next) : -1;
 }
 

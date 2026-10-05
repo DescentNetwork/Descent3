@@ -691,7 +691,7 @@ void MainWindow::showWorldTextures() {
   dlg.exec();
 }
 
-void MainWindow::showGenericObject(object_type objType, std::optional<uint32_t> current) {
+void MainWindow::showGenericObject(object_type objType, index_t current) {
   WorldObjectsGenericDialog dlg(objType, current, this);
   dlg.exec();
   if (objType == object_type::building)

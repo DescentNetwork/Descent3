@@ -228,7 +228,7 @@ void WorldObjectsPlayerDialog::onAddPship() {
     return;
   }
 
-  const std::optional<uint32_t> ship_handle = AllocShip();
+  const index_t ship_handle = AllocShip();
   int c = 1;
   bool finding_name = true;
   std::string cur_name;
@@ -258,7 +258,7 @@ void WorldObjectsPlayerDialog::onAddPship() {
 void WorldObjectsPlayerDialog::onPshipDelete() {
   if (auto s = data()) {
     const uint32_t n = app.current_ship ? *app.current_ship : 0;
-    const std::optional<uint32_t> tl = mng_FindTrackLock(s->name, PAGETYPE_SHIP);
+    const index_t tl = mng_FindTrackLock(s->name, PAGETYPE_SHIP);
     if (!tl) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This ship is not yours to delete.  Lock first.");
       return;
@@ -285,7 +285,7 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
       mng_DeletePagelock(s->name, PAGETYPE_SHIP);
     }
 
-    if (const std::optional<uint32_t> next = GetNextShip(n))
+    if (const index_t next = GetNextShip(n))
       app.current_ship = static_cast<int>(*next);
     if (s->model_handle >= 0 && s->model_handle < MAX_POLY_MODELS && Poly_models[s->model_handle].used)
       FreePolyModel(s->model_handle);
@@ -405,7 +405,7 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
         Q_ASSERT(mng_DeletePage(s->name, PAGETYPE_SHIP, 1) == 1);
         mng_EraseLocker();
 
-        const std::optional<uint32_t> p = mng_FindTrackLock(s->name, PAGETYPE_SHIP);
+        const index_t p = mng_FindTrackLock(s->name, PAGETYPE_SHIP);
         Q_ASSERT(p);
         mng_FreeTrackLock(*p);
         updateDialog();
@@ -442,7 +442,7 @@ void WorldObjectsPlayerDialog::onPshipPrev() {
 }
 
 void WorldObjectsPlayerDialog::onPshipPulldownChanged() {
-  const std::optional<uint32_t> i = FindShipName(ui->IDC_PSHIP_PULLDOWN->currentText().toStdString());
+  const index_t i = FindShipName(ui->IDC_PSHIP_PULLDOWN->currentText().toStdString());
   if (i)
   {
     app.current_ship = static_cast<int>(*i);
@@ -559,7 +559,7 @@ void WorldObjectsPlayerDialog::onPshipEditPhysics() {
 
 void WorldObjectsPlayerDialog::onKillfocusName() {
   if (auto s = data()) {
-    const std::optional<uint32_t> p = mng_FindTrackLock(s->name, PAGETYPE_SHIP);
+    const index_t p = mng_FindTrackLock(s->name, PAGETYPE_SHIP);
     if (!p)
     {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this ship if you wish to change its name.");

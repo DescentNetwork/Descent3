@@ -552,7 +552,7 @@ bool osipf_CallTriggerEvent(int trignum, int event, tOSIRISEventInfo *ei) {
 
 // searches through GamePath index and returns index of path matching name
 // returns -1 if not found
-std::optional<uint32_t> osipf_AIGetPathID(const std::string &string) {
+index_t osipf_AIGetPathID(const std::string &string) {
   //	extract string reference
   return FindGamePathName(string);
 }
@@ -925,7 +925,7 @@ void osipf_ObjectCustomAnim(int handle, float start, float end, float time, char
 extern void AIUpdateAnim(object *obj);
 
 // searches for an object id given its name
-std::optional<uint32_t> osipf_ObjectFindID(const std::string &name) { return FindObjectIDName(IGNORE_TABLE(name)); }
+index_t osipf_ObjectFindID(const std::string &name) { return FindObjectIDName(IGNORE_TABLE(name)); }
 
 // searches for an object id given its name
 std::optional<uint8_t> osipf_ObjectFindType(const std::string &name) {
@@ -939,7 +939,7 @@ std::optional<uint8_t> osipf_ObjectFindType(const std::string &name) {
 }
 
 // searches through the weapons for a name and returns the id
-std::optional<uint32_t> osipf_WeaponFindID(const std::string &name) { return FindWeaponName(IGNORE_TABLE(name)); }
+index_t osipf_WeaponFindID(const std::string &name) { return FindWeaponName(IGNORE_TABLE(name)); }
 
 #if 0
 // returns how long an object has lived
@@ -3364,9 +3364,9 @@ char osipf_AIGetCurGoalIndex(int obj_handle) {
   return -1;
 }
 #endif
-std::optional<uint32_t> osipf_FindSoundName(const std::string &name) { return FindSoundName(IGNORE_TABLE(name)); }
+index_t osipf_FindSoundName(const std::string &name) { return FindSoundName(IGNORE_TABLE(name)); }
 
-std::optional<uint32_t> osipf_FindRoomName(const std::string &name) {
+index_t osipf_FindRoomName(const std::string &name) {
   for (size_t i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used && !Rooms[i].name.empty()) {
       if (match(name, Rooms[i].name))
@@ -3376,7 +3376,7 @@ std::optional<uint32_t> osipf_FindRoomName(const std::string &name) {
   return std::nullopt;
 }
 
-std::optional<uint32_t> osipf_FindTriggerName(const std::string &name) {
+index_t osipf_FindTriggerName(const std::string &name) {
   for (size_t i = 0; i < Triggers.size(); i++) {
     if (!Triggers[i].name.empty()) {
       if (match(name, Triggers[i].name))
@@ -3386,7 +3386,7 @@ std::optional<uint32_t> osipf_FindTriggerName(const std::string &name) {
   return std::nullopt;
 }
 
-std::optional<uint32_t> osipf_FindObjectName(const std::string &name) {
+index_t osipf_FindObjectName(const std::string &name) {
   for (size_t i = 0; i < Objects.size(); i++) {
     if (Objects[i].type != object_type::none && !Objects[i].name.empty()) {
       if (match(name, Objects[i].name))
@@ -3396,21 +3396,21 @@ std::optional<uint32_t> osipf_FindObjectName(const std::string &name) {
   return std::nullopt;
 }
 
-std::optional<uint32_t> osipf_GetTriggerRoom(int trigger_id) {
+index_t osipf_GetTriggerRoom(int trigger_id) {
   if (trigger_id < 0 || trigger_id >= static_cast<int>(Triggers.size()))
     return std::nullopt;
 
   return static_cast<uint32_t>(Triggers[trigger_id].roomnum);
 }
 
-std::optional<uint32_t> osipf_GetTriggerFace(int trigger_id) {
+index_t osipf_GetTriggerFace(int trigger_id) {
   if (trigger_id < 0 || trigger_id >= static_cast<int>(Triggers.size()))
     return std::nullopt;
 
   return static_cast<uint32_t>(Triggers[trigger_id].facenum);
 }
 
-std::optional<uint32_t> osipf_FindDoorName(const std::string &name) {
+index_t osipf_FindDoorName(const std::string &name) {
   for (int i = 0; i <= MAX_OBJECTS; i++) {
     if (Objects[i].type == object_type::door && !Objects[i].name.empty() && match(Objects[i].name, name)) {
       return static_cast<uint32_t>(Objects[i].handle);
@@ -3419,11 +3419,11 @@ std::optional<uint32_t> osipf_FindDoorName(const std::string &name) {
   return std::nullopt;
 }
 
-std::optional<uint32_t> osipf_FindTextureName(const std::string &name) { return FindTextureName(IGNORE_TABLE(name)); }
+index_t osipf_FindTextureName(const std::string &name) { return FindTextureName(IGNORE_TABLE(name)); }
 
-std::optional<uint32_t> osipf_FindPathName(const std::string &name) { return FindGamePathName(name); }
+index_t osipf_FindPathName(const std::string &name) { return FindGamePathName(name); }
 
-std::optional<uint32_t> osipf_FindLevelGoalName(const std::string &name) { return Level_goals.GoalFindId(name); }
+index_t osipf_FindLevelGoalName(const std::string &name) { return Level_goals.GoalFindId(name); }
 #if 0
 void osipf_CreateRandomSparks(int num_sparks, vector3 *pos, int roomnum, int which_index, float force_scalar) {
   CreateRandomSparks(num_sparks, pos, roomnum, which_index, force_scalar);

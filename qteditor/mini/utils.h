@@ -6,7 +6,7 @@
 
 using index_t = std::optional<uint32_t>;
 
-inline byte_istream& operator >>(byte_istream& input, std::optional<uint32_t>& data)
+inline byte_istream& operator >>(byte_istream& input, index_t& data)
 {
   uint32_t val;
   input >> val;
@@ -17,7 +17,7 @@ inline byte_istream& operator >>(byte_istream& input, std::optional<uint32_t>& d
   return input;
 }
 
-inline byte_ostream& operator <<(byte_ostream& output, const std::optional<uint32_t>& data)
+inline byte_ostream& operator <<(byte_ostream& output, const index_t& data)
 {
   return output << data.value_or(UINT32_MAX);
 }

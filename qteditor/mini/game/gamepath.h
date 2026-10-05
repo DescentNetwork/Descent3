@@ -48,6 +48,7 @@
 #include "mem/mem.h"
 #include "slotvec.h"
 #include "vecmat.h"
+#include "utils.h"
 
 // chrishack -- this could be dynamically allocated at the beginning of a level
 // MAX_NODES_PER_PATH is big and so is MAX_GAME_PATHS
@@ -104,14 +105,14 @@ void InitGamePaths();
 
 // searches through GamePath index and returns index of path matching name
 // returns -1 if not found
-std::optional<uint32_t> FindGamePathName(const std::string &name);
+index_t FindGamePathName(const std::string &name);
 
 
 extern bool Show_paths;
 
 // Allocs a gamepath that a robot will follow.  Returns an index into the GamePaths
 // array
-std::optional<uint32_t> AllocGamePath(void);
+index_t AllocGamePath(void);
 
 // Given a path number, and a node number in that path, adds another node after the
 // specified node
@@ -133,9 +134,9 @@ int MovePathNode(int pathnum, int nodenum, vector3 *delta_pos);
 int MovePathNodeToPos(int pathnum, int nodenum, vector3 *pos);
 
 // Gets next path from n that has actually been alloced
-std::optional<uint32_t> GetNextPath(uint32_t n);
+index_t GetNextPath(uint32_t n);
 // Gets previous path from n that has actually been alloced
-std::optional<uint32_t> GetPrevPath(uint32_t n);
+index_t GetPrevPath(uint32_t n);
 
 // returns the index of the first path (from 0) alloced
 // returns -1 if there are no paths

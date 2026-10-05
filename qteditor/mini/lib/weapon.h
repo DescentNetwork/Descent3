@@ -201,6 +201,7 @@
 #include "objinfo.h"
 #include "slotvec.h"
 #include "weapon_external.h"
+#include "utils.h"
 
 #define MAX_PRIMARY_WEAPONS 10
 #define MAX_SECONDARY_WEAPONS 10
@@ -374,20 +375,20 @@ extern const int Static_weapon_ckpt_names[][2];
 void InitWeapons();
 
 // Allocs a weapon for use, returns std::nullopt if error, else index on success
-std::optional<uint32_t> AllocWeapon();
+index_t AllocWeapon();
 
 // Frees weapon index n
 void FreeWeapon(uint32_t n);
 
 // Gets next weapon from n that has actually been alloced
-std::optional<uint32_t> GetNextWeapon(uint32_t n);
+index_t GetNextWeapon(uint32_t n);
 
 // Gets previous weapon from n that has actually been alloced
-std::optional<uint32_t> GetPrevWeapon(uint32_t n);
+index_t GetPrevWeapon(uint32_t n);
 
 // Searches thru all weapons for a specific name, returns -1 if not found
 // or index of weapon with name
-std::optional<uint32_t> FindWeaponName(const std::string &name);
+index_t FindWeaponName(const std::string &name);
 
 // Given a filename, loads either the model or vclip found in that file.  If type
 // is not NULL, sets it to 1 if file is model, otherwise sets it to zero

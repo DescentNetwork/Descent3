@@ -34,12 +34,12 @@
 #include "vecmat.h"
 
 // Editor-side path helpers provided in d3_editor_state.cpp.
-std::optional<uint32_t> AllocGamePath();
+index_t AllocGamePath();
 void FreeGamePath(uint32_t n);
 int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient);
 void DeleteNodeFromPath(int pathnum, int nodenum);
-std::optional<uint32_t> GetNextPath(uint32_t n);
-std::optional<uint32_t> GetPrevPath(uint32_t n);
+index_t GetNextPath(uint32_t n);
+index_t GetPrevPath(uint32_t n);
 int GetFirstPath();
 
 
@@ -120,7 +120,7 @@ void PathKeypad::onAddPath() {
                                              &ok);
   if (!ok || name.isEmpty())
     return;
-  const std::optional<uint32_t> pathnum = AllocGamePath();
+  const index_t pathnum = AllocGamePath();
   if (!pathnum)
     return;
   GamePaths[*pathnum].name = name.toStdString();
@@ -134,7 +134,7 @@ void PathKeypad::onDeletePath() {
   if (p < 0)
     return;
   FreeGamePath(static_cast<uint32_t>(p));
-  if (const std::optional<uint32_t> next = GetNextPath(static_cast<uint32_t>(p)))
+  if (const index_t next = GetNextPath(static_cast<uint32_t>(p)))
     app.current_path = *next;
   app.current_node = 0u;
   updateDialog();
@@ -142,7 +142,7 @@ void PathKeypad::onDeletePath() {
 
 void PathKeypad::onPathPulldownChanged()
 {
-  if (const std::optional<uint32_t> idx = FindGamePathName(ui->IDC_PATHPAD_PULLDOWN->currentText().toStdString()); idx)
+  if (const index_t idx = FindGamePathName(ui->IDC_PATHPAD_PULLDOWN->currentText().toStdString()); idx)
   {
     app.current_path = idx;
     app.current_node = 0u;

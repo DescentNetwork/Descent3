@@ -157,8 +157,8 @@ std::array<std::optional<force_field_bounce_t>, MAX_FORCE_FIELD_BOUNCE_TEXTURES>
 
 //float Ceiling_height = 100.0f;
 renderer_preferred_state Render_preferred_state = {};
-std::optional<uint32_t> sound_override_force_field;
-std::optional<uint32_t> sound_override_glass_breaking;
+index_t sound_override_force_field;
+index_t sound_override_glass_breaking;
 bool Level_powerups_ignore_wind = false;
 
 QString InfoString;
@@ -226,9 +226,9 @@ ambient_life a_life;
 
 // ==================== Manage ====================
 mngs_track_lock GlobalTrackLocks[MAX_TRACKLOCKS] = {};
-std::optional<uint32_t> mng_AllocTrackLock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return std::nullopt; }
+index_t mng_AllocTrackLock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return std::nullopt; }
 void mng_FreeTrackLock(uint32_t n) { PRINT_STUB(__FUNCTION__); }
-std::optional<uint32_t> mng_FindTrackLock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return std::nullopt; }
+index_t mng_FindTrackLock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return std::nullopt; }
 int mng_CheckIfPageLocked(mngs_Pagelock *p) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_CheckIfPageOwned(mngs_Pagelock *p, const std::string &a) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_DeletePage(const std::string &a, int b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
@@ -237,7 +237,7 @@ void mng_EraseLocker() { PRINT_STUB(__FUNCTION__); }
 int mng_MakeLocker() { PRINT_STUB(__FUNCTION__); return 0; }
 void mng_OverrideToUnlocked(mngs_Pagelock *p) { PRINT_STUB(__FUNCTION__); }
 int mng_RenamePage(const std::string &a, const std::string &b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_ReplacePage(const std::string &a, const std::string &b, std::optional<uint32_t> c, int d, int e) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_ReplacePage(const std::string &a, const std::string &b, index_t c, int d, int e) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_ReplacePagelock(const std::string &a, mngs_Pagelock *b) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_FindSpecificDoorPage(const std::string &a, mngs_door_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_FindSpecificGenericPage(const std::string &a, mngs_generic_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
@@ -246,7 +246,7 @@ int mng_FindSpecificSoundPage(const std::string &a, mngs_sound_page *b, int c) {
 int mng_FindSpecificTexPage(const std::string &a, mngs_texture_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_FindSpecificWeaponPage(const std::string &a, mngs_weapon_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignDoorPageToDoor(mngs_door_page *a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_AssignGenericPageToObjInfo(mngs_generic_page *a, std::optional<uint32_t> b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_AssignGenericPageToObjInfo(mngs_generic_page *a, index_t b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignShipPageToShip(mngs_ship_page *a, int b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignSoundPageToSound(mngs_sound_page *a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignTexPageToTexture(mngs_texture_page *a, int b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }

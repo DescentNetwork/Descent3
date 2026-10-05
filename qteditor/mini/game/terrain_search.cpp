@@ -233,7 +233,7 @@
 //#include "dedicated_server.h"
 
 
-static std::optional<uint32_t> EvaluateBlock(int x, int z, int lod);
+static index_t EvaluateBlock(int x, int z, int lod);
 
 uint16_t TS_FrameCount = 0xFFFF;
 
@@ -723,7 +723,7 @@ int SearchQuadTree(int x1, int y1, int x2, int y2, int dir, int *ccount) {
 
 // Given a position, returns the terrain segment that that position is in/over
 // returns std::nullopt if not over terrain
-std::optional<uint32_t> GetTerrainCellFromPos(vector3& pos) {
+index_t GetTerrainCellFromPos(vector3& pos) {
   int x = pos.x() / TERRAIN_SIZE;
   int z = pos.z() / TERRAIN_SIZE;
 
@@ -733,8 +733,8 @@ std::optional<uint32_t> GetTerrainCellFromPos(vector3& pos) {
   return (z * TERRAIN_WIDTH + x);
 }
 
-std::optional<uint32_t> GetTerrainRoomFromPos(vector3& pos) {
-  const std::optional<uint32_t> cell = GetTerrainCellFromPos(pos);
+index_t GetTerrainRoomFromPos(vector3& pos) {
+  const index_t cell = GetTerrainCellFromPos(pos);
   if (!cell)
     return std::nullopt;
   return MAKE_ROOMNUM(*cell);
@@ -841,7 +841,7 @@ int SimplifyVertex(int x, int z, float delta) {
 // be simplified
 // Returns std::nullopt if the block is invisible
 // Returns 0 if not
-std::optional<uint32_t> EvaluateBlock(int x, int z, int lod) {
+index_t EvaluateBlock(int x, int z, int lod) {
   float delta;
   int simplemul = 1 << ((MAX_TERRAIN_LOD - 1) - lod);
 

@@ -13,7 +13,7 @@
 #include <QtGlobal>
 
 // Allocs a ship for use, returns std::nullopt if error, else index on success
-std::optional<uint32_t> AllocShip() {
+index_t AllocShip() {
   const size_t n = Ships.next_slot();
   Q_ASSERT(Ships.is_unused(n));
 
@@ -32,18 +32,18 @@ void FreeShip(uint32_t n) {
 }
 
 // Gets next ship from n that has actually been alloced
-std::optional<uint32_t> GetNextShip(uint32_t n) {
+index_t GetNextShip(uint32_t n) {
   return Ships.next(n);
 }
 
 // Gets previous ship from n that has actually been alloced
-std::optional<uint32_t> GetPrevShip(uint32_t n) {
+index_t GetPrevShip(uint32_t n) {
   return Ships.prev(n);
 }
 
 // Searches thru all ships for a specific name, returns std::nullopt if not
 // found or index of ship with name
-std::optional<uint32_t> FindShipName(const std::string &name) {
+index_t FindShipName(const std::string &name) {
   for (uint32_t i = 0; i < Ships.size(); i++)
     if (Ships.is_used(i) && match(name, Ships[i].name))
       return i;

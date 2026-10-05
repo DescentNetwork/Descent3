@@ -126,7 +126,7 @@ static bool IsChunk(const char *chunk_name, const char *id) { return chunk_name[
 // TXNM list is present (e.g. our own saved files).
 static std::array<int, MAX_TEXTURES> texture_xlate;
 
-static std::optional<uint32_t> LL_FindTextureName(const std::string& name)
+static index_t LL_FindTextureName(const std::string& name)
 {
   for (uint32_t i = 0; i < static_cast<int>(GameTextures.size()); i++)
     if (match(GameTextures[i].name, name))
@@ -540,7 +540,7 @@ static std::array<int16_t, MAX_DOORS> door_xlate;
 // BuildXlateTable.  The trailing entries up to max_items are cleared to -1 so
 // a partially filled table never leaks indices from a previous level.
 static void LL_ReadNameXlateChunk(posix_istream &ifile, int chunk_size,
-                                  std::optional<uint32_t> (*lookup)(const std::string &), int16_t *xlate, int max_items) {
+                                  index_t (*lookup)(const std::string &), int16_t *xlate, int max_items) {
   int32_t n32 = 0;
   ifile >> n32;
   int n = n32;
@@ -564,7 +564,7 @@ static void LL_ReadNameXlateChunk(posix_istream &ifile, int chunk_size,
 // First used page of the given type, the engine's FindValidID() fallback for
 // a name-mapping miss (GetObjectID for the generic types, the first used door
 // slot for object_type::door).  Returns std::nullopt when no game table provides one.
-static std::optional<uint32_t> FindValidID(object_type type) {
+static index_t FindValidID(object_type type) {
   switch (type) {
   case object_type::robot:
   case object_type::powerup:
@@ -597,7 +597,7 @@ static int TranslateObjectId(object_type type, int id) {
   if (xid != -1)
     return xid;
 
-  const std::optional<uint32_t> valid = FindValidID(type);
+  const index_t valid = FindValidID(type);
   return valid.value_or(id);
 }
 

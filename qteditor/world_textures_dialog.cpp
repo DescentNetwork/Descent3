@@ -85,7 +85,7 @@ void WorldTexturesDialog::saveTexturesOnClose() {
     return;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
     if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == PAGETYPE_TEXTURE) {
-      const std::optional<uint32_t> t = FindTextureName(GlobalTrackLocks[i].name);
+      const index_t t = FindTextureName(GlobalTrackLocks[i].name);
       if (t)
         mng_ReplacePage(GameTextures[*t].name, GameTextures[*t].name, *t, PAGETYPE_TEXTURE, 1);
     }
@@ -254,7 +254,7 @@ void WorldTexturesDialog::onAddNew() {
     return;
   }
   QFileInfo fileInfo(pathname);
-  const std::optional<uint32_t> handle = AllocTexture();
+  const index_t handle = AllocTexture();
   if (!handle) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot add texture: no free slots.");
     return;
@@ -293,7 +293,7 @@ void WorldTexturesDialog::onDelete() {
       mng_DeletePage(t->name, PAGETYPE_TEXTURE, 0);
       mng_DeletePagelock(t->name, PAGETYPE_TEXTURE);
     }
-    if (const std::optional<uint32_t> next = GetNextTexture(n))
+    if (const index_t next = GetNextTexture(n))
       app.texdlg_texture = static_cast<int>(*next);
     FreeTexture(n);
     mng_EraseLocker();
@@ -415,7 +415,7 @@ void WorldTexturesDialog::onOverride() {
 
 void WorldTexturesDialog::onChangeName() {
   if (auto t = data()) {
-    const std::optional<uint32_t> p = mng_FindTrackLock(t->name, PAGETYPE_TEXTURE);
+    const index_t p = mng_FindTrackLock(t->name, PAGETYPE_TEXTURE);
     if (!p) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this texture if you wish to change its name.");
       return;
@@ -453,14 +453,14 @@ void WorldTexturesDialog::onLoadBitmap() {
 
 void WorldTexturesDialog::onNext() {
   if (app.texdlg_texture) {
-    if (const std::optional<uint32_t> next = GetNextTexture(*app.texdlg_texture))
+    if (const index_t next = GetNextTexture(*app.texdlg_texture))
       app.texdlg_texture = *next;
   }
   updateDialog();
 }
 void WorldTexturesDialog::onPrev() {
   if (app.texdlg_texture) {
-    if (const std::optional<uint32_t> prev = GetPreviousTexture(*app.texdlg_texture))
+    if (const index_t prev = GetPreviousTexture(*app.texdlg_texture))
       app.texdlg_texture = *prev;
   }
   updateDialog();
@@ -468,7 +468,7 @@ void WorldTexturesDialog::onPrev() {
 
 void WorldTexturesDialog::onTexListChanged()
 {
-  if (const std::optional<uint32_t> i = FindTextureName(ui->IDC_TEX_LIST->currentText().toStdString()); i)
+  if (const index_t i = FindTextureName(ui->IDC_TEX_LIST->currentText().toStdString()); i)
   {
     app.texdlg_texture = *i;
     updateDialog();

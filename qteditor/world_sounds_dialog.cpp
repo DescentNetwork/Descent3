@@ -185,7 +185,7 @@ void WorldSoundsDialog::updateDialog()
     return;
 
   if (!app.current_sound || *app.current_sound >= static_cast<uint32_t>(Sounds.size()) || Sounds.is_unused(*app.current_sound))
-    if (const std::optional<uint32_t> next = GetNextSound(0))
+    if (const index_t next = GetNextSound(0))
       app.current_sound = *next;
 
   if (app.current_sound) Sound_system.CheckAndForceSoundDataAlloc(static_cast<int>(*app.current_sound));
@@ -301,7 +301,7 @@ void WorldSoundsDialog::onAddSound() {
     return;
   }
 
-  const std::optional<uint32_t> sound_handle = AllocSound();
+  const index_t sound_handle = AllocSound();
   int c = 1;
   bool finding_name = true;
   std::string cur_name;
@@ -514,7 +514,7 @@ void WorldSoundsDialog::onOverride() {
 
 void WorldSoundsDialog::onChangeName() {
   if (auto s = data()) {
-    const std::optional<uint32_t> p = mng_FindTrackLock(s->name, PAGETYPE_SOUND);
+    const index_t p = mng_FindTrackLock(s->name, PAGETYPE_SOUND);
     if (!p) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this sound if you wish to change its name.");
       return;

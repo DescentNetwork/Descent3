@@ -24,6 +24,7 @@
 #include <optional>
 #include <vector>
 
+#include "utils.h"
 #include "slotvec.h"
 
 #define NUM_MIP_LEVELS 5
@@ -98,7 +99,7 @@ void bm_ShutdownBitmaps(void);
 // If add_mem is nonzero, adds that to the amount alloced
 // (added due to the way the tmapper works)
 // Returns bitmap handle if successful, -1 if otherwise
-std::optional<uint32_t> bm_AllocBitmap(int w, int h, int add_mem);
+index_t bm_AllocBitmap(int w, int h, int add_mem);
 // Given a handle, frees the bitmap memory and flags this bitmap as unused
 void bm_FreeBitmap(int handle);
 // Allocs and loads a bitmap from a fully-resident in-memory payload (a HOG

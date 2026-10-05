@@ -185,6 +185,7 @@
 
 #include "renderer.h"
 #include "object.h"
+#include "utils.h"
 
 //	return 0 if we wan't to return to the menu, or return 1 if everything
 //	is okay. starts a new game based off the current mission.
@@ -243,8 +244,8 @@ extern int Max_window_w, Max_window_h;
 
 extern int Difficulty_level;
 
-extern std::optional<uint32_t> sound_override_force_field;
-extern std::optional<uint32_t> sound_override_glass_breaking;
+extern index_t sound_override_force_field;
+extern index_t sound_override_glass_breaking;
 
 #define MAX_FORCE_FIELD_BOUNCE_TEXTURES 3
 

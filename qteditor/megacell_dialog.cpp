@@ -63,7 +63,7 @@ void MegacellDialog::onNew() {
   if (!ok || name.isEmpty())
     return;
 
-  const std::optional<uint32_t> cell_handle = AllocMegacell();
+  const index_t cell_handle = AllocMegacell();
   if (!cell_handle) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No free megacell slots.");
     return;

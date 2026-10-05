@@ -27,6 +27,7 @@
 #include <QFileInfo>
 #include <optional>
 
+#include "utils.h"
 #include "object_external.h" // object_type
 
 QT_BEGIN_NAMESPACE
@@ -73,7 +74,7 @@ private:
   void showWorldObjectsSound();
   void showWorldWeapons();
   void showWorldTextures();
-  void showGenericObject(object_type objType, std::optional<uint32_t> current);
+  void showGenericObject(object_type objType, index_t current);
   void showLevelProperties();
   void showMegacells();
   void showAmbientSounds();

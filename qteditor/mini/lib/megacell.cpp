@@ -22,7 +22,7 @@ void InitMegacells() {
 }
 
 // Allocs a megacell for use, returns std::nullopt if error, else index on success
-std::optional<uint32_t> AllocMegacell() {
+index_t AllocMegacell() {
   const size_t i = Megacells.next_slot();
   Q_ASSERT(Megacells.is_unused(i));
 
@@ -42,18 +42,18 @@ void FreeMegacell(uint32_t n) {
 }
 
 // Gets next megacell from n that has actually been alloced
-std::optional<uint32_t> GetNextMegacell(uint32_t n) {
+index_t GetNextMegacell(uint32_t n) {
   return Megacells.next(n);
 }
 
 // Gets previous megacell from n that has actually been alloced
-std::optional<uint32_t> GetPrevMegacell(uint32_t n) {
+index_t GetPrevMegacell(uint32_t n) {
   return Megacells.prev(n);
 }
 
 // Searches thru all megacells for a specific name, returns std::nullopt if not
 // found or the index of the megacell with that name
-std::optional<uint32_t> FindMegacellName(const std::string &name) {
+index_t FindMegacellName(const std::string &name) {
   for (uint32_t i = 0; i < static_cast<uint32_t>(Megacells.size()); i++)
     if (Megacells.is_used(i) && match(Megacells[i].name, name))
       return i;

@@ -32,7 +32,7 @@ QT_END_NAMESPACE
 class GenericDeathDialog : public QDialog {
   Q_OBJECT
 public:
-  explicit GenericDeathDialog(std::optional<uint32_t> object_id, QWidget *parent = nullptr);
+  explicit GenericDeathDialog(index_t object_id, QWidget *parent = nullptr);
   ~GenericDeathDialog();
 
 private slots:
@@ -46,7 +46,7 @@ private:
   optref<object_info> data(void);
 private:
   Ui::GenericDeathDialog *ui;
-  std::optional<uint32_t> m_object_id;
+  index_t m_object_id;
   std::array<death_info, MAX_DEATH_TYPES> m_death_types;
   std::array<int, MAX_DEATH_TYPES> m_prob;
 };

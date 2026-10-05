@@ -125,7 +125,7 @@
 #include "player.h"
 #include "robotfirestruct.h"
 #include "slotvec.h"
-
+#include "utils.h"
 
 #define MAX_SHIPS 30
 
@@ -213,20 +213,20 @@ extern const char *AllowedShips[];
 void InitShips();
 
 // Allocs a ship for use, returns std::nullopt if error, else index on success
-std::optional<uint32_t> AllocShip();
+index_t AllocShip();
 
 // Frees ship index n
 void FreeShip(uint32_t n);
 
 // Gets next ship from n that has actually been alloced
-std::optional<uint32_t> GetNextShip(uint32_t n);
+index_t GetNextShip(uint32_t n);
 
 // Gets previous ship from n that has actually been alloced
-std::optional<uint32_t> GetPrevShip(uint32_t n);
+index_t GetPrevShip(uint32_t n);
 
 // Searches thru all ships for a specific name, returns std::nullopt if not
 // found or index of ship with name
-std::optional<uint32_t> FindShipName(const std::string &name);
+index_t FindShipName(const std::string &name);
 
 // Given a filename, loads either the model or vclip found in that file.  If type
 // is not NULL, sets it to 1 if file is model, otherwise sets it to zero

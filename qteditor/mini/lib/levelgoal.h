@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include "mem/mem.h"
 #include "levelgoal_external.h"
+#include "utils.h"
 
 class litem {
 public:
@@ -147,7 +148,7 @@ public:
   bool GoalGoalList(int goal_index, char operation, int8_t *value);
   bool GoalStatus(int goal_index, char operation, int *value, bool announce = true);
 
-  std::optional<uint32_t> GoalFindId(const std::string &goal_name);
+  index_t GoalFindId(const std::string &goal_name);
 
   int GoalGetNumItems(int goal_index);
 

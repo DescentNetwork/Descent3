@@ -101,6 +101,7 @@
 
 #include <posix_stream.h>
 
+#include "utils.h"
 #include "object_external.h" // object_type
 #include "vecmat_external.h"
 #include "robotfirestruct.h"
@@ -513,7 +514,7 @@ struct splinter_info_s {
 
 // Data for sourcesource objects
 struct soundsource_info_s {
-  std::optional<uint32_t> sound_index;
+  index_t sound_index;
   float volume;
 };
 

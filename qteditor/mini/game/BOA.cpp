@@ -128,7 +128,6 @@
 #include "BOA.h"
 #include "vecmat.h"
 #include "room.h"
-#include "utils.h"
 #include "object.h"
 #include "findintersection.h"
 #include "log.h"
@@ -321,7 +320,7 @@ extern object *GetDoorObject(int roomnum);
 //	return true;
 //}
 
-std::optional<uint32_t> BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, int end_room,
+index_t BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, int end_room,
                                                      optref<vector3> end_pos, bool f_for_sound,
                                                      bool f_making_robot_path_invalid_list, optref<int> blocked_portal) {
   int i;
@@ -562,7 +561,7 @@ bool BOA_IsVisible(int start_room, int end_room) {
   return ((BOA_Array[s_index][e_index] & BOAF_VIS) != 0);
 }
 
-std::optional<uint32_t> BOA_GetNextRoom(int start_room, int end_room) {
+index_t BOA_GetNextRoom(int start_room, int end_room) {
   int s_index = start_room;
   int e_index = end_room;
 

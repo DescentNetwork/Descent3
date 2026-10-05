@@ -576,7 +576,7 @@ void InitRoomFace(face *fp, int nverts) {
 }
 
 // Finds out if we are in a room or outside the mine (nullopt if we are outside)
-std::optional<uint32_t> FindPointRoom(vector3 *pnt) {
+index_t FindPointRoom(vector3 *pnt) {
   int i;
 
   Q_ASSERT(pnt != NULL);
@@ -1158,7 +1158,7 @@ void CreateRoomObjects() {
 }
 
 // returns the index of the first room that is being used.  Returns std::nullopt if there are none
-std::optional<uint32_t> FindFirstUsedRoom() {
+index_t FindFirstUsedRoom() {
   int i;
 
   for (i = 0; i < static_cast<int>(Rooms.size()); i++) {
@@ -1212,7 +1212,7 @@ void ClearRoomChanges() {
 }
 
 // Returns index of room change allocated, else std::nullopt on error
-std::optional<uint32_t> AllocRoomChange() {
+index_t AllocRoomChange() {
   for (int i = 0; i < MAX_ROOM_CHANGES; i++) {
     if (Room_changes[i].used == 0) {
       memset(&Room_changes[i], 0, sizeof(room_changes));
@@ -1277,7 +1277,7 @@ void DoRoomChangeFrame() {
 }
 
 // Sets up a room to change its fog or wind over time
-std::optional<uint32_t> SetRoomChangeOverTime(int roomnum, bool fog, vector3 *end, float depth_end, float time) {
+index_t SetRoomChangeOverTime(int roomnum, bool fog, vector3 *end, float depth_end, float time) {
   room *rp = &Rooms[roomnum];
   int index, i;
 
@@ -1292,7 +1292,7 @@ std::optional<uint32_t> SetRoomChangeOverTime(int roomnum, bool fog, vector3 *en
   }
 
   if (!found) {
-    const std::optional<uint32_t> alloc = AllocRoomChange();
+    const index_t alloc = AllocRoomChange();
     if (!alloc)
       return std::nullopt; // failed get free slot!
     index = static_cast<int>(*alloc);

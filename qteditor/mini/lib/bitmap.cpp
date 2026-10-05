@@ -13,7 +13,7 @@
 #include <cstdint>
 #include <cstring>
 
-std::optional<uint32_t> bm_AllocBitmap(int w, int h, int add_mem) {
+index_t bm_AllocBitmap(int w, int h, int add_mem) {
   const size_t n = GameBitmaps.next_slot();
   Q_ASSERT(GameBitmaps.is_unused(n));
 

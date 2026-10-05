@@ -260,8 +260,8 @@ bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, floa
 bool BOA_IsSoundAudible(int start_room, int end_room);
 bool BOA_IsVisible(int start_room, int end_room);
 bool BOA_HasPossibleBlockage(int start_room, int end_room);
-std::optional<uint32_t> BOA_GetNextRoom(int start_room, int end_room);
-std::optional<uint32_t> BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, int end_room,
+index_t BOA_GetNextRoom(int start_room, int end_room);
+index_t BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, int end_room,
                                                      optref<vector3> end_pos, bool f_for_sound = false,
                                                      bool f_making_robot_path_invalid_list = false,
                                                      optref<int> blocked_portal = std::nullopt);

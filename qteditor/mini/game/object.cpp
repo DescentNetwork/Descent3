@@ -209,7 +209,7 @@ int FreeObjectSlots(int num_used) {
 // Generally, ObjCreate() should be called to get an object, since it
 // fills in important fields and does the linking.
 // returns std::nullopt if no free objects
-std::optional<uint32_t> ObjAllocate(void) {
+index_t ObjAllocate(void) {
   if (Num_objects >= MAX_OBJECTS - 2)
     FreeObjectSlots(MAX_OBJECTS - 10);
 
@@ -556,7 +556,7 @@ void ObjReInitAll() {
 
 // Initializes a new object.  Adds it to the list for the given room.
 // Returns the object number, or std::nullopt on failure.
-std::optional<uint32_t> ObjCreate(object_type type, uint16_t id, int roomnum, vector3& pos, const matrix *orient,
+index_t ObjCreate(object_type type, uint16_t id, int roomnum, vector3& pos, const matrix *orient,
                                   int parent_handle) {
   if (type == object_type::none)
     return std::nullopt;
@@ -572,7 +572,7 @@ std::optional<uint32_t> ObjCreate(object_type type, uint16_t id, int roomnum, ve
   }
 
   // Get next free object
-  const std::optional<uint32_t> objnum_opt = ObjAllocate();
+  const index_t objnum_opt = ObjAllocate();
   if (!objnum_opt) // no free objects
     return std::nullopt;
 

@@ -28,7 +28,7 @@ object_info Object_info[MAX_OBJECTS];
 
 // First object page slot with the given type (the engine's objinfo.cpp
 // GetObjectID), used by FindValidID during level object-id translation.
-std::optional<uint32_t> GetObjectID(object_type type) {
+index_t GetObjectID(object_type type) {
   for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++)
     if (Object_info[i].type == type)
       return i;
@@ -182,7 +182,7 @@ object_info::object_info(object_type type, bool f_anim, bool f_weapons, bool f_a
 }
 
 // Allocs a object for use, returns -1 if error, else index on success
-std::optional<uint32_t> AllocObjectID(object_type type, bool f_anim, bool f_weapons, bool f_ai) {
+index_t AllocObjectID(object_type type, bool f_anim, bool f_weapons, bool f_ai) {
   for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++) {
     if (Object_info[i].type == object_type::none) {
       Object_info[i] = object_info(type, f_anim, f_weapons, f_ai);
@@ -196,7 +196,7 @@ std::optional<uint32_t> AllocObjectID(object_type type, bool f_anim, bool f_weap
 }
 
 // Frees object index n
-void FreeObjectID(std::optional<uint32_t> obj) {
+void FreeObjectID(index_t obj) {
   if(obj)
   {
     uint32_t n = *obj;
@@ -216,7 +216,7 @@ void FreeObjectID(std::optional<uint32_t> obj) {
   }
 }
 
-std::optional<uint32_t> GetNextObjectID(std::optional<uint32_t> n) {
+index_t GetNextObjectID(index_t n) {
   if(!n)
     return std::nullopt;
   Q_ASSERT(*n < MAX_OBJECT_IDS);
@@ -232,7 +232,7 @@ std::optional<uint32_t> GetNextObjectID(std::optional<uint32_t> n) {
   return n;
 }
 
-std::optional<uint32_t> GetPrevObjectID(std::optional<uint32_t> n) {
+index_t GetPrevObjectID(index_t n) {
   Q_ASSERT(*n < MAX_OBJECT_IDS);
   if(!n)
     return std::nullopt;

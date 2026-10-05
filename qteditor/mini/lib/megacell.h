@@ -60,20 +60,20 @@ extern d3::slotvec_t<megacell> Megacells;
 void InitMegacells();
 
 // Allocs a MEGACELL for use, returns std::nullopt if error, else index on success
-std::optional<uint32_t> AllocMegacell();
+index_t AllocMegacell();
 
 // Frees MEGACELL index n
 void FreeMegacell(uint32_t n);
 
 // Gets next MEGACELL from n that has actually been alloced
 // Gets next MEGACELL from n that has actually been alloced
-std::optional<uint32_t> GetNextMegacell(uint32_t n);
+index_t GetNextMegacell(uint32_t n);
 
 // Gets previous MEGACELL from n that has actually been alloced
-std::optional<uint32_t> GetPrevMegacell(uint32_t n);
+index_t GetPrevMegacell(uint32_t n);
 
 // Searches thru all MEGACELLs for a specific name, returns std::nullopt if not
 // found or the index of the MEGACELL with that name
-std::optional<uint32_t> FindMegacellName(const std::string &name);
+index_t FindMegacellName(const std::string &name);
 
 #endif

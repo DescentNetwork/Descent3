@@ -356,7 +356,7 @@ void WorldWeaponsDialog::onAddWeapon() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There is already a weapon with that name.");
     return;
   }
-  const std::optional<uint32_t> handle = AllocWeapon();
+  const index_t handle = AllocWeapon();
   if (!handle) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot add weapon: There are no free weapon slots.");
     return;
@@ -396,7 +396,7 @@ void WorldWeaponsDialog::onDeleteWeapon() {
       mng_DeletePage(w->name, PAGETYPE_WEAPON, 0);
       mng_DeletePagelock(w->name, PAGETYPE_WEAPON);
     }
-    if (const std::optional<uint32_t> next = GetNextWeapon(n))
+    if (const index_t next = GetNextWeapon(n))
       if (next) app.current_weapon = *next;
     FreeWeapon(n);
     mng_EraseLocker();
@@ -520,7 +520,7 @@ void WorldWeaponsDialog::onPrevWeapon() {
 
 void WorldWeaponsDialog::onWeaponPulldownChanged()
 {
-  if (const std::optional<uint32_t> i = FindWeaponName(ui->IDC_WEAPON_PULLDOWN->currentText().toStdString()); i)
+  if (const index_t i = FindWeaponName(ui->IDC_WEAPON_PULLDOWN->currentText().toStdString()); i)
   {
     app.current_weapon = *i;
     updateDialog();
@@ -549,7 +549,7 @@ void WorldWeaponsDialog::onChangeName()
 {
   if(auto w = data())
   {
-    const std::optional<uint32_t> p = mng_FindTrackLock(w->name, PAGETYPE_WEAPON);
+    const index_t p = mng_FindTrackLock(w->name, PAGETYPE_WEAPON);
     if (!p) {
       QMessageBox::warning(this, "Unable to rename", "You must lock this weapon if you wish to change its name.");
       return;

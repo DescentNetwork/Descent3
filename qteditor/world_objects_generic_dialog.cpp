@@ -67,7 +67,7 @@ optref<object_info> WorldObjectsGenericDialog::data(void)
   return Object_info[*m_object_id];
 }
 
-WorldObjectsGenericDialog::WorldObjectsGenericDialog(object_type objType, std::optional<uint32_t> object_id, QWidget *parent)
+WorldObjectsGenericDialog::WorldObjectsGenericDialog(object_type objType, index_t object_id, QWidget *parent)
     : QDialog(parent), ui(new Ui::WorldObjectsGenericDialog), m_type(objType), m_object_id(object_id)
 {
   ui->setupUi(this);
@@ -280,18 +280,18 @@ WorldObjectsGenericDialog::~WorldObjectsGenericDialog() {
   ObjReInitAll();
 }
 
-void WorldObjectsGenericDialog::setObjectId(std::optional<uint32_t> id) { m_object_id = id; }
+void WorldObjectsGenericDialog::setObjectId(index_t id) { m_object_id = id; }
 
-bool WorldObjectsGenericDialog::isLocked(std::optional<uint32_t> n) {
+bool WorldObjectsGenericDialog::isLocked(index_t n) {
   return n && mng_FindTrackLock(Object_info[*n].name, PAGETYPE_GENERIC);
 }
 
 uint32_t WorldObjectsGenericDialog::countLockedItems() {
   int count = 0;
-  std::optional<uint32_t> first = GetObjectID(m_type);
+  index_t first = GetObjectID(m_type);
   if (!first)
     return 0;
-  std::optional<uint32_t> n = first;
+  index_t n = first;
   do {
     if (isLocked(n))
       count++;
@@ -500,9 +500,9 @@ void WorldObjectsGenericDialog::updateDialog() {
     QComboBox *combo = ui->IDC_NAME_PULLDOWN;
     QSignalBlocker blocker(combo);
     combo->clear();
-    const std::optional<uint32_t> first = GetObjectID(m_type);
+    const index_t first = GetObjectID(m_type);
     if (first != -1) {
-      std::optional<uint32_t> i = first;
+      index_t i = first;
       do {
         combo->addItem(QString::fromStdString(Object_info[*i].name));
         i = GetNextObjectID(i);
@@ -592,7 +592,7 @@ void WorldObjectsGenericDialog::onAddNew() {
     return;
   }
 
-  const std::optional<uint32_t> object_handle = AllocObjectID(m_type, true, true, true);
+  const index_t object_handle = AllocObjectID(m_type, true, true, true);
   if (object_handle) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot add object: There are no free object slots.");
     return;
@@ -678,7 +678,7 @@ void WorldObjectsGenericDialog::onCheckIn() {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object checked in.");
         Q_ASSERT(mng_DeletePage(d->name, PAGETYPE_GENERIC, 1) == 1);
         mng_EraseLocker();
-        const std::optional<uint32_t> p = mng_FindTrackLock(d->name, PAGETYPE_GENERIC);
+        const index_t p = mng_FindTrackLock(d->name, PAGETYPE_GENERIC);
         Q_ASSERT(p);
         mng_FreeTrackLock(*p);
       }
@@ -718,7 +718,7 @@ void WorldObjectsGenericDialog::onDelete()
       mng_DeletePagelock(d->name, PAGETYPE_GENERIC);
     }
 
-    const std::optional<uint32_t> old_current = m_object_id;
+    const index_t old_current = m_object_id;
     auto& old_obj = Object_info[*old_current];
     m_object_id = GetNextObjectID(m_object_id);
     if (m_object_id == old_current)
@@ -863,7 +863,7 @@ void WorldObjectsGenericDialog::onPaste()
       temp_name = "Copy" + std::to_string(c++) + "Of" + Copy_object.name;
   }
 
-  const std::optional<uint32_t> n = AllocObjectID(m_type, true, true, true);
+  const index_t n = AllocObjectID(m_type, true, true, true);
   if (n) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot paste object: There are no free object slots.");
     return;

@@ -1659,7 +1659,7 @@ void ComputePlacedRoomMatrix() {
 
 // PlaceRoom — editor/HRoom.cpp:585
 // Sets up globals for interactive room placement.
-void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face, std::optional<uint32_t> placed_room_door) {
+void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face, index_t placed_room_door) {
   room &baseroomp = Rooms[baseroom];
   Q_ASSERT(baseroomp.faces[baseface].portal_num == -1);
 

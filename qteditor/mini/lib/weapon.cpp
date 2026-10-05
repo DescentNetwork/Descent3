@@ -128,7 +128,7 @@ bool ObjectsAreRelated(int o1, int o2) {
 // ============================================================================
 
 // Allocs a weapon for use, returns -1 if error, else index on success
-std::optional<uint32_t> AllocWeapon() {
+index_t AllocWeapon() {
   const size_t n = Weapons.next_slot();
   Q_ASSERT(Weapons.is_unused(n));
 
@@ -147,11 +147,11 @@ void FreeWeapon(uint32_t n) {
 }
 
 // Gets next weapon from n that has actually been alloced
-std::optional<uint32_t> GetNextWeapon(uint32_t n) {
+index_t GetNextWeapon(uint32_t n) {
   return Weapons.next(n);
 }
 
 // Gets previous weapon from n that has actually been alloced
-std::optional<uint32_t> GetPrevWeapon(uint32_t n) {
+index_t GetPrevWeapon(uint32_t n) {
   return Weapons.prev(n);
 }

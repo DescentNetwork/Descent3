@@ -304,7 +304,7 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
     return;
   const uint32_t n = *app.current_door;
 
-  std::optional<uint32_t> tl = mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR);
+  index_t tl = mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR);
   if (!tl) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This door is not yours to delete.  Lock first.");
     return;

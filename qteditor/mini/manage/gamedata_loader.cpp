@@ -89,7 +89,7 @@ static void discardBytes(posix_istream &infile, int count) {
 // still-open HOG stream `hogin`, and hands the bytes to the decoder via
 // bm_LoadBitmapFromMemory (fmemopen posix_istream).  Returns the bitmap handle,
 // or std::nullopt if the image is not in the Hog or fails to decode.
-static std::optional<uint32_t> loadTextureFromArchive(hog2::archive_t &archive, posix_istream &hogin, const std::string &img, int format) {
+static index_t loadTextureFromArchive(hog2::archive_t &archive, posix_istream &hogin, const std::string &img, int format) {
   auto entry = archive.end();
   const std::string needle = lowercase(img);
   for (auto it = archive.begin(); it != archive.end(); ++it) {
@@ -209,7 +209,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
         // read straight out of the open d3.hog archive and decoded from memory.
         GameTextures[texn].bm_handle = -1;
         if (!texpage.bitmap_name.empty()) {
-          const std::optional<uint32_t> bm = loadTextureFromArchive(archive, hogin, texpage.bitmap_name, BITMAP_FORMAT_1555);
+          const index_t bm = loadTextureFromArchive(archive, hogin, texpage.bitmap_name, BITMAP_FORMAT_1555);
           if (bm) {
             GameTextures[texn].bm_handle = static_cast<int>(*bm);
             // .oaf textures are vclips: bm_handle holds the vclip index and the
@@ -325,7 +325,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 // The whole table is scanned by its object_type::none marker (not a loaded-page count)
 // exactly like the engine's objinfo.cpp FindObjectIDName: page lookups must
 // work even while a level is loading when Num_objects is temporarily reset.
-std::optional<uint32_t> FindObjectIDName(const std::string &name) {
+index_t FindObjectIDName(const std::string &name) {
   if(!name.empty())
     for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++)
       if ((Object_info[i].type != object_type::none) && match(name, Object_info[i].name))
@@ -335,7 +335,7 @@ std::optional<uint32_t> FindObjectIDName(const std::string &name) {
 }
 
 // Searches the weapons table for a matching name.  Returns the id, or -1.
-std::optional<uint32_t> FindWeaponName(const std::string &name) {
+index_t FindWeaponName(const std::string &name) {
   if(!name.empty())
     for (uint32_t i = 0; i < Weapons.size(); i++)
       if (Weapons.is_used(i) && match(name, Weapons[i].name))
@@ -345,7 +345,7 @@ std::optional<uint32_t> FindWeaponName(const std::string &name) {
 }
 
 // Searches the sound table for a matching name.  Returns the id, or -1.
-std::optional<uint32_t> FindSoundName(const std::string &name) {
+index_t FindSoundName(const std::string &name) {
   if(!name.empty())
     for (uint32_t i = 0; i < Sounds.size(); i++)
       if (Sounds.is_used(i) && match(name, Sounds[i].name))

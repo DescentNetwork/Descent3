@@ -26,6 +26,7 @@
 
 #include "manage.h"
 #include "objinfo.h"
+#include "utils.h"
 #include "robotfirestruct.h"
 
 // Current version of the generic page (matches the original manage/generic.cpp)
@@ -77,7 +78,7 @@ int mng_SetAndLoadGeneric(mngs_generic_page *genericpage, struct CFILE* infile =
 // Given a genericpage and a generic handle, attempts to make generic n correspond to
 // to the genericpage.
 // Returns 1 on success, 0 otherwise
-int mng_AssignGenericPageToObjInfo(mngs_generic_page *genericpage, std::optional<uint32_t> n, struct CFILE* infile = NULL);
+int mng_AssignGenericPageToObjInfo(mngs_generic_page *genericpage, index_t n, struct CFILE* infile = NULL);
 
 // Copies values from a Generic into a generic_page
 void mng_AssignObjInfoToGenericPage(int n, mngs_generic_page *genericpage);

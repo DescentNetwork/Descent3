@@ -2464,7 +2464,7 @@ void RenderSingleLightGlow2(int index) {
   texture *texp = &GameTextures[fp->tmap];
 
   if (first) {
-    std::optional<uint32_t> texhandle = FindTextureName("LongCorona");
+    index_t texhandle = FindTextureName("LongCorona");
     if(!texhandle)
       star_handle = 0;
     else

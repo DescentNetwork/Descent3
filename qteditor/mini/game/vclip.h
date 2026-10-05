@@ -61,7 +61,7 @@ void InitVClips();
 
 // Allocs a vclip for use
 // Returns std::nullopt on error
-std::optional<uint32_t> AllocVClip();
+index_t AllocVClip();
 
 // Frees a vclip
 void FreeVClip(int num);
@@ -88,7 +88,7 @@ void ChangeVClipName(const std::filesystem::path& src, std::string& dest);
 
 // Searches thru all vclips for a specific name, returns std::nullopt if not found
 // or index of vclip with name
-std::optional<uint32_t> FindVClipName(const std::string& name);
+index_t FindVClipName(const std::string& name);
 
 // Pages in a vclip if it needs to be
 void PageInVClip(int vcnum);
@@ -96,6 +96,6 @@ void PageInVClip(int vcnum);
 // Allocs and loads a fully-resident vclip from an in-memory OAF payload (a HOG
 // entry): parses the container header and pages every frame into GameVClips[].
 // Returns the vclip index, or std::nullopt on error.
-std::optional<uint32_t> LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &name, int format);
+index_t LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &name, int format);
 
 #endif

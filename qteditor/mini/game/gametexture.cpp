@@ -23,7 +23,7 @@
 #include <fstream>
 #include <filesystem>
 
-std::optional<uint32_t> FindTextureName(const std::string &name) {
+index_t FindTextureName(const std::string &name) {
   if(!name.empty())
     for (uint32_t i = 0; i < GameTextures.size(); i++)
       if (!GameTextures[i].name.empty() && name == GameTextures[i].name)
@@ -34,7 +34,7 @@ std::optional<uint32_t> FindTextureName(const std::string &name) {
 
 // Searches thru all textures for a bitmap of a specific name, returns -1 if
 // not found or index of texture with name
-std::optional<uint32_t> FindTextureBitmapName(const std::string &name) {
+index_t FindTextureBitmapName(const std::string &name) {
   if(!name.empty())
     for (uint32_t i = 0; i < GameTextures.size(); i++) {
       if (GameTextures.is_unused(i))
@@ -178,7 +178,7 @@ int LoadTextureImage(const std::filesystem::path &filename, optref<int> type, in
   const std::string name = filename.filename().string();
 
   if (anim) {
-    const std::optional<uint32_t> vc = LoadVClipFromMemory(buf.data(), buf.size(), name, format);
+    const index_t vc = LoadVClipFromMemory(buf.data(), buf.size(), name, format);
     return vc.value_or(-1);
   }
 
@@ -264,7 +264,7 @@ byte_ostream& operator<<(byte_ostream& output, const texture& data)
 // ============================================================================
 
 // Set aside a texture for use
-std::optional<uint32_t> AllocTexture() {
+index_t AllocTexture() {
   if (GameTextures.num_empty() == 0 && GameTextures.size() >= MAX_TEXTURES)
     return std::nullopt; // No textures free!
 
@@ -286,12 +286,12 @@ void FreeTexture(uint32_t n) {
 }
 
 // Given current index, gets index of next texture in use
-std::optional<uint32_t> GetNextTexture(uint32_t n) {
+index_t GetNextTexture(uint32_t n) {
   return GameTextures.next(n);
 }
 
 // Given current index, gets index of prev texture in use
-std::optional<uint32_t> GetPreviousTexture(uint32_t n) {
+index_t GetPreviousTexture(uint32_t n) {
   return GameTextures.prev(n);
 }
 

@@ -27,7 +27,7 @@ std::string levelgoals::GoalGetName(int goal_index) const {
 }
 
 // Returns the index of the goal with the given name, or nullopt if not found.
-std::optional<uint32_t> levelgoals::GoalFindId(const std::string &goal_name) {
+index_t levelgoals::GoalFindId(const std::string &goal_name) {
   for (int i = 0; i < (int)m_num_goals; i++) {
     if (match(GoalGetName(i), goal_name))
       return static_cast<uint32_t>(i);

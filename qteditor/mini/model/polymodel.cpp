@@ -677,7 +677,7 @@ static inline void RecursiveAssignWB(poly_model *pm, int sm_index, int wb_index)
 static void FindWBSubobjects(poly_model *pm);
 /// Sets aside a polymodel for use.
 /// Errors and returns nullopt if none free.
-static std::optional<uint32_t> AllocPolyModel();
+static index_t AllocPolyModel();
 static std::string ReadModelStringLen(byte_istream &infile);
 /// Given a modelnumber, opens the original pof file and attempts to rematch that
 /// models textures with the bitmaps with have in memory.
@@ -742,7 +742,7 @@ void FindWBSubobjects(poly_model *pm) {
 
 // Sets aside a polymodel for use
 // Errors and returns nullopt if none free
-std::optional<uint32_t> AllocPolyModel() {
+index_t AllocPolyModel() {
   for (int i = 0; i < MAX_POLY_MODELS; i++)
     if (Poly_models[i].used == 0) {
       WBClearInfo(&Poly_models[i]);
@@ -874,7 +874,7 @@ bool ReloadModelTextures(int modelnum, byte_istream &infile) {
       }
 
       for (i = 0; i < n; i++) {
-        std::optional<uint32_t> ret;
+        index_t ret;
 
         // Read the name of this texture
         std::string name_buf = ReadModelStringLen(infile);
@@ -1665,7 +1665,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       Q_ASSERT(n < MAX_MODEL_TEXTURES);
 
       for (i = 0; i < n; i++) {
-        std::optional<uint32_t> ret;
+        index_t ret;
 
         // Read the name of this texture
         std::string name_buf = ReadModelStringLen(infile);
@@ -1958,7 +1958,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
 
 // given a filename, reads in a POF and returns an index into the Poly_models array
 // returns -1 if something is wrong
-std::optional<uint32_t> LoadPolyModel(const std::filesystem::path &filename, int pageable) {
+index_t LoadPolyModel(const std::filesystem::path &filename, int pageable) {
   int i, polynum = -1;
   std::unique_ptr<posix_istream> infile;
   int overlay = 0;
@@ -1969,7 +1969,7 @@ std::optional<uint32_t> LoadPolyModel(const std::filesystem::path &filename, int
   std::filesystem::path name = ChangePolyModelName(filename);
 
   // If this polymodel is already in memory, just use that index
-  const std::optional<uint32_t> existing = FindPolyModelName(name);
+  const index_t existing = FindPolyModelName(name);
   if (existing) {
     i = static_cast<int>(*existing);
 #ifdef RELEASE
@@ -2128,7 +2128,7 @@ std::filesystem::path ChangePolyModelName(const std::filesystem::path &src) {
 
 // Searches thru all polymodels for a specific name, returns nullopt if not found
 // or index of polymodel with name
-std::optional<uint32_t> FindPolyModelName(const std::filesystem::path &name) {
+index_t FindPolyModelName(const std::filesystem::path &name) {
   for (int i = 0; i < MAX_POLY_MODELS; i++) {
     if (Poly_models[i].used && match(Poly_models[i].name, name.string())) {
       return static_cast<uint32_t>(i);

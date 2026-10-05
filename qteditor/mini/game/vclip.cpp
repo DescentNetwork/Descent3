@@ -199,7 +199,7 @@ void InitVClips() {
 
 // Allocs a vclip for use
 // Returns std::nullopt on error
-std::optional<uint32_t> AllocVClip() {
+index_t AllocVClip() {
   int i;
 
   for (i = 0; i < MAX_VCLIPS; i++) {
@@ -312,7 +312,7 @@ static uint32_t readOafWord(posix_istream &in) {
 // followed by num_frames contiguous OGF/TGA bitmaps, each decoded with
 // bm_tga_alloc_file (which leaves the stream positioned past its frame).  All
 // frames are stored in GameVClips[].  Returns the vclip index, or std::nullopt on error.
-std::optional<uint32_t> LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &name, int format) {
+index_t LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &name, int format) {
   if (size < 7)
     return std::nullopt;
 
@@ -330,7 +330,7 @@ std::optional<uint32_t> LoadVClipFromMemory(const uint8_t *data, size_t size, co
     return std::nullopt;
   }
 
-  const std::optional<uint32_t> vcnum = AllocVClip();
+  const index_t vcnum = AllocVClip();
   if (!vcnum)
     return std::nullopt;
 
@@ -604,7 +604,7 @@ void ChangeVClipName(const std::filesystem::path&  src, std::string& dest)
 }
 // Searches thru all vclips for a specific name, returns std::nullopt if not found
 // or index of vclip with name
-std::optional<uint32_t> FindVClipName(const std::string& name) {
+index_t FindVClipName(const std::string& name) {
   int i;
 
   for (i = 0; i < MAX_VCLIPS; i++)

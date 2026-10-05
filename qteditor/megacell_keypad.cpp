@@ -48,7 +48,7 @@ MegacellKeypad::~MegacellKeypad() { delete ui; }
 void MegacellKeypad::updateDialog() {
   if (!GetNextMegacell(0))
     return;
-  std::optional<uint32_t> nxt;
+  index_t nxt;
 
   if(app.current_megacell && Megacells.is_used(*app.current_megacell))
     nxt = *app.current_megacell;

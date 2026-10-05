@@ -10,7 +10,7 @@
 #include "findintersection.h"
 
 // Returns the index of the game path whose name matches, or -1 if not found.
-std::optional<uint32_t> FindGamePathName(const std::string &name) {
+index_t FindGamePathName(const std::string &name) {
   for (uint32_t i = 0; i < GamePaths.size(); i++) {
     if (GamePaths.is_used(i) && match(GamePaths[i].name, name))
       return i;
@@ -77,7 +77,7 @@ void DeleteNodeFromPath(int pathnum, int nodenum) {
   GamePaths[pathnum].num_nodes--;
 }
 
-std::optional<uint32_t> AllocGamePath() {
+index_t AllocGamePath() {
   for (size_t i = 0; i < GamePaths.size(); i++) {
     if (GamePaths.is_unused(i)) {
       GamePaths.acquire(i);
@@ -159,11 +159,11 @@ int MovePathNode(int pathnum, int nodenum, vector3 *delta_pos) {
   return MovePathNodeToPos(pathnum, nodenum, &attempted_pos);
 }
 
-std::optional<uint32_t> GetNextPath(uint32_t n) {
+index_t GetNextPath(uint32_t n) {
   return GamePaths.next(n);
 }
 
-std::optional<uint32_t> GetPrevPath(uint32_t n) {
+index_t GetPrevPath(uint32_t n) {
   return GamePaths.prev(n);
 }
 

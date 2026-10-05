@@ -145,7 +145,7 @@ void InitDoors() {
 }
 
 // Allocs a door for use, returns std::nullopt if error, else index on success
-std::optional<uint32_t> AllocDoor() {
+index_t AllocDoor() {
   const size_t n = Doors.next_slot();
   Q_ASSERT(Doors.is_unused(n));
 
@@ -167,17 +167,17 @@ void FreeDoor(uint32_t n) {
 }
 
 // Gets next door from n that has actually been alloced
-std::optional<uint32_t> GetNextDoor(uint32_t n) {
+index_t GetNextDoor(uint32_t n) {
   return Doors.next(n);
 }
 
 // Gets previous door from n that has actually been alloced
-std::optional<uint32_t> GetPrevDoor(uint32_t n) {
+index_t GetPrevDoor(uint32_t n) {
   return Doors.prev(n);
 }
 // Searches thru all doors for a specific name, returns -1 if not found
 // or index of door with name
-std::optional<uint32_t> FindDoorName(const std::string &name)
+index_t FindDoorName(const std::string &name)
 {
   if(!name.empty())
     for (int i = 0; i < static_cast<int>(Doors.size()); i++)

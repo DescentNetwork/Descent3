@@ -365,24 +365,24 @@ int InitTextures();
 
 // Set aside a texture for use, returns std::nullopt if error, else index on
 // success
-std::optional<uint32_t> AllocTexture(void);
+index_t AllocTexture(void);
 
 // Frees a texture for future use
 void FreeTexture(uint32_t n);
 
 // Given current index, gets index of next texture in use
-std::optional<uint32_t> GetNextTexture(uint32_t n);
+index_t GetNextTexture(uint32_t n);
 
 // Given current index, gets index of prev texture in use
-std::optional<uint32_t> GetPreviousTexture(uint32_t n);
+index_t GetPreviousTexture(uint32_t n);
 
 // Searches thru all textures for a specific name, returns -1 if not found
 // or index of texture with name
-std::optional<uint32_t> FindTextureName(const std::string &name);
+index_t FindTextureName(const std::string &name);
 
 // Searches thru all textures for a bitmap of a specific name, returns -1 if not found
 // or index of texture with name
-std::optional<uint32_t> FindTextureBitmapName(const std::string& name);
+index_t FindTextureBitmapName(const std::string& name);
 
 // Given a texture handle, returns that textures bitmap
 // If the texture is animated, returns framenum mod num_of_frames in the animation

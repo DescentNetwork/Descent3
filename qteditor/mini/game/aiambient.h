@@ -23,6 +23,8 @@
 #include <cstdint>
 #include <posix_stream.h>
 #include <optional>
+#include "utils.h"
+
 
 #define MAX_AL_TYPES 6
 #define MAX_ALS_PER_TYPE 130
@@ -63,7 +65,7 @@ struct ambient_life_t
 
 class ambient_life {
   // Editor settable values
-  std::array<std::optional<uint32_t>, MAX_AL_TYPES> m_type;
+  std::array<index_t, MAX_AL_TYPES> m_type;
   std::array<uint8_t, MAX_AL_TYPES> m_total;
   std::array<uint8_t, MAX_AL_TYPES> m_max;
   std::array<uint8_t, MAX_AL_TYPES> m_min;

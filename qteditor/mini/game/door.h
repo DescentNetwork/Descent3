@@ -108,6 +108,7 @@
 #include "manage.h"
 #include "object.h"
 #include "slotvec.h"
+#include "utils.h"
 
 // IMPORTANT!!!!!!!!!!!
 // "Doors" refers to a predefined door that is in memory
@@ -157,18 +158,18 @@ extern d3::slotvec_t<door> Doors;
 void InitDoors();
 
 // Allocs a door for use, returns std::nullopt if error, else index on success
-std::optional<uint32_t> AllocDoor();
+index_t AllocDoor();
 
 // Frees door index n
 void FreeDoor(uint32_t n);
 
 // Gets next door from n that has actually been alloced
-std::optional<uint32_t> GetNextDoor(uint32_t n);
+index_t GetNextDoor(uint32_t n);
 // Gets previous door from n that has actually been alloced
-std::optional<uint32_t> GetPrevDoor(uint32_t n);
+index_t GetPrevDoor(uint32_t n);
 // Searches thru all doors for a specific name, returns -1 if not found
 // or index of door with name
-std::optional<uint32_t> FindDoorName(const std::string &name);
+index_t FindDoorName(const std::string &name);
 
 // Given a filename, loads the model found in that file
 int LoadDoorImage(const std::filesystem::path &filename, int pageable = 1);

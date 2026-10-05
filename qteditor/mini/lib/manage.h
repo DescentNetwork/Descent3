@@ -217,11 +217,11 @@ void mng_InitTrackLocks();
 
 // Given a name, returns the index of the tracklock with that name
 // -1 indicates that it wasn't found
-std::optional<uint32_t> mng_FindTrackLock(const std::string &name, int pagetype);
+index_t mng_FindTrackLock(const std::string &name, int pagetype);
 
 // Searches through global array of tracklocks and returns first free one
 // returns -1 if none free
-std::optional<uint32_t> mng_AllocTrackLock(const std::string &name, int pagetype);
+index_t mng_AllocTrackLock(const std::string &name, int pagetype);
 
 // Frees a tracklock
 void mng_FreeTrackLock(uint32_t n);
@@ -267,7 +267,7 @@ void EndManagePage(struct CFILE* ofile, int chunk_start_pos);
 // Given a texture handle, searches the table file and replaces the texture with the same name
 // If local=1, then does it to the users local copy
 // Returns 0 on error, else 1 if all is good
-int mng_ReplacePage(const std::string &srcname, const std::string &destname, std::optional<uint32_t> handle, int dest_pagetype, int local);
+int mng_ReplacePage(const std::string &srcname, const std::string &destname, index_t handle, int dest_pagetype, int local);
 
 // Given a texture name, finds it in the table file and deletes it
 // If local is 1, deletes from the local table file

@@ -77,7 +77,7 @@
 #include "ScriptCompilerAPI.h"
 #include "polymodel.h"
 
-std::optional<uint32_t> AllocGamePath();
+index_t AllocGamePath();
 void FreeGamePath(uint32_t n);
 int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient);
 void DeleteNodeFromPath(int pathnum, int nodenum);
@@ -2316,8 +2316,8 @@ private slots:
     QVERIFY(!GetNextTexture(0));
     QVERIFY(!GetPreviousTexture(0));
 
-    const std::optional<uint32_t> t0 = AllocTexture();
-    const std::optional<uint32_t> t1 = AllocTexture();
+    const index_t t0 = AllocTexture();
+    const index_t t1 = AllocTexture();
     QCOMPARE(*t0, 0u);
     QCOMPARE(*t1, 1u);
     QCOMPARE(static_cast<int>(GameTextures.size()), 2);
@@ -2356,8 +2356,8 @@ private slots:
     QVERIFY(!GetNextSound(0));
     QVERIFY(!GetPrevSound(0));
 
-    const std::optional<uint32_t> s0 = AllocSound();
-    const std::optional<uint32_t> s1 = AllocSound();
+    const index_t s0 = AllocSound();
+    const index_t s1 = AllocSound();
     QCOMPARE(*s0, 0u);
     QCOMPARE(*s1, 1u);
     QCOMPARE(static_cast<int>(Sounds.size()), 2);
@@ -2396,9 +2396,9 @@ private slots:
     QVERIFY(!GetNextWeapon(0));
     QVERIFY(!GetPrevWeapon(0));
 
-    const std::optional<uint32_t> w0 = AllocWeapon();
-    const std::optional<uint32_t> w1 = AllocWeapon();
-    const std::optional<uint32_t> w2 = AllocWeapon();
+    const index_t w0 = AllocWeapon();
+    const index_t w1 = AllocWeapon();
+    const index_t w2 = AllocWeapon();
     QCOMPARE(*w0, 0u);
     QCOMPARE(*w1, 1u);
     QCOMPARE(*w2, 2u);
@@ -2446,14 +2446,14 @@ private slots:
     QVERIFY(!GetPrevShip(0));
 
     // Allocating appends used slots.
-    const std::optional<uint32_t> s0 = AllocShip();
+    const index_t s0 = AllocShip();
     QVERIFY(s0.has_value());
     QCOMPARE(*s0, 0u);
     QCOMPARE(static_cast<int>(Ships.size()), 1);
     QVERIFY(Ships.is_used(0));
 
-    const std::optional<uint32_t> s1 = AllocShip();
-    const std::optional<uint32_t> s2 = AllocShip();
+    const index_t s1 = AllocShip();
+    const index_t s2 = AllocShip();
     QCOMPARE(*s1, 1u);
     QCOMPARE(*s2, 2u);
     QCOMPARE(static_cast<int>(Ships.size()), 3);
@@ -2511,15 +2511,15 @@ private slots:
     QVERIFY(!GetPrevDoor(0));
 
     // Allocating appends used slots.
-    const std::optional<uint32_t> d0 = AllocDoor();
+    const index_t d0 = AllocDoor();
     QVERIFY(d0.has_value());
     QCOMPARE(int(*d0), 0);
     QCOMPARE(static_cast<int>(Doors.size()), 1);
     QVERIFY(Doors.is_used(0));
     QVERIFY(!Doors.is_unused(0));
 
-    const std::optional<uint32_t> d1 = AllocDoor();
-    const std::optional<uint32_t> d2 = AllocDoor();
+    const index_t d1 = AllocDoor();
+    const index_t d2 = AllocDoor();
     QCOMPARE(int(*d1), 1);
     QCOMPARE(int(*d2), 2);
     QCOMPARE(static_cast<int>(Doors.size()), 3);
@@ -2551,7 +2551,7 @@ private slots:
 
     // The freed slot is reused by the next allocation (slotvec empty-slot
     // reuse rather than an ever-growing array).
-    const std::optional<uint32_t> d1b = AllocDoor();
+    const index_t d1b = AllocDoor();
     QCOMPARE(int(*d1b), 1);
     QVERIFY(Doors.is_used(1));
     QCOMPARE(static_cast<int>(Doors.size()), 3);
@@ -2730,7 +2730,7 @@ private slots:
   void testWorldSoundsDialogFlagToggles()
   {
     const int saved_network = Network_up;
-    const std::optional<uint32_t> saved_sound = app.current_sound;
+    const index_t saved_sound = app.current_sound;
     d3::slotvec_t<sound_info> saved_sounds = Sounds;
 
     // One used sound at index 0; the dialog edits Sounds[app.current_sound].
@@ -3277,9 +3277,9 @@ private slots:
     QVERIFY(!FindMegacellName("anything"));
 
     // Alloc hands out ascending free slots, seeds the default size, and counts.
-    const std::optional<uint32_t> a = AllocMegacell();
-    const std::optional<uint32_t> b = AllocMegacell();
-    const std::optional<uint32_t> c = AllocMegacell();
+    const index_t a = AllocMegacell();
+    const index_t b = AllocMegacell();
+    const index_t c = AllocMegacell();
     QVERIFY(a.has_value());
     QVERIFY(b.has_value());
     QVERIFY(c.has_value());
@@ -3334,7 +3334,7 @@ private slots:
 
     // A freed slot is recycled by the next alloc, and that slot comes back with
     // default (not stale) contents.
-    const std::optional<uint32_t> d = AllocMegacell();
+    const index_t d = AllocMegacell();
     QCOMPARE(*d, 1u);
     { int livec=0; for(size_t i=0;i<Megacells.size();i++) if(Megacells.is_used(i)) livec++; QCOMPARE(livec,3); }
     QCOMPARE(Megacells[*d].width, uint8_t(DEFAULT_MEGACELL_WIDTH));
@@ -3351,7 +3351,7 @@ private slots:
     for (uint32_t i = 0; i < MAX_MEGACELLS && i < static_cast<uint32_t>(Megacells.size()); i++)
       live_count += Megacells.is_used(i) ? 1u : 0u;
     while (live_count < MAX_MEGACELLS) {
-      const std::optional<uint32_t> slot = AllocMegacell();
+      const index_t slot = AllocMegacell();
       QVERIFY(slot.has_value());
       live_count++;
     }
@@ -7579,7 +7579,7 @@ private slots:
     int saved_num = Num_game_paths;
     const uint32_t idx = *AllocGamePath();
 
-    const std::optional<uint32_t> s0 = app.current_path;
+    const index_t s0 = app.current_path;
     app.current_path = idx;
 
     matrix orient = IDENTITY_MATRIX;
@@ -7971,7 +7971,7 @@ private slots:
     }
 
     // f_anim: fixed-size anim table with the engine defaults.
-    const std::optional<uint32_t> ai = AllocObjectID(object_type::powerup, true, false, false);
+    const index_t ai = AllocObjectID(object_type::powerup, true, false, false);
     QVERIFY(ai);
     QCOMPARE(int(Object_info[*ai].anim.size()), int(NUM_MOVEMENT_CLASSES));
     for (size_t j = 0; j < Object_info[*ai].anim.size(); j++)
@@ -7981,7 +7981,7 @@ private slots:
       }
 
     // No anim requested: the table stays empty.
-    const std::optional<uint32_t> bi = AllocObjectID(object_type::clutter, false, false, false);
+    const index_t bi = AllocObjectID(object_type::clutter, false, false, false);
     QVERIFY(bi);
     QVERIFY(Object_info[*bi].anim.empty());
 

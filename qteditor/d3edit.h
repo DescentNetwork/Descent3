@@ -4,6 +4,7 @@
 #include <optional>
 #include <filesystem>
 
+#include "utils.h"
 #include "vecmat.h"
 #include "terrain.h"
 #include "object_external.h" // object_type
@@ -62,22 +63,22 @@ namespace state
 struct d3edit_state
 {
   // Values for current item in the various dialogs
-  std::optional<uint32_t> texdlg_texture; // current texture in texdialog
+  index_t texdlg_texture; // current texture in texdialog
   std::optional<object_type> current_obj_type; // current type of object
   std::optional<uint16_t> current_obj_id; // current specific id of object within type
   std::optional<uint16_t> current_powerup; // current powerup id
-  std::optional<uint32_t> current_door; // current door in door page dialog
-  std::optional<uint32_t> current_robot; // current robot in robot page dialog
-  std::optional<uint32_t> current_ship; // current ship in ship page dialog
-  std::optional<uint32_t> current_sound; // current sound in sound page dialog
-  std::optional<uint32_t> current_weapon; // current weapon in weapon page dialog
-  std::optional<uint32_t> current_path; // currently selected path for a robot to follow
+  index_t current_door; // current door in door page dialog
+  index_t current_robot; // current robot in robot page dialog
+  index_t current_ship; // current ship in ship page dialog
+  index_t current_sound; // current sound in sound page dialog
+  index_t current_weapon; // current weapon in weapon page dialog
+  index_t current_path; // currently selected path for a robot to follow
   std::optional<uint16_t> current_node; // currently selected node of preceding path
-  std::optional<uint32_t> current_megacell; // currently selected megacell
+  index_t current_megacell; // currently selected megacell
   std::optional<int> current_room; // currently selected room
-  std::optional<uint32_t> current_gamefile; // currently selected gamefile
-  std::optional<uint32_t> current_building; // currently selected building
-  std::optional<uint32_t> current_clutter; // currently selected clutter
+  index_t current_gamefile; // currently selected gamefile
+  index_t current_building; // currently selected building
+  index_t current_clutter; // currently selected clutter
 
   //	Values for the different editor windows
   bool texscr_visible = false;                        // is texture mine view up?

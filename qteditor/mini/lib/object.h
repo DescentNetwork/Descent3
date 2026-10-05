@@ -714,7 +714,7 @@ void ObjSetAABB(object& obj);
 
 // initialize a new object.  adds to the list for the given room
 // returns the object number
-std::optional<uint32_t> ObjCreate(object_type type, uint16_t id, int roomnum, vector3& pos, const matrix *orient, int parent_handle = OBJECT_HANDLE_NONE);
+index_t ObjCreate(object_type type, uint16_t id, int roomnum, vector3& pos, const matrix *orient, int parent_handle = OBJECT_HANDLE_NONE);
 
 // remove object from the world
 void ObjDelete(int objnum);
