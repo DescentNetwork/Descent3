@@ -420,9 +420,6 @@ bool RoomsEnsureIndex(int roomnum);
 // Macros
 //
 
-// Handy macro to convert a room ptr to a room number
-#define ROOMNUM(r) (r - Rooms.data())
-
 // The mine index of a room (the 5-bit `mine` field of its room_flags_t)
 #define MINE_INDEX(x) (Rooms[x].flags.mine)
 
@@ -514,63 +511,21 @@ float GetAreaForFace(int roomnum, int facenum);
 int CheckTransparentPoint(const vector3 *pnt, int roomnum, const int facenum);
 
 // Face physics flags returned by GetFacePhysicsFlags()
-// Note that:
-//  it is illegal for a face to have both SOLID and TRANSPARENT
-//  it is legal, but probably not of interest, for a face to have SOLID & PORTAL
-#define FPF_SOLID 1       // nothing passes through this face
-#define FPF_TRANSPARENT 2 // face has transparency, so some things may be able to fly through it
-#define FPF_PORTAL 4      // this face is in a portal.
-#define FPF_RECORD 8      // take note of when an object passes through this face
+struct face_physics_flags_t {
+  unsigned int solid : 1;        // nothing passes through this face
+  unsigned int transparent : 1;  // face has transparency
+  unsigned int portal : 1;       // this face is in a portal
+  unsigned int record : 1;       // take note when object passes through
+};
 
-// Face physics types.  These are combinations of the above flags
-#define FPT_IGNORE 0 // completey ignore this face
+// Face physics types.  These are combinations of the above flags (legacy naming)
+#define FPT_IGNORE 0 // completely ignore this face
 
 // Figure out how the physics should deal with a given face
 // Parameters:	roomnum - the Rooms slot the face's room occupies
 //					fp - the face we're interested in
 // Returns:	bitmask of flags (see above).
-static inline int GetFacePhysicsFlags(int roomnum, const face *fp) {
-  int ret = 0;
-
-  // If face is a trigger, must record
-  if (fp->flags.has_trigger)
-    ret |= FPF_RECORD;
-
-  // If it's a floating trigger, then we're done
-  if (fp->flags.floating_trig)
-    return ret;
-
-  if (fp->flags.volumetric)
-    return ret;
-
-  // Deal with faces that are part of a portal
-  if (fp->portal_num != -1) {
-    const portal *pp = &Rooms[roomnum].portals[fp->portal_num];
-
-    // Mark as portal
-    ret |= FPF_PORTAL;
-
-    // Face is flythrough if we don't render the portal faces, or it's marked rendered flythrough
-    if (!(pp->flags.render_faces) || (pp->flags.rendered_flythrough))
-      return ret;
-  }
-
-  // If we're here, it's either a non-portal face, or portal face that gets rendered
-
-  // Check if the face is marked fly-through
-  if (GameTextures[fp->tmap].flags.fly_thru)
-    return ret;
-
-  // Check if the face is solid or transparent
-  int bm_handle = GetTextureBitmap(fp->tmap, 0);
-  if (GameBitmaps[bm_handle].flags.transparent)
-    ret |= FPF_TRANSPARENT;
-  else
-    ret |= FPF_SOLID;
-
-  // We're done
-  return ret;
-}
+face_physics_flags_t GetFacePhysicsFlags(int roomnum, const face *fp);
 
 // Computes a bounding sphere for the current room
 // Parameters: center - filled in with the center point of the sphere

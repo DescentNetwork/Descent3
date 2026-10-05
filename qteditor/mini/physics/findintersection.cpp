@@ -4500,7 +4500,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
       if (!room_movement_AABB(&cur_room->faces[i]))
         continue;
 
-      face_info = GetFacePhysicsFlags(room_index, &cur_room->faces[i]);
+      { auto ff = GetFacePhysicsFlags(room_index, &cur_room->faces[i]); face_info = (ff.solid?1:0)|(ff.transparent?2:0)|(ff.portal?4:0)|(ff.record?8:0); }
       if (face_info == FPT_IGNORE)
         continue;
 
@@ -4515,9 +4515,9 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
       face_normal = cur_room->faces[i].normal;
 
       // Add the portal if we are within a AABB of it.
-      if ((face_info & FPF_PORTAL)) {
+      if ((face_info & 4)) {
         // If we can cross a portal, add it to the next portal list if it is not already there
-        if (!(face_info & FPF_SOLID) && !(fvi_query_ptr->flags.solid_portals)) {
+        if (!(face_info & 1) && !(fvi_query_ptr->flags.solid_portals)) {
           bool f_add_next_portal;
 
           f_add_next_portal = true;
@@ -4531,7 +4531,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
             Q_ASSERT(num_next_portals < MAX_NEXT_PORTALS);
             next_portals[num_next_portals++] = portal_num;
 
-            if ((fvi_query_ptr->flags.record) && (face_info & FPF_RECORD)) {
+            if ((fvi_query_ptr->flags.record) && (face_info & 8)) {
               Q_ASSERT(Fvi_num_recorded_faces < MAX_RECORDED_FACES);
               if (Fvi_num_recorded_faces < MAX_RECORDED_FACES) {
                 Fvi_recorded_faces[Fvi_num_recorded_faces].face_index = i;
@@ -4596,7 +4596,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
           if (portal_num >= 0 && portal_num == from_portal)
             continue;
 
-          face_info = GetFacePhysicsFlags(room_index, cur_face);
+          auto ff = GetFacePhysicsFlags(room_index, cur_face); face_info = (ff.solid?1:0)|(ff.transparent?2:0)|(ff.portal?4:0)|(ff.record?8:0);
           if (face_info == FPT_IGNORE)
             continue;
 
@@ -4608,8 +4608,8 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
           face_normal = cur_face->normal;
 
           // Add the portal if we are within a AABB of it.
-          if ((face_info & FPF_PORTAL)) {
-            if ((fvi_query_ptr->flags.record) && (face_info & FPF_RECORD)) {
+          if ((face_info & 4)) {
+            if ((fvi_query_ptr->flags.record) && (face_info & 8)) {
               Q_ASSERT(Fvi_num_recorded_faces < MAX_RECORDED_FACES);
               if (Fvi_num_recorded_faces < MAX_RECORDED_FACES) {
                 Fvi_recorded_faces[Fvi_num_recorded_faces].face_index = i;
@@ -4618,7 +4618,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
             }
 
             // If we can cross a portal, add it to the next portal list if it is not already there
-            if (!(face_info & FPF_SOLID) && !(fvi_query_ptr->flags.solid_portals)) {
+            if (!(face_info & 1) && !(fvi_query_ptr->flags.solid_portals)) {
               bool f_add_next_portal = true;
 
               for (next_portal_index = 0; next_portal_index < num_next_portals; next_portal_index++) {
@@ -4683,7 +4683,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
             f_backface = true;
           }
 
-          if (face_hit_type && (face_info & FPF_TRANSPARENT) && (fvi_query_ptr->flags.transpoint) &&
+          if (face_hit_type && (face_info & 2) && (fvi_query_ptr->flags.transpoint) &&
               CheckTransparentPoint(&colp, room_index, i)) {
             // Go through the hole
             face_hit_type = HIT_NONE;
@@ -4691,7 +4691,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
 
           // If we hit the face...
           if (face_hit_type) {
-            if ((fvi_query_ptr->flags.record) && (face_info & FPF_RECORD) &&
+            if ((fvi_query_ptr->flags.record) && (face_info & 8) &&
                 !(Fvi_num_recorded_faces > 0 &&
                   Fvi_recorded_faces[Fvi_num_recorded_faces - 1].face_index == i &&
                   Fvi_recorded_faces[Fvi_num_recorded_faces - 1].room_index == room_index)) {
@@ -4702,7 +4702,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
               }
             }
 
-            if (cur_dist <= fvi_collision_dist && (face_info & (FPF_SOLID | FPF_TRANSPARENT))) {
+            if (cur_dist <= fvi_collision_dist && (face_info & (1|2))) {
 
               if ((cur_dist < fvi_collision_dist) || !(fvi_query_ptr->flags.multi_point)) {
                 fvi_hit_data_ptr->num_hits = 0;

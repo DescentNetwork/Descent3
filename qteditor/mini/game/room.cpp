@@ -1601,3 +1601,41 @@ byte_ostream& operator<<(byte_ostream& output, const room& data) {
   output << data.env_reverb;
   return output << data.damage << data.damage_type;
 }
+
+
+face_physics_flags_t GetFacePhysicsFlags(int roomnum, const face *fp) {
+  face_physics_flags_t ret{};
+  ret.solid = 0;
+  ret.transparent = 0;
+  ret.portal = 0;
+  ret.record = 0;
+
+  if (fp->flags.has_trigger) {
+    ret.record = 1;
+  }
+
+  if (fp->flags.floating_trig) {
+    return ret;
+  }
+
+  if (fp->flags.volumetric) {
+    return ret;
+  }
+
+  if (fp->portal_num != -1) {
+    const portal *pp = &Rooms[roomnum].portals[fp->portal_num];
+    ret.portal = 1;
+    if (!(pp->flags.render_faces) || (pp->flags.rendered_flythrough)) {
+      return ret;
+    }
+  }
+
+  int bm_handle = GetTextureBitmap(fp->tmap, 0);
+  if (GameBitmaps[bm_handle].flags.transparent) {
+    ret.transparent = 1;
+  } else {
+    ret.solid = 1;
+  }
+
+  return ret;
+}
