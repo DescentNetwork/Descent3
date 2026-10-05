@@ -7579,8 +7579,8 @@ private slots:
     int saved_num = Num_game_paths;
     const uint32_t idx = *AllocGamePath();
 
-    int s0 = app.current_path;
-    app.current_path = static_cast<int>(idx);
+    const std::optional<uint32_t> s0 = app.current_path;
+    app.current_path = idx;
 
     matrix orient = IDENTITY_MATRIX;
     vector3 pos{10.0f, 20.0f, 30.0f};

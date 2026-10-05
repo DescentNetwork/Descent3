@@ -354,7 +354,7 @@ struct d3edit_state {
   std::optional<uint32_t> current_ship;     // current ship in ship page dialog
   std::optional<uint32_t> current_sound;    // current sound in sound page dialog
   std::optional<uint32_t> current_weapon;   // current weapon in weapon page dialog
-  int current_path;     // currently selected path for a robot to follow
+  std::optional<uint32_t> current_path;     // currently selected path for a robot to follow
   int current_node;     // currently selected node of preceding path
   int current_megacell; // currently selected megacell
   int current_room;     // currently selected room

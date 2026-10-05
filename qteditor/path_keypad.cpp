@@ -70,7 +70,7 @@ PathKeypad::PathKeypad(QWidget *parent)
 
 PathKeypad::~PathKeypad() { delete ui; }
 
-int PathKeypad::currentPath() { return app.current_path; }
+int PathKeypad::currentPath() { return app.current_path ? static_cast<int>(*app.current_path) : -1; }
 
 int PathKeypad::currentNode() {
   const int p = currentPath();
@@ -84,8 +84,7 @@ int PathKeypad::currentNode() {
 void PathKeypad::updateDialog() {
   // Win32 disables path editing when there is no current path (requires a
   // loaded level with paths).
-  const bool active = (app.current_path >= 0 && app.current_path < (int)GamePaths.size() &&
-                       GamePaths.is_used(app.current_path));
+  const bool active = (app.current_path && *app.current_path < GamePaths.size() && GamePaths.is_used(*app.current_path));
   const QList<QWidget *> all = this->findChildren<QWidget *>();
   for (QWidget *w : all) {
     if (w->objectName().startsWith("IDC_PATHPAD") || w->objectName().startsWith("IDC_DELETE_PATH") ||
@@ -126,7 +125,7 @@ void PathKeypad::onAddPath() {
   if (!pathnum)
     return;
   GamePaths[*pathnum].name = name.toStdString();
-  app.current_path = static_cast<int>(*pathnum);
+  app.current_path = *pathnum;
   app.current_node = 0;
   updateDialog();
 }
@@ -137,7 +136,7 @@ void PathKeypad::onDeletePath() {
     return;
   FreeGamePath(static_cast<uint32_t>(p));
   if (const std::optional<uint32_t> next = GetNextPath(static_cast<uint32_t>(p)))
-    app.current_path = static_cast<int>(*next);
+    app.current_path = *next;
   app.current_node = 0;
   updateDialog();
 }
@@ -146,7 +145,7 @@ void PathKeypad::onPathPulldownChanged()
 {
   if (const std::optional<uint32_t> idx = FindGamePathName(ui->IDC_PATHPAD_PULLDOWN->currentText().toStdString()); idx)
   {
-    app.current_path = *idx;
+    app.current_path = idx;
     app.current_node = 0;
     updateDialog();
   }
