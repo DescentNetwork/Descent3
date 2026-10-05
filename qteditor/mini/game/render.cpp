@@ -3495,7 +3495,7 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
 
 #ifdef EDITOR
   if (OUTLINE_ON(OM_MINE)) {
-    OutlineCurrentFace(app.Curroomp.value_or(-1), app.Curface.value_or(-1), app.Curedge, app.Curvert, CURFACE_COLOR, CUREDGE_COLOR);
+    OutlineCurrentFace(app.Curroomp.value_or(-1), app.Curface.value_or(-1), app.Curedge.value_or(-1), app.Curvert, CURFACE_COLOR, CUREDGE_COLOR);
     if (app.Markedroomp != -1)
       OutlineCurrentFace(app.Markedroomp, app.Markedface, app.Markededge, app.Markedvert, MARKEDFACE_COLOR, MARKEDEDGE_COLOR);
     if (app.Placed_room != -1)

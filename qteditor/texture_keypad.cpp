@@ -90,8 +90,8 @@ void TextureKeypad::onExpandU() { ScaleFaceUVs(app.Curroomp.value_or(-1), app.Cu
 void TextureKeypad::onContractU() { ScaleFaceUVs(app.Curroomp.value_or(-1), app.Curface.value_or(-1), 1.0f / 1.1f); }
 void TextureKeypad::onExpandV() { ScaleFaceUVs(app.Curroomp.value_or(-1), app.Curface.value_or(-1), 1.1f); }
 void TextureKeypad::onContractV() { ScaleFaceUVs(app.Curroomp.value_or(-1), app.Curface.value_or(-1), 1.0f / 1.1f); }
-void TextureKeypad::onStretchLess() { HTextureStretchLess(app.Curroomp.value_or(-1), app.Curface.value_or(-1), app.Curedge, app.texscale); }
-void TextureKeypad::onStretchMore() { HTextureStretchMore(app.Curroomp.value_or(-1), app.Curface.value_or(-1), app.Curedge, app.texscale); }
+void TextureKeypad::onStretchLess() { HTextureStretchLess(app.Curroomp.value_or(-1), app.Curface.value_or(-1), app.Curedge.value_or(-1), app.texscale); }
+void TextureKeypad::onStretchMore() { HTextureStretchMore(app.Curroomp.value_or(-1), app.Curface.value_or(-1), app.Curedge.value_or(-1), app.texscale); }
 
 void TextureKeypad::onSetDefault() { HTextureSetDefault(app.Curroomp.value_or(-1), app.Curface.value_or(-1)); }
 

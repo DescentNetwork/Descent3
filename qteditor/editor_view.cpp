@@ -939,12 +939,12 @@ void EditorView::renderOverlays() {
         glEnd();
 
         // Current edge in green (DrawFaceEdge, CUREDGE_COLOR).
-        if (app.Curedge >= 0 && app.Curedge < nv) {
-          int next = (app.Curedge + 1) % nv;
+        if (app.Curedge.has_value() && app.Curedge.value_or(-1) < nv) {
+          int next = (app.Curedge.value_or(-1) + 1) % nv;
           glColor3fv(kWfCurEdgeColor);
           glLineWidth(3.0f);
           glBegin(GL_LINES);
-          glVertex2f(sx[app.Curedge], sy[app.Curedge]);
+          glVertex2f(sx[*app.Curedge], sy[*app.Curedge]);
           glVertex2f(sx[next], sy[next]);
           glEnd();
         }

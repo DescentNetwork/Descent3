@@ -1822,11 +1822,11 @@ bool MainWindow::onDeleteRoom() {
 // SetMarkedRoom() (which uses the MFC keypad "Mark" button).
 void MainWindow::onMarkRoom() {
   // editor/selectedroom.cpp::SetMarkedRoom() captures (app.Curroomp,
-  // app.Curface.value_or(-1), app.Curedge, app.Curvert); we mirror the same state but use the qteditor
+  // app.Curface.value_or(-1), app.Curedge.value_or(-1), app.Curvert); we mirror the same state but use the qteditor
   // globals From d3_editor_state.cpp.
   app.Markedroomp = app.Curroomp.value_or(-1);
   app.Markedface = app.Curface.value_or(-1);
-  app.Markededge = app.Curedge;
+  app.Markededge = app.Curedge.value_or(-1);
   app.Markedvert = app.Curvert;
   app.State_changed = true;
   std::fprintf(stderr, "[room_ops] MarkRoom: slot %d face %d\n",

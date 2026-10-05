@@ -2910,7 +2910,7 @@ private slots:
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QCOMPARE(app.Curroomp.value_or(-1), 0);
     QCOMPARE(app.Curface.value_or(-1), 1);
-    QCOMPARE(app.Curedge, 2);
+    QCOMPARE(app.Curedge.value_or(-1), 2);
     QCOMPARE(app.Curvert, 3);
     QCOMPARE(app.Markedroomp, 0);
     QCOMPARE(app.Markedface, 4);

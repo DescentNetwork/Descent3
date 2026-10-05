@@ -151,7 +151,7 @@ struct d3edit_state
   // Current room & face
   std::optional<int> Curroomp;
   std::optional<int> Curface;
-  int Curedge = -1;
+  std::optional<int> Curedge;
   int Curvert = -1;
   int Curportal = -1;
 
