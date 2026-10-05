@@ -2922,7 +2922,7 @@ private slots:
     QCOMPARE(app.Cur_object_index.value_or(-1), 7);
     QCOMPARE(app.Current_trigger.value_or(-1), 8);
     QCOMPARE(app.view_mode, state::viewer::terrain);
-    QCOMPARE(app.Editor_viewer_id, 9);
+    QCOMPARE(app.Editor_viewer_id.value_or(-1), 9);
     QCOMPARE(Wireframe_view_mine.dist, 50);
     QCOMPARE(Wireframe_view_mine.orient.fvec.z(), 1);
     QCOMPARE(LightSpacing, 40);
@@ -2991,7 +2991,7 @@ private slots:
     N_selected_rooms = 0;
     app.Cur_object_index.reset();
     app.Current_trigger.reset();
-    app.Editor_viewer_id = -1;
+    app.Editor_viewer_id.reset();
     app.view_mode = state::viewer::mine;
 
     // Clean teardown.
@@ -4449,7 +4449,7 @@ private slots:
     QCOMPARE(app.view_mode, state::viewer::mine);
     // CreateNewMine spawns a viewer for the level (Win32 HFile.cpp:478
     // SetEditorViewer), so the id/object are non-empty afterwards.
-    QCOMPARE(app.Editor_viewer_id, 0);
+    QCOMPARE(app.Editor_viewer_id.value_or(-1), 0);
     QVERIFY(Viewer_object != nullptr);
     QCOMPARE(int(Viewer_object->type), int(object_type::viewer));
     QCOMPARE(app.New_mine, true);
@@ -4482,7 +4482,7 @@ private slots:
     Highest_object_index = -1;
     RoomsReset();
     Viewer_object = nullptr;
-    app.Editor_viewer_id = -1;
+    app.Editor_viewer_id.reset();
     app.view_mode = state::viewer::mine;
 
     // A single interior room (flags.external is false after InitRoom).
@@ -4517,7 +4517,7 @@ private slots:
     QVERIFY(Viewer_object != nullptr);
     QCOMPARE(int(Viewer_object - Objects.data()), viewerSlot);
     QCOMPARE(Viewer_object->id, 4);
-    QCOMPARE(app.Editor_viewer_id, 4);
+    QCOMPARE(app.Editor_viewer_id.value_or(-1), 4);
     QVERIFY(Viewer_object->pos.x() == savedPos.x());
     QVERIFY(Viewer_object->pos.y() == savedPos.y());
     QVERIFY(Viewer_object->pos.z() == savedPos.z());
@@ -4536,7 +4536,7 @@ private slots:
     Highest_object_index = -1;
     RoomsReset();
     Viewer_object = nullptr;
-    app.Editor_viewer_id = -1;
+    app.Editor_viewer_id.reset();
     app.view_mode = state::viewer::mine;
 
     const vector3 quadV[4] = {
@@ -4560,7 +4560,7 @@ private slots:
     QVERIFY(Viewer_object != nullptr);
     QCOMPARE(int(Viewer_object->type), int(object_type::viewer));
     QCOMPARE(Viewer_object->roomnum, 0);
-    QCOMPARE(app.Editor_viewer_id, 0);
+    QCOMPARE(app.Editor_viewer_id.value_or(-1), 0);
     app.State_changed = app.Viewer_moved = false;
 
     // The new viewer lands at the room's centroid.
@@ -5455,7 +5455,7 @@ private slots:
       Objects[i].type = object_type::none;
     ResetObjectList();
     Highest_object_index = -1;
-    app.Editor_viewer_id = -1;
+    app.Editor_viewer_id.reset();
     Viewer_object = nullptr;
 
     MainWindow win;
@@ -5470,7 +5470,7 @@ private slots:
     const int viewer2 = win.onSpawnNewViewer();
     QVERIFY(viewer2 > 0);
     QCOMPARE(int(Objects[viewer2].type), int(object_type::viewer));
-    QCOMPARE(int(app.Editor_viewer_id >= 1), 1);
+    QCOMPARE(int(app.Editor_viewer_id.value_or(-1) >= 1), 1);
 
     const int moved = win.onSelectNextViewer();
     QVERIFY(moved >= 0);

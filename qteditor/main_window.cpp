@@ -1334,8 +1334,8 @@ int MainWindow::onSpawnNewViewer() {
   Objects[slot].type = object_type::viewer;
   Objects[slot].render_type = render_type::polyobj;
   Objects[slot].orient = Viewer_object->orient;
-  app.Editor_viewer_id = (app.Editor_viewer_id < 0) ? 0 : app.Editor_viewer_id + 1;
-  Objects[slot].id = app.Editor_viewer_id;
+  app.Editor_viewer_id = (!app.Editor_viewer_id) ? 0 : app.Editor_viewer_id.value_or(-1) + 1;
+  Objects[slot].id = static_cast<uint16_t>(app.Editor_viewer_id.value_or(0));
   // The slot was carved straight out of Objects[], so re-sync the free list /
   // object count with the type table (this also sets Highest_object_index,
   // which ObjRelink's assert below relies on).
@@ -1346,7 +1346,7 @@ int MainWindow::onSpawnNewViewer() {
   app.New_mine = true;
   std::fprintf(stderr,
                "[object_ops] SpawnNewViewer -> object %d (id %d)\n", slot,
-               app.Editor_viewer_id);
+               app.Editor_viewer_id.value_or(-1));
   m_editorView->update();
   return slot;
 }
@@ -1377,7 +1377,7 @@ int MainWindow::onSelectNextViewer() {
   app.Editor_viewer_id = Viewer_object->id;
   app.State_changed = app.Viewer_moved = true;
   std::fprintf(stderr, "[object_ops] SelectNextViewer -> object %d (id %d)\n",
-               best, app.Editor_viewer_id);
+               best, app.Editor_viewer_id.value_or(-1));
   m_editorView->update();
   return best;
 }
@@ -1405,7 +1405,7 @@ void MainWindow::onDeleteCurrentViewer() {
       app.Editor_viewer_id = Objects[i].id;
       std::fprintf(stderr,
                    "[object_ops] DeleteCurrentViewer: resync to %d (id %d)\n",
-                   i, app.Editor_viewer_id);
+                   i, app.Editor_viewer_id.value_or(-1));
       return;
     }
   }

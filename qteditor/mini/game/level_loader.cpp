@@ -1014,7 +1014,9 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
     ifile >> tmp;
     if (tmp >= static_cast<int>(state::viewer::mine) && tmp <= static_cast<int>(state::viewer::room))
       app.view_mode = static_cast<state::viewer>(tmp);
-    ifile >> app.Editor_viewer_id;
+    int32_t editor_viewer_id = 0;
+    ifile >> editor_viewer_id;
+    app.Editor_viewer_id = editor_viewer_id < 0 ? std::optional<int>() : std::optional<int>(editor_viewer_id);
     if (version < 47)
       ifile >> tmp; // was Editor_viewer_id[VM_TERRAIN]
   }
@@ -1066,7 +1068,7 @@ static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
   ofile << static_cast<int32_t>(app.Cur_object_index.value_or(-1));
   ofile << static_cast<int32_t>(app.Current_trigger.value_or(-1));
   ofile << static_cast<int32_t>(app.view_mode);
-  ofile << static_cast<int32_t>(app.Editor_viewer_id);
+  ofile << static_cast<int32_t>(app.Editor_viewer_id.value_or(-1));
 
   ofile << Wireframe_view_mine.target;
   ofile << Wireframe_view_mine.orient;

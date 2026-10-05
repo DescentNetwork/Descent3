@@ -162,7 +162,7 @@ struct d3edit_state
   std::optional<int> Current_trigger;
 
   // The ID of the most recent viewer object (not counting room view)
-  int Editor_viewer_id = -1;
+  std::optional<int> Editor_viewer_id;
 
   // Marked room & face
   int Markedroomp = -1;

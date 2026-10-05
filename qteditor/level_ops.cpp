@@ -153,7 +153,7 @@ void CreateNewMine() {
 
   // Reset the view position for the orbit camera.
   app.view_mode = state::viewer::mine;
-  app.Editor_viewer_id = -1;
+  app.Editor_viewer_id.reset();
 
   // Create a camera for this level (Win32 HFile.cpp:478 SetEditorViewer).
   SetEditorViewer();
@@ -377,7 +377,7 @@ void SetEditorViewer() {
   if (app.view_mode == state::viewer::room)
     objnum = findViewerObject(ROOM_VIEWER_ID);
   else
-    objnum = findNextViewerObject(app.Editor_viewer_id, app.view_mode);
+    objnum = findNextViewerObject(app.Editor_viewer_id.value_or(-1), app.view_mode);
 
   // If no viewer object, create one
   if (objnum == -1) {
@@ -413,7 +413,7 @@ void SetEditorViewer() {
       if (Viewer_object->type == object_type::viewer)
         objnum = OBJNUM(Viewer_object);
       else {
-        objnum = findNextViewerObject(app.Editor_viewer_id, state::viewer::invalid);
+        objnum = findNextViewerObject(app.Editor_viewer_id.value_or(-1), state::viewer::invalid);
         Q_ASSERT(objnum != -1);
       }
       ObjSetPos(Objects[objnum], pos, roomnum, std::nullopt, true);
