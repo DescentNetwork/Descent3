@@ -2730,7 +2730,7 @@ private slots:
   void testWorldSoundsDialogFlagToggles()
   {
     const int saved_network = Network_up;
-    const int saved_sound = app.current_sound;
+    const std::optional<uint32_t> saved_sound = app.current_sound;
     d3::slotvec_t<sound_info> saved_sounds = Sounds;
 
     // One used sound at index 0; the dialog edits Sounds[app.current_sound].
@@ -2739,7 +2739,7 @@ private slots:
     Sounds.acquire(snd_idx);
     Sounds[0].name = "toggle_sound";
     Sounds[0].sample_index = 0;
-    app.current_sound = 0;
+    app.current_sound = 0u;
     Network_up = 1;
 
     {

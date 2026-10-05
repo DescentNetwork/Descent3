@@ -42,9 +42,9 @@
 
 optref<sound_info> WorldSoundsDialog::data(void)
 {
-  if (app.current_sound < 0 || app.current_sound >= static_cast<int>(Sounds.size()) || Sounds.is_unused(app.current_sound))
+  if (!app.current_sound || *app.current_sound >= static_cast<uint32_t>(Sounds.size()) || Sounds.is_unused(*app.current_sound))
     return std::nullopt;
-  return Sounds[app.current_sound];
+  return Sounds[*app.current_sound];
 }
 
 WorldSoundsDialog::WorldSoundsDialog(QWidget *parent)
@@ -184,11 +184,11 @@ void WorldSoundsDialog::updateDialog()
   if (!static_cast<int>(Sounds.size()))
     return;
 
-  if (app.current_sound < 0 || app.current_sound >= static_cast<int>(Sounds.size()) || Sounds.is_unused(app.current_sound))
+  if (!app.current_sound || *app.current_sound >= static_cast<uint32_t>(Sounds.size()) || Sounds.is_unused(*app.current_sound))
     if (const std::optional<uint32_t> next = GetNextSound(0))
-      app.current_sound = static_cast<int>(*next);
+      app.current_sound = *next;
 
-  Sound_system.CheckAndForceSoundDataAlloc(app.current_sound);
+  if (app.current_sound) Sound_system.CheckAndForceSoundDataAlloc(static_cast<int>(*app.current_sound));
 
   if (auto s = data()) {
     int total_memory = 0;
@@ -323,9 +323,9 @@ void WorldSoundsDialog::onAddSound() {
   std::filesystem::copy(std::filesystem::path(pathname.toStdString()), (destname), std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(cur_name, PAGETYPE_SOUND);
-  app.current_sound = static_cast<int>(*sound_handle);
+  app.current_sound = *sound_handle;
   RemapSounds();
-  Sound_system.CheckAndForceSoundDataAlloc(app.current_sound);
+  if (app.current_sound) Sound_system.CheckAndForceSoundDataAlloc(static_cast<int>(*app.current_sound));
   Sounds[*sound_handle].loop_end = SoundFiles[Sounds[*sound_handle].sample_index].np_sample_length - 1;
   updateDialog();
 }
@@ -350,13 +350,11 @@ void WorldSoundsDialog::onLoadSound() {
 }
 
 void WorldSoundsDialog::onNextSound() {
-  if (const std::optional<uint32_t> next = GetNextSound(static_cast<uint32_t>(app.current_sound)))
-    app.current_sound = static_cast<int>(*next);
+  if (app.current_sound && (auto next = GetNextSound(*app.current_sound))) app.current_sound = *next;
   updateDialog();
 }
 void WorldSoundsDialog::onPrevSound() {
-  if (const std::optional<uint32_t> prev = GetPrevSound(static_cast<uint32_t>(app.current_sound)))
-    app.current_sound = static_cast<int>(*prev);
+  if (app.current_sound && (auto prev = GetPrevSound(*app.current_sound))) app.current_sound = *prev;
   updateDialog();
 }
 
@@ -387,10 +385,11 @@ void WorldSoundsDialog::onDeleteSound() {
       mng_DeletePagelock(s->name, PAGETYPE_SOUND);
     }
 
-    const uint32_t d = static_cast<uint32_t>(app.current_sound);
-    if (const std::optional<uint32_t> next = GetNextSound(d))
-      app.current_sound = static_cast<int>(*next);
-    FreeSound(d);
+    if (app.current_sound) {
+      uint32_t d = *app.current_sound;
+      if (auto next = GetNextSound(d)) app.current_sound = *next;
+      FreeSound(d);
+    }
     mng_EraseLocker();
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound deleted.");
     RemapSounds();
@@ -400,7 +399,7 @@ void WorldSoundsDialog::onDeleteSound() {
 
 void WorldSoundsDialog::onLockSound() {
   if (auto s = data()) {
-    const int n = app.current_sound;
+    const uint32_t n = app.current_sound ? *app.current_sound : 0;
     if (!mng_MakeLocker())
       return;
 
@@ -452,7 +451,7 @@ void WorldSoundsDialog::onLockSound() {
 
 void WorldSoundsDialog::onCheckinSound() {
   if (auto s = data()) {
-    const int n = app.current_sound;
+    const uint32_t n = app.current_sound ? *app.current_sound : 0;
     if (!mng_MakeLocker())
       return;
 
@@ -489,7 +488,7 @@ void WorldSoundsDialog::onCheckinSound() {
 }
 
 void WorldSoundsDialog::onPlaysound() {
-  const int n = app.current_sound;
+  const uint32_t n = app.current_sound ? *app.current_sound : 0;
   if (!static_cast<int>(Sounds.size()))
     return;
   Sound_system.BeginSoundFrame();
