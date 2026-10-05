@@ -350,11 +350,11 @@ void WorldSoundsDialog::onLoadSound() {
 }
 
 void WorldSoundsDialog::onNextSound() {
-  if (app.current_sound && (auto next = GetNextSound(*app.current_sound))) app.current_sound = *next;
+  if (app.current_sound) { auto next = GetNextSound(*app.current_sound); if (next) app.current_sound = *next; }
   updateDialog();
 }
 void WorldSoundsDialog::onPrevSound() {
-  if (app.current_sound && (auto prev = GetPrevSound(*app.current_sound))) app.current_sound = *prev;
+  if (app.current_sound) { auto prev = GetPrevSound(*app.current_sound); if (prev) app.current_sound = *prev; }
   updateDialog();
 }
 
