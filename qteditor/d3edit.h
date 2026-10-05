@@ -111,7 +111,7 @@ struct d3edit_state
   bool terrain_flat_shade = false; // flat shade terrain?
 
   // Misc preferences
-  int game_render_mode    = -1;        // what mode to we play the game in?  See constants above.
+  std::optional<int> game_render_mode;        // what mode to we play the game in?  See constants above.
   bool randomize_megacell = false;     // randomize when placing a megacell?
   int box_selection_mode  = -1;      // How editor box selection works.  See constants above.
   int object_move_mode    = -1;        // How object movements works.  See constants above.

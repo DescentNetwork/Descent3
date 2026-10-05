@@ -81,7 +81,7 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   settings.setValue(QStringLiteral("objmodeless_on"),        state.objmodeless_on);
 
   settings.setValue(QStringLiteral("tile_views"),            state.tile_views);
-  settings.setValue(QStringLiteral("game_render_mode"),      state.game_render_mode);
+  if (state.game_render_mode) settings.setValue(QStringLiteral("game_render_mode"), *state.game_render_mode); else settings.setValue(QStringLiteral("game_render_mode"), -1);
 
   settings.setValue(QStringLiteral("terrain_dots"),          state.terrain_dots);
   settings.setValue(QStringLiteral("terrain_flat_shade"),    state.terrain_flat_shade);
@@ -161,7 +161,7 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
   state.objmodeless_on    = settings.value(QStringLiteral("objmodeless_on"),    false).toBool();
 
   state.tile_views        = settings.value(QStringLiteral("tile_views"),        false).toBool();
-  state.game_render_mode  = settings.value(QStringLiteral("game_render_mode"),  0).toInt();
+  { auto v = getval.template operator()<int>("game_render_mode"); if (v) state.game_render_mode = *v; }
 
   state.terrain_dots            = settings.value(QStringLiteral("terrain_dots"),            true).toBool();
   state.terrain_flat_shade      = settings.value(QStringLiteral("terrain_flat_shade"),      false).toBool();
