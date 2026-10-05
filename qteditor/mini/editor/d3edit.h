@@ -385,7 +385,7 @@ struct d3edit_state {
   // Misc preferences
   int game_render_mode;        // what mode to we play the game in?  See constants above.
   bool randomize_megacell;     // randomize when placing a megacell?
-  int box_selection_mode;      // How editor box selection works.  See constants above.
+  std::optional<int> box_selection_mode;      // How editor box selection works.  See constants above.
   int object_move_mode;        // How object movements works.  See constants above.
   int object_move_axis;        // This is the axis on which objects move with mouse.
   bool fullscreen_debug_state; // do we allow for fullscreen debugging?
