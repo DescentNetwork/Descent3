@@ -51,7 +51,7 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   if (state.current_sound) settings.setValue(QStringLiteral("current_sound"), *state.current_sound); else settings.setValue(QStringLiteral("current_sound"), -1);
   if (state.current_weapon) settings.setValue(QStringLiteral("current_weapon"), *state.current_weapon); else settings.setValue(QStringLiteral("current_weapon"), -1);
   if (state.current_path) settings.setValue(QStringLiteral("current_path"), *state.current_path); else settings.setValue(QStringLiteral("current_path"), -1);
-  settings.setValue(QStringLiteral("current_node"),          state.current_node);
+  if (state.current_node) settings.setValue(QStringLiteral("current_node"), *state.current_node); else settings.setValue(QStringLiteral("current_node"), -1);
   settings.setValue(QStringLiteral("current_megacell"),      state.current_megacell);
   setval("current_building",  state.current_building);
   setval("current_clutter",   state.current_clutter);
@@ -131,7 +131,7 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
   { auto v = getval.template operator()<uint32_t>("current_sound"); if (v) state.current_sound = *v; }
   { auto v = getval.template operator()<uint32_t>("current_weapon"); if (v) state.current_weapon = *v; }
   { auto v = getval.template operator()<uint32_t>("current_path"); if (v) state.current_path = *v; }
-  state.current_node      = settings.value(QStringLiteral("current_node"),     0).toInt();
+  { auto v = getval.template operator()<uint16_t>("current_node"); if (v) state.current_node = *v; }
   state.current_megacell  = settings.value(QStringLiteral("current_megacell"), 0).toInt();
   state.current_building  = getval.operator()<uint32_t>("current_building");
   state.current_clutter   = getval.operator()<uint32_t>("current_clutter");

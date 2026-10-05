@@ -76,9 +76,8 @@ int PathKeypad::currentNode() {
   const int p = currentPath();
   if (p < 0 || p >= (int)GamePaths.size() || GamePaths.is_unused(p))
     return -1;
-  if (app.current_node >= GamePaths[p].num_nodes)
-    app.current_node = GamePaths[p].num_nodes - 1;
-  return app.current_node;
+  if (app.current_node && *app.current_node >= GamePaths[p].num_nodes) app.current_node = GamePaths[p].num_nodes - 1;
+  return app.current_node ? static_cast<int>(*app.current_node) : -1;
 }
 
 void PathKeypad::updateDialog() {
@@ -126,7 +125,7 @@ void PathKeypad::onAddPath() {
     return;
   GamePaths[*pathnum].name = name.toStdString();
   app.current_path = *pathnum;
-  app.current_node = 0;
+  app.current_node = 0u;
   updateDialog();
 }
 
@@ -137,7 +136,7 @@ void PathKeypad::onDeletePath() {
   FreeGamePath(static_cast<uint32_t>(p));
   if (const std::optional<uint32_t> next = GetNextPath(static_cast<uint32_t>(p)))
     app.current_path = *next;
-  app.current_node = 0;
+  app.current_node = 0u;
   updateDialog();
 }
 
@@ -146,7 +145,7 @@ void PathKeypad::onPathPulldownChanged()
   if (const std::optional<uint32_t> idx = FindGamePathName(ui->IDC_PATHPAD_PULLDOWN->currentText().toStdString()); idx)
   {
     app.current_path = idx;
-    app.current_node = 0;
+    app.current_node = 0u;
     updateDialog();
   }
 }
@@ -157,7 +156,8 @@ void PathKeypad::onNextNode() {
     return;
   if (GamePaths[p].num_nodes == 0)
     return;
-  app.current_node = (app.current_node + 1) % GamePaths[p].num_nodes;
+  if (!app.current_node) app.current_node = 0u;
+  app.current_node = static_cast<uint16_t>((*app.current_node + 1) % GamePaths[p].num_nodes);
   updateDialog();
 }
 
@@ -167,8 +167,8 @@ void PathKeypad::onPrevNode() {
     return;
   if (GamePaths[p].num_nodes == 0)
     return;
-  app.current_node =
-      (app.current_node <= 0) ? (GamePaths[p].num_nodes - 1) : (app.current_node - 1);
+  if (!app.current_node || *app.current_node == 0) app.current_node = static_cast<uint16_t>(GamePaths[p].num_nodes - 1);
+  else app.current_node = static_cast<uint16_t>(*app.current_node - 1);
   updateDialog();
 }
 
@@ -181,7 +181,7 @@ void PathKeypad::onCurrentNodeEdited() {
     n = 0;
   if (n >= GamePaths[p].num_nodes)
     n = GamePaths[p].num_nodes - 1;
-  app.current_node = n;
+  app.current_node = static_cast<uint16_t>(n);
   updateDialog();
 }
 
