@@ -159,7 +159,7 @@ void CalculateFormFactorsHemiCube() {
 
           for (k = 0; k < ep->num_verts; k++) {
             vector3 vec = ep->verts[k];
-            g3_RotatePoint(&Element_points[k], &vec);
+            g3_RotatePoint(Element_points[k], vec);
             Element_points[k].p3_flags = 0;
           }
 

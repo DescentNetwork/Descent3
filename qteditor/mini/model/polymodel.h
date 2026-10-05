@@ -342,17 +342,17 @@ std::optional<uint32_t> FindPolyModelName(const std::filesystem::path &name);
 // an animation state we are
 
 // This one is for static lighting - ie 1 light value for the entire model
-void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normalized_time, int flags, float r, float g,
+void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *normalized_time, int flags, float r, float g,
                       float b, uint32_t f_render_sub = 0xFFFFFFFF, uint8_t use_effect = 0, uint8_t overlay = 0);
 
 // This one is for gouraud shading - the lightdir is the normalized light direction, and lightscalar is a 0-1 scalar to
 // apply
-void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normalized_time, int flags, vector3 *lightdir,
+void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *normalized_time, int flags, vector3 *lightdir,
                       float r, float g, float b, uint32_t f_render_sub = 0xFFFFFFFF, uint8_t use_effect = 0,
                       uint8_t overlay = 0);
 
 // This one is for lightmap rendering
-void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normalized_time, int flags,
+void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *normalized_time, int flags,
                       lightmap_object *lm_object, uint32_t f_render_sub, uint8_t use_effect = 0, uint8_t overlay = 0);
 
 // Inits our models array
@@ -417,6 +417,6 @@ void FreePolymodelData(int i);
 void SetModelAnglesAndPos(poly_model *po, float *normalized_time, uint32_t subobj_flags = 0xFFFFFFFF);
 
 void DoneLightInstance();
-void StartLightInstance(vector3 *, matrix *);
+void StartLightInstance(vector3 *, const matrix *);
 
 #endif

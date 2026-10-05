@@ -448,21 +448,21 @@ static bool ObjInitTypeSpecific(object& obj, bool reinitializing) {
   if (obj.id < 0 || obj.id >= MAX_OBJECTS)
     return false;
 
-  object_info *oi = &Object_info[obj.id];
+  object_info& oi = Object_info[obj.id];
 
   // Deal with deleted type
-  if (oi->type == object_type::none)
+  if (oi.type == object_type::none)
     return false;
 
-  if (oi->type != obj.type)
-    obj.type = oi->type;
+  if (oi.type != obj.type)
+    obj.type = oi.type;
 
   switch (obj.type) {
   case object_type::room:
     obj.render_type = render_type::room;
     obj.movement_type = movement_type::none;
     obj.control_type = control_type::none;
-    obj.size = oi->size;
+    obj.size = oi.size;
     break;
   case object_type::viewer:
   case object_type::camera:
@@ -475,8 +475,8 @@ static bool ObjInitTypeSpecific(object& obj, bool reinitializing) {
   case object_type::waypoint:
   case object_type::door:
     ObjSetRenderPolyobj(obj, obj.id);
-    obj.size = oi->size;
-    obj.shields = static_cast<float>(oi->hit_points);
+    obj.size = oi.size;
+    obj.shields = static_cast<float>(oi.hit_points);
     if (obj.type == object_type::viewer)
       obj.control_type = control_type::slew;
     else if (obj.type == object_type::player)

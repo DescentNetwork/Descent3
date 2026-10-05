@@ -284,7 +284,7 @@ float g3_GetAspectRatio();
 // Instancing
 
 // instance at specified point with specified orientation
-void g3_StartInstanceMatrix(vector3 &pos, matrix &orient);
+void g3_StartInstanceMatrix(vector3 &pos, const matrix &orient);
 
 // instance at specified point with specified orientation
 void g3_StartInstanceAngles(vector3 &pos, optref<angvec> angles);
@@ -301,7 +301,7 @@ bool g3_CheckNormalFacing(vector3 *v, vector3 *norm);
 // Point definition and rotation functions:
 
 // rotates a point. returns codes.  does not check if already rotated
-uint8_t g3_RotatePoint(g3Point *dest, vector3 *src);
+uint8_t g3_RotatePoint(g3Point& dest, const vector3& src);
 
 // projects a point
 void g3_ProjectPoint(g3Point *point);

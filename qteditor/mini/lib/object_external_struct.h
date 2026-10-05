@@ -835,6 +835,8 @@ struct object {
 
   std::string custom_default_script_name;
   std::string custom_default_module_name;
+
+  bool is_outside(void) const { return ROOMNUM_OUTSIDE(roomnum); }
 };
 
 // Level-file (OBJS chunk) record serialization; read mirrors write.  This is

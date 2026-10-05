@@ -352,12 +352,12 @@ uint8_t g3_CodePoint(g3Point *p) {
 }
 
 // rotates a point; returns codes
-uint8_t g3_RotatePoint(g3Point *dest, vector3 *src) {
-  dest->p3_vecPreRot = *src;
-  vector3 tempv = *src - View_position;
-  dest->p3_vec = tempv * View_matrix;
-  dest->p3_flags = PF_ORIGPOINT;
-  return g3_CodePoint(dest);
+uint8_t g3_RotatePoint(g3Point& dest, const vector3& src) {
+  dest.p3_vecPreRot = src;
+  vector3 tempv = src - View_position;
+  dest.p3_vec = tempv * View_matrix;
+  dest.p3_flags = PF_ORIGPOINT;
+  return g3_CodePoint(&dest);
 }
 
 // projects a point
@@ -408,7 +408,7 @@ static InstanceContext sInstanceStack[MAX_INSTANCE_DEPTH];
 static int sInstanceDepth = 0;
 
 // instance at specified point with specified orientation
-void g3_StartInstanceMatrix(vector3 &pos, matrix &orient) {
+void g3_StartInstanceMatrix(vector3 &pos, const matrix &orient) {
   Q_ASSERT(sInstanceDepth < MAX_INSTANCE_DEPTH);
 
   sInstanceStack[sInstanceDepth].m_viewMatrix = View_matrix;

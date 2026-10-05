@@ -572,7 +572,7 @@ static std::optional<uint32_t> FindValidID(object_type type) {
   case object_type::clutter:
     return GetObjectID(type);
   case object_type::door:
-    for (int i = 0; i < static_cast<int>(Doors.size()); i++)
+    for (size_t i = 0; i < Doors.size(); i++)
       if (Doors.is_used(i))
         return i;
     return std::nullopt;

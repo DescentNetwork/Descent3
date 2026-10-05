@@ -2160,7 +2160,7 @@ void DonePolyModelPosInstance() {
 void SetNormalizedTimeObjTimed(object& obj, float *normalized_time) {
   int i, j;
   poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
-  object_info *obj_info = &Object_info[obj.id];
+  const object_info& obj_info = Object_info[obj.id];
 
   if (obj.type == object_type::player || obj.type == object_type::weapon)
     return;
@@ -2174,8 +2174,8 @@ void SetNormalizedTimeObjTimed(object& obj, float *normalized_time) {
 
     if (!(sm->flags.turret) &&
         !(sm->flags.wb) &&
-        !obj_info->static_wb[x].flags.anim_local &&
-        obj_info->static_wb[x].flags.anim_full)
+        !obj_info.static_wb[x].flags.anim_local &&
+        obj_info.static_wb[x].flags.anim_full)
     {
       if (frame <= sm->rot_track_min)
         normalized_time[i] = 0.0;
@@ -2634,7 +2634,7 @@ static vector3 Instance_bump_pos[MAX_SUBOBJECTS];
 
 static int Instance_light_cnt = 0;
 
-void StartLightInstance(vector3 *pos, matrix *orient) {
+void StartLightInstance(vector3 *pos, const matrix *orient) {
   int gouraud = 0, specular = 0, fogged = 0, bumped = 0;
 
   if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD)
@@ -2711,7 +2711,7 @@ void DoneLightInstance() {
 // an animation state we are
 
 // This is the static light version
-void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normalized_time, int flags, float r, float g,
+void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *normalized_time, int flags, float r, float g,
                       float b, uint32_t f_render_sub, uint8_t use_effect, uint8_t overlay) {
   poly_model *po;
 
@@ -2786,7 +2786,7 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
 }
 
 // This draws a gouraud shaded version
-void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normalized_time, int flags, vector3 *lightdir,
+void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *normalized_time, int flags, vector3 *lightdir,
                       float r, float g, float b, uint32_t f_render_sub, uint8_t use_effect, uint8_t overlay) {
   poly_model *po;
   vector3 light_vec = *lightdir;
@@ -2863,7 +2863,7 @@ void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normal
 }
 
 // This draws a lightmap shaded version
-void DrawPolygonModel(vector3 *pos, matrix *orient, int model_num, float *normalized_time, int flags,
+void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *normalized_time, int flags,
                       lightmap_object *lm_object, uint32_t f_render_sub, uint8_t use_effect, uint8_t overlay) {
   poly_model *po;
 

@@ -41,7 +41,7 @@ void RenderObject_SetLightmaps(lightmap_object *lmobject);
 
 // Actually draws a polygon model based on the light parameters set by the above
 // functions
-void RenderObject_DrawPolymodel(object *obj, float *normalized_times);
+void RenderObject_DrawPolymodel(const object& obj, float *normalized_times);
 
 // Sets the direction of the lightsource to be used when calculating vertex lighting
 // The light source vector should be in the models coordinate space

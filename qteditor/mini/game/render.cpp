@@ -299,8 +299,8 @@ void OutlineCurrentFace(int roomnum, int facenum, int edgenum, int vertnum, ddgr
   uint8_t c0, c1;
   int v;
   for (v = 0; v < fp->num_verts; v++) {
-    c0 = g3_RotatePoint(&p0, &rp.verts[fp->face_verts[v]]);
-    c1 = g3_RotatePoint(&p1, &rp.verts[fp->face_verts[(v + 1) % fp->num_verts]]);
+    c0 = g3_RotatePoint(p0, rp.verts[fp->face_verts[v]]);
+    c1 = g3_RotatePoint(p1, rp.verts[fp->face_verts[(v + 1) % fp->num_verts]]);
     if (!(c0 & c1)) { // both not off screen?
       // Draw current edge in green
       g3_DrawLine((v == edgenum) ? edge_color : face_color, &p0, &p1);
@@ -320,7 +320,7 @@ void OutlineCurrentFace(int roomnum, int facenum, int edgenum, int vertnum, ddgr
     Q_ASSERT(rp.faces[facenum].lmi_handle != BAD_LMI_INDEX);
 
     p0.p3_flags = 0;
-    c0 = g3_RotatePoint(&p0, &LightmapInfo[rp.faces[facenum].lmi_handle].upper_left);
+    c0 = g3_RotatePoint(p0, LightmapInfo[rp.faces[facenum].lmi_handle].upper_left);
     if (!c0) {
       // Draw a little cross at the current vert
       g3_ProjectPoint(&p0); // make sure projected
@@ -345,10 +345,10 @@ static void DrawPlacedRoomFace(int roomnum, vector3 *rotpoint, matrix *rotmat, v
     vector3 tv;
 
     tv = (rp->verts[fp->face_verts[v]] - *rotpoint) * *rotmat + *placepoint;
-    c0 = g3_RotatePoint(&p0, &tv);
+    c0 = g3_RotatePoint(p0, tv);
 
     tv = (rp->verts[fp->face_verts[(v + 1) % fp->num_verts]] - *rotpoint) * *rotmat + *placepoint;
-    c1 = g3_RotatePoint(&p1, &tv);
+    c1 = g3_RotatePoint(p1, tv);
 
     if (!(c0 & c1)) // both not off screen?
       g3_DrawLine(color, &p0, &p1);
@@ -498,13 +498,13 @@ void RotateRoomPoints(int roomnum, const vector3 *world_vecs) {
       val *= Viewer_object->effect_info->deform_time;
       vec += Global_alter_vec * (Viewer_object->effect_info->deform_range * val);
 
-      g3_RotatePoint(&World_point_buffer[rp->wpb_index + i], &vec);
+      g3_RotatePoint(World_point_buffer[rp->wpb_index + i], vec);
       g3_ProjectPoint(&World_point_buffer[rp->wpb_index + i]);
     }
   } else {
     for (i = 0; i < rp->num_verts; i++) {
       vector3 vec = world_vecs[i];
-      g3_RotatePoint(&World_point_buffer[rp->wpb_index + i], &vec);
+      g3_RotatePoint(World_point_buffer[rp->wpb_index + i], vec);
       g3_ProjectPoint(&World_point_buffer[rp->wpb_index + i]);
     }
   }
@@ -672,7 +672,7 @@ void MarkFacesForRendering(int roomnum, clip_wnd *wnd) {
 
     MakePointsFromMinMax(vecs, &obj->min_xyz, &obj->max_xyz);
     for (i = 0; i < 8; i++) {
-      g3_RotatePoint(&pnts[i], &vecs[i]);
+      g3_RotatePoint(pnts[i], vecs[i]);
       g3_ProjectPoint(&pnts[i]);
       code = clip2d(&pnts[i], wnd);
       anded &= code;
@@ -715,7 +715,7 @@ void RotateAllExternalRooms() {
       bool behind = 0;
       bool infront = 0;
       for (int t = 0; t < 8; t++) {
-        g3_RotatePoint(&pnt, &corners[t]);
+        g3_RotatePoint(pnt, corners[t]);
         External_room_codes[i] &= pnt.p3_codes;
         if (pnt.p3_codes & CC_BEHIND)
           behind = true;
@@ -876,7 +876,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
 
         // First we must rotate and clip this polygon
         for (k = 0; k < this_fp->num_verts; k++) {
-          uint8_t c = g3_RotatePoint(&Combined_portal_points[num_points + k], &rp->verts[this_fp->face_verts[k]]);
+          uint8_t c = g3_RotatePoint(Combined_portal_points[num_points + k], rp->verts[this_fp->face_verts[k]]);
           combine_cc.cc_or |= c;
           combine_cc.cc_and &= c;
         }
@@ -967,7 +967,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
       nv = 4;
     } else {
       for (i = 0; i < nv; i++) {
-        g3_RotatePoint(&Combined_portal_points[i], &rp->verts[fp->face_verts[i]]);
+        g3_RotatePoint(Combined_portal_points[i], rp->verts[fp->face_verts[i]]);
 
         uint8_t c = Combined_portal_points[i].p3_codes;
         cc.cc_and &= c;
@@ -1205,7 +1205,7 @@ void RenderFloatingTrig(int roomnum, face *fp) {
   float stepsize;
   left = rp->verts[fp->face_verts[0]];
   right = rp->verts[fp->face_verts[1]];
-  g3_RotatePoint(&p3, &left);
+  g3_RotatePoint(p3, left);
   stepsize = STEPSIZE * p3.p3_z;
   if (stepsize < STEPSIZE_MIN)
     stepsize = STEPSIZE_MIN;
@@ -1225,7 +1225,7 @@ void RenderFloatingTrig(int roomnum, face *fp) {
     cross_step = crossvec / n_steps;
     p = left;
     for (j = 0; j < n_crosssteps; j++) {
-      if (g3_RotatePoint(&p3, &p) == 0) { // on screen
+      if (g3_RotatePoint(p3, p) == 0) { // on screen
         g3_ProjectPoint(&p3);
         rend_SetPixel(GR_RGB(255, 100, 100), p3.p3_sx, p3.p3_sy);
       }
@@ -2037,8 +2037,8 @@ draw_fog:
       vector3 subvec = SpecialFaces[fp->special_handle].spec_instance[0].bright_center - center;
       vm_NormalizeVectorFast(&subvec);
       end = center + subvec;
-      g3_RotatePoint(&p1, &center);
-      g3_RotatePoint(&p2, &end);
+      g3_RotatePoint(p1, center);
+      g3_RotatePoint(p2, end);
       g3_DrawLine(GR_RGB(255, 255, 255), &p1, &p2);
       /*for (t=0;t<fp->num_verts;t++)
       {
@@ -2072,16 +2072,16 @@ draw_fog:
         int y = i / w;
         int x = i % w;
         evec[0] = lmi->upper_left - (y * uvec) + (x * rvec);
-        g3_RotatePoint(&epoints[0], &evec[0]);
+        g3_RotatePoint(epoints[0], evec[0]);
         pointlist[0] = &epoints[0];
         evec[1] = lmi->upper_left - (y * uvec) + ((x + 1) * rvec);
-        g3_RotatePoint(&epoints[1], &evec[1]);
+        g3_RotatePoint(epoints[1], evec[1]);
         pointlist[1] = &epoints[1];
         evec[2] = lmi->upper_left - ((y + 1) * uvec) + ((x + 1) * rvec);
-        g3_RotatePoint(&epoints[2], &evec[2]);
+        g3_RotatePoint(epoints[2], evec[2]);
         pointlist[2] = &epoints[2];
         evec[3] = lmi->upper_left - ((y + 1) * uvec) + (x * rvec);
-        g3_RotatePoint(&epoints[3], &evec[3]);
+        g3_RotatePoint(epoints[3], evec[3]);
         pointlist[3] = &epoints[3];
 
         if (!(src_data[y][x] & OPAQUE_FLAG)) {
@@ -2527,7 +2527,7 @@ void RenderSingleLightGlow2(int index) {
   world_vecs[3] = corona_pos - (size * rot_mat.rvec);
   world_vecs[3] -= (size * rot_mat.uvec);
   for (int i = 0; i < 4; i++) {
-    g3_RotatePoint(&pnts[i], &world_vecs[i]);
+    g3_RotatePoint(pnts[i], world_vecs[i]);
     pnts[i].p3_flags |= PF_UV | PF_RGBA;
     pnts[i].p3_r = r;
     pnts[i].p3_g = g;
@@ -2693,7 +2693,7 @@ void BuildMirroredRoomListSub(int start_room_num, clip_wnd *wnd) {
           vec->x() * mirror_norm->x() + vec->y() * mirror_norm->y() + vec->z() * mirror_norm->z() + mirror_dist;
       // dest_vecs contains the point on the other side of the mirror (ie the reflected point)
       temp_vec = *vec - (*mirror_norm * (dist_from_mirror * 2));
-      g3_RotatePoint(&portal_points[i], &temp_vec);
+      g3_RotatePoint(portal_points[i], temp_vec);
 
       uint8_t c = portal_points[i].p3_codes;
       cc.cc_and &= c;
@@ -2789,7 +2789,7 @@ void BuildMirroredRoomList() {
           vec->x() * mirror_norm->x() + vec->y() * mirror_norm->y() + vec->z() * mirror_norm->z() + mirror_dist;
       // dest_vecs contains the point on the other side of the mirror (ie the reflected point)
       temp_vec = *vec - (*mirror_norm * (dist_from_mirror * 2));
-      g3_RotatePoint(&portal_points[i], &temp_vec);
+      g3_RotatePoint(portal_points[i], temp_vec);
       cc.cc_and &= portal_points[i].p3_codes;
       cc.cc_or |= portal_points[i].p3_codes;
       pointlist[i] = &portal_points[i];
@@ -3327,7 +3327,7 @@ void RenderMirrorRooms() {
         int anded = 0xff;
         g3Point pnt;
         for (int t = 0; t < fp->num_verts; t++)
-          anded &= g3_RotatePoint(&pnt, &rp->verts[fp->face_verts[t]]);
+          anded &= g3_RotatePoint(pnt, rp->verts[fp->face_verts[t]]);
         if (!anded)
           on_screen = 1;
       }
@@ -3388,8 +3388,8 @@ void RenderRoomOutline(int roomnum) {
     int v;
     ddgr_color color;
     for (v = 0; v < fp->num_verts; v++) {
-      c0 = g3_RotatePoint(&p0, &rp->verts[fp->face_verts[v]]);
-      c1 = g3_RotatePoint(&p1, &rp->verts[fp->face_verts[(v + 1) % fp->num_verts]]);
+      c0 = g3_RotatePoint(p0, rp->verts[fp->face_verts[v]]);
+      c1 = g3_RotatePoint(p1, rp->verts[fp->face_verts[(v + 1) % fp->num_verts]]);
       if ((!(fp->flags.visible)) || ((fp->flags.not_facing))) {
         // wouldn't normally be rendered
         color = back_line_color;

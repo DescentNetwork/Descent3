@@ -345,7 +345,7 @@ void DrawScorches(int roomnum, int facenum) {
 
       // Rotate the points.  Set uv values
       for (int p = 0; p < 4; p++) {
-        g3_RotatePoint(&points[p], &corners[p]);
+        g3_RotatePoint(points[p], corners[p]);
         pointlist[p] = &points[p];
         points[p].p3_uvl.u = scorch_uvs[p].u;
         points[p].p3_uvl.v = scorch_uvs[p].v;

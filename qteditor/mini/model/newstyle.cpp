@@ -831,11 +831,11 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         float val = ((d3::rand() % 1000) - 500.0) / 500.0;
         vec *= 1.0 + (Polymodel_effect.deform_range * val);
 
-        g3_RotatePoint(&Robot_points[i], &vec);
+        g3_RotatePoint(Robot_points[i], vec);
       }
     } else {
       for (int i = 0; i < sm->nverts; i++)
-        g3_RotatePoint(&Robot_points[i], &sm->verts[i]);
+        g3_RotatePoint(Robot_points[i], sm->verts[i]);
     }
   } else if (Polymodel_light_type == POLYMODEL_LIGHTING_LIGHTMAP) {
     if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
@@ -844,7 +844,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         float val = ((d3::rand() % 1000) - 500.0) / 500.0;
         vec *= 1.0 + (Polymodel_effect.deform_range * val);
 
-        g3_RotatePoint(&Robot_points[i], &vec);
+        g3_RotatePoint(Robot_points[i], vec);
 
         Robot_points[i].p3_r = 1.0;
         Robot_points[i].p3_g = 1.0;
@@ -852,7 +852,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
       }
     } else {
       for (int i = 0; i < sm->nverts; i++) {
-        g3_RotatePoint(&Robot_points[i], &sm->verts[i]);
+        g3_RotatePoint(Robot_points[i], sm->verts[i]);
         Robot_points[i].p3_r = 1.0;
         Robot_points[i].p3_g = 1.0;
         Robot_points[i].p3_b = 1.0;
@@ -866,7 +866,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
           float val = ((d3::rand() % 1000) - 500.0) / 500.0;
           vec *= 1.0 + (Polymodel_effect.deform_range * val);
 
-          g3_RotatePoint(&Robot_points[i], &vec);
+          g3_RotatePoint(Robot_points[i], vec);
 
           vector3 normvec = sm->vertnorms[i];
           val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0) / 2;
@@ -882,7 +882,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
             float val = ((d3::rand() % 1000) - 500.0) / 500.0;
             vec *= 1.0 + (Polymodel_effect.deform_range * val);
 
-            g3_RotatePoint(&Robot_points[i], &vec);
+            g3_RotatePoint(Robot_points[i], vec);
 
             vector3 normvec = sm->vertnorms[i];
             val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0) / 2;
@@ -893,7 +893,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
           }
         } else {
           for (int i = 0; i < sm->nverts; i++) {
-            g3_RotatePoint(&Robot_points[i], &sm->verts[i]);
+            g3_RotatePoint(Robot_points[i], sm->verts[i]);
             vector3 normvec = sm->vertnorms[i];
             float val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0) / 2;
 
@@ -910,7 +910,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
           float val = ((d3::rand() % 1000) - 500.0) / 500.0;
           vec *= 1.0 + (Polymodel_effect.deform_range * val);
 
-          g3_RotatePoint(&Robot_points[i], &vec);
+          g3_RotatePoint(Robot_points[i], vec);
           vector3 normvec = sm->vertnorms[i];
           val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0) / 2;
 
@@ -920,7 +920,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         }
       } else {
         for (int i = 0; i < sm->nverts; i++) {
-          g3_RotatePoint(&Robot_points[i], &sm->verts[i]);
+          g3_RotatePoint(Robot_points[i], sm->verts[i]);
           vector3 normvec = sm->vertnorms[i];
           float val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0) / 2;
 

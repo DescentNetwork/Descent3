@@ -682,8 +682,8 @@ void DrawObjectSelectionBrackets(object& obj, bool front_flag) {
       // Grab the x,y, or z axis, and scale by the line segment length
       t = corner + ((((vector3 *)&obj.orient)[a]) * ((c & (1 << a)) ? line_len : -line_len));
       // Rotate both ends of the line
-      g3_RotatePoint(&pp0, &corner);
-      g3_RotatePoint(&pp1, &t);
+      g3_RotatePoint(pp0, corner);
+      g3_RotatePoint(pp1, t);
       // Draw!
       g3_DrawLine(GR_RGB(255, 255, 255), &pp0, &pp1);
     }
@@ -1001,14 +1001,14 @@ void DrawShardObject(object& obj) {
   // Build list of points and UVLs for this face
   for (int i = 0; i < 3; i++) {
     uint8_t c;
-    g3Point *p = &rotated_points[i];
-    c = g3_RotatePoint(p, &si->points[i]);
+    g3Point& p = rotated_points[i];
+    c = g3_RotatePoint(p, si->points[i]);
     codes_and &= c;
-    p->p3_uvl.u = si->u[i];
-    p->p3_uvl.v = si->v[i];
-    p->p3_uvl.a = 1.0;    // GameTextures[si->tmap].alpha;
-    p->p3_flags |= PF_UV; // + PF_L;	// + PF_UV2 + PF_RGBA;	//has uv and l set
-    p->p3_uvl.l = 1.0;
+    p.p3_uvl.u = si->u[i];
+    p.p3_uvl.v = si->v[i];
+    p.p3_uvl.a = 1.0;    // GameTextures[si->tmap].alpha;
+    p.p3_flags |= PF_UV; // + PF_L;	// + PF_UV2 + PF_RGBA;	//has uv and l set
+    p.p3_uvl.l = 1.0;
     pointlist[i] = &rotated_points[i];
   }
   // Check for backside
@@ -1239,7 +1239,7 @@ void RenderObject(object& obj) {
 
     if (!UseHardware) {
       g3Point sphere_point;
-      g3_RotatePoint(&sphere_point, &obj.pos);
+      g3_RotatePoint(sphere_point, obj.pos);
       g3_DrawSphere(obj.rtype.sphere_color(), &sphere_point, obj.size);
     } else {
       // Let me take this opportunity to say how much it pisses me off that
@@ -1259,9 +1259,9 @@ void RenderObject(object& obj) {
     if (obj.rtype.pobj_info().anim_frame || (Poly_models[obj.rtype.pobj_info().model_num].frame_max !=
                                             Poly_models[obj.rtype.pobj_info().model_num].frame_min)) {
       SetNormalizedTimeObj(&obj, normalized_time);
-      RenderObject_DrawPolymodel(&obj, normalized_time);
+      RenderObject_DrawPolymodel(obj, normalized_time);
     } else {
-      RenderObject_DrawPolymodel(&obj, NULL);
+      RenderObject_DrawPolymodel(obj, NULL);
     }
 
     ////////////////////////////////////////////
@@ -1326,9 +1326,9 @@ void RenderObject(object& obj) {
           // render the iteration
           if (obj.rtype.pobj_info().anim_frame || (Poly_models[obj.rtype.pobj_info().model_num].frame_max !=
                                                   Poly_models[obj.rtype.pobj_info().model_num].frame_min)) {
-            RenderObject_DrawPolymodel(&obj, normalized_time);
+            RenderObject_DrawPolymodel(obj, normalized_time);
           } else {
-            RenderObject_DrawPolymodel(&obj, NULL);
+            RenderObject_DrawPolymodel(obj, NULL);
           }
 
           // update
@@ -1420,7 +1420,7 @@ void RenderObject(object& obj) {
   {
     if (obj.render_type != render_type::polyobj) {
       g3Point pnt;
-      g3_RotatePoint(&pnt, &obj.pos);
+      g3_RotatePoint(pnt, obj.pos);
       g3_DrawBox(GR_RGB(255, 255, 255), &pnt, obj.size);
     } else {                               // polygon model
       DrawObjectSelectionBrackets(obj, 1); // draw front brackets
@@ -1473,25 +1473,28 @@ bool is_multi_demo = false;
 
 // Actually draws a polygon model based on the light parameters set by the above
 // functions
-void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
+void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
   int model_num;
   int use_effect = 0;
-  vector3 obj_pos = obj->pos;
+  vector3 obj_pos = obj.pos;
   polymodel_effect pe = {0};
+
+
+  const object_info& oi = Object_info[obj.id];
 
   // Do cloak effect on player
   if (UseHardware) {
-    if (obj->effect_info && (obj->effect_info->type_flags.fading_out)) {
+    if (obj.effect_info && (obj.effect_info->type_flags.fading_out)) {
       pe.type.alpha = true;
-      pe.alpha = .08 + (.92 * (obj->effect_info->fade_time / obj->effect_info->fade_max_time));
+      pe.alpha = .08 + (.92 * (obj.effect_info->fade_time / obj.effect_info->fade_max_time));
       use_effect = 1;
     }
-    if (obj->effect_info && (obj->effect_info->type_flags.fading_in)) {
+    if (obj.effect_info && (obj.effect_info->type_flags.fading_in)) {
       pe.type.alpha = true;
-      pe.alpha = .08 + (.92 * (1.0 - (obj->effect_info->fade_time / obj->effect_info->fade_max_time)));
+      pe.alpha = .08 + (.92 * (1.0 - (obj.effect_info->fade_time / obj.effect_info->fade_max_time)));
       use_effect = 1;
     }
-    if (obj->effect_info && (obj->effect_info->type_flags.cloaked)) {
+    if (obj.effect_info && (obj.effect_info->type_flags.cloaked)) {
       pe.type.alpha = true;
       pe.type.deform = true;
       pe.alpha = .13f;
@@ -1499,14 +1502,14 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
 
       use_effect = 1;
     }
-    if (obj->type == object_type::player) {
+    if (obj.type == object_type::player) {
       // Draw thrust/afterburner cooler
       pe.type.glow_scalar = true;
-      pe.glow_length_scalar = (Players[obj->id].thrust_mag);
-      pe.glow_size_scalar = (Players[obj->id].thrust_mag);
+      pe.glow_length_scalar = (Players[obj.id].thrust_mag);
+      pe.glow_size_scalar = (Players[obj.id].thrust_mag);
 
-      pe.glow_length_scalar += (Players[obj->id].afterburner_mag * 3);
-      pe.glow_size_scalar += (Players[obj->id].afterburner_mag * .5);
+      pe.glow_length_scalar += (Players[obj.id].afterburner_mag * 3);
+      pe.glow_size_scalar += (Players[obj.id].afterburner_mag * .5);
       float adjustment = (d3::rand() % 100 - 50);
       adjustment /= 50.0;
       pe.glow_length_scalar += (.2 * adjustment);
@@ -1518,10 +1521,10 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
       }
     }
     // Deform this object if needed
-    if (obj->effect_info && (obj->effect_info->type_flags.deform)) {
+    if (obj.effect_info && (obj.effect_info->type_flags.deform)) {
       pe.type.deform = true;
-      pe.deform_range = obj->effect_info->deform_range * obj->effect_info->deform_time;
-      float val = obj->effect_info->deform_time;
+      pe.deform_range = obj.effect_info->deform_range * obj.effect_info->deform_time;
+      float val = obj.effect_info->deform_time;
       if (val > 1)
         val = 1;
 
@@ -1548,50 +1551,52 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
       obj_pos.z() += (((d3::rand() % 1000) - 500) / 500.0) * moveval;
     }
     // If this is a powerup, fade it out near the end of its life
-    if (obj->type == object_type::powerup && obj->flags.uses_lifeleft && obj->lifeleft < 5) {
+    if (obj.type == object_type::powerup && obj.flags.uses_lifeleft && obj.lifeleft < 5) {
       pe.type.alpha = true;
       pe.type.deform = true;
-      pe.alpha = obj->lifeleft / 5.0;
-      pe.deform_range = .2f * (1.0 - (obj->lifeleft / 5.0));
+      pe.alpha = obj.lifeleft / 5.0;
+      pe.deform_range = .2f * (1.0 - (obj.lifeleft / 5.0));
 
       use_effect = 1;
     }
     // Fog this object if needed
-    if (!OBJECT_OUTSIDE(obj) && (Rooms[obj->roomnum].flags.fog) && Room_fog_plane_check != -1) {
+    if (!obj.is_outside() && (Rooms[obj.roomnum].flags.fog) && Room_fog_plane_check != -1) {
       pe.type.fogged_model = true;
       pe.fog_distance = Room_fog_distance;
       pe.fog_eye_distance = Room_fog_eye_distance;
       pe.fog_plane_check = Room_fog_plane_check;
       pe.fog_portal_vert = Room_fog_portal_vert;
       pe.fog_plane = Room_fog_plane;
-      pe.fog_depth = Rooms[obj->roomnum].fog_depth;
-      pe.fog_r = Rooms[obj->roomnum].fog_r;
-      pe.fog_g = Rooms[obj->roomnum].fog_g;
-      pe.fog_b = Rooms[obj->roomnum].fog_b;
+      pe.fog_depth = Rooms[obj.roomnum].fog_depth;
+      pe.fog_r = Rooms[obj.roomnum].fog_r;
+      pe.fog_g = Rooms[obj.roomnum].fog_g;
+      pe.fog_b = Rooms[obj.roomnum].fog_b;
 
       use_effect = 1;
     }
     // Apply specularity from dynamic lights
-    if (obj->effect_info) {
-      if ((obj->effect_info->type_flags.specular)) {
-        if (obj->type == object_type::powerup)
+    if (obj.effect_info) {
+      if ((obj.effect_info->type_flags.specular)) {
+        if (obj.type == object_type::powerup)
           pe.type.specular_model = true;
         else
           pe.type.specular_faces = true;
 
-        pe.spec_light_pos = obj->effect_info->spec_pos;
-        pe.spec_r = obj->effect_info->spec_r;
-        pe.spec_g = obj->effect_info->spec_g;
-        pe.spec_b = obj->effect_info->spec_b;
+        pe.spec_light_pos = obj.effect_info->spec_pos;
+        pe.spec_r = obj.effect_info->spec_r;
+        pe.spec_g = obj.effect_info->spec_g;
+        pe.spec_b = obj.effect_info->spec_b;
         pe.spec_scalar = 1.0;
         use_effect = 1;
       }
     }
     // Apply specularity from outdoor satellites
-    if (OBJECT_OUTSIDE(obj) && obj->lighting_render_type == lighting_render_type::gouraud && Detail_settings.Specular_lighting &&
-        !Object_info[obj->id].lighting_info.flags.no_specularity) {
-      if (obj->effect_info && !(obj->effect_info->type_flags.specular)) {
-        if (obj->type == object_type::powerup)
+    if (obj.is_outside() &&
+        obj.lighting_render_type == lighting_render_type::gouraud &&
+        Detail_settings.Specular_lighting &&
+        !oi.lighting_info.flags.no_specularity) {
+      if (obj.effect_info && !(obj.effect_info->type_flags.specular)) {
+        if (obj.type == object_type::powerup)
           pe.type.specular_model = true;
         else
           pe.type.specular_faces = true;
@@ -1604,8 +1609,9 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
         use_effect = 1;
       }
     }
-    if (Detail_settings.Bumpmapping_enabled && (obj->type == object_type::robot || obj->type == object_type::player)) {
-      pe.bump_light_pos = obj->pos;
+    if (Detail_settings.Bumpmapping_enabled &&
+        (obj.type == object_type::robot || obj.type == object_type::player)) {
+      pe.bump_light_pos = obj.pos;
       pe.bump_light_pos.y() += 100;
       pe.bump_scalar = 1;
       pe.type.bumpmapped = true;
@@ -1613,71 +1619,73 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
     }
   }
   // Pick a lod model to use if eligible
-  if (obj->lighting_render_type == lighting_render_type::static_lights || obj->lighting_render_type == lighting_render_type::gouraud) {
-    if (obj->type == object_type::powerup || obj->type == object_type::robot || obj->type == object_type::clutter) {
+  if (obj.lighting_render_type == lighting_render_type::static_lights ||
+      obj.lighting_render_type == lighting_render_type::gouraud) {
+    if (obj.type == object_type::powerup || obj.type == object_type::robot || obj.type == object_type::clutter) {
       g3Point pnt;
       float detail_scalar = 1.0;
-      g3_RotatePoint(&pnt, &obj->pos);
+      g3_RotatePoint(pnt, obj.pos);
       if (Detail_settings.Object_complexity == 0)
         detail_scalar = .6f;
       else if (Detail_settings.Object_complexity == 2)
         detail_scalar = 1.2f;
-      if (pnt.p3_z < (Object_info[obj->id].med_lod_distance * detail_scalar))
-        model_num = obj->rtype.pobj_info().model_num;
-      else if (pnt.p3_z < (Object_info[obj->id].lo_lod_distance * detail_scalar)) {
-        if (Object_info[obj->id].med_render_handle != -1)
-          model_num = Object_info[obj->id].med_render_handle;
+      if (pnt.p3_z < (oi.med_lod_distance * detail_scalar))
+        model_num = obj.rtype.pobj_info().model_num;
+      else if (pnt.p3_z < (oi.lo_lod_distance * detail_scalar)) {
+        if (oi.med_render_handle != -1)
+          model_num = oi.med_render_handle;
         else {
-          model_num = obj->rtype.pobj_info().model_num;
+          model_num = obj.rtype.pobj_info().model_num;
         }
       } else {
-        if (Object_info[obj->id].lo_render_handle != -1)
-          model_num = Object_info[obj->id].lo_render_handle;
+        if (oi.lo_render_handle != -1)
+          model_num = oi.lo_render_handle;
         else {
-          model_num = obj->rtype.pobj_info().model_num;
-          if (Object_info[obj->id].med_render_handle != -1)
-            model_num = Object_info[obj->id].med_render_handle;
+          model_num = obj.rtype.pobj_info().model_num;
+          if (oi.med_render_handle != -1)
+            model_num = oi.med_render_handle;
           else
-            model_num = obj->rtype.pobj_info().model_num;
+            model_num = obj.rtype.pobj_info().model_num;
         }
       }
-    } else if (obj->type == object_type::marker) {
+    } else if (obj.type == object_type::marker) {
      // model_num = Marker_polynum;
-    } else if (obj->type == object_type::player && !(Players[obj->id].flags & (PLAYER_FLAGS_DYING | PLAYER_FLAGS_DEAD))) {
+    } else if (obj.type == object_type::player &&
+             !(Players[obj.id].flags & (PLAYER_FLAGS_DYING | PLAYER_FLAGS_DEAD))) {
       g3Point pnt;
-      g3_RotatePoint(&pnt, &obj->pos);
-      int ship_num = Players[obj->id].ship_index;
+      g3_RotatePoint(pnt, obj.pos);
+      int ship_num = Players[obj.id].ship_index;
       float detail_scalar = 1.0;
       if (Detail_settings.Object_complexity == 0)
         detail_scalar = .6f;
       else if (Detail_settings.Object_complexity == 2)
         detail_scalar = 1.2f;
       if (pnt.p3_z < (Ships[ship_num].med_lod_distance * detail_scalar))
-        model_num = obj->rtype.pobj_info().model_num;
+        model_num = obj.rtype.pobj_info().model_num;
       else if (pnt.p3_z < (Ships[ship_num].lo_lod_distance * detail_scalar)) {
         if (Ships[ship_num].med_render_handle != -1)
           model_num = Ships[ship_num].med_render_handle;
         else {
-          model_num = obj->rtype.pobj_info().model_num;
+          model_num = obj.rtype.pobj_info().model_num;
         }
       } else {
         if (Ships[ship_num].lo_render_handle != -1)
           model_num = Ships[ship_num].lo_render_handle;
         else {
-          model_num = obj->rtype.pobj_info().model_num;
+          model_num = obj.rtype.pobj_info().model_num;
           if (Ships[ship_num].med_render_handle != -1)
             model_num = Ships[ship_num].med_render_handle;
           else
-            model_num = obj->rtype.pobj_info().model_num;
+            model_num = obj.rtype.pobj_info().model_num;
         }
       }
     } else
-      model_num = obj->rtype.pobj_info().model_num;
+      model_num = obj.rtype.pobj_info().model_num;
   } else
-    model_num = obj->rtype.pobj_info().model_num;
-  if (obj->type == object_type::building && obj->flags.use_destroyed_polymodel) {
-    if (Object_info[obj->id].lo_render_handle != -1)
-      model_num = Object_info[obj->id].lo_render_handle;
+    model_num = obj.rtype.pobj_info().model_num;
+  if (obj.type == object_type::building && obj.flags.use_destroyed_polymodel) {
+    if (Object_info[obj.id].lo_render_handle != -1)
+      model_num = Object_info[obj.id].lo_render_handle;
   }
   // Set effects
   if (use_effect)
@@ -1685,27 +1693,27 @@ void RenderObject_DrawPolymodel(object *obj, float *normalized_times) {
   if (RenderObjectType == RO_STATIC) {
     // Draw this object with static light
     int overlay = 0;
-    if ((obj->type == object_type::robot || obj->type == object_type::player) && obj->rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
+    if ((obj.type == object_type::robot || obj.type == object_type::player) && obj.rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
       overlay = 1;
 
-    DrawPolygonModel(&obj_pos, &obj->orient, model_num, normalized_times, 0, RenderObjectStaticRedValue,
-                     RenderObjectStaticGreenValue, RenderObjectStaticBlueValue, obj->rtype.pobj_info().subobj_flags,
+    DrawPolygonModel(&obj_pos, &obj.orient, model_num, normalized_times, 0, RenderObjectStaticRedValue,
+                     RenderObjectStaticGreenValue, RenderObjectStaticBlueValue, obj.rtype.pobj_info().subobj_flags,
                      use_effect, overlay);
   } else if (RenderObjectType == RO_GOURAUD || NoLightmaps) {
     // Draw this object with gouraud static light
     int overlay = 0;
-    if ((obj->type == object_type::robot || obj->type == object_type::player) && obj->rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
+    if ((obj.type == object_type::robot || obj.type == object_type::player) && obj.rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
       overlay = 1;
-    DrawPolygonModel(&obj_pos, &obj->orient, model_num, normalized_times, 0, &RenderObject_LightDirection,
+    DrawPolygonModel(&obj_pos, &obj.orient, model_num, normalized_times, 0, &RenderObject_LightDirection,
                      RenderObjectStaticRedValue, RenderObjectStaticGreenValue, RenderObjectStaticBlueValue,
-                     obj->rtype.pobj_info().subobj_flags, use_effect, overlay);
+                     obj.rtype.pobj_info().subobj_flags, use_effect, overlay);
   } else if (RenderObjectType == RO_LIGHTMAPS) {
     int overlay = 0;
-    if ((obj->type == object_type::robot || obj->type == object_type::player) && obj->rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
+    if ((obj.type == object_type::robot || obj.type == object_type::player) && obj.rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
       overlay = 1;
     // If this object is a destroyed building then do something different with it
-    DrawPolygonModel(&obj_pos, &obj->orient, model_num, normalized_times, 0, RenderObjectLightmapObject,
-                     obj->rtype.pobj_info().subobj_flags, use_effect, overlay);
+    DrawPolygonModel(&obj_pos, &obj.orient, model_num, normalized_times, 0, RenderObjectLightmapObject,
+                     obj.rtype.pobj_info().subobj_flags, use_effect, overlay);
   } else
     Q_ASSERT(false); // Get Jason
 }
@@ -1745,7 +1753,7 @@ int IsPointVisible(vector3 *pos, float size, float *pointz) {
   static vector3 left_normal, right_normal, top_normal, bottom_normal, view_position;
   static matrix unscaled_matrix;
 
-  g3_RotatePoint(&pnt, pos);
+  g3_RotatePoint(pnt, *pos);
   ccode = g3_CodePoint(&pnt);
   if (pointz != NULL)
     *pointz = pnt.p3_z;
