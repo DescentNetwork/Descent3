@@ -2909,7 +2909,7 @@ private slots:
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QCOMPARE(app.Curroomp.value_or(-1), 0);
-    QCOMPARE(app.Curface, 1);
+    QCOMPARE(app.Curface.value_or(-1), 1);
     QCOMPARE(app.Curedge, 2);
     QCOMPARE(app.Curvert, 3);
     QCOMPARE(app.Markedroomp, 0);
@@ -4419,7 +4419,7 @@ private slots:
 
   // Verifies the Qt port of editor/HFile.cpp:
   //   - CreateNewMine resets the editor-only globals exposed in
-  //     qteditor/d3_editor_state.cpp (app.Curface, static_cast<int>(Triggers.size()), …) and calls
+  //     qteditor/d3_editor_state.cpp (app.Curface.value_or(-1), static_cast<int>(Triggers.size()), …) and calls
   //     FreeAllRooms / FreeAllObjects on Descent3Core without exploding.
   //   - RenderLevelStats returns a non-empty buffer whose first three lines
   //     are the "Level Stats:" header the Win32 EditorMessageBox got.
@@ -4442,7 +4442,7 @@ private slots:
     app.New_mine = false;
     app.World_changed = true;
     CreateNewMine();
-    QCOMPARE(app.Curface, 0);
+    QCOMPARE(app.Curface.value_or(-1), 0);
     QCOMPARE(app.Curportal, -1);
     QCOMPARE(static_cast<int>(Triggers.size()), 0);
     QCOMPARE(app.Current_trigger, -1);
@@ -4768,7 +4768,7 @@ private slots:
     app.Mine_changed = 0;
     QVERIFY(DeleteRoom());
     QVERIFY(app.Curroomp == nullptr);
-    QCOMPARE(app.Curface, -1);
+    QCOMPARE(app.Curface.value_or(-1), -1);
     QCOMPARE(app.Curportal, -1);
     QCOMPARE(app.Mine_changed, 1);
 
@@ -6115,7 +6115,7 @@ private slots:
 
     // Clear selection first.
     app.Curroomp.reset();
-    app.Curface = -1;
+    app.Curface.reset();
     app.Cur_object_index = -1;
 
     bool faceFired = false;

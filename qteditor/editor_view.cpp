@@ -782,9 +782,9 @@ void EditorView::renderOverlays() {
     // (The yellow current-face highlight is drawn below — the Win32 room view
     // has no current-room or marked-room overlays.)
     if (liveRoom(app.Curroomp.value_or(-1)) && Rooms[*app.Curroomp].used &&
-        app.Curroomp == (app.current_room ? *app.current_room : -1) && app.Curface >= 0 &&
-        app.Curface < Rooms[*app.Curroomp].num_faces) {
-      face *fp = &Rooms[*app.Curroomp].faces[app.Curface];
+        app.Curroomp == (app.current_room ? *app.current_room : -1) && app.Curface.has_value() &&
+        app.Curface.value_or(-1) < Rooms[*app.Curroomp].num_faces) {
+      face *fp = &Rooms[*app.Curroomp].faces[*app.Curface];
       float sx[16], sy[16];
       int nv = fp->num_verts;
       if (nv > 16)
@@ -917,8 +917,8 @@ void EditorView::renderOverlays() {
     }
 
     // Current face in yellow.
-    if (app.Curface >= 0 && app.Curface < Rooms[*app.Curroomp].num_faces) {
-      face *fp = &Rooms[*app.Curroomp].faces[app.Curface];
+    if (app.Curface.has_value() && app.Curface.value_or(-1) < Rooms[*app.Curroomp].num_faces) {
+      face *fp = &Rooms[*app.Curroomp].faces[*app.Curface];
       float sx[16], sy[16];
       int nv = fp->num_verts;
       if (nv > 16)
@@ -950,7 +950,7 @@ void EditorView::renderOverlays() {
         }
 
         // Current vertex cross in green (DrawVertBox at
-        // faces[app.Curface].face_verts[app.Curvert], CUREDGE_COLOR).
+        // faces[*app.Curface].face_verts[app.Curvert], CUREDGE_COLOR).
         if (app.Curvert >= 0 && app.Curvert < fp->num_verts) {
           int vi = fp->face_verts[app.Curvert];
           float vx, vy;

@@ -188,8 +188,8 @@ bool HObjectPlace(object_type obj_type, uint16_t obj_id) {
         ObjDelete(objnum);
         return false;
       }
-      ComputeCenterPointOnFace(&pos, *app.Curroomp, app.Curface);
-      surface_norm = &Rooms[*app.Curroomp].faces[app.Curface].normal;
+      ComputeCenterPointOnFace(&pos, *app.Curroomp, app.Curface.value_or(-1));
+      surface_norm = &Rooms[*app.Curroomp].faces[*app.Curface].normal;
       roomnum = app.Curroomp.value_or(-1);
 
       if (Rooms[roomnum].flags.external)
