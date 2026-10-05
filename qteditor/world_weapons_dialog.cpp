@@ -43,9 +43,8 @@
 
 optref<weapon> WorldWeaponsDialog::data(void)
 {
-  if (app.current_weapon < 0 || app.current_weapon >= static_cast<int>(Weapons.size()))
-    return std::nullopt;
-  return Weapons[app.current_weapon];
+  if (!app.current_weapon || *app.current_weapon >= static_cast<uint32_t>(Weapons.size())) return std::nullopt;
+  return Weapons[*app.current_weapon];
 }
 
 WorldWeaponsDialog::WorldWeaponsDialog(QWidget *parent)
@@ -364,7 +363,7 @@ void WorldWeaponsDialog::onAddWeapon() {
   }
   Weapons[*handle].name = name.toStdString();
   mng_AllocTrackLock(Weapons[*handle].name, PAGETYPE_WEAPON);
-  app.current_weapon = static_cast<int>(*handle);
+  app.current_weapon = *handle;
   RemapWeapons();
   updateDialog();
 
@@ -373,7 +372,7 @@ void WorldWeaponsDialog::onAddWeapon() {
 void WorldWeaponsDialog::onDeleteWeapon() {
   if(auto w = data())
   {
-    const uint32_t n = static_cast<uint32_t>(app.current_weapon);
+    const uint32_t n = app.current_weapon ? *app.current_weapon : 0;
     const int tl = mng_FindTrackLock(w->name, PAGETYPE_WEAPON).value_or(-1);
     if (tl == -1) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This weapon is not yours to delete.  Lock first.");
@@ -398,7 +397,7 @@ void WorldWeaponsDialog::onDeleteWeapon() {
       mng_DeletePagelock(w->name, PAGETYPE_WEAPON);
     }
     if (const std::optional<uint32_t> next = GetNextWeapon(n))
-      app.current_weapon = static_cast<int>(*next);
+      if (next) app.current_weapon = *next;
     FreeWeapon(n);
     mng_EraseLocker();
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Weapon deleted.");
@@ -411,7 +410,7 @@ void WorldWeaponsDialog::onLockWeapon()
 {
   if(auto w = data())
   {
-    const uint32_t n = static_cast<uint32_t>(app.current_weapon);
+    const uint32_t n = app.current_weapon ? *app.current_weapon : 0;
     if (!mng_MakeLocker())
       return;
     mngs_Pagelock temp_pl;
@@ -462,7 +461,7 @@ void WorldWeaponsDialog::onLockWeapon()
 void WorldWeaponsDialog::onCheckinWeapon() {
   if(auto w = data())
   {
-    const uint32_t n = static_cast<uint32_t>(app.current_weapon);
+    const uint32_t n = app.current_weapon ? *app.current_weapon : 0;
     if (!mng_MakeLocker())
       return;
     mngs_Pagelock temp_pl;
@@ -511,13 +510,11 @@ void WorldWeaponsDialog::onWeaponsOut() {
 }
 
 void WorldWeaponsDialog::onNextWeapon() {
-  if (const std::optional<uint32_t> next = GetNextWeapon(static_cast<uint32_t>(app.current_weapon)))
-    app.current_weapon = static_cast<int>(*next);
+  if (app.current_weapon) { auto next = GetNextWeapon(*app.current_weapon); if (next) app.current_weapon = *next; }
   updateDialog();
 }
 void WorldWeaponsDialog::onPrevWeapon() {
-  if (const std::optional<uint32_t> prev = GetPrevWeapon(static_cast<uint32_t>(app.current_weapon)))
-    app.current_weapon = static_cast<int>(*prev);
+  if (app.current_weapon) { auto prev = GetPrevWeapon(*app.current_weapon); if (prev) app.current_weapon = *prev; }
   updateDialog();
 }
 
