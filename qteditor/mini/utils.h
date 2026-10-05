@@ -1,6 +1,26 @@
 #pragma once
 #include <optional>
 #include <functional>
+#include <cstdint>
+#include "posix_stream.h"
+
+using index_t = std::optional<uint32_t>;
+
+inline byte_istream& operator >>(byte_istream& input, std::optional<uint32_t>& data)
+{
+  uint32_t val;
+  input >> val;
+  if(val == UINT32_MAX)
+    data.reset();
+  else
+    *data = val;
+  return input;
+}
+
+inline byte_ostream& operator <<(byte_ostream& output, const std::optional<uint32_t>& data)
+{
+  return output << data.value_or(UINT32_MAX);
+}
 
 template <typename T>
 class optref {
