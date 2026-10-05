@@ -30,12 +30,12 @@
 
 optref<object_info> GenericDeathDialog::data(void)
 {
-  if(m_object_id < 0)
+  if(!m_object_id)
     return std::nullopt;
-  return Object_info[m_object_id];
+  return Object_info[*m_object_id];
 }
 
-GenericDeathDialog::GenericDeathDialog(int object_id, QWidget *parent)
+GenericDeathDialog::GenericDeathDialog(std::optional<uint32_t> object_id, QWidget *parent)
     : QDialog(parent), ui(new Ui::GenericDeathDialog), m_object_id(object_id)
 {
   ui->setupUi(this);

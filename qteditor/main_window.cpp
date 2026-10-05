@@ -252,7 +252,7 @@ MainWindow::MainWindow(QWidget *parent)
     showGenericObject(object_type::robot, app.current_robot);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_POWERUPS, &QAction::triggered, [this]() {
-    showGenericObject(object_type::powerup, app.current_powerup.value_or(-1));
+    showGenericObject(object_type::powerup, app.current_powerup);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_BUILDINGS, &QAction::triggered, [this]() {
     showGenericObject(object_type::building, app.current_building);
@@ -691,7 +691,7 @@ void MainWindow::showWorldTextures() {
   dlg.exec();
 }
 
-void MainWindow::showGenericObject(object_type objType, int current) {
+void MainWindow::showGenericObject(object_type objType, std::optional<uint32_t> current) {
   WorldObjectsGenericDialog dlg(objType, current, this);
   dlg.exec();
   if (objType == object_type::building)

@@ -108,6 +108,13 @@ bool verifyDoorModel(int handle) {
   return true;
 }
 
+bool is_valid_door()
+{
+  return app.current_door &&
+        *app.current_door >= static_cast<uint32_t>(Doors.size()) &&
+         Doors.is_used(*app.current_door);
+}
+
 } // namespace
 
 WorldObjectsDoorDialog::WorldObjectsDoorDialog(QWidget *parent)
@@ -134,35 +141,24 @@ WorldObjectsDoorDialog::WorldObjectsDoorDialog(QWidget *parent)
     &WorldObjectsDoorDialog::onCloseSoundChanged);
 
       connect(ui->IDC_DOOR_OPEN_TIME, &QLineEdit::editingFinished, [this]() {
-      const int n = app.current_door;
-      if (n < 0 || n >= static_cast<int>(Doors.size()) || !Doors.is_used(n))
-        return;
-      Doors[n].total_open_time = ui->IDC_DOOR_OPEN_TIME->text().toFloat();
+      if(is_valid_door())
+        Doors[*app.current_door].total_open_time = ui->IDC_DOOR_OPEN_TIME->text().toFloat();
     });
       connect(ui->IDC_DOOR_STAYS_OPEN, &QLineEdit::editingFinished, [this]() {
-      const int n = app.current_door;
-      if (n < 0 || n >= static_cast<int>(Doors.size()) || !Doors.is_used(n))
-        return;
-      Doors[n].total_time_open = ui->IDC_DOOR_STAYS_OPEN->text().toFloat();
+      if(is_valid_door())
+        Doors[*app.current_door].total_time_open = ui->IDC_DOOR_STAYS_OPEN->text().toFloat();
     });
       connect(ui->IDC_CLOSE_TIME, &QLineEdit::editingFinished, [this]() {
-      const int n = app.current_door;
-      if (n < 0 || n >= static_cast<int>(Doors.size()) || !Doors.is_used(n))
-        return;
-      Doors[n].total_close_time = ui->IDC_CLOSE_TIME->text().toFloat();
+      if(is_valid_door())
+        Doors[*app.current_door].total_close_time = ui->IDC_CLOSE_TIME->text().toFloat();
     });
       connect(ui->IDC_DOOR_HITPOINTS_EDIT, &QLineEdit::editingFinished, [this]() {
-      const int n = app.current_door;
-      if (n < 0 || n >= static_cast<int>(Doors.size()) || !Doors.is_used(n))
-        return;
-      Doors[n].hit_points = ui->IDC_DOOR_HITPOINTS_EDIT->text().toInt();
+      if(is_valid_door())
+        Doors[*app.current_door].hit_points = ui->IDC_DOOR_HITPOINTS_EDIT->text().toInt();
     });
       connect(ui->IDC_SCRIPTNAME, &QLineEdit::editingFinished, [this]() {
-      const int n = app.current_door;
-      if (n < 0 || n >= static_cast<int>(Doors.size()) || !Doors.is_used(n))
-        return;
-      const QString text = ui->IDC_SCRIPTNAME->text();
-      Doors[n].module_name = text.toStdString();
+      if(is_valid_door())
+        Doors[*app.current_door].module_name = ui->IDC_SCRIPTNAME->text().toStdString();
     });
 
   connect(ui->IDC_TRANSPARENCY, &QCheckBox::toggled, this, &WorldObjectsDoorDialog::onTransparencyToggled);
@@ -188,9 +184,11 @@ void WorldObjectsDoorDialog::updateDialog() {
   if (Doors.empty())
     return;
 
-  int n = app.current_door;
-  if (!Doors.is_used(n))
-    n = app.current_door = GetNextDoor(n).value_or(-1);
+  uint32_t n;
+  if(!is_valid_door() || !Doors.is_used(*app.current_door)) {
+    app.current_door = GetNextDoor(0);
+  }
+  n = app.current_door ? *app.current_door : 0;
 
   ui->IDC_TRANSPARENCY->setChecked(Doors[n].flags.seethrough);
   ui->IDC_DOOR_BLASTABLE->setChecked(Doors[n].flags.blastable);
@@ -267,7 +265,12 @@ void WorldObjectsDoorDialog::onAddDoor() {
     return;
   }
 
-  int door_handle = AllocDoor().value_or(-1);
+  auto doh = AllocDoor();
+  if (!doh) {
+    updateDialog();
+    return;
+  }
+  uint32_t door_handle = *doh;
   int c = 1;
   bool finding_name = true;
   const std::string base = pathFs.stem().string();
@@ -297,9 +300,9 @@ void WorldObjectsDoorDialog::onAddDoor() {
 }
 
 void WorldObjectsDoorDialog::onDeleteDoor() {
-  const int n = app.current_door;
-  if (Doors.empty())
+  if(!is_valid_door() || Doors.empty())
     return;
+  const uint32_t n = *app.current_door;
 
   std::optional<uint32_t> tl = mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR);
   if (!tl) {
@@ -328,7 +331,7 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
     mng_DeletePagelock(Doors[n].name, PAGETYPE_DOOR);
   }
 
-  app.current_door = GetNextDoor(n).value_or(-1);
+  app.current_door = GetNextDoor(n);
 
   if (Doors[n].model_handle >= 0 && Doors[n].model_handle < MAX_POLY_MODELS && Poly_models[Doors[n].model_handle].used)
     FreePolyModel(Doors[n].model_handle);
@@ -340,13 +343,13 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
 }
 
 void WorldObjectsDoorDialog::onLockDoor() {
-  const int n = app.current_door;
   mngs_Pagelock temp_pl;
 
-  if (Doors.empty())
+  if(!is_valid_door() || Doors.empty())
     return;
   if (!mng_MakeLocker())
     return;
+  const uint32_t n = *app.current_door;
 
   temp_pl.name = Doors[n].name;
   temp_pl.pagetype = PAGETYPE_DOOR;
@@ -394,13 +397,13 @@ void WorldObjectsDoorDialog::onLockDoor() {
 }
 
 void WorldObjectsDoorDialog::onCheckinDoor() {
-  const int n = app.current_door;
   mngs_Pagelock temp_pl;
 
-  if (Doors.empty())
+  if(!is_valid_door() || Doors.empty())
     return;
   if (!mng_MakeLocker())
     return;
+  const uint32_t n = *app.current_door;
 
   temp_pl.name = Doors[n].name;
   temp_pl.pagetype = PAGETYPE_DOOR;
@@ -456,12 +459,14 @@ void WorldObjectsDoorDialog::onDoorsOut() {
 }
 
 void WorldObjectsDoorDialog::onDoorNext() {
-  app.current_door = GetNextDoor(app.current_door).value_or(-1);
+  if(is_valid_door())
+    app.current_door = GetNextDoor(*app.current_door);
   updateDialog();
 }
 
 void WorldObjectsDoorDialog::onDoorPrev() {
-  app.current_door = GetPrevDoor(app.current_door).value_or(-1);
+  if(is_valid_door())
+    app.current_door = GetPrevDoor(*app.current_door);
   updateDialog();
 }
 
@@ -469,52 +474,49 @@ void WorldObjectsDoorDialog::onDoorPulldownChanged() {
   QComboBox *combo = ui->IDC_DOOR_PULLDOWN;
   if (combo == nullptr)
     return;
-  const int i = FindDoorName(combo->currentText().toStdString()).value_or(-1);
-  if (i == -1)
-    return;
-  app.current_door = i;
+  app.current_door = FindDoorName(combo->currentText().toStdString());
   updateDialog();
 }
 
 void WorldObjectsDoorDialog::onKillfocusOpenTime() {
-  const int n = app.current_door;
-  Doors[n].total_open_time = ui->IDC_DOOR_OPEN_TIME->text().toFloat();
+  if(is_valid_door())
+    Doors[*app.current_door].total_open_time = ui->IDC_DOOR_OPEN_TIME->text().toFloat();
 }
 
 void WorldObjectsDoorDialog::onKillfocusStaysOpen() {
-  const int n = app.current_door;
-  Doors[n].total_time_open = ui->IDC_DOOR_STAYS_OPEN->text().toFloat();
+  if(is_valid_door())
+    Doors[*app.current_door].total_time_open = ui->IDC_DOOR_STAYS_OPEN->text().toFloat();
 }
 
 void WorldObjectsDoorDialog::onKillfocusCloseTime() {
-  const int n = app.current_door;
-  Doors[n].total_close_time = ui->IDC_CLOSE_TIME->text().toFloat();
+  if(is_valid_door())
+    Doors[*app.current_door].total_close_time = ui->IDC_CLOSE_TIME->text().toFloat();
 }
 
 void WorldObjectsDoorDialog::onKillfocusHitpoints() {
-  const int n = app.current_door;
-  Doors[n].hit_points = ui->IDC_DOOR_HITPOINTS_EDIT->text().toInt();
+  if(is_valid_door())
+    Doors[*app.current_door].hit_points = ui->IDC_DOOR_HITPOINTS_EDIT->text().toInt();
 }
 
 void WorldObjectsDoorDialog::onTransparencyToggled(bool checked) {
-  const int n = app.current_door;
-  Doors[n].flags.seethrough = checked;
+  if(is_valid_door())
+    Doors[*app.current_door].flags.seethrough = checked;
 }
 
 void WorldObjectsDoorDialog::onBlastableToggled(bool checked) {
-  const int n = app.current_door;
-  Doors[n].flags.blastable = checked;
+  if(is_valid_door())
+    Doors[*app.current_door].flags.blastable = checked;
   updateDialog();
 }
 
 void WorldObjectsDoorDialog::onOpenSoundChanged() {
-  const int n = app.current_door;
-  Doors[n].open_sound = soundComboSelected(ui->IDC_DOOR_OPEN_SOUND);
+  if(is_valid_door())
+    Doors[*app.current_door].open_sound = soundComboSelected(ui->IDC_DOOR_OPEN_SOUND);
 }
 
 void WorldObjectsDoorDialog::onCloseSoundChanged() {
-  const int n = app.current_door;
-  Doors[n].close_sound = soundComboSelected(ui->IDC_DOOR_CLOSE_SOUND);
+  if(is_valid_door())
+    Doors[*app.current_door].close_sound = soundComboSelected(ui->IDC_DOOR_CLOSE_SOUND);
 }
 
 void WorldObjectsDoorDialog::onBrowse() {
@@ -527,12 +529,8 @@ void WorldObjectsDoorDialog::onBrowse() {
 }
 
 void WorldObjectsDoorDialog::onKillfocusScriptname() {
-  const int n = app.current_door;
-  {
-    QLineEdit *edit = ui->IDC_SCRIPTNAME;
-    const QString text = edit->text();
-    Doors[n].module_name = text.toStdString();
-  }
+  if(is_valid_door())
+    Doors[*app.current_door].module_name = ui->IDC_SCRIPTNAME->text().toStdString();
 }
 
 void WorldObjectsDoorDialog::onChangeName() {

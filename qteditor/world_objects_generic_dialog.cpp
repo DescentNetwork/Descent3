@@ -62,12 +62,12 @@ bool Copy_object_used = false;
 
 optref<object_info> WorldObjectsGenericDialog::data(void)
 {
-  if(m_object_id < 0)
+  if(!m_object_id)
     return std::nullopt;
-  return Object_info[m_object_id];
+  return Object_info[*m_object_id];
 }
 
-WorldObjectsGenericDialog::WorldObjectsGenericDialog(object_type objType, int object_id, QWidget *parent)
+WorldObjectsGenericDialog::WorldObjectsGenericDialog(object_type objType, std::optional<uint32_t> object_id, QWidget *parent)
     : QDialog(parent), ui(new Ui::WorldObjectsGenericDialog), m_type(objType), m_object_id(object_id)
 {
   ui->setupUi(this);
@@ -280,18 +280,18 @@ WorldObjectsGenericDialog::~WorldObjectsGenericDialog() {
   ObjReInitAll();
 }
 
-void WorldObjectsGenericDialog::setObjectId(int id) { m_object_id = id; }
+void WorldObjectsGenericDialog::setObjectId(std::optional<uint32_t> id) { m_object_id = id; }
 
-bool WorldObjectsGenericDialog::isLocked(int n) {
-  return n != -1 && mng_FindTrackLock(Object_info[n].name, PAGETYPE_GENERIC).value_or(-1) != -1;
+bool WorldObjectsGenericDialog::isLocked(std::optional<uint32_t> n) {
+  return n && mng_FindTrackLock(Object_info[*n].name, PAGETYPE_GENERIC);
 }
 
-int WorldObjectsGenericDialog::countLockedItems() {
+uint32_t WorldObjectsGenericDialog::countLockedItems() {
   int count = 0;
-  int first = GetObjectID(m_type).value_or(-1);
-  if (first == -1)
+  std::optional<uint32_t> first = GetObjectID(m_type);
+  if (!first)
     return 0;
-  int n = first;
+  std::optional<uint32_t> n = first;
   do {
     if (isLocked(n))
       count++;
@@ -487,7 +487,7 @@ void WorldObjectsGenericDialog::updateDialog() {
   ui->IDC_GENERIC_AMMO_TEXT->setEnabled(oi->type == object_type::powerup);
 
   ui->IDC_GENERIC_CHECKED_OUT->setEnabled(m_locked_count > 0);
-  ui->IDC_GENERIC_ID_EDIT->setText(QString::number(m_object_id));
+  ui->IDC_GENERIC_ID_EDIT->setText(QString::number(m_object_id ? *m_object_id : -1));
 
   ui->IDC_GENERIC_PASTE->setEnabled(Network_up && Copy_object_used);
   ui->IDC_GENERIC_DELETE->setEnabled(isLocked(m_object_id));
@@ -500,11 +500,11 @@ void WorldObjectsGenericDialog::updateDialog() {
     QComboBox *combo = ui->IDC_NAME_PULLDOWN;
     QSignalBlocker blocker(combo);
     combo->clear();
-    const int first = GetObjectID(m_type).value_or(-1);
+    const std::optional<uint32_t> first = GetObjectID(m_type);
     if (first != -1) {
-      int i = first;
+      std::optional<uint32_t> i = first;
       do {
-        combo->addItem(QString::fromStdString(Object_info[i].name));
+        combo->addItem(QString::fromStdString(Object_info[*i].name));
         i = GetNextObjectID(i);
       } while (i != first);
       combo->setCurrentText(QString::fromStdString(data()->name));
@@ -592,24 +592,25 @@ void WorldObjectsGenericDialog::onAddNew() {
     return;
   }
 
-  const int object_handle = AllocObjectID(m_type, true, true, true);
-  if (object_handle == -1) {
+  const std::optional<uint32_t> object_handle = AllocObjectID(m_type, true, true, true);
+  if (object_handle) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot add object: There are no free object slots.");
     return;
   }
 
-  Object_info[object_handle].name = current_name;
-  Object_info[object_handle].render_handle = img_handle;
-  ComputeDefaultSize(Object_info[object_handle].type, img_handle, Object_info[object_handle].size);
-  Object_info[object_handle].flags = object_info_flags_t{};
-  Object_info[object_handle].flags.destroyable = true;
-  Object_info[object_handle].hit_points = 100;
-  memset(&Object_info[object_handle].lighting_info, 0, sizeof(light_info));
-  Object_info[object_handle].lighting_info.timebits = 0xFFFFFFFF;
-  Object_info[object_handle].lighting_info.lighting_render_type =
+  auto& obj = Object_info[*object_handle];
+  obj.name = current_name;
+  obj.render_handle = img_handle;
+  ComputeDefaultSize(obj.type, img_handle, obj.size);
+  obj.flags = object_info_flags_t{};
+  obj.flags.destroyable = true;
+  obj.hit_points = 100;
+  obj.lighting_info = {};
+  obj.lighting_info.timebits = 0xFFFFFFFF;
+  obj.lighting_info.lighting_render_type =
       (m_type == object_type::building) ? lighting_render_type::lightmaps : lighting_render_type::gouraud;
 
-  std::filesystem::path destname = LocalModelsDir / Poly_models[Object_info[object_handle].render_handle].name;
+  std::filesystem::path destname = LocalModelsDir / Poly_models[obj.render_handle].name;
   std::filesystem::copy(pathname, destname, std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(current_name, PAGETYPE_GENERIC);
@@ -717,16 +718,17 @@ void WorldObjectsGenericDialog::onDelete()
       mng_DeletePagelock(d->name, PAGETYPE_GENERIC);
     }
 
-    const int old_current = m_object_id;
+    const std::optional<uint32_t> old_current = m_object_id;
+    auto& old_obj = Object_info[*old_current];
     m_object_id = GetNextObjectID(m_object_id);
     if (m_object_id == old_current)
-      m_object_id = -1;
-    FreePolyModel(Object_info[old_current].render_handle);
-    if (Object_info[old_current].med_render_handle != -1)
-      FreePolyModel(Object_info[old_current].med_render_handle);
-    if (Object_info[old_current].lo_render_handle != -1)
-      FreePolyModel(Object_info[old_current].lo_render_handle);
-    FreeObjectID(old_current);
+      m_object_id = std::nullopt;
+    FreePolyModel(old_obj.render_handle);
+    if (old_obj.med_render_handle != -1)
+      FreePolyModel(old_obj.med_render_handle);
+    if (old_obj.lo_render_handle != -1)
+      FreePolyModel(old_obj.lo_render_handle);
+    FreeObjectID(*old_current);
     mng_EraseLocker();
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object deleted.");
     RemapStaticIDs();
@@ -861,22 +863,23 @@ void WorldObjectsGenericDialog::onPaste()
       temp_name = "Copy" + std::to_string(c++) + "Of" + Copy_object.name;
   }
 
-  const int n = AllocObjectID(m_type, true, true, true);
-  if (n == -1) {
+  const std::optional<uint32_t> n = AllocObjectID(m_type, true, true, true);
+  if (n) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot paste object: There are no free object slots.");
     return;
   }
 
-  Object_info[n] = Copy_object;
-  Object_info[n].type = m_type;
-  Object_info[n].name = temp_name;
+  auto& obj = Object_info[*n];
+  obj = Copy_object;
+  obj.type = m_type;
+  obj.name = temp_name;
   Poly_models[data()->render_handle].used++;
   if (data()->med_render_handle != -1)
     Poly_models[data()->med_render_handle].used++;
   if (data()->lo_render_handle != -1)
     Poly_models[data()->lo_render_handle].used++;
   m_object_id = n;
-  mng_AllocTrackLock(Object_info[n].name, PAGETYPE_GENERIC);
+  mng_AllocTrackLock(obj.name, PAGETYPE_GENERIC);
   RemapStaticIDs();
   updateDialog();
 }
@@ -1001,10 +1004,3 @@ void WorldObjectsGenericDialog::saveGenericsOnClose() {
     }
   }
 }
-
-int editGenericObject(object_type objType, int initialCurrent, QWidget *parent) {
-  WorldObjectsGenericDialog dlg(objType, initialCurrent, parent);
-  dlg.exec();
-  return dlg.objectId();
-}
-

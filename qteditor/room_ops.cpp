@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <optional>
 
 #include "editor_room_state.h"
 
@@ -1658,7 +1659,7 @@ void ComputePlacedRoomMatrix() {
 
 // PlaceRoom — editor/HRoom.cpp:585
 // Sets up globals for interactive room placement.
-void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face, int placed_room_door) {
+void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face, std::optional<uint32_t> placed_room_door) {
   room &baseroomp = Rooms[baseroom];
   Q_ASSERT(baseroomp.faces[baseface].portal_num == -1);
 
@@ -1670,7 +1671,7 @@ void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face
   app.Placed_room_angle = 0;
   app.Placed_baseroomp = baseroom;
   app.Placed_baseface = baseface;
-  app.Placed_door = placed_room_door;
+  app.Placed_door = *placed_room_door;
 
   ComputeCenterPointOnFace(&app.Placed_room_attachpoint, baseroom, baseface);
   ComputeCenterPointOnFace(&app.Placed_room_origin, placed_room, placed_room_face);
@@ -1681,7 +1682,7 @@ void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face
 // PlaceDoor — editor/edoors.cpp:36
 // Creates a room from a door polymodel (shell + front face submodels) and
 // places it for interactive positioning.
-void PlaceDoor(int baseroom, int baseface, int placed_door) {
+void PlaceDoor(int baseroom, int baseface, uint32_t placed_door) {
   poly_model *po = GetPolymodelPointer(GetDoorImage(placed_door));
   if (po == nullptr)
     return;

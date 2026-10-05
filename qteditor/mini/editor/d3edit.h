@@ -349,7 +349,7 @@ struct d3edit_state {
   std::optional<object_type> current_obj_type; // current type of object
   std::optional<uint16_t> current_obj_id; // current specific id of object within type
   std::optional<uint16_t> current_powerup;  // current powerup id
-  int current_door;     // current door in door page dialog
+  std::optional<uint32_t> current_door;     // current door in door page dialog
   int current_robot;    // current robot in robot page dialog
   int current_ship;     // current ship in ship page dialog
   int current_sound;    // current sound in sound page dialog

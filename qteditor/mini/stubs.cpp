@@ -237,7 +237,7 @@ void mng_EraseLocker() { PRINT_STUB(__FUNCTION__); }
 int mng_MakeLocker() { PRINT_STUB(__FUNCTION__); return 0; }
 void mng_OverrideToUnlocked(mngs_Pagelock *p) { PRINT_STUB(__FUNCTION__); }
 int mng_RenamePage(const std::string &a, const std::string &b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_ReplacePage(const std::string &a, const std::string &b, int c, int d, int e) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_ReplacePage(const std::string &a, const std::string &b, std::optional<uint32_t> c, int d, int e) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_ReplacePagelock(const std::string &a, mngs_Pagelock *b) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_FindSpecificDoorPage(const std::string &a, mngs_door_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_FindSpecificGenericPage(const std::string &a, mngs_generic_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
@@ -246,7 +246,7 @@ int mng_FindSpecificSoundPage(const std::string &a, mngs_sound_page *b, int c) {
 int mng_FindSpecificTexPage(const std::string &a, mngs_texture_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_FindSpecificWeaponPage(const std::string &a, mngs_weapon_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignDoorPageToDoor(mngs_door_page *a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_AssignGenericPageToObjInfo(mngs_generic_page *a, int b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_AssignGenericPageToObjInfo(mngs_generic_page *a, std::optional<uint32_t> b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignShipPageToShip(mngs_ship_page *a, int b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignSoundPageToSound(mngs_sound_page *a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignTexPageToTexture(mngs_texture_page *a, int b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }

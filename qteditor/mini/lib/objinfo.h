@@ -604,26 +604,26 @@ void InitObjectInfo();
 void FreeObjectInfo(void);
 
 // Allocs a object for use, returns -1 if error, else index on success
-int AllocObjectID(object_type type, bool f_anim, bool f_weapons, bool f_ai);
+std::optional<uint32_t> AllocObjectID(object_type type, bool f_anim, bool f_weapons, bool f_ai);
 
 // Frees object index n
-void FreeObjectID(int n);
+void FreeObjectID(std::optional<uint32_t> n);
 
 // Find an object with the given type.  Returns std::nullopt if none found.
 std::optional<uint32_t> GetObjectID(object_type type);
 
 // Gets next object from n of the same type as n
-int GetNextObjectID(int n);
+std::optional<uint32_t> GetNextObjectID(std::optional<uint32_t> n);
 
 // Gets previous object from n that has the same type
-int GetPrevObjectID(int n);
+std::optional<uint32_t> GetPrevObjectID(std::optional<uint32_t> n);
 
 // Searches thru all object ids for a specific name
 // Returns the found id, or -1 if not found
 std::optional<uint32_t> FindObjectIDName(const std::string &name);
 
 // Given an object handle, returns an index to that object's model
-int GetObjectImage(int handle);
+std::optional<uint32_t> GetObjectImage(std::optional<uint32_t> handle);
 
 // Given an object, renders the representation of this object
 void DrawObject(object *obj);

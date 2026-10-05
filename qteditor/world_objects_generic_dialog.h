@@ -34,10 +34,10 @@ QT_END_NAMESPACE
 class WorldObjectsGenericDialog : public QDialog {
   Q_OBJECT
 public:
-  explicit WorldObjectsGenericDialog(object_type objType, int object_id, QWidget *parent = nullptr);
+  explicit WorldObjectsGenericDialog(object_type objType, std::optional<uint32_t> object_id, QWidget *parent = nullptr);
   ~WorldObjectsGenericDialog();
 
-  int objectId() const { return m_object_id; }
+  std::optional<uint32_t> objectId() const { return m_object_id; }
 
 private slots:
   void onAddNew();
@@ -64,20 +64,15 @@ private slots:
 private:
   void updateDialog();
   void enableDisableAll(bool flag);
-  bool isLocked(int n);
-  int countLockedItems();
-  void setObjectId(int id);
+  bool isLocked(std::optional<uint32_t> n);
+  uint32_t countLockedItems();
+  void setObjectId(std::optional<uint32_t> id);
   void saveGenericsOnClose();
   optref<object_info> data(void);
 
   Ui::WorldObjectsGenericDialog *ui;
   object_type m_type;
-  int m_object_id;
+  std::optional<uint32_t> m_object_id;
   int m_lod = 0;
   int m_locked_count = 0;
 };
-
-// Opens the generic object dialog for the given object type (matching the
-// original MainFrm handlers) and returns the resulting current id.
-int editGenericObject(object_type objType, int initialCurrent, QWidget *parent);
-

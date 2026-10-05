@@ -33,7 +33,6 @@
 void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   settings.beginGroup(QStringLiteral("editor"));
 
-
   auto setval = [&settings]<typename T>(const char* const name, std::optional<T> val) {
     if constexpr (std::is_enum_v<T>) {
       settings.setValue(name, std::to_underlying(*val));
@@ -42,20 +41,20 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
     }
   };
 
-  setval("texdlg_texture", state.texdlg_texture);
-  setval("current_obj_type", state.current_obj_type);
-  setval("current_obj_id", state.current_obj_id);
-  setval("current_powerup", state.current_powerup);
-  settings.setValue(QStringLiteral("current_door"),          state.current_door);
-  settings.setValue(QStringLiteral("current_robot"),         state.current_robot);
+  setval("texdlg_texture",    state.texdlg_texture);
+  setval("current_obj_type",  state.current_obj_type);
+  setval("current_obj_id",    state.current_obj_id);
+  setval("current_powerup",   state.current_powerup);
+  setval("current_door",      state.current_door);
+  setval("current_robot",      state.current_robot);
   settings.setValue(QStringLiteral("current_ship"),          state.current_ship);
   settings.setValue(QStringLiteral("current_sound"),         state.current_sound);
   settings.setValue(QStringLiteral("current_weapon"),        state.current_weapon);
   settings.setValue(QStringLiteral("current_path"),          state.current_path);
   settings.setValue(QStringLiteral("current_node"),          state.current_node);
   settings.setValue(QStringLiteral("current_megacell"),      state.current_megacell);
-  settings.setValue(QStringLiteral("current_building"),      state.current_building);
-  settings.setValue(QStringLiteral("current_clutter"),       state.current_clutter);
+  setval("current_building",  state.current_building);
+  setval("current_clutter",   state.current_clutter);
 
   settings.setValue(QStringLiteral("texscr_visible"),        state.texscr_visible);
   settings.setValue(QStringLiteral("texscr_x"),              state.texscr_x);
@@ -126,16 +125,16 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
   state.current_obj_type  = getval.operator()<object_type>("current_obj_type");
   state.current_obj_id    = getval.operator()<uint16_t>("current_obj_id");
   state.current_powerup   = getval.operator()<uint16_t>("current_powerup");
-  state.current_door      = settings.value(QStringLiteral("current_door"),     0).toInt();
-  state.current_robot     = settings.value(QStringLiteral("current_robot"),    0).toInt();
+  state.current_door      = getval.operator()<uint32_t>("current_door");
+  state.current_robot     = getval.operator()<uint32_t>("current_robot");
   state.current_ship      = settings.value(QStringLiteral("current_ship"),     0).toInt();
   state.current_sound     = settings.value(QStringLiteral("current_sound"),    0).toInt();
   state.current_weapon    = settings.value(QStringLiteral("current_weapon"),   0).toInt();
   state.current_path      = settings.value(QStringLiteral("current_path"),     0).toInt();
   state.current_node      = settings.value(QStringLiteral("current_node"),     0).toInt();
   state.current_megacell  = settings.value(QStringLiteral("current_megacell"), 0).toInt();
-  state.current_building  = settings.value(QStringLiteral("current_building"), 0).toInt();
-  state.current_clutter   = settings.value(QStringLiteral("current_clutter"),  0).toInt();
+  state.current_building  = getval.operator()<uint32_t>("current_building");
+  state.current_clutter   = getval.operator()<uint32_t>("current_clutter");
 
   state.texscr_visible    = settings.value(QStringLiteral("texscr_visible"),    false).toBool();
   state.texscr_x          = settings.value(QStringLiteral("texscr_x"),          0).toInt();

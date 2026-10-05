@@ -173,7 +173,7 @@ std::optional<uint32_t> FindDoorName(const std::string &name);
 // Given a filename, loads the model found in that file
 int LoadDoorImage(const std::filesystem::path &filename, int pageable = 1);
 // Given a door handle, returns an index to that doors model
-int GetDoorImage(int handle);
+int GetDoorImage(uint32_t handle);
 
 //	Remaps the doors
 void RemapDoors();

@@ -63,10 +63,9 @@ void RobotPreviewWidget::paintGL() {
   // Ensure the robot/object selection is valid before touching any model
   // state; a stale current_robot or an unused model handle must not reach the
   // model renderer (which asserts on pm->used).
-  const int robot = app.current_robot;
-  if (robot < 0 || robot >= MAX_OBJECT_TYPES)
+  if (!app.current_robot || *app.current_robot >= MAX_OBJECT_TYPES)
     return;
-  object_info *oi = &Object_info[robot];
+  object_info *oi = &Object_info[*app.current_robot];
   const int pmHandle = oi->render_handle;
   if (pmHandle < 0 || pmHandle >= MAX_POLY_MODELS)
     return;

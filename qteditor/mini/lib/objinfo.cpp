@@ -182,8 +182,8 @@ object_info::object_info(object_type type, bool f_anim, bool f_weapons, bool f_a
 }
 
 // Allocs a object for use, returns -1 if error, else index on success
-int AllocObjectID(object_type type, bool f_anim, bool f_weapons, bool f_ai) {
-  for (int i = 0; i < MAX_OBJECT_IDS; i++) {
+std::optional<uint32_t> AllocObjectID(object_type type, bool f_anim, bool f_weapons, bool f_ai) {
+  for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++) {
     if (Object_info[i].type == object_type::none) {
       Object_info[i] = object_info(type, f_anim, f_weapons, f_ai);
       Num_object_ids[obj_type_index(type)]++;
@@ -192,32 +192,38 @@ int AllocObjectID(object_type type, bool f_anim, bool f_weapons, bool f_ai) {
   }
 
   Q_ASSERT(false); // No slots free!
-  return -1;
+  return std::nullopt;
 }
 
 // Frees object index n
-void FreeObjectID(int n) {
-  Q_ASSERT(Object_info[n].type != object_type::none);
+void FreeObjectID(std::optional<uint32_t> obj) {
+  if(obj)
+  {
+    uint32_t n = *obj;
+    Q_ASSERT(Object_info[n].type != object_type::none);
 
-  Num_object_ids[obj_type_index(Object_info[n].type)]--;
-  Object_info[n].type = object_type::none;
-  Object_info[n].name.clear();
-  Object_info[n].icon_name.clear();
-  Object_info[n].script_name_override.clear();
-  Object_info[n].module_name.clear();
-  Object_info[n].description.clear();
+    Num_object_ids[obj_type_index(Object_info[n].type)]--;
+    Object_info[n].type = object_type::none;
+    Object_info[n].name.clear();
+    Object_info[n].icon_name.clear();
+    Object_info[n].script_name_override.clear();
+    Object_info[n].module_name.clear();
+    Object_info[n].description.clear();
 
-  Object_info[n].anim.clear();
-  Object_info[n].ai_info = {};
-  Object_info[n].static_wb = {};
+    Object_info[n].anim.clear();
+    Object_info[n].ai_info = {};
+    Object_info[n].static_wb = {};
+  }
 }
 
-int GetNextObjectID(int n) {
-  const object_type t = Object_info[n].type;
-  Q_ASSERT(n >= 0 && n < MAX_OBJECT_IDS);
+std::optional<uint32_t> GetNextObjectID(std::optional<uint32_t> n) {
+  if(!n)
+    return std::nullopt;
+  Q_ASSERT(*n < MAX_OBJECT_IDS);
+  const object_type t = Object_info[*n].type;
   if (Num_object_ids[obj_type_index(t)] == 0)
-    return -1;
-  for (int i = n + 1; i < MAX_OBJECT_IDS; i++)
+    return std::nullopt;;
+  for (int i = *n + 1; i < MAX_OBJECT_IDS; i++)
     if (Object_info[i].type == t)
       return i;
   for (int i = 0; i <= n; i++)
@@ -226,12 +232,14 @@ int GetNextObjectID(int n) {
   return n;
 }
 
-int GetPrevObjectID(int n) {
-  const object_type t = Object_info[n].type;
-  Q_ASSERT(n >= 0 && n < MAX_OBJECT_IDS);
+std::optional<uint32_t> GetPrevObjectID(std::optional<uint32_t> n) {
+  Q_ASSERT(*n < MAX_OBJECT_IDS);
+  if(!n)
+    return std::nullopt;
+  const object_type t = Object_info[*n].type;
   if (Num_object_ids[obj_type_index(t)] == 0)
-    return -1;
-  for (int i = n - 1; i >= 0; i--)
+    return std::nullopt;
+  for (int i = *n - 1; i >= 0; i--)
     if (Object_info[i].type == t)
       return i;
   for (int i = MAX_OBJECT_IDS - 1; i >= n; i--)

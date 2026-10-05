@@ -198,8 +198,8 @@ int LoadDoorImage(const std::filesystem::path& filename, int pageable) {
 }
 
 // Given a door handle, returns an index to that doors model
-int GetDoorImage(int handle) {
-  Q_ASSERT(handle >= 0 && handle < static_cast<int>(Doors.size()));
+int GetDoorImage(uint32_t handle) {
+  Q_ASSERT(handle < static_cast<uint32_t>(Doors.size()));
   Q_ASSERT(Doors.is_used(handle));
 
   return (Doors[handle].model_handle);

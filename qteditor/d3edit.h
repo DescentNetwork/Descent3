@@ -66,8 +66,8 @@ struct d3edit_state
   std::optional<object_type> current_obj_type; // current type of object
   std::optional<uint16_t> current_obj_id; // current specific id of object within type
   std::optional<uint16_t> current_powerup; // current powerup id
-  int current_door      = -1; // current door in door page dialog
-  int current_robot     = -1; // current robot in robot page dialog
+  std::optional<uint32_t> current_door; // current door in door page dialog
+  std::optional<uint32_t> current_robot; // current robot in robot page dialog
   int current_ship      = -1; // current ship in ship page dialog
   int current_sound     = -1; // current sound in sound page dialog
   int current_weapon    = -1; // current weapon in weapon page dialog
@@ -76,8 +76,8 @@ struct d3edit_state
   int current_megacell  = -1; // currently selected megacell
   int current_room      = -1; // currently selected room
   int current_gamefile  = -1; // currently selected gamefile
-  int current_building  = -1; // currently selected building
-  int current_clutter   = -1; // currently selected clutter
+  std::optional<uint32_t> current_building; // currently selected building
+  std::optional<uint32_t> current_clutter; // currently selected clutter
 
   //	Values for the different editor windows
   bool texscr_visible = false;                        // is texture mine view up?

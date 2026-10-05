@@ -25,8 +25,7 @@
 #include <QWidget>
 #include <QTimer>
 #include <QFileInfo>
-//#include <DockManager.h>
-//#include <DockWidget.h>
+#include <optional>
 
 #include "object_external.h" // object_type
 
@@ -74,7 +73,7 @@ private:
   void showWorldObjectsSound();
   void showWorldWeapons();
   void showWorldTextures();
-  void showGenericObject(object_type objType, int current);
+  void showGenericObject(object_type objType, std::optional<uint32_t> current);
   void showLevelProperties();
   void showMegacells();
   void showAmbientSounds();

@@ -22,6 +22,8 @@
 #include "vecmat_external.h"
 #include "room_external.h"
 
+#include <optional>
+
 struct face;
 struct roomUVL;
 
@@ -86,8 +88,8 @@ void ConnectPortal(int roomnum, int portal_num, int dest_room);
 void DetachPortal(int roomnum, int portal_num);
 void AttachRoom();
 void ComputePlacedRoomMatrix();
-void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face, int placed_room_door);
-void PlaceDoor(int baseroom, int baseface, int placed_door);
+void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face, std::optional<uint32_t> placed_room_door);
+void PlaceDoor(int baseroom, int baseface, uint32_t placed_door);
 
 // Port of editor/RoomUVs.cpp and editor/HTexture.cpp — UV manipulation.
 void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl);

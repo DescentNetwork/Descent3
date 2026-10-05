@@ -6593,7 +6593,7 @@ private slots:
     ComputeFaceNormal(1, 0);
     att->used = true;
 
-    PlaceRoom(0, 0, 1, 0, -1);
+    PlaceRoom(0, 0, 1, 0, std::nullopt);
 
     QCOMPARE(app.Placed_room, 1);
     QCOMPARE(app.Placed_room_face, 0);
@@ -7971,32 +7971,32 @@ private slots:
     }
 
     // f_anim: fixed-size anim table with the engine defaults.
-    const int ai = AllocObjectID(object_type::powerup, true, false, false);
-    QVERIFY(ai >= 0);
-    QCOMPARE(int(Object_info[ai].anim.size()), int(NUM_MOVEMENT_CLASSES));
-    for (size_t j = 0; j < Object_info[ai].anim.size(); j++)
+    const std::optional<uint32_t> ai = AllocObjectID(object_type::powerup, true, false, false);
+    QVERIFY(ai);
+    QCOMPARE(int(Object_info[*ai].anim.size()), int(NUM_MOVEMENT_CLASSES));
+    for (size_t j = 0; j < Object_info[*ai].anim.size(); j++)
       for (int k = 0; k < NUM_ANIMS_PER_CLASS; k++) {
-        QCOMPARE(Object_info[ai].anim[j].elem[k].spc, 1.0f);
-        QCOMPARE(Object_info[ai].anim[j].elem[k].anim_sound_index, -1);
+        QCOMPARE(Object_info[*ai].anim[j].elem[k].spc, 1.0f);
+        QCOMPARE(Object_info[*ai].anim[j].elem[k].anim_sound_index, -1);
       }
 
     // No anim requested: the table stays empty.
-    const int bi = AllocObjectID(object_type::clutter, false, false, false);
-    QVERIFY(bi >= 0);
-    QVERIFY(Object_info[bi].anim.empty());
+    const std::optional<uint32_t> bi = AllocObjectID(object_type::clutter, false, false, false);
+    QVERIFY(bi);
+    QVERIFY(Object_info[*bi].anim.empty());
 
     // Copies get their own buffer (vector semantics, not a shared pointer).
-    const object_info copy = Object_info[ai];
+    const object_info copy = Object_info[*ai];
     QCOMPARE(int(copy.anim.size()), int(NUM_MOVEMENT_CLASSES));
     QCOMPARE(copy.anim[0].elem[3].anim_sound_index, -1);
     QCOMPARE(copy.anim[0].elem[3].spc, 1.0f);
-    QVERIFY(copy.anim.data() != Object_info[ai].anim.data());
+    QVERIFY(copy.anim.data() != Object_info[*ai].anim.data());
 
     // FreeObjectID releases the anim storage.
     FreeObjectID(ai);
-    QVERIFY(Object_info[ai].anim.empty());
+    QVERIFY(Object_info[*ai].anim.empty());
     FreeObjectID(bi);
-    QVERIFY(Object_info[bi].anim.empty());
+    QVERIFY(Object_info[*bi].anim.empty());
 
     // Restore the surrounding game-table state so later tests (which rely on
     // the startup gamedata table) see it unchanged.
