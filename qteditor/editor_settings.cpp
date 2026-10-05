@@ -69,7 +69,7 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   settings.setValue(QStringLiteral("wirescr_h"),             state.wirescr_h);
 
   settings.setValue(QStringLiteral("keypad_visible"),        state.keypad_visible);
-  settings.setValue(QStringLiteral("keypad_current"),        state.keypad_current);
+  if (state.keypad_current) settings.setValue(QStringLiteral("keypad_current"), *state.keypad_current); else settings.setValue(QStringLiteral("keypad_current"), -1);
 
   settings.setValue(QStringLiteral("float_keypad_x"),        state.float_keypad_x);
   settings.setValue(QStringLiteral("float_keypad_y"),        state.float_keypad_y);
@@ -149,7 +149,7 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
   state.wirescr_h         = settings.value(QStringLiteral("wirescr_h"),         0).toInt();
 
   state.keypad_visible    = settings.value(QStringLiteral("keypad_visible"),    false).toBool();
-  state.keypad_current    = settings.value(QStringLiteral("keypad_current"),    0).toInt();
+  { auto v = getval.template operator()<int>("keypad_current"); if (v) state.keypad_current = *v; }
 
   state.float_keypad_x    = settings.value(QStringLiteral("float_keypad_x"),    -1).toInt();
   state.float_keypad_y    = settings.value(QStringLiteral("float_keypad_y"),    -1).toInt();
