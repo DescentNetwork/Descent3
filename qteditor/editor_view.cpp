@@ -348,9 +348,9 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
   size_t projStart = 0;
   size_t projEnd = Rooms.size() - 1;
   if (app.view_mode == state::viewer::room) {
-    if (app.current_room >= 0 && app.current_room < Rooms.size()) {
-      projStart = app.current_room;
-      projEnd = app.current_room;
+    if (app.current_room && *app.current_room < Rooms.size()) {
+      projStart = *app.current_room;
+      projEnd = *app.current_room;
     }
   }
   if (app.view_mode == state::viewer::terrain)
@@ -463,12 +463,12 @@ void EditorView::renderRooms() {
   size_t renderStart = 0;
   size_t renderEnd = Rooms.size() - 1;
   if (app.view_mode == state::viewer::room) {
-    if (app.current_room < 0 || app.current_room >= Rooms.size())
+    if (!app.current_room || *app.current_room >= Rooms.size())
       return;
-    if (!Rooms[app.current_room].used)
+    if (!Rooms[*app.current_room].used)
       return;
-    renderStart = app.current_room;
-    renderEnd = app.current_room;
+    renderStart = *app.current_room;
+    renderEnd = *app.current_room;
   }
 
   // In the Win32 mine view the terrain dots are drawn before all the rooms
@@ -782,7 +782,7 @@ void EditorView::renderOverlays() {
     // (The yellow current-face highlight is drawn below — the Win32 room view
     // has no current-room or marked-room overlays.)
     if (liveRoom(app.Curroomp) && Rooms[app.Curroomp].used &&
-        app.Curroomp == app.current_room && app.Curface >= 0 &&
+        app.Curroomp == (app.current_room ? *app.current_room : -1) && app.Curface >= 0 &&
         app.Curface < Rooms[app.Curroomp].num_faces) {
       face *fp = &Rooms[app.Curroomp].faces[app.Curface];
       float sx[16], sy[16];
@@ -1835,10 +1835,10 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
   if (app.view_mode == state::viewer::terrain)
     return best;
   if (app.view_mode == state::viewer::room) {
-    if (app.current_room < 0 || app.current_room >= Rooms.size())
+    if (!app.current_room || *app.current_room >= Rooms.size())
       return best;
-    pickStart = app.current_room;
-    pickEnd = app.current_room;
+    pickStart = app.current_room ? *app.current_room : 0;
+    pickEnd = app.current_room ? *app.current_room : 0;
   }
 
   const float rad2 = m_rad * m_rad;

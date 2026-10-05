@@ -357,7 +357,7 @@ struct d3edit_state {
   std::optional<uint32_t> current_path;     // currently selected path for a robot to follow
   std::optional<uint16_t> current_node;     // currently selected node of preceding path
   std::optional<uint32_t> current_megacell; // currently selected megacell
-  int current_room;     // currently selected room
+  std::optional<int> current_room;     // currently selected room
   int current_gamefile; // currently selected gamefile
   int current_building; // currently selected building
   int current_clutter;  // currently selected clutter

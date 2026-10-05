@@ -944,9 +944,9 @@ void MainWindow::onCenterViewOnCube() {
   // room's center without changing distance or orientation.
   int roomnum;
   if (app.view_mode == state::viewer::room) {
-    if (app.current_room < 0 || app.current_room >= Rooms.size())
+    if (!app.current_room || *app.current_room >= Rooms.size())
       return;
-    roomnum = app.current_room;
+    roomnum = *app.current_room;
   } else {
     roomnum = app.Curroomp;
   }
