@@ -311,7 +311,7 @@ void ObjUnlink(int objnum) {
     if (obj->roomnum < 0 || obj->roomnum >= Rooms.size())
       return;
 
-    room *rp = &Rooms[obj->roomnum];
+    room_t *rp = &Rooms[obj->roomnum];
 
     if (obj->prev == -1)
       rp->objects = obj->next;

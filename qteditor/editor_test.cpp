@@ -358,8 +358,8 @@ struct PickFixture {
   }
   static void addQuadRoom(int roomIndex, const std::vector<vector3>& verts) {
     RoomsEnsureIndex(roomIndex);
-    room *rp = &Rooms[roomIndex];
-    *rp = room{};
+    room_t *rp = &Rooms[roomIndex];
+    *rp = room_t{};
     InitRoom(*rp, 4, 1, 0);
     InitRoomFace(&rp->faces[0], 4);
     for (int i = 0; i < 4; i++) {
@@ -375,7 +375,7 @@ struct PickFixture {
   // loader / BOA; InitRoom alone leaves num_bbf_regions == 0, which makes the
   // engine skip every face test. A single region spanning the whole room with
   // a sector mask of 0 passes every msector gate, so all faces are tested.
-  static void buildBbfForRoom(room *rp) {
+  static void buildBbfForRoom(room_t *rp) {
     rp->min_xyz = rp->max_xyz = rp->verts[0];
     for (int v = 1; v < rp->num_verts; ++v) {
       const vector3 &p = rp->verts[v];
@@ -438,8 +438,8 @@ private slots:
 
     // Room 0: single 4-vert quad.
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *(r0) = room{};
+    room_t *r0 = &Rooms[0];
+    *(r0) = room_t{};
     InitRoom(*r0, 4, 1, 0);
     r0->verts[0] = vector3{(float)10, (float)0, (float)-10};
     r0->verts[1] = vector3{(float)0, (float)0, (float)-10};
@@ -455,8 +455,8 @@ private slots:
 
     // Room 1: triangle.
     RoomsEnsureIndex(1);
-    room *r1 = &Rooms[1];
-    *(r1) = room{};
+    room_t *r1 = &Rooms[1];
+    *(r1) = room_t{};
     InitRoom(*r1, 3, 1, 0);
     r1->verts[0] = vector3{(float)20, (float)0, (float)-10};
     r1->verts[1] = vector3{(float)30, (float)0, (float)-10};
@@ -580,8 +580,8 @@ private slots:
 
     // Simple quad room.
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *(r0) = room{};
+    room_t *r0 = &Rooms[0];
+    *(r0) = room_t{};
     InitRoom(*r0, 4, 1, 0);
     r0->verts[0] = vector3{(float)10, 0, (float)-10};
     r0->verts[1] = vector3{0, 0, (float)-10};
@@ -785,8 +785,8 @@ private slots:
 
     // Room 0: single 4-vert quad.
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *r0 = room{};
+    room_t *r0 = &Rooms[0];
+    *r0 = room_t{};
     InitRoom(*r0, 4, 1, 0);
     r0->verts[0] = vector3{(float)10, 0, (float)-10};
     r0->verts[1] = vector3{0, 0, (float)-10};
@@ -906,8 +906,8 @@ private slots:
 
     // Minimal room so an object is legal to place.
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *r0 = room{};
+    room_t *r0 = &Rooms[0];
+    *r0 = room_t{};
     InitRoom(*r0, 4, 1, 0);
     r0->verts[0] = vector3{(float)10, 0, (float)-10};
     r0->verts[1] = vector3{0, 0, (float)-10};
@@ -1052,8 +1052,8 @@ private slots:
 
     // One room, one quad face with real min/max extents, plus a BBF region.
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *r0 = room{};
+    room_t *r0 = &Rooms[0];
+    *r0 = room_t{};
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
@@ -1211,8 +1211,8 @@ private slots:
 
     // Minimal used room so SaveLevel has a valid ROOM chunk.
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *r0 = room{};
+    room_t *r0 = &Rooms[0];
+    *r0 = room_t{};
     InitRoom(*r0, 4, 1, 0);
     r0->verts[0] = vector3{(float)10, 0, (float)-10};
     r0->verts[1] = vector3{0, 0, (float)-10};
@@ -1396,8 +1396,8 @@ private slots:
     // A minimal used room (identical to testRoomAABBChunkRoundTrip) so the
     // writer emits a well-framed AABB chunk.
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *r0 = room{};
+    room_t *r0 = &Rooms[0];
+    *r0 = room_t{};
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
@@ -1629,8 +1629,8 @@ private slots:
     // A minimal used room (identical to testMatcenChunkRoundTrip) so the
     // writer emits a well-framed AABB chunk.
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *r0 = room{};
+    room_t *r0 = &Rooms[0];
+    *r0 = room_t{};
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
@@ -1753,8 +1753,8 @@ private slots:
     // A minimal used room (identical to the other chunk round-trip tests) so
     // the writer emits a well-framed AABB chunk.
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *r0 = room{};
+    room_t *r0 = &Rooms[0];
+    *r0 = room_t{};
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
@@ -1871,8 +1871,8 @@ private slots:
     // A minimal used room (identical to the other chunk round-trip tests) so
     // the writer emits a well-framed AABB chunk.
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *r0 = room{};
+    room_t *r0 = &Rooms[0];
+    *r0 = room_t{};
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
@@ -1983,8 +1983,8 @@ private slots:
     // A minimal used room (identical to the other chunk round-trip tests) so
     // the writer emits a well-framed AABB chunk.
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *r0 = room{};
+    room_t *r0 = &Rooms[0];
+    *r0 = room_t{};
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
@@ -2095,8 +2095,8 @@ private slots:
     // A minimal used room (identical to the other chunk round-trip tests) so
     // the writer emits a well-framed AABB chunk.
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *r0 = room{};
+    room_t *r0 = &Rooms[0];
+    *r0 = room_t{};
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
@@ -2838,8 +2838,8 @@ private slots:
 
     // A minimal used room (identical to the other chunk round-trip tests).
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *r0 = room{};
+    room_t *r0 = &Rooms[0];
+    *r0 = room_t{};
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
@@ -4491,8 +4491,8 @@ private slots:
       {2048 + 0, 0, 2048 + 10}, {2048 + 10, 0, 2048 + 10},
     };
     RoomsEnsureIndex(0);
-    room *rp = &Rooms[0];
-    *rp = room{};
+    room_t *rp = &Rooms[0];
+    *rp = room_t{};
     InitRoom(*rp, 4, 1, 0);
     InitRoomFace(&rp->faces[0], 4);
     for (int i = 0; i < 4; i++) {
@@ -4544,8 +4544,8 @@ private slots:
       {2048 + 0, -5, 2048 + 10}, {2048 + 10, -5, 2048 + 10},
     };
     RoomsEnsureIndex(0);
-    room *rp = &Rooms[0];
-    *rp = room{};
+    room_t *rp = &Rooms[0];
+    *rp = room_t{};
     InitRoom(*rp, 4, 1, 0);
     InitRoomFace(&rp->faces[0], 4);
     for (int i = 0; i < 4; i++) {
@@ -4994,8 +4994,8 @@ private slots:
   void testCopyRoom() {
     const int srcroom = FindFreeRoomSlot();
     QVERIFY(srcroom >= 0);
-    room &src = Rooms[srcroom];
-    src = room{};
+    room_t &src = Rooms[srcroom];
+    src = room_t{};
     src.used = 1;
     src.num_verts = 4;
     src.num_faces = 2;
@@ -5021,8 +5021,8 @@ private slots:
 
     const int dstroom = FindFreeRoomSlot();
     QVERIFY(dstroom >= 0);
-    room &dst = Rooms[dstroom];
-    dst = room{};
+    room_t &dst = Rooms[dstroom];
+    dst = room_t{};
     CopyRoom(dstroom, srcroom);
 
     QCOMPARE(dst.num_verts, 4);
@@ -5040,11 +5040,11 @@ private slots:
   void testLinkRoomsAndDeletePortal() {
     // Create two rooms with single 4-vert quad faces
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
+    room_t *r0 = &Rooms[0];
     RoomsEnsureIndex(1);
-    room *r1 = &Rooms[1];
-    *(r0) = room{};
-    *(r1) = room{};
+    room_t *r1 = &Rooms[1];
+    *(r0) = room_t{};
+    *(r1) = room_t{};
     InitRoom(*r0, 4, 1, 0);
     InitRoom(*r1, 4, 1, 0);
     r0->verts[0] = vector3{(float)0, (float)0, (float)0};
@@ -5084,8 +5084,8 @@ private slots:
 
   void testFlipFace() {
     RoomsEnsureIndex(0);
-    room *rp = &Rooms[0];
-    *(rp) = room{};
+    room_t *rp = &Rooms[0];
+    *(rp) = room_t{};
     InitRoom(*rp, 3, 1, 0);
     rp->verts[0] = vector3{(float)0, (float)0, (float)0};
     rp->verts[1] = vector3{(float)10, (float)0, (float)0};
@@ -5113,8 +5113,8 @@ private slots:
   void testCombineFacesCoplanar() {
     // Create a room with two adjacent coplanar triangles sharing edge 1-2
     RoomsEnsureIndex(0);
-    room *rp = &Rooms[0];
-    *(rp) = room{};
+    room_t *rp = &Rooms[0];
+    *(rp) = room_t{};
     InitRoom(*rp, 4, 2, 0);
     rp->verts[0] = vector3{(float)0, (float)0, (float)0};
     rp->verts[1] = vector3{(float)10, (float)0, (float)0};
@@ -5145,11 +5145,11 @@ private slots:
 
   void testRotateRooms() {
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
+    room_t *r0 = &Rooms[0];
     RoomsEnsureIndex(1);
-    room *r1 = &Rooms[1];
-    *(r0) = room{};
-    *(r1) = room{};
+    room_t *r1 = &Rooms[1];
+    *(r0) = room_t{};
+    *(r1) = room_t{};
     InitRoom(*r0, 8, 2, 0);
     InitRoom(*r1, 4, 1, 0);
 
@@ -5213,8 +5213,8 @@ private slots:
   void testAttachRoomTerrain() {
     // AttachRoom to terrain (baseroomp == NULL) — simplest path
     RoomsEnsureIndex(0);
-    room *r0 = &Rooms[0];
-    *(r0) = room{};
+    room_t *r0 = &Rooms[0];
+    *(r0) = room_t{};
     InitRoom(*r0, 4, 1, 0);
     r0->verts[0] = vector3{(float)100, (float)100, (float)0};
     r0->verts[1] = vector3{(float)200, (float)100, (float)0};
@@ -5259,11 +5259,11 @@ private slots:
     // AttachRoom to a mine room with portal clipping.
     // The attach face must have opposite winding to the base face.
     RoomsEnsureIndex(0);
-    room *base = &Rooms[0];
+    room_t *base = &Rooms[0];
     RoomsEnsureIndex(1);
-    room *att = &Rooms[1];
-    *(base) = room{};
-    *(att) = room{};
+    room_t *att = &Rooms[1];
+    *(base) = room_t{};
+    *(att) = room_t{};
     InitRoom(*base, 4, 1, 0);
     InitRoom(*att, 4, 1, 0);
 
@@ -5327,8 +5327,8 @@ private slots:
 
   void testUVSlide() {
     RoomsEnsureIndex(0);
-    room *rp = &Rooms[0];
-    *(rp) = room{};
+    room_t *rp = &Rooms[0];
+    *(rp) = room_t{};
     InitRoom(*rp, 4, 1, 0);
     rp->verts[0] = vector3{(float)0, (float)0, (float)0};
     rp->verts[1] = vector3{(float)10, (float)0, (float)0};
@@ -5362,8 +5362,8 @@ private slots:
 
   void testUVFlip() {
     RoomsEnsureIndex(0);
-    room *rp = &Rooms[0];
-    *(rp) = room{};
+    room_t *rp = &Rooms[0];
+    *(rp) = room_t{};
     InitRoom(*rp, 4, 1, 0);
     rp->verts[0] = vector3{(float)0, (float)0, (float)0};
     rp->verts[1] = vector3{(float)10, (float)0, (float)0};
@@ -5388,8 +5388,8 @@ private slots:
 
   void testUVScaleFromCenter() {
     RoomsEnsureIndex(0);
-    room *rp = &Rooms[0];
-    *(rp) = room{};
+    room_t *rp = &Rooms[0];
+    *(rp) = room_t{};
     InitRoom(*rp, 4, 1, 0);
     rp->verts[0] = vector3{(float)0, (float)0, (float)0};
     rp->verts[1] = vector3{(float)10, (float)0, (float)0};
@@ -5423,8 +5423,8 @@ private slots:
 
   void testSetDefaultUVs() {
     RoomsEnsureIndex(0);
-    room *rp = &Rooms[0];
-    *(rp) = room{};
+    room_t *rp = &Rooms[0];
+    *(rp) = room_t{};
     InitRoom(*rp, 4, 1, 0);
     rp->verts[0] = vector3{(float)0, (float)10, (float)0};
     rp->verts[1] = vector3{(float)10, (float)10, (float)0};
@@ -5792,7 +5792,7 @@ private slots:
     // Find a screen point that actually shows a face of the mine and click it.
     bool pickedSomething = false;
     for (size_t r = 0; r <= Rooms.size() - 1 && !pickedSomething; r++) {
-      room *rp = &Rooms[r];
+      room_t *rp = &Rooms[r];
       if (!rp->used)
         continue;
       for (int f = 0; f < rp->num_faces && !pickedSomething; f++) {
@@ -5843,7 +5843,7 @@ private slots:
     float bestZ = 1e30f;
     float pickX = -1.0f, pickY = -1.0f;
     for (size_t r = 0; r <= Rooms.size() - 1; r++) {
-      room *rp = &Rooms[r];
+      room_t *rp = &Rooms[r];
       if (!rp->used)
         continue;
       for (int f = 0; f < rp->num_faces; f++) {
@@ -5920,7 +5920,7 @@ private slots:
     Viewer_object->orient.fvec = vector3{1, 0, 0};
     app.view_mode = state::viewer::mine;
 
-    auto setFaceQuad = [](room *rp, const std::vector<vector3>& verts) {
+    auto setFaceQuad = [](room_t *rp, const std::vector<vector3>& verts) {
       InitRoomFace(&rp->faces[0], 4);
       for (int i = 0; i < 4; i++) {
         rp->verts[i] = verts[i];
@@ -5934,8 +5934,8 @@ private slots:
     // greater than the occluded face's average (~25).
     {
       RoomsEnsureIndex(0);
-      room *r0 = &Rooms[0];
-      *r0 = room{};
+      room_t *r0 = &Rooms[0];
+      *r0 = room_t{};
       InitRoom(*r0, 4, 1, 0);
       const std::vector<vector3> v = {
         {5, -4, 3}, {48, -4, -40}, {68, 4, -60}, {5, 4, 3},
@@ -5947,8 +5947,8 @@ private slots:
     // x=25, behind the click point.
     {
       RoomsEnsureIndex(1);
-      room *r1 = &Rooms[1];
-      *r1 = room{};
+      room_t *r1 = &Rooms[1];
+      *r1 = room_t{};
       InitRoom(*r1, 4, 1, 0);
       const std::vector<vector3> v = {
         {25, -2, -6}, {25, -2, 6}, {25, 2, 6}, {25, 2, -6},
@@ -6008,7 +6008,7 @@ private slots:
     app.view_mode = state::viewer::mine;
 
     auto setFlatQuad = [](int roomnum, const std::vector<vector3>& verts) {
-      room *rp = &Rooms[roomnum];
+      room_t *rp = &Rooms[roomnum];
       InitRoomFace(&rp->faces[0], 4);
       rp->faces[0].tmap = -1; // force flat shading, independent of textures
       for (int i = 0; i < 4; i++) {
@@ -6021,8 +6021,8 @@ private slots:
     // Room 0 (foreground): angled quad crossing the view axis at depth x=8.
     {
       RoomsEnsureIndex(0);
-      room *r0 = &Rooms[0];
-      *r0 = room{};
+      room_t *r0 = &Rooms[0];
+      *r0 = room_t{};
       InitRoom(*r0, 4, 1, 0);
       const std::vector<vector3> v = {{5, -4, 3}, {48, -4, -40}, {68, 4, -60}, {5, 4, 3}};
       setFlatQuad(0, v);
@@ -6032,8 +6032,8 @@ private slots:
     // drawn AFTER room 0 in scene order (so without depth it would overwrite it).
     {
       RoomsEnsureIndex(1);
-      room *r1 = &Rooms[1];
-      *r1 = room{};
+      room_t *r1 = &Rooms[1];
+      *r1 = room_t{};
       InitRoom(*r1, 4, 1, 0);
       const std::vector<vector3> v = {{25, -2, -6}, {25, -2, 6}, {25, 2, 6}, {25, 2, -6}};
       setFlatQuad(1, v);
@@ -6392,7 +6392,7 @@ private slots:
     int bestR = -1, bestF = -1;
     float bestT = 1e30f;
     for (size_t r = 0; r <= Rooms.size() - 1; r++) {
-      room *rp = &Rooms[r];
+      room_t *rp = &Rooms[r];
       if (!rp->used)
         continue;
       if (rp->num_verts > 0) {
@@ -6564,11 +6564,11 @@ private slots:
 
   void testPlaceRoomSetsGlobals() {
     RoomsEnsureIndex(0);
-    room *base = &Rooms[0];
+    room_t *base = &Rooms[0];
     RoomsEnsureIndex(1);
-    room *att = &Rooms[1];
-    *(base) = room{};
-    *(att) = room{};
+    room_t *att = &Rooms[1];
+    *(base) = room_t{};
+    *(att) = room_t{};
     InitRoom(*base, 4, 1, 0);
     InitRoom(*att, 4, 1, 0);
 
@@ -6624,7 +6624,7 @@ private slots:
 
     // Base room in slot 1 so slot 0 stays free for the door.
     RoomsEnsureIndex(1);
-    room *base = &Rooms[1];
+    room_t *base = &Rooms[1];
     InitRoom(*base, 4, 1, 0);
     base->verts[0] = vector3{(float)0, (float)0, (float)0};
     base->verts[1] = vector3{(float)10, (float)0, (float)0};
@@ -6705,8 +6705,8 @@ private slots:
 
   void testComputePlacedRoomMatrixIdentity() {
     RoomsEnsureIndex(0);
-    room *rp = &Rooms[0];
-    *(rp) = room{};
+    room_t *rp = &Rooms[0];
+    *(rp) = room_t{};
     InitRoom(*rp, 4, 1, 0);
     rp->verts[0] = vector3{(float)0, (float)0, (float)0};
     rp->verts[1] = vector3{(float)10, (float)0, (float)0};
@@ -7382,8 +7382,8 @@ private slots:
   // linking to Rooms[otherIdx].  Used to exercise fvi_FindIntersection directly.
   int buildBoxRoom(int roomIdx, vector3 min, vector3 max, int portalFace, int otherIdx) {
     RoomsEnsureIndex(roomIdx);
-    room *rp = &Rooms[roomIdx];
-    *(rp) = room{};
+    room_t *rp = &Rooms[roomIdx];
+    *(rp) = room_t{};
     InitRoom(*rp, 8, 6, portalFace >= 0 ? 1 : 0);
     rp->used = 1;
     float x0 = min.x(), y0 = min.y(), z0 = min.z();

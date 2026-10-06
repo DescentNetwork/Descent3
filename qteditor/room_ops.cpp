@@ -59,7 +59,7 @@
 // ============================================================================
 static void EditorDeleteTrigger(int trig_num) {
   trigger *tp = &Triggers[trig_num];
-  room *rp = &Rooms[tp->roomnum];
+  room_t *rp = &Rooms[tp->roomnum];
   face *fp = &rp->faces[tp->facenum];
   fp->flags.has_trigger = false;
   Triggers.erase(Triggers.begin() + trig_num);
@@ -111,7 +111,7 @@ int RoomAddVertices(int roomnum, int num_new_verts) {
   if (num_new_verts == 0)
     return 0;
 
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   rp.verts.resize(rp.num_verts + num_new_verts);
   rp.num_verts += num_new_verts;
 
@@ -126,7 +126,7 @@ int RoomAddFaces(int roomnum, int num_new_faces) {
   if (num_new_faces == 0)
     return 0;
 
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   rp.faces.resize(rp.num_faces + num_new_faces);
   rp.num_faces += num_new_faces;
 
@@ -148,7 +148,7 @@ int RoomAddFaces(int roomnum, int num_new_faces) {
 bool ResetRoomFaceNormals(int roomnum) {
   int bad_normals = 0;
 
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   for (int i = 0; i < rp.num_faces; i++)
     if (!ComputeFaceNormal(roomnum, i))
       bad_normals++;
@@ -197,8 +197,8 @@ void CopyFaceFlags(face *dfp, face *sfp) {
 // Deep-copies a room (verts, faces, doorway, flags).  Portals are not copied.
 // ============================================================================
 void CopyRoom(int destroom, int srcroom) {
-  room &destp = Rooms[destroom];
-  room &srcp = Rooms[srcroom];
+  room_t &destp = Rooms[destroom];
+  room_t &srcp = Rooms[srcroom];
 
   InitRoom(destp, srcp.num_verts, srcp.num_faces, 0);
 
@@ -304,7 +304,7 @@ bool FindSharedEdge(face *fp0, face *fp1, int *vn0, int *vn1) {
 void DeleteRoomFace(int roomnum, int facenum) {
   int f, i, t;
 
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
 
   if (rp.faces[facenum].flags.has_trigger)
     EditorDeleteTriggerByRoomFace(roomnum, facenum);
@@ -351,7 +351,7 @@ void DeleteRoomFace(int roomnum, int facenum) {
 // Deletes a portal from a room (does not delete the connecting side).
 // ============================================================================
 void DeleteRoomPortal(int roomnum, int portalnum) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   portal *pp = &rp.portals[portalnum];
   face *fp = &rp.faces[pp->portal_face];
 
@@ -375,7 +375,7 @@ void DeleteRoomPortal(int roomnum, int portalnum) {
 // Adds a new portal to a room.  Returns the portal number.
 // ============================================================================
 int AddPortal(int roomnum) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   rp.portals.resize(rp.num_portals + 1);
   rp.portals[rp.num_portals].flags = {};
   rp.portals[rp.num_portals].bnode_index = -1;
@@ -388,8 +388,8 @@ int AddPortal(int roomnum) {
 // Links two rooms by creating portals on the specified faces.
 // ============================================================================
 void LinkRooms(int room0, int face0, int room1, int face1) {
-  room &rp0 = Rooms[room0];
-  room &rp1 = Rooms[room1];
+  room_t &rp0 = Rooms[room0];
+  room_t &rp1 = Rooms[room1];
 
   Q_ASSERT(rp0.faces[face0].portal_num == -1);
   Q_ASSERT(rp1.faces[face1].portal_num == -1);
@@ -414,7 +414,7 @@ void LinkRooms(int room0, int face0, int room1, int face1) {
 // Deletes a portal pair (both sides of a connection).
 // ============================================================================
 void DeletePortalPair(int roomnum, int portalnum) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   portal *pp = &rp.portals[portalnum];
   int croom = pp->croom, cportal = pp->cportal;
 
@@ -441,7 +441,7 @@ void DeletePortalPair(int roomnum, int portalnum) {
 // Flips the winding order of a face and recomputes its normal.
 // ============================================================================
 void FlipFace(int roomnum, int facenum) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   face *fp = &rp.faces[facenum];
 
   Q_ASSERT(fp->portal_num == -1);
@@ -468,7 +468,7 @@ void FlipFace(int roomnum, int facenum) {
 // Given u,v coordinates at two vertices, assign u,v to all other vertices.
 // ============================================================================
 void AssignUVsToFace(int roomnum, int facenum, roomUVL *uva, roomUVL *uvb, int va, int vb) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   face *fp = &rp.faces[facenum];
   int nv = fp->num_verts;
   int vlo, vhi;
@@ -544,7 +544,7 @@ void AssignUVsToFace(int roomnum, int facenum, roomUVL *uva, roomUVL *uvb, int v
 // AssignDefaultUVsToRoom — editor/Erooms.cpp:748
 // ============================================================================
 void AssignDefaultUVsToRoom(int roomnum) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   for (int i = 0; i < rp.num_faces; i++)
     AssignDefaultUVsToRoomFace(roomnum, i);
 }
@@ -554,7 +554,7 @@ void AssignDefaultUVsToRoom(int roomnum) {
 // Triangulates concave/nonplanar faces in a room.
 // ============================================================================
 void FixConcaveFaces(int roomnum, int *facelist, int facecount) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
 
   for (int i = 0; i < facecount; i++) {
     face *fp = &rp.faces[facelist[i]];
@@ -624,7 +624,7 @@ void FixConcaveFaces(int roomnum, int *facelist, int facecount) {
 // Merges two coplanar, convex faces that share an edge.
 // ============================================================================
 bool CombineFaces(int roomnum, int face0, int face1) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   face *fp0 = &rp.faces[face0], *fp1 = &rp.faces[face1];
   int nv0 = fp0->num_verts, nv1 = fp1->num_verts;
   int v0, v1;
@@ -723,8 +723,8 @@ void RotateRooms(angle p, angle h, angle b) {
     return;
   }
 
-  room &markedroomp = Rooms[*app.marked.room];
-  room &curroomp = Rooms[*app.current.room];
+  room_t &markedroomp = Rooms[*app.marked.room];
+  room_t &curroomp = Rooms[*app.current.room];
 
   for (int i = 0; i < markedroomp.num_portals; i++) {
     if (markedroomp.portals[i].croom == app.current.room.value_or(-1)) {
@@ -772,7 +772,7 @@ void RotateRooms(angle p, angle h, angle b) {
   rotmat = roommat * ~rotmat * ~roommat;
 
   for (int i = 0; i < N_selected_rooms; i++) {
-    room &rp = Rooms[Selected_rooms[i]];
+    room_t &rp = Rooms[Selected_rooms[i]];
 
     if (Selected_rooms[i] == app.current.room.value_or(-1)) {
       face *cfp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
@@ -827,7 +827,7 @@ void RotateRooms(angle p, angle h, angle b) {
 // ConnectPortal — simplified wrapper to link two rooms via portal
 // ============================================================================
 void ConnectPortal(int roomnum, int portal_num, int dest_room) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
 
   if (portal_num < 0 || portal_num >= rp.num_portals) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid portal number.");
@@ -842,7 +842,7 @@ void ConnectPortal(int roomnum, int portal_num, int dest_room) {
     return;
   }
 
-  room &destp = Rooms[dest_room];
+  room_t &destp = Rooms[dest_room];
   if (destp.faces[dest_face].portal_num != -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Destination face is already a portal.");
     return;
@@ -858,7 +858,7 @@ void ConnectPortal(int roomnum, int portal_num, int dest_room) {
 // DetachPortal — disconnect a portal pair
 // ============================================================================
 void DetachPortal(int roomnum, int portal_num) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
 
   if (portal_num < 0 || portal_num >= rp.num_portals) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid portal number.");
@@ -944,7 +944,7 @@ static void ClipEdge(const vector3& normal, const clip_vertex *v0, const clip_ve
 // AddVertToFace — insert a vertex into a face after a given position
 // ============================================================================
 static void AddVertToFace(int roomnum, int facenum, int new_v, int after_v) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   face *fp = &rp.faces[facenum];
   int old_verts[MAX_VERTS_PER_FACE];
   roomUVL old_uvls[MAX_VERTS_PER_FACE];
@@ -989,7 +989,7 @@ static void AddVertToFace(int roomnum, int facenum, int new_v, int after_v) {
 // AddVertToAllEdges / AddPointToAllEdges
 // ============================================================================
 static void AddVertToAllEdges(int roomnum, int v0, int v1, int new_v) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   for (int f = 0; f < rp.num_faces; f++) {
     face *fp = &rp.faces[f];
     for (int v = 0; v < fp->num_verts; v++) {
@@ -1002,7 +1002,7 @@ static void AddVertToAllEdges(int roomnum, int v0, int v1, int new_v) {
 }
 
 static void AddPointToAllEdges(int roomnum, int v0, int v1, const vector3 *new_v) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   int newvertnum = RoomAddVertices(roomnum, 1);
   rp.verts[newvertnum] = *new_v;
   AddVertToAllEdges(roomnum, v0, v1, newvertnum);
@@ -1080,8 +1080,8 @@ static void ClipAgainstEdge(int nv, int16_t *vertnums, clip_vertex *vertices, in
 // polygon plus zero or more outside polygons.
 // ============================================================================
 static bool ClipFace(int aroom, int afacenum, int broom, int bfacenum) {
-  room &arp = Rooms[aroom];
-  room &brp = Rooms[broom];
+  room_t &arp = Rooms[aroom];
+  room_t &brp = Rooms[broom];
   face *afp = &arp.faces[afacenum];
   face *bfp = &brp.faces[bfacenum];
   int16_t vbuf0[MAX_VERTS_PER_FACE], vbuf1[MAX_VERTS_PER_FACE];
@@ -1177,8 +1177,8 @@ static bool ClipFacePair(int room0, int face0, int room1, int face1) {
 // points where needed.  Returns number of points added.
 // ============================================================================
 static int MatchPortalFaces(int room0, int facenum0, int room1, int facenum1, bool check_only = false) {
-  room &rp0 = Rooms[room0];
-  room &rp1 = Rooms[room1];
+  room_t &rp0 = Rooms[room0];
+  room_t &rp1 = Rooms[room1];
   face *fp0 = &rp0.faces[facenum0];
   face *fp1 = &rp1.faces[facenum1];
   int n0, n1, i, j, prev_vn0, prev_vn1, max_nv;
@@ -1303,8 +1303,8 @@ void AttachRoom() {
   // Initialize the room directly in the slot (avoids heap alloc + copy).
   // InitRoom fully initialises the room (including std::string members), so no
   // memset is done here (memset would corrupt the std::string members).
-  room &newroomp = Rooms[slot];
-  room &attroom = Rooms[attroomp];
+  room_t &newroomp = Rooms[slot];
+  room_t &attroom = Rooms[attroomp];
   InitRoom(newroomp, attroom.num_verts, attroom.num_faces, 0);
 
   // Rotate verts, copying into new room
@@ -1370,7 +1370,7 @@ void AttachRoom() {
 // GetUVLForRoomPoint — editor/Erooms.cpp:640
 // Given a room, face, and vertex index, compute the default UV coordinates.
 void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   face *fp = &rp.faces[facenum];
   int nv = fp->num_verts;
 
@@ -1436,7 +1436,7 @@ void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
 // Stretches the UVs of a face along the selected edge.
 // Edge is the vertex index — the edge is (edge, edge+1).
 void StretchRoomUVs(int roomnum, int facenum, int edge) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   face *fp = &rp.faces[facenum];
   int nv = fp->num_verts;
   int v0 = edge;
@@ -1451,7 +1451,7 @@ void StretchRoomUVs(int roomnum, int facenum, int edge) {
 // ScaleFaceUVs — editor/RoomUVs.cpp:195
 // Scale all UV values in a face from the center point (average of u,v).
 void ScaleFaceUVs(int roomnum, int facenum, float scale) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   face *fp = &rp.faces[facenum];
   int nv = fp->num_verts;
 
@@ -1472,7 +1472,7 @@ void ScaleFaceUVs(int roomnum, int facenum, float scale) {
 // HTextureSlide — editor/HTexture.cpp:334
 // Slide all UVs on a face by (right, up) in 1/128th texture units.
 void HTextureSlide(int roomnum, int facenum, float right, float up) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   if (!rp.used)
     return;
   for (int i = 0; i < rp.faces[facenum].num_verts; i++) {
@@ -1484,7 +1484,7 @@ void HTextureSlide(int roomnum, int facenum, float right, float up) {
 // HTextureRotate — editor/HTexture.cpp:371
 // Rotate all UVs on a face by the given angle (in radians).
 void HTextureRotate(int roomnum, int facenum, float angle_rad) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   if (!rp.used)
     return;
   face *fp = &rp.faces[facenum];
@@ -1514,7 +1514,7 @@ void HTextureRotate(int roomnum, int facenum, float angle_rad) {
 // HTextureFlipX — editor/HTexture.cpp:274
 // Flip the U coordinate: u = 1 - u.
 void HTextureFlipX(int roomnum, int facenum) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   if (!rp.used)
     return;
   for (int i = 0; i < rp.faces[facenum].num_verts; i++)
@@ -1524,7 +1524,7 @@ void HTextureFlipX(int roomnum, int facenum) {
 // HTextureFlipY — editor/HTexture.cpp:304
 // Flip the V coordinate: v = 1 - v.
 void HTextureFlipY(int roomnum, int facenum) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   if (!rp.used)
     return;
   for (int i = 0; i < rp.faces[facenum].num_verts; i++)
@@ -1534,7 +1534,7 @@ void HTextureFlipY(int roomnum, int facenum) {
 // HTextureRoomStretch — editor/HTexture.cpp:480
 // Stretch UVs perpendicular to the selected edge. direction = +1 or -1.
 void HTextureRoomStretch(int roomnum, int facenum, int edge, int direction) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   face *fp = &rp.faces[facenum];
   int nv = fp->num_verts;
   int next_edge = (edge + 1) % nv;
@@ -1573,7 +1573,7 @@ void HTextureStretchLess(int roomnum, int facenum, int edge, float texscale) {
 // HTextureSetDefault — editor/HTexture.cpp:416
 // Reset UVs to defaults using GetUVLForRoomPoint.
 void HTextureSetDefault(int roomnum, int facenum) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   if (!rp.used)
     return;
   for (int i = 0; i < rp.faces[facenum].num_verts; i++) {
@@ -1589,8 +1589,8 @@ void HTextureSetDefault(int roomnum, int facenum) {
 // Copy texture from current face to adjacent face, tiling UVs.
 // tex = true also copies the texture assignment.
 int HTexturePropagateToFace(int destroom, int destface, int srcroom, int srcface, bool tex) {
-  room &destrp = Rooms[destroom];
-  room &srcrp = Rooms[srcroom];
+  room_t &destrp = Rooms[destroom];
+  room_t &srcrp = Rooms[srcroom];
   face *dfp = &destrp.faces[destface];
   face *sfp = &srcrp.faces[srcface];
   int v0, v1;
@@ -1610,8 +1610,8 @@ int HTexturePropagateToFace(int destroom, int destface, int srcroom, int srcface
 // HTextureCopyUVsToFace — editor/HTexture.cpp:251
 // Copy texture UVs from one face to another with offset.
 int HTextureCopyUVsToFace(int destroom, int destface, int srcroom, int srcface, int offset) {
-  room &destrp = Rooms[destroom];
-  room &srcrp = Rooms[srcroom];
+  room_t &destrp = Rooms[destroom];
+  room_t &srcrp = Rooms[srcroom];
   face *dfp = &destrp.faces[destface];
   face *sfp = &srcrp.faces[srcface];
 
@@ -1628,7 +1628,7 @@ int HTextureCopyUVsToFace(int destroom, int destface, int srcroom, int srcface, 
 
 // HTextureApplyToRoomFace — editor/HTexture.cpp:198
 void HTextureApplyToRoomFace(int roomnum, int facenum, int tnum) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   if (!rp.used)
     return;
   rp.faces[facenum].tmap = tnum;
@@ -1644,7 +1644,7 @@ void HTextureApplyToRoomFace(int roomnum, int facenum, int tnum) {
 // ============================================================================
 
 void ComputePlacedRoomMatrix() {
-  room &placedroomp = Rooms[*app.placed.room];
+  room_t &placedroomp = Rooms[*app.placed.room];
   int placedface = *app.placed.room_face;
   matrix srcmat;
   vector3 t;
@@ -1663,10 +1663,10 @@ void ComputePlacedRoomMatrix() {
 // PlaceRoom — editor/HRoom.cpp:585
 // Sets up globals for interactive room placement.
 void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face, index_t placed_room_door) {
-  room &baseroomp = Rooms[baseroom];
+  room_t &baseroomp = Rooms[baseroom];
   Q_ASSERT(baseroomp.faces[baseface].portal_num == -1);
 
-  room &placedroomp = Rooms[placed_room];
+  room_t &placedroomp = Rooms[placed_room];
 
   app.placed.room = placed_room;
   app.placed.room_face = placed_room_face;
@@ -1720,7 +1720,7 @@ void PlaceDoor(int baseroom, int baseface, uint32_t placed_door) {
 
   int rp = CreateNewRoom(total_verts, total_faces);
   Q_ASSERT(rp >= 0);
-  room &newroom = Rooms[rp];
+  room_t &newroom = Rooms[rp];
 
   int index = 0;
 

@@ -161,7 +161,7 @@ extern int Global_keys;
 //
 
 // Define a couple types
-struct room;
+struct room_t;
 struct object;
 
 // Adds a doorway to the specified room

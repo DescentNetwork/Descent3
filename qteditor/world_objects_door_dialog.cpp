@@ -72,8 +72,8 @@ bool verifyDoorModel(int handle) {
         return false;
       }
 
-      room check_room;
-      check_room = room{};
+      room_t check_room;
+      check_room = room_t{};
 
       if (sm->nverts > 0)
         check_room.verts.assign(sm->verts.data(), sm->verts.data() + sm->nverts);

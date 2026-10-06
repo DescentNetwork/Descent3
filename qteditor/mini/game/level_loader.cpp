@@ -628,7 +628,7 @@ static void LL_EndChunk(posix_ostream &ofile, int chunk_start_pos) {
 // RLE byte compression used by the engine inside ROOM for volume lights.
 
 static int LL_ReadRoom(posix_istream &ifile, int roomnum, uint32_t /*version*/) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   // Current canonical layout: the room stream operator reads every field
   // (verts, faces, portals, lights, ...) exactly as the engine writes it.
   ifile >> *rp;

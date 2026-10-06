@@ -231,7 +231,7 @@ extern std::vector<fog_portal_data> Fog_portal_data;
 void SetFogZoneStart(float z);
 void SetFogZoneEnd(float z);
 
-struct room;
+struct room_t;
 
 // For sorting our textures in state limited environments
 struct state_limited_element {

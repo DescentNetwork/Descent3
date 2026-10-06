@@ -248,7 +248,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
                                  float blue_scale, vector3 *light_direction, float dot_range) {
   int i, lm_handle, t;
   vector3 rad;
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   vector3 Light_min_xyz;
   vector3 Light_max_xyz;
   uint16_t lmilist[MAX_DYNAMIC_FACES];
@@ -1035,7 +1035,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
   int blue_limit = 31;
 
   for (i = 0; i < num_faces; i++) {
-    room *rp = &Rooms[facelist[i].room_index];
+    room_t *rp = &Rooms[facelist[i].room_index];
     face *fp = &rp->faces[facelist[i].face_index];
 
     Q_ASSERT(Rooms[facelist[i].room_index].used);
@@ -1534,7 +1534,7 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
 // TODO: MTS: Unused?
 // Sets pulse parameters for an entire room
 void SetRoomPulse(int roomnum, uint8_t pulse_time, uint8_t pulse_offset) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   Q_ASSERT(rp->used);
 
   rp->pulse_time = pulse_time;
@@ -1544,7 +1544,7 @@ void SetRoomPulse(int roomnum, uint8_t pulse_time, uint8_t pulse_offset) {
 // TODO: MTS: Unused?
 // Returns the total number of bytes needed for volume lighting in this room
 int GetVolumeSizeOfRoom(int roomnum, optref<int> w, optref<int> h, optref<int> d) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   int width = ((rp->max_xyz.x() - rp->min_xyz.x()) / VOLUME_SPACING) + 1;
   int height = ((rp->max_xyz.y() - rp->min_xyz.y()) / VOLUME_SPACING) + 1;
   int depth = ((rp->max_xyz.z() - rp->min_xyz.z()) / VOLUME_SPACING) + 1;
@@ -1921,7 +1921,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 // Kills the lighting that a face casts and dampens all the faces that light influences
 void DestroyLight(int roomnum, int facenum) {
   vector3 vecs[MAX_VERTS_PER_FACE], center;
-  room *destroy_rp = &Rooms[roomnum];
+  room_t *destroy_rp = &Rooms[roomnum];
   face *destroy_fp = &destroy_rp->faces[facenum];
   float r, g, b;
   fvi_face_room_list facelist[MAX_DYNAMIC_FACES];
@@ -1971,7 +1971,7 @@ void DestroyLight(int roomnum, int facenum) {
   num_faces = fvi_QuickDistFaceList(roomnum, center, sphere_dist, *facelist, MAX_DYNAMIC_FACES);
 
   for (i = 0; i < num_faces; i++) {
-    room *rp = &Rooms[facelist[i].room_index];
+    room_t *rp = &Rooms[facelist[i].room_index];
     face *fp = &rp->faces[facelist[i].face_index];
 
     Q_ASSERT(Rooms[facelist[i].room_index].used);

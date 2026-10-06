@@ -359,7 +359,7 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
     return;
 
   for (size_t r = projStart; r <= projEnd; r++) {
-    room *rp = &Rooms[r];
+    room_t *rp = &Rooms[r];
     if (!rp->used)
       continue;
     for (int f = 0; f < rp->num_faces; f++) {
@@ -488,7 +488,7 @@ void EditorView::renderRooms() {
   float solidMaxDepth = 10.0f;
   if (!m_wireframe) {
     for (size_t rr = renderStart; rr <= renderEnd; rr++) {
-      room *rpc = &Rooms[rr];
+      room_t *rpc = &Rooms[rr];
       if (!rpc->used)
         continue;
       for (int i = 0; i < rpc->num_faces; i++) {
@@ -523,7 +523,7 @@ void EditorView::renderRooms() {
     glDisable(GL_CULL_FACE);
   }
   for (size_t r = renderStart; r <= renderEnd; r++) {
-    room *rp = &Rooms[r];
+    room_t *rp = &Rooms[r];
     if (!rp->used)
       continue;
 
@@ -1158,7 +1158,7 @@ void EditorView::renderObjects() {
     // (DrawAllRooms); objects live in rooms and follow the same gate.
     if (obj->roomnum < 0 || obj->roomnum >= Rooms.size())
       continue;
-    room *rp = &Rooms[obj->roomnum];
+    room_t *rp = &Rooms[obj->roomnum];
     if (!rp->used || rp->num_verts == 0)
       continue;
     if (vm_VectorDistance(&rp->verts[0], &m_target) >= m_rad)
@@ -1546,7 +1546,7 @@ void EditorView::fitToMine() {
   vector3 mn{1e30f, 1e30f, 1e30f}, mx{-1e30f, -1e30f, -1e30f};
   bool any = false;
   for (size_t r = 0; r < Rooms.size(); r++) {
-    room *rp = &Rooms[r];
+    room_t *rp = &Rooms[r];
     if (!rp->used)
       continue;
     for (int v = 0; v < rp->num_verts; v++) {
@@ -1847,7 +1847,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
 
   const float rad2 = m_rad * m_rad;
   for (size_t r = pickStart; r <= pickEnd; r++) {
-    room *rp = &Rooms[r];
+    room_t *rp = &Rooms[r];
     if (!rp->used)
       continue;
 

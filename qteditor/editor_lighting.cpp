@@ -187,7 +187,7 @@ void CopySqueezeBodyAndEdges(std::vector<std::vector<uint16_t>> &dest_data, cons
 
 void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<uint16_t>> &dest_data, int dest_x,
                              int dest_y) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   lightmap_info *lmi_ptr = &LightmapInfo[rp->faces[facenum].lmi_handle];
   const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi_ptr->lm_handle);
 
@@ -205,7 +205,7 @@ void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<u
   float v_scalar = (float)h / 128.0;
 
   for (size_t t = roomnum; t < Rooms.size(); t++) {
-    room *this_rp = &Rooms[t];
+    room_t *this_rp = &Rooms[t];
     if (!this_rp->used)
       continue;
 
@@ -323,7 +323,7 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<
 // Simply clears flags for combine portals
 void ClearCombinePortals(int terrain) {
   for (size_t i = 0; i < Rooms.size(); i++) {
-    room *rp = &Rooms[i];
+    room_t *rp = &Rooms[i];
 
     if (!rp->used)
       continue;
@@ -349,7 +349,7 @@ void CheckCombinePortals(int terrain) {
   LOG_INFO("Combining portals...");
 
   for (size_t i = 0; i < Rooms.size(); i++) {
-    room *rp = &Rooms[i];
+    room_t *rp = &Rooms[i];
 
     if (!rp->used)
       continue;
@@ -456,7 +456,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
   // Go through all the rooms and sqeeze them one by one
   for (i = 0; i < Rooms.size(); i++) {
-    room *rp = &Rooms[i];
+    room_t *rp = &Rooms[i];
     if (!rp->used)
       continue;
     if (rp->flags.no_light)
@@ -746,7 +746,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 }
 
 void ComputeSurfaceRes(rad_surface *surf, int roomnum, int facenum) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   int i;
   float left = 1.1f, right = -1, top = 1.1f, bottom = -1;
   face *fp = &rp->faces[facenum];
@@ -801,7 +801,7 @@ void AssignVolumeSpectraToRoom(int roomnum) {
   Q_ASSERT(!Rooms[roomnum].flags.external);
   Q_ASSERT(!Rooms[roomnum].flags.no_light);
 
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
 
   int i, t, j;
   int w = rp->volume_width;
@@ -852,7 +852,7 @@ int CheckForBadFaces(int roomnum) {
     if (roomnum != -1 && i != roomnum)
       continue;
 
-    room *rp = &Rooms[i];
+    room_t *rp = &Rooms[i];
     if (!rp->used)
       continue;
 
@@ -1142,7 +1142,7 @@ void DoRadiosityForRooms() {
 
 // Calculates radiosity and sets lightmaps for indoor faces only
 void DoRadiosityForCurrentRoom(int roomnum) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   int t;
   int facecount = 0;
   int surface_index = 0;
@@ -1288,7 +1288,7 @@ void DoRadiosityForCurrentRoom(int roomnum) {
 // Allocates and sets a lightmap based on the surface elements given
 void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
   face *fp = &Rooms[roomnum].faces[facenum];
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
 
   int i, t, lmi_handle;
   int xres, yres;
@@ -2494,7 +2494,7 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
     Rooms[room_list[i]].faces[face_list[i]].lmi_handle = lmi_handle;
 
     for (t = 0; t < Rooms[room_list[i]].faces[face_list[i]].num_verts; t++) {
-      room *rp = &Rooms[room_list[i]];
+      room_t *rp = &Rooms[room_list[i]];
       face *fp = &rp->faces[face_list[i]];
       vector3 vert = rp->verts[fp->face_verts[t]];
 
@@ -2722,7 +2722,7 @@ int CombineLightFaces(vector3 *dest_verts, vector3 *averts, int nva, vector3 *no
 int TestLightAdjacency(int roomnum, int facenum, int external) {
 
   int i, t, k;
-  room *arp = &Rooms[roomnum];
+  room_t *arp = &Rooms[roomnum];
   face *afp = &arp->faces[facenum];
 
   vector3 averts[MAX_VERTS_PER_FACE * 5];
@@ -2785,7 +2785,7 @@ StartOver:
       if (RoomsAlreadyCombined[i][t])
         continue;
 
-      room *brp = &Rooms[i];
+      room_t *brp = &Rooms[i];
       face *bfp = &brp->faces[t];
 
       // Don't do combine light sources
@@ -3135,7 +3135,7 @@ void CleanupSpecularLighting(int external) {
       if (!Rooms[i].flags.external && external)
         continue;
 
-      room *rp = &Rooms[i];
+      room_t *rp = &Rooms[i];
 
       for (t = 0; t < 4; t++) {
         mem_rmfree(Room_strongest_value[i][t]);
@@ -3230,7 +3230,7 @@ void SetupSpecularLighting(int external) {
       if (!Rooms[i].flags.external && external)
         continue;
 
-      room *rp = &Rooms[i];
+      room_t *rp = &Rooms[i];
 
       // Calculate vertex normals for this room
       std::vector<vector3> vertnorms(rp->num_verts);

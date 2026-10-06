@@ -20,8 +20,8 @@ int CreateNewRoom(int nverts, int nfaces, bool palette_room) {
 
   // `room{}` value-initialises (zeroing PODs, default-constructing the
   // std::string name).  No memset — memset would corrupt the std::string.
-  room &rp = Rooms[slot];
-  rp = room{};
+  room_t &rp = Rooms[slot];
+  rp = room_t{};
   rp.used = 1;
   rp.verts.resize(nverts);
   rp.faces.resize(nfaces);
@@ -57,7 +57,7 @@ void DestroyRoom(int roomnum) {
     return;
   if (static_cast<size_t>(roomnum) >= Rooms.size())
     return;
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   if (!rp->used)
     return;
   rp->verts.clear();

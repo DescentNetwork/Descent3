@@ -424,7 +424,7 @@
 // high-water mark + 1; individual slots can be free (used == 0) holes below
 // it.  Reserved to the full capacity up front so `Rooms.data()` (and any
 // room*) stays stable for the life of the process.
-std::vector<room> Rooms;
+std::vector<room_t> Rooms;
 
 room_changes Room_changes[MAX_ROOM_CHANGES];
 
@@ -468,7 +468,7 @@ void InitRooms() {
 int CountRoomFaceVerts(int roomnum) {
   int n = 0;
 
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   for (int f = 0; f < rp.num_faces; f++)
     n += rp.faces[f].num_verts;
 
@@ -484,7 +484,7 @@ int CountRoomFaceVerts(int roomnum) {
 //					nverts - how many vertices this room will have
 //					nfaces - how many faces this room wil have
 //					nportals - how many portals this room will have
-void InitRoom(room &rp, int nverts, int nfaces, int nportals) {
+void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
   // initialize room fields
   rp.flags = {};
   rp.objects = -1;
@@ -600,7 +600,7 @@ void FreeRoom(int roomnum) {
   int i;
   const int old_hri = static_cast<int>(Rooms.size()) - 1;
 
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
 
   Q_ASSERT(rp->used != 0); // make sure room is un use
 
@@ -679,7 +679,7 @@ void FreeRoomFace(face *fp) {
 void ComputeRoomCenter(vector3 *vp, int roomnum) {
   int i;
 
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
 
   *vp = vector3{};
 
@@ -694,7 +694,7 @@ void ComputeRoomCenter(vector3 *vp, int roomnum) {
 
 // Computes the center point on a face by averaging the points in the face
 void ComputeCenterPointOnFace(vector3 *vp, int roomnum, int facenum) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   face *fp = &rp.faces[facenum];
   int i;
 
@@ -715,7 +715,7 @@ void ComputeCenterPointOnFace(vector3 *vp, int roomnum, int facenum) {
 // Parameters:	rp,facenum - the room and face to calculate the normal for
 // Returns:		true if the normal is ok
 //					false if the normal has a very small (pre-normalization) magnitude
-bool ComputeFaceNormal(room &rp, int facenum) {
+bool ComputeFaceNormal(room_t &rp, int facenum) {
   face *fp = &rp.faces[facenum];
   bool ok;
 
@@ -729,7 +729,7 @@ bool ComputeFaceNormal(room &rp, int facenum) {
 }
 
 bool ComputeFaceNormal(int roomnum, int facenum) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   bool ok;
 
   ok = ComputeFaceNormal(rp, facenum);
@@ -783,7 +783,7 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
 
 // Computes the center point on a face by averaging the points in the portal
 void ComputePortalCenter(vector3 *vp, int roomnum, int portal_index) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   portal *pp = &rp.portals[portal_index];
   face *fp = &rp.faces[pp->portal_face];
   int i;
@@ -886,7 +886,7 @@ void ClearAllVolumeLights() {
 
 // Returns the area taken up by a face
 float GetAreaForFace(int roomnum, int facenum) {
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
 
   Q_ASSERT(rp.used > 0);
   Q_ASSERT(facenum >= 0 && facenum < rp.num_faces);
@@ -961,7 +961,7 @@ void GetIJ(const vector3& normal, int& ii, int& jj) {
 //					roomnum - the Rooms slot that pnt is in
 //					fp - pointer to the face that pnt is on
 void FindPointUV(float *u, float *v, const vector3 *pnt, int roomnum, const face *fp) {
-  const room &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[roomnum];
   int ii, jj;
   vector3 vec0, vec1;
   float *p1, *checkp, *v0, *v1;
@@ -1003,7 +1003,7 @@ void FindPointUV(float *u, float *v, const vector3 *pnt, int roomnum, const face
 // Returns:	true if can pass through the given point, else 0
 int CheckTransparentPoint(const vector3 *pnt, int roomnum, const int facenum) {
   int bm_handle;
-  const room &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[roomnum];
   const face *fp = &rp.faces[facenum];
   float u, v;
   int w, h, x, y;
@@ -1034,7 +1034,7 @@ float ComputeRoomBoundingSphere(vector3 *center, int roomnum) {
   // This algorithm is from Graphics Gems I.  There's a better algorithm in Graphics Gems III that
   // we should probably implement sometime.
 
-  room &rp = Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   vector3 *min_x, *max_x, *min_y, *max_y, *min_z, *max_z, *vp;
   float dx, dy, dz;
   float rad, rad2;
@@ -1131,7 +1131,7 @@ void CreateRoomObjects() {
 
   // Now go through all rooms & create objects for external ones
   for (r = 0; r < static_cast<int>(Rooms.size()); r++) {
-    room &rp = Rooms[r];
+    room_t &rp = Rooms[r];
     if (rp.used && rp.flags.external) {
       vector3 pos;
       float rad;
@@ -1180,7 +1180,7 @@ bool ChangeRoomFaceTexture(int room_num, int face_num, int texture) {
     return false;
   }
 
-  room *rp = &Rooms[room_num];
+  room_t *rp = &Rooms[room_num];
 
   if (face_num < 0 || face_num >= rp->num_faces) {
     LOG_FATAL("Invalid face number passed to ChangeRoomFaceTexture."
@@ -1232,7 +1232,7 @@ void DoRoomChangeFrame() {
     if (!Room_changes[i].used)
       continue;
 
-    room *rp = &Rooms[Room_changes[i].roomnum];
+    room_t *rp = &Rooms[Room_changes[i].roomnum];
 
     float norm = (d3::chrono::last_update() - Room_changes[i].start_time) / Room_changes[i].total_time;
 
@@ -1278,7 +1278,7 @@ void DoRoomChangeFrame() {
 
 // Sets up a room to change its fog or wind over time
 index_t SetRoomChangeOverTime(int roomnum, bool fog, vector3 *end, float depth_end, float time) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   int index, i;
 
   // First search to see if there is another with this same roomnum
@@ -1506,7 +1506,7 @@ static byte_ostream& writeCompressedBytes(byte_ostream& output, const uint8_t *v
   return output;
 }
 
-byte_istream& operator>>(byte_istream& input, room& data) {
+byte_istream& operator>>(byte_istream& input, room_t& data) {
   int32_t nverts = 0;
   int32_t nfaces = 0;
   int32_t nportals = 0;
@@ -1563,7 +1563,7 @@ byte_istream& operator>>(byte_istream& input, room& data) {
   return input;
 }
 
-byte_ostream& operator<<(byte_ostream& output, const room& data) {
+byte_ostream& operator<<(byte_ostream& output, const room_t& data) {
   output << static_cast<int32_t>(data.num_verts) << static_cast<int32_t>(data.num_faces)
          << static_cast<int32_t>(data.num_portals);
   output << data.name << data.path_pnt;

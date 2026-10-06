@@ -73,7 +73,7 @@ void RoomKeypad::updateDialog() {
       w->setEnabled(active);
   if (active)
   {
-    room &rp = Rooms[*app.current.room];
+    room_t &rp = Rooms[*app.current.room];
     ui->IDC_ROOM_NAME->setText(rp.name.empty() ? QString("<room %1>").arg(app.current.room.value_or(-1)) : QString::fromStdString(rp.name));
     ui->IDC_VERTEX_COUNT->setText(QString("Verts: %1").arg(rp.num_verts));
     ui->IDC_FACE_COUNT->setText(QString("Faces: %1").arg(rp.num_faces));
@@ -107,7 +107,7 @@ void RoomKeypad::onMarkRoom() {
 void RoomKeypad::expandGeometry(float scale) {
   if (!app.current.room)
     return;
-  room &rp = Rooms[*app.current.room];
+  room_t &rp = Rooms[*app.current.room];
   for (int v = 0; v < rp.num_verts; v++)
     rp.verts[v] *= scale;
   app.World_changed = true;

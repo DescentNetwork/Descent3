@@ -97,7 +97,7 @@ static int CreateDefaultRoom() {
   if (slot < 0)
     return -1;
 
-  room *rp = &Rooms[slot];
+  room_t *rp = &Rooms[slot];
   InitRoom(*rp, 16, 10, 0);
 
   // Set the 16 vertices, offset to Mine_origin.
@@ -234,7 +234,7 @@ void CheckLevelNames() {
     }
   }
   for (i = 0; i < static_cast<int>(Rooms.size()); i++) {
-    const room &rp = Rooms[i];
+    const room_t &rp = Rooms[i];
     if (rp.used && !rp.name.empty()) {
       const int n = static_cast<int>(osipf_FindRoomName(rp.name).value_or(-1));
       if (n != i)
@@ -486,7 +486,7 @@ std::string RenderLevelStats() {
 
   int i;
   for (i = 0; i < static_cast<int>(Rooms.size()); i++) {
-    const room &rp = Rooms[i];
+    const room_t &rp = Rooms[i];
     if (!rp.used)
       continue;
     n_rooms++;

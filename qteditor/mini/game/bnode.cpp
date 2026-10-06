@@ -473,7 +473,7 @@ bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level) {
       return NULL;
     }
 
-    room *rp = &Rooms[roomnum];
+    room_t *rp = &Rooms[roomnum];
     return &rp->bn_info;
   } else if (ROOMNUM_OUTSIDE(roomnum)) {
     return &BNode_terrain_list[Terrain_seg[roomnum].flags.region];
@@ -500,7 +500,7 @@ bool BNode_MakeSubPath(int16_t sroom, int16_t spnt, int16_t eroom, int16_t epnt,
 }
 
 void BNode_FreeRoom(int roomnum) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   rp->bn_info.nodes.clear();
 }
 

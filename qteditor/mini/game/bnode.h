@@ -113,7 +113,7 @@ struct bn_list {
   std::vector<bn_node> nodes;
 };
 
-struct room;
+struct room_t;
 
 extern void BNode_FreeRoom(int roomnum);
 extern void BNode_ClearBNodeInfo(void);

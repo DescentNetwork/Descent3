@@ -857,7 +857,7 @@ static void setViewerFromRoomFace(int roomnum, int facenum, bool room_center) {
   matrix orient;
   bool outside_mine = false;
 
-  const room &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[roomnum];
 
   ComputeCenterPointOnFace(&vp, roomnum, facenum);
 
@@ -1720,7 +1720,7 @@ bool MainWindow::onAddRoom()
     return false;
   }
 
-  room *rp = &Rooms[slot];
+  room_t *rp = &Rooms[slot];
 
   // Geometry: extrude the current face's verts outward by `kDefaultRoomLength`
   // along the face normal so the new room extends from the existing face.

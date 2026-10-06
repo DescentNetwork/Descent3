@@ -1908,7 +1908,7 @@ inline bool room_manual_AABB(const face *room_face, const vector3 *min_xyz, cons
 int fvi_QuickDistFaceList(int init_room_index, vector3 &pos, float rad, optref<fvi_face_room_list> quick_fr_list,
                           int max_elements) {
   int num_faces = 0;
-  room* cur_room = nullptr;
+  room_t* cur_room = nullptr;
   vector3 min_xyz, max_xyz;
   int next_rooms[MAX_QUICK_ROOMS];
   int highest_next_room_index;
@@ -2196,7 +2196,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
       }
     }
   } else {
-    room* cur_room = nullptr;
+    room_t* cur_room = nullptr;
     int next_rooms[MAX_QUICK_ROOMS];
     int highest_next_room_index;
     int cur_next_room_index;
@@ -2298,7 +2298,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
 }
 
 bool fvi_QuickRoomCheck(vector3 *pos, int roomnum, bool try_again) {
-  room *cur_room = &Rooms[roomnum];
+  room_t *cur_room = &Rooms[roomnum];
   vector3 hit_point; // where we hit
   vector3 colp;
   float cur_dist; // distance to hit point
@@ -2529,7 +2529,7 @@ void make_trigger_face_list(int last_sim_faces) {
     vector3 colp;
     vector3 hit_point;
     int16_t count;
-    room *cur_room = &Rooms[Fvi_recorded_faces[x].room_index];
+    room_t *cur_room = &Rooms[Fvi_recorded_faces[x].room_index];
     int i = Fvi_recorded_faces[x].face_index;
     float cur_dist;
 
@@ -4371,7 +4371,7 @@ void fvi_rooms_objs(void) {
 
   for (i = 0; i < fvi_num_rooms_visited; i++) {
     int roomnum = fvi_rooms_visited[i];
-    room *cur_room = &Rooms[roomnum];
+    room_t *cur_room = &Rooms[roomnum];
     Q_ASSERT((fvi_visit_list[roomnum >> 3] & (0x01 << (roomnum % 8))) != 0);
     Q_ASSERT(roomnum >= 0 && roomnum < Rooms.size() && cur_room->used);
 
@@ -4418,7 +4418,7 @@ inline int GetFaceAlpha(const face *fp, int bm_handle) {
 }
 
 bool PhysPastPortal(int roomnum, const portal *pp) {
-  const room *rp = &Rooms[roomnum];
+  const room_t *rp = &Rooms[roomnum];
   // If we don't render the portal's faces, then we see through it
   if (!pp->flags.render_faces)
     return true;
@@ -4436,7 +4436,7 @@ bool PhysPastPortal(int roomnum, const portal *pp) {
 int fvi_room(int room_index, int from_portal, int room_obj) {
   vector3 hit_point; // where we hit
   float cur_dist;   // distance to hit point
-  room *cur_room = &Rooms[room_index];
+  room_t *cur_room = &Rooms[room_index];
   int16_t i;
   int next_portals[MAX_NEXT_PORTALS];
   int num_next_portals = 0;

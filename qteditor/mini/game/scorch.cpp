@@ -178,7 +178,7 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
   if (ROOMNUM_OUTSIDE(roomnum))
     return;
 
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   face *fp = &rp->faces[facenum];
 
   // Check if face is a light, and if so don't add the scorch

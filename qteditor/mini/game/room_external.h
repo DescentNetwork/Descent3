@@ -316,7 +316,7 @@ inline byte_ostream& operator<<(byte_ostream& output, const room_flags_t& data) 
 }
 
 // the basic building-block of a Descent 3 level
-struct room {
+struct room_t {
   room_flags_t flags;
 
   int32_t num_faces;   // how many poygons in this room
@@ -381,7 +381,7 @@ byte_istream& operator>>(byte_istream& input, face& data);
 byte_ostream& operator<<(byte_ostream& output, const face& data);
 byte_istream& operator>>(byte_istream& input, portal& data);
 byte_ostream& operator<<(byte_ostream& output, const portal& data);
-byte_istream& operator>>(byte_istream& input, room& data);
-byte_ostream& operator<<(byte_ostream& output, const room& data);
+byte_istream& operator>>(byte_istream& input, room_t& data);
+byte_ostream& operator<<(byte_ostream& output, const room_t& data);
 
 #endif

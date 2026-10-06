@@ -104,7 +104,7 @@ bool EBNode_VerifyGraph() {
 
   for (size_t i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used) {
-      room *rp = &Rooms[i];
+      room_t *rp = &Rooms[i];
       if (Rooms[i].flags.external)
         continue;
 
@@ -144,7 +144,7 @@ bool EBNode_VerifyGraph() {
   for (int region = 0; region < BOA_num_terrain_regions; region++) {
     for (int i = 0; i < BOA_num_connect[region]; i++) {
       int end_room = BOA_connect[region][i].roomnum;
-      room *rp = &Rooms[end_room];
+      room_t *rp = &Rooms[end_room];
       int p = BOA_connect[region][i].portal;
 
       vector3 pos;
@@ -166,7 +166,7 @@ bool EBNode_VerifyGraph() {
 
   for (size_t i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used) {
-      room *rp = &Rooms[i];
+      room_t *rp = &Rooms[i];
       if (Rooms[i].flags.external)
         continue;
 
@@ -613,7 +613,7 @@ void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_add_reverse
 }
 
 void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
 
   for (int i = 0; i < rp->num_portals; i++) {
     vector3 pos;
@@ -714,7 +714,7 @@ static void EBNode_MakeDefaultTerrainNodes(int region) {
 
   for (int i = 0; i < BOA_num_connect[region]; i++) {
     int end_room = BOA_connect[region][i].roomnum;
-    room *rp = &Rooms[end_room];
+    room_t *rp = &Rooms[end_room];
     int p = BOA_connect[region][i].portal;
 
     vector3 pos;

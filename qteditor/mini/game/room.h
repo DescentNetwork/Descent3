@@ -400,7 +400,7 @@ struct room_changes {
 // Globals
 //
 
-extern std::vector<room> Rooms; // global array of rooms; grown on demand.  Slots
+extern std::vector<room_t> Rooms; // global array of rooms; grown on demand.  Slots
                                // may be free (used == 0) holes below the
                                // high-water mark; Rooms.size() is the
                                // high-water mark + 1.  Reserved once at startup
@@ -447,7 +447,7 @@ extern bool Render_floating_triggers;
 //					nverts - how many vertices this room will have
 //					nfaces - how many faces this room wil have
 //					nfaces - how many portals this room wil have
-void InitRoom(room &rp, int nverts, int nfaces, int nportals);
+void InitRoom(room_t &rp, int nverts, int nfaces, int nportals);
 
 // Initialize a room face structure, allocating memory for vertlist and uvls
 void InitRoomFace(face *fp, int nverts);
@@ -470,7 +470,7 @@ void ComputeRoomCenter(vector3 *vp, int roomnum);
 // Returns:		true if the normal is ok
 //					false if the normal has a very small (pre-normalization) magnitude
 bool ComputeFaceNormal(int roomnum, int facenum);
-bool ComputeFaceNormal(room &rp, int facenum);
+bool ComputeFaceNormal(room_t &rp, int facenum);
 
 // Compute the surface normal from a list of vertices that determine a face
 // Finds the best normal on this face by checking all sets of three vertices

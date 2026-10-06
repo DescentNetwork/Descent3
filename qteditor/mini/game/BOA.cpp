@@ -613,7 +613,7 @@ void compute_mine_info() {
   int cur_mine = 0;
 
   for (i = 0; i < Rooms.size(); i++) {
-    room *rp = &Rooms[i];
+    room_t *rp = &Rooms[i];
 
     if (rp->used) {
       rp->flags.mine = 0;
@@ -628,7 +628,7 @@ void compute_mine_info() {
     done = true;
 
     for (i = 0; i < Rooms.size(); i++) {
-      room *rp = &Rooms[i];
+      room_t *rp = &Rooms[i];
 
       if (rp->used && !checked[i]) {
         first_free = i;
@@ -1189,7 +1189,7 @@ int BOAGetMineChecksum() {
   int total = 0;
 
   for (i = 0; i < Rooms.size(); i++) {
-    room *rp = &Rooms[i];
+    room_t *rp = &Rooms[i];
 
     if (!Rooms[i].used)
       continue;
@@ -1239,7 +1239,7 @@ int BOAGetRoomChecksum(int i) {
   float total = 0;
 
   {
-    room *rp = &Rooms[i];
+    room_t *rp = &Rooms[i];
 
     if (!Rooms[i].used)
       return 0;
@@ -1372,7 +1372,7 @@ void BOA_ComputePathPoints(char *message, int len) {
 
 // Given a face, computes the upper left corner of the face
 void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, float *xdiff, float *ydiff, vector3 *center) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   matrix face_matrix, trans_matrix;
   vector3 fvec;
   vector3 avg_vert;
@@ -1585,7 +1585,7 @@ void MakeBOAVisTable(bool from_lighting) {
     if (Rooms[i].used == 0)
       continue;
 
-    room *rp = &Rooms[i];
+    room_t *rp = &Rooms[i];
 
 #ifdef NEWEDITOR
     DoBOAVisProgressDialog((float)(i + 1) / (float)(((int)Rooms.size() - 1) + 1), 1);
@@ -2181,7 +2181,7 @@ void ComputeAABB(bool f_full) {
 
         // Do the rooms now
 
-        room *rp = &Rooms[i];
+        room_t *rp = &Rooms[i];
 
         rp->max_xyz.x() = rp->max_xyz.y() = rp->max_xyz.z() = -9999999.0;
         rp->min_xyz.x() = rp->min_xyz.y() = rp->min_xyz.z() = 9999999.0;
@@ -2213,7 +2213,7 @@ void ComputeAABB(bool f_full) {
     // Determine number of independent structures and classify each face
     for (i = 0; i < Rooms.size(); i++) {
       if (Rooms[i].used) {
-        room *rp = &Rooms[i];
+        room_t *rp = &Rooms[i];
         int num_struct = 0;
         int count1, count2;
 
@@ -2279,7 +2279,7 @@ void ComputeAABB(bool f_full) {
     // Determine Area of each region for external shell remap
     for (i = 0; i < Rooms.size(); i++) {
       if (Rooms[i].used) {
-        room *rp = &Rooms[i];
+        room_t *rp = &Rooms[i];
 
         if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
           continue;
@@ -2356,7 +2356,7 @@ void ComputeAABB(bool f_full) {
       if (Rooms[i].used) {
         int x;
         Current_sort_room = i;
-        room *rp = &Rooms[i];
+        room_t *rp = &Rooms[i];
 
         if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
           continue;
@@ -2600,7 +2600,7 @@ void ComputeAABB(bool f_full) {
     // Finds the min/max of each region
     for (i = 0; i < Rooms.size(); i++) {
       if (Rooms[i].used) {
-        room *rp = &Rooms[i];
+        room_t *rp = &Rooms[i];
 
         if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
           continue;
@@ -2640,7 +2640,7 @@ void ComputeAABB(bool f_full) {
         if (BOA_AABB_ROOM_checksum[count] != 0 && BOA_AABB_ROOM_checksum[count] == computed_room_check[count])
           continue;
 
-        room *rp = &Rooms[count];
+        room_t *rp = &Rooms[count];
         for (i = 0; i < rp->num_bbf_regions; i++) {
           if (rp->num_bbf[i] == 0) {
             for (j = i + 1; j < rp->num_bbf_regions; j++) {
@@ -2662,7 +2662,7 @@ void ComputeAABB(bool f_full) {
     // Sub-divide structures
     for (i = 0; i < Rooms.size(); i++) {
       if (Rooms[i].used) {
-        room *rp = &Rooms[i];
+        room_t *rp = &Rooms[i];
         int original_bbf_regions = rp->num_bbf_regions;
 
         if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
@@ -2761,7 +2761,7 @@ void ComputeAABB(bool f_full) {
         if (BOA_AABB_ROOM_checksum[count] != 0 && BOA_AABB_ROOM_checksum[count] == computed_room_check[count])
           continue;
 
-        room *rp = &Rooms[count];
+        room_t *rp = &Rooms[count];
         for (i = 0; i < rp->num_bbf_regions; i++) {
           if (rp->num_bbf[i] == 0) {
             for (j = i + 1; j < rp->num_bbf_regions; j++) {
@@ -2783,7 +2783,7 @@ void ComputeAABB(bool f_full) {
     // Finds the min/max of each region
     for (i = 0; i < Rooms.size(); i++) {
       if (Rooms[i].used) {
-        room *rp = &Rooms[i];
+        room_t *rp = &Rooms[i];
 
         if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
           continue;
@@ -2820,7 +2820,7 @@ void ComputeAABB(bool f_full) {
     // Remaps all the regions to their best sectors
     for (i = 0; i < Rooms.size(); i++) {
       if (Rooms[i].used) {
-        room *rp = &Rooms[i];
+        room_t *rp = &Rooms[i];
         vector3 min_xyz = rp->bbf_min_xyz;
         vector3 max_xyz = rp->bbf_max_xyz;
 
@@ -2876,7 +2876,7 @@ void ComputeAABB(bool f_full) {
     // Remove extra slots
     for (count = 0; count < Rooms.size(); count++) {
       if (Rooms[count].used) {
-        room *rp = &Rooms[count];
+        room_t *rp = &Rooms[count];
         if (BOA_AABB_ROOM_checksum[count] != 0 && BOA_AABB_ROOM_checksum[count] == computed_room_check[count])
           continue;
 
@@ -2916,7 +2916,7 @@ void ComputeAABB(bool f_full) {
   // I had to add it :(  Rooms need this done even the checksum is correct
   for (i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used) {
-      room *rp = &Rooms[i];
+      room_t *rp = &Rooms[i];
 
       rp->max_xyz.x() = rp->max_xyz.y() = rp->max_xyz.z() = -9999999.0;
       rp->min_xyz.x() = rp->min_xyz.y() = rp->min_xyz.z() = 9999999.0;

@@ -204,7 +204,7 @@ doorway *GetDoorwayFromObject(int door_obj_handle) {
 
   Q_ASSERT(objp->type == object_type::door);
 
-  room *rp = &Rooms[objp->roomnum];
+  room_t *rp = &Rooms[objp->roomnum];
 
   Q_ASSERT(rp->flags.door);
   Q_ASSERT(rp->doorway_data);
@@ -501,7 +501,7 @@ void DoorwayDoFrame() {
 #endif
 // returns a pointer to the door object for the specified doorway
 object *GetDoorObject(int roomnum) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   Q_ASSERT(rp->flags.door);
 
   for (int objnum = rp->objects; (objnum != -1); objnum = Objects[objnum].next)
@@ -523,7 +523,7 @@ bool DoorwayLocked(int door_obj_handle) {
 
 // Returns true if the doorway in the given room is locked, else false
 bool DoorwayLockedForRoom(int roomnum) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   Q_ASSERT(rp->flags.door);
 
   doorway *dp = rp->doorway_data.get();
@@ -610,7 +610,7 @@ float DoorwayPosition(int door_obj_handle) {
 }
 // Returns the current position of the door.  0.0 = totally closed, 1.0 = totally open
 float DoorwayPositionForRoom(int roomnum) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   Q_ASSERT(rp->flags.door);
   Q_ASSERT(rp->doorway_data);
 
@@ -638,7 +638,7 @@ void DoorwayRebuildActiveList() {
 // Adds a doorway to the specified room
 // Returns a pointer to the doorway struct
 doorway *DoorwayAdd(int roomnum, int doornum) {
-  room *rp = &Rooms[roomnum];
+  room_t *rp = &Rooms[roomnum];
   Q_ASSERT(!rp->doorway_data);
 
   rp->flags.door = 1;
