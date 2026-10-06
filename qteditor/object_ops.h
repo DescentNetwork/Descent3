@@ -46,6 +46,16 @@ extern angle Object_move_rotation;
 bool HObjectPlace(object_type obj_type, uint16_t obj_id);
 int GetSelectedTerrainCell();
 
+// Object keypad page selection — ports SetCurrentIndex()/GetCurrentIndex() from
+// editor/ObjectDialog.cpp:350. The keypad keeps one current id per object page
+// and dispatches on the selected page type, rather than a single shared id.
+std::optional<uint16_t> objectPageCurrentId(object_type page);
+void setObjectPageCurrentId(object_type page, std::optional<uint16_t> id);
+
+// The object id that Place Object should use for the currently selected keypad
+// page, healing the remembered id if it no longer belongs to that page.
+std::optional<uint16_t> currentObjectPageId();
+
 // Movement.
 void HObjectMove(int objnum, float dx, float dy, float dz);
 void HObjectMoveToViewer(object& objp);

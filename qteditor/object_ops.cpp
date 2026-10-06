@@ -28,6 +28,7 @@
 #include "findintersection.h"
 
 #include "object.h"
+#include "objinfo.h"
 #include "physics.h"
 #include "player.h"
 #include "polymodel.h"
@@ -121,6 +122,77 @@ bool RotateObject(int objnum, angle p, angle h, angle b) {
 
   app.Object_moved = true;
   return true;
+}
+
+// ============================================================================
+// objectPageCurrentId / setObjectPageCurrentId — editor/ObjectDialog.cpp:350
+// The object keypad keeps one current object id per page and dispatches on the
+// selected page's type, rather than a single shared id. That way switching to
+// another page and back restores the previous selection for each page.
+// ============================================================================
+std::optional<uint16_t> objectPageCurrentId(object_type page) {
+  switch (page) {
+  case object_type::robot:
+    return app.current_robot;
+  case object_type::powerup:
+    return app.current_powerup;
+  case object_type::clutter:
+    return app.current_clutter;
+  case object_type::building:
+    return app.current_building;
+  default:
+    // Not an object keypad page with a per-page id (players derive theirs from
+    // GetFreePlayerIndex(), mirroring the current_player case in Win32).
+    return std::nullopt;
+  }
+}
+
+void setObjectPageCurrentId(object_type page, std::optional<uint16_t> id) {
+  switch (page) {
+  case object_type::robot:
+    app.current_robot = id;
+    break;
+  case object_type::powerup:
+    app.current_powerup = id;
+    break;
+  case object_type::clutter:
+    app.current_clutter = id;
+    break;
+  case object_type::building:
+    app.current_building = id;
+    break;
+  default:
+    Q_ASSERT(false);
+    break;
+  }
+}
+
+// Returns the first allocated object id of the given page's type, replacing any
+// stale id the page was holding. Mirrors the self-healing tail of Win32's
+// GetCurrentIndex() (editor/ObjectDialog.cpp:395-403).
+static std::optional<uint16_t> firstObjectIdForPage(object_type page) {
+  for (uint16_t i = 0; i < MAX_OBJECT_IDS; i++) {
+    if (Object_info[i].type == page)
+      return i;
+  }
+  return std::nullopt;
+}
+
+// Returns the object id to place for the currently selected keypad page, healing
+// the remembered id if it no longer belongs to that page (which happens when a
+// database reload frees the id, or when settings are restored under a different
+// page). Win32 does the equivalent check in GetCurrentIndex().
+std::optional<uint16_t> currentObjectPageId() {
+  if (!app.obj_page)
+    return std::nullopt;
+
+  std::optional<uint16_t> id = objectPageCurrentId(*app.obj_page);
+  if (id && *id < MAX_OBJECT_IDS && Object_info[*id].type == *app.obj_page)
+    return id;
+
+  id = firstObjectIdForPage(*app.obj_page);
+  setObjectPageCurrentId(*app.obj_page, id);
+  return id;
 }
 
 // ============================================================================

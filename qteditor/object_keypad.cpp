@@ -86,8 +86,12 @@ void ObjectKeypad::updateDialog() {
 }
 
 void ObjectKeypad::onPlaceObject() {
+  // The object id comes from the selected page, not from a shared field.
+  const std::optional<uint16_t> id = app.obj_page ? currentObjectPageId() : std::nullopt;
+  if (!app.obj_page || !id)
+    return;
   // HObjectPlace handles all the validation internally.
-  if (app.current_obj_type && app.current_obj_id && HObjectPlace(*app.current_obj_type, *app.current_obj_id)) {
+  if (HObjectPlace(*app.obj_page, *id)) {
     app.Mine_changed = true;
     updateDialog();
   }

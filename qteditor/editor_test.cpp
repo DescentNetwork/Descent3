@@ -4366,8 +4366,9 @@ private slots:
 
     d3edit_state out{};
     out.texdlg_texture = 42u;
-    out.current_obj_type = static_cast<object_type>(3);
+    out.obj_page = object_type::robot;
     out.current_powerup = 7u;
+    out.current_robot = 11u;
     out.texscr_visible = true;
     out.texscr_x = 17;
     out.texscr_y = 23;
@@ -4398,8 +4399,9 @@ private slots:
     }
 
     QCOMPARE(in.texdlg_texture, out.texdlg_texture);
-    QCOMPARE(in.current_obj_type, out.current_obj_type);
+    QCOMPARE(in.obj_page, out.obj_page);
     QCOMPARE(in.current_powerup, out.current_powerup);
+    QCOMPARE(in.current_robot, out.current_robot);
     QCOMPARE(in.texscr_visible, out.texscr_visible);
     QCOMPARE(in.texscr_x, out.texscr_x);
     QCOMPARE(in.texscr_y, out.texscr_y);
@@ -4411,9 +4413,131 @@ private slots:
     QCOMPARE(in.texture_display_flags, int(out.texture_display_flags));
     QCOMPARE(in.objects_in_wireframe, out.objects_in_wireframe);
 
+    // The previously unified per-page ids must all survive a null round-trip as
+    // nullopt (not as a bogus present value like 0 or UINT32_MAX), and the
+    // fields that moved off the -1 sentinel must land on their real values.
+    d3edit_state nulls{};
+    {
+      QSettings settings(ini_path, QSettings::IniFormat);
+      saveEditorSettings(settings, nulls);
+    }
+    d3edit_state nulls_in{};
+    {
+      QSettings settings(ini_path, QSettings::IniFormat);
+      loadEditorSettings(settings, nulls_in);
+    }
+    QVERIFY(!nulls_in.obj_page.has_value());
+    QVERIFY(!nulls_in.current_robot.has_value());
+    QVERIFY(!nulls_in.current_powerup.has_value());
+    QVERIFY(!nulls_in.current_building.has_value());
+    QVERIFY(!nulls_in.current_clutter.has_value());
+    QVERIFY(!nulls_in.current_ship.has_value());
+    QVERIFY(!nulls_in.current_node.has_value());
+    QVERIFY(!nulls_in.current_megacell.has_value());
+    QVERIFY(!nulls_in.current_path.has_value());
+    QVERIFY(!nulls_in.keypad_current.has_value());
+    QVERIFY(!nulls_in.current_door.has_value());
+
+    // Values that were previously written through the -1 sentinel scheme must
+    // now load as their real numbers rather than as huge unsigned wrap-arounds.
+    d3edit_state sent{};
+    sent.current_ship = 5u;
+    sent.current_megacell = 77u;
+    sent.keypad_current = -2; // a legitimately negative tab index
+    {
+      QSettings settings(ini_path, QSettings::IniFormat);
+      saveEditorSettings(settings, sent);
+    }
+    d3edit_state sent_in{};
+    {
+      QSettings settings(ini_path, QSettings::IniFormat);
+      loadEditorSettings(settings, sent_in);
+    }
+    QCOMPARE(sent_in.current_ship, std::optional<uint32_t>(5u));
+    QCOMPARE(sent_in.current_megacell, std::optional<uint32_t>(77u));
+    QCOMPARE(sent_in.keypad_current, std::optional<int>(-2));
+
+    // A legacy settings file holding the retired current_obj_id key must load
+    // without crashing; the key is simply ignored in favour of the per-page id.
+    {
+      QSettings settings(ini_path, QSettings::IniFormat);
+      settings.clear();
+      settings.beginGroup(QStringLiteral("editor"));
+      settings.setValue(QStringLiteral("current_obj_type"), 2);  // robot
+      settings.setValue(QStringLiteral("current_obj_id"), 999);
+      settings.endGroup();
+      settings.sync();
+    }
+    d3edit_state legacy_in{};
+    {
+      QSettings settings(ini_path, QSettings::IniFormat);
+      loadEditorSettings(settings, legacy_in);
+    }
+    QCOMPARE(legacy_in.obj_page, std::optional<object_type>(object_type::robot));
+    QVERIFY(!legacy_in.current_robot.has_value()); // must not inherit 999
+
     QFile::remove(ini_path);
     QSettings::setDefaultFormat(previous);
     errno = 0;
+  }
+
+  // The object keypad keeps one current object id per page and dispatches on the
+  // selected page's type, mirroring SetCurrentIndex()/GetCurrentIndex() in
+  // editor/ObjectDialog.cpp:350. Verify the ids are independent per page and
+  // that a stale id (one whose Object_info entry no longer matches the page)
+  // heals to the first id of the right type instead of being placed.
+  void testObjectPageIdDispatch() {
+    errno = 0;
+
+    // Claim two known slots, one per page type.
+    constexpr uint16_t kRobotSlot = 401;
+    constexpr uint16_t kClutterSlot = 402;
+    const object_info savedRobot = Object_info[kRobotSlot];
+    const object_info savedClutter = Object_info[kClutterSlot];
+    const object_type savedPage = app.obj_page.value_or(object_type::none);
+    const std::optional<uint16_t> savedRobotId = app.current_robot;
+    const std::optional<uint16_t> savedClutterId = app.current_clutter;
+
+    Object_info[kRobotSlot] = object_info{};
+    Object_info[kRobotSlot].type = object_type::robot;
+    Object_info[kClutterSlot] = object_info{};
+    Object_info[kClutterSlot].type = object_type::clutter;
+
+    // Each page reads back only its own id.
+    setObjectPageCurrentId(object_type::robot, kRobotSlot);
+    setObjectPageCurrentId(object_type::clutter, kClutterSlot);
+    QCOMPARE(objectPageCurrentId(object_type::robot), std::optional<uint16_t>(kRobotSlot));
+    QCOMPARE(objectPageCurrentId(object_type::clutter), std::optional<uint16_t>(kClutterSlot));
+
+    // With the robot page selected, placement uses the robot id.
+    app.obj_page = object_type::robot;
+    QCOMPARE(currentObjectPageId(), std::optional<uint16_t>(kRobotSlot));
+
+    // Switching pages selects a different id without disturbing the first.
+    app.obj_page = object_type::clutter;
+    QCOMPARE(currentObjectPageId(), std::optional<uint16_t>(kClutterSlot));
+    QCOMPARE(objectPageCurrentId(object_type::robot), std::optional<uint16_t>(kRobotSlot));
+
+    // A stale id (slot freed, so it no longer holds a robot) heals rather than
+    // placing the wrong type.
+    app.obj_page = object_type::robot;
+    app.current_robot = kClutterSlot;
+    const std::optional<uint16_t> healed = currentObjectPageId();
+    QVERIFY(healed.has_value());
+    QCOMPARE(Object_info[*healed].type, object_type::robot);
+    QVERIFY(*healed != kClutterSlot);
+    // The healed id is written back so the next call is stable.
+    QCOMPARE(currentObjectPageId(), healed);
+
+    // No page selected means nothing to place.
+    app.obj_page.reset();
+    QVERIFY(!currentObjectPageId().has_value());
+
+    Object_info[kRobotSlot] = savedRobot;
+    Object_info[kClutterSlot] = savedClutter;
+    app.obj_page = savedPage;
+    app.current_robot = savedRobotId;
+    app.current_clutter = savedClutterId;
   }
 
 

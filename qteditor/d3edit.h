@@ -123,11 +123,7 @@ struct d3edit_state
 {
   // Values for current item in the various dialogs
   index_t texdlg_texture; // current texture in texdialog
-  std::optional<object_type> current_obj_type; // current type of object
-  std::optional<uint16_t> current_obj_id; // current specific id of object within type
-  std::optional<uint16_t> current_powerup; // current powerup id
   index_t current_door; // current door in door page dialog
-  index_t current_robot; // current robot in robot page dialog
   index_t current_ship; // current ship in ship page dialog
   index_t current_sound; // current sound in sound page dialog
   index_t current_weapon; // current weapon in weapon page dialog
@@ -136,8 +132,23 @@ struct d3edit_state
   index_t current_megacell; // currently selected megacell
   index_t current_room; // currently selected room
   index_t current_gamefile; // currently selected gamefile
-  index_t current_building; // currently selected building
-  index_t current_clutter; // currently selected clutter
+
+  // Object keypad: which object page is selected. This selects which of the
+  // per-type current_* indices below is authoritative, mirroring the
+  // SetCurrentIndex()/GetCurrentIndex() dispatch in editor/ObjectDialog.cpp:350.
+  // There is deliberately no single "current object id" field — Win32 keeps one
+  // index per page and dispatches on the type, and it self-heals when the
+  // remembered index turns out to belong to a different page.
+  std::optional<object_type> obj_page;
+
+  // Current object-info id within each object keypad page. Only the one
+  // selected by obj_page is meaningful for placement; the others are retained
+  // per page so switching back and forth restores the previous selection.
+  // (See objectPageCurrentId()/setObjectPageCurrentId() in object_ops.cpp.)
+  std::optional<uint16_t> current_robot; // current robot in robot page dialog
+  std::optional<uint16_t> current_powerup; // current powerup id
+  std::optional<uint16_t> current_building; // currently selected building
+  std::optional<uint16_t> current_clutter; // currently selected clutter
 
   //	Values for the different editor windows
   bool texscr_visible = false;                        // is texture mine view up?

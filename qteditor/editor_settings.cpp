@@ -34,6 +34,14 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   settings.beginGroup(QStringLiteral("editor"));
 
   auto setval = [&settings]<typename T>(const char* const name, std::optional<T> val) {
+    if (!val) {
+      // Store an invalid QVariant rather than a sentinel like -1: it round-trips
+      // through the INI as @Invalid() and reads back as null, which is what
+      // getval() maps to nullopt. A -1 would instead come back as 4294967295 for
+      // the unsigned targets and read as a bogus-but-present id.
+      settings.setValue(name, QVariant());
+      return;
+    }
     if constexpr (std::is_enum_v<T>) {
       settings.setValue(name, std::to_underlying(*val));
     } else {
@@ -42,17 +50,16 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   };
 
   setval("texdlg_texture",    state.texdlg_texture);
-  setval("current_obj_type",  state.current_obj_type);
-  setval("current_obj_id",    state.current_obj_id);
+  setval("current_obj_type",  state.obj_page);
   setval("current_powerup",   state.current_powerup);
   setval("current_door",      state.current_door);
   setval("current_robot",      state.current_robot);
-  if (state.current_ship) settings.setValue(QStringLiteral("current_ship"), *state.current_ship); else settings.setValue(QStringLiteral("current_ship"), -1);
-  if (state.current_sound) settings.setValue(QStringLiteral("current_sound"), *state.current_sound); else settings.setValue(QStringLiteral("current_sound"), -1);
-  if (state.current_weapon) settings.setValue(QStringLiteral("current_weapon"), *state.current_weapon); else settings.setValue(QStringLiteral("current_weapon"), -1);
-  if (state.current_path) settings.setValue(QStringLiteral("current_path"), *state.current_path); else settings.setValue(QStringLiteral("current_path"), -1);
-  if (state.current_node) settings.setValue(QStringLiteral("current_node"), *state.current_node); else settings.setValue(QStringLiteral("current_node"), -1);
-  if (state.current_megacell) settings.setValue(QStringLiteral("current_megacell"), *state.current_megacell); else settings.setValue(QStringLiteral("current_megacell"), -1);
+  setval("current_ship",      state.current_ship);
+  setval("current_sound",     state.current_sound);
+  setval("current_weapon",    state.current_weapon);
+  setval("current_path",      state.current_path);
+  setval("current_node",      state.current_node);
+  setval("current_megacell",  state.current_megacell);
   setval("current_building",  state.current_building);
   setval("current_clutter",   state.current_clutter);
 
@@ -69,7 +76,7 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   settings.setValue(QStringLiteral("wirescr_h"),             state.wirescr_h);
 
   settings.setValue(QStringLiteral("keypad_visible"),        state.keypad_visible);
-  if (state.keypad_current) settings.setValue(QStringLiteral("keypad_current"), *state.keypad_current); else settings.setValue(QStringLiteral("keypad_current"), -1);
+  setval("keypad_current",   state.keypad_current);
 
   settings.setValue(QStringLiteral("float_keypad_x"),        state.float_keypad_x);
   settings.setValue(QStringLiteral("float_keypad_y"),        state.float_keypad_y);
@@ -122,19 +129,18 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
   };
 
   state.texdlg_texture    = getval.operator()<uint32_t>("texdlg_texture");
-  state.current_obj_type  = getval.operator()<object_type>("current_obj_type");
-  state.current_obj_id    = getval.operator()<uint16_t>("current_obj_id");
+  state.obj_page          = getval.operator()<object_type>("current_obj_type");
   state.current_powerup   = getval.operator()<uint16_t>("current_powerup");
   state.current_door      = getval.operator()<uint32_t>("current_door");
-  state.current_robot     = getval.operator()<uint32_t>("current_robot");
-  { auto v = getval.template operator()<uint32_t>("current_ship"); if (v) state.current_ship = *v; }
-  { auto v = getval.template operator()<uint32_t>("current_sound"); if (v) state.current_sound = *v; }
-  { auto v = getval.template operator()<uint32_t>("current_weapon"); if (v) state.current_weapon = *v; }
-  { auto v = getval.template operator()<uint32_t>("current_path"); if (v) state.current_path = *v; }
-  { auto v = getval.template operator()<uint16_t>("current_node"); if (v) state.current_node = *v; }
-  { auto v = getval.template operator()<uint32_t>("current_megacell"); if (v) state.current_megacell = *v; }
-  state.current_building  = getval.operator()<uint32_t>("current_building");
-  state.current_clutter   = getval.operator()<uint32_t>("current_clutter");
+  state.current_robot     = getval.operator()<uint16_t>("current_robot");
+  state.current_ship       = getval.operator()<uint32_t>("current_ship");
+  state.current_sound      = getval.operator()<uint32_t>("current_sound");
+  state.current_weapon     = getval.operator()<uint32_t>("current_weapon");
+  state.current_path       = getval.operator()<uint32_t>("current_path");
+  state.current_node       = getval.operator()<uint16_t>("current_node");
+  state.current_megacell   = getval.operator()<uint32_t>("current_megacell");
+  state.current_building  = getval.operator()<uint16_t>("current_building");
+  state.current_clutter   = getval.operator()<uint16_t>("current_clutter");
 
   state.texscr_visible    = settings.value(QStringLiteral("texscr_visible"),    false).toBool();
   state.texscr_x          = settings.value(QStringLiteral("texscr_x"),          0).toInt();
@@ -149,7 +155,7 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
   state.wirescr_h         = settings.value(QStringLiteral("wirescr_h"),         0).toInt();
 
   state.keypad_visible    = settings.value(QStringLiteral("keypad_visible"),    false).toBool();
-  { auto v = getval.template operator()<int>("keypad_current"); if (v) state.keypad_current = *v; }
+  state.keypad_current     = getval.operator()<int>("keypad_current");
 
   state.float_keypad_x    = settings.value(QStringLiteral("float_keypad_x"),    -1).toInt();
   state.float_keypad_y    = settings.value(QStringLiteral("float_keypad_y"),    -1).toInt();
