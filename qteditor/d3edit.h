@@ -166,7 +166,7 @@ struct d3edit_state
   std::optional<int> Editor_viewer_id;
 
   // Marked room & face
-  int Markedroomp = -1;
+  std::optional<int> Markedroomp;
   int Markedface = -1;
   int Markededge = -1;
   int Markedvert = -1;

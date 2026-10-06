@@ -1775,7 +1775,7 @@ bool MainWindow::onAddRoom()
 
 // Forgets the current room: sets app.Curroomp = -1, app.Curface = app.Curedge =
 // app.Curvert = app.Curportal = -1. The Win32 entry point also clears the marked
-// room; we leave app.Markedroomp alone so a separate "Mark" operation stays
+// room; we leave app.Markedroomp.value_or(-1) alone so a separate "Mark" operation stays
 // authoritative.
 bool MainWindow::onDeleteRoom() {
   if (!app.Curroomp) {
@@ -1794,7 +1794,7 @@ bool MainWindow::onDeleteRoom() {
 
   // Clear any marked-room alias before we tear down the slot.
   if (app.Markedroomp == app.Curroomp.value_or(-1))
-    app.Markedroomp = -1;
+    app.Markedroomp.reset();
 
   DestroyRoom(slot);
 
@@ -1921,7 +1921,7 @@ void MainWindow::onRoomDeletePortal() {
 void MainWindow::onRoomCombine() {
   if (!app.Curroomp)
     return;
-  if (app.Markedroomp != app.Curroomp.value_or(-1)) {
+  if (app.Markedroomp.value_or(-1) != app.Curroomp.value_or(-1)) {
     EditorStatus("Mark and current must be the same room to combine.");
     return;
   }
@@ -1936,7 +1936,7 @@ void MainWindow::onRoomCombine() {
 }
 
 void MainWindow::onRoomRotatePlaced45() {
-  if (!app.Curroomp || app.Markedroomp < 0) {
+  if (!app.Curroomp || !app.Markedroomp) {
     EditorStatus("No marked room.");
     return;
   }

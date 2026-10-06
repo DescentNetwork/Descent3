@@ -71,7 +71,7 @@ const float kObjMiscColor[3] = {0.0f, 100.0f / 255, 100.0f / 255};
 const float kObjCameraColor[3] = {1.0f, 1.0f, 0.0f};
 
 // Returns true when `roomnum` still names a live slot of the Rooms vector.
-// app.Curroomp/app.Markedroomp are room indices kept across RoomsReset()/clear(),
+// app.Curroomp/app.Markedroomp.value_or(-1) are room indices kept across RoomsReset()/clear(),
 // so after a reset they can be stale (out of range for a differently-sized
 // vector) or name a freshly reinitialised slot.  The Win32 fixed array granted
 // validity for free; the vector needs this explicit range check before use.
@@ -812,16 +812,16 @@ void EditorView::renderOverlays() {
   // Marked room/face/edge/vert in the Win32 order: the marked elements are
   // drawn BEFORE the current room so the white current-room wireframe draws
   // over them where they overlap (DrawWorld, editor/drawworld.cpp:851-863).
-  if (liveRoom(app.Markedroomp) && Rooms[app.Markedroomp].used) {
-    if (app.Markedface >= 0 && app.Markedface < Rooms[app.Markedroomp].num_faces) {
-      face *fp = &Rooms[app.Markedroomp].faces[app.Markedface];
+  if (liveRoom(app.Markedroomp.value_or(-1)) && Rooms[*app.Markedroomp].used) {
+    if (app.Markedface >= 0 && app.Markedface < Rooms[*app.Markedroomp].num_faces) {
+      face *fp = &Rooms[*app.Markedroomp].faces[app.Markedface];
       float sx[16], sy[16];
       int nv = fp->num_verts;
       if (nv > 16)
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(Rooms[app.Markedroomp].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[*app.Markedroomp].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -851,7 +851,7 @@ void EditorView::renderOverlays() {
         if (app.Markedvert >= 0 && app.Markedvert < fp->num_verts) {
           int vi = fp->face_verts[app.Markedvert];
           float vx, vy;
-          if (projectVertex(Rooms[app.Markedroomp].verts[vi], &vx, &vy))
+          if (projectVertex(Rooms[*app.Markedroomp].verts[vi], &vx, &vy))
             drawVertCross(vx, vy, kWfMarkedEdgeColor);
         }
       }

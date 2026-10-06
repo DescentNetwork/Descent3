@@ -718,12 +718,12 @@ void RotateRooms(angle p, angle h, angle b) {
   int marked_portalnum = -1;
   int cur_portalnum = -1;
 
-  if (app.Curroomp == app.Markedroomp || app.Markedroomp < 0) {
+  if (app.Curroomp == app.Markedroomp.value_or(-1) || !app.Markedroomp) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You do not have a valid room marked.");
     return;
   }
 
-  room &markedroomp = Rooms[app.Markedroomp];
+  room &markedroomp = Rooms[*app.Markedroomp];
   room &curroomp = Rooms[*app.Curroomp];
 
   for (int i = 0; i < markedroomp.num_portals; i++) {
@@ -739,7 +739,7 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   for (int i = 0; i < curroomp.num_portals; i++) {
-    if (curroomp.portals[i].croom == app.Markedroomp) {
+    if (curroomp.portals[i].croom == app.Markedroomp.value_or(-1)) {
       cur_portalnum = i;
       break;
     }
@@ -754,9 +754,9 @@ void RotateRooms(angle p, angle h, angle b) {
 
   curroomp.portals[cur_portalnum].croom = -1;
   SelectConnectedRooms(app.Curroomp.value_or(-1));
-  curroomp.portals[cur_portalnum].croom = app.Markedroomp;
+  curroomp.portals[cur_portalnum].croom = app.Markedroomp.value_or(-1);
 
-  if (IsRoomSelected(app.Markedroomp)) {
+  if (IsRoomSelected(app.Markedroomp.value_or(-1))) {
     RestoreRoomSelectedList();
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot rotate: rooms connect back to base room.");
     return;

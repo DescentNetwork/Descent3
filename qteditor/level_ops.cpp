@@ -159,7 +159,7 @@ void CreateNewMine() {
   SetEditorViewer();
 
   // Clear the marked room and selected segments.
-  app.Markedroomp = -1;
+  app.Markedroomp.reset();
   ClearRoomSelectedList();
 
   // Clear the placed room & group.

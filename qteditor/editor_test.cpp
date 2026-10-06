@@ -2912,7 +2912,7 @@ private slots:
     QCOMPARE(app.Curface.value_or(-1), 1);
     QCOMPARE(app.Curedge.value_or(-1), 2);
     QCOMPARE(app.Curvert.value_or(-1), 3);
-    QCOMPARE(app.Markedroomp, 0);
+    QCOMPARE(app.Markedroomp.value_or(-1), 0);
     QCOMPARE(app.Markedface, 4);
     QCOMPARE(app.Markededge, 5);
     QCOMPARE(app.Markedvert, 6);
@@ -2987,7 +2987,7 @@ private slots:
     // Restore the "no level loaded" editor defaults (later tests assume a
     // null app.Curroomp for their UI gating assertions).
     app.Curroomp.reset();
-    app.Markedroomp = -1;
+    app.Markedroomp.reset();
     N_selected_rooms = 0;
     app.Cur_object_index.reset();
     app.Current_trigger.reset();
@@ -5207,7 +5207,7 @@ private slots:
     FreeRoom(0);
     FreeRoom(1);
     app.Curroomp.reset();
-    app.Markedroomp = -1;
+    app.Markedroomp.reset();
   }
 
   void testAttachRoomTerrain() {
@@ -5322,7 +5322,7 @@ private slots:
     FreeRoom(1);
     app.Placed_room = -1;
     app.Curroomp.reset();
-    app.Markedroomp = -1;
+    app.Markedroomp.reset();
   }
 
   void testUVSlide() {
