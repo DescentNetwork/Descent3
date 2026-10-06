@@ -71,7 +71,7 @@ const float kObjMiscColor[3] = {0.0f, 100.0f / 255, 100.0f / 255};
 const float kObjCameraColor[3] = {1.0f, 1.0f, 0.0f};
 
 // Returns true when `roomnum` still names a live slot of the Rooms vector.
-// app.Curroomp/app.Markedroomp.value_or(-1) are room indices kept across RoomsReset()/clear(),
+// app.current.room/app.marked.room.value_or(-1) are room indices kept across RoomsReset()/clear(),
 // so after a reset they can be stale (out of range for a differently-sized
 // vector) or name a freshly reinitialised slot.  The Win32 fixed array granted
 // validity for free; the vector needs this explicit range check before use.
@@ -549,7 +549,7 @@ void EditorView::renderRooms() {
 
       // Determine the room's overlay color (selected = orange, else default).
       const bool selected = IsRoomSelected(r);
-      const bool isCurRoom = (r == app.Curroomp.value_or(-1));
+      const bool isCurRoom = (r == app.current.room.value_or(-1));
 
       for (int i = 0; i < rp->num_faces; i++) {
         face *fp = &rp->faces[i];
@@ -777,21 +777,25 @@ void EditorView::renderOverlays() {
   // In state::viewer::room the Win32 wireframe view draws only the palette room plus its
   // yellow current face; there are no current-room / marked-room overlays
   // (DrawWorld state::viewer::room branch, editor/drawworld.cpp:800-810).  The Qt port
-  // keeps the current-face selection in app.Curface.
+  // keeps the current-face selection in app.current.face.
   if (app.view_mode == state::viewer::room) {
     // (The yellow current-face highlight is drawn below — the Win32 room view
     // has no current-room or marked-room overlays.)
-    if (liveRoom(app.Curroomp.value_or(-1)) && Rooms[*app.Curroomp].used &&
-        app.Curroomp == (app.current_room ? *app.current_room : -1) && app.Curface.has_value() &&
-        app.Curface.value_or(-1) < Rooms[*app.Curroomp].num_faces) {
-      face *fp = &Rooms[*app.Curroomp].faces[*app.Curface];
+    if (app.current.room &&
+        app.current.face &&
+        app.current_room &&
+        liveRoom(*app.current.room) &&
+        Rooms[*app.current.room].used &&
+        app.current.room == app.current_room &&
+        *app.current.face < Rooms[*app.current.room].num_faces) {
+      face *fp = &Rooms[*app.current.room].faces[*app.current.face];
       float sx[16], sy[16];
       int nv = fp->num_verts;
       if (nv > 16)
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(Rooms[*app.Curroomp].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[*app.current.room].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -812,16 +816,16 @@ void EditorView::renderOverlays() {
   // Marked room/face/edge/vert in the Win32 order: the marked elements are
   // drawn BEFORE the current room so the white current-room wireframe draws
   // over them where they overlap (DrawWorld, editor/drawworld.cpp:851-863).
-  if (liveRoom(app.Markedroomp.value_or(-1)) && Rooms[*app.Markedroomp].used) {
-    if (app.Markedface.has_value() && app.Markedface.value_or(-1) < Rooms[*app.Markedroomp].num_faces) {
-      face *fp = &Rooms[*app.Markedroomp].faces[*app.Markedface];
+  if (liveRoom(app.marked.room.value_or(-1)) && Rooms[*app.marked.room].used) {
+    if (app.marked.face.has_value() && app.marked.face.value_or(-1) < Rooms[*app.marked.room].num_faces) {
+      face *fp = &Rooms[*app.marked.room].faces[*app.marked.face];
       float sx[16], sy[16];
       int nv = fp->num_verts;
       if (nv > 16)
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(Rooms[*app.Markedroomp].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[*app.marked.room].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -837,36 +841,36 @@ void EditorView::renderOverlays() {
         glLineWidth(1.0f);
 
         // Marked edge in teal.
-        if (app.Markededge.has_value() && app.Markededge.value_or(-1) < nv) {
-          int next = (app.Markededge.value_or(-1) + 1) % nv;
+        if (app.marked.edge.has_value() && app.marked.edge.value_or(-1) < nv) {
+          int next = (app.marked.edge.value_or(-1) + 1) % nv;
           glColor3fv(kWfMarkedEdgeColor);
           glLineWidth(1.0f);
           glBegin(GL_LINES);
-          glVertex2f(sx[*app.Markededge], sy[*app.Markededge]);
+          glVertex2f(sx[*app.marked.edge], sy[*app.marked.edge]);
           glVertex2f(sx[next], sy[next]);
           glEnd();
         }
 
         // Marked vertex cross in teal.
-        if (app.Markedvert.has_value() && app.Markedvert.value_or(-1) < fp->num_verts) {
-          int vi = fp->face_verts[*app.Markedvert];
+        if (app.marked.vert.has_value() && app.marked.vert.value_or(-1) < fp->num_verts) {
+          int vi = fp->face_verts[*app.marked.vert];
           float vx, vy;
-          if (projectVertex(Rooms[*app.Markedroomp].verts[vi], &vx, &vy))
+          if (projectVertex(Rooms[*app.marked.room].verts[vi], &vx, &vy))
             drawVertCross(vx, vy, kWfMarkedEdgeColor);
         }
       }
     }
   }
 
-  if (liveRoom(app.Curroomp.value_or(-1)) && Rooms[*app.Curroomp].used) {
-    // Current room wireframe in white (DrawRoom(app.Curroomp, CURROOM_COLOR)).
+  if (liveRoom(app.current.room.value_or(-1)) && Rooms[*app.current.room].used) {
+    // Current room wireframe in white (DrawRoom(app.current.room, CURROOM_COLOR)).
     // Like the legacy DrawRoom edge table, floating-trigger faces (drawn
     // red) and room portal faces (terrain portals drawn blue) are skipped so
     // the white override does not cover them.
     glColor3fv(kWfCurRoomColor);
     glLineWidth(1.0f);
-    for (int i = 0; i < Rooms[*app.Curroomp].num_faces; i++) {
-      face *fp = &Rooms[*app.Curroomp].faces[i];
+    for (int i = 0; i < Rooms[*app.current.room].num_faces; i++) {
+      face *fp = &Rooms[*app.current.room].faces[i];
       if ((fp->flags.floating_trig) || fp->portal_num != -1)
         continue;
       float sx[16], sy[16];
@@ -875,7 +879,7 @@ void EditorView::renderOverlays() {
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(Rooms[*app.Curroomp].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[*app.current.room].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -889,17 +893,17 @@ void EditorView::renderOverlays() {
     }
 
     // Current portal face in purple (DrawRoomFace, CURPORTAL_COLOR).
-    if (app.Curportal.has_value() && app.Curportal.value_or(-1) < Rooms[*app.Curroomp].num_portals) {
-      int faceIdx = Rooms[*app.Curroomp].portals[*app.Curportal].portal_face;
-      if (faceIdx >= 0 && faceIdx < Rooms[*app.Curroomp].num_faces) {
-        face *fp = &Rooms[*app.Curroomp].faces[faceIdx];
+    if (app.current.portal.has_value() && app.current.portal.value_or(-1) < Rooms[*app.current.room].num_portals) {
+      int faceIdx = Rooms[*app.current.room].portals[*app.current.portal].portal_face;
+      if (faceIdx >= 0 && faceIdx < Rooms[*app.current.room].num_faces) {
+        face *fp = &Rooms[*app.current.room].faces[faceIdx];
         float sx[16], sy[16];
         int nv = fp->num_verts;
         if (nv > 16)
           nv = 16;
         bool ok = true;
         for (int v = 0; v < nv; v++) {
-          if (!projectVertex(Rooms[*app.Curroomp].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+          if (!projectVertex(Rooms[*app.current.room].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
             ok = false;
             break;
           }
@@ -917,15 +921,15 @@ void EditorView::renderOverlays() {
     }
 
     // Current face in yellow.
-    if (app.Curface.has_value() && app.Curface.value_or(-1) < Rooms[*app.Curroomp].num_faces) {
-      face *fp = &Rooms[*app.Curroomp].faces[*app.Curface];
+    if (app.current.face.has_value() && app.current.face.value_or(-1) < Rooms[*app.current.room].num_faces) {
+      face *fp = &Rooms[*app.current.room].faces[*app.current.face];
       float sx[16], sy[16];
       int nv = fp->num_verts;
       if (nv > 16)
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(Rooms[*app.Curroomp].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[*app.current.room].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -939,22 +943,22 @@ void EditorView::renderOverlays() {
         glEnd();
 
         // Current edge in green (DrawFaceEdge, CUREDGE_COLOR).
-        if (app.Curedge.has_value() && app.Curedge.value_or(-1) < nv) {
-          int next = (app.Curedge.value_or(-1) + 1) % nv;
+        if (app.current.edge.has_value() && app.current.edge.value_or(-1) < nv) {
+          int next = (app.current.edge.value_or(-1) + 1) % nv;
           glColor3fv(kWfCurEdgeColor);
           glLineWidth(3.0f);
           glBegin(GL_LINES);
-          glVertex2f(sx[*app.Curedge], sy[*app.Curedge]);
+          glVertex2f(sx[*app.current.edge], sy[*app.current.edge]);
           glVertex2f(sx[next], sy[next]);
           glEnd();
         }
 
         // Current vertex cross in green (DrawVertBox at
-        // faces[*app.Curface].face_verts[*app.Curvert], CUREDGE_COLOR).
-        if (app.Curvert.has_value() && app.Curvert.value_or(-1) < fp->num_verts) {
-          int vi = fp->face_verts[*app.Curvert];
+        // faces[*app.current.face].face_verts[*app.current.vert], CUREDGE_COLOR).
+        if (app.current.vert.has_value() && app.current.vert.value_or(-1) < fp->num_verts) {
+          int vi = fp->face_verts[*app.current.vert];
           float vx, vy;
-          if (projectVertex(Rooms[*app.Curroomp].verts[vi], &vx, &vy))
+          if (projectVertex(Rooms[*app.current.room].verts[vi], &vx, &vy))
             drawVertCross(vx, vy, kWfCurEdgeColor);
         }
 

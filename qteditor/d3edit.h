@@ -59,6 +59,29 @@ namespace state
   };
 
 }
+// A face within a specific room, along with the sub-selection made within that
+// face. This mirrors the Win32 editor's Curroomp/Curface/Curedge/Curvert/
+// Curportal block (editor/EDVARS.cpp:130), which is always set as a unit: the
+// edge and vert are sub-indices of the face, and the portal is a property of
+// the face rather than a peer of the room.
+struct face_selection
+{
+  std::optional<int> room;   // index into Rooms[]
+  std::optional<int> face;   // face index within that room
+  std::optional<int> edge;   // edge index within that face
+  std::optional<int> vert;   // vert index within that face
+  std::optional<int> portal; // portal_num on that face
+
+  void reset()
+  {
+    room.reset();
+    face.reset();
+    edge.reset();
+    vert.reset();
+    portal.reset();
+  }
+};
+
 // Structure to store various editor state & preference values
 struct d3edit_state
 {
@@ -75,7 +98,7 @@ struct d3edit_state
   index_t current_path; // currently selected path for a robot to follow
   std::optional<uint16_t> current_node; // currently selected node of preceding path
   index_t current_megacell; // currently selected megacell
-  std::optional<int> current_room; // currently selected room
+  index_t current_room; // currently selected room
   index_t current_gamefile; // currently selected gamefile
   index_t current_building; // currently selected building
   index_t current_clutter; // currently selected clutter
@@ -149,12 +172,8 @@ struct d3edit_state
   // Flag for if mine has changed (& thus needs to be saved)
   bool Mine_changed = false;
 
-  // Current room & face
-  std::optional<int> Curroomp;
-  std::optional<int> Curface;
-  std::optional<int> Curedge;
-  std::optional<int> Curvert;
-  std::optional<int> Curportal;
+  // Current room:face selection (face-level editing target)
+  face_selection current;
 
   // Current object
   std::optional<int> Cur_object_index;
@@ -165,11 +184,9 @@ struct d3edit_state
   // The ID of the most recent viewer object (not counting room view)
   std::optional<int> Editor_viewer_id;
 
-  // Marked room & face
-  std::optional<int> Markedroomp;
-  std::optional<int> Markedface;
-  std::optional<int> Markededge;
-  std::optional<int> Markedvert;
+  // Marked room:face selection (the secondary face selection used by bridge,
+  // join, rotate and compare operations)
+  face_selection marked;
 
   // Placed room info
 

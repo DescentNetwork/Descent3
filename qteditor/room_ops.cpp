@@ -329,11 +329,11 @@ void DeleteRoomFace(int roomnum, int facenum) {
   rp.faces.erase(rp.faces.begin() + facenum);
   rp.num_faces--;
 
-  if (roomnum == app.Curroomp.value_or(-1)) {
-    if (app.Curface == rp.num_faces)
-      app.Curface = rp.num_faces - 1;
-    if (app.Markedface == rp.num_faces)
-      app.Markedface = rp.num_faces - 1;
+  if (roomnum == app.current.room.value_or(-1)) {
+    if (app.current.face == rp.num_faces)
+      app.current.face = rp.num_faces - 1;
+    if (app.marked.face == rp.num_faces)
+      app.marked.face = rp.num_faces - 1;
   }
 
   if (rp.num_bbf_regions) {
@@ -718,16 +718,16 @@ void RotateRooms(angle p, angle h, angle b) {
   int marked_portalnum = -1;
   int cur_portalnum = -1;
 
-  if (app.Curroomp == app.Markedroomp.value_or(-1) || !app.Markedroomp) {
+  if (app.current.room == app.marked.room.value_or(-1) || !app.marked.room) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You do not have a valid room marked.");
     return;
   }
 
-  room &markedroomp = Rooms[*app.Markedroomp];
-  room &curroomp = Rooms[*app.Curroomp];
+  room &markedroomp = Rooms[*app.marked.room];
+  room &curroomp = Rooms[*app.current.room];
 
   for (int i = 0; i < markedroomp.num_portals; i++) {
-    if (markedroomp.portals[i].croom == app.Curroomp.value_or(-1)) {
+    if (markedroomp.portals[i].croom == app.current.room.value_or(-1)) {
       marked_portalnum = i;
       break;
     }
@@ -739,7 +739,7 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   for (int i = 0; i < curroomp.num_portals; i++) {
-    if (curroomp.portals[i].croom == app.Markedroomp.value_or(-1)) {
+    if (curroomp.portals[i].croom == app.marked.room.value_or(-1)) {
       cur_portalnum = i;
       break;
     }
@@ -753,16 +753,16 @@ void RotateRooms(angle p, angle h, angle b) {
   SaveRoomSelectedList();
 
   curroomp.portals[cur_portalnum].croom = -1;
-  SelectConnectedRooms(app.Curroomp.value_or(-1));
-  curroomp.portals[cur_portalnum].croom = app.Markedroomp.value_or(-1);
+  SelectConnectedRooms(app.current.room.value_or(-1));
+  curroomp.portals[cur_portalnum].croom = app.marked.room.value_or(-1);
 
-  if (IsRoomSelected(app.Markedroomp.value_or(-1))) {
+  if (IsRoomSelected(app.marked.room.value_or(-1))) {
     RestoreRoomSelectedList();
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot rotate: rooms connect back to base room.");
     return;
   }
 
-  ComputePortalCenter(&rotpoint, app.Curroomp.value_or(-1), cur_portalnum);
+  ComputePortalCenter(&rotpoint, app.current.room.value_or(-1), cur_portalnum);
   vm_AnglesToMatrix(&rotmat, p, h, b);
   face *fp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
   ComputeNormal(portal_normal, fp->num_verts, fp->face_verts, curroomp.verts);
@@ -774,7 +774,7 @@ void RotateRooms(angle p, angle h, angle b) {
   for (int i = 0; i < N_selected_rooms; i++) {
     room &rp = Rooms[Selected_rooms[i]];
 
-    if (Selected_rooms[i] == app.Curroomp.value_or(-1)) {
+    if (Selected_rooms[i] == app.current.room.value_or(-1)) {
       face *cfp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
       for (int v = 0; v < rp.num_verts; v++) {
         for (int t = 0; t < cfp->num_verts; t++)
@@ -818,7 +818,7 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   if (checkcount > 0)
-    FixConcaveFaces(app.Curroomp.value_or(-1), checkfaces, checkcount);
+    FixConcaveFaces(app.current.room.value_or(-1), checkfaces, checkcount);
 
   app.World_changed = true;
 }

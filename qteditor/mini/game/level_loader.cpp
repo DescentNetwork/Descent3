@@ -970,30 +970,30 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
   ifile >> room_idx;
   {
     const int cur_room = lookup_room(room_idx);
-    app.Curroomp = cur_room < 0 ? std::optional<int>() : std::optional<int>(cur_room);
+    app.current.room = cur_room < 0 ? std::optional<int>() : std::optional<int>(cur_room);
   }
   int16_t sel = 0;
   ifile >> sel;
-  app.Curface = load_optional(sel);
+  app.current.face = load_optional(sel);
   if (version >= 81) {
     ifile >> sel;
-    app.Curedge = load_optional(sel);
+    app.current.edge = load_optional(sel);
     ifile >> sel;
-    app.Curvert = load_optional(sel);
+    app.current.vert = load_optional(sel);
   }
 
   ifile >> room_idx;
   {
     const int marked_room = lookup_room(room_idx);
-    app.Markedroomp = marked_room < 0 ? std::optional<int>() : std::optional<int>(marked_room);
+    app.marked.room = marked_room < 0 ? std::optional<int>() : std::optional<int>(marked_room);
   }
   ifile >> sel;
-  app.Markedface = load_optional(sel);
+  app.marked.face = load_optional(sel);
   if (version >= 81) {
     ifile >> sel;
-    app.Markededge = load_optional(sel);
+    app.marked.edge = load_optional(sel);
     ifile >> sel;
-    app.Markedvert = load_optional(sel);
+    app.marked.vert = load_optional(sel);
   }
 
   int32_t nsr = 0;
@@ -1055,14 +1055,14 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
 static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_EDITOR_INFO);
 
-  ofile << static_cast<int16_t>(app.Curroomp.has_value() ? app.Curroomp.value_or(-1) : -1);
-  ofile << static_cast<int16_t>(app.Curface.value_or(-1));
-  ofile << static_cast<int16_t>(app.Curedge.value_or(-1));
-  ofile << static_cast<int16_t>(app.Curvert.value_or(-1));
-  ofile << static_cast<int16_t>(app.Markedroomp.has_value() ? app.Markedroomp.value_or(-1) : -1);
-  ofile << static_cast<int16_t>(app.Markedface.value_or(-1));
-  ofile << static_cast<int16_t>(app.Markededge.value_or(-1));
-  ofile << static_cast<int16_t>(app.Markedvert.value_or(-1));
+  ofile << static_cast<int16_t>(app.current.room.has_value() ? app.current.room.value_or(-1) : -1);
+  ofile << static_cast<int16_t>(app.current.face.value_or(-1));
+  ofile << static_cast<int16_t>(app.current.edge.value_or(-1));
+  ofile << static_cast<int16_t>(app.current.vert.value_or(-1));
+  ofile << static_cast<int16_t>(app.marked.room.has_value() ? app.marked.room.value_or(-1) : -1);
+  ofile << static_cast<int16_t>(app.marked.face.value_or(-1));
+  ofile << static_cast<int16_t>(app.marked.edge.value_or(-1));
+  ofile << static_cast<int16_t>(app.marked.vert.value_or(-1));
 
   ofile << static_cast<int32_t>(N_selected_rooms);
   for (int i = 0; i < N_selected_rooms; i++)

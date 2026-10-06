@@ -2052,7 +2052,7 @@ draw_fog:
   if (Outline_lightmaps) {
     rend_SetTextureType(TT_FLAT);
     rend_SetAlphaType(AT_ALWAYS);
-    if (fp == &Rooms[*app.Curroomp].faces[*app.Curface] && (fp->flags.lightmap)) {
+    if (fp == &Rooms[*app.current.room].faces[*app.current.face] && (fp->flags.lightmap)) {
       Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
 
       lightmap_info *lmi = &LightmapInfo[fp->lmi_handle];
@@ -3495,9 +3495,9 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
 
 #ifdef EDITOR
   if (OUTLINE_ON(OM_MINE)) {
-    OutlineCurrentFace(app.Curroomp.value_or(-1), app.Curface.value_or(-1), app.Curedge.value_or(-1), app.Curvert.value_or(-1), CURFACE_COLOR, CUREDGE_COLOR);
-    if (app.Markedroomp.value_or(-1) != -1)
-      OutlineCurrentFace(app.Markedroomp.value_or(-1), app.Markedface.value_or(-1), app.Markededge.value_or(-1), app.Markedvert.value_or(-1), MARKEDFACE_COLOR, MARKEDEDGE_COLOR);
+    OutlineCurrentFace(app.current.room.value_or(-1), app.current.face.value_or(-1), app.current.edge.value_or(-1), app.current.vert.value_or(-1), CURFACE_COLOR, CUREDGE_COLOR);
+    if (app.marked.room.value_or(-1) != -1)
+      OutlineCurrentFace(app.marked.room.value_or(-1), app.marked.face.value_or(-1), app.marked.edge.value_or(-1), app.marked.vert.value_or(-1), MARKEDFACE_COLOR, MARKEDEDGE_COLOR);
     if (app.Placed_room)
       DrawPlacedRoomFace(app.Placed_room.value_or(-1), &app.Placed_room_origin, &app.Placed_room_rotmat, &app.Placed_room_attachpoint,
                          *app.Placed_room_face, PLACED_COLOR);

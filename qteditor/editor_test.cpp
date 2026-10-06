@@ -2862,14 +2862,14 @@ private slots:
     extern float Ambient_red, Ambient_green, Ambient_blue;
     extern int rad_MaxStep;
 
-    app.Curroomp = 0;
-    app.Curface = 1;
-    app.Curedge = 2;
-    app.Curvert = 3;
-    app.Markedroomp = 0;
-    app.Markedface = 4;
-    app.Markededge = 5;
-    app.Markedvert = 6;
+    app.current.room = 0;
+    app.current.face = 1;
+    app.current.edge = 2;
+    app.current.vert = 3;
+    app.marked.room = 0;
+    app.marked.face = 4;
+    app.marked.edge = 5;
+    app.marked.vert = 6;
     N_selected_rooms = 2;
     Selected_rooms[0] = 0;
     Selected_rooms[1] = 1;
@@ -2908,14 +2908,14 @@ private slots:
     QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
-    QCOMPARE(app.Curroomp.value_or(-1), 0);
-    QCOMPARE(app.Curface.value_or(-1), 1);
-    QCOMPARE(app.Curedge.value_or(-1), 2);
-    QCOMPARE(app.Curvert.value_or(-1), 3);
-    QCOMPARE(app.Markedroomp.value_or(-1), 0);
-    QCOMPARE(app.Markedface.value_or(-1), 4);
-    QCOMPARE(app.Markededge.value_or(-1), 5);
-    QCOMPARE(app.Markedvert.value_or(-1), 6);
+    QCOMPARE(app.current.room.value_or(-1), 0);
+    QCOMPARE(app.current.face.value_or(-1), 1);
+    QCOMPARE(app.current.edge.value_or(-1), 2);
+    QCOMPARE(app.current.vert.value_or(-1), 3);
+    QCOMPARE(app.marked.room.value_or(-1), 0);
+    QCOMPARE(app.marked.face.value_or(-1), 4);
+    QCOMPARE(app.marked.edge.value_or(-1), 5);
+    QCOMPARE(app.marked.vert.value_or(-1), 6);
     QCOMPARE(N_selected_rooms, 2);
     QCOMPARE(Selected_rooms[0], 0);
     QCOMPARE(Selected_rooms[1], 1);
@@ -2985,9 +2985,9 @@ private slots:
     QDir::current().rmdir(tmp);
 
     // Restore the "no level loaded" editor defaults (later tests assume a
-    // null app.Curroomp for their UI gating assertions).
-    app.Curroomp.reset();
-    app.Markedroomp.reset();
+    // null app.current.room for their UI gating assertions).
+    app.current.room.reset();
+    app.marked.room.reset();
     N_selected_rooms = 0;
     app.Cur_object_index.reset();
     app.Current_trigger.reset();
@@ -4075,9 +4075,9 @@ private slots:
   {
     // The doorway editing controls are gated on the current room actually
     // bearing doorway data (DoorwayKeypad::updateDialog()), not merely on a
-    // level being loaded: the EDIT chunk can restore a app.Curroomp whose room is
+    // level being loaded: the EDIT chunk can restore a app.current.room whose room is
     // not a doorway, in which case the controls stay disabled.
-    const bool levelLoaded = (app.Curroomp.has_value() && Rooms[*app.Curroomp].doorway_data != nullptr);
+    const bool levelLoaded = (app.current.room.has_value() && Rooms[*app.current.room].doorway_data != nullptr);
 
     for (const DialogInstance &d : g_dialogs)
     {
@@ -4272,9 +4272,9 @@ private slots:
 
     // Center on Current Room: orbit target becomes the current room's center,
     // distance/orientation untouched.
-    QVERIFY(app.Curroomp.has_value() && Rooms[*app.Curroomp].used);
+    QVERIFY(app.current.room.has_value() && Rooms[*app.current.room].used);
     vector3 roomCenter;
-    ComputeRoomCenter(&roomCenter, app.Curroomp.value_or(-1));
+    ComputeRoomCenter(&roomCenter, app.current.room.value_or(-1));
     a_room->trigger();
     QCoreApplication::processEvents();
     {
@@ -4419,7 +4419,7 @@ private slots:
 
   // Verifies the Qt port of editor/HFile.cpp:
   //   - CreateNewMine resets the editor-only globals exposed in
-  //     qteditor/d3_editor_state.cpp (app.Curface.value_or(-1), static_cast<int>(Triggers.size()), …) and calls
+  //     qteditor/d3_editor_state.cpp (app.current.face.value_or(-1), static_cast<int>(Triggers.size()), …) and calls
   //     FreeAllRooms / FreeAllObjects on Descent3Core without exploding.
   //   - RenderLevelStats returns a non-empty buffer whose first three lines
   //     are the "Level Stats:" header the Win32 EditorMessageBox got.
@@ -4431,10 +4431,10 @@ private slots:
     // Capture the editor-only globals CreateNewMine() is supposed to reset,
     // seed them to sentinel values, then run the function and confirm they
     // came back to the documented defaults.
-    app.Curface = 99;
-    app.Curedge = 99;
-    app.Curvert = 99;
-    app.Curportal = 42;
+    app.current.face = 99;
+    app.current.edge = 99;
+    app.current.vert = 99;
+    app.current.portal = 42;
     Triggers.resize(7);
     app.Current_trigger = 9;
     app.view_mode = state::viewer::room;
@@ -4442,8 +4442,8 @@ private slots:
     app.New_mine = false;
     app.World_changed = true;
     CreateNewMine();
-    QCOMPARE(app.Curface.value_or(-1), 0);
-    QCOMPARE(app.Curportal.value_or(-1), -1);
+    QCOMPARE(app.current.face.value_or(-1), 0);
+    QCOMPARE(app.current.portal.value_or(-1), -1);
     QCOMPARE(static_cast<int>(Triggers.size()), 0);
     QCOMPARE(app.Current_trigger.value_or(-1), -1);
     QCOMPARE(app.view_mode, state::viewer::mine);
@@ -4702,8 +4702,8 @@ private slots:
   // on the helpers' side-effects so the menu wiring has a deterministic
   // observable contract.
   void testRoomOpsContract() {
-    app.Curroomp = nullptr;
-    app.Markedroomp = nullptr;
+    app.current.room = nullptr;
+    app.marked.room = nullptr;
 
     // AddRoom provisions a brand-new room at the first free slot by
     // extruding the current face outward. Build a minimal current room
@@ -4739,9 +4739,9 @@ private slots:
       Rooms[0].faces[2].face_verts[3] = 3;
       RoomsEnsureIndex(0);
     }
-    app.Curroomp = &Rooms[0];
-    app.Curface = 2;
-    app.Curedge = app.Curvert = app.Curportal = 0;
+    app.current.room = &Rooms[0];
+    app.current.face = 2;
+    app.current.edge = app.current.vert = app.current.portal = 0;
 
     app.New_mine = 0;
     app.Mine_changed = 0;
@@ -4750,26 +4750,26 @@ private slots:
     QCOMPARE(app.Mine_changed, 1);
     // AddRoom wrote a fresh room into Rooms[] at a slot >0 and made it
     // the current selection.
-    QVERIFY(app.Curroomp.value_or(-1) != nullptr);
-    QVERIFY(app.Curroomp.value_or(-1) != &Rooms[0]);
-    QVERIFY(app.Curroomp.value_or(-1)->used);
-    QVERIFY(app.Curroomp.value_or(-1)->num_verts >= 8); // 4 (cnv) * 2 verts
-    QVERIFY(app.Curroomp.value_or(-1)->num_faces == 6); // cnv + 2
+    QVERIFY(app.current.room.value_or(-1) != nullptr);
+    QVERIFY(app.current.room.value_or(-1) != &Rooms[0]);
+    QVERIFY(app.current.room.value_or(-1)->used);
+    QVERIFY(app.current.room.value_or(-1)->num_verts >= 8); // 4 (cnv) * 2 verts
+    QVERIFY(app.current.room.value_or(-1)->num_faces == 6); // cnv + 2
 
     // DeleteRoom with no current selection is a no-op but must report
     // false so the menu's signal handler doesn't trigger a redraw.
-    app.Curroomp = nullptr;
+    app.current.room = nullptr;
     QVERIFY(!DeleteRoom());
 
-    // Set app.Curroomp to a dummy slot then DeleteRoom clears it.
-    app.Curroomp = &Rooms[0];
+    // Set app.current.room to a dummy slot then DeleteRoom clears it.
+    app.current.room = &Rooms[0];
     Rooms[0].used = 1;
     Rooms[0].name = const_cast<char *>("test-room");
     app.Mine_changed = 0;
     QVERIFY(DeleteRoom());
-    QVERIFY(app.Curroomp == nullptr);
-    QCOMPARE(app.Curface.value_or(-1), -1);
-    QCOMPARE(app.Curportal.value_or(-1), -1);
+    QVERIFY(app.current.room == nullptr);
+    QCOMPARE(app.current.face.value_or(-1), -1);
+    QCOMPARE(app.current.portal.value_or(-1), -1);
     QCOMPARE(app.Mine_changed, 1);
 
     // (testObjectOpsContract lives below; see line ~1090)
@@ -4834,7 +4834,7 @@ private slots:
         Rooms[0].verts[v] = vector3{};
       RoomsEnsureIndex(0);
     }
-    app.Curroomp = &Rooms[0];
+    app.current.room = &Rooms[0];
     // PlaceCameraAtViewer returns -1 on Linux until the ObjCreate path
     // links; verify the contract is honest.
     QCOMPARE(PlaceCameraAtViewer(), -1);
@@ -4891,7 +4891,7 @@ private slots:
       Rooms[0].verts[3] = {0, 0, 1};
       RoomsEnsureIndex(0);
     }
-    app.Curroomp = &Rooms[0];
+    app.current.room = &Rooms[0];
 
     // Stand up a viewer object so ObjSetPos has somewhere to write to.
     for (size_t i = 0; i < Objects.size(); ++i)
@@ -4921,7 +4921,7 @@ private slots:
     // builds, so we keep the assertion documented but skip the live call.
 
     // MoveViewToSelectedRoom refreshes Viewer_object->roomnum from
-    // app.Curroomp. Live calls are deferred until ObjLink's invariant
+    // app.current.room. Live calls are deferred until ObjLink's invariant
     // helpers let us start/stop the linked-list hooks cleanly.
   }
 #endif
@@ -5188,10 +5188,10 @@ private slots:
 
     LinkRooms(0, 0, 1, 0);
 
-    app.Curroomp = 0;
-    app.Curface = 0;
-    app.Markedroomp = 1;
-    app.Markedface = 0;
+    app.current.room = 0;
+    app.current.face = 0;
+    app.marked.room = 1;
+    app.marked.face = 0;
 
     vector3 orig = r0->verts[6];
 
@@ -5206,8 +5206,8 @@ private slots:
     DeletePortalPair(0, 0);
     FreeRoom(0);
     FreeRoom(1);
-    app.Curroomp.reset();
-    app.Markedroomp.reset();
+    app.current.room.reset();
+    app.marked.room.reset();
   }
 
   void testAttachRoomTerrain() {
@@ -5321,8 +5321,8 @@ private slots:
     FreeRoom(0);
     FreeRoom(1);
     app.Placed_room.reset();
-    app.Curroomp.reset();
-    app.Markedroomp.reset();
+    app.current.room.reset();
+    app.marked.room.reset();
   }
 
   void testUVSlide() {
@@ -5959,10 +5959,10 @@ private slots:
     RoomsEnsureIndex(1);
 
     // Pin the editor "current room" to the live room 0 for the view's overlay
-    // pass: app.Curroomp is a global that earlier tests may have left dangling
+    // pass: app.current.room is a global that earlier tests may have left dangling
     // (the room buffer is reused by RoomsReset), and renderOverlays derefs it
     // on the view's first paint.
-    app.Curroomp = 0;
+    app.current.room = 0;
 
     EditorView view;
     view.resize(640, 480);
@@ -6043,8 +6043,8 @@ private slots:
 
     // Pin the editor "current room" to the live room 0 for the view's overlay
     // pass, exactly as testPickPrefersForegroundFaceOverOccluded does (see the
-    // comment there for why app.Curroomp cannot be left to prior-test state).
-    app.Curroomp = 0;
+    // comment there for why app.current.room cannot be left to prior-test state).
+    app.current.room = 0;
 
     EditorView view;
     view.resize(640, 480);
@@ -6114,8 +6114,8 @@ private slots:
     QVERIFY2(view.frameCount() >= 1, "view never painted");
 
     // Clear selection first.
-    app.Curroomp.reset();
-    app.Curface.reset();
+    app.current.room.reset();
+    app.current.face.reset();
     app.Cur_object_index.reset();
 
     bool faceFired = false;

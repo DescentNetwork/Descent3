@@ -143,11 +143,13 @@ void CreateNewMine() {
   Player_object = nullptr;
 
   // Create the default room (octagonal prism at Mine_origin).
-  app.Curroomp = CreateDefaultRoom();
+  app.current.room = CreateDefaultRoom();
 
   // Reset selection / viewer globals.
-  app.Curface = app.Curedge = app.Curvert = 0;
-  app.Curportal.reset();
+  app.current.face = 0;
+  app.current.edge = 0;
+  app.current.vert = 0;
+  app.current.portal.reset();
   app.New_mine = true;
   app.World_changed = false;
 
@@ -159,7 +161,7 @@ void CreateNewMine() {
   SetEditorViewer();
 
   // Clear the marked room and selected segments.
-  app.Markedroomp.reset();
+  app.marked.room.reset();
   ClearRoomSelectedList();
 
   // Clear the placed room & group.

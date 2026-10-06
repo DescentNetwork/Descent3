@@ -50,7 +50,7 @@ int FindFreeRoomSlot() {
 // Counterpart of CreateNewRoom() that releases the per-room vectors/faces
 // array and marks the slot free. The full Win32 path also walks the
 // portal list, recycles to the free list, and detaches from the marked
-// room; the Qt port stops at "free the slot" because app.Curroomp tracking
+// room; the Qt port stops at "free the slot" because app.current.room tracking
 // lives at the qteditor level, not in Descent3Core.
 void DestroyRoom(int roomnum) {
   if (roomnum < 0)
