@@ -1274,20 +1274,23 @@ check_faces:;
 
 // ============================================================================
 // AttachRoom — port of editor/HRoom.cpp:703
-// Places a room that was placed via PlaceRoom, creating portals as
-// needed.  Requires app.Placed_room, app.Placed_baseroomp, app.Placed_baseface,
-// app.Placed_room_face, app.Placed_room_origin, app.Placed_room_attachpoint,
-// and app.Placed_room_rotmat to be set by the caller.
+// Places a room that was placed via PlaceRoom, creating portals as needed.
+// Requires app.placed to have been set up by the caller: the room being placed
+// (placed.room / placed.room_face) and the derived transforms (placed.origin /
+// attachpoint / rotmat). placed.base is the target room:face in the mine and
+// must be set when attaching into the mine; it stays nullopt when attaching a
+// terrain room, which has no base room to portal against.
 // ============================================================================
 void AttachRoom() {
-  Q_ASSERT(app.Placed_room);
+  Q_ASSERT(app.placed.room);
+  Q_ASSERT(app.placed.room_face);
 
-  int baseroomp = app.Placed_baseroomp;
-  int baseface = app.Placed_baseface;
-  int attroomp = app.Placed_room.value_or(-1);
-  int attface = *app.Placed_room_face;
-  vector3 attcenter = app.Placed_room_origin;
-  vector3 basecenter = app.Placed_room_attachpoint;
+  int baseroomp = app.placed.base.room.value_or(-1);
+  int baseface = app.placed.base.face.value_or(-1);
+  int attroomp = app.placed.room.value_or(-1);
+  int attface = *app.placed.room_face;
+  vector3 attcenter = app.placed.origin;
+  vector3 basecenter = app.placed.attachpoint;
 
   // Find a free slot in Rooms[] (grows the table on demand; the first unused
   // slot may be a hole in [0, size()) or a fresh index appended at the end).
@@ -1306,7 +1309,7 @@ void AttachRoom() {
 
   // Rotate verts, copying into new room
   for (int i = 0; i < attroom.num_verts; i++)
-    newroomp.verts[i] = ((attroom.verts[i] - attcenter) * app.Placed_room_rotmat) + basecenter;
+    newroomp.verts[i] = ((attroom.verts[i] - attcenter) * app.placed.rotmat) + basecenter;
 
   // Copy faces to new room
   for (int i = 0; i < attroom.num_faces; i++) {
@@ -1338,24 +1341,24 @@ void AttachRoom() {
     LinkRooms(baseroomp, baseface, slot, attface);
 
     // If there is a door, place it
-    if (app.Placed_door) {
-      matrix orient = ~app.Placed_room_rotmat;
+    if (app.placed.door) {
+      matrix orient = ~app.placed.rotmat;
       vector3 doorcenter = {0, 0, 0};
-      vector3 room_center = ((doorcenter - attcenter) * app.Placed_room_rotmat) + basecenter;
+      vector3 room_center = ((doorcenter - attcenter) * app.placed.rotmat) + basecenter;
 
-      FreeRoom(app.Placed_room.value_or(-1));
+      FreeRoom(app.placed.room.value_or(-1));
 
-      ObjCreate(object_type::door, *app.Placed_door, slot, room_center, &orient);
+      ObjCreate(object_type::door, *app.placed.door, slot, room_center, &orient);
 
-      doorway *dp = DoorwayAdd(slot, *app.Placed_door);
+      doorway *dp = DoorwayAdd(slot, *app.placed.door);
       (void)dp;
 
-      app.Placed_door.reset();
+      app.placed.door.reset();
     }
   }
 
   // Un-place the room
-  app.Placed_room.reset();
+  app.placed.room.reset();
 
   app.World_changed = true;
 }
@@ -1641,20 +1644,20 @@ void HTextureApplyToRoomFace(int roomnum, int facenum, int tnum) {
 // ============================================================================
 
 void ComputePlacedRoomMatrix() {
-  room &placedroomp = Rooms[*app.Placed_room];
-  int placedface = *app.Placed_room_face;
+  room &placedroomp = Rooms[*app.placed.room];
+  int placedface = *app.placed.room_face;
   matrix srcmat;
   vector3 t;
 
   t = -placedroomp.faces[placedface].normal;
   vm_VectorToMatrix(srcmat, t, std::nullopt, std::nullopt);
-  vm_VectorAngleToMatrix(&app.Placed_room_orient, &app.Placed_room_orient.fvec, app.Placed_room_angle);
+  vm_VectorAngleToMatrix(&app.placed.orient, &app.placed.orient.fvec, app.placed.angle);
 
   vm_Orthogonalize(&srcmat);
-  vm_Orthogonalize(&app.Placed_room_orient);
+  vm_Orthogonalize(&app.placed.orient);
 
-  vm_MatrixMulTMatrix(&app.Placed_room_rotmat, &srcmat, &app.Placed_room_orient);
-  vm_Orthogonalize(&app.Placed_room_rotmat);
+  vm_MatrixMulTMatrix(&app.placed.rotmat, &srcmat, &app.placed.orient);
+  vm_Orthogonalize(&app.placed.rotmat);
 }
 
 // PlaceRoom — editor/HRoom.cpp:585
@@ -1665,16 +1668,16 @@ void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face
 
   room &placedroomp = Rooms[placed_room];
 
-  app.Placed_room = placed_room;
-  app.Placed_room_face = placed_room_face;
-  app.Placed_room_orient.fvec = baseroomp.faces[baseface].normal;
-  app.Placed_room_angle = 0;
-  app.Placed_baseroomp = baseroom;
-  app.Placed_baseface = baseface;
-  app.Placed_door = placed_room_door;
+  app.placed.room = placed_room;
+  app.placed.room_face = placed_room_face;
+  app.placed.orient.fvec = baseroomp.faces[baseface].normal;
+  app.placed.angle = 0;
+  app.placed.base.room = baseroom;
+  app.placed.base.face = baseface;
+  app.placed.door = placed_room_door;
 
-  ComputeCenterPointOnFace(&app.Placed_room_attachpoint, baseroom, baseface);
-  ComputeCenterPointOnFace(&app.Placed_room_origin, placed_room, placed_room_face);
+  ComputeCenterPointOnFace(&app.placed.attachpoint, baseroom, baseface);
+  ComputeCenterPointOnFace(&app.placed.origin, placed_room, placed_room_face);
 
   ComputePlacedRoomMatrix();
 }

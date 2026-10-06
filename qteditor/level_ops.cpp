@@ -165,8 +165,8 @@ void CreateNewMine() {
   ClearRoomSelectedList();
 
   // Clear the placed room & group.
-  app.Placed_room.reset();
-  app.Placed_group = nullptr;
+  app.placed.room.reset();
+  app.placed.grp = nullptr;
 
   // Reset triggers.
   Triggers.clear();

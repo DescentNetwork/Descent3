@@ -5227,14 +5227,14 @@ private slots:
     r0->used = true;
 
     // Set up as a "placed room" for terrain attachment
-    app.Placed_room = 0;
-    app.Placed_baseroomp = -1;
-    app.Placed_baseface = -1;
-    app.Placed_room_face = 0;
-    app.Placed_room_origin = vector3{(float)150, (float)150, (float)0};
-    app.Placed_room_attachpoint = vector3{(float)0, (float)0, (float)0};
-    vm_MakeIdentity(&app.Placed_room_rotmat);
-    app.Placed_door.reset();
+    app.placed.room = 0;
+    app.placed.base.room.reset();
+    app.placed.base.face.reset();
+    app.placed.room_face = 0;
+    app.placed.origin = vector3{(float)150, (float)150, (float)0};
+    app.placed.attachpoint = vector3{(float)0, (float)0, (float)0};
+    vm_MakeIdentity(&app.placed.rotmat);
+    app.placed.door.reset();
 
     AttachRoom();
 
@@ -5252,7 +5252,7 @@ private slots:
 
     FreeRoom(newroom);
     FreeRoom(0);
-    app.Placed_room.reset();
+    app.placed.room.reset();
   }
 
   void testAttachRoomMine() {
@@ -5293,14 +5293,14 @@ private slots:
     att->used = true;
 
     // Place att so its face overlaps with the base face
-    app.Placed_room = 1;
-    app.Placed_baseroomp = 0;
-    app.Placed_baseface = 0;
-    app.Placed_room_face = 0;
-    app.Placed_room_origin = vector3{(float)5, (float)0, (float)-5};
-    app.Placed_room_attachpoint = vector3{(float)5, (float)0, (float)-5};
-    vm_MakeIdentity(&app.Placed_room_rotmat);
-    app.Placed_door.reset();
+    app.placed.room = 1;
+    app.placed.base.room = 0;
+    app.placed.base.face = 0;
+    app.placed.room_face = 0;
+    app.placed.origin = vector3{(float)5, (float)0, (float)-5};
+    app.placed.attachpoint = vector3{(float)5, (float)0, (float)-5};
+    vm_MakeIdentity(&app.placed.rotmat);
+    app.placed.door.reset();
 
     AttachRoom();
 
@@ -5320,7 +5320,7 @@ private slots:
     FreeRoom(newroom);
     FreeRoom(0);
     FreeRoom(1);
-    app.Placed_room.reset();
+    app.placed.room.reset();
     app.current.room.reset();
     app.marked.room.reset();
   }
@@ -6595,22 +6595,22 @@ private slots:
 
     PlaceRoom(0, 0, 1, 0, std::nullopt);
 
-    QCOMPARE(app.Placed_room.value_or(-1), 1);
-    QCOMPARE(app.Placed_room_face, std::optional<int>(0));
-    QCOMPARE(app.Placed_baseroomp, 0);
-    QCOMPARE(app.Placed_baseface, 0);
-    QVERIFY(!app.Placed_door);
-    QCOMPARE(app.Placed_room_angle, 0.0f);
+    QCOMPARE(app.placed.room.value_or(-1), 1);
+    QCOMPARE(app.placed.room_face, std::optional<int>(0));
+    QCOMPARE(app.placed.base.room, std::optional<int>(0));
+    QCOMPARE(app.placed.base.face, std::optional<int>(0));
+    QVERIFY(!app.placed.door);
+    QCOMPARE(app.placed.angle, 0.0f);
 
-    // app.Placed_room_orient.fvec should match base face normal
+    // app.placed.orient.fvec should match base face normal
     {
-      vector3 diff = app.Placed_room_orient.fvec - base->faces[0].normal;
+      vector3 diff = app.placed.orient.fvec - base->faces[0].normal;
       float dist = vm_GetMagnitude(&diff);
       QVERIFY(dist < 0.01f);
     }
 
-    app.Placed_room.reset();
-    app.Placed_baseroomp = -1;
+    app.placed.room.reset();
+    app.placed.base.room.reset();
     FreeRoom(0);
     FreeRoom(1);
   }
@@ -6674,33 +6674,33 @@ private slots:
     Doors[0] = door{};
     Doors[0].model_handle = 0;
 
-    app.Placed_room.reset();
+    app.placed.room.reset();
     PlaceDoor(1, 0, 0);
 
     // The door room must occupy a real Rooms[] slot (ROOMNUM(rp) is a pointer
     // difference against Rooms.data()).  Rooms no longer keeps a separate
     // palette region: slots are allocated from the first unused hole, which is
     // 0 here (base occupies slot 1), and the high-water mark is undisturbed.
-    QCOMPARE(app.Placed_room.value_or(-1), 0);
+    QCOMPARE(app.placed.room.value_or(-1), 0);
     QCOMPARE(static_cast<int>(Rooms.size()), 2);
-    QVERIFY(Rooms[*app.Placed_room].used);
-    QCOMPARE(Rooms[*app.Placed_room].num_verts, 8);
-    QCOMPARE(Rooms[*app.Placed_room].num_faces, 2);
-    QCOMPARE(app.Placed_baseroomp, 1);
-    QCOMPARE(app.Placed_door, std::optional<uint32_t>(0));
+    QVERIFY(Rooms[*app.placed.room].used);
+    QCOMPARE(Rooms[*app.placed.room].num_verts, 8);
+    QCOMPARE(Rooms[*app.placed.room].num_faces, 2);
+    QCOMPARE(app.placed.base.room, std::optional<int>(1));
+    QCOMPARE(app.placed.door, std::optional<uint32_t>(0));
     // Front face verts remap onto the shell (same positions).
     for (int i = 0; i < 4; ++i)
-      QCOMPARE(Rooms[*app.Placed_room].faces[1].face_verts[i], i);
+      QCOMPARE(Rooms[*app.placed.room].faces[1].face_verts[i], i);
 
-    FreeRoom(app.Placed_room.value_or(-1));
+    FreeRoom(app.placed.room.value_or(-1));
     FreeRoom(1);
     *po = poly_model{};
     if (Doors.is_used(0))
       Doors.release(0);
     Doors[0] = door{};
     RoomsReset();
-    app.Placed_room.reset();
-    app.Placed_baseroomp = -1;
+    app.placed.room.reset();
+    app.placed.base.room.reset();
   }
 
   void testComputePlacedRoomMatrixIdentity() {
@@ -6717,22 +6717,22 @@ private slots:
     ComputeFaceNormal(0, 0);
     rp->used = true;
 
-    app.Placed_room = 0;
-    app.Placed_room_face = 0;
-    app.Placed_room_angle = 0;
-    vm_MakeIdentity(&app.Placed_room_orient);
+    app.placed.room = 0;
+    app.placed.room_face = 0;
+    app.placed.angle = 0;
+    vm_MakeIdentity(&app.placed.orient);
 
     ComputePlacedRoomMatrix();
 
     // rotmat should be a valid orthogonal matrix (fvec magnitude ~1)
-    float fmag = vm_GetMagnitude(&app.Placed_room_rotmat.fvec);
-    float rmag = vm_GetMagnitude(&app.Placed_room_rotmat.rvec);
-    float umag = vm_GetMagnitude(&app.Placed_room_rotmat.uvec);
+    float fmag = vm_GetMagnitude(&app.placed.rotmat.fvec);
+    float rmag = vm_GetMagnitude(&app.placed.rotmat.rvec);
+    float umag = vm_GetMagnitude(&app.placed.rotmat.uvec);
     QVERIFY(fmag > 0.9f && fmag < 1.1f);
     QVERIFY(rmag > 0.9f && rmag < 1.1f);
     QVERIFY(umag > 0.9f && umag < 1.1f);
 
-    app.Placed_room.reset();
+    app.placed.room.reset();
     FreeRoom(0);
   }
 

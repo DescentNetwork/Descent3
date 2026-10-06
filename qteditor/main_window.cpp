@@ -1948,7 +1948,7 @@ void MainWindow::onRoomRotatePlaced45() {
 }
 
 void MainWindow::onRoomAttach() {
-  if (!app.Placed_room) {
+  if (!app.placed.room) {
     EditorStatus("No room placed. Use Place Room first.");
     return;
   }

@@ -90,6 +90,34 @@ struct face_selection
   }
 };
 
+// The room currently being positioned for attachment, together with the target
+// room:face it will be attached to. Mirrors the Win32 Placed_* block
+// (editor/EDVARS.cpp:138-148), which is written as a unit by PlaceRoom() and
+// consumed as a unit by AttachRoom().
+//
+// The base pair is itself a room:face selection, so it reuses face_selection
+// (of which only room and face are meaningful here). The origin/attachpoint/
+// orient/rotmat values are all derived by ComputePlacedRoomMatrix() from
+// placed.base and placed.orient.
+struct placed_room_state
+{
+  // Room being placed, and the face on it that will sit against the mine.
+  std::optional<int> room;
+  std::optional<int> room_face;
+
+  // Target room:face in the mine being attached onto.
+  face_selection base;
+
+  std::optional<uint32_t> door;
+  group *grp = nullptr;
+
+  float angle = 0;
+  vector3 origin = {0, 0, 0};
+  matrix orient = IDENTITY_MATRIX;
+  vector3 attachpoint = {0, 0, 0};
+  matrix rotmat = IDENTITY_MATRIX;
+};
+
 // Structure to store various editor state & preference values
 struct d3edit_state
 {
@@ -196,22 +224,8 @@ struct d3edit_state
   // join, rotate and compare operations)
   face_selection marked;
 
-  // Placed room info
-
-  std::optional<int> Placed_room;
-  group* Placed_group = nullptr;
-
-  std::optional<int> Placed_room_face;
-  std::optional<uint32_t> Placed_door;
-
-  float Placed_room_angle = 0;
-  vector3 Placed_room_origin = {0, 0, 0};
-  matrix Placed_room_orient = IDENTITY_MATRIX;
-  vector3 Placed_room_attachpoint = {0, 0, 0};
-  matrix Placed_room_rotmat = IDENTITY_MATRIX;
-
-  int Placed_baseroomp = -1;
-  int Placed_baseface = 0;
+  // Room currently being positioned for attachment
+  placed_room_state placed;
 
   // The scrap buffer
   group* Scrap = nullptr;
