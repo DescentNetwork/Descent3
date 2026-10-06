@@ -813,8 +813,8 @@ void EditorView::renderOverlays() {
   // drawn BEFORE the current room so the white current-room wireframe draws
   // over them where they overlap (DrawWorld, editor/drawworld.cpp:851-863).
   if (liveRoom(app.Markedroomp.value_or(-1)) && Rooms[*app.Markedroomp].used) {
-    if (app.Markedface >= 0 && app.Markedface < Rooms[*app.Markedroomp].num_faces) {
-      face *fp = &Rooms[*app.Markedroomp].faces[app.Markedface];
+    if (app.Markedface.has_value() && app.Markedface.value_or(-1) < Rooms[*app.Markedroomp].num_faces) {
+      face *fp = &Rooms[*app.Markedroomp].faces[*app.Markedface];
       float sx[16], sy[16];
       int nv = fp->num_verts;
       if (nv > 16)

@@ -1925,11 +1925,11 @@ void MainWindow::onRoomCombine() {
     EditorStatus("Mark and current must be the same room to combine.");
     return;
   }
-  if (app.Curface == app.Markedface) {
+  if (app.Curface == app.Markedface.value_or(-1)) {
     EditorStatus("Marked and current face must be different.");
     return;
   }
-  if (CombineFaces(app.Curroomp.value_or(-1), app.Markedface, app.Curface.value_or(-1))) {
+  if (CombineFaces(app.Curroomp.value_or(-1), app.Markedface.value_or(-1), app.Curface.value_or(-1))) {
     app.Mine_changed = true;
     EditorStatus("Faces combined.");
   }
