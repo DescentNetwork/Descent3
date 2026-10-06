@@ -3500,7 +3500,7 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
       OutlineCurrentFace(app.Markedroomp.value_or(-1), app.Markedface.value_or(-1), app.Markededge.value_or(-1), app.Markedvert.value_or(-1), MARKEDFACE_COLOR, MARKEDEDGE_COLOR);
     if (app.Placed_room)
       DrawPlacedRoomFace(app.Placed_room.value_or(-1), &app.Placed_room_origin, &app.Placed_room_rotmat, &app.Placed_room_attachpoint,
-                         app.Placed_room_face, PLACED_COLOR);
+                         *app.Placed_room_face, PLACED_COLOR);
   }
 #endif
 }

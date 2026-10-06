@@ -176,7 +176,7 @@ struct d3edit_state
   std::optional<int> Placed_room;
   group* Placed_group = nullptr;
 
-  int Placed_room_face = -1;
+  std::optional<int> Placed_room_face;
   std::optional<uint32_t> Placed_door;
 
   float Placed_room_angle = 0;

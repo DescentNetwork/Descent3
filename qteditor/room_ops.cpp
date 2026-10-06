@@ -1285,7 +1285,7 @@ void AttachRoom() {
   int baseroomp = app.Placed_baseroomp;
   int baseface = app.Placed_baseface;
   int attroomp = app.Placed_room.value_or(-1);
-  int attface = app.Placed_room_face;
+  int attface = *app.Placed_room_face;
   vector3 attcenter = app.Placed_room_origin;
   vector3 basecenter = app.Placed_room_attachpoint;
 
@@ -1642,7 +1642,7 @@ void HTextureApplyToRoomFace(int roomnum, int facenum, int tnum) {
 
 void ComputePlacedRoomMatrix() {
   room &placedroomp = Rooms[*app.Placed_room];
-  int placedface = app.Placed_room_face;
+  int placedface = *app.Placed_room_face;
   matrix srcmat;
   vector3 t;
 

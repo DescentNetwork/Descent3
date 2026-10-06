@@ -6596,7 +6596,7 @@ private slots:
     PlaceRoom(0, 0, 1, 0, std::nullopt);
 
     QCOMPARE(app.Placed_room.value_or(-1), 1);
-    QCOMPARE(app.Placed_room_face, 0);
+    QCOMPARE(app.Placed_room_face, std::optional<int>(0));
     QCOMPARE(app.Placed_baseroomp, 0);
     QCOMPARE(app.Placed_baseface, 0);
     QVERIFY(!app.Placed_door);
