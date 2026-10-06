@@ -1338,19 +1338,19 @@ void AttachRoom() {
     LinkRooms(baseroomp, baseface, slot, attface);
 
     // If there is a door, place it
-    if (app.Placed_door != -1) {
+    if (app.Placed_door) {
       matrix orient = ~app.Placed_room_rotmat;
       vector3 doorcenter = {0, 0, 0};
       vector3 room_center = ((doorcenter - attcenter) * app.Placed_room_rotmat) + basecenter;
 
       FreeRoom(app.Placed_room.value_or(-1));
 
-      ObjCreate(object_type::door, app.Placed_door, slot, room_center, &orient);
+      ObjCreate(object_type::door, *app.Placed_door, slot, room_center, &orient);
 
-      doorway *dp = DoorwayAdd(slot, app.Placed_door);
+      doorway *dp = DoorwayAdd(slot, *app.Placed_door);
       (void)dp;
 
-      app.Placed_door = -1;
+      app.Placed_door.reset();
     }
   }
 
@@ -1671,7 +1671,7 @@ void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face
   app.Placed_room_angle = 0;
   app.Placed_baseroomp = baseroom;
   app.Placed_baseface = baseface;
-  app.Placed_door = *placed_room_door;
+  app.Placed_door = placed_room_door;
 
   ComputeCenterPointOnFace(&app.Placed_room_attachpoint, baseroom, baseface);
   ComputeCenterPointOnFace(&app.Placed_room_origin, placed_room, placed_room_face);

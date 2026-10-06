@@ -5234,7 +5234,7 @@ private slots:
     app.Placed_room_origin = vector3{(float)150, (float)150, (float)0};
     app.Placed_room_attachpoint = vector3{(float)0, (float)0, (float)0};
     vm_MakeIdentity(&app.Placed_room_rotmat);
-    app.Placed_door = -1;
+    app.Placed_door.reset();
 
     AttachRoom();
 
@@ -5300,7 +5300,7 @@ private slots:
     app.Placed_room_origin = vector3{(float)5, (float)0, (float)-5};
     app.Placed_room_attachpoint = vector3{(float)5, (float)0, (float)-5};
     vm_MakeIdentity(&app.Placed_room_rotmat);
-    app.Placed_door = -1;
+    app.Placed_door.reset();
 
     AttachRoom();
 
@@ -6599,7 +6599,7 @@ private slots:
     QCOMPARE(app.Placed_room_face, 0);
     QCOMPARE(app.Placed_baseroomp, 0);
     QCOMPARE(app.Placed_baseface, 0);
-    QCOMPARE(app.Placed_door, -1);
+    QVERIFY(!app.Placed_door);
     QCOMPARE(app.Placed_room_angle, 0.0f);
 
     // app.Placed_room_orient.fvec should match base face normal
@@ -6687,7 +6687,7 @@ private slots:
     QCOMPARE(Rooms[*app.Placed_room].num_verts, 8);
     QCOMPARE(Rooms[*app.Placed_room].num_faces, 2);
     QCOMPARE(app.Placed_baseroomp, 1);
-    QCOMPARE(app.Placed_door, 0);
+    QCOMPARE(app.Placed_door, std::optional<uint32_t>(0));
     // Front face verts remap onto the shell (same positions).
     for (int i = 0; i < 4; ++i)
       QCOMPARE(Rooms[*app.Placed_room].faces[1].face_verts[i], i);
