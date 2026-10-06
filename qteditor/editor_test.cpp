@@ -2914,7 +2914,7 @@ private slots:
     QCOMPARE(app.Curvert.value_or(-1), 3);
     QCOMPARE(app.Markedroomp.value_or(-1), 0);
     QCOMPARE(app.Markedface.value_or(-1), 4);
-    QCOMPARE(app.Markededge, 5);
+    QCOMPARE(app.Markededge.value_or(-1), 5);
     QCOMPARE(app.Markedvert, 6);
     QCOMPARE(N_selected_rooms, 2);
     QCOMPARE(Selected_rooms[0], 0);

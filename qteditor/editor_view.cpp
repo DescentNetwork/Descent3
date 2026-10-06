@@ -837,12 +837,12 @@ void EditorView::renderOverlays() {
         glLineWidth(1.0f);
 
         // Marked edge in teal.
-        if (app.Markededge >= 0 && app.Markededge < nv) {
-          int next = (app.Markededge + 1) % nv;
+        if (app.Markededge.has_value() && app.Markededge.value_or(-1) < nv) {
+          int next = (app.Markededge.value_or(-1) + 1) % nv;
           glColor3fv(kWfMarkedEdgeColor);
           glLineWidth(1.0f);
           glBegin(GL_LINES);
-          glVertex2f(sx[app.Markededge], sy[app.Markededge]);
+          glVertex2f(sx[*app.Markededge], sy[*app.Markededge]);
           glVertex2f(sx[next], sy[next]);
           glEnd();
         }
