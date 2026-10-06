@@ -5252,7 +5252,7 @@ private slots:
 
     FreeRoom(newroom);
     FreeRoom(0);
-    app.Placed_room = -1;
+    app.Placed_room.reset();
   }
 
   void testAttachRoomMine() {
@@ -5320,7 +5320,7 @@ private slots:
     FreeRoom(newroom);
     FreeRoom(0);
     FreeRoom(1);
-    app.Placed_room = -1;
+    app.Placed_room.reset();
     app.Curroomp.reset();
     app.Markedroomp.reset();
   }
@@ -6595,7 +6595,7 @@ private slots:
 
     PlaceRoom(0, 0, 1, 0, std::nullopt);
 
-    QCOMPARE(app.Placed_room, 1);
+    QCOMPARE(app.Placed_room.value_or(-1), 1);
     QCOMPARE(app.Placed_room_face, 0);
     QCOMPARE(app.Placed_baseroomp, 0);
     QCOMPARE(app.Placed_baseface, 0);
@@ -6609,7 +6609,7 @@ private slots:
       QVERIFY(dist < 0.01f);
     }
 
-    app.Placed_room = -1;
+    app.Placed_room.reset();
     app.Placed_baseroomp = -1;
     FreeRoom(0);
     FreeRoom(1);
@@ -6674,32 +6674,32 @@ private slots:
     Doors[0] = door{};
     Doors[0].model_handle = 0;
 
-    app.Placed_room = -1;
+    app.Placed_room.reset();
     PlaceDoor(1, 0, 0);
 
     // The door room must occupy a real Rooms[] slot (ROOMNUM(rp) is a pointer
     // difference against Rooms.data()).  Rooms no longer keeps a separate
     // palette region: slots are allocated from the first unused hole, which is
     // 0 here (base occupies slot 1), and the high-water mark is undisturbed.
-    QCOMPARE(app.Placed_room, 0);
+    QCOMPARE(app.Placed_room.value_or(-1), 0);
     QCOMPARE(static_cast<int>(Rooms.size()), 2);
-    QVERIFY(Rooms[app.Placed_room].used);
-    QCOMPARE(Rooms[app.Placed_room].num_verts, 8);
-    QCOMPARE(Rooms[app.Placed_room].num_faces, 2);
+    QVERIFY(Rooms[*app.Placed_room].used);
+    QCOMPARE(Rooms[*app.Placed_room].num_verts, 8);
+    QCOMPARE(Rooms[*app.Placed_room].num_faces, 2);
     QCOMPARE(app.Placed_baseroomp, 1);
     QCOMPARE(app.Placed_door, 0);
     // Front face verts remap onto the shell (same positions).
     for (int i = 0; i < 4; ++i)
-      QCOMPARE(Rooms[app.Placed_room].faces[1].face_verts[i], i);
+      QCOMPARE(Rooms[*app.Placed_room].faces[1].face_verts[i], i);
 
-    FreeRoom(app.Placed_room);
+    FreeRoom(app.Placed_room.value_or(-1));
     FreeRoom(1);
     *po = poly_model{};
     if (Doors.is_used(0))
       Doors.release(0);
     Doors[0] = door{};
     RoomsReset();
-    app.Placed_room = -1;
+    app.Placed_room.reset();
     app.Placed_baseroomp = -1;
   }
 
@@ -6732,7 +6732,7 @@ private slots:
     QVERIFY(rmag > 0.9f && rmag < 1.1f);
     QVERIFY(umag > 0.9f && umag < 1.1f);
 
-    app.Placed_room = -1;
+    app.Placed_room.reset();
     FreeRoom(0);
   }
 

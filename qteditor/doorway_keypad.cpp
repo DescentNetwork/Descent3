@@ -223,7 +223,7 @@ void DoorwayKeypad::onPlaceDoor() {
 }
 
 void DoorwayKeypad::onAttachDoor() {
-  if (app.Placed_room == -1) {
+  if (!app.Placed_room) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No door placed. Use Place Door first.");
     return;
   }

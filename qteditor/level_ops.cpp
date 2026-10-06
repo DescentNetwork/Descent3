@@ -163,7 +163,7 @@ void CreateNewMine() {
   ClearRoomSelectedList();
 
   // Clear the placed room & group.
-  app.Placed_room = -1;
+  app.Placed_room.reset();
   app.Placed_group = nullptr;
 
   // Reset triggers.

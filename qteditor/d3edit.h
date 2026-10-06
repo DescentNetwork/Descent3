@@ -173,7 +173,7 @@ struct d3edit_state
 
   // Placed room info
 
-  int Placed_room = -1;
+  std::optional<int> Placed_room;
   group* Placed_group = nullptr;
 
   int Placed_room_face = -1;
