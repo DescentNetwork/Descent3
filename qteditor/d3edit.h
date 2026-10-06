@@ -169,7 +169,7 @@ struct d3edit_state
   std::optional<int> Markedroomp;
   std::optional<int> Markedface;
   std::optional<int> Markededge;
-  int Markedvert = -1;
+  std::optional<int> Markedvert;
 
   // Placed room info
 

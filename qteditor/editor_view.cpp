@@ -848,8 +848,8 @@ void EditorView::renderOverlays() {
         }
 
         // Marked vertex cross in teal.
-        if (app.Markedvert >= 0 && app.Markedvert < fp->num_verts) {
-          int vi = fp->face_verts[app.Markedvert];
+        if (app.Markedvert.has_value() && app.Markedvert.value_or(-1) < fp->num_verts) {
+          int vi = fp->face_verts[*app.Markedvert];
           float vx, vy;
           if (projectVertex(Rooms[*app.Markedroomp].verts[vi], &vx, &vy))
             drawVertCross(vx, vy, kWfMarkedEdgeColor);

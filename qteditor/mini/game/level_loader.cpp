@@ -993,7 +993,7 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
     ifile >> sel;
     app.Markededge = load_optional(sel);
     ifile >> sel;
-    app.Markedvert = sel;
+    app.Markedvert = load_optional(sel);
   }
 
   int32_t nsr = 0;
@@ -1062,7 +1062,7 @@ static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
   ofile << static_cast<int16_t>(app.Markedroomp.has_value() ? app.Markedroomp.value_or(-1) : -1);
   ofile << static_cast<int16_t>(app.Markedface.value_or(-1));
   ofile << static_cast<int16_t>(app.Markededge.value_or(-1));
-  ofile << static_cast<int16_t>(app.Markedvert);
+  ofile << static_cast<int16_t>(app.Markedvert.value_or(-1));
 
   ofile << static_cast<int32_t>(N_selected_rooms);
   for (int i = 0; i < N_selected_rooms; i++)
