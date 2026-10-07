@@ -1124,12 +1124,11 @@ static void LL_WriteInfo(posix_ostream &ofile) {
 // ---------------------------------------------------------------------------
 // Game paths (PATH) chunk: the level's named navigation-path table.
 static void LL_ReadGamePathsChunk(posix_istream &ifile, uint32_t version) {
-  int16_t np = 0;
+  uint16_t np = 0;
   ifile >> np;
-  Num_game_paths = np;
 
-  GamePaths.resize(Num_game_paths);
-  for (int i = 0; i < Num_game_paths; i++) {
+  GamePaths.resize(np);
+  for (int i = 0; i < np; i++) {
     game_path &p = GamePaths[i];
     // Value-initialise (NOT memset: game_path contains std::string members).
     p = game_path{};
@@ -1160,10 +1159,7 @@ static void LL_ReadGamePathsChunk(posix_istream &ifile, uint32_t version) {
 }
 
 static void LL_WriteGamePathsChunk(posix_ostream &ofile) {
-  int npaths = 0;
-  for (size_t i = 0; i < GamePaths.size(); i++)
-    if (GamePaths.is_used(i))
-      npaths++;
+  const size_t npaths = GamePaths.num_used();
 
   int start = LL_StartChunk(ofile, "PATH");
   ofile << (int16_t)npaths;
@@ -1960,7 +1956,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
           uint32_t handle = 0;
           ifile >> handle;
 
-           int objnum = handle & HANDLE_OBJNUM_MASK;
+          int32_t objnum = handle & HANDLE_OBJNUM_MASK;
           if (objnum < 0 || objnum >= MAX_OBJECTS)
             continue;
           object *obj = &Objects[objnum];

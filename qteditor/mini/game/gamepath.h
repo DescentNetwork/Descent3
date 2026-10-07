@@ -99,7 +99,6 @@ public:
 };
 
 extern d3::slotvec_t<game_path> GamePaths;
-extern int Num_game_paths;
 
 void InitGamePaths();
 

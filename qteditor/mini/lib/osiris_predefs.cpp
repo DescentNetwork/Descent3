@@ -3699,21 +3699,17 @@ int osipf_GetLanguageSetting(void) {
 //	for PV_ALL components, path_id and node_id MUST be valid.
 void osipf_PathValue(int path_id, int node_id, char op, int changes, void *ptr) {
   if (changes & PV_I_NUMPATHS) {
-    *((int *)ptr) = Num_game_paths;
+    *((int *)ptr) = static_cast<int>(GamePaths.num_used());
     return;
   }
 
-  if (path_id < 0 || path_id >= Num_game_paths) {
+  if (path_id < 0 || static_cast<size_t>(path_id) >= GamePaths.size() || GamePaths.is_unused(static_cast<size_t>(path_id))) {
     LOG_FATAL("Invalid Path");
     Q_ASSERT(false);
     return;
   }
 
   game_path *cpath = &GamePaths[path_id];
-
-  Q_ASSERT(GamePaths.is_used(path_id));
-  if (!GamePaths.is_used(path_id))
-    return;
 
   if (op == VF_GET) {
     if (changes & PV_ALL) {

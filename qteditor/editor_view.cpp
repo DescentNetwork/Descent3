@@ -1233,7 +1233,7 @@ void EditorView::renderPaths() {
   const float h = height() > 0 ? static_cast<float>(height()) : 1.0f;
   const float focal = (h * 0.5f) / std::tan(kFovY * 0.5f);
 
-  for (int i = 0; i < Num_game_paths; i++, current_path_index = NextPathIndex(current_path_index)) {
+  for (size_t i = 0; i < GamePaths.num_used(); i++, current_path_index = NextPathIndex(current_path_index)) {
     if (current_path_index < 0)
       break;
 

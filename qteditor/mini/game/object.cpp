@@ -73,13 +73,13 @@ static const int MINI_POLY_MODELS = 500;
 // ---------------------------------------------------------------------------
 
 std::array<object, MAX_OBJECTS> Objects;
-int Highest_object_index = -1;
+int32_t Highest_object_index = -1;
 object *Viewer_object = &Objects[0];
 object *Player_object = &Objects[0];
 
 
-int free_obj_list[MAX_OBJECTS];
-int Highest_ever_object_index = -1;
+uint32_t free_obj_list[MAX_OBJECTS];
+int32_t Highest_ever_object_index = -1;
 
 // Position history (declared extern in object.h).  Used for runtime motion
 // blur interpolation; the editor only maintains the free-slot bookkeeping.
@@ -138,7 +138,7 @@ void ResetObjectList() {
 void ResetFreeObjects() {
   Highest_object_index = -1;
 
-  int i;
+  uint32_t i;
   for (i = Num_objects = MAX_OBJECTS; --i >= 0;)
     if (Objects[i].type == object_type::none)
       free_obj_list[--Num_objects] = i;
@@ -216,7 +216,7 @@ index_t ObjAllocate(void) {
   if (Num_objects >= MAX_OBJECTS)
     return std::nullopt;
 
-  int objnum = free_obj_list[Num_objects++];
+  uint32_t objnum = free_obj_list[Num_objects++];
 
   if (objnum > Highest_object_index) {
     Highest_object_index = objnum;

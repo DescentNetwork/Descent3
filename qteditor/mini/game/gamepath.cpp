@@ -27,7 +27,6 @@ void FreeGamePath(uint32_t n) {
 
   GamePaths[n].num_nodes = 0;
   GamePaths.release(n);
-  Num_game_paths--;
 }
 
 // Clears every path slot.  Ported from the engine's InitGamePaths: a fresh
@@ -48,8 +47,6 @@ void InitGamePaths() {
   for (size_t i = 0; i < GamePaths.size(); i++) {
     GamePaths[i].num_nodes = 0;
   }
-
-  Num_game_paths = 0;
 }
 
 
@@ -85,14 +82,12 @@ index_t AllocGamePath() {
       GamePaths[i].num_nodes = 0;
       GamePaths[i].flags = {};
       GamePaths[i].pathnodes.clear();
-      Num_game_paths++;
       return static_cast<uint32_t>(i);
     }
   }
   // No free slot anywhere: grow the table by one at the frontier.
   const size_t i = GamePaths.add_slot(game_path{});
   GamePaths.acquire(i);
-  Num_game_paths++;
   return static_cast<uint32_t>(i);
 }
 

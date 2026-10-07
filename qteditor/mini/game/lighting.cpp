@@ -60,7 +60,7 @@ int DYNAMIC_LIGHTMAP_MEMORY = 1000000;
 #define MAX_DYNAMIC_LIGHTMAPS 2000
 
 struct volume_object {
-  int objnum;
+  uint32_t objnum;
   int handle;
 };
 
@@ -81,11 +81,11 @@ static int Specular_maps[NUM_DYNAMIC_CLASSES];
 
 static std::vector<uint16_t> Edges_to_blend;
 
-static int Num_dynamic_lightmaps = 0;
-static int Cur_dynamic_mem_ptr = 0;
+static uint32_t Num_dynamic_lightmaps = 0;
+static uint32_t Cur_dynamic_mem_ptr = 0;
 
-static std::vector<int> Destroyed_light_rooms_this_frame;
-static std::vector<int> Destroyed_light_faces_this_frame;
+static std::vector<uint32_t> Destroyed_light_rooms_this_frame;
+static std::vector<uint32_t> Destroyed_light_faces_this_frame;
 
 static void FreeLighting();
 static std::optional<uint16_t> GetFreeDynamicLightmap(int w, int h);
@@ -190,7 +190,7 @@ std::optional<uint16_t> GetFreeDynamicLightmap(int w, int h) {
     return std::nullopt;
   }
 
-  int n = Num_dynamic_lightmaps++;
+  uint32_t n = Num_dynamic_lightmaps++;
   Q_ASSERT(Dynamic_lightmaps[n].used == 0);
 
   Dynamic_lightmaps[n].used = 1;
@@ -918,7 +918,7 @@ void ApplyVolumeLightToObject(vector3 *pos, object *obj, float light_dist, float
   if (!obj->effect_info->dynamic_this_frame) {
     volume_object vol_obj;
     vol_obj.handle = obj->handle;
-    vol_obj.objnum = static_cast<int>(obj - Objects.data());
+    vol_obj.objnum = static_cast<uint32_t>(obj - Objects.data());
     Dynamic_volume_object_list.push_back(vol_obj);
     obj->effect_info->spec_mag = -100000;
 
@@ -2152,8 +2152,8 @@ void AddToDestroyableLightList(int roomnum, int facenum) {
 // Goes through our destroyable light list and actually kills all the lights
 void DoDestroyedLightsForFrame() {
   for (size_t i = 0; i < Destroyed_light_rooms_this_frame.size(); i++) {
-    int roomnum = Destroyed_light_rooms_this_frame[i];
-    int facenum = Destroyed_light_faces_this_frame[i];
+    uint32_t roomnum = Destroyed_light_rooms_this_frame[i];
+    uint32_t facenum = Destroyed_light_faces_this_frame[i];
     DestroyLight(roomnum, facenum);
   }
 

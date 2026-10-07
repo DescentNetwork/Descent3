@@ -679,7 +679,7 @@ extern const std::array<std::string, MAX_OBJECT_TYPES> Object_type_names;
  */
 
 extern std::array<object, MAX_OBJECTS> Objects;
-extern int Highest_object_index; // highest objnum
+extern int32_t Highest_object_index; // highest objnum
 
 extern object *Player_object; // the object that is the player
 extern object *Viewer_object; // which object we are seeing from

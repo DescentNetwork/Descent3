@@ -84,6 +84,10 @@ namespace d3
     // Number of slots whose reference count is zero.
     size_type num_empty(void) const { return m_num_empty; }
 
+    // Number of slots whose reference count is non-zero (i.e. number of used
+    // slots).  This is the table-backed replacement for a separate Num_* counter.
+    size_type num_used(void) const { return this->size() - m_num_empty; }
+
     // returns if there are no empty spaces
     bool is_full(void) const  { return !m_num_empty; }
 

@@ -3178,12 +3178,12 @@ private slots:
     // A real reset (InitGamePaths): the loader must not leak a previous
     // level's path table.
     InitGamePaths();
-    QCOMPARE(Num_game_paths, 0);
+    QCOMPARE(GamePaths.num_empty(), GamePaths.size());
 
     QVERIFY2(LoadLevel(lvl, nullptr), "LoadLevel(level1.d3l) failed");
 
-    QVERIFY2(Num_game_paths > 0, "level1.d3l should carry a game-path table");
-    QVERIFY(Num_game_paths <= MAX_GAME_PATHS);
+    QVERIFY2(GamePaths.num_used() > 0, "level1.d3l should carry a game-path table");
+    QVERIFY(GamePaths.num_used() <= MAX_GAME_PATHS);
 
     const game_path &first = GamePaths[0];
     QVERIFY(GamePaths.is_used(0));
@@ -3192,7 +3192,9 @@ private slots:
     QCOMPARE(int(first.pathnodes.size()), first.num_nodes);
     QCOMPARE(reinterpret_cast<const uint8_t &>(first.flags), uint8_t(0));
 
-    for (int i = 0; i < Num_game_paths; i++) {
+    for (size_t i = 0; i < GamePaths.size(); i++) {
+      if (!GamePaths.is_used(i))
+        continue;
       const game_path &p = GamePaths[i];
       QVERIFY(GamePaths.is_used(i));
       QVERIFY(p.num_nodes >= 0 && p.num_nodes <= MAX_NODES_PER_PATH);
@@ -3226,7 +3228,7 @@ private slots:
     Triggers.clear();
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
-    QVERIFY2(Num_game_paths > 0, "reloaded game-path table is empty");
+    QVERIFY2(GamePaths.num_used() > 0, "reloaded game-path table is empty");
     QCOMPARE(GamePaths[0].name, std::string("PlayerEndPath"));
     QCOMPARE(GamePaths[0].num_nodes, first.num_nodes);
 
@@ -4120,7 +4122,7 @@ private slots:
       {
         QList<QWidget *> ws;
         collectInteractive(d.handle, &ws);
-        const bool hasPaths = Num_game_paths > 0 && levelLoaded;
+        const bool hasPaths = GamePaths.num_used() > 0 && levelLoaded;
         for (QWidget *w : ws) {
           if (w->objectName().startsWith("IDC_PATHPAD") || w->objectName().startsWith("IDC_DELETE_PATH"))
             QVERIFY2(
@@ -7648,15 +7650,15 @@ private slots:
   }
 
   void testAllocFreeGamePath() {
-    int saved_num = Num_game_paths;
+    const size_t saved_num = GamePaths.num_used();
     const uint32_t idx = *AllocGamePath();
     QVERIFY(GamePaths.is_used(idx));
     QVERIFY(GamePaths[idx].num_nodes == 0);
-    QCOMPARE(Num_game_paths, saved_num + 1);
+    QCOMPARE(GamePaths.num_used(), saved_num + 1);
 
     FreeGamePath(idx);
     QVERIFY(GamePaths.is_unused(idx));
-    QCOMPARE(Num_game_paths, saved_num);
+    QCOMPARE(GamePaths.num_used(), saved_num);
   }
 
   // Lightmap handles are uint16_t and must cover the full 0..MAX_LIGHTMAPS-1
@@ -7700,7 +7702,6 @@ private slots:
   }
 
   void testInsertAndDeleteNode() {
-    int saved_num = Num_game_paths;
     const uint32_t idx = *AllocGamePath();
 
     const index_t s0 = app.current_path;

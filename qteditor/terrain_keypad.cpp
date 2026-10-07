@@ -493,9 +493,12 @@ void TerrainKeypad::onDropTerrain() {
     }
   }
 
-  for (int p = 0; p < Num_game_paths; p++)
+  for (size_t p = 0; p < GamePaths.size(); p++) {
+    if (!GamePaths.is_used(p))
+      continue;
     for (int n = 0; n < GamePaths[p].num_nodes; n++)
       GamePaths[p].pathnodes[n].pos.y() += delta_y;
+  }
 
   app.World_changed = true;
 }
