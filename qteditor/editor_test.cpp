@@ -5278,8 +5278,8 @@ private slots:
     LinkRooms(0, 0, 1, 0);
     QCOMPARE(r0->num_portals, 1);
     QCOMPARE(r1->num_portals, 1);
-    QCOMPARE(r0->portals[0].connected_room, 1);
-    QCOMPARE(r1->portals[0].connected_room, 0);
+    QCOMPARE(r0->portals[0].connected_room, to_roomnum(1));
+    QCOMPARE(r1->portals[0].connected_room, to_roomnum(0));
     QCOMPARE(r0->faces[0].portal_num, 0);
     QCOMPARE(r1->faces[0].portal_num, 0);
 
@@ -7638,8 +7638,8 @@ private slots:
     if (portalFace >= 0) {
       rp->faces[portalFace].portal_num = 0;
       rp->portals[0].flags = {};
-      rp->portals[0].connected_room = (int16_t)otherIdx;
-      rp->portals[0].connected_portal = 0;
+      rp->portals[0].connected_room = index_t{static_cast<uint32_t>(otherIdx)};
+      rp->portals[0].connected_portal = index_t{static_cast<uint32_t>(0)};
       rp->portals[0].portal_face = (int16_t)portalFace;
     }
     return portalFace >= 0 ? portalFace : -1;

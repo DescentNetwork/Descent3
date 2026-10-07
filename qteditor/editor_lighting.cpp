@@ -1032,7 +1032,8 @@ void DoRadiosityForRooms() {
           Light_surfaces[surface_index].flags.touches_terrain = 1;
 
         for (int k = 0; k < Rooms[i].num_portals; k++) {
-          if (Rooms[i].portals[k].connected_room == -1 || (Rooms[Rooms[i].portals[k].connected_room].flags.external))
+          const index_t connected_room = Rooms[i].portals[k].connected_room;
+          if (!connected_room || (Rooms[*connected_room].flags.external))
             Light_surfaces[surface_index].flags.touches_terrain = 1;
         }
 

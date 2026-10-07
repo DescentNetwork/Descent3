@@ -213,18 +213,20 @@ bool BOA_PassablePortal(int room, int portal_index, bool f_for_sound, bool f_mak
     tr = room - ((int)Rooms.size() - 1) - 1;
 
     // Inside room/portal
-    int temp_room = BOA_connect[tr][portal_index].roomnum;
-    int temp_portal_index = BOA_connect[tr][portal_index].portal;
+    const index_t temp_room = BOA_connect[tr][portal_index].roomnum;
+    const index_t temp_portal_index = BOA_connect[tr][portal_index].portal;
+    if (!temp_room || !temp_portal_index)
+      return false;
 
     // External room/portal
-    room = Rooms[temp_room].portals[temp_portal_index].connected_room;
-    portal_index = Rooms[temp_room].portals[temp_portal_index].connected_portal;
+    room = index_to_int(Rooms[*temp_room].portals[*temp_portal_index].connected_room);
+    portal_index = index_to_int(Rooms[*temp_room].portals[*temp_portal_index].connected_portal);
   }
 
   Q_ASSERT(room >= 0 && room < Rooms.size() && Rooms[room].used);
   face *fp = &Rooms[room].faces[Rooms[room].portals[portal_index].portal_face];
 
-  if (Rooms[room].portals[portal_index].connected_room < 0)
+  if (!Rooms[room].portals[portal_index].connected_room)
     return false;
 
   if (!BOA_f_making_boa) {
@@ -339,10 +341,11 @@ index_t BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, 
         continue;
 
       if (end_room < Rooms.size()) {
-        if (Rooms[start_room].portals[i].connected_room == end_room)
+        if (Rooms[start_room].portals[i].connected_room == to_roomnum(end_room))
           break;
       } else {
-        if (Rooms[Rooms[start_room].portals[i].connected_room].flags.external) {
+        const index_t connected_room = Rooms[start_room].portals[i].connected_room;
+        if (connected_room && Rooms[*connected_room].flags.external) {
           int cell = GetTerrainCellFromPos(Rooms[start_room].portals[i].path_pnt).value_or(-1);
           Q_ASSERT(cell != -1); // DAJ -1FIX
 
@@ -358,10 +361,12 @@ index_t BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, 
     for (i = 0; i < BOA_num_connect[start_room - ((int)Rooms.size() - 1) - 1]; i++) {
       Q_ASSERT(end_room < Rooms.size());
 
-      if (BOA_connect[start_room - ((int)Rooms.size() - 1) - 1][i].roomnum == end_room) {
-        int next_portal = BOA_connect[start_room - ((int)Rooms.size() - 1) - 1][i].portal;
-        int external_room = Rooms[end_room].portals[next_portal].connected_room;
-        int external_portal = Rooms[end_room].portals[next_portal].connected_portal;
+      if (BOA_connect[start_room - ((int)Rooms.size() - 1) - 1][i].roomnum == to_roomnum(end_room)) {
+        const index_t next_portal = BOA_connect[start_room - ((int)Rooms.size() - 1) - 1][i].portal;
+        if (!next_portal)
+          continue;
+        const int external_room = index_to_int(Rooms[end_room].portals[*next_portal].connected_room);
+        const int external_portal = index_to_int(Rooms[end_room].portals[*next_portal].connected_portal);
 
         if (BOA_PassablePortal(external_room, external_portal, f_for_sound, f_making_robot_path_invalid_list)) {
           break;
@@ -599,8 +604,9 @@ void add_mine_room(int room, int mine, char *checked) {
   checked[room] = 1;
 
   for (i = 0; i < Rooms[room].num_portals; i++) {
-    if (Rooms[room].portals[i].connected_room >= 0 && !checked[Rooms[room].portals[i].connected_room]) {
-      add_mine_room(Rooms[room].portals[i].connected_room, mine, checked);
+    const index_t connected_room = Rooms[room].portals[i].connected_room;
+    if (connected_room && !checked[*connected_room]) {
+      add_mine_room(*connected_room, mine, checked);
     }
   }
 }
@@ -775,7 +781,8 @@ void compute_terrain_region_info() {
         // Rooms[i].portals[j].cportal;
         //				}
 
-        if (!Rooms[Rooms[i].portals[j].connected_room].flags.external) {
+        const index_t connected_room = Rooms[i].portals[j].connected_room;
+        if (connected_room && !Rooms[*connected_room].flags.external) {
           if (BOA_PassablePortal(i, j)) {
             BOA_connect[region][BOA_num_connect[region]].roomnum = Rooms[i].portals[j].connected_room;
             BOA_connect[region][BOA_num_connect[region]].portal = Rooms[i].portals[j].connected_portal;
@@ -830,10 +837,12 @@ void compute_sound_dist_info() {
     int k;
 
     for (j = 0; j < BOA_num_connect[i]; j++) {
-      int croom = BOA_connect[i][j].roomnum;
+      const index_t croom = BOA_connect[i][j].roomnum;
+      if (!croom)
+        continue;
 
       for (k = 0; k < Rooms.size() + MAX_BOA_TERRAIN_REGIONS; k++) {
-        if (BOA_Array[croom][k] & BOA_SOUND_PROP) {
+        if (BOA_Array[*croom][k] & BOA_SOUND_PROP) {
           BOA_Array[((int)Rooms.size() - 1) + i + 1][k] |= BOA_SOUND_PROP;
           BOA_Array[k][((int)Rooms.size() - 1) + i + 1] |= BOA_SOUND_PROP;
         }
@@ -965,9 +974,9 @@ void FindPath(int i, int j) {
           continue;
 
         if (f_room)
-          next_room = Rooms[cur_node->roomnum].portals[counter].connected_room;
+          next_room = index_to_int(Rooms[cur_node->roomnum].portals[counter].connected_room);
         else
-          next_room = BOA_connect[t_index][counter].roomnum;
+          next_room = index_to_int(BOA_connect[t_index][counter].roomnum);
 
         if (next_room < 0 || next_room == BOA_NO_PATH)
           continue;
@@ -1026,9 +1035,9 @@ void FindPath(int i, int j) {
           continue;
 
         if (f_room)
-          next_room = Rooms[cur_node->roomnum].portals[counter].connected_room;
+          next_room = index_to_int(Rooms[cur_node->roomnum].portals[counter].connected_room);
         else
-          next_room = BOA_connect[t_index][counter].roomnum;
+          next_room = index_to_int(BOA_connect[t_index][counter].roomnum);
 
         if (next_room < 0 || next_room == BOA_NO_PATH)
           continue;
@@ -1601,21 +1610,21 @@ void MakeBOAVisTable(bool from_lighting) {
     // Make all the rooms connecting to this room automatically visible
     // Make all the rooms connecting to this room automatically visible
     for (t = 0; t < rp->num_portals; t++) {
-      int croom = rp->portals[t].connected_room;
+      const index_t croom = rp->portals[t].connected_room;
 
-      if (croom >= 0) {
-        BOA_Array[i][croom] |= BOAF_VIS;
-        already_checked[croom] = 1;
+      if (croom) {
+        BOA_Array[i][*croom] |= BOAF_VIS;
+        already_checked[*croom] = 1;
 
         // If this is an external room, mark the terrain as visible
-        if (Rooms[croom].flags.external) {
+        if (Rooms[*croom].flags.external) {
           int cp;
           int xxx;
 
           BOA_Array[i][((int)Rooms.size() - 1) + 1] |= BOAF_VIS;
 
-          for (xxx = 0; xxx < Rooms[croom].num_portals; xxx++) {
-            int cell = GetTerrainCellFromPos(Rooms[croom].portals[xxx].path_pnt).value_or(-1);
+          for (xxx = 0; xxx < Rooms[*croom].num_portals; xxx++) {
+            int cell = GetTerrainCellFromPos(Rooms[*croom].portals[xxx].path_pnt).value_or(-1);
             Q_ASSERT(cell != -1); // DAJ -1FIX
             int region = Terrain_seg[cell].flags.region;
 
@@ -1635,12 +1644,14 @@ void MakeBOAVisTable(bool from_lighting) {
 
     // Now push all of the connecting rooms portals onto the stack
     for (t = 0; t < rp->num_portals; t++) {
-      int roomnum = rp->portals[t].connected_room;
-      for (j = 0; j < Rooms[roomnum].num_portals; j++) {
-        int croom = Rooms[roomnum].portals[j].connected_room;
+      const index_t roomnum = rp->portals[t].connected_room;
+      if (!roomnum)
+        continue;
+      for (j = 0; j < Rooms[*roomnum].num_portals; j++) {
+        const index_t croom = Rooms[*roomnum].portals[j].connected_room;
 
-        if (croom >= 0 && !already_checked[croom]) {
-          vis_stack[stack_count] = croom;
+        if (croom && !already_checked[*croom]) {
+          vis_stack[stack_count] = *croom;
           stack_count++;
           Q_ASSERT(stack_count < MAX_ROOMS * 10);
         }
@@ -1663,9 +1674,9 @@ void MakeBOAVisTable(bool from_lighting) {
           // if this portal can be seen, add all its portals to the stack
           // and then set this room to be visible
           for (int tk = 0; tk < Rooms[check_room].num_portals; tk++) {
-            int croom = Rooms[check_room].portals[tk].connected_room;
-            if (croom >= 0) {
-              vis_stack[stack_count] = croom;
+            const index_t croom = Rooms[check_room].portals[tk].connected_room;
+            if (croom) {
+              vis_stack[stack_count] = *croom;
               stack_count++;
               Q_ASSERT(stack_count < MAX_ROOMS * 10);
             }
@@ -1809,9 +1820,9 @@ void MakeBOAVisTable(bool from_lighting) {
                     // if this portal can be seen, add all its portals to the stack
                     // and then set this room to be visible
                     for (int k = 0; k < Rooms[check_room].num_portals; k++) {
-                      int croom = Rooms[check_room].portals[k].connected_room;
-                      if (croom >= 0) {
-                        vis_stack[stack_count] = croom;
+                      const index_t croom = Rooms[check_room].portals[k].connected_room;
+                      if (croom) {
+                        vis_stack[stack_count] = *croom;
                         stack_count++;
                         Q_ASSERT(stack_count < MAX_ROOMS * 10);
                       }

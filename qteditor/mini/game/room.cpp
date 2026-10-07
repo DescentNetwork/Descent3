@@ -1444,14 +1444,8 @@ byte_ostream& operator<<(byte_ostream& output, const face& data) {
 byte_istream& operator>>(byte_istream& input, portal& data) {
   input >> reinterpret_cast<uint32_t &>(data.flags);
   input >> data.portal_face;
-  // croom/cportal are stored as int32 on disk (matching the engine writer);
-  // the struct holds them as int16.
-  int32_t room = 0;
-  input >> room;
-  data.connected_room = static_cast<int16_t>(room);
-  int32_t portal = 0;
-  input >> portal;
-  data.connected_portal = static_cast<int16_t>(portal);
+  input >> data.connected_room;
+  input >> data.connected_portal;
   input >> data.bnode_index;
   input >> data.path_pnt;
   return input >> data.combine_master;
@@ -1459,7 +1453,7 @@ byte_istream& operator>>(byte_istream& input, portal& data) {
 
 byte_ostream& operator<<(byte_ostream& output, const portal& data) {
   output << reinterpret_cast<const uint32_t &>(data.flags) << data.portal_face;
-  output << static_cast<int32_t>(data.connected_room) << static_cast<int32_t>(data.connected_portal);
+  output << data.connected_room << data.connected_portal;
   output << data.bnode_index << data.path_pnt;
   return output << data.combine_master;
 }

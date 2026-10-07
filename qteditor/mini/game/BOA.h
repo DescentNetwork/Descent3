@@ -239,8 +239,8 @@ public:
 #define BOA_TOO_SMALL_FOR_ROBOT(a, b) ((BOA_Array[a][b] & BOAF_TOO_SMALL_FOR_ROBOT) != 0)
 
 struct connect_data {
-  int roomnum;
-  int portal;
+  index_t roomnum;
+  index_t portal;
 };
 
 extern int BOA_num_mines;

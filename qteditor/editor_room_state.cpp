@@ -152,8 +152,9 @@ int SelectConnectedRooms(int roomnum) {
   app.State_changed = true;
 
   for (int s = 0; s < Rooms[roomnum].num_portals; s++) {
-    if (Rooms[roomnum].portals[s].connected_room != -1)
-      count += SelectConnectedRooms(Rooms[roomnum].portals[s].connected_room);
+    const index_t connected_room = Rooms[roomnum].portals[s].connected_room;
+    if (connected_room)
+      count += SelectConnectedRooms(*connected_room);
   }
   return count;
 }

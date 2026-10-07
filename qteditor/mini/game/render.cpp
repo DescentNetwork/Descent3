@@ -813,7 +813,8 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
   // Check all the portals for this room
   for (t = 0; t < rp->num_portals; t++) {
     portal *pp = &rp->portals[t];
-    int croom = pp->connected_room;
+    Q_ASSERT(pp->connected_room);
+    int croom = index_to_int(pp->connected_room);
     Q_ASSERT(croom >= 0);
 
     // If we are an external room portalizing into another external room, then skip!
@@ -1010,7 +1011,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
         }
         // If this room is fogged, see if this portal is closest
         if (Rooms[croom].flags.fog) {
-          CheckFogPortalExtents(croom, pp->connected_portal);
+          CheckFogPortalExtents(croom, index_to_int(pp->connected_portal));
         }
         // Combine the two windows
         new_wnd.left = std::max(wnd->left, new_wnd.left);
@@ -2648,7 +2649,8 @@ void BuildMirroredRoomListSub(int start_room_num, clip_wnd *wnd) {
   // Check all the portals for this room
   for (t = 0; t < rp->num_portals; t++) {
     portal *pp = &rp->portals[t];
-    int croom = pp->connected_room;
+    Q_ASSERT(pp->connected_room);
+    int croom = index_to_int(pp->connected_room);
     Q_ASSERT(croom >= 0);
     // If we are an external room portalizing into another external room, then skip!
     if ((rp->flags.external) && (Rooms[croom].flags.external))

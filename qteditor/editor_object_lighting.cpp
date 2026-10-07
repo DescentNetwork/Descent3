@@ -359,8 +359,8 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
               Light_surfaces[surface_index].flags.touches_terrain = 1;
 
             for (int k = 0; k < Rooms[roomnum].num_portals; k++) {
-              if (Rooms[roomnum].portals[k].connected_room == -1 ||
-                  Rooms[Rooms[roomnum].portals[k].connected_room].flags.external)
+              const index_t connected_room = Rooms[roomnum].portals[k].connected_room;
+              if (!connected_room || Rooms[*connected_room].flags.external)
                 Light_surfaces[surface_index].flags.touches_terrain = 1;
             }
           }

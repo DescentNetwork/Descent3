@@ -2008,7 +2008,7 @@ int fvi_QuickDistFaceList(int init_room_index, vector3 &pos, float rad, optref<f
 
           portal_num = cur_room->faces[i].portal_num;
           if (portal_num >= 0) {
-            connect_room = cur_room->portals[portal_num].connected_room;
+            connect_room = index_to_int(cur_room->portals[portal_num].connected_room);
 
             // If the conect_room is not a terrain cell and we still have a slot in the next room list...
             if (connect_room >= 0 && highest_next_room_index + 1 < MAX_QUICK_ROOMS) {
@@ -2267,7 +2267,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
           continue;
 
         portal_num = cur_room->faces[i].portal_num;
-        connect_room = cur_room->portals[portal_num].connected_room;
+        connect_room = index_to_int(cur_room->portals[portal_num].connected_room);
 
         // If the conect_room is not a terrain cell and we still have a slot in the next room list...
         if (connect_room >= 0 && highest_next_room_index + 1 < MAX_QUICK_ROOMS) {
@@ -4763,9 +4763,9 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
   if (!(fvi_query_ptr->flags.solid_portals)) {
     // Accounts for doors that leave a
     for (i = 0; i < cur_room->num_portals; i++) {
-      int c_room = cur_room->portals[i].connected_room;
+      const index_t c_room = cur_room->portals[i].connected_room;
 
-      if ((c_room > 0) && Rooms[c_room].flags.door) {
+      if (c_room && (*c_room > 0) && Rooms[*c_room].flags.door) {
         bool f_add_next_portal = true;
         for (next_portal_index = 0; next_portal_index < num_next_portals; next_portal_index++) {
           if (next_portals[next_portal_index] == i) {
@@ -4786,7 +4786,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
       int connect_room;
 
       portal_num = next_portals[next_portal_index];
-      connect_room = cur_room->portals[portal_num].connected_room;
+      connect_room = index_to_int(cur_room->portals[portal_num].connected_room);
 
       if (!Rooms[connect_room].flags.external) {
         if ((fvi_visit_list[connect_room >> 3] & (0x01 << ((connect_room) % 8))) == 0) {
@@ -4797,7 +4797,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
                   room_index,
                   cur_room->portals[portal_num].cportal);
           */
-          fvi_room(connect_room, cur_room->portals[portal_num].connected_portal);
+          fvi_room(connect_room, index_to_int(cur_room->portals[portal_num].connected_portal));
         }
       } else if (f_check_terrain) {
         fvi_info hit_data_terrain = *fvi_hit_data_ptr;

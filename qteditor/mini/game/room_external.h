@@ -107,6 +107,7 @@
 #include "vecmat_external.h"
 #include "bnode.h"
 #include "doorway.h"
+#include "utils.h"
 
 // Sizes for some global arrays
 #define MAX_ROOMS 400 // max number of rooms in the world
@@ -210,8 +211,8 @@ static_assert(sizeof(portal_flags_t) == sizeof(uint32_t));
 struct portal {
   portal_flags_t flags;      // flags for this portal
   int16_t portal_face; // the face for this portal
-  int16_t connected_room;       // the room this portal connects to
-  int16_t connected_portal;     // the portal in croom this portal connects to
+  index_t connected_room;       // the room this portal connects to
+  index_t connected_portal;     // the portal in croom this portal connects to
   int16_t bnode_index;
   int combine_master; // For rendering combined portals
   vector3 path_pnt;    // Point used by the path system
