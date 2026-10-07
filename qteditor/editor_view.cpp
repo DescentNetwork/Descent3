@@ -1650,16 +1650,16 @@ void EditorView::mousePressEvent(QMouseEvent *event) {
 
     updateCamera();
     PickResult pick = pickAt(event->pos().x(), event->pos().y());
-    if (pick.objectIndex >= 0) {
+    if (pick.objectIndex) {
       app.Cur_object_index = pick.objectIndex;
-      emit objectSelected(pick.objectIndex);
+      emit objectSelected(static_cast<int>(*pick.objectIndex));
       ObjMoveManager.Start(width(), height(), &m_eye, &m_orient, event->pos().x(), event->pos().y());
     }
   } else if (event->button() == Qt::RightButton) {
     updateCamera();
     PickResult pick = pickAt(event->pos().x(), event->pos().y());
-    if (pick.objectIndex >= 0) {
-      emit objectContextMenuRequested(event->globalPos(), pick.objectIndex);
+    if (pick.objectIndex) {
+      emit objectContextMenuRequested(event->globalPos(), static_cast<int>(*pick.objectIndex));
     }
   }
 }
@@ -1703,19 +1703,19 @@ void EditorView::mouseReleaseEvent(QMouseEvent *event) {
         // Shift+click toggles the current room selection (Win32
         // ToggleRoomSelectedState).
         PickResult pick = pickAt(event->pos().x(), event->pos().y());
-        if (pick.roomIndex >= 0)
-          emit roomToggleRequested(pick.roomIndex);
+        if (pick.roomIndex)
+          emit roomToggleRequested(static_cast<int>(*pick.roomIndex));
         else
           emit selectionCleared();
       } else {
         PickResult pick = pickAtCycle(event->pos().x(), event->pos().y());
-        if (pick.objectIndex >= 0) {
-          emit objectSelected(pick.objectIndex);
-        } else if (pick.roomIndex >= 0 && pick.faceIndex >= 0) {
-          emit faceSelected(pick.roomIndex, pick.faceIndex);
+        if (pick.objectIndex) {
+          emit objectSelected(static_cast<int>(*pick.objectIndex));
+        } else if (pick.roomIndex && pick.faceIndex) {
+          emit faceSelected(static_cast<int>(*pick.roomIndex), static_cast<int>(*pick.faceIndex));
         } else {
-          m_pickRoom = -1;
-          m_pickFace = -1;
+          m_pickRoom.reset();
+          m_pickFace.reset();
           m_pickCenterDist = 1e30f;
           emit selectionCleared();
         }
@@ -1782,14 +1782,14 @@ bool EditorView::pointInPolygon(float px, float py, const float *sx, const float
 }
 
 EditorView::PickResult EditorView::pickAt(int screenX, int screenY) const {
-  PickResult pick = pickAtImpl(screenX, screenY, -1, -1, 1e30f);
+  PickResult pick = pickAtImpl(screenX, screenY, std::nullopt, std::nullopt, 1e30f);
   const WireframeViewState &v = activeWireframeView();
   qInfo().noquote()
       << "PICK" << "target=(" << v.target.x() << "," << v.target.y() << "," << v.target.z() << ")"
       << "dist=" << v.dist << "rad=" << v.rad << "zoom=" << m_dist
       << "click=(" << screenX << "," << screenY << ")"
-      << "room=" << pick.roomIndex << "face=" << pick.faceIndex
-      << "obj=" << pick.objectIndex << "depth=" << pick.depth;
+      << "room=" << index_to_int(pick.roomIndex) << "face=" << index_to_int(pick.faceIndex)
+      << "obj=" << index_to_int(pick.objectIndex) << "depth=" << pick.depth;
   return pick;
 }
 
@@ -1799,10 +1799,10 @@ EditorView::PickResult EditorView::pickAtCycle(int screenX, int screenY) {
   // previously picked face are considered, so seed with that center distance.
   // A brand-new click position uses 0 (no gate: pick the closest front face).
   PickResult best =
-      pickAtImpl(screenX, screenY, sameSpot ? m_pickRoom : -1,
-                 sameSpot ? m_pickFace : -1, sameSpot ? m_pickCenterDist : 0.0f);
+      pickAtImpl(screenX, screenY, sameSpot ? m_pickRoom : index_t{},
+                 sameSpot ? m_pickFace : index_t{}, sameSpot ? m_pickCenterDist : 0.0f);
   // Remember the picked surface (and its center distance) for the next cycle.
-  if (best.roomIndex >= 0 && best.faceIndex >= 0) {
+  if (best.roomIndex && best.faceIndex) {
     m_pickRoom = best.roomIndex;
     m_pickFace = best.faceIndex;
     m_pickCenterDist = best.depth;
@@ -1821,10 +1821,10 @@ EditorView::PickResult EditorView::pickAtCycle(int screenX, int screenY) {
 // strictly greater than prevCenterDist are considered, and the winner is the
 // one with the minimum such eye->face-center distance (Win32:
 // dist > Search_min_dist with Search_min_dist = Found_dist, then min dist).
-EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prevRoom,
-                                               int prevFace, float prevCenterDist) const {
+EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t prevRoom,
+                                               index_t prevFace, float prevCenterDist) const {
   PickResult best;
-  const bool cycle = prevRoom >= 0 && prevFace >= 0;
+  const bool cycle = prevRoom && prevFace;
 
   const_cast<EditorView *>(this)->updateCamera();
   if (!m_cameraValid)
@@ -1965,15 +1965,15 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
         if (centerDist <= prevCenterDist + 1e-4f)
           continue;
         if (centerDist < best.depth) {
-          best.roomIndex = r;
-          best.faceIndex = f;
+          best.roomIndex = static_cast<uint32_t>(r);
+          best.faceIndex = static_cast<uint32_t>(f);
           best.depth = centerDist;
         }
       } else {
         // FM_CLOSEST: nearest front-facing face at the pixel (Z-buffer result).
         if (pixelDepth < best.depth) {
-          best.roomIndex = r;
-          best.faceIndex = f;
+          best.roomIndex = static_cast<uint32_t>(r);
+          best.faceIndex = static_cast<uint32_t>(f);
           best.depth = pixelDepth;
         }
       }
@@ -2000,8 +2000,8 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, int prev
     float dist = std::sqrt(dx * dx + dy * dy);
 
     if (dist <= screenRadius) {
-      if (best.objectIndex < 0 || oz < best.depth) {
-        best.objectIndex = i;
+      if (!best.objectIndex || oz < best.depth) {
+        best.objectIndex = static_cast<uint32_t>(i);
         best.depth = oz;
       }
     }

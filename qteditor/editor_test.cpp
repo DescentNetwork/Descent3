@@ -5934,8 +5934,7 @@ private slots:
           continue;
         if (sx < 0 || sx >= img.width() || sy < 0 || sy >= img.height())
           continue;
-        int dist = view.pickAt(static_cast<int>(sx), static_cast<int>(sy)).faceIndex;
-        if (dist >= 0) {
+        if (view.pickAt(static_cast<int>(sx), static_cast<int>(sy)).faceIndex) {
           pickedSomething = true;
           break;
         }
@@ -6014,7 +6013,8 @@ private slots:
     pickY = qBound(0.0f, pickY, static_cast<float>(view.height() - 1));
     EditorView::PickResult pick = view.pickAt(static_cast<int>(pickX), static_cast<int>(pickY));
     qInfo() << "picking near face r=" << bestRoom << "f=" << bestFace << " at (" << pickX << "," << pickY
-            << ") got room=" << pick.roomIndex << "face=" << pick.faceIndex << "obj=" << pick.objectIndex;
+            << ") got room=" << index_to_int(pick.roomIndex) << "face=" << index_to_int(pick.faceIndex)
+            << "obj=" << index_to_int(pick.objectIndex);
     const bool gotFace = pick.roomIndex >= 0 && pick.faceIndex >= 0;
     const bool gotObject = pick.objectIndex >= 0;
     QVERIFY2(gotFace || gotObject, "pickAt on a visible face found neither face nor object");
@@ -6102,9 +6102,9 @@ private slots:
     // Screen centre maps into both faces; the foreground angled face (room 0)
     // must win even though its average vertex depth is larger.
     EditorView::PickResult pick = view.pickAt(320, 240);
-    qInfo() << "centre pick room=" << pick.roomIndex << "face=" << pick.faceIndex
-            << "obj=" << pick.objectIndex;
-    QCOMPARE(pick.objectIndex, -1);
+    qInfo() << "centre pick room=" << index_to_int(pick.roomIndex) << "face=" << index_to_int(pick.faceIndex)
+            << "obj=" << index_to_int(pick.objectIndex);
+    QVERIFY(!pick.objectIndex);
     QVERIFY2(pick.roomIndex == 0,
              "foreground angled face was not picked; occluded face won (depth bug)");
     QCOMPARE(pick.faceIndex, 0);
@@ -6348,7 +6348,7 @@ private slots:
 
     // Third pick at the same spot: no farther face remains -> picks nothing.
     EditorView::PickResult third = fix.view.pickAtCycle(320, 240);
-    QCOMPARE(third.roomIndex, -1);
+    QVERIFY(!third.roomIndex);
 
     // A pick at a *different* screen position resets the cycle to the closest
     // face again (near face wins).

@@ -111,9 +111,9 @@ public:
 
   // Picking result returned by pickAt().
   struct PickResult {
-    int roomIndex = -1;
-    int faceIndex = -1;
-    int objectIndex = -1;
+    index_t roomIndex;
+    index_t faceIndex;
+    index_t objectIndex;
     float depth = 1e30f;
   };
 
@@ -123,10 +123,10 @@ public:
   PickResult pickAtCycle(int screenX, int screenY);
   // Shared pick implementation mirroring Win32 WireframeFindRoomFace.  A face
   // is a candidate only if it is FRONT-FACING (Win32 DoFacingCheck) and covers
-  // the click pixel.  When (prevRoom, prevFace) are valid, FM_NEXT cycling is
+  // the click pixel.  When (prevRoom, prevFace) are set, FM_NEXT cycling is
   // active and only faces whose eye->face-center distance is strictly greater
   // than prevCenterDist are considered, choosing the minimum such distance.
-  PickResult pickAtImpl(int screenX, int screenY, int prevRoom, int prevFace,
+  PickResult pickAtImpl(int screenX, int screenY, index_t prevRoom, index_t prevFace,
                         float prevCenterDist) const;
 
 signals:
@@ -205,8 +205,8 @@ private:
   // recently picked (room, face, eye->face-center distance).  A repeated click
   // without drag reuses these to pick the next-farther front-facing face under
   // the same pixel (FM_NEXT), ordered by increasing eye->face-center distance.
-  int m_pickRoom = -1;
-  int m_pickFace = -1;
+  index_t m_pickRoom;
+  index_t m_pickFace;
   float m_pickCenterDist = 1e30f;
   QPoint m_pickScreen = QPoint(-1, -1);
 

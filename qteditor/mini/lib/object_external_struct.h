@@ -160,7 +160,7 @@ inline index_t to_roomnum(int roomnum) {
 
 // Convert an index_t room number back to the legacy int form (-1 when unset).
 inline int from_roomnum(const index_t& roomnum) {
-  return roomnum ? static_cast<int>(*roomnum) : -1;
+  return index_to_int(roomnum);
 }
 
 /*

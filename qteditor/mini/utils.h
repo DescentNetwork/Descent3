@@ -22,6 +22,12 @@ inline byte_ostream& operator <<(byte_ostream& output, const index_t& data)
   return output << data.value_or(UINT32_MAX);
 }
 
+// Convert an index_t back to the legacy integer sentinel: nullopt -> -1.
+inline int index_to_int(const index_t& data)
+{
+  return data ? static_cast<int>(*data) : -1;
+}
+
 template <typename T>
 class optref {
 private:
