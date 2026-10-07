@@ -646,7 +646,7 @@ void EditorView::renderRooms() {
       // Now draw the terrain portals in blue (DrawRoom, drawworld.cpp:638-646).
       for (int p = 0; p < rp->num_portals; p++) {
         portal *pp = &rp->portals[p];
-        if (pp->croom != -1)
+        if (pp->connected_room != -1)
           continue;
         face *fp = &rp->faces[pp->portal_face];
         int pnv = fp->num_verts;

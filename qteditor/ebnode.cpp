@@ -69,8 +69,8 @@ bool EBNode_VerifyGraph() {
 
             for (int x = 0; x < Rooms[r].num_portals; x++) {
               if (Rooms[r].portals[x].bnode_index == p) {
-                int cr = Rooms[r].portals[x].croom;
-                int cp = Rooms[r].portals[x].cportal;
+                int cr = Rooms[r].portals[x].connected_room;
+                int cp = Rooms[r].portals[x].connected_portal;
                 Rooms[cr].portals[cp].bnode_index = -1;
               }
             }
@@ -150,8 +150,8 @@ bool EBNode_VerifyGraph() {
       vector3 pos;
       pos = rp->portals[p].path_pnt - rp->faces[rp->portals[p].portal_face].normal * 0.75f;
 
-      int external_room = rp->portals[p].croom;
-      int external_portal = rp->portals[p].cportal;
+      int external_room = rp->portals[p].connected_room;
+      int external_portal = rp->portals[p].connected_portal;
       Q_ASSERT(Rooms[external_room].flags.external);
 
       if (Rooms[external_room].portals[external_portal].bnode_index < 0) {
@@ -200,8 +200,8 @@ bool EBNode_VerifyGraph() {
 
         if (Rooms[i].portals[j].bnode_index < 0) {
           if (rp->flags.external) {
-            int cr = rp->portals[j].croom;
-            int ci = Rooms[cr].portals[rp->portals[j].cportal].bnode_index;
+            int cr = rp->portals[j].connected_room;
+            int ci = Rooms[cr].portals[rp->portals[j].connected_portal].bnode_index;
 
             if (Rooms[cr].flags.external)
               continue;
@@ -214,7 +214,7 @@ bool EBNode_VerifyGraph() {
             uint8_t region = Terrain_seg[roomnum].flags.region;
             for (xxx = 0; xxx < BOA_num_connect[region]; xxx++) {
               if (BOA_connect[region][xxx].roomnum == cr &&
-                  BOA_connect[region][xxx].portal == rp->portals[j].cportal) {
+                  BOA_connect[region][xxx].portal == rp->portals[j].connected_portal) {
                 break;
               }
             }
@@ -241,8 +241,8 @@ bool EBNode_VerifyGraph() {
             EBNode_AutoEdgeNode(rp->portals[j].bnode_index, i);
             LOG_INFO("EBNode Verify: Added a node and autoedged it.\n");
 
-            int cr = rp->portals[j].croom;
-            int ci = Rooms[cr].portals[rp->portals[j].cportal].bnode_index;
+            int cr = rp->portals[j].connected_room;
+            int ci = Rooms[cr].portals[rp->portals[j].connected_portal].bnode_index;
 
             if (ci < 0)
               continue;
@@ -396,8 +396,8 @@ static void RemapPortalNodeIndices(int roomnum, int pnt) {
       int r = BOA_connect[region][i].roomnum;
       int p = BOA_connect[region][i].portal;
 
-      int cr = Rooms[r].portals[p].croom;
-      int cp = Rooms[r].portals[p].cportal;
+      int cr = Rooms[r].portals[p].connected_room;
+      int cp = Rooms[r].portals[p].connected_portal;
 
       vector3 pos = Rooms[cr].portals[cp].path_pnt + Rooms[cr].faces[Rooms[cr].portals[cp].portal_face].normal * 0.75f;
       int cell = GetTerrainRoomFromPos(pos).value_or(-1);
@@ -668,8 +668,8 @@ void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
 
 void EBNode_MakeDefaultInterRoomEdges(int roomnum) {
   for (int i = 0; i < Rooms[roomnum].num_portals; i++) {
-    if (Rooms[roomnum].portals[i].cportal >= 0 && Rooms[roomnum].portals[i].croom > roomnum &&
-        !(Rooms[Rooms[roomnum].portals[i].croom].flags.external)) {
+    if (Rooms[roomnum].portals[i].connected_portal >= 0 && Rooms[roomnum].portals[i].connected_room > roomnum &&
+        !(Rooms[Rooms[roomnum].portals[i].connected_room].flags.external)) {
       if ((Rooms[roomnum].portals[i].flags.render_faces) &&
           !(Rooms[roomnum].portals[i].flags.rendered_flythrough)) {
         if (!(GameTextures[Rooms[roomnum].faces[Rooms[roomnum].portals[i].portal_face].tmap].flags.breakable ||
@@ -677,7 +677,7 @@ void EBNode_MakeDefaultInterRoomEdges(int roomnum) {
           continue;
       }
 
-      EBNode_AddEdge(i, roomnum, Rooms[roomnum].portals[i].cportal, Rooms[roomnum].portals[i].croom);
+      EBNode_AddEdge(i, roomnum, Rooms[roomnum].portals[i].connected_portal, Rooms[roomnum].portals[i].connected_room);
     }
   }
 }
@@ -720,8 +720,8 @@ static void EBNode_MakeDefaultTerrainNodes(int region) {
     vector3 pos;
     pos = rp->portals[p].path_pnt - rp->faces[rp->portals[p].portal_face].normal * 0.75f;
 
-    int external_room = rp->portals[p].croom;
-    int external_portal = rp->portals[p].cportal;
+    int external_room = rp->portals[p].connected_room;
+    int external_portal = rp->portals[p].connected_portal;
     Q_ASSERT(Rooms[external_room].flags.external);
     Rooms[external_room].portals[external_portal].bnode_index = i;
 

@@ -231,8 +231,8 @@ inline byte_ostream& operator<<(byte_ostream& output, const portal_flags_t& data
 struct portal {
   portal_flags_t flags;      // flags for this portal
   int16_t portal_face; // the face for this portal
-  int16_t croom;       // the room this portal connects to
-  int16_t cportal;     // the portal in croom this portal connects to
+  int16_t connected_room;       // the room this portal connects to
+  int16_t connected_portal;     // the portal in croom this portal connects to
   int16_t bnode_index;
   int combine_master; // For rendering combined portals
   vector3 path_pnt;    // Point used by the path system

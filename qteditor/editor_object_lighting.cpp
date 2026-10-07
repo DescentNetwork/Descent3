@@ -358,8 +358,8 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
               Light_surfaces[surface_index].flags.touches_terrain = 1;
 
             for (int k = 0; k < Rooms[Objects[i].roomnum].num_portals; k++) {
-              if (Rooms[Objects[i].roomnum].portals[k].croom == -1 ||
-                  Rooms[Rooms[Objects[i].roomnum].portals[k].croom].flags.external)
+              if (Rooms[Objects[i].roomnum].portals[k].connected_room == -1 ||
+                  Rooms[Rooms[Objects[i].roomnum].portals[k].connected_room].flags.external)
                 Light_surfaces[surface_index].flags.touches_terrain = 1;
             }
           }

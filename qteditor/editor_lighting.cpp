@@ -392,7 +392,7 @@ void CheckCombinePortals(int terrain) {
           continue;
 
         // Check to see if the portals connect to the same room
-        if (portal_a->croom != portal_b->croom)
+        if (portal_a->connected_room != portal_b->connected_room)
           continue;
 
         /*// Check to see if they share a normal
@@ -1032,7 +1032,7 @@ void DoRadiosityForRooms() {
           Light_surfaces[surface_index].flags.touches_terrain = 1;
 
         for (int k = 0; k < Rooms[i].num_portals; k++) {
-          if (Rooms[i].portals[k].croom == -1 || (Rooms[Rooms[i].portals[k].croom].flags.external))
+          if (Rooms[i].portals[k].connected_room == -1 || (Rooms[Rooms[i].portals[k].connected_room].flags.external))
             Light_surfaces[surface_index].flags.touches_terrain = 1;
         }
 

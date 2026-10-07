@@ -362,8 +362,8 @@ void DeleteRoomPortal(int roomnum, int portalnum) {
     portal *tp = &rp.portals[p];
     Q_ASSERT(rp.faces[tp->portal_face].portal_num == p);
     rp.faces[tp->portal_face].portal_num--;
-    if (tp->croom != -1)
-      Rooms[tp->croom].portals[tp->cportal].cportal--;
+    if (tp->connected_room != -1)
+      Rooms[tp->connected_room].portals[tp->connected_portal].connected_portal--;
   }
 
   rp.portals.erase(rp.portals.begin() + portalnum);
@@ -397,10 +397,10 @@ void LinkRooms(int room0, int face0, int room1, int face1) {
   int pn0 = AddPortal(room0);
   int pn1 = AddPortal(room1);
 
-  rp0.portals[pn0].croom = room1;
-  rp0.portals[pn0].cportal = pn1;
-  rp1.portals[pn1].croom = room0;
-  rp1.portals[pn1].cportal = pn0;
+  rp0.portals[pn0].connected_room = room1;
+  rp0.portals[pn0].connected_portal = pn1;
+  rp1.portals[pn1].connected_room = room0;
+  rp1.portals[pn1].connected_portal = pn0;
 
   rp0.portals[pn0].portal_face = face0;
   rp1.portals[pn1].portal_face = face1;
@@ -416,9 +416,9 @@ void LinkRooms(int room0, int face0, int room1, int face1) {
 void DeletePortalPair(int roomnum, int portalnum) {
   room_t &rp = Rooms[roomnum];
   portal *pp = &rp.portals[portalnum];
-  int croom = pp->croom, cportal = pp->cportal;
+  int croom = pp->connected_room, cportal = pp->connected_portal;
 
-  if ((Rooms[croom].portals[cportal].croom != roomnum) || (Rooms[croom].portals[cportal].cportal != portalnum)) {
+  if ((Rooms[croom].portals[cportal].connected_room != roomnum) || (Rooms[croom].portals[cportal].connected_portal != portalnum)) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot delete this portal: the connecting portal does not point back at it.");
     return;
   }
@@ -727,7 +727,7 @@ void RotateRooms(angle p, angle h, angle b) {
   room_t &curroomp = Rooms[*app.current.room];
 
   for (int i = 0; i < markedroomp.num_portals; i++) {
-    if (markedroomp.portals[i].croom == app.current.room.value_or(-1)) {
+    if (markedroomp.portals[i].connected_room == app.current.room.value_or(-1)) {
       marked_portalnum = i;
       break;
     }
@@ -739,7 +739,7 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   for (int i = 0; i < curroomp.num_portals; i++) {
-    if (curroomp.portals[i].croom == app.marked.room.value_or(-1)) {
+    if (curroomp.portals[i].connected_room == app.marked.room.value_or(-1)) {
       cur_portalnum = i;
       break;
     }
@@ -752,9 +752,9 @@ void RotateRooms(angle p, angle h, angle b) {
 
   SaveRoomSelectedList();
 
-  curroomp.portals[cur_portalnum].croom = -1;
+  curroomp.portals[cur_portalnum].connected_room = -1;
   SelectConnectedRooms(app.current.room.value_or(-1));
-  curroomp.portals[cur_portalnum].croom = app.marked.room.value_or(-1);
+  curroomp.portals[cur_portalnum].connected_room = app.marked.room.value_or(-1);
 
   if (IsRoomSelected(app.marked.room.value_or(-1))) {
     RestoreRoomSelectedList();
@@ -837,7 +837,7 @@ void ConnectPortal(int roomnum, int portal_num, int dest_room) {
   portal *pp = &rp.portals[portal_num];
   int dest_face = pp->portal_face;
 
-  if (pp->croom != -1) {
+  if (pp->connected_room != -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This portal is already connected.");
     return;
   }
@@ -866,7 +866,7 @@ void DetachPortal(int roomnum, int portal_num) {
   }
 
   portal *pp = &rp.portals[portal_num];
-  if (pp->croom == -1) {
+  if (pp->connected_room == -1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This portal is not connected.");
     return;
   }
