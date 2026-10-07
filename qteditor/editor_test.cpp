@@ -5439,10 +5439,10 @@ private slots:
     r0->used = true;
 
     // Set up as a "placed room" for terrain attachment
-    app.placed.room = 0;
+    app.placed.room = to_roomnum(0);
     app.placed.base.room.reset();
     app.placed.base.face.reset();
-    app.placed.room_face = 0;
+    app.placed.room_face = index_t{static_cast<uint32_t>(0)};
     app.placed.origin = vector3{(float)150, (float)150, (float)0};
     app.placed.attachpoint = vector3{(float)0, (float)0, (float)0};
     vm_MakeIdentity(&app.placed.rotmat);
@@ -5505,10 +5505,10 @@ private slots:
     att->used = true;
 
     // Place att so its face overlaps with the base face
-    app.placed.room = 1;
+    app.placed.room = to_roomnum(1);
     app.placed.base.room = 0;
     app.placed.base.face = 0;
-    app.placed.room_face = 0;
+    app.placed.room_face = index_t{static_cast<uint32_t>(0)};
     app.placed.origin = vector3{(float)5, (float)0, (float)-5};
     app.placed.attachpoint = vector3{(float)5, (float)0, (float)-5};
     vm_MakeIdentity(&app.placed.rotmat);
@@ -6807,8 +6807,8 @@ private slots:
 
     PlaceRoom(0, 0, 1, 0, std::nullopt);
 
-    QCOMPARE(app.placed.room.value_or(-1), 1);
-    QCOMPARE(app.placed.room_face, std::optional<int>(0));
+    QCOMPARE(app.placed.room, to_roomnum(1));
+    QCOMPARE(app.placed.room_face, index_t{static_cast<uint32_t>(0)});
     QCOMPARE(app.placed.base.room, std::optional<int>(0));
     QCOMPARE(app.placed.base.face, std::optional<int>(0));
     QVERIFY(!app.placed.door);
@@ -6893,7 +6893,7 @@ private slots:
     // difference against Rooms.data()).  Rooms no longer keeps a separate
     // palette region: slots are allocated from the first unused hole, which is
     // 0 here (base occupies slot 1), and the high-water mark is undisturbed.
-    QCOMPARE(app.placed.room.value_or(-1), 0);
+    QCOMPARE(app.placed.room, to_roomnum(0));
     QCOMPARE(static_cast<int>(Rooms.size()), 2);
     QVERIFY(Rooms[*app.placed.room].used);
     QCOMPARE(Rooms[*app.placed.room].num_verts, 8);
@@ -6904,7 +6904,7 @@ private slots:
     for (int i = 0; i < 4; ++i)
       QCOMPARE(Rooms[*app.placed.room].faces[1].face_verts[i], i);
 
-    FreeRoom(app.placed.room.value_or(-1));
+    FreeRoom(index_to_int(app.placed.room));
     FreeRoom(1);
     *po = poly_model{};
     if (Doors.is_used(0))
@@ -6929,8 +6929,8 @@ private slots:
     ComputeFaceNormal(0, 0);
     rp->used = true;
 
-    app.placed.room = 0;
-    app.placed.room_face = 0;
+    app.placed.room = to_roomnum(0);
+    app.placed.room_face = index_t{static_cast<uint32_t>(0)};
     app.placed.angle = 0;
     vm_MakeIdentity(&app.placed.orient);
 

@@ -3501,8 +3501,8 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
     if (app.marked.room.value_or(-1) != -1)
       OutlineCurrentFace(app.marked.room.value_or(-1), app.marked.face.value_or(-1), app.marked.edge.value_or(-1), app.marked.vert.value_or(-1), MARKEDFACE_COLOR, MARKEDEDGE_COLOR);
     if (app.placed.room)
-      DrawPlacedRoomFace(app.placed.room.value_or(-1), &app.placed.origin, &app.placed.rotmat, &app.placed.attachpoint,
-                         *app.placed.room_face, PLACED_COLOR);
+      DrawPlacedRoomFace(index_to_int(app.placed.room), &app.placed.origin, &app.placed.rotmat, &app.placed.attachpoint,
+                         static_cast<int>(*app.placed.room_face), PLACED_COLOR);
   }
 #endif
 }

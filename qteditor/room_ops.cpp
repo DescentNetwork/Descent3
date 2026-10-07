@@ -1292,8 +1292,8 @@ void AttachRoom() {
 
   int baseroomp = app.placed.base.room.value_or(-1);
   int baseface = app.placed.base.face.value_or(-1);
-  int attroomp = app.placed.room.value_or(-1);
-  int attface = *app.placed.room_face;
+  int attroomp = static_cast<int>(*app.placed.room);
+  int attface = static_cast<int>(*app.placed.room_face);
   vector3 attcenter = app.placed.origin;
   vector3 basecenter = app.placed.attachpoint;
 
@@ -1351,7 +1351,7 @@ void AttachRoom() {
       vector3 doorcenter = {0, 0, 0};
       vector3 room_center = ((doorcenter - attcenter) * app.placed.rotmat) + basecenter;
 
-      FreeRoom(app.placed.room.value_or(-1));
+      FreeRoom(index_to_int(app.placed.room));
 
       ObjCreate(object_type::door, *app.placed.door, slot, room_center, &orient);
 
@@ -1650,7 +1650,7 @@ void HTextureApplyToRoomFace(int roomnum, int facenum, int tnum) {
 
 void ComputePlacedRoomMatrix() {
   room_t &placedroomp = Rooms[*app.placed.room];
-  int placedface = *app.placed.room_face;
+  int placedface = static_cast<int>(*app.placed.room_face);
   matrix srcmat;
   vector3 t;
 
@@ -1673,8 +1673,8 @@ void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face
 
   room_t &placedroomp = Rooms[placed_room];
 
-  app.placed.room = placed_room;
-  app.placed.room_face = placed_room_face;
+  app.placed.room = to_roomnum(placed_room);
+  app.placed.room_face = index_t{static_cast<uint32_t>(placed_room_face)};
   app.placed.orient.fvec = baseroomp.faces[baseface].normal;
   app.placed.angle = 0;
   app.placed.base.room = baseroom;

@@ -102,8 +102,8 @@ struct face_selection
 struct placed_room_state
 {
   // Room being placed, and the face on it that will sit against the mine.
-  std::optional<int> room;
-  std::optional<int> room_face;
+  index_t room;
+  index_t room_face;
 
   // Target room:face in the mine being attached onto.
   face_selection base;
