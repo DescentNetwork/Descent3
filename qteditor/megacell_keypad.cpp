@@ -81,7 +81,8 @@ void MegacellKeypad::onRandomizeToggled(bool checked) { app.randomize_megacell =
 
 void MegacellKeypad::onXGranularEdited() {
   const uint32_t n = app.current_megacell ? *app.current_megacell : 0;
-  Q_ASSERT(Megacells.is_used(n));
+  if (n >= Megacells.size() || !Megacells.is_used(n))
+    return;
   int val = ui->IDC_X_GRANULAR_EDIT->text().toInt();
   if (val < 1)
     val = 1;
@@ -93,7 +94,8 @@ void MegacellKeypad::onXGranularEdited() {
 
 void MegacellKeypad::onYGranularEdited() {
   const uint32_t n = app.current_megacell ? *app.current_megacell : 0;
-  Q_ASSERT(Megacells.is_used(n));
+  if (n >= Megacells.size() || !Megacells.is_used(n))
+    return;
   int val = ui->IDC_Y_GRANULAR_EDIT->text().toInt();
   if (val < 1)
     val = 1;

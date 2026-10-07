@@ -3894,7 +3894,7 @@ private slots:
       make("editline", d);
     }
     {
-      auto *d = new GenericDeathDialog(-1);
+      auto *d = new GenericDeathDialog(std::nullopt);
       make("generic_death", d);
     }
     make("hog", (new HogDialog));
