@@ -216,16 +216,6 @@ struct [[gnu::packed]] portal_flags_t
 };
 static_assert(sizeof(portal_flags_t) == sizeof(uint32_t));
 
-// Serialized as the raw uint32 portal-flag word on disk.
-inline byte_istream& operator>>(byte_istream& input, portal_flags_t& data) {
-  uint32_t raw = 0;
-  input >> raw;
-  data = std::bit_cast<portal_flags_t>(raw);
-  return input;
-}
-inline byte_ostream& operator<<(byte_ostream& output, const portal_flags_t& data) {
-  return output << std::bit_cast<uint32_t>(data);
-}
 
 // a connection between two rooms
 struct portal {
