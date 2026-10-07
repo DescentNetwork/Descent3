@@ -260,9 +260,9 @@ bool HObjectPlace(object_type obj_type, uint16_t obj_id) {
         ObjDelete(objnum);
         return false;
       }
-      ComputeCenterPointOnFace(&pos, *app.current.room, app.current.face.value_or(-1));
+      ComputeCenterPointOnFace(&pos, static_cast<int>(*app.current.room), index_to_int(app.current.face));
       surface_norm = &Rooms[*app.current.room].faces[*app.current.face].normal;
-      roomnum = app.current.room.value_or(-1);
+      roomnum = index_to_int(app.current.room);
 
       if (Rooms[roomnum].flags.external)
         roomnum = GetTerrainRoomFromPos(pos).value_or(-1);

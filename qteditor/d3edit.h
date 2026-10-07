@@ -65,20 +65,18 @@ namespace state
 // edge and vert are sub-indices of the face, and the portal is a property of
 // the face rather than a peer of the room.
 //
-// The indices stay std::optional<int> rather than index_t: they are consumed by
-// int-keyed engine APIs (ScaleFaceUVs, HTextureSlide, OutlineCurrentFace,
-// ComputeCenterPointOnFace, ...) that mirror the int-based Win32 signatures, and
-// those APIs treat -1 as "no face". Narrowing to index_t means cascading the
-// change through every one of them, and a single missed ".value_or(-1)" would
-// silently become UINT32_MAX rather than a guarded -1. That belongs in its own
-// change, not alongside the extraction.
+// The indices are index_t (nullopt maps to the legacy -1 sentinel used by the
+// int-keyed engine APIs: ScaleFaceUVs, HTextureSlide, OutlineCurrentFace,
+// ComputeCenterPointOnFace, ...). All reads that cross into int-land go
+// through index_to_int() so a missed conversion cannot silently become
+// UINT32_MAX instead of a guarded -1.
 struct face_selection
 {
-  std::optional<int> room;   // index into Rooms[]
-  std::optional<int> face;   // face index within that room
-  std::optional<int> edge;   // edge index within that face
-  std::optional<int> vert;   // vert index within that face
-  std::optional<int> portal; // portal_num on that face
+  index_t room;   // index into Rooms[]
+  index_t face;   // face index within that room
+  index_t edge;   // edge index within that face
+  index_t vert;   // vert index within that face
+  index_t portal; // portal_num on that face
 
   void reset()
   {

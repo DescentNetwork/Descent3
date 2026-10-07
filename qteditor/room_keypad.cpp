@@ -42,7 +42,7 @@ RoomKeypad::RoomKeypad(QWidget *parent)
   connect(ui->IDC_ROOMPAD_EXPAND_ROOM, &QPushButton::clicked, this, &RoomKeypad::onExpandRoom);
   connect(ui->IDC_ROOMPAD_CONTRACT_ROOM, &QPushButton::clicked, this, &RoomKeypad::onContractRoom);
 
-  const int roomnum = app.current.room.value_or(-1);
+  const int roomnum = index_to_int(app.current.room);
   connect(ui->IDC_TOUCHES_OUTSIDE, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.touches_terrain = checked; app.World_changed = true; });
   connect(ui->IDC_SECRET_CHECK, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.secret = checked; app.World_changed = true; });
   connect(ui->IDC_EXTERNAL_ROOM, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.external = checked; app.World_changed = true; });
@@ -74,7 +74,7 @@ void RoomKeypad::updateDialog() {
   if (active)
   {
     room_t &rp = Rooms[*app.current.room];
-    ui->IDC_ROOM_NAME->setText(rp.name.empty() ? QString("<room %1>").arg(app.current.room.value_or(-1)) : QString::fromStdString(rp.name));
+    ui->IDC_ROOM_NAME->setText(rp.name.empty() ? QString("<room %1>").arg(index_to_int(app.current.room)) : QString::fromStdString(rp.name));
     ui->IDC_VERTEX_COUNT->setText(QString("Verts: %1").arg(rp.num_verts));
     ui->IDC_FACE_COUNT->setText(QString("Faces: %1").arg(rp.num_faces));
     ui->IDC_PORTAL_COUNT->setText(QString("Portals: %1").arg(rp.num_portals));
@@ -101,7 +101,7 @@ void RoomKeypad::updateDialog() {
 
 void RoomKeypad::onMarkRoom() {
   if (app.current.room.has_value())
-    app.marked.room = app.current.room.value_or(-1);
+    app.marked.room = app.current.room;
 }
 
 void RoomKeypad::expandGeometry(float scale) {

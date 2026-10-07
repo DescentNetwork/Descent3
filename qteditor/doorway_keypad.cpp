@@ -206,7 +206,7 @@ void DoorwayKeypad::onPlaceDoor() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No current room.");
     return;
   }
-  if (!app.current.face || app.current.face.value_or(-1) >= Rooms[*app.current.room].num_faces) {
+  if (!app.current.face || index_to_int(app.current.face) >= Rooms[*app.current.room].num_faces) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No current face.");
     return;
   }
@@ -218,7 +218,7 @@ void DoorwayKeypad::onPlaceDoor() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No door selected. Use the World Objects Door dialog first.");
     return;
   }
-  PlaceDoor(app.current.room.value_or(-1), app.current.face.value_or(-1), *app.current_door);
+  PlaceDoor(index_to_int(app.current.room), index_to_int(app.current.face), *app.current_door);
   updateDialog();
 }
 

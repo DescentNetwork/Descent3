@@ -329,11 +329,11 @@ void DeleteRoomFace(int roomnum, int facenum) {
   rp.faces.erase(rp.faces.begin() + facenum);
   rp.num_faces--;
 
-  if (roomnum == app.current.room.value_or(-1)) {
+  if (roomnum == index_to_int(app.current.room)) {
     if (app.current.face == rp.num_faces)
-      app.current.face = rp.num_faces - 1;
+      app.current.face = index_t{static_cast<uint32_t>(rp.num_faces - 1)};
     if (app.marked.face == rp.num_faces)
-      app.marked.face = rp.num_faces - 1;
+      app.marked.face = index_t{static_cast<uint32_t>(rp.num_faces - 1)};
   }
 
   if (rp.num_bbf_regions) {
@@ -723,7 +723,7 @@ void RotateRooms(angle p, angle h, angle b) {
   int marked_portalnum = -1;
   int cur_portalnum = -1;
 
-  if (app.current.room == app.marked.room.value_or(-1) || !app.marked.room) {
+  if (app.current.room == index_to_int(app.marked.room) || !app.marked.room) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You do not have a valid room marked.");
     return;
   }
@@ -758,16 +758,16 @@ void RotateRooms(angle p, angle h, angle b) {
   SaveRoomSelectedList();
 
   curroomp.portals[cur_portalnum].connected_room = index_t{};
-  SelectConnectedRooms(app.current.room.value_or(-1));
+  SelectConnectedRooms(index_to_int(app.current.room));
   curroomp.portals[cur_portalnum].connected_room = app.marked.room;
 
-  if (IsRoomSelected(app.marked.room.value_or(-1))) {
+  if (IsRoomSelected(index_to_int(app.marked.room))) {
     RestoreRoomSelectedList();
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot rotate: rooms connect back to base room.");
     return;
   }
 
-  ComputePortalCenter(&rotpoint, app.current.room.value_or(-1), cur_portalnum);
+  ComputePortalCenter(&rotpoint, index_to_int(app.current.room), cur_portalnum);
   vm_AnglesToMatrix(&rotmat, p, h, b);
   face *fp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
   ComputeNormal(portal_normal, fp->num_verts, fp->face_verts, curroomp.verts);
@@ -779,7 +779,7 @@ void RotateRooms(angle p, angle h, angle b) {
   for (int i = 0; i < N_selected_rooms; i++) {
     room_t &rp = Rooms[Selected_rooms[i]];
 
-    if (Selected_rooms[i] == app.current.room.value_or(-1)) {
+    if (Selected_rooms[i] == index_to_int(app.current.room)) {
       face *cfp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
       for (int v = 0; v < rp.num_verts; v++) {
         for (int t = 0; t < cfp->num_verts; t++)
@@ -823,7 +823,7 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   if (checkcount > 0)
-    FixConcaveFaces(app.current.room.value_or(-1), checkfaces, checkcount);
+    FixConcaveFaces(index_to_int(app.current.room), checkfaces, checkcount);
 
   app.World_changed = true;
 }
@@ -1290,8 +1290,8 @@ void AttachRoom() {
   Q_ASSERT(app.placed.room);
   Q_ASSERT(app.placed.room_face);
 
-  int baseroomp = app.placed.base.room.value_or(-1);
-  int baseface = app.placed.base.face.value_or(-1);
+  int baseroomp = index_to_int(app.placed.base.room);
+  int baseface = index_to_int(app.placed.base.face);
   int attroomp = static_cast<int>(*app.placed.room);
   int attface = static_cast<int>(*app.placed.room_face);
   vector3 attcenter = app.placed.origin;
@@ -1677,8 +1677,8 @@ void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face
   app.placed.room_face = index_t{static_cast<uint32_t>(placed_room_face)};
   app.placed.orient.fvec = baseroomp.faces[baseface].normal;
   app.placed.angle = 0;
-  app.placed.base.room = baseroom;
-  app.placed.base.face = baseface;
+  app.placed.base.room = to_roomnum(baseroom);
+  app.placed.base.face = index_t{static_cast<uint32_t>(baseface)};
   app.placed.door = placed_room_door;
 
   ComputeCenterPointOnFace(&app.placed.attachpoint, baseroom, baseface);

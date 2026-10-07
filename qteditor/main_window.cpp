@@ -120,8 +120,8 @@ MainWindow::MainWindow(QWidget *parent)
 
   // ---- EditorView picking signals -> editor state ----
   connect(m_editorView, &EditorView::faceSelected, [this](int r, int f) {
-    app.current.room = r;
-    app.current.face = f;
+    app.current.room = to_roomnum(r);
+    app.current.face = index_t{static_cast<uint32_t>(f)};
     app.current.edge = 0;
     app.current.vert = 0;
     app.current.portal.reset();
@@ -949,7 +949,7 @@ void MainWindow::onCenterViewOnCube() {
       return;
     roomnum = *app.current_room;
   } else {
-    roomnum = app.current.room.value_or(-1);
+    roomnum = index_to_int(app.current.room);
   }
   if (roomnum < 0 || !Rooms[roomnum].used)
     return;
@@ -987,17 +987,17 @@ void MainWindow::onResetViewRadius() {
 
 void MainWindow::onMoveViewToSelectedRoom() {
   // Win32 ID_VIEW_MOVECAMERATOSELECTEDROOM -> CMainFrame::OnViewMoveCameraToSelectedRoom
-  // (editor/MainFrm.cpp:2216) -> SetViewerFromRoomFace(app.current.room, app.current.face.value_or(-1), 1).
-  setViewerFromRoomFace(app.current.room.value_or(-1), app.current.face.value_or(-1), true);
+  // (editor/MainFrm.cpp:2216) -> SetViewerFromRoomFace(app.current.room, index_to_int(app.current.face), 1).
+  setViewerFromRoomFace(index_to_int(app.current.room), index_to_int(app.current.face), true);
   app.State_changed = true;
 
   m_editorView->update();
 }
 
 // Win32 ID_VIEW_MOVECAMERATOSELECTEDFACE -> CMainFrame::OnViewMoveCameraToSelectedFace
-// (editor/MainFrm.cpp:3670) -> SetViewerFromRoomFace(app.current.room, app.current.face.value_or(-1), 0).
+// (editor/MainFrm.cpp:3670) -> SetViewerFromRoomFace(app.current.room, index_to_int(app.current.face), 0).
 void MainWindow::onMoveCameraToSelectedFace() {
-  setViewerFromRoomFace(app.current.room.value_or(-1), app.current.face.value_or(-1), false);
+  setViewerFromRoomFace(index_to_int(app.current.room), index_to_int(app.current.face), false);
   app.State_changed = true;
 
   m_editorView->update();
@@ -1266,7 +1266,7 @@ void MainWindow::onMovePlayerToCurrentRoom() {
   // Win32 OnObjectMovePlayer rewinds the player to a known start state:
   // origin of the current room, identity matrix, roomnum from app.current.room.
   vector3 rp;
-  const int slot = app.current.room.value_or(-1);
+  const int slot = index_to_int(app.current.room);
   matrix idmat;
   ObjSetPos(*Player_object, rp, slot, idmat, false);
   app.State_changed = true;
@@ -1692,9 +1692,9 @@ bool MainWindow::onAddRoom()
     std::fprintf(stderr, "[room_ops] AddRoom: no current room\n");
     return false;
   }
-  if (!app.current.face || app.current.face.value_or(-1) >= Rooms[*app.current.room].num_faces) {
+  if (!app.current.face || index_to_int(app.current.face) >= Rooms[*app.current.room].num_faces) {
     std::fprintf(stderr, "[room_ops] AddRoom: invalid current face (%d)\n",
-                 app.current.face.value_or(-1));
+                 index_to_int(app.current.face));
     return false;
   }
   face *cfp = &Rooms[*app.current.room].faces[*app.current.face];
@@ -1761,7 +1761,7 @@ bool MainWindow::onAddRoom()
 
   // Wire the new room into the editor view: it's the current selection
   // and the marked room for follow-on edits.
-  app.current.room = slot;
+  app.current.room = to_roomnum(slot);
   app.current.face = 0;
   app.current.edge = 0;
   app.current.vert = 0;
@@ -1795,10 +1795,10 @@ bool MainWindow::onDeleteRoom() {
   // Don't delete the room with the player in it — editor/HRoom.cpp's
   // DeleteRoomFromMine() bails on that. Our stub doesn't track
   // Player_object's room yet, so this is a straight "no player here" OK.
-  const int slot = app.current.room.value_or(-1);
+  const int slot = index_to_int(app.current.room);
 
   // Clear any marked-room alias before we tear down the slot.
-  if (app.marked.room == app.current.room.value_or(-1))
+  if (app.marked.room == index_to_int(app.current.room))
     app.marked.room.reset();
 
   DestroyRoom(slot);
@@ -1808,7 +1808,7 @@ bool MainWindow::onDeleteRoom() {
   app.current_room = -1;
   for (int s = slot - 1; s >= 0; --s) {
     if (Rooms[s].used) {
-      app.current.room = s;
+      app.current.room = to_roomnum(s);
       app.current_room = s;
       break;
     }
@@ -1826,15 +1826,15 @@ bool MainWindow::onDeleteRoom() {
 // SetMarkedRoom() (which uses the MFC keypad "Mark" button).
 void MainWindow::onMarkRoom() {
   // editor/selectedroom.cpp::SetMarkedRoom() captures (app.current.room,
-  // app.current.face.value_or(-1), app.current.edge.value_or(-1), app.current.vert.value_or(-1)); we mirror the same state but use the qteditor
+  // index_to_int(app.current.face), index_to_int(app.current.edge), index_to_int(app.current.vert)); we mirror the same state but use the qteditor
   // globals From d3_editor_state.cpp.
-  app.marked.room = app.current.room.value_or(-1);
-  app.marked.face = app.current.face.value_or(-1);
-  app.marked.edge = app.current.edge.value_or(-1);
-  app.marked.vert = app.current.vert.value_or(-1);
+  app.marked.room = app.current.room;
+  app.marked.face = app.current.face;
+  app.marked.edge = app.current.edge;
+  app.marked.vert = app.current.vert;
   app.State_changed = true;
   std::fprintf(stderr, "[room_ops] MarkRoom: slot %d face %d\n",
-               app.current.room.value_or(-1), app.current.face.value_or(-1));
+               index_to_int(app.current.room), index_to_int(app.current.face));
 }
 
 // Mark-by-number: prompts the user for a room index and updates app.current.room.
@@ -1855,7 +1855,7 @@ int MainWindow::onSelectRoomByNumber() {
                  value);
     return -1;
   }
-  app.current.room = value;
+  app.current.room = to_roomnum(value);
   app.current.face = 0;
   app.current.edge = 0;
   app.current.vert = 0;
@@ -1898,42 +1898,42 @@ bool MainWindow::onSaveCurrentRoom() {
 }
 
 void MainWindow::onRoomDeleteFace() {
-  if (!app.current.room || !app.current.face || app.current.face.value_or(-1) >= Rooms[*app.current.room].num_faces)
+  if (!app.current.room || !app.current.face || index_to_int(app.current.face) >= Rooms[*app.current.room].num_faces)
     return;
   if (Rooms[*app.current.room].faces[*app.current.face].portal_num != -1) {
     onRoomDeletePortal();
     return;
   }
-  DeleteRoomFace(app.current.room.value_or(-1), app.current.face.value_or(-1));
-  if (app.current.face.value_or(-1) >= Rooms[*app.current.room].num_faces)
-    app.current.face = Rooms[*app.current.room].num_faces - 1;
+  DeleteRoomFace(index_to_int(app.current.room), index_to_int(app.current.face));
+  if (index_to_int(app.current.face) >= Rooms[*app.current.room].num_faces)
+    app.current.face = index_t{static_cast<uint32_t>(Rooms[*app.current.room].num_faces - 1)};
   app.Mine_changed = true;
 }
 
 void MainWindow::onRoomDeletePortal() {
-  if (!app.current.room || !app.current.face || app.current.face.value_or(-1) >= Rooms[*app.current.room].num_faces)
+  if (!app.current.room || !app.current.face || index_to_int(app.current.face) >= Rooms[*app.current.room].num_faces)
     return;
   int pn = Rooms[*app.current.room].faces[*app.current.face].portal_num;
   if (pn == -1) {
     EditorStatus("Current face is not a portal.");
     return;
   }
-  DeletePortalPair(app.current.room.value_or(-1), pn);
+  DeletePortalPair(index_to_int(app.current.room), pn);
   app.Mine_changed = true;
 }
 
 void MainWindow::onRoomCombine() {
   if (!app.current.room)
     return;
-  if (app.marked.room.value_or(-1) != app.current.room.value_or(-1)) {
+  if (index_to_int(app.marked.room) != index_to_int(app.current.room)) {
     EditorStatus("Mark and current must be the same room to combine.");
     return;
   }
-  if (app.current.face == app.marked.face.value_or(-1)) {
+  if (app.current.face == index_to_int(app.marked.face)) {
     EditorStatus("Marked and current face must be different.");
     return;
   }
-  if (CombineFaces(app.current.room.value_or(-1), app.marked.face.value_or(-1), app.current.face.value_or(-1))) {
+  if (CombineFaces(index_to_int(app.current.room), index_to_int(app.marked.face), index_to_int(app.current.face))) {
     app.Mine_changed = true;
     EditorStatus("Faces combined.");
   }

@@ -2994,14 +2994,14 @@ private slots:
     QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
-    QCOMPARE(app.current.room.value_or(-1), 0);
-    QCOMPARE(app.current.face.value_or(-1), 1);
-    QCOMPARE(app.current.edge.value_or(-1), 2);
-    QCOMPARE(app.current.vert.value_or(-1), 3);
-    QCOMPARE(app.marked.room.value_or(-1), 0);
-    QCOMPARE(app.marked.face.value_or(-1), 4);
-    QCOMPARE(app.marked.edge.value_or(-1), 5);
-    QCOMPARE(app.marked.vert.value_or(-1), 6);
+    QCOMPARE(index_to_int(app.current.room), 0);
+    QCOMPARE(index_to_int(app.current.face), 1);
+    QCOMPARE(index_to_int(app.current.edge), 2);
+    QCOMPARE(index_to_int(app.current.vert), 3);
+    QCOMPARE(index_to_int(app.marked.room), 0);
+    QCOMPARE(index_to_int(app.marked.face), 4);
+    QCOMPARE(index_to_int(app.marked.edge), 5);
+    QCOMPARE(index_to_int(app.marked.vert), 6);
     QCOMPARE(N_selected_rooms, 2);
     QCOMPARE(Selected_rooms[0], 0);
     QCOMPARE(Selected_rooms[1], 1);
@@ -4362,7 +4362,7 @@ private slots:
     // distance/orientation untouched.
     QVERIFY(app.current.room.has_value() && Rooms[*app.current.room].used);
     vector3 roomCenter;
-    ComputeRoomCenter(&roomCenter, app.current.room.value_or(-1));
+    ComputeRoomCenter(&roomCenter, index_to_int(app.current.room));
     a_room->trigger();
     QCoreApplication::processEvents();
     {
@@ -4631,7 +4631,7 @@ private slots:
 
   // Verifies the Qt port of editor/HFile.cpp:
   //   - CreateNewMine resets the editor-only globals exposed in
-  //     qteditor/d3_editor_state.cpp (app.current.face.value_or(-1), static_cast<int>(Triggers.size()), …) and calls
+  //     qteditor/d3_editor_state.cpp (index_to_int(app.current.face), static_cast<int>(Triggers.size()), …) and calls
   //     FreeAllRooms / FreeAllObjects on Descent3Core without exploding.
   //   - RenderLevelStats returns a non-empty buffer whose first three lines
   //     are the "Level Stats:" header the Win32 EditorMessageBox got.
@@ -4654,8 +4654,8 @@ private slots:
     app.New_mine = false;
     app.World_changed = true;
     CreateNewMine();
-    QCOMPARE(app.current.face.value_or(-1), 0);
-    QCOMPARE(app.current.portal.value_or(-1), -1);
+    QCOMPARE(index_to_int(app.current.face), 0);
+    QCOMPARE(index_to_int(app.current.portal), -1);
     QCOMPARE(static_cast<int>(Triggers.size()), 0);
     QCOMPARE(app.Current_trigger.value_or(-1), -1);
     QCOMPARE(app.view_mode, state::viewer::mine);
@@ -4962,11 +4962,11 @@ private slots:
     QCOMPARE(app.Mine_changed, 1);
     // AddRoom wrote a fresh room into Rooms[] at a slot >0 and made it
     // the current selection.
-    QVERIFY(app.current.room.value_or(-1) != nullptr);
-    QVERIFY(app.current.room.value_or(-1) != &Rooms[0]);
-    QVERIFY(app.current.room.value_or(-1)->used);
-    QVERIFY(app.current.room.value_or(-1)->num_verts >= 8); // 4 (cnv) * 2 verts
-    QVERIFY(app.current.room.value_or(-1)->num_faces == 6); // cnv + 2
+    QVERIFY(index_to_int(app.current.room) != nullptr);
+    QVERIFY(index_to_int(app.current.room) != &Rooms[0]);
+    QVERIFY(index_to_int(app.current.room)->used);
+    QVERIFY(index_to_int(app.current.room)->num_verts >= 8); // 4 (cnv) * 2 verts
+    QVERIFY(index_to_int(app.current.room)->num_faces == 6); // cnv + 2
 
     // DeleteRoom with no current selection is a no-op but must report
     // false so the menu's signal handler doesn't trigger a redraw.
@@ -4980,8 +4980,8 @@ private slots:
     app.Mine_changed = 0;
     QVERIFY(DeleteRoom());
     QVERIFY(app.current.room == nullptr);
-    QCOMPARE(app.current.face.value_or(-1), -1);
-    QCOMPARE(app.current.portal.value_or(-1), -1);
+    QCOMPARE(index_to_int(app.current.face), -1);
+    QCOMPARE(index_to_int(app.current.portal), -1);
     QCOMPARE(app.Mine_changed, 1);
 
     // (testObjectOpsContract lives below; see line ~1090)

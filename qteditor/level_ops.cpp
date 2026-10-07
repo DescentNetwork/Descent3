@@ -143,7 +143,7 @@ void CreateNewMine() {
   Player_object = nullptr;
 
   // Create the default room (octagonal prism at Mine_origin).
-  app.current.room = CreateDefaultRoom();
+  app.current.room = to_roomnum(CreateDefaultRoom());
 
   // Reset selection / viewer globals.
   app.current.face = 0;

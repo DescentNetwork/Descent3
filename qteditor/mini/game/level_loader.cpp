@@ -1055,14 +1055,14 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
 static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_EDITOR_INFO);
 
-  ofile << static_cast<int16_t>(app.current.room.has_value() ? app.current.room.value_or(-1) : -1);
-  ofile << static_cast<int16_t>(app.current.face.value_or(-1));
-  ofile << static_cast<int16_t>(app.current.edge.value_or(-1));
-  ofile << static_cast<int16_t>(app.current.vert.value_or(-1));
-  ofile << static_cast<int16_t>(app.marked.room.has_value() ? app.marked.room.value_or(-1) : -1);
-  ofile << static_cast<int16_t>(app.marked.face.value_or(-1));
-  ofile << static_cast<int16_t>(app.marked.edge.value_or(-1));
-  ofile << static_cast<int16_t>(app.marked.vert.value_or(-1));
+  ofile << static_cast<int16_t>(app.current.room.has_value() ? index_to_int(app.current.room) : -1);
+  ofile << static_cast<int16_t>(index_to_int(app.current.face));
+  ofile << static_cast<int16_t>(index_to_int(app.current.edge));
+  ofile << static_cast<int16_t>(index_to_int(app.current.vert));
+  ofile << static_cast<int16_t>(app.marked.room.has_value() ? index_to_int(app.marked.room) : -1);
+  ofile << static_cast<int16_t>(index_to_int(app.marked.face));
+  ofile << static_cast<int16_t>(index_to_int(app.marked.edge));
+  ofile << static_cast<int16_t>(index_to_int(app.marked.vert));
 
   ofile << static_cast<int32_t>(N_selected_rooms);
   for (int i = 0; i < N_selected_rooms; i++)

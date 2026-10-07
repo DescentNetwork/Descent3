@@ -3497,9 +3497,9 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
 
 #ifdef EDITOR
   if (OUTLINE_ON(OM_MINE)) {
-    OutlineCurrentFace(app.current.room.value_or(-1), app.current.face.value_or(-1), app.current.edge.value_or(-1), app.current.vert.value_or(-1), CURFACE_COLOR, CUREDGE_COLOR);
-    if (app.marked.room.value_or(-1) != -1)
-      OutlineCurrentFace(app.marked.room.value_or(-1), app.marked.face.value_or(-1), app.marked.edge.value_or(-1), app.marked.vert.value_or(-1), MARKEDFACE_COLOR, MARKEDEDGE_COLOR);
+    OutlineCurrentFace(index_to_int(app.current.room), index_to_int(app.current.face), index_to_int(app.current.edge), index_to_int(app.current.vert), CURFACE_COLOR, CUREDGE_COLOR);
+    if (index_to_int(app.marked.room) != -1)
+      OutlineCurrentFace(index_to_int(app.marked.room), index_to_int(app.marked.face), index_to_int(app.marked.edge), index_to_int(app.marked.vert), MARKEDFACE_COLOR, MARKEDEDGE_COLOR);
     if (app.placed.room)
       DrawPlacedRoomFace(index_to_int(app.placed.room), &app.placed.origin, &app.placed.rotmat, &app.placed.attachpoint,
                          static_cast<int>(*app.placed.room_face), PLACED_COLOR);
