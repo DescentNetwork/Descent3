@@ -787,7 +787,7 @@ struct object {
   float size;    // 3d size of object - for collision detection
   float shields; // Starts at maximum, when <0, object dies..
 
-  int8_t contains_type;   // Type of object this object contains (eg, spider contains powerup)
+  object_type contains_type;   // Type of object this object contains (eg, spider contains powerup)
   int8_t contains_id;     // ID of object this object contains (eg, id = blue type = key)
   int8_t contains_count;  // number of objects of type:id this object contains
   int8_t pad3;            // keep alignment

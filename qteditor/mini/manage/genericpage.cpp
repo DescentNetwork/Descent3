@@ -121,11 +121,7 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
   infile >> version_tmp;
   int version = version_tmp;
 
-  {
-    uint8_t b = 0;
-    infile >> b;
-    genericpage->objinfo_struct.type = static_cast<object_type>(b);
-  }
+  infile >> reinterpret_cast<uint8_t&>(genericpage->objinfo_struct.type);
 
   // Read object name
   infile >> genericpage->objinfo_struct.name;
@@ -316,7 +312,7 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
   int16_t version = GENERICFILE_VERSION;
   outfile << version;
 
-  outfile << static_cast<uint8_t>(genericpage->objinfo_struct.type);
+  outfile << reinterpret_cast<const uint8_t&>(genericpage->objinfo_struct.type);
 
   // Write object name
   outfile << genericpage->objinfo_struct.name;

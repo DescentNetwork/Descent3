@@ -537,7 +537,7 @@ bool ObjInit(object& obj, object_type type, int id, int handle, vector3& pos, fl
   obj.generic_sent_nonvis = 0;
   obj.custom_default_script_name.clear();
   obj.custom_default_module_name.clear();
-  obj.contains_type = -1;
+  obj.contains_type = object_type::none;
   obj.lifeleft = 0;
   obj.attach_children.clear();
 

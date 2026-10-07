@@ -1481,11 +1481,12 @@ static QByteArray serializeObject(const object &obj) {
   QDataStream out(&data, QIODevice::WriteOnly);
   out.setVersion(QDataStream::Qt_5_0);
 
-  out << quint8(obj.type) << quint8(obj.dummy_type) << quint16(obj.id) << quint32(std::bit_cast<uint32_t>(obj.flags));
+  out << reinterpret_cast<const quint8&>(obj.type) << reinterpret_cast<const quint8&>(obj.dummy_type)
+      << quint16(obj.id) << quint32(std::bit_cast<uint32_t>(obj.flags));
   out << QString::fromStdString(obj.name);
   out << qint32(obj.handle) << qint16(obj.next) << qint16(obj.prev);
-  out << quint8(obj.control_type) << quint8(obj.movement_type) << quint8(obj.render_type)
-      << quint8(obj.lighting_render_type);
+  out << reinterpret_cast<const quint8&>(obj.control_type) << reinterpret_cast<const quint8&>(obj.movement_type)
+      << reinterpret_cast<const quint8&>(obj.render_type) << reinterpret_cast<const quint8&>(obj.lighting_render_type);
   out << (obj.roomnum ? qint32(static_cast<int32_t>(*obj.roomnum)) : qint32(-1));
   writeVector(out, obj.pos);
   for (int i = 0; i < 9; ++i)
@@ -1495,7 +1496,7 @@ static QByteArray serializeObject(const object &obj) {
   writeVector(out, obj.wall_sphere_offset);
   writeVector(out, obj.anim_sphere_offset);
   out << obj.size << obj.shields;
-  out << qint8(obj.contains_type) << qint8(obj.contains_id) << qint8(obj.contains_count);
+  out << reinterpret_cast<const quint8&>(obj.contains_type) << qint8(obj.contains_id) << qint8(obj.contains_count);
   out << obj.creation_time << obj.lifeleft << obj.lifetime;
   out << qint32(obj.parent_handle) << qint32(obj.attach_ultimate_handle)
       << qint32(obj.attach_parent_handle);
@@ -1504,7 +1505,7 @@ static QByteArray serializeObject(const object &obj) {
   for (int32_t c : obj.attach_children)
     children.push_back(c);
   out << children;
-  out << quint8(obj.weapon_fire_flags) << qint8(obj.attach_type) << obj.attach_dist;
+  out << quint8(obj.weapon_fire_flags) << reinterpret_cast<const quint8&>(obj.attach_type) << obj.attach_dist;
   writeVector(out, obj.min_xyz);
   writeVector(out, obj.max_xyz);
   out << obj.impact_size << obj.impact_time << obj.impact_player_damage << obj.impact_generic_damage
@@ -1537,8 +1538,8 @@ static object deserializeObject(const QByteArray &data) {
   qint32 i32 = 0;
   qint16 i16 = 0;
 
-  in >> b8; obj.type = static_cast<object_type>(b8);
-  in >> b8; obj.dummy_type = static_cast<object_type>(b8);
+  in >> reinterpret_cast<quint8&>(obj.type);
+  in >> reinterpret_cast<quint8&>(obj.dummy_type);
   in >> u16; obj.id = u16;
   in >> u32; obj.flags = std::bit_cast<object_flags_t>(u32);
   QString name;
@@ -1546,10 +1547,10 @@ static object deserializeObject(const QByteArray &data) {
   in >> i32; obj.handle = i32;
   in >> i16; obj.next = i16;
   in >> i16; obj.prev = i16;
-  in >> b8; obj.control_type = static_cast<control_type>(b8);
-  in >> b8; obj.movement_type = static_cast<movement_type>(b8);
-  in >> b8; obj.render_type = static_cast<render_type>(b8);
-  in >> b8; obj.lighting_render_type = static_cast<lighting_render_type>(b8);
+  in >> reinterpret_cast<quint8&>(obj.control_type);
+  in >> reinterpret_cast<quint8&>(obj.movement_type);
+  in >> reinterpret_cast<quint8&>(obj.render_type);
+  in >> reinterpret_cast<quint8&>(obj.lighting_render_type);
   in >> i32; obj.roomnum = (i32 == -1) ? index_t{} : index_t{static_cast<uint32_t>(i32)};
   obj.pos = readVector(in);
   for (int i = 0; i < 9; ++i)
@@ -1559,8 +1560,8 @@ static object deserializeObject(const QByteArray &data) {
   obj.wall_sphere_offset = readVector(in);
   obj.anim_sphere_offset = readVector(in);
   in >> obj.size >> obj.shields;
+  in >> reinterpret_cast<quint8&>(obj.contains_type);
   qint8 i8 = 0;
-  in >> i8; obj.contains_type = i8;
   in >> i8; obj.contains_id = i8;
   in >> i8; obj.contains_count = i8;
   in >> obj.creation_time >> obj.lifeleft >> obj.lifetime;
@@ -1573,7 +1574,7 @@ static object deserializeObject(const QByteArray &data) {
   for (int i = 0; i < int(children.size()); ++i)
     obj.attach_children[size_t(i)] = children[i];
   in >> b8; obj.weapon_fire_flags = b8;
-  in >> i8; obj.attach_type = static_cast<attach_type>(i8);
+  in >> reinterpret_cast<quint8&>(obj.attach_type);
   in >> obj.attach_dist;
   obj.min_xyz = readVector(in);
   obj.max_xyz = readVector(in);

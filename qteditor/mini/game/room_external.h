@@ -156,17 +156,6 @@ struct [[gnu::packed]] face_flags_t
 };
 static_assert(sizeof(face_flags_t) == sizeof(uint16_t));
 
-// Serialized as the raw uint16 face-flag word on disk.
-inline byte_istream& operator>>(byte_istream& input, face_flags_t& data) {
-  uint16_t raw = 0;
-  input >> raw;
-  data = std::bit_cast<face_flags_t>(raw);
-  return input;
-}
-inline byte_ostream& operator<<(byte_ostream& output, const face_flags_t& data) {
-  return output << std::bit_cast<uint16_t>(data);
-}
-
 // UVLs for room verts
 struct roomUVL {
   float u, v; // texture coordinates
@@ -293,17 +282,6 @@ struct [[gnu::packed]] room_flags_t
 #endif
 };
 static_assert(sizeof(room_flags_t) == sizeof(uint32_t));
-
-// Serialized as the raw uint32 room-flag word on disk.
-inline byte_istream& operator>>(byte_istream& input, room_flags_t& data) {
-  uint32_t raw = 0;
-  input >> raw;
-  data = std::bit_cast<room_flags_t>(raw);
-  return input;
-}
-inline byte_ostream& operator<<(byte_ostream& output, const room_flags_t& data) {
-  return output << std::bit_cast<uint32_t>(data);
-}
 
 // the basic building-block of a Descent 3 level
 struct room_t {

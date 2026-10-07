@@ -1395,7 +1395,7 @@ byte_istream& operator>>(byte_istream& input, face& data) {
       alphaed = 1;
   }
 
-  input >> data.flags;
+  input >> reinterpret_cast<uint16_t&>(data.flags);
   if (alphaed)
     data.flags.vertex_alpha = true;
   else
@@ -1426,7 +1426,7 @@ byte_ostream& operator<<(byte_ostream& output, const face& data) {
   for (int i = 0; i < data.num_verts; i++) {
     output << data.face_uvls[i].u << data.face_uvls[i].v << data.face_uvls[i].alpha;
   }
-  output << data.flags << data.portal_num << data.tmap;
+  output << reinterpret_cast<const uint16_t&>(data.flags) << data.portal_num << data.tmap;
   if (data.flags.lightmap) {
     output << data.lmi_handle;
     for (int i = 0; i < data.num_verts; i++)
@@ -1522,7 +1522,7 @@ byte_istream& operator>>(byte_istream& input, room_t& data) {
   for (int i = 0; i < data.num_portals; i++)
     input >> data.portals[i];
 
-  input >> data.flags;
+  input >> reinterpret_cast<uint32_t&>(data.flags);
   input >> data.pulse_time >> data.pulse_offset >> data.mirror_face;
 
   if (data.flags.door) {
@@ -1575,7 +1575,7 @@ byte_ostream& operator<<(byte_ostream& output, const room_t& data) {
   for (int i = 0; i < data.num_portals; i++)
     output << data.portals[i];
 
-  output << data.flags;
+  output << reinterpret_cast<const uint32_t&>(data.flags);
   output << data.pulse_time << data.pulse_offset << data.mirror_face;
 
   if (data.flags.door) {

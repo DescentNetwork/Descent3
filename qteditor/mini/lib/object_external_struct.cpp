@@ -82,7 +82,6 @@ byte_ostream& operator<<(byte_ostream& output, const physics_info& data)
 
 byte_istream& operator>>(byte_istream& input, light_info& data)
 {
-  uint8_t lrt = 0;
   input
          >> data.light_distance
          >> data.red_light1
@@ -97,8 +96,7 @@ byte_istream& operator>>(byte_istream& input, light_info& data)
          >> reinterpret_cast<uint32_t&>(data.flags)
          >> data.timebits
          >> data.angle
-         >> lrt;
-  data.lighting_render_type = static_cast<lighting_render_type>(lrt);
+         >> reinterpret_cast<uint8_t&>(data.lighting_render_type);
   return input;
 }
 
@@ -118,7 +116,7 @@ byte_ostream& operator<<(byte_ostream& output, const light_info& data)
          << reinterpret_cast<const uint32_t&>(data.flags)
          << data.timebits
          << data.angle
-         << static_cast<uint8_t>(data.lighting_render_type);
+         << reinterpret_cast<const uint8_t&>(data.lighting_render_type);
 }
 
 //-----------------------------------------------------------------------------
@@ -242,10 +240,8 @@ static byte_ostream& writeObjectLightmaps(byte_ostream& output, const object& da
 
 byte_istream& operator>>(byte_istream& input, object& data)
 {
-  uint8_t type = 0;
-  input >> type;
-  data.type = static_cast<object_type>(type);
-  input >> data.id
+  input >> reinterpret_cast<uint8_t&>(data.type)
+      >> data.id
       >> data.name
       >> reinterpret_cast<uint32_t&>(data.flags);
 
@@ -259,7 +255,7 @@ byte_istream& operator>>(byte_istream& input, object& data)
   input >> data.roomnum
       >> data.pos
       >> data.orient
-      >> data.contains_type
+      >> reinterpret_cast<uint8_t&>(data.contains_type)
       >> data.contains_id
       >> data.contains_count
       >> data.lifeleft;
@@ -284,7 +280,7 @@ byte_istream& operator>>(byte_istream& input, object& data)
 }
 
 byte_ostream& operator<<(byte_ostream& output, const object& data) {
-  output << static_cast<uint8_t>(data.type)
+  output << reinterpret_cast<const uint8_t&>(data.type)
          << data.id
          << data.name
          << reinterpret_cast<const uint32_t&>(data.flags);
@@ -293,7 +289,7 @@ byte_ostream& operator<<(byte_ostream& output, const object& data) {
   output << data.roomnum
          << data.pos
          << data.orient
-         << data.contains_type
+         << reinterpret_cast<const uint8_t&>(data.contains_type)
          << data.contains_id
          << data.contains_count
          << data.lifeleft;

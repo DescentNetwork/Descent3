@@ -1610,6 +1610,92 @@ private slots:
     QCOMPARE(reinterpret_cast<uint32_t &>(en.flags), static_cast<uint32_t>(0x41));
   }
 
+  // Enum fields are streamed with the same reinterpret_cast pattern as the
+  // bit-flag structs above, so each value has to land in exactly its
+  // underlying type's bytes on disk.  These pin the two enum-bearing records:
+  // object::type (first byte of the OBJS chunk) and
+  // light_info::lighting_render_type (last byte of the light_info chunk).
+  void testEnumFieldsStreamAsUnderlyingBytes()
+  {
+    static_assert(sizeof(object_type) == 1);
+    static_assert(sizeof(lighting_render_type) == 1);
+
+    std::vector<uint8_t> buffer(64 * 1024);
+
+    object obj{};
+    obj.type = object_type::robot;
+    {
+      posix_ostream out(buffer.data(), buffer.size(), std::ios_base::out);
+      out << obj;
+      const size_t bytes = static_cast<size_t>(out.tell());
+      out.close();
+      QVERIFY(bytes > 0);
+      QCOMPARE(static_cast<int>(buffer[0]), static_cast<int>(object_type::robot));
+
+      posix_istream in(buffer.data(), bytes, std::ios_base::in);
+      object got{};
+      in >> got;
+      QCOMPARE(static_cast<int>(got.type), static_cast<int>(object_type::robot));
+    }
+
+    light_info li{};
+    li.lighting_render_type = lighting_render_type::lightmaps;
+    {
+      posix_ostream out(buffer.data(), buffer.size(), std::ios_base::out);
+      out << li;
+      const size_t bytes = static_cast<size_t>(out.tell());
+      out.close();
+      QVERIFY(bytes > 0);
+      QCOMPARE(static_cast<int>(buffer[bytes - 1]), static_cast<int>(lighting_render_type::lightmaps));
+
+      posix_istream in(buffer.data(), bytes, std::ios_base::in);
+      light_info got{};
+      in >> got;
+      QCOMPARE(static_cast<int>(got.lighting_render_type), static_cast<int>(lighting_render_type::lightmaps));
+    }
+  }
+
+  // contains_type was an int8_t holding -1 for "contains nothing"; it is now
+  // object_type::none (255), so the raw OBJS byte has to stay 0xFF and the
+  // value has to round-trip through the record writer.
+  void testContainsTypeStreamsAsLegacySentinelByte()
+  {
+    std::vector<uint8_t> buffer(64 * 1024);
+    std::vector<uint8_t> other(64 * 1024);
+
+    object none_obj{};
+    none_obj.contains_type = object_type::none;
+    object powerup_obj{};
+    powerup_obj.contains_type = object_type::powerup;
+
+    posix_ostream out(buffer.data(), buffer.size(), std::ios_base::out);
+    out << none_obj;
+    const size_t bytes = static_cast<size_t>(out.tell());
+    out.close();
+
+    posix_ostream out2(other.data(), other.size(), std::ios_base::out);
+    out2 << powerup_obj;
+    out2.close();
+
+    // The two records differ only in contains_type, so the first differing
+    // byte is that field without hard-coding the record layout.
+    int idx = -1;
+    for (size_t i = 0; i < bytes; i++) {
+      if (buffer[i] != other[i]) {
+        idx = static_cast<int>(i);
+        break;
+      }
+    }
+    QVERIFY2(idx >= 0, "contains_type byte not located in the object record");
+    QCOMPARE(static_cast<int>(buffer[static_cast<size_t>(idx)]), 0xFF);
+    QCOMPARE(static_cast<int>(other[static_cast<size_t>(idx)]), static_cast<int>(object_type::powerup));
+
+    posix_istream in(buffer.data(), bytes, std::ios_base::in);
+    object got{};
+    in >> got;
+    QCOMPARE(static_cast<int>(got.contains_type), static_cast<int>(object_type::none));
+  }
+
   void testLevelGoalsChunkRoundTrip()
   {
     InitRooms();
