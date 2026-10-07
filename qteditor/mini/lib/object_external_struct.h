@@ -136,8 +136,32 @@
 // Determine if a roomnum is really a cell number
 #define ROOMNUM_OUTSIDE(roomnum) (((roomnum) & ROOMNUM_CELLNUM_FLAG) != 0)
 
-// Determine if an object is outside
-#define OBJECT_OUTSIDE(objp) ROOMNUM_OUTSIDE((objp)->roomnum)
+// Determine if an object is outside.  An object with no room (nullopt) counts
+// as outside, matching the legacy -1 sentinel behaviour: callers rely on this
+// to avoid indexing Rooms[] with an unset room number.
+#define OBJECT_OUTSIDE(objp) ((objp)->is_outside())
+
+// index_t room-number helpers.  object::roomnum is an index_t; nullopt means
+// "not in the world" (the legacy -1), while a value encodes either a room index
+// (high bit clear) or a terrain cell (high bit set), exactly like the macros.
+inline bool roomnum_outside(const index_t& roomnum) {
+  return !roomnum || ((*roomnum) & ROOMNUM_CELLNUM_FLAG) != 0;
+}
+
+inline uint32_t roomnum_cell(const index_t& roomnum) {
+  // nullopt maps to the legacy -1 mask so this mirrors CELLNUM(-1) exactly.
+  return roomnum ? ((*roomnum) & ROOMNUM_CELLNUM_MASK) : ROOMNUM_CELLNUM_MASK;
+}
+
+// Convert a legacy integer room number (-1 meaning "no room") to index_t.
+inline index_t to_roomnum(int roomnum) {
+  return roomnum == -1 ? index_t{} : index_t{static_cast<uint32_t>(roomnum)};
+}
+
+// Convert an index_t room number back to the legacy int form (-1 when unset).
+inline int from_roomnum(const index_t& roomnum) {
+  return roomnum ? static_cast<int>(*roomnum) : -1;
+}
 
 /*
  *    STRUCTURES
@@ -749,7 +773,7 @@ struct object {
   ::render_type render_type;           //  how this object renders
   ::lighting_render_type lighting_render_type; // how this object is lit.  See flags above
 
-  int32_t roomnum; // room number or terrain cell containing object
+  index_t roomnum; // room number or terrain cell containing object; nullopt = not in the world
 
   vector3 pos;      // absolute x,y,z coordinate of center of object
   matrix orient;   // orientation of object in world
@@ -837,7 +861,7 @@ struct object {
   std::string custom_default_script_name;
   std::string custom_default_module_name;
 
-  bool is_outside(void) const { return ROOMNUM_OUTSIDE(roomnum); }
+  bool is_outside(void) const { return !roomnum || ((*roomnum) & ROOMNUM_CELLNUM_FLAG) != 0; }
 };
 
 // Level-file (OBJS chunk) record serialization; read mirrors write.  This is

@@ -13,7 +13,7 @@ inline byte_istream& operator >>(byte_istream& input, index_t& data)
   if(val == UINT32_MAX)
     data.reset();
   else
-    *data = val;
+    data = val;
   return input;
 }
 

@@ -827,7 +827,7 @@ constexpr float kDefaultViewRadius = 1.0f;
 // should be called whenever the viewer object is moved.  ObjSetPos relinks the
 // viewer into the mine/terrain; when it crosses the boundary the global view
 // mode follows (state::viewer::terrain <-> state::viewer::mine), mirroring SetViewMode().
-static void moveViewer(vector3& pos, int roomnum, optref<matrix> orient) {
+static void moveViewer(vector3& pos, index_t roomnum, optref<matrix> orient) {
   if (Viewer_object == nullptr)
     return;
   const bool was_outside = OBJECT_OUTSIDE(Viewer_object);
@@ -920,7 +920,7 @@ static void setViewerFromRoomFace(int roomnum, int facenum, bool room_center) {
     Viewer_object->pos = newpos;
     Viewer_object->orient = orient;
   } else
-    moveViewer(newpos, roomnum, orient);
+    moveViewer(newpos, to_roomnum(roomnum), orient);
 
   if (outside_mine)
     Viewer_object->flags.outside_mine = true;
@@ -1040,7 +1040,7 @@ void MainWindow::onMoveCameraToCurrentObject() {
   fvi_info hit_info;
   memset(&fq, 0, sizeof(fq));
   fq.p0 = &Viewer_object->pos;
-  fq.startroom = Viewer_object->roomnum;
+  fq.startroom = Viewer_object->roomnum ? static_cast<int>(*Viewer_object->roomnum) : -1;
   fq.p1 = &pos;
   fq.thisobjnum = OBJNUM(Viewer_object);
   fq.ignore_obj_list = nullptr;
@@ -1048,7 +1048,7 @@ void MainWindow::onMoveCameraToCurrentObject() {
   fvi_FindIntersection(&fq, &hit_info);
 
   // Move the viewer to the new position
-  moveViewer(hit_info.hit_pnt, hit_info.hit_room, std::nullopt);
+  moveViewer(hit_info.hit_pnt, to_roomnum(hit_info.hit_room), std::nullopt);
   app.Viewer_moved = true;
   app.State_changed = true;
 
@@ -1486,7 +1486,7 @@ static QByteArray serializeObject(const object &obj) {
   out << qint32(obj.handle) << qint16(obj.next) << qint16(obj.prev);
   out << quint8(obj.control_type) << quint8(obj.movement_type) << quint8(obj.render_type)
       << quint8(obj.lighting_render_type);
-  out << qint32(obj.roomnum);
+  out << (obj.roomnum ? qint32(static_cast<int32_t>(*obj.roomnum)) : qint32(-1));
   writeVector(out, obj.pos);
   for (int i = 0; i < 9; ++i)
     out << obj.orient.a1d[i];
@@ -1550,7 +1550,7 @@ static object deserializeObject(const QByteArray &data) {
   in >> b8; obj.movement_type = static_cast<movement_type>(b8);
   in >> b8; obj.render_type = static_cast<render_type>(b8);
   in >> b8; obj.lighting_render_type = static_cast<lighting_render_type>(b8);
-  in >> i32; obj.roomnum = i32;
+  in >> i32; obj.roomnum = (i32 == -1) ? index_t{} : index_t{static_cast<uint32_t>(i32)};
   obj.pos = readVector(in);
   for (int i = 0; i < 9; ++i)
     in >> obj.orient.a1d[i];

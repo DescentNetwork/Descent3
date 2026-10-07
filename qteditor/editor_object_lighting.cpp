@@ -351,15 +351,16 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
 
           Light_surfaces[surface_index].normal =
               LightmapInfo[Objects[i].lm_object.lightmap_faces[t][j].lmi_handle].normal;
-          Light_surfaces[surface_index].roomnum = Objects[i].roomnum;
+          Light_surfaces[surface_index].roomnum = Objects[i].roomnum.value_or(-1);
 
           if (Light_surfaces[surface_index].surface_type == ST_ROOM_OBJECT) {
-            if (Rooms[Objects[i].roomnum].flags.touches_terrain)
+            const int roomnum = static_cast<int>(*Objects[i].roomnum);
+            if (Rooms[roomnum].flags.touches_terrain)
               Light_surfaces[surface_index].flags.touches_terrain = 1;
 
-            for (int k = 0; k < Rooms[Objects[i].roomnum].num_portals; k++) {
-              if (Rooms[Objects[i].roomnum].portals[k].connected_room == -1 ||
-                  Rooms[Rooms[Objects[i].roomnum].portals[k].connected_room].flags.external)
+            for (int k = 0; k < Rooms[roomnum].num_portals; k++) {
+              if (Rooms[roomnum].portals[k].connected_room == -1 ||
+                  Rooms[Rooms[roomnum].portals[k].connected_room].flags.external)
                 Light_surfaces[surface_index].flags.touches_terrain = 1;
             }
           }
@@ -427,7 +428,7 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
 
           Light_surfaces[surface_index].normal =
               LightmapInfo[Objects[i].lm_object.lightmap_faces[t][j].lmi_handle].normal;
-          Light_surfaces[surface_index].roomnum = Objects[i].roomnum;
+          Light_surfaces[surface_index].roomnum = Objects[i].roomnum.value_or(-1);
 
           // Set the vertices for each element
           BuildElementListForObjectFace(i, t, j, &Light_surfaces[surface_index]);

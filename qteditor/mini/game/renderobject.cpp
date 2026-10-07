@@ -1062,7 +1062,7 @@ bool SetupTerrainObject(object& obj) {
       scalar_g = 1.0;
       scalar_b = 1.0;
     } else {
-      scalar = GetTerrainDynamicScalar(obj.pos, CELLNUM(obj.roomnum));
+      scalar = GetTerrainDynamicScalar(obj.pos, static_cast<int>(roomnum_cell(obj.roomnum)));
       if (obj.effect_info && (obj.effect_info->type_flags.volume_lit)) {
         scalar_r = std::min<float>(1, scalar + (obj.effect_info->dynamic_red));
         scalar_g = std::min<float>(1, scalar + (obj.effect_info->dynamic_green));
@@ -1114,7 +1114,7 @@ bool SetupMineObject(object& obj) {
 
     // Get the volume light for this object
     if (obj.effect_info && (obj.effect_info->type_flags.volume_lit) &&
-        !(Rooms[obj.roomnum].flags.external)) {
+        !(Rooms[*obj.roomnum].flags.external)) {
       vector3 vpos = obj.pos;
       if (Render_mirror_for_room)
         vpos = obj.last_pos;
@@ -1123,7 +1123,7 @@ bool SetupMineObject(object& obj) {
         float new_r, new_g, new_b;
         GetRoomDynamicScalar(&obj.effect_info->volume_old_pos, obj.effect_info->volume_old_room, &old_r, &old_g,
                              &old_b);
-        GetRoomDynamicScalar(&vpos, obj.roomnum, &new_r, &new_g, &new_b);
+        GetRoomDynamicScalar(&vpos, static_cast<int>(*obj.roomnum), &new_r, &new_g, &new_b);
         scalar_r =
             (old_r * obj.effect_info->volume_change_time) + ((1 - obj.effect_info->volume_change_time) * new_r);
         scalar_g =
@@ -1131,7 +1131,7 @@ bool SetupMineObject(object& obj) {
         scalar_b =
             (old_b * obj.effect_info->volume_change_time) + ((1 - obj.effect_info->volume_change_time) * new_b);
       } else
-        GetRoomDynamicScalar(&vpos, obj.roomnum, &scalar_r, &scalar_g, &scalar_b);
+        GetRoomDynamicScalar(&vpos, static_cast<int>(*obj.roomnum), &scalar_r, &scalar_g, &scalar_b);
 
       scalar_r = std::min<float>(1, scalar_r + (obj.effect_info->dynamic_red));
       scalar_g = std::min<float>(1, scalar_g + (obj.effect_info->dynamic_green));
@@ -1560,17 +1560,17 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
       use_effect = 1;
     }
     // Fog this object if needed
-    if (!obj.is_outside() && (Rooms[obj.roomnum].flags.fog) && Room_fog_plane_check != -1) {
+    if (!obj.is_outside() && (Rooms[*obj.roomnum].flags.fog) && Room_fog_plane_check != -1) {
       pe.type.fogged_model = true;
       pe.fog_distance = Room_fog_distance;
       pe.fog_eye_distance = Room_fog_eye_distance;
       pe.fog_plane_check = Room_fog_plane_check;
       pe.fog_portal_vert = Room_fog_portal_vert;
       pe.fog_plane = Room_fog_plane;
-      pe.fog_depth = Rooms[obj.roomnum].fog_depth;
-      pe.fog_r = Rooms[obj.roomnum].fog_r;
-      pe.fog_g = Rooms[obj.roomnum].fog_g;
-      pe.fog_b = Rooms[obj.roomnum].fog_b;
+      pe.fog_depth = Rooms[*obj.roomnum].fog_depth;
+      pe.fog_r = Rooms[*obj.roomnum].fog_r;
+      pe.fog_g = Rooms[*obj.roomnum].fog_g;
+      pe.fog_b = Rooms[*obj.roomnum].fog_b;
 
       use_effect = 1;
     }

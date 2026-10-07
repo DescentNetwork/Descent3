@@ -386,7 +386,7 @@ int SlewFrame(object *obj, int movement_limitations) {
 
     if (app.view_mode == state::viewer::room) {
       // Room number is bogus in room view, so don't update it
-      new_room = obj->roomnum;
+      new_room = from_roomnum(obj->roomnum);
     } else
 
       // NOTE LINK TO ABOVE IF
@@ -399,9 +399,9 @@ int SlewFrame(object *obj, int movement_limitations) {
           outside_mine = 0;
           LOG_DEBUG("SLEW: Re-entered mine at room %d", new_room);
         } else // not back in the mine
-          new_room = obj->roomnum;
+          new_room = from_roomnum(obj->roomnum);
       } else {
-        bool was_outside = (ROOMNUM_OUTSIDE(obj->roomnum) != 0);
+        bool was_outside = roomnum_outside(obj->roomnum);
 
         // Limit new position to terrain bounds if outside
         if (was_outside) {
@@ -417,7 +417,7 @@ int SlewFrame(object *obj, int movement_limitations) {
 
         // Call FVI up get updated room number
         fq.p0 = &obj->pos;
-        fq.startroom = obj->roomnum;
+        fq.startroom = from_roomnum(obj->roomnum);
         fq.p1 = &new_pos;
         fq.rad = 0;
         fq.thisobjnum = OBJNUM(obj);
@@ -428,7 +428,7 @@ int SlewFrame(object *obj, int movement_limitations) {
 
         // If bad room, don't move
         if ((fate == HIT_OUT_OF_TERRAIN_BOUNDS) || (hit_info.hit_room == -1)) {
-          new_room = obj->roomnum;
+          new_room = from_roomnum(obj->roomnum);
           new_pos = obj->pos;
         } else
           new_room = hit_info.hit_room;
@@ -451,7 +451,7 @@ int SlewFrame(object *obj, int movement_limitations) {
           }
         }
 
-        if (new_room != obj->roomnum) { // if we've changed rooms, say so
+        if (new_room != from_roomnum(obj->roomnum)) { // if we've changed rooms, say so
           if (ROOMNUM_OUTSIDE(new_room))
             if (was_outside)
               LOG_DEBUG("SLEW: Moved to cell %d, BOA TR %d", CELLNUM(new_room),
@@ -466,7 +466,7 @@ int SlewFrame(object *obj, int movement_limitations) {
       }
 
     // Now we have the new room, so update the object position
-    ObjSetPos(*obj, new_pos, new_room, std::nullopt, false);
+    ObjSetPos(*obj, new_pos, to_roomnum(new_room), std::nullopt, false);
 
     // Set outside-mine flag if we're outside
     if (outside_mine)

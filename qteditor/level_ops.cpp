@@ -348,7 +348,7 @@ static int createViewerObject(state::viewer view_mode, vector3& pos, int roomnum
   // Highest_object_index (used by ObjRelink's assert below).
   ResetFreeObjects();
 
-  ObjSetPos(Objects[objnum], pos, roomnum, std::nullopt, false);
+  ObjSetPos(Objects[objnum], pos, to_roomnum(roomnum), std::nullopt, false);
 
   return objnum;
 }
@@ -418,7 +418,7 @@ void SetEditorViewer() {
         objnum = findNextViewerObject(app.Editor_viewer_id.value_or(-1), state::viewer::invalid);
         Q_ASSERT(objnum != -1);
       }
-      ObjSetPos(Objects[objnum], pos, roomnum, std::nullopt, true);
+      ObjSetPos(Objects[objnum], pos, to_roomnum(roomnum), std::nullopt, true);
     }
   }
 

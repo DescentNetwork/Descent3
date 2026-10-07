@@ -1968,15 +1968,15 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
           // in the loaded game tables, exactly as the engine's ReadObject does.
           obj->id = static_cast<uint16_t>(TranslateObjectId(obj->type, obj->id));
 
-          int roomnum = obj->roomnum;
+          index_t roomnum = obj->roomnum;
           LOG_DEBUG("OBJS[%d]: type=%d id=%d name='%s' flags=%u room=%d pos=(%f,%f,%f)",
                     objnum, static_cast<int>(obj->type), (int)obj->id, obj->name.c_str(), std::bit_cast<uint32_t>(obj->flags),
-                    roomnum, (double)obj->pos.x(), (double)obj->pos.y(), (double)obj->pos.z());
+                    roomnum ? static_cast<int>(*roomnum) : -1, (double)obj->pos.x(), (double)obj->pos.y(), (double)obj->pos.z());
           // Give the object a usable handle and link it into the mine, exactly
           // as the original LL_ReadObjects does (object.cpp / LoadLevel.cpp).
           obj->handle = (version >= 45) ? handle : (objnum + HANDLE_COUNT_INCREMENT);
-          obj->roomnum = -1; // ObjLink() expects the roomnum to be -1
-          if ((roomnum >= Rooms.size()) && !ROOMNUM_OUTSIDE(roomnum))
+          obj->roomnum.reset(); // ObjLink() expects the roomnum to be unset
+          if (roomnum && *roomnum >= Rooms.size() && !roomnum_outside(roomnum))
             obj->type = object_type::none; // loading object with invalid room number
           else
             ObjLink(objnum, roomnum);

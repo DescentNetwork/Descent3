@@ -704,7 +704,7 @@ void InitObjects(void);
 
 // links an object into a room's list of objects.
 // takes object number and room number
-void ObjLink(int objnum, int roomnum);
+void ObjLink(int objnum, index_t roomnum);
 
 // reverses ObjLink.
 void ObjUnlink(int objnum);
@@ -714,7 +714,7 @@ void ObjSetAABB(object& obj);
 
 // initialize a new object.  adds to the list for the given room
 // returns the object number
-index_t ObjCreate(object_type type, uint16_t id, int roomnum, vector3& pos, const matrix *orient, int parent_handle = OBJECT_HANDLE_NONE);
+index_t ObjCreate(object_type type, uint16_t id, index_t roomnum, vector3& pos, const matrix *orient, int parent_handle = OBJECT_HANDLE_NONE);
 
 // remove object from the world
 void ObjDelete(int objnum);
@@ -743,7 +743,7 @@ void ObjGotoNextViewer();
 //					pos - the new position
 //					roomnum - the correct roomnum for pos.  No error checking is done.
 //					orient - if set, the object's orientation is set to this.
-void ObjSetPos(object& obj, vector3& pos, int roomnum, optref<matrix> orient, bool f_update_attached_children);
+void ObjSetPos(object& obj, vector3& pos, index_t roomnum, optref<matrix> orient, bool f_update_attached_children);
 void ObjSetOrient(object& obj, const matrix& orient);
 
 // delete objects, such as weapons & explosions, that shouldn't stay between levels

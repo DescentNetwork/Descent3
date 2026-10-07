@@ -84,9 +84,9 @@ QString ObjectTreeDialog::makeInfoStr(const object *obj) {
   }
 
   if (OBJECT_OUTSIDE(obj))
-    str += QString("cell %1").arg(CELLNUM(obj->roomnum));
+    str += QString("cell %1").arg(roomnum_cell(obj->roomnum));
   else
-    str += QString("room %1").arg(obj->roomnum);
+    str += QString("room %1").arg(static_cast<int>(*obj->roomnum));
 
   return str;
 }

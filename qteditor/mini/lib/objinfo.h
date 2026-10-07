@@ -595,7 +595,6 @@ struct object_info {
 
 // The big array of object info
 extern object_info Object_info[];
-#include "utils.h"
 
 
 // Sets all objects to unused

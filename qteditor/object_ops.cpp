@@ -83,7 +83,7 @@ bool MoveObject(object& obj, vector3& newpos) {
   bool use_radius = (obj.movement_type == movement_type::physics);
 
   fq.p0 = &obj.pos;
-  fq.startroom = obj.roomnum;
+  fq.startroom = obj.roomnum ? static_cast<int>(*obj.roomnum) : -1;
   fq.p1 = &newpos;
   fq.thisobjnum = OBJNUM(&obj);
   fq.ignore_obj_list = NULL;
@@ -102,7 +102,7 @@ bool MoveObject(object& obj, vector3& newpos) {
     if (vm_VectorDistance(&obj.pos, &hit_info.hit_pnt) < MOVE_EPSILON)
       return false;
 
-  ObjSetPos(obj, hit_info.hit_pnt, hit_info.hit_room, std::nullopt, false);
+  ObjSetPos(obj, hit_info.hit_pnt, to_roomnum(hit_info.hit_room), std::nullopt, false);
   return true;
 }
 
@@ -283,7 +283,7 @@ bool HObjectPlace(object_type obj_type, uint16_t obj_id) {
     vm_VectorToMatrix(surface_orient, *surface_norm);
     vm_MatrixMulTMatrix(&object_orient, &surface_orient, &groundplane_orient);
 
-    ObjSetPos(obj, pos, roomnum, object_orient, false);
+    ObjSetPos(obj, pos, to_roomnum(roomnum), object_orient, false);
   } else {
     // No ground plane — move in front of viewer, facing viewer
     vector3 pos;
@@ -310,7 +310,7 @@ bool HObjectPlace(object_type obj_type, uint16_t obj_id) {
   // Deal with special stuff for player
   if (obj_type == object_type::player) {
     Players[obj_id].start_pos = obj.pos;
-    Players[obj_id].start_roomnum = obj.roomnum;
+    Players[obj_id].start_roomnum = obj.roomnum ? static_cast<int32_t>(*obj.roomnum) : -1;
     Players[obj_id].start_orient = obj.orient;
     vm_Orthogonalize(&Players[obj_id].start_orient);
   }

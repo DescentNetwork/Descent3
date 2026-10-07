@@ -2579,7 +2579,7 @@ SetGlowStatus(roomnum, LightGlowsThisFrame[i].facenum, center, size, FastCoronas
     } else {
       fq.p0 = &Viewer_eye;
       fq.p1 = &center;
-      fq.startroom = Viewer_object->roomnum;
+      fq.startroom = Viewer_object->roomnum ? static_cast<int>(*Viewer_object->roomnum) : -1;
     }
 
     fq.rad = 0.0f;

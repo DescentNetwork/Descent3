@@ -121,7 +121,7 @@ void ResetObjectList() {
   for (size_t i = 0; i < Objects.size(); i++) {
     Objects[i].handle = i;
     Objects[i].type = object_type::none;
-    Objects[i].roomnum = -1;
+    Objects[i].roomnum.reset();
   }
 
   // Build the free object list
@@ -139,7 +139,7 @@ void ResetFreeObjects() {
   Highest_object_index = -1;
 
   uint32_t i;
-  for (i = Num_objects = MAX_OBJECTS; --i >= 0;)
+  for (i = Num_objects = MAX_OBJECTS; i-- > 0;)
     if (Objects[i].type == object_type::none)
       free_obj_list[--Num_objects] = i;
     else if (Highest_object_index == -1)
@@ -247,32 +247,35 @@ void ObjFree(int objnum) {
 // ---------------------------------------------------------------------------
 
 // Links the object into the list for its room (or terrain cell).
-void ObjLink(int objnum, int roomnum) {
+void ObjLink(int objnum, index_t roomnum) {
   object *obj = &Objects[objnum];
   if (objnum == -1)
     return;
 
-  if (obj->roomnum != -1 || (obj->flags.big_object))
+  if (obj->roomnum.has_value() || (obj->flags.big_object))
     return;
 
-  if ((obj->size >= MIN_BIG_OBJ_RAD) && (!ROOMNUM_OUTSIDE(roomnum)))
+  if ((obj->size >= MIN_BIG_OBJ_RAD) && (!roomnum_outside(roomnum)))
     BigObjAdd(objnum);
 
   obj->roomnum = roomnum;
 
-  if (ROOMNUM_OUTSIDE(roomnum)) {
-    int cellnum = CELLNUM(roomnum);
+  if (roomnum_outside(roomnum)) {
+    if (!roomnum)
+      return;
+
+    int cellnum = static_cast<int>(roomnum_cell(roomnum));
     if (cellnum < 0 || cellnum > (TERRAIN_WIDTH + 1) * (TERRAIN_DEPTH + 1))
       return;
 
     obj->next = Terrain_seg[cellnum].objects;
     Terrain_seg[cellnum].objects = objnum;
   } else {
-    if (roomnum < 0 || roomnum >= Rooms.size())
+    if (!roomnum || *roomnum >= Rooms.size())
       return;
 
-    obj->next = Rooms[roomnum].objects;
-    Rooms[roomnum].objects = objnum;
+    obj->next = Rooms[*roomnum].objects;
+    Rooms[*roomnum].objects = objnum;
   }
 
   obj->prev = -1;
@@ -287,14 +290,14 @@ void ObjUnlink(int objnum) {
     return;
 
   // If object is already unlinked, do nothing
-  if (obj->roomnum == -1)
+  if (!obj->roomnum)
     return;
 
   if (obj->flags.big_object)
     BigObjRemove(objnum);
 
   if (OBJECT_OUTSIDE(obj)) {
-    int cellnum = CELLNUM(obj->roomnum);
+    int cellnum = static_cast<int>(roomnum_cell(obj->roomnum));
     if (cellnum < 0 || cellnum > (TERRAIN_WIDTH + 1) * (TERRAIN_DEPTH + 1))
       return;
 
@@ -308,10 +311,10 @@ void ObjUnlink(int objnum) {
     if (obj->next != -1)
       Objects[obj->next].prev = obj->prev;
   } else {
-    if (obj->roomnum < 0 || obj->roomnum >= Rooms.size())
+    if (*obj->roomnum >= Rooms.size())
       return;
 
-    room_t *rp = &Rooms[obj->roomnum];
+    room_t *rp = &Rooms[*obj->roomnum];
 
     if (obj->prev == -1)
       rp->objects = obj->next;
@@ -323,12 +326,12 @@ void ObjUnlink(int objnum) {
   }
 
   // Mark as not linked
-  obj->roomnum = -1;
+  obj->roomnum.reset();
 }
 
 // When an object has moved into a new room, this function unlinks it from its
 // old room and links it into the new room.
-void ObjRelink(int objnum, int newroomnum) {
+void ObjRelink(int objnum, index_t newroomnum) {
   if ((objnum < 0) || (objnum > Highest_object_index))
     return;
 
@@ -523,7 +526,7 @@ bool ObjInit(object& obj, object_type type, int id, int handle, vector3& pos, fl
   obj.creation_time = creation_time;
 
   // Initialize some general stuff
-  obj.roomnum = -1;
+  obj.roomnum.reset();
   obj.orient = Identity_matrix;
   obj.next = obj.prev = -1;
   obj.dummy_type = object_type::none;
@@ -556,18 +559,18 @@ void ObjReInitAll() {
 
 // Initializes a new object.  Adds it to the list for the given room.
 // Returns the object number, or std::nullopt on failure.
-index_t ObjCreate(object_type type, uint16_t id, int roomnum, vector3& pos, const matrix *orient,
+index_t ObjCreate(object_type type, uint16_t id, index_t roomnum, vector3& pos, const matrix *orient,
                                   int parent_handle) {
   if (type == object_type::none)
     return std::nullopt;
 
-  if (ROOMNUM_OUTSIDE(roomnum)) {
-    int cellnum = CELLNUM(roomnum);
+  if (roomnum_outside(roomnum)) {
+    int cellnum = roomnum ? static_cast<int>(roomnum_cell(roomnum)) : -1;
     if (cellnum < 0 || cellnum > TERRAIN_WIDTH * TERRAIN_DEPTH)
       return std::nullopt;
 
-    roomnum = GetTerrainRoomFromPos(pos).value_or(-1);
-    if (roomnum == -1)
+    roomnum = GetTerrainRoomFromPos(pos);
+    if (!roomnum)
       return std::nullopt;
   }
 
@@ -582,7 +585,7 @@ index_t ObjCreate(object_type type, uint16_t id, int roomnum, vector3& pos, cons
   // Make sure the object is ok
   if (obj.type != object_type::none)
     return std::nullopt;
-  if (obj.roomnum != -1)
+  if (obj.roomnum.has_value())
     return std::nullopt;
 
   // Compute the new handle
@@ -640,7 +643,7 @@ void ObjDelete(int objnum) {
   obj->custom_default_module_name.clear();
 
   obj->type = object_type::none; // unused!
-  obj->roomnum = -1;    // zero it!
+  obj->roomnum.reset();    // zero it!
 
   // Free lightmap memory
   if (obj->lm_object.used)
@@ -698,10 +701,10 @@ void ObjSetOrient(object& obj, const matrix& orient) {
 }
 
 // Sets the position of an object.  This should be called to move an object.
-void ObjSetPos(object& obj, vector3& pos, int roomnum, optref<matrix> orient, bool f_update_attached_children) {
+void ObjSetPos(object& obj, vector3& pos, index_t roomnum, optref<matrix> orient, bool f_update_attached_children) {
   (void)f_update_attached_children;
 
-  int oldroomnum = obj.roomnum;
+  index_t oldroomnum = obj.roomnum;
   vector3 old_pos = obj.pos;
 
   // Reset the position & recalculate the AABB
@@ -725,11 +728,11 @@ void ObjSetPos(object& obj, vector3& pos, int roomnum, optref<matrix> orient, bo
 
     // Slowly change volume lighting if going between rooms, if not in the editor
     if ((obj.effect_info != nullptr) && (obj.effect_info->type_flags.volume_lit)) {
-      if (!ROOMNUM_OUTSIDE(oldroomnum) && !ROOMNUM_OUTSIDE(roomnum)) {
+      if (!roomnum_outside(oldroomnum) && !roomnum_outside(roomnum)) {
         if (!(obj.effect_info->type_flags.volume_changing)) {
           obj.effect_info->type_flags.volume_changing = true;
           obj.effect_info->volume_change_time = 1.0f;
-          obj.effect_info->volume_old_room = oldroomnum;
+          obj.effect_info->volume_old_room = static_cast<int32_t>(*oldroomnum);
           obj.effect_info->volume_old_pos = old_pos;
         }
       } else // either old or new room was outside, so don't do volume changing

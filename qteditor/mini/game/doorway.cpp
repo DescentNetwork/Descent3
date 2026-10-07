@@ -204,7 +204,7 @@ doorway *GetDoorwayFromObject(int door_obj_handle) {
 
   Q_ASSERT(objp->type == object_type::door);
 
-  room_t *rp = &Rooms[objp->roomnum];
+  room_t *rp = &Rooms[*objp->roomnum];
 
   Q_ASSERT(rp->flags.door);
   Q_ASSERT(rp->doorway_data);

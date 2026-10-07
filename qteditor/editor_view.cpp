@@ -1156,9 +1156,9 @@ void EditorView::renderObjects() {
 
     // A room is only drawn when its verts[0] is within the render radius
     // (DrawAllRooms); objects live in rooms and follow the same gate.
-    if (obj->roomnum < 0 || obj->roomnum >= Rooms.size())
+    if (!obj->roomnum || *obj->roomnum >= Rooms.size())
       continue;
-    room_t *rp = &Rooms[obj->roomnum];
+    room_t *rp = &Rooms[*obj->roomnum];
     if (!rp->used || rp->num_verts == 0)
       continue;
     if (vm_VectorDistance(&rp->verts[0], &m_target) >= m_rad)
@@ -1332,8 +1332,8 @@ void EditorView::renderBNodes() {
   size_t room_end = Rooms.size() - 1;
 
   if (EBN_draw_type == EBDRAW_ROOM || EBDRAW_ROOM_AND_NEXT_ROOMS) {
-    if (Viewer_object != nullptr)
-      room_start = room_end = Viewer_object->roomnum;
+    if (Viewer_object != nullptr && Viewer_object->roomnum)
+      room_start = room_end = *Viewer_object->roomnum;
   }
 
   for (size_t roomnum = room_start; roomnum <= room_end; roomnum++) {
