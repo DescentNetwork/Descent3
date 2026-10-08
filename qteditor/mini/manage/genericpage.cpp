@@ -26,6 +26,7 @@
 #include "genericpage.h"
 
 #include <algorithm>
+#include <utility>
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -598,12 +599,12 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page &genericpage, index_t n) {
           if (!weapon_handle) {
             LOG_ERROR("Couldn't load weapon file '%s' in AssignGenericPage %s...",
                       genericpage.weapon_name[i][j].c_str(), genericpage.objinfo_struct.name.c_str());
-            obj.static_wb[i].gp_weapon_index[j] = LASER_INDEX;
+            obj.static_wb[i].gp_weapon_index[j] = std::to_underlying(weapon_index::laser);
           } else {
             obj.static_wb[i].gp_weapon_index[j] = static_cast<uint16_t>(*weapon_handle);
           }
         } else {
-          obj.static_wb[i].gp_weapon_index[j] = LASER_INDEX;
+          obj.static_wb[i].gp_weapon_index[j] = std::to_underlying(weapon_index::laser);
         }
       }
     }

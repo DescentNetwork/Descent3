@@ -23,12 +23,6 @@
 #define MAX_WB_FIRING_MASKS 8 // Maximum firing masks (firing sequence) // Limitted by interface in Editor
 #define MAX_WB_TURRETS 8      // Maximum number of turret// Arbitary
 #define MAX_WB_UPGRADES 5
-
-#define DWBF_ENABLED 1
-#define DWBF_AUTOMATIC 2
-#define DWBF_ANIMATING 4
-#define DWBF_ANIM_FIRED 8
-#define DWBF_QUAD 16
-#define DWBF_UPGRADED 32
+// DWBF_* dynamic weapon battery flags are now dynamic_wb_info_flags_t (robotfirestruct.h)
 
 #endif

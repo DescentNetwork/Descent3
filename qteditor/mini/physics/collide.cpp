@@ -858,6 +858,7 @@
 //#include "sounds.h"
 #include "trigger.h"
 #include "vecmat.h"
+#include "weapon_external.h"
 #include "weapon.h"
 #include "chrono_timer.h"
 #include "rand.h"
@@ -2370,7 +2371,7 @@ void collide_two_objects(object *A, object *B, vector3 *collision_point, vector3
 
   // Only do omega particle collisions if specifically allowed
   extern bool Enable_omega_collions;
-  if (((A->type == object_type::weapon) && (A->id == OMEGA_INDEX)) || ((B->type == object_type::weapon) && (B->id == OMEGA_INDEX)))
+  if (((A->type == object_type::weapon) && (A->id == std::to_underlying(weapon_index::omega))) || ((B->type == object_type::weapon) && (B->id == std::to_underlying(weapon_index::omega))))
     if (!Enable_omega_collions)
       return;
 

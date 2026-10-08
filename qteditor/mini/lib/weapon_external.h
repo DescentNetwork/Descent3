@@ -19,27 +19,31 @@
 #ifndef WEAPON_EXTERNAL_H_
 #define WEAPON_EXTERNAL_H_
 
-#define LASER_INDEX 0
-#define VAUSS_INDEX 1
-#define MICROWAVE_INDEX 2
-#define PLASMA_INDEX 3
-#define FUSION_INDEX 4
-#define SUPER_LASER_INDEX 5
-#define MASSDRIVER_INDEX 6
-#define NAPALM_INDEX 7
-#define EMD_INDEX 8
-#define OMEGA_INDEX 9
-#define CONCUSSION_INDEX 10
-#define HOMING_INDEX 11
-#define IMPACTMORTAR_INDEX 12
-#define SMART_INDEX 13
-#define MEGA_INDEX 14
-#define FRAG_INDEX 15
-#define GUIDED_INDEX 16
-#define NAPALMROCKET_INDEX 17
-#define CYCLONE_INDEX 18
-#define BLACKSHARK_INDEX 19
+#include <cstdint>
 
-#define FLARE_INDEX 20
+// Player weapon ids (also index Weapon_info for these weapons)
+enum class weapon_index : uint8_t {
+  laser = 0,
+  vauss = 1,
+  microwave = 2,
+  plasma = 3,
+  fusion = 4,
+  super_laser = 5,
+  massdriver = 6,
+  napalm = 7,
+  emd = 8,
+  omega = 9,
+  concussion = 10,
+  homing = 11,
+  impactmortar = 12,
+  smart = 13,
+  mega = 14,
+  frag = 15,
+  guided = 16,
+  napalmrocket = 17,
+  cyclone = 18,
+  blackshark = 19,
+  flare = 20,
+};
 
 #endif

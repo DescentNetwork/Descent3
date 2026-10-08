@@ -194,6 +194,7 @@
 #define WEAPON_H
 
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 #include "manage.h"
@@ -515,12 +516,28 @@ void CreateCountermeasureFromObject(object *parent, int weapon_id);
 const uint16_t WPNSEL_SKIP = 0x8000, WPNSEL_INVALID = 0xffff;
 
 const uint16_t DefaultPrimarySelectList[MAX_PRIMARY_WEAPONS] = {
-    LASER_INDEX,       VAUSS_INDEX,      MICROWAVE_INDEX, PLASMA_INDEX, FUSION_INDEX,
-    SUPER_LASER_INDEX, MASSDRIVER_INDEX, NAPALM_INDEX,    EMD_INDEX,    OMEGA_INDEX};
+    std::to_underlying(weapon_index::laser),
+    std::to_underlying(weapon_index::vauss),
+    std::to_underlying(weapon_index::microwave),
+    std::to_underlying(weapon_index::plasma),
+    std::to_underlying(weapon_index::fusion),
+    std::to_underlying(weapon_index::super_laser),
+    std::to_underlying(weapon_index::massdriver),
+    std::to_underlying(weapon_index::napalm),
+    std::to_underlying(weapon_index::emd),
+    std::to_underlying(weapon_index::omega)};
 
 const uint16_t DefaultSecondarySelectList[MAX_SECONDARY_WEAPONS] = {
-    CONCUSSION_INDEX,           HOMING_INDEX,       IMPACTMORTAR_INDEX, SMART_INDEX,     MEGA_INDEX, FRAG_INDEX,
-    GUIDED_INDEX + WPNSEL_SKIP, NAPALMROCKET_INDEX, CYCLONE_INDEX,      BLACKSHARK_INDEX};
+    std::to_underlying(weapon_index::concussion),
+    std::to_underlying(weapon_index::homing),
+    std::to_underlying(weapon_index::impactmortar),
+    std::to_underlying(weapon_index::smart),
+    std::to_underlying(weapon_index::mega),
+    std::to_underlying(weapon_index::frag),
+    std::to_underlying(weapon_index::guided) + WPNSEL_SKIP,
+    std::to_underlying(weapon_index::napalmrocket),
+    std::to_underlying(weapon_index::cyclone),
+    std::to_underlying(weapon_index::blackshark)};
 
 // weapon auto selection info.
 uint16_t GetAutoSelectPrimaryWpnIdx(int slot);

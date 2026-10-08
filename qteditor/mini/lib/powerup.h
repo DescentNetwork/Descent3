@@ -29,62 +29,76 @@
 #define MAX_POWERUPS 100
 #define MAX_STATIC_POWERUPS 50
 
-#define PF_IMAGE_BITMAP 1
+// powerup::flags bits
+struct [[gnu::packed]] powerup_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 31;
+  uint32_t image_bitmap : 1; // PF_IMAGE_BITMAP (1)
+#else
+  uint32_t image_bitmap : 1; // PF_IMAGE_BITMAP (1)
+  uint32_t padding : 31;
+#endif
+};
+static_assert(sizeof(powerup_flags_t) == sizeof(uint32_t));
 
-// These defines must correspond to the Static_powerup_names array
-#define POW_SHIELD 0
-#define POW_ENERGY 1
+// These enumerators must correspond to the Static_powerup_names array
+enum class powerup_id : uint8_t {
+  shield = 0,
+  energy = 1,
 
-#define POW_LASER 2
-#define POW_VULCAN_WEAPON 3
-#define POW_SPREADFIRE_WEAPON 4
-#define POW_PLASMA_WEAPON 5
-#define POW_FUSION_WEAPON 6
+  laser = 2,
+  vulcan_weapon = 3,
+  spreadfire_weapon = 4,
+  plasma_weapon = 5,
+  fusion_weapon = 6,
 
-#define POW_SUPER_LASER 7
-#define POW_GAUSS_WEAPON 8
-#define POW_HELIX_WEAPON 9
-#define POW_PHOENIX_WEAPON 10
-#define POW_OMEGA_WEAPON 11
+  super_laser = 7,
+  gauss_weapon = 8,
+  helix_weapon = 9,
+  phoenix_weapon = 10,
+  omega_weapon = 11,
 
-#define POW_MISSILE_1 12
-#define POW_MISSILE_4 13 // 4-pack MUST follow single missile
-#define POW_HOMING_MISSILE_1 14
-#define POW_HOMING_MISSILE_4 15 // 4-pack MUST follow single missile
-#define POW_PROXIMITY_WEAPON 16
-#define POW_SMART_MISSILE_WEAPON 17
-#define POW_MEGA_WEAPON 18
+  missile_1 = 12,
+  missile_4 = 13, // 4-pack MUST follow single missile
+  homing_missile_1 = 14,
+  homing_missile_4 = 15, // 4-pack MUST follow single missile
+  proximity_weapon = 16,
+  smart_missile_weapon = 17,
+  mega_weapon = 18,
 
-#define POW_FLASH_MISSILE_1 19
-#define POW_FLASH_MISSILE_4 20 // 4-pack MUST follow single missile
-#define POW_GUIDED_MISSILE_1 21
-#define POW_GUIDED_MISSILE_4 22 // 4-pack MUST follow single missile
-#define POW_SMART_MINE 23
-#define POW_MERCURY_MISSILE_1 24
-#define POW_MERCURY_MISSILE_4 25 // 4-pack MUST follow single missile
-#define POW_EARTHSHAKER_MISSILE 26
+  flash_missile_1 = 19,
+  flash_missile_4 = 20, // 4-pack MUST follow single missile
+  guided_missile_1 = 21,
+  guided_missile_4 = 22, // 4-pack MUST follow single missile
+  smart_mine = 23,
+  mercury_missile_1 = 24,
+  mercury_missile_4 = 25, // 4-pack MUST follow single missile
+  earthshaker_missile = 26,
 
-#define POW_EXTRA_LIFE 27
-#define POW_QUAD_FIRE 28
-#define POW_VULCAN_AMMO 29
-#define POW_CLOAK 30
-#define POW_TURBO 31
-#define POW_INVULNERABILITY 32
-#define POW_FULL_MAP 33
-#define POW_CONVERTER 34
-#define POW_AMMO_RACK 35
-#define POW_AFTERBURNER 36
-#define POW_HEADLIGHT 37
+  extra_life = 27,
+  quad_fire = 28,
+  vulcan_ammo = 29,
+  cloak = 30,
+  turbo = 31,
+  invulnerability = 32,
+  full_map = 33,
+  converter = 34,
+  ammo_rack = 35,
+  afterburner = 36,
+  headlight = 37,
 
-#define POW_FLAG_BLUE 38
-#define POW_FLAG_RED 39
-#define POW_HOARD_ORB 40
-
+  flag_blue = 38,
+  flag_red = 39,
+  hoard_orb = 40,
+};
 // sound stuff
 
 #define MAX_POWERUP_SOUNDS 7
 
-#define PSI_PICKUP 0
+enum class powerup_sound_index : uint8_t {
+  pickup = 0,
+};
 
 struct powerup {
   std::string name;
@@ -92,7 +106,7 @@ struct powerup {
   int score;
   int image_handle;              // Either a vclip or a polygon model
   std::string model_name; // used for remapping powerups which contain models
-  int flags;
+  powerup_flags_t flags = {};
   uint16_t used;
 
   std::array<int16_t, MAX_POWERUP_SOUNDS> sounds;
