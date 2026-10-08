@@ -83,7 +83,7 @@ QString ObjectTreeDialog::makeInfoStr(const object *obj) {
               .arg(QString::fromStdString(obj->name.empty() ? "No Name Given"s : obj->name));
   }
 
-  if (OBJECT_OUTSIDE(obj))
+  if (obj->is_outside())
     str += QString("cell %1").arg(roomnum_cell(obj->roomnum));
   else
     str += QString("room %1").arg(static_cast<int>(*obj->roomnum));
@@ -140,9 +140,9 @@ void ObjectTreeDialog::onGoTo() {
   if (!obj)
     return;
 
-  if (OBJECT_OUTSIDE(obj) && app.view_mode != state::viewer::terrain) {
+  if (obj->is_outside() && app.view_mode != state::viewer::terrain) {
     app.view_mode = state::viewer::terrain;
-  } else if (!OBJECT_OUTSIDE(obj) && app.view_mode != state::viewer::mine) {
+  } else if (!obj->is_outside() && app.view_mode != state::viewer::mine) {
     app.view_mode = state::viewer::mine;
   }
 

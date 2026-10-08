@@ -136,11 +136,6 @@
 // Determine if a roomnum is really a cell number
 #define ROOMNUM_OUTSIDE(roomnum) (((roomnum) & ROOMNUM_CELLNUM_FLAG) != 0)
 
-// Determine if an object is outside.  An object with no room (nullopt) counts
-// as outside, matching the legacy -1 sentinel behaviour: callers rely on this
-// to avoid indexing Rooms[] with an unset room number.
-#define OBJECT_OUTSIDE(objp) ((objp)->is_outside())
-
 // index_t room-number helpers.  object::roomnum is an index_t; nullopt means
 // "not in the world" (the legacy -1), while a value encodes either a room index
 // (high bit clear) or a terrain cell (high bit set), exactly like the macros.

@@ -209,7 +209,7 @@ void AssignLightmapsToObjectSurfaces(int surface_index, int terrain) {
   memset(rotated, 0, MAX_LIGHTMAP_INFOS);
 
   for (i = 0; i <= Highest_object_index; i++) {
-    if ((terrain != 0) != (OBJECT_OUTSIDE(&Objects[i]) != 0))
+    if ((terrain != 0) != Objects[i].is_outside())
       continue;
 
     if (Objects[i].type != object_type::none && Objects[i].lighting_render_type == lighting_render_type::lightmaps) {
@@ -291,7 +291,7 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
   int i, t, j;
 
   for (i = 0; i <= Highest_object_index; i++) {
-    if ((terrain != 0) != (OBJECT_OUTSIDE(&Objects[i]) != 0))
+    if ((terrain != 0) != Objects[i].is_outside())
       continue;
 
     if (Objects[i].type != object_type::none && Objects[i].lighting_render_type == lighting_render_type::lightmaps) {
@@ -447,7 +447,7 @@ int GetTotalObjectFaces(int terrain) {
 
   for (i = 0; i <= Highest_object_index; i++) {
     if (Objects[i].type != object_type::none) {
-      if ((terrain != 0) != (OBJECT_OUTSIDE(&Objects[i]) != 0))
+      if ((terrain != 0) != Objects[i].is_outside())
         continue;
 
       if (Objects[i].lighting_render_type == lighting_render_type::lightmaps) {

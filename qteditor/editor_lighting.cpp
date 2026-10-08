@@ -647,7 +647,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
         continue;
       if (!obj->lm_object.used)
         continue;
-      if (!OBJECT_OUTSIDE(obj))
+      if (!obj->is_outside())
         continue;
 
       for (t = 0; t < obj->lm_object.num_models; t++) {
@@ -683,7 +683,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
               if (!obj->lm_object.used)
                 continue;
-              if (!OBJECT_OUTSIDE(obj))
+              if (!obj->is_outside())
                 continue;
 
               for (int b = 0; b < obj->lm_object.num_models; b++) {

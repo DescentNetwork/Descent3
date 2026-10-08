@@ -285,7 +285,7 @@ static int findNextViewerObject(int id, state::viewer view_mode) {
 
     if ((objnum != -1) &&
         (view_mode == state::viewer::invalid ||
-         (OBJECT_OUTSIDE(&Objects[objnum]) != 0) == terrain_flag))
+         Objects[objnum].is_outside() == terrain_flag))
       return objnum;
   }
 
@@ -361,10 +361,10 @@ static void setViewer(int objnum) {
   if (app.view_mode != state::viewer::room)
     app.Editor_viewer_id = Viewer_object->id;
 
-  if ((app.view_mode == state::viewer::mine) && OBJECT_OUTSIDE(Viewer_object))
+  if ((app.view_mode == state::viewer::mine) && Viewer_object->is_outside())
     app.view_mode = state::viewer::terrain;
 
-  if ((app.view_mode == state::viewer::terrain) && !OBJECT_OUTSIDE(Viewer_object))
+  if ((app.view_mode == state::viewer::terrain) && !Viewer_object->is_outside())
     app.view_mode = state::viewer::mine;
 
   app.State_changed = app.Viewer_moved = true;
@@ -536,7 +536,7 @@ std::string RenderLevelStats() {
     if (objp->render_type != render_type::polyobj)
       continue;
     n_objects++;
-    if (OBJECT_OUTSIDE(objp))
+    if (objp->is_outside())
       n_objects_outside++;
     poly_model *pm = GetPolymodelPointer(objp->rtype.pobj_info().model_num);
     if (pm == nullptr)

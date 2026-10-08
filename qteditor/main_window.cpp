@@ -832,13 +832,13 @@ constexpr float kDefaultViewRadius = 1.0f;
 static void moveViewer(vector3& pos, index_t roomnum, optref<matrix> orient) {
   if (Viewer_object == nullptr)
     return;
-  const bool was_outside = OBJECT_OUTSIDE(Viewer_object);
+  const bool was_outside = Viewer_object->is_outside();
 
   ObjSetPos(*Viewer_object, pos, roomnum, orient, false);
 
-  if (OBJECT_OUTSIDE(Viewer_object) && !was_outside)
+  if (Viewer_object->is_outside() && !was_outside)
     app.view_mode = state::viewer::terrain;
-  else if (!OBJECT_OUTSIDE(Viewer_object) && was_outside)
+  else if (!Viewer_object->is_outside() && was_outside)
     app.view_mode = state::viewer::mine;
 }
 

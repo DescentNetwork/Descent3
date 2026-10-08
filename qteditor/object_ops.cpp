@@ -326,7 +326,7 @@ bool HObjectPlace(object_type obj_type, uint16_t obj_id) {
 // Adjusts an object so it's at the ground level.
 // ============================================================================
 void ResetGroundObject(object& obj) {
-  if (!OBJECT_OUTSIDE(&obj))
+  if (!obj.is_outside())
     return;
 
   poly_model *pm;
