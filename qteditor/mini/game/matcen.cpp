@@ -84,13 +84,13 @@ void DestroyAllMatcens() {
 }
 
 matcen::matcen() {
-  m_prod_mode = MMODE_NOTPROD;
+  m_prod_mode = matcen_prod_mode::notprod;
   m_cur_saturation_count = 0;
 
   m_num_prod_types = 0;
-  m_control_type = MPC_SCRIPT;
-  m_type = MT_UNASSIGNED;
-  m_creation_effect = MEFFECT_LINE_LIGHTNING;
+  m_control_type = matcen_control_type::script;
+  m_type = matcen_type::unassigned;
+  m_creation_effect = matcen_effect::line_lightning;
 
   // Get lightning handle in case we need it
   m_creation_texture = FindTextureName("Matcen Lightning").value_or(0);
@@ -122,7 +122,7 @@ matcen::matcen() {
   m_preprod_time = 1.5f;
   m_postprod_time = 1.0f;
 
-  m_status = 0;
+  m_status = matcen_status_flags_t{};
 
   m_create_pnt = vector3{};
   m_create_room = MATCEN_ERROR;
@@ -142,8 +142,12 @@ void matcen::Reset() {
   // SaveData: the values stored in a saved level were already reset by the
   // engine at the time that file was written, so re-saving the loaded state
   // verbatim keeps the chunk byte-stable.
-  m_status &= ~(MSTAT_DONE_PROD | MSTAT_ACTIVE | MSTAT_ACTIVE_PAUSE | MSTAT_PROD_TILL_DONE | MSTAT_PROD_ONE_PAUSE |
-                MSTAT_PROD_ONE_DISABLE);
+  m_status.done_prod = false;
+  m_status.active = false;
+  m_status.active_pause = false;
+  m_status.prod_till_done = false;
+  m_status.prod_one_pause = false;
+  m_status.prod_one_disable = false;
 
   m_num_prod = 0;
   m_last_prod_type_index = MATCEN_ERROR;
@@ -158,7 +162,7 @@ void matcen::Reset() {
 
   m_last_prod_objref = OBJECT_HANDLE_NONE;
 
-  if (m_prod_mode == MMODE_NOTPROD) {
+  if (m_prod_mode == matcen_prod_mode::notprod) {
     m_cached_prod_index = -1;
     m_cached_prod_time = 0.0f;
   }
@@ -263,10 +267,10 @@ void matcen::SaveData(posix_ostream &ofile) const {
 
   ofile << m_speed_multi;
 
-  ofile << m_prod_mode;
+  ofile << static_cast<uint8_t>(m_prod_mode);
   ofile << m_prod_mode_time;
 
-  ofile << static_cast<int32_t>(m_status);
+  ofile << reinterpret_cast<const int32_t &>(m_status);
   ofile << static_cast<int32_t>(m_num_prod);
   ofile << static_cast<int32_t>(m_last_prod_type_index);
   ofile << m_last_prod_finish_time;
@@ -301,7 +305,8 @@ void matcen::LoadData(posix_istream &ifile, const int *texture_xlate) {
   if (max_prod_types < 0) max_prod_types = 0;
   if (max_prod_types > MAX_PROD_TYPES) max_prod_types = MAX_PROD_TYPES;
   if (max_matcen_sounds < 0) max_matcen_sounds = 0;
-  if (max_matcen_sounds > MAX_MATCEN_SOUNDS) max_matcen_sounds = MAX_MATCEN_SOUNDS;
+  if (max_matcen_sounds > static_cast<int32_t>(matcen_sound::count))
+    max_matcen_sounds = static_cast<int32_t>(matcen_sound::count);
 
   m_name = readLevelName(ifile);
 
@@ -387,10 +392,10 @@ void matcen::LoadData(posix_istream &ifile, const int *texture_xlate) {
 
   ifile >> m_speed_multi;
 
-  ifile >> m_prod_mode;
+  ifile >> reinterpret_cast<uint8_t &>(m_prod_mode);
   ifile >> m_prod_mode_time;
 
-  ifile >> m_status;
+  ifile >> reinterpret_cast<int32_t &>(m_status);
   ifile >> m_num_prod;
   ifile >> m_last_prod_type_index;
   ifile >> m_last_prod_finish_time;

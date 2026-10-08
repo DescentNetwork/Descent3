@@ -19,51 +19,83 @@
 #ifndef MATCEN_EXTERNAL_H_
 #define MATCEN_EXTERNAL_H_
 
+#include <cstdint>
+
 #define MAX_PROD_TYPES 8
 #define MAX_SPAWN_PNTS 4
 
 #define MATCEN_ERROR -1
 
-#define MSTAT_DISABLED 1
-#define MSTAT_ACTIVE 2
-#define MSTAT_ACTIVE_PAUSE 4
-#define MSTAT_CREATE_OBJ_FRAME 8
-#define MSTAT_NEVER_PROD 16
-#define MSTAT_DONE_PROD 32
-#define MSTAT_RANDOM_PROD_ORDER 64
-#define MSTAT_PROD_TILL_DONE 128
-#define MSTAT_PROD_ONE_PAUSE 256
-#define MSTAT_PROD_ONE_DISABLE 512
-#define MSTAT_MANUAL_UPDATE_CREATE_PNT 1024
-#define MSTAT_COMPUTE_CREATE_PNT_EVERY_FRAME 2048
-#define MSTAT_NOT_HURT_PLAYER 4096
+struct matcen_status_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 19;                 // Unused padding to complete 32 bits
+  uint32_t not_hurt_player : 1;
+  uint32_t compute_create_pnt_every_frame : 1;
+  uint32_t manual_update_create_pnt : 1;
+  uint32_t prod_one_disable : 1;
+  uint32_t prod_one_pause : 1;
+  uint32_t prod_till_done : 1;
+  uint32_t random_prod_order : 1;
+  uint32_t done_prod : 1;
+  uint32_t never_prod : 1;
+  uint32_t create_obj_frame : 1;
+  uint32_t active_pause : 1;
+  uint32_t active : 1;
+  uint32_t disabled : 1;
+#else
+  uint32_t disabled : 1;
+  uint32_t active : 1;
+  uint32_t active_pause : 1;
+  uint32_t create_obj_frame : 1;
+  uint32_t never_prod : 1;
+  uint32_t done_prod : 1;
+  uint32_t random_prod_order : 1;
+  uint32_t prod_till_done : 1;
+  uint32_t prod_one_pause : 1;
+  uint32_t prod_one_disable : 1;
+  uint32_t manual_update_create_pnt : 1;
+  uint32_t compute_create_pnt_every_frame : 1;
+  uint32_t not_hurt_player : 1;
+  uint32_t padding : 19;                 // Unused padding to complete 32 bits
+#endif
+};
 
-#define MMODE_NOTPROD 0
-#define MMODE_PREPROD 1
-#define MMODE_POSTPROD 2
+enum class matcen_prod_mode : uint8_t {
+  notprod = 0,
+  preprod = 1,
+  postprod = 2,
+};
 
 // MATCEN NOTE:  Make sure to add the name of the effect to the list
 // in matcen.cpp
-#define NUM_MATCEN_EFFECTS 4
-#define MEFFECT_LINE_LIGHTNING 0
-#define MEFFECT_LINE_SINE_WAVE 1
-#define MEFFECT_PROCEDURAL_LIGHTNING 2
-#define MEFFECT_NONE
+enum class matcen_effect : uint8_t {
+  line_lightning = 0,
+  line_sine_wave = 1,
+  procedural_lightning = 2,
+  none = 3,
+  count = 4,
+};
 
-#define MAX_MATCEN_CONTROL_TYPES 5
-#define MPC_SCRIPT 0
-#define MPC_WHILE_PLAYER_NEAR 1
-#define MPC_AFTER_PLAYER_NEAR 2
-#define MPC_WHILE_PLAYER_VISIBLE 3
-#define MPC_AFTER_PLAYER_VISIBLE 4
+enum class matcen_control_type : uint8_t {
+  script = 0,
+  while_player_near = 1,
+  after_player_near = 2,
+  while_player_visible = 3,
+  after_player_visible = 4,
+  count = 5,
+};
 
-#define MAX_MATCEN_SOUNDS 3
-#define MATCEN_ACTIVE_SOUND 0
-#define MATCEN_DISABLE_SOUND 1
-#define MATCEN_PROD_SOUND 2
+enum class matcen_sound : uint8_t {
+  active = 0,
+  disable = 1,
+  prod = 2,
+  count = 3,
+};
 
-#define MT_OBJECT 0
-#define MT_ROOM 1
-#define MT_UNASSIGNED 2
+enum class matcen_type : uint8_t {
+  object = 0,
+  room = 1,
+  unassigned = 2,
+};
 
 #endif

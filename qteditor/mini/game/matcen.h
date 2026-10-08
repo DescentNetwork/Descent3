@@ -48,7 +48,7 @@ extern bool Matcen_created;
 #define MAX_MATCEN_EFFECT_SATURATION 2
 
 #ifdef EDITOR
-extern char *MatcenEffectStrings[NUM_MATCEN_EFFECTS];
+extern char *MatcenEffectStrings[static_cast<size_t>(matcen_effect::count)];
 #endif
 
 // Versions
@@ -62,9 +62,9 @@ private:
   std::string m_name;
 
   char m_num_prod_types;
-  char m_control_type;
-  char m_type;
-  char m_creation_effect;
+  matcen_control_type m_control_type;
+  matcen_type m_type;
+  matcen_effect m_creation_effect;
   int16_t m_creation_texture;
   uint8_t m_cur_saturation_count;
 
@@ -102,10 +102,10 @@ private:
   float m_speed_multi;
 
   // Dynamic values that change without scripting
-  uint8_t m_prod_mode;
+  matcen_prod_mode m_prod_mode;
   float m_prod_mode_time;
 
-  int m_status;
+  matcen_status_flags_t m_status;
 
   int m_num_prod;
   int m_last_prod_type_index;
