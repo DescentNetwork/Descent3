@@ -557,7 +557,7 @@ struct object_info {
   std::string description; // used for inventory
   std::string icon_name;    // used for inventory
 
-  int16_t sounds[MAX_OBJ_SOUNDS]; // list of sound handles
+  std::array<index_t, MAX_OBJ_SOUNDS> sounds; // list of sound handles (index_t; nullopt = none)
   int16_t dspew[MAX_DSPEW_TYPES];
   float dspew_percent[MAX_DSPEW_TYPES];
   int16_t dspew_number[MAX_DSPEW_TYPES];
