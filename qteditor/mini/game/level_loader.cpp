@@ -452,14 +452,8 @@ static void LL_ReadBSPNode(posix_istream &ifile, bspnode *&node_out) {
   ifile >> node->plane.c;
   ifile >> node->plane.d;
 
-  int16_t roomnum = 0;
-  ifile >> roomnum;
-  node->node_roomnum = static_cast<uint16_t>(roomnum);
-
-  int16_t facenum = 0;
-  ifile >> facenum;
-  node->node_facenum = static_cast<uint16_t>(facenum);
-
+  ifile >> node->node_roomnum;
+  ifile >> node->node_facenum;
   ifile >> node->node_subnum;
 
   LL_ReadBSPNode(ifile, node->front);
@@ -476,8 +470,8 @@ static void LL_WriteBSPNode(posix_ostream &ofile, const bspnode *node) {
   ofile << node->plane.b;
   ofile << node->plane.c;
   ofile << node->plane.d;
-  ofile << static_cast<int16_t>(node->node_roomnum);
-  ofile << static_cast<int16_t>(node->node_facenum);
+  ofile << node->node_roomnum;
+  ofile << node->node_facenum;
   ofile << node->node_subnum;
 
   LL_WriteBSPNode(ofile, node->front);
@@ -603,11 +597,10 @@ static int TranslateObjectId(object_type type, int id) {
 
 // Writes a chunk header (4-char name + size placeholder), returns the position
 // of the size field so EndChunk can seek back and patch it.
-static int LL_StartChunk(posix_ostream &ofile, const char *chunk_name) {
+static int LL_StartChunk(posix_ostream &ofile, const char *chunk_name, uint32_t version = 0) {
   ofile.write(chunk_name, 4);
   int chunk_start_pos = static_cast<int>(ofile.tell());
-  int32_t placeholder = 0;
-  ofile << placeholder;
+  ofile << version;
   return chunk_start_pos;
 }
 
@@ -846,18 +839,16 @@ void ClearTerrainSound() {
 // player count (>= 120; legacy files used a fixed 32) then that many start
 // position flag words.  The editor passes these through untouched.
 static void LL_ReadPlayerStartsChunk(posix_istream &ifile, uint32_t version) {
-  int n = MAX_PLAYERS;
+  int16_t n16 = MAX_PLAYERS;
   if (version >= 120) {
-    int16_t n16 = 0;
     ifile >> n16;
-    n = n16;
   }
-  if (n < 0)
-    n = 0;
-  if (n > MAX_PLAYERS)
-    n = MAX_PLAYERS;
+  if (n16 < 0)
+    n16 = 0;
+  if (n16 > MAX_PLAYERS)
+    n16 = MAX_PLAYERS;
 
-  for (int i = 0; i < n; i++)
+  for (int i = 0; i < n16; i++)
     ifile >> Players[i].startpos_flags;
 }
 
@@ -1050,11 +1041,11 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
 static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_EDITOR_INFO);
 
-  ofile << static_cast<int16_t>(app.current.room.has_value() ? index_to_int(app.current.room) : -1);
+  ofile << static_cast<int16_t>(index_to_int(app.current.room));
   ofile << static_cast<int16_t>(index_to_int(app.current.face));
   ofile << static_cast<int16_t>(index_to_int(app.current.edge));
   ofile << static_cast<int16_t>(index_to_int(app.current.vert));
-  ofile << static_cast<int16_t>(app.marked.room.has_value() ? index_to_int(app.marked.room) : -1);
+  ofile << static_cast<int16_t>(index_to_int(app.marked.room));
   ofile << static_cast<int16_t>(index_to_int(app.marked.face));
   ofile << static_cast<int16_t>(index_to_int(app.marked.edge));
   ofile << static_cast<int16_t>(index_to_int(app.marked.vert));
