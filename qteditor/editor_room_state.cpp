@@ -159,36 +159,24 @@ int SelectConnectedRooms(int roomnum) {
   return count;
 }
 
-static int *Save_selected_rooms = nullptr;
-static int N_save_selected_rooms = -1;
+static std::vector<int> Save_selected_rooms;
+static bool Save_selected_rooms_active = false;
 
 void SaveRoomSelectedList() {
-  if (N_save_selected_rooms != -1)
+  if (Save_selected_rooms_active)
     return;
 
-  N_save_selected_rooms = N_selected_rooms;
-  if (!N_save_selected_rooms)
-    return;
-
-  Save_selected_rooms = new int[N_save_selected_rooms];
-  for (int i = 0; i < N_selected_rooms; i++)
-    Save_selected_rooms[i] = Selected_rooms[i];
+  Save_selected_rooms_active = true;
+  Save_selected_rooms.assign(Selected_rooms.begin(), Selected_rooms.begin() + N_selected_rooms);
 }
 
 void RestoreRoomSelectedList() {
-  if (N_save_selected_rooms == -1)
+  if (!Save_selected_rooms_active)
     return;
 
-  N_selected_rooms = N_save_selected_rooms;
-  N_save_selected_rooms = -1;
-
-  if (!N_selected_rooms)
-    return;
-
+  Save_selected_rooms_active = false;
+  N_selected_rooms = static_cast<int>(Save_selected_rooms.size());
   for (int i = 0; i < N_selected_rooms; i++)
     Selected_rooms[i] = Save_selected_rooms[i];
-
-  delete[] Save_selected_rooms;
-  Save_selected_rooms = nullptr;
 }
 
