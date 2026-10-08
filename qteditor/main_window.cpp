@@ -1510,7 +1510,7 @@ static QByteArray serializeObject(const object &obj) {
   for (int32_t c : obj.attach_children)
     children.push_back(c);
   out << children;
-  out << quint8(obj.weapon_fire_flags) << reinterpret_cast<const quint8&>(obj.attach_type) << obj.attach_dist;
+  out << reinterpret_cast<const quint8&>(obj.weapon_fire_flags) << reinterpret_cast<const quint8&>(obj.attach_type) << obj.attach_dist;
   writeVector(out, obj.min_xyz);
   writeVector(out, obj.max_xyz);
   out << obj.impact_size << obj.impact_time << obj.impact_player_damage << obj.impact_generic_damage
@@ -1578,7 +1578,7 @@ static object deserializeObject(const QByteArray &data) {
   obj.attach_children.resize(int(children.size()));
   for (int i = 0; i < int(children.size()); ++i)
     obj.attach_children[size_t(i)] = children[i];
-  in >> b8; obj.weapon_fire_flags = b8;
+  in >> b8; reinterpret_cast<quint8&>(obj.weapon_fire_flags) = b8;
   in >> reinterpret_cast<quint8&>(obj.attach_type);
   in >> obj.attach_dist;
   obj.min_xyz = readVector(in);

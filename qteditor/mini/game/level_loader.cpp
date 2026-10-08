@@ -848,7 +848,7 @@ static void LL_ReadPlayerStartsChunk(posix_istream &ifile, uint32_t version) {
     n16 = MAX_PLAYERS;
 
   for (int i = 0; i < n16; i++)
-    ifile >> Players[i].startpos_flags;
+    ifile >> reinterpret_cast<int32_t&>(Players[i].startpos_flags);
 }
 
 static void LL_WritePlayerStartsChunk(posix_ostream &ofile) {
@@ -857,7 +857,7 @@ static void LL_WritePlayerStartsChunk(posix_ostream &ofile) {
   ofile << static_cast<int16_t>(MAX_PLAYERS);
 
   for (size_t i = 0; i < Players.size(); i++)
-    ofile << Players[i].startpos_flags;
+    ofile << reinterpret_cast<const int32_t&>(Players[i].startpos_flags);
 
   LL_EndChunk(ofile, start);
 }

@@ -441,7 +441,7 @@ int AddWeaponToPlayer(int slot, int weap_index, int ammo);
 void ClearPlayerFiring(object *objp, int weapon_type);
 
 // Fires a weapon from our player.  Won't fire if ammo/energy requirements aren't met.
-// Parameters:	weapon_type - either PW_PRIMARY or PW_SECONDARY
+// Parameters:	weapon_type - either player_weapon_slot::primary or ::secondary
 void FireWeaponFromPlayer(object *objp, int weapon_type, int down_count, bool down_state, float down_time);
 
 // Fires a flare from our player.
@@ -464,7 +464,7 @@ void SelectWeapon(int slot);
 int SwitchPlayerWeapon(int weapon_type);
 
 //	Auto selects a weapon, usually the next best weapon.
-// weapon_type is either PW_PRIMARY or PW_SECONDARY
+// weapon_type is either player_weapon_slot::primary or ::secondary
 //	if new_wpn != -1, then we will see if the current weapon is inferior, to new weapon.  If
 //	it isn't, then the new weapon is selected.
 // returns true if selecting  new weapon, otherwise false.

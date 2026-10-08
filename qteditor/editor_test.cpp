@@ -2105,8 +2105,10 @@ private slots:
     RoomsEnsureIndex(0);
 
     // Distinct per-player start flags so the round-trip is provably real.
-    for (size_t i = 0; i < Players.size(); i++)
-      Players[i].startpos_flags = 0x1000 + i;
+    for (size_t i = 0; i < Players.size(); i++) {
+      const int32_t raw = int32_t(0x1000 + i);
+      std::memcpy(&Players[i].startpos_flags, &raw, sizeof(raw));
+    }
 
     const QString tmp = QDir::tempPath() + "/_test_pstr_roundtrip";
     QDir::current().mkpath(tmp);
@@ -2120,8 +2122,11 @@ private slots:
     QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel pass1 failed");
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
-    for (size_t i = 0; i < Players.size(); i++)
-      QCOMPARE(Players[i].startpos_flags, static_cast<int32_t>(0x1000 + i));
+    for (size_t i = 0; i < Players.size(); i++) {
+      int32_t raw = 0;
+      std::memcpy(&raw, &Players[i].startpos_flags, sizeof(raw));
+      QCOMPARE(raw, static_cast<int32_t>(0x1000 + i));
+    }
 
     QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
 

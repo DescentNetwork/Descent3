@@ -108,7 +108,7 @@ struct player {
   int32_t start_roomnum;
   matrix start_orient;
 
-  int32_t startpos_flags; // these flags apply to the start position (used for teams)
+  player_start_flags_t startpos_flags; // these flags apply to the start position (used for teams)
 
   int32_t ship_index; // the index into the Ships array that this player is flying
 
@@ -116,7 +116,7 @@ struct player {
   char callsign[CALLSIGN_LEN + 1]; // The callsign of this player, for net purposes.
 
   // Game data
-  uint32_t flags;                           // Powerup flags, see above...
+  player_flags_t flags = {};       // Player flags, see player_external.h
   int32_t score;                            // The player's current score
   float damage_magnitude;               // for shield effects
   float edrain_magnitude;               // for energy drain effects

@@ -1074,7 +1074,7 @@ bool SetupTerrainObject(object& obj) {
           scalar_g = std::max<float>(.1, scalar_g);
           scalar_b = std::max<float>(.1, scalar_b);
         }
-        if (obj.type == object_type::player && ((Players[obj.id].flags & PLAYER_FLAGS_HEADLIGHT)))
+        if (obj.type == object_type::player && ((Players[obj.id].flags.headlight)))
         {
           scalar_r = 1;
           scalar_g = 1;
@@ -1144,7 +1144,7 @@ bool SetupMineObject(object& obj) {
         scalar_b = std::max<float>(.1, scalar_b);
       }
 
-      if (obj.type == object_type::player && (Players[obj.id].flags & PLAYER_FLAGS_HEADLIGHT)) {
+      if (obj.type == object_type::player && (Players[obj.id].flags.headlight)) {
         scalar_r = 1;
         scalar_g = 1;
         scalar_b = 1;
@@ -1652,7 +1652,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
     } else if (obj.type == object_type::marker) {
      // model_num = Marker_polynum;
     } else if (obj.type == object_type::player &&
-             !(Players[obj.id].flags & (PLAYER_FLAGS_DYING | PLAYER_FLAGS_DEAD))) {
+             !(Players[obj.id].flags.dying || Players[obj.id].flags.dead)) {
       g3Point pnt;
       g3_RotatePoint(pnt, obj.pos);
       int ship_num = Players[obj.id].ship_index;
@@ -1868,7 +1868,7 @@ void DrawPlayerInvulSphere(object *obj) {
   Q_ASSERT(obj->type == object_type::player);
   if (Viewer_object == obj)
     return; // don't do me
-  if (!(Players[obj->id].flags & PLAYER_FLAGS_INVULNERABLE))
+  if (!(Players[obj->id].flags.invulnerable))
     return;
   if (Players[obj->id].invul_magnitude < .05)
     return;

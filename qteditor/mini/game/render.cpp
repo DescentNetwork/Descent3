@@ -3208,7 +3208,7 @@ void RenderRoomObjects(int roomnum) {
         objp->pos = *vec - (*norm * (dist_from_mirror * 2));
         // Check for rear view
         if (objp == Viewer_object && Viewer_object == Player_object &&
-            (Players[Player_num].flags & PLAYER_FLAGS_REARVIEW)) {
+            (Players[Player_num].flags.rearview)) {
           objp->orient.fvec = -objp->orient.fvec;
           objp->orient.rvec = -objp->orient.rvec;
         }

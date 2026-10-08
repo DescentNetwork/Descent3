@@ -376,8 +376,8 @@
 
 #include "robotfirestruct.h"
 #include "object_external_struct.h"
-#include "player_external_struct.h"
 #include "player_external.h"
+#include "player_external_struct.h"
 
 #define MAX_WAYPOINTS 25
 
@@ -395,11 +395,7 @@
 #define AFTERBURN_TIME 5.0
 #endif
 
-// Player start position flags
-#define PSPF_RED 1
-#define PSPF_BLUE 2
-#define PSPF_GREEN 4
-#define PSPF_YELLOW 8
+// Player start position flags (see player_start_flags_t in player_external.h)
 
 struct player_pos_suppress {
   int room;

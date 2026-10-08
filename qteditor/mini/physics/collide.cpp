@@ -1363,7 +1363,7 @@ void collide_player_and_wall(object *playerobj, float hitspeed, int hitseg, int 
     Players[playerobj->id].last_hit_wall_sound_time = d3::chrono::last_update();
   }
 
-  if (Players[playerobj->id].flags & PLAYER_FLAGS_DYING)
+  if (Players[playerobj->id].flags.dying)
     StartPlayerExplosion(playerobj->id);
 
   // Do ForceFeedback
@@ -2387,9 +2387,9 @@ void collide_two_objects(object *A, object *B, vector3 *collision_point, vector3
 
   // Call script only if it is ok to
   int ok_to_call_script = 1;
-  if (A->type == object_type::player && (Players[A->id].flags & (PLAYER_FLAGS_DYING | PLAYER_FLAGS_DEAD)))
+  if (A->type == object_type::player && (Players[A->id].flags.dying || Players[A->id].flags.dead))
     ok_to_call_script = 0;
-  if (B->type == object_type::player && (Players[B->id].flags & (PLAYER_FLAGS_DYING | PLAYER_FLAGS_DEAD)))
+  if (B->type == object_type::player && (Players[B->id].flags.dying || Players[B->id].flags.dead))
     ok_to_call_script = 0;
 
   // Check to see if we should call the script

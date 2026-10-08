@@ -609,6 +609,23 @@ struct [[gnu::packed]] physics_flags_t
 };
 static_assert(sizeof(physics_flags_t) == sizeof(uint32_t));
 
+// Object weapon fire flags (previously the WFF_* macros)
+struct [[gnu::packed]] weapon_fire_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t fired : 1; // fired this frame (128)
+  uint8_t : 5;
+  uint8_t on_off : 1; // an on/off weapon is firing (2)
+  uint8_t spray : 1;  // a spray weapon is firing (1)
+#else
+  uint8_t spray : 1;  // a spray weapon is firing (1)
+  uint8_t on_off : 1; // an on/off weapon is firing (2)
+  uint8_t : 5;
+  uint8_t fired : 1; // fired this frame (128)
+#endif
+};
+static_assert(sizeof(weapon_fire_flags_t) == sizeof(uint8_t));
+
 // True when any of the six lock flags (x/y/z/p/h/b) are set; mirrors the old
 // PF_LOCK_MASK check.
 inline bool physics_locked(const physics_flags_t &f) {
@@ -797,7 +814,7 @@ struct object {
   int32_t attach_parent_handle;
   std::vector<int32_t> attach_children; // List of object handles for connected children
 
-  uint8_t weapon_fire_flags;  // Used to indicate special weapon effects.  See flags above.
+  weapon_fire_flags_t weapon_fire_flags = {}; // Used to indicate special weapon effects
 
   ::attach_type attach_type;
   int16_t lowest_attached_vis;

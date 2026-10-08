@@ -62,6 +62,8 @@
 #ifndef __PLAYER_EXTERNAL_H_
 #define __PLAYER_EXTERNAL_H_
 
+#include <cstdint>
+
 #define N_PLAYER_GUNS 8
 
 // Initial player stat values
@@ -72,57 +74,120 @@
 #define MAX_SHIELDS 200
 
 // Observer modes
-#define OBSERVER_MODE_ROAM 0
-#define OBSERVER_MODE_PIGGYBACK 1
+enum class observer_mode : uint8_t {
+  roam = 0,
+  piggyback = 1,
+};
 
-// Values for special flags
-#define PLAYER_FLAGS_INVULNERABLE 1          // Player is invincible
-#define PLAYER_FLAGS_DYING 4                 // Is this player in the middle of dying?
-#define PLAYER_FLAGS_DEAD 8                  //	The player is just sitting there dead.
-#define PLAYER_FLAGS_UNUSED 16               // ????
-#define PLAYER_FLAGS_UNUSED1 32              // ????
-#define PLAYER_FLAGS_UNUSED2 64              // ????
-#define PLAYER_FLAGS_UNUSED3 128             // ????
-#define PLAYER_FLAGS_UNUSED4 256             // ????
-#define PLAYER_FLAGS_UNUSED5 512             // ????
-#define PLAYER_FLAGS_UNUSED6 1024            // ????
-#define PLAYER_FLAGS_AFTERBURNER 4096        // Player has an afterburner
-#define PLAYER_FLAGS_HEADLIGHT 8192          // Player has headlight boost
-#define PLAYER_FLAGS_HEADLIGHT_STOLEN 16384  // is the headlight stolen?
-#define PLAYER_FLAGS_AFTERBURN_ON 32768      // Player afterburner is engaged
-#define PLAYER_FLAGS_CUSTOM_TEXTURE 65536    // Player has a custom texture
-#define PLAYER_FLAGS_THRUSTED (1 << 17)      // Player has thrusted this frame
-#define PLAYER_FLAGS_BULLSEYE (1 << 18)      // Bullseye reticle should light up
-#define PLAYER_FLAGS_ZOOMED (1 << 19)        // Bullseye reticle should light up
-#define PLAYER_FLAGS_REARVIEW (1 << 20)      // Play is using rearview
-#define PLAYER_FLAGS_SEND_MOVEMENT (1 << 21) // We need to tell the server about our movement
-#define PLAYER_FLAGS_PLAYSOUNDMSGFORINVULN                                                                             \
-  (1 << 22) // A sound and hud message should be displayed when invulnerability wears off
+// Values for player::flags
+struct [[gnu::packed]] player_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 9;
+  uint32_t playsoundmsgforinvuln : 1; // A sound and hud msg when invulnerability wears off (1<<22)
+  uint32_t send_movement : 1;         // We need to tell the server about our movement (1<<21)
+  uint32_t rearview : 1;              // Play is using rearview (1<<20)
+  uint32_t zoomed : 1;                // Player is zoomed in (1<<19)
+  uint32_t bullseye : 1;              // Bullseye reticle should light up (1<<18)
+  uint32_t thrusted : 1;              // Player has thrusted this frame (1<<17)
+  uint32_t custom_texture : 1;        // Player has a custom texture (65536)
+  uint32_t afterburn_on : 1;          // Player afterburner is engaged (32768)
+  uint32_t headlight_stolen : 1;      // is the headlight stolen? (16384)
+  uint32_t headlight : 1;             // Player has headlight boost (8192)
+  uint32_t afterburner : 1;           // Player has an afterburner (4096)
+  uint32_t : 8;                       // 2048..16 legacy/unused
+  uint32_t dead : 1;                  // The player is just sitting there dead. (8)
+  uint32_t dying : 1;                 // Is this player in the middle of dying? (4)
+  uint32_t : 1;                       // 2 unused
+  uint32_t invulnerable : 1;          // Player is invincible (1)
+#else
+  uint32_t invulnerable : 1; // Player is invincible (1)
+  uint32_t : 1;              // 2 unused
+  uint32_t dying : 1;        // Is this player in the middle of dying? (4)
+  uint32_t dead : 1;         // The player is just sitting there dead. (8)
+  uint32_t : 8;              // 16..2048 legacy/unused
+  uint32_t afterburner : 1;  // Player has an afterburner (4096)
+  uint32_t headlight : 1;    // Player has headlight boost (8192)
+  uint32_t headlight_stolen : 1; // is the headlight stolen? (16384)
+  uint32_t afterburn_on : 1; // Player afterburner is engaged (32768)
+  uint32_t custom_texture : 1; // Player has a custom texture (65536)
+  uint32_t thrusted : 1;     // Player has thrusted this frame (1<<17)
+  uint32_t bullseye : 1;     // Bullseye reticle should light up (1<<18)
+  uint32_t zoomed : 1;       // Player is zoomed in (1<<19)
+  uint32_t rearview : 1;     // Play is using rearview (1<<20)
+  uint32_t send_movement : 1; // We need to tell the server about our movement (1<<21)
+  uint32_t playsoundmsgforinvuln : 1; // A sound and hud msg when invulnerability wears off (1<<22)
+  uint32_t padding : 9;
+#endif
+};
+static_assert(sizeof(player_flags_t) == sizeof(uint32_t));
 
-// Variables for weapon_fire_flags
-#define WFF_SPRAY 1   // a spray weapon is firing
-#define WFF_ON_OFF 2  // an on/off weapon is firing
-#define WFF_FIRED 128 // fired this frame
+// Player start position flags (used for teams)
+struct [[gnu::packed]] player_start_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 28;
+  uint32_t yellow : 1;
+  uint32_t green : 1;
+  uint32_t blue : 1;
+  uint32_t red : 1;
+#else
+  uint32_t red : 1;
+  uint32_t blue : 1;
+  uint32_t green : 1;
+  uint32_t yellow : 1;
+  uint32_t padding : 28;
+#endif
+};
+static_assert(sizeof(player_start_flags_t) == sizeof(uint32_t));
 
 // Define the two player weapons
-#define PW_PRIMARY 0
-#define PW_SECONDARY 1
+enum class player_weapon_slot : uint8_t {
+  primary = 0,
+  secondary = 1,
+};
 
 // These are used to mask out various controls, put in initially for the training system
-#define PCBF_FORWARD 1
-#define PCBF_REVERSE 2
-#define PCBF_LEFT 4
-#define PCBF_RIGHT 8
-#define PCBF_UP 16
-#define PCBF_DOWN 32
-#define PCBF_PITCHUP 64
-#define PCBF_PITCHDOWN 128
-#define PCBF_HEADINGLEFT 256
-#define PCBF_HEADINGRIGHT 512
-#define PCBF_BANKLEFT 1024
-#define PCBF_BANKRIGHT 2048
-#define PCBF_PRIMARY 4096
-#define PCBF_SECONDARY 8192
-#define PCBF_AFTERBURNER 16384
+struct [[gnu::packed]] player_control_block_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint16_t : 1;
+  uint16_t afterburner : 1;
+  uint16_t secondary : 1;
+  uint16_t primary : 1;
+  uint16_t bankright : 1;
+  uint16_t bankleft : 1;
+  uint16_t headingright : 1;
+  uint16_t headingleft : 1;
+  uint16_t pitchdown : 1;
+  uint16_t pitchup : 1;
+  uint16_t down : 1;
+  uint16_t up : 1;
+  uint16_t right : 1;
+  uint16_t left : 1;
+  uint16_t reverse : 1;
+  uint16_t forward : 1;
+#else
+  uint16_t forward : 1;
+  uint16_t reverse : 1;
+  uint16_t left : 1;
+  uint16_t right : 1;
+  uint16_t up : 1;
+  uint16_t down : 1;
+  uint16_t pitchup : 1;
+  uint16_t pitchdown : 1;
+  uint16_t headingleft : 1;
+  uint16_t headingright : 1;
+  uint16_t bankleft : 1;
+  uint16_t bankright : 1;
+  uint16_t primary : 1;
+  uint16_t secondary : 1;
+  uint16_t afterburner : 1;
+  uint16_t : 1;
+#endif
+};
+static_assert(sizeof(player_control_block_flags_t) == sizeof(uint16_t));
+// The DYNAMIC weapon battery flags (WFF_*) live on the object as
+// weapon_fire_flags_t (object_external_struct.h).
 
 #endif

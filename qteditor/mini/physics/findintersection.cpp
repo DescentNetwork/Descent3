@@ -2676,7 +2676,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
   } else {
     if ((this_obj) && this_obj->type == object_type::player && fq->rad == this_obj->size) {
       fvi_wall_sphere_rad = fq->rad * PLAYER_SIZE_SCALAR;
-      if (Players[this_obj->id].flags & (PLAYER_FLAGS_DEAD | PLAYER_FLAGS_DYING))
+      if (Players[this_obj->id].flags.dead || Players[this_obj->id].flags.dying)
         fvi_wall_sphere_rad *= 0.5f;
       fvi_wall_sphere_offset = vector3{};
       fvi_wall_sphere_p0 = *fq->p0;
