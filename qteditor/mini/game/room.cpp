@@ -400,6 +400,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
+#include <utility>
 
 #include "bnode.h"
 #include "room.h"
@@ -531,7 +532,7 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
   rp.env_reverb = 0; // reverb for sound system.
 
   rp.damage = 0.0;          // room damage
-  rp.damage_type = PD_NONE; // room damage type
+  rp.damage_type = player_damage_type::none; // room damage type
 
   rp.bn_info.nodes.clear();
 
@@ -1549,7 +1550,8 @@ byte_istream& operator>>(byte_istream& input, room_t& data) {
   input >> ambient;
 
   input >> data.env_reverb;
-  input >> data.damage >> data.damage_type;
+  input >> data.damage;
+  input >> reinterpret_cast<uint8_t &>(data.damage_type);
   return input;
 }
 
@@ -1589,7 +1591,7 @@ byte_ostream& operator<<(byte_ostream& output, const room_t& data) {
   output << data.fog_depth << data.fog_r << data.fog_g << data.fog_b;
   output << std::string("");
   output << data.env_reverb;
-  return output << data.damage << data.damage_type;
+  return output << data.damage << reinterpret_cast<const uint8_t &>(data.damage_type);
 }
 
 

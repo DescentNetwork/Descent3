@@ -303,9 +303,9 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
       SetupObjectLightmapMemory(&Objects[i]);
 
       if (terrain)
-        CombineObjectLightmapUVs(Objects[i], LMI_TERRAIN_OBJECT);
+        CombineObjectLightmapUVs(Objects[i], lmi_type::terrain_object);
       else
-        CombineObjectLightmapUVs(Objects[i], LMI_ROOM_OBJECT);
+        CombineObjectLightmapUVs(Objects[i], lmi_type::room_object);
 
       for (t = 0; t < po->n_models; t++) {
         bsp_info *sm = &po->submodel[t];
@@ -390,7 +390,7 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
         continue;
 
       SetupObjectLightmapMemory(&Objects[i]);
-      CombineObjectLightmapUVs(Objects[i], LMI_ROOM_OBJECT);
+      CombineObjectLightmapUVs(Objects[i], lmi_type::room_object);
 
       for (t = 0; t < po->n_models; t++) {
         bsp_info *sm = &po->submodel[t];
@@ -489,7 +489,7 @@ int GetTotalObjectFacesForSingleRoom(int roomnum) {
 }
 
 void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count, vector3 *lightmap_poly, int nv,
-                            int lm_type) {
+                            lmi_type lm_type) {
   matrix face_matrix, trans_matrix;
   vector3 fvec;
   vector3 avg_vert;
@@ -840,7 +840,7 @@ std::array<std::vector<uint8_t>, MAX_OBJECTS> ObjectsAlreadyCombined;
 
 // Given a submodel and a face, goes through the entire object and checks to see
 // if this face can share a lightmap with any other face
-int TestObjectLightAdjacency(object& obj, int subnum, int facenum, int lmi_type) {
+int TestObjectLightAdjacency(object& obj, int subnum, int facenum, lmi_type type) {
   int i, t, k;
   poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
   bsp_info *a_sm = &pm->submodel[subnum];
@@ -933,7 +933,7 @@ StartOver:
 
   // Now build 1 lightmap to be shared across all the faces that were combined
   if (total_faces > 1) {
-    BuildObjectLightmapUVs(obj, submodel_combine_list, face_combine_list, total_faces, averts, anv, lmi_type);
+    BuildObjectLightmapUVs(obj, submodel_combine_list, face_combine_list, total_faces, averts, anv, type);
   }
 
   return 1;
@@ -942,7 +942,7 @@ StartOver:
 // Computes the the mines UVs
 // Faces can now share one lightmap, so this routine goes through and tries to
 // combine as many faces as it can into one lightmap
-void CombineObjectLightmapUVs(object& obj, int lmi_type) {
+void CombineObjectLightmapUVs(object& obj, lmi_type type) {
   int i, t, k;
   int not_combined = 0;
 
@@ -966,7 +966,7 @@ void CombineObjectLightmapUVs(object& obj, int lmi_type) {
 
     for (t = 0; t < sm->num_faces; t++) {
       if (!ObjectsAlreadyCombined[i][t])
-        TestObjectLightAdjacency(obj, i, t, lmi_type);
+        TestObjectLightAdjacency(obj, i, t, type);
     }
   }
 
@@ -987,7 +987,7 @@ void CombineObjectLightmapUVs(object& obj, int lmi_type) {
 
         submodel_list[0] = i;
         face_list[0] = t;
-        BuildObjectLightmapUVs(obj, submodel_list, face_list, 1, verts, sm->faces[t].nverts, lmi_type);
+        BuildObjectLightmapUVs(obj, submodel_list, face_list, 1, verts, sm->faces[t].nverts, type);
         not_combined++;
       }
     }

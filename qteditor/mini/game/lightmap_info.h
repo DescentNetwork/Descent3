@@ -49,13 +49,15 @@
 #define BAD_LMI_INDEX 65535
 
 // What this lightmap is used for:
-#define LMI_ROOM 0
-#define LMI_ROOM_OBJECT 1
-#define LMI_TERRAIN 2
-#define LMI_TERRAIN_OBJECT 3
-#define LMI_DYNAMIC 4
-#define LMI_EXTERNAL_ROOM 5
-#define LMI_EXTERNAL_ROOM_OBJECT 6
+enum class lmi_type : uint8_t {
+  room = 0,
+  room_object = 1,
+  terrain = 2,
+  terrain_object = 3,
+  dynamic = 4,
+  external_room = 5,
+  external_room_object = 6,
+};
 
 struct lightmap_info {
   uint8_t xspacing, yspacing;
@@ -68,7 +70,7 @@ struct lightmap_info {
   // 0..MAX_LIGHTMAPS-1 range rather than wrapping negative at 32767.
   uint16_t spec_map;
 
-  uint8_t type; // see LMI_types above
+  lmi_type type; // see lmi_type above
 };
 
 // The lightmap-info table.  Grows on demand as fresh handles are created (the
@@ -85,7 +87,7 @@ void InitLightmapInfo(int nummaps = 0);
 // Allocs a lightmap of w x h size
 // Returns 16-bit lightmap_info handle (index into LightmapInfo) if
 // successful, nullopt if otherwise
-std::optional<uint16_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap = true);
+std::optional<uint16_t> AllocLightmapInfo(int w, int h, lmi_type type, bool alloc_lightmap = true);
 
 // Given a handle, frees the lightmap memory and flags this lightmap as unused
 void FreeLightmapInfo(int handle);
@@ -99,7 +101,7 @@ std::optional<uint8_t> lmi_h(int handle);
 void CloseLightmapInfos();
 
 // Softens the edges of lightmaps so there are fewer artifaces
-void ShadeLightmapInfoEdges(int type);
-void BlurLightmapInfos(int type);
+void ShadeLightmapInfoEdges(lmi_type type);
+void BlurLightmapInfos(lmi_type type);
 
 #endif

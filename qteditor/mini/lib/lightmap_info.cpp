@@ -32,7 +32,7 @@ void InitLightmapInfo(int nummaps) {
 
 // Allocs a lightmap of w x h size, optionally allocating its backing texture.
 // Returns 16-bit lightmap info handle if successful, nullopt if otherwise
-std::optional<uint16_t> AllocLightmapInfo(int w, int h, int type, bool alloc_lightmap) {
+std::optional<uint16_t> AllocLightmapInfo(int w, int h, lmi_type type, bool alloc_lightmap) {
   if (LightmapInfo.num_empty() == 0 && LightmapInfo.size() >= MAX_LIGHTMAP_INFOS)
     return std::nullopt; // Ran out of lightmap infos!
 

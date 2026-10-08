@@ -1,4 +1,5 @@
 /*
+#include <utility>
 * Descent 3 
 * Copyright (C) 2024 Parallax Software
 *
@@ -229,14 +230,14 @@ void DoorwayPlaySound(object *objp) {
   }
 
   // Play new sound, if this door has one
-  if ((dp->state == DOORWAY_OPENING) || (dp->state == DOORWAY_OPENING_AUTO)) {
+  if ((dp->state == doorway_state::opening) || (dp->state == doorway_state::opening_auto)) {
     if (door->open_sound != -1) {
       float offset = dp->position * door->total_open_time;
       dp->sound_handle =
           Sound_system.Play3dSound(Doors[dp->doornum].open_sound, SND_PRIORITY_HIGH, objp, 1.0, 0, offset);
     }
   } else {
-    Q_ASSERT(dp->state == DOORWAY_CLOSING);
+    Q_ASSERT(dp->state == doorway_state::closing);
     if (door->close_sound != -1) {
       float offset = (1.0 - dp->position) * door->total_close_time;
       dp->sound_handle =
@@ -271,7 +272,7 @@ void DoorwayActivate(int door_obj_handle) {
   door = &Doors[dp->doornum];
 
   // If already open or opening or waiting, do nothing
-  if ((dp->state == DOORWAY_OPENING) || (dp->state == DOORWAY_WAITING) || (dp->state == DOORWAY_OPENING_AUTO))
+  if ((dp->state == doorway_state::opening) || (dp->state == doorway_state::waiting) || (dp->state == doorway_state::opening_auto))
     return;
 
   // Store new desired position
@@ -281,7 +282,7 @@ void DoorwayActivate(int door_obj_handle) {
   AddActiveDoorway(objp->roomnum);
 
   // Set new state
-  dp->state = dp->flags.automatic ? DOORWAY_OPENING_AUTO : DOORWAY_OPENING;
+  dp->state = dp->flags.automatic ? doorway_state::opening_auto : doorway_state::opening;
 
   // Play sound
   DoorwayPlaySound(objp);
@@ -325,9 +326,9 @@ void DoorwaySetPosition(int door_obj_handle, float pos) {
 
   // Set new state & play sound
   if (dp->dest_pos > dp->position)
-    dp->state = DOORWAY_OPENING;
+    dp->state = doorway_state::opening;
   else
-    dp->state = DOORWAY_CLOSING;
+    dp->state = doorway_state::closing;
 
   // Play sound
   DoorwayPlaySound(objp);
@@ -341,7 +342,7 @@ void DoorwayStop(int door_obj_handle) {
 
   // Set the door as stopped
   dp->dest_pos = dp->position;
-  dp->state = DOORWAY_STOPPED;
+  dp->state = doorway_state::stopped;
 
   // Stop the sound if one is playing
   if (dp->sound_handle != -1) {
@@ -364,7 +365,7 @@ void DoorwayDestroy(object *objp) {
 
   dp->flags.blasted = true;
   dp->position = 1.0;
-  dp->state = DOORWAY_STOPPED;
+  dp->state = doorway_state::stopped;
 
   // Remove from the active doorway list
   if (dp->activenum != -1)
@@ -377,12 +378,12 @@ void DoorwayDeactivateAll() {
   for (size_t r = 0; r < Rooms.size(); r++) {
     room *rp = &Rooms[r];
     if (rp->used && rp->flags.door) {
-      if (rp->doorway_data->state != DOORWAY_STOPPED) {
+      if (rp->doorway_data->state != doorway_state::stopped) {
         doorway *dp = rp->doorway_data;
         Q_ASSERT(dp != NULL);
         dp->position = dp->dest_pos;
         dp->activenum = -1;
-        dp->state = DOORWAY_STOPPED;
+        dp->state = doorway_state::stopped;
         if (dp->sound_handle != -1) {
           Sound_system.StopSoundImmediate(dp->sound_handle);
           dp->sound_handle = -1;
@@ -431,8 +432,8 @@ void DoorwayDoFrame() {
     float delta; // movement delta
 
     switch (dway->state) {
-    case DOORWAY_OPENING:
-    case DOORWAY_OPENING_AUTO: //	doorway is opening
+    case doorway_state::opening:
+    case doorway_state::opening_auto: //	doorway is opening
       delta = Frametime / door->total_open_time;
 
       dway->position += delta;
@@ -440,17 +441,17 @@ void DoorwayDoFrame() {
       if (dway->position >= dway->dest_pos) {
         dway->position = dway->dest_pos;
 
-        if (dway->state == DOORWAY_OPENING_AUTO) {
-          dway->state = DOORWAY_WAITING;
+        if (dway->state == doorway_state::opening_auto) {
+          dway->state = doorway_state::waiting;
           dway->dest_pos = door->total_time_open;
         } else { //	non automatic doors will stay open, hence are no longer active
-          dway->state = DOORWAY_STOPPED;
+          dway->state = doorway_state::stopped;
           RemoveActiveDoorway(i_doorway);
         }
       }
       break;
 
-    case DOORWAY_CLOSING: //	doorway is closing
+    case doorway_state::closing: //	doorway is closing
       delta = Frametime / door->total_close_time;
 
       dway->position -= delta;
@@ -458,7 +459,7 @@ void DoorwayDoFrame() {
       if (dway->position <= dway->dest_pos) {
         dway->position = dway->dest_pos;
 
-        dway->state = DOORWAY_STOPPED;
+        dway->state = doorway_state::stopped;
         RemoveActiveDoorway(i_doorway);
 
         // Send notification event
@@ -469,7 +470,7 @@ void DoorwayDoFrame() {
       }
       break;
 
-    case DOORWAY_WAITING: //	doorway is in wait state
+    case doorway_state::waiting: //	doorway is in wait state
 
       dway->dest_pos -= Frametime;
 
@@ -482,7 +483,7 @@ void DoorwayDoFrame() {
         if (!((door_objp->next != -1) || (door_objp->prev != -1))) {
 
           dway->dest_pos = 0.0;
-          dway->state = DOORWAY_CLOSING;
+          dway->state = doorway_state::closing;
 
           // Play sound
           DoorwayPlaySound(door_objp);
@@ -577,11 +578,11 @@ bool DoorwayOpenable(int door_obj_handle, int opener_handle) {
 }
 
 // Returns the current state of the specified door
-int DoorwayState(int door_obj_handle) {
+doorway_state DoorwayState(int door_obj_handle) {
   doorway *dp = GetDoorwayFromObject(door_obj_handle);
 
   if (!dp)
-    return DOORWAY_STOPPED;
+    return doorway_state::stopped;
 
   return dp->state;
 }
@@ -628,7 +629,7 @@ void DoorwayRebuildActiveList() {
     room *rp = &Rooms[r];
     if (rp->used && rp->flags.door) {
       Q_ASSERT(rp->doorway_data != NULL);
-      if (rp->doorway_data->state != DOORWAY_STOPPED)
+      if (rp->doorway_data->state != doorway_state::stopped)
         AddActiveDoorway(r);
     }
   }
@@ -649,7 +650,7 @@ doorway *DoorwayAdd(int roomnum, int doornum) {
   // Initialize
   dp->doornum = doornum;
   dp->dest_pos = dp->position = 0.0;
-  dp->state = DOORWAY_STOPPED;
+  dp->state = doorway_state::stopped;
   dp->flags.automatic = true;
   dp->keys_needed = 0;
   dp->activenum = -1;

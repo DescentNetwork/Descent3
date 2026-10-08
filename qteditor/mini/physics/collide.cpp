@@ -831,6 +831,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <utility>
 
 #include "AIMain.h"
 #include "collide.h"
@@ -1306,13 +1307,13 @@ void collide_player_and_wall(object *playerobj, float hitspeed, int hitseg, int 
   // If volatile, make the sound & apply damage
   if (flags.explosive) {
     if (playerobj == Player_object) {
-        ApplyDamageToPlayer(playerobj, playerobj, PD_VOLATILE_HISS, VOLATILE_DAMAGE);
+        ApplyDamageToPlayer(playerobj, playerobj, player_damage_type::volatile_hiss, VOLATILE_DAMAGE);
     }
   }
 
   if (flags.forcefield) {
     if (playerobj == Player_object && sound_override_force_field == -1) {
-        ApplyDamageToPlayer(playerobj, playerobj, PD_ENERGY_WEAPON, FORCEFIELD_DAMAGE);
+        ApplyDamageToPlayer(playerobj, playerobj, player_damage_type::energy_weapon, FORCEFIELD_DAMAGE);
     }
 
     if (sound_override_force_field == -1)
@@ -1343,12 +1344,12 @@ void collide_player_and_wall(object *playerobj, float hitspeed, int hitseg, int 
 
     if (hitspeed > MIN_WALL_DAMAGE_SPEED) {
       if (playerobj == Player_object && playerobj->shields >= MIN_WALL_HIT_DAMAGE_SHIELDS) {
-          ApplyDamageToPlayer(playerobj, playerobj, PD_WALL_HIT, WALL_DAMAGE);
+          ApplyDamageToPlayer(playerobj, playerobj, player_damage_type::wall_hit, WALL_DAMAGE);
       }
     }
 
     Sound_system.Play3dSound(SOUND_PLAYER_HIT_WALL, SND_PRIORITY_NORMAL, playerobj, volume);
-    if (Demo_flags == DF_RECORDING)
+    if (Demo_flags == demo_flags_t::recording)
       DemoWrite3DSound(SOUND_PLAYER_HIT_WALL, OBJNUM(playerobj), 1, volume);
 
     ain_hear hear;
@@ -1406,14 +1407,14 @@ void collide_generic_and_wall(object *genericobj, float hitspeed, int hitseg, in
 
   // If volatile, make the sound & apply damage
   if (flags.explosive) {
-    ApplyDamageToGeneric(genericobj, genericobj, GD_VOLATILE_HISS, VOLATILE_DAMAGE);
+    ApplyDamageToGeneric(genericobj, genericobj, generic_damage_type::volatile_hiss, VOLATILE_DAMAGE);
     Sound_system.Play3dSound(SOUND_VOLATILE_HISS, SND_PRIORITY_HIGHEST, genericobj, MAX_GAME_VOLUME);
   }
 
   if (flags.forcefield) {
     if (sound_override_force_field == -1) {
       Sound_system.Play3dSound(SOUND_FORCEFIELD_BOUNCE, SND_PRIORITY_LOW, genericobj, MAX_GAME_VOLUME);
-      ApplyDamageToGeneric(genericobj, genericobj, GD_ENERGY, FORCEFIELD_DAMAGE);
+      ApplyDamageToGeneric(genericobj, genericobj, generic_damage_type::energy, FORCEFIELD_DAMAGE);
     } else {
       Sound_system.Play3dSound(sound_override_force_field, SND_PRIORITY_LOW, genericobj, MAX_GAME_VOLUME);
     }
@@ -1427,11 +1428,11 @@ void collide_generic_and_wall(object *genericobj, float hitspeed, int hitseg, in
       }
 
       if (hitspeed > MIN_WALL_DAMAGE_SPEED) {
-          ApplyDamageToGeneric(genericobj, genericobj, GD_PHYSICS, WALL_DAMAGE);
+          ApplyDamageToGeneric(genericobj, genericobj, generic_damage_type::physics, WALL_DAMAGE);
       }
 
       Sound_system.Play3dSound(SOUND_PLAYER_HIT_WALL, SND_PRIORITY_LOW, genericobj, volume);
-      if (Demo_flags == DF_RECORDING)
+      if (Demo_flags == demo_flags_t::recording)
         DemoWrite3DSound(SOUND_PLAYER_HIT_WALL, OBJNUM(genericobj), 1, volume);
     }
   }
@@ -2093,15 +2094,15 @@ void collide_generic_and_player(object *robotobj, object *playerobj, vector3 *co
          (robotobj->mtype.phys_info.flags.point_collide_walls))) {
       if (!(IS_GUIDEBOT(robotobj))) {
         if (robotobj->shields <= 1.0f) {
-          ApplyDamageToGeneric(robotobj, playerobj, GD_PHYSICS, 2.0f);
+          ApplyDamageToGeneric(robotobj, playerobj, generic_damage_type::physics, 2.0f);
         } else {
-          ApplyDamageToGeneric(robotobj, playerobj, GD_PHYSICS, 5.0f * Frametime * scalar);
+          ApplyDamageToGeneric(robotobj, playerobj, generic_damage_type::physics, 5.0f * Frametime * scalar);
         }
         if (scalar < 1.0f && physics_locked(robotobj->mtype.phys_info.flags) &&
             (robotobj->mtype.phys_info.flags.point_collide_walls))
           scalar = 1.0f;
 
-        ApplyDamageToPlayer(playerobj, playerobj, PD_WALL_HIT, 2.0f * Frametime * scalar);
+        ApplyDamageToPlayer(playerobj, playerobj, player_damage_type::wall_hit, 2.0f * Frametime * scalar);
       }
     }
   }
@@ -2146,13 +2147,13 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
   }
 
   if (Weapons[weapon->id].flags.napalm)
-    damage_type = GD_FIRE;
+    damage_type = generic_damage_type::fire;
   else if (Weapons[weapon->id].flags.matter_weapon)
-    damage_type = GD_MATTER;
+    damage_type = generic_damage_type::matter;
   else if (Weapons[weapon->id].flags.electrical)
-    damage_type = GD_ELECTRIC;
+    damage_type = generic_damage_type::electric;
   else
-    damage_type = GD_ENERGY;
+    damage_type = generic_damage_type::energy;
 
   if (f_reverse_normal)
     *collision_normal *= -1.0f;
@@ -2223,11 +2224,11 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
     }
   }
 #if 0	
-	if(Demo_flags == DF_RECORDING)
+	if(Demo_flags == demo_flags_t::recording)
 	{
 		DemoWriteCollideGenericWeapon( robotobj, weapon, collision_point, collision_normal, f_reverse_normal, hit_info );	
 	}
-	else if(Demo_flags == DF_PLAYBACK)
+	else if(Demo_flags == demo_flags_t::playback)
 	{
 		//During playback we don't need the code below (actually it won't work)
 		return;
@@ -2282,7 +2283,7 @@ void collide_player_and_weapon(object *playerobj, object *weapon, vector3 *colli
   // Factor in multiplier
   damage_to_apply *= weapon->ctype.laser_info().multiplier;
 
-  int damage_type = electrical ? PD_ENERGY_WEAPON : PD_MATTER_WEAPON;
+  int damage_type = electrical ? player_damage_type::energy_weapon : player_damage_type::matter_weapon;
 
   if (ApplyDamageToPlayer(playerobj, weapon, damage_type, damage_to_apply)) {
     // we were damaged!
@@ -2290,11 +2291,11 @@ void collide_player_and_weapon(object *playerobj, object *weapon, vector3 *colli
       Sound_system.Play3dSound(Weapons[weapon->id].sounds[WSI_IMPACT_ROBOT], SND_PRIORITY_NORMAL, weapon);
   }
 #if 0		
-	if(Demo_flags == DF_RECORDING)
+	if(Demo_flags == demo_flags_t::recording)
 	{
 		DemoWriteCollidePlayerWeapon( playerobj, weapon, collision_point, collision_normal, f_reverse_normal, hit_info );	
 	}
-	else if(Demo_flags == DF_PLAYBACK)
+	else if(Demo_flags == demo_flags_t::playback)
 	{
 		//During playback we don't need the code below (actually it won't work)
 		return;

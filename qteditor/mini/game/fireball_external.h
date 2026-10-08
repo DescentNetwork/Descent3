@@ -19,65 +19,72 @@
 #ifndef FIREBALL_EXTERNAL_H_
 #define FIREBALL_EXTERNAL_H_
 
-#define MED_EXPLOSION_INDEX2 0
-#define SMALL_EXPLOSION_INDEX2 1
-#define MED_EXPLOSION_INDEX 2
-#define MED_EXPLOSION_INDEX3 3
-#define BIG_EXPLOSION_INDEX 4
-#define BILLOWING_INDEX 5
-#define SMALL_EXPLOSION_INDEX 6
-#define MED_SMOKE_INDEX 7
-#define BLACK_SMOKE_INDEX 8
-#define BLAST_RING_INDEX 9
-#define SMOKE_TRAIL_INDEX 10
-#define CUSTOM_EXPLOSION_INDEX 11
-#define SHRINKING_BLAST_INDEX 12
-#define SMOLDERING_INDEX 13
-#define SHRINKING_BLAST_INDEX2 14
-#define HOT_SPARK_INDEX 15
-#define COOL_SPARK_INDEX 16
-#define GRADIENT_BALL_INDEX 17
-#define SPRAY_INDEX 18
-#define FADING_LINE_INDEX 19
-#define MUZZLE_FLASH_INDEX 20
-#define SHIP_HIT_INDEX 21
-#define BLUE_BLAST_RING_INDEX 22
-#define PARTICLE_INDEX 23
-#define AFTERBURNER_INDEX 24
-#define NAPALM_BALL_INDEX 25
-#define LIGHTNING_ORIGIN_INDEXA 26
-#define LIGHTNING_ORIGIN_INDEXB 27
-#define RAINDROP_INDEX 28
-#define PUDDLEDROP_INDEX 29
-#define GRAVITY_FIELD_INDEX 30
-#define LIGHTNING_BOLT_INDEX 31
-#define INVUL_HIT_INDEX 32
-#define SINE_WAVE_INDEX 33
-#define AXIS_BILLBOARD_INDEX 34
-#define DEFAULT_CORONA_INDEX 35
-#define HEADLIGHT_CORONA_INDEX 36
-#define STAR_CORONA_INDEX 37
-#define SUN_CORONA_INDEX 38
-#define SNOWFLAKE_INDEX 39
-#define THICK_LIGHTNING_INDEX 40
-#define BLUE_FIRE_INDEX 41
-#define RUBBLE1_INDEX 42
-#define RUBBLE2_INDEX 43
-#define WATER_SPLASH_INDEX 44
-#define SHATTER_INDEX 45
-#define SHATTER_INDEX2 46
-#define BILLBOARD_SMOKETRAIL_INDEX 47
-#define MASSDRIVER_EFFECT_INDEX 48
-#define BLUE_EXPLOSION_INDEX 49
-#define GRAY_SPARK_INDEX 50
-#define GRAY_LIGHTNING_BOLT_INDEX 51
-#define MERCBOSS_MASSDRIVER_EFFECT_INDEX 52
+#include <cstdint>
+
+// Indices into the fireball texture table
+enum class fireball_texture : uint8_t {
+  med_explosion_index2 = 0,
+  small_explosion_index2 = 1,
+  med_explosion_index = 2,
+  med_explosion_index3 = 3,
+  big_explosion_index = 4,
+  billowing_index = 5,
+  small_explosion_index = 6,
+  med_smoke_index = 7,
+  black_smoke_index = 8,
+  blast_ring_index = 9,
+  smoke_trail_index = 10,
+  custom_explosion_index = 11,
+  shrinking_blast_index = 12,
+  smoldering_index = 13,
+  shrinking_blast_index2 = 14,
+  hot_spark_index = 15,
+  cool_spark_index = 16,
+  gradient_ball_index = 17,
+  spray_index = 18,
+  fading_line_index = 19,
+  muzzle_flash_index = 20,
+  ship_hit_index = 21,
+  blue_blast_ring_index = 22,
+  particle_index = 23,
+  afterburner_index = 24,
+  napalm_ball_index = 25,
+  lightning_origin_indexa = 26,
+  lightning_origin_indexb = 27,
+  raindrop_index = 28,
+  puddledrop_index = 29,
+  gravity_field_index = 30,
+  lightning_bolt_index = 31,
+  invul_hit_index = 32,
+  sine_wave_index = 33,
+  axis_billboard_index = 34,
+  default_corona_index = 35,
+  headlight_corona_index = 36,
+  star_corona_index = 37,
+  sun_corona_index = 38,
+  snowflake_index = 39,
+  thick_lightning_index = 40,
+  blue_fire_index = 41,
+  rubble1_index = 42,
+  rubble2_index = 43,
+  water_splash_index = 44,
+  shatter_index = 45,
+  shatter_index2 = 46,
+  billboard_smoketrail_index = 47,
+  massdriver_effect_index = 48,
+  blue_explosion_index = 49,
+  gray_spark_index = 50,
+  gray_lightning_bolt_index = 51,
+  mercboss_massdriver_effect_index = 52,
+};
 
 // Fireball types
-#define FT_EXPLOSION 0
-#define FT_SMOKE 1
-#define FT_EFFECT 2
-#define FT_BILLOW 3
-#define FT_SPARK 4
+enum class fireball_type : uint8_t {
+  explosion = 0,
+  smoke = 1,
+  effect = 2,
+  billow = 3,
+  spark = 4,
+};
 
 #endif

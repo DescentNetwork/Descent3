@@ -33,6 +33,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
+#include <utility>
 
 #include "render.h"
 #include "3d.h"
@@ -2400,7 +2401,7 @@ void RenderSingleLightGlow(int index) {
   room_t *rp = &Rooms[LightGlows[index].roomnum];
   face *fp = &rp->faces[LightGlows[index].facenum];
   texture *texp = &GameTextures[fp->tmap];
-  bm_handle = Fireballs[DEFAULT_CORONA_INDEX + texp->corona_type].bm_handle;
+  bm_handle = Fireballs[std::to_underlying(fireball_texture::default_corona_index) + texp->corona_type].bm_handle;
 
   // Get size of light
   scalar size = LightGlows[index].size;

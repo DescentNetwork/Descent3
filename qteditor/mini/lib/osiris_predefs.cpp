@@ -434,6 +434,7 @@
 #include <cctype>
 #include <cstdarg>
 #include <cstdint>
+#include <utility>
 
 #include "osiris_predefs.h"
 #include "object.h"
@@ -2620,7 +2621,7 @@ int osipf_ObjCreate(uint8_t raw_type, uint16_t id, int roomnum, vector3 *pos, co
       auto ambient_sound_idx = Object_info[obj->id].sounds[generic_sound::ambient];
       if (ambient_sound_idx) {
         Sound_system.Play3dSound(static_cast<uint32_t>(*ambient_sound_idx), SND_PRIORITY_LOWEST, obj);
-        if (Demo_flags == DF_RECORDING)
+        if (Demo_flags == demo_flags_t::recording)
           DemoWrite3DSound(ambient_sound, objnum, SND_PRIORITY_LOW);
       }
     }

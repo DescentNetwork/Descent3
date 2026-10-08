@@ -27,6 +27,7 @@
 #include <QtGlobal>
 
 #include <algorithm>
+#include <utility>
 
 #include "gametexture.h"
 #include "objinfo.h"
@@ -210,9 +211,9 @@ void matcen::SaveData(posix_ostream &ofile) const {
   ofile << static_cast<int16_t>(m_name.size() + 1) << m_name;
 
   ofile << static_cast<int8_t>(m_num_prod_types);
-  ofile << static_cast<int8_t>(m_control_type);
-  ofile << static_cast<int8_t>(m_type);
-  ofile << static_cast<int8_t>(m_creation_effect);
+  ofile << std::to_underlying(m_control_type);
+  ofile << std::to_underlying(m_type);
+  ofile << std::to_underlying(m_creation_effect);
   ofile << m_creation_texture; // int16_t
 
   ofile << static_cast<int32_t>(m_num_spawn_pnts);
@@ -267,7 +268,7 @@ void matcen::SaveData(posix_ostream &ofile) const {
 
   ofile << m_speed_multi;
 
-  ofile << static_cast<uint8_t>(m_prod_mode);
+  ofile << std::to_underlying(m_prod_mode);
   ofile << m_prod_mode_time;
 
   ofile << reinterpret_cast<const int32_t &>(m_status);
@@ -305,8 +306,8 @@ void matcen::LoadData(posix_istream &ifile, const int *texture_xlate) {
   if (max_prod_types < 0) max_prod_types = 0;
   if (max_prod_types > MAX_PROD_TYPES) max_prod_types = MAX_PROD_TYPES;
   if (max_matcen_sounds < 0) max_matcen_sounds = 0;
-  if (max_matcen_sounds > static_cast<int32_t>(matcen_sound::count))
-    max_matcen_sounds = static_cast<int32_t>(matcen_sound::count);
+  if (max_matcen_sounds > static_cast<int32_t>(std::to_underlying(matcen_sound::count)))
+    max_matcen_sounds = static_cast<int32_t>(std::to_underlying(matcen_sound::count));
 
   m_name = readLevelName(ifile);
 

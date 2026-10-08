@@ -106,6 +106,7 @@
 
 #include "vecmat_external.h"
 #include "bnode.h"
+#include "damage_external.h"
 #include "doorway.h"
 #include "utils.h"
 
@@ -337,7 +338,7 @@ struct room_t {
 
   uint8_t env_reverb;        // environmental reverb preset
   uint8_t room_change_flags; // For multiplayer, detects what characteristics have to be sent
-  uint8_t damage_type;       // What type of damage this rooms does (for sound) if damage > 0
+  player_damage_type damage_type; // What type of damage this rooms does (for sound) if damage > 0
   uint8_t used;              // is this room holding data?
 
 };

@@ -47,6 +47,7 @@
 #include <QMessageBox>
 
 #include <limits>
+#include <utility>
 
 #include "level_loader.h"
 #include "doorway.h"
@@ -177,7 +178,7 @@ static void LL_ReadBOAChunk(posix_istream &ifile, uint32_t version)
     } else {
       for (i = 0; i <= max_rooms; i++) {
         for (j = 0; j <= max_rooms; j++) {
-          ifile >> BOA_Array[i][j];
+          ifile >> reinterpret_cast<uint16_t &>(BOA_Array[i][j]);
         }
       }
 
@@ -225,7 +226,7 @@ static void LL_WriteBOAChunk(posix_ostream &ofile) {
 
   for (i = 0; i < Rooms.size() + 8; i++) {
     for (j = 0; j < Rooms.size() + 8; j++) {
-      ofile << static_cast<int16_t>(BOA_Array[i][j]);
+      ofile << static_cast<int16_t>(reinterpret_cast<const uint16_t &>(BOA_Array[i][j]));
     }
   }
 
@@ -1305,7 +1306,8 @@ static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
     uint8_t type = 0;
     ifile >> type;
 
-    int lmi = static_cast<int>(AllocLightmapInfo(w, h, type, false).value_or(BAD_LMI_INDEX));
+    int lmi = static_cast<int>(
+        AllocLightmapInfo(w, h, static_cast<lmi_type>(type), false).value_or(BAD_LMI_INDEX));
     if (lmi == BAD_LMI_INDEX)
       continue;
     const size_t remap_idx = (remap_handle < num_raw) ? static_cast<size_t>(remap_handle) : 0;
@@ -1339,7 +1341,7 @@ static bool LL_WriteLightmapChunk(posix_ostream &ofile) {
   uint32_t lightmap_info_count = 0;
 
   for (uint32_t i = 0; i < static_cast<uint32_t>(LightmapInfo.size()); i++) {
-    if (LightmapInfo.is_used(i) && LightmapInfo[i].type != LMI_DYNAMIC) {
+    if (LightmapInfo.is_used(i) && LightmapInfo[i].type != lmi_type::dynamic) {
       const uint16_t lm_handle = LightmapInfo[i].lm_handle;
       if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
         lightmap_spoken_for[lm_handle] = 1;
@@ -1372,7 +1374,7 @@ static bool LL_WriteLightmapChunk(posix_ostream &ofile) {
 
   ofile << lightmap_count;
   for (uint32_t i = 0; i < static_cast<uint32_t>(LightmapInfo.size()); i++) {
-    if (LightmapInfo.is_used(i) && LightmapInfo[i].type != LMI_DYNAMIC) {
+    if (LightmapInfo.is_used(i) && LightmapInfo[i].type != lmi_type::dynamic) {
       const uint16_t lm_handle = LightmapInfo[i].lm_handle;
       if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
         lightmap_spoken_for[lm_handle] = 1;
@@ -1391,12 +1393,12 @@ static bool LL_WriteLightmapChunk(posix_ostream &ofile) {
 
   ofile << lightmap_info_count;
   for (uint32_t i = 0; i < static_cast<uint32_t>(LightmapInfo.size()); i++) {
-    if (LightmapInfo.is_used(i) && LightmapInfo[i].type != LMI_DYNAMIC) {
+    if (LightmapInfo.is_used(i) && LightmapInfo[i].type != lmi_type::dynamic) {
       const lightmap_info &info = LightmapInfo[i];
       ofile << lightmap_remap[info.lm_handle];
       ofile << static_cast<int16_t>(lmi_w(i).value_or(0));
       ofile << static_cast<int16_t>(lmi_h(i).value_or(0));
-      ofile << info.type;
+      ofile << reinterpret_cast<const uint8_t &>(info.type);
       ofile << static_cast<int16_t>(info.x1);
       ofile << static_cast<int16_t>(info.y1);
       ofile << info.xspacing;

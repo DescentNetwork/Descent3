@@ -99,11 +99,13 @@
 // Get it?  If not, talk to Samir or Jason
 
 //	doorway state
-#define DOORWAY_STOPPED 0      // door is not moving
-#define DOORWAY_OPENING 1      // door is opening
-#define DOORWAY_CLOSING 2      // door is closing
-#define DOORWAY_WAITING 3      // door is waiting to be closed
-#define DOORWAY_OPENING_AUTO 4 // door is opening and will automatically close
+enum class doorway_state : uint8_t {
+  stopped = 0,       // door is not moving
+  opening = 1,       // door is opening
+  closing = 2,       // door is closing
+  waiting = 3,       // door is waiting to be closed
+  opening_auto = 4,  // door is opening and will automatically close
+};
 
 //	doorway flags
 struct [[gnu::packed]] doorway_flags_t
@@ -127,17 +129,19 @@ struct [[gnu::packed]] doorway_flags_t
 static_assert(sizeof(doorway_flags_t) == sizeof(uint8_t));
 
 //	keymasks
-#define KF_KEY1 1 // Each key is a bit in the key_mask set in the door/object
-#define KF_KEY2 2
-#define KF_KEY3 4
-#define KF_KEY4 8
+enum class doorway_key : uint8_t {
+  key1 = 1, // Each key is a bit in the key_mask set in the door/object
+  key2 = 2,
+  key3 = 4,
+  key4 = 8,
+};
 
 extern std::vector<int> Active_doorways; // active doors in game
 
 // A doorway (room) in the mine
 struct doorway {
   int doornum;       // door type of this doorway
-  uint8_t state;        // current state of doorway
+  doorway_state state = doorway_state::stopped; // current state of doorway
   doorway_flags_t flags = {}; // flags associated with a doorway
   uint8_t keys_needed; // used by trigger system.  these bits need to be set to activate door
   int8_t activenum;   // index into active doorways array, or -1 if not active
@@ -149,7 +153,7 @@ struct doorway {
 //	Macros
 
 // returns the bitflag for the given key number
-#define KEY_FLAG(keynum) (1 << (keynum - 1))
+constexpr uint8_t KEY_FLAG(uint8_t keynum) { return static_cast<uint8_t>(1 << (keynum - 1)); }
 
 //	Variables
 
@@ -215,7 +219,7 @@ bool DoorwayLockedForRoom(int roomnum);
 bool DoorwayOpenable(int door_obj_handle, int opener_handle);
 
 // Returns the current state of the specified door
-int DoorwayState(int door_obj_handle);
+doorway_state DoorwayState(int door_obj_handle);
 
 // Returns the current position of the door.  0.0 = totally closed, 1.0 = totally open
 float DoorwayPosition(int door_obj_handle);

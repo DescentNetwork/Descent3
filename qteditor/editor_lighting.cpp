@@ -1109,11 +1109,11 @@ void DoRadiosityForRooms() {
 
   AssignLightmapsToObjectSurfaces(surface_index, 0);
 
-  BlurLightmapInfos(LMI_ROOM);
-  BlurLightmapInfos(LMI_ROOM_OBJECT);
+  BlurLightmapInfos(lmi_type::room);
+  BlurLightmapInfos(lmi_type::room_object);
 
-  ShadeLightmapInfoEdges(LMI_ROOM);
-  ShadeLightmapInfoEdges(LMI_ROOM_OBJECT);
+  ShadeLightmapInfoEdges(lmi_type::room);
+  ShadeLightmapInfoEdges(lmi_type::room_object);
 
   // Free our memory
   Light_surfaces.clear();
@@ -1266,11 +1266,11 @@ void DoRadiosityForCurrentRoom(int roomnum) {
 
   AssignLightmapsToObjectSurfacesForSingleRoom(surface_index, roomnum);
 
-  // BlurLightmapInfos (LMI_ROOM);
-  // BlurLightmapInfos (LMI_ROOM_OBJECT);
+  // BlurLightmapInfos (lmi_type::room);
+  // BlurLightmapInfos (lmi_type::room_object);
 
-  // ShadeLightmapInfoEdges (LMI_ROOM);
-  // ShadeLightmapInfoEdges (LMI_ROOM_OBJECT);
+  // ShadeLightmapInfoEdges (lmi_type::room);
+  // ShadeLightmapInfoEdges (lmi_type::room_object);
 
   // Free our memory
 
@@ -2113,11 +2113,11 @@ void DoRadiosityForTerrain() {
 
   // Shade room/object lightmaps
 
-  BlurLightmapInfos(LMI_EXTERNAL_ROOM);
-  BlurLightmapInfos(LMI_TERRAIN_OBJECT);
+  BlurLightmapInfos(lmi_type::external_room);
+  BlurLightmapInfos(lmi_type::terrain_object);
 
-  ShadeLightmapInfoEdges(LMI_EXTERNAL_ROOM);
-  ShadeLightmapInfoEdges(LMI_TERRAIN_OBJECT);
+  ShadeLightmapInfoEdges(lmi_type::external_room);
+  ShadeLightmapInfoEdges(lmi_type::terrain_object);
 
   // Free memory
   Light_surfaces.clear();
@@ -2461,9 +2461,9 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
   }*/
 
   if (external)
-    lmi_handle = static_cast<int>(AllocLightmapInfo(lightmap_x_res, lightmap_y_res, LMI_EXTERNAL_ROOM).value_or(BAD_LMI_INDEX));
+    lmi_handle = static_cast<int>(AllocLightmapInfo(lightmap_x_res, lightmap_y_res, lmi_type::external_room).value_or(BAD_LMI_INDEX));
   else
-    lmi_handle = static_cast<int>(AllocLightmapInfo(lightmap_x_res, lightmap_y_res, LMI_ROOM).value_or(BAD_LMI_INDEX));
+    lmi_handle = static_cast<int>(AllocLightmapInfo(lightmap_x_res, lightmap_y_res, lmi_type::room).value_or(BAD_LMI_INDEX));
 
   Q_ASSERT(lmi_handle != BAD_LMI_INDEX);
   Q_ASSERT(lmi_handle >= 0 && lmi_handle <= MAX_LIGHTMAP_INFOS);

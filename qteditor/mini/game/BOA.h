@@ -124,11 +124,41 @@
 #include "terrain.h"
 #include "utils.h"
 
+// One packed BOA_Array entry: the next room to step through on the path from
+// this pair, plus the visibility/propagation/blockage bits recorded for it.
+struct boa_array_entry_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint16_t too_small_for_robot : 1; // path has a portal too small for a robot
+  uint16_t blockage : 1;            // something blocks sound/light/robots here
+  uint16_t distance : 2;            // boa_distance bucket for this pair
+  uint16_t sound_prop : 1;          // a sound could prop between these two areas
+  uint16_t vis : 1;                 // the two areas can see each other
+  uint16_t next_room : 10;
+#else
+  uint16_t next_room : 10;
+  uint16_t vis : 1;                 // the two areas can see each other
+  uint16_t sound_prop : 1;          // a sound could prop between these two areas
+  uint16_t distance : 2;            // boa_distance bucket for this pair
+  uint16_t blockage : 1;            // something blocks sound/light/robots here
+  uint16_t too_small_for_robot : 1; // path has a portal too small for a robot
+#endif
+};
+static_assert(sizeof(boa_array_entry_t) == sizeof(uint16_t));
+
+// Distance bucket stored in boa_array_entry_t::distance
+enum class boa_distance : uint8_t {
+  vnear = 0,    // 0.0   to 100.0
+  near_dist = 1,// 100.0 to 200.0
+  far_dist = 2, // 200.0 to 300.0
+  vfar_dist = 3,// 300.0+
+};
+
 #define MAX_PATH_PORTALS 40
 #define MAX_BOA_TERRAIN_REGIONS 8
 extern std::array<std::array<float, MAX_PATH_PORTALS>, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS> BOA_cost_array;
 
-extern std::array<std::array<uint16_t, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS>, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS> BOA_Array;
+extern std::array<std::array<boa_array_entry_t, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS>, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS>
+    BOA_Array;
 extern int BOA_mine_checksum;
 extern int BOA_AABB_checksum;
 extern int BOA_vis_checksum;
@@ -195,48 +225,31 @@ public:
 };
 
 // Next Segment Info
-#define BOA_ROOM_MASK 0x03FF
 
-#define BOA_TERRAIN_INDEX (((int)Rooms.size() - 1) + 1)
-#define BOA_INDEX(x) ((ROOMNUM_OUTSIDE(x) ? (Terrain_seg[x].flags.region + Rooms.size()) : x))
-#define BOA_NO_PATH (((int)Rooms.size() - 1) + 9)
-
-#define BOA_NEXT_ROOM(a, b) (BOA_Array[a][b] & BOA_ROOM_MASK)
+inline int BOA_TERRAIN_INDEX() { return static_cast<int>(Rooms.size()); }
+inline int BOA_NO_PATH() { return static_cast<int>(Rooms.size()) - 1 + 9; }
+inline int BOA_INDEX(int roomnum) {
+  return ROOMNUM_OUTSIDE(roomnum) ? static_cast<int>(Terrain_seg[roomnum].flags.region + Rooms.size()) : roomnum;
+}
 
 // Visibility Info
 
-// flags
-#define BOAF_VIS 0x0400
-#define BOAF_VNEAR_DIST 0x0000 // 0.0   to 100.0
-#define BOAF_NEAR_DIST 0x1000  // 100.0 to 200.0
-#define BOAF_FAR_DIST 0x2000   // 200.0 to 300.0
-#define BOAF_VFAR_DIST 0x3000  // 300.0+
-#define BOAF_BLOCKAGE 0x4000
-#define BOAF_TOO_SMALL_FOR_ROBOT 0x8000
+inline uint16_t BOA_NEXT_ROOM(int a, int b) { return static_cast<uint16_t>(BOA_Array[a][b].next_room); }
 
-#define BOA_GET_VIS(a, b) (BOA_vis_valid ? ((BOA_Array[a][b] & BOAF_VIS) != 0) : 1)
+inline bool BOA_GET_VIS(int a, int b) { return BOA_vis_valid ? (BOA_Array[a][b].vis != 0) : true; }
 
-// Set if a sound could prop between these to areas
-#define BOA_SOUND_PROP 0x0800
+inline bool BOA_GET_DIST(int a, int b) { return (BOA_Array[a][b].distance != 0); }
+
+inline bool BOA_HAS_POSSIBLE_BLOCKAGE(int a, int b) { return (BOA_Array[a][b].blockage != 0); }
+
+inline bool BOA_TOO_SMALL_FOR_ROBOT(int a, int b) { return (BOA_Array[a][b].too_small_for_robot != 0); }
 
 // Distance from segment to segment Info
 
-#define BOAF_DIST_MASK 0x3000
-
-#define BOA_VNEAR_DIST 0.0
-#define BOA_NEAR_DIST 100.0
-#define BOA_FAR_DIST 200.0
-#define BOA_VFAR_DIST 300.0
-
-
-#define BOA_GET_DIST(a, b) ((BOA_Array[a][b] & BOAF_DIST_MASK) != 0)
-
-// Possible Blockage Info
-
-#define BOA_HAS_POSSIBLE_BLOCKAGE(a, b) ((BOA_Array[a][b] & BOAF_BLOCKAGE) != 0)
-
-// Path have a sport in it that is too small for a robot to get through
-#define BOA_TOO_SMALL_FOR_ROBOT(a, b) ((BOA_Array[a][b] & BOAF_TOO_SMALL_FOR_ROBOT) != 0)
+inline constexpr float BOA_VNEAR_DIST = 0.0f;
+inline constexpr float BOA_NEAR_DIST = 100.0f;
+inline constexpr float BOA_FAR_DIST = 200.0f;
+inline constexpr float BOA_VFAR_DIST = 300.0f;
 
 struct connect_data {
   index_t roomnum;

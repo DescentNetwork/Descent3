@@ -113,7 +113,6 @@
 
 extern std::filesystem::path Demo_fname;
 
-extern uint32_t Demo_flags;
 extern bool Demo_paused;
 extern bool Demo_do_one_frame;
 extern bool Demo_restart;
@@ -121,39 +120,46 @@ extern bool Demo_auto_play;
 extern bool Demo_make_movie;
 extern float Demo_frame_ofs;
 extern uint16_t Demo_obj_map[MAX_OBJECTS];
-#define DF_NONE 0
-#define DF_RECORDING 1
-#define DF_PLAYBACK 2
+
+enum class demo_flags_t : uint32_t {
+  none = 0,
+  recording = 1,
+  playback = 2,
+};
+extern demo_flags_t Demo_flags;
 
 #define D3_DEMO_SIG "D3DEM"
 #define D3_DEMO_SIG_NEW "D3DM1"
 
-#define DT_OBJ 1             // Object data
-#define DT_NEW_FRAME 2       // Start of a new frame
-#define DT_WEAPON_FIRE 3     // Someone fired a weapon
-#define DT_HUD_MESSAGE 4     // Display a hud message
-#define DT_3D_SOUND 5        // Play a 3d sound (associated with a weapon firing usually)
-#define DT_OBJ_CREATE 6      // A new object was created...
-#define DT_OBJ_ANIM 7        // Object animation has changed
-#define DT_OBJ_TURRET 8      // Object's turrets have changed
-#define DT_OBJ_EXPLODE 9     // Explode object
-#define DT_PLAYER_DEATH 10   // Player died
-#define DT_COLLIDE_PLR 11    // Player collided with a weapon
-#define DT_COLLIDE_GEN 12    // generic collided with a weapon
-#define DT_ATTACH 13         // Attach some objects
-#define DT_ATTACH_RAD 14     // Attach some objects with a radius?
-#define DT_UNATTACH 15       // Unattach some stuff
-#define DT_WEAP_FIRE_FLAG 16 // flags like spraying and on/off
-#define DT_PLAYER_INFO 17    // Player 1's info like energy/sheilds, etc.
-#define DT_MSAFE 18          // MSAFE data (ie script stuff)
-#define DT_POWERUP 19        // Powerups data
-#define DT_CINEMATICS 20     // Cinematic info
-#define DT_PERSISTANT_HUD 21 // Persistant hud message
-#define DT_SETOBJDEAD 22     // Mark an object as dead
-#define DT_PLAYERBALLS 23    // Rotating balls around player ship
-#define DT_PLAYERTYPECHNG 24 // Player type is changing
-#define DT_SETOBJLIFELEFT 25 // Object is getting OF_LIFELEFT flag changed
-#define DT_2D_SOUND 26       // Play a 2d sound
+// Record types stored at the head of each demo record
+enum class demo_record_type : uint8_t {
+  obj = 1,                // Object data
+  new_frame = 2,          // Start of a new frame
+  weapon_fire = 3,        // Someone fired a weapon
+  hud_message = 4,        // Display a hud message
+  sound_3d = 5,           // Play a 3d sound (associated with a weapon firing usually)
+  obj_create = 6,         // A new object was created...
+  obj_anim = 7,           // Object animation has changed
+  obj_turret = 8,         // Object's turrets have changed
+  obj_explode = 9,        // Explode object
+  player_death = 10,      // Player died
+  collide_player = 11,    // Player collided with a weapon
+  collide_generic = 12,   // generic collided with a weapon
+  attach = 13,            // Attach some objects
+  attach_rad = 14,        // Attach some objects with a radius?
+  unattach = 15,          // Unattach some stuff
+  weap_fire_flag = 16,    // flags like spraying and on/off
+  player_info = 17,       // Player 1's info like energy/sheilds, etc.
+  msafe = 18,             // MSAFE data (ie script stuff)
+  powerup = 19,           // Powerups data
+  cinematics = 20,        // Cinematic info
+  persistant_hud = 21,    // Persistant hud message
+  setobjdead = 22,        // Mark an object as dead
+  playerballs = 23,       // Rotating balls around player ship
+  playertypechng = 24,    // Player type is changing
+  setobjlifeleft = 25,    // Object is getting OF_LIFELEFT flag changed
+  sound_2d = 26,          // Play a 2d sound
+};
 
 // If not recording prompts user for filename and starts recording if successful
 // If recording, close the demo file

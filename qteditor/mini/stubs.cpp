@@ -192,8 +192,8 @@ d3::slotvec_t<megacell> Megacells;
 // ==================== Lighting ====================
 void FreeLightmapMemory() { PRINT_STUB(__FUNCTION__); }
 void ClearAllObjectLightmaps(int n) { PRINT_STUB(__FUNCTION__); }
-void BlurLightmapInfos(int n) { PRINT_STUB(__FUNCTION__); }
-void ShadeLightmapInfoEdges(int n) { PRINT_STUB(__FUNCTION__); }
+void BlurLightmapInfos(lmi_type n) { PRINT_STUB(__FUNCTION__); }
+void ShadeLightmapInfoEdges(lmi_type n) { PRINT_STUB(__FUNCTION__); }
 void EnableLightmapGen() { PRINT_STUB(__FUNCTION__); }
 void SetupObjectLightmapMemory(object *obj) { PRINT_STUB(__FUNCTION__); }
 //void ClearAllVolumeLights() { PRINT_STUB(__FUNCTION__); }

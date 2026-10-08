@@ -580,6 +580,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <utility>
 
 #include "object.h"
 #include "object_lighting.h"
@@ -1848,7 +1849,7 @@ void DrawPlayerDamageDisk(object *obj) {
   float diff = d3::chrono::last_update() - (int_game * rot_temp);
   int rot_angle = diff * 65536;
   rot_angle = 0;
-  bm_handle = Fireballs[SHIP_HIT_INDEX].bm_handle;
+  bm_handle = Fireballs[std::to_underlying(fireball_texture::ship_hit_index)].bm_handle;
 
   rend_SetAlphaType(AT_SATURATE_TEXTURE);
   rend_SetZBufferWriteMask(0);
