@@ -887,6 +887,27 @@ private slots:
     Triggers.clear();
   }
 
+  void testObjectIndex()
+  {
+    for (size_t i = 0; i < Objects.size(); i++) {
+      Objects[i] = object{};
+      Objects[i].type = object_type::none;
+    }
+    Highest_object_index = -1;
+
+    QCOMPARE(Objects[0].index(), uint32_t{0});
+    QCOMPARE(Objects[1].index(), uint32_t{1});
+    QCOMPARE(Objects[MAX_OBJECTS - 1].index(), uint32_t{MAX_OBJECTS - 1});
+
+    QCOMPARE((&Objects[42])->index(), uint32_t{42});
+    const object &const_obj = Objects[64];
+    QCOMPARE(const_obj.index(), uint32_t{64});
+
+    QCOMPARE(static_cast<int64_t>(Objects[64].index()), static_cast<int64_t>(OBJNUM(&Objects[64])));
+
+    Highest_object_index = -1;
+  }
+
   // Object handles for deleted slots (OHND): a freed object slot keeps a
   // handle whose count part says how often the slot has been re-used, so
   // stale references never alias a recycled slot.  Saving must persist those

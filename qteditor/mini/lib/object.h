@@ -690,6 +690,8 @@ extern std::vector<int16_t> BigObjectList; // DAJ_MR utb int
 #define OBJNUM(objp) (objp - Objects.data())
 #define OBJHANDLE(objp) ((objp) ? (objp)->handle : 0)
 
+inline uint32_t object::index() const { return static_cast<uint32_t>(this - Objects.data()); }
+
 /*
  *		FUNCTIONS
  */

@@ -857,6 +857,8 @@ struct object {
   std::string custom_default_module_name;
 
   bool is_outside(void) const { return !roomnum || ((*roomnum) & ROOMNUM_CELLNUM_FLAG) != 0; }
+
+  uint32_t index() const;
 };
 
 // Level-file (OBJS chunk) record serialization; read mirrors write.  This is
