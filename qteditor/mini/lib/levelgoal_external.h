@@ -75,16 +75,20 @@ struct [[gnu::packed]] levelgoals_flags_t {
 static_assert(sizeof(levelgoals_flags_t) == sizeof(uint32_t));
 
 // Level Item Types
-#define LIT_TERRAIN_CELL 0
-#define LIT_INTERNAL_ROOM 1
-#define LIT_OBJECT 2
-#define LIT_TRIGGER 3
-#define LIT_ANY_MINE 4
+enum class level_goal_item_type : uint8_t {
+  terrain_cell = 0,
+  internal_room = 1,
+  object = 2,
+  trigger = 3,
+  any_mine = 4,
+};
 
 // Level Item Operations
-#define LO_SET_SPECIFIED 0
-#define LO_GET_SPECIFIED 1
-#define LO_CLEAR_SPECIFIED 2
+enum class goal_operation : uint8_t {
+  set_specified = 0,
+  get_specified = 1,
+  clear_specified = 2,
+};
 
 #define MAX_GOAL_ITEMS 12
 #define MAX_LEVEL_GOALS 32

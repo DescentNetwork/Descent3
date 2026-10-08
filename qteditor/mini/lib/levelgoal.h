@@ -33,12 +33,12 @@
 class litem {
 public:
   litem() {
-    m_type = LIT_OBJECT;
+    m_type = level_goal_item_type::object;
     m_handle = OBJECT_HANDLE_NONE;
     m_f_done = false;
   };
 
-  char m_type;
+  level_goal_item_type m_type;
   int m_handle;
   bool m_f_done;
 };
@@ -83,7 +83,7 @@ public:
 
   int AddItem();
   bool DeleteItem(int index);
-  bool ItemInfo(int index, char operation, char *type, int *handle, bool *done);
+  bool ItemInfo(int index, goal_operation operation, char *type, int *handle, bool *done);
 
   void Reset(bool f_from_editor);
 
@@ -97,9 +97,9 @@ public:
   std::string GetDesc() const;
   std::string GetCompletionMessage() const;
 
-  bool Priority(int handle, char operation, int *value);
-  bool GoalList(char operation, int8_t *value);
-  bool GetStatus(int handle, char operation, int *value, bool f_save_load = false, bool announce = true);
+  bool Priority(int handle, goal_operation operation, int *value);
+  bool GoalList(goal_operation operation, int8_t *value);
+  bool GetStatus(int handle, goal_operation operation, int *value, bool f_save_load = false, bool announce = true);
 
   void SendStateToPlayer(int index, int pnum);
   void ResetModified(void);
@@ -132,7 +132,7 @@ public:
 
   int GoalAddItem(int goal_index);
   bool GoalDeleteItem(int goal_index, int item_index);
-  bool GoalItemInfo(int goal_index, int index, char operation, char *type, int *handle, bool *done);
+  bool GoalItemInfo(int goal_index, int index, goal_operation operation, char *type, int *handle, bool *done);
 
   bool GoalSetName(int goal_index, const std::string &name);
   bool GoalSetItemName(int goal_index, const std::string &iname);
@@ -144,9 +144,9 @@ public:
   std::string GoalGetDesc(int goal_index) const;
   std::string GoalGetCompletionMessage(int goal_index) const;
 
-  bool GoalPriority(int goal_index, char operation, int *value);
-  bool GoalGoalList(int goal_index, char operation, int8_t *value);
-  bool GoalStatus(int goal_index, char operation, int *value, bool announce = true);
+  bool GoalPriority(int goal_index, goal_operation operation, int *value);
+  bool GoalGoalList(int goal_index, goal_operation operation, int8_t *value);
+  bool GoalStatus(int goal_index, goal_operation operation, int *value, bool announce = true);
 
   index_t GoalFindId(const std::string &goal_name);
 
@@ -157,7 +157,7 @@ public:
   bool SaveLevelGoalInfo(posix_ostream &ofile) const;
   bool LoadLevelGoalInfo(posix_istream &ifile);
 
-  bool LGStatus(char operation, int *value);
+  bool LGStatus(goal_operation operation, int *value);
 
   int GetNumActivePrimaryGoals();
   int GetActivePrimaryGoal(int p_index);
@@ -168,7 +168,7 @@ public:
   void DoFrame();
   void CleanupAfterLevel();
   void InitLevel();
-  void Inform(char type, int comp_type, int handle);
+  void Inform(level_goal_item_type type, int comp_type, int handle);
 
   void ResetModifiedFlags(void);
   void MultiSendChangedGoals(int pnum);

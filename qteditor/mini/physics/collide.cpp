@@ -2347,7 +2347,7 @@ void check_lg_inform(object *A, object *B) {
         type = OF_INFORM_PLAYER_COLLIDE_TO_LG;
       }
 
-      Level_goals.Inform(LIT_OBJECT, type, A->handle);
+      Level_goals.Inform(level_goal_item_type::object, type, A->handle);
     }
   }
 
@@ -2356,7 +2356,7 @@ void check_lg_inform(object *A, object *B) {
       object *parent = ObjGetUltimateParent(B);
 
       if (parent && parent->type == object_type::player) {
-        Level_goals.Inform(LIT_OBJECT, OF_INFORM_PLAYER_WEAPON_COLLIDE_TO_LG, A->handle);
+        Level_goals.Inform(level_goal_item_type::object, OF_INFORM_PLAYER_WEAPON_COLLIDE_TO_LG, A->handle);
       }
     }
   }

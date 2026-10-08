@@ -3495,23 +3495,23 @@ void osipf_LGoalValue(char op, char vtype, void *ptr, int g_index, int i_index) 
   switch (vtype) {
   case LGV_I_STATUS: {
     if (op == VF_GET)
-      Level_goals.LGStatus(LO_GET_SPECIFIED, (int *)ptr);
+      Level_goals.LGStatus(std::to_underlying(goal_operation::get_specified), (int *)ptr);
     else if (op == VF_SET_FLAGS)
-      Level_goals.LGStatus(LO_SET_SPECIFIED, (int *)ptr);
+      Level_goals.LGStatus(std::to_underlying(goal_operation::set_specified), (int *)ptr);
     else if (op == VF_CLEAR_FLAGS)
-      Level_goals.LGStatus(LO_CLEAR_SPECIFIED, (int *)ptr);
+      Level_goals.LGStatus(std::to_underlying(goal_operation::clear_specified), (int *)ptr);
     else if (op == VF_SET) {
       int status;
-      Level_goals.LGStatus(LO_GET_SPECIFIED, &status);
+      Level_goals.LGStatus(std::to_underlying(goal_operation::get_specified), &status);
 
       int diff_flags = (*(int *)ptr) ^ status;
       int clear_flags = status & diff_flags;
       int set_flags = (~(status)) & diff_flags;
 
       if (clear_flags)
-        Level_goals.LGStatus(LO_CLEAR_SPECIFIED, &clear_flags);
+        Level_goals.LGStatus(std::to_underlying(goal_operation::clear_specified), &clear_flags);
       if (set_flags)
-        Level_goals.LGStatus(LO_SET_SPECIFIED, &set_flags);
+        Level_goals.LGStatus(std::to_underlying(goal_operation::set_specified), &set_flags);
     }
   } break;
   case LGV_I_NUM_ACTIVE_PRIMARIES: {
@@ -3564,37 +3564,37 @@ void osipf_LGoalValue(char op, char vtype, void *ptr, int g_index, int i_index) 
   } break;
   case LGSV_I_PRIORITY: {
     if (op == VF_GET) {
-      Level_goals.GoalPriority(g_index, LO_GET_SPECIFIED, (int *)&ptr);
+      Level_goals.GoalPriority(g_index, std::to_underlying(goal_operation::get_specified), (int *)&ptr);
     } else if (op == VF_SET) {
-      Level_goals.GoalPriority(g_index, LO_SET_SPECIFIED, (int *)&ptr);
+      Level_goals.GoalPriority(g_index, std::to_underlying(goal_operation::set_specified), (int *)&ptr);
     }
   } break;
   case LGSV_C_GOAL_LIST: {
     if (op == VF_GET) {
-      Level_goals.GoalGoalList(g_index, LO_GET_SPECIFIED, static_cast<int8_t *>(ptr));
+      Level_goals.GoalGoalList(g_index, std::to_underlying(goal_operation::get_specified), static_cast<int8_t *>(ptr));
     } else if (op == VF_SET) {
-      Level_goals.GoalGoalList(g_index, LO_SET_SPECIFIED, static_cast<int8_t *>(ptr));
+      Level_goals.GoalGoalList(g_index, std::to_underlying(goal_operation::set_specified), static_cast<int8_t *>(ptr));
     }
   } break;
   case LGSV_I_STATUS: {
     if (op == VF_GET)
-      Level_goals.GoalStatus(g_index, LO_GET_SPECIFIED, (int *)ptr);
+      Level_goals.GoalStatus(g_index, std::to_underlying(goal_operation::get_specified), (int *)ptr);
     else if (op == VF_SET_FLAGS)
-      Level_goals.GoalStatus(g_index, LO_SET_SPECIFIED, (int *)ptr);
+      Level_goals.GoalStatus(g_index, std::to_underlying(goal_operation::set_specified), (int *)ptr);
     else if (op == VF_CLEAR_FLAGS)
-      Level_goals.GoalStatus(g_index, LO_CLEAR_SPECIFIED, (int *)ptr);
+      Level_goals.GoalStatus(g_index, std::to_underlying(goal_operation::clear_specified), (int *)ptr);
     else if (op == VF_SET) {
       int status;
-      Level_goals.GoalStatus(g_index, LO_GET_SPECIFIED, &status);
+      Level_goals.GoalStatus(g_index, std::to_underlying(goal_operation::get_specified), &status);
 
       int diff_flags = (*(int *)ptr) ^ status;
       int clear_flags = status & diff_flags;
       int set_flags = (~(status)) & diff_flags;
 
       if (clear_flags)
-        Level_goals.GoalStatus(g_index, LO_CLEAR_SPECIFIED, &clear_flags);
+        Level_goals.GoalStatus(g_index, std::to_underlying(goal_operation::clear_specified), &clear_flags);
       if (set_flags)
-        Level_goals.GoalStatus(g_index, LO_SET_SPECIFIED, &set_flags);
+        Level_goals.GoalStatus(g_index, std::to_underlying(goal_operation::set_specified), &set_flags);
     }
   } break;
   case LGSV_I_NUM_ITEMS: {
@@ -3604,23 +3604,23 @@ void osipf_LGoalValue(char op, char vtype, void *ptr, int g_index, int i_index) 
   } break;
   case LGSSV_C_ITEM_TYPE: {
     if (op == VF_GET) {
-      Level_goals.GoalItemInfo(g_index, i_index, LO_GET_SPECIFIED, (char *)ptr, NULL, NULL);
+      Level_goals.GoalItemInfo(g_index, i_index, std::to_underlying(goal_operation::get_specified), (char *)ptr, NULL, NULL);
     } else if (op == VF_SET) {
-      Level_goals.GoalItemInfo(g_index, i_index, LO_SET_SPECIFIED, (char *)ptr, NULL, NULL);
+      Level_goals.GoalItemInfo(g_index, i_index, std::to_underlying(goal_operation::set_specified), (char *)ptr, NULL, NULL);
     }
   } break;
   case LGSSV_I_ITEM_HANDLE: {
     if (op == VF_GET) {
-      Level_goals.GoalItemInfo(g_index, i_index, LO_GET_SPECIFIED, NULL, (int *)ptr, NULL);
+      Level_goals.GoalItemInfo(g_index, i_index, std::to_underlying(goal_operation::get_specified), NULL, (int *)ptr, NULL);
     } else if (op == VF_SET) {
-      Level_goals.GoalItemInfo(g_index, i_index, LO_SET_SPECIFIED, NULL, (int *)ptr, NULL);
+      Level_goals.GoalItemInfo(g_index, i_index, std::to_underlying(goal_operation::set_specified), NULL, (int *)ptr, NULL);
     }
   } break;
   case LGSSV_B_ITEM_DONE: {
     if (op == VF_GET) {
-      Level_goals.GoalItemInfo(g_index, i_index, LO_GET_SPECIFIED, NULL, NULL, (bool *)ptr);
+      Level_goals.GoalItemInfo(g_index, i_index, std::to_underlying(goal_operation::get_specified), NULL, NULL, (bool *)ptr);
     } else if (op == VF_SET) {
-      Level_goals.GoalItemInfo(g_index, i_index, LO_SET_SPECIFIED, NULL, NULL, (bool *)ptr);
+      Level_goals.GoalItemInfo(g_index, i_index, std::to_underlying(goal_operation::set_specified), NULL, NULL, (bool *)ptr);
     }
   } break;
   }

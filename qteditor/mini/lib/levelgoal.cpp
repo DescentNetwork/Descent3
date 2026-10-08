@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 
 #include "string_helpers.h"
 
@@ -106,7 +107,7 @@ bool levelgoals::SaveLevelGoalInfo(posix_ostream &ofile) const {
     ofile << static_cast<int16_t>(g.m_num_items);
     for (int j = 0; j < g.m_num_items; j++) {
       const litem &it = g.m_item[j];
-      ofile << static_cast<int8_t>(it.m_type);
+      ofile << std::to_underlying(it.m_type);
       ofile << static_cast<int32_t>(it.m_handle);
       ofile << static_cast<int8_t>(it.m_f_done ? 1 : 0);
     }
@@ -171,7 +172,7 @@ bool levelgoals::LoadLevelGoalInfo(posix_istream &ifile) {
       int8_t type = 0;
       ifile >> type;
       litem &it = g.m_item[j];
-      it.m_type = type;
+      it.m_type = static_cast<level_goal_item_type>(type);
       ifile >> it.m_handle;
       int8_t done = 0;
       ifile >> done;
