@@ -18,14 +18,18 @@
 
 #pragma once
 
+#include <cstdint>
+
 #include "bnode.h"
 
-#define EBDRAW_NONE 0
-#define EBDRAW_ROOM 1
-#define EBDRAW_ROOM_AND_NEXT_ROOMS 2
-#define EBDRAW_LEVEL 3
+enum ebdraw : uint8_t {
+  none = 0,
+  room = 1,
+  room_and_next_rooms = 2,
+  level = 3,
+};
 
-extern char EBN_draw_type;
+extern ebdraw EBN_draw_type;
 
 bool EBNode_VerifyGraph();
 void EBNode_ClearLevel();

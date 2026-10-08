@@ -40,7 +40,7 @@
 #include "AIMain.h"
 #include "d3edit.h"
 
-char EBN_draw_type = EBDRAW_NONE;
+ebdraw EBN_draw_type = ebdraw::none;
 #define EBN_MAX_NEXT_ROOMS 200
 #define BNODE_VERY_CLOSE_DIST 5.0f
 

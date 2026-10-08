@@ -1313,10 +1313,8 @@ void EditorView::renderPaths() {
   glLineWidth(1.0f);
 }
 
-extern char EBN_draw_type;
-
 void EditorView::renderBNodes() {
-  if (EBN_draw_type == EBDRAW_NONE)
+  if (EBN_draw_type == ebdraw::none)
     return;
   if (app.view_mode == state::viewer::terrain)
     return;
@@ -1331,7 +1329,7 @@ void EditorView::renderBNodes() {
   size_t room_start = 0;
   size_t room_end = Rooms.size() - 1;
 
-  if (EBN_draw_type == EBDRAW_ROOM || EBDRAW_ROOM_AND_NEXT_ROOMS) {
+  if (EBN_draw_type == ebdraw::room || ebdraw::room_and_next_rooms) {
     if (Viewer_object != nullptr && Viewer_object->roomnum)
       room_start = room_end = *Viewer_object->roomnum;
   }
@@ -1339,7 +1337,7 @@ void EditorView::renderBNodes() {
   for (size_t roomnum = room_start; roomnum <= room_end; roomnum++) {
     if (!Rooms[roomnum].used || (Rooms[roomnum].flags.external))
       continue;
-    if (EBN_draw_type == EBDRAW_ROOM && roomnum != room_start)
+    if (EBN_draw_type == ebdraw::room && roomnum != room_start)
       continue;
 
     bn_list *nlist = BNode_GetBNListPtr(roomnum);
