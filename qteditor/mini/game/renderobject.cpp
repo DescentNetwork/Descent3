@@ -982,7 +982,7 @@ void DrawDebugInfo(object *obj) {
   g3_DrawLine(c1, &g3p[7], &g3p[4]);
   DrawNumber(OBJNUM(obj), obj->pos, 1.0, GR_RGB(255, 255, 255));
 
-  if (!OBJECT_OUTSIDE(obj)) {
+  if (!obj->is_outside()) {
     if (obj->roomnum != Player_object->roomnum)
       c1 = GR_RGB(255, 0, 0);
     else
@@ -1207,7 +1207,7 @@ void RenderObject(object& obj) {
         (parent_obj->type == object_type::player || parent_obj->movement_type != movement_type::none))
       return;
   }
-  if (OBJECT_OUTSIDE(&obj))
+  if (obj.is_outside())
     render_it = SetupTerrainObject(obj);
   else
     render_it = SetupMineObject(obj);
@@ -1416,7 +1416,7 @@ void RenderObject(object& obj) {
     //??	Max_linear_depth = mld_save;
     // Mark selected objects
 
-  if (OBJNUM(&obj) == index_to_int(app.Cur_object_index))
+  if (app.Cur_object_index && &obj == &Objects[*app.Cur_object_index])
   {
     if (obj.render_type != render_type::polyobj) {
       g3Point pnt;
