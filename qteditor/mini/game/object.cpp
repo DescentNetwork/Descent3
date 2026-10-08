@@ -296,7 +296,7 @@ void ObjUnlink(int objnum) {
   if (obj->flags.big_object)
     BigObjRemove(objnum);
 
-  if (OBJECT_OUTSIDE(obj)) {
+  if (obj->is_outside()) {
     int cellnum = static_cast<int>(roomnum_cell(obj->roomnum));
     if (cellnum < 0 || cellnum > (TERRAIN_WIDTH + 1) * (TERRAIN_DEPTH + 1))
       return;
@@ -815,11 +815,7 @@ void GetObjectPointInWorld(vector3& dest, object& obj, int subnum, int vertnum) 
 // ---------------------------------------------------------------------------
 
 void SetObjectDeadFlag(object& obj, bool tell_clients_to_remove, bool play_sound_on_clients) {
-  int objnum = OBJNUM(&obj);
-  if (objnum == -1 || objnum == 0)
-    return;
-  if (obj.type == object_type::none)
-    return;
+  Q_ASSERT(obj.type != object_type::none);
 
   obj.flags.dead = true;
 
