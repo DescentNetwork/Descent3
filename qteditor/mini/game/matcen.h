@@ -19,12 +19,14 @@
 #ifndef _MATCEN_H_
 #define _MATCEN_H_
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
 #include "posix_stream.h"
 #include "vecmat.h"
 #include "matcen_external.h"
+#include "utils.h"
 
 #define MAX_MATCENS 60
 #define MAX_MATCEN_NAME_LEN 32
@@ -76,17 +78,17 @@ private:
   vector3 m_create_pnt;
   int m_create_room;
 
-  int m_spawn_pnt[MAX_SPAWN_PNTS];
-  vector3 m_spawn_vec[MAX_SPAWN_PNTS];
-  vector3 m_spawn_normal[MAX_SPAWN_PNTS];
-  int16_t m_spawn_vis_effects[MAX_MATCEN_EFFECT_SATURATION][MAX_SPAWN_PNTS];
+  std::vector<index_t> m_spawn_pnt;
+  std::vector<vector3> m_spawn_vec;
+  std::vector<vector3> m_spawn_normal;
+  std::array<std::array<int16_t, MAX_SPAWN_PNTS>, MAX_MATCEN_EFFECT_SATURATION> m_spawn_vis_effects;
 
   int m_max_prod;
 
-  int m_prod_type[MAX_PROD_TYPES];
-  float m_prod_time[MAX_PROD_TYPES];
-  int m_prod_priority[MAX_PROD_TYPES];
-  int m_max_prod_type[MAX_PROD_TYPES];
+  std::vector<index_t> m_prod_type;
+  std::vector<float> m_prod_time;
+  std::vector<int> m_prod_priority;
+  std::vector<int> m_max_prod_type;
 
   int16_t m_max_alive_children;
   int16_t m_num_alive;
@@ -95,7 +97,7 @@ private:
   float m_preprod_time;
   float m_postprod_time;
 
-  int m_sounds[MAX_MATCEN_SOUNDS];
+  std::vector<index_t> m_sounds;
 
   float m_speed_multi;
 
@@ -119,7 +121,7 @@ private:
 
   int m_last_prod_objref;
 
-  int m_num_prod_type[MAX_PROD_TYPES];
+  std::vector<int> m_num_prod_type;
 
   // Private functions that are not available outside of the matcen internals
   bool StartObjProd();

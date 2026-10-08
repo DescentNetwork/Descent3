@@ -26,6 +26,8 @@
 
 #include <QtGlobal>
 
+#include <algorithm>
+
 #include "gametexture.h"
 #include "objinfo.h"
 #include "soundload.h"
@@ -97,21 +99,20 @@ matcen::matcen() {
 
   m_roomnum = MATCEN_ERROR;
 
-  for (int i = 0; i < MAX_SPAWN_PNTS; i++)
-    m_spawn_pnt[i] = MATCEN_ERROR;
+  m_spawn_pnt.assign(MAX_SPAWN_PNTS, index_t{});
+  m_spawn_vec.assign(MAX_SPAWN_PNTS, vector3{});
+  m_spawn_normal.assign(MAX_SPAWN_PNTS, vector3{});
 
   m_max_prod = 0;
 
-  for (int i = 0; i < MAX_PROD_TYPES; i++) {
-    m_prod_type[i] = MATCEN_ERROR;
-    m_prod_time[i] = 1.0f;
-    m_prod_priority[i] = 100;
-    m_max_prod_type[i] = 3;
-  }
+  m_prod_type.assign(MAX_PROD_TYPES, index_t{});
+  m_prod_time.assign(MAX_PROD_TYPES, 1.0f);
+  m_prod_priority.assign(MAX_PROD_TYPES, 100);
+  m_max_prod_type.assign(MAX_PROD_TYPES, 3);
 
-  m_sounds[MATCEN_ACTIVE_SOUND] = FindSoundName("AmbMatCenRun").value_or(-1);
-  m_sounds[MATCEN_DISABLE_SOUND] = -1;
-  m_sounds[MATCEN_PROD_SOUND] = FindSoundName("AmbMatCenProduce").value_or(-1);
+  m_sounds.push_back(FindSoundName("AmbMatCenRun"));
+  m_sounds.push_back(index_t{});
+  m_sounds.push_back(FindSoundName("AmbMatCenProduce"));
 
   m_speed_multi = 1.0f;
 
@@ -153,8 +154,7 @@ void matcen::Reset() {
 
   m_prod_mode_time = 0.0f;
 
-  for (int i = 0; i < MAX_PROD_TYPES; i++)
-    m_num_prod_type[i] = 0;
+  std::fill(m_num_prod_type.begin(), m_num_prod_type.end(), 0);
 
   m_last_prod_objref = OBJECT_HANDLE_NONE;
 
@@ -199,9 +199,9 @@ static std::string readLevelName(posix_istream &ifile) {
 void matcen::SaveData(posix_ostream &ofile) const {
   ofile << static_cast<int32_t>(MATCEN_LOADSAVE_VERSION);
 
-  ofile << static_cast<int16_t>(MAX_SPAWN_PNTS);
-  ofile << static_cast<int16_t>(MAX_PROD_TYPES);
-  ofile << static_cast<int16_t>(MAX_MATCEN_SOUNDS);
+  ofile << static_cast<int16_t>(m_spawn_pnt.size());
+  ofile << static_cast<int16_t>(m_prod_type.size());
+  ofile << static_cast<int16_t>(m_sounds.size());
 
   ofile << static_cast<int16_t>(m_name.size() + 1) << m_name;
 
@@ -221,18 +221,18 @@ void matcen::SaveData(posix_ostream &ofile) const {
   // spawn vectors and normals (a long-standing bug); the corrected z() is
   // written here.  Load+Save is still an identity because LoadData stores the
   // stored z value and SaveData writes that same value back.
-  for (int i = 0; i < MAX_SPAWN_PNTS; i++) {
-    ofile << static_cast<int32_t>(m_spawn_pnt[i])
+  for (size_t i = 0; i < m_spawn_pnt.size(); i++) {
+    ofile << static_cast<int32_t>(index_to_int(m_spawn_pnt[i]))
           << m_spawn_vec[i]
           << m_spawn_normal[i];
   }
 
   ofile << static_cast<int32_t>(m_max_prod);
 
-  for (int i = 0; i < MAX_PROD_TYPES; i++) {
-    const int type = m_prod_type[i];
-    if (type >= 0 && type < MAX_OBJECT_IDS) {
-      ofile << static_cast<int16_t>(Object_info[type].name.size() + 1) << Object_info[type].name;
+  for (size_t i = 0; i < m_prod_type.size(); i++) {
+    const index_t type = m_prod_type[i];
+    if (type && *type < MAX_OBJECT_IDS) {
+      ofile << static_cast<int16_t>(Object_info[*type].name.size() + 1) << Object_info[*type].name;
     } else {
       ofile << static_cast<int16_t>(1);
       ofile.put(0);
@@ -253,12 +253,12 @@ void matcen::SaveData(posix_ostream &ofile) const {
   ofile << m_preprod_time << m_postprod_time;
 
   // Convert these to names
-  for (int i = 0; i < MAX_MATCEN_SOUNDS; i++) {
-    if (m_sounds[i] < 0) {
+  for (size_t i = 0; i < m_sounds.size(); i++) {
+    if (!m_sounds[i]) {
       ofile << static_cast<int16_t>(0);
       continue;
     }
-    ofile << static_cast<int16_t>(Sounds[m_sounds[i]].name.size() + 1) << Sounds[m_sounds[i]].name;
+    ofile << static_cast<int16_t>(Sounds[*m_sounds[i]].name.size() + 1) << Sounds[*m_sounds[i]].name;
   }
 
   ofile << m_speed_multi;
@@ -279,7 +279,7 @@ void matcen::SaveData(posix_ostream &ofile) const {
 
   ofile << static_cast<int32_t>(m_last_prod_objref);
 
-  for (int i = 0; i < MAX_PROD_TYPES; i++)
+  for (size_t i = 0; i < m_num_prod_type.size(); i++)
     ofile << static_cast<int32_t>(m_num_prod_type[i]);
 
   ofile << static_cast<int32_t>(m_sound_active_handle);
@@ -325,23 +325,40 @@ void matcen::LoadData(posix_istream &ifile, const int *texture_xlate) {
 
   ifile >> m_create_room;
 
+  m_spawn_pnt.clear();
+  m_spawn_vec.clear();
+  m_spawn_normal.clear();
   for (int i = 0; i < max_spawn_pnts; i++) {
-    ifile >> m_spawn_pnt[i];
+    int32_t roomnum = MATCEN_ERROR;
+    ifile >> roomnum;
+    m_spawn_pnt.push_back(roomnum < 0 ? index_t{} : index_t{static_cast<uint32_t>(roomnum)});
 
-    ifile >> m_spawn_vec[i].x() >> m_spawn_vec[i].y() >> m_spawn_vec[i].z();
+    vector3 spawn_vec{};
+    ifile >> spawn_vec.x() >> spawn_vec.y() >> spawn_vec.z();
+    m_spawn_vec.push_back(spawn_vec);
 
-    ifile >> m_spawn_normal[i].x() >> m_spawn_normal[i].y() >> m_spawn_normal[i].z();
+    vector3 spawn_normal{};
+    ifile >> spawn_normal.x() >> spawn_normal.y() >> spawn_normal.z();
+    m_spawn_normal.push_back(spawn_normal);
   }
 
   ifile >> m_max_prod;
 
+  m_prod_type.clear();
+  m_prod_time.clear();
+  m_prod_priority.clear();
+  m_max_prod_type.clear();
   for (int i = 0; i < max_prod_types; i++) {
     const std::string prod_name = readLevelName(ifile);
-    m_prod_type[i] = FindObjectIDName(prod_name).value_or(-1);
+    m_prod_type.push_back(FindObjectIDName(prod_name));
 
-    ifile >> m_prod_time[i];
-    ifile >> m_prod_priority[i];
-    ifile >> m_max_prod_type[i];
+    float prod_time = 0.0f;
+    int prod_priority = 0;
+    int max_prod = 0;
+    ifile >> prod_time >> prod_priority >> max_prod;
+    m_prod_time.push_back(prod_time);
+    m_prod_priority.push_back(prod_priority);
+    m_max_prod_type.push_back(max_prod);
   }
 
   ifile >> m_max_alive_children;
@@ -362,9 +379,10 @@ void matcen::LoadData(posix_istream &ifile, const int *texture_xlate) {
   ifile >> m_preprod_time >> m_postprod_time;
 
   // Convert these to names
+  m_sounds.clear();
   for (int i = 0; i < max_matcen_sounds; i++) {
     const std::string sound_name = readLevelName(ifile);
-    m_sounds[i] = FindSoundName(sound_name).value_or(-1);
+    m_sounds.push_back(FindSoundName(sound_name));
   }
 
   ifile >> m_speed_multi;
@@ -387,8 +405,11 @@ void matcen::LoadData(posix_istream &ifile, const int *texture_xlate) {
 
   ifile >> m_last_prod_objref;
 
+  m_num_prod_type.clear();
   for (int i = 0; i < max_prod_types; i++) {
-    ifile >> m_num_prod_type[i];
+    int num_prod_type = 0;
+    ifile >> num_prod_type;
+    m_num_prod_type.push_back(num_prod_type);
   }
 
   if (version >= 3) {
