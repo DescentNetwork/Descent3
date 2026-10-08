@@ -87,6 +87,9 @@ void mng_LoadLocalWeaponPage(struct CFILE* );
 // Reads in a page off the net
 void mng_LoadNetWeaponPage(struct CFILE* , bool overlay = false);
 
-int mng_GetGuaranteedWeaponPage(char *name, struct CFILE* infile = NULL);
+// First searches through the weapon index to see if the weapon is already
+// loaded.  If not, searches in the table file and loads it.
+// Returns index of weapon if found, std::nullopt if not
+index_t mng_GetGuaranteedWeaponPage(const std::string &name);
 
 #endif

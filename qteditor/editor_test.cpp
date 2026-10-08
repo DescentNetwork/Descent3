@@ -3741,6 +3741,140 @@ private slots:
     errno = 0;
   }
 
+  // Verifies the name -> handle resolution mng_GetGuaranteedSoundPage performs
+  // (generic.cpp:1988-2001): it is what turns a generic page's sound_name
+  // strings into the index_t slots of object_info::sounds.
+  void testGuaranteedSoundPageLookup()
+  {
+    const std::filesystem::path hog = "/mnt/media/games/pc/Descent 3/d3.hog";
+    if (!std::filesystem::exists(hog)) {
+      QSKIP("d3.hog not found; skipping guaranteed sound page lookup test.");
+      return;
+    }
+
+    QVERIFY(loadGameDataTable(hog));
+    QVERIFY(Sounds.size() > 0);
+
+    index_t sample;
+    for (size_t i = 0; i < Sounds.size(); i++) {
+      if (Sounds.is_used(i) && !Sounds[i].name.empty()) {
+        sample = static_cast<uint32_t>(i);
+        break;
+      }
+    }
+    QVERIFY(sample);
+
+    const index_t found = mng_GetGuaranteedSoundPage(Sounds[*sample].name);
+    QVERIFY(found);
+    QCOMPARE(Sounds[*found].name, Sounds[*sample].name);
+
+    QVERIFY(!mng_GetGuaranteedSoundPage("no_such_sound_page_xyz"));
+    QVERIFY(!mng_GetGuaranteedSoundPage(""));
+  }
+
+  // Verifies the object_info::sounds round trip through a generic page:
+  // mng_AssignGenericPageToObjInfo resolves sound_name[] into handles
+  // (generic.cpp:1988-2001) and mng_AssignObjInfoToGenericPage writes each
+  // handle's name back out (generic.cpp:2142-2143).  The firing-mask sound
+  // slots ride along because they go through the same name -> handle helper.
+  void testGenericPageObjectSoundsRoundTrip()
+  {
+    const std::filesystem::path hog = "/mnt/media/games/pc/Descent 3/d3.hog";
+    if (!std::filesystem::exists(hog)) {
+      QSKIP("d3.hog not found; skipping generic page object sounds round trip.");
+      return;
+    }
+
+    QVERIFY(loadGameDataTable(hog));
+
+    index_t ambient;
+    index_t explode;
+    for (size_t i = 0; i < Sounds.size(); i++) {
+      if (!Sounds.is_used(i) || Sounds[i].name.empty())
+        continue;
+      if (!ambient) {
+        ambient = static_cast<uint32_t>(i);
+      } else if (!explode && Sounds[i].name != Sounds[*ambient].name) {
+        explode = static_cast<uint32_t>(i);
+      }
+    }
+    QVERIFY(ambient);
+    QVERIFY(explode);
+    const std::string ambient_name = Sounds[*ambient].name;
+    const std::string explode_name = Sounds[*explode].name;
+
+    const uint32_t slot = MAX_OBJECTS - 1;
+    const object_info saved = Object_info[slot];
+
+    mngs_generic_page page{};
+    page.objinfo_struct.name = "mng_sounds_roundtrip";
+    page.objinfo_struct.type = saved.type;
+    page.sound_name[GSI_AMBIENT] = ambient_name;
+    page.sound_name[GSI_EXPLODE] = "INVALID NAME";
+    page.fire_sound_name[0][0] = explode_name;
+    page.fire_sound_name[0][1] = "";
+
+    Object_info[slot].sounds[GSI_AMBIENT] = std::nullopt;
+    Object_info[slot].sounds[GSI_EXPLODE] = std::nullopt;
+    Object_info[slot].static_wb.assign(MAX_WBS_PER_OBJ, otype_wb_info{});
+
+    QCOMPARE(mng_AssignGenericPageToObjInfo(page, slot), 1);
+
+    QVERIFY(Object_info[slot].sounds[GSI_AMBIENT]);
+    QCOMPARE(Sounds[*Object_info[slot].sounds[GSI_AMBIENT]].name, ambient_name);
+    QVERIFY(!Object_info[slot].sounds[GSI_EXPLODE]);
+    QCOMPARE(static_cast<int>(Object_info[slot].static_wb[0].fm_fire_sound_index[0]),
+             static_cast<int>(*explode));
+    QCOMPARE(Object_info[slot].static_wb[0].fm_fire_sound_index[1], static_cast<uint16_t>(-1));
+
+    mngs_generic_page out{};
+    mng_AssignObjInfoToGenericPage(slot, out);
+    QCOMPARE(out.sound_name[GSI_AMBIENT], ambient_name);
+    QVERIFY(out.sound_name[GSI_EXPLODE].empty());
+    QCOMPARE(out.fire_sound_name[0][0], explode_name);
+    QVERIFY(out.fire_sound_name[0][1].empty());
+    QCOMPARE(out.image_name, page.image_name);
+
+    const int loaded_model = Object_info[slot].render_handle;
+    Object_info[slot] = saved;
+    if (loaded_model >= 0)
+      Poly_models[loaded_model] = poly_model{};
+  }
+
+  // Verifies an unresolved sound name and an "INVALID NAME" placeholder both
+  // resolve to "no sound" instead of leaking a stale handle.
+  void testGenericPageObjectSoundsUnresolved()
+  {
+    const uint32_t slot = MAX_OBJECTS - 1;
+    const object_info saved = Object_info[slot];
+
+    mngs_generic_page page{};
+    page.objinfo_struct.name = "mng_sounds_unresolved";
+    page.objinfo_struct.type = object_type::none;
+    page.sound_name[GSI_AMBIENT] = "definitely_not_in_the_table";
+    page.sound_name[GSI_EXPLODE] = "INVALID NAME";
+
+    Object_info[slot].sounds[GSI_AMBIENT] = index_t{7};
+    Object_info[slot].sounds[GSI_EXPLODE] = index_t{9};
+
+    QCOMPARE(mng_AssignGenericPageToObjInfo(page, slot), 1);
+
+    QVERIFY(!Object_info[slot].sounds[GSI_AMBIENT]);
+    QVERIFY(!Object_info[slot].sounds[GSI_EXPLODE]);
+
+    mngs_generic_page out{};
+    mng_AssignObjInfoToGenericPage(slot, out);
+    QVERIFY(out.sound_name[GSI_AMBIENT].empty());
+    QVERIFY(out.sound_name[GSI_EXPLODE].empty());
+
+    QVERIFY(!mng_AssignGenericPageToObjInfo(page, std::nullopt));
+
+    const int loaded_model = Object_info[slot].render_handle;
+    Object_info[slot] = saved;
+    if (loaded_model >= 0)
+      Poly_models[loaded_model] = poly_model{};
+  }
+
   // Verifies the OGF/IFF + TGA bitmap decoder populates GameBitmaps[] from the
   // real d3.hog texture files, so textured faces render with real pixel data.
   // This is the thing that was previously broken (bitmap stubs returned 0).

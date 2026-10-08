@@ -245,7 +245,6 @@ int mng_FindSpecificSoundPage(const std::string &a, mngs_sound_page *b, int c) {
 int mng_FindSpecificTexPage(const std::string &a, mngs_texture_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_FindSpecificWeaponPage(const std::string &a, mngs_weapon_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignDoorPageToDoor(mngs_door_page *a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_AssignGenericPageToObjInfo(mngs_generic_page *a, index_t b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignShipPageToShip(mngs_ship_page *a, int b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignSoundPageToSound(mngs_sound_page *a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_AssignTexPageToTexture(mngs_texture_page *a, int b, struct CFILE* c) { PRINT_STUB(__FUNCTION__); return 0; }

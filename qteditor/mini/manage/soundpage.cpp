@@ -19,7 +19,7 @@
 // Sound page reader (ported from soundpage.cpp : 222-255).
 
 #include "soundpage.h"
-//#include "soundload.h"
+#include "soundload.h"
 
 #include <cstdint>
 #include <cstring>
@@ -74,4 +74,11 @@ bool mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
   infile >> *soundpage;
 
   return true; // successfully read
+}
+
+// First searches through the sound index to see if the sound is already
+// loaded.  If not, searches in the table file and loads it.
+// Returns index of sound if found, std::nullopt if not.
+index_t mng_GetGuaranteedSoundPage(const std::string &name) {
+  return FindSoundName(name);
 }

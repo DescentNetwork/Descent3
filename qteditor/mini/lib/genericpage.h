@@ -78,10 +78,10 @@ int mng_SetAndLoadGeneric(mngs_generic_page *genericpage, struct CFILE* infile =
 // Given a genericpage and a generic handle, attempts to make generic n correspond to
 // to the genericpage.
 // Returns 1 on success, 0 otherwise
-int mng_AssignGenericPageToObjInfo(mngs_generic_page *genericpage, index_t n, struct CFILE* infile = NULL);
+int mng_AssignGenericPageToObjInfo(mngs_generic_page &genericpage, index_t n);
 
 // Copies values from a Generic into a generic_page
-void mng_AssignObjInfoToGenericPage(int n, mngs_generic_page *genericpage);
+void mng_AssignObjInfoToGenericPage(index_t n, mngs_generic_page &genericpage);
 
 // Reads in a generic page from the local table file, superseding any generic
 // already in RAM with that same name
@@ -92,7 +92,7 @@ void mng_LoadNetGenericPage(struct CFILE* , bool overlay = false);
 
 // First searches through the object index to see if the object is already
 // loaded.  If not, searches in the table file and loads it.
-// Returns index of object found, -1 if not
-int mng_GetGuaranteedGenericPage(char *name, struct CFILE* infile);
+// Returns index of object if found, std::nullopt if not
+index_t mng_GetGuaranteedGenericPage(const std::string &name);
 
 #endif

@@ -774,7 +774,7 @@ void WorldObjectsGenericDialog::onLock() {
         return;
       }
       if (mng_FindSpecificGenericPage(temp_pl.name, &page)) {
-        if (mng_AssignGenericPageToObjInfo(&page, m_object_id)) {
+        if (mng_AssignGenericPageToObjInfo(page, m_object_id)) {
           if (!mng_ReplacePage(d->name, d->name, m_object_id, PAGETYPE_GENERIC, 1)) {
             QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
             mng_EraseLocker();
@@ -814,7 +814,7 @@ void WorldObjectsGenericDialog::onUndoLock() {
     mng_FreeTrackLock(tl);
     Q_ASSERT(mng_DeletePage(d->name, PAGETYPE_GENERIC, 1));
     Q_ASSERT(mng_FindSpecificGenericPage(pl.name, &page));
-    Q_ASSERT(mng_AssignGenericPageToObjInfo(&page, m_object_id));
+    Q_ASSERT(mng_AssignGenericPageToObjInfo(page, m_object_id));
     mng_EraseLocker();
     updateDialog();
   }

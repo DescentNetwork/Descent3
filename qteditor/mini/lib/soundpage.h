@@ -20,10 +20,12 @@
 #define SOUNDPAGE_H
 
 #include <cstdint>
+#include <string>
 #include <posix_stream.h>
 
 #include "manage.h"
 #include "ssl_lib.h"
+#include "utils.h"
 
 struct mngs_sound_page {
   sound_info sound_struct;
@@ -74,7 +76,7 @@ void mng_LoadNetSoundPage(struct CFILE* , bool overlay = false);
 
 // First searches through the sound index to see if the sound is already
 // loaded.  If not, searches in the table file and loads it.
-// Returns index of sound if found, -1 if not
-int mng_GetGuaranteedSoundPage(char *name, struct CFILE* infile = NULL);
+// Returns index of sound if found, std::nullopt if not
+index_t mng_GetGuaranteedSoundPage(const std::string &name);
 
 #endif

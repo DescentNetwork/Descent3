@@ -275,3 +275,10 @@ bool mng_ReadNewWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) 
 
   return true; // successfully read
 }
+
+// First searches through the weapon index to see if the weapon is already
+// loaded.  If not, searches in the table file and loads it.
+// Returns index of weapon if found, std::nullopt if not.
+index_t mng_GetGuaranteedWeaponPage(const std::string &name) {
+  return FindWeaponName(name);
+}
