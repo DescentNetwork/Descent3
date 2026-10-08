@@ -119,25 +119,26 @@ MainWindow::MainWindow(QWidget *parent)
   Q_ASSERT(m_editorView != nullptr);
 
   // ---- EditorView picking signals -> editor state ----
-  connect(m_editorView, &EditorView::faceSelected, [this](int r, int f) {
-    app.current.room = to_roomnum(r);
-    app.current.face = index_t{static_cast<uint32_t>(f)};
+  connect(m_editorView, &EditorView::faceSelected, [this](index_t r, index_t f) {
+    app.current.room = r;
+    app.current.face = f;
     app.current.edge = 0;
     app.current.vert = 0;
     app.current.portal.reset();
     app.State_changed = true;
     statusBar()->showMessage(
-        QStringLiteral("Face selected: room %1, face %2").arg(r).arg(f));
+        QStringLiteral("Face selected: room %1, face %2").arg(index_to_int(r)).arg(index_to_int(f)));
     m_editorView->update();
   });
-  connect(m_editorView, &EditorView::objectSelected, [this](int idx) {
+  connect(m_editorView, &EditorView::objectSelected, [this](index_t idx) {
     app.Cur_object_index = idx;
     app.State_changed = true;
-    QString name = (idx >= 0 && idx <= Highest_object_index && !Objects[idx].name.empty())
-                           ? QString::fromStdString(Objects[idx].name)
+    const int32_t i = index_to_int(idx);
+    QString name = (i >= 0 && i <= Highest_object_index && !Objects[i].name.empty())
+                           ? QString::fromStdString(Objects[i].name)
                            : QString();
     statusBar()->showMessage(
-        QStringLiteral("Object %1 selected (%2)").arg(idx).arg(name));
+        QStringLiteral("Object %1 selected (%2)").arg(i).arg(name));
     m_editorView->update();
   });
   connect(m_editorView, &EditorView::selectionCleared, [this]() {
@@ -149,20 +150,21 @@ MainWindow::MainWindow(QWidget *parent)
     m_editorView->update();
   });
   connect(m_editorView, &EditorView::roomToggleRequested, this,
-          [this](int roomIndex) {
-            ToggleRoomSelectedState(roomIndex);
+          [this](index_t roomIndex) {
+            ToggleRoomSelectedState(index_to_int(roomIndex));
             app.State_changed = true;
             statusBar()->showMessage(
-                QStringLiteral("Room %1 selection toggled.").arg(roomIndex));
+                QStringLiteral("Room %1 selection toggled.").arg(index_to_int(roomIndex)));
             m_editorView->update();
           });
   connect(m_editorView, &EditorView::objectContextMenuRequested, this,
-          [this](const QPoint &globalPos, int objIdx) {
+          [this](const QPoint &globalPos, index_t objIdx) {
             app.Cur_object_index = objIdx;
             QMenu menu(this);
-            const QString title = (objIdx >= 0 && objIdx <= Highest_object_index &&
-                                   !Objects[objIdx].name.empty())
-                                      ? QString::fromStdString(Objects[objIdx].name)
+            const int32_t i = index_to_int(objIdx);
+            const QString title = (i >= 0 && i <= Highest_object_index &&
+                                   !Objects[i].name.empty())
+                                      ? QString::fromStdString(Objects[i].name)
                                       : QStringLiteral("(no name)");
             QAction *titleAct = menu.addAction(title);
             titleAct->setEnabled(false);

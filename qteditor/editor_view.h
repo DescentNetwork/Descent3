@@ -130,13 +130,13 @@ public:
                         float prevCenterDist) const;
 
 signals:
-  void faceSelected(int roomIndex, int faceIndex);
-  void objectSelected(int objIndex);
+  void faceSelected(index_t roomIndex, index_t faceIndex);
+  void objectSelected(index_t objIndex);
   void selectionCleared();
-  void objectContextMenuRequested(const QPoint &globalPos, int objIndex);
+  void objectContextMenuRequested(const QPoint &globalPos, index_t objIndex);
   // Emitted on Shift+click over a room to toggle that room's selection
   // (Win32 ToggleRoomSelectedState).
-  void roomToggleRequested(int roomIndex);
+  void roomToggleRequested(index_t roomIndex);
   void rectSelectionFinished(const QRect &rect);
 
   // Rectangle selection (rubber band / SelManager equivalent).

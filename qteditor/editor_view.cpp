@@ -1652,14 +1652,14 @@ void EditorView::mousePressEvent(QMouseEvent *event) {
     PickResult pick = pickAt(event->pos().x(), event->pos().y());
     if (pick.objectIndex) {
       app.Cur_object_index = pick.objectIndex;
-      emit objectSelected(static_cast<int>(*pick.objectIndex));
+      emit objectSelected(pick.objectIndex);
       ObjMoveManager.Start(width(), height(), &m_eye, &m_orient, event->pos().x(), event->pos().y());
     }
   } else if (event->button() == Qt::RightButton) {
     updateCamera();
     PickResult pick = pickAt(event->pos().x(), event->pos().y());
     if (pick.objectIndex) {
-      emit objectContextMenuRequested(event->globalPos(), static_cast<int>(*pick.objectIndex));
+      emit objectContextMenuRequested(event->globalPos(), pick.objectIndex);
     }
   }
 }
@@ -1704,15 +1704,15 @@ void EditorView::mouseReleaseEvent(QMouseEvent *event) {
         // ToggleRoomSelectedState).
         PickResult pick = pickAt(event->pos().x(), event->pos().y());
         if (pick.roomIndex)
-          emit roomToggleRequested(static_cast<int>(*pick.roomIndex));
+          emit roomToggleRequested(pick.roomIndex);
         else
           emit selectionCleared();
       } else {
         PickResult pick = pickAtCycle(event->pos().x(), event->pos().y());
         if (pick.objectIndex) {
-          emit objectSelected(static_cast<int>(*pick.objectIndex));
+          emit objectSelected(pick.objectIndex);
         } else if (pick.roomIndex && pick.faceIndex) {
-          emit faceSelected(static_cast<int>(*pick.roomIndex), static_cast<int>(*pick.faceIndex));
+          emit faceSelected(pick.roomIndex, pick.faceIndex);
         } else {
           m_pickRoom.reset();
           m_pickFace.reset();

@@ -6333,14 +6333,14 @@ private slots:
     bool clearedFired = false;
     int selRoom = -1, selFace = -1, selObj = -1;
 
-    connect(&view, &EditorView::faceSelected, [&](int r, int f) {
+    connect(&view, &EditorView::faceSelected, [&](index_t r, index_t f) {
       faceFired = true;
-      selRoom = r;
-      selFace = f;
+      selRoom = index_to_int(r);
+      selFace = index_to_int(f);
     });
-    connect(&view, &EditorView::objectSelected, [&](int idx) {
+    connect(&view, &EditorView::objectSelected, [&](index_t idx) {
       objectFired = true;
-      selObj = idx;
+      selObj = index_to_int(idx);
     });
     connect(&view, &EditorView::selectionCleared, [&]() { clearedFired = true; });
 
