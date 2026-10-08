@@ -788,7 +788,7 @@ static void LL_ReadTerrainSoundChunk(posix_istream &ifile, uint32_t version) {
     } else {
       std::string soundname;
       ifile >> soundname; // NUL-terminated, consuming the whole field
-      band.sound_index = FindSoundName(soundname).value_or(-1);
+      band.sound_index = FindSoundName(soundname);
     }
 
     ifile >> band.low_alt;
@@ -803,16 +803,16 @@ static void LL_WriteTerrainSoundChunk(posix_ostream &ofile) {
 
   int32_t n_bands = 0;
   for (int b = 0; b < NUM_TERRAIN_SOUND_BANDS; b++)
-    if (Terrain_sound_bands[b].sound_index != -1)
+    if (Terrain_sound_bands[b].sound_index)
       n_bands++;
   ofile << n_bands;
 
   for (int b = 0; b < NUM_TERRAIN_SOUND_BANDS; b++) {
-    if (Terrain_sound_bands[b].sound_index == -1)
+    if (!Terrain_sound_bands[b].sound_index)
       continue;
 
     const terrain_sound_band &band = Terrain_sound_bands[b];
-    ofile << Sounds[band.sound_index].name; // NUL-terminated, like cf_WriteString
+    ofile << Sounds[*band.sound_index].name; // NUL-terminated, like cf_WriteString
     ofile << band.low_alt;
     ofile << band.high_alt;
     ofile << band.low_volume;
@@ -825,7 +825,7 @@ static void LL_WriteTerrainSoundChunk(posix_ostream &ofile) {
 // Clears all terrain sound bands (engine GameLoop.cpp:2839).
 void ClearTerrainSound() {
   for (int b = 0; b < NUM_TERRAIN_SOUND_BANDS; b++) {
-    Terrain_sound_bands[b].sound_index = -1;
+    Terrain_sound_bands[b].sound_index.reset();
     Terrain_sound_bands[b].low_alt = 0;
     Terrain_sound_bands[b].high_alt = 0;
     Terrain_sound_bands[b].low_volume = 0.0f;
@@ -988,10 +988,10 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
   if (version >= 14) {
     int32_t cur_obj_index = 0;
     ifile >> cur_obj_index;
-    app.Cur_object_index = cur_obj_index < 0 ? std::optional<int>() : std::optional<int>(cur_obj_index);
+    app.Cur_object_index = cur_obj_index < 0 ? index_t{} : index_t{static_cast<uint32_t>(cur_obj_index)};
     int32_t current_trigger = 0;
     ifile >> current_trigger;
-    app.Current_trigger = current_trigger < 0 ? std::optional<int>() : std::optional<int>(current_trigger);
+    app.Current_trigger = current_trigger < 0 ? index_t{} : index_t{static_cast<uint32_t>(current_trigger)};
     int32_t tmp = 0;
     if (version < 106)
       ifile >> tmp; // was Current_doorway
@@ -1049,8 +1049,8 @@ static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
   for (int i = 0; i < N_selected_rooms; i++)
     ofile << static_cast<int16_t>(Selected_rooms[i]);
 
-  ofile << static_cast<int32_t>(app.Cur_object_index.value_or(-1));
-  ofile << static_cast<int32_t>(app.Current_trigger.value_or(-1));
+  ofile << static_cast<int32_t>(index_to_int(app.Cur_object_index));
+  ofile << static_cast<int32_t>(index_to_int(app.Current_trigger));
   ofile << static_cast<int32_t>(app.view_mode);
   ofile << static_cast<int32_t>(app.Editor_viewer_id.value_or(-1));
 

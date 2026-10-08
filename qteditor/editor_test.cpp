@@ -1813,12 +1813,12 @@ private slots:
     DestroyAllMatcens();
   }
 
-  // Counts the used terrain sound bands (sound_index != -1).
+  // Counts the used terrain sound bands (sound_index has a value).
   static int UsedTerrainSoundBands()
   {
     int n = 0;
     for (int b = 0; b < NUM_TERRAIN_SOUND_BANDS; b++)
-      if (Terrain_sound_bands[b].sound_index != -1)
+      if (Terrain_sound_bands[b].sound_index.has_value())
         n++;
     return n;
   }
@@ -3003,8 +3003,8 @@ private slots:
     QCOMPARE(N_selected_rooms, 2);
     QCOMPARE(Selected_rooms[0], 0);
     QCOMPARE(Selected_rooms[1], 1);
-    QCOMPARE(app.Cur_object_index.value_or(-1), 7);
-    QCOMPARE(app.Current_trigger.value_or(-1), 8);
+    QCOMPARE(index_to_int(app.Cur_object_index), 7);
+    QCOMPARE(index_to_int(app.Current_trigger), 8);
     QCOMPARE(app.view_mode, state::viewer::terrain);
     QCOMPARE(app.Editor_viewer_id.value_or(-1), 9);
     QCOMPARE(Wireframe_view_mine.dist, 50);
@@ -4655,7 +4655,7 @@ private slots:
     QCOMPARE(index_to_int(app.current.face), 0);
     QCOMPARE(index_to_int(app.current.portal), -1);
     QCOMPARE(static_cast<int>(Triggers.size()), 0);
-    QCOMPARE(app.Current_trigger.value_or(-1), -1);
+    QCOMPARE(index_to_int(app.Current_trigger), -1);
     QCOMPARE(app.view_mode, state::viewer::mine);
     // CreateNewMine spawns a viewer for the level (Win32 HFile.cpp:478
     // SetEditorViewer), so the id/object are non-empty afterwards.
@@ -4989,7 +4989,7 @@ private slots:
   // editor/editorView.cpp:PlaceCameraAtViewer, SetCameraFromViewer,
   // SetViewerFromCamera, DeleteCurrentObject, MovePlayerToCurrentRoom.
   // We exercise each in turn and inspect the side-effects on
-  // app.Cur_object_index.value_or(-1) / Objects[] / app.Mine_changed / Player_object.
+  // index_to_int(app.Cur_object_index) / Objects[] / app.Mine_changed / Player_object.
   void testObjectOpsContract() {
     // Reset the object table for the test.
     for (size_t i = 0; i < Objects.size(); ++i)
@@ -5125,7 +5125,7 @@ private slots:
     ResetViewRadius();
     QCOMPARE(app.texscale, 1.0f);
 
-    // CenterViewOnObject drops app.Cur_object_index.value_or(-1) onto the viewer. Live
+    // CenterViewOnObject drops index_to_int(app.Cur_object_index) onto the viewer. Live
     // calls with the freshly-init Objects[] above trip ObjUnlink's
     // invariant in object.cpp:1515 (Objects[0].next != 0) on Debug
     // builds, so we keep the assertion documented but skip the live call.
@@ -7040,7 +7040,7 @@ private slots:
 
     HObjectSetDefault();
 
-    QCOMPARE(app.Cur_object_index.value_or(-1), -1);
+    QCOMPARE(index_to_int(app.Cur_object_index), -1);
   }
 
   void testHObjectFlip() {
@@ -7102,7 +7102,7 @@ private slots:
     HObjectDelete();
 
     QCOMPARE(Objects[1].type, object_type::none);
-    QCOMPARE(app.Cur_object_index.value_or(-1), -1);
+    QCOMPARE(index_to_int(app.Cur_object_index), -1);
 
     Objects[0].type = object_type::none;
     Viewer_object = nullptr;
@@ -7114,7 +7114,7 @@ private slots:
   void testHObjectDeleteNoopWhenNoSelection() {
     app.Cur_object_index.reset();
     HObjectDelete();
-    QCOMPARE(app.Cur_object_index.value_or(-1), -1);
+    QCOMPARE(index_to_int(app.Cur_object_index), -1);
   }
 
   void testHObjectDeletePlayerBlocked() {
@@ -7556,7 +7556,7 @@ private slots:
                       Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
     QCoreApplication::sendEvent(&view, &press);
     QCoreApplication::processEvents();
-    QCOMPARE(app.Cur_object_index.value_or(-1), 0);
+    QCOMPARE(index_to_int(app.Cur_object_index), 0);
     QVERIFY(ObjMoveManager.IsMoving());
 
     const vector3 pos0 = Objects[0].pos;

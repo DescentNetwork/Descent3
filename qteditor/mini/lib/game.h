@@ -311,7 +311,7 @@ struct gamemode {
 
 // Structure for a terrain sound "band"
 struct terrain_sound_band {
-  int sound_index;               // the sound to play
+  index_t sound_index;           // the sound to play
   uint8_t low_alt, high_alt;       // top & bottom of range of sound
   float low_volume, high_volume; // volume at top & bottom of range
 };

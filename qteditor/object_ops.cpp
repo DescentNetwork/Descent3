@@ -381,12 +381,12 @@ void HObjectMove(int objnum, float dx, float dy, float dz) {
 // ============================================================================
 // Rotation functions — editor/HObject.cpp:503-513
 // ============================================================================
-void HObjectIncreaseBank() { RotateObject(app.Cur_object_index.value_or(-1), 0, 0, Object_move_rotation); }
-void HObjectDecreaseBank() { RotateObject(app.Cur_object_index.value_or(-1), 0, 0, -Object_move_rotation); }
-void HObjectIncreasePitch() { RotateObject(app.Cur_object_index.value_or(-1), Object_move_rotation, 0, 0); }
-void HObjectDecreasePitch() { RotateObject(app.Cur_object_index.value_or(-1), -Object_move_rotation, 0, 0); }
-void HObjectIncreaseHeading() { RotateObject(app.Cur_object_index.value_or(-1), 0, Object_move_rotation, 0); }
-void HObjectDecreaseHeading() { RotateObject(app.Cur_object_index.value_or(-1), 0, -Object_move_rotation, 0); }
+void HObjectIncreaseBank() { RotateObject(index_to_int(app.Cur_object_index), 0, 0, Object_move_rotation); }
+void HObjectDecreaseBank() { RotateObject(index_to_int(app.Cur_object_index), 0, 0, -Object_move_rotation); }
+void HObjectIncreasePitch() { RotateObject(index_to_int(app.Cur_object_index), Object_move_rotation, 0, 0); }
+void HObjectDecreasePitch() { RotateObject(index_to_int(app.Cur_object_index), -Object_move_rotation, 0, 0); }
+void HObjectIncreaseHeading() { RotateObject(index_to_int(app.Cur_object_index), 0, Object_move_rotation, 0); }
+void HObjectDecreaseHeading() { RotateObject(index_to_int(app.Cur_object_index), 0, -Object_move_rotation, 0); }
 
 // ============================================================================
 // HObjectDelete — editor/HObject.cpp:517
@@ -409,7 +409,7 @@ void HObjectDelete() {
   }
 
   ObjDelete(objnum);
-  if (objnum == app.Cur_object_index.value_or(-1))
+  if (objnum == index_to_int(app.Cur_object_index))
     app.Cur_object_index.reset();
 
   app.World_changed = true;

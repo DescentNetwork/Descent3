@@ -69,7 +69,7 @@ TerrainSoundDialog::TerrainSoundDialog(QWidget *parent)
 TerrainSoundDialog::~TerrainSoundDialog() { delete ui; }
 
 void TerrainSoundDialog::updateDialog() {
-  const bool enabled = m_bands[m_current].sound_index != -1;
+  const bool enabled = m_bands[m_current].sound_index.has_value();
   ui->IDC_TERRAIN_SOUND_LOW_ALT->setEnabled(enabled);
   ui->IDC_TERRAIN_SOUND_HIGH_ALT->setEnabled(enabled);
   ui->IDC_TERRAIN_SOUND_LOW_VOLUME->setEnabled(enabled);
@@ -86,7 +86,7 @@ void TerrainSoundDialog::copyToControls() {
   ui->IDC_TERRAIN_SOUND_HIGH_ALT->setText(QString::number(m_bands[m_current].high_alt));
   ui->IDC_TERRAIN_SOUND_LOW_VOLUME->setText(QString::number(m_bands[m_current].low_volume));
   ui->IDC_TERRAIN_SOUND_HIGH_VOLUME->setText(QString::number(m_bands[m_current].high_volume));
-  setSoundComboSelected(ui->IDC_TERRAIN_SOUND_COMBO, m_bands[m_current].sound_index);
+  setSoundComboSelected(ui->IDC_TERRAIN_SOUND_COMBO, index_to_int(m_bands[m_current].sound_index));
 }
 
 bool TerrainSoundDialog::copyFromControls() {
@@ -94,7 +94,8 @@ bool TerrainSoundDialog::copyFromControls() {
   m_bands[m_current].high_alt = ui->IDC_TERRAIN_SOUND_HIGH_ALT->text().toUInt();
   m_bands[m_current].low_volume = ui->IDC_TERRAIN_SOUND_LOW_VOLUME->text().toFloat();
   m_bands[m_current].high_volume = ui->IDC_TERRAIN_SOUND_HIGH_VOLUME->text().toFloat();
-  m_bands[m_current].sound_index = soundComboSelected(ui->IDC_TERRAIN_SOUND_COMBO);
+  const int s = soundComboSelected(ui->IDC_TERRAIN_SOUND_COMBO);
+  m_bands[m_current].sound_index = s < 0 ? index_t{} : index_t{static_cast<uint32_t>(s)};
 
   if (m_bands[m_current].low_alt > m_bands[m_current].high_alt) {
     QMessageBox::warning(this, "Terrain Sound", "High elevation must be greater than or equal to low elevation.");

@@ -69,7 +69,7 @@ void ObjectKeypad::setMoveAxis(int axis) {
 }
 
 void ObjectKeypad::updateDialog() {
-  const bool hasObject = (app.Cur_object_index.has_value() && app.Cur_object_index.value_or(-1) <= Highest_object_index &&
+  const bool hasObject = (app.Cur_object_index.has_value() && index_to_int(app.Cur_object_index) <= Highest_object_index &&
                           Objects[*app.Cur_object_index].type != object_type::none);
   ui->IDC_OBJPAD_FLIPOBJ->setEnabled(hasObject);
   ui->IDC_OBJ_DELOBJ->setEnabled(hasObject);
@@ -98,7 +98,7 @@ void ObjectKeypad::onPlaceObject() {
 }
 
 void ObjectKeypad::onDeleteObject() {
-  if (!app.Cur_object_index || app.Cur_object_index.value_or(-1) > Highest_object_index)
+  if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
   if (Objects[*app.Cur_object_index].type == object_type::none)
     return;
@@ -109,14 +109,14 @@ void ObjectKeypad::onDeleteObject() {
 void ObjectKeypad::onNextObject() {
   if (!app.Cur_object_index)
     return;
-  for (int i = app.Cur_object_index.value_or(-1) + 1; i <= Highest_object_index; i++) {
+  for (int i = index_to_int(app.Cur_object_index) + 1; i <= Highest_object_index; i++) {
     if (Objects[i].type != object_type::none && Objects[i].type != object_type::room) {
       app.Cur_object_index = i;
       updateDialog();
       return;
     }
   }
-  for (int i = 0; i <= app.Cur_object_index.value_or(-1); i++) {
+  for (int i = 0; i <= index_to_int(app.Cur_object_index); i++) {
     if (Objects[i].type != object_type::none && Objects[i].type != object_type::room) {
       app.Cur_object_index = i;
       updateDialog();
@@ -126,7 +126,7 @@ void ObjectKeypad::onNextObject() {
 }
 
 void ObjectKeypad::onFlipObject() {
-  if (!app.Cur_object_index || app.Cur_object_index.value_or(-1) > Highest_object_index)
+  if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
   if (Objects[*app.Cur_object_index].type == object_type::none)
     return;
@@ -153,12 +153,12 @@ void ObjectKeypad::onSetDefault() {
 }
 
 void ObjectKeypad::onRot90() {
-  if (!app.Cur_object_index || app.Cur_object_index.value_or(-1) > Highest_object_index)
+  if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
   if (Objects[*app.Cur_object_index].type == object_type::none)
     return;
   // Rotate 90 degrees (PI/2 radians = 8192 angle units in D3).
-  RotateObject(app.Cur_object_index.value_or(-1), 8192, 0, 0);
+  RotateObject(index_to_int(app.Cur_object_index), 8192, 0, 0);
   app.World_changed = true;
   updateDialog();
 }

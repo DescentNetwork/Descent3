@@ -221,10 +221,10 @@ struct d3edit_state
   face_selection current;
 
   // Current object
-  std::optional<int> Cur_object_index;
+  index_t Cur_object_index;
 
   //	Current trigger in mine displayed in trigger dialog
-  std::optional<int> Current_trigger;
+  index_t Current_trigger;
 
   // The ID of the most recent viewer object (not counting room view)
   std::optional<int> Editor_viewer_id;
