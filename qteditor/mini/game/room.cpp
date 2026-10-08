@@ -1387,19 +1387,16 @@ byte_istream& operator>>(byte_istream& input, face& data) {
   for (int i = 0; i < data.num_verts; i++)
     input >> data.face_verts[i];
 
-  int alphaed = 0;
+  bool alphaed = false;
   for (int i = 0; i < data.num_verts; i++) {
     input >> data.face_uvls[i].u >> data.face_uvls[i].v;
     input >> data.face_uvls[i].alpha;
     if (data.face_uvls[i].alpha != 255)
-      alphaed = 1;
+      alphaed = true;
   }
 
   input >> reinterpret_cast<uint16_t&>(data.flags);
-  if (alphaed)
-    data.flags.vertex_alpha = true;
-  else
-    data.flags.vertex_alpha = false;
+  data.flags.vertex_alpha = alphaed;
   input >> data.portal_num;
 
   // Level files hold the raw texture index; the loader maps it to the global

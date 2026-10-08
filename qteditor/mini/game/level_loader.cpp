@@ -954,46 +954,41 @@ static void LL_WriteFFTMChunk(posix_ostream &ofile) {
 // per-room multipliers/ambience and the lighting globals).  Engine reader
 // inline (:4026-4089, #ifdef EDITOR), writer (:5313, always the LAST chunk).
 static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
-  auto lookup_room = [](int16_t idx) -> int {
+  auto lookup_room = [](uint16_t idx) -> index_t {
     if (idx >= 0 && idx < Rooms.size() && Rooms[idx].used)
       return idx;
-    return -1;
+    return std::nullopt;
   };
 
-  auto load_optional = [](int16_t v) -> std::optional<int> {
-    if (v < 0)
+  auto optional16 = [](uint16_t v) -> index_t {
+    if (v == UINT16_MAX)
       return std::nullopt;
     return v;
   };
 
-  int16_t room_idx = 0;
+  uint16_t room_idx = 0;
   ifile >> room_idx;
-  {
-    const int cur_room = lookup_room(room_idx);
-    app.current.room = cur_room < 0 ? std::optional<int>() : std::optional<int>(cur_room);
-  }
-  int16_t sel = 0;
+  app.current.room = lookup_room(room_idx);
+
+  uint16_t sel = 0;
   ifile >> sel;
-  app.current.face = load_optional(sel);
+  app.current.face = optional16(sel);
   if (version >= 81) {
     ifile >> sel;
-    app.current.edge = load_optional(sel);
+    app.current.edge = optional16(sel);
     ifile >> sel;
-    app.current.vert = load_optional(sel);
+    app.current.vert = optional16(sel);
   }
 
   ifile >> room_idx;
-  {
-    const int marked_room = lookup_room(room_idx);
-    app.marked.room = marked_room < 0 ? std::optional<int>() : std::optional<int>(marked_room);
-  }
+  app.marked.room = lookup_room(room_idx);
   ifile >> sel;
-  app.marked.face = load_optional(sel);
+  app.marked.face = optional16(sel);
   if (version >= 81) {
     ifile >> sel;
-    app.marked.edge = load_optional(sel);
+    app.marked.edge = optional16(sel);
     ifile >> sel;
-    app.marked.vert = load_optional(sel);
+    app.marked.vert = optional16(sel);
   }
 
   int32_t nsr = 0;
