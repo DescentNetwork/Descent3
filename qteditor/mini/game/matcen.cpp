@@ -254,7 +254,7 @@ void matcen::SaveData(posix_ostream &ofile) const {
 
   // Convert these to names
   for (int i = 0; i < MAX_MATCEN_SOUNDS; i++) {
-    if (m_sounds[i] < 0 || m_sounds[i] >= MAX_SOUNDS) {
+    if (m_sounds[i] < 0) {
       ofile << static_cast<int16_t>(0);
       continue;
     }
@@ -263,7 +263,7 @@ void matcen::SaveData(posix_ostream &ofile) const {
 
   ofile << m_speed_multi;
 
-  ofile << static_cast<int8_t>(m_prod_mode);
+  ofile << m_prod_mode;
   ofile << m_prod_mode_time;
 
   ofile << static_cast<int32_t>(m_status);
@@ -369,7 +369,7 @@ void matcen::LoadData(posix_istream &ifile, const int *texture_xlate) {
 
   ifile >> m_speed_multi;
 
-  ifile >> reinterpret_cast<int8_t &>(m_prod_mode);
+  ifile >> m_prod_mode;
   ifile >> m_prod_mode_time;
 
   ifile >> m_status;

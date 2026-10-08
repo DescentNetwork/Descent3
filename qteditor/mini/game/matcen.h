@@ -100,7 +100,7 @@ private:
   float m_speed_multi;
 
   // Dynamic values that change without scripting
-  char m_prod_mode;
+  uint8_t m_prod_mode;
   float m_prod_mode_time;
 
   int m_status;

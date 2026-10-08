@@ -329,31 +329,31 @@ struct sound_file_info {
 struct [[gnu::packed]] sound_flags_t
 {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-  uint32_t : 20;                   // reserved
-  uint32_t cone_dir : 2;           // SPFT_CONE_DIR_* selector (0-3)
-  uint32_t cone_link : 1;          // SPFT_CONE_LINK high bit (TURRET2)
-  uint32_t once_per_obj : 1;       // SPF_ONCE_PER_OBJ (== cone-link low bit)
-  uint32_t listener_update : 1;    // SPF_LISTENER_UPDATE
-  uint32_t use_cone : 1;           // SPF_USE_CONE
-  uint32_t plays_once : 1;         // SPF_PLAYS_ONCE
-  uint32_t plays_exclusively : 1;  // SPF_PLAYS_EXCLUSIVELY
-  uint32_t plays_forever : 1;     // SPF_FOREVER
-  uint32_t obj_update : 1;         // SPF_OBJ_UPDATE
-  uint32_t fixed_freq : 1;         // SPF_FIXED_FREQ
-  uint32_t looped : 1;             // SPF_LOOPED
+  uint32_t padding : 20 = 0;                   // reserved
+  uint32_t cone_dir : 2 = 0;           // SPFT_CONE_DIR_* selector (0-3)
+  uint32_t cone_link : 1 = 0;          // SPFT_CONE_LINK high bit (TURRET2)
+  uint32_t once_per_obj : 1 = 0;       // SPF_ONCE_PER_OBJ (== cone-link low bit)
+  uint32_t listener_update : 1 = 1;    // SPF_LISTENER_UPDATE
+  uint32_t use_cone : 1 = 0;           // SPF_USE_CONE
+  uint32_t plays_once : 1 = 0;         // SPF_PLAYS_ONCE
+  uint32_t plays_exclusively : 1 = 0;  // SPF_PLAYS_EXCLUSIVELY
+  uint32_t plays_forever : 1 = 0;     // SPF_FOREVER
+  uint32_t obj_update : 1 = 0;         // SPF_OBJ_UPDATE
+  uint32_t fixed_freq : 1 = 0;         // SPF_FIXED_FREQ
+  uint32_t looped : 1 = 0;             // SPF_LOOPED
 #else
-  uint32_t looped : 1;             // SPF_LOOPED
-  uint32_t fixed_freq : 1;         // SPF_FIXED_FREQ
-  uint32_t obj_update : 1;         // SPF_OBJ_UPDATE
-  uint32_t plays_forever : 1;     // SPF_FOREVER
-  uint32_t plays_exclusively : 1;  // SPF_PLAYS_EXCLUSIVELY
-  uint32_t plays_once : 1;         // SPF_PLAYS_ONCE
-  uint32_t use_cone : 1;           // SPF_USE_CONE
-  uint32_t listener_update : 1;    // SPF_LISTENER_UPDATE
-  uint32_t once_per_obj : 1;       // SPF_ONCE_PER_OBJ (== cone-link low bit)
-  uint32_t cone_link : 1;          // SPFT_CONE_LINK high bit (TURRET2)
-  uint32_t cone_dir : 2;           // SPFT_CONE_DIR_* selector (0-3)
-  uint32_t : 20;                   // reserved
+  uint32_t looped : 1 = 0;             // SPF_LOOPED
+  uint32_t fixed_freq : 1 = 0;         // SPF_FIXED_FREQ
+  uint32_t obj_update : 1 = 0;         // SPF_OBJ_UPDATE
+  uint32_t plays_forever : 1 = 0;     // SPF_FOREVER
+  uint32_t plays_exclusively : 1 = 0;  // SPF_PLAYS_EXCLUSIVELY
+  uint32_t plays_once : 1 = 0;         // SPF_PLAYS_ONCE
+  uint32_t use_cone : 1 = 0;           // SPF_USE_CONE
+  uint32_t listener_update : 1 = 1;    // SPF_LISTENER_UPDATE
+  uint32_t once_per_obj : 1 = 0;       // SPF_ONCE_PER_OBJ (== cone-link low bit)
+  uint32_t cone_link : 1 = 0;          // SPFT_CONE_LINK high bit (TURRET2)
+  uint32_t cone_dir : 2 = 0;           // SPFT_CONE_DIR_* selector (0-3)
+  uint32_t padding : 20 = 0;           // reserved
 #endif
 };
 static_assert(sizeof(sound_flags_t) == sizeof(uint32_t));
@@ -365,11 +365,7 @@ struct sound_info {
 
   int loop_start = 0;          // Start byte of repeated loop for looping samples
   int loop_end = 0;            // End byte of repeating loop for looping samples
-  sound_flags_t flags = [] {
-    sound_flags_t f{};
-    f.listener_update = true; // SPF_LISTENER_UPDATE
-    return f;
-  }();                    // 2d/3d, variable frequency
+  sound_flags_t flags;         // 2d/3d, variable frequency
   float max_distance = 256.0f; // Maximum distance in which a sound is heard
   float min_distance = 10.0f;  // Sound gets no louder at min_distance
   int inner_cone_angle = 360;  // Angle in which sound is played at full base volume
@@ -589,13 +585,10 @@ public:
 //	TAKEN FROM SNDLIB SOUNDLOAD.CPP TO SEPARATE CODE REQUIRED BY THE LOWLEVEL SYSTEM AND THE
 //	HIGH LEVEL SYSTEM - Samir
 
-#ifndef NEWEDITOR
 #define MAX_SOUNDS 1000
 #define MAX_SOUND_FILES 1000
 extern d3::slotvec_t<sound_info> Sounds;
-#else
-#include "..\neweditor\ned_Sound.h"
-#endif
+
 
 extern sound_file_info SoundFiles[MAX_SOUND_FILES];
 
