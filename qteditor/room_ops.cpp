@@ -214,8 +214,7 @@ void CopyRoom(int destroom, int srcroom) {
 
   destp.flags = srcp.flags;
 
-  // Editor-lighting arrays (Room_multiplier, Room_ambience_*) live in the
-  // editor lib and are not linked; skip.
+  // room_light[] lives in the editor lib and is not linked; skip.
 }
 
 // ============================================================================

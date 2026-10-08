@@ -121,9 +121,9 @@ void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surf
           red = green = blue = 0;
         }
 
-        fr = std::min(1.0f, sp->elements[i * xres + t].exitance.r + Ambient_red);
-        fg = std::min(1.0f, sp->elements[i * xres + t].exitance.g + Ambient_green);
-        fb = std::min(1.0f, sp->elements[i * xres + t].exitance.b + Ambient_blue);
+        fr = std::min(1.0f, sp->elements[i * xres + t].exitance.r + global_light.ambient_red);
+        fg = std::min(1.0f, sp->elements[i * xres + t].exitance.g + global_light.ambient_green);
+        fb = std::min(1.0f, sp->elements[i * xres + t].exitance.b + global_light.ambient_blue);
 
         fr = (fr * 255) + .5;
         fg = (fg * 255) + .5;

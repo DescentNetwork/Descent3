@@ -68,7 +68,6 @@ struct spec_vertex {
 bool PointsAreSame(vector3 *v0, vector3 *v1) { return vm_VectorDistance(v0, v1) < POINT_TO_POINT_EPSILON; }
 
 int AllowCombining = 1;
-float GlobalMultiplier = 1.0;
 
 std::vector<rad_surface> Light_surfaces;
 
@@ -76,17 +75,14 @@ vector3 ScratchCenters[MAX_LIGHTMAP_INFOS];
 vector3 ScratchRVecs[MAX_LIGHTMAP_INFOS];
 vector3 ScratchUVecs[MAX_LIGHTMAP_INFOS];
 
-std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_multiplier;
-std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_ambience_r, Room_ambience_g, Room_ambience_b;
+std::array<room_light_t, MAX_ROOMS + MAX_PALETTE_ROOMS> room_light;
+room_light_t global_light = {1.0f, 0.0f, 0.0f, 0.0f};
 
 uint8_t *TerrainLightSpeedup[MAX_SATELLITES];
 
 int LightSpacing = LIGHTMAP_SPACING;
 int Square_surfaces = 0;
 int Lightmaps_for_rad = 0;
-
-// Ambient values for terrain
-float Ambient_red = 0.0f, Ambient_green = 0.0f, Ambient_blue = 0.0f;
 
 void DoTerrainDynamicTable();
 
@@ -1013,7 +1009,7 @@ void DoRadiosityForRooms() {
             Rooms[i].faces[t].light_multiple = 4;
 
           float mul = ((float)Rooms[i].faces[t].light_multiple) / 4.0;
-          mul *= GlobalMultiplier * Room_multiplier[i];
+          mul *= global_light.multiplier * room_light[i].multiplier;
 
           Light_surfaces[surface_index].emittance.r = (float)GameTextures[Rooms[i].faces[t].tmap].r * mul;
           Light_surfaces[surface_index].emittance.g = (float)GameTextures[Rooms[i].faces[t].tmap].g * mul;
@@ -1231,7 +1227,7 @@ void DoRadiosityForCurrentRoom(int roomnum) {
       Light_surfaces[surface_index].emittance.b = 0;
     } else {
       float mul = ((float)rp->faces[t].light_multiple) / 4.0;
-      mul *= GlobalMultiplier * Room_multiplier[roomnum];
+      mul *= global_light.multiplier * room_light[roomnum].multiplier;
       Light_surfaces[surface_index].emittance.r = (float)GameTextures[rp->faces[t].tmap].r * mul;
       Light_surfaces[surface_index].emittance.g = (float)GameTextures[rp->faces[t].tmap].g * mul;
       Light_surfaces[surface_index].emittance.b = (float)GameTextures[rp->faces[t].tmap].b * mul;
@@ -1338,9 +1334,9 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
           red = green = blue = 0;
         }
 
-        fr = std::min(1.0f, sp->elements[i * xres + t].exitance.r + Ambient_red + Room_ambience_r[roomnum]);
-        fg = std::min(1.0f, sp->elements[i * xres + t].exitance.g + Ambient_green + Room_ambience_g[roomnum]);
-        fb = std::min(1.0f, sp->elements[i * xres + t].exitance.b + Ambient_blue + Room_ambience_b[roomnum]);
+        fr = std::min(1.0f, sp->elements[i * xres + t].exitance.r + global_light.ambient_red + room_light[roomnum].ambient_red);
+        fg = std::min(1.0f, sp->elements[i * xres + t].exitance.g + global_light.ambient_green + room_light[roomnum].ambient_green);
+        fb = std::min(1.0f, sp->elements[i * xres + t].exitance.b + global_light.ambient_blue + room_light[roomnum].ambient_blue);
 
         fr = (fr * 255) + .5;
         fg = (fg * 255) + .5;
@@ -1994,7 +1990,7 @@ void DoRadiosityForTerrain() {
           Light_surfaces[surf_index].emittance.b = 0;
         } else {
           float mul = ((float)Rooms[i].faces[t].light_multiple) / 4.0;
-          mul *= GlobalMultiplier * Room_multiplier[i];
+          mul *= global_light.multiplier * room_light[i].multiplier;
 
           Light_surfaces[surf_index].emittance.r = (float)GameTextures[Rooms[i].faces[t].tmap].r * mul;
           Light_surfaces[surf_index].emittance.g = (float)GameTextures[Rooms[i].faces[t].tmap].g * mul;
@@ -2036,13 +2032,12 @@ void DoRadiosityForTerrain() {
   if (!Ignore_terrain) {
     for (i = 0; i < AREA_X * AREA_Z; i++) {
       // Add in ambient terrain light
-      terrain_sums[0][i].r = std::min(1.0f, Light_surfaces[i * 2].elements[0].exitance.r + Ambient_red);
-      terrain_sums[0][i].g = std::min(1.0f, Light_surfaces[i * 2].elements[0].exitance.g + Ambient_green);
-      terrain_sums[0][i].b = std::min(1.0f, Light_surfaces[i * 2].elements[0].exitance.b + Ambient_blue);
-
-      terrain_sums[1][i].r = std::min(1.0f, Light_surfaces[i * 2 + 1].elements[0].exitance.r + Ambient_red);
-      terrain_sums[1][i].g = std::min(1.0f, Light_surfaces[i * 2 + 1].elements[0].exitance.g + Ambient_green);
-      terrain_sums[1][i].b = std::min(1.0f, Light_surfaces[i * 2 + 1].elements[0].exitance.b + Ambient_blue);
+      terrain_sums[0][i].r = std::min(1.0f, Light_surfaces[i * 2].elements[0].exitance.r + global_light.ambient_red);
+      terrain_sums[0][i].g = std::min(1.0f, Light_surfaces[i * 2].elements[0].exitance.g + global_light.ambient_green);
+      terrain_sums[0][i].b = std::min(1.0f, Light_surfaces[i * 2].elements[0].exitance.b + global_light.ambient_blue);
+      terrain_sums[1][i].r = std::min(1.0f, Light_surfaces[i * 2 + 1].elements[0].exitance.r + global_light.ambient_red);
+      terrain_sums[1][i].g = std::min(1.0f, Light_surfaces[i * 2 + 1].elements[0].exitance.g + global_light.ambient_green);
+      terrain_sums[1][i].b = std::min(1.0f, Light_surfaces[i * 2 + 1].elements[0].exitance.b + global_light.ambient_blue);
     }
 
     for (i = 0; i < (AREA_X) * (AREA_Z); i++) {

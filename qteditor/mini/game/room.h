@@ -384,6 +384,14 @@
 #define MAX_PALETTE_ROOMS 0 // max number of loaded rooms
 #endif
 
+struct room_light_t
+{
+  float multiplier;
+  float ambient_red;
+  float ambient_green;
+  float ambient_blue;
+};
+
 // Room change stuff
 #define MAX_ROOM_CHANGES 100
 struct room_changes {

@@ -2941,11 +2941,9 @@ private slots:
     // editor_lighting.h can't be included next to level_loader.h (SaveLevel
     // default-argument clash), so bring in its globals directly; they are
     // linked from editor_lighting.cpp / rad_init.cpp.
-    extern std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_multiplier;
-    extern std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_ambience_r, Room_ambience_g, Room_ambience_b;
+    extern std::array<room_light_t, MAX_ROOMS + MAX_PALETTE_ROOMS> room_light;
+    extern room_light_t global_light;
     extern int LightSpacing;
-    extern float GlobalMultiplier;
-    extern float Ambient_red, Ambient_green, Ambient_blue;
     extern int rad_MaxStep;
 
     app.current.room = 0;
@@ -2970,16 +2968,16 @@ private slots:
     Wireframe_view_mine.dist = 50;
 
     for (int i = 0; i < MAX_ROOMS; i++) {
-      Room_multiplier[i] = 1.0f + i;
-      Room_ambience_r[i] = 0.01f * i;
-      Room_ambience_g[i] = 0.02f * i;
-      Room_ambience_b[i] = 0.03f * i;
+      room_light[i].multiplier = 1.0f + i;
+      room_light[i].ambient_red = 0.01f * i;
+      room_light[i].ambient_green = 0.02f * i;
+      room_light[i].ambient_blue = 0.03f * i;
     }
     LightSpacing = 40;
-    GlobalMultiplier = 2.5f;
-    Ambient_red = 0.1f;
-    Ambient_green = 0.2f;
-    Ambient_blue = 0.3f;
+    global_light.multiplier = 2.5f;
+    global_light.ambient_red = 0.1f;
+    global_light.ambient_green = 0.2f;
+    global_light.ambient_blue = 0.3f;
     rad_MaxStep = 16;
 
     const QString tmp = QDir::tempPath() + "/_test_edit_roundtrip";
@@ -3012,12 +3010,12 @@ private slots:
     QCOMPARE(Wireframe_view_mine.dist, 50);
     QCOMPARE(Wireframe_view_mine.orient.fvec.z(), 1);
     QCOMPARE(LightSpacing, 40);
-    QCOMPARE(GlobalMultiplier, 2.5f);
-    QCOMPARE(Ambient_red, 0.1f);
-    QCOMPARE(Ambient_green, 0.2f);
-    QCOMPARE(Ambient_blue, 0.3f);
+    QCOMPARE(global_light.multiplier, 2.5f);
+    QCOMPARE(global_light.ambient_red, 0.1f);
+    QCOMPARE(global_light.ambient_green, 0.2f);
+    QCOMPARE(global_light.ambient_blue, 0.3f);
     QCOMPARE(rad_MaxStep, 16);
-    QCOMPARE(Room_multiplier[3], 4.0f);
+    QCOMPARE(room_light[3].multiplier, 4.0f);
 
     QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
 

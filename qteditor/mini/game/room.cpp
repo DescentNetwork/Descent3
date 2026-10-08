@@ -536,17 +536,16 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
   rp.bn_info.nodes.clear();
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
-  // Room_multiplier / Room_ambience_* are indexed by the room's slot in the
+  // room_light[] is indexed by the room's slot in the
   // global Rooms[] array.  Guard against rooms that live elsewhere (e.g.
   // stack/temporary rooms used by the tests): the pointer subtraction would
   // otherwise produce a wild index and corrupt memory.
   const std::ptrdiff_t room_slot = &rp - Rooms.data();
   if (room_slot >= 0 && room_slot < MAX_ROOMS + MAX_PALETTE_ROOMS) {
-    Room_multiplier[room_slot] = 1.0;
-
-    Room_ambience_r[room_slot] = 0.0;
-    Room_ambience_g[room_slot] = 0.0;
-    Room_ambience_b[room_slot] = 0.0;
+    room_light[room_slot].multiplier = 1.0;
+    room_light[room_slot].ambient_red = 0.0;
+    room_light[room_slot].ambient_green = 0.0;
+    room_light[room_slot].ambient_blue = 0.0;
   }
 #endif
 

@@ -109,11 +109,9 @@ constexpr uint32_t operator "" _ID(const char* const str, std::size_t len) {
 // re-declares SaveLevel with a default argument, radiosity.h needs a <vector>
 // include this file orders after its own headers).  Declared here so the EDIT
 // chunk can round-trip them.
-extern std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_multiplier;
-extern std::array<float, MAX_ROOMS + MAX_PALETTE_ROOMS> Room_ambience_r, Room_ambience_g, Room_ambience_b;
+extern std::array<room_light_t, MAX_ROOMS + MAX_PALETTE_ROOMS> room_light;
+extern room_light_t global_light;
 extern int LightSpacing;
-extern float GlobalMultiplier;
-extern float Ambient_red, Ambient_green, Ambient_blue;
 extern int rad_MaxStep;
 
 
@@ -134,7 +132,7 @@ static index_t LL_FindTextureName(const std::string& name)
   return std::nullopt;
 }
 
-static int LL_StartChunk(posix_ostream &ofile, const char *chunk_name);
+static int LL_StartChunk(posix_ostream &ofile, const char *chunk_name, uint32_t version = 0);
 static void LL_EndChunk(posix_ostream &ofile, int chunk_start_pos);
 
 static void LL_ReadBOAChunk(posix_istream &ifile, uint32_t version)
@@ -597,7 +595,7 @@ static int TranslateObjectId(object_type type, int id) {
 
 // Writes a chunk header (4-char name + size placeholder), returns the position
 // of the size field so EndChunk can seek back and patch it.
-static int LL_StartChunk(posix_ostream &ofile, const char *chunk_name, uint32_t version = 0) {
+static int LL_StartChunk(posix_ostream &ofile, const char *chunk_name, uint32_t version) {
   ofile.write(chunk_name, 4);
   int chunk_start_pos = static_cast<int>(ofile.tell());
   ofile << version;
@@ -946,16 +944,13 @@ static void LL_WriteFFTMChunk(posix_ostream &ofile) {
 // inline (:4026-4089, #ifdef EDITOR), writer (:5313, always the LAST chunk).
 static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
   auto lookup_room = [](uint16_t idx) -> index_t {
-    if (idx >= 0 && idx < Rooms.size() && Rooms[idx].used)
+    if (idx < Rooms.size() && Rooms[idx].used)
       return idx;
     return std::nullopt;
   };
 
-  auto optional16 = [](uint16_t v) -> index_t {
-    if (v == UINT16_MAX)
-      return std::nullopt;
-    return v;
-  };
+  auto optional16 = [](uint16_t v) -> index_t
+    { return v == UINT16_MAX ? index_t{} : index_t{v}; };
 
   uint16_t room_idx = 0;
   ifile >> room_idx;
@@ -1018,11 +1013,11 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
 
   if (version >= 113) {
     for (int i = 0; i < MAX_ROOMS; i++) {
-      ifile >> Room_multiplier[i];
+      ifile >> room_light[i].multiplier;
       if (version >= 118) {
-        ifile >> Room_ambience_r[i];
-        ifile >> Room_ambience_g[i];
-        ifile >> Room_ambience_b[i];
+        ifile >> room_light[i].ambient_red;
+        ifile >> room_light[i].ambient_green;
+        ifile >> room_light[i].ambient_blue;
       }
     }
   }
@@ -1030,16 +1025,16 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
     ifile >> LightSpacing;
 
   if (version >= 128) {
-    ifile >> GlobalMultiplier;
-    ifile >> Ambient_red;
-    ifile >> Ambient_green;
-    ifile >> Ambient_blue;
+    ifile >> global_light.multiplier;
+    ifile >> global_light.ambient_red;
+    ifile >> global_light.ambient_green;
+    ifile >> global_light.ambient_blue;
     ifile >> rad_MaxStep;
   }
 }
 
 static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
-  int start = LL_StartChunk(ofile, CHUNK_EDITOR_INFO);
+  int start = LL_StartChunk(ofile, CHUNK_EDITOR_INFO, 133);
 
   ofile << static_cast<int16_t>(index_to_int(app.current.room));
   ofile << static_cast<int16_t>(index_to_int(app.current.face));
@@ -1064,17 +1059,17 @@ static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
   ofile << Wireframe_view_mine.dist;
 
   for (int i = 0; i < MAX_ROOMS; i++) {
-    ofile << Room_multiplier[i];
-    ofile << Room_ambience_r[i];
-    ofile << Room_ambience_g[i];
-    ofile << Room_ambience_b[i];
+    ofile << room_light[i].multiplier;
+    ofile << room_light[i].ambient_red;
+    ofile << room_light[i].ambient_green;
+    ofile << room_light[i].ambient_blue;
   }
 
   ofile << static_cast<int32_t>(LightSpacing);
-  ofile << GlobalMultiplier;
-  ofile << Ambient_red;
-  ofile << Ambient_green;
-  ofile << Ambient_blue;
+  ofile << global_light.multiplier;
+  ofile << global_light.ambient_red;
+  ofile << global_light.ambient_green;
+  ofile << global_light.ambient_blue;
   ofile << static_cast<int32_t>(rad_MaxStep);
 
   LL_EndChunk(ofile, start);
