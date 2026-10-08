@@ -108,12 +108,12 @@ int PlayerWeaponsDialog::currentWBIndex() const {
 void PlayerWeaponsDialog::updateDialog() {
   const int index = currentWBIndex();
   ship *shp = &shipRef(m_current_ship);
-  const int fire_flags = shipRef(m_current_ship).fire_flags[index];
+  const ship_fire_flags_t fire_flags = shipRef(m_current_ship).fire_flags[index];
 
-  ui->IDC_FIRES_FUSION->setChecked(fire_flags & SFF_FUSION);
+  ui->IDC_FIRES_FUSION->setChecked(fire_flags.fusion);
   ui->IDC_ONOFF->setChecked(shp->static_wb[index].flags.on_off);
-  ui->IDC_ZOOM->setChecked(fire_flags & SFF_ZOOM);
-  ui->IDC_SHOW_TENTHS->setChecked(fire_flags & SFF_TENTHS);
+  ui->IDC_ZOOM->setChecked(fire_flags.zoom);
+  ui->IDC_SHOW_TENTHS->setChecked(fire_flags.tenths);
 
   const int firing_sound = shipRef(m_current_ship).firing_sound[index];
   const int release_sound = shipRef(m_current_ship).firing_release_sound[index];
@@ -161,9 +161,9 @@ void PlayerWeaponsDialog::onCurrentWeaponChanged() {
 
 void PlayerWeaponsDialog::onFiresFusion() {
   const int i = currentWBIndex();
-  shipRef(m_current_ship).fire_flags[i] &= ~SFF_ZOOM;
+  shipRef(m_current_ship).fire_flags[i].zoom = false;
   shipRef(m_current_ship).static_wb[i].flags.on_off = false;
-  shipRef(m_current_ship).fire_flags[i] |= SFF_FUSION;
+  shipRef(m_current_ship).fire_flags[i].fusion = true;
   updateDialog();
 }
 
@@ -199,16 +199,17 @@ void PlayerWeaponsDialog::onSpewPowerupChanged() {
 
 void PlayerWeaponsDialog::onOnOff() {
   const int i = currentWBIndex();
-  shipRef(m_current_ship).fire_flags[i] &= ~(SFF_FUSION | SFF_ZOOM);
+  shipRef(m_current_ship).fire_flags[i].fusion = false;
+  shipRef(m_current_ship).fire_flags[i].zoom = false;
   shipRef(m_current_ship).static_wb[i].flags.on_off = true;
   updateDialog();
 }
 
 void PlayerWeaponsDialog::onZoom() {
   const int i = currentWBIndex();
-  shipRef(m_current_ship).fire_flags[i] &= ~SFF_FUSION;
+  shipRef(m_current_ship).fire_flags[i].fusion = false;
   shipRef(m_current_ship).static_wb[i].flags.on_off = false;
-  shipRef(m_current_ship).fire_flags[i] |= SFF_ZOOM;
+  shipRef(m_current_ship).fire_flags[i].zoom = true;
   updateDialog();
 }
 
@@ -219,10 +220,7 @@ void PlayerWeaponsDialog::onMaxAmmoEdited() {
 
 void PlayerWeaponsDialog::onShowTenths(bool checked) {
   const int i = currentWBIndex();
-  if (checked)
-    shipRef(m_current_ship).fire_flags[i] |= SFF_TENTHS;
-  else
-    shipRef(m_current_ship).fire_flags[i] &= ~SFF_TENTHS;
+  shipRef(m_current_ship).fire_flags[i].tenths = checked;
   updateDialog();
 }
 

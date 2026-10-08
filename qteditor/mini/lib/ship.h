@@ -138,17 +138,32 @@ constexpr float DEFAULT_SHIP_SIZE = 4.0f;
 #define DEFAULT_SHIP "Pyro-GL"
 // #endif
 
-// Ship fire flags
-#define SFF_FUSION 1 // fires like fusion
-#define SFF_ZOOM 4   // Zooms in
-#define SFF_TENTHS 8 // Ammo displays in tenths
+// Ship fire flags (one per weapon battery slot)
+struct [[gnu::packed]] ship_fire_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t : 4;
+  uint8_t tenths : 1; // ammo displays in tenths
+  uint8_t zoom : 1;   // zooms in
+  uint8_t : 1;
+  uint8_t fusion : 1; // fires like fusion
+#else
+  uint8_t fusion : 1; // fires like fusion
+  uint8_t : 1;
+  uint8_t zoom : 1; // zooms in
+  uint8_t tenths : 1; // ammo displays in tenths
+  uint8_t : 4;
+#endif
+};
+static_assert(sizeof(ship_fire_flags_t) == sizeof(uint8_t));
 
 // Default ship IDs
-#define SHIP_PYRO_ID 0
-#define SHIP_PHOENIX_ID 1
-#define SHIP_MAGNUM_ID 2
-
-#define MAX_DEFAULT_SHIPS 3
+enum class ship_id : uint8_t {
+  pyro = 0,
+  phoenix = 1,
+  magnum = 2,
+  count = 3,
+};
 
 // Ship flags
 struct [[gnu::packed]] ship_flags_t
@@ -181,7 +196,7 @@ struct ship {
   float lo_lod_distance = DEFAULT_LO_LOD_DISTANCE;
 
   std::array<otype_wb_info, MAX_PLAYER_WEAPONS> static_wb;
-  std::array<uint8_t, MAX_PLAYER_WEAPONS> fire_flags; // how a particular weapon fires
+  std::array<ship_fire_flags_t, MAX_PLAYER_WEAPONS> fire_flags; // how a particular weapon fires
   std::array<int, MAX_PLAYER_WEAPONS> max_ammo;
 
   std::array<int, MAX_PLAYER_WEAPONS> firing_sound = [] {

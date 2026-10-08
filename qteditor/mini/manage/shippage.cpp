@@ -57,7 +57,7 @@ byte_istream& operator>>(byte_istream& input, mngs_ship_page& data) {
         >> reinterpret_cast<uint32_t&>(data.ship_struct.flags);
 
   for (int i = 0; i < MAX_PLAYER_WEAPONS; i++) {
-    input >> data.ship_struct.fire_flags[i]
+    input >> reinterpret_cast<uint8_t&>(data.ship_struct.fire_flags[i])
           >> data.firing_sound_name[i]
           >> data.release_sound_name[i]
           >> data.spew_powerup_name[i]
@@ -92,7 +92,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_ship_page& data) {
          << reinterpret_cast<const uint32_t&>(data.ship_struct.flags);
 
   for (int i = 0; i < MAX_PLAYER_WEAPONS; i++) {
-    output << data.ship_struct.fire_flags[i]
+    output << reinterpret_cast<const uint8_t&>(data.ship_struct.fire_flags[i])
            << data.firing_sound_name[i]
            << data.release_sound_name[i]
            << data.spew_powerup_name[i]
