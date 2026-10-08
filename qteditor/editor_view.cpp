@@ -1329,7 +1329,7 @@ void EditorView::renderBNodes() {
   size_t room_start = 0;
   size_t room_end = Rooms.size() - 1;
 
-  if (EBN_draw_type == ebdraw::room || ebdraw::room_and_next_rooms) {
+  if (EBN_draw_type == ebdraw::room || EBN_draw_type == ebdraw::room_and_next_rooms) {
     if (Viewer_object != nullptr && Viewer_object->roomnum)
       room_start = room_end = *Viewer_object->roomnum;
   }
