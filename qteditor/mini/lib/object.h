@@ -641,22 +641,25 @@
 
 // Object handle stuff.
 // The handle is comprised of the object number in the low 10 bits, and a count in the high 22 bits.
-#define HANDLE_OBJNUM_MASK 0x7ff     // to mask off the object number part of the handle
-#define HANDLE_COUNT_MASK 0xfffff800 // to maks off the count part of the handle
-#define HANDLE_COUNT_INCREMENT 0x800 // what gets added to the handle to increment it
+inline constexpr uint32_t HANDLE_OBJNUM_MASK = 0x7ff;      // to mask off the object number part of the handle
+inline constexpr uint32_t HANDLE_COUNT_MASK = 0xfffff800;  // to maks off the count part of the handle
+inline constexpr uint32_t HANDLE_COUNT_INCREMENT = 0x800;  // what gets added to the handle to increment it
 
 // See object external for object_type and lighting_render_type
 
 extern const std::array<std::string, MAX_OBJECT_TYPES> Object_type_names;
 
-// stuctures for different kinds of weapon simulation (for precompution)
+// structures for different kinds of weapon simulation (for precomputation)
+enum class weapon_precomp_type : uint8_t {
+  not_used = 0,
+  no_collisions = 1,
+  hit_wall = 2,
+};
 
-#define WPC_NOT_USED 0
-#define WPC_NO_COLLISIONS 1
-#define WPC_HIT_WALL 2
-
-#define FMT_NEW_DATA 1
-#define FMT_UPDATING 2
+enum class object_update_type : uint8_t {
+  new_data = 1,
+  updating = 2,
+};
 
 /*
 // object light info flags
