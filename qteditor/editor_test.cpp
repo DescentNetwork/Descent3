@@ -3830,28 +3830,28 @@ private slots:
     mngs_generic_page page{};
     page.objinfo_struct.name = "mng_sounds_roundtrip";
     page.objinfo_struct.type = saved.type;
-    page.sound_name[GSI_AMBIENT] = ambient_name;
-    page.sound_name[GSI_EXPLODE] = "INVALID NAME";
+    page.sound_name[generic_sound::ambient] = ambient_name;
+    page.sound_name[generic_sound::explode] = "INVALID NAME";
     page.fire_sound_name[0][0] = explode_name;
     page.fire_sound_name[0][1] = "";
 
-    Object_info[slot].sounds[GSI_AMBIENT] = std::nullopt;
-    Object_info[slot].sounds[GSI_EXPLODE] = std::nullopt;
+    Object_info[slot].sounds[generic_sound::ambient] = std::nullopt;
+    Object_info[slot].sounds[generic_sound::explode] = std::nullopt;
     Object_info[slot].static_wb.assign(MAX_WBS_PER_OBJ, otype_wb_info{});
 
     QCOMPARE(mng_AssignGenericPageToObjInfo(page, slot), 1);
 
-    QVERIFY(Object_info[slot].sounds[GSI_AMBIENT]);
-    QCOMPARE(Sounds[*Object_info[slot].sounds[GSI_AMBIENT]].name, ambient_name);
-    QVERIFY(!Object_info[slot].sounds[GSI_EXPLODE]);
+    QVERIFY(Object_info[slot].sounds[generic_sound::ambient]);
+    QCOMPARE(Sounds[*Object_info[slot].sounds[generic_sound::ambient]].name, ambient_name);
+    QVERIFY(!Object_info[slot].sounds[generic_sound::explode]);
     QCOMPARE(static_cast<int>(Object_info[slot].static_wb[0].fm_fire_sound_index[0]),
              static_cast<int>(*explode));
     QCOMPARE(Object_info[slot].static_wb[0].fm_fire_sound_index[1], static_cast<uint16_t>(-1));
 
     mngs_generic_page out{};
     mng_AssignObjInfoToGenericPage(slot, out);
-    QCOMPARE(out.sound_name[GSI_AMBIENT], ambient_name);
-    QVERIFY(out.sound_name[GSI_EXPLODE].empty());
+    QCOMPARE(out.sound_name[generic_sound::ambient], ambient_name);
+    QVERIFY(out.sound_name[generic_sound::explode].empty());
     QCOMPARE(out.fire_sound_name[0][0], explode_name);
     QVERIFY(out.fire_sound_name[0][1].empty());
     QCOMPARE(out.image_name, page.image_name);
@@ -3872,21 +3872,21 @@ private slots:
     mngs_generic_page page{};
     page.objinfo_struct.name = "mng_sounds_unresolved";
     page.objinfo_struct.type = object_type::none;
-    page.sound_name[GSI_AMBIENT] = "definitely_not_in_the_table";
-    page.sound_name[GSI_EXPLODE] = "INVALID NAME";
+    page.sound_name[generic_sound::ambient] = "definitely_not_in_the_table";
+    page.sound_name[generic_sound::explode] = "INVALID NAME";
 
-    Object_info[slot].sounds[GSI_AMBIENT] = index_t{7};
-    Object_info[slot].sounds[GSI_EXPLODE] = index_t{9};
+    Object_info[slot].sounds[generic_sound::ambient] = index_t{7};
+    Object_info[slot].sounds[generic_sound::explode] = index_t{9};
 
     QCOMPARE(mng_AssignGenericPageToObjInfo(page, slot), 1);
 
-    QVERIFY(!Object_info[slot].sounds[GSI_AMBIENT]);
-    QVERIFY(!Object_info[slot].sounds[GSI_EXPLODE]);
+    QVERIFY(!Object_info[slot].sounds[generic_sound::ambient]);
+    QVERIFY(!Object_info[slot].sounds[generic_sound::explode]);
 
     mngs_generic_page out{};
     mng_AssignObjInfoToGenericPage(slot, out);
-    QVERIFY(out.sound_name[GSI_AMBIENT].empty());
-    QVERIFY(out.sound_name[GSI_EXPLODE].empty());
+    QVERIFY(out.sound_name[generic_sound::ambient].empty());
+    QVERIFY(out.sound_name[generic_sound::explode].empty());
 
     QVERIFY(!mng_AssignGenericPageToObjInfo(page, std::nullopt));
 

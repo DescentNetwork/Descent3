@@ -333,9 +333,6 @@
 // How many object ids in the array
 #define MAX_OBJECT_IDS 910
 
-// How many different sounds each object can make
-#define MAX_OBJ_SOUNDS 2
-
 // Object info flags use the object_info_flags_t bitfield struct below.
 
 // This next numbers define the distance at which LOD popping occurs in models
@@ -557,7 +554,7 @@ struct object_info {
   std::string description; // used for inventory
   std::string icon_name;    // used for inventory
 
-  std::array<index_t, MAX_OBJ_SOUNDS> sounds; // list of sound handles (index_t; nullopt = none)
+  std::array<index_t, generic_sound::count> sounds; // list of sound handles (index_t; nullopt = none)
   int16_t dspew[MAX_DSPEW_TYPES];
   float dspew_percent[MAX_DSPEW_TYPES];
   int16_t dspew_number[MAX_DSPEW_TYPES];

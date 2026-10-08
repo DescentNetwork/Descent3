@@ -274,8 +274,11 @@ enum class lighting_render_type : uint8_t {
 };
 
 // Generic Sound indices
-#define GSI_AMBIENT 0
-#define GSI_EXPLODE 1
+enum generic_sound : uint8_t {
+  ambient = 0,
+  explode = 1,
+  count = 2,
+};
 
 // Static Robot ids
 #define ROBOT_GUIDEBOT 0 // NOTE: this must match GENOBJ_GUIDEBOT

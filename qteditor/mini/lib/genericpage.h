@@ -40,7 +40,7 @@ struct mngs_generic_page {
   std::string image_name;
   std::string med_image_name;
   std::string lo_image_name;
-  std::array<std::string, MAX_OBJ_SOUNDS> sound_name;
+  std::array<std::string, generic_sound::count> sound_name;
   std::array<std::string, MAX_AI_SOUNDS> ai_sound_name;
   std::array<std::array<std::string, MAX_WB_GUNPOINTS>, MAX_WBS_PER_OBJ> weapon_name;
   std::array<std::array<std::string, MAX_WB_FIRING_MASKS>, MAX_WBS_PER_OBJ> fire_sound_name;

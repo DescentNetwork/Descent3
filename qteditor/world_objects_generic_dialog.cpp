@@ -140,14 +140,14 @@ WorldObjectsGenericDialog::WorldObjectsGenericDialog(object_type objType, index_
   connect(ui->IDC_GENERIC_EXPLOSION_SOUND_COMBO, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
     if (auto d = data()) {
       const int s = soundComboSelected(ui->IDC_GENERIC_EXPLOSION_SOUND_COMBO);
-      d->sounds[GSI_EXPLODE] = (s < 0) ? index_t{} : index_t{static_cast<uint32_t>(s)};
+      d->sounds[generic_sound::explode] = (s < 0) ? index_t{} : index_t{static_cast<uint32_t>(s)};
     }
   });
 
   connect(ui->IDC_GENERIC_AMBIENT_SOUND_COMBO, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
     if (auto d = data()) {
       const int s = soundComboSelected(ui->IDC_GENERIC_AMBIENT_SOUND_COMBO);
-      d->sounds[GSI_AMBIENT] = (s < 0) ? index_t{} : index_t{static_cast<uint32_t>(s)};
+      d->sounds[generic_sound::ambient] = (s < 0) ? index_t{} : index_t{static_cast<uint32_t>(s)};
     }
   });
 
@@ -446,8 +446,8 @@ void WorldObjectsGenericDialog::updateDialog() {
   ui->IDC_DEATH_POWERUP_USE2_IF_HAVE1_CHECK->setChecked(oi->f_dspew.only_if_player_has_obj_1);
   ui->IDC_GENERIC_DEATH_SPEW_2_IF_ZERO_1->setChecked(oi->f_dspew.only_if_no_1);
 
-  setSoundComboSelected(ui->IDC_GENERIC_EXPLOSION_SOUND_COMBO, index_to_int(oi->sounds[GSI_EXPLODE]));
-  setSoundComboSelected(ui->IDC_GENERIC_AMBIENT_SOUND_COMBO, index_to_int(oi->sounds[GSI_AMBIENT]));
+  setSoundComboSelected(ui->IDC_GENERIC_EXPLOSION_SOUND_COMBO, index_to_int(oi->sounds[generic_sound::explode]));
+  setSoundComboSelected(ui->IDC_GENERIC_AMBIENT_SOUND_COMBO, index_to_int(oi->sounds[generic_sound::ambient]));
 
   {
     QComboBox *combo = ui->IDC_DEATH_POWERUP1_PULLDOWN;

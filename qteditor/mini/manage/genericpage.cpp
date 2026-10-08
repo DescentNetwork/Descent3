@@ -238,7 +238,7 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
   infile >> genericpage->weapon_name;
 
   // read sounds
-  Q_ASSERT(MAX_OBJ_SOUNDS == 2);
+  Q_ASSERT(generic_sound::count == 2);
   infile >> genericpage->sound_name;
   if (version < 26) { // used to be three sounds
     std::string temp_sound_name;
@@ -540,7 +540,7 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page &genericpage, index_t n) {
   }
 
   // Try and load the various sounds
-  for (size_t i = 0; i < MAX_OBJ_SOUNDS; i++) {
+  for (size_t i = 0; i < generic_sound::count; i++) {
     if (mng_PageNameUsable(genericpage.sound_name[i])) {
       const index_t sound_handle = mng_GetGuaranteedSoundPage(genericpage.sound_name[i]);
       if (!sound_handle) {
@@ -673,7 +673,7 @@ void mng_AssignObjInfoToGenericPage(index_t n, mngs_generic_page &genericpage) {
   genericpage.med_image_name = mng_ModelNameOf(obj.med_render_handle);
   genericpage.lo_image_name = mng_ModelNameOf(obj.lo_render_handle);
 
-  for (size_t i = 0; i < MAX_OBJ_SOUNDS; i++) {
+  for (size_t i = 0; i < generic_sound::count; i++) {
     if (obj.sounds[i] && *obj.sounds[i] < Sounds.size())
       genericpage.sound_name[i] = Sounds[*obj.sounds[i]].name;
     else
