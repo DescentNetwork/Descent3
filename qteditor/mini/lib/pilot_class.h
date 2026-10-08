@@ -137,20 +137,24 @@ IIIIIIIII N       N P      OOOO  R   R    T    A    A NN   NN    T
 #define PILOT_TAUNT_SIZE 60
 
 // file error codes
-#define PLTW_NO_ERROR 0      // there was no error
-#define PLTW_NO_FILENAME 1   // no filename has been set
-#define PLTW_FILE_EXISTS 2   // the file already exists
-#define PLTW_FILE_CANTOPEN 3 // file couldn't be opened
-#define PLTW_CFILE_FATAL 4   // a CFILE error had occurred
-#define PLTW_UNKNOWN_FATAL 5 // an unknown exception occurred
+enum class pilot_write_status : uint8_t {
+  no_error = 0,      // there was no error
+  no_filename = 1,   // no filename has been set
+  file_exists = 2,   // the file already exists
+  file_cantopen = 3, // file couldn't be opened
+  cfile_fatal = 4,   // a CFILE error had occurred
+  unknown_fatal = 5, // an unknown exception occurred
+};
 
-#define PLTR_NO_ERROR 0      // there was no error
-#define PLTR_NO_FILENAME 1   // no filename has been set
-#define PLTR_FILE_NOEXIST 2  // the file doesn't exist to read
-#define PLTR_FILE_CANTOPEN 3 // file couldn't be opened
-#define PLTR_CFILE_FATAL 4   // a CFILE error had occurred
-#define PLTR_UNKNOWN_FATAL 5 // an uknown exception occurred
-#define PLTR_TOO_NEW 6       // pilot file too new
+enum class pilot_read_status : uint8_t {
+  no_error = 0,      // there was no error
+  no_filename = 1,   // no filename has been set
+  file_noexist = 2,  // the file doesn't exist to read
+  file_cantopen = 3, // file couldn't be opened
+  cfile_fatal = 4,   // a CFILE error had occurred
+  unknown_fatal = 5, // an uknown exception occurred
+  too_new = 6,       // pilot file too new
+};
 
 struct tMissionData {
   uint8_t highest_level;            // highlest level completed in the mission

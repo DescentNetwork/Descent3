@@ -453,7 +453,7 @@ extern void FindPlayerStarts();
 
 // Resets all the properties a player ship to the default values
 // Pass in what kind of reset the inventory should do INVRESET_
-void InitPlayerNewShip(int slot, int inven_reset);
+void InitPlayerNewShip(int slot, invreset_kind inven_reset);
 
 //	makes the player invulnerable
 void MakePlayerInvulnerable(int slot, float time, bool play_sound_and_message = false);

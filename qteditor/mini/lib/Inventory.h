@@ -242,9 +242,11 @@ struct [[gnu::packed]] tInvenInfo_flags_t {
 static_assert(sizeof(tInvenInfo_flags_t) == sizeof(uint32_t));
 
 // Inventory reset stage settings
-#define INVRESET_ALL 0
-#define INVRESET_LEVELCHANGE 1
-#define INVRESET_DEATHSPEW 2
+enum class invreset_kind : uint8_t {
+  all = 0,
+  levelchange = 1,
+  deathspew = 2,
+};
 
 struct tInvenList {
   bool selectable;
@@ -308,10 +310,10 @@ public:
   // Resets the inventory, cleaning it out
   // in_game: set to true if this is being called from during gameplay
   // reset_stage:
-  //		INVRESET_ALL:			Reset _EVERYTHING_
-  //		INVRESET_LEVELCHANGE:	Remove everything except those that last across levels
-  //		INVRESET_DEATHSPEW:		Remove everything except those that do not spew (Default)
-  void Reset(bool in_game, int reset_stage = INVRESET_DEATHSPEW);
+  //		invreset_kind::all:			Reset _EVERYTHING_
+  //		invreset_kind::levelchange:	Remove everything except those that last across levels
+  //		invreset_kind::deathspew:	Remove everything except those that do not spew (Default)
+  void Reset(bool in_game, invreset_kind reset_stage = invreset_kind::deathspew);
   // resets the position pointer in the list to the beginning
   void ResetPos(void);
   // moves the position pointer to the next inventory item

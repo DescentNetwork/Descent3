@@ -19,29 +19,33 @@
 #ifndef GAMEEVENT_H
 #define GAMEEVENT_H
 
+#include <cstdint>
 #include "game.h"
 #include "object.h"
 
 #define MAX_EVENTS 500
 
 // Game event types
-#define OBJECT_EVENT 1
-#define RENDER_EVENT 2
+enum class game_event_type : uint8_t {
+  object = 1,
+  render = 2,
+};
 
 // IDs
-#define UNKNOWN_EVENT 0
-#define FUSION_EFFECT 1
-#define DAMAGE_EFFECT 2
-#define SCREEN_BLEND 3
-#define BLAST_RING_EVENT 4
-#define FOV_CHANGE_EVENT 5
-#define EDRAIN_EFFECT 6
-
-#define D3X_TIMED_EVENT 256
+enum class game_event_id : uint16_t {
+  unknown = 0,
+  fusion_effect = 1,
+  damage_effect = 2,
+  screen_blend = 3,
+  blast_ring_event = 4,
+  fov_change_event = 5,
+  edrain_effect = 6,
+  timed = 256,
+};
 
 struct game_event {
-  int type;
-  int id;
+  game_event_type type;
+  game_event_id id;
   int objhandle_detonator; // watch this object, if it dies/gets killed than cancel this game event
   uint8_t used;
   float start_time, end_time;
