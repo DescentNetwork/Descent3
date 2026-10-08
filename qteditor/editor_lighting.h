@@ -40,7 +40,7 @@ void DoRadiosityForTerrain();
 bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB = true);
 
 void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf);
-void BuildElementListForObjectFace(int objnum, int subobj_num, int facenum, rad_surface *surf);
+void BuildElementListForObjectFace(object& obj, int subobj_num, int facenum, rad_surface *surf);
 
 void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp);
 void AssignObjectSurfaceToLightmap(int objnum, int sobj_num, int facenum, rad_surface *sp);

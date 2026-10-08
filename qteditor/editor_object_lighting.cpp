@@ -366,7 +366,7 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
           }
 
           // Set the vertices for each element
-          BuildElementListForObjectFace(i, t, j, &Light_surfaces[surface_index]);
+          BuildElementListForObjectFace(Objects[i], t, j, &Light_surfaces[surface_index]);
         }
       }
     }
@@ -431,7 +431,7 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
           Light_surfaces[surface_index].roomnum = Objects[i].roomnum.value_or(-1);
 
           // Set the vertices for each element
-          BuildElementListForObjectFace(i, t, j, &Light_surfaces[surface_index]);
+          BuildElementListForObjectFace(Objects[i], t, j, &Light_surfaces[surface_index]);
         }
       }
     }
@@ -721,7 +721,7 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
 
 // Important - vertnum is the index into the face_verts[] array in the face structure,
 // not an index into the verts[] array of the room structure
-void BuildElementListForObjectFace(int objnum, int subnum, int facenum, rad_surface *surf) {
+void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_surface *surf) {
   matrix face_matrix, trans_matrix;
   vector3 fvec;
   vector3 avg_vert;
@@ -733,7 +733,7 @@ void BuildElementListForObjectFace(int objnum, int subnum, int facenum, rad_surf
   int xres, yres;
   int lmi_handle;
   int x1 = surf->x1, y1 = surf->y1;
-  poly_model *pm = &Poly_models[Objects[objnum].rtype.pobj_info().model_num];
+  poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
   bsp_info *sm = &pm->submodel[subnum];
   polyface *fp = &sm->faces[facenum];
 
@@ -742,14 +742,14 @@ void BuildElementListForObjectFace(int objnum, int subnum, int facenum, rad_surf
 
   Q_ASSERT(pm->used);
   Q_ASSERT(fp->nverts >= 3);
-  Q_ASSERT(Objects[objnum].lm_object.lightmap_faces[subnum][facenum].lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(obj.lm_object.lightmap_faces[subnum][facenum].lmi_handle != BAD_LMI_INDEX);
 
   Q_ASSERT(fp->nverts < 32);
 
   for (i = 0; i < fp->nverts; i++)
-    GetObjectPointInWorld(world_verts[i], Objects[objnum], subnum, fp->vertnums[i]);
+    GetObjectPointInWorld(world_verts[i], obj, subnum, fp->vertnums[i]);
 
-  lmi_handle = Objects[objnum].lm_object.lightmap_faces[subnum][facenum].lmi_handle;
+  lmi_handle = obj.lm_object.lightmap_faces[subnum][facenum].lmi_handle;
   avg_vert = ScratchCenters[lmi_handle];
 
   // Make the orientation matrix
