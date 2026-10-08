@@ -2079,7 +2079,7 @@ void DrawPlayerNameOnHud(object *obj) {
     g3_ProjectPoint(&pnt);
     //	put a centered name string in the text buffer.
 
-    grtext_SetFont(HUD_FONT);
+    grtext_SetFont(hud_font());
     grtext_SetColor(color);
     grtext_CenteredPrintf(pnt.p3_sx - half, pnt.p3_sy, Players[slot].callsign);
     grtext_Flush();

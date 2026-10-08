@@ -113,7 +113,7 @@ BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const st
   ui->setupUi(this);
   m_desc = TCTEXTDESC{};
   m_desc.type = TC_TEXT_STATIC;
-  m_desc.font = BRIEF_FONT_INDEX;
+  m_desc.font = std::to_underlying(font_index::small);
   m_desc.color = GR_GREEN;
   m_desc.speed = 1.0f;
   m_desc.looping = false;
@@ -183,7 +183,7 @@ BriefTextEditDialog::BriefTextEditDialog(int currScreen, TCTEXTDESC *d, const st
   if (auto *combo = ui->IDC_BRIEF_T_FONT) {
     combo->addItem("sm_brief");
     combo->addItem("lg_brief");
-    combo->setCurrentIndex(m_desc.font == BRIEF_FONT_INDEX ? 0 : 1);
+    combo->setCurrentIndex(m_desc.font == std::to_underlying(font_index::small) ? 0 : 1);
   }
 
   // The .ui has a QLabel placeholder (IDC_RICHFRAME); overlay a text editor on
@@ -298,7 +298,8 @@ void BriefTextEditDialog::onOk() {
     m_desc.caps.tabstop = true;
 
   auto *combo = ui->IDC_BRIEF_T_FONT;
-  m_desc.font = (combo && combo->currentIndex() == 1) ? BBRIEF_FONT_INDEX : BRIEF_FONT_INDEX;
+  m_desc.font = (combo && combo->currentIndex() == 1) ? std::to_underlying(font_index::big)
+                                                       : std::to_underlying(font_index::small);
 
   int effectType = 0;
   if (ui->IDC_BRIEF_T_STATIC->isChecked())

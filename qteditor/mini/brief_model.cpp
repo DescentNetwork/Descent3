@@ -232,7 +232,7 @@ static std::string bmpEffectWord(const TCBMPDESC &desc) {
 }
 
 static std::string fontWord(int font) {
-  // BRIEF_FONT_INDEX vs BBRIEF_FONT_INDEX; both are 0/1 in practice.
+  // font_index::big vs font_index::small; both are 0/1 in practice.
   return (font == 1) ? "lg_brief" : "sm_brief";
 }
 

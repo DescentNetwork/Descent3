@@ -292,7 +292,7 @@ struct TCTEXTDESC {
   // the text box of the effect
   tc_text textbox; //(Default:entire monitor screen)
   // what kind of font to use
-  int font; //(Default: BRIEF_FONT_INDEX)
+  int font; //(Default: font_index::small)
   // default color of the text
   ddgr_color color; //(Default: GR_GREEN)
   // effect mode (scroll direction / fade)

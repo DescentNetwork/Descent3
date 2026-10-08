@@ -83,39 +83,44 @@
 #ifndef GAMEFONT_H
 #define GAMEFONT_H
 
+#include <cstdint>
+#include <utility>
+
 #include "grtext.h"
 
 extern int Game_fonts[]; // D3 font handles
 
 // Font defines
 
-#define NUM_FONTS 6 // How many fonts we have
-
 // Indices for the font handles
-#define SMALL_FONT_INDEX 0    // Basic small font, used everywhere. Originally designed for briefing
-#define BIG_FONT_INDEX 1      // Basic big Font, used for titles.
-#define HUD_FONT_INDEX 2      // Dropshadowed font so can be seen over variable background
-#define MENU_FONT_INDEX 3     // Main menu font, also used for some multiplayer messages
-#define SMALL_UI_FONT_INDEX 4 // For the new UI
-#define BIG_UI_FONT_INDEX 5   // For the new UI
+enum class font_index : uint8_t {
+  small = 0,     // Basic small font, used everywhere. Originally designed for briefing
+  big = 1,       // Basic big Font, used for titles.
+  hud = 2,       // Dropshadowed font so can be seen over variable background
+  menu = 3,      // Main menu font, also used for some multiplayer messages
+  small_ui = 4,  // For the new UI
+  big_ui = 5,    // For the new UI
+  count = 6,
+};
+
+// How many fonts we have
+inline constexpr uint32_t NUM_FONTS = std::to_underlying(font_index::count);
 
 // Handles to the fonts
-#define SMALL_FONT Game_fonts[SMALL_FONT_INDEX]
-#define BIG_FONT Game_fonts[BIG_FONT_INDEX]
-#define HUD_FONT Game_fonts[HUD_FONT_INDEX]
-#define MENU_FONT Game_fonts[MENU_FONT_INDEX]
-#define SMALL_UI_FONT Game_fonts[SMALL_UI_FONT_INDEX]
-#define BIG_UI_FONT Game_fonts[BIG_UI_FONT_INDEX]
+inline int small_font() { return Game_fonts[std::to_underlying(font_index::small)]; }
+inline int big_font() { return Game_fonts[std::to_underlying(font_index::big)]; }
+inline int hud_font() { return Game_fonts[std::to_underlying(font_index::hud)]; }
+inline int menu_font() { return Game_fonts[std::to_underlying(font_index::menu)]; }
+inline int small_ui_font() { return Game_fonts[std::to_underlying(font_index::small_ui)]; }
+inline int big_ui_font() { return Game_fonts[std::to_underlying(font_index::big_ui)]; }
 
 // These are equivalencies for the base fonts
-#define BRIEFING_FONT SMALL_FONT
-#define BIG_BRIEFING_FONT BIG_FONT
-#define BRIEF_FONT_INDEX SMALL_FONT_INDEX
-#define BBRIEF_FONT_INDEX BIG_FONT_INDEX
-#define MONITOR9_NEWUI_FONT SMALL_UI_FONT
-#define MONITOR15_NEWUI_FONT BIG_UI_FONT
-#define GADGET9_NEWUI_FONT SMALL_UI_FONT
-#define GADGET15_NEWUI_FONT BIG_UI_FONT
+inline int briefing_font() { return small_font(); }
+inline int big_briefing_font() { return big_font(); }
+inline int monitor9_newui_font() { return small_ui_font(); }
+inline int monitor15_newui_font() { return big_ui_font(); }
+inline int gadget9_newui_font() { return small_ui_font(); }
+inline int gadget15_newui_font() { return big_ui_font(); }
 
 //	loads all game fonts.
 void LoadAllFonts();
