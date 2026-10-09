@@ -746,7 +746,7 @@ static void DrawNumber(int num, vector3 pos, float size, ddgr_color c1) {
       rot_pnt[i] = basepnt;
       rot_pnt[i].p3_vec.x() += (ArrayX[num_array[j]][i] * size);
       rot_pnt[i].p3_vec.y() += (ArrayY[num_array[j]][i] * size);
-      rot_pnt[i].p3_flags = 0;
+      rot_pnt[i].p3_flags = g3point_flags_t{};
       g3_CodePoint(&rot_pnt[i]);
       g3_ProjectPoint(&rot_pnt[i]);
     }
@@ -1008,7 +1008,7 @@ void DrawShardObject(object& obj) {
     p.p3_uvl.u = si->u[i];
     p.p3_uvl.v = si->v[i];
     p.p3_uvl.a = 1.0;    // GameTextures[si->tmap].alpha;
-    p.p3_flags |= PF_UV; // + PF_L;	// + PF_UV2 + PF_RGBA;	//has uv and l set
+    p.p3_flags.uv = true; // has uv set
     p.p3_uvl.l = 1.0;
     pointlist[i] = &rotated_points[i];
   }
@@ -1749,16 +1749,16 @@ int Point_visible_last_frame = -1;
 // visible from the current view matrix
 int IsPointVisible(vector3 *pos, float size, float *pointz) {
   g3Point pnt;
-  uint8_t ccode;
+  g3_clip_codes_t ccode;
   static float last_render_fov = -1;
   static vector3 left_normal, right_normal, top_normal, bottom_normal, view_position;
   static matrix unscaled_matrix;
 
   g3_RotatePoint(pnt, *pos);
-  ccode = g3_CodePoint(&pnt);
+  ccode = clip_codes_from_byte(g3_CodePoint(&pnt));
   if (pointz != NULL)
     *pointz = pnt.p3_z;
-  if (ccode) // the center point is off, find out if the whole object is off
+  if (clip_code_byte(ccode) != 0) // the center point is off, find out if the whole object is off
   {
     float dotp;
 
@@ -1791,23 +1791,23 @@ int IsPointVisible(vector3 *pos, float size, float *pointz) {
     }
     vector3 temp_vec = *pos - view_position;
     pnt.p3_vec = temp_vec * unscaled_matrix;
-    if (ccode & CC_OFF_RIGHT) {
+    if (ccode.off_right) {
       dotp = vm_DotProduct(&right_normal, &pnt.p3_vec);
       if (dotp > size)
         return 0;
     }
-    if (ccode & CC_OFF_LEFT) {
+    if (ccode.off_left) {
       dotp = vm_DotProduct(&left_normal, &pnt.p3_vec);
       if (dotp > size)
         return 0;
     }
 
-    if (ccode & CC_OFF_TOP) {
+    if (ccode.off_top) {
       dotp = vm_DotProduct(&top_normal, &pnt.p3_vec);
       if (dotp > size)
         return 0;
     }
-    if (ccode & CC_OFF_BOT) {
+    if (ccode.off_bot) {
       dotp = vm_DotProduct(&bottom_normal, &pnt.p3_vec);
       if (dotp > size)
         return 0;
@@ -1976,8 +1976,8 @@ void DrawPlayerTypingIndicator(object *obj) {
     g3Codes cc;
     uint8_t code;
 
-    cc.cc_and = 0xFF;
-    cc.cc_or = 0;
+    cc.cc_and = clip_codes_from_byte(0xFF);
+    cc.cc_or = g3_clip_codes_t{};
 
     int b_w = std::min(bm_w(bm_handle, 0), 32);
     int b_h = std::min(bm_h(bm_handle, 0), 32);
@@ -2012,13 +2012,13 @@ void DrawPlayerTypingIndicator(object *obj) {
     points[3].p3_v = 1;
 
     for (int i = 0; i < 4; i++) {
-      points[i].p3_flags |= PF_UV;
+      points[i].p3_flags.uv = true;
       pntlist[i] = &points[i];
       code = g3_CodePoint(pntlist[i]);
       g3_ProjectPoint(pntlist[i]);
 
-      cc.cc_and &= code;
-      cc.cc_or |= code;
+      cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(code));
+      cc.cc_or = clip_codes_or(cc.cc_or, clip_codes_from_byte(code));
     }
     rend_SetAlphaType(AT_CONSTANT_TEXTURE);
     rend_SetAlphaValue(200);

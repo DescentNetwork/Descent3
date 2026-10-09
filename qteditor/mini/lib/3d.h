@@ -182,6 +182,7 @@
 #ifndef _3D_H
 #define _3D_H
 
+#include <bit>
 #include <cstdint>
 
 #include "vecmat.h" //the vector/matrix library
@@ -205,36 +206,102 @@ struct g3UVL {
   float g, b, a; // rgba lighting
 };
 
+// Point flags (g3Point::p3_flags).  These are transient renderer flags and are
+// never persisted; the byte layout below mirrors the legacy PF_* bit values so
+// the low byte has the same numeric meaning when bit_cast'ed.
+struct [[gnu::packed]] g3point_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t origpoint : 1;  // PF_ORIGPOINT (128)
+  uint8_t uv2 : 1;        // PF_UV2 (64)
+  uint8_t rgba : 1;       // PF_RGBA (32)
+  uint8_t lighting : 1;   // PF_L (16)
+  uint8_t uv : 1;         // PF_UV (8)
+  uint8_t temp_point : 1; // PF_TEMP_POINT (4)
+  uint8_t far_alpha : 1;  // PF_FAR_ALPHA (2)
+  uint8_t projected : 1;  // PF_PROJECTED (1)
+#else
+  uint8_t projected : 1;  // PF_PROJECTED (1)
+  uint8_t far_alpha : 1;  // PF_FAR_ALPHA (2)
+  uint8_t temp_point : 1; // PF_TEMP_POINT (4)
+  uint8_t uv : 1;         // PF_UV (8)
+  uint8_t lighting : 1;   // PF_L (16)
+  uint8_t rgba : 1;       // PF_RGBA (32)
+  uint8_t uv2 : 1;        // PF_UV2 (64)
+  uint8_t origpoint : 1;  // PF_ORIGPOINT (128)
+#endif
+};
+static_assert(sizeof(g3point_flags_t) == sizeof(uint8_t));
+
+// Clipping codes (g3Point::p3_codes and g3Codes::cc_or/cc_and).  Transient
+// renderer state, never persisted; byte layout mirrors the legacy CC_* values.
+struct [[gnu::packed]] g3_clip_codes_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t behind : 1;      // CC_BEHIND (128)
+  uint8_t unused : 1;      // bit 6 (64)
+  uint8_t off_custom : 1;  // CC_OFF_CUSTOM (32)
+  uint8_t off_far : 1;     // CC_OFF_FAR (16)
+  uint8_t off_top : 1;     // CC_OFF_TOP (8)
+  uint8_t off_bot : 1;     // CC_OFF_BOT (4)
+  uint8_t off_right : 1;   // CC_OFF_RIGHT (2)
+  uint8_t off_left : 1;    // CC_OFF_LEFT (1)
+#else
+  uint8_t off_left : 1;    // CC_OFF_LEFT (1)
+  uint8_t off_right : 1;   // CC_OFF_RIGHT (2)
+  uint8_t off_bot : 1;     // CC_OFF_BOT (4)
+  uint8_t off_top : 1;     // CC_OFF_TOP (8)
+  uint8_t off_far : 1;     // CC_OFF_FAR (16)
+  uint8_t off_custom : 1;  // CC_OFF_CUSTOM (32)
+  uint8_t unused : 1;      // bit 6 (64)
+  uint8_t behind : 1;      // CC_BEHIND (128)
+#endif
+};
+static_assert(sizeof(g3_clip_codes_t) == sizeof(uint8_t));
+
 // Structure to store clipping codes in a word
 struct g3Codes {
-  uint8_t cc_or, cc_and;
+  g3_clip_codes_t cc_or, cc_and;
 };
 
-// flags for point structure
-#define PF_PROJECTED 1  // has been projected, so sx,sy valid
-#define PF_FAR_ALPHA 2  // past fog zone
-#define PF_TEMP_POINT 4 // created during clip
-#define PF_UV 8         // has uv values set
-#define PF_L 16         // has lighting values set
-#define PF_RGBA 32      // has RGBA lighting values set
-#define PF_UV2 64       // has lightmap uvs as well
-#define PF_ORIGPOINT 128
+// View the raw byte a clip-code word occupies (numeric bit math the renderer
+// still occasionally needs, e.g. iterating the six custom clip planes).
+constexpr uint8_t clip_code_byte(g3_clip_codes_t c) { return std::bit_cast<uint8_t>(c); }
 
-// clipping codes flags
-#define CC_OFF_LEFT 1
-#define CC_OFF_RIGHT 2
-#define CC_OFF_BOT 4
-#define CC_OFF_TOP 8
-#define CC_OFF_FAR 16
-#define CC_OFF_CUSTOM 32
-#define CC_BEHIND 128
+// Build a clip-code word from a raw byte (e.g. a value already stored in a
+// uint8_t array, like Room_clips).
+constexpr g3_clip_codes_t clip_codes_from_byte(uint8_t v) { return std::bit_cast<g3_clip_codes_t>(v); }
+
+// Combine two clip-code words with OR, preserving every bit (incl. bit 6).
+constexpr g3_clip_codes_t clip_codes_or(g3_clip_codes_t a, g3_clip_codes_t b) {
+  a.off_left |= b.off_left;
+  a.off_right |= b.off_right;
+  a.off_bot |= b.off_bot;
+  a.off_top |= b.off_top;
+  a.off_far |= b.off_far;
+  a.off_custom |= b.off_custom;
+  a.unused |= b.unused;
+  a.behind |= b.behind;
+  return a;
+}
+
+// Combine two clip-code words with AND, preserving every bit (incl. bit 6).
+constexpr g3_clip_codes_t clip_codes_and(g3_clip_codes_t a, g3_clip_codes_t b) {
+  a.off_left &= b.off_left;
+  a.off_right &= b.off_right;
+  a.off_bot &= b.off_bot;
+  a.off_top &= b.off_top;
+  a.off_far &= b.off_far;
+  a.off_custom &= b.off_custom;
+  a.unused &= b.unused;
+  a.behind &= b.behind;
+  return a;
+}
 
 // Used to store rotated points for mines.  Has frame count to indicate
 // if rotated, and flag to indicate if projected.
 struct g3Point {
-  float p3_sx, p3_sy;  // screen x&y
-  uint8_t p3_codes;      // clipping codes
-  uint8_t p3_flags;      // projected?
+  float p3_sx, p3_sy;    // screen x&y
+  g3_clip_codes_t p3_codes; // clipping codes
+  g3point_flags_t p3_flags; // projected?
   int16_t p3_pad;        // keep structure longword aligned
   vector3 p3_vec;       // x,y,z of rotated point
   vector3 p3_vecPreRot; // original XYZ of the point

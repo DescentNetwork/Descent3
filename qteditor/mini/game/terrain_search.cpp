@@ -330,7 +330,7 @@ void GetPreRotatedPoint(g3Point *dest, int x, int z, int yvalue) {
   dest->p3_vec += *GetDYVector(yvalue);
 
   // also store the unrotated point
-  dest->p3_flags |= PF_ORIGPOINT;
+  dest->p3_flags.origpoint = true;
   dest->p3_vecPreRot.x() = TERRAIN_SIZE * x;
   dest->p3_vecPreRot.y() = TERRAIN_HEIGHT_INCREMENT * yvalue;
   dest->p3_vecPreRot.z() = TERRAIN_SIZE * z;
@@ -351,7 +351,7 @@ void GetSpecialRotatedPoint(g3Point *dest, int x, int z, float yvalue) {
   dest->p3_vec += dyp;
 
   // also store the unrotated point
-  dest->p3_flags |= PF_ORIGPOINT;
+  dest->p3_flags.origpoint = true;
   dest->p3_vecPreRot.x() = TERRAIN_SIZE * x;
   dest->p3_vecPreRot.y() = yvalue;
   dest->p3_vecPreRot.z() = TERRAIN_SIZE * z;
@@ -652,9 +652,9 @@ int SearchQuadTree(int x1, int y1, int x2, int y2, int dir, int *ccount) {
 
       anded &= g3_CodePoint(pnt);
       if (Check_terrain_portal && check_portal) {
-        pnt->p3_flags &= ~PF_PROJECTED;
+        pnt->p3_flags.projected = false;
         // Automatically flag the ones behind us as visible
-        if (pnt->p3_codes & CC_BEHIND)
+        if (pnt->p3_codes.behind)
           check_portal = 0;
         else {
           g3_ProjectPoint(pnt);
@@ -676,9 +676,9 @@ int SearchQuadTree(int x1, int y1, int x2, int y2, int dir, int *ccount) {
       anded &= g3_CodePoint(pnt);
 
       if (Check_terrain_portal && check_portal) {
-        pnt->p3_flags &= ~PF_PROJECTED;
+        pnt->p3_flags.projected = false;
         // Automatically flag the ones behind us as visible
-        if (pnt->p3_codes & CC_BEHIND)
+        if (pnt->p3_codes.behind)
           check_portal = 0;
         else {
           g3_ProjectPoint(pnt);
@@ -788,10 +788,10 @@ float GetTerrainGroundPoint(vector3& pos, optref<vector3> normal) {
 bool SimplifyVertexSlow(int x, int z, float delta) {
   g3Point p1, p2;
 
-  p1.p3_codes = 0;
+  p1.p3_codes = g3_clip_codes_t{};
   GetPreRotatedPoint(&p1, x, z, Terrain_seg[z * TERRAIN_WIDTH + x].ypos);
 
-  p2.p3_codes = 0;
+  p2.p3_codes = g3_clip_codes_t{};
   GetSpecialRotatedPoint(&p2, x, z, Terrain_seg[z * TERRAIN_WIDTH + x].y + delta);
 
   g3_ProjectPoint(&p1);

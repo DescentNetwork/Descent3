@@ -350,7 +350,8 @@ void DrawScorches(int roomnum, int facenum) {
         points[p].p3_uvl.u = scorch_uvs[p].u;
         points[p].p3_uvl.v = scorch_uvs[p].v;
         points[p].p3_l = 1.0;
-        points[p].p3_flags |= PF_UV | PF_L;
+        points[p].p3_flags.uv = true;
+        points[p].p3_flags.lighting = true;
       }
 
       // Get the bitmap handle

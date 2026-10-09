@@ -40,6 +40,8 @@ not yet used**.
 | `trigger_flags_t`     | `lib/trigger.h`                 | yes — `trigger::flags` |
 | `activator_flags_t`   | `lib/trigger.h`                 | yes — `trigger::activator` |
 | `weapon_flags_t`      | `lib/weapon.h`                  | yes — `weapon::flags` |
+| `g3point_flags_t`     | `lib/3d.h`                      | yes — `g3Point::p3_flags` (replaces `PF_*`) |
+| `g3_clip_codes_t`     | `lib/3d.h`                      | yes — `g3Point::p3_codes`, `g3Codes::cc_or/cc_and` (replaces `CC_*`) |
 
 ## Migration Status
 

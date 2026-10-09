@@ -185,8 +185,8 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
   g3Codes face_cc;
   int triface = 0;
 
-  face_cc.cc_and = 0xff;
-  face_cc.cc_or = 0;
+  face_cc.cc_and = clip_codes_from_byte(0xff);
+  face_cc.cc_or = g3_clip_codes_t{};
 
   triangulated_faces[facenum] = 0;
 
@@ -244,12 +244,14 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
       p->p3_uvl.u = fp->u[t] + uchange;
       p->p3_uvl.v = fp->v[t] + vchange;
       p->p3_uvl.a = sm->alpha[fp->vertnums[t]];
-      p->p3_flags |= PF_UV + PF_RGBA + PF_L;
+      p->p3_flags.uv = true;
+      p->p3_flags.rgba = true;
+      p->p3_flags.lighting = true;
 
       // Assign bump mapping coords
       if ((Polymodel_effect.type.bumpmapped) && texp->bumpmap != -1 &&
           Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
-        p->p3_flags |= PF_UV2;
+        p->p3_flags.uv2 = true;
 
         vector3 vert = sm->verts[fp->vertnums[t]];
 
@@ -285,16 +287,16 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
     }
 
     if (Polymodel_light_type == POLYMODEL_LIGHTING_LIGHTMAP) {
-      p->p3_flags |= PF_UV2;
+      p->p3_flags.uv2 = true;
       p->p3_uvl.u2 = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].u2[t];
       p->p3_uvl.v2 = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].v2[t];
     }
 
-    face_cc.cc_or |= p->p3_codes;
-    face_cc.cc_and &= p->p3_codes;
+    face_cc.cc_or = clip_codes_or(face_cc.cc_or, p->p3_codes);
+    face_cc.cc_and = clip_codes_and(face_cc.cc_and, p->p3_codes);
   }
 
-  if (face_cc.cc_or && Polymodel_use_effect &&
+  if (clip_code_byte(face_cc.cc_or) != 0 && Polymodel_use_effect &&
       ((Polymodel_effect.type.fogged_model || Polymodel_effect.type.specular_model || Polymodel_effect.type.specular_faces))) {
     triface = 1;
     triangulated_faces[facenum] = 1;
@@ -455,7 +457,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
                     // Draw red cross where upper left is
                     uint8_t c0;
                     g3Point p0;
-                    p0.p3_flags=0;
+                    p0.p3_flags = g3point_flags_t{};
                     c0 = g3_RotatePoint(&p0,&LightmapInfo[lmi_handle].upper_left);
 
                     if (! c0)
@@ -497,7 +499,9 @@ inline void RenderSubmodelLightmapFace(poly_model *pm, bsp_info *sm, int facenum
     p->p3_uvl.v = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].v2[t] * yscalar;
     p->p3_uvl.l = 1.0;
 
-    p->p3_flags |= PF_UV2 + PF_RGBA + PF_L;
+    p->p3_flags.uv2 = true;
+    p->p3_flags.rgba = true;
+    p->p3_flags.lighting = true;
   }
 
   if (triangulated_faces[facenum])
@@ -547,7 +551,7 @@ inline void RenderSubmodelFaceFogged(poly_model *pm, bsp_info *sm, int facenum) 
       scalar = 0;
     p->p3_a = scalar;
 
-    p->p3_flags |= PF_RGBA;
+    p->p3_flags.rgba = true;
   }
 
   if (triangulated_faces[facenum])
@@ -581,7 +585,7 @@ inline void RenderSubmodelFaceSpecular(poly_model *pm, bsp_info *sm, int facenum
 
     pointlist[t] = p;
 
-    p->p3_flags |= PF_RGBA;
+    p->p3_flags.rgba = true;
     p->p3_a = 0.0;
 
     vector3 subvec = Specular_view_pos - vert;

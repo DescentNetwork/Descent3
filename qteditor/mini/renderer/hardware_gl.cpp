@@ -269,16 +269,16 @@ void g3_DrawBitmap(vector3 *pos, float width, float height, int bm, int color) {
     float cornerScaleU = ((i & 1) ^ ((i & 2) >> 1)) ? 1.0f : -1.0f;
     float cornerScaleV = (i & 2) ? 1.0f : -1.0f;
     vector3 cornerPos = *pos + (viewOrient.uvec * (height * -cornerScaleV)) + (viewOrient.rvec * (width * cornerScaleU));
-    corners[i].p3_codes = 0;
+    corners[i].p3_codes = g3_clip_codes_t{};
     g3_RotatePoint(*pts[i], cornerPos);
-    corners[i].p3_flags |= PF_UV;
+    corners[i].p3_flags.uv = true;
     corners[i].p3_uvl.u = (cornerScaleU * 0.5f) + 0.5f;
     corners[i].p3_uvl.v = (cornerScaleV * 0.5f) + 0.5f;
     if (color == -1) {
-      corners[i].p3_flags |= PF_L;
+      corners[i].p3_flags.lighting = true;
       corners[i].p3_uvl.l = 1.0f;
     } else {
-      corners[i].p3_flags |= PF_RGBA;
+      corners[i].p3_flags.rgba = true;
       corners[i].p3_uvl.r = r;
       corners[i].p3_uvl.g = g;
       corners[i].p3_uvl.b = b;

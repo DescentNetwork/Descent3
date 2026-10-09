@@ -1479,18 +1479,18 @@ void SetRadClipLines(vector3 *tp, vector3 *rp, vector3 *bp, vector3 *lp) {
 }
 
 uint8_t CodeRadPoint(rad_point *rp) {
-  uint8_t code = 0;
+  g3_clip_codes_t code{};
   if (rp->pos.x() < rad_ClipLeft->x())
-    code |= CC_OFF_LEFT;
+    code.off_left = true;
   if (rp->pos.x() > rad_ClipRight->x())
-    code |= CC_OFF_RIGHT;
+    code.off_right = true;
   if (rp->pos.y() < rad_ClipBottom->y())
-    code |= CC_OFF_BOT;
+    code.off_bot = true;
   if (rp->pos.y() > rad_ClipTop->y())
-    code |= CC_OFF_TOP;
-  rp->code = code;
+    code.off_top = true;
+  rp->code = clip_code_byte(code);
 
-  return code;
+  return rp->code;
 }
 
 void ClipSurfaceElement(vector3 *surf_verts, rad_element *ep, vector3 *clip_verts, int nv) {
@@ -1599,7 +1599,7 @@ int ClipRadToPlane(int plane, rad_point *src, rad_point *dest, int nv) {
       if (!(src[ppoint].code & plane)) // prev point on?
       {
         // mprintf(0,"pVertex %d off %d plane.\n",i,plane);
-        ClipRadEdge(plane, &src[ppoint], &src[i]);
+        ClipRadEdge(clip_codes_from_byte(plane), &src[ppoint], &src[i]);
 
         memcpy(&dest[num], &GlobalTempRadPoint, sizeof(rad_point));
         num++;
@@ -1609,7 +1609,7 @@ int ClipRadToPlane(int plane, rad_point *src, rad_point *dest, int nv) {
       {
 
         // mprintf(0,"nVertex %d off %d plane.\n",i,plane);
-        ClipRadEdge(plane, &src[npoint], &src[i]);
+        ClipRadEdge(clip_codes_from_byte(plane), &src[npoint], &src[i]);
 
         memcpy(&dest[num], &GlobalTempRadPoint, sizeof(rad_point));
         num++;
@@ -1627,23 +1627,23 @@ int ClipRadToPlane(int plane, rad_point *src, rad_point *dest, int nv) {
 }
 
 // Takes two points and a plane, and clips.
-void ClipRadEdge(int plane_flag, rad_point *on_pnt, rad_point *off_pnt) {
-  if (plane_flag & CC_OFF_TOP) {
+void ClipRadEdge(g3_clip_codes_t plane_flag, rad_point *on_pnt, rad_point *off_pnt) {
+  if (plane_flag.off_top) {
     scalar percent_on = 1.0 - ((off_pnt->pos.y() - rad_ClipTop->y()) / (off_pnt->pos.y() - on_pnt->pos.y()));
     GlobalTempRadPoint.pos = on_pnt->pos + ((off_pnt->pos - on_pnt->pos) * percent_on);
   }
 
-  if (plane_flag & CC_OFF_RIGHT) {
+  if (plane_flag.off_right) {
     scalar percent_on = 1.0 - ((off_pnt->pos.x() - rad_ClipRight->x()) / (off_pnt->pos.x() - on_pnt->pos.x()));
     GlobalTempRadPoint.pos = on_pnt->pos + ((off_pnt->pos - on_pnt->pos) * percent_on);
   }
 
-  if (plane_flag & CC_OFF_LEFT) {
+  if (plane_flag.off_left) {
     scalar percent_on = 1.0 - ((off_pnt->pos.x() - rad_ClipLeft->x()) / (off_pnt->pos.x() - on_pnt->pos.x()));
     GlobalTempRadPoint.pos = on_pnt->pos + ((off_pnt->pos - on_pnt->pos) * percent_on);
   }
 
-  if (plane_flag & CC_OFF_BOT) {
+  if (plane_flag.off_bot) {
     scalar percent_on = 1.0 - ((off_pnt->pos.y() - rad_ClipBottom->y()) / (off_pnt->pos.y() - on_pnt->pos.y()));
     GlobalTempRadPoint.pos = on_pnt->pos + ((off_pnt->pos - on_pnt->pos) * percent_on);
   }

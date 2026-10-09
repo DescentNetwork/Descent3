@@ -160,7 +160,7 @@ void CalculateFormFactorsHemiCube() {
           for (k = 0; k < ep->num_verts; k++) {
             vector3 vec = ep->verts[k];
             g3_RotatePoint(Element_points[k], vec);
-            Element_points[k].p3_flags = 0;
+            Element_points[k].p3_flags = g3point_flags_t{};
           }
 
           if (g3_CheckNormalFacing(&ep->verts[0], &surf->normal)) {
@@ -482,25 +482,25 @@ void DrawRadiosityPoly(int nv, g3Point **pointlist, int id) {
   }
 
   // Initialize
-  cc.cc_or = 0;
-  cc.cc_and = 0xff;
+  cc.cc_or = g3_clip_codes_t{};
+  cc.cc_and = clip_codes_from_byte(0xff);
 
   // Get codes for this polygon, and copy uvls into points
   for (i = 0; i < nv; i++) {
     uint8_t c;
 
-    c = pointlist[i]->p3_codes;
+    c = clip_code_byte(pointlist[i]->p3_codes);
 
-    cc.cc_and &= c;
-    cc.cc_or |= c;
+    cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(c));
+    cc.cc_or = clip_codes_or(cc.cc_or, clip_codes_from_byte(c));
   }
 
   // All points off grid?
-  if (cc.cc_and)
+  if (clip_code_byte(cc.cc_and) != 0)
     return;
 
   // One or more point off screen, so clip
-  if (cc.cc_or) {
+  if (clip_code_byte(cc.cc_or) != 0) {
 
     // Clip the polygon, getting pointer to new buffer
     pointlist = g3_ClipPolygon(pointlist, &nv, &cc);
@@ -509,7 +509,7 @@ void DrawRadiosityPoly(int nv, g3Point **pointlist, int id) {
     was_clipped = 1;
 
     // Check for polygon clipped away, or clip otherwise failed
-    if ((nv == 0) || (cc.cc_or & CC_BEHIND) || cc.cc_and)
+    if ((nv == 0) || cc.cc_or.behind || clip_code_byte(cc.cc_and) != 0)
       goto free_points;
   }
 

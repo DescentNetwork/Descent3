@@ -36,7 +36,7 @@ struct PosColorUV2Vertex {
 
 void FreeTempPoint(g3Point *p);
 void InitFreePoints(void);
-void ClipLine(g3Point **p0, g3Point **p1, uint8_t codes_or);
+void ClipLine(g3Point **p0, g3Point **p1, g3_clip_codes_t codes_or);
 
 // Verify that all the temp points are free, and free them if they are not.
 #ifdef _DEBUG

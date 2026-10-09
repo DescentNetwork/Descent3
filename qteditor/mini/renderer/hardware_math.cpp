@@ -38,7 +38,7 @@ void InitFreePoints(void) {
 g3Point *GetTempPoint(void) {
   Q_ASSERT(free_point_num < MAX_POINTS_IN_POLY);
   g3Point *p = free_points[free_point_num++];
-  p->p3_flags = PF_TEMP_POINT;
+  p->p3_flags = g3point_flags_t{.temp_point = true};
   return p;
 }
 
@@ -47,9 +47,9 @@ void FreeTempPoint(g3Point *p) {
     Q_ASSERT(false);
     free_point_num = 1;
   }
-  Q_ASSERT(p->p3_flags & PF_TEMP_POINT);
+  Q_ASSERT(p->p3_flags.temp_point);
   free_points[--free_point_num] = p;
-  p->p3_flags &= ~PF_TEMP_POINT;
+  p->p3_flags.temp_point = false;
 }
 
 // Verify that all the temp points are free, and free them if they are not.
@@ -64,7 +64,7 @@ static void checkTempPointsInternal(void) {
 void g3_FreeTempPoints(g3Point **pointlist, int nv) {
   int i;
   for (i = 0; i < nv; i++) {
-    if (pointlist[i]->p3_flags & PF_TEMP_POINT)
+    if (pointlist[i]->p3_flags.temp_point)
       FreeTempPoint(pointlist[i]);
   }
   checkTempPointsInternal();
@@ -81,26 +81,26 @@ g3Point *ClipFarEdge(g3Point *on_pnt, g3Point *off_pnt) {
   tmp->p3_x = on_pnt->p3_x + ((off_pnt->p3_x - on_pnt->p3_x) * k);
   tmp->p3_y = on_pnt->p3_y + ((off_pnt->p3_y - on_pnt->p3_y) * k);
 
-  if (on_pnt->p3_flags & PF_UV) {
+  if (on_pnt->p3_flags.uv) {
     tmp->p3_u = on_pnt->p3_u + ((off_pnt->p3_u - on_pnt->p3_u) * k);
     tmp->p3_v = on_pnt->p3_v + ((off_pnt->p3_v - on_pnt->p3_v) * k);
-    tmp->p3_flags |= PF_UV;
+    tmp->p3_flags.uv = true;
   }
-  if (on_pnt->p3_flags & PF_UV2) {
+  if (on_pnt->p3_flags.uv2) {
     tmp->p3_u2 = on_pnt->p3_u2 + ((off_pnt->p3_u2 - on_pnt->p3_u2) * k);
     tmp->p3_v2 = on_pnt->p3_v2 + ((off_pnt->p3_v2 - on_pnt->p3_v2) * k);
-    tmp->p3_flags |= PF_UV2;
+    tmp->p3_flags.uv2 = true;
   }
-  if (on_pnt->p3_flags & PF_L) {
+  if (on_pnt->p3_flags.lighting) {
     tmp->p3_l = on_pnt->p3_l + ((off_pnt->p3_l - on_pnt->p3_l) * k);
-    tmp->p3_flags |= PF_L;
+    tmp->p3_flags.lighting = true;
   }
-  if (on_pnt->p3_flags & PF_RGBA) {
+  if (on_pnt->p3_flags.rgba) {
     tmp->p3_r = on_pnt->p3_r + ((off_pnt->p3_r - on_pnt->p3_r) * k);
     tmp->p3_g = on_pnt->p3_g + ((off_pnt->p3_g - on_pnt->p3_g) * k);
     tmp->p3_b = on_pnt->p3_b + ((off_pnt->p3_b - on_pnt->p3_b) * k);
     tmp->p3_a = on_pnt->p3_a + ((off_pnt->p3_a - on_pnt->p3_a) * k);
-    tmp->p3_flags |= PF_RGBA;
+    tmp->p3_flags.rgba = true;
   }
 
   g3_CodePoint(tmp);
@@ -127,26 +127,26 @@ g3Point *ClipCustomEdge(g3Point *on_pnt, g3Point *off_pnt) {
 
   tmp->p3_vec = on_pnt->p3_vec + ((off_pnt->p3_vec - on_pnt->p3_vec) * k);
 
-  if (on_pnt->p3_flags & PF_UV) {
+  if (on_pnt->p3_flags.uv) {
     tmp->p3_u = on_pnt->p3_u + ((off_pnt->p3_u - on_pnt->p3_u) * k);
     tmp->p3_v = on_pnt->p3_v + ((off_pnt->p3_v - on_pnt->p3_v) * k);
-    tmp->p3_flags |= PF_UV;
+    tmp->p3_flags.uv = true;
   }
-  if (on_pnt->p3_flags & PF_UV2) {
+  if (on_pnt->p3_flags.uv2) {
     tmp->p3_u2 = on_pnt->p3_u2 + ((off_pnt->p3_u2 - on_pnt->p3_u2) * k);
     tmp->p3_v2 = on_pnt->p3_v2 + ((off_pnt->p3_v2 - on_pnt->p3_v2) * k);
-    tmp->p3_flags |= PF_UV2;
+    tmp->p3_flags.uv2 = true;
   }
-  if (on_pnt->p3_flags & PF_L) {
+  if (on_pnt->p3_flags.lighting) {
     tmp->p3_l = on_pnt->p3_l + ((off_pnt->p3_l - on_pnt->p3_l) * k);
-    tmp->p3_flags |= PF_L;
+    tmp->p3_flags.lighting = true;
   }
-  if (on_pnt->p3_flags & PF_RGBA) {
+  if (on_pnt->p3_flags.rgba) {
     tmp->p3_r = on_pnt->p3_r + ((off_pnt->p3_r - on_pnt->p3_r) * k);
     tmp->p3_g = on_pnt->p3_g + ((off_pnt->p3_g - on_pnt->p3_g) * k);
     tmp->p3_b = on_pnt->p3_b + ((off_pnt->p3_b - on_pnt->p3_b) * k);
     tmp->p3_a = on_pnt->p3_a + ((off_pnt->p3_a - on_pnt->p3_a) * k);
-    tmp->p3_flags |= PF_RGBA;
+    tmp->p3_flags.rgba = true;
   }
 
   g3_CodePoint(tmp);
@@ -154,17 +154,17 @@ g3Point *ClipCustomEdge(g3Point *on_pnt, g3Point *off_pnt) {
 }
 
 // clips an edge against one plane
-g3Point *ClipEdge(int plane_flag, g3Point *on_pnt, g3Point *off_pnt) {
+g3Point *ClipEdge(g3_clip_codes_t plane_flag, g3Point *on_pnt, g3Point *off_pnt) {
   float a, b, k;
   g3Point *tmp;
 
-  if (plane_flag & CC_OFF_FAR)
+  if (plane_flag.off_far)
     return ClipFarEdge(on_pnt, off_pnt);
 
-  if ((plane_flag & CC_OFF_CUSTOM) && Clip_custom)
+  if (plane_flag.off_custom && Clip_custom)
     return ClipCustomEdge(on_pnt, off_pnt);
 
-  if (plane_flag & (CC_OFF_RIGHT | CC_OFF_LEFT)) {
+  if (plane_flag.off_right || plane_flag.off_left) {
     a = on_pnt->p3_x;
     b = off_pnt->p3_x;
   } else {
@@ -172,7 +172,7 @@ g3Point *ClipEdge(int plane_flag, g3Point *on_pnt, g3Point *off_pnt) {
     b = off_pnt->p3_y;
   }
 
-  if (plane_flag & (CC_OFF_LEFT | CC_OFF_BOT)) {
+  if (plane_flag.off_left || plane_flag.off_bot) {
     a = -a;
     b = -b;
   }
@@ -184,34 +184,34 @@ g3Point *ClipEdge(int plane_flag, g3Point *on_pnt, g3Point *off_pnt) {
   tmp->p3_x = on_pnt->p3_x + ((off_pnt->p3_x - on_pnt->p3_x) * k);
   tmp->p3_y = on_pnt->p3_y + ((off_pnt->p3_y - on_pnt->p3_y) * k);
 
-  if (plane_flag & (CC_OFF_TOP | CC_OFF_BOT))
+  if (plane_flag.off_top || plane_flag.off_bot)
     tmp->p3_z = tmp->p3_y;
   else
     tmp->p3_z = tmp->p3_x;
 
-  if (plane_flag & (CC_OFF_LEFT | CC_OFF_BOT))
+  if (plane_flag.off_left || plane_flag.off_bot)
     tmp->p3_z = -tmp->p3_z;
 
-  if (on_pnt->p3_flags & PF_UV) {
+  if (on_pnt->p3_flags.uv) {
     tmp->p3_u = on_pnt->p3_u + ((off_pnt->p3_u - on_pnt->p3_u) * k);
     tmp->p3_v = on_pnt->p3_v + ((off_pnt->p3_v - on_pnt->p3_v) * k);
-    tmp->p3_flags |= PF_UV;
+    tmp->p3_flags.uv = true;
   }
-  if (on_pnt->p3_flags & PF_UV2) {
+  if (on_pnt->p3_flags.uv2) {
     tmp->p3_u2 = on_pnt->p3_u2 + ((off_pnt->p3_u2 - on_pnt->p3_u2) * k);
     tmp->p3_v2 = on_pnt->p3_v2 + ((off_pnt->p3_v2 - on_pnt->p3_v2) * k);
-    tmp->p3_flags |= PF_UV2;
+    tmp->p3_flags.uv2 = true;
   }
-  if (on_pnt->p3_flags & PF_L) {
+  if (on_pnt->p3_flags.lighting) {
     tmp->p3_l = on_pnt->p3_l + ((off_pnt->p3_l - on_pnt->p3_l) * k);
-    tmp->p3_flags |= PF_L;
+    tmp->p3_flags.lighting = true;
   }
-  if (on_pnt->p3_flags & PF_RGBA) {
+  if (on_pnt->p3_flags.rgba) {
     tmp->p3_r = on_pnt->p3_r + ((off_pnt->p3_r - on_pnt->p3_r) * k);
     tmp->p3_g = on_pnt->p3_g + ((off_pnt->p3_g - on_pnt->p3_g) * k);
     tmp->p3_b = on_pnt->p3_b + ((off_pnt->p3_b - on_pnt->p3_b) * k);
     tmp->p3_a = on_pnt->p3_a + ((off_pnt->p3_a - on_pnt->p3_a) * k);
-    tmp->p3_flags |= PF_RGBA;
+    tmp->p3_flags.rgba = true;
   }
 
   g3_CodePoint(tmp);
@@ -219,56 +219,58 @@ g3Point *ClipEdge(int plane_flag, g3Point *on_pnt, g3Point *off_pnt) {
 }
 
 // clips a line to the viewing pyramid
-void ClipLine(g3Point **p0, g3Point **p1, uint8_t codes_or) {
-  int plane_flag;
+void ClipLine(g3Point **p0, g3Point **p1, g3_clip_codes_t codes_or) {
   g3Point *old_p1;
+  uint8_t codes_byte = clip_code_byte(codes_or);
 
-  for (plane_flag = 1; plane_flag <= 32; plane_flag <<= 1) {
-    if (codes_or & plane_flag) {
-      if ((*p0)->p3_codes & plane_flag) {
+  for (uint8_t plane_flag = 1; plane_flag <= 32; plane_flag <<= 1) {
+    if (codes_byte & plane_flag) {
+      if (clip_code_byte((*p0)->p3_codes) & plane_flag) {
         g3Point *t = *p0;
         *p0 = *p1;
         *p1 = t;
       }
 
       old_p1 = *p1;
-      *p1 = ClipEdge(plane_flag, *p0, *p1);
-      codes_or = (*p0)->p3_codes | (*p1)->p3_codes;
+      *p1 = ClipEdge(clip_codes_from_byte(plane_flag), *p0, *p1);
+      codes_or = clip_codes_or((*p0)->p3_codes, (*p1)->p3_codes);
+      codes_byte = clip_code_byte(codes_or);
 
-      if (old_p1->p3_flags & PF_TEMP_POINT)
+      if (old_p1->p3_flags.temp_point)
         FreeTempPoint(old_p1);
     }
   }
 }
 
 // Clips a polygon against one plane
-int ClipPlane(int plane_flag, g3Point **src, g3Point **dest, int *nv, g3Codes *cc) {
+int ClipPlane(g3_clip_codes_t plane_flag, g3Point **src, g3Point **dest, int *nv, g3Codes *cc) {
   int i, prev, next;
   g3Point **save_dest = dest;
+  const uint8_t flag_byte = clip_code_byte(plane_flag);
 
-  cc->cc_and = 0xff;
-  cc->cc_or = 0;
+  cc->cc_and = clip_codes_from_byte(0xff);
+  cc->cc_or = {};
 
   for (i = 0, prev = *nv - 1, next = 1; i < *nv; i++) {
-    if (src[i]->p3_codes & plane_flag) {
-      if (!(src[prev]->p3_codes & plane_flag)) {
+    if (clip_code_byte(src[i]->p3_codes) & flag_byte) {
+      if (!(clip_code_byte(src[prev]->p3_codes) & flag_byte)) {
         *dest = ClipEdge(plane_flag, src[prev], src[i]);
-        cc->cc_or |= (*dest)->p3_codes;
-        cc->cc_and &= (*dest)->p3_codes;
+        cc->cc_or = clip_codes_or(cc->cc_or, (*dest)->p3_codes);
+        cc->cc_and = clip_codes_and(cc->cc_and, (*dest)->p3_codes);
         dest++;
       }
-      if (!(src[next]->p3_codes & plane_flag)) {
+      if (!(clip_code_byte(src[next]->p3_codes) & flag_byte)) {
         *dest = ClipEdge(plane_flag, src[next], src[i]);
-        cc->cc_or |= (*dest)->p3_codes;
-        cc->cc_and &= (*dest)->p3_codes;
+        cc->cc_or = clip_codes_or(cc->cc_or, (*dest)->p3_codes);
+        cc->cc_and = clip_codes_and(cc->cc_and, (*dest)->p3_codes);
         dest++;
       }
-      if (src[i]->p3_flags & PF_TEMP_POINT)
+      if (src[i]->p3_flags.temp_point)
         FreeTempPoint(src[i]);
     } else {
       *dest++ = src[i];
-      cc->cc_or |= src[i]->p3_codes;
-      cc->cc_and &= src[i]->p3_codes;
+      cc->cc_or = clip_codes_or(cc->cc_or, src[i]->p3_codes);
+      cc->cc_and = clip_codes_and(cc->cc_and, src[i]->p3_codes);
     }
 
     prev = i;
@@ -284,7 +286,6 @@ static g3Point *Vbuf1[MAX_POINTS_IN_POLY];
 
 // Clips a polygon.  Caller MUST call g3_FreeTempPoints() when done.
 g3Point **g3_ClipPolygon(g3Point **pointlist, int *nv, g3Codes *cc) {
-  int plane_flag;
   g3Point **dest = Vbuf0;
 
   if (free_point_num != 0) {
@@ -292,14 +293,16 @@ g3Point **g3_ClipPolygon(g3Point **pointlist, int *nv, g3Codes *cc) {
     free_point_num = 0;
   }
 
-  for (plane_flag = 1; plane_flag <= 32; plane_flag <<= 1) {
-    if (cc->cc_or & plane_flag) {
-      *nv = ClipPlane(plane_flag, pointlist, dest, nv, cc);
-      if (cc->cc_and) // clipped away
+  uint8_t codes = clip_code_byte(cc->cc_or);
+  for (uint8_t plane_flag = 1; plane_flag <= 32; plane_flag <<= 1) {
+    if (codes & plane_flag) {
+      *nv = ClipPlane(clip_codes_from_byte(plane_flag), pointlist, dest, nv, cc);
+      if (clip_code_byte(cc->cc_and) != 0) // clipped away
         return dest;
 
       pointlist = dest;
       dest = (pointlist == Vbuf0) ? Vbuf1 : Vbuf0;
+      codes = clip_code_byte(cc->cc_or);
     }
   }
   return pointlist;
@@ -325,30 +328,31 @@ void g3_SetCustomClipPlane(uint8_t state, vector3 *pnt, vector3 *normal) {
 
 // code a point; fills in the p3_codes field and returns the codes
 uint8_t g3_CodePoint(g3Point *p) {
-  uint8_t cc = 0;
+  g3_clip_codes_t cc{};
 
   if (p->p3_x > p->p3_z)
-    cc |= CC_OFF_RIGHT;
+    cc.off_right = true;
   if (p->p3_y > p->p3_z)
-    cc |= CC_OFF_TOP;
+    cc.off_top = true;
   if (p->p3_x < -p->p3_z)
-    cc |= CC_OFF_LEFT;
+    cc.off_left = true;
   if (p->p3_y < -p->p3_z)
-    cc |= CC_OFF_BOT;
+    cc.off_bot = true;
   if (p->p3_z < 0)
-    cc |= CC_BEHIND;
+    cc.behind = true;
   if (p->p3_z > Far_clip_z)
-    cc |= CC_OFF_FAR;
+    cc.off_far = true;
 
   if (Clip_custom) {
     vector3 vec = p->p3_vec - Clip_plane_point;
     vec /= Matrix_scale;
     scalar dp = vm_Dot3Product(vec, Clip_plane);
     if (dp < -0.005f)
-      cc |= CC_OFF_CUSTOM;
+      cc.off_custom = true;
   }
 
-  return p->p3_codes = cc;
+  p->p3_codes = cc;
+  return clip_code_byte(cc);
 }
 
 // rotates a point; returns codes
@@ -356,19 +360,19 @@ uint8_t g3_RotatePoint(g3Point& dest, const vector3& src) {
   dest.p3_vecPreRot = src;
   vector3 tempv = src - View_position;
   dest.p3_vec = tempv * View_matrix;
-  dest.p3_flags = PF_ORIGPOINT;
+  dest.p3_flags = g3point_flags_t{.origpoint = true};
   return g3_CodePoint(&dest);
 }
 
 // projects a point
 void g3_ProjectPoint(g3Point *p) {
-  if (p->p3_flags & PF_PROJECTED || p->p3_codes & CC_BEHIND)
+  if (p->p3_flags.projected || p->p3_codes.behind)
     return;
 
   float one_over_z = 1.0 / p->p3_z;
   p->p3_sx = Window_w2 + (p->p3_x * (Window_w2 * one_over_z));
   p->p3_sy = Window_h2 - (p->p3_y * (Window_h2 * one_over_z));
-  p->p3_flags |= PF_PROJECTED;
+  p->p3_flags.projected = true;
 }
 
 // from a 2d point, compute the vector through that point
