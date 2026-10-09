@@ -368,33 +368,34 @@ extern hlsSystem Sound_system;
 //////////////////////////////////////////////////////////////////////////
 //	ENVIRONMENTAL REVERB PRESETS
 
-#define N_ENVAUDIO_PRESETS 26
-
-#define ENVAUD_PRESET_NONE 0
-#define ENVAUD_PRESET_PADDEDCELL 1
-#define ENVAUD_PRESET_ROOM 2
-#define ENVAUD_PRESET_BATHROOM 3
-#define ENVAUD_PRESET_LIVINGROOM 4
-#define ENVAUD_PRESET_STONEROOM 5
-#define ENVAUD_PRESET_AUDITORIUM 6
-#define ENVAUD_PRESET_CONCERTHALL 7
-#define ENVAUD_PRESET_CAVE 8
-#define ENVAUD_PRESET_ARENA 9
-#define ENVAUD_PRESET_HANGAR 10
-#define ENVAUD_PRESET_CARPETEDHALLWAY 11
-#define ENVAUD_PRESET_HALLWAY 12
-#define ENVAUD_PRESET_STONECORRIDOR 13
-#define ENVAUD_PRESET_ALLEY 14
-#define ENVAUD_PRESET_FOREST 15
-#define ENVAUD_PRESET_CITY 16
-#define ENVAUD_PRESET_MOUNTAINS 17
-#define ENVAUD_PRESET_QUARRY 18
-#define ENVAUD_PRESET_PLAIN 19
-#define ENVAUD_PRESET_PARKINGLOT 20
-#define ENVAUD_PRESET_SEWERPIPE 21
-#define ENVAUD_PRESET_UNDERWATER 22
-#define ENVAUD_PRESET_DRUGGED 23
-#define ENVAUD_PRESET_DIZZY 24
-#define ENVAUD_PRESET_PSYCHOTIC 25
+enum class envaud_preset : uint8_t {
+  none = 0,
+  paddedcell = 1,
+  room = 2,
+  bathroom = 3,
+  livingroom = 4,
+  stoneroom = 5,
+  auditorium = 6,
+  concerthall = 7,
+  cave = 8,
+  arena = 9,
+  hangar = 10,
+  carpetedhallway = 11,
+  hallway = 12,
+  stonecorridor = 13,
+  alley = 14,
+  forest = 15,
+  city = 16,
+  mountains = 17,
+  quarry = 18,
+  plain = 19,
+  parkinglot = 20,
+  sewerpipe = 21,
+  underwater = 22,
+  drugged = 23,
+  dizzy = 24,
+  psychotic = 25,
+  count = 26,
+};
 
 #endif
