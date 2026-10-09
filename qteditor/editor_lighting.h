@@ -46,7 +46,7 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp);
 void AssignObjectSurfaceToLightmap(int objnum, int sobj_num, int facenum, rad_surface *sp);
 void AssignLightmapsToObjectSurfacesForSingleRoom(int surface_index, int roomnum);
 
-int ClipRadPointList(rad_point **src, rad_point **dest, int *nv, int code);
+int ClipRadPointList(rad_point **src, rad_point **dest, int *nv, g3_clip_codes_t code);
 int ClipRadToPlane(int plane, rad_point *src, rad_point *dest, int nv);
 void ClipRadEdge(g3_clip_codes_t plane_flag, rad_point *on_pnt, rad_point *off_pnt);
 void SetRadClipLines(vector3 *tp, vector3 *rp, vector3 *bp, vector3 *lp);

@@ -933,10 +933,10 @@ void DoRadiosityForRooms() {
 
             if (FindPointRoom(&dest_vec).value_or(-1) != roomnum) {
               Volume_elements[roomnum][(i * vw * vh) + (t * vw) + j].color.r = 0;
-              Volume_elements[roomnum][(i * vw * vh) + (t * vw) + j].flags = VEF_REVERSE_SHOOT;
+              Volume_elements[roomnum][(i * vw * vh) + (t * vw) + j].flags.reverse_shoot = true;
             } else {
               Volume_elements[roomnum][(i * vw * vh) + (t * vw) + j].color.r = 0;
-              Volume_elements[roomnum][(i * vw * vh) + (t * vw) + j].flags = 0;
+              Volume_elements[roomnum][(i * vw * vh) + (t * vw) + j].flags = volume_element_flags_t{};
             }
           }
         }
@@ -1000,7 +1000,7 @@ void DoRadiosityForRooms() {
               (GameTextures[Rooms[i].faces[t].tmap].flags.tmap2))))
 
         {
-          Light_surfaces[surface_index].surface_type = ST_PORTAL;
+          Light_surfaces[surface_index].surface_type = rad_surface_type::portal;
           Light_surfaces[surface_index].emittance.r = 0;
           Light_surfaces[surface_index].emittance.g = 0;
           Light_surfaces[surface_index].emittance.b = 0;
@@ -1014,7 +1014,7 @@ void DoRadiosityForRooms() {
           Light_surfaces[surface_index].emittance.r = (float)GameTextures[Rooms[i].faces[t].tmap].r * mul;
           Light_surfaces[surface_index].emittance.g = (float)GameTextures[Rooms[i].faces[t].tmap].g * mul;
           Light_surfaces[surface_index].emittance.b = (float)GameTextures[Rooms[i].faces[t].tmap].b * mul;
-          Light_surfaces[surface_index].surface_type = ST_ROOM;
+          Light_surfaces[surface_index].surface_type = rad_surface_type::room;
 
           if ((GetMaxColor(&Light_surfaces[surface_index].emittance)) > .005)
             Light_surfaces[surface_index].flags.lightsource = 1;
@@ -1050,7 +1050,7 @@ void DoRadiosityForRooms() {
     Light_surfaces[surface_index].elements.resize(1);
     Light_surfaces[surface_index].elements[0].verts.resize(3);
 
-    Light_surfaces[surface_index].surface_type = ST_SATELLITE;
+    Light_surfaces[surface_index].surface_type = rad_surface_type::satellite;
     Light_surfaces[surface_index].emittance.r = Terrain_sky.satellite_r[i];
     Light_surfaces[surface_index].emittance.g = Terrain_sky.satellite_g[i];
     Light_surfaces[surface_index].emittance.b = Terrain_sky.satellite_b[i];
@@ -1074,7 +1074,7 @@ void DoRadiosityForRooms() {
     Light_surfaces[surface_index].elements[0].verts[2] = Terrain_sky.satellite_vectors[i];
     Light_surfaces[surface_index].elements[0].num_verts = 3;
 
-    Light_surfaces[surface_index].elements[0].flags = 0;
+    Light_surfaces[surface_index].elements[0].flags = rad_element_flags_t{};
   }
 
   // Setup Objects
@@ -1083,9 +1083,9 @@ void DoRadiosityForRooms() {
   LOG_INFO("This radiosity run is using %d lightmaps.\n", Lightmaps_for_rad);
   LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
   if (app.hemicube_radiosity)
-    DoRadiosityRun(SM_HEMICUBE, Light_surfaces, facecount);
+    DoRadiosityRun(shooting_method::hemicube, Light_surfaces, facecount);
   else
-    DoRadiosityRun(SM_RAYCAST, Light_surfaces, facecount);
+    DoRadiosityRun(shooting_method::raycast, Light_surfaces, facecount);
   LOG_INFO("Done solving radiosity - cleaning up...\n");
 
   surface_index = 0;
@@ -1221,7 +1221,7 @@ void DoRadiosityForCurrentRoom(int roomnum) {
     if (rp->faces[t].portal_num != -1 && (((rp->portals[rp->faces[t].portal_num].flags.render_faces == 0)) ||
                                           ((rp->portals[rp->faces[t].portal_num].flags.render_faces) &&
                                            (GameTextures[rp->faces[t].tmap].flags.tmap2)))) {
-      Light_surfaces[surface_index].surface_type = ST_PORTAL;
+      Light_surfaces[surface_index].surface_type = rad_surface_type::portal;
       Light_surfaces[surface_index].emittance.r = 0;
       Light_surfaces[surface_index].emittance.g = 0;
       Light_surfaces[surface_index].emittance.b = 0;
@@ -1231,7 +1231,7 @@ void DoRadiosityForCurrentRoom(int roomnum) {
       Light_surfaces[surface_index].emittance.r = (float)GameTextures[rp->faces[t].tmap].r * mul;
       Light_surfaces[surface_index].emittance.g = (float)GameTextures[rp->faces[t].tmap].g * mul;
       Light_surfaces[surface_index].emittance.b = (float)GameTextures[rp->faces[t].tmap].b * mul;
-      Light_surfaces[surface_index].surface_type = ST_ROOM;
+      Light_surfaces[surface_index].surface_type = rad_surface_type::room;
     }
 
     Light_surfaces[surface_index].normal = rp->faces[t].normal;
@@ -1252,9 +1252,9 @@ void DoRadiosityForCurrentRoom(int roomnum) {
 
   LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
   if (app.hemicube_radiosity)
-    DoRadiosityRun(SM_HEMICUBE, Light_surfaces, facecount);
+    DoRadiosityRun(shooting_method::hemicube, Light_surfaces, facecount);
   else
-    DoRadiosityRun(SM_RAYCAST, Light_surfaces, facecount);
+    DoRadiosityRun(shooting_method::raycast, Light_surfaces, facecount);
   LOG_INFO("Done solving radiosity - cleaning up...\n");
 
   surface_index = 0;
@@ -1322,7 +1322,7 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
 
   for (i = 0; i < yres; i++) {
     for (t = 0; t < xres; t++) {
-      if (!(sp->elements[i * xres + t].flags & EF_IGNORE)) {
+      if (!(sp->elements[i * xres + t].flags.ignore)) {
         ddgr_color color = GR_16_TO_COLOR(dest_data[i + y1][t + x1]);
         int red = GR_COLOR_RED(color);
         int green = GR_COLOR_GREEN(color);
@@ -1478,7 +1478,7 @@ void SetRadClipLines(vector3 *tp, vector3 *rp, vector3 *bp, vector3 *lp) {
   rad_ClipLeft = lp;
 }
 
-uint8_t CodeRadPoint(rad_point *rp) {
+g3_clip_codes_t CodeRadPoint(rad_point *rp) {
   g3_clip_codes_t code{};
   if (rp->pos.x() < rad_ClipLeft->x())
     code.off_left = true;
@@ -1488,7 +1488,7 @@ uint8_t CodeRadPoint(rad_point *rp) {
     code.off_bot = true;
   if (rp->pos.y() > rad_ClipTop->y())
     code.off_top = true;
-  rp->code = clip_code_byte(code);
+  rp->code = code;
 
   return rp->code;
 }
@@ -1497,13 +1497,13 @@ void ClipSurfaceElement(vector3 *surf_verts, rad_element *ep, vector3 *clip_vert
   rad_point src_verts[50];
   rad_point dest_verts[50];
   rad_point *slist, *dlist;
-  uint8_t and_val = 0xff;
-  uint8_t or_val = 0;
+  g3_clip_codes_t and_val = clip_codes_from_byte(0xff);
+  g3_clip_codes_t or_val = g3_clip_codes_t{};
   int i;
 
   Q_ASSERT(nv < 50);
 
-  ep->flags = 0;
+  ep->flags = rad_element_flags_t{};
 
   SetRadClipLines(&clip_verts[0], &clip_verts[1], &clip_verts[2], &clip_verts[3]);
 
@@ -1513,13 +1513,13 @@ void ClipSurfaceElement(vector3 *surf_verts, rad_element *ep, vector3 *clip_vert
   }
 
   for (i = 0; i < nv; i++) {
-    and_val &= src_verts[i].code;
-    or_val |= src_verts[i].code;
+    and_val = clip_codes_and(and_val, src_verts[i].code);
+    or_val = clip_codes_or(or_val, src_verts[i].code);
   }
 
-  if (and_val) {
+  if (clip_code_byte(and_val) != 0) {
     // This element is not even in the face, ignore it
-    ep->flags |= EF_IGNORE;
+    ep->flags.ignore = true;
     ep->num_verts = 0;
     return;
   }
@@ -1533,7 +1533,7 @@ void ClipSurfaceElement(vector3 *surf_verts, rad_element *ep, vector3 *clip_vert
   ep->num_verts = nnv;
 
   if (ep->num_verts == 0)
-    ep->flags |= EF_IGNORE;
+    ep->flags.ignore = true;
   else {
     ep->verts.resize(nnv);
 
@@ -1547,13 +1547,14 @@ void ClipSurfaceElement(vector3 *surf_verts, rad_element *ep, vector3 *clip_vert
 // Puts the new clipped list in dest
 // Returns number of points in clipped polygon
 
-int ClipRadPointList(rad_point **src, rad_point **dest, int *nv, int code) {
+int ClipRadPointList(rad_point **src, rad_point **dest, int *nv, g3_clip_codes_t code) {
   int plane, num = 0;
   rad_point **save_src = src, *t;
   rad_point **save_dest = dest;
+  const uint8_t code_byte = clip_code_byte(code);
 
   for (plane = 1; plane < 16; plane <<= 1) {
-    if (plane & code) // Is this point off this plane?
+    if (plane & code_byte) // Is this point off this plane?
     {
 
       *nv = ClipRadToPlane(plane, *src, *dest, *nv);
@@ -1593,10 +1594,10 @@ int ClipRadToPlane(int plane, rad_point *src, rad_point *dest, int nv) {
       ppoint = i - 1;
 
     // mprintf(0,"checking point %d ",i);
-    if (src[i].code & plane) // off this plane?
+    if (clip_code_byte(src[i].code) & plane) // off this plane?
     {
 
-      if (!(src[ppoint].code & plane)) // prev point on?
+      if (!(clip_code_byte(src[ppoint].code) & plane)) // prev point on?
       {
         // mprintf(0,"pVertex %d off %d plane.\n",i,plane);
         ClipRadEdge(clip_codes_from_byte(plane), &src[ppoint], &src[i]);
@@ -1605,7 +1606,7 @@ int ClipRadToPlane(int plane, rad_point *src, rad_point *dest, int nv) {
         num++;
       }
 
-      if (!(src[npoint].code & plane)) // next point on?
+      if (!(clip_code_byte(src[npoint].code) & plane)) // next point on?
       {
 
         // mprintf(0,"nVertex %d off %d plane.\n",i,plane);
@@ -1844,7 +1845,7 @@ void DoRadiosityForTerrain() {
 
       // Do common stuff (for both triangles)
       for (x = 0; x < 2; x++) {
-        Light_surfaces[i * 2 + x].surface_type = ST_TERRAIN;
+        Light_surfaces[i * 2 + x].surface_type = rad_surface_type::terrain;
         Light_surfaces[i * 2 + x].emittance.r =
             (float)GameTextures[Terrain_tex_seg[Terrain_seg[seg].texseg_index].tex_index].r;
         Light_surfaces[i * 2 + x].emittance.g =
@@ -1893,7 +1894,7 @@ void DoRadiosityForTerrain() {
       Light_surfaces[i * 2].elements[0].verts[2] = c;
       Light_surfaces[i * 2].elements[0].num_verts = 3;
 
-      Light_surfaces[i * 2].elements[0].flags = 0;
+      Light_surfaces[i * 2].elements[0].flags = rad_element_flags_t{};
 
       // Now do lower right
 
@@ -1928,7 +1929,7 @@ void DoRadiosityForTerrain() {
       Light_surfaces[i * 2 + 1].elements[0].verts[2] = c;
       Light_surfaces[i * 2 + 1].elements[0].num_verts = 3;
 
-      Light_surfaces[i * 2 + 1].elements[0].flags = 0;
+      Light_surfaces[i * 2 + 1].elements[0].flags = rad_element_flags_t{};
     }
   }
 
@@ -1938,7 +1939,7 @@ void DoRadiosityForTerrain() {
     Light_surfaces[surf_index].elements.resize(1);
     Light_surfaces[surf_index].elements[0].verts.resize(3);
 
-    Light_surfaces[surf_index].surface_type = ST_SATELLITE;
+    Light_surfaces[surf_index].surface_type = rad_surface_type::satellite;
     Light_surfaces[surf_index].emittance.r = Terrain_sky.satellite_r[i];
     Light_surfaces[surf_index].emittance.g = Terrain_sky.satellite_g[i];
     Light_surfaces[surf_index].emittance.b = Terrain_sky.satellite_b[i];
@@ -1962,7 +1963,7 @@ void DoRadiosityForTerrain() {
     Light_surfaces[surf_index].elements[0].verts[2] = Terrain_sky.satellite_vectors[i];
     Light_surfaces[surf_index].elements[0].num_verts = 3;
 
-    Light_surfaces[surf_index].elements[0].flags = 0;
+    Light_surfaces[surf_index].elements[0].flags = rad_element_flags_t{};
   }
 
   // Setup external rooms
@@ -1984,7 +1985,7 @@ void DoRadiosityForTerrain() {
         if (Rooms[i].faces[t].portal_num != -1 &&
             !(Rooms[i].portals[Rooms[i].faces[t].portal_num].flags.render_faces))
         {
-          Light_surfaces[surf_index].surface_type = ST_PORTAL;
+          Light_surfaces[surf_index].surface_type = rad_surface_type::portal;
           Light_surfaces[surf_index].emittance.r = 0;
           Light_surfaces[surf_index].emittance.g = 0;
           Light_surfaces[surf_index].emittance.b = 0;
@@ -1995,10 +1996,10 @@ void DoRadiosityForTerrain() {
           Light_surfaces[surf_index].emittance.r = (float)GameTextures[Rooms[i].faces[t].tmap].r * mul;
           Light_surfaces[surf_index].emittance.g = (float)GameTextures[Rooms[i].faces[t].tmap].g * mul;
           Light_surfaces[surf_index].emittance.b = (float)GameTextures[Rooms[i].faces[t].tmap].b * mul;
-          Light_surfaces[surf_index].surface_type = ST_EXTERNAL_ROOM;
+          Light_surfaces[surf_index].surface_type = rad_surface_type::external_room;
 
           // if ((GetMaxColor (&Light_surfaces[surf_index].emittance))>.005)
-          //	Light_surfaces[surf_index].flags|=SF_LIGHTSOURCE;
+          //	Light_surfaces[surf_index].flags.lightsource = true;
         }
 
         Light_surfaces[surf_index].normal = LightmapInfo[Rooms[i].faces[t].lmi_handle].normal;
@@ -2023,9 +2024,9 @@ void DoRadiosityForTerrain() {
   LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
 
   if (app.hemicube_radiosity)
-    DoRadiosityRun(SM_SWITCH_AFTER_SATELLITES, Light_surfaces, total_surfaces);
+    DoRadiosityRun(shooting_method::switch_after_satellites, Light_surfaces, total_surfaces);
   else
-    DoRadiosityRun(SM_RAYCAST, Light_surfaces, total_surfaces);
+    DoRadiosityRun(shooting_method::raycast, Light_surfaces, total_surfaces);
 
   // Figure out lighting by averaging the two triangles per terrain cell
 

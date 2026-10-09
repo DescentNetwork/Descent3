@@ -35,7 +35,7 @@
 
 
 // Some radiosity globals
-int Shoot_method = SM_HEMICUBE;
+shooting_method Shoot_method = shooting_method::hemicube;
 int Hemicube_resolution = 1024;
 
 bool Ignore_terrain = false;
@@ -71,7 +71,7 @@ volume_element *Volume_elements[MAX_VOLUME_ELEMENTS];
 
 extern int Shoot_from_patch;
 
-int DoRadiosityRun(int method, std::vector<rad_surface>& light_surfaces, int count) {
+int DoRadiosityRun(shooting_method method, std::vector<rad_surface>& light_surfaces, int count) {
   float start_time;
 
   LOG_INFO("Calculating radiosity on %d faces.\n", count);
@@ -113,7 +113,7 @@ void InitRadiosityRun() {
   CalculateArea();
   InitExitance();
 
-  if (Shoot_method == SM_HEMICUBE) {
+  if (Shoot_method == shooting_method::hemicube) {
     SetupFormFactors();
     InitHemicube(Hemicube_resolution);
   }
@@ -147,7 +147,7 @@ void CalculateAreaForElement(rad_element *ep) {
 
   vector3 normal;
 
-  if (ep->flags & EF_IGNORE) {
+  if (ep->flags.ignore) {
     ep->area = .0000001f;
     return;
   }
@@ -161,9 +161,9 @@ void CalculateAreaForElement(rad_element *ep) {
   }
 
   if (ep->area < .05)
-    ep->flags |= EF_SMALL;
+    ep->flags.small = true;
   if (ep->area == 0) {
-    ep->flags |= EF_IGNORE;
+    ep->flags.ignore = true;
     ep->area = .00000001f;
   }
 }
@@ -258,7 +258,7 @@ void UpdateUnsentValues() {
     }
 
     // Always give satellites priority
-    if (surf->surface_type == ST_SATELLITE && cur_unsent > 0) {
+    if (surf->surface_type == rad_surface_type::satellite && cur_unsent > 0) {
       if (cur_unsent > sat_max_unsent) {
         use_sat = 1;
         sat_max_unsent = cur_unsent;
@@ -281,10 +281,10 @@ void UpdateUnsentValues() {
   if (use_sat)
     rad_MaxSurface = sat_surface;
 
-  if (!use_sat && Shoot_method == SM_SWITCH_AFTER_SATELLITES) {
+  if (!use_sat && Shoot_method == shooting_method::switch_after_satellites) {
     SetupFormFactors();
     InitHemicube(Hemicube_resolution);
-    Shoot_method = SM_HEMICUBE;
+    Shoot_method = shooting_method::hemicube;
   }
 
   // No energy left to shoot?
@@ -324,7 +324,7 @@ float GetUnsentFlux(rad_surface *surface) {
 
   flux = surface->exitance.r + surface->exitance.g + surface->exitance.b;
 
-  if (surface->surface_type != ST_SATELLITE)
+  if (surface->surface_type != rad_surface_type::satellite)
     flux *= surface->area;
 
   return flux;
@@ -353,7 +353,7 @@ void NormalizeExitance() {
     for (t = 0; t < surf->xresolution * surf->yresolution; t++) {
       rad_element *ep = &surf->elements[t];
 
-      if (ep->flags & EF_IGNORE)
+      if (ep->flags.ignore)
         continue;
 
       if (Shoot_from_patch) {
@@ -384,14 +384,14 @@ void NormalizeExitance() {
 void CloseRadiosityRun() {
 
   NormalizeExitance();
-  if (Shoot_method == SM_HEMICUBE) {
+  if (Shoot_method == shooting_method::hemicube) {
     rad_FormFactors.clear();
     CloseHemicube();
   }
 }
 void Calculate() {
 
-  if (Shoot_method == SM_HEMICUBE)
+  if (Shoot_method == shooting_method::hemicube)
     CalculateFormFactorsHemiCube();
   else
     CalculateFormFactorsRaycast();

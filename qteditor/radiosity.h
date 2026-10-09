@@ -70,11 +70,13 @@
 #include "gr.h"
 
 // Shooting methods
-#define SM_HEMICUBE 0
-#define SM_RAYCAST 1
-// This method makes a switch from RAYCAST to HEMICUBE after all satellites have
-// been used for lightsources
-#define SM_SWITCH_AFTER_SATELLITES 2
+enum class shooting_method : uint8_t {
+  hemicube = 0,
+  raycast = 1,
+  // This method makes a switch from raycast to hemicube after all satellites
+  // have been used for lightsources
+  switch_after_satellites = 2,
+};
 
 #define MAX_VOLUME_ELEMENTS 500
 
@@ -83,35 +85,54 @@ struct spectra {
 };
 
 // element flags
-#define EF_IGNORE 1
-#define EF_SMALL 2 // Don't blend this one into the lightmap - it will corrupt!
+struct [[gnu::packed]] rad_element_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 6;
+  uint8_t small : 1;  // Don't blend this one into the lightmap - it will corrupt!
+  uint8_t ignore : 1;
+#else
+  uint8_t ignore : 1;
+  uint8_t small : 1; // Don't blend this one into the lightmap - it will corrupt!
+  uint8_t padding : 6;
+#endif
+};
+static_assert(sizeof(rad_element_flags_t) == sizeof(uint8_t));
 
 struct rad_element {
   std::vector<vector3> verts;
   spectra exitance;
   float area;
   uint8_t num_verts;
-  uint8_t flags; // see above
+  rad_element_flags_t flags; // see above
 };
 
-#define VEF_REVERSE_SHOOT 1
+struct [[gnu::packed]] volume_element_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 7;
+  uint8_t reverse_shoot : 1;
+#else
+  uint8_t reverse_shoot : 1;
+  uint8_t padding : 7;
+#endif
+};
+static_assert(sizeof(volume_element_flags_t) == sizeof(uint8_t));
 
 struct volume_element {
   spectra color;
   vector3 pos;
-  uint8_t flags;
+  volume_element_flags_t flags;
 };
 
-#define ST_ROOM 0           // This is a room surface
-#define ST_TERRAIN 1        // This is a terrain surface
-#define ST_SATELLITE 2      // This is a sun on the terrain
-#define ST_PORTAL 3         // This surface is a portal, don't consider it
-#define ST_ROOM_OBJECT 4    // This surface is part of an object
-#define ST_TERRAIN_OBJECT 5 // This surface is part of terrain object
-#define ST_EXTERNAL_ROOM 6  // This surface is a room outside
-
-#define SF_TOUCHES_TERRAIN 1
-#define SF_LIGHTSOURCE 2
+// This surface's type
+enum class rad_surface_type : uint8_t {
+  room = 0,           // This is a room surface
+  terrain = 1,        // This is a terrain surface
+  satellite = 2,      // This is a sun on the terrain
+  portal = 3,         // This surface is a portal, don't consider it
+  room_object = 4,    // This surface is part of an object
+  terrain_object = 5, // This surface is part of terrain object
+  external_room = 6,  // This surface is a room outside
+};
 
 
 struct [[gnu::packed]] surface_flags_t
@@ -139,7 +160,7 @@ struct rad_surface {
   vector3 normal;         // normal of this surface
   std::vector<vector3> verts;
 
-  uint8_t surface_type; // See ST_ types above
+  rad_surface_type surface_type; // See rad_surface_type above
 
   int facenum; // facenumber of room
   int roomnum; // The roomnumber or terrain segment number
@@ -153,7 +174,7 @@ struct rad_surface {
 
 struct rad_point {
   vector3 pos;
-  uint8_t code;
+  g3_clip_codes_t code;
 };
 
 extern float *Room_strongest_value[][4];
@@ -188,7 +209,7 @@ extern int Shoot_from_patch;
 // Tells radiosity renderer to do volume lighting
 extern int Do_volume_lighting;
 
-int DoRadiosityRun(int method, std::vector<rad_surface>& light_surfaces, int count);
+int DoRadiosityRun(shooting_method method, std::vector<rad_surface>& light_surfaces, int count);
 // Sets up our radiosity run
 void InitRadiosityRun();
 

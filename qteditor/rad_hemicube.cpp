@@ -124,7 +124,7 @@ void CalculateFormFactorsHemiCube() {
       SetSurfaceView(rad_MaxSurface);
     } else {
       rad_MaxElement = &rad_MaxSurface->elements[en];
-      if (rad_MaxElement->flags & EF_IGNORE)
+      if (rad_MaxElement->flags.ignore)
         continue;
 
       SetElementView(rad_MaxElement);
@@ -145,7 +145,7 @@ void CalculateFormFactorsHemiCube() {
 
         if (surf == rad_MaxSurface)
           ignore = 1;
-        if (surf->surface_type == ST_PORTAL)
+        if (surf->surface_type == rad_surface_type::portal)
           ignore = 1;
 
         for (j = 0; j < surf->xresolution * surf->yresolution; j++, ff_index++) {
@@ -154,7 +154,7 @@ void CalculateFormFactorsHemiCube() {
 
           rad_element *ep = &surf->elements[j];
 
-          if (ep->flags & EF_IGNORE)
+          if (ep->flags.ignore)
             continue;
 
           for (k = 0; k < ep->num_verts; k++) {
@@ -202,7 +202,7 @@ void CalculateFormFactorsHemiCube() {
         // Compute reciprocal form factor
         float rff;
 
-        if (rad_MaxSurface->surface_type == ST_SATELLITE)
+        if (rad_MaxSurface->surface_type == rad_surface_type::satellite)
           rff = std::min(rad_FormFactors[ff_index], 1.0f);
         else
           rff = (float)std::min(rad_FormFactors[ff_index] * rad_MaxSurface->area / dest_element->area, 1.0f);

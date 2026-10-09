@@ -109,7 +109,7 @@ void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surf
 
   for (i = 0; i < yres; i++) {
     for (t = 0; t < xres; t++) {
-      if (!(sp->elements[i * xres + t].flags & EF_IGNORE)) {
+      if (!(sp->elements[i * xres + t].flags.ignore)) {
         ddgr_color color = GR_16_TO_COLOR(dest_data[i + y1][t + x1]);
         int red = GR_COLOR_RED(color);
         int green = GR_COLOR_GREEN(color);
@@ -345,15 +345,15 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
           }
 
           if (terrain)
-            Light_surfaces[surface_index].surface_type = ST_TERRAIN_OBJECT;
+            Light_surfaces[surface_index].surface_type = rad_surface_type::terrain_object;
           else
-            Light_surfaces[surface_index].surface_type = ST_ROOM_OBJECT;
+            Light_surfaces[surface_index].surface_type = rad_surface_type::room_object;
 
           Light_surfaces[surface_index].normal =
               LightmapInfo[Objects[i].lm_object.lightmap_faces[t][j].lmi_handle].normal;
           Light_surfaces[surface_index].roomnum = Objects[i].roomnum.value_or(-1);
 
-          if (Light_surfaces[surface_index].surface_type == ST_ROOM_OBJECT) {
+          if (Light_surfaces[surface_index].surface_type == rad_surface_type::room_object) {
             const int roomnum = static_cast<int>(*Objects[i].roomnum);
             if (Rooms[roomnum].flags.touches_terrain)
               Light_surfaces[surface_index].flags.touches_terrain = 1;
@@ -424,7 +424,7 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
             Light_surfaces[surface_index].reflectivity = GameTextures[po->textures[sm->faces[j].texnum]].reflectivity;
           }
 
-          Light_surfaces[surface_index].surface_type = ST_ROOM_OBJECT;
+          Light_surfaces[surface_index].surface_type = rad_surface_type::room_object;
 
           Light_surfaces[surface_index].normal =
               LightmapInfo[Objects[i].lm_object.lightmap_faces[t][j].lmi_handle].normal;

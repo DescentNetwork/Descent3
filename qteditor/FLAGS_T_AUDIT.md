@@ -42,6 +42,9 @@ not yet used**.
 | `weapon_flags_t`      | `lib/weapon.h`                  | yes — `weapon::flags` |
 | `g3point_flags_t`     | `lib/3d.h`                      | yes — `g3Point::p3_flags` (replaces `PF_*`) |
 | `g3_clip_codes_t`     | `lib/3d.h`                      | yes — `g3Point::p3_codes`, `g3Codes::cc_or/cc_and` (replaces `CC_*`) |
+| `surface_flags_t`     | `radiosity.h`                   | yes — `rad_surface::flags` (replaces `SF_*`) |
+| `rad_element_flags_t` | `radiosity.h`                   | yes — `rad_element::flags` (replaces `EF_*`) |
+| `volume_element_flags_t` | `radiosity.h`                | yes — `volume_element::flags` (replaces `VEF_REVERSE_SHOOT`) |
 
 ## Migration Status
 
