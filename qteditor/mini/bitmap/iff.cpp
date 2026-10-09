@@ -527,7 +527,7 @@ static int Fake_file_size = 0;
 static inline char tga_read_byte();
 static inline int tga_read_int();
 static inline int16_t tga_read_short();
-static uint16_t bm_tga_translate_pixel(int pixel, int format);
+static uint16_t bm_tga_translate_pixel(int pixel, bitmap_format format);
 
 inline char tga_read_byte() {
   // Check for bad file
@@ -567,14 +567,14 @@ inline int16_t tga_read_short() {
   return INTEL_SHORT(i);
 }
 
-uint16_t bm_tga_translate_pixel(int pixel, int format) {
+uint16_t bm_tga_translate_pixel(int pixel, bitmap_format format) {
   int red = ((pixel >> 16) & 0xFF);
   int green = ((pixel >> 8) & 0xFF);
   int blue = ((pixel) & 0xFF);
   int alpha = ((pixel >> 24) & 0xFF);
   uint16_t newpix;
 
-  if (format == BITMAP_FORMAT_4444) {
+  if (format == bitmap_format::_4444) {
     int newred = red >> 4;
     int newgreen = green >> 4;
     int newblue = blue >> 4;
@@ -594,7 +594,7 @@ uint16_t bm_tga_translate_pixel(int pixel, int format) {
   return newpix;
 }
 
-static int bm_tga_read_outrage_compressed16(int n, int num_mips, int type) {
+static int bm_tga_read_outrage_compressed16(int n, int num_mips, outrage_file_type type) {
   uint16_t *dest_data;
   uint16_t pixel;
   int width, height;
@@ -625,7 +625,7 @@ static int bm_tga_read_outrage_compressed16(int n, int num_mips, int type) {
         if (Bad_tga)
           return 0;
 
-        if (type != OUTRAGE_1555_COMPRESSED_MIPPED && type != OUTRAGE_4444_COMPRESSED_MIPPED) {
+        if (type != outrage_file_type::outrage_1555_compressed_mipped && type != outrage_file_type::outrage_4444_compressed_mipped) {
           if (pixel == 0x07e0)
             pixel = NEW_TRANSPARENT_COLOR;
           else {
@@ -648,7 +648,7 @@ static int bm_tga_read_outrage_compressed16(int n, int num_mips, int type) {
         if (Bad_tga)
           return 0;
 
-        if (type != OUTRAGE_1555_COMPRESSED_MIPPED && type != OUTRAGE_4444_COMPRESSED_MIPPED) {
+        if (type != outrage_file_type::outrage_1555_compressed_mipped && type != outrage_file_type::outrage_4444_compressed_mipped) {
           if (pixel == 0x07e0)
             pixel = NEW_TRANSPARENT_COLOR;
           else {
@@ -675,8 +675,9 @@ static int bm_tga_read_outrage_compressed16(int n, int num_mips, int type) {
 }
 
 // Loads a tga or ogf file into a bitmap...returns handle to bm or -1 on error
-int bm_tga_alloc_file(posix_istream &infile, char *name, int format) {
-  uint8_t image_id_len, color_map_type, image_type, pixsize, descriptor;
+int bm_tga_alloc_file(posix_istream &infile, char *name, bitmap_format format) {
+  uint8_t image_id_len, color_map_type, pixsize, descriptor;
+  outrage_file_type image_type;
   uint8_t upside_down = 0;
   uint16_t width, height;
   uint32_t pixel;
@@ -687,22 +688,28 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, int format) {
 
   image_id_len = (uint8_t)rdByte(infile);
   color_map_type = (uint8_t)rdByte(infile);
-  image_type = (uint8_t)rdByte(infile);
+  image_type = static_cast<outrage_file_type>(rdByte(infile));
 
   if (color_map_type != 0 ||
-      (image_type != 10 && image_type != 2 && image_type != OUTRAGE_TGA_TYPE && image_type != OUTRAGE_COMPRESSED_OGF &&
-       image_type != OUTRAGE_COMPRESSED_MIPPED && image_type != OUTRAGE_NEW_COMPRESSED_MIPPED &&
-       image_type != OUTRAGE_1555_COMPRESSED_MIPPED && image_type != OUTRAGE_4444_COMPRESSED_MIPPED)) {
+      (image_type != static_cast<outrage_file_type>(10) && image_type != static_cast<outrage_file_type>(2) &&
+       image_type != outrage_file_type::outrage_tga_type && image_type != outrage_file_type::outrage_compressed_ogf &&
+       image_type != outrage_file_type::outrage_compressed_mipped &&
+       image_type != outrage_file_type::outrage_new_compressed_mipped &&
+       image_type != outrage_file_type::outrage_1555_compressed_mipped &&
+       image_type != outrage_file_type::outrage_4444_compressed_mipped)) {
     LOG_ERROR("bm_tga: Can't read this type of TGA.");
     return -1;
   }
 
-  if (image_type == OUTRAGE_4444_COMPRESSED_MIPPED || image_type == OUTRAGE_1555_COMPRESSED_MIPPED ||
-      image_type == OUTRAGE_NEW_COMPRESSED_MIPPED || image_type == OUTRAGE_TGA_TYPE ||
-      image_type == OUTRAGE_COMPRESSED_MIPPED || image_type == OUTRAGE_COMPRESSED_OGF ||
-      image_type == OUTRAGE_COMPRESSED_OGF_8BIT) {
-    if (image_type == OUTRAGE_4444_COMPRESSED_MIPPED || image_type == OUTRAGE_NEW_COMPRESSED_MIPPED ||
-        image_type == OUTRAGE_1555_COMPRESSED_MIPPED) {
+  if (image_type == outrage_file_type::outrage_4444_compressed_mipped ||
+      image_type == outrage_file_type::outrage_1555_compressed_mipped ||
+      image_type == outrage_file_type::outrage_new_compressed_mipped ||
+      image_type == outrage_file_type::outrage_tga_type || image_type == outrage_file_type::outrage_compressed_mipped ||
+      image_type == outrage_file_type::outrage_compressed_ogf ||
+      image_type == outrage_file_type::outrage_compressed_ogf_8bit) {
+    if (image_type == outrage_file_type::outrage_4444_compressed_mipped ||
+        image_type == outrage_file_type::outrage_new_compressed_mipped ||
+        image_type == outrage_file_type::outrage_1555_compressed_mipped) {
       // cf_ReadString(name, BITMAP_NAME_LEN - 1, infile): read until NUL/EOF.
       size_t idx = 0;
       while (idx < (size_t)(BITMAP_NAME_LEN - 1)) {
@@ -716,8 +723,10 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, int format) {
       for (i = 0; i < BITMAP_NAME_LEN; i++)
         name[i] = (char)rdByte(infile);
     }
-    if (image_type == OUTRAGE_4444_COMPRESSED_MIPPED || image_type == OUTRAGE_1555_COMPRESSED_MIPPED ||
-        image_type == OUTRAGE_COMPRESSED_MIPPED || image_type == OUTRAGE_NEW_COMPRESSED_MIPPED)
+    if (image_type == outrage_file_type::outrage_4444_compressed_mipped ||
+        image_type == outrage_file_type::outrage_1555_compressed_mipped ||
+        image_type == outrage_file_type::outrage_compressed_mipped ||
+        image_type == outrage_file_type::outrage_new_compressed_mipped)
       num_mips = rdByte(infile);
     else
       num_mips = 1;
@@ -749,8 +758,8 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, int format) {
 
   n = bm_AllocBitmap(width, height, mipped * ((width * height * 2) / 3)).value_or(-1);
 
-  if (format == BITMAP_FORMAT_4444 || image_type == OUTRAGE_4444_COMPRESSED_MIPPED)
-    GameBitmaps[n].format = BITMAP_FORMAT_4444;
+  if (format == bitmap_format::_4444 || image_type == outrage_file_type::outrage_4444_compressed_mipped)
+    GameBitmaps[n].format = bitmap_format::_4444;
 
   // Copy the name
   strcpy(GameBitmaps[n].name, name);
@@ -770,8 +779,8 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, int format) {
   // Load the actual bitmap data in, converting it from 32 bit to 16 bit, and replacing
   // that pesky transparency color without our replacement
 
-  if (image_type == 10 || image_type == 2) {
-    if (image_type == 10) // compressed tga
+  if (image_type == static_cast<outrage_file_type>(10) || image_type == static_cast<outrage_file_type>(2)) {
+    if (image_type == static_cast<outrage_file_type>(10)) // compressed tga
     {
       int total = 0;
 
@@ -849,9 +858,12 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, int format) {
         }
       }
     }
-  } else if (image_type == OUTRAGE_4444_COMPRESSED_MIPPED || image_type == OUTRAGE_1555_COMPRESSED_MIPPED ||
-             image_type == OUTRAGE_NEW_COMPRESSED_MIPPED || image_type == OUTRAGE_COMPRESSED_MIPPED ||
-             image_type == OUTRAGE_COMPRESSED_OGF || image_type == OUTRAGE_COMPRESSED_OGF_8BIT) // COMPRESSED OGF
+  } else if (image_type == outrage_file_type::outrage_4444_compressed_mipped ||
+             image_type == outrage_file_type::outrage_1555_compressed_mipped ||
+             image_type == outrage_file_type::outrage_new_compressed_mipped ||
+             image_type == outrage_file_type::outrage_compressed_mipped ||
+             image_type == outrage_file_type::outrage_compressed_ogf ||
+             image_type == outrage_file_type::outrage_compressed_ogf_8bit) // COMPRESSED OGF
   {
     // read this ogf in all at once (much faster)
 
@@ -918,7 +930,7 @@ static int bm_GetFileType(posix_istream &infile, const char *dest) {
 // file read from disk).  `data`/`size` is wrapped in an fmemopen posix_istream
 // so all the decoders above read from memory instead of cfopen()/CFILE.
 // Returns the handle of the loaded bitmap, or -1 if something is wrong.
-int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname, int format, int mipped) {
+int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname, bitmap_format format, int mipped) {
   posix_istream infile(const_cast<uint8_t *>(data), size, std::ios_base::in);
   if (!infile.is_open()) {
     LOG_ERROR("bm_LoadBitmapFromMemory: Can't open in-memory stream for %s.", fname);

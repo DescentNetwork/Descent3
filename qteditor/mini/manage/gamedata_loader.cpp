@@ -89,7 +89,7 @@ static void discardBytes(posix_istream &infile, int count) {
 // still-open HOG stream `hogin`, and hands the bytes to the decoder via
 // bm_LoadBitmapFromMemory (fmemopen posix_istream).  Returns the bitmap handle,
 // or std::nullopt if the image is not in the Hog or fails to decode.
-static index_t loadTextureFromArchive(hog2::archive_t &archive, posix_istream &hogin, const std::string &img, int format) {
+static index_t loadTextureFromArchive(hog2::archive_t &archive, posix_istream &hogin, const std::string &img, bitmap_format format) {
   auto entry = archive.end();
   const std::string needle = lowercase(img);
   for (auto it = archive.begin(); it != archive.end(); ++it) {
@@ -209,7 +209,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
         // read straight out of the open d3.hog archive and decoded from memory.
         GameTextures[texn].bm_handle = -1;
         if (!texpage.bitmap_name.empty()) {
-          const index_t bm = loadTextureFromArchive(archive, hogin, texpage.bitmap_name, BITMAP_FORMAT_1555);
+          const index_t bm = loadTextureFromArchive(archive, hogin, texpage.bitmap_name, bitmap_format::_1555);
           if (bm) {
             GameTextures[texn].bm_handle = static_cast<int>(*bm);
             // .oaf textures are vclips: bm_handle holds the vclip index and the

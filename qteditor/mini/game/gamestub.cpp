@@ -45,4 +45,4 @@ void DrawVisEffect(vis_effect *) {}
 
 void RenderTerrain(uint8_t, int, int, int, int) {}
 
-int bm_format(int) { return BITMAP_FORMAT_1555; }
+bitmap_format bm_format(int) { return bitmap_format::_1555; }

@@ -48,11 +48,11 @@
 int bm_iff_alloc_file(posix_istream &ifile);
 
 // Loads a tga or ogf file into a bitmap...returns handle to bm or -1 on error
-int bm_tga_alloc_file(posix_istream &infile, char *name, int format = 0);
+int bm_tga_alloc_file(posix_istream &infile, char *name, bitmap_format format = bitmap_format::standard);
 
 // Allocs and loads a bitmap from a fully-resident in-memory payload.
 // Returns the handle of the loaded bitmap, or -1 on error.
-int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname, int format, int mipped);
+int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname, bitmap_format format, int mipped);
 
 // Loads a pcx file and converts it to 16 bit.  Returns bitmap handle or -1 on error
 int bm_pcx_alloc_file(struct CFILE* infile);

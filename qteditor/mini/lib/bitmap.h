@@ -67,9 +67,22 @@ struct [[gnu::packed]] bitmap_flags_t {
 static_assert(sizeof(bitmap_flags_t) == sizeof(uint8_t));
 
 // Bitmap priorities
-#define BITMAP_FORMAT_STANDARD 0
-#define BITMAP_FORMAT_1555 0
-#define BITMAP_FORMAT_4444 1
+enum class bitmap_format : uint8_t {
+  standard = 0,
+  _1555 = 0,
+  _4444 = 1,
+};
+
+// Image file payload types used by the iff/tga loader (all values > 10)
+enum class outrage_file_type : uint8_t {
+  outrage_4444_compressed_mipped = 121,
+  outrage_1555_compressed_mipped = 122,
+  outrage_new_compressed_mipped = 123,
+  outrage_compressed_mipped = 124,
+  outrage_compressed_ogf_8bit = 125,
+  outrage_tga_type = 126,
+  outrage_compressed_ogf = 127,
+};
 
 struct bms_bitmap {
   std::unique_ptr<uint16_t[]> data16; // 16bit data
@@ -79,7 +92,7 @@ struct bms_bitmap {
   uint8_t mip_levels;
   bitmap_flags_t flags;
 
-  uint8_t format;               // See bitmap format types above
+  bitmap_format format;          // See bitmap format types above
   char name[BITMAP_NAME_LEN]; // Whats the name of this bitmap? (ie SteelWall)
 };
 
@@ -107,13 +120,13 @@ void bm_FreeBitmap(int handle);
 // posix_istream by bm_LoadBitmapFromMemory.  This replaces the old CFILE-based
 // bm_AllocLoadFileBitmap which resolved files via cfopen()/open HOGs.
 // Returns the handle of the loaded bitmap, or -1 if something is wrong
-int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname, int format = BITMAP_FORMAT_1555,
-                            int mipped = 0);
+int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname,
+                            bitmap_format format = bitmap_format::_1555, int mipped = 0);
 // Allocs and loads a bitmap from an open file
 // Returns the handle of the loaded bitmap
 // Returns -1 if something is wrong
 // If mipped is non-zero, allocs extra space for mips and computes them
-int bm_AllocLoadBitmap(struct CFILE* infile, int mipped, int format = BITMAP_FORMAT_1555);
+int bm_AllocLoadBitmap(struct CFILE* infile, int mipped, bitmap_format format = bitmap_format::_1555);
 // Given a handle, makes a big random shape to let you know you are screwed.
 void bm_MakeBad(int handle);
 // Searches thru all bitmaps for a specific name, returns -1 if not found
@@ -151,7 +164,7 @@ int bm_SetBitmapIfTransparent(int handle);
 // Allocs and loads a bitmap but doesn't actually load texel data!
 // Returns the handle of the loaded bitmap
 // Returns -1 if something is wrong
-int bm_AllocLoadFileNoMemBitmap(const char *filename, int mipped, int format = BITMAP_FORMAT_1555);
+int bm_AllocLoadFileNoMemBitmap(const char *filename, int mipped, bitmap_format format = bitmap_format::_1555);
 // Just like bm_AllocBitmap but doesn't actually allocate memory.  Useful for paging!
 int bm_AllocNoMemBitmap(int w, int h);
 // clears bitmap
@@ -166,7 +179,7 @@ void bm_DestroyChunkedBitmap(chunked_bitmap *chunk);
 //	simply frees up a bitmap
 void bm_FreeBitmapData(int handle);
 // Returns the format of this bitmap
-int bm_format(int handle);
+bitmap_format bm_format(int handle);
 // Returns the number of mipmap levels
 int bm_miplevels(int handle);
 

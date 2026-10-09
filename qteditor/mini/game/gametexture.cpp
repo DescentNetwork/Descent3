@@ -149,7 +149,7 @@ int AllocateProceduralForTexture(int handle)
 // type is not NULL, sets it to 1 if the file is an animation, otherwise sets it
 // to zero.  Returns the bitmap/vclip handle, or -1 on error.
 int LoadTextureImage(const std::filesystem::path &filename, optref<int> type, int texture_size, int mipped, int pageable,
-                     int format) {
+                     bitmap_format format) {
   // Animation containers (.oaf/.ifl/.abm) page in as a vclip.
   std::string ext = filename.extension().string();
   if (!ext.empty() && ext[0] == '.')

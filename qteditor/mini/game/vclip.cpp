@@ -312,7 +312,7 @@ static uint32_t readOafWord(posix_istream &in) {
 // followed by num_frames contiguous OGF/TGA bitmaps, each decoded with
 // bm_tga_alloc_file (which leaves the stream positioned past its frame).  All
 // frames are stored in GameVClips[].  Returns the vclip index, or std::nullopt on error.
-index_t LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &name, int format) {
+index_t LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string &name, bitmap_format format) {
   if (size < 7)
     return std::nullopt;
 
@@ -377,7 +377,8 @@ index_t LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string 
 
 // Allocs and loads a vclip from the file named "filename"
 // Returns -1 on error, index into GameVClip array on success
-int AllocLoadVClip(const std::filesystem::path& filename, int texture_size, int mipped, int pageable, int format) {
+int AllocLoadVClip(const std::filesystem::path& filename, int texture_size, int mipped, int pageable,
+                   bitmap_format format) {
 #if 0
   char name[PAGENAME_LEN];
   int i;
@@ -433,7 +434,7 @@ int AllocLoadVClip(const std::filesystem::path& filename, int texture_size, int 
 // Returns -1 on error, else index into GameVClips on success
 // Argument texture means that this vclip is an animated texture and
 // needs to have an 8bit version
-int AllocLoadIFLVClip(const char *filename, int texture_size, int mipped, int format) {
+int AllocLoadIFLVClip(const char *filename, int texture_size, int mipped, bitmap_format format) {
 #if 0
   CFILE *infile;
   char name[PAGENAME_LEN];

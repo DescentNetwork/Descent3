@@ -4410,7 +4410,7 @@ inline int GetFaceAlpha(const face *fp, int bm_handle) {
       ret |= ATF_VERTEX;
 
     // Check for transparency
-    if (GameBitmaps[bm_handle].format != BITMAP_FORMAT_4444 && GameTextures[fp->tmap].flags.tmap2)
+    if (GameBitmaps[bm_handle].format != bitmap_format::_4444 && GameTextures[fp->tmap].flags.tmap2)
       ret |= ATF_TEXTURE;
   }
 

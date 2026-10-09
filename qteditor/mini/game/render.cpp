@@ -252,7 +252,7 @@ static inline int GetFaceAlpha(face *fp, int bm_handle) {
       ret |= ATF_CONSTANT;
 
     // Check for transparency
-    if (bm_handle >= 0 && GameBitmaps[bm_handle].format != BITMAP_FORMAT_4444 && GameTextures[fp->tmap].flags.tmap2)
+    if (bm_handle >= 0 && GameBitmaps[bm_handle].format != bitmap_format::_4444 && GameTextures[fp->tmap].flags.tmap2)
       ret |= ATF_TEXTURE;
   }
   return ret;
@@ -1331,7 +1331,7 @@ void RenderSpecularFacesFlat(int roomnum) {
     int bm_handle = GetTextureBitmap(fp->tmap, 0);
     if ((fp->flags.destroyed) && GameTextures[fp->tmap].flags.destroyable)
       bm_handle = GetTextureBitmap(GameTextures[fp->tmap].destroy_handle, 0);
-    if (bm_format(bm_handle) != BITMAP_FORMAT_4444)
+    if (bm_format(bm_handle) != bitmap_format::_4444)
       continue;
 
     int lm_handle;
@@ -1494,7 +1494,7 @@ texel = data[int_v][int_u];
     int bm_handle = GetTextureBitmap(fp->tmap, 0);
     if ((fp->flags.destroyed) && (GameTextures[fp->tmap].flags.destroyable))
       bm_handle = GetTextureBitmap(GameTextures[fp->tmap].destroy_handle, 0);
-    if (bm_format(bm_handle) != BITMAP_FORMAT_4444)
+    if (bm_format(bm_handle) != bitmap_format::_4444)
       continue;
     float reflect = GameTextures[fp->tmap].reflectivity * 1.5;
     for (vn = 0; vn < fp->num_verts; vn++) {

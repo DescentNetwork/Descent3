@@ -19,7 +19,7 @@ index_t bm_AllocBitmap(int w, int h, int add_mem) {
 
   GameBitmaps[n].width = (uint16_t)w;
   GameBitmaps[n].height = (uint16_t)h;
-  GameBitmaps[n].format = BITMAP_FORMAT_STANDARD;
+  GameBitmaps[n].format = bitmap_format::standard;
   GameBitmaps[n].flags = {};
   GameBitmaps[n].flags.changed = true;
   GameBitmaps[n].flags.brand_new = true;

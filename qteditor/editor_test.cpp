@@ -3983,7 +3983,7 @@ private slots:
     in.seek(archive.fileOffset(entry), std::ios_base::beg);
     in.read(buf.data(), entry->len);
 
-    const int vc = LoadVClipFromMemory(buf.data(), buf.size(), "pillar.oaf", BITMAP_FORMAT_1555).value_or(-1);
+    const int vc = LoadVClipFromMemory(buf.data(), buf.size(), "pillar.oaf", bitmap_format::_1555).value_or(-1);
     QVERIFY2(vc >= 0, "OAF containers should page in as a resident vclip");
 
     // pillar.oaf is an 8-frame 1555 vclip whose frames are all 128x128.
@@ -3998,7 +3998,7 @@ private slots:
     }
 
     // Loading the same vclip again returns the existing (resident) entry.
-    const int again = LoadVClipFromMemory(buf.data(), buf.size(), "pillar.oaf", BITMAP_FORMAT_1555).value_or(-1);
+    const int again = LoadVClipFromMemory(buf.data(), buf.size(), "pillar.oaf", bitmap_format::_1555).value_or(-1);
     QCOMPARE(again, vc);
 
     // explosion.oaf uses the legacy, non-versioned container header (num_frames
@@ -4014,7 +4014,7 @@ private slots:
     std::vector<uint8_t> legacy_buf(legacy->len);
     in.seek(archive.fileOffset(legacy), std::ios_base::beg);
     in.read(legacy_buf.data(), legacy->len);
-    const int legacy_vc = LoadVClipFromMemory(legacy_buf.data(), legacy_buf.size(), "explosion.oaf", BITMAP_FORMAT_1555).value_or(-1);
+    const int legacy_vc = LoadVClipFromMemory(legacy_buf.data(), legacy_buf.size(), "explosion.oaf", bitmap_format::_1555).value_or(-1);
     QVERIFY2(legacy_vc >= 0, "legacy OAF containers should page in as a resident vclip");
     QVERIFY(!GameVClips[legacy_vc].flags.not_resident);
     QCOMPARE(GameVClips[legacy_vc].num_frames, 12);
