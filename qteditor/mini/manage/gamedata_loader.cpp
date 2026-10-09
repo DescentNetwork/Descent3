@@ -192,13 +192,13 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 
   bool ok = true;
   while (!infile.eof()) {
-    uint8_t pagetype = 0;
+    page_type pagetype = page_type::unknown;
     int32_t len = 0;
-    infile >> pagetype;
+    infile >> reinterpret_cast<uint8_t&>(pagetype);
     infile >> len;
 
     switch (pagetype) {
-    case PAGETYPE_TEXTURE:
+    case page_type::texture:
       // GameTextures is a vector that grows to hold every paged texture;
       // texture_xlate stays indexed by the on-disk tmap value.
       {
@@ -221,7 +221,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       }
       break;
 
-    case PAGETYPE_WEAPON:
+    case page_type::weapon:
       if (!mng_ReadNewWeaponPage(infile, &weaponpage))
         ok = false;
       {
@@ -230,7 +230,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       }
       break;
 
-    case PAGETYPE_DOOR:
+    case page_type::door:
       if (!mng_ReadNewDoorPage(infile, &doorpage))
         ok = false;
       {
@@ -239,7 +239,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       }
       break;
 
-    case PAGETYPE_SHIP:
+    case page_type::ship:
       if (!mng_ReadNewShipPage(infile, &shippage))
         ok = false;
       {
@@ -248,7 +248,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       }
       break;
 
-    case PAGETYPE_SOUND:
+    case page_type::sound:
       if (!mng_ReadNewSoundPage(infile, &soundpage))
         ok = false;
       {
@@ -257,7 +257,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       }
       break;
 
-    case PAGETYPE_GENERIC:
+    case page_type::generic:
       if (Num_objects < MAX_OBJECTS) {
         if (!mng_ReadNewGenericPage(infile, &genericpage))
           ok = false;
@@ -269,7 +269,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       }
       break;
 
-    case PAGETYPE_MEGACELL:
+    case page_type::megacell:
       {
         const size_t slot = Megacells.next_slot();
         if (!mng_ReadNewMegacellPage(infile, &megacellpage))
@@ -284,10 +284,10 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       }
       break;
 
-    case PAGETYPE_ROBOT:
-    case PAGETYPE_POWERUP:
-    case PAGETYPE_GAMEFILE:
-    case PAGETYPE_UNKNOWN:
+    case page_type::robot:
+    case page_type::powerup:
+    case page_type::gamefile:
+    case page_type::unknown:
     default:
       // Unsupported/game-only page types: read and discard the payload.
       discardBytes(infile, len - 4);

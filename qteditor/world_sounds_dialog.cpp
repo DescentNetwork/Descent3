@@ -112,10 +112,10 @@ void WorldSoundsDialog::saveSoundsOnClose()
   if (!Network_up)
     return;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
-    if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == PAGETYPE_SOUND) {
+    if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == page_type::sound) {
       const int t = FindSoundName(GlobalTrackLocks[i].name).value_or(-1);
       if (t != -1)
-        mng_ReplacePage(Sounds[t].name, Sounds[t].name, t, PAGETYPE_SOUND, 1);
+        mng_ReplacePage(Sounds[t].name, Sounds[t].name, t, page_type::sound, 1);
     }
   }
 }
@@ -256,7 +256,7 @@ void WorldSoundsDialog::updateDialog()
 
     {
       QPushButton *checkin = ui->IDC_CHECKIN_SOUND;
-      if (!mng_FindTrackLock(s->name, PAGETYPE_SOUND)) {
+      if (!mng_FindTrackLock(s->name, page_type::sound)) {
         checkin->setEnabled(false);
         ui->IDC_LOCK_SOUND->setEnabled(true);
         ui->IDC_SOUND_CHANGE_NAME->setEnabled(false);
@@ -322,7 +322,7 @@ void WorldSoundsDialog::onAddSound() {
   std::filesystem::path destname = LocalSoundsDir / SoundFiles[Sounds[*sound_handle].sample_index].name;
   std::filesystem::copy(std::filesystem::path(pathname.toStdString()), (destname), std::filesystem::copy_options::overwrite_existing);
 
-  mng_AllocTrackLock(cur_name, PAGETYPE_SOUND);
+  mng_AllocTrackLock(cur_name, page_type::sound);
   app.current_sound = *sound_handle;
   RemapSounds();
   if (app.current_sound) Sound_system.CheckAndForceSoundDataAlloc(static_cast<int>(*app.current_sound));
@@ -360,7 +360,7 @@ void WorldSoundsDialog::onPrevSound() {
 
 void WorldSoundsDialog::onDeleteSound() {
   if (auto s = data()) {
-    const int tl = mng_FindTrackLock(s->name, PAGETYPE_SOUND).value_or(-1);
+    const int tl = mng_FindTrackLock(s->name, page_type::sound).value_or(-1);
     if (tl == -1) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This sound is not yours to delete.  Lock first.");
       return;
@@ -373,16 +373,16 @@ void WorldSoundsDialog::onDeleteSound() {
 
     mngs_Pagelock pl;
     pl.name = s->name;
-    pl.pagetype = PAGETYPE_SOUND;
+    pl.pagetype = page_type::sound;
 
     if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
       mng_FreeTrackLock(tl);
-      Q_ASSERT(mng_DeletePage(s->name, PAGETYPE_SOUND, 1));
+      Q_ASSERT(mng_DeletePage(s->name, page_type::sound, 1));
     } else {
       mng_FreeTrackLock(tl);
-      mng_DeletePage(s->name, PAGETYPE_SOUND, 1);
-      mng_DeletePage(s->name, PAGETYPE_SOUND, 0);
-      mng_DeletePagelock(s->name, PAGETYPE_SOUND);
+      mng_DeletePage(s->name, page_type::sound, 1);
+      mng_DeletePage(s->name, page_type::sound, 0);
+      mng_DeletePagelock(s->name, page_type::sound);
     }
 
     if (app.current_sound) {
@@ -406,7 +406,7 @@ void WorldSoundsDialog::onLockSound() {
     mngs_Pagelock temp_pl;
     mngs_sound_page soundpage;
     temp_pl.name = s->name;
-    temp_pl.pagetype = PAGETYPE_SOUND;
+    temp_pl.pagetype = page_type::sound;
 
     const int r = mng_CheckIfPageLocked(&temp_pl);
     if (r == 2) {
@@ -430,7 +430,7 @@ void WorldSoundsDialog::onLockSound() {
       }
       if (mng_FindSpecificSoundPage(temp_pl.name, &soundpage)) {
         if (mng_AssignSoundPageToSound(&soundpage, n)) {
-          if (!mng_ReplacePage(s->name, s->name, n, PAGETYPE_SOUND, 1)) {
+          if (!mng_ReplacePage(s->name, s->name, n, page_type::sound, 1)) {
             QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
             mng_EraseLocker();
             return;
@@ -439,7 +439,7 @@ void WorldSoundsDialog::onLockSound() {
         } else {
           QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this sound.");
         }
-        mng_AllocTrackLock(s->name, PAGETYPE_SOUND);
+        mng_AllocTrackLock(s->name, page_type::sound);
       } else {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that sound in the table file!");
       }
@@ -457,7 +457,7 @@ void WorldSoundsDialog::onCheckinSound() {
 
     mngs_Pagelock temp_pl;
     temp_pl.name = s->name;
-    temp_pl.pagetype = PAGETYPE_SOUND;
+    temp_pl.pagetype = page_type::sound;
 
     const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
     if (r < 0)
@@ -471,13 +471,13 @@ void WorldSoundsDialog::onCheckinSound() {
         mng_EraseLocker();
         return;
       }
-      if (!mng_ReplacePage(s->name, s->name, n, PAGETYPE_SOUND, 0))
+      if (!mng_ReplacePage(s->name, s->name, n, page_type::sound, 0))
         QMessageBox::critical(this, "Error!", ErrorString);
       else {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound checked in.");
-        Q_ASSERT(mng_DeletePage(s->name, PAGETYPE_SOUND, 1) == 1);
+        Q_ASSERT(mng_DeletePage(s->name, page_type::sound, 1) == 1);
         mng_EraseLocker();
-        const int p = mng_FindTrackLock(s->name, PAGETYPE_SOUND).value_or(-1);
+        const int p = mng_FindTrackLock(s->name, page_type::sound).value_or(-1);
         Q_ASSERT(p != -1);
         mng_FreeTrackLock(p);
       }
@@ -507,14 +507,14 @@ void WorldSoundsDialog::onOverride() {
   if (auto s = data()) {
     mngs_Pagelock temp_pl;
     temp_pl.name = s->name;
-    temp_pl.pagetype = PAGETYPE_SOUND;
+    temp_pl.pagetype = page_type::sound;
     mng_OverrideToUnlocked(&temp_pl);
   }
 }
 
 void WorldSoundsDialog::onChangeName() {
   if (auto s = data()) {
-    const index_t p = mng_FindTrackLock(s->name, PAGETYPE_SOUND);
+    const index_t p = mng_FindTrackLock(s->name, page_type::sound);
     if (!p) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this sound if you wish to change its name.");
       return;
@@ -532,15 +532,15 @@ void WorldSoundsDialog::onChangeName() {
       return;
     mngs_Pagelock pl;
     pl.name = s->name;
-    pl.pagetype = PAGETYPE_SOUND;
+    pl.pagetype = page_type::sound;
     const int ret = mng_CheckIfPageOwned(&pl, TableUser.toStdString());
     if (ret < 0)
       QMessageBox::critical(this, "Error!", ErrorString);
     else if (ret == 1)
-      mng_RenamePage(s->name, name.toStdString(), PAGETYPE_SOUND);
+      mng_RenamePage(s->name, name.toStdString(), page_type::sound);
     else if (ret == 2) {
       GlobalTrackLocks[*p].name = name.toStdString();
-      mng_ReplacePage(GlobalTrackLocks[*p].name, name.toStdString(), app.current_sound, PAGETYPE_SOUND, 1);
+      mng_ReplacePage(GlobalTrackLocks[*p].name, name.toStdString(), app.current_sound, page_type::sound, 1);
     } else if (ret == 0) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You don't own this page.  Get Jason now!");
       mng_FreeTrackLock(*p);

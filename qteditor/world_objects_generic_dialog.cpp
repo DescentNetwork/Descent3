@@ -289,7 +289,7 @@ WorldObjectsGenericDialog::~WorldObjectsGenericDialog() {
 void WorldObjectsGenericDialog::setObjectId(index_t id) { m_object_id = id; }
 
 bool WorldObjectsGenericDialog::isLocked(index_t n) {
-  return n && mng_FindTrackLock(Object_info[*n].name, PAGETYPE_GENERIC);
+  return n && mng_FindTrackLock(Object_info[*n].name, page_type::generic);
 }
 
 uint32_t WorldObjectsGenericDialog::countLockedItems() {
@@ -619,7 +619,7 @@ void WorldObjectsGenericDialog::onAddNew() {
   std::filesystem::path destname = LocalModelsDir / Poly_models[obj.render_handle].name;
   std::filesystem::copy(pathname, destname, std::filesystem::copy_options::overwrite_existing);
 
-  mng_AllocTrackLock(current_name, PAGETYPE_GENERIC);
+  mng_AllocTrackLock(current_name, page_type::generic);
   m_object_id = object_handle;
   RemapStaticIDs();
   updateDialog();
@@ -629,7 +629,7 @@ void WorldObjectsGenericDialog::onCheckedOut() {
   QString str = QString("User %1 has these objects held locally:\n\n").arg(TableUser);
   int total = 0;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
-    if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == PAGETYPE_GENERIC) {
+    if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == page_type::generic) {
       const int n = FindObjectIDName(GlobalTrackLocks[i].name).value_or(-1);
       if (n != -1 && Object_info[n].type == m_type) {
         str += "   ";
@@ -651,7 +651,7 @@ void WorldObjectsGenericDialog::onCheckIn() {
 
     mngs_Pagelock temp_pl;
     temp_pl.name = d->name;
-    temp_pl.pagetype = PAGETYPE_GENERIC;
+    temp_pl.pagetype = page_type::generic;
 
     const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
     if (r < 0)
@@ -665,7 +665,7 @@ void WorldObjectsGenericDialog::onCheckIn() {
         mng_EraseLocker();
         return;
       }
-      if (!mng_ReplacePage(d->name, d->name, m_object_id, PAGETYPE_GENERIC, 0)) {
+      if (!mng_ReplacePage(d->name, d->name, m_object_id, page_type::generic, 0)) {
         QMessageBox::critical(this, "Error!", ErrorString);
       } else {
         std::filesystem::path srcname = LocalModelsDir / Poly_models[d->render_handle].name;
@@ -682,9 +682,9 @@ void WorldObjectsGenericDialog::onCheckIn() {
           std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
         }
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object checked in.");
-        Q_ASSERT(mng_DeletePage(d->name, PAGETYPE_GENERIC, 1) == 1);
+        Q_ASSERT(mng_DeletePage(d->name, page_type::generic, 1) == 1);
         mng_EraseLocker();
-        const index_t p = mng_FindTrackLock(d->name, PAGETYPE_GENERIC);
+        const index_t p = mng_FindTrackLock(d->name, page_type::generic);
         Q_ASSERT(p);
         mng_FreeTrackLock(*p);
       }
@@ -698,7 +698,7 @@ void WorldObjectsGenericDialog::onDelete()
 {
   if (auto d = data())
   {
-    const int tl = mng_FindTrackLock(d->name, PAGETYPE_GENERIC).value_or(-1);
+    const int tl = mng_FindTrackLock(d->name, page_type::generic).value_or(-1);
     if (tl == -1) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This object is not yours to delete.  Lock first.");
       return;
@@ -712,16 +712,16 @@ void WorldObjectsGenericDialog::onDelete()
 
     mngs_Pagelock pl;
     pl.name = d->name;
-    pl.pagetype = PAGETYPE_GENERIC;
+    pl.pagetype = page_type::generic;
 
     if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
       mng_FreeTrackLock(tl);
-      Q_ASSERT(mng_DeletePage(d->name, PAGETYPE_GENERIC, 1));
+      Q_ASSERT(mng_DeletePage(d->name, page_type::generic, 1));
     } else {
       mng_FreeTrackLock(tl);
-      mng_DeletePage(d->name, PAGETYPE_GENERIC, 0);
-      mng_DeletePage(d->name, PAGETYPE_GENERIC, 1);
-      mng_DeletePagelock(d->name, PAGETYPE_GENERIC);
+      mng_DeletePage(d->name, page_type::generic, 0);
+      mng_DeletePage(d->name, page_type::generic, 1);
+      mng_DeletePagelock(d->name, page_type::generic);
     }
 
     const index_t old_current = m_object_id;
@@ -751,7 +751,7 @@ void WorldObjectsGenericDialog::onLock() {
     mngs_Pagelock temp_pl;
     mngs_generic_page page;
     temp_pl.name = d->name;
-    temp_pl.pagetype = PAGETYPE_GENERIC;
+    temp_pl.pagetype = page_type::generic;
 
     const int r = mng_CheckIfPageLocked(&temp_pl);
     if (r == 2) {
@@ -775,7 +775,7 @@ void WorldObjectsGenericDialog::onLock() {
       }
       if (mng_FindSpecificGenericPage(temp_pl.name, &page)) {
         if (mng_AssignGenericPageToObjInfo(page, m_object_id)) {
-          if (!mng_ReplacePage(d->name, d->name, m_object_id, PAGETYPE_GENERIC, 1)) {
+          if (!mng_ReplacePage(d->name, d->name, m_object_id, page_type::generic, 1)) {
             QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
             mng_EraseLocker();
             return;
@@ -784,7 +784,7 @@ void WorldObjectsGenericDialog::onLock() {
         } else {
           QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this object.");
         }
-        mng_AllocTrackLock(d->name, PAGETYPE_GENERIC);
+        mng_AllocTrackLock(d->name, page_type::generic);
       } else {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that object in the table file!");
       }
@@ -797,7 +797,7 @@ void WorldObjectsGenericDialog::onLock() {
 void WorldObjectsGenericDialog::onUndoLock() {
   if (auto d = data())
   {
-    const int tl = mng_FindTrackLock(d->name, PAGETYPE_GENERIC).value_or(-1);
+    const int tl = mng_FindTrackLock(d->name, page_type::generic).value_or(-1);
     if (tl == -1)
       return;
     if (QMessageBox::question(this, "Are you sure?",
@@ -809,10 +809,10 @@ void WorldObjectsGenericDialog::onUndoLock() {
     mngs_Pagelock pl;
     mngs_generic_page page;
     pl.name = d->name;
-    pl.pagetype = PAGETYPE_GENERIC;
+    pl.pagetype = page_type::generic;
 
     mng_FreeTrackLock(tl);
-    Q_ASSERT(mng_DeletePage(d->name, PAGETYPE_GENERIC, 1));
+    Q_ASSERT(mng_DeletePage(d->name, page_type::generic, 1));
     Q_ASSERT(mng_FindSpecificGenericPage(pl.name, &page));
     Q_ASSERT(mng_AssignGenericPageToObjInfo(page, m_object_id));
     mng_EraseLocker();
@@ -885,7 +885,7 @@ void WorldObjectsGenericDialog::onPaste()
   if (data()->lo_render_handle != -1)
     Poly_models[data()->lo_render_handle].used++;
   m_object_id = n;
-  mng_AllocTrackLock(obj.name, PAGETYPE_GENERIC);
+  mng_AllocTrackLock(obj.name, page_type::generic);
   RemapStaticIDs();
   updateDialog();
 }
@@ -966,7 +966,7 @@ void WorldObjectsGenericDialog::onOverride() {
   {
     mngs_Pagelock temp_pl;
     temp_pl.name = data()->name;
-    temp_pl.pagetype = PAGETYPE_GENERIC;
+    temp_pl.pagetype = page_type::generic;
     mng_OverrideToUnlocked(&temp_pl);
   }
 }
@@ -1003,10 +1003,10 @@ void WorldObjectsGenericDialog::saveGenericsOnClose() {
   if (!Network_up)
     return;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
-    if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == PAGETYPE_GENERIC) {
+    if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == page_type::generic) {
       const int t = FindObjectIDName(GlobalTrackLocks[i].name).value_or(-1);
       if (t != -1)
-        mng_ReplacePage(Object_info[t].name, Object_info[t].name, t, PAGETYPE_GENERIC, 1);
+        mng_ReplacePage(Object_info[t].name, Object_info[t].name, t, page_type::generic, 1);
     }
   }
 }

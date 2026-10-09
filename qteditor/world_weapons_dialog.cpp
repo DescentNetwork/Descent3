@@ -86,9 +86,9 @@ WorldWeaponsDialog::~WorldWeaponsDialog() { saveWeaponsOnClose(); }
 void WorldWeaponsDialog::saveWeaponsOnClose() {
   if (Network_up)
     for (int i = 0; i < MAX_TRACKLOCKS; i++)
-      if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == PAGETYPE_WEAPON) {
+      if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == page_type::weapon) {
         if (auto t = FindWeaponName(GlobalTrackLocks[i].name))
-          mng_ReplacePage(Weapons[*t].name, Weapons[*t].name, *t, PAGETYPE_WEAPON, 1);
+          mng_ReplacePage(Weapons[*t].name, Weapons[*t].name, *t, page_type::weapon, 1);
       }
 }
 
@@ -316,7 +316,7 @@ void WorldWeaponsDialog::updateDialog()
     ui->IDC_ENERGY_RADIO->setChecked(!wf.matter_weapon);
     ui->IDC_MATTER_RADIO->setChecked(wf.matter_weapon);
 
-    if (!mng_FindTrackLock(weapon->name, PAGETYPE_WEAPON)) {
+    if (!mng_FindTrackLock(weapon->name, page_type::weapon)) {
       ui->IDC_CHECKIN_WEAPON->setEnabled(false);
       ui->IDC_LOCK_WEAPON->setEnabled(true);
     } else {
@@ -362,7 +362,7 @@ void WorldWeaponsDialog::onAddWeapon() {
     return;
   }
   Weapons[*handle].name = name.toStdString();
-  mng_AllocTrackLock(Weapons[*handle].name, PAGETYPE_WEAPON);
+  mng_AllocTrackLock(Weapons[*handle].name, page_type::weapon);
   app.current_weapon = *handle;
   RemapWeapons();
   updateDialog();
@@ -373,7 +373,7 @@ void WorldWeaponsDialog::onDeleteWeapon() {
   if(auto w = data())
   {
     const uint32_t n = app.current_weapon ? *app.current_weapon : 0;
-    const int tl = mng_FindTrackLock(w->name, PAGETYPE_WEAPON).value_or(-1);
+    const int tl = mng_FindTrackLock(w->name, page_type::weapon).value_or(-1);
     if (tl == -1) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This weapon is not yours to delete.  Lock first.");
       return;
@@ -386,15 +386,15 @@ void WorldWeaponsDialog::onDeleteWeapon() {
       return;
     mngs_Pagelock pl;
     pl.name = w->name;
-    pl.pagetype = PAGETYPE_WEAPON;
+    pl.pagetype = page_type::weapon;
     if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
       mng_FreeTrackLock(tl);
-      Q_ASSERT(mng_DeletePage(w->name, PAGETYPE_WEAPON, 1));
+      Q_ASSERT(mng_DeletePage(w->name, page_type::weapon, 1));
     } else {
       mng_FreeTrackLock(tl);
-      mng_DeletePage(w->name, PAGETYPE_WEAPON, 1);
-      mng_DeletePage(w->name, PAGETYPE_WEAPON, 0);
-      mng_DeletePagelock(w->name, PAGETYPE_WEAPON);
+      mng_DeletePage(w->name, page_type::weapon, 1);
+      mng_DeletePage(w->name, page_type::weapon, 0);
+      mng_DeletePagelock(w->name, page_type::weapon);
     }
     if (const index_t next = GetNextWeapon(n))
       if (next) app.current_weapon = *next;
@@ -416,7 +416,7 @@ void WorldWeaponsDialog::onLockWeapon()
     mngs_Pagelock temp_pl;
     mngs_weapon_page weaponpage;
     temp_pl.name = w->name;
-    temp_pl.pagetype = PAGETYPE_WEAPON;
+    temp_pl.pagetype = page_type::weapon;
     const int r = mng_CheckIfPageLocked(&temp_pl);
     if (r == 2) {
       if (QMessageBox::question(this, "Are you sure?",
@@ -439,7 +439,7 @@ void WorldWeaponsDialog::onLockWeapon()
       }
       if (mng_FindSpecificWeaponPage(temp_pl.name, &weaponpage, 0)) {
         if (mng_AssignWeaponPageToWeapon(&weaponpage, n)) {
-          if (!mng_ReplacePage(w->name, w->name, n, PAGETYPE_WEAPON, 1)) {
+          if (!mng_ReplacePage(w->name, w->name, n, page_type::weapon, 1)) {
             QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
             mng_EraseLocker();
             return;
@@ -448,7 +448,7 @@ void WorldWeaponsDialog::onLockWeapon()
         } else {
           QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this weapon.");
         }
-        mng_AllocTrackLock(w->name, PAGETYPE_WEAPON);
+        mng_AllocTrackLock(w->name, page_type::weapon);
       } else {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that weapon in the table file!");
       }
@@ -466,7 +466,7 @@ void WorldWeaponsDialog::onCheckinWeapon() {
       return;
     mngs_Pagelock temp_pl;
     temp_pl.name = w->name;
-    temp_pl.pagetype = PAGETYPE_WEAPON;
+    temp_pl.pagetype = page_type::weapon;
     const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
     if (r < 0)
       QMessageBox::critical(this, "Error!", ErrorString);
@@ -479,13 +479,13 @@ void WorldWeaponsDialog::onCheckinWeapon() {
         mng_EraseLocker();
         return;
       }
-      if (!mng_ReplacePage(w->name, w->name, n, PAGETYPE_WEAPON, 0))
+      if (!mng_ReplacePage(w->name, w->name, n, page_type::weapon, 0))
         QMessageBox::critical(this, "Error!", ErrorString);
       else {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Weapon checked in.");
-        Q_ASSERT(mng_DeletePage(w->name, PAGETYPE_WEAPON, 1) == 1);
+        Q_ASSERT(mng_DeletePage(w->name, page_type::weapon, 1) == 1);
         mng_EraseLocker();
-        const int p = mng_FindTrackLock(w->name, PAGETYPE_WEAPON).value_or(-1);
+        const int p = mng_FindTrackLock(w->name, page_type::weapon).value_or(-1);
         Q_ASSERT(p != -1);
         mng_FreeTrackLock(p);
       }
@@ -499,7 +499,7 @@ void WorldWeaponsDialog::onWeaponsOut() {
   QString str = QString("User %1 has these weapons held locally:\n\n").arg(TableUser);
   int total = 0;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
-    if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == PAGETYPE_WEAPON) {
+    if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == page_type::weapon) {
       str += QString::fromStdString(GlobalTrackLocks[i].name);
       str += "\n";
       total++;
@@ -530,14 +530,14 @@ void WorldWeaponsDialog::onWeaponPulldownChanged()
 void WorldWeaponsDialog::onOverride() {
   mngs_Pagelock temp_pl;
   temp_pl.name = data()->name;
-  temp_pl.pagetype = PAGETYPE_WEAPON;
+  temp_pl.pagetype = page_type::weapon;
   mng_OverrideToUnlocked(&temp_pl);
 }
 
 void WorldWeaponsDialog::onCopy() {
   if (auto w = data())
   {
-      if(!mng_FindTrackLock(w->name, PAGETYPE_WEAPON)) {
+      if(!mng_FindTrackLock(w->name, page_type::weapon)) {
       QMessageBox::warning(this, "Unable to copy", "You must lock this weapon before you can copy it.");
       return;
     }
@@ -549,7 +549,7 @@ void WorldWeaponsDialog::onChangeName()
 {
   if(auto w = data())
   {
-    const index_t p = mng_FindTrackLock(w->name, PAGETYPE_WEAPON);
+    const index_t p = mng_FindTrackLock(w->name, page_type::weapon);
     if (!p) {
       QMessageBox::warning(this, "Unable to rename", "You must lock this weapon if you wish to change its name.");
       return;

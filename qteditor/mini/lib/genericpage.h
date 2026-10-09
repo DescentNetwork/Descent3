@@ -63,7 +63,7 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
 // Serializes a generic page in the current table-file format (the exact mirror
 // of mng_ReadNewGenericPage: same field order and encodings, so a page written
 // here parses back bit-for-bit with the reader).  Writes the full page frame —
-// [PAGETYPE_GENERIC][int32 len] header + payload — just like the original
+// [page_type::generic][int32 len] header + payload — just like the original
 // StartManagePage/EndManagePage-wrapped writer.
 void mng_WriteNewGenericPage(byte_ostream &outfile, mngs_generic_page *genericpage);
 

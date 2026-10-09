@@ -166,6 +166,7 @@ bool EBNode_VerifyGraph();
 #include "table_manage.h"
 
 #include <algorithm>
+#include <utility>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
@@ -7980,7 +7981,7 @@ private slots:
   // Round-trips a generic page through mng_WriteNewGenericPage back into
   // mng_ReadNewGenericPage and compares key fields.  The writer must be the
   // exact mirror of the reader (same field order and encodings), and must emit
-  // the [PAGETYPE_GENERIC][int32 len] page frame the loader loop expects.
+  // the [page_type::generic][int32 len] page frame the loader loop expects.
   void testGenericPageWriteReadRoundTrip()
   {
     std::vector<uint8_t> buffer(64 * 1024);
@@ -8024,13 +8025,13 @@ private slots:
     QVERIFY(bytes > 16);
     out.close(); // materialize fmemopen stdio buffering into the memory
 
-    // Page frame: [PAGETYPE_GENERIC][int32 len][payload].
+    // Page frame: [page_type::generic][int32 len][payload].
     posix_istream in(buffer.data(), bytes, std::ios_base::in);
     uint8_t pagetype = 0;
     int32_t len = 0;
     in >> pagetype;
     in >> len;
-    QCOMPARE(static_cast<int>(pagetype), static_cast<int>(PAGETYPE_GENERIC));
+    QCOMPARE(static_cast<int>(pagetype), static_cast<int>(page_type::generic));
     QCOMPARE(static_cast<int32_t>(len), static_cast<int32_t>(bytes) - 1);
 
     mngs_generic_page got{};
@@ -8160,7 +8161,7 @@ private slots:
       posix_ostream file(path, std::ios_base::out);
 
       // A non-generic page first; it must be copied through untouched.
-      file.put(PAGETYPE_SOUND);
+      file.put(std::to_underlying(page_type::sound));
       int32_t len = 3;
       file << len;
       file.write("ABC", 3);
@@ -8244,7 +8245,7 @@ private slots:
     std::ifstream ifs(out_path, std::ios::binary);
     std::vector<uint8_t> raw((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     QVERIFY(raw.size() > 5);
-    QCOMPARE(static_cast<int>(raw[0]), static_cast<int>(PAGETYPE_SOUND));
+    QCOMPARE(static_cast<int>(raw[0]), static_cast<int>(page_type::sound));
     QCOMPARE(static_cast<int>(raw[1]), 3); // little-endian int32 len of 3
     QCOMPARE(static_cast<int>(raw[2]), 0);
     QCOMPARE(static_cast<int>(raw[3]), 0);

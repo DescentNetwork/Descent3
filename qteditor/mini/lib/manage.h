@@ -44,20 +44,23 @@
 #define MAX_PAGELOCKS 1000
 #define MAX_TRACKLOCKS 5000
 
-#define PAGETYPE_UNKNOWN 0
-#define PAGETYPE_TEXTURE 1
-#define PAGETYPE_WEAPON 2
-#define PAGETYPE_ROBOT 3
-#define PAGETYPE_POWERUP 4
-#define PAGETYPE_DOOR 5
-#define PAGETYPE_SHIP 6
-#define PAGETYPE_SOUND 7
-#define PAGETYPE_MEGACELL 8
-#define PAGETYPE_GAMEFILE 9
-#define PAGETYPE_GENERIC 10
+// The type of a manage page
+enum class page_type : uint8_t {
+  unknown = 0,
+  texture = 1,
+  weapon = 2,
+  robot = 3,
+  powerup = 4,
+  door = 5,
+  ship = 6,
+  sound = 7,
+  megacell = 8,
+  gamefile = 9,
+  generic = 10,
+};
 
 struct mngs_Pagelock {
-  uint8_t pagetype; // of type PAGETYPE above
+  page_type pagetype; // of type page_type above
   std::string name;
   std::string holder;
 };
@@ -65,7 +68,7 @@ struct mngs_Pagelock {
 struct mngs_track_lock {
   uint8_t used;
   uint8_t overlay;
-  uint8_t pagetype;
+  page_type pagetype;
   uint8_t __pad;
   int stack_filepos; // file position of this page in the tablefile (the value we are
                      // pushing, for addon tables)
@@ -95,7 +98,7 @@ void mng_ClearAddonTables();
 bool mng_SetAddonTable(const std::string& name);
 
 // Pushes an addon pack onto the stack so we can keep track of it
-void mng_PushAddonPage(int pagetype, char *name, int overlay);
+void mng_PushAddonPage(page_type pagetype, char *name, int overlay);
 
 // Loads and allocs all pages found locally
 void mng_LoadAddonPages();
@@ -160,8 +163,8 @@ void mng_CheckToCreateNetTables();
 void mng_InitLocalDirectories();
 void mng_InitNetDirectories();
 
-void mng_ReadDummyPage(struct CFILE* infile, uint8_t pagetype);
-void mng_ReadWriteDummyPage(struct CFILE* infile, struct CFILE* outfile, uint8_t pagetype);
+void mng_ReadDummyPage(struct CFILE* infile, page_type pagetype);
+void mng_ReadWriteDummyPage(struct CFILE* infile, struct CFILE* outfile, page_type pagetype);
 
 // Function for writing out "undefined" page...useful for placeholding
 void mng_WriteUnknownPage(struct CFILE* outfile);
@@ -193,7 +196,7 @@ int mng_ReplacePagelock(const std::string &name, mngs_Pagelock *);
 int mng_GetListOfLocks(mngs_Pagelock *pl, int max, char *who);
 
 // Given a name and a pagetype, deletes the one already inside the lock file
-int mng_DeletePagelock(const std::string &name, int pagetype);
+int mng_DeletePagelock(const std::string &name, page_type pagetype);
 
 // Call this before any chokepoint functions are executed.
 // Locks the whole table system for our exclusive use
@@ -201,7 +204,7 @@ int mng_DeletePagelock(const std::string &name, int pagetype);
 int mng_MakeLocker();
 
 // Given a list of names and a pagetype, deletes the ones already inside the lock file
-int mng_DeletePagelockSeries(char *names[], int num, int pagetype);
+int mng_DeletePagelockSeries(char *names[], int num, page_type pagetype);
 
 // Simply erases the Lockerfile
 void mng_EraseLocker();
@@ -217,11 +220,11 @@ void mng_InitTrackLocks();
 
 // Given a name, returns the index of the tracklock with that name
 // -1 indicates that it wasn't found
-index_t mng_FindTrackLock(const std::string &name, int pagetype);
+index_t mng_FindTrackLock(const std::string &name, page_type pagetype);
 
 // Searches through global array of tracklocks and returns first free one
 // returns -1 if none free
-index_t mng_AllocTrackLock(const std::string &name, int pagetype);
+index_t mng_AllocTrackLock(const std::string &name, page_type pagetype);
 
 // Frees a tracklock
 void mng_FreeTrackLock(uint32_t n);
@@ -232,7 +235,7 @@ void mng_FreeTrackLock(uint32_t n);
 void mng_DisplayLockList(char *name);
 
 // Renames a page on the network
-int mng_RenamePage(const std::string &oldname, const std::string &newname, int pagetype);
+int mng_RenamePage(const std::string &oldname, const std::string &newname, page_type pagetype);
 
 // Removes a file, then renames another file to be the removed file. Get it?
 // Returns 1 on success, else 0 on fail
@@ -251,10 +254,10 @@ bool IsPrimitiveOld(char *name);
 // Localname = local version of the primname (with path)
 // Netname = Network version of the primname (with path)
 void UpdatePrimitive(const std::filesystem::path& localname, const std::filesystem::path& netname, char *primname,
-                     int pagetype, char *pagename);
+                     page_type pagetype, char *pagename);
 
 // Writes a chunk header.  Writes chunk id & placeholder length.  Returns chunk start pos
-int StartManagePage(struct CFILE* ofile, uint8_t pagetype);
+int StartManagePage(struct CFILE* ofile, page_type pagetype);
 
 // Fill in page length when done writing
 void EndManagePage(struct CFILE* ofile, int chunk_start_pos);
@@ -267,13 +270,13 @@ void EndManagePage(struct CFILE* ofile, int chunk_start_pos);
 // Given a texture handle, searches the table file and replaces the texture with the same name
 // If local=1, then does it to the users local copy
 // Returns 0 on error, else 1 if all is good
-int mng_ReplacePage(const std::string &srcname, const std::string &destname, index_t handle, int dest_pagetype, int local);
+int mng_ReplacePage(const std::string &srcname, const std::string &destname, index_t handle, page_type dest_pagetype, int local);
 
 // Given a texture name, finds it in the table file and deletes it
 // If local is 1, deletes from the local table file
-int mng_DeletePage(const std::string &name, int dest_pagetype, int local);
+int mng_DeletePage(const std::string &name, page_type dest_pagetype, int local);
 
-void mng_FreePagetypePrimitives(int pagetype, char *name, int freetype);
+void mng_FreePagetypePrimitives(page_type pagetype, char *name, int freetype);
 
 // Error reporting
 //void DataError(const char *fmt, ...);

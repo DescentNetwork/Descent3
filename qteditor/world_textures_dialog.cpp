@@ -84,10 +84,10 @@ void WorldTexturesDialog::saveTexturesOnClose() {
   if (!Network_up)
     return;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
-    if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == PAGETYPE_TEXTURE) {
+    if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == page_type::texture) {
       const index_t t = FindTextureName(GlobalTrackLocks[i].name);
       if (t)
-        mng_ReplacePage(GameTextures[*t].name, GameTextures[*t].name, *t, PAGETYPE_TEXTURE, 1);
+        mng_ReplacePage(GameTextures[*t].name, GameTextures[*t].name, *t, page_type::texture, 1);
     }
   }
 }
@@ -213,7 +213,7 @@ void WorldTexturesDialog::updateDialog() {
     if (const int bm = t->bm_handle; bm >= 0)
       ui->IDC_BITMAP_NAME->setText(QString::fromStdString(GameBitmaps[bm].name));
 
-    if (!mng_FindTrackLock(t->name, PAGETYPE_TEXTURE)) {
+    if (!mng_FindTrackLock(t->name, page_type::texture)) {
       ui->IDC_CHECKIN->setEnabled(false);
       ui->IDC_LOCK->setEnabled(true);
     } else {
@@ -261,7 +261,7 @@ void WorldTexturesDialog::onAddNew() {
   }
   GameTextures[*handle].name = fileInfo.baseName().toStdString();
   GameTextures[*handle].bm_handle = bm;
-  mng_AllocTrackLock(GameTextures[*handle].name, PAGETYPE_TEXTURE);
+  mng_AllocTrackLock(GameTextures[*handle].name, page_type::texture);
   app.texdlg_texture = *handle;
   updateDialog();
 }
@@ -270,7 +270,7 @@ void WorldTexturesDialog::onDelete() {
   if (auto t = data())
   {
     const uint32_t n = *app.texdlg_texture;
-    const int tl = mng_FindTrackLock(t->name, PAGETYPE_TEXTURE).value_or(-1);
+    const int tl = mng_FindTrackLock(t->name, page_type::texture).value_or(-1);
     if (tl == -1) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This texture is not yours to delete.  Lock first.");
       return;
@@ -283,15 +283,15 @@ void WorldTexturesDialog::onDelete() {
       return;
     mngs_Pagelock pl;
     pl.name = t->name;
-    pl.pagetype = PAGETYPE_TEXTURE;
+    pl.pagetype = page_type::texture;
     if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
       mng_FreeTrackLock(tl);
-      Q_ASSERT(mng_DeletePage(t->name, PAGETYPE_TEXTURE, 1));
+      Q_ASSERT(mng_DeletePage(t->name, page_type::texture, 1));
     } else {
       mng_FreeTrackLock(tl);
-      mng_DeletePage(t->name, PAGETYPE_TEXTURE, 1);
-      mng_DeletePage(t->name, PAGETYPE_TEXTURE, 0);
-      mng_DeletePagelock(t->name, PAGETYPE_TEXTURE);
+      mng_DeletePage(t->name, page_type::texture, 1);
+      mng_DeletePage(t->name, page_type::texture, 0);
+      mng_DeletePagelock(t->name, page_type::texture);
     }
     if (const index_t next = GetNextTexture(n))
       app.texdlg_texture = static_cast<int>(*next);
@@ -311,7 +311,7 @@ void WorldTexturesDialog::onLock() {
     mngs_Pagelock temp_pl;
     mngs_texture_page texturepage;
     temp_pl.name = t->name;
-    temp_pl.pagetype = PAGETYPE_TEXTURE;
+    temp_pl.pagetype = page_type::texture;
     const int r = mng_CheckIfPageLocked(&temp_pl);
     if (r == 2) {
       if (QMessageBox::question(this, "Are you sure?",
@@ -334,7 +334,7 @@ void WorldTexturesDialog::onLock() {
       }
       if (mng_FindSpecificTexPage(temp_pl.name, &texturepage)) {
         if (mng_AssignTexPageToTexture(&texturepage, n)) {
-          if (!mng_ReplacePage(t->name, t->name, n, PAGETYPE_TEXTURE, 1)) {
+          if (!mng_ReplacePage(t->name, t->name, n, page_type::texture, 1)) {
             QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
             mng_EraseLocker();
             return;
@@ -343,7 +343,7 @@ void WorldTexturesDialog::onLock() {
         } else {
           QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this texture.");
         }
-        mng_AllocTrackLock(t->name, PAGETYPE_TEXTURE);
+        mng_AllocTrackLock(t->name, page_type::texture);
       } else {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that texture in the table file!");
       }
@@ -361,7 +361,7 @@ void WorldTexturesDialog::onCheckin() {
       return;
     mngs_Pagelock temp_pl;
     temp_pl.name = t->name;
-    temp_pl.pagetype = PAGETYPE_TEXTURE;
+    temp_pl.pagetype = page_type::texture;
     const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
     if (r < 0)
       QMessageBox::critical(this, "Error!", ErrorString);
@@ -374,13 +374,13 @@ void WorldTexturesDialog::onCheckin() {
         mng_EraseLocker();
         return;
       }
-      if (!mng_ReplacePage(t->name, t->name, n, PAGETYPE_TEXTURE, 0))
+      if (!mng_ReplacePage(t->name, t->name, n, page_type::texture, 0))
         QMessageBox::critical(this, "Error!", ErrorString);
       else {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Texture checked in.");
-        Q_ASSERT(mng_DeletePage(t->name, PAGETYPE_TEXTURE, 1) == 1);
+        Q_ASSERT(mng_DeletePage(t->name, page_type::texture, 1) == 1);
         mng_EraseLocker();
-        const int p = mng_FindTrackLock(t->name, PAGETYPE_TEXTURE).value_or(-1);
+        const int p = mng_FindTrackLock(t->name, page_type::texture).value_or(-1);
         Q_ASSERT(p != -1);
         mng_FreeTrackLock(p);
       }
@@ -394,7 +394,7 @@ void WorldTexturesDialog::onCheckedOut() {
   QString str = QString("User %1 has these textures held locally:\n\n").arg(TableUser);
   int total = 0;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
-    if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == PAGETYPE_TEXTURE) {
+    if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == page_type::texture) {
       str += QString::fromStdString(GlobalTrackLocks[i].name);
       str += "\n";
       total++;
@@ -408,14 +408,14 @@ void WorldTexturesDialog::onOverride() {
   if (auto t = data()) {
     mngs_Pagelock temp_pl;
     temp_pl.name = t->name;
-    temp_pl.pagetype = PAGETYPE_TEXTURE;
+    temp_pl.pagetype = page_type::texture;
     mng_OverrideToUnlocked(&temp_pl);
   }
 }
 
 void WorldTexturesDialog::onChangeName() {
   if (auto t = data()) {
-    const index_t p = mng_FindTrackLock(t->name, PAGETYPE_TEXTURE);
+    const index_t p = mng_FindTrackLock(t->name, page_type::texture);
     if (!p) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this texture if you wish to change its name.");
       return;

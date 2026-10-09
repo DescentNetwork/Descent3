@@ -209,7 +209,7 @@ void WorldObjectsDoorDialog::updateDialog() {
 
   {
     QPushButton *checkin = ui->IDC_CHECKIN_DOOR;
-    if (!mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR)) {
+    if (!mng_FindTrackLock(Doors[n].name, page_type::door)) {
       checkin->setEnabled(false);
       ui->IDC_LOCK_DOOR->setEnabled(true);
     } else {
@@ -292,7 +292,7 @@ void WorldObjectsDoorDialog::onAddDoor() {
   std::filesystem::path destname = LocalModelsDir / Poly_models[Doors[door_handle].model_handle].name;
   std::filesystem::copy((pathFs), (destname), std::filesystem::copy_options::overwrite_existing);
 
-  mng_AllocTrackLock(cur_name, PAGETYPE_DOOR);
+  mng_AllocTrackLock(cur_name, page_type::door);
 
   app.current_door = door_handle;
 
@@ -304,7 +304,7 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
     return;
   const uint32_t n = *app.current_door;
 
-  index_t tl = mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR);
+  index_t tl = mng_FindTrackLock(Doors[n].name, page_type::door);
   if (!tl) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This door is not yours to delete.  Lock first.");
     return;
@@ -319,16 +319,16 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
 
   mngs_Pagelock pl;
   pl.name = Doors[n].name;
-  pl.pagetype = PAGETYPE_DOOR;
+  pl.pagetype = page_type::door;
 
   if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
     mng_FreeTrackLock(*tl);
-    Q_ASSERT(mng_DeletePage(Doors[n].name, PAGETYPE_DOOR, 1));
+    Q_ASSERT(mng_DeletePage(Doors[n].name, page_type::door, 1));
   } else {
     mng_FreeTrackLock(*tl);
-    mng_DeletePage(Doors[n].name, PAGETYPE_DOOR, 1);
-    mng_DeletePage(Doors[n].name, PAGETYPE_DOOR, 0);
-    mng_DeletePagelock(Doors[n].name, PAGETYPE_DOOR);
+    mng_DeletePage(Doors[n].name, page_type::door, 1);
+    mng_DeletePage(Doors[n].name, page_type::door, 0);
+    mng_DeletePagelock(Doors[n].name, page_type::door);
   }
 
   app.current_door = GetNextDoor(n);
@@ -352,7 +352,7 @@ void WorldObjectsDoorDialog::onLockDoor() {
   const uint32_t n = *app.current_door;
 
   temp_pl.name = Doors[n].name;
-  temp_pl.pagetype = PAGETYPE_DOOR;
+  temp_pl.pagetype = page_type::door;
 
   const int r = mng_CheckIfPageLocked(&temp_pl);
   if (r == 2) {
@@ -377,7 +377,7 @@ void WorldObjectsDoorDialog::onLockDoor() {
       mngs_door_page doorpage;
       if (mng_FindSpecificDoorPage(temp_pl.name, &doorpage)) {
         if (mng_AssignDoorPageToDoor(&doorpage, n)) {
-          if (!mng_ReplacePage(Doors[n].name, Doors[n].name, n, PAGETYPE_DOOR, 1)) {
+          if (!mng_ReplacePage(Doors[n].name, Doors[n].name, n, page_type::door, 1)) {
             QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
             mng_EraseLocker();
             return;
@@ -386,7 +386,7 @@ void WorldObjectsDoorDialog::onLockDoor() {
         } else {
           QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this door.  You might encounter problems in dealing with it.");
         }
-        mng_AllocTrackLock(Doors[n].name, PAGETYPE_DOOR);
+        mng_AllocTrackLock(Doors[n].name, page_type::door);
         updateDialog();
       } else {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that door in the table file!");
@@ -406,7 +406,7 @@ void WorldObjectsDoorDialog::onCheckinDoor() {
   const uint32_t n = *app.current_door;
 
   temp_pl.name = Doors[n].name;
-  temp_pl.pagetype = PAGETYPE_DOOR;
+  temp_pl.pagetype = page_type::door;
 
   const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
   if (r < 0)
@@ -420,7 +420,7 @@ void WorldObjectsDoorDialog::onCheckinDoor() {
       mng_EraseLocker();
       return;
     } else {
-      if (!mng_ReplacePage(Doors[n].name, Doors[n].name, n, PAGETYPE_DOOR, 0))
+      if (!mng_ReplacePage(Doors[n].name, Doors[n].name, n, page_type::door, 0))
         QMessageBox::critical(this, "Error!", ErrorString);
       else {
         std::filesystem::path srcname = LocalModelsDir / Poly_models[Doors[n].model_handle].name;
@@ -429,11 +429,11 @@ void WorldObjectsDoorDialog::onCheckinDoor() {
 
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Door checked in.");
 
-        const int dret = mng_DeletePage(Doors[n].name, PAGETYPE_DOOR, 1);
+        const int dret = mng_DeletePage(Doors[n].name, page_type::door, 1);
         Q_ASSERT(dret == 1);
         mng_EraseLocker();
 
-        const int p = mng_FindTrackLock(Doors[n].name, PAGETYPE_DOOR).value_or(-1);
+        const int p = mng_FindTrackLock(Doors[n].name, page_type::door).value_or(-1);
         Q_ASSERT(p != -1);
         mng_FreeTrackLock(p);
         updateDialog();
@@ -448,7 +448,7 @@ void WorldObjectsDoorDialog::onDoorsOut() {
   QString str = QString("User %1 has these doors held locally:\n\n").arg(TableUser);
   int total = 0;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
-    if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == PAGETYPE_DOOR) {
+    if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == page_type::door) {
       str += QString::fromStdString(GlobalTrackLocks[i].name);
       str += "\n";
       total++;

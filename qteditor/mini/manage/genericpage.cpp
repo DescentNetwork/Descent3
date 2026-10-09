@@ -307,13 +307,13 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
 //-----------------------------------------------------------------------------
 
 // Serializes one page (header + payload) into a concrete posix_ostream with
-// the [PAGETYPE_GENERIC][int32 len] frame back-patched, mirroring the
+// the [page_type::generic][int32 len] frame back-patched, mirroring the
 // original StartManagePage/EndManagePage.  The public mng_WriteNewGenericPage
 // runs this against a scratch buffer so it can talk to any byte_ostream.
 static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_page *genericpage) {
   int i, j;
 
-  outfile << static_cast<uint8_t>(PAGETYPE_GENERIC);
+  outfile << std::to_underlying(page_type::generic);
   const off_t chunk_start_pos = outfile.tell();
   int32_t idum = 0; // placeholder for chunk len
   outfile << idum;

@@ -9,6 +9,7 @@
  */
 
 #include "table_manage.h"
+#include <utility>
 
 #include <algorithm>
 #include <cctype>
@@ -178,14 +179,14 @@ bool GenericPageList::LoadTable(const std::string &table_filename) {
 
   uint32_t page_id = 0;
   while (!infile.eof()) {
-    uint8_t pagetype = 0;
-    infile >> pagetype;
+    page_type pagetype = page_type::unknown;
+    infile >> reinterpret_cast<uint8_t&>(pagetype);
     if (infile.eof())
       break;
 
     // If not a generic page, just read it in and ignore it
-    if (pagetype != PAGETYPE_GENERIC) {
-      if (!CopyPagePayload(infile, pagetype, std::nullopt))
+    if (pagetype != page_type::generic) {
+      if (!CopyPagePayload(infile, std::to_underlying(pagetype), std::nullopt))
         return false;
       page_id++;
       continue;
@@ -247,14 +248,14 @@ bool GenericPageList::SaveTable(const std::string &table_filename) {
   // original page back out.
   uint32_t page_id = 0;
   while (!infile.eof()) {
-    uint8_t pagetype = 0;
-    infile >> pagetype;
+    page_type pagetype = page_type::unknown;
+    infile >> reinterpret_cast<uint8_t&>(pagetype);
     if (infile.eof())
       break;
 
     // If not a generic page, copy it through unchanged
-    if (pagetype != PAGETYPE_GENERIC) {
-      if (!CopyPagePayload(infile, pagetype, outfile))
+    if (pagetype != page_type::generic) {
+      if (!CopyPagePayload(infile, std::to_underlying(pagetype), outfile))
         return false;
       page_id++;
       continue;

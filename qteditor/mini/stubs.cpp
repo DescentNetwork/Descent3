@@ -2,6 +2,7 @@
 // but not provided by any source in mini/.
 
 #include <cstdio>
+#include <utility>
 #include <cstdlib>
 #include <cstdint>
 #include <cstring>
@@ -225,18 +226,18 @@ ambient_life a_life;
 
 // ==================== Manage ====================
 mngs_track_lock GlobalTrackLocks[MAX_TRACKLOCKS] = {};
-index_t mng_AllocTrackLock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return std::nullopt; }
+index_t mng_AllocTrackLock(const std::string &a, page_type b) { PRINT_STUB(__FUNCTION__); return std::nullopt; }
 void mng_FreeTrackLock(uint32_t n) { PRINT_STUB(__FUNCTION__); }
-index_t mng_FindTrackLock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return std::nullopt; }
+index_t mng_FindTrackLock(const std::string &a, page_type b) { PRINT_STUB(__FUNCTION__); return std::nullopt; }
 int mng_CheckIfPageLocked(mngs_Pagelock *p) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_CheckIfPageOwned(mngs_Pagelock *p, const std::string &a) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_DeletePage(const std::string &a, int b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_DeletePagelock(const std::string &a, int b) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_DeletePage(const std::string &a, page_type b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_DeletePagelock(const std::string &a, page_type b) { PRINT_STUB(__FUNCTION__); return 0; }
 void mng_EraseLocker() { PRINT_STUB(__FUNCTION__); }
 int mng_MakeLocker() { PRINT_STUB(__FUNCTION__); return 0; }
 void mng_OverrideToUnlocked(mngs_Pagelock *p) { PRINT_STUB(__FUNCTION__); }
-int mng_RenamePage(const std::string &a, const std::string &b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
-int mng_ReplacePage(const std::string &a, const std::string &b, index_t c, int d, int e) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_RenamePage(const std::string &a, const std::string &b, page_type c) { PRINT_STUB(__FUNCTION__); return 0; }
+int mng_ReplacePage(const std::string &a, const std::string &b, index_t c, page_type d, int e) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_ReplacePagelock(const std::string &a, mngs_Pagelock *b) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_FindSpecificDoorPage(const std::string &a, mngs_door_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }
 int mng_FindSpecificGenericPage(const std::string &a, mngs_generic_page *b, int c) { PRINT_STUB(__FUNCTION__); return 0; }

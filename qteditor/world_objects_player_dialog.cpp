@@ -173,7 +173,7 @@ void WorldObjectsPlayerDialog::updateDialog() {
     ui->IDC_PSHIP_COCKPIT_EDIT->setText(QString::fromStdString(s->cockpit_name));
     ui->IDC_SHIP_ARMOR_EDIT->setText(QString::number(s->armor_scalar));
 
-    if (!mng_FindTrackLock(s->name, PAGETYPE_SHIP) ) {
+    if (!mng_FindTrackLock(s->name, page_type::ship) ) {
       ui->IDC_PSHIP_CHECKIN->setEnabled(false);
       ui->IDC_PSHIP_LOCK->setEnabled(true);
     } else {
@@ -249,7 +249,7 @@ void WorldObjectsPlayerDialog::onAddPship() {
   std::filesystem::path destname = LocalModelsDir / Poly_models[Ships[*ship_handle].model_handle].name;
   std::filesystem::copy(pathFs, (destname), std::filesystem::copy_options::overwrite_existing);
 
-  mng_AllocTrackLock(cur_name, PAGETYPE_SHIP);
+  mng_AllocTrackLock(cur_name, page_type::ship);
   app.current_ship = static_cast<int>(*ship_handle);
   RemapShips();
   updateDialog();
@@ -258,7 +258,7 @@ void WorldObjectsPlayerDialog::onAddPship() {
 void WorldObjectsPlayerDialog::onPshipDelete() {
   if (auto s = data()) {
     const uint32_t n = app.current_ship ? *app.current_ship : 0;
-    const index_t tl = mng_FindTrackLock(s->name, PAGETYPE_SHIP);
+    const index_t tl = mng_FindTrackLock(s->name, page_type::ship);
     if (!tl) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This ship is not yours to delete.  Lock first.");
       return;
@@ -273,16 +273,16 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
 
     mngs_Pagelock pl;
     pl.name = s->name;
-    pl.pagetype = PAGETYPE_SHIP;
+    pl.pagetype = page_type::ship;
 
     if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
       mng_FreeTrackLock(*tl);
-      Q_ASSERT(mng_DeletePage(s->name, PAGETYPE_SHIP, 1));
+      Q_ASSERT(mng_DeletePage(s->name, page_type::ship, 1));
     } else {
       mng_FreeTrackLock(*tl);
-      mng_DeletePage(s->name, PAGETYPE_SHIP, 0);
-      mng_DeletePage(s->name, PAGETYPE_SHIP, 1);
-      mng_DeletePagelock(s->name, PAGETYPE_SHIP);
+      mng_DeletePage(s->name, page_type::ship, 0);
+      mng_DeletePage(s->name, page_type::ship, 1);
+      mng_DeletePagelock(s->name, page_type::ship);
     }
 
     if (const index_t next = GetNextShip(n))
@@ -310,7 +310,7 @@ void WorldObjectsPlayerDialog::onPshipLock() {
       return;
 
     temp_pl.name = s->name;
-    temp_pl.pagetype = PAGETYPE_SHIP;
+    temp_pl.pagetype = page_type::ship;
 
     const int r = mng_CheckIfPageLocked(&temp_pl);
     if (r == 2) {
@@ -333,7 +333,7 @@ void WorldObjectsPlayerDialog::onPshipLock() {
         return;
       } else if (mng_FindSpecificShipPage(temp_pl.name, &shippage)) {
         if (app.current_ship && mng_AssignShipPageToShip(&shippage, static_cast<int>(*app.current_ship))) {
-          if (!mng_ReplacePage(s->name, s->name, app.current_ship, PAGETYPE_SHIP, 1)) {
+          if (!mng_ReplacePage(s->name, s->name, app.current_ship, page_type::ship, 1)) {
             QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
             mng_EraseLocker();
             return;
@@ -342,7 +342,7 @@ void WorldObjectsPlayerDialog::onPshipLock() {
         } else {
           QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this ship.");
         }
-        mng_AllocTrackLock(s->name, PAGETYPE_SHIP);
+        mng_AllocTrackLock(s->name, page_type::ship);
         updateDialog();
       } else {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that ship in the table file!");
@@ -360,7 +360,7 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
       return;
 
     temp_pl.name = s->name;
-    temp_pl.pagetype = PAGETYPE_SHIP;
+    temp_pl.pagetype = page_type::ship;
 
     const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
     if (r < 0)
@@ -373,7 +373,7 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
         QMessageBox::critical(this, "Error!", ErrorString);
         mng_EraseLocker();
         return;
-      } else if (!mng_ReplacePage(s->name, s->name, app.current_ship, PAGETYPE_SHIP, 0)) {
+      } else if (!mng_ReplacePage(s->name, s->name, app.current_ship, page_type::ship, 0)) {
         QMessageBox::critical(this, "Error!", ErrorString);
       } else {
         std::filesystem::path srcname = LocalModelsDir / Poly_models[s->model_handle].name;
@@ -402,10 +402,10 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
 
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Ship checked in.");
 
-        Q_ASSERT(mng_DeletePage(s->name, PAGETYPE_SHIP, 1) == 1);
+        Q_ASSERT(mng_DeletePage(s->name, page_type::ship, 1) == 1);
         mng_EraseLocker();
 
-        const index_t p = mng_FindTrackLock(s->name, PAGETYPE_SHIP);
+        const index_t p = mng_FindTrackLock(s->name, page_type::ship);
         Q_ASSERT(p);
         mng_FreeTrackLock(*p);
         updateDialog();
@@ -419,7 +419,7 @@ void WorldObjectsPlayerDialog::onPshipsOut() {
   QString str = QString("User %1 has these ships held locally:\n\n").arg(TableUser);
   int total = 0;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
-    if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == PAGETYPE_SHIP) {
+    if (GlobalTrackLocks[i].used && GlobalTrackLocks[i].pagetype == page_type::ship) {
       str += QString::fromStdString(GlobalTrackLocks[i].name);
       str += "\n";
       total++;
@@ -559,7 +559,7 @@ void WorldObjectsPlayerDialog::onPshipEditPhysics() {
 
 void WorldObjectsPlayerDialog::onKillfocusName() {
   if (auto s = data()) {
-    const index_t p = mng_FindTrackLock(s->name, PAGETYPE_SHIP);
+    const index_t p = mng_FindTrackLock(s->name, page_type::ship);
     if (!p)
     {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this ship if you wish to change its name.");
@@ -579,18 +579,18 @@ void WorldObjectsPlayerDialog::onKillfocusName() {
 
     mngs_Pagelock pl;
     pl.name = s->name;
-    pl.pagetype = PAGETYPE_SHIP;
+    pl.pagetype = page_type::ship;
 
     const int ret = mng_CheckIfPageOwned(&pl, TableUser.toStdString());
     if (ret < 0)
       QMessageBox::critical(this, "Error!", ErrorString);
     else if (ret == 1)
-      mng_RenamePage(s->name, name, PAGETYPE_SHIP);
+      mng_RenamePage(s->name, name, page_type::ship);
     else if (ret == 2) {
       std::string oldname;
       oldname = s->name;
       s->name = name;
-      mng_ReplacePage(oldname, s->name, app.current_ship, PAGETYPE_SHIP, 1);
+      mng_ReplacePage(oldname, s->name, app.current_ship, page_type::ship, 1);
     } else if (ret == 0) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You don't own this page.  Get Jason now!");
       mng_FreeTrackLock(*p);
