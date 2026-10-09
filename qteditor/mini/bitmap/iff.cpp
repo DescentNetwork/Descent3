@@ -97,7 +97,7 @@ struct pal_entry {
 struct iff_bitmap_header {
   int16_t w, h;                  // width and height of this bitmap
   int16_t x, y;                  // generally unused
-  int16_t type;                  // see types above
+  iff_bitmap_type type;          // see types above
   int16_t transparentcolor;      // which color is transparent (if any)
   int16_t pagewidth, pageheight; // width & height of source screen
   uint8_t nplanes;               // number of planes (8 for 256 color image)
@@ -111,28 +111,29 @@ struct iff_bitmap_header {
 int16_t iff_transparent_color;
 int16_t iff_has_transparency; // 0=no transparency, 1=iff_transparent_color is valid
 
-#define MAKE_SIG(a, b, c, d) (((int32_t)(a) << 24) + ((int32_t)(b) << 16) + ((c) << 8) + (d))
+// IFF chunk signature identifiers (FourCCs decoded by bm_iff_get_sig)
+enum class iff_sig : uint8_t {
+  form = 1,
+  ilbm = 2,
+  body = 3,
+  bmhd = 4,
+  cmap = 5,
+  unknown = 6,
+  pbm = 7,
+  anim = 8,
+  delta = 9,
+  anhd = 10,
+};
 
-#define IFF_SIG_FORM 1
-#define IFF_SIG_ILBM 2
-#define IFF_SIG_BODY 3
-#define IFF_SIG_BMHD 4
-#define IFF_SIG_CMAP 5
-#define IFF_SIG_UNKNOWN 6
-#define IFF_SIG_PBM 7
-#define IFF_SIG_ANIM 8
-#define IFF_SIG_DELTA 9
-#define IFF_SIG_ANHD 10
-
-static int bm_iff_get_sig(posix_istream &f);
-static int bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_header *bmheader);
-static int bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bmheader);
+static iff_sig bm_iff_get_sig(posix_istream &f);
+static iff_error bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_header *bmheader);
+static iff_error bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bmheader);
 static void bm_iff_skip_chunk(posix_istream &ifile, uint32_t len);
-static int bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheader);
-static int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, optref<iff_bitmap_header> prev_bm);
+static iff_error bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheader);
+static iff_error bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, optref<iff_bitmap_header> prev_bm);
 static void bm_iff_convert_8_to_16(int dest_bm, iff_bitmap_header *iffbm);
 
-int bm_iff_get_sig(posix_istream &f) {
+iff_sig bm_iff_get_sig(posix_istream &f) {
   char s[4];
   int i;
 
@@ -140,27 +141,27 @@ int bm_iff_get_sig(posix_istream &f) {
     s[i] = (char)rdByte(f);
 
   if (!strncmp("ILBM", s, 4))
-    return IFF_SIG_ILBM;
+    return iff_sig::ilbm;
   if (!strncmp("BODY", s, 4))
-    return IFF_SIG_BODY;
+    return iff_sig::body;
   if (!strncmp("CMAP", s, 4))
-    return IFF_SIG_CMAP;
+    return iff_sig::cmap;
   if (!strncmp("BMHD", s, 4))
-    return IFF_SIG_BMHD;
+    return iff_sig::bmhd;
   if (!strncmp("FORM", s, 4))
-    return IFF_SIG_FORM;
+    return iff_sig::form;
   if (!strncmp("PBM ", s, 4))
-    return IFF_SIG_PBM;
+    return iff_sig::pbm;
   if (!strncmp("ANIM", s, 4))
-    return IFF_SIG_ANIM;
+    return iff_sig::anim;
   if (!strncmp("DLTA", s, 4))
-    return IFF_SIG_DELTA;
+    return iff_sig::delta;
   if (!strncmp("ANHD", s, 4))
-    return IFF_SIG_ANHD;
+    return iff_sig::anhd;
 
-  return (IFF_SIG_UNKNOWN);
+  return (iff_sig::unknown);
 }
-int bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_header *bmheader) {
+iff_error bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_header *bmheader) {
   len = len;
 
   bmheader->w = rdShortBE(ifile);
@@ -188,20 +189,20 @@ int bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_header *bmh
     iff_has_transparency = 1;
 
   else if (bmheader->masking != mskNone && bmheader->masking != mskHasMask)
-    return IFF_UNKNOWN_MASK;
+    return iff_error::unknown_mask;
 
-  return IFF_NO_ERROR;
+  return iff_error::no_error;
 }
 
 //  the buffer pointed to by raw_data is stuffed with a pointer to decompressed pixel data
-int bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bmheader) {
+iff_error bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bmheader) {
   uint8_t *p = bmheader->raw_data.data();
   int width = 0, depth = 0, done = 0;
 
-  if (bmheader->type == TYPE_PBM) {
+  if (bmheader->type == iff_bitmap_type::pbm) {
     width = bmheader->w;
     depth = 1;
-  } else if (bmheader->type == TYPE_ILBM) {
+  } else if (bmheader->type == iff_bitmap_type::ilbm) {
     width = (bmheader->w + 7) / 8;
     depth = bmheader->nplanes;
   }
@@ -274,7 +275,7 @@ int bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bmheader
     }
   }
 
-  return IFF_NO_ERROR;
+  return iff_error::no_error;
 }
 
 //  the buffer pointed to by raw_data is stuffed with a pointer to bitplane pixel data
@@ -286,7 +287,7 @@ void bm_iff_skip_chunk(posix_istream &ifile, uint32_t len) {
 }
 
 // modify passed bitmap
-int bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheader) {
+iff_error bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheader) {
   uint8_t *p = bmheader->raw_data.data();
   int y;
   int32_t chunk_end = (int32_t)ifile.tell() + len;
@@ -334,9 +335,9 @@ int bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheade
 
     if (cnt == -1) {
       if (!bmheader->w & 1)
-        return IFF_CORRUPT;
+        return iff_error::corrupt;
     } else if (cnt)
-      return IFF_CORRUPT;
+      return iff_error::corrupt;
   }
 
   if ((int32_t)ifile.tell() == chunk_end - 1) // pad
@@ -344,17 +345,18 @@ int bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheade
 
   if ((int32_t)ifile.tell() != chunk_end) {
     Q_ASSERT(false);
-    return IFF_CORRUPT;
+    return iff_error::corrupt;
   }
 
   else
-    return IFF_NO_ERROR;
+    return iff_error::no_error;
 }
 
 // read an PBM
 // Pass pointer to opened file, and to empty bitmap_header structure, and form length
-int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, optref<iff_bitmap_header> prev_bm) {
-  uint32_t sig, len;
+iff_error bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, optref<iff_bitmap_header> prev_bm) {
+  iff_sig sig;
+  uint32_t len;
   int done = 0;
 
   while (!done) {
@@ -368,27 +370,27 @@ int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, optref<
     len = (uint32_t)rdIntBE(ifile);
 
     switch (sig) {
-    case IFF_SIG_FORM: {
+    case iff_sig::form: {
       bm_iff_get_sig(ifile);
-      bmheader.type = TYPE_PBM;
+      bmheader.type = iff_bitmap_type::pbm;
       break;
     }
-    case IFF_SIG_BMHD: {
-      int ret;
+    case iff_sig::bmhd: {
+      iff_error ret;
 
       ret = bm_iff_parse_bmhd(ifile, len, &bmheader);
-      if (ret != IFF_NO_ERROR)
+      if (ret != iff_error::no_error)
         return ret;
       else {
         bmheader.raw_data.resize(bmheader.w * bmheader.h);
       }
 
     } break;
-    case IFF_SIG_ANHD: {
+    case iff_sig::anhd: {
 
       if (!prev_bm.has_value()) {
         Q_ASSERT(false);
-        return IFF_CORRUPT;
+        return iff_error::corrupt;
       }
 
       bmheader.w = prev_bm->w;
@@ -403,7 +405,7 @@ int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, optref<
       break;
     }
 
-    case IFF_SIG_CMAP: {
+    case iff_sig::cmap: {
       int ncolors = (int)(len / 3), cnum;
       uint8_t r, g, b;
 
@@ -423,16 +425,16 @@ int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, optref<
 
     } break;
 
-    case IFF_SIG_BODY: {
-      int r;
-      if ((r = bm_iff_parse_body(ifile, len, &bmheader)) != IFF_NO_ERROR)
+    case iff_sig::body: {
+      iff_error r;
+      if ((r = bm_iff_parse_body(ifile, len, &bmheader)) != iff_error::no_error)
         return r;
       done = 1;
       break;
     }
-    case IFF_SIG_DELTA: {
-      int r;
-      if ((r = bm_iff_parse_delta(ifile, len, &bmheader)) != IFF_NO_ERROR)
+    case iff_sig::delta: {
+      iff_error r;
+      if ((r = bm_iff_parse_delta(ifile, len, &bmheader)) != iff_error::no_error)
         return r;
       done = 1;
       break;
@@ -447,7 +449,7 @@ int bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, optref<
     }
   }
 
-  return IFF_NO_ERROR; /* ok! */
+  return iff_error::no_error; /* ok! */
 }
 
 void bm_iff_convert_8_to_16(int dest_bm, iff_bitmap_header *iffbm) {
@@ -476,7 +478,7 @@ void bm_iff_convert_8_to_16(int dest_bm, iff_bitmap_header *iffbm) {
 // 16bit bitmap
 // Returns bitmap handle on success, or -1 if failed
 int bm_iff_alloc_file(posix_istream &ifile) {
-  int ret; // return code
+  iff_error ret; // return code
   iff_bitmap_header bmheader{};
   int src_bm;
   char cur_sig[4];
@@ -493,11 +495,11 @@ int bm_iff_alloc_file(posix_istream &ifile) {
     LOG_ERROR("IFF file isn't a PBM...aborting.");
     return -1;
   }
-  bmheader.type = TYPE_PBM;
+  bmheader.type = iff_bitmap_type::pbm;
 
   ret = bm_iff_parse_file(ifile, bmheader, std::nullopt);
 
-  if (ret != IFF_NO_ERROR) {
+  if (ret != iff_error::no_error) {
     LOG_ERROR("Couldn't load IFF file.");
     return -1;
   }
@@ -904,26 +906,29 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, bitmap_format format) {
 // at the first 4 bytes ("FORM" => IFF, otherwise TGA).
 // ----------------------------------------------------------------------------
 
-#define BM_FILETYPE_PCX 0
-#define BM_FILETYPE_IFF 1
-#define BM_FILETYPE_TGA 2
+// IFF/TGA/PCX file types recognized by the dispatch below
+enum class bm_filetype : uint8_t {
+  pcx = 0,
+  iff = 1,
+  tga = 2,
+};
 
-static int bm_GetFileType(posix_istream &infile, const char *dest) {
+static bm_filetype bm_GetFileType(posix_istream &infile, const char *dest) {
   char iffcheck[4];
   int i;
   // First, check if it is a PCX
   i = strlen(dest);
   if (i >= 4 && dest[i - 4] == '.' && (dest[i - 3] == 'p' || dest[i - 3] == 'P') && (dest[i - 2] == 'c' || dest[i - 2] == 'C') &&
       (dest[i - 1] == 'x' || dest[i - 1] == 'X'))
-    return BM_FILETYPE_PCX;
+    return bm_filetype::pcx;
   // How about an IFF?
   for (i = 0; i < 4; i++)
     iffcheck[i] = (char)rdByte(infile);
   infile.seek(0, std::ios_base::beg);
   if (!strncmp("FORM", iffcheck, 4))
-    return BM_FILETYPE_IFF;
+    return bm_filetype::iff;
   // Lastly, just default to possible TGA or OGF
-  return BM_FILETYPE_TGA;
+  return bm_filetype::tga;
 }
 
 // Allocs and loads a bitmap from a full in-memory payload (a HOG entry or a
@@ -942,17 +947,17 @@ int bm_LoadBitmapFromMemory(const uint8_t *data, size_t size, const char *fname,
   name[0] = 0;
 
   int src_bm = -1;
-  int filetype = bm_GetFileType(infile, fname);
+  bm_filetype filetype = bm_GetFileType(infile, fname);
 
   switch (filetype) {
-  case BM_FILETYPE_IFF:
+  case bm_filetype::iff:
     src_bm = bm_iff_alloc_file(infile);
     break;
-  case BM_FILETYPE_TGA:
+  case bm_filetype::tga:
     // reads a tga or an outrage graphics file (ogf)
     src_bm = bm_tga_alloc_file(infile, name, format);
     break;
-  case BM_FILETYPE_PCX:
+  case bm_filetype::pcx:
   default:
     LOG_ERROR("bm_LoadBitmapFromMemory: PCX or unknown file type not supported for %s.", fname);
     src_bm = -1;

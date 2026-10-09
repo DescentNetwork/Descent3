@@ -26,23 +26,27 @@
 
 // Error codes for read & write routines
 
-#define IFF_NO_ERROR 0      // everything is fine, have a nice day
-#define IFF_NO_MEM 1        // not enough mem for loading or processing
-#define IFF_UNKNOWN_FORM 2  // IFF file, but not a bitmap
-#define IFF_NOT_IFF 3       // this isn't even an IFF file
-#define IFF_NO_FILE 4       // cannot find or open file
-#define IFF_BAD_BM_TYPE 5   // tried to save invalid type, like BM_RGB15
-#define IFF_CORRUPT 6       // bad data in file
-#define IFF_FORM_ANIM 7     // this is an anim, with non-anim load rtn
-#define IFF_FORM_BITMAP 8   // this is not an anim, with anim load rtn
-#define IFF_TOO_MANY_BMS 9  // anim read had more bitmaps than room for
-#define IFF_UNKNOWN_MASK 10 // unknown masking type
-#define IFF_READ_ERROR 11   // error reading from file
-#define IFF_BM_MISMATCH 12  // bm being loaded doesn't match bm loaded into
+enum class iff_error : uint8_t {
+  no_error = 0,      // everything is fine, have a nice day
+  no_mem = 1,        // not enough mem for loading or processing
+  unknown_form = 2,  // IFF file, but not a bitmap
+  not_iff = 3,       // this isn't even an IFF file
+  no_file = 4,       // cannot find or open file
+  bad_bm_type = 5,   // tried to save invalid type, like BM_RGB15
+  corrupt = 6,       // bad data in file
+  form_anim = 7,     // this is an anim, with non-anim load rtn
+  form_bitmap = 8,   // this is not an anim, with anim load rtn
+  too_many_bms = 9,  // anim read had more bitmaps than room for
+  unknown_mask = 10, // unknown masking type
+  read_error = 11,   // error reading from file
+  bm_mismatch = 12,  // bm being loaded doesn't match bm loaded into
+};
 
 // Type values for iff bitmaps
-#define TYPE_PBM 0
-#define TYPE_ILBM 1
+enum class iff_bitmap_type : int16_t {
+  pbm = 0,
+  ilbm = 1,
+};
 
 // Loads an IFF file, returning bitmap handle or -1 if error
 int bm_iff_alloc_file(posix_istream &ifile);
