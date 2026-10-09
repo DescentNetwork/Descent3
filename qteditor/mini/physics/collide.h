@@ -89,8 +89,23 @@
 #include "object.h"
 #include "vecmat.h"
 
-extern uint8_t CollisionResult[MAX_OBJECT_TYPES][MAX_OBJECT_TYPES];
-extern uint8_t CollisionRayResult[MAX_OBJECT_TYPES];
+// Types of supported collisions
+enum class collision_result : uint8_t {
+  nothing = 0,
+  check_sphere_sphere = 1,
+  check_sphere_poly = 2,
+  check_poly_sphere = 3,
+  check_bbox_poly = 4,
+  check_poly_bbox = 5,
+  check_bbox_bbox = 6,
+  check_bbox_sphere = 7,
+  check_sphere_bbox = 8,
+  check_sphere_room = 9,
+  check_bbox_room = 10,
+};
+
+extern collision_result CollisionResult[MAX_OBJECT_TYPES][MAX_OBJECT_TYPES];
+extern collision_result CollisionRayResult[MAX_OBJECT_TYPES];
 
 void CollideInit();
 void collide_two_objects(object *A, object *B, vector3 *collision_point, vector3 *collision_normal,
@@ -107,19 +122,5 @@ void ConvertEulerToAxisAmount(vector3 *e, vector3 *n, float *w);
 void ConvertAxisAmountToEuler(vector3 *n, float *w, vector3 *e);
 
 void bump_obj_against_fixed(object *obj, vector3 *collision_point, vector3 *collision_normal);
-
-#ifndef NED_PHYSICS
-#define RESULT_NOTHING 0
-#define RESULT_CHECK_SPHERE_SPHERE 1
-#define RESULT_CHECK_SPHERE_POLY 2
-#define RESULT_CHECK_POLY_SPHERE 3
-#define RESULT_CHECK_BBOX_POLY 4
-#define RESULT_CHECK_POLY_BBOX 5
-#define RESULT_CHECK_BBOX_BBOX 6
-#define RESULT_CHECK_BBOX_SPHERE 7
-#define RESULT_CHECK_SPHERE_BBOX 8
-#define RESULT_CHECK_SPHERE_ROOM 9
-#define RESULT_CHECK_BBOX_ROOM 10
-#endif
 
 #endif

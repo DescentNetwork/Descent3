@@ -427,19 +427,4 @@ extern bool check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, ve
                                const float rad);
 extern void InitFVI();
 
-// Types of supported collisions
-#ifdef NED_PHYSICS
-#define RESULT_NOTHING 0
-#define RESULT_CHECK_SPHERE_SPHERE 1
-#define RESULT_CHECK_SPHERE_POLY 2
-#define RESULT_CHECK_POLY_SPHERE 3
-#define RESULT_CHECK_BBOX_POLY 4
-#define RESULT_CHECK_POLY_BBOX 5
-#define RESULT_CHECK_BBOX_BBOX 6
-#define RESULT_CHECK_BBOX_SPHERE 7
-#define RESULT_CHECK_SPHERE_BBOX 8
-#define RESULT_CHECK_SPHERE_ROOM 9
-#define RESULT_CHECK_BBOX_ROOM 10
-#endif
-
 #endif

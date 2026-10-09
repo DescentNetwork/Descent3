@@ -866,8 +866,8 @@
 #define PLAYER_ROTATION_BY_FORCE_SCALAR 0.12f
 #define NONPLAYER_ROTATION_BY_FORCE_SCALAR 1.0f
 
-uint8_t CollisionResult[MAX_OBJECT_TYPES][MAX_OBJECT_TYPES];
-uint8_t CollisionRayResult[MAX_OBJECT_TYPES];
+collision_result CollisionResult[MAX_OBJECT_TYPES][MAX_OBJECT_TYPES];
+collision_result CollisionRayResult[MAX_OBJECT_TYPES];
 
 static bool IsOKToApplyForce(object *objp);
 //! Creates some effects where a weapon has collided with a wall.
@@ -2363,7 +2363,7 @@ void check_lg_inform(object *A, object *B) {
 }
 
 void collide_two_objects(object *A, object *B, vector3 *collision_point, vector3 *collision_normal, fvi_info *hit_info) {
-  int collision_type;
+  collision_result collision_type;
   int a_num = A - Objects.data();
   int b_num = B - Objects.data();
   uint8_t a_good = 0, b_good = 0;
@@ -2375,7 +2375,7 @@ void collide_two_objects(object *A, object *B, vector3 *collision_point, vector3
     if (!Enable_omega_collions)
       return;
 
-  Q_ASSERT(CollisionResult[A->type][B->type] != RESULT_NOTHING);
+  Q_ASSERT(CollisionResult[A->type][B->type] != collision_result::nothing);
 
   collision_type = COLLISION_OF(A->type, B->type);
 
@@ -2449,68 +2449,68 @@ void collide_two_objects(object *A, object *B, vector3 *collision_point, vector3
 }
 
 #define ENABLE_COLLISION_SPHERE_SPHERE(type1, type2)                                                                   \
-  CollisionResult[type1][type2] = RESULT_CHECK_SPHERE_SPHERE;                                                          \
-  CollisionResult[type2][type1] = RESULT_CHECK_SPHERE_SPHERE;
+  CollisionResult[type1][type2] = collision_result::check_sphere_sphere;                                                          \
+  CollisionResult[type2][type1] = collision_result::check_sphere_sphere;
 
 #define ENABLE_COLLISION_SPHERE_POLY(type1, type2)                                                                     \
-  CollisionResult[type1][type2] = RESULT_CHECK_SPHERE_POLY;                                                            \
-  CollisionResult[type2][type1] = RESULT_CHECK_POLY_SPHERE;
+  CollisionResult[type1][type2] = collision_result::check_sphere_poly;                                                            \
+  CollisionResult[type2][type1] = collision_result::check_poly_sphere;
 
 #define ENABLE_COLLISION_POLY_SPHERE(type1, type2)                                                                     \
-  CollisionResult[type1][type2] = RESULT_CHECK_POLY_SPHERE;                                                            \
-  CollisionResult[type2][type1] = RESULT_CHECK_SPHERE_POLY;
+  CollisionResult[type1][type2] = collision_result::check_poly_sphere;                                                            \
+  CollisionResult[type2][type1] = collision_result::check_sphere_poly;
 
 #define ENABLE_COLLISION_BBOX_POLY(type1, type2)                                                                       \
-  CollisionResult[type1][type2] = RESULT_CHECK_BBOX_POLY;                                                              \
-  CollisionResult[type2][type1] = RESULT_CHECK_POLY_BBOX;
+  CollisionResult[type1][type2] = collision_result::check_bbox_poly;                                                              \
+  CollisionResult[type2][type1] = collision_result::check_poly_bbox;
 
 #define ENABLE_COLLISION_POLY_BBOX(type1, type2)                                                                       \
-  CollisionResult[type1][type2] = RESULT_CHECK_POLY_BBOX;                                                              \
-  CollisionResult[type2][type1] = RESULT_CHECK_BBOX_POLY;
+  CollisionResult[type1][type2] = collision_result::check_poly_bbox;                                                              \
+  CollisionResult[type2][type1] = collision_result::check_bbox_poly;
 
 #define ENABLE_COLLISION_BBOX_BBOX(type1, type2)                                                                       \
-  CollisionResult[type1][type2] = RESULT_CHECK_BBOX_BBOX;                                                              \
-  CollisionResult[type2][type1] = RESULT_CHECK_BBOX_BBOX;
+  CollisionResult[type1][type2] = collision_result::check_bbox_bbox;                                                              \
+  CollisionResult[type2][type1] = collision_result::check_bbox_bbox;
 
 #define ENABLE_COLLISION_BBOX_SPHERE(type1, type2)                                                                     \
-  CollisionResult[type1][type2] = RESULT_CHECK_BBOX_SPHERE;                                                            \
-  CollisionResult[type2][type1] = RESULT_CHECK_SPHERE_BBOX;
+  CollisionResult[type1][type2] = collision_result::check_bbox_sphere;                                                            \
+  CollisionResult[type2][type1] = collision_result::check_sphere_bbox;
 
 #define ENABLE_COLLISION_SPHERE_BBOX(type1, type2)                                                                     \
-  CollisionResult[type1][type2] = RESULT_CHECK_SPHERE_BBOX;                                                            \
-  CollisionResult[type2][type1] = RESULT_CHECK_BBOX_SPHERE;
+  CollisionResult[type1][type2] = collision_result::check_sphere_bbox;                                                            \
+  CollisionResult[type2][type1] = collision_result::check_bbox_sphere;
 
 #define ENABLE_COLLISION_SPHERE_ROOM(type1, type2)                                                                     \
-  CollisionResult[type1][type2] = RESULT_CHECK_SPHERE_ROOM;                                                            \
-  CollisionResult[type2][type1] = RESULT_CHECK_SPHERE_ROOM;
+  CollisionResult[type1][type2] = collision_result::check_sphere_room;                                                            \
+  CollisionResult[type2][type1] = collision_result::check_sphere_room;
 
 #define ENABLE_COLLISION_BBOX_ROOM(type1, type2)                                                                       \
-  CollisionResult[type1][type2] = RESULT_CHECK_BBOX_ROOM;                                                              \
-  CollisionResult[type2][type1] = RESULT_CHECK_BBOX_ROOM;
+  CollisionResult[type1][type2] = collision_result::check_bbox_room;                                                              \
+  CollisionResult[type2][type1] = collision_result::check_bbox_room;
 
 #define DISABLE_COLLISION(type1, type2)                                                                                \
-  CollisionResult[type1][type2] = RESULT_NOTHING;                                                                      \
-  CollisionResult[type2][type1] = RESULT_NOTHING;
+  CollisionResult[type1][type2] = collision_result::nothing;                                                                      \
+  CollisionResult[type2][type1] = collision_result::nothing;
 
 void CollideInit() {
   int i, j;
 
   for (i = 0; i < MAX_OBJECT_TYPES; i++)
     for (j = 0; j < MAX_OBJECT_TYPES; j++) {
-      CollisionResult[i][j] = RESULT_NOTHING;
+      CollisionResult[i][j] = collision_result::nothing;
     }
 
   for (i = 0; i < MAX_OBJECT_TYPES; i++) {
-    CollisionRayResult[i] = RESULT_NOTHING;
+    CollisionRayResult[i] = collision_result::nothing;
   }
-  CollisionRayResult[object_type::robot] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[object_type::player] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[object_type::weapon] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[object_type::powerup] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[object_type::clutter] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[object_type::building] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[object_type::door] = RESULT_CHECK_SPHERE_POLY;
-  CollisionRayResult[object_type::room] = RESULT_CHECK_SPHERE_POLY;
+  CollisionRayResult[object_type::robot] = collision_result::check_sphere_poly;
+  CollisionRayResult[object_type::player] = collision_result::check_sphere_poly;
+  CollisionRayResult[object_type::weapon] = collision_result::check_sphere_poly;
+  CollisionRayResult[object_type::powerup] = collision_result::check_sphere_poly;
+  CollisionRayResult[object_type::clutter] = collision_result::check_sphere_poly;
+  CollisionRayResult[object_type::building] = collision_result::check_sphere_poly;
+  CollisionRayResult[object_type::door] = collision_result::check_sphere_poly;
+  CollisionRayResult[object_type::room] = collision_result::check_sphere_poly;
 
   for (i = 0; i < MAX_OBJECT_TYPES; i++) {
     ENABLE_COLLISION_SPHERE_ROOM(i, object_type::room)

@@ -2151,7 +2151,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
           if (num_objects >= max_elements)
             break;
 
-          if ((f_include_non_collide_objects) || CollisionRayResult[obj_type_index(Objects[cur_obj_index].type)] != RESULT_NOTHING) {
+          if ((f_include_non_collide_objects) || CollisionRayResult[obj_type_index(Objects[cur_obj_index].type)] != collision_result::nothing) {
             if (!f_only_players_and_ais || Objects[cur_obj_index].type == object_type::player ||
                 Objects[cur_obj_index].ai_info) {
               if (!(f_lightmap_only && (Objects[cur_obj_index].lighting_render_type != lighting_render_type::lightmaps) &&
@@ -2183,7 +2183,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
 
       if ((f_include_non_collide_objects) || (Objects[x].type != object_type::none &&
                                              obj_type_index(Objects[x].type) < MAX_OBJECT_TYPES &&
-                                             CollisionRayResult[obj_type_index(Objects[x].type)] != RESULT_NOTHING)) {
+                                             CollisionRayResult[obj_type_index(Objects[x].type)] != collision_result::nothing)) {
         if (!f_only_players_and_ais || Objects[x].type == object_type::player || Objects[x].ai_info) {
           if (!(f_lightmap_only && (Objects[BigObjectList[x]].lighting_render_type != lighting_render_type::lightmaps) &&
                 Objects[BigObjectList[x]].type != object_type::room)) {
@@ -2226,7 +2226,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
       while (cur_obj_index > -1) {
         if (num_objects >= max_elements)
           break;
-        if ((f_include_non_collide_objects) || CollisionRayResult[obj_type_index(Objects[cur_obj_index].type)] != RESULT_NOTHING) {
+        if ((f_include_non_collide_objects) || CollisionRayResult[obj_type_index(Objects[cur_obj_index].type)] != collision_result::nothing) {
           if (!f_only_players_and_ais || Objects[cur_obj_index].type == object_type::player || Objects[cur_obj_index].ai_info) {
             if (!(f_lightmap_only && (Objects[cur_obj_index].lighting_render_type != lighting_render_type::lightmaps))) {
               if (object_movement_AABB(&Objects[cur_obj_index])) {
@@ -3308,7 +3308,7 @@ void check_hit_obj(int objnum) {
   vector3 hit_point;
   float cur_dist;
   const object *obj = &Objects[objnum];
-  int collision_type;
+  collision_result collision_type;
   int m_obj_index = fvi_query_ptr->thisobjnum;
   object *m_obj = &Objects[m_obj_index];
 
@@ -3322,10 +3322,10 @@ void check_hit_obj(int objnum) {
 
   if (!(obj->flags.dead)) {
     if (m_obj_index != objnum) {
-      if (!((m_obj_index > -1) && ((collision_type = CollisionResult[obj_type_index(m_obj->type)][obj_type_index(obj->type)]) == RESULT_NOTHING) &&
-            (CollisionResult[obj_type_index(obj->type)][obj_type_index(m_obj->type)] == RESULT_NOTHING))) {
+      if (!((m_obj_index > -1) && ((collision_type = CollisionResult[obj_type_index(m_obj->type)][obj_type_index(obj->type)]) == collision_result::nothing) &&
+            (CollisionResult[obj_type_index(obj->type)][obj_type_index(m_obj->type)] == collision_result::nothing))) {
         // Account for ray casting
-        if (m_obj_index <= -1 && (CollisionRayResult[obj_type_index(obj->type)] == RESULT_NOTHING))
+        if (m_obj_index <= -1 && (CollisionRayResult[obj_type_index(obj->type)] == collision_result::nothing))
           return;
 
         if (object_movement_AABB(&Objects[objnum])) {
@@ -3348,25 +3348,25 @@ void check_hit_obj(int objnum) {
                 switch (obj->type) {
                 case object_type::room:
                   if (fvi_query_ptr->flags.external_rooms_as_sphere)
-                    collision_type = RESULT_CHECK_SPHERE_SPHERE;
+                    collision_type = collision_result::check_sphere_sphere;
                   else
-                    collision_type = RESULT_CHECK_SPHERE_ROOM;
+                    collision_type = collision_result::check_sphere_room;
                   break;
                 case object_type::player:
                   if (fvi_query_ptr->flags.players_as_sphere)
-                    collision_type = RESULT_CHECK_SPHERE_SPHERE;
+                    collision_type = collision_result::check_sphere_sphere;
                   else
-                    collision_type = RESULT_CHECK_SPHERE_POLY;
+                    collision_type = collision_result::check_sphere_poly;
                   break;
                 case object_type::robot:
                   if (fvi_query_ptr->flags.robots_as_sphere)
-                    collision_type = RESULT_CHECK_SPHERE_SPHERE;
+                    collision_type = collision_result::check_sphere_sphere;
                   else
-                    collision_type = RESULT_CHECK_SPHERE_POLY;
+                    collision_type = collision_result::check_sphere_poly;
                   break;
 
                 default:
-                  collision_type = RESULT_CHECK_SPHERE_POLY;
+                  collision_type = collision_result::check_sphere_poly;
                   break;
                 }
               } else {
@@ -3374,7 +3374,7 @@ void check_hit_obj(int objnum) {
                      (m_obj->movement_type == movement_type::physics) && (obj->type == object_type::player)) ||
                     ((obj->type == object_type::clutter) && (obj->mtype.phys_info.flags.gravity) &&
                      (obj->movement_type == movement_type::physics) && (m_obj->type == object_type::player))) {
-                  collision_type = RESULT_CHECK_SPHERE_SPHERE;
+                  collision_type = collision_result::check_sphere_sphere;
                 }
 
                 // Ignore robot collisions if it is specified
@@ -3427,20 +3427,20 @@ void check_hit_obj(int objnum) {
               }
 
               if (obj->type == object_type::player && (fvi_query_ptr->flags.players_as_sphere))
-                collision_type = RESULT_CHECK_SPHERE_SPHERE;
+                collision_type = collision_result::check_sphere_sphere;
               if (obj->type == object_type::robot && (fvi_query_ptr->flags.robots_as_sphere))
-                collision_type = RESULT_CHECK_SPHERE_SPHERE;
+                collision_type = collision_result::check_sphere_sphere;
 
               switch (collision_type) {
-              case RESULT_CHECK_BBOX_ROOM:
-              case RESULT_CHECK_SPHERE_ROOM: {
+              case collision_result::check_bbox_room:
+              case collision_result::check_sphere_room: {
                 Q_ASSERT(obj->type == object_type::room);
 
                 fvi_room(obj->id, -1, objnum);
               } break;
 
-              case RESULT_CHECK_SPHERE_POLY:
-              case RESULT_CHECK_BBOX_POLY: {
+              case collision_result::check_sphere_poly:
+              case collision_result::check_bbox_poly: {
                 //									float dist;
                 //									vector3 pos;
                 //									float size;
@@ -3467,8 +3467,8 @@ void check_hit_obj(int objnum) {
                 //									}
               } break;
 
-              case RESULT_CHECK_POLY_SPHERE:
-              case RESULT_CHECK_POLY_BBOX: {
+              case collision_result::check_poly_sphere:
+              case collision_result::check_poly_bbox: {
                 if (!(m_obj->flags.polygon_object))
                   goto sphere_sphere;
 
@@ -3528,10 +3528,10 @@ void check_hit_obj(int objnum) {
                 }
               } break;
 
-              case RESULT_CHECK_SPHERE_SPHERE:
-              case RESULT_CHECK_BBOX_BBOX:
-              case RESULT_CHECK_SPHERE_BBOX:
-              case RESULT_CHECK_BBOX_SPHERE: {
+              case collision_result::check_sphere_sphere:
+              case collision_result::check_bbox_bbox:
+              case collision_result::check_sphere_bbox:
+              case collision_result::check_bbox_sphere: {
               sphere_sphere:
                 if (check_vector_to_object(&hit_point, &cur_dist, &fvi_anim_sphere_p0, &fvi_anim_sphere_p1,
                                            fvi_anim_sphere_rad, &Objects[objnum], &Objects[m_obj_index])) {
