@@ -111,18 +111,28 @@ struct iff_bitmap_header {
 uint16_t iff_transparent_color;
 uint16_t iff_has_transparency; // 0=no transparency, 1=iff_transparent_color is valid
 
+constexpr uint32_t operator "" _ID(const char* const str, std::size_t len) {
+  if (len != 4)
+    throw "ID strings requires exactly 4 characters";
+  return (static_cast<uint32_t>(str[3]) << 24) |
+         (static_cast<uint32_t>(str[2]) << 16) |
+         (static_cast<uint32_t>(str[1]) << 8)  |
+         static_cast<uint32_t>(str[0]);
+}
+
+
 // IFF chunk signature identifiers (FourCCs decoded by bm_iff_get_sig)
-enum class iff_sig : uint8_t {
-  form = 1,
-  ilbm = 2,
-  body = 3,
-  bmhd = 4,
-  cmap = 5,
-  unknown = 6,
-  pbm = 7,
-  anim = 8,
-  delta = 9,
-  anhd = 10,
+enum class iff_sig : uint32_t {
+  unknown = 0,
+  form = "FORM"_ID,
+  ilbm = "ILBM"_ID,
+  body = "BODY"_ID,
+  bmhd = "BMHD"_ID,
+  cmap = "CMAP"_ID,
+  pbm  = "PBM "_ID,
+  anim = "ANIM"_ID,
+  delta = "DLTA"_ID,
+  anhd = "ANHD"_ID,
 };
 
 static iff_sig bm_iff_get_sig(posix_istream &f);
@@ -134,52 +144,52 @@ static iff_error bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmhe
 static void bm_iff_convert_8_to_16(int dest_bm, iff_bitmap_header *iffbm);
 
 iff_sig bm_iff_get_sig(posix_istream &f) {
-  char s[4];
-  int i;
-
-  for (i = 0; i < 4; i++)
-    s[i] = (char)rdByte(f);
-
-  if (!strncmp("ILBM", s, 4))
-    return iff_sig::ilbm;
-  if (!strncmp("BODY", s, 4))
-    return iff_sig::body;
-  if (!strncmp("CMAP", s, 4))
-    return iff_sig::cmap;
-  if (!strncmp("BMHD", s, 4))
-    return iff_sig::bmhd;
-  if (!strncmp("FORM", s, 4))
-    return iff_sig::form;
-  if (!strncmp("PBM ", s, 4))
-    return iff_sig::pbm;
-  if (!strncmp("ANIM", s, 4))
-    return iff_sig::anim;
-  if (!strncmp("DLTA", s, 4))
-    return iff_sig::delta;
-  if (!strncmp("ANHD", s, 4))
-    return iff_sig::anhd;
+  iff_sig sig;
+  f >> reinterpret_cast<uint32_t&>(sig);
+  switch(sig)
+  {
+    case iff_sig::form:
+    case iff_sig::ilbm:
+    case iff_sig::body:
+    case iff_sig::bmhd:
+    case iff_sig::cmap:
+    case iff_sig::pbm:
+    case iff_sig::anim:
+    case iff_sig::delta:
+    case iff_sig::anhd:
+      return static_cast<iff_sig>(sig);
+  }
 
   return (iff_sig::unknown);
 }
 iff_error bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_header *bmheader) {
   len = len;
 
-  bmheader->w = rdShortBE(ifile);
-  bmheader->h = rdShortBE(ifile);
-  bmheader->x = rdShortBE(ifile);
-  bmheader->y = rdShortBE(ifile);
+  ifile >> bmheader->w;
+  ifile >> bmheader->h;
+  ifile >> bmheader->x;
+  ifile >> bmheader->y;
 
   bmheader->nplanes = rdByte(ifile);
   bmheader->masking = rdByte(ifile);
   bmheader->compression = rdByte(ifile);
   rdByte(ifile); /* skip pad */
 
-  bmheader->transparentcolor = rdShortBE(ifile);
+  ifile >> bmheader->transparentcolor;
+
   bmheader->xaspect = rdByte(ifile);
   bmheader->yaspect = rdByte(ifile);
 
-  bmheader->pagewidth = rdShortBE(ifile);
-  bmheader->pageheight = rdShortBE(ifile);
+  ifile >> bmheader->pagewidth;
+  ifile >> bmheader->pageheight;
+
+  bmheader->w = D3::convert_be(bmheader->w);
+  bmheader->h = D3::convert_be(bmheader->h);
+  bmheader->x = D3::convert_be(bmheader->x);
+  bmheader->y = D3::convert_be(bmheader->y);
+  bmheader->transparentcolor = D3::convert_be(bmheader->transparentcolor);
+  bmheader->pagewidth   = D3::convert_be(bmheader->pagewidth);
+  bmheader->pageheight  = D3::convert_be(bmheader->pageheight);
 
   iff_transparent_color = bmheader->transparentcolor;
 
@@ -229,7 +239,7 @@ iff_error bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bm
     uint8_t *data_end = p + (bmheader->h * depth * width);
     uint8_t mask = (bmheader->masking == mskHasMask);
     int cur_width = 0, skip_mask = 0;
-    int command;
+    uint8_t command;
     int plane = 0;
 
     while (!done) {
@@ -251,7 +261,7 @@ iff_error bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bm
       }
 
       command = rdByte(ifile);
-      if (command >= 0 && command <= 127) {
+      if (command >= 0 && command < 0x80) {
         if (!skip_mask) {
           for (int i = 0; i < command + 1; i++)
             *p++ = rdByte(ifile);
@@ -261,7 +271,7 @@ iff_error bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bm
         }
 
         cur_width += (command + 1);
-      } else if (command >= -127 && command < 0) {
+      } else if (command >= 0x80 && command < 0) {
         int run = (-command) + 1;
         int repeat_byte = rdByte(ifile);
 
@@ -290,13 +300,13 @@ void bm_iff_skip_chunk(posix_istream &ifile, uint32_t len) {
 iff_error bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheader) {
   uint8_t *p = bmheader->raw_data.data();
   int y;
-  int32_t chunk_end = (int32_t)ifile.tell() + len;
+  off_t chunk_end = ifile.tell() + len;
 
-  rdIntLE(ifile); // longword, seems to be equal to 4.  Don't know what it is
+  ifile.seek(4, std::ios_base::cur); // longword, seems to be equal to 4.  Don't know what it is
 
   for (y = 0; y < bmheader->h; y++) {
     uint8_t n_items;
-    int cnt = bmheader->w;
+    uint16_t cnt = bmheader->w;
     uint8_t code;
 
     n_items = (uint8_t)rdByte(ifile);
@@ -311,39 +321,39 @@ iff_error bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *b
         val = (uint8_t)rdByte(ifile);
 
         cnt -= rep;
-        if (cnt == -1)
+        if (cnt == UINT16_MAX)
           rep--;
         while (rep--)
           *p++ = val;
       } else if (code > 0x80) { // skip
         cnt -= (code - 0x80);
         p += (code - 0x80);
-        if (cnt == -1)
+        if (cnt == UINT16_MAX)
           p--;
       } else { // literal
         cnt -= code;
-        if (cnt == -1)
+        if (cnt == UINT16_MAX)
           code--;
 
         while (code--)
           *p++ = (uint8_t)rdByte(ifile);
 
-        if (cnt == -1)
-          rdByte(ifile);
+        if (cnt == UINT16_MAX)
+          ifile.seek(1, std::ios_base::cur);
       }
     }
 
-    if (cnt == -1) {
+    if (cnt == UINT16_MAX) {
       if (!bmheader->w & 1)
         return iff_error::corrupt;
     } else if (cnt)
       return iff_error::corrupt;
   }
 
-  if ((int32_t)ifile.tell() == chunk_end - 1) // pad
+  if (ifile.tell() == chunk_end - 1) // pad
     rdByte(ifile);
 
-  if ((int32_t)ifile.tell() != chunk_end) {
+  if (ifile.tell() != chunk_end) {
     Q_ASSERT(false);
     return iff_error::corrupt;
   }
@@ -367,7 +377,8 @@ iff_error bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, o
 
     sig = bm_iff_get_sig(ifile);
 
-    len = (uint32_t)rdIntBE(ifile);
+    ifile >> len;
+    len = D3::convert_be(len);
 
     switch (sig) {
     case iff_sig::form: {
@@ -484,8 +495,7 @@ int bm_iff_alloc_file(posix_istream &ifile) {
   char cur_sig[4];
 
   // Ignore FORM and form length
-  rdIntLE(ifile);
-  rdIntLE(ifile);
+  ifile.seek(8, std::ios_base::cur);
 
   // check if this an ILBM
   for (int i = 0; i < 4; i++)
@@ -793,9 +803,9 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, bitmap_format format) {
         if (command & 128) // rle chunk
         {
           if (pixsize == 32)
-            pixel = (uint32_t)rdIntLE(infile);
+            infile >> pixel;
           else {
-            int r, g, b;
+            uint8_t r, g, b;
             r = (uint8_t)rdByte(infile);
             g = (uint8_t)rdByte(infile);
             b = (uint8_t)rdByte(infile);
@@ -817,7 +827,7 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, bitmap_format format) {
         {
           for (int k = 0; k < len; k++, total++) {
             if (pixsize == 32)
-              pixel = (uint32_t)rdIntLE(infile);
+              infile >> pixel;
             else {
               int r, g, b;
               b = (uint8_t)rdByte(infile);
@@ -842,7 +852,7 @@ int bm_tga_alloc_file(posix_istream &infile, char *name, bitmap_format format) {
       for (i = 0; i < height; i++) {
         for (t = 0; t < width; t++) {
           if (pixsize == 32)
-            pixel = (uint32_t)rdIntLE(infile);
+            infile >> pixel;
           else {
             int r, g, b;
             b = (uint8_t)rdByte(infile);
