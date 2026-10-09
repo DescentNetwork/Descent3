@@ -954,8 +954,8 @@ int Fvi_num_recorded_faces = 0;
 // Some function def's
 //------------------------------------------------------------------------------------------
 
-static int do_fvi_terrain();
-static int fvi_room(int room_index, int from_portal, int room_obj = -1);
+static fvi_hit_type do_fvi_terrain();
+static fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj = -1);
 static void do_fvi_rooms(int initial_room_index);
 /// Find the point on the specified plane where the line intersects.
 /// - returns: true if point found, false if line parallel to plane.
@@ -2307,7 +2307,7 @@ bool fvi_QuickRoomCheck(vector3 *pos, int roomnum, bool try_again) {
 
 internal_try_again:
 
-  int closest_hit_type = 0;
+  fvi_hit_type closest_hit_type = fvi_hit_type::none;
   float closest_hit_distance = 10000000.0f;
 
   vector3 min_xyz;
@@ -2415,9 +2415,9 @@ internal_try_again:
             closest_hit_distance = cur_dist;
 
             if (f_backface)
-              closest_hit_type = HIT_BACKFACE;
+              closest_hit_type = fvi_hit_type::backface;
             else
-              closest_hit_type = HIT_WALL;
+              closest_hit_type = fvi_hit_type::wall;
           }
         }
       }
@@ -2425,7 +2425,7 @@ internal_try_again:
   skip_region:;
   }
 
-  if (closest_hit_type != HIT_WALL) {
+  if (closest_hit_type != fvi_hit_type::wall) {
     f_in_room = false;
     //		mprintf(0, " in room bool = %d, hit_type = %d\n", (int) f_in_room, closest_hit_type);
   }
@@ -2499,7 +2499,7 @@ void check_ceiling() {
         goto ignore_hit;
       }
 
-      fvi_hit_data_ptr->hit_type[fvi_hit_data_ptr->num_hits] = HIT_CEILING;
+      fvi_hit_data_ptr->hit_type[fvi_hit_data_ptr->num_hits] = fvi_hit_type::ceiling;
       fvi_hit_data_ptr->hit_wallnorm[fvi_hit_data_ptr->num_hits] = wall_norm;
       // fvi_hit_data_ptr->hit_seg = -1; -- set in the fvi_FindIntersection function
       fvi_hit_data_ptr->hit_object[fvi_hit_data_ptr->num_hits] = -1;
@@ -2596,13 +2596,13 @@ void make_trigger_face_list(int last_sim_faces) {
 extern bool Tracking_FVI;
 #endif
 
-int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision) {
+fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision) {
   int i;
   object *this_obj;
   int last_sim_trigger_faces;
 
   if (fq->startroom == -1) {
-    return HIT_NONE;
+    return fvi_hit_type::none;
   }
 
 #ifndef NED_PHYSICS
@@ -2709,7 +2709,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
   hit_data->hit_room = -1;
 
   hit_data->num_hits = 0;
-  hit_data->hit_type[0] = HIT_NONE;
+  hit_data->hit_type[0] = fvi_hit_type::none;
   hit_data->hit_face_room[0] = -1;
   hit_data->hit_object[0] = -1;
 
@@ -2737,8 +2737,8 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
 
       // Number of whole subdivisions
       int num_subdivisions = vm_VectorDistance(fq->p0, fq->p1) / MIN_LONG_RAY;
-      vector3 sub_dir;     // Direction and magnitude of each subdivision
-      int s_hit_type = 0; // Sub-divided hit type
+      vector3 sub_dir;                    // Direction and magnitude of each subdivision
+      fvi_hit_type s_hit_type = fvi_hit_type::none; // Sub-divided hit type
 
       sub_dir = *fq->p1 - *fq->p0;  // Direction of movement
       vm_NormalizeVector(&sub_dir); // Normalize it
@@ -2759,7 +2759,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
 
         fvi_new_query.flags.new_record_list = false;
 
-        if (s_hit_type != HIT_NONE) {
+        if (s_hit_type != fvi_hit_type::none) {
           // mprintf(0, "Hit %d at %f, %f, %f\n", s_hit_type, XYZ(&fvi_new_hit_data.hit_pnt));
           break;
         }
@@ -2772,7 +2772,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
       }
 
       // Check up to the real stopping point
-      if (s_hit_type == HIT_NONE) {
+      if (s_hit_type == fvi_hit_type::none) {
         new_p1 = *save_fvi_query_ptr->p1;
         s_hit_type = fvi_FindIntersection(&fvi_new_query, &fvi_new_hit_data, true);
       }
@@ -2810,7 +2810,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
   if (!(fq->flags.no_relink)) {
     if (fvi_num_rooms_visited == 1 && fvi_num_cells_visited == 0) {
       hit_data->hit_room = fvi_rooms_visited[0];
-    } else if ((hit_data->hit_type[0] == HIT_WALL || hit_data->hit_type[0] == HIT_TERRAIN) &&
+    } else if ((hit_data->hit_type[0] == fvi_hit_type::wall || hit_data->hit_type[0] == fvi_hit_type::terrain) &&
                (fvi_zero_rad ||
                 (fvi_query_ptr->thisobjnum >= 0 &&
                  (Objects[fvi_query_ptr->thisobjnum].mtype.phys_info.flags.point_collide_walls))) &&
@@ -2839,7 +2839,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
         // Determine if we are within the valid terrain bounds
         hit_data->hit_room = GetTerrainRoomFromPos(hit_data->hit_pnt).value_or(-1);
         if (hit_data->hit_room == -1) {
-          hit_data->hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
+          hit_data->hit_type[0] = fvi_hit_type::out_of_terrain_bounds;
         }
       } else if (!f_found_room) {
         //				mprintf(0, "Attempting to patch\n");
@@ -2858,8 +2858,8 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision)
     }
 
     // Do the ASSERTS for FVI.
-    Q_ASSERT(!(hit_data->hit_room == -1 && hit_data->hit_type[0] != HIT_OUT_OF_TERRAIN_BOUNDS));
-    Q_ASSERT(!(hit_data->hit_type[0] == HIT_OBJECT && hit_data->hit_object[0] == -1));
+    Q_ASSERT(!(hit_data->hit_room == -1 && hit_data->hit_type[0] != fvi_hit_type::out_of_terrain_bounds));
+    Q_ASSERT(!(hit_data->hit_type[0] == fvi_hit_type::object && hit_data->hit_object[0] == -1));
   }
 
   // Clean up the visit list bits
@@ -3490,7 +3490,7 @@ void check_hit_obj(int objnum) {
                 fq.thisobjnum = objnum;
 
                 hit_info.num_hits = 0;
-                hit_info.hit_type[0] = HIT_NONE;
+                hit_info.hit_type[0] = fvi_hit_type::none;
 
                 fvi_curobj = m_obj_index;
                 fvi_moveobj = objnum;
@@ -3499,7 +3499,7 @@ void check_hit_obj(int objnum) {
                 fvi_hit_data_ptr = temp_fvi_hit_data_ptr;
                 fvi_query_ptr = temp_fvi_query_ptr;
 
-                if (hit_info.hit_type[0] != HIT_NONE) {
+                if (hit_info.hit_type[0] != fvi_hit_type::none) {
                   int counter;
 
                   if (saved_dist != fvi_collision_dist) {
@@ -3510,7 +3510,7 @@ void check_hit_obj(int objnum) {
                   fvi_hit_data_ptr->num_hits = 0;
 
                   for (counter = 0; counter < hit_info.num_hits; counter++) {
-                    fvi_hit_data_ptr->hit_type[fvi_hit_data_ptr->num_hits] = HIT_OBJECT;
+                    fvi_hit_data_ptr->hit_type[fvi_hit_data_ptr->num_hits] = fvi_hit_type::object;
                     fvi_hit_data_ptr->hit_object[fvi_hit_data_ptr->num_hits] = objnum;
                     fvi_hit_data_ptr->hit_face_pnt[fvi_hit_data_ptr->num_hits] =
                         fvi_hit_data_ptr->hit_pnt + (hit_info.hit_face_pnt[counter] - m_obj->pos);
@@ -3562,7 +3562,7 @@ void check_hit_obj(int objnum) {
                     fvi_hit_data_ptr->num_hits = 1;
 
                     fvi_hit_data_ptr->hit_object[0] = objnum;
-                    fvi_hit_data_ptr->hit_type[0] = HIT_OBJECT;
+                    fvi_hit_data_ptr->hit_type[0] = fvi_hit_type::object;
                     fvi_hit_data_ptr->hit_face_pnt[0] = pos_hit;
 
                     Q_ASSERT(hit_obj_size > 0.0f);
@@ -3942,7 +3942,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
                                      fvi_query_ptr->o_velocity))
             Q_ASSERT(1);
 
-          if (fvi_hit_data_ptr->hit_type[0] == HIT_NONE &&
+          if (fvi_hit_data_ptr->hit_type[0] == fvi_hit_type::none &&
               BBoxPlaneIntersection(false, &fvi_hit_data_ptr->hit_face_pnt[0], &fvi_hit_data_ptr->hit_wallnorm[0],
                                     &Objects[fvi_query_ptr->thisobjnum], &fvi_hit_data_ptr->hit_pnt, 3, vertex_ptr_list,
                                     &face_normal, &fvi_hit_data_ptr->hit_orient, &fvi_hit_data_ptr->hit_rotvel,
@@ -3974,7 +3974,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
               hit_dist = 0.0f;
             }
 
-            fvi_hit_data_ptr->hit_type[0] = HIT_TERRAIN;
+            fvi_hit_data_ptr->hit_type[0] = fvi_hit_type::terrain;
             fvi_hit_data_ptr->hit_wallnorm[0].x = 0.0;
             fvi_hit_data_ptr->hit_wallnorm[0].y = 1.0;
             fvi_hit_data_ptr->hit_wallnorm[0].z = 0.0;
@@ -4009,7 +4009,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
             }
 
             fvi_hit_data_ptr->hit_object[fvi_hit_data_ptr->num_hits] = -1;
-            fvi_hit_data_ptr->hit_type[fvi_hit_data_ptr->num_hits] = HIT_TERRAIN;
+            fvi_hit_data_ptr->hit_type[fvi_hit_data_ptr->num_hits] = fvi_hit_type::terrain;
             fvi_hit_data_ptr->hit_wallnorm[fvi_hit_data_ptr->num_hits] = wall_norm;
             // fvi_hit_data_ptr->hit_seg = -1; -- set in the fvi_FindIntersection function
             fvi_hit_data_ptr->hit_face[fvi_hit_data_ptr->num_hits] = i;
@@ -4154,7 +4154,7 @@ f_check_next_ground);
 }
 */
 
-int do_fvi_terrain() {
+fvi_hit_type do_fvi_terrain() {
   int x1, x2, y1, y2, x, y, delta_y, delta_x, change_x, change_y, length, cur_node, error_term;
   size_t i;
 
@@ -4199,7 +4199,7 @@ int do_fvi_terrain() {
 
     fvi_hit_data_ptr->hit_room = GetTerrainRoomFromPos(fvi_hit_data_ptr->hit_pnt).value_or(-1);
 
-    fvi_hit_data_ptr->hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
+    fvi_hit_data_ptr->hit_type[0] = fvi_hit_type::out_of_terrain_bounds;
 
     compute_movement_AABB();
 
@@ -4263,7 +4263,7 @@ int do_fvi_terrain() {
       }
 
       if (y >= TERRAIN_DEPTH || y < 0 || x < 0 || x >= TERRAIN_WIDTH) {
-        fvi_hit_data_ptr->hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
+        fvi_hit_data_ptr->hit_type[0] = fvi_hit_type::out_of_terrain_bounds;
         goto check_big_objs;
       }
 
@@ -4306,7 +4306,7 @@ int do_fvi_terrain() {
       }
 
       if (y >= TERRAIN_DEPTH || y < 0 || x < 0 || x >= TERRAIN_WIDTH) {
-        fvi_hit_data_ptr->hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
+        fvi_hit_data_ptr->hit_type[0] = fvi_hit_type::out_of_terrain_bounds;
         goto check_big_objs;
       }
 
@@ -4433,7 +4433,7 @@ bool PhysPastPortal(int roomnum, const portal *pp) {
   return false; // Not transparent, so no render past
 }
 
-int fvi_room(int room_index, int from_portal, int room_obj) {
+fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
   vector3 hit_point; // where we hit
   float cur_dist;   // distance to hit point
   room_t *cur_room = &Rooms[room_index];
@@ -4686,7 +4686,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
           if (face_hit_type && (face_info & 2) && (fvi_query_ptr->flags.transpoint) &&
               CheckTransparentPoint(&colp, room_index, i)) {
             // Go through the hole
-            face_hit_type = HIT_NONE;
+            face_hit_type = false;
           }
 
           // If we hit the face...
@@ -4715,9 +4715,9 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
               }
 
               if (f_backface)
-                fvi_hit_data_ptr->hit_type[fvi_hit_data_ptr->num_hits] = HIT_BACKFACE;
+                fvi_hit_data_ptr->hit_type[fvi_hit_data_ptr->num_hits] = fvi_hit_type::backface;
               else
-                fvi_hit_data_ptr->hit_type[fvi_hit_data_ptr->num_hits] = HIT_WALL;
+                fvi_hit_data_ptr->hit_type[fvi_hit_data_ptr->num_hits] = fvi_hit_type::wall;
 
               fvi_hit_data_ptr->hit_wallnorm[fvi_hit_data_ptr->num_hits] = wall_norm;
               // fvi_hit_data_ptr->hit_seg = -1; -- set in the fvi_FindIntersection function
@@ -4816,7 +4816,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
         hit_data_terrain.hit_room = GetTerrainRoomFromPos(hit_data_terrain.hit_pnt).value_or(-1);
 
         if (hit_data_terrain.hit_room == -1)
-          hit_data_terrain.hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
+          hit_data_terrain.hit_type[0] = fvi_hit_type::out_of_terrain_bounds;
 
         // Find the hit data!!!
         do_fvi_terrain();
@@ -4824,14 +4824,14 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
         // This is quick, so do it here.
         hit_data_terrain.hit_room = GetTerrainRoomFromPos(hit_data_terrain.hit_pnt).value_or(-1);
         if (hit_data_terrain.hit_room == -1)
-          hit_data_terrain.hit_type[0] = HIT_OUT_OF_TERRAIN_BOUNDS;
+          hit_data_terrain.hit_type[0] = fvi_hit_type::out_of_terrain_bounds;
 
         // Reset the fvi global pointers to handle in mine stuff.
         fvi_hit_data_ptr = temp_hit_data;
         fvi_query_ptr = temp_query;
 
         // Make sure we register the hit
-        if (hit_data_terrain.hit_type[0] != HIT_NONE)
+        if (hit_data_terrain.hit_type[0] != fvi_hit_type::none)
           *fvi_hit_data_ptr = hit_data_terrain;
       }
     }
@@ -4839,7 +4839,7 @@ int fvi_room(int room_index, int from_portal, int room_obj) {
 
   // quit_looking:
 
-  Q_ASSERT(!(fvi_hit_data_ptr->hit_type[0] == HIT_OBJECT && fvi_hit_data_ptr->hit_object[0] == -1));
+  Q_ASSERT(!(fvi_hit_data_ptr->hit_type[0] == fvi_hit_type::object && fvi_hit_data_ptr->hit_object[0] == -1));
 
   return fvi_hit_data_ptr->hit_type[0];
 }

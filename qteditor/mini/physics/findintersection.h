@@ -315,8 +315,8 @@ struct fvi_info {
 
   int num_hits; // Number of recorded hits
 
-  int hit_type[MAX_HITS];        // what sort of intersection
-  vector3 hit_face_pnt[MAX_HITS]; // actual collision point (edge of rad)
+  fvi_hit_type hit_type[MAX_HITS];  // what sort of intersection
+  vector3 hit_face_pnt[MAX_HITS];   // actual collision point (edge of rad)
 
   int hit_face_room[MAX_HITS];   // what room the hit face is in
   int hit_face[MAX_HITS];        // if hit wall, which face
@@ -371,7 +371,7 @@ struct fvi_query
 //  ingore_obj_list	NULL, or ptr to a list of objnums to ignore, terminated with -1
 //  check_obj_flag	determines whether collisions with objects are checked
 // Returns the hit_data->hit_type
-extern int fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision = false);
+extern fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision = false);
 
 // Face/Room list for some fvi call(s)
 struct fvi_face_room_list {

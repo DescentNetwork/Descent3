@@ -2593,8 +2593,8 @@ SetGlowStatus(roomnum, LightGlowsThisFrame[i].facenum, center, size, FastCoronas
     fq.flags.players_as_sphere = true;
     fq.thisobjnum = -1;
     fq.ignore_obj_list = NULL;
-    int fate = fvi_FindIntersection(&fq, &hit_info);
-    if (fate != HIT_NONE)
+    fvi_hit_type fate = fvi_FindIntersection(&fq, &hit_info);
+    if (fate != fvi_hit_type::none)
       continue;
     SetGlowStatus(roomnum, LightGlowsThisFrame[i].facenum, center, size, FastCoronas);
   }

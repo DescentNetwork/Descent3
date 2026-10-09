@@ -265,7 +265,7 @@ int SlewFrame(object *obj, int movement_limitations) {
   int new_room;
   fvi_query fq;
   fvi_info hit_info;
-  int fate;
+  fvi_hit_type fate;
 
   float key_timex1 = 0, key_timex0 = 0;
   float key_timey1 = 0, key_timey0 = 0;
@@ -427,14 +427,14 @@ int SlewFrame(object *obj, int movement_limitations) {
         fate = fvi_FindIntersection(&fq, &hit_info);
 
         // If bad room, don't move
-        if ((fate == HIT_OUT_OF_TERRAIN_BOUNDS) || (hit_info.hit_room == -1)) {
+        if ((fate == fvi_hit_type::out_of_terrain_bounds) || (hit_info.hit_room == -1)) {
           new_room = from_roomnum(obj->roomnum);
           new_pos = obj->pos;
         } else
           new_room = hit_info.hit_room;
 
         // The object hit a wall, and maybe went outside the mine.
-        if (fate == HIT_WALL) {
+        if (fate == fvi_hit_type::wall) {
           int t;
 
           LOG_DEBUG("SLEW: hit wall");

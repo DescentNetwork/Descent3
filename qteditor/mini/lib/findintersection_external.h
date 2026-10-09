@@ -41,19 +41,23 @@
 #ifndef FINDINTERSECTION_EXTERNAL_H_
 #define FINDINTERSECTION_EXTERNAL_H_
 
+#include <cstdint>
+
 // return values for find_vector_intersection()
-#define HIT_NONE 0                  // we hit nothing
-#define HIT_WALL 1                  // we hit a wall
-#define HIT_OBJECT 2                // we hit an object
-#define HIT_TERRAIN 3               // we hit the terrain
-#define HIT_BAD_P0 4                // start point not is specified segment
-#define HIT_OUT_OF_TERRAIN_BOUNDS 5 // End point is outside of the terrain
-#define HIT_BACKFACE 6              // We hit the backface of a wall...
-#define HIT_SPHERE_2_POLY_OBJECT 7  // Hit a sphere to a real polygon
-#define HIT_CEILING 8               // Object hit the ceiling
-#define HIT_CORNER_WALL 9
-#define HIT_EDGE_WALL 10
-#define HIT_FACE_WALL 11
+enum class fvi_hit_type : uint8_t {
+  none = 0,                  // we hit nothing
+  wall = 1,                  // we hit a wall
+  object = 2,                // we hit an object
+  terrain = 3,               // we hit the terrain
+  bad_p0 = 4,                // start point not is specified segment
+  out_of_terrain_bounds = 5, // End point is outside of the terrain
+  backface = 6,              // We hit the backface of a wall...
+  sphere_2_poly_object = 7,  // Hit a sphere to a real polygon
+  ceiling = 8,               // Object hit the ceiling
+  corner_wall = 9,
+  edge_wall = 10,
+  face_wall = 11,
+};
 
 // fvi_query::flags
 struct [[gnu::packed]] fvi_query_flags_t {

@@ -519,7 +519,7 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
   float size = 0.0f;
   fvi_info hit_info;
   fvi_query fq;
-  int fate;
+  fvi_hit_type fate;
 
   fq.flags = fvi_query_flags_t{};
   fq.flags.ignore_render_through_portals = true;
@@ -536,7 +536,7 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
 
     fate = fvi_FindIntersection(&fq, &hit_info);
 
-    if (fate == HIT_NONE) {
+    if (fate == fvi_hit_type::none) {
       fq.p0 = &enlist->nodes[epnt].pos;
       fq.p1 = &snlist->nodes[spnt].pos;
       fq.startroom = (eroom > (Rooms.size() - 1) && eroom < Rooms.size() + 8)
@@ -547,10 +547,10 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
       fate = fvi_FindIntersection(&fq, &hit_info);
     }
 
-    if (fate == HIT_NONE)
+    if (fate == fvi_hit_type::none)
       size += 1.0f;
 
-  } while (fate == HIT_NONE && size < MAX_BNODE_SIZE + 1.0f);
+  } while (fate == fvi_hit_type::none && size < MAX_BNODE_SIZE + 1.0f);
 
   return (size - 1.0f);
 }
@@ -577,7 +577,7 @@ void EBNode_AutoEdgeNode(int spnt, int sroom) {
       fq.thisobjnum = -1;
       fq.ignore_obj_list = NULL;
 
-      if (fvi_FindIntersection(&fq, &hit_info) == HIT_NONE)
+      if (fvi_FindIntersection(&fq, &hit_info) == fvi_hit_type::none)
         EBNode_AddEdge(spnt, sroom, i, sroom);
     }
   }
@@ -671,7 +671,7 @@ void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
       fq.thisobjnum = -1;
       fq.ignore_obj_list = NULL;
 
-      if (fvi_FindIntersection(&fq, &hit_info) != HIT_NONE)
+      if (fvi_FindIntersection(&fq, &hit_info) != fvi_hit_type::none)
         continue;
 
       EBNode_AddEdge(i, roomnum, j, roomnum);
@@ -822,7 +822,7 @@ int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom) {
 
   if (sroom != eroom) {
     fvi_query fq;
-    int fate;
+    fvi_hit_type fate;
 
     fq.p0 = &snlist->nodes[spnt].pos;
     fq.p1 = &enlist->nodes[epnt].pos;
@@ -838,7 +838,7 @@ int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom) {
 
     fate = fvi_FindIntersection(&fq, &hit_info);
 
-    if (fate != HIT_NONE) {
+    if (fate != fvi_hit_type::none) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You can only do this function if the 2 nodes can\nsee each other or are in the same room.\n");
       return -1;
     }

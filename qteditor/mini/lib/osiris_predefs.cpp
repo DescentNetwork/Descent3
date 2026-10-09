@@ -2465,7 +2465,7 @@ int osipf_RayCast(int objhandle, vector3 *p0, vector3 *p1, int start_roomnum, fl
   ri->hit_room = hit_info.hit_room;
   ri->fate = fate;
 
-  if (fate == HIT_SPHERE_2_POLY_OBJECT || fate == HIT_OBJECT) {
+  if (fate == std::to_underlying(fvi_hit_type::sphere_2_poly_object) || fate == std::to_underlying(fvi_hit_type::object)) {
     ri->hit_object = Objects[hit_info.hit_object[0]].handle;
   }
   ri->hit_subobject = hit_info.hit_subobject[0];

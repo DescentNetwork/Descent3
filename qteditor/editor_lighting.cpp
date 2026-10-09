@@ -1692,9 +1692,9 @@ int ShootRayForTerrainLight(vector3 *src, vector3 *dest, int cellnum) {
   fq.thisobjnum = -1;
   fq.ignore_obj_list = NULL;
 
-  int fate = fvi_FindIntersection(&fq, &hit_info);
+  fvi_hit_type fate = fvi_FindIntersection(&fq, &hit_info);
 
-  if (fate == HIT_OUT_OF_TERRAIN_BOUNDS || fate == HIT_NONE)
+  if (fate == fvi_hit_type::out_of_terrain_bounds || fate == fvi_hit_type::none)
     return 1;
 
   return 0;

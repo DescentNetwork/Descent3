@@ -352,7 +352,7 @@ retry:
           fq.flags.no_relink = true;
           fq.flags.ignore_non_lightmap_objects = true;
 
-          if (fvi_FindIntersection(&fq, &hit_info) == HIT_NONE) {
+          if (fvi_FindIntersection(&fq, &hit_info) == fvi_hit_type::none) {
             BNode_vis[i] = VIS_OK;
             best_dot = dot;
             closest_node = i;
@@ -437,7 +437,7 @@ retry:
           fq.ignore_obj_list = nullptr;
         }
 
-        if (f_retry || fvi_FindIntersection(&fq, &hit_info) == HIT_NONE) {
+        if (f_retry || fvi_FindIntersection(&fq, &hit_info) == fvi_hit_type::none) {
           closest_dist = dist;
           closest_node = i;
         }

@@ -249,7 +249,7 @@ int ShootRayToVolumePoint(vector3& src, vector3& dest, int start_room) {
   fq.thisobjnum = -1;
   fq.ignore_obj_list = NULL;
 
-  int fate = fvi_FindIntersection(&fq, &hit_info);
+  fvi_hit_type fate = fvi_FindIntersection(&fq, &hit_info);
 
   float dist = vm_VectorDistance(&hit_info.hit_pnt, &dest);
   if (dist > .1)
@@ -410,10 +410,10 @@ int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_su
   fq.thisobjnum = -1;
   fq.ignore_obj_list = NULL;
 
-  int fate = fvi_FindIntersection(&fq, &hit_info);
+  fvi_hit_type fate = fvi_FindIntersection(&fq, &hit_info);
 
   if (from_satellite) {
-    if (fate == HIT_NONE || fate == HIT_OUT_OF_TERRAIN_BOUNDS)
+    if (fate == fvi_hit_type::none || fate == fvi_hit_type::out_of_terrain_bounds)
       return 1;
     else
       return 0;

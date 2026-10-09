@@ -1290,7 +1290,7 @@ bool IsPathPointValid(int room, vector3 *pos) {
   for (i = 0; i < Rooms[room].num_portals; i++) {
     fvi_info hit_info;
     fvi_query fq;
-    int fate;
+    fvi_hit_type fate;
 
     if (!BOA_PassablePortal(room, i))
       continue;
@@ -1311,7 +1311,7 @@ bool IsPathPointValid(int room, vector3 *pos) {
 
     fate = fvi_FindIntersection(&fq, &hit_info);
 
-    if (fate != HIT_NONE) {
+    if (fate != fvi_hit_type::none) {
       return false;
     }
   }
@@ -1801,7 +1801,7 @@ void MakeBOAVisTable(bool from_lighting) {
                   // Check to see if we can see to this portal point
                   fvi_query fq;
                   fvi_info hit_data;
-                  int fate;
+                  fvi_hit_type fate;
 
                   fq.p0 = &src2;
                   fq.startroom = i;
@@ -1818,7 +1818,7 @@ void MakeBOAVisTable(bool from_lighting) {
                   fq.flags.ignore_render_through_portals = true;
 
                   fate = fvi_FindIntersection(&fq, &hit_data);
-                  if (fate == HIT_NONE) {
+                  if (fate == fvi_hit_type::none) {
                     // if this portal can be seen, add all its portals to the stack
                     // and then set this room to be visible
                     for (int k = 0; k < Rooms[check_room].num_portals; k++) {

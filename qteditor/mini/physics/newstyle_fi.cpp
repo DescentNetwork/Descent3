@@ -209,7 +209,7 @@ static void CollideSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
 
               fvi_hit_data_ptr->hit_object[0] = fvi_curobj;
               fvi_hit_data_ptr->hit_subobject[0] = sm - pm->submodel.data();
-              fvi_hit_data_ptr->hit_type[0] = HIT_SPHERE_2_POLY_OBJECT;
+              fvi_hit_data_ptr->hit_type[0] = fvi_hit_type::sphere_2_poly_object;
               fvi_hit_data_ptr->hit_wallnorm[0] = wall_norm;
               fvi_hit_data_ptr->hit_face_pnt[0] = colp;
               fvi_hit_data_ptr->hit_face[0] = i;
