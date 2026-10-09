@@ -87,7 +87,9 @@ std::array<uint8_t, TERRAIN_WIDTH * TERRAIN_DEPTH> TerrainSelected;
 int Num_terrain_selected = 0;
 #endif
 
-int TSearch_on = 0, TSearch_found_type, TSearch_x, TSearch_y, TSearch_seg, TSearch_face;
+int TSearch_on = 0;
+terrain_search_type TSearch_found_type;
+int TSearch_x, TSearch_y, TSearch_seg, TSearch_face;
 
 int TerrainEdgeTest[MAX_TERRAIN_LOD][16];
 uint8_t TerrainEdgeJump[MAX_TERRAIN_LOD];

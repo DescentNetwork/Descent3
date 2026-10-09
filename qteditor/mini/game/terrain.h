@@ -291,18 +291,21 @@ extern int Num_terrain_selected;
 extern std::vector<uint16_t> Terrain_rotate_list; // which points have been sub/rotated this frame
 extern std::vector<g3Point> World_point_buffer; // Rotated points
 
-#define TSEARCH_FOUND_TERRAIN 0
-#define TSEARCH_FOUND_MINE 1
-#define TSEARCH_FOUND_SATELLITE 2
-#define TSEARCH_FOUND_SKY_DOME 3
-#define TSEARCH_FOUND_SKY_BAND 4
-#define TSEARCH_FOUND_OBJECT 5
-#ifdef NEWEDITOR
-#define TSEARCH_FOUND_NODE 6
-#define TSEARCH_FOUND_BNODE 7
-#endif
+// What TSearch hit: enumerated values of TSearch_found_type
+enum class terrain_search_type : uint8_t {
+  found_terrain = 0,
+  found_mine = 1,
+  found_satellite = 2,
+  found_sky_dome = 3,
+  found_sky_band = 4,
+  found_object = 5,
+  found_node = 6,   // NEWEDITOR only
+  found_bnode = 7,  // NEWEDITOR only
+};
 
-extern int TSearch_on, TSearch_found_type, TSearch_x, TSearch_y, TSearch_seg, TSearch_face;
+extern int TSearch_on;
+extern terrain_search_type TSearch_found_type;
+extern int TSearch_x, TSearch_y, TSearch_seg, TSearch_face;
 
 extern void InitTerrain();
 

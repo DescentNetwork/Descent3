@@ -1431,7 +1431,7 @@ void RenderObject(object& obj) {
 
   if (TSearch_on) {
     if (rend_GetPixel(TSearch_x, TSearch_y) != oldcolor) {
-      TSearch_found_type = TSEARCH_FOUND_OBJECT;
+      TSearch_found_type = terrain_search_type::found_object;
       TSearch_seg = OBJNUM(&obj);
       LOG_DEBUG("TR:objnum=%d", OBJNUM(&obj));
     }

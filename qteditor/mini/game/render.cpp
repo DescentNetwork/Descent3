@@ -1956,7 +1956,7 @@ void RenderFace(int roomnum, int facenum) {
 #ifdef EDITOR
   if (TSearch_on) {
     if (rend_GetPixel(TSearch_x, TSearch_y) != oldcolor) {
-      TSearch_found_type = TSEARCH_FOUND_MINE;
+      TSearch_found_type = terrain_search_type::found_mine;
       TSearch_seg = roomnum;
       TSearch_face = facenum;
     }
@@ -2119,7 +2119,7 @@ draw_fog:
 
           if (point_in_poly(4, epoints, TSearch_x, TSearch_y)) {
             found_lightmap = i;
-            TSearch_found_type = TSEARCH_FOUND_MINE;
+            TSearch_found_type = terrain_search_type::found_mine;
             TSearch_seg = roomnum;
             TSearch_face = facenum;
           }

@@ -95,21 +95,21 @@ struct pal_entry {
 
 // structure of the header in the file
 struct iff_bitmap_header {
-  int16_t w, h;                  // width and height of this bitmap
-  int16_t x, y;                  // generally unused
+  uint16_t w, h;                  // width and height of this bitmap
+  uint16_t x, y;                  // generally unused
   iff_bitmap_type type;          // see types above
-  int16_t transparentcolor;      // which color is transparent (if any)
-  int16_t pagewidth, pageheight; // width & height of source screen
+  uint16_t transparentcolor;      // which color is transparent (if any)
+  uint16_t pagewidth, pageheight; // width & height of source screen
   uint8_t nplanes;               // number of planes (8 for 256 color image)
   uint8_t masking, compression;  // see constants above
   uint8_t xaspect, yaspect;      // aspect ratio (usually 5/6)
   pal_entry palette[256];        // the palette for this bitmap
   std::vector<uint8_t> raw_data; // pixel data
-  int16_t row_size;               // offset to next row
+  uint16_t row_size;               // offset to next row
 };
 
-int16_t iff_transparent_color;
-int16_t iff_has_transparency; // 0=no transparency, 1=iff_transparent_color is valid
+uint16_t iff_transparent_color;
+uint16_t iff_has_transparency; // 0=no transparency, 1=iff_transparent_color is valid
 
 // IFF chunk signature identifiers (FourCCs decoded by bm_iff_get_sig)
 enum class iff_sig : uint8_t {
