@@ -377,42 +377,54 @@ struct sound_info {
 };
 
 // Supported sound mixers
-#define SOUND_MIXER_SOFTWARE_16 0
-#define SOUND_MIXER_DS_16 1
-#define SOUND_MIXER_DS_8 2
-#define SOUND_MIXER_DS3D_16 3
-#define SOUND_MIXER_AUREAL 4       // Unused, outdated 3D sound technology
-#define SOUND_MIXER_CREATIVE_EAX 6 // switched because launcher uses 5 as NONE.
-#define SOUND_MIXER_NONE 5
+enum class sound_mixer : uint8_t {
+  software_16 = 0,
+  ds_16 = 1,
+  ds_8 = 2,
+  ds3d_16 = 3,
+  aureal = 4,        // Unused, outdated 3D sound technology
+  none = 5,          // launcher uses 5 as NONE.
+  creative_eax = 6,  // switched because launcher uses 5 as NONE.
+};
 
 // Support sound qualities
-#define SQT_NORMAL 0
-#define SQT_HIGH 1
+enum class sound_quality_type : uint8_t {
+  normal = 0,
+  high = 1,
+};
+
 // Parameters of the sound library
-#define SLF_USE_3D 1     // Use 3d effects
-#define SLF_DELTA_FREQ 2 // Use frequency shifts (i.e. water effects)
-#define SLF_USE_16_BIT 4 // Use 16bit samples (else 8bit)
-#define SLF_USE_22_KHZ 8 // Use 22khz (else 44khz)
-#define SLF_PAUSED 16    // Sound library is currently paused
-#define SLF_FULL_3D 32   // Full 3d hardware support
-#define SLF_MOST_3D 64   // No fully static 3d -- i.e. cockpit type stuff (use 2d instead)
-#define SLF_LIGHT_3D 128 // Dynamically updating 3d sounds if sound is longer than a given threshold
-#define SLF_GOOD_2D 256  // all linked sounds update position
-#define SLF_OK_2D 512    // if a sound is longer than a threshold, it updates
+struct slf_flags_t {
+  uint32_t use_3d : 1;     // Use 3d effects
+  uint32_t delta_freq : 1; // Use frequency shifts (i.e. water effects)
+  uint32_t use_16_bit : 1; // Use 16bit samples (else 8bit)
+  uint32_t use_22_khz : 1; // Use 22khz (else 44khz)
+  uint32_t paused : 1;     // Sound library is currently paused
+  uint32_t full_3d : 1;    // Full 3d hardware support
+  uint32_t most_3d : 1;    // No fully static 3d -- i.e. cockpit type stuff (use 2d instead)
+  uint32_t light_3d : 1;   // Dynamically updating 3d sounds if sound is longer than a given threshold
+  uint32_t good_2d : 1;    // all linked sounds update position
+  uint32_t ok_2d : 1;      // if a sound is longer than a threshold, it updates
+  uint32_t unused : 22;
+};
+static_assert(sizeof(slf_flags_t) == sizeof(uint32_t));
 
 // Sound Instance flags (Move this out of here)
-#define SIF_UNUSED 0     // Not a valid sound item
-#define SIF_PLAYING_2D 1 // Sound is currently playing
-#define SIF_PLAYING_3D 2
-#define SIF_OBJ_UPDATE 4
-#define SIF_TOO_FAR 8 // We will play it, but it currently too far away(stop sound in low-level)
-#define SIF_NO_3D_EFFECTS 16
-#define SIF_LOOPING 32
-#define SIF_STREAMING_8_M 64
-#define SIF_STREAMING_16_M 128
-#define SIF_STREAMING_8_S 256
-#define SIF_STREAMING_16_S 512
-#define SIF_STREAMING (64 | 128 | 256 | 512)
+struct sif_flags_t {
+  uint32_t unused : 1;    // Not a valid sound item (all bits clear)
+  uint32_t playing_2d : 1; // Sound is currently playing
+  uint32_t playing_3d : 1;
+  uint32_t obj_update : 1;
+  uint32_t too_far : 1;    // We will play it, but it currently too far away(stop sound in low-level)
+  uint32_t no_3d_effects : 1;
+  uint32_t looping : 1;
+  uint32_t streaming_8_m : 1;
+  uint32_t streaming_16_m : 1;
+  uint32_t streaming_8_s : 1;
+  uint32_t streaming_16_s : 1;
+  uint32_t unused2 : 21;
+};
+static_assert(sizeof(sif_flags_t) == sizeof(uint32_t));
 
 // Sound kill types
 enum class sound_kill_type : uint8_t {
@@ -422,10 +434,12 @@ enum class sound_kill_type : uint8_t {
 };
 
 // Sound Library Internal Error Codes
-#define SSL_OK 0
-#define SSL_ERROR_GENERIC (-1)
-#define SSL_ERROR_SAMPLE_NODATA (-2)
-#define SSL_ERROR_STREAMMIXER (-3)
+enum class ssl_error : int8_t {
+  ok = 0,
+  error_generic = -1,
+  error_sample_nodata = -2,
+  error_streammixer = -3,
+};
 
 // Sound Status
 enum class sound_status : uint8_t {
@@ -438,18 +452,24 @@ enum class sound_status : uint8_t {
   buffered_strm = 128,
 };
 
-#define SBT_PRIMARY 0
-#define SBT_2D 1
-#define SBT_3D 2
+enum class sound_buffer_type : uint8_t {
+  primary = 0,
+  _2d = 1,
+  _3d = 2,
+};
 
 // looping methods
-#define DSLOOP_SMART_METHOD 0
-#define DSLOOP_BUFFER_METHOD 1
-#define DSLOOP_STREAM_METHOD 2
+enum class dsloop_method : uint8_t {
+  smart_method = 0,
+  buffer_method = 1,
+  stream_method = 2,
+};
 
-#define DSBUFLOOP_INIT_STEP (-1)
-#define DSBUFLOOP_LOOP_STEP 0
-#define DSBUFLOOP_FINISH_STEP 1
+enum class dsbufloop_step : int8_t {
+  init_step = -1,
+  loop_step = 0,
+  finish_step = 1,
+};
 
 // used to time threads.
 
@@ -460,17 +480,21 @@ enum class sound_status : uint8_t {
 
 
 // structure to get and set environment values
-#define ENV3DVALF_DOPPLER 1
-#define ENV3DVALF_GEOMETRY 2
+struct env3dvalf_flags_t {
+  uint32_t doppler : 1;
+  uint32_t geometry : 1;
+  uint32_t unused : 30;
+};
+static_assert(sizeof(env3dvalf_flags_t) == sizeof(uint32_t));
 
 struct t3dEnvironmentValues {
-  uint32_t flags; // use flags above
+  env3dvalf_flags_t flags; // use flags above
 
   float doppler_scalar; // values from 0.0f to ???? (1.0f = normal)
 };
 
 struct t3dEnvironmentToggles {
-  uint32_t flags;     // use flags above
+  env3dvalf_flags_t flags; // use flags above
   int supported; // returns flag values to inform caller of supported features (doppler, ie.)
 
   bool doppler;  // state of doppler effects
@@ -502,7 +526,7 @@ public:
   virtual void SetSoundCard(const char *name) = 0;
 
   // Starts the sound library, maybe have it send back some information -- 3d support?
-  virtual int InitSoundLib(char mixer_type, oeApplication *sos, uint8_t max_sounds_played) = 0;
+  virtual int InitSoundLib(sound_mixer mixer_type, oeApplication *sos, uint8_t max_sounds_played) = 0;
   // Cleans up after the Sound Library
   virtual void DestroySoundLib() = 0;
 
@@ -510,10 +534,10 @@ public:
   virtual bool LockSound(int sound_uid) = 0;
   virtual bool UnlockSound(int sound_uid) = 0;
 
-  virtual bool SetSoundQuality(char quality) = 0;
-  virtual char GetSoundQuality() = 0;
-  virtual bool SetSoundMixer(char mixer_type) = 0;
-  virtual char GetSoundMixer() = 0;
+  virtual bool SetSoundQuality(sound_quality_type quality) = 0;
+  virtual sound_quality_type GetSoundQuality() = 0;
+  virtual bool SetSoundMixer(sound_mixer mixer_type) = 0;
+  virtual sound_mixer GetSoundMixer() = 0;
 
   // Plays a 2d sound
   virtual int PlaySound2d(play_information *play_info, int sound_index, float volume, float pan, bool f_looped) = 0;

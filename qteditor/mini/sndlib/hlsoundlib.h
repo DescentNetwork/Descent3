@@ -249,16 +249,16 @@ enum class envaud_preset : uint8_t {
   count = 26,
 };
 
-extern char Sound_quality;
-extern char Sound_mixer;
+extern sound_quality_type Sound_quality;
+extern sound_mixer Sound_mixer;
 extern char Sound_card_name[];
 
 class sound_object {
 public:
-  sound_object() { m_obj_type_flags = SIF_UNUSED; }
+  sound_object() { m_obj_type_flags = sif_flags_t{}; }
 
 public:
-  uint32_t m_obj_type_flags;
+  sif_flags_t m_obj_type_flags;
   int m_sound_uid;
   int m_sound_index;
   int m_hlsound_uid;
@@ -313,7 +313,7 @@ public:
   bool IsActive(void);
 
   // Start and clean-up after the sound library
-  int InitSoundLib(oeApplication *sos, char mixer_type, char quality, bool f_kill_sound_lib = false);
+  int InitSoundLib(oeApplication *sos, sound_mixer mixer_type, sound_quality_type quality, bool f_kill_sound_lib = false);
   void KillSoundLib(bool f_kill_sound_list);
   void SetLLSoundQuantity(int n_sounds);
   int GetLLSoundQuantity();
@@ -380,10 +380,10 @@ public:
   void KillAllQueues();
 
   bool CheckAndForceSoundDataAlloc(int sound_file_index);
-  bool SetSoundQuality(char quality);
-  char GetSoundQuality(void);
-  bool SetSoundMixer(char mixer_type);
-  char GetSoundMixer(void);
+  bool SetSoundQuality(sound_quality_type quality);
+  sound_quality_type GetSoundQuality(void);
+  bool SetSoundMixer(sound_mixer mixer_type);
+  sound_mixer GetSoundMixer(void);
 
   bool IsSoundPlaying(int hlsound_uid);
 

@@ -34,6 +34,9 @@ not yet used**.
 | `dynamic_wb_info_flags_t` | `lib/robotfirestruct.h`    | yes — `dynamic_wb_info::flags` |
 | `otype_wb_info_flags_t`   | `lib/robotfirestruct.h`    | yes — `otype_wb_info::flags` |
 | `sound_flags_t`       | `lib/ssl_lib.h`                 | yes — `sound_info::flags` |
+| `slf_flags_t`         | `lib/ssl_lib.h`                 | no — sound library flags (stubbed, no consumer yet) |
+| `sif_flags_t`         | `lib/ssl_lib.h`                 | yes — `sound_object::m_obj_type_flags` |
+| `env3dvalf_flags_t`   | `lib/ssl_lib.h`                 | yes — `t3dEnvironmentValues::flags`, `t3dEnvironmentToggles::flags` |
 | `trigger_flags_t`     | `lib/trigger.h`                 | yes — `trigger::flags` |
 | `activator_flags_t`   | `lib/trigger.h`                 | yes — `trigger::activator` |
 | `weapon_flags_t`      | `lib/weapon.h`                  | yes — `weapon::flags` |

@@ -68,7 +68,8 @@ void Mixer_Update(void) {
 
 bool hlsSystem::IsActive(void) { PRINT_STUB(__FUNCTION__); return m_f_hls_system_init != 0; }
 
-int hlsSystem::InitSoundLib(oeApplication *sos, char mixer_type, char quality, bool f_kill_sound_lib) {
+int hlsSystem::InitSoundLib(oeApplication *sos, sound_mixer mixer_type, sound_quality_type quality,
+                            bool f_kill_sound_lib) {
   PRINT_STUB(__FUNCTION__);
   return 1;
 }
@@ -152,13 +153,13 @@ void hlsSystem::KillQueue(int q_num) { PRINT_STUB(__FUNCTION__); }
 
 void hlsSystem::KillAllQueues() { PRINT_STUB(__FUNCTION__); }
 
-bool hlsSystem::SetSoundQuality(char quality) { PRINT_STUB(__FUNCTION__); return false; }
+bool hlsSystem::SetSoundQuality(sound_quality_type quality) { PRINT_STUB(__FUNCTION__); return false; }
 
-char hlsSystem::GetSoundQuality(void) { PRINT_STUB(__FUNCTION__); return 0; }
+sound_quality_type hlsSystem::GetSoundQuality(void) { PRINT_STUB(__FUNCTION__); return sound_quality_type::normal; }
 
-bool hlsSystem::SetSoundMixer(char mixer_type) { PRINT_STUB(__FUNCTION__); return false; }
+bool hlsSystem::SetSoundMixer(sound_mixer mixer_type) { PRINT_STUB(__FUNCTION__); return false; }
 
-char hlsSystem::GetSoundMixer(void) { PRINT_STUB(__FUNCTION__); return 0; }
+sound_mixer hlsSystem::GetSoundMixer(void) { PRINT_STUB(__FUNCTION__); return sound_mixer::none; }
 
 bool hlsSystem::IsSoundPlaying(int hlsound_uid) { PRINT_STUB(__FUNCTION__); return false; }
 
