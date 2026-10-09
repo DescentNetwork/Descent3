@@ -396,7 +396,7 @@ static void LL_WriteBNodeChunk(posix_ostream &ofile) {
 // (Descent3/LoadLevel.cpp:3952-3956, bsp.cpp:189-242).  The chunk body is an
 // int32 BSPChecksum followed by the root node in recursive pre-order.
 //
-//   uint8 type             BSP_NODE (0) / BSP_EMPTY_LEAF (1) / BSP_SOLID_LEAF (2)
+//   uint8 type             bsp_node_type::node (0) / empty_leaf (1) / solid_leaf (2)
 //   leaves:                (no further data)
 //   node:                  plane.a/b/c/d (float), node_roomnum (int16),
 //                          node_facenum (int16), node_subnum (int8),
@@ -412,15 +412,16 @@ int BSPChecksum = -1;
 bool BSP_initted = false;
 
 static bspnode *LL_NewBSPNode() {
-  // Value-initialise: type -> BSP_NODE (0), plane/indices -> 0, front/back ->
-  // nullptr, polylist -> nullptr (matches the engine's NewBSPNode zeroing).
+  // Value-initialise: type -> bsp_node_type::node (0), plane/indices -> 0,
+  // front/back -> nullptr, polylist -> nullptr (matches the engine's
+  // NewBSPNode zeroing).
   return new bspnode{};
 }
 
 static void LL_DestroyBSPNode(bspnode *node) {
   if (!node)
     return;
-  if (node->type == BSP_NODE) {
+  if (node->type == bsp_node_type::node) {
     LL_DestroyBSPNode(node->front);
     LL_DestroyBSPNode(node->back);
   }
@@ -437,13 +438,13 @@ static void LL_DefaultBSPTree() {
 }
 
 static void LL_ReadBSPNode(posix_istream &ifile, bspnode *&node_out) {
-  uint8_t type = 0;
-  ifile >> type;
+  uint8_t raw_type = 0;
+  ifile >> raw_type;
   bspnode *node = LL_NewBSPNode();
-  node->type = type;
+  node->type = static_cast<bsp_node_type>(raw_type);
   node_out = node;
 
-  if (type == BSP_EMPTY_LEAF || type == BSP_SOLID_LEAF)
+  if (node->type == bsp_node_type::empty_leaf || node->type == bsp_node_type::solid_leaf)
     return;
 
   ifile >> node->plane.a;
@@ -460,9 +461,9 @@ static void LL_ReadBSPNode(posix_istream &ifile, bspnode *&node_out) {
 }
 
 static void LL_WriteBSPNode(posix_ostream &ofile, const bspnode *node) {
-  ofile << node->type;
+  ofile << reinterpret_cast<const uint8_t &>(node->type);
 
-  if (node->type == BSP_EMPTY_LEAF || node->type == BSP_SOLID_LEAF)
+  if (node->type == bsp_node_type::empty_leaf || node->type == bsp_node_type::solid_leaf)
     return;
 
   ofile << node->plane.a;

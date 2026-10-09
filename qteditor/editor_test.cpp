@@ -1204,9 +1204,9 @@ private slots:
 
   // The CNBS chunk carries the mine's indoor BSP (collision/visibility) tree:
   // an int32 BSPChecksum followed by a recursive pre-order node stream
-  // (BSP_NODE = plane + room/face/subnum + front/back subtrees; the two leaf
-  // tags terminate a branch).  It must survive a load/save cycle value-for-
-  // value, and a real level's tree must be re-emitted identically.
+  // (bsp_node_type::node = plane + room/face/subnum + front/back subtrees;
+  // the two leaf tags terminate a branch).  It must survive a load/save cycle
+  // value-for-value, and a real level's tree must be re-emitted identically.
   void testBSPChunkRoundTrip()
   {
     // Local recursive free so this test fully controls the global BSP state
@@ -1214,7 +1214,7 @@ private slots:
     std::function<void(bspnode *)> freeTree = [&freeTree](bspnode *n) {
       if (!n)
         return;
-      if (n->type == BSP_NODE) {
+      if (n->type == bsp_node_type::node) {
         freeTree(n->front);
         freeTree(n->back);
       }
@@ -1257,25 +1257,25 @@ private slots:
     // Build a synthetic tree: root node -> node -> [empty, solid] leaves, plus
     // a solid leaf on the root's back side.
     bspnode *root = new bspnode{};
-    root->type = BSP_NODE;
+    root->type = bsp_node_type::node;
     root->plane = bspplane{1.0f, 0.0f, 0.0f, -100.0f, 0};
     root->node_roomnum = 3;
     root->node_facenum = 4;
     root->node_subnum = -2;
 
     bspnode *front = new bspnode{};
-    front->type = BSP_NODE;
+    front->type = bsp_node_type::node;
     front->plane = bspplane{0.0f, 1.0f, 0.0f, -50.0f, 0};
     front->node_roomnum = 5;
     front->node_facenum = 6;
     front->node_subnum = 1;
     front->front = new bspnode{};
-    front->front->type = BSP_EMPTY_LEAF;
+    front->front->type = bsp_node_type::empty_leaf;
     front->back = new bspnode{};
-    front->back->type = BSP_SOLID_LEAF;
+    front->back->type = bsp_node_type::solid_leaf;
     root->front = front;
     root->back = new bspnode{};
-    root->back->type = BSP_SOLID_LEAF;
+    root->back->type = bsp_node_type::solid_leaf;
     MineBSP.root = root;
     BSP_initted = true;
     BSPChecksum = 0xBADF00D;
@@ -1301,23 +1301,23 @@ private slots:
     QVERIFY2(BSP_initted, "CNBS chunk did not flag the BSP tree as initialized");
     QVERIFY(MineBSP.root != nullptr);
     QCOMPARE(int(BSPChecksum), int(0xBADF00D));
-    QCOMPARE(int(MineBSP.root->type), int(BSP_NODE));
+    QCOMPARE(int(MineBSP.root->type), int(bsp_node_type::node));
     QCOMPARE(MineBSP.root->plane.a, 1.0f);
     QCOMPARE(MineBSP.root->plane.d, -100.0f);
     QCOMPARE(int(MineBSP.root->node_roomnum), 3);
     QCOMPARE(int(MineBSP.root->node_facenum), 4);
     QCOMPARE(int(MineBSP.root->node_subnum), -2);
     QVERIFY(MineBSP.root->front != nullptr);
-    QCOMPARE(int(MineBSP.root->front->type), int(BSP_NODE));
+    QCOMPARE(int(MineBSP.root->front->type), int(bsp_node_type::node));
     QCOMPARE(MineBSP.root->front->plane.b, 1.0f);
     QCOMPARE(int(MineBSP.root->front->node_roomnum), 5);
     QCOMPARE(int(MineBSP.root->front->node_subnum), 1);
     QVERIFY(MineBSP.root->front->front != nullptr);
-    QCOMPARE(int(MineBSP.root->front->front->type), int(BSP_EMPTY_LEAF));
+    QCOMPARE(int(MineBSP.root->front->front->type), int(bsp_node_type::empty_leaf));
     QVERIFY(MineBSP.root->front->back != nullptr);
-    QCOMPARE(int(MineBSP.root->front->back->type), int(BSP_SOLID_LEAF));
+    QCOMPARE(int(MineBSP.root->front->back->type), int(bsp_node_type::solid_leaf));
     QVERIFY(MineBSP.root->back != nullptr);
-    QCOMPARE(int(MineBSP.root->back->type), int(BSP_SOLID_LEAF));
+    QCOMPARE(int(MineBSP.root->back->type), int(bsp_node_type::solid_leaf));
 
     // save -> reload -> save: the second and third passes must be byte-identical.
     QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");

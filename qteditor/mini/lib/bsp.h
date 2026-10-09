@@ -44,17 +44,23 @@
 #include "list.h"
 #include "vecmat.h"
 
-#define BSP_IN_FRONT 1
-#define BSP_BEHIND 2
-#define BSP_ON_PLANE 3
-#define BSP_SPANNING 4
-#define BSP_COINCIDENT 5
+// Results of classifying a polygon against a plane
+enum class bsp_side : uint8_t {
+  in_front = 1,
+  behind = 2,
+  on_plane = 3,
+  spanning = 4,
+  coincident = 5,
+};
 
-#define BSP_EPSILON .00005f
+inline constexpr float BSP_EPSILON = 0.00005f;
 
-#define BSP_NODE 0
-#define BSP_EMPTY_LEAF 1
-#define BSP_SOLID_LEAF 2
+// Values for bspnode::type
+enum class bsp_node_type : uint8_t {
+  node = 0,
+  empty_leaf = 1,
+  solid_leaf = 2,
+};
 
 struct bspplane {
   float a, b, c, d;
@@ -75,7 +81,7 @@ struct bsppolygon {
 };
 
 struct bspnode {
-  uint8_t type;
+  bsp_node_type type;
   bspplane plane;
   uint16_t node_facenum;
   uint16_t node_roomnum;
