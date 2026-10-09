@@ -1074,7 +1074,7 @@ void check_for_special_surface(object *weapon, int surface_tmap, vector3 *surfac
       Q_ASSERT(false);
 
     hear.max_dist = Sounds[snd].max_distance;
-    Sound_system.Play3dSound(snd, SND_PRIORITY_NORMAL, weapon);
+    Sound_system.Play3dSound(snd, sound_priority::normal, weapon);
     AINotify(weapon, AIN_HEAR_NOISE, (void *)&hear);
 
     if (!flags.water)
@@ -1125,9 +1125,9 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
     AINotify(weapon, AIN_HEAR_NOISE, (void *)&hear);
 
     if (sound_override_force_field == -1)
-      Sound_system.Play3dSound(SOUND_FORCEFIELD_BOUNCE, SND_PRIORITY_HIGH, weapon);
+      Sound_system.Play3dSound(SOUND_FORCEFIELD_BOUNCE, sound_priority::high, weapon);
     else
-      Sound_system.Play3dSound(sound_override_force_field, SND_PRIORITY_HIGH, weapon);
+      Sound_system.Play3dSound(sound_override_force_field, sound_priority::high, weapon);
 
     return true;
   }
@@ -1159,9 +1159,9 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
       CreateRandomSparks(20, hitpnt, hitseg);
 
       if (sound_override_glass_breaking == -1)
-        Sound_system.Play3dSound(SOUND_BREAKING_GLASS, SND_PRIORITY_HIGH, weapon);
+        Sound_system.Play3dSound(SOUND_BREAKING_GLASS, sound_priority::high, weapon);
       else
-        Sound_system.Play3dSound(sound_override_glass_breaking, SND_PRIORITY_HIGH, weapon);
+        Sound_system.Play3dSound(sound_override_glass_breaking, sound_priority::high, weapon);
 
       fp->flags.destroyed = true;
     }
@@ -1222,7 +1222,7 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
 
     if (snd != SOUND_NONE_INDEX) {
       hear.max_dist = Sounds[snd].max_distance;
-      Sound_system.Play3dSound(snd, SND_PRIORITY_NORMAL, weapon);
+      Sound_system.Play3dSound(snd, sound_priority::normal, weapon);
       AINotify(weapon, AIN_HEAR_NOISE, (void *)&hear);
     }
 
@@ -1241,7 +1241,7 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
   } else { // weapon is bouncing
 
     if (Weapons[weapon->id].sounds[WSI_BOUNCE] != SOUND_NONE_INDEX) {
-      Sound_system.Play3dSound(Weapons[weapon->id].sounds[WSI_BOUNCE], SND_PRIORITY_HIGH, weapon);
+      Sound_system.Play3dSound(Weapons[weapon->id].sounds[WSI_BOUNCE], sound_priority::high, weapon);
 
       if (Weapons[weapon->id].sounds[WSI_BOUNCE] > -1) {
         ain_hear hear;
@@ -1318,9 +1318,9 @@ void collide_player_and_wall(object *playerobj, float hitspeed, int hitseg, int 
     }
 
     if (sound_override_force_field == -1)
-      Sound_system.Play3dSound(SOUND_FORCEFIELD_BOUNCE, SND_PRIORITY_HIGH, playerobj, MAX_GAME_VOLUME);
+      Sound_system.Play3dSound(SOUND_FORCEFIELD_BOUNCE, sound_priority::high, playerobj, MAX_GAME_VOLUME);
     else
-      Sound_system.Play3dSound(sound_override_force_field, SND_PRIORITY_HIGH, playerobj, MAX_GAME_VOLUME);
+      Sound_system.Play3dSound(sound_override_force_field, sound_priority::high, playerobj, MAX_GAME_VOLUME);
   }
 
   if (flags.forcefield || flags.lava || flags.explosive) {
@@ -1349,7 +1349,7 @@ void collide_player_and_wall(object *playerobj, float hitspeed, int hitseg, int 
       }
     }
 
-    Sound_system.Play3dSound(SOUND_PLAYER_HIT_WALL, SND_PRIORITY_NORMAL, playerobj, volume);
+    Sound_system.Play3dSound(SOUND_PLAYER_HIT_WALL, sound_priority::normal, playerobj, volume);
     if (Demo_flags == demo_flags_t::recording)
       DemoWrite3DSound(SOUND_PLAYER_HIT_WALL, OBJNUM(playerobj), 1, volume);
 
@@ -1409,15 +1409,15 @@ void collide_generic_and_wall(object *genericobj, float hitspeed, int hitseg, in
   // If volatile, make the sound & apply damage
   if (flags.explosive) {
     ApplyDamageToGeneric(genericobj, genericobj, generic_damage_type::volatile_hiss, VOLATILE_DAMAGE);
-    Sound_system.Play3dSound(SOUND_VOLATILE_HISS, SND_PRIORITY_HIGHEST, genericobj, MAX_GAME_VOLUME);
+    Sound_system.Play3dSound(SOUND_VOLATILE_HISS, sound_priority::highest, genericobj, MAX_GAME_VOLUME);
   }
 
   if (flags.forcefield) {
     if (sound_override_force_field == -1) {
-      Sound_system.Play3dSound(SOUND_FORCEFIELD_BOUNCE, SND_PRIORITY_LOW, genericobj, MAX_GAME_VOLUME);
+      Sound_system.Play3dSound(SOUND_FORCEFIELD_BOUNCE, sound_priority::low, genericobj, MAX_GAME_VOLUME);
       ApplyDamageToGeneric(genericobj, genericobj, generic_damage_type::energy, FORCEFIELD_DAMAGE);
     } else {
-      Sound_system.Play3dSound(sound_override_force_field, SND_PRIORITY_LOW, genericobj, MAX_GAME_VOLUME);
+      Sound_system.Play3dSound(sound_override_force_field, sound_priority::low, genericobj, MAX_GAME_VOLUME);
     }
   }
 
@@ -1432,7 +1432,7 @@ void collide_generic_and_wall(object *genericobj, float hitspeed, int hitseg, in
           ApplyDamageToGeneric(genericobj, genericobj, generic_damage_type::physics, WALL_DAMAGE);
       }
 
-      Sound_system.Play3dSound(SOUND_PLAYER_HIT_WALL, SND_PRIORITY_LOW, genericobj, volume);
+      Sound_system.Play3dSound(SOUND_PLAYER_HIT_WALL, sound_priority::low, genericobj, volume);
       if (Demo_flags == demo_flags_t::recording)
         DemoWrite3DSound(SOUND_PLAYER_HIT_WALL, OBJNUM(genericobj), 1, volume);
     }
@@ -2002,7 +2002,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
 
         if (dest_obj->effect_info->sound_handle == SOUND_NONE_INDEX)
           dest_obj->effect_info->sound_handle =
-              Sound_system.Play3dSound(SOUND_PLAYER_BURNING, SND_PRIORITY_HIGHEST, dest_obj);
+              Sound_system.Play3dSound(SOUND_PLAYER_BURNING, sound_priority::highest, dest_obj);
       }
     }
   }
@@ -2031,7 +2031,7 @@ void collide_player_and_player(object *p1, object *p2, vector3 *collision_point,
     cur_pos.orient = &p1->orient;
     cur_pos.roomnum = p1->roomnum;
 
-    Sound_system.Play3dSound(SOUND_PLAYER_HIT_WALL, SND_PRIORITY_HIGHEST, &cur_pos, MAX_GAME_VOLUME * scalar);
+    Sound_system.Play3dSound(SOUND_PLAYER_HIT_WALL, sound_priority::highest, &cur_pos, MAX_GAME_VOLUME * scalar);
   }
 
   bump_two_objects(p1, p2, collision_point, collision_normal, 1);
@@ -2081,7 +2081,7 @@ void collide_generic_and_player(object *robotobj, object *playerobj, vector3 *co
     cur_pos.orient = &playerobj->orient;
     cur_pos.roomnum = playerobj->roomnum;
 
-    Sound_system.Play3dSound(SOUND_PLAYER_HIT_WALL, SND_PRIORITY_HIGHEST, &cur_pos, MAX_GAME_VOLUME * scalar);
+    Sound_system.Play3dSound(SOUND_PLAYER_HIT_WALL, sound_priority::highest, &cur_pos, MAX_GAME_VOLUME * scalar);
 
     ain_hear hear;
     hear.f_directly_player = true;
@@ -2163,7 +2163,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
     robotobj->ctype.dying_info().delay_time *= 0.975f;
 
   if (Weapons[weapon->id].sounds[WSI_IMPACT_WALL] != SOUND_NONE_INDEX) {
-    Sound_system.Play3dSound(Weapons[weapon->id].sounds[WSI_IMPACT_WALL], SND_PRIORITY_HIGH, weapon);
+    Sound_system.Play3dSound(Weapons[weapon->id].sounds[WSI_IMPACT_WALL], sound_priority::high, weapon);
 
     ain_hear hear;
     hear.f_directly_player = false;
@@ -2216,7 +2216,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
 
   if (ApplyDamageToGeneric(robotobj, weapon, damage_type, damage_to_apply)) {
     if (Weapons[weapon->id].sounds[WSI_IMPACT_ROBOT] != SOUND_NONE_INDEX) {
-      Sound_system.Play3dSound(Weapons[weapon->id].sounds[WSI_IMPACT_ROBOT], SND_PRIORITY_HIGHEST, weapon);
+      Sound_system.Play3dSound(Weapons[weapon->id].sounds[WSI_IMPACT_ROBOT], sound_priority::highest, weapon);
     }
     if (!electrical) {
       light_info *li = &Weapons[weapon->id].lighting_info;
@@ -2289,7 +2289,7 @@ void collide_player_and_weapon(object *playerobj, object *weapon, vector3 *colli
   if (ApplyDamageToPlayer(playerobj, weapon, damage_type, damage_to_apply)) {
     // we were damaged!
     if (Weapons[weapon->id].sounds[WSI_IMPACT_ROBOT] != SOUND_NONE_INDEX)
-      Sound_system.Play3dSound(Weapons[weapon->id].sounds[WSI_IMPACT_ROBOT], SND_PRIORITY_NORMAL, weapon);
+      Sound_system.Play3dSound(Weapons[weapon->id].sounds[WSI_IMPACT_ROBOT], sound_priority::normal, weapon);
   }
 #if 0		
 	if(Demo_flags == demo_flags_t::recording)
@@ -2598,9 +2598,9 @@ bool collide_object_with_wall(object *A, float hitspeed, int hitseg, int hitwall
     break;
   case object_type::shard:
     if (sound_override_glass_breaking == -1)
-      Sound_system.Play3dSound(SOUND_BREAKING_GLASS, SND_PRIORITY_NORMAL, A, MAX_GAME_VOLUME / 10);
+      Sound_system.Play3dSound(SOUND_BREAKING_GLASS, sound_priority::normal, A, MAX_GAME_VOLUME / 10);
     else
-      Sound_system.Play3dSound(sound_override_glass_breaking, SND_PRIORITY_NORMAL, A, MAX_GAME_VOLUME / 10);
+      Sound_system.Play3dSound(sound_override_glass_breaking, sound_priority::normal, A, MAX_GAME_VOLUME / 10);
     break;
 
   default:

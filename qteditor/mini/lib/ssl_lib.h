@@ -279,12 +279,14 @@ struct pos_state {
 // #define MAX_EFFECT_OFFSETS 5
 
 //	sound priority values.
-#define SND_PRIORITY_CRITICAL 5 // usually streams have this priority, bumps off any other sounds.
-#define SND_PRIORITY_HIGHEST 4
-#define SND_PRIORITY_HIGH 3
-#define SND_PRIORITY_NORMAL 2
-#define SND_PRIORITY_LOW 1
-#define SND_PRIORITY_LOWEST 0
+enum class sound_priority : uint8_t {
+  lowest = 0,
+  low = 1,
+  normal = 2,
+  high = 3,
+  highest = 4,
+  critical = 5, // usually streams have this priority, bumps off any other sounds.
+};
 
 struct play_information {
 
@@ -296,7 +298,7 @@ struct play_information {
   void *user_data; // this is passed to the stream callback by the caller that defined this.
 
   uint8_t sample_skip_interval; // Allows us to skip samples (i.e. simulate lower sampling rates)
-  uint8_t priority;             // priority of sound.
+  sound_priority priority;      // priority of sound.
   uint16_t m_stream_format;     // passed in
 
   //	internal data.
@@ -413,9 +415,11 @@ struct sound_info {
 #define SIF_STREAMING (64 | 128 | 256 | 512)
 
 // Sound kill types
-#define SKT_STOP_AFTER_LOOP 0  // Allows a looping sample to play until the end of the sample
-#define SKT_STOP_IMMEDIATELY 1 // Stops and cleans up after a sound (For StopAllSounds)
-#define SKT_HOLD_UNTIL_STOP 2  // Hold until sound stops.
+enum class sound_kill_type : uint8_t {
+  stop_after_loop = 0,  // Allows a looping sample to play until the end of the sample
+  stop_immediately = 1, // Stops and cleans up after a sound (For StopAllSounds)
+  hold_until_stop = 2,  // Hold until sound stops.
+};
 
 // Sound Library Internal Error Codes
 #define SSL_OK 0
@@ -424,13 +428,15 @@ struct sound_info {
 #define SSL_ERROR_STREAMMIXER (-3)
 
 // Sound Status
-#define SSF_UNUSED 0
-#define SSF_PLAY_NORMAL 1
-#define SSF_PLAY_LOOPING 2
-#define SSF_PAUSED 4
-#define SSF_PLAY_STREAMING 8
-#define SSF_BUFFERED_LOOP 64
-#define SSF_BUFFERED_STRM 128
+enum class sound_status : uint8_t {
+  unused = 0,
+  play_normal = 1,
+  play_looping = 2,
+  paused = 4,
+  play_streaming = 8,
+  buffered_loop = 64,
+  buffered_strm = 128,
+};
 
 #define SBT_PRIMARY 0
 #define SBT_2D 1
@@ -528,7 +534,7 @@ public:
   //	virtual void AdjustSound(int sound_uid, play_information *play_info) = 0;
 
   // Stops 2d and 3d sounds
-  virtual void StopSound(int sound_uid, uint8_t f_immediately = SKT_STOP_IMMEDIATELY) = 0;
+  virtual void StopSound(int sound_uid, sound_kill_type f_immediately = sound_kill_type::stop_immediately) = 0;
 
   // Pause all sounds/resume all sounds
   virtual void PauseSounds() = 0;

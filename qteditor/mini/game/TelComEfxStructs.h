@@ -95,7 +95,6 @@
 
 #include "grdefs.h"
 
-#define MAX_FILELEN 32
 //===================
 // tc_text
 //  - Contains information on the text coordinates of an effect
@@ -255,11 +254,13 @@ enum class tc_click_type : uint8_t {
 #define TC_TEXT_SCROLL 1
 #define TC_TEXT_FADE 2
 #define TC_TEXT_FLASH 3
+
 #define TC_BMP_STATIC 0
 #define TC_BMP_BLUR 1
 #define TC_BMP_SCANLINE 2
 #define TC_BMP_INVERT 3
 #define TC_BMP_STRETCH 4
+
 #define TC_BACK_STATIC 0
 #define TC_MOVIE_STATIC 0
 #define TC_POLY_STATIC 0

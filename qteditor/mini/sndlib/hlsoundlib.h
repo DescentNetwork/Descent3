@@ -216,6 +216,39 @@
 #define MIN_SOUNDS_MIXED 20
 #define MAX_SOUND_OBJECTS 3000
 
+//////////////////////////////////////////////////////////////////////////
+//	ENVIRONMENTAL REVERB PRESETS
+
+enum class envaud_preset : uint8_t {
+  none = 0,
+  paddedcell = 1,
+  room = 2,
+  bathroom = 3,
+  livingroom = 4,
+  stoneroom = 5,
+  auditorium = 6,
+  concerthall = 7,
+  cave = 8,
+  arena = 9,
+  hangar = 10,
+  carpetedhallway = 11,
+  hallway = 12,
+  stonecorridor = 13,
+  alley = 14,
+  forest = 15,
+  city = 16,
+  mountains = 17,
+  quarry = 18,
+  plain = 19,
+  parkinglot = 20,
+  sewerpipe = 21,
+  underwater = 22,
+  drugged = 23,
+  dizzy = 24,
+  psychotic = 25,
+  count = 26,
+};
+
 extern char Sound_quality;
 extern char Sound_mixer;
 extern char Sound_card_name[];
@@ -254,7 +287,7 @@ class hlsSystem {
   int m_sounds_played;
 
   bool m_pause_new;
-  uint8_t m_cur_environment; // current environment being played.
+  envaud_preset m_cur_environment; // current environment being played.
   int n_lls_sounds;        // number of sounds that we want the low level mixer to mix.
 
   bool Emulate3dSound(int sound_obj_index);
@@ -264,10 +297,10 @@ class hlsSystem {
   inline int ValidateUniqueId(int hl_sound_uid);
 
   // Forcefully ends a sound
-  void StopSound(int sound_obj_index, uint8_t f_immediately = SKT_STOP_IMMEDIATELY);
+  void StopSound(int sound_obj_index, sound_kill_type f_immediately = sound_kill_type::stop_immediately);
 
 private:
-  int Play3dSound(int sound_index, pos_state *cur_pos, object *cur_obj, int priority, float volume, int flags,
+  int Play3dSound(int sound_index, pos_state *cur_pos, object *cur_obj, sound_priority priority, float volume, int flags,
                   float offset = 0.0);
 
 public:
@@ -310,9 +343,9 @@ public:
                   float offset = 0.0);
   int Play3dSound(int sound_index, object *cur_obj, float volume = MAX_GAME_VOLUME, int flags = 0, float offset = 0.0);
 
-  int Play3dSound(int sound_index, int priority, pos_state *cur_pos, float volume = MAX_GAME_VOLUME, int flags = 0,
+  int Play3dSound(int sound_index, sound_priority priority, pos_state *cur_pos, float volume = MAX_GAME_VOLUME, int flags = 0,
                   float offset = 0.0);
-  int Play3dSound(int sound_index, int priority, object *cur_obj, float volume = MAX_GAME_VOLUME, int flags = 0,
+  int Play3dSound(int sound_index, sound_priority priority, object *cur_obj, float volume = MAX_GAME_VOLUME, int flags = 0,
                   float offset = 0.0);
 
   int PlayStream(int unique_handle, void *data, int size, int stream_format, float volume,
@@ -322,7 +355,7 @@ public:
   int Play2dSound(int sound_index, float volume = MAX_GAME_VOLUME / 2, float pan = 0.0,
                   uint16_t frequency = 22050);
 
-  int Play2dSound(int sound_index, int priority, float volume = MAX_GAME_VOLUME / 2, float pan = 0.0,
+  int Play2dSound(int sound_index, sound_priority priority, float volume = MAX_GAME_VOLUME / 2, float pan = 0.0,
                   uint16_t frequency = 22050);
 
   int Update2dSound(int hlsound_uid, float volume, float pan);
@@ -365,37 +398,16 @@ public:
 
 extern hlsSystem Sound_system;
 
-//////////////////////////////////////////////////////////////////////////
-//	ENVIRONMENTAL REVERB PRESETS
+inline int hlsSystem::MakeUniqueId(int sound_obj_index) {
+  Q_ASSERT(sound_obj_index >= 0);
+  m_sounds_played++;
+  return m_sounds_played;
+}
 
-enum class envaud_preset : uint8_t {
-  none = 0,
-  paddedcell = 1,
-  room = 2,
-  bathroom = 3,
-  livingroom = 4,
-  stoneroom = 5,
-  auditorium = 6,
-  concerthall = 7,
-  cave = 8,
-  arena = 9,
-  hangar = 10,
-  carpetedhallway = 11,
-  hallway = 12,
-  stonecorridor = 13,
-  alley = 14,
-  forest = 15,
-  city = 16,
-  mountains = 17,
-  quarry = 18,
-  plain = 19,
-  parkinglot = 20,
-  sewerpipe = 21,
-  underwater = 22,
-  drugged = 23,
-  dizzy = 24,
-  psychotic = 25,
-  count = 26,
-};
+inline int hlsSystem::ValidateUniqueId(int hl_sound_uid) {
+  if (m_sounds_played == hl_sound_uid)
+    return 1;
+  return 0;
+}
 
 #endif

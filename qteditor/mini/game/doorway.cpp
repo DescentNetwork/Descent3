@@ -234,14 +234,14 @@ void DoorwayPlaySound(object *objp) {
     if (door->open_sound != -1) {
       float offset = dp->position * door->total_open_time;
       dp->sound_handle =
-          Sound_system.Play3dSound(Doors[dp->doornum].open_sound, SND_PRIORITY_HIGH, objp, 1.0, 0, offset);
+          Sound_system.Play3dSound(Doors[dp->doornum].open_sound, sound_priority::high, objp, 1.0, 0, offset);
     }
   } else {
     Q_ASSERT(dp->state == doorway_state::closing);
     if (door->close_sound != -1) {
       float offset = (1.0 - dp->position) * door->total_close_time;
       dp->sound_handle =
-          Sound_system.Play3dSound(Doors[dp->doornum].close_sound, SND_PRIORITY_HIGH, objp, 1.0, 0, offset);
+          Sound_system.Play3dSound(Doors[dp->doornum].close_sound, sound_priority::high, objp, 1.0, 0, offset);
     }
   }
 }

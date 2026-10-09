@@ -49,7 +49,7 @@ struct DSLOOPSTREAM {
 class sound_buffer_info {
 public:
   sound_buffer_info() {
-    m_status = SSF_UNUSED;
+    m_status = sound_status::unused;
     s = NULL;
   }
 
@@ -71,7 +71,7 @@ public:
 
   bool stereo;
   int8_t bps;
-  uint8_t m_status; // Sound status
+  sound_status m_status; // Sound status
   uint8_t pad;
 };
 

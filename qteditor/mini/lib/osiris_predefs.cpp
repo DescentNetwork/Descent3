@@ -2620,9 +2620,9 @@ int osipf_ObjCreate(uint8_t raw_type, uint16_t id, int roomnum, vector3 *pos, co
     if (IS_GENERIC(obj->type)) {
       auto ambient_sound_idx = Object_info[obj->id].sounds[generic_sound::ambient];
       if (ambient_sound_idx) {
-        Sound_system.Play3dSound(static_cast<uint32_t>(*ambient_sound_idx), SND_PRIORITY_LOWEST, obj);
+        Sound_system.Play3dSound(static_cast<uint32_t>(*ambient_sound_idx), sound_priority::lowest, obj);
         if (Demo_flags == demo_flags_t::recording)
-          DemoWrite3DSound(ambient_sound, objnum, SND_PRIORITY_LOW);
+          DemoWrite3DSound(ambient_sound, objnum, sound_priority::low);
       }
     }
   } else {
@@ -2894,7 +2894,7 @@ void osipf_ObjBurning(int handle, float time, float damage_per_second) {
       obj->effect_info->damage_handle = obj->handle;
 
       if (obj->effect_info->sound_handle == SOUND_NONE_INDEX)
-        obj->effect_info->sound_handle = Sound_system.Play3dSound(SOUND_PLAYER_BURNING, SND_PRIORITY_HIGHEST, obj);
+        obj->effect_info->sound_handle = Sound_system.Play3dSound(SOUND_PLAYER_BURNING, sound_priority::highest, obj);
     } else {
       obj->effect_info->type_flags.napalmed = false;
       obj->effect_info->last_damage_time = 0;
@@ -2944,7 +2944,7 @@ int osipf_SoundPlay2d(int obj_handle, int s_id, float volume) {
   return mstruct.sound_handle;
   /*
   //chrishack -- use handle for who hears the sound
-  return Sound_system.Play2dSound(s_id, SND_PRIORITY_HIGHEST, volume);
+  return Sound_system.Play2dSound(s_id, sound_priority::highest, volume);
   */
 }
 
@@ -2960,7 +2960,7 @@ int osipf_SoundPlay3d(int obj_handle, int s_id, float volume) {
 
   if(obj)
   {
-          return Sound_system.Play3dSound(s_id, SND_PRIORITY_HIGHEST,obj, volume);
+          return Sound_system.Play3dSound(s_id, sound_priority::highest,obj, volume);
   }
 
   return -1;
