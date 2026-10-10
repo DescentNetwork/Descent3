@@ -784,7 +784,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
   room_t *rp = &Rooms[start_room_num];
   int i, t;
   if (Render_portals) {
-    rend_SetTextureType(TT_FLAT);
+    rend_SetTextureType(texture_type::flat);
     rend_SetAlphaType(AT_CONSTANT);
     rend_SetAlphaValue(255);
     rend_SetFlatColor(GR_RGB(255, 255, 255));
@@ -1177,13 +1177,13 @@ void CheckFace(int roomnum,int facenum, int nv, int bm,g3Point **pointlist)
         oldcolor = rend_GetPixel(search_x,search_y);			//will be different in 15/16-bit color
         // Based on distance, draw in perspective or linear
         // This is gonna be ripped out
-        rend_SetTextureType (TT_LINEAR_SPECIAL);
+        rend_SetTextureType (texture_type::linear_special);
         for (int i=0;i<nv;i++)
         {
                 g3Point *t;
                 t=pointlist[i];
                 if (t[i].p3_vec.z<35)
-                        rend_SetTextureType (TT_PERSPECTIVE_SPECIAL);
+                        rend_SetTextureType (texture_type::perspective_special);
         }
         g3_DrawPoly(nv,pointlist,bm);
         if (rend_GetPixel(search_x,search_y) != oldcolor) {
@@ -1245,11 +1245,11 @@ void RenderSpecularFaces(int roomnum) {
   int i, vn;
   g3Point *pointlist[MAX_VERTS_PER_FACE];
   g3Point pointbuffer[MAX_VERTS_PER_FACE];
-  rend_SetWrapType(WT_CLAMP);
+  rend_SetWrapType(wrap_type::clamp);
   rend_SetOverlayType(OT_NONE);
-  rend_SetTextureType(TT_PERSPECTIVE);
-  rend_SetLighting(LS_NONE);
-  rend_SetColorModel(CM_MONO);
+  rend_SetTextureType(texture_type::perspective);
+  rend_SetLighting(light_state::none);
+  rend_SetColorModel(color_model::mono);
   rend_SetAlphaType(AT_SATURATE_TEXTURE);
   rend_SetAlphaValue(255);
 
@@ -1275,7 +1275,7 @@ void RenderSpecularFaces(int roomnum) {
     GameLightmaps[lm_handle].width = save_w;
     GameLightmaps[lm_handle].height = save_h;
   }
-  rend_SetWrapType(WT_WRAP);
+  rend_SetWrapType(wrap_type::wrap);
 }
 
 float Specular_scalars[4][4] = {{1.0f}, {1.0f, .66f}, {1.0f, .66f, .33f}, {1.0f, .66f, .33f, .25f}};
@@ -1315,9 +1315,9 @@ void RenderSpecularFacesFlat(int roomnum) {
   g3Point *pointlist[MAX_VERTS_PER_FACE];
   g3Point pointbuffer[MAX_VERTS_PER_FACE];
   rend_SetOverlayType(OT_NONE);
-  rend_SetTextureType(TT_FLAT);
-  rend_SetLighting(LS_GOURAUD);
-  rend_SetColorModel(CM_RGB);
+  rend_SetTextureType(texture_type::flat);
+  rend_SetLighting(light_state::gouraud);
+  rend_SetColorModel(color_model::rgb);
   rend_SetAlphaType(AT_SPECULAR);
   rend_SetZBufferWriteMask(0);
 
@@ -1536,7 +1536,7 @@ void UpdateSpecularFace(int roomnum, face *fp) {
           if (handle<0)
                   return;
   }*/
-  if (Renderer_type == RENDERER_OPENGL)
+  if (Renderer_type == renderer_type::opengl)
     return;
   int n = Num_specular_faces_to_render;
   if (n >= MAX_SPECULAR_FACES)
@@ -1569,9 +1569,9 @@ void RenderFogFaces(int roomnum) {
   g3Point *pointlist[MAX_VERTS_PER_FACE];
   g3Point pointbuffer[MAX_VERTS_PER_FACE];
   rend_SetOverlayType(OT_NONE);
-  rend_SetTextureType(TT_FLAT);
-  rend_SetLighting(LS_NONE);
-  rend_SetColorModel(CM_MONO);
+  rend_SetTextureType(texture_type::flat);
+  rend_SetLighting(light_state::none);
+  rend_SetColorModel(color_model::mono);
   rend_SetAlphaType(AT_VERTEX);
   rend_SetAlphaValue(255);
   rend_SetZBufferWriteMask(0);
@@ -1633,14 +1633,14 @@ void RenderScorchesForRoom(int roomnum) {
   // Set alpha, transparency, & lighting for this face
   rend_SetAlphaType(AT_LIGHTMAP_BLEND);
   rend_SetAlphaValue(255);
-  rend_SetLighting(LS_NONE);
-  rend_SetColorModel(CM_MONO);
+  rend_SetLighting(light_state::none);
+  rend_SetColorModel(color_model::mono);
   rend_SetOverlayType(OT_NONE);
   rend_SetZBias(-.5);
   rend_SetZBufferWriteMask(0);
 
   // Select texture type
-  rend_SetTextureType(TT_LINEAR);
+  rend_SetTextureType(texture_type::linear);
 
   for (i = 0; i < Num_scorches_to_render; i++) {
     DrawScorches(roomnum, Scorches_to_render[i]);
@@ -1915,13 +1915,13 @@ void RenderFace(int roomnum, int facenum) {
   else
     rend_SetAlphaValue(GameTextures[fp->tmap].alpha * 255);
   if (!UseHardware)
-    rend_SetLighting(Lighting_on ? LS_GOURAUD : LS_NONE);
+    rend_SetLighting(Lighting_on ? light_state::gouraud : light_state::none);
   else
-    rend_SetLighting(LS_GOURAUD);
+    rend_SetLighting(light_state::gouraud);
   if (!NoLightmaps)
-    rend_SetColorModel(CM_MONO);
+    rend_SetColorModel(color_model::mono);
   else
-    rend_SetColorModel(CM_RGB);
+    rend_SetColorModel(color_model::rgb);
   // Set lighting map
   if ((fp->flags.lightmap) != 0) {
     if (GameTextures[fp->tmap].flags.saturate)
@@ -1933,15 +1933,15 @@ void RenderFace(int roomnum, int facenum) {
     rend_SetOverlayType(OT_NONE);
   // Select texture type
   if (!UseHardware) {
-    tt = TT_LINEAR;                        // default to linear
+    tt = texture_type::linear;                        // default to linear
     for (vn = 0; vn < fp->num_verts; vn++) // select perspective if close
       if (pointlist[vn]->p3_vec.z() < 35) {
-        tt = TT_PERSPECTIVE;
+        tt = texture_type::perspective;
         break;
       }
     rend_SetTextureType(tt);
   } else
-    rend_SetTextureType(TT_PERSPECTIVE);
+    rend_SetTextureType(texture_type::perspective);
   if (clip_code_byte(face_cc.cc_or) != 0) // Possible triangulate this face because it is off screen somewhat
   {
     if (Room_light_val < 1.0)
@@ -2021,7 +2021,7 @@ draw_fog:
 #ifdef EDITOR
   if (OUTLINE_ON(OM_MINE)) // Outline the face
   {
-    rend_SetTextureType(TT_FLAT);
+    rend_SetTextureType(texture_type::flat);
     rend_SetAlphaType(AT_ALWAYS);
     rend_SetFlatColor(GR_RGB(255, 255, 255));
 
@@ -2063,7 +2063,7 @@ draw_fog:
     }
   }
   if (Outline_lightmaps) {
-    rend_SetTextureType(TT_FLAT);
+    rend_SetTextureType(texture_type::flat);
     rend_SetAlphaType(AT_ALWAYS);
     if (fp == &Rooms[*app.current.room].faces[*app.current.face] && (fp->flags.lightmap)) {
       Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
@@ -2496,7 +2496,7 @@ void RenderSingleLightGlow2(int index) {
     g = texp->g;
     b = texp->b;
   }
-  rend_SetLighting(LS_GOURAUD);
+  rend_SetLighting(light_state::gouraud);
 
   // Get size of light
   float size = LightGlows[index].size;
@@ -2859,7 +2859,7 @@ void BuildMirroredRoomList() {
   new_wnd.right = std::min(wnd.right, new_wnd.right);
   new_wnd.top = std::max(wnd.top, new_wnd.top);
   new_wnd.bot = std::min(wnd.bot, new_wnd.bot);
-  /*rend_SetTextureType (TT_FLAT);
+  /*rend_SetTextureType (texture_type::flat);
   rend_SetAlphaType (AT_CONSTANT);
   rend_SetAlphaValue (255);
   rend_SetFlatColor (GR_RGB(255,255,255));
@@ -2939,9 +2939,9 @@ void RenderMirroredRoom(int roomnum) {
   MarkFacingFaces(roomnum, mirror_dest_vecs);
   Facing_visited[roomnum] = save_frame;
   // Render the mirror room
-  rend_SetColorModel(CM_MONO);
-  rend_SetLighting(LS_GOURAUD);
-  rend_SetWrapType(WT_WRAP);
+  rend_SetColorModel(color_model::mono);
+  rend_SetLighting(light_state::gouraud);
+  rend_SetWrapType(wrap_type::wrap);
   RenderRoomUnsorted(roomnum);
   if (restore_index == false) {
     rp->wpb_index = -1;
@@ -2964,9 +2964,9 @@ void RenderRoom(int roomnum) {
   LightGlowsThisFrame.clear();
 
   // Set up rendering states
-  rend_SetColorModel(CM_MONO);
-  rend_SetLighting(LS_GOURAUD);
-  rend_SetWrapType(WT_WRAP);
+  rend_SetColorModel(color_model::mono);
+  rend_SetLighting(light_state::gouraud);
+  rend_SetWrapType(wrap_type::wrap);
   if (rp->used == 0) {
     Q_ASSERT(false); // Trying to draw a room that isn't in use!
     return;
@@ -3530,9 +3530,9 @@ void RenderLightGlows() {
   if (!UseHardware)
     return;
   // Render all the glows for this mine
-  rend_SetColorModel(CM_RGB);
-  rend_SetLighting(LS_GOURAUD);
-  rend_SetTextureType(TT_LINEAR);
+  rend_SetColorModel(color_model::rgb);
+  rend_SetLighting(light_state::gouraud);
+  rend_SetTextureType(texture_type::linear);
   rend_SetAlphaType(AT_SATURATE_TEXTURE);
   rend_SetOverlayType(OT_NONE);
   rend_SetFogState(0);

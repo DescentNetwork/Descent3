@@ -158,17 +158,17 @@ class grViewport;
 //	---------------------------------------------------------------------------
 //	Constants and Types
 
-enum function_mode {
-  INIT_MODE,
-  GAME_MODE,
-  RESTORE_GAME_MODE,
-  EDITOR_MODE,
-  EDITOR_GAME_MODE,
-  MENU_MODE,
-  QUIT_MODE,
-  LOADDEMO_MODE,
-  GAMEGAUGE_MODE, // Unused
-  CREDITS_MODE
+enum class function_mode : uint8_t {
+  init,
+  game,
+  restore_game,
+  editor,
+  editor_game,
+  menu,
+  quit,
+  loaddemo,
+  gamegauge, // Unused
+  credits
 };
 
 extern bool Descent_overrided_intro;

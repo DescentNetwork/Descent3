@@ -30,11 +30,11 @@ float Z_bias = 0.0f;
 // ===========================================================================
 static rendering_state s_state;
 
-static texture_type s_textureType = TT_FLAT;
-static color_model s_colorModel = CM_MONO;
-static light_state s_lightState = LS_NONE;
+static texture_type s_textureType = texture_type::flat;
+static color_model s_colorModel = color_model::mono;
+static light_state s_lightState = light_state::none;
 static int8_t s_alphaType = AT_ALWAYS;
-static wrap_type s_wrapType = WT_WRAP;
+static wrap_type s_wrapType = wrap_type::wrap;
 static int s_alpha = 255;
 static ddgr_color s_flatColor = 0;
 static float s_alphaFactor = 1.0f;
@@ -43,7 +43,7 @@ static int8_t s_textureQuality = 0;
 void rend_SetTextureType(texture_type t) {
   s_textureType = t;
   s_state.cur_texture_type = t;
-  s_textureQuality = (t == TT_FLAT) ? 0 : 1;
+  s_textureQuality = (t == texture_type::flat) ? 0 : 1;
 }
 void rend_SetColorModel(color_model m) {
   s_colorModel = m;
@@ -142,9 +142,9 @@ void gpu_DrawFlatPolygon3D(g3Point **p, int nv) {
     g3Point *pnt = p[i];
     if (s_alphaType & ATF_VERTEX)
       glColor4f(pnt->p3_r, pnt->p3_g, pnt->p3_b, pnt->p3_a * s_alphaFactor);
-    else if (s_lightState == LS_NONE)
+    else if (s_lightState == light_state::none)
       glColor4f(fr, fg, fb, s_alphaFactor);
-    else if (s_colorModel == CM_MONO)
+    else if (s_colorModel == color_model::mono)
       glColor4f(pnt->p3_l, pnt->p3_l, pnt->p3_l, s_alphaFactor);
     else
       glColor4f(pnt->p3_r, pnt->p3_g, pnt->p3_b, s_alphaFactor);
@@ -162,7 +162,7 @@ color_array DeterminePointColor(g3Point const *pnt, bool disableGouraud, bool ch
                                 bool flatColorForNoLight) {
   color_array col;
 
-  if (s_lightState == LS_NONE) {
+  if (s_lightState == light_state::none) {
     if (flatColorForNoLight) {
       col.r = (float)GR_COLOR_RED(s_flatColor) / 255.0f;
       col.g = (float)GR_COLOR_GREEN(s_flatColor) / 255.0f;
@@ -285,7 +285,7 @@ void g3_DrawBitmap(vector3 *pos, float width, float height, int bm, int color) {
     }
     corners[i].p3_uvl.a = 1.0f;
   }
-  rend_SetTextureType(TT_LINEAR);
+  rend_SetTextureType(texture_type::linear);
   rend_DrawPolygon3D(bm, pts, 4);
 }
 

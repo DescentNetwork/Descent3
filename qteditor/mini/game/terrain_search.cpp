@@ -846,11 +846,11 @@ index_t EvaluateBlock(int x, int z, int lod) {
   int simplemul = 1 << ((MAX_TERRAIN_LOD - 1) - lod);
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
-  if (View_mode == EDITOR_MODE && app.Editor_LOD_engine_off)
+  if (View_mode == function_mode::editor && app.Editor_LOD_engine_off)
     return 0;
 #endif
 
-  if (View_mode != EDITOR_MODE && app.Terrain_LOD_engine_off)
+  if (View_mode != function_mode::editor && app.Terrain_LOD_engine_off)
     return 0;
 
   delta = TerrainDeltaBlocks[lod][((z / simplemul) * (TERRAIN_WIDTH / simplemul)) + (x / simplemul)];

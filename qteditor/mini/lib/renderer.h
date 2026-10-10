@@ -310,11 +310,11 @@ class oeApplication;
 #define TEXTURE_HEIGHT 128
 
 // Is this hardware or software rendered?
-enum renderer_type {
-  RENDERER_OPENGL = 2,
-  RENDERER_DIRECT3D = 3,
-  RENDERER_GLIDE = 4, // Unused
-  RENDERER_NONE = 5,
+enum class renderer_type : uint8_t {
+  opengl = 2,
+  direct3d = 3,
+  glide = 4, // Unused
+  none = 5,
 };
 
 extern renderer_type Renderer_type;
@@ -343,31 +343,31 @@ void rend_SetRendererType(renderer_type state);
 #define MAP_TYPE_LIGHTMAP 1
 
 // lighting state
-enum light_state : uint32_t
+enum class light_state : uint32_t
 {
-  LS_NONE = 0,        // no lighting, fully lit rendering
-  LS_GOURAUD,     // Gouraud shading
-  LS_PHONG,       // Phong shading
-  LS_FLAT_GOURAUD // Take color from flat color
+  none = 0,        // no lighting, fully lit rendering
+  gouraud,     // Gouraud shading
+  phong,       // Phong shading
+  flat_gouraud // Take color from flat color
 };
 
 void rend_SetLighting(light_state);
 
-enum color_model : uint32_t
+enum class color_model : uint32_t
 {
-  CM_MONO = 0, // monochromatic (intensity) model - default
-  CM_RGB,  // RGB model
+  mono = 0, // monochromatic (intensity) model - default
+  rgb,  // RGB model
 };
 
 // color model
 void rend_SetColorModel(color_model);
 
-enum texture_type {
-  TT_FLAT,                // solid color
-  TT_LINEAR,              // textured linearly
-  TT_PERSPECTIVE,         // texture perspectively
-  TT_LINEAR_SPECIAL,      // A textured polygon drawn as a flat color
-  TT_PERSPECTIVE_SPECIAL, // A textured polygon drawn as a flat color
+enum class texture_type : uint8_t {
+  flat,                // solid color
+  linear,              // textured linearly
+  perspective,         // texture perspectively
+  linear_special,      // A textured polygon drawn as a flat color
+  perspective_special, // A textured polygon drawn as a flat color
 };
 
 // Alpha type flags - used to decide what type of alpha blending to use
@@ -392,10 +392,10 @@ enum texture_type {
 #define AT_SPECULAR 32
 #define AT_LIGHTMAP_BLEND_SATURATE 33 // Light lightmap blend, but add instead of multiply
 
-enum wrap_type {
-  WT_WRAP,  // Texture repeats
-  WT_CLAMP, // Texture clamps
-  WT_WRAP_V // Texture wraps in v
+enum class wrap_type : uint8_t {
+  wrap,  // Texture repeats
+  clamp, // Texture clamps
+  wrap_v // Texture wraps in v
 };
 
 struct rendering_state {

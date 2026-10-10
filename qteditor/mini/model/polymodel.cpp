@@ -664,7 +664,7 @@ static_assert(sizeof("1234"_ID) == sizeof(uint32_t));
 
 int Polymodel_use_effect = 0;
 polymodel_effect Polymodel_effect;
-polymodel_light_type Polymodel_light_type = POLYMODEL_LIGHTING_STATIC;
+polymodel_light_type Polymodel_light_type = polymodel_light_type::static_;
 float Polylighting_static_red;
 float Polylighting_static_green;
 float Polylighting_static_blue;
@@ -2637,7 +2637,7 @@ static int Instance_light_cnt = 0;
 void StartLightInstance(vector3 *pos, const matrix *orient) {
   int gouraud = 0, specular = 0, fogged = 0, bumped = 0;
 
-  if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD)
+  if (Polymodel_light_type == polymodel_light_type::gouraud)
     gouraud = 1;
   if (Polymodel_use_effect && Polymodel_effect.type.fogged_model)
     fogged = 1;
@@ -2691,7 +2691,7 @@ void DoneLightInstance() {
   Q_ASSERT(Instance_light_cnt != 0);
   Instance_light_cnt--;
 
-  if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD)
+  if (Polymodel_light_type == polymodel_light_type::gouraud)
     *Polymodel_light_direction = Instance_light_stack[Instance_light_cnt];
 
   if (Polymodel_use_effect && Polymodel_effect.type.fogged_model) {
@@ -2721,13 +2721,13 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
   GetPolymodelPointer(model_num);
 
   Polymodel_use_effect = use_effect;
-  Polymodel_light_type = POLYMODEL_LIGHTING_STATIC;
+  Polymodel_light_type = polymodel_light_type::static_;
   Polylighting_static_red = r;
   Polylighting_static_green = g;
   Polylighting_static_blue = b;
 
   rend_SetOverlayType(OT_NONE);
-  rend_SetLighting(LS_NONE);
+  rend_SetLighting(light_state::none);
 
   po = &Poly_models[model_num];
 
@@ -2799,10 +2799,10 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
   GetPolymodelPointer(model_num);
 
   rend_SetOverlayType(OT_NONE);
-  rend_SetLighting(LS_GOURAUD);
-  rend_SetColorModel(CM_RGB);
+  rend_SetLighting(light_state::gouraud);
+  rend_SetColorModel(color_model::rgb);
 
-  Polymodel_light_type = POLYMODEL_LIGHTING_GOURAUD;
+  Polymodel_light_type = polymodel_light_type::gouraud;
   Polylighting_static_red = r;
   Polylighting_static_green = g;
   Polylighting_static_blue = b;
@@ -2874,8 +2874,8 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
 
   Polymodel_use_effect = use_effect;
 
-  rend_SetLighting(LS_NONE);
-  Polymodel_light_type = POLYMODEL_LIGHTING_LIGHTMAP;
+  rend_SetLighting(light_state::none);
+  Polymodel_light_type = polymodel_light_type::lightmap;
   Polylighting_lightmap_object = lm_object;
 
   if (Polymodel_use_effect && Polymodel_effect.type.fogged_model) {

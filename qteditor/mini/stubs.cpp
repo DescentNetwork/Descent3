@@ -106,7 +106,7 @@ object *ObjGetUltimateParent(object *child) { PRINT_STUB(__FUNCTION__); return c
 int FrameCount = 0;
 bool Katmai = false;                    // whether or not katmai CPU is detected
 bool Dedicated_server = false;
-function_mode View_mode = EDITOR_MODE;
+function_mode View_mode = function_mode::editor;
 
 // ==================== Terrain ====================
 std::array<terrain_sound_band, NUM_TERRAIN_SOUND_BANDS> Terrain_sound_bands = {};

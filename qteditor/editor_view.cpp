@@ -107,11 +107,12 @@ bool isUsableCameraOrient(const matrix &m) {
 }
 
 // Edge types for the deduplication hash table.
-enum EdgeType { ET_FACING = 0, ET_NOTFACING = 1, ET_PORTAL = 2, ET_EMPTY = 255 };
+// Edge types for the deduplication hash table.
+enum class EdgeType : uint8_t { facing = 0, not_facing = 1, portal = 2, empty = 255 };
 
 struct WireEdge {
   int16_t v0, v1; // normalized so v0 < v1
-  uint8_t type;   // EdgeType
+  EdgeType type;
   float sx0, sy0, sx1, sy1; // screen coords for both endpoints
 };
 
@@ -121,11 +122,11 @@ int s_nUsed = 0;
 
 void resetEdgeTable() {
   for (int i = 0; i < kMaxEdges; i++)
-    s_edgeTable[i].type = ET_EMPTY;
+    s_edgeTable[i].type = EdgeType::empty;
   s_nUsed = 0;
 }
 
-void addEdge(int v0, int v1, uint8_t type,
+void addEdge(int v0, int v1, EdgeType type,
              float sx0, float sy0, float sx1, float sy1) {
   if (v0 > v1) {
     int t = v0; v0 = v1; v1 = t;
@@ -135,7 +136,7 @@ void addEdge(int v0, int v1, uint8_t type,
   int key = ((v0 * 7 + v1 * 13) & 0x7FFF) % kMaxEdges;
   for (int probe = 0; probe < kMaxEdges; probe++) {
     int idx = (key + probe) % kMaxEdges;
-    if (s_edgeTable[idx].type == ET_EMPTY) {
+    if (s_edgeTable[idx].type == EdgeType::empty) {
       s_edgeTable[idx] = {static_cast<int16_t>(v0), static_cast<int16_t>(v1), type,
                           sx0, sy0, sx1, sy1};
       s_nUsed++;
@@ -149,13 +150,13 @@ void addEdge(int v0, int v1, uint8_t type,
   }
 }
 
-void drawEdgesFromTable(const float *color, uint8_t type) {
+void drawEdgesFromTable(const float *color, EdgeType type) {
   glColor3fv(color);
   glLineWidth(1.0f);
   glBegin(GL_LINES);
   for (int i = 0; i < kMaxEdges; i++) {
     WireEdge &e = s_edgeTable[i];
-    if (e.type == ET_EMPTY || e.type != type)
+    if (e.type == EdgeType::empty || e.type != type)
       continue;
     glVertex2f(e.sx0, e.sy0);
     glVertex2f(e.sx1, e.sy1);
@@ -608,7 +609,7 @@ void EditorView::renderRooms() {
                              fp->normal.y() * toCamera.y() +
                              fp->normal.z() * toCamera.z()) > 0.0f;
 
-        uint8_t edgeType = facing ? ET_NOTFACING : ET_FACING;
+        EdgeType edgeType = facing ? EdgeType::not_facing : EdgeType::facing;
 
         for (int v = 0; v < fnv; v++) {
           int v0 = fp->face_verts[v];
@@ -618,8 +619,8 @@ void EditorView::renderRooms() {
       }
 
       // Draw edges: non-facing first (dark), then facing (light).
-      drawEdgesFromTable(kWfNotFacingColor, ET_NOTFACING);
-      drawEdgesFromTable(kWfFacingColor, ET_FACING);
+      drawEdgesFromTable(kWfNotFacingColor, EdgeType::not_facing);
+      drawEdgesFromTable(kWfFacingColor, EdgeType::facing);
 
       // Override all edges with orange if this is a selected room.
       // (Floating triggers and room portals are not re-drawn: triggers keep
@@ -637,10 +638,10 @@ void EditorView::renderRooms() {
             int v0 = fp->face_verts[v];
             int v1 = fp->face_verts[(v + 1) % fnv];
             if (sxv[v0] > -9000.0f && sxv[v1] > -9000.0f)
-              addEdge(v0, v1, ET_FACING, sxv[v0], syv[v0], sxv[v1], syv[v1]);
+              addEdge(v0, v1, EdgeType::facing, sxv[v0], syv[v0], sxv[v1], syv[v1]);
           }
         }
-        drawEdgesFromTable(kWfSelectedColor, ET_FACING);
+        drawEdgesFromTable(kWfSelectedColor, EdgeType::facing);
       }
 
       // Now draw the terrain portals in blue (DrawRoom, drawworld.cpp:638-646).

@@ -325,10 +325,10 @@ struct poly_model {
 };
 
 // Which kind of lighting model for this polymodel
-enum polymodel_light_type {
-  POLYMODEL_LIGHTING_STATIC,
-  POLYMODEL_LIGHTING_GOURAUD,
-  POLYMODEL_LIGHTING_LIGHTMAP,
+enum class polymodel_light_type : uint8_t {
+  static_,                // Static lighting (baked into the model)
+  gouraud,                // Gouraud shading
+  lightmap,               // Lightmapped
 };
 
 // polymodel effects stuff

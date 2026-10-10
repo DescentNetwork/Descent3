@@ -1031,11 +1031,11 @@ void DrawShardObject(object& obj) {
   // Set alpha, transparency, & lighting for this face
   rend_SetAlphaType(ATF_CONSTANT);
   rend_SetAlphaValue(alpha * 255);
-  rend_SetLighting(LS_GOURAUD);
-  rend_SetColorModel(CM_MONO);
+  rend_SetLighting(light_state::gouraud);
+  rend_SetColorModel(color_model::mono);
   rend_SetOverlayType(OT_NONE);
   // Select texture type
-  rend_SetTextureType(TT_LINEAR);
+  rend_SetTextureType(texture_type::linear);
   // Draw the polygon
   g3_DrawPoly(3, pointlist, bm_handle);
 }
@@ -1050,7 +1050,7 @@ bool SetupTerrainObject(object& obj) {
 
   obj.flags.safe_to_render = true;
   RenderObject_SetLightDirection(&camlight);
-  rend_SetColorModel(CM_MONO);
+  rend_SetColorModel(color_model::mono);
   if (obj.render_type == render_type::polyobj ||
       (obj.render_type == render_type::weapon &&
        !Weapons[obj.id].flags.image_bitmap &&
@@ -1856,7 +1856,7 @@ void DrawPlayerDamageDisk(object *obj) {
 
   rend_SetAlphaValue(.4 * damage_norm * 255);
   rend_SetOverlayType(OT_NONE);
-  rend_SetLighting(LS_NONE);
+  rend_SetLighting(light_state::none);
   g3_DrawRotatedBitmap(&obj->pos, rot_angle, obj->size, (obj->size * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0),
                        bm_handle);
   rend_SetZBufferWriteMask(1);
@@ -1888,7 +1888,7 @@ void DrawPlayerInvulSphere(object *obj) {
   rend_SetZBufferWriteMask(0);
   rend_SetAlphaValue(.6 * Players[obj->id].invul_magnitude * 255);
   rend_SetOverlayType(OT_NONE);
-  rend_SetLighting(LS_NONE);
+  rend_SetLighting(light_state::none);
   g3_DrawPlanarRotatedBitmap(&hit_pos, &norm_vec, 0, 3, 3, bm_handle);
   rend_SetZBufferWriteMask(1);
 }
@@ -1900,9 +1900,9 @@ void DrawPlayerRotatingBall(object *obj) {
   static int first = 1;
   static int bm_handle;
   vector3 worldpos;
-  rend_SetColorModel(CM_RGB);
-  rend_SetLighting(LS_GOURAUD);
-  rend_SetTextureType(TT_LINEAR);
+  rend_SetColorModel(color_model::rgb);
+  rend_SetLighting(light_state::gouraud);
+  rend_SetTextureType(texture_type::linear);
   rend_SetAlphaType(AT_SATURATE_TEXTURE);
   rend_SetAlphaValue(.3 * 255);
   rend_SetZBufferWriteMask(0);
@@ -2022,11 +2022,11 @@ void DrawPlayerTypingIndicator(object *obj) {
     }
     rend_SetAlphaType(AT_CONSTANT_TEXTURE);
     rend_SetAlphaValue(200);
-    rend_SetWrapType(WT_CLAMP);
-    rend_SetLighting(LS_NONE);
+    rend_SetWrapType(wrap_type::clamp);
+    rend_SetLighting(light_state::none);
     rend_SetOverlayType(OT_NONE);
-    rend_SetColorModel(CM_MONO);
-    rend_SetTextureType(TT_LINEAR);
+    rend_SetColorModel(color_model::mono);
+    rend_SetTextureType(texture_type::linear);
     g3_DrawPoly(4, pntlist, bm_handle, 0, &cc);
   }
 }

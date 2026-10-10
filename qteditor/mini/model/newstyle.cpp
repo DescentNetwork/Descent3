@@ -201,14 +201,14 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
     texp = &GameTextures[Polymodel_effect.custom_texture];
 
   // Set radiosity lightmaps if needed
-  if (Polymodel_light_type == POLYMODEL_LIGHTING_LIGHTMAP) {
+  if (Polymodel_light_type == polymodel_light_type::lightmap) {
     rend_SetOverlayMap(
         LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle);
   }
 
   // Do bump mapping
   if ((Polymodel_effect.type.bumpmapped) && texp && texp->bumpmap != -1 &&
-      Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
+      Polymodel_light_type == polymodel_light_type::gouraud) {
     rend_SetOverlayType(OT_NONE);
     rend_SetBumpmapReadyState(1, texp->bumpmap);
     if (GameTextures[fp->texnum].flags.smooth_specular)
@@ -250,7 +250,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
 
       // Assign bump mapping coords
       if ((Polymodel_effect.type.bumpmapped) && texp->bumpmap != -1 &&
-          Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
+          Polymodel_light_type == polymodel_light_type::gouraud) {
         p->p3_flags.uv2 = true;
 
         vector3 vert = sm->verts[fp->vertnums[t]];
@@ -286,7 +286,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
       }
     }
 
-    if (Polymodel_light_type == POLYMODEL_LIGHTING_LIGHTMAP) {
+    if (Polymodel_light_type == polymodel_light_type::lightmap) {
       p->p3_flags.uv2 = true;
       p->p3_uvl.u2 = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].u2[t];
       p->p3_uvl.v2 = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].v2[t];
@@ -306,13 +306,13 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
   if (texp) {
     bm_handle = GetTextureBitmap(static_cast<int>(texp - &GameTextures.data()[0].second), 0);
 
-    rend_SetTextureType(TT_LINEAR);
-    if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD)
-      rend_SetLighting(LS_GOURAUD);
+    rend_SetTextureType(texture_type::linear);
+    if (Polymodel_light_type == polymodel_light_type::gouraud)
+      rend_SetLighting(light_state::gouraud);
 
     // If this is a light texture, make the texture full bright
     if (texp->flags.light) {
-      rend_SetLighting(LS_FLAT_GOURAUD);
+      rend_SetLighting(light_state::flat_gouraud);
       rend_SetFlatColor(GR_RGB(255, 255, 255));
     }
 
@@ -321,13 +321,13 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
         (static_cast<int>(texp - &GameTextures.data()[0].second)) == Multicolor_texture) {
       int r, g, b;
 
-      rend_SetLighting(LS_FLAT_GOURAUD);
+      rend_SetLighting(light_state::flat_gouraud);
 
       r = GR_COLOR_RED(Polymodel_effect.custom_color);
       g = GR_COLOR_GREEN(Polymodel_effect.custom_color);
       b = GR_COLOR_BLUE(Polymodel_effect.custom_color);
 
-      if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
+      if (Polymodel_light_type == polymodel_light_type::gouraud) {
         if (Polymodel_use_effect && Polymodel_effect.type.color) {
           r = Polymodel_effect.r * (float)r * Polylighting_static_red;
           g = Polymodel_effect.g * (float)g * Polylighting_static_green;
@@ -362,8 +362,8 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
     else
       rend_SetAlphaValue(255);
 
-    rend_SetLighting(LS_NONE);
-    rend_SetTextureType(TT_FLAT);
+    rend_SetLighting(light_state::none);
+    rend_SetTextureType(texture_type::flat);
 
     int r, g, b;
 
@@ -371,7 +371,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
     g = GR_COLOR_GREEN(fp->color);
     b = GR_COLOR_BLUE(fp->color);
 
-    if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
+    if (Polymodel_light_type == polymodel_light_type::gouraud) {
       if (Polymodel_use_effect && Polymodel_effect.type.color) {
         r = Polymodel_effect.r * (float)r * Polylighting_static_red;
         g = Polymodel_effect.g * (float)g * Polylighting_static_green;
@@ -397,7 +397,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
     g3_SetTriangulationTest(0);
 
   if (texp && (Polymodel_effect.type.bumpmapped) && texp->bumpmap != -1 &&
-      Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
+      Polymodel_light_type == polymodel_light_type::gouraud) {
     rend_SetBumpmapReadyState(0, 0);
   }
 
@@ -405,7 +405,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
   if (Polymodel_outline_mode)
     DrawSubmodelFaceOutline(fp->nverts, pointlist);
 
-    /*	if (Lightmap_debug_model==(pm-Poly_models) && Polymodel_light_type==POLYMODEL_LIGHTING_LIGHTMAP &&
+    /*	if (Lightmap_debug_model==(pm-Poly_models) && Polymodel_light_type==polymodel_light_type::lightmap &&
        Lightmap_debug_subnum==modelnum && Lightmap_debug_facenum==facenum)
             {
 
@@ -755,9 +755,9 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
   // Draw specular faces if needed
   if (Polymodel_use_effect && (Polymodel_effect.type.specular_model || Polymodel_effect.type.specular_faces)) {
     rend_SetOverlayType(OT_NONE);
-    rend_SetTextureType(TT_FLAT);
-    rend_SetLighting(LS_NONE);
-    rend_SetColorModel(CM_MONO);
+    rend_SetTextureType(texture_type::flat);
+    rend_SetLighting(light_state::none);
+    rend_SetColorModel(color_model::mono);
     rend_SetAlphaType(AT_SATURATE_VERTEX);
     rend_SetAlphaValue(255);
     rend_SetZBufferWriteMask(0);
@@ -799,9 +799,9 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
     }
 
     rend_SetOverlayType(OT_NONE);
-    rend_SetTextureType(TT_FLAT);
-    rend_SetLighting(LS_NONE);
-    rend_SetColorModel(CM_MONO);
+    rend_SetTextureType(texture_type::flat);
+    rend_SetLighting(light_state::none);
+    rend_SetColorModel(color_model::mono);
     rend_SetAlphaType(AT_VERTEX);
     rend_SetAlphaValue(255);
     rend_SetZBufferWriteMask(0);
@@ -827,7 +827,7 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
 void RotateModelPoints(poly_model *pm, bsp_info *sm) {
 
   // Figure out lighting
-  if (Polymodel_light_type == POLYMODEL_LIGHTING_STATIC) {
+  if (Polymodel_light_type == polymodel_light_type::static_) {
     if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
       for (int i = 0; i < sm->nverts; i++) {
         vector3 vec = sm->verts[i];
@@ -841,7 +841,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
       for (int i = 0; i < sm->nverts; i++)
         g3_RotatePoint(Robot_points[i], sm->verts[i]);
     }
-  } else if (Polymodel_light_type == POLYMODEL_LIGHTING_LIGHTMAP) {
+  } else if (Polymodel_light_type == polymodel_light_type::lightmap) {
     if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
       for (int i = 0; i < sm->nverts; i++) {
         vector3 vec = sm->verts[i];
@@ -862,7 +862,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         Robot_points[i].p3_b = 1.0;
       }
     }
-  } else if (Polymodel_light_type == POLYMODEL_LIGHTING_GOURAUD) {
+  } else if (Polymodel_light_type == polymodel_light_type::gouraud) {
     if (Polymodel_use_effect && Polymodel_effect.type.color) {
       if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
         for (int i = 0; i < sm->nverts; i++) {
@@ -940,7 +940,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
   if (!UseHardware) {
     for (int i = 0; i < sm->nverts; i++)
       Robot_points[i].p3_l = Robot_points[i].p3_g;
-    rend_SetColorModel(CM_MONO);
+    rend_SetColorModel(color_model::mono);
   }
 #endif
 }
@@ -953,7 +953,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
   if (IsNonRenderableSubmodel(pm, sm - pm->submodel.data()))
     return;
 
-  if (Polymodel_light_type != POLYMODEL_LIGHTING_LIGHTMAP) {
+  if (Polymodel_light_type != polymodel_light_type::lightmap) {
     // Turn off bumpmapping if not needed
     rend_SetBumpmapReadyState(0, 0);
   } else {
@@ -963,7 +963,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
   if (Multicolor_texture == -1 && Polymodel_use_effect && (Polymodel_effect.type.custom_color))
     Multicolor_texture = FindTextureName("MultiColor").value_or(-1);
 
-  rend_SetColorModel(CM_RGB);
+  rend_SetColorModel(color_model::rgb);
   StartPolyModelPosInstance(&sm->mod_pos);
   vector3 temp_vec = sm->mod_pos + sm->offset;
   g3_StartInstanceAngles(temp_vec, sm->angs);
@@ -1010,8 +1010,8 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
         goto pop_lighting;
 
       vector3 pos;
-      rend_SetLighting(LS_NONE);
-      rend_SetColorModel(CM_MONO);
+      rend_SetLighting(light_state::none);
+      rend_SetColorModel(color_model::mono);
       rend_SetOverlayType(OT_NONE);
 
       int bm_handle = GetTextureBitmap(pm->textures[sm->faces[0].texnum], 0);
@@ -1058,7 +1058,7 @@ int RenderPolygonModel(poly_model *pm, uint32_t f_render_sub) {
   int i = 0;
 
   rend_SetAlphaType(ATF_CONSTANT + ATF_VERTEX);
-  rend_SetWrapType(WT_WRAP);
+  rend_SetWrapType(wrap_type::wrap);
 
   FacingPass = 0;
   for (i = 0; i < pm->n_models; i++) {

@@ -29,7 +29,7 @@ float Render_FOV = 72.0f;   // default field of view (D3_DEFAULT_FOV)
 bool StateLimited = false;  // not state-limited by default
 bool UseHardware = false;   // no hardware renderer in the Qt port
 bool NoLightmaps = false;   // no lightmap optimization by default
-renderer_type Renderer_type = RENDERER_NONE;
+renderer_type Renderer_type = renderer_type::none;
 
 uint8_t Clip_custom = 0;
 float Clip_plane_distance = 0;

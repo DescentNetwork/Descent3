@@ -56,9 +56,9 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
     connect(rb, &QRadioButton::clicked, this, &PreferencesDialog::onFullScreenHW);
   }
   ui->IDC_DEBUG_CHECK->setChecked(app.fullscreen_debug_state);
-  ui->IDC_USE_OPENGL->setChecked(PreferredRenderer == RENDERER_OPENGL);
-  ui->IDC_USE_GLIDE->setChecked(PreferredRenderer == RENDERER_GLIDE);
-  ui->IDC_USE_D3D->setChecked(PreferredRenderer == RENDERER_DIRECT3D);
+  ui->IDC_USE_OPENGL->setChecked(PreferredRenderer == renderer_type::opengl);
+  ui->IDC_USE_GLIDE->setChecked(PreferredRenderer == renderer_type::glide);
+  ui->IDC_USE_D3D->setChecked(PreferredRenderer == renderer_type::direct3d);
   ui->IDC_BILINEAR_CHECK->setChecked(Render_preferred_state.filtering != 0);
   ui->IDC_MIPPING_CHECK->setChecked(Render_preferred_state.mipping != 0);
   ui->IDC_JOYENABLE->setChecked(app.joy_slewing);
@@ -149,11 +149,11 @@ void PreferencesDialog::onOk() {
   app.fullscreen_debug_state = ui->IDC_DEBUG_CHECK->isChecked();
 
   if (ui->IDC_USE_OPENGL->isChecked())
-    PreferredRenderer = RENDERER_OPENGL;
+    PreferredRenderer = renderer_type::opengl;
   else if (ui->IDC_USE_GLIDE->isChecked())
-    PreferredRenderer = RENDERER_GLIDE;
+    PreferredRenderer = renderer_type::glide;
   else if (ui->IDC_USE_D3D->isChecked())
-    PreferredRenderer = RENDERER_DIRECT3D;
+    PreferredRenderer = renderer_type::direct3d;
 
   const bool joyslew = ui->IDC_JOYENABLE->isChecked();
   if (joyslew != app.joy_slewing) {

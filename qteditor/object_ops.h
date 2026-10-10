@@ -29,13 +29,13 @@ constexpr float HOBJECT_SCALE_UNIT = 0.5f;
 constexpr float HOBJECT_ROTATION_UNIT = 1024.0f;
 
 // Object move direction constants (from HObject.h).
-enum ObjectMoveDir {
-  HOBJECT_MOVE_LEFT = 1,
-  HOBJECT_MOVE_RIGHT = 2,
-  HOBJECT_MOVE_FORWARD = 3,
-  HOBJECT_MOVE_BACK = 4,
-  HOBJECT_MOVE_UP = 5,
-  HOBJECT_MOVE_DOWN = 6,
+enum class object_move_dir : uint8_t {
+  left = 1,
+  right = 2,
+  forward = 3,
+  back = 4,
+  up = 5,
+  down = 6,
 };
 
 // Globals (from HObject.cpp).
