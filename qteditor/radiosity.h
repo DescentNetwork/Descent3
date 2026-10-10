@@ -66,6 +66,8 @@
 #define RADIOSITY_H
 
 #include <cstdint>
+#include <span>
+#include <vector>
 #include "3d.h"
 #include "gr.h"
 
@@ -194,10 +196,8 @@ extern float rad_TotalUnsent;
 
 extern rad_surface *rad_MaxSurface;
 
-extern int rad_NumSurfaces;
-
 extern std::vector<float> rad_FormFactors;
-extern rad_surface *rad_Surfaces;
+extern std::span<rad_surface> rad_Surfaces;
 extern volume_element *Volume_elements[];
 
 extern int UseVolumeLights;
@@ -208,7 +208,7 @@ extern int Shoot_from_patch;
 // Tells radiosity renderer to do volume lighting
 extern int Do_volume_lighting;
 
-int DoRadiosityRun(shooting_method method, std::vector<rad_surface>& light_surfaces, int count);
+int DoRadiosityRun(shooting_method method, std::vector<rad_surface>& light_surfaces);
 // Sets up our radiosity run
 void InitRadiosityRun();
 

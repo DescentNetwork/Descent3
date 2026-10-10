@@ -1083,9 +1083,9 @@ void DoRadiosityForRooms() {
   LOG_INFO("This radiosity run is using %d lightmaps.\n", Lightmaps_for_rad);
   LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
   if (app.hemicube_radiosity)
-    DoRadiosityRun(shooting_method::hemicube, Light_surfaces, facecount);
+    DoRadiosityRun(shooting_method::hemicube, Light_surfaces);
   else
-    DoRadiosityRun(shooting_method::raycast, Light_surfaces, facecount);
+    DoRadiosityRun(shooting_method::raycast, Light_surfaces);
   LOG_INFO("Done solving radiosity - cleaning up...\n");
 
   surface_index = 0;
@@ -1252,9 +1252,9 @@ void DoRadiosityForCurrentRoom(int roomnum) {
 
   LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
   if (app.hemicube_radiosity)
-    DoRadiosityRun(shooting_method::hemicube, Light_surfaces, facecount);
+    DoRadiosityRun(shooting_method::hemicube, Light_surfaces);
   else
-    DoRadiosityRun(shooting_method::raycast, Light_surfaces, facecount);
+    DoRadiosityRun(shooting_method::raycast, Light_surfaces);
   LOG_INFO("Done solving radiosity - cleaning up...\n");
 
   surface_index = 0;
@@ -2024,9 +2024,9 @@ void DoRadiosityForTerrain() {
   LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
 
   if (app.hemicube_radiosity)
-    DoRadiosityRun(shooting_method::switch_after_satellites, Light_surfaces, total_surfaces);
+    DoRadiosityRun(shooting_method::switch_after_satellites, Light_surfaces);
   else
-    DoRadiosityRun(shooting_method::raycast, Light_surfaces, total_surfaces);
+    DoRadiosityRun(shooting_method::raycast, Light_surfaces);
 
   // Figure out lighting by averaging the two triangles per terrain cell
 

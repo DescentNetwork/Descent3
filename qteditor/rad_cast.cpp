@@ -982,7 +982,8 @@ void CalculateFormFactorsRaycast() {
     express -= rad_MaxSurface->area;
     sphere_dist = sqrt(express);
     if (sphere_dist > 0)
-      fvi_QuickDistFaceList(from_roomnum(rad_MaxSurface->roomnum), src_center, sphere_dist, std::nullopt, rad_NumSurfaces);
+      fvi_QuickDistFaceList(from_roomnum(rad_MaxSurface->roomnum), src_center, sphere_dist, std::nullopt,
+                            static_cast<int>(rad_Surfaces.size()));
   }
 
   // Do volume lighting
@@ -990,7 +991,7 @@ void CalculateFormFactorsRaycast() {
     CalculateVolumeLightsForRay(sphere_dist, src_center);
 
   // Shoot this patches light to each element within range
-  for (i = 0; i < rad_NumSurfaces; i++) {
+  for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     rad_surface *dest_surf = &rad_Surfaces[i];
 
     Current_max_specular_strength = 0;

@@ -44,8 +44,6 @@ bool Ignore_satellites = false;
 float rad_TotalFlux = 0.0f;
 float rad_Convergence = 1.0f;
 
-int rad_NumSurfaces;
-
 std::vector<float> rad_FormFactors;
 
 int rad_StepCount = 0;
@@ -55,7 +53,7 @@ int rad_DoneCalculating = 0;
 float rad_TotalUnsent = 0.0f;
 
 rad_surface *rad_MaxSurface = NULL;
-rad_surface *rad_Surfaces;
+std::span<rad_surface> rad_Surfaces;
 
 int UseVolumeLights = 0; // User selectable to do volumelights
 int Calculate_specular_lighting = 0;
@@ -70,13 +68,12 @@ volume_element *Volume_elements[MAX_VOLUME_ELEMENTS];
 
 extern int Shoot_from_patch;
 
-int DoRadiosityRun(shooting_method method, std::vector<rad_surface>& light_surfaces, int count) {
+int DoRadiosityRun(shooting_method method, std::vector<rad_surface>& light_surfaces) {
   float start_time;
 
-  LOG_INFO("Calculating radiosity on %d faces.\n", count);
+  LOG_INFO("Calculating radiosity on %zu faces.\n", light_surfaces.size());
 
-  rad_Surfaces = light_surfaces.data();
-  rad_NumSurfaces = count;
+  rad_Surfaces = light_surfaces;
 
   Shoot_method = method;
 
@@ -165,7 +162,7 @@ void CalculateArea() {
   rad_surface *surf;
   int i, t;
 
-  for (i = 0; i < rad_NumSurfaces; i++) {
+  for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     surf = &rad_Surfaces[i];
 
     CalculateAreaForSurface(surf);
@@ -183,7 +180,7 @@ void CountElements() {
   size_t num_elements = 0;
   rad_surface *surf;
 
-  for (int i = 0; i < rad_NumSurfaces; i++) {
+  for (int i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     surf = &rad_Surfaces[i];
 
     num_elements += (surf->xresolution * surf->yresolution);
@@ -198,7 +195,7 @@ void CountElements() {
 void InitExitance() {
   int i;
 
-  for (i = 0; i < rad_NumSurfaces; i++) {
+  for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     SetExitanceForSurface(&rad_Surfaces[i]);
   }
 }
@@ -241,7 +238,7 @@ void UpdateUnsentValues() {
   // Go through all the surfaces searching for the surface with the greatest
   // exitance yet to be shot
 
-  for (i = 0; i < rad_NumSurfaces; i++) {
+  for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     rad_surface *surf = &rad_Surfaces[i];
     cur_unsent = GetUnsentFlux(surf);
     rad_TotalUnsent += cur_unsent;
@@ -339,7 +336,7 @@ void NormalizeExitance() {
   int i, t;
   float rmax = 0.0f;
 
-  for (i = 0; i < rad_NumSurfaces; i++) {
+  for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     rad_surface *surf = &rad_Surfaces[i];
     spectra *emittance = &surf->emittance;
 

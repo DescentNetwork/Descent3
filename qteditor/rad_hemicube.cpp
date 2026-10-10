@@ -136,7 +136,7 @@ void CalculateFormFactorsHemiCube() {
 
       ff_index = 0;
 
-      for (t = 0; t < rad_NumSurfaces; t++) {
+      for (t = 0; t < static_cast<int>(rad_Surfaces.size()); t++) {
         int ignore = 0;
         rad_surface *surf = &rad_Surfaces[t];
 
@@ -177,7 +177,7 @@ void CalculateFormFactorsHemiCube() {
   }
 
   // Now extract the results
-  for (ff_index = 0, i = 0; i < rad_NumSurfaces; i++) {
+  for (ff_index = 0, i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     rad_surface *surf = &rad_Surfaces[i];
 
     // Check for self surface
@@ -367,7 +367,7 @@ void EndHemicubeDrawing(int face) {
     uint16_t surfval[90000];
     int ff_index = 0;
 
-    for (i = 0; i < rad_NumSurfaces; i++) {
+    for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
       rad_surface *surf = &rad_Surfaces[i];
 
       for (t = 0; t < surf->yresolution * surf->xresolution; t++, ff_index++) {
