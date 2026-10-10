@@ -20,10 +20,13 @@
 
 #include <QDialog>
 
+#include "utils.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class WorldObjectsPlayerDialog; }
 QT_END_NAMESPACE
 
+struct ship;
 
 // Port of CWorldObjectsPlayerDialog (IDD_WORLDOBJECTSPLAYER): edits the player
 // ship table (model + LODs, dying model, cockpit, armor, physics, weapons).
@@ -49,16 +52,15 @@ private slots:
   void onPshipCockpit();
   void onPshipEditPhysics();
   void onKillfocusName();
-  void onKillfocusCockpit();
-  void onKillfocusArmor();
-  void onKillfocusLodDistance();
-  void onDefaultAllowToggled(bool checked);
   void onHiresRadio();
   void onMedresRadio();
   void onLoresRadio();
   void onNolod();
 
 private:
+  optref<ship> data(void);
+  void bindEdits();
+  void bindChecks();
   void updateDialog();
 
   Ui::WorldObjectsPlayerDialog *ui;

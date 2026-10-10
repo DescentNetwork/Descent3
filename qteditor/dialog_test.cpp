@@ -94,7 +94,7 @@ int runDialogTest() {
     check("brief_mission_flags", dlg != nullptr);
   }
   {
-    BriefTextEditDialog* dlg = new BriefTextEditDialog(0, nullptr, 0);
+    BriefTextEditDialog* dlg = new BriefTextEditDialog(0, nullptr, {}, 0);
     check("brief_text_edit", dlg != nullptr);
   }
   construct<CreateNewScriptDialog>("createscript", nullptr);
@@ -110,7 +110,7 @@ int runDialogTest() {
     check("editline", dlg != nullptr);
   }
   {
-    GenericDeathDialog* dlg = new GenericDeathDialog(&oi);
+    GenericDeathDialog* dlg = new GenericDeathDialog(std::nullopt);
     check("generic_death", dlg != nullptr);
   }
   construct<HogDialog>("hog", nullptr);
@@ -119,7 +119,7 @@ int runDialogTest() {
     check("level_info", dlg != nullptr);
   }
   {
-    PhysicsDialog* dlg = new PhysicsDialog(&pi);
+    PhysicsDialog* dlg = new PhysicsDialog();
     check("physics", dlg != nullptr);
   }
   {
@@ -139,7 +139,7 @@ int runDialogTest() {
   construct<ViewerPropDialog>("viewer_prop", nullptr);
   construct<WorldObjectsDoorDialog>("world_objects_door", nullptr);
   {
-    WorldObjectsGenericDialog* dlg = new WorldObjectsGenericDialog(OBJ_BUILDING, 0);
+    WorldObjectsGenericDialog* dlg = new WorldObjectsGenericDialog(object_type_e::building, 0);
     check("world_objects_generic", dlg != nullptr);
   }
   construct<WorldObjectsPlayerDialog>("world_objects_player", nullptr);

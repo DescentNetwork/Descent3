@@ -24,23 +24,15 @@
 #include <QDialog>
 #include <QWidget>
 #include <QTimer>
-//#include <DockManager.h>
-//#include <DockWidget.h>
+#include <QFileInfo>
+#include <optional>
+
+#include "utils.h"
+#include "object_external.h" // object_type
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
-
-
-// Constant set for the editor's view mode. Mirrors the Win32 enum in
-// editor/d3edit.h (VM_MINE, VM_TERRAIN, VM_ROOM). Used by SetViewMode and
-// the View menu's ID_MINE_VIEW / ID_TERRAIN_VIEW / ID_ROOM_VIEW handlers.
-enum class view_mode_t
-{
-  VIEW_MODE_MINE = 0,
-  VIEW_MODE_TERRAIN,
-  VIEW_MODE_ROOM,
-};
 
 
 class KeypadBar;
@@ -82,7 +74,7 @@ private:
   void showWorldObjectsSound();
   void showWorldWeapons();
   void showWorldTextures();
-  void showGenericObject(int objType, int current);
+  void showGenericObject(object_type_e objType, index_t current);
   void showLevelProperties();
   void showMegacells();
   void showAmbientSounds();
@@ -130,6 +122,14 @@ private:
   void onViewShowObjectsInWireframe();
   void onButtonOutline();
 
+  // Object context-menu (right-click on an object in the editor view) actions,
+  // mirroring the Win32 CTextureGrWnd popup.
+  void onObjectRename();
+  void onObjectSound();
+  void onObjectEditScripts();
+  void onObjectNewScript();
+  void onObjectCustomDefaultScript();
+
   // Room menu slots that delegate to room_ops. The Room menu has many more
   // items than this list — they route through wireNotPorted() above — but
   // these ones have real Qt-side implementations.
@@ -147,9 +147,13 @@ private:
 
   // ====== VIEWER OPERATIONS ======
   void onCenterViewOnMine();
+  void onCenterViewOnCube();
   void onCenterViewOnObject();
   void onResetViewRadius();
   void onMoveViewToSelectedRoom();
+  void onMoveCameraToSelectedFace();
+  void onMoveCameraToCurrentObject();
+  void onFlipViewer();
 
   // ====== OBJECT OPERATIONS ======
   int onPlaceCameraAtViewer();
@@ -191,7 +195,6 @@ private:
   QDialog *m_aboutBox = nullptr;
   ViewerPropDialog *m_viewerProps = nullptr;
   EditorView *m_editorView = nullptr;
-  view_mode_t m_view_mode = view_mode_t::VIEW_MODE_MINE;
 
   // Path of the currently open .d3l, or empty if none / untitled. Updated by
   // onFileOpen / onFileSaveAs and cleared by onFileNew.

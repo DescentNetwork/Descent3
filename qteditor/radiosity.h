@@ -65,17 +65,20 @@
 #ifndef RADIOSITY_H
 #define RADIOSITY_H
 
-
-#include "pstypes.h"
+#include <cstdint>
+#include <span>
+#include <vector>
 #include "3d.h"
 #include "gr.h"
 
 // Shooting methods
-#define SM_HEMICUBE 0
-#define SM_RAYCAST 1
-// This method makes a switch from RAYCAST to HEMICUBE after all satellites have
-// been used for lightsources
-#define SM_SWITCH_AFTER_SATELLITES 2
+enum class shooting_method : uint8_t {
+  hemicube = 0,
+  raycast = 1,
+  // This method makes a switch from raycast to hemicube after all satellites
+  // have been used for lightsources
+  switch_after_satellites = 2,
+};
 
 #define MAX_VOLUME_ELEMENTS 500
 
@@ -84,35 +87,69 @@ struct spectra {
 };
 
 // element flags
-#define EF_IGNORE 1
-#define EF_SMALL 2 // Don't blend this one into the lightmap - it will corrupt!
+struct [[gnu::packed]] rad_element_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 6;
+  uint8_t small : 1;  // Don't blend this one into the lightmap - it will corrupt!
+  uint8_t ignore : 1;
+#else
+  uint8_t ignore : 1;
+  uint8_t small : 1; // Don't blend this one into the lightmap - it will corrupt!
+  uint8_t padding : 6;
+#endif
+};
+static_assert(sizeof(rad_element_flags_t) == sizeof(uint8_t));
 
 struct rad_element {
-  vector *verts;
+  std::vector<vector3> verts;
   spectra exitance;
   float area;
   uint8_t num_verts;
-  uint8_t flags; // see above
+  rad_element_flags_t flags; // see above
 };
 
-#define VEF_REVERSE_SHOOT 1
+struct [[gnu::packed]] volume_element_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 7;
+  uint8_t reverse_shoot : 1;
+#else
+  uint8_t reverse_shoot : 1;
+  uint8_t padding : 7;
+#endif
+};
+static_assert(sizeof(volume_element_flags_t) == sizeof(uint8_t));
 
 struct volume_element {
   spectra color;
-  vector pos;
-  uint8_t flags;
+  vector3 pos;
+  volume_element_flags_t flags;
 };
 
-#define ST_ROOM 0           // This is a room surface
-#define ST_TERRAIN 1        // This is a terrain surface
-#define ST_SATELLITE 2      // This is a sun on the terrain
-#define ST_PORTAL 3         // This surface is a portal, don't consider it
-#define ST_ROOM_OBJECT 4    // This surface is part of an object
-#define ST_TERRAIN_OBJECT 5 // This surface is part of terrain object
-#define ST_EXTERNAL_ROOM 6  // This surface is a room outside
+// This surface's type
+enum class rad_surface_type : uint8_t {
+  room = 0,           // This is a room surface
+  terrain = 1,        // This is a terrain surface
+  satellite = 2,      // This is a sun on the terrain
+  portal = 3,         // This surface is a portal, don't consider it
+  room_object = 4,    // This surface is part of an object
+  terrain_object = 5, // This surface is part of terrain object
+  external_room = 6,  // This surface is a room outside
+};
 
-#define SF_TOUCHES_TERRAIN 1
-#define SF_LIGHTSOURCE 2
+
+struct [[gnu::packed]] surface_flags_t
+{
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 6;           // Unused padding
+  uint8_t lightsource : 1;       // surface emits light
+  uint8_t touches_terrain : 1;   // surface contacts with terrain
+#else
+  uint8_t touches_terrain : 1;   // surface contacts with terrain
+  uint8_t lightsource : 1;       // surface emits light
+  uint8_t padding : 6;           // Unused padding
+#endif
+};
+static_assert(sizeof(surface_flags_t) == sizeof(uint8_t));
 
 struct rad_surface {
   float area;
@@ -121,16 +158,16 @@ struct rad_surface {
   float reflectivity;  // how much light bounces off
   uint8_t xresolution; // how many elements (resolution x resolution) for this face
   uint8_t yresolution;
-  rad_element *elements; // list of elements for this surface
-  vector normal;         // normal of this surface
-  vector *verts;
+  std::vector<rad_element> elements; // list of elements for this surface
+  vector3 normal;         // normal of this surface
+  std::vector<vector3> verts;
 
-  uint8_t surface_type; // See ST_ types above
+  rad_surface_type surface_type; // See rad_surface_type above
 
   int facenum; // facenumber of room
-  int roomnum; // The roomnumber or terrain segment number
+  index_t roomnum; // The roomnumber or terrain segment number
   uint8_t num_verts;
-  uint8_t flags;
+  surface_flags_t flags;
 
   float surface_area, element_area;
 
@@ -138,14 +175,14 @@ struct rad_surface {
 };
 
 struct rad_point {
-  vector pos;
-  uint8_t code;
+  vector3 pos;
+  g3_clip_codes_t code;
 };
 
 extern float *Room_strongest_value[][4];
 
-extern int Ignore_terrain;
-extern int Ignore_satellites;
+extern bool Ignore_terrain;
+extern bool Ignore_satellites;
 
 extern float Ignore_limit;
 extern float rad_TotalFlux;
@@ -159,11 +196,8 @@ extern float rad_TotalUnsent;
 
 extern rad_surface *rad_MaxSurface;
 
-extern int rad_NumSurfaces;
-extern int rad_NumElements;
-
-extern float *rad_FormFactors;
-extern rad_surface *rad_Surfaces;
+extern std::vector<float> rad_FormFactors;
+extern std::span<rad_surface> rad_Surfaces;
 extern volume_element *Volume_elements[];
 
 extern int UseVolumeLights;
@@ -174,7 +208,7 @@ extern int Shoot_from_patch;
 // Tells radiosity renderer to do volume lighting
 extern int Do_volume_lighting;
 
-int DoRadiosityRun(int method, rad_surface *light_surfaces, int count);
+int DoRadiosityRun(shooting_method method, std::vector<rad_surface>& light_surfaces);
 // Sets up our radiosity run
 void InitRadiosityRun();
 
@@ -194,13 +228,13 @@ void UpdateUnsentValues();
 int DoRadiosityIteration();
 
 // Finds the world coordinate center of a element
-void GetCenterOfElement(rad_element *ep, vector *dest);
+void GetCenterOfElement(rad_element *ep, vector3 *dest);
 
 // Finds the world coordinate center of a surface
-void GetCenterOfSurface(rad_surface *ep, vector *dest);
+void GetCenterOfSurface(rad_surface *ep, vector3 *dest);
 
 // Returns 1 if a src vector can hit dest vector unobstructed
-int ShootRayFromPoint(vector *src, vector *dest, rad_surface *src_surf, rad_surface *dest_surf);
+int ShootRayFromPoint(vector3 *src, vector3 *dest, rad_surface *src_surf, rad_surface *dest_surf);
 
 // Shoots a ray from the center of the max surface to center of every other element
 // Also updates the exitances of elements that get hit
@@ -215,9 +249,6 @@ float GetUnsentFlux(rad_surface *surface);
 
 // Shuts down the radiosity stuff, freeing memory, etc
 void CloseRadiosityRun();
-
-// Initalizes memory for form factors
-void SetupFormFactors();
 
 // Calculates the area of the surfaces and elements in our environment
 void CalculateArea();

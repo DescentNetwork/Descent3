@@ -28,8 +28,7 @@ MultiCheckDialog::MultiCheckDialog(const QString &message, const QStringList &it
     : QDialog(parent), ui(new Ui::MulticheckDialog), m_list(nullptr)
 {
   ui->setupUi(this);
-  if (QLabel *label = ui->IDC_DIRECTIONS_TEXT)
-    label->setText(message);
+  ui->IDC_DIRECTIONS_TEXT->setText(message);
   m_list = ui->IDC_MULTICHECKIN_LISTBOX;
   if (m_list != nullptr) {
     m_list->addItems(items);

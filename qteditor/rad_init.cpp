@@ -1,3 +1,4 @@
+#include <QtGlobal>
 /*
  * Descent 3
  * Copyright (C) 2024 Parallax Software
@@ -20,6 +21,7 @@
 #include "d3edit.h"
 #include "lighting_status_dialog.h"
 #include "radiosity.h"
+#include "chrono_timer.h"
 
 #include "findintersection.h"
 #include "hemicube.h"
@@ -27,23 +29,22 @@
 #include "rad_cast.h"
 #include "vecmat.h"
 #include <cstdlib>
-#include "mem.h"
+#include "mem/mem.h"
+
+#include "ddio.h"
 
 
 // Some radiosity globals
-int Shoot_method = SM_HEMICUBE;
+shooting_method Shoot_method = shooting_method::hemicube;
 int Hemicube_resolution = 1024;
 
-int Ignore_terrain = 0;
-int Ignore_satellites = 0;
+bool Ignore_terrain = false;
+bool Ignore_satellites = false;
 
 float rad_TotalFlux = 0.0f;
 float rad_Convergence = 1.0f;
 
-int rad_NumSurfaces;
-int rad_NumElements;
-
-float *rad_FormFactors;
+std::vector<float> rad_FormFactors;
 
 int rad_StepCount = 0;
 int rad_MaxStep = 1;
@@ -52,7 +53,7 @@ int rad_DoneCalculating = 0;
 float rad_TotalUnsent = 0.0f;
 
 rad_surface *rad_MaxSurface = NULL;
-rad_surface *rad_Surfaces;
+std::span<rad_surface> rad_Surfaces;
 
 int UseVolumeLights = 0; // User selectable to do volumelights
 int Calculate_specular_lighting = 0;
@@ -67,17 +68,16 @@ volume_element *Volume_elements[MAX_VOLUME_ELEMENTS];
 
 extern int Shoot_from_patch;
 
-int DoRadiosityRun(int method, rad_surface *light_surfaces, int count) {
+int DoRadiosityRun(shooting_method method, std::vector<rad_surface>& light_surfaces) {
   float start_time;
 
-  LOG_INFO("Calculating radiosity on %d faces.\n", count);
+  LOG_INFO("Calculating radiosity on %zu faces.\n", light_surfaces.size());
 
   rad_Surfaces = light_surfaces;
-  rad_NumSurfaces = count;
 
   Shoot_method = method;
 
-  start_time = timer_GetTime();
+  start_time = d3::chrono::last_update();
 
   InitRadiosityRun();
 
@@ -92,7 +92,7 @@ int DoRadiosityRun(int method, rad_surface *light_surfaces, int count) {
   CloseRadiosityRun();
 
   // Print time taken
-  LOG_INFO("\nLighting took %.4f seconds.\n", timer_GetTime() - start_time);
+  LOG_INFO("\nLighting took %.4f seconds.\n", d3::chrono::last_update() - start_time);
 
   return 1;
 }
@@ -109,24 +109,15 @@ void InitRadiosityRun() {
   CalculateArea();
   InitExitance();
 
-  if (Shoot_method == SM_HEMICUBE) {
-    SetupFormFactors();
+  if (Shoot_method == shooting_method::hemicube) {
     InitHemicube(Hemicube_resolution);
   }
-}
-
-// Initalizes memory for form factors
-void SetupFormFactors() {
-  Q_ASSERT(rad_NumElements > 0);
-
-  rad_FormFactors = mem_rmalloc<float>(rad_NumElements);
-  Q_ASSERT(rad_FormFactors != NULL);
 }
 
 void CalculateAreaForSurface(rad_surface *sp) {
   int i;
 
-  vector normal;
+  vector3 normal;
 
   vm_GetPerp(&normal, &sp->verts[0], &sp->verts[1], &sp->verts[2]);
   sp->area = (vm_GetMagnitude(&normal) / 2);
@@ -143,9 +134,9 @@ void CalculateAreaForSurface(rad_surface *sp) {
 void CalculateAreaForElement(rad_element *ep) {
   int i;
 
-  vector normal;
+  vector3 normal;
 
-  if (ep->flags & EF_IGNORE) {
+  if (ep->flags.ignore) {
     ep->area = .0000001f;
     return;
   }
@@ -159,9 +150,9 @@ void CalculateAreaForElement(rad_element *ep) {
   }
 
   if (ep->area < .05)
-    ep->flags |= EF_SMALL;
+    ep->flags.small = true;
   if (ep->area == 0) {
-    ep->flags |= EF_IGNORE;
+    ep->flags.ignore = true;
     ep->area = .00000001f;
   }
 }
@@ -171,7 +162,7 @@ void CalculateArea() {
   rad_surface *surf;
   int i, t;
 
-  for (i = 0; i < rad_NumSurfaces; i++) {
+  for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     surf = &rad_Surfaces[i];
 
     CalculateAreaForSurface(surf);
@@ -183,26 +174,28 @@ void CalculateArea() {
   }
 }
 
-// Counts the total number of elements we have to work with
+// Counts the total number of elements we have to work with and sizes the form
+// factor array to match.
 void CountElements() {
+  size_t num_elements = 0;
   rad_surface *surf;
-  int i;
 
-  rad_NumElements = 0;
-
-  for (i = 0; i < rad_NumSurfaces; i++) {
+  for (int i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     surf = &rad_Surfaces[i];
 
-    rad_NumElements += (surf->xresolution * surf->yresolution);
+    num_elements += (surf->xresolution * surf->yresolution);
   }
-  LOG_INFO("Number of elements=%d\n", rad_NumElements);
+
+  Q_ASSERT(num_elements > 0);
+  rad_FormFactors.resize(num_elements);
+  LOG_INFO("Number of elements=%zu\n", num_elements);
 }
 
 // Initializes the exitances for all surfaces
 void InitExitance() {
   int i;
 
-  for (i = 0; i < rad_NumSurfaces; i++) {
+  for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     SetExitanceForSurface(&rad_Surfaces[i]);
   }
 }
@@ -245,7 +238,7 @@ void UpdateUnsentValues() {
   // Go through all the surfaces searching for the surface with the greatest
   // exitance yet to be shot
 
-  for (i = 0; i < rad_NumSurfaces; i++) {
+  for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     rad_surface *surf = &rad_Surfaces[i];
     cur_unsent = GetUnsentFlux(surf);
     rad_TotalUnsent += cur_unsent;
@@ -256,7 +249,7 @@ void UpdateUnsentValues() {
     }
 
     // Always give satellites priority
-    if (surf->surface_type == ST_SATELLITE && cur_unsent > 0) {
+    if (surf->surface_type == rad_surface_type::satellite && cur_unsent > 0) {
       if (cur_unsent > sat_max_unsent) {
         use_sat = 1;
         sat_max_unsent = cur_unsent;
@@ -271,18 +264,17 @@ void UpdateUnsentValues() {
   else
     rad_Convergence = 0.0;
 
-  if (timer_GetTime() - last_report_time > 10.0) {
+  if (d3::chrono::last_update() - last_report_time > 10.0) {
     LOG_INFO("Percentage left=%f\n", rad_Convergence);
-    last_report_time = timer_GetTime();
+    last_report_time = d3::chrono::last_update();
   }
 
   if (use_sat)
     rad_MaxSurface = sat_surface;
 
-  if (!use_sat && Shoot_method == SM_SWITCH_AFTER_SATELLITES) {
-    SetupFormFactors();
+  if (!use_sat && Shoot_method == shooting_method::switch_after_satellites) {
     InitHemicube(Hemicube_resolution);
-    Shoot_method = SM_HEMICUBE;
+    Shoot_method = shooting_method::hemicube;
   }
 
   // No energy left to shoot?
@@ -291,10 +283,10 @@ void UpdateUnsentValues() {
 }
 
 // Finds the world coordinate center of a surface
-void GetCenterOfSurface(rad_surface *sp, vector *dest) { vm_GetCentroid(dest, sp->verts, sp->num_verts); }
+void GetCenterOfSurface(rad_surface *sp, vector3 *dest) { vm_GetCentroid(dest, sp->verts.data(), sp->num_verts); }
 
 // Finds the world coordinate center of a surface
-void GetCenterOfElement(rad_element *ep, vector *dest) { vm_GetCentroid(dest, ep->verts, ep->num_verts); }
+void GetCenterOfElement(rad_element *ep, vector3 *dest) { vm_GetCentroid(dest, ep->verts.data(), ep->num_verts); }
 
 void CalculateRadiosity() {
   while (!rad_DoneCalculating) {
@@ -307,6 +299,10 @@ void CalculateRadiosity() {
 
     rad_StepCount++;
 
+    // Advance the game clock so last_update() tracks real elapsed time for
+    // progress reporting and timing logs.
+    d3::chrono::update();
+
     Descent->defer();
     // Qt handles keyboard events natively - abort logic should be moved to UI
   }
@@ -318,7 +314,7 @@ float GetUnsentFlux(rad_surface *surface) {
 
   flux = surface->exitance.r + surface->exitance.g + surface->exitance.b;
 
-  if (surface->surface_type != ST_SATELLITE)
+  if (surface->surface_type != rad_surface_type::satellite)
     flux *= surface->area;
 
   return flux;
@@ -340,14 +336,14 @@ void NormalizeExitance() {
   int i, t;
   float rmax = 0.0f;
 
-  for (i = 0; i < rad_NumSurfaces; i++) {
+  for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     rad_surface *surf = &rad_Surfaces[i];
     spectra *emittance = &surf->emittance;
 
     for (t = 0; t < surf->xresolution * surf->yresolution; t++) {
       rad_element *ep = &surf->elements[t];
 
-      if (ep->flags & EF_IGNORE)
+      if (ep->flags.ignore)
         continue;
 
       if (Shoot_from_patch) {
@@ -378,14 +374,14 @@ void NormalizeExitance() {
 void CloseRadiosityRun() {
 
   NormalizeExitance();
-  if (Shoot_method == SM_HEMICUBE) {
-    mem_free(rad_FormFactors);
+  if (Shoot_method == shooting_method::hemicube) {
+    rad_FormFactors.clear();
     CloseHemicube();
   }
 }
 void Calculate() {
 
-  if (Shoot_method == SM_HEMICUBE)
+  if (Shoot_method == shooting_method::hemicube)
     CalculateFormFactorsHemiCube();
   else
     CalculateFormFactorsRaycast();
@@ -394,7 +390,7 @@ void Calculate() {
   rad_MaxSurface->exitance.r = 0;
   rad_MaxSurface->exitance.g = 0;
   rad_MaxSurface->exitance.b = 0;
-  rad_MaxSurface->flags &= ~SF_LIGHTSOURCE;
+  rad_MaxSurface->flags.lightsource = 0;
 }
 
 // Does one iteration of ray-casting radiosity

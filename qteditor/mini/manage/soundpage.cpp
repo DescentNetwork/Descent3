@@ -1,0 +1,84 @@
+/*
+ * Descent 3
+ * Copyright (C) 2024 Parallax Software
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+// Sound page reader (ported from soundpage.cpp : 222-255).
+
+#include "soundpage.h"
+#include "soundload.h"
+
+#include <cstdint>
+#include <cstring>
+#include <string>
+
+#include "manage.h"
+#include "gamedata_helpers.h"
+
+//-----------------------------------------------------------------------------
+// Sound page (ported from soundpage.cpp : 222-255)
+//-----------------------------------------------------------------------------
+
+// sound_info is a page sub-record (its name interleaves with the page-level
+// raw_name on disk), so the page operators inline all of its fields in the
+// original write order: flags, loop_start, loop_end, outer_cone_volume,
+// inner_cone_angle, outer_cone_angle, max_distance, min_distance,
+// import_volume.
+
+byte_istream& operator>>(byte_istream& input, mngs_sound_page& data) {
+  return input
+        >> version_t { 1 }
+        >> data.sound_struct.name
+        >> data.raw_name
+        >> reinterpret_cast<uint32_t&>(data.sound_struct.flags)
+        >> data.sound_struct.loop_start
+        >> data.sound_struct.loop_end
+        >> data.sound_struct.outer_cone_volume
+        >> data.sound_struct.inner_cone_angle
+        >> data.sound_struct.outer_cone_angle
+        >> data.sound_struct.max_distance
+        >> data.sound_struct.min_distance
+        >> data.sound_struct.import_volume;
+}
+
+byte_ostream& operator<<(byte_ostream& output, const mngs_sound_page& data) {
+  return output
+         << version_t { 1 }
+         << data.sound_struct.name
+         << data.raw_name
+         << reinterpret_cast<const uint32_t&>(data.sound_struct.flags)
+         << data.sound_struct.loop_start
+         << data.sound_struct.loop_end
+         << data.sound_struct.outer_cone_volume
+         << data.sound_struct.inner_cone_angle
+         << data.sound_struct.outer_cone_angle
+         << data.sound_struct.max_distance
+         << data.sound_struct.min_distance
+         << data.sound_struct.import_volume;
+}
+
+bool mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
+  infile >> *soundpage;
+
+  return true; // successfully read
+}
+
+// First searches through the sound index to see if the sound is already
+// loaded.  If not, searches in the table file and loads it.
+// Returns index of sound if found, std::nullopt if not.
+index_t mng_GetGuaranteedSoundPage(const std::string &name) {
+  return FindSoundName(name);
+}

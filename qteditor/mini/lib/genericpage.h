@@ -1,0 +1,98 @@
+/*
+* Descent 3 
+* Copyright (C) 2024 Parallax Software
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef GENERICPAGE_H
+#define GENERICPAGE_H
+
+#include <array>
+#include <cstdint>
+#include <string>
+#include <posix_stream.h>
+
+#include "manage.h"
+#include "objinfo.h"
+#include "utils.h"
+#include "robotfirestruct.h"
+
+// Current version of the generic page (matches the original manage/generic.cpp)
+#define GENERICFILE_VERSION 27
+
+struct mngs_generic_page {
+  object_info objinfo_struct;
+  std::array<anim_elem, NUM_MOVEMENT_CLASSES> anim;
+  std::array<otype_wb_info, MAX_WBS_PER_OBJ> static_wb;
+  ai_info_t ai_info;
+  std::string image_name;
+  std::string med_image_name;
+  std::string lo_image_name;
+  std::array<std::string, generic_sound::count> sound_name;
+  std::array<std::string, MAX_AI_SOUNDS> ai_sound_name;
+  std::array<std::array<std::string, MAX_WB_GUNPOINTS>, MAX_WBS_PER_OBJ> weapon_name;
+  std::array<std::array<std::string, MAX_WB_FIRING_MASKS>, MAX_WBS_PER_OBJ> fire_sound_name;
+  std::array<std::array<std::string, NUM_ANIMS_PER_CLASS>, NUM_MOVEMENT_CLASSES> anim_sound_name;
+  std::array<std::string, MAX_DSPEW_TYPES> dspew_name;
+};
+
+// Table-file serialization; operator>> reads any version from the stream and
+// operator<< writes the current (GENERICFILE_VERSION) layout.  The read is
+// the mirror of the write.
+byte_istream& operator >>(byte_istream& input, mngs_generic_page& data);
+byte_ostream& operator <<(byte_ostream& output, const mngs_generic_page& data);
+
+// Generic page functions
+//---------------------------------------------------------------
+
+// Reads a generic page from an open file.  Returns false on error.
+bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage);
+
+// Serializes a generic page in the current table-file format (the exact mirror
+// of mng_ReadNewGenericPage: same field order and encodings, so a page written
+// here parses back bit-for-bit with the reader).  Writes the full page frame —
+// [page_type::generic][int32 len] header + payload — just like the original
+// StartManagePage/EndManagePage-wrapped writer.
+void mng_WriteNewGenericPage(byte_ostream &outfile, mngs_generic_page *genericpage);
+
+// Reads in the genericpage named "name" into genericpage struct
+// Returns 0 on error or couldn't find, else 1 if all is good
+int mng_FindSpecificGenericPage(const std::string &name, mngs_generic_page *genericpage, int offset = 0);
+
+// Given a generic page, allocs a generic and calls AssignGenericPageToGeneric to actually
+// load model and values. Returns generic handle on success, -1 if fail
+int mng_SetAndLoadGeneric(mngs_generic_page *genericpage, struct CFILE* infile = NULL);
+
+// Given a genericpage and a generic handle, attempts to make generic n correspond to
+// to the genericpage.
+// Returns 1 on success, 0 otherwise
+int mng_AssignGenericPageToObjInfo(mngs_generic_page &genericpage, index_t n);
+
+// Copies values from a Generic into a generic_page
+void mng_AssignObjInfoToGenericPage(index_t n, mngs_generic_page &genericpage);
+
+// Reads in a generic page from the local table file, superseding any generic
+// already in RAM with that same name
+void mng_LoadLocalGenericPage(struct CFILE* );
+
+// Reads in a page off the net
+void mng_LoadNetGenericPage(struct CFILE* , bool overlay = false);
+
+// First searches through the object index to see if the object is already
+// loaded.  If not, searches in the table file and loads it.
+// Returns index of object if found, std::nullopt if not
+index_t mng_GetGuaranteedGenericPage(const std::string &name);
+
+#endif

@@ -1,38 +1,34 @@
-/*
- * Descent 3
- * Copyright (C) 2024 Descent Developers
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #pragma once
 
 #include <QDialog>
+#include <string>
+
+#include "brief_model.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class BriefScreenDialog; }
 QT_END_NAMESPACE
 
-
-// Port of CBriefScreenEdit (IDD_BRIEF_ADDS): add a briefing screen (picture,
-// layout, description, mission flags).
+// Port of CBriefScreenEdit (IDD_BRIEF_ADDS): add/edit a briefing screen
+// (layout predef selection + description).
 class BriefScreenDialog : public QDialog {
   Q_OBJECT
 public:
   explicit BriefScreenDialog(QWidget *parent = nullptr);
   ~BriefScreenDialog();
+
+  std::string layout() const { return m_layout; }
+  void setLayout(const std::string &layout);
+
+  uint32_t setFlags() const { return m_set; }
+  uint32_t unsetFlags() const { return m_unset; }
+
+private slots:
+  void onLayoutChanged(int index);
+  void onMissionFlags();
+
 private:
   Ui::BriefScreenDialog *ui;
+  std::string m_layout;
+  uint32_t m_set = 0, m_unset = 0;
 };
-

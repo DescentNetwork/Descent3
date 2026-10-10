@@ -30,10 +30,10 @@ void populateSoundCombo(QComboBox *combo, int selected) {
   combo->clear();
   combo->addItem("<none>", -1);
 
-  for (int i = 0; i < MAX_SOUNDS; i++) {
-    if (Sounds[i].used) {
+  for (int i = 0; i < static_cast<int>(Sounds.size()); i++) {
+    if (Sounds.is_used(i)) {
       int index = combo->count();
-      combo->addItem(Sounds[i].name, i);
+      combo->addItem(QString::fromStdString(Sounds[i].name), i);
       if (selected == i)
         combo->setCurrentIndex(index);
     }
@@ -54,4 +54,36 @@ int soundComboSelected(QComboBox *combo) {
     return -1;
   return combo->currentData().toInt();
 }
+
+/*
+
+
+void populateSoundCombo(QComboBox *combo, int selected) {
+  combo->clear();
+  combo->addItem("<none>", QVariant());
+
+  for (int i = 0; i < static_cast<int>(Sounds.size()); i++) {
+    if (Sounds.is_used(i)) {
+      int index = combo->count();
+      combo->addItem(QString::fromStdString(Sounds[i].name), i);
+      if (selected == i)
+        combo->setCurrentIndex(index);
+    }
+  }
+}
+
+void setSoundComboSelected(QComboBox *combo, int selected) {
+  for (int i = 0; i < combo->count(); i++) {
+    if (combo->itemData(i).toInt() == selected)
+      combo->setCurrentIndex(i);
+  }
+}
+
+index_t soundComboSelected(QComboBox *combo)
+{
+  if (combo->currentData().isNull())
+    return std::nullopt;
+  return combo->currentData().toUInt();
+}
+*/
 

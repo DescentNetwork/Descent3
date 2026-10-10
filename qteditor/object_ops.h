@@ -19,6 +19,7 @@
 #pragma once
 
 #include "fix.h"
+#include "object_external.h" // object_type
 #include "vecmat.h"
 
 struct object;
@@ -28,13 +29,13 @@ constexpr float HOBJECT_SCALE_UNIT = 0.5f;
 constexpr float HOBJECT_ROTATION_UNIT = 1024.0f;
 
 // Object move direction constants (from HObject.h).
-enum ObjectMoveDir {
-  HOBJECT_MOVE_LEFT = 1,
-  HOBJECT_MOVE_RIGHT = 2,
-  HOBJECT_MOVE_FORWARD = 3,
-  HOBJECT_MOVE_BACK = 4,
-  HOBJECT_MOVE_UP = 5,
-  HOBJECT_MOVE_DOWN = 6,
+enum class object_move_dir : uint8_t {
+  left = 1,
+  right = 2,
+  forward = 3,
+  back = 4,
+  up = 5,
+  down = 6,
 };
 
 // Globals (from HObject.cpp).
@@ -42,12 +43,22 @@ extern float Object_move_scale;
 extern angle Object_move_rotation;
 
 // Placement.
-bool HObjectPlace(int obj_type, int obj_id);
+bool HObjectPlace(object_type_e obj_type, uint16_t obj_id);
 int GetSelectedTerrainCell();
+
+// Object keypad page selection — ports SetCurrentIndex()/GetCurrentIndex() from
+// editor/ObjectDialog.cpp:350. The keypad keeps one current id per object page
+// and dispatches on the selected page type, rather than a single shared id.
+std::optional<uint16_t> objectPageCurrentId(object_type_e page);
+void setObjectPageCurrentId(object_type_e page, std::optional<uint16_t> id);
+
+// The object id that Place Object should use for the currently selected keypad
+// page, healing the remembered id if it no longer belongs to that page.
+std::optional<uint16_t> currentObjectPageId();
 
 // Movement.
 void HObjectMove(int objnum, float dx, float dy, float dz);
-void HObjectMoveToViewer(object *objp);
+void HObjectMoveToViewer(object& objp);
 
 // Rotation.
 void HObjectIncreaseBank();
@@ -65,8 +76,8 @@ void HObjectFlip();
 void HObjectDelete();
 
 // Terrain ground re-alignment.
-void ResetGroundObject(object *objp);
+void ResetGroundObject(object& objp);
 
 // Internal helpers (exposed for testing).
-bool MoveObject(object *obj, vector *newpos);
+bool MoveObject(object& obj, vector3& newpos);
 bool RotateObject(int objnum, angle p, angle h, angle b);

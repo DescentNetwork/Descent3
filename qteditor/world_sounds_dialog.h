@@ -20,6 +20,9 @@
 
 #include <QDialog>
 
+#include "ssl_lib.h" // sound_info
+#include "utils.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class WorldSoundsDialog; }
 QT_END_NAMESPACE
@@ -47,39 +50,12 @@ private slots:
   void onChangeName();
   void onSoundPulldownChanged();
 
-  void onMaxDistEdited();
-  void onMinDistEdited();
-  void onInnerConeEdited();
-  void onOuterConeAngleEdited();
-  void onOuterConeVolEdited();
-  void onLoopStartEdited();
-  void onLoopEndEdited();
-  void onImportVolumeEdited();
-
-  void onHallEffectToggled(bool checked);
-  void onLoopingToggled(bool checked);
-  void onForeverToggled(bool checked);
-  void onExclusiveToggled(bool checked);
-  void onOnceToggled(bool checked);
-  void onOncePerObjToggled(bool checked);
-  void onNoUpdateToggled(bool checked);
-  void onObjAttach();
-  void onPosAttach();
-  void onConeLinkObject();
-  void onConeLinkTurret1();
-  void onConeLinkTurret2();
-  void onConeLinkTurret3();
-  void onConeDirForward();
-  void onConeDirBackward();
-  void onConeDirUpward();
-  void onConeDirDownward();
-
 private:
+  optref<sound_info> data(void);
   void updateDialog();
+  void bindEdits();
+  void bindChecks();
   void saveSoundsOnClose();
-  void setFlag(uint32_t flag, const char *checkName, bool checked);
-  void setConeLink(int value);
-  void setConeDir(int value);
 private:
   Ui::WorldSoundsDialog *ui;
 };

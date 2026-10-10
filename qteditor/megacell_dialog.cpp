@@ -19,6 +19,9 @@
 #include "megacell_dialog.h"
 #include "ui_megacell.h"
 
+#include <optional>
+#include <string>
+
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QLabel>
@@ -34,18 +37,12 @@ MegacellDialog::MegacellDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::MegacellDialog)
 {
   ui->setupUi(this);
-  if (QPushButton *b = ui->IDC_NEW_MEGACELL)
-    connect(b, &QPushButton::clicked, this, &MegacellDialog::onNew);
-  if (QPushButton *b = ui->IDC_DELETE_MEGACELL)
-    connect(b, &QPushButton::clicked, this, &MegacellDialog::onDelete);
-  if (QPushButton *b = ui->IDC_LOCK_MEGACELL)
-    connect(b, &QPushButton::clicked, this, &MegacellDialog::onLock);
-  if (QPushButton *b = ui->IDC_CHECKIN_MEGACELL)
-    connect(b, &QPushButton::clicked, this, &MegacellDialog::onCheckin);
-  if (QPushButton *b = ui->IDC_PREVIOUS_MEGACELL)
-    connect(b, &QPushButton::clicked, this, &MegacellDialog::onPrev);
-  if (QPushButton *b = ui->IDC_NEXT_MEGACELL)
-    connect(b, &QPushButton::clicked, this, &MegacellDialog::onNext);
+  connect(ui->IDC_NEW_MEGACELL, &QPushButton::clicked, this, &MegacellDialog::onNew);
+  connect(ui->IDC_DELETE_MEGACELL, &QPushButton::clicked, this, &MegacellDialog::onDelete);
+  connect(ui->IDC_LOCK_MEGACELL, &QPushButton::clicked, this, &MegacellDialog::onLock);
+  connect(ui->IDC_CHECKIN_MEGACELL, &QPushButton::clicked, this, &MegacellDialog::onCheckin);
+  connect(ui->IDC_PREVIOUS_MEGACELL, &QPushButton::clicked, this, &MegacellDialog::onPrev);
+  connect(ui->IDC_NEXT_MEGACELL, &QPushButton::clicked, this, &MegacellDialog::onNext);
 
   updateDialog();
 }
@@ -53,11 +50,11 @@ MegacellDialog::MegacellDialog(QWidget *parent)
 MegacellDialog::~MegacellDialog() { delete ui; }
 
 void MegacellDialog::updateDialog() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
-  const int n = D3EditState.current_megacell;
+  const uint32_t n = app.current_megacell ? *app.current_megacell : 0;
   if (auto *label = ui->IDC_MEGACELL_NAME_EDIT)
-    label->setText(Megacells[n].name);
+    label->setText(QString::fromStdString(Megacells[n].name));
 }
 
 void MegacellDialog::onNew() {
@@ -65,52 +62,63 @@ void MegacellDialog::onNew() {
   const QString name = QInputDialog::getText(this, "New megacell", "Name:", QLineEdit::Normal, "", &ok);
   if (!ok || name.isEmpty())
     return;
-  for (int i = 0; i < MAX_MEGACELLS; i++) {
-    if (!Megacells[i].used) {
-      snprintf(Megacells[i].name, sizeof(Megacells[i].name), "%s", name.toLocal8Bit().constData());
-      Megacells[i].used = true;
-      Num_megacells++;
-      D3EditState.current_megacell = i;
-      updateDialog();
-      return;
-    }
+
+  const index_t cell_handle = AllocMegacell();
+  if (!cell_handle) {
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No free megacell slots.");
+    return;
   }
-  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No free megacell slots.");
+
+  // Give the cell a name that is not already taken by some other cell, the same
+  // way the legacy editor does (CMegacellDialog::OnNewMegacell): append an
+  // increasing counter until the candidate is unused.
+  const std::string base = name.toStdString();
+  std::string unique;
+  for (int c = 1;; c++) {
+    unique = base + std::to_string(c);
+    if (!FindMegacellName(unique))
+      break;
+  }
+
+  Megacells[*cell_handle].name = unique;
+  app.current_megacell = *cell_handle;
+  updateDialog();
 }
 
 void MegacellDialog::onDelete() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
-  const int n = D3EditState.current_megacell;
-  Megacells[n].used = false;
-  Num_megacells--;
-  D3EditState.current_megacell = GetNextMegacell(n);
+  const uint32_t n = app.current_megacell ? *app.current_megacell : 0;
+  if (n < 0 || !Megacells.is_used(n))
+    return;
+  FreeMegacell(static_cast<uint32_t>(n));
+  if (auto nxt = GetNextMegacell(n)) app.current_megacell = *nxt; else app.current_megacell.reset();
   updateDialog();
 }
 
 void MegacellDialog::onLock() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
   QMessageBox::information(this, "Success", "Megacell locked.");
 }
 
 void MegacellDialog::onCheckin() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
   QMessageBox::information(this, "Success", "Megacell checked in.");
 }
 
 void MegacellDialog::onPrev() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
-  D3EditState.current_megacell = GetPrevMegacell(D3EditState.current_megacell);
+  if (app.current_megacell) { auto prv = GetPrevMegacell(*app.current_megacell); if (prv) app.current_megacell = *prv; }
   updateDialog();
 }
 
 void MegacellDialog::onNext() {
-  if (Num_megacells < 1)
+  if (!GetNextMegacell(0))
     return;
-  D3EditState.current_megacell = GetNextMegacell(D3EditState.current_megacell);
+  if (app.current_megacell) { auto nxt = GetNextMegacell(*app.current_megacell); if (nxt) app.current_megacell = *nxt; }
   updateDialog();
 }
 

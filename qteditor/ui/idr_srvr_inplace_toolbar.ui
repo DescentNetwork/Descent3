@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<ui version="4.0">
+  <class>Form</class>
+  <widget class="QMainWindow" name="idr_srvr_inplace_toolbar">
+    <widget class="QToolBar" name="IDR_SRVR_INPLACE">
+      <addaction name="ID_EDIT_CUT" />
+      <addaction name="ID_EDIT_COPY" />
+      <addaction name="ID_EDIT_PASTE" />
+      <addaction name="separator" />
+      <addaction name="ID_APP_ABOUT" />
+    </widget>
+    <action name="ID_APP_ABOUT">
+      <property name="text">
+        <string>&amp;About editor...</string>
+      </property>
+    </action>
+    <action name="ID_D3HELP">
+      <property name="text">
+        <string>Help on D3 Editor</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_COPY">
+      <property name="text">
+        <string>&amp;Copy</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Ins</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_CUT">
+      <property name="text">
+        <string>Cu&amp;t</string>
+      </property>
+      <property name="shortcut">
+        <string>Shift+Del</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_PASTE">
+      <property name="text">
+        <string>&amp;Paste</string>
+      </property>
+      <property name="shortcut">
+        <string>Shift+Ins</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_UNDO">
+      <property name="text">
+        <string>&amp;Undo</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+Backspace</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_TOOLBAR">
+      <property name="text">
+        <string>&amp;Toolbar</string>
+      </property>
+    </action>
+  </widget>
+</ui>

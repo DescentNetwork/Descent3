@@ -22,7 +22,7 @@
 #include <QListWidget>
 #include <QPushButton>
 
-#include "hlsoundlib.h"
+#include "sndlib/hlsoundlib.h"
 #include "ssl_lib.h"
 
 
@@ -32,14 +32,12 @@ DallasSoundDialog::DallasSoundDialog(QWidget *parent)
   ui->setupUi(this);
   m_list = ui->IDC_SOUND_LIST;
   if (m_list != nullptr) {
-    for (int i = 0; i < MAX_SOUNDS; i++)
-      if (Sounds[i].used)
-        m_list->addItem(Sounds[i].name);
+    for (int i = 0; i < static_cast<int>(Sounds.size()); i++)
+      if (Sounds.is_used(i))
+        m_list->addItem(QString::fromStdString(Sounds[i].name));
   }
-  if (QPushButton *b = ui->IDC_PLAY_SOUND_BUTTON)
-    connect(b, &QPushButton::clicked, this, &DallasSoundDialog::onPlay);
-  if (QPushButton *b = ui->IDC_STOP_SOUNDS_BUTTON)
-    connect(b, &QPushButton::clicked, this, &DallasSoundDialog::onStop);
+  connect(ui->IDC_PLAY_SOUND_BUTTON, &QPushButton::clicked, this, &DallasSoundDialog::onPlay);
+  connect(ui->IDC_STOP_SOUNDS_BUTTON, &QPushButton::clicked, this, &DallasSoundDialog::onStop);
 }
 
 DallasSoundDialog::~DallasSoundDialog() { delete ui; }
@@ -48,8 +46,8 @@ int DallasSoundDialog::selectedSound() const {
   if (m_list == nullptr || m_list->currentRow() < 0)
     return -1;
   int usedCount = 0;
-  for (int i = 0; i < MAX_SOUNDS; i++) {
-    if (!Sounds[i].used)
+  for (int i = 0; i < static_cast<int>(Sounds.size()); i++) {
+    if (!Sounds.is_used(i))
       continue;
     if (usedCount == m_list->currentRow())
       return i;
