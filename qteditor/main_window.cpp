@@ -797,7 +797,7 @@ void MainWindow::showBitmapImporter() {
   if (path.isEmpty())
     return;
   const std::filesystem::path pathFs(path.toStdString());
-  const int bm = LoadTextureImage(pathFs, std::nullopt, 0, 0);
+  const int bm = LoadTextureImage(pathFs, std::nullopt, texture_size_type::none, 0);
   if (bm < 0) {
     QMessageBox::warning(this, QStringLiteral("Import Bitmap"), QStringLiteral("Could not load %1.").arg(path));
     return;

@@ -320,11 +320,22 @@ enum class renderer_type : uint8_t {
 extern renderer_type Renderer_type;
 
 // renderer clear flags
-#define RF_CLEAR_ZBUFFER 1
+struct [[gnu::packed]] render_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint32_t padding : 31;
+  uint32_t clear_zbuffer : 1;
+#else
+  uint32_t clear_zbuffer : 1;
+  uint32_t padding : 31;
+#endif
+};
+static_assert(sizeof(render_flags_t) == sizeof(uint32_t));
 
 // Overlay texture settings
-#define OT_NONE 0           // No overlay
-#define OT_BLEND 1          // Draw a lightmap texture afterwards
+enum class overlay_type : uint8_t {
+  none = 0, // No overlay
+  blend = 1 // Draw a lightmap texture afterwards
+};
 
 extern float Z_bias;
 extern bool UseHardware;
@@ -339,8 +350,11 @@ class NewBitmap;
 // Sets our renderer
 void rend_SetRendererType(renderer_type state);
 
-#define MAP_TYPE_BITMAP 0
-#define MAP_TYPE_LIGHTMAP 1
+// Which kind of texture map is applied to a polygon
+enum class map_type : uint8_t {
+  bitmap = 0,   // 3D textured polygon
+  lightmap = 1, // Lightmapped polygon
+};
 
 // lighting state
 enum class light_state : uint32_t
@@ -370,27 +384,59 @@ enum class texture_type : uint8_t {
   perspective_special, // A textured polygon drawn as a flat color
 };
 
-// Alpha type flags - used to decide what type of alpha blending to use
-#define ATF_CONSTANT 1 // Take constant alpha into account
-#define ATF_TEXTURE 2  // Take texture alpha into account
-#define ATF_VERTEX 4   // Take vertex alpha into account
+// Which inputs contribute alpha to a polygon (was ATF_* bit flags)
+struct [[gnu::packed]] alpha_flags_t {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  uint8_t padding : 5;
+  uint8_t vertex : 1;
+  uint8_t texture : 1;
+  uint8_t constant : 1;
+#else
+  uint8_t constant : 1;
+  uint8_t texture : 1;
+  uint8_t vertex : 1;
+  uint8_t padding : 5;
+#endif
+};
+static_assert(sizeof(alpha_flags_t) == sizeof(uint8_t));
 
-// Alpha types
-#define AT_ALWAYS 0                    // Alpha is always 255 (1.0)
-#define AT_CONSTANT 1                  // constant alpha across the whole image
-#define AT_TEXTURE 2                   // Only uses texture alpha
-#define AT_CONSTANT_TEXTURE 3          // Use texture * constant alpha
-#define AT_VERTEX 4                    // Use vertex alpha only
-#define AT_CONSTANT_VERTEX 5           // Use vertex * constant alpha
-#define AT_TEXTURE_VERTEX 6            // Use texture * vertex alpha
-#define AT_CONSTANT_TEXTURE_VERTEX 7   // Use all three (texture constant vertex)
-#define AT_LIGHTMAP_BLEND 8            // dest*src colors
-#define AT_SATURATE_TEXTURE 9          // Saturate up to white when blending
-#define AT_SATURATE_VERTEX 12          // Saturation with vertices
-#define AT_SATURATE_CONSTANT_VERTEX 13 // Constant*vertex saturation
-#define AT_SATURATE_TEXTURE_VERTEX 14  // Texture * vertex saturation
-#define AT_SPECULAR 32
-#define AT_LIGHTMAP_BLEND_SATURATE 33 // Light lightmap blend, but add instead of multiply
+// Alpha blending modes (was AT_*). The low three bits of the source modes
+// (values 1, 2, 4) line up with the alpha_flags_t source bits.
+enum class alpha_blend_type : uint8_t {
+  always = 0,                    // Alpha is always 255 (1.0)
+  constant = 1,                  // constant alpha across the whole image
+  texture = 2,                   // Only uses texture alpha
+  constant_texture = 3,          // Use texture * constant alpha
+  vertex = 4,                    // Use vertex alpha only
+  constant_vertex = 5,           // Use vertex * constant alpha
+  texture_vertex = 6,            // Use texture * vertex alpha
+  constant_texture_vertex = 7,   // Use all three (texture constant vertex)
+  lightmap_blend = 8,            // dest*src colors
+  saturate_texture = 9,          // Saturate up to white when blending
+  saturate_vertex = 12,          // Saturation with vertices
+  saturate_constant_vertex = 13, // Constant*vertex saturation
+  saturate_texture_vertex = 14,  // Texture * vertex saturation
+  specular = 32,
+  lightmap_blend_saturate = 33 // Light lightmap blend, but add instead of multiply
+};
+
+// Converts an alpha source flag mask to the equivalent alpha blend type
+constexpr alpha_blend_type alpha_blend_type_of(alpha_flags_t f) {
+  const uint8_t bits =
+      static_cast<uint8_t>((f.constant ? 1u : 0u) | (f.texture ? 2u : 0u) | (f.vertex ? 4u : 0u));
+  return static_cast<alpha_blend_type>(bits);
+}
+
+// Returns the constant/texture/vertex source bits a blend type combines, for
+// checks that used to test the ATF_* bits directly
+constexpr alpha_flags_t alpha_type_source_flags(alpha_blend_type t) {
+  const uint8_t bits = static_cast<uint8_t>(t);
+  alpha_flags_t f = {};
+  f.constant = (bits & 0x01u) != 0;
+  f.texture = (bits & 0x02u) != 0;
+  f.vertex = (bits & 0x04u) != 0;
+  return f;
+}
 
 enum class wrap_type : uint8_t {
   wrap,  // Texture repeats
@@ -407,7 +453,7 @@ struct rendering_state {
   texture_type cur_texture_type;
   color_model cur_color_model;
   light_state cur_light_state;
-  int8_t cur_alpha_type;
+  alpha_blend_type cur_alpha_type;
 
   wrap_type cur_wrap_type;
 
@@ -448,7 +494,7 @@ void rend_GetStatistics(tRendererStats *stats);
 void rend_SetTextureType(texture_type);
 
 // Given a handle to a bitmap and nv point vertices, draws a 3D polygon
-void rend_DrawPolygon3D(int handle, g3Point **p, int nv, int map_type = MAP_TYPE_BITMAP);
+void rend_DrawPolygon3D(int handle, g3Point **p, int nv, map_type mt = map_type::bitmap);
 
 // Given a handle to a bitmap and nv point vertices, draws a 2D polygon
 void rend_DrawPolygon2D(int handle, g3Point **p, int nv);
@@ -467,7 +513,12 @@ void rend_SetFlatColor(ddgr_color color);
 
 // Tells the renderer we're starting a frame.  Clear flags tells the renderer
 // what buffer (if any) to clear
-void rend_StartFrame(int x1, int y1, int x2, int y2, int clear_flags = RF_CLEAR_ZBUFFER);
+inline constexpr render_flags_t default_clear_flags() {
+  render_flags_t f = {};
+  f.clear_zbuffer = true;
+  return f;
+}
+void rend_StartFrame(int x1, int y1, int x2, int y2, render_flags_t clear_flags = default_clear_flags());
 
 // Tells the renderer the frame is over
 void rend_EndFrame();
@@ -493,7 +544,7 @@ void rend_SetZBufferState(int8_t state);
 void rend_SetOverlayMap(int handle);
 
 // Sets the type of overlay operation
-void rend_SetOverlayType(uint8_t type);
+void rend_SetOverlayType(overlay_type type);
 
 // Clears the display to a specified color
 void rend_ClearScreen(ddgr_color color);
@@ -529,7 +580,7 @@ void rend_SetCharacterParameters(ddgr_color color1, ddgr_color color2, ddgr_colo
 void rend_SetFogColor(ddgr_color fogcolor);
 
 // sets the alpha type
-void rend_SetAlphaType(int8_t);
+void rend_SetAlphaType(alpha_blend_type);
 
 // Sets the constant alpha value
 void rend_SetAlphaValue(uint8_t val);

@@ -296,11 +296,11 @@ void DrawScorches(int roomnum, int facenum) {
 
   // Set alpha, transparency, & lighting for this face
   if (!StateLimited) {
-    rend_SetAlphaType(AT_LIGHTMAP_BLEND);
+    rend_SetAlphaType(alpha_blend_type::lightmap_blend);
     rend_SetAlphaValue(255);
     rend_SetLighting(light_state::none);
     rend_SetColorModel(color_model::mono);
-    rend_SetOverlayType(OT_NONE);
+    rend_SetOverlayType(overlay_type::none);
     rend_SetZBias(-.5);
     rend_SetZBufferWriteMask(0);
 

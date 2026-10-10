@@ -24,6 +24,7 @@
 
 #include "fix.h"
 #include "manage.h"
+#include "gametexture.h"
 #include <vector>
 
 #define MAX_VCLIPS 200
@@ -49,7 +50,7 @@ struct vclip {
   std::vector<int16_t> frames; // bitmap indices
   float frame_time; // time (in seconds) of each frame
   vclip_flags_t flags;
-  uint8_t target_size; // what size this vclip should use (texture wise)
+  texture_size_type target_size; // what size this vclip should use (texture wise)
   uint8_t used;        // Is this vclip in use?
 };
 
@@ -75,13 +76,13 @@ bool SaveVClip(const std::filesystem::path& filename, int num);
 // Returns -1 on error, index into GameVClip array on success
 // Argument texture means that this vclip is an animated texture and
 // needs to have an 8bit version
-int AllocLoadVClip(const std::filesystem::path& filename, int texture_size, int mipped, int pageable = 0, int format = 0);
+int AllocLoadVClip(const std::filesystem::path& filename, texture_size_type texture_size, int mipped, int pageable = 0, int format = 0);
 
 // Allocs and loads a vclip from a 3DS ILS file
 // Returns -1 on error, else index into GameVClips on success
 // Argument texture means that this vclip is an animated texture and
 // needs to have an 8bit version
-int AllocLoadIFLVClip(const std::filesystem::path& filename, int texture_size, int mipped, int format = 0);
+int AllocLoadIFLVClip(const std::filesystem::path& filename, texture_size_type texture_size, int mipped, int format = 0);
 
 // gets the filename from a path, plus appends our .oaf extension
 void ChangeVClipName(const std::filesystem::path& src, std::string& dest);

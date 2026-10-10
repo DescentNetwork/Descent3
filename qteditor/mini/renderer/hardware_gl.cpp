@@ -33,7 +33,7 @@ static rendering_state s_state;
 static texture_type s_textureType = texture_type::flat;
 static color_model s_colorModel = color_model::mono;
 static light_state s_lightState = light_state::none;
-static int8_t s_alphaType = AT_ALWAYS;
+static alpha_blend_type s_alphaType = alpha_blend_type::always;
 static wrap_type s_wrapType = wrap_type::wrap;
 static int s_alpha = 255;
 static ddgr_color s_flatColor = 0;
@@ -53,7 +53,7 @@ void rend_SetLighting(light_state l) {
   s_lightState = l;
   s_state.cur_light_state = l;
 }
-void rend_SetAlphaType(int8_t a) {
+void rend_SetAlphaType(alpha_blend_type a) {
   s_alphaType = a;
   s_state.cur_alpha_type = a;
 }
@@ -70,7 +70,7 @@ void rend_SetZBufferState(int8_t) {}
 void rend_SetAlphaValue(uint8_t a) { s_alpha = a; }
 void rend_SetAlphaFactor(float f) { s_alphaFactor = f; }
 float rend_GetAlphaFactor() { return s_alphaFactor; }
-void rend_SetOverlayType(uint8_t) {}
+void rend_SetOverlayType(overlay_type) {}
 void rend_SetFlatColor(ddgr_color c) { s_flatColor = c; }
 
 void rend_TransformSetToPassthru(void) {}
@@ -140,7 +140,7 @@ void gpu_DrawFlatPolygon3D(g3Point **p, int nv) {
   glBegin(GL_POLYGON);
   for (int i = 0; i < nv; i++) {
     g3Point *pnt = p[i];
-    if (s_alphaType & ATF_VERTEX)
+    if (alpha_type_source_flags(s_alphaType).vertex)
       glColor4f(pnt->p3_r, pnt->p3_g, pnt->p3_b, pnt->p3_a * s_alphaFactor);
     else if (s_lightState == light_state::none)
       glColor4f(fr, fg, fb, s_alphaFactor);
@@ -209,7 +209,7 @@ void rend_DrawMultitexturePolygon3D(int, g3Point **, int, int) {}
 // ===========================================================================
 static PosColorUVVertex s_vArray[100];
 
-void rend_DrawPolygon3D(int handle, g3Point **p, int nv, int map_type) {
+void rend_DrawPolygon3D(int handle, g3Point **p, int nv, map_type mt) {
   Q_ASSERT(nv < 100);
   if (nv < 3)
     return;
@@ -241,13 +241,13 @@ void rend_DrawPolygon3D(int handle, g3Point **p, int nv, int map_type) {
   glDeleteTextures(1, &tex);
 }
 
-void rend_DrawPolygon2D(int handle, g3Point **p, int nv) { rend_DrawPolygon3D(handle, p, nv, MAP_TYPE_BITMAP); }
+void rend_DrawPolygon2D(int handle, g3Point **p, int nv) { rend_DrawPolygon3D(handle, p, nv, map_type::bitmap); }
 
 // ===========================================================================
 // g3_DrawPoly / g3_DrawBitmap -- HardwareDraw.cpp
 // ===========================================================================
-int g3_DrawPoly(int nv, g3Point **pointlist, int bm, int map_type, g3Codes *) {
-  rend_DrawPolygon3D(bm, pointlist, nv, map_type);
+int g3_DrawPoly(int nv, g3Point **pointlist, int bm, map_type mt, g3Codes *) {
+  rend_DrawPolygon3D(bm, pointlist, nv, mt);
   return 1;
 }
 
@@ -300,7 +300,7 @@ void rend_FillCircle(ddgr_color, float, float, float) {}
 // ===========================================================================
 // Frame handling for the immediate-mode renderer
 // ===========================================================================
-void rend_StartFrame(int x1, int y1, int x2, int y2, int clear_flags) {
+void rend_StartFrame(int x1, int y1, int x2, int y2, render_flags_t clear_flags) {
   s_state.clip_x1 = x1;
   s_state.clip_y1 = y1;
   s_state.clip_x2 = x2;

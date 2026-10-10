@@ -2726,7 +2726,7 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
   Polylighting_static_green = g;
   Polylighting_static_blue = b;
 
-  rend_SetOverlayType(OT_NONE);
+  rend_SetOverlayType(overlay_type::none);
   rend_SetLighting(light_state::none);
 
   po = &Poly_models[model_num];
@@ -2756,7 +2756,7 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
   } else {
     Q_ASSERT(po->new_style);
 
-    rend_SetAlphaType(ATF_CONSTANT + ATF_VERTEX);
+    rend_SetAlphaType(alpha_blend_type::constant_vertex);
 
     int i;
     for (i = 0; i < po->n_models; i++) {
@@ -2798,7 +2798,7 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
 
   GetPolymodelPointer(model_num);
 
-  rend_SetOverlayType(OT_NONE);
+  rend_SetOverlayType(overlay_type::none);
   rend_SetLighting(light_state::gouraud);
   rend_SetColorModel(color_model::rgb);
 
@@ -2833,7 +2833,7 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
   } else {
     Q_ASSERT(po->new_style);
 
-    rend_SetAlphaType(ATF_CONSTANT + ATF_VERTEX);
+    rend_SetAlphaType(alpha_blend_type::constant_vertex);
 
     int i;
     for (i = 0; i < po->n_models; i++) {
@@ -2902,7 +2902,7 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
   } else {
     Q_ASSERT(po->new_style);
 
-    rend_SetAlphaType(ATF_CONSTANT + ATF_VERTEX);
+    rend_SetAlphaType(alpha_blend_type::constant_vertex);
 
     int i;
     for (i = 0; i < po->n_models; i++) {
@@ -2929,7 +2929,7 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
 
   g3_DoneInstance();
   DoneLightInstance();
-  rend_SetOverlayType(OT_NONE);
+  rend_SetOverlayType(overlay_type::none);
 }
 
 void FreeAllModels() {

@@ -209,7 +209,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
   // Do bump mapping
   if ((Polymodel_effect.type.bumpmapped) && texp && texp->bumpmap != -1 &&
       Polymodel_light_type == polymodel_light_type::gouraud) {
-    rend_SetOverlayType(OT_NONE);
+    rend_SetOverlayType(overlay_type::none);
     rend_SetBumpmapReadyState(1, texp->bumpmap);
     if (GameTextures[fp->texnum].flags.smooth_specular)
       smooth = 1;
@@ -348,15 +348,15 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
       rend_SetAlphaValue(texp->alpha * 255);
 
     if (texp->flags.saturate)
-      rend_SetAlphaType(AT_SATURATE_CONSTANT_VERTEX);
+      rend_SetAlphaType(alpha_blend_type::saturate_constant_vertex);
     else {
       if (texp->flags.alpha || (Polymodel_use_effect && (Polymodel_effect.type.alpha)))
-        rend_SetAlphaType(ATF_CONSTANT + ATF_VERTEX);
+        rend_SetAlphaType(alpha_blend_type::constant_vertex);
       else
-        rend_SetAlphaType(ATF_TEXTURE + ATF_VERTEX);
+        rend_SetAlphaType(alpha_blend_type::texture_vertex);
     }
   } else {
-    rend_SetAlphaType(ATF_CONSTANT + ATF_VERTEX);
+    rend_SetAlphaType(alpha_blend_type::constant_vertex);
     if (Polymodel_use_effect && (Polymodel_effect.type.alpha))
       rend_SetAlphaValue(Polymodel_effect.alpha * 255);
     else
@@ -391,7 +391,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
   if (triface)
     g3_SetTriangulationTest(1);
 
-  g3_DrawPoly(fp->nverts, pointlist, bm_handle, MAP_TYPE_BITMAP, &face_cc);
+  g3_DrawPoly(fp->nverts, pointlist, bm_handle, map_type::bitmap, &face_cc);
 
   if (triface)
     g3_SetTriangulationTest(0);
@@ -507,7 +507,7 @@ inline void RenderSubmodelLightmapFace(poly_model *pm, bsp_info *sm, int facenum
   if (triangulated_faces[facenum])
     g3_SetTriangulationTest(1);
 
-  g3_DrawPoly(fp->nverts, pointlist, lm_handle, MAP_TYPE_LIGHTMAP);
+  g3_DrawPoly(fp->nverts, pointlist, lm_handle, map_type::lightmap);
 
   if (triangulated_faces[facenum])
     g3_SetTriangulationTest(0);
@@ -754,11 +754,11 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
 
   // Draw specular faces if needed
   if (Polymodel_use_effect && (Polymodel_effect.type.specular_model || Polymodel_effect.type.specular_faces)) {
-    rend_SetOverlayType(OT_NONE);
+    rend_SetOverlayType(overlay_type::none);
     rend_SetTextureType(texture_type::flat);
     rend_SetLighting(light_state::none);
     rend_SetColorModel(color_model::mono);
-    rend_SetAlphaType(AT_SATURATE_VERTEX);
+    rend_SetAlphaType(alpha_blend_type::saturate_vertex);
     rend_SetAlphaValue(255);
     rend_SetZBufferWriteMask(0);
 
@@ -798,11 +798,11 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
       Fog_eye_distance = vm_Dot3Product(Fog_view_pos, Polymodel_fog_plane) + Fog_distance;
     }
 
-    rend_SetOverlayType(OT_NONE);
+    rend_SetOverlayType(overlay_type::none);
     rend_SetTextureType(texture_type::flat);
     rend_SetLighting(light_state::none);
     rend_SetColorModel(color_model::mono);
-    rend_SetAlphaType(AT_VERTEX);
+    rend_SetAlphaType(alpha_blend_type::vertex);
     rend_SetAlphaValue(255);
     rend_SetZBufferWriteMask(0);
     rend_SetCoplanarPolygonOffset(1);
@@ -957,7 +957,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
     // Turn off bumpmapping if not needed
     rend_SetBumpmapReadyState(0, 0);
   } else {
-    rend_SetOverlayType(OT_BLEND);
+    rend_SetOverlayType(overlay_type::blend);
   }
 
   if (Multicolor_texture == -1 && Polymodel_use_effect && (Polymodel_effect.type.custom_color))
@@ -984,7 +984,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
         goto pop_lighting;
 
       vector3 zero_pos = {0, 0, 0};
-      rend_SetOverlayType(OT_NONE);
+      rend_SetOverlayType(overlay_type::none);
 
       if (Polymodel_use_effect && Polymodel_effect.type.glow_scalar) {
         if (Polymodel_effect.type.custom_glow)
@@ -1012,7 +1012,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
       vector3 pos;
       rend_SetLighting(light_state::none);
       rend_SetColorModel(color_model::mono);
-      rend_SetOverlayType(OT_NONE);
+      rend_SetOverlayType(overlay_type::none);
 
       int bm_handle = GetTextureBitmap(pm->textures[sm->faces[0].texnum], 0);
       rend_SetAlphaValue(GameTextures[pm->textures[sm->faces[0].texnum]].alpha * 255);
@@ -1020,9 +1020,9 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
       vm_MakeZero(&pos);
 
       if (GameTextures[pm->textures[sm->faces[0].texnum]].flags.saturate)
-        rend_SetAlphaType(AT_SATURATE_TEXTURE);
+        rend_SetAlphaType(alpha_blend_type::saturate_texture);
       else
-        rend_SetAlphaType(ATF_CONSTANT + ATF_TEXTURE);
+        rend_SetAlphaType(alpha_blend_type::constant_texture);
 
       rend_SetZBufferWriteMask(0);
       g3_DrawBitmap(&pos, sm->rad, (sm->rad * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle);
@@ -1057,7 +1057,7 @@ int RenderPolygonModel(poly_model *pm, uint32_t f_render_sub) {
   Q_ASSERT(pm->new_style == 1);
   int i = 0;
 
-  rend_SetAlphaType(ATF_CONSTANT + ATF_VERTEX);
+  rend_SetAlphaType(alpha_blend_type::constant_vertex);
   rend_SetWrapType(wrap_type::wrap);
 
   FacingPass = 0;
@@ -1071,7 +1071,7 @@ int RenderPolygonModel(poly_model *pm, uint32_t f_render_sub) {
   if (pm->flags.facing) {
     // Don't render if we have it set for no glows
     FacingPass = 1;
-    rend_SetOverlayType(OT_NONE);
+    rend_SetOverlayType(overlay_type::none);
     for (i = 0; i < pm->n_models; i++) {
       bsp_info *sm = &pm->submodel[i];
       if (sm->parent == -1)

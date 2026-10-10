@@ -377,7 +377,7 @@ index_t LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string 
 
 // Allocs and loads a vclip from the file named "filename"
 // Returns -1 on error, index into GameVClip array on success
-int AllocLoadVClip(const std::filesystem::path& filename, int texture_size, int mipped, int pageable,
+int AllocLoadVClip(const std::filesystem::path& filename, texture_size_type texture_size, int mipped, int pageable,
                    bitmap_format format) {
 #if 0
   char name[PAGENAME_LEN];
@@ -434,7 +434,7 @@ int AllocLoadVClip(const std::filesystem::path& filename, int texture_size, int 
 // Returns -1 on error, else index into GameVClips on success
 // Argument texture means that this vclip is an animated texture and
 // needs to have an 8bit version
-int AllocLoadIFLVClip(const char *filename, int texture_size, int mipped, bitmap_format format) {
+int AllocLoadIFLVClip(const char *filename, texture_size_type texture_size, int mipped, bitmap_format format) {
 #if 0
   CFILE *infile;
   char name[PAGENAME_LEN];
@@ -532,14 +532,14 @@ int AllocLoadIFLVClip(const char *filename, int texture_size, int mipped, bitmap
 
       int w, h;
 
-      if (texture_size == NORMAL_TEXTURE) {
+      if (texture_size == texture_size_type::normal) {
         w = TEXTURE_WIDTH;
         h = TEXTURE_HEIGHT;
-      } else if (texture_size == SMALL_TEXTURE) {
+      } else if (texture_size == texture_size_type::small) {
         // Make small textures a quarter of the size of normal textures
         w = TEXTURE_WIDTH / 2;
         h = TEXTURE_HEIGHT / 2;
-      } else if (texture_size == TINY_TEXTURE) {
+      } else if (texture_size == texture_size_type::tiny) {
         // Make these tinys an eigth of the size of normal textures
         w = TEXTURE_WIDTH / 4;
         h = TEXTURE_HEIGHT / 4;

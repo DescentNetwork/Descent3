@@ -203,17 +203,23 @@
 
 #include "manage.h"
 
-#define NOT_TEXTURE 0
-#define NORMAL_TEXTURE 1 // a normal size texture
-#define SMALL_TEXTURE 2  // 1/4 of a normal texture
-#define TINY_TEXTURE 3   // 1/8 of a normal texture
-#define HUGE_TEXTURE 4   // Double the size of a normal texture
+// Size of a texture relative to a normal texture
+enum class texture_size_type : uint8_t {
+  none = 0,   // (was NOT_TEXTURE)
+  normal = 1, // a normal size texture
+  small = 2,  // 1/4 of a normal texture
+  tiny = 3,   // 1/8 of a normal texture
+  huge = 4,   // Double the size of a normal texture
+};
 
 #define MAX_TEXTURES 3100
 
-#define PROC_MEMORY_TYPE_NONE 0
-#define PROC_MEMORY_TYPE_FIRE 1
-#define PROC_MEMORY_TYPE_WATER 2
+// Type of procedural memory storage
+enum class proc_memory_type : uint8_t {
+  none = 0,
+  fire = 1,
+  water = 2,
+};
 
 struct static_proc_element {
   uint8_t type;
@@ -237,7 +243,7 @@ struct proc_struct {
   static_proc_element *static_proc_elements;
   uint16_t num_static_elements;
 
-  uint8_t memory_type;
+  proc_memory_type memory_type;
 
   uint8_t heat;
   uint8_t thickness;
@@ -390,7 +396,7 @@ int GetTextureBitmap(int handle, int framenum, bool force = false);
 
 // Given a filename, loads either the bitmap or vclip found in that file.  If type
 // is not NULL, sets it to 1 if file is animation, otherwise sets it to zero
-int LoadTextureImage(const std::filesystem::path &filename, optref<int> type, int texture_size, int mipped,
+int LoadTextureImage(const std::filesystem::path &filename, optref<int> type, texture_size_type texture_size, int mipped,
                      int pageable = 0, bitmap_format format = bitmap_format::standard);
 
 // Goes through and marks a texture as a tmap2 if its bitmap(s) have transparency

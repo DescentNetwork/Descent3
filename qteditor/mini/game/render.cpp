@@ -241,21 +241,23 @@ static inline bool FaceIsRenderable(int roomnum, face *fp) {
 // Parameters:	fp - pointer to the face in question
 //					bm_handle - the handle for the bitmap for this frame, or -1 if don't care about
 // transparence Returns:		bitmask describing the alpha blending for the face
-// the return bits are the ATF_ flags in renderer.h
-static inline int GetFaceAlpha(face *fp, int bm_handle) {
-  int ret = AT_ALWAYS;
+// the return value is an alpha_blend_type value assembled from the
+// alpha_flags_t source bits in renderer.h
+static inline alpha_blend_type GetFaceAlpha(face *fp, int bm_handle) {
   if (GameTextures[fp->tmap].flags.saturate) {
-    ret = AT_SATURATE_TEXTURE;
+    return alpha_blend_type::saturate_texture;
   } else {
+    alpha_flags_t flags = {};
     // Check the face's texture for an alpha value
     if (GameTextures[fp->tmap].alpha < 1.0)
-      ret |= ATF_CONSTANT;
+      flags.constant = true;
 
     // Check for transparency
     if (bm_handle >= 0 && GameBitmaps[bm_handle].format != bitmap_format::_4444 && GameTextures[fp->tmap].flags.tmap2)
-      ret |= ATF_TEXTURE;
+      flags.texture = true;
+
+    return alpha_blend_type_of(flags);
   }
-  return ret;
 }
 // Determine if you should render through a portal
 // Parameters:	roomnum - index of the room the portal is in
@@ -273,7 +275,7 @@ static inline bool RenderPastPortal(int roomnum, portal *pp) {
   if (GameTextures[fp->tmap].flags.procedural)
     return 1;
   int bm_handle = GetTextureBitmap(fp->tmap, 0);
-  if (GetFaceAlpha(fp, bm_handle))
+  if (GetFaceAlpha(fp, bm_handle) != alpha_blend_type::always)
     return 1; // Face has alpha or transparency, so we can see through it
   else
     return 0; // Not transparent, so no render past
@@ -785,7 +787,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
   int i, t;
   if (Render_portals) {
     rend_SetTextureType(texture_type::flat);
-    rend_SetAlphaType(AT_CONSTANT);
+    rend_SetAlphaType(alpha_blend_type::constant);
     rend_SetAlphaValue(255);
     rend_SetFlatColor(GR_RGB(255, 255, 255));
 
@@ -1246,11 +1248,11 @@ void RenderSpecularFaces(int roomnum) {
   g3Point *pointlist[MAX_VERTS_PER_FACE];
   g3Point pointbuffer[MAX_VERTS_PER_FACE];
   rend_SetWrapType(wrap_type::clamp);
-  rend_SetOverlayType(OT_NONE);
+  rend_SetOverlayType(overlay_type::none);
   rend_SetTextureType(texture_type::perspective);
   rend_SetLighting(light_state::none);
   rend_SetColorModel(color_model::mono);
-  rend_SetAlphaType(AT_SATURATE_TEXTURE);
+  rend_SetAlphaType(alpha_blend_type::saturate_texture);
   rend_SetAlphaValue(255);
 
   for (i = 0; i < Num_specular_faces_to_render; i++) {
@@ -1271,7 +1273,7 @@ void RenderSpecularFaces(int roomnum) {
     int save_h = static_cast<int>(lm_h(lm_handle).value_or(255));
     GameLightmaps[lm_handle].width = static_cast<uint8_t>(lm_w(LightmapInfo[fp->lmi_handle].lm_handle).value_or(0));
     GameLightmaps[lm_handle].height = static_cast<uint8_t>(lm_h(LightmapInfo[fp->lmi_handle].lm_handle).value_or(0));
-    g3_DrawPoly(fp->num_verts, pointlist, lm_handle, MAP_TYPE_LIGHTMAP);
+    g3_DrawPoly(fp->num_verts, pointlist, lm_handle, map_type::lightmap);
     GameLightmaps[lm_handle].width = save_w;
     GameLightmaps[lm_handle].height = save_h;
   }
@@ -1314,11 +1316,11 @@ void RenderSpecularFacesFlat(int roomnum) {
   int t, vn;
   g3Point *pointlist[MAX_VERTS_PER_FACE];
   g3Point pointbuffer[MAX_VERTS_PER_FACE];
-  rend_SetOverlayType(OT_NONE);
+  rend_SetOverlayType(overlay_type::none);
   rend_SetTextureType(texture_type::flat);
   rend_SetLighting(light_state::gouraud);
   rend_SetColorModel(color_model::rgb);
-  rend_SetAlphaType(AT_SPECULAR);
+  rend_SetAlphaType(alpha_blend_type::specular);
   rend_SetZBufferWriteMask(0);
 
   for (i = 0; i < Num_specular_faces_to_render; i++) {
@@ -1568,11 +1570,11 @@ void RenderFogFaces(int roomnum) {
   float eye_distance;
   g3Point *pointlist[MAX_VERTS_PER_FACE];
   g3Point pointbuffer[MAX_VERTS_PER_FACE];
-  rend_SetOverlayType(OT_NONE);
+  rend_SetOverlayType(overlay_type::none);
   rend_SetTextureType(texture_type::flat);
   rend_SetLighting(light_state::none);
   rend_SetColorModel(color_model::mono);
-  rend_SetAlphaType(AT_VERTEX);
+  rend_SetAlphaType(alpha_blend_type::vertex);
   rend_SetAlphaValue(255);
   rend_SetZBufferWriteMask(0);
   rend_SetCoplanarPolygonOffset(1);
@@ -1631,11 +1633,11 @@ void RenderScorchesForRoom(int roomnum) {
   if (!Detail_settings.Scorches_enabled)
     return;
   // Set alpha, transparency, & lighting for this face
-  rend_SetAlphaType(AT_LIGHTMAP_BLEND);
+  rend_SetAlphaType(alpha_blend_type::lightmap_blend);
   rend_SetAlphaValue(255);
   rend_SetLighting(light_state::none);
   rend_SetColorModel(color_model::mono);
-  rend_SetOverlayType(OT_NONE);
+  rend_SetOverlayType(overlay_type::none);
   rend_SetZBias(-.5);
   rend_SetZBufferWriteMask(0);
 
@@ -1679,7 +1681,7 @@ void RenderLightmapFace(int roomnum, int facenum) {
   int lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
   // Setup saturation if needed
   if (GameTextures[fp->tmap].flags.saturate_lightmap)
-    rend_SetAlphaType(AT_LIGHTMAP_BLEND_SATURATE);
+    rend_SetAlphaType(alpha_blend_type::lightmap_blend_saturate);
   // Our lightmaps aren't square, but our destination texture surfaces are
   // Use these scalars to get them into the correct coordinates
   float xscalar = static_cast<float>(GameLightmaps[lm_handle].width) / static_cast<float>(GameLightmaps[lm_handle].square_res);
@@ -1722,12 +1724,12 @@ void RenderLightmapFace(int roomnum, int facenum) {
   if (fp->flags.triangulated)
     g3_SetTriangulationTest(1);
   // Draw the damn thing
-  drawn = g3_DrawPoly(fp->num_verts, pointlist, lm_handle, MAP_TYPE_LIGHTMAP);
+  drawn = g3_DrawPoly(fp->num_verts, pointlist, lm_handle, map_type::lightmap);
   if (fp->flags.triangulated)
     g3_SetTriangulationTest(0);
   // Restore if using saturated blending
   if (GameTextures[fp->tmap].flags.saturate_lightmap)
-    rend_SetAlphaType(AT_LIGHTMAP_BLEND);
+    rend_SetAlphaType(alpha_blend_type::lightmap_blend);
 }
 // Draw the specified face
 // Parameters:	roomnum - index of the room the face is un
@@ -1925,12 +1927,12 @@ void RenderFace(int roomnum, int facenum) {
   // Set lighting map
   if ((fp->flags.lightmap) != 0) {
     if (GameTextures[fp->tmap].flags.saturate)
-      rend_SetOverlayType(OT_NONE);
+      rend_SetOverlayType(overlay_type::none);
     else
-      rend_SetOverlayType(OT_BLEND);
+      rend_SetOverlayType(overlay_type::blend);
     rend_SetOverlayMap(LightmapInfo[fp->lmi_handle].lm_handle);
   } else
-    rend_SetOverlayType(OT_NONE);
+    rend_SetOverlayType(overlay_type::none);
   // Select texture type
   if (!UseHardware) {
     tt = texture_type::linear;                        // default to linear
@@ -1963,7 +1965,7 @@ void RenderFace(int roomnum, int facenum) {
     }
   }
   // Draw the damn thing
-  drawn = g3_DrawPoly(fp->num_verts, pointlist, bm_handle, MAP_TYPE_BITMAP, &face_cc);
+  drawn = g3_DrawPoly(fp->num_verts, pointlist, bm_handle, map_type::bitmap, &face_cc);
 #ifdef EDITOR
   if (TSearch_on) {
     if (rend_GetPixel(TSearch_x, TSearch_y) != oldcolor) {
@@ -2022,7 +2024,7 @@ draw_fog:
   if (OUTLINE_ON(OM_MINE)) // Outline the face
   {
     rend_SetTextureType(texture_type::flat);
-    rend_SetAlphaType(AT_ALWAYS);
+    rend_SetAlphaType(alpha_blend_type::always);
     rend_SetFlatColor(GR_RGB(255, 255, 255));
 
     if (UseHardware) {
@@ -2064,7 +2066,7 @@ draw_fog:
   }
   if (Outline_lightmaps) {
     rend_SetTextureType(texture_type::flat);
-    rend_SetAlphaType(AT_ALWAYS);
+    rend_SetAlphaType(alpha_blend_type::always);
     if (fp == &Rooms[*app.current.room].faces[*app.current.face] && (fp->flags.lightmap)) {
       Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
 
@@ -2333,7 +2335,9 @@ void RenderRoomUnsorted(int roomnum) {
       fogged_portal = 1;
     }
 
-    if (Render_mirror_for_room == false && (fogged_portal || (GetFaceAlpha(fp, -1) & (ATF_CONSTANT + ATF_VERTEX)))) {
+    const alpha_flags_t face_alpha_sources = alpha_type_source_flags(GetFaceAlpha(fp, -1));
+    if (Render_mirror_for_room == false &&
+        (fogged_portal || face_alpha_sources.constant || face_alpha_sources.vertex)) {
       // Place alpha faces into our postrender list (disabled: post-render system not ported)
       // if (Num_postrenders < MAX_POSTRENDERS) {
       //   face_depth[fn] = 0.0f;
@@ -2860,7 +2864,7 @@ void BuildMirroredRoomList() {
   new_wnd.top = std::max(wnd.top, new_wnd.top);
   new_wnd.bot = std::min(wnd.bot, new_wnd.bot);
   /*rend_SetTextureType (texture_type::flat);
-  rend_SetAlphaType (AT_CONSTANT);
+  rend_SetAlphaType (alpha_blend_type::constant);
   rend_SetAlphaValue (255);
   rend_SetFlatColor (GR_RGB(255,255,255));
 
@@ -3504,7 +3508,7 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
       CheckToRenderMineObjects(roomnum);
     }
   }
-  rend_SetOverlayType(OT_NONE); // turn off lightmap blending
+  rend_SetOverlayType(overlay_type::none); // turn off lightmap blending
   if (Must_render_terrain && !Called_from_terrain)
     rend_SetFogState(0);
 
@@ -3533,8 +3537,8 @@ void RenderLightGlows() {
   rend_SetColorModel(color_model::rgb);
   rend_SetLighting(light_state::gouraud);
   rend_SetTextureType(texture_type::linear);
-  rend_SetAlphaType(AT_SATURATE_TEXTURE);
-  rend_SetOverlayType(OT_NONE);
+  rend_SetAlphaType(alpha_blend_type::saturate_texture);
+  rend_SetOverlayType(overlay_type::none);
   rend_SetFogState(0);
   for (size_t i = 0; i < LightGlows.size(); i++) {
     if (LightGlows[i].flags.used) {

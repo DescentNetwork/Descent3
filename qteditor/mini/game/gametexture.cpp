@@ -148,7 +148,7 @@ int AllocateProceduralForTexture(int handle)
 // Given a filename, loads either the bitmap or vclip found in that file.  If
 // type is not NULL, sets it to 1 if the file is an animation, otherwise sets it
 // to zero.  Returns the bitmap/vclip handle, or -1 on error.
-int LoadTextureImage(const std::filesystem::path &filename, optref<int> type, int texture_size, int mipped, int pageable,
+int LoadTextureImage(const std::filesystem::path &filename, optref<int> type, texture_size_type texture_size, int mipped, int pageable,
                      bitmap_format format) {
   // Animation containers (.oaf/.ifl/.abm) page in as a vclip.
   std::string ext = filename.extension().string();
@@ -187,16 +187,16 @@ int LoadTextureImage(const std::filesystem::path &filename, optref<int> type, in
     return -1;
 
   int w = 0, h = 0;
-  if (texture_size == NORMAL_TEXTURE) {
+  if (texture_size == texture_size_type::normal) {
     w = TEXTURE_WIDTH;
     h = TEXTURE_HEIGHT;
-  } else if (texture_size == SMALL_TEXTURE) {
+  } else if (texture_size == texture_size_type::small) {
     w = TEXTURE_WIDTH / 2;
     h = TEXTURE_HEIGHT / 2;
-  } else if (texture_size == TINY_TEXTURE) {
+  } else if (texture_size == texture_size_type::tiny) {
     w = TEXTURE_WIDTH / 4;
     h = TEXTURE_HEIGHT / 4;
-  } else if (texture_size == HUGE_TEXTURE) {
+  } else if (texture_size == texture_size_type::huge) {
     w = TEXTURE_WIDTH * 2;
     h = TEXTURE_HEIGHT * 2;
   } else {

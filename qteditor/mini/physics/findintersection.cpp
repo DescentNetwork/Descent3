@@ -4391,30 +4391,31 @@ void fvi_rooms_objs(void) {
 // Parameters:	fp - pointer to the face in question
 //					bm_handle - the handle for the bitmap for this frame, or -1 if don't care about
 // transparence Returns:		bitmask describing the alpha blending for the face
-// the return bits are the ATF_ flags in renderer.h
-inline int GetFaceAlpha(const face *fp, int bm_handle) {
-  int ret = AT_ALWAYS;
+// the return value is an alpha_blend_type value assembled from the
+// alpha_flags_t source bits in renderer.h
+inline alpha_blend_type GetFaceAlpha(const face *fp, int bm_handle) {
   if (GameTextures[fp->tmap].flags.saturate) {
     if (fp->flags.vertex_alpha)
-      ret = AT_SATURATE_TEXTURE_VERTEX;
+      return alpha_blend_type::saturate_texture_vertex;
     else
-      ret = AT_SATURATE_TEXTURE;
-  } else {
-    // Check the face's texture for an alpha value
-    if (GameTextures[fp->tmap].alpha < 1.0)
-      ret |= ATF_CONSTANT;
-
-    // Someday we'll probably check the bitmap's alpha, too
-    // Check for vertex alpha flag
-    if (fp->flags.vertex_alpha)
-      ret |= ATF_VERTEX;
-
-    // Check for transparency
-    if (GameBitmaps[bm_handle].format != bitmap_format::_4444 && GameTextures[fp->tmap].flags.tmap2)
-      ret |= ATF_TEXTURE;
+      return alpha_blend_type::saturate_texture;
   }
 
-  return ret;
+  alpha_flags_t flags = {};
+  // Check the face's texture for an alpha value
+  if (GameTextures[fp->tmap].alpha < 1.0)
+    flags.constant = true;
+
+  // Someday we'll probably check the bitmap's alpha, too
+  // Check for vertex alpha flag
+  if (fp->flags.vertex_alpha)
+    flags.vertex = true;
+
+  // Check for transparency
+  if (GameBitmaps[bm_handle].format != bitmap_format::_4444 && GameTextures[fp->tmap].flags.tmap2)
+    flags.texture = true;
+
+  return alpha_blend_type_of(flags);
 }
 
 bool PhysPastPortal(int roomnum, const portal *pp) {
@@ -4427,7 +4428,7 @@ bool PhysPastPortal(int roomnum, const portal *pp) {
   const face *fp = &rp->faces[pp->portal_face];
   int bm_handle = GetTextureBitmap(fp->tmap, 0);
 
-  if (GetFaceAlpha(fp, bm_handle))
+  if (GetFaceAlpha(fp, bm_handle) != alpha_blend_type::always)
     return true; // Face has alpha or transparency, so we can see through it
 
   return false; // Not transparent, so no render past
