@@ -79,7 +79,7 @@
 #define kMAX_Str 80
 #define kInfinite_Duration 0xFFFFFF
 #define FF_USEENVELOPE 0x01
-#define HZ_to_uS(hz) ((int)(1000000.0 / (double)(hz) + 0.5))
+#define HZ_to_uS(hz) ((int)(1000000.0f / (float)(hz) + 0.5f))
 #define DDIO_FF_MAXEFFECTS 30
 #if defined(WIN32)
 // WINDOWS

@@ -50,7 +50,7 @@
 
 #define MAX_TERRAIN_HEIGHT 350.0f                              // Max height of our terrain
 #define TERRAIN_HEIGHT_INCREMENT (MAX_TERRAIN_HEIGHT / 255.0f) // Incremental jumps
-#define DEFAULT_VISIBLE_TERRAIN_DISTANCE 80.0 * TERRAIN_SIZE
+#define DEFAULT_VISIBLE_TERRAIN_DISTANCE 80.0f * TERRAIN_SIZE
 
 // Sky defines
 #define MAX_STARS 600    // how many stars in our sky

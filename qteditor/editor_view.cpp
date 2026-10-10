@@ -30,6 +30,7 @@
 
 #include <cmath>
 #include <algorithm>
+#include <numbers>
 
 #include "bitmap.h"
 
@@ -190,7 +191,7 @@ void drawFilledCircle(float cx, float cy, float radius, const float *color) {
   glVertex2f(cx, cy);
   constexpr int kSegments = 32;
   for (int i = 0; i <= kSegments; i++) {
-    const float a = 2.0f * 3.14159265f * static_cast<float>(i) / kSegments;
+    const float a = 2.0f * std::numbers::pi_v<float> * static_cast<float>(i) / kSegments;
     glVertex2f(cx + radius * std::cos(a), cy + radius * std::sin(a));
   }
   glEnd();

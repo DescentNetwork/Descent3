@@ -422,8 +422,8 @@ int nw_psnet_buffer_get_next_by_packet_id(uint8_t *data, int *length, uint32_t p
 #define MAXNETBUFFERS                                                                                                  \
   150                    // Maximum network buffers (For between network and upper level functions, which is
                          // required in case of out of order packets
-#define NETRETRYTIME .75 // Time after sending before we resend
-#define MIN_NET_RETRYTIME .2
+#define NETRETRYTIME 0.75f // Time after sending before we resend
+#define MIN_NET_RETRYTIME 0.2f
 #define NETTIMEOUT 300        // Time after receiving the last packet before we drop that user
 #define NETHEARTBEATTIME 10   // How often to send a heartbeat
 #define MAXRELIABLESOCKETS 40 // Max reliable sockets to open at once...

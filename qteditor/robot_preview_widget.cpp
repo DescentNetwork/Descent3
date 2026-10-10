@@ -48,7 +48,7 @@ void RobotPreviewWidget::resizeGL(int w, int h) { glViewport(0, 0, w, h); }
 
 void RobotPreviewWidget::advanceAnim() {
   // Advance a small animation phase so spinning/frame-based models move.
-  m_animTime += 0.02;
+  m_animTime += 0.02f;
   if (m_animTime > 1.0f)
     m_animTime = 0.0f;
   update();
@@ -96,7 +96,7 @@ void RobotPreviewWidget::paintGL() {
 
   // Rotate the model slowly for a live preview.
   matrix rotMatrix;
-  vm_AnglesToMatrix(&rotMatrix, 0, (angle)(m_animTime * 360.0 * 8.0f), 0);
+  vm_AnglesToMatrix(&rotMatrix, 0, (angle)(m_animTime * 360.0f * 8.0f), 0);
 
   float normTime[MAX_SUBOBJECTS];
   for (int i = 0; i < MAX_SUBOBJECTS; i++)

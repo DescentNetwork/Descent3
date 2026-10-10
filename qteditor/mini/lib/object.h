@@ -178,7 +178,7 @@
  * unghost
  *
  * 129   8/12/98 12:04p Chris
- * Attach system version .5 (still needs more work to be multiplayer
+ * Attach system version 0.5f (still needs more work to be multiplayer
  * friendly)
  *
  * 128   8/07/98 8:25p Chris

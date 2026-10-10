@@ -1262,7 +1262,7 @@ void DoRoomChangeFrame() {
     }
 
     // If this room is done changing, take it out of the list and mark it as changed
-    if (norm >= 1.0) {
+    if (norm >= 1.0f) {
       Room_changes[i].used = 0;
       if (Room_changes[i].fog)
         rp->room_change_flags |= RCF_FOG;

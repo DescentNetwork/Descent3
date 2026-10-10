@@ -6738,8 +6738,8 @@ private slots:
 
     // Camera orientation: EditorView::updateCamera uses
     // vm_AnglesToMatrix(&m_orient, 0, yaw, pitch) i.e. p=0, h=yaw, b=pitch.
-    const double pRad = pitchDeg * std::numbers::pi / 180.0;
-    const double hRad = yawDeg * std::numbers::pi / 180.0;
+    const float pRad = pitchDeg * std::numbers::pi_v<float> / 180.0f;
+    const float hRad = yawDeg * std::numbers::pi_v<float> / 180.0f;
     matrix orient;
     vm_SinCosToMatrix(&orient, 0.0f, 1.0f,
                       scalar(std::sin(pRad)),

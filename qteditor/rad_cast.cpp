@@ -202,6 +202,8 @@
 #include "logger/log.h"
 
 #include <cstdlib>
+#include <numbers>
+
 #include "radiosity.h"
 #include "rad_cast.h"
 #include "terrain.h"
@@ -213,8 +215,8 @@
 #include "BOA.h"
 
 
-// A ray must contribute at least this amount to be accepted (currently .5%)
-#define DEFAULT_IGNORE_LIMIT .005f
+// A ray must contribute at least this amount to be accepted (currently 0.5f%)
+#define DEFAULT_IGNORE_LIMIT 0.005f
 
 float Ignore_limit = DEFAULT_IGNORE_LIMIT;
 extern rad_element *rad_MaxElement;
@@ -252,7 +254,7 @@ int ShootRayToVolumePoint(vector3& src, vector3& dest, int start_room) {
   fvi_hit_type fate = fvi_FindIntersection(&fq, &hit_info);
 
   float dist = vm_VectorDistance(&hit_info.hit_pnt, &dest);
-  if (dist > .1)
+  if (dist > 0.1f)
     return 0;
   return 1;
 }
@@ -420,7 +422,7 @@ int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_su
   }
 
   dist = vm_VectorDistance(&hit_info.hit_pnt, &temp_dest);
-  if (dist > .1) {
+  if (dist > 0.1f) {
     // LOG_INFO("Didn't hit!\n");
     return 0;
   }
@@ -501,11 +503,11 @@ float GetFormFactorForElementAndSatellite(rad_surface *dest_surf, rad_element *d
 
 // Calculates the percentage of specular light that is coming from the
 // currently shooting patch
-void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra *color, vector3 *src_center) {
+void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra& color, vector3 *src_center) {
   vector3 light_center;
 
-  float total_strength = (color->r * .3) + (color->g * .33) + (color->b * .33);
-  float threshold = .7f;
+  float total_strength = (color.r * 0.3f) + (color.g * 0.33f) + (color.b * 0.33f);
+  float threshold = 0.7f;
 
   if (dest_surf->surface_type != rad_surface_type::room)
     return;
@@ -522,7 +524,7 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra *color, vector3 *
   face *fp = &rp->faces[dest_surf->facenum];
 
   if (GameTextures[fp->tmap].flags.smooth_specular)
-    threshold = .01f;
+    threshold = 0.01f;
   else {
     if (!rad_MaxSurface->flags.lightsource)
       return;
@@ -533,7 +535,7 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra *color, vector3 *
   for (i = 0; i < 4; i++) {
     if (total_strength > threshold &&
         total_strength > Room_strongest_value[*dest_surf->roomnum][i][dest_surf->facenum]) {
-      float scalar = (total_strength / 50.0) + .5;
+      float scalar = (total_strength / 50.0f) + 0.5f;
       if (scalar > 1)
         scalar = 1.0f;
 
@@ -552,11 +554,11 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra *color, vector3 *
       // Update our arrays with strongest light and src patch center
       Room_strongest_value[*dest_surf->roomnum][i][dest_surf->facenum] = total_strength;
 
-      float rmax = GetMaxColor(color);
+      float rmax = GetMaxColor(&color);
 
-      float r = color->r;
-      float g = color->g;
-      float b = color->b;
+      float r = color.r;
+      float g = color.g;
+      float b = color.b;
 
       // Normalize colors
       if (rmax > 1) {
@@ -565,9 +567,9 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra *color, vector3 *
         b /= rmax;
       }
 
-      r *= (255.0 * scalar);
-      g *= (255.0 * scalar);
-      b *= (255.0 * scalar);
+      r *= (255.0f * scalar);
+      g *= (255.0f * scalar);
+      b *= (255.0f * scalar);
 
       SpecialFaces[special_index].spec_instance[i].bright_color = GR_RGB16((int)r, (int)g, (int)b);
       SpecialFaces[special_index].spec_instance[i].bright_center = light_center;
@@ -627,7 +629,7 @@ float GetFormFactorForElement(rad_surface *dest_surf, rad_element *dest_element,
     float ff;
     vector3 src_normal = rad_MaxSurface->normal;
     ff = (vm_DotProduct(&src_norm_ray, &src_normal) * vm_DotProduct(&dest_normal, &dest_norm_ray)) /
-         ((3.14 * ray_length * ray_length) + ray_area);
+         ((std::numbers::pi_v<float> * ray_length * ray_length) + ray_area);
     ff *= ray_area;
     ff *= rmax;
 
@@ -652,7 +654,7 @@ float GetFormFactorForElement(rad_surface *dest_surf, rad_element *dest_element,
       src_normal = rad_MaxSurface->normal;
 
       ff = (vm_DotProduct(&src_norm_ray, &src_normal) * vm_DotProduct(&dest_normal, &dest_norm_ray)) /
-           ((3.14 * ray_length * ray_length) + ray_area);
+           ((std::numbers::pi_v<float> * ray_length * ray_length) + ray_area);
 
       if (ff > 1)
         LOG_INFO("ff >1!\n");
@@ -672,7 +674,7 @@ float GetFormFactorForElement(rad_surface *dest_surf, rad_element *dest_element,
         color.g = rad_MaxSurface->exitance.g * scalar;
         color.b = rad_MaxSurface->exitance.b * scalar;
 
-        float total_strength = (color.r * .33) + (color.g * .33) + (color.b * .33);
+        float total_strength = (color.r * 0.33f) + (color.g * 0.33f) + (color.b * 0.33f);
         if (total_strength > Current_max_specular_strength) {
           Current_max_specular_strength = total_strength;
           Current_max_specular_color = color;
@@ -742,7 +744,7 @@ float GetFormFactorForElementSuperDetail(rad_surface *dest_surf, rad_element *de
   float ff;
   vector3 src_normal = rad_MaxSurface->normal;
   ff = (vm_DotProduct(&src_norm_ray, &src_normal) * vm_DotProduct(&dest_normal, &dest_norm_ray)) /
-       ((3.14 * ray_length * ray_length) + ray_area);
+       ((std::numbers::pi_v<float> * ray_length * ray_length) + ray_area);
   ff *= ray_area;
   ff *= rmax;
 
@@ -766,7 +768,7 @@ float GetFormFactorForElementSuperDetail(rad_surface *dest_surf, rad_element *de
     src_normal = rad_MaxSurface->normal;
 
     ff = (vm_DotProduct(&src_norm_ray, &src_normal) * vm_DotProduct(&dest_normal, &dest_norm_ray)) /
-         ((3.14 * ray_length * ray_length) + ray_area);
+         ((std::numbers::pi_v<float> * ray_length * ray_length) + ray_area);
 
     if (ff > 1)
       LOG_INFO("ff >1!\n");
@@ -787,7 +789,7 @@ float GetFormFactorForElementSuperDetail(rad_surface *dest_surf, rad_element *de
       color.g = rad_MaxSurface->exitance.g * scalar;
       color.b = rad_MaxSurface->exitance.b * scalar;
 
-      float total_strength = (color.r * .33) + (color.g * .33) + (color.b * .33);
+      float total_strength = (color.r * 0.33f) + (color.g * 0.33f) + (color.b * 0.33f);
       if (total_strength > Current_max_specular_strength) {
         Current_max_specular_strength = total_strength;
         Current_max_specular_color = color;
@@ -812,7 +814,7 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
 
   // Do volume lighting
   if ((rad_MaxSurface->surface_type == rad_surface_type::room || rad_MaxSurface->surface_type == rad_surface_type::room_object)) {
-    if (sphere_dist > .1) {
+    if (sphere_dist > 0.1f) {
       fvi_face_room_list facelist[5000];
       uint8_t check_room[MAX_VOLUME_ELEMENTS];
 
@@ -881,7 +883,7 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
                   if (scalar < 0)
                     continue;
 
-                  scalar /= ((3.14 * mag * mag) + rad_MaxElement->area);
+                  scalar /= ((std::numbers::pi_v<float> * mag * mag) + rad_MaxElement->area);
                   scalar *= rad_MaxElement->area;
 
                   // Trivially reject all rooms
@@ -929,7 +931,7 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
                 if (scalar < 0)
                   continue;
 
-                scalar /= ((3.14 * mag * mag) + rad_MaxSurface->area);
+                scalar /= ((std::numbers::pi_v<float> * mag * mag) + rad_MaxSurface->area);
                 scalar *= rad_MaxSurface->area;
 
                 if (!BOA_IsVisible(roomnum, from_roomnum(rad_MaxSurface->roomnum))) {
@@ -977,8 +979,8 @@ void CalculateFormFactorsRaycast() {
     float rmax = GetMaxColor(&rad_MaxSurface->exitance);
     float power = rmax * rad_MaxSurface->area;
     float temp_ignore = Ignore_limit / power;
-    float express = 1.0 / temp_ignore;
-    express /= 3.14f;
+    float express = 1.0f / temp_ignore;
+    express /= std::numbers::pi_v<float>;
     express -= rad_MaxSurface->area;
     sphere_dist = sqrt(express);
     if (sphere_dist > 0)
@@ -1109,6 +1111,6 @@ void CalculateFormFactorsRaycast() {
     }
 
     if (rad_MaxSurface->surface_type == rad_surface_type::room && Calculate_specular_lighting)
-      CheckToUpdateSpecularFace(dest_surf, &Current_max_specular_color, NULL);
+      CheckToUpdateSpecularFace(dest_surf, Current_max_specular_color, NULL);
   }
 }

@@ -14,7 +14,7 @@ QSlantedLabel::QSlantedLabel(QWidget *parent)
 
 void QSlantedLabel::setRotation(qreal degrees)
 {
-    if (!qFuzzyCompare(m_rotation + 1.0, degrees + 1.0)) {
+    if (!qFuzzyCompare(m_rotation + 1.0f, degrees + 1.0f)) {
         m_rotation = degrees;
         updateGeometry();
         update();

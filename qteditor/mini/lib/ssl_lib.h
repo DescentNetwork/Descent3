@@ -475,7 +475,7 @@ enum class dsbufloop_step : int8_t {
 
 // This is the update rate at which to call sound_mixer::DoFrame()
 // (sleep this amount each frame of the thread)
-#define DSPB_TICK_INTERVAL .01 // Primary buffer update rate (in seconds)
+#define DSPB_TICK_INTERVAL 0.01f // Primary buffer update rate (in seconds)
 #define DSPB_TICK_MILLISECONDS (DSPB_TICK_INTERVAL * 1000)
 
 

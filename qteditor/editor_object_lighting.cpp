@@ -54,10 +54,10 @@ void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int fac
       bottom = lfp->v2[i];
   }
 
-  float left_result = (left * lw) + .0001;
-  float right_result = (right * lw) + .0001;
-  float top_result = (top * lh) + .0001;
-  float bottom_result = (bottom * lh) + .0001;
+  float left_result = (left * lw) + 0.0001f;
+  float right_result = (right * lw) + 0.0001f;
+  float top_result = (top * lh) + 0.0001f;
+  float bottom_result = (bottom * lh) + 0.0001f;
 
   surf->x1 = floor(left_result);
   surf->x2 = floor(right_result);
@@ -69,16 +69,16 @@ void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int fac
   surf->yresolution = (surf->y2 - surf->y1);
 
   // Adjust for a accuracy errors
-  if (((right_result) - (float)surf->x2) > .005)
+  if (((right_result) - (float)surf->x2) > 0.005f)
     surf->xresolution++;
 
-  if (((bottom_result) - (float)surf->y2) > .005)
+  if (((bottom_result) - (float)surf->y2) > 0.005f)
     surf->yresolution++;
 
-  if (((top_result) - (float)surf->y1) > .99)
+  if (((top_result) - (float)surf->y1) > 0.99f)
     surf->y1++;
 
-  if (((left_result) - (float)surf->x1) > .99)
+  if (((left_result) - (float)surf->x1) > 0.99f)
     surf->x1++;
 }
 
@@ -125,9 +125,9 @@ void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surf
         fg = std::min(1.0f, sp->elements[i * xres + t].exitance.g + global_light.ambient_green);
         fb = std::min(1.0f, sp->elements[i * xres + t].exitance.b + global_light.ambient_blue);
 
-        fr = (fr * 255) + .5;
-        fg = (fg * 255) + .5;
-        fb = (fb * 255) + .5;
+        fr = (fr * 255) + 0.5f;
+        fg = (fg * 255) + 0.5f;
+        fb = (fb * 255) + 0.5f;
 
         red += (int)fr;
         green += (int)fg;
@@ -835,7 +835,7 @@ void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_sur
 }
 
 #define MAX_COMBINES 50
-#define LM_ADJACENT_FACE_THRESHOLD .95
+#define LM_ADJACENT_FACE_THRESHOLD 0.95f
 std::array<std::vector<uint8_t>, MAX_OBJECTS> ObjectsAlreadyCombined;
 
 // Given a submodel and a face, goes through the entire object and checks to see

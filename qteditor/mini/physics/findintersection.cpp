@@ -1022,14 +1022,14 @@ inline bool find_plane_line_intersection(vector3 &intp, vector3 &colp, vector3 &
   proj_dist_point_plane = (vm_Dot3Product(plane_norm, point_plane_vec));
 
   // Throw out any sphere who's centerpoint is initially behind the face
-  if (proj_dist_point_plane > 0.0)
+  if (proj_dist_point_plane > 0.0f)
     return false;
 
   // Use the distance from the edge of the sphere to the plane.  If the new proj_dist_point_plane is
   // negative, then the sphere pokes thru the edge at the initial position
   proj_dist_point_plane += rad;
 
-  if (proj_dist_point_plane > 0.0 && proj_dist_line < 0.0) {
+  if (proj_dist_point_plane > 0.0f && proj_dist_line < 0.0f) {
     intp = p0;
     colp = intp + plane_norm * (-rad + proj_dist_point_plane);
 
@@ -1044,7 +1044,7 @@ inline bool find_plane_line_intersection(vector3 &intp, vector3 &colp, vector3 &
   // If we are moving almost parallal to the plane, then make sure we are a rad away form it
   // I picked .00000001 from my head.  It would be pretty parallel of a pretty short movement and
   // the linear combination below might not product a nice answer
-  if (fabs(proj_dist_line) <= 0.00000000001) {
+  if (fabs(proj_dist_line) <= 0.00000000001f) {
     scalar plane_dist;
 
     plane_dist = vm_Dot3Product((p1 - plane_pnt), plane_norm);

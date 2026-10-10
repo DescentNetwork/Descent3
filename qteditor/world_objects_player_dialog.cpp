@@ -95,8 +95,8 @@ void WorldObjectsPlayerDialog::bindEdits() {
   connect(ui->IDC_SHIP_ARMOR_EDIT, &QLineEdit::editingFinished, [this]() {
     if (auto s = data()) {
       float val = ui->IDC_SHIP_ARMOR_EDIT->text().toFloat();
-      if (val < .05f)
-        val = .05f;
+      if (val < 0.05f)
+        val = 0.05f;
       if (val > 10)
         val = 10;
       s->armor_scalar = val;

@@ -891,7 +891,7 @@ bool ReloadModelTextures(int modelnum, byte_istream &infile) {
         }
 
         pm->textures[i] = *ret;
-        if (GameTextures[*ret].alpha < .99)
+        if (GameTextures[*ret].alpha < 0.99f)
           pm->flags.alpha = true;
       }
 
@@ -1070,7 +1070,7 @@ void SetPolymodelProperties(bsp_info *subobj, const std::string &props) {
       fov_angle = 1.0f;
     }
 
-    // .4 is really fast and really arbitrary
+    // 0.4 is really fast and really arbitrary
     if (turret_spr < 0.0f || turret_spr > 60.0f) {
       // Bad data
       Q_ASSERT(0);
@@ -1381,7 +1381,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       if (version_major >= 23) {
         for (i = 0; i < nverts; i++) {
           infile >> pm->submodel[n].alpha[i];
-          if (pm->submodel[n].alpha[i] < .99)
+          if (pm->submodel[n].alpha[i] < 0.99f)
             pm->flags.alpha = true;
         }
       } else {
@@ -1682,7 +1682,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
         }
 
         pm->textures[i] = *ret;
-        if (GameTextures[*ret].alpha < .99)
+        if (GameTextures[*ret].alpha < 0.99f)
           pm->flags.alpha = true;
       }
 
@@ -2326,7 +2326,7 @@ void SetModelAngles(poly_model *po, const float *normalized_angles) {
 
   if (po->num_key_angles > 0 && normalized_angles) {
     // get time per keyframe state
-    float state_time = 1.0 / (po->num_key_angles - 1);
+    float state_time = 1.0f / (po->num_key_angles - 1);
     float cur_state_time;
     int cur_state;
     float normal_state_time;
@@ -2442,7 +2442,7 @@ void SetModelInterpPos(poly_model *po, const float *normalized_pos) {
       bsp_info *sm = &po->submodel[i];
 
       // get time per keyframe state
-      float state_time = 1.0 / (po->num_key_pos - 1);
+      float state_time = 1.0f / (po->num_key_pos - 1);
       float cur_state_time;
       int cur_state;
       float normal_state_time;
@@ -2506,7 +2506,7 @@ void SetModelAnglesAndPosTimed(poly_model *po, float *normalized_time, uint32_t 
         goto do_angles;
       }
 
-      if (normalized_time[i] == 1.0) {
+      if (normalized_time[i] == 1.0f) {
         sm->mod_pos = sm->keyframe_pos[sm->num_key_pos - 1];
         goto do_angles;
       }

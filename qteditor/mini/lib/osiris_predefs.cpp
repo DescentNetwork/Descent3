@@ -1710,10 +1710,10 @@ vector3 osipf_AIFindHidePos(int hideobjhandle, int viewobjhandle, float time, in
     return hide_obj->pos;
   }
 
-  if (time <= 0.0) {
+  if (time <= 0.0f) {
     LOG_ERROR("AIFindHidePos: Illegal Time Passed bashing to 1sec");
     time = 1.0f;
-  } else if (time > 15.0) {
+  } else if (time > 15.0f) {
     LOG_ERROR("AIFindHidePos: Illegal Time Passed bashing to 15sec");
     time = 15.0f;
   }
@@ -2120,7 +2120,7 @@ void osipf_GetGroundPos(int objhandle, int ground_number, vector3 *ground_pnt, v
 #endif
 
 uint8_t osipf_IsRoomValid(int roomnum) {
-  if (roomnum == -1.0) {
+  if (roomnum == -1.0f) {
     return 0;
   } else if (ROOMNUM_OUTSIDE(roomnum)) {
     int cell = CELLNUM(roomnum);
@@ -2883,7 +2883,7 @@ void osipf_ObjGhost(int handle, bool f_ghost) {
 void osipf_ObjBurning(int handle, float time, float damage_per_second) {
   object *obj = ObjGet(handle);
   if (obj && obj->effect_info) {
-    if (time > 0.0) {
+    if (time > 0.0f) {
       obj->effect_info->type_flags.napalmed = true;
 
       obj->effect_info->damage_time = time;

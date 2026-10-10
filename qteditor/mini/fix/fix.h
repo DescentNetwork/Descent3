@@ -92,7 +92,7 @@ scalar FixSin(angle a);
 // Returns the cosine of the given angle.  Linearly interpolates between two entries in a 256-entry table
 scalar FixCos(angle a);
 
-#define Round(x) ((int)(x + 0.5))
+#define Round(x) ((int)(x + 0.5f))
 
 // Conversion macros
 //??#define FloatToFix(num) Round((num) * FLOAT_SCALER)

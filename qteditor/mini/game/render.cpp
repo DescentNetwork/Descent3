@@ -79,7 +79,7 @@ extern uint8_t Outline_release_mode;
 // 3d point for each vertex for use during rendering a room
 uint8_t Room_clips[MAX_VERTS_PER_ROOM]; // used for face culling
 // default face reflectivity
-float Face_reflectivity = 0.5;
+float Face_reflectivity = 00.5f;
 // the position of the viewer - valid while a frame is being rendered
 static vector3 Viewer_eye;
 static matrix Viewer_orient;
@@ -90,7 +90,7 @@ float Fog_zone_start = FLT_MAX, Fog_zone_end = FLT_MAX;
 int Must_render_terrain;
 int Global_buffer_index;
 int No_render_windows_hack = -1;
-#define WALL_PULSE_INCREMENT .01
+#define WALL_PULSE_INCREMENT 0.01f
 // Variables for various debugging features
 #if (defined(_DEBUG) || defined(NEWEDITOR) || defined(EDITOR))
 // If true, draw white outline for each polygon
@@ -249,7 +249,7 @@ static inline alpha_blend_type GetFaceAlpha(face *fp, int bm_handle) {
   } else {
     alpha_flags_t flags = {};
     // Check the face's texture for an alpha value
-    if (GameTextures[fp->tmap].alpha < 1.0)
+    if (GameTextures[fp->tmap].alpha < 1.0f)
       flags.constant = true;
 
     // Check for transparency
@@ -385,12 +385,12 @@ static inline bool LineIntersectsLine(g3Point *ls, g3Point *le, float x1, float 
   num = ((ls->p3_sy - y1) * (x2 - x1)) - ((ls->p3_sx - x1) * (y2 - y1));
   denom = ((le->p3_sx - ls->p3_sx) * (y2 - y1)) - ((le->p3_sy - ls->p3_sy) * (x2 - x1));
   float r = num / denom;
-  if (r >= 0.0 && r <= 1.0)
+  if (r >= 0.0f && r <= 1.0f)
     return true;
   num = ((ls->p3_sy - y1) * (le->p3_sx - ls->p3_sx)) - ((ls->p3_sx - x1) * (le->p3_sy - ls->p3_sy));
   denom = ((le->p3_sx - ls->p3_sx) * (y2 - y1)) - ((le->p3_sy - ls->p3_sy) * (x2 - x1));
   float s = num / denom;
-  if (s >= 0.0 && s <= 1.0)
+  if (r >= 0.0f && r <= 1.0f)
     return true;
   return false;
 }
@@ -497,7 +497,7 @@ void RotateRoomPoints(int roomnum, const vector3 *world_vecs) {
   if (Viewer_object->effect_info && (Viewer_object->effect_info->type_flags.deform)) {
     for (i = 0; i < rp->num_verts; i++) {
       vector3 vec = world_vecs[i];
-      float val = ((d3::rand() % 1000) - 500.0) / 500.0f;
+      float val = ((d3::rand() % 1000) - 500.0f) / 500.0f;
       val *= Viewer_object->effect_info->deform_time;
       vec += Global_alter_vec * (Viewer_object->effect_info->deform_range * val);
 
@@ -808,7 +808,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
   Room_depth_list[start_room_num] = depth;
   // If this room is a closed (non-seethrough) door, don't check any of its portals,
   //...UNLESS this is the first room we're looking at (meaning the viewer is in this room)
-  if ((rp->flags.door) && (rp->doorway_data->position == 0.0) &&
+  if ((rp->flags.door) && (rp->doorway_data->position == 0.0f) &&
       !Doors[rp->doorway_data->doornum].flags.seethrough)
     if (depth != 0)
       return;
@@ -1196,8 +1196,8 @@ void CheckFace(int roomnum,int facenum, int nv, int bm,g3Point **pointlist)
 */
 #endif
 #ifdef EDITOR
-#define STEPSIZE .01f
-#define STEPSIZE_MIN .1f
+#define STEPSIZE 0.01f
+#define STEPSIZE_MIN 0.1f
 void RenderFloatingTrig(int roomnum, face *fp) {
   room_t *rp = &Rooms[roomnum];
   if (!Render_floating_triggers)
@@ -1216,7 +1216,7 @@ void RenderFloatingTrig(int roomnum, face *fp) {
     stepsize = STEPSIZE_MIN;
   leftvec = rp->verts[fp->face_verts[3]] - rp->verts[fp->face_verts[0]];
   rightvec = rp->verts[fp->face_verts[2]] - rp->verts[fp->face_verts[1]];
-  n_steps = (vm_GetMagnitude(&leftvec) / stepsize + 0.5) + 1;
+  n_steps = (vm_GetMagnitude(&leftvec) / stepsize + 0.5f) + 1;
   left_step = leftvec / n_steps;
   right_step = rightvec / n_steps;
   for (i = 0; i < n_steps; i++) {
@@ -1226,7 +1226,7 @@ void RenderFloatingTrig(int roomnum, face *fp) {
     int n_crosssteps;
 
     crossvec = right - left;
-    n_crosssteps = (vm_GetMagnitude(&crossvec) / stepsize + 0.5) + 1;
+    n_crosssteps = (vm_GetMagnitude(&crossvec) / stepsize + 0.5f) + 1;
     cross_step = crossvec / n_steps;
     p = left;
     for (j = 0; j < n_crosssteps; j++) {
@@ -1280,7 +1280,10 @@ void RenderSpecularFaces(int roomnum) {
   rend_SetWrapType(wrap_type::wrap);
 }
 
-float Specular_scalars[4][4] = {{1.0f}, {1.0f, .66f}, {1.0f, .66f, .33f}, {1.0f, .66f, .33f, .25f}};
+float Specular_scalars[4][4] = {{1.0f, 0.0f, 0.0f, 0.0f},
+                                {1.0f, 0.66f, 0.0f, 0.0f},
+                                {1.0f, 0.66f, 0.33f, 0.0f},
+                                {1.0f, 0.66f, 0.33f, 0.25f}};
 void RenderSpecularFacesFlat(int roomnum) {
   room_t *rp = &Rooms[roomnum];
   static int first = 1;
@@ -1418,9 +1421,9 @@ texel = data[int_v][int_u];
             float cr = static_cast<float>((color >> 10) & 0x1f) / 31.0f;
             float cg = static_cast<float>((color >> 5) & 0x1f) / 31.0f;
             float cb = static_cast<float>(color & 0x1f) / 31.0f;
-            rv = std::min<float>(1.0, (rv + (scalar * cr)));
-            gv = std::min<float>(1.0, (gv + (scalar * cg)));
-            bv = std::min<float>(1.0, (bv + (scalar * cb)));
+            rv = std::min<float>(1.0f, (rv + (scalar * cr)));
+            gv = std::min<float>(1.0f, (gv + (scalar * cg)));
+            bv = std::min<float>(1.0f, (bv + (scalar * cb)));
           }
         }
       } else {
@@ -1500,7 +1503,7 @@ texel = data[int_v][int_u];
       bm_handle = GetTextureBitmap(GameTextures[fp->tmap].destroy_handle, 0);
     if (bm_format(bm_handle) != bitmap_format::_4444)
       continue;
-    float reflect = GameTextures[fp->tmap].reflectivity * 1.5;
+    float reflect = GameTextures[fp->tmap].reflectivity * 1.5f;
     for (vn = 0; vn < fp->num_verts; vn++) {
       pointbuffer[vn] = World_point_buffer[rp->wpb_index + fp->face_verts[vn]];
       g3Point *p = &pointbuffer[vn];
@@ -1508,9 +1511,9 @@ texel = data[int_v][int_u];
       p->p3_uvl.u = fp->face_uvls[vn].u;
       p->p3_uvl.v = fp->face_uvls[vn].v;
       p->p3_a = 1.0f;
-      p->p3_r = std::min<float>(1.0, Smooth_verts[fp->face_verts[vn]].r * reflect);
-      p->p3_g = std::min<float>(1.0, Smooth_verts[fp->face_verts[vn]].g * reflect);
-      p->p3_b = std::min<float>(1.0, Smooth_verts[fp->face_verts[vn]].b * reflect);
+      p->p3_r = std::min<float>(1.0f, Smooth_verts[fp->face_verts[vn]].r * reflect);
+      p->p3_g = std::min<float>(1.0f, Smooth_verts[fp->face_verts[vn]].g * reflect);
+      p->p3_b = std::min<float>(1.0f, Smooth_verts[fp->face_verts[vn]].b * reflect);
       p->p3_flags.rgba = true;
       p->p3_flags.uv = true;
     }
@@ -1579,7 +1582,7 @@ void RenderFogFaces(int roomnum) {
   rend_SetZBufferWriteMask(0);
   rend_SetCoplanarPolygonOffset(1);
 
-  rend_SetFlatColor(GR_RGB((int)(rp->fog_r * 255.0), (int)(rp->fog_g * 255.0), (int)(rp->fog_b * 255.0)));
+  rend_SetFlatColor(GR_RGB(uint8_t(rp->fog_r * 255.0f), uint8_t(rp->fog_g * 255.0f), uint8_t(rp->fog_b * 255.0f)));
   for (int i = 0; i < Num_fog_faces_to_render; i++) {
     face *fp = &rp->faces[Fog_faces[i]];
     for (vn = 0; vn < fp->num_verts; vn++) {
@@ -1638,7 +1641,7 @@ void RenderScorchesForRoom(int roomnum) {
   rend_SetLighting(light_state::none);
   rend_SetColorModel(color_model::mono);
   rend_SetOverlayType(overlay_type::none);
-  rend_SetZBias(-.5);
+  rend_SetZBias(-0.5f);
   rend_SetZBufferWriteMask(0);
 
   // Select texture type
@@ -1946,7 +1949,7 @@ void RenderFace(int roomnum, int facenum) {
     rend_SetTextureType(texture_type::perspective);
   if (clip_code_byte(face_cc.cc_or) != 0) // Possible triangulate this face because it is off screen somewhat
   {
-    if (Room_light_val < 1.0)
+    if (Room_light_val < 1.0f)
       do_triangle_test = 1;
     if (Detail_settings.Fog_enabled && (rp->flags.fog))
       do_triangle_test = 1;
@@ -2028,7 +2031,7 @@ draw_fog:
     rend_SetFlatColor(GR_RGB(255, 255, 255));
 
     if (UseHardware) {
-      rend_SetZBias(-.1f);
+      rend_SetZBias(-0.1f);
       for (int i = 0; i < fp->num_verts; i++) {
         g3_DrawSpecialLine(pointlist[i], pointlist[(i + 1) % fp->num_verts]);
       }
@@ -2443,11 +2446,11 @@ void RenderSingleLightGlow(int index) {
   // Take into effect pulsing
   ComputeRoomPulseLight(LightGlows[index].roomnum);
   facing_scalar *= Room_light_val;
-  rend_SetAlphaValue(facing_scalar * .4 * 255);
+  rend_SetAlphaValue(facing_scalar * 0.4f * 255);
 
   float maxc = std::max({texp->r, texp->g, texp->b});
   float r, g, b;
-  if (maxc > 1.0) {
+  if (maxc > 1.0f) {
     r = texp->r / maxc;
     g = texp->g / maxc;
     b = texp->b / maxc;
@@ -2488,10 +2491,10 @@ void RenderSingleLightGlow2(int index) {
       star_handle = GetTextureBitmap(*texhandle, 0);
     first = 0;
   }
-  rend_SetAlphaValue(.4 * 255);
+  rend_SetAlphaValue(0.4f * 255);
   float maxc = std::max({texp->r, texp->g, texp->b});
   float r, g, b;
-  if (maxc > 1.0) {
+  if (maxc > 1.0f) {
     r = texp->r / maxc;
     g = texp->g / maxc;
     b = texp->b / maxc;
@@ -2653,7 +2656,7 @@ void BuildMirroredRoomListSub(int start_room_num, clip_wnd *wnd) {
 
   // If this room is a closed (non-seethrough) door, don't check any of its portals,
   //...UNLESS this is the first room we're looking at (meaning the viewer is in this room)
-  if ((rp->flags.door) && (rp->doorway_data->position == 0.0) &&
+  if ((rp->flags.door) && (rp->doorway_data->position == 0.0f) &&
       !Doors[rp->doorway_data->doornum].flags.seethrough)
     return;
   room_t *mirror_rp = &Rooms[Mirror_room];
@@ -3479,7 +3482,7 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
 
     if ((Terrain_sky.flags.fog) && (UseHardware || (!UseHardware && Lighting_on))) {
       rend_SetFogState(1);
-      rend_SetFogBorders(VisibleTerrainZ * .85, VisibleTerrainZ);
+      rend_SetFogBorders(VisibleTerrainZ * 0.85f, VisibleTerrainZ);
       rend_SetFogColor(Terrain_sky.fog_color);
     }
   }
@@ -3570,7 +3573,7 @@ void FogClipPoints (g3Point *on_pnt,g3Point *off_pnt,g3Point *dest,float zval,in
         tmp->p3_flags = g3point_flags_t{};
         z_on=on_pnt->p3_z;
         z_off=off_pnt->p3_z;
-        k = 1.0-((z_off-zval) / (z_off-z_on));
+        k = 1.0f-((z_off-zval) / (z_off-z_on));
         tmp->p3_z = on_pnt->p3_z + ((off_pnt->p3_z-on_pnt->p3_z) * k);
 
         tmp->p3_x = on_pnt->p3_x + ((off_pnt->p3_x-on_pnt->p3_x) * k);
@@ -3762,7 +3765,7 @@ int FogBlendFace (g3Point **src,int nv,int *num_solid,int *num_alpha)
                         }
                         // Add this point to the list
                         //---------------------------
-                        float alpha=1.0-((thispnt->p3_z-Fog_zone_start)/fog_zone_range);
+                        float alpha=1.0f-((thispnt->p3_z-Fog_zone_start)/fog_zone_range);
                         if (alpha<0)
                                 alpha=0;
                         Q_ASSERT (alpha<=1.0f);

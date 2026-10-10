@@ -152,8 +152,8 @@ void vm_MakeInverseMatrix(matrix *dest) {
     vm_TransposeMatrix(dest);
 }
 // angle is uint16_t with 65536 == 2*pi (matches the D3 256-entry trig table).
-scalar FixSin(angle a) { return scalar(std::sin((2.0 * std::numbers::pi * double(a)) / 65536.0)); }
-scalar FixCos(angle a) { return scalar(std::cos((2.0 * std::numbers::pi * double(a)) / 65536.0)); }
+scalar FixSin(angle a) { return scalar(std::sin((2.0f * std::numbers::pi_v<float> * float(a)) / 65536.0f)); }
+scalar FixCos(angle a) { return scalar(std::cos((2.0f * std::numbers::pi_v<float> * float(a)) / 65536.0f)); }
 
 void vm_SinCos(angle a, scalar *s, scalar *c) {
   if (s)
@@ -190,7 +190,7 @@ angle vm_DeltaAngVecNorm(const vector3 *v0, const vector3 *v1, const vector3 *fv
     s = 1.0f;
   if (s < -1.0f)
     s = -1.0f;
-  return (angle)((std::acos(s) / (2.0 * std::numbers::pi)) * 65536.0f);
+  return (angle)((std::acos(s) / (2.0f * std::numbers::pi_v<float>)) * 65536.0f);
 }
 void vm_AnglesToMatrix(matrix *m, angle p, angle h, angle b) {
   if (m == nullptr)
@@ -205,11 +205,11 @@ angvec *vm_ExtractAnglesFromMatrix(angvec *a, const matrix *m) {
     p = 1.0f;
   if (p < -1.0f)
     p = -1.0f;
-  a->p() = (angle)((std::asin(p) / (2.0 * std::numbers::pi)) * 65536.0f);
+  a->p() = (angle)((std::asin(p) / (2.0f * std::numbers::pi_v<float>)) * 65536.0f);
   scalar cosp = std::sqrt(std::max(0.0f, 1.0f - p * p));
   if (cosp != 0.0f) {
-    a->h() = (angle)((std::atan2(m->fvec.x() / cosp, m->fvec.z() / cosp) / (2.0f * std::numbers::pi)) * 65536.0f);
-    a->b() = (angle)((std::atan2(m->rvec.y() / cosp, m->uvec.y() / cosp) / (2.0f * std::numbers::pi)) * 65536.0f);
+    a->h() = (angle)((std::atan2(m->fvec.x() / cosp, m->fvec.z() / cosp) / (2.0f * std::numbers::pi_v<float>)) * 65536.0f);
+    a->b() = (angle)((std::atan2(m->rvec.y() / cosp, m->uvec.y() / cosp) / (2.0f * std::numbers::pi_v<float>)) * 65536.0f);
   } else {
     a->h() = a->b() = 0;
   }

@@ -95,9 +95,9 @@ void ViewerPropDialog::updatePosition() {
     ui->IDC_XPOS_EDIT->setEnabled(false);
     return;
   }
-  ui->IDC_XPOS_EDIT->setText(QString::number((double)Viewer_object->pos.x(), 'f', 2));
-  ui->IDC_YPOS_EDIT->setText(QString::number((double)Viewer_object->pos.y(), 'f', 2));
-  ui->IDC_ZPOS_EDIT->setText(QString::number((double)Viewer_object->pos.z(), 'f', 2));
+  ui->IDC_XPOS_EDIT->setText(QString::number(Viewer_object->pos.x(), 'f', 2));
+  ui->IDC_YPOS_EDIT->setText(QString::number(Viewer_object->pos.y(), 'f', 2));
+  ui->IDC_ZPOS_EDIT->setText(QString::number(Viewer_object->pos.z(), 'f', 2));
   (void)hasViewer;
 }
 

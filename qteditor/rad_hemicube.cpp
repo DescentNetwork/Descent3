@@ -62,8 +62,8 @@ void CalculateDeltaFormFactors() {
   // Initialize cell dimensions and area
   Highest_top_delta = -1.0f;
   Highest_side_delta = -1.0f;
-  dx = dy = dz = 2.0 / (float)rad_Hemicube.ff_res;
-  da = 4.0 / ((float)rad_Hemicube.ff_res * (float)rad_Hemicube.ff_res);
+  dx = dy = dz = 2.0f / rad_Hemicube.ff_res;
+  da = 4.0f / (float(rad_Hemicube.ff_res) * float(rad_Hemicube.ff_res));
 
   // Calculate top face delta form factors
   x = dx / 2.0f;

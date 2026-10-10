@@ -907,7 +907,7 @@ bool IsOKToApplyForce(object *objp) {
   }
 
 
-  if (objp->mtype.phys_info.mass == 0.0)
+  if (objp->mtype.phys_info.mass == 0.0f)
     return false;
 
   if (objp->movement_type != movement_type_e::physics && objp->movement_type != movement_type_e::walking)
@@ -992,8 +992,8 @@ void DoWallEffects(object *weapon, int surface_tmap) {
       if (visnum >= 0) {
         vis_effect *vis = &VisEffects[visnum];
 
-        vis->lifetime = .9f;
-        vis->lifeleft = .9f;
+        vis->lifetime = 0.9f;
+        vis->lifeleft = 0.9f;
 
         vis->movement_type = movement_type::physics;
         vis->size = 3.0f;
@@ -1019,7 +1019,7 @@ void DoWallEffects(object *weapon, int surface_tmap) {
 
           vis->movement_type = movement_type::physics;
           vis->mass = 100;
-          vis->drag = .1f;
+          vis->drag = 0.1f;
 
           vis->phys_flags.gravity = true;
           vis->phys_flags.no_collide = true;
@@ -1036,9 +1036,9 @@ void DoWallEffects(object *weapon, int surface_tmap) {
 
           vm_NormalizeVectorFast(&vis->velocity);
           vis->velocity *= 4 + (d3::rand() % 20);
-          vis->size = .5 + (((d3::rand() % 11) - 5) * .05);
+          vis->size = 0.5f + (((d3::rand() % 11) - 5) * 0.05f);
           vis->flags.uses_lifeleft = true;
-          scalar lifetime = 1.0 + (((d3::rand() % 11) - 5) * .1);
+          scalar lifetime = 1.0f + (((d3::rand() % 11) - 5) * 0.1f);
           vis->lifeleft = lifetime;
           vis->lifetime = lifetime;
           vis->lighting_color = color;
@@ -1269,7 +1269,7 @@ void collide_player_and_marker(object *playerobj, object *marker_obj, vector3 *c
 
 #define MIN_WALL_HIT_SOUND_VEL 40.0f
 #define MAX_WALL_HIT_SOUND_VEL 120.0f
-#define MIN_PLAYER_WALL_SOUND_TIME .1f
+#define MIN_PLAYER_WALL_SOUND_TIME 0.1f
 #define WALL_DAMAGE 0.5f
 #define MIN_WALL_HIT_DAMAGE_SHIELDS 5
 #define MIN_WALL_DAMAGE_SPEED 65.0
@@ -1497,7 +1497,7 @@ void ConvertEulerToAxisAmount(vector3 *e, vector3 *n, float *w) {
   float rotspeed = vm_GetMagnitude(e);
   matrix rotmat;
   vector3 e_n;
-  float scale = rotspeed / .0001f;
+  float scale = rotspeed / 0.0001f;
 
   // If there isn't a rotation, return something valid
   if (rotspeed == 0.0f || scale == 0.0f) {
@@ -1545,7 +1545,7 @@ void ConvertAxisAmountToEuler(vector3 *n, float *w, vector3 *e) {
   scalar c;
   scalar t;
 
-  scalar scale = *w / .0001f;
+  scalar scale = *w / 0.0001f;
   vector3 s_result;
 
   if (*w == 0.0f) {
@@ -1553,8 +1553,8 @@ void ConvertAxisAmountToEuler(vector3 *n, float *w, vector3 *e) {
     return;
   }
 
-  s = std::sin(.0001f);
-  c = std::cos(.0001f);
+  s = std::sin(0.0001f);
+  c = std::cos(0.0001f);
   t = 1.0f - c;
 
   matrix rotmat;
@@ -1639,8 +1639,8 @@ void bump_obj_against_fixed(object *obj, vector3 *collision_point, vector3 *coll
   //	matrix i2;
   float i1 = (2.0f / 5.0f) * m1 * obj->size * obj->size;
 
-  if (i1 < .0000001)
-    i1 = .0000001f;
+  if (i1 < 0.0000001f)
+    i1 = 0.0000001f;
 
   vm_CrossProduct(&c1, &r1, collision_normal);
 
@@ -1731,7 +1731,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
             Q_ASSERT(t->type != object_type::player);
             if (t->flags.dying) {
               Q_ASSERT((t->control_type == control_type::dying) || (t->control_type == control_type::dying_and_ai));
-              DestroyObject(t, 50.0, t->ctype.dying_info().death_flags);
+              DestroyObject(t, 50.0f, t->ctype.dying_info().death_flags);
             } else
               SetObjectDeadFlag(t);
           }
@@ -1747,11 +1747,11 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
 
         wall_force = vm_Dot3Product(t->mtype.phys_info.thrust,*collision_normal);
         t->mtype.phys_info.thrust +=
-            *collision_normal * (wall_force * -1.001); // 1.001 so that we are not quite tangential
+            *collision_normal * (wall_force * -1.001f); // 1.001 so that we are not quite tangential
 
         // Update velocity from wall hit.
         t->mtype.phys_info.velocity +=
-            *collision_normal * (wall_part * -1.001); // 1.001 so that we are not quite tangential
+            *collision_normal * (wall_part * -1.001f); // 1.001 so that we are not quite tangential
         if (t->type == object_type::player) {
           float real_vel;
 
@@ -1876,10 +1876,10 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
   float i1 = (2.0f / 5.0f) * m1 * object0->size * object0->size;
   float i2 = (2.0f / 5.0f) * m2 * object1->size * object1->size;
 
-  if (i1 < .0000001)
-    i1 = .0000001f;
-  if (i2 < .0000001)
-    i2 = .0000001f;
+  if (i1 < 0.0000001f)
+    i1 = 0.0000001f;
+  if (i2 < 0.0000001f)
+    i2 = 0.0000001f;
 
   vm_CrossProduct(&c1, &r1, collision_normal);
   vm_CrossProduct(&c2, &r2, collision_normal);
@@ -2025,7 +2025,7 @@ void collide_player_and_player(object *p1, object *p2, vector3 *collision_point,
     scalar = (speed - MIN_WALL_HIT_SOUND_VEL) / (MAX_WALL_HIT_SOUND_VEL - MIN_WALL_HIT_SOUND_VEL);
   }
 
-  if (scalar > .01) {
+  if (scalar > 0.01f) {
     pos_state cur_pos;
     cur_pos.position = collision_point;
     cur_pos.orient = &p1->orient;
@@ -2075,7 +2075,7 @@ void collide_generic_and_player(object *robotobj, object *playerobj, vector3 *co
       scalar = 0; // don't make collide sound
   }
 
-  if (scalar > .01 || physics_locked(robotobj->mtype.phys_info.flags)) {
+  if (scalar > 0.01f || physics_locked(robotobj->mtype.phys_info.flags)) {
     pos_state cur_pos;
     cur_pos.position = collision_point;
     cur_pos.orient = &playerobj->orient;
@@ -2090,7 +2090,7 @@ void collide_generic_and_player(object *robotobj, object *playerobj, vector3 *co
     hear.max_dist = Sounds[SOUND_PLAYER_HIT_WALL].max_distance * scalar;
     AINotify(playerobj, AIN_HEAR_NOISE, (void *)&hear);
 
-    if ((scalar > .25f && (robotobj->movement_type == movement_type::walking || robotobj->movement_type == movement_type::physics)) ||
+    if ((scalar > 0.25f && (robotobj->movement_type == movement_type::walking || robotobj->movement_type == movement_type::physics)) ||
         (physics_locked(robotobj->mtype.phys_info.flags) &&
          (robotobj->mtype.phys_info.flags.point_collide_walls))) {
       if (!(IS_GUIDEBOT(robotobj))) {
@@ -2174,7 +2174,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
       hear.hostile_level = 0.5f;
       hear.curiosity_level = 1.0f;
     } else {
-      hear.hostile_level = .9f;
+      hear.hostile_level = 0.9f;
       hear.curiosity_level = 0.5f;
     }
 

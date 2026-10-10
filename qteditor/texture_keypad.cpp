@@ -24,6 +24,7 @@
 #include <QPushButton>
 
 #include <cmath>
+#include <numbers>
 
 #include "d3edit.h"
 #include "editor_room_state.h"
@@ -83,7 +84,7 @@ void TextureKeypad::onSlideUp() { HTextureSlide(index_to_int(app.current.room), 
 void TextureKeypad::onSlideDown() { HTextureSlide(index_to_int(app.current.room), index_to_int(app.current.face), 0, -1.0f * app.texscale); }
 void TextureKeypad::onRotLeft() { HTextureRotate(index_to_int(app.current.room), index_to_int(app.current.face), -0.1f * app.texscale); }
 void TextureKeypad::onRotRight() { HTextureRotate(index_to_int(app.current.room), index_to_int(app.current.face), 0.1f * app.texscale); }
-void TextureKeypad::onRotate90() { HTextureRotate(index_to_int(app.current.room), index_to_int(app.current.face), 3.14159f / 2.0f); }
+void TextureKeypad::onRotate90() { HTextureRotate(index_to_int(app.current.room), index_to_int(app.current.face), std::numbers::pi_v<float> / 2.0f); }
 void TextureKeypad::onFlipX() { HTextureFlipX(index_to_int(app.current.room), index_to_int(app.current.face)); }
 void TextureKeypad::onFlipY() { HTextureFlipY(index_to_int(app.current.room), index_to_int(app.current.face)); }
 void TextureKeypad::onExpandU() { ScaleFaceUVs(index_to_int(app.current.room), index_to_int(app.current.face), 1.1f); }

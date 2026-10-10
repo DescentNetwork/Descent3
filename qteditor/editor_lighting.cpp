@@ -394,14 +394,14 @@ void CheckCombinePortals(int terrain) {
         /*// Check to see if they share a normal
         float dp=vm_DotProduct (&face_a->normal,&face_b->normal);
 
-        if (dp < .95f)
+        if (dp < 0.95f)
                 continue;
 
 
         // Check to see if the distances are same
         float dist_b=vm_DotProduct (&rp->verts[face_b->face_verts[0]],&face_b->normal);
 
-        if (fabs(dist_b-dist_a)>.5)
+        if (fabs(dist_b-dist_a)> 0.5f)
                 continue;
 
         int match=0;
@@ -760,10 +760,10 @@ void ComputeSurfaceRes(rad_surface *surf, int roomnum, int facenum) {
       bottom = fp->face_uvls[i].v2;
   }
 
-  float left_result = (left * lw) + .0001;
-  float right_result = (right * lw) + .0001;
-  float top_result = (top * lh) + .0001;
-  float bottom_result = (bottom * lh) + .0001;
+  float left_result = (left * lw) + 0.0001f;
+  float right_result = (right * lw) + 0.0001f;
+  float top_result = (top * lh) + 0.0001f;
+  float bottom_result = (bottom * lh) + 0.0001f;
 
   surf->x1 = floor(left_result);
   surf->x2 = floor(right_result);
@@ -775,16 +775,16 @@ void ComputeSurfaceRes(rad_surface *surf, int roomnum, int facenum) {
   surf->yresolution = (surf->y2 - surf->y1);
 
   // Adjust for a accuracy errors
-  if (((right_result) - (float)surf->x2) > .005)
+  if (((right_result) - (float)surf->x2) > 0.005f)
     surf->xresolution++;
 
-  if (((bottom_result) - (float)surf->y2) > .005)
+  if (((bottom_result) - (float)surf->y2) > 0.005f)
     surf->yresolution++;
 
-  if (((top_result) - (float)surf->y1) > .99)
+  if (((top_result) - (float)surf->y1) > 0.99f)
     surf->y1++;
 
-  if (((left_result) - (float)surf->x1) > .99)
+  if (((left_result) - (float)surf->x1) > 0.99f)
     surf->x1++;
 
   Q_ASSERT((surf->x1 + surf->xresolution) <= lw);
@@ -815,7 +815,7 @@ void AssignVolumeSpectraToRoom(int roomnum) {
         } else {
           float rmax = GetMaxColor(this_spectra);
 
-          if (rmax > 1.0 && rmax > 0.0) {
+          if (rmax > 1.0f && rmax > 0.0f) {
             this_spectra->r /= rmax;
             this_spectra->g /= rmax;
             this_spectra->b /= rmax;
@@ -920,12 +920,12 @@ void DoRadiosityForRooms() {
       Q_ASSERT(Volume_elements[roomnum]);
 
       // Now go through and find all the valid spectra points
-      float cur_z = Rooms[roomnum].min_xyz.z() + .1;
+      float cur_z = Rooms[roomnum].min_xyz.z() + 0.1f;
 
       for (i = 0; i < vd; i++, cur_z += VOLUME_SPACING) {
-        float cur_y = Rooms[roomnum].min_xyz.y() + .1;
+        float cur_y = Rooms[roomnum].min_xyz.y() + 0.1f;
         for (t = 0; t < vh; t++, cur_y += VOLUME_SPACING) {
-          float cur_x = Rooms[roomnum].min_xyz.x() + .1;
+          float cur_x = Rooms[roomnum].min_xyz.x() + 0.1f;
           for (j = 0; j < vw; j++, cur_x += VOLUME_SPACING) {
             vector3 dest_vec = { cur_x, cur_y, cur_z };
 
@@ -1016,7 +1016,7 @@ void DoRadiosityForRooms() {
           Light_surfaces[surface_index].emittance.b = (float)GameTextures[Rooms[i].faces[t].tmap].b * mul;
           Light_surfaces[surface_index].surface_type = rad_surface_type::room;
 
-          if ((GetMaxColor(&Light_surfaces[surface_index].emittance)) > .005)
+          if ((GetMaxColor(&Light_surfaces[surface_index].emittance)) > 0.005f)
             Light_surfaces[surface_index].flags.lightsource = 1;
         }
 
@@ -1338,9 +1338,9 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
         fg = std::min(1.0f, sp->elements[i * xres + t].exitance.g + global_light.ambient_green + room_light[roomnum].ambient_green);
         fb = std::min(1.0f, sp->elements[i * xres + t].exitance.b + global_light.ambient_blue + room_light[roomnum].ambient_blue);
 
-        fr = (fr * 255) + .5;
-        fg = (fg * 255) + .5;
-        fb = (fb * 255) + .5;
+        fr = (fr * 255) + 0.5f;
+        fg = (fg * 255) + 0.5f;
+        fb = (fb * 255) + 0.5f;
 
         red += (int)fr;
         green += (int)fg;
@@ -1630,22 +1630,22 @@ int ClipRadToPlane(int plane, rad_point *src, rad_point *dest, int nv) {
 // Takes two points and a plane, and clips.
 void ClipRadEdge(g3_clip_codes_t plane_flag, rad_point *on_pnt, rad_point *off_pnt) {
   if (plane_flag.off_top) {
-    scalar percent_on = 1.0 - ((off_pnt->pos.y() - rad_ClipTop->y()) / (off_pnt->pos.y() - on_pnt->pos.y()));
+    scalar percent_on = 1.0f - ((off_pnt->pos.y() - rad_ClipTop->y()) / (off_pnt->pos.y() - on_pnt->pos.y()));
     GlobalTempRadPoint.pos = on_pnt->pos + ((off_pnt->pos - on_pnt->pos) * percent_on);
   }
 
   if (plane_flag.off_right) {
-    scalar percent_on = 1.0 - ((off_pnt->pos.x() - rad_ClipRight->x()) / (off_pnt->pos.x() - on_pnt->pos.x()));
+    scalar percent_on = 1.0f - ((off_pnt->pos.x() - rad_ClipRight->x()) / (off_pnt->pos.x() - on_pnt->pos.x()));
     GlobalTempRadPoint.pos = on_pnt->pos + ((off_pnt->pos - on_pnt->pos) * percent_on);
   }
 
   if (plane_flag.off_left) {
-    scalar percent_on = 1.0 - ((off_pnt->pos.x() - rad_ClipLeft->x()) / (off_pnt->pos.x() - on_pnt->pos.x()));
+    scalar percent_on = 1.0f - ((off_pnt->pos.x() - rad_ClipLeft->x()) / (off_pnt->pos.x() - on_pnt->pos.x()));
     GlobalTempRadPoint.pos = on_pnt->pos + ((off_pnt->pos - on_pnt->pos) * percent_on);
   }
 
   if (plane_flag.off_bot) {
-    scalar percent_on = 1.0 - ((off_pnt->pos.y() - rad_ClipBottom->y()) / (off_pnt->pos.y() - on_pnt->pos.y()));
+    scalar percent_on = 1.0f - ((off_pnt->pos.y() - rad_ClipBottom->y()) / (off_pnt->pos.y() - on_pnt->pos.y()));
     GlobalTempRadPoint.pos = on_pnt->pos + ((off_pnt->pos - on_pnt->pos) * percent_on);
   }
 
@@ -1998,7 +1998,7 @@ void DoRadiosityForTerrain() {
           Light_surfaces[surf_index].emittance.b = (float)GameTextures[Rooms[i].faces[t].tmap].b * mul;
           Light_surfaces[surf_index].surface_type = rad_surface_type::external_room;
 
-          // if ((GetMaxColor (&Light_surfaces[surf_index].emittance))>.005)
+          // if ((GetMaxColor (&Light_surfaces[surf_index].emittance)) > 0.005f)
           //	Light_surfaces[surf_index].flags.lightsource = true;
         }
 
@@ -2082,11 +2082,11 @@ void DoRadiosityForTerrain() {
       total.g /= num_items;
       total.b /= num_items;
 
-      if (total.r > 1.0)
+      if (total.r > 1.0f)
         total.r = 1.0f;
-      if (total.g > 1.0)
+      if (total.g > 1.0f)
         total.g = 1.0f;
-      if (total.b > 1.0)
+      if (total.b > 1.0f)
         total.b = 1.0f;
 
       Terrain_seg[seg].l = Float_to_ubyte(GetMaxColor(&total));
@@ -2189,11 +2189,11 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
                         vector3 pos1,pos2;
 
                         pos1.x=(t*TERRAIN_SIZE)+(TERRAIN_SIZE/3);
-                        pos1.z=(i*TERRAIN_SIZE)+(TERRAIN_SIZE * .66);
+                        pos1.z=(i*TERRAIN_SIZE)+(TERRAIN_SIZE * 0.66f);
                         pos1.y=GetTerrainGroundPoint (pos1, std::nullopt);
                         pos1+=((TerrainNormals[MAX_TERRAIN_LOD-1][tseg].normal1)/16);
 
-                        pos2.x=(t*TERRAIN_SIZE)+(TERRAIN_SIZE * .66);
+                        pos2.x=(t*TERRAIN_SIZE)+(TERRAIN_SIZE * 0.66f);
                         pos2.z=(i*TERRAIN_SIZE)+(TERRAIN_SIZE/3);
                         pos2.y=GetTerrainGroundPoint (pos2, std::nullopt);
                         pos2+=((TerrainNormals[MAX_TERRAIN_LOD-1][tseg].normal2)/16);
@@ -2526,7 +2526,7 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
 }
 
 #define MAX_COMBINES 50
-#define LM_ADJACENT_FACE_THRESHOLD .999
+#define LM_ADJACENT_FACE_THRESHOLD 0.999f
 uint8_t *RoomsAlreadyCombined[MAX_ROOMS];
 
 /*
@@ -3103,9 +3103,9 @@ void CreateNormalMapForFace (int roomnum,face *fp)
                         if (!(src_data[offset] & OPAQUE_FLAG))
                                 continue;
 
-                        sfp->normal_map[(offset*3)+0]=((vnorm.x+1.0)/2.0)*255.0f;
-                        sfp->normal_map[(offset*3)+1]=((vnorm.y+1.0)/2.0)*255.0f;
-                        sfp->normal_map[(offset*3)+2]=((vnorm.z+1.0)/2.0)*255.0f;
+                        sfp->normal_map[(offset*3)+0]=((vnorm.x+1.0f)/2.0f)*255.0f;
+                        sfp->normal_map[(offset*3)+1]=((vnorm.y+1.0f)/2.0f)*255.0f;
+                        sfp->normal_map[(offset*3)+2]=((vnorm.z+1.0f)/2.0f)*255.0f;
                         vnorm+=delta_vnorm;
                 }
 
@@ -3185,7 +3185,7 @@ void CleanupSpecularLighting(int external) {
                     float sg = (float)g / 31.0f;
                     float sb = (float)b / 31.0f;
 
-                    float mono_color = (sr * .3) + (sg * .59) + (sb * .11);
+                    float mono_color = (sr * 0.3f) + (sg * 0.59f) + (sb * 0.11f);
                     if (mono_color > strongest_light) {
                       strongest_light = mono_color;
                       found = 1;

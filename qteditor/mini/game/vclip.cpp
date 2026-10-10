@@ -174,7 +174,7 @@
 vclip GameVClips[MAX_VCLIPS];
 int Num_vclips = 0;
 
-#define DEFAULT_FRAMETIME .07f
+#define DEFAULT_FRAMETIME 0.07f
 
 #define VCLIP_VERSION 1
 // Frees all the memory used by vclips

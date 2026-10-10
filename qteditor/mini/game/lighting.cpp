@@ -30,6 +30,7 @@
 #include <cstring>
 #include <memory>
 #include <vector>
+#include <numbers>
 
 #include "3d.h"
 #include "gametexture.h"
@@ -165,7 +166,7 @@ void InitDynamicLighting() {
 uint8_t Float_to_ubyte(float fnum) {
   int i;
 
-  if (fnum < 0 || fnum > 1.0) {
+  if (fnum < 0.0f || fnum > 1.0f) {
     LOG_WARNING("ERROR: Trying to get value in Float_to_ubyte that is %f!", fnum);
     return 0;
   }
@@ -327,7 +328,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     vector3 base_vector = lmi_ptr->upper_left;
 
     // Get the area of effect for this light
-    float area_of_effect = (1.0 - (dist_from_plane / light_dist)) * light_dist;
+    float area_of_effect = (1.0f - (dist_from_plane / light_dist)) * light_dist;
     vector3 touch_vector = *pos - (lmi_ptr->normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
@@ -339,8 +340,8 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     // Get the rectangle of the lightmap that we want to light
     int start_x = (rdist / lmi_ptr->xspacing) - x_add;
     int start_y = (udist / lmi_ptr->yspacing) - y_add;
-    int end_x = (rdist / lmi_ptr->xspacing) + x_add + .5;
-    int end_y = (udist / lmi_ptr->yspacing) + y_add + .5;
+    int end_x = (rdist / lmi_ptr->xspacing) + x_add + 0.5f;
+    int end_y = (udist / lmi_ptr->yspacing) + y_add + 0.5f;
 
     if (end_x < 0 || end_y < 0 || start_x >= (xres) || start_y >= (yres))
       continue;
@@ -464,7 +465,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
           continue;
 
         float dist = vm_VectorDistanceQuick(&element_vec, pos);
-        float scalar = 1.0 - (dist / light_dist);
+        float scalar = 1.0f - (dist / light_dist);
 
         if (light_direction) {
           vector3 lsubvec = element_vec - *pos;
@@ -474,7 +475,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
             continue;
           } else {
 
-            float add_scale = (dp - dot_range) / (1.0 - dot_range);
+            float add_scale = (dp - dot_range) / (1.0f - dot_range);
             scalar *= add_scale;
           }
         }
@@ -659,7 +660,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
     vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
     // Get the area of effect for this light
-    float area_of_effect = (1.0 - (dist_from_plane / light_dist)) * light_dist;
+    float area_of_effect = (1.0f - (dist_from_plane / light_dist)) * light_dist;
     vector3 touch_vector = light_pos - (lmi_ptr->normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
@@ -671,8 +672,8 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
     // Get the rectangle of the lightmap that we want to light
     int start_x = (rdist / lmi_ptr->xspacing) - x_add;
     int start_y = (udist / lmi_ptr->yspacing) - y_add;
-    int end_x = (rdist / lmi_ptr->xspacing) + x_add + .5;
-    int end_y = (udist / lmi_ptr->yspacing) + y_add + .5;
+    int end_x = (rdist / lmi_ptr->xspacing) + x_add + 0.5f;
+    int end_y = (udist / lmi_ptr->yspacing) + y_add + 0.5f;
 
     if (end_x < 0 || end_y < 0 || start_x >= (xres) || start_y >= (yres))
       continue;
@@ -798,7 +799,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
           continue;
 
         float dist = vm_VectorDistanceQuick(&element_vec, &light_pos);
-        float scalar = 1.0 - (dist / light_dist);
+        float scalar = 1.0f - (dist / light_dist);
 
         if (Use_light_direction) {
           vector3 lsubvec = element_vec - light_pos;
@@ -808,7 +809,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
             continue;
           } else {
 
-            float add_scale = (dp - dot_range) / (1.0 - dot_range);
+            float add_scale = (dp - dot_range) / (1.0f - dot_range);
             scalar *= add_scale;
           }
         }
@@ -872,9 +873,8 @@ red_scale,float green_scale,float blue_scale)
                 sf->strength=0;
         }
 
-        float norm=std::min(1.0,(light_dist/dist_from_plane)*2.0f);
-        float strength=((red_scale*.33)+(green_scale*.33)+(blue_scale*.33))*light_dist;
-
+        float norm=std::min(1.0f, (light_dist/dist_from_plane)*2.0f);
+        float strength = ((red_scale * 0.33f) + (green_scale * 0.33f) + (blue_scale * 0.33f)) * light_dist;
         if (strength>sf->strength)
         {
                 sf->strength=strength;
@@ -903,11 +903,11 @@ void ApplyVolumeLightToObject(vector3 *pos, object *obj, float light_dist, float
     float mag = vm_NormalizeVectorFast(&dir_vec);
     float dp = vm_Dot3Product(dir_vec, *light_direction);
 
-    if (mag > 1.0) {
+    if (mag > 1.0f) {
       if (dp < dot_range)
         return;
       else {
-        float add_scale = (dp - dot_range) / (1.0 - dot_range);
+        float add_scale = (dp - dot_range) / (1.0f - dot_range);
         scalar *= add_scale;
       }
     }
@@ -1100,7 +1100,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     vector3 base_vector = lmi_ptr->upper_left;
 
     // Get the area of effect for this light
-    float area_of_effect = (1.0 - (dist_from_plane / light_dist)) * light_dist;
+    float area_of_effect = (1.0f - (dist_from_plane / light_dist)) * light_dist;
     vector3 touch_vector = *pos - (lmi_ptr->normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
@@ -1112,8 +1112,8 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     // Get the rectangle of the lightmap that we want to light
     int start_x = (rdist / lmi_ptr->xspacing) - x_add;
     int start_y = (udist / lmi_ptr->yspacing) - y_add;
-    int end_x = (rdist / lmi_ptr->xspacing) + x_add + .5;
-    int end_y = (udist / lmi_ptr->yspacing) + y_add + .5;
+    int end_x = (rdist / lmi_ptr->xspacing) + x_add + 0.5f;
+    int end_y = (udist / lmi_ptr->yspacing) + y_add + 0.5f;
 
     if (end_x < 0 || end_y < 0 || start_x >= (xres) || start_y >= (yres))
       continue;
@@ -1237,7 +1237,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
           continue;
 
         float dist = vm_VectorDistanceQuick(&element_vec, pos);
-        float scalar = 1.0 - (dist / light_dist);
+        float scalar = 1.0f - (dist / light_dist);
 
         if (light_direction) {
           vector3 lsubvec = element_vec - *pos;
@@ -1247,7 +1247,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
             continue;
           } else {
 
-            float add_scale = (dp - dot_range) / (1.0 - dot_range);
+            float add_scale = (dp - dot_range) / (1.0f - dot_range);
             scalar *= add_scale;
           }
         }
@@ -1451,7 +1451,7 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
     vector3 subvec = *pos - tpos;
 
     float dist = vm_GetMagnitudeFast(&subvec);
-    float scalar = 1.0 - (dist / light_dist);
+    float scalar = 1.0f - (dist / light_dist);
 
     if (light_direction) {
       vector3 lsubvec = -subvec;
@@ -1460,7 +1460,7 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
       if (dp < dot_range) {
         continue;
       } else {
-        float add_scale = (dp - dot_range) / (1.0 - dot_range);
+        float add_scale = (dp - dot_range) / (1.0f - dot_range);
         scalar *= add_scale;
       }
     }
@@ -1916,7 +1916,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         return lm_handle;
 }*/
 
-#define DESTROYABLE_IGNORE_LIMIT .2f
+#define DESTROYABLE_IGNORE_LIMIT 0.2f
 
 // Kills the lighting that a face casts and dampens all the faces that light influences
 void DestroyLight(int roomnum, int facenum) {
@@ -1961,8 +1961,8 @@ void DestroyLight(int roomnum, int facenum) {
   // Get the sphere of influence of this light
   float power = rmax * area;
   float temp_ignore = DESTROYABLE_IGNORE_LIMIT / power;
-  float express = 1.0 / temp_ignore;
-  express /= 3.14f;
+  float express = 1.0f / temp_ignore;
+  express /= std::numbers::pi_v<float>;
   express -= area;
   float sphere_dist = sqrt(express);
 
@@ -2013,7 +2013,7 @@ void DestroyLight(int roomnum, int facenum) {
     vector3 base_vector = lmi_ptr->upper_left;
 
     // Get the area of effect for this light
-    float area_of_effect = (1.0 - (dist_from_plane / sphere_dist)) * sphere_dist;
+    float area_of_effect = (1.0f - (dist_from_plane / sphere_dist)) * sphere_dist;
     vector3 touch_vector = center - (lmi_ptr->normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
@@ -2025,8 +2025,8 @@ void DestroyLight(int roomnum, int facenum) {
     // Get the rectangle of the lightmap that we want to light
     int start_x = (rdist / lmi_ptr->xspacing) - x_add;
     int start_y = (udist / lmi_ptr->yspacing) - y_add;
-    int end_x = (rdist / lmi_ptr->xspacing) + x_add + .5;
-    int end_y = (udist / lmi_ptr->yspacing) + y_add + .5;
+    int end_x = (rdist / lmi_ptr->xspacing) + x_add + 0.5f;
+    int end_y = (udist / lmi_ptr->yspacing) + y_add + 0.5f;
 
     if (end_x < 0 || end_y < 0 || start_x >= (xres) || start_y >= (yres))
       continue;
@@ -2109,7 +2109,7 @@ void DestroyLight(int roomnum, int facenum) {
           continue;
 
         float dist = vm_VectorDistanceQuick(&element_vec, &center);
-        float scalar = 1.0 - (dist / sphere_dist);
+        float scalar = 1.0f - (dist / sphere_dist);
 
         if (scalar <= 0)
           continue;

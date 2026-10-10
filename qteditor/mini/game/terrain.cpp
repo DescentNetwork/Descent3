@@ -489,12 +489,12 @@ void DeformTerrain(vector3 *pos, int depth, float size) {
     for (t = startx; t <= endx; t++, cur_vec.x() += TERRAIN_SIZE) {
       terrain_segment *tseg = &Terrain_seg[i * TERRAIN_WIDTH + t];
 
-      if (vm_Dot3Product(up_vec, TerrainNormals[MAX_TERRAIN_LOD - 1][i * TERRAIN_WIDTH + t].normal1) < .5)
+      if (vm_Dot3Product(up_vec, TerrainNormals[MAX_TERRAIN_LOD - 1][i * TERRAIN_WIDTH + t].normal1) < 0.5f)
         continue; // not flat enough
-      if (vm_Dot3Product(up_vec, TerrainNormals[MAX_TERRAIN_LOD - 1][i * TERRAIN_WIDTH + t].normal2) < .5)
+      if (vm_Dot3Product(up_vec, TerrainNormals[MAX_TERRAIN_LOD - 1][i * TERRAIN_WIDTH + t].normal2) < 0.5f)
         continue; // not flat enough
 
-      float dist = 1.0 - (vm_VectorDistanceQuick(&local_pos, &cur_vec) / max_dist);
+      float dist = 1.0f - (vm_VectorDistanceQuick(&local_pos, &cur_vec) / max_dist);
 
       int height_change = -(dist * (float)depth);
       int light_change = height_change * 2;
@@ -533,7 +533,7 @@ void BuildTerrainNormals() {
   int i, t, l, z, x;
   vector3 a, b, c;
   int simplemul;
-  vector3 up_norm = {0, 1.0, 0};
+  vector3 up_norm = {0.0f, 1.0f, 0.0f};
 
   // TerrainNormals[] is allocated by InitTerrain(); the Qt editor never runs
   // it, so the arrays stay empty. Nothing to build in that case.
@@ -636,17 +636,17 @@ void CloseTerrain(void) {
 // Given a 3space triplet, computes the u,v coords for a texture map at that position
 // on a sphere.
 void SphereMap(float x, float y, float z, float radius, float *u, float *v, int h) {
-  if (y < 0)
+  if (y < 0.0f)
     Q_ASSERT(false);
 
   float fh = h;
 
   // produces u from 0 to 1
-  *u = fh / (65536.0 / 16.005); // account for floating point precision error
+  *u = fh / (65536.0f / 16.005f); // account for floating point precision error
 
-  *v = std::acos(y / radius) / (std::numbers::pi_v<float> / 2.0f); // v=.5 to 1
-  *v /= .5;                         // v=1 to 2
-  *v -= 1;                          // v=0 to 1
+  *v = std::acos(y / radius) / (std::numbers::pi_v<float> / 2.0f); // v = 0.5 to 1
+  *v /= 0.5f;                         // v=1 to 2
+  *v -= 1.0f;                          // v=0 to 1
 }
 
 void SetupSkyTexture() {
@@ -769,9 +769,9 @@ void SetupSky(float radius, terrain_sky_flags_t flags, uint8_t randit) {
       b = 200;
     }
 
-    r = ((1.0 - color_norm) * horizon_r) + (color_norm * r);
-    g = ((1.0 - color_norm) * horizon_g) + (color_norm * g);
-    b = ((1.0 - color_norm) * horizon_b) + (color_norm * b);
+    r = ((1.0f - color_norm) * horizon_r) + (color_norm * r);
+    g = ((1.0f - color_norm) * horizon_g) + (color_norm * g);
+    b = ((1.0f - color_norm) * horizon_b) + (color_norm * b);
 
     Terrain_sky.star_color[i] = GR_RGB(r, g, b);
   }
@@ -923,7 +923,7 @@ void ResetTerrain(int force) {
   memset(TerrainJoinMap, 0, TERRAIN_WIDTH * TERRAIN_DEPTH);
 
   Terrain_sky.damage_per_second = 0;
-  Terrain_sky.fog_scalar = .85f;
+  Terrain_sky.fog_scalar = 0.85f;
   SetupSkyTexture();
   //ResetWeather();
 }

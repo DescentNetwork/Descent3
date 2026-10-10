@@ -1806,7 +1806,7 @@ void MakeBOAVisTable(bool from_lighting) {
                   fq.p0 = &src2;
                   fq.startroom = i;
                   fq.p1 = &dest_vector;
-                  fq.rad = .01f;
+                  fq.rad = 0.01f;
                   fq.thisobjnum = -1;
                   fq.ignore_obj_list = NULL;
                   // Gaurentees in weird geometry cases (as the ray will hit as it

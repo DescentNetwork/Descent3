@@ -279,7 +279,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
         if (dotp > 1)
           dotp = 1;
 
-        scalar val = dotp * .5;
+        scalar val = dotp * 0.5f;
 
         p->p3_uvl.u2 = val;
         p->p3_uvl.v2 = val;
@@ -705,7 +705,7 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
   }
 
   if (sm->flags.custom)
-    rend_SetZBias(-.5);
+    rend_SetZBias(-0.5f);
 
   for (i = 0; i < sm->num_faces; i++) {
     vector3 tempv;
@@ -762,8 +762,9 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
     rend_SetAlphaValue(255);
     rend_SetZBufferWriteMask(0);
 
-    rend_SetFlatColor(GR_RGB((int)(Polymodel_effect.spec_r * 255.0), (int)(Polymodel_effect.spec_g * 255.0),
-                             (int)(Polymodel_effect.spec_b * 255.0)));
+    rend_SetFlatColor(GR_RGB(uint8_t(Polymodel_effect.spec_r * 255.0f),
+                             uint8_t(Polymodel_effect.spec_g * 255.0f),
+                             uint8_t(Polymodel_effect.spec_b * 255.0f)));
 
     for (i = 0; i < sm->num_faces; i++) {
       polyface *fp = &sm->faces[i];
@@ -806,8 +807,9 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
     rend_SetAlphaValue(255);
     rend_SetZBufferWriteMask(0);
     rend_SetCoplanarPolygonOffset(1);
-    rend_SetFlatColor(GR_RGB((int)(Polymodel_effect.fog_r * 255.0), (int)(Polymodel_effect.fog_g * 255.0),
-                             (int)(Polymodel_effect.fog_b * 255.0)));
+    rend_SetFlatColor(GR_RGB(uint8_t(Polymodel_effect.fog_r * 255.0f),
+                             uint8_t(Polymodel_effect.fog_g * 255.0f),
+                             uint8_t(Polymodel_effect.fog_b * 255.0f)));
 
     for (i = 0; i < sm->num_faces; i++) {
       polyface *fp = &sm->faces[i];
@@ -832,8 +834,8 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
       for (int i = 0; i < sm->nverts; i++) {
         vector3 vec = sm->verts[i];
 
-        float val = ((d3::rand() % 1000) - 500.0) / 500.0f;
-        vec *= 1.0 + (Polymodel_effect.deform_range * val);
+        float val = ((d3::rand() % 1000) - 500.0f) / 500.0f;
+        vec *= 1.0f + (Polymodel_effect.deform_range * val);
 
         g3_RotatePoint(Robot_points[i], vec);
       }
@@ -845,8 +847,8 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
     if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
       for (int i = 0; i < sm->nverts; i++) {
         vector3 vec = sm->verts[i];
-        float val = ((d3::rand() % 1000) - 500.0) / 500.0f;
-        vec *= 1.0 + (Polymodel_effect.deform_range * val);
+        float val = ((d3::rand() % 1000) - 500.0f) / 500.0f;
+        vec *= 1.0f + (Polymodel_effect.deform_range * val);
 
         g3_RotatePoint(Robot_points[i], vec);
 
@@ -867,13 +869,13 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
       if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
         for (int i = 0; i < sm->nverts; i++) {
           vector3 vec = sm->verts[i];
-          float val = ((d3::rand() % 1000) - 500.0) / 500.0f;
-          vec *= 1.0 + (Polymodel_effect.deform_range * val);
+          float val = ((d3::rand() % 1000) - 500.0f) / 500.0f;
+          vec *= 1.0f + (Polymodel_effect.deform_range * val);
 
           g3_RotatePoint(Robot_points[i], vec);
 
           vector3 normvec = sm->vertnorms[i];
-          val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0) / 2;
+          val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0f) / 2;
 
           Robot_points[i].p3_r = Polymodel_effect.r * val * Polylighting_static_red;
           Robot_points[i].p3_g = Polymodel_effect.g * val * Polylighting_static_green;
@@ -883,13 +885,13 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
           for (int i = 0; i < sm->nverts; i++) {
             vector3 vec = sm->verts[i];
-            float val = ((d3::rand() % 1000) - 500.0) / 500.0f;
-            vec *= 1.0 + (Polymodel_effect.deform_range * val);
+            float val = ((d3::rand() % 1000) - 500.0f) / 500.0f;
+            vec *= 1.0f + (Polymodel_effect.deform_range * val);
 
             g3_RotatePoint(Robot_points[i], vec);
 
             vector3 normvec = sm->vertnorms[i];
-            val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0) / 2;
+            val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0f) / 2;
 
             Robot_points[i].p3_r = Polymodel_effect.r * val * Polylighting_static_red;
             Robot_points[i].p3_g = Polymodel_effect.g * val * Polylighting_static_green;
@@ -899,7 +901,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
           for (int i = 0; i < sm->nverts; i++) {
             g3_RotatePoint(Robot_points[i], sm->verts[i]);
             vector3 normvec = sm->vertnorms[i];
-            float val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0) / 2;
+            float val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0f) / 2;
 
             Robot_points[i].p3_r = Polymodel_effect.r * val * Polylighting_static_red;
             Robot_points[i].p3_g = Polymodel_effect.g * val * Polylighting_static_green;
@@ -911,12 +913,12 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
       if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
         for (int i = 0; i < sm->nverts; i++) {
           vector3 vec = sm->verts[i];
-          float val = ((d3::rand() % 1000) - 500.0) / 500.0f;
-          vec *= 1.0 + (Polymodel_effect.deform_range * val);
+          float val = ((d3::rand() % 1000) - 500.0f) / 500.0f;
+          vec *= 1.0f + (Polymodel_effect.deform_range * val);
 
           g3_RotatePoint(Robot_points[i], vec);
           vector3 normvec = sm->vertnorms[i];
-          val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0) / 2;
+          val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0f) / 2;
 
           Robot_points[i].p3_r = val * Polylighting_static_red;
           Robot_points[i].p3_g = val * Polylighting_static_green;
@@ -926,7 +928,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         for (int i = 0; i < sm->nverts; i++) {
           g3_RotatePoint(Robot_points[i], sm->verts[i]);
           vector3 normvec = sm->vertnorms[i];
-          float val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0) / 2;
+          float val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0f) / 2;
 
           Robot_points[i].p3_r = val * Polylighting_static_red;
           Robot_points[i].p3_g = val * Polylighting_static_green;

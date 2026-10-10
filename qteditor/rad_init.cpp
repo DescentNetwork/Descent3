@@ -137,7 +137,7 @@ void CalculateAreaForElement(rad_element *ep) {
   vector3 normal;
 
   if (ep->flags.ignore) {
-    ep->area = .0000001f;
+    ep->area = 0.0000001f;
     return;
   }
 
@@ -149,11 +149,11 @@ void CalculateAreaForElement(rad_element *ep) {
     ep->area += (vm_GetMagnitude(&normal) / 2);
   }
 
-  if (ep->area < .05)
+  if (ep->area < 0.05f)
     ep->flags.small = true;
-  if (ep->area == 0) {
+  if (ep->area == 0.0f) {
     ep->flags.ignore = true;
-    ep->area = .00000001f;
+    ep->area = 0.00000001f;
   }
 }
 
@@ -259,12 +259,12 @@ void UpdateUnsentValues() {
   }
 
   // Update convergence
-  if (rad_TotalFlux > .0001)
+  if (rad_TotalFlux > 0.0001f)
     rad_Convergence = fabs(rad_TotalUnsent) / rad_TotalFlux;
   else
     rad_Convergence = 0.0f;
 
-  if (d3::chrono::last_update() - last_report_time > 10.0) {
+  if (d3::chrono::last_update() - last_report_time > 10.0f) {
     LOG_INFO("Percentage left=%f\n", rad_Convergence);
     last_report_time = d3::chrono::last_update();
   }
@@ -361,7 +361,7 @@ void NormalizeExitance() {
 
       rmax = GetMaxColor(&ep->exitance);
 
-      if (rmax > 1.0 && rmax > 0.0) {
+      if (rmax > 1.0f && rmax > 0.0f) {
         ep->exitance.r /= rmax;
         ep->exitance.g /= rmax;
         ep->exitance.b /= rmax;

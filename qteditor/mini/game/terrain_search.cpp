@@ -245,7 +245,7 @@ int TotalDepth;
 static std::vector<lodoff> LODOffs;
 
 // Variables for LOD engine
-static float ViewDistance1 = .68f, ViewDistance2 = 1.0f;
+static float ViewDistance1 = 0.68f, ViewDistance2 = 1.0f;
 static float TS_Lambda, TS_SimplifyCondition;
 
 static matrix *TS_View_matrix;
@@ -430,7 +430,7 @@ __inline void CheckCellOccupancy(int x, int y, int *ccount, uint8_t lod) {
   if (*ccount >= MAX_CELLS_TO_RENDER) {
     LOG_WARNING("Trying to render too many cells!  Cell limit=%d", MAX_CELLS_TO_RENDER);
 #ifndef NEWEDITOR
-    Detail_settings.Terrain_render_distance = 80.0 * TERRAIN_SIZE;
+    Detail_settings.Terrain_render_distance = 80.0f * TERRAIN_SIZE;
 #endif
     return;
   }

@@ -418,7 +418,7 @@ void RobotEditWeaponsDialog::updateDialog() {
   if (m_pm != nullptr && m_pm->num_wbs > 0 && m_pm->poly_wb[0].num_turrets > 0) {
     const int turret = m_pm->poly_wb[0].turret_index[0];
     ui->IDC_TURRET_SOBJ_STATIC->setText(QString::number(turret));
-    ui->IDC_TURRET_FOV_STATIC->setText(QString::number(m_pm->submodel[turret].fov * 720.0));
+    ui->IDC_TURRET_FOV_STATIC->setText(QString::number(m_pm->submodel[turret].fov * 720.0f));
     ui->IDC_TURRET_REACTION_TIME_STATIC->setText(QString::number(m_pm->submodel[turret].think_interval, 'f', 2));
     ui->IDC_TURRET_SPR_STATIC->setText(QString::number(1.0f / m_pm->submodel[turret].rps, 'f', 2));
   }

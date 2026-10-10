@@ -209,8 +209,8 @@
 
 // variables for slew system
 
-#define ROT_SPEED (1.0 / 8.0) // rate of rotation while key held down
-#define VEL_SPEED (110.0)     // rate of acceleration while key held down
+#define ROT_SPEED (1.0f / 8.0f) // rate of rotation while key held down
+#define VEL_SPEED (110.0f)     // rate of acceleration while key held down
 #define JOY_NULL 32
 
 float Slew_key_speed = 1.0f;
@@ -309,9 +309,9 @@ int SlewFrame(object *obj, int movement_limitations) {
   rottime.x() = key_timep1 - key_timep0;
   rottime.y() = key_timeh1 - key_timeh0;
   rottime.z() = key_timeb1 - key_timeb0;
-  rotang.p() = (int16_t)(65536.0 * rottime.x() * ROT_SPEED * Slew_key_speed);
-  rotang.h() = (int16_t)(65536.0 * rottime.y() * ROT_SPEED * Slew_key_speed);
-  rotang.b() = (int16_t)(65536.0 * rottime.z() * ROT_SPEED * Slew_key_speed);
+  rotang.p() = (int16_t)(65536.0f * rottime.x() * ROT_SPEED * Slew_key_speed);
+  rotang.h() = (int16_t)(65536.0f * rottime.y() * ROT_SPEED * Slew_key_speed);
+  rotang.b() = (int16_t)(65536.0f * rottime.z() * ROT_SPEED * Slew_key_speed);
 
 // joystick movement
 
@@ -405,13 +405,13 @@ int SlewFrame(object *obj, int movement_limitations) {
 
         // Limit new position to terrain bounds if outside
         if (was_outside) {
-          if (new_pos.x() < 1.0)
+          if (new_pos.x() < 1.0f)
             new_pos.x() = 1.0f;
-          if (new_pos.x() > TERRAIN_WIDTH * TERRAIN_SIZE - 1.0)
+          if (new_pos.x() > TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f)
             new_pos.x() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
-          if (new_pos.z() < 1.0)
+          if (new_pos.z() < 1.0f)
             new_pos.z() = 1.0f;
-          if (new_pos.z() > TERRAIN_DEPTH * TERRAIN_SIZE - 1.0)
+          if (new_pos.z() > TERRAIN_DEPTH * TERRAIN_SIZE - 1.0f)
             new_pos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
         }
 

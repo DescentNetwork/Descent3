@@ -22,7 +22,7 @@ LightingStatusDialog::~LightingStatusDialog() {
 
 void LightingStatusDialog::onTimer() {
   char str[100];
-  snprintf(str, sizeof(str), "Percentage complete: %.2f %%", (1.0 - rad_Convergence) * 100.0f);
+  snprintf(str, sizeof(str), "Percentage complete: %.2f %%", (1.0f - rad_Convergence) * 100.0f);
   ui->IDC_LIGHTING_COMPLETE->setText(str);
 }
 

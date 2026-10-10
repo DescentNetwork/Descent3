@@ -157,7 +157,7 @@
 #include "grdefs.h"
 #include "DeathInfo.h"
 
-#define PARTICLE_LIFE .5
+#define PARTICLE_LIFE 0.5f
 #define DEBRIS_LIFE 2.0
 
 #define FF_MOVES 1
@@ -166,9 +166,9 @@
 #define REAL_FIREBALL 1   // This fireball can actually burn things
 
 // The alpha for a fireball
-#define FIREBALL_ALPHA .9f
+#define FIREBALL_ALPHA 0.9f
 // Smoke alpha
-#define SMOKE_ALPHA .3f
+#define SMOKE_ALPHA 0.3f
 
 #define MAX_FIREBALL_SIZE 80.0
 

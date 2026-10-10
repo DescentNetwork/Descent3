@@ -71,7 +71,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
   {
     QSlider *slider = ui->IDC_SLEWSLIDER;
     slider->setRange(0, 3);
-    slider->setValue((int)((Slew_key_speed - 0.5) / 0.5));
+    slider->setValue((int)((Slew_key_speed - 0.5f) / 0.5f));
   }
 
   {

@@ -247,7 +247,7 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
   // Fill in the data
   sp->roomface = roomface;
   sp->pos = *pos;
-  Q_ASSERT((size >= 0.0) && (size < 15.0));
+  Q_ASSERT((size >= 0.0f) && (size < 15.0f));
   sp->size = size * 16.0f;
 
   // Get index for handle, adding it if this texture hasn't been seen yet
@@ -281,7 +281,10 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
 // The UVs for the blob bitmap
 struct {
   float u, v;
-} scorch_uvs[4] = {{0.0, 0.0}, {1.0, 0.0}, {1.0, 1.0}, {0.0, 1.0}};
+} scorch_uvs[4] = {{ 0.0f, 0.0f },
+                   { 1.0f, 0.0f },
+                   { 1.0f, 1.0f },
+                   { 0.0f, 1.0f }};
 
 // Values used to get rid of far-away scorches
 #define MAX_VIS_DISTANCE 200    // if mark farther than this, don't draw
@@ -301,7 +304,7 @@ void DrawScorches(int roomnum, int facenum) {
     rend_SetLighting(light_state::none);
     rend_SetColorModel(color_model::mono);
     rend_SetOverlayType(overlay_type::none);
-    rend_SetZBias(-.5);
+    rend_SetZBias(-0.5f);
     rend_SetZBufferWriteMask(0);
 
     // Select texture type
@@ -326,7 +329,7 @@ void DrawScorches(int roomnum, int facenum) {
       if (depth > MAX_VIS_DISTANCE)
         goto skip_draw;
       if (depth > FADE_START_DISTANCE)
-        size *= 1.0 - ((depth - FADE_START_DISTANCE) / (MAX_VIS_DISTANCE - FADE_START_DISTANCE));
+        size *= 1.0f - ((depth - FADE_START_DISTANCE) / (MAX_VIS_DISTANCE - FADE_START_DISTANCE));
 
       // Calculate vectors to corners
       right.x() = (size / 127.0f) * sp->rx;

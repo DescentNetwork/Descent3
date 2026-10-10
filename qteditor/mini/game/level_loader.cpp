@@ -1953,9 +1953,9 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
           obj->id = static_cast<uint16_t>(TranslateObjectId(obj->type, obj->id));
 
           index_t roomnum = obj->roomnum;
-          LOG_DEBUG("OBJS[%d]: type=%d id=%d name='%s' flags=%u room=%d pos=(%f,%f,%f)",
+          LOG_DEBUG("OBJS[%d]: type=%d id=%d name='%s' flags=%u room=%d pos=(%hf,%hf,%hf)",
                     objnum, static_cast<int>(obj->type), (int)obj->id, obj->name.c_str(), std::bit_cast<uint32_t>(obj->flags),
-                    roomnum ? static_cast<int>(*roomnum) : -1, (double)obj->pos.x(), (double)obj->pos.y(), (double)obj->pos.z());
+                    roomnum ? static_cast<int>(*roomnum) : -1, obj->pos.x(), obj->pos.y(), obj->pos.z());
           // Give the object a usable handle and link it into the mine, exactly
           // as the original LL_ReadObjects does (object.cpp / LoadLevel.cpp).
           obj->handle = (version >= 45) ? handle : (objnum + HANDLE_COUNT_INCREMENT);

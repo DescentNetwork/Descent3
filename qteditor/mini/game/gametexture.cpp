@@ -122,7 +122,7 @@ int GetTextureBitmap(int handle, int framenum, bool force) {
 
       if (!force) // && !Detail_settings.Procedurals_enabled)
       {
-        if (d3::chrono::last_update() < GameTextures[handle].procedural->last_evaluation_time + 10.0)
+        if (d3::chrono::last_update() < GameTextures[handle].procedural->last_evaluation_time + 10.0f)
           do_eval = false;
       }
 

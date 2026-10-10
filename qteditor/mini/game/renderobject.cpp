@@ -581,6 +581,7 @@
 #include <algorithm>
 #include <cstring>
 #include <utility>
+#include <numbers>
 
 #include "object.h"
 #include "object_lighting.h"
@@ -672,7 +673,7 @@ void DrawObjectSelectionBrackets(object& obj, bool front_flag) {
              (obj.orient.uvec * ((c & 2) ? pm->mins.y() : pm->maxs.y())) +
              (obj.orient.fvec * ((c & 4) ? pm->mins.z() : pm->maxs.z()));
     // See if this corner is in front or in back of the object, as specified
-    if ((vm_Dot3Product(corner, viewvec) > 0.0) != front_flag)
+    if ((vm_Dot3Product(corner, viewvec) > 0.0f) != front_flag)
       continue;
     // Get absolute position in 3-space
     corner += obj.pos;
@@ -692,10 +693,10 @@ void DrawObjectSelectionBrackets(object& obj, bool front_flag) {
 }
 #endif
 #ifdef _DEBUG
-static float ArrayX[10][20] = {{-1, 1, 1, -1, -1},
-                               {-.25, 0.0, 0.0, 0.0, -1.0, 1.0},
+static float ArrayX[10][20] = {{-1.0, 1.0, 1.0, -1.0, -1.0},
+                               {-0.25, 0.0, 0.0, 0.0, -1.0, 1.0},
                                {-1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, -1.0, 1.0},
-                               {-1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -.5},
+                               {-1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -0.5},
                                {-1.0, -1.0, -1.0, 1.0, 1.0, 1.0},
                                {-1.0, 1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0},
                                {-1.0, 1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0},
@@ -703,7 +704,7 @@ static float ArrayX[10][20] = {{-1, 1, 1, -1, -1},
                                {-1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, -1.0, 1.0},
                                {1.0, -1.0, -1.0, 1.0, 1.0, 1.0}};
 static float ArrayY[10][20] = {{1, 1, -1, -1, 1},
-                               {.75, 1.0, 1.0, -1.0, -1.0, -1.0},
+                               {0.75, 1.0, 1.0, -1.0, -1.0, -1.0},
                                {1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, -1.0, -1.0},
                                {1.0, 1.0, -1.0, -1.0, -1.0, 0, 0.0},
                                {1.0, 0.0, 0.0, 0.0, 1.0, -1.0},
@@ -738,9 +739,9 @@ static void DrawNumber(int num, vector3 pos, float size, ddgr_color c1) {
     vector3 cur_pos;
 
     if (num_numbers & 0x00000001)
-      cur_pos = pos + (2.1 * size * ((num_numbers >> 1) - j)) * Viewer_object->orient.rvec;
+      cur_pos = pos + (2.1f * size * ((num_numbers >> 1) - j)) * Viewer_object->orient.rvec;
     else
-      cur_pos = pos + (2.1 * size * ((num_numbers >> 1) - j) - size) * Viewer_object->orient.rvec;
+      cur_pos = pos + (2.1f * size * ((num_numbers >> 1) - j) - size) * Viewer_object->orient.rvec;
     g3_RotatePoint(&basepnt, &cur_pos);
     for (i = 0; i < NumOfPoints[num_array[j]]; i++) {
       rot_pnt[i] = basepnt;
@@ -901,16 +902,16 @@ void DrawRoomVisPnts(object *obj) {
           //							subvec/=(mag*4);
           //							src2+=subvec;
           if ((check_point_to_face(&src2, &src_fp->normal, src_fp->num_verts, src_vertp))) {
-            DrawColoredDisk(&src2, 1.0f, 0.0f, 0.0f, .1f, .7f, 0.25f, 1);
+            DrawColoredDisk(&src2, 1.0f, 0.0f, 0.0f, 0.1f, 0.7f, 0.25f, 1);
             continue;
           }
 
           src2 += 0.1f * rp->faces[rp->portals[t].portal_face].normal;
           if (!fvi_QuickRoomCheck(&src2, roomnum, false) && !fvi_QuickRoomCheck(&src2, roomnum, true)) {
-            DrawColoredDisk(&src2, 0.0f, 1.0f, 0.0f, .1f, .7f, 0.25f, 1);
+            DrawColoredDisk(&src2, 0.0f, 1.0f, 0.0f, 0.1f, 0.7f, 0.25f, 1);
             continue;
           }
-          DrawColoredDisk(&src2, 0.0f, 0.0f, 1.0f, .1f, .7f, 0.25f, 1);
+          DrawColoredDisk(&src2, 0.0f, 0.0f, 1.0f, 0.1f, 0.7f, 0.25f, 1);
         }
       }
     }
@@ -921,16 +922,16 @@ void DrawDebugInfo(object *obj) {
   m = obj->orient;
   vm_TransposeMatrix(&m);
   if (obj->type == object_type::room) {
-    DrawColoredDisk(&obj->pos, 0.0f, 0.0f, 1.0f, .1f, .7f, obj->size, 1);
+    DrawColoredDisk(&obj->pos, 0.0f, 0.0f, 1.0f, 0.1f, 0.7f, obj->size, 1);
   } else {
     if (Game_show_sphere == 1) {
       vector3 center = obj->pos + Poly_models[obj->rtype.pobj_info().model_num].wall_size_offset * m;
-      DrawColoredDisk(&center, 0.0f, 0.0f, 1.0f, .1f, .7f, Poly_models[obj->rtype.pobj_info().model_num].wall_size, 1);
+      DrawColoredDisk(&center, 0.0f, 0.0f, 1.0f, 0.1f, 0.7f, Poly_models[obj->rtype.pobj_info().model_num].wall_size, 1);
     } else if (Game_show_sphere == 2) {
       vector3 center = obj->pos + Poly_models[obj->rtype.pobj_info().model_num].anim_size_offset * m;
-      DrawColoredDisk(&center, 0.0f, 0.1f, .9f, .1f, .7f, Poly_models[obj->rtype.pobj_info().model_num].anim_size, 1);
+      DrawColoredDisk(&center, 0.0f, 0.1f, 0.9f, 0.1f, 0.7f, Poly_models[obj->rtype.pobj_info().model_num].anim_size, 1);
     } else if (Game_show_sphere == 3) {
-      DrawColoredDisk(&obj->pos, 0.1f, 0.2f, .9f, .1f, .7f, obj->size, 1);
+      DrawColoredDisk(&obj->pos, 0.1f, 0.2f, 0.9f, 0.1f, 0.7f, obj->size, 1);
     }
   }
   g3Point g3p[8];
@@ -960,7 +961,7 @@ void DrawDebugInfo(object *obj) {
   pos[7].z() = obj->max_xyz.z();
 
   pos[8] = obj->pos;
-  pos[8].y() += .8f * obj->size;
+  pos[8].y() += 0.8f * obj->size;
   g3_RotatePoint(&g3p[0], &pos[0]);
   g3_RotatePoint(&g3p[1], &pos[1]);
   g3_RotatePoint(&g3p[2], &pos[2]);
@@ -981,14 +982,14 @@ void DrawDebugInfo(object *obj) {
   g3_DrawLine(c1, &g3p[5], &g3p[6]);
   g3_DrawLine(c1, &g3p[6], &g3p[7]);
   g3_DrawLine(c1, &g3p[7], &g3p[4]);
-  DrawNumber(OBJNUM(obj), obj->pos, 1.0, GR_RGB(255, 255, 255));
+  DrawNumber(OBJNUM(obj), obj->pos, 1.0f, GR_RGB(255, 255, 255));
 
   if (!obj->is_outside()) {
     if (obj->roomnum != Player_object->roomnum)
       c1 = GR_RGB(255, 0, 0);
     else
       c1 = GR_RGB(255, 255, 255);
-    DrawNumber(obj->roomnum, obj->max_xyz, 0.50, c1);
+    DrawNumber(obj->roomnum, obj->max_xyz, 0.50f, c1);
   }
 }
 #endif
@@ -1027,7 +1028,7 @@ void DrawShardObject(object& obj) {
   int bm_handle = GetTextureBitmap(si->tmap, 0);
   Q_ASSERT(bm_handle != -1);
   float alpha = GameTextures[si->tmap].alpha;
-  alpha = 0.2 + alpha * 0.8; // Make less transparent
+  alpha = 0.2f + alpha * 0.8f; // Make less transparent
   // Set alpha, transparency, & lighting for this face
   rend_SetAlphaType(alpha_blend_type::constant);
   rend_SetAlphaValue(alpha * 255);
@@ -1070,9 +1071,9 @@ bool SetupTerrainObject(object& obj) {
         scalar_b = std::min<float>(1, scalar + (obj.effect_info->dynamic_blue));
         // If this is a robot, make it at least 10% for each RGB component
         if (obj.type == object_type_e::robot) {
-          scalar_r = std::max<float>(.1, scalar_r);
-          scalar_g = std::max<float>(.1, scalar_g);
-          scalar_b = std::max<float>(.1, scalar_b);
+          scalar_r = std::max<float>(0.1f, scalar_r);
+          scalar_g = std::max<float>(0.1f, scalar_g);
+          scalar_b = std::max<float>(0.1f, scalar_b);
         }
         if (obj.type == object_type_e::player && ((Players[obj.id].flags.headlight)))
         {
@@ -1090,7 +1091,7 @@ bool SetupTerrainObject(object& obj) {
     if (obj.lighting_render_type == lighting_render_type_e::static_lights || Poly_models[obj.rtype.pobj_info().model_num].new_style == 0)
       RenderObject_SetStatic(scalar_r, scalar_g, scalar_b);
     else if (obj.lighting_render_type == lighting_render_type_e::gouraud || NoLightmaps) {
-      vector3 lightdir = {0, -1.0, 0}; // straight down for now
+      vector3 lightdir = {0.0f, -1.0f, 0.0f}; // straight down for now
       RenderObject_SetGouraud(&lightdir, scalar_r, scalar_g, scalar_b, scalar);
     } else if (obj.lighting_render_type == lighting_render_type_e::lightmaps) {
       if (obj.lm_object.used == 0)
@@ -1109,9 +1110,9 @@ bool SetupMineObject(object& obj) {
   if (obj.lighting_render_type == lighting_render_type_e::static_lights || Poly_models[obj.rtype.pobj_info().model_num].new_style == 0) {
     RenderObject_SetStatic(1.0f, 1.0f, 1.0f);
   } else if (obj.lighting_render_type == lighting_render_type_e::gouraud || NoLightmaps) {
-    float scalar_r = 1.0, scalar_g = 1.0, scalar_b = 1.0f;
+    float scalar_r = 1.0f, scalar_g = 1.0f, scalar_b = 1.0f;
 
-    vector3 lightdir = {0, -1.0, 0}; // straight down for now
+    vector3 lightdir = {0.0f, -1.0f, 0.0f}; // straight down for now
 
     // Get the volume light for this object
     if (obj.effect_info && (obj.effect_info->type_flags.volume_lit) &&
@@ -1139,9 +1140,9 @@ bool SetupMineObject(object& obj) {
       scalar_b = std::min<float>(1, scalar_b + (obj.effect_info->dynamic_blue));
       // If this is a robot, make it at least 10% for each RGB component
       if (obj.type == object_type_e::robot) {
-        scalar_r = std::max<float>(.1, scalar_r);
-        scalar_g = std::max<float>(.1, scalar_g);
-        scalar_b = std::max<float>(.1, scalar_b);
+        scalar_r = std::max<float>(0.1f, scalar_r);
+        scalar_g = std::max<float>(0.1f, scalar_g);
+        scalar_b = std::max<float>(0.1f, scalar_b);
       }
 
       if (obj.type == object_type_e::player && (Players[obj.id].flags.headlight)) {
@@ -1246,8 +1247,8 @@ void RenderObject(object& obj) {
       // Let me take this opportunity to say how much it pisses me off that
       // the DrawColoredDisk() function takes r,g,b as floats, when the standard
       // in our graphics system is to pass color as a ddgr_color
-      float r = (float)GR_COLOR_RED(obj.rtype.sphere_color()) / 255.0,
-            g = (float)GR_COLOR_GREEN(obj.rtype.sphere_color()) / 255.0,
+      float r = (float)GR_COLOR_RED(obj.rtype.sphere_color()) / 255.0f,
+            g = (float)GR_COLOR_GREEN(obj.rtype.sphere_color()) / 255.0f,
             b = (float)GR_COLOR_BLUE(obj.rtype.sphere_color()) / 255.0f;
       DrawColoredDisk(&obj.pos, r, g, b, 1, 1, obj.size, 0);
     }
@@ -1487,19 +1488,19 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
   if (UseHardware) {
     if (obj.effect_info && (obj.effect_info->type_flags.fading_out)) {
       pe.type.alpha = true;
-      pe.alpha = .08 + (.92 * (obj.effect_info->fade_time / obj.effect_info->fade_max_time));
+      pe.alpha = 0.08f + (0.92f * (obj.effect_info->fade_time / obj.effect_info->fade_max_time));
       use_effect = 1;
     }
     if (obj.effect_info && (obj.effect_info->type_flags.fading_in)) {
       pe.type.alpha = true;
-      pe.alpha = .08 + (.92 * (1.0 - (obj.effect_info->fade_time / obj.effect_info->fade_max_time)));
+      pe.alpha = 0.08f + (0.92f * (1.0f - (obj.effect_info->fade_time / obj.effect_info->fade_max_time)));
       use_effect = 1;
     }
     if (obj.effect_info && (obj.effect_info->type_flags.cloaked)) {
       pe.type.alpha = true;
       pe.type.deform = true;
-      pe.alpha = .13f;
-      pe.deform_range = .1f;
+      pe.alpha = 0.13f;
+      pe.deform_range = 0.1f;
 
       use_effect = 1;
     }
@@ -1510,15 +1511,15 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
       pe.glow_size_scalar = (Players[obj.id].thrust_mag);
 
       pe.glow_length_scalar += (Players[obj.id].afterburner_mag * 3);
-      pe.glow_size_scalar += (Players[obj.id].afterburner_mag * .5);
+      pe.glow_size_scalar += (Players[obj.id].afterburner_mag * 0.5f);
       float adjustment = (d3::rand() % 100 - 50);
       adjustment /= 50.0f;
-      pe.glow_length_scalar += (.2 * adjustment);
+      pe.glow_length_scalar += (0.2f * adjustment);
 
       use_effect = 1;
       // Make Katmai glows longer
       if (Katmai) {
-        pe.glow_length_scalar *= 1.5;
+        pe.glow_length_scalar *= 1.5f;
       }
     }
     // Deform this object if needed
@@ -1546,17 +1547,17 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
 
       use_effect = 1;
       // switch object position a little
-      float moveval = 10.0 * val * Viewer_object->effect_info->deform_range;
-      obj_pos.x() += (((d3::rand() % 1000) - 500) / 500.0) * moveval;
-      obj_pos.y() += (((d3::rand() % 1000) - 500) / 500.0) * moveval;
-      obj_pos.z() += (((d3::rand() % 1000) - 500) / 500.0) * moveval;
+      float moveval = 10.0f * val * Viewer_object->effect_info->deform_range;
+      obj_pos.x() += (((d3::rand() % 1000) - 500) / 500.0f) * moveval;
+      obj_pos.y() += (((d3::rand() % 1000) - 500) / 500.0f) * moveval;
+      obj_pos.z() += (((d3::rand() % 1000) - 500) / 500.0f) * moveval;
     }
     // If this is a powerup, fade it out near the end of its life
     if (obj.type == object_type_e::powerup && obj.flags.uses_lifeleft && obj.lifeleft < 5) {
       pe.type.alpha = true;
       pe.type.deform = true;
       pe.alpha = obj.lifeleft / 5.0f;
-      pe.deform_range = .2f * (1.0 - (obj.lifeleft / 5.0));
+      pe.deform_range = 0.2f * (1.0f - (obj.lifeleft / 5.0f));
 
       use_effect = 1;
     }
@@ -1627,7 +1628,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
       float detail_scalar = 1.0f;
       g3_RotatePoint(pnt, obj.pos);
       if (Detail_settings.Object_complexity == 0)
-        detail_scalar = .6f;
+        detail_scalar = 0.6f;
       else if (Detail_settings.Object_complexity == 2)
         detail_scalar = 1.2f;
       if (pnt.p3_z < (oi.med_lod_distance * detail_scalar))
@@ -1658,7 +1659,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
       int ship_num = Players[obj.id].ship_index;
       float detail_scalar = 1.0f;
       if (Detail_settings.Object_complexity == 0)
-        detail_scalar = .6f;
+        detail_scalar = 0.6f;
       else if (Detail_settings.Object_complexity == 2)
         detail_scalar = 1.2f;
       if (pnt.p3_z < (Ships[ship_num].med_lod_distance * detail_scalar))
@@ -1824,7 +1825,7 @@ void DrawPowerupSparkles(object *obj) {
   (void)obj;
 }
 
-#define POWERUP_HALO_ALPHA .3f
+#define POWERUP_HALO_ALPHA 0.3f
 // Draws the glowing disk around a powerup
 void DrawPowerupGlowDisk(object *obj) {
   // NOTE: body commented out -- depends on unported lighting subsystem
@@ -1838,13 +1839,13 @@ void DrawPlayerDamageDisk(object *obj) {
   if (obj == Viewer_object)
     return; // don't do me
   float damage_norm = Players[obj->id].damage_magnitude / MAX_DAMAGE_MAG;
-  if (damage_norm > 1.0)
+  if (damage_norm > 1.0f)
     damage_norm = 1.0f;
-  if (damage_norm < .001)
+  if (damage_norm < 0.001f)
     return;
   rend_SetZBias(-obj->size);
   int bm_handle;
-  float rot_temp = .25; // Higher is faster
+  float rot_temp = 0.25f; // Higher is faster
   int int_game = d3::chrono::last_update() / rot_temp;
   float diff = d3::chrono::last_update() - (int_game * rot_temp);
   int rot_angle = diff * 65536;
@@ -1854,7 +1855,7 @@ void DrawPlayerDamageDisk(object *obj) {
   rend_SetAlphaType(alpha_blend_type::saturate_texture);
   rend_SetZBufferWriteMask(0);
 
-  rend_SetAlphaValue(.4 * damage_norm * 255);
+  rend_SetAlphaValue(0.4f * damage_norm * 255);
   rend_SetOverlayType(overlay_type::none);
   rend_SetLighting(light_state::none);
   g3_DrawRotatedBitmap(&obj->pos, rot_angle, obj->size, (obj->size * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0),
@@ -1870,7 +1871,7 @@ void DrawPlayerInvulSphere(object *obj) {
     return; // don't do me
   if (!(Players[obj->id].flags.invulnerable))
     return;
-  if (Players[obj->id].invul_magnitude < .05)
+  if (Players[obj->id].invul_magnitude < 0.05f)
     return;
 
   int bm_handle = Fireballs[INVUL_HIT_INDEX].bm_handle;
@@ -1886,7 +1887,7 @@ void DrawPlayerInvulSphere(object *obj) {
   // Now draw!
   rend_SetAlphaType(alpha_blend_type::saturate_texture);
   rend_SetZBufferWriteMask(0);
-  rend_SetAlphaValue(.6 * Players[obj->id].invul_magnitude * 255);
+  rend_SetAlphaValue(0.6f * Players[obj->id].invul_magnitude * 255);
   rend_SetOverlayType(overlay_type::none);
   rend_SetLighting(light_state::none);
   g3_DrawPlanarRotatedBitmap(&hit_pos, &norm_vec, 0, 3, 3, bm_handle);
@@ -1904,7 +1905,7 @@ void DrawPlayerRotatingBall(object *obj) {
   rend_SetLighting(light_state::gouraud);
   rend_SetTextureType(texture_type::linear);
   rend_SetAlphaType(alpha_blend_type::saturate_texture);
-  rend_SetAlphaValue(.3 * 255);
+  rend_SetAlphaValue(0.3f * 255);
   rend_SetZBufferWriteMask(0);
   if (first) {
     int texhandle = FindTextureName("WhiteGlowingBall").value_or(-1);
@@ -1944,7 +1945,7 @@ void DrawPlayerTypingIndicator(object *obj) {
     return;
   int bm_handle = GetTextureBitmap(type_indicator_model, 0);
   float IndicatorTan;
-  float rad = (float)(3.14 * (float)(10) / 180.0f);
+  float rad = (float)(std::numbers::pi_v<float> * 10.0f / 180.0f);
   IndicatorTan = std::tan(rad);
   // See if it is in our viewcone
   vector3 subvec = obj->pos - Player_object->pos;
