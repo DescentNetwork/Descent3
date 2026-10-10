@@ -916,8 +916,8 @@ void BuildModelAngleMatrix(matrix *mat, angle ang, vector3 *axis) {
   y = axis->y();
   z = axis->z();
 
-  s = (scalar)FixSin(ang);
-  c = (scalar)FixCos(ang);
+  s = FixSin(ang);
+  c = FixCos(ang);
   t = 1.0f - c;
 
   mat->rvec.x() = t * x * x + c;

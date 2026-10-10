@@ -1531,7 +1531,7 @@ void ConvertEulerToAxisAmount(vector3 *e, vector3 *n, float *w) {
     float v = acos(ct);
     float z = sin(v);
 
-    *w = rotspeed * ((2.0f * PI) / (65535.0f));
+    *w = rotspeed * ((2.0f * std::numbers::pi_v<float>) / (65535.0f));
 
     if (z >= 0.0f)
       *n *= -1.0f;
@@ -1580,9 +1580,9 @@ void ConvertAxisAmountToEuler(vector3 *n, float *w, vector3 *e) {
 
   CollideExtractAnglesFromMatrix(&s_result, &rotmat);
 
-  e->x() = (s_result.x()) * scale * (65535.0f / (2.0 * PI));
-  e->y() = (s_result.y()) * scale * (65535.0f / (2.0 * PI));
-  e->z() = (s_result.z()) * scale * (65535.0f / (2.0 * PI));
+  e->x() = s_result.x() * scale * (65535.0f / (2.0f * std::numbers::pi_v<float>));
+  e->y() = s_result.y() * scale * (65535.0f / (2.0f * std::numbers::pi_v<float>));
+  e->z() = s_result.z() * scale * (65535.0f / (2.0f * std::numbers::pi_v<float>));
 }
 #if 0
 void bump_obj_against_fixed(object *obj, vector3 *collision_point, vector3 *collision_normal) {

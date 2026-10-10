@@ -1220,7 +1220,7 @@ bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0,
       vm_NormalizeVector(&n_ptc);
 
       *intp =
-          *p0 - n_ptc * (sphere_rad - (scalar)sqrt(sphere_rad * sphere_rad - vm_Dot3Product(point_to_center_vec, point_to_center_vec)));
+          *p0 - n_ptc * (sphere_rad - scalar(sqrt(sphere_rad * sphere_rad - vm_Dot3Product(point_to_center_vec, point_to_center_vec))));
 
       *col_dist = 0.0;
       return true;
@@ -2320,15 +2320,15 @@ internal_try_again:
   new_pos = min_xyz = max_xyz = *pos;
 
   if (!try_again) {
-    new_pos.x() += (scalar)10000000;
-    max_xyz.x() += (scalar)10000000;
+    new_pos.x() += 10000000.0f;
+    max_xyz.x() += 10000000.0f;
   } else {
-    new_pos.z() -= (scalar)10000000;
-    min_xyz.z() -= (scalar)10000000;
-    new_pos.y() -= (scalar)10000000;
-    min_xyz.y() -= (scalar)10000000;
-    new_pos.x() -= (scalar)10000000;
-    min_xyz.x() -= (scalar)10000000;
+    new_pos.z() -= 10000000.0f;
+    min_xyz.z() -= 10000000.0f;
+    new_pos.y() -= 10000000.0f;
+    min_xyz.y() -= 10000000.0f;
+    new_pos.x() -= 10000000.0f;
+    min_xyz.x() -= 10000000.0f;
   }
   //	mprintf(0, "Checking room %d ", ROOMNUM(cur_room));
 
@@ -2440,7 +2440,7 @@ internal_try_again:
 }
 
 // Long rays are 10 segments or longer in length
-#define MIN_LONG_RAY (TERRAIN_SIZE * 20.0)
+#define MIN_LONG_RAY (TERRAIN_SIZE * 20.0f)
 
 inline bool is_long_xz_ray(fvi_query *fq) {
   if ((fabs(fq->p0->x() - fq->p1->x()) > MIN_LONG_RAY) || (fabs(fq->p0->z() - fq->p1->z()) > MIN_LONG_RAY)) {
@@ -2742,7 +2742,7 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
 
       sub_dir = *fq->p1 - *fq->p0;  // Direction of movement
       vm_NormalizeVector(&sub_dir); // Normalize it
-      sub_dir *= (scalar)MIN_LONG_RAY;      // Scale it to the length of a sub-division
+      sub_dir *= MIN_LONG_RAY;      // Scale it to the length of a sub-division
 
       // Determine the first sub-division
       new_p0 = *fq->p0;

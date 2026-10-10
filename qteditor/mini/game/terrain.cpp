@@ -644,7 +644,7 @@ void SphereMap(float x, float y, float z, float radius, float *u, float *v, int 
   // produces u from 0 to 1
   *u = fh / (65536.0 / 16.005); // account for floating point precision error
 
-  *v = acos(y / radius) / (PI / 2); // v=.5 to 1
+  *v = acos(y / radius) / (std::numbers::pi_v<float> / 2.0f); // v=.5 to 1
   *v /= .5;                         // v=1 to 2
   *v -= 1;                          // v=0 to 1
 }

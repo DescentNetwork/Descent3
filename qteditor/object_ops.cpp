@@ -47,7 +47,7 @@
 float Object_move_scale = HOBJECT_SCALE_UNIT;
 angle Object_move_rotation = HOBJECT_ROTATION_UNIT;
 
-#define OBJECT_PLACE_DIST (scalar)10.0
+#define OBJECT_PLACE_DIST 10.0f
 #define MOVE_EPSILON 0.1f
 
 bool f_allow_objects_to_be_pushed_through_walls = false;

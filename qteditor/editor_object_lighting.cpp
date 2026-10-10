@@ -793,7 +793,7 @@ void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_sur
 
   vm_TransposeMatrix(&trans_matrix);
 
-  xdiff = vector3{ (scalar)LightmapInfo[lmi_handle].xspacing, (scalar)LightmapInfo[lmi_handle].yspacing, (scalar)0 };
+  xdiff = vector3{ scalar(LightmapInfo[lmi_handle].xspacing), scalar(LightmapInfo[lmi_handle].yspacing), 0.0f };
 
   for (i = 0; i < yres; i++) {
     for (t = 0; t < xres; t++) {

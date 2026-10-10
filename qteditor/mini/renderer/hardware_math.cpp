@@ -591,11 +591,11 @@ void g3_StartFrame(vector3 *view_pos, matrix *view_matrix, float zoom) {
 
   rend_GetProjectionParameters(&Window_width, &Window_height);
 
-  Window_w2 = ((scalar)Window_width) * 0.5f;
-  Window_h2 = ((scalar)Window_height) * 0.5f;
+  Window_w2 = 0.5f * Window_width;
+  Window_h2 = 0.5f * Window_height;
 
-  scalar s = (scalar)Window_height / (scalar)Window_width;
-  Matrix_scale = vector3{s <= 1.0f ? s : 1.0f / s, 1.0f, 1.0f};
+  scalar s = scalar(Window_height) / Window_width;
+  Matrix_scale = vector3 { (s <= 1.0f ? s : 1.0f / s), 1.0f, 1.0f};
 
   zoom *= 3.f / 4.f;
 

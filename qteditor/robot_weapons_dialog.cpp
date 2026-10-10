@@ -251,8 +251,8 @@ void RobotEditWeaponsDialog::loadData() {
   ui->IDC_GP_MASK_Q_7->setChecked((wb->gp_quad_fire_mask & (1 << 7)) != 0);
   ui->IDC_BARREL_7_RADIO->setChecked(wb->aiming_gp_index == 7);
 
-  const float view_cone = wb->aiming_3d_dot > 1.0f ? 0.0f : acos(wb->aiming_3d_dot) * (360.0 / PI);
-  const float xz_angle = wb->aiming_XZ_dot > 1.0f ? 0.0f : acos(wb->aiming_XZ_dot) * (360.0 / PI);
+  const float view_cone = wb->aiming_3d_dot > 1.0f ? 0.0f : acos(wb->aiming_3d_dot) * (360.0f / std::numbers::pi_v<float>);
+  const float xz_angle = wb->aiming_XZ_dot > 1.0f ? 0.0f : acos(wb->aiming_XZ_dot) * (360.0f / std::numbers::pi_v<float>);
   ui->IDC_VIEW_CONE_ANGLE_EDIT->setText(QString::number(view_cone));
   ui->IDC_MAX_DISTANCE_EDIT->setText(QString::number(wb->aiming_3d_dist));
   ui->IDC_XZ_PLANE_ANGLE_EDIT->setText(QString::number(xz_angle));
@@ -663,9 +663,9 @@ void RobotEditWeaponsDialog::getData() {
   if (ui->IDC_BARREL_7_RADIO->isChecked())
     wb->aiming_gp_index = 7;
 
-  wb->aiming_3d_dot = cos(ui->IDC_VIEW_CONE_ANGLE_EDIT->text().toFloat() * PI / 360.0);
+  wb->aiming_3d_dot = cos(ui->IDC_VIEW_CONE_ANGLE_EDIT->text().toFloat() * std::numbers::pi_v<float> / 360.0f);
   wb->aiming_3d_dist = ui->IDC_MAX_DISTANCE_EDIT->text().toFloat();
-  wb->aiming_XZ_dot = cos(ui->IDC_XZ_PLANE_ANGLE_EDIT->text().toFloat() * PI / 360.0);
+  wb->aiming_XZ_dot = cos(ui->IDC_XZ_PLANE_ANGLE_EDIT->text().toFloat() * std::numbers::pi_v<float> / 360.0f);
 
   wb->energy_usage = ui->IDC_ENERGY_USAGE_EDIT->text().toFloat();
   wb->ammo_usage = ui->IDC_AMMO_USAGE_EDIT->text().toFloat();

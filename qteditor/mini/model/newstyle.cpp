@@ -606,7 +606,7 @@ inline void RenderSubmodelFaceSpecular(poly_model *pm, bsp_info *sm, int facenum
       dotp = 1;
 
     if (dotp > 0) {
-      int index = ((scalar)(MAX_SPECULAR_INCREMENTS - 1) * dotp);
+      int index = dotp * (MAX_SPECULAR_INCREMENTS - 1);
       scalar val = Specular_tables[2][index];
 
       p->p3_a = val * Polymodel_effect.spec_scalar;

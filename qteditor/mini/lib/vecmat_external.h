@@ -288,10 +288,10 @@ struct alignas(N==N_POW2 && A != align::scalar || A == align::vector ? alignof(T
   template<size_t N_A = 3, size_t N_B = 3, enum align A_A = align::adaptive, enum align A_B = align::adaptive>
   constexpr static inline vec<T,3> cross3(const vec<T,N_A,A_A> &a, const vec<T,N_B,A_B> &b)
   {
-    return vec<T,3,align::vector>{a.y()*b.z(), a.z()*b.x(), a.x()*b.y()}
-         - vec<T,3,align::vector>{b.y()*a.z(), b.z()*a.x(), b.x()*a.y()};
+    return vec<T,3,align::vector>{ a.y() * b.z(), a.z() * b.x(), a.x() * b.y() }
+         - vec<T,3,align::vector>{ b.y() * a.z(), b.z() * a.x(), b.x() * a.y() };
   }
-  constexpr inline scalar mag() const { return (scalar)sqrt(dot((*this),(*this))); }
+  constexpr inline scalar mag() const { return scalar(sqrt(dot(*this, *this))); }
 
   template<size_t N_A = 3, size_t N_B = 3, enum align A_A = align::adaptive, enum align A_B = align::adaptive>
   static constexpr inline scalar distance(const vec<T,N_A,A_A> &a, const vec<T,N_B,A_B> &b) { return (a - b).mag(); }

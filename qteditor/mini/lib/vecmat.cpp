@@ -13,10 +13,6 @@
 #include <algorithm>
 #include <cmath>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 const matrix Identity_matrix = matrix::id();
 void vm_MakeIdentity(matrix *m) { *m = Identity_matrix; }
 void vm_TransposeMatrix(matrix *m) {
@@ -84,8 +80,9 @@ void vm_CenterVector(vector3 *v) {
 void vm_AverageVector(vector3 *v, int n) {
   if (v == nullptr || n == 0)
     return;
+  scalar nf = n;
   for (int i = 0; i < 3; i++)
-    (*v)[i] /= (scalar)n;
+    (*v)[i] /= nf;
 }
 scalar vm_GetNormal(vector3 *n, const vector3 *v0, const vector3 *v1, const vector3 *v2) {
   if (n == nullptr || v0 == nullptr || v1 == nullptr || v2 == nullptr)
@@ -155,8 +152,8 @@ void vm_MakeInverseMatrix(matrix *dest) {
     vm_TransposeMatrix(dest);
 }
 // angle is uint16_t with 65536 == 2*pi (matches the D3 256-entry trig table).
-scalar FixSin(angle a) { return (scalar)(std::sin((2.0 * M_PI * (double)a) / 65536.0)); }
-scalar FixCos(angle a) { return (scalar)(std::cos((2.0 * M_PI * (double)a) / 65536.0)); }
+scalar FixSin(angle a) { return scalar(std::sin((2.0 * std::numbers::pi * double(a)) / 65536.0)); }
+scalar FixCos(angle a) { return scalar(std::cos((2.0 * std::numbers::pi * double(a)) / 65536.0)); }
 
 void vm_SinCos(angle a, scalar *s, scalar *c) {
   if (s)
@@ -193,7 +190,7 @@ angle vm_DeltaAngVecNorm(const vector3 *v0, const vector3 *v1, const vector3 *fv
     s = 1.0f;
   if (s < -1.0f)
     s = -1.0f;
-  return (angle)((std::acos(s) / (2.0 * M_PI)) * 65536.0);
+  return (angle)((std::acos(s) / (2.0 * std::numbers::pi)) * 65536.0);
 }
 void vm_AnglesToMatrix(matrix *m, angle p, angle h, angle b) {
   if (m == nullptr)
@@ -208,11 +205,11 @@ angvec *vm_ExtractAnglesFromMatrix(angvec *a, const matrix *m) {
     p = 1.0f;
   if (p < -1.0f)
     p = -1.0f;
-  a->p() = (angle)((std::asin(p) / (2.0 * M_PI)) * 65536.0);
+  a->p() = (angle)((std::asin(p) / (2.0 * std::numbers::pi)) * 65536.0);
   scalar cosp = std::sqrt(std::max(0.0f, 1.0f - p * p));
   if (cosp != 0.0f) {
-    a->h() = (angle)((std::atan2(m->fvec.x() / cosp, m->fvec.z() / cosp) / (2.0 * M_PI)) * 65536.0);
-    a->b() = (angle)((std::atan2(m->rvec.y() / cosp, m->uvec.y() / cosp) / (2.0 * M_PI)) * 65536.0);
+    a->h() = (angle)((std::atan2(m->fvec.x() / cosp, m->fvec.z() / cosp) / (2.0 * std::numbers::pi)) * 65536.0);
+    a->b() = (angle)((std::atan2(m->rvec.y() / cosp, m->uvec.y() / cosp) / (2.0 * std::numbers::pi)) * 65536.0);
   } else {
     a->h() = a->b() = 0;
   }

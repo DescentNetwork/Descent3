@@ -28,6 +28,7 @@
 #include "rand.h"
 
 #include <algorithm>
+#include <numbers>
 
 #define TOP_FACE 0
 #define LEFT_FACE 1
@@ -50,10 +51,6 @@ int Cracks_this_frame, Cracks_this_side;
 
 float Highest_top_delta, Highest_side_delta;
 
-#ifndef PI
-#define PI 3.141592654
-#endif
-
 // Calculates delta form factors
 void CalculateDeltaFormFactors() {
   int i, j;         // Loop indices
@@ -74,7 +71,7 @@ void CalculateDeltaFormFactors() {
     y = dy / 2.0;
     for (j = 0; j < rad_Hemicube.grid_dim; j++) {
       r = x * x + y * y + 1.0;
-      val = (float)(da / (PI * r * r));
+      val = (float)(da / (std::numbers::pi_v<float> * r * r));
       rad_Hemicube.top_array[j * rad_Hemicube.grid_dim + i] = val;
 
       if (val > Highest_top_delta)
@@ -91,7 +88,7 @@ void CalculateDeltaFormFactors() {
     z = dz / 2.0;
     for (j = 0; j < rad_Hemicube.grid_dim; j++) {
       r = x * x + z * z + 1.0;
-      val = (float)(z * da / (PI * r * r));
+      val = (float)(z * da / (std::numbers::pi_v<float> * r * r));
       rad_Hemicube.side_array[j * rad_Hemicube.grid_dim + i] = val;
 
       if (val > Highest_side_delta)
@@ -273,16 +270,16 @@ void SetElementView(rad_element *ep) {
   vector3 u, v, n;
 
   // Select random vector for hemicube orientation
-  rv.x() = (((scalar)d3::rand() / (scalar)d3::rand_max) * (scalar)2.0 - (scalar)1.0);
-  rv.y() = (((scalar)d3::rand() / (scalar)d3::rand_max) * (scalar)2.0 - (scalar)1.0);
-  rv.z() = (((scalar)d3::rand() / (scalar)d3::rand_max) * (scalar)2.0 - (scalar)1.0);
+  rv.x() = ((scalar(d3::rand()) / d3::rand_max) * 2.0f - 1.0f);
+  rv.z() = ((scalar(d3::rand()) / d3::rand_max) * 2.0f - 1.0f);
+  rv.y() = ((scalar(d3::rand()) / d3::rand_max) * 2.0f - 1.0f);
 
   n = rad_MaxSurface->normal; // Get patch normal
 
   do // Get valid u-axis vector
   {
     vm_CrossProduct(&u, &n, &rv);
-  } while (vm_GetMagnitude(&u) < .0001);
+  } while (vm_GetMagnitude(&u) < 0.0001f);
 
   vm_NormalizeVector(&u);
   vm_CrossProduct(&v, &u, &n); // Determine v-axis
@@ -301,16 +298,16 @@ void SetSurfaceView(rad_surface *surf) {
   vector3 u, v, n;
 
   // Select random vector for hemicube orientation
-  rv.x() = (((scalar)d3::rand() / (scalar)d3::rand_max) * (scalar)2.0 - (scalar)1.0);
-  rv.y() = (((scalar)d3::rand() / (scalar)d3::rand_max) * (scalar)2.0 - (scalar)1.0);
-  rv.z() = (((scalar)d3::rand() / (scalar)d3::rand_max) * (scalar)2.0 - (scalar)1.0);
+  rv.x() = ((scalar(d3::rand()) / d3::rand_max) * 2.0f - 1.0f);
+  rv.y() = ((scalar(d3::rand()) / d3::rand_max) * 2.0f - 1.0f);
+  rv.z() = ((scalar(d3::rand()) / d3::rand_max) * 2.0f - 1.0f);
 
   n = rad_MaxSurface->normal; // Get patch normal
 
   do // Get valid u-axis vector
   {
     vm_CrossProduct(&u, &n, &rv);
-  } while (vm_GetMagnitude(&u) < (scalar).0001);
+  } while (vm_GetMagnitude(&u) < 0.0001f);
 
   vm_NormalizeVector(&u);
   vm_CrossProduct(&v, &u, &n); // Determine v-axis
@@ -333,7 +330,7 @@ void BuildTransform(vector3 *nu, vector3 *nv, vector3 *nn) {
   else
     GetCenterOfElement(rad_Hemicube.shooting_element, &rad_Hemicube.view_position);
 
-  rad_Hemicube.view_position += (rad_MaxSurface->normal / (scalar)16.0);
+  rad_Hemicube.view_position += rad_MaxSurface->normal / 16.0f;
 
   vm->fvec = *nn;
   vm->uvec = *nv;
@@ -742,7 +739,7 @@ void ScanRadiosityPoly(g3Point **pl, int nv, int element_id) {
 
     cp[i].sx = p.p3_sx;
     cp[i].sy = p.p3_sy;
-    cp[i].z = (scalar)1.0 / (scalar)(p.p3_vec.z());
+    cp[i].z = 1.0f / p.p3_vec.z();
   }
 
   // Determine top and bottom y coords.
@@ -814,7 +811,7 @@ void ScanRadiosityPoly(g3Point **pl, int nv, int element_id) {
 
       // Enter scan line
       for (int x = x1; x < x1 + width; x++) {
-        scalar realz = (scalar)1.0 / z;
+        scalar realz = 1.0f / z;
         // Check element visibility
         if (realz <= rad_Hemicube.depth_grid[destptr + x]) {
           // Update Z-buffer

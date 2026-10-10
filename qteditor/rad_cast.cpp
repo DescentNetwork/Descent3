@@ -264,13 +264,13 @@ void ClipSatelliteToTerrain(vector3& answer, vector3& src_vec, vector3& dest_vec
   vector3 ray;
 
   // Check ceiling
-  if (cur_vec.y() > ((scalar)MAX_TERRAIN_HEIGHT * 30)) {
+  if (cur_vec.y() > MAX_TERRAIN_HEIGHT * 30) {
     ray = cur_vec - dest_vec;
 
     mag = vm_GetMagnitude(&ray);
     ray /= mag;
 
-    diff = (((scalar)MAX_TERRAIN_HEIGHT * 30) - dest_vec.y()) / ray.y();
+    diff = ((MAX_TERRAIN_HEIGHT * 30.0f) - dest_vec.y()) / ray.y();
 
     cur_vec = (dest_vec + (ray * diff)) - (ray / 4);
   }
@@ -361,7 +361,7 @@ int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_su
 
   // If this ray is too high, clip it to the ceiling
   if (src_surf->surface_type == rad_surface_type::satellite) {
-    if (1 || dest.y() >= (scalar)MAX_TERRAIN_HEIGHT) {
+    if (1 || dest.y() >= MAX_TERRAIN_HEIGHT) {
       from_satellite = 1;
       // swap the src/dest the variables because we now want to shoot from the ground to the satellite
       rad_surface *temp_surf;

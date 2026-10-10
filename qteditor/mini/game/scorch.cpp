@@ -329,13 +329,13 @@ void DrawScorches(int roomnum, int facenum) {
         size *= 1.0 - ((depth - FADE_START_DISTANCE) / (MAX_VIS_DISTANCE - FADE_START_DISTANCE));
 
       // Calculate vectors to corners
-      right.x() = (scalar)sp->rx * (size / 127.0);
-      right.y() = (scalar)sp->ry * (size / 127.0);
-      right.z() = (scalar)sp->rz * (size / 127.0);
+      right.x() = (size / 127.0f) * sp->rx;
+      right.y() = (size / 127.0f) * sp->ry;
+      right.z() = (size / 127.0f) * sp->rz;
 
-      up.x() = (scalar)sp->ux * (size / 127.0);
-      up.y() = (scalar)sp->uy * (size / 127.0);
-      up.z() = (scalar)sp->uz * (size / 127.0);
+      up.x() = (size / 127.0f) * sp->ux;
+      up.y() = (size / 127.0f) * sp->uy;
+      up.z() = (size / 127.0f) * sp->uz;
 
       // Compute four corners
       corners[0] = sp->pos - right + up;

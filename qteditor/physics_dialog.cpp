@@ -25,6 +25,7 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <cmath>
+#include <numbers>
 
 #include "vecmat.h"
 
@@ -166,8 +167,7 @@ void PhysicsDialog::setPhysicsData(const physics_info& p)
   setEditFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_Y_EDIT, p.rotvel.y());
   setEditFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_Z_EDIT, p.rotvel.z());
   setEditFloat(ui->IDC_PHYSICS_MAX_BOUNCES_EDIT, p.num_bounces);
-  setEditFloat(ui->IDC_PHYSICS_PERCENT_LOSS_EDIT,
-               (scalar)100.0 - (p.coeff_restitution * (scalar)100.0));
+  setEditFloat(ui->IDC_PHYSICS_PERCENT_LOSS_EDIT, 100.0f - (p.coeff_restitution * 100.0f));
 
   ui->IDC_PHYSICS_STICKY_CHECK->setChecked(p.flags.stick);
   ui->IDC_PHYSICS_BOUNCY_CHECK->setChecked(p.flags.bounce);
@@ -204,7 +204,7 @@ void PhysicsDialog::setPhysicsData(const physics_info& p)
 
   setEditFloat(ui->IDC_PHYSICS_HIT_DIE_ANGLE,
                (p.hit_die_dot == -1) ? 0.0f
-                                      : (float)(asin(p.hit_die_dot) * ((scalar)180.0 / (scalar)PI)));
+                                      : (float)(asin(p.hit_die_dot) * (180.0f / std::numbers::pi_v<float>)));
   ui->IDC_PHYSICS_HIT_DIE_ANGLE->setEnabled(p.hit_die_dot != -1);
 }
 
@@ -224,7 +224,7 @@ void PhysicsDialog::getPhysicsData(physics_info& p) const
   p.rotvel.y() = editFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_Y_EDIT);
   p.rotvel.z() = editFloat(ui->IDC_PHYSICS_INIT_ROT_VELOCITY_Z_EDIT);
   p.num_bounces = (int)editFloat(ui->IDC_PHYSICS_MAX_BOUNCES_EDIT);
-  p.coeff_restitution = ((scalar)100.0 - editFloat(ui->IDC_PHYSICS_PERCENT_LOSS_EDIT)) / (scalar)100.0;
+  p.coeff_restitution = (100.0f - editFloat(ui->IDC_PHYSICS_PERCENT_LOSS_EDIT)) / 100.0f;
   
   p.flags.stick = ui->IDC_PHYSICS_STICKY_CHECK->isChecked();
   p.flags.bounce = ui->IDC_PHYSICS_BOUNCY_CHECK->isChecked();
@@ -252,7 +252,7 @@ void PhysicsDialog::getPhysicsData(physics_info& p) const
   p.flags.persistent = ui->IDC_PHYSICS_PERSISTENT_CHECK->isChecked();
 
   if (p.hit_die_dot != -1)
-    p.hit_die_dot = sin(editFloat(ui->IDC_PHYSICS_HIT_DIE_ANGLE) * (scalar)PI / (scalar)180.0);
+    p.hit_die_dot = sin(editFloat(ui->IDC_PHYSICS_HIT_DIE_ANGLE) * std::numbers::pi_v<float> / 180.0f);
   p.flags.gravity = (m_gravityFlag == kForwardGravity);
   p.flags.reverse_gravity =(m_gravityFlag == kReverseGravity);
 }

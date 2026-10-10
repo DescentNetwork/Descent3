@@ -75,8 +75,6 @@ using angle = uint16_t;
 // The basic fixed-point type
 using fix = int32_t;
 
-#define PI 3.141592654f
-#define PIOVER2 1.570796327 // DAJ
 
 // Constants for converted between fix and float
 #define FLOAT_SCALER 65536.0f
@@ -101,7 +99,7 @@ scalar FixCos(angle a);
 #define FloatToFix(num) ((fix)((num) * FLOAT_SCALER))
 #define IntToFix(num) ((num) << FIX_SHIFT)
 #define ShortToFix(num) (((int32_t)(num)) << FIX_SHIFT)
-#define FixToFloat(num) (((scalar)(num)) / FLOAT_SCALER)
+#define FixToFloat(num) ((scalar(num)) / FLOAT_SCALER)
 #define FixToInt(num) ((num) >> FIX_SHIFT)
 
 angle FixAtan2(scalar cos, scalar sin);

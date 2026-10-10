@@ -6741,8 +6741,11 @@ private slots:
     const double pRad = pitchDeg * kPi / 180.0;
     const double hRad = yawDeg * kPi / 180.0;
     matrix orient;
-    vm_SinCosToMatrix(&orient, 0.0f, 1.0f, (scalar)std::sin(pRad), (scalar)std::cos(pRad),
-                      (scalar)std::sin(hRad), (scalar)std::cos(hRad));
+    vm_SinCosToMatrix(&orient, 0.0f, 1.0f,
+                      scalar(std::sin(pRad)),
+                      scalar(std::cos(pRad)),
+                      scalar(std::sin(hRad)),
+                      scalar(std::cos(hRad)));
     const vector3 eye = target - orient.fvec * zoom;
 
     // Focal from the vertical FOV (matches EditorView::projectVertexDepth).

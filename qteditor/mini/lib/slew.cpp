@@ -340,7 +340,7 @@ int SlewFrame(object *obj, int movement_limitations) {
         rotang.p() = -joy_y * 256 * Frametime;
     } else {
       if (joyy_moved)
-        obj->mtype.phys_info.velocity.z() = (scalar)-joy_y / 4.0;
+        obj->mtype.phys_info.velocity.z() = 0.25f * -joy_y;
     }
 
     if (!rotang.h())
