@@ -337,7 +337,7 @@ struct texture
   int bm_handle = -1;           // handle which shows what this texture looks like
   int destroy_handle = -1;      // handle which denotes the destroyed image
 
-  int damage = -1;
+  index_t damage;
   float reflectivity = 0.6f;
 
    // colored lighting	 (0 to 100%)
@@ -352,10 +352,10 @@ struct texture
 
   proc_struct *procedural = nullptr;
 
-  int sound = -1;          // The sound this texture makes
+  index_t sound;            // The sound this texture makes
   float sound_volume = 1.0f; // The volume for this texture's sound
 
-  int16_t bumpmap = -1;     // The bumpmap for this texture, or -1 if there is none
+  index_t bumpmap;          // The bumpmap for this texture, or std::nullopt if there is none
   uint8_t corona_type = 0; // what type of corona this thing uses
 
 };

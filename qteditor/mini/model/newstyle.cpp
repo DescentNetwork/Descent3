@@ -207,10 +207,10 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
   }
 
   // Do bump mapping
-  if ((Polymodel_effect.type.bumpmapped) && texp && texp->bumpmap != -1 &&
+  if ((Polymodel_effect.type.bumpmapped) && texp && texp->bumpmap.has_value() &&
       Polymodel_light_type == polymodel_light_type::gouraud) {
     rend_SetOverlayType(overlay_type::none);
-    rend_SetBumpmapReadyState(1, texp->bumpmap);
+    rend_SetBumpmapReadyState(1, static_cast<int>(*texp->bumpmap));
     if (GameTextures[fp->texnum].flags.smooth_specular)
       smooth = 1;
   }
@@ -249,7 +249,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
       p->p3_flags.lighting = true;
 
       // Assign bump mapping coords
-      if ((Polymodel_effect.type.bumpmapped) && texp->bumpmap != -1 &&
+      if ((Polymodel_effect.type.bumpmapped) && texp->bumpmap.has_value() &&
           Polymodel_light_type == polymodel_light_type::gouraud) {
         p->p3_flags.uv2 = true;
 
@@ -396,7 +396,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
   if (triface)
     g3_SetTriangulationTest(0);
 
-  if (texp && (Polymodel_effect.type.bumpmapped) && texp->bumpmap != -1 &&
+  if (texp && (Polymodel_effect.type.bumpmapped) && texp->bumpmap.has_value() &&
       Polymodel_light_type == polymodel_light_type::gouraud) {
     rend_SetBumpmapReadyState(0, 0);
   }

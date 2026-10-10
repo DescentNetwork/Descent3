@@ -121,7 +121,10 @@ void WorldTexturesDialog::bindEdits() {
     if (auto t = data()) t->sound_volume = ui->IDC_TEXTURE_AMBIENT_SOUND_VOLUME->text().toFloat();
   });
   connect(ui->IDC_DAMAGE, &QLineEdit::editingFinished, [this]() {
-    if (auto t = data()) t->damage = ui->IDC_DAMAGE->text().toInt();
+    if (auto t = data()) {
+      const int damage = ui->IDC_DAMAGE->text().toInt();
+      t->damage = (damage >= 0) ? index_t{static_cast<uint32_t>(damage)} : std::nullopt;
+    }
   });
 }
 
@@ -157,7 +160,10 @@ void WorldTexturesDialog::bindChecks() {
 
 void WorldTexturesDialog::bindCombos() {
   connect(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), [this]() {
-    if (auto t = data()) t->sound = soundComboSelected(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN);
+    if (auto t = data()) {
+      const int sound = soundComboSelected(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN);
+      t->sound = (sound >= 0) ? index_t{static_cast<uint32_t>(sound)} : std::nullopt;
+    }
   });
 }
 
@@ -231,7 +237,7 @@ void WorldTexturesDialog::updateDialog() {
       combo->setCurrentText(QString::fromStdString(t->name));
     }
 
-    populateSoundCombo(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN, t->sound);
+    populateSoundCombo(ui->IDC_TEXTURE_AMBIENT_SOUND_PULLDOWN, index_to_int(t->sound));
   }
 }
 
