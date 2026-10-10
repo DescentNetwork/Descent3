@@ -445,7 +445,7 @@ float GetFormFactorForElementAndSatellite(rad_surface *dest_surf, rad_element *d
 
   for (int j = 0; j < dest_element->num_verts; j++) {
     dest_center = dest_element->verts[j];
-    dest_center += dest_surf->normal / 32.0f);
+    dest_center += dest_surf->normal / 32.0f;
     scalar temp_factor = 0;
 
     int hit = 0;
