@@ -108,7 +108,7 @@ void CalculateFormFactorsHemiCube() {
   int self;
   rad_element *dest_element;
 
-  for (i = 0; i < rad_NumElements; i++)
+  for (i = 0; i < static_cast<int>(rad_FormFactors.size()); i++)
     rad_FormFactors[i] = 0.0f;
 
   // Shoot from patch (faster) or element?
@@ -459,7 +459,7 @@ void DrawRadiosityPoly(int nv, g3Point **pointlist, int id) {
   bool was_clipped = 0;
   int triangulate = 1;
 
-  Q_ASSERT(id >= 0 && id <= rad_NumElements);
+  Q_ASSERT(id >= 0 && id <= static_cast<int>(rad_FormFactors.size()));
 
   if (triangulate) {
     if (nv > 3) {
@@ -731,7 +731,7 @@ void ScanRadiosityPoly(g3Point **pl, int nv, int element_id) {
     next_break_right = cp[vrb].sy;
   };
 
-  Q_ASSERT(element_id >= 0 && element_id <= rad_NumElements);
+  Q_ASSERT(element_id >= 0 && element_id <= static_cast<int>(rad_FormFactors.size()));
 
   for (i = 0; i < nv; i++) {
     g3Point p;

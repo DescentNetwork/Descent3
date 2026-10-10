@@ -45,7 +45,6 @@ float rad_TotalFlux = 0.0f;
 float rad_Convergence = 1.0f;
 
 int rad_NumSurfaces;
-int rad_NumElements;
 
 std::vector<float> rad_FormFactors;
 
@@ -114,15 +113,8 @@ void InitRadiosityRun() {
   InitExitance();
 
   if (Shoot_method == shooting_method::hemicube) {
-    SetupFormFactors();
     InitHemicube(Hemicube_resolution);
   }
-}
-
-// Initalizes memory for form factors
-void SetupFormFactors() {
-  Q_ASSERT(rad_NumElements > 0);
-  rad_FormFactors.resize(rad_NumElements);
 }
 
 void CalculateAreaForSurface(rad_surface *sp) {
@@ -185,19 +177,21 @@ void CalculateArea() {
   }
 }
 
-// Counts the total number of elements we have to work with
+// Counts the total number of elements we have to work with and sizes the form
+// factor array to match.
 void CountElements() {
+  size_t num_elements = 0;
   rad_surface *surf;
-  int i;
 
-  rad_NumElements = 0;
-
-  for (i = 0; i < rad_NumSurfaces; i++) {
+  for (int i = 0; i < rad_NumSurfaces; i++) {
     surf = &rad_Surfaces[i];
 
-    rad_NumElements += (surf->xresolution * surf->yresolution);
+    num_elements += (surf->xresolution * surf->yresolution);
   }
-  LOG_INFO("Number of elements=%d\n", rad_NumElements);
+
+  Q_ASSERT(num_elements > 0);
+  rad_FormFactors.resize(num_elements);
+  LOG_INFO("Number of elements=%zu\n", num_elements);
 }
 
 // Initializes the exitances for all surfaces
@@ -282,7 +276,6 @@ void UpdateUnsentValues() {
     rad_MaxSurface = sat_surface;
 
   if (!use_sat && Shoot_method == shooting_method::switch_after_satellites) {
-    SetupFormFactors();
     InitHemicube(Hemicube_resolution);
     Shoot_method = shooting_method::hemicube;
   }

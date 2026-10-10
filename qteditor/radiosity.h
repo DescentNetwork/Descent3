@@ -195,7 +195,6 @@ extern float rad_TotalUnsent;
 extern rad_surface *rad_MaxSurface;
 
 extern int rad_NumSurfaces;
-extern int rad_NumElements;
 
 extern std::vector<float> rad_FormFactors;
 extern rad_surface *rad_Surfaces;
@@ -250,9 +249,6 @@ float GetUnsentFlux(rad_surface *surface);
 
 // Shuts down the radiosity stuff, freeing memory, etc
 void CloseRadiosityRun();
-
-// Initalizes memory for form factors
-void SetupFormFactors();
 
 // Calculates the area of the surfaces and elements in our environment
 void CalculateArea();
