@@ -68,7 +68,7 @@ constexpr int32_t LEVEL_GOAL_VERSION = 4;
 
 // Reads a short-length-prefixed string (length then that many raw bytes,
 // consuming exactly the declared bytes).
-std::string readGoalString(posix_istream &ifile) {
+std::string readGoalString(byte_istream &ifile) {
   int16_t len = 0;
   ifile >> len;
 
@@ -81,14 +81,14 @@ std::string readGoalString(posix_istream &ifile) {
 }
 
 // Writes a short-length-prefixed string matching the engine's strlen+bytes.
-void writeGoalString(posix_ostream &ofile, const std::string &s) {
+void writeGoalString(byte_ostream &ofile, const std::string &s) {
   ofile << static_cast<int16_t>(static_cast<int>(s.size()));
   if (!s.empty())
     ofile.write(s.data(), s.size());
 }
 } // namespace
 
-bool levelgoals::SaveLevelGoalInfo(posix_ostream &ofile) const {
+bool levelgoals::SaveLevelGoalInfo(byte_ostream &ofile) const {
   ofile << static_cast<int16_t>(LEVEL_GOAL_VERSION);
   ofile << static_cast<int16_t>(m_num_goals);
 
@@ -118,7 +118,7 @@ bool levelgoals::SaveLevelGoalInfo(posix_ostream &ofile) const {
   return true;
 }
 
-bool levelgoals::LoadLevelGoalInfo(posix_istream &ifile) {
+bool levelgoals::LoadLevelGoalInfo(byte_istream &ifile) {
   // Clean-slate reset (mirrors the mini's CleanupAfterLevel()).
   CleanupAfterLevel();
 

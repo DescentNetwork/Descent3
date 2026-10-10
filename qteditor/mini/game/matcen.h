@@ -162,8 +162,8 @@ public:
   int GetSpawnPnt(int8_t s_index);
   bool SetSpawnPnt(int8_t s_index, int s_value);
 
-  void SaveData(posix_ostream &ofile) const;
-  void LoadData(posix_istream &ifile, const int *texture_xlate);
+  void SaveData(byte_ostream &ofile) const;
+  void LoadData(byte_istream &ifile, const int *texture_xlate);
 
   std::string GetName(void);
   bool SetName(const std::string& name);

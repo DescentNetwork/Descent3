@@ -298,7 +298,7 @@ void PageInVClip(int vcnum) {
 }
 
 // Reads one 32-bit little-endian word (used for the OAF container header).
-static uint32_t readOafWord(posix_istream &in) {
+static uint32_t readOafWord(byte_istream &in) {
   uint8_t b[4]{};
   in.read(reinterpret_cast<char *>(b), sizeof(b));
   return (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);

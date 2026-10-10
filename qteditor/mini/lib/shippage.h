@@ -57,7 +57,7 @@ void mng_WriteShipPage(struct CFILE* outfile, mngs_ship_page *shippage);
 void mng_WriteNewShipPage(struct CFILE* outfile, mngs_ship_page *shippage);
 
 // Reads a ship page from an open file.  Returns false on error.
-bool mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage);
+bool mng_ReadNewShipPage(byte_istream &infile, mngs_ship_page *shippage);
 
 // Reads in the shippage named "name" into shippage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

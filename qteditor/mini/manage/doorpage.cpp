@@ -68,7 +68,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_door_page& data) {
          << data.door_struct.module_name;
 }
 
-bool mng_ReadNewDoorPage(posix_istream &infile, mngs_door_page *doorpage) {
+bool mng_ReadNewDoorPage(byte_istream &infile, mngs_door_page *doorpage) {
   infile >> *doorpage;
 
   return true; // successfully read

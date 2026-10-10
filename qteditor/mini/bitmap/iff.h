@@ -49,10 +49,10 @@ enum class iff_bitmap_type : int16_t {
 };
 
 // Loads an IFF file, returning bitmap handle or -1 if error
-int bm_iff_alloc_file(posix_istream &ifile);
+int bm_iff_alloc_file(byte_istream &ifile);
 
 // Loads a tga or ogf file into a bitmap...returns handle to bm or -1 on error
-int bm_tga_alloc_file(posix_istream &infile, char *name, bitmap_format format = bitmap_format::standard);
+int bm_tga_alloc_file(byte_istream &infile, char *name, bitmap_format format = bitmap_format::standard);
 
 // Allocs and loads a bitmap from a fully-resident in-memory payload.
 // Returns the handle of the loaded bitmap, or -1 on error.

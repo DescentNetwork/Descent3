@@ -74,7 +74,7 @@ extern uint32_t Num_objects;
 // Discards exactly `count` bytes from an open page file (used to skip pages
 // whose bodies are not consumed by a reader, e.g. game-only ROBOT/POWERUP
 // pages or pages that overflow a global array).
-static void discardBytes(posix_istream &infile, int count) {
+static void discardBytes(byte_istream &infile, int count) {
   uint8_t buf[4096];
   while (count > 0) {
     size_t take = count > sizeof(buf) ? sizeof(buf) : count;
@@ -89,7 +89,7 @@ static void discardBytes(posix_istream &infile, int count) {
 // still-open HOG stream `hogin`, and hands the bytes to the decoder via
 // bm_LoadBitmapFromMemory (fmemopen posix_istream).  Returns the bitmap handle,
 // or std::nullopt if the image is not in the Hog or fails to decode.
-static index_t loadTextureFromArchive(hog2::archive_t &archive, posix_istream &hogin, const std::string &img, bitmap_format format) {
+static index_t loadTextureFromArchive(hog2::archive_t &archive, byte_istream &hogin, const std::string &img, bitmap_format format) {
   auto entry = archive.end();
   const std::string needle = lowercase(img);
   for (auto it = archive.begin(); it != archive.end(); ++it) {

@@ -39,7 +39,7 @@ struct mngs_robot_page {
 void mng_WriteRobotPage(struct CFILE* outfile, mngs_robot_page *robotpage);
 
 // Reads a robot page from an open file.  Returns 0 on error.
-int mng_ReadRobotPage(posix_istream &infile, mngs_robot_page *robotpage);
+int mng_ReadRobotPage(byte_istream &infile, mngs_robot_page *robotpage);
 
 // Given a robot handle, searches the table file and replaces the robot with the same name
 // If local=1, then does it to the users local copy

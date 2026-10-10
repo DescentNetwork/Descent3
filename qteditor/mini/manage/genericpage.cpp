@@ -121,7 +121,7 @@ static void GenericPageSetPowerupDefaultAmmo(object_info *ip) {
 }
 
 // Reads a generic page from an open file.  Returns 0 on error.
-bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage) {
+bool mng_ReadNewGenericPage(byte_istream &infile, mngs_generic_page *genericpage) {
   int i, j;
 
   mng_InitGenericPage(genericpage);
@@ -310,7 +310,7 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
 // the [page_type::generic][int32 len] frame back-patched, mirroring the
 // original StartManagePage/EndManagePage.  The public mng_WriteNewGenericPage
 // runs this against a scratch buffer so it can talk to any byte_ostream.
-static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_page *genericpage) {
+static void mng_WriteNewGenericPageFramed(byte_ostream &outfile, mngs_generic_page *genericpage) {
   int i, j;
 
   outfile << std::to_underlying(page_type::generic);

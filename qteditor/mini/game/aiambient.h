@@ -87,8 +87,8 @@ public:
 
   void GetALValue(int8_t index, char field, void *ptr);
   void SetALValue(int8_t index, char field, void *ptr);
-  void SaveData(posix_ostream &ofile) const;
-  void LoadData(posix_istream &ifile);
+  void SaveData(byte_ostream &ofile) const;
+  void LoadData(byte_istream &ifile);
 
   void DoFrame();
   void InitForLevel(void);

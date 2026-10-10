@@ -262,7 +262,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_weapon_page& data) {
   return output;
 }
 
-bool mng_ReadNewWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage) {
+bool mng_ReadNewWeaponPage(byte_istream &infile, mngs_weapon_page *weaponpage) {
   mng_InitWeaponPage(weaponpage);
 
   infile >> *weaponpage;

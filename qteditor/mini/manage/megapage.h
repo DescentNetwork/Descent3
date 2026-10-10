@@ -46,6 +46,6 @@ byte_istream& operator >>(byte_istream& input, mngs_megacell_page& data);
 byte_ostream& operator <<(byte_ostream& output, const mngs_megacell_page& data);
 
 // Reads a (new-style, net table) megacell page from an open file.  Returns false on error.
-bool mng_ReadNewMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage);
+bool mng_ReadNewMegacellPage(byte_istream &infile, mngs_megacell_page *megacellpage);
 
 #endif

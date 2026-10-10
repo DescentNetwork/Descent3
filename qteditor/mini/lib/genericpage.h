@@ -58,7 +58,7 @@ byte_ostream& operator <<(byte_ostream& output, const mngs_generic_page& data);
 //---------------------------------------------------------------
 
 // Reads a generic page from an open file.  Returns false on error.
-bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpage);
+bool mng_ReadNewGenericPage(byte_istream &infile, mngs_generic_page *genericpage);
 
 // Serializes a generic page in the current table-file format (the exact mirror
 // of mng_ReadNewGenericPage: same field order and encodings, so a page written

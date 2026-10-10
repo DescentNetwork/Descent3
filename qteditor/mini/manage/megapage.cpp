@@ -30,7 +30,7 @@
 // Megacell page (ported from megapage.cpp : 175-192)
 //-----------------------------------------------------------------------------
 
-bool mng_ReadNewMegacellPage(posix_istream &infile, mngs_megacell_page *megacellpage) {
+bool mng_ReadNewMegacellPage(byte_istream &infile, mngs_megacell_page *megacellpage) {
   *megacellpage = mngs_megacell_page{};
   /* int version = */ int16_t v; infile >> v;
 

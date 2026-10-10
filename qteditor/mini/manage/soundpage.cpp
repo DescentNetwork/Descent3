@@ -70,7 +70,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_sound_page& data) {
          << data.sound_struct.import_volume;
 }
 
-bool mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage) {
+bool mng_ReadNewSoundPage(byte_istream &infile, mngs_sound_page *soundpage) {
   infile >> *soundpage;
 
   return true; // successfully read

@@ -39,7 +39,7 @@ struct mngs_power_page {
 void mng_WritePowerPage(struct CFILE* outfile, mngs_power_page *powpage);
 
 // Reads a powerup page from an open file.  Returns 0 on error.
-int mng_ReadPowerPage(posix_istream &infile, mngs_power_page *powpage);
+int mng_ReadPowerPage(byte_istream &infile, mngs_power_page *powpage);
 
 // Given a power handle, searches the table file and replaces the powerup with the same name
 // If local=1, then does it to the users local copy

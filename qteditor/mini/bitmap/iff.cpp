@@ -56,23 +56,23 @@
 // values are byte-swapped explicitly via D3::convert_be, matching the old
 // cf_ReadShort(f, false) / cf_ReadInt(f, false) behaviour.
 namespace {
-inline int8_t rdByte(posix_istream &in) { return (int8_t)in.get(); }
-inline int16_t rdShortLE(posix_istream &in) {
+inline int8_t rdByte(byte_istream &in) { return (int8_t)in.get(); }
+inline int16_t rdShortLE(byte_istream &in) {
   int16_t v = 0;
   in >> v;
   return v;
 }
-inline int32_t rdIntLE(posix_istream &in) {
+inline int32_t rdIntLE(byte_istream &in) {
   int32_t v = 0;
   in >> v;
   return v;
 }
-inline int16_t rdShortBE(posix_istream &in) {
+inline int16_t rdShortBE(byte_istream &in) {
   int16_t v = 0;
   in.read(&v, sizeof(v));
   return D3::convert_be(v);
 }
-inline int32_t rdIntBE(posix_istream &in) {
+inline int32_t rdIntBE(byte_istream &in) {
   int32_t v = 0;
   in.read(&v, sizeof(v));
   return D3::convert_be(v);
@@ -135,15 +135,15 @@ enum class iff_sig : uint32_t {
   anhd = "ANHD"_ID,
 };
 
-static iff_sig bm_iff_get_sig(posix_istream &f);
-static iff_error bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_header *bmheader);
-static iff_error bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bmheader);
-static void bm_iff_skip_chunk(posix_istream &ifile, uint32_t len);
-static iff_error bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheader);
-static iff_error bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, optref<iff_bitmap_header> prev_bm);
+static iff_sig bm_iff_get_sig(byte_istream &f);
+static iff_error bm_iff_parse_bmhd(byte_istream &ifile, uint32_t len, iff_bitmap_header *bmheader);
+static iff_error bm_iff_parse_body(byte_istream &ifile, int len, iff_bitmap_header *bmheader);
+static void bm_iff_skip_chunk(byte_istream &ifile, uint32_t len);
+static iff_error bm_iff_parse_delta(byte_istream &ifile, int len, iff_bitmap_header *bmheader);
+static iff_error bm_iff_parse_file(byte_istream &ifile, iff_bitmap_header &bmheader, optref<iff_bitmap_header> prev_bm);
 static void bm_iff_convert_8_to_16(int dest_bm, iff_bitmap_header *iffbm);
 
-iff_sig bm_iff_get_sig(posix_istream &f) {
+iff_sig bm_iff_get_sig(byte_istream &f) {
   iff_sig sig;
   f >> reinterpret_cast<uint32_t&>(sig);
   switch(sig)
@@ -162,7 +162,7 @@ iff_sig bm_iff_get_sig(posix_istream &f) {
 
   return (iff_sig::unknown);
 }
-iff_error bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_header *bmheader) {
+iff_error bm_iff_parse_bmhd(byte_istream &ifile, uint32_t len, iff_bitmap_header *bmheader) {
   len = len;
 
   ifile >> bmheader->w;
@@ -205,7 +205,7 @@ iff_error bm_iff_parse_bmhd(posix_istream &ifile, uint32_t len, iff_bitmap_heade
 }
 
 //  the buffer pointed to by raw_data is stuffed with a pointer to decompressed pixel data
-iff_error bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bmheader) {
+iff_error bm_iff_parse_body(byte_istream &ifile, int len, iff_bitmap_header *bmheader) {
   uint8_t *p = bmheader->raw_data.data();
   int width = 0, depth = 0, done = 0;
 
@@ -289,7 +289,7 @@ iff_error bm_iff_parse_body(posix_istream &ifile, int len, iff_bitmap_header *bm
 }
 
 //  the buffer pointed to by raw_data is stuffed with a pointer to bitplane pixel data
-void bm_iff_skip_chunk(posix_istream &ifile, uint32_t len) {
+void bm_iff_skip_chunk(byte_istream &ifile, uint32_t len) {
   uint32_t i;
 
   for (i = 0; i < len; i++)
@@ -297,7 +297,7 @@ void bm_iff_skip_chunk(posix_istream &ifile, uint32_t len) {
 }
 
 // modify passed bitmap
-iff_error bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *bmheader) {
+iff_error bm_iff_parse_delta(byte_istream &ifile, int len, iff_bitmap_header *bmheader) {
   uint8_t *p = bmheader->raw_data.data();
   int y;
   off_t chunk_end = ifile.tell() + len;
@@ -364,7 +364,7 @@ iff_error bm_iff_parse_delta(posix_istream &ifile, int len, iff_bitmap_header *b
 
 // read an PBM
 // Pass pointer to opened file, and to empty bitmap_header structure, and form length
-iff_error bm_iff_parse_file(posix_istream &ifile, iff_bitmap_header &bmheader, optref<iff_bitmap_header> prev_bm) {
+iff_error bm_iff_parse_file(byte_istream &ifile, iff_bitmap_header &bmheader, optref<iff_bitmap_header> prev_bm) {
   iff_sig sig;
   uint32_t len;
   int done = 0;
@@ -488,7 +488,7 @@ void bm_iff_convert_8_to_16(int dest_bm, iff_bitmap_header *iffbm) {
 // Loads an iff into a structure, allocs bitmap memory and converts 8 bit iff file into
 // 16bit bitmap
 // Returns bitmap handle on success, or -1 if failed
-int bm_iff_alloc_file(posix_istream &ifile) {
+int bm_iff_alloc_file(byte_istream &ifile) {
   iff_error ret; // return code
   iff_bitmap_header bmheader{};
   int src_bm;
@@ -687,7 +687,7 @@ static int bm_tga_read_outrage_compressed16(int n, int num_mips, outrage_file_ty
 }
 
 // Loads a tga or ogf file into a bitmap...returns handle to bm or -1 on error
-int bm_tga_alloc_file(posix_istream &infile, char *name, bitmap_format format) {
+int bm_tga_alloc_file(byte_istream &infile, char *name, bitmap_format format) {
   uint8_t image_id_len, color_map_type, pixsize, descriptor;
   outrage_file_type image_type;
   uint8_t upside_down = 0;
@@ -923,7 +923,7 @@ enum class bm_filetype : uint8_t {
   tga = 2,
 };
 
-static bm_filetype bm_GetFileType(posix_istream &infile, const char *dest) {
+static bm_filetype bm_GetFileType(byte_istream &infile, const char *dest) {
   char iffcheck[4];
   int i;
   // First, check if it is a PCX

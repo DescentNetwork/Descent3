@@ -61,7 +61,7 @@ void mng_WriteWeaponPage(struct CFILE* outfile, mngs_weapon_page *weaponpage);
 void mng_WriteNewWeaponPage(struct CFILE* outfile, mngs_weapon_page *weaponpage);
 
 // Reads a weapon page from an open file.  Returns false on error.
-bool mng_ReadNewWeaponPage(posix_istream &infile, mngs_weapon_page *weaponpage);
+bool mng_ReadNewWeaponPage(byte_istream &infile, mngs_weapon_page *weaponpage);
 
 // Reads in the weaponpage named "name" into weaponpage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

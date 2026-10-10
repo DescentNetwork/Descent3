@@ -62,7 +62,7 @@ void mng_WriteTexturePage(struct CFILE* outfile, mngs_texture_page *texpage);
 
 // Reads a texture page from an open file.  Returns false on error.
 
-bool mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage);
+bool mng_ReadNewTexturePage(byte_istream &infile, mngs_texture_page *texpage);
 
 // Given an open file pointer and a texture handle, writes that texture page out
 void mng_WriteNewTexturePage(struct CFILE* outfile, mngs_texture_page *texpage);

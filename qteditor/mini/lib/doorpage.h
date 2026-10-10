@@ -51,7 +51,7 @@ void mng_WriteDoorPage(struct CFILE* outfile, mngs_door_page *doorpage);
 void mng_WriteNewDoorPage(struct CFILE* outfile, mngs_door_page *doorpage);
 
 // Reads a door page from an open file.  Returns false on error.
-bool mng_ReadNewDoorPage(posix_istream &infile, mngs_door_page *doorpage);
+bool mng_ReadNewDoorPage(byte_istream &infile, mngs_door_page *doorpage);
 
 // Reads in the doorpage named "name" into doorpage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

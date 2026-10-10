@@ -184,7 +184,7 @@ bool matcen::SetName(const std::string &name) {
 // count followed by that many raw bytes.  Always consumes exactly the declared
 // byte count so the enclosing record stays aligned.  The string is truncated
 // at the first embedded NUL because writers terminate names with one.
-static std::string readLevelName(posix_istream &ifile) {
+static std::string readLevelName(byte_istream &ifile) {
   int16_t len = 0;
   ifile >> len;
 
@@ -201,7 +201,7 @@ static std::string readLevelName(posix_istream &ifile) {
   return std::string(raw.c_str());
 }
 
-void matcen::SaveData(posix_ostream &ofile) const {
+void matcen::SaveData(byte_ostream &ofile) const {
   ofile << static_cast<int32_t>(MATCEN_LOADSAVE_VERSION);
 
   ofile << static_cast<int16_t>(m_spawn_pnt.size());
@@ -290,7 +290,7 @@ void matcen::SaveData(posix_ostream &ofile) const {
   ofile << static_cast<int32_t>(m_sound_active_handle);
 }
 
-void matcen::LoadData(posix_istream &ifile, const int *texture_xlate) {
+void matcen::LoadData(byte_istream &ifile, const int *texture_xlate) {
   int32_t version = 0;
   ifile >> version;
 

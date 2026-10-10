@@ -49,7 +49,7 @@ void mng_WriteSoundPage(struct CFILE* outfile, mngs_sound_page *soundpage);
 void mng_WriteNewSoundPage(struct CFILE* outfile, mngs_sound_page *soundpage);
 
 // Reads a sound page from an open file.  Returns 0 on error.
-bool mng_ReadNewSoundPage(posix_istream &infile, mngs_sound_page *soundpage);
+bool mng_ReadNewSoundPage(byte_istream &infile, mngs_sound_page *soundpage);
 
 // Reads in the soundpage named "name" into soundpage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

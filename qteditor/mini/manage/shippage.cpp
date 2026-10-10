@@ -110,7 +110,7 @@ byte_ostream& operator<<(byte_ostream& output, const mngs_ship_page& data) {
   return output;
 }
 
-bool mng_ReadNewShipPage(posix_istream &infile, mngs_ship_page *shippage) {
+bool mng_ReadNewShipPage(byte_istream &infile, mngs_ship_page *shippage) {
   // Clear the page record.  The embedded ship holds std::string members, so
   // use member-wise reset rather than memset (which would corrupt them).
   *shippage = mngs_ship_page{};

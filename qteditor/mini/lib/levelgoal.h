@@ -154,8 +154,8 @@ public:
 
   int GetNumGoals();
 
-  bool SaveLevelGoalInfo(posix_ostream &ofile) const;
-  bool LoadLevelGoalInfo(posix_istream &ifile);
+  bool SaveLevelGoalInfo(byte_ostream &ofile) const;
+  bool LoadLevelGoalInfo(byte_istream &ifile);
 
   bool LGStatus(goal_operation operation, int *value);
 

@@ -89,7 +89,7 @@ byte_ostream& operator <<(byte_ostream& output, const mngs_texture_page& data)
          << data.tex_struct.sound_volume;
 }
 
-bool mng_ReadNewTexturePage(posix_istream &infile, mngs_texture_page *texpage)
+bool mng_ReadNewTexturePage(byte_istream &infile, mngs_texture_page *texpage)
 {
   //mng_InitTexturePage(texpage);
   *texpage = {};

@@ -36,13 +36,13 @@ struct mngs_gamefile_page {
 void mng_WriteGamefilePage(struct CFILE* outfile, mngs_gamefile_page *gamefilepage);
 
 // Reads a gamefile page from an open file.  Returns 0 on error.
-int mng_ReadGamefilePage(posix_istream &infile, mngs_gamefile_page *gamefilepage);
+int mng_ReadGamefilePage(byte_istream &infile, mngs_gamefile_page *gamefilepage);
 
 // Given an open file pointer and a gamefile_page struct, writes that gamefile page out
 void mng_WriteNewGamefilePage(struct CFILE* outfile, mngs_gamefile_page *gamefilepage);
 
 // Reads a gamefile page from an open file.  Returns 0 on error.
-int mng_ReadNewGamefilePage(posix_istream &infile, mngs_gamefile_page *gamefilepage);
+int mng_ReadNewGamefilePage(byte_istream &infile, mngs_gamefile_page *gamefilepage);
 
 // Reads in the gamefilepage named "name" into gamefilepage struct
 // Returns 0 on error or couldn't find, else 1 if all is good

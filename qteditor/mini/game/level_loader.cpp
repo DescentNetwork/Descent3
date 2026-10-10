@@ -133,10 +133,10 @@ static index_t LL_FindTextureName(const std::string& name)
   return std::nullopt;
 }
 
-static int LL_StartChunk(posix_ostream &ofile, const char *chunk_name, uint32_t version = 0);
-static void LL_EndChunk(posix_ostream &ofile, int chunk_start_pos);
+static int LL_StartChunk(byte_ostream &ofile, const char *chunk_name, uint32_t version = 0);
+static void LL_EndChunk(byte_ostream &ofile, int chunk_start_pos);
 
-static void LL_ReadBOAChunk(posix_istream &ifile, uint32_t version)
+static void LL_ReadBOAChunk(byte_istream &ifile, uint32_t version)
 {
   int i, j;
   int max_rooms;
@@ -215,7 +215,7 @@ static void LL_ReadBOAChunk(posix_istream &ifile, uint32_t version)
 // the BOA_cost_array of floats, then mine/terrain-region counts and the
 // terrain-region connectivity list.  Written unconditionally in the current
 // format (no version gates, like the engine writer).
-static void LL_WriteBOAChunk(posix_ostream &ofile) {
+static void LL_WriteBOAChunk(byte_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_BOA);
   int i, j;
 
@@ -274,7 +274,7 @@ static void LL_WriteBOAChunk(posix_ostream &ofile) {
 //   tail (version <= 123): BNode_verified = false
 //   else: byte b; BNode_verified = (b != 0)
 //   BNode_allocated = true
-static void LL_ReadBNodeChunk(posix_istream &ifile, uint32_t version) {
+static void LL_ReadBNodeChunk(byte_istream &ifile, uint32_t version) {
   int16_t hr_index = 0;
   ifile >> hr_index;
   Q_ASSERT(hr_index == ((int)Rooms.size() - 1) + 8);
@@ -353,7 +353,7 @@ static void LL_ReadBNodeChunk(posix_istream &ifile, uint32_t version) {
 //           int16 cost
 //           float max_rad
 //   byte BNode_verified ? 1 : 0
-static void LL_WriteBNodeChunk(posix_ostream &ofile) {
+static void LL_WriteBNodeChunk(byte_ostream &ofile) {
   int start = LL_StartChunk(ofile, "NODE");
 
   ofile << static_cast<int16_t>(((int)Rooms.size() - 1) + 8);
@@ -437,7 +437,7 @@ static void LL_DefaultBSPTree() {
   MineBSP.vertlist = nullptr;
 }
 
-static void LL_ReadBSPNode(posix_istream &ifile, bspnode *&node_out) {
+static void LL_ReadBSPNode(byte_istream &ifile, bspnode *&node_out) {
   uint8_t raw_type = 0;
   ifile >> raw_type;
   bspnode *node = LL_NewBSPNode();
@@ -460,7 +460,7 @@ static void LL_ReadBSPNode(posix_istream &ifile, bspnode *&node_out) {
   LL_ReadBSPNode(ifile, node->back);
 }
 
-static void LL_WriteBSPNode(posix_ostream &ofile, const bspnode *node) {
+static void LL_WriteBSPNode(byte_ostream &ofile, const bspnode *node) {
   ofile << reinterpret_cast<const uint8_t &>(node->type);
 
   if (node->type == bsp_node_type::empty_leaf || node->type == bsp_node_type::solid_leaf)
@@ -480,7 +480,7 @@ static void LL_WriteBSPNode(posix_ostream &ofile, const bspnode *node) {
 
 // Reads a CNBS chunk: clears any prior tree, stores the checksum, then loads
 // the tree into MineBSP.root.  BSP_initted ends up true (tree present).
-static void LL_ReadBSPChunk(posix_istream &ifile) {
+static void LL_ReadBSPChunk(byte_istream &ifile) {
   LL_DefaultBSPTree();
 
   ifile >> BSPChecksum;
@@ -491,7 +491,7 @@ static void LL_ReadBSPChunk(posix_istream &ifile) {
 
 // Writes a CNBS chunk: checksum then the whole tree.  Caller decides whether
 // the chunk is emitted (engine writes it only when BSP_initted).
-static void LL_WriteBSPChunk(posix_ostream &ofile) {
+static void LL_WriteBSPChunk(byte_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_NEW_BSP);
 
   ofile << BSPChecksum;
@@ -500,7 +500,7 @@ static void LL_WriteBSPChunk(posix_ostream &ofile) {
   LL_EndChunk(ofile, start);
 }
 
-static void LL_ReadTextureList(posix_istream &ifile, int chunk_size) {
+static void LL_ReadTextureList(byte_istream &ifile, int chunk_size) {
   int32_t n32 = 0;
   ifile >> n32;
   int n = n32;
@@ -533,7 +533,7 @@ static std::array<int16_t, MAX_DOORS> door_xlate;
 // unused slot) is never looked up and maps to -1, exactly as in the engine's
 // BuildXlateTable.  The trailing entries up to max_items are cleared to -1 so
 // a partially filled table never leaks indices from a previous level.
-static void LL_ReadNameXlateChunk(posix_istream &ifile, int chunk_size,
+static void LL_ReadNameXlateChunk(byte_istream &ifile, int chunk_size,
                                   index_t (*lookup)(const std::string &), int16_t *xlate, int max_items) {
   int32_t n32 = 0;
   ifile >> n32;
@@ -597,14 +597,14 @@ static int TranslateObjectId(object_type_e type, int id) {
 
 // Writes a chunk header (4-char name + size placeholder), returns the position
 // of the size field so EndChunk can seek back and patch it.
-static int LL_StartChunk(posix_ostream &ofile, const char *chunk_name, uint32_t version) {
+static int LL_StartChunk(byte_ostream &ofile, const char *chunk_name, uint32_t version) {
   ofile.write(chunk_name, 4);
   int chunk_start_pos = static_cast<int>(ofile.tell());
   ofile << version;
   return chunk_start_pos;
 }
 
-static void LL_EndChunk(posix_ostream &ofile, int chunk_start_pos) {
+static void LL_EndChunk(byte_ostream &ofile, int chunk_start_pos) {
   int save_pos = static_cast<int>(ofile.tell());
   int len = save_pos - chunk_start_pos;
   while (len & 3) { // pad to multiple of four
@@ -620,7 +620,7 @@ static void LL_EndChunk(posix_ostream &ofile, int chunk_start_pos) {
 
 // RLE byte compression used by the engine inside ROOM for volume lights.
 
-static int LL_ReadRoom(posix_istream &ifile, int roomnum, uint32_t /*version*/) {
+static int LL_ReadRoom(byte_istream &ifile, int roomnum, uint32_t /*version*/) {
   room_t *rp = &Rooms[roomnum];
   // Current canonical layout: the room stream operator reads every field
   // (verts, faces, portals, lights, ...) exactly as the engine writes it.
@@ -640,7 +640,7 @@ static int LL_ReadRoom(posix_istream &ifile, int roomnum, uint32_t /*version*/) 
 // visibility queries.  The engine's ReadRoomAABBChunk / WriteRoomAABBChunk
 // store these per room; the mini keeps the arrays as vectors instead of the
 // engine's malloc'd pointers.
-static void LL_ReadRoomAABBChunk(posix_istream &ifile) {
+static void LL_ReadRoomAABBChunk(byte_istream &ifile) {
   int32_t save_hri = 0;
   ifile >> save_hri;
   if (save_hri < 0 || save_hri >= MAX_ROOMS)
@@ -699,7 +699,7 @@ static void LL_ReadRoomAABBChunk(posix_istream &ifile) {
   }
 }
 
-static void LL_WriteRoomAABBChunk(posix_ostream &ofile) {
+static void LL_WriteRoomAABBChunk(byte_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_ROOM_AABB);
 
   ofile << (int32_t)((int)Rooms.size() - 1);
@@ -745,7 +745,7 @@ static void LL_WriteRoomAABBChunk(posix_ostream &ofile) {
 // the per-record I/O; these helpers frame the table.  The engine reads the
 // count then instantiates each entry; the in-memory table is rebuilt fresh to
 // avoid leaking entries from a previously loaded level.
-static void LL_ReadMatcenChunk(posix_istream &ifile) {
+static void LL_ReadMatcenChunk(byte_istream &ifile) {
   uint32_t count = 0;
   ifile >> count;
 
@@ -757,7 +757,7 @@ static void LL_ReadMatcenChunk(posix_istream &ifile) {
   }
 }
 
-static void LL_WriteMatcenChunk(posix_ostream &ofile) {
+static void LL_WriteMatcenChunk(byte_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_MATCEN_DATA);
 
   ofile << static_cast<uint32_t>(Matcen.size());
@@ -774,7 +774,7 @@ static void LL_WriteMatcenChunk(posix_ostream &ofile) {
 // sound table), a low/high altitude pair and a low/high volume pair.  The
 // writer emits only the used bands (sound_index != -1), so the reader clears
 // the table first and the reload re-emits the same used set byte-stably.
-static void LL_ReadTerrainSoundChunk(posix_istream &ifile, uint32_t version) {
+static void LL_ReadTerrainSoundChunk(byte_istream &ifile, uint32_t version) {
   uint32_t n_bands = 0;
   ifile >> n_bands;
   if (n_bands > NUM_TERRAIN_SOUND_BANDS)
@@ -800,7 +800,7 @@ static void LL_ReadTerrainSoundChunk(posix_istream &ifile, uint32_t version) {
   }
 }
 
-static void LL_WriteTerrainSoundChunk(posix_ostream &ofile) {
+static void LL_WriteTerrainSoundChunk(byte_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_TERRAIN_SOUND);
 
   int32_t n_bands = 0;
@@ -838,7 +838,7 @@ void ClearTerrainSound() {
 // PSTR (player starts).  Reader/writer (LoadLevel.cpp:3499 / :5062).  A short
 // player count (>= 120; legacy files used a fixed 32) then that many start
 // position flag words.  The editor passes these through untouched.
-static void LL_ReadPlayerStartsChunk(posix_istream &ifile, uint32_t version) {
+static void LL_ReadPlayerStartsChunk(byte_istream &ifile, uint32_t version) {
   int16_t n16 = MAX_PLAYERS;
   if (version >= 120) {
     ifile >> n16;
@@ -852,7 +852,7 @@ static void LL_ReadPlayerStartsChunk(posix_istream &ifile, uint32_t version) {
     ifile >> reinterpret_cast<int32_t&>(Players[i].startpos_flags);
 }
 
-static void LL_WritePlayerStartsChunk(posix_ostream &ofile) {
+static void LL_WritePlayerStartsChunk(byte_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_PLAYER_STARTS);
 
   ofile << static_cast<int16_t>(MAX_PLAYERS);
@@ -868,7 +868,7 @@ static void LL_WritePlayerStartsChunk(posix_ostream &ofile) {
 // engine's NEWEDITOR build only *reads* these (for v1.2 compatibility it does
 // not re-write them); the mini writes them so an engine-made level with such
 // chunks round-trips losslessly.
-static void LL_ReadOverrideSoundChunk(posix_istream &ifile) {
+static void LL_ReadOverrideSoundChunk(byte_istream &ifile) {
   sound_override_force_field.reset();
   sound_override_glass_breaking.reset();
 
@@ -882,7 +882,7 @@ static void LL_ReadOverrideSoundChunk(posix_istream &ifile) {
     sound_override_glass_breaking = FindSoundName(soundname);
 }
 
-static void LL_WriteOverrideSoundChunk(posix_ostream &ofile) {
+static void LL_WriteOverrideSoundChunk(byte_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_OVERRIDE_SOUNDS);
 
   if(sound_override_force_field)
@@ -898,7 +898,7 @@ static void LL_WriteOverrideSoundChunk(posix_ostream &ofile) {
   LL_EndChunk(ofile, start);
 }
 
-static void LL_ReadFFTMChunk(posix_istream &ifile, uint32_t version) {  
+static void LL_ReadFFTMChunk(byte_istream &ifile, uint32_t version) {  
   std::ranges::fill(force_field_bounce, std::nullopt);
 
   size_t num_items = MAX_FORCE_FIELD_BOUNCE_TEXTURES;
@@ -922,7 +922,7 @@ static void LL_ReadFFTMChunk(posix_istream &ifile, uint32_t version) {
   }
 }
 
-static void LL_WriteFFTMChunk(posix_ostream &ofile) {
+static void LL_WriteFFTMChunk(byte_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_FFT_MOD);
 
   for(auto& bounce : force_field_bounce)
@@ -944,7 +944,7 @@ static void LL_WriteFFTMChunk(posix_ostream &ofile) {
 // EDIT (editor state: current/marked room & selection, wireframe view,
 // per-room multipliers/ambience and the lighting globals).  Engine reader
 // inline (:4026-4089, #ifdef EDITOR), writer (:5313, always the LAST chunk).
-static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
+static void LL_ReadEditorInfoChunk(byte_istream &ifile, uint32_t version) {
   auto lookup_room = [](uint16_t idx) -> index_t {
     if (idx < Rooms.size() && Rooms[idx].used)
       return idx;
@@ -1035,7 +1035,7 @@ static void LL_ReadEditorInfoChunk(posix_istream &ifile, uint32_t version) {
   }
 }
 
-static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
+static void LL_WriteEditorInfoChunk(byte_ostream &ofile) {
   int start = LL_StartChunk(ofile, CHUNK_EDITOR_INFO, 133);
 
   ofile << static_cast<int16_t>(index_to_int(app.current.room));
@@ -1077,7 +1077,7 @@ static void LL_WriteEditorInfoChunk(posix_ostream &ofile) {
   LL_EndChunk(ofile, start);
 }
 
-static void LL_ReadInfo(posix_istream &ifile, int) {
+static void LL_ReadInfo(byte_istream &ifile, int) {
   Level_info = level_info{};
   ifile >> Level_info;
 
@@ -1093,7 +1093,7 @@ static void LL_ReadInfo(posix_istream &ifile, int) {
   ifile >> Ceiling_height;
 }
 
-static void LL_WriteInfo(posix_ostream &ofile) {
+static void LL_WriteInfo(byte_ostream &ofile) {
   ofile << Level_info;
 
   ofile << Gravity_strength;
@@ -1106,7 +1106,7 @@ static void LL_WriteInfo(posix_ostream &ofile) {
 
 // ---------------------------------------------------------------------------
 // Game paths (PATH) chunk: the level's named navigation-path table.
-static void LL_ReadGamePathsChunk(posix_istream &ifile, uint32_t version) {
+static void LL_ReadGamePathsChunk(byte_istream &ifile, uint32_t version) {
   uint16_t np = 0;
   ifile >> np;
 
@@ -1141,7 +1141,7 @@ static void LL_ReadGamePathsChunk(posix_istream &ifile, uint32_t version) {
   }
 }
 
-static void LL_WriteGamePathsChunk(posix_ostream &ofile) {
+static void LL_WriteGamePathsChunk(byte_ostream &ofile) {
   const size_t npaths = GamePaths.num_used();
 
   int start = LL_StartChunk(ofile, "PATH");
@@ -1195,7 +1195,7 @@ static int LL_CountCompressShort(const uint16_t *val, int total) {
   return written;
 }
 
-static void LL_WriteCompressShort(posix_ostream &ofile, const uint16_t *val, int total, bool compressed) {
+static void LL_WriteCompressShort(byte_ostream &ofile, const uint16_t *val, int total, bool compressed) {
   if (!compressed) {
     ofile.put(0); // NO_COMPRESS
     for (int i = 0; i < total; i++)
@@ -1221,7 +1221,7 @@ static void LL_WriteCompressShort(posix_ostream &ofile, const uint16_t *val, int
   }
 }
 
-static void LL_CheckToWriteCompressShort(posix_ostream &ofile, const uint16_t *vals, int total) {
+static void LL_CheckToWriteCompressShort(byte_ostream &ofile, const uint16_t *vals, int total) {
   if (total <= 0)
     return;
   if (LL_CountCompressShort(vals, total) >= total)
@@ -1230,7 +1230,7 @@ static void LL_CheckToWriteCompressShort(posix_ostream &ofile, const uint16_t *v
     LL_WriteCompressShort(ofile, vals, total, true);
 }
 
-static void LL_ReadCompressedShortArray(posix_istream &ifile, uint16_t *vals, int total) {
+static void LL_ReadCompressedShortArray(byte_istream &ifile, uint16_t *vals, int total) {
   uint8_t compressed = 0;
   ifile >> compressed;
   if (compressed == 0) {
@@ -1258,7 +1258,7 @@ static void LL_ReadCompressedShortArray(posix_istream &ifile, uint16_t *vals, in
   }
 }
 
-static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
+static void LL_ReadNewLightmapChunk(byte_istream &ifile, uint32_t version) {
   // The counts are written as int32 but are never negative in a valid file, so
   // they are read unsigned: the byte layout is identical, and a corrupt count
   // then fails the upper bound alone instead of also needing a negative check.
@@ -1332,7 +1332,7 @@ static void LL_ReadNewLightmapChunk(posix_istream &ifile, uint32_t version) {
   }
 }
 
-static bool LL_WriteLightmapChunk(posix_ostream &ofile) {
+static bool LL_WriteLightmapChunk(byte_ostream &ofile) {
   // Build the lm_handle -> ordinal remap and count infos, exactly as the
   // engine's WriteLightmapChunk does (dynamic infos are excluded).
   const size_t MAXLMS = MAX_LIGHTMAPS;
@@ -1424,7 +1424,7 @@ static bool LL_WriteLightmapChunk(posix_ostream &ofile) {
 // leading flag byte (0 = raw, 1 = run-length encoded) followed by either
 // `total` raw values or command bytes (0 = single raw value follows, 2..250 =
 // run of that many copies of the next byte).
-static void LL_ReadCompressedByte(posix_istream &ifile, uint8_t *vals, int total) {
+static void LL_ReadCompressedByte(byte_istream &ifile, uint8_t *vals, int total) {
   uint8_t compressed = 0;
   ifile >> compressed;
   int count = 0;
@@ -1453,7 +1453,7 @@ static void LL_ReadCompressedByte(posix_istream &ifile, uint8_t *vals, int total
 }
 
 // Same scheme for uint16_t values (terrain texmap indices).
-static void LL_ReadCompressedShort(posix_istream &ifile, uint16_t *vals, int total) {
+static void LL_ReadCompressedShort(byte_istream &ifile, uint16_t *vals, int total) {
   uint8_t compressed = 0;
   ifile >> compressed;
   int count = 0;
@@ -1484,13 +1484,13 @@ static void LL_ReadCompressedShort(posix_istream &ifile, uint16_t *vals, int tot
 // The engine emits whichever of raw/RLE is smaller; the mini (like the room
 // volume lights) always writes raw (flag byte 0), which every reader -- ours
 // and the engine's -- accepts.
-static void LL_WriteCompressedByte(posix_ostream &ofile, const uint8_t *vals, int total) {
+static void LL_WriteCompressedByte(byte_ostream &ofile, const uint8_t *vals, int total) {
   ofile.put(0);
   for (int i = 0; i < total; i++)
     ofile.put(vals[i]);
 }
 
-static void LL_WriteCompressedShort(posix_ostream &ofile, const uint16_t *vals, int total) {
+static void LL_WriteCompressedShort(byte_ostream &ofile, const uint16_t *vals, int total) {
   ofile.put(0);
   for (int i = 0; i < total; i++)
     ofile << vals[i];
@@ -1504,7 +1504,7 @@ static int16_t LL_TranslateTerrainTexture(int raw) {
   return (g >= 0) ? static_cast<int16_t>(g) : 0;
 }
 
-static void LL_ReadTerrainHeightChunk(posix_istream &ifile, int) {
+static void LL_ReadTerrainHeightChunk(byte_istream &ifile, int) {
   // The engine also folds the heights into a level checksum; the mini keeps no
   // level checksum, so the values are the only thing we retain.
   std::vector<uint8_t> byte_vals(TERRAIN_DEPTH * TERRAIN_WIDTH);
@@ -1513,7 +1513,7 @@ static void LL_ReadTerrainHeightChunk(posix_istream &ifile, int) {
     Terrain_seg[i].ypos = byte_vals[i];
 }
 
-static void LL_ReadTerrainSkyAndLightChunk(posix_istream &ifile, int) {
+static void LL_ReadTerrainSkyAndLightChunk(byte_istream &ifile, int) {
   ifile >> Terrain_sky.fog_scalar;
   ifile >> Terrain_sky.damage_per_second;
 
@@ -1599,7 +1599,7 @@ static void LL_ReadTerrainSkyAndLightChunk(posix_istream &ifile, int) {
     Terrain_occlusion_map[i / 32][i % 32] = occlusion[i];
 }
 
-static void LL_ReadTerrainTmapFlagChunk(posix_istream &ifile, int) {
+static void LL_ReadTerrainTmapFlagChunk(byte_istream &ifile, int) {
   constexpr int tex_total = TERRAIN_TEX_DEPTH * TERRAIN_TEX_WIDTH;
   std::vector<uint16_t> short_vals(tex_total);
   LL_ReadCompressedShort(ifile, short_vals.data(), tex_total);
@@ -1623,7 +1623,7 @@ static void LL_ReadTerrainTmapFlagChunk(posix_istream &ifile, int) {
 
 // Reads the TERR container: sub-chunks until the TEND terminator, then
 // regenerates derived data (AABB, normals, lightmaps).
-static void LL_ReadTerrainChunks(posix_istream &ifile, uint32_t version) {
+static void LL_ReadTerrainChunks(byte_istream &ifile, uint32_t version) {
   // Force-reset so the min/max quadtree + LOD delta arrays are sized: the
   // mini never runs InitTerrain(), and the height/light sub-chunk readers and
   // BuildMinMaxTerrain() below write through them.  The height chunk re-fills
@@ -1661,7 +1661,7 @@ static void LL_ReadTerrainChunks(posix_istream &ifile, uint32_t version) {
   Num_terrain_selected = 0;
 }
 
-static void LL_WriteTerrainHeightChunk(posix_ostream &ofile) {
+static void LL_WriteTerrainHeightChunk(byte_ostream &ofile) {
   const int total = TERRAIN_DEPTH * TERRAIN_WIDTH;
   int start = LL_StartChunk(ofile, "TERH");
 
@@ -1673,7 +1673,7 @@ static void LL_WriteTerrainHeightChunk(posix_ostream &ofile) {
   LL_EndChunk(ofile, start);
 }
 
-static void LL_WriteTerrainTmapChunk(posix_ostream &ofile) {
+static void LL_WriteTerrainTmapChunk(byte_ostream &ofile) {
   constexpr int tex_total = TERRAIN_TEX_DEPTH * TERRAIN_TEX_WIDTH;
   const int total = TERRAIN_DEPTH * TERRAIN_WIDTH;
   int start = LL_StartChunk(ofile, "TETM");
@@ -1696,7 +1696,7 @@ static void LL_WriteTerrainTmapChunk(posix_ostream &ofile) {
   LL_EndChunk(ofile, start);
 }
 
-static void LL_WriteTerrainSkyAndLightChunk(posix_ostream &ofile) {
+static void LL_WriteTerrainSkyAndLightChunk(byte_ostream &ofile) {
   int start = LL_StartChunk(ofile, "TSKY");
 
   ofile << Terrain_sky.fog_scalar;
@@ -1753,7 +1753,7 @@ static void LL_WriteTerrainSkyAndLightChunk(posix_ostream &ofile) {
 
 // TERR container.  Must be saved before OBJS: loading it runs ResetTerrain(),
 // which clears the per-segment object links just before OBJS re-links them.
-static void LL_WriteTerrainChunks(posix_ostream &ofile) {
+static void LL_WriteTerrainChunks(byte_ostream &ofile) {
   LL_WriteTerrainHeightChunk(ofile);
   LL_WriteTerrainTmapChunk(ofile);
   LL_WriteTerrainSkyAndLightChunk(ofile);

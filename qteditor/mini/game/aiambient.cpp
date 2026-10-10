@@ -78,7 +78,7 @@ void ambient_life::InitForLevel() {
 // LIFE chunk writer (engine aiambient.cpp:138).  Per type: the object name
 // (short length + name bytes including the NUL), then five byte fields and a
 // float; afterwards the per-type live-resident counts and their object handles.
-void ambient_life::SaveData(posix_ostream &ofile) const {
+void ambient_life::SaveData(byte_ostream &ofile) const {
   static std::string empty_string;
   ofile << AL_VERSION;
 
@@ -109,7 +109,7 @@ void ambient_life::SaveData(posix_ostream &ofile) const {
 // (like the other chunk readers) so a re-saved level keeps only the entries
 // the file declared; the object name is resolved through the loaded objinfo
 // tables to a global object id.
-void ambient_life::LoadData(posix_istream &ifile) {
+void ambient_life::LoadData(byte_istream &ifile) {
   ALReset();
 
   int32_t version = 0;
