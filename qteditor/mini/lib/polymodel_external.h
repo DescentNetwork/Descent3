@@ -1,4 +1,4 @@
-/*
+﻿/*
 * Descent 3 
 * Copyright (C) 2024 Parallax Software
 *
@@ -79,14 +79,14 @@
 #define MAX_POINTS_PER_SUBOBJECT 300
 
 // gun bank
-struct w_bank {
+struct weapon_bank {
   int parent;
   vector3 pnt;
   vector3 norm;
 };
 
 // attach bank
-struct a_bank {
+struct attach_bank {
   int parent;
   vector3 pnt;
   vector3 norm;
@@ -197,7 +197,7 @@ struct bsp_info {
   vector3 pnt;              // point for sep plane
   vector3 geometric_center; // geometric center of this subobject.  In the same Frame Of
                            // Reference as all other vertices in this submodel. (Relative to pivot point)
-  float rad;               // radius for each submodel
+  float radius;               // radius for each submodel
 
   std::vector<vector3> verts; // vertices for the submodel (NEWSTYLE)
   std::vector<vector3> vertnorms;
@@ -298,7 +298,7 @@ struct poly_model {
   float anim_size;
   vector3 anim_size_offset;
 
-  float rad;
+  float radius;
   int n_textures;
   int16_t textures[MAX_MODEL_TEXTURES]; // a list of bitmap indices
 
@@ -309,14 +309,14 @@ struct poly_model {
 
   int frame_min, frame_max; // For TIMED polymodels, the min/max frames
 
-  int n_guns;
-  std::vector<w_bank> gun_slots; // array of gun banks
+  int n_weapons;
+  std::vector<weapon_bank> weapon_slots; // array of gun banks
 
   int n_ground;
-  std::vector<w_bank> ground_slots; // array of ground planes
+  std::vector<weapon_bank> ground_slots; // array of ground planes
 
   int n_attach;
-  std::vector<a_bank> attach_slots;
+  std::vector<attach_bank> attach_slots;
 
   int num_wbs;
   std::vector<poly_wb_info> poly_wb; // array of weapon batteries

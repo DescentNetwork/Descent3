@@ -790,7 +790,7 @@ void FreePolymodelData(int i) {
   }
 
   Poly_models[i].model_data.clear();
-  Poly_models[i].gun_slots.clear();
+  Poly_models[i].weapon_slots.clear();
   Poly_models[i].poly_wb.clear();
   Poly_models[i].attach_slots.clear();
   Poly_models[i].ground_slots.clear();
@@ -1067,7 +1067,7 @@ void SetPolymodelProperties(bsp_info *subobj, const std::string &props) {
     if (fov_angle < 0.0f || fov_angle > 360.0f) {
       // Bad data
       Q_ASSERT(0);
-      fov_angle = 1.0;
+      fov_angle = 1.0f;
     }
 
     // .4 is really fast and really arbitrary
@@ -1248,7 +1248,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       // mprintf(0,"Object header...\n");
 
       infile >> pm->n_models;
-      infile >> pm->rad;
+      infile >> pm->radius;
 
       pm->submodel.resize(pm->n_models);
 
@@ -1299,7 +1299,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       infile >> pm->submodel[n].pnt;
       infile >> pm->submodel[n].offset;
 
-      infile >> pm->submodel[n].rad; // radius
+      infile >> pm->submodel[n].radius; // radius
 
       infile >> pm->submodel[n].tree_offset; // offset
       infile >> pm->submodel[n].data_offset; // offset
@@ -1386,7 +1386,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
         }
       } else {
         for (i = 0; i < nverts; i++)
-          pm->submodel[n].alpha[i] = 1.0;
+          pm->submodel[n].alpha[i] = 1.0f;
       }
 
       int nfaces = 0;
@@ -1529,12 +1529,12 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
     }
 
     case "GPNT"_ID: // gun points
-      infile >> pm->n_guns;
-      pm->gun_slots.resize(pm->n_guns);
-      Q_ASSERT(pm->gun_slots.size() == (size_t)pm->n_guns);
+      infile >> pm->n_weapons;
+      pm->weapon_slots.resize(pm->n_weapons);
+      Q_ASSERT(pm->weapon_slots.size() == (size_t)pm->n_weapons);
 
-      for (i = 0; i < pm->n_guns; i++) {
-        w_bank *bank = &pm->gun_slots[i];
+      for (i = 0; i < pm->n_weapons; i++) {
+        weapon_bank *bank = &pm->weapon_slots[i];
 
         // In Version 19.08 and beyond, gunpoints are associated to their parent object.
         if (version >= 19 * 100 + 8) {
@@ -1555,7 +1555,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
         Q_ASSERT(pm->attach_slots.size() == (size_t)pm->n_attach);
 
         for (i = 0; i < pm->n_attach; i++) {
-          a_bank *bank = &pm->attach_slots[i];
+          attach_bank *bank = &pm->attach_slots[i];
 
           infile >> bank->parent;
           infile >> bank->pnt;
@@ -1583,7 +1583,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       if (num_normals) {
         for (i = 0; i < num_normals; i++) {
           vector3 temp;
-          a_bank *bank = &pm->attach_slots[i];
+          attach_bank *bank = &pm->attach_slots[i];
 
           {
             int skip = 0;
@@ -1644,7 +1644,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       Q_ASSERT(pm->ground_slots.size() == (size_t)pm->n_ground);
 
       for (i = 0; i < pm->n_ground; i++) {
-        w_bank *bank = &pm->ground_slots[i];
+        weapon_bank *bank = &pm->ground_slots[i];
 
         infile >> bank->parent;
 
@@ -1759,7 +1759,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
           if (dir<0)
           {
                   pm->submodel[i].keyframe_angles[t+0]*=-1;
-                  pm->submodel[i].keyframe_axis[t+0]*=-1.0;
+                  pm->submodel[i].keyframe_axis[t+0]*=-1.0f;
           }*/
         }
       }
@@ -1874,7 +1874,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
         vecs[newt] = pm->submodel[i].verts[pm->submodel[i].faces[0].vertnums[newt]];
       }
 
-      pm->submodel[i].rad = (sqrt(vm_GetCentroid(&avg, vecs, pm->submodel[i].faces[0].nverts)) / 2);
+      pm->submodel[i].radius = (sqrt(vm_GetCentroid(&avg, vecs, pm->submodel[i].faces[0].nverts)) / 2);
 
       pm->flags.facing = true;
     }
@@ -2178,9 +2178,9 @@ void SetNormalizedTimeObjTimed(object& obj, float *normalized_time) {
         obj_info.static_wb[x].flags.anim_full)
     {
       if (frame <= sm->rot_track_min)
-        normalized_time[i] = 0.0;
+        normalized_time[i] = 0.0f;
       else if (frame >= sm->rot_track_max)
-        normalized_time[i] = 1.0;
+        normalized_time[i] = 1.0f;
       else {
         float total_time = sm->rot_track_max - sm->rot_track_min;
         normalized_time[i] = (frame - sm->rot_track_min) / total_time;
@@ -2195,9 +2195,9 @@ void SetNormalizedTimeObjTimed(object& obj, float *normalized_time) {
         w_frame = 0;
 
       if (w_frame <= sm->rot_track_min)
-        normalized_time[i] = 0.0;
+        normalized_time[i] = 0.0f;
       else if (w_frame >= sm->rot_track_max)
-        normalized_time[i] = 1.0;
+        normalized_time[i] = 1.0f;
       else {
         float total_time = sm->rot_track_max - sm->rot_track_min;
         normalized_time[i] = (w_frame - sm->rot_track_min) / total_time;
@@ -2269,9 +2269,9 @@ void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, poly_model 
     bsp_info *sm = &pm->submodel[i];
 
     if (frame <= sm->rot_track_min)
-      normalized_time[i] = 0.0;
+      normalized_time[i] = 0.0f;
     else if (frame >= sm->rot_track_max)
-      normalized_time[i] = 1.0;
+      normalized_time[i] = 1.0f;
     else {
       float total_time = sm->rot_track_max - sm->rot_track_min;
       normalized_time[i] = (frame - sm->rot_track_min) / total_time;
@@ -2284,7 +2284,7 @@ void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, poly_model 
       int sobj_index;
 
       sobj_index = pm->poly_wb[i].turret_index[j];
-      normalized_time[sobj_index] = 0.0;
+      normalized_time[sobj_index] = 0.0f;
     }
   }
 }
@@ -2312,7 +2312,7 @@ void SetNormalizedTimeAnim(float anim_frame, float *normalized_time, poly_model 
       int sobj_index;
 
       sobj_index = pm->poly_wb[i].turret_index[j];
-      normalized_time[sobj_index] = 0.0;
+      normalized_time[sobj_index] = 0.0f;
     }
   }
 }
@@ -3026,7 +3026,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
     return;
 
   for (i = 0; i < MAX_SUBOBJECTS; i++)
-    normalized_time[i] = 0.0;
+    normalized_time[i] = 0.0f;
 
   SetModelAnglesAndPos(&pm, normalized_time);
 

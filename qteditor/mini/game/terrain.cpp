@@ -704,7 +704,7 @@ void SetupSky(float radius, terrain_sky_flags_t flags, uint8_t randit) {
 
   // Now figure out texture UVS
   for (i = 0; i < 5; i++) {
-    float scalar = (float)i / 4.0;
+    float scalar = (float)i / 4.0f;
     int angle_increment = 65536 / MAX_HORIZON_PIECES;
     for (t = 0; t < MAX_HORIZON_PIECES; t++) {
       float cur_sin = FixSin(t * angle_increment) * scalar;

@@ -34,7 +34,7 @@ void RenderObject(object& obj);
 void RenderObject_SetStatic(float r, float g, float b);
 
 // Sets the polygon render object type to gouraud
-void RenderObject_SetGouraud(vector3 *dir, float r, float g, float b, float scalar = 1.0);
+void RenderObject_SetGouraud(vector3 *dir, float r, float g, float b, float scalar = 1.0f);
 
 // Sets the object render to draw a polymodel with lightmaps applied
 void RenderObject_SetLightmaps(lightmap_object *lmobject);

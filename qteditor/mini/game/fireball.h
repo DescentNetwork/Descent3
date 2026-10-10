@@ -204,7 +204,7 @@ int CreateFireball(vector3 *pos, int fireball_num, int roomnum, int realtype = V
 // The explosion size is twice the object size times size_scale
 // The fireball type will be randomly selected based on the object size times size_scale
 // Returns the visnum of the fireball
-int CreateObjectFireball(object *objp, float size_scale = 1.0);
+int CreateObjectFireball(object *objp, float size_scale = 1.0f);
 
 // Control code for debris
 void DoDebrisFrame(object *obj);

@@ -161,7 +161,7 @@ void GetPointInObjectSpace(vector3& dest, vector3& pos, object& obj, int subnum,
     return;
 
   for (i = 0; i < MAX_SUBOBJECTS; i++)
-    normalized_time[i] = 0.0;
+    normalized_time[i] = 0.0f;
 
   SetModelAnglesAndPos(&pm, normalized_time);
 
@@ -331,16 +331,16 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
           Light_surfaces[surface_index].flags.touches_terrain = 0;
 
           if (sm->faces[j].texnum == -1) {
-            Light_surfaces[surface_index].emittance.r = 0;
-            Light_surfaces[surface_index].emittance.g = 0;
-            Light_surfaces[surface_index].emittance.b = 0;
-            Light_surfaces[surface_index].reflectivity = .5;
+            Light_surfaces[surface_index].emittance.r = 0.0f;
+            Light_surfaces[surface_index].emittance.g = 0.0f;
+            Light_surfaces[surface_index].emittance.b = 0.0f;
+            Light_surfaces[surface_index].reflectivity = 0.5f;
           } else {
-            Light_surfaces[surface_index].emittance.r = (float)GameTextures[po->textures[sm->faces[j].texnum]].r;
-            Light_surfaces[surface_index].emittance.g = (float)GameTextures[po->textures[sm->faces[j].texnum]].g;
-            Light_surfaces[surface_index].emittance.b = (float)GameTextures[po->textures[sm->faces[j].texnum]].b;
+            Light_surfaces[surface_index].emittance.r = GameTextures[po->textures[sm->faces[j].texnum]].r;
+            Light_surfaces[surface_index].emittance.g = GameTextures[po->textures[sm->faces[j].texnum]].g;
+            Light_surfaces[surface_index].emittance.b = GameTextures[po->textures[sm->faces[j].texnum]].b;
             Light_surfaces[surface_index].reflectivity = GameTextures[po->textures[sm->faces[j].texnum]].reflectivity;
-            if ((GetMaxColor(&Light_surfaces[surface_index].emittance)) > .005)
+            if ((GetMaxColor(&Light_surfaces[surface_index].emittance)) > 0.005f)
               Light_surfaces[surface_index].flags.lightsource = 1;
           }
 
@@ -413,14 +413,14 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
             Light_surfaces[surface_index].elements.clear();
 
           if (sm->faces[j].texnum == -1) {
-            Light_surfaces[surface_index].emittance.r = 0;
-            Light_surfaces[surface_index].emittance.g = 0;
-            Light_surfaces[surface_index].emittance.b = 0;
-            Light_surfaces[surface_index].reflectivity = .5;
+            Light_surfaces[surface_index].emittance.r = 0.0f;
+            Light_surfaces[surface_index].emittance.g = 0.0f;
+            Light_surfaces[surface_index].emittance.b = 0.0f;
+            Light_surfaces[surface_index].reflectivity = 0.5f;
           } else {
-            Light_surfaces[surface_index].emittance.r = (float)GameTextures[po->textures[sm->faces[j].texnum]].r;
-            Light_surfaces[surface_index].emittance.g = (float)GameTextures[po->textures[sm->faces[j].texnum]].g;
-            Light_surfaces[surface_index].emittance.b = (float)GameTextures[po->textures[sm->faces[j].texnum]].b;
+            Light_surfaces[surface_index].emittance.r = GameTextures[po->textures[sm->faces[j].texnum]].r;
+            Light_surfaces[surface_index].emittance.g = GameTextures[po->textures[sm->faces[j].texnum]].g;
+            Light_surfaces[surface_index].emittance.b = GameTextures[po->textures[sm->faces[j].texnum]].b;
             Light_surfaces[surface_index].reflectivity = GameTextures[po->textures[sm->faces[j].texnum]].reflectivity;
           }
 
@@ -703,8 +703,8 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
       lfp->u2[t] = (facevert.x() - verts[leftmost_point].x()) / (float)(lightmap_x_res * xspace_int);
       lfp->v2[t] = fabs((verts[topmost_point].y() - facevert.y())) / (float)(lightmap_y_res * yspace_int);
 
-      Q_ASSERT(lfp->u2[t] >= 0 && lfp->u2[t] <= 1.0);
-      Q_ASSERT(lfp->v2[t] >= 0 && lfp->v2[t] <= 1.0);
+      Q_ASSERT(lfp->u2[t] >= 0 && lfp->u2[t] <= 1.0f);
+      Q_ASSERT(lfp->v2[t] >= 0 && lfp->v2[t] <= 1.0f);
     }
   }
 

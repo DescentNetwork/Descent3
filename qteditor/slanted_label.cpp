@@ -52,7 +52,7 @@ void QSlantedLabel::paintEvent(QPaintEvent * /*event*/)
     p.setRenderHint(QPainter::TextAntialiasing);
 
     // Translate to center, rotate, translate back
-    QPointF center(width() / 2.0, height() / 2.0);
+    QPointF center(width() / 2.0, height() / 2.0f);
     p.translate(center);
     p.rotate(m_rotation);
     p.translate(-center);

@@ -497,7 +497,7 @@ inline void RenderSubmodelLightmapFace(poly_model *pm, bsp_info *sm, int facenum
 
     p->p3_uvl.u = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].u2[t] * xscalar;
     p->p3_uvl.v = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].v2[t] * yscalar;
-    p->p3_uvl.l = 1.0;
+    p->p3_uvl.l = 1.0f;
 
     p->p3_flags.uv2 = true;
     p->p3_flags.rgba = true;
@@ -586,7 +586,7 @@ inline void RenderSubmodelFaceSpecular(poly_model *pm, bsp_info *sm, int facenum
     pointlist[t] = p;
 
     p->p3_flags.rgba = true;
-    p->p3_a = 0.0;
+    p->p3_a = 0.0f;
 
     vector3 subvec = Specular_view_pos - vert;
     vm_NormalizeVectorFast(&subvec);
@@ -832,7 +832,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
       for (int i = 0; i < sm->nverts; i++) {
         vector3 vec = sm->verts[i];
 
-        float val = ((d3::rand() % 1000) - 500.0) / 500.0;
+        float val = ((d3::rand() % 1000) - 500.0) / 500.0f;
         vec *= 1.0 + (Polymodel_effect.deform_range * val);
 
         g3_RotatePoint(Robot_points[i], vec);
@@ -845,21 +845,21 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
     if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
       for (int i = 0; i < sm->nverts; i++) {
         vector3 vec = sm->verts[i];
-        float val = ((d3::rand() % 1000) - 500.0) / 500.0;
+        float val = ((d3::rand() % 1000) - 500.0) / 500.0f;
         vec *= 1.0 + (Polymodel_effect.deform_range * val);
 
         g3_RotatePoint(Robot_points[i], vec);
 
-        Robot_points[i].p3_r = 1.0;
-        Robot_points[i].p3_g = 1.0;
-        Robot_points[i].p3_b = 1.0;
+        Robot_points[i].p3_r = 1.0f;
+        Robot_points[i].p3_g = 1.0f;
+        Robot_points[i].p3_b = 1.0f;
       }
     } else {
       for (int i = 0; i < sm->nverts; i++) {
         g3_RotatePoint(Robot_points[i], sm->verts[i]);
-        Robot_points[i].p3_r = 1.0;
-        Robot_points[i].p3_g = 1.0;
-        Robot_points[i].p3_b = 1.0;
+        Robot_points[i].p3_r = 1.0f;
+        Robot_points[i].p3_g = 1.0f;
+        Robot_points[i].p3_b = 1.0f;
       }
     }
   } else if (Polymodel_light_type == polymodel_light_type::gouraud) {
@@ -867,7 +867,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
       if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
         for (int i = 0; i < sm->nverts; i++) {
           vector3 vec = sm->verts[i];
-          float val = ((d3::rand() % 1000) - 500.0) / 500.0;
+          float val = ((d3::rand() % 1000) - 500.0) / 500.0f;
           vec *= 1.0 + (Polymodel_effect.deform_range * val);
 
           g3_RotatePoint(Robot_points[i], vec);
@@ -883,7 +883,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
           for (int i = 0; i < sm->nverts; i++) {
             vector3 vec = sm->verts[i];
-            float val = ((d3::rand() % 1000) - 500.0) / 500.0;
+            float val = ((d3::rand() % 1000) - 500.0) / 500.0f;
             vec *= 1.0 + (Polymodel_effect.deform_range * val);
 
             g3_RotatePoint(Robot_points[i], vec);
@@ -911,7 +911,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
       if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
         for (int i = 0; i < sm->nverts; i++) {
           vector3 vec = sm->verts[i];
-          float val = ((d3::rand() % 1000) - 500.0) / 500.0;
+          float val = ((d3::rand() % 1000) - 500.0) / 500.0f;
           vec *= 1.0 + (Polymodel_effect.deform_range * val);
 
           g3_RotatePoint(Robot_points[i], vec);
@@ -1025,7 +1025,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
         rend_SetAlphaType(alpha_blend_type::constant_texture);
 
       rend_SetZBufferWriteMask(0);
-      g3_DrawBitmap(&pos, sm->rad, (sm->rad * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle);
+      g3_DrawBitmap(&pos, sm->radius, (sm->radius * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle);
       rend_SetZBufferWriteMask(1);
 
       goto pop_lighting;
@@ -1090,7 +1090,7 @@ float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3>
   float normalized_time[MAX_SUBOBJECTS];
   int model_index, sm_vert_index, frame_index;
   float cur_dist;
-  float size = 0.0;
+  float size = 0.0f;
   int start_frame = 0;
   int end_frame = 0;
 

@@ -36,7 +36,7 @@
 #define FRONT_FACE 3
 #define BACK_FACE 4
 
-float Hemicube_view_zoom = 1.0;
+float Hemicube_view_zoom = 1.0f;
 
 bool rad_Drawing = false;
 
@@ -66,11 +66,11 @@ void CalculateDeltaFormFactors() {
   da = 4.0 / ((float)rad_Hemicube.ff_res * (float)rad_Hemicube.ff_res);
 
   // Calculate top face delta form factors
-  x = dx / 2.0;
+  x = dx / 2.0f;
   for (i = 0; i < rad_Hemicube.grid_dim; i++) {
-    y = dy / 2.0;
+    y = dy / 2.0f;
     for (j = 0; j < rad_Hemicube.grid_dim; j++) {
-      r = x * x + y * y + 1.0;
+      r = x * x + y * y + 1.0f;
       val = (float)(da / (std::numbers::pi_v<float> * r * r));
       rad_Hemicube.top_array[j * rad_Hemicube.grid_dim + i] = val;
 
@@ -83,11 +83,11 @@ void CalculateDeltaFormFactors() {
   }
 
   // Calculate side face delta form factors
-  x = dx / 2.0;
+  x = dx / 2.0f;
   for (i = 0; i < rad_Hemicube.grid_dim; i++) {
-    z = dz / 2.0;
+    z = dz / 2.0f;
     for (j = 0; j < rad_Hemicube.grid_dim; j++) {
-      r = x * x + z * z + 1.0;
+      r = x * x + z * z + 1.0f;
       val = (float)(z * da / (std::numbers::pi_v<float> * r * r));
       rad_Hemicube.side_array[j * rad_Hemicube.grid_dim + i] = val;
 

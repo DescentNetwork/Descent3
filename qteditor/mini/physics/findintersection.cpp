@@ -1006,7 +1006,7 @@ inline bool find_plane_line_intersection(vector3 &intp, vector3 &colp, vector3 &
   float proj_dist_line;        // Distance projection of line onto the plane normal
   float proj_dist_point_plane; // Distance of the object from the plane
 
-  Q_ASSERT(rad >= 0.0);
+  Q_ASSERT(rad >= 0.0f);
 
   // Line direction
   line_vec = p1 - p0;
@@ -1185,7 +1185,7 @@ bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0,
   float shorten; // How much to subtract from the closest_point_dist to get the actual intersection
                  // point
 
-  Q_ASSERT(sphere_rad > 0.0);
+  Q_ASSERT(sphere_rad > 0.0f);
 
   // Get the vectors as usual
   line_vec = *p1 - *p0;
@@ -1222,11 +1222,11 @@ bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0,
       *intp =
           *p0 - n_ptc * (sphere_rad - scalar(sqrt(sphere_rad * sphere_rad - vm_Dot3Product(point_to_center_vec, point_to_center_vec))));
 
-      *col_dist = 0.0;
+      *col_dist = 0.0f;
       return true;
     } else if (f_init_collisions) {
       *intp = *p0;
-      *col_dist = 0.0;
+      *col_dist = 0.0f;
 
       return true;
     } else {
@@ -1321,7 +1321,7 @@ bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vec
     po0 = (*p0 - *ep0) * edge_orient;
     po1 = (*p1 - *ep0) * edge_orient;
 
-    po0.z() = po1.z() = 0.0;
+    po0.z() = po1.z() = 0.0f;
     mvec = po1 - po0;
     vector_len = vm_NormalizeVector(&mvec);
 
@@ -1453,7 +1453,7 @@ float rad, vector3 *ep0, vector3 *ep1)
                 goto check_ends;  // We are moving parallal to the cylinder (only end collisions are possible)
         pmag = vm_NormalizeVector(&perp);
 
-        Q_ASSERT(pmag != 0.0);
+        Q_ASSERT(pmag != 0.0f);
 
         vector3 brbc = *p0 - *ep0;
         cdist = fabs((brbc) * perp);  // Closest distance
@@ -1690,7 +1690,7 @@ bool check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *
   vector3* test = vertex_ptr_list[0];
   int i;
 
-  Q_ASSERT(newp != nullptr && p0 != 0 && p1 != nullptr && rad >= 0.0);
+  Q_ASSERT(newp != nullptr && p0 != 0 && p1 != nullptr && rad >= 0.0f);
 
   // This is so we always use the same vertex
   for (i = 1; i < nv; i++) {
@@ -2397,7 +2397,7 @@ internal_try_again:
         face_normal = cur_room->faces[i].normal;
 
         face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, pos, &new_pos, &face_normal,
-                                           vertex_ptr_list, cur_room->faces[i].num_verts, 0.0);
+                                           vertex_ptr_list, cur_room->faces[i].num_verts, 0.0f);
         if (!face_hit_type) {
           face_normal *= -1.0f;
           for (count = 0; count < cur_room->faces[i].num_verts; count++)
@@ -2405,7 +2405,7 @@ internal_try_again:
                 &cur_room->verts[cur_room->faces[i].face_verts[count]];
 
           face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, pos, &new_pos, &face_normal,
-                                             vertex_ptr_list, cur_room->faces[i].num_verts, 0.0);
+                                             vertex_ptr_list, cur_room->faces[i].num_verts, 0.0f);
           f_backface = true;
         }
 
@@ -2465,16 +2465,16 @@ void check_ceiling() {
   if (fvi_query_ptr->rad + fvi_hit_data_ptr->hit_pnt.y() < CEILING_HEIGHT)
     return;
 
-  vlist[0].x() = 0.0;
+  vlist[0].x() = 0.0f;
   vlist[0].y() = CEILING_HEIGHT;
-  vlist[0].z() = 0.0;
+  vlist[0].z() = 0.0f;
   vlist[1].x() = TERRAIN_WIDTH * TERRAIN_SIZE;
   vlist[1].y() = CEILING_HEIGHT;
-  vlist[1].z() = 0.0;
+  vlist[1].z() = 0.0f;
   vlist[2].x() = TERRAIN_WIDTH * TERRAIN_SIZE;
   vlist[2].y() = CEILING_HEIGHT;
   vlist[2].z() = TERRAIN_DEPTH * TERRAIN_SIZE;
-  vlist[3].x() = 0.0;
+  vlist[3].x() = 0.0f;
   vlist[3].y() = CEILING_HEIGHT;
   vlist[3].z() = TERRAIN_DEPTH * TERRAIN_SIZE;
 
@@ -3238,7 +3238,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
 
   for (i = 0; i < 8; i++) {
     collidable[i] =
-        true; //(PointSpeed(&Objects[fvi_query_ptr->thisobjnum], &verts[i], orient, rotvel, velocity).y < 0.0);
+        true; //(PointSpeed(&Objects[fvi_query_ptr->thisobjnum], &verts[i], orient, rotvel, velocity).y < 0.0f);
   }
 
   // Get Ground intersection points
@@ -3731,14 +3731,14 @@ fvi_query_ptr->p1)); matrix orient = *fvi_query_ptr->o_orient; vector3 rotvel = 
 
         if (sim_time_remaining < 0.0)
         {
-                sim_time_remaining = 0.0;
+                sim_time_remaining = 0.0f;
                 moved_time = old_sim_time_remaining;
         }
 
         if (sim_time_remaining > old_sim_time_remaining)
         {
                 sim_time_remaining = old_sim_time_remaining;
-                moved_time = 0.0;
+                moved_time = 0.0f;
         }
 
         if(old_sim_time_remaining > 0.0)
@@ -3866,14 +3866,14 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
           if (cellnum_upper_right < TERRAIN_WIDTH * TERRAIN_DEPTH)
             vlist[1].y() = Terrain_seg[cellnum_upper_right].y;
           else
-            vlist[1].y() = 0.0;
+            vlist[1].y() = 0.0f;
           vlist[1].z() = (cellnum_upper_right / TERRAIN_WIDTH) * TERRAIN_SIZE;
 
           vlist[2].x() = (cellnum_right % TERRAIN_WIDTH) * TERRAIN_SIZE;
           if (cellnum_right < TERRAIN_WIDTH * TERRAIN_DEPTH)
             vlist[2].y() = Terrain_seg[cellnum_right].y;
           else
-            vlist[2].y() = 0.0;
+            vlist[2].y() = 0.0f;
           vlist[2].z() = (cellnum_right / TERRAIN_WIDTH) * TERRAIN_SIZE;
 
           vertex_ptr_list[0] = &vlist[0];
@@ -3894,14 +3894,14 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
           if (cellnum_upper < TERRAIN_WIDTH * TERRAIN_DEPTH)
             vlist[1].y() = Terrain_seg[cellnum_upper].y;
           else
-            vlist[1].y() = 0.0;
+            vlist[1].y() = 0.0f;
           vlist[1].z() = (cellnum_upper / TERRAIN_WIDTH) * TERRAIN_SIZE;
 
           vlist[2].x() = (cellnum_upper_right % TERRAIN_WIDTH) * TERRAIN_SIZE;
           if (cellnum_upper_right < TERRAIN_WIDTH * TERRAIN_DEPTH)
             vlist[2].y() = Terrain_seg[cellnum_upper_right].y;
           else
-            vlist[2].y() = 0.0;
+            vlist[2].y() = 0.0f;
           vlist[2].z() = (cellnum_upper_right / TERRAIN_WIDTH) * TERRAIN_SIZE;
 
           vertex_ptr_list[0] = &vlist[0];
@@ -3947,7 +3947,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
                                     &Objects[fvi_query_ptr->thisobjnum], &fvi_hit_data_ptr->hit_pnt, 3, vertex_ptr_list,
                                     &face_normal, &fvi_hit_data_ptr->hit_orient, &fvi_hit_data_ptr->hit_rotvel,
                                     &fvi_hit_data_ptr->hit_velocity)) {
-            float hit_dist = 0.0;
+            float hit_dist = 0.0f;
             float hit_interval;
             vector3 movement_dir;
 
@@ -3969,15 +3969,15 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
               fvi_hit_data_ptr->hit_turnroll = *fvi_query_ptr->o_turnroll;
               fvi_hit_data_ptr->hit_pnt = *fvi_query_ptr->p0;
 
-              fvi_collision_dist = 0.0;
+              fvi_collision_dist = 0.0f;
               movement_dir = vector3{};
               hit_dist = 0.0f;
             }
 
             fvi_hit_data_ptr->hit_type[0] = fvi_hit_type::terrain;
-            fvi_hit_data_ptr->hit_wallnorm[0].x = 0.0;
-            fvi_hit_data_ptr->hit_wallnorm[0].y = 1.0;
-            fvi_hit_data_ptr->hit_wallnorm[0].z = 0.0;
+            fvi_hit_data_ptr->hit_wallnorm[0].x = 0.0f;
+            fvi_hit_data_ptr->hit_wallnorm[0].y = 1.0f;
+            fvi_hit_data_ptr->hit_wallnorm[0].z = 0.0f;
             // fvi_hit_data_ptr->hit_seg = -1; -- set in the fvi_FindIntersection function
             // fvi_hit_data_ptr->hit_pnt = *fvi_query_ptr->p0 + hit_dist *movement_dir;
             fvi_hit_data_ptr->hit_face[0] = i;
@@ -4171,7 +4171,7 @@ fvi_hit_type do_fvi_terrain() {
 
   // End point is out of bounds, so clip it.
   if (fvi_hit_data_ptr->hit_room == -1) {
-    float delta = 1.0;
+    float delta = 1.0f;
     vector3 movement = fvi_hit_data_ptr->hit_pnt - *fvi_query_ptr->p0;
 
     if (fvi_hit_data_ptr->hit_pnt.x() < (fvi_query_ptr->rad + 0.000001)) {

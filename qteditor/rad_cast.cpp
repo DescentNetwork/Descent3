@@ -445,7 +445,7 @@ float GetFormFactorForElementAndSatellite(rad_surface *dest_surf, rad_element *d
 
   for (int j = 0; j < dest_element->num_verts; j++) {
     dest_center = dest_element->verts[j];
-    dest_center += (dest_surf->normal / 32.0);
+    dest_center += (dest_surf->normal / 32.0f);
     scalar temp_factor = 0;
 
     int hit = 0;
@@ -602,13 +602,13 @@ float GetFormFactorForElement(rad_surface *dest_surf, rad_element *dest_element,
 
     if (multiple_shoots) {
       GetCenterOfElement(&rad_MaxSurface->elements[i], &light_center);
-      light_center += (rad_MaxSurface->normal / 16.0);
+      light_center += (rad_MaxSurface->normal / 16.0f);
       ray_area = rad_MaxSurface->elements[i].area;
     } else
       ray_area = rad_MaxSurface->area;
 
     GetCenterOfElement(dest_element, &dest_center);
-    dest_center += (dest_surf->normal / 16.0);
+    dest_center += (dest_surf->normal / 16.0f);
 
     int hit = 0;
     vector3 ray = light_center - dest_center;
@@ -720,10 +720,10 @@ float GetFormFactorForElementSuperDetail(rad_surface *dest_surf, rad_element *de
 
   GetCenterOfSurface(rad_MaxSurface, &patch_center);
   GetCenterOfElement(rad_MaxElement, &light_center);
-  light_center += (rad_MaxSurface->normal / 16.0);
+  light_center += (rad_MaxSurface->normal / 16.0f);
 
   GetCenterOfElement(dest_element, &dest_center);
-  dest_center += (dest_surf->normal / 16.0);
+  dest_center += (dest_surf->normal / 16.0f);
 
   int hit = 0;
   vector3 ray = light_center - dest_center;
@@ -968,7 +968,7 @@ void CalculateFormFactorsRaycast() {
     src_center = rad_MaxSurface->verts[0];
   } else {
     GetCenterOfSurface(rad_MaxSurface, &src_center);
-    src_center += (rad_MaxSurface->normal / 16.0);
+    src_center += (rad_MaxSurface->normal / 16.0f);
   }
 
   float sphere_dist = 0;

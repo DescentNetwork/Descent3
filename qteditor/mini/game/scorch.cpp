@@ -191,7 +191,7 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
   int count = 0;
   for (int i = Scorch_start; i >= 0; ) {
     const auto sp = &Scorches[i];
-    float size = (float)sp->size / 16.0;
+    float size = (float)sp->size / 16.0f;
 
     // Increment count, and stop drawing if hit limit
     if (sp->roomface == roomface) {    // Found one!
@@ -248,7 +248,7 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
   sp->roomface = roomface;
   sp->pos = *pos;
   Q_ASSERT((size >= 0.0) && (size < 15.0));
-  sp->size = size * 16.0;
+  sp->size = size * 16.0f;
 
   // Get index for handle, adding it if this texture hasn't been seen yet
   const auto found = std::find(Scorch_texture_handles.begin(), Scorch_texture_handles.end(), texture_handle);
@@ -319,7 +319,7 @@ void DrawScorches(int roomnum, int facenum) {
       vector3 corners[4];
       g3Point points[4];
       g3Point *pointlist[4];
-      float size = (float)sp->size / 16.0;
+      float size = (float)sp->size / 16.0f;
 
       // Don't draw mark if too far away, and make smaller those marks that are almost too far
       float depth = g3_CalcPointDepth(&sp->pos);
@@ -349,7 +349,7 @@ void DrawScorches(int roomnum, int facenum) {
         pointlist[p] = &points[p];
         points[p].p3_uvl.u = scorch_uvs[p].u;
         points[p].p3_uvl.v = scorch_uvs[p].v;
-        points[p].p3_l = 1.0;
+        points[p].p3_l = 1.0f;
         points[p].p3_flags.uv = true;
         points[p].p3_flags.lighting = true;
       }

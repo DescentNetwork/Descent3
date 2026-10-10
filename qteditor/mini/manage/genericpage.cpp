@@ -256,7 +256,7 @@ bool mng_ReadNewGenericPage(byte_istream &infile, mngs_generic_page *genericpage
   if (version >= 21)
     infile >> genericpage->objinfo_struct.respawn_scalar;
   else
-    genericpage->objinfo_struct.respawn_scalar = 1.0;
+    genericpage->objinfo_struct.respawn_scalar = 1.0f;
 
   if (version >= 22) {
     int16_t n = 0;
@@ -281,8 +281,8 @@ bool mng_ReadNewGenericPage(byte_istream &infile, mngs_generic_page *genericpage
       if (version < 27) {
         const uint32_t flags = std::bit_cast<uint32_t>(death_types[i].flags);
         if ((flags & OLD_DF_DELAY_MASK) != OLD_DF_DELAY_MIN_MAX) {
-          death_types[i].delay_min = 0.0;
-          death_types[i].delay_max = 0.0;
+          death_types[i].delay_min = 0.0f;
+          death_types[i].delay_max = 0.0f;
         }
       }
     }

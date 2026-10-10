@@ -194,11 +194,11 @@ void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<u
   CopySqueezeBodyAndEdges(dest_data, src_data, w, h, dest_x, dest_y);
 
   // Now alter all face uvs that have this lightmap info
-  float dest_u = (float)(dest_x + 1) / 128.0;
-  float dest_v = (float)(dest_y + 1) / 128.0;
+  float dest_u = (float)(dest_x + 1) / 128.0f;
+  float dest_v = (float)(dest_y + 1) / 128.0f;
 
-  float u_scalar = (float)w / 128.0;
-  float v_scalar = (float)h / 128.0;
+  float u_scalar = (float)w / 128.0f;
+  float v_scalar = (float)h / 128.0f;
 
   for (size_t t = roomnum; t < Rooms.size(); t++) {
     room_t *this_rp = &Rooms[t];
@@ -260,11 +260,11 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<
   CopySqueezeBodyAndEdges(dest_data, src_data, w, h, dest_x, dest_y);
 
   // Now alter all face uvs that have this lightmap info
-  float dest_u = (float)(dest_x + 1) / 128.0;
-  float dest_v = (float)(dest_y + 1) / 128.0;
+  float dest_u = (float)(dest_x + 1) / 128.0f;
+  float dest_v = (float)(dest_y + 1) / 128.0f;
 
-  float u_scalar = (float)w / 128.0;
-  float v_scalar = (float)h / 128.0;
+  float u_scalar = (float)w / 128.0f;
+  float v_scalar = (float)h / 128.0f;
 
   for (int objnum = obj - Objects.data(); objnum != -1; objnum = Objects[objnum].next) {
     object *this_obj = &Objects[objnum];
@@ -1008,7 +1008,7 @@ void DoRadiosityForRooms() {
           if (Rooms[i].faces[t].light_multiple > 200)
             Rooms[i].faces[t].light_multiple = 4;
 
-          float mul = ((float)Rooms[i].faces[t].light_multiple) / 4.0;
+          float mul = ((float)Rooms[i].faces[t].light_multiple) / 4.0f;
           mul *= global_light.multiplier * room_light[i].multiplier;
 
           Light_surfaces[surface_index].emittance.r = (float)GameTextures[Rooms[i].faces[t].tmap].r * mul;
@@ -1226,7 +1226,7 @@ void DoRadiosityForCurrentRoom(int roomnum) {
       Light_surfaces[surface_index].emittance.g = 0;
       Light_surfaces[surface_index].emittance.b = 0;
     } else {
-      float mul = ((float)rp->faces[t].light_multiple) / 4.0;
+      float mul = ((float)rp->faces[t].light_multiple) / 4.0f;
       mul *= global_light.multiplier * room_light[roomnum].multiplier;
       Light_surfaces[surface_index].emittance.r = (float)GameTextures[rp->faces[t].tmap].r * mul;
       Light_surfaces[surface_index].emittance.g = (float)GameTextures[rp->faces[t].tmap].g * mul;
@@ -1990,7 +1990,7 @@ void DoRadiosityForTerrain() {
           Light_surfaces[surf_index].emittance.g = 0;
           Light_surfaces[surf_index].emittance.b = 0;
         } else {
-          float mul = ((float)Rooms[i].faces[t].light_multiple) / 4.0;
+          float mul = ((float)Rooms[i].faces[t].light_multiple) / 4.0f;
           mul *= global_light.multiplier * room_light[i].multiplier;
 
           Light_surfaces[surf_index].emittance.r = (float)GameTextures[Rooms[i].faces[t].tmap].r * mul;
@@ -2083,11 +2083,11 @@ void DoRadiosityForTerrain() {
       total.b /= num_items;
 
       if (total.r > 1.0)
-        total.r = 1.0;
+        total.r = 1.0f;
       if (total.g > 1.0)
-        total.g = 1.0;
+        total.g = 1.0f;
       if (total.b > 1.0)
-        total.b = 1.0;
+        total.b = 1.0f;
 
       Terrain_seg[seg].l = Float_to_ubyte(GetMaxColor(&total));
 
@@ -2509,8 +2509,8 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
       if (fp->face_uvls[t].v2 < 0)
         fp->face_uvls[t].v2 = 0;
 
-      Q_ASSERT(fp->face_uvls[t].u2 >= 0 && fp->face_uvls[t].u2 <= 1.0);
-      Q_ASSERT(fp->face_uvls[t].v2 >= 0 && fp->face_uvls[t].v2 <= 1.0);
+      Q_ASSERT(fp->face_uvls[t].u2 >= 0 && fp->face_uvls[t].u2 <= 1.0f);
+      Q_ASSERT(fp->face_uvls[t].v2 >= 0 && fp->face_uvls[t].v2 <= 1.0f);
     }
   }
 
@@ -3103,9 +3103,9 @@ void CreateNormalMapForFace (int roomnum,face *fp)
                         if (!(src_data[offset] & OPAQUE_FLAG))
                                 continue;
 
-                        sfp->normal_map[(offset*3)+0]=((vnorm.x+1.0)/2.0)*255.0;
-                        sfp->normal_map[(offset*3)+1]=((vnorm.y+1.0)/2.0)*255.0;
-                        sfp->normal_map[(offset*3)+2]=((vnorm.z+1.0)/2.0)*255.0;
+                        sfp->normal_map[(offset*3)+0]=((vnorm.x+1.0)/2.0)*255.0f;
+                        sfp->normal_map[(offset*3)+1]=((vnorm.y+1.0)/2.0)*255.0f;
+                        sfp->normal_map[(offset*3)+2]=((vnorm.z+1.0)/2.0)*255.0f;
                         vnorm+=delta_vnorm;
                 }
 
@@ -3181,9 +3181,9 @@ void CleanupSpecularLighting(int external) {
                     int r = (color >> 10) & 0x1f;
                     int g = (color >> 5) & 0x1f;
                     int b = (color & 0x1f);
-                    float sr = (float)r / 31.0;
-                    float sg = (float)g / 31.0;
-                    float sb = (float)b / 31.0;
+                    float sr = (float)r / 31.0f;
+                    float sg = (float)g / 31.0f;
+                    float sb = (float)b / 31.0f;
 
                     float mono_color = (sr * .3) + (sg * .59) + (sb * .11);
                     if (mono_color > strongest_light) {

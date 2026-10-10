@@ -151,7 +151,7 @@ index_t AllocDoor() {
 
   Doors[n] = door{};
   Doors[n].flags = {};
-  Doors[n].hit_points = 0.0;
+  Doors[n].hit_points = 0.0f;
 
   Doors.acquire(n);
   return static_cast<uint32_t>(n);

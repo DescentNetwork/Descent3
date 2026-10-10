@@ -497,7 +497,7 @@ void RotateRoomPoints(int roomnum, const vector3 *world_vecs) {
   if (Viewer_object->effect_info && (Viewer_object->effect_info->type_flags.deform)) {
     for (i = 0; i < rp->num_verts; i++) {
       vector3 vec = world_vecs[i];
-      float val = ((d3::rand() % 1000) - 500.0) / 500.0;
+      float val = ((d3::rand() % 1000) - 500.0) / 500.0f;
       val *= Viewer_object->effect_info->deform_time;
       vec += Global_alter_vec * (Viewer_object->effect_info->deform_range * val);
 
@@ -933,7 +933,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
       }
       int left = 0, top = 0, right = 0, bottom = 0;
       clip_wnd combine_wnd;
-      combine_wnd.right = combine_wnd.bot = 0.0;
+      combine_wnd.right = combine_wnd.bot = 0.0f;
       combine_wnd.left = Render_width;
       combine_wnd.top = Render_height;
       // make new clip window
@@ -998,7 +998,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
       // Make sure it didn't get clipped away
       if (clip_code_byte(cc.cc_and) == 0 || external_door_hack) {
         clip_wnd new_wnd;
-        new_wnd.right = new_wnd.bot = 0.0;
+        new_wnd.right = new_wnd.bot = 0.0f;
         new_wnd.left = Render_width;
         new_wnd.top = Render_height;
         // make new clip window
@@ -1130,7 +1130,7 @@ void BuildRoomList(int start_room_num) {
     Objects[objnum].flags.safe_to_render = true;
 
   // Initial clip window is whole screen
-  wnd.left = wnd.top = 0.0;
+  wnd.left = wnd.top = 0.0f;
   wnd.right = Render_width;
   wnd.bot = Render_height;
   BuildRoomListSub(start_room_num, &wnd, 0);
@@ -1304,9 +1304,9 @@ void RenderSpecularFacesFlat(int roomnum) {
     first = 0;
     int i;
     for (i = 0; i < 32; i++) {
-      lm_red[i] = static_cast<float>(i) / 31.0;
-      lm_green[i] = static_cast<float>(i) / 31.0;
-      lm_blue[i] = static_cast<float>(i) / 31.0;
+      lm_red[i] = static_cast<float>(i) / 31.0f;
+      lm_green[i] = static_cast<float>(i) / 31.0f;
+      lm_blue[i] = static_cast<float>(i) / 31.0f;
     }
     for (i = 0; i < MAX_VERTS_PER_ROOM; i++) {
       Smooth_verts[i].used = 0;
@@ -1415,9 +1415,9 @@ texel = data[int_v][int_u];
             int index = (static_cast<float>(MAX_SPECULAR_INCREMENTS - 1) * dotp);
             scalar = Specular_tables[material_type][index] * spec_scalar;
 
-            float cr = static_cast<float>((color >> 10) & 0x1f) / 31.0;
-            float cg = static_cast<float>((color >> 5) & 0x1f) / 31.0;
-            float cb = static_cast<float>(color & 0x1f) / 31.0;
+            float cr = static_cast<float>((color >> 10) & 0x1f) / 31.0f;
+            float cg = static_cast<float>((color >> 5) & 0x1f) / 31.0f;
+            float cb = static_cast<float>(color & 0x1f) / 31.0f;
             rv = std::min<float>(1.0, (rv + (scalar * cr)));
             gv = std::min<float>(1.0, (gv + (scalar * cg)));
             bv = std::min<float>(1.0, (bv + (scalar * cb)));
@@ -1459,15 +1459,15 @@ texel = data[int_v][int_u];
           Smooth_verts[fp->face_verts[vn]].b += bv;
         }
       } else {
-        rv = std::min(1.0, rv * vr * 4.0);
-        gv = std::min(1.0, gv * vg * 4.0);
-        bv = std::min(1.0, bv * vb * 4.0);
+        rv = std::min(1.0f, rv * vr * 4.0f);
+        gv = std::min(1.0f, gv * vg * 4.0f);
+        bv = std::min(1.0f, bv * vb * 4.0f);
         pointbuffer[vn] = World_point_buffer[rp->wpb_index + fp->face_verts[vn]];
         g3Point *p = &pointbuffer[vn];
         pointlist[vn] = p;
         p->p3_uvl.u = fp->face_uvls[vn].u;
         p->p3_uvl.v = fp->face_uvls[vn].v;
-        p->p3_a = 1.0;
+        p->p3_a = 1.0f;
         p->p3_r = rv;
         p->p3_g = gv;
         p->p3_b = bv;
@@ -1507,7 +1507,7 @@ texel = data[int_v][int_u];
       pointlist[vn] = p;
       p->p3_uvl.u = fp->face_uvls[vn].u;
       p->p3_uvl.v = fp->face_uvls[vn].v;
-      p->p3_a = 1.0;
+      p->p3_a = 1.0f;
       p->p3_r = std::min<float>(1.0, Smooth_verts[fp->face_verts[vn]].r * reflect);
       p->p3_g = std::min<float>(1.0, Smooth_verts[fp->face_verts[vn]].g * reflect);
       p->p3_b = std::min<float>(1.0, Smooth_verts[fp->face_verts[vn]].b * reflect);
@@ -1697,7 +1697,7 @@ void RenderLightmapFace(int roomnum, int facenum) {
       p->p3_flags.uv = true;
       p->p3_flags.lighting = true;
       p->p3_flags.rgba = true; // has uv and l set
-      p->p3_uvl.l = 1.0;
+      p->p3_uvl.l = 1.0f;
 
       face_code &= clip_code_byte(p->p3_codes);
     }
@@ -1712,7 +1712,7 @@ void RenderLightmapFace(int roomnum, int facenum) {
       p->p3_flags.uv = true;
       p->p3_flags.lighting = true;
       p->p3_flags.rgba = true; // has uv and l set
-      p->p3_uvl.l = 1.0;
+      p->p3_uvl.l = 1.0f;
 
       face_code &= clip_code_byte(p->p3_codes);
     }
@@ -1800,7 +1800,7 @@ void RenderFace(int roomnum, int facenum) {
       if ((fp->flags.lightmap) && UseHardware)
         p->p3_uvl.l = Room_light_val;
       else
-        p->p3_uvl.l = 1.0;
+        p->p3_uvl.l = 1.0f;
 #else
       p->p3_uvl.l = Room_light_val;
 #endif
@@ -1829,7 +1829,7 @@ void RenderFace(int roomnum, int facenum) {
       if ((fp->flags.lightmap) && UseHardware)
         p->p3_uvl.l = Room_light_val;
       else
-        p->p3_uvl.l = 1.0;
+        p->p3_uvl.l = 1.0f;
 #else
       p->p3_uvl.l = Room_light_val;
 #endif
@@ -1854,9 +1854,9 @@ void RenderFace(int roomnum, int facenum) {
     if (first) {
       first = 0;
       for (int i = 0; i < 32; i++) {
-        lm_red[i] = static_cast<float>(i) / 31.0;
-        lm_green[i] = static_cast<float>(i) / 31.0;
-        lm_blue[i] = static_cast<float>(i) / 31.0;
+        lm_red[i] = static_cast<float>(i) / 31.0f;
+        lm_green[i] = static_cast<float>(i) / 31.0f;
+        lm_blue[i] = static_cast<float>(i) / 31.0f;
       }
     }
 
@@ -2382,7 +2382,7 @@ void RenderRoomUnsorted(int roomnum) {
 void ComputeRoomPulseLight(int roomnum) {
   room_t *rp = &Rooms[roomnum];
   if (rp->pulse_time == 0 || In_editor_mode)
-    Room_light_val = 1.0;
+    Room_light_val = 1.0f;
   else {
     float ptime = rp->pulse_time * WALL_PULSE_INCREMENT;
     float add_time = rp->pulse_offset * WALL_PULSE_INCREMENT;
@@ -2391,7 +2391,7 @@ void ComputeRoomPulseLight(int roomnum) {
     float left_time = (d3::chrono::last_update() + add_time) - (int_time * ptime * 2);
     float norm_time = left_time / (ptime);
     if (norm_time > 1)
-      Room_light_val = 1 - (norm_time - 1.0);
+      Room_light_val = 1 - (norm_time - 1.0f);
     else
       Room_light_val = norm_time;
   }
@@ -2439,7 +2439,7 @@ void RenderSingleLightGlow(int index) {
   }
 
   facing_scalar *= LightGlows[index].scalar;
-  facing_scalar = std::min<float>(facing_scalar, 1.0);
+  facing_scalar = std::min<float>(facing_scalar, 1.0f);
   // Take into effect pulsing
   ComputeRoomPulseLight(LightGlows[index].roomnum);
   facing_scalar *= Room_light_val;
@@ -2737,7 +2737,7 @@ void BuildMirroredRoomListSub(int start_room_num, clip_wnd *wnd) {
       // Make sure it didn't get clipped away
       if (clip_code_byte(cc.cc_and) == 0 || external_door_hack) {
         clip_wnd new_wnd;
-        new_wnd.right = new_wnd.bot = 0.0;
+        new_wnd.right = new_wnd.bot = 0.0f;
         new_wnd.left = Render_width;
         new_wnd.top = Render_height;
         // make new clip window
@@ -2779,7 +2779,7 @@ void BuildMirroredRoomList() {
   Mirrored_room_list[Num_mirrored_rooms++] = Mirror_room;
 
   // Initial clip window is whole screen
-  wnd.left = wnd.top = 0.0;
+  wnd.left = wnd.top = 0.0f;
   wnd.right = Render_width;
   wnd.bot = Render_height;
   g3Point portal_points[MAX_VERTS_PER_FACE], temp_points[MAX_VERTS_PER_FACE * 2];
@@ -2844,7 +2844,7 @@ void BuildMirroredRoomList() {
   }
   // make new clip window
   clip_wnd new_wnd;
-  new_wnd.right = new_wnd.bot = 0.0;
+  new_wnd.right = new_wnd.bot = 0.0f;
   new_wnd.left = Render_width;
   new_wnd.top = Render_height;
   for (int i = 0; i < total_points; i++) {
@@ -3032,9 +3032,9 @@ static inline void IsRoomDynamicValid(int roomnum, int x, int y, int z, float *r
 
   uint8_t color = rp->volume_lights[(z * w * h) + (y * w) + x];
 
-  *r = (float)((color >> 5) / 7.0);
-  *g = (float)((color >> 2) & 0x07) / 7.0;
-  *b = (float)((float)(color & 0x03) / 3.0);
+  *r = (float)((color >> 5) / 7.0f);
+  *g = (float)((color >> 2) & 0x07) / 7.0f;
+  *b = (float)((float)(color & 0x03) / 3.0f);
 }
 // Gets the dynamic light value for this position
 void GetRoomDynamicScalar(vector3 *pos, int roomnum, float *r, float *g, float *b) {
@@ -3596,9 +3596,9 @@ void FogClipPoints (g3Point *on_pnt,g3Point *off_pnt,g3Point *dest,float zval,in
                 tmp->p3_flags.rgba = true;
         }
         if (ending)
-                tmp->p3_a = 0.0;
+                tmp->p3_a = 0.0f;
         else
-                tmp->p3_a = 1.0;
+                tmp->p3_a = 1.0f;
         g3_CodePoint(tmp);
 }
 */
@@ -3765,7 +3765,7 @@ int FogBlendFace (g3Point **src,int nv,int *num_solid,int *num_alpha)
                         float alpha=1.0-((thispnt->p3_z-Fog_zone_start)/fog_zone_range);
                         if (alpha<0)
                                 alpha=0;
-                        Q_ASSERT (alpha<=1.0);
+                        Q_ASSERT (alpha<=1.0f);
                         AlphaFogPoints[alpha_nv]=*thispnt;
                         AlphaFogPoints[alpha_nv].p3_a=alpha;
                         alpha_nv++;
@@ -3783,7 +3783,7 @@ int FogBlendFace (g3Point **src,int nv,int *num_solid,int *num_alpha)
                 else
                 {
                         SolidFogPoints[solid_nv]=*thispnt;
-                        SolidFogPoints[solid_nv].p3_a=1.0;
+                        SolidFogPoints[solid_nv].p3_a=1.0f;
                         solid_nv++;
                 }
         }

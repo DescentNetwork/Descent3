@@ -47,12 +47,12 @@ static void mng_InitWeaponPage(mngs_weapon_page *weaponpage) {
   weaponpage->icon_name.clear();
   weaponpage->particle_name.clear();
 
-  weaponpage->weapon_struct.alpha = 1.0;
+  weaponpage->weapon_struct.alpha = 1.0f;
   weaponpage->weapon_struct.alternate_chance = 0;
-  weaponpage->weapon_struct.explode_time = 1.0;
-  weaponpage->weapon_struct.explode_size = 1.0;
+  weaponpage->weapon_struct.explode_time = 1.0f;
+  weaponpage->weapon_struct.explode_size = 1.0f;
   weaponpage->weapon_struct.particle_count = 0;
-  weaponpage->weapon_struct.scorch_size = 1.0;
+  weaponpage->weapon_struct.scorch_size = 1.0f;
   weaponpage->weapon_struct.terrain_damage_size = 0;
   weaponpage->weapon_struct.terrain_damage_depth = 0;
   weaponpage->weapon_struct.homing_fov = 0.4f;

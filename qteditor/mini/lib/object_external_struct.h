@@ -718,7 +718,7 @@ struct tOSIRISScript {
 // Render info, determined by RENDER_TYPE.  Stored as a std::variant so the
 // union can hold the non-trivially-copyable `polyobj_info`; the accessors
 // activate (and therefore default-construct) the requested alternative.
-struct object_rtype {
+struct render_info_s {
   std::variant<polyobj_info, shard_info_s, line_info_s, uint32_t> v;
 
   polyobj_info &pobj_info() { return std::get<polyobj_info>(v); }
@@ -736,7 +736,7 @@ struct object_rtype {
 // `soundsource_info_s`; the accessors activate (and therefore default-
 // construct) the requested alternative.  Default-constructs to laser_info,
 // matching the legacy value-initialized union (first member).
-struct object_ctype {
+struct control_info_s {
   // The union's members were always readable regardless of which one the
   // object actually used; the non-const accessors therefore activate (and
   // default-construct) the requested alternative so a write never throws.
@@ -853,12 +853,12 @@ struct object {
   lightmap_object lm_object; // The lightmap object for this object
 
 // Control info, determined by CONTROL_TYPE; see object_ctype for accessors
-  object_ctype ctype;
+  control_info_s ctype;
 
   std::unique_ptr<ai_frame> ai_info; // AI information pointer
 
   // Render info, determined by RENDER_TYPE
-  object_rtype rtype;
+  render_info_s rtype;
 
   std::unique_ptr<effect_info_s> effect_info;
   std::unique_ptr<light_info> lighting_info; // Pointer to lighting info, or NULL if inherits from type

@@ -16,5 +16,5 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    qreal m_rotation = 0.0; // degrees
+    qreal m_rotation = 0.0f; // degrees
 };

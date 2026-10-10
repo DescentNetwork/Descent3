@@ -301,13 +301,13 @@ class hlsSystem {
 
 private:
   int Play3dSound(int sound_index, pos_state *cur_pos, object *cur_obj, sound_priority priority, float volume, int flags,
-                  float offset = 0.0);
+                  float offset = 0.0f);
 
 public:
   // Include a lowel-level sound system
   class llsSystem *m_ll_sound_ptr;
 
-  hlsSystem(); // {m_f_hls_system_init = 0; m_sounds_played=0; m_master_volume = 1.0; m_pause_new = false;}
+  hlsSystem(); // {m_f_hls_system_init = 0; m_sounds_played=0; m_master_volume = 1.0f; m_pause_new = false;}
   ~hlsSystem() { KillSoundLib(true); }
 
   bool IsActive(void);
@@ -340,13 +340,13 @@ public:
   // 3d functions (we use the sound flags in the page to determine all the cool stuff)
   // Functions that play a 3d sound -- includes the 2d emulation of 3d sound
   int Play3dSound(int sound_index, pos_state *cur_pos, float volume = MAX_GAME_VOLUME, int flags = 0,
-                  float offset = 0.0);
-  int Play3dSound(int sound_index, object *cur_obj, float volume = MAX_GAME_VOLUME, int flags = 0, float offset = 0.0);
+                  float offset = 0.0f);
+  int Play3dSound(int sound_index, object *cur_obj, float volume = MAX_GAME_VOLUME, int flags = 0, float offset = 0.0f);
 
   int Play3dSound(int sound_index, sound_priority priority, pos_state *cur_pos, float volume = MAX_GAME_VOLUME, int flags = 0,
-                  float offset = 0.0);
+                  float offset = 0.0f);
   int Play3dSound(int sound_index, sound_priority priority, object *cur_obj, float volume = MAX_GAME_VOLUME, int flags = 0,
-                  float offset = 0.0);
+                  float offset = 0.0f);
 
   int PlayStream(int unique_handle, void *data, int size, int stream_format, float volume,
                  void *stream_callback(void *user_data, int handle, int *size) = NULL);

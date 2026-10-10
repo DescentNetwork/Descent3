@@ -50,6 +50,6 @@ private:
   // Cached frame interval used to animate the model's keyframes.
   void advanceAnim();
 
-  qreal m_animTime = 0.0;
+  qreal m_animTime = 0.0f;
   int m_lastModel = -1;
 };

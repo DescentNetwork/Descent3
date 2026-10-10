@@ -770,7 +770,7 @@ void RotateRooms(angle p, angle h, angle b) {
   vm_AnglesToMatrix(&rotmat, p, h, b);
   face *fp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
   ComputeNormal(portal_normal, fp->num_verts, fp->face_verts, curroomp.verts);
-  portal_normal *= -1.0;
+  portal_normal *= -1.0f;
 
   vm_VectorToMatrix(roommat, portal_normal, std::nullopt, std::nullopt);
   rotmat = roommat * ~rotmat * ~roommat;

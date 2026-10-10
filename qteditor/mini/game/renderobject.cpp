@@ -1007,9 +1007,9 @@ void DrawShardObject(object& obj) {
     codes_and &= c;
     p.p3_uvl.u = si->u[i];
     p.p3_uvl.v = si->v[i];
-    p.p3_uvl.a = 1.0;    // GameTextures[si->tmap].alpha;
+    p.p3_uvl.a = 1.0f;    // GameTextures[si->tmap].alpha;
     p.p3_flags.uv = true; // has uv set
-    p.p3_uvl.l = 1.0;
+    p.p3_uvl.l = 1.0f;
     pointlist[i] = &rotated_points[i];
   }
   // Check for backside
@@ -1058,10 +1058,10 @@ bool SetupTerrainObject(object& obj) {
   {
     float scalar_r, scalar_g, scalar_b, scalar;
     if (obj.type == object_type_e::powerup) {
-      scalar = 1.0;
-      scalar_r = 1.0;
-      scalar_g = 1.0;
-      scalar_b = 1.0;
+      scalar = 1.0f;
+      scalar_r = 1.0f;
+      scalar_g = 1.0f;
+      scalar_b = 1.0f;
     } else {
       scalar = GetTerrainDynamicScalar(obj.pos, static_cast<int>(roomnum_cell(obj.roomnum)));
       if (obj.effect_info && (obj.effect_info->type_flags.volume_lit)) {
@@ -1109,7 +1109,7 @@ bool SetupMineObject(object& obj) {
   if (obj.lighting_render_type == lighting_render_type_e::static_lights || Poly_models[obj.rtype.pobj_info().model_num].new_style == 0) {
     RenderObject_SetStatic(1.0f, 1.0f, 1.0f);
   } else if (obj.lighting_render_type == lighting_render_type_e::gouraud || NoLightmaps) {
-    float scalar_r = 1.0, scalar_g = 1.0, scalar_b = 1.0;
+    float scalar_r = 1.0, scalar_g = 1.0, scalar_b = 1.0f;
 
     vector3 lightdir = {0, -1.0, 0}; // straight down for now
 
@@ -1248,7 +1248,7 @@ void RenderObject(object& obj) {
       // in our graphics system is to pass color as a ddgr_color
       float r = (float)GR_COLOR_RED(obj.rtype.sphere_color()) / 255.0,
             g = (float)GR_COLOR_GREEN(obj.rtype.sphere_color()) / 255.0,
-            b = (float)GR_COLOR_BLUE(obj.rtype.sphere_color()) / 255.0;
+            b = (float)GR_COLOR_BLUE(obj.rtype.sphere_color()) / 255.0f;
       DrawColoredDisk(&obj.pos, r, g, b, 1, 1, obj.size, 0);
     }
 
@@ -1443,7 +1443,7 @@ void RenderObject_SetStatic(float r, float g, float b) {
   RenderObjectStaticRedValue = r;
   RenderObjectStaticGreenValue = g;
   RenderObjectStaticBlueValue = b;
-  RenderObjectStaticScalar = 1.0;
+  RenderObjectStaticScalar = 1.0f;
 }
 // Sets the polygon render object type to gouraud (one lightval for each vertex)
 void RenderObject_SetGouraud(vector3 *dir, float r, float g, float b, float scalar) {
@@ -1512,7 +1512,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
       pe.glow_length_scalar += (Players[obj.id].afterburner_mag * 3);
       pe.glow_size_scalar += (Players[obj.id].afterburner_mag * .5);
       float adjustment = (d3::rand() % 100 - 50);
-      adjustment /= 50.0;
+      adjustment /= 50.0f;
       pe.glow_length_scalar += (.2 * adjustment);
 
       use_effect = 1;
@@ -1530,7 +1530,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
         val = 1;
 
       pe.type.color = true;
-      pe.r = 1.0;
+      pe.r = 1.0f;
       pe.g = 1 - (val / 2);
       pe.b = 1 - (val / 2);
 
@@ -1555,7 +1555,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
     if (obj.type == object_type_e::powerup && obj.flags.uses_lifeleft && obj.lifeleft < 5) {
       pe.type.alpha = true;
       pe.type.deform = true;
-      pe.alpha = obj.lifeleft / 5.0;
+      pe.alpha = obj.lifeleft / 5.0f;
       pe.deform_range = .2f * (1.0 - (obj.lifeleft / 5.0));
 
       use_effect = 1;
@@ -1587,7 +1587,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
         pe.spec_r = obj.effect_info->spec_r;
         pe.spec_g = obj.effect_info->spec_g;
         pe.spec_b = obj.effect_info->spec_b;
-        pe.spec_scalar = 1.0;
+        pe.spec_scalar = 1.0f;
         use_effect = 1;
       }
     }
@@ -1603,9 +1603,9 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
           pe.type.specular_faces = true;
 
         pe.spec_light_pos = Terrain_sky.satellite_vectors[0];
-        pe.spec_r = 1.0;
-        pe.spec_g = 1.0;
-        pe.spec_b = 1.0;
+        pe.spec_r = 1.0f;
+        pe.spec_g = 1.0f;
+        pe.spec_b = 1.0f;
         pe.spec_scalar = RenderObjectStaticScalar;
         use_effect = 1;
       }
@@ -1624,7 +1624,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
       obj.lighting_render_type == lighting_render_type_e::gouraud) {
     if (obj.type == object_type_e::powerup || obj.type == object_type_e::robot || obj.type == object_type_e::clutter) {
       g3Point pnt;
-      float detail_scalar = 1.0;
+      float detail_scalar = 1.0f;
       g3_RotatePoint(pnt, obj.pos);
       if (Detail_settings.Object_complexity == 0)
         detail_scalar = .6f;
@@ -1656,7 +1656,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
       g3Point pnt;
       g3_RotatePoint(pnt, obj.pos);
       int ship_num = Players[obj.id].ship_index;
-      float detail_scalar = 1.0;
+      float detail_scalar = 1.0f;
       if (Detail_settings.Object_complexity == 0)
         detail_scalar = .6f;
       else if (Detail_settings.Object_complexity == 2)
@@ -1839,7 +1839,7 @@ void DrawPlayerDamageDisk(object *obj) {
     return; // don't do me
   float damage_norm = Players[obj->id].damage_magnitude / MAX_DAMAGE_MAG;
   if (damage_norm > 1.0)
-    damage_norm = 1.0;
+    damage_norm = 1.0f;
   if (damage_norm < .001)
     return;
   rend_SetZBias(-obj->size);
@@ -1944,7 +1944,7 @@ void DrawPlayerTypingIndicator(object *obj) {
     return;
   int bm_handle = GetTextureBitmap(type_indicator_model, 0);
   float IndicatorTan;
-  float rad = (float)(3.14 * (float)(10) / 180.0);
+  float rad = (float)(3.14 * (float)(10) / 180.0f);
   IndicatorTan = tan(rad);
   // See if it is in our viewcone
   vector3 subvec = obj->pos - Player_object->pos;

@@ -507,10 +507,10 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
   rp.num_verts = nverts;
   rp.num_portals = nportals;
   rp.last_render_time = 0;
-  rp.fog_depth = 100.0;
-  rp.fog_r = 1.0;
-  rp.fog_g = 1.0;
-  rp.fog_b = 1.0;
+  rp.fog_depth = 100.0f;
+  rp.fog_r = 1.0f;
+  rp.fog_g = 1.0f;
+  rp.fog_b = 1.0f;
 
   rp.faces.resize(nfaces);
   rp.verts.resize(nverts);
@@ -531,7 +531,7 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
 
   rp.env_reverb = 0; // reverb for sound system.
 
-  rp.damage = 0.0;          // room damage
+  rp.damage = 0.0f;          // room damage
   rp.damage_type = player_damage_type::none; // room damage type
 
   rp.bn_info.nodes.clear();
@@ -543,10 +543,10 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
   // otherwise produce a wild index and corrupt memory.
   const std::ptrdiff_t room_slot = &rp - Rooms.data();
   if (room_slot >= 0 && room_slot < MAX_ROOMS + MAX_PALETTE_ROOMS) {
-    room_light[room_slot].multiplier = 1.0;
-    room_light[room_slot].ambient_red = 0.0;
-    room_light[room_slot].ambient_green = 0.0;
-    room_light[room_slot].ambient_blue = 0.0;
+    room_light[room_slot].multiplier = 1.0f;
+    room_light[room_slot].ambient_red = 0.0f;
+    room_light[room_slot].ambient_green = 0.0f;
+    room_light[room_slot].ambient_blue = 0.0f;
   }
 #endif
 
@@ -755,7 +755,7 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
   float largest_mag;
 
   i = 0;
-  largest_mag = 0.0;
+  largest_mag = 0.0f;
 
   for (i = 0; i < num_verts; i++) {
     vector3 tnormal;
@@ -1237,7 +1237,7 @@ void DoRoomChangeFrame() {
     float norm = (d3::chrono::last_update() - Room_changes[i].start_time) / Room_changes[i].total_time;
 
     if (norm > 1)
-      norm = 1.0;
+      norm = 1.0f;
 
     if (Room_changes[i].fog) {
 

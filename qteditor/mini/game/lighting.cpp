@@ -117,9 +117,9 @@ void InitDynamicLighting() {
   memset(Lmi_spoken_for, 0, MAX_LIGHTMAP_INFOS / 8);
 
   for (i = 0; i < 16; i++)
-    Light_component_scalar[i] = i / 15.0;
+    Light_component_scalar[i] = i / 15.0f;
   for (i = 16; i < 32; i++)
-    Light_component_scalar[i] = 1.0;
+    Light_component_scalar[i] = 1.0f;
 
   for (cl = 0, size = 128; size >= 2; size >>= 1, cl++) {
     Specular_maps[cl] = static_cast<int>(lm_AllocLightmap(size, size).value_or(BAD_LM_INDEX));
@@ -139,7 +139,7 @@ void InitDynamicLighting() {
 
   // Setup uint8_t to float
   for (i = 0; i < 256; i++)
-    Ubyte_to_float[i] = static_cast<float>(i) / 255.0;
+    Ubyte_to_float[i] = static_cast<float>(i) / 255.0f;
 
   // Setup specular tables
   LOG_DEBUG("Building specular tables.");
@@ -872,7 +872,7 @@ red_scale,float green_scale,float blue_scale)
                 sf->strength=0;
         }
 
-        float norm=std::min(1.0,(light_dist/dist_from_plane)*2.0);
+        float norm=std::min(1.0,(light_dist/dist_from_plane)*2.0f);
         float strength=((red_scale*.33)+(green_scale*.33)+(blue_scale*.33))*light_dist;
 
         if (strength>sf->strength)
@@ -1932,7 +1932,7 @@ void DestroyLight(int roomnum, int facenum) {
   if (Dedicated_server)
     return;
 
-  float mul = (static_cast<float>(destroy_fp->light_multiple)) / 4.0;
+  float mul = (static_cast<float>(destroy_fp->light_multiple)) / 4.0f;
 
   r = GameTextures[destroy_fp->tmap].r * mul;
   g = GameTextures[destroy_fp->tmap].g * mul;

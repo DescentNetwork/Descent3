@@ -232,8 +232,8 @@ bool EBNode_VerifyGraph();
 #include "aistruct.h"
 #include "viseffect_external.h"
 #include "d3edit.h"
+#include <numbers>
 
-static constexpr double kPi = 3.14159265358979323846;
 // Vertical field of view in radians (matches EditorView::kFovY).
 static constexpr float kPickFovY = 0.5445f;
 
@@ -6738,8 +6738,8 @@ private slots:
 
     // Camera orientation: EditorView::updateCamera uses
     // vm_AnglesToMatrix(&m_orient, 0, yaw, pitch) i.e. p=0, h=yaw, b=pitch.
-    const double pRad = pitchDeg * kPi / 180.0;
-    const double hRad = yawDeg * kPi / 180.0;
+    const double pRad = pitchDeg * std::numbers::pi / 180.0;
+    const double hRad = yawDeg * std::numbers::pi / 180.0;
     matrix orient;
     vm_SinCosToMatrix(&orient, 0.0f, 1.0f,
                       scalar(std::sin(pRad)),

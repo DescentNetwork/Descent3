@@ -276,7 +276,7 @@ void DoorwayActivate(int door_obj_handle) {
     return;
 
   // Store new desired position
-  dp->dest_pos = 1.0;
+  dp->dest_pos = 1.0f;
 
   // If not already active, create active entry
   AddActiveDoorway(objp->roomnum);
@@ -364,7 +364,7 @@ void DoorwayDestroy(object *objp) {
   Q_ASSERT(dp);
 
   dp->flags.blasted = true;
-  dp->position = 1.0;
+  dp->position = 1.0f;
   dp->state = doorway_state::stopped;
 
   // Remove from the active doorway list
@@ -482,7 +482,7 @@ void DoorwayDoFrame() {
         // Time to start closing.  See if there's anything in the way
         if (!((door_objp->next != -1) || (door_objp->prev != -1))) {
 
-          dway->dest_pos = 0.0;
+          dway->dest_pos = 0.0f;
           dway->state = doorway_state::closing;
 
           // Play sound
@@ -605,7 +605,7 @@ float DoorwayPosition(int door_obj_handle) {
   doorway *dp = GetDoorwayFromObject(door_obj_handle);
 
   if (!dp)
-    return 0.0;
+    return 0.0f;
 
   return dp->position;
 }
@@ -649,7 +649,7 @@ doorway *DoorwayAdd(int roomnum, int doornum) {
 
   // Initialize
   dp->doornum = doornum;
-  dp->dest_pos = dp->position = 0.0;
+  dp->dest_pos = dp->position = 0.0f;
   dp->state = doorway_state::stopped;
   dp->flags.automatic = true;
   dp->keys_needed = 0;

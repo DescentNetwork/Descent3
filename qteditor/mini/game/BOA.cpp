@@ -889,12 +889,12 @@ void compute_costs() {
 
           BOA_cost_array[i][j] = vm_VectorDistance(&from_pnt, &portal_pnt);
         } else {
-          BOA_cost_array[i][j] = -1.0;
+          BOA_cost_array[i][j] = -1.0f;
         }
       }
     } else {
       for (j = 0; j < Rooms[i].num_portals; j++) {
-        BOA_cost_array[i][j] = -1.0;
+        BOA_cost_array[i][j] = -1.0f;
       }
     }
   }
@@ -929,7 +929,7 @@ void update_path_info(q_item *node_list[MAX_ROOMS], int start, int end) {
 void FindPath(int i, int j) {
   pq PQPath;
   int counter;
-  q_item *start_node = new q_item(BOA_INDEX(i), -1, 0.0);
+  q_item *start_node = new q_item(BOA_INDEX(i), -1, 0.0f);
   q_item *cur_node;
 
   q_item *node_list[MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS];
@@ -2196,8 +2196,8 @@ void ComputeAABB(bool f_full) {
 
         room_t *rp = &Rooms[i];
 
-        rp->max_xyz.x() = rp->max_xyz.y() = rp->max_xyz.z() = -9999999.0;
-        rp->min_xyz.x() = rp->min_xyz.y() = rp->min_xyz.z() = 9999999.0;
+        rp->max_xyz.x() = rp->max_xyz.y() = rp->max_xyz.z() = -9999999.0f;
+        rp->min_xyz.x() = rp->min_xyz.y() = rp->min_xyz.z() = 9999999.0f;
 
         for (int t = 0; t < rp->num_faces; t++) {
           face *fp = &rp->faces[t];
@@ -2309,8 +2309,8 @@ void ComputeAABB(bool f_full) {
 
         for (count = 0; count < num_structs_per_room[i]; count++) {
 
-          s_max_xyz[count].x() = s_max_xyz[count].y() = s_max_xyz[count].z() = -9999999.0;
-          s_min_xyz[count].x() = s_min_xyz[count].y() = s_min_xyz[count].z() = 9999999.0;
+          s_max_xyz[count].x() = s_max_xyz[count].y() = s_max_xyz[count].z() = -9999999.0f;
+          s_min_xyz[count].x() = s_min_xyz[count].y() = s_min_xyz[count].z() = 9999999.0f;
 
           for (int t = 0; t < rp->num_faces; t++) {
             if (r_struct_list[i][t] != count)
@@ -2619,8 +2619,8 @@ void ComputeAABB(bool f_full) {
           continue;
 
         for (count = 0; count < rp->num_bbf_regions; count++) {
-          rp->bbf_list_max_xyz[count].x() = rp->bbf_list_max_xyz[count].y() = rp->bbf_list_max_xyz[count].z() = -9999999.0;
-          rp->bbf_list_min_xyz[count].x() = rp->bbf_list_min_xyz[count].y() = rp->bbf_list_min_xyz[count].z() = 9999999.0;
+          rp->bbf_list_max_xyz[count].x() = rp->bbf_list_max_xyz[count].y() = rp->bbf_list_max_xyz[count].z() = -9999999.0f;
+          rp->bbf_list_min_xyz[count].x() = rp->bbf_list_min_xyz[count].y() = rp->bbf_list_min_xyz[count].z() = 9999999.0f;
 
           for (int t = 0; t < rp->num_bbf[count]; t++) {
             face *fp = &rp->faces[rp->bbf_list[count][t]];
@@ -2802,8 +2802,8 @@ void ComputeAABB(bool f_full) {
           continue;
 
         for (count = 0; count < rp->num_bbf_regions; count++) {
-          rp->bbf_list_max_xyz[count].x() = rp->bbf_list_max_xyz[count].y() = rp->bbf_list_max_xyz[count].z() = -9999999.0;
-          rp->bbf_list_min_xyz[count].x() = rp->bbf_list_min_xyz[count].y() = rp->bbf_list_min_xyz[count].z() = 9999999.0;
+          rp->bbf_list_max_xyz[count].x() = rp->bbf_list_max_xyz[count].y() = rp->bbf_list_max_xyz[count].z() = -9999999.0f;
+          rp->bbf_list_min_xyz[count].x() = rp->bbf_list_min_xyz[count].y() = rp->bbf_list_min_xyz[count].z() = 9999999.0f;
 
           for (int t = 0; t < rp->num_bbf[count]; t++) {
             face *fp = &rp->faces[rp->bbf_list[count][t]];
@@ -2931,8 +2931,8 @@ void ComputeAABB(bool f_full) {
     if (Rooms[i].used) {
       room_t *rp = &Rooms[i];
 
-      rp->max_xyz.x() = rp->max_xyz.y() = rp->max_xyz.z() = -9999999.0;
-      rp->min_xyz.x() = rp->min_xyz.y() = rp->min_xyz.z() = 9999999.0;
+      rp->max_xyz.x() = rp->max_xyz.y() = rp->max_xyz.z() = -9999999.0f;
+      rp->min_xyz.x() = rp->min_xyz.y() = rp->min_xyz.z() = 9999999.0f;
 
       for (int t = 0; t < rp->num_faces; t++) {
         face *fp = &rp->faces[t];

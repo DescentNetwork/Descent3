@@ -187,9 +187,9 @@ struct d3edit_state
   std::optional<int> object_move_axis;        // This is the axis on which objects move with mouse.
   bool fullscreen_debug_state = false; // do we allow for fullscreen debugging?
   bool hemicube_radiosity = false;
-  float node_movement_inc = 0.0;
+  float node_movement_inc = 0.0f;
   int texture_display_flags = 0; // which textures to display on the texture tab
-  float texscale            = 0.0;            // the scalar for moving texture UVs
+  float texscale            = 0.0f;            // the scalar for moving texture UVs
   bool joy_slewing = false;          // shall we allow joystick slewing?
   bool objects_in_wireframe = false; // should we draw objects in the wireframe view?
 

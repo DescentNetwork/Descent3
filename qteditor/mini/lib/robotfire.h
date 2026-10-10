@@ -32,7 +32,7 @@ void WBFireAnimFrame(object *obj, otype_wb_info *static_wb, int wb_index);
 bool WBIsBatteryReady(object *obj, otype_wb_info *static_wb, int wb_index);
 void WBFireBattery(object *obj, otype_wb_info *static_wb, int wb_index);
 void WBFireBattery(object *obj, otype_wb_info *static_wb, int poly_wb_index, int dynamic_wb_index,
-                   float damage_scalar = 1.0);
+                   float damage_scalar = 1.0f);
 
 void WBClearInfo(object *obj);
 void WBClearInfo(otype_wb_info static_wb[]);

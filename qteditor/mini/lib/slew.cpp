@@ -406,13 +406,13 @@ int SlewFrame(object *obj, int movement_limitations) {
         // Limit new position to terrain bounds if outside
         if (was_outside) {
           if (new_pos.x() < 1.0)
-            new_pos.x() = 1.0;
+            new_pos.x() = 1.0f;
           if (new_pos.x() > TERRAIN_WIDTH * TERRAIN_SIZE - 1.0)
-            new_pos.x() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0;
+            new_pos.x() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
           if (new_pos.z() < 1.0)
-            new_pos.z() = 1.0;
+            new_pos.z() = 1.0f;
           if (new_pos.z() > TERRAIN_DEPTH * TERRAIN_SIZE - 1.0)
-            new_pos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0;
+            new_pos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
         }
 
         // Call FVI up get updated room number

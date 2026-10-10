@@ -262,7 +262,7 @@ void UpdateUnsentValues() {
   if (rad_TotalFlux > .0001)
     rad_Convergence = fabs(rad_TotalUnsent) / rad_TotalFlux;
   else
-    rad_Convergence = 0.0;
+    rad_Convergence = 0.0f;
 
   if (d3::chrono::last_update() - last_report_time > 10.0) {
     LOG_INFO("Percentage left=%f\n", rad_Convergence);

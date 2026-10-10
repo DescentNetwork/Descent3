@@ -996,7 +996,7 @@ void DoWallEffects(object *weapon, int surface_tmap) {
         vis->lifeleft = .9f;
 
         vis->movement_type = movement_type::physics;
-        vis->size = 3.0;
+        vis->size = 3.0f;
         vm_MakeZero(&vis->velocity);
         vis->velocity.y() = 10;
       }
@@ -1473,7 +1473,7 @@ vector3 *CollideExtractAnglesFromMatrix(vector3 *a, matrix *m) {
   a->y() = asin(sinh);
 
   cosh = cos(a->y());
-  Q_ASSERT(cosh != 0.0);
+  Q_ASSERT(cosh != 0.0f);
 
   sinp = m->fvec.y() / cosh;
   if (sinp < -1.0f)
@@ -1723,7 +1723,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
       wall_part = vm_Dot3Product(*collision_normal, t->mtype.phys_info.velocity);
 
       if (t->mtype.phys_info.flags.bounce) {
-        wall_part *= 2.0; // Subtract out wall part twice to achieve bounce
+        wall_part *= 2.0f; // Subtract out wall part twice to achieve bounce
 
         // New bounceness code
         if ((t->mtype.phys_info.flags.bounce) && (t->mtype.phys_info.num_bounces != PHYSICS_UNLIMITED_BOUNCE)) {
@@ -2140,7 +2140,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
 
     DoWallEffects(weapon, tmap);
 
-    check_for_special_surface(weapon, tmap, normal, 1.0);
+    check_for_special_surface(weapon, tmap, normal, 1.0f);
 
     // If object died, stop processing
   if (weapon->flags.dead)
