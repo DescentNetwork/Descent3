@@ -252,7 +252,7 @@ void PhysicsDialog::getPhysicsData(physics_info& p) const
   p.flags.persistent = ui->IDC_PHYSICS_PERSISTENT_CHECK->isChecked();
 
   if (p.hit_die_dot != -1)
-    p.hit_die_dot = sin(editFloat(ui->IDC_PHYSICS_HIT_DIE_ANGLE) * std::numbers::pi_v<float> / 180.0f);
+    p.hit_die_dot = std::sin(editFloat(ui->IDC_PHYSICS_HIT_DIE_ANGLE) * std::numbers::pi_v<float> / 180.0f);
   p.flags.gravity = (m_gravityFlag == kForwardGravity);
   p.flags.reverse_gravity =(m_gravityFlag == kReverseGravity);
 }

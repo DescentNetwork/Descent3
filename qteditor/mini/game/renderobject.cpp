@@ -1945,7 +1945,7 @@ void DrawPlayerTypingIndicator(object *obj) {
   int bm_handle = GetTextureBitmap(type_indicator_model, 0);
   float IndicatorTan;
   float rad = (float)(3.14 * (float)(10) / 180.0f);
-  IndicatorTan = tan(rad);
+  IndicatorTan = std::tan(rad);
   // See if it is in our viewcone
   vector3 subvec = obj->pos - Player_object->pos;
   vm_NormalizeVectorFast(&subvec);

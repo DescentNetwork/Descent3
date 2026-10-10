@@ -1442,12 +1442,12 @@ void collide_generic_and_wall(object *genericobj, float hitspeed, int hitseg, in
 void CollideAnglesToMatrix(matrix *m, float p, float h, float b) {
   float sinp, cosp, sinb, cosb, sinh, cosh;
 
-  sinp = sin(p);
-  cosp = cos(p);
-  sinb = sin(b);
-  cosb = cos(b);
-  sinh = sin(h);
-  cosh = cos(h);
+  sinp = std::sin(p);
+  cosp = std::cos(p);
+  sinb = std::sin(b);
+  cosb = std::cos(b);
+  sinh = std::sin(h);
+  cosh = std::cos(h);
 
   m->rvec.x() = cosb * cosh;
   m->rvec.y() = cosb * sinp * sinh - cosp * sinb;
@@ -1470,9 +1470,9 @@ vector3 *CollideExtractAnglesFromMatrix(vector3 *a, matrix *m) {
     sinh = -1.0f;
   else if (sinh > 1.0f)
     sinh = 1.0f;
-  a->y() = asin(sinh);
+  a->y() = std::asin(sinh);
 
-  cosh = cos(a->y());
+  cosh = std::cos(a->y());
   Q_ASSERT(cosh != 0.0f);
 
   sinp = m->fvec.y() / cosh;
@@ -1487,8 +1487,8 @@ vector3 *CollideExtractAnglesFromMatrix(vector3 *a, matrix *m) {
   else if (sinb > 1.0f)
     sinb = 1.0f;
 
-  a->x() = asin(sinp);
-  a->z() = asin(sinb);
+  a->x() = std::asin(sinp);
+  a->z() = std::asin(sinb);
 
   return a;
 }
@@ -1528,8 +1528,8 @@ void ConvertEulerToAxisAmount(vector3 *e, vector3 *n, float *w) {
     else if (ct > 1.0f)
       ct = 1.0f;
 
-    float v = acos(ct);
-    float z = sin(v);
+    float v = std::acos(ct);
+    float z = std::sin(v);
 
     *w = rotspeed * ((2.0f * std::numbers::pi_v<float>) / (65535.0f));
 
@@ -1553,8 +1553,8 @@ void ConvertAxisAmountToEuler(vector3 *n, float *w, vector3 *e) {
     return;
   }
 
-  s = sin(.0001f);
-  c = cos(.0001f);
+  s = std::sin(.0001f);
+  c = std::cos(.0001f);
   t = 1.0f - c;
 
   matrix rotmat;
