@@ -343,7 +343,7 @@ int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_su
   // Trivially reject all rooms
   if (dest_surf->surface_type == rad_surface_type::room || dest_surf->surface_type == rad_surface_type::room_object) {
     if (src_surf->surface_type == rad_surface_type::room || src_surf->surface_type == rad_surface_type::room_object) {
-      if (!BOA_IsVisible(dest_surf->roomnum, src_surf->roomnum))
+      if (!BOA_IsVisible(from_roomnum(dest_surf->roomnum), from_roomnum(src_surf->roomnum)))
         return 0;
     }
   }
@@ -388,7 +388,7 @@ int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_su
         Q_ASSERT(false); // Get Jason, satellite clipped off terrain?
       }
 
-      src_surf->roomnum = MAKE_ROOMNUM(src_cell);
+      src_surf->roomnum = to_roomnum(MAKE_ROOMNUM(src_cell));
     }
   }
 
@@ -399,7 +399,7 @@ int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_su
   if (src_surf->surface_type == rad_surface_type::external_room)
     fq.startroom = GetTerrainRoomFromPos(src).value_or(-1);
   else
-    fq.startroom = src_surf->roomnum;
+    fq.startroom = from_roomnum(src_surf->roomnum);
 
   fq.rad = 0.0f;
   fq.flags = fvi_query_flags_t{};
@@ -458,8 +458,8 @@ float GetFormFactorForElementAndSatellite(rad_surface *dest_surf, rad_element *d
 
     // If this surface is a terrain surface, use the terrain speedup table
     if (dest_surf->surface_type == rad_surface_type::terrain) {
-      Q_ASSERT(ROOMNUM_OUTSIDE(dest_surf->roomnum));
-      int cellnum = CELLNUM(dest_surf->roomnum);
+      Q_ASSERT(roomnum_outside(dest_surf->roomnum));
+      int cellnum = static_cast<int>(roomnum_cell(dest_surf->roomnum));
       if (dest_surf->facenum == 0) {
         if (j == 1)
           cellnum += TERRAIN_WIDTH;
@@ -472,7 +472,7 @@ float GetFormFactorForElementAndSatellite(rad_surface *dest_surf, rad_element *d
           cellnum++;
       }
 
-      hit = TerrainLightSpeedup[rad_MaxSurface->roomnum][cellnum];
+      hit = TerrainLightSpeedup[from_roomnum(rad_MaxSurface->roomnum)][cellnum];
     } else
       hit = ShootRayFromPoint(light_center, dest_center, rad_MaxSurface, dest_surf);
 
@@ -510,7 +510,7 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra *color, vector3 *
   if (dest_surf->surface_type != rad_surface_type::room)
     return;
 
-  if (Rooms[dest_surf->roomnum].faces[dest_surf->facenum].special_handle == BAD_SPECIAL_FACE_INDEX)
+  if (Rooms[*dest_surf->roomnum].faces[dest_surf->facenum].special_handle == BAD_SPECIAL_FACE_INDEX)
     return;
 
   if (src_center == NULL)
@@ -518,7 +518,7 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra *color, vector3 *
   else
     light_center = *src_center;
 
-  room_t *rp = &Rooms[dest_surf->roomnum];
+  room_t *rp = &Rooms[*dest_surf->roomnum];
   face *fp = &rp->faces[dest_surf->facenum];
 
   if (GameTextures[fp->tmap].flags.smooth_specular)
@@ -532,17 +532,17 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra *color, vector3 *
 
   for (i = 0; i < 4; i++) {
     if (total_strength > threshold &&
-        total_strength > Room_strongest_value[dest_surf->roomnum][i][dest_surf->facenum]) {
+        total_strength > Room_strongest_value[*dest_surf->roomnum][i][dest_surf->facenum]) {
       float scalar = (total_strength / 50.0) + .5;
       if (scalar > 1)
         scalar = 1.0;
 
-      int special_index = Rooms[dest_surf->roomnum].faces[dest_surf->facenum].special_handle;
+      int special_index = Rooms[*dest_surf->roomnum].faces[dest_surf->facenum].special_handle;
 
       // Move the others down
       for (t = 2; t >= i; t--) {
-        Room_strongest_value[dest_surf->roomnum][t + 1][dest_surf->facenum] =
-            Room_strongest_value[dest_surf->roomnum][t][dest_surf->facenum];
+        Room_strongest_value[*dest_surf->roomnum][t + 1][dest_surf->facenum] =
+            Room_strongest_value[*dest_surf->roomnum][t][dest_surf->facenum];
         SpecialFaces[special_index].spec_instance[t + 1].bright_color =
             SpecialFaces[special_index].spec_instance[t].bright_color;
         SpecialFaces[special_index].spec_instance[t + 1].bright_center =
@@ -550,7 +550,7 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra *color, vector3 *
       }
 
       // Update our arrays with strongest light and src patch center
-      Room_strongest_value[dest_surf->roomnum][i][dest_surf->facenum] = total_strength;
+      Room_strongest_value[*dest_surf->roomnum][i][dest_surf->facenum] = total_strength;
 
       float rmax = GetMaxColor(color);
 
@@ -819,8 +819,8 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
       memset(check_room, 0, MAX_VOLUME_ELEMENTS);
 
       // Build a list of rooms to check
-      int num_faces = fvi_QuickDistFaceList(rad_MaxSurface->roomnum, src_center, sphere_dist, *facelist, 4000);
-      check_room[rad_MaxSurface->roomnum] = 1;
+      int num_faces = fvi_QuickDistFaceList(from_roomnum(rad_MaxSurface->roomnum), src_center, sphere_dist, *facelist, 4000);
+      check_room[from_roomnum(rad_MaxSurface->roomnum)] = 1;
 
       for (i = 0; i < num_faces; i++) {
         if (Rooms[facelist[i].room_index].flags.external)
@@ -834,7 +834,7 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
         if (check_room[roomnum] == 0)
           continue;
 
-        if (!BOA_IsVisible(roomnum, rad_MaxSurface->roomnum)) {
+        if (!BOA_IsVisible(roomnum, from_roomnum(rad_MaxSurface->roomnum))) {
           continue;
         }
 
@@ -886,13 +886,13 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
 
                   // Trivially reject all rooms
 
-                  if (!BOA_IsVisible(roomnum, rad_MaxSurface->roomnum)) {
+                  if (!BOA_IsVisible(roomnum, from_roomnum(rad_MaxSurface->roomnum))) {
                     hit = 0;
                   } else {
                     if (ve->flags.reverse_shoot)
                       hit = ShootRayToVolumePoint(ve->pos, light_center, roomnum);
                     else
-                      hit = ShootRayToVolumePoint(light_center, ve->pos, rad_MaxSurface->roomnum);
+                      hit = ShootRayToVolumePoint(light_center, ve->pos, from_roomnum(rad_MaxSurface->roomnum));
                   }
 
                   if (hit) {
@@ -932,13 +932,13 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
                 scalar /= ((3.14 * mag * mag) + rad_MaxSurface->area);
                 scalar *= rad_MaxSurface->area;
 
-                if (!BOA_IsVisible(roomnum, rad_MaxSurface->roomnum)) {
+                if (!BOA_IsVisible(roomnum, from_roomnum(rad_MaxSurface->roomnum))) {
                   hit = 0;
                 } else {
                   if (ve->flags.reverse_shoot)
                     hit = ShootRayToVolumePoint(ve->pos, src_center, roomnum);
                   else
-                    hit = ShootRayToVolumePoint(src_center, ve->pos, rad_MaxSurface->roomnum);
+                    hit = ShootRayToVolumePoint(src_center, ve->pos, from_roomnum(rad_MaxSurface->roomnum));
                 }
 
                 if (hit) {
@@ -982,7 +982,7 @@ void CalculateFormFactorsRaycast() {
     express -= rad_MaxSurface->area;
     sphere_dist = sqrt(express);
     if (sphere_dist > 0)
-      fvi_QuickDistFaceList(rad_MaxSurface->roomnum, src_center, sphere_dist, std::nullopt, rad_NumSurfaces);
+      fvi_QuickDistFaceList(from_roomnum(rad_MaxSurface->roomnum), src_center, sphere_dist, std::nullopt, rad_NumSurfaces);
   }
 
   // Do volume lighting
@@ -1013,15 +1013,15 @@ void CalculateFormFactorsRaycast() {
 
     if (rad_MaxSurface->surface_type == rad_surface_type::room || rad_MaxSurface->surface_type == rad_surface_type::room_object) {
       if (dest_surf->surface_type == rad_surface_type::room) {
-        if (!Rooms[dest_surf->roomnum].faces[dest_surf->facenum].flags.touched)
+        if (!Rooms[*dest_surf->roomnum].faces[dest_surf->facenum].flags.touched)
           ignore = 1;
 
-        Rooms[dest_surf->roomnum].faces[dest_surf->facenum].flags.touched = false;
+        Rooms[*dest_surf->roomnum].faces[dest_surf->facenum].flags.touched = false;
       }
     }
 
     if (dest_surf->surface_type == rad_surface_type::room)
-      Rooms[dest_surf->roomnum].faces[dest_surf->facenum].flags.touched = false;
+      Rooms[*dest_surf->roomnum].faces[dest_surf->facenum].flags.touched = false;
 
     int dest_num_elements = dest_surf->xresolution * dest_surf->yresolution;
 

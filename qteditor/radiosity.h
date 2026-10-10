@@ -163,7 +163,7 @@ struct rad_surface {
   rad_surface_type surface_type; // See rad_surface_type above
 
   int facenum; // facenumber of room
-  int roomnum; // The roomnumber or terrain segment number
+  index_t roomnum; // The roomnumber or terrain segment number
   uint8_t num_verts;
   surface_flags_t flags;
 

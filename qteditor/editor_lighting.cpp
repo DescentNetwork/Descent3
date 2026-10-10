@@ -1021,7 +1021,7 @@ void DoRadiosityForRooms() {
         }
 
         Light_surfaces[surface_index].normal = LightmapInfo[Rooms[i].faces[t].lmi_handle].normal;
-        Light_surfaces[surface_index].roomnum = i;
+        Light_surfaces[surface_index].roomnum = to_roomnum(i);
         Light_surfaces[surface_index].facenum = t;
 
         if (Rooms[i].flags.touches_terrain)
@@ -1055,7 +1055,7 @@ void DoRadiosityForRooms() {
     Light_surfaces[surface_index].emittance.g = Terrain_sky.satellite_g[i];
     Light_surfaces[surface_index].emittance.b = Terrain_sky.satellite_b[i];
 
-    Light_surfaces[surface_index].roomnum = i;
+    Light_surfaces[surface_index].roomnum = to_roomnum(i);
     Light_surfaces[surface_index].facenum = 0;
 
     Light_surfaces[surface_index].reflectivity = 0;
@@ -1235,7 +1235,7 @@ void DoRadiosityForCurrentRoom(int roomnum) {
     }
 
     Light_surfaces[surface_index].normal = rp->faces[t].normal;
-    Light_surfaces[surface_index].roomnum = roomnum;
+    Light_surfaces[surface_index].roomnum = to_roomnum(roomnum);
     Light_surfaces[surface_index].facenum = t;
 
     Light_surfaces[surface_index].reflectivity = GameTextures[rp->faces[t].tmap].reflectivity;
@@ -1853,7 +1853,7 @@ void DoRadiosityForTerrain() {
         Light_surfaces[i * 2 + x].emittance.b =
             (float)GameTextures[Terrain_tex_seg[Terrain_seg[seg].texseg_index].tex_index].b;
 
-        Light_surfaces[i * 2 + x].roomnum = MAKE_ROOMNUM(seg);
+        Light_surfaces[i * 2 + x].roomnum = to_roomnum(MAKE_ROOMNUM(seg));
         Light_surfaces[i * 2 + x].facenum = x;
 
         Light_surfaces[i * 2 + x].reflectivity =
@@ -1944,7 +1944,7 @@ void DoRadiosityForTerrain() {
     Light_surfaces[surf_index].emittance.g = Terrain_sky.satellite_g[i];
     Light_surfaces[surf_index].emittance.b = Terrain_sky.satellite_b[i];
 
-    Light_surfaces[surf_index].roomnum = i;
+    Light_surfaces[surf_index].roomnum = to_roomnum(i);
     Light_surfaces[surf_index].facenum = 0;
 
     Light_surfaces[surf_index].reflectivity = 0;
@@ -2003,7 +2003,7 @@ void DoRadiosityForTerrain() {
         }
 
         Light_surfaces[surf_index].normal = LightmapInfo[Rooms[i].faces[t].lmi_handle].normal;
-        Light_surfaces[surf_index].roomnum = i;
+        Light_surfaces[surf_index].roomnum = to_roomnum(i);
         Light_surfaces[surf_index].facenum = t;
 
         Light_surfaces[surf_index].reflectivity = GameTextures[Rooms[i].faces[t].tmap].reflectivity;

@@ -22,6 +22,26 @@ inline byte_ostream& operator <<(byte_ostream& output, const index_t& data)
   return output << data.value_or(UINT32_MAX);
 }
 
+inline index_t u16_to_index(const uint16_t data)
+{
+  if(data == UINT16_MAX)
+    return std::nullopt;
+  return static_cast<uint32_t>(data);
+}
+
+inline index_t u8_to_index(const uint8_t data)
+{
+  if(data == UINT8_MAX)
+    return std::nullopt;
+  return static_cast<uint32_t>(data);
+}
+
+inline uint16_t index_to_u16(const index_t& data)
+  { return data ? static_cast<uint16_t>(*data) : UINT16_MAX; }
+
+inline uint8_t index_to_u8(const index_t& data)
+  { return data ? static_cast<uint8_t>(*data) : UINT8_MAX; }
+
 // Convert an index_t back to the legacy integer sentinel: nullopt -> -1.
 inline int index_to_int(const index_t& data)
 {

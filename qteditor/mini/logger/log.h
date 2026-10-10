@@ -17,13 +17,15 @@
  */
 
 #pragma once
+#include <cstdint>
 
 // Logging is currently disabled: the LOG_* macros below are no-ops. The call
 // sites are preserved as printf-style format strings so that a logging backend
 // can be reintroduced later by redefining the macros and implementing InitLog.
 
-enum class LogSeverity {
-  verbose,
+enum class LogSeverity : uint8_t
+{
+  verbose = 0,
   debug,
   info,
   warning,
