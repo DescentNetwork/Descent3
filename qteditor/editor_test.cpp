@@ -337,13 +337,13 @@ struct PickFixture {
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
     Triggers.clear();
     Viewer_object = &Objects[0];
-    Viewer_object->type = object_type::viewer;
+    Viewer_object->type = object_type_e::viewer;
     Viewer_object->pos = vector3{0, 0, 0};
     Viewer_object->orient.rvec = vector3{0, 0, 1};
     Viewer_object->orient.uvec = vector3{0, 1, 0};
@@ -431,7 +431,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -469,14 +469,14 @@ private slots:
     RoomsEnsureIndex(1);
 
     // Objects.
-    Objects[0].type = object_type::powerup;
+    Objects[0].type = object_type_e::powerup;
     Objects[0].id = 1;
     Objects[0].roomnum = 0;
     Objects[0].pos = vector3{(float)5, (float)1, (float)-5};
     Objects[0].orient.rvec = vector3{(float)1, 0, 0};
     Objects[0].orient.uvec = vector3{(float)0, (float)1, 0};
     Objects[0].orient.fvec = vector3{0, 0, (float)1};
-    Objects[1].type = object_type::robot;
+    Objects[1].type = object_type_e::robot;
     Objects[1].id = 7;
     Objects[1].roomnum = 1;
     Objects[1].pos = vector3{(float)25, (float)2, (float)0};
@@ -510,7 +510,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -533,7 +533,7 @@ private slots:
     QCOMPARE(Rooms[0].wind.x(), 1.0f);
 
     QVERIFY(Highest_object_index >= 1);
-    QCOMPARE(int(Objects[0].type), int(object_type::powerup));
+    QCOMPARE(int(Objects[0].type), int(object_type_e::powerup));
     QCOMPARE(int(Objects[0].id), 1);
     QCOMPARE(Objects[0].roomnum, 0);
     QCOMPARE(Objects[0].pos.x(), 5.0f);
@@ -552,7 +552,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -573,7 +573,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -599,7 +599,7 @@ private slots:
 
     // A lightmapped robot: two models carrying per-face u2/v2 data.  This is
     // the record shape that exercises the per-model num_faces write.
-    Objects[0].type = object_type::robot;
+    Objects[0].type = object_type_e::robot;
     Objects[0].id = 7;
     Objects[0].roomnum = 0;
     Objects[0].pos = vector3{(float)5, (float)1, (float)-5};
@@ -659,7 +659,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -675,7 +675,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -771,7 +771,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -781,7 +781,7 @@ private slots:
     // "Loaded game tables" for the save: page 3 is the powerup page.
     for (int i = 0; i < MAX_OBJECT_IDS; i++)
       Object_info[i] = object_info{};
-    Object_info[3].type = object_type::powerup;
+    Object_info[3].type = object_type_e::powerup;
     Object_info[3].name = "XlatePowerup";
 
     // Room 0: single 4-vert quad.
@@ -801,7 +801,7 @@ private slots:
     RoomsEnsureIndex(0);
 
     // The powerup references page 3 in the level file.
-    Objects[0].type = object_type::powerup;
+    Objects[0].type = object_type_e::powerup;
     Objects[0].id = 3;
     Objects[0].roomnum = 0;
     Objects[0].pos = vector3{(float)5, (float)1, (float)-5};
@@ -825,14 +825,14 @@ private slots:
     // and page 3 no longer exists.
     for (int i = 0; i < MAX_OBJECT_IDS; i++)
       Object_info[i] = object_info{};
-    Object_info[0].type = object_type::powerup;
+    Object_info[0].type = object_type_e::powerup;
     Object_info[0].name = "XlatePowerup";
 
     // Reload: the GNNM name table must map the file's page 3 to page 0.
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -841,7 +841,7 @@ private slots:
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QVERIFY(Highest_object_index >= 0);
     QCOMPARE(int(Objects[0].id), 0); // remapped via the GNNM name table
-    QCOMPARE(int(Objects[0].type), int(object_type::powerup));
+    QCOMPARE(int(Objects[0].type), int(object_type_e::powerup));
 
     // Re-save and confirm the remapped id is stable: pass2 and pass3 are
     // byte-identical, and reloading pass2 keeps page 0.
@@ -849,7 +849,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -881,7 +881,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -892,7 +892,7 @@ private slots:
   {
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
 
@@ -919,7 +919,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -942,7 +942,7 @@ private slots:
     r0->name.clear();
     RoomsEnsureIndex(0);
 
-    Objects[0].type = object_type::powerup;
+    Objects[0].type = object_type_e::powerup;
     Objects[0].id = 0;
     Objects[0].roomnum = 0;
     Objects[0].pos = vector3{(float)5, (float)1, (float)-5};
@@ -952,7 +952,7 @@ private slots:
     Highest_object_index = 0;
 
     // Slot 7 is deleted but was freed twice, so it carries a count part.
-    Objects[7].type = object_type::none;
+    Objects[7].type = object_type_e::none;
     Objects[7].handle = 7 + 2 * HANDLE_COUNT_INCREMENT;
 
     const QString tmp = QDir::tempPath() + "/_test_object_handles_roundtrip";
@@ -970,14 +970,14 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
     RoomsReset();
     Triggers.clear();
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
-    QCOMPARE(int(Objects[7].type), int(object_type::none));
+    QCOMPARE(int(Objects[7].type), int(object_type_e::none));
     QCOMPARE(int(Objects[7].handle), int(7 + 2 * HANDLE_COUNT_INCREMENT));
 
     QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
@@ -987,7 +987,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1049,7 +1049,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1065,7 +1065,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1117,7 +1117,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1138,7 +1138,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1194,7 +1194,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1224,7 +1224,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1391,7 +1391,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1407,7 +1407,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1513,7 +1513,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1639,41 +1639,41 @@ private slots:
   // light_info::lighting_render_type (last byte of the light_info chunk).
   void testEnumFieldsStreamAsUnderlyingBytes()
   {
-    static_assert(sizeof(object_type) == 1);
-    static_assert(sizeof(lighting_render_type) == 1);
+    static_assert(sizeof(object_type_e) == 1);
+    static_assert(sizeof(lighting_render_type_e) == 1);
 
     std::vector<uint8_t> buffer(64 * 1024);
 
     object obj{};
-    obj.type = object_type::robot;
+    obj.type = object_type_e::robot;
     {
       posix_ostream out(buffer.data(), buffer.size(), std::ios_base::out);
       out << obj;
       const size_t bytes = static_cast<size_t>(out.tell());
       out.close();
       QVERIFY(bytes > 0);
-      QCOMPARE(static_cast<int>(buffer[0]), static_cast<int>(object_type::robot));
+      QCOMPARE(static_cast<int>(buffer[0]), static_cast<int>(object_type_e::robot));
 
       posix_istream in(buffer.data(), bytes, std::ios_base::in);
       object got{};
       in >> got;
-      QCOMPARE(static_cast<int>(got.type), static_cast<int>(object_type::robot));
+      QCOMPARE(static_cast<int>(got.type), static_cast<int>(object_type_e::robot));
     }
 
     light_info li{};
-    li.lighting_render_type = lighting_render_type::lightmaps;
+    li.lighting_render_type = lighting_render_type_e::lightmaps;
     {
       posix_ostream out(buffer.data(), buffer.size(), std::ios_base::out);
       out << li;
       const size_t bytes = static_cast<size_t>(out.tell());
       out.close();
       QVERIFY(bytes > 0);
-      QCOMPARE(static_cast<int>(buffer[bytes - 1]), static_cast<int>(lighting_render_type::lightmaps));
+      QCOMPARE(static_cast<int>(buffer[bytes - 1]), static_cast<int>(lighting_render_type_e::lightmaps));
 
       posix_istream in(buffer.data(), bytes, std::ios_base::in);
       light_info got{};
       in >> got;
-      QCOMPARE(static_cast<int>(got.lighting_render_type), static_cast<int>(lighting_render_type::lightmaps));
+      QCOMPARE(static_cast<int>(got.lighting_render_type), static_cast<int>(lighting_render_type_e::lightmaps));
     }
   }
 
@@ -1686,9 +1686,9 @@ private slots:
     std::vector<uint8_t> other(64 * 1024);
 
     object none_obj{};
-    none_obj.contains_type = object_type::none;
+    none_obj.contains_type = object_type_e::none;
     object powerup_obj{};
-    powerup_obj.contains_type = object_type::powerup;
+    powerup_obj.contains_type = object_type_e::powerup;
 
     posix_ostream out(buffer.data(), buffer.size(), std::ios_base::out);
     out << none_obj;
@@ -1710,12 +1710,12 @@ private slots:
     }
     QVERIFY2(idx >= 0, "contains_type byte not located in the object record");
     QCOMPARE(static_cast<int>(buffer[static_cast<size_t>(idx)]), 0xFF);
-    QCOMPARE(static_cast<int>(other[static_cast<size_t>(idx)]), static_cast<int>(object_type::powerup));
+    QCOMPARE(static_cast<int>(other[static_cast<size_t>(idx)]), static_cast<int>(object_type_e::powerup));
 
     posix_istream in(buffer.data(), bytes, std::ios_base::in);
     object got{};
     in >> got;
-    QCOMPARE(static_cast<int>(got.contains_type), static_cast<int>(object_type::none));
+    QCOMPARE(static_cast<int>(got.contains_type), static_cast<int>(object_type_e::none));
   }
 
   void testLevelGoalsChunkRoundTrip()
@@ -1723,7 +1723,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1826,7 +1826,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1850,7 +1850,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1954,7 +1954,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -1968,7 +1968,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -2066,7 +2066,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -2080,7 +2080,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -2183,7 +2183,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -2197,7 +2197,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -2324,7 +2324,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -2941,7 +2941,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -3109,7 +3109,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
       Objects[i].handle = i;
     }
     Highest_object_index = -1;
@@ -3232,7 +3232,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -3266,7 +3266,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -3332,7 +3332,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -3361,7 +3361,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -3541,7 +3541,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -3568,7 +3568,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -3877,7 +3877,7 @@ private slots:
 
     mngs_generic_page page{};
     page.objinfo_struct.name = "mng_sounds_unresolved";
-    page.objinfo_struct.type = object_type::none;
+    page.objinfo_struct.type = object_type_e::none;
     page.sound_name[generic_sound::ambient] = "definitely_not_in_the_table";
     page.sound_name[generic_sound::explode] = "INVALID NAME";
 
@@ -4170,7 +4170,7 @@ private slots:
     make("viewer_prop", (new ViewerPropDialog));
     make("world_objects_door", (new WorldObjectsDoorDialog));
     {
-      auto *d = new WorldObjectsGenericDialog(object_type::building, 0);
+      auto *d = new WorldObjectsGenericDialog(object_type_e::building, 0);
       make("world_objects_generic", d);
     }
     make("world_objects_player", (new WorldObjectsPlayerDialog));
@@ -4209,7 +4209,7 @@ private slots:
     };
     run("world_objects_door", new WorldObjectsDoorDialog, "IDOK");
     run("world_textures", new WorldTexturesDialog, "IDOK");
-    run("world_objects_generic", new WorldObjectsGenericDialog(object_type::building, 0), "IDOK");
+    run("world_objects_generic", new WorldObjectsGenericDialog(object_type_e::building, 0), "IDOK");
     run("osiris_status", new OsirisStatusDialog, "IDC_OSIRIS_DONE");
   }
 
@@ -4294,12 +4294,12 @@ private slots:
     // constructing the physics tab) and verify Cancel rejects.
     {
       Objects[0].id = 0;
-      Objects[0].type = object_type::building;
+      Objects[0].type = object_type_e::building;
       Highest_object_index = 0;
       // A default object_info{} has type 0 (object_type::wall); use object_type::none so the
       // ctor's physics-tab branch is skipped and the test stays hermetic.
       Object_info[0] = object_info{};
-      Object_info[0].type = object_type::none;
+      Object_info[0].type = object_type_e::none;
 
       ObjectPropertiesDialog dlg(0);
       QSignalSpy spy(&dlg, &QDialog::rejected);
@@ -4613,7 +4613,7 @@ private slots:
 
     d3edit_state out{};
     out.texdlg_texture = 42u;
-    out.obj_page = object_type::robot;
+    out.obj_page = object_type_e::robot;
     out.current_powerup = 7u;
     out.current_robot = 11u;
     out.texscr_visible = true;
@@ -4720,7 +4720,7 @@ private slots:
       QSettings settings(ini_path, QSettings::IniFormat);
       loadEditorSettings(settings, legacy_in);
     }
-    QCOMPARE(legacy_in.obj_page, std::optional<object_type>(object_type::robot));
+    QCOMPARE(legacy_in.obj_page, std::optional<object_type_e>(object_type_e::robot));
     QVERIFY(!legacy_in.current_robot.has_value()); // must not inherit 999
 
     QFile::remove(ini_path);
@@ -4741,37 +4741,37 @@ private slots:
     constexpr uint16_t kClutterSlot = 402;
     const object_info savedRobot = Object_info[kRobotSlot];
     const object_info savedClutter = Object_info[kClutterSlot];
-    const object_type savedPage = app.obj_page.value_or(object_type::none);
+    const object_type_e savedPage = app.obj_page.value_or(object_type_e::none);
     const std::optional<uint16_t> savedRobotId = app.current_robot;
     const std::optional<uint16_t> savedClutterId = app.current_clutter;
 
     Object_info[kRobotSlot] = object_info{};
-    Object_info[kRobotSlot].type = object_type::robot;
+    Object_info[kRobotSlot].type = object_type_e::robot;
     Object_info[kClutterSlot] = object_info{};
-    Object_info[kClutterSlot].type = object_type::clutter;
+    Object_info[kClutterSlot].type = object_type_e::clutter;
 
     // Each page reads back only its own id.
-    setObjectPageCurrentId(object_type::robot, kRobotSlot);
-    setObjectPageCurrentId(object_type::clutter, kClutterSlot);
-    QCOMPARE(objectPageCurrentId(object_type::robot), std::optional<uint16_t>(kRobotSlot));
-    QCOMPARE(objectPageCurrentId(object_type::clutter), std::optional<uint16_t>(kClutterSlot));
+    setObjectPageCurrentId(object_type_e::robot, kRobotSlot);
+    setObjectPageCurrentId(object_type_e::clutter, kClutterSlot);
+    QCOMPARE(objectPageCurrentId(object_type_e::robot), std::optional<uint16_t>(kRobotSlot));
+    QCOMPARE(objectPageCurrentId(object_type_e::clutter), std::optional<uint16_t>(kClutterSlot));
 
     // With the robot page selected, placement uses the robot id.
-    app.obj_page = object_type::robot;
+    app.obj_page = object_type_e::robot;
     QCOMPARE(currentObjectPageId(), std::optional<uint16_t>(kRobotSlot));
 
     // Switching pages selects a different id without disturbing the first.
-    app.obj_page = object_type::clutter;
+    app.obj_page = object_type_e::clutter;
     QCOMPARE(currentObjectPageId(), std::optional<uint16_t>(kClutterSlot));
-    QCOMPARE(objectPageCurrentId(object_type::robot), std::optional<uint16_t>(kRobotSlot));
+    QCOMPARE(objectPageCurrentId(object_type_e::robot), std::optional<uint16_t>(kRobotSlot));
 
     // A stale id (slot freed, so it no longer holds a robot) heals rather than
     // placing the wrong type.
-    app.obj_page = object_type::robot;
+    app.obj_page = object_type_e::robot;
     app.current_robot = kClutterSlot;
     const std::optional<uint16_t> healed = currentObjectPageId();
     QVERIFY(healed.has_value());
-    QCOMPARE(Object_info[*healed].type, object_type::robot);
+    QCOMPARE(Object_info[*healed].type, object_type_e::robot);
     QVERIFY(*healed != kClutterSlot);
     // The healed id is written back so the next call is stable.
     QCOMPARE(currentObjectPageId(), healed);
@@ -4822,7 +4822,7 @@ private slots:
     // SetEditorViewer), so the id/object are non-empty afterwards.
     QCOMPARE(app.Editor_viewer_id.value_or(-1), 0);
     QVERIFY(Viewer_object != nullptr);
-    QCOMPARE(int(Viewer_object->type), int(object_type::viewer));
+    QCOMPARE(int(Viewer_object->type), int(object_type_e::viewer));
     QCOMPARE(app.New_mine, true);
     QCOMPARE(app.World_changed, false);
 
@@ -4848,7 +4848,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); ++i) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -4876,7 +4876,7 @@ private slots:
     // A saved viewer at a known pose inside room 0.
     const vector3 savedPos{1, 2, 3};
     const int viewerSlot = 0;
-    Objects[viewerSlot].type = object_type::viewer;
+    Objects[viewerSlot].type = object_type_e::viewer;
     Objects[viewerSlot].id = 4;
     Objects[viewerSlot].pos = savedPos;
     Objects[viewerSlot].roomnum = 0;
@@ -4902,7 +4902,7 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); ++i) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
@@ -4929,7 +4929,7 @@ private slots:
     SetEditorViewer();
 
     QVERIFY(Viewer_object != nullptr);
-    QCOMPARE(int(Viewer_object->type), int(object_type::viewer));
+    QCOMPARE(int(Viewer_object->type), int(object_type_e::viewer));
     QCOMPARE(Viewer_object->roomnum, 0);
     QCOMPARE(app.Editor_viewer_id.value_or(-1), 0);
     app.State_changed = app.Viewer_moved = false;
@@ -6093,7 +6093,7 @@ private slots:
 
     // Camera-space identity-free orientation at the origin, looking +X
     // (the same pose the pick fixtures set up).
-    Objects[0].type = object_type::viewer;
+    Objects[0].type = object_type_e::viewer;
     Objects[0].pos = vector3{0, 0, 0};
     Objects[0].orient.rvec = vector3{0, 0, 1};
     Objects[0].orient.uvec = vector3{0, 1, 0};
@@ -6278,13 +6278,13 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
     Triggers.clear();
     Viewer_object = &Objects[0];
-    Viewer_object->type = object_type::viewer;
+    Viewer_object->type = object_type_e::viewer;
     Viewer_object->pos = vector3{0, 0, 0};
     Viewer_object->orient.rvec = vector3{0, 0, 1};
     Viewer_object->orient.uvec = vector3{0, 1, 0};
@@ -6365,13 +6365,13 @@ private slots:
     InitRooms();
     for (size_t i = 0; i < Objects.size(); i++) {
       Objects[i] = object{};
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     }
     Highest_object_index = -1;
     RoomsReset();
     Triggers.clear();
     Viewer_object = &Objects[0];
-    Viewer_object->type = object_type::viewer;
+    Viewer_object->type = object_type_e::viewer;
     Viewer_object->pos = vector3{0, 0, 0};
     Viewer_object->orient.rvec = vector3{0, 0, 1};
     Viewer_object->orient.uvec = vector3{0, 1, 0};
@@ -7112,11 +7112,11 @@ private slots:
 
   void testRotateObjectIdentity() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
-    Objects[0].type = object_type::powerup;
+    Objects[0].type = object_type_e::powerup;
     Objects[0].orient = IDENTITY_MATRIX;
     Highest_object_index = 0;
 
@@ -7130,18 +7130,18 @@ private slots:
     QVERIFY(rmag > 0.9f && rmag < 1.1f);
     QVERIFY(umag > 0.9f && umag < 1.1f);
 
-    Objects[0].type = object_type::none;
+    Objects[0].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
   }
 
   void testRotateObjectChangesOrientation() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
-    Objects[0].type = object_type::powerup;
+    Objects[0].type = object_type_e::powerup;
     Objects[0].orient = IDENTITY_MATRIX;
     Highest_object_index = 0;
 
@@ -7164,18 +7164,18 @@ private slots:
     QVERIFY(rmag > 0.9f && rmag < 1.1f);
     QVERIFY(umag > 0.9f && umag < 1.1f);
 
-    Objects[0].type = object_type::none;
+    Objects[0].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
   }
 
   void testHObjectSetDefault() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
-    Objects[0].type = object_type::powerup;
+    Objects[0].type = object_type_e::powerup;
     matrix rotated{};
     vm_AnglesToMatrix(&rotated, 4096, 2048, 1024);
     Objects[0].orient = rotated;
@@ -7192,7 +7192,7 @@ private slots:
     QCOMPARE(Objects[0].orient.uvec.y(), IDENTITY_MATRIX.uvec.y());
 
     app.Cur_object_index.reset();
-    Objects[0].type = object_type::none;
+    Objects[0].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
   }
@@ -7209,11 +7209,11 @@ private slots:
 
   void testHObjectFlip() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
-    Objects[0].type = object_type::powerup;
+    Objects[0].type = object_type_e::powerup;
     Objects[0].orient = IDENTITY_MATRIX;
     Highest_object_index = 0;
     app.Cur_object_index = 0;
@@ -7237,23 +7237,23 @@ private slots:
     QCOMPARE(Objects[0].orient.uvec.z(), -uvec_before.z());
 
     app.Cur_object_index.reset();
-    Objects[0].type = object_type::none;
+    Objects[0].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
   }
 
   void testHObjectDeleteNonPlayer() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
-    Objects[0].type = object_type::viewer;
-    Objects[0].render_type = render_type::polyobj;
+    Objects[0].type = object_type_e::viewer;
+    Objects[0].render_type = render_type_e::polyobj;
     Viewer_object = &Objects[0];
 
-    Objects[1].type = object_type::powerup;
-    Objects[1].render_type = render_type::polyobj;
+    Objects[1].type = object_type_e::powerup;
+    Objects[1].render_type = render_type_e::polyobj;
     Highest_object_index = 1;
 
     // The slots above were carved straight out of Objects[], so re-sync the
@@ -7265,10 +7265,10 @@ private slots:
 
     HObjectDelete();
 
-    QCOMPARE(Objects[1].type, object_type::none);
+    QCOMPARE(Objects[1].type, object_type_e::none);
     QCOMPARE(index_to_int(app.Cur_object_index), -1);
 
-    Objects[0].type = object_type::none;
+    Objects[0].type = object_type_e::none;
     Viewer_object = nullptr;
     app.Cur_object_index.reset();
     ResetObjectList();
@@ -7283,16 +7283,16 @@ private slots:
 
   void testHObjectDeletePlayerBlocked() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
-    Objects[0].type = object_type::viewer;
-    Objects[0].render_type = render_type::polyobj;
+    Objects[0].type = object_type_e::viewer;
+    Objects[0].render_type = render_type_e::polyobj;
     Viewer_object = &Objects[0];
 
-    Objects[1].type = object_type::player;
-    Objects[1].render_type = render_type::polyobj;
+    Objects[1].type = object_type_e::player;
+    Objects[1].render_type = render_type_e::polyobj;
     Player_object = &Objects[1];
     Highest_object_index = 1;
 
@@ -7305,11 +7305,11 @@ private slots:
 
     HObjectDelete();
 
-    QCOMPARE(Objects[1].type, object_type::player);
+    QCOMPARE(Objects[1].type, object_type_e::player);
 
     app.Cur_object_index.reset();
-    Objects[0].type = object_type::none;
-    Objects[1].type = object_type::none;
+    Objects[0].type = object_type_e::none;
+    Objects[1].type = object_type_e::none;
     Viewer_object = nullptr;
     Player_object = nullptr;
     ResetObjectList();
@@ -7318,7 +7318,7 @@ private slots:
 
   void testMoveObjectBasic() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
@@ -7335,13 +7335,13 @@ private slots:
     }
     RoomsEnsureIndex(0);
 
-    Objects[0].type = object_type::viewer;
-    Objects[0].render_type = render_type::polyobj;
+    Objects[0].type = object_type_e::viewer;
+    Objects[0].render_type = render_type_e::polyobj;
     Viewer_object = &Objects[0];
 
-    Objects[1].type = object_type::powerup;
-    Objects[1].render_type = render_type::polyobj;
-    Objects[1].movement_type = movement_type::none;
+    Objects[1].type = object_type_e::powerup;
+    Objects[1].render_type = render_type_e::polyobj;
+    Objects[1].movement_type = movement_type_e::none;
     Objects[1].size = 1.0f;
     Highest_object_index = 1;
 
@@ -7354,8 +7354,8 @@ private slots:
     QVERIFY(moved);
     QVERIFY(Objects[1].pos.x() > -100.0f);
 
-    Objects[0].type = object_type::none;
-    Objects[1].type = object_type::none;
+    Objects[0].type = object_type_e::none;
+    Objects[1].type = object_type_e::none;
     Viewer_object = nullptr;
     app.Cur_object_index.reset();
     ResetObjectList();
@@ -7365,7 +7365,7 @@ private slots:
 
   void testHObjectMove() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
@@ -7382,14 +7382,14 @@ private slots:
     }
     RoomsEnsureIndex(0);
 
-    Objects[0].type = object_type::viewer;
-    Objects[0].render_type = render_type::polyobj;
+    Objects[0].type = object_type_e::viewer;
+    Objects[0].render_type = render_type_e::polyobj;
     Objects[0].orient = IDENTITY_MATRIX;
     Viewer_object = &Objects[0];
 
-    Objects[1].type = object_type::powerup;
-    Objects[1].render_type = render_type::polyobj;
-    Objects[1].movement_type = movement_type::none;
+    Objects[1].type = object_type_e::powerup;
+    Objects[1].render_type = render_type_e::polyobj;
+    Objects[1].movement_type = movement_type_e::none;
     Objects[1].orient = IDENTITY_MATRIX;
     Objects[1].size = 1.0f;
     Highest_object_index = 1;
@@ -7406,8 +7406,8 @@ private slots:
     QVERIFY(app.Object_moved);
 
     app.Cur_object_index.reset();
-    Objects[0].type = object_type::none;
-    Objects[1].type = object_type::none;
+    Objects[0].type = object_type_e::none;
+    Objects[1].type = object_type_e::none;
     Viewer_object = nullptr;
     ResetObjectList();
     Highest_object_index = -1;
@@ -7416,7 +7416,7 @@ private slots:
 
   void testObjMoveManagerStartEnd() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
@@ -7433,14 +7433,14 @@ private slots:
     }
     RoomsEnsureIndex(0);
 
-    Objects[0].type = object_type::viewer;
-    Objects[0].render_type = render_type::polyobj;
+    Objects[0].type = object_type_e::viewer;
+    Objects[0].render_type = render_type_e::polyobj;
     Objects[0].orient = IDENTITY_MATRIX;
     Viewer_object = &Objects[0];
 
-    Objects[1].type = object_type::powerup;
-    Objects[1].render_type = render_type::polyobj;
-    Objects[1].movement_type = movement_type::none;
+    Objects[1].type = object_type_e::powerup;
+    Objects[1].render_type = render_type_e::polyobj;
+    Objects[1].movement_type = movement_type_e::none;
     Objects[1].orient = IDENTITY_MATRIX;
     Objects[1].size = 1.0f;
     Highest_object_index = 1;
@@ -7463,8 +7463,8 @@ private slots:
     QVERIFY(!ObjMoveManager.IsMoving());
 
     app.Cur_object_index.reset();
-    Objects[0].type = object_type::none;
-    Objects[1].type = object_type::none;
+    Objects[0].type = object_type_e::none;
+    Objects[1].type = object_type_e::none;
     Viewer_object = nullptr;
     ResetObjectList();
     Highest_object_index = -1;
@@ -7473,7 +7473,7 @@ private slots:
 
   void testObjMoveManagerSkipsDoor() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
@@ -7490,14 +7490,14 @@ private slots:
     }
     RoomsEnsureIndex(0);
 
-    Objects[0].type = object_type::viewer;
-    Objects[0].render_type = render_type::polyobj;
+    Objects[0].type = object_type_e::viewer;
+    Objects[0].render_type = render_type_e::polyobj;
     Objects[0].orient = IDENTITY_MATRIX;
     Viewer_object = &Objects[0];
 
-    Objects[1].type = object_type::door;
-    Objects[1].render_type = render_type::polyobj;
-    Objects[1].movement_type = movement_type::none;
+    Objects[1].type = object_type_e::door;
+    Objects[1].render_type = render_type_e::polyobj;
+    Objects[1].movement_type = movement_type_e::none;
     Objects[1].orient = IDENTITY_MATRIX;
     Objects[1].size = 1.0f;
     Highest_object_index = 1;
@@ -7514,8 +7514,8 @@ private slots:
     QVERIFY(!ObjMoveManager.IsMoving());
 
     app.Cur_object_index.reset();
-    Objects[0].type = object_type::none;
-    Objects[1].type = object_type::none;
+    Objects[0].type = object_type_e::none;
+    Objects[1].type = object_type_e::none;
     Viewer_object = nullptr;
     ResetObjectList();
     Highest_object_index = -1;
@@ -7532,7 +7532,7 @@ private slots:
   // event-driven Defer(int,int,bool) overload.
   void testObjMoveManagerDeferTranslatesAndReleases() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
@@ -7549,14 +7549,14 @@ private slots:
     }
     RoomsEnsureIndex(0);
 
-    Objects[0].type = object_type::viewer;
-    Objects[0].render_type = render_type::polyobj;
+    Objects[0].type = object_type_e::viewer;
+    Objects[0].render_type = render_type_e::polyobj;
     Objects[0].orient = IDENTITY_MATRIX;
     Viewer_object = &Objects[0];
 
-    Objects[1].type = object_type::powerup;
-    Objects[1].render_type = render_type::polyobj;
-    Objects[1].movement_type = movement_type::none;
+    Objects[1].type = object_type_e::powerup;
+    Objects[1].render_type = render_type_e::polyobj;
+    Objects[1].movement_type = movement_type_e::none;
     Objects[1].orient = IDENTITY_MATRIX;
     Objects[1].size = 1.0f;
     Highest_object_index = 1;
@@ -7584,8 +7584,8 @@ private slots:
     QVERIFY(!ObjMoveManager.IsMoving());
 
     app.Cur_object_index.reset();
-    Objects[0].type = object_type::none;
-    Objects[1].type = object_type::none;
+    Objects[0].type = object_type_e::none;
+    Objects[1].type = object_type_e::none;
     Viewer_object = nullptr;
     ResetObjectList();
     Highest_object_index = -1;
@@ -7595,7 +7595,7 @@ private slots:
   // Verifies that dragging with OBJMOVEAXIS_H rotates the object.
   void testObjMoveManagerDeferRotates() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
@@ -7612,14 +7612,14 @@ private slots:
     }
     RoomsEnsureIndex(0);
 
-    Objects[0].type = object_type::viewer;
-    Objects[0].render_type = render_type::polyobj;
+    Objects[0].type = object_type_e::viewer;
+    Objects[0].render_type = render_type_e::polyobj;
     Objects[0].orient = IDENTITY_MATRIX;
     Viewer_object = &Objects[0];
 
-    Objects[1].type = object_type::powerup;
-    Objects[1].render_type = render_type::polyobj;
-    Objects[1].movement_type = movement_type::none;
+    Objects[1].type = object_type_e::powerup;
+    Objects[1].render_type = render_type_e::polyobj;
+    Objects[1].movement_type = movement_type_e::none;
     Objects[1].orient = IDENTITY_MATRIX;
     Objects[1].size = 1.0f;
     Highest_object_index = 1;
@@ -7652,8 +7652,8 @@ private slots:
     QVERIFY(!ObjMoveManager.IsMoving());
 
     app.Cur_object_index.reset();
-    Objects[0].type = object_type::none;
-    Objects[1].type = object_type::none;
+    Objects[0].type = object_type_e::none;
+    Objects[1].type = object_type_e::none;
     Viewer_object = nullptr;
     ResetObjectList();
     Highest_object_index = -1;
@@ -7664,7 +7664,7 @@ private slots:
   // and verify the object moved in world space.
   void testEditorViewDragMovesObject() {
     for (size_t i = 0; i < Objects.size(); ++i)
-      Objects[i].type = object_type::none;
+      Objects[i].type = object_type_e::none;
     ResetObjectList();
     Highest_object_index = -1;
 
@@ -7684,9 +7684,9 @@ private slots:
     }
     RoomsEnsureIndex(0);
 
-    Objects[0].type = object_type::powerup;
-    Objects[0].render_type = render_type::polyobj;
-    Objects[0].movement_type = movement_type::none;
+    Objects[0].type = object_type_e::powerup;
+    Objects[0].render_type = render_type_e::polyobj;
+    Objects[0].movement_type = movement_type_e::none;
     Objects[0].orient = IDENTITY_MATRIX;
     Objects[0].size = 3.0f;
     Highest_object_index = 0;
@@ -7742,7 +7742,7 @@ private slots:
             "drag did not move the object");
 
     app.Cur_object_index.reset();
-    Objects[0].type = object_type::none;
+    Objects[0].type = object_type_e::none;
     app.view_mode = state::viewer::mine;
     ResetObjectList();
     Highest_object_index = -1;
@@ -7991,7 +7991,7 @@ private slots:
     posix_ostream out(buffer.data(), buffer.size(), std::ios_base::out);
 
     mngs_generic_page page{};
-    page.objinfo_struct.type = object_type::robot;
+    page.objinfo_struct.type = object_type_e::robot;
     page.objinfo_struct.name = "roundtrip_robot";
     page.image_name = "models/robot.oof";
     page.med_image_name = "models/robot.oof";
@@ -8039,7 +8039,7 @@ private slots:
 
     mngs_generic_page got{};
     QVERIFY(mng_ReadNewGenericPage(in, &got));
-    QCOMPARE(static_cast<int>(got.objinfo_struct.type), static_cast<int>(object_type::robot));
+    QCOMPARE(static_cast<int>(got.objinfo_struct.type), static_cast<int>(object_type_e::robot));
     QCOMPARE(got.objinfo_struct.name, page.objinfo_struct.name);
     QCOMPARE(got.image_name, page.image_name);
     QCOMPARE(got.objinfo_struct.module_name, page.objinfo_struct.module_name);
@@ -8077,7 +8077,7 @@ private slots:
     posix_ostream out(buffer.data(), buffer.size(), std::ios_base::out);
 
     mngs_generic_page page{};
-    page.objinfo_struct.type = object_type::robot;
+    page.objinfo_struct.type = object_type_e::robot;
     page.objinfo_struct.name = "death_count_robot";
     // Only two death types are meaningful here; poison the rest of the vector
     // so we can tell "padded" apart from "stale".
@@ -8171,7 +8171,7 @@ private slots:
 
       auto write_robot = [&file](const std::string &name) {
         mngs_generic_page p{};
-        p.objinfo_struct.type = object_type::robot;
+        p.objinfo_struct.type = object_type_e::robot;
         p.objinfo_struct.name = name;
         p.image_name = "models/" + name + ".oof";
         p.med_image_name = "models/" + name + ".oof";
@@ -8340,11 +8340,11 @@ private slots:
     }
     for (int i = 0; i < MAX_OBJECT_IDS; i++) {
       Object_info[i] = object_info{};
-      Object_info[i].type = object_type::none;
+      Object_info[i].type = object_type_e::none;
     }
 
     // f_anim: fixed-size anim table with the engine defaults.
-    const index_t ai = AllocObjectID(object_type::powerup, true, false, false);
+    const index_t ai = AllocObjectID(object_type_e::powerup, true, false, false);
     QVERIFY(ai);
     QCOMPARE(int(Object_info[*ai].anim.size()), int(NUM_MOVEMENT_CLASSES));
     for (size_t j = 0; j < Object_info[*ai].anim.size(); j++)
@@ -8354,7 +8354,7 @@ private slots:
       }
 
     // No anim requested: the table stays empty.
-    const index_t bi = AllocObjectID(object_type::clutter, false, false, false);
+    const index_t bi = AllocObjectID(object_type_e::clutter, false, false, false);
     QVERIFY(bi);
     QVERIFY(Object_info[*bi].anim.empty());
 

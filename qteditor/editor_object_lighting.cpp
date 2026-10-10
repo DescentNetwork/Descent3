@@ -212,7 +212,7 @@ void AssignLightmapsToObjectSurfaces(int surface_index, int terrain) {
     if ((terrain != 0) != Objects[i].is_outside())
       continue;
 
-    if (Objects[i].type != object_type::none && Objects[i].lighting_render_type == lighting_render_type::lightmaps) {
+    if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {
       poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
 
       if (!po->new_style)
@@ -265,7 +265,7 @@ void AssignLightmapsToObjectSurfacesForSingleRoom(int surface_index, int roomnum
 
   for (i = 0; i <= Highest_object_index; i++) {
 
-    if (Objects[i].type != object_type::none && Objects[i].lighting_render_type == lighting_render_type::lightmaps &&
+    if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps &&
         Objects[i].roomnum == roomnum) {
       poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
 
@@ -294,7 +294,7 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
     if ((terrain != 0) != Objects[i].is_outside())
       continue;
 
-    if (Objects[i].type != object_type::none && Objects[i].lighting_render_type == lighting_render_type::lightmaps) {
+    if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {
       poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
 
       if (!po->new_style)
@@ -382,7 +382,7 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
 
   for (i = 0; i <= Highest_object_index; i++) {
 
-    if (Objects[i].type != object_type::none && Objects[i].lighting_render_type == lighting_render_type::lightmaps &&
+    if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps &&
         Objects[i].roomnum == roomnum) {
       poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
 
@@ -446,11 +446,11 @@ int GetTotalObjectFaces(int terrain) {
   int facecount = 0;
 
   for (i = 0; i <= Highest_object_index; i++) {
-    if (Objects[i].type != object_type::none) {
+    if (Objects[i].type != object_type_e::none) {
       if ((terrain != 0) != Objects[i].is_outside())
         continue;
 
-      if (Objects[i].lighting_render_type == lighting_render_type::lightmaps) {
+      if (Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {
         poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
 
         if (!po->new_style)
@@ -470,11 +470,11 @@ int GetTotalObjectFacesForSingleRoom(int roomnum) {
   int facecount = 0;
 
   for (i = 0; i <= Highest_object_index; i++) {
-    if (Objects[i].type != object_type::none) {
+    if (Objects[i].type != object_type_e::none) {
       if (Objects[i].roomnum != roomnum)
         continue;
 
-      if (Objects[i].lighting_render_type == lighting_render_type::lightmaps) {
+      if (Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {
         poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
 
         if (!po->new_style)

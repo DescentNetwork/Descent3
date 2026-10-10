@@ -269,7 +269,7 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<
   for (int objnum = obj - Objects.data(); objnum != -1; objnum = Objects[objnum].next) {
     object *this_obj = &Objects[objnum];
 
-    if (this_obj->lighting_render_type != lighting_render_type::lightmaps)
+    if (this_obj->lighting_render_type != lighting_render_type_e::lightmaps)
       continue;
     if (!this_obj->lm_object.used)
       continue;
@@ -542,7 +542,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
     // Now search through all the objects in this room
     for (k = rp->objects; k != -1; k = Objects[k].next) {
       object *obj = &Objects[k];
-      if (obj->lighting_render_type != lighting_render_type::lightmaps)
+      if (obj->lighting_render_type != lighting_render_type_e::lightmaps)
         continue;
       if (!obj->lm_object.used)
         continue;
@@ -578,7 +578,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             // Can't find an empty slot, so search through all the other remaining faces
             for (int a = rp->objects; a != -1; a = Objects[a].next) {
               object *obj = &Objects[a];
-              if (obj->lighting_render_type != lighting_render_type::lightmaps)
+              if (obj->lighting_render_type != lighting_render_type_e::lightmaps)
                 continue;
               if (!obj->lm_object.used)
                 continue;
@@ -641,9 +641,9 @@ void SqueezeLightmaps(int external, int target_roomnum) {
     for (i = 0; i <= Highest_object_index; i++) {
       object *obj = &Objects[i];
 
-      if (obj->type == object_type::room)
+      if (obj->type == object_type_e::room)
         continue;
-      if (obj->lighting_render_type != lighting_render_type::lightmaps)
+      if (obj->lighting_render_type != lighting_render_type_e::lightmaps)
         continue;
       if (!obj->lm_object.used)
         continue;
@@ -1170,7 +1170,7 @@ void DoRadiosityForCurrentRoom(int roomnum) {
 
   ClearRoomLightmaps(roomnum);
   for (t = 0; t <= Highest_object_index; t++) {
-    if (Objects[t].type != object_type::none && (Objects[t].roomnum == roomnum))
+    if (Objects[t].type != object_type_e::none && (Objects[t].roomnum == roomnum))
       ClearObjectLightmaps(&Objects[t]);
   }
 

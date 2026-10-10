@@ -486,7 +486,7 @@ void TerrainKeypad::onDropTerrain() {
   }
 
   for (int o = 0; o <= Highest_object_index; o++) {
-    if (Objects[o].type != object_type::none) {
+    if (Objects[o].type != object_type_e::none) {
       vector3 new_pos = Objects[o].pos;
       new_pos.y() += delta_y;
       ObjSetPos(Objects[o], new_pos, Objects[o].roomnum, std::nullopt, false);

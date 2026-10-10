@@ -34,7 +34,7 @@ QT_END_NAMESPACE
 class WorldObjectsGenericDialog : public QDialog {
   Q_OBJECT
 public:
-  explicit WorldObjectsGenericDialog(object_type objType, index_t object_id, QWidget *parent = nullptr);
+  explicit WorldObjectsGenericDialog(object_type_e objType, index_t object_id, QWidget *parent = nullptr);
   ~WorldObjectsGenericDialog();
 
   index_t objectId() const { return m_object_id; }
@@ -71,7 +71,7 @@ private:
   optref<object_info> data(void);
 
   Ui::WorldObjectsGenericDialog *ui;
-  object_type m_type;
+  object_type_e m_type;
   index_t m_object_id;
   int m_lod = 0;
   int m_locked_count = 0;

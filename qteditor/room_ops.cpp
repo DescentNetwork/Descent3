@@ -1352,7 +1352,7 @@ void AttachRoom() {
 
       FreeRoom(index_to_int(app.placed.room));
 
-      ObjCreate(object_type::door, *app.placed.door, slot, room_center, &orient);
+      ObjCreate(object_type_e::door, *app.placed.door, slot, room_center, &orient);
 
       doorway *dp = DoorwayAdd(slot, *app.placed.door);
       (void)dp;

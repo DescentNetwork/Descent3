@@ -196,7 +196,7 @@ struct light_info {
   float directional_dot;
   uint32_t timebits;
   uint8_t angle;
-  ::lighting_render_type lighting_render_type;
+  ::lighting_render_type_e lighting_render_type;
 };
 
 // Table-file (lighting chunk) serialization; the read is the exact mirror of
@@ -770,8 +770,8 @@ private:
 
 // The data for an object
 struct object {
-  object_type type;       // what type of object this is... robot, weapon, hostage, powerup, fireball
-  object_type dummy_type; // stored type of an object_type::dummy
+  object_type_e type;       // what type of object this is... robot, weapon, hostage, powerup, fireball
+  object_type_e dummy_type; // stored type of an object_type::dummy
   uint16_t id;        // which form of object...which powerup, robot, etc.
   object_flags_t flags;
 
@@ -780,10 +780,10 @@ struct object {
   int32_t handle;       //  unique handle for this object.  See defines above
   int16_t next, prev;   // id of next and previous connected object in Objects, -1 = no connection
 
-  ::control_type control_type;         // how this object is controlled
-  ::movement_type movement_type;       // how this object moves
-  ::render_type render_type;           //  how this object renders
-  ::lighting_render_type lighting_render_type; // how this object is lit.  See flags above
+  control_type_e control_type;         // how this object is controlled
+  movement_type_e movement_type;       // how this object moves
+  render_type_e render_type;           //  how this object renders
+  lighting_render_type_e lighting_render_type; // how this object is lit.  See flags above
 
   index_t roomnum; // room number or terrain cell containing object; nullopt = not in the world
 
@@ -799,7 +799,7 @@ struct object {
   float size;    // 3d size of object - for collision detection
   float shields; // Starts at maximum, when <0, object dies..
 
-  object_type contains_type;   // Type of object this object contains (eg, spider contains powerup)
+  object_type_e contains_type;   // Type of object this object contains (eg, spider contains powerup)
   int8_t contains_id;     // ID of object this object contains (eg, id = blue type = key)
   int8_t contains_count;  // number of objects of type:id this object contains
   int8_t pad3;            // keep alignment
@@ -816,7 +816,7 @@ struct object {
 
   weapon_fire_flags_t weapon_fire_flags = {}; // Used to indicate special weapon effects
 
-  ::attach_type attach_type;
+  attach_type_e attach_type;
   int16_t lowest_attached_vis;
   union {
     float attach_dist;

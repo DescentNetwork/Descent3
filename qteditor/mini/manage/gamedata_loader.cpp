@@ -174,7 +174,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
   Sounds.clear();
   Num_objects = 0;
   for (int i = 0; i < MAX_OBJECT_IDS; i++) {
-    Object_info[i].type = object_type::none;
+    Object_info[i].type = object_type_e::none;
     Object_info[i].name.clear();
   }
   // Loop grows so a second load produces the same arrays as the first.
@@ -306,8 +306,8 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
   for (int i = 0; i < MAX_OBJECTS; i++)
     Num_object_ids[i] = 0;
   for (int i = 0; i < MAX_OBJECT_IDS; i++) {
-    const object_type type = Object_info[i].type;
-    if (type != object_type::none && obj_type_index(type) < MAX_OBJECT_TYPES)
+    const object_type_e type = Object_info[i].type;
+    if (type != object_type_e::none && obj_type_index(type) < MAX_OBJECT_TYPES)
       Num_object_ids[obj_type_index(type)]++;
   }
 
@@ -328,7 +328,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 index_t FindObjectIDName(const std::string &name) {
   if(!name.empty())
     for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++)
-      if ((Object_info[i].type != object_type::none) && match(name, Object_info[i].name))
+      if ((Object_info[i].type != object_type_e::none) && match(name, Object_info[i].name))
         return i;
 
   return std::nullopt;

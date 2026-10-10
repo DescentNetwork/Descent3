@@ -1239,19 +1239,19 @@ float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3>
   return size;
 }
 
-float ComputeDefaultSize(object_type type, int handle, optref<float> size_ptr) {
+float ComputeDefaultSize(object_type_e type, int handle, optref<float> size_ptr) {
   float size = ComputeDefaultSizeFunc(handle, size_ptr, std::nullopt, true);
 
-  if (type != object_type::weapon && type != object_type::debris && type != object_type::powerup) {
+  if (type != object_type_e::weapon && type != object_type_e::debris && type != object_type_e::powerup) {
     ComputeDefaultSizeFunc(handle, Poly_models[handle].wall_size, Poly_models[handle].wall_size_offset, false);
     ComputeDefaultSizeFunc(handle, Poly_models[handle].anim_size, Poly_models[handle].anim_size_offset, true);
 
-    if (type == object_type::player) {
+    if (type == object_type_e::player) {
       Poly_models[handle].anim_size *= PLAYER_SIZE_SCALAR;
       Poly_models[handle].anim_size_offset = vector3{};
     }
   } else {
-    if (type == object_type::powerup) {
+    if (type == object_type_e::powerup) {
       size *= 2.0f;
       *size_ptr *= 2.0f;
     }

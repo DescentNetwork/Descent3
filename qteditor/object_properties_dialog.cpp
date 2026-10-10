@@ -34,10 +34,10 @@ ObjectPropertiesDialog::ObjectPropertiesDialog(int objIndex, QWidget *parent)
     return;
 
   object *obj = &Objects[m_objIndex];
-  if (obj->type == object_type::none)
+  if (obj->type == object_type_e::none)
     return;
 
-  if (obj->id >= 0 && obj->id < MAX_OBJECT_IDS && Object_info[obj->id].type != object_type::none) {
+  if (obj->id >= 0 && obj->id < MAX_OBJECT_IDS && Object_info[obj->id].type != object_type_e::none) {
     PropertyPhysicsDialog *physics = new PropertyPhysicsDialog(obj->id, tabs);
     tabs->addTab(physics, "Physics");
 

@@ -383,7 +383,7 @@ void SetNormalizedTimeAnim(float norm_anim_frame, float *normalized_time, poly_m
 void WBClearInfo(poly_model *pm);
 
 // Computes the size of a polymodel.
-float ComputeDefaultSize(object_type type, int handle, optref<float> size_out);
+float ComputeDefaultSize(object_type_e type, int handle, optref<float> size_out);
 
 // Returns the total number of faces in a model
 int CountFacesInPolymodel(poly_model *pm);
@@ -405,7 +405,7 @@ int IsNonRenderableSubmodel(poly_model *pm, int submodelnum);
 void SetPolymodelEffect(polymodel_effect *);
 
 // Pages in a polymodel if it is not already in memory
-void PageInPolymodel(int polynum, std::optional<object_type> type = std::nullopt, optref<float> size_out = std::nullopt);
+void PageInPolymodel(int polynum, std::optional<object_type_e> type = std::nullopt, optref<float> size_out = std::nullopt);
 
 // Gets a pointer to a polymodel.  Pages it in if neccessary
 poly_model *GetPolymodelPointer(int polynum);

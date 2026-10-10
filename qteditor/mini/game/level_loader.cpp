@@ -558,14 +558,14 @@ static void LL_ReadNameXlateChunk(posix_istream &ifile, int chunk_size,
 // First used page of the given type, the engine's FindValidID() fallback for
 // a name-mapping miss (GetObjectID for the generic types, the first used door
 // slot for object_type::door).  Returns std::nullopt when no game table provides one.
-static index_t FindValidID(object_type type) {
+static index_t FindValidID(object_type_e type) {
   switch (type) {
-  case object_type::robot:
-  case object_type::powerup:
-  case object_type::building:
-  case object_type::clutter:
+  case object_type_e::robot:
+  case object_type_e::powerup:
+  case object_type_e::building:
+  case object_type_e::clutter:
     return GetObjectID(type);
-  case object_type::door:
+  case object_type_e::door:
     for (size_t i = 0; i < Doors.size(); i++)
       if (Doors.is_used(i))
         return i;
@@ -579,11 +579,11 @@ static index_t FindValidID(object_type type) {
 // the generic object types and doors.  On a lookup miss the engine picks the
 // first valid page of the object's type; when no game table is loaded the raw
 // file id is kept so the level still renders.
-static int TranslateObjectId(object_type type, int id) {
+static int TranslateObjectId(object_type_e type, int id) {
   int xid = -1;
-  if (type == object_type::robot || type == object_type::powerup || type == object_type::building || type == object_type::clutter)
+  if (type == object_type_e::robot || type == object_type_e::powerup || type == object_type_e::building || type == object_type_e::clutter)
     xid = (id < MAX_OBJECT_IDS) ? static_cast<int>(generic_xlate[id]) : -1;
-  else if (type == object_type::door)
+  else if (type == object_type_e::door)
     xid = (id < MAX_DOORS) ? static_cast<int>(door_xlate[id]) : -1;
   else
     return id;
@@ -1961,7 +1961,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
           obj->handle = (version >= 45) ? handle : (objnum + HANDLE_COUNT_INCREMENT);
           obj->roomnum.reset(); // ObjLink() expects the roomnum to be unset
           if (roomnum && *roomnum >= Rooms.size() && !roomnum_outside(roomnum))
-            obj->type = object_type::none; // loading object with invalid room number
+            obj->type = object_type_e::none; // loading object with invalid room number
           else
             ObjLink(objnum, roomnum);
           if (objnum > Highest_object_index)
@@ -2072,11 +2072,11 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
       int start = LL_StartChunk(out, CHUNK_GENERIC_NAMES);
       int highest = -1;
       for (int i = 0; i < MAX_OBJECT_IDS; i++)
-        if (Object_info[i].type != object_type::none)
+        if (Object_info[i].type != object_type_e::none)
           highest = i;
       out << (int32_t)(highest + 1);
       for (int i = 0; i <= highest; i++)
-        out << (Object_info[i].type != object_type::none ? Object_info[i].name : std::string());
+        out << (Object_info[i].type != object_type_e::none ? Object_info[i].name : std::string());
       LL_EndChunk(out, start);
     }
 
@@ -2155,12 +2155,12 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     {
       int handleCount = 0;
       for (size_t i = 0; i < Objects.size(); i++)
-        if (Objects[i].type == object_type::none && (Objects[i].handle & HANDLE_COUNT_MASK) != 0)
+        if (Objects[i].type == object_type_e::none && (Objects[i].handle & HANDLE_COUNT_MASK) != 0)
           handleCount++;
       int start = LL_StartChunk(out, CHUNK_OBJECT_HANDLES);
       out << handleCount;
       for (size_t i = 0; i < Objects.size(); i++) {
-        if (Objects[i].type == object_type::none && (Objects[i].handle & HANDLE_COUNT_MASK) != 0)
+        if (Objects[i].type == object_type_e::none && (Objects[i].handle & HANDLE_COUNT_MASK) != 0)
           out << (int32_t)Objects[i].handle;
       }
       LL_EndChunk(out, start);
@@ -2171,11 +2171,11 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
       int start = LL_StartChunk(out, CHUNK_OBJECTS);
       int count = 0;
       for (int i = 0; i <= Highest_object_index; i++)
-        if (Objects[i].type != object_type::none)
+        if (Objects[i].type != object_type_e::none)
           count++;
       out << count;
       for (int i = 0; i <= Highest_object_index; i++) {
-        if (Objects[i].type == object_type::none)
+        if (Objects[i].type == object_type_e::none)
           continue;
         // Engine-compatible record: handle first (low bits = object index),
         // then the full placement record via the object stream operator.

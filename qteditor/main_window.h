@@ -74,7 +74,7 @@ private:
   void showWorldObjectsSound();
   void showWorldWeapons();
   void showWorldTextures();
-  void showGenericObject(object_type objType, index_t current);
+  void showGenericObject(object_type_e objType, index_t current);
   void showLevelProperties();
   void showMegacells();
   void showAmbientSounds();

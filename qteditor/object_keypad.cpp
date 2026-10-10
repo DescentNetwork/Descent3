@@ -70,7 +70,7 @@ void ObjectKeypad::setMoveAxis(int axis) {
 
 void ObjectKeypad::updateDialog() {
   const bool hasObject = (app.Cur_object_index.has_value() && index_to_int(app.Cur_object_index) <= Highest_object_index &&
-                          Objects[*app.Cur_object_index].type != object_type::none);
+                          Objects[*app.Cur_object_index].type != object_type_e::none);
   ui->IDC_OBJPAD_FLIPOBJ->setEnabled(hasObject);
   ui->IDC_OBJ_DELOBJ->setEnabled(hasObject);
   ui->IDC_OBJPAD_NEXTOBJ->setEnabled(hasObject);
@@ -100,7 +100,7 @@ void ObjectKeypad::onPlaceObject() {
 void ObjectKeypad::onDeleteObject() {
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
-  if (Objects[*app.Cur_object_index].type == object_type::none)
+  if (Objects[*app.Cur_object_index].type == object_type_e::none)
     return;
   HObjectDelete();
   updateDialog();
@@ -110,14 +110,14 @@ void ObjectKeypad::onNextObject() {
   if (!app.Cur_object_index)
     return;
   for (int i = index_to_int(app.Cur_object_index) + 1; i <= Highest_object_index; i++) {
-    if (Objects[i].type != object_type::none && Objects[i].type != object_type::room) {
+    if (Objects[i].type != object_type_e::none && Objects[i].type != object_type_e::room) {
       app.Cur_object_index = i;
       updateDialog();
       return;
     }
   }
   for (int i = 0; i <= index_to_int(app.Cur_object_index); i++) {
-    if (Objects[i].type != object_type::none && Objects[i].type != object_type::room) {
+    if (Objects[i].type != object_type_e::none && Objects[i].type != object_type_e::room) {
       app.Cur_object_index = i;
       updateDialog();
       return;
@@ -128,7 +128,7 @@ void ObjectKeypad::onNextObject() {
 void ObjectKeypad::onFlipObject() {
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
-  if (Objects[*app.Cur_object_index].type == object_type::none)
+  if (Objects[*app.Cur_object_index].type == object_type_e::none)
     return;
   HObjectFlip();
   updateDialog();
@@ -136,10 +136,10 @@ void ObjectKeypad::onFlipObject() {
 
 void ObjectKeypad::onResetObjects() {
   for (int i = 0; i <= Highest_object_index; i++) {
-    if (Objects[i].type == object_type::none)
+    if (Objects[i].type == object_type_e::none)
       continue;
-    const object_type type = Objects[i].type;
-    if (type == object_type::none || Object_info[obj_type_index(type)].type == object_type::none)
+    const object_type_e type = Objects[i].type;
+    if (type == object_type_e::none || Object_info[obj_type_index(type)].type == object_type_e::none)
       continue;
     Objects[i].flags = {};
     Objects[i].size = Object_info[obj_type_index(type)].size;
@@ -155,7 +155,7 @@ void ObjectKeypad::onSetDefault() {
 void ObjectKeypad::onRot90() {
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
-  if (Objects[*app.Cur_object_index].type == object_type::none)
+  if (Objects[*app.Cur_object_index].type == object_type_e::none)
     return;
   // Rotate 90 degrees (PI/2 radians = 8192 angle units in D3).
   RotateObject(index_to_int(app.Cur_object_index), 8192, 0, 0);
@@ -168,11 +168,11 @@ void ObjectKeypad::onDeleteAll()
   if(QMessageBox::question(this, "Are you sure?", "Delete all objects except the player?") == QMessageBox::Yes)
   {
     for (int i = 0; i <= Highest_object_index; i++) {
-      if (Objects[i].type == object_type::none || Objects[i].type == object_type::room)
+      if (Objects[i].type == object_type_e::none || Objects[i].type == object_type_e::room)
         continue;
       if (&Objects[i] == Player_object)
         continue;
-      if (Objects[i].type == object_type::player)
+      if (Objects[i].type == object_type_e::player)
         continue;
       ObjDelete(i);
     }

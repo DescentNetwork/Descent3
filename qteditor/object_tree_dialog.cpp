@@ -17,25 +17,25 @@ const char *kCategoryNames[] = {
     "Clipboard", "Powerups", "Robots", "Buildings", "Door",
     "Clutter", "Players", "Cameras", "Sound sources", "Miscellaneous"};
 
-int categoryForType(object_type type) {
+int categoryForType(object_type_e type) {
   switch (type) {
-  case object_type::powerup:
+  case object_type_e::powerup:
     return 1;
-  case object_type::robot:
+  case object_type_e::robot:
     return 2;
-  case object_type::building:
+  case object_type_e::building:
     return 3;
-  case object_type::clutter:
+  case object_type_e::clutter:
     return 5;
-  case object_type::door:
+  case object_type_e::door:
     return 4;
-  case object_type::player:
+  case object_type_e::player:
     return 6;
-  case object_type::camera:
+  case object_type_e::camera:
     return 7;
-  case object_type::soundsource:
+  case object_type_e::soundsource:
     return 8;
-  case object_type::viewer:
+  case object_type_e::viewer:
     return -1;
   default:
     return 9;
@@ -68,8 +68,8 @@ ObjectTreeDialog::~ObjectTreeDialog() { delete ui; }
 
 QString ObjectTreeDialog::makeInfoStr(const object *obj) {
   QString str;
-  if (obj->type == object_type::powerup || obj->type == object_type::robot || obj->type == object_type::building ||
-      obj->type == object_type::clutter) {
+  if (obj->type == object_type_e::powerup || obj->type == object_type_e::robot || obj->type == object_type_e::building ||
+      obj->type == object_type_e::clutter) {
     str = QString("%1-(0x%2)[%3](%4) ")
               .arg(static_cast<int>(OBJNUM(obj)))
               .arg(obj->handle, 0, 16)
@@ -174,9 +174,9 @@ void ObjectTreeDialog::onClearAll()
         continue;
       if (&Objects[i] == Viewer_object)
         continue;
-      if (Objects[i].type == object_type::door)
+      if (Objects[i].type == object_type_e::door)
         continue;
-      if (Objects[i].type != object_type::none)
+      if (Objects[i].type != object_type_e::none)
         ObjDelete(i);
     }
 

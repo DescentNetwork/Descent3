@@ -137,7 +137,7 @@ struct d3edit_state
   // There is deliberately no single "current object id" field — Win32 keeps one
   // index per page and dispatches on the type, and it self-heals when the
   // remembered index turns out to belong to a different page.
-  std::optional<object_type> obj_page;
+  std::optional<object_type_e> obj_page;
 
   // Current object-info id within each object keypad page. Only the one
   // selected by obj_page is meaningful for placement; the others are retained

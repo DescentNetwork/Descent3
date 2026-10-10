@@ -898,11 +898,11 @@ static void check_lg_inform(object *A, object *B);
 
 bool IsOKToApplyForce(object *objp) {
 
-  if (objp->type == object_type::player) {
+  if (objp->type == object_type_e::player) {
     if (objp != Player_object)
       return false;
   } else {
-    if (objp->type != object_type::weapon && objp->type != object_type::powerup)
+    if (objp->type != object_type_e::weapon && objp->type != object_type_e::powerup)
       return false;
   }
 
@@ -910,7 +910,7 @@ bool IsOKToApplyForce(object *objp) {
   if (objp->mtype.phys_info.mass == 0.0)
     return false;
 
-  if (objp->movement_type != movement_type::physics && objp->movement_type != movement_type::walking)
+  if (objp->movement_type != movement_type_e::physics && objp->movement_type != movement_type_e::walking)
     return false;
 
   if (objp->mtype.phys_info.flags.persistent)

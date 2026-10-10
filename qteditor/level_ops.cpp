@@ -217,7 +217,7 @@ void CheckLevelNames() {
   int i;
   object *objp;
   for (i = 0, objp = Objects.data(); i <= Highest_object_index; i++, objp++) {
-    if (objp->type != object_type::none && !objp->name.empty()) {
+    if (objp->type != object_type_e::none && !objp->name.empty()) {
       const int handle = static_cast<int>(osipf_FindObjectName(objp->name).value_or(-1));
       if (handle != objp->handle)
         std::fprintf(stderr, "[level_io] duplicate object name \"%s\"\n",
@@ -256,7 +256,7 @@ void CheckLevelNames() {
 // (port of editor/HView.cpp:220 FindViewerObject)
 static int findViewerObject(int id) {
   for (int objnum = 0; objnum <= Highest_object_index; objnum++)
-    if ((Objects[objnum].type == object_type::viewer) && (Objects[objnum].id == id))
+    if ((Objects[objnum].type == object_type_e::viewer) && (Objects[objnum].id == id))
       return objnum;
   return -1;
 }
@@ -309,13 +309,13 @@ static int createViewerObject(state::viewer view_mode, vector3& pos, int roomnum
     id = ROOM_VIEWER_ID;
 
     for (objnum = 0; objnum <= Highest_object_index; objnum++)
-      if ((Objects[objnum].type == object_type::viewer) && (Objects[objnum].id == id))
+      if ((Objects[objnum].type == object_type_e::viewer) && (Objects[objnum].id == id))
         return -1; // this one already used
   } else {
     // for each id, loop through all objects to see if it's used
     for (id = 0; id < MAX_VIEWERS; id++) {
       for (objnum = 0; objnum <= Highest_object_index; objnum++)
-        if ((Objects[objnum].type == object_type::viewer) && (Objects[objnum].id == id))
+        if ((Objects[objnum].type == object_type_e::viewer) && (Objects[objnum].id == id))
           break;                             // this one already used
       if (objnum > Highest_object_index)     // didn't find object with this id
         break;
@@ -328,7 +328,7 @@ static int createViewerObject(state::viewer view_mode, vector3& pos, int roomnum
   // Create the new object
   objnum = -1;
   for (size_t i = 0; i < Objects.size(); ++i) {
-    if (Objects[i].type == object_type::none) {
+    if (Objects[i].type == object_type_e::none) {
       objnum = i;
       break;
     }
@@ -338,8 +338,8 @@ static int createViewerObject(state::viewer view_mode, vector3& pos, int roomnum
     return -1;
 
   Objects[objnum] = object{};
-  Objects[objnum].type = object_type::viewer;
-  Objects[objnum].render_type = render_type::polyobj;
+  Objects[objnum].type = object_type_e::viewer;
+  Objects[objnum].render_type = render_type_e::polyobj;
   Objects[objnum].id = id;
 
   // The slot was carved straight out of Objects[] (ObjCreate is MFC gated),
@@ -412,7 +412,7 @@ void SetEditorViewer() {
     // If no free viewer slots, grab any viewer and move it
     if (objnum == -1) {
       Q_ASSERT(Viewer_object != nullptr);
-      if (Viewer_object->type == object_type::viewer)
+      if (Viewer_object->type == object_type_e::viewer)
         objnum = OBJNUM(Viewer_object);
       else {
         objnum = findNextViewerObject(app.Editor_viewer_id.value_or(-1), state::viewer::invalid);
@@ -531,9 +531,9 @@ std::string RenderLevelStats() {
   }
   object *objp;
   for (i = 0, objp = Objects.data(); i <= Highest_object_index; i++, objp++) {
-    if (objp->type == object_type::none || objp->type == object_type::room)
+    if (objp->type == object_type_e::none || objp->type == object_type_e::room)
       continue;
-    if (objp->render_type != render_type::polyobj)
+    if (objp->render_type != render_type_e::polyobj)
       continue;
     n_objects++;
     if (objp->is_outside())
@@ -543,7 +543,7 @@ std::string RenderLevelStats() {
       continue;
     for (int m = 0; m < pm->n_models; m++) {
       n_object_faces += pm->submodel[m].num_faces;
-      if (objp->lighting_render_type == lighting_render_type::lightmaps)
+      if (objp->lighting_render_type == lighting_render_type_e::lightmaps)
         n_object_lightmap_faces += pm->submodel[m].num_faces;
     }
   }

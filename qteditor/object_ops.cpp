@@ -80,7 +80,7 @@ bool MoveObject(object& obj, vector3& newpos) {
   fvi_query fq;
   fvi_info hit_info;
 
-  bool use_radius = (obj.movement_type == movement_type::physics);
+  bool use_radius = (obj.movement_type == movement_type_e::physics);
 
   fq.p0 = &obj.pos;
   fq.startroom = obj.roomnum ? static_cast<int>(*obj.roomnum) : -1;
@@ -130,15 +130,15 @@ bool RotateObject(int objnum, angle p, angle h, angle b) {
 // selected page's type, rather than a single shared id. That way switching to
 // another page and back restores the previous selection for each page.
 // ============================================================================
-std::optional<uint16_t> objectPageCurrentId(object_type page) {
+std::optional<uint16_t> objectPageCurrentId(object_type_e page) {
   switch (page) {
-  case object_type::robot:
+  case object_type_e::robot:
     return app.current_robot;
-  case object_type::powerup:
+  case object_type_e::powerup:
     return app.current_powerup;
-  case object_type::clutter:
+  case object_type_e::clutter:
     return app.current_clutter;
-  case object_type::building:
+  case object_type_e::building:
     return app.current_building;
   default:
     // Not an object keypad page with a per-page id (players derive theirs from
@@ -147,18 +147,18 @@ std::optional<uint16_t> objectPageCurrentId(object_type page) {
   }
 }
 
-void setObjectPageCurrentId(object_type page, std::optional<uint16_t> id) {
+void setObjectPageCurrentId(object_type_e page, std::optional<uint16_t> id) {
   switch (page) {
-  case object_type::robot:
+  case object_type_e::robot:
     app.current_robot = id;
     break;
-  case object_type::powerup:
+  case object_type_e::powerup:
     app.current_powerup = id;
     break;
-  case object_type::clutter:
+  case object_type_e::clutter:
     app.current_clutter = id;
     break;
-  case object_type::building:
+  case object_type_e::building:
     app.current_building = id;
     break;
   default:
@@ -170,7 +170,7 @@ void setObjectPageCurrentId(object_type page, std::optional<uint16_t> id) {
 // Returns the first allocated object id of the given page's type, replacing any
 // stale id the page was holding. Mirrors the self-healing tail of Win32's
 // GetCurrentIndex() (editor/ObjectDialog.cpp:395-403).
-static std::optional<uint16_t> firstObjectIdForPage(object_type page) {
+static std::optional<uint16_t> firstObjectIdForPage(object_type_e page) {
   for (uint16_t i = 0; i < MAX_OBJECT_IDS; i++) {
     if (Object_info[i].type == page)
       return i;
@@ -200,13 +200,13 @@ std::optional<uint16_t> currentObjectPageId() {
 // Places a new object of the given type and ID into the world at the viewer's
 // location, then repositions it onto the current surface.
 // ============================================================================
-bool HObjectPlace(object_type obj_type, uint16_t obj_id) {
+bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
   int objnum;
   poly_model *pm;
   matrix orient = IDENTITY_MATRIX;
 
   // Special stuff for player ship
-  if (obj_type == object_type::player) {
+  if (obj_type == object_type_e::player) {
     if (Ships.empty()) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place a player: There are no player ships.");
       return false;
@@ -220,7 +220,7 @@ bool HObjectPlace(object_type obj_type, uint16_t obj_id) {
     Players[obj_id].ship_index = *app.current_ship;
   }
 
-  if (obj_type != object_type::powerup) {
+  if (obj_type != object_type_e::powerup) {
     orient = Viewer_object->orient;
   }
 
@@ -231,7 +231,7 @@ bool HObjectPlace(object_type obj_type, uint16_t obj_id) {
   object& obj = Objects[objnum];
 
   // If we have a ground plane, use current cell or face for position
-  if ((obj.render_type == render_type::polyobj) &&
+  if ((obj.render_type == render_type_e::polyobj) &&
       ((pm = GetPolymodelPointer(obj.rtype.pobj_info().model_num)) != nullptr) &&
       pm->n_ground) {
     vector3 *surface_norm;
@@ -308,7 +308,7 @@ bool HObjectPlace(object_type obj_type, uint16_t obj_id) {
   }
 
   // Deal with special stuff for player
-  if (obj_type == object_type::player) {
+  if (obj_type == object_type_e::player) {
     Players[obj_id].start_pos = obj.pos;
     Players[obj_id].start_roomnum = obj.roomnum ? static_cast<int32_t>(*obj.roomnum) : -1;
     Players[obj_id].start_orient = obj.orient;
@@ -330,7 +330,7 @@ void ResetGroundObject(object& obj) {
     return;
 
   poly_model *pm;
-  if (!((obj.render_type == render_type::polyobj) &&
+  if (!((obj.render_type == render_type_e::polyobj) &&
         ((pm = GetPolymodelPointer(obj.rtype.pobj_info().model_num)) != nullptr) &&
         pm->n_ground))
     return;
@@ -403,7 +403,7 @@ void HObjectDelete() {
     return;
   }
 
-  if (Objects[objnum].type == object_type::door) {
+  if (Objects[objnum].type == object_type_e::door) {
     if (QMessageBox::question(nullptr, "Are you sure?", "It's very, very bad to delete a door object.  Are you sure you want to do this?") == QMessageBox::No)
       return;
   }

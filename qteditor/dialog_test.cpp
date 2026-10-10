@@ -139,7 +139,7 @@ int runDialogTest() {
   construct<ViewerPropDialog>("viewer_prop", nullptr);
   construct<WorldObjectsDoorDialog>("world_objects_door", nullptr);
   {
-    WorldObjectsGenericDialog* dlg = new WorldObjectsGenericDialog(object_type::building, 0);
+    WorldObjectsGenericDialog* dlg = new WorldObjectsGenericDialog(object_type_e::building, 0);
     check("world_objects_generic", dlg != nullptr);
   }
   construct<WorldObjectsPlayerDialog>("world_objects_player", nullptr);

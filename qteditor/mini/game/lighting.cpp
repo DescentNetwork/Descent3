@@ -956,7 +956,7 @@ void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float r
   for (i = 0; i < num_objects; i++) {
     object *obj = &Objects[objlist[i]];
 
-    if (obj->type == object_type::room) {
+    if (obj->type == object_type_e::room) {
       ApplyLightingToExternalRoom(pos, obj->id, light_dist, red_scale, green_scale, blue_scale, light_direction,
                                   dot_range);
       continue;
@@ -969,7 +969,7 @@ void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float r
 
     if (obj->lm_object.used == 0) {
       if (obj->effect_info && ((obj->effect_info->type_flags.volume_lit) ||
-                               obj->lighting_render_type == lighting_render_type::gouraud || obj->type == object_type::powerup)) {
+                               obj->lighting_render_type == lighting_render_type_e::gouraud || obj->type == object_type_e::powerup)) {
         ApplyVolumeLightToObject(pos, obj, light_dist, red_scale, green_scale, blue_scale, light_direction, dot_range);
         continue;
       } else
@@ -1316,7 +1316,7 @@ void ClearDynamicLightmaps() {
   // Reset volume lights
   for (auto &vol_obj : Dynamic_volume_object_list) {
     object *obj = &Objects[vol_obj.objnum];
-    if (obj->type == object_type::none || obj->handle != vol_obj.handle)
+    if (obj->type == object_type_e::none || obj->handle != vol_obj.handle)
       continue; // object was destroyed this frame
 
     obj->effect_info->type_flags.specular = false;

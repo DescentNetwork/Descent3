@@ -28,7 +28,7 @@ object_info Object_info[MAX_OBJECTS];
 
 // First object page slot with the given type (the engine's objinfo.cpp
 // GetObjectID), used by FindValidID during level object-id translation.
-index_t GetObjectID(object_type type) {
+index_t GetObjectID(object_type_e type) {
   for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++)
     if (Object_info[i].type == type)
       return i;
@@ -129,7 +129,7 @@ constexpr float DEFAULT_OBJECT_ROTDRAG = 0.01f;
 // Builds a fresh object_info row as AllocObjectID does: value-initialized
 // first (so untouched members stay zero/empty), then the object-type
 // defaults and the f_anim/f_weapons/f_ai-dependent allocations.
-object_info::object_info(object_type type, bool f_anim, bool f_weapons, bool f_ai) : object_info{} {
+object_info::object_info(object_type_e type, bool f_anim, bool f_weapons, bool f_ai) : object_info{} {
   this->type = type;
   size = DEFAULT_OBJECT_SIZE;
 
@@ -163,7 +163,7 @@ object_info::object_info(object_type type, bool f_anim, bool f_weapons, bool f_a
   lo_lod_distance = DEFAULT_LO_LOD_DISTANCE;
   respawn_scalar = 1.0f;
 
-  if (type == object_type::clutter || type == object_type::robot) {
+  if (type == object_type_e::clutter || type == object_type_e::robot) {
     med_lod_distance *= 10;
     lo_lod_distance *= 10;
   }
@@ -182,9 +182,9 @@ object_info::object_info(object_type type, bool f_anim, bool f_weapons, bool f_a
 }
 
 // Allocs a object for use, returns -1 if error, else index on success
-index_t AllocObjectID(object_type type, bool f_anim, bool f_weapons, bool f_ai) {
+index_t AllocObjectID(object_type_e type, bool f_anim, bool f_weapons, bool f_ai) {
   for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++) {
-    if (Object_info[i].type == object_type::none) {
+    if (Object_info[i].type == object_type_e::none) {
       Object_info[i] = object_info(type, f_anim, f_weapons, f_ai);
       Num_object_ids[obj_type_index(type)]++;
       return i;
@@ -200,10 +200,10 @@ void FreeObjectID(index_t obj) {
   if(obj)
   {
     uint32_t n = *obj;
-    Q_ASSERT(Object_info[n].type != object_type::none);
+    Q_ASSERT(Object_info[n].type != object_type_e::none);
 
     Num_object_ids[obj_type_index(Object_info[n].type)]--;
-    Object_info[n].type = object_type::none;
+    Object_info[n].type = object_type_e::none;
     Object_info[n].name.clear();
     Object_info[n].icon_name.clear();
     Object_info[n].script_name_override.clear();
@@ -220,7 +220,7 @@ index_t GetNextObjectID(index_t n) {
   if(!n)
     return std::nullopt;
   Q_ASSERT(*n < MAX_OBJECT_IDS);
-  const object_type t = Object_info[*n].type;
+  const object_type_e t = Object_info[*n].type;
   if (Num_object_ids[obj_type_index(t)] == 0)
     return std::nullopt;;
   for (int i = *n + 1; i < MAX_OBJECT_IDS; i++)
@@ -236,7 +236,7 @@ index_t GetPrevObjectID(index_t n) {
   Q_ASSERT(*n < MAX_OBJECT_IDS);
   if(!n)
     return std::nullopt;
-  const object_type t = Object_info[*n].type;
+  const object_type_e t = Object_info[*n].type;
   if (Num_object_ids[obj_type_index(t)] == 0)
     return std::nullopt;
   for (int i = *n - 1; i >= 0; i--)

@@ -2590,7 +2590,7 @@ int osipf_ObjCreate(uint8_t raw_type, uint16_t id, int roomnum, vector3 *pos, co
   object *obj;
   int objnum;
   // Script ABI passes the raw 8-bit object type; convert at this boundary.
-  const object_type type = static_cast<object_type>(raw_type);
+  const object_type type = static_cast<object_type_e>(raw_type);
 
   if (id == 65535) // since it is a uint16_t, this is == -1
     return OBJECT_HANDLE_NONE;
@@ -3389,7 +3389,7 @@ index_t osipf_FindTriggerName(const std::string &name) {
 
 index_t osipf_FindObjectName(const std::string &name) {
   for (size_t i = 0; i < Objects.size(); i++) {
-    if (Objects[i].type != object_type::none && !Objects[i].name.empty()) {
+    if (Objects[i].type != object_type_e::none && !Objects[i].name.empty()) {
       if (match(name, Objects[i].name))
         return static_cast<uint32_t>(Objects[i].handle);
     }
@@ -3413,7 +3413,7 @@ index_t osipf_GetTriggerFace(int trigger_id) {
 
 index_t osipf_FindDoorName(const std::string &name) {
   for (int i = 0; i <= MAX_OBJECTS; i++) {
-    if (Objects[i].type == object_type::door && !Objects[i].name.empty() && match(Objects[i].name, name)) {
+    if (Objects[i].type == object_type_e::door && !Objects[i].name.empty() && match(Objects[i].name, name)) {
       return static_cast<uint32_t>(Objects[i].handle);
     }
   }

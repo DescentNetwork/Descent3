@@ -2052,7 +2052,7 @@ if (!(Poly_models[polynum].flags.not_resident)) {
 }
 
 // Pages in a polymodel if it is not already in memory
-void PageInPolymodel(int polynum, std::optional<object_type> type, optref<float> size_out) {
+void PageInPolymodel(int polynum, std::optional<object_type_e> type, optref<float> size_out) {
   if (!(Poly_models[polynum].flags.not_resident)) {
     if (!(Poly_models[polynum].flags.size_computed))
       if (type) {
@@ -2162,7 +2162,7 @@ void SetNormalizedTimeObjTimed(object& obj, float *normalized_time) {
   poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
   const object_info& obj_info = Object_info[obj.id];
 
-  if (obj.type == object_type::player || obj.type == object_type::weapon)
+  if (obj.type == object_type_e::player || obj.type == object_type_e::weapon)
     return;
 
   // Setup all the subobjects for the keyframe
@@ -2243,11 +2243,11 @@ void SetNormalizedTimeObj(object *obj, float *normalized_time) {
 
   // Currently, we are not handling player weapons in this manner
   // chrishack -- weapons with turrets -- COOL.
-  if (obj->type == object_type::player || obj->type == object_type::weapon)
+  if (obj->type == object_type_e::player || obj->type == object_type_e::weapon)
     return;
 
-  Q_ASSERT(obj->type == object_type::powerup || obj->type == object_type::robot || obj->type == object_type::building || obj->type == object_type::debris ||
-         obj->type == object_type::door || obj->type == object_type::clutter);
+  Q_ASSERT(obj->type == object_type_e::powerup || obj->type == object_type_e::robot || obj->type == object_type_e::building || obj->type == object_type_e::debris ||
+         obj->type == object_type_e::door || obj->type == object_type_e::clutter);
 
   // Now, override angles of weapon bank turrets
   for (i = 0; i < Poly_models[obj->rtype.pobj_info().model_num].num_wbs; i++) {

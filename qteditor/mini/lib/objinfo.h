@@ -526,11 +526,11 @@ struct object_info {
   // Value-initializes the object (like object_info{}) and then applies the
   // AllocObjectID defaults; keeps the f_anim/f_weapons/f_ai-dependent
   // allocations so a default-constructed object_info stays cheap and zero.
-  object_info(object_type type, bool f_anim, bool f_weapons, bool f_ai);
+  object_info(object_type_e type, bool f_anim, bool f_weapons, bool f_ai);
 
   std::string name; // the name on the page
 
-  object_type type; // what type of object this is
+  object_type_e type; // what type of object this is
   float size; // size
   object_info_flags_t flags; // misc flags.  See above.
 
@@ -601,13 +601,13 @@ void InitObjectInfo();
 void FreeObjectInfo(void);
 
 // Allocs a object for use, returns -1 if error, else index on success
-index_t AllocObjectID(object_type type, bool f_anim, bool f_weapons, bool f_ai);
+index_t AllocObjectID(object_type_e type, bool f_anim, bool f_weapons, bool f_ai);
 
 // Frees object index n
 void FreeObjectID(index_t n);
 
 // Find an object with the given type.  Returns std::nullopt if none found.
-index_t GetObjectID(object_type type);
+index_t GetObjectID(object_type_e type);
 
 // Gets next object from n of the same type as n
 index_t GetNextObjectID(index_t n);

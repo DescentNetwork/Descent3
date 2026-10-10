@@ -67,7 +67,7 @@ optref<object_info> WorldObjectsGenericDialog::data(void)
   return Object_info[*m_object_id];
 }
 
-WorldObjectsGenericDialog::WorldObjectsGenericDialog(object_type objType, index_t object_id, QWidget *parent)
+WorldObjectsGenericDialog::WorldObjectsGenericDialog(object_type_e objType, index_t object_id, QWidget *parent)
     : QDialog(parent), ui(new Ui::WorldObjectsGenericDialog), m_type(objType), m_object_id(object_id)
 {
   ui->setupUi(this);
@@ -455,7 +455,7 @@ void WorldObjectsGenericDialog::updateDialog() {
     combo->clear();
     combo->addItem("<none>", -1);
     for (int i = 0; i < MAX_OBJECT_IDS; i++)
-      if (Object_info[i].type != object_type::none)
+      if (Object_info[i].type != object_type_e::none)
         combo->addItem(QString::fromStdString(Object_info[i].name), i);
     const int sp1 = oi->dspew[0];
     combo->setCurrentIndex(combo->findData(sp1 >= 0 && sp1 < MAX_OBJECT_IDS ? sp1 : -1));
@@ -466,7 +466,7 @@ void WorldObjectsGenericDialog::updateDialog() {
     combo->clear();
     combo->addItem("<none>", -1);
     for (int i = 0; i < MAX_OBJECT_IDS; i++)
-      if (Object_info[i].type != object_type::none)
+      if (Object_info[i].type != object_type_e::none)
         combo->addItem(QString::fromStdString(Object_info[i].name), i);
     const int sp2 = oi->dspew[1];
     combo->setCurrentIndex(combo->findData(sp2 >= 0 && sp2 < MAX_OBJECT_IDS ? sp2 : -1));
@@ -489,8 +489,8 @@ void WorldObjectsGenericDialog::updateDialog() {
   ui->IDC_GENERIC_SCORE_EDIT->setText(oi->flags.destroyable ? QString::number(oi->score) : "");
   ui->IDC_GENERIC_SCORE_EDIT->setEnabled(oi->flags.destroyable);
   ui->IDC_GENERIC_AMMO_EDIT->setText(QString::number(oi->ammo_count));
-  ui->IDC_GENERIC_AMMO_EDIT->setEnabled(oi->type == object_type::powerup);
-  ui->IDC_GENERIC_AMMO_TEXT->setEnabled(oi->type == object_type::powerup);
+  ui->IDC_GENERIC_AMMO_EDIT->setEnabled(oi->type == object_type_e::powerup);
+  ui->IDC_GENERIC_AMMO_TEXT->setEnabled(oi->type == object_type_e::powerup);
 
   ui->IDC_GENERIC_CHECKED_OUT->setEnabled(m_locked_count > 0);
   ui->IDC_GENERIC_ID_EDIT->setText(QString::number(m_object_id ? *m_object_id : -1));
@@ -614,7 +614,7 @@ void WorldObjectsGenericDialog::onAddNew() {
   obj.lighting_info = {};
   obj.lighting_info.timebits = 0xFFFFFFFF;
   obj.lighting_info.lighting_render_type =
-      (m_type == object_type::building) ? lighting_render_type::lightmaps : lighting_render_type::gouraud;
+      (m_type == object_type_e::building) ? lighting_render_type_e::lightmaps : lighting_render_type_e::gouraud;
 
   std::filesystem::path destname = LocalModelsDir / Poly_models[obj.render_handle].name;
   std::filesystem::copy(pathname, destname, std::filesystem::copy_options::overwrite_existing);

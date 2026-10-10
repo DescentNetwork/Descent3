@@ -252,16 +252,16 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->ID_TOOLS_WORLD_TEXTURES, &QAction::triggered, this, &MainWindow::showWorldTextures);
   connect(ui->ID_EDITORS_MEGACELLS, &QAction::triggered, this, &MainWindow::showMegacells);
   connect(ui->ID_TOOLS_WORLD_OBJECTS_ROBOTS, &QAction::triggered, [this]() {
-    showGenericObject(object_type::robot, app.current_robot);
+    showGenericObject(object_type_e::robot, app.current_robot);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_POWERUPS, &QAction::triggered, [this]() {
-    showGenericObject(object_type::powerup, app.current_powerup);
+    showGenericObject(object_type_e::powerup, app.current_powerup);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_BUILDINGS, &QAction::triggered, [this]() {
-    showGenericObject(object_type::building, app.current_building);
+    showGenericObject(object_type_e::building, app.current_building);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_CLUTTER, &QAction::triggered, [this]() {
-    showGenericObject(object_type::clutter, app.current_clutter);
+    showGenericObject(object_type_e::clutter, app.current_clutter);
   });
   connect(ui->ID_TOOLS_WORLD_OBJECTS_PLAYER, &QAction::triggered, this, &MainWindow::showWorldObjectsPlayer);
   connect(ui->ID_TOOLS_WORLD_WEAPONS, &QAction::triggered, this, &MainWindow::showWorldWeapons);
@@ -694,12 +694,12 @@ void MainWindow::showWorldTextures() {
   dlg.exec();
 }
 
-void MainWindow::showGenericObject(object_type objType, index_t current) {
+void MainWindow::showGenericObject(object_type_e objType, index_t current) {
   WorldObjectsGenericDialog dlg(objType, current, this);
   dlg.exec();
-  if (objType == object_type::building)
+  if (objType == object_type_e::building)
     app.current_building = dlg.objectId();
-  else if (objType == object_type::clutter)
+  else if (objType == object_type_e::clutter)
     app.current_clutter = dlg.objectId();
 }
 
@@ -967,7 +967,7 @@ void MainWindow::onCenterViewOnObject() {
   // (editor/MainFrm.cpp:2229) -> SetWireframeView(&Objects[cur].pos).
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
-  if (Objects[*app.Cur_object_index].type == object_type::none)
+  if (Objects[*app.Cur_object_index].type == object_type_e::none)
     return;
 
   m_editorView->setWireframeView(Objects[*app.Cur_object_index].pos);
@@ -1016,7 +1016,7 @@ void MainWindow::onMoveCameraToCurrentObject() {
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
   object *objp = &Objects[*app.Cur_object_index];
-  if (objp->type == object_type::none)
+  if (objp->type == object_type_e::none)
     return;
 
   // OBJECT_PLACE_DIST is defined in editor/HObject.cpp:258 and reused by the
@@ -1096,7 +1096,7 @@ static int find_used(int from) {
   const int total = Highest_object_index + 1;
   for (int step = 0; step < total; ++step) {
     const int idx = (from + step) % total;
-    if (Objects[idx].type != object_type::none)
+    if (Objects[idx].type != object_type_e::none)
       return idx;
   }
   return -1;
@@ -1110,7 +1110,7 @@ static int find_used(int from) {
 // Win32 OnObjectPlaceCameraAtViewer handler closely enough that
 // subsequent editor code (viewer-move-with-camera) keeps working.
 int MainWindow::onPlaceCameraAtViewer() {
-  if (Viewer_object == nullptr || Viewer_object->type != object_type::viewer)
+  if (Viewer_object == nullptr || Viewer_object->type != object_type_e::viewer)
     return -1;
   if (!app.current.room)
     return -1;
@@ -1123,7 +1123,7 @@ int MainWindow::onPlaceCameraAtViewer() {
   // Find an unused object slot to host the camera.
   int slot = -1;
   for (size_t i = 0; i < Objects.size(); ++i) {
-    if (Objects[i].type == object_type::none) {
+    if (Objects[i].type == object_type_e::none) {
       slot = i;
       break;
     }
@@ -1136,8 +1136,8 @@ int MainWindow::onPlaceCameraAtViewer() {
   // of the camera setup itself.
   vector3 pos = Viewer_object->pos;
   pos.z() += 1.0f;
-  Objects[slot].type = object_type::camera;
-  Objects[slot].render_type = render_type::polyobj;
+  Objects[slot].type = object_type_e::camera;
+  Objects[slot].render_type = render_type_e::polyobj;
   Objects[slot].name = "Cam";
   ObjSetPos(Objects[slot], pos, Viewer_object->roomnum,
             Viewer_object->orient, false);
@@ -1160,7 +1160,7 @@ void MainWindow::onSetViewerFromCamera() {
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
   object *cam = &Objects[*app.Cur_object_index];
-  if (cam->type != object_type::camera)
+  if (cam->type != object_type_e::camera)
     return;
 
   // In Win32 OnObjectSetViewerFromCamera, the viewer's pos/orient/roomnum
@@ -1184,7 +1184,7 @@ void MainWindow::onSetCameraFromViewer() {
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
   object& cam = Objects[*app.Cur_object_index];
-  if (cam.type != object_type::camera)
+  if (cam.type != object_type_e::camera)
     return;
   if (Viewer_object == nullptr)
     return;
@@ -1201,7 +1201,7 @@ void MainWindow::onSetCameraFromViewer() {
 void MainWindow::onDeleteCurrentObject() {
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
-  if (Objects[*app.Cur_object_index].type == object_type::none)
+  if (Objects[*app.Cur_object_index].type == object_type_e::none)
     return;
   ObjDelete(index_to_int(app.Cur_object_index));
   const int was = index_to_int(app.Cur_object_index);
@@ -1222,7 +1222,7 @@ void MainWindow::onObjectRename() {
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
   object *obj = &Objects[*app.Cur_object_index];
-  if (obj->type == object_type::none)
+  if (obj->type == object_type_e::none)
     return;
   const QString current = QString::fromStdString(obj->name);
   bool ok = false;
@@ -1291,7 +1291,7 @@ void MainWindow::onSelectPrevObject(int from) {
   if (from <= 0)
     return;
   for (int i = from - 1; i >= 0; --i) {
-    if (Objects[i].type != object_type::none) {
+    if (Objects[i].type != object_type_e::none) {
       app.Cur_object_index = i;
       return;
     }
@@ -1322,7 +1322,7 @@ void MainWindow::onCreateNewViewer() {
 // Pick the next object_type::viewer slot and copy the viewer's pose onto it.
 // Returns the new objnum or -1 on failure.
 int MainWindow::onSpawnNewViewer() {
-  if (Viewer_object == nullptr || Viewer_object->type != object_type::viewer)
+  if (Viewer_object == nullptr || Viewer_object->type != object_type_e::viewer)
     return -1;
   // Walk Objects[] to find the first unused slot, then copy the current
   // viewer's pose/orient/roomnum into a fresh object_type::viewer slot. We don't
@@ -1330,15 +1330,15 @@ int MainWindow::onSpawnNewViewer() {
   // paths in editor/HView.cpp; this Qt-stub is honest about that.
   int slot = -1;
   for (size_t i = 0; i < Objects.size(); ++i) {
-    if (Objects[i].type == object_type::none) {
+    if (Objects[i].type == object_type_e::none) {
       slot = i;
       break;
     }
   }
   if (slot < 0)
     return -1;
-  Objects[slot].type = object_type::viewer;
-  Objects[slot].render_type = render_type::polyobj;
+  Objects[slot].type = object_type_e::viewer;
+  Objects[slot].render_type = render_type_e::polyobj;
   Objects[slot].orient = Viewer_object->orient;
   app.Editor_viewer_id = (!app.Editor_viewer_id) ? 0 : app.Editor_viewer_id.value_or(-1) + 1;
   Objects[slot].id = static_cast<uint16_t>(app.Editor_viewer_id.value_or(0));
@@ -1370,7 +1370,7 @@ int MainWindow::onSelectNextViewer() {
   const int cur_id = Viewer_object->id;
   int best = -1;
   for (size_t i = 0; i < Objects.size(); ++i) {
-    if (Objects[i].type != object_type::viewer)
+    if (Objects[i].type != object_type_e::viewer)
       continue;
     if (Objects[i].id == cur_id)
       continue;
@@ -1391,7 +1391,7 @@ int MainWindow::onSelectNextViewer() {
 // Drop the current Viewer_object from Objects and resync
 // Viewer_object to the next available viewer.
 void MainWindow::onDeleteCurrentViewer() {
-  if (Viewer_object == nullptr || Viewer_object->type != object_type::viewer)
+  if (Viewer_object == nullptr || Viewer_object->type != object_type_e::viewer)
     return;
   // Mark the current viewer's slot freed and resync to the next
   // available object_type::viewer (or clear Viewer_object if none).
@@ -1401,12 +1401,12 @@ void MainWindow::onDeleteCurrentViewer() {
     cur_slot = static_cast<int>(Viewer_object - Objects.data());
   }
   if (cur_slot >= 0) {
-    Objects[cur_slot].type = object_type::none;
+    Objects[cur_slot].type = object_type_e::none;
     Objects[cur_slot].id = -1;
   }
   // Auto-pick the remaining object_type::viewer if any.
   for (size_t i = 0; i < Objects.size(); ++i) {
-    if (Objects[i].type == object_type::viewer) {
+    if (Objects[i].type == object_type_e::viewer) {
       Viewer_object = &Objects[i];
       app.Editor_viewer_id = Objects[i].id;
       std::fprintf(stderr,
@@ -1439,7 +1439,7 @@ int MainWindow::onSelectObjectByNumber()
       &ok);
   if (!ok)
     return -1;
-  if (value < 0 || value > Highest_object_index || Objects[value].type == object_type::none) {
+  if (value < 0 || value > Highest_object_index || Objects[value].type == object_type_e::none) {
     std::fprintf(stderr,
                  "[object_ops] SelectObjectByNumber: %d is invalid\n", value);
     return -1;
@@ -1456,7 +1456,7 @@ int MainWindow::onSelectObjectByNumber()
 void MainWindow::onSelectObject(int objnum) {
   if (objnum < 0 || objnum > Highest_object_index)
     return;
-  if (Objects[objnum].type == object_type::none)
+  if (Objects[objnum].type == object_type_e::none)
     return;
   app.Cur_object_index = objnum;
   m_editorView->update();
@@ -1607,7 +1607,7 @@ static object deserializeObject(const QByteArray &data) {
 void MainWindow::onCopyObjectToClipboard() {
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
-  if (Objects[*app.Cur_object_index].type == object_type::none)
+  if (Objects[*app.Cur_object_index].type == object_type_e::none)
     return;
   auto *mime = new QMimeData();
   mime->setData(kObjectMimeType, serializeObject(Objects[*app.Cur_object_index]));
@@ -1617,7 +1617,7 @@ void MainWindow::onCopyObjectToClipboard() {
 void MainWindow::onCutObjectToClipboard() {
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
-  if (Objects[*app.Cur_object_index].type == object_type::none)
+  if (Objects[*app.Cur_object_index].type == object_type_e::none)
     return;
   onCopyObjectToClipboard();
   onDeleteCurrentObject();
@@ -1633,7 +1633,7 @@ void MainWindow::onPasteObjectFromClipboard() {
   // Find the first unused slot.
   int slot = -1;
   for (size_t i = 0; i < Objects.size(); ++i) {
-    if (Objects[i].type == object_type::none) {
+    if (Objects[i].type == object_type_e::none) {
       slot = i;
       break;
     }

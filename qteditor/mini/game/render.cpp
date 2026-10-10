@@ -3134,17 +3134,17 @@ void RenderRoomObjects(int roomnum) {
     Q_ASSERT(objnum != Objects[objnum].next);
     object *obj = &Objects[objnum];
 
-    if (obj->render_type == render_type::none)
+    if (obj->render_type == render_type_e::none)
       continue;
     if (obj == Viewer_object && !Render_mirror_for_room)
       continue;
     float size = obj->size;
     // Special case weapons with streamers
-    if (obj->type == object_type::weapon && Weapons[obj->id].flags.streamer)
+    if (obj->type == object_type_e::weapon && Weapons[obj->id].flags.streamer)
       size = Weapons[obj->id].phys_info.velocity.z();
     // Check if object is trivially rejected
     bool isVisible = IsPointVisible(&obj->pos, size, &zdist) ? true : false;
-    if (Render_mirror_for_room || (obj->type == object_type::weapon && Weapons[obj->id].flags.electrical) || isVisible) {
+    if (Render_mirror_for_room || (obj->type == object_type_e::weapon && Weapons[obj->id].flags.electrical) || isVisible) {
       obj_sort_list[n_objs].vis_effect = 0;
       obj_sort_list[n_objs].objnum = objnum;
       obj_sort_list[n_objs].dist = zdist;
@@ -3275,20 +3275,20 @@ void CheckToRenderMineObjects(int roomnum) {
       return;
     for (index = Rooms[roomnum].objects; index != -1; index = Objects[index].next) {
       object *obj = &Objects[index];
-      if (Objects[index].render_type == render_type::none)
+      if (Objects[index].render_type == render_type_e::none)
         continue;
       if (obj == Viewer_object)
         continue;
       // Don't draw piggybacked objects
-      if (Viewer_object->type == object_type::observer && index == Players[Viewer_object->id].piggy_objnum)
+      if (Viewer_object->type == object_type_e::observer && index == Players[Viewer_object->id].piggy_objnum)
         continue;
       float size = Objects[index].size;
       // Special case weapons with streamers
-      if (Objects[index].type == object_type::weapon && (Weapons[Objects[index].id].flags.streamer))
+      if (Objects[index].type == object_type_e::weapon && (Weapons[Objects[index].id].flags.streamer))
         size = Weapons[Objects[index].id].phys_info.velocity.z();
       // Check if object is trivially rejected
       int isVisible = IsPointVisible(&obj->pos, size, &zdist); // calculate zdist
-      if ((obj->type == object_type::weapon && Weapons[obj->id].flags.electrical) || isVisible) {
+      if ((obj->type == object_type_e::weapon && Weapons[obj->id].flags.electrical) || isVisible) {
         // Stuff objects into our postrender list (disabled: post-render system not ported)
         // if (Num_postrenders < MAX_POSTRENDERS) {
         //   Postrender_list[Num_postrenders].type = PRT_OBJECT;

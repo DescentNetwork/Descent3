@@ -129,7 +129,7 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
   };
 
   state.texdlg_texture    = getval.operator()<uint32_t>("texdlg_texture");
-  state.obj_page          = getval.operator()<object_type>("current_obj_type");
+  state.obj_page          = getval.operator()<object_type_e>("current_obj_type");
   state.current_powerup   = getval.operator()<uint16_t>("current_powerup");
   state.current_door      = getval.operator()<uint32_t>("current_door");
   state.current_robot     = getval.operator()<uint16_t>("current_robot");

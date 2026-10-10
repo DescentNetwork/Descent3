@@ -149,7 +149,7 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
     infile >> genericpage->objinfo_struct.score;
 
   // Read ammo
-  if (genericpage->objinfo_struct.type == object_type::powerup) {
+  if (genericpage->objinfo_struct.type == object_type_e::powerup) {
     infile >> genericpage->objinfo_struct.ammo_count;
   } else
     genericpage->objinfo_struct.ammo_count = 0;
@@ -290,13 +290,13 @@ bool mng_ReadNewGenericPage(posix_istream &infile, mngs_generic_page *genericpag
 
   // Set score from hitpoints if old version
   if (version < 24) {
-    if ((genericpage->objinfo_struct.type == object_type::robot) ||
-        (genericpage->objinfo_struct.type == object_type::building && genericpage->objinfo_struct.flags.control_ai))
+    if ((genericpage->objinfo_struct.type == object_type_e::robot) ||
+        (genericpage->objinfo_struct.type == object_type_e::building && genericpage->objinfo_struct.flags.control_ai))
       if (genericpage->objinfo_struct.flags.destroyable)
         genericpage->objinfo_struct.score = 3 * genericpage->objinfo_struct.hit_points;
   }
 
-  Q_ASSERT(genericpage->objinfo_struct.type != object_type::none);
+  Q_ASSERT(genericpage->objinfo_struct.type != object_type_e::none);
 
   return true; // successfully read
 }
@@ -340,7 +340,7 @@ static void mng_WriteNewGenericPageFramed(posix_ostream &outfile, mngs_generic_p
   outfile << genericpage->objinfo_struct.score;
 
   // Write ammo
-  if (genericpage->objinfo_struct.type == object_type::powerup)
+  if (genericpage->objinfo_struct.type == object_type_e::powerup)
     outfile << genericpage->objinfo_struct.ammo_count;
 
   // Write script name (discarded by the reader)
@@ -683,7 +683,7 @@ void mng_AssignObjInfoToGenericPage(index_t n, mngs_generic_page &genericpage) {
 
   for (size_t i = 0; i < MAX_DSPEW_TYPES; i++) {
     if (obj.dspew[i] >= 0 && static_cast<uint32_t>(obj.dspew[i]) < MAX_OBJECTS &&
-        Object_info[obj.dspew[i]].type != object_type::none)
+        Object_info[obj.dspew[i]].type != object_type_e::none)
       genericpage.dspew_name[i] = Object_info[obj.dspew[i]].name;
     else
       genericpage.dspew_name[i].clear();

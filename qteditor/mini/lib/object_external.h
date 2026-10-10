@@ -159,7 +159,7 @@
 #define OBJECT_HANDLE_NONE -1
 
 // Object types (was the OBJ_* set of C macros)
-enum class object_type : uint8_t {
+enum class object_type_e : uint8_t {
   none = 255,       // unused object
   wall = 0,         // A wall... not really an object, but used for collisions
   fireball = 1,     // a fireball, part of an explosion
@@ -194,7 +194,7 @@ inline constexpr size_t MAX_OBJECT_TYPES = 26; // Update this when adding new ty
 // Index into the per-type arrays (Object_type_names, CollisionResult,
 // Num_object_ids, ...).  object_type::none (255) is a sentinel, not a valid
 // index, so callers must exclude it before using this.
-inline size_t obj_type_index(object_type type) { return static_cast<size_t>(type); }
+inline size_t obj_type_index(object_type_e type) { return static_cast<size_t>(type); }
 
 // Condition to check if the specified type in a generic type
 #define IS_GENERIC(type)                                                                                               \
@@ -205,7 +205,7 @@ inline size_t obj_type_index(object_type type) { return static_cast<size_t>(type
 #define IS_ROBOT(objp) ((objp->type == object_type::robot) || ((objp->type == object_type::building) && objp->ai_info))
 
 // Control types - what tells this object what do do
-enum class control_type : uint8_t {
+enum class control_type_e : uint8_t {
   none = 0,          // doesn't move (or change movement)
   ai = 1,            // driven by AI
   explosion = 2,     // explosion sequencer
@@ -224,7 +224,7 @@ enum class control_type : uint8_t {
 };
 
 // Movement types
-enum class movement_type : uint8_t {
+enum class movement_type_e : uint8_t {
   none = 0,        // Doesn't move
   physics = 1,     // Moves by physics
   walking = 2,     // Uses physics data structure, but uses a different physics code pipe
@@ -246,14 +246,14 @@ enum class movement_class : uint8_t {
 };
 
 // Attach types
-enum class attach_type : uint8_t {
+enum class attach_type_e : uint8_t {
   rad = 0,
   aligned = 1,
   unaligned = 2,
 };
 
 // Render types
-enum class render_type : uint8_t {
+enum class render_type_e : uint8_t {
   none = 0,          // does not render
   polyobj = 1,       // a polygon model
   fireball = 2,      // a fireball
@@ -267,7 +267,7 @@ enum class render_type : uint8_t {
 };
 
 // How an object (or an object_info's light) is lit.
-enum class lighting_render_type : uint8_t {
+enum class lighting_render_type_e : uint8_t {
   static_lights = 0,
   gouraud = 1,
   lightmaps = 2,

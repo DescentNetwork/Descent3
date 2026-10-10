@@ -1753,8 +1753,8 @@ bool check_vector_to_object(vector3 *intp, float *col_dist, vector3 *p0, vector3
 
   int fvi_objnum = fvi_query_ptr->thisobjnum;
 
-  if ((still_obj->flags.polygon_object) && still_obj->type != object_type::powerup && still_obj->type != object_type::weapon &&
-      still_obj->type != object_type::debris && still_obj->type != object_type::room && still_obj->type != object_type::player) {
+  if ((still_obj->flags.polygon_object) && still_obj->type != object_type_e::powerup && still_obj->type != object_type_e::weapon &&
+      still_obj->type != object_type_e::debris && still_obj->type != object_type_e::room && still_obj->type != object_type_e::player) {
     still_size = Poly_models[still_obj->rtype.pobj_info().model_num].anim_size;
     still_pos += still_obj->anim_sphere_offset;
   } else {
@@ -1762,8 +1762,8 @@ bool check_vector_to_object(vector3 *intp, float *col_dist, vector3 *p0, vector3
   }
 
   // This accounts for relative position vs. relative velocity
-  if (fvi_objnum != -1 && still_obj->movement_type == movement_type::physics && Objects[fvi_objnum].movement_type == movement_type::physics) {
-    if (still_obj->type != object_type::powerup && Objects[fvi_objnum].type != object_type::powerup) {
+  if (fvi_objnum != -1 && still_obj->movement_type == movement_type_e::physics && Objects[fvi_objnum].movement_type == movement_type_e::physics) {
+    if (still_obj->type != object_type_e::powerup && Objects[fvi_objnum].type != object_type_e::powerup) {
       if (vm_Dot3Product(still_pos - Objects[fvi_objnum].pos,
               (still_obj->mtype.phys_info.velocity - Objects[fvi_objnum].mtype.phys_info.velocity)) >=
           0) {
@@ -2152,10 +2152,10 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
             break;
 
           if ((f_include_non_collide_objects) || CollisionRayResult[obj_type_index(Objects[cur_obj_index].type)] != collision_result::nothing) {
-            if (!f_only_players_and_ais || Objects[cur_obj_index].type == object_type::player ||
+            if (!f_only_players_and_ais || Objects[cur_obj_index].type == object_type_e::player ||
                 Objects[cur_obj_index].ai_info) {
-              if (!(f_lightmap_only && (Objects[cur_obj_index].lighting_render_type != lighting_render_type::lightmaps) &&
-                    Objects[cur_obj_index].type != object_type::room)) {
+              if (!(f_lightmap_only && (Objects[cur_obj_index].lighting_render_type != lighting_render_type_e::lightmaps) &&
+                    Objects[cur_obj_index].type != object_type_e::room)) {
                 if (object_movement_AABB(&Objects[cur_obj_index]) && !(Objects[cur_obj_index].flags.big_object)) {
                   object_index_list[num_objects++] = cur_obj_index;
                   Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
@@ -2181,12 +2181,12 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
       if (num_objects >= max_elements)
         break;
 
-      if ((f_include_non_collide_objects) || (Objects[x].type != object_type::none &&
+      if ((f_include_non_collide_objects) || (Objects[x].type != object_type_e::none &&
                                              obj_type_index(Objects[x].type) < MAX_OBJECT_TYPES &&
                                              CollisionRayResult[obj_type_index(Objects[x].type)] != collision_result::nothing)) {
-        if (!f_only_players_and_ais || Objects[x].type == object_type::player || Objects[x].ai_info) {
-          if (!(f_lightmap_only && (Objects[BigObjectList[x]].lighting_render_type != lighting_render_type::lightmaps) &&
-                Objects[BigObjectList[x]].type != object_type::room)) {
+        if (!f_only_players_and_ais || Objects[x].type == object_type_e::player || Objects[x].ai_info) {
+          if (!(f_lightmap_only && (Objects[BigObjectList[x]].lighting_render_type != lighting_render_type_e::lightmaps) &&
+                Objects[BigObjectList[x]].type != object_type_e::room)) {
             if (object_movement_AABB(&Objects[BigObjectList[x]])) {
               object_index_list[num_objects++] = BigObjectList[x];
               Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
@@ -2227,8 +2227,8 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
         if (num_objects >= max_elements)
           break;
         if ((f_include_non_collide_objects) || CollisionRayResult[obj_type_index(Objects[cur_obj_index].type)] != collision_result::nothing) {
-          if (!f_only_players_and_ais || Objects[cur_obj_index].type == object_type::player || Objects[cur_obj_index].ai_info) {
-            if (!(f_lightmap_only && (Objects[cur_obj_index].lighting_render_type != lighting_render_type::lightmaps))) {
+          if (!f_only_players_and_ais || Objects[cur_obj_index].type == object_type_e::player || Objects[cur_obj_index].ai_info) {
+            if (!(f_lightmap_only && (Objects[cur_obj_index].lighting_render_type != lighting_render_type_e::lightmaps))) {
               if (object_movement_AABB(&Objects[cur_obj_index])) {
                 object_index_list[num_objects++] = cur_obj_index;
                 Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
@@ -2654,9 +2654,9 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
   }
   last_sim_trigger_faces = Fvi_num_recorded_faces;
 
-  if ((this_obj) && (this_obj->flags.polygon_object) && this_obj->type != object_type::weapon &&
-      this_obj->type != object_type::powerup && this_obj->type != object_type::debris && this_obj->type != object_type::room &&
-      this_obj->type != object_type::player && fq->rad == this_obj->size) {
+  if ((this_obj) && (this_obj->flags.polygon_object) && this_obj->type != object_type_e::weapon &&
+      this_obj->type != object_type_e::powerup && this_obj->type != object_type_e::debris && this_obj->type != object_type_e::room &&
+      this_obj->type != object_type_e::player && fq->rad == this_obj->size) {
     if (this_obj->mtype.phys_info.flags.point_collide_walls) {
       fvi_wall_sphere_rad = 0.0f;
       fvi_wall_sphere_offset = vector3{};
@@ -2674,7 +2674,7 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
     fvi_anim_sphere_p0 = *fq->p0 + fvi_anim_sphere_offset;
     fvi_anim_sphere_p1 = *fq->p1 + fvi_anim_sphere_offset;
   } else {
-    if ((this_obj) && this_obj->type == object_type::player && fq->rad == this_obj->size) {
+    if ((this_obj) && this_obj->type == object_type_e::player && fq->rad == this_obj->size) {
       fvi_wall_sphere_rad = fq->rad * PLAYER_SIZE_SCALAR;
       if (Players[this_obj->id].flags.dead || Players[this_obj->id].flags.dying)
         fvi_wall_sphere_rad *= 0.5f;
@@ -3312,9 +3312,9 @@ void check_hit_obj(int objnum) {
   int m_obj_index = fvi_query_ptr->thisobjnum;
   object *m_obj = &Objects[m_obj_index];
 
-  if (!(fvi_query_ptr->flags.check_objs) && (obj->type != object_type::room))
+  if (!(fvi_query_ptr->flags.check_objs) && (obj->type != object_type_e::room))
     return;
-  if ((fvi_query_ptr->flags.ignore_external_rooms) && (obj->type == object_type::room))
+  if ((fvi_query_ptr->flags.ignore_external_rooms) && (obj->type == object_type_e::room))
     return;
 
   if (obj->flags.no_object_collisions)
@@ -3346,19 +3346,19 @@ void check_hit_obj(int objnum) {
 
               if (m_obj_index < 0) {
                 switch (obj->type) {
-                case object_type::room:
+                case object_type_e::room:
                   if (fvi_query_ptr->flags.external_rooms_as_sphere)
                     collision_type = collision_result::check_sphere_sphere;
                   else
                     collision_type = collision_result::check_sphere_room;
                   break;
-                case object_type::player:
+                case object_type_e::player:
                   if (fvi_query_ptr->flags.players_as_sphere)
                     collision_type = collision_result::check_sphere_sphere;
                   else
                     collision_type = collision_result::check_sphere_poly;
                   break;
-                case object_type::robot:
+                case object_type_e::robot:
                   if (fvi_query_ptr->flags.robots_as_sphere)
                     collision_type = collision_result::check_sphere_sphere;
                   else
@@ -3370,10 +3370,10 @@ void check_hit_obj(int objnum) {
                   break;
                 }
               } else {
-                if (((m_obj->type == object_type::clutter) && (m_obj->mtype.phys_info.flags.gravity) &&
-                     (m_obj->movement_type == movement_type::physics) && (obj->type == object_type::player)) ||
-                    ((obj->type == object_type::clutter) && (obj->mtype.phys_info.flags.gravity) &&
-                     (obj->movement_type == movement_type::physics) && (m_obj->type == object_type::player))) {
+                if (((m_obj->type == object_type_e::clutter) && (m_obj->mtype.phys_info.flags.gravity) &&
+                     (m_obj->movement_type == movement_type_e::physics) && (obj->type == object_type_e::player)) ||
+                    ((obj->type == object_type_e::clutter) && (obj->mtype.phys_info.flags.gravity) &&
+                     (obj->movement_type == movement_type_e::physics) && (m_obj->type == object_type_e::player))) {
                   collision_type = collision_result::check_sphere_sphere;
                 }
 
@@ -3384,57 +3384,57 @@ void check_hit_obj(int objnum) {
 
                 // Ignore robot collisions if it is specified
                 if ((m_obj->mtype.phys_info.flags.no_robot_collisions) &&
-                    (obj->type == object_type::clutter || obj->type == object_type::robot || (obj->type == object_type::building && obj->ai_info)))
+                    (obj->type == object_type_e::clutter || obj->type == object_type_e::robot || (obj->type == object_type_e::building && obj->ai_info)))
                   return;
 
                 if ((obj->mtype.phys_info.flags.no_robot_collisions) &&
-                    (obj->type == object_type::clutter || m_obj->type == object_type::robot ||
-                     (m_obj->type == object_type::building && m_obj->ai_info)))
+                    (obj->type == object_type_e::clutter || m_obj->type == object_type_e::robot ||
+                     (m_obj->type == object_type_e::building && m_obj->ai_info)))
                   return;
 
                 if ((m_obj->mtype.phys_info.flags.no_door_collisions)) {
-                  if (obj->movement_type != movement_type::physics && obj->movement_type != movement_type::walking) {
+                  if (obj->movement_type != movement_type_e::physics && obj->movement_type != movement_type_e::walking) {
                     return;
                   }
                 }
               }
 
               if (fvi_query_ptr->flags.ignore_non_lightmap_objects)
-                if (obj->lighting_render_type != lighting_render_type::lightmaps && obj->type != object_type::room)
+                if (obj->lighting_render_type != lighting_render_type_e::lightmaps && obj->type != object_type_e::room)
                   return;
 
               if (fvi_query_ptr->flags.ignore_powerups)
-                if (obj->type == object_type::powerup)
+                if (obj->type == object_type_e::powerup)
                   return;
 
               if (fvi_query_ptr->flags.ignore_weapons)
-                if (obj->type == object_type::weapon || obj->type == object_type::fireball || obj->type == object_type::shard ||
-                    obj->type == object_type::shockwave)
+                if (obj->type == object_type_e::weapon || obj->type == object_type_e::fireball || obj->type == object_type_e::shard ||
+                    obj->type == object_type_e::shockwave)
                   return;
 
               if (fvi_query_ptr->flags.ignore_moving_objects)
-                if (obj->movement_type == movement_type::physics || obj->movement_type == movement_type::walking)
+                if (obj->movement_type == movement_type_e::physics || obj->movement_type == movement_type_e::walking)
                   return;
 
-              if (obj->type != object_type::room) {
+              if (obj->type != object_type_e::room) {
                 if (fvi_query_ptr->flags.only_player_obj)
-                  if (obj->type != object_type::player)
+                  if (obj->type != object_type_e::player)
                     return;
 
                 if (fvi_query_ptr->flags.only_door_obj)
-                  if (obj->type != object_type::door)
+                  if (obj->type != object_type_e::door)
                     return;
               }
 
-              if (obj->type == object_type::player && (fvi_query_ptr->flags.players_as_sphere))
+              if (obj->type == object_type_e::player && (fvi_query_ptr->flags.players_as_sphere))
                 collision_type = collision_result::check_sphere_sphere;
-              if (obj->type == object_type::robot && (fvi_query_ptr->flags.robots_as_sphere))
+              if (obj->type == object_type_e::robot && (fvi_query_ptr->flags.robots_as_sphere))
                 collision_type = collision_result::check_sphere_sphere;
 
               switch (collision_type) {
               case collision_result::check_bbox_room:
               case collision_result::check_sphere_room: {
-                Q_ASSERT(obj->type == object_type::room);
+                Q_ASSERT(obj->type == object_type_e::room);
 
                 fvi_room(obj->id, -1, objnum);
               } break;
@@ -3546,8 +3546,8 @@ void check_hit_obj(int objnum) {
                     hit_obj_pos = obj->pos + obj->anim_sphere_offset;
                     pos_hit = hit_point - hit_obj_pos;
 
-                    if ((obj->flags.polygon_object) && obj->type != object_type::room && obj->type != object_type::weapon &&
-                        obj->type != object_type::powerup && obj->type != object_type::debris && obj->type != object_type::player) {
+                    if ((obj->flags.polygon_object) && obj->type != object_type_e::room && obj->type != object_type_e::weapon &&
+                        obj->type != object_type_e::powerup && obj->type != object_type_e::debris && obj->type != object_type_e::player) {
                       hit_obj_size = Poly_models[obj->rtype.pobj_info().model_num].anim_size;
                     } else {
                       hit_obj_size = obj->size;
@@ -3815,7 +3815,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
       if (!(fvi_query_ptr->flags.ignore_external_rooms))
         for (objnum = Terrain_seg[cur_node].objects; objnum != -1; objnum = Objects[objnum].next) {
           Q_ASSERT(objnum != -1);
-          if ((Objects[objnum].type == object_type::room) && !(Objects[objnum].flags.big_object))
+          if ((Objects[objnum].type == object_type_e::room) && !(Objects[objnum].flags.big_object))
             check_hit_obj(objnum);
         }
     }
@@ -4348,7 +4348,7 @@ check_big_objs: // Check Big objects
   } else {
     if (!(fvi_query_ptr->flags.ignore_external_rooms))
       for (i = 0; i < BigObjectList.size(); i++) {
-        if (Objects[BigObjectList[i]].type == object_type::room)
+        if (Objects[BigObjectList[i]].type == object_type_e::room)
           check_hit_obj(BigObjectList[i]);
         //		mprintf(0, "CHecking BIG %d\n", i);
       }

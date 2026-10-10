@@ -120,7 +120,7 @@ void ResetObjectList() {
   // Init data for each object
   for (size_t i = 0; i < Objects.size(); i++) {
     Objects[i].handle = i;
-    Objects[i].type = object_type::none;
+    Objects[i].type = object_type_e::none;
     Objects[i].roomnum.reset();
   }
 
@@ -140,7 +140,7 @@ void ResetFreeObjects() {
 
   uint32_t i;
   for (i = Num_objects = MAX_OBJECTS; i-- > 0;)
-    if (Objects[i].type == object_type::none)
+    if (Objects[i].type == object_type_e::none)
       free_obj_list[--Num_objects] = i;
     else if (Highest_object_index == -1)
       Highest_object_index = i;
@@ -167,15 +167,15 @@ int FreeObjectSlots(int num_used) {
         return num_already_free;
     } else {
       switch (Objects[i].type) {
-      case object_type::none:
+      case object_type_e::none:
         num_already_free++;
         if (MAX_OBJECTS - num_already_free < num_used)
           return 0;
         break;
-      case object_type::fireball:
-      case object_type::weapon:
-      case object_type::debris:
-      case object_type::splinter:
+      case object_type_e::fireball:
+      case object_type_e::weapon:
+      case object_type_e::debris:
+      case object_type_e::splinter:
         obj_list[olind++] = i;
         break;
       default:
@@ -191,13 +191,13 @@ int FreeObjectSlots(int num_used) {
     num_to_free = olind;
 
   for (i = 0; i < num_to_free; i++)
-    if (Objects[obj_list[i]].type == object_type::debris) {
+    if (Objects[obj_list[i]].type == object_type_e::debris) {
       SetObjectDeadFlag(Objects[obj_list[i]]);
       num_to_free--;
     }
 
   for (i = 0; i < num_to_free; i++)
-    if (Objects[obj_list[i]].type == object_type::weapon) {
+    if (Objects[obj_list[i]].type == object_type_e::weapon) {
       SetObjectDeadFlag(Objects[obj_list[i]]);
       num_to_free--;
     }
@@ -238,7 +238,7 @@ void ObjFree(int objnum) {
     Num_objects = 0;
 
   if (objnum == Highest_object_index)
-    while (Highest_object_index > 0 && Objects[--Highest_object_index].type == object_type::none)
+    while (Highest_object_index > 0 && Objects[--Highest_object_index].type == object_type_e::none)
       ;
 }
 
@@ -394,11 +394,11 @@ static vector3 ComputeObjectRadiusFromModel(int model_num, float fallback_size) 
 void ObjSetAABB(object& obj) {
   vector3 object_rad;
 
-  if (obj.type == object_type::room && obj.id >= 0 && obj.id < MAX_ROOMS) {
+  if (obj.type == object_type_e::room && obj.id >= 0 && obj.id < MAX_ROOMS) {
     obj.min_xyz = Rooms[obj.id].min_xyz;
     obj.max_xyz = Rooms[obj.id].max_xyz;
-  } else if (obj.flags.polygon_object && obj.type != object_type::weapon && obj.type != object_type::debris &&
-             obj.type != object_type::powerup && obj.type != object_type::player) {
+  } else if (obj.flags.polygon_object && obj.type != object_type_e::weapon && obj.type != object_type_e::debris &&
+             obj.type != object_type_e::powerup && obj.type != object_type_e::player) {
     vector3 offset_pos;
 
     object_rad = ComputeObjectRadiusFromModel(obj.rtype.pobj_info().model_num, obj.size);
@@ -425,11 +425,11 @@ void ObjSetAABB(object& obj) {
 // subset the editor needs.
 static void ObjSetRenderPolyobj(object& obj, int handle) {
   if (handle == -1) {
-    obj.render_type = render_type::none;
+    obj.render_type = render_type_e::none;
     obj.flags.polygon_object = false;
     obj.rtype.pobj_info().model_num = -1;
   } else {
-    obj.render_type = render_type::polyobj;
+    obj.render_type = render_type_e::polyobj;
     obj.flags.polygon_object = true;
     obj.rtype.pobj_info().model_num = handle;
   }
@@ -454,52 +454,52 @@ static bool ObjInitTypeSpecific(object& obj, bool reinitializing) {
   object_info& oi = Object_info[obj.id];
 
   // Deal with deleted type
-  if (oi.type == object_type::none)
+  if (oi.type == object_type_e::none)
     return false;
 
   if (oi.type != obj.type)
     obj.type = oi.type;
 
   switch (obj.type) {
-  case object_type::room:
-    obj.render_type = render_type::room;
-    obj.movement_type = movement_type::none;
-    obj.control_type = control_type::none;
+  case object_type_e::room:
+    obj.render_type = render_type_e::room;
+    obj.movement_type = movement_type_e::none;
+    obj.control_type = control_type_e::none;
     obj.size = oi.size;
     break;
-  case object_type::viewer:
-  case object_type::camera:
-  case object_type::marker:
-  case object_type::clutter:
-  case object_type::building:
-  case object_type::robot:
-  case object_type::powerup:
-  case object_type::player:
-  case object_type::waypoint:
-  case object_type::door:
+  case object_type_e::viewer:
+  case object_type_e::camera:
+  case object_type_e::marker:
+  case object_type_e::clutter:
+  case object_type_e::building:
+  case object_type_e::robot:
+  case object_type_e::powerup:
+  case object_type_e::player:
+  case object_type_e::waypoint:
+  case object_type_e::door:
     ObjSetRenderPolyobj(obj, obj.id);
     obj.size = oi.size;
     obj.shields = static_cast<float>(oi.hit_points);
-    if (obj.type == object_type::viewer)
-      obj.control_type = control_type::slew;
-    else if (obj.type == object_type::player)
-      obj.movement_type = movement_type::physics;
-    else if (obj.type == object_type::powerup)
-      obj.movement_type = movement_type::physics;
-    else if (obj.type == object_type::camera)
-      obj.movement_type = movement_type::none;
+    if (obj.type == object_type_e::viewer)
+      obj.control_type = control_type_e::slew;
+    else if (obj.type == object_type_e::player)
+      obj.movement_type = movement_type_e::physics;
+    else if (obj.type == object_type_e::powerup)
+      obj.movement_type = movement_type_e::physics;
+    else if (obj.type == object_type_e::camera)
+      obj.movement_type = movement_type_e::none;
     break;
-  case object_type::soundsource:
-    obj.render_type = render_type::none;
-    obj.movement_type = movement_type::none;
-    obj.control_type = control_type::soundsource;
+  case object_type_e::soundsource:
+    obj.render_type = render_type_e::none;
+    obj.movement_type = movement_type_e::none;
+    obj.control_type = control_type_e::soundsource;
     break;
-  case object_type::weapon:
-  case object_type::fireball:
-  case object_type::debris:
-  case object_type::shard:
-  case object_type::splinter:
-  case object_type::shockwave:
+  case object_type_e::weapon:
+  case object_type_e::fireball:
+  case object_type_e::debris:
+  case object_type_e::shard:
+  case object_type_e::splinter:
+  case object_type_e::shockwave:
     // Runtime systems only; keep the object inert in the editor.
     break;
   default:
@@ -511,7 +511,7 @@ static bool ObjInitTypeSpecific(object& obj, bool reinitializing) {
 
 // Initializes a new object.  All fields not passed in are set to defaults.
 // Returns 1 if ok, 0 if error
-bool ObjInit(object& obj, object_type type, int id, int handle, vector3& pos, float creation_time, int parent_handle) {
+bool ObjInit(object& obj, object_type_e type, int id, int handle, vector3& pos, float creation_time, int parent_handle) {
   // Zero out the object structure.  The original uses memset() here; the mini
   // object holds a std::string (name) so a value-initialized temporary is used
   // instead — equivalent zeroing without clobbering the string.
@@ -529,7 +529,7 @@ bool ObjInit(object& obj, object_type type, int id, int handle, vector3& pos, fl
   obj.roomnum.reset();
   obj.orient = Identity_matrix;
   obj.next = obj.prev = -1;
-  obj.dummy_type = object_type::none;
+  obj.dummy_type = object_type_e::none;
   obj.flags = {};
   obj.size = 0;
   obj.change_flags = 0;
@@ -537,7 +537,7 @@ bool ObjInit(object& obj, object_type type, int id, int handle, vector3& pos, fl
   obj.generic_sent_nonvis = 0;
   obj.custom_default_script_name.clear();
   obj.custom_default_module_name.clear();
-  obj.contains_type = object_type::none;
+  obj.contains_type = object_type_e::none;
   obj.lifeleft = 0;
   obj.attach_children.clear();
 
@@ -549,7 +549,7 @@ bool ObjInit(object& obj, object_type type, int id, int handle, vector3& pos, fl
 // Called after an object page has changed.
 void ObjReInitAll() {
   for (int objnum = 0; objnum <= Highest_object_index; objnum++)
-    if (Objects[objnum].type != object_type::none)
+    if (Objects[objnum].type != object_type_e::none)
       ObjInitTypeSpecific(Objects[objnum], true);
 }
 
@@ -559,9 +559,9 @@ void ObjReInitAll() {
 
 // Initializes a new object.  Adds it to the list for the given room.
 // Returns the object number, or std::nullopt on failure.
-index_t ObjCreate(object_type type, uint16_t id, index_t roomnum, vector3& pos, const matrix *orient,
+index_t ObjCreate(object_type_e type, uint16_t id, index_t roomnum, vector3& pos, const matrix *orient,
                                   int parent_handle) {
-  if (type == object_type::none)
+  if (type == object_type_e::none)
     return std::nullopt;
 
   if (roomnum_outside(roomnum)) {
@@ -583,7 +583,7 @@ index_t ObjCreate(object_type type, uint16_t id, index_t roomnum, vector3& pos, 
   object& obj = Objects[objnum];
 
   // Make sure the object is ok
-  if (obj.type != object_type::none)
+  if (obj.type != object_type_e::none)
     return std::nullopt;
   if (obj.roomnum.has_value())
     return std::nullopt;
@@ -595,7 +595,7 @@ index_t ObjCreate(object_type type, uint16_t id, index_t roomnum, vector3& pos, 
   // The original passes the game clock (Gametime); the mini has no game clock,
   // so creation_time starts at 0.
   if (!ObjInit(obj, type, id, handle, pos, 0.0f, parent_handle)) { // Couldn't init!
-    obj.type = object_type::none;                                          // mark as unused
+    obj.type = object_type_e::none;                                          // mark as unused
     ObjFree(objnum);                                               // de-allocate object
     return std::nullopt;
   }
@@ -622,7 +622,7 @@ void ObjDelete(int objnum) {
   if (objnum < 0 || objnum >= MAX_OBJECTS)
     return;
 
-  if (obj->type == object_type::none)
+  if (obj->type == object_type_e::none)
     return;
 
   if (obj->flags.polygon_object) {
@@ -642,7 +642,7 @@ void ObjDelete(int objnum) {
   obj->custom_default_script_name.clear();
   obj->custom_default_module_name.clear();
 
-  obj->type = object_type::none; // unused!
+  obj->type = object_type_e::none; // unused!
   obj->roomnum.reset();    // zero it!
 
   // Free lightmap memory
@@ -663,7 +663,7 @@ void ObjDelete(int objnum) {
 // Frees all the objects that are currently in use.
 void FreeAllObjects() {
   for (int objnum = 0; objnum <= Highest_object_index; objnum++)
-    if (Objects[objnum].type != object_type::none) {
+    if (Objects[objnum].type != object_type_e::none) {
       Objects[objnum].flags.server_says_delete = true;
       Objects[objnum].flags.inplayer_inventory = false;
       ObjDelete(objnum);
@@ -682,7 +682,7 @@ void ObjSetOrient(object& obj, const matrix& orient) {
 
   // Recompute the orientation dependent information
   if (obj.flags.polygon_object) {
-    if (obj.type != object_type::weapon && obj.type != object_type::debris && obj.type != object_type::powerup && obj.type != object_type::room) {
+    if (obj.type != object_type_e::weapon && obj.type != object_type_e::debris && obj.type != object_type_e::powerup && obj.type != object_type_e::room) {
       int mn = obj.rtype.pobj_info().model_num;
       if (mn >= 0 && mn < MINI_POLY_MODELS) {
         matrix m;
@@ -760,7 +760,7 @@ object *ObjGet(int handle) {
 
   object *objp = &Objects[objnum];
 
-  if ((objp->type != object_type::none) && (objp->handle == handle))
+  if ((objp->type != object_type_e::none) && (objp->handle == handle))
     return objp;
 
   return nullptr;
@@ -815,7 +815,7 @@ void GetObjectPointInWorld(vector3& dest, object& obj, int subnum, int vertnum) 
 // ---------------------------------------------------------------------------
 
 void SetObjectDeadFlag(object& obj, bool tell_clients_to_remove, bool play_sound_on_clients) {
-  Q_ASSERT(obj.type != object_type::none);
+  Q_ASSERT(obj.type != object_type_e::none);
 
   obj.flags.dead = true;
 
