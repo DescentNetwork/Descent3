@@ -116,10 +116,10 @@ void collide_two_objects(object *A, object *B, vector3 *collision_point, vector3
 bool collide_object_with_wall(object *A, float hitspeed, int hitseg, int hitwall, vector3 *hitpt, vector3 *wall_normal,
                               float hit_dot);
 
-extern void FindHitpointUV(float *u, float *v, vector3 *point, int roomnum, int facenum);
+extern void FindHitpointUV(float &u, float &v, const vector3 &point, int roomnum, int facenum);
 
-void ConvertEulerToAxisAmount(vector3 *e, vector3 *n, float *w);
-void ConvertAxisAmountToEuler(vector3 *n, float *w, vector3 *e);
+void ConvertEulerToAxisAmount(const vector3 &e, vector3 &n, float &w);
+void ConvertAxisAmountToEuler(const vector3 &n, float w, vector3 &e);
 
 void bump_obj_against_fixed(object *obj, vector3 *collision_point, vector3 *collision_normal);
 

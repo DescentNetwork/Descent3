@@ -869,7 +869,7 @@
 collision_result CollisionResult[MAX_OBJECT_TYPES][MAX_OBJECT_TYPES];
 collision_result CollisionRayResult[MAX_OBJECT_TYPES];
 
-static bool IsOKToApplyForce(object *objp);
+static bool IsOKToApplyForce(object &objp);
 //! Creates some effects where a weapon has collided with a wall.
 static void DoWallEffects(object *weapon, int surface_tmap);
 //! Check for lava, volatile, or water surface.  If contact, make special sound & kill the weapon.
@@ -896,27 +896,27 @@ static void collide_generic_and_player(object *robotobj, object *playerobj, vect
 static void MakeWeaponStick(object *weapon, object *parent, fvi_info *hit_info);
 static void check_lg_inform(object *A, object *B);
 
-bool IsOKToApplyForce(object *objp) {
+bool IsOKToApplyForce(object &objp) {
 
-  if (objp->type == object_type_e::player) {
-    if (objp != Player_object)
+  if (objp.type == object_type_e::player) {
+    if (&objp != Player_object)
       return false;
   } else {
-    if (objp->type != object_type_e::weapon && objp->type != object_type_e::powerup)
+    if (objp.type != object_type_e::weapon && objp.type != object_type_e::powerup)
       return false;
   }
 
 
-  if (objp->mtype.phys_info.mass == 0.0f)
+  if (objp.mtype.phys_info.mass == 0.0f)
     return false;
 
-  if (objp->movement_type != movement_type_e::physics && objp->movement_type != movement_type_e::walking)
+  if (objp.movement_type != movement_type_e::physics && objp.movement_type != movement_type_e::walking)
     return false;
 
-  if (objp->mtype.phys_info.flags.persistent)
+  if (objp.mtype.phys_info.flags.persistent)
     return false;
 
-  if (physics_locked(objp->mtype.phys_info.flags)) // Not done!
+  if (physics_locked(objp.mtype.phys_info.flags)) // Not done!
     return false;
 
   return true;
@@ -930,12 +930,12 @@ struct vec2d {
 
 // finds the uv coords of the given point on the given seg & side
 // fills in u & v. if l is non-NULL fills it in also
-void FindHitpointUV(float *u, float *v, vector3 *point, int roomnum, int facenum) {
+void FindHitpointUV(float &u, float &v, const vector3 &point, int roomnum, int facenum) {
   room_t *rp = &Rooms[roomnum];
   face *fp = &rp->faces[facenum];
   int ii, jj;
   vec2d pnt[3], checkp, vec0, vec1;
-  float *t;
+  const float *t;
   float k0, k1;
   int i;
 
@@ -951,7 +951,7 @@ void FindHitpointUV(float *u, float *v, vector3 *point, int roomnum, int facenum
     pnt[i].i = t[ii];
     pnt[i].j = t[jj];
   }
-  t = &point->x();
+  t = &point.x();
   checkp.i = t[ii];
   checkp.j = t[jj];
 
@@ -971,10 +971,10 @@ void FindHitpointUV(float *u, float *v, vector3 *point, int roomnum, int facenum
 
   // mprintf(0," k0,k1  = %x,%x\n",k0,k1);
 
-  *u = fp->face_uvls[1].u + (k0 * (fp->face_uvls[0].u - fp->face_uvls[1].u)) +
-       (k1 * (fp->face_uvls[2].u - fp->face_uvls[1].u));
-  *v = fp->face_uvls[1].v + (k0 * (fp->face_uvls[0].v - fp->face_uvls[1].v)) +
-       (k1 * (fp->face_uvls[2].v - fp->face_uvls[1].v));
+  u = fp->face_uvls[1].u + (k0 * (fp->face_uvls[0].u - fp->face_uvls[1].u)) +
+      (k1 * (fp->face_uvls[2].u - fp->face_uvls[1].u));
+  v = fp->face_uvls[1].v + (k0 * (fp->face_uvls[0].v - fp->face_uvls[1].v)) +
+      (k1 * (fp->face_uvls[2].v - fp->face_uvls[1].v));
 
   // mprintf(0," u,v    = %x,%x\n",*u,*v);
 }
@@ -1439,7 +1439,7 @@ void collide_generic_and_wall(object *genericobj, float hitspeed, int hitseg, in
   }
 }
 #endif
-void CollideAnglesToMatrix(matrix *m, float p, float h, float b) {
+void CollideAnglesToMatrix(matrix &m, float p, float h, float b) {
   float sinp, cosp, sinb, cosb, sinh, cosh;
 
   sinp = std::sin(p);
@@ -1449,78 +1449,78 @@ void CollideAnglesToMatrix(matrix *m, float p, float h, float b) {
   sinh = std::sin(h);
   cosh = std::cos(h);
 
-  m->rvec.x() = cosb * cosh;
-  m->rvec.y() = cosb * sinp * sinh - cosp * sinb;
-  m->rvec.z() = cosb * cosp * sinh + sinb * sinp;
+  m.rvec.x() = cosb * cosh;
+  m.rvec.y() = cosb * sinp * sinh - cosp * sinb;
+  m.rvec.z() = cosb * cosp * sinh + sinb * sinp;
 
-  m->uvec.x() = cosh * sinb;
-  m->uvec.y() = sinb * sinp * sinh + cosp * cosb;
-  m->uvec.z() = sinb * cosp * sinh - cosb * sinp;
+  m.uvec.x() = cosh * sinb;
+  m.uvec.y() = sinb * sinp * sinh + cosp * cosb;
+  m.uvec.z() = sinb * cosp * sinh - cosb * sinp;
 
-  m->fvec.x() = -sinh;
-  m->fvec.y() = sinp * cosh;
-  m->fvec.z() = cosp * cosh;
+  m.fvec.x() = -sinh;
+  m.fvec.y() = sinp * cosh;
+  m.fvec.z() = cosp * cosh;
 }
 
-vector3 *CollideExtractAnglesFromMatrix(vector3 *a, matrix *m) {
+vector3 &CollideExtractAnglesFromMatrix(vector3 &a, const matrix &m) {
   float sinh, cosh, sinp, sinb;
 
-  sinh = -m->fvec.x();
+  sinh = -m.fvec.x();
   if (sinh < -1.0f)
     sinh = -1.0f;
   else if (sinh > 1.0f)
     sinh = 1.0f;
-  a->y() = std::asin(sinh);
+  a.y() = std::asin(sinh);
 
-  cosh = std::cos(a->y());
+  cosh = std::cos(a.y());
   Q_ASSERT(cosh != 0.0f);
 
-  sinp = m->fvec.y() / cosh;
+  sinp = m.fvec.y() / cosh;
   if (sinp < -1.0f)
     sinp = -1.0f;
   else if (sinp > 1.0f)
     sinp = 1.0f;
 
-  sinb = m->uvec.x() / cosh;
+  sinb = m.uvec.x() / cosh;
   if (sinb < -1.0f)
     sinb = -1.0f;
   else if (sinb > 1.0f)
     sinb = 1.0f;
 
-  a->x() = std::asin(sinp);
-  a->z() = std::asin(sinb);
+  a.x() = std::asin(sinp);
+  a.z() = std::asin(sinb);
 
   return a;
 }
 
-void ConvertEulerToAxisAmount(vector3 *e, vector3 *n, float *w) {
-  float rotspeed = vm_GetMagnitude(*e);
+void ConvertEulerToAxisAmount(const vector3 &e, vector3 &n, float &w) {
+  float rotspeed = vm_GetMagnitude(e);
   matrix rotmat;
   vector3 e_n;
   float scale = rotspeed / 0.0001f;
 
   // If there isn't a rotation, return something valid
   if (rotspeed == 0.0f || scale == 0.0f) {
-    *n = vector3{};
-    n->y() = 1.0f;
-    *w = 0.0f;
+    n = vector3{};
+    n.y() = 1.0f;
+    w = 0.0f;
 
     return;
   }
 
-  e_n = *e / scale;
+  e_n = e / scale;
 
-  CollideAnglesToMatrix(&rotmat, e_n.x(), e_n.y(), e_n.z());
+  CollideAnglesToMatrix(rotmat, e_n.x(), e_n.y(), e_n.z());
 
   // This is from Graphics Gems 1 p.467  I am converting from a angle vector3
   // to the normal of that rotation (you can also get the angle about that normal, but
   // we don't need it)
-  n->x() = rotmat.uvec.z() - rotmat.fvec.y();
-  n->y() = rotmat.fvec.x() - rotmat.rvec.z();
-  n->z() = rotmat.rvec.y() - rotmat.uvec.x();
+  n.x() = rotmat.uvec.z() - rotmat.fvec.y();
+  n.y() = rotmat.fvec.x() - rotmat.rvec.z();
+  n.z() = rotmat.rvec.y() - rotmat.uvec.x();
 
-  if (*n != vector3{}) {
-    vm_NormalizeVector(*n);
+  if (n != vector3{}) {
+    vm_NormalizeVector(n);
 
     float ct = (rotmat.rvec.x() + rotmat.uvec.y() + rotmat.fvec.z() - 1.0f) / 2.0f;
     if (ct < -1.0f)
@@ -1531,25 +1531,25 @@ void ConvertEulerToAxisAmount(vector3 *e, vector3 *n, float *w) {
     float v = std::acos(ct);
     float z = std::sin(v);
 
-    *w = rotspeed * ((2.0f * std::numbers::pi_v<float>) / (65535.0f));
+    w = rotspeed * ((2.0f * std::numbers::pi_v<float>) / (65535.0f));
 
     if (z >= 0.0f)
-      *n *= -1.0f;
+      n *= -1.0f;
   } else {
-    *w = 0.0f;
+    w = 0.0f;
   }
 }
 
-void ConvertAxisAmountToEuler(vector3 *n, float *w, vector3 *e) {
+void ConvertAxisAmountToEuler(const vector3 &n, float w, vector3 &e) {
   scalar s;
   scalar c;
   scalar t;
 
-  scalar scale = *w / 0.0001f;
+  scalar scale = w / 0.0001f;
   vector3 s_result;
 
-  if (*w == 0.0f) {
-    *e = vector3{};
+  if (w == 0.0f) {
+    e = vector3{};
     return;
   }
 
@@ -1558,15 +1558,15 @@ void ConvertAxisAmountToEuler(vector3 *n, float *w, vector3 *e) {
   t = 1.0f - c;
 
   matrix rotmat;
-  const scalar sx = s * n->x();
-  const scalar sy = s * n->y();
-  const scalar sz = s * n->z();
-  const scalar txy = t * n->x() * n->y();
-  const scalar txz = t * n->x() * n->z();
-  const scalar tyz = t * n->y() * n->z();
-  const scalar txx = t * n->x() * n->x();
-  const scalar tyy = t * n->y() * n->y();
-  const scalar tzz = t * n->z() * n->z();
+  const scalar sx = s * n.x();
+  const scalar sy = s * n.y();
+  const scalar sz = s * n.z();
+  const scalar txy = t * n.x() * n.y();
+  const scalar txz = t * n.x() * n.z();
+  const scalar tyz = t * n.y() * n.z();
+  const scalar txx = t * n.x() * n.x();
+  const scalar tyy = t * n.y() * n.y();
+  const scalar tzz = t * n.z() * n.z();
 
   rotmat.rvec.x() = txx + c;
   rotmat.rvec.y() = txy - sz;
@@ -1578,11 +1578,11 @@ void ConvertAxisAmountToEuler(vector3 *n, float *w, vector3 *e) {
   rotmat.fvec.y() = tyz + sx;
   rotmat.fvec.z() = tzz + c;
 
-  CollideExtractAnglesFromMatrix(&s_result, &rotmat);
+  CollideExtractAnglesFromMatrix(s_result, rotmat);
 
-  e->x() = s_result.x() * scale * (65535.0f / (2.0f * std::numbers::pi_v<float>));
-  e->y() = s_result.y() * scale * (65535.0f / (2.0f * std::numbers::pi_v<float>));
-  e->z() = s_result.z() * scale * (65535.0f / (2.0f * std::numbers::pi_v<float>));
+  e.x() = s_result.x() * scale * (65535.0f / (2.0f * std::numbers::pi_v<float>));
+  e.y() = s_result.y() * scale * (65535.0f / (2.0f * std::numbers::pi_v<float>));
+  e.z() = s_result.z() * scale * (65535.0f / (2.0f * std::numbers::pi_v<float>));
 }
 #if 0
 void bump_obj_against_fixed(object *obj, vector3 *collision_point, vector3 *collision_normal) {

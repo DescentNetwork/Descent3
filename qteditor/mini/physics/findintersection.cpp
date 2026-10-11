@@ -3186,7 +3186,7 @@ vector3 PointSpeed(object *obj, vector3 *pos, matrix *orient, vector3 *rotvel, v
 
   vm_TransposeMatrix(o_t1);
   vector3 cmp1 = *rotvel * o_t1;
-  ConvertEulerToAxisAmount(&cmp1, &n1, &temp1);
+  ConvertEulerToAxisAmount(cmp1, n1, temp1);
 
   n1 *= temp1;
 
