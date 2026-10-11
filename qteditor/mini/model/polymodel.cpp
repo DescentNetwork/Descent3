@@ -673,8 +673,8 @@ lightmap_object *Polylighting_lightmap_object;
 vector3 *Polymodel_light_direction, Polymodel_fog_plane, Polymodel_specular_pos, Polymodel_fog_portal_vert,
     Polymodel_bump_pos;
 
-static inline void RecursiveAssignWB(poly_model *pm, int sm_index, int wb_index);
-static void FindWBSubobjects(poly_model *pm);
+static inline void RecursiveAssignWB(poly_model &pm, int sm_index, int wb_index);
+static void FindWBSubobjects(poly_model &pm);
 /// Sets aside a polymodel for use.
 /// Errors and returns nullopt if none free.
 static index_t AllocPolyModel();
@@ -682,49 +682,49 @@ static std::string ReadModelStringLen(byte_istream &infile);
 /// Given a modelnumber, opens the original pof file and attempts to rematch that
 /// models textures with the bitmaps with have in memory.
 static bool ReloadModelTextures(int modelnum, byte_istream &infile);
-static void SetPolymodelProperties(bsp_info *subobj, const std::string &props);
-static void MinMaxSubmodel(poly_model *pm, bsp_info *sm, vector3 offset);
-static void FindMinMaxForModel(poly_model *pm);
+static void SetPolymodelProperties(bsp_info &subobj, const std::string &props);
+static void MinMaxSubmodel(poly_model &pm, const bsp_info &sm, vector3 offset);
+static void FindMinMaxForModel(poly_model &pm);
 static bool ReadNewModelFile(int polynum, byte_istream &infile);
-static void SetNormalizedTimeObjTimed(object& obj, float *normalized_time);
-static void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, poly_model *pm);
+static void SetNormalizedTimeObjTimed(const object& obj, float *normalized_time);
+static void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, const poly_model &pm);
 static void FreeAllModels();
 /// Given a model pointer and an array of floats that go from 0..1, calculate the interpolated
 /// position/angle of each corresponding subobject.
-static void SetModelAnglesAndPosTimed(poly_model *po, float *normalized_time, uint32_t subobj_flags);
-static void BuildModelAngleMatrix(matrix *mat, angle ang, vector3 *axis);
+static void SetModelAnglesAndPosTimed(poly_model &po, float *normalized_time, uint32_t subobj_flags);
+static void BuildModelAngleMatrix(matrix &mat, angle ang, const vector3 &axis);
 
-void WBClearInfo(poly_model *pm) { pm->num_wbs = 0; }
+void WBClearInfo(poly_model &pm) { pm.num_wbs = 0; }
 
-inline void RecursiveAssignWB(poly_model *pm, int sm_index, int wb_index) {
+inline void RecursiveAssignWB(poly_model &pm, int sm_index, int wb_index) {
   int i;
 
-  Q_ASSERT(!(pm->flags.not_resident));
+  Q_ASSERT(!(pm.flags.not_resident));
 
-  pm->submodel[sm_index].flags.wb = true;
-  pm->submodel[sm_index].flags.wb_index = wb_index;
+  pm.submodel[sm_index].flags.wb = true;
+  pm.submodel[sm_index].flags.wb_index = wb_index;
 
-  for (i = 0; i < pm->submodel[sm_index].num_children; i++) {
-    RecursiveAssignWB(pm, pm->submodel[sm_index].children[i], wb_index);
+  for (i = 0; i < pm.submodel[sm_index].num_children; i++) {
+    RecursiveAssignWB(pm, pm.submodel[sm_index].children[i], wb_index);
   }
 }
 
-void FindWBSubobjects(poly_model *pm) {
+void FindWBSubobjects(poly_model &pm) {
   int i;
   bool found;
 
-  Q_ASSERT(!(pm->flags.not_resident));
+  Q_ASSERT(!(pm.flags.not_resident));
 
-  for (i = 0; i < pm->n_models; i++) {
-    if (pm->submodel[i].flags.turret) {
+  for (i = 0; i < pm.n_models; i++) {
+    if (pm.submodel[i].flags.turret) {
       int j;
       found = false;
 
-      for (j = 0; j < pm->num_wbs; j++) {
+      for (j = 0; j < pm.num_wbs; j++) {
         int k;
 
-        for (k = 0; k < pm->poly_wb[j].num_turrets; k++) {
-          if (pm->poly_wb[j].turret_index[k] == i) {
+        for (k = 0; k < pm.poly_wb[j].num_turrets; k++) {
+          if (pm.poly_wb[j].turret_index[k] == i) {
             found = true;
             RecursiveAssignWB(pm, i, j);
           }
@@ -745,7 +745,7 @@ void FindWBSubobjects(poly_model *pm) {
 index_t AllocPolyModel() {
   for (int i = 0; i < MAX_POLY_MODELS; i++)
     if (Poly_models[i].used == 0) {
-      WBClearInfo(&Poly_models[i]);
+      WBClearInfo(Poly_models[i]);
       Poly_models[i] = poly_model{};
       Poly_models[i].used = 1;
       Poly_models[i].flags.not_resident = true; // not in memory yet!
@@ -908,29 +908,29 @@ bool ReloadModelTextures(int modelnum, byte_istream &infile) {
   return true;
 }
 
-void BuildModelAngleMatrix(matrix *mat, angle ang, vector3 *axis) {
+void BuildModelAngleMatrix(matrix &mat, angle ang, const vector3 &axis) {
   scalar x, y, z;
   scalar s, c, t;
 
-  x = axis->x();
-  y = axis->y();
-  z = axis->z();
+  x = axis.x();
+  y = axis.y();
+  z = axis.z();
 
   s = FixSin(ang);
   c = FixCos(ang);
   t = 1.0f - c;
 
-  mat->rvec.x() = t * x * x + c;
-  mat->rvec.y() = t * x * y + s * z;
-  mat->rvec.z() = t * x * z - s * y;
+  mat.rvec.x() = t * x * x + c;
+  mat.rvec.y() = t * x * y + s * z;
+  mat.rvec.z() = t * x * z - s * y;
 
-  mat->uvec.x() = t * x * y - s * z;
-  mat->uvec.y() = t * y * y + c;
-  mat->uvec.z() = t * y * z + s * x;
+  mat.uvec.x() = t * x * y - s * z;
+  mat.uvec.y() = t * y * y + c;
+  mat.uvec.z() = t * y * z + s * x;
 
-  mat->fvec.x() = t * x * z + s * y;
-  mat->fvec.y() = t * y * z - s * x;
-  mat->fvec.z() = t * z * z + c;
+  mat.fvec.x() = t * x * z + s * y;
+  mat.fvec.y() = t * y * z - s * x;
+  mat.fvec.z() = t * z * z + c;
 }
 
 // Case-insensitive prefix comparison (replaces the original strnicmp).
@@ -965,7 +965,7 @@ static bool parse_floats(const std::string &text, std::vector<float> &out) {
 
 // Reads the user properties string for a subobject and applies the supported
 // $command=data pairs by setting flags/values on the subobject.
-void SetPolymodelProperties(bsp_info *subobj, const std::string &props) {
+void SetPolymodelProperties(bsp_info &subobj, const std::string &props) {
   // first, extract the command (up to '=') and the data (after '=')
   const std::string::size_type eq = props.find('=');
   const std::string command = eq == std::string::npos ? props : props.substr(0, eq);
@@ -984,48 +984,48 @@ void SetPolymodelProperties(bsp_info *subobj, const std::string &props) {
     if (spinrate <= 0 || spinrate > 20)
       return; // bad data
 
-    subobj->flags.rotate = true;
-    subobj->rps = 1.0f / spinrate;
+    subobj.flags.rotate = true;
+    subobj.rps = 1.0f / spinrate;
 
     return;
   }
 
   if (match_prefix(command, "$jitter")) {
     // this subobject is a jittery object
-    subobj->flags.jitter = true;
+    subobj.flags.jitter = true;
     return;
   }
 
   if (match_prefix(command, "$shell")) {
     // this subobject is a door shell
-    subobj->flags.shell = true;
+    subobj.flags.shell = true;
     return;
   }
   if (match_prefix(command, "$facing")) {
     // this subobject always faces you
-    subobj->flags.facing = true;
+    subobj.flags.facing = true;
     return;
   }
 
   if (match_prefix(command, "$frontface")) {
     // this subobject is a door front
-    subobj->flags.frontface = true;
+    subobj.flags.frontface = true;
     return;
   }
 
   if (match(command, "$glow=")) {
-    Q_ASSERT(!(subobj->flags.glow || subobj->flags.thruster));
+    Q_ASSERT(!(subobj.flags.glow || subobj.flags.thruster));
 
     std::vector<float> vals;
     if (!parse_floats(data, vals) || vals.size() != 4)
       return;
 
-    subobj->flags.glow = true;
+    subobj.flags.glow = true;
 
-    if (subobj->glow_info.empty()) // DAJ may already exist
-      subobj->glow_info.resize(1);
+    if (subobj.glow_info.empty()) // DAJ may already exist
+      subobj.glow_info.resize(1);
 
-    glowinfo &glow = subobj->glow_info[0];
+    glowinfo &glow = subobj.glow_info[0];
     glow.glow_r = vals[0];
     glow.glow_g = vals[1];
     glow.glow_b = vals[2];
@@ -1035,18 +1035,18 @@ void SetPolymodelProperties(bsp_info *subobj, const std::string &props) {
   }
 
   if (match(command, "$thruster=")) {
-    Q_ASSERT(!(subobj->flags.glow || subobj->flags.thruster));
+    Q_ASSERT(!(subobj.flags.glow || subobj.flags.thruster));
 
     std::vector<float> vals;
     if (!parse_floats(data, vals) || vals.size() != 4)
       return;
 
-    subobj->flags.thruster = true;
+    subobj.flags.thruster = true;
 
-    if (subobj->glow_info.empty()) // DAJ may already exist
-      subobj->glow_info.resize(1);
+    if (subobj.glow_info.empty()) // DAJ may already exist
+      subobj.glow_info.resize(1);
 
-    glowinfo &glow = subobj->glow_info[0];
+    glowinfo &glow = subobj.glow_info[0];
     glow.glow_r = vals[0];
     glow.glow_g = vals[1];
     glow.glow_b = vals[2];
@@ -1084,101 +1084,101 @@ void SetPolymodelProperties(bsp_info *subobj, const std::string &props) {
       reaction_time = 10.0f;
     }
 
-    subobj->flags.turret = true;
-    subobj->fov = fov_angle / 720.0f; // 720 = 360 * 2 and we want to make fov the amount we can move in either
+    subobj.flags.turret = true;
+    subobj.fov = fov_angle / 720.0f; // 720 = 360 * 2 and we want to make fov the amount we can move in either
                                       // direction it has a minimum value of (0.0) to [0.5]
-    subobj->rps = 1.0f / turret_spr;  // convert spr to rps (rotations per second)
-    subobj->think_interval = reaction_time;
+    subobj.rps = 1.0f / turret_spr;  // convert spr to rps (rotations per second)
+    subobj.think_interval = reaction_time;
 
     return;
   }
 
   if (match(command, "$monitor01")) {
-    subobj->flags.monitor1 = true;
+    subobj.flags.monitor1 = true;
     return;
   }
   if (match(command, "$monitor02")) {
-    subobj->flags.monitor2 = true;
+    subobj.flags.monitor2 = true;
     return;
   }
   if (match(command, "$monitor03")) {
-    subobj->flags.monitor3 = true;
+    subobj.flags.monitor3 = true;
     return;
   }
   if (match(command, "$monitor04")) {
-    subobj->flags.monitor4 = true;
+    subobj.flags.monitor4 = true;
     return;
   }
   if (match(command, "$monitor05")) {
-    subobj->flags.monitor5 = true;
+    subobj.flags.monitor5 = true;
     return;
   }
   if (match(command, "$monitor06")) {
-    subobj->flags.monitor6 = true;
+    subobj.flags.monitor6 = true;
     return;
   }
   if (match(command, "$monitor07")) {
-    subobj->flags.monitor7 = true;
+    subobj.flags.monitor7 = true;
     return;
   }
   if (match(command, "$monitor08")) {
-    subobj->flags.monitor8 = true;
+    subobj.flags.monitor8 = true;
     return;
   }
 
   if (match(command, "$viewer")) {
-    subobj->flags.viewer = true;
+    subobj.flags.viewer = true;
     return;
   }
 
   if (match(command, "$layer")) {
-    subobj->flags.layer = true;
+    subobj.flags.layer = true;
     return;
   }
 
   if (match(command, "$custom")) {
-    subobj->flags.custom = true;
+    subobj.flags.custom = true;
     return;
   }
 }
 
-void MinMaxSubmodel(poly_model *pm, bsp_info *sm, vector3 offset) {
+void MinMaxSubmodel(poly_model &pm, const bsp_info &sm, vector3 offset) {
 
-  offset += sm->offset;
+  offset += sm.offset;
   // Get max
-  if ((sm->max.x() + offset.x()) > pm->maxs.x())
-    pm->maxs.x() = sm->max.x() + offset.x();
-  if ((sm->max.y() + offset.y()) > pm->maxs.y())
-    pm->maxs.y() = sm->max.y() + offset.y();
-  if ((sm->max.z() + offset.z()) > pm->maxs.z())
-    pm->maxs.z() = sm->max.z() + offset.z();
+  if ((sm.max.x() + offset.x()) > pm.maxs.x())
+    pm.maxs.x() = sm.max.x() + offset.x();
+  if ((sm.max.y() + offset.y()) > pm.maxs.y())
+    pm.maxs.y() = sm.max.y() + offset.y();
+  if ((sm.max.z() + offset.z()) > pm.maxs.z())
+    pm.maxs.z() = sm.max.z() + offset.z();
 
   // Get min
-  if ((sm->min.x() + offset.x()) < pm->mins.x())
-    pm->mins.x() = sm->min.x() + offset.x();
-  if ((sm->min.y() + offset.y()) < pm->mins.y())
-    pm->mins.y() = sm->min.y() + offset.y();
-  if ((sm->min.z() + offset.z()) < pm->mins.z())
-    pm->mins.z() = sm->min.z() + offset.z();
+  if ((sm.min.x() + offset.x()) < pm.mins.x())
+    pm.mins.x() = sm.min.x() + offset.x();
+  if ((sm.min.y() + offset.y()) < pm.mins.y())
+    pm.mins.y() = sm.min.y() + offset.y();
+  if ((sm.min.z() + offset.z()) < pm.mins.z())
+    pm.mins.z() = sm.min.z() + offset.z();
 
-  for (int i = 0; i < sm->num_children; i++)
-    MinMaxSubmodel(pm, &pm->submodel[sm->children[i]], offset);
+  for (int i = 0; i < sm.num_children; i++)
+    MinMaxSubmodel(pm, pm.submodel[sm.children[i]], offset);
 }
 
-void FindMinMaxForModel(poly_model *pm) {
+void FindMinMaxForModel(poly_model &pm) {
 
   vector3 zero_vec;
 
-  Q_ASSERT(!(pm->flags.not_resident));
+  Q_ASSERT(!(pm.flags.not_resident));
 
   vm_MakeZero(&zero_vec);
-  pm->mins.x() = pm->mins.y() = pm->mins.z() = 90000;
-  pm->maxs.x() = pm->maxs.y() = pm->maxs.z() = -90000;
+  pm.mins.x() = pm.mins.y() = pm.mins.z() = 90000;
+  pm.maxs.x() = pm.maxs.y() = pm.maxs.z() = -90000;
 
-  for (int i = 0; i < pm->n_models; i++) {
-    bsp_info *sm = &pm->submodel[i];
+  for (int i = 0; i < pm.n_models; i++) {
+    bsp_info *sm = &pm.submodel[i];
     if (sm->parent == -1)
-      MinMaxSubmodel(pm, sm, zero_vec);
+      MinMaxSubmodel(pm, *sm, zero_vec);
   }
 }
 
@@ -1315,7 +1315,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       pm->submodel[n].name = ReadModelStringLen(infile);
       std::string props = ReadModelStringLen(infile); // and the user properties
 
-      SetPolymodelProperties(&pm->submodel[n], props);
+      SetPolymodelProperties(pm->submodel[n], props);
 
       infile >> pm->submodel[n].movement_type;
       infile >> pm->submodel[n].movement_axis;
@@ -1838,7 +1838,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
 
     for (int newt = 0; newt < sm->num_key_angles; newt++) {
       cur_angle = sm->keyframe_angles[newt];
-      BuildModelAngleMatrix(&temp_matrix, cur_angle, &sm->keyframe_axis[newt]);
+      BuildModelAngleMatrix(temp_matrix, cur_angle, sm->keyframe_axis[newt]);
       vm_MakeIdentity(&dest_matrix);
       dest_matrix = temp_matrix * base_matrix;
       base_matrix = dest_matrix;
@@ -1936,12 +1936,12 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
   pm->flags.not_resident = false; // mark it as in memory
 
   // Find Min/Max of whole model
-  FindMinMaxForModel(pm);
+  FindMinMaxForModel(*pm);
 
   // adjust positional interpolation frames
 
 
-  FindWBSubobjects(pm);
+  FindWBSubobjects(*pm);
 
   // Set as newstyle
   pm->new_style = 1;
@@ -1989,7 +1989,7 @@ index_t LoadPolyModel(const std::filesystem::path &filename, int pageable) {
     FreePolyModel(i);
 
     Poly_models[i] = poly_model{};
-    WBClearInfo(&Poly_models[i]);
+    WBClearInfo(Poly_models[i]);
     Poly_models[i].used = old_used + 1;
     if (not_res)
       Poly_models[i].flags.not_resident = true;
@@ -2139,9 +2139,9 @@ index_t FindPolyModelName(const std::filesystem::path &name) {
 }
 
 // Sets a positional instance
-void StartPolyModelPosInstance(vector3 *posvec) {
+void StartPolyModelPosInstance(const vector3 &posvec) {
 
-  Interp_pos_instance_vec = *posvec;
+  Interp_pos_instance_vec = posvec;
 
   Instance_vec_stack[Instance_vec_cnt] = Interp_pos_instance_vec;
   Instance_vec_cnt++;
@@ -2157,7 +2157,7 @@ void DonePolyModelPosInstance() {
     Interp_pos_instance_vec = Instance_vec_stack[Instance_vec_cnt];
 }
 
-void SetNormalizedTimeObjTimed(object& obj, float *normalized_time) {
+void SetNormalizedTimeObjTimed(const object& obj, float *normalized_time) {
   int i, j;
   poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
   const object_info& obj_info = Object_info[obj.id];
@@ -2227,46 +2227,46 @@ void SetNormalizedTimeObjTimed(object& obj, float *normalized_time) {
   }
 }
 
-void SetNormalizedTimeObj(object *obj, float *normalized_time) {
+void SetNormalizedTimeObj(const object &obj, float *normalized_time) {
   int i, j;
 
-  if (Poly_models[obj->rtype.pobj_info().model_num].flags.timed) {
-    SetNormalizedTimeObjTimed(*obj, normalized_time);
+  if (Poly_models[obj.rtype.pobj_info().model_num].flags.timed) {
+    SetNormalizedTimeObjTimed(obj, normalized_time);
     return;
   }
 
-  float norm_anim_frame = GetNormalizedKeyframe(obj->rtype.pobj_info().model_num, obj->rtype.pobj_info().anim_frame);
+  float norm_anim_frame = GetNormalizedKeyframe(obj.rtype.pobj_info().model_num, obj.rtype.pobj_info().anim_frame);
 
   // Setup all the subobjects for the keyframe
-  for (i = 0; i < Poly_models[obj->rtype.pobj_info().model_num].n_models; i++)
+  for (i = 0; i < Poly_models[obj.rtype.pobj_info().model_num].n_models; i++)
     normalized_time[i] = norm_anim_frame;
 
   // Currently, we are not handling player weapons in this manner
   // chrishack -- weapons with turrets -- COOL.
-  if (obj->type == object_type_e::player || obj->type == object_type_e::weapon)
+  if (obj.type == object_type_e::player || obj.type == object_type_e::weapon)
     return;
 
-  Q_ASSERT(obj->type == object_type_e::powerup || obj->type == object_type_e::robot || obj->type == object_type_e::building || obj->type == object_type_e::debris ||
-         obj->type == object_type_e::door || obj->type == object_type_e::clutter);
+  Q_ASSERT(obj.type == object_type_e::powerup || obj.type == object_type_e::robot || obj.type == object_type_e::building || obj.type == object_type_e::debris ||
+         obj.type == object_type_e::door || obj.type == object_type_e::clutter);
 
   // Now, override angles of weapon bank turrets
-  for (i = 0; i < Poly_models[obj->rtype.pobj_info().model_num].num_wbs; i++) {
-    for (j = 0; j < Poly_models[obj->rtype.pobj_info().model_num].poly_wb[i].num_turrets; j++) {
+  for (i = 0; i < Poly_models[obj.rtype.pobj_info().model_num].num_wbs; i++) {
+    for (j = 0; j < Poly_models[obj.rtype.pobj_info().model_num].poly_wb[i].num_turrets; j++) {
       int sobj_index;
 
-      sobj_index = Poly_models[obj->rtype.pobj_info().model_num].poly_wb[i].turret_index[j];
-      normalized_time[sobj_index] = obj->dynamic_wb[i].norm_turret_angle[j];
+      sobj_index = Poly_models[obj.rtype.pobj_info().model_num].poly_wb[i].turret_index[j];
+      normalized_time[sobj_index] = obj.dynamic_wb[i].norm_turret_angle[j];
     }
   }
 }
 
-void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, poly_model *pm) {
+void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, const poly_model &pm) {
   int i, j;
 
-  Q_ASSERT(!(pm->flags.not_resident));
+  Q_ASSERT(!(pm.flags.not_resident));
 
-  for (i = 0; i < pm->n_models; i++) {
-    bsp_info *sm = &pm->submodel[i];
+  for (i = 0; i < pm.n_models; i++) {
+    const bsp_info *sm = &pm.submodel[i];
 
     if (frame <= sm->rot_track_min)
       normalized_time[i] = 0.0f;
@@ -2279,39 +2279,39 @@ void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, poly_model 
   }
 
   // Now, override angles of weapon bank turrets
-  for (i = 0; i < pm->num_wbs; i++) {
-    for (j = 0; j < pm->poly_wb[i].num_turrets; j++) {
+  for (i = 0; i < pm.num_wbs; i++) {
+    for (j = 0; j < pm.poly_wb[i].num_turrets; j++) {
       int sobj_index;
 
-      sobj_index = pm->poly_wb[i].turret_index[j];
+      sobj_index = pm.poly_wb[i].turret_index[j];
       normalized_time[sobj_index] = 0.0f;
     }
   }
 }
 
 // This is for non-rotated turrets or rotators
-void SetNormalizedTimeAnim(float anim_frame, float *normalized_time, poly_model *pm) {
+void SetNormalizedTimeAnim(float anim_frame, float *normalized_time, const poly_model &pm) {
   int i, j;
 
-  Q_ASSERT(!(pm->flags.not_resident));
+  Q_ASSERT(!(pm.flags.not_resident));
 
-  float norm_anim_frame = anim_frame / pm->max_keys;
+  float norm_anim_frame = anim_frame / pm.max_keys;
 
-  if (pm->flags.timed) {
+  if (pm.flags.timed) {
     SetNormalizedTimeAnimTimed(anim_frame, normalized_time, pm);
     return;
   }
 
   // Setup all the subobjects for the keyframe
-  for (i = 0; i < pm->n_models; i++)
+  for (i = 0; i < pm.n_models; i++)
     normalized_time[i] = norm_anim_frame;
 
   // Now, override angles of weapon bank turrets
-  for (i = 0; i < pm->num_wbs; i++) {
-    for (j = 0; j < pm->poly_wb[i].num_turrets; j++) {
+  for (i = 0; i < pm.num_wbs; i++) {
+    for (j = 0; j < pm.poly_wb[i].num_turrets; j++) {
       int sobj_index;
 
-      sobj_index = pm->poly_wb[i].turret_index[j];
+      sobj_index = pm.poly_wb[i].turret_index[j];
       normalized_time[sobj_index] = 0.0f;
     }
   }
@@ -2319,21 +2319,21 @@ void SetNormalizedTimeAnim(float anim_frame, float *normalized_time, poly_model 
 
 // Given a model pointer and an array of floats that go from 0..1, calculate the angles of each
 // corresponding subobject
-void SetModelAngles(poly_model *po, const float *normalized_angles) {
+void SetModelAngles(poly_model &po, const float *normalized_angles) {
   int i;
 
-  Q_ASSERT(!(po->flags.not_resident));
+  Q_ASSERT(!(po.flags.not_resident));
 
-  if (po->num_key_angles > 0 && normalized_angles) {
+  if (po.num_key_angles > 0 && normalized_angles) {
     // get time per keyframe state
-    float state_time = 1.0f / (po->num_key_angles - 1);
+    float state_time = 1.0f / (po.num_key_angles - 1);
     float cur_state_time;
     int cur_state;
     float normal_state_time;
 
-    for (i = 0; i < po->n_models; i++) {
+    for (i = 0; i < po.n_models; i++) {
       // Don't rotate turrets or auto-rotators or weapon battery submodels
-      if (!(po->submodel[i].flags.rotate || po->submodel[i].flags.turret)) {
+      if (!(po.submodel[i].flags.rotate || po.submodel[i].flags.turret)) {
 
         // Find out which keyframe we're at
 
@@ -2348,20 +2348,20 @@ void SetModelAngles(poly_model *po, const float *normalized_angles) {
 
         // If we're already at the high point of the interpolation then just
         // stuff some values
-        if (cur_state == po->num_key_angles - 1) {
-          vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &po->submodel[i].keyframe_matrix[po->num_key_angles - 1]);
+        if (cur_state == po.num_key_angles - 1) {
+          vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &po.submodel[i].keyframe_matrix[po.num_key_angles - 1]);
           continue;
         }
 
-        dest_matrix = po->submodel[i].keyframe_matrix[cur_state] +
-                      ((po->submodel[i].keyframe_matrix[cur_state + 1] - po->submodel[i].keyframe_matrix[cur_state]) *
+        dest_matrix = po.submodel[i].keyframe_matrix[cur_state] +
+                      ((po.submodel[i].keyframe_matrix[cur_state + 1] - po.submodel[i].keyframe_matrix[cur_state]) *
                        normal_state_time);
 
-        vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &dest_matrix);
-        // po->submodel[i].mod_matrix=dest_matrix;
+        vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &dest_matrix);
+        // po.submodel[i].mod_matrix=dest_matrix;
 
-      } else if (po->submodel[i].flags.rotate) {
-        float flrot = d3::chrono::last_update() * po->submodel[i].rps;
+      } else if (po.submodel[i].flags.rotate) {
+        float flrot = d3::chrono::last_update() * po.submodel[i].rps;
         int introt = flrot;
 
         float fdiff = flrot - introt;
@@ -2371,27 +2371,27 @@ void SetModelAngles(poly_model *po, const float *normalized_angles) {
         // fdiff now equals 0 to 1
         matrix temp_matrix;
         vector3 temp_vec;
-        if (po->new_style)
-          temp_vec = po->submodel[i].keyframe_axis[1];
+        if (po.new_style)
+          temp_vec = po.submodel[i].keyframe_axis[1];
         else
-          temp_vec = po->submodel[i].norm;
+          temp_vec = po.submodel[i].norm;
 
-        BuildModelAngleMatrix(&temp_matrix, fdiff * 65535, &temp_vec);
-        vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &temp_matrix);
-      } else if (po->submodel[i].flags.turret) {
+        BuildModelAngleMatrix(temp_matrix, fdiff * 65535, temp_vec);
+        vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &temp_matrix);
+      } else if (po.submodel[i].flags.turret) {
         matrix temp_matrix;
-        if (po->new_style)
-          BuildModelAngleMatrix(&temp_matrix, normalized_angles[i] * 65535, &po->submodel[i].keyframe_axis[1]);
+        if (po.new_style)
+          BuildModelAngleMatrix(temp_matrix, normalized_angles[i] * 65535, po.submodel[i].keyframe_axis[1]);
         else
-          BuildModelAngleMatrix(&temp_matrix, normalized_angles[i] * 65535, &po->submodel[i].norm);
+          BuildModelAngleMatrix(temp_matrix, normalized_angles[i] * 65535, po.submodel[i].norm);
 
-        vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &temp_matrix);
+        vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &temp_matrix);
       }
     }
   } else {
-    for (i = 0; i < po->n_models; i++) {
-        if (po->submodel[i].flags.rotate) {
-        float flrot = d3::chrono::last_update() * po->submodel[i].rps;
+    for (i = 0; i < po.n_models; i++) {
+        if (po.submodel[i].flags.rotate) {
+        float flrot = d3::chrono::last_update() * po.submodel[i].rps;
         int introt = flrot;
 
         float fdiff = flrot - introt;
@@ -2401,14 +2401,14 @@ void SetModelAngles(poly_model *po, const float *normalized_angles) {
         // fdiff now equals 0 to 1
         matrix temp_matrix;
         vector3 temp_vec;
-        if (po->new_style)
-          temp_vec = po->submodel[i].keyframe_axis[1];
+        if (po.new_style)
+          temp_vec = po.submodel[i].keyframe_axis[1];
         else
-          temp_vec = po->submodel[i].norm;
+          temp_vec = po.submodel[i].norm;
 
-        BuildModelAngleMatrix(&temp_matrix, fdiff * 65535, &temp_vec);
-        vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &temp_matrix);
-      } else if (po->submodel[i].flags.turret) {
+        BuildModelAngleMatrix(temp_matrix, fdiff * 65535, temp_vec);
+        vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &temp_matrix);
+      } else if (po.submodel[i].flags.turret) {
         // We need to find where in this rotation is relative to gametime
         float flrot = d3::chrono::last_update();
         int introt = flrot;
@@ -2417,14 +2417,14 @@ void SetModelAngles(poly_model *po, const float *normalized_angles) {
 
         // fdiff now equals 0 to 1
         matrix temp_matrix;
-        if (po->new_style)
-          BuildModelAngleMatrix(&temp_matrix, fdiff * 65535, &po->submodel[i].keyframe_axis[0]);
+        if (po.new_style)
+          BuildModelAngleMatrix(temp_matrix, fdiff * 65535, po.submodel[i].keyframe_axis[0]);
         else
-          BuildModelAngleMatrix(&temp_matrix, fdiff * 65535, &po->submodel[i].norm);
+          BuildModelAngleMatrix(temp_matrix, fdiff * 65535, po.submodel[i].norm);
 
-        vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &temp_matrix);
+        vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &temp_matrix);
       } else {
-        po->submodel[i].angs = angvec{};
+        po.submodel[i].angs = angvec{};
       }
     }
   }
@@ -2432,17 +2432,17 @@ void SetModelAngles(poly_model *po, const float *normalized_angles) {
 
 // Given a model pointer and an array of floats that go from 0..1, calculate the interpolated
 // position of each corresponding subobject
-void SetModelInterpPos(poly_model *po, const float *normalized_pos) {
+void SetModelInterpPos(poly_model &po, const float *normalized_pos) {
   int i;
 
-  Q_ASSERT(!(po->flags.not_resident));
+  Q_ASSERT(!(po.flags.not_resident));
 
-  if (normalized_pos && po->num_key_pos > 0) {
-    for (i = 0; i < po->n_models; i++) {
-      bsp_info *sm = &po->submodel[i];
+  if (normalized_pos && po.num_key_pos > 0) {
+    for (i = 0; i < po.n_models; i++) {
+      bsp_info *sm = &po.submodel[i];
 
       // get time per keyframe state
-      float state_time = 1.0f / (po->num_key_pos - 1);
+      float state_time = 1.0f / (po.num_key_pos - 1);
       float cur_state_time;
       int cur_state;
       float normal_state_time;
@@ -2462,39 +2462,39 @@ void SetModelInterpPos(poly_model *po, const float *normalized_pos) {
       // If we're already at the high point of the interpolation then just
       // stuff some values
       if (cur_state == sm->num_key_pos - 1) {
-        po->submodel[i].mod_pos = po->submodel[i].keyframe_pos[po->num_key_pos - 1];
+        po.submodel[i].mod_pos = po.submodel[i].keyframe_pos[po.num_key_pos - 1];
         continue;
       }
 
       if (cur_state == 0)
-        po->submodel[i].mod_pos = normal_state_time * po->submodel[i].keyframe_pos[1];
+        po.submodel[i].mod_pos = normal_state_time * po.submodel[i].keyframe_pos[1];
       else {
-        vm_SubVectors(&subpos, &po->submodel[i].keyframe_pos[cur_state + 1], &po->submodel[i].keyframe_pos[cur_state]);
-        final_pos = po->submodel[i].keyframe_pos[cur_state] + (subpos * normal_state_time);
-        po->submodel[i].mod_pos = final_pos;
+        vm_SubVectors(&subpos, &po.submodel[i].keyframe_pos[cur_state + 1], &po.submodel[i].keyframe_pos[cur_state]);
+        final_pos = po.submodel[i].keyframe_pos[cur_state] + (subpos * normal_state_time);
+        po.submodel[i].mod_pos = final_pos;
       }
     }
   } else {
-    for (i = 0; i < po->n_models; i++)
-      po->submodel[i].mod_pos = vector3{};
+    for (i = 0; i < po.n_models; i++)
+      po.submodel[i].mod_pos = vector3{};
   }
 }
 
 // Sets the effect used by a polymodel
-void SetPolymodelEffect(polymodel_effect *poly_effect) { Polymodel_effect = *poly_effect; }
+void SetPolymodelEffect(const polymodel_effect &poly_effect) { Polymodel_effect = poly_effect; }
 
 // Given a model pointer and an array of floats that go from 0..1, calculate the interpolated
 // position/angle of each corresponding subobject
-void SetModelAnglesAndPosTimed(poly_model *po, float *normalized_time, uint32_t subobj_flags) {
+void SetModelAnglesAndPosTimed(poly_model &po, float *normalized_time, uint32_t subobj_flags) {
   int i;
 
-  Q_ASSERT(!(po->flags.not_resident));
+  Q_ASSERT(!(po.flags.not_resident));
 
   if (normalized_time) {
     // get time per keyframe state
 
-    for (i = 0; i < po->n_models; i++) {
-      bsp_info *sm = &po->submodel[i];
+    for (i = 0; i < po.n_models; i++) {
+      bsp_info *sm = &po.submodel[i];
       int int_tick, current_frame, total_ticks;
       float normal_state_time, current_tick;
 
@@ -2544,7 +2544,7 @@ void SetModelAnglesAndPosTimed(poly_model *po, float *normalized_time, uint32_t 
         }
 
         if (normalized_time[i] == 1.0) {
-          vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &po->submodel[i].keyframe_matrix[sm->num_key_angles - 1]);
+          vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &po.submodel[i].keyframe_matrix[sm->num_key_angles - 1]);
           continue;
         }
 
@@ -2557,7 +2557,7 @@ void SetModelAnglesAndPosTimed(poly_model *po, float *normalized_time, uint32_t 
         Q_ASSERT(current_frame >= 0 && current_frame <= sm->num_key_angles - 1);
 
         if (current_frame == sm->num_key_angles - 1) {
-          vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &po->submodel[i].keyframe_matrix[sm->num_key_angles - 1]);
+          vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &po.submodel[i].keyframe_matrix[sm->num_key_angles - 1]);
           continue;
         } else {
           int ticks_between_frames = sm->rot_start_time[current_frame + 1] - sm->rot_start_time[current_frame];
@@ -2575,8 +2575,8 @@ void SetModelAnglesAndPosTimed(poly_model *po, float *normalized_time, uint32_t 
 
       } else {
         // Adjust special subobjects
-      if (po->submodel[i].flags.rotate) {
-          float flrot = d3::chrono::last_update() * po->submodel[i].rps;
+      if (po.submodel[i].flags.rotate) {
+          float flrot = d3::chrono::last_update() * po.submodel[i].rps;
           int introt = flrot;
 
           float fdiff = flrot - introt;
@@ -2586,38 +2586,38 @@ void SetModelAnglesAndPosTimed(poly_model *po, float *normalized_time, uint32_t 
           // fdiff now equals 0 to 1
           matrix temp_matrix;
           vector3 temp_vec;
-          if (po->new_style)
-            temp_vec = po->submodel[i].keyframe_axis[1];
+          if (po.new_style)
+            temp_vec = po.submodel[i].keyframe_axis[1];
           else
-            temp_vec = po->submodel[i].norm;
+            temp_vec = po.submodel[i].norm;
 
-          BuildModelAngleMatrix(&temp_matrix, fdiff * 65535, &temp_vec);
-          vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &temp_matrix);
-        } else if (po->submodel[i].flags.turret) {
+          BuildModelAngleMatrix(temp_matrix, fdiff * 65535, temp_vec);
+          vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &temp_matrix);
+        } else if (po.submodel[i].flags.turret) {
           matrix temp_matrix;
-          if (po->new_style)
-            BuildModelAngleMatrix(&temp_matrix, normalized_time[i] * 65535, &po->submodel[i].keyframe_axis[1]);
+          if (po.new_style)
+            BuildModelAngleMatrix(temp_matrix, normalized_time[i] * 65535, po.submodel[i].keyframe_axis[1]);
           else
-            BuildModelAngleMatrix(&temp_matrix, normalized_time[i] * 65535, &po->submodel[i].norm);
+            BuildModelAngleMatrix(temp_matrix, normalized_time[i] * 65535, po.submodel[i].norm);
 
-          vm_ExtractAnglesFromMatrix(&po->submodel[i].angs, &temp_matrix);
+          vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &temp_matrix);
         }
       }
     }
 
   } else {
-    for (i = 0; i < po->n_models; i++) {
-      po->submodel[i].mod_pos = vector3{};
-      po->submodel[i].angs = angvec{};
+    for (i = 0; i < po.n_models; i++) {
+      po.submodel[i].mod_pos = vector3{};
+      po.submodel[i].angs = angvec{};
     }
   }
 }
 
 // Sets the position and rotation of a polymodel.  Used for rendering and collision detection
-void SetModelAnglesAndPos(poly_model *po, float *normalized_time, uint32_t subobj_flags) {
-  Q_ASSERT(!(po->flags.not_resident));
+void SetModelAnglesAndPos(poly_model &po, float *normalized_time, uint32_t subobj_flags) {
+  Q_ASSERT(!(po.flags.not_resident));
 
-  if (po->flags.timed) {
+  if (po.flags.timed) {
     SetModelAnglesAndPosTimed(po, normalized_time, subobj_flags);
     return;
   } else {
@@ -2634,7 +2634,7 @@ static vector3 Instance_bump_pos[MAX_SUBOBJECTS];
 
 static int Instance_light_cnt = 0;
 
-void StartLightInstance(vector3 *pos, const matrix *orient) {
+void StartLightInstance(const vector3 &pos, const matrix &orient) {
   int gouraud = 0, specular = 0, fogged = 0, bumped = 0;
 
   if (Polymodel_light_type == polymodel_light_type::gouraud)
@@ -2664,26 +2664,26 @@ void StartLightInstance(vector3 *pos, const matrix *orient) {
   vector3 temp_vec;
 
   if (gouraud) {
-    vm_MatrixMulVector(&temp_vec, Polymodel_light_direction, orient);
+    vm_MatrixMulVector(&temp_vec, Polymodel_light_direction, &orient);
     *Polymodel_light_direction = temp_vec;
   }
   if (fogged) {
-    vector3 tempv = Polymodel_fog_portal_vert - *pos;
-    vm_MatrixMulVector(&temp_vec, &tempv, orient);
+    vector3 tempv = Polymodel_fog_portal_vert - pos;
+    vm_MatrixMulVector(&temp_vec, &tempv, &orient);
     Polymodel_fog_portal_vert = temp_vec;
 
-    vm_MatrixMulVector(&temp_vec, &Polymodel_fog_plane, orient);
+    vm_MatrixMulVector(&temp_vec, &Polymodel_fog_plane, &orient);
     Polymodel_fog_plane = temp_vec;
   }
   if (specular) {
-    vector3 tempv = Polymodel_specular_pos - *pos;
-    vm_MatrixMulVector(&temp_vec, &tempv, orient);
+    vector3 tempv = Polymodel_specular_pos - pos;
+    vm_MatrixMulVector(&temp_vec, &tempv, &orient);
     Polymodel_specular_pos = temp_vec;
   }
 
   if (bumped) {
-    vector3 tempv = Polymodel_bump_pos - *pos;
-    vm_MatrixMulVector(&temp_vec, &tempv, orient);
+    vector3 tempv = Polymodel_bump_pos - pos;
+    vm_MatrixMulVector(&temp_vec, &tempv, &orient);
     Polymodel_bump_pos = temp_vec;
   }
 }
@@ -2711,7 +2711,7 @@ void DoneLightInstance() {
 // an animation state we are
 
 // This is the static light version
-void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *normalized_time, int flags, float r, float g,
+void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *normalized_time, int flags, float r, float g,
                       float b, uint32_t f_render_sub, uint8_t use_effect, uint8_t overlay) {
   poly_model *po;
 
@@ -2731,7 +2731,7 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
 
   po = &Poly_models[model_num];
 
-  g3_StartInstanceMatrix(*pos, *orient);
+  g3_StartInstanceMatrix(pos, orient);
 
   if (Polymodel_use_effect && Polymodel_effect.type.fogged_model) {
     Polymodel_fog_plane = Polymodel_effect.fog_plane;
@@ -2746,7 +2746,7 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
 
   StartLightInstance(pos, orient);
 
-  SetModelAnglesAndPos(po, normalized_time, f_render_sub);
+  SetModelAnglesAndPos(*po, normalized_time, f_render_sub);
 
   if (f_render_sub == 0xFFFFFFFF || overlay) // draw entire object
   {
@@ -2786,10 +2786,10 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
 }
 
 // This draws a gouraud shaded version
-void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *normalized_time, int flags, vector3 *lightdir,
+void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *normalized_time, int flags, const vector3 &lightdir,
                       float r, float g, float b, uint32_t f_render_sub, uint8_t use_effect, uint8_t overlay) {
   poly_model *po;
-  vector3 light_vec = *lightdir;
+  vector3 light_vec = lightdir;
 
   Polymodel_use_effect = use_effect;
 
@@ -2820,11 +2820,11 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
   if (Polymodel_use_effect && (Polymodel_effect.type.bumpmapped))
     Polymodel_bump_pos = Polymodel_effect.bump_light_pos;
 
-  g3_StartInstanceMatrix(*pos, *orient);
+  g3_StartInstanceMatrix(pos, orient);
   StartLightInstance(pos, orient);
 
   po = &Poly_models[model_num];
-  SetModelAnglesAndPos(po, normalized_time, f_render_sub);
+  SetModelAnglesAndPos(*po, normalized_time, f_render_sub);
 
   if (f_render_sub == 0xFFFFFFFF || overlay) // draw entire object
   {
@@ -2863,8 +2863,8 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
 }
 
 // This draws a lightmap shaded version
-void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *normalized_time, int flags,
-                      lightmap_object *lm_object, uint32_t f_render_sub, uint8_t use_effect, uint8_t overlay) {
+void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *normalized_time, int flags,
+                      lightmap_object &lm_object, uint32_t f_render_sub, uint8_t use_effect, uint8_t overlay) {
   poly_model *po;
 
   Q_ASSERT(Poly_models[model_num].used);
@@ -2876,7 +2876,7 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
 
   rend_SetLighting(light_state::none);
   Polymodel_light_type = polymodel_light_type::lightmap;
-  Polylighting_lightmap_object = lm_object;
+  Polylighting_lightmap_object = &lm_object;
 
   if (Polymodel_use_effect && Polymodel_effect.type.fogged_model) {
     Polymodel_fog_plane = Polymodel_effect.fog_plane;
@@ -2889,11 +2889,11 @@ void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *
   if (Polymodel_use_effect && (Polymodel_effect.type.bumpmapped))
     Polymodel_bump_pos = Polymodel_effect.bump_light_pos;
 
-  g3_StartInstanceMatrix(*pos, *orient);
+  g3_StartInstanceMatrix(pos, orient);
   StartLightInstance(pos, orient);
 
   po = &Poly_models[model_num];
-  SetModelAnglesAndPos(po, normalized_time, f_render_sub);
+  SetModelAnglesAndPos(*po, normalized_time, f_render_sub);
 
   if (f_render_sub == 0xFFFFFFFF || overlay) // draw entire object
   {
@@ -2996,18 +2996,18 @@ void RemapPolyModels() {
 
 // MTS: not used?
 // Returns the total number of faces in a model
-int CountFacesInPolymodel(poly_model *pm) {
+int CountFacesInPolymodel(const poly_model &pm) {
   int i;
-  Q_ASSERT(pm->used > 0);
+  Q_ASSERT(pm.used > 0);
   int count = 0;
 
-  Q_ASSERT(!(pm->flags.not_resident));
+  Q_ASSERT(!(pm.flags.not_resident));
 
-  for (i = 0; i < pm->n_models; i++) {
+  for (i = 0; i < pm.n_models; i++) {
     if (IsNonRenderableSubmodel(pm, i))
       continue;
 
-    count += pm->submodel[i].num_faces;
+    count += pm.submodel[i].num_faces;
   }
 
   return count;
@@ -3015,7 +3015,7 @@ int CountFacesInPolymodel(poly_model *pm) {
 
 // Given an object, a submodel, and a vertex number, calculates the world position
 // of that point
-void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matrix& orient, int subnum, vector3& pos,
+void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, const vector3& wpos, const matrix& orient, int subnum, const vector3& pos,
                               optref<vector3> norm) {
   float normalized_time[MAX_SUBOBJECTS];
   int i;
@@ -3028,7 +3028,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
   for (i = 0; i < MAX_SUBOBJECTS; i++)
     normalized_time[i] = 0.0f;
 
-  SetModelAnglesAndPos(&pm, normalized_time);
+  SetModelAnglesAndPos(pm, normalized_time);
 
   vector3 pnt = pos;
   int mn = subnum;
@@ -3066,14 +3066,14 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
   dest += wpos;
 }
 
-void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matrix& orient, int subnum,
-                              float *normalized_time, vector3& pos, optref<vector3> norm) {
+void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, const vector3& wpos, const matrix& orient, int subnum,
+                              float *normalized_time, const vector3& pos, optref<vector3> norm) {
   Q_ASSERT(!(pm.flags.not_resident));
 
   if (!pm.new_style)
     return;
 
-  SetModelAnglesAndPos(&pm, normalized_time);
+  SetModelAnglesAndPos(pm, normalized_time);
 
   vector3 pnt = pos;
   int mn = subnum;
@@ -3112,14 +3112,14 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matr
 }
 
 // Returns 1 if this submodel shouldn't be rendered
-int IsNonRenderableSubmodel(poly_model *pm, int submodelnum) {
-  Q_ASSERT(pm->used);
-  Q_ASSERT(!(pm->flags.not_resident));
+int IsNonRenderableSubmodel(const poly_model &pm, int submodelnum) {
+  Q_ASSERT(pm.used);
+  Q_ASSERT(!(pm.flags.not_resident));
 
-  if ((pm->submodel[submodelnum].flags.frontface) || (pm->submodel[submodelnum].flags.shell))
+  if ((pm.submodel[submodelnum].flags.frontface) || (pm.submodel[submodelnum].flags.shell))
     return 1;
 
-  if (pm->submodel[submodelnum].num_faces == 0)
+  if (pm.submodel[submodelnum].num_faces == 0)
     return 1;
 
   return 0;

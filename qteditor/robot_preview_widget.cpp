@@ -104,6 +104,6 @@ void RobotPreviewWidget::paintGL() {
 
   vector3 zeroVector{};
   g3_StartFrame(&viewVector, &idMatrix, D3_DEFAULT_ZOOM);
-  DrawPolygonModel(&zeroVector, &rotMatrix, pmHandle, normTime, 0, 0.9f, 0.9f, 0.9f);
+  DrawPolygonModel(zeroVector, rotMatrix, pmHandle, normTime, 0, 0.9f, 0.9f, 0.9f);
   g3_EndFrame();
 }

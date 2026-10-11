@@ -342,18 +342,18 @@ index_t FindPolyModelName(const std::filesystem::path &name);
 // an animation state we are
 
 // This one is for static lighting - ie 1 light value for the entire model
-void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *normalized_time, int flags, float r, float g,
+void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *normalized_time, int flags, float r, float g,
                       float b, uint32_t f_render_sub = 0xFFFFFFFF, uint8_t use_effect = 0, uint8_t overlay = 0);
 
 // This one is for gouraud shading - the lightdir is the normalized light direction, and lightscalar is a 0-1 scalar to
 // apply
-void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *normalized_time, int flags, vector3 *lightdir,
+void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *normalized_time, int flags, const vector3 &lightdir,
                       float r, float g, float b, uint32_t f_render_sub = 0xFFFFFFFF, uint8_t use_effect = 0,
                       uint8_t overlay = 0);
 
 // This one is for lightmap rendering
-void DrawPolygonModel(vector3 *pos, const matrix *orient, int model_num, float *normalized_time, int flags,
-                      lightmap_object *lm_object, uint32_t f_render_sub, uint8_t use_effect = 0, uint8_t overlay = 0);
+void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *normalized_time, int flags,
+                      lightmap_object &lm_object, uint32_t f_render_sub, uint8_t use_effect = 0, uint8_t overlay = 0);
 
 // Inits our models array
 int InitModels();
@@ -369,40 +369,40 @@ float GetNormalizedKeyframe(int handle, float num);
 void RemapPolyModels();
 
 // Sets a positional instance
-void StartPolyModelPosInstance(vector3 *posvec);
+void StartPolyModelPosInstance(const vector3 &posvec);
 
 // Pops a positional instance
 void DonePolyModelPosInstance();
 
-void SetModelAngles(poly_model *po, const float *normalized_angles);
-void SetModelInterpPos(poly_model *po, const float *normalized_pos);
+void SetModelAngles(poly_model &po, const float *normalized_angles);
+void SetModelInterpPos(poly_model &po, const float *normalized_pos);
 
-void SetNormalizedTimeObj(object *obj, float *normalized_time);
-void SetNormalizedTimeAnim(float norm_anim_frame, float *normalized_time, poly_model *pm);
+void SetNormalizedTimeObj(const object &obj, float *normalized_time);
+void SetNormalizedTimeAnim(float norm_anim_frame, float *normalized_time, const poly_model &pm);
 
-void WBClearInfo(poly_model *pm);
+void WBClearInfo(poly_model &pm);
 
 // Computes the size of a polymodel.
 float ComputeDefaultSize(object_type_e type, int handle, optref<float> size_out);
 
 // Returns the total number of faces in a model
-int CountFacesInPolymodel(poly_model *pm);
+int CountFacesInPolymodel(const poly_model &pm);
 
 // Rendering functions
 int RenderPolygonModel(poly_model *, uint32_t f_render_sub = 0xFFFFFFFF);
 void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub);
 
 //	returns point within polymodel/submodel in world coordinates.
-void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matrix& orient, int subnum, vector3& pos,
+void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, const vector3& wpos, const matrix& orient, int subnum, const vector3& pos,
                               optref<vector3> norm = std::nullopt);
-void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, vector3& wpos, matrix& orient, int subnum,
-                              float *normalized_time, vector3& pos, optref<vector3> norm = std::nullopt);
+void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, const vector3& wpos, const matrix& orient, int subnum,
+                              float *normalized_time, const vector3& pos, optref<vector3> norm = std::nullopt);
 
 // Returns 1 if this submodel shouldn't be rendered
-int IsNonRenderableSubmodel(poly_model *pm, int submodelnum);
+int IsNonRenderableSubmodel(const poly_model &pm, int submodelnum);
 
 // Sets the effect used by a polymodel
-void SetPolymodelEffect(polymodel_effect *);
+void SetPolymodelEffect(const polymodel_effect &);
 
 // Pages in a polymodel if it is not already in memory
 void PageInPolymodel(int polynum, std::optional<object_type_e> type = std::nullopt, optref<float> size_out = std::nullopt);
@@ -414,9 +414,9 @@ poly_model *GetPolymodelPointer(int polynum);
 void FreePolymodelData(int i);
 
 // Sets the position and rotation of a polymodel.  Used for rendering and collision detection
-void SetModelAnglesAndPos(poly_model *po, float *normalized_time, uint32_t subobj_flags = 0xFFFFFFFF);
+void SetModelAnglesAndPos(poly_model &po, float *normalized_time, uint32_t subobj_flags = 0xFFFFFFFF);
 
 void DoneLightInstance();
-void StartLightInstance(vector3 *, const matrix *);
+void StartLightInstance(const vector3 &, const matrix &);
 
 #endif

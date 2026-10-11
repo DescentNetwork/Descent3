@@ -383,7 +383,7 @@ void WorldObjectsGenericDialog::updateDialog() {
     ui->IDC_NUM_POLYS->setText("Num polys: NA");
   else {
     PageInPolymodel(poly_handle);
-    ui->IDC_NUM_POLYS->setText(QString("Num polys: %1").arg(CountFacesInPolymodel(&Poly_models[poly_handle])));
+    ui->IDC_NUM_POLYS->setText(QString("Num polys: %1").arg(CountFacesInPolymodel(Poly_models[poly_handle])));
   }
 
   if (poly_handle == -1)

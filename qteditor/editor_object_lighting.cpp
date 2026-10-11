@@ -163,7 +163,7 @@ void GetPointInObjectSpace(vector3& dest, vector3& pos, object& obj, int subnum,
   for (i = 0; i < MAX_SUBOBJECTS; i++)
     normalized_time[i] = 0.0f;
 
-  SetModelAnglesAndPos(&pm, normalized_time);
+  SetModelAnglesAndPos(pm, normalized_time);
 
   vector3 pnt = pos;
   int mn = subnum;
@@ -221,7 +221,7 @@ void AssignLightmapsToObjectSurfaces(int surface_index, int terrain) {
       for (t = 0; t < po->n_models; t++) {
         bsp_info *sm = &po->submodel[t];
 
-        if (IsNonRenderableSubmodel(po, t))
+        if (IsNonRenderableSubmodel(*po, t))
           continue;
 
         for (j = 0; j < sm->num_faces; j++, surface_index++) {
@@ -275,7 +275,7 @@ void AssignLightmapsToObjectSurfacesForSingleRoom(int surface_index, int roomnum
       for (t = 0; t < po->n_models; t++) {
         bsp_info *sm = &po->submodel[t];
 
-        if (IsNonRenderableSubmodel(po, t))
+        if (IsNonRenderableSubmodel(*po, t))
           continue;
 
         for (j = 0; j < sm->num_faces; j++, surface_index++)
@@ -310,7 +310,7 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
       for (t = 0; t < po->n_models; t++) {
         bsp_info *sm = &po->submodel[t];
 
-        if (IsNonRenderableSubmodel(po, t))
+        if (IsNonRenderableSubmodel(*po, t))
           continue;
 
         for (j = 0; j < sm->num_faces; j++, surface_index++) {
@@ -395,7 +395,7 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
       for (t = 0; t < po->n_models; t++) {
         bsp_info *sm = &po->submodel[t];
 
-        if (IsNonRenderableSubmodel(po, t))
+        if (IsNonRenderableSubmodel(*po, t))
           continue;
 
         for (j = 0; j < sm->num_faces; j++, surface_index++) {
@@ -456,7 +456,7 @@ int GetTotalObjectFaces(int terrain) {
         if (!po->new_style)
           continue;
 
-        facecount += CountFacesInPolymodel(po);
+        facecount += CountFacesInPolymodel(*po);
       }
     }
   }
@@ -480,7 +480,7 @@ int GetTotalObjectFacesForSingleRoom(int roomnum) {
         if (!po->new_style)
           continue;
 
-        facecount += CountFacesInPolymodel(po);
+        facecount += CountFacesInPolymodel(*po);
       }
     }
   }
@@ -879,7 +879,7 @@ StartOver:
   for (i = 0; i < pm->n_models; i++) {
     bsp_info *bsm = &pm->submodel[i];
 
-    if (IsNonRenderableSubmodel(pm, i))
+    if (IsNonRenderableSubmodel(*pm, i))
       continue;
 
     if (bsm != a_sm) // only combine faces in the same submodel
@@ -952,7 +952,7 @@ void CombineObjectLightmapUVs(object& obj, lmi_type type) {
   for (i = 0; i < pm->n_models; i++) {
     bsp_info *sm = &pm->submodel[i];
 
-    if (IsNonRenderableSubmodel(pm, i))
+    if (IsNonRenderableSubmodel(*pm, i))
       continue;
 
     ObjectsAlreadyCombined[i].resize(sm->num_faces, 0);
@@ -961,7 +961,7 @@ void CombineObjectLightmapUVs(object& obj, lmi_type type) {
   for (i = 0; i < pm->n_models; i++) {
     bsp_info *sm = &pm->submodel[i];
 
-    if (IsNonRenderableSubmodel(pm, i))
+    if (IsNonRenderableSubmodel(*pm, i))
       continue;
 
     for (t = 0; t < sm->num_faces; t++) {
@@ -974,7 +974,7 @@ void CombineObjectLightmapUVs(object& obj, lmi_type type) {
   for (i = 0; i < pm->n_models; i++) {
     bsp_info *sm = &pm->submodel[i];
 
-    if (IsNonRenderableSubmodel(pm, i))
+    if (IsNonRenderableSubmodel(*pm, i))
       continue;
 
     for (t = 0; t < sm->num_faces; t++) {
@@ -999,7 +999,7 @@ void CombineObjectLightmapUVs(object& obj, lmi_type type) {
   for (i = 0; i < pm->n_models; i++) {
     bsp_info *sm = &pm->submodel[i];
 
-    if (IsNonRenderableSubmodel(pm, i))
+    if (IsNonRenderableSubmodel(*pm, i))
       continue;
     ObjectsAlreadyCombined[i].clear();
   }

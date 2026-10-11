@@ -1260,7 +1260,7 @@ void RenderObject(object& obj) {
 
     if (obj.rtype.pobj_info().anim_frame || (Poly_models[obj.rtype.pobj_info().model_num].frame_max !=
                                             Poly_models[obj.rtype.pobj_info().model_num].frame_min)) {
-      SetNormalizedTimeObj(&obj, normalized_time);
+      SetNormalizedTimeObj(obj, normalized_time);
       RenderObject_DrawPolymodel(obj, normalized_time);
     } else {
       RenderObject_DrawPolymodel(obj, NULL);
@@ -1691,14 +1691,14 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
   }
   // Set effects
   if (use_effect)
-    SetPolymodelEffect(&pe);
+    SetPolymodelEffect(pe);
   if (RenderObjectType == RO_STATIC) {
     // Draw this object with static light
     int overlay = 0;
     if ((obj.type == object_type_e::robot || obj.type == object_type_e::player) && obj.rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
       overlay = 1;
 
-    DrawPolygonModel(&obj_pos, &obj.orient, model_num, normalized_times, 0, RenderObjectStaticRedValue,
+    DrawPolygonModel(obj_pos, obj.orient, model_num, normalized_times, 0, RenderObjectStaticRedValue,
                      RenderObjectStaticGreenValue, RenderObjectStaticBlueValue, obj.rtype.pobj_info().subobj_flags,
                      use_effect, overlay);
   } else if (RenderObjectType == RO_GOURAUD || NoLightmaps) {
@@ -1706,7 +1706,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
     int overlay = 0;
     if ((obj.type == object_type_e::robot || obj.type == object_type_e::player) && obj.rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
       overlay = 1;
-    DrawPolygonModel(&obj_pos, &obj.orient, model_num, normalized_times, 0, &RenderObject_LightDirection,
+    DrawPolygonModel(obj_pos, obj.orient, model_num, normalized_times, 0, RenderObject_LightDirection,
                      RenderObjectStaticRedValue, RenderObjectStaticGreenValue, RenderObjectStaticBlueValue,
                      obj.rtype.pobj_info().subobj_flags, use_effect, overlay);
   } else if (RenderObjectType == RO_LIGHTMAPS) {
@@ -1714,7 +1714,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
     if ((obj.type == object_type_e::robot || obj.type == object_type_e::player) && obj.rtype.pobj_info().subobj_flags != 0xFFFFFFFF)
       overlay = 1;
     // If this object is a destroyed building then do something different with it
-    DrawPolygonModel(&obj_pos, &obj.orient, model_num, normalized_times, 0, RenderObjectLightmapObject,
+    DrawPolygonModel(obj_pos, obj.orient, model_num, normalized_times, 0, *RenderObjectLightmapObject,
                      obj.rtype.pobj_info().subobj_flags, use_effect, overlay);
   } else
     Q_ASSERT(false); // Get Jason

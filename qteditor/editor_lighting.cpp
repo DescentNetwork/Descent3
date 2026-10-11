@@ -275,7 +275,7 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<
       continue;
 
     for (t = 0; t < this_obj->lm_object.num_models; t++) {
-      if (IsNonRenderableSubmodel(&Poly_models[this_obj->rtype.pobj_info().model_num], t))
+      if (IsNonRenderableSubmodel(Poly_models[this_obj->rtype.pobj_info().model_num], t))
         continue;
 
       for (k = 0; k < this_obj->lm_object.num_faces[t]; k++) {
@@ -548,7 +548,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
         continue;
 
       for (t = 0; t < obj->lm_object.num_models; t++) {
-        if (IsNonRenderableSubmodel(&Poly_models[obj->rtype.pobj_info().model_num], t))
+        if (IsNonRenderableSubmodel(Poly_models[obj->rtype.pobj_info().model_num], t))
           continue;
 
         for (int j = 0; j < obj->lm_object.num_faces[t]; j++) {
@@ -584,7 +584,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
                 continue;
 
               for (int b = 0; b < obj->lm_object.num_models; b++) {
-                if (IsNonRenderableSubmodel(&Poly_models[obj->rtype.pobj_info().model_num], b))
+                if (IsNonRenderableSubmodel(Poly_models[obj->rtype.pobj_info().model_num], b))
                   continue;
 
                 for (int c = 0; c < obj->lm_object.num_faces[b]; c++) {
@@ -651,7 +651,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
         continue;
 
       for (t = 0; t < obj->lm_object.num_models; t++) {
-        if (IsNonRenderableSubmodel(&Poly_models[obj->rtype.pobj_info().model_num], t))
+        if (IsNonRenderableSubmodel(Poly_models[obj->rtype.pobj_info().model_num], t))
           continue;
         for (k = 0; k < obj->lm_object.num_faces[t]; k++) {
           lightmap_object_face *fp = &obj->lm_object.lightmap_faces[t][k];
@@ -687,7 +687,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
                 continue;
 
               for (int b = 0; b < obj->lm_object.num_models; b++) {
-                if (IsNonRenderableSubmodel(&Poly_models[obj->rtype.pobj_info().model_num], b))
+                if (IsNonRenderableSubmodel(Poly_models[obj->rtype.pobj_info().model_num], b))
                   continue;
                 for (int c = 0; c < obj->lm_object.num_faces[b]; c++) {
                   lightmap_object_face *fp = &obj->lm_object.lightmap_faces[b][c];

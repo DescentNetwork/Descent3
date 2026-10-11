@@ -312,7 +312,7 @@ void CollideSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
   if ((sm->flags.shell) || (sm->flags.frontface))
     return;
 
-  StartPolyModelPosInstance(&sm->mod_pos);
+  StartPolyModelPosInstance(sm->mod_pos);
   vector3 temp_vec = sm->mod_pos + sm->offset;
   newstyle_StartInstanceAngles(temp_vec, sm->angs);
 
@@ -340,7 +340,7 @@ void CollidePolygonModel(vector3 *pos, matrix *orient, int model_num, float *nor
 
   newstyle_StartInstanceMatrix(*pos, *orient);
 
-  SetModelAnglesAndPos(po, normalized_time);
+  SetModelAnglesAndPos(*po, normalized_time);
 
   for (int i = 0; i < po->n_models; i++) {
     bsp_info *sm = &po->submodel[i];
@@ -403,7 +403,7 @@ bool PolyCollideObject(object& obj) {
 #ifndef NED_PHYSICS
   if (obj.type == object_type_e::player || obj.type == object_type_e::robot || obj.type == object_type_e::debris || obj.type == object_type_e::door ||
       obj.type == object_type_e::building || obj.type == object_type_e::clutter || obj.type == object_type_e::building) {
-    SetNormalizedTimeObj(&obj, normalized_time);
+    SetNormalizedTimeObj(obj, normalized_time);
     CollidePolygonModel(&obj.pos, &obj.orient, obj.rtype.pobj_info().model_num, normalized_time,
                         obj.rtype.pobj_info().subobj_flags);
   } else {

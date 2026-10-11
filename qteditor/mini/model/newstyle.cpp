@@ -952,7 +952,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
   matrix lightmatrix;
 
   // Don't render door housings
-  if (IsNonRenderableSubmodel(pm, sm - pm->submodel.data()))
+  if (IsNonRenderableSubmodel(*pm, sm - pm->submodel.data()))
     return;
 
   if (Polymodel_light_type != polymodel_light_type::lightmap) {
@@ -966,12 +966,12 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
     Multicolor_texture = FindTextureName("MultiColor").value_or(-1);
 
   rend_SetColorModel(color_model::rgb);
-  StartPolyModelPosInstance(&sm->mod_pos);
+  StartPolyModelPosInstance(sm->mod_pos);
   vector3 temp_vec = sm->mod_pos + sm->offset;
   g3_StartInstanceAngles(temp_vec, sm->angs);
 
   vm_AnglesToMatrix(&lightmatrix, sm->angs.p(), sm->angs.h(), sm->angs.b());
-  StartLightInstance(&temp_vec, &lightmatrix);
+  StartLightInstance(temp_vec, lightmatrix);
 
   // Check my bit to see if I get drawn
   if (f_render_sub & (0x00000001 << (sm - pm->submodel.data()))) {
@@ -1117,9 +1117,9 @@ float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3>
       // Because size changes with animation, we need the worst case point -- so, check every keyframe
       // NOTE:  This code does not currently account for all $turret and $rotate positions
 
-      SetNormalizedTimeAnim(frame_index, normalized_time, pm);
+      SetNormalizedTimeAnim(frame_index, normalized_time, *pm);
 
-      SetModelAnglesAndPos(pm, normalized_time);
+      SetModelAnglesAndPos(*pm, normalized_time);
 
       for (model_index = 0; model_index < pm->n_models; model_index++) {
         bsp_info *sm = &pm->submodel[model_index];
@@ -1187,9 +1187,9 @@ float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3>
     // Because size changes with animation, we need the worst case point -- so, check every keyframe
     // NOTE:  This code does not currently account for all $turret and $rotate positions
 
-    SetNormalizedTimeAnim(frame_index, normalized_time, pm);
+    SetNormalizedTimeAnim(frame_index, normalized_time, *pm);
 
-    SetModelAnglesAndPos(pm, normalized_time);
+    SetModelAnglesAndPos(*pm, normalized_time);
 
     for (model_index = 0; model_index < pm->n_models; model_index++) {
       bsp_info *sm = &pm->submodel[model_index];

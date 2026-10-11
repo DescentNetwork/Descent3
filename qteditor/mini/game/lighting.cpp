@@ -585,7 +585,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
   int green_limit = 31;
   int blue_limit = 31;
 
-  if (IsNonRenderableSubmodel(pm, subnum))
+  if (IsNonRenderableSubmodel(*pm, subnum))
     return; // Don't do shells, frontfaces, etc
 
   // Start instance stuff
@@ -992,8 +992,8 @@ void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float r
     StartLightingInstance(&obj->pos, &obj->orient);
 
     // Now, get the lights position in the objects submodel space
-    SetNormalizedTimeObj(obj, normalized_time);
-    SetModelAnglesAndPos(pm, normalized_time);
+    SetNormalizedTimeObj(*obj, normalized_time);
+    SetModelAnglesAndPos(*pm, normalized_time);
 
     for (int t = 0; t < pm->n_models; t++) {
       bsp_info *sm = &pm->submodel[t];

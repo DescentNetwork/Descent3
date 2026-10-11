@@ -782,7 +782,7 @@ void GetObjectPointInWorld(vector3& dest, object& obj, int subnum, int vertnum) 
   for (int i = 0; i < MAX_SUBOBJECTS; i++)
     normalized_time[i] = 0.0f;
 
-  SetModelAnglesAndPos(pm, normalized_time);
+  SetModelAnglesAndPos(*pm, normalized_time);
 
   vector3 pnt = sm->verts[vertnum];
   int mn = subnum;
