@@ -160,7 +160,7 @@ void CalculateFormFactorsHemiCube() {
             Element_points[k].p3_flags = g3point_flags_t{};
           }
 
-          if (g3_CheckNormalFacing(&ep->verts[0], &surf->normal)) {
+          if (g3_CheckNormalFacing(ep->verts[0], surf->normal)) {
             for (k = 0; k < ep->num_verts; k++) {
               g3Point *p = &Element_points[k];
               pointlist[k] = p;
@@ -500,7 +500,7 @@ void DrawRadiosityPoly(int nv, g3Point **pointlist, int id) {
   if (clip_code_byte(cc.cc_or) != 0) {
 
     // Clip the polygon, getting pointer to new buffer
-    pointlist = g3_ClipPolygon(pointlist, &nv, &cc);
+    pointlist = g3_ClipPolygon(pointlist, nv, cc);
 
     // Flag as clipped so temp points will be freed
     was_clipped = 1;
@@ -513,7 +513,7 @@ void DrawRadiosityPoly(int nv, g3Point **pointlist, int id) {
   // Make list of 2d coords
   for (i = 0; i < nv; i++) {
     g3Point *p = pointlist[i];
-    g3_ProjectPoint(p);
+    g3_ProjectPoint(*p);
   }
 
   // Draw!

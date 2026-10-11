@@ -661,7 +661,7 @@ void DrawObjectSelectionBrackets(object& obj, bool front_flag) {
   poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
   float line_len;
   // Get vector from object to viewer
-  g3_GetViewPosition(&viewvec);
+  g3_GetViewPosition(viewvec);
   viewvec -= obj.pos;
   // Get length of line segments we're drawing
   line_len = (pm->maxs.x() - pm->mins.x()) * 0.2f;
@@ -687,7 +687,7 @@ void DrawObjectSelectionBrackets(object& obj, bool front_flag) {
       g3_RotatePoint(pp0, corner);
       g3_RotatePoint(pp1, t);
       // Draw!
-      g3_DrawLine(GR_RGB(255, 255, 255), &pp0, &pp1);
+      g3_DrawLine(GR_RGB(255, 255, 255), pp0, pp1);
     }
   }
 }
@@ -748,15 +748,15 @@ static void DrawNumber(int num, vector3 pos, float size, ddgr_color c1) {
       rot_pnt[i].p3_vec.x() += (ArrayX[num_array[j]][i] * size);
       rot_pnt[i].p3_vec.y() += (ArrayY[num_array[j]][i] * size);
       rot_pnt[i].p3_flags = g3point_flags_t{};
-      g3_CodePoint(&rot_pnt[i]);
-      g3_ProjectPoint(&rot_pnt[i]);
+      g3_CodePoint(rot_pnt[i]);
+      g3_ProjectPoint(rot_pnt[i]);
     }
     for (i = 0; i < NumOfPoints[num_array[j]] - 1; i++) {
       g3Point p1, p2;
       p1 = rot_pnt[i];
       p2 = rot_pnt[i + 1];
 
-      g3_DrawLine(c1, &p1, &p2);
+      g3_DrawLine(c1, p1, p2);
     }
   }
 }
@@ -970,18 +970,18 @@ void DrawDebugInfo(object *obj) {
   g3_RotatePoint(&g3p[5], &pos[5]);
   g3_RotatePoint(&g3p[6], &pos[6]);
   g3_RotatePoint(&g3p[7], &pos[7]);
-  g3_DrawLine(c1, &g3p[0], &g3p[1]);
-  g3_DrawLine(c1, &g3p[1], &g3p[2]);
-  g3_DrawLine(c1, &g3p[2], &g3p[3]);
-  g3_DrawLine(c1, &g3p[3], &g3p[0]);
-  g3_DrawLine(c1, &g3p[0], &g3p[4]);
-  g3_DrawLine(c1, &g3p[1], &g3p[5]);
-  g3_DrawLine(c1, &g3p[2], &g3p[6]);
-  g3_DrawLine(c1, &g3p[3], &g3p[7]);
-  g3_DrawLine(c1, &g3p[4], &g3p[5]);
-  g3_DrawLine(c1, &g3p[5], &g3p[6]);
-  g3_DrawLine(c1, &g3p[6], &g3p[7]);
-  g3_DrawLine(c1, &g3p[7], &g3p[4]);
+  g3_DrawLine(c1, g3p[0], g3p[1]);
+  g3_DrawLine(c1, g3p[1], g3p[2]);
+  g3_DrawLine(c1, g3p[2], g3p[3]);
+  g3_DrawLine(c1, g3p[3], g3p[0]);
+  g3_DrawLine(c1, g3p[0], g3p[4]);
+  g3_DrawLine(c1, g3p[1], g3p[5]);
+  g3_DrawLine(c1, g3p[2], g3p[6]);
+  g3_DrawLine(c1, g3p[3], g3p[7]);
+  g3_DrawLine(c1, g3p[4], g3p[5]);
+  g3_DrawLine(c1, g3p[5], g3p[6]);
+  g3_DrawLine(c1, g3p[6], g3p[7]);
+  g3_DrawLine(c1, g3p[7], g3p[4]);
   DrawNumber(OBJNUM(obj), obj->pos, 1.0f, GR_RGB(255, 255, 255));
 
   if (!obj->is_outside()) {
@@ -1014,7 +1014,7 @@ void DrawShardObject(object& obj) {
     pointlist[i] = &rotated_points[i];
   }
   // Check for backside
-  if (!g3_CheckNormalFacing(&obj.pos, &si->normal)) {
+  if (!g3_CheckNormalFacing(obj.pos, si->normal)) {
     g3Point *t = pointlist[1];
     pointlist[1] = pointlist[2];
     pointlist[2] = t;
@@ -1242,7 +1242,7 @@ void RenderObject(object& obj) {
     if (!UseHardware) {
       g3Point sphere_point;
       g3_RotatePoint(sphere_point, obj.pos);
-      g3_DrawSphere(obj.rtype.sphere_color(), &sphere_point, obj.size);
+      g3_DrawSphere(obj.rtype.sphere_color(), sphere_point, obj.size);
     } else {
       // Let me take this opportunity to say how much it pisses me off that
       // the DrawColoredDisk() function takes r,g,b as floats, when the standard
@@ -1399,7 +1399,7 @@ void RenderObject(object& obj) {
 
     g3_RotatePoint(&g3p[0], &obj.pos);
     g3_RotatePoint(&g3p[1], &obj.rtype.line_info().end_pos);
-    g3_DrawLine(GR_RGB(255, 255, 255), &g3p[0], &g3p[1]);
+    g3_DrawLine(GR_RGB(255, 255, 255), g3p[0], g3p[1]);
     break;
   }
 #endif
@@ -1423,7 +1423,7 @@ void RenderObject(object& obj) {
     if (obj.render_type != render_type_e::polyobj) {
       g3Point pnt;
       g3_RotatePoint(pnt, obj.pos);
-      g3_DrawBox(GR_RGB(255, 255, 255), &pnt, obj.size);
+      g3_DrawBox(GR_RGB(255, 255, 255), pnt, obj.size);
     } else {                               // polygon model
       DrawObjectSelectionBrackets(obj, 1); // draw front brackets
     }
@@ -1756,7 +1756,7 @@ int IsPointVisible(vector3 *pos, float size, float *pointz) {
   static matrix unscaled_matrix;
 
   g3_RotatePoint(pnt, *pos);
-  ccode = clip_codes_from_byte(g3_CodePoint(&pnt));
+  ccode = clip_codes_from_byte(g3_CodePoint(pnt));
   if (pointz != NULL)
     *pointz = pnt.p3_z;
   if (clip_code_byte(ccode) != 0) // the center point is off, find out if the whole object is off
@@ -1787,8 +1787,8 @@ int IsPointVisible(vector3 *pos, float size, float *pointz) {
     // Get unscaled matrix stuff
     if (Point_visible_last_frame != FrameCount) {
       Point_visible_last_frame = FrameCount;
-      g3_GetUnscaledMatrix(&unscaled_matrix);
-      g3_GetViewPosition(&view_position);
+      g3_GetUnscaledMatrix(unscaled_matrix);
+      g3_GetViewPosition(view_position);
     }
     vector3 temp_vec = *pos - view_position;
     pnt.p3_vec = temp_vec * unscaled_matrix;
@@ -1920,8 +1920,7 @@ void DrawPlayerRotatingBall(object *obj) {
     // Get color of balls
     ddgr_color color =
         GR_RGB(Players[obj->id].ball_r[i] * 255, Players[obj->id].ball_g[i] * 255, Players[obj->id].ball_b[i] * 255);
-    g3_DrawBitmap(&worldpos, obj->size / 4, ((obj->size / 4) * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle,
-                  color);
+    g3_DrawBitmap(worldpos, obj->size / 4, ((obj->size / 4) * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle, color);
   }
   rend_SetZBufferWriteMask(1);
 }
@@ -1986,7 +1985,7 @@ void DrawPlayerTypingIndicator(object *obj) {
     bmh = b_h / 2;
 
     g3_RotatePoint(&pnt, fq.p1);
-    g3_ProjectPoint(&pnt);
+    g3_ProjectPoint(pnt);
 
     points[0].p3_vec.x() = pnt.p3_vec.x() - bmw;
     points[0].p3_vec.y() = pnt.p3_vec.y() + bmh + 5;
@@ -2015,8 +2014,8 @@ void DrawPlayerTypingIndicator(object *obj) {
     for (int i = 0; i < 4; i++) {
       points[i].p3_flags.uv = true;
       pntlist[i] = &points[i];
-      code = g3_CodePoint(pntlist[i]);
-      g3_ProjectPoint(pntlist[i]);
+      code = g3_CodePoint(*pntlist[i]);
+      g3_ProjectPoint(*pntlist[i]);
 
       cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(code));
       cc.cc_or = clip_codes_or(cc.cc_or, clip_codes_from_byte(code));
@@ -2028,7 +2027,7 @@ void DrawPlayerTypingIndicator(object *obj) {
     rend_SetOverlayType(overlay_type::none);
     rend_SetColorModel(color_model::mono);
     rend_SetTextureType(texture_type::linear);
-    g3_DrawPoly(4, pntlist, bm_handle, map_type::bitmap, &cc);
+    g3_DrawPoly(4, pntlist, bm_handle, map_type::bitmap, cc);
   }
 }
 
@@ -2077,7 +2076,7 @@ void DrawPlayerNameOnHud(object *obj) {
     // Draw this name on the hud
     g3Point pnt;
     g3_RotatePoint(&pnt, fq.p1);
-    g3_ProjectPoint(&pnt);
+    g3_ProjectPoint(pnt);
     //	put a centered name string in the text buffer.
 
     grtext_SetFont(hud_font());

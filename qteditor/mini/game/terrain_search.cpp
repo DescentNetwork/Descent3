@@ -650,14 +650,14 @@ int SearchQuadTree(int x1, int y1, int x2, int y2, int dir, int *ccount) {
       if ((fabs(pnt->p3_vec.z()) <= testdist))
         close = 1;
 
-      anded &= g3_CodePoint(pnt);
+      anded &= g3_CodePoint(*pnt);
       if (Check_terrain_portal && check_portal) {
         pnt->p3_flags.projected = false;
         // Automatically flag the ones behind us as visible
         if (pnt->p3_codes.behind)
           check_portal = 0;
         else {
-          g3_ProjectPoint(pnt);
+          g3_ProjectPoint(*pnt);
           portal_and &= CodeTerrainPoint(pnt);
         }
       }
@@ -673,7 +673,7 @@ int SearchQuadTree(int x1, int y1, int x2, int y2, int dir, int *ccount) {
       if ((fabs(pnt->p3_vec.z()) <= testdist))
         close = 1;
 
-      anded &= g3_CodePoint(pnt);
+      anded &= g3_CodePoint(*pnt);
 
       if (Check_terrain_portal && check_portal) {
         pnt->p3_flags.projected = false;
@@ -681,7 +681,7 @@ int SearchQuadTree(int x1, int y1, int x2, int y2, int dir, int *ccount) {
         if (pnt->p3_codes.behind)
           check_portal = 0;
         else {
-          g3_ProjectPoint(pnt);
+          g3_ProjectPoint(*pnt);
           portal_and &= CodeTerrainPoint(pnt);
         }
       }
@@ -794,8 +794,8 @@ bool SimplifyVertexSlow(int x, int z, float delta) {
   p2.p3_codes = g3_clip_codes_t{};
   GetSpecialRotatedPoint(&p2, x, z, Terrain_seg[z * TERRAIN_WIDTH + x].y + delta);
 
-  g3_ProjectPoint(&p1);
-  g3_ProjectPoint(&p2);
+  g3_ProjectPoint(p1);
+  g3_ProjectPoint(p2);
 
   float len = ((p1.p3_sx - p2.p3_sx) * (p1.p3_sx - p2.p3_sx)) + ((p1.p3_sy - p2.p3_sy) * (p1.p3_sy - p2.p3_sy));
 

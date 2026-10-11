@@ -84,9 +84,9 @@ float rend_GetAlphaMultiplier() { return 1.0f; }
 // ===========================================================================
 // Facing test -- HardwareDraw.cpp
 // ===========================================================================
-bool g3_CheckNormalFacing(vector3 *v, vector3 *norm) {
-  vector3 tempv = View_position - *v;
-  return (vm_Dot3Product(tempv, *norm) > 0);
+bool g3_CheckNormalFacing(const vector3 &v, const vector3 &norm) {
+  vector3 tempv = View_position - v;
+  return (vm_Dot3Product(tempv, norm) > 0);
 }
 
 int Triangulate_test = 0;
@@ -246,14 +246,14 @@ void rend_DrawPolygon2D(int handle, g3Point **p, int nv) { rend_DrawPolygon3D(ha
 // ===========================================================================
 // g3_DrawPoly / g3_DrawBitmap -- HardwareDraw.cpp
 // ===========================================================================
-int g3_DrawPoly(int nv, g3Point **pointlist, int bm, map_type mt, g3Codes *) {
+int g3_DrawPoly(int nv, g3Point **pointlist, int bm, map_type mt, optref<g3Codes>) {
   rend_DrawPolygon3D(bm, pointlist, nv, mt);
   return 1;
 }
 
-void g3_DrawBitmap(vector3 *pos, float width, float height, int bm, int color) {
+void g3_DrawBitmap(const vector3 &pos, float width, float height, int bm, int color) {
   matrix viewOrient;
-  g3_GetUnscaledMatrix(&viewOrient);
+  g3_GetUnscaledMatrix(viewOrient);
 
   float r = 1.0f, g = 1.0f, b = 1.0f;
   if (color != -1) {
@@ -268,7 +268,7 @@ void g3_DrawBitmap(vector3 *pos, float width, float height, int bm, int color) {
     pts[i] = &corners[i];
     float cornerScaleU = ((i & 1) ^ ((i & 2) >> 1)) ? 1.0f : -1.0f;
     float cornerScaleV = (i & 2) ? 1.0f : -1.0f;
-    vector3 cornerPos = *pos + (viewOrient.uvec * (height * -cornerScaleV)) + (viewOrient.rvec * (width * cornerScaleU));
+    vector3 cornerPos = pos + (viewOrient.uvec * (height * -cornerScaleV)) + (viewOrient.rvec * (width * cornerScaleU));
     corners[i].p3_codes = g3_clip_codes_t{};
     g3_RotatePoint(*pts[i], cornerPos);
     corners[i].p3_flags.uv = true;
@@ -289,10 +289,10 @@ void g3_DrawBitmap(vector3 *pos, float width, float height, int bm, int color) {
   rend_DrawPolygon3D(bm, pts, 4);
 }
 
-void g3_DrawSpecialLine(g3Point *, g3Point *) {}
-void g3_DrawLine(ddgr_color, g3Point *, g3Point *) {}
-void g3_DrawSphere(ddgr_color, g3Point *, float) {}
-void g3_DrawBox(ddgr_color, g3Point *, float) {}
+void g3_DrawSpecialLine(g3Point &, g3Point &) {}
+void g3_DrawLine(ddgr_color, g3Point &, g3Point &) {}
+void g3_DrawSphere(ddgr_color, g3Point &, float) {}
+void g3_DrawBox(ddgr_color, g3Point &, float) {}
 void rend_DrawLine(int, int, int, int) {}
 void rend_DrawSpecialLine(g3Point *, g3Point *) {}
 void rend_FillCircle(ddgr_color, float, float, float) {}

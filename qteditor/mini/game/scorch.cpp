@@ -325,7 +325,7 @@ void DrawScorches(int roomnum, int facenum) {
       float size = (float)sp->size / 16.0f;
 
       // Don't draw mark if too far away, and make smaller those marks that are almost too far
-      float depth = g3_CalcPointDepth(&sp->pos);
+      float depth = g3_CalcPointDepth(sp->pos);
       if (depth > MAX_VIS_DISTANCE)
         goto skip_draw;
       if (depth > FADE_START_DISTANCE)

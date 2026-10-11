@@ -144,9 +144,9 @@ static void model_draw_outline(int nverts, g3Point **pointlist) {
   int i;
 
   for (i = 0; i < nverts - 1; i++)
-    g3_DrawLine(GR_RGB(255, 255, 255), pointlist[i], pointlist[i + 1]);
+    g3_DrawLine(GR_RGB(255, 255, 255), *pointlist[i], *pointlist[i + 1]);
 
-  g3_DrawLine(GR_RGB(255, 255, 255), pointlist[i], pointlist[0]);
+  g3_DrawLine(GR_RGB(255, 255, 255), *pointlist[i], *pointlist[0]);
 }
 
 static void DrawSubmodelFaceOutline(int nv, g3Point **pointlist) {
@@ -162,8 +162,8 @@ static void DrawSubmodelFaceOutline(int nv, g3Point **pointlist) {
   }
 
   for (i = 0; i < nv - 1; i++)
-    g3_DrawLine(GR_RGB(255, 255, 0), tpnt_list[i], tpnt_list[i + 1]);
-  g3_DrawLine(GR_RGB(255, 255, 0), tpnt_list[i], tpnt_list[0]);
+    g3_DrawLine(GR_RGB(255, 255, 0), *tpnt_list[i], *tpnt_list[i + 1]);
+  g3_DrawLine(GR_RGB(255, 255, 0), *tpnt_list[i], *tpnt_list[0]);
 }
 #endif
 
@@ -391,7 +391,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
   if (triface)
     g3_SetTriangulationTest(1);
 
-  g3_DrawPoly(fp->nverts, pointlist, bm_handle, map_type::bitmap, &face_cc);
+  g3_DrawPoly(fp->nverts, pointlist, bm_handle, map_type::bitmap, face_cc);
 
   if (triface)
     g3_SetTriangulationTest(0);
@@ -445,12 +445,12 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
                             if (!(src_data[y*w+x] & OPAQUE_FLAG))
                             {
                                     for (t=0;t<4;t++)
-                                            g3_DrawLine(GR_RGB(255,0,255),pointlist[t],pointlist[(t+1)%4]);
+                                            g3_DrawLine(GR_RGB(255,0,255), *pointlist[t], *pointlist[(t+1)%4]);
                             }
                             else
                             {
                                     for (t=0;t<4;t++)
-                                            g3_DrawLine(GR_RGB(255,255,255),pointlist[t],pointlist[(t+1)%4]);
+                                            g3_DrawLine(GR_RGB(255,255,255), *pointlist[t], *pointlist[(t+1)%4]);
                             }
                     }
 
@@ -464,7 +464,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
                     {
 
                             //Draw a little cross at the current vert
-                            g3_ProjectPoint(&p0);	  //make sure projected
+                            g3_ProjectPoint(p0);	  //make sure projected
                             rend_SetFlatColor(GR_RGB(255,0,0));
                             rend_DrawLine(p0.p3_sx-CROSS_WIDTH,p0.p3_sy,p0.p3_sx,p0.p3_sy-CROSS_WIDTH);
                             rend_DrawLine(p0.p3_sx,p0.p3_sy-CROSS_WIDTH,p0.p3_sx+CROSS_WIDTH,p0.p3_sy);
@@ -660,7 +660,7 @@ void RenderSubmodelFacesSorted(poly_model *pm, bsp_info *sm) {
     polyface *fp = &sm->faces[i];
 
     // check for visible face
-    if (g3_CheckNormalFacing(&sm->verts[fp->vertnums[0]], &fp->normal)) {
+    if (g3_CheckNormalFacing(sm->verts[fp->vertnums[0]], fp->normal)) {
       face_depth[i] = 0;
       for (t = 0; t < fp->nverts; t++)
         face_depth[i] += Robot_points[fp->vertnums[t]].p3_z;
@@ -693,8 +693,8 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
   std::vector<state_limited_element> state_elements;
   vector3 view_pos;
 
-  g3_GetViewPosition(&view_pos);
-  g3_GetUnscaledMatrix(&Unscaled_bumpmap_matrix);
+  g3_GetViewPosition(view_pos);
+  g3_GetUnscaledMatrix(Unscaled_bumpmap_matrix);
 
   Specular_view_pos = view_pos;
   Bump_view_pos = view_pos;
@@ -769,7 +769,7 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
     for (i = 0; i < sm->num_faces; i++) {
       polyface *fp = &sm->faces[i];
 
-      if (!g3_CheckNormalFacing(&sm->verts[fp->vertnums[0]], &fp->normal))
+      if (!g3_CheckNormalFacing(sm->verts[fp->vertnums[0]], fp->normal))
         continue;
 
       /*	vector3 subvec=sm->verts[fp->vertnums[0]]-Polymodel_specular_pos;
@@ -788,8 +788,8 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
   if (Polymodel_use_effect && Polymodel_effect.type.fogged_model) {
     matrix mat;
 
-    g3_GetUnscaledMatrix(&mat);
-    g3_GetViewPosition(&Fog_view_pos);
+    g3_GetUnscaledMatrix(mat);
+    g3_GetViewPosition(Fog_view_pos);
     Fog_plane = mat.fvec;
 
     if (Polymodel_effect.fog_plane_check == 1)
@@ -814,7 +814,7 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
     for (i = 0; i < sm->num_faces; i++) {
       polyface *fp = &sm->faces[i];
 
-      if (!g3_CheckNormalFacing(&sm->verts[fp->vertnums[0]], &fp->normal))
+      if (!g3_CheckNormalFacing(sm->verts[fp->vertnums[0]], fp->normal))
         continue;
 
       RenderSubmodelFaceFogged(pm, sm, i);
@@ -1027,7 +1027,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
         rend_SetAlphaType(alpha_blend_type::constant_texture);
 
       rend_SetZBufferWriteMask(0);
-      g3_DrawBitmap(&pos, sm->radius, (sm->radius * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle);
+      g3_DrawBitmap(pos, sm->radius, (sm->radius * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle);
       rend_SetZBufferWriteMask(1);
 
       goto pop_lighting;

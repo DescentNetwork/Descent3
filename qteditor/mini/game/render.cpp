@@ -306,11 +306,11 @@ void OutlineCurrentFace(int roomnum, int facenum, int edgenum, int vertnum, ddgr
     c1 = g3_RotatePoint(p1, rp.verts[fp->face_verts[(v + 1) % fp->num_verts]]);
     if (!(c0 & c1)) { // both not off screen?
       // Draw current edge in green
-      g3_DrawLine((v == edgenum) ? edge_color : face_color, &p0, &p1);
+      g3_DrawLine((v == edgenum) ? edge_color : face_color, p0, p1);
     }
     if ((v == vertnum) && (c0 == 0)) {
       // Draw a little cross at the current vert
-      g3_ProjectPoint(&p0); // make sure projected
+      g3_ProjectPoint(p0); // make sure projected
       rend_SetFlatColor(edge_color);
       rend_DrawLine(p0.p3_sx - CROSS_WIDTH, p0.p3_sy, p0.p3_sx, p0.p3_sy - CROSS_HEIGHT);
       rend_DrawLine(p0.p3_sx, p0.p3_sy - CROSS_HEIGHT, p0.p3_sx + CROSS_WIDTH, p0.p3_sy);
@@ -326,7 +326,7 @@ void OutlineCurrentFace(int roomnum, int facenum, int edgenum, int vertnum, ddgr
     c0 = g3_RotatePoint(p0, LightmapInfo[rp.faces[facenum].lmi_handle].upper_left);
     if (!c0) {
       // Draw a little cross at the current vert
-      g3_ProjectPoint(&p0); // make sure projected
+      g3_ProjectPoint(p0); // make sure projected
       rend_SetFlatColor(GR_RGB(255, 0, 0));
       rend_DrawLine(p0.p3_sx - CROSS_WIDTH, p0.p3_sy, p0.p3_sx, p0.p3_sy - CROSS_HEIGHT);
       rend_DrawLine(p0.p3_sx, p0.p3_sy - CROSS_HEIGHT, p0.p3_sx + CROSS_WIDTH, p0.p3_sy);
@@ -354,7 +354,7 @@ static void DrawPlacedRoomFace(int roomnum, vector3 *rotpoint, matrix *rotmat, v
     c1 = g3_RotatePoint(p1, tv);
 
     if (!(c0 & c1)) // both not off screen?
-      g3_DrawLine(color, &p0, &p1);
+      g3_DrawLine(color, p0, p1);
   }
 }
 #endif // ifdef EDITOR
@@ -502,13 +502,13 @@ void RotateRoomPoints(int roomnum, const vector3 *world_vecs) {
       vec += Global_alter_vec * (Viewer_object->effect_info->deform_range * val);
 
       g3_RotatePoint(World_point_buffer[rp->wpb_index + i], vec);
-      g3_ProjectPoint(&World_point_buffer[rp->wpb_index + i]);
+      g3_ProjectPoint(World_point_buffer[rp->wpb_index + i]);
     }
   } else {
     for (i = 0; i < rp->num_verts; i++) {
       vector3 vec = world_vecs[i];
       g3_RotatePoint(World_point_buffer[rp->wpb_index + i], vec);
-      g3_ProjectPoint(&World_point_buffer[rp->wpb_index + i]);
+      g3_ProjectPoint(World_point_buffer[rp->wpb_index + i]);
     }
   }
 }
@@ -676,7 +676,7 @@ void MarkFacesForRendering(int roomnum, clip_wnd *wnd) {
     MakePointsFromMinMax(vecs, &obj->min_xyz, &obj->max_xyz);
     for (i = 0; i < 8; i++) {
       g3_RotatePoint(pnts[i], vecs[i]);
-      g3_ProjectPoint(&pnts[i]);
+      g3_ProjectPoint(pnts[i]);
       code = clip2d(&pnts[i], wnd);
       anded &= code;
       if (pnts[i].p3_codes.behind)
@@ -725,7 +725,7 @@ void RotateAllExternalRooms() {
         else
           infront = true;
         pnt.p3_codes.behind = false;
-        g3_ProjectPoint(&pnt);
+        g3_ProjectPoint(pnt);
         External_room_corners[i][t].x() = pnt.p3_sx;
         External_room_corners[i][t].y() = pnt.p3_sy;
       }
@@ -895,7 +895,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
 
           // If portal not all on screen, must clip it
           int combine_nv = this_fp->num_verts;
-          g3Point **pl = g3_ClipPolygon(pointlist, &combine_nv, &combine_cc);
+          g3Point **pl = g3_ClipPolygon(pointlist, combine_nv, combine_cc);
           if (clip_code_byte(combine_cc.cc_and) != 0) {
             g3_FreeTempPoints(pl, combine_nv);
           } else {
@@ -929,7 +929,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
       // Now, figure out a min/max for these points
       g3Point four_points[4];
       for (i = 0; i < num_points; i++) {
-        g3_ProjectPoint(&Combined_portal_points[i]);
+        g3_ProjectPoint(Combined_portal_points[i]);
       }
       int left = 0, top = 0, right = 0, bottom = 0;
       clip_wnd combine_wnd;
@@ -987,12 +987,12 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
         pointlist[i] = &Combined_portal_points[i];
       // If portal not all on screen, must clip it
       if (clip_code_byte(cc.cc_or) != 0) {
-        pl = g3_ClipPolygon(pl, &nv, &cc);
+        pl = g3_ClipPolygon(pl, nv, cc);
         clipped = 1;
       }
       cc.cc_and = clip_codes_from_byte(0xff);
       for (i = 0; i < nv; i++) {
-        g3_ProjectPoint(pl[i]);
+        g3_ProjectPoint(*pl[i]);
         cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(clip2d(pl[i], wnd)));
       }
       // Make sure it didn't get clipped away
@@ -1187,7 +1187,7 @@ void CheckFace(int roomnum,int facenum, int nv, int bm,g3Point **pointlist)
                 if (t[i].p3_vec.z<35)
                         rend_SetTextureType (texture_type::perspective_special);
         }
-        g3_DrawPoly(nv,pointlist,bm);
+        g3_DrawPoly(nv, pointlist, bm);
         if (rend_GetPixel(search_x,search_y) != oldcolor) {
                 found_room = roomnum;
                 found_face = facenum;
@@ -1231,7 +1231,7 @@ void RenderFloatingTrig(int roomnum, face *fp) {
     p = left;
     for (j = 0; j < n_crosssteps; j++) {
       if (g3_RotatePoint(p3, p) == 0) { // on screen
-        g3_ProjectPoint(&p3);
+        g3_ProjectPoint(p3);
         rend_SetPixel(GR_RGB(255, 100, 100), p3.p3_sx, p3.p3_sy);
       }
       p += cross_step;
@@ -1968,7 +1968,7 @@ void RenderFace(int roomnum, int facenum) {
     }
   }
   // Draw the damn thing
-  drawn = g3_DrawPoly(fp->num_verts, pointlist, bm_handle, map_type::bitmap, &face_cc);
+  drawn = g3_DrawPoly(fp->num_verts, pointlist, bm_handle, map_type::bitmap, face_cc);
 #ifdef EDITOR
   if (TSearch_on) {
     if (rend_GetPixel(TSearch_x, TSearch_y) != oldcolor) {
@@ -2033,17 +2033,17 @@ draw_fog:
     if (UseHardware) {
       rend_SetZBias(-0.1f);
       for (int i = 0; i < fp->num_verts; i++) {
-        g3_DrawSpecialLine(pointlist[i], pointlist[(i + 1) % fp->num_verts]);
+        g3_DrawSpecialLine(*pointlist[i], *pointlist[(i + 1) % fp->num_verts]);
       }
       rend_SetZBias(0);
     } else {
       for (int i = 0; i < fp->num_verts; i++) {
-        g3_DrawLine(GR_RGB(255, 255, 255), pointlist[i], pointlist[(i + 1) % fp->num_verts]);
+        g3_DrawLine(GR_RGB(255, 255, 255), *pointlist[i], *pointlist[(i + 1) % fp->num_verts]);
       }
     }
     if ((fp->flags.has_trigger) && (fp->num_verts > 3)) {
-      g3_DrawLine(CUREDGE_COLOR, pointlist[0], pointlist[2]);
-      g3_DrawLine(CUREDGE_COLOR, pointlist[1], pointlist[3]);
+      g3_DrawLine(CUREDGE_COLOR, *pointlist[0], *pointlist[2]);
+      g3_DrawLine(CUREDGE_COLOR, *pointlist[1], *pointlist[3]);
     }
     if (fp->special_handle != BAD_SPECIAL_FACE_INDEX) {
       g3Point p1, p2;
@@ -2057,13 +2057,13 @@ draw_fog:
       end = center + subvec;
       g3_RotatePoint(p1, center);
       g3_RotatePoint(p2, end);
-      g3_DrawLine(GR_RGB(255, 255, 255), &p1, &p2);
+      g3_DrawLine(GR_RGB(255, 255, 255), p1, p2);
       /*for (t=0;t<fp->num_verts;t++)
       {
               end=rp->verts[fp->face_verts[t]]+SpecialFaces[fp->special_handle].vertnorms[t];
               g3_RotatePoint (&p1,&rp->verts[fp->face_verts[t]]);
               g3_RotatePoint (&p2,&end);
-              g3_DrawLine(GR_RGB(255,255,255),&p1,&p2);
+              g3_DrawLine(GR_RGB(255,255,255), p1, p2);
       }*/
     }
   }
@@ -2104,10 +2104,10 @@ draw_fog:
 
         if (!(src_data[y][x] & OPAQUE_FLAG)) {
           for (t = 0; t < 4; t++)
-            g3_DrawLine(GR_RGB(255, 0, 255), pointlist[t], pointlist[(t + 1) % 4]);
+            g3_DrawLine(GR_RGB(255, 0, 255), *pointlist[t], *pointlist[(t + 1) % 4]);
         } else {
           for (t = 0; t < 4; t++)
-            g3_DrawLine(GR_RGB(255, 255, 255), pointlist[t], pointlist[(t + 1) % 4]);
+            g3_DrawLine(GR_RGB(255, 255, 255), *pointlist[t], *pointlist[(t + 1) % 4]);
         }
         // Draw interpolated normals
         /*if (fp->special_handle!=BAD_SPECIAL_FACE_INDEX && SpecialFaces[fp->special_handle].normal_map!=NULL)
@@ -2126,12 +2126,12 @@ draw_fog:
                 to=from+norm;
                 g3_RotatePoint (&p1,&from);
                 g3_RotatePoint (&p2,&to);
-                g3_DrawLine(GR_RGB(255,255,255),&p1,&p2);
+                g3_DrawLine(GR_RGB(255,255,255), p1, p2);
         }*/
 
         if (Search_lightmaps) {
           for (t = 0; t < 4; t++)
-            g3_ProjectPoint(&epoints[t]);
+            g3_ProjectPoint(epoints[t]);
 
           if (point_in_poly(4, epoints, TSearch_x, TSearch_y)) {
             found_lightmap = i;
@@ -2466,7 +2466,7 @@ void RenderSingleLightGlow(int index) {
     rend_SetZBufferState(0);
   }
   ddgr_color color = GR_RGB(r * 255, g * 255, b * 255);
-  g3_DrawBitmap(&center, size, (size * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle, color);
+  g3_DrawBitmap(center, size, (size * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle, color);
   if (LightGlows[index].flags.fast) {
     rend_SetZBufferWriteMask(1);
     rend_SetZBias(0);
@@ -2729,12 +2729,12 @@ void BuildMirroredRoomListSub(int start_room_num, clip_wnd *wnd) {
         pointlist[i] = &portal_points[i];
       // If portal not all on screen, must clip it
       if (clip_code_byte(cc.cc_or) != 0) {
-        pl = g3_ClipPolygon(pl, &nv, &cc);
+        pl = g3_ClipPolygon(pl, nv, cc);
         clipped = 1;
       }
       cc.cc_and = clip_codes_from_byte(0xff);
       for (i = 0; i < nv; i++) {
-        g3_ProjectPoint(pl[i]);
+        g3_ProjectPoint(*pl[i]);
         cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(clip2d(pl[i], wnd)));
       }
       // Make sure it didn't get clipped away
@@ -2822,7 +2822,7 @@ void BuildMirroredRoomList() {
       continue;
     if (clip_code_byte(cc.cc_or) != 0) {
       // Must clip
-      pl = g3_ClipPolygon(pl, &nv, &cc);
+      pl = g3_ClipPolygon(pl, nv, cc);
 
       if (clip_code_byte(cc.cc_and) != 0) {
         g3_FreeTempPoints(pl, nv);
@@ -2841,7 +2841,7 @@ void BuildMirroredRoomList() {
     }
 
     for (i = 0; i < nv; i++)
-      g3_ProjectPoint(&temp_points[total_points + i]);
+      g3_ProjectPoint(temp_points[total_points + i]);
 
     total_points += nv;
   }
@@ -2928,7 +2928,7 @@ void RenderMirroredRoom(int roomnum) {
   }
   // Rotate our mirror points
   vector3 revnorm = -*norm;
-  g3_SetCustomClipPlane(1, mirror_vec, &revnorm);
+  g3_SetCustomClipPlane(1, *mirror_vec, revnorm);
 
   // Katmai enhanced rotate only in a release build, because not
   // everyone has the intel compiler!
@@ -2962,7 +2962,7 @@ void RenderMirroredRoom(int roomnum) {
 
   RenderRoomObjects(roomnum);
   rp->last_render_time = d3::chrono::last_update();
-  g3_SetCustomClipPlane(0, NULL, NULL);
+  g3_SetCustomClipPlane(0, std::nullopt, std::nullopt);
 }
 // Renders a specific room.  If pos_offset is not NULL, adds that offset to each of the
 // rooms vertices
@@ -3420,7 +3420,7 @@ void RenderRoomOutline(int roomnum) {
       }
       if (!(c0 & c1)) { // both not off screen?
         // Draw current edge in green
-        g3_DrawLine(color, &p0, &p1);
+        g3_DrawLine(color, p0, p1);
       }
     }
   }
@@ -3444,8 +3444,8 @@ void RenderMine(int viewer_roomnum, int flag_automap, int called_from_terrain) {
   }
 #endif
   // Get the viewer eye so functions down the line can look at it
-  g3_GetViewPosition(&Viewer_eye);
-  g3_GetUnscaledMatrix(&Viewer_orient);
+  g3_GetViewPosition(Viewer_eye);
+  g3_GetUnscaledMatrix(Viewer_orient);
   // set these globals so functions down the line can look at them
   Viewer_roomnum = viewer_roomnum;
   Flag_automap = flag_automap;

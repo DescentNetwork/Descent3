@@ -330,19 +330,19 @@ struct g3Point {
 // Frame setup functions:
 
 // start the frame, specifying view position, matrix, & zoom
-void g3_StartFrame(vector3 *view_pos, matrix *view_matrix, float zoom);
+void g3_StartFrame(const vector3 &view_pos, const matrix &view_matrix, float zoom);
 
 // end the frame
 void g3_EndFrame(void);
 
 // get the current view position
-void g3_GetViewPosition(vector3 *vp);
+void g3_GetViewPosition(vector3 &vp);
 
 //	returns the current view matrix
-void g3_GetViewMatrix(matrix *mat);
+void g3_GetViewMatrix(matrix &mat);
 
 //	returns the current unscaled view matrix
-void g3_GetUnscaledMatrix(matrix *mat);
+void g3_GetUnscaledMatrix(matrix &mat);
 
 // allows the user to specify an aspect ratio that overrides the renderer's
 void g3_SetAspectRatio(float);
@@ -364,7 +364,7 @@ void g3_DoneInstance();
 
 // returns true if a plane is facing the viewer. takes the unrotated surface
 // normal of the plane, and a point on it.  The normal need not be normalized
-bool g3_CheckNormalFacing(vector3 *v, vector3 *norm);
+bool g3_CheckNormalFacing(const vector3 &v, const vector3 &norm);
 
 // Point definition and rotation functions:
 
@@ -372,60 +372,60 @@ bool g3_CheckNormalFacing(vector3 *v, vector3 *norm);
 uint8_t g3_RotatePoint(g3Point& dest, const vector3& src);
 
 // projects a point
-void g3_ProjectPoint(g3Point *point);
+void g3_ProjectPoint(g3Point &point);
 
 // calculate the depth of a point - returns the z coord of the rotated point
-float g3_CalcPointDepth(vector3 *pnt);
+float g3_CalcPointDepth(const vector3 &pnt);
 
 // from a 2d point, compute the vector through that point
-void g3_Point2Vec(vector3 *v, int16_t sx, int16_t sy);
+void g3_Point2Vec(vector3 &v, int16_t sx, int16_t sy);
 
 // code a point.  fills in the p3_codes field of the point, and returns the codes
-uint8_t g3_CodePoint(g3Point *point);
+uint8_t g3_CodePoint(g3Point &point);
 
 // delta rotation functions
-vector3 *g3_RotateDeltaX(vector3 *dest, float dx);
-vector3 *g3_RotateDeltaY(vector3 *dest, float dy);
-vector3 *g3_RotateDeltaZ(vector3 *dest, float dz);
-vector3 *g3_RotateDeltaVec(vector3 *dest, vector3 *src);
-uint8_t g3_AddDeltaVec(g3Point *dest, g3Point *src, vector3 *deltav);
+vector3 &g3_RotateDeltaX(vector3 &dest, float dx);
+vector3 &g3_RotateDeltaY(vector3 &dest, float dy);
+vector3 &g3_RotateDeltaZ(vector3 &dest, float dz);
+vector3 &g3_RotateDeltaVec(vector3 &dest, const vector3 &src);
+uint8_t g3_AddDeltaVec(g3Point &dest, const g3Point &src, const vector3 &deltav);
 
 // Drawing functions:
 // draw a polygon
 // Parameters:	nv - the number of verts in the poly
 //					pointlist - a pointer to a list of pointers to points
 //					bm - the bitmap handle if texturing.  ignored if flat shading
-int g3_DrawPoly(int nv, g3Point **pointlist, int bm, map_type mt = map_type::bitmap, g3Codes *clip_codes = NULL);
+int g3_DrawPoly(int nv, g3Point **pointlist, int bm, map_type mt = map_type::bitmap, optref<g3Codes> clip_codes = std::nullopt);
 
 // draw a sortof sphere - i.e., the 2d radius is proportional to the 3d
 // radius, but not to the distance from the eye
-void g3_DrawSphere(ddgr_color color, g3Point *pnt, float rad);
+void g3_DrawSphere(ddgr_color color, g3Point &pnt, float rad);
 
 // like g3_DrawPoly(), but checks to see if facing.  If surface normal is
 // NULL, this routine must compute it, which will be slow.  It is better to
 // pre-compute the normal, and pass it to this function.  When the normal
 // is passed, this function works like g3_CheckNormalFacing() plus
 // g3_DrawPoly().
-void g3_CheckAndDrawPoly(int nv, g3Point **pointlist, int bm, vector3 *norm, vector3 *pnt);
+void g3_CheckAndDrawPoly(int nv, g3Point **pointlist, int bm, optref<const vector3> norm, const vector3 &pnt);
 
 // draws a line. takes two points.
-void g3_DrawLine(ddgr_color color, g3Point *p0, g3Point *p1);
+void g3_DrawLine(ddgr_color color, g3Point &p0, g3Point &p1);
 
 // draws a bitmap with the specified 3d width & height
 // returns 1 if off screen, 0 if drew
-void g3_DrawBitmap(vector3 *pos, float width, float height, int bm, int color = -1);
+void g3_DrawBitmap(const vector3 &pos, float width, float height, int bm, int color = -1);
 
 // Draws a bitmap that has been rotated about its center.  Angle of rotation is passed as 'rot_angle'
-void g3_DrawRotatedBitmap(vector3 *pos, angle rot_angle, float width, float height, int bm, int color = -1);
+void g3_DrawRotatedBitmap(const vector3 &pos, angle rot_angle, float width, float height, int bm, int color = -1);
 
 // Draw a wireframe box aligned with the screen.  Used for the editor.
 // Parameters:	color - the color to draw the lines
 //					pnt - the center point
 //					rad - specifies the width/2 & height/2 of the box
-void g3_DrawBox(ddgr_color color, g3Point *pnt, float rad);
+void g3_DrawBox(ddgr_color color, g3Point &pnt, float rad);
 
 // Sets up a custom clipping plane - g3_StartFrame must be called before this is called
-void g3_SetCustomClipPlane(uint8_t state, vector3 *pnt, vector3 *normal);
+void g3_SetCustomClipPlane(uint8_t state, optref<const vector3> pnt, optref<const vector3> normal);
 
 // sets the z distance of the far clipping plane
 void g3_SetFarClipZ(float z);
@@ -439,7 +439,7 @@ static inline void g3_ResetFarClipZ() { g3_SetFarClipZ(FLT_MAX); }
 //					cc - the clip codes for this polygon
 // Returns:	a pointer to a list of pointer of points in the clipped polygon
 // NOTE: You MUST call g3_FreeTempPoints() when you're done with the clipped polygon
-g3Point **g3_ClipPolygon(g3Point **pointlist, int *nv, g3Codes *cc);
+g3Point **g3_ClipPolygon(g3Point **pointlist, int &nv, g3Codes &cc);
 
 // Free up any temp points (created by the clipper) in the given pointlist
 // Parameters:	pointlist - pointer to list of pointers to points, returned by g3_ClipPolygon()
@@ -447,20 +447,20 @@ g3Point **g3_ClipPolygon(g3Point **pointlist, int *nv, g3Codes *cc);
 void g3_FreeTempPoints(g3Point **pointlist, int nv);
 
 // Gets the matrix scale vector
-void g3_GetMatrixScale(vector3 *matrix_scale);
+void g3_GetMatrixScale(vector3 &matrix_scale);
 
 // Sets the triangulation test to on or off
 void g3_SetTriangulationTest(int state);
 
 // draws a line based on the current setting of render states. takes two points.  returns true if drew
-void g3_DrawSpecialLine(g3Point *p0, g3Point *p1);
+void g3_DrawSpecialLine(g3Point &p0, g3Point &p1);
 
 // Draws a bitmap on a specific plane.  Also does rotation.  Angle of rotation is passed as 'rot_angle'
-void g3_DrawPlanarRotatedBitmap(vector3 *pos, vector3 *norm, angle rot_angle, float width, float height, int bm);
+void g3_DrawPlanarRotatedBitmap(const vector3 &pos, const vector3 &norm, angle rot_angle, float width, float height, int bm);
 
 void g3_TransformMult(float res[4][4], float a[4][4], float b[4][4]);
 void g3_TransformTrans(float res[4][4], float t[4][4]);
-void g3_GetModelViewMatrix(const vector3 *viewPos, const matrix *viewMatrix, float *mvMat);
+void g3_GetModelViewMatrix(const vector3 &viewPos, const matrix &viewMatrix, float *mvMat);
 extern float gTransformViewPort[4][4];
 extern float gTransformProjection[4][4];
 extern float gTransformModelView[4][4];
