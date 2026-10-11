@@ -96,7 +96,7 @@ bool MoveObject(object& obj, vector3& newpos) {
     fq.flags.ignore_terrain = true;
     fq.flags.ignore_external_rooms = true;
 
-  fvi_hit_type fate = fvi_FindIntersection(&fq, &hit_info);
+  fvi_hit_type fate = fvi_FindIntersection(fq, hit_info);
 
   if (fate == fvi_hit_type::wall)
     if (vm_VectorDistance(obj.pos, hit_info.hit_pnt) < MOVE_EPSILON)

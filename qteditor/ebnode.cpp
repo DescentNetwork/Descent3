@@ -534,7 +534,7 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
                        : sroom;
     fq.rad = size;
 
-    fate = fvi_FindIntersection(&fq, &hit_info);
+    fate = fvi_FindIntersection(fq, hit_info);
 
     if (fate == fvi_hit_type::none) {
       fq.p0 = &enlist->nodes[epnt].pos;
@@ -544,7 +544,7 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
                          : eroom;
       fq.rad = size;
 
-      fate = fvi_FindIntersection(&fq, &hit_info);
+      fate = fvi_FindIntersection(fq, hit_info);
     }
 
     if (fate == fvi_hit_type::none)
@@ -577,7 +577,7 @@ void EBNode_AutoEdgeNode(int spnt, int sroom) {
       fq.thisobjnum = -1;
       fq.ignore_obj_list = NULL;
 
-      if (fvi_FindIntersection(&fq, &hit_info) == fvi_hit_type::none)
+      if (fvi_FindIntersection(fq, hit_info) == fvi_hit_type::none)
         EBNode_AddEdge(spnt, sroom, i, sroom);
     }
   }
@@ -671,7 +671,7 @@ void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
       fq.thisobjnum = -1;
       fq.ignore_obj_list = NULL;
 
-      if (fvi_FindIntersection(&fq, &hit_info) != fvi_hit_type::none)
+      if (fvi_FindIntersection(fq, hit_info) != fvi_hit_type::none)
         continue;
 
       EBNode_AddEdge(i, roomnum, j, roomnum);
@@ -836,7 +836,7 @@ int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom) {
     fq.thisobjnum = -1;
     fq.ignore_obj_list = NULL;
 
-    fate = fvi_FindIntersection(&fq, &hit_info);
+    fate = fvi_FindIntersection(fq, hit_info);
 
     if (fate != fvi_hit_type::none) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You can only do this function if the 2 nodes can\nsee each other or are in the same room.\n");
@@ -906,7 +906,7 @@ void EBNode_Move(bool f_offset, int roomnum, int pnt, vector3 *pos) {
     fq.thisobjnum = -1;
     fq.ignore_obj_list = NULL;
 
-    fvi_FindIntersection(&fq, &hit_info);
+    fvi_FindIntersection(fq, hit_info);
 
     npos = hit_info.hit_pnt;
   }

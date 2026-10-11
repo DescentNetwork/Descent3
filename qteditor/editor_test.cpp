@@ -7846,7 +7846,7 @@ private slots:
       fq.thisobjnum = -1;
       fq.ignore_obj_list = nullptr;
       fvi_info info{};
-      fvi_hit_type fate = fvi_FindIntersection(&fq, &info);
+      fvi_hit_type fate = fvi_FindIntersection(fq, info);
       QCOMPARE(fate, fvi_hit_type::none);
       QCOMPARE(info.hit_room, 0);
       QCOMPARE(info.n_rooms, 0);
@@ -7865,7 +7865,7 @@ private slots:
       fq.thisobjnum = -1;
       fq.ignore_obj_list = nullptr;
       fvi_info info{};
-      fvi_hit_type fate = fvi_FindIntersection(&fq, &info);
+      fvi_hit_type fate = fvi_FindIntersection(fq, info);
       QCOMPARE(fate, fvi_hit_type::wall);
       QVERIFY(std::fabs(info.hit_pnt.z() + 5.0f) < 1e-3f);
       QCOMPARE(info.hit_room, 0);
@@ -7886,7 +7886,7 @@ private slots:
       fq.flags = fvi_query_flags_t{};
       fq.flags.ignore_walls = true;
       fvi_info info{};
-      fvi_hit_type fate = fvi_FindIntersection(&fq, &info);
+      fvi_hit_type fate = fvi_FindIntersection(fq, info);
       QCOMPARE(fate, fvi_hit_type::none);
       QVERIFY(vm_VectorDistance(p1v, info.hit_pnt) < 1e-3f);
     }

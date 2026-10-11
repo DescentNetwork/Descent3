@@ -968,20 +968,20 @@ static void do_fvi_rooms(int initial_room_index);
 /// Assumes that the initial point is not intersecting the plane.
 static inline bool find_plane_line_intersection(vector3 &intp, vector3 &colp, vector3 &plane_pnt, const vector3 &plane_norm,
                                                 const vector3 &p0, const vector3 &p1, float rad);
-static bool IsPointInCylinder(vector3& normal, vector3 *cylinder_pnt, vector3 *edir, float elen, const float rad,
-                              const vector3 *pnt, vector3 *mdir, bool *f_collide);
+static bool IsPointInCylinder(vector3& normal, const vector3 &cylinder_pnt, const vector3 &edir, float elen, const float rad,
+                              const vector3 &pnt, const vector3 &mdir, bool &f_collide);
 
 //! check if a sphere intersects a face -- this can be optimized (only need 2d stuff after rotation)
-static bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
-                                     const vector3 *p1, float rad, vector3 *ep0, vector3 *ep1);
+static bool check_vector_to_cylinder(vector3 &colp, vector3 &intp, float &col_dist, vector3 &wall_norm, const vector3 &p0,
+                                     const vector3 &p1, float rad, const vector3 &ep0, const vector3 &ep1);
 
 //! check if a sphere intersects a face.
-static bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
-                                 const vector3 *p1, vector3 *face_normal, int nv, float rad, vector3 **vertex_ptr_list);
+static bool check_sphere_to_face(vector3 &colp, vector3 &intp, float &col_dist, vector3 &wall_norm, const vector3 &p0,
+                                 const vector3 &p1, const vector3 &face_normal, int nv, float rad, vector3 **vertex_ptr_list);
 static void fvi_rooms_objs(void);
 static int obj_in_list(int objnum, int *obj_list);
 static void make_trigger_face_list(int last_sim_faces);
-static bool PhysPastPortal(int roomnum, const portal *pp);
+static bool PhysPastPortal(int roomnum, const portal &pp);
 
 //------------------------------------------------------------------------------------------
 // FVI FUNCTIONS
@@ -1089,9 +1089,9 @@ static const int ij_table[3][2] = {
 #define IT_POINT 3 // touches vertex
 
 // see if a point in inside a face by projecting into 2d
-uint32_t check_point_to_face(vector3 *colp, vector3 *face_normal, int nv, vector3 **vertex_ptr_list) {
-  vector3* colp_array; // Axis-independent version of the collision point
-  vector3* norm;       // Axis-independent version of the plane's normal
+uint32_t check_point_to_face(const vector3 &colp, const vector3 &face_normal, int nv, vector3 **vertex_ptr_list) {
+  const vector3* colp_array; // Axis-independent version of the collision point
+  const vector3* norm;       // Axis-independent version of the plane's normal
   vector3 t;                 // Temporary vector3 that holds the magnatude of the normal's x,y,z components (ABS)
   int biggest;              // Index of the largest of the three components (0-x, 1-y, 2-z)  Axis to ignore :)
   int i, j, edge;           // Index for i-axis, Index for j-axis, and the current edge
@@ -1101,8 +1101,8 @@ uint32_t check_point_to_face(vector3 *colp, vector3 *face_normal, int nv, vector
   vector3_array* v1 = nullptr;
 
   // Lets look at these vectors as arrays :)
-  norm = (vector3 *)face_normal;
-  colp_array = (vector3 *)colp;
+  norm = &face_normal;
+  colp_array = &colp;
 
   // now do 2d check to see if point is in side
 
@@ -1171,7 +1171,7 @@ uint32_t check_point_to_face(vector3 *colp, vector3 *face_normal, int nv, vector
 // if there is an intersection this function returns true, fills in intp, and col_dist else it returns false
 // NOTE:  Caller should account for the radius of the vector3 (i.e. no rad. for the vector3 is passed
 //        to this function -- the 2 radii are additive to it is trial and it saves 1 parameter
-bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0, const vector3 *p1, vector3 *sphere_pos,
+bool check_vector_to_sphere_1(vector3 &intp, float &col_dist, const vector3 &p0, const vector3 &p1, const vector3 &sphere_pos,
                               float sphere_rad, bool f_correcting, bool f_init_collisions) {
   vector3 line_vec;            // Vector direction of line from p0 to p1
   vector3 normalized_line_vec; // Normalized line vector3
@@ -1188,8 +1188,8 @@ bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0,
   Q_ASSERT(sphere_rad > 0.0f);
 
   // Get the vectors as usual
-  line_vec = *p1 - *p0;
-  point_to_center_vec = *sphere_pos - *p0;
+  line_vec = p1 - p0;
+  point_to_center_vec = sphere_pos - p0;
 
   if (vm_Dot3Product(line_vec, point_to_center_vec) <= 0.0f)
     return false;
@@ -1219,14 +1219,14 @@ bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0,
       vector3 n_ptc = point_to_center_vec;
       vm_NormalizeVector(n_ptc);
 
-      *intp =
-          *p0 - n_ptc * (sphere_rad - scalar(sqrt(sphere_rad * sphere_rad - vm_Dot3Product(point_to_center_vec, point_to_center_vec))));
+      intp =
+          p0 - n_ptc * (sphere_rad - scalar(sqrt(sphere_rad * sphere_rad - vm_Dot3Product(point_to_center_vec, point_to_center_vec))));
 
-      *col_dist = 0.0f;
+      col_dist = 0.0f;
       return true;
     } else if (f_init_collisions) {
-      *intp = *p0;
-      *col_dist = 0.0f;
+      intp = p0;
+      col_dist = 0.0f;
 
       return true;
     } else {
@@ -1235,8 +1235,8 @@ bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0,
     }
   }
 
-  closest_point = *p0 + closest_point_dist * normalized_line_vec;
-  closest_mag_to_center = vm_VectorDistance(closest_point, *sphere_pos);
+  closest_point = p0 + closest_point_dist * normalized_line_vec;
+  closest_mag_to_center = vm_VectorDistance(closest_point, sphere_pos);
 
   // We are not moving close enough to collide with the circle
   if (closest_mag_to_center >= sphere_rad)
@@ -1246,46 +1246,46 @@ bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0,
   // from the point to the line, and the amount we should subtract from the line to account
   // for the sphere overlapping the line at the closest approach point
   shorten = sqrt(sphere_rad * sphere_rad - closest_mag_to_center * closest_mag_to_center);
-  *col_dist = closest_point_dist - shorten;
-  if (*col_dist > mag_line)
+  col_dist = closest_point_dist - shorten;
+  if (col_dist > mag_line)
     return false;
 
   // Actual collision distance
-  *intp = *p0 + *col_dist * normalized_line_vec;
+  intp = p0 + col_dist * normalized_line_vec;
 
   // Actual collision point
   return true;
 }
 
-bool IsPointInCylinder(vector3& normal, vector3 *cylinder_pnt, vector3 *edir, float elen, const float rad,
-                       const vector3 *pnt, vector3 *mdir, bool *f_collide) {
-  scalar plen = vm_Dot3Product((*pnt - *cylinder_pnt), *edir);
+bool IsPointInCylinder(vector3& normal, const vector3 &cylinder_pnt, const vector3 &edir, float elen, const float rad,
+                       const vector3 &pnt, const vector3 &mdir, bool &f_collide) {
+  scalar plen = vm_Dot3Product((pnt - cylinder_pnt), edir);
 
   if (plen < 0.0f || plen > elen) {
     return false;
   }
 
-  vector3 newp = *cylinder_pnt + *edir * plen;
-  normal = *pnt - newp;
+  vector3 newp = cylinder_pnt + edir * plen;
+  normal = pnt - newp;
 
   if (vm_NormalizeVector(normal) >= rad) {
     return false;
   }
 
-  if (vm_Dot3Product(normal,*mdir) >= 0.0f)
-    *f_collide = false;
+  if (vm_Dot3Product(normal,mdir) >= 0.0f)
+    f_collide = false;
   else
-    *f_collide = true;
+    f_collide = true;
 
   return true;
 }
 
 // check if a sphere intersects a face -- this can be optimized (only need 2d stuff after rotation)
-bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
-                              const vector3 *p1, float rad, vector3 *ep0, vector3 *ep1) {
+bool check_vector_to_cylinder(vector3 &colp, vector3 &intp, float &col_dist, vector3 &wall_norm, const vector3 &p0,
+                              const vector3 &p1, float rad, const vector3 &ep0, const vector3 &ep1) {
   matrix edge_orient;
   vector3 po0, po1;
-  vector3 edgevec = *ep1 - *ep0;
+  vector3 edgevec = ep1 - ep0;
   vector3 mvec;
   vector3 closest_pnt;
 
@@ -1307,7 +1307,7 @@ bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vec
   float cole_dist[4];
   vector3 inte[4];
 
-  mvec3d = *p1 - *p0;
+  mvec3d = p1 - p0;
   vector_len3d = vm_NormalizeVector(mvec3d);
 
   edge_len = vm_NormalizeVector(edgevec);
@@ -1315,11 +1315,11 @@ bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vec
   vector3 init_normal;
   bool f_init_collide;
 
-  if (!IsPointInCylinder(init_normal, ep0, &edgevec, edge_len, rad, p0, &mvec3d, &f_init_collide)) {
+  if (!IsPointInCylinder(init_normal, ep0, edgevec, edge_len, rad, p0, mvec3d, f_init_collide)) {
     vm_VectorToMatrix(edge_orient, edgevec, std::nullopt, std::nullopt);
 
-    po0 = (*p0 - *ep0) * edge_orient;
-    po1 = (*p1 - *ep0) * edge_orient;
+    po0 = (p0 - ep0) * edge_orient;
+    po1 = (p1 - ep0) * edge_orient;
 
     po0.z() = po1.z() = 0.0f;
     mvec = po1 - po0;
@@ -1354,12 +1354,12 @@ bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vec
       float t_edge;
 
       if (valid_t[i]) {
-        ivertex[i] = *p0 + mvec3d * (vector_len3d * t[i]);
+        ivertex[i] = p0 + mvec3d * (vector_len3d * t[i]);
 
-        t_edge = (vm_Dot3Product(ivertex[i] - *ep0, edgevec)) / edge_len;
+        t_edge = (vm_Dot3Product(ivertex[i] - ep0, edgevec)) / edge_len;
         if (t_edge >= 0.0 && t_edge <= 1.0) {
           cole_dist[i] = vector_len3d * t[i];
-          inte[i] = *ep0 + vm_Dot3Product((ivertex[i] - *ep0), edgevec) * edgevec;
+          inte[i] = ep0 + vm_Dot3Product((ivertex[i] - ep0), edgevec) * edgevec;
           valid_hit = 1;
           /// mprintf(0, "%f,%f,%f to %f,%f, %f\n", XYZ(p0), XYZ(p1));
         } else {
@@ -1370,22 +1370,22 @@ bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vec
 
     vector3 d_vec;
     // check end spheres
-    if (check_vector_to_sphere_1(&ivertex[2], &cole_dist[2], p0, p1, ep0, rad, false, true)) {
+    if (check_vector_to_sphere_1(ivertex[2], cole_dist[2], p0, p1, ep0, rad, false, true)) {
       t[2] = cole_dist[2] / vector_len3d;
       valid_t[2] = 1;
       valid_hit = 1;
       // mprintf(0, "Sphere %f,%f,%f to %f,%f, %f\n", XYZ(p0), XYZ(p1));
-      d_vec = *ep1 - ivertex[2];
+      d_vec = ep1 - ivertex[2];
       vm_NormalizeVector(d_vec);
       inte[2] = ivertex[2] + rad * (d_vec);
     } else {
       valid_t[2] = 0;
     }
-    if (check_vector_to_sphere_1(&ivertex[3], &cole_dist[3], p0, p1, ep1, rad, false, true)) {
+    if (check_vector_to_sphere_1(ivertex[3], cole_dist[3], p0, p1, ep1, rad, false, true)) {
       t[3] = cole_dist[3] / vector_len3d;
       valid_t[3] = 1;
       valid_hit = 1;
-      d_vec = *ep1 - ivertex[3];
+      d_vec = ep1 - ivertex[3];
       vm_NormalizeVector(d_vec);
       inte[3] = ivertex[3] + rad * (d_vec);
     } else {
@@ -1406,22 +1406,22 @@ bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vec
 
     //	if(best_hit_index < 2)
 
-    *colp = inte[best_hit_index];
-    *intp = ivertex[best_hit_index];
-    *col_dist = cole_dist[best_hit_index];
+    colp = inte[best_hit_index];
+    intp = ivertex[best_hit_index];
+    col_dist = cole_dist[best_hit_index];
 
-    *wall_norm = *intp - *colp;
-    vm_NormalizeVector(*wall_norm);
+    wall_norm = intp - colp;
+    vm_NormalizeVector(wall_norm);
 
     // mprintf(0, "We hit at %f,%f,%f \nwith %f,%f,%f on face\n", XYZ(intp), XYZ(colp));
 
     return true;
   } else {
     if (f_init_collide) {
-      *col_dist = 0.0f;
-      *wall_norm = init_normal;
-      *colp = *p0 - init_normal * rad;
-      *intp = *p0;
+      col_dist = 0.0f;
+      wall_norm = init_normal;
+      colp = p0 - init_normal * rad;
+      intp = p0;
 
       return true;
     } else {
@@ -1593,8 +1593,8 @@ float rad, vector3 *ep0, vector3 *ep1)
 */
 
 // check if a sphere intersects a face
-bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
-                          const vector3 *p1, vector3 *face_normal, int nv, float rad, vector3 **vertex_ptr_list) {
+bool check_sphere_to_face(vector3 &colp, vector3 &intp, float &col_dist, vector3 &wall_norm, const vector3 &p0,
+                          const vector3 &p1, const vector3 &face_normal, int nv, float rad, vector3 **vertex_ptr_list) {
   uint32_t edgemask;
 
   Q_ASSERT(nv > 0 && nv <= 32); // otherwise, we overflow the edgemask -- if we hit this we need to make edgemask a long
@@ -1606,8 +1606,8 @@ bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3
   // If we are inside edgemask is 0, we hit the face.
   if (edgemask == 0) {
     //		mprintf(0, "CSTF Hit Face\n");
-    *col_dist = vm_VectorDistance(*p0, *intp);
-    *wall_norm = *face_normal;
+    col_dist = vm_VectorDistance(p0, intp);
+    wall_norm = face_normal;
     return true;
   } else {
     // Although the plane collision point is not in the face, we might hit an edge.
@@ -1623,7 +1623,7 @@ bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3
       return false;
 
     int f_hit = 0;
-    vector3 c_end = *p1;
+    vector3 c_end = p1;
 
     // get verts for edge we're behind
     for (edgenum = 0; edgenum < nv; edgenum++) {
@@ -1631,8 +1631,8 @@ bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3
         v0 = vertex_ptr_list[edgenum];
         v1 = vertex_ptr_list[(edgenum + 1) % nv];
 
-        if (check_vector_to_cylinder(colp, intp, col_dist, wall_norm, p0, &c_end, rad, v0, v1)) {
-          c_end = *intp;
+        if (check_vector_to_cylinder(colp, intp, col_dist, wall_norm, p0, c_end, rad, *v0, *v1)) {
+          c_end = intp;
           f_hit = 1;
         }
       }
@@ -1683,14 +1683,14 @@ bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3
 // point on plane, whether or not line intersects side
 // facenum determines which of four possible faces we have
 // note: the seg parm is temporary, until the face itself has a point field
-bool check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *wall_norm, const vector3 *p0,
-                        const vector3 *p1, vector3 *face_normal, vector3 **vertex_ptr_list, const int nv, const float rad) {
+bool check_line_to_face(vector3 &newp, vector3 &colp, float &col_dist, vector3 &wall_norm, const vector3 &p0,
+                        const vector3 &p1, const vector3 &face_normal, vector3 **vertex_ptr_list, const int nv, const float rad) {
   bool f_pli; // Flag for if a plane that defines the face intersects with the line
   int vertnum = 0;
   vector3* test = vertex_ptr_list[0];
   int i;
 
-  Q_ASSERT(newp != nullptr && p0 != 0 && p1 != nullptr && rad >= 0.0f);
+  Q_ASSERT(rad >= 0.0f);
 
   // This is so we always use the same vertex
   for (i = 1; i < nv; i++) {
@@ -1702,7 +1702,7 @@ bool check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *
 
   // Determine the intersection point between the plane(of the face) and the line
   // This point is the center of the circle (not the edge)
-  f_pli = find_plane_line_intersection(*newp, *colp, *vertex_ptr_list[vertnum], *face_normal, *p0, *p1, rad);
+  f_pli = find_plane_line_intersection(newp, colp, *vertex_ptr_list[vertnum], face_normal, p0, p1, rad);
 
   if (!f_pli)
     return false;
@@ -1721,51 +1721,51 @@ bool check_line_to_face(vector3 *newp, vector3 *colp, float *col_dist, vector3 *
 // chrishack -- check this later
 // computes the parameters of closest approach of two lines
 // fill in two parameters, t0 & t1.  returns 0 if lines are parallel, else 1
-bool check_line_to_line(scalar *t1, scalar *t2, vector3 *p1, vector3 *v1, vector3 *p2, vector3 *v2) {
+bool check_line_to_line(scalar &t1, scalar &t2, const vector3 &p1, const vector3 &v1, const vector3 &p2, const vector3 &v2) {
   matrix det;
   scalar d, cross_mag2; // mag squared cross product
 
-  det.rvec = *p2 - *p1;
-  det.fvec = vm_Cross3Product(*v1, *v2);
+  det.rvec = p2 - p1;
+  det.fvec = vm_Cross3Product(v1, v2);
   cross_mag2 = vm_Dot3Product(det.fvec,det.fvec);
 
   if (cross_mag2 == 0.0)
     return false; // lines are parallel
 
-  det.uvec = *v2;
+  det.uvec = v2;
   d = calc_det_value(det);
-  *t1 = d / cross_mag2;
+  t1 = d / cross_mag2;
 
-  det.uvec = *v1;
+  det.uvec = v1;
   d = calc_det_value(det);
-  *t2 = d / cross_mag2;
+  t2 = d / cross_mag2;
 
   return true; // found point
 }
 
 // determine if a vector intersects with an object
 // if no intersects, returns false, else fills in intp
-bool check_vector_to_object(vector3 *intp, float *col_dist, vector3 *p0, vector3 *p1, float rad, object *still_obj,
-                            object *fvi_obj) {
+bool check_vector_to_object(vector3 &intp, float &col_dist, const vector3 &p0, const vector3 &p1, float rad, const object &still_obj,
+                            object &fvi_obj) {
   float still_size;
-  vector3 still_pos = still_obj->pos;
+  vector3 still_pos = still_obj.pos;
   float total_size;
 
   int fvi_objnum = fvi_query_ptr->thisobjnum;
 
-  if ((still_obj->flags.polygon_object) && still_obj->type != object_type_e::powerup && still_obj->type != object_type_e::weapon &&
-      still_obj->type != object_type_e::debris && still_obj->type != object_type_e::room && still_obj->type != object_type_e::player) {
-    still_size = Poly_models[still_obj->rtype.pobj_info().model_num].anim_size;
-    still_pos += still_obj->anim_sphere_offset;
+  if ((still_obj.flags.polygon_object) && still_obj.type != object_type_e::powerup && still_obj.type != object_type_e::weapon &&
+      still_obj.type != object_type_e::debris && still_obj.type != object_type_e::room && still_obj.type != object_type_e::player) {
+    still_size = Poly_models[still_obj.rtype.pobj_info().model_num].anim_size;
+    still_pos += still_obj.anim_sphere_offset;
   } else {
-    still_size = still_obj->size;
+    still_size = still_obj.size;
   }
 
   // This accounts for relative position vs. relative velocity
-  if (fvi_objnum != -1 && still_obj->movement_type == movement_type_e::physics && Objects[fvi_objnum].movement_type == movement_type_e::physics) {
-    if (still_obj->type != object_type_e::powerup && Objects[fvi_objnum].type != object_type_e::powerup) {
+  if (fvi_objnum != -1 && still_obj.movement_type == movement_type_e::physics && Objects[fvi_objnum].movement_type == movement_type_e::physics) {
+    if (still_obj.type != object_type_e::powerup && Objects[fvi_objnum].type != object_type_e::powerup) {
       if (vm_Dot3Product(still_pos - Objects[fvi_objnum].pos,
-              (still_obj->mtype.phys_info.velocity - Objects[fvi_objnum].mtype.phys_info.velocity)) >=
+              (still_obj.mtype.phys_info.velocity - Objects[fvi_objnum].mtype.phys_info.velocity)) >=
           0) {
 #ifndef NED_PHYSICS
 #ifdef _DEBUG
@@ -1787,15 +1787,15 @@ bool check_vector_to_object(vector3 *intp, float *col_dist, vector3 *p0, vector3
   if (total_size <= 0.0f) {
 #ifdef _DEBUG
     if (fvi_objnum >= 0)
-      LOG_DEBUG("Get Chris: type %d and type %d are zero radius", still_obj->type, Objects[fvi_objnum].type);
+      LOG_DEBUG("Get Chris: type %d and type %d are zero radius", still_obj.type, Objects[fvi_objnum].type);
     else
-      LOG_DEBUG("Get Chris: A non-object tried to hit a zero radii object of type %d", still_obj->type);
+      LOG_DEBUG("Get Chris: A non-object tried to hit a zero radii object of type %d", still_obj.type);
 #endif
     return false;
   }
 
   // Account for the radius of the vector.
-  return check_vector_to_sphere_1(intp, col_dist, p0, p1, &still_pos, total_size, false, true);
+  return check_vector_to_sphere_1(intp, col_dist, p0, p1, still_pos, total_size, false, true);
 }
 
 inline void compute_movement_AABB(void) {
@@ -1850,53 +1850,53 @@ inline void compute_movement_AABB(void) {
   }
 }
 
-inline bool object_object_AABB(object *obj1, object *obj2) {
+inline bool object_object_AABB(const object &obj1, const object &obj2) {
   bool overlap = true;
 
-  if (obj1->max_xyz.x() < obj2->min_xyz.x() || obj2->max_xyz.x() < obj1->min_xyz.x() || obj1->max_xyz.z() < obj2->min_xyz.z() ||
-      obj2->max_xyz.z() < obj1->min_xyz.z() || obj1->max_xyz.y() < obj2->min_xyz.y() || obj2->max_xyz.y() < obj1->min_xyz.y())
+  if (obj1.max_xyz.x() < obj2.min_xyz.x() || obj2.max_xyz.x() < obj1.min_xyz.x() || obj1.max_xyz.z() < obj2.min_xyz.z() ||
+      obj2.max_xyz.z() < obj1.min_xyz.z() || obj1.max_xyz.y() < obj2.min_xyz.y() || obj2.max_xyz.y() < obj1.min_xyz.y())
     overlap = false;
 
   return overlap;
 }
 
-inline bool object_movement_AABB(object *obj) {
+inline bool object_movement_AABB(const object &obj) {
   bool overlap = true;
 
-  if (obj->max_xyz.x() < fvi_min_xyz.x() || fvi_max_xyz.x() < obj->min_xyz.x() || obj->max_xyz.z() < fvi_min_xyz.z() ||
-      fvi_max_xyz.z() < obj->min_xyz.z() || obj->max_xyz.y() < fvi_min_xyz.y() || fvi_max_xyz.y() < obj->min_xyz.y())
+  if (obj.max_xyz.x() < fvi_min_xyz.x() || fvi_max_xyz.x() < obj.min_xyz.x() || obj.max_xyz.z() < fvi_min_xyz.z() ||
+      fvi_max_xyz.z() < obj.min_xyz.z() || obj.max_xyz.y() < fvi_min_xyz.y() || fvi_max_xyz.y() < obj.min_xyz.y())
     overlap = false;
 
   return overlap;
 }
 
-inline bool object_room_AABB(object *obj, face *room_face) {
+inline bool object_room_AABB(const object &obj, const face &room_face) {
   bool overlap = true;
 
-  if (obj->max_xyz.y() < room_face->min_xyz.y() || room_face->max_xyz.y() < obj->min_xyz.y() ||
-      obj->max_xyz.x() < room_face->min_xyz.x() || room_face->max_xyz.x() < obj->min_xyz.x() ||
-      obj->max_xyz.z() < room_face->min_xyz.z() || room_face->max_xyz.z() < obj->min_xyz.z())
+  if (obj.max_xyz.y() < room_face.min_xyz.y() || room_face.max_xyz.y() < obj.min_xyz.y() ||
+      obj.max_xyz.x() < room_face.min_xyz.x() || room_face.max_xyz.x() < obj.min_xyz.x() ||
+      obj.max_xyz.z() < room_face.min_xyz.z() || room_face.max_xyz.z() < obj.min_xyz.z())
     overlap = false;
 
   return overlap;
 }
 
-inline bool room_movement_AABB(face *room_face) {
+inline bool room_movement_AABB(const face &room_face) {
   bool overlap = true;
 
-  if (fvi_wall_max_xyz.y() < room_face->min_xyz.y() || room_face->max_xyz.y() < fvi_wall_min_xyz.y() ||
-      fvi_wall_max_xyz.x() < room_face->min_xyz.x() || room_face->max_xyz.x() < fvi_wall_min_xyz.x() ||
-      fvi_wall_max_xyz.z() < room_face->min_xyz.z() || room_face->max_xyz.z() < fvi_wall_min_xyz.z())
+  if (fvi_wall_max_xyz.y() < room_face.min_xyz.y() || room_face.max_xyz.y() < fvi_wall_min_xyz.y() ||
+      fvi_wall_max_xyz.x() < room_face.min_xyz.x() || room_face.max_xyz.x() < fvi_wall_min_xyz.x() ||
+      fvi_wall_max_xyz.z() < room_face.min_xyz.z() || room_face.max_xyz.z() < fvi_wall_min_xyz.z())
     overlap = false;
 
   return overlap;
 }
 
-inline bool room_manual_AABB(const face *room_face, const vector3 *min_xyz, const vector3 *max_xyz) {
+inline bool room_manual_AABB(const face &room_face, const vector3 &min_xyz, const vector3 &max_xyz) {
   bool overlap = true;
 
-  if (max_xyz->y() < room_face->min_xyz.y() || room_face->max_xyz.y() < min_xyz->y() || max_xyz->x() < room_face->min_xyz.x() ||
-      room_face->max_xyz.x() < min_xyz->x() || max_xyz->z() < room_face->min_xyz.z() || room_face->max_xyz.z() < min_xyz->z())
+  if (max_xyz.y() < room_face.min_xyz.y() || room_face.max_xyz.y() < min_xyz.y() || max_xyz.x() < room_face.min_xyz.x() ||
+      room_face.max_xyz.x() < min_xyz.x() || max_xyz.z() < room_face.min_xyz.z() || room_face.max_xyz.z() < min_xyz.z())
     overlap = false;
 
   return overlap;
@@ -1990,7 +1990,7 @@ int fvi_QuickDistFaceList(int init_room_index, vector3 &pos, float rad, optref<f
           int portal_num;
           int connect_room;
 
-          if (!room_manual_AABB(&cur_room->faces[i], &min_xyz, &max_xyz))
+          if (!room_manual_AABB(cur_room->faces[i], min_xyz, max_xyz))
             continue;
 
           if (quick_fr_list.has_value()) {
@@ -2039,7 +2039,7 @@ int fvi_QuickDistFaceList(int init_room_index, vector3 &pos, float rad, optref<f
 }
 
 // Returns the number of faces that are approximately within the specified radius
-int fvi_QuickDistCellList(int init_cell_index, vector3 *pos, float rad, int *quick_cell_list, int max_elements) {
+int fvi_QuickDistCellList(int init_cell_index, const vector3 &pos, float rad, int *quick_cell_list, int max_elements) {
   int num_cells = 0;
   int next_y_delta;
   int xstart, xend, ystart, yend;
@@ -2048,7 +2048,6 @@ int fvi_QuickDistCellList(int init_cell_index, vector3 *pos, float rad, int *qui
   int cur_node;
 
   Q_ASSERT(quick_cell_list != nullptr);
-  Q_ASSERT(pos != nullptr);
   Q_ASSERT(init_cell_index >= 0 && init_cell_index < TERRAIN_WIDTH * TERRAIN_DEPTH);
   Q_ASSERT(rad >= 0.0f);
 
@@ -2078,8 +2077,8 @@ int fvi_QuickDistCellList(int init_cell_index, vector3 *pos, float rad, int *qui
 
   for (ycounter = ystart; ycounter <= yend; ycounter++) {
     for (xcounter = xstart; xcounter <= xend; xcounter++) {
-      if ((Terrain_seg[cur_node].y >= pos->y() - rad) || (Terrain_seg[cur_node + TERRAIN_WIDTH + 1].y >= pos->y() - rad) ||
-          (Terrain_seg[cur_node + 1].y >= pos->y() - rad) || (Terrain_seg[cur_node + TERRAIN_WIDTH].y >= pos->y() - rad)) {
+      if ((Terrain_seg[cur_node].y >= pos.y() - rad) || (Terrain_seg[cur_node + TERRAIN_WIDTH + 1].y >= pos.y() - rad) ||
+          (Terrain_seg[cur_node + 1].y >= pos.y() - rad) || (Terrain_seg[cur_node + TERRAIN_WIDTH].y >= pos.y() - rad)) {
         quick_cell_list[num_cells++] = cur_node;
         if (num_cells >= max_elements)
           break;
@@ -2094,7 +2093,7 @@ int fvi_QuickDistCellList(int init_cell_index, vector3 *pos, float rad, int *qui
   return num_cells;
 }
 
-int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_t *object_index_list, int max_elements,
+int fvi_QuickDistObjectList(const vector3 &pos, int init_room_index, float rad, int16_t *object_index_list, int max_elements,
                             bool f_lightmap_only, bool f_only_players_and_ais, bool f_include_non_collide_objects,
                             bool f_stop_at_closed_doors) {
   int num_objects = 0;
@@ -2103,7 +2102,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
 
   // Quick volume
   delta.x() = delta.y() = delta.z() = rad;
-  fvi_min_xyz = fvi_max_xyz = *pos;
+  fvi_min_xyz = fvi_max_xyz = pos;
 
   fvi_min_xyz -= delta;
   fvi_max_xyz += delta;
@@ -2156,7 +2155,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
                 Objects[cur_obj_index].ai_info) {
               if (!(f_lightmap_only && (Objects[cur_obj_index].lighting_render_type != lighting_render_type_e::lightmaps) &&
                     Objects[cur_obj_index].type != object_type_e::room)) {
-                if (object_movement_AABB(&Objects[cur_obj_index]) && !(Objects[cur_obj_index].flags.big_object)) {
+                if (object_movement_AABB(Objects[cur_obj_index]) && !(Objects[cur_obj_index].flags.big_object)) {
                   object_index_list[num_objects++] = cur_obj_index;
                   Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
                 }
@@ -2187,7 +2186,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
         if (!f_only_players_and_ais || Objects[x].type == object_type_e::player || Objects[x].ai_info) {
           if (!(f_lightmap_only && (Objects[BigObjectList[x]].lighting_render_type != lighting_render_type_e::lightmaps) &&
                 Objects[BigObjectList[x]].type != object_type_e::room)) {
-            if (object_movement_AABB(&Objects[BigObjectList[x]])) {
+            if (object_movement_AABB(Objects[BigObjectList[x]])) {
               object_index_list[num_objects++] = BigObjectList[x];
               Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
             }
@@ -2202,7 +2201,6 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
     int cur_next_room_index;
     int i;
 
-    Q_ASSERT(pos != nullptr);
     Q_ASSERT(init_room_index >= 0 && init_room_index < Rooms.size() && Rooms[init_room_index].used != 0);
     Q_ASSERT(rad >= 0.0f);
 
@@ -2229,7 +2227,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
         if ((f_include_non_collide_objects) || CollisionRayResult[obj_type_index(Objects[cur_obj_index].type)] != collision_result::nothing) {
           if (!f_only_players_and_ais || Objects[cur_obj_index].type == object_type_e::player || Objects[cur_obj_index].ai_info) {
             if (!(f_lightmap_only && (Objects[cur_obj_index].lighting_render_type != lighting_render_type_e::lightmaps))) {
-              if (object_movement_AABB(&Objects[cur_obj_index])) {
+              if (object_movement_AABB(Objects[cur_obj_index])) {
                 object_index_list[num_objects++] = cur_obj_index;
                 Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
               }
@@ -2263,7 +2261,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
 
         i = cur_room->portals[x].portal_face;
 
-        if (!room_movement_AABB(&cur_room->faces[i]))
+        if (!room_movement_AABB(cur_room->faces[i]))
           continue;
 
         portal_num = cur_room->faces[i].portal_num;
@@ -2297,7 +2295,7 @@ int fvi_QuickDistObjectList(vector3 *pos, int init_room_index, float rad, int16_
   return num_objects;
 }
 
-bool fvi_QuickRoomCheck(vector3 *pos, int roomnum, bool try_again) {
+bool fvi_QuickRoomCheck(const vector3 &pos, int roomnum, bool try_again) {
   room_t *cur_room = &Rooms[roomnum];
   vector3 hit_point; // where we hit
   vector3 colp;
@@ -2317,7 +2315,7 @@ internal_try_again:
   if (!(cur_room->used) || cur_room->flags.external)
     return false;
 
-  new_pos = min_xyz = max_xyz = *pos;
+  new_pos = min_xyz = max_xyz = pos;
 
   if (!try_again) {
     new_pos.x() += 10000000.0f;
@@ -2386,7 +2384,7 @@ internal_try_again:
         if (cur_room->faces[i].flags.not_shell)
           continue;
 
-        if (!room_manual_AABB(&cur_room->faces[i], &min_xyz, &max_xyz))
+        if (!room_manual_AABB(cur_room->faces[i], min_xyz, max_xyz))
           continue;
 
         f_backface = false;
@@ -2396,7 +2394,7 @@ internal_try_again:
 
         face_normal = cur_room->faces[i].normal;
 
-        face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, pos, &new_pos, &face_normal,
+        face_hit_type = check_line_to_face(hit_point, colp, cur_dist, wall_norm, pos, new_pos, face_normal,
                                            vertex_ptr_list, cur_room->faces[i].num_verts, 0.0f);
         if (!face_hit_type) {
           face_normal *= -1.0f;
@@ -2404,7 +2402,7 @@ internal_try_again:
             vertex_ptr_list[cur_room->faces[i].num_verts - count - 1] =
                 &cur_room->verts[cur_room->faces[i].face_verts[count]];
 
-          face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, pos, &new_pos, &face_normal,
+          face_hit_type = check_line_to_face(hit_point, colp, cur_dist, wall_norm, pos, new_pos, face_normal,
                                              vertex_ptr_list, cur_room->faces[i].num_verts, 0.0f);
           f_backface = true;
         }
@@ -2442,8 +2440,8 @@ internal_try_again:
 // Long rays are 10 segments or longer in length
 #define MIN_LONG_RAY (TERRAIN_SIZE * 20.0f)
 
-inline bool is_long_xz_ray(fvi_query *fq) {
-  if ((fabs(fq->p0->x() - fq->p1->x()) > MIN_LONG_RAY) || (fabs(fq->p0->z() - fq->p1->z()) > MIN_LONG_RAY)) {
+inline bool is_long_xz_ray(const fvi_query &fq) {
+  if ((fabs(fq.p0->x() - fq.p1->x()) > MIN_LONG_RAY) || (fabs(fq.p0->z() - fq.p1->z()) > MIN_LONG_RAY)) {
     return true;
   } else {
     return false;
@@ -2484,8 +2482,8 @@ void check_ceiling() {
   vertex_ptr_list[3] = &vlist[3];
 
   // Did we hit this face?
-  face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, fvi_query_ptr->p0,
-                                     &fvi_hit_data_ptr->hit_pnt, &face_normal, vertex_ptr_list, 4, fvi_query_ptr->rad);
+  face_hit_type = check_line_to_face(hit_point, colp, cur_dist, wall_norm, *fvi_query_ptr->p0,
+                                     fvi_hit_data_ptr->hit_pnt, face_normal, vertex_ptr_list, 4, fvi_query_ptr->rad);
 
   if (face_hit_type) {
     if (cur_dist <= fvi_collision_dist) {
@@ -2545,8 +2543,8 @@ void make_trigger_face_list(int last_sim_faces) {
     face_normal = cur_room->faces[i].normal;
 
     face_hit_type =
-        check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, fvi_query_ptr->p0, &fvi_hit_data_ptr->hit_pnt,
-                           &face_normal, vertex_ptr_list, cur_room->faces[i].num_verts, 0.0f);
+        check_line_to_face(hit_point, colp, cur_dist, wall_norm, *fvi_query_ptr->p0, fvi_hit_data_ptr->hit_pnt,
+                           face_normal, vertex_ptr_list, cur_room->faces[i].num_verts, 0.0f);
 
     if (face_hit_type) {
       //			mprintf(0, "FVI:hit trigger\n");
@@ -2596,19 +2594,19 @@ void make_trigger_face_list(int last_sim_faces) {
 extern bool Tracking_FVI;
 #endif
 
-fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_subdivision) {
+fvi_hit_type fvi_FindIntersection(fvi_query &fq, fvi_info &hit_data, bool no_subdivision) {
   int i;
   object *this_obj;
   int last_sim_trigger_faces;
 
-  if (fq->startroom == -1) {
+  if (fq.startroom == -1) {
     return fvi_hit_type::none;
   }
 
 #ifndef NED_PHYSICS
   if (Tracking_FVI) {
     LOG_DEBUG("Track FVI - Ray %d, thisobjnum=%d, startroom=%d, rad=%f",
-                     FVI_counter, fq->thisobjnum, fq->startroom, fq->rad);
+                     FVI_counter, fq.thisobjnum, fq.startroom, fq.rad);
   }
 #endif
 
@@ -2626,77 +2624,75 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
   /////////////////////////////////////////
 
   // Setup our globals
-  fvi_hit_data_ptr = hit_data;
-  fvi_query_ptr = fq;
+  fvi_hit_data_ptr = &hit_data;
+  fvi_query_ptr = &fq;
 
-  if (fq->thisobjnum >= 0)
-    this_obj = &Objects[fq->thisobjnum];
+  if (fq.thisobjnum >= 0)
+    this_obj = &Objects[fq.thisobjnum];
   else
     this_obj = nullptr;
 
-  if (fq->rad == 0.0f)
+  if (fq.rad == 0.0f)
     fvi_zero_rad = true;
   else
     fvi_zero_rad = false;
 
-  Q_ASSERT(fq != nullptr && hit_data != nullptr);
+  Q_ASSERT(std::isfinite(fq.p1->x())); // Caller wants to go to infinity!  -- Not FVI's fault.
+  Q_ASSERT(std::isfinite(fq.p1->y())); // Caller wants to go to infinity!  -- Not FVI's fault.
+  Q_ASSERT(std::isfinite(fq.p1->z())); // Caller wants to go to infinity!  -- Not FVI's fault.
 
-  Q_ASSERT(std::isfinite(fq->p1->x())); // Caller wants to go to infinity!  -- Not FVI's fault.
-  Q_ASSERT(std::isfinite(fq->p1->y())); // Caller wants to go to infinity!  -- Not FVI's fault.
-  Q_ASSERT(std::isfinite(fq->p1->z())); // Caller wants to go to infinity!  -- Not FVI's fault.
-
-  fvi_movement_delta = *fq->p1 - *fq->p0;
+  fvi_movement_delta = *fq.p1 - *fq.p0;
 
   // mprintf(0, "FVI:----New search----\n");
   // mprintf(0, "FVI: P0 is %f, %f, %f\n", XYZ(fq->p0));
-  if (fq->flags.new_record_list) {
+  if (fq.flags.new_record_list) {
     Fvi_num_recorded_faces = 0;
   }
   last_sim_trigger_faces = Fvi_num_recorded_faces;
 
   if ((this_obj) && (this_obj->flags.polygon_object) && this_obj->type != object_type_e::weapon &&
       this_obj->type != object_type_e::powerup && this_obj->type != object_type_e::debris && this_obj->type != object_type_e::room &&
-      this_obj->type != object_type_e::player && fq->rad == this_obj->size) {
+      this_obj->type != object_type_e::player && fq.rad == this_obj->size) {
     if (this_obj->mtype.phys_info.flags.point_collide_walls) {
       fvi_wall_sphere_rad = 0.0f;
       fvi_wall_sphere_offset = vector3{};
-      fvi_wall_sphere_p0 = *fq->p0;
-      fvi_wall_sphere_p1 = *fq->p1;
+      fvi_wall_sphere_p0 = *fq.p0;
+      fvi_wall_sphere_p1 = *fq.p1;
     } else {
       fvi_wall_sphere_rad = Poly_models[this_obj->rtype.pobj_info().model_num].wall_size;
       fvi_wall_sphere_offset = this_obj->wall_sphere_offset;
-      fvi_wall_sphere_p0 = *fq->p0 + fvi_wall_sphere_offset;
-      fvi_wall_sphere_p1 = *fq->p1 + fvi_wall_sphere_offset;
+      fvi_wall_sphere_p0 = *fq.p0 + fvi_wall_sphere_offset;
+      fvi_wall_sphere_p1 = *fq.p1 + fvi_wall_sphere_offset;
     }
 
     fvi_anim_sphere_rad = Poly_models[this_obj->rtype.pobj_info().model_num].anim_size;
     fvi_anim_sphere_offset = this_obj->anim_sphere_offset;
-    fvi_anim_sphere_p0 = *fq->p0 + fvi_anim_sphere_offset;
-    fvi_anim_sphere_p1 = *fq->p1 + fvi_anim_sphere_offset;
+    fvi_anim_sphere_p0 = *fq.p0 + fvi_anim_sphere_offset;
+    fvi_anim_sphere_p1 = *fq.p1 + fvi_anim_sphere_offset;
   } else {
-    if ((this_obj) && this_obj->type == object_type_e::player && fq->rad == this_obj->size) {
-      fvi_wall_sphere_rad = fq->rad * PLAYER_SIZE_SCALAR;
+    if ((this_obj) && this_obj->type == object_type_e::player && fq.rad == this_obj->size) {
+      fvi_wall_sphere_rad = fq.rad * PLAYER_SIZE_SCALAR;
       if (Players[this_obj->id].flags.dead || Players[this_obj->id].flags.dying)
         fvi_wall_sphere_rad *= 0.5f;
       fvi_wall_sphere_offset = vector3{};
-      fvi_wall_sphere_p0 = *fq->p0;
-      fvi_wall_sphere_p1 = *fq->p1;
+      fvi_wall_sphere_p0 = *fq.p0;
+      fvi_wall_sphere_p1 = *fq.p1;
     } else if ((this_obj) && this_obj->mtype.phys_info.flags.point_collide_walls) {
       fvi_wall_sphere_rad = 0.0f;
       fvi_wall_sphere_offset = vector3{};
-      fvi_wall_sphere_p0 = *fq->p0;
-      fvi_wall_sphere_p1 = *fq->p1;
+      fvi_wall_sphere_p0 = *fq.p0;
+      fvi_wall_sphere_p1 = *fq.p1;
     } else {
-      fvi_wall_sphere_rad = fq->rad;
+      fvi_wall_sphere_rad = fq.rad;
       fvi_wall_sphere_offset = vector3{};
-      fvi_wall_sphere_p0 = *fq->p0;
-      fvi_wall_sphere_p1 = *fq->p1;
+      fvi_wall_sphere_p0 = *fq.p0;
+      fvi_wall_sphere_p1 = *fq.p1;
     }
 
-    fvi_anim_sphere_rad = fq->rad;
+    fvi_anim_sphere_rad = fq.rad;
     fvi_anim_sphere_offset = vector3{};
-    fvi_anim_sphere_p0 = *fq->p0;
-    fvi_anim_sphere_p1 = *fq->p1;
+    fvi_anim_sphere_p0 = *fq.p0;
+    fvi_anim_sphere_p1 = *fq.p1;
   }
 
   fvi_num_rooms_visited = 0;
@@ -2705,47 +2701,47 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
   f_check_terrain = true;
 
   // Initially assume we will hit the endpoint -- Do not compute the end segment unless we actually have no collisions
-  hit_data->hit_pnt = *fq->p1;
-  hit_data->hit_room = -1;
+  hit_data.hit_pnt = *fq.p1;
+  hit_data.hit_room = -1;
 
-  hit_data->num_hits = 0;
-  hit_data->hit_type[0] = fvi_hit_type::none;
-  hit_data->hit_face_room[0] = -1;
-  hit_data->hit_object[0] = -1;
+  hit_data.num_hits = 0;
+  hit_data.hit_type[0] = fvi_hit_type::none;
+  hit_data.hit_face_room[0] = -1;
+  hit_data.hit_object[0] = -1;
 
-  hit_data->n_rooms = 0;
-  fvi_collision_dist = vm_VectorDistance(*fq->p0, *fq->p1) + 0.0000001f;
+  hit_data.n_rooms = 0;
+  fvi_collision_dist = vm_VectorDistance(*fq.p0, *fq.p1) + 0.0000001f;
 
   // Computes a axis-aligned bounding-box that encompasses the area
   compute_movement_AABB();
 
-  if (ROOMNUM_OUTSIDE(fq->startroom)) {
+  if (ROOMNUM_OUTSIDE(fq.startroom)) {
     // Subdivides long rays
     if ((!no_subdivision) && is_long_xz_ray(fq)) {
 
       // Save old pointers
-      fvi_info *save_fvi_hit_data_ptr = hit_data;
-      fvi_query *save_fvi_query_ptr = fq;
+      fvi_info *save_fvi_hit_data_ptr = &hit_data;
+      fvi_query *save_fvi_query_ptr = &fq;
 
       // Copy old data to new data
-      fvi_info fvi_new_hit_data = *hit_data;
-      fvi_query fvi_new_query = *fq;
+      fvi_info fvi_new_hit_data = hit_data;
+      fvi_query fvi_new_query = fq;
 
       // These are the new "moving" line points
       vector3 new_p0;
       vector3 new_p1;
 
       // Number of whole subdivisions
-      int num_subdivisions = vm_VectorDistance(*fq->p0, *fq->p1) / MIN_LONG_RAY;
+      int num_subdivisions = vm_VectorDistance(*fq.p0, *fq.p1) / MIN_LONG_RAY;
       vector3 sub_dir;                    // Direction and magnitude of each subdivision
       fvi_hit_type s_hit_type = fvi_hit_type::none; // Sub-divided hit type
 
-      sub_dir = *fq->p1 - *fq->p0;  // Direction of movement
+      sub_dir = *fq.p1 - *fq.p0;   // Direction of movement
       vm_NormalizeVector(sub_dir); // Normalize it
-      sub_dir *= MIN_LONG_RAY;      // Scale it to the length of a sub-division
+      sub_dir *= MIN_LONG_RAY;     // Scale it to the length of a sub-division
 
       // Determine the first sub-division
-      new_p0 = *fq->p0;
+      new_p0 = *fq.p0;
       new_p1 = new_p0 + sub_dir;
 
       fvi_new_query.p0 = &new_p0;
@@ -2755,7 +2751,7 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
         fvi_new_query.startroom = GetTerrainRoomFromPos(new_p0).value_or(-1);
 
         //				mprintf(0, "S %d F %f,%f,%f to %f,%f,%f\n", i, XYZ(&new_p0), XYZ(&new_p1));
-        s_hit_type = fvi_FindIntersection(&fvi_new_query, &fvi_new_hit_data, true);
+        s_hit_type = fvi_FindIntersection(fvi_new_query, fvi_new_hit_data, true);
 
         fvi_new_query.flags.new_record_list = false;
 
@@ -2774,25 +2770,25 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
       // Check up to the real stopping point
       if (s_hit_type == fvi_hit_type::none) {
         new_p1 = *save_fvi_query_ptr->p1;
-        s_hit_type = fvi_FindIntersection(&fvi_new_query, &fvi_new_hit_data, true);
+        s_hit_type = fvi_FindIntersection(fvi_new_query, fvi_new_hit_data, true);
       }
 
-      hit_data = save_fvi_hit_data_ptr;
-      fq = save_fvi_query_ptr;
+      hit_data = *save_fvi_hit_data_ptr;
+      fq = *save_fvi_query_ptr;
 
-      *hit_data = fvi_new_hit_data;
+      hit_data = fvi_new_hit_data;
 #ifdef USE_RTP
       RTP_tENDTIME(fvi_time, curr_time);
 #endif
-      return hit_data->hit_type[0];
+      return hit_data.hit_type[0];
     } else
       do_fvi_terrain();
   } else {
-    Q_ASSERT(!Rooms[fq->startroom].flags.external); // If we hit this, it is not FVI's fault
+    Q_ASSERT(!Rooms[fq.startroom].flags.external); // If we hit this, it is not FVI's fault
                                                          // The caller to fvi has a bug
     FVI_room_counter++;
     // do_fvi_rooms(fq->startroom);
-    fvi_room(fq->startroom, -1);
+    fvi_room(fq.startroom, -1);
 
     Q_ASSERT(fvi_num_rooms_visited >= 1);
   }
@@ -2800,31 +2796,31 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
   // Check objects in rooms we visited
   fvi_rooms_objs();
 
-  if (FVI_always_check_ceiling && (fq->flags.check_ceiling)) {
+  if (FVI_always_check_ceiling && (fq.flags.check_ceiling)) {
     check_ceiling();
   }
 
   // Determine hit seg.
 
   // Only do this if not running radiosity
-  if (!(fq->flags.no_relink)) {
+  if (!(fq.flags.no_relink)) {
     if (fvi_num_rooms_visited == 1 && fvi_num_cells_visited == 0) {
-      hit_data->hit_room = fvi_rooms_visited[0];
-    } else if ((hit_data->hit_type[0] == fvi_hit_type::wall || hit_data->hit_type[0] == fvi_hit_type::terrain) &&
+      hit_data.hit_room = fvi_rooms_visited[0];
+    } else if ((hit_data.hit_type[0] == fvi_hit_type::wall || hit_data.hit_type[0] == fvi_hit_type::terrain) &&
                (fvi_zero_rad ||
                 (fvi_query_ptr->thisobjnum >= 0 &&
                  (Objects[fvi_query_ptr->thisobjnum].mtype.phys_info.flags.point_collide_walls))) &&
-               (ROOMNUM_OUTSIDE(hit_data->hit_face_room[0]) ||
-                !Rooms[hit_data->hit_face_room[0]].flags.external)) {
-      hit_data->hit_room = hit_data->hit_face_room[0];
+               (ROOMNUM_OUTSIDE(hit_data.hit_face_room[0]) ||
+                !Rooms[hit_data.hit_face_room[0]].flags.external)) {
+      hit_data.hit_room = hit_data.hit_face_room[0];
     } else {
       bool f_found_room = false;
 
       for (i = 0; i < fvi_num_rooms_visited && !f_found_room; i++) {
         if (!Rooms[fvi_rooms_visited[i]].flags.external)
-          if (fvi_QuickRoomCheck(&hit_data->hit_pnt, fvi_rooms_visited[i])) {
+          if (fvi_QuickRoomCheck(hit_data.hit_pnt, fvi_rooms_visited[i])) {
             f_found_room = true;
-            hit_data->hit_room = fvi_rooms_visited[i];
+            hit_data.hit_room = fvi_rooms_visited[i];
           }
       }
 
@@ -2832,23 +2828,23 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
         // We must be outside
 
         // Check the ceiling too
-        if (!FVI_always_check_ceiling && (fq->flags.check_ceiling)) {
+        if (!FVI_always_check_ceiling && (fq.flags.check_ceiling)) {
           check_ceiling();
         }
 
         // Determine if we are within the valid terrain bounds
-        hit_data->hit_room = GetTerrainRoomFromPos(hit_data->hit_pnt).value_or(-1);
-        if (hit_data->hit_room == -1) {
-          hit_data->hit_type[0] = fvi_hit_type::out_of_terrain_bounds;
+        hit_data.hit_room = GetTerrainRoomFromPos(hit_data.hit_pnt).value_or(-1);
+        if (hit_data.hit_room == -1) {
+          hit_data.hit_type[0] = fvi_hit_type::out_of_terrain_bounds;
         }
       } else if (!f_found_room) {
         //				mprintf(0, "Attempting to patch\n");
         for (i = 0; i < fvi_num_rooms_visited && !f_found_room; i++) {
           if (!Rooms[fvi_rooms_visited[i]].flags.external)
-            if (fvi_QuickRoomCheck(&hit_data->hit_pnt, fvi_rooms_visited[i]), true) {
+            if (fvi_QuickRoomCheck(hit_data.hit_pnt, fvi_rooms_visited[i]), true) {
               f_found_room = true;
-              hit_data->hit_room = fvi_rooms_visited[i];
-              Q_ASSERT(!Rooms[hit_data->hit_room].flags.external);
+              hit_data.hit_room = fvi_rooms_visited[i];
+              Q_ASSERT(!Rooms[hit_data.hit_room].flags.external);
               //				break;
             }
         }
@@ -2858,8 +2854,8 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
     }
 
     // Do the ASSERTS for FVI.
-    Q_ASSERT(!(hit_data->hit_room == -1 && hit_data->hit_type[0] != fvi_hit_type::out_of_terrain_bounds));
-    Q_ASSERT(!(hit_data->hit_type[0] == fvi_hit_type::object && hit_data->hit_object[0] == -1));
+    Q_ASSERT(!(hit_data.hit_room == -1 && hit_data.hit_type[0] != fvi_hit_type::out_of_terrain_bounds));
+    Q_ASSERT(!(hit_data.hit_type[0] == fvi_hit_type::object && hit_data.hit_object[0] == -1));
   }
 
   // Clean up the visit list bits
@@ -2879,13 +2875,13 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
     make_trigger_face_list(last_sim_trigger_faces);
   }
 
-  hit_data->hit_dist = fvi_collision_dist;
+  hit_data.hit_dist = fvi_collision_dist;
 
   // Return the hit type
 #ifdef USE_RTP
   RTP_tENDTIME(fvi_time, curr_time);
 #endif
-  return hit_data->hit_type[0];
+  return hit_data.hit_type[0];
 }
 
 int obj_in_list(int objnum, int *obj_list) {
@@ -2899,7 +2895,7 @@ int obj_in_list(int objnum, int *obj_list) {
 
 // new function for Mike
 // note: n_segs_visited must be set to zero before this is called
-bool sphere_intersects_wall(vector3 *pnt, int segnum, float rad) {
+bool sphere_intersects_wall(const vector3 &pnt, int segnum, float rad) {
   /*
           int facemask;
           segment *seg;
@@ -3176,16 +3172,16 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
 }
 */
 
-vector3 PointSpeed(object *obj, vector3 *pos, matrix *orient, vector3 *rotvel, vector3 *velocity) {
-  vector3 r1 = *pos - obj->pos;
+vector3 PointSpeed(const object &obj, const vector3 &pos, const matrix &orient, const vector3 &rotvel, const vector3 &velocity) {
+  vector3 r1 = pos - obj.pos;
   vector3 w1;
   vector3 n1;
   float temp1;
 
-  matrix o_t1 = *orient;
+  matrix o_t1 = orient;
 
   vm_TransposeMatrix(o_t1);
-  vector3 cmp1 = *rotvel * o_t1;
+  vector3 cmp1 = rotvel * o_t1;
   ConvertEulerToAxisAmount(cmp1, n1, temp1);
 
   n1 *= temp1;
@@ -3196,14 +3192,14 @@ vector3 PointSpeed(object *obj, vector3 *pos, matrix *orient, vector3 *rotvel, v
     w1 = vector3{};
   }
 
-  return *velocity + w1;
+  return velocity + w1;
 }
 
 // MTS: only used in this file.
 // Hacked for some initial testing
-bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *collision_normal, object& obj,
-                           vector3 *new_pos, int nv, vector3 **vertex_ptr_list, vector3 *face_normal, matrix *orient,
-                           vector3 *rotvel, vector3 *velocity) {
+bool BBoxPlaneIntersection(bool fast_exit, vector3 &collision_point, vector3 &collision_normal, object& obj,
+                           const vector3 &new_pos, int nv, vector3 **vertex_ptr_list, const vector3 &face_normal, const matrix &orient,
+                           const vector3 &rotvel, const vector3 &velocity) {
   vector3 plane_pnt;
   vector3 verts[12];
   poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
@@ -3215,17 +3211,17 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
   int num_int_box = 0;
   vector3 int_points_box[12];
 
-  verts[0] = (orient->rvec * pm->mins.x()) + (orient->uvec * pm->maxs.y()) + (orient->fvec * pm->mins.z());
-  verts[1] = (orient->rvec * pm->mins.x()) + (orient->uvec * pm->mins.y()) + (orient->fvec * pm->mins.z());
-  verts[2] = (orient->rvec * pm->maxs.x()) + (orient->uvec * pm->mins.y()) + (orient->fvec * pm->mins.z());
-  verts[3] = (orient->rvec * pm->maxs.x()) + (orient->uvec * pm->maxs.y()) + (orient->fvec * pm->mins.z());
-  verts[4] = (orient->rvec * pm->maxs.x()) + (orient->uvec * pm->maxs.y()) + (orient->fvec * pm->maxs.z());
-  verts[5] = (orient->rvec * pm->maxs.x()) + (orient->uvec * pm->mins.y()) + (orient->fvec * pm->maxs.z());
-  verts[6] = (orient->rvec * pm->mins.x()) + (orient->uvec * pm->mins.y()) + (orient->fvec * pm->maxs.z());
-  verts[7] = (orient->rvec * pm->mins.x()) + (orient->uvec * pm->maxs.y()) + (orient->fvec * pm->maxs.z());
+  verts[0] = (orient.rvec * pm->mins.x()) + (orient.uvec * pm->maxs.y()) + (orient.fvec * pm->mins.z());
+  verts[1] = (orient.rvec * pm->mins.x()) + (orient.uvec * pm->mins.y()) + (orient.fvec * pm->mins.z());
+  verts[2] = (orient.rvec * pm->maxs.x()) + (orient.uvec * pm->mins.y()) + (orient.fvec * pm->mins.z());
+  verts[3] = (orient.rvec * pm->maxs.x()) + (orient.uvec * pm->maxs.y()) + (orient.fvec * pm->mins.z());
+  verts[4] = (orient.rvec * pm->maxs.x()) + (orient.uvec * pm->maxs.y()) + (orient.fvec * pm->maxs.z());
+  verts[5] = (orient.rvec * pm->maxs.x()) + (orient.uvec * pm->mins.y()) + (orient.fvec * pm->maxs.z());
+  verts[6] = (orient.rvec * pm->mins.x()) + (orient.uvec * pm->mins.y()) + (orient.fvec * pm->maxs.z());
+  verts[7] = (orient.rvec * pm->mins.x()) + (orient.uvec * pm->maxs.y()) + (orient.fvec * pm->maxs.z());
 
   for (i = 0; i < 8; i++) {
-    verts[i] += *new_pos;
+    verts[i] += new_pos;
   }
 
   vector3 xxx_normal{};
@@ -3252,7 +3248,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
     if (dot[bbox_edges[i][0]] > 0.0f && dot[bbox_edges[i][1]] < 0.0f && collidable[bbox_edges[i][1]]) {
       movement = verts[bbox_edges[i][1]] - verts[bbox_edges[i][0]];
 
-      nmovement = -(vm_Dot3Product(movement,*face_normal));
+      nmovement = -(vm_Dot3Product(movement,face_normal));
 
       plane_pnt = verts[bbox_edges[i][0]];
       plane_pnt += movement * (dot[bbox_edges[i][0]] / nmovement);
@@ -3261,7 +3257,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
     } else if (dot[bbox_edges[i][0]] < 0.0f && dot[bbox_edges[i][1]] > 0.0f && collidable[bbox_edges[i][0]]) {
       movement = verts[bbox_edges[i][0]] - verts[bbox_edges[i][1]];
 
-      nmovement = -(vm_Dot3Product(movement,*face_normal));
+      nmovement = -(vm_Dot3Product(movement,face_normal));
 
       plane_pnt = verts[bbox_edges[i][1]];
       plane_pnt += movement * (dot[bbox_edges[i][1]] / nmovement);
@@ -3278,14 +3274,14 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
   }
 
   if (num_int_box) {
-    vm_MakeZero(*collision_point);
+    vm_MakeZero(collision_point);
 
     for (i = 0; i < num_int_box; i++) {
-      *collision_point += int_points_box[i];
+      collision_point += int_points_box[i];
     }
 
-    *collision_point /= (float)(num_int_box);
-    *collision_normal = xxx_normal;
+    collision_point /= (float)(num_int_box);
+    collision_normal = xxx_normal;
 
     //		mprintf(0, "BBox %d hits\n", num_int_box);
 
@@ -3296,7 +3292,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
 }
 
 // Returns true if the object is through any walls
-bool object_intersects_wall(object *objp) {
+bool object_intersects_wall(const object &objp) {
   //	n_segs_visited = 0;
   //
   //	return sphere_intersects_wall(&objp->pos,objp->segnum,objp->size);
@@ -3328,7 +3324,7 @@ void check_hit_obj(int objnum) {
         if (m_obj_index <= -1 && (CollisionRayResult[obj_type_index(obj->type)] == collision_result::nothing))
           return;
 
-        if (object_movement_AABB(&Objects[objnum])) {
+        if (object_movement_AABB(Objects[objnum])) {
 #ifndef NED_PHYSICS
 #ifdef _DEBUG
           if (Physics_player_verbose) {
@@ -3533,8 +3529,8 @@ void check_hit_obj(int objnum) {
               case collision_result::check_sphere_bbox:
               case collision_result::check_bbox_sphere: {
               sphere_sphere:
-                if (check_vector_to_object(&hit_point, &cur_dist, &fvi_anim_sphere_p0, &fvi_anim_sphere_p1,
-                                           fvi_anim_sphere_rad, &Objects[objnum], &Objects[m_obj_index])) {
+                if (check_vector_to_object(hit_point, cur_dist, fvi_anim_sphere_p0, fvi_anim_sphere_p1,
+                                           fvi_anim_sphere_rad, Objects[objnum], Objects[m_obj_index])) {
                   //	hit_point
 
                   if (cur_dist < fvi_collision_dist) {
@@ -3913,17 +3909,17 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
         // Did we hit this face?
         if ((fvi_query_ptr->thisobjnum >= 0) &&
             (Objects[fvi_query_ptr->thisobjnum].mtype.phys_info.flags.point_collide_walls)) {
-          face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, fvi_query_ptr->p0,
-                                             &fvi_hit_data_ptr->hit_pnt, &face_normal, vertex_ptr_list, 3, 0.0f);
+          face_hit_type = check_line_to_face(hit_point, colp, cur_dist, wall_norm, *fvi_query_ptr->p0,
+                                             fvi_hit_data_ptr->hit_pnt, face_normal, vertex_ptr_list, 3, 0.0f);
           } else if ((this_obj) && (this_obj->flags.polygon_object)) {
           face_hit_type =
-              check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, &fvi_wall_sphere_p0, &fvi_wall_sphere_p1,
-                                 &face_normal, vertex_ptr_list, 3, fvi_wall_sphere_rad);
+              check_line_to_face(hit_point, colp, cur_dist, wall_norm, fvi_wall_sphere_p0, fvi_wall_sphere_p1,
+                                 face_normal, vertex_ptr_list, 3, fvi_wall_sphere_rad);
           hit_point -= fvi_wall_sphere_offset;
         } else {
           face_hit_type =
-              check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, fvi_query_ptr->p0,
-                                 &fvi_hit_data_ptr->hit_pnt, &face_normal, vertex_ptr_list, 3, fvi_query_ptr->rad);
+              check_line_to_face(hit_point, colp, cur_dist, wall_norm, *fvi_query_ptr->p0,
+                                 fvi_hit_data_ptr->hit_pnt, face_normal, vertex_ptr_list, 3, fvi_query_ptr->rad);
         }
         /*
                 if(Objects[fvi_query_ptr->thisobjnum].type == object_type::clutter) {
@@ -4392,9 +4388,9 @@ void fvi_rooms_objs(void) {
 // transparence Returns:		bitmask describing the alpha blending for the face
 // the return value is an alpha_blend_type value assembled from the
 // alpha_flags_t source bits in renderer.h
-inline alpha_blend_type GetFaceAlpha(const face *fp, int bm_handle) {
-  if (GameTextures[fp->tmap].flags.saturate) {
-    if (fp->flags.vertex_alpha)
+inline alpha_blend_type GetFaceAlpha(const face &fp, int bm_handle) {
+  if (GameTextures[fp.tmap].flags.saturate) {
+    if (fp.flags.vertex_alpha)
       return alpha_blend_type::saturate_texture_vertex;
     else
       return alpha_blend_type::saturate_texture;
@@ -4402,32 +4398,32 @@ inline alpha_blend_type GetFaceAlpha(const face *fp, int bm_handle) {
 
   alpha_flags_t flags = {};
   // Check the face's texture for an alpha value
-  if (GameTextures[fp->tmap].alpha < 1.0)
+  if (GameTextures[fp.tmap].alpha < 1.0)
     flags.constant = true;
 
   // Someday we'll probably check the bitmap's alpha, too
   // Check for vertex alpha flag
-  if (fp->flags.vertex_alpha)
+  if (fp.flags.vertex_alpha)
     flags.vertex = true;
 
   // Check for transparency
-  if (GameBitmaps[bm_handle].format != bitmap_format::_4444 && GameTextures[fp->tmap].flags.tmap2)
+  if (GameBitmaps[bm_handle].format != bitmap_format::_4444 && GameTextures[fp.tmap].flags.tmap2)
     flags.texture = true;
 
   return alpha_blend_type_of(flags);
 }
 
-bool PhysPastPortal(int roomnum, const portal *pp) {
+bool PhysPastPortal(int roomnum, const portal &pp) {
   const room_t *rp = &Rooms[roomnum];
   // If we don't render the portal's faces, then we see through it
-  if (!pp->flags.render_faces)
+  if (!pp.flags.render_faces)
     return true;
 
   // Check if the face's texture has transparency
-  const face *fp = &rp->faces[pp->portal_face];
+  const face *fp = &rp->faces[pp.portal_face];
   int bm_handle = GetTextureBitmap(fp->tmap, 0);
 
-  if (GetFaceAlpha(fp, bm_handle) != alpha_blend_type::always)
+  if (GetFaceAlpha(*fp, bm_handle) != alpha_blend_type::always)
     return true; // Face has alpha or transparency, so we can see through it
 
   return false; // Not transparent, so no render past
@@ -4497,7 +4493,7 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
       portal_num = cur_room->faces[i].portal_num;
 
       //			if ((msector & cur_room->faces[i].sector) != cur_room->faces[i].sector) continue;
-      if (!room_movement_AABB(&cur_room->faces[i]))
+      if (!room_movement_AABB(cur_room->faces[i]))
         continue;
 
       { auto ff = GetFacePhysicsFlags(room_index, &cur_room->faces[i]); face_info = (ff.solid?1:0)|(ff.transparent?2:0)|(ff.portal?4:0)|(ff.record?8:0); }
@@ -4635,7 +4631,7 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
             }
 
             if ((fvi_query_ptr->flags.ignore_render_through_portals) &&
-                (PhysPastPortal(room_index, &cur_room->portals[portal_num]))) {
+                (PhysPastPortal(room_index, cur_room->portals[portal_num]))) {
               bool f_add_next_portal = true;
 
               for (next_portal_index = 0; next_portal_index < num_next_portals; next_portal_index++) {
@@ -4656,17 +4652,17 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
 
           // Did we hit this face?
           if ((this_obj) && (this_obj->mtype.phys_info.flags.point_collide_walls)) {
-            face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, fvi_query_ptr->p0,
-                                               &fvi_hit_data_ptr->hit_pnt, &face_normal, vertex_ptr_list,
+            face_hit_type = check_line_to_face(hit_point, colp, cur_dist, wall_norm, *fvi_query_ptr->p0,
+                                               fvi_hit_data_ptr->hit_pnt, face_normal, vertex_ptr_list,
                                                cur_face->num_verts, 0.0f);
         } else if ((this_obj) && (this_obj->flags.polygon_object)) {
             face_hit_type =
-                check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, &fvi_wall_sphere_p0, &fvi_wall_sphere_p1,
-                                   &face_normal, vertex_ptr_list, cur_face->num_verts, fvi_wall_sphere_rad);
+                check_line_to_face(hit_point, colp, cur_dist, wall_norm, fvi_wall_sphere_p0, fvi_wall_sphere_p1,
+                                   face_normal, vertex_ptr_list, cur_face->num_verts, fvi_wall_sphere_rad);
             hit_point -= fvi_wall_sphere_offset;
           } else {
-            face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, fvi_query_ptr->p0,
-                                               &fvi_hit_data_ptr->hit_pnt, &face_normal, vertex_ptr_list,
+            face_hit_type = check_line_to_face(hit_point, colp, cur_dist, wall_norm, *fvi_query_ptr->p0,
+                                               fvi_hit_data_ptr->hit_pnt, face_normal, vertex_ptr_list,
                                                cur_face->num_verts, fvi_query_ptr->rad);
           }
 
@@ -4677,8 +4673,8 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
             for (count = 0; count < cur_face->num_verts; count++)
               vertex_ptr_list[cur_face->num_verts - count - 1] = &cur_room->verts[cur_face->face_verts[count]];
 
-            face_hit_type = check_line_to_face(&hit_point, &colp, &cur_dist, &wall_norm, fvi_query_ptr->p0,
-                                               &fvi_hit_data_ptr->hit_pnt, &face_normal, vertex_ptr_list,
+            face_hit_type = check_line_to_face(hit_point, colp, cur_dist, wall_norm, *fvi_query_ptr->p0,
+                                               fvi_hit_data_ptr->hit_pnt, face_normal, vertex_ptr_list,
                                                cur_face->num_verts, fvi_query_ptr->rad);
             f_backface = true;
           }

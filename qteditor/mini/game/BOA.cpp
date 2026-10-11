@@ -1309,7 +1309,7 @@ bool IsPathPointValid(int room, vector3 *pos) {
     fq.thisobjnum = -1;
     fq.ignore_obj_list = NULL;
 
-    fate = fvi_FindIntersection(&fq, &hit_info);
+    fate = fvi_FindIntersection(fq, hit_info);
 
     if (fate != fvi_hit_type::none) {
       return false;
@@ -1767,7 +1767,7 @@ void MakeBOAVisTable(bool from_lighting) {
               vector3 src2 = src_vector;
               vector3 subvec;
 
-              if ((check_point_to_face(&src2, &src_fp->normal, src_fp->num_verts, src_vertp)))
+              if ((check_point_to_face(src2, src_fp->normal, src_fp->num_verts, src_vertp)))
                 continue;
 
               vector3 dest_vector, dest_ybase;
@@ -1787,15 +1787,15 @@ void MakeBOAVisTable(bool from_lighting) {
                   if (subvec * dest_fp->normal>0)
                           continue;*/
 
-                  if ((check_point_to_face(&dest_vector, &dest_fp->normal, dest_fp->num_verts, dest_vertp)))
+                  if ((check_point_to_face(dest_vector, dest_fp->normal, dest_fp->num_verts, dest_vertp)))
                     continue;
 
-                  if (!fvi_QuickRoomCheck(&src2, i, false) && !fvi_QuickRoomCheck(&src2, i, true))
+                  if (!fvi_QuickRoomCheck(src2, i, false) && !fvi_QuickRoomCheck(src2, i, true))
                     continue;
 
                   if (!Rooms[check_room].flags.external &&
-                      (!fvi_QuickRoomCheck(&dest_vector, check_room, false) &&
-                       !fvi_QuickRoomCheck(&dest_vector, check_room, true)))
+                      (!fvi_QuickRoomCheck(dest_vector, check_room, false) &&
+                       !fvi_QuickRoomCheck(dest_vector, check_room, true)))
                     continue;
 
                   // Check to see if we can see to this portal point
@@ -1817,7 +1817,7 @@ void MakeBOAVisTable(bool from_lighting) {
                   fq.flags.backface = true;
                   fq.flags.ignore_render_through_portals = true;
 
-                  fate = fvi_FindIntersection(&fq, &hit_data);
+                  fate = fvi_FindIntersection(fq, hit_data);
                   if (fate == fvi_hit_type::none) {
                     // if this portal can be seen, add all its portals to the stack
                     // and then set this room to be visible

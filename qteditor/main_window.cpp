@@ -1047,7 +1047,7 @@ void MainWindow::onMoveCameraToCurrentObject() {
   fq.thisobjnum = OBJNUM(Viewer_object);
   fq.ignore_obj_list = nullptr;
   fq.rad = 0.0f;
-  fvi_FindIntersection(&fq, &hit_info);
+  fvi_FindIntersection(fq, hit_info);
 
   // Move the viewer to the new position
   moveViewer(hit_info.hit_pnt, to_roomnum(hit_info.hit_room), std::nullopt);

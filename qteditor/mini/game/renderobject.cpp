@@ -901,13 +901,13 @@ void DrawRoomVisPnts(object *obj) {
           //							float mag=vm_GetMagnitudeFast (subvec);
           //							subvec/=(mag*4);
           //							src2+=subvec;
-          if ((check_point_to_face(&src2, &src_fp->normal, src_fp->num_verts, src_vertp))) {
+          if ((check_point_to_face(src2, src_fp->normal, src_fp->num_verts, src_vertp))) {
             DrawColoredDisk(&src2, 1.0f, 0.0f, 0.0f, 0.1f, 0.7f, 0.25f, 1);
             continue;
           }
 
           src2 += 0.1f * rp->faces[rp->portals[t].portal_face].normal;
-          if (!fvi_QuickRoomCheck(&src2, roomnum, false) && !fvi_QuickRoomCheck(&src2, roomnum, true)) {
+          if (!fvi_QuickRoomCheck(src2, roomnum, false) && !fvi_QuickRoomCheck(src2, roomnum, true)) {
             DrawColoredDisk(&src2, 0.0f, 1.0f, 0.0f, 0.1f, 0.7f, 0.25f, 1);
             continue;
           }
@@ -1967,7 +1967,7 @@ void DrawPlayerTypingIndicator(object *obj) {
   fq.flags.check_objs = true;
   fq.flags.ignore_powerups = true;
   fq.flags.ignore_weapons = true;
-  fate = fvi_FindIntersection(&fq, &hit_data);
+  fate = fvi_FindIntersection(fq, hit_data);
   if (fate == fvi_hit_type::none || (fate == fvi_hit_type::sphere_2_poly_object && hit_data.hit_object[0] == (obj - Objects.data()))) {
     // Draw this indicator on the hud
     g3Point pnt;
@@ -2070,7 +2070,7 @@ void DrawPlayerNameOnHud(object *obj) {
   fq.flags.check_objs = true;
   fq.flags.ignore_powerups = true;
   fq.flags.ignore_weapons = true;
-  fate = fvi_FindIntersection(&fq, &hit_data);
+  fate = fvi_FindIntersection(fq, hit_data);
   if (fate == fvi_hit_type::none || (fate == fvi_hit_type::sphere_2_poly_object && hit_data.hit_object[0] == (obj - Objects.data()))) {
     int half = Game_window_w / 2;
     // Draw this name on the hud

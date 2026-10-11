@@ -585,7 +585,7 @@ index_t FindPointRoom(vector3 *pnt) {
     if ((Rooms[i].used) && !Rooms[i].flags.external) {
       bool f_in_room;
 
-      f_in_room = fvi_QuickRoomCheck(pnt, i);
+      f_in_room = fvi_QuickRoomCheck(*pnt, i);
 
       if (f_in_room == true)
         return i;

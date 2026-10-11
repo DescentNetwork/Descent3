@@ -424,7 +424,7 @@ int SlewFrame(object *obj, int movement_limitations) {
         fq.ignore_obj_list = NULL;
         fq.flags = fvi_query_flags_t{};
         fq.flags.ignore_render_through_portals = true;
-        fate = fvi_FindIntersection(&fq, &hit_info);
+        fate = fvi_FindIntersection(fq, hit_info);
 
         // If bad room, don't move
         if ((fate == fvi_hit_type::out_of_terrain_bounds) || (hit_info.hit_room == -1)) {

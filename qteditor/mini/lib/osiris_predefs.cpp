@@ -2459,7 +2459,7 @@ int osipf_RayCast(int objhandle, vector3 *p0, vector3 *p1, int start_roomnum, fl
     fq.ignore_obj_list = NULL;
   }
 
-  fate = fvi_FindIntersection(&fq, &hit_info);
+  fate = fvi_FindIntersection(fq, hit_info);
 
   ri->hit_point = hit_info.hit_pnt;
   ri->hit_room = hit_info.hit_room;
@@ -3340,7 +3340,7 @@ int osipf_AIGetNearbyObjs(vector3 *pos, int init_roomnum, float rad, int *object
   int i;
   int count = 0;
 
-  num_close = fvi_QuickDistObjectList(pos, init_roomnum, rad, s_list.data(), max_elements, f_lightmap_only,
+  num_close = fvi_QuickDistObjectList(*pos, init_roomnum, rad, s_list.data(), max_elements, f_lightmap_only,
                                       f_only_players_and_ais, f_include_non_collide_objects, f_stop_at_closed_doors);
   Q_ASSERT(num_close <= max_elements);
   for (i = 0; i < num_close; i++) {

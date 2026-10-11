@@ -951,7 +951,7 @@ void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float r
   int num_objects, i;
   float normalized_time[MAX_SUBOBJECTS];
 
-  num_objects = fvi_QuickDistObjectList(pos, roomnum, light_dist, objlist, MAX_DYNAMIC_FACES, false, false, true);
+  num_objects = fvi_QuickDistObjectList(*pos, roomnum, light_dist, objlist, MAX_DYNAMIC_FACES, false, false, true);
 
   for (i = 0; i < num_objects; i++) {
     object *obj = &Objects[objlist[i]];
@@ -1411,7 +1411,7 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
   ApplyLightingToObjects(pos, MAKE_ROOMNUM(cellnum), light_dist, red_scale, green_scale, blue_scale, light_direction,
                          dot_range);
 
-  num_cells = fvi_QuickDistCellList(cellnum, pos, light_dist, celllist, MAX_DYNAMIC_CELLS);
+  num_cells = fvi_QuickDistCellList(cellnum, *pos, light_dist, celllist, MAX_DYNAMIC_CELLS);
 
   if (num_cells < 1)
     return;
