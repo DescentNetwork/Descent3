@@ -313,9 +313,9 @@ using aligned_angvec        = vec<angle,3,align::vector>;
 using aligned_angvec_array  = aligned_angvec;
 
 // Set an angvec to {0,0,0}
-static inline void vm_MakeZero(angvec *a) { *a = angvec{}; }
+static inline void vm_MakeZero(angvec &a) { a = angvec{}; }
 // zero's out a vector
-static inline void vm_MakeZero(vector3 *v) { *v = vector3{}; }
+static inline void vm_MakeZero(vector3 &v) { v = vector3{}; }
 
 struct matrix {
 constexpr static const size_t RIGHT_HAND = 0;
@@ -422,7 +422,7 @@ static inline matrix operator/(matrix src, float n) {
 }
 
 inline scalar vm_Dot3Product(const vector3 &a, const vector3 &b) { return vector3::dot(a,b); }
-static inline scalar vm_Dot3Vector(scalar x, scalar y, scalar z, const vector3 *v) { return vector3::dot(aligned_vector3{x,y,z}, *v); }
+static inline scalar vm_Dot3Vector(scalar x, scalar y, scalar z, const vector3 &v) { return vector3::dot(aligned_vector3{x,y,z}, v); }
 
 inline vector3 vm_Cross3Product(const vector3 &u, const vector3 &v) {
   return vector3::cross3(u,v);

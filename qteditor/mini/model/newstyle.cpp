@@ -263,10 +263,10 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
           vertnorm = fp->normal;
 
         vector3 subvec = Bump_view_pos - vert;
-        vm_NormalizeVectorFast(&subvec);
+        vm_NormalizeVectorFast(subvec);
 
         vector3 incident_norm = vert - Polymodel_bump_pos;
-        vm_NormalizeVectorFast(&incident_norm);
+        vm_NormalizeVectorFast(incident_norm);
 
         scalar d = vm_Dot3Product(incident_norm, vertnorm);
         vector3 upvec = d * vertnorm;
@@ -525,7 +525,7 @@ inline void RenderSubmodelFaceFogged(poly_model *pm, bsp_info *sm, int facenum) 
     scalar mag;
 
     if (Polymodel_effect.fog_plane_check == 1) {
-      mag = vm_DotProduct(&Fog_plane, &sm->verts[fp->vertnums[t]]) + Fog_distance;
+      mag = vm_DotProduct(Fog_plane, sm->verts[fp->vertnums[t]]) + Fog_distance;
     } else {
       vector3 *vec = &sm->verts[fp->vertnums[t]];
 
@@ -539,8 +539,8 @@ inline void RenderSubmodelFaceFogged(poly_model *pm, bsp_info *sm, int facenum) 
       scalar t = Fog_eye_distance / (Fog_eye_distance - dist);
       vector3 portal_point = Fog_view_pos + (t * subvec);
 
-      scalar eye_distance = -(vm_DotProduct(&Fog_plane, &portal_point));
-      mag = vm_DotProduct(&Fog_plane, vec) + eye_distance;
+      scalar eye_distance = -(vm_DotProduct(Fog_plane, portal_point));
+      mag = vm_DotProduct(Fog_plane, *vec) + eye_distance;
     }
 
     scalar scalar = mag / Polymodel_effect.fog_depth;
@@ -589,10 +589,10 @@ inline void RenderSubmodelFaceSpecular(poly_model *pm, bsp_info *sm, int facenum
     p->p3_a = 0.0f;
 
     vector3 subvec = Specular_view_pos - vert;
-    vm_NormalizeVectorFast(&subvec);
+    vm_NormalizeVectorFast(subvec);
 
     vector3 incident_norm = vert - Polymodel_specular_pos;
-    vm_NormalizeVectorFast(&incident_norm);
+    vm_NormalizeVectorFast(incident_norm);
 
     scalar d = vm_Dot3Product(incident_norm, vertnorm);
     vector3 upvec = d * vertnorm;
@@ -793,9 +793,9 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
     Fog_plane = mat.fvec;
 
     if (Polymodel_effect.fog_plane_check == 1)
-      Fog_distance = -(vm_DotProduct(&Fog_plane, &Fog_view_pos));
+      Fog_distance = -(vm_DotProduct(Fog_plane, Fog_view_pos));
     else {
-      Fog_distance = -(vm_DotProduct(&Polymodel_fog_plane, &Polymodel_fog_portal_vert));
+      Fog_distance = -(vm_DotProduct(Polymodel_fog_plane, Polymodel_fog_portal_vert));
       Fog_eye_distance = vm_Dot3Product(Fog_view_pos, Polymodel_fog_plane) + Fog_distance;
     }
 
@@ -875,7 +875,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
           g3_RotatePoint(Robot_points[i], vec);
 
           vector3 normvec = sm->vertnorms[i];
-          val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0f) / 2;
+          val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
           Robot_points[i].p3_r = Polymodel_effect.r * val * Polylighting_static_red;
           Robot_points[i].p3_g = Polymodel_effect.g * val * Polylighting_static_green;
@@ -891,7 +891,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
             g3_RotatePoint(Robot_points[i], vec);
 
             vector3 normvec = sm->vertnorms[i];
-            val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0f) / 2;
+            val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
             Robot_points[i].p3_r = Polymodel_effect.r * val * Polylighting_static_red;
             Robot_points[i].p3_g = Polymodel_effect.g * val * Polylighting_static_green;
@@ -901,7 +901,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
           for (int i = 0; i < sm->nverts; i++) {
             g3_RotatePoint(Robot_points[i], sm->verts[i]);
             vector3 normvec = sm->vertnorms[i];
-            float val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0f) / 2;
+            float val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
             Robot_points[i].p3_r = Polymodel_effect.r * val * Polylighting_static_red;
             Robot_points[i].p3_g = Polymodel_effect.g * val * Polylighting_static_green;
@@ -918,7 +918,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
 
           g3_RotatePoint(Robot_points[i], vec);
           vector3 normvec = sm->vertnorms[i];
-          val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0f) / 2;
+          val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
           Robot_points[i].p3_r = val * Polylighting_static_red;
           Robot_points[i].p3_g = val * Polylighting_static_green;
@@ -928,7 +928,7 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         for (int i = 0; i < sm->nverts; i++) {
           g3_RotatePoint(Robot_points[i], sm->verts[i]);
           vector3 normvec = sm->vertnorms[i];
-          float val = (-vm_DotProduct(Polymodel_light_direction, &normvec) + 1.0f) / 2;
+          float val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
           Robot_points[i].p3_r = val * Polylighting_static_red;
           Robot_points[i].p3_g = val * Polylighting_static_green;
@@ -970,7 +970,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
   vector3 temp_vec = sm->mod_pos + sm->offset;
   g3_StartInstanceAngles(temp_vec, sm->angs);
 
-  vm_AnglesToMatrix(&lightmatrix, sm->angs.p(), sm->angs.h(), sm->angs.b());
+  vm_AnglesToMatrix(lightmatrix, sm->angs.p(), sm->angs.h(), sm->angs.b());
   StartLightInstance(temp_vec, lightmatrix);
 
   // Check my bit to see if I get drawn
@@ -1019,7 +1019,7 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
       int bm_handle = GetTextureBitmap(pm->textures[sm->faces[0].texnum], 0);
       rend_SetAlphaValue(GameTextures[pm->textures[sm->faces[0].texnum]].alpha * 255);
 
-      vm_MakeZero(&pos);
+      vm_MakeZero(pos);
 
       if (GameTextures[pm->textures[sm->faces[0].texnum]].flags.saturate)
         rend_SetAlphaType(alpha_blend_type::saturate_texture);
@@ -1137,8 +1137,8 @@ float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3>
           while (mn != -1) {
             vector3 tpnt;
 
-            vm_AnglesToMatrix(&m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
-            vm_TransposeMatrix(&m);
+            vm_AnglesToMatrix(m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
+            vm_TransposeMatrix(m);
 
             tpnt = pnt * m;
 
@@ -1149,7 +1149,7 @@ float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3>
 
           //				Maybe use for other code -- Accounts for world coordinates
           //				m = obj->orient;
-          //				vm_TransposeMatrix(&m);
+          //				vm_TransposeMatrix(m);
           //
           //				pnt = pnt * m;
           //
@@ -1207,8 +1207,8 @@ float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3>
         while (mn != -1) {
           vector3 tpnt;
 
-          vm_AnglesToMatrix(&m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
-          vm_TransposeMatrix(&m);
+          vm_AnglesToMatrix(m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
+          vm_TransposeMatrix(m);
 
           tpnt = pnt * m;
 
@@ -1219,13 +1219,13 @@ float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3>
 
         //				Maybe use for other code -- Accounts for world coordinates
         //				m = obj->orient;
-        //				vm_TransposeMatrix(&m);
+        //				vm_TransposeMatrix(m);
         //
         //				pnt = pnt * m;
         //
         //				*gun_point += obj->pos;
 
-        cur_dist = vm_VectorDistance(&geometric_center, &pnt);
+        cur_dist = vm_VectorDistance(geometric_center, pnt);
         if (cur_dist > size)
           size = cur_dist;
       }

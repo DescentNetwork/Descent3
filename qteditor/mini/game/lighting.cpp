@@ -294,7 +294,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
 
     // Check for backfaces
     vector3 subvec = *pos - lmi_ptr->upper_left;
-    float dist_from_plane = fabs(vm_DotProduct(&subvec, &lmi_ptr->normal));
+    float dist_from_plane = fabs(vm_DotProduct(subvec, lmi_ptr->normal));
 
     if (dist_from_plane > light_dist)
       continue;
@@ -332,8 +332,8 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     vector3 touch_vector = *pos - (lmi_ptr->normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
-    float rdist = vm_DotProduct(&subvec, &facematrix.rvec);
-    float udist = -vm_DotProduct(&subvec, &facematrix.uvec);
+    float rdist = vm_DotProduct(subvec, facematrix.rvec);
+    float udist = -vm_DotProduct(subvec, facematrix.uvec);
     int x_add = 1 + ((area_of_effect + (lmi_ptr->xspacing / 2)) / lmi_ptr->xspacing);
     int y_add = 1 + ((area_of_effect + (lmi_ptr->yspacing / 2)) / lmi_ptr->yspacing);
 
@@ -464,13 +464,13 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
 
-        float dist = vm_VectorDistanceQuick(&element_vec, pos);
+        float dist = vm_VectorDistanceQuick(element_vec, *pos);
         float scalar = 1.0f - (dist / light_dist);
 
         if (light_direction) {
           vector3 lsubvec = element_vec - *pos;
-          vm_NormalizeVectorFast(&lsubvec);
-          float dp = vm_DotProduct(&lsubvec, light_direction);
+          vm_NormalizeVectorFast(lsubvec);
+          float dp = vm_DotProduct(lsubvec, *light_direction);
           if (dp < dot_range) {
             continue;
           } else {
@@ -590,7 +590,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
 
   // Start instance stuff
   vector3 temp_vec = sm->mod_pos + sm->offset;
-  vm_AnglesToMatrix(&mat, sm->angs.p(), sm->angs.h(), sm->angs.b());
+  vm_AnglesToMatrix(mat, sm->angs.p(), sm->angs.h(), sm->angs.b());
   StartLightingInstance(&temp_vec, &mat);
 
   rad.x() = light_dist;
@@ -627,7 +627,7 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
     // Get upper left vector3 of face
     vector3 base_vector = lmi_ptr->upper_left;
     vector3 subvec = light_pos - lmi_ptr->upper_left;
-    float dist_from_plane = fabs(vm_DotProduct(&subvec, &lmi_ptr->normal));
+    float dist_from_plane = fabs(vm_DotProduct(subvec, lmi_ptr->normal));
 
     if (dist_from_plane > light_dist)
       continue;
@@ -664,8 +664,8 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
     vector3 touch_vector = light_pos - (lmi_ptr->normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
-    float rdist = vm_DotProduct(&subvec, &facematrix.rvec);
-    float udist = -vm_DotProduct(&subvec, &facematrix.uvec);
+    float rdist = vm_DotProduct(subvec, facematrix.rvec);
+    float udist = -vm_DotProduct(subvec, facematrix.uvec);
     int x_add = 1 + ((area_of_effect + (lmi_ptr->xspacing / 2)) / lmi_ptr->xspacing);
     int y_add = 1 + ((area_of_effect + (lmi_ptr->yspacing / 2)) / lmi_ptr->yspacing);
 
@@ -798,13 +798,13 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
 
-        float dist = vm_VectorDistanceQuick(&element_vec, &light_pos);
+        float dist = vm_VectorDistanceQuick(element_vec, light_pos);
         float scalar = 1.0f - (dist / light_dist);
 
         if (Use_light_direction) {
           vector3 lsubvec = element_vec - light_pos;
-          vm_NormalizeVectorFast(&lsubvec);
-          float dp = vm_DotProduct(&lsubvec, &light_dir);
+          vm_NormalizeVectorFast(lsubvec);
+          float dp = vm_DotProduct(lsubvec, light_dir);
           if (dp < dot_range) {
             continue;
           } else {
@@ -889,7 +889,7 @@ red_scale,float green_scale,float blue_scale)
 void ApplyVolumeLightToObject(vector3 *pos, object *obj, float light_dist, float red_scale, float green_scale,
                               float blue_scale, vector3 *light_direction, float dot_range) {
   vector3 subvec = *pos - obj->pos;
-  float mag = vm_GetMagnitudeFast(&subvec);
+  float mag = vm_GetMagnitudeFast(subvec);
 
   float scalar = mag / light_dist;
   if (scalar > 1)
@@ -900,7 +900,7 @@ void ApplyVolumeLightToObject(vector3 *pos, object *obj, float light_dist, float
   if (light_direction) {
     // Do a directional light
     vector3 dir_vec = obj->pos - *pos;
-    float mag = vm_NormalizeVectorFast(&dir_vec);
+    float mag = vm_NormalizeVectorFast(dir_vec);
     float dp = vm_Dot3Product(dir_vec, *light_direction);
 
     if (mag > 1.0f) {
@@ -1060,7 +1060,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
 
     // Check for backfaces
     vector3 subvec = *pos - lmi_ptr->upper_left;
-    float dist_from_plane = fabs(vm_DotProduct(&subvec, &lmi_ptr->normal));
+    float dist_from_plane = fabs(vm_DotProduct(subvec, lmi_ptr->normal));
 
     if (dist_from_plane > light_dist)
       continue;
@@ -1104,8 +1104,8 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     vector3 touch_vector = *pos - (lmi_ptr->normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
-    float rdist = vm_DotProduct(&subvec, &facematrix.rvec);
-    float udist = -vm_DotProduct(&subvec, &facematrix.uvec);
+    float rdist = vm_DotProduct(subvec, facematrix.rvec);
+    float udist = -vm_DotProduct(subvec, facematrix.uvec);
     int x_add = 1 + ((area_of_effect + (lmi_ptr->xspacing / 2)) / lmi_ptr->xspacing);
     int y_add = 1 + ((area_of_effect + (lmi_ptr->yspacing / 2)) / lmi_ptr->yspacing);
 
@@ -1236,13 +1236,13 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
 
-        float dist = vm_VectorDistanceQuick(&element_vec, pos);
+        float dist = vm_VectorDistanceQuick(element_vec, *pos);
         float scalar = 1.0f - (dist / light_dist);
 
         if (light_direction) {
           vector3 lsubvec = element_vec - *pos;
-          vm_NormalizeVectorFast(&lsubvec);
-          float dp = vm_DotProduct(&lsubvec, light_direction);
+          vm_NormalizeVectorFast(lsubvec);
+          float dp = vm_DotProduct(lsubvec, *light_direction);
           if (dp < dot_range) {
             continue;
           } else {
@@ -1450,13 +1450,13 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
 
     vector3 subvec = *pos - tpos;
 
-    float dist = vm_GetMagnitudeFast(&subvec);
+    float dist = vm_GetMagnitudeFast(subvec);
     float scalar = 1.0f - (dist / light_dist);
 
     if (light_direction) {
       vector3 lsubvec = -subvec;
       lsubvec /= dist;
-      float dp = vm_DotProduct(&lsubvec, light_direction);
+      float dp = vm_DotProduct(lsubvec, *light_direction);
       if (dp < dot_range) {
         continue;
       } else {
@@ -1667,11 +1667,11 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
                                 int old_b=lightmap_texel & 0x1f;
 
                                 vector3 subvec=*pos-element_vec;
-                                vm_NormalizeVectorFast (&subvec);
+                                vm_NormalizeVectorFast (subvec);
 
                                 vector3
 incident_norm=element_vec-SpecialFaces[fp->special_handle].spec_instance[i].bright_center; vm_NormalizeVectorFast
-(&incident_norm);
+(incident_norm);
 
                                 float d=incident_norm * fp->normal;
                                 vector3 upvec=d * fp->normal;
@@ -1788,22 +1788,22 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 
         base_vector-=center;
 
-        vm_MatrixMulVector (&tempvec,&base_vector,&facematrix);
+        vm_MatrixMulVector (tempvec, base_vector, facematrix);
         base_vector=tempvec;
 
         tempvec=*pos-center;
-        vm_MatrixMulVector (&eye_pos,&tempvec,&facematrix);
+        vm_MatrixMulVector (eye_pos, tempvec, facematrix);
 
         for (int i=0;i<4;i++)
         {
                 if (SpecialFaces[fp->special_handle].spec_instance[i].bright_color!=0)
                 {
                         tempvec=SpecialFaces[fp->special_handle].spec_instance[i].bright_center-center;
-                        vm_MatrixMulVector (&light_pos[i],&tempvec,&facematrix);
+                        vm_MatrixMulVector (light_pos[i], tempvec, facematrix);
                 }
         }
 
-        vm_MatrixMulVector (&norm,&fp->normal,&facematrix);
+        vm_MatrixMulVector (norm, fp->normal, facematrix);
 
         // Move to offset
         vector3 element_vec;
@@ -1868,10 +1868,10 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
                                 int old_b=lightmap_texel & 0x1f;
 
                                 vector3 subvec=eye_pos-element_vec;
-                                vm_NormalizeVectorFast (&subvec);
+                                vm_NormalizeVectorFast (subvec);
 
                                 vector3 incident_norm=element_vec-light_pos[i];
-                                vm_NormalizeVectorFast (&incident_norm);
+                                vm_NormalizeVectorFast (incident_norm);
 
                                 float d=incident_norm * norm;
                                 vector3 upvec=d * norm;
@@ -1956,7 +1956,7 @@ void DestroyLight(int roomnum, int facenum) {
   for (i = 0; i < destroy_fp->num_verts; i++)
     vecs[i] = destroy_rp->verts[destroy_fp->face_verts[i]];
 
-  float area = vm_GetCentroid(&center, vecs, destroy_fp->num_verts);
+  float area = vm_GetCentroid(center, vecs, destroy_fp->num_verts);
 
   // Get the sphere of influence of this light
   float power = rmax * area;
@@ -1993,7 +1993,7 @@ void DestroyLight(int roomnum, int facenum) {
     lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
 
     vector3 subvec = center - lmi_ptr->upper_left;
-    float dist_from_plane = vm_DotProduct(&subvec, &lmi_ptr->normal);
+    float dist_from_plane = vm_DotProduct(subvec, lmi_ptr->normal);
 
     // Check for backfaces
     if (dist_from_plane < 0)
@@ -2017,8 +2017,8 @@ void DestroyLight(int roomnum, int facenum) {
     vector3 touch_vector = center - (lmi_ptr->normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
-    float rdist = vm_DotProduct(&subvec, &facematrix.rvec);
-    float udist = -vm_DotProduct(&subvec, &facematrix.uvec);
+    float rdist = vm_DotProduct(subvec, facematrix.rvec);
+    float udist = -vm_DotProduct(subvec, facematrix.uvec);
     int x_add = 1 + ((area_of_effect + (lmi_ptr->xspacing / 2)) / lmi_ptr->xspacing);
     int y_add = 1 + ((area_of_effect + (lmi_ptr->yspacing / 2)) / lmi_ptr->yspacing);
 
@@ -2108,7 +2108,7 @@ void DestroyLight(int roomnum, int facenum) {
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
 
-        float dist = vm_VectorDistanceQuick(&element_vec, &center);
+        float dist = vm_VectorDistanceQuick(element_vec, center);
         float scalar = 1.0f - (dist / sphere_dist);
 
         if (scalar <= 0)

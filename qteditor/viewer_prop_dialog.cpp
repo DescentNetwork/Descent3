@@ -81,7 +81,7 @@ void ViewerPropDialog::updateOrientation() {
     return;
   }
   angvec angs;
-  vm_ExtractAnglesFromMatrix(&angs, &Viewer_object->orient);
+  vm_ExtractAnglesFromMatrix(angs, Viewer_object->orient);
 
   ui->IDC_PITCH_EDIT->setText(QString::number(angs.p() * kDegreesPerAngle));
   ui->IDC_HEADING_EDIT->setText(QString::number(angs.h() * kDegreesPerAngle));
@@ -106,7 +106,7 @@ bool ViewerPropDialog::ensureViewer() { return Viewer_object != nullptr; }
 void ViewerPropDialog::setOrientation(matrix &m) {
   if (Viewer_object == nullptr)
     return;
-  vm_Orthogonalize(&m);
+  vm_Orthogonalize(m);
   app.Viewer_moved = true;
 }
 
@@ -204,8 +204,7 @@ void ViewerPropDialog::onOrientCommit() {
   const int heading = ui->IDC_HEADING_EDIT->text().toInt();
   const int bank = ui->IDC_BANK_EDIT->text().toInt();
 
-  vm_AnglesToMatrix(&Viewer_object->orient, pitch * kAnglesPerDegree, heading * kAnglesPerDegree,
-                    bank * kAnglesPerDegree);
+  vm_AnglesToMatrix(Viewer_object->orient, pitch * kAnglesPerDegree, heading * kAnglesPerDegree, bank * kAnglesPerDegree);
 
   app.State_changed = app.Viewer_moved = false;
 }

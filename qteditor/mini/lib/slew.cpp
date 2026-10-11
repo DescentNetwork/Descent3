@@ -240,7 +240,7 @@ bool SlewStop(object *obj) {
   if (!obj)
     return false;
 
-  vm_MakeZero(&obj->mtype.phys_info.velocity);
+  vm_MakeZero(obj->mtype.phys_info.velocity);
 
   return true;
 }
@@ -353,14 +353,14 @@ int SlewFrame(object *obj, int movement_limitations) {
   }
 
 
-  vm_AnglesToMatrix(&rotmat, rotang.p(), rotang.h(), rotang.b());
+  vm_AnglesToMatrix(rotmat, rotang.p(), rotang.h(), rotang.b());
 
   new_pm = obj->orient * rotmat;
-  vm_Orthogonalize(&new_pm);
+  vm_Orthogonalize(new_pm);
 
   ObjSetOrient(*obj, new_pm);
 
-  vm_TransposeMatrix(&new_pm); // make those columns rows
+  vm_TransposeMatrix(new_pm); // make those columns rows
 
   svel = obj->mtype.phys_info.velocity * Frametime;
   movement = svel * new_pm;

@@ -253,7 +253,7 @@ int ShootRayToVolumePoint(vector3& src, vector3& dest, int start_room) {
 
   fvi_hit_type fate = fvi_FindIntersection(&fq, &hit_info);
 
-  float dist = vm_VectorDistance(&hit_info.hit_pnt, &dest);
+  float dist = vm_VectorDistance(hit_info.hit_pnt, dest);
   if (dist > 0.1f)
     return 0;
   return 1;
@@ -269,7 +269,7 @@ void ClipSatelliteToTerrain(vector3& answer, vector3& src_vec, vector3& dest_vec
   if (cur_vec.y() > MAX_TERRAIN_HEIGHT * 30) {
     ray = cur_vec - dest_vec;
 
-    mag = vm_GetMagnitude(&ray);
+    mag = vm_GetMagnitude(ray);
     ray /= mag;
 
     diff = ((MAX_TERRAIN_HEIGHT * 30.0f) - dest_vec.y()) / ray.y();
@@ -281,7 +281,7 @@ void ClipSatelliteToTerrain(vector3& answer, vector3& src_vec, vector3& dest_vec
   if (cur_vec.x() > terrain_limit) {
     ray = cur_vec - dest_vec;
 
-    mag = vm_GetMagnitude(&ray);
+    mag = vm_GetMagnitude(ray);
     ray /= mag;
 
     diff = (terrain_limit - dest_vec.x()) / ray.x();
@@ -293,7 +293,7 @@ void ClipSatelliteToTerrain(vector3& answer, vector3& src_vec, vector3& dest_vec
   if (cur_vec.x() < 0) {
     ray = cur_vec - dest_vec;
 
-    mag = vm_GetMagnitude(&ray);
+    mag = vm_GetMagnitude(ray);
     ray /= mag;
 
     diff = (-dest_vec.x()) / ray.x();
@@ -305,7 +305,7 @@ void ClipSatelliteToTerrain(vector3& answer, vector3& src_vec, vector3& dest_vec
   if (cur_vec.z() > terrain_limit) {
     ray = cur_vec - dest_vec;
 
-    mag = vm_GetMagnitude(&ray);
+    mag = vm_GetMagnitude(ray);
     ray /= mag;
 
     diff = (terrain_limit - dest_vec.z()) / ray.z();
@@ -317,7 +317,7 @@ void ClipSatelliteToTerrain(vector3& answer, vector3& src_vec, vector3& dest_vec
   if (cur_vec.z() < 0) {
     ray = cur_vec - dest_vec;
 
-    mag = vm_GetMagnitude(&ray);
+    mag = vm_GetMagnitude(ray);
     ray /= mag;
 
     diff = (-dest_vec.z()) / ray.z();
@@ -421,7 +421,7 @@ int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_su
       return 0;
   }
 
-  dist = vm_VectorDistance(&hit_info.hit_pnt, &temp_dest);
+  dist = vm_VectorDistance(hit_info.hit_pnt, temp_dest);
   if (dist > 0.1f) {
     // LOG_INFO("Didn't hit!\n");
     return 0;
@@ -454,7 +454,7 @@ float GetFormFactorForElementAndSatellite(rad_surface *dest_surf, rad_element *d
     vector3 ray = light_center - dest_center;
 
     if (dest_surf->surface_type != rad_surface_type::terrain) {
-      if ((vm_DotProduct(&ray, &dest_surf->normal)) < 0)
+      if ((vm_DotProduct(ray, dest_surf->normal)) < 0)
         continue;
     }
 
@@ -479,12 +479,12 @@ float GetFormFactorForElementAndSatellite(rad_surface *dest_surf, rad_element *d
       hit = ShootRayFromPoint(light_center, dest_center, rad_MaxSurface, dest_surf);
 
     if (hit) {
-      float ray_length = vm_GetMagnitude(&ray);
+      float ray_length = vm_GetMagnitude(ray);
       vector3 dest_norm_ray = ray / ray_length;
       vector3 dest_normal = dest_surf->normal;
       float ff;
 
-      ff = vm_DotProduct(&dest_normal, &dest_norm_ray);
+      ff = vm_DotProduct(dest_normal, dest_norm_ray);
 
       if (ff > 0)
         temp_factor += ff;
@@ -616,19 +616,19 @@ float GetFormFactorForElement(rad_surface *dest_surf, rad_element *dest_element,
     vector3 ray = light_center - dest_center;
     vector3 revray = dest_center - light_center;
 
-    if ((vm_DotProduct(&ray, &dest_surf->normal)) < 0)
+    if ((vm_DotProduct(ray, dest_surf->normal)) < 0)
       continue;
-    if ((vm_DotProduct(&revray, &rad_MaxSurface->normal)) < 0)
+    if ((vm_DotProduct(revray, rad_MaxSurface->normal)) < 0)
       continue;
 
     // Check to see if this ray even matters
-    float ray_length = vm_GetMagnitudeFast(&ray);
+    float ray_length = vm_GetMagnitudeFast(ray);
     vector3 dest_norm_ray = ray / ray_length;
     vector3 src_norm_ray = -dest_norm_ray;
     vector3 dest_normal = dest_surf->normal;
     float ff;
     vector3 src_normal = rad_MaxSurface->normal;
-    ff = (vm_DotProduct(&src_norm_ray, &src_normal) * vm_DotProduct(&dest_normal, &dest_norm_ray)) /
+    ff = (vm_DotProduct(src_norm_ray, src_normal) * vm_DotProduct(dest_normal, dest_norm_ray)) /
          ((std::numbers::pi_v<float> * ray_length * ray_length) + ray_area);
     ff *= ray_area;
     ff *= rmax;
@@ -647,13 +647,13 @@ float GetFormFactorForElement(rad_surface *dest_surf, rad_element *dest_element,
     if (hit) {
       // We got a hit...figure out how much light contribution this light has
 
-      ray_length = vm_GetMagnitude(&ray);
+      ray_length = vm_GetMagnitude(ray);
       dest_norm_ray = ray / ray_length;
       src_norm_ray = -dest_norm_ray;
       dest_normal = dest_surf->normal;
       src_normal = rad_MaxSurface->normal;
 
-      ff = (vm_DotProduct(&src_norm_ray, &src_normal) * vm_DotProduct(&dest_normal, &dest_norm_ray)) /
+      ff = (vm_DotProduct(src_norm_ray, src_normal) * vm_DotProduct(dest_normal, dest_norm_ray)) /
            ((std::numbers::pi_v<float> * ray_length * ray_length) + ray_area);
 
       if (ff > 1)
@@ -731,19 +731,19 @@ float GetFormFactorForElementSuperDetail(rad_surface *dest_surf, rad_element *de
   vector3 ray = light_center - dest_center;
   vector3 revray = dest_center - light_center;
 
-  if ((vm_DotProduct(&ray, &dest_surf->normal)) < 0)
+  if ((vm_DotProduct(ray, dest_surf->normal)) < 0)
     return 0;
-  if ((vm_DotProduct(&revray, &rad_MaxSurface->normal)) < 0)
+  if ((vm_DotProduct(revray, rad_MaxSurface->normal)) < 0)
     return 0;
 
   // Check to see if this ray even matters
-  float ray_length = vm_GetMagnitudeFast(&ray);
+  float ray_length = vm_GetMagnitudeFast(ray);
   vector3 dest_norm_ray = ray / ray_length;
   vector3 src_norm_ray = -dest_norm_ray;
   vector3 dest_normal = dest_surf->normal;
   float ff;
   vector3 src_normal = rad_MaxSurface->normal;
-  ff = (vm_DotProduct(&src_norm_ray, &src_normal) * vm_DotProduct(&dest_normal, &dest_norm_ray)) /
+  ff = (vm_DotProduct(src_norm_ray, src_normal) * vm_DotProduct(dest_normal, dest_norm_ray)) /
        ((std::numbers::pi_v<float> * ray_length * ray_length) + ray_area);
   ff *= ray_area;
   ff *= rmax;
@@ -761,13 +761,13 @@ float GetFormFactorForElementSuperDetail(rad_surface *dest_surf, rad_element *de
   if (hit) {
     // We got a hit...figure out how much light contribution this light has
 
-    ray_length = vm_GetMagnitude(&ray);
+    ray_length = vm_GetMagnitude(ray);
     dest_norm_ray = ray / ray_length;
     src_norm_ray = -dest_norm_ray;
     dest_normal = dest_surf->normal;
     src_normal = rad_MaxSurface->normal;
 
-    ff = (vm_DotProduct(&src_norm_ray, &src_normal) * vm_DotProduct(&dest_normal, &dest_norm_ray)) /
+    ff = (vm_DotProduct(src_norm_ray, src_normal) * vm_DotProduct(dest_normal, dest_norm_ray)) /
          ((std::numbers::pi_v<float> * ray_length * ray_length) + ray_area);
 
     if (ff > 1)
@@ -870,7 +870,7 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
                     continue;
 
                   vector3 subvec = ve->pos - light_center;
-                  float mag = vm_GetMagnitudeFast(&subvec);
+                  float mag = vm_GetMagnitudeFast(subvec);
 
                   if (mag > sphere_dist)
                     continue;
@@ -918,7 +918,7 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
                   continue;
 
                 vector3 subvec = ve->pos - src_center;
-                float mag = vm_GetMagnitudeFast(&subvec);
+                float mag = vm_GetMagnitudeFast(subvec);
 
                 if (mag > sphere_dist)
                   continue;

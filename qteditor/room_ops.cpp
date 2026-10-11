@@ -516,7 +516,7 @@ void AssignUVsToFace(int roomnum, int facenum, roomUVL *uva, roomUVL *uvb, int v
   vector3 *vv1 = &rp.verts[fp->face_verts[vhi]];
 
   fvec = *vv1 - *vv0;
-  mag01 = vm_NormalizeVector(&fvec);
+  mag01 = vm_NormalizeVector(fvec);
 
   if (mag01 < 0.001f) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("U, V bogosity in room #%1, probably on face #%2.").arg(roomnum).arg(facenum));
@@ -767,7 +767,7 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   ComputePortalCenter(&rotpoint, index_to_int(app.current.room), cur_portalnum);
-  vm_AnglesToMatrix(&rotmat, p, h, b);
+  vm_AnglesToMatrix(rotmat, p, h, b);
   face *fp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
   ComputeNormal(portal_normal, fp->num_verts, fp->face_verts, curroomp.verts);
   portal_normal *= -1.0f;
@@ -891,7 +891,7 @@ struct clip_vertex {
 #define POINT_TO_EDGE_EPSILON 0.1f
 
 static bool PointsAreSame(const vector3 *v0, const vector3 *v1) {
-  return vm_VectorDistance(v0, v1) < POINT_TO_POINT_EPSILON;
+  return vm_VectorDistance(*v0, *v1) < POINT_TO_POINT_EPSILON;
 }
 
 static int CheckPointAgainstEdge(const vector3 *checkv, const vector3 *v0, const vector3 *v1, const vector3& normal) {
@@ -929,11 +929,11 @@ static void ClipEdge(const vector3& normal, const clip_vertex *v0, const clip_ve
             ((vv1[jj] - vv0[jj]) * (vv3[ii] - vv2[ii]) - (vv1[ii] - vv0[ii]) * (vv3[jj] - vv2[jj]));
 
   if (k < 0.0f) {
-    Q_ASSERT((vm_VectorDistance(&v1->vec, &v0->vec) * -k) < POINT_TO_EDGE_EPSILON);
+    Q_ASSERT((vm_VectorDistance(v1->vec, v0->vec) * -k) < POINT_TO_EDGE_EPSILON);
     k = 0.0f;
   }
   if (k > 1.0f) {
-    Q_ASSERT((vm_VectorDistance(&v1->vec, &v0->vec) * (k - 1.0f)) < POINT_TO_EDGE_EPSILON);
+    Q_ASSERT((vm_VectorDistance(v1->vec, v0->vec) * (k - 1.0f)) < POINT_TO_EDGE_EPSILON);
     k = 1.0f;
   }
   Q_ASSERT((k >= 0) && (k <= 1.0f));
@@ -980,7 +980,7 @@ static void AddVertToFace(int roomnum, int facenum, int new_v, int after_v) {
   roomUVL *uva = &fp->face_uvls[after_v];
   roomUVL *uvb = &fp->face_uvls[(after_v + 2) % fp->num_verts];
 
-  float k = vm_VectorDistance(vn, va) / vm_VectorDistance(vb, va);
+  float k = vm_VectorDistance(*vn, *va) / vm_VectorDistance(*vb, *va);
 
   fp->face_uvls[after_v + 1].u = uva->u + k * (uvb->u - uva->u);
   fp->face_uvls[after_v + 1].v = uva->v + k * (uvb->v - uva->v);
@@ -1228,8 +1228,8 @@ check_faces:;
       vector3 *prev_v0 = &rp0.verts[prev_vn0];
       vector3 *prev_v1 = &rp1.verts[prev_vn1];
 
-      float d0 = vm_VectorDistance(v0, prev_v0);
-      float d1 = vm_VectorDistance(v1, prev_v1);
+float d0 = vm_VectorDistance(*v0, *prev_v0);
+float d1 = vm_VectorDistance(*v1, *prev_v1);
 
       if (d0 > d1) {
         if (CheckPointAgainstEdge(v1, prev_v0, v0, fp0->normal)) {
@@ -1383,7 +1383,7 @@ void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
   vector3 verts[MAX_VERTS_PER_FACE];
 
   // find the center point of this face
-  vm_MakeZero(&avg_vert);
+  vm_MakeZero(avg_vert);
   int i;
   for (i = 0; i < nv; i++)
     avg_vert += rp.verts[fp->face_verts[i]];
@@ -1394,14 +1394,14 @@ void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
   vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
 
   angvec avec;
-  vm_ExtractAnglesFromMatrix(&avec, &face_matrix);
-  vm_AnglesToMatrix(&trans_matrix, avec.p(), avec.h(), avec.b());
+  vm_ExtractAnglesFromMatrix(avec, face_matrix);
+  vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b());
 
   // Rotate all the points
   for (i = 0; i < nv; i++) {
     vector3 vert = rp.verts[fp->face_verts[i]];
     vert -= avg_vert;
-    vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
+    vm_MatrixMulVector(rot_vert, vert, trans_matrix);
     verts[i] = rot_vert;
   }
 
@@ -1655,13 +1655,13 @@ void ComputePlacedRoomMatrix() {
 
   t = -placedroomp.faces[placedface].normal;
   vm_VectorToMatrix(srcmat, t, std::nullopt, std::nullopt);
-  vm_VectorAngleToMatrix(&app.placed.orient, &app.placed.orient.fvec, app.placed.angle);
+  vm_VectorAngleToMatrix(app.placed.orient, app.placed.orient.fvec, app.placed.angle);
 
-  vm_Orthogonalize(&srcmat);
-  vm_Orthogonalize(&app.placed.orient);
+  vm_Orthogonalize(srcmat);
+  vm_Orthogonalize(app.placed.orient);
 
-  vm_MatrixMulTMatrix(&app.placed.rotmat, &srcmat, &app.placed.orient);
-  vm_Orthogonalize(&app.placed.rotmat);
+  vm_MatrixMulTMatrix(app.placed.rotmat, srcmat, app.placed.orient);
+  vm_Orthogonalize(app.placed.rotmat);
 }
 
 // PlaceRoom — editor/HRoom.cpp:585

@@ -770,10 +770,10 @@ void CheckFogPortalExtents(int roomnum, int portalnum) {
 
   // calculate the plane equation for the portal
   vector3 *vec = &rp->verts[fp->face_verts[0]];
-  float distance = -vm_DotProduct(&fp->normal, vec);
+  float distance = -vm_DotProduct(fp->normal, *vec);
 
   // calculate the distance from the camera to the portal
-  distance = vm_DotProduct(&fp->normal, &Viewer_eye) + distance;
+  distance = vm_DotProduct(fp->normal, Viewer_eye) + distance;
   if (distance < Fog_portal_data[found_room].close_dist) {
     // this portal is closer to the camera than the previous
     Fog_portal_data[found_room].close_dist = distance;
@@ -1216,7 +1216,7 @@ void RenderFloatingTrig(int roomnum, face *fp) {
     stepsize = STEPSIZE_MIN;
   leftvec = rp->verts[fp->face_verts[3]] - rp->verts[fp->face_verts[0]];
   rightvec = rp->verts[fp->face_verts[2]] - rp->verts[fp->face_verts[1]];
-  n_steps = (vm_GetMagnitude(&leftvec) / stepsize + 0.5f) + 1;
+  n_steps = (vm_GetMagnitude(leftvec) / stepsize + 0.5f) + 1;
   left_step = leftvec / n_steps;
   right_step = rightvec / n_steps;
   for (i = 0; i < n_steps; i++) {
@@ -1226,7 +1226,7 @@ void RenderFloatingTrig(int roomnum, face *fp) {
     int n_crosssteps;
 
     crossvec = right - left;
-    n_crosssteps = (vm_GetMagnitude(&crossvec) / stepsize + 0.5f) + 1;
+    n_crosssteps = (vm_GetMagnitude(crossvec) / stepsize + 0.5f) + 1;
     cross_step = crossvec / n_steps;
     p = left;
     for (j = 0; j < n_crosssteps; j++) {
@@ -1376,7 +1376,7 @@ texel = data[int_v][int_u];
       vb = lm_blue[b];
 
       vector3 subvec = Viewer_eye - rp->verts[fp->face_verts[vn]];
-      vm_NormalizeVectorFast(&subvec);
+      vm_NormalizeVectorFast(subvec);
       if (!(rp->flags.external)) {
         int limit = SpecialFaces[fp->special_handle].num;
         int spec_index = limit - 1;
@@ -1398,7 +1398,7 @@ texel = data[int_v][int_u];
               rp->verts[fp->face_verts[vn]] - SpecialFaces[fp->special_handle].spec_instance[t].bright_center;
           spec_scalar = Specular_scalars[spec_index][t];
 
-          vm_NormalizeVectorFast(&incident_norm);
+          vm_NormalizeVectorFast(incident_norm);
           float d;
           vector3 upvec;
           if ((GameTextures[fp->tmap].flags.smooth_specular) &&
@@ -1428,7 +1428,7 @@ texel = data[int_v][int_u];
         }
       } else {
         vector3 incident_norm = rp->verts[fp->face_verts[vn]] - Terrain_sky.satellite_vectors[0];
-        vm_NormalizeVectorFast(&incident_norm);
+        vm_NormalizeVectorFast(incident_norm);
 
         float d = vm_Dot3Product(incident_norm, fp->normal);
         vector3 upvec = d * fp->normal;
@@ -2051,9 +2051,9 @@ draw_fog:
       vector3 center, end;
       for (int t = 0; t < fp->num_verts; t++)
         verts[t] = rp->verts[fp->face_verts[t]];
-      vm_GetCentroid(&center, verts, fp->num_verts);
+      vm_GetCentroid(center, verts, fp->num_verts);
       vector3 subvec = SpecialFaces[fp->special_handle].spec_instance[0].bright_center - center;
-      vm_NormalizeVectorFast(&subvec);
+      vm_NormalizeVectorFast(subvec);
       end = center + subvec;
       g3_RotatePoint(p1, center);
       g3_RotatePoint(p2, end);
@@ -2080,7 +2080,7 @@ draw_fog:
       vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
       vector3 rvec = facematrix.rvec * lmi->xspacing;
       vector3 uvec = facematrix.uvec * lmi->yspacing;
-      vm_TransposeMatrix(&facematrix);
+      vm_TransposeMatrix(facematrix);
       int w = static_cast<int>(lm_w(lmi->lm_handle).value_or(255));
       int h = static_cast<int>(lm_h(lmi->lm_handle).value_or(255));
       for (int i = 0; i < w * h; i++) {
@@ -2114,11 +2114,11 @@ draw_fog:
         {
                 vector3 norm,from,to,temp;
                 g3Point p1,p2;
-                vm_MakeZero (&from);
+                vm_MakeZero (from);
                 norm.x=Normal_table[SpecialFaces[fp->special_handle].normal_map[i*3+0]];
                 norm.y=Normal_table[SpecialFaces[fp->special_handle].normal_map[i*3+1]];
                 norm.z=Normal_table[SpecialFaces[fp->special_handle].normal_map[i*3+2]];
-                vm_MatrixMulVector (&temp,&norm,&facematrix);
+                vm_MatrixMulVector (temp, norm, facematrix);
                 norm=temp;
                 for (t=0;t<4;t++)
                         from+=evec[t];
@@ -2233,7 +2233,7 @@ void SetupRoomFog(int roomnum, vector3 *eye, matrix *orient, int viewer_room) {
     // viewer is in the room
     vector3 *vec = eye;
     Room_fog_plane_check = 1;
-    Room_fog_distance = -vm_DotProduct(&orient->fvec, vec);
+    Room_fog_distance = -vm_DotProduct(orient->fvec, *vec);
     Room_fog_plane = orient->fvec;
     return;
   }
@@ -2258,7 +2258,7 @@ void SetupRoomFog(int roomnum, vector3 *eye, matrix *orient, int viewer_room) {
   Room_fog_plane_check = 0;
   Room_fog_plane = close_face->normal;
   Room_fog_portal_vert = rp->verts[close_face->face_verts[0]];
-  Room_fog_distance = -vm_DotProduct(&Room_fog_plane, &Room_fog_portal_vert);
+  Room_fog_distance = -vm_DotProduct(Room_fog_plane, Room_fog_portal_vert);
   Room_fog_eye_distance = vm_Dot3Product(*eye, Room_fog_plane) + Room_fog_distance;
 }
 
@@ -2427,13 +2427,13 @@ void RenderSingleLightGlow(int index) {
 
   // Get alpha of light
   vector3 tvec = Viewer_eye - rp->verts[fp->face_verts[0]];
-  vm_NormalizeVectorFast(&tvec);
+  vm_NormalizeVectorFast(tvec);
   scalar facing_scalar = vm_Dot3Product(tvec, fp->normal) * 2;
   if (facing_scalar < 0)
     return;
   tvec = center - Viewer_eye;
 
-  scalar dist = vm_GetMagnitudeFast(&tvec);
+  scalar dist = vm_GetMagnitudeFast(tvec);
   if (dist < (size * CORONA_DIST_CUTOFF))
     return;
   if (dist < (size * (CORONA_DIST_CUTOFF + 15))) {
@@ -2518,10 +2518,10 @@ void RenderSingleLightGlow2(int index) {
 
   // Rotate view vector into billboard space
   fvec = Viewer_eye - corona_pos;
-  vm_NormalizeVectorFast(&fvec);
+  vm_NormalizeVectorFast(fvec);
   temp_vec = fvec * mat;
   fvec = temp_vec;
-  vm_NormalizeVectorFast(&fvec);
+  vm_NormalizeVectorFast(fvec);
   rvec.x() = fvec.z();
   rvec.y() = 0;
   rvec.z() = -fvec.x();
@@ -2529,7 +2529,7 @@ void RenderSingleLightGlow2(int index) {
   uvec.x() = 0;
   uvec.z() = 0;
   vm_VectorToMatrix(rot_mat, std::nullopt, uvec, rvec);
-  vm_TransposeMatrix(&mat);
+  vm_TransposeMatrix(mat);
   temp_vec = rot_mat.rvec * mat;
   rot_mat.rvec = temp_vec;
   temp_vec = rot_mat.uvec * mat;
@@ -2576,10 +2576,10 @@ void CheckLightGlowsForRoom(int roomnum) {
     vector3 center;
     for (int t = 0; t < fp->num_verts; t++)
       verts[t] = rp->verts[fp->face_verts[t]];
-    float size = sqrt(vm_GetCentroid(&center, verts, fp->num_verts));
+    float size = sqrt(vm_GetCentroid(center, verts, fp->num_verts));
     size *= 2;
     center += (fp->normal / 4);
-    if (vm_VectorDistanceQuick(&center, &Viewer_eye) < (size * CORONA_DIST_CUTOFF))
+    if (vm_VectorDistanceQuick(center, Viewer_eye) < (size * CORONA_DIST_CUTOFF))
       continue;
     // Check if we can see this light
     fvi_info hit_info;
@@ -2591,7 +2591,7 @@ SetGlowStatus(roomnum, LightGlowsThisFrame[i].facenum, center, size, FastCoronas
         continue;
       }
       vector3 subvec = Viewer_eye - center;
-      vm_NormalizeVectorFast(&subvec);
+      vm_NormalizeVectorFast(subvec);
       subvec *= size;
       subvec += center;
       fq.p0 = &center;
@@ -3192,7 +3192,7 @@ void RenderRoomObjects(int roomnum) {
     matrix mirror_matrix, inv_mirror_matrix, dest_matrix, negz_matrix;
     vm_VectorToMatrix(mirror_matrix, *norm, std::nullopt, std::nullopt);
     inv_mirror_matrix = mirror_matrix;
-    vm_TransposeMatrix(&inv_mirror_matrix);
+    vm_TransposeMatrix(inv_mirror_matrix);
     vm_VectorToMatrix(negz_matrix, negz_vec, std::nullopt, std::nullopt);
     negz_matrix.rvec *= -1;
 

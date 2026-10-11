@@ -688,7 +688,7 @@ void ObjSetOrient(object& obj, const matrix& orient) {
         matrix m;
 
         m = obj.orient;
-        vm_TransposeMatrix(&m);
+        vm_TransposeMatrix(m);
 
         obj.wall_sphere_offset = Poly_models[mn].wall_size_offset * m;
         obj.anim_sphere_offset = Poly_models[mn].anim_size_offset * m;
@@ -792,8 +792,8 @@ void GetObjectPointInWorld(vector3& dest, object& obj, int subnum, int vertnum) 
   while (mn != -1) {
     vector3 tpnt;
 
-    vm_AnglesToMatrix(&m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
-    vm_TransposeMatrix(&m);
+    vm_AnglesToMatrix(m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
+    vm_TransposeMatrix(m);
 
     tpnt = pnt * m;
 
@@ -804,7 +804,7 @@ void GetObjectPointInWorld(vector3& dest, object& obj, int subnum, int vertnum) 
 
   // Now instance for the entire object
   m = obj.orient;
-  vm_TransposeMatrix(&m);
+  vm_TransposeMatrix(m);
 
   dest = pnt * m;
   dest += obj.pos;

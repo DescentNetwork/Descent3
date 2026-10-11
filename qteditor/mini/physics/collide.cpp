@@ -997,7 +997,7 @@ void DoWallEffects(object *weapon, int surface_tmap) {
 
         vis->movement_type = movement_type::physics;
         vis->size = 3.0f;
-        vm_MakeZero(&vis->velocity);
+        vm_MakeZero(vis->velocity);
         vis->velocity.y() = 10;
       }
     }
@@ -1034,7 +1034,7 @@ void DoWallEffects(object *weapon, int surface_tmap) {
             vis->velocity.z() = (d3::rand() % 300) - 50;
           }
 
-          vm_NormalizeVectorFast(&vis->velocity);
+          vm_NormalizeVectorFast(vis->velocity);
           vis->velocity *= 4 + (d3::rand() % 20);
           vis->size = 0.5f + (((d3::rand() % 11) - 5) * 0.05f);
           vis->flags.uses_lifeleft = true;
@@ -1152,7 +1152,7 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
         for (int t = 0; t < fp->num_verts; t++)
           verts[t] = rp->verts[fp->face_verts[t]];
 
-        float size = sqrt(vm_GetCentroid(&center, verts, fp->num_verts));
+        float size = sqrt(vm_GetCentroid(center, verts, fp->num_verts));
         VisEffects[visnum].size = (size / 2);
       }
 
@@ -1494,7 +1494,7 @@ vector3 *CollideExtractAnglesFromMatrix(vector3 *a, matrix *m) {
 }
 
 void ConvertEulerToAxisAmount(vector3 *e, vector3 *n, float *w) {
-  float rotspeed = vm_GetMagnitude(e);
+  float rotspeed = vm_GetMagnitude(*e);
   matrix rotmat;
   vector3 e_n;
   float scale = rotspeed / 0.0001f;
@@ -1520,7 +1520,7 @@ void ConvertEulerToAxisAmount(vector3 *e, vector3 *n, float *w) {
   n->z() = rotmat.rvec.y() - rotmat.uvec.x();
 
   if (*n != vector3{}) {
-    vm_NormalizeVector(n);
+    vm_NormalizeVector(*n);
 
     float ct = (rotmat.rvec.x() + rotmat.uvec.y() + rotmat.fvec.z() - 1.0f) / 2.0f;
     if (ct < -1.0f)
@@ -1604,7 +1604,7 @@ void bump_obj_against_fixed(object *obj, vector3 *collision_point, vector3 *coll
   float j;
 
   matrix o_t1 = obj->orient;
-  vm_TransposeMatrix(&o_t1);
+  vm_TransposeMatrix(o_t1);
 
   vector3 cmp1 = obj->mtype.phys_info.rotvel * o_t1;
 
@@ -1613,7 +1613,7 @@ void bump_obj_against_fixed(object *obj, vector3 *collision_point, vector3 *coll
   n1 *= temp1;
 
   if (temp1 != 0.0f) {
-    vm_CrossProduct(&w1, &n1, &r1);
+    vm_CrossProduct(w1, n1, r1);
   } else {
     w1 = vector3{};
   }
@@ -1642,11 +1642,11 @@ void bump_obj_against_fixed(object *obj, vector3 *collision_point, vector3 *coll
   if (i1 < 0.0000001f)
     i1 = 0.0000001f;
 
-  vm_CrossProduct(&c1, &r1, collision_normal);
+  vm_CrossProduct(c1, r1, collision_normal);
 
   c1 = c1 / i1;
 
-  vm_CrossProduct(&cc1, &c1, &r1);
+  vm_CrossProduct(cc1, c1, r1);
 
   cv1 = vm_Dot3Product(*collision_normal,c1);
 
@@ -1657,11 +1657,11 @@ void bump_obj_against_fixed(object *obj, vector3 *collision_point, vector3 *coll
 
   vector3 jcn = j * (*collision_normal);
 
-  vm_CrossProduct(&c1, &r1, &jcn);
+  vm_CrossProduct(c1, r1, jcn);
 
   n1 = (c1) / i1;
 
-  temp1 = vm_NormalizeVector(&n1);
+  temp1 = vm_NormalizeVector(n1);
 
   vector3 txx1;
 
@@ -1714,7 +1714,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
     float luke_test;
 
     if (t->type == object_type::player) {
-      luke_test = vm_GetMagnitude(&t->mtype.phys_info.velocity);
+      luke_test = vm_GetMagnitude(t->mtype.phys_info.velocity);
     }
 
     if (!(t->flags.dead)) {
@@ -1755,7 +1755,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
         if (t->type == object_type::player) {
           float real_vel;
 
-          real_vel = vm_NormalizeVector(&t->mtype.phys_info.velocity);
+          real_vel = vm_NormalizeVector(t->mtype.phys_info.velocity);
           t->mtype.phys_info.velocity *= ((real_vel + luke_test) / 2.0f);
           // obj->mtype.phys_info.velocity *= (luke_test);
         }
@@ -1809,8 +1809,8 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
   matrix o_t1 = object0->orient;
   matrix o_t2 = object1->orient;
 
-  vm_TransposeMatrix(&o_t1);
-  vm_TransposeMatrix(&o_t2);
+  vm_TransposeMatrix(o_t1);
+  vm_TransposeMatrix(o_t2);
 
   vector3 cmp1 = object0->mtype.phys_info.rotvel * o_t1;
   vector3 cmp2 = object1->mtype.phys_info.rotvel * o_t2;
@@ -1822,13 +1822,13 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
   n2 *= temp2;
 
   if (temp1 != 0.0f) {
-    vm_CrossProduct(&w1, &n1, &r1);
+    vm_CrossProduct(w1, n1, r1);
   } else {
     w1 = vector3{};
   }
 
   if (temp2 != 0.0f) {
-    vm_CrossProduct(&w2, &n2, &r2);
+    vm_CrossProduct(w2, n2, r2);
   } else {
     w2 = vector3{};
   }
@@ -1881,14 +1881,14 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
   if (i2 < 0.0000001f)
     i2 = 0.0000001f;
 
-  vm_CrossProduct(&c1, &r1, collision_normal);
-  vm_CrossProduct(&c2, &r2, collision_normal);
+  vm_CrossProduct(c1, r1, collision_normal);
+  vm_CrossProduct(c2, r2, collision_normal);
 
   c1 = c1 / i1;
   c2 = c2 / i2;
 
-  vm_CrossProduct(&cc1, &c1, &r1);
-  vm_CrossProduct(&cc2, &c2, &r2);
+  vm_CrossProduct(cc1, c1, r1);
+  vm_CrossProduct(cc2, c2, r2);
 
   cv1 = vm_Dot3Product(*collision_normal,c1);
   cv2 = vm_Dot3Product(*collision_normal,c2);
@@ -1904,14 +1904,14 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
 
   vector3 jcn = j * (*collision_normal);
 
-  vm_CrossProduct(&c1, &r1, &jcn);
-  vm_CrossProduct(&c2, &r2, &jcn);
+  vm_CrossProduct(c1, r1, jcn);
+  vm_CrossProduct(c2, r2, jcn);
 
   n1 = (c1) / i1;
   n2 = (c2) / i2;
 
-  temp1 = vm_NormalizeVector(&n1);
-  temp2 = vm_NormalizeVector(&n2);
+  temp1 = vm_NormalizeVector(n1);
+  temp2 = vm_NormalizeVector(n2);
 
   vector3 txx1;
   vector3 txx2;
@@ -2014,7 +2014,7 @@ void collide_player_and_player(object *p1, object *p2, vector3 *collision_point,
     *collision_normal *= -1.0f;
 
   vector3 rvel = p1->mtype.phys_info.velocity - p2->mtype.phys_info.velocity;
-  float speed = vm_NormalizeVector(&rvel);
+  float speed = vm_NormalizeVector(rvel);
   float scalar;
 
   if (speed <= MIN_WALL_HIT_SOUND_VEL) {
@@ -2049,7 +2049,7 @@ void collide_generic_and_player(object *robotobj, object *playerobj, vector3 *co
     rvel = vector3{};
   }
   rvel -= playerobj->mtype.phys_info.velocity;
-  float speed = vm_NormalizeVector(&rvel);
+  float speed = vm_NormalizeVector(rvel);
   float scalar;
 
   if (speed <= MIN_WALL_HIT_SOUND_VEL) {

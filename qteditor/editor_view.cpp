@@ -533,7 +533,7 @@ void EditorView::renderRooms() {
       // The Win32 wireframe view only draws rooms within the view radius of
       // the target (DrawAllRooms, editor/drawworld.cpp:745-759).
       if (app.view_mode != state::viewer::room && rp->num_verts > 0 &&
-          vm_VectorDistance(&rp->verts[0], &m_target) >= m_rad)
+          vm_VectorDistance(rp->verts[0], m_target) >= m_rad)
         continue;
 
       // Wireframe: use edge deduplication with backface-aware coloring,
@@ -716,7 +716,7 @@ void EditorView::renderRooms() {
 
         // Face shading from a fixed world light direction.
         vector3 ld{0.4f, 0.7f, 0.6f};
-        float len = vm_NormalizeVector(&ld);
+        float len = vm_NormalizeVector(ld);
         if (len < 0.001f)
           ld = vector3{0, 1, 0};
         float diff = (fp->normal.x() * ld.x() + fp->normal.y() * ld.y() + fp->normal.z() * ld.z());
@@ -1163,7 +1163,7 @@ void EditorView::renderObjects() {
     room_t *rp = &Rooms[*obj->roomnum];
     if (!rp->used || rp->num_verts == 0)
       continue;
-    if (vm_VectorDistance(&rp->verts[0], &m_target) >= m_rad)
+    if (vm_VectorDistance(rp->verts[0], m_target) >= m_rad)
       continue;
 
     // Un-clipped projection like the legacy editor: draw even behind camera.
@@ -1455,7 +1455,7 @@ void EditorView::resetWireframeView() {
   WireframeViewState *v = activeView();
   v->dist = kDefaultViewDist;
   v->rad = kDefaultViewRad;
-  vm_MakeIdentity(&v->orient);
+  vm_MakeIdentity(v->orient);
   v->target = kMineOrigin;
   syncViewerToCamera();
   m_cameraValid = false;
@@ -1529,7 +1529,7 @@ void EditorView::moveWorld(int dx, int dy, bool ctrlDown, bool shiftDown, bool z
 void EditorView::setOrbitCamera(float yawDeg, float pitchDeg, float dist) {
   WireframeViewState *v = activeView();
   // Same angle mapping updateCamera used to apply: p=0, h=yaw, b=pitch.
-  vm_AnglesToMatrix(&v->orient, 0, yawDeg * 65536.0f / 360.0f, pitchDeg * 65536.0f / 360.0f);
+  vm_AnglesToMatrix(v->orient, 0, yawDeg * 65536.0f / 360.0f, pitchDeg * 65536.0f / 360.0f);
   if (dist > 0.0f)
     v->dist = dist;
   syncViewerToCamera();
@@ -1565,7 +1565,7 @@ void EditorView::fitToMine() {
 
   const vector3 center = (mn + mx) * 0.5f;
   const vector3 e = mx - mn;
-  const float radius = vm_GetMagnitude(&e) * 0.5f;
+  const float radius = vm_GetMagnitude(e) * 0.5f;
 
   const float h = height() > 0 ? static_cast<float>(height()) : 480.0f;
   const float w = width() > 0 ? static_cast<float>(width()) : 640.0f;
@@ -1577,7 +1577,7 @@ void EditorView::fitToMine() {
   WireframeViewState *v = activeView();
   v->target = center;
   v->dist = std::max(fitX, fitY) * 1.5f;
-  vm_MakeIdentity(&v->orient);
+  vm_MakeIdentity(v->orient);
   syncViewerToCamera();
   m_cameraValid = false;
   update();
@@ -1857,7 +1857,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
     // a single room, so this only matters in state::viewer::mine).
     const bool isCurrent = (app.current_room == r);
     if (!isCurrent && rp->num_verts > 0 &&
-        (vm_VectorDistance(&rp->verts[0], &m_target) * vm_VectorDistance(&rp->verts[0], &m_target)) > rad2)
+        (vm_VectorDistance(rp->verts[0], m_target) * vm_VectorDistance(rp->verts[0], m_target)) > rad2)
       continue;
 
     for (int f = 0; f < rp->num_faces; f++) {
@@ -1957,7 +1957,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
       // metric Win32 stores in Found_dist and uses to order FM_NEXT.
       vector3 center;
       ComputeCenterPointOnFace(&center, r, f);
-      const float centerDist = vm_VectorDistance(&center, &m_eye);
+      const float centerDist = vm_VectorDistance(center, m_eye);
 
       if (cycle) {
         // FM_NEXT: strictly farther (by eye->face-center distance) than the

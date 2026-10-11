@@ -193,7 +193,7 @@ void GetPointInObjectSpace(vector3& dest, vector3& pos, object& obj, int subnum,
     else
       tpnt = pnt;
 
-    vm_AnglesToMatrix(&m, pm.submodel[mn].angs.p(), pm.submodel[mn].angs.h(), pm.submodel[mn].angs.b());
+    vm_AnglesToMatrix(m, pm.submodel[mn].angs.p(), pm.submodel[mn].angs.h(), pm.submodel[mn].angs.b());
 
     pnt = tpnt * m;
   }
@@ -506,7 +506,7 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
     GetObjectPointInWorld(world_verts[i], obj, sublist[0], pm->submodel[sublist[0]].faces[facelist[0]].vertnums[i]);
 
   // find the center point of this face
-  vm_MakeZero(&avg_vert);
+  vm_MakeZero(avg_vert);
   for (i = 0; i < nv; i++)
     avg_vert += lightmap_poly[i];
 
@@ -515,25 +515,25 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
   // Make the orientation matrix
   // Reverse the normal because we're looking "at" the face, not from it
 
-  vm_GetNormal(&fvec, &world_verts[0], &world_verts[1], &world_verts[2]);
+  vm_GetNormal(fvec, world_verts[0], world_verts[1], world_verts[2]);
   fvec = -fvec;
 
-  if ((vm_NormalizeVector(&fvec)) != 0)
+  if ((vm_NormalizeVector(fvec)) != 0)
     vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
   else
-    vm_MakeIdentity(&face_matrix);
+    vm_MakeIdentity(face_matrix);
   // Make the transformation matrix
 
   angvec avec;
-  vm_ExtractAnglesFromMatrix(&avec, &face_matrix);
-  vm_AnglesToMatrix(&trans_matrix, avec.p(), avec.h(), avec.b());
+  vm_ExtractAnglesFromMatrix(avec, face_matrix);
+  vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b());
 
   // Rotate all the points
   for (i = 0; i < nv; i++) {
     vector3 vert = lightmap_poly[i];
 
     vert -= avg_vert;
-    vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
+    vm_MatrixMulVector(rot_vert, vert, trans_matrix);
 
     verts[i] = rot_vert;
   }
@@ -695,7 +695,7 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
       vector3 vert = world_verts[t];
 
       vert -= avg_vert;
-      vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
+      vm_MatrixMulVector(rot_vert, vert, trans_matrix);
 
       facevert = rot_vert;
 
@@ -709,8 +709,8 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
   }
 
   // Find upper left corner
-  vm_TransposeMatrix(&trans_matrix);
-  vm_MatrixMulVector(&rot_vert, &base_vector, &trans_matrix);
+  vm_TransposeMatrix(trans_matrix);
+  vm_MatrixMulVector(rot_vert, base_vector, trans_matrix);
   LightmapInfo[lmi_handle].upper_left = rot_vert + avg_vert;
 
   LightmapInfo[lmi_handle].xspacing = xspace_int;
@@ -756,10 +756,10 @@ void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_sur
   // Reverse the normal because we're looking "at" the face, not from it
   fvec = -LightmapInfo[lmi_handle].normal;
 
-  if ((vm_NormalizeVector(&fvec)) != 0)
+  if ((vm_NormalizeVector(fvec)) != 0)
     vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
   else
-    vm_MakeIdentity(&face_matrix);
+    vm_MakeIdentity(face_matrix);
 
   ScratchRVecs[lmi_handle] = face_matrix.rvec;
   ScratchUVecs[lmi_handle] = face_matrix.uvec;
@@ -767,15 +767,15 @@ void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_sur
   // Make the transformation matrix
 
   angvec avec;
-  vm_ExtractAnglesFromMatrix(&avec, &face_matrix);
-  vm_AnglesToMatrix(&trans_matrix, avec.p(), avec.h(), avec.b());
+  vm_ExtractAnglesFromMatrix(avec, face_matrix);
+  vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b());
 
   // Rotate all the points
   for (i = 0; i < fp->nverts; i++) {
     vert = world_verts[i];
 
     vert -= avg_vert;
-    vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
+    vm_MatrixMulVector(rot_vert, vert, trans_matrix);
 
     verts[i] = rot_vert;
   }
@@ -784,14 +784,14 @@ void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_sur
   vector3 base_vector;
   vector3 xdiff, ydiff;
 
-  vm_MakeZero(&xdiff);
-  vm_MakeZero(&ydiff);
+  vm_MakeZero(xdiff);
+  vm_MakeZero(ydiff);
 
   // Rotate our upper left point into our 2d space
   vert = LightmapInfo[lmi_handle].upper_left - avg_vert;
-  vm_MatrixMulVector(&base_vector, &vert, &trans_matrix);
+  vm_MatrixMulVector(base_vector, vert, trans_matrix);
 
-  vm_TransposeMatrix(&trans_matrix);
+  vm_TransposeMatrix(trans_matrix);
 
   xdiff = vector3{ scalar(LightmapInfo[lmi_handle].xspacing), scalar(LightmapInfo[lmi_handle].yspacing), 0.0f };
 
@@ -809,7 +809,7 @@ void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_sur
       ClipSurfaceElement(verts, ep, clip_verts, fp->nverts);
 
       for (int k = 0; k < ep->num_verts; k++) {
-        vm_MatrixMulVector(&rot_vert, &ep->verts[k], &trans_matrix);
+        vm_MatrixMulVector(rot_vert, ep->verts[k], trans_matrix);
         ep->verts[k] = rot_vert + avg_vert;
       }
     }
@@ -822,7 +822,7 @@ void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_sur
     surf->verts[3] = base_vector - (ydiff * yres);
 
     for (int k = 0; k < 4; k++) {
-      vm_MatrixMulVector(&rot_vert, &surf->verts[k], &trans_matrix);
+      vm_MatrixMulVector(rot_vert, surf->verts[k], trans_matrix);
       surf->verts[k] = rot_vert + avg_vert;
     }
     surf->num_verts = 4;
@@ -871,7 +871,7 @@ int TestObjectLightAdjacency(object& obj, int subnum, int facenum, lmi_type type
 
   for (i = 0; i < afp->nverts; i++)
     GetObjectPointInWorld(averts[i], obj, subnum, afp->vertnums[i]);
-  vm_GetNormal(&anormal, &averts[0], &averts[1], &averts[2]);
+  vm_GetNormal(anormal, averts[0], averts[1], averts[2]);
 
 StartOver:
 
@@ -908,7 +908,7 @@ StartOver:
       for (k = 0; k < bfp->nverts; k++)
         GetObjectPointInWorld(bverts[k], obj, i, bfp->vertnums[k]);
 
-      vm_GetNormal(&bnormal, &bverts[0], &bverts[1], &bverts[2]);
+      vm_GetNormal(bnormal, bverts[0], bverts[1], bverts[2]);
 
       int nv = CombineLightFaces(dest_verts, averts, anv, &anormal, bverts, bfp->nverts, &bnormal);
 

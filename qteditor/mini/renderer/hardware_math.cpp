@@ -318,7 +318,7 @@ void g3_SetCustomClipPlane(uint8_t state, vector3 *pnt, vector3 *normal) {
     tempv = *pnt - View_position;
     Clip_plane_point = tempv * View_matrix;
     Clip_plane = norm * Unscaled_matrix;
-    vm_NormalizeVector(&Clip_plane);
+    vm_NormalizeVector(Clip_plane);
   }
 }
 
@@ -384,7 +384,7 @@ void g3_Point2Vec(vector3 *v, int16_t sx, int16_t sy) {
   tempv.y() = -(((sy - Window_h2) / Window_h2) * Matrix_scale.z() / Matrix_scale.y());
   tempv.z() = 1.0f;
 
-  vm_NormalizeVector(&tempv);
+  vm_NormalizeVector(tempv);
 
   tempm = ~Unscaled_matrix;
   *v = tempv * tempm;
@@ -438,12 +438,12 @@ void g3_StartInstanceMatrix(vector3 &pos, const matrix &orient) {
 void g3_StartInstanceAngles(vector3 &pos, optref<angvec> angles) {
   if (!angles.has_value()) {
     matrix ident;
-    vm_MakeIdentity(&ident);
+    vm_MakeIdentity(ident);
     g3_StartInstanceMatrix(pos, ident);
     return;
   }
   matrix tm;
-  vm_AnglesToMatrix(&tm, angles->p(), angles->h(), angles->b());
+  vm_AnglesToMatrix(tm, angles->p(), angles->h(), angles->b());
   g3_StartInstanceMatrix(pos, tm);
 }
 

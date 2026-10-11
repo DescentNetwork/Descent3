@@ -1171,7 +1171,7 @@ void FindMinMaxForModel(poly_model &pm) {
 
   Q_ASSERT(!(pm.flags.not_resident));
 
-  vm_MakeZero(&zero_vec);
+  vm_MakeZero(zero_vec);
   pm.mins.x() = pm.mins.y() = pm.mins.z() = 90000;
   pm.maxs.x() = pm.maxs.y() = pm.maxs.z() = -90000;
 
@@ -1309,7 +1309,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       else {
         // for old models, hack in 0,0,0, which says the geometric center is
         // equal to pivot point, which is not always true.
-        vm_MakeZero(&pm->submodel[n].geometric_center);
+        vm_MakeZero(pm->submodel[n].geometric_center);
       }
 
       pm->submodel[n].name = ReadModelStringLen(infile);
@@ -1740,7 +1740,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
           infile >> pm->submodel[i].keyframe_axis[t + 0];
           axis = &pm->submodel[i].keyframe_axis[t + 0];
 
-          mag = vm_GetMagnitude(axis);
+          mag = vm_GetMagnitude(*axis);
           if (mag > 0)
             pm->submodel[i].keyframe_axis[t] /= mag;
 
@@ -1754,7 +1754,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
             }*/
           }
           /*else
-                  dir=vm_DotProduct (axis,&pm->submodel[i].keyframe_axis[1]);
+                  dir=vm_DotProduct (axis, pm->submodel[i].keyframe_axis[1]);
 
           if (dir<0)
           {
@@ -1832,14 +1832,14 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
   int parent;
 
   for (i = 0; i < pm->n_models; i++) {
-    vm_MakeIdentity(&base_matrix);
+    vm_MakeIdentity(base_matrix);
 
     bsp_info *sm = &pm->submodel[i];
 
     for (int newt = 0; newt < sm->num_key_angles; newt++) {
       cur_angle = sm->keyframe_angles[newt];
       BuildModelAngleMatrix(temp_matrix, cur_angle, sm->keyframe_axis[newt]);
-      vm_MakeIdentity(&dest_matrix);
+      vm_MakeIdentity(dest_matrix);
       dest_matrix = temp_matrix * base_matrix;
       base_matrix = dest_matrix;
       sm->keyframe_matrix[newt] = base_matrix;
@@ -1874,7 +1874,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
         vecs[newt] = pm->submodel[i].verts[pm->submodel[i].faces[0].vertnums[newt]];
       }
 
-      pm->submodel[i].radius = (sqrt(vm_GetCentroid(&avg, vecs, pm->submodel[i].faces[0].nverts)) / 2);
+      pm->submodel[i].radius = (sqrt(vm_GetCentroid(avg, vecs, pm->submodel[i].faces[0].nverts)) / 2);
 
       pm->flags.facing = true;
     }
@@ -1886,7 +1886,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       for (t = 0; t < pm->submodel[i].faces[0].nverts; t++)
         vecs[t] = pm->submodel[i].verts[pm->submodel[i].faces[0].vertnums[t]];
 
-      vm_GetNormal(&pm->submodel[i].glow_info[0].normal, &vecs[0], &vecs[1], &vecs[2]);
+      vm_GetNormal(pm->submodel[i].glow_info[0].normal, vecs[0], vecs[1], vecs[2]);
 
       pm->flags.facing = true; // Set this so we know when to draw
     }
@@ -2349,7 +2349,7 @@ void SetModelAngles(poly_model &po, const float *normalized_angles) {
         // If we're already at the high point of the interpolation then just
         // stuff some values
         if (cur_state == po.num_key_angles - 1) {
-          vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &po.submodel[i].keyframe_matrix[po.num_key_angles - 1]);
+          vm_ExtractAnglesFromMatrix(po.submodel[i].angs, po.submodel[i].keyframe_matrix[po.num_key_angles - 1]);
           continue;
         }
 
@@ -2357,7 +2357,7 @@ void SetModelAngles(poly_model &po, const float *normalized_angles) {
                       ((po.submodel[i].keyframe_matrix[cur_state + 1] - po.submodel[i].keyframe_matrix[cur_state]) *
                        normal_state_time);
 
-        vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &dest_matrix);
+        vm_ExtractAnglesFromMatrix(po.submodel[i].angs, dest_matrix);
         // po.submodel[i].mod_matrix=dest_matrix;
 
       } else if (po.submodel[i].flags.rotate) {
@@ -2377,7 +2377,7 @@ void SetModelAngles(poly_model &po, const float *normalized_angles) {
           temp_vec = po.submodel[i].norm;
 
         BuildModelAngleMatrix(temp_matrix, fdiff * 65535, temp_vec);
-        vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &temp_matrix);
+        vm_ExtractAnglesFromMatrix(po.submodel[i].angs, temp_matrix);
       } else if (po.submodel[i].flags.turret) {
         matrix temp_matrix;
         if (po.new_style)
@@ -2385,7 +2385,7 @@ void SetModelAngles(poly_model &po, const float *normalized_angles) {
         else
           BuildModelAngleMatrix(temp_matrix, normalized_angles[i] * 65535, po.submodel[i].norm);
 
-        vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &temp_matrix);
+        vm_ExtractAnglesFromMatrix(po.submodel[i].angs, temp_matrix);
       }
     }
   } else {
@@ -2407,7 +2407,7 @@ void SetModelAngles(poly_model &po, const float *normalized_angles) {
           temp_vec = po.submodel[i].norm;
 
         BuildModelAngleMatrix(temp_matrix, fdiff * 65535, temp_vec);
-        vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &temp_matrix);
+        vm_ExtractAnglesFromMatrix(po.submodel[i].angs, temp_matrix);
       } else if (po.submodel[i].flags.turret) {
         // We need to find where in this rotation is relative to gametime
         float flrot = d3::chrono::last_update();
@@ -2422,7 +2422,7 @@ void SetModelAngles(poly_model &po, const float *normalized_angles) {
         else
           BuildModelAngleMatrix(temp_matrix, fdiff * 65535, po.submodel[i].norm);
 
-        vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &temp_matrix);
+        vm_ExtractAnglesFromMatrix(po.submodel[i].angs, temp_matrix);
       } else {
         po.submodel[i].angs = angvec{};
       }
@@ -2469,7 +2469,7 @@ void SetModelInterpPos(poly_model &po, const float *normalized_pos) {
       if (cur_state == 0)
         po.submodel[i].mod_pos = normal_state_time * po.submodel[i].keyframe_pos[1];
       else {
-        vm_SubVectors(&subpos, &po.submodel[i].keyframe_pos[cur_state + 1], &po.submodel[i].keyframe_pos[cur_state]);
+        vm_SubVectors(subpos, po.submodel[i].keyframe_pos[cur_state + 1], po.submodel[i].keyframe_pos[cur_state]);
         final_pos = po.submodel[i].keyframe_pos[cur_state] + (subpos * normal_state_time);
         po.submodel[i].mod_pos = final_pos;
       }
@@ -2528,7 +2528,7 @@ void SetModelAnglesAndPosTimed(poly_model &po, float *normalized_time, uint32_t 
         normal_state_time = (float)this_tick / (float)ticks_between_frames;
 
         vector3 subpos;
-        vm_SubVectors(&subpos, &sm->keyframe_pos[current_frame + 1], &sm->keyframe_pos[current_frame]);
+        vm_SubVectors(subpos, sm->keyframe_pos[current_frame + 1], sm->keyframe_pos[current_frame]);
         sm->mod_pos = sm->keyframe_pos[current_frame] + (subpos * normal_state_time);
       }
 
@@ -2544,7 +2544,7 @@ void SetModelAnglesAndPosTimed(poly_model &po, float *normalized_time, uint32_t 
         }
 
         if (normalized_time[i] == 1.0) {
-          vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &po.submodel[i].keyframe_matrix[sm->num_key_angles - 1]);
+          vm_ExtractAnglesFromMatrix(po.submodel[i].angs, po.submodel[i].keyframe_matrix[sm->num_key_angles - 1]);
           continue;
         }
 
@@ -2557,7 +2557,7 @@ void SetModelAnglesAndPosTimed(poly_model &po, float *normalized_time, uint32_t 
         Q_ASSERT(current_frame >= 0 && current_frame <= sm->num_key_angles - 1);
 
         if (current_frame == sm->num_key_angles - 1) {
-          vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &po.submodel[i].keyframe_matrix[sm->num_key_angles - 1]);
+          vm_ExtractAnglesFromMatrix(po.submodel[i].angs, po.submodel[i].keyframe_matrix[sm->num_key_angles - 1]);
           continue;
         } else {
           int ticks_between_frames = sm->rot_start_time[current_frame + 1] - sm->rot_start_time[current_frame];
@@ -2570,7 +2570,7 @@ void SetModelAnglesAndPosTimed(poly_model &po, float *normalized_time, uint32_t 
               sm->keyframe_matrix[current_frame] +
               ((sm->keyframe_matrix[current_frame + 1] - sm->keyframe_matrix[current_frame]) * normal_state_time);
 
-          vm_ExtractAnglesFromMatrix(&sm->angs, &dest_matrix);
+          vm_ExtractAnglesFromMatrix(sm->angs, dest_matrix);
         }
 
       } else {
@@ -2592,7 +2592,7 @@ void SetModelAnglesAndPosTimed(poly_model &po, float *normalized_time, uint32_t 
             temp_vec = po.submodel[i].norm;
 
           BuildModelAngleMatrix(temp_matrix, fdiff * 65535, temp_vec);
-          vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &temp_matrix);
+          vm_ExtractAnglesFromMatrix(po.submodel[i].angs, temp_matrix);
         } else if (po.submodel[i].flags.turret) {
           matrix temp_matrix;
           if (po.new_style)
@@ -2600,7 +2600,7 @@ void SetModelAnglesAndPosTimed(poly_model &po, float *normalized_time, uint32_t 
           else
             BuildModelAngleMatrix(temp_matrix, normalized_time[i] * 65535, po.submodel[i].norm);
 
-          vm_ExtractAnglesFromMatrix(&po.submodel[i].angs, &temp_matrix);
+          vm_ExtractAnglesFromMatrix(po.submodel[i].angs, temp_matrix);
         }
       }
     }
@@ -2664,26 +2664,26 @@ void StartLightInstance(const vector3 &pos, const matrix &orient) {
   vector3 temp_vec;
 
   if (gouraud) {
-    vm_MatrixMulVector(&temp_vec, Polymodel_light_direction, &orient);
+    vm_MatrixMulVector(temp_vec, *Polymodel_light_direction, orient);
     *Polymodel_light_direction = temp_vec;
   }
   if (fogged) {
     vector3 tempv = Polymodel_fog_portal_vert - pos;
-    vm_MatrixMulVector(&temp_vec, &tempv, &orient);
+    vm_MatrixMulVector(temp_vec, tempv, orient);
     Polymodel_fog_portal_vert = temp_vec;
 
-    vm_MatrixMulVector(&temp_vec, &Polymodel_fog_plane, &orient);
+    vm_MatrixMulVector(temp_vec, Polymodel_fog_plane, orient);
     Polymodel_fog_plane = temp_vec;
   }
   if (specular) {
     vector3 tempv = Polymodel_specular_pos - pos;
-    vm_MatrixMulVector(&temp_vec, &tempv, &orient);
+    vm_MatrixMulVector(temp_vec, tempv, orient);
     Polymodel_specular_pos = temp_vec;
   }
 
   if (bumped) {
     vector3 tempv = Polymodel_bump_pos - pos;
-    vm_MatrixMulVector(&temp_vec, &tempv, &orient);
+    vm_MatrixMulVector(temp_vec, tempv, orient);
     Polymodel_bump_pos = temp_vec;
   }
 }
@@ -2766,8 +2766,8 @@ void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *
 
           vector3 ofs = (po->submodel[i].min + po->submodel[i].max) / 2;
           vector3 save_offset = po->submodel[i].offset;
-          vm_MakeZero(&po->submodel[i].offset);
-          vm_MakeZero(&po->submodel[i].mod_pos);
+          vm_MakeZero(po->submodel[i].offset);
+          vm_MakeZero(po->submodel[i].mod_pos);
           po->submodel[i].angs = {};
           ofs *= -1;
 
@@ -2843,8 +2843,8 @@ void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *
 
           vector3 ofs = (po->submodel[i].min + po->submodel[i].max) / 2;
           vector3 save_offset = po->submodel[i].offset;
-          vm_MakeZero(&po->submodel[i].offset);
-          vm_MakeZero(&po->submodel[i].mod_pos);
+          vm_MakeZero(po->submodel[i].offset);
+          vm_MakeZero(po->submodel[i].mod_pos);
           po->submodel[i].angs = {};
           ofs *= -1;
 
@@ -2912,8 +2912,8 @@ void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *
 
           vector3 ofs = (po->submodel[i].min + po->submodel[i].max) / 2;
           vector3 save_offset = po->submodel[i].offset;
-          vm_MakeZero(&po->submodel[i].offset);
-          vm_MakeZero(&po->submodel[i].mod_pos);
+          vm_MakeZero(po->submodel[i].offset);
+          vm_MakeZero(po->submodel[i].mod_pos);
           memset(&po->submodel[i].angs, 0, sizeof(angvec));
           ofs *= -1;
 
@@ -3043,8 +3043,8 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, const vector3& wpos
   while (mn != -1) {
     vector3 tpnt;
 
-    vm_AnglesToMatrix(&m, pm.submodel[mn].angs.p(), pm.submodel[mn].angs.h(), pm.submodel[mn].angs.b());
-    vm_TransposeMatrix(&m);
+    vm_AnglesToMatrix(m, pm.submodel[mn].angs.p(), pm.submodel[mn].angs.h(), pm.submodel[mn].angs.b());
+    vm_TransposeMatrix(m);
 
     tpnt = pnt * m;
 
@@ -3058,7 +3058,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, const vector3& wpos
 
   // now instance for the entire object
   m = orient;
-  vm_TransposeMatrix(&m);
+  vm_TransposeMatrix(m);
 
   if (norm.has_value())
     *norm = (cur_norm * m);
@@ -3088,8 +3088,8 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, const vector3& wpos
   while (mn != -1) {
     vector3 tpnt;
 
-    vm_AnglesToMatrix(&m, pm.submodel[mn].angs.p(), pm.submodel[mn].angs.h(), pm.submodel[mn].angs.b());
-    vm_TransposeMatrix(&m);
+    vm_AnglesToMatrix(m, pm.submodel[mn].angs.p(), pm.submodel[mn].angs.h(), pm.submodel[mn].angs.b());
+    vm_TransposeMatrix(m);
 
     tpnt = pnt * m;
 
@@ -3103,7 +3103,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, const vector3& wpos
 
   // now instance for the entire object
   m = orient;
-  vm_TransposeMatrix(&m);
+  vm_TransposeMatrix(m);
 
   if (norm.has_value())
     *norm = (cur_norm * m);

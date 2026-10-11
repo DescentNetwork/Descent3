@@ -289,12 +289,12 @@ void TerrainKeypad::onPrevMoon() {
 void TerrainKeypad::moveSat(int pitch, int heading) {
   int n = m_currentSatellite;
   matrix rot_matrix;
-  vm_AnglesToMatrix(&rot_matrix, pitch, heading, 0);
+  vm_AnglesToMatrix(rot_matrix, pitch, heading, 0);
   vector3 sat_vec = Terrain_sky.satellite_vectors[n] - Viewer_object->pos;
-  float mag = vm_GetMagnitude(&sat_vec);
-  vm_NormalizeVector(&sat_vec);
+  float mag = vm_GetMagnitude(sat_vec);
+  vm_NormalizeVector(sat_vec);
   vector3 rot_vec;
-  vm_MatrixMulVector(&rot_vec, &sat_vec, &rot_matrix);
+  vm_MatrixMulVector(rot_vec, sat_vec, rot_matrix);
   Terrain_sky.satellite_vectors[n] = Viewer_object->pos + (rot_vec * mag);
   app.TV_changed = true;
 }

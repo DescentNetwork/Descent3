@@ -4526,7 +4526,7 @@ private slots:
     QCoreApplication::processEvents();
     {
       const EditorView::WireframeViewState &v = view->activeWireframeView();
-      QVERIFY2(vm_VectorDistance(&roomCenter, &v.target) < 1e-3f,
+      QVERIFY2(vm_VectorDistance(roomCenter, v.target) < 1e-3f,
                "Center on Current Room did not aim the orbit target at the room center");
       QCOMPARE(v.dist, 500.0f); // SetWireframeView keeps distance
     }
@@ -4543,7 +4543,7 @@ private slots:
     app.Cur_object_index = selIdx;
     a_object->trigger();
     QCoreApplication::processEvents();
-    QVERIFY2(vm_VectorDistance(&selPos, &view->activeWireframeView().target) < 1e-3f,
+    QVERIFY2(vm_VectorDistance(selPos, view->activeWireframeView().target) < 1e-3f,
              "Center on Current Object did not aim the orbit target at the object");
 
     // Center on Mine Origin: ResetWireframeView defaults (dist=500/rad=5000)
@@ -5604,7 +5604,7 @@ private slots:
     app.placed.room_face = index_t{static_cast<uint32_t>(0)};
     app.placed.origin = vector3{(float)150, (float)150, (float)0};
     app.placed.attachpoint = vector3{(float)0, (float)0, (float)0};
-    vm_MakeIdentity(&app.placed.rotmat);
+    vm_MakeIdentity(app.placed.rotmat);
     app.placed.door.reset();
 
     AttachRoom();
@@ -5670,7 +5670,7 @@ private slots:
     app.placed.room_face = index_t{static_cast<uint32_t>(0)};
     app.placed.origin = vector3{(float)5, (float)0, (float)-5};
     app.placed.attachpoint = vector3{(float)5, (float)0, (float)-5};
-    vm_MakeIdentity(&app.placed.rotmat);
+    vm_MakeIdentity(app.placed.rotmat);
     app.placed.door.reset();
 
     AttachRoom();
@@ -6433,7 +6433,7 @@ private slots:
     // Expected flat colours (mirrors the shading math in renderRooms).
     auto flatRgb = [](const vector3 &n, float *out) {
       vector3 ld{0.4f, 0.7f, 0.6f};
-      float len = vm_NormalizeVector(&ld);
+      float len = vm_NormalizeVector(ld);
       if (len < 0.001f)
         ld = vector3{0, 1, 0};
       float diff = n.x() * ld.x() + n.y() * ld.y() + n.z() * ld.z();
@@ -6737,12 +6737,11 @@ private slots:
     const float rad2 = vstate.rad * vstate.rad;
 
     // Camera orientation: EditorView::updateCamera uses
-    // vm_AnglesToMatrix(&m_orient, 0, yaw, pitch) i.e. p=0, h=yaw, b=pitch.
+    // vm_AnglesToMatrix(m_orient, 0, yaw, pitch) i.e. p=0, h=yaw, b=pitch.
     const float pRad = pitchDeg * std::numbers::pi_v<float> / 180.0f;
     const float hRad = yawDeg * std::numbers::pi_v<float> / 180.0f;
     matrix orient;
-    vm_SinCosToMatrix(&orient, 0.0f, 1.0f,
-                      scalar(std::sin(pRad)),
+    vm_SinCosToMatrix(orient, 0.0f, 1.0f, scalar(std::sin(pRad)),
                       scalar(std::cos(pRad)),
                       scalar(std::sin(hRad)),
                       scalar(std::cos(hRad)));
@@ -6758,7 +6757,7 @@ private slots:
     const float cx = ((float)sx - w * 0.5f) / focal;
     const float cy = (h * 0.5f - (float)sy) / focal;
     vector3 dir = orient.rvec * cx + orient.uvec * cy + orient.fvec;
-    const float dlen = vm_GetMagnitude(&dir);
+    const float dlen = vm_GetMagnitude(dir);
     if (dlen < 1e-6f)
       return false;
     dir = dir * (1.0f / dlen);
@@ -6803,7 +6802,7 @@ private slots:
             continue;
           // Front-face cull matching Win32 DoFacingCheck (and pickAtImpl):
           // only the front side of a face is selectable.  The test is done in
-          // VIEW space with vm_GetPerp(v0,v1,v2) and dot(n_view, v1_view) < 0,
+          // VIEW space with vm_GetPerp(v0, v1, v2) and dot(n_view, v1_view) < 0,
           // exactly like pickAtImpl, because the view transform is a reflection
           // and a naive world-space cross product would flip the sign.
           const auto toView = [&](const vector3 &w) {
@@ -6979,7 +6978,7 @@ private slots:
     // app.placed.orient.fvec should match base face normal
     {
       vector3 diff = app.placed.orient.fvec - base->faces[0].normal;
-      float dist = vm_GetMagnitude(&diff);
+      float dist = vm_GetMagnitude(diff);
       QVERIFY(dist < 0.01f);
     }
 
@@ -7094,14 +7093,14 @@ private slots:
     app.placed.room = to_roomnum(0);
     app.placed.room_face = index_t{static_cast<uint32_t>(0)};
     app.placed.angle = 0;
-    vm_MakeIdentity(&app.placed.orient);
+    vm_MakeIdentity(app.placed.orient);
 
     ComputePlacedRoomMatrix();
 
     // rotmat should be a valid orthogonal matrix (fvec magnitude ~1)
-    float fmag = vm_GetMagnitude(&app.placed.rotmat.fvec);
-    float rmag = vm_GetMagnitude(&app.placed.rotmat.rvec);
-    float umag = vm_GetMagnitude(&app.placed.rotmat.uvec);
+    float fmag = vm_GetMagnitude(app.placed.rotmat.fvec);
+    float rmag = vm_GetMagnitude(app.placed.rotmat.rvec);
+    float umag = vm_GetMagnitude(app.placed.rotmat.uvec);
     QVERIFY(fmag > 0.9f && fmag < 1.1f);
     QVERIFY(rmag > 0.9f && rmag < 1.1f);
     QVERIFY(umag > 0.9f && umag < 1.1f);
@@ -7123,9 +7122,9 @@ private slots:
     bool result = RotateObject(0, 0, 0, 0);
     QVERIFY(result);
 
-    float fmag = vm_GetMagnitude(&Objects[0].orient.fvec);
-    float rmag = vm_GetMagnitude(&Objects[0].orient.rvec);
-    float umag = vm_GetMagnitude(&Objects[0].orient.uvec);
+    float fmag = vm_GetMagnitude(Objects[0].orient.fvec);
+    float rmag = vm_GetMagnitude(Objects[0].orient.rvec);
+    float umag = vm_GetMagnitude(Objects[0].orient.uvec);
     QVERIFY(fmag > 0.9f && fmag < 1.1f);
     QVERIFY(rmag > 0.9f && rmag < 1.1f);
     QVERIFY(umag > 0.9f && umag < 1.1f);
@@ -7157,9 +7156,9 @@ private slots:
       changed = true;
     QVERIFY(changed);
 
-    float fmag = vm_GetMagnitude(&Objects[0].orient.fvec);
-    float rmag = vm_GetMagnitude(&Objects[0].orient.rvec);
-    float umag = vm_GetMagnitude(&Objects[0].orient.uvec);
+    float fmag = vm_GetMagnitude(Objects[0].orient.fvec);
+    float rmag = vm_GetMagnitude(Objects[0].orient.rvec);
+    float umag = vm_GetMagnitude(Objects[0].orient.uvec);
     QVERIFY(fmag > 0.9f && fmag < 1.1f);
     QVERIFY(rmag > 0.9f && rmag < 1.1f);
     QVERIFY(umag > 0.9f && umag < 1.1f);
@@ -7177,7 +7176,7 @@ private slots:
 
     Objects[0].type = object_type_e::powerup;
     matrix rotated{};
-    vm_AnglesToMatrix(&rotated, 4096, 2048, 1024);
+    vm_AnglesToMatrix(rotated, 4096, 2048, 1024);
     Objects[0].orient = rotated;
     Highest_object_index = 0;
 
@@ -7200,7 +7199,7 @@ private slots:
   void testHObjectSetDefaultNoopWhenNoSelection() {
     app.Cur_object_index.reset();
     matrix before{};
-    vm_MakeIdentity(&before);
+    vm_MakeIdentity(before);
 
     HObjectSetDefault();
 
@@ -7578,7 +7577,7 @@ private slots:
     ObjMoveManager.Defer(10, 0, true);
     QVERIFY(ObjMoveManager.IsMoving());
     QVERIFY(app.Object_moved);
-    QVERIFY(vm_VectorDistance(&pos0, &Objects[1].pos) > 1e-3f);
+    QVERIFY(vm_VectorDistance(pos0, Objects[1].pos) > 1e-3f);
 
     ObjMoveManager.Defer(0, 0, false);
     QVERIFY(!ObjMoveManager.IsMoving());
@@ -7646,7 +7645,7 @@ private slots:
         Objects[1].orient.fvec.z() != before.fvec.z())
       changed = true;
     QVERIFY(changed);
-    QVERIFY(vm_GetMagnitude(&Objects[1].orient.fvec) > 0.9f);
+    QVERIFY(vm_GetMagnitude(Objects[1].orient.fvec) > 0.9f);
 
     ObjMoveManager.Defer(0, 0, false);
     QVERIFY(!ObjMoveManager.IsMoving());
@@ -7738,7 +7737,7 @@ private slots:
     QCoreApplication::sendEvent(&view, &release);
     QVERIFY(!ObjMoveManager.IsMoving());
 
-    QVERIFY2(vm_VectorDistance(&pos0, &Objects[0].pos) > 1e-3f,
+    QVERIFY2(vm_VectorDistance(pos0, Objects[0].pos) > 1e-3f,
             "drag did not move the object");
 
     app.Cur_object_index.reset();
@@ -7851,7 +7850,7 @@ private slots:
       QCOMPARE(fate, fvi_hit_type::none);
       QCOMPARE(info.hit_room, 0);
       QCOMPARE(info.n_rooms, 0);
-      QVERIFY(vm_VectorDistance(&p1v, &info.hit_pnt) < 1e-3f);
+      QVERIFY(vm_VectorDistance(p1v, info.hit_pnt) < 1e-3f);
     }
 
     // A ray along +Z hits the -Z wall of room 0 (z=-5) before any portal.
@@ -7889,7 +7888,7 @@ private slots:
       fvi_info info{};
       fvi_hit_type fate = fvi_FindIntersection(&fq, &info);
       QCOMPARE(fate, fvi_hit_type::none);
-      QVERIFY(vm_VectorDistance(&p1v, &info.hit_pnt) < 1e-3f);
+      QVERIFY(vm_VectorDistance(p1v, info.hit_pnt) < 1e-3f);
     }
 
     FreeRoom(0);

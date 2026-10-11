@@ -92,11 +92,11 @@ void RobotPreviewWidget::paintGL() {
     viewVector.z() = -40.0f;
 
   matrix idMatrix;
-  vm_MakeIdentity(&idMatrix);
+  vm_MakeIdentity(idMatrix);
 
   // Rotate the model slowly for a live preview.
   matrix rotMatrix;
-  vm_AnglesToMatrix(&rotMatrix, 0, (angle)(m_animTime * 360.0f * 8.0f), 0);
+  vm_AnglesToMatrix(rotMatrix, 0, (angle)(m_animTime * 360.0f * 8.0f), 0);
 
   float normTime[MAX_SUBOBJECTS];
   for (int i = 0; i < MAX_SUBOBJECTS; i++)

@@ -779,7 +779,7 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, fl
   int i;
 
   // find the center point of this face
-  vm_MakeZero(&avg_vert);
+  vm_MakeZero(avg_vert);
   for (i = 0; i < fp->num_verts; i++)
     avg_vert += rp->verts[fp->face_verts[i]];
   avg_vert /= fp->num_verts;
@@ -791,15 +791,15 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, fl
   // Make the transformation matrix
 
   angvec avec;
-  vm_ExtractAnglesFromMatrix(&avec, &face_matrix);
-  vm_AnglesToMatrix(&trans_matrix, avec.p(), avec.h(), avec.b());
+  vm_ExtractAnglesFromMatrix(avec, face_matrix);
+  vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b());
 
   // Rotate all the points
   for (i = 0; i < fp->num_verts; i++) {
     vector3 vert = rp->verts[fp->face_verts[i]];
 
     vert -= avg_vert;
-    vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
+    vm_MatrixMulVector(rot_vert, vert, trans_matrix);
     verts[i] = rot_vert;
   }
   // Find left most point
@@ -852,8 +852,8 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, fl
   *ydiff = verts[topmost_point].y() - verts[bottommost_point].y();
 
   // Find upper left corner
-  vm_TransposeMatrix(&trans_matrix);
-  vm_MatrixMulVector(&rot_vert, &base_vector, &trans_matrix);
+  vm_TransposeMatrix(trans_matrix);
+  vm_MatrixMulVector(rot_vert, base_vector, trans_matrix);
   *upper_left = rot_vert + avg_vert;
   *center = avg_vert;
 }
@@ -898,7 +898,7 @@ void DrawRoomVisPnts(object *obj) {
         for (int sx = 0; sx < src_width; sx++, src_vector += src_matrix.rvec) {
           vector3 src2 = src_vector;
           //						vector3 subvec=src_center-src_vector;
-          //							float mag=vm_GetMagnitudeFast (&subvec);
+          //							float mag=vm_GetMagnitudeFast (subvec);
           //							subvec/=(mag*4);
           //							src2+=subvec;
           if ((check_point_to_face(&src2, &src_fp->normal, src_fp->num_verts, src_vertp))) {
@@ -920,7 +920,7 @@ void DrawRoomVisPnts(object *obj) {
 void DrawDebugInfo(object *obj) {
   matrix m;
   m = obj->orient;
-  vm_TransposeMatrix(&m);
+  vm_TransposeMatrix(m);
   if (obj->type == object_type::room) {
     DrawColoredDisk(&obj->pos, 0.0f, 0.0f, 1.0f, 0.1f, 0.7f, obj->size, 1);
   } else {
@@ -1043,7 +1043,7 @@ void DrawShardObject(object& obj) {
 // Sets up the light states for an outdoor object to be rendered
 bool SetupTerrainObject(object& obj) {
   vector3 camlight = Terrain_sky.lightsource;
-  vm_NormalizeVector(&camlight);
+  vm_NormalizeVector(camlight);
 #ifdef EDITOR
   if (!app.Terrain_render_ext_room_objs)
     return false;
@@ -1180,8 +1180,8 @@ bool GetLinearPosition(vector3 *points, float *times, int num_points, float t, v
   vector3 vd;
   float mag;
   vd = points[min_point + 1] - points[min_point];
-  mag = vm_GetMagnitude(&vd);
-  vm_NormalizeVector(&vd);
+  mag = vm_GetMagnitude(vd);
+  vm_NormalizeVector(vd);
   vd *= (mag * newt);
 
   *pos = points[min_point] + vd;
@@ -1275,7 +1275,7 @@ void RenderObject(object& obj) {
       float AFT = 1.0f / 20.0f;       // Assumed frame time
       int num_iterations;             // number of iterations
 
-      vel_mag = fabs(vm_GetMagnitude(&obj.mtype.phys_info.velocity));
+      vel_mag = fabs(vm_GetMagnitude(obj.mtype.phys_info.velocity));
       num_iterations = (vel_mag * AFT) / (sphere_size_perc * obj.size);
 
       if (num_iterations > 12)
@@ -1775,13 +1775,13 @@ int IsPointVisible(vector3 *pos, float size, float *pointz) {
       vector3 tvec = {0, 1, 0};
       vector3 bvec = {0, -1, 0};
       matrix temp_mat;
-      vm_AnglesToMatrix(&temp_mat, 0, 65536 - angle_adjust, 0);
+      vm_AnglesToMatrix(temp_mat, 0, 65536 - angle_adjust, 0);
       right_normal = rvec * temp_mat;
-      vm_AnglesToMatrix(&temp_mat, 0, angle_adjust, 0);
+      vm_AnglesToMatrix(temp_mat, 0, angle_adjust, 0);
       left_normal = lvec * temp_mat;
-      vm_AnglesToMatrix(&temp_mat, 65536 - angle_adjust, 0, 0);
+      vm_AnglesToMatrix(temp_mat, 65536 - angle_adjust, 0, 0);
       bottom_normal = bvec * temp_mat;
-      vm_AnglesToMatrix(&temp_mat, angle_adjust, 0, 0);
+      vm_AnglesToMatrix(temp_mat, angle_adjust, 0, 0);
       top_normal = tvec * temp_mat;
     }
     // Get unscaled matrix stuff
@@ -1793,23 +1793,23 @@ int IsPointVisible(vector3 *pos, float size, float *pointz) {
     vector3 temp_vec = *pos - view_position;
     pnt.p3_vec = temp_vec * unscaled_matrix;
     if (ccode.off_right) {
-      dotp = vm_DotProduct(&right_normal, &pnt.p3_vec);
+      dotp = vm_DotProduct(right_normal, pnt.p3_vec);
       if (dotp > size)
         return 0;
     }
     if (ccode.off_left) {
-      dotp = vm_DotProduct(&left_normal, &pnt.p3_vec);
+      dotp = vm_DotProduct(left_normal, pnt.p3_vec);
       if (dotp > size)
         return 0;
     }
 
     if (ccode.off_top) {
-      dotp = vm_DotProduct(&top_normal, &pnt.p3_vec);
+      dotp = vm_DotProduct(top_normal, pnt.p3_vec);
       if (dotp > size)
         return 0;
     }
     if (ccode.off_bot) {
-      dotp = vm_DotProduct(&bottom_normal, &pnt.p3_vec);
+      dotp = vm_DotProduct(bottom_normal, pnt.p3_vec);
       if (dotp > size)
         return 0;
     }
@@ -1879,7 +1879,7 @@ void DrawPlayerInvulSphere(object *obj) {
   vector3 hit_pos = obj->pos + (Players[obj->id].invul_vector * obj->size);
   vector3 norm_vec = Players[obj->id].invul_vector;
   // Check to see that we're ok with the length of the vector
-  float mag = vm_GetMagnitudeFast(&norm_vec);
+  float mag = vm_GetMagnitudeFast(norm_vec);
   if (mag < 1)
     return;
   norm_vec /= mag;
@@ -1949,10 +1949,10 @@ void DrawPlayerTypingIndicator(object *obj) {
   IndicatorTan = std::tan(rad);
   // See if it is in our viewcone
   vector3 subvec = obj->pos - Player_object->pos;
-  vm_NormalizeVectorFast(&subvec);
-  if ((vm_DotProduct(&subvec, &Player_object->orient.fvec)) < IndicatorTan)
+  vm_NormalizeVectorFast(subvec);
+  if ((vm_DotProduct(subvec, Player_object->orient.fvec)) < IndicatorTan)
     return;
-  if ((vm_VectorDistanceQuick(&Viewer_object->pos, &obj->pos) > 800.0f))
+  if ((vm_VectorDistanceQuick(Viewer_object->pos, obj->pos) > 800.0f))
     return;
   // Find out if it is o.k. to draw here.
   fvi_query fq;
@@ -2054,8 +2054,8 @@ void DrawPlayerNameOnHud(object *obj) {
 
   // See if it is in our viewcone
   vector3 subvec = obj->pos - Player_object->pos;
-  vm_NormalizeVectorFast(&subvec);
-  if ((vm_DotProduct(&subvec, &Player_object->orient.fvec)) < HudNameTan)
+  vm_NormalizeVectorFast(subvec);
+  if ((vm_DotProduct(subvec, Player_object->orient.fvec)) < HudNameTan)
     return;
   // Find out if it is o.k. to draw here.
   fvi_query fq;

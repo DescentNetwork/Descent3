@@ -761,8 +761,8 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
     vector3 tnormal;
     float mag;
 
-    mag = vm_GetNormal(&tnormal, &verts[vertnum_list[i]], &verts[vertnum_list[(i + 1) % num_verts]],
-                       &verts[vertnum_list[(i + 2) % num_verts]]);
+    mag = vm_GetNormal(tnormal, verts[vertnum_list[i]], verts[vertnum_list[(i + 1) % num_verts]],
+                       verts[vertnum_list[(i + 2) % num_verts]]);
 
     if (mag > largest_mag) {
       normal = tnormal;
@@ -788,7 +788,7 @@ void ComputePortalCenter(vector3 *vp, int roomnum, int portal_index) {
   face *fp = &rp.faces[pp->portal_face];
   int i;
 
-  vm_MakeZero(vp);
+  vm_MakeZero(*vp);
 
   for (i = 0; i < fp->num_verts; i++)
     *vp += rp.verts[fp->face_verts[i]];
@@ -896,13 +896,12 @@ float GetAreaForFace(int roomnum, int facenum) {
   vector3 normal;
   float area = 0;
 
-  vm_GetPerp(&normal, &rp.verts[fp->face_verts[0]], &rp.verts[fp->face_verts[1]], &rp.verts[fp->face_verts[2]]);
-  area = (vm_GetMagnitude(&normal) / 2);
+  vm_GetPerp(normal, rp.verts[fp->face_verts[0]], rp.verts[fp->face_verts[1]], rp.verts[fp->face_verts[2]]);
+  area = (vm_GetMagnitude(normal) / 2);
 
   for (i = 2; i < fp->num_verts - 1; i++) {
-    vm_GetPerp(&normal, &rp.verts[fp->face_verts[0]], &rp.verts[fp->face_verts[i]],
-               &rp.verts[fp->face_verts[i + 1]]);
-    area += (vm_GetMagnitude(&normal) / 2);
+    vm_GetPerp(normal, rp.verts[fp->face_verts[0]], rp.verts[fp->face_verts[i]], rp.verts[fp->face_verts[i + 1]]);
+    area += (vm_GetMagnitude(normal) / 2);
   }
 
   return area;
@@ -1076,9 +1075,9 @@ float ComputeRoomBoundingSphere(vector3 *center, int roomnum) {
 
   // Calculate initial sphere
 
-  dx = vm_VectorDistance(min_x, max_x);
-  dy = vm_VectorDistance(min_y, max_y);
-  dz = vm_VectorDistance(min_z, max_z);
+  dx = vm_VectorDistance(*min_x, *max_x);
+  dy = vm_VectorDistance(*min_y, *max_y);
+  dz = vm_VectorDistance(*min_z, *max_z);
 
   if (dx > dy)
     if (dx > dz) {

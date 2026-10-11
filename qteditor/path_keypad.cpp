@@ -191,9 +191,9 @@ void PathKeypad::onInsertNode() {
   if (p < 0 || n < 0)
     return;
   matrix orient;
-  vm_MakeIdentity(&orient);
+  vm_MakeIdentity(orient);
   vector3 zero_pos;
-  vm_MakeZero(&zero_pos);
+  vm_MakeZero(zero_pos);
   const int newnode = InsertNodeIntoPath(p, n, 0, 0, zero_pos, orient);
   if (newnode != -1)
     app.current_node = newnode;

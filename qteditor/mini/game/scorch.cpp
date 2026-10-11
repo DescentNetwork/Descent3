@@ -217,12 +217,12 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
 
     v0 = v1;
     v1 = &rp->verts[fp->face_verts[v]];
-    vm_GetNormalizedDir(&edgevec, v1, v0);
+    vm_GetNormalizedDir(edgevec, *v1, *v0);
 
     checkvec = *pos - *v0;
     dot = vm_Dot3Product(checkvec, edgevec);
     checkp = *v0 + edgevec * dot;
-    dist = vm_VectorDistance(&checkp, pos);
+    dist = vm_VectorDistance(checkp, *pos);
     if (dist < size)
       return;
   }
@@ -263,7 +263,7 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
 
   // Calculate the vectors
   matrix m;
-  vm_VectorAngleToMatrix(&m, &fp->normal, d3::rand() * 2);
+  vm_VectorAngleToMatrix(m, fp->normal, d3::rand() * 2);
 
   // Store the vectors as signed 8-bit values
   sp->rx = -m.rvec.x() * 127;

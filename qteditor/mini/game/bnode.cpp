@@ -316,7 +316,7 @@ retry:
 
   for (i = 0; i < bnlist->nodes.size(); i++) {
     vector3 to = bnlist->nodes[i].pos - pos;
-    scalar dist = vm_NormalizeVector(&to);
+    scalar dist = vm_NormalizeVector(to);
 
     if (dist < closest_dist) {
       scalar dot = vm_Dot3Product(fvec, to);

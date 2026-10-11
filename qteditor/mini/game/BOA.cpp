@@ -887,7 +887,7 @@ void compute_costs() {
 
           ComputePortalCenter(&portal_pnt, i, j);
 
-          BOA_cost_array[i][j] = vm_VectorDistance(&from_pnt, &portal_pnt);
+          BOA_cost_array[i][j] = vm_VectorDistance(from_pnt, portal_pnt);
         } else {
           BOA_cost_array[i][j] = -1.0f;
         }
@@ -1392,7 +1392,7 @@ void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, floa
   int i;
 
   // find the center point of this face
-  vm_MakeZero(&avg_vert);
+  vm_MakeZero(avg_vert);
   for (i = 0; i < fp->num_verts; i++)
     avg_vert += rp->verts[fp->face_verts[i]];
 
@@ -1406,15 +1406,15 @@ void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, floa
   // Make the transformation matrix
 
   angvec avec;
-  vm_ExtractAnglesFromMatrix(&avec, &face_matrix);
-  vm_AnglesToMatrix(&trans_matrix, avec.p(), avec.h(), avec.b());
+  vm_ExtractAnglesFromMatrix(avec, face_matrix);
+  vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b());
 
   // Rotate all the points
   for (i = 0; i < fp->num_verts; i++) {
     vector3 vert = rp->verts[fp->face_verts[i]];
 
     vert -= avg_vert;
-    vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
+    vm_MatrixMulVector(rot_vert, vert, trans_matrix);
 
     verts[i] = rot_vert;
   }
@@ -1487,8 +1487,8 @@ void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, floa
     *ydiff = verts[topmost_point].y() - verts[bottommost_point].y();
 
   // Find upper left corner
-  vm_TransposeMatrix(&trans_matrix);
-  vm_MatrixMulVector(&rot_vert, &base_vector, &trans_matrix);
+  vm_TransposeMatrix(trans_matrix);
+  vm_MatrixMulVector(rot_vert, base_vector, trans_matrix);
 
   if (upper_left)
     *upper_left = rot_vert + avg_vert;

@@ -196,7 +196,7 @@ static void CollideSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
 
               fvi_check_param = true;
               x = *fvi_query_ptr->p1 - *fvi_query_ptr->p0;
-              vm_NormalizeVector(&x);
+              vm_NormalizeVector(x);
 
               fvi_hit_param = vm_Dot3Product((newp - *fvi_query_ptr->p0), x);
 
@@ -285,7 +285,7 @@ static void newstyle_StartInstanceAngles(vector3 &pos, optref<angvec> angles) {
     return;
   }
 
-  vm_AnglesToMatrix(&tm, angles->p(), angles->h(), angles->b());
+  vm_AnglesToMatrix(tm, angles->p(), angles->h(), angles->b());
 
   newstyle_StartInstanceMatrix(pos, tm);
 }
@@ -427,8 +427,8 @@ bool PolyCollideObject(object& obj) {
     while (mn != -1) {
       vector3 tpnt;
 
-      vm_AnglesToMatrix(&m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
-      vm_TransposeMatrix(&m);
+      vm_AnglesToMatrix(m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
+      vm_TransposeMatrix(m);
 
       tpnt = pnt * m;
       fvi_hit_data_ptr->hit_wallnorm[0] = fvi_hit_data_ptr->hit_wallnorm[0] * m;
@@ -441,7 +441,7 @@ bool PolyCollideObject(object& obj) {
     fvi_hit_data_ptr->hit_face_pnt[0] = pnt;
 
     m = obj.orient;
-    vm_TransposeMatrix(&m);
+    vm_TransposeMatrix(m);
 
     fvi_hit_data_ptr->hit_wallnorm[0] = fvi_hit_data_ptr->hit_wallnorm[0] * m;
 
@@ -451,7 +451,7 @@ bool PolyCollideObject(object& obj) {
 
     // Now get the hit point
     vector3 x = *fvi_query_ptr->p1 - *fvi_query_ptr->p0;
-    vm_NormalizeVector(&x);
+    vm_NormalizeVector(x);
 
     fvi_hit_data_ptr->hit_pnt = *fvi_query_ptr->p0 + x * fvi_hit_param;
   }

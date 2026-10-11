@@ -134,7 +134,7 @@ bool EBNode_VerifyGraph() {
           if (f_add) {
             vector3 pos;
             pos = rp->portals[j].path_pnt + rp->faces[rp->portals[j].portal_face].normal * 0.75f;
-            rp->portals[j].bnode_index = EBNode_AddNode(i, &pos, false, false);
+            rp->portals[j].bnode_index = EBNode_AddNode(i, pos, false, false);
             LOG_INFO("EBNode Verify: Added a portal node\n");
           }
         }
@@ -158,7 +158,7 @@ bool EBNode_VerifyGraph() {
 
       if (Rooms[*external_room].portals[*external_portal].bnode_index < 0) {
         Rooms[*external_room].portals[*external_portal].bnode_index =
-            EBNode_AddNode(Rooms.size() + region, &pos, false, false);
+            EBNode_AddNode(Rooms.size() + region, pos, false, false);
         if (Rooms[*end_room].portals[*p].bnode_index >= 0)
           EBNode_AddEdge(Rooms[*external_room].portals[*external_portal].bnode_index, Rooms.size() + region,
                          Rooms[*end_room].portals[*p].bnode_index, *end_room);
@@ -230,7 +230,7 @@ bool EBNode_VerifyGraph() {
               continue;
             }
 
-            rp->portals[j].bnode_index = EBNode_AddNode(roomnum, &pos, false, false);
+            rp->portals[j].bnode_index = EBNode_AddNode(roomnum, pos, false, false);
             Q_ASSERT(rp->portals[j].bnode_index >= 0);
             EBNode_AutoEdgeNode(rp->portals[j].bnode_index, roomnum);
             LOG_INFO("EBNode Verify: Added a node and autoedged it.\n");
@@ -241,7 +241,7 @@ bool EBNode_VerifyGraph() {
           } else {
             vector3 pos;
             pos = rp->portals[j].path_pnt + rp->faces[rp->portals[j].portal_face].normal * 0.75f;
-            rp->portals[j].bnode_index = EBNode_AddNode(i, &pos, false, false);
+            rp->portals[j].bnode_index = EBNode_AddNode(i, pos, false, false);
             Q_ASSERT(rp->portals[j].bnode_index >= 0);
             EBNode_AutoEdgeNode(rp->portals[j].bnode_index, i);
             LOG_INFO("EBNode Verify: Added a node and autoedged it.\n");
@@ -476,7 +476,7 @@ void EBNode_RemoveEdge(int spnt, int sroom, int epnt, int eroom, bool f_remove_r
     EBNode_RemoveEdge(epnt, eroom, spnt, sroom, false);
 }
 
-int EBNode_AddNode(int roomnum, vector3 *pnt, bool f_from_editor, bool f_check_for_close_nodes) {
+int EBNode_AddNode(int roomnum, const vector3 &pnt, bool f_from_editor, bool f_check_for_close_nodes) {
   bn_list *nlist = BNode_GetBNListPtr(roomnum);
   if (!nlist)
     return -1;
@@ -492,7 +492,7 @@ int EBNode_AddNode(int roomnum, vector3 *pnt, bool f_from_editor, bool f_check_f
 
   if (f_check_for_close_nodes) {
     for (size_t i = 0; i < nlist->nodes.size(); i++) {
-      if (vm_VectorDistance(&nlist->nodes[i].pos, pnt) <= BNODE_VERY_CLOSE_DIST) {
+      if (vm_VectorDistance(nlist->nodes[i].pos, pnt) <= BNODE_VERY_CLOSE_DIST) {
         f_really_close_neighbor = true;
         break;
       }
@@ -507,7 +507,7 @@ int EBNode_AddNode(int roomnum, vector3 *pnt, bool f_from_editor, bool f_check_f
 
   size_t new_node = nlist->nodes.size();
   nlist->nodes.push_back(bn_node{});
-  nlist->nodes[new_node].pos = *pnt;
+  nlist->nodes[new_node].pos = pnt;
 
   return new_node;
 }
@@ -607,7 +607,7 @@ void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_add_reverse
     size_t new_edge = snlist->nodes[spnt].edges.size();
     snlist->nodes[spnt].edges.push_back(bn_edge{});
 
-    float cost = vm_VectorDistance(&snlist->nodes[spnt].pos, &enlist->nodes[epnt].pos);
+    float cost = vm_VectorDistance(snlist->nodes[spnt].pos, enlist->nodes[epnt].pos);
     if (cost < 1.0f)
       cost = 1.0f;
 
@@ -632,10 +632,10 @@ void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
     vector3 pos;
     pos = rp->portals[i].path_pnt + rp->faces[rp->portals[i].portal_face].normal * 0.75f;
     rp->portals[i].bnode_index = i;
-    EBNode_AddNode(roomnum, &pos, false, false);
+    EBNode_AddNode(roomnum, pos, false, false);
   }
 
-  EBNode_AddNode(roomnum, &rp->path_pnt, false, false);
+  EBNode_AddNode(roomnum, rp->path_pnt, false, false);
 
   for (size_t i = 0; i < rp->bn_info.nodes.size(); i++) {
     for (size_t j = i + 1; j < rp->bn_info.nodes.size(); j++) {
@@ -643,14 +643,14 @@ void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
         vector3 vec = rp->portals[j].path_pnt - rp->portals[i].path_pnt;
         vector3 cvec = rp->path_pnt - rp->portals[i].path_pnt;
 
-        scalar len = vm_NormalizeVector(&vec);
+        scalar len = vm_NormalizeVector(vec);
         scalar cproj = vm_Dot3Product(cvec, vec);
 
         if (len >= cproj && cproj >= 0.0f) {
           vector3 cxline = cproj * vec;
           vector3 dvec = rp->path_pnt - (rp->portals[i].path_pnt + cxline);
 
-          if (vm_GetMagnitude(&dvec) < 3.0f)
+          if (vm_GetMagnitude(dvec) < 3.0f)
             continue;
         }
       }
@@ -740,7 +740,7 @@ static void EBNode_MakeDefaultTerrainNodes(int region) {
     Q_ASSERT(external_room && external_portal && Rooms[*external_room].flags.external);
     Rooms[*external_room].portals[*external_portal].bnode_index = i;
 
-    EBNode_AddNode(Rooms.size() + region, &pos, false, false);
+    EBNode_AddNode(Rooms.size() + region, pos, false, false);
     EBNode_AddEdge(i, Rooms.size() + region, *p, *end_room);
   }
 
@@ -844,7 +844,7 @@ int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom) {
     }
   }
 
-  int n_index = EBNode_AddNode(hit_info.hit_room, &new_pos, false, false);
+  int n_index = EBNode_AddNode(hit_info.hit_room, new_pos, false, false);
   EBNode_AddEdge(n_index, hit_info.hit_room, spnt, sroom);
   EBNode_AddEdge(n_index, hit_info.hit_room, epnt, eroom);
   EBNode_RemoveEdge(epnt, eroom, spnt, sroom);
@@ -864,7 +864,7 @@ static void EBNode_ComputeEdgeCosts(int sroom, int spnt, int eroom, int epnt) {
           (enlist->nodes[epnt].edges[j].end_index == spnt && enlist->nodes[epnt].edges[j].end_room == sroom)) {
         f_found = true;
 
-        float cost = vm_VectorDistance(&snlist->nodes[spnt].pos, &enlist->nodes[epnt].pos);
+        float cost = vm_VectorDistance(snlist->nodes[spnt].pos, enlist->nodes[epnt].pos);
         if (cost < 1.0f)
           cost = 1.0f;
 

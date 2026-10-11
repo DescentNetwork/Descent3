@@ -99,7 +99,7 @@ bool MoveObject(object& obj, vector3& newpos) {
   fvi_hit_type fate = fvi_FindIntersection(&fq, &hit_info);
 
   if (fate == fvi_hit_type::wall)
-    if (vm_VectorDistance(&obj.pos, &hit_info.hit_pnt) < MOVE_EPSILON)
+    if (vm_VectorDistance(obj.pos, hit_info.hit_pnt) < MOVE_EPSILON)
       return false;
 
   ObjSetPos(obj, hit_info.hit_pnt, to_roomnum(hit_info.hit_room), std::nullopt, false);
@@ -114,10 +114,10 @@ bool RotateObject(int objnum, angle p, angle h, angle b) {
   object& obj = Objects[objnum];
   matrix rotmat;
 
-  vm_AnglesToMatrix(&rotmat, p, h, b);
+  vm_AnglesToMatrix(rotmat, p, h, b);
   obj.orient *= rotmat;
 
-  vm_Orthogonalize(&obj.orient);
+  vm_Orthogonalize(obj.orient);
   ObjSetOrient(obj, obj.orient);
 
   app.Object_moved = true;
@@ -281,7 +281,7 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
 
     vm_VectorToMatrix(groundplane_orient, pm->ground_slots[0].norm, std::nullopt, std::nullopt);
     vm_VectorToMatrix(surface_orient, *surface_norm);
-    vm_MatrixMulTMatrix(&object_orient, &surface_orient, &groundplane_orient);
+    vm_MatrixMulTMatrix(object_orient, surface_orient, groundplane_orient);
 
     ObjSetPos(obj, pos, to_roomnum(roomnum), object_orient, false);
   } else {
@@ -312,7 +312,7 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
     Players[obj_id].start_pos = obj.pos;
     Players[obj_id].start_roomnum = obj.roomnum ? static_cast<int32_t>(*obj.roomnum) : -1;
     Players[obj_id].start_orient = obj.orient;
-    vm_Orthogonalize(&Players[obj_id].start_orient);
+    vm_Orthogonalize(Players[obj_id].start_orient);
   }
 
   app.Cur_object_index = objnum;
@@ -352,7 +352,7 @@ void ResetGroundObject(object& obj) {
 
   vm_VectorToMatrix(groundplane_orient, pm->ground_slots[0].norm, std::nullopt, std::nullopt);
   vm_VectorToMatrix(surface_orient, surface_norm);
-  vm_MatrixMulTMatrix(&object_orient, &surface_orient, &groundplane_orient);
+  vm_MatrixMulTMatrix(object_orient, surface_orient, groundplane_orient);
 
   ObjSetPos(obj, pos, obj.roomnum, object_orient, false);
 

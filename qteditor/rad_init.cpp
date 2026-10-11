@@ -119,12 +119,12 @@ void CalculateAreaForSurface(rad_surface *sp) {
 
   vector3 normal;
 
-  vm_GetPerp(&normal, &sp->verts[0], &sp->verts[1], &sp->verts[2]);
-  sp->area = (vm_GetMagnitude(&normal) / 2);
+  vm_GetPerp(normal, sp->verts[0], sp->verts[1], sp->verts[2]);
+  sp->area = (vm_GetMagnitude(normal) / 2);
 
   for (i = 2; i < sp->num_verts - 1; i++) {
-    vm_GetPerp(&normal, &sp->verts[0], &sp->verts[i], &sp->verts[i + 1]);
-    sp->area += (vm_GetMagnitude(&normal) / 2);
+    vm_GetPerp(normal, sp->verts[0], sp->verts[i], sp->verts[i + 1]);
+    sp->area += (vm_GetMagnitude(normal) / 2);
   }
 
   sp->surface_area = sp->area;
@@ -141,12 +141,12 @@ void CalculateAreaForElement(rad_element *ep) {
     return;
   }
 
-  vm_GetPerp(&normal, &ep->verts[0], &ep->verts[1], &ep->verts[2]);
-  ep->area = (vm_GetMagnitude(&normal) / 2);
+  vm_GetPerp(normal, ep->verts[0], ep->verts[1], ep->verts[2]);
+  ep->area = (vm_GetMagnitude(normal) / 2);
 
   for (i = 2; i < ep->num_verts - 1; i++) {
-    vm_GetPerp(&normal, &ep->verts[0], &ep->verts[i], &ep->verts[i + 1]);
-    ep->area += (vm_GetMagnitude(&normal) / 2);
+    vm_GetPerp(normal, ep->verts[0], ep->verts[i], ep->verts[i + 1]);
+    ep->area += (vm_GetMagnitude(normal) / 2);
   }
 
   if (ep->area < 0.05f)
@@ -283,10 +283,10 @@ void UpdateUnsentValues() {
 }
 
 // Finds the world coordinate center of a surface
-void GetCenterOfSurface(rad_surface *sp, vector3 *dest) { vm_GetCentroid(dest, sp->verts.data(), sp->num_verts); }
+void GetCenterOfSurface(rad_surface *sp, vector3 *dest) { vm_GetCentroid(*dest, sp->verts.data(), sp->num_verts); }
 
 // Finds the world coordinate center of a surface
-void GetCenterOfElement(rad_element *ep, vector3 *dest) { vm_GetCentroid(dest, ep->verts.data(), ep->num_verts); }
+void GetCenterOfElement(rad_element *ep, vector3 *dest) { vm_GetCentroid(*dest, ep->verts.data(), ep->num_verts); }
 
 void CalculateRadiosity() {
   while (!rad_DoneCalculating) {

@@ -1196,7 +1196,7 @@ bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0,
 
   // Get the magnitude and direction of the line vector3
   normalized_line_vec = line_vec;
-  mag_line = vm_NormalizeVector(&normalized_line_vec);
+  mag_line = vm_NormalizeVector(normalized_line_vec);
 
   // Compute the location of the point on the line that is perpendicular to the center of the sphere
   closest_point_dist = vm_Dot3Product(normalized_line_vec, point_to_center_vec);
@@ -1217,7 +1217,7 @@ bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0,
       */
       // chrishack this movement intersection fix is a hack...  How do we do correct cylinder/vector3 interestion?
       vector3 n_ptc = point_to_center_vec;
-      vm_NormalizeVector(&n_ptc);
+      vm_NormalizeVector(n_ptc);
 
       *intp =
           *p0 - n_ptc * (sphere_rad - scalar(sqrt(sphere_rad * sphere_rad - vm_Dot3Product(point_to_center_vec, point_to_center_vec))));
@@ -1236,7 +1236,7 @@ bool check_vector_to_sphere_1(vector3 *intp, float *col_dist, const vector3 *p0,
   }
 
   closest_point = *p0 + closest_point_dist * normalized_line_vec;
-  closest_mag_to_center = vm_VectorDistance(&closest_point, sphere_pos);
+  closest_mag_to_center = vm_VectorDistance(closest_point, *sphere_pos);
 
   // We are not moving close enough to collide with the circle
   if (closest_mag_to_center >= sphere_rad)
@@ -1268,7 +1268,7 @@ bool IsPointInCylinder(vector3& normal, vector3 *cylinder_pnt, vector3 *edir, fl
   vector3 newp = *cylinder_pnt + *edir * plen;
   normal = *pnt - newp;
 
-  if (vm_NormalizeVector(&normal) >= rad) {
+  if (vm_NormalizeVector(normal) >= rad) {
     return false;
   }
 
@@ -1308,9 +1308,9 @@ bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vec
   vector3 inte[4];
 
   mvec3d = *p1 - *p0;
-  vector_len3d = vm_NormalizeVector(&mvec3d);
+  vector_len3d = vm_NormalizeVector(mvec3d);
 
-  edge_len = vm_NormalizeVector(&edgevec);
+  edge_len = vm_NormalizeVector(edgevec);
 
   vector3 init_normal;
   bool f_init_collide;
@@ -1323,14 +1323,14 @@ bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vec
 
     po0.z() = po1.z() = 0.0f;
     mvec = po1 - po0;
-    vector_len = vm_NormalizeVector(&mvec);
+    vector_len = vm_NormalizeVector(mvec);
 
     dist = -(vm_Dot3Product(mvec,po0));
 
     closest_pnt = po0 + dist * mvec;
     //	Q_ASSERT(!(closest_pnt.x == 0.0 && closest_pnt.y == 0.0 && closest_pnt.z == 0)); -- why does this matter?
 
-    dist_from_origin = vm_GetMagnitude(&closest_pnt);
+    dist_from_origin = vm_GetMagnitude(closest_pnt);
     if (dist_from_origin >= rad)
       return false;
 
@@ -1376,7 +1376,7 @@ bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vec
       valid_hit = 1;
       // mprintf(0, "Sphere %f,%f,%f to %f,%f, %f\n", XYZ(p0), XYZ(p1));
       d_vec = *ep1 - ivertex[2];
-      vm_NormalizeVector(&d_vec);
+      vm_NormalizeVector(d_vec);
       inte[2] = ivertex[2] + rad * (d_vec);
     } else {
       valid_t[2] = 0;
@@ -1386,7 +1386,7 @@ bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vec
       valid_t[3] = 1;
       valid_hit = 1;
       d_vec = *ep1 - ivertex[3];
-      vm_NormalizeVector(&d_vec);
+      vm_NormalizeVector(d_vec);
       inte[3] = ivertex[3] + rad * (d_vec);
     } else {
       valid_t[3] = 0;
@@ -1411,7 +1411,7 @@ bool check_vector_to_cylinder(vector3 *colp, vector3 *intp, float *col_dist, vec
     *col_dist = cole_dist[best_hit_index];
 
     *wall_norm = *intp - *colp;
-    vm_NormalizeVector(wall_norm);
+    vm_NormalizeVector(*wall_norm);
 
     // mprintf(0, "We hit at %f,%f,%f \nwith %f,%f,%f on face\n", XYZ(intp), XYZ(colp));
 
@@ -1441,9 +1441,9 @@ float rad, vector3 *ep0, vector3 *ep1)
         vector3 init_normal;
         bool f_hit = false;
         vector3 mdir = *p1 - *p0;
-        float mlen = vm_NormalizeVector(&mdir);
+        float mlen = vm_NormalizeVector(mdir);
         vector3 edir = *ep1 - *ep0;
-        float elen = vm_NormalizeVector(&edir);
+        float elen = vm_NormalizeVector(edir);
         bool f_init_collide;
 
         float cdist; // Closest dist
@@ -1451,7 +1451,7 @@ float rad, vector3 *ep0, vector3 *ep1)
         vector3 perp = (mdir ^ edir);        // Determines the normalized perp to both lines
         if(perp == vector3{})
                 goto check_ends;  // We are moving parallal to the cylinder (only end collisions are possible)
-        pmag = vm_NormalizeVector(&perp);
+        pmag = vm_NormalizeVector(perp);
 
         Q_ASSERT(pmag != 0.0f);
 
@@ -1467,7 +1467,7 @@ float rad, vector3 *ep0, vector3 *ep1)
                 t = (((brbc) ^ edir) * perp)/pmag;
 
                 vector3 o = perp ^ edir;
-                vm_NormalizeVector(&o);
+                vm_NormalizeVector(o);
 
                 s = fabs(sqrt(rad * rad - pmag * pmag)/(mdir * o));
 
@@ -1483,7 +1483,7 @@ float rad, vector3 *ep0, vector3 *ep1)
                 {
                         vector3 hb = cyl_pnt[i] - *ep0;
                         cyl_norm[i] = (hb - (hb * edir) * edir)/rad;
-                        vm_NormalizeVector(&cyl_norm[i]); // Accounts for fp round off. - probably not necessary
+                        vm_NormalizeVector(cyl_norm[i]); // Accounts for fp round off. - probably not necessary
                 }
 
                 bool f_valid[2];
@@ -1522,7 +1522,7 @@ float rad, vector3 *ep0, vector3 *ep1)
                         if(f_valid[i])
                         {
                                 // Determine the collision distance
-                                float new_dist = vm_VectorDistance(p0, &cyl_pnt[i]);
+                                float new_dist = vm_VectorDistance(p0, cyl_pnt[i]);
 
                                 *col_dist = new_dist;
                                 *wall_norm = cyl_norm[i];
@@ -1606,7 +1606,7 @@ bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3
   // If we are inside edgemask is 0, we hit the face.
   if (edgemask == 0) {
     //		mprintf(0, "CSTF Hit Face\n");
-    *col_dist = vm_VectorDistance(p0, intp);
+    *col_dist = vm_VectorDistance(*p0, *intp);
     *wall_norm = *face_normal;
     return true;
   } else {
@@ -1643,7 +1643,7 @@ bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3
     return f_hit != 0;
   } /*	checkvec = *p0 - *v0;
            edgevec = *v1 - *v0;
-           edgelen = vm_NormalizeVector(&edgevec);
+           edgelen = vm_NormalizeVector(edgevec);
 
            cur_dist = edgevec * checkvec;
 
@@ -1658,7 +1658,7 @@ bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3
 //			mprintf(0, "Hit edge\n");
 
                    *wall_norm = *intp - closest_point;
-                   vm_NormalizeVector(wall_norm);
+                   vm_NormalizeVector(*wall_norm);
                    *colp = *intp + (-rad) * *wall_norm;
 
                    return IT_EDGE;
@@ -1672,7 +1672,7 @@ bool check_sphere_to_face(vector3 *colp, vector3 *intp, float *col_dist, vector3
 //		mprintf(0, "Hit point\n");
 
            *wall_norm = *intp - closest_point;
-           vm_NormalizeVector(wall_norm);
+           vm_NormalizeVector(*wall_norm);
            *colp = *intp + (-rad) * *wall_norm;
 
            return IT_POINT;
@@ -1733,11 +1733,11 @@ bool check_line_to_line(scalar *t1, scalar *t2, vector3 *p1, vector3 *v1, vector
     return false; // lines are parallel
 
   det.uvec = *v2;
-  d = calc_det_value(&det);
+  d = calc_det_value(det);
   *t1 = d / cross_mag2;
 
   det.uvec = *v1;
-  d = calc_det_value(&det);
+  d = calc_det_value(det);
   *t2 = d / cross_mag2;
 
   return true; // found point
@@ -2714,7 +2714,7 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
   hit_data->hit_object[0] = -1;
 
   hit_data->n_rooms = 0;
-  fvi_collision_dist = vm_VectorDistance(fq->p0, fq->p1) + 0.0000001f;
+  fvi_collision_dist = vm_VectorDistance(*fq->p0, *fq->p1) + 0.0000001f;
 
   // Computes a axis-aligned bounding-box that encompasses the area
   compute_movement_AABB();
@@ -2736,12 +2736,12 @@ fvi_hit_type fvi_FindIntersection(fvi_query *fq, fvi_info *hit_data, bool no_sub
       vector3 new_p1;
 
       // Number of whole subdivisions
-      int num_subdivisions = vm_VectorDistance(fq->p0, fq->p1) / MIN_LONG_RAY;
+      int num_subdivisions = vm_VectorDistance(*fq->p0, *fq->p1) / MIN_LONG_RAY;
       vector3 sub_dir;                    // Direction and magnitude of each subdivision
       fvi_hit_type s_hit_type = fvi_hit_type::none; // Sub-divided hit type
 
       sub_dir = *fq->p1 - *fq->p0;  // Direction of movement
-      vm_NormalizeVector(&sub_dir); // Normalize it
+      vm_NormalizeVector(sub_dir); // Normalize it
       sub_dir *= MIN_LONG_RAY;      // Scale it to the length of a sub-division
 
       // Determine the first sub-division
@@ -3154,7 +3154,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
 
         if(num_int_poly || num_int_box)
         {
-                vm_MakeZero(collision_point);
+                vm_MakeZero(*collision_point);
 
                 for(i = 0; i < num_int_poly; i++)
                 {
@@ -3184,14 +3184,14 @@ vector3 PointSpeed(object *obj, vector3 *pos, matrix *orient, vector3 *rotvel, v
 
   matrix o_t1 = *orient;
 
-  vm_TransposeMatrix(&o_t1);
+  vm_TransposeMatrix(o_t1);
   vector3 cmp1 = *rotvel * o_t1;
   ConvertEulerToAxisAmount(&cmp1, &n1, &temp1);
 
   n1 *= temp1;
 
   if (temp1 != 0.0f) {
-    vm_CrossProduct(&w1, &n1, &r1);
+    vm_CrossProduct(w1, n1, r1);
   } else {
     w1 = vector3{};
   }
@@ -3278,7 +3278,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
   }
 
   if (num_int_box) {
-    vm_MakeZero(collision_point);
+    vm_MakeZero(*collision_point);
 
     for (i = 0; i < num_int_box; i++) {
       *collision_point += int_points_box[i];
@@ -3450,7 +3450,7 @@ void check_hit_obj(int objnum) {
 
                 //									pos = obj->pos +
                 // obj->anim_sphere_offset; 									dist =
-                // vm_VectorDistance(&pos, &fvi_anim_sphere_p0);
+                // vm_VectorDistance(pos, fvi_anim_sphere_p0);
                 // size = Poly_models[obj->rtype.pobj_info().model_num].anim_size;
 
                 //									if((dist <= size +
@@ -3692,8 +3692,7 @@ void DoLinearApprox(vector3 *collision_point, vector3 *collision_normal, float *
         *hit_interval /= 2.0f;
         end_pos = *p0 + ((*hit_interval + *hit_dist)* *movement_dir);
 
-        float frametime = fvi_query_ptr->frametime * ((*hit_interval + *hit_dist)/vm_VectorDistance(fvi_query_ptr->p0,
-fvi_query_ptr->p1)); matrix orient = *fvi_query_ptr->o_orient; vector3 rotvel = *fvi_query_ptr->o_rotvel; vector3 rotforce
+        float frametime = fvi_query_ptr->frametime * ((*hit_interval + *hit_dist)/vm_VectorDistance(fvi_query_ptr->p0, fvi_query_ptr->p1)); matrix orient = *fvi_query_ptr->o_orient; vector3 rotvel = *fvi_query_ptr->o_rotvel; vector3 rotforce
 = *fvi_query_ptr->o_rotthrust; angle turnroll = *fvi_query_ptr->o_turnroll;
         //vector3 thrust = *fvi_query_ptr->o_thrust;
         vector3 velocity = *fvi_query_ptr->o_velocity;
@@ -3717,7 +3716,7 @@ fvi_query_ptr->p1)); matrix orient = *fvi_query_ptr->o_orient; vector3 rotvel = 
         moved_vec_n = end_pos - *p0;
         if(moved_vec_n != vector3{})
         {
-                actual_dist = vm_NormalizeVector(&moved_vec_n);
+                actual_dist = vm_NormalizeVector(moved_vec_n);
         }
         else
         {
@@ -3956,7 +3955,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
                                        &face_normal, fvi_query_ptr->o_orient, fvi_query_ptr->o_rotvel,
                                        fvi_query_ptr->o_velocity)) {
               movement_dir = fvi_hit_data_ptr->hit_pnt - *fvi_query_ptr->p0;
-              hit_interval = vm_NormalizeVector(&movement_dir);
+              hit_interval = vm_NormalizeVector(movement_dir);
 
               DoLinearApprox(&fvi_hit_data_ptr->hit_face_pnt[0], &fvi_hit_data_ptr->hit_wallnorm[0], &hit_dist,
                              &hit_interval, &movement_dir, fvi_query_ptr->p0, &Objects[fvi_query_ptr->thisobjnum], 3,
@@ -4195,7 +4194,7 @@ fvi_hit_type do_fvi_terrain() {
     }
 
     fvi_hit_data_ptr->hit_pnt = *fvi_query_ptr->p0 + delta * movement;
-    fvi_collision_dist = vm_VectorDistance(&fvi_hit_data_ptr->hit_pnt, fvi_query_ptr->p0);
+    fvi_collision_dist = vm_VectorDistance(fvi_hit_data_ptr->hit_pnt, *fvi_query_ptr->p0);
 
     fvi_hit_data_ptr->hit_room = GetTerrainRoomFromPos(fvi_hit_data_ptr->hit_pnt).value_or(-1);
 
@@ -4749,7 +4748,7 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
                           new_normal += col_normal[i];
                   }
 
-                  len = vm_NormalizeVector(&new_normal);
+                  len = vm_NormalizeVector(new_normal);
 
                   if(len == 0.0f)
                   {

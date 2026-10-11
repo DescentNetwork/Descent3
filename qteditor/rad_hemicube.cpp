@@ -278,11 +278,11 @@ void SetElementView(rad_element *ep) {
 
   do // Get valid u-axis vector
   {
-    vm_CrossProduct(&u, &n, &rv);
-  } while (vm_GetMagnitude(&u) < 0.0001f);
+    vm_CrossProduct(u, n, rv);
+  } while (vm_GetMagnitude(u) < 0.0001f);
 
-  vm_NormalizeVector(&u);
-  vm_CrossProduct(&v, &u, &n); // Determine v-axis
+  vm_NormalizeVector(u);
+  vm_CrossProduct(v, u, n); // Determine v-axis
 
   rad_Hemicube.head_matrix.rvec = u;
   rad_Hemicube.head_matrix.uvec = v;
@@ -306,11 +306,11 @@ void SetSurfaceView(rad_surface *surf) {
 
   do // Get valid u-axis vector
   {
-    vm_CrossProduct(&u, &n, &rv);
-  } while (vm_GetMagnitude(&u) < 0.0001f);
+    vm_CrossProduct(u, n, rv);
+  } while (vm_GetMagnitude(u) < 0.0001f);
 
-  vm_NormalizeVector(&u);
-  vm_CrossProduct(&v, &u, &n); // Determine v-axis
+  vm_NormalizeVector(u);
+  vm_CrossProduct(v, u, n); // Determine v-axis
 
   rad_Hemicube.head_matrix.rvec = u;
   rad_Hemicube.head_matrix.uvec = v;

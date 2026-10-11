@@ -913,10 +913,10 @@ bool pointInsideFace(const room *rp, int faceIndex, const vector3 &pnt) {
 
 // Parametric t in [0,1] where the segment crosses the face plane.
 bool facePlaneIntersect(const vector3 &p0, const vector3 &seg, const vector3 &v0, const vector3 &normal, float &tOut) {
-  const float denom = vm_DotProduct(&normal, &seg);
+  const float denom = vm_DotProduct(normal, seg);
   if (std::fabs(denom) < 1e-6f)
     return false;
-  const float t = (vm_DotProduct(&normal, &v0) - vm_DotProduct(&normal, &p0)) / denom;
+  const float t = (vm_DotProduct(normal, v0) - vm_DotProduct(normal, p0)) / denom;
   if (!(t > 0.0f) || !(t < 1.0f))
     return false;
   tOut = t;
@@ -931,7 +931,7 @@ bool pointInsideRoom(const room *rp, const vector3 &pnt) {
     if (fp->num_verts < 3)
       continue;
     const vector3 rel = pnt - rp->verts[fp->face_verts[0]];
-    if (vm_DotProduct(&fp->normal, &rel) > 0.0f)
+    if (vm_DotProduct(fp->normal, rel) > 0.0f)
       return false;
   }
   return true;
@@ -948,7 +948,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *ans, bool no_subdivision) {
   const vector3 p0 = *fq->p0;
   const vector3 p1 = *fq->p1;
   const vector3 seg = p1 - p0;
-  const float segLen = vm_GetMagnitude(&seg);
+  const float segLen = vm_GetMagnitude(seg);
 
   if (fq->startroom < 0 || fq->startroom >= Rooms.size()) {
     // Starting outside the mine: treat as a free move, but report the room the

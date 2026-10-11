@@ -65,7 +65,7 @@ struct spec_vertex {
 
 #define POINT_TO_POINT_EPSILON 0.1f
 
-bool PointsAreSame(vector3 *v0, vector3 *v1) { return vm_VectorDistance(v0, v1) < POINT_TO_POINT_EPSILON; }
+bool PointsAreSame(vector3 *v0, vector3 *v1) { return vm_VectorDistance(*v0, *v1) < POINT_TO_POINT_EPSILON; }
 
 int AllowCombining = 1;
 
@@ -367,7 +367,7 @@ void CheckCombinePortals(int terrain) {
       if (GameTextures[face_a->tmap].flags.breakable)
         continue;
 
-      float dist_a = vm_DotProduct(&rp->verts[face_a->face_verts[0]], &face_a->normal);
+      float dist_a = vm_DotProduct(rp->verts[face_a->face_verts[0]], face_a->normal);
 
       for (int k = 0; k < rp->num_portals; k++) {
         portal *portal_b = &rp->portals[k];
@@ -392,14 +392,14 @@ void CheckCombinePortals(int terrain) {
           continue;
 
         /*// Check to see if they share a normal
-        float dp=vm_DotProduct (&face_a->normal,&face_b->normal);
+        float dp=vm_DotProduct (face_a->normal, face_b->normal);
 
         if (dp < 0.95f)
                 continue;
 
 
         // Check to see if the distances are same
-        float dist_b=vm_DotProduct (&rp->verts[face_b->face_verts[0]],&face_b->normal);
+        float dist_b=vm_DotProduct (rp->verts[face_b->face_verts[0]], face_b->normal);
 
         if (fabs(dist_b-dist_a)> 0.5f)
                 continue;
@@ -1062,7 +1062,7 @@ void DoRadiosityForRooms() {
     Light_surfaces[surface_index].xresolution = 1;
     Light_surfaces[surface_index].yresolution = 1;
 
-    vm_MakeZero(&Light_surfaces[surface_index].normal);
+    vm_MakeZero(Light_surfaces[surface_index].normal);
 
     Light_surfaces[surface_index].verts[0] = Terrain_sky.satellite_vectors[i];
     Light_surfaces[surface_index].verts[1] = Terrain_sky.satellite_vectors[i];
@@ -1398,15 +1398,15 @@ void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf) {
   // Make the transformation matrix
 
   angvec avec;
-  vm_ExtractAnglesFromMatrix(&avec, &face_matrix);
-  vm_AnglesToMatrix(&trans_matrix, avec.p(), avec.h(), avec.b());
+  vm_ExtractAnglesFromMatrix(avec, face_matrix);
+  vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b());
 
   // Rotate all the points
   for (i = 0; i < Rooms[roomnum].faces[facenum].num_verts; i++) {
     vert = Rooms[roomnum].verts[Rooms[roomnum].faces[facenum].face_verts[i]];
 
     vert -= avg_vert;
-    vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
+    vm_MatrixMulVector(rot_vert, vert, trans_matrix);
 
     verts[i] = rot_vert;
   }
@@ -1415,17 +1415,17 @@ void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf) {
   vector3 base_vector;
   vector3 xdiff, ydiff;
 
-  vm_MakeZero(&xdiff);
-  vm_MakeZero(&ydiff);
+  vm_MakeZero(xdiff);
+  vm_MakeZero(ydiff);
 
   // Rotate our upper left point into our 2d space
   vert = LightmapInfo[lmi_handle].upper_left - avg_vert;
-  vm_MatrixMulVector(&base_vector, &vert, &trans_matrix);
+  vm_MatrixMulVector(base_vector, vert, trans_matrix);
 
   xdiff.x() = LightmapInfo[lmi_handle].xspacing;
   ydiff.y() = LightmapInfo[lmi_handle].yspacing;
 
-  vm_TransposeMatrix(&trans_matrix);
+  vm_TransposeMatrix(trans_matrix);
 
   for (i = 0; i < yres; i++) {
     for (t = 0; t < xres; t++) {
@@ -1442,7 +1442,7 @@ void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf) {
       ClipSurfaceElement(verts, ep, clip_verts, Rooms[roomnum].faces[facenum].num_verts);
 
       for (int k = 0; k < ep->num_verts; k++) {
-        vm_MatrixMulVector(&rot_vert, &ep->verts[k], &trans_matrix);
+        vm_MatrixMulVector(rot_vert, ep->verts[k], trans_matrix);
         ep->verts[k] = rot_vert + avg_vert;
       }
     }
@@ -1455,7 +1455,7 @@ void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf) {
     surf->verts[3] = base_vector - (ydiff * yres);
 
     for (int k = 0; k < 4; k++) {
-      vm_MatrixMulVector(&rot_vert, &surf->verts[k], &trans_matrix);
+      vm_MatrixMulVector(rot_vert, surf->verts[k], trans_matrix);
       surf->verts[k] = rot_vert + avg_vert;
     }
     surf->num_verts = 4;
@@ -1670,7 +1670,7 @@ int ShootRayForTerrainLight(vector3 *src, vector3 *dest, int cellnum) {
     float ydiff;
     vector3 ray = temp_dest - *src;
 
-    mag = vm_GetMagnitude(&ray);
+    mag = vm_GetMagnitude(ray);
     ray /= mag;
 
     ydiff = ((MAX_TERRAIN_HEIGHT * 3) - src->y()) / ray.y();
@@ -1951,7 +1951,7 @@ void DoRadiosityForTerrain() {
     Light_surfaces[surf_index].xresolution = 1;
     Light_surfaces[surf_index].yresolution = 1;
 
-    vm_MakeZero(&Light_surfaces[surf_index].normal);
+    vm_MakeZero(Light_surfaces[surf_index].normal);
 
     Light_surfaces[surf_index].verts[0] = Terrain_sky.satellite_vectors[i];
     Light_surfaces[surf_index].verts[1] = Terrain_sky.satellite_vectors[i];
@@ -2220,13 +2220,13 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
 
                                 vector3 normal;
 
-                                vm_GetNormalizedDir (&normal,&Terrain_sky.satellite_vectors[j],&pos1);
-                                light1=answer1*(vm_DotProduct (&normal,&tnorm1));
+                                vm_GetNormalizedDir (normal, Terrain_sky.satellite_vectors[j], pos1);
+                                light1=answer1*(vm_DotProduct (normal, tnorm1));
                                 if (light1<0)
                                         light1=0;
 
-                                vm_GetNormalizedDir (&normal,&Terrain_sky.satellite_vectors[j],&pos2);
-                                light2=answer2*(vm_DotProduct (&normal,&tnorm2));
+                                vm_GetNormalizedDir (normal, Terrain_sky.satellite_vectors[j], pos2);
+                                light2=answer2*(vm_DotProduct (normal, tnorm2));
                                 if (light2<0)
                                         light2=0;
 
@@ -2313,7 +2313,7 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
   int lmi_handle;
 
   // find the center point of this face
-  vm_MakeZero(&avg_vert);
+  vm_MakeZero(avg_vert);
   for (i = 0; i < nv; i++)
     avg_vert += lightmap_poly[i];
 
@@ -2327,15 +2327,15 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
   // Make the transformation matrix
 
   angvec avec;
-  vm_ExtractAnglesFromMatrix(&avec, &face_matrix);
-  vm_AnglesToMatrix(&trans_matrix, avec.p(), avec.h(), avec.b());
+  vm_ExtractAnglesFromMatrix(avec, face_matrix);
+  vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b());
 
   // Rotate all the points
   for (i = 0; i < nv; i++) {
     vector3 vert = lightmap_poly[i];
 
     vert -= avg_vert;
-    vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
+    vm_MatrixMulVector(rot_vert, vert, trans_matrix);
 
     verts[i] = rot_vert;
   }
@@ -2496,7 +2496,7 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
       vector3 vert = rp->verts[fp->face_verts[t]];
 
       vert -= avg_vert;
-      vm_MatrixMulVector(&rot_vert, &vert, &trans_matrix);
+      vm_MatrixMulVector(rot_vert, vert, trans_matrix);
 
       facevert = rot_vert;
 
@@ -2515,8 +2515,8 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
   }
 
   // Find upper left corner
-  vm_TransposeMatrix(&trans_matrix);
-  vm_MatrixMulVector(&rot_vert, &base_vector, &trans_matrix);
+  vm_TransposeMatrix(trans_matrix);
+  vm_MatrixMulVector(rot_vert, base_vector, trans_matrix);
   LightmapInfo[lmi_handle].upper_left = rot_vert + avg_vert;
 
   LightmapInfo[lmi_handle].xspacing = xspace_int;
@@ -2539,7 +2539,7 @@ int CombineLightFaces( vector3 *dest_verts,vector3 *averts, int nva, vector3 *no
         vector3 va;
         float dp;
 
-        dp=vm_DotProduct (normb,norma);
+        dp=vm_DotProduct (normb, norma);
 
         if (dp < LM_ADJACENT_FACE_THRESHOLD)
                 return 0;
@@ -2662,7 +2662,7 @@ int CombineLightFaces(vector3 *dest_verts, vector3 *averts, int nva, vector3 *no
 
   float dp;
 
-  dp = vm_DotProduct(normb, norma);
+  dp = vm_DotProduct(*normb, *norma);
 
   if (dp < LM_ADJACENT_FACE_THRESHOLD)
     return 0;
@@ -3022,7 +3022,7 @@ void CreateNormalMapForFace (int roomnum,face *fp)
 
         for (i=0;i<fp->num_verts;i++)
         {
-                vm_MatrixMulVector (&vertnorms[i],&sfp->vertnorms[i],&facematrix);
+                vm_MatrixMulVector (vertnorms[i], sfp->vertnorms[i], facematrix);
                 spec_verts[i].x=fp->face_uvls[i].u2;
                 spec_verts[i].y=fp->face_uvls[i].v2;
         }
@@ -3234,7 +3234,7 @@ void SetupSpecularLighting(int external) {
       for (t = 0; t < rp->num_verts; t++) {
         int total = 0;
         vector3 normal;
-        vm_MakeZero(&normal);
+        vm_MakeZero(normal);
 
         for (int k = 0; k < rp->num_faces; k++) {
           face *fp = &rp->faces[k];
@@ -3274,7 +3274,7 @@ void SetupSpecularLighting(int external) {
 
           for (int k = 0; k < 4; k++) {
             SpecialFaces[n].spec_instance[k].bright_color = 0;
-            vm_MakeZero(&SpecialFaces[n].spec_instance[k].bright_center);
+            vm_MakeZero(SpecialFaces[n].spec_instance[k].bright_center);
           }
 
           // Get vertex normals for this punk
