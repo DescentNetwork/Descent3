@@ -295,13 +295,13 @@ void PostUpdateAllLightGlows();
 void ResetLightGlows();
 
 // Gets the dynamic light value for this position
-void GetRoomDynamicScalar(vector3 *pos, int roomnum, float *r, float *g, float *b);
+void GetRoomDynamicScalar(const vector3 &pos, int roomnum, float &r, float &g, float &b);
 
 // Sorts our texture states using the quicksort algorithm
 void SortStates(state_limited_element *state_array, int cellcount);
 
 // Sets up fog if this room is fogged
-void SetupRoomFog(int roomnum, vector3 *eye, matrix *orient, int viewer_room);
+void SetupRoomFog(int roomnum, const vector3 &eye, const matrix &orient, int viewer_room);
 
 // Draw the specified face
 // Parameters:	roomnum - index of the room the face is un

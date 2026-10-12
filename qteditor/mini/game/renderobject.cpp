@@ -1124,9 +1124,9 @@ bool SetupMineObject(object& obj) {
       if (obj.effect_info->type_flags.volume_changing) {
         float old_r, old_g, old_b;
         float new_r, new_g, new_b;
-        GetRoomDynamicScalar(&obj.effect_info->volume_old_pos, obj.effect_info->volume_old_room, &old_r, &old_g,
-                             &old_b);
-        GetRoomDynamicScalar(&vpos, static_cast<int>(*obj.roomnum), &new_r, &new_g, &new_b);
+        GetRoomDynamicScalar(obj.effect_info->volume_old_pos, obj.effect_info->volume_old_room, old_r, old_g,
+                             old_b);
+        GetRoomDynamicScalar(vpos, static_cast<int>(*obj.roomnum), new_r, new_g, new_b);
         scalar_r =
             (old_r * obj.effect_info->volume_change_time) + ((1 - obj.effect_info->volume_change_time) * new_r);
         scalar_g =
@@ -1134,7 +1134,7 @@ bool SetupMineObject(object& obj) {
         scalar_b =
             (old_b * obj.effect_info->volume_change_time) + ((1 - obj.effect_info->volume_change_time) * new_b);
       } else
-        GetRoomDynamicScalar(&vpos, static_cast<int>(*obj.roomnum), &scalar_r, &scalar_g, &scalar_b);
+        GetRoomDynamicScalar(vpos, static_cast<int>(*obj.roomnum), scalar_r, scalar_g, scalar_b);
 
       scalar_r = std::min<float>(1, scalar_r + (obj.effect_info->dynamic_red));
       scalar_g = std::min<float>(1, scalar_g + (obj.effect_info->dynamic_green));
