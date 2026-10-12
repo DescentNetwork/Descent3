@@ -637,22 +637,22 @@ vector3 RenderObject_LightDirection;
 float Last_powerup_sparkle_time = 0.0f;
 bool Render_powerup_sparkles = false;
 // Do powerup sparkles and stuff
-void DrawPowerupSparkles(object *obj);
+void DrawPowerupSparkles(object &obj);
 
 // Draws the glowing disk around a powerup
-void DrawPowerupGlowDisk(object *obj);
+void DrawPowerupGlowDisk(object &obj);
 // Draws a damage disk around a powerup
 void DrawPlayerDamageDisk(object *obj);
 void DrawPlayerInvulSphere(object *obj);
-void DrawPlayerSightVector(object *obj);
+void DrawPlayerSightVector(object &obj);
 // Draws this players name on the hud
 void DrawPlayerNameOnHud(object *obj);
 // Draws a rotating ball around the player
 void DrawPlayerRotatingBall(object *obj);
 // Creates lightning sparks on a damaged object
-void DrawSparkyDamageLightning(object *obj);
+void DrawSparkyDamageLightning(object &obj);
 // Creates Virus infected lightning on an object
-void DrawVirusLightning(object *obj);
+void DrawVirusLightning(object &obj);
 
 #ifdef EDITOR
 // Draws the little corner brackets around the selected object
@@ -761,16 +761,16 @@ static void DrawNumber(int num, vector3 pos, float size, ddgr_color c1) {
     }
   }
 }
-static inline bool object_object_AABB(object *obj1, object *obj2) {
+static inline bool object_object_AABB(const object &obj1, const object &obj2) {
   bool overlap = true;
-  if (obj1->max_xyz.x() < obj2->min_xyz.x() || obj2->max_xyz.x() < obj1->min_xyz.x() || obj1->max_xyz.z() < obj2->min_xyz.z() ||
-      obj2->max_xyz.z() < obj1->min_xyz.z() || obj1->max_xyz.y() < obj2->min_xyz.y() || obj2->max_xyz.y() < obj1->min_xyz.y())
+  if (obj1.max_xyz.x() < obj2.min_xyz.x() || obj2.max_xyz.x() < obj1.min_xyz.x() || obj1.max_xyz.z() < obj2.min_xyz.z() ||
+      obj2.max_xyz.z() < obj1.min_xyz.z() || obj1.max_xyz.y() < obj2.min_xyz.y() || obj2.max_xyz.y() < obj1.min_xyz.y())
     overlap = false;
 
   return overlap;
 }
 // Given a face, computes the upper left corner of the face
-void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, float *xdiff, float *ydiff, vector3 *center) {
+void ComputeDebugVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff, vector3 &center) {
   room *rp = &Rooms[roomnum];
   matrix face_matrix, trans_matrix;
   vector3 fvec;
@@ -781,12 +781,12 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, fl
 
   // find the center point of this face
   vm_MakeZero(avg_vert);
-  for (i = 0; i < fp->num_verts; i++)
-    avg_vert += rp->verts[fp->face_verts[i]];
-  avg_vert /= fp->num_verts;
+  for (i = 0; i < fp.num_verts; i++)
+    avg_vert += rp->verts[fp.face_verts[i]];
+  avg_vert /= fp.num_verts;
   // Make the orientation matrix
   // Reverse the normal because we're looking "at" the face, not from it
-  fvec = -fp->normal;
+  fvec = -fp.normal;
 
   vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
   // Make the transformation matrix
@@ -796,8 +796,8 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, fl
   vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b());
 
   // Rotate all the points
-  for (i = 0; i < fp->num_verts; i++) {
-    vector3 vert = rp->verts[fp->face_verts[i]];
+  for (i = 0; i < fp.num_verts; i++) {
+    vector3 vert = rp->verts[fp.face_verts[i]];
 
     vert -= avg_vert;
     vm_MatrixMulVector(rot_vert, vert, trans_matrix);
@@ -806,7 +806,7 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, fl
   // Find left most point
   int leftmost_point = -1;
   float leftmost_x = 900000.00f; // a big number
-  for (i = 0; i < fp->num_verts; i++) {
+  for (i = 0; i < fp.num_verts; i++) {
     if (verts[i].x() < leftmost_x) {
       leftmost_point = i;
       leftmost_x = verts[i].x();
@@ -816,7 +816,7 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, fl
   // Find top most point
   int topmost_point = -1;
   float topmost_y = -900000.0f; // a big number
-  for (i = 0; i < fp->num_verts; i++) {
+  for (i = 0; i < fp.num_verts; i++) {
     if (verts[i].y() > topmost_y) {
       topmost_point = i;
       topmost_y = verts[i].y();
@@ -826,7 +826,7 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, fl
   // Find right most point
   int rightmost_point = -1;
   float rightmost_x = -900000.00f; // a big number
-  for (i = 0; i < fp->num_verts; i++) {
+  for (i = 0; i < fp.num_verts; i++) {
     if (verts[i].x() > rightmost_x) {
       rightmost_point = i;
       rightmost_x = verts[i].x();
@@ -836,7 +836,7 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, fl
   // Find bottom most point
   int bottommost_point = -1;
   float bottommost_y = 900000.0f; // a big number
-  for (i = 0; i < fp->num_verts; i++) {
+  for (i = 0; i < fp.num_verts; i++) {
     if (verts[i].y() < bottommost_y) {
       bottommost_point = i;
       bottommost_y = verts[i].y();
@@ -849,19 +849,19 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, fl
   base_vector.y() = verts[topmost_point].y();
   base_vector.z() = 0;
   // Figure out grid resolution
-  *xdiff = verts[rightmost_point].x() - verts[leftmost_point].x();
-  *ydiff = verts[topmost_point].y() - verts[bottommost_point].y();
+  xdiff = verts[rightmost_point].x() - verts[leftmost_point].x();
+  ydiff = verts[topmost_point].y() - verts[bottommost_point].y();
 
   // Find upper left corner
   vm_TransposeMatrix(trans_matrix);
   vm_MatrixMulVector(rot_vert, base_vector, trans_matrix);
-  *upper_left = rot_vert + avg_vert;
-  *center = avg_vert;
+  upper_left = rot_vert + avg_vert;
+  center = avg_vert;
 }
 
 #define VIS_TABLE_RESOLUTION 6
-void DrawRoomVisPnts(object *obj) {
-  int roomnum = obj->roomnum;
+void DrawRoomVisPnts(const object &obj) {
+  int roomnum = obj.roomnum;
   if ((!ROOMNUM_OUTSIDE(roomnum)) && (roomnum != -1) && (Rooms[roomnum].used)) {
     room *rp = &Rooms[roomnum];
     int t;
@@ -878,7 +878,7 @@ void DrawRoomVisPnts(object *obj) {
       }
       vector3 fvec = -src_fp->normal;
       vm_VectorToMatrix(src_matrix, fvec, std::nullopt, std::nullopt);
-      ComputeDebugVisFaceUpperLeft(roomnum, src_fp, &src_upper_left, &src_width, &src_height, &src_center);
+      ComputeDebugVisFaceUpperLeft(roomnum, *src_fp, src_upper_left, src_width, src_height, src_center);
 
       if (src_width > VIS_TABLE_RESOLUTION) {
         float num = src_width / VIS_TABLE_RESOLUTION;
@@ -918,21 +918,21 @@ void DrawRoomVisPnts(object *obj) {
     }
   }
 }
-void DrawDebugInfo(object *obj) {
+void DrawDebugInfo(const object &obj) {
   matrix m;
-  m = obj->orient;
+  m = obj.orient;
   vm_TransposeMatrix(m);
-  if (obj->type == object_type::room) {
-    DrawColoredDisk(&obj->pos, 0.0f, 0.0f, 1.0f, 0.1f, 0.7f, obj->size, 1);
+  if (obj.type == object_type::room) {
+    DrawColoredDisk(&obj.pos, 0.0f, 0.0f, 1.0f, 0.1f, 0.7f, obj.size, 1);
   } else {
     if (Game_show_sphere == 1) {
-      vector3 center = obj->pos + Poly_models[obj->rtype.pobj_info().model_num].wall_size_offset * m;
-      DrawColoredDisk(&center, 0.0f, 0.0f, 1.0f, 0.1f, 0.7f, Poly_models[obj->rtype.pobj_info().model_num].wall_size, 1);
+      vector3 center = obj.pos + Poly_models[obj.rtype.pobj_info().model_num].wall_size_offset * m;
+      DrawColoredDisk(&center, 0.0f, 0.0f, 1.0f, 0.1f, 0.7f, Poly_models[obj.rtype.pobj_info().model_num].wall_size, 1);
     } else if (Game_show_sphere == 2) {
-      vector3 center = obj->pos + Poly_models[obj->rtype.pobj_info().model_num].anim_size_offset * m;
-      DrawColoredDisk(&center, 0.0f, 0.1f, 0.9f, 0.1f, 0.7f, Poly_models[obj->rtype.pobj_info().model_num].anim_size, 1);
+      vector3 center = obj.pos + Poly_models[obj.rtype.pobj_info().model_num].anim_size_offset * m;
+      DrawColoredDisk(&center, 0.0f, 0.1f, 0.9f, 0.1f, 0.7f, Poly_models[obj.rtype.pobj_info().model_num].anim_size, 1);
     } else if (Game_show_sphere == 3) {
-      DrawColoredDisk(&obj->pos, 0.1f, 0.2f, 0.9f, 0.1f, 0.7f, obj->size, 1);
+      DrawColoredDisk(&obj.pos, 0.1f, 0.2f, 0.9f, 0.1f, 0.7f, obj.size, 1);
     }
   }
   g3Point g3p[8];
@@ -942,27 +942,27 @@ void DrawDebugInfo(object *obj) {
   // g3p[1].p3_vec = obj->rtype.line_info().end_pos;
 
   ddgr_color c1;
-  if (!object_object_AABB(obj, Player_object))
+  if (!object_object_AABB(obj, *Player_object))
     c1 = GR_RGB(255, 0, 0);
   else
     c1 = GR_RGB(255, 255, 255);
-  pos[0] = obj->max_xyz;
-  pos[1] = obj->max_xyz;
-  pos[1].z() = obj->min_xyz.z();
-  pos[2] = obj->min_xyz;
-  pos[2].y() = obj->max_xyz.y();
-  pos[3] = obj->max_xyz;
-  pos[3].x() = obj->min_xyz.x();
-  pos[4] = obj->max_xyz;
-  pos[4].y() = obj->min_xyz.y();
-  pos[5] = obj->min_xyz;
-  pos[5].x() = obj->max_xyz.x();
-  pos[6] = obj->min_xyz;
-  pos[7] = obj->min_xyz;
-  pos[7].z() = obj->max_xyz.z();
+  pos[0] = obj.max_xyz;
+  pos[1] = obj.max_xyz;
+  pos[1].z() = obj.min_xyz.z();
+  pos[2] = obj.min_xyz;
+  pos[2].y() = obj.max_xyz.y();
+  pos[3] = obj.max_xyz;
+  pos[3].x() = obj.min_xyz.x();
+  pos[4] = obj.max_xyz;
+  pos[4].y() = obj.min_xyz.y();
+  pos[5] = obj.min_xyz;
+  pos[5].x() = obj.max_xyz.x();
+  pos[6] = obj.min_xyz;
+  pos[7] = obj.min_xyz;
+  pos[7].z() = obj.max_xyz.z();
 
-  pos[8] = obj->pos;
-  pos[8].y() += 0.8f * obj->size;
+  pos[8] = obj.pos;
+  pos[8].y() += 0.8f * obj.size;
   g3_RotatePoint(&g3p[0], &pos[0]);
   g3_RotatePoint(&g3p[1], &pos[1]);
   g3_RotatePoint(&g3p[2], &pos[2]);
@@ -983,14 +983,14 @@ void DrawDebugInfo(object *obj) {
   g3_DrawLine(c1, g3p[5], g3p[6]);
   g3_DrawLine(c1, g3p[6], g3p[7]);
   g3_DrawLine(c1, g3p[7], g3p[4]);
-  DrawNumber(OBJNUM(obj), obj->pos, 1.0f, GR_RGB(255, 255, 255));
+  DrawNumber(OBJNUM(&obj), obj.pos, 1.0f, GR_RGB(255, 255, 255));
 
-  if (!obj->is_outside()) {
-    if (obj->roomnum != Player_object->roomnum)
+  if (!obj.is_outside()) {
+    if (obj.roomnum != Player_object->roomnum)
       c1 = GR_RGB(255, 0, 0);
     else
       c1 = GR_RGB(255, 255, 255);
-    DrawNumber(obj->roomnum, obj->max_xyz, 0.50f, c1);
+    DrawNumber(obj.roomnum, obj.max_xyz, 0.50f, c1);
   }
 }
 #endif
@@ -1051,7 +1051,7 @@ bool SetupTerrainObject(object& obj) {
 #endif
 
   obj.flags.safe_to_render = true;
-  RenderObject_SetLightDirection(&camlight);
+  RenderObject_SetLightDirection(camlight);
   rend_SetColorModel(color_model::mono);
   if (obj.render_type == render_type_e::polyobj ||
       (obj.render_type == render_type_e::weapon &&
@@ -1093,12 +1093,12 @@ bool SetupTerrainObject(object& obj) {
       RenderObject_SetStatic(scalar_r, scalar_g, scalar_b);
     else if (obj.lighting_render_type == lighting_render_type_e::gouraud || NoLightmaps) {
       vector3 lightdir = {0.0f, -1.0f, 0.0f}; // straight down for now
-      RenderObject_SetGouraud(&lightdir, scalar_r, scalar_g, scalar_b, scalar);
+      RenderObject_SetGouraud(lightdir, scalar_r, scalar_g, scalar_b, scalar);
     } else if (obj.lighting_render_type == lighting_render_type_e::lightmaps) {
       if (obj.lm_object.used == 0)
         RenderObject_SetStatic(scalar_r, scalar_g, scalar_b);
       else
-        RenderObject_SetLightmaps(&obj.lm_object);
+        RenderObject_SetLightmaps(obj.lm_object);
     }
   } else {
     RenderObject_SetStatic(1, 1, 1);
@@ -1152,17 +1152,17 @@ bool SetupMineObject(object& obj) {
         scalar_b = 1;
       }
     }
-    RenderObject_SetGouraud(&lightdir, scalar_r, scalar_g, scalar_b);
+    RenderObject_SetGouraud(lightdir, scalar_r, scalar_g, scalar_b);
   } else if (obj.lighting_render_type == lighting_render_type_e::lightmaps) {
     if (obj.lm_object.used == 0)
       RenderObject_SetStatic(1.0f, 1.0f, 1.0f);
     else
-      RenderObject_SetLightmaps(&obj.lm_object);
+      RenderObject_SetLightmaps(obj.lm_object);
   }
   return true;
 }
 
-bool GetLinearPosition(vector3 *points, float *times, int num_points, float t, vector3 *pos) {
+bool GetLinearPosition(vector3 *points, float *times, int num_points, float t, vector3 &pos) {
   // find between which points is the time
   int min_point;
   for (min_point = 0; min_point < num_points - 1; min_point++) {
@@ -1185,7 +1185,7 @@ bool GetLinearPosition(vector3 *points, float *times, int num_points, float t, v
   vm_NormalizeVector(vd);
   vd *= (mag * newt);
 
-  *pos = points[min_point] + vd;
+  pos = points[min_point] + vd;
   return true;
 }
 
@@ -1321,7 +1321,7 @@ void RenderObject(object& obj) {
         float curr_t = t_interval;
 
         for (i = 0; i < num_iterations; i++) {
-          if (!GetLinearPosition(positions, times, MAX_POSITION_HISTORY + 1, curr_t, &obj.pos))
+          if (!GetLinearPosition(positions, times, MAX_POSITION_HISTORY + 1, curr_t, obj.pos))
             break;
 
           rend_SetAlphaFactor(curr_alpha);
@@ -1353,8 +1353,8 @@ void RenderObject(object& obj) {
 
     // Render that powerup glow
     if (obj.type == object_type_e::powerup) {
-      DrawPowerupGlowDisk(&obj);
-      DrawPowerupSparkles(&obj);
+      DrawPowerupGlowDisk(obj);
+      DrawPowerupSparkles(obj);
     }
 #if 0
     if (obj.type == object_type::player) {
@@ -1366,8 +1366,8 @@ void RenderObject(object& obj) {
     }
 #endif
     if (obj.type == object_type_e::player || obj.type == object_type_e::robot || (obj.type == object_type_e::building && obj.ai_info)) {
-      DrawSparkyDamageLightning(&obj);
-      DrawVirusLightning(&obj);
+      DrawSparkyDamageLightning(obj);
+      DrawVirusLightning(obj);
     }
 
     break;
@@ -1379,7 +1379,7 @@ void RenderObject(object& obj) {
 
 #ifdef _DEBUG
     if (Game_show_sphere) {
-      DrawDebugInfo(&obj);
+      DrawDebugInfo(obj);
     }
 #endif
     break;
@@ -1448,8 +1448,8 @@ void RenderObject_SetStatic(float r, float g, float b) {
   RenderObjectStaticScalar = 1.0f;
 }
 // Sets the polygon render object type to gouraud (one lightval for each vertex)
-void RenderObject_SetGouraud(vector3 *dir, float r, float g, float b, float scalar) {
-  RenderObject_LightDirection = *dir;
+void RenderObject_SetGouraud(const vector3 &dir, float r, float g, float b, float scalar) {
+  RenderObject_LightDirection = dir;
   RenderObjectStaticRedValue = r;
   RenderObjectStaticGreenValue = g;
   RenderObjectStaticBlueValue = b;
@@ -1457,10 +1457,10 @@ void RenderObject_SetGouraud(vector3 *dir, float r, float g, float b, float scal
   RenderObjectType = RO_GOURAUD;
 }
 // Sets the object render to draw a polymodel with lightmaps applied
-void RenderObject_SetLightmaps(lightmap_object *lmobject) {
-  Q_ASSERT(lmobject->used);
+void RenderObject_SetLightmaps(lightmap_object &lmobject) {
+  Q_ASSERT(lmobject.used);
   RenderObjectType = RO_LIGHTMAPS;
-  RenderObjectLightmapObject = lmobject;
+  RenderObjectLightmapObject = &lmobject;
 }
 
 ddgr_color Player_colors[] = {
@@ -1722,9 +1722,9 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
 }
 // Sets the direction of the lightsource to be used when calculating vertex lighting
 // The light source vector should be in the models coordinate space
-void RenderObject_SetLightDirection(vector3 *dir) { RenderObject_LightDirection = *dir; }
+void RenderObject_SetLightDirection(const vector3 &dir) { RenderObject_LightDirection = dir; }
 // draw an object that has one bitmap & doesn't rotate
-void obj_draw_blob(object *obj, int bmnum) {
+void obj_draw_blob(object &obj, int bmnum) {
   //	int	orientation=0;
   //	grs_bitmap * bm = &GameBitmaps[bmnum];
   //
@@ -1749,17 +1749,16 @@ extern float Render_FOV;
 int Point_visible_last_frame = -1;
 // Given a position in 3space and a size, returns whether or not that sized point is
 // visible from the current view matrix
-int IsPointVisible(vector3 *pos, float size, float *pointz) {
+int IsPointVisible(const vector3 &pos, float size, float &pointz) {
   g3Point pnt;
   g3_clip_codes_t ccode;
   static float last_render_fov = -1;
   static vector3 left_normal, right_normal, top_normal, bottom_normal, view_position;
   static matrix unscaled_matrix;
 
-  g3_RotatePoint(pnt, *pos);
+  g3_RotatePoint(pnt, pos);
   ccode = clip_codes_from_byte(g3_CodePoint(pnt));
-  if (pointz != NULL)
-    *pointz = pnt.p3_z;
+  pointz = pnt.p3_z;
   if (clip_code_byte(ccode) != 0) // the center point is off, find out if the whole object is off
   {
     float dotp;
@@ -1791,7 +1790,7 @@ int IsPointVisible(vector3 *pos, float size, float *pointz) {
       g3_GetUnscaledMatrix(unscaled_matrix);
       g3_GetViewPosition(view_position);
     }
-    vector3 temp_vec = *pos - view_position;
+    vector3 temp_vec = pos - view_position;
     pnt.p3_vec = temp_vec * unscaled_matrix;
     if (ccode.off_right) {
       dotp = vm_DotProduct(right_normal, pnt.p3_vec);
@@ -1821,14 +1820,14 @@ int IsPointVisible(vector3 *pos, float size, float *pointz) {
 }
 
 // Do powerup sparkles and stuff
-void DrawPowerupSparkles(object *obj) {
+void DrawPowerupSparkles(object &obj) {
   // NOTE: body commented out -- depends on unported viseffect subsystem
   (void)obj;
 }
 
 #define POWERUP_HALO_ALPHA 0.3f
 // Draws the glowing disk around a powerup
-void DrawPowerupGlowDisk(object *obj) {
+void DrawPowerupGlowDisk(object &obj) {
   // NOTE: body commented out -- depends on unported lighting subsystem
   (void)obj;
 }
@@ -2090,18 +2089,18 @@ void DrawPlayerNameOnHud(object *obj) {
 #endif
 
 // Creates lightning sparks on a damaged object
-void DrawSparkyDamageLightning(object *obj) {
+void DrawSparkyDamageLightning(object &obj) {
   // NOTE: body commented out -- depends on unported viseffect subsystem
   (void)obj;
 }
 
 // Creates Virus infected lightning on an object
-void DrawVirusLightning(object *obj) {
+void DrawVirusLightning(object &obj) {
   // NOTE: body commented out -- depends on unported viseffect subsystem
   (void)obj;
 }
 
-void DrawPlayerSightVector(object *obj) {
+void DrawPlayerSightVector(object &obj) {
   // NOTE: body commented out -- depends on unported player/camera subsystem
   (void)obj;
 }

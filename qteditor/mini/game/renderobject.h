@@ -23,8 +23,8 @@
 #include "polymodel.h"
 
 #ifdef _DEBUG
-void DrawDebugInfo(object *obj);
-void DrawRoomVisPnts(object *obj);
+void DrawDebugInfo(const object &obj);
+void DrawRoomVisPnts(const object &obj);
 #endif
 
 //	Render an object.  Calls one of several routines based on type
@@ -34,10 +34,10 @@ void RenderObject(object& obj);
 void RenderObject_SetStatic(float r, float g, float b);
 
 // Sets the polygon render object type to gouraud
-void RenderObject_SetGouraud(vector3 *dir, float r, float g, float b, float scalar = 1.0f);
+void RenderObject_SetGouraud(const vector3 &dir, float r, float g, float b, float scalar = 1.0f);
 
 // Sets the object render to draw a polymodel with lightmaps applied
-void RenderObject_SetLightmaps(lightmap_object *lmobject);
+void RenderObject_SetLightmaps(lightmap_object &lmobject);
 
 // Actually draws a polygon model based on the light parameters set by the above
 // functions
@@ -45,11 +45,11 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times);
 
 // Sets the direction of the lightsource to be used when calculating vertex lighting
 // The light source vector should be in the models coordinate space
-void RenderObject_SetLightDirection(vector3 *dir);
+void RenderObject_SetLightDirection(const vector3 &dir);
 
 // Given a position in 3space and a size, returns whether or not that sized point is
 // visible from the current view matrix
-int IsPointVisible(vector3 *, float, float *pointz = NULL);
+int IsPointVisible(const vector3 &pos, float size, float &pointz);
 
 // Draws the 'typing message' icon indicator above an object
 void DrawPlayerTypingIndicator(object *obj);

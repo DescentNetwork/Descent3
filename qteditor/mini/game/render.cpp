@@ -3150,7 +3150,7 @@ void RenderRoomObjects(int roomnum) {
     if (obj->type == object_type_e::weapon && Weapons[obj->id].flags.streamer)
       size = Weapons[obj->id].phys_info.velocity.z();
     // Check if object is trivially rejected
-    bool isVisible = IsPointVisible(&obj->pos, size, &zdist) ? true : false;
+    bool isVisible = IsPointVisible(obj->pos, size, zdist) ? true : false;
     if (Render_mirror_for_room || (obj->type == object_type_e::weapon && Weapons[obj->id].flags.electrical) || isVisible) {
       obj_sort_list[n_objs].vis_effect = 0;
       obj_sort_list[n_objs].objnum = objnum;
@@ -3164,7 +3164,7 @@ void RenderRoomObjects(int roomnum) {
     if (VisEffects[visnum].type == VIS_NONE || VisEffects[visnum].flags.dead)
       continue;
 
-    bool pointIsVisible = IsPointVisible(&VisEffects[visnum].pos, VisEffects[visnum].size, &zdist) ? true : false;
+    bool pointIsVisible = IsPointVisible(VisEffects[visnum].pos, VisEffects[visnum].size, zdist) ? true : false;
     if (Render_mirror_for_room || pointIsVisible) {
       obj_sort_list[n_objs].vis_effect = 1;
       obj_sort_list[n_objs].objnum = visnum;
@@ -3294,7 +3294,7 @@ void CheckToRenderMineObjects(int roomnum) {
       if (Objects[index].type == object_type_e::weapon && (Weapons[Objects[index].id].flags.streamer))
         size = Weapons[Objects[index].id].phys_info.velocity.z();
       // Check if object is trivially rejected
-      int isVisible = IsPointVisible(&obj->pos, size, &zdist); // calculate zdist
+      int isVisible = IsPointVisible(obj->pos, size, zdist); // calculate zdist
       if ((obj->type == object_type_e::weapon && Weapons[obj->id].flags.electrical) || isVisible) {
         // Stuff objects into our postrender list (disabled: post-render system not ported)
         // if (Num_postrenders < MAX_POSTRENDERS) {
@@ -3309,7 +3309,7 @@ void CheckToRenderMineObjects(int roomnum) {
       if (VisEffects[index].type == VIS_NONE || VisEffects[index].flags.dead)
         continue;
 
-      if (IsPointVisible(&VisEffects[index].pos, VisEffects[index].size, &zdist)) {
+      if (IsPointVisible(VisEffects[index].pos, VisEffects[index].size, zdist)) {
         // Stuff viseffects into our postrender list (disabled: post-render system not ported)
         // if (Num_postrenders < MAX_POSTRENDERS) {
         //   Postrender_list[Num_postrenders].type = PRT_VISEFFECT;
