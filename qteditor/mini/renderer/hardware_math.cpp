@@ -281,11 +281,11 @@ int ClipPlane(g3_clip_codes_t plane_flag, g3Point *const *src, g3Point **dest, i
   return (dest - save_dest);
 }
 
-static std::vector<g3Point *> Vbuf0(MAX_POINTS_IN_POLY);
-static std::vector<g3Point *> Vbuf1(MAX_POINTS_IN_POLY);
-
 // Clips a polygon.  Caller MUST call g3_FreeTempPoints() when done.
 const std::vector<g3Point *> &g3_ClipPolygon(const std::vector<g3Point *> &pointlist, int &nv, g3Codes &cc) {
+  static std::vector<g3Point *> Vbuf0(MAX_POINTS_IN_POLY);
+  static std::vector<g3Point *> Vbuf1(MAX_POINTS_IN_POLY);
+
   g3Point *const *src = pointlist.data();
   g3Point **dest = Vbuf0.data();
 
