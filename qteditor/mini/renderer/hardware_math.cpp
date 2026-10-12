@@ -61,7 +61,7 @@ static void checkTempPointsInternal(void) {
 }
 
 // Free up any temp points (created by the clipper) in the given pointlist
-void g3_FreeTempPoints(g3Point **pointlist, int nv) {
+void g3_FreeTempPoints(const std::vector<g3Point *> &pointlist, int nv) {
   int i;
   for (i = 0; i < nv; i++) {
     if (pointlist[i]->p3_flags.temp_point)
@@ -243,7 +243,7 @@ void ClipLine(g3Point *&p0, g3Point *&p1, g3_clip_codes_t codes_or) {
 }
 
 // Clips a polygon against one plane
-int ClipPlane(g3_clip_codes_t plane_flag, g3Point **src, g3Point **dest, int &nv, g3Codes &cc) {
+int ClipPlane(g3_clip_codes_t plane_flag, g3Point *const *src, g3Point **dest, int &nv, g3Codes &cc) {
   int i, prev, next;
   g3Point **save_dest = dest;
   const uint8_t flag_byte = clip_code_byte(plane_flag);
@@ -281,12 +281,13 @@ int ClipPlane(g3_clip_codes_t plane_flag, g3Point **src, g3Point **dest, int &nv
   return (dest - save_dest);
 }
 
-static g3Point *Vbuf0[MAX_POINTS_IN_POLY];
-static g3Point *Vbuf1[MAX_POINTS_IN_POLY];
+static std::vector<g3Point *> Vbuf0(MAX_POINTS_IN_POLY);
+static std::vector<g3Point *> Vbuf1(MAX_POINTS_IN_POLY);
 
 // Clips a polygon.  Caller MUST call g3_FreeTempPoints() when done.
-g3Point **g3_ClipPolygon(g3Point **pointlist, int &nv, g3Codes &cc) {
-  g3Point **dest = Vbuf0;
+const std::vector<g3Point *> &g3_ClipPolygon(const std::vector<g3Point *> &pointlist, int &nv, g3Codes &cc) {
+  g3Point *const *src = pointlist.data();
+  g3Point **dest = Vbuf0.data();
 
   if (free_point_num != 0) {
     Q_ASSERT(false);
@@ -296,15 +297,19 @@ g3Point **g3_ClipPolygon(g3Point **pointlist, int &nv, g3Codes &cc) {
   uint8_t codes = clip_code_byte(cc.cc_or);
   for (uint8_t plane_flag = 1; plane_flag <= 32; plane_flag <<= 1) {
     if (codes & plane_flag) {
-      nv = ClipPlane(clip_codes_from_byte(plane_flag), pointlist, dest, nv, cc);
+      nv = ClipPlane(clip_codes_from_byte(plane_flag), src, dest, nv, cc);
       if (clip_code_byte(cc.cc_and) != 0) // clipped away
-        return dest;
+        return (dest == Vbuf1.data()) ? Vbuf1 : Vbuf0;
 
-      pointlist = dest;
-      dest = (pointlist == Vbuf0) ? Vbuf1 : Vbuf0;
+      src = dest;
+      dest = (src == Vbuf0.data()) ? Vbuf1.data() : Vbuf0.data();
       codes = clip_code_byte(cc.cc_or);
     }
   }
+  if (src == Vbuf0.data())
+    return Vbuf0;
+  if (src == Vbuf1.data())
+    return Vbuf1;
   return pointlist;
 }
 

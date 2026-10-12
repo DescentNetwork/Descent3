@@ -321,7 +321,7 @@ void DrawScorches(int roomnum, int facenum) {
       vector3 right, up;
       vector3 corners[4];
       g3Point points[4];
-      g3Point *pointlist[4];
+      std::vector<g3Point *> pointlist(4);
       float size = (float)sp->size / 16.0f;
 
       // Don't draw mark if too far away, and make smaller those marks that are almost too far

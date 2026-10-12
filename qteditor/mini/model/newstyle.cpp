@@ -174,7 +174,7 @@ int Lightmap_debug_model = -1;
 
 inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
 
-  g3Point *pointlist[100];
+  std::vector<g3Point *> pointlist(100);
   int bm_handle;
   int smooth = 0;
   polyface *fp = &sm->faces[facenum];
@@ -403,7 +403,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
 
 #ifdef _DEBUG
   if (Polymodel_outline_mode)
-    DrawSubmodelFaceOutline(fp->nverts, pointlist);
+    DrawSubmodelFaceOutline(fp->nverts, pointlist.data());
 
     /*	if (Lightmap_debug_model==(pm-Poly_models) && Polymodel_light_type==polymodel_light_type::lightmap &&
        Lightmap_debug_subnum==modelnum && Lightmap_debug_facenum==facenum)
@@ -478,7 +478,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
 }
 
 inline void RenderSubmodelLightmapFace(poly_model *pm, bsp_info *sm, int facenum) {
-  g3Point *pointlist[100];
+  std::vector<g3Point *> pointlist(100);
 
   polyface *fp = &sm->faces[facenum];
   int modelnum = sm - pm->submodel.data();
@@ -514,7 +514,7 @@ inline void RenderSubmodelLightmapFace(poly_model *pm, bsp_info *sm, int facenum
 }
 
 inline void RenderSubmodelFaceFogged(poly_model *pm, bsp_info *sm, int facenum) {
-  g3Point *pointlist[100];
+  std::vector<g3Point *> pointlist(100);
   polyface *fp = &sm->faces[facenum];
   int t;
 
@@ -564,7 +564,7 @@ inline void RenderSubmodelFaceFogged(poly_model *pm, bsp_info *sm, int facenum) 
 }
 
 inline void RenderSubmodelFaceSpecular(poly_model *pm, bsp_info *sm, int facenum) {
-  g3Point *pointlist[100];
+  std::vector<g3Point *> pointlist(100);
   polyface *fp = &sm->faces[facenum];
   int t;
   bool smooth = 0;

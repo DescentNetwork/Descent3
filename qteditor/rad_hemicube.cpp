@@ -29,6 +29,7 @@
 
 #include <algorithm>
 #include <numbers>
+#include <vector>
 
 #define TOP_FACE 0
 #define LEFT_FACE 1
@@ -102,7 +103,7 @@ void CalculateDeltaFormFactors() {
 
 // Calculates the form factors for a hemicube
 void CalculateFormFactorsHemiCube() {
-  g3Point *pointlist[100];
+  std::vector<g3Point *> pointlist(100);
   int i, t, k, j, en_limit, en;
   int ff_index = 0;
   int self;
@@ -453,17 +454,18 @@ void UpdateView(int face_id) {
   BuildTransform(&nu, &nv, &nn);
 }
 
-void DrawRadiosityPoly(int nv, g3Point **pointlist, int id) {
+void DrawRadiosityPoly(int nv, const std::vector<g3Point *> &pointlist, int id) {
   int i;
   g3Codes cc;
   bool was_clipped = 0;
   int triangulate = 1;
+  const std::vector<g3Point *> *pl = &pointlist;
 
   Q_ASSERT(id >= 0 && id <= static_cast<int>(rad_FormFactors.size()));
 
   if (triangulate) {
     if (nv > 3) {
-      g3Point *tripoints[3];
+      std::vector<g3Point *> tripoints(3);
 
       tripoints[0] = pointlist[0];
       tripoints[2] = pointlist[1];
@@ -500,7 +502,7 @@ void DrawRadiosityPoly(int nv, g3Point **pointlist, int id) {
   if (clip_code_byte(cc.cc_or) != 0) {
 
     // Clip the polygon, getting pointer to new buffer
-    pointlist = g3_ClipPolygon(pointlist, nv, cc);
+    pl = &g3_ClipPolygon(*pl, nv, cc);
 
     // Flag as clipped so temp points will be freed
     was_clipped = 1;
@@ -512,18 +514,18 @@ void DrawRadiosityPoly(int nv, g3Point **pointlist, int id) {
 
   // Make list of 2d coords
   for (i = 0; i < nv; i++) {
-    g3Point *p = pointlist[i];
+    g3Point *p = (*pl)[i];
     g3_ProjectPoint(*p);
   }
 
   // Draw!
-  ScanRadiosityPoly(pointlist, nv, id);
+  ScanRadiosityPoly(*pl, nv, id);
 
 free_points:;
 
   // If was clipped, free temp points
   if (was_clipped)
-    g3_FreeTempPoints(pointlist, nv);
+    g3_FreeTempPoints(*pl, nv);
 }
 
 /*void GetVertexOrdering (hemicube_point *t, int nv, int *vlt, int *vlb, int *vrt, int *vrb,int *bottom_y_ind)
@@ -689,7 +691,7 @@ int NextIndex(int val, int modulus) {
     return 0;
 }
 
-void ScanRadiosityPoly(g3Point **pl, int nv, int element_id) {
+void ScanRadiosityPoly(const std::vector<g3Point *> &pl, int nv, int element_id) {
   int i, left_edge_dir;
 
   scalar Delta_right_x, Right_x, Delta_left_x, Left_x;

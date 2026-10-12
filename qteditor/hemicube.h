@@ -23,6 +23,8 @@
 #include "radiosity.h"
 #include "gr.h"
 
+#include <vector>
+
 struct rad_hemicube {
   matrix view_matrix;
   matrix head_matrix;
@@ -80,8 +82,8 @@ void EndHemicubeDrawing(int);
 void UpdateView(int face_id);
 
 // Actually draws the projected polygon onto a hemicube face
-void ScanRadiosityPoly(g3Point **pl, int nv, int element_id);
-void DrawRadiosityPoly(int nv, g3Point **pointlist, int id);
+void ScanRadiosityPoly(const std::vector<g3Point *> &pl, int nv, int element_id);
+void DrawRadiosityPoly(int nv, const std::vector<g3Point *> &pointlist, int id);
 void GetVertexOrdering(hemicube_point *t, int nv, int *vlt, int *vlb, int *vrt, int *vrb, int *bottom_y_ind);
 int PrevIndex(int val, int modulus);
 int NextIndex(int val, int modulus);

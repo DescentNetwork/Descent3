@@ -296,6 +296,7 @@
 
 #include <memory>
 #include <cstdint>
+#include <vector>
 
 #include "grdefs.h"
 
@@ -494,10 +495,10 @@ void rend_GetStatistics(tRendererStats *stats);
 void rend_SetTextureType(texture_type);
 
 // Given a handle to a bitmap and nv point vertices, draws a 3D polygon
-void rend_DrawPolygon3D(int handle, g3Point **p, int nv, map_type mt = map_type::bitmap);
+void rend_DrawPolygon3D(int handle, const std::vector<g3Point *> &p, int nv, map_type mt = map_type::bitmap);
 
 // Given a handle to a bitmap and nv point vertices, draws a 2D polygon
-void rend_DrawPolygon2D(int handle, g3Point **p, int nv);
+void rend_DrawPolygon2D(int handle, const std::vector<g3Point *> &p, int nv);
 
 // Tells the software renderer whether or not to use mipping
 void rend_SetMipState(int8_t);

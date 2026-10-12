@@ -30,6 +30,7 @@
  */
 
 #include <algorithm>
+#include <array>
 #include <cstdlib>
 #include <cstring>
 #include <vector>
@@ -781,7 +782,7 @@ void CheckFogPortalExtents(int roomnum, int portalnum) {
   }
 }
 
-g3Point Combined_portal_points[MAX_VERTS_PER_FACE * 5];
+std::vector<g3Point> Combined_portal_points(MAX_VERTS_PER_FACE * 5);
 void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
   room_t *rp = &Rooms[start_room_num];
   int i, t;
@@ -887,7 +888,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
         if (clip_code_byte(combine_cc.cc_and) != 0) {
           continue; // clipped away!
         } else if (clip_code_byte(combine_cc.cc_or) != 0) {
-          g3Point *pointlist[MAX_VERTS_PER_FACE];
+          std::vector<g3Point *> pointlist(MAX_VERTS_PER_FACE);
           for (k = 0; k < this_fp->num_verts; k++) {
             pointlist[k] = &Combined_portal_points[num_points + k];
             Q_ASSERT(!pointlist[k]->p3_flags.temp_point);
@@ -895,7 +896,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
 
           // If portal not all on screen, must clip it
           int combine_nv = this_fp->num_verts;
-          g3Point **pl = g3_ClipPolygon(pointlist, combine_nv, combine_cc);
+          const std::vector<g3Point *> &pl = g3_ClipPolygon(pointlist, combine_nv, combine_cc);
           if (clip_code_byte(combine_cc.cc_and) != 0) {
             g3_FreeTempPoints(pl, combine_nv);
           } else {
@@ -927,7 +928,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
         continue;
 
       // Now, figure out a min/max for these points
-      g3Point four_points[4];
+      std::array<g3Point, 4> four_points;
       for (i = 0; i < num_points; i++) {
         g3_ProjectPoint(Combined_portal_points[i]);
       }
@@ -982,18 +983,19 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
     // If points are on screen, see if they're in the clip window
     if (clip_code_byte(cc.cc_and) == 0 || external_door_hack) {
       bool clipped = 0;
-      g3Point *pointlist[MAX_VERTS_PER_FACE], **pl = pointlist;
+      std::vector<g3Point *> pointlist(MAX_VERTS_PER_FACE);
+      const std::vector<g3Point *> *pl = &pointlist;
       for (i = 0; i < nv; i++)
         pointlist[i] = &Combined_portal_points[i];
       // If portal not all on screen, must clip it
       if (clip_code_byte(cc.cc_or) != 0) {
-        pl = g3_ClipPolygon(pl, nv, cc);
+        pl = &g3_ClipPolygon(*pl, nv, cc);
         clipped = 1;
       }
       cc.cc_and = clip_codes_from_byte(0xff);
       for (i = 0; i < nv; i++) {
-        g3_ProjectPoint(*pl[i]);
-        cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(clip2d(pl[i], wnd)));
+        g3_ProjectPoint(*(*pl)[i]);
+        cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(clip2d((*pl)[i], wnd)));
       }
       // Make sure it didn't get clipped away
       if (clip_code_byte(cc.cc_and) == 0 || external_door_hack) {
@@ -1003,7 +1005,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
         new_wnd.top = Render_height;
         // make new clip window
         for (i = 0; i < nv; i++) {
-          float x = pl[i]->p3_sx, y = pl[i]->p3_sy;
+          float x = (*pl)[i]->p3_sx, y = (*pl)[i]->p3_sy;
           if (x < new_wnd.left)
             new_wnd.left = x;
           if (x > new_wnd.right)
@@ -1023,7 +1025,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
         new_wnd.top = std::max(wnd->top, new_wnd.top);
         new_wnd.bot = std::min(wnd->bot, new_wnd.bot);
         if (clipped) { // Free up temp points
-          g3_FreeTempPoints(pl, nv);
+          g3_FreeTempPoints(*pl, nv);
           clipped = 0;
         }
         if (Rooms[croom].flags.external) {
@@ -1062,7 +1064,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd *wnd, int depth) {
         }
       }
       if (clipped) // Free up temp points
-        g3_FreeTempPoints(pl, nv);
+        g3_FreeTempPoints(*pl, nv);
     }
   }
 }
@@ -1245,7 +1247,7 @@ void RenderSpecularFaces(int roomnum) {
   room_t *rp = &Rooms[roomnum];
   Q_ASSERT(Num_specular_faces_to_render > 0);
   int i, vn;
-  g3Point *pointlist[MAX_VERTS_PER_FACE];
+  std::vector<g3Point *> pointlist(MAX_VERTS_PER_FACE);
   g3Point pointbuffer[MAX_VERTS_PER_FACE];
   rend_SetWrapType(wrap_type::clamp);
   rend_SetOverlayType(overlay_type::none);
@@ -1317,7 +1319,7 @@ void RenderSpecularFacesFlat(int roomnum) {
   }
 
   int t, vn;
-  g3Point *pointlist[MAX_VERTS_PER_FACE];
+  std::vector<g3Point *> pointlist(MAX_VERTS_PER_FACE);
   g3Point pointbuffer[MAX_VERTS_PER_FACE];
   rend_SetOverlayType(overlay_type::none);
   rend_SetTextureType(texture_type::flat);
@@ -1571,7 +1573,7 @@ void RenderFogFaces(int roomnum) {
   room_t *rp = &Rooms[roomnum];
   int vn;
   float eye_distance;
-  g3Point *pointlist[MAX_VERTS_PER_FACE];
+  std::vector<g3Point *> pointlist(MAX_VERTS_PER_FACE);
   g3Point pointbuffer[MAX_VERTS_PER_FACE];
   rend_SetOverlayType(overlay_type::none);
   rend_SetTextureType(texture_type::flat);
@@ -1661,7 +1663,7 @@ void RenderLightmapFace(int roomnum, int facenum) {
   room_t *rp = &Rooms[roomnum];
   int vn, drawn = 0;
   face *fp = &rp->faces[facenum];
-  g3Point *pointlist[MAX_VERTS_PER_FACE];
+  std::vector<g3Point *> pointlist(MAX_VERTS_PER_FACE);
   g3Point pointbuffer[MAX_VERTS_PER_FACE];
   uint8_t face_code = 255;
   if (NoLightmaps)
@@ -1741,7 +1743,7 @@ void RenderFace(int roomnum, int facenum) {
   room_t *rp = &Rooms[roomnum];
   int vn, drawn = 0;
   face *fp = &rp->faces[facenum];
-  g3Point *pointlist[MAX_VERTS_PER_FACE];
+  std::vector<g3Point *> pointlist(MAX_VERTS_PER_FACE);
   g3Point pointbuffer[MAX_VERTS_PER_FACE];
   int bm_handle;
   float uchange = 0, vchange = 0;
@@ -2537,7 +2539,8 @@ void RenderSingleLightGlow2(int index) {
   temp_vec = rot_mat.fvec * mat;
   rot_mat.fvec = temp_vec;
   vector3 world_vecs[4];
-  g3Point pnts[4], *pntlist[4];
+  g3Point pnts[4];
+  std::vector<g3Point *> pntlist(4);
   world_vecs[0] = corona_pos - (size * rot_mat.rvec);
   world_vecs[0] += (size * rot_mat.uvec);
   world_vecs[1] = corona_pos + (size * rot_mat.rvec);
@@ -2724,18 +2727,19 @@ void BuildMirroredRoomListSub(int start_room_num, clip_wnd *wnd) {
     // If points are on screen, see if they're in the clip window
     if (clip_code_byte(cc.cc_and) == 0 || external_door_hack) {
       bool clipped = 0;
-      g3Point *pointlist[MAX_VERTS_PER_FACE], **pl = pointlist;
+      std::vector<g3Point *> pointlist(MAX_VERTS_PER_FACE);
+      const std::vector<g3Point *> *pl = &pointlist;
       for (i = 0; i < nv; i++)
         pointlist[i] = &portal_points[i];
       // If portal not all on screen, must clip it
       if (clip_code_byte(cc.cc_or) != 0) {
-        pl = g3_ClipPolygon(pl, nv, cc);
+        pl = &g3_ClipPolygon(*pl, nv, cc);
         clipped = 1;
       }
       cc.cc_and = clip_codes_from_byte(0xff);
       for (i = 0; i < nv; i++) {
-        g3_ProjectPoint(*pl[i]);
-        cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(clip2d(pl[i], wnd)));
+        g3_ProjectPoint(*(*pl)[i]);
+        cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(clip2d((*pl)[i], wnd)));
       }
       // Make sure it didn't get clipped away
       if (clip_code_byte(cc.cc_and) == 0 || external_door_hack) {
@@ -2745,7 +2749,7 @@ void BuildMirroredRoomListSub(int start_room_num, clip_wnd *wnd) {
         new_wnd.top = Render_height;
         // make new clip window
         for (i = 0; i < nv; i++) {
-          float x = pl[i]->p3_sx, y = pl[i]->p3_sy;
+          float x = (*pl)[i]->p3_sx, y = (*pl)[i]->p3_sy;
           if (x < new_wnd.left)
             new_wnd.left = x;
           if (x > new_wnd.right)
@@ -2762,13 +2766,13 @@ void BuildMirroredRoomListSub(int start_room_num, clip_wnd *wnd) {
         new_wnd.top = std::max(wnd->top, new_wnd.top);
         new_wnd.bot = std::min(wnd->bot, new_wnd.bot);
         if (clipped) { // Free up temp points
-          g3_FreeTempPoints(pl, nv);
+          g3_FreeTempPoints(*pl, nv);
           clipped = 0;
         }
         BuildMirroredRoomListSub(croom, &new_wnd);
       }
       if (clipped) // Free up temp points
-        g3_FreeTempPoints(pl, nv);
+        g3_FreeTempPoints(*pl, nv);
     }
   }
 }
@@ -2786,7 +2790,8 @@ void BuildMirroredRoomList() {
   wnd.right = Render_width;
   wnd.bot = Render_height;
   g3Point portal_points[MAX_VERTS_PER_FACE], temp_points[MAX_VERTS_PER_FACE * 2];
-  g3Point *pointlist[MAX_VERTS_PER_FACE * 2], **pl = pointlist;
+  std::vector<g3Point *> pointlist(MAX_VERTS_PER_FACE * 2);
+  const std::vector<g3Point *> *pl = &pointlist;
   room_t *mirror_rp = &Rooms[Mirror_room];
   vector3 *mirror_vec = &mirror_rp->verts[mirror_rp->faces[mirror_rp->mirror_face].face_verts[0]];
   face *mirror_fp = &mirror_rp->faces[mirror_rp->mirror_face];
@@ -2822,21 +2827,21 @@ void BuildMirroredRoomList() {
       continue;
     if (clip_code_byte(cc.cc_or) != 0) {
       // Must clip
-      pl = g3_ClipPolygon(pl, nv, cc);
+      pl = &g3_ClipPolygon(*pl, nv, cc);
 
       if (clip_code_byte(cc.cc_and) != 0) {
-        g3_FreeTempPoints(pl, nv);
+        g3_FreeTempPoints(*pl, nv);
         continue;
       } else {
         for (i = 0; i < nv; i++) {
-          temp_points[i + total_points] = *pl[i];
+          temp_points[i + total_points] = *(*pl)[i];
           temp_points[i + total_points].p3_flags.temp_point = false;
         }
-        g3_FreeTempPoints(pl, nv);
+        g3_FreeTempPoints(*pl, nv);
       }
     } else {
       for (i = 0; i < nv; i++) {
-        temp_points[i + total_points] = *pl[i];
+        temp_points[i + total_points] = *(*pl)[i];
       }
     }
 

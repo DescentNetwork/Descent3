@@ -581,6 +581,7 @@
 #include <algorithm>
 #include <cstring>
 #include <utility>
+#include <vector>
 #include <numbers>
 
 #include "object.h"
@@ -997,7 +998,7 @@ void DrawDebugInfo(object *obj) {
 void DrawShardObject(object& obj) {
   shard_info_s *si = &obj.rtype.shard_info();
   g3Point rotated_points[3];
-  g3Point *pointlist[3];
+  std::vector<g3Point *> pointlist(3);
   uint8_t codes_and = 0xff;
   g3_StartInstanceMatrix(obj.pos, obj.orient);
   // Build list of points and UVLs for this face
@@ -1972,7 +1973,8 @@ void DrawPlayerTypingIndicator(object *obj) {
     // Draw this indicator on the hud
     g3Point pnt;
     int bmh, bmw;
-    g3Point *pntlist[32], points[4];
+    g3Point points[4];
+    std::vector<g3Point *> pntlist(32);
     g3Codes cc;
     uint8_t code;
 

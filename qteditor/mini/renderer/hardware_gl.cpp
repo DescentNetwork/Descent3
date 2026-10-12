@@ -132,7 +132,7 @@ static GLuint uploadTexture(int bm) {
 // ===========================================================================
 // Flat polygon (no texture) -- legacy opengl_DrawFlatPolygon
 // ===========================================================================
-void gpu_DrawFlatPolygon3D(g3Point **p, int nv) {
+void gpu_DrawFlatPolygon3D(const std::vector<g3Point *> &p, int nv) {
   float fr = (float)GR_COLOR_RED(s_flatColor) / 255.0f;
   float fg = (float)GR_COLOR_GREEN(s_flatColor) / 255.0f;
   float fb = (float)GR_COLOR_BLUE(s_flatColor) / 255.0f;
@@ -202,14 +202,14 @@ void gpu_RenderPolygonUV2(PosColorUV2Vertex *vData, uint32_t nv) {
   glEnd();
 }
 
-void rend_DrawMultitexturePolygon3D(int, g3Point **, int, int) {}
+void rend_DrawMultitexturePolygon3D(int, const std::vector<g3Point *> &, int, int) {}
 
 // ===========================================================================
 // Polygon -- legacy opengl_DrawPolygon (immediate mode)
 // ===========================================================================
 static PosColorUVVertex s_vArray[100];
 
-void rend_DrawPolygon3D(int handle, g3Point **p, int nv, map_type mt) {
+void rend_DrawPolygon3D(int handle, const std::vector<g3Point *> &p, int nv, map_type mt) {
   Q_ASSERT(nv < 100);
   if (nv < 3)
     return;
@@ -241,12 +241,12 @@ void rend_DrawPolygon3D(int handle, g3Point **p, int nv, map_type mt) {
   glDeleteTextures(1, &tex);
 }
 
-void rend_DrawPolygon2D(int handle, g3Point **p, int nv) { rend_DrawPolygon3D(handle, p, nv, map_type::bitmap); }
+void rend_DrawPolygon2D(int handle, const std::vector<g3Point *> &p, int nv) { rend_DrawPolygon3D(handle, p, nv, map_type::bitmap); }
 
 // ===========================================================================
 // g3_DrawPoly / g3_DrawBitmap -- HardwareDraw.cpp
 // ===========================================================================
-int g3_DrawPoly(int nv, g3Point **pointlist, int bm, map_type mt, optref<g3Codes>) {
+int g3_DrawPoly(int nv, const std::vector<g3Point *> &pointlist, int bm, map_type mt, optref<g3Codes>) {
   rend_DrawPolygon3D(bm, pointlist, nv, mt);
   return 1;
 }
@@ -263,7 +263,8 @@ void g3_DrawBitmap(const vector3 &pos, float width, float height, int bm, int co
     b = GR_COLOR_BLUE(color) * scale;
   }
 
-  g3Point corners[4], *pts[4];
+  g3Point corners[4];
+  std::vector<g3Point *> pts(4);
   for (int i = 0; i < 4; ++i) {
     pts[i] = &corners[i];
     float cornerScaleU = ((i & 1) ^ ((i & 2) >> 1)) ? 1.0f : -1.0f;

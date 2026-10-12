@@ -10,6 +10,8 @@
 #ifndef __HARDWARE_INTERNAL_H__
 #define __HARDWARE_INTERNAL_H__
 
+#include <vector>
+
 #define MAX_POINTS_IN_POLY 100
 
 // These structs are for drawing with vertex arrays
@@ -76,8 +78,8 @@ void gpu_SetMultitextureBlendMode(bool state);
 void gpu_BindTexture(int handle, int map_type, int slot);
 void gpu_RenderPolygon(PosColorUVVertex *vData, uint32_t nv);
 void gpu_RenderPolygonUV2(PosColorUV2Vertex *vData, uint32_t nv);
-void gpu_DrawFlatPolygon3D(g3Point **p, int nv);
-void rend_DrawMultitexturePolygon3D(int handle, g3Point **p, int nv, int map_type);
+void gpu_DrawFlatPolygon3D(const std::vector<g3Point *> &p, int nv);
+void rend_DrawMultitexturePolygon3D(int handle, const std::vector<g3Point *> &p, int nv, int map_type);
 
 /*
  * Returns the color to use for a given point, based on lighting and alpha modes.

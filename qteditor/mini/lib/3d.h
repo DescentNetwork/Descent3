@@ -184,6 +184,7 @@
 
 #include <bit>
 #include <cstdint>
+#include <vector>
 
 #include "vecmat.h" //the vector/matrix library
 #include "grdefs.h"
@@ -395,7 +396,8 @@ uint8_t g3_AddDeltaVec(g3Point &dest, const g3Point &src, const vector3 &deltav)
 // Parameters:	nv - the number of verts in the poly
 //					pointlist - a pointer to a list of pointers to points
 //					bm - the bitmap handle if texturing.  ignored if flat shading
-int g3_DrawPoly(int nv, g3Point **pointlist, int bm, map_type mt = map_type::bitmap, optref<g3Codes> clip_codes = std::nullopt);
+int g3_DrawPoly(int nv, const std::vector<g3Point *> &pointlist, int bm, map_type mt = map_type::bitmap,
+                optref<g3Codes> clip_codes = std::nullopt);
 
 // draw a sortof sphere - i.e., the 2d radius is proportional to the 3d
 // radius, but not to the distance from the eye
@@ -406,7 +408,8 @@ void g3_DrawSphere(ddgr_color color, g3Point &pnt, float rad);
 // pre-compute the normal, and pass it to this function.  When the normal
 // is passed, this function works like g3_CheckNormalFacing() plus
 // g3_DrawPoly().
-void g3_CheckAndDrawPoly(int nv, g3Point **pointlist, int bm, optref<const vector3> norm, const vector3 &pnt);
+void g3_CheckAndDrawPoly(int nv, const std::vector<g3Point *> &pointlist, int bm, optref<const vector3> norm,
+                         const vector3 &pnt);
 
 // draws a line. takes two points.
 void g3_DrawLine(ddgr_color color, g3Point &p0, g3Point &p1);
@@ -439,12 +442,12 @@ static inline void g3_ResetFarClipZ() { g3_SetFarClipZ(FLT_MAX); }
 //					cc - the clip codes for this polygon
 // Returns:	a pointer to a list of pointer of points in the clipped polygon
 // NOTE: You MUST call g3_FreeTempPoints() when you're done with the clipped polygon
-g3Point **g3_ClipPolygon(g3Point **pointlist, int &nv, g3Codes &cc);
+const std::vector<g3Point *> &g3_ClipPolygon(const std::vector<g3Point *> &pointlist, int &nv, g3Codes &cc);
 
 // Free up any temp points (created by the clipper) in the given pointlist
 // Parameters:	pointlist - pointer to list of pointers to points, returned by g3_ClipPolygon()
 //					nv - the number of points in pointlist
-void g3_FreeTempPoints(g3Point **pointlist, int nv);
+void g3_FreeTempPoints(const std::vector<g3Point *> &pointlist, int nv);
 
 // Gets the matrix scale vector
 void g3_GetMatrixScale(vector3 &matrix_scale);
