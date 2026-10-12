@@ -65,15 +65,15 @@ int FindFreeDynamicLightmap(int cl);
 
 // Applies dynamic lighting to the room faces based on the light coming from
 // an object
-void ApplyLightingToRooms(vector3 *, int, float, float, float, float, vector3 *light_direction = NULL,
-                          float dot_range = 0);
+void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red_scale, float green_scale,
+                          float blue_scale, optref<const vector3> light_direction = std::nullopt, float dot_range = 0);
 
 // Clears the used flag for the dynamic lightmaps
 void ClearDynamicLightmaps();
 
 // Changes the terrain shading to approximate lighting
-void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float red_scale, float green_scale,
-                            float blue_scale, vector3 *light_direction = NULL, float dot_range = 0);
+void ApplyLightingToTerrain(const vector3 &pos, int cellnum, float light_dist, float red_scale, float green_scale,
+                            float blue_scale, optref<const vector3> light_direction = std::nullopt, float dot_range = 0);
 
 // Given a float, returns the index into the Ubyte_float_table that this number
 // corresponds to
@@ -89,7 +89,7 @@ int GetVolumeSizeOfRoom(int roomnum, optref<int> w = std::nullopt, optref<int> h
                         optref<int> d = std::nullopt);
 
 // Returns a lightmap that can be applied for specular lighting
-int GetSpecularLightmapForFace(vector3 *pos, int roomnum, face *fp);
+int GetSpecularLightmapForFace(const vector3 &pos, int roomnum, const face &fp);
 
 // Kills the lighting that a face casts and dampens all the faces that light influences
 void DestroyLight(int roomnum, int facenum);

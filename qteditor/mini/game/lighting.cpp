@@ -91,16 +91,18 @@ static std::vector<uint32_t> Destroyed_light_faces_this_frame;
 static void FreeLighting();
 static std::optional<uint16_t> GetFreeDynamicLightmap(int w, int h);
 static void BlendLightingEdges(int lmi_handle);
-static void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, float red_scale, float green_scale,
-                                        float blue_scale, vector3 *light_direction, float dot_range);
-static void StartLightingInstance(vector3 *pos, matrix *orient);
+static void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_dist, float red_scale,
+                                        float green_scale, float blue_scale, optref<const vector3> light_direction,
+                                        float dot_range);
+static void StartLightingInstance(const vector3 &pos, const matrix &orient);
 static void DoneLightingInstance();
-static void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float light_dist, float red_scale,
-                                    float green_scale, float blue_scale, float dot_range);
-static void ApplyVolumeLightToObject(vector3 *pos, object *obj, float light_dist, float red_scale, float green_scale,
-                                     float blue_scale, vector3 *light_direction, float dot_range);
-static void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float red_scale, float green_scale,
-                                   float blue_scale, vector3 *light_direction, float dot_range);
+static void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_info &sm, float light_dist,
+                                    float red_scale, float green_scale, float blue_scale, float dot_range);
+static void ApplyVolumeLightToObject(const vector3 &pos, object &obj, float light_dist, float red_scale,
+                                     float green_scale, float blue_scale, optref<const vector3> light_direction,
+                                     float dot_range);
+static void ApplyLightingToObjects(const vector3 &pos, int roomnum, float light_dist, float red_scale, float green_scale,
+                                   float blue_scale, optref<const vector3> light_direction, float dot_range);
 
 // Frees memory used by dynamic light structures
 void FreeLighting() {
@@ -245,8 +247,8 @@ void BlendLightingEdges(int lmi_handle_in) {
 }
 
 // Does lighting for the passed in external room
-void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, float red_scale, float green_scale,
-                                 float blue_scale, vector3 *light_direction, float dot_range) {
+void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_dist, float red_scale, float green_scale,
+                                 float blue_scale, optref<const vector3> light_direction, float dot_range) {
   int i, lm_handle, t;
   vector3 rad;
   room_t *rp = &Rooms[roomnum];
@@ -263,8 +265,8 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
   rad.y() = light_dist;
   rad.z() = light_dist;
 
-  Light_min_xyz = *pos - rad;
-  Light_max_xyz = *pos + rad;
+  Light_min_xyz = pos - rad;
+  Light_max_xyz = pos + rad;
 
   // Now the Light_position is in the submodels frame of reference
   for (i = 0; i < rp->num_faces; i++) {
@@ -293,7 +295,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
     
 
     // Check for backfaces
-    vector3 subvec = *pos - lmi_ptr->upper_left;
+    vector3 subvec = pos - lmi_ptr->upper_left;
     float dist_from_plane = fabs(vm_DotProduct(subvec, lmi_ptr->normal));
 
     if (dist_from_plane > light_dist)
@@ -301,7 +303,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
 
     if (light_direction) {
       // If this is a directional light, check for backfaces
-      vector3 norm_vec = *pos - rp->verts[fp->face_verts[0]];
+      vector3 norm_vec = pos - rp->verts[fp->face_verts[0]];
 
       if (vm_Dot3Product(norm_vec, lmi_ptr->normal) < 0) {
         // Backface, skip this light
@@ -310,7 +312,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
       // Test to see if all vertices are behind the light object, if so then bail
       int in_front = 0; //
       for (t = 0; t < fp->num_verts && in_front == 0; t++) {
-        norm_vec = rp->verts[fp->face_verts[t]] - *pos;
+        norm_vec = rp->verts[fp->face_verts[t]] - pos;
         if (vm_Dot3Product(norm_vec, *light_direction) > 0)
           in_front = 1;
       }
@@ -329,7 +331,7 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
 
     // Get the area of effect for this light
     float area_of_effect = (1.0f - (dist_from_plane / light_dist)) * light_dist;
-    vector3 touch_vector = *pos - (lmi_ptr->normal * dist_from_plane);
+    vector3 touch_vector = pos - (lmi_ptr->normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
     float rdist = vm_DotProduct(subvec, facematrix.rvec);
@@ -464,11 +466,11 @@ void ApplyLightingToExternalRoom(vector3 *pos, int roomnum, float light_dist, fl
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
 
-        float dist = vm_VectorDistanceQuick(element_vec, *pos);
+        float dist = vm_VectorDistanceQuick(element_vec, pos);
         float scalar = 1.0f - (dist / light_dist);
 
         if (light_direction) {
-          vector3 lsubvec = element_vec - *pos;
+          vector3 lsubvec = element_vec - pos;
           vm_NormalizeVectorFast(lsubvec);
           float dp = vm_DotProduct(lsubvec, *light_direction);
           if (dp < dot_range) {
@@ -534,7 +536,7 @@ vector3 Light_position;
 vector3 Light_direction;
 
 // instance at specified point with specified orientation
-void StartLightingInstance(vector3 *pos, matrix *orient) {
+void StartLightingInstance(const vector3 &pos, const matrix &orient) {
   vector3 tempv;
 
   Q_ASSERT(Light_instance_depth < MAX_SUBOBJECTS);
@@ -545,15 +547,15 @@ void StartLightingInstance(vector3 *pos, matrix *orient) {
   Light_instance_depth++;
 
   // Step 1: subtract position from light position
-  tempv = Light_position - *pos;
+  tempv = Light_position - pos;
   // step 2: rotate view vector3 through object matrix
 
-  Light_position = tempv * *orient;
+  Light_position = tempv * orient;
 
   // Rotate the light direction through this matrix
   if (Use_light_direction) {
     tempv = Light_direction;
-    Light_direction = tempv * *orient;
+    Light_direction = tempv * orient;
   }
 }
 
@@ -569,14 +571,14 @@ void DoneLightingInstance() {
 }
 
 // Applies lighting to a submodel and all its children
-void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float light_dist, float red_scale,
-                             float green_scale, float blue_scale, float dot_range) {
+void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_info &sm, float light_dist,
+                             float red_scale, float green_scale, float blue_scale, float dot_range) {
   matrix mat;
   vector3 Light_min_xyz;
   vector3 Light_max_xyz;
   vector3 rad;
   int i, t;
-  int subnum = sm - pm->submodel.data();
+  int subnum = &sm - pm.submodel.data();
   int lm_handle;
   uint16_t lmilist[MAX_DYNAMIC_FACES];
   int num_spoken_for = 0;
@@ -585,13 +587,13 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
   int green_limit = 31;
   int blue_limit = 31;
 
-  if (IsNonRenderableSubmodel(*pm, subnum))
+  if (IsNonRenderableSubmodel(pm, subnum))
     return; // Don't do shells, frontfaces, etc
 
   // Start instance stuff
-  vector3 temp_vec = sm->mod_pos + sm->offset;
-  vm_AnglesToMatrix(mat, sm->angs.p(), sm->angs.h(), sm->angs.b());
-  StartLightingInstance(&temp_vec, &mat);
+  vector3 temp_vec = sm.mod_pos + sm.offset;
+  vm_AnglesToMatrix(mat, sm.angs.p(), sm.angs.h(), sm.angs.b());
+  StartLightingInstance(temp_vec, mat);
 
   rad.x() = light_dist;
   rad.y() = light_dist;
@@ -604,15 +606,15 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
   Light_max_xyz = light_pos + rad;
 
   // Now the Light_position is in the submodels frame of reference
-  for (i = 0; i < sm->num_faces; i++) {
+  for (i = 0; i < sm.num_faces; i++) {
     // check to see if this face is within reach
-    if (Light_max_xyz.y() < sm->face_min[i].y() || sm->face_max[i].y() < Light_min_xyz.y() ||
-        Light_max_xyz.x() < sm->face_min[i].x() || sm->face_max[i].x() < Light_min_xyz.x() ||
-        Light_max_xyz.z() < sm->face_min[i].z() || sm->face_max[i].z() < Light_min_xyz.z())
+    if (Light_max_xyz.y() < sm.face_min[i].y() || sm.face_max[i].y() < Light_min_xyz.y() ||
+        Light_max_xyz.x() < sm.face_min[i].x() || sm.face_max[i].x() < Light_min_xyz.x() ||
+        Light_max_xyz.z() < sm.face_min[i].z() || sm.face_max[i].z() < Light_min_xyz.z())
       continue;
 
     // Ok, now we know that this light touches this face
-    lightmap_object_face *fp = &obj->lm_object.lightmap_faces[subnum][i];
+    const lightmap_object_face *fp = &obj.lm_object.lightmap_faces[subnum][i];
 
     if (Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))
       continue;
@@ -642,10 +644,10 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
       }
 
       // Test to see if all vertices are behind the light object, if so then bail
-      polyface *poly_fp = &sm->faces[i];
+      const polyface *poly_fp = &sm.faces[i];
       int in_front = 0; //
       for (t = 0; t < fp->num_verts && in_front == 0; t++) {
-        norm_vec = sm->verts[poly_fp->vertnums[t]] - light_pos;
+        norm_vec = sm.verts[poly_fp->vertnums[t]] - light_pos;
         if (vm_Dot3Product(norm_vec, light_dir) > 0)
           in_front = 1;
       }
@@ -852,8 +854,8 @@ void ApplyLightingToSubmodel(object *obj, poly_model *pm, bsp_info *sm, float li
     Lmi_spoken_for[index / 8] = 0;
   }
 
-  for (i = 0; i < sm->num_children; i++)
-    ApplyLightingToSubmodel(obj, pm, &pm->submodel[sm->children[i]], light_dist, red_scale, green_scale, blue_scale,
+  for (i = 0; i < sm.num_children; i++)
+    ApplyLightingToSubmodel(obj, pm, pm.submodel[sm.children[i]], light_dist, red_scale, green_scale, blue_scale,
                             dot_range);
 
   DoneLightingInstance();
@@ -886,9 +888,9 @@ red_scale,float green_scale,float blue_scale)
 }*/
 
 // Applys dynamic volumetric lighting to an object
-void ApplyVolumeLightToObject(vector3 *pos, object *obj, float light_dist, float red_scale, float green_scale,
-                              float blue_scale, vector3 *light_direction, float dot_range) {
-  vector3 subvec = *pos - obj->pos;
+void ApplyVolumeLightToObject(const vector3 &pos, object &obj, float light_dist, float red_scale, float green_scale,
+                              float blue_scale, optref<const vector3> light_direction, float dot_range) {
+  vector3 subvec = pos - obj.pos;
   float mag = vm_GetMagnitudeFast(subvec);
 
   float scalar = mag / light_dist;
@@ -899,7 +901,7 @@ void ApplyVolumeLightToObject(vector3 *pos, object *obj, float light_dist, float
 
   if (light_direction) {
     // Do a directional light
-    vector3 dir_vec = obj->pos - *pos;
+    vector3 dir_vec = obj.pos - pos;
     float mag = vm_NormalizeVectorFast(dir_vec);
     float dp = vm_Dot3Product(dir_vec, *light_direction);
 
@@ -913,45 +915,45 @@ void ApplyVolumeLightToObject(vector3 *pos, object *obj, float light_dist, float
     }
   }
 
-  Q_ASSERT(obj->effect_info != NULL);
+  Q_ASSERT(obj.effect_info != NULL);
 
-  if (!obj->effect_info->dynamic_this_frame) {
+  if (!obj.effect_info->dynamic_this_frame) {
     volume_object vol_obj;
-    vol_obj.handle = obj->handle;
-    vol_obj.objnum = static_cast<uint32_t>(obj - Objects.data());
+    vol_obj.handle = obj.handle;
+    vol_obj.objnum = static_cast<uint32_t>(&obj - Objects.data());
     Dynamic_volume_object_list.push_back(vol_obj);
-    obj->effect_info->spec_mag = -100000;
+    obj.effect_info->spec_mag = -100000;
 
-    obj->effect_info->dynamic_this_frame = 1;
+    obj.effect_info->dynamic_this_frame = 1;
   }
 
   // See if this specular light source is greater than our current one
-  if ((light_dist - mag) > obj->effect_info->spec_mag &&
+  if ((light_dist - mag) > obj.effect_info->spec_mag &&
       Detail_settings.Specular_lighting &&
-      !Object_info[obj->id].lighting_info.flags.no_specularity) {
-    obj->effect_info->type_flags.specular = true;
-    obj->effect_info->spec_mag = light_dist - mag;
-    obj->effect_info->spec_pos = *pos;
-    obj->effect_info->spec_r = red_scale;
-    obj->effect_info->spec_g = green_scale;
-    obj->effect_info->spec_b = blue_scale;
+      !Object_info[obj.id].lighting_info.flags.no_specularity) {
+    obj.effect_info->type_flags.specular = true;
+    obj.effect_info->spec_mag = light_dist - mag;
+    obj.effect_info->spec_pos = pos;
+    obj.effect_info->spec_r = red_scale;
+    obj.effect_info->spec_g = green_scale;
+    obj.effect_info->spec_b = blue_scale;
   }
 
-  if (obj->effect_info->type_flags.volume_lit) {
-    obj->effect_info->dynamic_red = std::min<float>(1, obj->effect_info->dynamic_red + (scalar * red_scale));
-    obj->effect_info->dynamic_green = std::min<float>(1, obj->effect_info->dynamic_green + (scalar * green_scale));
-    obj->effect_info->dynamic_blue = std::min<float>(1, obj->effect_info->dynamic_blue + (scalar * blue_scale));
+  if (obj.effect_info->type_flags.volume_lit) {
+    obj.effect_info->dynamic_red = std::min<float>(1, obj.effect_info->dynamic_red + (scalar * red_scale));
+    obj.effect_info->dynamic_green = std::min<float>(1, obj.effect_info->dynamic_green + (scalar * green_scale));
+    obj.effect_info->dynamic_blue = std::min<float>(1, obj.effect_info->dynamic_blue + (scalar * blue_scale));
   }
 }
 
 // Applies lighting to all objects in a certain distance
-void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float red_scale, float green_scale,
-                            float blue_scale, vector3 *light_direction, float dot_range) {
+void ApplyLightingToObjects(const vector3 &pos, int roomnum, float light_dist, float red_scale, float green_scale,
+                            float blue_scale, optref<const vector3> light_direction, float dot_range) {
   int16_t objlist[MAX_DYNAMIC_FACES];
   int num_objects, i;
   float normalized_time[MAX_SUBOBJECTS];
 
-  num_objects = fvi_QuickDistObjectList(*pos, roomnum, light_dist, objlist, MAX_DYNAMIC_FACES, false, false, true);
+  num_objects = fvi_QuickDistObjectList(pos, roomnum, light_dist, objlist, MAX_DYNAMIC_FACES, false, false, true);
 
   for (i = 0; i < num_objects; i++) {
     object *obj = &Objects[objlist[i]];
@@ -970,7 +972,7 @@ void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float r
     if (obj->lm_object.used == 0) {
       if (obj->effect_info && ((obj->effect_info->type_flags.volume_lit) ||
                                obj->lighting_render_type == lighting_render_type_e::gouraud || obj->type == object_type_e::powerup)) {
-        ApplyVolumeLightToObject(pos, obj, light_dist, red_scale, green_scale, blue_scale, light_direction, dot_range);
+        ApplyVolumeLightToObject(pos, *obj, light_dist, red_scale, green_scale, blue_scale, light_direction, dot_range);
         continue;
       } else
         continue;
@@ -980,7 +982,7 @@ void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float r
     poly_model *pm = &Poly_models[model_num];
 
     // Set our light position
-    Light_position = *pos;
+    Light_position = pos;
 
     // Set up light direction if this is a directional light
     if (light_direction) {
@@ -989,7 +991,7 @@ void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float r
     } else
       Use_light_direction = 0;
 
-    StartLightingInstance(&obj->pos, &obj->orient);
+    StartLightingInstance(obj->pos, obj->orient);
 
     // Now, get the lights position in the objects submodel space
     SetNormalizedTimeObj(*obj, normalized_time);
@@ -998,7 +1000,7 @@ void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float r
     for (int t = 0; t < pm->n_models; t++) {
       bsp_info *sm = &pm->submodel[t];
       if (sm->parent == -1)
-        ApplyLightingToSubmodel(obj, pm, sm, light_dist, red_scale, green_scale, blue_scale, dot_range);
+        ApplyLightingToSubmodel(*obj, *pm, *sm, light_dist, red_scale, green_scale, blue_scale, dot_range);
     }
 
     DoneLightingInstance();
@@ -1008,8 +1010,8 @@ void ApplyLightingToObjects(vector3 *pos, int roomnum, float light_dist, float r
 
 // Applys dynamic lightmap changes to rooms and room objects.  If light direction is non-null, we are applying a
 // directional light
-void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red_scale, float green_scale,
-                          float blue_scale, vector3 *light_direction, float dot_range) {
+void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red_scale, float green_scale,
+                          float blue_scale, optref<const vector3> light_direction, float dot_range) {
   fvi_face_room_list facelist[MAX_DYNAMIC_FACES];
   uint16_t lmilist[MAX_DYNAMIC_FACES];
   int num_spoken_for = 0;
@@ -1021,7 +1023,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
 
   ApplyLightingToObjects(pos, roomnum, light_dist, red_scale, green_scale, blue_scale, light_direction, dot_range);
 
-  num_faces = fvi_QuickDistFaceList(roomnum, *pos, light_dist, *facelist, MAX_DYNAMIC_FACES);
+  num_faces = fvi_QuickDistFaceList(roomnum, pos, light_dist, *facelist, MAX_DYNAMIC_FACES);
 
   LOG_DEBUG_IF(num_faces == MAX_DYNAMIC_FACES,
                "Dynamic light from 1 object is touching %d faces! dist=%f",
@@ -1059,7 +1061,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
     
 
     // Check for backfaces
-    vector3 subvec = *pos - lmi_ptr->upper_left;
+    vector3 subvec = pos - lmi_ptr->upper_left;
     float dist_from_plane = fabs(vm_DotProduct(subvec, lmi_ptr->normal));
 
     if (dist_from_plane > light_dist)
@@ -1067,7 +1069,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
 
     if (light_direction) {
       // If this is a directional light, check for backfaces
-      vector3 norm_vec = *pos - rp->verts[fp->face_verts[0]];
+      vector3 norm_vec = pos - rp->verts[fp->face_verts[0]];
 
       if (vm_Dot3Product(norm_vec, lmi_ptr->normal) < 0) {
         // Backface, skip this light
@@ -1076,7 +1078,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
       // Test to see if all vertices are behind the light object, if so then bail
       int in_front = 0; //
       for (t = 0; t < fp->num_verts && in_front == 0; t++) {
-        norm_vec = rp->verts[fp->face_verts[t]] - *pos;
+        norm_vec = rp->verts[fp->face_verts[t]] - pos;
         if (vm_Dot3Product(norm_vec, *light_direction) > 0)
           in_front = 1;
       }
@@ -1101,7 +1103,7 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
 
     // Get the area of effect for this light
     float area_of_effect = (1.0f - (dist_from_plane / light_dist)) * light_dist;
-    vector3 touch_vector = *pos - (lmi_ptr->normal * dist_from_plane);
+    vector3 touch_vector = pos - (lmi_ptr->normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
     float rdist = vm_DotProduct(subvec, facematrix.rvec);
@@ -1236,11 +1238,11 @@ void ApplyLightingToRooms(vector3 *pos, int roomnum, float light_dist, float red
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
 
-        float dist = vm_VectorDistanceQuick(element_vec, *pos);
+        float dist = vm_VectorDistanceQuick(element_vec, pos);
         float scalar = 1.0f - (dist / light_dist);
 
         if (light_direction) {
-          vector3 lsubvec = element_vec - *pos;
+          vector3 lsubvec = element_vec - pos;
           vm_NormalizeVectorFast(lsubvec);
           float dp = vm_DotProduct(lsubvec, *light_direction);
           if (dp < dot_range) {
@@ -1400,8 +1402,8 @@ void ClearDynamicLightmaps() {
 }
 
 // Changes the terrain shading to approximate lighting
-void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float red_scale, float green_scale,
-                            float blue_scale, vector3 *light_direction, float dot_range) {
+void ApplyLightingToTerrain(const vector3 &pos, int cellnum, float light_dist, float red_scale, float green_scale,
+                            float blue_scale, optref<const vector3> light_direction, float dot_range) {
   int celllist[MAX_DYNAMIC_CELLS];
   int num_cells, i;
 
@@ -1411,7 +1413,7 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
   ApplyLightingToObjects(pos, MAKE_ROOMNUM(cellnum), light_dist, red_scale, green_scale, blue_scale, light_direction,
                          dot_range);
 
-  num_cells = fvi_QuickDistCellList(cellnum, *pos, light_dist, celllist, MAX_DYNAMIC_CELLS);
+  num_cells = fvi_QuickDistCellList(cellnum, pos, light_dist, celllist, MAX_DYNAMIC_CELLS);
 
   if (num_cells < 1)
     return;
@@ -1448,7 +1450,7 @@ void ApplyLightingToTerrain(vector3 *pos, int cellnum, float light_dist, float r
     tpos.z() = (seg_z * TERRAIN_SIZE) + (TERRAIN_SIZE / 2);
     tpos.y() = tseg->y;
 
-    vector3 subvec = *pos - tpos;
+    vector3 subvec = pos - tpos;
 
     float dist = vm_GetMagnitudeFast(subvec);
     float scalar = 1.0f - (dist / light_dist);
