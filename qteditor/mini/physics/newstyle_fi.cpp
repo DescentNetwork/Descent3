@@ -54,8 +54,8 @@ static struct instance_context instance_stack[MAX_INSTANCE_DEPTH];
 static int instance_depth = 0;
 
 static inline void ns_compute_movement_AABB();
-static inline bool ns_movement_manual_AABB(vector3 *min_xyz, vector3 *max_xyz);
-static void CollideSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm);
+static inline bool ns_movement_manual_AABB(const vector3 &min_xyz, const vector3 &max_xyz);
+static void CollideSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm);
 
 /// instance at specified point with specified orientation.
 /// if matrix==NULL, don't modify matrix.  This will be like doing an offset.
@@ -66,33 +66,33 @@ static void newstyle_StartInstanceAngles(vector3 &pos, optref<angvec> angles);
 
 /// pops the old context
 static void newstyle_DoneInstance();
-static void CollideSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub);
-static void CollidePolygonModel(vector3 *pos, matrix *orient, int model_num, float *normalized_time,
+static void CollideSubmodel(poly_model &pm, bsp_info &sm, uint32_t f_render_sub);
+static void CollidePolygonModel(vector3 &pos, matrix &orient, int model_num, float *normalized_time,
                                 uint32_t f_render_sub);
 
-static void BuildModelAngleMatrix(matrix *mat, angle ang, vector3 *axis) {
+static void BuildModelAngleMatrix(matrix &mat, angle ang, const vector3 &axis) {
   scalar x, y, z;
   scalar s, c, t;
 
-  x = axis->x();
-  y = axis->y();
-  z = axis->z();
+  x = axis.x();
+  y = axis.y();
+  z = axis.z();
 
   s = FixSin(ang);
   c = FixCos(ang);
   t = 1.0f - c;
 
-  mat->rvec.x() = t * x * x + c;
-  mat->rvec.y() = t * x * y + s * z;
-  mat->rvec.z() = t * x * z - s * y;
+  mat.rvec.x() = t * x * x + c;
+  mat.rvec.y() = t * x * y + s * z;
+  mat.rvec.z() = t * x * z - s * y;
 
-  mat->uvec.x() = t * x * y - s * z;
-  mat->uvec.y() = t * y * y + c;
-  mat->uvec.z() = t * y * z + s * x;
+  mat.uvec.x() = t * x * y - s * z;
+  mat.uvec.y() = t * y * y + c;
+  mat.uvec.z() = t * y * z + s * x;
 
-  mat->fvec.x() = t * x * z + s * y;
-  mat->fvec.y() = t * y * z - s * x;
-  mat->fvec.z() = t * z * z + c;
+  mat.fvec.x() = t * x * z + s * y;
+  mat.fvec.y() = t * y * z - s * x;
+  mat.fvec.z() = t * z * z + c;
 }
 
 float fvi_hit_param;
@@ -130,11 +130,11 @@ inline void ns_compute_movement_AABB() {
     ns_min_xyz.z() += delta_movement.z();
 }
 
-inline bool ns_movement_manual_AABB(vector3 *min_xyz, vector3 *max_xyz) {
+inline bool ns_movement_manual_AABB(const vector3 &min_xyz, const vector3 &max_xyz) {
   bool overlap = true;
 
-  if (max_xyz->y() < ns_min_xyz.y() || ns_max_xyz.y() < min_xyz->y() || max_xyz->x() < ns_min_xyz.x() ||
-      ns_max_xyz.x() < min_xyz->x() || max_xyz->z() < ns_min_xyz.z() || ns_max_xyz.z() < min_xyz->z())
+  if (max_xyz.y() < ns_min_xyz.y() || ns_max_xyz.y() < min_xyz.y() || max_xyz.x() < ns_min_xyz.x() ||
+      ns_max_xyz.x() < min_xyz.x() || max_xyz.z() < ns_min_xyz.z() || ns_max_xyz.z() < min_xyz.z())
     overlap = false;
 
   return overlap;
@@ -145,7 +145,7 @@ inline bool ns_movement_manual_AABB(vector3 *min_xyz, vector3 *max_xyz) {
 //					pointlist - a pointer to a list of pointers to points
 //					bm - the bitmap handle if texturing.  ignored if flat shading
 
-static void CollideSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
+static void CollideSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
   int i;
   int j;
   vector3 colp;
@@ -158,20 +158,20 @@ static void CollideSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
   // (For this reference frame)
   ns_compute_movement_AABB();
 
-  if (ns_movement_manual_AABB(&sm->min, &sm->max)) {
+  if (ns_movement_manual_AABB(sm.min, sm.max)) {
 
-    for (i = 0; i < sm->num_faces; i++) {
-      if (ns_movement_manual_AABB(&sm->face_min[i], &sm->face_max[i])) {
-        polyface *fp = &sm->faces[i];
+    for (i = 0; i < sm.num_faces; i++) {
+      if (ns_movement_manual_AABB(sm.face_min[i], sm.face_max[i])) {
+        polyface *fp = &sm.faces[i];
 
         if (fp->texnum >= 0 &&
-            !GameTextures[pm->textures[fp->texnum]].flags.fly_thru &&
-            !GameTextures[pm->textures[fp->texnum]].flags.pass_thru)
+            !GameTextures[pm.textures[fp->texnum]].flags.fly_thru &&
+            !GameTextures[pm.textures[fp->texnum]].flags.pass_thru)
         {
           Q_ASSERT(fp->nverts <= 32);
 
           for (j = 0; j < fp->nverts; j++) {
-            vertex_list[j] = &sm->verts[fp->vertnums[j]];
+            vertex_list[j] = &sm.verts[fp->vertnums[j]];
           }
 
           face_hit_type = check_line_to_face(newp, colp, col_dist, wall_norm, *fvi_query_ptr->p0, *fvi_query_ptr->p1,
@@ -182,7 +182,7 @@ static void CollideSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
 
             face_normal *= -1.0f;
             for (count = 0; count < fp->nverts; count++) {
-              vertex_list[fp->nverts - count - 1] = &sm->verts[fp->vertnums[count]];
+              vertex_list[fp->nverts - count - 1] = &sm.verts[fp->vertnums[count]];
             }
 
             face_hit_type =
@@ -208,7 +208,7 @@ static void CollideSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
               fvi_hit_data_ptr->num_hits = 1;
 
               fvi_hit_data_ptr->hit_object[0] = fvi_curobj;
-              fvi_hit_data_ptr->hit_subobject[0] = sm - pm->submodel.data();
+              fvi_hit_data_ptr->hit_subobject[0] = &sm - pm.submodel.data();
               fvi_hit_data_ptr->hit_type[0] = fvi_hit_type::sphere_2_poly_object;
               fvi_hit_data_ptr->hit_wallnorm[0] = wall_norm;
               fvi_hit_data_ptr->hit_face_pnt[0] = colp;
@@ -307,28 +307,28 @@ static void newstyle_DoneInstance() {
   }
 }
 
-void CollideSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
+void CollideSubmodel(poly_model &pm, bsp_info &sm, uint32_t f_render_sub) {
   // Don't collide with door housings (That is the 'room' portion of the door)
-  if ((sm->flags.shell) || (sm->flags.frontface))
+  if ((sm.flags.shell) || (sm.flags.frontface))
     return;
 
-  StartPolyModelPosInstance(sm->mod_pos);
-  vector3 temp_vec = sm->mod_pos + sm->offset;
-  newstyle_StartInstanceAngles(temp_vec, sm->angs);
+  StartPolyModelPosInstance(sm.mod_pos);
+  vector3 temp_vec = sm.mod_pos + sm.offset;
+  newstyle_StartInstanceAngles(temp_vec, sm.angs);
 
   // Check my bit to see if I get collided with.  :)
-  if (f_render_sub & (0x00000001 << (sm - pm->submodel.data())))
+  if (f_render_sub & (0x00000001 << (&sm - pm.submodel.data())))
     CollideSubmodelFacesUnsorted(pm, sm);
 
-  for (int i = 0; i < sm->num_children; i++) {
-    CollideSubmodel(pm, &pm->submodel[sm->children[i]], f_render_sub);
+  for (int i = 0; i < sm.num_children; i++) {
+    CollideSubmodel(pm, pm.submodel[sm.children[i]], f_render_sub);
   }
 
   newstyle_DoneInstance();
   DonePolyModelPosInstance();
 }
 
-void CollidePolygonModel(vector3 *pos, matrix *orient, int model_num, float *normalized_time, uint32_t f_render_sub) {
+void CollidePolygonModel(vector3 &pos, matrix &orient, int model_num, float *normalized_time, uint32_t f_render_sub) {
   poly_model *po;
 
   Q_ASSERT(Poly_models[model_num].used);
@@ -338,14 +338,14 @@ void CollidePolygonModel(vector3 *pos, matrix *orient, int model_num, float *nor
 
   po = &Poly_models[model_num];
 
-  newstyle_StartInstanceMatrix(*pos, *orient);
+  newstyle_StartInstanceMatrix(pos, orient);
 
   SetModelAnglesAndPos(*po, normalized_time);
 
   for (int i = 0; i < po->n_models; i++) {
     bsp_info *sm = &po->submodel[i];
     if (sm->parent == -1)
-      CollideSubmodel(po, sm, f_render_sub);
+      CollideSubmodel(*po, *sm, f_render_sub);
   }
 
   newstyle_DoneInstance();
@@ -404,14 +404,14 @@ bool PolyCollideObject(object& obj) {
   if (obj.type == object_type_e::player || obj.type == object_type_e::robot || obj.type == object_type_e::debris || obj.type == object_type_e::door ||
       obj.type == object_type_e::building || obj.type == object_type_e::clutter || obj.type == object_type_e::building) {
     SetNormalizedTimeObj(obj, normalized_time);
-    CollidePolygonModel(&obj.pos, &obj.orient, obj.rtype.pobj_info().model_num, normalized_time,
+    CollidePolygonModel(obj.pos, obj.orient, obj.rtype.pobj_info().model_num, normalized_time,
                         obj.rtype.pobj_info().subobj_flags);
   } else {
-    CollidePolygonModel(&obj.pos, &obj.orient, obj.rtype.pobj_info().model_num, nullptr,
+    CollidePolygonModel(obj.pos, obj.orient, obj.rtype.pobj_info().model_num, nullptr,
                         obj.rtype.pobj_info().subobj_flags);
   }
 #else
-  CollidePolygonModel(&obj.pos, &obj.orient, obj.rtype.pobj_info().model_num, NULL, obj.rtype.pobj_info().subobj_flags);
+  CollidePolygonModel(obj.pos, obj.orient, obj.rtype.pobj_info().model_num, NULL, obj.rtype.pobj_info().subobj_flags);
 #endif
 
   View_position = temp_pos;
