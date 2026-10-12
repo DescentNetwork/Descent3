@@ -559,7 +559,7 @@ void ObjReInitAll() {
 
 // Initializes a new object.  Adds it to the list for the given room.
 // Returns the object number, or std::nullopt on failure.
-index_t ObjCreate(object_type_e type, uint16_t id, index_t roomnum, vector3& pos, const matrix *orient,
+index_t ObjCreate(object_type_e type, uint16_t id, index_t roomnum, vector3& pos, optref<const matrix> orient,
                                   int parent_handle) {
   if (type == object_type_e::none)
     return std::nullopt;
@@ -603,7 +603,7 @@ index_t ObjCreate(object_type_e type, uint16_t id, index_t roomnum, vector3& pos
   // Set the object's orientation
   // THIS MUST BE DONE AFTER ObjInit (as ObjInit loads a polymodel and sets
   // the anim and wall offsets).
-  ObjSetOrient(obj, orient ? *orient : Identity_matrix);
+  ObjSetOrient(obj, orient.has_value() ? *orient : Identity_matrix);
 
   // Link object into room or terrain cell
   ObjLink(objnum, roomnum);

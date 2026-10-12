@@ -224,7 +224,7 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
     orient = Viewer_object->orient;
   }
 
-  objnum = ObjCreate(obj_type, obj_id, Viewer_object->roomnum, Viewer_object->pos, &orient).value_or(-1);
+  objnum = ObjCreate(obj_type, obj_id, Viewer_object->roomnum, Viewer_object->pos, orient).value_or(-1);
   if (objnum == -1)
     return false;
 

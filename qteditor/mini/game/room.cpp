@@ -1141,7 +1141,7 @@ void CreateRoomObjects() {
 
       Q_ASSERT(roomnum != -1);
 
-      objnum = ObjCreate(object_type_e::room, r, roomnum, pos, nullptr).value_or(-1);
+      objnum = ObjCreate(object_type_e::room, r, roomnum, pos, std::nullopt).value_or(-1);
       Q_ASSERT(objnum != -1); // DAJ -1FIX moved up
       Objects[objnum].size = rad;
       Objects[objnum].wall_sphere_offset = vector3{};
