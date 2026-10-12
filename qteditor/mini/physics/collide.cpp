@@ -1050,7 +1050,7 @@ void DoWallEffects(object *weapon, int surface_tmap) {
 
 #define FORCEFIELD_DAMAGE 5.0f
 
-extern void DeformTerrain(vector3 *pos, int depth, scalar size);
+extern void DeformTerrain(const vector3 &pos, int depth, scalar size);
 
 // Check for lava, volatile, or water surface.  If contact, make special sound & kill the weapon
 void check_for_special_surface(object *weapon, int surface_tmap, vector3 *surface_normal, float hit_dot) {
@@ -1195,7 +1195,7 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
 
   if (ROOMNUM_OUTSIDE(hitseg)) {
     if (Weapons[weapon->id].terrain_damage_size > 0 && Weapons[weapon->id].terrain_damage_depth > 0) {
-      DeformTerrain(&weapon->pos, Weapons[weapon->id].terrain_damage_depth, Weapons[weapon->id].terrain_damage_size);
+      DeformTerrain(weapon->pos, Weapons[weapon->id].terrain_damage_depth, Weapons[weapon->id].terrain_damage_size);
     }
   }
 

@@ -456,15 +456,15 @@ void DeformTerrainPoint(int x, int z, int change_height) {
 }
 
 void UpdateSingleTerrainLightmap(int which);
-void DeformTerrain(vector3 *pos, int depth, float size) {
+void DeformTerrain(const vector3 &pos, int depth, float size) {
   int startx, startz, endx, endz;
   int changed[4] = {0, 0, 0, 0};
-  vector3 local_pos = *pos;
+  vector3 local_pos = pos;
 
-  startx = (pos->x() / TERRAIN_SIZE) - (size / TERRAIN_SIZE);
-  startz = (pos->z() / TERRAIN_SIZE) - (size / TERRAIN_SIZE);
-  endx = (pos->x() / TERRAIN_SIZE) + (size / TERRAIN_SIZE);
-  endz = (pos->z() / TERRAIN_SIZE) + (size / TERRAIN_SIZE);
+  startx = (pos.x() / TERRAIN_SIZE) - (size / TERRAIN_SIZE);
+  startz = (pos.z() / TERRAIN_SIZE) - (size / TERRAIN_SIZE);
+  endx = (pos.x() / TERRAIN_SIZE) + (size / TERRAIN_SIZE);
+  endz = (pos.z() / TERRAIN_SIZE) + (size / TERRAIN_SIZE);
 
   startx = std::max(0, startx);
   startz = std::max(0, startz);
@@ -635,18 +635,18 @@ void CloseTerrain(void) {
 
 // Given a 3space triplet, computes the u,v coords for a texture map at that position
 // on a sphere.
-void SphereMap(float x, float y, float z, float radius, float *u, float *v, int h) {
+void SphereMap(float x, float y, float z, float radius, float &u, float &v, int h) {
   if (y < 0.0f)
     Q_ASSERT(false);
 
   float fh = h;
 
   // produces u from 0 to 1
-  *u = fh / (65536.0f / 16.005f); // account for floating point precision error
+  u = fh / (65536.0f / 16.005f); // account for floating point precision error
 
-  *v = std::acos(y / radius) / (std::numbers::pi_v<float> / 2.0f); // v = 0.5 to 1
-  *v /= 0.5f;                         // v=1 to 2
-  *v -= 1.0f;                          // v=0 to 1
+  v = std::acos(y / radius) / (std::numbers::pi_v<float> / 2.0f); // v = 0.5 to 1
+  v /= 0.5f;                         // v=1 to 2
+  v -= 1.0f;                          // v=0 to 1
 }
 
 void SetupSkyTexture() {
