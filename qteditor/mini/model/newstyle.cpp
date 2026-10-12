@@ -108,22 +108,22 @@ static vector3 Fog_view_pos, Specular_view_pos, Bump_view_pos;
 static matrix Unscaled_bumpmap_matrix;
 
 static int ModelFaceSortFunc(const int16_t *a, const int16_t *b);
-static inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum);
-static inline void RenderSubmodelLightmapFace(poly_model *pm, bsp_info *sm, int facenum);
-static inline void RenderSubmodelFaceFogged(poly_model *pm, bsp_info *sm, int facenum);
-static inline void RenderSubmodelFaceSpecular(poly_model *pm, bsp_info *sm, int facenum);
+static inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum);
+static inline void RenderSubmodelLightmapFace(poly_model &pm, bsp_info &sm, int facenum);
+static inline void RenderSubmodelFaceFogged(poly_model &pm, bsp_info &sm, int facenum);
+static inline void RenderSubmodelFaceSpecular(poly_model &pm, bsp_info &sm, int facenum);
 
 /// Draws a glowing cone of light.
-static void DrawGlowEffect(vector3 *pos, float r, float g, float b, vector3 *norm, float size);
+static void DrawGlowEffect(const vector3 &pos, float r, float g, float b, const vector3 &norm, float size);
 
 /// Draws a glowing cone of light that represents thrusters
-static void DrawThrusterEffect(vector3 *pos, float r, float g, float b, vector3 *norm, float size, float length);
+static void DrawThrusterEffect(const vector3 &pos, float r, float g, float b, const vector3 &norm, float size, float length);
 
-static void RenderSubmodelFacesSorted(poly_model *pm, bsp_info *sm);
-static void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm);
+static void RenderSubmodelFacesSorted(poly_model &pm, bsp_info &sm);
+static void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm);
 
 /// Rotates all of the points of a submodel, plus supplies color info.
-static void RotateModelPoints(poly_model *pm, bsp_info *sm);
+static void RotateModelPoints(poly_model &pm, bsp_info &sm);
 
 int ModelFaceSortFunc(const int16_t *a, const int16_t *b) {
   float az, bz;
@@ -172,13 +172,13 @@ int Lightmap_debug_subnum = -1;
 int Lightmap_debug_facenum = -1;
 int Lightmap_debug_model = -1;
 
-inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
+inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
 
   std::vector<g3Point *> pointlist(100);
   int bm_handle;
   int smooth = 0;
-  polyface *fp = &sm->faces[facenum];
-  int modelnum = sm - pm->submodel.data();
+  polyface *fp = &sm.faces[facenum];
+  int modelnum = &sm - pm.submodel.data();
   texture *texp = nullptr;
   int t;
   int custom = 0;
@@ -190,12 +190,12 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
 
   triangulated_faces[facenum] = 0;
 
-  if (sm->flags.custom)
+  if (sm.flags.custom)
     custom = 1;
 
   // Setup texturing
   if (fp->texnum != -1)
-    texp = &GameTextures[pm->textures[fp->texnum]];
+    texp = &GameTextures[pm.textures[fp->texnum]];
 
   if (texp && custom && Polymodel_use_effect && (Polymodel_effect.type.custom_texture))
     texp = &GameTextures[Polymodel_effect.custom_texture];
@@ -243,7 +243,7 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
     if (texp) {
       p->p3_uvl.u = fp->u[t] + uchange;
       p->p3_uvl.v = fp->v[t] + vchange;
-      p->p3_uvl.a = sm->alpha[fp->vertnums[t]];
+      p->p3_uvl.a = sm.alpha[fp->vertnums[t]];
       p->p3_flags.uv = true;
       p->p3_flags.rgba = true;
       p->p3_flags.lighting = true;
@@ -253,12 +253,12 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
           Polymodel_light_type == polymodel_light_type::gouraud) {
         p->p3_flags.uv2 = true;
 
-        vector3 vert = sm->verts[fp->vertnums[t]];
+        vector3 vert = sm.verts[fp->vertnums[t]];
 
         vector3 vertnorm;
 
         if (smooth)
-          vertnorm = sm->vertnorms[fp->vertnums[t]];
+          vertnorm = sm.vertnorms[fp->vertnums[t]];
         else
           vertnorm = fp->normal;
 
@@ -477,11 +477,11 @@ inline void RenderSubmodelFace(poly_model *pm, bsp_info *sm, int facenum) {
 #endif
 }
 
-inline void RenderSubmodelLightmapFace(poly_model *pm, bsp_info *sm, int facenum) {
+inline void RenderSubmodelLightmapFace(poly_model &pm, bsp_info &sm, int facenum) {
   std::vector<g3Point *> pointlist(100);
 
-  polyface *fp = &sm->faces[facenum];
-  int modelnum = sm - pm->submodel.data();
+  polyface *fp = &sm.faces[facenum];
+  int modelnum = &sm - pm.submodel.data();
   int t;
 
   int lm_handle = LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle;
@@ -513,9 +513,9 @@ inline void RenderSubmodelLightmapFace(poly_model *pm, bsp_info *sm, int facenum
     g3_SetTriangulationTest(0);
 }
 
-inline void RenderSubmodelFaceFogged(poly_model *pm, bsp_info *sm, int facenum) {
+inline void RenderSubmodelFaceFogged(poly_model &pm, bsp_info &sm, int facenum) {
   std::vector<g3Point *> pointlist(100);
-  polyface *fp = &sm->faces[facenum];
+  polyface *fp = &sm.faces[facenum];
   int t;
 
   for (t = 0; t < fp->nverts; t++) {
@@ -525,9 +525,9 @@ inline void RenderSubmodelFaceFogged(poly_model *pm, bsp_info *sm, int facenum) 
     scalar mag;
 
     if (Polymodel_effect.fog_plane_check == 1) {
-      mag = vm_DotProduct(Fog_plane, sm->verts[fp->vertnums[t]]) + Fog_distance;
+      mag = vm_DotProduct(Fog_plane, sm.verts[fp->vertnums[t]]) + Fog_distance;
     } else {
-      vector3 *vec = &sm->verts[fp->vertnums[t]];
+      vector3 *vec = &sm.verts[fp->vertnums[t]];
 
       // Now we must generate the split point. This is simply
       // an equation in the form Origin + t*Direction
@@ -563,9 +563,9 @@ inline void RenderSubmodelFaceFogged(poly_model *pm, bsp_info *sm, int facenum) 
     g3_SetTriangulationTest(0);
 }
 
-inline void RenderSubmodelFaceSpecular(poly_model *pm, bsp_info *sm, int facenum) {
+inline void RenderSubmodelFaceSpecular(poly_model &pm, bsp_info &sm, int facenum) {
   std::vector<g3Point *> pointlist(100);
-  polyface *fp = &sm->faces[facenum];
+  polyface *fp = &sm.faces[facenum];
   int t;
   bool smooth = 0;
 
@@ -574,12 +574,12 @@ inline void RenderSubmodelFaceSpecular(poly_model *pm, bsp_info *sm, int facenum
 
   for (t = 0; t < fp->nverts; t++) {
     g3Point *p = &Robot_points[fp->vertnums[t]];
-    vector3 vert = sm->verts[fp->vertnums[t]];
+    vector3 vert = sm.verts[fp->vertnums[t]];
 
     vector3 vertnorm;
 
     if (smooth)
-      vertnorm = sm->vertnorms[fp->vertnums[t]];
+      vertnorm = sm.vertnorms[fp->vertnums[t]];
     else
       vertnorm = fp->normal;
 
@@ -625,7 +625,7 @@ inline void RenderSubmodelFaceSpecular(poly_model *pm, bsp_info *sm, int facenum
 #define MAX_PARTS 100
 
 // Draws a glowing cone of light that represents thrusters
-void DrawThrusterEffect(vector3 *pos, float r, float g, float b, vector3 *norm, float size, float length) {
+void DrawThrusterEffect(const vector3 &pos, float r, float g, float b, const vector3 &norm, float size, float length) {
   // NOTE: body commented out -- depends on unported fireball subsystem
   (void)pos;
   (void)r;
@@ -637,7 +637,7 @@ void DrawThrusterEffect(vector3 *pos, float r, float g, float b, vector3 *norm, 
 }
 
 // Draws a glowing cone of light
-void DrawGlowEffect(vector3 *pos, float r, float g, float b, vector3 *norm, float size) {
+void DrawGlowEffect(const vector3 &pos, float r, float g, float b, const vector3 &norm, float size) {
   // NOTE: body commented out -- depends on unported fireball subsystem
   (void)pos;
   (void)r;
@@ -647,20 +647,20 @@ void DrawGlowEffect(vector3 *pos, float r, float g, float b, vector3 *norm, floa
   (void)size;
 }
 
-void RenderSubmodelFacesSorted(poly_model *pm, bsp_info *sm) {
+void RenderSubmodelFacesSorted(poly_model &pm, bsp_info &sm) {
   int i, t;
 
   int rcount;
   int model_render_order[MAX_POLYGON_VECS];
 
-  Q_ASSERT(sm->nverts < MAX_POLYGON_VECS);
+  Q_ASSERT(sm.nverts < MAX_POLYGON_VECS);
 
   // Build list of visible (non-backfacing) faces, & compute average face depths
-  for (i = rcount = 0; i < sm->num_faces; i++) {
-    polyface *fp = &sm->faces[i];
+  for (i = rcount = 0; i < sm.num_faces; i++) {
+    polyface *fp = &sm.faces[i];
 
     // check for visible face
-    if (g3_CheckNormalFacing(sm->verts[fp->vertnums[0]], fp->normal)) {
+    if (g3_CheckNormalFacing(sm.verts[fp->vertnums[0]], fp->normal)) {
       face_depth[i] = 0;
       for (t = 0; t < fp->nverts; t++)
         face_depth[i] += Robot_points[fp->vertnums[t]].p3_z;
@@ -686,9 +686,9 @@ void RenderSubmodelFacesSorted(poly_model *pm, bsp_info *sm) {
     RenderSubmodelFace(pm, sm, facenum);
   }
 }
-void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
+void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
   int i;
-  int modelnum = sm - pm->submodel.data();
+  int modelnum = &sm - pm.submodel.data();
   int16_t alpha_faces[MAX_FACES_PER_ROOM], num_alpha_faces = 0;
   std::vector<state_limited_element> state_elements;
   vector3 view_pos;
@@ -699,26 +699,26 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
   Specular_view_pos = view_pos;
   Bump_view_pos = view_pos;
 
-  if (modelnum < 0 || modelnum >= pm->n_models) {
-    LOG_ERROR("Got bad model number %d from polymodel %s!", modelnum, pm->name);
+  if (modelnum < 0 || modelnum >= pm.n_models) {
+    LOG_ERROR("Got bad model number %d from polymodel %s!", modelnum, pm.name);
     return;
   }
 
-  if (sm->flags.custom)
+  if (sm.flags.custom)
     rend_SetZBias(-0.5f);
 
-  for (i = 0; i < sm->num_faces; i++) {
+  for (i = 0; i < sm.num_faces; i++) {
     vector3 tempv;
-    polyface *fp = &sm->faces[i];
+    polyface *fp = &sm.faces[i];
     texture *texp;
 
     // Check to see if this face even faces us!
-    tempv = view_pos - sm->verts[fp->vertnums[0]];
+    tempv = view_pos - sm.verts[fp->vertnums[0]];
     if ((vm_Dot3Product(tempv, fp->normal)) < 0)
       continue;
 
     if (fp->texnum != -1) {
-      texp = &GameTextures[pm->textures[fp->texnum]];
+      texp = &GameTextures[pm.textures[fp->texnum]];
 
       if (texp->flags.alpha || texp->flags.saturate) {
         alpha_faces[num_alpha_faces++] = i;
@@ -729,7 +729,7 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
     if (StateLimited) {
       state_limited_element state_element;
       state_element.facenum = i;
-      state_element.sort_key = pm->textures[fp->texnum];
+      state_element.sort_key = pm.textures[fp->texnum];
       state_elements.push_back(state_element);
     } else
       RenderSubmodelFace(pm, sm, i);
@@ -749,7 +749,7 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
     RenderSubmodelFace(pm, sm, alpha_faces[i]);
   // rend_SetZBufferWriteMask (1);
 
-  if (sm->flags.custom)
+  if (sm.flags.custom)
     rend_SetZBias(0);
 
   // Draw specular faces if needed
@@ -766,18 +766,18 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
                              uint8_t(Polymodel_effect.spec_g * 255.0f),
                              uint8_t(Polymodel_effect.spec_b * 255.0f)));
 
-    for (i = 0; i < sm->num_faces; i++) {
-      polyface *fp = &sm->faces[i];
+    for (i = 0; i < sm.num_faces; i++) {
+      polyface *fp = &sm.faces[i];
 
-      if (!g3_CheckNormalFacing(sm->verts[fp->vertnums[0]], fp->normal))
+      if (!g3_CheckNormalFacing(sm.verts[fp->vertnums[0]], fp->normal))
         continue;
 
-      /*	vector3 subvec=sm->verts[fp->vertnums[0]]-Polymodel_specular_pos;
+      /*	vector3 subvec=sm.verts[fp->vertnums[0]]-Polymodel_specular_pos;
               if ((fp->normal * subvec)> 0)
                       continue;*/
 
       if ((Polymodel_effect.type.specular_model) ||
-          (fp->texnum != -1 && GameTextures[pm->textures[fp->texnum]].flags.smooth_specular))
+          (fp->texnum != -1 && GameTextures[pm.textures[fp->texnum]].flags.smooth_specular))
         RenderSubmodelFaceSpecular(pm, sm, i);
     }
 
@@ -811,10 +811,10 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
                              uint8_t(Polymodel_effect.fog_g * 255.0f),
                              uint8_t(Polymodel_effect.fog_b * 255.0f)));
 
-    for (i = 0; i < sm->num_faces; i++) {
-      polyface *fp = &sm->faces[i];
+    for (i = 0; i < sm.num_faces; i++) {
+      polyface *fp = &sm.faces[i];
 
-      if (!g3_CheckNormalFacing(sm->verts[fp->vertnums[0]], fp->normal))
+      if (!g3_CheckNormalFacing(sm.verts[fp->vertnums[0]], fp->normal))
         continue;
 
       RenderSubmodelFaceFogged(pm, sm, i);
@@ -826,13 +826,13 @@ void RenderSubmodelFacesUnsorted(poly_model *pm, bsp_info *sm) {
 }
 
 // Rotates all of the points of a submodel, plus supplies color info
-void RotateModelPoints(poly_model *pm, bsp_info *sm) {
+void RotateModelPoints(poly_model &pm, bsp_info &sm) {
 
   // Figure out lighting
   if (Polymodel_light_type == polymodel_light_type::static_) {
-    if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
-      for (int i = 0; i < sm->nverts; i++) {
-        vector3 vec = sm->verts[i];
+    if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm.flags.jitter) {
+      for (int i = 0; i < sm.nverts; i++) {
+        vector3 vec = sm.verts[i];
 
         float val = ((d3::rand() % 1000) - 500.0f) / 500.0f;
         vec *= 1.0f + (Polymodel_effect.deform_range * val);
@@ -840,13 +840,13 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         g3_RotatePoint(Robot_points[i], vec);
       }
     } else {
-      for (int i = 0; i < sm->nverts; i++)
-        g3_RotatePoint(Robot_points[i], sm->verts[i]);
+      for (int i = 0; i < sm.nverts; i++)
+        g3_RotatePoint(Robot_points[i], sm.verts[i]);
     }
   } else if (Polymodel_light_type == polymodel_light_type::lightmap) {
-    if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
-      for (int i = 0; i < sm->nverts; i++) {
-        vector3 vec = sm->verts[i];
+    if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm.flags.jitter) {
+      for (int i = 0; i < sm.nverts; i++) {
+        vector3 vec = sm.verts[i];
         float val = ((d3::rand() % 1000) - 500.0f) / 500.0f;
         vec *= 1.0f + (Polymodel_effect.deform_range * val);
 
@@ -857,8 +857,8 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         Robot_points[i].p3_b = 1.0f;
       }
     } else {
-      for (int i = 0; i < sm->nverts; i++) {
-        g3_RotatePoint(Robot_points[i], sm->verts[i]);
+      for (int i = 0; i < sm.nverts; i++) {
+        g3_RotatePoint(Robot_points[i], sm.verts[i]);
         Robot_points[i].p3_r = 1.0f;
         Robot_points[i].p3_g = 1.0f;
         Robot_points[i].p3_b = 1.0f;
@@ -866,15 +866,15 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
     }
   } else if (Polymodel_light_type == polymodel_light_type::gouraud) {
     if (Polymodel_use_effect && Polymodel_effect.type.color) {
-      if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
-        for (int i = 0; i < sm->nverts; i++) {
-          vector3 vec = sm->verts[i];
+      if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm.flags.jitter) {
+        for (int i = 0; i < sm.nverts; i++) {
+          vector3 vec = sm.verts[i];
           float val = ((d3::rand() % 1000) - 500.0f) / 500.0f;
           vec *= 1.0f + (Polymodel_effect.deform_range * val);
 
           g3_RotatePoint(Robot_points[i], vec);
 
-          vector3 normvec = sm->vertnorms[i];
+          vector3 normvec = sm.vertnorms[i];
           val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
           Robot_points[i].p3_r = Polymodel_effect.r * val * Polylighting_static_red;
@@ -882,15 +882,15 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
           Robot_points[i].p3_b = Polymodel_effect.b * val * Polylighting_static_blue;
         }
       } else {
-        if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
-          for (int i = 0; i < sm->nverts; i++) {
-            vector3 vec = sm->verts[i];
+        if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm.flags.jitter) {
+          for (int i = 0; i < sm.nverts; i++) {
+            vector3 vec = sm.verts[i];
             float val = ((d3::rand() % 1000) - 500.0f) / 500.0f;
             vec *= 1.0f + (Polymodel_effect.deform_range * val);
 
             g3_RotatePoint(Robot_points[i], vec);
 
-            vector3 normvec = sm->vertnorms[i];
+            vector3 normvec = sm.vertnorms[i];
             val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
             Robot_points[i].p3_r = Polymodel_effect.r * val * Polylighting_static_red;
@@ -898,9 +898,9 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
             Robot_points[i].p3_b = Polymodel_effect.b * val * Polylighting_static_blue;
           }
         } else {
-          for (int i = 0; i < sm->nverts; i++) {
-            g3_RotatePoint(Robot_points[i], sm->verts[i]);
-            vector3 normvec = sm->vertnorms[i];
+          for (int i = 0; i < sm.nverts; i++) {
+            g3_RotatePoint(Robot_points[i], sm.verts[i]);
+            vector3 normvec = sm.vertnorms[i];
             float val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
             Robot_points[i].p3_r = Polymodel_effect.r * val * Polylighting_static_red;
@@ -910,14 +910,14 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
         }
       }
     } else {
-      if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm->flags.jitter) {
-        for (int i = 0; i < sm->nverts; i++) {
-          vector3 vec = sm->verts[i];
+      if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm.flags.jitter) {
+        for (int i = 0; i < sm.nverts; i++) {
+          vector3 vec = sm.verts[i];
           float val = ((d3::rand() % 1000) - 500.0f) / 500.0f;
           vec *= 1.0f + (Polymodel_effect.deform_range * val);
 
           g3_RotatePoint(Robot_points[i], vec);
-          vector3 normvec = sm->vertnorms[i];
+          vector3 normvec = sm.vertnorms[i];
           val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
           Robot_points[i].p3_r = val * Polylighting_static_red;
@@ -925,9 +925,9 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
           Robot_points[i].p3_b = val * Polylighting_static_blue;
         }
       } else {
-        for (int i = 0; i < sm->nverts; i++) {
-          g3_RotatePoint(Robot_points[i], sm->verts[i]);
-          vector3 normvec = sm->vertnorms[i];
+        for (int i = 0; i < sm.nverts; i++) {
+          g3_RotatePoint(Robot_points[i], sm.verts[i]);
+          vector3 normvec = sm.vertnorms[i];
           float val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
           Robot_points[i].p3_r = val * Polylighting_static_red;
@@ -940,19 +940,19 @@ void RotateModelPoints(poly_model *pm, bsp_info *sm) {
 
 #ifndef RELEASE
   if (!UseHardware) {
-    for (int i = 0; i < sm->nverts; i++)
+    for (int i = 0; i < sm.nverts; i++)
       Robot_points[i].p3_l = Robot_points[i].p3_g;
     rend_SetColorModel(color_model::mono);
   }
 #endif
 }
 
-void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
+void RenderSubmodel(poly_model &pm, bsp_info &sm, uint32_t f_render_sub) {
   int i;
   matrix lightmatrix;
 
   // Don't render door housings
-  if (IsNonRenderableSubmodel(*pm, sm - pm->submodel.data()))
+  if (IsNonRenderableSubmodel(pm, &sm - pm.submodel.data()))
     return;
 
   if (Polymodel_light_type != polymodel_light_type::lightmap) {
@@ -966,22 +966,22 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
     Multicolor_texture = FindTextureName("MultiColor").value_or(-1);
 
   rend_SetColorModel(color_model::rgb);
-  StartPolyModelPosInstance(sm->mod_pos);
-  vector3 temp_vec = sm->mod_pos + sm->offset;
-  g3_StartInstanceAngles(temp_vec, sm->angs);
+  StartPolyModelPosInstance(sm.mod_pos);
+  vector3 temp_vec = sm.mod_pos + sm.offset;
+  g3_StartInstanceAngles(temp_vec, sm.angs);
 
-  vm_AnglesToMatrix(lightmatrix, sm->angs.p(), sm->angs.h(), sm->angs.b());
+  vm_AnglesToMatrix(lightmatrix, sm.angs.p(), sm.angs.h(), sm.angs.b());
   StartLightInstance(temp_vec, lightmatrix);
 
   // Check my bit to see if I get drawn
-  if (f_render_sub & (0x00000001 << (sm - pm->submodel.data()))) {
-    if (sm->flags.custom) {
+  if (f_render_sub & (0x00000001 << (&sm - pm.submodel.data()))) {
+    if (sm.flags.custom) {
       if (!(Polymodel_effect.type.custom_texture))
         goto pop_lighting;
     }
 
     // Check to draw glow faces
-    if (sm->flags.glow || sm->flags.thruster) {
+    if (sm.flags.glow || sm.flags.thruster) {
       if (!FacingPass)
         goto pop_lighting;
 
@@ -990,24 +990,24 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
 
       if (Polymodel_use_effect && Polymodel_effect.type.glow_scalar) {
         if (Polymodel_effect.type.custom_glow)
-          DrawThrusterEffect(&zero_pos, Polymodel_effect.glow_r, Polymodel_effect.glow_g, Polymodel_effect.glow_b,
-                             &sm->glow_info[0].normal, sm->glow_info[0].glow_size * Polymodel_effect.glow_size_scalar,
+          DrawThrusterEffect(zero_pos, Polymodel_effect.glow_r, Polymodel_effect.glow_g, Polymodel_effect.glow_b,
+                             sm.glow_info[0].normal, sm.glow_info[0].glow_size * Polymodel_effect.glow_size_scalar,
                              3 * Polymodel_effect.glow_length_scalar);
         else
-          DrawThrusterEffect(&zero_pos, sm->glow_info[0].glow_r, sm->glow_info[0].glow_g, sm->glow_info[0].glow_b,
-                             &sm->glow_info[0].normal, sm->glow_info[0].glow_size * Polymodel_effect.glow_size_scalar,
+          DrawThrusterEffect(zero_pos, sm.glow_info[0].glow_r, sm.glow_info[0].glow_g, sm.glow_info[0].glow_b,
+                             sm.glow_info[0].normal, sm.glow_info[0].glow_size * Polymodel_effect.glow_size_scalar,
                              3 * Polymodel_effect.glow_length_scalar);
       } else {
         if (Polymodel_use_effect && Polymodel_effect.type.custom_glow)
-          DrawGlowEffect(&zero_pos, Polymodel_effect.glow_r, Polymodel_effect.glow_g, Polymodel_effect.glow_b,
-                         &sm->glow_info[0].normal, sm->glow_info[0].glow_size);
+          DrawGlowEffect(zero_pos, Polymodel_effect.glow_r, Polymodel_effect.glow_g, Polymodel_effect.glow_b,
+                         sm.glow_info[0].normal, sm.glow_info[0].glow_size);
         else
-          DrawGlowEffect(&zero_pos, sm->glow_info[0].glow_r, sm->glow_info[0].glow_g, sm->glow_info[0].glow_b,
-                         &sm->glow_info[0].normal, sm->glow_info[0].glow_size);
+          DrawGlowEffect(zero_pos, sm.glow_info[0].glow_r, sm.glow_info[0].glow_g, sm.glow_info[0].glow_b,
+                         sm.glow_info[0].normal, sm.glow_info[0].glow_size);
       }
 
       goto pop_lighting;
-    } else if (sm->flags.facing) {
+    } else if (sm.flags.facing) {
       if (!FacingPass)
         goto pop_lighting;
 
@@ -1016,18 +1016,18 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
       rend_SetColorModel(color_model::mono);
       rend_SetOverlayType(overlay_type::none);
 
-      int bm_handle = GetTextureBitmap(pm->textures[sm->faces[0].texnum], 0);
-      rend_SetAlphaValue(GameTextures[pm->textures[sm->faces[0].texnum]].alpha * 255);
+      int bm_handle = GetTextureBitmap(pm.textures[sm.faces[0].texnum], 0);
+      rend_SetAlphaValue(GameTextures[pm.textures[sm.faces[0].texnum]].alpha * 255);
 
       vm_MakeZero(pos);
 
-      if (GameTextures[pm->textures[sm->faces[0].texnum]].flags.saturate)
+      if (GameTextures[pm.textures[sm.faces[0].texnum]].flags.saturate)
         rend_SetAlphaType(alpha_blend_type::saturate_texture);
       else
         rend_SetAlphaType(alpha_blend_type::constant_texture);
 
       rend_SetZBufferWriteMask(0);
-      g3_DrawBitmap(pos, sm->radius, (sm->radius * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle);
+      g3_DrawBitmap(pos, sm.radius, (sm.radius * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle);
       rend_SetZBufferWriteMask(1);
 
       goto pop_lighting;
@@ -1046,8 +1046,8 @@ void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub) {
 
 pop_lighting:
 
-  for (i = 0; i < sm->num_children; i++) {
-    RenderSubmodel(pm, &pm->submodel[sm->children[i]], f_render_sub);
+  for (i = 0; i < sm.num_children; i++) {
+    RenderSubmodel(pm, pm.submodel[sm.children[i]], f_render_sub);
   }
 
   g3_DoneInstance();
@@ -1055,28 +1055,28 @@ pop_lighting:
   DoneLightInstance();
 }
 
-int RenderPolygonModel(poly_model *pm, uint32_t f_render_sub) {
-  Q_ASSERT(pm->new_style == 1);
+int RenderPolygonModel(poly_model &pm, uint32_t f_render_sub) {
+  Q_ASSERT(pm.new_style == 1);
   int i = 0;
 
   rend_SetAlphaType(alpha_blend_type::constant_vertex);
   rend_SetWrapType(wrap_type::wrap);
 
   FacingPass = 0;
-  for (i = 0; i < pm->n_models; i++) {
-    bsp_info *sm = &pm->submodel[i];
-    if (sm->parent == -1)
+  for (i = 0; i < pm.n_models; i++) {
+    bsp_info &sm = pm.submodel[i];
+    if (sm.parent == -1)
       RenderSubmodel(pm, sm, f_render_sub);
   }
 
   // Now render any facing submodels
-  if (pm->flags.facing) {
+  if (pm.flags.facing) {
     // Don't render if we have it set for no glows
     FacingPass = 1;
     rend_SetOverlayType(overlay_type::none);
-    for (i = 0; i < pm->n_models; i++) {
-      bsp_info *sm = &pm->submodel[i];
-      if (sm->parent == -1)
+    for (i = 0; i < pm.n_models; i++) {
+      bsp_info &sm = pm.submodel[i];
+      if (sm.parent == -1)
         RenderSubmodel(pm, sm, f_render_sub);
     }
   }
@@ -1087,7 +1087,6 @@ int RenderPolygonModel(poly_model *pm, uint32_t f_render_sub) {
 }
 
 float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3> offset_ptr, bool f_use_all_frames) {
-  poly_model *pm;
   matrix m;
   float normalized_time[MAX_SUBOBJECTS];
   int model_index, sm_vert_index, frame_index;
@@ -1099,13 +1098,13 @@ float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3>
   vector3 geometric_center{};
 
   // Chris: Come see me when you are ready to deal with the paging problem - JL
-  pm = GetPolymodelPointer(handle);
+  poly_model &pm = *GetPolymodelPointer(handle);
 
   Q_ASSERT(start_frame <= end_frame);
-  Q_ASSERT(end_frame <= pm->frame_max);
+  Q_ASSERT(end_frame <= pm.frame_max);
 
   if (f_use_all_frames) {
-    end_frame = pm->frame_max;
+    end_frame = pm.frame_max;
   }
 
   if (offset_ptr) {
@@ -1117,34 +1116,34 @@ float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3>
       // Because size changes with animation, we need the worst case point -- so, check every keyframe
       // NOTE:  This code does not currently account for all $turret and $rotate positions
 
-      SetNormalizedTimeAnim(frame_index, normalized_time, *pm);
+      SetNormalizedTimeAnim(frame_index, normalized_time, pm);
 
-      SetModelAnglesAndPos(*pm, normalized_time);
+      SetModelAnglesAndPos(pm, normalized_time);
 
-      for (model_index = 0; model_index < pm->n_models; model_index++) {
-        bsp_info *sm = &pm->submodel[model_index];
+      for (model_index = 0; model_index < pm.n_models; model_index++) {
+        bsp_info &sm = pm.submodel[model_index];
 
         // For every vertex
-        for (sm_vert_index = 0; sm_vert_index < sm->nverts; sm_vert_index++) {
+        for (sm_vert_index = 0; sm_vert_index < sm.nverts; sm_vert_index++) {
           vector3 pnt;
           int mn;
 
           // Get the point and its current sub-object
-          pnt = sm->verts[sm_vert_index];
+          pnt = sm.verts[sm_vert_index];
           mn = model_index;
 
           // Instance up the tree
           while (mn != -1) {
             vector3 tpnt;
 
-            vm_AnglesToMatrix(m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
+            vm_AnglesToMatrix(m, pm.submodel[mn].angs.p(), pm.submodel[mn].angs.h(), pm.submodel[mn].angs.b());
             vm_TransposeMatrix(m);
 
             tpnt = pnt * m;
 
-            pnt = tpnt + pm->submodel[mn].offset + pm->submodel[mn].mod_pos;
+            pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
 
-            mn = pm->submodel[mn].parent;
+            mn = pm.submodel[mn].parent;
           }
 
           //				Maybe use for other code -- Accounts for world coordinates
@@ -1187,34 +1186,34 @@ float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3>
     // Because size changes with animation, we need the worst case point -- so, check every keyframe
     // NOTE:  This code does not currently account for all $turret and $rotate positions
 
-    SetNormalizedTimeAnim(frame_index, normalized_time, *pm);
+    SetNormalizedTimeAnim(frame_index, normalized_time, pm);
 
-    SetModelAnglesAndPos(*pm, normalized_time);
+    SetModelAnglesAndPos(pm, normalized_time);
 
-    for (model_index = 0; model_index < pm->n_models; model_index++) {
-      bsp_info *sm = &pm->submodel[model_index];
+    for (model_index = 0; model_index < pm.n_models; model_index++) {
+      bsp_info &sm = pm.submodel[model_index];
 
       // For every vertex
-      for (sm_vert_index = 0; sm_vert_index < sm->nverts; sm_vert_index++) {
+      for (sm_vert_index = 0; sm_vert_index < sm.nverts; sm_vert_index++) {
         vector3 pnt;
         int mn;
 
         // Get the point and its current sub-object
-        pnt = sm->verts[sm_vert_index];
+        pnt = sm.verts[sm_vert_index];
         mn = model_index;
 
         // Instance up the tree
         while (mn != -1) {
           vector3 tpnt;
 
-          vm_AnglesToMatrix(m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
+          vm_AnglesToMatrix(m, pm.submodel[mn].angs.p(), pm.submodel[mn].angs.h(), pm.submodel[mn].angs.b());
           vm_TransposeMatrix(m);
 
           tpnt = pnt * m;
 
-          pnt = tpnt + pm->submodel[mn].offset + pm->submodel[mn].mod_pos;
+          pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
 
-          mn = pm->submodel[mn].parent;
+          mn = pm.submodel[mn].parent;
         }
 
         //				Maybe use for other code -- Accounts for world coordinates

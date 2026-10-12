@@ -389,8 +389,8 @@ float ComputeDefaultSize(object_type_e type, int handle, optref<float> size_out)
 int CountFacesInPolymodel(const poly_model &pm);
 
 // Rendering functions
-int RenderPolygonModel(poly_model *, uint32_t f_render_sub = 0xFFFFFFFF);
-void RenderSubmodel(poly_model *pm, bsp_info *sm, uint32_t f_render_sub);
+int RenderPolygonModel(poly_model &pm, uint32_t f_render_sub = 0xFFFFFFFF);
+void RenderSubmodel(poly_model &pm, bsp_info &sm, uint32_t f_render_sub);
 
 //	returns point within polymodel/submodel in world coordinates.
 void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, const vector3& wpos, const matrix& orient, int subnum, const vector3& pos,

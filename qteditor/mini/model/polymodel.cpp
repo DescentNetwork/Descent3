@@ -2751,7 +2751,7 @@ void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *
   if (f_render_sub == 0xFFFFFFFF || overlay) // draw entire object
   {
     if (po->new_style) {
-      RenderPolygonModel(po, f_render_sub);
+      RenderPolygonModel(*po, f_render_sub);
     }
   } else {
     Q_ASSERT(po->new_style);
@@ -2772,11 +2772,11 @@ void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *
           ofs *= -1;
 
           po->submodel[i].offset = ofs;
-          RenderSubmodel(po, &po->submodel[i], f_render_sub);
+          RenderSubmodel(*po, po->submodel[i], f_render_sub);
 
           po->submodel[i].offset = save_offset;
         } else
-          RenderSubmodel(po, &po->submodel[i], f_render_sub);
+          RenderSubmodel(*po, po->submodel[i], f_render_sub);
       }
     }
   }
@@ -2829,7 +2829,7 @@ void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *
   if (f_render_sub == 0xFFFFFFFF || overlay) // draw entire object
   {
     if (po->new_style)
-      RenderPolygonModel(po, f_render_sub);
+      RenderPolygonModel(*po, f_render_sub);
   } else {
     Q_ASSERT(po->new_style);
 
@@ -2849,11 +2849,11 @@ void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *
           ofs *= -1;
 
           po->submodel[i].offset = ofs;
-          RenderSubmodel(po, &po->submodel[i], f_render_sub);
+          RenderSubmodel(*po, po->submodel[i], f_render_sub);
 
           po->submodel[i].offset = save_offset;
         } else
-          RenderSubmodel(po, &po->submodel[i], f_render_sub);
+          RenderSubmodel(*po, po->submodel[i], f_render_sub);
       }
     }
   }
@@ -2898,7 +2898,7 @@ void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *
   if (f_render_sub == 0xFFFFFFFF || overlay) // draw entire object
   {
     if (po->new_style)
-      RenderPolygonModel(po, f_render_sub);
+      RenderPolygonModel(*po, f_render_sub);
   } else {
     Q_ASSERT(po->new_style);
 
@@ -2918,11 +2918,11 @@ void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *
           ofs *= -1;
 
           po->submodel[i].offset = ofs;
-          RenderSubmodel(po, &po->submodel[i], f_render_sub);
+          RenderSubmodel(*po, po->submodel[i], f_render_sub);
 
           po->submodel[i].offset = save_offset;
         } else
-          RenderSubmodel(po, &po->submodel[i], f_render_sub);
+          RenderSubmodel(*po, po->submodel[i], f_render_sub);
       }
     }
   }
