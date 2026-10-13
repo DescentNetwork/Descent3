@@ -102,6 +102,7 @@
 #include <posix_stream.h>
 
 #include "utils.h"
+#include "color.h"
 #include "object_external.h" // object_type
 #include "vecmat_external.h"
 #include "robotfirestruct.h"
@@ -330,7 +331,7 @@ struct effect_info_s {
   float cloak_time;   // how much time left cloaked
   float deform_time;  // how much time left deforming
   float color_time;   // how much time left colored
-  float r, g, b;
+  color3f color;
 
   // For fading in/out
   float fade_time;
@@ -352,11 +353,11 @@ struct effect_info_s {
   // For specular lighting
   vector3 spec_pos;
   float spec_mag;
-  float spec_r, spec_g, spec_b;
+  color3f spec;
 
   // For dynamic volume lighting
   uint8_t dynamic_this_frame;
-  float dynamic_red, dynamic_green, dynamic_blue;
+  color3f dynamic;
 
   // For liquid object
   float liquid_time_left;

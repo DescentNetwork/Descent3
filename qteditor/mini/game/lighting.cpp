@@ -934,15 +934,15 @@ void ApplyVolumeLightToObject(const vector3 &pos, object &obj, float light_dist,
     obj.effect_info->type_flags.specular = true;
     obj.effect_info->spec_mag = light_dist - mag;
     obj.effect_info->spec_pos = pos;
-    obj.effect_info->spec_r = red_scale;
-    obj.effect_info->spec_g = green_scale;
-    obj.effect_info->spec_b = blue_scale;
+    obj.effect_info->spec.r = red_scale;
+    obj.effect_info->spec.g = green_scale;
+    obj.effect_info->spec.b = blue_scale;
   }
 
   if (obj.effect_info->type_flags.volume_lit) {
-    obj.effect_info->dynamic_red = std::min<float>(1, obj.effect_info->dynamic_red + (scalar * red_scale));
-    obj.effect_info->dynamic_green = std::min<float>(1, obj.effect_info->dynamic_green + (scalar * green_scale));
-    obj.effect_info->dynamic_blue = std::min<float>(1, obj.effect_info->dynamic_blue + (scalar * blue_scale));
+    obj.effect_info->dynamic.r = std::min<float>(1, obj.effect_info->dynamic.r + (scalar * red_scale));
+    obj.effect_info->dynamic.g = std::min<float>(1, obj.effect_info->dynamic.g + (scalar * green_scale));
+    obj.effect_info->dynamic.b = std::min<float>(1, obj.effect_info->dynamic.b + (scalar * blue_scale));
   }
 }
 
@@ -1323,9 +1323,9 @@ void ClearDynamicLightmaps() {
 
     obj->effect_info->type_flags.specular = false;
     obj->effect_info->dynamic_this_frame = 0;
-    obj->effect_info->dynamic_red = 0;
-    obj->effect_info->dynamic_green = 0;
-    obj->effect_info->dynamic_blue = 0;
+    obj->effect_info->dynamic.r = 0;
+    obj->effect_info->dynamic.g = 0;
+    obj->effect_info->dynamic.b = 0;
   }
 
   Dynamic_volume_object_list.clear();

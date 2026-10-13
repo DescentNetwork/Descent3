@@ -669,6 +669,23 @@ void SetupSkyTexture() {
   Terrain_sky.rotate_rate = 0;
 }
 
+static void RandomizeSatellitePosition(satellite_t &sat) {
+  matrix tempm;
+  int p = d3::rand() % (65336 / 8);
+  int top = ((65536 / 4) * 3) + (4096); // don't do satellites that are straight up
+
+  vm_AnglesToMatrix(tempm, (top + p) % 65336, (d3::rand() * d3::rand()) % 65536, 0);
+  vm_ScaleVector(sat.vectors, tempm.fvec, Terrain_sky.radius * 3);
+  sat.size = 500;
+}
+
+satellite_t MakeDefaultSatellite() {
+  satellite_t sat{};
+  sat.texture = 111;
+  RandomizeSatellitePosition(sat);
+  return sat;
+}
+
 // Compute a parametric sphere for our sky.
 void SetupSky(float radius, terrain_sky_flags_t flags, uint8_t randit) {
   int jump = 65536 / MAX_HORIZON_PIECES;
@@ -776,18 +793,8 @@ void SetupSky(float radius, terrain_sky_flags_t flags, uint8_t randit) {
     Terrain_sky.star_color[i] = GR_RGB(r, g, b);
   }
 
-  for (i = 0; i < MAX_SATELLITES; i++) {
-    vector3 satellitevec;
-    matrix tempm;
-
-    int p = d3::rand() % (65336 / 8);
-    top = ((65536 / 4) * 3) + (4096); // don't do satellites that are straight up
-
-    vm_AnglesToMatrix(tempm, (top + p) % 65336, (d3::rand() * d3::rand()) % 65536, 0);
-    vm_ScaleVector(satellitevec, tempm.fvec, Terrain_sky.radius * 3);
-    Terrain_sky.satellite_vectors[i] = satellitevec;
-    Terrain_sky.satellite_size[i] = 500;
-  }
+  for (satellite_t &sat : Terrain_sky.satellites)
+    RandomizeSatellitePosition(sat);
 }
 #if 0
 // Loads a pcx bitmap to be used as a height map
@@ -909,10 +916,7 @@ void ResetTerrain(int force) {
 
   BuildTerrainNormals();
 
-  for (i = 0; i < MAX_SATELLITES; i++) {
-    Terrain_sky.satellite_texture[i] = 111;
-    Terrain_sky.satellite_flags[i] = {};
-  }
+  Terrain_sky.satellites.clear();
 
   GenerateTerrainLight();
 
@@ -973,7 +977,7 @@ void InitTerrain(void) {
   }
 
   Terrain_sky.lightangle = 0;
-  Terrain_sky.num_satellites = 1;
+  Terrain_sky.satellites.assign(1, MakeDefaultSatellite());
   Terrain_sky.damage_per_second = 0;
 
   terrain_sky_flags_t flags;

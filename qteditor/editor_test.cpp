@@ -3213,7 +3213,6 @@ private slots:
 
     // Sky/lighting and occlusion came out of their sub-chunks.
     QVERIFY(std::isfinite(Terrain_sky.fog_scalar));
-    QVERIFY(Terrain_sky.num_satellites <= MAX_SATELLITES);
     QVERIFY(Terrain_seg[123].l != 0 || Terrain_seg[123].r != 0 || Terrain_seg[123].g != 0 ||
             Terrain_seg[123].b != 0);
 

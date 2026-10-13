@@ -331,9 +331,9 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
 
       if (Polymodel_light_type == polymodel_light_type::gouraud) {
         if (Polymodel_use_effect && Polymodel_effect.type.color) {
-          r = Polymodel_effect.r * (float)r * Polylighting_static_red;
-          g = Polymodel_effect.g * (float)g * Polylighting_static_green;
-          b = Polymodel_effect.b * (float)b * Polylighting_static_blue;
+          r = Polymodel_effect.color.r * (float)r * Polylighting_static_red;
+          g = Polymodel_effect.color.g * (float)g * Polylighting_static_green;
+          b = Polymodel_effect.color.b * (float)b * Polylighting_static_blue;
         } else {
           r = (float)r * Polylighting_static_red;
           g = (float)g * Polylighting_static_green;
@@ -375,9 +375,9 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
 
     if (Polymodel_light_type == polymodel_light_type::gouraud) {
       if (Polymodel_use_effect && Polymodel_effect.type.color) {
-        r = Polymodel_effect.r * (float)r * Polylighting_static_red;
-        g = Polymodel_effect.g * (float)g * Polylighting_static_green;
-        b = Polymodel_effect.b * (float)b * Polylighting_static_blue;
+        r = Polymodel_effect.color.r * (float)r * Polylighting_static_red;
+        g = Polymodel_effect.color.g * (float)g * Polylighting_static_green;
+        b = Polymodel_effect.color.b * (float)b * Polylighting_static_blue;
       } else {
         r = (float)r * Polylighting_static_red;
         g = (float)g * Polylighting_static_green;
@@ -764,9 +764,9 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
     rend_SetAlphaValue(255);
     rend_SetZBufferWriteMask(0);
 
-    rend_SetFlatColor(GR_RGB(uint8_t(Polymodel_effect.spec_r * 255.0f),
-                             uint8_t(Polymodel_effect.spec_g * 255.0f),
-                             uint8_t(Polymodel_effect.spec_b * 255.0f)));
+    rend_SetFlatColor(GR_RGB(uint8_t(Polymodel_effect.spec.r * 255.0f),
+                             uint8_t(Polymodel_effect.spec.g * 255.0f),
+                             uint8_t(Polymodel_effect.spec.b * 255.0f)));
 
     for (i = 0; i < sm.num_faces; i++) {
       polyface *fp = &sm.faces[i];
@@ -809,9 +809,9 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
     rend_SetAlphaValue(255);
     rend_SetZBufferWriteMask(0);
     rend_SetCoplanarPolygonOffset(1);
-    rend_SetFlatColor(GR_RGB(uint8_t(Polymodel_effect.fog_r * 255.0f),
-                             uint8_t(Polymodel_effect.fog_g * 255.0f),
-                             uint8_t(Polymodel_effect.fog_b * 255.0f)));
+    rend_SetFlatColor(GR_RGB(uint8_t(Polymodel_effect.fog.r * 255.0f),
+                             uint8_t(Polymodel_effect.fog.g * 255.0f),
+                             uint8_t(Polymodel_effect.fog.b * 255.0f)));
 
     for (i = 0; i < sm.num_faces; i++) {
       polyface *fp = &sm.faces[i];
@@ -879,9 +879,9 @@ void RotateModelPoints(poly_model &pm, bsp_info &sm) {
           vector3 normvec = sm.vertnorms[i];
           val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
-          Robot_points[i].p3_r = Polymodel_effect.r * val * Polylighting_static_red;
-          Robot_points[i].p3_g = Polymodel_effect.g * val * Polylighting_static_green;
-          Robot_points[i].p3_b = Polymodel_effect.b * val * Polylighting_static_blue;
+          Robot_points[i].p3_r = Polymodel_effect.color.r * val * Polylighting_static_red;
+          Robot_points[i].p3_g = Polymodel_effect.color.g * val * Polylighting_static_green;
+          Robot_points[i].p3_b = Polymodel_effect.color.b * val * Polylighting_static_blue;
         }
       } else {
         if ((Polymodel_use_effect && (Polymodel_effect.type.deform)) || sm.flags.jitter) {
@@ -895,9 +895,9 @@ void RotateModelPoints(poly_model &pm, bsp_info &sm) {
             vector3 normvec = sm.vertnorms[i];
             val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
-            Robot_points[i].p3_r = Polymodel_effect.r * val * Polylighting_static_red;
-            Robot_points[i].p3_g = Polymodel_effect.g * val * Polylighting_static_green;
-            Robot_points[i].p3_b = Polymodel_effect.b * val * Polylighting_static_blue;
+            Robot_points[i].p3_r = Polymodel_effect.color.r * val * Polylighting_static_red;
+            Robot_points[i].p3_g = Polymodel_effect.color.g * val * Polylighting_static_green;
+            Robot_points[i].p3_b = Polymodel_effect.color.b * val * Polylighting_static_blue;
           }
         } else {
           for (int i = 0; i < sm.nverts; i++) {
@@ -905,9 +905,9 @@ void RotateModelPoints(poly_model &pm, bsp_info &sm) {
             vector3 normvec = sm.vertnorms[i];
             float val = (-vm_DotProduct(*Polymodel_light_direction, normvec) + 1.0f) / 2;
 
-            Robot_points[i].p3_r = Polymodel_effect.r * val * Polylighting_static_red;
-            Robot_points[i].p3_g = Polymodel_effect.g * val * Polylighting_static_green;
-            Robot_points[i].p3_b = Polymodel_effect.b * val * Polylighting_static_blue;
+            Robot_points[i].p3_r = Polymodel_effect.color.r * val * Polylighting_static_red;
+            Robot_points[i].p3_g = Polymodel_effect.color.g * val * Polylighting_static_green;
+            Robot_points[i].p3_b = Polymodel_effect.color.b * val * Polylighting_static_blue;
           }
         }
       }
@@ -992,7 +992,7 @@ void RenderSubmodel(poly_model &pm, bsp_info &sm, uint32_t f_render_sub) {
 
       if (Polymodel_use_effect && Polymodel_effect.type.glow_scalar) {
         if (Polymodel_effect.type.custom_glow)
-          DrawThrusterEffect(zero_pos, Polymodel_effect.glow_r, Polymodel_effect.glow_g, Polymodel_effect.glow_b,
+          DrawThrusterEffect(zero_pos, Polymodel_effect.glow.r, Polymodel_effect.glow.g, Polymodel_effect.glow.b,
                              sm.glow_info[0].normal, sm.glow_info[0].glow_size * Polymodel_effect.glow_size_scalar,
                              3 * Polymodel_effect.glow_length_scalar);
         else
@@ -1001,7 +1001,7 @@ void RenderSubmodel(poly_model &pm, bsp_info &sm, uint32_t f_render_sub) {
                              3 * Polymodel_effect.glow_length_scalar);
       } else {
         if (Polymodel_use_effect && Polymodel_effect.type.custom_glow)
-          DrawGlowEffect(zero_pos, Polymodel_effect.glow_r, Polymodel_effect.glow_g, Polymodel_effect.glow_b,
+          DrawGlowEffect(zero_pos, Polymodel_effect.glow.r, Polymodel_effect.glow.g, Polymodel_effect.glow.b,
                          sm.glow_info[0].normal, sm.glow_info[0].glow_size);
         else
           DrawGlowEffect(zero_pos, sm.glow_info[0].glow_r, sm.glow_info[0].glow_g, sm.glow_info[0].glow_b,

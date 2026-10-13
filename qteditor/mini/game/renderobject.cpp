@@ -1067,9 +1067,9 @@ bool SetupTerrainObject(object& obj) {
     } else {
       scalar = GetTerrainDynamicScalar(obj.pos, static_cast<int>(roomnum_cell(obj.roomnum)));
       if (obj.effect_info && (obj.effect_info->type_flags.volume_lit)) {
-        scalar_r = std::min<float>(1, scalar + (obj.effect_info->dynamic_red));
-        scalar_g = std::min<float>(1, scalar + (obj.effect_info->dynamic_green));
-        scalar_b = std::min<float>(1, scalar + (obj.effect_info->dynamic_blue));
+        scalar_r = std::min<float>(1, scalar + (obj.effect_info->dynamic.r));
+        scalar_g = std::min<float>(1, scalar + (obj.effect_info->dynamic.g));
+        scalar_b = std::min<float>(1, scalar + (obj.effect_info->dynamic.b));
         // If this is a robot, make it at least 10% for each RGB component
         if (obj.type == object_type_e::robot) {
           scalar_r = std::max<float>(0.1f, scalar_r);
@@ -1136,9 +1136,9 @@ bool SetupMineObject(object& obj) {
       } else
         GetRoomDynamicScalar(vpos, static_cast<int>(*obj.roomnum), scalar_r, scalar_g, scalar_b);
 
-      scalar_r = std::min<float>(1, scalar_r + (obj.effect_info->dynamic_red));
-      scalar_g = std::min<float>(1, scalar_g + (obj.effect_info->dynamic_green));
-      scalar_b = std::min<float>(1, scalar_b + (obj.effect_info->dynamic_blue));
+      scalar_r = std::min<float>(1, scalar_r + (obj.effect_info->dynamic.r));
+      scalar_g = std::min<float>(1, scalar_g + (obj.effect_info->dynamic.g));
+      scalar_b = std::min<float>(1, scalar_b + (obj.effect_info->dynamic.b));
       // If this is a robot, make it at least 10% for each RGB component
       if (obj.type == object_type_e::robot) {
         scalar_r = std::max<float>(0.1f, scalar_r);
@@ -1532,9 +1532,9 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
         val = 1;
 
       pe.type.color = true;
-      pe.r = 1.0f;
-      pe.g = 1 - (val / 2);
-      pe.b = 1 - (val / 2);
+      pe.color.r = 1.0f;
+      pe.color.g = 1 - (val / 2);
+      pe.color.b = 1 - (val / 2);
 
       use_effect = 1;
     }
@@ -1571,9 +1571,9 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
       pe.fog_portal_vert = Room_fog_portal_vert;
       pe.fog_plane = Room_fog_plane;
       pe.fog_depth = Rooms[*obj.roomnum].fog_depth;
-      pe.fog_r = Rooms[*obj.roomnum].fog_r;
-      pe.fog_g = Rooms[*obj.roomnum].fog_g;
-      pe.fog_b = Rooms[*obj.roomnum].fog_b;
+      pe.fog.r = Rooms[*obj.roomnum].fog_r;
+      pe.fog.g = Rooms[*obj.roomnum].fog_g;
+      pe.fog.b = Rooms[*obj.roomnum].fog_b;
 
       use_effect = 1;
     }
@@ -1586,9 +1586,9 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
           pe.type.specular_faces = true;
 
         pe.spec_light_pos = obj.effect_info->spec_pos;
-        pe.spec_r = obj.effect_info->spec_r;
-        pe.spec_g = obj.effect_info->spec_g;
-        pe.spec_b = obj.effect_info->spec_b;
+        pe.spec.r = obj.effect_info->spec.r;
+        pe.spec.g = obj.effect_info->spec.g;
+        pe.spec.b = obj.effect_info->spec.b;
         pe.spec_scalar = 1.0f;
         use_effect = 1;
       }
@@ -1597,6 +1597,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
     if (obj.is_outside() &&
         obj.lighting_render_type == lighting_render_type_e::gouraud &&
         Detail_settings.Specular_lighting &&
+        !Terrain_sky.satellites.empty() &&
         !oi.lighting_info.flags.no_specularity) {
       if (obj.effect_info && !(obj.effect_info->type_flags.specular)) {
         if (obj.type == object_type_e::powerup)
@@ -1604,10 +1605,10 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
         else
           pe.type.specular_faces = true;
 
-        pe.spec_light_pos = Terrain_sky.satellite_vectors[0];
-        pe.spec_r = 1.0f;
-        pe.spec_g = 1.0f;
-        pe.spec_b = 1.0f;
+        pe.spec_light_pos = Terrain_sky.satellites[0].vectors;
+        pe.spec.r = 1.0f;
+        pe.spec.g = 1.0f;
+        pe.spec.b = 1.0f;
         pe.spec_scalar = RenderObjectStaticScalar;
         use_effect = 1;
       }

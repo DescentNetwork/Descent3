@@ -130,6 +130,12 @@ TerrainKeypad::~TerrainKeypad() { delete ui; }
 
 int TerrainKeypad::currentSat() const { return m_currentSatellite; }
 
+satellite_t *TerrainKeypad::currentSatellite() const {
+  if (m_currentSatellite < 0 || m_currentSatellite >= static_cast<int>(Terrain_sky.satellites.size()))
+    return nullptr;
+  return &Terrain_sky.satellites[m_currentSatellite];
+}
+
 void TerrainKeypad::updateDialog() {
   const bool hasTerrain = (Num_terrain_selected > 0);
   ui->IDC_TERRPAD_MOVE_UP->setEnabled(hasTerrain);
@@ -141,7 +147,9 @@ void TerrainKeypad::updateDialog() {
   ui->IDC_TERRPAD_MAKE_ZERO->setEnabled(hasTerrain);
   ui->IDC_TERRPAD_FILL_AREA->setEnabled(hasTerrain);
 
-  ui->IDC_NUM_MOONS_STATIC->setText(QString("Num of sats:%1").arg(Terrain_sky.num_satellites));
+  const satellite_t *sat = currentSatellite();
+
+  ui->IDC_NUM_MOONS_STATIC->setText(QString("Num of sats:%1").arg(static_cast<int>(Terrain_sky.satellites.size())));
   ui->IDC_CUR_MOON_STATIC->setText(QString("Current sat:%1").arg(m_currentSatellite));
 
   {
@@ -156,10 +164,10 @@ void TerrainKeypad::updateDialog() {
       b = GR_COLOR_BLUE(color);
       e->setText(QString::number(r));
     } else {
-      e->setText(QString::number(Terrain_sky.satellite_r[m_currentSatellite], 'f', 2));
+      e->setText(sat ? QString::number(sat->color.r, 'f', 2) : QString());
     }
-    ui->IDC_SKY_GREEN_EDIT->setText(m_ccMode != ColorMode_Sat ? QString::number(g) : QString::number(Terrain_sky.satellite_g[m_currentSatellite], 'f', 2));
-    ui->IDC_SKY_BLUE_EDIT->setText(m_ccMode != ColorMode_Sat ? QString::number(b) : QString::number(Terrain_sky.satellite_b[m_currentSatellite], 'f', 2));
+    ui->IDC_SKY_GREEN_EDIT->setText(m_ccMode != ColorMode_Sat ? QString::number(g) : (sat ? QString::number(sat->color.g, 'f', 2) : QString()));
+    ui->IDC_SKY_BLUE_EDIT->setText(m_ccMode != ColorMode_Sat ? QString::number(b) : (sat ? QString::number(sat->color.b, 'f', 2) : QString()));
   }
 
   ui->IDC_FOG_DISTANCE_EDIT->setText(QString::number(Detail_settings.Terrain_render_distance / TERRAIN_SIZE, 'f', 1));
@@ -174,9 +182,9 @@ void TerrainKeypad::updateDialog() {
   ui->IDC_USE_FOG->setChecked(Terrain_sky.flags.fog);
   ui->IDC_ROTATE_STARS->setChecked(Terrain_sky.flags.rotate_stars);
   ui->IDC_ROTATE_SKY->setChecked(Terrain_sky.flags.rotate_sky);
-  if (m_currentSatellite >= 0 && m_currentSatellite < 5) {
-    ui->IDC_USE_HALO->setChecked(Terrain_sky.satellite_flags[m_currentSatellite].halo);
-    ui->IDC_USE_ATMOSPHERE->setChecked(Terrain_sky.satellite_flags[m_currentSatellite].atmosphere);
+  if (sat) {
+    ui->IDC_USE_HALO->setChecked(sat->flags.halo);
+    ui->IDC_USE_ATMOSPHERE->setChecked(sat->flags.atmosphere);
   }
   ui->IDC_SHOW_TERRAIN->setChecked(app.terrain_dots);
   ui->IDC_FLAT_SHADE_TERRAIN_CHECK->setChecked(app.terrain_flat_shade);
@@ -261,41 +269,48 @@ void TerrainKeypad::onFillArea() {
 }
 
 void TerrainKeypad::onMoreMoons() {
-  if (Terrain_sky.num_satellites < 5)
-    Terrain_sky.num_satellites++;
+  Terrain_sky.satellites.push_back(MakeDefaultSatellite());
   app.TV_changed = true;
   updateDialog();
 }
 
 void TerrainKeypad::onLessMoons() {
-  if (Terrain_sky.num_satellites > 0)
-    Terrain_sky.num_satellites--;
+  if (!Terrain_sky.satellites.empty())
+    Terrain_sky.satellites.pop_back();
+  if (m_currentSatellite >= static_cast<int>(Terrain_sky.satellites.size()))
+    m_currentSatellite = static_cast<int>(Terrain_sky.satellites.size()) - 1;
+  if (m_currentSatellite < 0)
+    m_currentSatellite = 0;
   app.TV_changed = true;
   updateDialog();
 }
 
 void TerrainKeypad::onNextMoon() {
-  m_currentSatellite = (m_currentSatellite + 1) % 5;
+  const int n = static_cast<int>(Terrain_sky.satellites.size());
+  if (n > 0)
+    m_currentSatellite = (m_currentSatellite + 1) % n;
   updateDialog();
 }
 
 void TerrainKeypad::onPrevMoon() {
-  m_currentSatellite--;
-  if (m_currentSatellite < 0)
-    m_currentSatellite = 4;
+  const int n = static_cast<int>(Terrain_sky.satellites.size());
+  if (n > 0)
+    m_currentSatellite = (m_currentSatellite + n - 1) % n;
   updateDialog();
 }
 
 void TerrainKeypad::moveSat(int pitch, int heading) {
-  int n = m_currentSatellite;
+  satellite_t *sat = currentSatellite();
+  if (!sat)
+    return;
   matrix rot_matrix;
   vm_AnglesToMatrix(rot_matrix, pitch, heading, 0);
-  vector3 sat_vec = Terrain_sky.satellite_vectors[n] - Viewer_object->pos;
+  vector3 sat_vec = sat->vectors - Viewer_object->pos;
   float mag = vm_GetMagnitude(sat_vec);
   vm_NormalizeVector(sat_vec);
   vector3 rot_vec;
   vm_MatrixMulVector(rot_vec, sat_vec, rot_matrix);
-  Terrain_sky.satellite_vectors[n] = Viewer_object->pos + (rot_vec * mag);
+  sat->vectors = Viewer_object->pos + (rot_vec * mag);
   app.TV_changed = true;
 }
 
@@ -305,12 +320,14 @@ void TerrainKeypad::onMoveSatLeft() { moveSat(0, 64000); }
 void TerrainKeypad::onMoveSatRight() { moveSat(0, 1500); }
 
 void TerrainKeypad::onMoveMoonCloser() {
-  Terrain_sky.satellite_size[m_currentSatellite] *= 1.1f;
+  if (satellite_t *sat = currentSatellite())
+    sat->size *= 1.1f;
   app.TV_changed = true;
 }
 
 void TerrainKeypad::onMoveMoonFarther() {
-  Terrain_sky.satellite_size[m_currentSatellite] *= 0.9f;
+  if (satellite_t *sat = currentSatellite())
+    sat->size *= 0.9f;
   app.TV_changed = true;
 }
 
@@ -560,7 +577,8 @@ void TerrainKeypad::onSkyRedEdited()
   {
     if (fv < 0)
       fv = 0;
-    Terrain_sky.satellite_r[m_currentSatellite] = fv;
+    if (satellite_t *sat = currentSatellite())
+      sat->color.r = fv;
   }
   app.World_changed = true;
   updateDialog();
@@ -596,7 +614,8 @@ void TerrainKeypad::onSkyGreenEdited()
   {
     if (fv < 0)
       fv = 0;
-    Terrain_sky.satellite_g[m_currentSatellite] = fv;
+    if (satellite_t *sat = currentSatellite())
+      sat->color.g = fv;
   }
   app.World_changed = true;
   updateDialog();
@@ -632,7 +651,8 @@ void TerrainKeypad::onSkyBlueEdited()
   {
     if (fv < 0)
       fv = 0;
-    Terrain_sky.satellite_b[m_currentSatellite] = fv;
+    if (satellite_t *sat = currentSatellite())
+      sat->color.b = fv;
   }
   app.World_changed = true;
   updateDialog();
@@ -686,14 +706,14 @@ void TerrainKeypad::onUseFogToggled(bool checked) {
   app.World_changed = true;
 }
 void TerrainKeypad::onUseHaloToggled(bool checked) {
-  if (m_currentSatellite >= 0 && m_currentSatellite < 5) {
-    Terrain_sky.satellite_flags[m_currentSatellite].halo = checked;
+  if (satellite_t *sat = currentSatellite()) {
+    sat->flags.halo = checked;
     app.World_changed = true;
   }
 }
 void TerrainKeypad::onUseAtmosphereToggled(bool checked) {
-  if (m_currentSatellite >= 0 && m_currentSatellite < 5) {
-    Terrain_sky.satellite_flags[m_currentSatellite].atmosphere = checked;
+  if (satellite_t *sat = currentSatellite()) {
+    sat->flags.atmosphere = checked;
     app.World_changed = true;
   }
 }

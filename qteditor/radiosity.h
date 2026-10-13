@@ -70,6 +70,7 @@
 #include <vector>
 #include "3d.h"
 #include "gr.h"
+#include "color.h"
 
 // Shooting methods
 enum class shooting_method : uint8_t {
@@ -82,9 +83,7 @@ enum class shooting_method : uint8_t {
 
 #define MAX_VOLUME_ELEMENTS 500
 
-struct spectra {
-  float r, g, b;
-};
+using spectra = color3f;
 
 // element flags
 struct [[gnu::packed]] rad_element_flags_t {

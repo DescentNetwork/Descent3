@@ -78,6 +78,7 @@
 #include <cstdint>
 
 #include "vecmat_external.h"
+#include "color.h"
 #include "object_external_struct.h"
 #include "multi_external.h"
 #include "Inventory.h"
@@ -160,7 +161,7 @@ struct player {
 
   // lighting
   float light_dist;
-  float r, g, b;
+  color3f color;
 
   float ballspeed;
   uint8_t num_balls;

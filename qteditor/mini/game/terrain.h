@@ -28,6 +28,7 @@
 #include "grdefs.h"
 #include "object.h"
 #include "utils.h"
+#include "color.h"
 
 
 // How far we texture out to...after this distance we draw flat shaded polygons
@@ -54,7 +55,6 @@
 
 // Sky defines
 #define MAX_STARS 600    // how many stars in our sky
-#define MAX_SATELLITES 5 // max satellites in our sky
 #define MAX_HORIZON_PIECES 16 // how many segments of the horizon there are around our sphere
 /*
 // Sky flags
@@ -154,7 +154,7 @@ struct [[gnu::packed]] terrain_sky_flags_t
 };
 static_assert(sizeof(terrain_sky_flags_t) == sizeof(uint32_t));
 
-struct [[gnu::packed]] terrain_satellite_flags_t
+struct [[gnu::packed]] satellite_flags_t
 {
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
   uint8_t padding : 6;
@@ -166,7 +166,22 @@ struct [[gnu::packed]] terrain_satellite_flags_t
   uint8_t padding : 6;
 #endif
 };
-static_assert(sizeof(terrain_satellite_flags_t) == sizeof(uint8_t));
+static_assert(sizeof(satellite_flags_t) == sizeof(uint8_t));
+
+struct satellite_t
+{
+  int16_t texture;
+  vector3 vectors;
+  satellite_flags_t flags;
+  float size;
+  color3f color;
+};
+
+inline byte_istream& operator >>(byte_istream& input, satellite_t& data)
+  { input >> data.texture >> data.vectors >> reinterpret_cast<uint8_t&>(data.flags) >> data.size >> data.color; }
+
+inline byte_ostream& operator <<(byte_ostream& output, const satellite_t& data)
+  { output << data.texture << data.vectors << reinterpret_cast<const uint8_t&>(data.flags) << data.size << data.color; }
 
 // Data for the sky spherical map
 struct terrain_sky {
@@ -186,19 +201,14 @@ struct terrain_sky {
   ddgr_color horizon_color;
   ddgr_color fog_color;
 
-  std::array<float, MAX_SATELLITES> satellite_r;
-  std::array<float, MAX_SATELLITES> satellite_g;
-  std::array<float, MAX_SATELLITES> satellite_b;
+  std::vector<satellite_t> satellites;
+
+
 
   std::array<vector3, MAX_STARS> star_vectors;
-  std::array<vector3, MAX_SATELLITES> satellite_vectors;
-  std::array<terrain_satellite_flags_t, MAX_SATELLITES> satellite_flags;
-  std::array<float, MAX_SATELLITES> satellite_size;
-
-  uint8_t num_satellites;
+  std::array<int, MAX_STARS> star_color;
   uint8_t num_stars;
 
-  std::array<int16_t, MAX_SATELLITES> satellite_texture;
 
   vector3 lightsource;
   angle lightangle;
@@ -206,7 +216,6 @@ struct terrain_sky {
   float damage_per_second;
   float fog_scalar;
 
-  std::array<int, MAX_STARS> star_color;
   terrain_sky_flags_t flags;
 };
 
@@ -343,6 +352,10 @@ void ComputeTerrainSegmentCenter(vector3& pos, int segnum);
 float GetTerrainGroundPoint(vector3& pos, optref<vector3> normal);
 
 void SetupSky(float radius, terrain_sky_flags_t flags, uint8_t randit = 0);
+
+// Creates a new satellite with a random position in the sky (for a new level
+// or when the user adds a moon).
+satellite_t MakeDefaultSatellite();
 
 // Builds the surface normal for terrain segment n
 void BuildNormalForTerrainSegment(int n);

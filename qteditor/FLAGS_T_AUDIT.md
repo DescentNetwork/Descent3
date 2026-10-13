@@ -22,7 +22,7 @@ not yet used**.
 | `snd_caps_flags_t`    | `game/TelComEfxStructs.h`       | yes — `TelComSoundInterface::caps` |
 | `button_flags_t`      | `game/TelComEfxStructs.h`       | yes — `TelComButton::osflags` |
 | `terrain_segment_flags_t` | `game/terrain.h`            | yes — `terrain_segment::flags` |
-| `terrain_satellite_flags_t` | `game/terrain.h`          | yes — `terrain_satellite::satellite_flags` |
+| `terrain_satellite_flags_t` | `game/terrain.h`          | yes — `satellite_t::flags` |
 | `terrain_sky_flags_t` | `game/terrain.h`               | yes — `terrain_sky::flags` |
 | `death_flags_t`       | `lib/deathinfo_external.h`      | yes — `death_info::flags` |
 | `death_spew_flags_t`         | `lib/objinfo.h`                 | yes — `object_info::f_dspew` |

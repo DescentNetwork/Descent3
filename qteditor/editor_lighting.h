@@ -86,7 +86,7 @@ int SpecularNextIndex(int val, int modulus);
 extern std::vector<rad_surface> Light_surfaces;
 extern std::vector<rad_surface> Terrain_light_surfaces;
 
-extern std::vector<uint8_t> TerrainLightSpeedup[];
+extern std::vector<std::vector<uint8_t>> TerrainLightSpeedup;
 
 extern int Square_surfaces;
 extern int LightSpacing;

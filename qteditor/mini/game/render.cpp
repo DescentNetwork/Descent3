@@ -1426,8 +1426,8 @@ texel = data[int_v][int_u];
             bv = std::min<float>(1.0f, (bv + (scalar * cb)));
           }
         }
-      } else {
-        vector3 incident_norm = rp->verts[fp->face_verts[vn]] - Terrain_sky.satellite_vectors[0];
+      } else if (!Terrain_sky.satellites.empty()) {
+        vector3 incident_norm = rp->verts[fp->face_verts[vn]] - Terrain_sky.satellites[0].vectors;
         vm_NormalizeVectorFast(incident_norm);
 
         float d = vector3::dot(incident_norm, fp->normal);

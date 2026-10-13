@@ -1535,37 +1535,13 @@ static void LL_ReadTerrainSkyAndLightChunk(byte_istream &ifile, int) {
 
   int32_t num_sats = 0;
   ifile >> num_sats;
-  Terrain_sky.num_satellites = static_cast<uint8_t>(std::min(num_sats, static_cast<int>(MAX_SATELLITES)));
+  if (num_sats < 0)
+    num_sats = 0;
 
-  for (int i = 0; i < num_sats; i++) {
-    int16_t tex = 0;
-    ifile >> tex;
-    if (i < MAX_SATELLITES)
-      Terrain_sky.satellite_texture[i] = LL_TranslateTerrainTexture(tex);
-
-    vector3 satvec{};
-    ifile >> satvec;
-    if (i < MAX_SATELLITES)
-      Terrain_sky.satellite_vectors[i] = satvec;
-
-    uint8_t sf = 0;
-    ifile >> sf;
-    if (i < MAX_SATELLITES)
-      Terrain_sky.satellite_flags[i] = std::bit_cast<terrain_satellite_flags_t>(sf);
-
-    float sz = 0.0f;
-    ifile >> sz;
-    if (i < MAX_SATELLITES)
-      Terrain_sky.satellite_size[i] = sz;
-
-    float r = 0.0f, g = 0.0f, b = 0.0f;
-    ifile >> r >> g >> b;
-    if (i < MAX_SATELLITES) {
-      Terrain_sky.satellite_r[i] = r;
-      Terrain_sky.satellite_g[i] = g;
-      Terrain_sky.satellite_b[i] = b;
-    }
-  }
+  Terrain_sky.satellites.resize(num_sats);
+  ifile >> Terrain_sky.satellites;
+  for (satellite_t &sat : Terrain_sky.satellites)
+    sat.texture = LL_TranslateTerrainTexture(sat.texture);
 
   const int total = TERRAIN_DEPTH * TERRAIN_WIDTH;
   std::vector<uint8_t> byte_vals(total);
@@ -1709,16 +1685,8 @@ static void LL_WriteTerrainSkyAndLightChunk(byte_ostream &ofile) {
   ofile << Terrain_sky.radius;
   ofile << Terrain_sky.rotate_rate;
 
-  ofile << static_cast<int32_t>(Terrain_sky.num_satellites);
-  for (int i = 0; i < Terrain_sky.num_satellites; i++) {
-    ofile << Terrain_sky.satellite_texture[i];
-    ofile << Terrain_sky.satellite_vectors[i];
-    ofile << std::bit_cast<uint8_t>(Terrain_sky.satellite_flags[i]);
-    ofile << Terrain_sky.satellite_size[i];
-    ofile << Terrain_sky.satellite_r[i];
-    ofile << Terrain_sky.satellite_g[i];
-    ofile << Terrain_sky.satellite_b[i];
-  }
+  ofile << static_cast<int32_t>(Terrain_sky.satellites.size());
+  ofile << Terrain_sky.satellites;
 
   const int total = TERRAIN_DEPTH * TERRAIN_WIDTH;
   std::vector<uint8_t> byte_vals(total);

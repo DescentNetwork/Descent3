@@ -62,6 +62,7 @@
 
 #include <posix_stream.h>
 
+#include "color.h"
 #include "grdefs.h"
 #include "manage_external.h"
 #include "robotfirestruct.h"
@@ -390,12 +391,14 @@ struct polymodel_effect {
   polymodel_effects_flags_t type;
   float alpha;
   float deform_range;
-  float r, g, b;
-  float fog_r, fog_g, fog_b;
+
+  color3f color;
+  color3f fog;
+  color3f spec;
+
   int custom_texture;
   int custom_color;
 
-  float spec_r, spec_g, spec_b;
   vector3 spec_light_pos;
   float spec_scalar;
 
@@ -411,7 +414,7 @@ struct polymodel_effect {
   float glow_length_scalar;
   float glow_size_scalar;
 
-  float glow_r, glow_g, glow_b;
+  color3f glow;
 
 };
 

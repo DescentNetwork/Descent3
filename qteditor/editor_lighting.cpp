@@ -78,7 +78,7 @@ vector3 ScratchUVecs[MAX_LIGHTMAP_INFOS];
 std::array<room_light_t, MAX_ROOMS + MAX_PALETTE_ROOMS> room_light;
 room_light_t global_light = {1.0f, 0.0f, 0.0f, 0.0f};
 
-std::vector<uint8_t> TerrainLightSpeedup[MAX_SATELLITES];
+std::vector<std::vector<uint8_t>> TerrainLightSpeedup;
 
 int LightSpacing = LIGHTMAP_SPACING;
 int Square_surfaces = 0;
@@ -950,7 +950,7 @@ void DoRadiosityForRooms() {
   // Do objects
   facecount += GetTotalObjectFaces(0);
   // Do satellites
-  facecount += Terrain_sky.num_satellites;
+  facecount += static_cast<int>(Terrain_sky.satellites.size());
 
   // Allocate enough memory to hold all surfaces
 
@@ -1037,15 +1037,15 @@ void DoRadiosityForRooms() {
   }
 
   // Setup satellites
-  for (i = 0; i < Terrain_sky.num_satellites; i++, surface_index++) {
+  for (i = 0; i < static_cast<int>(Terrain_sky.satellites.size()); i++, surface_index++) {
     Light_surfaces[surface_index].verts.resize(3);
     Light_surfaces[surface_index].elements.resize(1);
     Light_surfaces[surface_index].elements[0].verts.resize(3);
 
     Light_surfaces[surface_index].surface_type = rad_surface_type::satellite;
-    Light_surfaces[surface_index].emittance.r = Terrain_sky.satellite_r[i];
-    Light_surfaces[surface_index].emittance.g = Terrain_sky.satellite_g[i];
-    Light_surfaces[surface_index].emittance.b = Terrain_sky.satellite_b[i];
+    Light_surfaces[surface_index].emittance.r = Terrain_sky.satellites[i].color.r;
+    Light_surfaces[surface_index].emittance.g = Terrain_sky.satellites[i].color.g;
+    Light_surfaces[surface_index].emittance.b = Terrain_sky.satellites[i].color.b;
 
     Light_surfaces[surface_index].roomnum = to_roomnum(i);
     Light_surfaces[surface_index].facenum = 0;
@@ -1056,14 +1056,14 @@ void DoRadiosityForRooms() {
 
     vm_MakeZero(Light_surfaces[surface_index].normal);
 
-    Light_surfaces[surface_index].verts[0] = Terrain_sky.satellite_vectors[i];
-    Light_surfaces[surface_index].verts[1] = Terrain_sky.satellite_vectors[i];
-    Light_surfaces[surface_index].verts[2] = Terrain_sky.satellite_vectors[i];
+    Light_surfaces[surface_index].verts[0] = Terrain_sky.satellites[i].vectors;
+    Light_surfaces[surface_index].verts[1] = Terrain_sky.satellites[i].vectors;
+    Light_surfaces[surface_index].verts[2] = Terrain_sky.satellites[i].vectors;
     Light_surfaces[surface_index].num_verts = 3;
 
-    Light_surfaces[surface_index].elements[0].verts[0] = Terrain_sky.satellite_vectors[i];
-    Light_surfaces[surface_index].elements[0].verts[1] = Terrain_sky.satellite_vectors[i];
-    Light_surfaces[surface_index].elements[0].verts[2] = Terrain_sky.satellite_vectors[i];
+    Light_surfaces[surface_index].elements[0].verts[0] = Terrain_sky.satellites[i].vectors;
+    Light_surfaces[surface_index].elements[0].verts[1] = Terrain_sky.satellites[i].vectors;
+    Light_surfaces[surface_index].elements[0].verts[2] = Terrain_sky.satellites[i].vectors;
     Light_surfaces[surface_index].elements[0].num_verts = 3;
 
     Light_surfaces[surface_index].elements[0].flags = rad_element_flags_t{};
@@ -1097,7 +1097,7 @@ void DoRadiosityForRooms() {
     }
   }
 
-  surface_index += Terrain_sky.num_satellites;
+  surface_index += static_cast<int>(Terrain_sky.satellites.size());
 
   AssignLightmapsToObjectSurfaces(surface_index, 0);
 
@@ -1703,7 +1703,7 @@ void DoTerrainDynamicTable() {
   int raynum = 0;
   int key;
 
-  maxrays = AREA_X * AREA_Z * 8 * Terrain_sky.num_satellites;
+  maxrays = AREA_X * AREA_Z * 8 * static_cast<int>(Terrain_sky.satellites.size());
 
   LOG_INFO("Calculating dynamic light table for %d points...\n", maxrays);
   LOG_INFO("Press tilde key to abort!\n");
@@ -1721,19 +1721,19 @@ void DoTerrainDynamicTable() {
         vector3 pos = gp;
         pos.y() = k * (MAX_TERRAIN_HEIGHT / 8);
 
-        for (j = 0; j < Terrain_sky.num_satellites; j++) {
+        for (j = 0; j < static_cast<int>(Terrain_sky.satellites.size()); j++) {
           raynum++;
 
           if (gp.y() > pos.y())
             continue;
 
           int answer;
-          answer = ShootRayForTerrainLight(&pos, &Terrain_sky.satellite_vectors[j], tseg);
+          answer = ShootRayForTerrainLight(&pos, &Terrain_sky.satellites[j].vectors, tseg);
           if (!answer)
             continue;
 
           Terrain_dynamic_table[tseg] |= (1 << k);
-          j = Terrain_sky.num_satellites;
+          j = static_cast<int>(Terrain_sky.satellites.size());
         }
       }
     }
@@ -1750,8 +1750,8 @@ void ComputeTerrainSpeedTable() {
       vector3 pos = { (t * TERRAIN_SIZE), (Terrain_seg[tseg].y) + 0.001f, (i * TERRAIN_SIZE) };
       raynum++;
 
-      for (j = 0; j < Terrain_sky.num_satellites; j++)
-        TerrainLightSpeedup[j][tseg] = ShootRayForTerrainLight(&pos, &Terrain_sky.satellite_vectors[j], tseg);
+      for (j = 0; j < static_cast<int>(Terrain_sky.satellites.size()); j++)
+        TerrainLightSpeedup[j][tseg] = ShootRayForTerrainLight(&pos, &Terrain_sky.satellites[j].vectors, tseg);
     }
   }
 }
@@ -1770,9 +1770,9 @@ void DoRadiosityForTerrain() {
   int lit = 0;
 
   // First make sure there is even a light source
-  for (i = 0; i < Terrain_sky.num_satellites; i++) {
-    int tmap = Terrain_sky.satellite_texture[i];
-    if (Terrain_sky.satellite_r[i] > 0 || Terrain_sky.satellite_g[i] > 0 || Terrain_sky.satellite_b[i] > 0)
+  for (i = 0; i < static_cast<int>(Terrain_sky.satellites.size()); i++) {
+    int tmap = Terrain_sky.satellites[i].texture;
+    if (Terrain_sky.satellites[i].color.r > 0 || Terrain_sky.satellites[i].color.g > 0 || Terrain_sky.satellites[i].color.b > 0)
       lit = 1;
   }
 
@@ -1781,7 +1781,8 @@ void DoRadiosityForTerrain() {
     return;
   }
 
-  for (i = 0; i < Terrain_sky.num_satellites; i++)
+  TerrainLightSpeedup.resize(Terrain_sky.satellites.size());
+  for (i = 0; i < static_cast<int>(Terrain_sky.satellites.size()); i++)
     TerrainLightSpeedup[i].resize(TERRAIN_WIDTH * TERRAIN_DEPTH);
 
   if (QMessageBox::warning(nullptr,
@@ -1793,7 +1794,7 @@ void DoRadiosityForTerrain() {
   if (!Ignore_terrain)
     ComputeTerrainSpeedTable();
 
-  extra_surfaces += Terrain_sky.num_satellites;
+  extra_surfaces += static_cast<int>(Terrain_sky.satellites.size());
   extra_surfaces += GetTotalObjectFaces(1);
 
   // Get our external rooms ready
@@ -1921,15 +1922,15 @@ void DoRadiosityForTerrain() {
   }
 
   // Setup satellites
-  for (i = 0; i < Terrain_sky.num_satellites; i++, surf_index++) {
+  for (i = 0; i < static_cast<int>(Terrain_sky.satellites.size()); i++, surf_index++) {
     Light_surfaces[surf_index].verts.resize(3);
     Light_surfaces[surf_index].elements.resize(1);
     Light_surfaces[surf_index].elements[0].verts.resize(3);
 
     Light_surfaces[surf_index].surface_type = rad_surface_type::satellite;
-    Light_surfaces[surf_index].emittance.r = Terrain_sky.satellite_r[i];
-    Light_surfaces[surf_index].emittance.g = Terrain_sky.satellite_g[i];
-    Light_surfaces[surf_index].emittance.b = Terrain_sky.satellite_b[i];
+    Light_surfaces[surf_index].emittance.r = Terrain_sky.satellites[i].color.r;
+    Light_surfaces[surf_index].emittance.g = Terrain_sky.satellites[i].color.g;
+    Light_surfaces[surf_index].emittance.b = Terrain_sky.satellites[i].color.b;
 
     Light_surfaces[surf_index].roomnum = to_roomnum(i);
     Light_surfaces[surf_index].facenum = 0;
@@ -1940,14 +1941,14 @@ void DoRadiosityForTerrain() {
 
     vm_MakeZero(Light_surfaces[surf_index].normal);
 
-    Light_surfaces[surf_index].verts[0] = Terrain_sky.satellite_vectors[i];
-    Light_surfaces[surf_index].verts[1] = Terrain_sky.satellite_vectors[i];
-    Light_surfaces[surf_index].verts[2] = Terrain_sky.satellite_vectors[i];
+    Light_surfaces[surf_index].verts[0] = Terrain_sky.satellites[i].vectors;
+    Light_surfaces[surf_index].verts[1] = Terrain_sky.satellites[i].vectors;
+    Light_surfaces[surf_index].verts[2] = Terrain_sky.satellites[i].vectors;
     Light_surfaces[surf_index].num_verts = 3;
 
-    Light_surfaces[surf_index].elements[0].verts[0] = Terrain_sky.satellite_vectors[i];
-    Light_surfaces[surf_index].elements[0].verts[1] = Terrain_sky.satellite_vectors[i];
-    Light_surfaces[surf_index].elements[0].verts[2] = Terrain_sky.satellite_vectors[i];
+    Light_surfaces[surf_index].elements[0].verts[0] = Terrain_sky.satellites[i].vectors;
+    Light_surfaces[surf_index].elements[0].verts[1] = Terrain_sky.satellites[i].vectors;
+    Light_surfaces[surf_index].elements[0].verts[2] = Terrain_sky.satellites[i].vectors;
     Light_surfaces[surf_index].elements[0].num_verts = 3;
 
     Light_surfaces[surf_index].elements[0].flags = rad_element_flags_t{};
@@ -2133,9 +2134,9 @@ void DoRadiosityForTerrain ()
 Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
 
         // First make sure there is even a light source
-        for (i=0;i<Terrain_sky.num_satellites;i++)
+        for (i=0;i<static_cast<int>(Terrain_sky.satellites.size());i++)
         {
-                int tmap=Terrain_sky.satellite_texture[i];
+                int tmap=Terrain_sky.satellites[i].texture;
                 if (GameTextures[tmap].r>0 || GameTextures[tmap].g || GameTextures[tmap].b)
                         lit=1;
         }
@@ -2146,7 +2147,7 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
                 return;
         }
 
-        maxrays=(TERRAIN_DEPTH-1)*(TERRAIN_WIDTH-1)*Terrain_sky.num_satellites;
+        maxrays=(TERRAIN_DEPTH-1)*(TERRAIN_WIDTH-1)*static_cast<int>(Terrain_sky.satellites.size());
 
         mprintf(0,"Calculating terrain radiosity for %d points! (be patient!)\n",maxrays);
 
@@ -2180,13 +2181,13 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
                         pos2.y=GetTerrainGroundPoint (pos2, std::nullopt);
                         pos2+=((TerrainNormals[MAX_TERRAIN_LOD-1][tseg].normal2)/16);
 
-                        for (j=0;j<Terrain_sky.num_satellites;j++)
+                        for (j=0;j<static_cast<int>(Terrain_sky.satellites.size());j++)
                         {
                                 raynum++;
 
                                 int answer1,answer2;
-                                answer1=ShootRayForTerrainLight (&pos1,&Terrain_sky.satellite_vectors[j],tseg);
-                                answer2=ShootRayForTerrainLight (&pos2,&Terrain_sky.satellite_vectors[j],tseg);
+                                answer1=ShootRayForTerrainLight (&pos1,&Terrain_sky.satellites[j].vectors,tseg);
+                                answer2=ShootRayForTerrainLight (&pos2,&Terrain_sky.satellites[j].vectors,tseg);
 
                                 if (answer1==0 && answer2==0)
                                         continue;
@@ -2194,7 +2195,7 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
                                 float r=exitance[tseg].r;
                                 float g=exitance[tseg].g;
                                 float b=exitance[tseg].b;
-                                int tmap=Terrain_sky.satellite_texture[j];
+                                int tmap=Terrain_sky.satellites[j].texture;
 
                                 float light1,light2,light_avg;
                                 vector3 tnorm1=TerrainNormals[MAX_TERRAIN_LOD-1][tseg].normal1;
@@ -2202,12 +2203,12 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
 
                                 vector3 normal;
 
-                                vm_GetNormalizedDir (normal, Terrain_sky.satellite_vectors[j], pos1);
+                                vm_GetNormalizedDir (normal, Terrain_sky.satellites[j].vectors, pos1);
                                 light1=answer1*(vm_DotProduct (normal, tnorm1));
                                 if (light1<0)
                                         light1=0;
 
-                                vm_GetNormalizedDir (normal, Terrain_sky.satellite_vectors[j], pos2);
+                                vm_GetNormalizedDir (normal, Terrain_sky.satellites[j].vectors, pos2);
                                 light2=answer2*(vm_DotProduct (normal, tnorm2));
                                 if (light2<0)
                                         light2=0;
