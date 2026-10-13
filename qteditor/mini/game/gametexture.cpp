@@ -42,10 +42,10 @@ index_t FindTextureBitmapName(const std::string &name) {
 
       if (GameTextures[i].flags.animated) {
         PageInVClip(GameTextures[i].bm_handle);
-        vclip *vc = &GameVClips[GameTextures[i].bm_handle];
-        if (vc->used) {
-          for (int t = 0; t < vc->num_frames; t++) {
-            if (match(GameBitmaps[vc->frames[t]].name, name))
+        vclip &vc = GameVClips[GameTextures[i].bm_handle];
+        if (vc.used) {
+          for (int t = 0; t < vc.num_frames; t++) {
+            if (match(GameBitmaps[vc.frames[t]].name, name))
               return i;
           }
         }
@@ -72,32 +72,32 @@ int GetTextureBitmap(int handle, int framenum, bool force) {
   if (GameTextures[handle].flags.animated) {
     float cur_frametime;
     int int_frame;
-    texture *tex = &GameTextures[handle];
+    texture &tex = GameTextures[handle];
     PageInVClip(GameTextures[handle].bm_handle);
 
-    vclip *vc = &GameVClips[GameTextures[handle].bm_handle];
-    Q_ASSERT(vc->used >= 1);
+    vclip &vc = GameVClips[GameTextures[handle].bm_handle];
+    Q_ASSERT(vc.used >= 1);
 
     if (GameTextures[handle].flags.ping_pong) {
       // Ping pong this texture
 
-      float frametime = tex->speed / vc->num_frames;
+      float frametime = tex.speed / vc.num_frames;
       cur_frametime = d3::chrono::last_update() / frametime;
       int_frame = cur_frametime;
       int_frame += framenum;
 
-      int_frame %= (vc->num_frames * 2);
-      if (int_frame >= vc->num_frames)
-        int_frame = (vc->num_frames - 1) - (int_frame % vc->num_frames);
+      int_frame %= (vc.num_frames * 2);
+      if (int_frame >= vc.num_frames)
+        int_frame = (vc.num_frames - 1) - (int_frame % vc.num_frames);
       else
-        int_frame %= vc->num_frames;
-      src_bitmap = vc->frames[int_frame];
+        int_frame %= vc.num_frames;
+      src_bitmap = vc.frames[int_frame];
     } else {
-      float frametime = tex->speed / vc->num_frames;
+      float frametime = tex.speed / vc.num_frames;
       cur_frametime = d3::chrono::last_update() / frametime;
       int_frame = cur_frametime;
       int_frame += framenum;
-      src_bitmap = vc->frames[int_frame % vc->num_frames];
+      src_bitmap = vc.frames[int_frame % vc.num_frames];
     }
   } else {
     src_bitmap = GameTextures[handle].bm_handle;

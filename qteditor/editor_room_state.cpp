@@ -57,22 +57,22 @@ void DestroyRoom(int roomnum) {
     return;
   if (static_cast<size_t>(roomnum) >= Rooms.size())
     return;
-  room_t *rp = &Rooms[roomnum];
-  if (!rp->used)
+  room_t &rp = Rooms[roomnum];
+  if (!rp.used)
     return;
-  rp->verts.clear();
-  rp->verts4.clear();
-  rp->faces.clear();
-  rp->portals.clear();
-  rp->bbf_list.clear();
-  rp->num_bbf.clear();
-  rp->bbf_list_min_xyz.clear();
-  rp->bbf_list_max_xyz.clear();
-  rp->bbf_list_sector.clear();
-  rp->used = 0;
-  rp->num_verts = 0;
-  rp->num_faces = 0;
-  rp->num_portals = 0;
+  rp.verts.clear();
+  rp.verts4.clear();
+  rp.faces.clear();
+  rp.portals.clear();
+  rp.bbf_list.clear();
+  rp.num_bbf.clear();
+  rp.bbf_list_min_xyz.clear();
+  rp.bbf_list_max_xyz.clear();
+  rp.bbf_list_sector.clear();
+  rp.used = 0;
+  rp.num_verts = 0;
+  rp.num_faces = 0;
+  rp.num_portals = 0;
 
   // Rooms.size() == high-water mark + 1, so pop the unused tail (matching
   // the Win32 room free path's trim loop).
@@ -94,13 +94,13 @@ void AssignDefaultUVsToRoomFace(int roomnum, int facenum) {
     return;
   if (facenum < 0 || facenum >= Rooms[roomnum].num_faces)
     return;
-  face *fp = &Rooms[roomnum].faces[facenum];
-  if (fp->num_verts < 3)
+  face &fp = Rooms[roomnum].faces[facenum];
+  if (fp.num_verts < 3)
     return;
 
-  for (int t = 0; t < fp->num_verts; t++) {
-    GetUVLForRoomPoint(roomnum, facenum, t, &fp->face_uvls[t]);
-    fp->face_uvls[t].alpha = 255;
+  for (int t = 0; t < fp.num_verts; t++) {
+    GetUVLForRoomPoint(roomnum, facenum, t, &fp.face_uvls[t]);
+    fp.face_uvls[t].alpha = 255;
   }
 }
 

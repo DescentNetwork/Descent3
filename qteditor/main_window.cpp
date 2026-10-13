@@ -891,11 +891,11 @@ static void setViewerFromRoomFace(int roomnum, int facenum, bool room_center) {
       vm_VectorToMatrix(orient, vp, std::nullopt, std::nullopt);
     }
   } else {
-    const face *fp = &rp.faces[facenum];
+    const face &fp = rp.faces[facenum];
 
-    newpos = vp + fp->normal * kFaceViewDist;
+    newpos = vp + fp.normal * kFaceViewDist;
 
-    vector3 t = -fp->normal;
+    vector3 t = -fp.normal;
     vm_VectorToMatrix(orient, t, std::nullopt, std::nullopt);
 
     if (rp.flags.external) {
@@ -1015,8 +1015,8 @@ void MainWindow::onMoveCameraToCurrentObject() {
     return;
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
-  object *objp = &Objects[*app.Cur_object_index];
-  if (objp->type == object_type_e::none)
+  object &objp = Objects[*app.Cur_object_index];
+  if (objp.type == object_type_e::none)
     return;
 
   // OBJECT_PLACE_DIST is defined in editor/HObject.cpp:258 and reused by the
@@ -1026,12 +1026,12 @@ void MainWindow::onMoveCameraToCurrentObject() {
   // Turn the viewer around so facing the object: the viewer's f/r vectors are
   // the object's negated ones, keeping its up vector.
   matrix orient;
-  orient.fvec = -objp->orient.fvec;
-  orient.rvec = -objp->orient.rvec;
-  orient.uvec = objp->orient.uvec;
+  orient.fvec = -objp.orient.fvec;
+  orient.rvec = -objp.orient.rvec;
+  orient.uvec = objp.orient.uvec;
 
   // Move the viewer to the object
-  moveViewer(objp->pos, objp->roomnum, orient);
+  moveViewer(objp.pos, objp.roomnum, orient);
 
   // Calculate a position a little in front of the object
   vector3 pos = Viewer_object->pos - (Viewer_object->orient.fvec * kObjectPlaceDist);
@@ -1159,22 +1159,22 @@ int MainWindow::onPlaceCameraAtViewer() {
 void MainWindow::onSetViewerFromCamera() {
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
-  object *cam = &Objects[*app.Cur_object_index];
-  if (cam->type != object_type_e::camera)
+  object &cam = Objects[*app.Cur_object_index];
+  if (cam.type != object_type_e::camera)
     return;
 
   // In Win32 OnObjectSetViewerFromCamera, the viewer's pos/orient/roomnum
   // are copied from the camera. We follow that contract directly.
   if (Viewer_object != nullptr) {
-    ObjSetPos(*Viewer_object, cam->pos, cam->roomnum, cam->orient, false);
+    ObjSetPos(*Viewer_object, cam.pos, cam.roomnum, cam.orient, false);
   }
   // Also propagate to the player object (object 0) so saving the level
   // from the editor preserves the latest camera-driven viewpoint.
   if (Player_object != nullptr)
-    ObjSetPos(*Player_object, cam->pos, cam->roomnum, cam->orient, false);
+    ObjSetPos(*Player_object, cam.pos, cam.roomnum, cam.orient, false);
   app.State_changed = true;
   std::fprintf(stderr, "[object_ops] SetViewerFromCamera: viewer=(%g,%g,%g) room %d\n",
-               cam->pos.x(), cam->pos.y(), cam->pos.z(), cam->roomnum);
+               cam.pos.x(), cam.pos.y(), cam.pos.z(), cam.roomnum);
   m_editorView->update();
 }
 
@@ -1221,10 +1221,10 @@ void MainWindow::onDeleteCurrentObject() {
 void MainWindow::onObjectRename() {
   if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
     return;
-  object *obj = &Objects[*app.Cur_object_index];
-  if (obj->type == object_type_e::none)
+  object &obj = Objects[*app.Cur_object_index];
+  if (obj.type == object_type_e::none)
     return;
-  const QString current = QString::fromStdString(obj->name);
+  const QString current = QString::fromStdString(obj.name);
   bool ok = false;
   const QString picked =
       QInputDialog::getText(this, QStringLiteral("Object Name"),
@@ -1232,7 +1232,7 @@ void MainWindow::onObjectRename() {
                             QLineEdit::Normal, current, &ok);
   if (!ok)
     return;
-  obj->name = picked.toStdString();
+  obj.name = picked.toStdString();
   app.Mine_changed = true;
   m_editorView->update();
 }
@@ -1623,15 +1623,15 @@ bool MainWindow::onAddRoom()
                  index_to_int(app.current.face));
     return false;
   }
-  face *cfp = &Rooms[*app.current.room].faces[*app.current.face];
-  if (cfp->portal_num != -1) {
+  face &cfp = Rooms[*app.current.room].faces[*app.current.face];
+  if (cfp.portal_num != -1) {
     std::fprintf(stderr,
                  "[room_ops] AddRoom: face already connected (portal %d)\n",
-                 cfp->portal_num);
+                 cfp.portal_num);
     return false;
   }
 
-  const int cnv = cfp->num_verts;
+  const int cnv = cfp.num_verts;
   if (cnv < 3) {
     std::fprintf(stderr, "[room_ops] AddRoom: face has %d verts, need >= 3\n",
                  cnv);
@@ -1647,32 +1647,32 @@ bool MainWindow::onAddRoom()
     return false;
   }
 
-  room_t *rp = &Rooms[slot];
+  room_t &rp = Rooms[slot];
 
   // Geometry: extrude the current face's verts outward by `kDefaultRoomLength`
   // along the face normal so the new room extends from the existing face.
-  const vector3 room_delta = cfp->normal * -kDefaultRoomLength;
+  const vector3 room_delta = cfp.normal * -kDefaultRoomLength;
   for (int i = 0; i < cnv; ++i) {
-    rp->verts[i] = Rooms[*app.current.room].verts[cfp->face_verts[cnv - 1 - i]];
-    rp->verts[cnv + i] = rp->verts[i] + room_delta;
+    rp.verts[i] = Rooms[*app.current.room].verts[cfp.face_verts[cnv - 1 - i]];
+    rp.verts[cnv + i] = rp.verts[i] + room_delta;
   }
 
   // Faces: front face copies current face verts in reverse, back face
   //          is the extruded copy, and the (cnv) side quads stitch them.
-  InitRoomFace(rp->faces[0], cnv);
+  InitRoomFace(rp.faces[0], cnv);
   for (int i = 0; i < cnv; ++i)
-    rp->faces[0].face_verts[i] = i;
+    rp.faces[0].face_verts[i] = i;
 
-  InitRoomFace(rp->faces[1], cnv);
+  InitRoomFace(rp.faces[1], cnv);
   for (int i = 0; i < cnv; ++i)
-    rp->faces[1].face_verts[i] = cnv * 2 - 1 - i;
+    rp.faces[1].face_verts[i] = cnv * 2 - 1 - i;
 
   for (int i = 0; i < nfaces - 2; ++i) {
-    InitRoomFace(rp->faces[i + 2], 4);
-    rp->faces[i + 2].face_verts[0] = i;
-    rp->faces[i + 2].face_verts[1] = i + cnv;
-    rp->faces[i + 2].face_verts[2] = ((i + 1) % cnv) + cnv;
-    rp->faces[i + 2].face_verts[3] = (i + 1) % cnv;
+    InitRoomFace(rp.faces[i + 2], 4);
+    rp.faces[i + 2].face_verts[0] = i;
+    rp.faces[i + 2].face_verts[1] = i + cnv;
+    rp.faces[i + 2].face_verts[2] = ((i + 1) % cnv) + cnv;
+    rp.faces[i + 2].face_verts[3] = (i + 1) % cnv;
   }
 
   for (int i = 0; i < nfaces; ++i) {
@@ -1681,7 +1681,7 @@ bool MainWindow::onAddRoom()
                    "[room_ops] AddRoom: ComputeFaceNormal failed for face %d\n",
                    i);
     }
-    rp->faces[i].tmap = (i + 1) % MAX_TEXTURES;
+    rp.faces[i].tmap = (i + 1) % MAX_TEXTURES;
     AssignDefaultUVsToRoomFace(slot, i);
   }
 

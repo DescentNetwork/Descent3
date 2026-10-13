@@ -251,7 +251,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
                                  float blue_scale, optref<const vector3> light_direction, float dot_range) {
   int i, lm_handle, t;
   vector3 rad;
-  room_t *rp = &Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   vector3 Light_min_xyz;
   vector3 Light_max_xyz;
   uint16_t lmilist[MAX_DYNAMIC_FACES];
@@ -269,50 +269,50 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
   Light_max_xyz = pos + rad;
 
   // Now the Light_position is in the submodels frame of reference
-  for (i = 0; i < rp->num_faces; i++) {
-    face *fp = &rp->faces[i];
+  for (i = 0; i < rp.num_faces; i++) {
+    face &fp = rp.faces[i];
 
     // check to see if this face is within reach
-    if (Light_max_xyz.y() < fp->min_xyz.y() || fp->max_xyz.y() < Light_min_xyz.y() || Light_max_xyz.x() < fp->min_xyz.x() ||
-        fp->max_xyz.x() < Light_min_xyz.x() || Light_max_xyz.z() < fp->min_xyz.z() || fp->max_xyz.z() < Light_min_xyz.z())
+    if (Light_max_xyz.y() < fp.min_xyz.y() || fp.max_xyz.y() < Light_min_xyz.y() || Light_max_xyz.x() < fp.min_xyz.x() ||
+        fp.max_xyz.x() < Light_min_xyz.x() || Light_max_xyz.z() < fp.min_xyz.z() || fp.max_xyz.z() < Light_min_xyz.z())
       continue;
 
     // Make sure face was rendered
-    if (fp->renderframe != ((FrameCount - 1) % 256))
+    if (fp.renderframe != ((FrameCount - 1) % 256))
       continue;
 
     // Make sure there already is a lightmap for this face
-    if (!fp->flags.lightmap)
+    if (!fp.flags.lightmap)
       continue;
 
-    if (Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))
+    if (Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))
       continue;
 
-    int xres = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
-    int yres = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
+    int xres = static_cast<int>(lmi_w(fp.lmi_handle).value_or(0));
+    int yres = static_cast<int>(lmi_h(fp.lmi_handle).value_or(0));
 
-    lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
+    lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
     
 
     // Check for backfaces
-    vector3 subvec = pos - lmi_ptr->upper_left;
-    float dist_from_plane = fabs(vm_DotProduct(subvec, lmi_ptr->normal));
+    vector3 subvec = pos - lmi_ptr.upper_left;
+    float dist_from_plane = fabs(vm_DotProduct(subvec, lmi_ptr.normal));
 
     if (dist_from_plane > light_dist)
       continue;
 
     if (light_direction) {
       // If this is a directional light, check for backfaces
-      vector3 norm_vec = pos - rp->verts[fp->face_verts[0]];
+      vector3 norm_vec = pos - rp.verts[fp.face_verts[0]];
 
-      if (vector3::dot(norm_vec, lmi_ptr->normal) < 0) {
+      if (vector3::dot(norm_vec, lmi_ptr.normal) < 0) {
         // Backface, skip this light
         continue;
       }
       // Test to see if all vertices are behind the light object, if so then bail
       int in_front = 0; //
-      for (t = 0; t < fp->num_verts && in_front == 0; t++) {
-        norm_vec = rp->verts[fp->face_verts[t]] - pos;
+      for (t = 0; t < fp.num_verts && in_front == 0; t++) {
+        norm_vec = rp.verts[fp.face_verts[t]] - pos;
         if (vector3::dot(norm_vec, *light_direction) > 0)
           in_front = 1;
       }
@@ -323,27 +323,27 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
 
     // Compute face matrix
     matrix facematrix;
-    vector3 fvec = -lmi_ptr->normal;
+    vector3 fvec = -lmi_ptr.normal;
     vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
     // Get upper left vector3 of face
-    vector3 base_vector = lmi_ptr->upper_left;
+    vector3 base_vector = lmi_ptr.upper_left;
 
     // Get the area of effect for this light
     float area_of_effect = (1.0f - (dist_from_plane / light_dist)) * light_dist;
-    vector3 touch_vector = pos - (lmi_ptr->normal * dist_from_plane);
+    vector3 touch_vector = pos - (lmi_ptr.normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
     float rdist = vm_DotProduct(subvec, facematrix.rvec);
     float udist = -vm_DotProduct(subvec, facematrix.uvec);
-    int x_add = 1 + ((area_of_effect + (lmi_ptr->xspacing / 2)) / lmi_ptr->xspacing);
-    int y_add = 1 + ((area_of_effect + (lmi_ptr->yspacing / 2)) / lmi_ptr->yspacing);
+    int x_add = 1 + ((area_of_effect + (lmi_ptr.xspacing / 2)) / lmi_ptr.xspacing);
+    int y_add = 1 + ((area_of_effect + (lmi_ptr.yspacing / 2)) / lmi_ptr.yspacing);
 
     // Get the rectangle of the lightmap that we want to light
-    int start_x = (rdist / lmi_ptr->xspacing) - x_add;
-    int start_y = (udist / lmi_ptr->yspacing) - y_add;
-    int end_x = (rdist / lmi_ptr->xspacing) + x_add + 0.5f;
-    int end_y = (udist / lmi_ptr->yspacing) + y_add + 0.5f;
+    int start_x = (rdist / lmi_ptr.xspacing) - x_add;
+    int start_y = (udist / lmi_ptr.yspacing) - y_add;
+    int end_x = (rdist / lmi_ptr.xspacing) + x_add + 0.5f;
+    int end_y = (udist / lmi_ptr.yspacing) + y_add + 0.5f;
 
     if (end_x < 0 || end_y < 0 || start_x >= (xres) || start_y >= (yres))
       continue;
@@ -368,26 +368,26 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
     Q_ASSERT(width > 0);
     Q_ASSERT(height > 0);
 
-    if (lmi_ptr->dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
+    if (lmi_ptr.dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
-      lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
+      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
-      if (start_x + lmi_ptr->x1 < GameLightmaps[lm_handle].cx1)
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
-      if (start_x + lmi_ptr->x1 + width > GameLightmaps[lm_handle].cx2)
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
+      if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
+        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
+      if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
+        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-      if (start_y + lmi_ptr->y1 < GameLightmaps[lm_handle].cy1)
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
-      if (lmi_ptr->y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
+      if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
+        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
+      if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
+        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
 
       GameLightmaps[lm_handle].flags.changed = true;
       GameLightmaps[lm_handle].flags.limits = true;
 
-      if (!(Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))) {
-        lmilist[num_spoken_for] = fp->lmi_handle;
-        Lmi_spoken_for[fp->lmi_handle / 8] |= (1 << (fp->lmi_handle % 8));
+      if (!(Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))) {
+        lmilist[num_spoken_for] = fp.lmi_handle;
+        Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
         num_spoken_for++;
       }
     } else // Start a new dynamic lightmap
@@ -401,67 +401,67 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
       uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
         for (int x = 0; x < xres; x++) {
-          dyn_data[y * xres + x] = src_data[lmi_ptr->y1 + y][lmi_ptr->x1 + x];
+          dyn_data[y * xres + x] = src_data[lmi_ptr.y1 + y][lmi_ptr.x1 + x];
         }
       }
 
-      lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
+      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
       // Mark it as changed
-      lmi_ptr->dynamic = static_cast<uint16_t>(*dynamic_handle);
+      lmi_ptr.dynamic = static_cast<uint16_t>(*dynamic_handle);
 
       if (!GameLightmaps[lm_handle].flags.limits) {
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
+        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
+        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
+        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
       } else {
-        if (start_x + lmi_ptr->x1 < GameLightmaps[lm_handle].cx1)
-          GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
-        if (start_x + lmi_ptr->x1 + width > GameLightmaps[lm_handle].cx2)
-          GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
+        if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
+          GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
+        if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
+          GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-        if (start_y + lmi_ptr->y1 < GameLightmaps[lm_handle].cy1)
-          GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
-        if (lmi_ptr->y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-          GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
+        if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
+          GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
+        if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
+          GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
       }
 
       GameLightmaps[lm_handle].flags.changed = true;
       GameLightmaps[lm_handle].flags.limits = true;
 
-      Dynamic_face_list.push_back(dynamic_face{fp->lmi_handle});
+      Dynamic_face_list.push_back(dynamic_face{fp.lmi_handle});
 
-      lmilist[num_spoken_for] = fp->lmi_handle;
-      Lmi_spoken_for[fp->lmi_handle / 8] |= (1 << (fp->lmi_handle % 8));
+      lmilist[num_spoken_for] = fp.lmi_handle;
+      Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
       num_spoken_for++;
 
       // Setup edge blending
-      Edges_to_blend.push_back(fp->lmi_handle);
+      Edges_to_blend.push_back(fp.lmi_handle);
     }
 
     vector3 element_vec;
 
-    base_vector -= (start_y * (facematrix.uvec * lmi_ptr->yspacing));
-    base_vector += (start_x * (facematrix.rvec * lmi_ptr->xspacing));
+    base_vector -= (start_y * (facematrix.uvec * lmi_ptr.yspacing));
+    base_vector += (start_x * (facematrix.rvec * lmi_ptr.xspacing));
 
-    base_vector -= ((facematrix.uvec / 2) * lmi_ptr->yspacing);
-    base_vector += ((facematrix.rvec / 2) * lmi_ptr->xspacing);
+    base_vector -= ((facematrix.uvec / 2) * lmi_ptr.yspacing);
+    base_vector += ((facematrix.rvec / 2) * lmi_ptr.xspacing);
 
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
-    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr->yspacing)) {
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
-      for (int x = 0; x < width; x++, element_vec += (facematrix.rvec * lmi_ptr->xspacing)) {
-        uint16_t &lightmap_texel = dest_data[start_y + lmi_ptr->y1 + y][start_x + lmi_ptr->x1 + x];
+      for (int x = 0; x < width; x++, element_vec += (facematrix.rvec * lmi_ptr.xspacing)) {
+        uint16_t &lightmap_texel = dest_data[start_y + lmi_ptr.y1 + y][start_x + lmi_ptr.x1 + x];
 
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
@@ -614,22 +614,22 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
       continue;
 
     // Ok, now we know that this light touches this face
-    const lightmap_object_face *fp = &obj.lm_object.lightmap_faces[subnum][i];
+    const lightmap_object_face &fp = obj.lm_object.lightmap_faces[subnum][i];
 
-    if (Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))
+    if (Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))
       continue;
 
-    int xres = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
-    int yres = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
+    int xres = static_cast<int>(lmi_w(fp.lmi_handle).value_or(0));
+    int yres = static_cast<int>(lmi_h(fp.lmi_handle).value_or(0));
 
-    lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
+    lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
     
 
     // Check for backfaces
     // Get upper left vector3 of face
-    vector3 base_vector = lmi_ptr->upper_left;
-    vector3 subvec = light_pos - lmi_ptr->upper_left;
-    float dist_from_plane = fabs(vm_DotProduct(subvec, lmi_ptr->normal));
+    vector3 base_vector = lmi_ptr.upper_left;
+    vector3 subvec = light_pos - lmi_ptr.upper_left;
+    float dist_from_plane = fabs(vm_DotProduct(subvec, lmi_ptr.normal));
 
     if (dist_from_plane > light_dist)
       continue;
@@ -638,16 +638,16 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
       // If this is a directional light, check for backfaces
       vector3 norm_vec = light_pos - base_vector;
 
-      if (vector3::dot(norm_vec, lmi_ptr->normal) < 0) {
+      if (vector3::dot(norm_vec, lmi_ptr.normal) < 0) {
         // Backface, skip this face
         continue;
       }
 
       // Test to see if all vertices are behind the light object, if so then bail
-      const polyface *poly_fp = &sm.faces[i];
+      const polyface &poly_fp = sm.faces[i];
       int in_front = 0; //
-      for (t = 0; t < fp->num_verts && in_front == 0; t++) {
-        norm_vec = sm.verts[poly_fp->vertnums[t]] - light_pos;
+      for (t = 0; t < fp.num_verts && in_front == 0; t++) {
+        norm_vec = sm.verts[poly_fp.vertnums[t]] - light_pos;
         if (vector3::dot(norm_vec, light_dir) > 0)
           in_front = 1;
       }
@@ -658,24 +658,24 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
 
     // Compute face matrix
     matrix facematrix;
-    vector3 fvec = -lmi_ptr->normal;
+    vector3 fvec = -lmi_ptr.normal;
     vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
     // Get the area of effect for this light
     float area_of_effect = (1.0f - (dist_from_plane / light_dist)) * light_dist;
-    vector3 touch_vector = light_pos - (lmi_ptr->normal * dist_from_plane);
+    vector3 touch_vector = light_pos - (lmi_ptr.normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
     float rdist = vm_DotProduct(subvec, facematrix.rvec);
     float udist = -vm_DotProduct(subvec, facematrix.uvec);
-    int x_add = 1 + ((area_of_effect + (lmi_ptr->xspacing / 2)) / lmi_ptr->xspacing);
-    int y_add = 1 + ((area_of_effect + (lmi_ptr->yspacing / 2)) / lmi_ptr->yspacing);
+    int x_add = 1 + ((area_of_effect + (lmi_ptr.xspacing / 2)) / lmi_ptr.xspacing);
+    int y_add = 1 + ((area_of_effect + (lmi_ptr.yspacing / 2)) / lmi_ptr.yspacing);
 
     // Get the rectangle of the lightmap that we want to light
-    int start_x = (rdist / lmi_ptr->xspacing) - x_add;
-    int start_y = (udist / lmi_ptr->yspacing) - y_add;
-    int end_x = (rdist / lmi_ptr->xspacing) + x_add + 0.5f;
-    int end_y = (udist / lmi_ptr->yspacing) + y_add + 0.5f;
+    int start_x = (rdist / lmi_ptr.xspacing) - x_add;
+    int start_y = (udist / lmi_ptr.yspacing) - y_add;
+    int end_x = (rdist / lmi_ptr.xspacing) + x_add + 0.5f;
+    int end_y = (udist / lmi_ptr.yspacing) + y_add + 0.5f;
 
     if (end_x < 0 || end_y < 0 || start_x >= (xres) || start_y >= (yres))
       continue;
@@ -700,26 +700,26 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
     Q_ASSERT(width > 0);
     Q_ASSERT(height > 0);
 
-    if (lmi_ptr->dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
+    if (lmi_ptr.dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
-      lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
+      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
-      if (start_x + lmi_ptr->x1 < GameLightmaps[lm_handle].cx1)
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
-      if (start_x + lmi_ptr->x1 + width > GameLightmaps[lm_handle].cx2)
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
+      if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
+        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
+      if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
+        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-      if (start_y + lmi_ptr->y1 < GameLightmaps[lm_handle].cy1)
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
-      if (lmi_ptr->y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
+      if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
+        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
+      if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
+        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
 
       GameLightmaps[lm_handle].flags.changed = true;
       GameLightmaps[lm_handle].flags.limits = true;
 
-      if (!(Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))) {
-        lmilist[num_spoken_for] = fp->lmi_handle;
-        Lmi_spoken_for[fp->lmi_handle / 8] |= (1 << (fp->lmi_handle % 8));
+      if (!(Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))) {
+        lmilist[num_spoken_for] = fp.lmi_handle;
+        Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
         num_spoken_for++;
       }
     } else // Start a new dynamic lightmap
@@ -735,67 +735,67 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
       uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
         for (int x = 0; x < xres; x++) {
-          dyn_data[y * xres + x] = src_data[lmi_ptr->y1 + y][lmi_ptr->x1 + x];
+          dyn_data[y * xres + x] = src_data[lmi_ptr.y1 + y][lmi_ptr.x1 + x];
         }
       }
 
-      lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
+      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
       // Mark it as changed
-      lmi_ptr->dynamic = static_cast<uint16_t>(*dynamic_handle);
+      lmi_ptr.dynamic = static_cast<uint16_t>(*dynamic_handle);
 
       if (!GameLightmaps[lm_handle].flags.limits) {
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
+        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
+        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
+        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
       } else {
-        if (start_x + lmi_ptr->x1 < GameLightmaps[lm_handle].cx1)
-          GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
-        if (start_x + lmi_ptr->x1 + width > GameLightmaps[lm_handle].cx2)
-          GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
+        if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
+          GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
+        if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
+          GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-        if (start_y + lmi_ptr->y1 < GameLightmaps[lm_handle].cy1)
-          GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
-        if (lmi_ptr->y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-          GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
+        if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
+          GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
+        if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
+          GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
       }
 
       GameLightmaps[lm_handle].flags.changed = true;
       GameLightmaps[lm_handle].flags.limits = true;
 
-      Dynamic_face_list.push_back(dynamic_face{fp->lmi_handle});
+      Dynamic_face_list.push_back(dynamic_face{fp.lmi_handle});
 
-      lmilist[num_spoken_for] = fp->lmi_handle;
-      Lmi_spoken_for[fp->lmi_handle / 8] |= (1 << (fp->lmi_handle % 8));
+      lmilist[num_spoken_for] = fp.lmi_handle;
+      Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
       num_spoken_for++;
 
       // Setup edge blending
-      Edges_to_blend.push_back(fp->lmi_handle);
+      Edges_to_blend.push_back(fp.lmi_handle);
     }
 
     vector3 element_vec;
 
-    base_vector -= (start_y * (facematrix.uvec * lmi_ptr->yspacing));
-    base_vector += (start_x * (facematrix.rvec * lmi_ptr->xspacing));
+    base_vector -= (start_y * (facematrix.uvec * lmi_ptr.yspacing));
+    base_vector += (start_x * (facematrix.rvec * lmi_ptr.xspacing));
 
-    base_vector -= ((facematrix.uvec / 2) * lmi_ptr->yspacing);
-    base_vector += ((facematrix.rvec / 2) * lmi_ptr->xspacing);
+    base_vector -= ((facematrix.uvec / 2) * lmi_ptr.yspacing);
+    base_vector += ((facematrix.rvec / 2) * lmi_ptr.xspacing);
 
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
-    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr->yspacing)) {
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
-      for (int x = 0; x < width; x++, element_vec += (facematrix.rvec * lmi_ptr->xspacing)) {
-        uint16_t &lightmap_texel = dest_data[start_y + lmi_ptr->y1 + y][start_x + lmi_ptr->x1 + x];
+      for (int x = 0; x < width; x++, element_vec += (facematrix.rvec * lmi_ptr.xspacing)) {
+        uint16_t &lightmap_texel = dest_data[start_y + lmi_ptr.y1 + y][start_x + lmi_ptr.x1 + x];
 
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
@@ -865,24 +865,24 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
 void ApplySpecularLightingToWall (room *rp,face *fp,vector3 *pos,float light_dist,float dist_from_plane,float
 red_scale,float green_scale,float blue_scale)
 {
-        special_face *sf=&SpecialFaces[fp->special_handle];
+        special_face &sf = SpecialFaces[fp->special_handle];
 
-        if (!(sf->flags))
+        if (!(sf.flags))
         {
                 // Reset this face
                 Specular_face_list[Num_specular_faces++]=fp->special_handle;
-                sf->flags=1;
-                sf->strength=0;
+                sf.flags=1;
+                sf.strength=0;
         }
 
         float norm=std::min(1.0f, (light_dist/dist_from_plane)*2.0f);
         float strength = ((red_scale * 0.33f) + (green_scale * 0.33f) + (blue_scale * 0.33f)) * light_dist;
-        if (strength>sf->strength)
+        if (strength>sf.strength)
         {
-                sf->strength=strength;
-                sf->lightdist=light_dist;
-                sf->lightpos=*pos;
-                sf->color=GR_RGB16(norm*red_scale*255,norm*green_scale*255,norm*blue_scale*255);
+                sf.strength=strength;
+                sf.lightdist=light_dist;
+                sf.lightpos=*pos;
+                sf.color=GR_RGB16(norm*red_scale*255,norm*green_scale*255,norm*blue_scale*255);
         }
 
 }*/
@@ -979,7 +979,7 @@ void ApplyLightingToObjects(const vector3 &pos, int roomnum, float light_dist, f
     }
 
     int model_num = obj->rtype.pobj_info().model_num;
-    poly_model *pm = &Poly_models[model_num];
+    poly_model &pm = Poly_models[model_num];
 
     // Set our light position
     Light_position = pos;
@@ -995,12 +995,12 @@ void ApplyLightingToObjects(const vector3 &pos, int roomnum, float light_dist, f
 
     // Now, get the lights position in the objects submodel space
     SetNormalizedTimeObj(*obj, normalized_time);
-    SetModelAnglesAndPos(*pm, normalized_time);
+    SetModelAnglesAndPos(pm, normalized_time);
 
-    for (int t = 0; t < pm->n_models; t++) {
-      bsp_info *sm = &pm->submodel[t];
-      if (sm->parent == -1)
-        ApplyLightingToSubmodel(*obj, *pm, *sm, light_dist, red_scale, green_scale, blue_scale, dot_range);
+    for (int t = 0; t < pm.n_models; t++) {
+      bsp_info &sm = pm.submodel[t];
+      if (sm.parent == -1)
+        ApplyLightingToSubmodel(*obj, pm, sm, light_dist, red_scale, green_scale, blue_scale, dot_range);
     }
 
     DoneLightingInstance();
@@ -1037,48 +1037,48 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
   int blue_limit = 31;
 
   for (i = 0; i < num_faces; i++) {
-    room_t *rp = &Rooms[facelist[i].room_index];
-    face *fp = &rp->faces[facelist[i].face_index];
+    room_t &rp = Rooms[facelist[i].room_index];
+    face &fp = rp.faces[facelist[i].face_index];
 
     Q_ASSERT(Rooms[facelist[i].room_index].used);
     Q_ASSERT(facelist[i].face_index < Rooms[facelist[i].room_index].num_faces);
 
     // Make sure face was rendered
-    if (fp->renderframe != ((FrameCount - 1) % 256))
+    if (fp.renderframe != ((FrameCount - 1) % 256))
       continue;
 
     // Make sure there already is a lightmap for this face
-    if (!fp->flags.lightmap)
+    if (!fp.flags.lightmap)
       continue;
 
-    if (Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))
+    if (Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))
       continue;
 
-    int xres = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
-    int yres = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
+    int xres = static_cast<int>(lmi_w(fp.lmi_handle).value_or(0));
+    int yres = static_cast<int>(lmi_h(fp.lmi_handle).value_or(0));
 
-    lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
+    lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
     
 
     // Check for backfaces
-    vector3 subvec = pos - lmi_ptr->upper_left;
-    float dist_from_plane = fabs(vm_DotProduct(subvec, lmi_ptr->normal));
+    vector3 subvec = pos - lmi_ptr.upper_left;
+    float dist_from_plane = fabs(vm_DotProduct(subvec, lmi_ptr.normal));
 
     if (dist_from_plane > light_dist)
       continue;
 
     if (light_direction) {
       // If this is a directional light, check for backfaces
-      vector3 norm_vec = pos - rp->verts[fp->face_verts[0]];
+      vector3 norm_vec = pos - rp.verts[fp.face_verts[0]];
 
-      if (vector3::dot(norm_vec, lmi_ptr->normal) < 0) {
+      if (vector3::dot(norm_vec, lmi_ptr.normal) < 0) {
         // Backface, skip this light
         continue;
       }
       // Test to see if all vertices are behind the light object, if so then bail
       int in_front = 0; //
-      for (t = 0; t < fp->num_verts && in_front == 0; t++) {
-        norm_vec = rp->verts[fp->face_verts[t]] - pos;
+      for (t = 0; t < fp.num_verts && in_front == 0; t++) {
+        norm_vec = rp.verts[fp.face_verts[t]] - pos;
         if (vector3::dot(norm_vec, *light_direction) > 0)
           in_front = 1;
       }
@@ -1088,34 +1088,34 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
     }
 
     /*// Check for specular lighting changes on this face
-    if (Detail_settings.Specular_lighting && fp->special_handle!=BAD_SPECIAL_FACE_INDEX)
+    if (Detail_settings.Specular_lighting && fp.special_handle!=BAD_SPECIAL_FACE_INDEX)
     {
             ApplySpecularLightingToWall(rp,fp,pos,light_dist,dist_from_plane,red_scale,green_scale,blue_scale);
     }*/
 
     // Compute face matrix
     matrix facematrix;
-    vector3 fvec = -lmi_ptr->normal;
+    vector3 fvec = -lmi_ptr.normal;
     vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
     // Get upper left vector3 of face
-    vector3 base_vector = lmi_ptr->upper_left;
+    vector3 base_vector = lmi_ptr.upper_left;
 
     // Get the area of effect for this light
     float area_of_effect = (1.0f - (dist_from_plane / light_dist)) * light_dist;
-    vector3 touch_vector = pos - (lmi_ptr->normal * dist_from_plane);
+    vector3 touch_vector = pos - (lmi_ptr.normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
     float rdist = vm_DotProduct(subvec, facematrix.rvec);
     float udist = -vm_DotProduct(subvec, facematrix.uvec);
-    int x_add = 1 + ((area_of_effect + (lmi_ptr->xspacing / 2)) / lmi_ptr->xspacing);
-    int y_add = 1 + ((area_of_effect + (lmi_ptr->yspacing / 2)) / lmi_ptr->yspacing);
+    int x_add = 1 + ((area_of_effect + (lmi_ptr.xspacing / 2)) / lmi_ptr.xspacing);
+    int y_add = 1 + ((area_of_effect + (lmi_ptr.yspacing / 2)) / lmi_ptr.yspacing);
 
     // Get the rectangle of the lightmap that we want to light
-    int start_x = (rdist / lmi_ptr->xspacing) - x_add;
-    int start_y = (udist / lmi_ptr->yspacing) - y_add;
-    int end_x = (rdist / lmi_ptr->xspacing) + x_add + 0.5f;
-    int end_y = (udist / lmi_ptr->yspacing) + y_add + 0.5f;
+    int start_x = (rdist / lmi_ptr.xspacing) - x_add;
+    int start_y = (udist / lmi_ptr.yspacing) - y_add;
+    int end_x = (rdist / lmi_ptr.xspacing) + x_add + 0.5f;
+    int end_y = (udist / lmi_ptr.yspacing) + y_add + 0.5f;
 
     if (end_x < 0 || end_y < 0 || start_x >= (xres) || start_y >= (yres))
       continue;
@@ -1140,26 +1140,26 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
     Q_ASSERT(width > 0);
     Q_ASSERT(height > 0);
 
-    if (lmi_ptr->dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
+    if (lmi_ptr.dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
-      lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
+      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
-      if (start_x + lmi_ptr->x1 < GameLightmaps[lm_handle].cx1)
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
-      if (start_x + lmi_ptr->x1 + width > GameLightmaps[lm_handle].cx2)
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
+      if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
+        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
+      if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
+        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-      if (start_y + lmi_ptr->y1 < GameLightmaps[lm_handle].cy1)
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
-      if (lmi_ptr->y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
+      if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
+        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
+      if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
+        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
 
       GameLightmaps[lm_handle].flags.changed = true;
       GameLightmaps[lm_handle].flags.limits = true;
 
-      if (!(Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))) {
-        lmilist[num_spoken_for] = fp->lmi_handle;
-        Lmi_spoken_for[fp->lmi_handle / 8] |= (1 << (fp->lmi_handle % 8));
+      if (!(Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))) {
+        lmilist[num_spoken_for] = fp.lmi_handle;
+        Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
         num_spoken_for++;
       }
     } else // Start a new dynamic lightmap
@@ -1173,67 +1173,67 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
       uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
         for (int x = 0; x < xres; x++) {
-          dyn_data[y * xres + x] = src_data[lmi_ptr->y1 + y][lmi_ptr->x1 + x];
+          dyn_data[y * xres + x] = src_data[lmi_ptr.y1 + y][lmi_ptr.x1 + x];
         }
       }
 
-      lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
+      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
       // Mark it as changed
-      lmi_ptr->dynamic = static_cast<uint16_t>(*dynamic_handle);
+      lmi_ptr.dynamic = static_cast<uint16_t>(*dynamic_handle);
 
       if (!GameLightmaps[lm_handle].flags.limits) {
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
+        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
+        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
+        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
       } else {
-        if (start_x + lmi_ptr->x1 < GameLightmaps[lm_handle].cx1)
-          GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
-        if (start_x + lmi_ptr->x1 + width > GameLightmaps[lm_handle].cx2)
-          GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
+        if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
+          GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
+        if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
+          GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-        if (start_y + lmi_ptr->y1 < GameLightmaps[lm_handle].cy1)
-          GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
-        if (lmi_ptr->y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-          GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
+        if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
+          GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
+        if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
+          GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
       }
 
       GameLightmaps[lm_handle].flags.changed = true;
       GameLightmaps[lm_handle].flags.limits = true;
 
-      Dynamic_face_list.push_back(dynamic_face{fp->lmi_handle});
+      Dynamic_face_list.push_back(dynamic_face{fp.lmi_handle});
 
-      lmilist[num_spoken_for] = fp->lmi_handle;
-      Lmi_spoken_for[fp->lmi_handle / 8] |= (1 << (fp->lmi_handle % 8));
+      lmilist[num_spoken_for] = fp.lmi_handle;
+      Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
       num_spoken_for++;
 
       // Setup edge blending
-      Edges_to_blend.push_back(fp->lmi_handle);
+      Edges_to_blend.push_back(fp.lmi_handle);
     }
 
     vector3 element_vec;
 
-    base_vector -= (start_y * (facematrix.uvec * lmi_ptr->yspacing));
-    base_vector += (start_x * (facematrix.rvec * lmi_ptr->xspacing));
+    base_vector -= (start_y * (facematrix.uvec * lmi_ptr.yspacing));
+    base_vector += (start_x * (facematrix.rvec * lmi_ptr.xspacing));
 
-    base_vector -= ((facematrix.uvec / 2) * lmi_ptr->yspacing);
-    base_vector += ((facematrix.rvec / 2) * lmi_ptr->xspacing);
+    base_vector -= ((facematrix.uvec / 2) * lmi_ptr.yspacing);
+    base_vector += ((facematrix.rvec / 2) * lmi_ptr.xspacing);
 
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
-    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr->yspacing)) {
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
-      for (int x = 0; x < width; x++, element_vec += (facematrix.rvec * lmi_ptr->xspacing)) {
-        uint16_t &lightmap_texel = dest_data[start_y + lmi_ptr->y1 + y][start_x + lmi_ptr->x1 + x];
+      for (int x = 0; x < width; x++, element_vec += (facematrix.rvec * lmi_ptr.xspacing)) {
+        uint16_t &lightmap_texel = dest_data[start_y + lmi_ptr.y1 + y][start_x + lmi_ptr.x1 + x];
 
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
@@ -1317,15 +1317,15 @@ void ClearDynamicLightmaps() {
 
   // Reset volume lights
   for (auto &vol_obj : Dynamic_volume_object_list) {
-    object *obj = &Objects[vol_obj.objnum];
-    if (obj->type == object_type_e::none || obj->handle != vol_obj.handle)
+    object &obj = Objects[vol_obj.objnum];
+    if (obj.type == object_type_e::none || obj.handle != vol_obj.handle)
       continue; // object was destroyed this frame
 
-    obj->effect_info->type_flags.specular = false;
-    obj->effect_info->dynamic_this_frame = 0;
-    obj->effect_info->dynamic.r = 0;
-    obj->effect_info->dynamic.g = 0;
-    obj->effect_info->dynamic.b = 0;
+    obj.effect_info->type_flags.specular = false;
+    obj.effect_info->dynamic_this_frame = 0;
+    obj.effect_info->dynamic.r = 0;
+    obj.effect_info->dynamic.g = 0;
+    obj.effect_info->dynamic.b = 0;
   }
 
   Dynamic_volume_object_list.clear();
@@ -1347,14 +1347,14 @@ void ClearDynamicLightmaps() {
     int dynamic_handle = LightmapInfo[dyn_face.lmi_handle].dynamic;
     int lmi_handle = dyn_face.lmi_handle;
     int lm_handle = LightmapInfo[lmi_handle].lm_handle;
-    lightmap_info *lmi_ptr = &LightmapInfo[lmi_handle];
+    lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
 
     uint16_t *src_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
     std::vector<std::vector<uint16_t>> &dest_data = lm_data(lm_handle);
 
-    for (int y = 0; y < lmi_ptr->height; y++) {
-      for (int x = 0; x < lmi_ptr->width; x++) {
-        dest_data[lmi_ptr->y1 + y][lmi_ptr->x1 + x] = src_data[y * lmi_ptr->width + x];
+    for (int y = 0; y < lmi_ptr.height; y++) {
+      for (int x = 0; x < lmi_ptr.width; x++) {
+        dest_data[lmi_ptr.y1 + y][lmi_ptr.x1 + x] = src_data[y * lmi_ptr.width + x];
       }
     }
 
@@ -1428,7 +1428,7 @@ void ApplyLightingToTerrain(const vector3 &pos, int cellnum, float light_dist, f
 
   for (i = 0; i < num_cells; i++) {
     int cellnum = celllist[i];
-    terrain_segment *tseg = &Terrain_seg[cellnum];
+    terrain_segment &tseg = Terrain_seg[cellnum];
 
     int seg_x = cellnum % TERRAIN_WIDTH;
     int seg_z = cellnum / TERRAIN_WIDTH;
@@ -1448,7 +1448,7 @@ void ApplyLightingToTerrain(const vector3 &pos, int cellnum, float light_dist, f
 
     tpos.x() = (seg_x * TERRAIN_SIZE) + (TERRAIN_SIZE / 2);
     tpos.z() = (seg_z * TERRAIN_SIZE) + (TERRAIN_SIZE / 2);
-    tpos.y() = tseg->y;
+    tpos.y() = tseg.y;
 
     vector3 subvec = pos - tpos;
 
@@ -1471,9 +1471,9 @@ void ApplyLightingToTerrain(const vector3 &pos, int cellnum, float light_dist, f
       continue;
 
     // Add a new face to our list
-    if (!(tseg->flags.dynamic)) {
-      Dynamic_cell_list.push_back(dynamic_cell{static_cast<uint16_t>(cellnum), tseg->r, tseg->g, tseg->b});
-      tseg->flags.dynamic = 1;
+    if (!(tseg.flags.dynamic)) {
+      Dynamic_cell_list.push_back(dynamic_cell{static_cast<uint16_t>(cellnum), tseg.r, tseg.g, tseg.b});
+      tseg.flags.dynamic = 1;
 
       if (GameLightmaps[whichmap].flags.limits) {
         if (subx < GameLightmaps[whichmap].cx1)
@@ -1496,35 +1496,35 @@ void ApplyLightingToTerrain(const vector3 &pos, int cellnum, float light_dist, f
       }
     }
 
-    int r = tseg->r;
-    int g = tseg->g;
-    int b = tseg->b;
+    int r = tseg.r;
+    int g = tseg.g;
+    int b = tseg.b;
 
     if (red_scale < 0) {
       // we are subtracting light
-      tseg->r = std::max<float>(0, r + (scalar * red_scale * 255));
+      tseg.r = std::max<float>(0, r + (scalar * red_scale * 255));
     } else {
       if (r < red_limit)
-        tseg->r = std::min<float>(red_limit, r + (scalar * red_scale * 255));
+        tseg.r = std::min<float>(red_limit, r + (scalar * red_scale * 255));
     }
 
     if (green_scale < 0) {
       // we are subtracting light
-      tseg->g = std::max<float>(0, g + (scalar * green_scale * 255));
+      tseg.g = std::max<float>(0, g + (scalar * green_scale * 255));
     } else {
       if (g < green_limit)
-        tseg->g = std::min<float>(green_limit, g + (scalar * green_scale * 255));
+        tseg.g = std::min<float>(green_limit, g + (scalar * green_scale * 255));
     }
 
     if (blue_scale < 0) {
       // we are subtracting light
-      tseg->b = std::max<float>(0, b + (scalar * blue_scale * 255));
+      tseg.b = std::max<float>(0, b + (scalar * blue_scale * 255));
     } else {
       if (b < blue_limit)
-        tseg->b = std::min<float>(blue_limit, b + (scalar * blue_scale * 255));
+        tseg.b = std::min<float>(blue_limit, b + (scalar * blue_scale * 255));
     }
 
-    uint16_t color = OPAQUE_FLAG | GR_RGB16(tseg->r, tseg->g, tseg->b);
+    uint16_t color = OPAQUE_FLAG | GR_RGB16(tseg.r, tseg.g, tseg.b);
     std::vector<std::vector<uint16_t>> &data = lm_data(whichmap);
 
     Q_ASSERT(!data.empty());
@@ -1536,20 +1536,20 @@ void ApplyLightingToTerrain(const vector3 &pos, int cellnum, float light_dist, f
 // TODO: MTS: Unused?
 // Sets pulse parameters for an entire room
 void SetRoomPulse(int roomnum, uint8_t pulse_time, uint8_t pulse_offset) {
-  room_t *rp = &Rooms[roomnum];
-  Q_ASSERT(rp->used);
+  room_t &rp = Rooms[roomnum];
+  Q_ASSERT(rp.used);
 
-  rp->pulse_time = pulse_time;
-  rp->pulse_offset = pulse_offset;
+  rp.pulse_time = pulse_time;
+  rp.pulse_offset = pulse_offset;
 }
 
 // TODO: MTS: Unused?
 // Returns the total number of bytes needed for volume lighting in this room
 int GetVolumeSizeOfRoom(int roomnum, optref<int> w, optref<int> h, optref<int> d) {
-  room_t *rp = &Rooms[roomnum];
-  int width = ((rp->max_xyz.x() - rp->min_xyz.x()) / VOLUME_SPACING) + 1;
-  int height = ((rp->max_xyz.y() - rp->min_xyz.y()) / VOLUME_SPACING) + 1;
-  int depth = ((rp->max_xyz.z() - rp->min_xyz.z()) / VOLUME_SPACING) + 1;
+  room_t &rp = Rooms[roomnum];
+  int width = ((rp.max_xyz.x() - rp.min_xyz.x()) / VOLUME_SPACING) + 1;
+  int height = ((rp.max_xyz.y() - rp.min_xyz.y()) / VOLUME_SPACING) + 1;
+  int depth = ((rp.max_xyz.z() - rp.min_xyz.z()) / VOLUME_SPACING) + 1;
 
   if (w.has_value())
     *w = width;
@@ -1567,16 +1567,16 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 {
         int xres=static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
         int yres=static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
-        lightmap_info *lmi_ptr=&LightmapInfo[fp->lmi_handle];
+        lightmap_info &lmi_ptr = LightmapInfo[fp->lmi_handle];
 
         matrix facematrix;
-        vector3 fvec=-lmi_ptr->normal;
+        vector3 fvec=-lmi_ptr.normal;
         vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
         // Get upper left vector3 of face
-        vector3 base_vector=lmi_ptr->upper_left;
+        vector3 base_vector=lmi_ptr.upper_left;
 
-        int square_res=GameLightmaps[lmi_ptr->lm_handle].square_res;
+        int square_res=GameLightmaps[lmi_ptr.lm_handle].square_res;
 
         //if (square_res>=128)
                 //return -1;
@@ -1584,16 +1584,16 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         //square_res*=2;
         //xres*=2;
         //yres*=2;
-        float xspacing = static_cast<float>(lmi_ptr->xspacing);
-        float yspacing = static_cast<float>(lmi_ptr->yspacing);
+        float xspacing = static_cast<float>(lmi_ptr.xspacing);
+        float yspacing = static_cast<float>(lmi_ptr.yspacing);
 
         int cl=GetLightmapClass (square_res);
         int lm_handle;
 
         uint16_t *dest_data;
-        uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr->lm_handle);
+        uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr.lm_handle);
 
-        if (lmi_ptr->spec_map == BAD_LM_INDEX)
+        if (lmi_ptr.spec_map == BAD_LM_INDEX)
         {
                 // Get a new specular map and clear it
                 int dynamic_handle=FindFreeDynamicLightmap (cl);
@@ -1608,7 +1608,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
                 int dynamic_lmi_handle=Dynamic_lightmaps[cl][dynamic_handle].lmi_handle;
                 lm_handle=LightmapInfo[dynamic_lmi_handle].lm_handle;
 
-                lmi_ptr->spec_map=lm_handle;
+                lmi_ptr.spec_map=lm_handle;
                 dest_data=(uint16_t *)lm_data(lm_handle);
 
                 memset (dest_data,0,xres*yres*2);
@@ -1721,15 +1721,15 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 
         int xres=static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
         int yres=static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
-        lightmap_info *lmi_ptr=&LightmapInfo[fp->lmi_handle];
+        lightmap_info &lmi_ptr = LightmapInfo[fp->lmi_handle];
         vector3 center=SpecialFaces[fp->special_handle].center;
 
         matrix facematrix;
-        vector3 fvec=-lmi_ptr->normal;
+        vector3 fvec=-lmi_ptr.normal;
         vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
         // Get upper left vector3 of face
-        vector3 base_vector=lmi_ptr->upper_left;
+        vector3 base_vector=lmi_ptr.upper_left;
 
         int start_x=fp->x1;
         int start_y=fp->y1;
@@ -1747,14 +1747,14 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         Q_ASSERT (width>0);
         Q_ASSERT (height>0);
 
-        int square_res=GameLightmaps[lmi_ptr->lm_handle].square_res;
+        int square_res=GameLightmaps[lmi_ptr.lm_handle].square_res;
         int cl=GetLightmapClass (square_res);
         int lm_handle;
 
         uint16_t *dest_data;
-        uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr->lm_handle);
+        uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr.lm_handle);
 
-        if (lmi_ptr->spec_map == BAD_LM_INDEX)
+        if (lmi_ptr.spec_map == BAD_LM_INDEX)
         {
                 // Get a new specular map and clear it
                 int dynamic_handle=FindFreeDynamicLightmap (cl);
@@ -1769,7 +1769,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
                 int dynamic_lmi_handle=Dynamic_lightmaps[cl][dynamic_handle].lmi_handle;
                 lm_handle=LightmapInfo[dynamic_lmi_handle].lm_handle;
 
-                lmi_ptr->spec_map=lm_handle;
+                lmi_ptr.spec_map=lm_handle;
                 dest_data=(uint16_t *)lm_data(lm_handle);
 
                 memset (dest_data,0,xres*yres*2);
@@ -1778,7 +1778,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         }
         else
         {
-                lm_handle=lmi_ptr->spec_map;
+                lm_handle=lmi_ptr.spec_map;
                 dest_data=(uint16_t *)lm_data(lm_handle);
         }
 
@@ -1810,12 +1810,12 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         // Move to offset
         vector3 element_vec;
 
-        base_vector.y-=(start_y*lmi_ptr->yspacing);
-        base_vector.x+=(start_x*lmi_ptr->xspacing);
+        base_vector.y-=(start_y*lmi_ptr.yspacing);
+        base_vector.x+=(start_x*lmi_ptr.xspacing);
 
         // Move to center of texel
-        base_vector.y-=(lmi_ptr->yspacing/2);
-        base_vector.x+=(lmi_ptr->xspacing/2);
+        base_vector.y-=(lmi_ptr.yspacing/2);
+        base_vector.x+=(lmi_ptr.xspacing/2);
 
         // Choose material
         int material_type=0;
@@ -1831,11 +1831,11 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         int texel_num=start_y*xres+start_x;
         int num=SpecialFaces[fp->special_handle].num;
 
-        for (int y=0;y<height;y++,base_vector.y-=lmi_ptr->yspacing,texel_num+=xres)
+        for (int y=0;y<height;y++,base_vector.y-=lmi_ptr.yspacing,texel_num+=xres)
         {
                 element_vec=base_vector;
 
-                for (int x=0;x<width;x++,element_vec.x+=lmi_ptr->xspacing)
+                for (int x=0;x<width;x++,element_vec.x+=lmi_ptr.xspacing)
                 {
                         int lightmap_texel_num=texel_num+x;
 
@@ -1923,8 +1923,8 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 // Kills the lighting that a face casts and dampens all the faces that light influences
 void DestroyLight(int roomnum, int facenum) {
   vector3 vecs[MAX_VERTS_PER_FACE], center;
-  room_t *destroy_rp = &Rooms[roomnum];
-  face *destroy_fp = &destroy_rp->faces[facenum];
+  room_t &destroy_rp = Rooms[roomnum];
+  face &destroy_fp = destroy_rp.faces[facenum];
   float r, g, b;
   fvi_face_room_list facelist[MAX_DYNAMIC_FACES];
   int num_faces, i;
@@ -1934,11 +1934,11 @@ void DestroyLight(int roomnum, int facenum) {
   if (Dedicated_server)
     return;
 
-  float mul = (static_cast<float>(destroy_fp->light_multiple)) / 4.0f;
+  float mul = (static_cast<float>(destroy_fp.light_multiple)) / 4.0f;
 
-  r = GameTextures[destroy_fp->tmap].r * mul;
-  g = GameTextures[destroy_fp->tmap].g * mul;
-  b = GameTextures[destroy_fp->tmap].b * mul;
+  r = GameTextures[destroy_fp.tmap].r * mul;
+  g = GameTextures[destroy_fp.tmap].g * mul;
+  b = GameTextures[destroy_fp.tmap].b * mul;
 
   // Get highest component
   float rmax = std::max({r, g, b});
@@ -1955,10 +1955,10 @@ void DestroyLight(int roomnum, int facenum) {
   LOG_DEBUG("r=%f g=%f b=%f", red_scale, green_scale, blue_scale);
 
   // Get center and area of light face
-  for (i = 0; i < destroy_fp->num_verts; i++)
-    vecs[i] = destroy_rp->verts[destroy_fp->face_verts[i]];
+  for (i = 0; i < destroy_fp.num_verts; i++)
+    vecs[i] = destroy_rp.verts[destroy_fp.face_verts[i]];
 
-  float area = vm_GetCentroid(center, vecs, destroy_fp->num_verts);
+  float area = vm_GetCentroid(center, vecs, destroy_fp.num_verts);
 
   // Get the sphere of influence of this light
   float power = rmax * area;
@@ -1973,29 +1973,29 @@ void DestroyLight(int roomnum, int facenum) {
   num_faces = fvi_QuickDistFaceList(roomnum, center, sphere_dist, *facelist, MAX_DYNAMIC_FACES);
 
   for (i = 0; i < num_faces; i++) {
-    room_t *rp = &Rooms[facelist[i].room_index];
-    face *fp = &rp->faces[facelist[i].face_index];
+    room_t &rp = Rooms[facelist[i].room_index];
+    face &fp = rp.faces[facelist[i].face_index];
 
     Q_ASSERT(Rooms[facelist[i].room_index].used);
     Q_ASSERT(facelist[i].face_index < Rooms[facelist[i].room_index].num_faces);
 
     // Make sure there already is a lightmap for this face
-    if (!fp->flags.lightmap)
+    if (!fp.flags.lightmap)
       continue;
 
-    if (GameTextures[fp->tmap].flags.light)
+    if (GameTextures[fp.tmap].flags.light)
       continue;
 
-    if (Lmi_spoken_for[fp->lmi_handle / 8] & (1 << (fp->lmi_handle % 8)))
+    if (Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))
       continue;
 
-    int xres = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
-    int yres = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
+    int xres = static_cast<int>(lmi_w(fp.lmi_handle).value_or(0));
+    int yres = static_cast<int>(lmi_h(fp.lmi_handle).value_or(0));
 
-    lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
+    lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
 
-    vector3 subvec = center - lmi_ptr->upper_left;
-    float dist_from_plane = vm_DotProduct(subvec, lmi_ptr->normal);
+    vector3 subvec = center - lmi_ptr.upper_left;
+    float dist_from_plane = vm_DotProduct(subvec, lmi_ptr.normal);
 
     // Check for backfaces
     if (dist_from_plane < 0)
@@ -2008,27 +2008,27 @@ void DestroyLight(int roomnum, int facenum) {
 
     // Compute face matrix
     matrix facematrix;
-    vector3 fvec = -lmi_ptr->normal;
+    vector3 fvec = -lmi_ptr.normal;
     vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
     // Get upper left vector3 of face
-    vector3 base_vector = lmi_ptr->upper_left;
+    vector3 base_vector = lmi_ptr.upper_left;
 
     // Get the area of effect for this light
     float area_of_effect = (1.0f - (dist_from_plane / sphere_dist)) * sphere_dist;
-    vector3 touch_vector = center - (lmi_ptr->normal * dist_from_plane);
+    vector3 touch_vector = center - (lmi_ptr.normal * dist_from_plane);
 
     subvec = touch_vector - base_vector;
     float rdist = vm_DotProduct(subvec, facematrix.rvec);
     float udist = -vm_DotProduct(subvec, facematrix.uvec);
-    int x_add = 1 + ((area_of_effect + (lmi_ptr->xspacing / 2)) / lmi_ptr->xspacing);
-    int y_add = 1 + ((area_of_effect + (lmi_ptr->yspacing / 2)) / lmi_ptr->yspacing);
+    int x_add = 1 + ((area_of_effect + (lmi_ptr.xspacing / 2)) / lmi_ptr.xspacing);
+    int y_add = 1 + ((area_of_effect + (lmi_ptr.yspacing / 2)) / lmi_ptr.yspacing);
 
     // Get the rectangle of the lightmap that we want to light
-    int start_x = (rdist / lmi_ptr->xspacing) - x_add;
-    int start_y = (udist / lmi_ptr->yspacing) - y_add;
-    int end_x = (rdist / lmi_ptr->xspacing) + x_add + 0.5f;
-    int end_y = (udist / lmi_ptr->yspacing) + y_add + 0.5f;
+    int start_x = (rdist / lmi_ptr.xspacing) - x_add;
+    int start_y = (udist / lmi_ptr.yspacing) - y_add;
+    int end_x = (rdist / lmi_ptr.xspacing) + x_add + 0.5f;
+    int end_y = (udist / lmi_ptr.yspacing) + y_add + 0.5f;
 
     if (end_x < 0 || end_y < 0 || start_x >= (xres) || start_y >= (yres))
       continue;
@@ -2063,49 +2063,49 @@ void DestroyLight(int roomnum, int facenum) {
 
     // Now copy our source data to our dest data so we have a base to work with
 
-    int lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
+    int lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
     if (!GameLightmaps[lm_handle].flags.limits) {
-      GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
-      GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
-      GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
-      GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
+      GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
+      GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+      GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
+      GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
     } else {
-      if (start_x + lmi_ptr->x1 < GameLightmaps[lm_handle].cx1)
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr->x1;
-      if (start_x + lmi_ptr->x1 + width > GameLightmaps[lm_handle].cx2)
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr->x1;
+      if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
+        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
+      if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
+        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-      if (start_y + lmi_ptr->y1 < GameLightmaps[lm_handle].cy1)
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr->y1;
-      if (lmi_ptr->y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr->y1;
+      if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
+        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
+      if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
+        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
     }
 
     GameLightmaps[lm_handle].flags.changed = true;
     GameLightmaps[lm_handle].flags.limits = true;
 
-    lmilist[num_spoken_for] = fp->lmi_handle;
-    Lmi_spoken_for[fp->lmi_handle / 8] |= (1 << (fp->lmi_handle % 8));
+    lmilist[num_spoken_for] = fp.lmi_handle;
+    Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
     num_spoken_for++;
 
     vector3 element_vec;
 
-    base_vector -= (start_y * (facematrix.uvec * lmi_ptr->yspacing));
-    base_vector += (start_x * (facematrix.rvec * lmi_ptr->xspacing));
+    base_vector -= (start_y * (facematrix.uvec * lmi_ptr.yspacing));
+    base_vector += (start_x * (facematrix.rvec * lmi_ptr.xspacing));
 
-    base_vector -= ((facematrix.uvec / 2) * lmi_ptr->yspacing);
-    base_vector += ((facematrix.rvec / 2) * lmi_ptr->xspacing);
+    base_vector -= ((facematrix.uvec / 2) * lmi_ptr.yspacing);
+    base_vector += ((facematrix.rvec / 2) * lmi_ptr.xspacing);
 
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp->lmi_handle].lm_handle);
-    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr->yspacing)) {
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+    for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
-      for (int x = 0; x < width; x++, element_vec += (facematrix.rvec * lmi_ptr->xspacing)) {
-        uint16_t &lightmap_texel = dest_data[start_y + lmi_ptr->y1 + y][start_x + lmi_ptr->x1 + x];
+      for (int x = 0; x < width; x++, element_vec += (facematrix.rvec * lmi_ptr.xspacing)) {
+        uint16_t &lightmap_texel = dest_data[start_y + lmi_ptr.y1 + y][start_x + lmi_ptr.x1 + x];
 
         if (!(lightmap_texel & OPAQUE_FLAG))
           continue;
@@ -2133,7 +2133,7 @@ void DestroyLight(int roomnum, int facenum) {
       }
     }
 
-    BlendLightingEdges(fp->lmi_handle);
+    BlendLightingEdges(fp.lmi_handle);
   }
 
   for (i = 0; i < num_spoken_for; i++) {

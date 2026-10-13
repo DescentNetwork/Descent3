@@ -631,28 +631,28 @@ void osipf_RoomValue(int roomnum, char op, char vtype, void *ptr, int index) {
     return;
   }
 
-  room *rp = &Rooms[roomnum];
+  room &rp = Rooms[roomnum];
 
   switch (vtype) {
   case RMV_I_FLAGS:
     if (op == VF_GET)
-      *(int *)ptr = rp->flags;
+      *(int *)ptr = rp.flags;
     else if (op == VF_SET)
-      rp->flags = *(int *)ptr;
+      rp.flags = *(int *)ptr;
     else if (op == VF_SET_FLAGS)
-      rp->flags |= *(int *)ptr;
+      rp.flags |= *(int *)ptr;
     else if (op == VF_CLEAR_FLAGS)
-      rp->flags &= ~(*(int *)ptr);
+      rp.flags &= ~(*(int *)ptr);
     break;
   case RMV_V_WIND:
     if (op == VF_SET)
-      rp->wind = *(vector3 *)ptr;
+      rp.wind = *(vector3 *)ptr;
     else if (op == VF_GET)
-      *(vector3 *)ptr = rp->wind;
+      *(vector3 *)ptr = rp.wind;
     break;
   case RMV_C_USED:
     if (op == VF_GET)
-      *(char *)ptr = (rp->used != 0);
+      *(char *)ptr = (rp.used != 0);
     break;
 
   case RMV_I_NUM_PATH_PNTS:
@@ -661,77 +661,77 @@ void osipf_RoomValue(int roomnum, char op, char vtype, void *ptr, int index) {
     break;
   case RMSV_V_PATH_PNT:
     if (op == VF_SET)
-      rp->path_pnt = *(vector3 *)ptr;
+      rp.path_pnt = *(vector3 *)ptr;
     else if (op == VF_GET)
-      *(vector3 *)ptr = rp->path_pnt;
+      *(vector3 *)ptr = rp.path_pnt;
     break;
 
   case RMV_I_NUM_FACES:
     if (op == VF_GET)
-      *(int *)ptr = rp->num_faces;
+      *(int *)ptr = rp.num_faces;
     break;
   case RMSV_I_FACE_TEXTURE_ID:
     if (op == VF_SET)
-      rp->faces[index].tmap = *(int *)ptr;
+      rp.faces[index].tmap = *(int *)ptr;
     else if (op == VF_GET)
-      *(int *)ptr = rp->faces[index].tmap;
+      *(int *)ptr = rp.faces[index].tmap;
     break;
   case RMSV_I_FACE_FLAGS:
     if (op == VF_GET)
-      *(int *)ptr = rp->faces[index].flags;
+      *(int *)ptr = rp.faces[index].flags;
     else if (op == VF_SET)
-      rp->faces[index].flags = *(int *)ptr;
+      rp.faces[index].flags = *(int *)ptr;
     else if (op == VF_SET_FLAGS)
-      rp->faces[index].flags |= *(int *)ptr;
+      rp.faces[index].flags |= *(int *)ptr;
     else if (op == VF_CLEAR_FLAGS)
-      rp->faces[index].flags &= ~(*(int *)ptr);
+      rp.faces[index].flags &= ~(*(int *)ptr);
     break;
   case RMSV_V_FACE_NORMAL:
     if (op == VF_GET)
-      *(vector3 *)ptr = rp->faces[index].normal;
+      *(vector3 *)ptr = rp.faces[index].normal;
     break;
   case RMSV_V_FACE_CENTER_PNT:
     if (op == VF_GET) {
       int i;
 
-      if (index < 0 || index >= rp->num_faces || rp->faces[index].num_verts <= 0) {
-        *(vector3 *)ptr = rp->path_pnt;
+      if (index < 0 || index >= rp.num_faces || rp.faces[index].num_verts <= 0) {
+        *(vector3 *)ptr = rp.path_pnt;
       } else {
         *(vector3 *)ptr = vector3{};
 
-        for (i = 0; i < rp->faces[index].num_verts; i++) {
-          *(vector3 *)ptr += rp->verts[rp->faces[index].face_verts[i]];
+        for (i = 0; i < rp.faces[index].num_verts; i++) {
+          *(vector3 *)ptr += rp.verts[rp.faces[index].face_verts[i]];
         }
 
-        *(vector3 *)ptr /= rp->faces[index].num_verts;
+        *(vector3 *)ptr /= rp.faces[index].num_verts;
       }
     }
     break;
   case RMV_I_NUM_PORTALS:
     if (op == VF_GET)
-      *(int *)ptr = rp->num_portals;
+      *(int *)ptr = rp.num_portals;
     break;
   case RMSV_V_PORTAL_PATH_PNT:
     if (op == VF_SET)
-      rp->portals[index].path_pnt = *(vector3 *)ptr; // chrishack -- make sure save game accounts for this
+      rp.portals[index].path_pnt = *(vector3 *)ptr; // chrishack -- make sure save game accounts for this
     else if (op == VF_GET)
-      *(vector3 *)ptr = rp->portals[index].path_pnt;
+      *(vector3 *)ptr = rp.portals[index].path_pnt;
     break;
   case RMSV_I_PORTAL_CONNECT_ROOM:
     if (op == VF_GET)
-      *(int *)ptr = rp->portals[index].croom;
+      *(int *)ptr = rp.portals[index].croom;
     break;
   case RMSV_I_PORTAL_CONNECT_PORTAL:
     if (op == VF_GET)
-      *(int *)ptr = rp->portals[index].cportal;
+      *(int *)ptr = rp.portals[index].cportal;
     break;
   case RMSV_I_PORTAL_FACE:
     if (op == VF_GET)
-      *(int *)ptr = rp->portals[index].portal_face;
+      *(int *)ptr = rp.portals[index].portal_face;
     break;
   case RMV_F_DAMAGE:
     if (op == VF_GET)
-      *(float *)ptr = rp->damage;
+      *(float *)ptr = rp.damage;
     break;
   }
 }
@@ -2156,8 +2156,8 @@ int osipf_GetNumAttachSlots(int objhandle) {
   object *parent = ObjGet(objhandle);
 
   if ((parent) && (parent->flags.polygon_object)) {
-    poly_model *parent_pm = &Poly_models[parent->rtype.pobj_info().model_num];
-    return (parent_pm->n_attach);
+    poly_model &parent_pm = Poly_models[parent->rtype.pobj_info().model_num];
+    return (parent_pm.n_attach);
   }
 
   return 0;
@@ -2168,8 +2168,8 @@ int osipf_GetAttachChildHandle(int objhandle, char attachpoint) {
   int8_t parent_ap = attachpoint;
 
   if ((parent) && (parent->flags.polygon_object)) {
-    poly_model *parent_pm = &Poly_models[parent->rtype.pobj_info().model_num];
-    if (parent_ap >= 0 && parent_ap < parent_pm->n_attach) {
+    poly_model &parent_pm = Poly_models[parent->rtype.pobj_info().model_num];
+    if (parent_ap >= 0 && parent_ap < parent_pm.n_attach) {
       return (parent->attach_children[parent_ap]);
     }
   }
@@ -2663,26 +2663,26 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
     return;
   }
 
-  dynamic_wb_info *p_dwb = &objp->dynamic_wb[wb_index];
+  dynamic_wb_info &p_dwb = objp->dynamic_wb[wb_index];
   otype_wb_info *static_wb;
-  poly_model *pm = &Poly_models[objp->rtype.pobj_info().model_num];
+  poly_model &pm = Poly_models[objp->rtype.pobj_info().model_num];
 
   if (objp->type == object_type::player || objp->type == object_type::observer) {
-    ship *ship = &Ships[Players[objp->id].ship_index];
-    static_wb = &ship->static_wb[wb_index];
+    ship &ship = Ships[Players[objp->id].ship_index];
+    static_wb = &ship.static_wb[wb_index];
   } else {
-    object_info *obj_info = &Object_info[objp->id];
-    static_wb = &obj_info->static_wb[wb_index];
+    object_info &obj_info = Object_info[objp->id];
+    static_wb = &obj_info.static_wb[wb_index];
   }
 
-  if (objp->type == object_type::building && (wb_index < 0 || wb_index > pm->num_wbs)) {
+  if (objp->type == object_type::building && (wb_index < 0 || wb_index > pm.num_wbs)) {
     return;
   }
 
   switch (vtype) {
   case WBV_C_NUM_WBS: {
     if (op == VF_GET) {
-      *(char *)ptr = pm->num_wbs;
+      *(char *)ptr = pm.num_wbs;
     }
   } break;
   case WBV_F_ANIM_FRAME:
@@ -2690,7 +2690,7 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
       int anim_type = static_wb->flags & WBF_ANIM_MASKS;
 
       if (anim_type == WBF_ANIM_LOCAL) {
-        *((float *)ptr) = p_dwb->wb_anim_frame;
+        *((float *)ptr) = p_dwb.wb_anim_frame;
       } else {
         *((float *)ptr) = objp->rtype.pobj_info().anim_frame;
       }
@@ -2699,21 +2699,21 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
 
   case WBV_F_LAST_FIRE_TIME:
     if (op == VF_SET) {
-      p_dwb->last_fire_time = *((float *)ptr);
+      p_dwb.last_fire_time = *((float *)ptr);
     } else if (op == VF_GET) {
-      *((float *)ptr) = p_dwb->last_fire_time;
+      *((float *)ptr) = p_dwb.last_fire_time;
     }
     break;
 
   case WBV_I_DYNAMIC_FLAGS:
     if (op == VF_SET) {
-      p_dwb->flags = *((int *)ptr);
+      p_dwb.flags = *((int *)ptr);
     } else if (op == VF_GET) {
-      *((int *)ptr) = p_dwb->flags;
+      *((int *)ptr) = p_dwb.flags;
     } else if (op == VF_SET_FLAGS) {
-      p_dwb->flags |= *((int *)ptr);
+      p_dwb.flags |= *((int *)ptr);
     } else if (op == VF_CLEAR_FLAGS) {
-      p_dwb->flags &= ~(*((int *)ptr));
+      p_dwb.flags &= ~(*((int *)ptr));
     }
     break;
 
@@ -2722,7 +2722,7 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
       if (objp->type == object_type::player || objp->type == object_type::observer) {
         *((char *)ptr) = 8;
       } else {
-        *((char *)ptr) = pm->poly_wb[wb_index].num_gps;
+        *((char *)ptr) = pm.poly_wb[wb_index].num_gps;
       }
     }
     break;
@@ -2736,9 +2736,9 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
   case WBSV_V_GUNPT_POS:
     if (op == VF_GET) {
       if (objp->type == object_type::player || objp->type == object_type::observer)
-        WeaponCalcGun(((vector3 *)ptr), NULL, objp, pm->poly_wb[0].gp_index[g_index]);
+        WeaponCalcGun(((vector3 *)ptr), NULL, objp, pm.poly_wb[0].gp_index[g_index]);
       else
-        WeaponCalcGun(((vector3 *)ptr), NULL, objp, pm->poly_wb[wb_index].gp_index[g_index]);
+        WeaponCalcGun(((vector3 *)ptr), NULL, objp, pm.poly_wb[wb_index].gp_index[g_index]);
     }
     break;
 
@@ -3001,11 +3001,11 @@ void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void
   if (g_index < 0 || g_index >= MAX_GOALS)
     return;
 
-  goal *g_ptr = &ai_info->goals[g_index];
+  goal &g_ptr = ai_info->goals[g_index];
 
-  if (!g_ptr->used || vtype == AIGV_B_USED) {
+  if (!g_ptr.used || vtype == AIGV_B_USED) {
     if (vtype == AIGV_B_USED && op == VF_GET)
-      *(bool *)ptr = g_ptr->used;
+      *(bool *)ptr = g_ptr.used;
 
     return;
   }
@@ -3013,143 +3013,143 @@ void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void
   switch (vtype) {
   case AIGV_I_TYPE: {
     if (op == VF_GET)
-      *(int *)ptr = g_ptr->type;
+      *(int *)ptr = g_ptr.type;
     else if (op == VF_SET)
-      g_ptr->type = *(int *)ptr;
+      g_ptr.type = *(int *)ptr;
   } break;
   case AIGV_C_ACTIVATION_LEVEL: {
     if (op == VF_GET)
-      *(char *)ptr = g_ptr->activation_level;
+      *(char *)ptr = g_ptr.activation_level;
     else if (op == VF_SET)
-      g_ptr->activation_level = *(char *)ptr;
+      g_ptr.activation_level = *(char *)ptr;
   } break;
   case AIGV_F_MIN_INFLUENCE: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->min_influence;
+      *(float *)ptr = g_ptr.min_influence;
     else if (op == VF_SET)
-      g_ptr->min_influence = *(float *)ptr;
+      g_ptr.min_influence = *(float *)ptr;
   } break;
   case AIGV_F_MAX_INFLUENCE: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->max_influence;
+      *(float *)ptr = g_ptr.max_influence;
     else if (op == VF_SET)
-      g_ptr->max_influence = *(float *)ptr;
+      g_ptr.max_influence = *(float *)ptr;
   } break;
 
   case AIGSV_F_INFLUENCE_DIST: // 0 - 3
   {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->ramp_influence_dists[index];
+      *(float *)ptr = g_ptr.ramp_influence_dists[index];
     else if (op == VF_SET)
-      g_ptr->ramp_influence_dists[index] = *(float *)ptr;
+      g_ptr.ramp_influence_dists[index] = *(float *)ptr;
   } break;
 
   case AIGV_I_HANDLE: {
     if (op == VF_GET)
-      *(int *)ptr = g_ptr->g_info.handle;
+      *(int *)ptr = g_ptr.g_info.handle;
     else if (op == VF_SET)
-      g_ptr->g_info.handle = *(int *)ptr;
+      g_ptr.g_info.handle = *(int *)ptr;
   } break;
   case AIGV_I_ROOMNUM: {
     if (op == VF_GET)
-      *(int *)ptr = g_ptr->g_info.roomnum;
+      *(int *)ptr = g_ptr.g_info.roomnum;
     else if (op == VF_SET)
-      g_ptr->g_info.roomnum = *(int *)ptr;
+      g_ptr.g_info.roomnum = *(int *)ptr;
   } break;
   case AIGV_I_F_ACTIONS: {
     if (op == VF_GET)
-      *(int *)ptr = g_ptr->g_info.f_actions;
+      *(int *)ptr = g_ptr.g_info.f_actions;
     else if (op == VF_SET)
-      g_ptr->g_info.f_actions = *(int *)ptr;
+      g_ptr.g_info.f_actions = *(int *)ptr;
   } break;
   case AIGV_I_ID: {
     if (op == VF_GET)
-      *(int *)ptr = g_ptr->g_info.id;
+      *(int *)ptr = g_ptr.g_info.id;
     else if (op == VF_SET)
-      g_ptr->g_info.id = *(int *)ptr;
+      g_ptr.g_info.id = *(int *)ptr;
   } break;
   case AIGV_C_SUBTYPE: {
     if (op == VF_GET)
-      *(char *)ptr = g_ptr->subtype;
+      *(char *)ptr = g_ptr.subtype;
     else if (op == VF_SET)
-      g_ptr->subtype = *(char *)ptr;
+      g_ptr.subtype = *(char *)ptr;
   } break;
   case AIGV_F_TIME: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->g_info.time;
+      *(float *)ptr = g_ptr.g_info.time;
     else if (op == VF_SET)
-      g_ptr->g_info.time = *(float *)ptr;
+      g_ptr.g_info.time = *(float *)ptr;
   } break;
   case AIGV_V_VEC: {
     if (op == VF_GET)
-      *(vector3 *)ptr = g_ptr->g_info.vec;
+      *(vector3 *)ptr = g_ptr.g_info.vec;
     else if (op == VF_SET)
-      g_ptr->g_info.vec = *(vector3 *)ptr;
+      g_ptr.g_info.vec = *(vector3 *)ptr;
   } break;
   case AIGV_V_POS: {
     if (op == VF_GET)
-      *(vector3 *)ptr = g_ptr->g_info.pos;
+      *(vector3 *)ptr = g_ptr.g_info.pos;
     else if (op == VF_SET)
-      g_ptr->g_info.pos = *(vector3 *)ptr;
+      g_ptr.g_info.pos = *(vector3 *)ptr;
   } break;
   case AIGV_F_STEER_MIN_DIST: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->g_info.dist_info.min_dist;
+      *(float *)ptr = g_ptr.g_info.dist_info.min_dist;
     else if (op == VF_SET)
-      g_ptr->g_info.dist_info.min_dist = *(float *)ptr;
+      g_ptr.g_info.dist_info.min_dist = *(float *)ptr;
   } break;
   case AIGV_F_STEER_MAX_DIST: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->g_info.dist_info.max_dist;
+      *(float *)ptr = g_ptr.g_info.dist_info.max_dist;
     else if (op == VF_SET)
-      g_ptr->g_info.dist_info.max_dist = *(float *)ptr;
+      g_ptr.g_info.dist_info.max_dist = *(float *)ptr;
   } break;
   case AIGV_F_STEER_MAX_STRENGTH: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->g_info.dist_info.max_strength;
+      *(float *)ptr = g_ptr.g_info.dist_info.max_strength;
     else if (op == VF_SET)
-      g_ptr->g_info.dist_info.max_strength = *(float *)ptr;
+      g_ptr.g_info.dist_info.max_strength = *(float *)ptr;
   } break;
   case AIGV_B_ATTACH_F_ALIGNED: {
     if (op == VF_GET)
-      *reinterpret_cast<bool *>(ptr) = g_ptr->g_info.attach_info.flags.aligned;
+      *reinterpret_cast<bool *>(ptr) = g_ptr.g_info.attach_info.flags.aligned;
   } break;
   case AIGV_B_ATTACH_F_SPHERE: {
     if (op == VF_GET)
-      *reinterpret_cast<bool *>(ptr) = g_ptr->g_info.attach_info.flags.sphere;
+      *reinterpret_cast<bool *>(ptr) = g_ptr.g_info.attach_info.flags.sphere;
   } break;
   case AIGV_F_ATTACH_RAD: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->g_info.attach_info.rad;
+      *(float *)ptr = g_ptr.g_info.attach_info.rad;
   } break;
   case AIGV_C_ATTACH_CHILD_AP: {
     if (op == VF_GET)
-      *(char *)ptr = g_ptr->g_info.attach_info.child_ap;
+      *(char *)ptr = g_ptr.g_info.attach_info.child_ap;
   } break;
   case AIGV_C_ATTACH_PARENT_AP: {
     if (op == VF_GET)
-      *(char *)ptr = g_ptr->g_info.attach_info.parent_ap;
+      *(char *)ptr = g_ptr.g_info.attach_info.parent_ap;
   } break;
   case AIGV_I_WANDER_AVOID_HANDLE: {
     if (op == VF_GET)
-      *(int *)ptr = g_ptr->g_info.wander_extra_info.avoid_handle;
+      *(int *)ptr = g_ptr.g_info.wander_extra_info.avoid_handle;
     else if (op == VF_SET)
-      g_ptr->g_info.wander_extra_info.avoid_handle = *(int *)ptr;
+      g_ptr.g_info.wander_extra_info.avoid_handle = *(int *)ptr;
   } break;
   case AIGV_C_WANDER_MIN_ROOMS: {
     if (op == VF_GET)
-      *(char *)ptr = g_ptr->g_info.wander_extra_info.min_rooms;
+      *(char *)ptr = g_ptr.g_info.wander_extra_info.min_rooms;
     else if (op == VF_SET)
-      g_ptr->g_info.wander_extra_info.min_rooms = *(char *)ptr;
+      g_ptr.g_info.wander_extra_info.min_rooms = *(char *)ptr;
   } break;
   case AIGV_C_WANDER_MAX_ROOMS: {
     if (op == VF_GET)
-      *(char *)ptr = g_ptr->g_info.wander_extra_info.max_rooms;
+      *(char *)ptr = g_ptr.g_info.wander_extra_info.max_rooms;
     else if (op == VF_SET)
-      g_ptr->g_info.wander_extra_info.max_rooms = *(char *)ptr;
+      g_ptr.g_info.wander_extra_info.max_rooms = *(char *)ptr;
   } break;
   case AIGV_C_WANDER_FLAGS: {
-    auto &flags = g_ptr->g_info.wander_extra_info.flags;
+    auto &flags = g_ptr.g_info.wander_extra_info.flags;
     if (op == VF_GET)
       *reinterpret_cast<uint8_t *>(ptr) = reinterpret_cast<uint8_t &>(flags);
     else if (op == VF_SET)
@@ -3161,135 +3161,135 @@ void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void
   } break;
   case AIGV_C_WANDER_MINE_INDEX: {
     if (op == VF_GET)
-      *(char *)ptr = g_ptr->g_info.wander_extra_info.mine_index;
+      *(char *)ptr = g_ptr.g_info.wander_extra_info.mine_index;
     else if (op == VF_SET)
-      g_ptr->g_info.wander_extra_info.mine_index = *(char *)ptr;
+      g_ptr.g_info.wander_extra_info.mine_index = *(char *)ptr;
   } break;
   case AIGV_F_CIRCLE_DIST: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->circle_distance;
+      *(float *)ptr = g_ptr.circle_distance;
     else if (op == VF_SET)
-      g_ptr->circle_distance = *(float *)ptr;
+      g_ptr.circle_distance = *(float *)ptr;
   } break;
   case AIGV_I_STATUS_REG: {
     if (op == VF_GET)
-      *(int *)ptr = g_ptr->status_reg;
+      *(int *)ptr = g_ptr.status_reg;
     else if (op == VF_SET)
-      g_ptr->status_reg = *(int *)ptr;
+      g_ptr.status_reg = *(int *)ptr;
     else if (op == VF_SET_FLAGS)
-      g_ptr->status_reg |= *(int *)ptr;
+      g_ptr.status_reg |= *(int *)ptr;
     else if (op == VF_CLEAR_FLAGS)
-      g_ptr->status_reg &= ~(*(int *)ptr);
+      g_ptr.status_reg &= ~(*(int *)ptr);
   } break;
   case AIGV_F_START_TIME: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->start_time;
+      *(float *)ptr = g_ptr.start_time;
     else if (op == VF_SET)
-      g_ptr->start_time = *(float *)ptr;
+      g_ptr.start_time = *(float *)ptr;
   } break;
   case AIGV_F_NEXT_PATH_TIME: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->next_path_time;
+      *(float *)ptr = g_ptr.next_path_time;
     else if (op == VF_SET)
-      g_ptr->next_path_time = *(float *)ptr;
+      g_ptr.next_path_time = *(float *)ptr;
   } break;
   case AIGV_F_DIST_TO_GOAL: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->dist_to_goal;
+      *(float *)ptr = g_ptr.dist_to_goal;
     else if (op == VF_SET)
-      g_ptr->dist_to_goal = *(float *)ptr;
+      g_ptr.dist_to_goal = *(float *)ptr;
   } break;
   case AIGV_I_SCRIPTED_DATA_PTR: {
 	if(op == VF_GET)
-	    *(void **)ptr = g_ptr->g_info.scripted_data_ptr;
+	    *(void **)ptr = g_ptr.g_info.scripted_data_ptr;
 	else if(op == VF_SET)
-	    g_ptr->g_info.scripted_data_ptr = *((void **)ptr);
+	    g_ptr.g_info.scripted_data_ptr = *((void **)ptr);
   } break;
   case AIGV_V_VEC_TO_TARGET: {
     if (op == VF_GET)
-      *(vector3 *)ptr = g_ptr->vec_to_target;
+      *(vector3 *)ptr = g_ptr.vec_to_target;
     else if (op == VF_SET)
-      g_ptr->vec_to_target = *(vector3 *)ptr;
+      g_ptr.vec_to_target = *(vector3 *)ptr;
   } break;
   case AIGV_F_NEXT_CHECK_SEE_TARGET_TIME: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->next_check_see_target_time;
+      *(float *)ptr = g_ptr.next_check_see_target_time;
     else if (op == VF_SET)
-      g_ptr->next_check_see_target_time = *(float *)ptr;
+      g_ptr.next_check_see_target_time = *(float *)ptr;
   } break;
   case AIGV_V_LAST_SEE_TARGET_POS: {
     if (op == VF_GET)
-      *(vector3 *)ptr = g_ptr->last_see_target_pos;
+      *(vector3 *)ptr = g_ptr.last_see_target_pos;
     else if (op == VF_SET)
-      g_ptr->last_see_target_pos = *(vector3 *)ptr;
+      g_ptr.last_see_target_pos = *(vector3 *)ptr;
   } break;
   case AIGV_F_LAST_SEE_TARGET_TIME: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->last_see_target_time;
+      *(float *)ptr = g_ptr.last_see_target_time;
     else if (op == VF_SET)
-      g_ptr->last_see_target_time = *(float *)ptr;
+      g_ptr.last_see_target_time = *(float *)ptr;
   } break;
   case AIGV_F_NEXT_TARGET_UPDATE_TIME: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->next_target_update_time;
+      *(float *)ptr = g_ptr.next_target_update_time;
     else if (op == VF_SET)
-      g_ptr->next_target_update_time = *(float *)ptr;
+      g_ptr.next_target_update_time = *(float *)ptr;
   } break;
   case AIGV_I_FLAGS: {
     if (op == VF_GET)
-      *(int *)ptr = g_ptr->flags;
+      *(int *)ptr = g_ptr.flags;
     else if (op == VF_SET)
-      g_ptr->flags = *(int *)ptr;
+      g_ptr.flags = *(int *)ptr;
     else if (op == VF_SET_FLAGS)
-      g_ptr->flags |= *(int *)ptr;
+      g_ptr.flags |= *(int *)ptr;
     else if (op == VF_CLEAR_FLAGS)
-      g_ptr->flags &= ~(*(int *)ptr);
+      g_ptr.flags &= ~(*(int *)ptr);
   } break;
 
   case AIGV_C_NUM_ENABLERS: {
     if (op == VF_GET)
-      *(char *)ptr = g_ptr->num_enablers;
+      *(char *)ptr = g_ptr.num_enablers;
     else if (op == VF_SET)
-      g_ptr->num_enablers = *(char *)ptr;
+      g_ptr.num_enablers = *(char *)ptr;
   } break;
   case AIGV_V_ORIENT_FVEC: {
     if (op == VF_GET)
-      *(vector3 *)ptr = g_ptr->set_fvec;
+      *(vector3 *)ptr = g_ptr.set_fvec;
     else if (op == VF_SET)
-      g_ptr->set_fvec = *(vector3 *)ptr;
+      g_ptr.set_fvec = *(vector3 *)ptr;
   } break;
   case AIGV_V_ORIENT_UVEC: {
     if (op == VF_GET)
-      *(vector3 *)ptr = g_ptr->set_uvec;
+      *(vector3 *)ptr = g_ptr.set_uvec;
     else if (op == VF_SET)
-      g_ptr->set_uvec = *(vector3 *)ptr;
+      g_ptr.set_uvec = *(vector3 *)ptr;
   } break;
   case AIGSV_C_ENABLER_TYPE: {
     if (op == VF_GET)
-      *(char *)ptr = g_ptr->enabler[index].enabler_type;
+      *(char *)ptr = g_ptr.enabler[index].enabler_type;
     else if (op == VF_SET)
-      g_ptr->enabler[index].enabler_type = *(char *)ptr;
+      g_ptr.enabler[index].enabler_type = *(char *)ptr;
   } break;
   case AIGSV_F_ENABLER_TIME: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->enabler[index].time;
+      *(float *)ptr = g_ptr.enabler[index].time;
     else if (op == VF_SET)
-      g_ptr->enabler[index].time = *(float *)ptr;
+      g_ptr.enabler[index].time = *(float *)ptr;
   } break;
   case AIGSV_C_ENABLER_MTYPE: {
     if (op == VF_GET)
-      *(char *)ptr = g_ptr->enabler[index].movement_type;
+      *(char *)ptr = g_ptr.enabler[index].movement_type;
     else if (op == VF_SET)
-      g_ptr->enabler[index].movement_type = *(char *)ptr;
+      g_ptr.enabler[index].movement_type = *(char *)ptr;
   } break;
   case AIGSV_F_ENABLER_FLOAT_VALUE: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->enabler[index].float_value;
+      *(float *)ptr = g_ptr.enabler[index].float_value;
     else if (op == VF_SET)
-      g_ptr->enabler[index].float_value = *(float *)ptr;
+      g_ptr.enabler[index].float_value = *(float *)ptr;
   } break;
   case AIGSV_I_ENABLER_FLAGS: {
-    auto &flags = g_ptr->enabler[index].flags;
+    auto &flags = g_ptr.enabler[index].flags;
     if (op == VF_GET)
       *reinterpret_cast<uint32_t *>(ptr) = reinterpret_cast<uint32_t &>(flags);
     else if (op == VF_SET)
@@ -3301,33 +3301,33 @@ void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void
   } break;
   case AIGSV_F_ENABLER_DIST: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->enabler[index].dist;
+      *(float *)ptr = g_ptr.enabler[index].dist;
     else if (op == VF_SET)
-      g_ptr->enabler[index].dist = *(float *)ptr;
+      g_ptr.enabler[index].dist = *(float *)ptr;
   } break;
   case AIGSV_F_ENABLER_PERCENT: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->enabler[index].percent_enable;
+      *(float *)ptr = g_ptr.enabler[index].percent_enable;
     else if (op == VF_SET)
-      g_ptr->enabler[index].percent_enable = *(float *)ptr;
+      g_ptr.enabler[index].percent_enable = *(float *)ptr;
   } break;
   case AIGSV_F_ENABLER_CHECK_INTERVAL: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->enabler[index].check_interval;
+      *(float *)ptr = g_ptr.enabler[index].check_interval;
     else if (op == VF_SET)
-      g_ptr->enabler[index].check_interval = *(float *)ptr;
+      g_ptr.enabler[index].check_interval = *(float *)ptr;
   } break;
   case AIGSV_F_ENABLER_LAST_CHECK_TIME: {
     if (op == VF_GET)
-      *(float *)ptr = g_ptr->enabler[index].last_check_time;
+      *(float *)ptr = g_ptr.enabler[index].last_check_time;
     else if (op == VF_SET)
-      g_ptr->enabler[index].last_check_time = *(float *)ptr;
+      g_ptr.enabler[index].last_check_time = *(float *)ptr;
   } break;
   case AIGSV_C_ENABLER_NEXT_ENABLER_OP: {
     if (op == VF_GET)
-      *(char *)ptr = g_ptr->enabler[index].bool_next_enabler_op;
+      *(char *)ptr = g_ptr.enabler[index].bool_next_enabler_op;
     else if (op == VF_SET)
-      g_ptr->enabler[index].bool_next_enabler_op = *(char *)ptr;
+      g_ptr.enabler[index].bool_next_enabler_op = *(char *)ptr;
   } break;
   }
 }
@@ -3710,33 +3710,33 @@ void osipf_PathValue(int path_id, int node_id, char op, int changes, void *ptr) 
     return;
   }
 
-  game_path *cpath = &GamePaths[path_id];
+  game_path &cpath = GamePaths[path_id];
 
   if (op == VF_GET) {
     if (changes & PV_ALL) {
-      if (node_id < 0 || node_id >= cpath->num_nodes) {
+      if (node_id < 0 || node_id >= cpath.num_nodes) {
         LOG_FATAL("Invalid node on path");
         Q_ASSERT(false);
         return;
       }
 
-      node *cnode = &cpath->pathnodes[node_id];
+      node &cnode = cpath.pathnodes[node_id];
       osiris_path_node_info *pni = (osiris_path_node_info *)ptr;
 
       if (changes & PV_POS) {
-        pni->pos = cnode->pos;
+        pni->pos = cnode.pos;
       }
       if (changes & PV_ROOMNUM) {
-        pni->roomnum = cnode->roomnum;
+        pni->roomnum = cnode.roomnum;
       }
       if (changes & PV_FLAGS) {
-        pni->flags = cnode->flags;
+        pni->flags = cnode.flags;
       }
       if (changes & PV_FVEC) {
-        pni->fvec = cnode->fvec;
+        pni->fvec = cnode.fvec;
       }
       if (changes & PV_UVEC) {
-        pni->uvec = cnode->uvec;
+        pni->uvec = cnode.uvec;
       }
 
       changes &= ~PV_ALL;
@@ -3745,40 +3745,40 @@ void osipf_PathValue(int path_id, int node_id, char op, int changes, void *ptr) 
     }
 
     if (changes == PV_I_NUMNODES) {
-      *((int *)ptr) = cpath->num_nodes;
+      *((int *)ptr) = cpath.num_nodes;
       return;
     }
 
     if (changes == PV_CS_NAME) {
-      strcpy((char *)ptr, cpath->name);
+      strcpy((char *)ptr, cpath.name);
       return;
     }
 
   } else if (op == VF_SET) {
     if (changes & PV_ALL) {
-      if (node_id < 0 || node_id >= cpath->num_nodes) {
+      if (node_id < 0 || node_id >= cpath.num_nodes) {
         LOG_FATAL("Invalid node on path");
         Q_ASSERT(false);
         return;
       }
 
-      node *cnode = &cpath->pathnodes[node_id];
+      node &cnode = cpath.pathnodes[node_id];
       osiris_path_node_info *pni = (osiris_path_node_info *)ptr;
 
       if (changes & PV_POS) {
-        cnode->pos = pni->pos;
+        cnode.pos = pni->pos;
       }
       if (changes & PV_ROOMNUM) {
-        cnode->roomnum = pni->roomnum;
+        cnode.roomnum = pni->roomnum;
       }
       if (changes & PV_FLAGS) {
-        cnode->flags = pni->flags;
+        cnode.flags = pni->flags;
       }
       if (changes & PV_FVEC) {
-        cnode->fvec = pni->fvec;
+        cnode.fvec = pni->fvec;
       }
       if (changes & PV_UVEC) {
-        cnode->uvec = pni->uvec;
+        cnode.uvec = pni->uvec;
       }
 
       changes &= ~PV_ALL;

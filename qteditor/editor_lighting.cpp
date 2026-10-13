@@ -183,12 +183,12 @@ void CopySqueezeBodyAndEdges(std::vector<std::vector<uint16_t>> &dest_data, cons
 
 void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<uint16_t>> &dest_data, int dest_x,
                              int dest_y) {
-  room_t *rp = &Rooms[roomnum];
-  lightmap_info *lmi_ptr = &LightmapInfo[rp->faces[facenum].lmi_handle];
-  const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi_ptr->lm_handle);
+  room_t &rp = Rooms[roomnum];
+  lightmap_info &lmi_ptr = LightmapInfo[rp.faces[facenum].lmi_handle];
+  const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi_ptr.lm_handle);
 
-  int w = lmi_ptr->width;
-  int h = lmi_ptr->height;
+  int w = lmi_ptr.width;
+  int h = lmi_ptr.height;
 
   // Copy over the actual lightmap data
   CopySqueezeBodyAndEdges(dest_data, src_data, w, h, dest_x, dest_y);
@@ -201,60 +201,60 @@ void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<u
   float v_scalar = (float)h / 128.0f;
 
   for (size_t t = roomnum; t < Rooms.size(); t++) {
-    room_t *this_rp = &Rooms[t];
-    if (!this_rp->used)
+    room_t &this_rp = Rooms[t];
+    if (!this_rp.used)
       continue;
 
-    for (int j = 0; j < this_rp->num_faces; j++) {
+    for (int j = 0; j < this_rp.num_faces; j++) {
 
-      if (!this_rp->faces[j].flags.lightmap)
+      if (!this_rp.faces[j].flags.lightmap)
         continue;
 
-      if (this_rp->faces[j].lmi_handle == BAD_LMI_INDEX)
+      if (this_rp.faces[j].lmi_handle == BAD_LMI_INDEX)
         continue;
 
-      if (Lmi_spoken_for[this_rp->faces[j].lmi_handle])
+      if (Lmi_spoken_for[this_rp.faces[j].lmi_handle])
         continue;
-      if (this_rp->faces[j].lmi_handle == rp->faces[facenum].lmi_handle) {
-        lmi_ptr->x1 = dest_x + 1;
-        lmi_ptr->y1 = dest_y + 1;
+      if (this_rp.faces[j].lmi_handle == rp.faces[facenum].lmi_handle) {
+        lmi_ptr.x1 = dest_x + 1;
+        lmi_ptr.y1 = dest_y + 1;
 
         // We have to alter our uvs for this face to reflect our change
-        face *fp = &this_rp->faces[j];
-        for (int k = 0; k < fp->num_verts; k++) {
-          fp->face_uvls[k].u2 *= u_scalar;
-          fp->face_uvls[k].u2 += dest_u;
+        face &fp = this_rp.faces[j];
+        for (int k = 0; k < fp.num_verts; k++) {
+          fp.face_uvls[k].u2 *= u_scalar;
+          fp.face_uvls[k].u2 += dest_u;
 
-          fp->face_uvls[k].v2 *= v_scalar;
-          fp->face_uvls[k].v2 += dest_v;
+          fp.face_uvls[k].v2 *= v_scalar;
+          fp.face_uvls[k].v2 += dest_v;
         }
       }
     }
   }
 
-  Q_ASSERT(rp->faces[facenum].lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(rp.faces[facenum].lmi_handle != BAD_LMI_INDEX);
 
-  Lmi_spoken_for[rp->faces[facenum].lmi_handle] = 1;
+  Lmi_spoken_for[rp.faces[facenum].lmi_handle] = 1;
 
   // Free our old lightmap (the original overwrote the refcount with 1 and
   // freed; dropping extra references first reproduces that forced release).
-  while (GameLightmaps.refs(lmi_ptr->lm_handle) > 1)
-    GameLightmaps.release(lmi_ptr->lm_handle);
-  lm_FreeLightmap(lmi_ptr->lm_handle);
+  while (GameLightmaps.refs(lmi_ptr.lm_handle) > 1)
+    GameLightmaps.release(lmi_ptr.lm_handle);
+  lm_FreeLightmap(lmi_ptr.lm_handle);
 
-  lmi_ptr->lm_handle = Squeeze_lightmap_handle;
+  lmi_ptr.lm_handle = Squeeze_lightmap_handle;
   GameLightmaps.acquire(Squeeze_lightmap_handle);
 }
 
 void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<std::vector<uint16_t>> &dest_data,
                               int dest_x, int dest_y) {
-  lightmap_object_face *fp = &obj->lm_object.lightmap_faces[subnum][facenum];
-  lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
-  const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi_ptr->lm_handle);
+  lightmap_object_face &fp = obj->lm_object.lightmap_faces[subnum][facenum];
+  lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
+  const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi_ptr.lm_handle);
   int t, k;
 
-  int w = lmi_ptr->width;
-  int h = lmi_ptr->height;
+  int w = lmi_ptr.width;
+  int h = lmi_ptr.height;
 
   // Copy over the actual lightmap data
   CopySqueezeBodyAndEdges(dest_data, src_data, w, h, dest_x, dest_y);
@@ -267,72 +267,72 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<
   float v_scalar = (float)h / 128.0f;
 
   for (int objnum = obj - Objects.data(); objnum != -1; objnum = Objects[objnum].next) {
-    object *this_obj = &Objects[objnum];
+    object &this_obj = Objects[objnum];
 
-    if (this_obj->lighting_render_type != lighting_render_type_e::lightmaps)
+    if (this_obj.lighting_render_type != lighting_render_type_e::lightmaps)
       continue;
-    if (!this_obj->lm_object.used)
+    if (!this_obj.lm_object.used)
       continue;
 
-    for (t = 0; t < this_obj->lm_object.num_models; t++) {
-      if (IsNonRenderableSubmodel(Poly_models[this_obj->rtype.pobj_info().model_num], t))
+    for (t = 0; t < this_obj.lm_object.num_models; t++) {
+      if (IsNonRenderableSubmodel(Poly_models[this_obj.rtype.pobj_info().model_num], t))
         continue;
 
-      for (k = 0; k < this_obj->lm_object.num_faces[t]; k++) {
-        lightmap_object_face *this_fp = &this_obj->lm_object.lightmap_faces[t][k];
-        int lmi_handle = this_fp->lmi_handle;
+      for (k = 0; k < this_obj.lm_object.num_faces[t]; k++) {
+        lightmap_object_face &this_fp = this_obj.lm_object.lightmap_faces[t][k];
+        int lmi_handle = this_fp.lmi_handle;
         if (lmi_handle == BAD_LMI_INDEX)
           continue;
         if (Lmi_spoken_for[lmi_handle])
           continue;
 
-        if (lmi_handle == fp->lmi_handle) {
-          lmi_ptr->x1 = dest_x + 1;
-          lmi_ptr->y1 = dest_y + 1;
+        if (lmi_handle == fp.lmi_handle) {
+          lmi_ptr.x1 = dest_x + 1;
+          lmi_ptr.y1 = dest_y + 1;
 
           // We have to alter our uvs for this face to reflect our change
-          for (int j = 0; j < this_fp->num_verts; j++) {
-            this_fp->u2[j] *= u_scalar;
-            this_fp->u2[j] += dest_u;
+          for (int j = 0; j < this_fp.num_verts; j++) {
+            this_fp.u2[j] *= u_scalar;
+            this_fp.u2[j] += dest_u;
 
-            this_fp->v2[j] *= v_scalar;
-            this_fp->v2[j] += dest_v;
+            this_fp.v2[j] *= v_scalar;
+            this_fp.v2[j] += dest_v;
           }
         }
       }
     }
   }
 
-  Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
-  Lmi_spoken_for[fp->lmi_handle] = 1;
+  Q_ASSERT(fp.lmi_handle != BAD_LMI_INDEX);
+  Lmi_spoken_for[fp.lmi_handle] = 1;
 
   // Free our old lightmap (the original overwrote the refcount with 1 and
   // freed; dropping extra references first reproduces that forced release).
-  while (GameLightmaps.refs(lmi_ptr->lm_handle) > 1)
-    GameLightmaps.release(lmi_ptr->lm_handle);
-  lm_FreeLightmap(lmi_ptr->lm_handle);
+  while (GameLightmaps.refs(lmi_ptr.lm_handle) > 1)
+    GameLightmaps.release(lmi_ptr.lm_handle);
+  lm_FreeLightmap(lmi_ptr.lm_handle);
 
-  lmi_ptr->lm_handle = Squeeze_lightmap_handle;
+  lmi_ptr.lm_handle = Squeeze_lightmap_handle;
   GameLightmaps.acquire(Squeeze_lightmap_handle);
 }
 
 // Simply clears flags for combine portals
 void ClearCombinePortals(int terrain) {
   for (size_t i = 0; i < Rooms.size(); i++) {
-    room_t *rp = &Rooms[i];
+    room_t &rp = Rooms[i];
 
-    if (!rp->used)
+    if (!rp.used)
       continue;
 
-    if (terrain && !rp->flags.external)
+    if (terrain && !rp.flags.external)
       continue;
 
-    if (!terrain && rp->flags.external)
+    if (!terrain && rp.flags.external)
       continue;
 
-    for (int t = 0; t < rp->num_portals; t++) {
-      portal *portal_a = &rp->portals[t];
-      portal_a->flags.combined = false;
+    for (int t = 0; t < rp.num_portals; t++) {
+      portal &portal_a = rp.portals[t];
+      portal_a.flags.combined = false;
     }
   }
 }
@@ -345,72 +345,72 @@ void CheckCombinePortals(int terrain) {
   LOG_INFO("Combining portals...");
 
   for (size_t i = 0; i < Rooms.size(); i++) {
-    room_t *rp = &Rooms[i];
+    room_t &rp = Rooms[i];
 
-    if (!rp->used)
+    if (!rp.used)
       continue;
 
-    if (terrain && !rp->flags.external)
+    if (terrain && !rp.flags.external)
       continue;
 
-    if (!terrain && rp->flags.external)
+    if (!terrain && rp.flags.external)
       continue;
 
-    for (int t = 0; t < rp->num_portals; t++) {
-      portal *portal_a = &rp->portals[t];
-      face *face_a = &rp->faces[portal_a->portal_face];
+    for (int t = 0; t < rp.num_portals; t++) {
+      portal &portal_a = rp.portals[t];
+      face &face_a = rp.faces[portal_a.portal_face];
 
-      if (portal_a->flags.combined)
+      if (portal_a.flags.combined)
         continue;
 
       // Don't combine if face is breakable
-      if (GameTextures[face_a->tmap].flags.breakable)
+      if (GameTextures[face_a.tmap].flags.breakable)
         continue;
 
-      float dist_a = vm_DotProduct(rp->verts[face_a->face_verts[0]], face_a->normal);
+      float dist_a = vm_DotProduct(rp.verts[face_a.face_verts[0]], face_a.normal);
 
-      for (int k = 0; k < rp->num_portals; k++) {
-        portal *portal_b = &rp->portals[k];
-        face *face_b = &rp->faces[portal_b->portal_face];
+      for (int k = 0; k < rp.num_portals; k++) {
+        portal &portal_b = rp.portals[k];
+        face &face_b = rp.faces[portal_b.portal_face];
 
-        if (portal_b->flags.combined)
+        if (portal_b.flags.combined)
           continue;
 
         // Don't combine if one portal is render-faces and the other is not
-        if (portal_a->flags.render_faces != portal_b->flags.render_faces)
+        if (portal_a.flags.render_faces != portal_b.flags.render_faces)
           continue;
 
         // Don't combine if face is breakable
-        if (GameTextures[face_b->tmap].flags.breakable)
+        if (GameTextures[face_b.tmap].flags.breakable)
           continue;
 
         if (t == k)
           continue;
 
         // Check to see if the portals connect to the same room
-        if (portal_a->connected_room != portal_b->connected_room)
+        if (portal_a.connected_room != portal_b.connected_room)
           continue;
 
         /*// Check to see if they share a normal
-        float dp=vm_DotProduct (face_a->normal, face_b->normal);
+        float dp=vm_DotProduct (face_a.normal, face_b.normal);
 
         if (dp < 0.95f)
                 continue;
 
 
         // Check to see if the distances are same
-        float dist_b=vm_DotProduct (rp->verts[face_b->face_verts[0]], face_b->normal);
+        float dist_b=vm_DotProduct (rp.verts[face_b.face_verts[0]], face_b.normal);
 
         if (fabs(dist_b-dist_a)> 0.5f)
                 continue;
 
         int match=0;
         // Test to see if any points at all can touch
-        for (int x=0; x<face_a->num_verts && !match; x++ )
+        for (int x=0; x<face_a.num_verts && !match; x++ )
         {
-                for (int y=0; y<face_b->num_verts && !match; y++ )
+                for (int y=0; y<face_b.num_verts && !match; y++ )
                 {
-                        if (PointsAreSame(&rp->verts[face_a->face_verts[x]],&rp->verts[face_b->face_verts[y]]))
+                        if (PointsAreSame(&rp.verts[face_a.face_verts[x]],&rp.verts[face_b.face_verts[y]]))
                                 match=1;
                 }
         }
@@ -419,15 +419,15 @@ void CheckCombinePortals(int terrain) {
                 continue;
 
         //Check to see if the portals connect to the same room
-        if (portal_a->croom != portal_b->croom)
+        if (portal_a.croom != portal_b.croom)
                 continue;
 
         // Hurray! These portals can be combined*/
-        portal_a->flags.combined = true;
-        portal_b->flags.combined = true;
+        portal_a.flags.combined = true;
+        portal_b.flags.combined = true;
 
-        portal_a->combine_master = t;
-        portal_b->combine_master = t;
+        portal_a.combine_master = t;
+        portal_b.combine_master = t;
         combine_count++;
       }
     }
@@ -447,17 +447,17 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
   // Go through all the rooms and sqeeze them one by one
   for (i = 0; i < Rooms.size(); i++) {
-    room_t *rp = &Rooms[i];
-    if (!rp->used)
+    room_t &rp = Rooms[i];
+    if (!rp.used)
       continue;
-    if (rp->flags.no_light)
+    if (rp.flags.no_light)
       continue;
 
     if (external) {
-      if (!rp->flags.external)
+      if (!rp.flags.external)
         continue;
     } else {
-      if (rp->flags.external)
+      if (rp.flags.external)
         continue;
 
       if (target_roomnum != -1 && target_roomnum != i)
@@ -465,11 +465,11 @@ void SqueezeLightmaps(int external, int target_roomnum) {
     }
 
     // Go through each face
-    for (t = 0; t < rp->num_faces; t++) {
-      face *fp = &rp->faces[t];
-      int lmi_handle = fp->lmi_handle;
+    for (t = 0; t < rp.num_faces; t++) {
+      face &fp = rp.faces[t];
+      int lmi_handle = fp.lmi_handle;
 
-      if (!fp->flags.lightmap)
+      if (!fp.flags.lightmap)
         continue;
 
       if (lmi_handle == BAD_LMI_INDEX)
@@ -477,11 +477,11 @@ void SqueezeLightmaps(int external, int target_roomnum) {
       if (Lmi_spoken_for[lmi_handle])
         continue;
 
-      lightmap_info *lmi = &LightmapInfo[lmi_handle];
+      lightmap_info &lmi = LightmapInfo[lmi_handle];
 
       int dest_x, dest_y;
-      int src_w = lmi->width;
-      int src_h = lmi->height;
+      int src_w = lmi.width;
+      int src_h = lmi.height;
 
       if (Squeeze_lightmap_handle == -1) {
         std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
@@ -494,21 +494,21 @@ void SqueezeLightmaps(int external, int target_roomnum) {
         CopySqueezeDataForRooms(i, t, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
       } else {
         // Can't find an empty slot, so search through all the other remaining faces
-        for (k = t; k < rp->num_faces; k++) {
-          face *fp = &rp->faces[k];
-          int lmi_handle = fp->lmi_handle;
+        for (k = t; k < rp.num_faces; k++) {
+          face &fp = rp.faces[k];
+          int lmi_handle = fp.lmi_handle;
 
-          if (!fp->flags.lightmap)
+          if (!fp.flags.lightmap)
             continue;
           if (lmi_handle == BAD_LMI_INDEX)
             continue;
           if (Lmi_spoken_for[lmi_handle])
             continue;
 
-          lightmap_info *lmi = &LightmapInfo[lmi_handle];
+          lightmap_info &lmi = LightmapInfo[lmi_handle];
 
-          int src_w = lmi->width;
-          int src_h = lmi->height;
+          int src_w = lmi.width;
+          int src_h = lmi.height;
 
           if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
             CopySqueezeDataForRooms(i, k, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
@@ -535,30 +535,30 @@ void SqueezeLightmaps(int external, int target_roomnum) {
     }
 
     // Now search through all the objects in this room
-    for (k = rp->objects; k != -1; k = Objects[k].next) {
-      object *obj = &Objects[k];
-      if (obj->lighting_render_type != lighting_render_type_e::lightmaps)
+    for (k = rp.objects; k != -1; k = Objects[k].next) {
+      object &obj = Objects[k];
+      if (obj.lighting_render_type != lighting_render_type_e::lightmaps)
         continue;
-      if (!obj->lm_object.used)
+      if (!obj.lm_object.used)
         continue;
 
-      for (t = 0; t < obj->lm_object.num_models; t++) {
-        if (IsNonRenderableSubmodel(Poly_models[obj->rtype.pobj_info().model_num], t))
+      for (t = 0; t < obj.lm_object.num_models; t++) {
+        if (IsNonRenderableSubmodel(Poly_models[obj.rtype.pobj_info().model_num], t))
           continue;
 
-        for (int j = 0; j < obj->lm_object.num_faces[t]; j++) {
-          lightmap_object_face *fp = &obj->lm_object.lightmap_faces[t][j];
-          int lmi_handle = fp->lmi_handle;
+        for (int j = 0; j < obj.lm_object.num_faces[t]; j++) {
+          lightmap_object_face &fp = obj.lm_object.lightmap_faces[t][j];
+          int lmi_handle = fp.lmi_handle;
           if (lmi_handle == BAD_LMI_INDEX)
             continue;
           if (Lmi_spoken_for[lmi_handle])
             continue;
 
-          lightmap_info *lmi = &LightmapInfo[lmi_handle];
+          lightmap_info &lmi = LightmapInfo[lmi_handle];
 
           int dest_x, dest_y;
-          int src_w = lmi->width;
-          int src_h = lmi->height;
+          int src_w = lmi.width;
+          int src_h = lmi.height;
 
           if (Squeeze_lightmap_handle == -1) {
             std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
@@ -568,35 +568,35 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
           if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
             // Cool, found a spot
-            CopySqueezeDataForObject(obj, t, j, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
+            CopySqueezeDataForObject(&obj, t, j, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
           } else {
             // Can't find an empty slot, so search through all the other remaining faces
-            for (int a = rp->objects; a != -1; a = Objects[a].next) {
-              object *obj = &Objects[a];
-              if (obj->lighting_render_type != lighting_render_type_e::lightmaps)
+            for (int a = rp.objects; a != -1; a = Objects[a].next) {
+              object &obj = Objects[a];
+              if (obj.lighting_render_type != lighting_render_type_e::lightmaps)
                 continue;
-              if (!obj->lm_object.used)
+              if (!obj.lm_object.used)
                 continue;
 
-              for (int b = 0; b < obj->lm_object.num_models; b++) {
-                if (IsNonRenderableSubmodel(Poly_models[obj->rtype.pobj_info().model_num], b))
+              for (int b = 0; b < obj.lm_object.num_models; b++) {
+                if (IsNonRenderableSubmodel(Poly_models[obj.rtype.pobj_info().model_num], b))
                   continue;
 
-                for (int c = 0; c < obj->lm_object.num_faces[b]; c++) {
-                  lightmap_object_face *fp = &obj->lm_object.lightmap_faces[b][c];
-                  int lmi_handle = fp->lmi_handle;
+                for (int c = 0; c < obj.lm_object.num_faces[b]; c++) {
+                  lightmap_object_face &fp = obj.lm_object.lightmap_faces[b][c];
+                  int lmi_handle = fp.lmi_handle;
                   if (lmi_handle == BAD_LMI_INDEX)
                     continue;
                   if (Lmi_spoken_for[lmi_handle])
                     continue;
 
-                  lightmap_info *lmi = &LightmapInfo[lmi_handle];
+                  lightmap_info &lmi = LightmapInfo[lmi_handle];
 
-                  int src_w = lmi->width;
-                  int src_h = lmi->height;
+                  int src_w = lmi.width;
+                  int src_h = lmi.height;
 
                   if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
-                    CopySqueezeDataForObject(obj, b, c, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
+                    CopySqueezeDataForObject(&obj, b, c, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
                   }
                 }
               }
@@ -614,7 +614,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
 
             if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
-              CopySqueezeDataForObject(obj, t, j, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
+              CopySqueezeDataForObject(&obj, t, j, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
             } else {
               Q_ASSERT(false); // Get Jason, how did this happen????
             }
@@ -634,33 +634,33 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
     Squeeze_lightmap_handle = -1;
     for (i = 0; i <= Highest_object_index; i++) {
-      object *obj = &Objects[i];
+      object &obj = Objects[i];
 
-      if (obj->type == object_type_e::room)
+      if (obj.type == object_type_e::room)
         continue;
-      if (obj->lighting_render_type != lighting_render_type_e::lightmaps)
+      if (obj.lighting_render_type != lighting_render_type_e::lightmaps)
         continue;
-      if (!obj->lm_object.used)
+      if (!obj.lm_object.used)
         continue;
-      if (!obj->is_outside())
+      if (!obj.is_outside())
         continue;
 
-      for (t = 0; t < obj->lm_object.num_models; t++) {
-        if (IsNonRenderableSubmodel(Poly_models[obj->rtype.pobj_info().model_num], t))
+      for (t = 0; t < obj.lm_object.num_models; t++) {
+        if (IsNonRenderableSubmodel(Poly_models[obj.rtype.pobj_info().model_num], t))
           continue;
-        for (k = 0; k < obj->lm_object.num_faces[t]; k++) {
-          lightmap_object_face *fp = &obj->lm_object.lightmap_faces[t][k];
-          int lmi_handle = fp->lmi_handle;
+        for (k = 0; k < obj.lm_object.num_faces[t]; k++) {
+          lightmap_object_face &fp = obj.lm_object.lightmap_faces[t][k];
+          int lmi_handle = fp.lmi_handle;
           if (lmi_handle == BAD_LMI_INDEX)
             continue;
           if (Lmi_spoken_for[lmi_handle])
             continue;
 
-          lightmap_info *lmi = &LightmapInfo[lmi_handle];
+          lightmap_info &lmi = LightmapInfo[lmi_handle];
 
           int dest_x, dest_y;
-          int src_w = lmi->width;
-          int src_h = lmi->height;
+          int src_w = lmi.width;
+          int src_h = lmi.height;
 
           if (Squeeze_lightmap_handle == -1) {
             std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
@@ -670,35 +670,35 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
           if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
             // Cool, found a spot
-            CopySqueezeDataForObject(obj, t, k, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
+            CopySqueezeDataForObject(&obj, t, k, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
           } else {
             // Search through the remaining objects on the terrain
             for (int a = i; a <= Highest_object_index; a++) {
-              object *obj = &Objects[a];
+              object &obj = Objects[a];
 
-              if (!obj->lm_object.used)
+              if (!obj.lm_object.used)
                 continue;
-              if (!obj->is_outside())
+              if (!obj.is_outside())
                 continue;
 
-              for (int b = 0; b < obj->lm_object.num_models; b++) {
-                if (IsNonRenderableSubmodel(Poly_models[obj->rtype.pobj_info().model_num], b))
+              for (int b = 0; b < obj.lm_object.num_models; b++) {
+                if (IsNonRenderableSubmodel(Poly_models[obj.rtype.pobj_info().model_num], b))
                   continue;
-                for (int c = 0; c < obj->lm_object.num_faces[b]; c++) {
-                  lightmap_object_face *fp = &obj->lm_object.lightmap_faces[b][c];
-                  int lmi_handle = fp->lmi_handle;
+                for (int c = 0; c < obj.lm_object.num_faces[b]; c++) {
+                  lightmap_object_face &fp = obj.lm_object.lightmap_faces[b][c];
+                  int lmi_handle = fp.lmi_handle;
                   if (lmi_handle == BAD_LMI_INDEX)
                     continue;
                   if (Lmi_spoken_for[lmi_handle])
                     continue;
 
-                  lightmap_info *lmi = &LightmapInfo[lmi_handle];
+                  lightmap_info &lmi = LightmapInfo[lmi_handle];
 
-                  int src_w = lmi->width;
-                  int src_h = lmi->height;
+                  int src_w = lmi.width;
+                  int src_h = lmi.height;
 
                   if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
-                    CopySqueezeDataForObject(obj, b, c, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
+                    CopySqueezeDataForObject(&obj, b, c, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
                   }
                 }
               }
@@ -716,7 +716,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
 
             if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
-              CopySqueezeDataForObject(obj, t, k, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
+              CopySqueezeDataForObject(&obj, t, k, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
             } else {
               Q_ASSERT(false); // Get Jason, how did this happen????
             }
@@ -735,22 +735,22 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 }
 
 void ComputeSurfaceRes(rad_surface *surf, int roomnum, int facenum) {
-  room_t *rp = &Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   int i;
   float left = 1.1f, right = -1, top = 1.1f, bottom = -1;
-  face *fp = &rp->faces[facenum];
-  int lw = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
-  int lh = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
+  face &fp = rp.faces[facenum];
+  int lw = static_cast<int>(lmi_w(fp.lmi_handle).value_or(0));
+  int lh = static_cast<int>(lmi_h(fp.lmi_handle).value_or(0));
 
-  for (i = 0; i < fp->num_verts; i++) {
-    if (fp->face_uvls[i].u2 < left)
-      left = fp->face_uvls[i].u2;
-    if (fp->face_uvls[i].u2 > right)
-      right = fp->face_uvls[i].u2;
-    if (fp->face_uvls[i].v2 < top)
-      top = fp->face_uvls[i].v2;
-    if (fp->face_uvls[i].v2 > bottom)
-      bottom = fp->face_uvls[i].v2;
+  for (i = 0; i < fp.num_verts; i++) {
+    if (fp.face_uvls[i].u2 < left)
+      left = fp.face_uvls[i].u2;
+    if (fp.face_uvls[i].u2 > right)
+      right = fp.face_uvls[i].u2;
+    if (fp.face_uvls[i].v2 < top)
+      top = fp.face_uvls[i].v2;
+    if (fp.face_uvls[i].v2 > bottom)
+      bottom = fp.face_uvls[i].v2;
   }
 
   float left_result = (left * lw) + 0.0001f;
@@ -790,42 +790,42 @@ void AssignVolumeSpectraToRoom(int roomnum) {
   Q_ASSERT(!Rooms[roomnum].flags.external);
   Q_ASSERT(!Rooms[roomnum].flags.no_light);
 
-  room_t *rp = &Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
 
   int i, t, j;
-  int w = rp->volume_width;
-  int h = rp->volume_height;
-  int d = rp->volume_depth;
+  int w = rp.volume_width;
+  int h = rp.volume_height;
+  int d = rp.volume_depth;
 
   for (i = 0; i < d; i++) {
     for (t = 0; t < h; t++) {
       for (j = 0; j < w; j++) {
-        spectra *this_spectra = &Volume_elements[roomnum][(i * w * h) + (t * w) + j].color;
+        spectra &this_spectra = Volume_elements[roomnum][(i * w * h) + (t * w) + j].color;
 
-        if (this_spectra->r < 0) {
+        if (this_spectra.r < 0) {
           Q_ASSERT(false); // Shouldn't hit this
-          rp->volume_lights[(i * w * h) + (t * w) + j] = INVISIBLE_VOLUME_ELEMENT;
+          rp.volume_lights[(i * w * h) + (t * w) + j] = INVISIBLE_VOLUME_ELEMENT;
         } else {
-          float rmax = GetMaxColor(this_spectra);
+          float rmax = GetMaxColor(&this_spectra);
 
           if (rmax > 1.0f && rmax > 0.0f) {
-            this_spectra->r /= rmax;
-            this_spectra->g /= rmax;
-            this_spectra->b /= rmax;
+            this_spectra.r /= rmax;
+            this_spectra.g /= rmax;
+            this_spectra.b /= rmax;
           }
 
-          int r = (this_spectra->r * 7);
+          int r = (this_spectra.r * 7);
           r <<= 5;
-          int g = (this_spectra->g * 7);
+          int g = (this_spectra.g * 7);
           g <<= 2;
-          int b = (this_spectra->b * 3);
+          int b = (this_spectra.b * 3);
 
           uint8_t volume_color = r | g | b;
 
           if (!UseVolumeLights)
-            rp->volume_lights[(i * w * h) + (t * w) + j] = 255;
+            rp.volume_lights[(i * w * h) + (t * w) + j] = 255;
           else
-            rp->volume_lights[(i * w * h) + (t * w) + j] = volume_color;
+            rp.volume_lights[(i * w * h) + (t * w) + j] = volume_color;
         }
       }
     }
@@ -841,12 +841,12 @@ int CheckForBadFaces(int roomnum) {
     if (roomnum != -1 && i != roomnum)
       continue;
 
-    room_t *rp = &Rooms[i];
-    if (!rp->used)
+    room_t &rp = Rooms[i];
+    if (!rp.used)
       continue;
 
-    for (t = 0; t < rp->num_faces; t++) {
-      if (rp->faces[t].num_verts < 3)
+    for (t = 0; t < rp.num_faces; t++) {
+      if (rp.faces[t].num_verts < 3)
         return 0; // Bad face detected!
     }
   }
@@ -1131,7 +1131,7 @@ void DoRadiosityForRooms() {
 
 // Calculates radiosity and sets lightmaps for indoor faces only
 void DoRadiosityForCurrentRoom(int roomnum) {
-  room_t *rp = &Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   int t;
   int facecount = 0;
   int surface_index = 0;
@@ -1145,14 +1145,14 @@ void DoRadiosityForCurrentRoom(int roomnum) {
   LOG_INFO("Setting up...\n");
 
   Q_ASSERT(roomnum >= 0);
-  Q_ASSERT(rp->used);
+  Q_ASSERT(rp.used);
 
-  if (rp->flags.external) {
+  if (rp.flags.external) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You cannot run single room radiosity on external rooms!");
     return;
   }
 
-  if (rp->flags.no_light) {
+  if (rp.flags.no_light) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You cannot run single room radiosity on a room marked not to light!");
     return;
   }
@@ -1167,20 +1167,20 @@ void DoRadiosityForCurrentRoom(int roomnum) {
   }
 
   // Build lightmap uvs
-  for (t = 0; t < rp->num_faces; t++) {
+  for (t = 0; t < rp.num_faces; t++) {
     vector3 verts[MAX_VERTS_PER_FACE * 5];
     int room_list[2], face_list[2];
-    for (int k = 0; k < rp->faces[t].num_verts; k++)
-      verts[k] = rp->verts[rp->faces[t].face_verts[k]];
+    for (int k = 0; k < rp.faces[t].num_verts; k++)
+      verts[k] = rp.verts[rp.faces[t].face_verts[k]];
 
     room_list[0] = roomnum;
     face_list[0] = t;
 
-    BuildLightmapUVs(room_list, face_list, 1, verts, rp->faces[t].num_verts, 0);
+    BuildLightmapUVs(room_list, face_list, 1, verts, rp.faces[t].num_verts, 0);
   }
 
   // First count how many faces we'll need
-  facecount += rp->num_faces;
+  facecount += rp.num_faces;
 
   // Do objects
   facecount += GetTotalObjectFacesForSingleRoom(roomnum);
@@ -1192,11 +1192,11 @@ void DoRadiosityForCurrentRoom(int roomnum) {
   // Set initial surface properties
   max_index = surface_index = 0;
 
-  for (t = 0; t < rp->num_faces; t++, surface_index++, max_index++) {
+  for (t = 0; t < rp.num_faces; t++, surface_index++, max_index++) {
     ComputeSurfaceRes(&Light_surfaces[surface_index], roomnum, t);
 
-    if (rp->faces[t].num_verts) {
-      Light_surfaces[surface_index].verts.resize(rp->faces[t].num_verts);
+    if (rp.faces[t].num_verts) {
+      Light_surfaces[surface_index].verts.resize(rp.faces[t].num_verts);
     } else {
       Light_surfaces[surface_index].verts.clear();
       LOG_INFO("Room=%d Face %d has no verts!\n", roomnum, t);
@@ -1210,27 +1210,27 @@ void DoRadiosityForCurrentRoom(int roomnum) {
       LOG_INFO("Room=%d Face %d is slivered!\n", roomnum, t);
     }
 
-    if (rp->faces[t].portal_num != -1 && (((rp->portals[rp->faces[t].portal_num].flags.render_faces == 0)) ||
-                                          ((rp->portals[rp->faces[t].portal_num].flags.render_faces) &&
-                                           (GameTextures[rp->faces[t].tmap].flags.tmap2)))) {
+    if (rp.faces[t].portal_num != -1 && (((rp.portals[rp.faces[t].portal_num].flags.render_faces == 0)) ||
+                                          ((rp.portals[rp.faces[t].portal_num].flags.render_faces) &&
+                                           (GameTextures[rp.faces[t].tmap].flags.tmap2)))) {
       Light_surfaces[surface_index].surface_type = rad_surface_type::portal;
       Light_surfaces[surface_index].emittance.r = 0;
       Light_surfaces[surface_index].emittance.g = 0;
       Light_surfaces[surface_index].emittance.b = 0;
     } else {
-      float mul = ((float)rp->faces[t].light_multiple) / 4.0f;
+      float mul = ((float)rp.faces[t].light_multiple) / 4.0f;
       mul *= global_light.multiplier * room_light[roomnum].multiplier;
-      Light_surfaces[surface_index].emittance.r = (float)GameTextures[rp->faces[t].tmap].r * mul;
-      Light_surfaces[surface_index].emittance.g = (float)GameTextures[rp->faces[t].tmap].g * mul;
-      Light_surfaces[surface_index].emittance.b = (float)GameTextures[rp->faces[t].tmap].b * mul;
+      Light_surfaces[surface_index].emittance.r = (float)GameTextures[rp.faces[t].tmap].r * mul;
+      Light_surfaces[surface_index].emittance.g = (float)GameTextures[rp.faces[t].tmap].g * mul;
+      Light_surfaces[surface_index].emittance.b = (float)GameTextures[rp.faces[t].tmap].b * mul;
       Light_surfaces[surface_index].surface_type = rad_surface_type::room;
     }
 
-    Light_surfaces[surface_index].normal = rp->faces[t].normal;
+    Light_surfaces[surface_index].normal = rp.faces[t].normal;
     Light_surfaces[surface_index].roomnum = to_roomnum(roomnum);
     Light_surfaces[surface_index].facenum = t;
 
-    Light_surfaces[surface_index].reflectivity = GameTextures[rp->faces[t].tmap].reflectivity;
+    Light_surfaces[surface_index].reflectivity = GameTextures[rp.faces[t].tmap].reflectivity;
 
     // Set the vertices for each element
     BuildElementListForRoomFace(roomnum, t, &Light_surfaces[surface_index]);
@@ -1252,7 +1252,7 @@ void DoRadiosityForCurrentRoom(int roomnum) {
   surface_index = 0;
 
   // Assign lightap properties
-  for (t = 0; t < rp->num_faces; t++, surface_index++) {
+  for (t = 0; t < rp.num_faces; t++, surface_index++) {
     AssignRoomSurfaceToLightmap(roomnum, t, &Light_surfaces[surface_index]);
   }
 
@@ -1276,8 +1276,8 @@ void DoRadiosityForCurrentRoom(int roomnum) {
 
 // Allocates and sets a lightmap based on the surface elements given
 void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
-  face *fp = &Rooms[roomnum].faces[facenum];
-  room_t *rp = &Rooms[roomnum];
+  face &fp = Rooms[roomnum].faces[facenum];
+  room_t &rp = Rooms[roomnum];
 
   int i, t, lmi_handle;
   int xres, yres;
@@ -1289,8 +1289,8 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
   xres = sp->xresolution;
   yres = sp->yresolution;
 
-  Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
-  lmi_handle = fp->lmi_handle;
+  Q_ASSERT(fp.lmi_handle != BAD_LMI_INDEX);
+  lmi_handle = fp.lmi_handle;
 
   lw = static_cast<int>(lmi_w(lmi_handle).value_or(0));
   lh = static_cast<int>(lmi_h(lmi_handle).value_or(0));
@@ -1304,13 +1304,13 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
   std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
 
   // Set face pointer
-  if (GameTextures[fp->tmap].flags.alpha)
+  if (GameTextures[fp.tmap].flags.alpha)
     use_lightmap = 0;
-  if (GameTextures[fp->tmap].flags.force_lightmap || GameTextures[fp->tmap].flags.saturate_lightmap)
+  if (GameTextures[fp.tmap].flags.force_lightmap || GameTextures[fp.tmap].flags.saturate_lightmap)
     use_lightmap = 1;
 
   if (use_lightmap)
-    fp->flags.lightmap = true;
+    fp.flags.lightmap = true;
 
   for (i = 0; i < yres; i++) {
     for (t = 0; t < xres; t++) {
@@ -1424,18 +1424,18 @@ void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf) {
       int element_index = i * xres + t;
       vector3 clip_verts[4];
 
-      rad_element *ep = &surf->elements[element_index];
+      rad_element &ep = surf->elements[element_index];
 
       // Allocate some free space
       clip_verts[0] = base_vector + (xdiff * (t + x1)) - (ydiff * (i + y1));
       clip_verts[1] = base_vector + (xdiff * (t + x1 + 1)) - (ydiff * (i + y1));
       clip_verts[2] = base_vector + (xdiff * (t + x1 + 1)) - (ydiff * (i + y1 + 1));
       clip_verts[3] = base_vector + (xdiff * (t + x1)) - (ydiff * (i + y1 + 1));
-      ClipSurfaceElement(verts, ep, clip_verts, Rooms[roomnum].faces[facenum].num_verts);
+      ClipSurfaceElement(verts, &ep, clip_verts, Rooms[roomnum].faces[facenum].num_verts);
 
-      for (int k = 0; k < ep->num_verts; k++) {
-        vm_MatrixMulVector(rot_vert, ep->verts[k], trans_matrix);
-        ep->verts[k] = rot_vert + avg_vert;
+      for (int k = 0; k < ep.num_verts; k++) {
+        vm_MatrixMulVector(rot_vert, ep.verts[k], trans_matrix);
+        ep.verts[k] = rot_vert + avg_vert;
       }
     }
   }
@@ -2474,9 +2474,9 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
     Rooms[room_list[i]].faces[face_list[i]].lmi_handle = lmi_handle;
 
     for (t = 0; t < Rooms[room_list[i]].faces[face_list[i]].num_verts; t++) {
-      room_t *rp = &Rooms[room_list[i]];
-      face *fp = &rp->faces[face_list[i]];
-      vector3 vert = rp->verts[fp->face_verts[t]];
+      room_t &rp = Rooms[room_list[i]];
+      face &fp = rp.faces[face_list[i]];
+      vector3 vert = rp.verts[fp.face_verts[t]];
 
       vert -= avg_vert;
       vm_MatrixMulVector(rot_vert, vert, trans_matrix);
@@ -2484,16 +2484,16 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
       facevert = rot_vert;
 
       // Find uv2s for this vertex
-      fp->face_uvls[t].u2 = (facevert.x() - verts[leftmost_point].x()) / (float)(lightmap_x_res * xspace_int);
-      fp->face_uvls[t].v2 = fabs((verts[topmost_point].y() - facevert.y())) / (float)(lightmap_y_res * yspace_int);
+      fp.face_uvls[t].u2 = (facevert.x() - verts[leftmost_point].x()) / (float)(lightmap_x_res * xspace_int);
+      fp.face_uvls[t].v2 = fabs((verts[topmost_point].y() - facevert.y())) / (float)(lightmap_y_res * yspace_int);
 
-      if (fp->face_uvls[t].u2 < 0)
-        fp->face_uvls[t].u2 = 0;
-      if (fp->face_uvls[t].v2 < 0)
-        fp->face_uvls[t].v2 = 0;
+      if (fp.face_uvls[t].u2 < 0)
+        fp.face_uvls[t].u2 = 0;
+      if (fp.face_uvls[t].v2 < 0)
+        fp.face_uvls[t].v2 = 0;
 
-      Q_ASSERT(fp->face_uvls[t].u2 >= 0 && fp->face_uvls[t].u2 <= 1.0f);
-      Q_ASSERT(fp->face_uvls[t].v2 >= 0 && fp->face_uvls[t].v2 <= 1.0f);
+      Q_ASSERT(fp.face_uvls[t].u2 >= 0 && fp.face_uvls[t].u2 <= 1.0f);
+      Q_ASSERT(fp.face_uvls[t].v2 >= 0 && fp.face_uvls[t].v2 <= 1.0f);
     }
   }
 
@@ -2703,7 +2703,7 @@ int TestLightAdjacency(int roomnum, int facenum, int external) {
 
   int i, t, k;
   room_t *arp = &Rooms[roomnum];
-  face *afp = &arp->faces[facenum];
+  face &afp = arp->faces[facenum];
 
   vector3 averts[MAX_VERTS_PER_FACE * 5];
   vector3 bverts[MAX_VERTS_PER_FACE * 5];
@@ -2721,19 +2721,19 @@ int TestLightAdjacency(int roomnum, int facenum, int external) {
   //	return 0;
 
   // Don't combine portals!
-  if (afp->portal_num != -1)
+  if (afp.portal_num != -1)
     return 0;
 
   // Setup our 'base' face
 
-  int anv = afp->num_verts;
+  int anv = afp.num_verts;
   int total_faces = 1;
 
   room_combine_list[0] = roomnum;
   face_combine_list[0] = facenum;
 
-  for (i = 0; i < afp->num_verts; i++)
-    averts[i] = arp->verts[afp->face_verts[i]];
+  for (i = 0; i < afp.num_verts; i++)
+    averts[i] = arp->verts[afp.face_verts[i]];
 
 StartOver:
 
@@ -2765,21 +2765,21 @@ StartOver:
       if (RoomsAlreadyCombined[i][t])
         continue;
 
-      room_t *brp = &Rooms[i];
-      face *bfp = &brp->faces[t];
+      room_t &brp = Rooms[i];
+      face &bfp = brp.faces[t];
 
       // Don't do combine light sources
       // if (GameTextures[bfp->tmap].r>0 || GameTextures[bfp->tmap].g>0 || GameTextures[bfp->tmap].b>0)
       //	continue;
       // Don't combine portals!
-      if (bfp->portal_num != -1)
+      if (bfp.portal_num != -1)
         continue;
 
-      for (k = 0; k < bfp->num_verts; k++)
-        bverts[k] = brp->verts[bfp->face_verts[k]];
+      for (k = 0; k < bfp.num_verts; k++)
+        bverts[k] = brp.verts[bfp.face_verts[k]];
 
       int nv =
-          CombineLightFaces(dest_verts, averts, anv, &afp->normal, bverts, bfp->num_verts, &bfp->normal, roomnum, i);
+          CombineLightFaces(dest_verts, averts, anv, &afp.normal, bverts, bfp.num_verts, &bfp.normal, roomnum, i);
 
       // We have a combine!  Mark this face in the appropriate list
       // And update our new polygon
@@ -2975,34 +2975,34 @@ void GetSpecularVertexOrdering(spec_vertex *verts, int nv, int *vlt, int *vlb, i
 // Used in specular mapping
 void CreateNormalMapForFace (int roomnum,face *fp)
 {
-        room *rp=&Rooms[roomnum];
+        room &rp = Rooms[roomnum];
         int w = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
         int h = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
-        special_face *sfp=&SpecialFaces[fp->special_handle];
+        special_face &sfp = SpecialFaces[fp->special_handle];
         spec_vertex spec_verts[MAX_VERTS_PER_FACE];
         vector3 vertnorms[MAX_VERTS_PER_FACE];
         int vlt,vlb,vrt,vrb,max_y_vertex,top_y,bottom_y,height;
         int no_height=0,no_width=0,no_right=0,no_left=0;
-        lightmap_info *lmi_ptr=&LightmapInfo[fp->lmi_handle];
-        uint16_t *src_data=lm_data(lmi_ptr->lm_handle);
+        lightmap_info &lmi_ptr = LightmapInfo[fp->lmi_handle];
+        uint16_t *src_data=lm_data(lmi_ptr.lm_handle);
 
         matrix facematrix;
-        vector3 fvec=-lmi_ptr->normal;
+        vector3 fvec=-lmi_ptr.normal;
         vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
 
-        sfp->normal_map=(uint8_t *)mem_malloc (w*h*3);
-        Q_ASSERT (sfp->normal_map);
+        sfp.normal_map=(uint8_t *)mem_malloc (w*h*3);
+        Q_ASSERT (sfp.normal_map);
 
         for (int i=0;i<(w*h);i++)
         {
-                sfp->normal_map[i*3+0]=0;
-                sfp->normal_map[i*3+1]=0;
-                sfp->normal_map[i*3+2]=128;
+                sfp.normal_map[i*3+0]=0;
+                sfp.normal_map[i*3+1]=0;
+                sfp.normal_map[i*3+2]=128;
         }
 
         for (i=0;i<fp->num_verts;i++)
         {
-                vm_MatrixMulVector (vertnorms[i], sfp->vertnorms[i], facematrix);
+                vm_MatrixMulVector (vertnorms[i], sfp.vertnorms[i], facematrix);
                 spec_verts[i].x=fp->face_uvls[i].u2;
                 spec_verts[i].y=fp->face_uvls[i].v2;
         }
@@ -3083,9 +3083,9 @@ void CreateNormalMapForFace (int roomnum,face *fp)
                         if (!(src_data[offset] & OPAQUE_FLAG))
                                 continue;
 
-                        sfp->normal_map[(offset*3)+0]=((vnorm.x+1.0f)/2.0f)*255.0f;
-                        sfp->normal_map[(offset*3)+1]=((vnorm.y+1.0f)/2.0f)*255.0f;
-                        sfp->normal_map[(offset*3)+2]=((vnorm.z+1.0f)/2.0f)*255.0f;
+                        sfp.normal_map[(offset*3)+0]=((vnorm.x+1.0f)/2.0f)*255.0f;
+                        sfp.normal_map[(offset*3)+1]=((vnorm.y+1.0f)/2.0f)*255.0f;
+                        sfp.normal_map[(offset*3)+2]=((vnorm.z+1.0f)/2.0f)*255.0f;
                         vnorm+=delta_vnorm;
                 }
 
@@ -3112,14 +3112,14 @@ void CleanupSpecularLighting(int external) {
       if (!Rooms[i].flags.external && external)
         continue;
 
-      room_t *rp = &Rooms[i];
+      room_t &rp = Rooms[i];
 
       for (t = 0; t < 4; t++) {
         Room_strongest_value[i][t].clear();
       }
 
-      for (t = 0; t < rp->num_faces; t++) {
-        face *fp = &rp->faces[t];
+      for (t = 0; t < rp.num_faces; t++) {
+        face *fp = &rp.faces[t];
         if (GameTextures[fp->tmap].flags.metal || GameTextures[fp->tmap].flags.marble ||
             GameTextures[fp->tmap].flags.plastic) {
           Q_ASSERT(fp->special_handle != BAD_SPECIAL_FACE_INDEX);
@@ -3136,8 +3136,8 @@ void CleanupSpecularLighting(int external) {
 
             for (l = 0; l < fp->num_verts; l++) {
               int vert_to_check = fp->face_verts[l];
-              for (j = 0; j < rp->num_faces; j++) {
-                face *this_fp = &rp->faces[j];
+              for (j = 0; j < rp.num_faces; j++) {
+                face *this_fp = &rp.faces[j];
 
                 if (this_fp == fp)
                   continue; // don't do self
@@ -3207,21 +3207,21 @@ void SetupSpecularLighting(int external) {
       if (!Rooms[i].flags.external && external)
         continue;
 
-      room_t *rp = &Rooms[i];
+      room_t &rp = Rooms[i];
 
       // Calculate vertex normals for this room
-      std::vector<vector3> vertnorms(rp->num_verts);
-      for (t = 0; t < rp->num_verts; t++) {
+      std::vector<vector3> vertnorms(rp.num_verts);
+      for (t = 0; t < rp.num_verts; t++) {
         int total = 0;
         vector3 normal;
         vm_MakeZero(normal);
 
-        for (int k = 0; k < rp->num_faces; k++) {
-          face *fp = &rp->faces[k];
-          for (int j = 0; j < fp->num_verts; j++) {
-            if (fp->face_verts[j] == t) {
+        for (int k = 0; k < rp.num_faces; k++) {
+          face &fp = rp.faces[k];
+          for (int j = 0; j < fp.num_verts; j++) {
+            if (fp.face_verts[j] == t) {
               total++;
-              normal += fp->normal;
+              normal += fp.normal;
             }
           }
         }
@@ -3233,22 +3233,22 @@ void SetupSpecularLighting(int external) {
       }
 
       for (t = 0; t < 4; t++) {
-        Room_strongest_value[i][t].assign(rp->num_faces, 0.0f);
+        Room_strongest_value[i][t].assign(rp.num_faces, 0.0f);
       }
 
-      for (t = 0; t < rp->num_faces; t++) {
-        face *fp = &rp->faces[t];
-        if (GameTextures[fp->tmap].flags.metal || GameTextures[fp->tmap].flags.marble ||
-            GameTextures[fp->tmap].flags.plastic) {
-          Q_ASSERT(fp->special_handle == BAD_SPECIAL_FACE_INDEX);
+      for (t = 0; t < rp.num_faces; t++) {
+        face &fp = rp.faces[t];
+        if (GameTextures[fp.tmap].flags.metal || GameTextures[fp.tmap].flags.marble ||
+            GameTextures[fp.tmap].flags.plastic) {
+          Q_ASSERT(fp.special_handle == BAD_SPECIAL_FACE_INDEX);
 
           int n;
-          if (GameTextures[fp->tmap].flags.smooth_specular)
-            n = AllocSpecialFace(SFT_SPECULAR, 4, true, fp->num_verts);
+          if (GameTextures[fp.tmap].flags.smooth_specular)
+            n = AllocSpecialFace(SFT_SPECULAR, 4, true, fp.num_verts);
           else
             n = AllocSpecialFace(SFT_SPECULAR, 4);
 
-          fp->special_handle = n;
+          fp.special_handle = n;
 
           for (int k = 0; k < 4; k++) {
             SpecialFaces[n].spec_instance[k].bright_color = 0;
@@ -3256,9 +3256,9 @@ void SetupSpecularLighting(int external) {
           }
 
           // Get vertex normals for this punk
-          if (GameTextures[fp->tmap].flags.smooth_specular) {
-            for (int k = 0; k < fp->num_verts; k++) {
-              SpecialFaces[n].vertnorms[k] = vertnorms[fp->face_verts[k]];
+          if (GameTextures[fp.tmap].flags.smooth_specular) {
+            for (int k = 0; k < fp.num_verts; k++) {
+              SpecialFaces[n].vertnorms[k] = vertnorms[fp.face_verts[k]];
             }
           }
         }

@@ -150,24 +150,24 @@ void CalculateFormFactorsHemiCube() {
           if (ignore)
             continue;
 
-          rad_element *ep = &surf->elements[j];
+          rad_element &ep = surf->elements[j];
 
-          if (ep->flags.ignore)
+          if (ep.flags.ignore)
             continue;
 
-          for (k = 0; k < ep->num_verts; k++) {
-            vector3 vec = ep->verts[k];
+          for (k = 0; k < ep.num_verts; k++) {
+            vector3 vec = ep.verts[k];
             g3_RotatePoint(Element_points[k], vec);
             Element_points[k].p3_flags = g3point_flags_t{};
           }
 
-          if (g3_CheckNormalFacing(ep->verts[0], surf->normal)) {
-            for (k = 0; k < ep->num_verts; k++) {
-              g3Point *p = &Element_points[k];
-              pointlist[k] = p;
+          if (g3_CheckNormalFacing(ep.verts[0], surf->normal)) {
+            for (k = 0; k < ep.num_verts; k++) {
+              g3Point &p = Element_points[k];
+              pointlist[k] = &p;
             }
 
-            DrawRadiosityPoly(ep->num_verts, pointlist, ff_index);
+            DrawRadiosityPoly(ep.num_verts, pointlist, ff_index);
           }
         }
       }
@@ -324,7 +324,7 @@ void SetSurfaceView(rad_surface *surf) {
 
 // Build transformation matrix for our hemicube
 void BuildTransform(vector3 *nu, vector3 *nv, vector3 *nn) {
-  matrix *vm = &rad_Hemicube.view_matrix; // view matrix
+  matrix &vm = rad_Hemicube.view_matrix; // view matrix
 
   if (Shoot_from_patch)
     GetCenterOfSurface(rad_Hemicube.shooting_surface, &rad_Hemicube.view_position);
@@ -333,9 +333,9 @@ void BuildTransform(vector3 *nu, vector3 *nv, vector3 *nn) {
 
   rad_Hemicube.view_position += rad_MaxSurface->normal / 16.0f;
 
-  vm->fvec = *nn;
-  vm->uvec = *nv;
-  vm->rvec = *nu;
+  vm.fvec = *nn;
+  vm.uvec = *nv;
+  vm.rvec = *nu;
 }
 
 void StartHemicubeDrawing() {
@@ -369,9 +369,9 @@ void EndHemicubeDrawing(int face) {
     int ff_index = 0;
 
     for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
-      rad_surface *surf = &rad_Surfaces[i];
+      rad_surface &surf = rad_Surfaces[i];
 
-      for (t = 0; t < surf->yresolution * surf->xresolution; t++, ff_index++) {
+      for (t = 0; t < surf.yresolution * surf.xresolution; t++, ff_index++) {
         surfval[ff_index] = i;
       }
     }

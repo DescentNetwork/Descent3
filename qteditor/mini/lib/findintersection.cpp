@@ -875,21 +875,21 @@ namespace {
 
 // True when pnt (which lies on the plane of face f) is inside the face polygon.
 bool pointInsideFace(const room *rp, int faceIndex, const vector3 &pnt) {
-  const face *fp = &rp->faces[faceIndex];
-  const int n = fp->num_verts;
+  const face &fp = rp->faces[faceIndex];
+  const int n = fp.num_verts;
   if (n < 3)
     return false;
 
   // Project onto the 2D plane of the face (drop the dominant normal axis).
-  const float ax = std::fabs(fp->normal.x());
-  const float ay = std::fabs(fp->normal.y());
-  const float az = std::fabs(fp->normal.z());
+  const float ax = std::fabs(fp.normal.x());
+  const float ay = std::fabs(fp.normal.y());
+  const float az = std::fabs(fp.normal.z());
   const bool dropX = (ax >= ay && ax >= az);
 
   float sx[64] = {};
   float sy[64] = {};
   for (int v = 0; v < n; ++v) {
-    const vector3 rel = rp->verts[fp->face_verts[v]] - pnt;
+    const vector3 rel = rp->verts[fp.face_verts[v]] - pnt;
     if (dropX) {
       sx[v] = rel.y();
       sy[v] = rel.z();
@@ -927,11 +927,11 @@ bool facePlaneIntersect(const vector3 &p0, const vector3 &seg, const vector3 &v0
 // side of every face plane.
 bool pointInsideRoom(const room *rp, const vector3 &pnt) {
   for (int f = 0; f < rp->num_faces; ++f) {
-    const face *fp = &rp->faces[f];
-    if (fp->num_verts < 3)
+    const face &fp = rp->faces[f];
+    if (fp.num_verts < 3)
       continue;
-    const vector3 rel = pnt - rp->verts[fp->face_verts[0]];
-    if (vm_DotProduct(fp->normal, rel) > 0.0f)
+    const vector3 rel = pnt - rp->verts[fp.face_verts[0]];
+    if (vm_DotProduct(fp.normal, rel) > 0.0f)
       return false;
   }
   return true;
@@ -990,8 +990,8 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *ans, bool no_subdivision) {
       ans->n_rooms = roomCount;
       return HIT_NONE;
     }
-    const room *rp = &Rooms[roomIdx];
-    if (!rp->used) {
+    const room &rp = Rooms[roomIdx];
+    if (!rp.used) {
       ans->hit_pnt = p1;
       ans->n_rooms = roomCount;
       return HIT_NONE;
@@ -1002,21 +1002,21 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *ans, bool no_subdivision) {
     int bestWallFace = -1;
     float bestPortalT = 2.0f;
     int bestPortalFace = -1;
-    for (int f = 0; f < rp->num_faces; ++f) {
-      const face *fp = &rp->faces[f];
-      const int nv = fp->num_verts;
+    for (int f = 0; f < rp.num_faces; ++f) {
+      const face &fp = rp.faces[f];
+      const int nv = fp.num_verts;
       if (nv < 3)
         continue;
-      const vector3 v0 = rp->verts[fp->face_verts[0]];
+      const vector3 v0 = rp.verts[fp.face_verts[0]];
       float t = 0.0f;
-      if (!facePlaneIntersect(p0, seg, v0, fp->normal, t))
+      if (!facePlaneIntersect(p0, seg, v0, fp.normal, t))
         continue;
       if (t <= rayT + 1e-5f)
         continue;
       const vector3 pnt = p0 + seg * t;
       if (!pointInsideFace(rp, f, pnt))
         continue;
-      const bool isPortal = (fp->portal_num >= 0);
+      const bool isPortal = (fp.portal_num >= 0);
       if (isPortal && !solidPortals) {
         if (t < bestPortalT) {
           bestPortalT = t;
@@ -1036,7 +1036,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *ans, bool no_subdivision) {
       ans->hit_room = roomIdx;
       ans->hit_face[0] = bestWallFace;
       ans->hit_dist = bestWallT * segLen;
-      ans->hit_wallnorm[0] = rp->faces[bestWallFace].normal;
+      ans->hit_wallnorm[0] = rp.faces[bestWallFace].normal;
       ans->num_hits = 1;
       ans->n_rooms = roomCount;
       ans->hit_type[0] = HIT_WALL;
@@ -1047,8 +1047,8 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *ans, bool no_subdivision) {
     }
 
     if (bestPortalFace >= 0) {
-      const portal *pp = &rp->portals[rp->faces[bestPortalFace].portal_num];
-      roomIdx = pp->croom;
+      const portal &pp = rp.portals[rp.faces[bestPortalFace].portal_num];
+      roomIdx = pp.croom;
       rayT = bestPortalT;
       if (roomCount < MAX_FVI_SEGS)
         ans->roomlist[roomCount++] = roomIdx;

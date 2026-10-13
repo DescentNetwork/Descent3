@@ -659,20 +659,20 @@ void DrawVirusLightning(object &obj);
 // Actually, only draws those either in front or in back of the object, based on front_flag
 void DrawObjectSelectionBrackets(object& obj, bool front_flag) {
   vector3 viewvec;
-  poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
+  poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
   float line_len;
   // Get vector from object to viewer
   g3_GetViewPosition(viewvec);
   viewvec -= obj.pos;
   // Get length of line segments we're drawing
-  line_len = (pm->maxs.x() - pm->mins.x()) * 0.2f;
+  line_len = (pm.maxs.x() - pm.mins.x()) * 0.2f;
   // Do each corner
   for (int c = 0; c < 8; c++) {
     vector3 corner;
     // Get the corner relative to the object
-    corner = (obj.orient.rvec * ((c & 1) ? pm->mins.x() : pm->maxs.x())) +
-             (obj.orient.uvec * ((c & 2) ? pm->mins.y() : pm->maxs.y())) +
-             (obj.orient.fvec * ((c & 4) ? pm->mins.z() : pm->maxs.z()));
+    corner = (obj.orient.rvec * ((c & 1) ? pm.mins.x() : pm.maxs.x())) +
+             (obj.orient.uvec * ((c & 2) ? pm.mins.y() : pm.maxs.y())) +
+             (obj.orient.fvec * ((c & 4) ? pm.mins.z() : pm.maxs.z()));
     // See if this corner is in front or in back of the object, as specified
     if ((vector3::dot(corner, viewvec) > 0.0f) != front_flag)
       continue;
@@ -771,7 +771,7 @@ static inline bool object_object_AABB(const object &obj1, const object &obj2) {
 }
 // Given a face, computes the upper left corner of the face
 void ComputeDebugVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff, vector3 &center) {
-  room *rp = &Rooms[roomnum];
+  room &rp = Rooms[roomnum];
   matrix face_matrix, trans_matrix;
   vector3 fvec;
   vector3 avg_vert;
@@ -782,7 +782,7 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_le
   // find the center point of this face
   vm_MakeZero(avg_vert);
   for (i = 0; i < fp.num_verts; i++)
-    avg_vert += rp->verts[fp.face_verts[i]];
+    avg_vert += rp.verts[fp.face_verts[i]];
   avg_vert /= fp.num_verts;
   // Make the orientation matrix
   // Reverse the normal because we're looking "at" the face, not from it
@@ -797,7 +797,7 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_le
 
   // Rotate all the points
   for (i = 0; i < fp.num_verts; i++) {
-    vector3 vert = rp->verts[fp.face_verts[i]];
+    vector3 vert = rp.verts[fp.face_verts[i]];
 
     vert -= avg_vert;
     vm_MatrixMulVector(rot_vert, vert, trans_matrix);
@@ -863,22 +863,22 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_le
 void DrawRoomVisPnts(const object &obj) {
   int roomnum = obj.roomnum;
   if ((!ROOMNUM_OUTSIDE(roomnum)) && (roomnum != -1) && (Rooms[roomnum].used)) {
-    room *rp = &Rooms[roomnum];
+    room &rp = Rooms[roomnum];
     int t;
     int j;
-    for (t = 0; t < rp->num_portals; t++) {
-      face *src_fp = &rp->faces[rp->portals[t].portal_face];
+    for (t = 0; t < rp.num_portals; t++) {
+      face &src_fp = rp.faces[rp.portals[t].portal_face];
       float src_width, src_height;
       vector3 src_upper_left, src_center;
       matrix src_matrix;
       vector3 src_verts[MAX_VERTS_PER_FACE], *src_vertp[MAX_VERTS_PER_FACE];
-      for (j = 0; j < src_fp->num_verts; j++) {
-        src_verts[j] = rp->verts[src_fp->face_verts[j]];
+      for (j = 0; j < src_fp.num_verts; j++) {
+        src_verts[j] = rp.verts[src_fp.face_verts[j]];
         src_vertp[j] = &src_verts[j];
       }
-      vector3 fvec = -src_fp->normal;
+      vector3 fvec = -src_fp.normal;
       vm_VectorToMatrix(src_matrix, fvec, std::nullopt, std::nullopt);
-      ComputeDebugVisFaceUpperLeft(roomnum, *src_fp, src_upper_left, src_width, src_height, src_center);
+      ComputeDebugVisFaceUpperLeft(roomnum, src_fp, src_upper_left, src_width, src_height, src_center);
 
       if (src_width > VIS_TABLE_RESOLUTION) {
         float num = src_width / VIS_TABLE_RESOLUTION;
@@ -902,12 +902,12 @@ void DrawRoomVisPnts(const object &obj) {
           //							float mag=vm_GetMagnitudeFast (subvec);
           //							subvec/=(mag*4);
           //							src2+=subvec;
-          if ((check_point_to_face(src2, src_fp->normal, src_fp->num_verts, src_vertp))) {
+          if ((check_point_to_face(src2, src_fp.normal, src_fp.num_verts, src_vertp))) {
             DrawColoredDisk(&src2, 1.0f, 0.0f, 0.0f, 0.1f, 0.7f, 0.25f, 1);
             continue;
           }
 
-          src2 += 0.1f * rp->faces[rp->portals[t].portal_face].normal;
+          src2 += 0.1f * rp.faces[rp.portals[t].portal_face].normal;
           if (!fvi_QuickRoomCheck(src2, roomnum, false) && !fvi_QuickRoomCheck(src2, roomnum, true)) {
             DrawColoredDisk(&src2, 0.0f, 1.0f, 0.0f, 0.1f, 0.7f, 0.25f, 1);
             continue;
@@ -996,7 +996,7 @@ void DrawDebugInfo(const object &obj) {
 #endif
 // Draw a shard
 void DrawShardObject(object& obj) {
-  shard_info_s *si = &obj.rtype.shard_info();
+  shard_info_s &si = obj.rtype.shard_info();
   g3Point rotated_points[3];
   std::vector<g3Point *> pointlist(3);
   uint8_t codes_and = 0xff;
@@ -1005,17 +1005,17 @@ void DrawShardObject(object& obj) {
   for (int i = 0; i < 3; i++) {
     uint8_t c;
     g3Point& p = rotated_points[i];
-    c = g3_RotatePoint(p, si->points[i]);
+    c = g3_RotatePoint(p, si.points[i]);
     codes_and &= c;
-    p.p3_uvl.u = si->u[i];
-    p.p3_uvl.v = si->v[i];
+    p.p3_uvl.u = si.u[i];
+    p.p3_uvl.v = si.v[i];
     p.p3_uvl.a = 1.0f;    // GameTextures[si->tmap].alpha;
     p.p3_flags.uv = true; // has uv set
     p.p3_uvl.l = 1.0f;
     pointlist[i] = &rotated_points[i];
   }
   // Check for backside
-  if (!g3_CheckNormalFacing(obj.pos, si->normal)) {
+  if (!g3_CheckNormalFacing(obj.pos, si.normal)) {
     g3Point *t = pointlist[1];
     pointlist[1] = pointlist[2];
     pointlist[2] = t;
@@ -1026,9 +1026,9 @@ void DrawShardObject(object& obj) {
   if (codes_and)
     return;
   // Get bitmap handle
-  int bm_handle = GetTextureBitmap(si->tmap, 0);
+  int bm_handle = GetTextureBitmap(si.tmap, 0);
   Q_ASSERT(bm_handle != -1);
-  float alpha = GameTextures[si->tmap].alpha;
+  float alpha = GameTextures[si.tmap].alpha;
   alpha = 0.2f + alpha * 0.8f; // Make less transparent
   // Set alpha, transparency, & lighting for this face
   rend_SetAlphaType(alpha_blend_type::constant);
@@ -1727,7 +1727,7 @@ void RenderObject_SetLightDirection(const vector3 &dir) { RenderObject_LightDire
 // draw an object that has one bitmap & doesn't rotate
 void obj_draw_blob(object &obj, int bmnum) {
   //	int	orientation=0;
-  //	grs_bitmap * bm = &GameBitmaps[bmnum];
+  //	grs_bitmap &bm = GameBitmaps[bmnum];
   //
   //
   //	if (obj->type == object_type::fireball)

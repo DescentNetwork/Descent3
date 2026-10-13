@@ -252,10 +252,10 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, optref<BriefGlo
   while (curr_screen != -1) {
     if (curr_screen < 0 || curr_screen >= MAX_TELCOM_SCREENS || !Briefing_screens[curr_screen].used)
       break;
-    tBriefScreen *scr = &Briefing_screens[curr_screen];
+    tBriefScreen &scr = Briefing_screens[curr_screen];
 
-    std::string sm = missionFlagTokens(scr->mission_mask_set, true);
-    std::string um = missionFlagTokens(scr->mission_mask_unset, false);
+    std::string sm = missionFlagTokens(scr.mission_mask_set, true);
+    std::string um = missionFlagTokens(scr.mission_mask_unset, false);
 
     out << "$screen " << screen_count;
     if (!sm.empty())
@@ -263,108 +263,108 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, optref<BriefGlo
     if (!um.empty())
       out << " " << um;
     out << " desc \"Screen " << screen_count << "\"";
-    if (!scr->layout.empty())
-      out << " layout \"" << scr->layout << "\"";
+    if (!scr.layout.empty())
+      out << " layout \"" << scr.layout << "\"";
     out << " start\n";
 
-    int curr_effect = scr->root_effect;
+    int curr_effect = scr.root_effect;
     while (curr_effect != -1) {
-      if (curr_effect < 0 || curr_effect >= MAX_EFFECTS_PER_SCREEN || !scr->effects[curr_effect].used)
+      if (curr_effect < 0 || curr_effect >= MAX_EFFECTS_PER_SCREEN || !scr.effects[curr_effect].used)
         break;
-      tBriefEffect *efx = &scr->effects[curr_effect];
+      tBriefEffect &efx = scr.effects[curr_effect];
 
-      switch (efx->type) {
+      switch (efx.type) {
       case BE_TEXT: {
-        TCTEXTDESC *desc = &efx->desc.text_desc();
-        std::string red = std::to_string(GR_COLOR_RED(desc->color));
-        std::string green = std::to_string(GR_COLOR_GREEN(desc->color));
-        std::string blue = std::to_string(GR_COLOR_BLUE(desc->color));
-        out << "$text effect " << textEffectWord(*desc) << " font " << fontWord(desc->font)
-            << ((desc->caps.tabstop) ? " tabstop" : "") << " speed " << desc->speed
-            << " box " << desc->textbox.left << "," << desc->textbox.right << "," << desc->textbox.top << ","
-            << desc->textbox.bottom << " color " << red << "," << green << "," << blue
-            << " desc \"" << efx->description << "\" id " << efx->id << " starttime " << desc->waittime;
-        std::string sm2 = missionFlagTokens(desc->mission_mask_set, true);
-        std::string um2 = missionFlagTokens(desc->mission_mask_unset, false);
+        TCTEXTDESC &desc = efx.desc.text_desc();
+        std::string red = std::to_string(GR_COLOR_RED(desc.color));
+        std::string green = std::to_string(GR_COLOR_GREEN(desc.color));
+        std::string blue = std::to_string(GR_COLOR_BLUE(desc.color));
+        out << "$text effect " << textEffectWord(desc) << " font " << fontWord(desc.font)
+            << ((desc.caps.tabstop) ? " tabstop" : "") << " speed " << desc.speed
+            << " box " << desc.textbox.left << "," << desc.textbox.right << "," << desc.textbox.top << ","
+            << desc.textbox.bottom << " color " << red << "," << green << "," << blue
+            << " desc \"" << efx.description << "\" id " << efx.id << " starttime " << desc.waittime;
+        std::string sm2 = missionFlagTokens(desc.mission_mask_set, true);
+        std::string um2 = missionFlagTokens(desc.mission_mask_unset, false);
         if (!sm2.empty())
           out << " " << sm2;
         if (!um2.empty())
           out << " " << um2;
         out << " show\n";
-        out << efx->text << "\n";
+        out << efx.text << "\n";
         out << "$endtext\n";
       } break;
       case BE_BMP: {
-        TCBMPDESC *desc = &efx->desc.bmp_desc();
-        out << "$bitmap effect " << bmpEffectWord(*desc) << " starttime " << desc->waittime;
-        if (desc->no_early_render)
+        TCBMPDESC &desc = efx.desc.bmp_desc();
+        out << "$bitmap effect " << bmpEffectWord(desc) << " starttime " << desc.waittime;
+        if (desc.no_early_render)
           out << " no_early_rend";
-        out << " speed " << desc->speed << " position " << desc->x << "," << desc->y;
-        std::string sm2 = missionFlagTokens(desc->mission_mask_set, true);
-        std::string um2 = missionFlagTokens(desc->mission_mask_unset, false);
+        out << " speed " << desc.speed << " position " << desc.x << "," << desc.y;
+        std::string sm2 = missionFlagTokens(desc.mission_mask_set, true);
+        std::string um2 = missionFlagTokens(desc.mission_mask_unset, false);
         if (!sm2.empty())
           out << " " << sm2;
         if (!um2.empty())
           out << " " << um2;
-        out << " desc \"" << efx->description << "\" show \"" << desc->filename << "\"\n";
+        out << " desc \"" << efx.description << "\" show \"" << desc.filename << "\"\n";
       } break;
       case BE_MOVIE: {
-        TCMOVIEDESC *desc = &efx->desc.movie_desc();
-        out << "$movie position " << desc->x << "," << desc->y << " fps " << desc->fps
-            << (desc->looping ? " looping" : "") << " starttime " << desc->waittime;
-        std::string sm2 = missionFlagTokens(desc->mission_mask_set, true);
-        std::string um2 = missionFlagTokens(desc->mission_mask_unset, false);
+        TCMOVIEDESC &desc = efx.desc.movie_desc();
+        out << "$movie position " << desc.x << "," << desc.y << " fps " << desc.fps
+            << (desc.looping ? " looping" : "") << " starttime " << desc.waittime;
+        std::string sm2 = missionFlagTokens(desc.mission_mask_set, true);
+        std::string um2 = missionFlagTokens(desc.mission_mask_unset, false);
         if (!sm2.empty())
           out << " " << sm2;
         if (!um2.empty())
           out << " " << um2;
-        out << " desc \"" << efx->description << "\" show \"" << desc->filename << "\"\n";
+        out << " desc \"" << efx.description << "\" show \"" << desc.filename << "\"\n";
       } break;
       case BE_SND: {
-        TCSNDDESC *desc = &efx->desc.snd_desc();
-        out << "$sound " << (desc->once ? "once" : "") << " starttime " << desc->waittime;
-        std::string sm2 = missionFlagTokens(desc->mission_mask_set, true);
-        std::string um2 = missionFlagTokens(desc->mission_mask_unset, false);
+        TCSNDDESC &desc = efx.desc.snd_desc();
+        out << "$sound " << (desc.once ? "once" : "") << " starttime " << desc.waittime;
+        std::string sm2 = missionFlagTokens(desc.mission_mask_set, true);
+        std::string um2 = missionFlagTokens(desc.mission_mask_unset, false);
         if (!sm2.empty())
           out << " " << sm2;
         if (!um2.empty())
           out << " " << um2;
-        out << " desc \"" << efx->description << "\" play \"" << desc->filename << "\"\n";
+        out << " desc \"" << efx.description << "\" play \"" << desc.filename << "\"\n";
       } break;
       case BE_BUTTON: {
-        TCBUTTONDESC *desc = &efx->desc.button_desc();
+        TCBUTTONDESC &desc = efx.desc.button_desc();
         std::string ctype;
-        switch (desc->click_type) {
+        switch (desc.click_type) {
         case tc_click_type::click_down: ctype = "ClickDown"; break;
         case tc_click_type::click_up: ctype = "ClickUp"; break;
         case tc_click_type::hold: ctype = "HoldDown"; break;
         default: ctype = "ClickUp"; break;
         }
         std::string btype;
-        switch (desc->button_type) {
+        switch (desc.button_type) {
         case tc_button_type::up_arrow: btype = "Up"; break;
         case tc_button_type::down_arrow: btype = "Down"; break;
         case tc_button_type::next_page: btype = "Next"; break;
         case tc_button_type::prev_page: btype = "Prev"; break;
         case tc_button_type::quit: btype = "Quit"; break;
-        case tc_button_type::jump: btype = "Jump " + std::to_string(desc->jump_page); break;
+        case tc_button_type::jump: btype = "Jump " + std::to_string(desc.jump_page); break;
         default: btype = "Next"; break;
         }
-        out << "$button " << desc->x << "," << desc->y << " type " << btype;
-        if (desc->osflags.flash)
-          out << " flash " << desc->flash_time << " \"" << desc->flash_filename << "\" \""
-              << desc->flash_filename_focus << "\"";
-        if (desc->osflags.glow)
+        out << "$button " << desc.x << "," << desc.y << " type " << btype;
+        if (desc.osflags.flash)
+          out << " flash " << desc.flash_time << " \"" << desc.flash_filename << "\" \""
+              << desc.flash_filename_focus << "\"";
+        if (desc.osflags.glow)
           out << " glow";
-        out << " click " << ctype << " id " << efx->id << " desc \"" << efx->description << "\" parent_id "
-            << desc->parent_id << " sibling_id " << desc->sibling_id;
-        std::string sm2 = missionFlagTokens(desc->mission_mask_set, true);
-        std::string um2 = missionFlagTokens(desc->mission_mask_unset, false);
+        out << " click " << ctype << " id " << efx.id << " desc \"" << efx.description << "\" parent_id "
+            << desc.parent_id << " sibling_id " << desc.sibling_id;
+        std::string sm2 = missionFlagTokens(desc.mission_mask_set, true);
+        std::string um2 = missionFlagTokens(desc.mission_mask_unset, false);
         if (!sm2.empty())
           out << " " << sm2;
         if (!um2.empty())
           out << " " << um2;
-        out << " show \"" << desc->filename << "\" \"" << desc->filename_focus << "\"\n";
+        out << " show \"" << desc.filename << "\" \"" << desc.filename_focus << "\"\n";
       } break;
       case BE_BKG:
       case BE_POLY:
@@ -372,11 +372,11 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, optref<BriefGlo
         break;
       }
 
-      curr_effect = scr->effects[curr_effect].next;
+      curr_effect = scr.effects[curr_effect].next;
     }
 
     out << "$endscreen\n";
-    curr_screen = scr->next;
+    curr_screen = scr.next;
     screen_count++;
   }
 
@@ -456,9 +456,9 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, optref<BriefGlo
           break;
         }
       }
-      tBriefScreen *scr = &Briefing_screens[slot];
-      scr->init();
-      scr->used = true;
+      tBriefScreen &scr = Briefing_screens[slot];
+      scr.init();
+      scr.used = true;
       // parse layout + mission flags from the rest
       std::string rest;
       std::getline(ss, rest);
@@ -468,11 +468,11 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, optref<BriefGlo
         size_t start = lit + 8;
         size_t end = rest.find('"', start);
         if (end != std::string::npos)
-          scr->layout = rest.substr(start, end - start);
+          scr.layout = rest.substr(start, end - start);
       }
       if (Briefing_root_screen == -1)
         Briefing_root_screen = slot;
-      cur = scr;
+      cur = &scr;
       cur_effect_slot = -1;
       screen_index++;
     } else if (cmd == "$endscreen") {
@@ -500,14 +500,14 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, optref<BriefGlo
       }
       if (eff < 0)
         eff = 0;
-      tBriefEffect *efx = &cur->effects[eff];
-      efx->init();
-      efx->used = true;
+      tBriefEffect &efx = cur->effects[eff];
+      efx.init();
+      efx.used = true;
       // hook into list as the new root
       if (cur->root_effect == -1) {
         cur->root_effect = eff;
       } else {
-        efx->next = cur->root_effect;
+        efx.next = cur->root_effect;
         cur->effects[cur->root_effect].prev = eff;
         cur->root_effect = eff;
       }
@@ -517,37 +517,37 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, optref<BriefGlo
       std::getline(ss, rest);
 
       if (cmd == "$text") {
-        efx->type = BE_TEXT;
-        TCTEXTDESC *desc = &efx->desc.text_desc();
-        desc->caps.font = true;
-        desc->caps.color = true;
-        desc->caps.speed = true;
-        desc->caps.waittime = true;
-        desc->caps.textbox = true;
-        desc->caps.scroll = true;
+        efx.type = BE_TEXT;
+        TCTEXTDESC &desc = efx.desc.text_desc();
+        desc.caps.font = true;
+        desc.caps.color = true;
+        desc.caps.speed = true;
+        desc.caps.waittime = true;
+        desc.caps.textbox = true;
+        desc.caps.scroll = true;
         // parse key fields
         auto pos = rest.find("font ");
         if (pos != std::string::npos) {
           std::istringstream f(rest.substr(pos + 5));
           std::string fw;
           f >> fw;
-          desc->font = (fw == "lg_brief") ? 1 : 0;
+          desc.font = (fw == "lg_brief") ? 1 : 0;
         }
         pos = rest.find(" speed ");
         if (pos != std::string::npos)
-          std::istringstream(rest.substr(pos + 7)) >> desc->speed;
+          std::istringstream(rest.substr(pos + 7)) >> desc.speed;
         pos = rest.find(" box ");
         if (pos != std::string::npos) {
           std::istringstream b(rest.substr(pos + 5));
           char comma;
-          b >> desc->textbox.left >> comma >> desc->textbox.right >> comma >> desc->textbox.top >> comma >>
-              desc->textbox.bottom;
+          b >> desc.textbox.left >> comma >> desc.textbox.right >> comma >> desc.textbox.top >> comma >>
+              desc.textbox.bottom;
         }
         pos = rest.find(" starttime ");
         if (pos != std::string::npos)
-          std::istringstream(rest.substr(pos + 10)) >> desc->waittime;
+          std::istringstream(rest.substr(pos + 10)) >> desc.waittime;
         if (rest.find("tabstop") != std::string::npos)
-          desc->caps.tabstop = true;
+          desc.caps.tabstop = true;
         // color
         pos = rest.find(" color ");
         if (pos != std::string::npos) {
@@ -555,93 +555,93 @@ bool BriefEditLoadScreens(const std::filesystem::path &filename, optref<BriefGlo
           int r, g, b;
           char comma;
           c >> r >> comma >> g >> comma >> b;
-          desc->color = GR_RGB(r, g, b);
+          desc.color = GR_RGB(r, g, b);
         }
         pos = rest.find(" desc \"");
         if (pos != std::string::npos) {
           size_t s = pos + 7;
           size_t e = rest.find('"', s);
           if (e != std::string::npos)
-            efx->description = rest.substr(s, e - s);
+            efx.description = rest.substr(s, e - s);
         }
         pos = rest.find(" id ");
         if (pos != std::string::npos)
-          std::istringstream(rest.substr(pos + 4)) >> efx->id;
+          std::istringstream(rest.substr(pos + 4)) >> efx.id;
         // effect word -> desc.type/mode
-        if (rest.find("scroll_l2r") != std::string::npos) { desc->type = TC_TEXT_SCROLL; desc->mode = tc_text_mode::scroll_l2r; }
-        else if (rest.find("scroll_r2l") != std::string::npos) { desc->type = TC_TEXT_SCROLL; desc->mode = tc_text_mode::scroll_r2l; }
-        else if (rest.find("scroll_t2b") != std::string::npos) { desc->type = TC_TEXT_SCROLL; desc->mode = tc_text_mode::scroll_t2b; }
-        else if (rest.find("scroll_b2t") != std::string::npos) { desc->type = TC_TEXT_SCROLL; desc->mode = tc_text_mode::scroll_b2t; }
-        else if (rest.find("fade_in") != std::string::npos) { desc->type = TC_TEXT_FADE; desc->mode = tc_text_mode::fade_in; }
-        else if (rest.find("fade_out") != std::string::npos) { desc->type = TC_TEXT_FADE; desc->mode = tc_text_mode::fade_out; }
-        else if (rest.find("flash") != std::string::npos) { desc->type = TC_TEXT_FLASH; }
-        else { desc->type = TC_TEXT_STATIC; }
+        if (rest.find("scroll_l2r") != std::string::npos) { desc.type = TC_TEXT_SCROLL; desc.mode = tc_text_mode::scroll_l2r; }
+        else if (rest.find("scroll_r2l") != std::string::npos) { desc.type = TC_TEXT_SCROLL; desc.mode = tc_text_mode::scroll_r2l; }
+        else if (rest.find("scroll_t2b") != std::string::npos) { desc.type = TC_TEXT_SCROLL; desc.mode = tc_text_mode::scroll_t2b; }
+        else if (rest.find("scroll_b2t") != std::string::npos) { desc.type = TC_TEXT_SCROLL; desc.mode = tc_text_mode::scroll_b2t; }
+        else if (rest.find("fade_in") != std::string::npos) { desc.type = TC_TEXT_FADE; desc.mode = tc_text_mode::fade_in; }
+        else if (rest.find("fade_out") != std::string::npos) { desc.type = TC_TEXT_FADE; desc.mode = tc_text_mode::fade_out; }
+        else if (rest.find("flash") != std::string::npos) { desc.type = TC_TEXT_FLASH; }
+        else { desc.type = TC_TEXT_STATIC; }
         in_text = true;
         pending_text.clear();
       } else if (cmd == "$bitmap") {
-        efx->type = BE_BMP;
-        TCBMPDESC *desc = &efx->desc.bmp_desc();
+        efx.type = BE_BMP;
+        TCBMPDESC &desc = efx.desc.bmp_desc();
         auto pos = rest.find(" starttime ");
         if (pos != std::string::npos)
-          std::istringstream(rest.substr(pos + 10)) >> desc->waittime;
+          std::istringstream(rest.substr(pos + 10)) >> desc.waittime;
         pos = rest.find(" speed ");
         if (pos != std::string::npos)
-          std::istringstream(rest.substr(pos + 7)) >> desc->speed;
+          std::istringstream(rest.substr(pos + 7)) >> desc.speed;
         pos = rest.find(" position ");
         if (pos != std::string::npos) {
           std::istringstream p(rest.substr(pos + 9));
           char comma;
-          p >> desc->x >> comma >> desc->y;
+          p >> desc.x >> comma >> desc.y;
         }
         if (rest.find("no_early_rend") != std::string::npos)
-          desc->no_early_render = true;
+          desc.no_early_render = true;
         pos = rest.find(" desc \"");
         if (pos != std::string::npos) {
           size_t s = pos + 7;
           size_t e = rest.find('"', s);
           if (e != std::string::npos)
-            efx->description = rest.substr(s, e - s);
+            efx.description = rest.substr(s, e - s);
         }
         pos = rest.find(" show \"");
         if (pos != std::string::npos) {
           size_t s = pos + 7;
           size_t e = rest.find('"', s);
-          desc->filename = (e != std::string::npos) ? rest.substr(s, e - s) : std::string();
+          desc.filename = (e != std::string::npos) ? rest.substr(s, e - s) : std::string();
         }
       } else if (cmd == "$movie") {
-        efx->type = BE_MOVIE;
-        TCMOVIEDESC *desc = &efx->desc.movie_desc();
+        efx.type = BE_MOVIE;
+        TCMOVIEDESC &desc = efx.desc.movie_desc();
         auto pos = rest.find(" position ");
         if (pos != std::string::npos) {
           std::istringstream p(rest.substr(pos + 9));
           char comma;
-          p >> desc->x >> comma >> desc->y;
+          p >> desc.x >> comma >> desc.y;
         }
         pos = rest.find(" fps ");
         if (pos != std::string::npos)
-          std::istringstream(rest.substr(pos + 5)) >> desc->fps;
+          std::istringstream(rest.substr(pos + 5)) >> desc.fps;
         pos = rest.find(" starttime ");
         if (pos != std::string::npos)
-          std::istringstream(rest.substr(pos + 10)) >> desc->waittime;
-        desc->looping = (rest.find("looping") != std::string::npos);
+          std::istringstream(rest.substr(pos + 10)) >> desc.waittime;
+        desc.looping = (rest.find("looping") != std::string::npos);
         pos = rest.find(" show \"");
         if (pos != std::string::npos) {
           size_t s = pos + 7;
           size_t e = rest.find('"', s);
-          desc->filename = (e != std::string::npos) ? rest.substr(s, e - s) : std::string();
+          desc.filename = (e != std::string::npos) ? rest.substr(s, e - s) : std::string();
         }
       } else if (cmd == "$sound") {
-        efx->type = BE_SND;
-        TCSNDDESC *desc = &efx->desc.snd_desc();
+        efx.type = BE_SND;
+        TCSNDDESC &desc = efx.desc.snd_desc();
         auto pos = rest.find(" starttime ");
         if (pos != std::string::npos)
-          std::istringstream(rest.substr(pos + 10)) >> desc->waittime;
-        desc->once = (rest.find("once") != std::string::npos);
+          std::istringstream(rest.substr(pos + 10)) >> desc.waittime;
+        desc.once = (rest.find("once") != std::string::npos);
         pos = rest.find(" play \"");
         if (pos != std::string::npos) {
           size_t s = pos + 7;
           size_t e = rest.find('"', s);
-          desc->filename = (e != std::string::npos) ? rest.substr(s, e - s) : std::string();
+          desc.filename = (e != std::string::npos) ? rest.substr(s, e - s) : std::string();
         }
       }
       // (button omitted in parse for now; round-trip focuses on text/bmp/movie/sound)

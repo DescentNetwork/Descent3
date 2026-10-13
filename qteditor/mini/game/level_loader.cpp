@@ -621,15 +621,15 @@ static void LL_EndChunk(byte_ostream &ofile, int chunk_start_pos) {
 // RLE byte compression used by the engine inside ROOM for volume lights.
 
 static int LL_ReadRoom(byte_istream &ifile, int roomnum, uint32_t /*version*/) {
-  room_t *rp = &Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   // Current canonical layout: the room stream operator reads every field
   // (verts, faces, portals, lights, ...) exactly as the engine writes it.
-  ifile >> *rp;
+  ifile >> rp;
 
   // Map raw level-local texture indices into global GameTextures[] slots.
-  for (int f = 0; f < rp->num_faces; f++) {
-    const int raw = rp->faces[f].tmap;
-    rp->faces[f].tmap = (raw >= 0 && raw < MAX_TEXTURES) ? texture_xlate[raw] : 0;
+  for (int f = 0; f < rp.num_faces; f++) {
+    const int raw = rp.faces[f].tmap;
+    rp.faces[f].tmap = (raw >= 0 && raw < MAX_TEXTURES) ? texture_xlate[raw] : 0;
   }
 
   return 1;
@@ -1908,25 +1908,25 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
           int32_t objnum = handle & HANDLE_OBJNUM_MASK;
           if (objnum < 0 || objnum >= MAX_OBJECTS)
             continue;
-          object *obj = &Objects[objnum];
+          object &obj = Objects[objnum];
           // Value-initialise (NOT memset: object contains std::string members).
-          *obj = object{};
-          ifile >> *obj;
+          obj = object{};
+          ifile >> obj;
 
           // GNNM/DRNM name tables map the file's page index to the page index
           // in the loaded game tables, exactly as the engine's ReadObject does.
-          obj->id = static_cast<uint16_t>(TranslateObjectId(obj->type, obj->id));
+          obj.id = static_cast<uint16_t>(TranslateObjectId(obj.type, obj.id));
 
-          index_t roomnum = obj->roomnum;
+          index_t roomnum = obj.roomnum;
           LOG_DEBUG("OBJS[%d]: type=%d id=%d name='%s' flags=%u room=%d pos=(%hf,%hf,%hf)",
-                    objnum, static_cast<int>(obj->type), (int)obj->id, obj->name.c_str(), std::bit_cast<uint32_t>(obj->flags),
-                    roomnum ? static_cast<int>(*roomnum) : -1, obj->pos.x(), obj->pos.y(), obj->pos.z());
+                    objnum, static_cast<int>(obj.type), (int)obj.id, obj.name.c_str(), std::bit_cast<uint32_t>(obj.flags),
+                    roomnum ? static_cast<int>(*roomnum) : -1, obj.pos.x(), obj.pos.y(), obj.pos.z());
           // Give the object a usable handle and link it into the mine, exactly
           // as the original LL_ReadObjects does (object.cpp / LoadLevel.cpp).
-          obj->handle = (version >= 45) ? handle : (objnum + HANDLE_COUNT_INCREMENT);
-          obj->roomnum.reset(); // ObjLink() expects the roomnum to be unset
+          obj.handle = (version >= 45) ? handle : (objnum + HANDLE_COUNT_INCREMENT);
+          obj.roomnum.reset(); // ObjLink() expects the roomnum to be unset
           if (roomnum && *roomnum >= Rooms.size() && !roomnum_outside(roomnum))
-            obj->type = object_type_e::none; // loading object with invalid room number
+            obj.type = object_type_e::none; // loading object with invalid room number
           else
             ObjLink(objnum, roomnum);
           if (objnum > Highest_object_index)
@@ -1947,10 +1947,10 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
         ifile >> nt;
         Triggers.resize(nt);
         for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
-          trigger *tp = &Triggers[i];
+          trigger &tp = Triggers[i];
           // Value-initialise (NOT memset: trigger contains a std::string name).
-          *tp = trigger{};
-          ifile >> *tp;
+          tp = trigger{};
+          ifile >> tp;
         }
         break;
       }

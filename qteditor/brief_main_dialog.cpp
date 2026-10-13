@@ -96,9 +96,9 @@ void BriefMainDialog::refreshEffectList() {
     int efx = Briefing_screens[scr].root_effect;
     int idx = 0;
     while (efx != -1 && idx < MAX_EFFECTS_PER_SCREEN) {
-      const tBriefEffect *e = &Briefing_screens[scr].effects[efx];
+      const tBriefEffect &e = Briefing_screens[scr].effects[efx];
       QString label;
-      switch (e->type) {
+      switch (e.type) {
       case BE_TEXT: label = "Text"; break;
       case BE_BMP: label = "Bitmap"; break;
       case BE_MOVIE: label = "Movie"; break;
@@ -106,10 +106,10 @@ void BriefMainDialog::refreshEffectList() {
       case BE_BUTTON: label = "Button"; break;
       default: label = "None"; break;
       }
-      if (!e->description.empty())
-        label += QStringLiteral(": %1").arg(QString::fromStdString(e->description));
+      if (!e.description.empty())
+        label += QStringLiteral(": %1").arg(QString::fromStdString(e.description));
       combo->addItem(label);
-      efx = e->next;
+      efx = e.next;
       idx++;
     }
   }
@@ -212,13 +212,13 @@ int BriefMainDialog::allocateEffectOnCurrentScreen() {
   // Find a free effect slot.
   for (int i = 0; i < MAX_EFFECTS_PER_SCREEN; i++) {
     if (!Briefing_screens[scr].effects[i].used) {
-      tBriefEffect *efx = &Briefing_screens[scr].effects[i];
-      efx->init();
-      efx->used = true;
+      tBriefEffect &efx = Briefing_screens[scr].effects[i];
+      efx.init();
+      efx.used = true;
       if (Briefing_screens[scr].root_effect == -1) {
         Briefing_screens[scr].root_effect = i;
       } else {
-        efx->next = Briefing_screens[scr].root_effect;
+        efx.next = Briefing_screens[scr].root_effect;
         Briefing_screens[scr].effects[Briefing_screens[scr].root_effect].prev = i;
         Briefing_screens[scr].root_effect = i;
       }
@@ -237,55 +237,55 @@ void BriefMainDialog::openEffectAdd(int effectType) {
   int slot = allocateEffectOnCurrentScreen();
   if (slot == -1)
     return;
-  tBriefEffect *efx = &Briefing_screens[scr].effects[slot];
-  efx->type = effectType;
+  tBriefEffect &efx = Briefing_screens[scr].effects[slot];
+  efx.type = effectType;
 
   switch (effectType) {
   case BE_TEXT: {
     BriefTextEditDialog dlg(scr, nullptr, std::string(), 0, this);
     if (dlg.exec() == QDialog::Accepted) {
-      efx->desc.text_desc() = dlg.result();
-      efx->description = dlg.descText().toStdString();
-      efx->id = dlg.id();
-      efx->text = dlg.textBuffer();
+      efx.desc.text_desc() = dlg.result();
+      efx.description = dlg.descText().toStdString();
+      efx.id = dlg.id();
+      efx.text = dlg.textBuffer();
     } else {
-      BriefEditFreeEffect(*efx);
+      BriefEditFreeEffect(efx);
     }
   } break;
   case BE_BMP: {
     BriefBitmapDialog dlg(nullptr, this);
     if (dlg.exec() == QDialog::Accepted) {
-      efx->desc.bmp_desc() = dlg.result();
-      efx->description = dlg.description().toStdString();
+      efx.desc.bmp_desc() = dlg.result();
+      efx.description = dlg.description().toStdString();
     } else {
-      BriefEditFreeEffect(*efx);
+      BriefEditFreeEffect(efx);
     }
   } break;
   case BE_MOVIE: {
     BriefMovieDialog dlg(nullptr, this);
     if (dlg.exec() == QDialog::Accepted) {
-      efx->desc.movie_desc() = dlg.result();
-      efx->description = dlg.description().toStdString();
+      efx.desc.movie_desc() = dlg.result();
+      efx.description = dlg.description().toStdString();
     } else {
-      BriefEditFreeEffect(*efx);
+      BriefEditFreeEffect(efx);
     }
   } break;
   case BE_SND: {
     BriefSoundDialog dlg(nullptr, this);
     if (dlg.exec() == QDialog::Accepted) {
-      efx->desc.snd_desc() = dlg.result();
-      efx->description = dlg.description().toStdString();
+      efx.desc.snd_desc() = dlg.result();
+      efx.description = dlg.description().toStdString();
     } else {
-      BriefEditFreeEffect(*efx);
+      BriefEditFreeEffect(efx);
     }
   } break;
   case BE_BUTTON: {
     BriefButtonDialog dlg(nullptr, this);
     if (dlg.exec() == QDialog::Accepted) {
-      efx->desc.button_desc() = dlg.result();
-      efx->description = dlg.buttonDescription().toStdString();
+      efx.desc.button_desc() = dlg.result();
+      efx.description = dlg.buttonDescription().toStdString();
     } else {
-      BriefEditFreeEffect(*efx);
+      BriefEditFreeEffect(efx);
     }
   } break;
   default:
@@ -299,39 +299,39 @@ void BriefMainDialog::openEffectEdit(int arraySlot) {
   int scr = currentScreenIndex();
   if (scr == -1 || arraySlot < 0)
     return;
-  tBriefEffect *efx = &Briefing_screens[scr].effects[arraySlot];
-  switch (efx->type) {
+  tBriefEffect &efx = Briefing_screens[scr].effects[arraySlot];
+  switch (efx.type) {
   case BE_TEXT: {
-    BriefTextEditDialog dlg(scr, &efx->desc.text_desc(), efx->text, efx->id, this);
+    BriefTextEditDialog dlg(scr, &efx.desc.text_desc(), efx.text, efx.id, this);
     if (dlg.exec() == QDialog::Accepted) {
-      efx->desc.text_desc() = dlg.result();
-      efx->description = dlg.descText().toStdString();
-      efx->id = dlg.id();
-      efx->text = dlg.textBuffer();
+      efx.desc.text_desc() = dlg.result();
+      efx.description = dlg.descText().toStdString();
+      efx.id = dlg.id();
+      efx.text = dlg.textBuffer();
     }
   } break;
   case BE_BMP: {
-    BriefBitmapDialog dlg(&efx->desc.bmp_desc(), this);
+    BriefBitmapDialog dlg(&efx.desc.bmp_desc(), this);
     if (dlg.exec() == QDialog::Accepted) {
-      efx->desc.bmp_desc() = dlg.result();
+      efx.desc.bmp_desc() = dlg.result();
     }
   } break;
   case BE_MOVIE: {
-    BriefMovieDialog dlg(&efx->desc.movie_desc(), this);
+    BriefMovieDialog dlg(&efx.desc.movie_desc(), this);
     if (dlg.exec() == QDialog::Accepted) {
-      efx->desc.movie_desc() = dlg.result();
+      efx.desc.movie_desc() = dlg.result();
     }
   } break;
   case BE_SND: {
-    BriefSoundDialog dlg(&efx->desc.snd_desc(), this);
+    BriefSoundDialog dlg(&efx.desc.snd_desc(), this);
     if (dlg.exec() == QDialog::Accepted) {
-      efx->desc.snd_desc() = dlg.result();
+      efx.desc.snd_desc() = dlg.result();
     }
   } break;
   case BE_BUTTON: {
-    BriefButtonDialog dlg(&efx->desc.button_desc(), this);
+    BriefButtonDialog dlg(&efx.desc.button_desc(), this);
     if (dlg.exec() == QDialog::Accepted) {
-      efx->desc.button_desc() = dlg.result();
+      efx.desc.button_desc() = dlg.result();
     }
   } break;
   default:

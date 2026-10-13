@@ -107,11 +107,11 @@ int PlayerWeaponsDialog::currentWBIndex() const {
 
 void PlayerWeaponsDialog::updateDialog() {
   const int index = currentWBIndex();
-  ship *shp = &shipRef(m_current_ship);
+  ship &shp = shipRef(m_current_ship);
   const ship_fire_flags_t fire_flags = shipRef(m_current_ship).fire_flags[index];
 
   ui->IDC_FIRES_FUSION->setChecked(fire_flags.fusion);
-  ui->IDC_ONOFF->setChecked(shp->static_wb[index].flags.on_off);
+  ui->IDC_ONOFF->setChecked(shp.static_wb[index].flags.on_off);
   ui->IDC_ZOOM->setChecked(fire_flags.zoom);
   ui->IDC_SHOW_TENTHS->setChecked(fire_flags.tenths);
 
@@ -141,7 +141,7 @@ void PlayerWeaponsDialog::updateDialog() {
       ui->IDC_SPEW_POWERUP_PULLDOWN->setCurrentIndex(ui->IDC_SPEW_POWERUP_PULLDOWN->findData(spew));
   }
 
-  ui->IDC_MAX_AMMO->setText(QString::number(shp->max_ammo[index]));
+  ui->IDC_MAX_AMMO->setText(QString::number(shp.max_ammo[index]));
 }
 
 void PlayerWeaponsDialog::onEditWbButton() {

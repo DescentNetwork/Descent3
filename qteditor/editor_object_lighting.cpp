@@ -39,19 +39,19 @@
 void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int facenum) {
   int i;
   float left = 1.1f, right = -1, top = 1.1f, bottom = -1;
-  lightmap_object_face *lfp = &obj->lm_object.lightmap_faces[subnum][facenum];
-  int lw = static_cast<int>(lmi_w(lfp->lmi_handle).value_or(0));
-  int lh = static_cast<int>(lmi_h(lfp->lmi_handle).value_or(0));
+  lightmap_object_face &lfp = obj->lm_object.lightmap_faces[subnum][facenum];
+  int lw = static_cast<int>(lmi_w(lfp.lmi_handle).value_or(0));
+  int lh = static_cast<int>(lmi_h(lfp.lmi_handle).value_or(0));
 
-  for (i = 0; i < lfp->num_verts; i++) {
-    if (lfp->u2[i] < left)
-      left = lfp->u2[i];
-    if (lfp->u2[i] > right)
-      right = lfp->u2[i];
-    if (lfp->v2[i] < top)
-      top = lfp->v2[i];
-    if (lfp->v2[i] > bottom)
-      bottom = lfp->v2[i];
+  for (i = 0; i < lfp.num_verts; i++) {
+    if (lfp.u2[i] < left)
+      left = lfp.u2[i];
+    if (lfp.u2[i] > right)
+      right = lfp.u2[i];
+    if (lfp.v2[i] < top)
+      top = lfp.v2[i];
+    if (lfp.v2[i] > bottom)
+      bottom = lfp.v2[i];
   }
 
   float left_result = (left * lw) + 0.0001f;
@@ -83,7 +83,7 @@ void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int fac
 }
 
 void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surface *sp) {
-  lightmap_object_face *fp = &obj->lm_object.lightmap_faces[subnum][facenum];
+  lightmap_object_face &fp = obj->lm_object.lightmap_faces[subnum][facenum];
   int i, t, lmi_handle;
   int xres, yres;
   int lw, lh;
@@ -93,8 +93,8 @@ void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surf
   xres = sp->xresolution;
   yres = sp->yresolution;
 
-  Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
-  lmi_handle = fp->lmi_handle;
+  Q_ASSERT(fp.lmi_handle != BAD_LMI_INDEX);
+  lmi_handle = fp.lmi_handle;
 
   lw = static_cast<int>(lmi_w(lmi_handle).value_or(0));
   lh = static_cast<int>(lmi_h(lmi_handle).value_or(0));
@@ -213,43 +213,43 @@ void AssignLightmapsToObjectSurfaces(int surface_index, int terrain) {
       continue;
 
     if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {
-      poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
+      poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
-      if (!po->new_style)
+      if (!po.new_style)
         continue;
 
-      for (t = 0; t < po->n_models; t++) {
-        bsp_info *sm = &po->submodel[t];
+      for (t = 0; t < po.n_models; t++) {
+        bsp_info &sm = po.submodel[t];
 
-        if (IsNonRenderableSubmodel(*po, t))
+        if (IsNonRenderableSubmodel(po, t))
           continue;
 
-        for (j = 0; j < sm->num_faces; j++, surface_index++) {
+        for (j = 0; j < sm.num_faces; j++, surface_index++) {
           ApplyLightmapToObjectSurface(&Objects[i], t, j, &Light_surfaces[surface_index]);
 
           // Rotate the lightmap  upper left
           object& obj = Objects[i];
-          lightmap_object_face *fp = &obj.lm_object.lightmap_faces[t][j];
-          lightmap_info *lmi_ptr = &LightmapInfo[fp->lmi_handle];
+          lightmap_object_face &fp = obj.lm_object.lightmap_faces[t][j];
+          lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
 
-          if (!rotated[fp->lmi_handle]) {
+          if (!rotated[fp.lmi_handle]) {
             vector3 uleft, rvec, uvec, norm;
-            GetPointInObjectSpace(uleft, lmi_ptr->upper_left, obj, t, 1);
-            GetPointInObjectSpace(norm, lmi_ptr->normal, obj, t, 0);
-            lmi_ptr->normal = norm;
-            lmi_ptr->upper_left = uleft;
+            GetPointInObjectSpace(uleft, lmi_ptr.upper_left, obj, t, 1);
+            GetPointInObjectSpace(norm, lmi_ptr.normal, obj, t, 0);
+            lmi_ptr.normal = norm;
+            lmi_ptr.upper_left = uleft;
 
-            GetPointInObjectSpace(rvec, ScratchRVecs[fp->lmi_handle], obj, t, 0);
-            GetPointInObjectSpace(uvec, ScratchUVecs[fp->lmi_handle], obj, t, 0);
+            GetPointInObjectSpace(rvec, ScratchRVecs[fp.lmi_handle], obj, t, 0);
+            GetPointInObjectSpace(uvec, ScratchUVecs[fp.lmi_handle], obj, t, 0);
 
-            rotated[fp->lmi_handle] = 1;
+            rotated[fp.lmi_handle] = 1;
 
             // Find all the faces in this submodel that have this lightmap info handle
-            for (int k = 0; k < sm->num_faces; k++) {
-              lightmap_object_face *this_fp = &obj.lm_object.lightmap_faces[t][k];
-              if (fp->lmi_handle == this_fp->lmi_handle) {
-                this_fp->rvec = rvec;
-                this_fp->uvec = uvec;
+            for (int k = 0; k < sm.num_faces; k++) {
+              lightmap_object_face &this_fp = obj.lm_object.lightmap_faces[t][k];
+              if (fp.lmi_handle == this_fp.lmi_handle) {
+                this_fp.rvec = rvec;
+                this_fp.uvec = uvec;
               }
             }
           }
@@ -267,18 +267,18 @@ void AssignLightmapsToObjectSurfacesForSingleRoom(int surface_index, int roomnum
 
     if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps &&
         Objects[i].roomnum == roomnum) {
-      poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
+      poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
-      if (!po->new_style)
+      if (!po.new_style)
         continue;
 
-      for (t = 0; t < po->n_models; t++) {
-        bsp_info *sm = &po->submodel[t];
+      for (t = 0; t < po.n_models; t++) {
+        bsp_info &sm = po.submodel[t];
 
-        if (IsNonRenderableSubmodel(*po, t))
+        if (IsNonRenderableSubmodel(po, t))
           continue;
 
-        for (j = 0; j < sm->num_faces; j++, surface_index++)
+        for (j = 0; j < sm.num_faces; j++, surface_index++)
           ApplyLightmapToObjectSurface(&Objects[i], t, j, &Light_surfaces[surface_index]);
       }
     }
@@ -295,9 +295,9 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
       continue;
 
     if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {
-      poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
+      poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
-      if (!po->new_style)
+      if (!po.new_style)
         continue;
 
       SetupObjectLightmapMemory(&Objects[i]);
@@ -307,17 +307,17 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
       else
         CombineObjectLightmapUVs(Objects[i], lmi_type::room_object);
 
-      for (t = 0; t < po->n_models; t++) {
-        bsp_info *sm = &po->submodel[t];
+      for (t = 0; t < po.n_models; t++) {
+        bsp_info &sm = po.submodel[t];
 
-        if (IsNonRenderableSubmodel(*po, t))
+        if (IsNonRenderableSubmodel(po, t))
           continue;
 
-        for (j = 0; j < sm->num_faces; j++, surface_index++) {
+        for (j = 0; j < sm.num_faces; j++, surface_index++) {
           ComputeObjectSurfaceRes(&Light_surfaces[surface_index], &Objects[i], t, j);
 
-          if (sm->faces[j].nverts > 0)
-            Light_surfaces[surface_index].verts.resize(sm->faces[j].nverts);
+          if (sm.faces[j].nverts > 0)
+            Light_surfaces[surface_index].verts.resize(sm.faces[j].nverts);
           else
             Light_surfaces[surface_index].verts.clear();
 
@@ -330,16 +330,16 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
           Light_surfaces[surface_index].flags.lightsource = 0;
           Light_surfaces[surface_index].flags.touches_terrain = 0;
 
-          if (sm->faces[j].texnum == -1) {
+          if (sm.faces[j].texnum == -1) {
             Light_surfaces[surface_index].emittance.r = 0.0f;
             Light_surfaces[surface_index].emittance.g = 0.0f;
             Light_surfaces[surface_index].emittance.b = 0.0f;
             Light_surfaces[surface_index].reflectivity = 0.5f;
           } else {
-            Light_surfaces[surface_index].emittance.r = GameTextures[po->textures[sm->faces[j].texnum]].r;
-            Light_surfaces[surface_index].emittance.g = GameTextures[po->textures[sm->faces[j].texnum]].g;
-            Light_surfaces[surface_index].emittance.b = GameTextures[po->textures[sm->faces[j].texnum]].b;
-            Light_surfaces[surface_index].reflectivity = GameTextures[po->textures[sm->faces[j].texnum]].reflectivity;
+            Light_surfaces[surface_index].emittance.r = GameTextures[po.textures[sm.faces[j].texnum]].r;
+            Light_surfaces[surface_index].emittance.g = GameTextures[po.textures[sm.faces[j].texnum]].g;
+            Light_surfaces[surface_index].emittance.b = GameTextures[po.textures[sm.faces[j].texnum]].b;
+            Light_surfaces[surface_index].reflectivity = GameTextures[po.textures[sm.faces[j].texnum]].reflectivity;
             if ((GetMaxColor(&Light_surfaces[surface_index].emittance)) > 0.005f)
               Light_surfaces[surface_index].flags.lightsource = 1;
           }
@@ -384,25 +384,25 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
 
     if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps &&
         Objects[i].roomnum == roomnum) {
-      poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
+      poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
-      if (!po->new_style)
+      if (!po.new_style)
         continue;
 
       SetupObjectLightmapMemory(&Objects[i]);
       CombineObjectLightmapUVs(Objects[i], lmi_type::room_object);
 
-      for (t = 0; t < po->n_models; t++) {
-        bsp_info *sm = &po->submodel[t];
+      for (t = 0; t < po.n_models; t++) {
+        bsp_info &sm = po.submodel[t];
 
-        if (IsNonRenderableSubmodel(*po, t))
+        if (IsNonRenderableSubmodel(po, t))
           continue;
 
-        for (j = 0; j < sm->num_faces; j++, surface_index++) {
+        for (j = 0; j < sm.num_faces; j++, surface_index++) {
           ComputeObjectSurfaceRes(&Light_surfaces[surface_index], &Objects[i], t, j);
 
-          if (sm->faces[j].nverts > 0)
-            Light_surfaces[surface_index].verts.resize(sm->faces[j].nverts);
+          if (sm.faces[j].nverts > 0)
+            Light_surfaces[surface_index].verts.resize(sm.faces[j].nverts);
           else
             Light_surfaces[surface_index].verts.clear();
 
@@ -412,16 +412,16 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
           else
             Light_surfaces[surface_index].elements.clear();
 
-          if (sm->faces[j].texnum == -1) {
+          if (sm.faces[j].texnum == -1) {
             Light_surfaces[surface_index].emittance.r = 0.0f;
             Light_surfaces[surface_index].emittance.g = 0.0f;
             Light_surfaces[surface_index].emittance.b = 0.0f;
             Light_surfaces[surface_index].reflectivity = 0.5f;
           } else {
-            Light_surfaces[surface_index].emittance.r = GameTextures[po->textures[sm->faces[j].texnum]].r;
-            Light_surfaces[surface_index].emittance.g = GameTextures[po->textures[sm->faces[j].texnum]].g;
-            Light_surfaces[surface_index].emittance.b = GameTextures[po->textures[sm->faces[j].texnum]].b;
-            Light_surfaces[surface_index].reflectivity = GameTextures[po->textures[sm->faces[j].texnum]].reflectivity;
+            Light_surfaces[surface_index].emittance.r = GameTextures[po.textures[sm.faces[j].texnum]].r;
+            Light_surfaces[surface_index].emittance.g = GameTextures[po.textures[sm.faces[j].texnum]].g;
+            Light_surfaces[surface_index].emittance.b = GameTextures[po.textures[sm.faces[j].texnum]].b;
+            Light_surfaces[surface_index].reflectivity = GameTextures[po.textures[sm.faces[j].texnum]].reflectivity;
           }
 
           Light_surfaces[surface_index].surface_type = rad_surface_type::room_object;
@@ -451,12 +451,12 @@ int GetTotalObjectFaces(int terrain) {
         continue;
 
       if (Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {
-        poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
+        poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
-        if (!po->new_style)
+        if (!po.new_style)
           continue;
 
-        facecount += CountFacesInPolymodel(*po);
+        facecount += CountFacesInPolymodel(po);
       }
     }
   }
@@ -475,12 +475,12 @@ int GetTotalObjectFacesForSingleRoom(int roomnum) {
         continue;
 
       if (Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {
-        poly_model *po = &Poly_models[Objects[i].rtype.pobj_info().model_num];
+        poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
-        if (!po->new_style)
+        if (!po.new_style)
           continue;
 
-        facecount += CountFacesInPolymodel(*po);
+        facecount += CountFacesInPolymodel(po);
       }
     }
   }
@@ -500,10 +500,10 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
   int lmi_handle;
   vector3 world_verts[32];
 
-  poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
+  poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
 
-  for (i = 0; i < pm->submodel[sublist[0]].faces[facelist[0]].nverts; i++)
-    GetObjectPointInWorld(world_verts[i], obj, sublist[0], pm->submodel[sublist[0]].faces[facelist[0]].vertnums[i]);
+  for (i = 0; i < pm.submodel[sublist[0]].faces[facelist[0]].nverts; i++)
+    GetObjectPointInWorld(world_verts[i], obj, sublist[0], pm.submodel[sublist[0]].faces[facelist[0]].vertnums[i]);
 
   // find the center point of this face
   vm_MakeZero(avg_vert);
@@ -684,17 +684,17 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
   // Rotate all the face points
   for (i = 0; i < count; i++) {
     obj.lm_object.lightmap_faces[sublist[i]][facelist[i]].lmi_handle = lmi_handle;
-    bsp_info *sm = &pm->submodel[sublist[i]];
-    polyface *fp = &sm->faces[facelist[i]];
-    lightmap_object_face *lfp = &obj.lm_object.lightmap_faces[sublist[i]][facelist[i]];
-    lfp->num_verts = fp->nverts;
-    lfp->u2.resize(fp->nverts);
-    lfp->v2.resize(fp->nverts);
+    bsp_info &sm = pm.submodel[sublist[i]];
+    polyface &fp = sm.faces[facelist[i]];
+    lightmap_object_face &lfp = obj.lm_object.lightmap_faces[sublist[i]][facelist[i]];
+    lfp.num_verts = fp.nverts;
+    lfp.u2.resize(fp.nverts);
+    lfp.v2.resize(fp.nverts);
 
-    for (t = 0; t < fp->nverts; t++)
-      GetObjectPointInWorld(world_verts[t], obj, sublist[i], fp->vertnums[t]);
+    for (t = 0; t < fp.nverts; t++)
+      GetObjectPointInWorld(world_verts[t], obj, sublist[i], fp.vertnums[t]);
 
-    for (t = 0; t < fp->nverts; t++) {
+    for (t = 0; t < fp.nverts; t++) {
       vector3 vert = world_verts[t];
 
       vert -= avg_vert;
@@ -703,11 +703,11 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
       facevert = rot_vert;
 
       // Find uv2s for this vertex
-      lfp->u2[t] = (facevert.x() - verts[leftmost_point].x()) / (float)(lightmap_x_res * xspace_int);
-      lfp->v2[t] = fabs((verts[topmost_point].y() - facevert.y())) / (float)(lightmap_y_res * yspace_int);
+      lfp.u2[t] = (facevert.x() - verts[leftmost_point].x()) / (float)(lightmap_x_res * xspace_int);
+      lfp.v2[t] = fabs((verts[topmost_point].y() - facevert.y())) / (float)(lightmap_y_res * yspace_int);
 
-      Q_ASSERT(lfp->u2[t] >= 0 && lfp->u2[t] <= 1.0f);
-      Q_ASSERT(lfp->v2[t] >= 0 && lfp->v2[t] <= 1.0f);
+      Q_ASSERT(lfp.u2[t] >= 0 && lfp.u2[t] <= 1.0f);
+      Q_ASSERT(lfp.v2[t] >= 0 && lfp.v2[t] <= 1.0f);
     }
   }
 
@@ -736,21 +736,21 @@ void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_sur
   int xres, yres;
   int lmi_handle;
   int x1 = surf->x1, y1 = surf->y1;
-  poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
-  bsp_info *sm = &pm->submodel[subnum];
-  polyface *fp = &sm->faces[facenum];
+  poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
+  bsp_info &sm = pm.submodel[subnum];
+  polyface &fp = sm.faces[facenum];
 
   xres = surf->xresolution;
   yres = surf->yresolution;
 
-  Q_ASSERT(pm->used);
-  Q_ASSERT(fp->nverts >= 3);
+  Q_ASSERT(pm.used);
+  Q_ASSERT(fp.nverts >= 3);
   Q_ASSERT(obj.lm_object.lightmap_faces[subnum][facenum].lmi_handle != BAD_LMI_INDEX);
 
-  Q_ASSERT(fp->nverts < 32);
+  Q_ASSERT(fp.nverts < 32);
 
-  for (i = 0; i < fp->nverts; i++)
-    GetObjectPointInWorld(world_verts[i], obj, subnum, fp->vertnums[i]);
+  for (i = 0; i < fp.nverts; i++)
+    GetObjectPointInWorld(world_verts[i], obj, subnum, fp.vertnums[i]);
 
   lmi_handle = obj.lm_object.lightmap_faces[subnum][facenum].lmi_handle;
   avg_vert = ScratchCenters[lmi_handle];
@@ -774,7 +774,7 @@ void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_sur
   vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b());
 
   // Rotate all the points
-  for (i = 0; i < fp->nverts; i++) {
+  for (i = 0; i < fp.nverts; i++) {
     vert = world_verts[i];
 
     vert -= avg_vert;
@@ -803,17 +803,17 @@ void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_sur
       int element_index = i * xres + t;
       vector3 clip_verts[4];
 
-      rad_element *ep = &surf->elements[element_index];
+      rad_element &ep = surf->elements[element_index];
 
       clip_verts[0] = base_vector + (xdiff * (t + x1)) - (ydiff * (i + y1));
       clip_verts[1] = base_vector + (xdiff * (t + x1 + 1)) - (ydiff * (i + y1));
       clip_verts[2] = base_vector + (xdiff * (t + x1 + 1)) - (ydiff * (i + y1 + 1));
       clip_verts[3] = base_vector + (xdiff * (t + x1)) - (ydiff * (i + y1 + 1));
-      ClipSurfaceElement(verts, ep, clip_verts, fp->nverts);
+      ClipSurfaceElement(verts, &ep, clip_verts, fp.nverts);
 
-      for (int k = 0; k < ep->num_verts; k++) {
-        vm_MatrixMulVector(rot_vert, ep->verts[k], trans_matrix);
-        ep->verts[k] = rot_vert + avg_vert;
+      for (int k = 0; k < ep.num_verts; k++) {
+        vm_MatrixMulVector(rot_vert, ep.verts[k], trans_matrix);
+        ep.verts[k] = rot_vert + avg_vert;
       }
     }
   }
@@ -830,7 +830,7 @@ void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_sur
     }
     surf->num_verts = 4;
   } else {
-    surf->num_verts = fp->nverts;
+    surf->num_verts = fp.nverts;
     for (int k = 0; k < surf->num_verts; k++) {
       surf->verts[k] = world_verts[k];
     }
@@ -845,9 +845,9 @@ std::array<std::vector<uint8_t>, MAX_OBJECTS> ObjectsAlreadyCombined;
 // if this face can share a lightmap with any other face
 int TestObjectLightAdjacency(object& obj, int subnum, int facenum, lmi_type type) {
   int i, t, k;
-  poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
-  bsp_info *a_sm = &pm->submodel[subnum];
-  polyface *afp = &a_sm->faces[facenum];
+  poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
+  bsp_info *a_sm = &pm.submodel[subnum];
+  polyface &afp = a_sm->faces[facenum];
   vector3 anormal;
 
   vector3 averts[MAX_VERTS_PER_FACE * 5];
@@ -857,32 +857,32 @@ int TestObjectLightAdjacency(object& obj, int subnum, int facenum, lmi_type type
   int face_combine_list[MAX_COMBINES];
   int submodel_combine_list[MAX_COMBINES];
 
-  if (afp->texnum == -1)
+  if (afp.texnum == -1)
     return 0;
-  int tex = pm->textures[afp->texnum];
+  int tex = pm.textures[afp.texnum];
 
   if (GameTextures[tex].r > 0 || GameTextures[tex].g > 0 || GameTextures[tex].b > 0)
     return 0;
 
   // Setup our 'base' face
 
-  int anv = afp->nverts;
+  int anv = afp.nverts;
   int total_faces = 1;
 
   submodel_combine_list[0] = subnum;
   face_combine_list[0] = facenum;
 
-  for (i = 0; i < afp->nverts; i++)
-    GetObjectPointInWorld(averts[i], obj, subnum, afp->vertnums[i]);
+  for (i = 0; i < afp.nverts; i++)
+    GetObjectPointInWorld(averts[i], obj, subnum, afp.vertnums[i]);
   vm_GetNormal(anormal, averts[0], averts[1], averts[2]);
 
 StartOver:
 
   // Go through each room and find an adjacent face
-  for (i = 0; i < pm->n_models; i++) {
-    bsp_info *bsm = &pm->submodel[i];
+  for (i = 0; i < pm.n_models; i++) {
+    bsp_info *bsm = &pm.submodel[i];
 
-    if (IsNonRenderableSubmodel(*pm, i))
+    if (IsNonRenderableSubmodel(pm, i))
       continue;
 
     if (bsm != a_sm) // only combine faces in the same submodel
@@ -899,21 +899,21 @@ StartOver:
       if (ObjectsAlreadyCombined[i][t])
         continue;
 
-      polyface *bfp = &bsm->faces[t];
+      polyface &bfp = bsm->faces[t];
       vector3 bnormal;
 
       // Don't do combine light sources
 
-      tex = pm->textures[bfp->texnum];
+      tex = pm.textures[bfp.texnum];
       if (GameTextures[tex].r > 0 || GameTextures[tex].g > 0 || GameTextures[tex].b > 0)
         continue;
 
-      for (k = 0; k < bfp->nverts; k++)
-        GetObjectPointInWorld(bverts[k], obj, i, bfp->vertnums[k]);
+      for (k = 0; k < bfp.nverts; k++)
+        GetObjectPointInWorld(bverts[k], obj, i, bfp.vertnums[k]);
 
       vm_GetNormal(bnormal, bverts[0], bverts[1], bverts[2]);
 
-      int nv = CombineLightFaces(dest_verts, averts, anv, &anormal, bverts, bfp->nverts, &bnormal);
+      int nv = CombineLightFaces(dest_verts, averts, anv, &anormal, bverts, bfp.nverts, &bnormal);
 
       // We have a combine!  Mark this face in the appropriate list
       // And update our new polygon
@@ -949,60 +949,60 @@ void CombineObjectLightmapUVs(object& obj, lmi_type type) {
   int i, t, k;
   int not_combined = 0;
 
-  poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
+  poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
   Q_ASSERT(obj.lm_object.used);
 
-  for (i = 0; i < pm->n_models; i++) {
-    bsp_info *sm = &pm->submodel[i];
+  for (i = 0; i < pm.n_models; i++) {
+    bsp_info &sm = pm.submodel[i];
 
-    if (IsNonRenderableSubmodel(*pm, i))
+    if (IsNonRenderableSubmodel(pm, i))
       continue;
 
-    ObjectsAlreadyCombined[i].resize(sm->num_faces, 0);
+    ObjectsAlreadyCombined[i].resize(sm.num_faces, 0);
   }
 
-  for (i = 0; i < pm->n_models; i++) {
-    bsp_info *sm = &pm->submodel[i];
+  for (i = 0; i < pm.n_models; i++) {
+    bsp_info &sm = pm.submodel[i];
 
-    if (IsNonRenderableSubmodel(*pm, i))
+    if (IsNonRenderableSubmodel(pm, i))
       continue;
 
-    for (t = 0; t < sm->num_faces; t++) {
+    for (t = 0; t < sm.num_faces; t++) {
       if (!ObjectsAlreadyCombined[i][t])
         TestObjectLightAdjacency(obj, i, t, type);
     }
   }
 
   // Now build lightmaps for any faces that couldn't be combined
-  for (i = 0; i < pm->n_models; i++) {
-    bsp_info *sm = &pm->submodel[i];
+  for (i = 0; i < pm.n_models; i++) {
+    bsp_info &sm = pm.submodel[i];
 
-    if (IsNonRenderableSubmodel(*pm, i))
+    if (IsNonRenderableSubmodel(pm, i))
       continue;
 
-    for (t = 0; t < sm->num_faces; t++) {
+    for (t = 0; t < sm.num_faces; t++) {
       if (!ObjectsAlreadyCombined[i][t]) {
         vector3 verts[MAX_VERTS_PER_FACE * 5];
         int submodel_list[2], face_list[2];
-        for (k = 0; k < sm->faces[t].nverts; k++) {
-          GetObjectPointInWorld(verts[k], obj, i, sm->faces[t].vertnums[k]);
+        for (k = 0; k < sm.faces[t].nverts; k++) {
+          GetObjectPointInWorld(verts[k], obj, i, sm.faces[t].vertnums[k]);
         }
 
         submodel_list[0] = i;
         face_list[0] = t;
-        BuildObjectLightmapUVs(obj, submodel_list, face_list, 1, verts, sm->faces[t].nverts, type);
+        BuildObjectLightmapUVs(obj, submodel_list, face_list, 1, verts, sm.faces[t].nverts, type);
         not_combined++;
       }
     }
   }
 
-  LOG_INFO("%d %s faces couldn't be combined!\n", not_combined, pm->name);
+  LOG_INFO("%d %s faces couldn't be combined!\n", not_combined, pm.name);
 
   // Free memory
-  for (i = 0; i < pm->n_models; i++) {
-    bsp_info *sm = &pm->submodel[i];
+  for (i = 0; i < pm.n_models; i++) {
+    bsp_info &sm = pm.submodel[i];
 
-    if (IsNonRenderableSubmodel(*pm, i))
+    if (IsNonRenderableSubmodel(pm, i))
       continue;
     ObjectsAlreadyCombined[i].clear();
   }

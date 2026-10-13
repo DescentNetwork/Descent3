@@ -162,32 +162,32 @@ static void CollideSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
 
     for (i = 0; i < sm.num_faces; i++) {
       if (ns_movement_manual_AABB(sm.face_min[i], sm.face_max[i])) {
-        polyface *fp = &sm.faces[i];
+        polyface &fp = sm.faces[i];
 
-        if (fp->texnum >= 0 &&
-            !GameTextures[pm.textures[fp->texnum]].flags.fly_thru &&
-            !GameTextures[pm.textures[fp->texnum]].flags.pass_thru)
+        if (fp.texnum >= 0 &&
+            !GameTextures[pm.textures[fp.texnum]].flags.fly_thru &&
+            !GameTextures[pm.textures[fp.texnum]].flags.pass_thru)
         {
-          Q_ASSERT(fp->nverts <= 32);
+          Q_ASSERT(fp.nverts <= 32);
 
-          for (j = 0; j < fp->nverts; j++) {
-            vertex_list[j] = &sm.verts[fp->vertnums[j]];
+          for (j = 0; j < fp.nverts; j++) {
+            vertex_list[j] = &sm.verts[fp.vertnums[j]];
           }
 
           face_hit_type = check_line_to_face(newp, colp, col_dist, wall_norm, *fvi_query_ptr->p0, *fvi_query_ptr->p1,
-                                             fp->normal, vertex_list, fp->nverts, fvi_query_ptr->rad);
+                                             fp.normal, vertex_list, fp.nverts, fvi_query_ptr->rad);
           if ((fvi_query_ptr->flags.obj_backface) && (!face_hit_type)) {
-            vector3 face_normal = fp->normal;
+            vector3 face_normal = fp.normal;
             int count;
 
             face_normal *= -1.0f;
-            for (count = 0; count < fp->nverts; count++) {
-              vertex_list[fp->nverts - count - 1] = &sm.verts[fp->vertnums[count]];
+            for (count = 0; count < fp.nverts; count++) {
+              vertex_list[fp.nverts - count - 1] = &sm.verts[fp.vertnums[count]];
             }
 
             face_hit_type =
                 check_line_to_face(newp, colp, col_dist, wall_norm, *fvi_query_ptr->p0, *fvi_query_ptr->p1,
-                                   face_normal, vertex_list, fp->nverts, fvi_query_ptr->rad);
+                                   face_normal, vertex_list, fp.nverts, fvi_query_ptr->rad);
           }
 
           if (face_hit_type) {
@@ -343,9 +343,9 @@ void CollidePolygonModel(vector3 &pos, matrix &orient, int model_num, float *nor
   SetModelAnglesAndPos(*po, normalized_time);
 
   for (int i = 0; i < po->n_models; i++) {
-    bsp_info *sm = &po->submodel[i];
-    if (sm->parent == -1)
-      CollideSubmodel(*po, *sm, f_render_sub);
+    bsp_info &sm = po->submodel[i];
+    if (sm.parent == -1)
+      CollideSubmodel(*po, sm, f_render_sub);
   }
 
   newstyle_DoneInstance();
@@ -422,20 +422,20 @@ bool PolyCollideObject(object& obj) {
     vector3 pnt = fvi_hit_data_ptr->hit_face_pnt[0];
     int mn = fvi_hit_data_ptr->hit_subobject[0];
     matrix m;
-    poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
+    poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
 
     while (mn != -1) {
       vector3 tpnt;
 
-      vm_AnglesToMatrix(m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
+      vm_AnglesToMatrix(m, pm.submodel[mn].angs.p(), pm.submodel[mn].angs.h(), pm.submodel[mn].angs.b());
       vm_TransposeMatrix(m);
 
       tpnt = pnt * m;
       fvi_hit_data_ptr->hit_wallnorm[0] = fvi_hit_data_ptr->hit_wallnorm[0] * m;
 
-      pnt = tpnt + pm->submodel[mn].offset + pm->submodel[mn].mod_pos;
+      pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
 
-      mn = pm->submodel[mn].parent;
+      mn = pm.submodel[mn].parent;
     }
 
     fvi_hit_data_ptr->hit_face_pnt[0] = pnt;

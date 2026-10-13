@@ -168,8 +168,8 @@ void CalculateArea() {
     CalculateAreaForSurface(surf);
 
     for (t = 0; t < surf->xresolution * surf->yresolution; t++) {
-      rad_element *ep = &surf->elements[t];
-      CalculateAreaForElement(ep);
+      rad_element &ep = surf->elements[t];
+      CalculateAreaForElement(&ep);
     }
   }
 }
@@ -239,21 +239,21 @@ void UpdateUnsentValues() {
   // exitance yet to be shot
 
   for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
-    rad_surface *surf = &rad_Surfaces[i];
-    cur_unsent = GetUnsentFlux(surf);
+    rad_surface &surf = rad_Surfaces[i];
+    cur_unsent = GetUnsentFlux(&surf);
     rad_TotalUnsent += cur_unsent;
 
     if (cur_unsent > max_unsent) {
       max_unsent = cur_unsent;
-      rad_MaxSurface = surf;
+      rad_MaxSurface = &surf;
     }
 
     // Always give satellites priority
-    if (surf->surface_type == rad_surface_type::satellite && cur_unsent > 0) {
+    if (surf.surface_type == rad_surface_type::satellite && cur_unsent > 0) {
       if (cur_unsent > sat_max_unsent) {
         use_sat = 1;
         sat_max_unsent = cur_unsent;
-        sat_surface = surf;
+        sat_surface = &surf;
       }
     }
   }
@@ -337,34 +337,34 @@ void NormalizeExitance() {
   float rmax = 0.0f;
 
   for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
-    rad_surface *surf = &rad_Surfaces[i];
-    spectra *emittance = &surf->emittance;
+    rad_surface &surf = rad_Surfaces[i];
+    spectra &emittance = surf.emittance;
 
-    for (t = 0; t < surf->xresolution * surf->yresolution; t++) {
-      rad_element *ep = &surf->elements[t];
+    for (t = 0; t < surf.xresolution * surf.yresolution; t++) {
+      rad_element &ep = surf.elements[t];
 
-      if (ep->flags.ignore)
+      if (ep.flags.ignore)
         continue;
 
       if (Shoot_from_patch) {
-        ep->exitance.r += emittance->r;
-        ep->exitance.g += emittance->g;
-        ep->exitance.b += emittance->b;
+        ep.exitance.r += emittance.r;
+        ep.exitance.g += emittance.g;
+        ep.exitance.b += emittance.b;
       }
 
       /*			if (ep->exitance.r>1)
-                                      ep->exitance.r=1;
-                              if (ep->exitance.g>1)
-                                      ep->exitance.g=1;
-                              if (ep->exitance.b>1)
-                                      ep->exitance.b=1;*/
+                                      ep.exitance.r=1;
+                              if (ep.exitance.g>1)
+                                      ep.exitance.g=1;
+                              if (ep.exitance.b>1)
+                                      ep.exitance.b=1;*/
 
-      rmax = GetMaxColor(&ep->exitance);
+      rmax = GetMaxColor(&ep.exitance);
 
       if (rmax > 1.0f && rmax > 0.0f) {
-        ep->exitance.r /= rmax;
-        ep->exitance.g /= rmax;
-        ep->exitance.b /= rmax;
+        ep.exitance.r /= rmax;
+        ep.exitance.g /= rmax;
+        ep.exitance.b /= rmax;
       }
     }
   }

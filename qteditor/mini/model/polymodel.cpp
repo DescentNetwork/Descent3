@@ -833,7 +833,7 @@ std::string ReadModelStringLen(byte_istream &infile) {
 bool ReloadModelTextures(int modelnum, byte_istream &infile) {
   int done = 0, len;
   uint32_t id;
-  poly_model *pm = &Poly_models[modelnum];
+  poly_model &pm = Poly_models[modelnum];
 
   Q_ASSERT(!(Poly_models[modelnum].flags.not_resident));
 
@@ -868,7 +868,7 @@ bool ReloadModelTextures(int modelnum, byte_istream &infile) {
       int i, n;
 
       infile >> n;
-      if (n != pm->n_textures) {
+      if (n != pm.n_textures) {
         Q_ASSERT(false); // Get Jason, new model doesn't match old model!!!
         return false;
       }
@@ -890,9 +890,9 @@ bool ReloadModelTextures(int modelnum, byte_istream &infile) {
           }
         }
 
-        pm->textures[i] = *ret;
+        pm.textures[i] = *ret;
         if (GameTextures[*ret].alpha < 0.99f)
-          pm->flags.alpha = true;
+          pm.flags.alpha = true;
       }
 
       done = 1;
@@ -1176,9 +1176,9 @@ void FindMinMaxForModel(poly_model &pm) {
   pm.maxs.x() = pm.maxs.y() = pm.maxs.z() = -90000;
 
   for (int i = 0; i < pm.n_models; i++) {
-    bsp_info *sm = &pm.submodel[i];
-    if (sm->parent == -1)
-      MinMaxSubmodel(pm, *sm, zero_vec);
+    bsp_info &sm = pm.submodel[i];
+    if (sm.parent == -1)
+      MinMaxSubmodel(pm, sm, zero_vec);
   }
 }
 
@@ -1404,7 +1404,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       }
 
       // Find out how much space we'll need
-      bsp_info *sm = &pm->submodel[n];
+      bsp_info &sm = pm->submodel[n];
 
       vector3 tvec;
       int current_count = 0;
@@ -1441,9 +1441,9 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
 
       // Allocate our space
       if (current_count) {
-        sm->vertnum_memory.resize(current_count);
-        sm->u_memory.resize(current_count);
-        sm->v_memory.resize(current_count);
+        sm.vertnum_memory.resize(current_count);
+        sm.u_memory.resize(current_count);
+        sm.v_memory.resize(current_count);
       }
 
       // Now go through and set up our fake pointers
@@ -1451,10 +1451,10 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
         int vert_count =
             (i == nfaces - 1) ? (current_count - start_index[i]) : (start_index[i + 1] - start_index[i]);
 
-        sm->faces[i].vertnums.assign(&sm->vertnum_memory[start_index[i]],
-                                     &sm->vertnum_memory[start_index[i]] + vert_count);
-        sm->faces[i].u.assign(&sm->u_memory[start_index[i]], &sm->u_memory[start_index[i]] + vert_count);
-        sm->faces[i].v.assign(&sm->v_memory[start_index[i]], &sm->v_memory[start_index[i]] + vert_count);
+        sm.faces[i].vertnums.assign(&sm.vertnum_memory[start_index[i]],
+                                     &sm.vertnum_memory[start_index[i]] + vert_count);
+        sm.faces[i].u.assign(&sm.u_memory[start_index[i]], &sm.u_memory[start_index[i]] + vert_count);
+        sm.faces[i].v.assign(&sm.v_memory[start_index[i]], &sm.v_memory[start_index[i]] + vert_count);
       }
 
       // Reset our file pointer and free the temp memory
@@ -1485,8 +1485,8 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
 
         for (t = 0; t < pm->submodel[n].faces[i].nverts; t++) {
           int val;
-          vector3 *min_ptr = &pm->submodel[n].face_min[i];
-          vector3 *max_ptr = &pm->submodel[n].face_max[i];
+          vector3 &min_ptr = pm->submodel[n].face_min[i];
+          vector3 &max_ptr = pm->submodel[n].face_max[i];
           vector3 *v_ptr;
 
           infile >> val;
@@ -1497,22 +1497,22 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
           v_ptr = &pm->submodel[n].verts[pm->submodel[n].faces[i].vertnums[t]];
 
           if (t == 0) {
-            *min_ptr = *max_ptr = *v_ptr;
+            min_ptr = max_ptr = *v_ptr;
           } else {
-            if (v_ptr->x() < min_ptr->x())
-              min_ptr->x() = v_ptr->x();
-            else if (v_ptr->x() > max_ptr->x())
-              max_ptr->x() = v_ptr->x();
+            if (v_ptr->x() < min_ptr.x())
+              min_ptr.x() = v_ptr->x();
+            else if (v_ptr->x() > max_ptr.x())
+              max_ptr.x() = v_ptr->x();
 
-            if (v_ptr->y() < min_ptr->y())
-              min_ptr->y() = v_ptr->y();
-            else if (v_ptr->y() > max_ptr->y())
-              max_ptr->y() = v_ptr->y();
+            if (v_ptr->y() < min_ptr.y())
+              min_ptr.y() = v_ptr->y();
+            else if (v_ptr->y() > max_ptr.y())
+              max_ptr.y() = v_ptr->y();
 
-            if (v_ptr->z() < min_ptr->z())
-              min_ptr->z() = v_ptr->z();
-            else if (v_ptr->z() > max_ptr->z())
-              max_ptr->z() = v_ptr->z();
+            if (v_ptr->z() < min_ptr.z())
+              min_ptr.z() = v_ptr->z();
+            else if (v_ptr->z() > max_ptr.z())
+              max_ptr.z() = v_ptr->z();
           }
         }
 
@@ -1534,17 +1534,17 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       Q_ASSERT(pm->weapon_slots.size() == (size_t)pm->n_weapons);
 
       for (i = 0; i < pm->n_weapons; i++) {
-        weapon_bank *bank = &pm->weapon_slots[i];
+        weapon_bank &bank = pm->weapon_slots[i];
 
         // In Version 19.08 and beyond, gunpoints are associated to their parent object.
         if (version >= 19 * 100 + 8) {
-          infile >> bank->parent;
+          infile >> bank.parent;
         } else {
-          bank->parent = 0;
+          bank.parent = 0;
         }
 
-        infile >> bank->pnt;
-        infile >> bank->norm;
+        infile >> bank.pnt;
+        infile >> bank.norm;
       }
       break;
 
@@ -1555,12 +1555,12 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
         Q_ASSERT(pm->attach_slots.size() == (size_t)pm->n_attach);
 
         for (i = 0; i < pm->n_attach; i++) {
-          attach_bank *bank = &pm->attach_slots[i];
+          attach_bank &bank = pm->attach_slots[i];
 
-          infile >> bank->parent;
-          infile >> bank->pnt;
-          infile >> bank->norm;
-          bank->f_uvec = false;
+          infile >> bank.parent;
+          infile >> bank.pnt;
+          infile >> bank.norm;
+          bank.f_uvec = false;
         }
       }
       break;
@@ -1583,15 +1583,15 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       if (num_normals) {
         for (i = 0; i < num_normals; i++) {
           vector3 temp;
-          attach_bank *bank = &pm->attach_slots[i];
+          attach_bank &bank = pm->attach_slots[i];
 
           {
             int skip = 0;
             infile >> skip;
           }
           infile >> temp;
-          infile >> bank->uvec;
-          bank->f_uvec = f_uvec;
+          infile >> bank.uvec;
+          bank.f_uvec = f_uvec;
         }
       } else {
         pm->attach_slots.clear();
@@ -1644,12 +1644,12 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       Q_ASSERT(pm->ground_slots.size() == (size_t)pm->n_ground);
 
       for (i = 0; i < pm->n_ground; i++) {
-        weapon_bank *bank = &pm->ground_slots[i];
+        weapon_bank &bank = pm->ground_slots[i];
 
-        infile >> bank->parent;
+        infile >> bank.parent;
 
-        infile >> bank->pnt;
-        infile >> bank->norm;
+        infile >> bank.pnt;
+        infile >> bank.norm;
       }
       break;
 
@@ -1834,15 +1834,15 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
   for (i = 0; i < pm->n_models; i++) {
     vm_MakeIdentity(base_matrix);
 
-    bsp_info *sm = &pm->submodel[i];
+    bsp_info &sm = pm->submodel[i];
 
-    for (int newt = 0; newt < sm->num_key_angles; newt++) {
-      cur_angle = sm->keyframe_angles[newt];
-      BuildModelAngleMatrix(temp_matrix, cur_angle, sm->keyframe_axis[newt]);
+    for (int newt = 0; newt < sm.num_key_angles; newt++) {
+      cur_angle = sm.keyframe_angles[newt];
+      BuildModelAngleMatrix(temp_matrix, cur_angle, sm.keyframe_axis[newt]);
       vm_MakeIdentity(dest_matrix);
       dest_matrix = temp_matrix * base_matrix;
       base_matrix = dest_matrix;
-      sm->keyframe_matrix[newt] = base_matrix;
+      sm.keyframe_matrix[newt] = base_matrix;
     }
 
     // Build children
@@ -1895,12 +1895,12 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
     int num_ticks = (pm->submodel[i].pos_track_max - pm->submodel[i].pos_track_min);
     for (t = 0; timed && t < num_ticks; t++) {
       int done = 0;
-      int current_tick = sm->pos_track_min + t;
+      int current_tick = sm.pos_track_min + t;
 
-      if (sm->num_key_pos > 1) {
-        for (int k = sm->num_key_pos - 1; k >= 0 && !done; k--) {
-          if (current_tick >= sm->pos_start_time[k]) {
-            sm->tick_pos_remap[t] = k;
+      if (sm.num_key_pos > 1) {
+        for (int k = sm.num_key_pos - 1; k >= 0 && !done; k--) {
+          if (current_tick >= sm.pos_start_time[k]) {
+            sm.tick_pos_remap[t] = k;
             done = 1;
           }
         }
@@ -1915,12 +1915,12 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
     // Now build the tick/keyframe remap list
     num_ticks = (pm->submodel[i].rot_track_max - pm->submodel[i].rot_track_min);
     for (t = 0; timed && t < num_ticks; t++) {
-      if (sm->num_key_angles > 1) {
+      if (sm.num_key_angles > 1) {
         int done = 0;
-        int current_tick = sm->rot_track_min + t;
-        for (int k = sm->num_key_angles - 1; k >= 0 && !done; k--) {
-          if (current_tick >= sm->rot_start_time[k]) {
-            sm->tick_ang_remap[t] = k;
+        int current_tick = sm.rot_track_min + t;
+        for (int k = sm.num_key_angles - 1; k >= 0 && !done; k--) {
+          if (current_tick >= sm.rot_start_time[k]) {
+            sm.tick_ang_remap[t] = k;
             done = 1;
           }
         }
@@ -2159,7 +2159,7 @@ void DonePolyModelPosInstance() {
 
 void SetNormalizedTimeObjTimed(const object& obj, float *normalized_time) {
   int i, j;
-  poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
+  poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
   const object_info& obj_info = Object_info[obj.id];
 
   if (obj.type == object_type_e::player || obj.type == object_type_e::weapon)
@@ -2168,24 +2168,24 @@ void SetNormalizedTimeObjTimed(const object& obj, float *normalized_time) {
   // Setup all the subobjects for the keyframe
   float frame = obj.rtype.pobj_info().anim_frame;
 
-  for (i = 0; i < pm->n_models; i++) {
-    bsp_info *sm = &pm->submodel[i];
-    int x = sm->flags.wb_index;
+  for (i = 0; i < pm.n_models; i++) {
+    bsp_info &sm = pm.submodel[i];
+    int x = sm.flags.wb_index;
 
-    if (!(sm->flags.turret) &&
-        !(sm->flags.wb) &&
+    if (!(sm.flags.turret) &&
+        !(sm.flags.wb) &&
         !obj_info.static_wb[x].flags.anim_local &&
         obj_info.static_wb[x].flags.anim_full)
     {
-      if (frame <= sm->rot_track_min)
+      if (frame <= sm.rot_track_min)
         normalized_time[i] = 0.0f;
-      else if (frame >= sm->rot_track_max)
+      else if (frame >= sm.rot_track_max)
         normalized_time[i] = 1.0f;
       else {
-        float total_time = sm->rot_track_max - sm->rot_track_min;
-        normalized_time[i] = (frame - sm->rot_track_min) / total_time;
+        float total_time = sm.rot_track_max - sm.rot_track_min;
+        normalized_time[i] = (frame - sm.rot_track_min) / total_time;
       }
-    } else if ((sm->flags.wb) && !(sm->flags.turret)) {
+    } else if ((sm.flags.wb) && !(sm.flags.turret)) {
       static float w_frame;
       Q_ASSERT(x >= 0 && x < MAX_WBS_PER_OBJ);
 
@@ -2194,33 +2194,33 @@ void SetNormalizedTimeObjTimed(const object& obj, float *normalized_time) {
       else
         w_frame = 0;
 
-      if (w_frame <= sm->rot_track_min)
+      if (w_frame <= sm.rot_track_min)
         normalized_time[i] = 0.0f;
-      else if (w_frame >= sm->rot_track_max)
+      else if (w_frame >= sm.rot_track_max)
         normalized_time[i] = 1.0f;
       else {
-        float total_time = sm->rot_track_max - sm->rot_track_min;
-        normalized_time[i] = (w_frame - sm->rot_track_min) / total_time;
+        float total_time = sm.rot_track_max - sm.rot_track_min;
+        normalized_time[i] = (w_frame - sm.rot_track_min) / total_time;
       }
     }
   }
 
   // Now, override angles of weapon bank turrets
   if (obj.dynamic_wb) {
-    for (i = 0; i < pm->num_wbs; i++) {
-      for (j = 0; j < pm->poly_wb[i].num_turrets; j++) {
+    for (i = 0; i < pm.num_wbs; i++) {
+      for (j = 0; j < pm.poly_wb[i].num_turrets; j++) {
         int sobj_index;
 
-        sobj_index = pm->poly_wb[i].turret_index[j];
+        sobj_index = pm.poly_wb[i].turret_index[j];
         normalized_time[sobj_index] = obj.dynamic_wb[i].norm_turret_angle[j];
       }
     }
   } else {
-    for (i = 0; i < pm->num_wbs; i++) {
-      for (j = 0; j < pm->poly_wb[i].num_turrets; j++) {
+    for (i = 0; i < pm.num_wbs; i++) {
+      for (j = 0; j < pm.poly_wb[i].num_turrets; j++) {
         int sobj_index;
 
-        sobj_index = pm->poly_wb[i].turret_index[j];
+        sobj_index = pm.poly_wb[i].turret_index[j];
         normalized_time[sobj_index] = 0;
       }
     }
@@ -2266,15 +2266,15 @@ void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, const poly_
   Q_ASSERT(!(pm.flags.not_resident));
 
   for (i = 0; i < pm.n_models; i++) {
-    const bsp_info *sm = &pm.submodel[i];
+    const bsp_info &sm = pm.submodel[i];
 
-    if (frame <= sm->rot_track_min)
+    if (frame <= sm.rot_track_min)
       normalized_time[i] = 0.0f;
-    else if (frame >= sm->rot_track_max)
+    else if (frame >= sm.rot_track_max)
       normalized_time[i] = 1.0f;
     else {
-      float total_time = sm->rot_track_max - sm->rot_track_min;
-      normalized_time[i] = (frame - sm->rot_track_min) / total_time;
+      float total_time = sm.rot_track_max - sm.rot_track_min;
+      normalized_time[i] = (frame - sm.rot_track_min) / total_time;
     }
   }
 
@@ -2439,7 +2439,7 @@ void SetModelInterpPos(poly_model &po, const float *normalized_pos) {
 
   if (normalized_pos && po.num_key_pos > 0) {
     for (i = 0; i < po.n_models; i++) {
-      bsp_info *sm = &po.submodel[i];
+      bsp_info &sm = po.submodel[i];
 
       // get time per keyframe state
       float state_time = 1.0f / (po.num_key_pos - 1);
@@ -2461,7 +2461,7 @@ void SetModelInterpPos(poly_model &po, const float *normalized_pos) {
 
       // If we're already at the high point of the interpolation then just
       // stuff some values
-      if (cur_state == sm->num_key_pos - 1) {
+      if (cur_state == sm.num_key_pos - 1) {
         po.submodel[i].mod_pos = po.submodel[i].keyframe_pos[po.num_key_pos - 1];
         continue;
       }
@@ -2494,83 +2494,83 @@ void SetModelAnglesAndPosTimed(poly_model &po, float *normalized_time, uint32_t 
     // get time per keyframe state
 
     for (i = 0; i < po.n_models; i++) {
-      bsp_info *sm = &po.submodel[i];
+      bsp_info &sm = po.submodel[i];
       int int_tick, current_frame, total_ticks;
       float normal_state_time, current_tick;
 
       if (!(subobj_flags & (1 << i)))
         continue;
 
-      if (sm->num_key_pos <= 1) {
-        sm->mod_pos = vector3{};
+      if (sm.num_key_pos <= 1) {
+        sm.mod_pos = vector3{};
         goto do_angles;
       }
 
       if (normalized_time[i] == 1.0f) {
-        sm->mod_pos = sm->keyframe_pos[sm->num_key_pos - 1];
+        sm.mod_pos = sm.keyframe_pos[sm.num_key_pos - 1];
         goto do_angles;
       }
 
       // Find out which keyframe we're at
-      total_ticks = sm->pos_track_max - sm->pos_track_min;
-      current_tick = (normalized_time[i] * total_ticks) + sm->pos_track_min;
+      total_ticks = sm.pos_track_max - sm.pos_track_min;
+      current_tick = (normalized_time[i] * total_ticks) + sm.pos_track_min;
       int_tick = current_tick;
-      current_frame = sm->tick_pos_remap[int_tick - sm->pos_track_min];
+      current_frame = sm.tick_pos_remap[int_tick - sm.pos_track_min];
 
-      Q_ASSERT(current_frame >= 0 && current_frame <= sm->num_key_pos - 1);
+      Q_ASSERT(current_frame >= 0 && current_frame <= sm.num_key_pos - 1);
 
-      if (current_frame == sm->num_key_pos - 1) {
-        sm->mod_pos = sm->keyframe_pos[sm->num_key_pos - 1];
+      if (current_frame == sm.num_key_pos - 1) {
+        sm.mod_pos = sm.keyframe_pos[sm.num_key_pos - 1];
         goto do_angles;
       } else {
-        int ticks_between_frames = sm->pos_start_time[current_frame + 1] - sm->pos_start_time[current_frame];
-        float this_tick = current_tick - sm->pos_start_time[current_frame];
+        int ticks_between_frames = sm.pos_start_time[current_frame + 1] - sm.pos_start_time[current_frame];
+        float this_tick = current_tick - sm.pos_start_time[current_frame];
         normal_state_time = (float)this_tick / (float)ticks_between_frames;
 
         vector3 subpos;
-        vm_SubVectors(subpos, sm->keyframe_pos[current_frame + 1], sm->keyframe_pos[current_frame]);
-        sm->mod_pos = sm->keyframe_pos[current_frame] + (subpos * normal_state_time);
+        vm_SubVectors(subpos, sm.keyframe_pos[current_frame + 1], sm.keyframe_pos[current_frame]);
+        sm.mod_pos = sm.keyframe_pos[current_frame] + (subpos * normal_state_time);
       }
 
     // Now do angle stuff here
     do_angles:
       // Don't rotate turrets or auto-rotators
-      if (!(sm->flags.turret || sm->flags.rotate)) {
-        if (sm->num_key_angles <= 1) {
-          sm->angs.p() = 0;
-          sm->angs.h() = 0;
-          sm->angs.b() = 0;
+      if (!(sm.flags.turret || sm.flags.rotate)) {
+        if (sm.num_key_angles <= 1) {
+          sm.angs.p() = 0;
+          sm.angs.h() = 0;
+          sm.angs.b() = 0;
           continue;
         }
 
         if (normalized_time[i] == 1.0) {
-          vm_ExtractAnglesFromMatrix(po.submodel[i].angs, po.submodel[i].keyframe_matrix[sm->num_key_angles - 1]);
+          vm_ExtractAnglesFromMatrix(po.submodel[i].angs, po.submodel[i].keyframe_matrix[sm.num_key_angles - 1]);
           continue;
         }
 
         // Find out which keyframe we're at
-        total_ticks = sm->rot_track_max - sm->rot_track_min;
-        current_tick = (normalized_time[i] * total_ticks) + sm->rot_track_min;
+        total_ticks = sm.rot_track_max - sm.rot_track_min;
+        current_tick = (normalized_time[i] * total_ticks) + sm.rot_track_min;
         int_tick = current_tick;
-        current_frame = sm->tick_ang_remap[int_tick - sm->rot_track_min];
+        current_frame = sm.tick_ang_remap[int_tick - sm.rot_track_min];
 
-        Q_ASSERT(current_frame >= 0 && current_frame <= sm->num_key_angles - 1);
+        Q_ASSERT(current_frame >= 0 && current_frame <= sm.num_key_angles - 1);
 
-        if (current_frame == sm->num_key_angles - 1) {
-          vm_ExtractAnglesFromMatrix(po.submodel[i].angs, po.submodel[i].keyframe_matrix[sm->num_key_angles - 1]);
+        if (current_frame == sm.num_key_angles - 1) {
+          vm_ExtractAnglesFromMatrix(po.submodel[i].angs, po.submodel[i].keyframe_matrix[sm.num_key_angles - 1]);
           continue;
         } else {
-          int ticks_between_frames = sm->rot_start_time[current_frame + 1] - sm->rot_start_time[current_frame];
-          float this_tick = current_tick - sm->rot_start_time[current_frame];
+          int ticks_between_frames = sm.rot_start_time[current_frame + 1] - sm.rot_start_time[current_frame];
+          float this_tick = current_tick - sm.rot_start_time[current_frame];
           normal_state_time = (float)this_tick / (float)ticks_between_frames;
 
           // Now do a parametric adjustment on the angles
 
           matrix dest_matrix =
-              sm->keyframe_matrix[current_frame] +
-              ((sm->keyframe_matrix[current_frame + 1] - sm->keyframe_matrix[current_frame]) * normal_state_time);
+              sm.keyframe_matrix[current_frame] +
+              ((sm.keyframe_matrix[current_frame + 1] - sm.keyframe_matrix[current_frame]) * normal_state_time);
 
-          vm_ExtractAnglesFromMatrix(sm->angs, dest_matrix);
+          vm_ExtractAnglesFromMatrix(sm.angs, dest_matrix);
         }
 
       } else {
@@ -2959,14 +2959,14 @@ int InitModels() {
 // keyframe
 // Handle is an index into the Poly_models array
 float GetNormalizedKeyframe(int handle, float num) {
-  poly_model *pm = &Poly_models[handle];
+  poly_model &pm = Poly_models[handle];
 
-  Q_ASSERT(!(pm->flags.not_resident));
+  Q_ASSERT(!(pm.flags.not_resident));
 
-  Q_ASSERT(pm->used);
-  Q_ASSERT(num >= 0 && num <= pm->max_keys);
+  Q_ASSERT(pm.used);
+  Q_ASSERT(num >= 0 && num <= pm.max_keys);
 
-  return ((num / (float)pm->max_keys));
+  return ((num / (float)pm.max_keys));
 }
 
 // Goes through all poly models and gets all missing textures

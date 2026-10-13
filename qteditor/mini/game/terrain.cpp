@@ -381,15 +381,15 @@ void BuildMinMaxTerrain() {
 
 // Changes the terrain mesh for deformation effect
 void DeformTerrainPoint(int x, int z, int change_height) {
-  terrain_segment *tseg = &Terrain_seg[z * TERRAIN_WIDTH + x];
+  terrain_segment &tseg = Terrain_seg[z * TERRAIN_WIDTH + x];
   int i;
 
-  change_height += tseg->ypos;
+  change_height += tseg.ypos;
 
   change_height = std::clamp(change_height, 0, 255);
 
-  tseg->ypos = change_height;
-  tseg->y = tseg->ypos * TERRAIN_HEIGHT_INCREMENT;
+  tseg.ypos = change_height;
+  tseg.y = tseg.ypos * TERRAIN_HEIGHT_INCREMENT;
 
   int sx = std::max(0, x - 1);
   int sz = std::max(0, z - 1);
@@ -404,10 +404,10 @@ void DeformTerrainPoint(int x, int z, int change_height) {
 
         int offset = ((t / div) * row_width) + (k / div);
 
-        if (tseg->ypos > Terrain_max_height_int[i][offset])
-          Terrain_max_height_int[i][offset] = tseg->ypos;
-        if (tseg->ypos < Terrain_min_height_int[i][offset])
-          Terrain_min_height_int[i][offset] = tseg->ypos;
+        if (tseg.ypos > Terrain_max_height_int[i][offset])
+          Terrain_max_height_int[i][offset] = tseg.ypos;
+        if (tseg.ypos < Terrain_min_height_int[i][offset])
+          Terrain_min_height_int[i][offset] = tseg.ypos;
       }
     }
   }
@@ -417,37 +417,37 @@ void DeformTerrainPoint(int x, int z, int change_height) {
   for (i = sz; i <= z; i++) {
     for (int t = sx; t <= x; t++) {
       vector3 a, b, c;
-      terrain_segment *tseg0 = &Terrain_seg[i * TERRAIN_WIDTH + t];
-      terrain_segment *tseg1 = &Terrain_seg[(i + 1) * TERRAIN_WIDTH + t];
-      terrain_segment *tseg2 = &Terrain_seg[((i + 1) * TERRAIN_WIDTH) + t + 1];
-      terrain_segment *tseg3 = &Terrain_seg[(i * TERRAIN_WIDTH) + t + 1];
+      terrain_segment &tseg0 = Terrain_seg[i * TERRAIN_WIDTH + t];
+      terrain_segment &tseg1 = Terrain_seg[(i + 1) * TERRAIN_WIDTH + t];
+      terrain_segment &tseg2 = Terrain_seg[((i + 1) * TERRAIN_WIDTH) + t + 1];
+      terrain_segment &tseg3 = Terrain_seg[(i * TERRAIN_WIDTH) + t + 1];
 
       // Do upper left triangle
       a.x() = t * TERRAIN_SIZE;
-      a.y() = tseg0->y;
+      a.y() = tseg0.y;
       a.z() = i * TERRAIN_SIZE;
 
       b.x() = t * TERRAIN_SIZE;
-      b.y() = tseg1->y;
+      b.y() = tseg1.y;
       b.z() = (i + 1) * TERRAIN_SIZE;
 
       c.x() = (t + 1) * TERRAIN_SIZE;
-      c.y() = tseg2->y;
+      c.y() = tseg2.y;
       c.z() = (i + 1) * TERRAIN_SIZE;
 
       vm_GetNormal(TerrainNormals[MAX_TERRAIN_LOD - 1][i * TERRAIN_WIDTH + t].normal1, a, b, c);
 
       // Now do lower right triangle
       a.x() = t * TERRAIN_SIZE;
-      a.y() = tseg0->y;
+      a.y() = tseg0.y;
       a.z() = i * TERRAIN_SIZE;
 
       b.x() = (t + 1) * TERRAIN_SIZE;
-      b.y() = tseg2->y;
+      b.y() = tseg2.y;
       b.z() = (i + 1) * TERRAIN_SIZE;
 
       c.x() = (t + 1) * TERRAIN_SIZE;
-      c.y() = tseg3->y;
+      c.y() = tseg3.y;
       c.z() = (i)*TERRAIN_SIZE;
 
       vm_GetNormal(TerrainNormals[MAX_TERRAIN_LOD - 1][i * TERRAIN_WIDTH + t].normal2, a, b, c);
@@ -487,7 +487,7 @@ void DeformTerrain(const vector3 &pos, int depth, float size) {
   for (i = startz; i <= endz; i++, cur_vec.z() += TERRAIN_SIZE) {
     cur_vec.x() = startx * TERRAIN_SIZE;
     for (t = startx; t <= endx; t++, cur_vec.x() += TERRAIN_SIZE) {
-      terrain_segment *tseg = &Terrain_seg[i * TERRAIN_WIDTH + t];
+      terrain_segment &tseg = Terrain_seg[i * TERRAIN_WIDTH + t];
 
       if (vector3::dot(up_vec, TerrainNormals[MAX_TERRAIN_LOD - 1][i * TERRAIN_WIDTH + t].normal1) < 0.5f)
         continue; // not flat enough
@@ -501,9 +501,9 @@ void DeformTerrain(const vector3 &pos, int depth, float size) {
 
       DeformTerrainPoint(t, i, height_change);
 
-      tseg->r = std::max(0, tseg->r + light_change);
-      tseg->g = std::max(0, tseg->g + light_change);
-      tseg->b = std::max(0, tseg->b + light_change);
+      tseg.r = std::max(0, tseg.r + light_change);
+      tseg.g = std::max(0, tseg.g + light_change);
+      tseg.b = std::max(0, tseg.b + light_change);
 
       int which = ((i / 128) * 2) + (t / 128);
       changed[which] = 1;
@@ -551,37 +551,37 @@ void BuildTerrainNormals() {
 
     for (z = 0, i = 0; i < TERRAIN_DEPTH - simplemul; i += simplemul, z++) {
       for (x = 0, t = 0; t < TERRAIN_WIDTH - simplemul; t += simplemul, x++) {
-        terrain_segment *tseg0 = &Terrain_seg[i * TERRAIN_WIDTH + t];
-        terrain_segment *tseg1 = &Terrain_seg[(i + simplemul) * TERRAIN_WIDTH + t];
-        terrain_segment *tseg2 = &Terrain_seg[((i + simplemul) * TERRAIN_WIDTH) + t + simplemul];
-        terrain_segment *tseg3 = &Terrain_seg[(i * TERRAIN_WIDTH) + t + simplemul];
+        terrain_segment &tseg0 = Terrain_seg[i * TERRAIN_WIDTH + t];
+        terrain_segment &tseg1 = Terrain_seg[(i + simplemul) * TERRAIN_WIDTH + t];
+        terrain_segment &tseg2 = Terrain_seg[((i + simplemul) * TERRAIN_WIDTH) + t + simplemul];
+        terrain_segment &tseg3 = Terrain_seg[(i * TERRAIN_WIDTH) + t + simplemul];
 
         // Do upper left triangle
         a.x() = t * TERRAIN_SIZE;
-        a.y() = tseg0->y;
+        a.y() = tseg0.y;
         a.z() = i * TERRAIN_SIZE;
 
         b.x() = t * TERRAIN_SIZE;
-        b.y() = tseg1->y;
+        b.y() = tseg1.y;
         b.z() = (i + simplemul) * TERRAIN_SIZE;
 
         c.x() = (t + simplemul) * TERRAIN_SIZE;
-        c.y() = tseg2->y;
+        c.y() = tseg2.y;
         c.z() = (i + simplemul) * TERRAIN_SIZE;
 
         vm_GetNormal(TerrainNormals[l][z * (TERRAIN_WIDTH / simplemul) + x].normal1, a, b, c);
 
         // Now do lower right triangle
         a.x() = t * TERRAIN_SIZE;
-        a.y() = tseg0->y;
+        a.y() = tseg0.y;
         a.z() = i * TERRAIN_SIZE;
 
         b.x() = (t + simplemul) * TERRAIN_SIZE;
-        b.y() = tseg2->y;
+        b.y() = tseg2.y;
         b.z() = (i + simplemul) * TERRAIN_SIZE;
 
         c.x() = (t + simplemul) * TERRAIN_SIZE;
-        c.y() = tseg3->y;
+        c.y() = tseg3.y;
         c.z() = (i)*TERRAIN_SIZE;
 
         vm_GetNormal(TerrainNormals[l][z * (TERRAIN_WIDTH / simplemul) + x].normal2, a, b, c);
@@ -708,14 +708,14 @@ void SetupSky(float radius, terrain_sky_flags_t flags, uint8_t randit) {
     const angle pitch = (65536 - 16384) + (i * increment);
 
     for (t = 0; t < MAX_HORIZON_PIECES; t++) {
-      vector3 *vec = &Terrain_sky.horizon_vectors[t][i];
+      vector3 &vec = Terrain_sky.horizon_vectors[t][i];
 
       matrix tempm;
       vm_AnglesToMatrix(tempm, pitch, t * jump, 0);
-      vm_ScaleVector(*vec, tempm.fvec, SKY_RADIUS / 2);
+      vm_ScaleVector(vec, tempm.fvec, SKY_RADIUS / 2);
 
-      vec->y() -= MAX_TERRAIN_HEIGHT;
-      vec->y() += (rad_diff / 4);
+      vec.y() -= MAX_TERRAIN_HEIGHT;
+      vec.y() += (rad_diff / 4);
     }
   }
 
@@ -1029,9 +1029,9 @@ void UpdateSingleTerrainLightmap(int which) {
   for (i = sz; i < sz + 128; i++) {
     for (t = sx; t < sx + 128; t++) {
       int tseg = i * TERRAIN_WIDTH + t;
-      terrain_segment *tp = &Terrain_seg[tseg];
+      terrain_segment &tp = Terrain_seg[tseg];
 
-      uint16_t color = GR_RGB16(tp->r, tp->g, tp->b);
+      uint16_t color = GR_RGB16(tp.r, tp.g, tp.b);
       std::vector<std::vector<uint16_t>> &data = lm_data(TerrainLightmaps[which]);
 
       int x = t % 128;
@@ -1100,12 +1100,12 @@ void UpdateTerrainLightmaps() {
   for (i = 0; i < TERRAIN_DEPTH; i++) {
     for (t = 0; t < TERRAIN_WIDTH; t++) {
       int tseg = i * TERRAIN_WIDTH + t;
-      terrain_segment *tp = &Terrain_seg[tseg];
+      terrain_segment &tp = Terrain_seg[tseg];
       int x = t % 128;
       int y = 127 - (i % 128);
       int which = ((i / 128) * 2) + (t / 128);
 
-      uint16_t color = GR_RGB16(tp->r, tp->g, tp->b);
+      uint16_t color = GR_RGB16(tp.r, tp.g, tp.b);
       std::vector<std::vector<uint16_t>> &data = lm_data(TerrainLightmaps[which]);
 
       data[y][x] = OPAQUE_FLAG | color;

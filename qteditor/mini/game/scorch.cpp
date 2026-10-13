@@ -178,11 +178,11 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
   if (ROOMNUM_OUTSIDE(roomnum))
     return;
 
-  room_t *rp = &Rooms[roomnum];
-  face *fp = &rp->faces[facenum];
+  room_t &rp = Rooms[roomnum];
+  face &fp = rp.faces[facenum];
 
   // Check if face is a light, and if so don't add the scorch
-  if (GameTextures[fp->tmap].flags.light || GameTextures[fp->tmap].flags.procedural)
+  if (GameTextures[fp.tmap].flags.light || GameTextures[fp.tmap].flags.procedural)
     return;
 
   int roomface = ROOMFACE(roomnum, facenum);
@@ -210,13 +210,13 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
   }
 
   // Check for scorch going off the edge of the face, and bail if does
-  vector3 *v0, *v1 = &rp->verts[fp->face_verts[fp->num_verts - 1]];
-  for (int v = 0; v < fp->num_verts; v++) {
+  vector3 *v0, *v1 = &rp.verts[fp.face_verts[fp.num_verts - 1]];
+  for (int v = 0; v < fp.num_verts; v++) {
     vector3 edgevec, checkvec, checkp;
     float dot, dist;
 
     v0 = v1;
-    v1 = &rp->verts[fp->face_verts[v]];
+    v1 = &rp.verts[fp.face_verts[v]];
     vm_GetNormalizedDir(edgevec, *v1, *v0);
 
     checkvec = *pos - *v0;
@@ -263,7 +263,7 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
 
   // Calculate the vectors
   matrix m;
-  vm_VectorAngleToMatrix(m, fp->normal, d3::rand() * 2);
+  vm_VectorAngleToMatrix(m, fp.normal, d3::rand() * 2);
 
   // Store the vectors as signed 8-bit values
   sp->rx = -m.rvec.x() * 127;
@@ -275,7 +275,7 @@ void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float
   sp->uz = m.uvec.z() * 127;
 
   // Flag this face as being scorched
-  fp->flags.scorched = true;
+  fp.flags.scorched = true;
 }
 
 // The UVs for the blob bitmap

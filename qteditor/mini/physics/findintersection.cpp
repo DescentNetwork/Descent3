@@ -2296,7 +2296,7 @@ int fvi_QuickDistObjectList(const vector3 &pos, int init_room_index, float rad, 
 }
 
 bool fvi_QuickRoomCheck(const vector3 &pos, int roomnum, bool try_again) {
-  room_t *cur_room = &Rooms[roomnum];
+  room_t &cur_room = Rooms[roomnum];
   vector3 hit_point; // where we hit
   vector3 colp;
   float cur_dist; // distance to hit point
@@ -2312,7 +2312,7 @@ internal_try_again:
   vector3 max_xyz;
   vector3 new_pos;
 
-  if (!(cur_room->used) || cur_room->flags.external)
+  if (!(cur_room.used) || cur_room.flags.external)
     return false;
 
   new_pos = min_xyz = max_xyz = pos;
@@ -2333,31 +2333,31 @@ internal_try_again:
   // sort shit
   uint8_t msector = 0;
 
-  if (min_xyz.x() <= cur_room->bbf_min_xyz.x()) {
+  if (min_xyz.x() <= cur_room.bbf_min_xyz.x()) {
     msector |= 0x01;
   }
-  if (min_xyz.y() <= cur_room->bbf_min_xyz.y()) {
+  if (min_xyz.y() <= cur_room.bbf_min_xyz.y()) {
     msector |= 0x02;
   }
-  if (min_xyz.z() <= cur_room->bbf_min_xyz.z()) {
+  if (min_xyz.z() <= cur_room.bbf_min_xyz.z()) {
     msector |= 0x04;
   }
-  if (max_xyz.x() >= cur_room->bbf_max_xyz.x()) {
+  if (max_xyz.x() >= cur_room.bbf_max_xyz.x()) {
     msector |= 0x08;
   }
-  if (max_xyz.y() >= cur_room->bbf_max_xyz.y()) {
+  if (max_xyz.y() >= cur_room.bbf_max_xyz.y()) {
     msector |= 0x10;
   }
-  if (max_xyz.z() >= cur_room->bbf_max_xyz.z()) {
+  if (max_xyz.z() >= cur_room.bbf_max_xyz.z()) {
     msector |= 0x20;
   }
 
-  const int16_t num_bbf_regions = cur_room->num_bbf_regions;
-  const auto &num_bbf = cur_room->num_bbf;
-  const auto &bbf_list_sector = cur_room->bbf_list_sector;
-  const auto &bbf_list_min_xyz = cur_room->bbf_list_min_xyz;
-  const auto &bbf_list_max_xyz = cur_room->bbf_list_max_xyz;
-  const auto &bbf_list = cur_room->bbf_list;
+  const int16_t num_bbf_regions = cur_room.num_bbf_regions;
+  const auto &num_bbf = cur_room.num_bbf;
+  const auto &bbf_list_sector = cur_room.bbf_list_sector;
+  const auto &bbf_list_min_xyz = cur_room.bbf_list_min_xyz;
+  const auto &bbf_list_max_xyz = cur_room.bbf_list_max_xyz;
+  const auto &bbf_list = cur_room.bbf_list;
 
   // Do the actual wall collsion stuff here!
   for (int test1 = 0; test1 < num_bbf_regions; test1++) {
@@ -2381,29 +2381,29 @@ internal_try_again:
         int16_t count;
         bool f_backface;
 
-        if (cur_room->faces[i].flags.not_shell)
+        if (cur_room.faces[i].flags.not_shell)
           continue;
 
-        if (!room_manual_AABB(cur_room->faces[i], min_xyz, max_xyz))
+        if (!room_manual_AABB(cur_room.faces[i], min_xyz, max_xyz))
           continue;
 
         f_backface = false;
 
-        for (count = 0; count < cur_room->faces[i].num_verts; count++)
-          vertex_ptr_list[count] = &cur_room->verts[cur_room->faces[i].face_verts[count]];
+        for (count = 0; count < cur_room.faces[i].num_verts; count++)
+          vertex_ptr_list[count] = &cur_room.verts[cur_room.faces[i].face_verts[count]];
 
-        face_normal = cur_room->faces[i].normal;
+        face_normal = cur_room.faces[i].normal;
 
         face_hit_type = check_line_to_face(hit_point, colp, cur_dist, wall_norm, pos, new_pos, face_normal,
-                                           vertex_ptr_list, cur_room->faces[i].num_verts, 0.0f);
+                                           vertex_ptr_list, cur_room.faces[i].num_verts, 0.0f);
         if (!face_hit_type) {
           face_normal *= -1.0f;
-          for (count = 0; count < cur_room->faces[i].num_verts; count++)
-            vertex_ptr_list[cur_room->faces[i].num_verts - count - 1] =
-                &cur_room->verts[cur_room->faces[i].face_verts[count]];
+          for (count = 0; count < cur_room.faces[i].num_verts; count++)
+            vertex_ptr_list[cur_room.faces[i].num_verts - count - 1] =
+                &cur_room.verts[cur_room.faces[i].face_verts[count]];
 
           face_hit_type = check_line_to_face(hit_point, colp, cur_dist, wall_norm, pos, new_pos, face_normal,
-                                             vertex_ptr_list, cur_room->faces[i].num_verts, 0.0f);
+                                             vertex_ptr_list, cur_room.faces[i].num_verts, 0.0f);
           f_backface = true;
         }
 
@@ -2527,12 +2527,12 @@ void make_trigger_face_list(int last_sim_faces) {
     vector3 colp;
     vector3 hit_point;
     int16_t count;
-    room_t *cur_room = &Rooms[Fvi_recorded_faces[x].room_index];
+    room_t &cur_room = Rooms[Fvi_recorded_faces[x].room_index];
     int i = Fvi_recorded_faces[x].face_index;
     float cur_dist;
 
-    for (count = 0; count < cur_room->faces[i].num_verts; count++)
-      vertex_ptr_list[count] = &cur_room->verts[cur_room->faces[i].face_verts[count]];
+    for (count = 0; count < cur_room.faces[i].num_verts; count++)
+      vertex_ptr_list[count] = &cur_room.verts[cur_room.faces[i].face_verts[count]];
     /*
         mprintf(0, "FVI:In trigger %f to %f crossed %f\n",
                 fvi_query_ptr->p0->z,
@@ -2540,11 +2540,11 @@ void make_trigger_face_list(int last_sim_faces) {
                 vertex_ptr_list[0]->z);
     */
 
-    face_normal = cur_room->faces[i].normal;
+    face_normal = cur_room.faces[i].normal;
 
     face_hit_type =
         check_line_to_face(hit_point, colp, cur_dist, wall_norm, *fvi_query_ptr->p0, fvi_hit_data_ptr->hit_pnt,
-                           face_normal, vertex_ptr_list, cur_room->faces[i].num_verts, 0.0f);
+                           face_normal, vertex_ptr_list, cur_room.faces[i].num_verts, 0.0f);
 
     if (face_hit_type) {
       //			mprintf(0, "FVI:hit trigger\n");
@@ -2720,8 +2720,8 @@ fvi_hit_type fvi_FindIntersection(fvi_query &fq, fvi_info &hit_data, bool no_sub
     if ((!no_subdivision) && is_long_xz_ray(fq)) {
 
       // Save old pointers
-      fvi_info *save_fvi_hit_data_ptr = &hit_data;
-      fvi_query *save_fvi_query_ptr = &fq;
+      fvi_info &save_fvi_hit_data_ptr = hit_data;
+      fvi_query &save_fvi_query_ptr = fq;
 
       // Copy old data to new data
       fvi_info fvi_new_hit_data = hit_data;
@@ -2769,12 +2769,12 @@ fvi_hit_type fvi_FindIntersection(fvi_query &fq, fvi_info &hit_data, bool no_sub
 
       // Check up to the real stopping point
       if (s_hit_type == fvi_hit_type::none) {
-        new_p1 = *save_fvi_query_ptr->p1;
+        new_p1 = *save_fvi_query_ptr.p1;
         s_hit_type = fvi_FindIntersection(fvi_new_query, fvi_new_hit_data, true);
       }
 
-      hit_data = *save_fvi_hit_data_ptr;
-      fq = *save_fvi_query_ptr;
+      hit_data = save_fvi_hit_data_ptr;
+      fq = save_fvi_query_ptr;
 
       hit_data = fvi_new_hit_data;
 #ifdef USE_RTP
@@ -2970,7 +2970,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
         vector3 plane_pnt;
         vector3 verts[12];
         vector3 norms[6];
-        poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
+        poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
         int i, j, k;
         vector3 rel[32];
         float dot[32];
@@ -2985,37 +2985,37 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
         bool f_int_poly = false;
 
 
-        verts[0] = (obj->orient.rvec * pm->mins.x) +
-                                  (obj->orient.uvec * pm->maxs.y) +
-                                  (obj->orient.fvec * pm->mins.z);
+        verts[0] = (obj->orient.rvec * pm.mins.x) +
+                                  (obj->orient.uvec * pm.maxs.y) +
+                                  (obj->orient.fvec * pm.mins.z);
 
-        verts[1] = (obj->orient.rvec * pm->mins.x) +
-                                  (obj->orient.uvec * pm->mins.y) +
-                                  (obj->orient.fvec * pm->mins.z);
+        verts[1] = (obj->orient.rvec * pm.mins.x) +
+                                  (obj->orient.uvec * pm.mins.y) +
+                                  (obj->orient.fvec * pm.mins.z);
 
-        verts[2] = (obj->orient.rvec * pm->maxs.x) +
-                                  (obj->orient.uvec * pm->mins.y) +
-                                  (obj->orient.fvec * pm->mins.z);
+        verts[2] = (obj->orient.rvec * pm.maxs.x) +
+                                  (obj->orient.uvec * pm.mins.y) +
+                                  (obj->orient.fvec * pm.mins.z);
 
-        verts[3] = (obj->orient.rvec * pm->maxs.x) +
-                                  (obj->orient.uvec * pm->maxs.y) +
-                                  (obj->orient.fvec * pm->mins.z);
+        verts[3] = (obj->orient.rvec * pm.maxs.x) +
+                                  (obj->orient.uvec * pm.maxs.y) +
+                                  (obj->orient.fvec * pm.mins.z);
 
-        verts[4] = (obj->orient.rvec * pm->maxs.x) +
-                                  (obj->orient.uvec * pm->maxs.y) +
-                                  (obj->orient.fvec * pm->maxs.z);
+        verts[4] = (obj->orient.rvec * pm.maxs.x) +
+                                  (obj->orient.uvec * pm.maxs.y) +
+                                  (obj->orient.fvec * pm.maxs.z);
 
-        verts[5] = (obj->orient.rvec * pm->maxs.x) +
-                                  (obj->orient.uvec * pm->mins.y) +
-                                  (obj->orient.fvec * pm->maxs.z);
+        verts[5] = (obj->orient.rvec * pm.maxs.x) +
+                                  (obj->orient.uvec * pm.mins.y) +
+                                  (obj->orient.fvec * pm.maxs.z);
 
-        verts[6] = (obj->orient.rvec * pm->mins.x) +
-                                  (obj->orient.uvec * pm->mins.y) +
-                                  (obj->orient.fvec * pm->maxs.z);
+        verts[6] = (obj->orient.rvec * pm.mins.x) +
+                                  (obj->orient.uvec * pm.mins.y) +
+                                  (obj->orient.fvec * pm.maxs.z);
 
-        verts[7] = (obj->orient.rvec * pm->mins.x) +
-                                  (obj->orient.uvec * pm->maxs.y) +
-                                  (obj->orient.fvec * pm->maxs.z);
+        verts[7] = (obj->orient.rvec * pm.mins.x) +
+                                  (obj->orient.uvec * pm.maxs.y) +
+                                  (obj->orient.fvec * pm.maxs.z);
 
 
 //	mprintf(0, "START\n");
@@ -3202,7 +3202,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 &collision_point, vector3 &co
                            const vector3 &rotvel, const vector3 &velocity) {
   vector3 plane_pnt;
   vector3 verts[12];
-  poly_model *pm = &Poly_models[obj.rtype.pobj_info().model_num];
+  poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
   int i;
   vector3 rel[32];
   float dot[32];
@@ -3211,14 +3211,14 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 &collision_point, vector3 &co
   int num_int_box = 0;
   vector3 int_points_box[12];
 
-  verts[0] = (orient.rvec * pm->mins.x()) + (orient.uvec * pm->maxs.y()) + (orient.fvec * pm->mins.z());
-  verts[1] = (orient.rvec * pm->mins.x()) + (orient.uvec * pm->mins.y()) + (orient.fvec * pm->mins.z());
-  verts[2] = (orient.rvec * pm->maxs.x()) + (orient.uvec * pm->mins.y()) + (orient.fvec * pm->mins.z());
-  verts[3] = (orient.rvec * pm->maxs.x()) + (orient.uvec * pm->maxs.y()) + (orient.fvec * pm->mins.z());
-  verts[4] = (orient.rvec * pm->maxs.x()) + (orient.uvec * pm->maxs.y()) + (orient.fvec * pm->maxs.z());
-  verts[5] = (orient.rvec * pm->maxs.x()) + (orient.uvec * pm->mins.y()) + (orient.fvec * pm->maxs.z());
-  verts[6] = (orient.rvec * pm->mins.x()) + (orient.uvec * pm->mins.y()) + (orient.fvec * pm->maxs.z());
-  verts[7] = (orient.rvec * pm->mins.x()) + (orient.uvec * pm->maxs.y()) + (orient.fvec * pm->maxs.z());
+  verts[0] = (orient.rvec * pm.mins.x()) + (orient.uvec * pm.maxs.y()) + (orient.fvec * pm.mins.z());
+  verts[1] = (orient.rvec * pm.mins.x()) + (orient.uvec * pm.mins.y()) + (orient.fvec * pm.mins.z());
+  verts[2] = (orient.rvec * pm.maxs.x()) + (orient.uvec * pm.mins.y()) + (orient.fvec * pm.mins.z());
+  verts[3] = (orient.rvec * pm.maxs.x()) + (orient.uvec * pm.maxs.y()) + (orient.fvec * pm.mins.z());
+  verts[4] = (orient.rvec * pm.maxs.x()) + (orient.uvec * pm.maxs.y()) + (orient.fvec * pm.maxs.z());
+  verts[5] = (orient.rvec * pm.maxs.x()) + (orient.uvec * pm.mins.y()) + (orient.fvec * pm.maxs.z());
+  verts[6] = (orient.rvec * pm.mins.x()) + (orient.uvec * pm.mins.y()) + (orient.fvec * pm.maxs.z());
+  verts[7] = (orient.rvec * pm.mins.x()) + (orient.uvec * pm.maxs.y()) + (orient.fvec * pm.maxs.z());
 
   for (i = 0; i < 8; i++) {
     verts[i] += new_pos;
@@ -3303,25 +3303,25 @@ bool object_intersects_wall(const object &objp) {
 void check_hit_obj(int objnum) {
   vector3 hit_point;
   float cur_dist;
-  const object *obj = &Objects[objnum];
+  const object &obj = Objects[objnum];
   collision_result collision_type;
   int m_obj_index = fvi_query_ptr->thisobjnum;
   object *m_obj = &Objects[m_obj_index];
 
-  if (!(fvi_query_ptr->flags.check_objs) && (obj->type != object_type_e::room))
+  if (!(fvi_query_ptr->flags.check_objs) && (obj.type != object_type_e::room))
     return;
-  if ((fvi_query_ptr->flags.ignore_external_rooms) && (obj->type == object_type_e::room))
-    return;
-
-  if (obj->flags.no_object_collisions)
+  if ((fvi_query_ptr->flags.ignore_external_rooms) && (obj.type == object_type_e::room))
     return;
 
-  if (!(obj->flags.dead)) {
+  if (obj.flags.no_object_collisions)
+    return;
+
+  if (!(obj.flags.dead)) {
     if (m_obj_index != objnum) {
-      if (!((m_obj_index > -1) && ((collision_type = CollisionResult[obj_type_index(m_obj->type)][obj_type_index(obj->type)]) == collision_result::nothing) &&
-            (CollisionResult[obj_type_index(obj->type)][obj_type_index(m_obj->type)] == collision_result::nothing))) {
+      if (!((m_obj_index > -1) && ((collision_type = CollisionResult[obj_type_index(m_obj->type)][obj_type_index(obj.type)]) == collision_result::nothing) &&
+            (CollisionResult[obj_type_index(obj.type)][obj_type_index(m_obj->type)] == collision_result::nothing))) {
         // Account for ray casting
-        if (m_obj_index <= -1 && (CollisionRayResult[obj_type_index(obj->type)] == collision_result::nothing))
+        if (m_obj_index <= -1 && (CollisionRayResult[obj_type_index(obj.type)] == collision_result::nothing))
           return;
 
         if (object_movement_AABB(Objects[objnum])) {
@@ -3341,7 +3341,7 @@ void check_hit_obj(int objnum) {
             if (!ObjectsAreRelated(objnum, m_obj_index)) {
 
               if (m_obj_index < 0) {
-                switch (obj->type) {
+                switch (obj.type) {
                 case object_type_e::room:
                   if (fvi_query_ptr->flags.external_rooms_as_sphere)
                     collision_type = collision_result::check_sphere_sphere;
@@ -3367,72 +3367,72 @@ void check_hit_obj(int objnum) {
                 }
               } else {
                 if (((m_obj->type == object_type_e::clutter) && (m_obj->mtype.phys_info.flags.gravity) &&
-                     (m_obj->movement_type == movement_type_e::physics) && (obj->type == object_type_e::player)) ||
-                    ((obj->type == object_type_e::clutter) && (obj->mtype.phys_info.flags.gravity) &&
-                     (obj->movement_type == movement_type_e::physics) && (m_obj->type == object_type_e::player))) {
+                     (m_obj->movement_type == movement_type_e::physics) && (obj.type == object_type_e::player)) ||
+                    ((obj.type == object_type_e::clutter) && (obj.mtype.phys_info.flags.gravity) &&
+                     (obj.movement_type == movement_type_e::physics) && (m_obj->type == object_type_e::player))) {
                   collision_type = collision_result::check_sphere_sphere;
                 }
 
                 // Ignore robot collisions if it is specified
-                if ((m_obj->mtype.phys_info.flags.no_same_collisions) && (obj->type == m_obj->type) &&
-                    (obj->id == m_obj->id))
+                if ((m_obj->mtype.phys_info.flags.no_same_collisions) && (obj.type == m_obj->type) &&
+                    (obj.id == m_obj->id))
                   return;
 
                 // Ignore robot collisions if it is specified
                 if ((m_obj->mtype.phys_info.flags.no_robot_collisions) &&
-                    (obj->type == object_type_e::clutter || obj->type == object_type_e::robot || (obj->type == object_type_e::building && obj->ai_info)))
+                    (obj.type == object_type_e::clutter || obj.type == object_type_e::robot || (obj.type == object_type_e::building && obj.ai_info)))
                   return;
 
-                if ((obj->mtype.phys_info.flags.no_robot_collisions) &&
-                    (obj->type == object_type_e::clutter || m_obj->type == object_type_e::robot ||
+                if ((obj.mtype.phys_info.flags.no_robot_collisions) &&
+                    (obj.type == object_type_e::clutter || m_obj->type == object_type_e::robot ||
                      (m_obj->type == object_type_e::building && m_obj->ai_info)))
                   return;
 
                 if ((m_obj->mtype.phys_info.flags.no_door_collisions)) {
-                  if (obj->movement_type != movement_type_e::physics && obj->movement_type != movement_type_e::walking) {
+                  if (obj.movement_type != movement_type_e::physics && obj.movement_type != movement_type_e::walking) {
                     return;
                   }
                 }
               }
 
               if (fvi_query_ptr->flags.ignore_non_lightmap_objects)
-                if (obj->lighting_render_type != lighting_render_type_e::lightmaps && obj->type != object_type_e::room)
+                if (obj.lighting_render_type != lighting_render_type_e::lightmaps && obj.type != object_type_e::room)
                   return;
 
               if (fvi_query_ptr->flags.ignore_powerups)
-                if (obj->type == object_type_e::powerup)
+                if (obj.type == object_type_e::powerup)
                   return;
 
               if (fvi_query_ptr->flags.ignore_weapons)
-                if (obj->type == object_type_e::weapon || obj->type == object_type_e::fireball || obj->type == object_type_e::shard ||
-                    obj->type == object_type_e::shockwave)
+                if (obj.type == object_type_e::weapon || obj.type == object_type_e::fireball || obj.type == object_type_e::shard ||
+                    obj.type == object_type_e::shockwave)
                   return;
 
               if (fvi_query_ptr->flags.ignore_moving_objects)
-                if (obj->movement_type == movement_type_e::physics || obj->movement_type == movement_type_e::walking)
+                if (obj.movement_type == movement_type_e::physics || obj.movement_type == movement_type_e::walking)
                   return;
 
-              if (obj->type != object_type_e::room) {
+              if (obj.type != object_type_e::room) {
                 if (fvi_query_ptr->flags.only_player_obj)
-                  if (obj->type != object_type_e::player)
+                  if (obj.type != object_type_e::player)
                     return;
 
                 if (fvi_query_ptr->flags.only_door_obj)
-                  if (obj->type != object_type_e::door)
+                  if (obj.type != object_type_e::door)
                     return;
               }
 
-              if (obj->type == object_type_e::player && (fvi_query_ptr->flags.players_as_sphere))
+              if (obj.type == object_type_e::player && (fvi_query_ptr->flags.players_as_sphere))
                 collision_type = collision_result::check_sphere_sphere;
-              if (obj->type == object_type_e::robot && (fvi_query_ptr->flags.robots_as_sphere))
+              if (obj.type == object_type_e::robot && (fvi_query_ptr->flags.robots_as_sphere))
                 collision_type = collision_result::check_sphere_sphere;
 
               switch (collision_type) {
               case collision_result::check_bbox_room:
               case collision_result::check_sphere_room: {
-                Q_ASSERT(obj->type == object_type_e::room);
+                Q_ASSERT(obj.type == object_type_e::room);
 
-                fvi_room(obj->id, -1, objnum);
+                fvi_room(obj.id, -1, objnum);
               } break;
 
               case collision_result::check_sphere_poly:
@@ -3441,7 +3441,7 @@ void check_hit_obj(int objnum) {
                 //									vector3 pos;
                 //									float size;
 
-                if (!(obj->flags.polygon_object))
+                if (!(obj.flags.polygon_object))
                   goto sphere_sphere;
 
                 //									pos = obj->pos +
@@ -3475,14 +3475,14 @@ void check_hit_obj(int objnum) {
                 fvi_query fq;
                 float saved_dist = fvi_collision_dist;
 
-                vector3 relative_pos = obj->pos + (*fvi_query_ptr->p0 - *fvi_query_ptr->p1);
+                vector3 relative_pos = obj.pos + (*fvi_query_ptr->p0 - *fvi_query_ptr->p1);
 
                 fvi_hit_data_ptr = &hit_info;
                 fvi_query_ptr = &fq;
 
                 fq.p0 = &Objects[objnum].pos;
                 fq.p1 = &relative_pos;
-                fq.rad = obj->size;
+                fq.rad = obj.size;
                 fq.thisobjnum = objnum;
 
                 hit_info.num_hits = 0;
@@ -3499,7 +3499,7 @@ void check_hit_obj(int objnum) {
                   int counter;
 
                   if (saved_dist != fvi_collision_dist) {
-                    fvi_hit_data_ptr->hit_pnt = m_obj->pos + (obj->pos - hit_info.hit_pnt);
+                    fvi_hit_data_ptr->hit_pnt = m_obj->pos + (obj.pos - hit_info.hit_pnt);
                     compute_movement_AABB();
                   }
 
@@ -3539,14 +3539,14 @@ void check_hit_obj(int objnum) {
                     scalar hit_obj_size;
                     vector3 hit_obj_pos;
 
-                    hit_obj_pos = obj->pos + obj->anim_sphere_offset;
+                    hit_obj_pos = obj.pos + obj.anim_sphere_offset;
                     pos_hit = hit_point - hit_obj_pos;
 
-                    if ((obj->flags.polygon_object) && obj->type != object_type_e::room && obj->type != object_type_e::weapon &&
-                        obj->type != object_type_e::powerup && obj->type != object_type_e::debris && obj->type != object_type_e::player) {
-                      hit_obj_size = Poly_models[obj->rtype.pobj_info().model_num].anim_size;
+                    if ((obj.flags.polygon_object) && obj.type != object_type_e::room && obj.type != object_type_e::weapon &&
+                        obj.type != object_type_e::powerup && obj.type != object_type_e::debris && obj.type != object_type_e::player) {
+                      hit_obj_size = Poly_models[obj.rtype.pobj_info().model_num].anim_size;
                     } else {
-                      hit_obj_size = obj->size;
+                      hit_obj_size = obj.size;
                     }
 
                     Q_ASSERT(hit_obj_size + fvi_anim_sphere_rad > 0.0f);
@@ -4366,11 +4366,11 @@ void fvi_rooms_objs(void) {
 
   for (i = 0; i < fvi_num_rooms_visited; i++) {
     int roomnum = fvi_rooms_visited[i];
-    room_t *cur_room = &Rooms[roomnum];
+    room_t &cur_room = Rooms[roomnum];
     Q_ASSERT((fvi_visit_list[roomnum >> 3] & (0x01 << (roomnum % 8))) != 0);
-    Q_ASSERT(roomnum >= 0 && roomnum < Rooms.size() && cur_room->used);
+    Q_ASSERT(roomnum >= 0 && roomnum < Rooms.size() && cur_room.used);
 
-    for (objnum = cur_room->objects; objnum != -1; objnum = Objects[objnum].next) {
+    for (objnum = cur_room.objects; objnum != -1; objnum = Objects[objnum].next) {
       Q_ASSERT(objnum != -1);
       check_hit_obj(objnum);
     }
@@ -4414,16 +4414,16 @@ inline alpha_blend_type GetFaceAlpha(const face &fp, int bm_handle) {
 }
 
 bool PhysPastPortal(int roomnum, const portal &pp) {
-  const room_t *rp = &Rooms[roomnum];
+  const room_t &rp = Rooms[roomnum];
   // If we don't render the portal's faces, then we see through it
   if (!pp.flags.render_faces)
     return true;
 
   // Check if the face's texture has transparency
-  const face *fp = &rp->faces[pp.portal_face];
-  int bm_handle = GetTextureBitmap(fp->tmap, 0);
+  const face &fp = rp.faces[pp.portal_face];
+  int bm_handle = GetTextureBitmap(fp.tmap, 0);
 
-  if (GetFaceAlpha(*fp, bm_handle) != alpha_blend_type::always)
+  if (GetFaceAlpha(fp, bm_handle) != alpha_blend_type::always)
     return true; // Face has alpha or transparency, so we can see through it
 
   return false; // Not transparent, so no render past
@@ -4432,7 +4432,7 @@ bool PhysPastPortal(int roomnum, const portal &pp) {
 fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
   vector3 hit_point; // where we hit
   float cur_dist;   // distance to hit point
-  room_t *cur_room = &Rooms[room_index];
+  room_t &cur_room = Rooms[room_index];
   int16_t i;
   int next_portals[MAX_NEXT_PORTALS];
   int num_next_portals = 0;
@@ -4443,22 +4443,22 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
   object *this_obj;
   uint8_t msector = 0;
 
-  if (fvi_min_xyz.x() <= cur_room->bbf_min_xyz.x()) {
+  if (fvi_min_xyz.x() <= cur_room.bbf_min_xyz.x()) {
     msector |= 0x01;
   }
-  if (fvi_min_xyz.y() <= cur_room->bbf_min_xyz.y()) {
+  if (fvi_min_xyz.y() <= cur_room.bbf_min_xyz.y()) {
     msector |= 0x02;
   }
-  if (fvi_min_xyz.z() <= cur_room->bbf_min_xyz.z()) {
+  if (fvi_min_xyz.z() <= cur_room.bbf_min_xyz.z()) {
     msector |= 0x04;
   }
-  if (fvi_max_xyz.x() >= cur_room->bbf_max_xyz.x()) {
+  if (fvi_max_xyz.x() >= cur_room.bbf_max_xyz.x()) {
     msector |= 0x08;
   }
-  if (fvi_max_xyz.y() >= cur_room->bbf_max_xyz.y()) {
+  if (fvi_max_xyz.y() >= cur_room.bbf_max_xyz.y()) {
     msector |= 0x10;
   }
-  if (fvi_max_xyz.z() >= cur_room->bbf_max_xyz.z()) {
+  if (fvi_max_xyz.z() >= cur_room.bbf_max_xyz.z()) {
     msector |= 0x20;
   }
 
@@ -4471,7 +4471,7 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
   Q_ASSERT(Rooms[room_index].used);
   Q_ASSERT((fvi_visit_list[room_index >> 3] & (0x01 << (room_index % 8))) == 0);
 
-  if (!cur_room->flags.external) {
+  if (!cur_room.flags.external) {
     fvi_visit_list[room_index >> 3] |= 0x01 << (room_index % 8);
     fvi_rooms_visited[fvi_num_rooms_visited] = room_index;
     fvi_num_rooms_visited++;
@@ -4487,16 +4487,16 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
     int face_info;
     int j; //, k;
 
-    for (j = 0; j < cur_room->num_portals; j++) {
-      i = cur_room->portals[j].portal_face;
+    for (j = 0; j < cur_room.num_portals; j++) {
+      i = cur_room.portals[j].portal_face;
 
-      portal_num = cur_room->faces[i].portal_num;
+      portal_num = cur_room.faces[i].portal_num;
 
       //			if ((msector & cur_room->faces[i].sector) != cur_room->faces[i].sector) continue;
-      if (!room_movement_AABB(cur_room->faces[i]))
+      if (!room_movement_AABB(cur_room.faces[i]))
         continue;
 
-      { auto ff = GetFacePhysicsFlags(room_index, cur_room->faces[i]); face_info = (ff.solid?1:0)|(ff.transparent?2:0)|(ff.portal?4:0)|(ff.record?8:0); }
+      { auto ff = GetFacePhysicsFlags(room_index, cur_room.faces[i]); face_info = (ff.solid?1:0)|(ff.transparent?2:0)|(ff.portal?4:0)|(ff.record?8:0); }
       if (face_info == FPT_IGNORE)
         continue;
 
@@ -4505,10 +4505,10 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
 
       f_backface = false;
 
-      for (count = 0; count < cur_room->faces[i].num_verts; count++)
-        vertex_ptr_list[count] = &cur_room->verts[cur_room->faces[i].face_verts[count]];
+      for (count = 0; count < cur_room.faces[i].num_verts; count++)
+        vertex_ptr_list[count] = &cur_room.verts[cur_room.faces[i].face_verts[count]];
 
-      face_normal = cur_room->faces[i].normal;
+      face_normal = cur_room.faces[i].normal;
 
       // Add the portal if we are within a AABB of it.
       if ((face_info & 4)) {
@@ -4539,12 +4539,12 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
       }
     }
   } else {
-    const int16_t num_bbf_regions = cur_room->num_bbf_regions;
-    const auto &num_bbf = cur_room->num_bbf;
-    const auto &bbf_list_sector = cur_room->bbf_list_sector;
-    const auto &bbf_list_min_xyz = cur_room->bbf_list_min_xyz;
-    const auto &bbf_list_max_xyz = cur_room->bbf_list_max_xyz;
-    const auto &bbf_list = cur_room->bbf_list;
+    const int16_t num_bbf_regions = cur_room.num_bbf_regions;
+    const auto &num_bbf = cur_room.num_bbf;
+    const auto &bbf_list_sector = cur_room.bbf_list_sector;
+    const auto &bbf_list_min_xyz = cur_room.bbf_list_min_xyz;
+    const auto &bbf_list_max_xyz = cur_room.bbf_list_max_xyz;
+    const auto &bbf_list = cur_room.bbf_list;
 
     // Do the actual wall collsion stuff here!
     for (int test1 = 0; test1 < num_bbf_regions; test1++) {
@@ -4575,16 +4575,16 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
           face *cur_face;
 
           i = region_faces[sort_list_cur];
-          cur_face = &cur_room->faces[region_faces[sort_list_cur]];
+          cur_face = &cur_room.faces[region_faces[sort_list_cur]];
 
-          const vector3 *cf_max = &cur_face->max_xyz;
-          const vector3 *cf_min = &cur_face->min_xyz;
+          const vector3 &cf_max = cur_face->max_xyz;
+          const vector3 &cf_min = cur_face->min_xyz;
 
-          if (cf_min->x() > fvi_wall_max_xyz.x() || cf_min->y() > fvi_wall_max_xyz.y() || cf_min->z() > fvi_wall_max_xyz.z() ||
-              cf_max->x() < fvi_wall_min_xyz.x() || cf_max->y() < fvi_wall_min_xyz.y() || cf_max->z() < fvi_wall_min_xyz.z())
+          if (cf_min.x() > fvi_wall_max_xyz.x() || cf_min.y() > fvi_wall_max_xyz.y() || cf_min.z() > fvi_wall_max_xyz.z() ||
+              cf_max.x() < fvi_wall_min_xyz.x() || cf_max.y() < fvi_wall_min_xyz.y() || cf_max.z() < fvi_wall_min_xyz.z())
             continue;
 
-          if (fvi_zero_rad && !FastVectorBBox((float *)cf_min, (float *)cf_max, (float *)fvi_query_ptr->p0,
+          if (fvi_zero_rad && !FastVectorBBox((float *)&cf_min, (float *)&cf_max, (float *)fvi_query_ptr->p0,
                                               (float *)&fvi_movement_delta))
             continue;
 
@@ -4599,7 +4599,7 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
           f_backface = false;
 
           for (count = 0; count < cur_face->num_verts; count++)
-            vertex_ptr_list[count] = &cur_room->verts[cur_face->face_verts[count]];
+            vertex_ptr_list[count] = &cur_room.verts[cur_face->face_verts[count]];
 
           face_normal = cur_face->normal;
 
@@ -4631,7 +4631,7 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
             }
 
             if ((fvi_query_ptr->flags.ignore_render_through_portals) &&
-                (PhysPastPortal(room_index, cur_room->portals[portal_num]))) {
+                (PhysPastPortal(room_index, cur_room.portals[portal_num]))) {
               bool f_add_next_portal = true;
 
               for (next_portal_index = 0; next_portal_index < num_next_portals; next_portal_index++) {
@@ -4666,12 +4666,12 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
                                                cur_face->num_verts, fvi_query_ptr->rad);
           }
 
-          if ((((fvi_query_ptr->flags.obj_backface) && cur_room->flags.external) ||
-               ((fvi_query_ptr->flags.backface) && !cur_room->flags.external)) &&
+          if ((((fvi_query_ptr->flags.obj_backface) && cur_room.flags.external) ||
+               ((fvi_query_ptr->flags.backface) && !cur_room.flags.external)) &&
               (!face_hit_type)) {
             face_normal *= -1.0f;
             for (count = 0; count < cur_face->num_verts; count++)
-              vertex_ptr_list[cur_face->num_verts - count - 1] = &cur_room->verts[cur_face->face_verts[count]];
+              vertex_ptr_list[cur_face->num_verts - count - 1] = &cur_room.verts[cur_face->face_verts[count]];
 
             face_hit_type = check_line_to_face(hit_point, colp, cur_dist, wall_norm, *fvi_query_ptr->p0,
                                                fvi_hit_data_ptr->hit_pnt, face_normal, vertex_ptr_list,
@@ -4758,8 +4758,8 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
 
   if (!(fvi_query_ptr->flags.solid_portals)) {
     // Accounts for doors that leave a
-    for (i = 0; i < cur_room->num_portals; i++) {
-      const index_t c_room = cur_room->portals[i].connected_room;
+    for (i = 0; i < cur_room.num_portals; i++) {
+      const index_t c_room = cur_room.portals[i].connected_room;
 
       if (c_room && (*c_room > 0) && Rooms[*c_room].flags.door) {
         bool f_add_next_portal = true;
@@ -4782,18 +4782,18 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
       int connect_room;
 
       portal_num = next_portals[next_portal_index];
-      connect_room = index_to_int(cur_room->portals[portal_num].connected_room);
+      connect_room = index_to_int(cur_room.portals[portal_num].connected_room);
 
       if (!Rooms[connect_room].flags.external) {
         if ((fvi_visit_list[connect_room >> 3] & (0x01 << ((connect_room) % 8))) == 0) {
           /*
           mprintf(0, "A portal %d to room %d,from room %d,with %d cportal\n",
                   portal_num,
-                  cur_room->portals[portal_num].croom,
+                  cur_room.portals[portal_num].croom,
                   room_index,
-                  cur_room->portals[portal_num].cportal);
+                  cur_room.portals[portal_num].cportal);
           */
-          fvi_room(connect_room, index_to_int(cur_room->portals[portal_num].connected_portal));
+          fvi_room(connect_room, index_to_int(cur_room.portals[portal_num].connected_portal));
         }
       } else if (f_check_terrain) {
         fvi_info hit_data_terrain = *fvi_hit_data_ptr;

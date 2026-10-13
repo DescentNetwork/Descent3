@@ -52,22 +52,22 @@ bool verifyDoorModel(int handle) {
   bool found_frontface = false, found_shell = false;
 
   for (int s = 0; s < pm->n_models; s++) {
-    bsp_info *sm = &pm->submodel[s];
+    bsp_info &sm = pm->submodel[s];
 
-    if (sm->flags.frontface) {
-      if (sm->num_faces != 1) {
-        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("Invalid door model: Frontface has %1 faces; must have 1.").arg(sm->num_faces));
+    if (sm.flags.frontface) {
+      if (sm.num_faces != 1) {
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("Invalid door model: Frontface has %1 faces; must have 1.").arg(sm.num_faces));
         return false;
       }
-      if (sm->num_children != 0) {
+      if (sm.num_children != 0) {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid door model: Frontface cannot have submodels.");
         return false;
       }
       found_frontface = true;
     }
 
-    if (sm->flags.shell) {
-      if (sm->num_children != 0) {
+    if (sm.flags.shell) {
+      if (sm.num_children != 0) {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid door model: Shell cannot have submodels.");
         return false;
       }
@@ -75,17 +75,17 @@ bool verifyDoorModel(int handle) {
       room_t check_room;
       check_room = room_t{};
 
-      if (sm->nverts > 0)
-        check_room.verts.assign(sm->verts.data(), sm->verts.data() + sm->nverts);
+      if (sm.nverts > 0)
+        check_room.verts.assign(sm.verts.data(), sm.verts.data() + sm.nverts);
       check_room.faces.resize(1);
 
-      for (int f = 0; f < sm->num_faces; f++) {
-        polyface *polyface = &sm->faces[f];
+      for (int f = 0; f < sm.num_faces; f++) {
+        polyface &polyface = sm.faces[f];
 
-        face *check_face = &check_room.faces[0];
-        check_face->num_verts = polyface->nverts;
-        if (polyface->nverts > 0)
-          check_face->face_verts.assign(polyface->vertnums.data(), polyface->vertnums.data() + polyface->nverts);
+        face &check_face = check_room.faces[0];
+        check_face.num_verts = polyface.nverts;
+        if (polyface.nverts > 0)
+          check_face.face_verts.assign(polyface.vertnums.data(), polyface.vertnums.data() + polyface.nverts);
 
         if (!ComputeFaceNormal(check_room, 0)) {
           QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("Invalid door model: Face %1 in shell has bad normal.").arg(f));

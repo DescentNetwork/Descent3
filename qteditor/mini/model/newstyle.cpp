@@ -177,7 +177,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
   std::vector<g3Point *> pointlist(100);
   int bm_handle;
   int smooth = 0;
-  polyface *fp = &sm.faces[facenum];
+  polyface &fp = sm.faces[facenum];
   int modelnum = &sm - pm.submodel.data();
   texture *texp = nullptr;
   int t;
@@ -194,8 +194,8 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
     custom = 1;
 
   // Setup texturing
-  if (fp->texnum != -1)
-    texp = &GameTextures[pm.textures[fp->texnum]];
+  if (fp.texnum != -1)
+    texp = &GameTextures[pm.textures[fp.texnum]];
 
   if (texp && custom && Polymodel_use_effect && (Polymodel_effect.type.custom_texture))
     texp = &GameTextures[Polymodel_effect.custom_texture];
@@ -211,7 +211,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
       Polymodel_light_type == polymodel_light_type::gouraud) {
     rend_SetOverlayType(overlay_type::none);
     rend_SetBumpmapReadyState(1, static_cast<int>(*texp->bumpmap));
-    if (GameTextures[fp->texnum].flags.smooth_specular)
+    if (GameTextures[fp.texnum].flags.smooth_specular)
       smooth = 1;
   }
 
@@ -233,34 +233,34 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
     vchange = norm_time;
   }
 
-  Q_ASSERT(fp->nverts < 100);
+  Q_ASSERT(fp.nverts < 100);
 
   // Setup the points for this face
-  for (t = 0; t < fp->nverts; t++) {
-    g3Point *p = &Robot_points[fp->vertnums[t]];
-    pointlist[t] = p;
+  for (t = 0; t < fp.nverts; t++) {
+    g3Point &p = Robot_points[fp.vertnums[t]];
+    pointlist[t] = &p;
 
     if (texp) {
-      p->p3_uvl.u = fp->u[t] + uchange;
-      p->p3_uvl.v = fp->v[t] + vchange;
-      p->p3_uvl.a = sm.alpha[fp->vertnums[t]];
-      p->p3_flags.uv = true;
-      p->p3_flags.rgba = true;
-      p->p3_flags.lighting = true;
+      p.p3_uvl.u = fp.u[t] + uchange;
+      p.p3_uvl.v = fp.v[t] + vchange;
+      p.p3_uvl.a = sm.alpha[fp.vertnums[t]];
+      p.p3_flags.uv = true;
+      p.p3_flags.rgba = true;
+      p.p3_flags.lighting = true;
 
       // Assign bump mapping coords
       if ((Polymodel_effect.type.bumpmapped) && texp->bumpmap.has_value() &&
           Polymodel_light_type == polymodel_light_type::gouraud) {
-        p->p3_flags.uv2 = true;
+        p.p3_flags.uv2 = true;
 
-        vector3 vert = sm.verts[fp->vertnums[t]];
+        vector3 vert = sm.verts[fp.vertnums[t]];
 
         vector3 vertnorm;
 
         if (smooth)
-          vertnorm = sm.vertnorms[fp->vertnums[t]];
+          vertnorm = sm.vertnorms[fp.vertnums[t]];
         else
-          vertnorm = fp->normal;
+          vertnorm = fp.normal;
 
         vector3 subvec = Bump_view_pos - vert;
         vm_NormalizeVectorFast(subvec);
@@ -281,19 +281,19 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
 
         scalar val = dotp * 0.5f;
 
-        p->p3_uvl.u2 = val;
-        p->p3_uvl.v2 = val;
+        p.p3_uvl.u2 = val;
+        p.p3_uvl.v2 = val;
       }
     }
 
     if (Polymodel_light_type == polymodel_light_type::lightmap) {
-      p->p3_flags.uv2 = true;
-      p->p3_uvl.u2 = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].u2[t];
-      p->p3_uvl.v2 = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].v2[t];
+      p.p3_flags.uv2 = true;
+      p.p3_uvl.u2 = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].u2[t];
+      p.p3_uvl.v2 = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].v2[t];
     }
 
-    face_cc.cc_or = face_cc.cc_or | p->p3_codes;
-    face_cc.cc_and = face_cc.cc_and & p->p3_codes;
+    face_cc.cc_or = face_cc.cc_or | p.p3_codes;
+    face_cc.cc_and = face_cc.cc_and & p.p3_codes;
   }
 
   if (face_cc.cc_or && Polymodel_use_effect &&
@@ -369,9 +369,9 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
 
     int r, g, b;
 
-    r = GR_COLOR_RED(fp->color);
-    g = GR_COLOR_GREEN(fp->color);
-    b = GR_COLOR_BLUE(fp->color);
+    r = GR_COLOR_RED(fp.color);
+    g = GR_COLOR_GREEN(fp.color);
+    b = GR_COLOR_BLUE(fp.color);
 
     if (Polymodel_light_type == polymodel_light_type::gouraud) {
       if (Polymodel_use_effect && Polymodel_effect.type.color) {
@@ -393,7 +393,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
   if (triface)
     g3_SetTriangulationTest(1);
 
-  g3_DrawPoly(fp->nverts, pointlist, bm_handle, map_type::bitmap, face_cc);
+  g3_DrawPoly(fp.nverts, pointlist, bm_handle, map_type::bitmap, face_cc);
 
   if (triface)
     g3_SetTriangulationTest(0);
@@ -405,20 +405,20 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
 
 #ifdef _DEBUG
   if (Polymodel_outline_mode)
-    DrawSubmodelFaceOutline(fp->nverts, pointlist.data());
+    DrawSubmodelFaceOutline(fp.nverts, pointlist.data());
 
     /*	if (Lightmap_debug_model==(pm-Poly_models) && Polymodel_light_type==polymodel_light_type::lightmap &&
        Lightmap_debug_subnum==modelnum && Lightmap_debug_facenum==facenum)
             {
 
                     int lmi_handle=Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle;
-                    lightmap_object_face *lfp=&Polylighting_lightmap_object->lightmap_faces[modelnum][facenum];
-                    lightmap_info *lmi_ptr=&LightmapInfo[lmi_handle];
+                    lightmap_object_face &lfp = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum];
+                    lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
                     int w=static_cast<int>(lmi_w (lmi_handle).value_or(0));
                     int h=static_cast<int>(lmi_h (lmi_handle).value_or(0));
-                    vector3 rvec=lfp->rvec*lmi_ptr->xspacing;
-                    vector3 uvec=lfp->uvec*lmi_ptr->yspacing;
-                    uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr->lm_handle);
+                    vector3 rvec=lfp.rvec*lmi_ptr.xspacing;
+                    vector3 uvec=lfp.uvec*lmi_ptr.yspacing;
+                    uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr.lm_handle);
 
                     for (int i=0;i<w*h;i++)
                     {
@@ -428,19 +428,19 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
                             int y=i/w;
                             int x=i%w;
 
-                            evec[0]=lmi_ptr->upper_left-(y*uvec)+(x*rvec);
+                            evec[0]=lmi_ptr.upper_left-(y*uvec)+(x*rvec);
                             g3_RotatePoint(&epoints[0],&evec[0]);
                             pointlist[0] = &epoints[0];
 
-                            evec[1]=lmi_ptr->upper_left-(y*uvec)+((x+1)*rvec);
+                            evec[1]=lmi_ptr.upper_left-(y*uvec)+((x+1)*rvec);
                             g3_RotatePoint(&epoints[1],&evec[1]);
                             pointlist[1] = &epoints[1];
 
-                            evec[2]=lmi_ptr->upper_left-((y+1)*uvec)+((x+1)*rvec);
+                            evec[2]=lmi_ptr.upper_left-((y+1)*uvec)+((x+1)*rvec);
                             g3_RotatePoint(&epoints[2],&evec[2]);
                             pointlist[2] = &epoints[2];
 
-                            evec[3]=lmi_ptr->upper_left-((y+1)*uvec)+(x*rvec);
+                            evec[3]=lmi_ptr.upper_left-((y+1)*uvec)+(x*rvec);
                             g3_RotatePoint(&epoints[3],&evec[3]);
                             pointlist[3] = &epoints[3];
 
@@ -482,7 +482,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
 inline void RenderSubmodelLightmapFace(poly_model &pm, bsp_info &sm, int facenum) {
   std::vector<g3Point *> pointlist(100);
 
-  polyface *fp = &sm.faces[facenum];
+  polyface &fp = sm.faces[facenum];
   int modelnum = &sm - pm.submodel.data();
   int t;
 
@@ -490,26 +490,26 @@ inline void RenderSubmodelLightmapFace(poly_model &pm, bsp_info &sm, int facenum
   float xscalar = (float)GameLightmaps[lm_handle].width / (float)GameLightmaps[lm_handle].square_res;
   float yscalar = (float)GameLightmaps[lm_handle].height / (float)GameLightmaps[lm_handle].square_res;
 
-  Q_ASSERT(fp->nverts < 100);
+  Q_ASSERT(fp.nverts < 100);
 
   // Setup the points for this face
-  for (t = 0; t < fp->nverts; t++) {
-    g3Point *p = &Robot_points[fp->vertnums[t]];
-    pointlist[t] = p;
+  for (t = 0; t < fp.nverts; t++) {
+    g3Point &p = Robot_points[fp.vertnums[t]];
+    pointlist[t] = &p;
 
-    p->p3_uvl.u = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].u2[t] * xscalar;
-    p->p3_uvl.v = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].v2[t] * yscalar;
-    p->p3_uvl.l = 1.0f;
+    p.p3_uvl.u = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].u2[t] * xscalar;
+    p.p3_uvl.v = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].v2[t] * yscalar;
+    p.p3_uvl.l = 1.0f;
 
-    p->p3_flags.uv2 = true;
-    p->p3_flags.rgba = true;
-    p->p3_flags.lighting = true;
+    p.p3_flags.uv2 = true;
+    p.p3_flags.rgba = true;
+    p.p3_flags.lighting = true;
   }
 
   if (triangulated_faces[facenum])
     g3_SetTriangulationTest(1);
 
-  g3_DrawPoly(fp->nverts, pointlist, lm_handle, map_type::lightmap);
+  g3_DrawPoly(fp.nverts, pointlist, lm_handle, map_type::lightmap);
 
   if (triangulated_faces[facenum])
     g3_SetTriangulationTest(0);
@@ -517,32 +517,32 @@ inline void RenderSubmodelLightmapFace(poly_model &pm, bsp_info &sm, int facenum
 
 inline void RenderSubmodelFaceFogged(poly_model &pm, bsp_info &sm, int facenum) {
   std::vector<g3Point *> pointlist(100);
-  polyface *fp = &sm.faces[facenum];
+  polyface &fp = sm.faces[facenum];
   int t;
 
-  for (t = 0; t < fp->nverts; t++) {
-    g3Point *p = &Robot_points[fp->vertnums[t]];
-    pointlist[t] = p;
+  for (t = 0; t < fp.nverts; t++) {
+    g3Point &p = Robot_points[fp.vertnums[t]];
+    pointlist[t] = &p;
 
     scalar mag;
 
     if (Polymodel_effect.fog_plane_check == 1) {
-      mag = vm_DotProduct(Fog_plane, sm.verts[fp->vertnums[t]]) + Fog_distance;
+      mag = vm_DotProduct(Fog_plane, sm.verts[fp.vertnums[t]]) + Fog_distance;
     } else {
-      vector3 *vec = &sm.verts[fp->vertnums[t]];
+      vector3 &vec = sm.verts[fp.vertnums[t]];
 
       // Now we must generate the split point. This is simply
       // an equation in the form Origin + t*Direction
 
-      scalar dist = vector3::dot(*vec, Polymodel_fog_plane) + Fog_distance;
+      scalar dist = vector3::dot(vec, Polymodel_fog_plane) + Fog_distance;
 
-      vector3 subvec = *vec - Fog_view_pos;
+      vector3 subvec = vec - Fog_view_pos;
 
       scalar t = Fog_eye_distance / (Fog_eye_distance - dist);
       vector3 portal_point = Fog_view_pos + (t * subvec);
 
       scalar eye_distance = -(vm_DotProduct(Fog_plane, portal_point));
-      mag = vm_DotProduct(Fog_plane, *vec) + eye_distance;
+      mag = vm_DotProduct(Fog_plane, vec) + eye_distance;
     }
 
     scalar scalar = mag / Polymodel_effect.fog_depth;
@@ -551,15 +551,15 @@ inline void RenderSubmodelFaceFogged(poly_model &pm, bsp_info &sm, int facenum) 
       scalar = 1;
     if (scalar < 0)
       scalar = 0;
-    p->p3_a = scalar;
+    p.p3_a = scalar;
 
-    p->p3_flags.rgba = true;
+    p.p3_flags.rgba = true;
   }
 
   if (triangulated_faces[facenum])
     g3_SetTriangulationTest(1);
 
-  g3_DrawPoly(fp->nverts, pointlist, 0);
+  g3_DrawPoly(fp.nverts, pointlist, 0);
 
   if (triangulated_faces[facenum])
     g3_SetTriangulationTest(0);
@@ -567,28 +567,28 @@ inline void RenderSubmodelFaceFogged(poly_model &pm, bsp_info &sm, int facenum) 
 
 inline void RenderSubmodelFaceSpecular(poly_model &pm, bsp_info &sm, int facenum) {
   std::vector<g3Point *> pointlist(100);
-  polyface *fp = &sm.faces[facenum];
+  polyface &fp = sm.faces[facenum];
   int t;
   bool smooth = 0;
 
-  if ((Polymodel_effect.type.specular_faces) && GameTextures[fp->texnum].flags.smooth_specular)
+  if ((Polymodel_effect.type.specular_faces) && GameTextures[fp.texnum].flags.smooth_specular)
     smooth = 1;
 
-  for (t = 0; t < fp->nverts; t++) {
-    g3Point *p = &Robot_points[fp->vertnums[t]];
-    vector3 vert = sm.verts[fp->vertnums[t]];
+  for (t = 0; t < fp.nverts; t++) {
+    g3Point &p = Robot_points[fp.vertnums[t]];
+    vector3 vert = sm.verts[fp.vertnums[t]];
 
     vector3 vertnorm;
 
     if (smooth)
-      vertnorm = sm.vertnorms[fp->vertnums[t]];
+      vertnorm = sm.vertnorms[fp.vertnums[t]];
     else
-      vertnorm = fp->normal;
+      vertnorm = fp.normal;
 
-    pointlist[t] = p;
+    pointlist[t] = &p;
 
-    p->p3_flags.rgba = true;
-    p->p3_a = 0.0f;
+    p.p3_flags.rgba = true;
+    p.p3_a = 0.0f;
 
     vector3 subvec = Specular_view_pos - vert;
     vm_NormalizeVectorFast(subvec);
@@ -611,14 +611,14 @@ inline void RenderSubmodelFaceSpecular(poly_model &pm, bsp_info &sm, int facenum
       int index = dotp * (MAX_SPECULAR_INCREMENTS - 1);
       scalar val = Specular_tables[2][index];
 
-      p->p3_a = val * Polymodel_effect.spec_scalar;
+      p.p3_a = val * Polymodel_effect.spec_scalar;
     }
   }
 
   if (triangulated_faces[facenum])
     g3_SetTriangulationTest(1);
 
-  g3_DrawPoly(fp->nverts, pointlist, 0);
+  g3_DrawPoly(fp.nverts, pointlist, 0);
 
   if (triangulated_faces[facenum])
     g3_SetTriangulationTest(0);
@@ -659,15 +659,15 @@ void RenderSubmodelFacesSorted(poly_model &pm, bsp_info &sm) {
 
   // Build list of visible (non-backfacing) faces, & compute average face depths
   for (i = rcount = 0; i < sm.num_faces; i++) {
-    polyface *fp = &sm.faces[i];
+    polyface &fp = sm.faces[i];
 
     // check for visible face
-    if (g3_CheckNormalFacing(sm.verts[fp->vertnums[0]], fp->normal)) {
+    if (g3_CheckNormalFacing(sm.verts[fp.vertnums[0]], fp.normal)) {
       face_depth[i] = 0;
-      for (t = 0; t < fp->nverts; t++)
-        face_depth[i] += Robot_points[fp->vertnums[t]].p3_z;
+      for (t = 0; t < fp.nverts; t++)
+        face_depth[i] += Robot_points[fp.vertnums[t]].p3_z;
 
-      face_depth[i] /= fp->nverts;
+      face_depth[i] /= fp.nverts;
 
       // initialize order list
       model_render_order[rcount] = i;
@@ -711,16 +711,16 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
 
   for (i = 0; i < sm.num_faces; i++) {
     vector3 tempv;
-    polyface *fp = &sm.faces[i];
+    polyface &fp = sm.faces[i];
     texture *texp;
 
     // Check to see if this face even faces us!
-    tempv = view_pos - sm.verts[fp->vertnums[0]];
-    if ((vector3::dot(tempv, fp->normal)) < 0)
+    tempv = view_pos - sm.verts[fp.vertnums[0]];
+    if ((vector3::dot(tempv, fp.normal)) < 0)
       continue;
 
-    if (fp->texnum != -1) {
-      texp = &GameTextures[pm.textures[fp->texnum]];
+    if (fp.texnum != -1) {
+      texp = &GameTextures[pm.textures[fp.texnum]];
 
       if (texp->flags.alpha || texp->flags.saturate) {
         alpha_faces[num_alpha_faces++] = i;
@@ -731,7 +731,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
     if (StateLimited) {
       state_limited_element state_element;
       state_element.facenum = i;
-      state_element.sort_key = pm.textures[fp->texnum];
+      state_element.sort_key = pm.textures[fp.texnum];
       state_elements.push_back(state_element);
     } else
       RenderSubmodelFace(pm, sm, i);
@@ -769,17 +769,17 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
                              uint8_t(Polymodel_effect.spec.b * 255.0f)));
 
     for (i = 0; i < sm.num_faces; i++) {
-      polyface *fp = &sm.faces[i];
+      polyface &fp = sm.faces[i];
 
-      if (!g3_CheckNormalFacing(sm.verts[fp->vertnums[0]], fp->normal))
+      if (!g3_CheckNormalFacing(sm.verts[fp.vertnums[0]], fp.normal))
         continue;
 
       /*	vector3 subvec=sm.verts[fp->vertnums[0]]-Polymodel_specular_pos;
-              if ((fp->normal * subvec)> 0)
+              if ((fp.normal * subvec)> 0)
                       continue;*/
 
       if ((Polymodel_effect.type.specular_model) ||
-          (fp->texnum != -1 && GameTextures[pm.textures[fp->texnum]].flags.smooth_specular))
+          (fp.texnum != -1 && GameTextures[pm.textures[fp.texnum]].flags.smooth_specular))
         RenderSubmodelFaceSpecular(pm, sm, i);
     }
 
@@ -814,9 +814,9 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
                              uint8_t(Polymodel_effect.fog.b * 255.0f)));
 
     for (i = 0; i < sm.num_faces; i++) {
-      polyface *fp = &sm.faces[i];
+      polyface &fp = sm.faces[i];
 
-      if (!g3_CheckNormalFacing(sm.verts[fp->vertnums[0]], fp->normal))
+      if (!g3_CheckNormalFacing(sm.verts[fp.vertnums[0]], fp.normal))
         continue;
 
       RenderSubmodelFaceFogged(pm, sm, i);

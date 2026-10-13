@@ -598,37 +598,37 @@ void FreeRoom(int roomnum) {
   int i;
   const int old_hri = static_cast<int>(Rooms.size()) - 1;
 
-  room_t *rp = &Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
 
-  Q_ASSERT(rp->used != 0); // make sure room is un use
+  Q_ASSERT(rp.used != 0); // make sure room is un use
 
   // Free the faces
-  for (i = 0; i < rp->num_faces; i++)
-    FreeRoomFace(rp->faces[i]);
+  for (i = 0; i < rp.num_faces; i++)
+    FreeRoomFace(rp.faces[i]);
 
   // Free up mem alloced for this room
-  rp->faces.clear();
-  rp->portals.clear();
-  rp->verts.clear();
-  rp->verts4.clear();
+  rp.faces.clear();
+  rp.portals.clear();
+  rp.verts.clear();
+  rp.verts4.clear();
 
-  if (rp->num_bbf_regions) {
-    rp->bbf_list.clear();
-    rp->num_bbf.clear();
-    rp->bbf_list_min_xyz.clear();
-    rp->bbf_list_max_xyz.clear();
-    rp->bbf_list_sector.clear();
+  if (rp.num_bbf_regions) {
+    rp.bbf_list.clear();
+    rp.num_bbf.clear();
+    rp.bbf_list_min_xyz.clear();
+    rp.bbf_list_max_xyz.clear();
+    rp.bbf_list_sector.clear();
 
-    rp->num_bbf_regions = 0;
+    rp.num_bbf_regions = 0;
   }
 
   BNode_FreeRoom(roomnum);
 
-  rp->volume_lights.clear();
+  rp.volume_lights.clear();
 
-  rp->mirror_faces_list.clear();
+  rp.mirror_faces_list.clear();
 
-  rp->used = 0;
+  rp.used = 0;
 
   // Update the high-water mark: Rooms.size() is the watermark + 1, so drop any
   // unused tail slots just like the Win32 room-free path trimmed the watermark.
@@ -693,15 +693,15 @@ void ComputeRoomCenter(vector3 &vp, int roomnum) {
 // Computes the center point on a face by averaging the points in the face
 void ComputeCenterPointOnFace(vector3 &vp, int roomnum, int facenum) {
   room_t &rp = Rooms[roomnum];
-  face *fp = &rp.faces[facenum];
+  face &fp = rp.faces[facenum];
   int i;
 
   vp = vector3{};
 
-  for (i = 0; i < fp->num_verts; i++)
-    vp += rp.verts[fp->face_verts[i]];
+  for (i = 0; i < fp.num_verts; i++)
+    vp += rp.verts[fp.face_verts[i]];
 
-  vp /= fp->num_verts;
+  vp /= fp.num_verts;
 }
 
 // the minimum magnitude of a surface normal that we're willing to accept
@@ -714,10 +714,10 @@ void ComputeCenterPointOnFace(vector3 &vp, int roomnum, int facenum) {
 // Returns:		true if the normal is ok
 //					false if the normal has a very small (pre-normalization) magnitude
 bool ComputeFaceNormal(room_t &rp, int facenum) {
-  face *fp = &rp.faces[facenum];
+  face &fp = rp.faces[facenum];
   bool ok;
 
-  ok = ComputeNormal(fp->normal, fp->num_verts, fp->face_verts, rp.verts);
+  ok = ComputeNormal(fp.normal, fp.num_verts, fp.face_verts, rp.verts);
 
   if (!ok) {
     LOG_WARNING("Warning: Low precision normal for a local room face.");
@@ -782,16 +782,16 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
 // Computes the center point on a face by averaging the points in the portal
 void ComputePortalCenter(vector3 &vp, int roomnum, int portal_index) {
   room_t &rp = Rooms[roomnum];
-  portal *pp = &rp.portals[portal_index];
-  face *fp = &rp.faces[pp->portal_face];
+  portal &pp = rp.portals[portal_index];
+  face &fp = rp.faces[pp.portal_face];
   int i;
 
   vm_MakeZero(vp);
 
-  for (i = 0; i < fp->num_verts; i++)
-    vp += rp.verts[fp->face_verts[i]];
+  for (i = 0; i < fp.num_verts; i++)
+    vp += rp.verts[fp.face_verts[i]];
 
-  vp /= fp->num_verts;
+  vp /= fp.num_verts;
 }
 
 // Clears lightmaps for a single room
@@ -889,16 +889,16 @@ float GetAreaForFace(int roomnum, int facenum) {
   Q_ASSERT(rp.used > 0);
   Q_ASSERT(facenum >= 0 && facenum < rp.num_faces);
 
-  face *fp = &rp.faces[facenum];
+  face &fp = rp.faces[facenum];
   int i;
   vector3 normal;
   float area = 0;
 
-  vm_GetPerp(normal, rp.verts[fp->face_verts[0]], rp.verts[fp->face_verts[1]], rp.verts[fp->face_verts[2]]);
+  vm_GetPerp(normal, rp.verts[fp.face_verts[0]], rp.verts[fp.face_verts[1]], rp.verts[fp.face_verts[2]]);
   area = (vm_GetMagnitude(normal) / 2);
 
-  for (i = 2; i < fp->num_verts - 1; i++) {
-    vm_GetPerp(normal, rp.verts[fp->face_verts[0]], rp.verts[fp->face_verts[i]], rp.verts[fp->face_verts[i + 1]]);
+  for (i = 2; i < fp.num_verts - 1; i++) {
+    vm_GetPerp(normal, rp.verts[fp.face_verts[0]], rp.verts[fp.face_verts[i]], rp.verts[fp.face_verts[i + 1]]);
     area += (vm_GetMagnitude(normal) / 2);
   }
 
@@ -1001,17 +1001,17 @@ void FindPointUV(float &u, float &v, const vector3 &pnt, int roomnum, const face
 int CheckTransparentPoint(const vector3 &pnt, int roomnum, const int facenum) {
   int bm_handle;
   const room_t &rp = Rooms[roomnum];
-  const face *fp = &rp.faces[facenum];
+  const face &fp = rp.faces[facenum];
   float u, v;
   int w, h, x, y;
 
   return false;
 
   // Get the UV coordindates of the point we hit
-  FindPointUV(u, v, pnt, roomnum, *fp);
+  FindPointUV(u, v, pnt, roomnum, fp);
 
   // Get pointer to the bitmap data
-  bm_handle = GetTextureBitmap(fp->tmap, 0);
+  bm_handle = GetTextureBitmap(fp.tmap, 0);
 
   // Get x & y coordindates (in bitmap) of check point
   w = bm_w(bm_handle, 0);
@@ -1177,12 +1177,12 @@ bool ChangeRoomFaceTexture(int room_num, int face_num, int texture) {
     return false;
   }
 
-  room_t *rp = &Rooms[room_num];
+  room_t &rp = Rooms[room_num];
 
-  if (face_num < 0 || face_num >= rp->num_faces) {
+  if (face_num < 0 || face_num >= rp.num_faces) {
     LOG_FATAL("Invalid face number passed to ChangeRoomFaceTexture."
                "  Room=%d, you gave face #%d, there are only %d in the room",
-             room_num, face_num, rp->num_faces);
+             room_num, face_num, rp.num_faces);
     Q_ASSERT(false);
     return false;
   }
@@ -1193,11 +1193,11 @@ bool ChangeRoomFaceTexture(int room_num, int face_num, int texture) {
     return false;
   }
 
-  face *fp = &rp->faces[face_num];
+  face &fp = rp.faces[face_num];
 
-  fp->tmap = texture;
-  fp->flags.texture_changed = true;
-  rp->room_change_flags |= RCF_TEXTURE;
+  fp.tmap = texture;
+  fp.flags.texture_changed = true;
+  rp.room_change_flags |= RCF_TEXTURE;
   return true;
 }
 
@@ -1229,7 +1229,7 @@ void DoRoomChangeFrame() {
     if (!Room_changes[i].used)
       continue;
 
-    room_t *rp = &Rooms[Room_changes[i].roomnum];
+    room_t &rp = Rooms[Room_changes[i].roomnum];
 
     float norm = (d3::chrono::last_update() - Room_changes[i].start_time) / Room_changes[i].total_time;
 
@@ -1243,30 +1243,30 @@ void DoRoomChangeFrame() {
       float scale_depth =
           ((Room_changes[i].end_depth - Room_changes[i].start_depth) * norm) + Room_changes[i].start_depth;
 
-      rp->flags.fog = 1;
-      rp->room_change_flags |= RCF_CHANGING_WIND_FOG;
+      rp.flags.fog = 1;
+      rp.room_change_flags |= RCF_CHANGING_WIND_FOG;
 
-      rp->fog_r = scale_color.x();
-      rp->fog_g = scale_color.y();
-      rp->fog_b = scale_color.z();
-      rp->fog_depth = scale_depth;
+      rp.fog_r = scale_color.x();
+      rp.fog_g = scale_color.y();
+      rp.fog_b = scale_color.z();
+      rp.fog_depth = scale_depth;
     } else {
       vector3 scale_wind =
           ((Room_changes[i].end_vector - Room_changes[i].start_vector) * norm) + Room_changes[i].start_vector;
 
-      rp->room_change_flags |= RCF_CHANGING_WIND_FOG;
-      rp->wind = scale_wind;
+      rp.room_change_flags |= RCF_CHANGING_WIND_FOG;
+      rp.wind = scale_wind;
     }
 
     // If this room is done changing, take it out of the list and mark it as changed
     if (norm >= 1.0f) {
       Room_changes[i].used = 0;
       if (Room_changes[i].fog)
-        rp->room_change_flags |= RCF_FOG;
+        rp.room_change_flags |= RCF_FOG;
       else
-        rp->room_change_flags |= RCF_WIND;
+        rp.room_change_flags |= RCF_WIND;
 
-      rp->room_change_flags &= ~RCF_CHANGING_WIND_FOG;
+      rp.room_change_flags &= ~RCF_CHANGING_WIND_FOG;
 
       continue;
     }
@@ -1275,7 +1275,7 @@ void DoRoomChangeFrame() {
 
 // Sets up a room to change its fog or wind over time
 index_t SetRoomChangeOverTime(int roomnum, bool fog, const vector3 &end, float depth_end, float time) {
-  room_t *rp = &Rooms[roomnum];
+  room_t &rp = Rooms[roomnum];
   int index, i;
 
   // First search to see if there is another with this same roomnum
@@ -1300,16 +1300,16 @@ index_t SetRoomChangeOverTime(int roomnum, bool fog, const vector3 &end, float d
   Room_changes[index].end_vector = end;
   Room_changes[index].start_time = d3::chrono::last_update();
   Room_changes[index].total_time = time;
-  rp->room_change_flags |= RCF_CHANGING_WIND_FOG;
+  rp.room_change_flags |= RCF_CHANGING_WIND_FOG;
 
   if (fog) {
-    Room_changes[index].start_depth = rp->fog_depth;
-    Room_changes[index].start_vector.x() = rp->fog_r;
-    Room_changes[index].start_vector.y() = rp->fog_g;
-    Room_changes[index].start_vector.z() = rp->fog_b;
+    Room_changes[index].start_depth = rp.fog_depth;
+    Room_changes[index].start_vector.x() = rp.fog_r;
+    Room_changes[index].start_vector.y() = rp.fog_g;
+    Room_changes[index].start_vector.z() = rp.fog_b;
     Room_changes[index].end_depth = depth_end;
   } else
-    Room_changes[index].start_vector = rp->wind;
+    Room_changes[index].start_vector = rp.wind;
 
   return static_cast<uint32_t>(index);
 }
@@ -1612,9 +1612,9 @@ face_physics_flags_t GetFacePhysicsFlags(int roomnum, const face &fp) {
   }
 
   if (fp.portal_num != -1) {
-    const portal *pp = &Rooms[roomnum].portals[fp.portal_num];
+    const portal &pp = Rooms[roomnum].portals[fp.portal_num];
     ret.portal = 1;
-    if (!(pp->flags.render_faces) || (pp->flags.rendered_flythrough)) {
+    if (!(pp.flags.render_faces) || (pp.flags.rendered_flythrough)) {
       return ret;
     }
   }

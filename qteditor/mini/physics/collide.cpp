@@ -931,8 +931,8 @@ struct vec2d {
 // finds the uv coords of the given point on the given seg & side
 // fills in u & v. if l is non-NULL fills it in also
 void FindHitpointUV(float &u, float &v, const vector3 &point, int roomnum, int facenum) {
-  room_t *rp = &Rooms[roomnum];
-  face *fp = &rp->faces[facenum];
+  room_t &rp = Rooms[roomnum];
+  face &fp = rp.faces[facenum];
   int ii, jj;
   vec2d pnt[3], checkp, vec0, vec1;
   const float *t;
@@ -941,13 +941,13 @@ void FindHitpointUV(float &u, float &v, const vector3 &point, int roomnum, int f
 
   // 1. find what plane to project this wall onto to make it a 2d case
 
-  GetIJ(fp->normal, ii, jj);
+  GetIJ(fp.normal, ii, jj);
 
   // 2. compute u,v of intersection point
 
   // Copy face points into 2d verts array
   for (i = 0; i < 3; i++) {
-    t = &rp->verts[fp->face_verts[i]].x();
+    t = &rp.verts[fp.face_verts[i]].x();
     pnt[i].i = t[ii];
     pnt[i].j = t[jj];
   }
@@ -971,10 +971,10 @@ void FindHitpointUV(float &u, float &v, const vector3 &point, int roomnum, int f
 
   // mprintf(0," k0,k1  = %x,%x\n",k0,k1);
 
-  u = fp->face_uvls[1].u + (k0 * (fp->face_uvls[0].u - fp->face_uvls[1].u)) +
-      (k1 * (fp->face_uvls[2].u - fp->face_uvls[1].u));
-  v = fp->face_uvls[1].v + (k0 * (fp->face_uvls[0].v - fp->face_uvls[1].v)) +
-      (k1 * (fp->face_uvls[2].v - fp->face_uvls[1].v));
+  u = fp.face_uvls[1].u + (k0 * (fp.face_uvls[0].u - fp.face_uvls[1].u)) +
+      (k1 * (fp.face_uvls[2].u - fp.face_uvls[1].u));
+  v = fp.face_uvls[1].v + (k0 * (fp.face_uvls[0].v - fp.face_uvls[1].v)) +
+      (k1 * (fp.face_uvls[2].v - fp.face_uvls[1].v));
 
   // mprintf(0," u,v    = %x,%x\n",*u,*v);
 }
@@ -990,15 +990,15 @@ void DoWallEffects(object *weapon, int surface_tmap) {
     if (texp->flags.water || ((d3::rand() % 4) == 0)) {
       int visnum = VisEffectCreate(VIS_FIREBALL, MED_SMOKE_INDEX, weapon->roomnum, &weapon->pos);
       if (visnum >= 0) {
-        vis_effect *vis = &VisEffects[visnum];
+        vis_effect &vis = VisEffects[visnum];
 
-        vis->lifetime = 0.9f;
-        vis->lifeleft = 0.9f;
+        vis.lifetime = 0.9f;
+        vis.lifeleft = 0.9f;
 
-        vis->movement_type = movement_type::physics;
-        vis->size = 3.0f;
-        vm_MakeZero(vis->velocity);
-        vis->velocity.y() = 10;
+        vis.movement_type = movement_type::physics;
+        vis.size = 3.0f;
+        vm_MakeZero(vis.velocity);
+        vis.velocity.y() = 10;
       }
     }
   } else if (texp->flags.rubble) {
@@ -1015,33 +1015,33 @@ void DoWallEffects(object *weapon, int surface_tmap) {
         visnum = VisEffectCreate(VIS_FIREBALL, RUBBLE1_INDEX + (d3::rand() % 2), weapon->roomnum, &weapon->pos);
 
         if (visnum >= 0) {
-          vis_effect *vis = &VisEffects[visnum];
+          vis_effect &vis = VisEffects[visnum];
 
-          vis->movement_type = movement_type::physics;
-          vis->mass = 100;
-          vis->drag = 0.1f;
+          vis.movement_type = movement_type::physics;
+          vis.mass = 100;
+          vis.drag = 0.1f;
 
-          vis->phys_flags.gravity = true;
-          vis->phys_flags.no_collide = true;
+          vis.phys_flags.gravity = true;
+          vis.phys_flags.no_collide = true;
 
           if ((d3::rand() % 3) == 0) {
-            vis->velocity.x() = (d3::rand() % 100) - 50;
-            vis->velocity.y() = -((d3::rand() % 200) - 30);
-            vis->velocity.z() = (d3::rand() % 100) - 50;
+            vis.velocity.x() = (d3::rand() % 100) - 50;
+            vis.velocity.y() = -((d3::rand() % 200) - 30);
+            vis.velocity.z() = (d3::rand() % 100) - 50;
           } else {
-            vis->velocity.x() = (d3::rand() % 300) - 50;
-            vis->velocity.y() = -((d3::rand() % 200) - 30);
-            vis->velocity.z() = (d3::rand() % 300) - 50;
+            vis.velocity.x() = (d3::rand() % 300) - 50;
+            vis.velocity.y() = -((d3::rand() % 200) - 30);
+            vis.velocity.z() = (d3::rand() % 300) - 50;
           }
 
-          vm_NormalizeVectorFast(vis->velocity);
-          vis->velocity *= 4 + (d3::rand() % 20);
-          vis->size = 0.5f + (((d3::rand() % 11) - 5) * 0.05f);
-          vis->flags.uses_lifeleft = true;
+          vm_NormalizeVectorFast(vis.velocity);
+          vis.velocity *= 4 + (d3::rand() % 20);
+          vis.size = 0.5f + (((d3::rand() % 11) - 5) * 0.05f);
+          vis.flags.uses_lifeleft = true;
           scalar lifetime = 1.0f + (((d3::rand() % 11) - 5) * 0.1f);
-          vis->lifeleft = lifetime;
-          vis->lifetime = lifetime;
-          vis->lighting_color = color;
+          vis.lifeleft = lifetime;
+          vis.lifetime = lifetime;
+          vis.lighting_color = color;
         }
       }
     }
@@ -1135,24 +1135,24 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
   // Check for destroyable or breakable face
   if (!ROOMNUM_OUTSIDE(hitseg)) // First, make sure we've hit a wall, and not terrain
   {
-    room *rp = &Rooms[hitseg];
-    face *fp = &rp->faces[hitwall];
+    room &rp = Rooms[hitseg];
+    face &fp = rp.faces[hitwall];
 
     // Check for a trigger on this wall
     CheckTrigger(hitseg, hitwall, weapon, TT_COLLIDE);
 
     // Check for a destroyable face
-    if (GameTextures[fp->tmap].flags.destroyable && !fp->flags.destroyed) {
+    if (GameTextures[fp.tmap].flags.destroyable && !fp.flags.destroyed) {
       int visnum = CreateFireball(hitpnt, SHATTER_INDEX + (d3::rand() % 2), hitseg, VISUAL_FIREBALL);
 
       if (visnum >= 0) {
         // Alter the size of this explosion based on the face size
         vector3 verts[MAX_VERTS_PER_FACE];
         vector3 center;
-        for (int t = 0; t < fp->num_verts; t++)
-          verts[t] = rp->verts[fp->face_verts[t]];
+        for (int t = 0; t < fp.num_verts; t++)
+          verts[t] = rp.verts[fp.face_verts[t]];
 
-        float size = sqrt(vm_GetCentroid(center, verts, fp->num_verts));
+        float size = sqrt(vm_GetCentroid(center, verts, fp.num_verts));
         VisEffects[visnum].size = (size / 2);
       }
 
@@ -1163,12 +1163,12 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
       else
         Sound_system.Play3dSound(sound_override_glass_breaking, sound_priority::high, weapon);
 
-      fp->flags.destroyed = true;
+      fp.flags.destroyed = true;
     }
 
     // Check for a breakable face: If the texture is breakable and it's on a portal
     // and hit with a matter weapon, break it
-    if ((fp->portal_num != -1) && GameTextures[fp->tmap].flags.breakable &&
+    if ((fp.portal_num != -1) && GameTextures[fp.tmap].flags.breakable &&
         Weapons[weapon->id].flags.matter_weapon)
     {
 
@@ -2219,8 +2219,8 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
       Sound_system.Play3dSound(Weapons[weapon->id].sounds[WSI_IMPACT_ROBOT], sound_priority::highest, weapon);
     }
     if (!electrical) {
-      light_info *li = &Weapons[weapon->id].lighting_info;
-      uint16_t color = GR_RGB16(li->red_light2 * 255, li->green_light2 * 255, li->blue_light2 * 255);
+      light_info &li = Weapons[weapon->id].lighting_info;
+      uint16_t color = GR_RGB16(li.red_light2 * 255, li.green_light2 * 255, li.blue_light2 * 255);
       CreateRandomLineSparks(3 + d3::rand() % 6, &weapon->pos, weapon->roomnum, color);
     }
   }

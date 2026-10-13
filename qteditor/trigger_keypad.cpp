@@ -76,20 +76,20 @@ void TriggerKeypad::updateDialog() {
       w->setEnabled(active);
   if (!active)
     return;
-  trigger *tp = &Triggers[*app.Current_trigger];
+  trigger &tp = Triggers[*app.Current_trigger];
 
-  ui->IDC_TRIG_CURRENT_NAME->setText(QString::fromStdString(tp->name));
+  ui->IDC_TRIG_CURRENT_NAME->setText(QString::fromStdString(tp.name));
   ui->IDC_TRIG_CURRENT_NUM->setText(QString::number(index_to_int(app.Current_trigger)));
-  ui->IDC_TRIG_CURRENT_ROOM->setText(QString::number(tp->roomnum));
-  ui->IDC_TRIG_CURRENT_FACE->setText(QString::number(tp->facenum));
+  ui->IDC_TRIG_CURRENT_ROOM->setText(QString::number(tp.roomnum));
+  ui->IDC_TRIG_CURRENT_FACE->setText(QString::number(tp.facenum));
 
-  ui->IDC_TRIG_ONESHOT->setChecked(tp->flags.oneshot);
+  ui->IDC_TRIG_ONESHOT->setChecked(tp.flags.oneshot);
 
-  ui->IDC_TRIG_ACTIV_PLAYER->setChecked(tp->activator.player);
-  ui->IDC_TRIG_ACTIV_PLAYER_WEAPONS->setChecked(tp->activator.player_weapon);
-  ui->IDC_TRIG_ACTIV_ROBOTS->setChecked(tp->activator.robot);
-  ui->IDC_TRIG_ACTIV_ROBOT_WEAPONS->setChecked(tp->activator.robot_weapon);
-  ui->IDC_TRIG_ACTIV_CLUTTER->setChecked(tp->activator.clutter);
+  ui->IDC_TRIG_ACTIV_PLAYER->setChecked(tp.activator.player);
+  ui->IDC_TRIG_ACTIV_PLAYER_WEAPONS->setChecked(tp.activator.player_weapon);
+  ui->IDC_TRIG_ACTIV_ROBOTS->setChecked(tp.activator.robot);
+  ui->IDC_TRIG_ACTIV_ROBOT_WEAPONS->setChecked(tp.activator.robot_weapon);
+  ui->IDC_TRIG_ACTIV_CLUTTER->setChecked(tp.activator.clutter);
 }
 
 void TriggerKeypad::onOneshotToggled(bool checked) {

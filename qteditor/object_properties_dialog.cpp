@@ -33,12 +33,12 @@ ObjectPropertiesDialog::ObjectPropertiesDialog(int objIndex, QWidget *parent)
   if (tabs == nullptr || m_objIndex < 0 || m_objIndex > Highest_object_index)
     return;
 
-  object *obj = &Objects[m_objIndex];
-  if (obj->type == object_type_e::none)
+  object &obj = Objects[m_objIndex];
+  if (obj.type == object_type_e::none)
     return;
 
-  if (obj->id >= 0 && obj->id < MAX_OBJECT_IDS && Object_info[obj->id].type != object_type_e::none) {
-    PropertyPhysicsDialog *physics = new PropertyPhysicsDialog(obj->id, tabs);
+  if (obj.id >= 0 && obj.id < MAX_OBJECT_IDS && Object_info[obj.id].type != object_type_e::none) {
+    PropertyPhysicsDialog *physics = new PropertyPhysicsDialog(obj.id, tabs);
     tabs->addTab(physics, "Physics");
 
     QLabel *aiPlaceholder = new QLabel("AI properties not yet implemented.", tabs);

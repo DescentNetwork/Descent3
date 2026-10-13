@@ -57,7 +57,7 @@ void ObjectMoveManager::End() {
   app.World_changed = true;
 }
 
-#define ROTATE_SCALE (256.0f * 20.0f / ((obj->size < 10.0f) ? 10.0f : obj->size))
+#define ROTATE_SCALE (256.0f * 20.0f / ((obj.size < 10.0f) ? 10.0f : obj.size))
 
 void ObjectMoveManager::Defer(int dsx, int dsy, bool leftDown) {
   if (m_DragState != 1)
@@ -66,13 +66,13 @@ void ObjectMoveManager::Defer(int dsx, int dsy, bool leftDown) {
   app.Object_moved = false;
 
   if (leftDown) {
-    object *obj = &Objects[m_ObjNum];
+    object &obj = Objects[m_ObjNum];
 
     if (!dsx && !dsy)
       return;
 
     float dx, dy;
-    GetObjectDeltas(&dx, &dy, obj, dsx, dsy);
+    GetObjectDeltas(&dx, &dy, &obj, dsx, dsy);
 
     switch (m_MoveAxis) {
     case OBJMOVEAXIS_X:

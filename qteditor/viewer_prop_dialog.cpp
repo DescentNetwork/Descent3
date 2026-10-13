@@ -113,88 +113,88 @@ void ViewerPropDialog::setOrientation(matrix &m) {
 void ViewerPropDialog::onAlignUpYpos() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->rvec.y() = m->fvec.y() = m->uvec.x() = m->uvec.z() = 0;
-  m->uvec.y() = 1.0f;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.rvec.y() = m.fvec.y() = m.uvec.x() = m.uvec.z() = 0;
+  m.uvec.y() = 1.0f;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onAlignXneg() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->fvec.x() = -1.0f;
-  m->fvec.y() = m->fvec.z() = 0;
-  m->uvec.y() = 1.0f;
-  m->uvec.x() = m->uvec.z() = 0;
-  m->rvec.z() = 1.0f;
-  m->rvec.x() = m->rvec.y() = 0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.fvec.x() = -1.0f;
+  m.fvec.y() = m.fvec.z() = 0;
+  m.uvec.y() = 1.0f;
+  m.uvec.x() = m.uvec.z() = 0;
+  m.rvec.z() = 1.0f;
+  m.rvec.x() = m.rvec.y() = 0;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onAlignXpos() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->fvec.x() = 1.0f;
-  m->fvec.y() = m->fvec.z() = 0;
-  m->uvec.y() = 1.0f;
-  m->uvec.x() = m->uvec.z() = 0;
-  m->rvec.z() = -1.0f;
-  m->rvec.x() = m->rvec.y() = 0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.fvec.x() = 1.0f;
+  m.fvec.y() = m.fvec.z() = 0;
+  m.uvec.y() = 1.0f;
+  m.uvec.x() = m.uvec.z() = 0;
+  m.rvec.z() = -1.0f;
+  m.rvec.x() = m.rvec.y() = 0;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onAlignYneg() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->fvec.y() = -1.0f;
-  m->fvec.x() = m->fvec.z() = 0;
-  m->uvec.z() = 1.0f;
-  m->uvec.x() = m->uvec.y() = 0;
-  m->rvec.x() = 1.0f;
-  m->rvec.y() = m->rvec.z() = 0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.fvec.y() = -1.0f;
+  m.fvec.x() = m.fvec.z() = 0;
+  m.uvec.z() = 1.0f;
+  m.uvec.x() = m.uvec.y() = 0;
+  m.rvec.x() = 1.0f;
+  m.rvec.y() = m.rvec.z() = 0;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onAlignYpos() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->fvec.y() = 1.0f;
-  m->fvec.x() = m->fvec.z() = 0;
-  m->uvec.z() = -1.0f;
-  m->uvec.x() = m->uvec.y() = 0;
-  m->rvec.x() = 1.0f;
-  m->rvec.y() = m->rvec.z() = 0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.fvec.y() = 1.0f;
+  m.fvec.x() = m.fvec.z() = 0;
+  m.uvec.z() = -1.0f;
+  m.uvec.x() = m.uvec.y() = 0;
+  m.rvec.x() = 1.0f;
+  m.rvec.y() = m.rvec.z() = 0;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onAlignZneg() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->fvec.z() = -1.0f;
-  m->fvec.x() = m->fvec.y() = 0;
-  m->uvec.y() = 1.0f;
-  m->uvec.x() = m->uvec.z() = 0;
-  m->rvec.x() = -1.0f;
-  m->rvec.y() = m->rvec.z() = 0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.fvec.z() = -1.0f;
+  m.fvec.x() = m.fvec.y() = 0;
+  m.uvec.y() = 1.0f;
+  m.uvec.x() = m.uvec.z() = 0;
+  m.rvec.x() = -1.0f;
+  m.rvec.y() = m.rvec.z() = 0;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onAlignZpos() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->fvec.z() = 1.0f;
-  m->fvec.x() = m->fvec.y() = 0;
-  m->uvec.y() = 1.0f;
-  m->uvec.x() = m->uvec.z() = 0;
-  m->rvec.x() = 1.0f;
-  m->rvec.y() = m->rvec.z() = 0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.fvec.z() = 1.0f;
+  m.fvec.x() = m.fvec.y() = 0;
+  m.uvec.y() = 1.0f;
+  m.uvec.x() = m.uvec.z() = 0;
+  m.rvec.x() = 1.0f;
+  m.rvec.y() = m.rvec.z() = 0;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onOrientCommit() {

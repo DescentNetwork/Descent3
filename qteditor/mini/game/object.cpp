@@ -248,17 +248,17 @@ void ObjFree(int objnum) {
 
 // Links the object into the list for its room (or terrain cell).
 void ObjLink(int objnum, index_t roomnum) {
-  object *obj = &Objects[objnum];
+  object &obj = Objects[objnum];
   if (objnum == -1)
     return;
 
-  if (obj->roomnum.has_value() || (obj->flags.big_object))
+  if (obj.roomnum.has_value() || (obj.flags.big_object))
     return;
 
-  if ((obj->size >= MIN_BIG_OBJ_RAD) && (!roomnum_outside(roomnum)))
+  if ((obj.size >= MIN_BIG_OBJ_RAD) && (!roomnum_outside(roomnum)))
     BigObjAdd(objnum);
 
-  obj->roomnum = roomnum;
+  obj.roomnum = roomnum;
 
   if (roomnum_outside(roomnum)) {
     if (!roomnum)
@@ -268,65 +268,65 @@ void ObjLink(int objnum, index_t roomnum) {
     if (cellnum < 0 || cellnum > (TERRAIN_WIDTH + 1) * (TERRAIN_DEPTH + 1))
       return;
 
-    obj->next = Terrain_seg[cellnum].objects;
+    obj.next = Terrain_seg[cellnum].objects;
     Terrain_seg[cellnum].objects = objnum;
   } else {
     if (!roomnum || *roomnum >= Rooms.size())
       return;
 
-    obj->next = Rooms[*roomnum].objects;
+    obj.next = Rooms[*roomnum].objects;
     Rooms[*roomnum].objects = objnum;
   }
 
-  obj->prev = -1;
+  obj.prev = -1;
 
-  if (obj->next != -1)
-    Objects[obj->next].prev = objnum;
+  if (obj.next != -1)
+    Objects[obj.next].prev = objnum;
 }
 
 void ObjUnlink(int objnum) {
-  object *obj = &Objects[objnum];
+  object &obj = Objects[objnum];
   if (objnum == -1)
     return;
 
   // If object is already unlinked, do nothing
-  if (!obj->roomnum)
+  if (!obj.roomnum)
     return;
 
-  if (obj->flags.big_object)
+  if (obj.flags.big_object)
     BigObjRemove(objnum);
 
-  if (obj->is_outside()) {
-    int cellnum = static_cast<int>(roomnum_cell(obj->roomnum));
+  if (obj.is_outside()) {
+    int cellnum = static_cast<int>(roomnum_cell(obj.roomnum));
     if (cellnum < 0 || cellnum > (TERRAIN_WIDTH + 1) * (TERRAIN_DEPTH + 1))
       return;
 
-    terrain_segment *seg = &Terrain_seg[cellnum];
+    terrain_segment &seg = Terrain_seg[cellnum];
 
-    if (obj->prev == -1)
-      seg->objects = obj->next;
+    if (obj.prev == -1)
+      seg.objects = obj.next;
     else
-      Objects[obj->prev].next = obj->next;
+      Objects[obj.prev].next = obj.next;
 
-    if (obj->next != -1)
-      Objects[obj->next].prev = obj->prev;
+    if (obj.next != -1)
+      Objects[obj.next].prev = obj.prev;
   } else {
-    if (*obj->roomnum >= Rooms.size())
+    if (*obj.roomnum >= Rooms.size())
       return;
 
-    room_t *rp = &Rooms[*obj->roomnum];
+    room_t &rp = Rooms[*obj.roomnum];
 
-    if (obj->prev == -1)
-      rp->objects = obj->next;
+    if (obj.prev == -1)
+      rp.objects = obj.next;
     else
-      Objects[obj->prev].next = obj->next;
+      Objects[obj.prev].next = obj.next;
 
-    if (obj->next != -1)
-      Objects[obj->next].prev = obj->prev;
+    if (obj.next != -1)
+      Objects[obj.next].prev = obj.prev;
   }
 
   // Mark as not linked
-  obj->roomnum.reset();
+  obj.roomnum.reset();
 }
 
 // When an object has moved into a new room, this function unlinks it from its
@@ -626,9 +626,9 @@ void ObjDelete(int objnum) {
     return;
 
   if (obj->flags.polygon_object) {
-    polyobj_info *p_info = &obj->rtype.pobj_info();
-    p_info->multi_turret_info.keyframes.clear();
-    p_info->multi_turret_info.last_keyframes.clear();
+    polyobj_info &p_info = obj->rtype.pobj_info();
+    p_info.multi_turret_info.keyframes.clear();
+    p_info.multi_turret_info.last_keyframes.clear();
   }
 
   if (obj == Viewer_object) // deleting the viewer?
@@ -758,10 +758,10 @@ object *ObjGet(int handle) {
   if (objnum < 0 || objnum >= MAX_OBJECTS)
     return nullptr;
 
-  object *objp = &Objects[objnum];
+  object &objp = Objects[objnum];
 
-  if ((objp->type != object_type_e::none) && (objp->handle == handle))
-    return objp;
+  if ((objp.type != object_type_e::none) && (objp.handle == handle))
+    return &objp;
 
   return nullptr;
 }
@@ -772,19 +772,19 @@ void GetObjectPointInWorld(vector3& dest, object& obj, int subnum, int vertnum) 
   if (mn_i < 0 || mn_i >= MINI_POLY_MODELS)
     return;
 
-  poly_model *pm = &Poly_models[mn_i];
-  bsp_info *sm = &pm->submodel[subnum];
+  poly_model &pm = Poly_models[mn_i];
+  bsp_info &sm = pm.submodel[subnum];
   float normalized_time[MAX_SUBOBJECTS];
 
-  if (!pm->new_style)
+  if (!pm.new_style)
     return;
 
   for (int i = 0; i < MAX_SUBOBJECTS; i++)
     normalized_time[i] = 0.0f;
 
-  SetModelAnglesAndPos(*pm, normalized_time);
+  SetModelAnglesAndPos(pm, normalized_time);
 
-  vector3 pnt = sm->verts[vertnum];
+  vector3 pnt = sm.verts[vertnum];
   int mn = subnum;
   matrix m;
 
@@ -792,14 +792,14 @@ void GetObjectPointInWorld(vector3& dest, object& obj, int subnum, int vertnum) 
   while (mn != -1) {
     vector3 tpnt;
 
-    vm_AnglesToMatrix(m, pm->submodel[mn].angs.p(), pm->submodel[mn].angs.h(), pm->submodel[mn].angs.b());
+    vm_AnglesToMatrix(m, pm.submodel[mn].angs.p(), pm.submodel[mn].angs.h(), pm.submodel[mn].angs.b());
     vm_TransposeMatrix(m);
 
     tpnt = pnt * m;
 
-    pnt = tpnt + pm->submodel[mn].offset + pm->submodel[mn].mod_pos;
+    pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
 
-    mn = pm->submodel[mn].parent;
+    mn = pm.submodel[mn].parent;
   }
 
   // Now instance for the entire object

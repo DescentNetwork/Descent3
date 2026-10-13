@@ -243,9 +243,9 @@ void FreeVClip(int num) {
 bool SaveVClip(const std::filesystem::path& filename, int num) {
 #if 0
   CFILE *outfile;
-  vclip *vc = &GameVClips[num];
+  vclip &vc = GameVClips[num];
 
-  Q_ASSERT(vc->used);
+  Q_ASSERT(vc.used);
   Q_ASSERT(!filename.empty());
 
   PageInVClip(num);
@@ -260,15 +260,15 @@ bool SaveVClip(const std::filesystem::path& filename, int num) {
   cf_WriteByte(outfile, 127);
   cf_WriteByte(outfile, (int8_t)VCLIP_VERSION);
 
-  cf_WriteByte(outfile, vc->num_frames);
+  cf_WriteByte(outfile, vc.num_frames);
   // cf_WriteFloat (outfile,vc->play_time);
-  cf_WriteFloat(outfile, vc->frame_time);
+  cf_WriteFloat(outfile, vc.frame_time);
   // cf_WriteInt (outfile,vc->flags);
   // cf_WriteFloat (outfile,vc->light_value);
 
   // Now save each frame of this vclip
-  for (int i = 0; i < vc->num_frames; i++) {
-    if (bm_SaveBitmap(outfile, vc->frames[i]) != 1) {
+  for (int i = 0; i < vc.num_frames; i++) {
+    if (bm_SaveBitmap(outfile, vc.frames[i]) != 1) {
       LOG_ERROR("Couldn't save frame %d of vclip %s!", i, filename.u8string().c_str());
       Q_ASSERT(false);
       cfclose(outfile);
@@ -334,8 +334,8 @@ index_t LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string 
   if (!vcnum)
     return std::nullopt;
 
-  vclip *vc = &GameVClips[*vcnum];
-  vc->name = name;
+  vclip &vc = GameVClips[*vcnum];
+  vc.name = name;
 
   // Container header (engine Descent3/vclip.cpp PageInVClip).
   int num_frames = (uint8_t)infile.get();
@@ -362,16 +362,16 @@ index_t LoadVClipFromMemory(const uint8_t *data, size_t size, const std::string 
     if (n < 0) {
       LOG_ERROR("LoadVClipFromMemory: Couldn't load frame %d of %s.", i, name.c_str());
       for (int j = 0; j < i; j++)
-        bm_FreeBitmap(vc->frames[j]);
+        bm_FreeBitmap(vc.frames[j]);
       FreeVClip(static_cast<int>(*vcnum));
       return std::nullopt;
     }
-    vc->frames[i] = (int16_t)n;
+    vc.frames[i] = (int16_t)n;
   }
 
-  vc->num_frames = (int16_t)num_frames;
-  vc->frame_time = DEFAULT_FRAMETIME;
-  vc->flags.not_resident = false;
+  vc.num_frames = (int16_t)num_frames;
+  vc.frame_time = DEFAULT_FRAMETIME;
+  vc.flags.not_resident = false;
   return *vcnum;
 }
 
@@ -462,7 +462,7 @@ int AllocLoadIFLVClip(const char *filename, texture_size_type texture_size, int 
 
   Q_ASSERT(vcnum >= 0);
 
-  vclip *vc = &GameVClips[vcnum];
+  vclip &vc = GameVClips[vcnum];
 
   while (!done) {
     char curline[200];
@@ -525,7 +525,7 @@ int AllocLoadIFLVClip(const char *filename, texture_size_type texture_size, int 
 
       int bm = bm_AllocLoadFileBitmap(IGNORE_TABLE(bmname), 0, format);
       if (bm < 1) {
-        Error("Error loading frame %d of ILS file %s!\n", vc->num_frames, filename);
+        Error("Error loading frame %d of ILS file %s!\n", vc.num_frames, filename);
         cfclose(infile);
         return -1;
       }
@@ -565,20 +565,20 @@ int AllocLoadIFLVClip(const char *filename, texture_size_type texture_size, int 
         bm = dest_bm;
       }
 
-      vc->frames[vc->num_frames] = bm;
-      vc->num_frames++;
+      vc.frames[vc.num_frames] = bm;
+      vc.num_frames++;
     }
   }
 
   cfclose(infile);
 
-  if (vc->num_frames == 0) {
+  if (vc.num_frames == 0) {
     LOG_WARNING("vclip had no valid bitmap names!");
     FreeVClip(vcnum);
     return -1;
   }
 
-  vc->name = name;
+  vc.name = name;
   return vcnum;
 #endif
   Q_ASSERT(false);

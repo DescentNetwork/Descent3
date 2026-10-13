@@ -27,92 +27,92 @@ bool ObjectsAreRelated(int o1, int o2) {
   if ((o1 < 0) || (o2 < 0))
     return false;
 
-  const object *obj1 = &Objects[o1];
-  const object *obj2 = &Objects[o2];
+  const object &obj1 = Objects[o1];
+  const object &obj2 = Objects[o2];
 
-  Q_ASSERT(obj1->handle != OBJECT_HANDLE_NONE);
-  Q_ASSERT(obj2->handle != OBJECT_HANDLE_NONE);
+  Q_ASSERT(obj1.handle != OBJECT_HANDLE_NONE);
+  Q_ASSERT(obj2.handle != OBJECT_HANDLE_NONE);
 
-  if (obj1->movement_type == movement_type_e::obj_linked || obj2->movement_type == movement_type_e::obj_linked)
+  if (obj1.movement_type == movement_type_e::obj_linked || obj2.movement_type == movement_type_e::obj_linked)
     return true;
 
-  if (obj1->type != object_type_e::shockwave && obj1->mtype.phys_info.flags.no_collide) {
-    return true;
-  }
-
-  if (obj2->type != object_type_e::shockwave && obj2->mtype.phys_info.flags.no_collide) {
+  if (obj1.type != object_type_e::shockwave && obj1.mtype.phys_info.flags.no_collide) {
     return true;
   }
 
-  if (((obj1->type == object_type_e::player) && ((obj2->type == object_type_e::robot) && (obj2->id == GENOBJ_CHAFFCHUNK))) ||
-      ((obj2->type == object_type_e::player) && ((obj1->type == object_type_e::robot) && (obj1->id == GENOBJ_CHAFFCHUNK))))
-    return true;
-
-  if (((obj1->type == object_type_e::building) && (obj1->movement_type != movement_type_e::none) && (obj2->type == object_type_e::powerup)) ||
-      ((obj2->type == object_type_e::building) && (obj2->movement_type != movement_type_e::none) && (obj1->type == object_type_e::powerup))) {
+  if (obj2.type != object_type_e::shockwave && obj2.mtype.phys_info.flags.no_collide) {
     return true;
   }
 
-  if (obj1->type == object_type_e::door && DoorwayPositionForRoom(from_roomnum(obj1->roomnum)) == 1.0f && obj2->type == object_type_e::robot)
+  if (((obj1.type == object_type_e::player) && ((obj2.type == object_type_e::robot) && (obj2.id == GENOBJ_CHAFFCHUNK))) ||
+      ((obj2.type == object_type_e::player) && ((obj1.type == object_type_e::robot) && (obj1.id == GENOBJ_CHAFFCHUNK))))
     return true;
 
-  if (obj2->type == object_type_e::door && DoorwayPositionForRoom(from_roomnum(obj2->roomnum)) == 1.0f && obj1->type == object_type_e::robot)
+  if (((obj1.type == object_type_e::building) && (obj1.movement_type != movement_type_e::none) && (obj2.type == object_type_e::powerup)) ||
+      ((obj2.type == object_type_e::building) && (obj2.movement_type != movement_type_e::none) && (obj1.type == object_type_e::powerup))) {
+    return true;
+  }
+
+  if (obj1.type == object_type_e::door && DoorwayPositionForRoom(from_roomnum(obj1.roomnum)) == 1.0f && obj2.type == object_type_e::robot)
     return true;
 
-  if (AreObjectsAttached(obj1, obj2))
+  if (obj2.type == object_type_e::door && DoorwayPositionForRoom(from_roomnum(obj2.roomnum)) == 1.0f && obj1.type == object_type_e::robot)
     return true;
 
-  if (obj1->type != object_type_e::weapon && obj2->type != object_type_e::weapon) {
-    if (((d3::chrono::last_update() < obj1->creation_time + 3.0f) && obj1->parent_handle == obj2->handle) ||
-        ((d3::chrono::last_update() < obj2->creation_time + 3.0f) && obj2->parent_handle == obj1->handle))
+  if (AreObjectsAttached(&obj1, &obj2))
+    return true;
+
+  if (obj1.type != object_type_e::weapon && obj2.type != object_type_e::weapon) {
+    if (((d3::chrono::last_update() < obj1.creation_time + 3.0f) && obj1.parent_handle == obj2.handle) ||
+        ((d3::chrono::last_update() < obj2.creation_time + 3.0f) && obj2.parent_handle == obj1.handle))
       return true;
     else
       return false;
   }
 
-  if (obj1->type == object_type_e::weapon && obj1->movement_type == movement_type_e::physics && obj1->mtype.phys_info.flags.persistent &&
-      obj1->ctype.laser_info().last_hit_handle == obj2->handle)
+  if (obj1.type == object_type_e::weapon && obj1.movement_type == movement_type_e::physics && obj1.mtype.phys_info.flags.persistent &&
+      obj1.ctype.laser_info().last_hit_handle == obj2.handle)
     return true;
 
-  if (obj2->type == object_type_e::weapon && obj2->movement_type == movement_type_e::physics && obj2->mtype.phys_info.flags.persistent &&
-      obj2->ctype.laser_info().last_hit_handle == obj1->handle)
+  if (obj2.type == object_type_e::weapon && obj2.movement_type == movement_type_e::physics && obj2.mtype.phys_info.flags.persistent &&
+      obj2.ctype.laser_info().last_hit_handle == obj1.handle)
     return true;
 
   // See if o2 is the parent of o1
-  if (obj1->type == object_type_e::weapon && obj1->mtype.phys_info.flags.no_collide_parent) {
-    if (obj1->parent_handle == obj2->handle)
+  if (obj1.type == object_type_e::weapon && obj1.mtype.phys_info.flags.no_collide_parent) {
+    if (obj1.parent_handle == obj2.handle)
       return true;
 
-    object *t1 = ObjGet(obj1->parent_handle);
+    object *t1 = ObjGet(obj1.parent_handle);
 
     if (t1) {
-      if (AreObjectsAttached(obj2, t1))
+      if (AreObjectsAttached(&obj2, t1))
         return true;
     }
   }
 
   // See if o1 is the parent of o2
-  if (obj2->type == object_type_e::weapon && obj2->mtype.phys_info.flags.no_collide_parent) {
-    if (obj2->parent_handle == obj1->handle)
+  if (obj2.type == object_type_e::weapon && obj2.mtype.phys_info.flags.no_collide_parent) {
+    if (obj2.parent_handle == obj1.handle)
       return true;
 
-    object *t2 = ObjGet(obj2->parent_handle);
+    object *t2 = ObjGet(obj2.parent_handle);
 
     if (t2) {
-      if (AreObjectsAttached(obj1, t2))
+      if (AreObjectsAttached(&obj1, t2))
         return true;
     }
   }
 
   // They must both be weapons
-  if (obj1->type != object_type_e::weapon || obj2->type != object_type_e::weapon) {
+  if (obj1.type != object_type_e::weapon || obj2.type != object_type_e::weapon) {
     return false;
   }
 
   //	Here is the 09/07/94 change -- Siblings must be identical, others can hurt each other
   // See if they're siblings...
-  if (obj1->parent_handle == obj2->parent_handle) {
-    if (obj1->mtype.phys_info.flags.hits_siblings || obj2->mtype.phys_info.flags.hits_siblings) {
+  if (obj1.parent_handle == obj2.parent_handle) {
+    if (obj1.mtype.phys_info.flags.hits_siblings || obj2.mtype.phys_info.flags.hits_siblings) {
       return false; // if either is proximity, then can blow up, so say not related
     } else {
       return true;

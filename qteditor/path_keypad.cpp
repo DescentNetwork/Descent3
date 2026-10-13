@@ -220,23 +220,23 @@ void PathKeypad::onMoveNode() {
   const int n = currentNode();
   if (p < 0 || n < 0)
     return;
-  node *nd = &GamePaths[p].pathnodes[n];
+  node &nd = GamePaths[p].pathnodes[n];
   QPushButton *btn = qobject_cast<QPushButton *>(sender());
   if (btn == nullptr)
     return;
   const QString name = btn->objectName();
   if (name == "IDC_PATHPAD_MOVE_FORWARD")
-    nd->pos += nd->fvec * m_inc;
+    nd.pos += nd.fvec * m_inc;
   else if (name == "IDC_PATHPAD_MOVE_BACKWARD")
-    nd->pos -= nd->fvec * m_inc;
+    nd.pos -= nd.fvec * m_inc;
   else if (name == "IDC_PATHPAD_MOVE_LEFT")
-    nd->pos -= nd->uvec * m_inc;
+    nd.pos -= nd.uvec * m_inc;
   else if (name == "IDC_PATHPAD_MOVE_RIGHT")
-    nd->pos += nd->uvec * m_inc;
+    nd.pos += nd.uvec * m_inc;
   else if (name == "IDC_PATHPAD_MOVE_UP")
-    nd->pos.y() += m_inc;
+    nd.pos.y() += m_inc;
   else if (name == "IDC_PATHPAD_MOVE_DOWN")
-    nd->pos.y() -= m_inc;
+    nd.pos.y() -= m_inc;
 }
 
 void PathKeypad::onShowNodesToggled(bool) {

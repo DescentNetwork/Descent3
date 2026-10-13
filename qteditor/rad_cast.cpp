@@ -520,10 +520,10 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra& color, vector3 *
   else
     light_center = *src_center;
 
-  room_t *rp = &Rooms[*dest_surf->roomnum];
-  face *fp = &rp->faces[dest_surf->facenum];
+  room_t &rp = Rooms[*dest_surf->roomnum];
+  face &fp = rp.faces[dest_surf->facenum];
 
-  if (GameTextures[fp->tmap].flags.smooth_specular)
+  if (GameTextures[fp.tmap].flags.smooth_specular)
     threshold = 0.01f;
   else {
     if (!rad_MaxSurface->flags.lightsource)
@@ -864,12 +864,12 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
             for (i = 0; i < d; i++) {
               for (t = 0; t < h; t++) {
                 for (int j = 0; j < w; j++) {
-                  volume_element *ve = &Volume_elements[roomnum][(i * w * h) + (t * w) + j];
+                  volume_element &ve = Volume_elements[roomnum][(i * w * h) + (t * w) + j];
 
-                  if (ve->color.r < 0)
+                  if (ve.color.r < 0)
                     continue;
 
-                  vector3 subvec = ve->pos - light_center;
+                  vector3 subvec = ve.pos - light_center;
                   float mag = vm_GetMagnitudeFast(subvec);
 
                   if (mag > sphere_dist)
@@ -891,17 +891,17 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
                   if (!BOA_IsVisible(roomnum, from_roomnum(rad_MaxSurface->roomnum))) {
                     hit = 0;
                   } else {
-                    if (ve->flags.reverse_shoot)
-                      hit = ShootRayToVolumePoint(ve->pos, light_center, roomnum);
+                    if (ve.flags.reverse_shoot)
+                      hit = ShootRayToVolumePoint(ve.pos, light_center, roomnum);
                     else
-                      hit = ShootRayToVolumePoint(light_center, ve->pos, from_roomnum(rad_MaxSurface->roomnum));
+                      hit = ShootRayToVolumePoint(light_center, ve.pos, from_roomnum(rad_MaxSurface->roomnum));
                   }
 
                   if (hit) {
 
-                    ve->color.r += rad_MaxElement->exitance.r * scalar;
-                    ve->color.g += rad_MaxElement->exitance.g * scalar;
-                    ve->color.b += rad_MaxElement->exitance.b * scalar;
+                    ve.color.r += rad_MaxElement->exitance.r * scalar;
+                    ve.color.g += rad_MaxElement->exitance.g * scalar;
+                    ve.color.b += rad_MaxElement->exitance.b * scalar;
                   }
                 }
               }
@@ -912,12 +912,12 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
           for (i = 0; i < d; i++) {
             for (t = 0; t < h; t++) {
               for (int j = 0; j < w; j++) {
-                volume_element *ve = &Volume_elements[roomnum][(i * w * h) + (t * w) + j];
+                volume_element &ve = Volume_elements[roomnum][(i * w * h) + (t * w) + j];
 
-                if (ve->color.r < 0)
+                if (ve.color.r < 0)
                   continue;
 
-                vector3 subvec = ve->pos - src_center;
+                vector3 subvec = ve.pos - src_center;
                 float mag = vm_GetMagnitudeFast(subvec);
 
                 if (mag > sphere_dist)
@@ -937,16 +937,16 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
                 if (!BOA_IsVisible(roomnum, from_roomnum(rad_MaxSurface->roomnum))) {
                   hit = 0;
                 } else {
-                  if (ve->flags.reverse_shoot)
-                    hit = ShootRayToVolumePoint(ve->pos, src_center, roomnum);
+                  if (ve.flags.reverse_shoot)
+                    hit = ShootRayToVolumePoint(ve.pos, src_center, roomnum);
                   else
-                    hit = ShootRayToVolumePoint(src_center, ve->pos, from_roomnum(rad_MaxSurface->roomnum));
+                    hit = ShootRayToVolumePoint(src_center, ve.pos, from_roomnum(rad_MaxSurface->roomnum));
                 }
 
                 if (hit) {
-                  ve->color.r += rad_MaxSurface->exitance.r * scalar;
-                  ve->color.g += rad_MaxSurface->exitance.g * scalar;
-                  ve->color.b += rad_MaxSurface->exitance.b * scalar;
+                  ve.color.r += rad_MaxSurface->exitance.r * scalar;
+                  ve.color.g += rad_MaxSurface->exitance.g * scalar;
+                  ve.color.b += rad_MaxSurface->exitance.b * scalar;
                 }
               }
             }
@@ -1042,22 +1042,22 @@ void CalculateFormFactorsRaycast() {
     }
 
     for (t = 0; t < dest_num_elements; t++) {
-      rad_element *dest_element = &dest_surf->elements[t];
+      rad_element &dest_element = dest_surf->elements[t];
 
       raycount++;
 
       if (ignore)
         continue;
 
-      if (dest_element->flags.ignore)
+      if (dest_element.flags.ignore)
         continue;
 
       if (Shoot_from_patch || rad_MaxSurface->surface_type == rad_surface_type::satellite ||
           !rad_MaxSurface->flags.lightsource) {
         if (rad_MaxSurface->surface_type == rad_surface_type::satellite)
-          form_factor = GetFormFactorForElementAndSatellite(dest_surf, dest_element, &src_center);
+          form_factor = GetFormFactorForElementAndSatellite(dest_surf, &dest_element, &src_center);
         else
-          form_factor = GetFormFactorForElement(dest_surf, dest_element, &src_center);
+          form_factor = GetFormFactorForElement(dest_surf, &dest_element, &src_center);
 
         // Now extract the form factor info out to exitances
         if (form_factor > 0) {
@@ -1070,13 +1070,13 @@ void CalculateFormFactorsRaycast() {
           delta.b = shoot.b * reflect_factor * form_factor;
 
           // update element exitance
-          dest_element->exitance.r += delta.r;
-          dest_element->exitance.g += delta.g;
-          dest_element->exitance.b += delta.b;
+          dest_element.exitance.r += delta.r;
+          dest_element.exitance.g += delta.g;
+          dest_element.exitance.b += delta.b;
 
-          dest_surf->exitance.r += ((dest_element->area / dest_surf->area) * delta.r);
-          dest_surf->exitance.g += ((dest_element->area / dest_surf->area) * delta.g);
-          dest_surf->exitance.b += ((dest_element->area / dest_surf->area) * delta.b);
+          dest_surf->exitance.r += ((dest_element.area / dest_surf->area) * delta.r);
+          dest_surf->exitance.g += ((dest_element.area / dest_surf->area) * delta.g);
+          dest_surf->exitance.b += ((dest_element.area / dest_surf->area) * delta.b);
         }
       } else // Do super detail
       {
@@ -1088,7 +1088,7 @@ void CalculateFormFactorsRaycast() {
           if (rad_MaxElement->flags.ignore)
             continue;
 
-          form_factor = GetFormFactorForElementSuperDetail(dest_surf, dest_element);
+          form_factor = GetFormFactorForElementSuperDetail(dest_surf, &dest_element);
           // Now extract the form factor info out to exitances
           if (form_factor > 0) {
             spectra shoot = rad_MaxElement->exitance;
@@ -1098,13 +1098,13 @@ void CalculateFormFactorsRaycast() {
             delta.g = shoot.g * reflect_factor * form_factor;
             delta.b = shoot.b * reflect_factor * form_factor;
             // update element exitance
-            dest_element->exitance.r += delta.r;
-            dest_element->exitance.g += delta.g;
-            dest_element->exitance.b += delta.b;
+            dest_element.exitance.r += delta.r;
+            dest_element.exitance.g += delta.g;
+            dest_element.exitance.b += delta.b;
 
-            dest_surf->exitance.r += ((dest_element->area / dest_surf->area) * delta.r);
-            dest_surf->exitance.g += ((dest_element->area / dest_surf->area) * delta.g);
-            dest_surf->exitance.b += ((dest_element->area / dest_surf->area) * delta.b);
+            dest_surf->exitance.r += ((dest_element.area / dest_surf->area) * delta.r);
+            dest_surf->exitance.g += ((dest_element.area / dest_surf->area) * delta.g);
+            dest_surf->exitance.b += ((dest_element.area / dest_surf->area) * delta.b);
           }
         }
       }

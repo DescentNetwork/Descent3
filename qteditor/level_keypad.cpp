@@ -32,12 +32,12 @@ float levelCeiling() {
   float maxy = -1e30f;
   bool any = false;
   for (size_t r = 0; r < Rooms.size(); r++) {
-    room_t *rp = &Rooms[r];
-    if (!rp->used)
+    room_t &rp = Rooms[r];
+    if (!rp.used)
       continue;
-    for (int v = 0; v < rp->num_verts; v++) {
-      if (rp->verts[v].y() > maxy) {
-        maxy = rp->verts[v].y();
+    for (int v = 0; v < rp.num_verts; v++) {
+      if (rp.verts[v].y() > maxy) {
+        maxy = rp.verts[v].y();
         any = true;
       }
     }
@@ -77,11 +77,11 @@ void LevelKeypad::onCeilingEdited() {
     const float cur = levelCeiling();
     const float delta = target - cur;
     for (size_t r = 0; r < Rooms.size(); r++) {
-      room_t *rp = &Rooms[r];
-      if (!rp->used)
+      room_t &rp = Rooms[r];
+      if (!rp.used)
         continue;
-      for (int v = 0; v < rp->num_verts; v++)
-        rp->verts[v].y() += delta;
+      for (int v = 0; v < rp.num_verts; v++)
+        rp.verts[v].y() += delta;
     }
     app.World_changed = true;
   }

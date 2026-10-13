@@ -97,36 +97,36 @@ static int CreateDefaultRoom() {
   if (slot < 0)
     return -1;
 
-  room_t *rp = &Rooms[slot];
-  InitRoom(*rp, 16, 10, 0);
+  room_t &rp = Rooms[slot];
+  InitRoom(rp, 16, 10, 0);
 
   // Set the 16 vertices, offset to Mine_origin.
   for (int i = 0; i < 16; i++)
-    rp->verts[i] = default_room_verts[i] + Mine_origin;
+    rp.verts[i] = default_room_verts[i] + Mine_origin;
 
   // Face 0: front octagonal cap (verts 0..7).
-  InitRoomFace(rp->faces[0], 8);
+  InitRoomFace(rp.faces[0], 8);
   for (int i = 0; i < 8; i++)
-    rp->faces[0].face_verts[i] = i;
+    rp.faces[0].face_verts[i] = i;
 
   // Face 1: back octagonal cap (verts 15..8, reversed).
-  InitRoomFace(rp->faces[1], 8);
+  InitRoomFace(rp.faces[1], 8);
   for (int i = 0; i < 8; i++)
-    rp->faces[1].face_verts[i] = 15 - i;
+    rp.faces[1].face_verts[i] = 15 - i;
 
   // Faces 2..9: eight side quads connecting front and back edges.
   for (int i = 0; i < 8; i++) {
-    InitRoomFace(rp->faces[i + 2], 4);
-    rp->faces[i + 2].face_verts[0] = i;
-    rp->faces[i + 2].face_verts[1] = i + 8;
-    rp->faces[i + 2].face_verts[2] = ((i + 1) % 8) + 8;
-    rp->faces[i + 2].face_verts[3] = (i + 1) % 8;
+    InitRoomFace(rp.faces[i + 2], 4);
+    rp.faces[i + 2].face_verts[0] = i;
+    rp.faces[i + 2].face_verts[1] = i + 8;
+    rp.faces[i + 2].face_verts[2] = ((i + 1) % 8) + 8;
+    rp.faces[i + 2].face_verts[3] = (i + 1) % 8;
   }
 
   // Compute normals, assign textures and UVs for every face.
   for (int i = 0; i < 10; i++) {
     ComputeFaceNormal(slot, i);
-    rp->faces[i].tmap = i + 1;
+    rp.faces[i].tmap = i + 1;
     AssignDefaultUVsToRoomFace(slot, i);
   }
 
@@ -499,11 +499,11 @@ std::string RenderLevelStats() {
       total_volume_bytes += GetVolumeSizeOfRoom(i);
 
     for (int t = 0; t < rp.num_faces; t++) {
-      const face *fp = &rp.faces[t];
-      if (fp->special_handle != BAD_SPECIAL_FACE_INDEX &&
-          (GameTextures[fp->tmap].flags.metal || GameTextures[fp->tmap].flags.marble ||
-           GameTextures[fp->tmap].flags.plastic) &&
-          fp->lmi_handle != BAD_LMI_INDEX)
+      const face &fp = rp.faces[t];
+      if (fp.special_handle != BAD_SPECIAL_FACE_INDEX &&
+          (GameTextures[fp.tmap].flags.metal || GameTextures[fp.tmap].flags.marble ||
+           GameTextures[fp.tmap].flags.plastic) &&
+          fp.lmi_handle != BAD_LMI_INDEX)
         spec_faces++;
     }
     if (rp.flags.door)

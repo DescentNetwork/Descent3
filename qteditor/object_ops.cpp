@@ -445,10 +445,10 @@ void HObjectMoveToViewer(object& objp) {
 // Flips the current object by negating its up and right vectors.
 // ============================================================================
 void HObjectFlip() {
-  matrix *m = &Objects[*app.Cur_object_index].orient;
+  matrix &m = Objects[*app.Cur_object_index].orient;
 
-  m->uvec = -m->uvec;
-  m->rvec = -m->rvec;
+  m.uvec = -m.uvec;
+  m.rvec = -m.rvec;
 
   app.World_changed = true;
 }

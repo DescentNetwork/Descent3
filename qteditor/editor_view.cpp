@@ -361,15 +361,15 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
     return;
 
   for (size_t r = projStart; r <= projEnd; r++) {
-    room_t *rp = &Rooms[r];
-    if (!rp->used)
+    room_t &rp = Rooms[r];
+    if (!rp.used)
       continue;
-    for (int f = 0; f < rp->num_faces; f++) {
-      face *fp = &rp->faces[f];
+    for (int f = 0; f < rp.num_faces; f++) {
+      face &fp = rp.faces[f];
       QVector<ProjectedVertex> face;
       bool ok = true;
-      for (int v = 0; v < fp->num_verts; v++) {
-        const vector3 &world = rp->verts[fp->face_verts[v]];
+      for (int v = 0; v < fp.num_verts; v++) {
+        const vector3 &world = rp.verts[fp.face_verts[v]];
         float sx, sy;
         if (!projectVertex(world, &sx, &sy)) {
           ok = false;
@@ -490,19 +490,19 @@ void EditorView::renderRooms() {
   float solidMaxDepth = 10.0f;
   if (!m_wireframe) {
     for (size_t rr = renderStart; rr <= renderEnd; rr++) {
-      room_t *rpc = &Rooms[rr];
-      if (!rpc->used)
+      room_t &rpc = Rooms[rr];
+      if (!rpc.used)
         continue;
-      for (int i = 0; i < rpc->num_faces; i++) {
-        face *fp = &rpc->faces[i];
-        int fnv = fp->num_verts;
+      for (int i = 0; i < rpc.num_faces; i++) {
+        face &fp = rpc.faces[i];
+        int fnv = fp.num_verts;
         if (fnv > 16)
           fnv = 16;
         if (fnv < 3)
           continue;
         for (int v = 0; v < fnv; v++) {
           float tsx, tsy, td;
-          if (projectVertexDepth(rpc->verts[fp->face_verts[v]], &tsx, &tsy, &td)) {
+          if (projectVertexDepth(rpc.verts[fp.face_verts[v]], &tsx, &tsy, &td)) {
             if (td > solidMaxDepth)
               solidMaxDepth = td;
           }
@@ -525,15 +525,15 @@ void EditorView::renderRooms() {
     glDisable(GL_CULL_FACE);
   }
   for (size_t r = renderStart; r <= renderEnd; r++) {
-    room_t *rp = &Rooms[r];
-    if (!rp->used)
+    room_t &rp = Rooms[r];
+    if (!rp.used)
       continue;
 
     if (m_wireframe) {
       // The Win32 wireframe view only draws rooms within the view radius of
       // the target (DrawAllRooms, editor/drawworld.cpp:745-759).
-      if (app.view_mode != state::viewer::room && rp->num_verts > 0 &&
-          vm_VectorDistance(rp->verts[0], m_target) >= m_rad)
+      if (app.view_mode != state::viewer::room && rp.num_verts > 0 &&
+          vm_VectorDistance(rp.verts[0], m_target) >= m_rad)
         continue;
 
       // Wireframe: use edge deduplication with backface-aware coloring,
@@ -541,10 +541,10 @@ void EditorView::renderRooms() {
       resetEdgeTable();
 
       // Build screen-space coords for every vertex in this room.
-      const int nv = rp->num_verts;
+      const int nv = rp.num_verts;
       QVector<float> sxv(nv), syv(nv);
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(rp->verts[v], &sxv[v], &syv[v])) {
+        if (!projectVertex(rp.verts[v], &sxv[v], &syv[v])) {
           sxv[v] = syv[v] = -9999.0f;
         }
       }
@@ -553,16 +553,16 @@ void EditorView::renderRooms() {
       const bool selected = IsRoomSelected(r);
       const bool isCurRoom = (r == index_to_int(app.current.room));
 
-      for (int i = 0; i < rp->num_faces; i++) {
-        face *fp = &rp->faces[i];
-        int fnv = fp->num_verts;
+      for (int i = 0; i < rp.num_faces; i++) {
+        face &fp = rp.faces[i];
+        int fnv = fp.num_verts;
         if (fnv > 16)
           fnv = 16;
 
         // Skip faces with any behind-camera vertex.
         bool behind = false;
         for (int v = 0; v < fnv; v++) {
-          if (sxv[fp->face_verts[v]] < -9000.0f) {
+          if (sxv[fp.face_verts[v]] < -9000.0f) {
             behind = true;
             break;
           }
@@ -572,22 +572,22 @@ void EditorView::renderRooms() {
 
         // Floating trigger: draw edges directly in red, including the two
         // diagonals the Win32 editor adds (DrawRoom, drawworld.cpp:618-622).
-        if (fp->flags.floating_trig) {
+        if (fp.flags.floating_trig) {
           glColor3fv(kWfFloatTrigColor);
           glLineWidth(1.0f);
           glBegin(GL_LINE_LOOP);
           for (int v = 0; v < fnv; v++) {
-            int vi = fp->face_verts[v];
+            int vi = fp.face_verts[v];
             glVertex2f(sxv[vi], syv[vi]);
           }
           glEnd();
           if (fnv >= 3) {
             glBegin(GL_LINES);
-            glVertex2f(sxv[fp->face_verts[0]], syv[fp->face_verts[0]]);
-            glVertex2f(sxv[fp->face_verts[2]], syv[fp->face_verts[2]]);
+            glVertex2f(sxv[fp.face_verts[0]], syv[fp.face_verts[0]]);
+            glVertex2f(sxv[fp.face_verts[2]], syv[fp.face_verts[2]]);
             if (fnv >= 4) {
-              glVertex2f(sxv[fp->face_verts[1]], syv[fp->face_verts[1]]);
-              glVertex2f(sxv[fp->face_verts[3]], syv[fp->face_verts[3]]);
+              glVertex2f(sxv[fp.face_verts[1]], syv[fp.face_verts[1]]);
+              glVertex2f(sxv[fp.face_verts[3]], syv[fp.face_verts[3]]);
             }
             glEnd();
           }
@@ -597,7 +597,7 @@ void EditorView::renderRooms() {
         // Room-to-room portal faces are skipped entirely in the wireframe
         // view (DrawRoom gates on fp->portal_num == -1); only *terrain*
         // portals are drawn, in blue, after all the edges.
-        if (fp->portal_num != -1)
+        if (fp.portal_num != -1)
           continue;
 
         // Determine facing as the Win32 editor does: the tested point is the
@@ -605,16 +605,16 @@ void EditorView::renderRooms() {
         // The classification is intentionally inverted in the legacy code so
         // facing edges come out dark (first batch) and non-facing light
         // (second batch, on top).
-        vector3 toCamera = m_eye - rp->verts[fp->face_verts[0]];
-        const bool facing = (fp->normal.x() * toCamera.x() +
-                             fp->normal.y() * toCamera.y() +
-                             fp->normal.z() * toCamera.z()) > 0.0f;
+        vector3 toCamera = m_eye - rp.verts[fp.face_verts[0]];
+        const bool facing = (fp.normal.x() * toCamera.x() +
+                             fp.normal.y() * toCamera.y() +
+                             fp.normal.z() * toCamera.z()) > 0.0f;
 
         EdgeType edgeType = facing ? EdgeType::not_facing : EdgeType::facing;
 
         for (int v = 0; v < fnv; v++) {
-          int v0 = fp->face_verts[v];
-          int v1 = fp->face_verts[(v + 1) % fnv];
+          int v0 = fp.face_verts[v];
+          int v1 = fp.face_verts[(v + 1) % fnv];
           addEdge(v0, v1, edgeType, sxv[v0], syv[v0], sxv[v1], syv[v1]);
         }
       }
@@ -628,16 +628,16 @@ void EditorView::renderRooms() {
       // their red, terrain portals stay blue below.)
       if (selected && !isCurRoom) {
         resetEdgeTable();
-        for (int i = 0; i < rp->num_faces; i++) {
-          face *fp = &rp->faces[i];
-          if ((fp->flags.floating_trig) || fp->portal_num != -1)
+        for (int i = 0; i < rp.num_faces; i++) {
+          face &fp = rp.faces[i];
+          if ((fp.flags.floating_trig) || fp.portal_num != -1)
             continue;
-          int fnv = fp->num_verts;
+          int fnv = fp.num_verts;
           if (fnv > 16)
             fnv = 16;
           for (int v = 0; v < fnv; v++) {
-            int v0 = fp->face_verts[v];
-            int v1 = fp->face_verts[(v + 1) % fnv];
+            int v0 = fp.face_verts[v];
+            int v1 = fp.face_verts[(v + 1) % fnv];
             if (sxv[v0] > -9000.0f && sxv[v1] > -9000.0f)
               addEdge(v0, v1, EdgeType::facing, sxv[v0], syv[v0], sxv[v1], syv[v1]);
           }
@@ -646,17 +646,17 @@ void EditorView::renderRooms() {
       }
 
       // Now draw the terrain portals in blue (DrawRoom, drawworld.cpp:638-646).
-      for (int p = 0; p < rp->num_portals; p++) {
-        portal *pp = &rp->portals[p];
-        if (pp->connected_room != -1)
+      for (int p = 0; p < rp.num_portals; p++) {
+        portal &pp = rp.portals[p];
+        if (pp.connected_room != -1)
           continue;
-        face *fp = &rp->faces[pp->portal_face];
-        int pnv = fp->num_verts;
+        face &fp = rp.faces[pp.portal_face];
+        int pnv = fp.num_verts;
         if (pnv > 16)
           pnv = 16;
         bool behind = false;
         for (int v = 0; v < pnv; v++) {
-          if (sxv[fp->face_verts[v]] < -9000.0f) {
+          if (sxv[fp.face_verts[v]] < -9000.0f) {
             behind = true;
             break;
           }
@@ -667,23 +667,23 @@ void EditorView::renderRooms() {
         glLineWidth(1.0f);
         glBegin(GL_LINE_LOOP);
         for (int v = 0; v < pnv; v++) {
-          int vi = fp->face_verts[v];
+          int vi = fp.face_verts[v];
           glVertex2f(sxv[vi], syv[vi]);
         }
         glEnd();
       }
     } else {
       // Textured / solid mode.
-      for (int i = 0; i < rp->num_faces; i++) {
-        face *fp = &rp->faces[i];
+      for (int i = 0; i < rp.num_faces; i++) {
+        face &fp = rp.faces[i];
 
         float sx[16], sy[16], d[16];
-        int nv = fp->num_verts;
+        int nv = fp.num_verts;
         if (nv > 16)
           nv = 16;
         bool behind = false;
         for (int v = 0; v < nv; v++) {
-          if (!projectVertexDepth(rp->verts[fp->face_verts[v]], &sx[v], &sy[v], &d[v])) {
+          if (!projectVertexDepth(rp.verts[fp.face_verts[v]], &sx[v], &sy[v], &d[v])) {
             behind = true;
             break;
           }
@@ -706,9 +706,9 @@ void EditorView::renderRooms() {
                             d.z() * m_orient.fvec.z()};
           };
           vector3 v0, v1, v2;
-          toViewScratch(rp->verts[fp->face_verts[0]], v0);
-          toViewScratch(rp->verts[fp->face_verts[1]], v1);
-          toViewScratch(rp->verts[fp->face_verts[2]], v2);
+          toViewScratch(rp.verts[fp.face_verts[0]], v0);
+          toViewScratch(rp.verts[fp.face_verts[1]], v1);
+          toViewScratch(rp.verts[fp.face_verts[2]], v2);
           const vector3 n = vm_Cross3Product(v1 - v0, v2 - v0);
           if (!(vector3::dot(n, v1) < 0.0f))
             continue; // back-facing -> not drawn (matches pick)
@@ -719,7 +719,7 @@ void EditorView::renderRooms() {
         float len = vm_NormalizeVector(ld);
         if (len < 0.001f)
           ld = vector3{0, 1, 0};
-        float diff = (fp->normal.x() * ld.x() + fp->normal.y() * ld.y() + fp->normal.z() * ld.z());
+        float diff = (fp.normal.x() * ld.x() + fp.normal.y() * ld.y() + fp.normal.z() * ld.z());
         float shade = 0.35f + 0.65f * (diff < 0 ? -diff : diff);
         if (shade > 1.0f)
           shade = 1.0f;
@@ -735,8 +735,8 @@ void EditorView::renderRooms() {
 
         // Texture the face if possible.
         int bm = -1;
-        if (fp->tmap >= 0 && fp->tmap < static_cast<int>(GameTextures.size()) && GameTextures.is_used(fp->tmap))
-          bm = GameTextures[fp->tmap].bm_handle;
+        if (fp.tmap >= 0 && fp.tmap < static_cast<int>(GameTextures.size()) && GameTextures.is_used(fp.tmap))
+          bm = GameTextures[fp.tmap].bm_handle;
         if (bm >= 0) {
           ensureTexture(bm);
           auto it = m_textures.constFind(bm);
@@ -749,9 +749,9 @@ void EditorView::renderRooms() {
             glBegin(GL_TRIANGLE_FAN);
             for (int v = 0; v < nv; v++) {
               float u = 0, vv = 0;
-              if (!fp->face_uvls.empty() && tw > 0 && th > 0) {
-                u = fp->face_uvls[v].u / tw;
-                vv = fp->face_uvls[v].v / th;
+              if (!fp.face_uvls.empty() && tw > 0 && th > 0) {
+                u = fp.face_uvls[v].u / tw;
+                vv = fp.face_uvls[v].v / th;
               }
               glTexCoord2f(u, vv);
               glVertex3f(sx[v], sy[v], d[v]);
@@ -790,14 +790,14 @@ void EditorView::renderOverlays() {
         Rooms[*app.current.room].used &&
         app.current.room == app.current_room &&
         *app.current.face < Rooms[*app.current.room].num_faces) {
-      face *fp = &Rooms[*app.current.room].faces[*app.current.face];
+      face &fp = Rooms[*app.current.room].faces[*app.current.face];
       float sx[16], sy[16];
-      int nv = fp->num_verts;
+      int nv = fp.num_verts;
       if (nv > 16)
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(Rooms[*app.current.room].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[*app.current.room].verts[fp.face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -820,14 +820,14 @@ void EditorView::renderOverlays() {
   // over them where they overlap (DrawWorld, editor/drawworld.cpp:851-863).
   if (liveRoom(index_to_int(app.marked.room)) && Rooms[*app.marked.room].used) {
     if (app.marked.face.has_value() && index_to_int(app.marked.face) < Rooms[*app.marked.room].num_faces) {
-      face *fp = &Rooms[*app.marked.room].faces[*app.marked.face];
+      face &fp = Rooms[*app.marked.room].faces[*app.marked.face];
       float sx[16], sy[16];
-      int nv = fp->num_verts;
+      int nv = fp.num_verts;
       if (nv > 16)
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(Rooms[*app.marked.room].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[*app.marked.room].verts[fp.face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -854,8 +854,8 @@ void EditorView::renderOverlays() {
         }
 
         // Marked vertex cross in teal.
-        if (app.marked.vert.has_value() && index_to_int(app.marked.vert) < fp->num_verts) {
-          int vi = fp->face_verts[*app.marked.vert];
+        if (app.marked.vert.has_value() && index_to_int(app.marked.vert) < fp.num_verts) {
+          int vi = fp.face_verts[*app.marked.vert];
           float vx, vy;
           if (projectVertex(Rooms[*app.marked.room].verts[vi], &vx, &vy))
             drawVertCross(vx, vy, kWfMarkedEdgeColor);
@@ -872,16 +872,16 @@ void EditorView::renderOverlays() {
     glColor3fv(kWfCurRoomColor);
     glLineWidth(1.0f);
     for (int i = 0; i < Rooms[*app.current.room].num_faces; i++) {
-      face *fp = &Rooms[*app.current.room].faces[i];
-      if ((fp->flags.floating_trig) || fp->portal_num != -1)
+      face &fp = Rooms[*app.current.room].faces[i];
+      if ((fp.flags.floating_trig) || fp.portal_num != -1)
         continue;
       float sx[16], sy[16];
-      int nv = fp->num_verts;
+      int nv = fp.num_verts;
       if (nv > 16)
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(Rooms[*app.current.room].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[*app.current.room].verts[fp.face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -898,14 +898,14 @@ void EditorView::renderOverlays() {
     if (app.current.portal.has_value() && index_to_int(app.current.portal) < Rooms[*app.current.room].num_portals) {
       int faceIdx = Rooms[*app.current.room].portals[*app.current.portal].portal_face;
       if (faceIdx >= 0 && faceIdx < Rooms[*app.current.room].num_faces) {
-        face *fp = &Rooms[*app.current.room].faces[faceIdx];
+        face &fp = Rooms[*app.current.room].faces[faceIdx];
         float sx[16], sy[16];
-        int nv = fp->num_verts;
+        int nv = fp.num_verts;
         if (nv > 16)
           nv = 16;
         bool ok = true;
         for (int v = 0; v < nv; v++) {
-          if (!projectVertex(Rooms[*app.current.room].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+          if (!projectVertex(Rooms[*app.current.room].verts[fp.face_verts[v]], &sx[v], &sy[v])) {
             ok = false;
             break;
           }
@@ -924,14 +924,14 @@ void EditorView::renderOverlays() {
 
     // Current face in yellow.
     if (app.current.face.has_value() && index_to_int(app.current.face) < Rooms[*app.current.room].num_faces) {
-      face *fp = &Rooms[*app.current.room].faces[*app.current.face];
+      face &fp = Rooms[*app.current.room].faces[*app.current.face];
       float sx[16], sy[16];
-      int nv = fp->num_verts;
+      int nv = fp.num_verts;
       if (nv > 16)
         nv = 16;
       bool ok = true;
       for (int v = 0; v < nv; v++) {
-        if (!projectVertex(Rooms[*app.current.room].verts[fp->face_verts[v]], &sx[v], &sy[v])) {
+        if (!projectVertex(Rooms[*app.current.room].verts[fp.face_verts[v]], &sx[v], &sy[v])) {
           ok = false;
           break;
         }
@@ -957,8 +957,8 @@ void EditorView::renderOverlays() {
 
         // Current vertex cross in green (DrawVertBox at
         // faces[*app.current.face].face_verts[*app.current.vert], CUREDGE_COLOR).
-        if (app.current.vert.has_value() && index_to_int(app.current.vert) < fp->num_verts) {
-          int vi = fp->face_verts[*app.current.vert];
+        if (app.current.vert.has_value() && index_to_int(app.current.vert) < fp.num_verts) {
+          int vi = fp.face_verts[*app.current.vert];
           float vx, vy;
           if (projectVertex(Rooms[*app.current.room].verts[vi], &vx, &vy))
             drawVertCross(vx, vy, kWfCurEdgeColor);
@@ -1152,22 +1152,22 @@ void EditorView::renderObjects() {
   LOG_DEBUG("Rendering %i objects", Highest_object_index);
 
   for (int i = 0; i <= Highest_object_index; i++) {
-    object *obj = &Objects[i];
-    if (obj->type == object_type_e::none || obj->type == object_type_e::door)
+    object &obj = Objects[i];
+    if (obj.type == object_type_e::none || obj.type == object_type_e::door)
       continue;
 
     // A room is only drawn when its verts[0] is within the render radius
     // (DrawAllRooms); objects live in rooms and follow the same gate.
-    if (!obj->roomnum || *obj->roomnum >= Rooms.size())
+    if (!obj.roomnum || *obj.roomnum >= Rooms.size())
       continue;
-    room_t *rp = &Rooms[*obj->roomnum];
-    if (!rp->used || rp->num_verts == 0)
+    room_t &rp = Rooms[*obj.roomnum];
+    if (!rp.used || rp.num_verts == 0)
       continue;
-    if (vm_VectorDistance(rp->verts[0], m_target) >= m_rad)
+    if (vm_VectorDistance(rp.verts[0], m_target) >= m_rad)
       continue;
 
     // Un-clipped projection like the legacy editor: draw even behind camera.
-    vector3 d = obj->pos - m_eye;
+    vector3 d = obj.pos - m_eye;
     const float cz = d.x() * m_orient.fvec.x() + d.y() * m_orient.fvec.y() + d.z() * m_orient.fvec.z();
     if (cz > -0.001f && cz < 0.001f)
       continue;
@@ -1178,7 +1178,7 @@ void EditorView::renderObjects() {
     const float sy = h * 0.5f - (cy / cz) * getFocal();
 
     // Color by object type (DrawRoomObjects switch).  Doors were skipped above.
-    switch (obj->type) {
+    switch (obj.type) {
     case object_type_e::player:
       glColor3f(0.0f, 1.0f, 0.0f); // PLAYER_COLOR GR_RGB(0,255,0)
       break;
@@ -1200,7 +1200,7 @@ void EditorView::renderObjects() {
     }
 
     // g3_DrawSphere: filled disk of radius obj->size * focal / depth.
-    const float radius = (obj->size * focalX) / cz;
+    const float radius = (obj.size * focalX) / cz;
     constexpr int kSegments = 32;
     glBegin(GL_TRIANGLE_FAN);
     glVertex2f(sx, sy);
@@ -1239,17 +1239,17 @@ void EditorView::renderPaths() {
     if (current_path_index < 0)
       break;
 
-    game_path *gp = &GamePaths[current_path_index];
-    if (!GamePaths.is_used(current_path_index) || gp->num_nodes == 0)
+    game_path &gp = GamePaths[current_path_index];
+    if (!GamePaths.is_used(current_path_index) || gp.num_nodes == 0)
       continue;
 
     bool isCurrent = (current_path_index == app.current_path);
 
-    for (int t = 0; t < gp->num_nodes - 1; t++) {
+    for (int t = 0; t < gp.num_nodes - 1; t++) {
       float ax, ay, az, bx, by, bz;
-      if (!projectVertexDepth(gp->pathnodes[t].pos, &ax, &ay, &az))
+      if (!projectVertexDepth(gp.pathnodes[t].pos, &ax, &ay, &az))
         continue;
-      if (!projectVertexDepth(gp->pathnodes[t + 1].pos, &bx, &by, &bz))
+      if (!projectVertexDepth(gp.pathnodes[t + 1].pos, &bx, &by, &bz))
         continue;
 
       glColor3f(0.14f, 0.39f, 0.93f);
@@ -1261,9 +1261,9 @@ void EditorView::renderPaths() {
       glEnd();
     }
 
-    for (int t = 0; t < gp->num_nodes; t++) {
+    for (int t = 0; t < gp.num_nodes; t++) {
       float nx, ny, nz;
-      if (!projectVertexDepth(gp->pathnodes[t].pos, &nx, &ny, &nz))
+      if (!projectVertexDepth(gp.pathnodes[t].pos, &nx, &ny, &nz))
         continue;
 
       float size = (focal * 1.2f) / nz;
@@ -1284,9 +1284,9 @@ void EditorView::renderPaths() {
       glVertex2f(nx - hs, ny);
       glEnd();
 
-      float fex = gp->pathnodes[t].pos.x() + gp->pathnodes[t].fvec.x() * (size * 0.4f);
-      float fey = gp->pathnodes[t].pos.y() + gp->pathnodes[t].fvec.y() * (size * 0.4f);
-      float fez = gp->pathnodes[t].pos.z() + gp->pathnodes[t].fvec.z() * (size * 0.4f);
+      float fex = gp.pathnodes[t].pos.x() + gp.pathnodes[t].fvec.x() * (size * 0.4f);
+      float fey = gp.pathnodes[t].pos.y() + gp.pathnodes[t].fvec.y() * (size * 0.4f);
+      float fez = gp.pathnodes[t].pos.z() + gp.pathnodes[t].fvec.z() * (size * 0.4f);
       vector3 fepos{fex, fey, fez};
       float fx, fy, fdep;
       if (projectVertexDepth(fepos, &fx, &fy, &fdep)) {
@@ -1297,9 +1297,9 @@ void EditorView::renderPaths() {
         glEnd();
       }
 
-      float uex = gp->pathnodes[t].pos.x() + gp->pathnodes[t].uvec.x() * (size * 0.4f);
-      float uey = gp->pathnodes[t].pos.y() + gp->pathnodes[t].uvec.y() * (size * 0.4f);
-      float uez = gp->pathnodes[t].pos.z() + gp->pathnodes[t].uvec.z() * (size * 0.4f);
+      float uex = gp.pathnodes[t].pos.x() + gp.pathnodes[t].uvec.x() * (size * 0.4f);
+      float uey = gp.pathnodes[t].pos.y() + gp.pathnodes[t].uvec.y() * (size * 0.4f);
+      float uez = gp.pathnodes[t].pos.z() + gp.pathnodes[t].uvec.z() * (size * 0.4f);
       vector3 uepos{uex, uey, uez};
       float ux, uy, udep;
       if (projectVertexDepth(uepos, &ux, &uy, &udep)) {
@@ -1546,11 +1546,11 @@ void EditorView::fitToMine() {
   vector3 mn{1e30f, 1e30f, 1e30f}, mx{-1e30f, -1e30f, -1e30f};
   bool any = false;
   for (size_t r = 0; r < Rooms.size(); r++) {
-    room_t *rp = &Rooms[r];
-    if (!rp->used)
+    room_t &rp = Rooms[r];
+    if (!rp.used)
       continue;
-    for (int v = 0; v < rp->num_verts; v++) {
-      const vector3 &p = rp->verts[v];
+    for (int v = 0; v < rp.num_verts; v++) {
+      const vector3 &p = rp.verts[v];
       mn.x() = std::min(mn.x(), p.x());
       mn.y() = std::min(mn.y(), p.y());
       mn.z() = std::min(mn.z(), p.z());
@@ -1847,8 +1847,8 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
 
   const float rad2 = m_rad * m_rad;
   for (size_t r = pickStart; r <= pickEnd; r++) {
-    room_t *rp = &Rooms[r];
-    if (!rp->used)
+    room_t &rp = Rooms[r];
+    if (!rp.used)
       continue;
 
     // Win32 DrawAllRooms gating: only rooms whose first vertex lies within the
@@ -1856,20 +1856,20 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
     // current room, which is always a candidate (state::viewer::room already restricts to
     // a single room, so this only matters in state::viewer::mine).
     const bool isCurrent = (app.current_room == r);
-    if (!isCurrent && rp->num_verts > 0 &&
-        (vm_VectorDistance(rp->verts[0], m_target) * vm_VectorDistance(rp->verts[0], m_target)) > rad2)
+    if (!isCurrent && rp.num_verts > 0 &&
+        (vm_VectorDistance(rp.verts[0], m_target) * vm_VectorDistance(rp.verts[0], m_target)) > rad2)
       continue;
 
-    for (int f = 0; f < rp->num_faces; f++) {
-      face *fp = &rp->faces[f];
-      int nv = fp->num_verts;
+    for (int f = 0; f < rp.num_faces; f++) {
+      face &fp = rp.faces[f];
+      int nv = fp.num_verts;
       if (nv < 3 || nv > MAX_VERTS_PER_FACE)
         continue;
 
       float sx[64], sy[64], sz[64];
       int inFront = 0;
       for (int v = 0; v < nv; v++) {
-        if (projectVertexDepth(rp->verts[fp->face_verts[v]], &sx[v], &sy[v], &sz[v]))
+        if (projectVertexDepth(rp.verts[fp.face_verts[v]], &sx[v], &sy[v], &sz[v]))
           inFront++;
       }
       if (inFront < 1)
@@ -1888,9 +1888,9 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
       // transform is a reflection (left-handed), so a naive world-space cross
       // product would flip the facing sign.  Back faces are never selectable.
       {
-        const vector3 &w0 = rp->verts[fp->face_verts[0]];
-        const vector3 &w1 = rp->verts[fp->face_verts[1]];
-        const vector3 &w2 = rp->verts[fp->face_verts[2]];
+        const vector3 &w0 = rp.verts[fp.face_verts[0]];
+        const vector3 &w1 = rp.verts[fp.face_verts[1]];
+        const vector3 &w2 = rp.verts[fp.face_verts[2]];
         auto toViewScratch = [](const vector3 &w, const vector3 &eye,
                                 const matrix &o, vector3 &c) {
           // D3 g3_RotatePoint computes p3_vec = d * View_matrix (row-vector
@@ -1981,17 +1981,17 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
   }
 
   for (int i = 0; i <= Highest_object_index; i++) {
-    object *obj = &Objects[i];
-    if (obj->type == object_type_e::none)
+    object &obj = Objects[i];
+    if (obj.type == object_type_e::none)
       continue;
 
     float ox, oy, oz;
-    if (!projectVertexDepth(obj->pos, &ox, &oy, &oz))
+    if (!projectVertexDepth(obj.pos, &ox, &oy, &oz))
       continue;
 
     const float h = height() > 0 ? static_cast<float>(height()) : 1.0f;
     const float focal = (h * 0.5f) / std::tan(kFovY * 0.5f);
-    float screenRadius = (obj->size * focal) / oz;
+    float screenRadius = (obj.size * focal) / oz;
     if (screenRadius < 6.0f)
       screenRadius = 6.0f;
 
