@@ -256,47 +256,34 @@ struct [[gnu::packed]] g3_clip_codes_t {
   uint8_t unused : 1;      // bit 6 (64)
   uint8_t behind : 1;      // CC_BEHIND (128)
 #endif
+
+  //g3_clip_codes_t(uint8_t data) { *reinterpret_cast<uint8_t*>(this) = data; }
+  constexpr g3_clip_codes_t& operator =(uint8_t o) { *reinterpret_cast<uint8_t*>(this) = o; return *this; }
+  constexpr operator uint8_t(void) const { return *reinterpret_cast<const uint8_t*>(this); }
+  constexpr operator bool(void) const { return operator uint8_t(); }
+
+  constexpr g3_clip_codes_t& operator &= (uint8_t o)
+    { return operator =(operator uint8_t() & o); }
+  constexpr g3_clip_codes_t& operator &= (g3_clip_codes_t o)
+    { return operator &=(std::bit_cast<uint8_t>(o)); }
+
+  constexpr g3_clip_codes_t& operator |= (uint8_t o)
+    { return operator =(operator uint8_t() | o); }
+  constexpr g3_clip_codes_t& operator |= (g3_clip_codes_t o)
+    { return operator |=(std::bit_cast<uint8_t>(o)); }
 };
 static_assert(sizeof(g3_clip_codes_t) == sizeof(uint8_t));
+
+static inline uint8_t operator |(g3_clip_codes_t a, uint8_t b)
+  { return std::bit_cast<uint8_t>(a) | b; }
+
+static inline uint8_t operator &(g3_clip_codes_t a, uint8_t b)
+  { return std::bit_cast<uint8_t>(a) & b; }
 
 // Structure to store clipping codes in a word
 struct g3Codes {
   g3_clip_codes_t cc_or, cc_and;
 };
-
-// View the raw byte a clip-code word occupies (numeric bit math the renderer
-// still occasionally needs, e.g. iterating the six custom clip planes).
-constexpr uint8_t clip_code_byte(g3_clip_codes_t c) { return std::bit_cast<uint8_t>(c); }
-
-// Build a clip-code word from a raw byte (e.g. a value already stored in a
-// uint8_t array, like Room_clips).
-constexpr g3_clip_codes_t clip_codes_from_byte(uint8_t v) { return std::bit_cast<g3_clip_codes_t>(v); }
-
-// Combine two clip-code words with OR, preserving every bit (incl. bit 6).
-constexpr g3_clip_codes_t clip_codes_or(g3_clip_codes_t a, g3_clip_codes_t b) {
-  a.off_left |= b.off_left;
-  a.off_right |= b.off_right;
-  a.off_bot |= b.off_bot;
-  a.off_top |= b.off_top;
-  a.off_far |= b.off_far;
-  a.off_custom |= b.off_custom;
-  a.unused |= b.unused;
-  a.behind |= b.behind;
-  return a;
-}
-
-// Combine two clip-code words with AND, preserving every bit (incl. bit 6).
-constexpr g3_clip_codes_t clip_codes_and(g3_clip_codes_t a, g3_clip_codes_t b) {
-  a.off_left &= b.off_left;
-  a.off_right &= b.off_right;
-  a.off_bot &= b.off_bot;
-  a.off_top &= b.off_top;
-  a.off_far &= b.off_far;
-  a.off_custom &= b.off_custom;
-  a.unused &= b.unused;
-  a.behind &= b.behind;
-  return a;
-}
 
 // Used to store rotated points for mines.  Has frame count to indicate
 // if rotated, and flag to indicate if projected.

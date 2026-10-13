@@ -221,20 +221,18 @@ g3Point *ClipEdge(g3_clip_codes_t plane_flag, g3Point &on_pnt, g3Point &off_pnt)
 // clips a line to the viewing pyramid
 void ClipLine(g3Point *&p0, g3Point *&p1, g3_clip_codes_t codes_or) {
   g3Point *old_p1;
-  uint8_t codes_byte = clip_code_byte(codes_or);
 
   for (uint8_t plane_flag = 1; plane_flag <= 32; plane_flag <<= 1) {
-    if (codes_byte & plane_flag) {
-      if (clip_code_byte(p0->p3_codes) & plane_flag) {
+    if (codes_or & plane_flag) {
+      if (p0->p3_codes & plane_flag) {
         g3Point *t = p0;
         p0 = p1;
         p1 = t;
       }
 
       old_p1 = p1;
-      p1 = ClipEdge(clip_codes_from_byte(plane_flag), *p0, *p1);
-      codes_or = clip_codes_or(p0->p3_codes, p1->p3_codes);
-      codes_byte = clip_code_byte(codes_or);
+      p1 = ClipEdge(std::bit_cast<g3_clip_codes_t>(plane_flag), *p0, *p1);
+      codes_or = p0->p3_codes | p1->p3_codes;
 
       if (old_p1->p3_flags.temp_point)
         FreeTempPoint(*old_p1);
@@ -246,31 +244,30 @@ void ClipLine(g3Point *&p0, g3Point *&p1, g3_clip_codes_t codes_or) {
 int ClipPlane(g3_clip_codes_t plane_flag, g3Point *const *src, g3Point **dest, int &nv, g3Codes &cc) {
   int i, prev, next;
   g3Point **save_dest = dest;
-  const uint8_t flag_byte = clip_code_byte(plane_flag);
 
-  cc.cc_and = clip_codes_from_byte(0xff);
+  cc.cc_and = 0xff;
   cc.cc_or = {};
 
   for (i = 0, prev = nv - 1, next = 1; i < nv; i++) {
-    if (clip_code_byte(src[i]->p3_codes) & flag_byte) {
-      if (!(clip_code_byte(src[prev]->p3_codes) & flag_byte)) {
+    if (src[i]->p3_codes & plane_flag) {
+      if (!(src[prev]->p3_codes & plane_flag)) {
         *dest = ClipEdge(plane_flag, *src[prev], *src[i]);
-        cc.cc_or = clip_codes_or(cc.cc_or, (*dest)->p3_codes);
-        cc.cc_and = clip_codes_and(cc.cc_and, (*dest)->p3_codes);
+        cc.cc_or = cc.cc_or | (*dest)->p3_codes;
+        cc.cc_and = cc.cc_and & (*dest)->p3_codes;
         dest++;
       }
-      if (!(clip_code_byte(src[next]->p3_codes) & flag_byte)) {
+      if (!(src[next]->p3_codes & plane_flag)) {
         *dest = ClipEdge(plane_flag, *src[next], *src[i]);
-        cc.cc_or = clip_codes_or(cc.cc_or, (*dest)->p3_codes);
-        cc.cc_and = clip_codes_and(cc.cc_and, (*dest)->p3_codes);
+        cc.cc_or = cc.cc_or | (*dest)->p3_codes;
+        cc.cc_and = cc.cc_and & (*dest)->p3_codes;
         dest++;
       }
       if (src[i]->p3_flags.temp_point)
         FreeTempPoint(*src[i]);
     } else {
       *dest++ = src[i];
-      cc.cc_or = clip_codes_or(cc.cc_or, src[i]->p3_codes);
-      cc.cc_and = clip_codes_and(cc.cc_and, src[i]->p3_codes);
+      cc.cc_or = cc.cc_or | src[i]->p3_codes;
+      cc.cc_and = cc.cc_and & src[i]->p3_codes;
     }
 
     prev = i;
@@ -294,16 +291,14 @@ const std::vector<g3Point *> &g3_ClipPolygon(const std::vector<g3Point *> &point
     free_point_num = 0;
   }
 
-  uint8_t codes = clip_code_byte(cc.cc_or);
   for (uint8_t plane_flag = 1; plane_flag <= 32; plane_flag <<= 1) {
-    if (codes & plane_flag) {
-      nv = ClipPlane(clip_codes_from_byte(plane_flag), src, dest, nv, cc);
-      if (clip_code_byte(cc.cc_and) != 0) // clipped away
+    if (cc.cc_or & plane_flag) {
+      nv = ClipPlane(std::bit_cast<g3_clip_codes_t>(plane_flag), src, dest, nv, cc);
+      if (cc.cc_and) // clipped away
         return (dest == Vbuf1.data()) ? Vbuf1 : Vbuf0;
 
       src = dest;
       dest = (src == Vbuf0.data()) ? Vbuf1.data() : Vbuf0.data();
-      codes = clip_code_byte(cc.cc_or);
     }
   }
   if (src == Vbuf0.data())
@@ -357,7 +352,7 @@ uint8_t g3_CodePoint(g3Point &p) {
   }
 
   p.p3_codes = cc;
-  return clip_code_byte(cc);
+  return cc;
 }
 
 // rotates a point; returns codes

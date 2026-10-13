@@ -367,7 +367,7 @@ struct clip_wnd {
 static inline uint8_t clip2d(const g3Point &pnt, const clip_wnd &wnd) {
   g3_clip_codes_t code{};
   if (pnt.p3_codes.behind)
-    return clip_code_byte(g3_clip_codes_t{.behind = true});
+    return g3_clip_codes_t{.behind = true};
 
   if (pnt.p3_sx < wnd.left)
     code.off_left = true;
@@ -377,7 +377,7 @@ static inline uint8_t clip2d(const g3Point &pnt, const clip_wnd &wnd) {
     code.off_top = true;
   if (pnt.p3_sy > wnd.bot)
     code.off_bot = true;
-  return clip_code_byte(code);
+  return code;
 }
 
 // Returns true if a line intersects another line
@@ -402,14 +402,14 @@ static inline bool FaceIntersectsPortal(int roomnum, const face &fp, clip_wnd &w
   int i;
 
   cc.cc_or = g3_clip_codes_t{};
-  cc.cc_and = clip_codes_from_byte(0xff);
+  cc.cc_and = 0xff;
   for (i = 0; i < fp.num_verts; i++) {
-    cc.cc_or = clip_codes_or(cc.cc_or, clip_codes_from_byte(Room_clips[fp.face_verts[i]]));
-    cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(Room_clips[fp.face_verts[i]]));
+    cc.cc_or |= Room_clips[fp.face_verts[i]];
+    cc.cc_and &= Room_clips[fp.face_verts[i]];
   }
-  if (clip_code_byte(cc.cc_and) != 0)
+  if (cc.cc_and)
     return false; // completely outside
-  if (clip_code_byte(cc.cc_or) == 0)
+  if (!cc.cc_or)
     return true; // completely inside
 
   // Now we must do a check
@@ -720,7 +720,7 @@ void RotateAllExternalRooms() {
       bool infront = 0;
       for (int t = 0; t < 8; t++) {
         g3_RotatePoint(pnt, corners[t]);
-        External_room_codes[i] &= clip_code_byte(pnt.p3_codes);
+        External_room_codes[i] &= static_cast<uint8_t>(pnt.p3_codes);
         if (pnt.p3_codes.behind)
           behind = true;
         else
@@ -735,7 +735,7 @@ void RotateAllExternalRooms() {
         External_room_project_net[i] = 1;
       } else {
         if (behind) {
-          External_room_codes[i] = clip_code_byte(g3_clip_codes_t{.behind = true});
+          External_room_codes[i] = g3_clip_codes_t{.behind = true};
         }
       }
     }
@@ -852,7 +852,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd &wnd, int depth) {
 
     g3Codes cc;
     cc.cc_or = g3_clip_codes_t{};
-    cc.cc_and = clip_codes_from_byte(0xff);
+    cc.cc_and = 0xff;
     int nv = fp->num_verts;
 
     // Code the face points
@@ -876,18 +876,18 @@ void BuildRoomListSub(int start_room_num, clip_wnd &wnd, int depth) {
 
         g3Codes combine_cc;
         combine_cc.cc_or = g3_clip_codes_t{};
-        combine_cc.cc_and = clip_codes_from_byte(0xff);
+        combine_cc.cc_and = 0xff;
         Q_ASSERT((num_points + this_fp->num_verts) < (MAX_VERTS_PER_FACE * 5));
 
         // First we must rotate and clip this polygon
         for (k = 0; k < this_fp->num_verts; k++) {
           uint8_t c = g3_RotatePoint(Combined_portal_points[num_points + k], rp->verts[this_fp->face_verts[k]]);
-          combine_cc.cc_or = clip_codes_or(combine_cc.cc_or, clip_codes_from_byte(c));
-          combine_cc.cc_and = clip_codes_and(combine_cc.cc_and, clip_codes_from_byte(c));
+          combine_cc.cc_or |= c;
+          combine_cc.cc_and &= c;
         }
-        if (clip_code_byte(combine_cc.cc_and) != 0) {
+        if (combine_cc.cc_and) {
           continue; // clipped away!
-        } else if (clip_code_byte(combine_cc.cc_or) != 0) {
+        } else if (combine_cc.cc_or) {
           std::vector<g3Point *> pointlist(MAX_VERTS_PER_FACE);
           for (k = 0; k < this_fp->num_verts; k++) {
             pointlist[k] = &Combined_portal_points[num_points + k];
@@ -897,7 +897,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd &wnd, int depth) {
           // If portal not all on screen, must clip it
           int combine_nv = this_fp->num_verts;
           const std::vector<g3Point *> &pl = g3_ClipPolygon(pointlist, combine_nv, combine_cc);
-          if (clip_code_byte(combine_cc.cc_and) != 0) {
+          if (combine_cc.cc_and) {
             g3_FreeTempPoints(pl, combine_nv);
           } else {
             // save the clipped points
@@ -966,39 +966,37 @@ void BuildRoomListSub(int start_room_num, clip_wnd &wnd, int depth) {
         Combined_portal_points[i] = four_points[i];
         Combined_portal_points[i].p3_flags.projected = false;
         Combined_portal_points[i].p3_flags.temp_point = false;
-        uint8_t c = clip_code_byte(Combined_portal_points[i].p3_codes);
-        cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(c));
-        cc.cc_or = clip_codes_or(cc.cc_or, clip_codes_from_byte(c));
+
+        cc.cc_and &= Combined_portal_points[i].p3_codes;
+        cc.cc_or |= Combined_portal_points[i].p3_codes;
       }
       nv = 4;
     } else {
       for (i = 0; i < nv; i++) {
         g3_RotatePoint(Combined_portal_points[i], rp->verts[fp->face_verts[i]]);
-
-        uint8_t c = clip_code_byte(Combined_portal_points[i].p3_codes);
-        cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(c));
-        cc.cc_or = clip_codes_or(cc.cc_or, clip_codes_from_byte(c));
+        cc.cc_and &= Combined_portal_points[i].p3_codes;
+        cc.cc_or |= Combined_portal_points[i].p3_codes;
       }
     }
     // If points are on screen, see if they're in the clip window
-    if (clip_code_byte(cc.cc_and) == 0 || external_door_hack) {
+    if (!cc.cc_and || external_door_hack) {
       bool clipped = 0;
       std::vector<g3Point *> pointlist(MAX_VERTS_PER_FACE);
       const std::vector<g3Point *> *pl = &pointlist;
       for (i = 0; i < nv; i++)
         pointlist[i] = &Combined_portal_points[i];
       // If portal not all on screen, must clip it
-      if (clip_code_byte(cc.cc_or) != 0) {
+      if (cc.cc_or) {
         pl = &g3_ClipPolygon(*pl, nv, cc);
         clipped = 1;
       }
-      cc.cc_and = clip_codes_from_byte(0xff);
+      cc.cc_and = 0xff;
       for (i = 0; i < nv; i++) {
         g3_ProjectPoint(*(*pl)[i]);
-        cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(clip2d(*(*pl)[i], wnd)));
+        cc.cc_and &= clip2d(*(*pl)[i], wnd);
       }
       // Make sure it didn't get clipped away
-      if (clip_code_byte(cc.cc_and) == 0 || external_door_hack) {
+      if (!cc.cc_and || external_door_hack) {
         clip_wnd new_wnd;
         new_wnd.right = new_wnd.bot = 0.0f;
         new_wnd.left = Render_width;
@@ -1704,7 +1702,7 @@ void RenderLightmapFace(int roomnum, int facenum) {
       p->p3_flags.rgba = true; // has uv and l set
       p->p3_uvl.l = 1.0f;
 
-      face_code &= clip_code_byte(p->p3_codes);
+      face_code &= static_cast<uint8_t>(p->p3_codes);
     }
   } else {
     for (vn = 0; vn < fp->num_verts; vn++) {
@@ -1719,7 +1717,7 @@ void RenderLightmapFace(int roomnum, int facenum) {
       p->p3_flags.rgba = true; // has uv and l set
       p->p3_uvl.l = 1.0f;
 
-      face_code &= clip_code_byte(p->p3_codes);
+      face_code &= static_cast<uint8_t>(p->p3_codes);
     }
   }
 
@@ -1753,7 +1751,7 @@ void RenderFace(int roomnum, int facenum) {
   static int first = 1;
   static float lm_red[32], lm_green[32], lm_blue[32];
   bool spec_face = 0;
-  face_cc.cc_and = clip_codes_from_byte(0xff);
+  face_cc.cc_and = 0xff;
   face_cc.cc_or = g3_clip_codes_t{};
 #ifdef EDITOR
   if (fp->flags.floating_trig) {
@@ -1813,8 +1811,8 @@ void RenderFace(int roomnum, int facenum) {
       // do texture sliding
       p->p3_uvl.u += uchange;
       p->p3_uvl.v += vchange;
-      face_cc.cc_and = clip_codes_and(face_cc.cc_and, p->p3_codes);
-      face_cc.cc_or = clip_codes_or(face_cc.cc_or, p->p3_codes);
+      face_cc.cc_and &= p->p3_codes;
+      face_cc.cc_or |= p->p3_codes;
     }
   } else {
 
@@ -1842,11 +1840,11 @@ void RenderFace(int roomnum, int facenum) {
       // do texture sliding
       p->p3_uvl.u += uchange;
       p->p3_uvl.v += vchange;
-      face_cc.cc_and = clip_codes_and(face_cc.cc_and, p->p3_codes);
-      face_cc.cc_or = clip_codes_or(face_cc.cc_or, p->p3_codes);
+      face_cc.cc_and &= p->p3_codes;
+      face_cc.cc_or |= p->p3_codes;
     }
   }
-  if (clip_code_byte(face_cc.cc_and) != 0) // This entire face is off the screen
+  if (face_cc.cc_and) // This entire face is off the screen
   {
     if (spec_face && GameTextures[fp->tmap].flags.smooth_specular) {
       fp->flags.spec_invisible = true;
@@ -1949,7 +1947,7 @@ void RenderFace(int roomnum, int facenum) {
     rend_SetTextureType(tt);
   } else
     rend_SetTextureType(texture_type::perspective);
-  if (clip_code_byte(face_cc.cc_or) != 0) // Possible triangulate this face because it is off screen somewhat
+  if (face_cc.cc_or) // Possible triangulate this face because it is off screen somewhat
   {
     if (Room_light_val < 1.0f)
       do_triangle_test = 1;
@@ -2707,7 +2705,7 @@ void BuildMirroredRoomListSub(int start_room_num, const clip_wnd &wnd) {
 
     g3Codes cc;
     cc.cc_or = g3_clip_codes_t{};
-    cc.cc_and = clip_codes_from_byte(0xff);
+    cc.cc_and = 0xff;
     int nv = fp->num_verts;
     // Code the face points
     for (i = 0; i < nv; i++) {
@@ -2718,30 +2716,28 @@ void BuildMirroredRoomListSub(int start_room_num, const clip_wnd &wnd) {
       // dest_vecs contains the point on the other side of the mirror (ie the reflected point)
       temp_vec = *vec - (*mirror_norm * (dist_from_mirror * 2));
       g3_RotatePoint(portal_points[i], temp_vec);
-
-      uint8_t c = clip_code_byte(portal_points[i].p3_codes);
-      cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(c));
-      cc.cc_or = clip_codes_or(cc.cc_or, clip_codes_from_byte(c));
+      cc.cc_and &= portal_points[i].p3_codes;
+      cc.cc_or |= portal_points[i].p3_codes;
     }
     // If points are on screen, see if they're in the clip window
-    if (clip_code_byte(cc.cc_and) == 0 || external_door_hack) {
+    if (!cc.cc_and || external_door_hack) {
       bool clipped = 0;
       std::vector<g3Point *> pointlist(MAX_VERTS_PER_FACE);
       const std::vector<g3Point *> *pl = &pointlist;
       for (i = 0; i < nv; i++)
         pointlist[i] = &portal_points[i];
       // If portal not all on screen, must clip it
-      if (clip_code_byte(cc.cc_or) != 0) {
+      if (cc.cc_or) {
         pl = &g3_ClipPolygon(*pl, nv, cc);
         clipped = 1;
       }
-      cc.cc_and = clip_codes_from_byte(0xff);
+      cc.cc_and = 0xff;
       for (i = 0; i < nv; i++) {
         g3_ProjectPoint(*(*pl)[i]);
-        cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(clip2d(*(*pl)[i], wnd)));
+        cc.cc_and &= clip2d(*(*pl)[i], wnd);
       }
       // Make sure it didn't get clipped away
-      if (clip_code_byte(cc.cc_and) == 0 || external_door_hack) {
+      if (!cc.cc_and || external_door_hack) {
         clip_wnd new_wnd;
         new_wnd.right = new_wnd.bot = 0.0f;
         new_wnd.left = Render_width;
@@ -2804,7 +2800,7 @@ void BuildMirroredRoomList() {
     int i;
     Q_ASSERT(total_points + fp->num_verts <= MAX_VERTS_PER_FACE * 2);
     g3Codes cc;
-    cc.cc_and = clip_codes_from_byte(0xff);
+    cc.cc_and = 0xff;
     cc.cc_or = g3_clip_codes_t{};
     int nv = fp->num_verts;
 
@@ -2816,19 +2812,19 @@ void BuildMirroredRoomList() {
       // dest_vecs contains the point on the other side of the mirror (ie the reflected point)
       temp_vec = *vec - (*mirror_norm * (dist_from_mirror * 2));
       g3_RotatePoint(portal_points[i], temp_vec);
-      cc.cc_and = clip_codes_and(cc.cc_and, portal_points[i].p3_codes);
-      cc.cc_or = clip_codes_or(cc.cc_or, portal_points[i].p3_codes);
+      cc.cc_and &= portal_points[i].p3_codes;
+      cc.cc_or |= portal_points[i].p3_codes;
       pointlist[i] = &portal_points[i];
     }
 
     // Clipped away
-    if (clip_code_byte(cc.cc_and) != 0)
+    if (cc.cc_and)
       continue;
-    if (clip_code_byte(cc.cc_or) != 0) {
+    if (cc.cc_or) {
       // Must clip
       pl = &g3_ClipPolygon(*pl, nv, cc);
 
-      if (clip_code_byte(cc.cc_and) != 0) {
+      if (cc.cc_and) {
         g3_FreeTempPoints(*pl, nv);
         continue;
       } else {

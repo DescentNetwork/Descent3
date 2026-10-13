@@ -1489,7 +1489,7 @@ void ClipSurfaceElement(vector3 *surf_verts, rad_element *ep, vector3 *clip_vert
   rad_point src_verts[50];
   rad_point dest_verts[50];
   rad_point *slist, *dlist;
-  g3_clip_codes_t and_val = clip_codes_from_byte(0xff);
+  g3_clip_codes_t and_val; and_val = 0xff;
   g3_clip_codes_t or_val = g3_clip_codes_t{};
   int i;
 
@@ -1505,11 +1505,11 @@ void ClipSurfaceElement(vector3 *surf_verts, rad_element *ep, vector3 *clip_vert
   }
 
   for (i = 0; i < nv; i++) {
-    and_val = clip_codes_and(and_val, src_verts[i].code);
-    or_val = clip_codes_or(or_val, src_verts[i].code);
+    and_val &= src_verts[i].code;
+    or_val |= src_verts[i].code;
   }
 
-  if (clip_code_byte(and_val) != 0) {
+  if (and_val) {
     // This element is not even in the face, ignore it
     ep->flags.ignore = true;
     ep->num_verts = 0;
@@ -1540,15 +1540,13 @@ void ClipSurfaceElement(vector3 *surf_verts, rad_element *ep, vector3 *clip_vert
 // Returns number of points in clipped polygon
 
 int ClipRadPointList(rad_point **src, rad_point **dest, int *nv, g3_clip_codes_t code) {
-  int plane, num = 0;
+  uint8_t plane, num = 0;
   rad_point **save_src = src, *t;
   rad_point **save_dest = dest;
-  const uint8_t code_byte = clip_code_byte(code);
 
   for (plane = 1; plane < 16; plane <<= 1) {
-    if (plane & code_byte) // Is this point off this plane?
+    if (code & plane) // Is this point off this plane?
     {
-
       *nv = ClipRadToPlane(plane, *src, *dest, *nv);
       if (*nv == 0)
         return 0;
@@ -1569,7 +1567,7 @@ int ClipRadPointList(rad_point **src, rad_point **dest, int *nv, g3_clip_codes_t
 }
 
 // Clips to a specific plane, putting resulting points in dest and returning number of points in dest
-int ClipRadToPlane(int plane, rad_point *src, rad_point *dest, int nv) {
+int ClipRadToPlane(uint8_t plane, rad_point *src, rad_point *dest, int nv) {
   int i, num = 0, limit = nv - 1, ppoint, npoint;
 
   Q_ASSERT(nv >= 3);
@@ -1586,23 +1584,23 @@ int ClipRadToPlane(int plane, rad_point *src, rad_point *dest, int nv) {
       ppoint = i - 1;
 
     // mprintf(0,"checking point %d ",i);
-    if (clip_code_byte(src[i].code) & plane) // off this plane?
+    if (src[i].code & plane) // off this plane?
     {
 
-      if (!(clip_code_byte(src[ppoint].code) & plane)) // prev point on?
+      if (!(src[ppoint].code & plane)) // prev point on?
       {
         // mprintf(0,"pVertex %d off %d plane.\n",i,plane);
-        ClipRadEdge(clip_codes_from_byte(plane), &src[ppoint], &src[i]);
+        ClipRadEdge(std::bit_cast<g3_clip_codes_t>(plane), &src[ppoint], &src[i]);
 
         memcpy(&dest[num], &GlobalTempRadPoint, sizeof(rad_point));
         num++;
       }
 
-      if (!(clip_code_byte(src[npoint].code) & plane)) // next point on?
+      if (!(src[npoint].code & plane)) // next point on?
       {
 
         // mprintf(0,"nVertex %d off %d plane.\n",i,plane);
-        ClipRadEdge(clip_codes_from_byte(plane), &src[npoint], &src[i]);
+        ClipRadEdge(std::bit_cast<g3_clip_codes_t>(plane), &src[npoint], &src[i]);
 
         memcpy(&dest[num], &GlobalTempRadPoint, sizeof(rad_point));
         num++;

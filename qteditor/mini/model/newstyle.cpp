@@ -185,7 +185,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
   g3Codes face_cc;
   int triface = 0;
 
-  face_cc.cc_and = clip_codes_from_byte(0xff);
+  face_cc.cc_and = 0xff;
   face_cc.cc_or = g3_clip_codes_t{};
 
   triangulated_faces[facenum] = 0;
@@ -292,12 +292,14 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
       p->p3_uvl.v2 = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].v2[t];
     }
 
-    face_cc.cc_or = clip_codes_or(face_cc.cc_or, p->p3_codes);
-    face_cc.cc_and = clip_codes_and(face_cc.cc_and, p->p3_codes);
+    face_cc.cc_or = face_cc.cc_or | p->p3_codes;
+    face_cc.cc_and = face_cc.cc_and & p->p3_codes;
   }
 
-  if (clip_code_byte(face_cc.cc_or) != 0 && Polymodel_use_effect &&
-      ((Polymodel_effect.type.fogged_model || Polymodel_effect.type.specular_model || Polymodel_effect.type.specular_faces))) {
+  if (face_cc.cc_or && Polymodel_use_effect &&
+      (Polymodel_effect.type.fogged_model ||
+       Polymodel_effect.type.specular_model ||
+       Polymodel_effect.type.specular_faces)) {
     triface = 1;
     triangulated_faces[facenum] = 1;
   }

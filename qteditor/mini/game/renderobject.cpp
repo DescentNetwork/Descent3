@@ -1757,9 +1757,9 @@ int IsPointVisible(const vector3 &pos, float size, float &pointz) {
   static matrix unscaled_matrix;
 
   g3_RotatePoint(pnt, pos);
-  ccode = clip_codes_from_byte(g3_CodePoint(pnt));
+  ccode = g3_CodePoint(pnt);
   pointz = pnt.p3_z;
-  if (clip_code_byte(ccode) != 0) // the center point is off, find out if the whole object is off
+  if (ccode) // the center point is off, find out if the whole object is off
   {
     float dotp;
 
@@ -1977,7 +1977,7 @@ void DrawPlayerTypingIndicator(object *obj) {
     g3Codes cc;
     uint8_t code;
 
-    cc.cc_and = clip_codes_from_byte(0xFF);
+    cc.cc_and = 0xFF;
     cc.cc_or = g3_clip_codes_t{};
 
     int b_w = std::min(bm_w(bm_handle, 0), 32);
@@ -2018,8 +2018,8 @@ void DrawPlayerTypingIndicator(object *obj) {
       code = g3_CodePoint(*pntlist[i]);
       g3_ProjectPoint(*pntlist[i]);
 
-      cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(code));
-      cc.cc_or = clip_codes_or(cc.cc_or, clip_codes_from_byte(code));
+      cc.cc_and = cc.cc_and & code;
+      cc.cc_or = cc.cc_or | code;
     }
     rend_SetAlphaType(alpha_blend_type::constant_texture);
     rend_SetAlphaValue(200);

@@ -482,24 +482,20 @@ void DrawRadiosityPoly(int nv, const std::vector<g3Point *> &pointlist, int id) 
 
   // Initialize
   cc.cc_or = g3_clip_codes_t{};
-  cc.cc_and = clip_codes_from_byte(0xff);
+  cc.cc_and = 0xff;
 
   // Get codes for this polygon, and copy uvls into points
   for (i = 0; i < nv; i++) {
-    uint8_t c;
-
-    c = clip_code_byte(pointlist[i]->p3_codes);
-
-    cc.cc_and = clip_codes_and(cc.cc_and, clip_codes_from_byte(c));
-    cc.cc_or = clip_codes_or(cc.cc_or, clip_codes_from_byte(c));
+    cc.cc_and &= pointlist[i]->p3_codes;
+    cc.cc_or |= pointlist[i]->p3_codes;
   }
 
   // All points off grid?
-  if (clip_code_byte(cc.cc_and) != 0)
+  if (cc.cc_and)
     return;
 
   // One or more point off screen, so clip
-  if (clip_code_byte(cc.cc_or) != 0) {
+  if (cc.cc_or) {
 
     // Clip the polygon, getting pointer to new buffer
     pl = &g3_ClipPolygon(*pl, nv, cc);
@@ -508,7 +504,7 @@ void DrawRadiosityPoly(int nv, const std::vector<g3Point *> &pointlist, int id) 
     was_clipped = 1;
 
     // Check for polygon clipped away, or clip otherwise failed
-    if ((nv == 0) || cc.cc_or.behind || clip_code_byte(cc.cc_and) != 0)
+    if ((nv == 0) || cc.cc_or.behind || cc.cc_and)
       goto free_points;
   }
 
