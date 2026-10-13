@@ -193,10 +193,10 @@ static void update_path_info(q_item *node_list[MAX_ROOMS], int start, int end);
 static void FindPath(int i, int j);
 static void compute_next_segs();
 static void compute_blockage_info();
-static void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, float *xdiff, float *ydiff,
-                                       vector3 *center);
+static void ComputeBOAVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff,
+                                       vector3 &center);
 static int BOAGetRoomChecksum(int i);
-static bool IsPathPointValid(int room, vector3 *pos);
+static bool IsPathPointValid(int room, const vector3 &pos);
 static void ValidateRoomPathPoint(int room, char *message, int len);
 static void verify_connections();
 static void find_small_portals();
@@ -1280,7 +1280,7 @@ int BOAGetRoomChecksum(int i) {
 
 #pragma optimize("", on)
 
-bool IsPathPointValid(int room, vector3 *pos) {
+bool IsPathPointValid(int room, const vector3 &pos) {
   // vector3 c_pnt = Rooms[room].path_pnt;
   int i;
 
@@ -1299,7 +1299,7 @@ bool IsPathPointValid(int room, vector3 *pos) {
 
     // shoot a ray from the light position to the current vertex
     fq.p0 = &portal_pnt;
-    fq.p1 = pos;
+    fq.p1 = const_cast<vector3 *>(&pos);
     fq.startroom = room;
 
     fq.rad = 5.0f;
@@ -1327,7 +1327,7 @@ void ValidateRoomPathPoint(int room, char *message, int len) {
 
   pos = Rooms[room].path_pnt;
 
-  if (IsPathPointValid(room, &pos))
+  if (IsPathPointValid(room, pos))
     return;
 
   // vector3 best_pnt;
@@ -1343,7 +1343,7 @@ void ValidateRoomPathPoint(int room, char *message, int len) {
         t_pnt.y() += diff.y() * j;
         t_pnt.z() += diff.z() * k;
 
-        if (IsPathPointValid(room, &t_pnt)) {
+        if (IsPathPointValid(room, t_pnt)) {
           Rooms[room].path_pnt = t_pnt;
           return;
         }
@@ -1382,7 +1382,8 @@ void BOA_ComputePathPoints(char *message, int len) {
 }
 
 // Given a face, computes the upper left corner of the face
-void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, float *xdiff, float *ydiff, vector3 *center) {
+void ComputeBOAVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff,
+                                vector3 &center) {
   room_t *rp = &Rooms[roomnum];
   matrix face_matrix, trans_matrix;
   vector3 fvec;
@@ -1393,14 +1394,14 @@ void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, floa
 
   // find the center point of this face
   vm_MakeZero(avg_vert);
-  for (i = 0; i < fp->num_verts; i++)
-    avg_vert += rp->verts[fp->face_verts[i]];
+  for (i = 0; i < fp.num_verts; i++)
+    avg_vert += rp->verts[fp.face_verts[i]];
 
-  avg_vert /= fp->num_verts;
+  avg_vert /= fp.num_verts;
 
   // Make the orientation matrix
   // Reverse the normal because we're looking "at" the face, not from it
-  fvec = -fp->normal;
+  fvec = -fp.normal;
 
   vm_VectorToMatrix(face_matrix, fvec, std::nullopt, std::nullopt);
   // Make the transformation matrix
@@ -1410,8 +1411,8 @@ void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, floa
   vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b());
 
   // Rotate all the points
-  for (i = 0; i < fp->num_verts; i++) {
-    vector3 vert = rp->verts[fp->face_verts[i]];
+  for (i = 0; i < fp.num_verts; i++) {
+    vector3 vert = rp->verts[fp.face_verts[i]];
 
     vert -= avg_vert;
     vm_MatrixMulVector(rot_vert, vert, trans_matrix);
@@ -1423,7 +1424,7 @@ void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, floa
   int leftmost_point = -1;
   float leftmost_x = 900000.00f; // a big number
 
-  for (i = 0; i < fp->num_verts; i++) {
+  for (i = 0; i < fp.num_verts; i++) {
     if (verts[i].x() < leftmost_x) {
       leftmost_point = i;
       leftmost_x = verts[i].x();
@@ -1436,7 +1437,7 @@ void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, floa
   int topmost_point = -1;
   float topmost_y = -900000.0f; // a big number
 
-  for (i = 0; i < fp->num_verts; i++) {
+  for (i = 0; i < fp.num_verts; i++) {
     if (verts[i].y() > topmost_y) {
       topmost_point = i;
       topmost_y = verts[i].y();
@@ -1449,7 +1450,7 @@ void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, floa
   int rightmost_point = -1;
   float rightmost_x = -900000.00f; // a big number
 
-  for (i = 0; i < fp->num_verts; i++) {
+  for (i = 0; i < fp.num_verts; i++) {
     if (verts[i].x() > rightmost_x) {
       rightmost_point = i;
       rightmost_x = verts[i].x();
@@ -1462,7 +1463,7 @@ void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, floa
   int bottommost_point = -1;
   float bottommost_y = 900000.0f; // a big number
 
-  for (i = 0; i < fp->num_verts; i++) {
+  for (i = 0; i < fp.num_verts; i++) {
     if (verts[i].y() < bottommost_y) {
       bottommost_point = i;
       bottommost_y = verts[i].y();
@@ -1480,21 +1481,17 @@ void ComputeBOAVisFaceUpperLeft(int roomnum, face *fp, vector3 *upper_left, floa
   base_vector.z() = 0;
 
   // Figure out grid resolution
-  if (xdiff)
-    *xdiff = verts[rightmost_point].x() - verts[leftmost_point].x();
+  xdiff = verts[rightmost_point].x() - verts[leftmost_point].x();
 
-  if (ydiff)
-    *ydiff = verts[topmost_point].y() - verts[bottommost_point].y();
+  ydiff = verts[topmost_point].y() - verts[bottommost_point].y();
 
   // Find upper left corner
   vm_TransposeMatrix(trans_matrix);
   vm_MatrixMulVector(rot_vert, base_vector, trans_matrix);
 
-  if (upper_left)
-    *upper_left = rot_vert + avg_vert;
+  upper_left = rot_vert + avg_vert;
 
-  if (center)
-    *center = avg_vert;
+  center = avg_vert;
 }
 
 
@@ -1705,7 +1702,7 @@ void MakeBOAVisTable(bool from_lighting) {
         vector3 fvec = -src_fp->normal;
         vm_VectorToMatrix(src_matrix, fvec, std::nullopt, std::nullopt);
 
-        ComputeBOAVisFaceUpperLeft(i, src_fp, &src_upper_left, &src_width, &src_height, &src_center);
+        ComputeBOAVisFaceUpperLeft(i, *src_fp, src_upper_left, src_width, src_height, src_center);
 
         if (src_width > VIS_TABLE_RESOLUTION) {
           float num = src_width / VIS_TABLE_RESOLUTION;
@@ -1738,8 +1735,8 @@ void MakeBOAVisTable(bool from_lighting) {
           fvec = -dest_fp->normal;
           vm_VectorToMatrix(dest_matrix, fvec, std::nullopt, std::nullopt);
 
-          ComputeBOAVisFaceUpperLeft(check_room, dest_fp, &dest_upper_left, &dest_width, &dest_height,
-                                     &dest_center);
+          ComputeBOAVisFaceUpperLeft(check_room, *dest_fp, dest_upper_left, dest_width, dest_height,
+                                     dest_center);
 
           if (dest_width > VIS_TABLE_RESOLUTION) {
             float num = dest_width / VIS_TABLE_RESOLUTION;
@@ -1945,9 +1942,11 @@ void find_small_portals() {
       for (j = 0; j < Rooms[i].num_portals; j++) {
         face *fp = &Rooms[i].faces[Rooms[i].portals[j].portal_face];
 
+        vector3 upper_left;
+        vector3 center;
         float xdiff;
         float ydiff;
-        ComputeBOAVisFaceUpperLeft(i, fp, NULL, &xdiff, &ydiff, NULL);
+        ComputeBOAVisFaceUpperLeft(i, *fp, upper_left, xdiff, ydiff, center);
 
         if (xdiff < 6.0f || ydiff < 6.0f) {
           counter++;
