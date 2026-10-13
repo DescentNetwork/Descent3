@@ -4,6 +4,8 @@
 #include <optional>
 #include <filesystem>
 
+#include <QRect>
+
 #include "utils.h"
 #include "vecmat.h"
 #include "terrain.h"
@@ -149,25 +151,16 @@ struct d3edit_state
   std::optional<uint16_t> current_clutter; // currently selected clutter
 
   //	Values for the different editor windows
-  bool texscr_visible = false;                        // is texture mine view up?
-  int texscr_x,
-      texscr_y,
-      texscr_w,
-      texscr_h; // dims of floating texture mine view
+  bool texscr_visible = false; // is texture mine view up?
+  QRect texscr;                // dims of floating texture mine view
 
-  bool wirescr_visible = false;                           // is wireframe model up?
-  int wirescr_x,
-      wirescr_y,
-      wirescr_w,
-      wirescr_h; // dims of floating wireframe model
+  bool wirescr_visible = false; // is wireframe model up?
+  QRect wirescr;                // dims of floating wireframe model
 
-  bool keypad_visible = false;                                                // is keypad visible?
-  index_t keypad_current;                                                 // which keypad tab are we on?
-  bool float_keypad_moved = false;                                            // has floating keypad moved?
-  int float_keypad_x,
-      float_keypad_y,
-      float_keypad_w,
-      float_keypad_h; // floating keypad width and height, x, y
+  bool keypad_visible = false;      // is keypad visible?
+  index_t keypad_current;           // which keypad tab are we on?
+  bool float_keypad_moved = false;  // has floating keypad moved?
+  QRect float_keypad;               // floating keypad width and height, x, y
 
   int objmodeless_x,
       objmodeless_y;                                   // object modeless list x and y.

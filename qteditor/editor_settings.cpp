@@ -68,39 +68,30 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   setval("object_move_mode",    state.object_move_mode);
   setval("object_move_axis",    state.object_move_axis);
 
-  settings.setValue(QStringLiteral("texscr_visible"),        state.texscr_visible);
-  settings.setValue(QStringLiteral("texscr_x"),              state.texscr_x);
-  settings.setValue(QStringLiteral("texscr_y"),              state.texscr_y);
-  settings.setValue(QStringLiteral("texscr_w"),              state.texscr_w);
-  settings.setValue(QStringLiteral("texscr_h"),              state.texscr_h);
+  settings.setValue(QStringLiteral("texscr_visible"),         state.texscr_visible);
+  settings.setValue(QStringLiteral("wirescr_visible"),        state.wirescr_visible);
+  settings.setValue(QStringLiteral("keypad_visible"),         state.keypad_visible);
 
-  settings.setValue(QStringLiteral("wirescr_visible"),       state.wirescr_visible);
-  settings.setValue(QStringLiteral("wirescr_x"),             state.wirescr_x);
-  settings.setValue(QStringLiteral("wirescr_y"),             state.wirescr_y);
-  settings.setValue(QStringLiteral("wirescr_w"),             state.wirescr_w);
-  settings.setValue(QStringLiteral("wirescr_h"),             state.wirescr_h);
+  settings.setValue(QStringLiteral("texscr"),                 state.texscr);
+  settings.setValue(QStringLiteral("wirescr"),                state.wirescr);
+  settings.setValue(QStringLiteral("float_keypad"),           state.float_keypad);
 
-  settings.setValue(QStringLiteral("keypad_visible"),        state.keypad_visible);
-  settings.setValue(QStringLiteral("float_keypad_x"),        state.float_keypad_x);
-  settings.setValue(QStringLiteral("float_keypad_y"),        state.float_keypad_y);
-  settings.setValue(QStringLiteral("float_keypad_w"),        state.float_keypad_w);
-  settings.setValue(QStringLiteral("float_keypad_h"),        state.float_keypad_h);
-  settings.setValue(QStringLiteral("objmodeless_x"),         state.objmodeless_x);
-  settings.setValue(QStringLiteral("objmodeless_y"),         state.objmodeless_y);
-  settings.setValue(QStringLiteral("objmodeless_on"),        state.objmodeless_on);
-  settings.setValue(QStringLiteral("tile_views"),            state.tile_views);
-  settings.setValue(QStringLiteral("terrain_dots"),          state.terrain_dots);
-  settings.setValue(QStringLiteral("terrain_flat_shade"),    state.terrain_flat_shade);
-  settings.setValue(QStringLiteral("randomize_megacell"),    state.randomize_megacell);
+  settings.setValue(QStringLiteral("objmodeless_x"),          state.objmodeless_x);
+  settings.setValue(QStringLiteral("objmodeless_y"),          state.objmodeless_y);
+  settings.setValue(QStringLiteral("objmodeless_on"),         state.objmodeless_on);
+  settings.setValue(QStringLiteral("tile_views"),             state.tile_views);
+  settings.setValue(QStringLiteral("terrain_dots"),           state.terrain_dots);
+  settings.setValue(QStringLiteral("terrain_flat_shade"),     state.terrain_flat_shade);
+  settings.setValue(QStringLiteral("randomize_megacell"),     state.randomize_megacell);
   settings.setValue(QStringLiteral("fullscreen_debug_state"), state.fullscreen_debug_state);
-  settings.setValue(QStringLiteral("texture_display_flags"), state.texture_display_flags);
+  settings.setValue(QStringLiteral("texture_display_flags"),  state.texture_display_flags);
 
   // Slew_key_speed lives outside app in d3edit.h but is part of the
   // editor preferences surface; persist it under the same group so a one-stop
   // QSettings backup covers the editor UI tweaks.
-  settings.setValue(QStringLiteral("slew_key_speed"),        Slew_key_speed);
-  settings.setValue(QStringLiteral("joy_slewing"),           state.joy_slewing);
-  settings.setValue(QStringLiteral("objects_in_wireframe"),  state.objects_in_wireframe);
+  settings.setValue(QStringLiteral("slew_key_speed"),         Slew_key_speed);
+  settings.setValue(QStringLiteral("joy_slewing"),            state.joy_slewing);
+  settings.setValue(QStringLiteral("objects_in_wireframe"),   state.objects_in_wireframe);
 
   settings.endGroup();
   settings.sync();
@@ -141,30 +132,18 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
   state.object_move_mode    = getval.template operator()<uint32_t>("object_move_mode");
   state.object_move_axis    = getval.template operator()<uint32_t>("object_move_axis");
 
+  state.texscr_visible          = settings.value(QStringLiteral("texscr_visible"),    false).toBool();
+  state.wirescr_visible         = settings.value(QStringLiteral("wirescr_visible"),   false).toBool();
+  state.keypad_visible          = settings.value(QStringLiteral("keypad_visible"),    false).toBool();
 
-  state.texscr_visible    = settings.value(QStringLiteral("texscr_visible"),    false).toBool();
-  state.texscr_x          = settings.value(QStringLiteral("texscr_x"),          0).toInt();
-  state.texscr_y          = settings.value(QStringLiteral("texscr_y"),          0).toInt();
-  state.texscr_w          = settings.value(QStringLiteral("texscr_w"),          0).toInt();
-  state.texscr_h          = settings.value(QStringLiteral("texscr_h"),          0).toInt();
+  state.texscr                  = settings.value(QStringLiteral("texscr"),            QRect()).toRect();
+  state.wirescr                 = settings.value(QStringLiteral("wirescr"),           QRect()).toRect();
+  state.float_keypad            = settings.value(QStringLiteral("float_keypad"),      QRect()).toRect();
 
-  state.wirescr_visible   = settings.value(QStringLiteral("wirescr_visible"),   false).toBool();
-  state.wirescr_x         = settings.value(QStringLiteral("wirescr_x"),         0).toInt();
-  state.wirescr_y         = settings.value(QStringLiteral("wirescr_y"),         0).toInt();
-  state.wirescr_w         = settings.value(QStringLiteral("wirescr_w"),         0).toInt();
-  state.wirescr_h         = settings.value(QStringLiteral("wirescr_h"),         0).toInt();
-
-  state.keypad_visible    = settings.value(QStringLiteral("keypad_visible"),    false).toBool();
-
-
-  state.float_keypad_x    = settings.value(QStringLiteral("float_keypad_x"),    -1).toInt();
-  state.float_keypad_y    = settings.value(QStringLiteral("float_keypad_y"),    -1).toInt();
-  state.float_keypad_w    = settings.value(QStringLiteral("float_keypad_w"),    -1).toInt();
-  state.float_keypad_h    = settings.value(QStringLiteral("float_keypad_h"),    -1).toInt();
-  state.objmodeless_x     = settings.value(QStringLiteral("objmodeless_x"),     0).toInt();
-  state.objmodeless_y     = settings.value(QStringLiteral("objmodeless_y"),     0).toInt();
-  state.objmodeless_on    = settings.value(QStringLiteral("objmodeless_on"),    false).toBool();
-  state.tile_views        = settings.value(QStringLiteral("tile_views"),        false).toBool();
+  state.objmodeless_x           = settings.value(QStringLiteral("objmodeless_x"),     0).toInt();
+  state.objmodeless_y           = settings.value(QStringLiteral("objmodeless_y"),     0).toInt();
+  state.objmodeless_on          = settings.value(QStringLiteral("objmodeless_on"),    false).toBool();
+  state.tile_views              = settings.value(QStringLiteral("tile_views"),        false).toBool();
   state.terrain_dots            = settings.value(QStringLiteral("terrain_dots"),            true).toBool();
   state.terrain_flat_shade      = settings.value(QStringLiteral("terrain_flat_shade"),      false).toBool();
   state.randomize_megacell      = settings.value(QStringLiteral("randomize_megacell"),      false).toBool();

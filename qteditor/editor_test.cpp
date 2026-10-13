@@ -4617,8 +4617,7 @@ private slots:
     out.current_powerup = 7u;
     out.current_robot = 11u;
     out.texscr_visible = true;
-    out.texscr_x = 17;
-    out.texscr_y = 23;
+    out.texscr = QRect(17, 23, 0, 0);
     out.game_render_mode = GM_FULLSCREEN_HW;
     out.joy_slewing = false;
     out.tile_views = true;
@@ -4626,10 +4625,7 @@ private slots:
     out.fullscreen_debug_state = true;
     out.texture_display_flags = 0xab;
     out.objects_in_wireframe = false;
-    out.float_keypad_x = -1;
-    out.float_keypad_y = -1;
-    out.float_keypad_w = -1;
-    out.float_keypad_h = -1;
+    out.float_keypad = QRect(-1, -1, -1, -1);
 
     // Save through an explicit file-backed QSettings, mirroring the path
     // Linux/Qt will use at runtime.
@@ -4650,8 +4646,7 @@ private slots:
     QCOMPARE(in.current_powerup, out.current_powerup);
     QCOMPARE(in.current_robot, out.current_robot);
     QCOMPARE(in.texscr_visible, out.texscr_visible);
-    QCOMPARE(in.texscr_x, out.texscr_x);
-    QCOMPARE(in.texscr_y, out.texscr_y);
+    QCOMPARE(in.texscr, out.texscr);
     QCOMPARE(in.game_render_mode, out.game_render_mode);
     QCOMPARE(in.joy_slewing, out.joy_slewing);
     QCOMPARE(in.tile_views, out.tile_views);
