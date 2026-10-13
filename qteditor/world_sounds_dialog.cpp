@@ -1,3 +1,4 @@
+#include <QtGlobal>
 /*
  * Descent 3
  * Copyright (C) 2024 Descent Developers
@@ -22,294 +23,258 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFileDialog>
+#include <QFile>
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
-
 #include <QFileInfo>
-
-#include "cfile.h"
 
 #include "d3edit.h"
 
-#include "hlsoundlib.h"
 #include "manage.h"
+#include "hlsoundlib.h"
 #include "soundpage.h"
 #include "soundload.h"
-#include "ssl_lib.h"
 
 
-namespace {
-// Writes a single float/int field back into the current sound.
-} // namespace
+optref<sound_info> WorldSoundsDialog::data(void)
+{
+  if (!app.current_sound || *app.current_sound >= static_cast<uint32_t>(Sounds.size()) || Sounds.is_unused(*app.current_sound))
+    return std::nullopt;
+  return Sounds[*app.current_sound];
+}
 
 WorldSoundsDialog::WorldSoundsDialog(QWidget *parent)
-    : QDialog(parent), ui(new Ui::WorldSoundsDialog) {
+    : QDialog(parent),
+      ui(new Ui::WorldSoundsDialog)
+{
   ui->setupUi(this);
-  if (QPushButton *b = ui->IDC_ADD_SOUND)
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onAddSound);
-  if (QPushButton *b = ui->IDC_LOAD_SOUND)
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onLoadSound);
-  if (QPushButton *b = ui->IDC_NEXT_SOUND)
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onNextSound);
-  if (QPushButton *b = ui->IDC_PREV_SOUND)
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onPrevSound);
-  if (QPushButton *b = ui->IDC_DELETE_SOUND)
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onDeleteSound);
-  if (QPushButton *b = ui->IDC_LOCK_SOUND)
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onLockSound);
-  if (QPushButton *b = ui->IDC_CHECKIN_SOUND)
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onCheckinSound);
-  if (QPushButton *b = ui->IDC_PLAYSOUND)
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onPlaysound);
-  if (QPushButton *b = ui->IDC_KILLSOUNDS)
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onKillsounds);
-  if (QPushButton *b = ui->IDC_OVERRIDE)
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onOverride);
-  if (QPushButton *b = ui->IDC_SOUND_CHANGE_NAME)
-    connect(b, &QPushButton::clicked, this, &WorldSoundsDialog::onChangeName);
 
-  if (QComboBox *combo = ui->IDC_SOUND_PULLDOWN)
-    connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
-            &WorldSoundsDialog::onSoundPulldownChanged);
+  connect(ui->IDC_ADD_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onAddSound);
+  connect(ui->IDC_LOAD_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onLoadSound);
+  connect(ui->IDC_NEXT_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onNextSound);
+  connect(ui->IDC_PREV_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onPrevSound);
+  connect(ui->IDC_DELETE_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onDeleteSound);
+  connect(ui->IDC_LOCK_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onLockSound);
+  connect(ui->IDC_CHECKIN_SOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onCheckinSound);
+  connect(ui->IDC_PLAYSOUND, &QPushButton::clicked, this, &WorldSoundsDialog::onPlaysound);
+  connect(ui->IDC_KILLSOUNDS, &QPushButton::clicked, this, &WorldSoundsDialog::onKillsounds);
+  connect(ui->IDC_OVERRIDE, &QPushButton::clicked, this, &WorldSoundsDialog::onOverride);
+  connect(ui->IDC_SOUND_CHANGE_NAME, &QPushButton::clicked, this, &WorldSoundsDialog::onChangeName);
 
-  const char *edits[] = {"IDC_SOUNDMAXDIST_EDIT",    "IDC_SOUNDMINDIST_EDIT",   "IDC_SOUNDINNERCONEANGLE_EDIT",
-                         "IDC_SOUNDOUTERCONEANGLE_EDIT", "IDC_SOUNDOUTERCONEVOL_EDIT", "IDC_SOUNDLOOPSTART_EDIT",
-                         "IDC_SOUNDLOOPEND_EDIT",    "IDC_SOUND_IMPORT_VOLUME_EDIT"};
-  const auto slotFor = [&](const char *name) {
-    if (QString::compare(name, "IDC_SOUNDMAXDIST_EDIT") == 0)
-      return &WorldSoundsDialog::onMaxDistEdited;
-    if (QString::compare(name, "IDC_SOUNDMINDIST_EDIT") == 0)
-      return &WorldSoundsDialog::onMinDistEdited;
-    if (QString::compare(name, "IDC_SOUNDINNERCONEANGLE_EDIT") == 0)
-      return &WorldSoundsDialog::onInnerConeEdited;
-    if (QString::compare(name, "IDC_SOUNDOUTERCONEANGLE_EDIT") == 0)
-      return &WorldSoundsDialog::onOuterConeAngleEdited;
-    if (QString::compare(name, "IDC_SOUNDOUTERCONEVOL_EDIT") == 0)
-      return &WorldSoundsDialog::onOuterConeVolEdited;
-    if (QString::compare(name, "IDC_SOUNDLOOPSTART_EDIT") == 0)
-      return &WorldSoundsDialog::onLoopStartEdited;
-    if (QString::compare(name, "IDC_SOUNDLOOPEND_EDIT") == 0)
-      return &WorldSoundsDialog::onLoopEndEdited;
-    return &WorldSoundsDialog::onImportVolumeEdited;
-  };
-  for (const char *name : edits) {
-    if (QLineEdit *edit = findChild<QLineEdit*>(name))
-      connect(edit, &QLineEdit::editingFinished, this, slotFor(name));
-  }
+  connect(ui->IDC_SOUND_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, &WorldSoundsDialog::onSoundPulldownChanged);
 
-  struct {
-    const char *name;
-    void (WorldSoundsDialog::*slot)(bool);
-  } checks[] = {
-      {"IDC_SOUNDHALLEFFECT_CHECK", &WorldSoundsDialog::onHallEffectToggled},
-      {"IDC_LOOPING_CHECK", &WorldSoundsDialog::onLoopingToggled},
-      {"IDC_SOUNDFOREVER_CHECK", &WorldSoundsDialog::onForeverToggled},
-      {"IDC_SOUNDEXCLUSIVE_CHECK", &WorldSoundsDialog::onExclusiveToggled},
-      {"IDC_SOUNDONCE_CHECK", &WorldSoundsDialog::onOnceToggled},
-      {"IDC_SOUND_ONCE_PER_OBJ_CHECK", &WorldSoundsDialog::onOncePerObjToggled},
-      {"IDC_SOUND_NO_UPDATE", &WorldSoundsDialog::onNoUpdateToggled},
-  };
-  for (const auto &c : checks)
-    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
-      connect(cb, &QCheckBox::toggled, this, c.slot);
+  bindEdits();
+  bindChecks();
 
-  if (QRadioButton *rb = ui->IDC_SOUNDOBJATTACH_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onObjAttach);
-  if (QRadioButton *rb = ui->IDC_SOUNDPOSATTACH_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onPosAttach);
-  if (QRadioButton *rb = ui->IDC_SOUNDOBJECT_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeLinkObject);
-  if (QRadioButton *rb = ui->IDC_SOUNDTURRET1_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeLinkTurret1);
-  if (QRadioButton *rb = ui->IDC_SOUNDTURRET2_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeLinkTurret2);
-  if (QRadioButton *rb = ui->IDC_SOUNDTURRET3_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeLinkTurret3);
-  if (QRadioButton *rb = ui->IDC_SOUNDFORWARD_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeDirForward);
-  if (QRadioButton *rb = ui->IDC_SOUNDBACKWARD_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeDirBackward);
-  if (QRadioButton *rb = ui->IDC_SOUNDUPWARD_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeDirUpward);
-  if (QRadioButton *rb = ui->IDC_SOUNDDOWNWARD_RADIO)
-    connect(rb, &QRadioButton::clicked, this, &WorldSoundsDialog::onConeDirDownward);
+  connect(ui->IDC_SOUNDOBJATTACH_RADIO, &QRadioButton::clicked, [this]() { if (auto s = data()) s->flags.obj_update = true; });
+  connect(ui->IDC_SOUNDPOSATTACH_RADIO, &QRadioButton::clicked, [this]() { if (auto s = data()) s->flags.obj_update = false; });
+  connect(ui->IDC_SOUNDOBJECT_RADIO, &QRadioButton::clicked, [this]() {
+    if (auto s = data()) {
+      s->flags.cone_link = 0;
+      s->flags.once_per_obj = 0;
+    }
+  });
+  connect(ui->IDC_SOUNDTURRET1_RADIO, &QRadioButton::clicked, [this]() {
+    if (auto s = data()) {
+      s->flags.cone_link = 0;
+      s->flags.once_per_obj = 1;
+    }
+  });
+  connect(ui->IDC_SOUNDTURRET2_RADIO, &QRadioButton::clicked, [this]() {
+    if (auto s = data()) {
+      s->flags.cone_link = 1;
+      s->flags.once_per_obj = 0;
+    }
+  });
+  connect(ui->IDC_SOUNDTURRET3_RADIO, &QRadioButton::clicked, [this]() {
+    if (auto s = data()) {
+      s->flags.cone_link = 1;
+      s->flags.once_per_obj = 1;
+    }
+  });
+  connect(ui->IDC_SOUNDFORWARD_RADIO, &QRadioButton::clicked, [this]() { if (auto s = data()) s->flags.cone_dir = 0; });
+  connect(ui->IDC_SOUNDBACKWARD_RADIO, &QRadioButton::clicked, [this]() { if (auto s = data()) s->flags.cone_dir = 1; });
+  connect(ui->IDC_SOUNDUPWARD_RADIO, &QRadioButton::clicked, [this]() { if (auto s = data()) s->flags.cone_dir = 2; });
+  connect(ui->IDC_SOUNDDOWNWARD_RADIO, &QRadioButton::clicked, [this]() { if (auto s = data()) s->flags.cone_dir = 3; });
 
   updateDialog();
 }
 
+
 WorldSoundsDialog::~WorldSoundsDialog() { saveSoundsOnClose(); }
 
-void WorldSoundsDialog::saveSoundsOnClose() {
+void WorldSoundsDialog::saveSoundsOnClose()
+{
   if (!Network_up)
     return;
   for (int i = 0; i < MAX_TRACKLOCKS; i++) {
-    if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == PAGETYPE_SOUND) {
-      const int t = FindSoundName(GlobalTrackLocks[i].name);
+    if (GlobalTrackLocks[i].used == 1 && GlobalTrackLocks[i].pagetype == page_type::sound) {
+      const int t = FindSoundName(GlobalTrackLocks[i].name).value_or(-1);
       if (t != -1)
-        mng_ReplacePage(Sounds[t].name, Sounds[t].name, t, PAGETYPE_SOUND, 1);
+        mng_ReplacePage(Sounds[t].name, Sounds[t].name, t, page_type::sound, 1);
     }
   }
 }
 
-void WorldSoundsDialog::setFlag(uint32_t flag, const char *checkName, bool checked) {
-  const int n = D3EditState.current_sound;
-  if (n < 0 || n >= MAX_SOUNDS || !Sounds[n].used)
-    return;
-  if (checked)
-    Sounds[n].flags |= flag;
-  else
-    Sounds[n].flags &= ~flag;
+void WorldSoundsDialog::bindEdits() {
+  connect(ui->IDC_SOUNDMAXDIST_EDIT, &QLineEdit::editingFinished, [this]() {
+    if (auto s = data()) s->max_distance = ui->IDC_SOUNDMAXDIST_EDIT->text().toFloat();
+  });
+  connect(ui->IDC_SOUNDMINDIST_EDIT, &QLineEdit::editingFinished, [this]() {
+    if (auto s = data()) s->min_distance = ui->IDC_SOUNDMINDIST_EDIT->text().toFloat();
+  });
+  connect(ui->IDC_SOUNDINNERCONEANGLE_EDIT, &QLineEdit::editingFinished, [this]() {
+    if (auto s = data()) s->inner_cone_angle = ui->IDC_SOUNDINNERCONEANGLE_EDIT->text().toInt();
+  });
+  connect(ui->IDC_SOUNDOUTERCONEANGLE_EDIT, &QLineEdit::editingFinished, [this]() {
+    if (auto s = data()) s->outer_cone_angle = ui->IDC_SOUNDOUTERCONEANGLE_EDIT->text().toInt();
+  });
+  connect(ui->IDC_SOUNDOUTERCONEVOL_EDIT, &QLineEdit::editingFinished, [this]() {
+    if (auto s = data()) s->outer_cone_volume = ui->IDC_SOUNDOUTERCONEVOL_EDIT->text().toFloat() / 100.0f;
+  });
+  connect(ui->IDC_SOUNDLOOPSTART_EDIT, &QLineEdit::editingFinished, [this]() {
+    if (auto s = data()) s->loop_start = ui->IDC_SOUNDLOOPSTART_EDIT->text().toInt();
+  });
+  connect(ui->IDC_SOUNDLOOPEND_EDIT, &QLineEdit::editingFinished, [this]() {
+    if (auto s = data()) s->loop_end = ui->IDC_SOUNDLOOPEND_EDIT->text().toInt();
+  });
+  connect(ui->IDC_SOUND_IMPORT_VOLUME_EDIT, &QLineEdit::editingFinished, [this]() {
+    if (auto s = data()) s->import_volume = ui->IDC_SOUND_IMPORT_VOLUME_EDIT->text().toFloat() / 100.0f;
+  });
 }
 
-void WorldSoundsDialog::setConeLink(int value) {
-  setFlag(SPFT_CONE_LINK_MASK, "", true);
-  const int n = D3EditState.current_sound;
-  if (n >= 0 && n < MAX_SOUNDS)
-    Sounds[n].flags = (Sounds[n].flags & ~SPFT_CONE_LINK_MASK) | value;
+void WorldSoundsDialog::bindChecks() {
+  connect(ui->IDC_SOUNDHALLEFFECT_CHECK, &QCheckBox::toggled, [this](bool checked) {
+    if (auto s = data()) s->flags.fixed_freq = !checked;
+  });
+  connect(ui->IDC_LOOPING_CHECK, &QCheckBox::toggled, [this](bool checked) {
+    if (auto s = data()) s->flags.looped = checked;
+  });
+  connect(ui->IDC_SOUNDFOREVER_CHECK, &QCheckBox::toggled, [this](bool checked) {
+    if (auto s = data()) s->flags.plays_forever = checked;
+  });
+  connect(ui->IDC_SOUNDEXCLUSIVE_CHECK, &QCheckBox::toggled, [this](bool checked) {
+    if (auto s = data()) s->flags.plays_exclusively = checked;
+  });
+  connect(ui->IDC_SOUNDONCE_CHECK, &QCheckBox::toggled, [this](bool checked) {
+    if (auto s = data()) s->flags.plays_once = checked;
+  });
+  connect(ui->IDC_SOUND_ONCE_PER_OBJ_CHECK, &QCheckBox::toggled, [this](bool checked) {
+    if (auto s = data()) s->flags.once_per_obj = checked;
+  });
+  connect(ui->IDC_SOUND_NO_UPDATE, &QCheckBox::toggled, [this](bool checked) {
+    if (auto s = data()) s->flags.listener_update = checked;
+  });
 }
 
-void WorldSoundsDialog::setConeDir(int value) {
-  const int n = D3EditState.current_sound;
-  if (n >= 0 && n < MAX_SOUNDS)
-    Sounds[n].flags = (Sounds[n].flags & ~SPFT_CONE_DIR_MASK) | value;
-}
-
-void WorldSoundsDialog::updateDialog() {
-  const int n = D3EditState.current_sound;
-
-  if (QPushButton *next = ui->IDC_NEXT_SOUND)
-    next->setEnabled(Num_sounds >= 1);
-  if (QPushButton *prev = ui->IDC_PREV_SOUND)
-    prev->setEnabled(Num_sounds >= 1);
+void WorldSoundsDialog::updateDialog()
+{
+  ui->IDC_NEXT_SOUND->setEnabled(static_cast<int>(Sounds.size()));
+  ui->IDC_PREV_SOUND->setEnabled(static_cast<int>(Sounds.size()));
   if (!Network_up) {
-    for (const char *name : {"IDC_LOCK_SOUND", "IDC_CHECKIN_SOUND", "IDC_OVERRIDE"}) {
-      if (auto *w = findChild<QPushButton*>(name))
-        w->setEnabled(false);
-    }
+    ui->IDC_LOCK_SOUND->setEnabled(false);
+    ui->IDC_CHECKIN_SOUND->setEnabled(false);
+    ui->IDC_OVERRIDE->setEnabled(false);
     return;
   }
-  if (Num_sounds < 1)
+  if (!static_cast<int>(Sounds.size()))
     return;
 
-  if (!Sounds[n].used)
-    D3EditState.current_sound = GetNextSound(n);
+  if (!app.current_sound || *app.current_sound >= static_cast<uint32_t>(Sounds.size()) || Sounds.is_unused(*app.current_sound))
+    if (const index_t next = GetNextSound(0))
+      app.current_sound = *next;
 
-  Sound_system.CheckAndForceSoundDataAlloc(D3EditState.current_sound);
-  const int s = D3EditState.current_sound;
+  if (app.current_sound) Sound_system.CheckAndForceSoundDataAlloc(static_cast<int>(*app.current_sound));
 
-  int total_memory = 0;
-  for (int i = 0; i < MAX_SOUNDS; i++)
-    if (Sounds[i].used)
-      total_memory += SoundFiles[Sounds[i].sample_index].sample_length * 2;
+  if (auto s = data()) {
+    int total_memory = 0;
+    for (int i = 0; i < static_cast<int>(Sounds.size()); i++)
+      if (Sounds.is_used(i))
+        total_memory += SoundFiles[Sounds[i].sample_index].sample_length * 2;
 
-  if (QLineEdit *edit = ui->IDC_SOUNDMAXDIST_EDIT)
-    edit->setText(QString::number(Sounds[s].max_distance));
-  if (QLineEdit *edit = ui->IDC_SOUNDMINDIST_EDIT)
-    edit->setText(QString::number(Sounds[s].min_distance));
-  if (QLineEdit *edit = ui->IDC_SOUNDINNERCONEANGLE_EDIT)
-    edit->setText(QString::number(Sounds[s].inner_cone_angle));
-  if (QLineEdit *edit = ui->IDC_SOUNDOUTERCONEANGLE_EDIT)
-    edit->setText(QString::number(Sounds[s].outer_cone_angle));
-  if (QLineEdit *edit = ui->IDC_SOUNDOUTERCONEVOL_EDIT)
-    edit->setText(QString::number(Sounds[s].outer_cone_volume * 100.0f));
-  if (QLineEdit *edit = ui->IDC_SOUNDLOOPSTART_EDIT)
-    edit->setText(QString::number(Sounds[s].loop_start));
+    ui->IDC_SOUNDMAXDIST_EDIT->setText(QString::number(s->max_distance));
+    ui->IDC_SOUNDMINDIST_EDIT->setText(QString::number(s->min_distance));
+    ui->IDC_SOUNDINNERCONEANGLE_EDIT->setText(QString::number(s->inner_cone_angle));
+    ui->IDC_SOUNDOUTERCONEANGLE_EDIT->setText(QString::number(s->outer_cone_angle));
+    ui->IDC_SOUNDOUTERCONEVOL_EDIT->setText(QString::number(s->outer_cone_volume * 100.0f));
+    ui->IDC_SOUNDLOOPSTART_EDIT->setText(QString::number(s->loop_start));
 
-  if (Sounds[s].loop_end >= SoundFiles[Sounds[s].sample_index].np_sample_length)
-    Sounds[s].loop_end = SoundFiles[Sounds[s].sample_index].np_sample_length - 1;
-  if (Sounds[s].loop_start > Sounds[s].loop_end)
-    Sounds[s].loop_start = 0;
-  if (QLineEdit *edit = ui->IDC_SOUNDLOOPEND_EDIT)
-    edit->setText(QString::number(Sounds[s].loop_end));
+    if (s->loop_end >= SoundFiles[s->sample_index].np_sample_length)
+      s->loop_end = SoundFiles[s->sample_index].np_sample_length - 1;
+    if (s->loop_start > s->loop_end)
+      s->loop_start = 0;
+    ui->IDC_SOUNDLOOPEND_EDIT->setText(QString::number(s->loop_end));
 
-  if (QLineEdit *edit = ui->IDC_SOUND_IMPORT_VOLUME_EDIT)
-    edit->setText(QString::number(Sounds[s].import_volume * 100.0f));
-  if (QLineEdit *edit = ui->IDC_RAW_NAME_EDIT)
-    edit->setText(SoundFiles[Sounds[s].sample_index].name);
+    ui->IDC_SOUND_IMPORT_VOLUME_EDIT->setText(QString::number(s->import_volume * 100.0f));
+    ui->IDC_RAW_NAME_EDIT->setText(QString::fromStdString(SoundFiles[s->sample_index].name));
 
-  if (QLabel *label = ui->IDC_SOUND_MEMORY_STATIC)
-    label->setText(QString("%1, %2 H, %3 Total")
-                       .arg(SoundFiles[Sounds[s].sample_index].sample_length / 512)
-                       .arg(0)
-                       .arg(total_memory / 1024));
+    ui->IDC_SOUND_MEMORY_STATIC->setText(QString("%1, %2 H, %3 Total")
+      .arg(SoundFiles[s->sample_index].sample_length / 512)
+      .arg(0)
+      .arg(total_memory / 1024));
 
-  if (QCheckBox *cb = ui->IDC_SOUNDHALLEFFECT_CHECK)
-    cb->setChecked(!(Sounds[s].flags & SPF_FIXED_FREQ));
-  if (QCheckBox *cb = ui->IDC_SOUNDFOREVER_CHECK)
-    cb->setChecked(Sounds[s].flags & SPF_FOREVER);
-  if (QCheckBox *cb = ui->IDC_SOUND_ONCE_PER_OBJ_CHECK)
-    cb->setChecked(Sounds[s].flags & SPF_ONCE_PER_OBJ);
-  if (QCheckBox *cb = ui->IDC_SOUNDEXCLUSIVE_CHECK)
-    cb->setChecked(Sounds[s].flags & SPF_PLAYS_EXCLUSIVELY);
-  if (QCheckBox *cb = ui->IDC_SOUND_NO_UPDATE)
-    cb->setChecked(Sounds[s].flags & SPF_LISTENER_UPDATE);
-  if (QCheckBox *cb = ui->IDC_SOUNDONCE_CHECK)
-    cb->setChecked(Sounds[s].flags & SPF_PLAYS_ONCE);
-  if (QCheckBox *cb = ui->IDC_LOOPING_CHECK)
-    cb->setChecked(Sounds[s].flags & SPF_LOOPED);
+    ui->IDC_SOUNDHALLEFFECT_CHECK->setChecked(!s->flags.fixed_freq);
+    ui->IDC_SOUNDFOREVER_CHECK->setChecked(s->flags.plays_forever);
+    ui->IDC_SOUND_ONCE_PER_OBJ_CHECK->setChecked(s->flags.once_per_obj);
+    ui->IDC_SOUNDEXCLUSIVE_CHECK->setChecked(s->flags.plays_exclusively);
+    ui->IDC_SOUND_NO_UPDATE->setChecked(s->flags.listener_update);
+    ui->IDC_SOUNDONCE_CHECK->setChecked(s->flags.plays_once);
+    ui->IDC_LOOPING_CHECK->setChecked(s->flags.looped);
 
-  if (QRadioButton *rb = ui->IDC_SOUNDOBJATTACH_RADIO)
-    rb->setChecked(Sounds[s].flags & SPF_OBJ_UPDATE);
-  if (QRadioButton *rb = ui->IDC_SOUNDPOSATTACH_RADIO)
-    rb->setChecked(!(Sounds[s].flags & SPF_OBJ_UPDATE));
+    ui->IDC_SOUNDOBJATTACH_RADIO->setChecked(s->flags.obj_update);
+    ui->IDC_SOUNDPOSATTACH_RADIO->setChecked(!s->flags.obj_update);
 
-  switch (SPFT_CONE_LINK_MASK & Sounds[s].flags) {
-  case SPFT_CONE_LINK_TURRET1:
-    ui->IDC_SOUNDTURRET1_RADIO->setChecked(true);
-    break;
-  case SPFT_CONE_LINK_TURRET2:
-    ui->IDC_SOUNDTURRET2_RADIO->setChecked(true);
-    break;
-  case SPFT_CONE_LINK_TURRET3:
-    ui->IDC_SOUNDTURRET3_RADIO->setChecked(true);
-    break;
-  default:
-    ui->IDC_SOUNDOBJECT_RADIO->setChecked(true);
-    break;
-  }
+    // The cone-link selector shares its low bit with once_per_obj; recompose
+    // the 2-bit selector the same way SPFT_CONE_LINK_* did.
+    if (s->flags.cone_link && s->flags.once_per_obj)
+      ui->IDC_SOUNDTURRET3_RADIO->setChecked(true);
+    else if (s->flags.cone_link)
+      ui->IDC_SOUNDTURRET2_RADIO->setChecked(true);
+    else if (s->flags.once_per_obj)
+      ui->IDC_SOUNDTURRET1_RADIO->setChecked(true);
+    else
+      ui->IDC_SOUNDOBJECT_RADIO->setChecked(true);
 
-  switch (SPFT_CONE_DIR_MASK & Sounds[s].flags) {
-  case SPFT_CONE_DIR_BACKWARD:
-    ui->IDC_SOUNDBACKWARD_RADIO->setChecked(true);
-    break;
-  case SPFT_CONE_DIR_UPWARD:
-    ui->IDC_SOUNDUPWARD_RADIO->setChecked(true);
-    break;
-  case SPFT_CONE_DIR_DOWNWARD:
-    ui->IDC_SOUNDDOWNWARD_RADIO->setChecked(true);
-    break;
-  default:
-    ui->IDC_SOUNDFORWARD_RADIO->setChecked(true);
-    break;
-  }
-
-  if (QPushButton *checkin = ui->IDC_CHECKIN_SOUND) {
-    if (mng_FindTrackLock(Sounds[s].name, PAGETYPE_SOUND) == -1) {
-      checkin->setEnabled(false);
-      if (QPushButton *lock = ui->IDC_LOCK_SOUND)
-        lock->setEnabled(true);
-      if (QPushButton *rename = ui->IDC_SOUND_CHANGE_NAME)
-        rename->setEnabled(false);
-    } else {
-      checkin->setEnabled(true);
-      if (QPushButton *lock = ui->IDC_LOCK_SOUND)
-        lock->setEnabled(false);
-      if (QPushButton *rename = ui->IDC_SOUND_CHANGE_NAME)
-        rename->setEnabled(true);
+    switch (s->flags.cone_dir) {
+    case 1: // SPFT_CONE_DIR_BACKWARD
+      ui->IDC_SOUNDBACKWARD_RADIO->setChecked(true);
+      break;
+    case 2: // SPFT_CONE_DIR_UPWARD
+      ui->IDC_SOUNDUPWARD_RADIO->setChecked(true);
+      break;
+    case 3: // SPFT_CONE_DIR_DOWNWARD
+      ui->IDC_SOUNDDOWNWARD_RADIO->setChecked(true);
+      break;
+    default: // SPFT_CONE_DIR_FORWARD
+      ui->IDC_SOUNDFORWARD_RADIO->setChecked(true);
+      break;
     }
-  }
 
-  if (QComboBox *combo = ui->IDC_SOUND_PULLDOWN) {
-    QSignalBlocker blocker(combo);
-    combo->clear();
-    for (int i = 0; i < MAX_SOUNDS; i++)
-      if (Sounds[i].used)
-        combo->addItem(Sounds[i].name);
-    combo->setCurrentText(Sounds[s].name);
+    {
+      QPushButton *checkin = ui->IDC_CHECKIN_SOUND;
+      if (!mng_FindTrackLock(s->name, page_type::sound)) {
+        checkin->setEnabled(false);
+        ui->IDC_LOCK_SOUND->setEnabled(true);
+        ui->IDC_SOUND_CHANGE_NAME->setEnabled(false);
+      } else {
+        checkin->setEnabled(true);
+        ui->IDC_LOCK_SOUND->setEnabled(false);
+        ui->IDC_SOUND_CHANGE_NAME->setEnabled(true);
+      }
+    }
+
+    {
+      QSignalBlocker blocker(ui->IDC_SOUND_PULLDOWN);
+      ui->IDC_SOUND_PULLDOWN->clear();
+      for (int i = 0; i < static_cast<int>(Sounds.size()); i++)
+        if (Sounds.is_used(i))
+          ui->IDC_SOUND_PULLDOWN->addItem(QString::fromStdString(Sounds[i].name));
+      ui->IDC_SOUND_PULLDOWN->setCurrentText(QString::fromStdString(s->name));
+    }
   }
 }
 
@@ -328,7 +293,7 @@ void WorldSoundsDialog::onAddSound() {
 
   QFileInfo fileInfo(pathname);
   const QByteArray pathBytes = pathname.toLocal8Bit();
-  const char *fname = fileInfo.baseName().toLocal8Bit().constData();
+  const std::string fname = fileInfo.baseName().toStdString();
 
   const int raw_handle = LoadSoundFile(pathBytes.constData(), 1.0f, true);
   if (raw_handle < 0) {
@@ -336,195 +301,195 @@ void WorldSoundsDialog::onAddSound() {
     return;
   }
 
-  const int sound_handle = AllocSound();
+  const index_t sound_handle = AllocSound();
   int c = 1;
   bool finding_name = true;
-  char cur_name[100];
+  std::string cur_name;
   while (finding_name) {
     if (c == 1)
-      snprintf(cur_name, sizeof(cur_name), "%s", fname);
+      cur_name = fname;
     else
-      snprintf(cur_name, sizeof(cur_name), "%s%d", fname, c);
-    if (FindSoundName(cur_name) != -1)
+      cur_name = fname + std::to_string(c);
+    if (FindSoundName(cur_name))
       c++;
     else
       finding_name = false;
   }
 
-  snprintf(Sounds[sound_handle].name, sizeof(Sounds[sound_handle].name), "%s", cur_name);
-  Sounds[sound_handle].sample_index = raw_handle;
+  Sounds[*sound_handle].name = cur_name;
+  Sounds[*sound_handle].sample_index = raw_handle;
 
-  std::filesystem::path destname = LocalSoundsDir / SoundFiles[Sounds[sound_handle].sample_index].name;
-  cf_CopyFile(destname, pathname.toStdString());
+  std::filesystem::path destname = LocalSoundsDir / SoundFiles[Sounds[*sound_handle].sample_index].name;
+  std::filesystem::copy(std::filesystem::path(pathname.toStdString()), (destname), std::filesystem::copy_options::overwrite_existing);
 
-  mng_AllocTrackLock(cur_name, PAGETYPE_SOUND);
-  D3EditState.current_sound = sound_handle;
+  mng_AllocTrackLock(cur_name, page_type::sound);
+  app.current_sound = *sound_handle;
   RemapSounds();
-  Sound_system.CheckAndForceSoundDataAlloc(D3EditState.current_sound);
-  Sounds[sound_handle].loop_end = SoundFiles[Sounds[sound_handle].sample_index].np_sample_length - 1;
+  if (app.current_sound) Sound_system.CheckAndForceSoundDataAlloc(static_cast<int>(*app.current_sound));
+  Sounds[*sound_handle].loop_end = SoundFiles[Sounds[*sound_handle].sample_index].np_sample_length - 1;
   updateDialog();
 }
 
 void WorldSoundsDialog::onLoadSound() {
   if (!Network_up)
     return;
-  QString Current_sounds_dir; // get from settings
-  const QString pathname =
-      QFileDialog::getOpenFileName(this, "Load sound", Current_sounds_dir, "Descent III files (*.wav)");
-  if (pathname.isEmpty())
-    return;
-  const int n = D3EditState.current_sound;
-  if (n < 0 || n >= MAX_SOUNDS || !Sounds[n].used)
-    return;
-  const QByteArray pathBytes = pathname.toLocal8Bit();
-  const int raw_handle = LoadSoundFile(pathBytes.constData(), Sounds[n].import_volume, false);
-  if (raw_handle < 0)
-    return;
-  Sounds[n].sample_index = raw_handle;
-  Sounds[n].loop_end = SoundFiles[raw_handle].np_sample_length - 1;
-  updateDialog();
+  if (auto s = data()) {
+    QString Current_sounds_dir; // get from settings
+    const QString pathname =
+        QFileDialog::getOpenFileName(this, "Load sound", Current_sounds_dir, "Descent III files (*.wav)");
+    if (pathname.isEmpty())
+      return;
+    const QByteArray pathBytes = pathname.toLocal8Bit();
+    const int raw_handle = LoadSoundFile(pathBytes.constData(), s->import_volume, false);
+    if (raw_handle < 0)
+      return;
+    s->sample_index = raw_handle;
+    s->loop_end = SoundFiles[raw_handle].np_sample_length - 1;
+    updateDialog();
+  }
 }
 
 void WorldSoundsDialog::onNextSound() {
-  D3EditState.current_sound = GetNextSound(D3EditState.current_sound);
+  if (app.current_sound) { auto next = GetNextSound(*app.current_sound); if (next) app.current_sound = *next; }
   updateDialog();
 }
 void WorldSoundsDialog::onPrevSound() {
-  D3EditState.current_sound = GetPrevSound(D3EditState.current_sound);
+  if (app.current_sound) { auto prev = GetPrevSound(*app.current_sound); if (prev) app.current_sound = *prev; }
   updateDialog();
 }
 
 void WorldSoundsDialog::onDeleteSound() {
-  const int n = D3EditState.current_sound;
-  if (Num_sounds < 1)
-    return;
-  const int tl = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
-  if (tl == -1) {
-    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This sound is not yours to delete.  Lock first.");
-    return;
+  if (auto s = data()) {
+    const int tl = mng_FindTrackLock(s->name, page_type::sound).value_or(-1);
+    if (tl == -1) {
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This sound is not yours to delete.  Lock first.");
+      return;
+    }
+    if (QMessageBox::question(this, "Delete sound",
+                              QString("Are you sure you want to delete this sound? %1").arg(QString::fromStdString(s->name))) != QMessageBox::Yes)
+      return;
+    if (!mng_MakeLocker())
+      return;
+
+    mngs_Pagelock pl;
+    pl.name = s->name;
+    pl.pagetype = page_type::sound;
+
+    if (mng_CheckIfPageOwned(&pl, TableUser.toStdString()) != 1) {
+      mng_FreeTrackLock(tl);
+      Q_ASSERT(mng_DeletePage(s->name, page_type::sound, 1));
+    } else {
+      mng_FreeTrackLock(tl);
+      mng_DeletePage(s->name, page_type::sound, 1);
+      mng_DeletePage(s->name, page_type::sound, 0);
+      mng_DeletePagelock(s->name, page_type::sound);
+    }
+
+    if (app.current_sound) {
+      uint32_t d = *app.current_sound;
+      if (auto next = GetNextSound(d)) app.current_sound = *next;
+      FreeSound(d);
+    }
+    mng_EraseLocker();
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound deleted.");
+    RemapSounds();
+    updateDialog();
   }
-  if (QMessageBox::question(this, "Delete sound",
-                            QString("Are you sure you want to delete this sound? %1").arg(Sounds[n].name)) !=
-      QMessageBox::Yes)
-    return;
-  if (!mng_MakeLocker())
-    return;
-
-  mngs_Pagelock pl;
-  snprintf(pl.name, sizeof(pl.name), "%s", Sounds[n].name);
-  pl.pagetype = PAGETYPE_SOUND;
-
-  if (mng_CheckIfPageOwned(&pl, TableUser) != 1) {
-    mng_FreeTrackLock(tl);
-    Q_ASSERT(mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 1));
-  } else {
-    mng_FreeTrackLock(tl);
-    mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 1);
-    mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 0);
-    mng_DeletePagelock(Sounds[n].name, PAGETYPE_SOUND);
-  }
-
-  D3EditState.current_sound = GetNextSound(n);
-  FreeSound(n);
-  mng_EraseLocker();
-  QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound deleted.");
-  RemapSounds();
-  updateDialog();
 }
 
 void WorldSoundsDialog::onLockSound() {
-  const int n = D3EditState.current_sound;
-  if (Num_sounds < 1)
-    return;
-  if (!mng_MakeLocker())
-    return;
-
-  mngs_Pagelock temp_pl;
-  mngs_sound_page soundpage;
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", Sounds[n].name);
-  temp_pl.pagetype = PAGETYPE_SOUND;
-
-  const int r = mng_CheckIfPageLocked(&temp_pl);
-  if (r == 2) {
-    if (QMessageBox::question(this, "Are you sure?",
-                          "This page is not even in the table file, or the database maybe corrupt.  Override to "
-                          "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
-      snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
-      if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
-        QMessageBox::critical(this, "Error!", ErrorString);
-    }
-  } else if (r < 0) {
-    QMessageBox::critical(this, "Error!", ErrorString);
-  } else if (r == 1) {
-    QMessageBox::information(this, "Information", InfoString);
-  } else {
-    snprintf(temp_pl.holder, sizeof(temp_pl.holder), "%s", TableUser);
-    if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(this, "Error!", ErrorString);
-      mng_EraseLocker();
+  if (auto s = data()) {
+    const uint32_t n = app.current_sound ? *app.current_sound : 0;
+    if (!mng_MakeLocker())
       return;
-    }
-    if (mng_FindSpecificSoundPage(temp_pl.name, &soundpage)) {
-      if (mng_AssignSoundPageToSound(&soundpage, n)) {
-        if (!mng_ReplacePage(Sounds[n].name, Sounds[n].name, n, PAGETYPE_SOUND, 1)) {
-          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
-          mng_EraseLocker();
-          return;
-        }
-        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound locked.");
-      } else {
-        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this sound.");
+
+    mngs_Pagelock temp_pl;
+    mngs_sound_page soundpage;
+    temp_pl.name = s->name;
+    temp_pl.pagetype = page_type::sound;
+
+    const int r = mng_CheckIfPageLocked(&temp_pl);
+    if (r == 2) {
+      if (QMessageBox::question(this, "Are you sure?",
+                            "This page is not even in the table file, or the database maybe corrupt.  Override to "
+                            "'Unlocked'? (Select NO if you don't know what you're doing)") == QMessageBox::Yes) {
+        temp_pl.holder = "UNLOCKED";
+        if (!mng_ReplacePagelock(temp_pl.name, &temp_pl))
+          QMessageBox::critical(this, "Error!", ErrorString);
       }
-      mng_AllocTrackLock(Sounds[n].name, PAGETYPE_SOUND);
+    } else if (r < 0) {
+      QMessageBox::critical(this, "Error!", ErrorString);
+    } else if (r == 1) {
+      QMessageBox::information(this, "Information", InfoString);
     } else {
-      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that sound in the table file!");
+      temp_pl.holder = TableUser.toStdString();
+      if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
+        QMessageBox::critical(this, "Error!", ErrorString);
+        mng_EraseLocker();
+        return;
+      }
+      if (mng_FindSpecificSoundPage(temp_pl.name, &soundpage)) {
+        if (mng_AssignSoundPageToSound(&soundpage, n)) {
+          if (!mng_ReplacePage(s->name, s->name, n, page_type::sound, 1)) {
+            QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was problem writing that page locally!");
+            mng_EraseLocker();
+            return;
+          }
+          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound locked.");
+        } else {
+          QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "There was a problem loading this sound.");
+        }
+        mng_AllocTrackLock(s->name, page_type::sound);
+      } else {
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't find that sound in the table file!");
+      }
     }
+    mng_EraseLocker();
+    updateDialog();
   }
-  mng_EraseLocker();
-  updateDialog();
 }
 
 void WorldSoundsDialog::onCheckinSound() {
-  const int n = D3EditState.current_sound;
-  if (Num_sounds < 1)
-    return;
-  if (!mng_MakeLocker())
-    return;
-
-  mngs_Pagelock temp_pl;
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", Sounds[n].name);
-  temp_pl.pagetype = PAGETYPE_SOUND;
-
-  const int r = mng_CheckIfPageOwned(&temp_pl, TableUser);
-  if (r < 0)
-    QMessageBox::critical(this, "Error!", ErrorString);
-  else if (r == 0)
-    QMessageBox::information(this, "Information", InfoString);
-  else {
-    snprintf(temp_pl.holder, sizeof(temp_pl.holder), "UNLOCKED");
-    if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
-      QMessageBox::critical(this, "Error!", ErrorString);
-      mng_EraseLocker();
+  if (auto s = data()) {
+    const uint32_t n = app.current_sound ? *app.current_sound : 0;
+    if (!mng_MakeLocker())
       return;
-    }
-    if (!mng_ReplacePage(Sounds[n].name, Sounds[n].name, n, PAGETYPE_SOUND, 0))
+
+    mngs_Pagelock temp_pl;
+    temp_pl.name = s->name;
+    temp_pl.pagetype = page_type::sound;
+
+    const int r = mng_CheckIfPageOwned(&temp_pl, TableUser.toStdString());
+    if (r < 0)
       QMessageBox::critical(this, "Error!", ErrorString);
+    else if (r == 0)
+      QMessageBox::information(this, "Information", InfoString);
     else {
-      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound checked in.");
-      Q_ASSERT(mng_DeletePage(Sounds[n].name, PAGETYPE_SOUND, 1) == 1);
-      mng_EraseLocker();
-      const int p = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
-      Q_ASSERT(p != -1);
-      mng_FreeTrackLock(p);
+      temp_pl.holder = "UNLOCKED";
+      if (!mng_ReplacePagelock(temp_pl.name, &temp_pl)) {
+        QMessageBox::critical(this, "Error!", ErrorString);
+        mng_EraseLocker();
+        return;
+      }
+      if (!mng_ReplacePage(s->name, s->name, n, page_type::sound, 0))
+        QMessageBox::critical(this, "Error!", ErrorString);
+      else {
+        QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Sound checked in.");
+        Q_ASSERT(mng_DeletePage(s->name, page_type::sound, 1) == 1);
+        mng_EraseLocker();
+        const int p = mng_FindTrackLock(s->name, page_type::sound).value_or(-1);
+        Q_ASSERT(p != -1);
+        mng_FreeTrackLock(p);
+      }
     }
+    mng_EraseLocker();
+    updateDialog();
   }
-  mng_EraseLocker();
-  updateDialog();
 }
 
 void WorldSoundsDialog::onPlaysound() {
-  const int n = D3EditState.current_sound;
-  if (Num_sounds < 1)
+  const uint32_t n = app.current_sound ? *app.current_sound : 0;
+  if (!static_cast<int>(Sounds.size()))
     return;
   Sound_system.BeginSoundFrame();
   Sound_system.Play2dSound(n);
@@ -539,123 +504,62 @@ void WorldSoundsDialog::onKillsounds() {
 }
 
 void WorldSoundsDialog::onOverride() {
-  const int n = D3EditState.current_sound;
-  mngs_Pagelock temp_pl;
-  snprintf(temp_pl.name, sizeof(temp_pl.name), "%s", Sounds[n].name);
-  temp_pl.pagetype = PAGETYPE_SOUND;
-  mng_OverrideToUnlocked(&temp_pl);
+  if (auto s = data()) {
+    mngs_Pagelock temp_pl;
+    temp_pl.name = s->name;
+    temp_pl.pagetype = page_type::sound;
+    mng_OverrideToUnlocked(&temp_pl);
+  }
 }
 
 void WorldSoundsDialog::onChangeName() {
-  const int n = D3EditState.current_sound;
-  const int p = mng_FindTrackLock(Sounds[n].name, PAGETYPE_SOUND);
-  if (p == -1) {
-    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this sound if you wish to change its name.");
-    return;
-  }
-  bool ok = false;
-  QString name = QInputDialog::getText(this, "Sound name", "Enter a new name for this sound:",
-                                       QLineEdit::Normal, Sounds[n].name, &ok);
-  if (!ok)
-    return;
-  if (FindSoundName(name.toLocal8Bit().constData()) != -1) {
-    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
-    return;
-  }
-  if (!mng_MakeLocker())
-    return;
-  mngs_Pagelock pl;
-  snprintf(pl.name, sizeof(pl.name), "%s", Sounds[n].name);
-  pl.pagetype = PAGETYPE_SOUND;
-  const QByteArray newName = name.toLocal8Bit();
-  char newNameBuf[PAGENAME_LEN];
-  snprintf(newNameBuf, sizeof(newNameBuf), "%s", newName.constData());
-  const int ret = mng_CheckIfPageOwned(&pl, TableUser);
-  if (ret < 0)
-    QMessageBox::critical(this, "Error!", ErrorString);
-  else if (ret == 1)
-    mng_RenamePage(Sounds[n].name, newNameBuf, PAGETYPE_SOUND);
-  else if (ret == 2) {
-    snprintf(GlobalTrackLocks[p].name, sizeof(GlobalTrackLocks[p].name), "%s", newName.constData());
-    mng_ReplacePage(GlobalTrackLocks[p].name, newNameBuf, n, PAGETYPE_SOUND, 1);
-  } else if (ret == 0) {
-    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You don't own this page.  Get Jason now!");
-    mng_FreeTrackLock(p);
+  if (auto s = data()) {
+    const index_t p = mng_FindTrackLock(s->name, page_type::sound);
+    if (!p) {
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must lock this sound if you wish to change its name.");
+      return;
+    }
+    bool ok = false;
+    QString name = QInputDialog::getText(this, "Sound name", "Enter a new name for this sound:",
+                                         QLineEdit::Normal, QString::fromStdString(s->name), &ok);
+    if (!ok)
+      return;
+    if (FindSoundName(name.toStdString())) {
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "That name is taken, please choose another.");
+      return;
+    }
+    if (!mng_MakeLocker())
+      return;
+    mngs_Pagelock pl;
+    pl.name = s->name;
+    pl.pagetype = page_type::sound;
+    const int ret = mng_CheckIfPageOwned(&pl, TableUser.toStdString());
+    if (ret < 0)
+      QMessageBox::critical(this, "Error!", ErrorString);
+    else if (ret == 1)
+      mng_RenamePage(s->name, name.toStdString(), page_type::sound);
+    else if (ret == 2) {
+      GlobalTrackLocks[*p].name = name.toStdString();
+      mng_ReplacePage(GlobalTrackLocks[*p].name, name.toStdString(), app.current_sound, page_type::sound, 1);
+    } else if (ret == 0) {
+      QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You don't own this page.  Get Jason now!");
+      mng_FreeTrackLock(*p);
+      mng_EraseLocker();
+      return;
+    }
+    GlobalTrackLocks[*p].name = name.toStdString();
+    s->name = name.toStdString();
     mng_EraseLocker();
-    return;
+    RemapSounds();
+    updateDialog();
   }
-  snprintf(GlobalTrackLocks[p].name, sizeof(GlobalTrackLocks[p].name), "%s", newName.constData());
-  snprintf(Sounds[n].name, sizeof(Sounds[n].name), "%s", newName.constData());
-  mng_EraseLocker();
-  RemapSounds();
-  updateDialog();
 }
 
 void WorldSoundsDialog::onSoundPulldownChanged() {
   QComboBox *combo = ui->IDC_SOUND_PULLDOWN;
-  const int i = FindSoundName(combo->currentText().toLocal8Bit().constData());
+  const int i = FindSoundName(combo->currentText().toStdString()).value_or(-1);
   if (i == -1)
     return;
-  D3EditState.current_sound = i;
+  app.current_sound = i;
   updateDialog();
 }
-
-void WorldSoundsDialog::onMaxDistEdited() {
-  const int n = D3EditState.current_sound;
-  if (QLineEdit *e = ui->IDC_SOUNDMAXDIST_EDIT)
-    Sounds[n].max_distance = e->text().toFloat();
-}
-void WorldSoundsDialog::onMinDistEdited() {
-  const int n = D3EditState.current_sound;
-  if (QLineEdit *e = ui->IDC_SOUNDMINDIST_EDIT)
-    Sounds[n].min_distance = e->text().toFloat();
-}
-void WorldSoundsDialog::onInnerConeEdited() {
-  const int n = D3EditState.current_sound;
-  if (QLineEdit *e = ui->IDC_SOUNDINNERCONEANGLE_EDIT)
-    Sounds[n].inner_cone_angle = e->text().toInt();
-}
-void WorldSoundsDialog::onOuterConeAngleEdited() {
-  const int n = D3EditState.current_sound;
-  if (QLineEdit *e = ui->IDC_SOUNDOUTERCONEANGLE_EDIT)
-    Sounds[n].outer_cone_angle = e->text().toInt();
-}
-void WorldSoundsDialog::onOuterConeVolEdited() {
-  const int n = D3EditState.current_sound;
-  if (QLineEdit *e = ui->IDC_SOUNDOUTERCONEVOL_EDIT)
-    Sounds[n].outer_cone_volume = e->text().toFloat() / 100.0f;
-}
-void WorldSoundsDialog::onLoopStartEdited() {
-  const int n = D3EditState.current_sound;
-  if (QLineEdit *e = ui->IDC_SOUNDLOOPSTART_EDIT)
-    Sounds[n].loop_start = e->text().toInt();
-}
-void WorldSoundsDialog::onLoopEndEdited() {
-  const int n = D3EditState.current_sound;
-  if (QLineEdit *e = ui->IDC_SOUNDLOOPEND_EDIT)
-    Sounds[n].loop_end = e->text().toInt();
-}
-void WorldSoundsDialog::onImportVolumeEdited() {
-  const int n = D3EditState.current_sound;
-  if (QLineEdit *e = ui->IDC_SOUND_IMPORT_VOLUME_EDIT)
-    Sounds[n].import_volume = e->text().toFloat() / 100.0f;
-}
-
-void WorldSoundsDialog::onHallEffectToggled(bool checked) { setFlag(SPF_FIXED_FREQ, "", !checked); }
-void WorldSoundsDialog::onLoopingToggled(bool checked) { setFlag(SPF_LOOPED, "", checked); }
-void WorldSoundsDialog::onForeverToggled(bool checked) { setFlag(SPF_FOREVER, "", checked); }
-void WorldSoundsDialog::onExclusiveToggled(bool checked) { setFlag(SPF_PLAYS_EXCLUSIVELY, "", checked); }
-void WorldSoundsDialog::onOnceToggled(bool checked) { setFlag(SPF_PLAYS_ONCE, "", checked); }
-void WorldSoundsDialog::onOncePerObjToggled(bool checked) { setFlag(SPF_ONCE_PER_OBJ, "", checked); }
-void WorldSoundsDialog::onNoUpdateToggled(bool checked) { setFlag(SPF_LISTENER_UPDATE, "", checked); }
-void WorldSoundsDialog::onObjAttach() { setFlag(SPF_OBJ_UPDATE, "", true); }
-void WorldSoundsDialog::onPosAttach() { setFlag(SPF_OBJ_UPDATE, "", false); }
-void WorldSoundsDialog::onConeLinkObject() { setConeLink(SPFT_CONE_LINK_OBJECT); }
-void WorldSoundsDialog::onConeLinkTurret1() { setConeLink(SPFT_CONE_LINK_TURRET1); }
-void WorldSoundsDialog::onConeLinkTurret2() { setConeLink(SPFT_CONE_LINK_TURRET2); }
-void WorldSoundsDialog::onConeLinkTurret3() { setConeLink(SPFT_CONE_LINK_TURRET3); }
-void WorldSoundsDialog::onConeDirForward() { setConeDir(SPFT_CONE_DIR_FORWARD); }
-void WorldSoundsDialog::onConeDirBackward() { setConeDir(SPFT_CONE_DIR_BACKWARD); }
-void WorldSoundsDialog::onConeDirUpward() { setConeDir(SPFT_CONE_DIR_UPWARD); }
-void WorldSoundsDialog::onConeDirDownward() { setConeDir(SPFT_CONE_DIR_DOWNWARD); }
-

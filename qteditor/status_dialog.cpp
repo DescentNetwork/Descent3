@@ -40,7 +40,8 @@ int StatusDialog::step() {
 }
 
 void StatusDialog::init(int min, int max, int delta) {
-  if (QProgressBar *progress = ui->IDC_STATUSPROGRESS) {
+  {
+    QProgressBar *progress = ui->IDC_STATUSPROGRESS;
     progress->setRange(min, max);
     progress->setValue(min);
     m_step = delta;
@@ -53,8 +54,7 @@ void StatusDialog::text(const QString &string) {
 }
 
 void StatusDialog::setTo(int value) {
-  if (QProgressBar *progress = ui->IDC_STATUSPROGRESS)
-    progress->setValue(value);
+  ui->IDC_STATUSPROGRESS->setValue(value);
 }
 
 Progress::~Progress() { destroyProgress(); }
@@ -70,7 +70,7 @@ bool Progress::initProgress(fix min, fix max, int32_t iterations, QWidget *paren
     delta *= 10.0f;
     nmax *= 10;
   }
-  int step = (int)delta;
+  int step = delta;
   m_Max = nmax;
   m_Min = nmin;
 
@@ -112,12 +112,12 @@ void Progress::setProgressPercentage(int percent) {
   if (!m_statusDlg)
     return;
   const float per = (float)percent / 100.0f;
-  m_statusDlg->setTo(m_Min + (int)(per * (m_Max - m_Min)));
+  m_statusDlg->setTo(m_Min + int(per * (m_Max - m_Min)));
 }
 
 void Progress::setProgressPercentage(float percent) {
   if (!m_statusDlg)
     return;
-  m_statusDlg->setTo(m_Min + (int)(percent * (m_Max - m_Min)));
+  m_statusDlg->setTo(m_Min + int(percent * (m_Max - m_Min)));
 }
 

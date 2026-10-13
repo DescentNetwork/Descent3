@@ -40,18 +40,13 @@ ViewerPropDialog::ViewerPropDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::ViewerPropDialog)
 {
   ui->setupUi(this);
-  if (QCheckBox *cb = ui->IDC_XMOVE_CHECK) {
-    cb->setChecked(true);
-    connect(cb, &QCheckBox::toggled, this, &ViewerPropDialog::onXMoveToggled);
-  }
-  if (QCheckBox *cb = ui->IDC_YMOVE_CHECK) {
-    cb->setChecked(true);
-    connect(cb, &QCheckBox::toggled, this, &ViewerPropDialog::onYMoveToggled);
-  }
-  if (QCheckBox *cb = ui->IDC_ZMOVE_CHECK) {
-    cb->setChecked(true);
-    connect(cb, &QCheckBox::toggled, this, &ViewerPropDialog::onZMoveToggled);
-  }
+  ui->IDC_XMOVE_CHECK->setChecked(true);
+  ui->IDC_YMOVE_CHECK->setChecked(true);
+  ui->IDC_ZMOVE_CHECK->setChecked(true);
+
+  connect(ui->IDC_XMOVE_CHECK, &QCheckBox::toggled, this, &ViewerPropDialog::onXMoveToggled);
+  connect(ui->IDC_YMOVE_CHECK, &QCheckBox::toggled, this, &ViewerPropDialog::onYMoveToggled);
+  connect(ui->IDC_ZMOVE_CHECK, &QCheckBox::toggled, this, &ViewerPropDialog::onZMoveToggled);
 
   updatePosition();
   updateOrientation();
@@ -65,62 +60,44 @@ ViewerPropDialog::ViewerPropDialog(QWidget *parent)
         w->setEnabled(false);
   }
 
-  if (QPushButton *b = ui->IDC_POS_COMMIT_BUTTON)
-    b->setEnabled(false);
+  ui->IDC_POS_COMMIT_BUTTON->setEnabled(Viewer_object != nullptr);
 
-  if (QPushButton *b = ui->IDC_ALIGN_UPYPOS_BUTTON)
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignUpYpos);
-  if (QPushButton *b = ui->IDC_ALIGN_XNEG_BUTTON)
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignXneg);
-  if (QPushButton *b = ui->IDC_ALIGN_XPOS_BUTTON)
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignXpos);
-  if (QPushButton *b = ui->IDC_ALIGN_YNEG_BUTTON)
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignYneg);
-  if (QPushButton *b = ui->IDC_ALIGN_YPOS_BUTTON)
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignYpos);
-  if (QPushButton *b = ui->IDC_ALIGN_ZNEG_BUTTON)
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignZneg);
-  if (QPushButton *b = ui->IDC_ALIGN_ZPOS_BUTTON)
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onAlignZpos);
-  if (QPushButton *b = ui->IDC_ORIENT_COMMIT_BUTTON)
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onOrientCommit);
-  if (QPushButton *b = ui->IDC_POS_COMMIT_BUTTON)
-    connect(b, &QPushButton::clicked, this, &ViewerPropDialog::onPosCommit);
+  connect(ui->IDC_ALIGN_UPYPOS_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignUpYpos);
+  connect(ui->IDC_ALIGN_XNEG_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignXneg);
+  connect(ui->IDC_ALIGN_XPOS_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignXpos);
+  connect(ui->IDC_ALIGN_YNEG_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignYneg);
+  connect(ui->IDC_ALIGN_YPOS_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignYpos);
+  connect(ui->IDC_ALIGN_ZNEG_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignZneg);
+  connect(ui->IDC_ALIGN_ZPOS_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onAlignZpos);
+  connect(ui->IDC_ORIENT_COMMIT_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onOrientCommit);
+  connect(ui->IDC_POS_COMMIT_BUTTON, &QPushButton::clicked, this, &ViewerPropDialog::onPosCommit);
 }
 
 ViewerPropDialog::~ViewerPropDialog() { delete ui; }
 
 void ViewerPropDialog::updateOrientation() {
   if (Viewer_object == nullptr) {
-    if (QWidget *w = ui->IDC_PITCH_EDIT)
-      w->setEnabled(false);
+    ui->IDC_PITCH_EDIT->setEnabled(false);
     return;
   }
   angvec angs;
-  vm_ExtractAnglesFromMatrix(&angs, &Viewer_object->orient);
+  vm_ExtractAnglesFromMatrix(angs, Viewer_object->orient);
 
-  if (QLineEdit *edit = ui->IDC_PITCH_EDIT)
-    edit->setText(QString::number((int)angs.p() * kDegreesPerAngle));
-  if (QLineEdit *edit = ui->IDC_HEADING_EDIT)
-    edit->setText(QString::number((int)angs.h() * kDegreesPerAngle));
-  if (QLineEdit *edit = ui->IDC_BANK_EDIT)
-    edit->setText(QString::number((int)angs.b() * kDegreesPerAngle));
+  ui->IDC_PITCH_EDIT->setText(QString::number(angs.p() * kDegreesPerAngle));
+  ui->IDC_HEADING_EDIT->setText(QString::number(angs.h() * kDegreesPerAngle));
+  ui->IDC_BANK_EDIT->setText(QString::number(angs.b() * kDegreesPerAngle));
 }
 
 void ViewerPropDialog::updatePosition() {
   const bool hasViewer = (Viewer_object != nullptr);
   if (Viewer_object == nullptr) {
     // Win32 gates the whole dialog on the viewer existing.
-    if (QWidget *w = ui->IDC_XPOS_EDIT)
-      w->setEnabled(false);
+    ui->IDC_XPOS_EDIT->setEnabled(false);
     return;
   }
-  if (QLineEdit *edit = ui->IDC_XPOS_EDIT)
-    edit->setText(QString::number((double)Viewer_object->pos.x(), 'f', 2));
-  if (QLineEdit *edit = ui->IDC_YPOS_EDIT)
-    edit->setText(QString::number((double)Viewer_object->pos.y(), 'f', 2));
-  if (QLineEdit *edit = ui->IDC_ZPOS_EDIT)
-    edit->setText(QString::number((double)Viewer_object->pos.z(), 'f', 2));
+  ui->IDC_XPOS_EDIT->setText(QString::number(Viewer_object->pos.x(), 'f', 2));
+  ui->IDC_YPOS_EDIT->setText(QString::number(Viewer_object->pos.y(), 'f', 2));
+  ui->IDC_ZPOS_EDIT->setText(QString::number(Viewer_object->pos.z(), 'f', 2));
   (void)hasViewer;
 }
 
@@ -129,95 +106,95 @@ bool ViewerPropDialog::ensureViewer() { return Viewer_object != nullptr; }
 void ViewerPropDialog::setOrientation(matrix &m) {
   if (Viewer_object == nullptr)
     return;
-  vm_Orthogonalize(&m);
-  Viewer_moved = true;
+  vm_Orthogonalize(m);
+  app.Viewer_moved = true;
 }
 
 void ViewerPropDialog::onAlignUpYpos() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->rvec.y() = m->fvec.y() = m->uvec.x() = m->uvec.z() = 0;
-  m->uvec.y() = 1.0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.rvec.y() = m.fvec.y() = m.uvec.x() = m.uvec.z() = 0;
+  m.uvec.y() = 1.0f;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onAlignXneg() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->fvec.x() = -1.0;
-  m->fvec.y() = m->fvec.z() = 0;
-  m->uvec.y() = 1.0;
-  m->uvec.x() = m->uvec.z() = 0;
-  m->rvec.z() = 1.0;
-  m->rvec.x() = m->rvec.y() = 0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.fvec.x() = -1.0f;
+  m.fvec.y() = m.fvec.z() = 0;
+  m.uvec.y() = 1.0f;
+  m.uvec.x() = m.uvec.z() = 0;
+  m.rvec.z() = 1.0f;
+  m.rvec.x() = m.rvec.y() = 0;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onAlignXpos() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->fvec.x() = 1.0;
-  m->fvec.y() = m->fvec.z() = 0;
-  m->uvec.y() = 1.0;
-  m->uvec.x() = m->uvec.z() = 0;
-  m->rvec.z() = -1.0;
-  m->rvec.x() = m->rvec.y() = 0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.fvec.x() = 1.0f;
+  m.fvec.y() = m.fvec.z() = 0;
+  m.uvec.y() = 1.0f;
+  m.uvec.x() = m.uvec.z() = 0;
+  m.rvec.z() = -1.0f;
+  m.rvec.x() = m.rvec.y() = 0;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onAlignYneg() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->fvec.y() = -1.0;
-  m->fvec.x() = m->fvec.z() = 0;
-  m->uvec.z() = 1.0;
-  m->uvec.x() = m->uvec.y() = 0;
-  m->rvec.x() = 1.0;
-  m->rvec.y() = m->rvec.z() = 0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.fvec.y() = -1.0f;
+  m.fvec.x() = m.fvec.z() = 0;
+  m.uvec.z() = 1.0f;
+  m.uvec.x() = m.uvec.y() = 0;
+  m.rvec.x() = 1.0f;
+  m.rvec.y() = m.rvec.z() = 0;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onAlignYpos() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->fvec.y() = 1.0;
-  m->fvec.x() = m->fvec.z() = 0;
-  m->uvec.z() = -1.0;
-  m->uvec.x() = m->uvec.y() = 0;
-  m->rvec.x() = 1.0;
-  m->rvec.y() = m->rvec.z() = 0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.fvec.y() = 1.0f;
+  m.fvec.x() = m.fvec.z() = 0;
+  m.uvec.z() = -1.0f;
+  m.uvec.x() = m.uvec.y() = 0;
+  m.rvec.x() = 1.0f;
+  m.rvec.y() = m.rvec.z() = 0;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onAlignZneg() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->fvec.z() = -1.0;
-  m->fvec.x() = m->fvec.y() = 0;
-  m->uvec.y() = 1.0;
-  m->uvec.x() = m->uvec.z() = 0;
-  m->rvec.x() = -1.0;
-  m->rvec.y() = m->rvec.z() = 0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.fvec.z() = -1.0f;
+  m.fvec.x() = m.fvec.y() = 0;
+  m.uvec.y() = 1.0f;
+  m.uvec.x() = m.uvec.z() = 0;
+  m.rvec.x() = -1.0f;
+  m.rvec.y() = m.rvec.z() = 0;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onAlignZpos() {
   if (Viewer_object == nullptr)
     return;
-  matrix *m = &Viewer_object->orient;
-  m->fvec.z() = 1.0;
-  m->fvec.x() = m->fvec.y() = 0;
-  m->uvec.y() = 1.0;
-  m->uvec.x() = m->uvec.z() = 0;
-  m->rvec.x() = 1.0;
-  m->rvec.y() = m->rvec.z() = 0;
-  setOrientation(*m);
+  matrix &m = Viewer_object->orient;
+  m.fvec.z() = 1.0f;
+  m.fvec.x() = m.fvec.y() = 0;
+  m.uvec.y() = 1.0f;
+  m.uvec.x() = m.uvec.z() = 0;
+  m.rvec.x() = 1.0f;
+  m.rvec.y() = m.rvec.z() = 0;
+  setOrientation(m);
 }
 
 void ViewerPropDialog::onOrientCommit() {
@@ -227,10 +204,9 @@ void ViewerPropDialog::onOrientCommit() {
   const int heading = ui->IDC_HEADING_EDIT->text().toInt();
   const int bank = ui->IDC_BANK_EDIT->text().toInt();
 
-  vm_AnglesToMatrix(&Viewer_object->orient, pitch * kAnglesPerDegree, heading * kAnglesPerDegree,
-                    bank * kAnglesPerDegree);
+  vm_AnglesToMatrix(Viewer_object->orient, pitch * kAnglesPerDegree, heading * kAnglesPerDegree, bank * kAnglesPerDegree);
 
-  State_changed = Viewer_moved = false;
+  app.State_changed = app.Viewer_moved = false;
 }
 
 void ViewerPropDialog::onPosCommit() {
@@ -239,7 +215,7 @@ void ViewerPropDialog::onPosCommit() {
   Viewer_object->pos.x() = ui->IDC_XPOS_EDIT->text().toFloat();
   Viewer_object->pos.y() = ui->IDC_YPOS_EDIT->text().toFloat();
   Viewer_object->pos.z() = ui->IDC_ZPOS_EDIT->text().toFloat();
-  Viewer_moved = true;
+  app.Viewer_moved = true;
 }
 
 void ViewerPropDialog::onXMoveToggled(bool checked) {

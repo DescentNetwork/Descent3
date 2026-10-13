@@ -35,23 +35,11 @@ public:
   ~GenericLightDialog();
 
 private slots:
-  void onFlickerRadio();
-  void onAlwaysOnRadio();
-  void onUseTimebitsRadio();
-  void onPulseToggled(bool checked);
-  void onPulseToSecondToggled(bool checked);
-  void onFlickerSlightlyToggled(bool checked);
-  void onDirectionalToggled(bool checked);
-  void onNoSpecularToggled(bool checked);
   void onTimeCheck();
-  void onRenderStatic();
-  void onRenderGouraud();
-  void onRenderLightmaps();
   void onFieldEdited();
 
 private:
   void updateDialog();
-  void setFlag(int32_t flag, const char *checkName, bool checked);
 
   Ui::GenericLightDialog *ui;
   light_info *m_lightinfo;

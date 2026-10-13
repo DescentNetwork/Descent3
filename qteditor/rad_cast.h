@@ -38,7 +38,7 @@
 #include "radiosity.h"
 
 // Returns 1 if a src vector can hit dest vector unobstructed, else 0
-int ShootRayFromPoint(vector *src, vector *dest, rad_surface *src_surf, rad_surface *dest_surf);
+int ShootRayFromPoint(vector3 *src, vector3 *dest, rad_surface *src_surf, rad_surface *dest_surf);
 
 // Calculates the form factors using a raycasting method
 void CalculateFormFactorsRaycast();

@@ -20,6 +20,10 @@
 
 #include <QDialog>
 
+#include "weapon.h" // weapon_flags_t
+#include "object_external_struct.h" // physics_flags_t
+#include "utils.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class WorldWeaponsDialog; }
 QT_END_NAMESPACE
@@ -44,31 +48,16 @@ private slots:
   void onWeaponPulldownChanged();
   void onOverride();
   void onCopy();
-  void onPaste();
   void onChangeName();
   void onEditPhysics();
-  void onDefaultSize();
-  void onEnergyRadio();
-  void onMatterRadio();
-
-  void onFireSoundChanged();
-  void onWallSoundChanged();
-  void onFlyingSoundChanged();
-  void onBounceSoundChanged();
-  void onExplodeChanged();
-  void onSmokeChanged();
-  void onParticleChanged();
-  void onSpawnChanged();
-  void onSpawnRobotChanged();
 
 private:
   void updateDialog();
   void saveWeaponsOnClose();
-  void setFlag(uint32_t flag, const char *checkName, bool checked);
-  void setPhysFlag(uint32_t flag, const char *checkName, bool checked);
   void bindEdits();
   void bindChecks();
   void bindCombos();
+  optref<weapon> data(void);
 private:
   Ui::WorldWeaponsDialog *ui;
 };

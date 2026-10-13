@@ -32,7 +32,7 @@ CreateNewScriptDialog::CreateNewScriptDialog(QWidget *parent)
   if (auto *level = ui->IDC_LEVEL)
     level->setChecked(true);
 
-  connect(this, &QDialog::accept, this, &CreateNewScriptDialog::onOk);
+  connect(ui->IDOK, &QPushButton::clicked, this, &CreateNewScriptDialog::onOk);
 }
 
 CreateNewScriptDialog::~CreateNewScriptDialog() { delete ui; }

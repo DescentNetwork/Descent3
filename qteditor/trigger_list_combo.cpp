@@ -29,9 +29,9 @@ void populateTriggerCombo(QComboBox *combo, int selected) {
   combo->clear();
   combo->addItem("<none>", -1);
 
-  for (int i = 0; i < Num_triggers; i++) {
+  for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
     int index = combo->count();
-    combo->addItem(Triggers[i].name, i);
+    combo->addItem(QString::fromStdString(Triggers[i].name), i);
     if (selected == i)
       combo->setCurrentIndex(index);
   }

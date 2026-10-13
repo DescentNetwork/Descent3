@@ -23,114 +23,104 @@
 #include <QLineEdit>
 #include <QPushButton>
 
-#include "object_external_struct.h"
 #include "physics.h"
+#include "objinfo.h"
 
 
-namespace {
-const struct {
-  const char *name;
-  uint32_t flag;
-} kFlagChecks[] = {
-    {"IDC_PTURNROLL", PF_TURNROLL},      {"IDC_PLEVELLING", PF_LEVELING},
-    {"IDC_PBOUNCE", PF_BOUNCE},          {"IDC_PWIGGLE", PF_WIGGLE},
-    {"IDC_PSTICKS", PF_STICK},           {"IDC_PPERSISTENT", PF_PERSISTENT},
-    {"IDC_PUSESTHRUST", PF_USES_THRUST}, {"IDC_PGRAVITY", PF_GRAVITY},
-    {"IDC_PWIND", PF_WIND},
-};
+optref<physics_info> PropertyPhysicsDialog::data(void)
+{
+  if(m_object_id < 0)
+    return std::nullopt;
+  return Object_info[m_object_id].phys_info;
+}
 
-} // namespace
-
-PropertyPhysicsDialog::PropertyPhysicsDialog(physics_info *physInfo, QWidget *parent)
-    : QDialog(parent), ui(new Ui::PropertyPhysicsDialog), m_physInfo(physInfo)
+PropertyPhysicsDialog::PropertyPhysicsDialog(int object_id, QWidget *parent)
+    : QDialog(parent), ui(new Ui::PropertyPhysicsDialog), m_object_id(object_id)
 {
   ui->setupUi(this);
-  for (const auto &c : kFlagChecks)
-    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
-      connect(cb, &QCheckBox::toggled, this, &PropertyPhysicsDialog::onFlagToggled);
 
-  connect(this, &QDialog::accept, this, &PropertyPhysicsDialog::onOk);
+  connect(ui->IDC_PTURNROLL,    &QCheckBox::toggled,  [this](bool checked) { if(data()) data()->flags.turnroll    = checked; });
+  connect(ui->IDC_PLEVELLING,   &QCheckBox::toggled,  [this](bool checked) { if(data()) data()->flags.leveling    = checked; });
+  connect(ui->IDC_PBOUNCE,      &QCheckBox::toggled,  [this](bool checked) { if(data()) data()->flags.bounce      = checked; });
+  connect(ui->IDC_PWIGGLE,      &QCheckBox::toggled,  [this](bool checked) { if(data()) data()->flags.wiggle      = checked; });
+  connect(ui->IDC_PSTICKS,      &QCheckBox::toggled,  [this](bool checked) { if(data()) data()->flags.stick       = checked; });
+  connect(ui->IDC_PPERSISTENT,  &QCheckBox::toggled,  [this](bool checked) { if(data()) data()->flags.persistent  = checked; });
+  connect(ui->IDC_PUSESTHRUST,  &QCheckBox::toggled,  [this](bool checked) { if(data()) data()->flags.uses_thrust = checked; });
+  connect(ui->IDC_PGRAVITY,     &QCheckBox::toggled,  [this](bool checked) { if(data()) data()->flags.gravity     = checked; });
+  connect(ui->IDC_PWIND,        &QCheckBox::toggled,  [this](bool checked) { if(data()) data()->flags.wind        = checked; });
 
-  const struct {
-    const char *name;
-    float physics_info::*field;
-  } fields[] = {
-      {"IDC_PMASS", &physics_info::mass},
-      {"IDC_PDRAG", &physics_info::drag},
-      {"IDC_PROTDRAG", &physics_info::rotdrag},
-      {"IDC_PFULL_THRUST", &physics_info::full_thrust},
-      {"IDC_PFULL_ROTTHRUST", &physics_info::full_rotthrust},
-      {"IDC_PMAX_TURNROLL_RATE", &physics_info::max_turnroll_rate},
-      {"IDC_PTURNROLL_RATIO", &physics_info::turnroll_ratio},
-      {"IDC_PWIGGLE_AMPLITUDE", &physics_info::wiggle_amplitude},
-      {"IDC_PWIGGLES_PER_SECOND", &physics_info::wiggles_per_sec},
-  };
-  for (const auto &f : fields)
-    if (QLineEdit *e = findChild<QLineEdit*>(f.name))
-      connect(e, &QLineEdit::editingFinished, this, [this, f]() {
-        m_physInfo->*f.field = findChild<QLineEdit*>(f.name)->text().toFloat();
-      });
+  connect(ui->IDC_PMASS,        &QLineEdit::editingFinished, [this]() {
+    if(data()) data()->mass = ui->IDC_PMASS->text().toFloat();
+  });
+  connect(ui->IDC_PDRAG,        &QLineEdit::editingFinished, [this]() {
+    if(data()) data()->drag = ui->IDC_PDRAG->text().toFloat();
+  });
+  connect(ui->IDC_PROTDRAG,     &QLineEdit::editingFinished, [this]() {
+    if(data()) data()->rotdrag = ui->IDC_PROTDRAG->text().toFloat();
+  });
+  connect(ui->IDC_PFULL_THRUST, &QLineEdit::editingFinished, [this]() {
+    if(data()) data()->full_thrust = ui->IDC_PFULL_THRUST->text().toFloat();
+  });
+  connect(ui->IDC_PFULL_ROTTHRUST,      &QLineEdit::editingFinished, [this]() {
+    if(data()) data()->full_rotthrust = ui->IDC_PFULL_ROTTHRUST->text().toFloat();
+  });
+  connect(ui->IDC_PMAX_TURNROLL_RATE,   &QLineEdit::editingFinished, [this]() {
+    if(data()) data()->max_turnroll_rate = ui->IDC_PMAX_TURNROLL_RATE->text().toFloat();
+  });
+  connect(ui->IDC_PTURNROLL_RATIO,      &QLineEdit::editingFinished, [this]() {
+    if(data()) data()->turnroll_ratio = ui->IDC_PTURNROLL_RATIO->text().toFloat();
+  });
+  connect(ui->IDC_PWIGGLE_AMPLITUDE,    &QLineEdit::editingFinished, [this]() {
+    if(data()) data()->wiggle_amplitude = ui->IDC_PWIGGLE_AMPLITUDE->text().toFloat();
+  });
+  connect(ui->IDC_PWIGGLES_PER_SECOND,  &QLineEdit::editingFinished, [this]() {
+    if(data()) data()->wiggles_per_sec = ui->IDC_PWIGGLES_PER_SECOND->text().toFloat();
+  });
+
+  //connect(ui->IDOK, &QPushButton::clicked, this, &PropertyPhysicsDialog::onOk);
 
   updateDialog();
 }
 
 PropertyPhysicsDialog::~PropertyPhysicsDialog() { delete ui; }
 
-void PropertyPhysicsDialog::setFlag(uint32_t flag, const char *checkName, bool checked) {
-  if (checked)
-    m_physInfo->flags |= flag;
-  else
-    m_physInfo->flags &= ~flag;
-}
-
 void PropertyPhysicsDialog::updateDialog() {
-  for (const auto &c : kFlagChecks)
-    if (QCheckBox *cb = findChild<QCheckBox*>(c.name))
-      cb->setChecked(m_physInfo->flags & c.flag);
-  const struct {
-    const char *name;
-    float physics_info::*field;
-  } fields[] = {
-      {"IDC_PMASS", &physics_info::mass},
-      {"IDC_PDRAG", &physics_info::drag},
-      {"IDC_PROTDRAG", &physics_info::rotdrag},
-      {"IDC_PFULL_THRUST", &physics_info::full_thrust},
-      {"IDC_PFULL_ROTTHRUST", &physics_info::full_rotthrust},
-      {"IDC_PMAX_TURNROLL_RATE", &physics_info::max_turnroll_rate},
-      {"IDC_PTURNROLL_RATIO", &physics_info::turnroll_ratio},
-      {"IDC_PWIGGLE_AMPLITUDE", &physics_info::wiggle_amplitude},
-      {"IDC_PWIGGLES_PER_SECOND", &physics_info::wiggles_per_sec},
-  };
-  for (const auto &f : fields)
-    if (QLineEdit *e = findChild<QLineEdit*>(f.name))
-      e->setText(QString::number(m_physInfo->*f.field));
-}
+  if(auto physInfo = data(); physInfo)
+  {
+    ui->IDC_PTURNROLL->setChecked(physInfo->flags.turnroll);
+    ui->IDC_PLEVELLING->setChecked(physInfo->flags.leveling);
+    ui->IDC_PBOUNCE->setChecked(physInfo->flags.bounce);
+    ui->IDC_PWIGGLE->setChecked(physInfo->flags.wiggle);
+    ui->IDC_PSTICKS->setChecked(physInfo->flags.stick);
+    ui->IDC_PPERSISTENT->setChecked(physInfo->flags.persistent);
+    ui->IDC_PUSESTHRUST->setChecked(physInfo->flags.uses_thrust);
+    ui->IDC_PGRAVITY->setChecked(physInfo->flags.gravity);
+    ui->IDC_PWIND->setChecked(physInfo->flags.wind);
 
-void PropertyPhysicsDialog::onFlagToggled() {
-  QCheckBox *cb = qobject_cast<QCheckBox *>(sender());
-  if (cb == nullptr)
-    return;
-  for (const auto &c : kFlagChecks)
-    if (strcmp(c.name, cb->objectName().toLatin1().constData()) == 0)
-      setFlag(c.flag, c.name, cb->isChecked());
+    ui->IDC_PMASS->setText(QString::number(physInfo->mass));
+    ui->IDC_PDRAG->setText(QString::number(physInfo->drag));
+    ui->IDC_PROTDRAG->setText(QString::number(physInfo->rotdrag));
+    ui->IDC_PFULL_THRUST->setText(QString::number(physInfo->full_thrust));
+    ui->IDC_PFULL_ROTTHRUST->setText(QString::number(physInfo->full_rotthrust));
+    ui->IDC_PMAX_TURNROLL_RATE->setText(QString::number(physInfo->max_turnroll_rate));
+    ui->IDC_PTURNROLL_RATIO->setText(QString::number(physInfo->turnroll_ratio));
+    ui->IDC_PWIGGLE_AMPLITUDE->setText(QString::number(physInfo->wiggle_amplitude));
+    ui->IDC_PWIGGLES_PER_SECOND->setText(QString::number(physInfo->wiggles_per_sec));
+  }
 }
 
 void PropertyPhysicsDialog::onOk() {
-  const struct {
-    const char *name;
-    float physics_info::*field;
-  } fields[] = {
-      {"IDC_PMASS", &physics_info::mass}, {"IDC_PDRAG", &physics_info::drag},
-      {"IDC_PROTDRAG", &physics_info::rotdrag}, {"IDC_PFULL_THRUST", &physics_info::full_thrust},
-      {"IDC_PFULL_ROTTHRUST", &physics_info::full_rotthrust},
-      {"IDC_PMAX_TURNROLL_RATE", &physics_info::max_turnroll_rate},
-      {"IDC_PTURNROLL_RATIO", &physics_info::turnroll_ratio},
-      {"IDC_PWIGGLE_AMPLITUDE", &physics_info::wiggle_amplitude},
-      {"IDC_PWIGGLES_PER_SECOND", &physics_info::wiggles_per_sec},
-  };
-  for (const auto &f : fields)
-    if (QLineEdit *e = findChild<QLineEdit*>(f.name))
-      m_physInfo->*f.field = e->text().toFloat();
+  if(auto physInfo = data(); physInfo)
+  {
+    physInfo->mass        = ui->IDC_PMASS->text().toFloat();
+    physInfo->drag        = ui->IDC_PDRAG->text().toFloat();
+    physInfo->rotdrag     = ui->IDC_PROTDRAG->text().toFloat();
+    physInfo->full_thrust = ui->IDC_PFULL_THRUST->text().toFloat();
+    physInfo->full_rotthrust    = ui->IDC_PFULL_ROTTHRUST->text().toFloat();
+    physInfo->max_turnroll_rate = ui->IDC_PMAX_TURNROLL_RATE->text().toFloat();
+    physInfo->turnroll_ratio    = ui->IDC_PTURNROLL_RATIO->text().toFloat();
+    physInfo->wiggle_amplitude  = ui->IDC_PWIGGLE_AMPLITUDE->text().toFloat();
+    physInfo->wiggles_per_sec   = ui->IDC_PWIGGLES_PER_SECOND->text().toFloat();
+  }
   accept();
 }
-
