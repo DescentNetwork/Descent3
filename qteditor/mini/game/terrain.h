@@ -121,7 +121,6 @@ struct terrain_segment {
   uint8_t ypos;    // this is so we don't have to constantly convert
                  // floats to ints when traversing the terrain
                  // it's the integer version of pos.y
-  uint8_t pad;     // for alignment
 };
 
 struct terrain_tex_segment {
@@ -171,7 +170,7 @@ static_assert(sizeof(terrain_satellite_flags_t) == sizeof(uint8_t));
 
 // Data for the sky spherical map
 struct terrain_sky {
-  int textured; // 1=use textures, 0=use gouraud shaded polygon
+  bool textured; // 1=use textures, 0=use gouraud shaded polygon
 
   // The two subscripts correspond to the top, middle, and bottom of the horizon piece
   vector3 horizon_vectors[MAX_HORIZON_PIECES][6];

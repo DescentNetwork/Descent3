@@ -1516,10 +1516,7 @@ static void LL_ReadTerrainHeightChunk(byte_istream &ifile, int) {
 static void LL_ReadTerrainSkyAndLightChunk(byte_istream &ifile, int) {
   ifile >> Terrain_sky.fog_scalar;
   ifile >> Terrain_sky.damage_per_second;
-
-  uint8_t textured = 0;
-  ifile >> textured;
-  Terrain_sky.textured = textured;
+  ifile >> reinterpret_cast<uint8_t&>(Terrain_sky.textured);
 
   int16_t dome = 0;
   ifile >> dome;
@@ -1701,14 +1698,14 @@ static void LL_WriteTerrainSkyAndLightChunk(byte_ostream &ofile) {
 
   ofile << Terrain_sky.fog_scalar;
   ofile << Terrain_sky.damage_per_second;
-  ofile.put(static_cast<uint8_t>(Terrain_sky.textured));
+  ofile << static_cast<uint8_t>(Terrain_sky.textured);
   ofile << Terrain_sky.dome_texture;
 
   ofile << static_cast<int32_t>(Terrain_sky.sky_color);
   ofile << static_cast<int32_t>(Terrain_sky.horizon_color);
   ofile << static_cast<int32_t>(Terrain_sky.fog_color);
 
-  ofile << std::bit_cast<int32_t>(Terrain_sky.flags);
+  ofile << std::bit_cast<uint32_t>(Terrain_sky.flags);
   ofile << Terrain_sky.radius;
   ofile << Terrain_sky.rotate_rate;
 
@@ -1716,7 +1713,7 @@ static void LL_WriteTerrainSkyAndLightChunk(byte_ostream &ofile) {
   for (int i = 0; i < Terrain_sky.num_satellites; i++) {
     ofile << Terrain_sky.satellite_texture[i];
     ofile << Terrain_sky.satellite_vectors[i];
-    ofile.put(std::bit_cast<uint8_t>(Terrain_sky.satellite_flags[i]));
+    ofile << std::bit_cast<uint8_t>(Terrain_sky.satellite_flags[i]);
     ofile << Terrain_sky.satellite_size[i];
     ofile << Terrain_sky.satellite_r[i];
     ofile << Terrain_sky.satellite_g[i];
