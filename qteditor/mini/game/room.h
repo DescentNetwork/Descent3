@@ -443,7 +443,7 @@ void InitRooms();
 // Allows a spew'er to find out if he is in a room or external to the mine
 // NOTE:  THIS FUNCTION IS NOT FOR IN GAME STUFF.  It is REALLY SLOW and accurate.
 // Talk to Chris if you need something like this function.
-index_t FindPointRoom(vector3 *pnt);
+index_t FindPointRoom(const vector3 &pnt);
 
 // Put this here so we don't need to include render.h
 extern bool Render_floating_triggers;
@@ -458,7 +458,7 @@ extern bool Render_floating_triggers;
 void InitRoom(room_t &rp, int nverts, int nfaces, int nportals);
 
 // Initialize a room face structure, allocating memory for vertlist and uvls
-void InitRoomFace(face *fp, int nverts);
+void InitRoomFace(face &fp, int nverts);
 
 // Frees a room in the Rooms table, deallocating its memory and marking it as unused
 void FreeRoom(int roomnum);
@@ -469,7 +469,7 @@ void FreeAllRooms();
 // Finds the center point of a room
 // Parameters:	vp - filled in with the center point
 //					roomnum - the Rooms slot whose center to find
-void ComputeRoomCenter(vector3 *vp, int roomnum);
+void ComputeRoomCenter(vector3 &vp, int roomnum);
 
 // Computes (fills in) the surface normal of a face.
 // Finds the best normal on this face by checking all sets of three vertices
@@ -495,13 +495,13 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
 // Parameters:	vp           - filled in with the center point
 //					roomnum      - the Rooms slot
 //					portal_index - the index of the portal whose center to find
-void ComputePortalCenter(vector3 *vp, int roomnum, int portal_index);
+void ComputePortalCenter(vector3 &vp, int roomnum, int portal_index);
 
 // Computes the center point on a face by averaging the points in the face
-void ComputeCenterPointOnFace(vector3 *vp, int roomnum, int facenum);
+void ComputeCenterPointOnFace(vector3 &vp, int roomnum, int facenum);
 
 // Free the memory used by a room face structure
-void FreeRoomFace(face *fp);
+void FreeRoomFace(face &fp);
 
 // Removes all room lightmaps from memory and sets indoor faces accordingly
 void ClearAllRoomLightmaps(int external);
@@ -517,7 +517,7 @@ float GetAreaForFace(int roomnum, int facenum);
 //					roomnum - the Rooms slot that pnt is in
 //					facenum - the face that pnt is on
 // Returns:	true if can pass through the given point, else 0
-int CheckTransparentPoint(const vector3 *pnt, int roomnum, const int facenum);
+int CheckTransparentPoint(const vector3 &pnt, int roomnum, const int facenum);
 
 // Face physics flags returned by GetFacePhysicsFlags()
 struct face_physics_flags_t {
@@ -534,13 +534,13 @@ struct face_physics_flags_t {
 // Parameters:	roomnum - the Rooms slot the face's room occupies
 //					fp - the face we're interested in
 // Returns:	bitmask of flags (see above).
-face_physics_flags_t GetFacePhysicsFlags(int roomnum, const face *fp);
+face_physics_flags_t GetFacePhysicsFlags(int roomnum, const face &fp);
 
 // Computes a bounding sphere for the current room
 // Parameters: center - filled in with the center point of the sphere
 //		roomnum - the Rooms slot we're bounding
 // Returns: the radius of the bounding sphere
-float ComputeRoomBoundingSphere(vector3 *center, int roomnum);
+float ComputeRoomBoundingSphere(vector3 &center, int roomnum);
 
 // Create objects for the external rooms
 void CreateRoomObjects();
@@ -574,6 +574,6 @@ index_t AllocRoomChange();
 void DoRoomChangeFrame();
 
 // Sets up a room to change its fog or wind over time
-index_t SetRoomChangeOverTime(int roomnum, bool fog, vector3 *end, float depth_end, float time);
+index_t SetRoomChangeOverTime(int roomnum, bool fog, const vector3 &end, float depth_end, float time);
 
 #endif

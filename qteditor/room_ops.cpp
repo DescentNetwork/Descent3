@@ -165,7 +165,7 @@ bool ResetRoomFaceNormals(int roomnum) {
 // Copies the contents of one face to another.  Sets portal_num to -1.
 // ============================================================================
 void CopyFace(face *dfp, face *sfp) {
-  InitRoomFace(dfp, sfp->num_verts);
+  InitRoomFace(*dfp, sfp->num_verts);
 
   dfp->flags = sfp->flags;
   dfp->portal_num = -1;
@@ -324,7 +324,7 @@ void DeleteRoomFace(int roomnum, int facenum) {
     }
   }
 
-  FreeRoomFace(&rp.faces[facenum]);
+  FreeRoomFace(rp.faces[facenum]);
   rp.faces.erase(rp.faces.begin() + facenum);
   rp.num_faces--;
 
@@ -603,7 +603,7 @@ void FixConcaveFaces(int roomnum, int *facelist, int facecount) {
       }
 
       for (int t = 0; t < num_new_faces; t++)
-        InitRoomFace(&rp.faces[old_num_faces + t], 3);
+        InitRoomFace(rp.faces[old_num_faces + t], 3);
 
       for (int t = 0; t < concave_count - 3; t++) {
         rp.faces[old_num_faces + t].face_verts[0] = concave_verts[0];
@@ -766,7 +766,7 @@ void RotateRooms(angle p, angle h, angle b) {
     return;
   }
 
-  ComputePortalCenter(&rotpoint, index_to_int(app.current.room), cur_portalnum);
+  ComputePortalCenter(rotpoint, index_to_int(app.current.room), cur_portalnum);
   vm_AnglesToMatrix(rotmat, p, h, b);
   face *fp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
   ComputeNormal(portal_normal, fp->num_verts, fp->face_verts, curroomp.verts);
@@ -1148,7 +1148,7 @@ static bool ClipFace(int aroom, int afacenum, int broom, int bfacenum) {
 
   for (int i = 0; i < num_newfaces; i++) {
     face *fp = &arp.faces[first_new_face + i];
-    InitRoomFace(fp, newface_nvs[i]);
+    InitRoomFace(*fp, newface_nvs[i]);
     for (int j = 0; j < newface_nvs[i]; j++) {
       fp->face_verts[j] = newvertnums[newface_verts[i][j]];
       fp->face_uvls[j] = newverts[newface_verts[i][j]].uvl;
@@ -1680,8 +1680,8 @@ void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face
   app.placed.base.face = index_t{static_cast<uint32_t>(baseface)};
   app.placed.door = placed_room_door;
 
-  ComputeCenterPointOnFace(&app.placed.attachpoint, baseroom, baseface);
-  ComputeCenterPointOnFace(&app.placed.origin, placed_room, placed_room_face);
+  ComputeCenterPointOnFace(app.placed.attachpoint, baseroom, baseface);
+  ComputeCenterPointOnFace(app.placed.origin, placed_room, placed_room_face);
 
   ComputePlacedRoomMatrix();
 }
@@ -1740,7 +1740,7 @@ void PlaceDoor(int baseroom, int baseface, uint32_t placed_door) {
   // Create faces from shell
   index = 0;
   for (int i = 0; i < shell_sm->num_faces; i++, index++) {
-    InitRoomFace(&newroom.faces[index], shell_sm->faces[i].nverts);
+    InitRoomFace(newroom.faces[index], shell_sm->faces[i].nverts);
     newroom.faces[index].tmap = static_cast<int16_t>(app.texdlg_texture.value_or(0xFFFFu));
     for (int t = 0; t < newroom.faces[index].num_verts; t++)
       newroom.faces[index].face_verts[t] = shell_sm->faces[i].vertnums[t];
@@ -1749,7 +1749,7 @@ void PlaceDoor(int baseroom, int baseface, uint32_t placed_door) {
   // Create the front face (always one face)
   int front_face_index = index;
   Q_ASSERT(front_sm->num_faces == 1);
-  InitRoomFace(&newroom.faces[index], front_sm->faces[0].nverts);
+  InitRoomFace(newroom.faces[index], front_sm->faces[0].nverts);
   newroom.faces[index].tmap = static_cast<int16_t>(app.texdlg_texture.value_or(0xFFFFu));
 
   // Remap front face vertices to match the shell

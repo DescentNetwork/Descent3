@@ -362,7 +362,7 @@ struct PickFixture {
     room_t *rp = &Rooms[roomIndex];
     *rp = room_t{};
     InitRoom(*rp, 4, 1, 0);
-    InitRoomFace(&rp->faces[0], 4);
+    InitRoomFace(rp->faces[0], 4);
     for (int i = 0; i < 4; i++) {
       rp->verts[i] = verts[i];
       rp->faces[0].face_verts[i] = (int16_t)i;
@@ -446,7 +446,7 @@ private slots:
     r0->verts[1] = vector3{(float)0, (float)0, (float)-10};
     r0->verts[2] = vector3{(float)0, (float)0, (float)10};
     r0->verts[3] = vector3{(float)10, (float)0, (float)10};
-    InitRoomFace(&r0->faces[0], 4);
+    InitRoomFace(r0->faces[0], 4);
     for (int i = 0; i < 4; i++)
       r0->faces[0].face_verts[i] = (int16_t)i;
     r0->faces[0].tmap = 2;
@@ -462,7 +462,7 @@ private slots:
     r1->verts[0] = vector3{(float)20, (float)0, (float)-10};
     r1->verts[1] = vector3{(float)30, (float)0, (float)-10};
     r1->verts[2] = vector3{(float)25, (float)0, (float)10};
-    InitRoomFace(&r1->faces[0], 3);
+    InitRoomFace(r1->faces[0], 3);
     for (int i = 0; i < 3; i++)
       r1->faces[0].face_verts[i] = (int16_t)i;
     r1->faces[0].tmap = 3;
@@ -588,7 +588,7 @@ private slots:
     r0->verts[1] = vector3{0, 0, (float)-10};
     r0->verts[2] = vector3{0, 0, (float)10};
     r0->verts[3] = vector3{(float)10, 0, (float)10};
-    InitRoomFace(&r0->faces[0], 4);
+    InitRoomFace(r0->faces[0], 4);
     for (int i = 0; i < 4; i++)
       r0->faces[0].face_verts[i] = (int16_t)i;
     r0->faces[0].tmap = 2;
@@ -793,7 +793,7 @@ private slots:
     r0->verts[1] = vector3{0, 0, (float)-10};
     r0->verts[2] = vector3{0, 0, (float)10};
     r0->verts[3] = vector3{(float)10, 0, (float)10};
-    InitRoomFace(&r0->faces[0], 4);
+    InitRoomFace(r0->faces[0], 4);
     for (int i = 0; i < 4; i++)
       r0->faces[0].face_verts[i] = (int16_t)i;
     r0->faces[0].tmap = 2;
@@ -935,7 +935,7 @@ private slots:
     r0->verts[1] = vector3{0, 0, (float)-10};
     r0->verts[2] = vector3{0, 0, (float)10};
     r0->verts[3] = vector3{(float)10, 0, (float)10};
-    InitRoomFace(&r0->faces[0], 4);
+    InitRoomFace(r0->faces[0], 4);
     for (int i = 0; i < 4; i++)
       r0->faces[0].face_verts[i] = (int16_t)i;
     r0->faces[0].tmap = 2;
@@ -1079,7 +1079,7 @@ private slots:
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
-      InitRoomFace(&r0->faces[i / 2], 4);
+      InitRoomFace(r0->faces[i / 2], 4);
       for (int j = 0; j < 4; j++)
         r0->faces[i / 2].face_verts[j] = (int16_t)j;
     }
@@ -1240,7 +1240,7 @@ private slots:
     r0->verts[1] = vector3{0, 0, (float)-10};
     r0->verts[2] = vector3{0, 0, (float)10};
     r0->verts[3] = vector3{(float)10, 0, (float)10};
-    InitRoomFace(&r0->faces[0], 4);
+    InitRoomFace(r0->faces[0], 4);
     for (int i = 0; i < 4; i++)
       r0->faces[0].face_verts[i] = (int16_t)i;
     r0->faces[0].tmap = 2;
@@ -1423,7 +1423,7 @@ private slots:
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
-      InitRoomFace(&r0->faces[i / 2], 4);
+      InitRoomFace(r0->faces[i / 2], 4);
       for (int j = 0; j < 4; j++)
         r0->faces[i / 2].face_verts[j] = (int16_t)j;
     }
@@ -1742,7 +1742,7 @@ private slots:
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
-      InitRoomFace(&r0->faces[i / 2], 4);
+      InitRoomFace(r0->faces[i / 2], 4);
       for (int j = 0; j < 4; j++)
         r0->faces[i / 2].face_verts[j] = (int16_t)j;
     }
@@ -1866,7 +1866,7 @@ private slots:
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
-      InitRoomFace(&r0->faces[i / 2], 4);
+      InitRoomFace(r0->faces[i / 2], 4);
       for (int j = 0; j < 4; j++)
         r0->faces[i / 2].face_verts[j] = (int16_t)j;
     }
@@ -1984,7 +1984,7 @@ private slots:
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
-      InitRoomFace(&r0->faces[i / 2], 4);
+      InitRoomFace(r0->faces[i / 2], 4);
       for (int j = 0; j < 4; j++)
         r0->faces[i / 2].face_verts[j] = (int16_t)j;
     }
@@ -2096,7 +2096,7 @@ private slots:
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
-      InitRoomFace(&r0->faces[i / 2], 4);
+      InitRoomFace(r0->faces[i / 2], 4);
       for (int j = 0; j < 4; j++)
         r0->faces[i / 2].face_verts[j] = (int16_t)j;
     }
@@ -2213,7 +2213,7 @@ private slots:
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
-      InitRoomFace(&r0->faces[i / 2], 4);
+      InitRoomFace(r0->faces[i / 2], 4);
       for (int j = 0; j < 4; j++)
         r0->faces[i / 2].face_verts[j] = (int16_t)j;
     }
@@ -2956,7 +2956,7 @@ private slots:
     InitRoom(*r0, 4, 2, 0);
     for (int i = 0; i < 4; i++) {
       r0->verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
-      InitRoomFace(&r0->faces[i / 2], 4);
+      InitRoomFace(r0->faces[i / 2], 4);
       for (int j = 0; j < 4; j++)
         r0->faces[i / 2].face_verts[j] = (int16_t)j;
     }
@@ -4521,7 +4521,7 @@ private slots:
     // distance/orientation untouched.
     QVERIFY(app.current.room.has_value() && Rooms[*app.current.room].used);
     vector3 roomCenter;
-    ComputeRoomCenter(&roomCenter, index_to_int(app.current.room));
+    ComputeRoomCenter(roomCenter, index_to_int(app.current.room));
     a_room->trigger();
     QCoreApplication::processEvents();
     {
@@ -4865,7 +4865,7 @@ private slots:
     room_t *rp = &Rooms[0];
     *rp = room_t{};
     InitRoom(*rp, 4, 1, 0);
-    InitRoomFace(&rp->faces[0], 4);
+    InitRoomFace(rp->faces[0], 4);
     for (int i = 0; i < 4; i++) {
       rp->verts[i] = quadV[i];
       rp->faces[0].face_verts[i] = (int16_t)i;
@@ -4918,7 +4918,7 @@ private slots:
     room_t *rp = &Rooms[0];
     *rp = room_t{};
     InitRoom(*rp, 4, 1, 0);
-    InitRoomFace(&rp->faces[0], 4);
+    InitRoomFace(rp->faces[0], 4);
     for (int i = 0; i < 4; i++) {
       rp->verts[i] = quadV[i];
       rp->faces[0].face_verts[i] = (int16_t)i;
@@ -5103,7 +5103,7 @@ private slots:
         Rooms[0].verts[i] = corners[i & 3];
       for (int i = 0; i < 3; ++i)
 
-        InitRoomFace(&Rooms[0].faces[i], i == 2 ? 4 : 3);
+        InitRoomFace(Rooms[0].faces[i], i == 2 ? 4 : 3);
       Rooms[0].faces[2].face_verts[0] = 0;
       Rooms[0].faces[2].face_verts[1] = 1;
       Rooms[0].faces[2].face_verts[2] = 2;
@@ -5331,7 +5331,7 @@ private slots:
   void testCopyFace() {
     face src, dst;
     memset(&src, 0, sizeof(src));
-    InitRoomFace(&src, 4);
+    InitRoomFace(src, 4);
     src.flags.goalface = true;
     src.portal_num = 5;
     src.tmap = 42;
@@ -5358,8 +5358,8 @@ private slots:
       QCOMPARE(dst.face_uvls[i].u, src.face_uvls[i].u);
       QCOMPARE(dst.face_uvls[i].v, src.face_uvls[i].v);
     }
-    FreeRoomFace(&dst);
-    FreeRoomFace(&src);
+    FreeRoomFace(dst);
+    FreeRoomFace(src);
   }
 
   void testCopyRoom() {
@@ -5376,13 +5376,13 @@ private slots:
     src.verts[1] = vector3{(float)40, (float)50, (float)60};
     src.verts[2] = vector3{(float)70, (float)80, (float)90};
     src.verts[3] = vector3{(float)100, (float)110, (float)120};
-    InitRoomFace(&src.faces[0], 3);
+    InitRoomFace(src.faces[0], 3);
     src.faces[0].face_verts[0] = 0;
     src.faces[0].face_verts[1] = 1;
     src.faces[0].face_verts[2] = 2;
     src.faces[0].tmap = 5;
     src.faces[0].normal = vector3{(float)0, (float)0, (float)1};
-    InitRoomFace(&src.faces[1], 3);
+    InitRoomFace(src.faces[1], 3);
     src.faces[1].face_verts[0] = 1;
     src.faces[1].face_verts[1] = 2;
     src.faces[1].face_verts[2] = 3;
@@ -5426,8 +5426,8 @@ private slots:
     r1->verts[1] = vector3{(float)20, (float)0, (float)0};
     r1->verts[2] = vector3{(float)20, (float)0, (float)-10};
     r1->verts[3] = vector3{(float)10, (float)0, (float)-10};
-    InitRoomFace(&r0->faces[0], 4);
-    InitRoomFace(&r1->faces[0], 4);
+    InitRoomFace(r0->faces[0], 4);
+    InitRoomFace(r1->faces[0], 4);
     for (int i = 0; i < 4; i++) {
       r0->faces[0].face_verts[i] = i;
       r1->faces[0].face_verts[i] = i;
@@ -5461,7 +5461,7 @@ private slots:
     rp->verts[0] = vector3{(float)0, (float)0, (float)0};
     rp->verts[1] = vector3{(float)10, (float)0, (float)0};
     rp->verts[2] = vector3{(float)0, (float)10, (float)0};
-    InitRoomFace(&rp->faces[0], 3);
+    InitRoomFace(rp->faces[0], 3);
     rp->faces[0].face_verts[0] = 0;
     rp->faces[0].face_verts[1] = 1;
     rp->faces[0].face_verts[2] = 2;
@@ -5492,14 +5492,14 @@ private slots:
     rp->verts[2] = vector3{(float)10, (float)10, (float)0};
     rp->verts[3] = vector3{(float)0, (float)10, (float)0};
 
-    InitRoomFace(&rp->faces[0], 3);
+    InitRoomFace(rp->faces[0], 3);
     rp->faces[0].face_verts[0] = 0;
     rp->faces[0].face_verts[1] = 1;
     rp->faces[0].face_verts[2] = 2;
     ComputeFaceNormal(0, 0);
     AssignDefaultUVsToRoomFace(0, 0);
 
-    InitRoomFace(&rp->faces[1], 3);
+    InitRoomFace(rp->faces[1], 3);
     rp->faces[1].face_verts[0] = 0;
     rp->faces[1].face_verts[1] = 2;
     rp->faces[1].face_verts[2] = 3;
@@ -5529,7 +5529,7 @@ private slots:
     r0->verts[1] = vector3{(float)10, (float)0, (float)0};
     r0->verts[2] = vector3{(float)10, (float)0, (float)-10};
     r0->verts[3] = vector3{(float)0, (float)0, (float)-10};
-    InitRoomFace(&r0->faces[0], 4);
+    InitRoomFace(r0->faces[0], 4);
     for (int i = 0; i < 4; i++) r0->faces[0].face_verts[i] = i;
     ComputeFaceNormal(0, 0);
     AssignDefaultUVsToRoomFace(0, 0);
@@ -5539,7 +5539,7 @@ private slots:
     r0->verts[5] = vector3{(float)10, (float)0, (float)-10};
     r0->verts[6] = vector3{(float)10, (float)10, (float)-10};
     r0->verts[7] = vector3{(float)0, (float)10, (float)-10};
-    InitRoomFace(&r0->faces[1], 4);
+    InitRoomFace(r0->faces[1], 4);
     r0->faces[1].face_verts[0] = 4;
     r0->faces[1].face_verts[1] = 5;
     r0->faces[1].face_verts[2] = 6;
@@ -5552,7 +5552,7 @@ private slots:
     r1->verts[1] = vector3{(float)20, (float)0, (float)0};
     r1->verts[2] = vector3{(float)20, (float)0, (float)-10};
     r1->verts[3] = vector3{(float)10, (float)0, (float)-10};
-    InitRoomFace(&r1->faces[0], 4);
+    InitRoomFace(r1->faces[0], 4);
     for (int i = 0; i < 4; i++) r1->faces[0].face_verts[i] = i;
     ComputeFaceNormal(1, 0);
     AssignDefaultUVsToRoomFace(1, 0);
@@ -5591,7 +5591,7 @@ private slots:
     r0->verts[1] = vector3{(float)200, (float)100, (float)0};
     r0->verts[2] = vector3{(float)200, (float)200, (float)0};
     r0->verts[3] = vector3{(float)100, (float)200, (float)0};
-    InitRoomFace(&r0->faces[0], 4);
+    InitRoomFace(r0->faces[0], 4);
     for (int i = 0; i < 4; i++) r0->faces[0].face_verts[i] = i;
     ComputeFaceNormal(0, 0);
     r0->faces[0].tmap = 0;
@@ -5643,7 +5643,7 @@ private slots:
     base->verts[1] = vector3{(float)10, (float)0, (float)0};
     base->verts[2] = vector3{(float)10, (float)0, (float)-10};
     base->verts[3] = vector3{(float)0, (float)0, (float)-10};
-    InitRoomFace(&base->faces[0], 4);
+    InitRoomFace(base->faces[0], 4);
     for (int i = 0; i < 4; i++) base->faces[0].face_verts[i] = i;
     ComputeFaceNormal(0, 0);
     base->faces[0].tmap = 0;
@@ -5654,7 +5654,7 @@ private slots:
     att->verts[1] = vector3{(float)10, (float)0, (float)0};
     att->verts[2] = vector3{(float)10, (float)0, (float)-10};
     att->verts[3] = vector3{(float)0, (float)0, (float)-10};
-    InitRoomFace(&att->faces[0], 4);
+    InitRoomFace(att->faces[0], 4);
     att->faces[0].face_verts[0] = 0;
     att->faces[0].face_verts[1] = 3;
     att->faces[0].face_verts[2] = 2;
@@ -5705,7 +5705,7 @@ private slots:
     rp->verts[1] = vector3{(float)10, (float)0, (float)0};
     rp->verts[2] = vector3{(float)10, (float)0, (float)-10};
     rp->verts[3] = vector3{(float)0, (float)0, (float)-10};
-    InitRoomFace(&rp->faces[0], 4);
+    InitRoomFace(rp->faces[0], 4);
     for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
     ComputeFaceNormal(0, 0);
     rp->used = true;
@@ -5740,7 +5740,7 @@ private slots:
     rp->verts[1] = vector3{(float)10, (float)0, (float)0};
     rp->verts[2] = vector3{(float)10, (float)0, (float)-10};
     rp->verts[3] = vector3{(float)0, (float)0, (float)-10};
-    InitRoomFace(&rp->faces[0], 4);
+    InitRoomFace(rp->faces[0], 4);
     for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
     ComputeFaceNormal(0, 0);
     rp->used = true;
@@ -5766,7 +5766,7 @@ private slots:
     rp->verts[1] = vector3{(float)10, (float)0, (float)0};
     rp->verts[2] = vector3{(float)10, (float)0, (float)-10};
     rp->verts[3] = vector3{(float)0, (float)0, (float)-10};
-    InitRoomFace(&rp->faces[0], 4);
+    InitRoomFace(rp->faces[0], 4);
     for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
     ComputeFaceNormal(0, 0);
     rp->used = true;
@@ -5801,7 +5801,7 @@ private slots:
     rp->verts[1] = vector3{(float)10, (float)10, (float)0};
     rp->verts[2] = vector3{(float)10, (float)0, (float)0};
     rp->verts[3] = vector3{(float)0, (float)0, (float)0};
-    InitRoomFace(&rp->faces[0], 4);
+    InitRoomFace(rp->faces[0], 4);
     for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
     ComputeFaceNormal(0, 0);
     rp->used = true;
@@ -6292,7 +6292,7 @@ private slots:
     app.view_mode = state::viewer::mine;
 
     auto setFaceQuad = [](room_t *rp, const std::vector<vector3>& verts) {
-      InitRoomFace(&rp->faces[0], 4);
+      InitRoomFace(rp->faces[0], 4);
       for (int i = 0; i < 4; i++) {
         rp->verts[i] = verts[i];
         rp->faces[0].face_verts[i] = (int16_t)i;
@@ -6380,7 +6380,7 @@ private slots:
 
     auto setFlatQuad = [](int roomnum, const std::vector<vector3>& verts) {
       room_t *rp = &Rooms[roomnum];
-      InitRoomFace(&rp->faces[0], 4);
+      InitRoomFace(rp->faces[0], 4);
       rp->faces[0].tmap = -1; // force flat shading, independent of textures
       for (int i = 0; i < 4; i++) {
         rp->verts[i] = verts[i];
@@ -6949,7 +6949,7 @@ private slots:
     base->verts[1] = vector3{(float)10, (float)0, (float)0};
     base->verts[2] = vector3{(float)10, (float)0, (float)-10};
     base->verts[3] = vector3{(float)0, (float)0, (float)-10};
-    InitRoomFace(&base->faces[0], 4);
+    InitRoomFace(base->faces[0], 4);
     for (int i = 0; i < 4; i++) base->faces[0].face_verts[i] = i;
     ComputeFaceNormal(0, 0);
     base->used = true;
@@ -6958,7 +6958,7 @@ private slots:
     att->verts[1] = vector3{(float)10, (float)0, (float)0};
     att->verts[2] = vector3{(float)10, (float)0, (float)-10};
     att->verts[3] = vector3{(float)0, (float)0, (float)-10};
-    InitRoomFace(&att->faces[0], 4);
+    InitRoomFace(att->faces[0], 4);
     att->faces[0].face_verts[0] = 0;
     att->faces[0].face_verts[1] = 3;
     att->faces[0].face_verts[2] = 2;
@@ -7003,7 +7003,7 @@ private slots:
     base->verts[1] = vector3{(float)10, (float)0, (float)0};
     base->verts[2] = vector3{(float)10, (float)0, (float)-10};
     base->verts[3] = vector3{(float)0, (float)0, (float)-10};
-    InitRoomFace(&base->faces[0], 4);
+    InitRoomFace(base->faces[0], 4);
     for (int i = 0; i < 4; i++) base->faces[0].face_verts[i] = i;
     ComputeFaceNormal(1, 0);
     base->faces[0].portal_num = -1;
@@ -7085,7 +7085,7 @@ private slots:
     rp->verts[1] = vector3{(float)10, (float)0, (float)0};
     rp->verts[2] = vector3{(float)10, (float)0, (float)-10};
     rp->verts[3] = vector3{(float)0, (float)0, (float)-10};
-    InitRoomFace(&rp->faces[0], 4);
+    InitRoomFace(rp->faces[0], 4);
     for (int i = 0; i < 4; i++) rp->faces[0].face_verts[i] = i;
     ComputeFaceNormal(0, 0);
     rp->used = true;
@@ -7676,7 +7676,7 @@ private slots:
       Rooms[roomnum].num_faces = 1;
       for (int v = 0; v < 4; ++v)
         Rooms[roomnum].verts[v] = vector3{(float)(v & 1) * 10, 0, (float)(v > 1) * 10};
-      InitRoomFace(&Rooms[roomnum].faces[0], 4);
+      InitRoomFace(Rooms[roomnum].faces[0], 4);
       for (int i = 0; i < 4; ++i)
         Rooms[roomnum].faces[0].face_verts[i] = (int16_t)i;
       ComputeFaceNormal(roomnum, 0);
@@ -7771,7 +7771,7 @@ private slots:
     rp->verts[7] = vector3{x0, y1, z1};
 
     auto initFace = [&](int f, int a, int b, int c, int d, vector3 normal) {
-      InitRoomFace(&rp->faces[f], 4);
+      InitRoomFace(rp->faces[f], 4);
       int16_t idx[4] = {(int16_t)a, (int16_t)b, (int16_t)c, (int16_t)d};
       // Orient the winding so the face's natural normal (cross of the first
       // edge pair, matching room.cpp's ComputeNormal convention) agrees with

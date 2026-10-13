@@ -105,18 +105,18 @@ static int CreateDefaultRoom() {
     rp->verts[i] = default_room_verts[i] + Mine_origin;
 
   // Face 0: front octagonal cap (verts 0..7).
-  InitRoomFace(&rp->faces[0], 8);
+  InitRoomFace(rp->faces[0], 8);
   for (int i = 0; i < 8; i++)
     rp->faces[0].face_verts[i] = i;
 
   // Face 1: back octagonal cap (verts 15..8, reversed).
-  InitRoomFace(&rp->faces[1], 8);
+  InitRoomFace(rp->faces[1], 8);
   for (int i = 0; i < 8; i++)
     rp->faces[1].face_verts[i] = 15 - i;
 
   // Faces 2..9: eight side quads connecting front and back edges.
   for (int i = 0; i < 8; i++) {
-    InitRoomFace(&rp->faces[i + 2], 4);
+    InitRoomFace(rp->faces[i + 2], 4);
     rp->faces[i + 2].face_verts[0] = i;
     rp->faces[i + 2].face_verts[1] = i + 8;
     rp->faces[i + 2].face_verts[2] = ((i + 1) % 8) + 8;
@@ -395,7 +395,7 @@ void SetEditorViewer() {
     } else if (app.view_mode == state::viewer::mine) { // if mine, put in center of any room
       for (roomnum = 0; roomnum < Rooms.size(); roomnum++)
         if (Rooms[roomnum].used && !Rooms[roomnum].flags.external) {
-          ComputeRoomCenter(&pos, roomnum);
+          ComputeRoomCenter(pos, roomnum);
           break;
         }
       Q_ASSERT(roomnum < Rooms.size());

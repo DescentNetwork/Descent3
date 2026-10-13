@@ -260,7 +260,7 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
         ObjDelete(objnum);
         return false;
       }
-      ComputeCenterPointOnFace(&pos, static_cast<int>(*app.current.room), index_to_int(app.current.face));
+      ComputeCenterPointOnFace(pos, static_cast<int>(*app.current.room), index_to_int(app.current.face));
       surface_norm = &Rooms[*app.current.room].faces[*app.current.face].normal;
       roomnum = index_to_int(app.current.room);
 

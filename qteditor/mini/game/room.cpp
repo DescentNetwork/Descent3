@@ -554,38 +554,36 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
 }
 
 // Initialize a room face structure.
-void InitRoomFace(face *fp, int nverts) {
-  fp->flags = {};
-  fp->num_verts = nverts;
-  fp->portal_num = -1;
-  fp->tmap = 0;
+void InitRoomFace(face &fp, int nverts) {
+  fp.flags = {};
+  fp.num_verts = nverts;
+  fp.portal_num = -1;
+  fp.tmap = 0;
 
 #ifdef NEWEDITOR
   ned_MarkTextureInUse(0, true);
 #endif
 
-  fp->lmi_handle = BAD_LMI_INDEX;
-  fp->special_handle = BAD_SPECIAL_FACE_INDEX;
-  fp->light_multiple = 4;
+  fp.lmi_handle = BAD_LMI_INDEX;
+  fp.special_handle = BAD_SPECIAL_FACE_INDEX;
+  fp.light_multiple = 4;
 
-  fp->face_verts.resize(nverts);
-  fp->face_uvls.resize(nverts);
+  fp.face_verts.resize(nverts);
+  fp.face_uvls.resize(nverts);
 
   for (int i = 0; i < nverts; i++)
-    fp->face_uvls[i].alpha = 255;
+    fp.face_uvls[i].alpha = 255;
 }
 
 // Finds out if we are in a room or outside the mine (nullopt if we are outside)
-index_t FindPointRoom(vector3 *pnt) {
+index_t FindPointRoom(const vector3 &pnt) {
   int i;
-
-  Q_ASSERT(pnt != NULL);
 
   for (i = 0; i < static_cast<int>(Rooms.size()); i++) {
     if ((Rooms[i].used) && !Rooms[i].flags.external) {
       bool f_in_room;
 
-      f_in_room = fvi_QuickRoomCheck(*pnt, i);
+      f_in_room = fvi_QuickRoomCheck(pnt, i);
 
       if (f_in_room == true)
         return i;
@@ -606,7 +604,7 @@ void FreeRoom(int roomnum) {
 
   // Free the faces
   for (i = 0; i < rp->num_faces; i++)
-    FreeRoomFace(&rp->faces[i]);
+    FreeRoomFace(rp->faces[i]);
 
   // Free up mem alloced for this room
   rp->faces.clear();
@@ -657,53 +655,53 @@ void FreeAllRooms() {
 }
 
 // Free the memory used by a room face structure
-void FreeRoomFace(face *fp) {
-  if (fp->lmi_handle != BAD_LMI_INDEX) {
-    FreeLightmapInfo(fp->lmi_handle);
-    fp->lmi_handle = BAD_LMI_INDEX;
-    fp->flags.lightmap = false;
+void FreeRoomFace(face &fp) {
+  if (fp.lmi_handle != BAD_LMI_INDEX) {
+    FreeLightmapInfo(fp.lmi_handle);
+    fp.lmi_handle = BAD_LMI_INDEX;
+    fp.flags.lightmap = false;
   }
 
-  if (fp->special_handle != BAD_SPECIAL_FACE_INDEX) {
-    FreeSpecialFace(fp->special_handle);
-    fp->special_handle = BAD_SPECIAL_FACE_INDEX;
+  if (fp.special_handle != BAD_SPECIAL_FACE_INDEX) {
+    FreeSpecialFace(fp.special_handle);
+    fp.special_handle = BAD_SPECIAL_FACE_INDEX;
   }
 
-  fp->face_verts.clear();
-  fp->face_uvls.clear();
+  fp.face_verts.clear();
+  fp.face_uvls.clear();
 }
 
 // Finds the center point of a room
 // Parameters:	vp - filled in with the center point
 //					rp - the room whose center to find
-void ComputeRoomCenter(vector3 *vp, int roomnum) {
+void ComputeRoomCenter(vector3 &vp, int roomnum) {
   int i;
 
   room_t &rp = Rooms[roomnum];
 
-  *vp = vector3{};
+  vp = vector3{};
 
   for (i = 0; i < rp.num_verts; i++)
-    *vp += rp.verts[i];
+    vp += rp.verts[i];
 
 #ifdef NEWEDITOR
   if (rp.num_verts)
 #endif
-    *vp /= rp.num_verts;
+    vp /= rp.num_verts;
 }
 
 // Computes the center point on a face by averaging the points in the face
-void ComputeCenterPointOnFace(vector3 *vp, int roomnum, int facenum) {
+void ComputeCenterPointOnFace(vector3 &vp, int roomnum, int facenum) {
   room_t &rp = Rooms[roomnum];
   face *fp = &rp.faces[facenum];
   int i;
 
-  *vp = vector3{};
+  vp = vector3{};
 
   for (i = 0; i < fp->num_verts; i++)
-    *vp += rp.verts[fp->face_verts[i]];
+    vp += rp.verts[fp->face_verts[i]];
 
-  *vp /= fp->num_verts;
+  vp /= fp->num_verts;
 }
 
 // the minimum magnitude of a surface normal that we're willing to accept
@@ -782,18 +780,18 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
 }
 
 // Computes the center point on a face by averaging the points in the portal
-void ComputePortalCenter(vector3 *vp, int roomnum, int portal_index) {
+void ComputePortalCenter(vector3 &vp, int roomnum, int portal_index) {
   room_t &rp = Rooms[roomnum];
   portal *pp = &rp.portals[portal_index];
   face *fp = &rp.faces[pp->portal_face];
   int i;
 
-  vm_MakeZero(*vp);
+  vm_MakeZero(vp);
 
   for (i = 0; i < fp->num_verts; i++)
-    *vp += rp.verts[fp->face_verts[i]];
+    vp += rp.verts[fp->face_verts[i]];
 
-  *vp /= fp->num_verts;
+  vp /= fp->num_verts;
 }
 
 // Clears lightmaps for a single room
@@ -959,7 +957,7 @@ void GetIJ(const vector3& normal, int& ii, int& jj) {
 //					pnt - the point we're checking
 //					roomnum - the Rooms slot that pnt is in
 //					fp - pointer to the face that pnt is on
-void FindPointUV(float *u, float *v, const vector3 *pnt, int roomnum, const face *fp) {
+void FindPointUV(float &u, float &v, const vector3 &pnt, int roomnum, const face &fp) {
   const room_t &rp = Rooms[roomnum];
   int ii, jj;
   vector3 vec0, vec1;
@@ -971,17 +969,17 @@ void FindPointUV(float *u, float *v, const vector3 *pnt, int roomnum, const face
   Q_ASSERT((roomnum >= 0) && (roomnum < static_cast<int>(Rooms.size())));
 
   // Find what plane to project this wall onto to make it a 2d case
-  GetIJ(fp->normal, ii, jj);
+  GetIJ(fp.normal, ii, jj);
 
   // Compute delta vectors
-  vec0 = rp.verts[fp->face_verts[0]] - rp.verts[fp->face_verts[1]]; // vec from 1 -> 0
-  vec1 = rp.verts[fp->face_verts[2]] - rp.verts[fp->face_verts[1]]; // vec from 1 -> 0
+  vec0 = rp.verts[fp.face_verts[0]] - rp.verts[fp.face_verts[1]]; // vec from 1 -> 0
+  vec1 = rp.verts[fp.face_verts[2]] - rp.verts[fp.face_verts[1]]; // vec from 1 -> 0
 
   // Get pointers to referece our vectors as arrays of floats
-  p1 = (float *)&rp.verts[fp->face_verts[1]];
+  p1 = (float *)&rp.verts[fp.face_verts[1]];
   v0 = (float *)&vec0;
   v1 = (float *)&vec1;
-  checkp = (float *)pnt;
+  checkp = (float *)&pnt;
 
   // Compute our clipping values along i & j axes
   k1 = -(cross(checkp, v0) + cross(v0, p1)) / cross(v0, v1);
@@ -989,10 +987,10 @@ void FindPointUV(float *u, float *v, const vector3 *pnt, int roomnum, const face
   k0 = ((-k1 * v1[t]) + checkp[t] - p1[t]) / v0[t];
 
   // Compute u & v values
-  *u = fp->face_uvls[1].u + (k0 * (fp->face_uvls[0].u - fp->face_uvls[1].u)) +
-       (k1 * (fp->face_uvls[2].u - fp->face_uvls[1].u));
-  *v = fp->face_uvls[1].v + (k0 * (fp->face_uvls[0].v - fp->face_uvls[1].v)) +
-       (k1 * (fp->face_uvls[2].v - fp->face_uvls[1].v));
+  u = fp.face_uvls[1].u + (k0 * (fp.face_uvls[0].u - fp.face_uvls[1].u)) +
+      (k1 * (fp.face_uvls[2].u - fp.face_uvls[1].u));
+  v = fp.face_uvls[1].v + (k0 * (fp.face_uvls[0].v - fp.face_uvls[1].v)) +
+      (k1 * (fp.face_uvls[2].v - fp.face_uvls[1].v));
 }
 
 // Check if a particular point on a wall is a transparent pixel
@@ -1000,7 +998,7 @@ void FindPointUV(float *u, float *v, const vector3 *pnt, int roomnum, const face
 //					roomnum - the Rooms slot that pnt is in
 //					facenum - the face that pnt is on
 // Returns:	true if can pass through the given point, else 0
-int CheckTransparentPoint(const vector3 *pnt, int roomnum, const int facenum) {
+int CheckTransparentPoint(const vector3 &pnt, int roomnum, const int facenum) {
   int bm_handle;
   const room_t &rp = Rooms[roomnum];
   const face *fp = &rp.faces[facenum];
@@ -1010,7 +1008,7 @@ int CheckTransparentPoint(const vector3 *pnt, int roomnum, const int facenum) {
   return false;
 
   // Get the UV coordindates of the point we hit
-  FindPointUV(&u, &v, pnt, roomnum, fp);
+  FindPointUV(u, v, pnt, roomnum, *fp);
 
   // Get pointer to the bitmap data
   bm_handle = GetTextureBitmap(fp->tmap, 0);
@@ -1029,7 +1027,7 @@ int CheckTransparentPoint(const vector3 *pnt, int roomnum, const int facenum) {
 // Parameters: center - filled in with the center point of the sphere
 //		roomnum - the Rooms slot we're bounding
 // Returns: the radius of the bounding sphere
-float ComputeRoomBoundingSphere(vector3 *center, int roomnum) {
+float ComputeRoomBoundingSphere(vector3 &center, int roomnum) {
   // This algorithm is from Graphics Gems I.  There's a better algorithm in Graphics Gems III that
   // we should probably implement sometime.
 
@@ -1041,9 +1039,9 @@ float ComputeRoomBoundingSphere(vector3 *center, int roomnum) {
 
 #ifdef NEWEDITOR
   if (!rp.num_verts) {
-    center->x() = 0.0f;
-    center->y() = 0.0f;
-    center->z() = 0.0f;
+    center.x() = 0.0f;
+    center.y() = 0.0f;
+    center.z() = 0.0f;
     return 0.0f;
   }
 #endif
@@ -1081,17 +1079,17 @@ float ComputeRoomBoundingSphere(vector3 *center, int roomnum) {
 
   if (dx > dy)
     if (dx > dz) {
-      *center = (*min_x + *max_x) / 2;
+      center = (*min_x + *max_x) / 2;
       rad = dx / 2;
     } else {
-      *center = (*min_z + *max_z) / 2;
+      center = (*min_z + *max_z) / 2;
       rad = dz / 2;
     }
   else if (dy > dz) {
-    *center = (*min_y + *max_y) / 2;
+    center = (*min_y + *max_y) / 2;
     rad = dy / 2;
   } else {
-    *center = (*min_z + *max_z) / 2;
+    center = (*min_z + *max_z) / 2;
     rad = dz / 2;
   }
 
@@ -1101,7 +1099,7 @@ float ComputeRoomBoundingSphere(vector3 *center, int roomnum) {
     vector3 delta;
     float t2;
 
-    delta = *vp - *center;
+    delta = *vp - center;
     t2 = delta.x() * delta.x() + delta.y() * delta.y() + delta.z() * delta.z();
 
     // If point outside, make the sphere bigger
@@ -1111,7 +1109,7 @@ float ComputeRoomBoundingSphere(vector3 *center, int roomnum) {
       t = sqrt(t2);
       rad = (rad + t) / 2;
       rad2 = rad * rad;
-      *center += delta * (t - rad) / t;
+      center += delta * (t - rad) / t;
     }
   }
 
@@ -1136,7 +1134,7 @@ void CreateRoomObjects() {
       float rad;
       int roomnum, objnum;
 
-      rad = ComputeRoomBoundingSphere(&pos, r);
+      rad = ComputeRoomBoundingSphere(pos, r);
       roomnum = GetTerrainRoomFromPos(pos).value_or(-1);
 
       Q_ASSERT(roomnum != -1);
@@ -1276,7 +1274,7 @@ void DoRoomChangeFrame() {
 }
 
 // Sets up a room to change its fog or wind over time
-index_t SetRoomChangeOverTime(int roomnum, bool fog, vector3 *end, float depth_end, float time) {
+index_t SetRoomChangeOverTime(int roomnum, bool fog, const vector3 &end, float depth_end, float time) {
   room_t *rp = &Rooms[roomnum];
   int index, i;
 
@@ -1299,7 +1297,7 @@ index_t SetRoomChangeOverTime(int roomnum, bool fog, vector3 *end, float depth_e
 
   Room_changes[index].roomnum = roomnum;
   Room_changes[index].fog = fog;
-  Room_changes[index].end_vector = *end;
+  Room_changes[index].end_vector = end;
   Room_changes[index].start_time = d3::chrono::last_update();
   Room_changes[index].total_time = time;
   rp->room_change_flags |= RCF_CHANGING_WIND_FOG;
@@ -1381,7 +1379,7 @@ static byte_istream& skipSpecialFace(byte_istream& input, int format) {
 byte_istream& operator>>(byte_istream& input, face& data) {
   uint8_t nverts = 0;
   input >> nverts;
-  InitRoomFace(&data, nverts);
+  InitRoomFace(data, nverts);
 
   for (int i = 0; i < data.num_verts; i++)
     input >> data.face_verts[i];
@@ -1594,34 +1592,34 @@ byte_ostream& operator<<(byte_ostream& output, const room_t& data) {
 }
 
 
-face_physics_flags_t GetFacePhysicsFlags(int roomnum, const face *fp) {
+face_physics_flags_t GetFacePhysicsFlags(int roomnum, const face &fp) {
   face_physics_flags_t ret{};
   ret.solid = 0;
   ret.transparent = 0;
   ret.portal = 0;
   ret.record = 0;
 
-  if (fp->flags.has_trigger) {
+  if (fp.flags.has_trigger) {
     ret.record = 1;
   }
 
-  if (fp->flags.floating_trig) {
+  if (fp.flags.floating_trig) {
     return ret;
   }
 
-  if (fp->flags.volumetric) {
+  if (fp.flags.volumetric) {
     return ret;
   }
 
-  if (fp->portal_num != -1) {
-    const portal *pp = &Rooms[roomnum].portals[fp->portal_num];
+  if (fp.portal_num != -1) {
+    const portal *pp = &Rooms[roomnum].portals[fp.portal_num];
     ret.portal = 1;
     if (!(pp->flags.render_faces) || (pp->flags.rendered_flythrough)) {
       return ret;
     }
   }
 
-  int bm_handle = GetTextureBitmap(fp->tmap, 0);
+  int bm_handle = GetTextureBitmap(fp.tmap, 0);
   if (GameBitmaps[bm_handle].flags.transparent) {
     ret.transparent = 1;
   } else {

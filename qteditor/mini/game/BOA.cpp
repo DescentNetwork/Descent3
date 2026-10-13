@@ -882,10 +882,10 @@ void compute_costs() {
 
       for (j = 0; j < Rooms[i].num_portals; j++) {
         if (BOA_PassablePortal(i, j)) {
-          ComputeRoomCenter(&from_pnt, i);
+          ComputeRoomCenter(from_pnt, i);
           // ComputeRoomCenter(&to_pnt, Rooms[i].portals[j].croom);
 
-          ComputePortalCenter(&portal_pnt, i, j);
+          ComputePortalCenter(portal_pnt, i, j);
 
           BOA_cost_array[i][j] = vm_VectorDistance(from_pnt, portal_pnt);
         } else {
@@ -1370,7 +1370,7 @@ void BOA_ComputePathPoints(char *message, int len) {
   for (i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used) {
       for (j = 0; j < Rooms[i].num_portals; j++) {
-        ComputePortalCenter(&Rooms[i].portals[j].path_pnt, i, j);
+        ComputePortalCenter(Rooms[i].portals[j].path_pnt, i, j);
       }
 
       if (!Rooms[i].flags.manual_path_pnt) {

@@ -861,15 +861,15 @@ static void setViewerFromRoomFace(int roomnum, int facenum, bool room_center) {
 
   const room_t &rp = Rooms[roomnum];
 
-  ComputeCenterPointOnFace(&vp, roomnum, facenum);
+  ComputeCenterPointOnFace(vp, roomnum, facenum);
 
   if (room_center) {
     // Get position
-    ComputeRoomCenter(&newpos, roomnum);
+    ComputeRoomCenter(newpos, roomnum);
 
     if (rp.flags.external) {
       vector3 t;
-      float rad = ComputeRoomBoundingSphere(&t, roomnum);
+      float rad = ComputeRoomBoundingSphere(t, roomnum);
 
       newpos.z() -= rad * 1.5f;
 
@@ -909,7 +909,7 @@ static void setViewerFromRoomFace(int roomnum, int facenum, bool room_center) {
         newpos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
       roomnum = GetTerrainRoomFromPos(newpos).value_or(-1);
     } else {
-      int new_roomnum = FindPointRoom(&newpos).value_or(-1);
+      int new_roomnum = FindPointRoom(newpos).value_or(-1);
       if (new_roomnum == -1)
         outside_mine = true;
       else
@@ -957,7 +957,7 @@ void MainWindow::onCenterViewOnCube() {
     return;
 
   vector3 pos;
-  ComputeRoomCenter(&pos, roomnum);
+  ComputeRoomCenter(pos, roomnum);
   m_editorView->setWireframeView(pos);
   m_editorView->update();
 }
@@ -1738,16 +1738,16 @@ bool MainWindow::onAddRoom()
 
   // Faces: front face copies current face verts in reverse, back face
   //          is the extruded copy, and the (cnv) side quads stitch them.
-  InitRoomFace(&rp->faces[0], cnv);
+  InitRoomFace(rp->faces[0], cnv);
   for (int i = 0; i < cnv; ++i)
     rp->faces[0].face_verts[i] = i;
 
-  InitRoomFace(&rp->faces[1], cnv);
+  InitRoomFace(rp->faces[1], cnv);
   for (int i = 0; i < cnv; ++i)
     rp->faces[1].face_verts[i] = cnv * 2 - 1 - i;
 
   for (int i = 0; i < nfaces - 2; ++i) {
-    InitRoomFace(&rp->faces[i + 2], 4);
+    InitRoomFace(rp->faces[i + 2], 4);
     rp->faces[i + 2].face_verts[0] = i;
     rp->faces[i + 2].face_verts[1] = i + cnv;
     rp->faces[i + 2].face_verts[2] = ((i + 1) % cnv) + cnv;

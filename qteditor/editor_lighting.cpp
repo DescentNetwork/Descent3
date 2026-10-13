@@ -931,7 +931,7 @@ void DoRadiosityForRooms() {
 
             Volume_elements[roomnum][(i * vw * vh) + (t * vw) + j].pos = dest_vec;
 
-            if (FindPointRoom(&dest_vec).value_or(-1) != roomnum) {
+            if (FindPointRoom(dest_vec).value_or(-1) != roomnum) {
               Volume_elements[roomnum][(i * vw * vh) + (t * vw) + j].color.r = 0;
               Volume_elements[roomnum][(i * vw * vh) + (t * vw) + j].flags.reverse_shoot = true;
             } else {

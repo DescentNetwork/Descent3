@@ -1956,7 +1956,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
       // the viewer's EYE to the (vertex-averaged) face center.  This is the
       // metric Win32 stores in Found_dist and uses to order FM_NEXT.
       vector3 center;
-      ComputeCenterPointOnFace(&center, r, f);
+      ComputeCenterPointOnFace(center, r, f);
       const float centerDist = vm_VectorDistance(center, m_eye);
 
       if (cycle) {

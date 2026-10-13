@@ -4496,7 +4496,7 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
       if (!room_movement_AABB(cur_room->faces[i]))
         continue;
 
-      { auto ff = GetFacePhysicsFlags(room_index, &cur_room->faces[i]); face_info = (ff.solid?1:0)|(ff.transparent?2:0)|(ff.portal?4:0)|(ff.record?8:0); }
+      { auto ff = GetFacePhysicsFlags(room_index, cur_room->faces[i]); face_info = (ff.solid?1:0)|(ff.transparent?2:0)|(ff.portal?4:0)|(ff.record?8:0); }
       if (face_info == FPT_IGNORE)
         continue;
 
@@ -4592,7 +4592,7 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
           if (portal_num >= 0 && portal_num == from_portal)
             continue;
 
-          auto ff = GetFacePhysicsFlags(room_index, cur_face); face_info = (ff.solid?1:0)|(ff.transparent?2:0)|(ff.portal?4:0)|(ff.record?8:0);
+          auto ff = GetFacePhysicsFlags(room_index, *cur_face); face_info = (ff.solid?1:0)|(ff.transparent?2:0)|(ff.portal?4:0)|(ff.record?8:0);
           if (face_info == FPT_IGNORE)
             continue;
 
@@ -4680,7 +4680,7 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
           }
 
           if (face_hit_type && (face_info & 2) && (fvi_query_ptr->flags.transpoint) &&
-              CheckTransparentPoint(&colp, room_index, i)) {
+              CheckTransparentPoint(colp, room_index, i)) {
             // Go through the hole
             face_hit_type = false;
           }
