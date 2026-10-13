@@ -150,7 +150,7 @@ void CalculateFormFactorsHemiCube() {
           if (ignore)
             continue;
 
-          rad_element &ep = surf->elements[j];
+          const rad_element &ep = surf->elements[j];
 
           if (ep.flags.ignore)
             continue;
@@ -369,7 +369,7 @@ void EndHemicubeDrawing(int face) {
     int ff_index = 0;
 
     for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
-      rad_surface &surf = rad_Surfaces[i];
+      const rad_surface &surf = rad_Surfaces[i];
 
       for (t = 0; t < surf.yresolution * surf.xresolution; t++, ff_index++) {
         surfval[ff_index] = i;

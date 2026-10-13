@@ -693,7 +693,7 @@ void ComputeRoomCenter(vector3 &vp, int roomnum) {
 // Computes the center point on a face by averaging the points in the face
 void ComputeCenterPointOnFace(vector3 &vp, int roomnum, int facenum) {
   room_t &rp = Rooms[roomnum];
-  face &fp = rp.faces[facenum];
+  const face &fp = rp.faces[facenum];
   int i;
 
   vp = vector3{};
@@ -782,8 +782,8 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
 // Computes the center point on a face by averaging the points in the portal
 void ComputePortalCenter(vector3 &vp, int roomnum, int portal_index) {
   room_t &rp = Rooms[roomnum];
-  portal &pp = rp.portals[portal_index];
-  face &fp = rp.faces[pp.portal_face];
+  const portal &pp = rp.portals[portal_index];
+  const face &fp = rp.faces[pp.portal_face];
   int i;
 
   vm_MakeZero(vp);
@@ -889,7 +889,7 @@ float GetAreaForFace(int roomnum, int facenum) {
   Q_ASSERT(rp.used > 0);
   Q_ASSERT(facenum >= 0 && facenum < rp.num_faces);
 
-  face &fp = rp.faces[facenum];
+  const face &fp = rp.faces[facenum];
   int i;
   vector3 normal;
   float area = 0;

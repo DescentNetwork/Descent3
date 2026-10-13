@@ -147,7 +147,7 @@ bool EBNode_VerifyGraph() {
       const index_t end_room = BOA_connect[region][i].roomnum;
       const index_t p = BOA_connect[region][i].portal;
       Q_ASSERT(end_room && p);
-      room_t &rp = Rooms[*end_room];
+      const room_t &rp = Rooms[*end_room];
 
       vector3 pos;
       pos = rp.portals[*p].path_pnt - rp.faces[rp.portals[*p].portal_face].normal * 0.75f;
@@ -730,7 +730,7 @@ static void EBNode_MakeDefaultTerrainNodes(int region) {
     const index_t end_room = BOA_connect[region][i].roomnum;
     const index_t p = BOA_connect[region][i].portal;
     Q_ASSERT(end_room && p);
-    room_t &rp = Rooms[*end_room];
+    const room_t &rp = Rooms[*end_room];
 
     vector3 pos;
     pos = rp.portals[*p].path_pnt - rp.faces[rp.portals[*p].portal_face].normal * 0.75f;

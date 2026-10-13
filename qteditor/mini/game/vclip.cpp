@@ -243,7 +243,7 @@ void FreeVClip(int num) {
 bool SaveVClip(const std::filesystem::path& filename, int num) {
 #if 0
   CFILE *outfile;
-  vclip &vc = GameVClips[num];
+  const vclip &vc = GameVClips[num];
 
   Q_ASSERT(vc.used);
   Q_ASSERT(!filename.empty());
@@ -462,7 +462,7 @@ int AllocLoadIFLVClip(const char *filename, texture_size_type texture_size, int 
 
   Q_ASSERT(vcnum >= 0);
 
-  vclip &vc = GameVClips[vcnum];
+  const vclip &vc = GameVClips[vcnum];
 
   while (!done) {
     char curline[200];

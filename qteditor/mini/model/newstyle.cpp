@@ -412,8 +412,8 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
             {
 
                     int lmi_handle=Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle;
-                    lightmap_object_face &lfp = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum];
-                    lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
+                    const lightmap_object_face &lfp = Polylighting_lightmap_object->lightmap_faces[modelnum][facenum];
+                    const lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
                     int w=static_cast<int>(lmi_w (lmi_handle).value_or(0));
                     int h=static_cast<int>(lmi_h (lmi_handle).value_or(0));
                     vector3 rvec=lfp.rvec*lmi_ptr.xspacing;
@@ -482,7 +482,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
 inline void RenderSubmodelLightmapFace(poly_model &pm, bsp_info &sm, int facenum) {
   std::vector<g3Point *> pointlist(100);
 
-  polyface &fp = sm.faces[facenum];
+  const polyface &fp = sm.faces[facenum];
   int modelnum = &sm - pm.submodel.data();
   int t;
 
@@ -517,7 +517,7 @@ inline void RenderSubmodelLightmapFace(poly_model &pm, bsp_info &sm, int facenum
 
 inline void RenderSubmodelFaceFogged(poly_model &pm, bsp_info &sm, int facenum) {
   std::vector<g3Point *> pointlist(100);
-  polyface &fp = sm.faces[facenum];
+  const polyface &fp = sm.faces[facenum];
   int t;
 
   for (t = 0; t < fp.nverts; t++) {
@@ -529,7 +529,7 @@ inline void RenderSubmodelFaceFogged(poly_model &pm, bsp_info &sm, int facenum) 
     if (Polymodel_effect.fog_plane_check == 1) {
       mag = vm_DotProduct(Fog_plane, sm.verts[fp.vertnums[t]]) + Fog_distance;
     } else {
-      vector3 &vec = sm.verts[fp.vertnums[t]];
+      const vector3 &vec = sm.verts[fp.vertnums[t]];
 
       // Now we must generate the split point. This is simply
       // an equation in the form Origin + t*Direction
@@ -567,7 +567,7 @@ inline void RenderSubmodelFaceFogged(poly_model &pm, bsp_info &sm, int facenum) 
 
 inline void RenderSubmodelFaceSpecular(poly_model &pm, bsp_info &sm, int facenum) {
   std::vector<g3Point *> pointlist(100);
-  polyface &fp = sm.faces[facenum];
+  const polyface &fp = sm.faces[facenum];
   int t;
   bool smooth = 0;
 
@@ -659,7 +659,7 @@ void RenderSubmodelFacesSorted(poly_model &pm, bsp_info &sm) {
 
   // Build list of visible (non-backfacing) faces, & compute average face depths
   for (i = rcount = 0; i < sm.num_faces; i++) {
-    polyface &fp = sm.faces[i];
+    const polyface &fp = sm.faces[i];
 
     // check for visible face
     if (g3_CheckNormalFacing(sm.verts[fp.vertnums[0]], fp.normal)) {
@@ -711,7 +711,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
 
   for (i = 0; i < sm.num_faces; i++) {
     vector3 tempv;
-    polyface &fp = sm.faces[i];
+    const polyface &fp = sm.faces[i];
     texture *texp;
 
     // Check to see if this face even faces us!
@@ -769,7 +769,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
                              uint8_t(Polymodel_effect.spec.b * 255.0f)));
 
     for (i = 0; i < sm.num_faces; i++) {
-      polyface &fp = sm.faces[i];
+      const polyface &fp = sm.faces[i];
 
       if (!g3_CheckNormalFacing(sm.verts[fp.vertnums[0]], fp.normal))
         continue;
@@ -814,7 +814,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
                              uint8_t(Polymodel_effect.fog.b * 255.0f)));
 
     for (i = 0; i < sm.num_faces; i++) {
-      polyface &fp = sm.faces[i];
+      const polyface &fp = sm.faces[i];
 
       if (!g3_CheckNormalFacing(sm.verts[fp.vertnums[0]], fp.normal))
         continue;

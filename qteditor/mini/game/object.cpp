@@ -773,7 +773,7 @@ void GetObjectPointInWorld(vector3& dest, object& obj, int subnum, int vertnum) 
     return;
 
   poly_model &pm = Poly_models[mn_i];
-  bsp_info &sm = pm.submodel[subnum];
+  const bsp_info &sm = pm.submodel[subnum];
   float normalized_time[MAX_SUBOBJECTS];
 
   if (!pm.new_style)

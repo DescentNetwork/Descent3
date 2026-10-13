@@ -931,8 +931,8 @@ struct vec2d {
 // finds the uv coords of the given point on the given seg & side
 // fills in u & v. if l is non-NULL fills it in also
 void FindHitpointUV(float &u, float &v, const vector3 &point, int roomnum, int facenum) {
-  room_t &rp = Rooms[roomnum];
-  face &fp = rp.faces[facenum];
+  const room_t &rp = Rooms[roomnum];
+  const face &fp = rp.faces[facenum];
   int ii, jj;
   vec2d pnt[3], checkp, vec0, vec1;
   const float *t;
@@ -990,7 +990,7 @@ void DoWallEffects(object *weapon, int surface_tmap) {
     if (texp->flags.water || ((d3::rand() % 4) == 0)) {
       int visnum = VisEffectCreate(VIS_FIREBALL, MED_SMOKE_INDEX, weapon->roomnum, &weapon->pos);
       if (visnum >= 0) {
-        vis_effect &vis = VisEffects[visnum];
+        const vis_effect &vis = VisEffects[visnum];
 
         vis.lifetime = 0.9f;
         vis.lifeleft = 0.9f;
@@ -1015,7 +1015,7 @@ void DoWallEffects(object *weapon, int surface_tmap) {
         visnum = VisEffectCreate(VIS_FIREBALL, RUBBLE1_INDEX + (d3::rand() % 2), weapon->roomnum, &weapon->pos);
 
         if (visnum >= 0) {
-          vis_effect &vis = VisEffects[visnum];
+          const vis_effect &vis = VisEffects[visnum];
 
           vis.movement_type = movement_type::physics;
           vis.mass = 100;
@@ -1135,8 +1135,8 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
   // Check for destroyable or breakable face
   if (!ROOMNUM_OUTSIDE(hitseg)) // First, make sure we've hit a wall, and not terrain
   {
-    room &rp = Rooms[hitseg];
-    face &fp = rp.faces[hitwall];
+    const room &rp = Rooms[hitseg];
+    const face &fp = rp.faces[hitwall];
 
     // Check for a trigger on this wall
     CheckTrigger(hitseg, hitwall, weapon, TT_COLLIDE);
@@ -2219,7 +2219,7 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
       Sound_system.Play3dSound(Weapons[weapon->id].sounds[WSI_IMPACT_ROBOT], sound_priority::highest, weapon);
     }
     if (!electrical) {
-      light_info &li = Weapons[weapon->id].lighting_info;
+      const light_info &li = Weapons[weapon->id].lighting_info;
       uint16_t color = GR_RGB16(li.red_light2 * 255, li.green_light2 * 255, li.blue_light2 * 255);
       CreateRandomLineSparks(3 + d3::rand() % 6, &weapon->pos, weapon->roomnum, color);
     }

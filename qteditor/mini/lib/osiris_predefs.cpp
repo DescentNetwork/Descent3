@@ -631,7 +631,7 @@ void osipf_RoomValue(int roomnum, char op, char vtype, void *ptr, int index) {
     return;
   }
 
-  room &rp = Rooms[roomnum];
+  const room &rp = Rooms[roomnum];
 
   switch (vtype) {
   case RMV_I_FLAGS:
@@ -2156,7 +2156,7 @@ int osipf_GetNumAttachSlots(int objhandle) {
   object *parent = ObjGet(objhandle);
 
   if ((parent) && (parent->flags.polygon_object)) {
-    poly_model &parent_pm = Poly_models[parent->rtype.pobj_info().model_num];
+    const poly_model &parent_pm = Poly_models[parent->rtype.pobj_info().model_num];
     return (parent_pm.n_attach);
   }
 
@@ -2168,7 +2168,7 @@ int osipf_GetAttachChildHandle(int objhandle, char attachpoint) {
   int8_t parent_ap = attachpoint;
 
   if ((parent) && (parent->flags.polygon_object)) {
-    poly_model &parent_pm = Poly_models[parent->rtype.pobj_info().model_num];
+    const poly_model &parent_pm = Poly_models[parent->rtype.pobj_info().model_num];
     if (parent_ap >= 0 && parent_ap < parent_pm.n_attach) {
       return (parent->attach_children[parent_ap]);
     }
@@ -2663,15 +2663,15 @@ void osipf_ObjWBValue(int obj_handle, int8_t wb_index, char op, char vtype, void
     return;
   }
 
-  dynamic_wb_info &p_dwb = objp->dynamic_wb[wb_index];
+  const dynamic_wb_info &p_dwb = objp->dynamic_wb[wb_index];
   otype_wb_info *static_wb;
-  poly_model &pm = Poly_models[objp->rtype.pobj_info().model_num];
+  const poly_model &pm = Poly_models[objp->rtype.pobj_info().model_num];
 
   if (objp->type == object_type::player || objp->type == object_type::observer) {
-    ship &ship = Ships[Players[objp->id].ship_index];
+    const ship &ship = Ships[Players[objp->id].ship_index];
     static_wb = &ship.static_wb[wb_index];
   } else {
-    object_info &obj_info = Object_info[objp->id];
+    const object_info &obj_info = Object_info[objp->id];
     static_wb = &obj_info.static_wb[wb_index];
   }
 
@@ -3001,7 +3001,7 @@ void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void
   if (g_index < 0 || g_index >= MAX_GOALS)
     return;
 
-  goal &g_ptr = ai_info->goals[g_index];
+  const goal &g_ptr = ai_info->goals[g_index];
 
   if (!g_ptr.used || vtype == AIGV_B_USED) {
     if (vtype == AIGV_B_USED && op == VF_GET)
@@ -3149,7 +3149,7 @@ void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void
       g_ptr.g_info.wander_extra_info.max_rooms = *(char *)ptr;
   } break;
   case AIGV_C_WANDER_FLAGS: {
-    auto &flags = g_ptr.g_info.wander_extra_info.flags;
+    const auto &flags = g_ptr.g_info.wander_extra_info.flags;
     if (op == VF_GET)
       *reinterpret_cast<uint8_t *>(ptr) = reinterpret_cast<uint8_t &>(flags);
     else if (op == VF_SET)
@@ -3289,7 +3289,7 @@ void osipf_AIGoalValue(int obj_handle, int8_t g_index, char op, char vtype, void
       g_ptr.enabler[index].float_value = *(float *)ptr;
   } break;
   case AIGSV_I_ENABLER_FLAGS: {
-    auto &flags = g_ptr.enabler[index].flags;
+    const auto &flags = g_ptr.enabler[index].flags;
     if (op == VF_GET)
       *reinterpret_cast<uint32_t *>(ptr) = reinterpret_cast<uint32_t &>(flags);
     else if (op == VF_SET)
@@ -3710,7 +3710,7 @@ void osipf_PathValue(int path_id, int node_id, char op, int changes, void *ptr) 
     return;
   }
 
-  game_path &cpath = GamePaths[path_id];
+  const game_path &cpath = GamePaths[path_id];
 
   if (op == VF_GET) {
     if (changes & PV_ALL) {
@@ -3720,7 +3720,7 @@ void osipf_PathValue(int path_id, int node_id, char op, int changes, void *ptr) 
         return;
       }
 
-      node &cnode = cpath.pathnodes[node_id];
+      const node &cnode = cpath.pathnodes[node_id];
       osiris_path_node_info *pni = (osiris_path_node_info *)ptr;
 
       if (changes & PV_POS) {
@@ -3762,7 +3762,7 @@ void osipf_PathValue(int path_id, int node_id, char op, int changes, void *ptr) 
         return;
       }
 
-      node &cnode = cpath.pathnodes[node_id];
+      const node &cnode = cpath.pathnodes[node_id];
       osiris_path_node_info *pni = (osiris_path_node_info *)ptr;
 
       if (changes & PV_POS) {

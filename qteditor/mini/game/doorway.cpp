@@ -160,7 +160,7 @@ object *GetDoorObject(int roomnum);
 //	Functions
 #if 0
 void RemoveActiveDoorway(int adway) {
-  room &rp = Rooms[Active_doorways[adway]];
+  const room &rp = Rooms[Active_doorways[adway]];
 
   Q_ASSERT(rp.flags.door);
   Q_ASSERT(rp.doorway_data != NULL);
@@ -178,7 +178,7 @@ void RemoveActiveDoorway(int adway) {
 }
 
 void AddActiveDoorway(int roomnum) {
-  room &rp = Rooms[roomnum];
+  const room &rp = Rooms[roomnum];
   Q_ASSERT(rp.flags.door);
 
   doorway *dp = rp.doorway_data;
@@ -205,7 +205,7 @@ doorway *GetDoorwayFromObject(int door_obj_handle) {
 
   Q_ASSERT(objp->type == object_type_e::door);
 
-  room_t &rp = Rooms[*objp->roomnum];
+  const room_t &rp = Rooms[*objp->roomnum];
 
   Q_ASSERT(rp.flags.door);
   Q_ASSERT(rp.doorway_data);
@@ -215,13 +215,13 @@ doorway *GetDoorwayFromObject(int door_obj_handle) {
 #if 0
 // Plays a sound for this door
 void DoorwayPlaySound(object *objp) {
-  room &rp = Rooms[objp->roomnum];
+  const room &rp = Rooms[objp->roomnum];
   Q_ASSERT(rp.flags.door);
 
   doorway *dp = rp.doorway_data;
   Q_ASSERT(dp != NULL);
 
-  door &door = Doors[dp->doornum];
+  const door &door = Doors[dp->doornum];
 
   // Stop sound if one playing
   if (dp->sound_handle != -1) {
@@ -357,7 +357,7 @@ void DoorwayStop(int door_obj_handle) {
 
 // Called when a door is blown up
 void DoorwayDestroy(object *objp) {
-  room &rp = Rooms[objp->roomnum];
+  const room &rp = Rooms[objp->roomnum];
   doorway *dp = rp.doorway_data;
 
   Q_ASSERT(rp.flags.door);
@@ -376,7 +376,7 @@ void DoorwayDestroy(object *objp) {
 void DoorwayDeactivateAll() {
   // Go through all rooms and deactivate doors
   for (size_t r = 0; r < Rooms.size(); r++) {
-    room &rp = Rooms[r];
+    const room &rp = Rooms[r];
     if (rp.used && rp.flags.door) {
       if (rp.doorway_data->state != doorway_state::stopped) {
         doorway *dp = rp.doorway_data;
@@ -398,7 +398,7 @@ void DoorwayDeactivateAll() {
 
 // Sets the corresponding door objects animation frame
 void DoorwayUpdateAnimation(int roomnum) {
-  room &rp = Rooms[roomnum];
+  const room &rp = Rooms[roomnum];
   doorway *dway;
   poly_model *pm;
   int doornum;
@@ -424,11 +424,11 @@ void DoorwayUpdateAnimation(int roomnum) {
 //	Update all doorways currently active in the mine
 void DoorwayDoFrame() {
   for (int roomnum : Active_doorways) {
-    room &rp = Rooms[roomnum];
+    const room &rp = Rooms[roomnum];
     Q_ASSERT(rp.flags.door);
     doorway *dway = rp.doorway_data;
     Q_ASSERT(dway != NULL);
-    door &door = Doors[dway->doornum];
+    const door &door = Doors[dway->doornum];
     float delta; // movement delta
 
     switch (dway->state) {
@@ -502,7 +502,7 @@ void DoorwayDoFrame() {
 #endif
 // returns a pointer to the door object for the specified doorway
 object *GetDoorObject(int roomnum) {
-  room_t &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[roomnum];
   Q_ASSERT(rp.flags.door);
 
   for (int objnum = rp.objects; (objnum != -1); objnum = Objects[objnum].next)
@@ -524,7 +524,7 @@ bool DoorwayLocked(int door_obj_handle) {
 
 // Returns true if the doorway in the given room is locked, else false
 bool DoorwayLockedForRoom(int roomnum) {
-  room_t &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[roomnum];
   Q_ASSERT(rp.flags.door);
 
   doorway *dp = rp.doorway_data.get();
@@ -611,7 +611,7 @@ float DoorwayPosition(int door_obj_handle) {
 }
 // Returns the current position of the door.  0.0 = totally closed, 1.0 = totally open
 float DoorwayPositionForRoom(int roomnum) {
-  room_t &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[roomnum];
   Q_ASSERT(rp.flags.door);
   Q_ASSERT(rp.doorway_data);
 
@@ -626,7 +626,7 @@ void DoorwayRebuildActiveList() {
 
   // Go through all rooms and look for active doors
   for (int r = 0; r < (int)Rooms.size(); r++) {
-    room &rp = Rooms[r];
+    const room &rp = Rooms[r];
     if (rp.used && rp.flags.door) {
       Q_ASSERT(rp.doorway_data != NULL);
       if (rp.doorway_data->state != doorway_state::stopped)

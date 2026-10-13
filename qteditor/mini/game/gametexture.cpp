@@ -42,7 +42,7 @@ index_t FindTextureBitmapName(const std::string &name) {
 
       if (GameTextures[i].flags.animated) {
         PageInVClip(GameTextures[i].bm_handle);
-        vclip &vc = GameVClips[GameTextures[i].bm_handle];
+        const vclip &vc = GameVClips[GameTextures[i].bm_handle];
         if (vc.used) {
           for (int t = 0; t < vc.num_frames; t++) {
             if (match(GameBitmaps[vc.frames[t]].name, name))
@@ -72,10 +72,10 @@ int GetTextureBitmap(int handle, int framenum, bool force) {
   if (GameTextures[handle].flags.animated) {
     float cur_frametime;
     int int_frame;
-    texture &tex = GameTextures[handle];
+    const texture &tex = GameTextures[handle];
     PageInVClip(GameTextures[handle].bm_handle);
 
-    vclip &vc = GameVClips[GameTextures[handle].bm_handle];
+    const vclip &vc = GameVClips[GameTextures[handle].bm_handle];
     Q_ASSERT(vc.used >= 1);
 
     if (GameTextures[handle].flags.ping_pong) {

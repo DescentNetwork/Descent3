@@ -107,7 +107,7 @@ int PlayerWeaponsDialog::currentWBIndex() const {
 
 void PlayerWeaponsDialog::updateDialog() {
   const int index = currentWBIndex();
-  ship &shp = shipRef(m_current_ship);
+  const ship &shp = shipRef(m_current_ship);
   const ship_fire_flags_t fire_flags = shipRef(m_current_ship).fire_flags[index];
 
   ui->IDC_FIRES_FUSION->setChecked(fire_flags.fusion);

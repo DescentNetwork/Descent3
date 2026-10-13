@@ -390,23 +390,23 @@ void WorldObjectsGenericDialog::updateDialog() {
     ui->IDC_TEXTURE_RAM_TEXT->setText("Texture RAM: NA");
   else {
     int tram = 0;
-    poly_model &pm = Poly_models[poly_handle];
+    const poly_model &pm = Poly_models[poly_handle];
     uint8_t already_used[100];
     memset(already_used, 0, sizeof(already_used));
     for (int i = 0; i < pm.n_models; i++) {
-      bsp_info &sm = pm.submodel[i];
+      const bsp_info &sm = pm.submodel[i];
       for (int t = 0; t < sm.num_faces; t++) {
-        polyface &fp = sm.faces[t];
+        const polyface &fp = sm.faces[t];
         if (fp.texnum != -1 && !already_used[fp.texnum]) {
           already_used[fp.texnum] = 1;
           const int texnum = pm.textures[fp.texnum];
-          texture &texp = GameTextures[texnum];
+          const texture &texp = GameTextures[texnum];
           if (texnum == 0)
             continue;
           if (GameTextures.is_unused(texnum)) {
             int mem_this_tex;
             if (texp.flags.animated) {
-              vclip &vc = GameVClips[texp.bm_handle];
+              const vclip &vc = GameVClips[texp.bm_handle];
               mem_this_tex = 0;
               for (int j = 0; j < vc.num_frames; j++) {
                 const int bm_handle = vc.frames[j];

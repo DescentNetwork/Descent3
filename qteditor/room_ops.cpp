@@ -351,14 +351,14 @@ void DeleteRoomFace(int roomnum, int facenum) {
 // ============================================================================
 void DeleteRoomPortal(int roomnum, int portalnum) {
   room_t &rp = Rooms[roomnum];
-  portal &pp = rp.portals[portalnum];
+  const portal &pp = rp.portals[portalnum];
   face &fp = rp.faces[pp.portal_face];
 
   Q_ASSERT(fp.portal_num == portalnum);
   fp.portal_num = -1;
 
   for (int p = portalnum + 1; p < rp.num_portals; p++) {
-    portal &tp = rp.portals[p];
+    const portal &tp = rp.portals[p];
     Q_ASSERT(rp.faces[tp.portal_face].portal_num == p);
     rp.faces[tp.portal_face].portal_num--;
     if (tp.connected_room && tp.connected_portal) {
@@ -417,7 +417,7 @@ void LinkRooms(int room0, int face0, int room1, int face1) {
 // ============================================================================
 void DeletePortalPair(int roomnum, int portalnum) {
   room_t &rp = Rooms[roomnum];
-  portal &pp = rp.portals[portalnum];
+  const portal &pp = rp.portals[portalnum];
   const index_t croom = pp.connected_room;
   const index_t cportal = pp.connected_portal;
 
@@ -512,8 +512,8 @@ void AssignUVsToFace(int roomnum, int facenum, roomUVL *uva, roomUVL *uvb, int v
     fuvmag.v = uvhi.v - uvlo.v;
   }
 
-  vector3 &vv0 = rp.verts[fp.face_verts[vlo]];
-  vector3 &vv1 = rp.verts[fp.face_verts[vhi]];
+  const vector3 &vv0 = rp.verts[fp.face_verts[vlo]];
+  const vector3 &vv1 = rp.verts[fp.face_verts[vhi]];
 
   fvec = vv1 - vv0;
   mag01 = vm_NormalizeVector(fvec);
@@ -779,7 +779,7 @@ void RotateRooms(angle p, angle h, angle b) {
     room_t &rp = Rooms[Selected_rooms[i]];
 
     if (Selected_rooms[i] == index_to_int(app.current.room)) {
-      face &cfp = curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
+      const face &cfp = curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
       for (int v = 0; v < rp.num_verts; v++) {
         for (int t = 0; t < cfp.num_verts; t++)
           if (v == cfp.face_verts[t])
@@ -838,7 +838,7 @@ void ConnectPortal(int roomnum, int portal_num, int dest_room) {
     return;
   }
 
-  portal &pp = rp.portals[portal_num];
+  const portal &pp = rp.portals[portal_num];
   int dest_face = pp.portal_face;
 
   if (pp.connected_room) {
@@ -869,7 +869,7 @@ void DetachPortal(int roomnum, int portal_num) {
     return;
   }
 
-  portal &pp = rp.portals[portal_num];
+  const portal &pp = rp.portals[portal_num];
   if (!pp.connected_room) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "This portal is not connected.");
     return;
@@ -974,9 +974,9 @@ static void AddVertToFace(int roomnum, int facenum, int new_v, int after_v) {
   }
 
   // Compute UV for the new vert by interpolating along the edge
-  vector3 &va = rp.verts[fp.face_verts[after_v]];
-  vector3 &vb = rp.verts[fp.face_verts[(after_v + 2) % fp.num_verts]];
-  vector3 &vn = rp.verts[fp.face_verts[after_v + 1]];
+  const vector3 &va = rp.verts[fp.face_verts[after_v]];
+  const vector3 &vb = rp.verts[fp.face_verts[(after_v + 2) % fp.num_verts]];
+  const vector3 &vn = rp.verts[fp.face_verts[after_v + 1]];
   roomUVL &uva = fp.face_uvls[after_v];
   roomUVL &uvb = fp.face_uvls[(after_v + 2) % fp.num_verts];
 
@@ -995,7 +995,7 @@ static void AddVertToFace(int roomnum, int facenum, int new_v, int after_v) {
 static void AddVertToAllEdges(int roomnum, int v0, int v1, int new_v) {
   room_t &rp = Rooms[roomnum];
   for (int f = 0; f < rp.num_faces; f++) {
-    face &fp = rp.faces[f];
+    const face &fp = rp.faces[f];
     for (int v = 0; v < fp.num_verts; v++) {
       int cur = fp.face_verts[v];
       int nxt = fp.face_verts[(v + 1) % fp.num_verts];
@@ -1038,15 +1038,15 @@ static void ClipAgainstEdge(int nv, int16_t *vertnums, clip_vertex *vertices, in
   int inside_points = 0, outside_points = 0;
 
   for (int i = 0, prev = nv - 1, next = 1; i < nv; i++) {
-    clip_vertex &curv = vertices[vertnums[i]];
+    const clip_vertex &curv = vertices[vertnums[i]];
 
     int check = CheckPointAgainstEdge(&curv.vec, v0, v1, normal);
     if (check == 0) {
       *op++ = vertnums[i];
       *ip++ = vertnums[i];
     } else if (check == -1) {
-      clip_vertex &prevv = vertices[vertnums[prev]];
-      clip_vertex &nextv = vertices[vertnums[next]];
+      const clip_vertex &prevv = vertices[vertnums[prev]];
+      const clip_vertex &nextv = vertices[vertnums[next]];
 
       int check2 = CheckPointAgainstEdge(&prevv.vec, v0, v1, normal);
       if (check2 == 1) {
@@ -1087,7 +1087,7 @@ static bool ClipFace(int aroom, int afacenum, int broom, int bfacenum) {
   room_t &arp = Rooms[aroom];
   room_t &brp = Rooms[broom];
   face &afp = arp.faces[afacenum];
-  face &bfp = brp.faces[bfacenum];
+  const face &bfp = brp.faces[bfacenum];
   int16_t vbuf0[MAX_VERTS_PER_FACE], vbuf1[MAX_VERTS_PER_FACE];
   int16_t newface_verts[MAX_VERTS_PER_FACE][MAX_VERTS_PER_FACE];
   int newface_nvs[MAX_VERTS_PER_FACE];
@@ -1183,8 +1183,8 @@ static bool ClipFacePair(int room0, int face0, int room1, int face1) {
 static int MatchPortalFaces(int room0, int facenum0, int room1, int facenum1, bool check_only = false) {
   room_t &rp0 = Rooms[room0];
   room_t &rp1 = Rooms[room1];
-  face &fp0 = rp0.faces[facenum0];
-  face &fp1 = rp1.faces[facenum1];
+  const face &fp0 = rp0.faces[facenum0];
+  const face &fp1 = rp1.faces[facenum1];
   int n0, n1, i, j, prev_vn0, prev_vn1, max_nv;
   int points_added = 0;
 
@@ -1225,8 +1225,8 @@ check_faces:;
       if (!check_only)
         v0 = v1;
     } else {
-      vector3 &prev_v0 = rp0.verts[prev_vn0];
-      vector3 &prev_v1 = rp1.verts[prev_vn1];
+      const vector3 &prev_v0 = rp0.verts[prev_vn0];
+      const vector3 &prev_v1 = rp1.verts[prev_vn1];
 
 float d0 = vm_VectorDistance(v0, prev_v0);
 float d1 = vm_VectorDistance(v1, prev_v1);
@@ -1375,7 +1375,7 @@ void AttachRoom() {
 // Given a room, face, and vertex index, compute the default UV coordinates.
 void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
   room_t &rp = Rooms[roomnum];
-  face &fp = rp.faces[facenum];
+  const face &fp = rp.faces[facenum];
   int nv = fp.num_verts;
 
   matrix face_matrix, trans_matrix;
@@ -1441,7 +1441,7 @@ void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
 // Edge is the vertex index — the edge is (edge, edge+1).
 void StretchRoomUVs(int roomnum, int facenum, int edge) {
   room_t &rp = Rooms[roomnum];
-  face &fp = rp.faces[facenum];
+  const face &fp = rp.faces[facenum];
   int nv = fp.num_verts;
   int v0 = edge;
   int v1 = (v0 + 1) % nv;

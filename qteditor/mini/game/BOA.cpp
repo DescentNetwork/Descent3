@@ -226,7 +226,7 @@ bool BOA_PassablePortal(int room, int portal_index, bool f_for_sound, bool f_mak
   }
 
   Q_ASSERT(room >= 0 && room < Rooms.size() && Rooms[room].used);
-  face &fp = Rooms[room].faces[Rooms[room].portals[portal_index].portal_face];
+  const face &fp = Rooms[room].faces[Rooms[room].portals[portal_index].portal_face];
 
   if (!Rooms[room].portals[portal_index].connected_room)
     return false;
@@ -636,7 +636,7 @@ void compute_mine_info() {
     done = true;
 
     for (i = 0; i < Rooms.size(); i++) {
-      room_t &rp = Rooms[i];
+      const room_t &rp = Rooms[i];
 
       if (rp.used && !checked[i]) {
         first_free = i;
@@ -1200,13 +1200,13 @@ int BOAGetMineChecksum() {
   int total = 0;
 
   for (i = 0; i < Rooms.size(); i++) {
-    room_t &rp = Rooms[i];
+    const room_t &rp = Rooms[i];
 
     if (!Rooms[i].used)
       continue;
 
     for (t = 0; t < rp.num_faces; t++) {
-      face &fp = rp.faces[t];
+      const face &fp = rp.faces[t];
 
       for (k = 0; k < fp.num_verts; k++) {
         int x, y, z;
@@ -1220,7 +1220,7 @@ int BOAGetMineChecksum() {
 
       if (fp.portal_num != -1) {
         // factor in portal
-        portal &pp = rp.portals[fp.portal_num];
+        const portal &pp = rp.portals[fp.portal_num];
 
         total += fp.portal_num;
 
@@ -1250,13 +1250,13 @@ int BOAGetRoomChecksum(int i) {
   float total = 0;
 
   {
-    room_t &rp = Rooms[i];
+    const room_t &rp = Rooms[i];
 
     if (!Rooms[i].used)
       return 0;
 
     for (t = 0; t < rp.num_faces; t++) {
-      face &fp = rp.faces[t];
+      const face &fp = rp.faces[t];
 
       for (k = 0; k < fp.num_verts; k++) {
         total += rp.verts[fp.face_verts[k]].x();
@@ -1384,7 +1384,7 @@ void BOA_ComputePathPoints(char *message, int len) {
 // Given a face, computes the upper left corner of the face
 void ComputeBOAVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff,
                                 vector3 &center) {
-  room_t &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[roomnum];
   matrix face_matrix, trans_matrix;
   vector3 fvec;
   vector3 avg_vert;
@@ -1593,7 +1593,7 @@ void MakeBOAVisTable(bool from_lighting) {
     if (Rooms[i].used == 0)
       continue;
 
-    room_t &rp = Rooms[i];
+    const room_t &rp = Rooms[i];
 
 #ifdef NEWEDITOR
     DoBOAVisProgressDialog((float)(i + 1) / (float)(((int)Rooms.size() - 1) + 1), 1);
@@ -1688,7 +1688,7 @@ void MakeBOAVisTable(bool from_lighting) {
       int done = 0;
 
       for (t = 0; t < rp.num_portals && !done; t++) {
-        face &src_fp = rp.faces[rp.portals[t].portal_face];
+        const face &src_fp = rp.faces[rp.portals[t].portal_face];
         float src_width, src_height;
         vector3 src_upper_left, src_center;
         matrix src_matrix;
@@ -1721,7 +1721,7 @@ void MakeBOAVisTable(bool from_lighting) {
         }
 
         for (j = 0; j < Rooms[check_room].num_portals && !done; j++) {
-          face &dest_fp = Rooms[check_room].faces[Rooms[check_room].portals[j].portal_face];
+          const face &dest_fp = Rooms[check_room].faces[Rooms[check_room].portals[j].portal_face];
           float dest_width, dest_height;
           vector3 dest_upper_left, dest_center;
           matrix dest_matrix;
@@ -1940,7 +1940,7 @@ void find_small_portals() {
   for (i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used) {
       for (j = 0; j < Rooms[i].num_portals; j++) {
-        face &fp = Rooms[i].faces[Rooms[i].portals[j].portal_face];
+        const face &fp = Rooms[i].faces[Rooms[i].portals[j].portal_face];
 
         vector3 upper_left;
         vector3 center;
@@ -2225,7 +2225,7 @@ void ComputeAABB(bool f_full) {
     // Determine number of independent structures and classify each face
     for (i = 0; i < Rooms.size(); i++) {
       if (Rooms[i].used) {
-        room_t &rp = Rooms[i];
+        const room_t &rp = Rooms[i];
         int num_struct = 0;
         int count1, count2;
 
@@ -2291,7 +2291,7 @@ void ComputeAABB(bool f_full) {
     // Determine Area of each region for external shell remap
     for (i = 0; i < Rooms.size(); i++) {
       if (Rooms[i].used) {
-        room_t &rp = Rooms[i];
+        const room_t &rp = Rooms[i];
 
         if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
           continue;
@@ -2315,7 +2315,7 @@ void ComputeAABB(bool f_full) {
             if (r_struct_list[i][t] != count)
               continue;
 
-            face &fp = rp.faces[t];
+            const face &fp = rp.faces[t];
 
             if (fp.max_xyz.x() > s_max_xyz[count].x())
               s_max_xyz[count].x() = fp.max_xyz.x();
@@ -2446,7 +2446,7 @@ void ComputeAABB(bool f_full) {
         }
 
         for (count = 0; count < rp.num_faces; count++) {
-          face &fp = rp.faces[count];
+          const face &fp = rp.faces[count];
           bool f_part = false;
           bool list[6];
           int x;
@@ -2841,7 +2841,7 @@ void ComputeAABB(bool f_full) {
 
         for (j = 0; j < rp.num_bbf_regions; j++) {
           for (count = 0; count < rp.num_bbf[j]; count++) {
-            face &fp = rp.faces[rp.bbf_list[j][count]];
+            const face &fp = rp.faces[rp.bbf_list[j][count]];
             bool list[6];
             int x;
 

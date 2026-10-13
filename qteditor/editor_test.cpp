@@ -6157,11 +6157,11 @@ private slots:
     // Find a screen point that actually shows a face of the mine and click it.
     bool pickedSomething = false;
     for (size_t r = 0; r <= Rooms.size() - 1 && !pickedSomething; r++) {
-      room_t &rp = Rooms[r];
+      const room_t &rp = Rooms[r];
       if (!rp.used)
         continue;
       for (int f = 0; f < rp.num_faces && !pickedSomething; f++) {
-        face &fp = rp.faces[f];
+        const face &fp = rp.faces[f];
         if (fp.portal_num != -1)
           continue;
         vector3 center{};
@@ -6207,11 +6207,11 @@ private slots:
     float bestZ = 1e30f;
     float pickX = -1.0f, pickY = -1.0f;
     for (size_t r = 0; r <= Rooms.size() - 1; r++) {
-      room_t &rp = Rooms[r];
+      const room_t &rp = Rooms[r];
       if (!rp.used)
         continue;
       for (int f = 0; f < rp.num_faces; f++) {
-        face &fp = rp.faces[f];
+        const face &fp = rp.faces[f];
         const int nv = fp.num_verts;
         if (nv < 3)
           continue;
@@ -6759,7 +6759,7 @@ private slots:
     int bestR = -1, bestF = -1;
     float bestT = 1e30f;
     for (size_t r = 0; r <= Rooms.size() - 1; r++) {
-      room_t &rp = Rooms[r];
+      const room_t &rp = Rooms[r];
       if (!rp.used)
         continue;
       if (rp.num_verts > 0) {
@@ -6768,7 +6768,7 @@ private slots:
           continue;
       }
       for (int f = 0; f < rp.num_faces; f++) {
-        face &fp = rp.faces[f];
+        const face &fp = rp.faces[f];
         const int nv = fp.num_verts;
         if (nv < 3 || nv > 64)
           continue;

@@ -361,11 +361,11 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
     return;
 
   for (size_t r = projStart; r <= projEnd; r++) {
-    room_t &rp = Rooms[r];
+    const room_t &rp = Rooms[r];
     if (!rp.used)
       continue;
     for (int f = 0; f < rp.num_faces; f++) {
-      face &fp = rp.faces[f];
+      const face &fp = rp.faces[f];
       QVector<ProjectedVertex> face;
       bool ok = true;
       for (int v = 0; v < fp.num_verts; v++) {
@@ -490,11 +490,11 @@ void EditorView::renderRooms() {
   float solidMaxDepth = 10.0f;
   if (!m_wireframe) {
     for (size_t rr = renderStart; rr <= renderEnd; rr++) {
-      room_t &rpc = Rooms[rr];
+      const room_t &rpc = Rooms[rr];
       if (!rpc.used)
         continue;
       for (int i = 0; i < rpc.num_faces; i++) {
-        face &fp = rpc.faces[i];
+        const face &fp = rpc.faces[i];
         int fnv = fp.num_verts;
         if (fnv > 16)
           fnv = 16;
@@ -525,7 +525,7 @@ void EditorView::renderRooms() {
     glDisable(GL_CULL_FACE);
   }
   for (size_t r = renderStart; r <= renderEnd; r++) {
-    room_t &rp = Rooms[r];
+    const room_t &rp = Rooms[r];
     if (!rp.used)
       continue;
 
@@ -554,7 +554,7 @@ void EditorView::renderRooms() {
       const bool isCurRoom = (r == index_to_int(app.current.room));
 
       for (int i = 0; i < rp.num_faces; i++) {
-        face &fp = rp.faces[i];
+        const face &fp = rp.faces[i];
         int fnv = fp.num_verts;
         if (fnv > 16)
           fnv = 16;
@@ -629,7 +629,7 @@ void EditorView::renderRooms() {
       if (selected && !isCurRoom) {
         resetEdgeTable();
         for (int i = 0; i < rp.num_faces; i++) {
-          face &fp = rp.faces[i];
+          const face &fp = rp.faces[i];
           if ((fp.flags.floating_trig) || fp.portal_num != -1)
             continue;
           int fnv = fp.num_verts;
@@ -647,10 +647,10 @@ void EditorView::renderRooms() {
 
       // Now draw the terrain portals in blue (DrawRoom, drawworld.cpp:638-646).
       for (int p = 0; p < rp.num_portals; p++) {
-        portal &pp = rp.portals[p];
+        const portal &pp = rp.portals[p];
         if (pp.connected_room != -1)
           continue;
-        face &fp = rp.faces[pp.portal_face];
+        const face &fp = rp.faces[pp.portal_face];
         int pnv = fp.num_verts;
         if (pnv > 16)
           pnv = 16;
@@ -675,7 +675,7 @@ void EditorView::renderRooms() {
     } else {
       // Textured / solid mode.
       for (int i = 0; i < rp.num_faces; i++) {
-        face &fp = rp.faces[i];
+        const face &fp = rp.faces[i];
 
         float sx[16], sy[16], d[16];
         int nv = fp.num_verts;
@@ -790,7 +790,7 @@ void EditorView::renderOverlays() {
         Rooms[*app.current.room].used &&
         app.current.room == app.current_room &&
         *app.current.face < Rooms[*app.current.room].num_faces) {
-      face &fp = Rooms[*app.current.room].faces[*app.current.face];
+      const face &fp = Rooms[*app.current.room].faces[*app.current.face];
       float sx[16], sy[16];
       int nv = fp.num_verts;
       if (nv > 16)
@@ -820,7 +820,7 @@ void EditorView::renderOverlays() {
   // over them where they overlap (DrawWorld, editor/drawworld.cpp:851-863).
   if (liveRoom(index_to_int(app.marked.room)) && Rooms[*app.marked.room].used) {
     if (app.marked.face.has_value() && index_to_int(app.marked.face) < Rooms[*app.marked.room].num_faces) {
-      face &fp = Rooms[*app.marked.room].faces[*app.marked.face];
+      const face &fp = Rooms[*app.marked.room].faces[*app.marked.face];
       float sx[16], sy[16];
       int nv = fp.num_verts;
       if (nv > 16)
@@ -872,7 +872,7 @@ void EditorView::renderOverlays() {
     glColor3fv(kWfCurRoomColor);
     glLineWidth(1.0f);
     for (int i = 0; i < Rooms[*app.current.room].num_faces; i++) {
-      face &fp = Rooms[*app.current.room].faces[i];
+      const face &fp = Rooms[*app.current.room].faces[i];
       if ((fp.flags.floating_trig) || fp.portal_num != -1)
         continue;
       float sx[16], sy[16];
@@ -898,7 +898,7 @@ void EditorView::renderOverlays() {
     if (app.current.portal.has_value() && index_to_int(app.current.portal) < Rooms[*app.current.room].num_portals) {
       int faceIdx = Rooms[*app.current.room].portals[*app.current.portal].portal_face;
       if (faceIdx >= 0 && faceIdx < Rooms[*app.current.room].num_faces) {
-        face &fp = Rooms[*app.current.room].faces[faceIdx];
+        const face &fp = Rooms[*app.current.room].faces[faceIdx];
         float sx[16], sy[16];
         int nv = fp.num_verts;
         if (nv > 16)
@@ -924,7 +924,7 @@ void EditorView::renderOverlays() {
 
     // Current face in yellow.
     if (app.current.face.has_value() && index_to_int(app.current.face) < Rooms[*app.current.room].num_faces) {
-      face &fp = Rooms[*app.current.room].faces[*app.current.face];
+      const face &fp = Rooms[*app.current.room].faces[*app.current.face];
       float sx[16], sy[16];
       int nv = fp.num_verts;
       if (nv > 16)
@@ -1152,7 +1152,7 @@ void EditorView::renderObjects() {
   LOG_DEBUG("Rendering %i objects", Highest_object_index);
 
   for (int i = 0; i <= Highest_object_index; i++) {
-    object &obj = Objects[i];
+    const object &obj = Objects[i];
     if (obj.type == object_type_e::none || obj.type == object_type_e::door)
       continue;
 
@@ -1160,7 +1160,7 @@ void EditorView::renderObjects() {
     // (DrawAllRooms); objects live in rooms and follow the same gate.
     if (!obj.roomnum || *obj.roomnum >= Rooms.size())
       continue;
-    room_t &rp = Rooms[*obj.roomnum];
+    const room_t &rp = Rooms[*obj.roomnum];
     if (!rp.used || rp.num_verts == 0)
       continue;
     if (vm_VectorDistance(rp.verts[0], m_target) >= m_rad)
@@ -1239,7 +1239,7 @@ void EditorView::renderPaths() {
     if (current_path_index < 0)
       break;
 
-    game_path &gp = GamePaths[current_path_index];
+    const game_path &gp = GamePaths[current_path_index];
     if (!GamePaths.is_used(current_path_index) || gp.num_nodes == 0)
       continue;
 
@@ -1546,7 +1546,7 @@ void EditorView::fitToMine() {
   vector3 mn{1e30f, 1e30f, 1e30f}, mx{-1e30f, -1e30f, -1e30f};
   bool any = false;
   for (size_t r = 0; r < Rooms.size(); r++) {
-    room_t &rp = Rooms[r];
+    const room_t &rp = Rooms[r];
     if (!rp.used)
       continue;
     for (int v = 0; v < rp.num_verts; v++) {
@@ -1847,7 +1847,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
 
   const float rad2 = m_rad * m_rad;
   for (size_t r = pickStart; r <= pickEnd; r++) {
-    room_t &rp = Rooms[r];
+    const room_t &rp = Rooms[r];
     if (!rp.used)
       continue;
 
@@ -1861,7 +1861,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
       continue;
 
     for (int f = 0; f < rp.num_faces; f++) {
-      face &fp = rp.faces[f];
+      const face &fp = rp.faces[f];
       int nv = fp.num_verts;
       if (nv < 3 || nv > MAX_VERTS_PER_FACE)
         continue;
@@ -1981,7 +1981,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
   }
 
   for (int i = 0; i <= Highest_object_index; i++) {
-    object &obj = Objects[i];
+    const object &obj = Objects[i];
     if (obj.type == object_type_e::none)
       continue;
 

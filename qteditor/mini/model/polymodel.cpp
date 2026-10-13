@@ -1176,7 +1176,7 @@ void FindMinMaxForModel(poly_model &pm) {
   pm.maxs.x() = pm.maxs.y() = pm.maxs.z() = -90000;
 
   for (int i = 0; i < pm.n_models; i++) {
-    bsp_info &sm = pm.submodel[i];
+    const bsp_info &sm = pm.submodel[i];
     if (sm.parent == -1)
       MinMaxSubmodel(pm, sm, zero_vec);
   }
@@ -2159,7 +2159,7 @@ void DonePolyModelPosInstance() {
 
 void SetNormalizedTimeObjTimed(const object& obj, float *normalized_time) {
   int i, j;
-  poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
+  const poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
   const object_info& obj_info = Object_info[obj.id];
 
   if (obj.type == object_type_e::player || obj.type == object_type_e::weapon)
@@ -2169,7 +2169,7 @@ void SetNormalizedTimeObjTimed(const object& obj, float *normalized_time) {
   float frame = obj.rtype.pobj_info().anim_frame;
 
   for (i = 0; i < pm.n_models; i++) {
-    bsp_info &sm = pm.submodel[i];
+    const bsp_info &sm = pm.submodel[i];
     int x = sm.flags.wb_index;
 
     if (!(sm.flags.turret) &&
@@ -2439,7 +2439,7 @@ void SetModelInterpPos(poly_model &po, const float *normalized_pos) {
 
   if (normalized_pos && po.num_key_pos > 0) {
     for (i = 0; i < po.n_models; i++) {
-      bsp_info &sm = po.submodel[i];
+      const bsp_info &sm = po.submodel[i];
 
       // get time per keyframe state
       float state_time = 1.0f / (po.num_key_pos - 1);
@@ -2959,7 +2959,7 @@ int InitModels() {
 // keyframe
 // Handle is an index into the Poly_models array
 float GetNormalizedKeyframe(int handle, float num) {
-  poly_model &pm = Poly_models[handle];
+  const poly_model &pm = Poly_models[handle];
 
   Q_ASSERT(!(pm.flags.not_resident));
 

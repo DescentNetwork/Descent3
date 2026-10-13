@@ -76,7 +76,7 @@ void TriggerKeypad::updateDialog() {
       w->setEnabled(active);
   if (!active)
     return;
-  trigger &tp = Triggers[*app.Current_trigger];
+  const trigger &tp = Triggers[*app.Current_trigger];
 
   ui->IDC_TRIG_CURRENT_NAME->setText(QString::fromStdString(tp.name));
   ui->IDC_TRIG_CURRENT_NUM->setText(QString::number(index_to_int(app.Current_trigger)));

@@ -520,8 +520,8 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra& color, vector3 *
   else
     light_center = *src_center;
 
-  room_t &rp = Rooms[*dest_surf->roomnum];
-  face &fp = rp.faces[dest_surf->facenum];
+  const room_t &rp = Rooms[*dest_surf->roomnum];
+  const face &fp = rp.faces[dest_surf->facenum];
 
   if (GameTextures[fp.tmap].flags.smooth_specular)
     threshold = 0.01f;

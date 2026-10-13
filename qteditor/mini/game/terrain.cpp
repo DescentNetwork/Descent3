@@ -417,10 +417,10 @@ void DeformTerrainPoint(int x, int z, int change_height) {
   for (i = sz; i <= z; i++) {
     for (int t = sx; t <= x; t++) {
       vector3 a, b, c;
-      terrain_segment &tseg0 = Terrain_seg[i * TERRAIN_WIDTH + t];
-      terrain_segment &tseg1 = Terrain_seg[(i + 1) * TERRAIN_WIDTH + t];
-      terrain_segment &tseg2 = Terrain_seg[((i + 1) * TERRAIN_WIDTH) + t + 1];
-      terrain_segment &tseg3 = Terrain_seg[(i * TERRAIN_WIDTH) + t + 1];
+      const terrain_segment &tseg0 = Terrain_seg[i * TERRAIN_WIDTH + t];
+      const terrain_segment &tseg1 = Terrain_seg[(i + 1) * TERRAIN_WIDTH + t];
+      const terrain_segment &tseg2 = Terrain_seg[((i + 1) * TERRAIN_WIDTH) + t + 1];
+      const terrain_segment &tseg3 = Terrain_seg[(i * TERRAIN_WIDTH) + t + 1];
 
       // Do upper left triangle
       a.x() = t * TERRAIN_SIZE;
@@ -551,10 +551,10 @@ void BuildTerrainNormals() {
 
     for (z = 0, i = 0; i < TERRAIN_DEPTH - simplemul; i += simplemul, z++) {
       for (x = 0, t = 0; t < TERRAIN_WIDTH - simplemul; t += simplemul, x++) {
-        terrain_segment &tseg0 = Terrain_seg[i * TERRAIN_WIDTH + t];
-        terrain_segment &tseg1 = Terrain_seg[(i + simplemul) * TERRAIN_WIDTH + t];
-        terrain_segment &tseg2 = Terrain_seg[((i + simplemul) * TERRAIN_WIDTH) + t + simplemul];
-        terrain_segment &tseg3 = Terrain_seg[(i * TERRAIN_WIDTH) + t + simplemul];
+        const terrain_segment &tseg0 = Terrain_seg[i * TERRAIN_WIDTH + t];
+        const terrain_segment &tseg1 = Terrain_seg[(i + simplemul) * TERRAIN_WIDTH + t];
+        const terrain_segment &tseg2 = Terrain_seg[((i + simplemul) * TERRAIN_WIDTH) + t + simplemul];
+        const terrain_segment &tseg3 = Terrain_seg[(i * TERRAIN_WIDTH) + t + simplemul];
 
         // Do upper left triangle
         a.x() = t * TERRAIN_SIZE;
@@ -1029,7 +1029,7 @@ void UpdateSingleTerrainLightmap(int which) {
   for (i = sz; i < sz + 128; i++) {
     for (t = sx; t < sx + 128; t++) {
       int tseg = i * TERRAIN_WIDTH + t;
-      terrain_segment &tp = Terrain_seg[tseg];
+      const terrain_segment &tp = Terrain_seg[tseg];
 
       uint16_t color = GR_RGB16(tp.r, tp.g, tp.b);
       std::vector<std::vector<uint16_t>> &data = lm_data(TerrainLightmaps[which]);
@@ -1100,7 +1100,7 @@ void UpdateTerrainLightmaps() {
   for (i = 0; i < TERRAIN_DEPTH; i++) {
     for (t = 0; t < TERRAIN_WIDTH; t++) {
       int tseg = i * TERRAIN_WIDTH + t;
-      terrain_segment &tp = Terrain_seg[tseg];
+      const terrain_segment &tp = Terrain_seg[tseg];
       int x = t % 128;
       int y = 127 - (i % 128);
       int which = ((i / 128) * 2) + (t / 128);

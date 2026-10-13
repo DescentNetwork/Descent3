@@ -252,7 +252,7 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, optref<BriefGlo
   while (curr_screen != -1) {
     if (curr_screen < 0 || curr_screen >= MAX_TELCOM_SCREENS || !Briefing_screens[curr_screen].used)
       break;
-    tBriefScreen &scr = Briefing_screens[curr_screen];
+    const tBriefScreen &scr = Briefing_screens[curr_screen];
 
     std::string sm = missionFlagTokens(scr.mission_mask_set, true);
     std::string um = missionFlagTokens(scr.mission_mask_unset, false);
@@ -271,11 +271,11 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, optref<BriefGlo
     while (curr_effect != -1) {
       if (curr_effect < 0 || curr_effect >= MAX_EFFECTS_PER_SCREEN || !scr.effects[curr_effect].used)
         break;
-      tBriefEffect &efx = scr.effects[curr_effect];
+      const tBriefEffect &efx = scr.effects[curr_effect];
 
       switch (efx.type) {
       case BE_TEXT: {
-        TCTEXTDESC &desc = efx.desc.text_desc();
+        const TCTEXTDESC &desc = efx.desc.text_desc();
         std::string red = std::to_string(GR_COLOR_RED(desc.color));
         std::string green = std::to_string(GR_COLOR_GREEN(desc.color));
         std::string blue = std::to_string(GR_COLOR_BLUE(desc.color));
@@ -295,7 +295,7 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, optref<BriefGlo
         out << "$endtext\n";
       } break;
       case BE_BMP: {
-        TCBMPDESC &desc = efx.desc.bmp_desc();
+        const TCBMPDESC &desc = efx.desc.bmp_desc();
         out << "$bitmap effect " << bmpEffectWord(desc) << " starttime " << desc.waittime;
         if (desc.no_early_render)
           out << " no_early_rend";
@@ -309,7 +309,7 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, optref<BriefGlo
         out << " desc \"" << efx.description << "\" show \"" << desc.filename << "\"\n";
       } break;
       case BE_MOVIE: {
-        TCMOVIEDESC &desc = efx.desc.movie_desc();
+        const TCMOVIEDESC &desc = efx.desc.movie_desc();
         out << "$movie position " << desc.x << "," << desc.y << " fps " << desc.fps
             << (desc.looping ? " looping" : "") << " starttime " << desc.waittime;
         std::string sm2 = missionFlagTokens(desc.mission_mask_set, true);
@@ -321,7 +321,7 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, optref<BriefGlo
         out << " desc \"" << efx.description << "\" show \"" << desc.filename << "\"\n";
       } break;
       case BE_SND: {
-        TCSNDDESC &desc = efx.desc.snd_desc();
+        const TCSNDDESC &desc = efx.desc.snd_desc();
         out << "$sound " << (desc.once ? "once" : "") << " starttime " << desc.waittime;
         std::string sm2 = missionFlagTokens(desc.mission_mask_set, true);
         std::string um2 = missionFlagTokens(desc.mission_mask_unset, false);
@@ -332,7 +332,7 @@ bool BriefEditSaveScreens(const std::filesystem::path &filename, optref<BriefGlo
         out << " desc \"" << efx.description << "\" play \"" << desc.filename << "\"\n";
       } break;
       case BE_BUTTON: {
-        TCBUTTONDESC &desc = efx.desc.button_desc();
+        const TCBUTTONDESC &desc = efx.desc.button_desc();
         std::string ctype;
         switch (desc.click_type) {
         case tc_click_type::click_down: ctype = "ClickDown"; break;

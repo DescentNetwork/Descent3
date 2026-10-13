@@ -659,7 +659,7 @@ void DrawVirusLightning(object &obj);
 // Actually, only draws those either in front or in back of the object, based on front_flag
 void DrawObjectSelectionBrackets(object& obj, bool front_flag) {
   vector3 viewvec;
-  poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
+  const poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
   float line_len;
   // Get vector from object to viewer
   g3_GetViewPosition(viewvec);
@@ -771,7 +771,7 @@ static inline bool object_object_AABB(const object &obj1, const object &obj2) {
 }
 // Given a face, computes the upper left corner of the face
 void ComputeDebugVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff, vector3 &center) {
-  room &rp = Rooms[roomnum];
+  const room &rp = Rooms[roomnum];
   matrix face_matrix, trans_matrix;
   vector3 fvec;
   vector3 avg_vert;
@@ -863,11 +863,11 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_le
 void DrawRoomVisPnts(const object &obj) {
   int roomnum = obj.roomnum;
   if ((!ROOMNUM_OUTSIDE(roomnum)) && (roomnum != -1) && (Rooms[roomnum].used)) {
-    room &rp = Rooms[roomnum];
+    const room &rp = Rooms[roomnum];
     int t;
     int j;
     for (t = 0; t < rp.num_portals; t++) {
-      face &src_fp = rp.faces[rp.portals[t].portal_face];
+      const face &src_fp = rp.faces[rp.portals[t].portal_face];
       float src_width, src_height;
       vector3 src_upper_left, src_center;
       matrix src_matrix;
@@ -996,7 +996,7 @@ void DrawDebugInfo(const object &obj) {
 #endif
 // Draw a shard
 void DrawShardObject(object& obj) {
-  shard_info_s &si = obj.rtype.shard_info();
+  const shard_info_s &si = obj.rtype.shard_info();
   g3Point rotated_points[3];
   std::vector<g3Point *> pointlist(3);
   uint8_t codes_and = 0xff;

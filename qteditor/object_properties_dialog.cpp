@@ -33,7 +33,7 @@ ObjectPropertiesDialog::ObjectPropertiesDialog(int objIndex, QWidget *parent)
   if (tabs == nullptr || m_objIndex < 0 || m_objIndex > Highest_object_index)
     return;
 
-  object &obj = Objects[m_objIndex];
+  const object &obj = Objects[m_objIndex];
   if (obj.type == object_type_e::none)
     return;
 

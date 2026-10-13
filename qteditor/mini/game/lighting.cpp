@@ -251,7 +251,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
                                  float blue_scale, optref<const vector3> light_direction, float dot_range) {
   int i, lm_handle, t;
   vector3 rad;
-  room_t &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[roomnum];
   vector3 Light_min_xyz;
   vector3 Light_max_xyz;
   uint16_t lmilist[MAX_DYNAMIC_FACES];
@@ -270,7 +270,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
 
   // Now the Light_position is in the submodels frame of reference
   for (i = 0; i < rp.num_faces; i++) {
-    face &fp = rp.faces[i];
+    const face &fp = rp.faces[i];
 
     // check to see if this face is within reach
     if (Light_max_xyz.y() < fp.min_xyz.y() || fp.max_xyz.y() < Light_min_xyz.y() || Light_max_xyz.x() < fp.min_xyz.x() ||
@@ -865,7 +865,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
 void ApplySpecularLightingToWall (room *rp,face *fp,vector3 *pos,float light_dist,float dist_from_plane,float
 red_scale,float green_scale,float blue_scale)
 {
-        special_face &sf = SpecialFaces[fp->special_handle];
+        const special_face &sf = SpecialFaces[fp->special_handle];
 
         if (!(sf.flags))
         {
@@ -998,7 +998,7 @@ void ApplyLightingToObjects(const vector3 &pos, int roomnum, float light_dist, f
     SetModelAnglesAndPos(pm, normalized_time);
 
     for (int t = 0; t < pm.n_models; t++) {
-      bsp_info &sm = pm.submodel[t];
+      const bsp_info &sm = pm.submodel[t];
       if (sm.parent == -1)
         ApplyLightingToSubmodel(*obj, pm, sm, light_dist, red_scale, green_scale, blue_scale, dot_range);
     }
@@ -1037,8 +1037,8 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
   int blue_limit = 31;
 
   for (i = 0; i < num_faces; i++) {
-    room_t &rp = Rooms[facelist[i].room_index];
-    face &fp = rp.faces[facelist[i].face_index];
+    const room_t &rp = Rooms[facelist[i].room_index];
+    const face &fp = rp.faces[facelist[i].face_index];
 
     Q_ASSERT(Rooms[facelist[i].room_index].used);
     Q_ASSERT(facelist[i].face_index < Rooms[facelist[i].room_index].num_faces);
@@ -1317,7 +1317,7 @@ void ClearDynamicLightmaps() {
 
   // Reset volume lights
   for (auto &vol_obj : Dynamic_volume_object_list) {
-    object &obj = Objects[vol_obj.objnum];
+    const object &obj = Objects[vol_obj.objnum];
     if (obj.type == object_type_e::none || obj.handle != vol_obj.handle)
       continue; // object was destroyed this frame
 
@@ -1347,7 +1347,7 @@ void ClearDynamicLightmaps() {
     int dynamic_handle = LightmapInfo[dyn_face.lmi_handle].dynamic;
     int lmi_handle = dyn_face.lmi_handle;
     int lm_handle = LightmapInfo[lmi_handle].lm_handle;
-    lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
+    const lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
 
     uint16_t *src_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
     std::vector<std::vector<uint16_t>> &dest_data = lm_data(lm_handle);
@@ -1546,7 +1546,7 @@ void SetRoomPulse(int roomnum, uint8_t pulse_time, uint8_t pulse_offset) {
 // TODO: MTS: Unused?
 // Returns the total number of bytes needed for volume lighting in this room
 int GetVolumeSizeOfRoom(int roomnum, optref<int> w, optref<int> h, optref<int> d) {
-  room_t &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[roomnum];
   int width = ((rp.max_xyz.x() - rp.min_xyz.x()) / VOLUME_SPACING) + 1;
   int height = ((rp.max_xyz.y() - rp.min_xyz.y()) / VOLUME_SPACING) + 1;
   int depth = ((rp.max_xyz.z() - rp.min_xyz.z()) / VOLUME_SPACING) + 1;
@@ -1923,8 +1923,8 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 // Kills the lighting that a face casts and dampens all the faces that light influences
 void DestroyLight(int roomnum, int facenum) {
   vector3 vecs[MAX_VERTS_PER_FACE], center;
-  room_t &destroy_rp = Rooms[roomnum];
-  face &destroy_fp = destroy_rp.faces[facenum];
+  const room_t &destroy_rp = Rooms[roomnum];
+  const face &destroy_fp = destroy_rp.faces[facenum];
   float r, g, b;
   fvi_face_room_list facelist[MAX_DYNAMIC_FACES];
   int num_faces, i;
@@ -1973,8 +1973,8 @@ void DestroyLight(int roomnum, int facenum) {
   num_faces = fvi_QuickDistFaceList(roomnum, center, sphere_dist, *facelist, MAX_DYNAMIC_FACES);
 
   for (i = 0; i < num_faces; i++) {
-    room_t &rp = Rooms[facelist[i].room_index];
-    face &fp = rp.faces[facelist[i].face_index];
+    const room_t &rp = Rooms[facelist[i].room_index];
+    const face &fp = rp.faces[facelist[i].face_index];
 
     Q_ASSERT(Rooms[facelist[i].room_index].used);
     Q_ASSERT(facelist[i].face_index < Rooms[facelist[i].room_index].num_faces);

@@ -39,7 +39,7 @@
 void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int facenum) {
   int i;
   float left = 1.1f, right = -1, top = 1.1f, bottom = -1;
-  lightmap_object_face &lfp = obj->lm_object.lightmap_faces[subnum][facenum];
+  const lightmap_object_face &lfp = obj->lm_object.lightmap_faces[subnum][facenum];
   int lw = static_cast<int>(lmi_w(lfp.lmi_handle).value_or(0));
   int lh = static_cast<int>(lmi_h(lfp.lmi_handle).value_or(0));
 
@@ -83,7 +83,7 @@ void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int fac
 }
 
 void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surface *sp) {
-  lightmap_object_face &fp = obj->lm_object.lightmap_faces[subnum][facenum];
+  const lightmap_object_face &fp = obj->lm_object.lightmap_faces[subnum][facenum];
   int i, t, lmi_handle;
   int xres, yres;
   int lw, lh;
@@ -213,13 +213,13 @@ void AssignLightmapsToObjectSurfaces(int surface_index, int terrain) {
       continue;
 
     if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {
-      poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
+      const poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
       if (!po.new_style)
         continue;
 
       for (t = 0; t < po.n_models; t++) {
-        bsp_info &sm = po.submodel[t];
+        const bsp_info &sm = po.submodel[t];
 
         if (IsNonRenderableSubmodel(po, t))
           continue;
@@ -229,7 +229,7 @@ void AssignLightmapsToObjectSurfaces(int surface_index, int terrain) {
 
           // Rotate the lightmap  upper left
           object& obj = Objects[i];
-          lightmap_object_face &fp = obj.lm_object.lightmap_faces[t][j];
+          const lightmap_object_face &fp = obj.lm_object.lightmap_faces[t][j];
           lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
 
           if (!rotated[fp.lmi_handle]) {
@@ -267,13 +267,13 @@ void AssignLightmapsToObjectSurfacesForSingleRoom(int surface_index, int roomnum
 
     if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps &&
         Objects[i].roomnum == roomnum) {
-      poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
+      const poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
       if (!po.new_style)
         continue;
 
       for (t = 0; t < po.n_models; t++) {
-        bsp_info &sm = po.submodel[t];
+        const bsp_info &sm = po.submodel[t];
 
         if (IsNonRenderableSubmodel(po, t))
           continue;
@@ -295,7 +295,7 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
       continue;
 
     if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {
-      poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
+      const poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
       if (!po.new_style)
         continue;
@@ -308,7 +308,7 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
         CombineObjectLightmapUVs(Objects[i], lmi_type::room_object);
 
       for (t = 0; t < po.n_models; t++) {
-        bsp_info &sm = po.submodel[t];
+        const bsp_info &sm = po.submodel[t];
 
         if (IsNonRenderableSubmodel(po, t))
           continue;
@@ -384,7 +384,7 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
 
     if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps &&
         Objects[i].roomnum == roomnum) {
-      poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
+      const poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
       if (!po.new_style)
         continue;
@@ -393,7 +393,7 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
       CombineObjectLightmapUVs(Objects[i], lmi_type::room_object);
 
       for (t = 0; t < po.n_models; t++) {
-        bsp_info &sm = po.submodel[t];
+        const bsp_info &sm = po.submodel[t];
 
         if (IsNonRenderableSubmodel(po, t))
           continue;
@@ -451,7 +451,7 @@ int GetTotalObjectFaces(int terrain) {
         continue;
 
       if (Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {
-        poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
+        const poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
         if (!po.new_style)
           continue;
@@ -475,7 +475,7 @@ int GetTotalObjectFacesForSingleRoom(int roomnum) {
         continue;
 
       if (Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {
-        poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
+        const poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
         if (!po.new_style)
           continue;
@@ -847,7 +847,7 @@ int TestObjectLightAdjacency(object& obj, int subnum, int facenum, lmi_type type
   int i, t, k;
   poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
   bsp_info *a_sm = &pm.submodel[subnum];
-  polyface &afp = a_sm->faces[facenum];
+  const polyface &afp = a_sm->faces[facenum];
   vector3 anormal;
 
   vector3 averts[MAX_VERTS_PER_FACE * 5];
@@ -899,7 +899,7 @@ StartOver:
       if (ObjectsAlreadyCombined[i][t])
         continue;
 
-      polyface &bfp = bsm->faces[t];
+      const polyface &bfp = bsm->faces[t];
       vector3 bnormal;
 
       // Don't do combine light sources
@@ -949,11 +949,11 @@ void CombineObjectLightmapUVs(object& obj, lmi_type type) {
   int i, t, k;
   int not_combined = 0;
 
-  poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
+  const poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
   Q_ASSERT(obj.lm_object.used);
 
   for (i = 0; i < pm.n_models; i++) {
-    bsp_info &sm = pm.submodel[i];
+    const bsp_info &sm = pm.submodel[i];
 
     if (IsNonRenderableSubmodel(pm, i))
       continue;
@@ -962,7 +962,7 @@ void CombineObjectLightmapUVs(object& obj, lmi_type type) {
   }
 
   for (i = 0; i < pm.n_models; i++) {
-    bsp_info &sm = pm.submodel[i];
+    const bsp_info &sm = pm.submodel[i];
 
     if (IsNonRenderableSubmodel(pm, i))
       continue;
@@ -975,7 +975,7 @@ void CombineObjectLightmapUVs(object& obj, lmi_type type) {
 
   // Now build lightmaps for any faces that couldn't be combined
   for (i = 0; i < pm.n_models; i++) {
-    bsp_info &sm = pm.submodel[i];
+    const bsp_info &sm = pm.submodel[i];
 
     if (IsNonRenderableSubmodel(pm, i))
       continue;
@@ -1000,7 +1000,7 @@ void CombineObjectLightmapUVs(object& obj, lmi_type type) {
 
   // Free memory
   for (i = 0; i < pm.n_models; i++) {
-    bsp_info &sm = pm.submodel[i];
+    const bsp_info &sm = pm.submodel[i];
 
     if (IsNonRenderableSubmodel(pm, i))
       continue;

@@ -32,7 +32,7 @@ float levelCeiling() {
   float maxy = -1e30f;
   bool any = false;
   for (size_t r = 0; r < Rooms.size(); r++) {
-    room_t &rp = Rooms[r];
+    const room_t &rp = Rooms[r];
     if (!rp.used)
       continue;
     for (int v = 0; v < rp.num_verts; v++) {

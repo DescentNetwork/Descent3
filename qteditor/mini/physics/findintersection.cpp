@@ -2720,8 +2720,8 @@ fvi_hit_type fvi_FindIntersection(fvi_query &fq, fvi_info &hit_data, bool no_sub
     if ((!no_subdivision) && is_long_xz_ray(fq)) {
 
       // Save old pointers
-      fvi_info &save_fvi_hit_data_ptr = hit_data;
-      fvi_query &save_fvi_query_ptr = fq;
+      const fvi_info &save_fvi_hit_data_ptr = hit_data;
+      const fvi_query &save_fvi_query_ptr = fq;
 
       // Copy old data to new data
       fvi_info fvi_new_hit_data = hit_data;
@@ -2970,7 +2970,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 *collision_point, vector3 *co
         vector3 plane_pnt;
         vector3 verts[12];
         vector3 norms[6];
-        poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
+        const poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
         int i, j, k;
         vector3 rel[32];
         float dot[32];
@@ -3202,7 +3202,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 &collision_point, vector3 &co
                            const vector3 &rotvel, const vector3 &velocity) {
   vector3 plane_pnt;
   vector3 verts[12];
-  poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
+  const poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
   int i;
   vector3 rel[32];
   float dot[32];
@@ -4366,7 +4366,7 @@ void fvi_rooms_objs(void) {
 
   for (i = 0; i < fvi_num_rooms_visited; i++) {
     int roomnum = fvi_rooms_visited[i];
-    room_t &cur_room = Rooms[roomnum];
+    const room_t &cur_room = Rooms[roomnum];
     Q_ASSERT((fvi_visit_list[roomnum >> 3] & (0x01 << (roomnum % 8))) != 0);
     Q_ASSERT(roomnum >= 0 && roomnum < Rooms.size() && cur_room.used);
 
