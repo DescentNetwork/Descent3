@@ -23,7 +23,6 @@
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
-#include <QDataStream>
 #include <QFileInfo>
 #include <QMenu>
 #include <QDockWidget>
@@ -54,6 +53,7 @@
 #include "hog_dialog.h"
 #include "level_ops.h"
 #include "object.h"
+#include <posix_stream.h>
 #include "render.h"
 #include "ai_settings_dialog.h"
 #include "ambient_sound_patterns_dialog.h"
@@ -1466,129 +1466,62 @@ void MainWindow::onSelectObject(int objnum) {
 // ====== CLIPBOARD OPERATIONS ======
 // Qt clipboard integration. Objects are serialized via a custom MIME type
 // so the system clipboard owns the data lifetime. The object owns its
-// std::string/std::vector/std::unique_ptr members, so it is streamed
-// field-by-field instead of copied as raw bytes.
+// std::string/std::vector/std::unique_ptr members, so it is (de)serialized
+// with the object stream operators rather than copied as raw bytes.
 static const char *kObjectMimeType = "application/x-descent3-editor-object";
 
-// Serializes the editor-relevant state of an object.
+// Serializes the object record (including its model lightmaps) into a byte
+// buffer using the object stream operator operator<<(byte_ostream&).
+namespace {
+// Growable in-memory byte sink for the object stream operators. posix_ostream
+// wraps a fixed fmemopen buffer and silently overruns it, so the clipboard
+// serializer writes into a std::vector that grows as needed.
+class byte_vector_ostream : public byte_ostream {
+public:
+  byte_ostream &put(uint8_t data) override {
+    m_data.push_back(data);
+    m_pos = m_data.size();
+    return *this;
+  }
+
+  byte_ostream &write(const void *data, size_t length) override {
+    const auto *first = static_cast<const uint8_t *>(data);
+    m_data.insert(m_data.end(), first, first + length);
+    m_pos = m_data.size();
+    return *this;
+  }
+
+  bool seek(off_t off, std::ios_base::seekdir dir = std::ios_base::beg) const override {
+    if (dir != std::ios_base::beg || off < 0 || static_cast<size_t>(off) > m_data.size())
+      return false;
+    m_pos = static_cast<size_t>(off);
+    return true;
+  }
+
+  off_t tell() const override { return static_cast<off_t>(m_pos); }
+  size_t size() const override { return m_data.size(); }
+  bool eof() const override { return m_pos >= m_data.size(); }
+
+  const std::vector<uint8_t> &buffer() const { return m_data; }
+
+private:
+  std::vector<uint8_t> m_data;
+  mutable size_t m_pos = 0;
+};
+} // namespace
+
 static QByteArray serializeObject(const object &obj) {
-  QByteArray data;
-  QDataStream out(&data, QIODevice::WriteOnly);
-  out.setVersion(QDataStream::Qt_5_0);
-
-  out << reinterpret_cast<const quint8&>(obj.type) << reinterpret_cast<const quint8&>(obj.dummy_type)
-      << quint16(obj.id) << quint32(std::bit_cast<uint32_t>(obj.flags));
-  out << QString::fromStdString(obj.name);
-  out << qint32(obj.handle) << qint16(obj.next) << qint16(obj.prev);
-  out << reinterpret_cast<const quint8&>(obj.control_type) << reinterpret_cast<const quint8&>(obj.movement_type)
-      << reinterpret_cast<const quint8&>(obj.render_type) << reinterpret_cast<const quint8&>(obj.lighting_render_type);
-  out << (obj.roomnum ? qint32(static_cast<int32_t>(*obj.roomnum)) : qint32(-1));
-  out << obj.pos;
-  out << obj.orient;
-  out << obj.last_pos;
-  out << quint16(obj.renderframe);
-  out << obj.wall_sphere_offset;
-  out << obj.anim_sphere_offset;
-  out << obj.size << obj.shields;
-  out << reinterpret_cast<const quint8&>(obj.contains_type) << qint8(obj.contains_id) << qint8(obj.contains_count);
-  out << obj.creation_time << obj.lifeleft << obj.lifetime;
-  out << qint32(obj.parent_handle) << qint32(obj.attach_ultimate_handle)
-      << qint32(obj.attach_parent_handle);
-  QVector<qint32> children;
-  children.reserve(int(obj.attach_children.size()));
-  for (int32_t c : obj.attach_children)
-    children.push_back(c);
-  out << children;
-  out << reinterpret_cast<const quint8&>(obj.weapon_fire_flags) << reinterpret_cast<const quint8&>(obj.attach_type) << obj.attach_dist;
-  out << obj.min_xyz;
-  out << obj.max_xyz;
-  out << obj.impact_size << obj.impact_time << obj.impact_player_damage << obj.impact_generic_damage
-      << obj.impact_force;
-  out << qint32(obj.change_flags) << qint32(obj.generic_nonvis_flags) << qint32(obj.generic_sent_nonvis);
-  out << quint16(obj.position_counter);
-  out << QString::fromStdString(obj.custom_default_script_name);
-  out << QString::fromStdString(obj.custom_default_module_name);
-
-  // Editor-facing polygon model info (the runtime unions are not serialized;
-  // they never hold heap data in the editor).
-  const polyobj_info &pi = obj.rtype.pobj_info();
-  out << qint16(pi.model_num) << qint16(pi.dying_model_num);
-  out << pi.anim_start_frame << pi.anim_frame << pi.anim_end_frame << pi.anim_time;
-  out << quint32(pi.anim_flags) << pi.max_speed;
-  out << quint32(pi.subobj_flags) << qint32(pi.tmap_override);
-
-  return data;
+  byte_vector_ostream out;
+  out << obj;
+  const std::vector<uint8_t> &bytes = out.buffer();
+  return QByteArray(reinterpret_cast<const char *>(bytes.data()), static_cast<qsizetype>(bytes.size()));
 }
 
-// Restores editor-relevant state into a fresh object.
+// Restores an object record from clipboard bytes using operator>>(byte_istream&).
 static object deserializeObject(const QByteArray &data) {
-  QDataStream in(data);
-  in.setVersion(QDataStream::Qt_5_0);
-
-  object obj; // default-constructed: empty strings, null smart pointers
-  quint8 b8 = 0;
-  quint16 u16 = 0;
-  quint32 u32 = 0;
-  qint32 i32 = 0;
-  qint16 i16 = 0;
-
-  in >> reinterpret_cast<quint8&>(obj.type);
-  in >> reinterpret_cast<quint8&>(obj.dummy_type);
-  in >> u16; obj.id = u16;
-  in >> u32; obj.flags = std::bit_cast<object_flags_t>(u32);
-  QString name;
-  in >> name; obj.name = name.toStdString();
-  in >> i32; obj.handle = i32;
-  in >> i16; obj.next = i16;
-  in >> i16; obj.prev = i16;
-  in >> reinterpret_cast<quint8&>(obj.control_type);
-  in >> reinterpret_cast<quint8&>(obj.movement_type);
-  in >> reinterpret_cast<quint8&>(obj.render_type);
-  in >> reinterpret_cast<quint8&>(obj.lighting_render_type);
-  in >> obj.roomnum;
-  in >> obj.pos;
-  in >> obj.orient;
-  in >> obj.last_pos;
-  in >> obj.renderframe;
-  in >> obj.wall_sphere_offset;
-  in >> obj.anim_sphere_offset;
-  in >> obj.size >> obj.shields;
-  in >> reinterpret_cast<quint8&>(obj.contains_type);
-  qint8 i8 = 0;
-  in >> i8; obj.contains_id = i8;
-  in >> i8; obj.contains_count = i8;
-  in >> obj.creation_time >> obj.lifeleft >> obj.lifetime;
-  in >> i32; obj.parent_handle = i32;
-  in >> i32; obj.attach_ultimate_handle = i32;
-  in >> i32; obj.attach_parent_handle = i32;
-  QVector<qint32> children;
-  in >> children;
-  obj.attach_children.resize(int(children.size()));
-  for (int i = 0; i < int(children.size()); ++i)
-    obj.attach_children[size_t(i)] = children[i];
-  in >> b8; reinterpret_cast<quint8&>(obj.weapon_fire_flags) = b8;
-  in >> reinterpret_cast<quint8&>(obj.attach_type);
-  in >> obj.attach_dist;
-  in>> obj.min_xyz;
-  in >> obj.max_xyz;
-  in >> obj.impact_size >> obj.impact_time >> obj.impact_player_damage >> obj.impact_generic_damage
-      >> obj.impact_force;
-  in >> i32; obj.change_flags = i32;
-  in >> i32; obj.generic_nonvis_flags = i32;
-  in >> i32; obj.generic_sent_nonvis = i32;
-  in >> u16; obj.position_counter = u16;
-  in >> name; obj.custom_default_script_name = name.toStdString();
-  in >> name; obj.custom_default_module_name = name.toStdString();
-
-  polyobj_info &pi = obj.rtype.pobj_info();
-  in >> i16; pi.model_num = i16;
-  in >> i16; pi.dying_model_num = i16;
-  in >> pi.anim_start_frame >> pi.anim_frame >> pi.anim_end_frame >> pi.anim_time;
-  in >> u32; pi.anim_flags = u32;
-  in >> pi.max_speed;
-  in >> u32; pi.subobj_flags = u32;
-  in >> i32; pi.tmap_override = i32;
-
+  posix_istream in(const_cast<char *>(data.constData()), static_cast<size_t>(data.size()), std::ios_base::in);
+  object obj{};
+  in >> obj;
   return obj;
 }
 
