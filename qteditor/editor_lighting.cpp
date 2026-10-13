@@ -78,7 +78,7 @@ vector3 ScratchUVecs[MAX_LIGHTMAP_INFOS];
 std::array<room_light_t, MAX_ROOMS + MAX_PALETTE_ROOMS> room_light;
 room_light_t global_light = {1.0f, 0.0f, 0.0f, 0.0f};
 
-uint8_t *TerrainLightSpeedup[MAX_SATELLITES];
+std::vector<uint8_t> TerrainLightSpeedup[MAX_SATELLITES];
 
 int LightSpacing = LIGHTMAP_SPACING;
 int Square_surfaces = 0;
@@ -86,8 +86,8 @@ int Lightmaps_for_rad = 0;
 
 void DoTerrainDynamicTable();
 
-uint8_t *Lightmap_mask = NULL;
-static uint8_t *Lmi_spoken_for;
+std::vector<uint8_t> Lightmap_mask;
+static std::vector<uint8_t> Lmi_spoken_for;
 int Squeeze_lightmap_handle = -1;
 
 // Allocates the shared "squeeze" lightmap.  lm_AllocLightmap now returns a
@@ -441,14 +441,9 @@ void SqueezeLightmaps(int external, int target_roomnum) {
   int i, t, k;
   LOG_INFO("Squeezing %s lightmaps, please wait...\n", external ? "external" : "internal");
 
-  Lmi_spoken_for = mem_rmalloc<uint8_t>(MAX_LIGHTMAP_INFOS);
-  Lightmap_mask = (uint8_t *)mem_malloc(128 * 128);
+  Lmi_spoken_for.assign(MAX_LIGHTMAP_INFOS, 0);
+  Lightmap_mask.assign(128 * 128, 0);
   Squeeze_lightmap_handle = -1;
-
-  Q_ASSERT(Lightmap_mask);
-  Q_ASSERT(Lmi_spoken_for);
-  memset(Lmi_spoken_for, 0, MAX_LIGHTMAP_INFOS);
-  memset(Lightmap_mask, 0, 128 * 128);
 
   // Go through all the rooms and sqeeze them one by one
   for (i = 0; i < Rooms.size(); i++) {
@@ -489,7 +484,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
       int src_h = lmi->height;
 
       if (Squeeze_lightmap_handle == -1) {
-        memset(Lightmap_mask, 0, 128 * 128);
+        std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
         Squeeze_lightmap_handle = AllocSqueezeLightmap();
         
       }
@@ -525,7 +520,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
         Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
         GameLightmaps.release(Squeeze_lightmap_handle);
 
-        memset(Lightmap_mask, 0, 128 * 128);
+        std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
         Squeeze_lightmap_handle = AllocSqueezeLightmap();
         
 
@@ -566,7 +561,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
           int src_h = lmi->height;
 
           if (Squeeze_lightmap_handle == -1) {
-            memset(Lightmap_mask, 0, 128 * 128);
+            std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
             Squeeze_lightmap_handle = AllocSqueezeLightmap();
             
           }
@@ -612,7 +607,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
             GameLightmaps.release(Squeeze_lightmap_handle);
 
-            memset(Lightmap_mask, 0, 128 * 128);
+            std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
             Squeeze_lightmap_handle = AllocSqueezeLightmap();
             
 
@@ -668,7 +663,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
           int src_h = lmi->height;
 
           if (Squeeze_lightmap_handle == -1) {
-            memset(Lightmap_mask, 0, 128 * 128);
+            std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
             Squeeze_lightmap_handle = AllocSqueezeLightmap();
             
           }
@@ -714,7 +709,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
             GameLightmaps.release(Squeeze_lightmap_handle);
 
-            memset(Lightmap_mask, 0, 128 * 128);
+            std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
             Squeeze_lightmap_handle = AllocSqueezeLightmap();
             
 
@@ -736,8 +731,6 @@ void SqueezeLightmaps(int external, int target_roomnum) {
     }
   }
 
-  mem_free(Lightmap_mask);
-  mem_rmfree(Lmi_spoken_for);
   LOG_INFO("Done squeezing lightmaps.\n");
 }
 
@@ -905,7 +898,7 @@ void DoRadiosityForRooms() {
   // Figure out memory for volume lights
   int vw, vh, vd;
   for (int roomnum = 0; roomnum < MAX_ROOMS; roomnum++) {
-    Volume_elements[roomnum] = NULL;
+    Volume_elements[roomnum].clear();
 
     if (Rooms[roomnum].used && !Rooms[roomnum].flags.external && !Rooms[roomnum].flags.no_light) {
       int num_bytes = GetVolumeSizeOfRoom(roomnum, vw, vh, vd);
@@ -916,8 +909,7 @@ void DoRadiosityForRooms() {
 
       Rooms[roomnum].volume_lights.resize(vw * vh * vd);
 
-      Volume_elements[roomnum] = mem_rmalloc<volume_element>(vw * vh * vd);
-      Q_ASSERT(Volume_elements[roomnum]);
+      Volume_elements[roomnum].resize(vw * vh * vd);
 
       // Now go through and find all the valid spectra points
       float cur_z = Rooms[roomnum].min_xyz.z() + 0.1f;
@@ -1101,7 +1093,7 @@ void DoRadiosityForRooms() {
       }
 
       AssignVolumeSpectraToRoom(i);
-      mem_rmfree(Volume_elements[i]);
+      Volume_elements[i].clear();
     }
   }
 
@@ -1773,7 +1765,7 @@ void DoRadiosityForTerrain() {
   int i, t, raynum = 0;
   int extra_surfaces = 0, total_surfaces = 0;
   int surf_index = 0;
-  spectra *terrain_sums[2];
+  std::vector<spectra> terrain_sums[2];
   int room_surf_start, obj_surf_start;
 
   int do_dynamic = 0;
@@ -1791,10 +1783,8 @@ void DoRadiosityForTerrain() {
     return;
   }
 
-  for (i = 0; i < Terrain_sky.num_satellites; i++) {
-    TerrainLightSpeedup[i] = (uint8_t *)mem_malloc(TERRAIN_WIDTH * TERRAIN_DEPTH);
-    Q_ASSERT(TerrainLightSpeedup[i]);
-  }
+  for (i = 0; i < Terrain_sky.num_satellites; i++)
+    TerrainLightSpeedup[i].resize(TERRAIN_WIDTH * TERRAIN_DEPTH);
 
   if (QMessageBox::warning(nullptr,
       "High computational complexity",
@@ -1826,9 +1816,8 @@ void DoRadiosityForTerrain() {
   ClearAllObjectLightmaps(1);
 
   // Allocate memory
-  terrain_sums[0] = mem_rmalloc<spectra>(TERRAIN_WIDTH * TERRAIN_DEPTH);
-  terrain_sums[1] = mem_rmalloc<spectra>(TERRAIN_WIDTH * TERRAIN_DEPTH);
-  Q_ASSERT(terrain_sums[0] && terrain_sums[1]);
+  terrain_sums[0].resize(TERRAIN_WIDTH * TERRAIN_DEPTH);
+  terrain_sums[1].resize(TERRAIN_WIDTH * TERRAIN_DEPTH);
 
   Light_surfaces.resize(total_surfaces);
 
@@ -2122,11 +2111,6 @@ void DoRadiosityForTerrain() {
 
   // Free memory
   Light_surfaces.clear();
-  mem_rmfree(terrain_sums[0]);
-  mem_rmfree(terrain_sums[1]);
-
-  for (i = 0; i < Terrain_sky.num_satellites; i++)
-    mem_free(TerrainLightSpeedup[i]);
 
   UpdateTerrainLightmaps();
   SqueezeLightmaps(1, -1);
@@ -2527,7 +2511,7 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
 
 #define MAX_COMBINES 50
 #define LM_ADJACENT_FACE_THRESHOLD 0.999f
-uint8_t *RoomsAlreadyCombined[MAX_ROOMS];
+std::vector<uint8_t> RoomsAlreadyCombined[MAX_ROOMS];
 
 /*
 // Returns number of verts in dest if face a can be safely combined with face b
@@ -2843,10 +2827,7 @@ void ComputeAllRoomLightmapUVs(int external) {
       if (!external && Rooms[i].flags.external)
         continue;
 
-      RoomsAlreadyCombined[i] = mem_rmalloc<uint8_t>(Rooms[i].num_faces);
-      Q_ASSERT(RoomsAlreadyCombined[i]);
-      for (k = 0; k < Rooms[i].num_faces; k++)
-        RoomsAlreadyCombined[i][k] = 0;
+      RoomsAlreadyCombined[i].assign(Rooms[i].num_faces, 0);
     }
   }
 
@@ -2862,7 +2843,7 @@ void ComputeAllRoomLightmapUVs(int external) {
         continue;
 
       for (t = 0; t < Rooms[i].num_faces; t++) {
-        if (*(RoomsAlreadyCombined[i] + t) == 0)
+        if (RoomsAlreadyCombined[i][t] == 0)
           TestLightAdjacency(i, t, external);
       }
     }
@@ -2911,7 +2892,7 @@ void ComputeAllRoomLightmapUVs(int external) {
       if (!external && Rooms[i].flags.external)
         continue;
 
-      mem_rmfree(RoomsAlreadyCombined[i]);
+      RoomsAlreadyCombined[i].clear();
     }
   }
 }
@@ -3135,7 +3116,7 @@ void CleanupSpecularLighting(int external) {
       room_t *rp = &Rooms[i];
 
       for (t = 0; t < 4; t++) {
-        mem_rmfree(Room_strongest_value[i][t]);
+        Room_strongest_value[i][t].clear();
       }
 
       for (t = 0; t < rp->num_faces; t++) {
@@ -3253,9 +3234,7 @@ void SetupSpecularLighting(int external) {
       }
 
       for (t = 0; t < 4; t++) {
-        Room_strongest_value[i][t] = mem_rmalloc<float>(rp->num_faces);
-        Q_ASSERT(Room_strongest_value[i][t]);
-        memset(Room_strongest_value[i][t], 0, sizeof(float) * rp->num_faces);
+        Room_strongest_value[i][t].assign(rp->num_faces, 0.0f);
       }
 
       for (t = 0; t < rp->num_faces; t++) {

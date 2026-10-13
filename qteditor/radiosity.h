@@ -179,7 +179,7 @@ struct rad_point {
   g3_clip_codes_t code;
 };
 
-extern float *Room_strongest_value[][4];
+extern std::vector<float> Room_strongest_value[][4];
 
 extern bool Ignore_terrain;
 extern bool Ignore_satellites;
@@ -198,7 +198,7 @@ extern rad_surface *rad_MaxSurface;
 
 extern std::vector<float> rad_FormFactors;
 extern std::span<rad_surface> rad_Surfaces;
-extern volume_element *Volume_elements[];
+extern std::vector<volume_element> Volume_elements[];
 
 extern int UseVolumeLights;
 extern int Calculate_specular_lighting;

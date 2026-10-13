@@ -831,7 +831,7 @@ void CalculateVolumeLightsForRay(float total_sphere_dist, vector3& src_center) {
       }
 
       for (int roomnum = 0; roomnum < MAX_VOLUME_ELEMENTS; roomnum++) {
-        if (Volume_elements[roomnum] == NULL)
+        if (Volume_elements[roomnum].empty())
           continue;
         if (check_room[roomnum] == 0)
           continue;

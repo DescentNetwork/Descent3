@@ -59,12 +59,12 @@ int UseVolumeLights = 0; // User selectable to do volumelights
 int Calculate_specular_lighting = 0;
 
 // Specular variable
-float *Room_strongest_value[MAX_ROOMS][4];
+std::vector<float> Room_strongest_value[MAX_ROOMS][4];
 
 // Tells radiosity renderer to do volume lighting
 int Do_volume_lighting = 0;
 
-volume_element *Volume_elements[MAX_VOLUME_ELEMENTS];
+std::vector<volume_element> Volume_elements[MAX_VOLUME_ELEMENTS];
 
 extern int Shoot_from_patch;
 
