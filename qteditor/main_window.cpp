@@ -1470,16 +1470,6 @@ void MainWindow::onSelectObject(int objnum) {
 // field-by-field instead of copied as raw bytes.
 static const char *kObjectMimeType = "application/x-descent3-editor-object";
 
-static void writeVector(QDataStream &out, const vector3 &v) {
-  out << v.x() << v.y() << v.z();
-}
-
-static vector3 readVector(QDataStream &in) {
-  float x = 0, y = 0, z = 0;
-  in >> x >> y >> z;
-  return vector3{x, y, z};
-}
-
 // Serializes the editor-relevant state of an object.
 static QByteArray serializeObject(const object &obj) {
   QByteArray data;
@@ -1493,13 +1483,12 @@ static QByteArray serializeObject(const object &obj) {
   out << reinterpret_cast<const quint8&>(obj.control_type) << reinterpret_cast<const quint8&>(obj.movement_type)
       << reinterpret_cast<const quint8&>(obj.render_type) << reinterpret_cast<const quint8&>(obj.lighting_render_type);
   out << (obj.roomnum ? qint32(static_cast<int32_t>(*obj.roomnum)) : qint32(-1));
-  writeVector(out, obj.pos);
-  for (int i = 0; i < 9; ++i)
-    out << obj.orient.a1d[i];
-  writeVector(out, obj.last_pos);
+  out << obj.pos;
+  out << obj.orient;
+  out << obj.last_pos;
   out << quint16(obj.renderframe);
-  writeVector(out, obj.wall_sphere_offset);
-  writeVector(out, obj.anim_sphere_offset);
+  out << obj.wall_sphere_offset;
+  out << obj.anim_sphere_offset;
   out << obj.size << obj.shields;
   out << reinterpret_cast<const quint8&>(obj.contains_type) << qint8(obj.contains_id) << qint8(obj.contains_count);
   out << obj.creation_time << obj.lifeleft << obj.lifetime;
@@ -1511,8 +1500,8 @@ static QByteArray serializeObject(const object &obj) {
     children.push_back(c);
   out << children;
   out << reinterpret_cast<const quint8&>(obj.weapon_fire_flags) << reinterpret_cast<const quint8&>(obj.attach_type) << obj.attach_dist;
-  writeVector(out, obj.min_xyz);
-  writeVector(out, obj.max_xyz);
+  out << obj.min_xyz;
+  out << obj.max_xyz;
   out << obj.impact_size << obj.impact_time << obj.impact_player_damage << obj.impact_generic_damage
       << obj.impact_force;
   out << qint32(obj.change_flags) << qint32(obj.generic_nonvis_flags) << qint32(obj.generic_sent_nonvis);
@@ -1556,14 +1545,13 @@ static object deserializeObject(const QByteArray &data) {
   in >> reinterpret_cast<quint8&>(obj.movement_type);
   in >> reinterpret_cast<quint8&>(obj.render_type);
   in >> reinterpret_cast<quint8&>(obj.lighting_render_type);
-  in >> i32; obj.roomnum = (i32 == -1) ? index_t{} : index_t{static_cast<uint32_t>(i32)};
-  obj.pos = readVector(in);
-  for (int i = 0; i < 9; ++i)
-    in >> obj.orient.a1d[i];
-  obj.last_pos = readVector(in);
-  in >> u16; obj.renderframe = u16;
-  obj.wall_sphere_offset = readVector(in);
-  obj.anim_sphere_offset = readVector(in);
+  in >> obj.roomnum;
+  in >> obj.pos;
+  in >> obj.orient;
+  in >> obj.last_pos;
+  in >> obj.renderframe;
+  in >> obj.wall_sphere_offset;
+  in >> obj.anim_sphere_offset;
   in >> obj.size >> obj.shields;
   in >> reinterpret_cast<quint8&>(obj.contains_type);
   qint8 i8 = 0;
@@ -1581,8 +1569,8 @@ static object deserializeObject(const QByteArray &data) {
   in >> b8; reinterpret_cast<quint8&>(obj.weapon_fire_flags) = b8;
   in >> reinterpret_cast<quint8&>(obj.attach_type);
   in >> obj.attach_dist;
-  obj.min_xyz = readVector(in);
-  obj.max_xyz = readVector(in);
+  in>> obj.min_xyz;
+  in >> obj.max_xyz;
   in >> obj.impact_size >> obj.impact_time >> obj.impact_player_damage >> obj.impact_generic_damage
       >> obj.impact_force;
   in >> i32; obj.change_flags = i32;

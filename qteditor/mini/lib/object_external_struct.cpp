@@ -120,9 +120,8 @@ byte_ostream& operator<<(byte_ostream& output, const light_info& data)
 }
 
 //-----------------------------------------------------------------------------
-// Lightmap cleanup for the per-face u2/v2 arrays the object record loader
-// allocates (below).  The container vectors free themselves; only the float
-// blocks are heap owned.
+// Lightmap cleanup for the lightmap_object stream operator.  All storage is
+// owned by the container's own vectors, so only the bookkeeping is reset here.
 //-----------------------------------------------------------------------------
 
 void ClearObjectLightmaps(object *obj) {
@@ -132,10 +131,8 @@ void ClearObjectLightmaps(object *obj) {
 
   for (auto &faces : obj->lm_object.lightmap_faces) {
     for (auto &f : faces) {
-      delete[] f.u2;
-      delete[] f.v2;
-      f.u2 = nullptr;
-      f.v2 = nullptr;
+      f.u2.clear();
+      f.v2.clear();
       f.num_verts = 0;
       f.lmi_handle = std::numeric_limits<uint16_t>::max();
     }
@@ -165,69 +162,6 @@ static byte_ostream& writeByteString(byte_ostream& output, const std::string& da
   output << len;
   if (len)
     output.write(data.data(), len);
-  return output;
-}
-
-// Reads the lightmap block that follows an object record in a level file
-// (present whenever the lmdata byte is non-zero).  The per-face u2/v2 arrays
-// are heap-allocated here and released by ClearObjectLightmaps().  format >=
-// 58 files store the face rvec/uvec vectors; older ones do not.
-static byte_istream& readObjectLightmaps(byte_istream& input, object& data, int format) {
-  uint8_t num_models = 0;
-  input >> num_models;
-  data.lm_object.num_models = num_models;
-  data.lm_object.num_faces.clear();
-  data.lm_object.lightmap_faces.clear();
-
-  for (int m = 0; m < num_models; m++) {
-    int16_t num_faces = 0;
-    input >> num_faces;
-    data.lm_object.num_faces.push_back(num_faces);
-    auto &faces = data.lm_object.lightmap_faces.emplace_back();
-    faces.resize(num_faces);
-    for (int t = 0; t < num_faces; t++) {
-      lightmap_object_face &f = faces[t];
-      input >> f.lmi_handle;
-      if (format >= 58) {
-        if (format <= 59) {
-          vector3 pad;
-          input >> pad;
-        }
-        input >> f.rvec >> f.uvec;
-      } else {
-        f.rvec = {};
-        f.uvec = {};
-        f.uvec.y() = 1;
-      }
-      uint8_t nv = 0;
-      input >> nv;
-      f.num_verts = nv;
-      f.u2 = new float[nv];
-      f.v2 = new float[nv];
-      for (int k = 0; k < nv; k++)
-        input >> f.u2[k] >> f.v2[k];
-    }
-  }
-  data.lm_object.used = 1;
-  return input;
-}
-
-static byte_ostream& writeObjectLightmaps(byte_ostream& output, const object& data) {
-  if (!data.lm_object.used)
-    return output << static_cast<uint8_t>(0);
-
-  output << static_cast<uint8_t>(1);
-  output << data.lm_object.num_models;
-  for (size_t m = 0; m < data.lm_object.lightmap_faces.size(); m++) {
-    output << static_cast<int16_t>(data.lm_object.num_faces[m]);
-    const auto &faces = data.lm_object.lightmap_faces[m];
-    for (const lightmap_object_face &f : faces) {
-      output << f.lmi_handle << f.rvec << f.uvec;
-      output << f.num_verts;
-      for (int k = 0; k < f.num_verts; k++)
-        output << f.u2[k] << f.v2[k];
-    }
-  }
   return output;
 }
 
@@ -272,10 +206,7 @@ byte_istream& operator>>(byte_istream& input, object& data)
   readByteString(input, data.custom_default_script_name);
   readByteString(input, data.custom_default_module_name);
 
-  uint8_t lmdata = 0;
-  input >> lmdata;
-  if (lmdata)
-    readObjectLightmaps(input, data, 119);
+  input >> data.lm_object;
   return input;
 }
 
@@ -304,5 +235,6 @@ byte_ostream& operator<<(byte_ostream& output, const object& data) {
   writeByteString(output, data.custom_default_script_name);
   writeByteString(output, data.custom_default_module_name);
 
-  return writeObjectLightmaps(output, data);
+  output << data.lm_object;
+  return output;
 }

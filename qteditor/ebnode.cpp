@@ -644,7 +644,7 @@ void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
         vector3 cvec = rp->path_pnt - rp->portals[i].path_pnt;
 
         scalar len = vm_NormalizeVector(vec);
-        scalar cproj = vm_Dot3Product(cvec, vec);
+        scalar cproj = vector3::dot(cvec, vec);
 
         if (len >= cproj && cproj >= 0.0f) {
           vector3 cxline = cproj * vec;

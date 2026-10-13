@@ -85,7 +85,7 @@ static void EditorDeleteTriggerByRoomFace(int roomnum, int facenum) {
 // Helper: NormalsAreSame
 // ============================================================================
 static inline bool NormalsAreSame(const vector3 *n0, const vector3 *n1) {
-  scalar d = vm_Dot3Product(*n0, *n1);
+  scalar d = vector3::dot(*n0, *n1);
   return (d > 0.999f);
 }
 
@@ -226,11 +226,11 @@ bool FaceIsPlanar(int nv, std::vector<int16_t>& face_verts, vector3& normal, std
 
   float average_d = 0;
   for (int v = 0; v < nv; v++)
-    average_d += vm_Dot3Product(verts[face_verts[v]], normal);
+    average_d += vector3::dot(verts[face_verts[v]], normal);
   average_d /= nv;
 
   for (int v = 0; v < nv; v++) {
-    float d = vm_Dot3Product(verts[face_verts[v]], normal);
+    float d = vector3::dot(verts[face_verts[v]], normal);
     if (fabs(d - average_d) > POINT_TO_PLANE_EPSILON)
       return false;
   }
@@ -536,8 +536,8 @@ void AssignUVsToFace(int roomnum, int facenum, roomUVL *uva, roomUVL *uvb, int v
 
     tvec = rp.verts[rv] - *vv0;
 
-    scalar rproj = vm_Dot3Product(tvec, rvec);
-    scalar fproj = vm_Dot3Product(tvec, fvec);
+    scalar rproj = vector3::dot(tvec, rvec);
+    scalar fproj = vector3::dot(tvec, fvec);
 
     fp->face_uvls[fv].u = uvlo.u + (ruvmag.u * rproj) + (fuvmag.u * fproj);
     fp->face_uvls[fv].v = uvlo.v + (ruvmag.v * rproj) + (fuvmag.v * fproj);

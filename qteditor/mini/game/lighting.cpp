@@ -305,7 +305,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
       // If this is a directional light, check for backfaces
       vector3 norm_vec = pos - rp->verts[fp->face_verts[0]];
 
-      if (vm_Dot3Product(norm_vec, lmi_ptr->normal) < 0) {
+      if (vector3::dot(norm_vec, lmi_ptr->normal) < 0) {
         // Backface, skip this light
         continue;
       }
@@ -313,7 +313,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
       int in_front = 0; //
       for (t = 0; t < fp->num_verts && in_front == 0; t++) {
         norm_vec = rp->verts[fp->face_verts[t]] - pos;
-        if (vm_Dot3Product(norm_vec, *light_direction) > 0)
+        if (vector3::dot(norm_vec, *light_direction) > 0)
           in_front = 1;
       }
 
@@ -638,7 +638,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
       // If this is a directional light, check for backfaces
       vector3 norm_vec = light_pos - base_vector;
 
-      if (vm_Dot3Product(norm_vec, lmi_ptr->normal) < 0) {
+      if (vector3::dot(norm_vec, lmi_ptr->normal) < 0) {
         // Backface, skip this face
         continue;
       }
@@ -648,7 +648,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
       int in_front = 0; //
       for (t = 0; t < fp->num_verts && in_front == 0; t++) {
         norm_vec = sm.verts[poly_fp->vertnums[t]] - light_pos;
-        if (vm_Dot3Product(norm_vec, light_dir) > 0)
+        if (vector3::dot(norm_vec, light_dir) > 0)
           in_front = 1;
       }
 
@@ -903,7 +903,7 @@ void ApplyVolumeLightToObject(const vector3 &pos, object &obj, float light_dist,
     // Do a directional light
     vector3 dir_vec = obj.pos - pos;
     float mag = vm_NormalizeVectorFast(dir_vec);
-    float dp = vm_Dot3Product(dir_vec, *light_direction);
+    float dp = vector3::dot(dir_vec, *light_direction);
 
     if (mag > 1.0f) {
       if (dp < dot_range)
@@ -1071,7 +1071,7 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
       // If this is a directional light, check for backfaces
       vector3 norm_vec = pos - rp->verts[fp->face_verts[0]];
 
-      if (vm_Dot3Product(norm_vec, lmi_ptr->normal) < 0) {
+      if (vector3::dot(norm_vec, lmi_ptr->normal) < 0) {
         // Backface, skip this light
         continue;
       }
@@ -1079,7 +1079,7 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
       int in_front = 0; //
       for (t = 0; t < fp->num_verts && in_front == 0; t++) {
         norm_vec = rp->verts[fp->face_verts[t]] - pos;
-        if (vm_Dot3Product(norm_vec, *light_direction) > 0)
+        if (vector3::dot(norm_vec, *light_direction) > 0)
           in_front = 1;
       }
 

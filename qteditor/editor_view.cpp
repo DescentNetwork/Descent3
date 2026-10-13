@@ -710,7 +710,7 @@ void EditorView::renderRooms() {
           toViewScratch(rp->verts[fp->face_verts[1]], v1);
           toViewScratch(rp->verts[fp->face_verts[2]], v2);
           const vector3 n = vm_Cross3Product(v1 - v0, v2 - v0);
-          if (!(vm_Dot3Product(n, v1) < 0.0f))
+          if (!(vector3::dot(n, v1) < 0.0f))
             continue; // back-facing -> not drawn (matches pick)
         }
 
@@ -1912,7 +1912,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
         const vector3 m10 = v1 - v0;
         const vector3 m20 = v2 - v0;
         const vector3 n = vm_Cross3Product(m10, m20);
-        float dotv1 = vm_Dot3Product(n, v1);
+        float dotv1 = vector3::dot(n, v1);
         if (!(dotv1 < 0.0f))
           continue; // back-facing -> not a valid pick candidate (Win32)
       }

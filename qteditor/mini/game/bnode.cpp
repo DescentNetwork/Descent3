@@ -319,7 +319,7 @@ retry:
     scalar dist = vm_NormalizeVector(to);
 
     if (dist < closest_dist) {
-      scalar dot = vm_Dot3Product(fvec, to);
+      scalar dot = vector3::dot(fvec, to);
 
       if (dot > 0.0f || f_retry) {
         /* float node_size = 0.0f;

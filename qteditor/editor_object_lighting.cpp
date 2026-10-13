@@ -687,6 +687,9 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
     bsp_info *sm = &pm->submodel[sublist[i]];
     polyface *fp = &sm->faces[facelist[i]];
     lightmap_object_face *lfp = &obj.lm_object.lightmap_faces[sublist[i]][facelist[i]];
+    lfp->num_verts = fp->nverts;
+    lfp->u2.resize(fp->nverts);
+    lfp->v2.resize(fp->nverts);
 
     for (t = 0; t < fp->nverts; t++)
       GetObjectPointInWorld(world_verts[t], obj, sublist[i], fp->vertnums[t]);

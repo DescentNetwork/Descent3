@@ -268,11 +268,11 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
         vector3 incident_norm = vert - Polymodel_bump_pos;
         vm_NormalizeVectorFast(incident_norm);
 
-        scalar d = vm_Dot3Product(incident_norm, vertnorm);
+        scalar d = vector3::dot(incident_norm, vertnorm);
         vector3 upvec = d * vertnorm;
         incident_norm -= (2 * upvec);
 
-        scalar dotp = vm_Dot3Product(subvec, incident_norm);
+        scalar dotp = vector3::dot(subvec, incident_norm);
 
         if (dotp < 0)
           dotp = 0;
@@ -532,7 +532,7 @@ inline void RenderSubmodelFaceFogged(poly_model &pm, bsp_info &sm, int facenum) 
       // Now we must generate the split point. This is simply
       // an equation in the form Origin + t*Direction
 
-      scalar dist = vm_Dot3Product(*vec, Polymodel_fog_plane) + Fog_distance;
+      scalar dist = vector3::dot(*vec, Polymodel_fog_plane) + Fog_distance;
 
       vector3 subvec = *vec - Fog_view_pos;
 
@@ -594,11 +594,11 @@ inline void RenderSubmodelFaceSpecular(poly_model &pm, bsp_info &sm, int facenum
     vector3 incident_norm = vert - Polymodel_specular_pos;
     vm_NormalizeVectorFast(incident_norm);
 
-    scalar d = vm_Dot3Product(incident_norm, vertnorm);
+    scalar d = vector3::dot(incident_norm, vertnorm);
     vector3 upvec = d * vertnorm;
     incident_norm -= (2 * upvec);
 
-    scalar dotp = vm_Dot3Product(subvec,incident_norm);
+    scalar dotp = vector3::dot(subvec,incident_norm);
 
     if (dotp < 0)
       continue;
@@ -714,7 +714,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
 
     // Check to see if this face even faces us!
     tempv = view_pos - sm.verts[fp->vertnums[0]];
-    if ((vm_Dot3Product(tempv, fp->normal)) < 0)
+    if ((vector3::dot(tempv, fp->normal)) < 0)
       continue;
 
     if (fp->texnum != -1) {
@@ -796,7 +796,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
       Fog_distance = -(vm_DotProduct(Fog_plane, Fog_view_pos));
     else {
       Fog_distance = -(vm_DotProduct(Polymodel_fog_plane, Polymodel_fog_portal_vert));
-      Fog_eye_distance = vm_Dot3Product(Fog_view_pos, Polymodel_fog_plane) + Fog_distance;
+      Fog_eye_distance = vector3::dot(Fog_view_pos, Polymodel_fog_plane) + Fog_distance;
     }
 
     rend_SetOverlayType(overlay_type::none);

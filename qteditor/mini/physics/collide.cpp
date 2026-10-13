@@ -1627,7 +1627,7 @@ void bump_obj_against_fixed(object *obj, vector3 *collision_point, vector3 *coll
   if (m1 <= 0.0f)
     m1 = 0.00000001f;
 
-  v_rel = vm_Dot3Product(*collision_normal, p1);
+  v_rel = vector3::dot(*collision_normal, p1);
 
   float e = obj->mtype.phys_info.coeff_restitution;
 
@@ -1648,7 +1648,7 @@ void bump_obj_against_fixed(object *obj, vector3 *collision_point, vector3 *coll
 
   vm_CrossProduct(cc1, c1, r1);
 
-  cv1 = vm_Dot3Product(*collision_normal,c1);
+  cv1 = vector3::dot(*collision_normal,c1);
 
   j = (-(1.0f + e)) * v_rel;
   j /= (1 / m1 + cv1);
@@ -1720,7 +1720,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
     if (!(t->flags.dead)) {
       // Find hit speed
       moved_v = t->pos - t->last_pos;
-      wall_part = vm_Dot3Product(*collision_normal, t->mtype.phys_info.velocity);
+      wall_part = vector3::dot(*collision_normal, t->mtype.phys_info.velocity);
 
       if (t->mtype.phys_info.flags.bounce) {
         wall_part *= 2.0f; // Subtract out wall part twice to achieve bounce
@@ -1745,7 +1745,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
       } else {
         float wall_force;
 
-        wall_force = vm_Dot3Product(t->mtype.phys_info.thrust,*collision_normal);
+        wall_force = vector3::dot(t->mtype.phys_info.thrust,*collision_normal);
         t->mtype.phys_info.thrust +=
             *collision_normal * (wall_force * -1.001f); // 1.001 so that we are not quite tangential
 
@@ -1849,7 +1849,7 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
   if (m2 <= 0.0f)
     m2 = 0.00000001f;
 
-  v_rel = vm_Dot3Product(*collision_normal,(p1 - p2));
+  v_rel = vector3::dot(*collision_normal,(p1 - p2));
 
   float e;
 
@@ -1890,8 +1890,8 @@ void bump_two_objects(object *object0, object *object1, vector3 *collision_point
   vm_CrossProduct(cc1, c1, r1);
   vm_CrossProduct(cc2, c2, r2);
 
-  cv1 = vm_Dot3Product(*collision_normal,c1);
-  cv2 = vm_Dot3Product(*collision_normal,c2);
+  cv1 = vector3::dot(*collision_normal,c1);
+  cv2 = vector3::dot(*collision_normal,c2);
 
   j = (-(1.0f + e)) * v_rel;
   j /= (1 / m1 + 1 / m2 + cv1 + cv2);

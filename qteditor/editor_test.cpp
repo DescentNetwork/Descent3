@@ -617,15 +617,15 @@ private slots:
       f0.lmi_handle = 123;
       f0.rvec = vector3{(float)1, 0, 0};
       f0.uvec = vector3{0, (float)1, 0};
-      f0.u2 = new float[2]{0.1f, 0.2f};
-      f0.v2 = new float[2]{0.3f, 0.4f};
+      f0.u2 = {0.1f, 0.2f};
+      f0.v2 = {0.3f, 0.4f};
       auto &f1 = lm.lightmap_faces[0][1];
       f1.num_verts = 3;
       f1.lmi_handle = 456;
       f1.rvec = vector3{0, 0, (float)1};
       f1.uvec = vector3{(float)1, 0, 0};
-      f1.u2 = new float[3]{0.5f, 0.6f, 0.7f};
-      f1.v2 = new float[3]{0.8f, 0.9f, 1.0f};
+      f1.u2 = {0.5f, 0.6f, 0.7f};
+      f1.v2 = {0.8f, 0.9f, 1.0f};
       lm.used = 1;
     }
     Highest_object_index = 0;
@@ -6785,19 +6785,19 @@ private slots:
           const vector3 e1 = B - A;
           const vector3 e2 = C - A;
           const vector3 pvec = vm_Cross3Product(dir, e2);
-          const float det = vm_Dot3Product(e1, pvec);
+          const float det = vector3::dot(e1, pvec);
           if (std::fabs(det) < 1e-9f)
             continue;
           const float inv = 1.0f / det;
           const vector3 tvec = eye - A;
-          const float u = vm_Dot3Product(tvec, pvec) * inv;
+          const float u = vector3::dot(tvec, pvec) * inv;
           if (u < -1e-5f || u > 1.0f + 1e-5f)
             continue;
           const vector3 qvec = vm_Cross3Product(tvec, e1);
-          const float vv = vm_Dot3Product(dir, qvec) * inv;
+          const float vv = vector3::dot(dir, qvec) * inv;
           if (vv < -1e-5f || u + vv > 1.0f + 1e-5f)
             continue;
-          const float t = vm_Dot3Product(e2, qvec) * inv;
+          const float t = vector3::dot(e2, qvec) * inv;
           if (t < 1e-4f)
             continue;
           // Front-face cull matching Win32 DoFacingCheck (and pickAtImpl):
@@ -6820,7 +6820,7 @@ private slots:
           // n = (vv1-vv0) x (vv2-vv0), replicating Win32 vm_GetPerp (mini-lib
           // vm_GetPerp is a stub, so compute the cross directly).
           const vector3 nrm = vm_Cross3Product(vv1 - vv0, vv2 - vv0);
-          if (!(vm_Dot3Product(nrm, vv1) < 0.0f))
+          if (!(vector3::dot(nrm, vv1) < 0.0f))
             continue;
           if (t < bestT) {
             bestT = t;
@@ -7778,7 +7778,7 @@ private slots:
       // the stored normal, like real .d3l room data.  fvi relies on this for
       // its point-in-face tests.
       vector3 perp = vm_Cross3Product(rp->verts[b] - rp->verts[a], rp->verts[c] - rp->verts[a]);
-      if (vm_Dot3Product(perp, normal) < 0) {
+      if (vector3::dot(perp, normal) < 0) {
         idx[0] = (int16_t)a;
         idx[1] = (int16_t)d;
         idx[2] = (int16_t)c;

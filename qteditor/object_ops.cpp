@@ -276,7 +276,7 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
 
     PhysCalcGround(ground_point, ground_normal, obj, 0);
     to_ground = obj.pos - ground_point;
-    float dist = vm_Dot3Product(ground_normal, to_ground);
+    float dist = vector3::dot(ground_normal, to_ground);
     pos += dist * (*surface_norm);
 
     vm_VectorToMatrix(groundplane_orient, pm->ground_slots[0].norm, std::nullopt, std::nullopt);
@@ -345,7 +345,7 @@ void ResetGroundObject(object& obj) {
 
   PhysCalcGround(ground_point, ground_normal, obj, 0);
   to_ground = obj.pos - ground_point;
-  float dist = vm_Dot3Product(ground_normal, to_ground);
+  float dist = vector3::dot(ground_normal, to_ground);
   pos += dist * surface_norm;
 
   matrix groundplane_orient, surface_orient, object_orient;

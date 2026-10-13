@@ -86,7 +86,7 @@ float rend_GetAlphaMultiplier() { return 1.0f; }
 // ===========================================================================
 bool g3_CheckNormalFacing(const vector3 &v, const vector3 &norm) {
   vector3 tempv = View_position - v;
-  return (vm_Dot3Product(tempv, norm) > 0);
+  return vector3::dot(tempv, norm) > 0;
 }
 
 int Triangulate_test = 0;

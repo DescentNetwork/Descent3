@@ -518,7 +518,7 @@ void RotateRoomPoints(int roomnum, const vector3 *world_vecs) {
 // Useful for specular and other reflective surfaces
 void ReflectRay(vector3 &dest, const vector3 &src, const vector3 &mirror_norm) {
   dest = src;
-  scalar d = vm_Dot3Product(dest, mirror_norm);
+  scalar d = vector3::dot(dest, mirror_norm);
   vector3 upvec = d * mirror_norm;
   dest -= (2.0f * upvec);
 }
@@ -546,13 +546,13 @@ void MarkFacingFaces(int roomnum, const vector3 *world_verts) {
       ReflectRay(incident_norm, fp->normal, mirror_fp->normal);
 
       tvec = Viewer_eye - world_verts[fp->face_verts[0]];
-      if (vm_Dot3Product(tvec, incident_norm) <= 0)
+      if (vector3::dot(tvec, incident_norm) <= 0)
         fp->flags.not_facing = true;
     }
   } else {
     for (int i = 0; i < rp->num_faces; i++, fp++) {
       tvec = Viewer_eye - world_verts[fp->face_verts[0]];
-      if (vm_Dot3Product(tvec, fp->normal) <= 0)
+      if (vector3::dot(tvec, fp->normal) <= 0)
         fp->flags.not_facing = true;
     }
   }
@@ -844,7 +844,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd &wnd, int depth) {
     // See if portal is facing toward us
     if (!external_door_hack && !(pp->flags.combined)) {
       vector3 check_v = Viewer_eye - rp->verts[fp->face_verts[0]];
-      if (vm_Dot3Product(check_v, fp->normal) <= 0) {
+      if (vector3::dot(check_v, fp->normal) <= 0) {
         // not facing us
         continue;
       }
@@ -871,7 +871,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd &wnd, int depth) {
         face *this_fp = &rp->faces[rp->portals[i].portal_face];
         vector3 check_v;
         check_v = Viewer_eye - rp->verts[this_fp->face_verts[0]];
-        if (vm_Dot3Product(check_v, this_fp->normal) <= 0) // not facing us
+        if (vector3::dot(check_v, this_fp->normal) <= 0) // not facing us
           continue;
 
         g3Codes combine_cc;
@@ -1405,14 +1405,14 @@ texel = data[int_v][int_u];
           vector3 upvec;
           if ((GameTextures[fp->tmap].flags.smooth_specular) &&
               (SpecialFaces[fp->special_handle].flags.spec_smooth)) {
-            d = vm_Dot3Product(incident_norm, SpecialFaces[fp->special_handle].vertnorms[vn]);
+            d = vector3::dot(incident_norm, SpecialFaces[fp->special_handle].vertnorms[vn]);
             upvec = d * SpecialFaces[fp->special_handle].vertnorms[vn];
           } else {
-            d = vm_Dot3Product(incident_norm, fp->normal);
+            d = vector3::dot(incident_norm, fp->normal);
             upvec = d * fp->normal;
           }
           incident_norm -= (2 * upvec);
-          float dotp = vm_Dot3Product(subvec, incident_norm);
+          float dotp = vector3::dot(subvec, incident_norm);
           if (dotp > 1)
             dotp = 1;
 
@@ -1432,10 +1432,10 @@ texel = data[int_v][int_u];
         vector3 incident_norm = rp->verts[fp->face_verts[vn]] - Terrain_sky.satellite_vectors[0];
         vm_NormalizeVectorFast(incident_norm);
 
-        float d = vm_Dot3Product(incident_norm, fp->normal);
+        float d = vector3::dot(incident_norm, fp->normal);
         vector3 upvec = d * fp->normal;
         incident_norm -= (2 * upvec);
-        float dotp = vm_Dot3Product(subvec, incident_norm);
+        float dotp = vector3::dot(subvec, incident_norm);
         if (dotp > 1)
           dotp = 1;
 
@@ -1600,18 +1600,18 @@ void RenderFogFaces(int roomnum) {
         // Now we must generate the split point. This is simply
         // an equation in the form Origin + t*Direction
 
-        scalar dist = vm_Dot3Product(*vec, Room_fog_plane) + Room_fog_distance;
+        scalar dist = vector3::dot(*vec, Room_fog_plane) + Room_fog_distance;
 
         vector3 subvec = *vec - Viewer_eye;
         scalar t = Room_fog_eye_distance / (Room_fog_eye_distance - dist);
         vector3 portal_point = Viewer_eye + (t * subvec);
 
-        eye_distance = -(vm_Dot3Product(Viewer_orient.fvec, portal_point));
-        mag = vm_Dot3Product(Viewer_orient.fvec, *vec) + eye_distance;
+        eye_distance = -(vector3::dot(Viewer_orient.fvec, portal_point));
+        mag = vector3::dot(Viewer_orient.fvec, *vec) + eye_distance;
       } else if (Room_fog_plane_check == 1) {
         // In the room, distance from
         vector3 *vec = &rp->verts[fp->face_verts[vn]];
-        mag = vm_Dot3Product(Room_fog_plane, *vec) + Room_fog_distance;
+        mag = vector3::dot(Room_fog_plane, *vec) + Room_fog_distance;
       }
       scalar scalar = mag / rp->fog_depth;
       if (scalar > 1)
@@ -2260,7 +2260,7 @@ void SetupRoomFog(int roomnum, const vector3 &eye, const matrix &orient, int vie
   Room_fog_plane = close_face->normal;
   Room_fog_portal_vert = rp->verts[close_face->face_verts[0]];
   Room_fog_distance = -vm_DotProduct(Room_fog_plane, Room_fog_portal_vert);
-  Room_fog_eye_distance = vm_Dot3Product(eye, Room_fog_plane) + Room_fog_distance;
+  Room_fog_eye_distance = vector3::dot(eye, Room_fog_plane) + Room_fog_distance;
 }
 
 // Renders the faces in a room without worrying about sorting.  Used in the game when Z-buffering is active
@@ -2429,7 +2429,7 @@ void RenderSingleLightGlow(int index) {
   // Get alpha of light
   vector3 tvec = Viewer_eye - rp->verts[fp->face_verts[0]];
   vm_NormalizeVectorFast(tvec);
-  scalar facing_scalar = vm_Dot3Product(tvec, fp->normal) * 2;
+  scalar facing_scalar = vector3::dot(tvec, fp->normal) * 2;
   if (facing_scalar < 0)
     return;
   tvec = center - Viewer_eye;
@@ -2701,7 +2701,7 @@ void BuildMirroredRoomListSub(int start_room_num, const clip_wnd &wnd) {
       ReflectRay(incident_norm, fp->normal, mirror_fp->normal);
 
       vector3 tvec = Viewer_eye - temp_vec;
-      if (vm_Dot3Product(tvec, incident_norm) <= 0)
+      if (vector3::dot(tvec, incident_norm) <= 0)
         continue; // not facing
     }
 

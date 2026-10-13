@@ -1013,13 +1013,13 @@ inline bool find_plane_line_intersection(vector3 &intp, vector3 &colp, vector3 &
 
   // Compute the distance to the plane and the distance the line travels in the direction of the normal
   // Negative because if the object is moving toward the plane, it is moving in the opposite direction of the normal
-  proj_dist_line = vm_Dot3Product(plane_norm, line_vec);
+  proj_dist_line = vector3::dot(plane_norm, line_vec);
   if (proj_dist_line >= 0.0f)
     return false;
 
   //  Vector from p0 to a point on the plane
   point_plane_vec = plane_pnt - p0;
-  proj_dist_point_plane = (vm_Dot3Product(plane_norm, point_plane_vec));
+  proj_dist_point_plane = (vector3::dot(plane_norm, point_plane_vec));
 
   // Throw out any sphere who's centerpoint is initially behind the face
   if (proj_dist_point_plane > 0.0f)
@@ -1047,14 +1047,14 @@ inline bool find_plane_line_intersection(vector3 &intp, vector3 &colp, vector3 &
   if (fabs(proj_dist_line) <= 0.00000000001f) {
     scalar plane_dist;
 
-    plane_dist = vm_Dot3Product((p1 - plane_pnt), plane_norm);
+    plane_dist = vector3::dot((p1 - plane_pnt), plane_norm);
     if (plane_dist >= rad)
       return false;
 
     intp = p1 + (rad - plane_dist) * plane_norm;
 
     // Make sure the computed new position is not behind the wall.
-    Q_ASSERT(vm_Dot3Product((intp - plane_pnt), plane_norm) >= -0.01);
+    Q_ASSERT(vector3::dot((intp - plane_pnt), plane_norm) >= -0.01);
 
   } else {
     // The intersection of the line and the plane is a simple linear combination
@@ -1191,7 +1191,7 @@ bool check_vector_to_sphere_1(vector3 &intp, float &col_dist, const vector3 &p0,
   line_vec = p1 - p0;
   point_to_center_vec = sphere_pos - p0;
 
-  if (vm_Dot3Product(line_vec, point_to_center_vec) <= 0.0f)
+  if (vector3::dot(line_vec, point_to_center_vec) <= 0.0f)
     return false;
 
   // Get the magnitude and direction of the line vector3
@@ -1199,7 +1199,7 @@ bool check_vector_to_sphere_1(vector3 &intp, float &col_dist, const vector3 &p0,
   mag_line = vm_NormalizeVector(normalized_line_vec);
 
   // Compute the location of the point on the line that is perpendicular to the center of the sphere
-  closest_point_dist = vm_Dot3Product(normalized_line_vec, point_to_center_vec);
+  closest_point_dist = vector3::dot(normalized_line_vec, point_to_center_vec);
 
   // We check for an initial hit, so if closest_point is negative distance, it was a miss (think about it)
   // Otherwise, make sure it is not any farther than would for a collision to happen
@@ -1207,7 +1207,7 @@ bool check_vector_to_sphere_1(vector3 &intp, float &col_dist, const vector3 &p0,
     return false;
 
   // Is the initial p0 position an intersection?  If so, warn us and collide immediately.
-  if (vm_Dot3Product(point_to_center_vec, point_to_center_vec) < sphere_rad * sphere_rad) {
+  if (vector3::dot(point_to_center_vec, point_to_center_vec) < sphere_rad * sphere_rad) {
     if (f_correcting) {
       /*
             // chrishack
@@ -1220,7 +1220,7 @@ bool check_vector_to_sphere_1(vector3 &intp, float &col_dist, const vector3 &p0,
       vm_NormalizeVector(n_ptc);
 
       intp =
-          p0 - n_ptc * (sphere_rad - scalar(sqrt(sphere_rad * sphere_rad - vm_Dot3Product(point_to_center_vec, point_to_center_vec))));
+          p0 - n_ptc * (sphere_rad - scalar(sqrt(sphere_rad * sphere_rad - vector3::dot(point_to_center_vec, point_to_center_vec))));
 
       col_dist = 0.0f;
       return true;
@@ -1259,7 +1259,7 @@ bool check_vector_to_sphere_1(vector3 &intp, float &col_dist, const vector3 &p0,
 
 bool IsPointInCylinder(vector3& normal, const vector3 &cylinder_pnt, const vector3 &edir, float elen, const float rad,
                        const vector3 &pnt, const vector3 &mdir, bool &f_collide) {
-  scalar plen = vm_Dot3Product((pnt - cylinder_pnt), edir);
+  scalar plen = vector3::dot((pnt - cylinder_pnt), edir);
 
   if (plen < 0.0f || plen > elen) {
     return false;
@@ -1272,7 +1272,7 @@ bool IsPointInCylinder(vector3& normal, const vector3 &cylinder_pnt, const vecto
     return false;
   }
 
-  if (vm_Dot3Product(normal,mdir) >= 0.0f)
+  if (vector3::dot(normal,mdir) >= 0.0f)
     f_collide = false;
   else
     f_collide = true;
@@ -1325,7 +1325,7 @@ bool check_vector_to_cylinder(vector3 &colp, vector3 &intp, float &col_dist, vec
     mvec = po1 - po0;
     vector_len = vm_NormalizeVector(mvec);
 
-    dist = -(vm_Dot3Product(mvec,po0));
+    dist = -(vector3::dot(mvec,po0));
 
     closest_pnt = po0 + dist * mvec;
     //	Q_ASSERT(!(closest_pnt.x == 0.0 && closest_pnt.y == 0.0 && closest_pnt.z == 0)); -- why does this matter?
@@ -1356,10 +1356,10 @@ bool check_vector_to_cylinder(vector3 &colp, vector3 &intp, float &col_dist, vec
       if (valid_t[i]) {
         ivertex[i] = p0 + mvec3d * (vector_len3d * t[i]);
 
-        t_edge = (vm_Dot3Product(ivertex[i] - ep0, edgevec)) / edge_len;
+        t_edge = (vector3::dot(ivertex[i] - ep0, edgevec)) / edge_len;
         if (t_edge >= 0.0 && t_edge <= 1.0) {
           cole_dist[i] = vector_len3d * t[i];
-          inte[i] = ep0 + vm_Dot3Product((ivertex[i] - ep0), edgevec) * edgevec;
+          inte[i] = ep0 + vector3::dot((ivertex[i] - ep0), edgevec) * edgevec;
           valid_hit = 1;
           /// mprintf(0, "%f,%f,%f to %f,%f, %f\n", XYZ(p0), XYZ(p1));
         } else {
@@ -1727,7 +1727,7 @@ bool check_line_to_line(scalar &t1, scalar &t2, const vector3 &p1, const vector3
 
   det.rvec = p2 - p1;
   det.fvec = vm_Cross3Product(v1, v2);
-  cross_mag2 = vm_Dot3Product(det.fvec,det.fvec);
+  cross_mag2 = vector3::dot(det.fvec,det.fvec);
 
   if (cross_mag2 == 0.0)
     return false; // lines are parallel
@@ -1764,7 +1764,7 @@ bool check_vector_to_object(vector3 &intp, float &col_dist, const vector3 &p0, c
   // This accounts for relative position vs. relative velocity
   if (fvi_objnum != -1 && still_obj.movement_type == movement_type_e::physics && Objects[fvi_objnum].movement_type == movement_type_e::physics) {
     if (still_obj.type != object_type_e::powerup && Objects[fvi_objnum].type != object_type_e::powerup) {
-      if (vm_Dot3Product(still_pos - Objects[fvi_objnum].pos,
+      if (vector3::dot(still_pos - Objects[fvi_objnum].pos,
               (still_obj.mtype.phys_info.velocity - Objects[fvi_objnum].mtype.phys_info.velocity)) >=
           0) {
 #ifndef NED_PHYSICS
@@ -3229,7 +3229,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 &collision_point, vector3 &co
 
   for (i = 0; i < 8; i++) {
     rel[i] = verts[i];
-    dot[i] = vm_Dot3Product(rel[i],(xxx_normal));
+    dot[i] = vector3::dot(rel[i],(xxx_normal));
   }
 
   for (i = 0; i < 8; i++) {
@@ -3248,7 +3248,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 &collision_point, vector3 &co
     if (dot[bbox_edges[i][0]] > 0.0f && dot[bbox_edges[i][1]] < 0.0f && collidable[bbox_edges[i][1]]) {
       movement = verts[bbox_edges[i][1]] - verts[bbox_edges[i][0]];
 
-      nmovement = -(vm_Dot3Product(movement,face_normal));
+      nmovement = -(vector3::dot(movement,face_normal));
 
       plane_pnt = verts[bbox_edges[i][0]];
       plane_pnt += movement * (dot[bbox_edges[i][0]] / nmovement);
@@ -3257,7 +3257,7 @@ bool BBoxPlaneIntersection(bool fast_exit, vector3 &collision_point, vector3 &co
     } else if (dot[bbox_edges[i][0]] < 0.0f && dot[bbox_edges[i][1]] > 0.0f && collidable[bbox_edges[i][0]]) {
       movement = verts[bbox_edges[i][0]] - verts[bbox_edges[i][1]];
 
-      nmovement = -(vm_Dot3Product(movement,face_normal));
+      nmovement = -(vector3::dot(movement,face_normal));
 
       plane_pnt = verts[bbox_edges[i][1]];
       plane_pnt += movement * (dot[bbox_edges[i][1]] / nmovement);

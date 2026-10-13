@@ -489,9 +489,9 @@ void DeformTerrain(const vector3 &pos, int depth, float size) {
     for (t = startx; t <= endx; t++, cur_vec.x() += TERRAIN_SIZE) {
       terrain_segment *tseg = &Terrain_seg[i * TERRAIN_WIDTH + t];
 
-      if (vm_Dot3Product(up_vec, TerrainNormals[MAX_TERRAIN_LOD - 1][i * TERRAIN_WIDTH + t].normal1) < 0.5f)
+      if (vector3::dot(up_vec, TerrainNormals[MAX_TERRAIN_LOD - 1][i * TERRAIN_WIDTH + t].normal1) < 0.5f)
         continue; // not flat enough
-      if (vm_Dot3Product(up_vec, TerrainNormals[MAX_TERRAIN_LOD - 1][i * TERRAIN_WIDTH + t].normal2) < 0.5f)
+      if (vector3::dot(up_vec, TerrainNormals[MAX_TERRAIN_LOD - 1][i * TERRAIN_WIDTH + t].normal2) < 0.5f)
         continue; // not flat enough
 
       float dist = 1.0f - (vm_VectorDistanceQuick(local_pos, cur_vec) / max_dist);

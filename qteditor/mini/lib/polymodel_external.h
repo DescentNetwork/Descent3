@@ -60,6 +60,8 @@
 #include <string>
 #include <vector>
 
+#include <posix_stream.h>
+
 #include "grdefs.h"
 #include "manage_external.h"
 #include "robotfirestruct.h"
@@ -98,7 +100,7 @@ struct lightmap_object_face {
   uint8_t num_verts;
   uint16_t lmi_handle;
   vector3 rvec, uvec;
-  float *u2, *v2;
+  std::vector<float> u2, v2;
 };
 
 struct lightmap_object {
@@ -107,8 +109,15 @@ struct lightmap_object {
   std::vector<int16_t> num_faces;
   std::vector<std::vector<lightmap_object_face>> lightmap_faces;
   uint8_t used;
-
 };
+
+// On-disk (level file) serialization of the object lightmap block.  Each read
+// is the exact mirror of its write, preserving the on-disk field order and
+// encodings from the original D3 LoadLevel code.
+byte_istream& operator>>(byte_istream& input, lightmap_object_face& data);
+byte_ostream& operator<<(byte_ostream& output, const lightmap_object_face& data);
+byte_istream& operator>>(byte_istream& input, lightmap_object& data);
+byte_ostream& operator<<(byte_ostream& output, const lightmap_object& data);
 
 struct polyface {
   int8_t nverts;

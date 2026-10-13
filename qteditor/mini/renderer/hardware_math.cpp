@@ -117,11 +117,11 @@ g3Point *ClipCustomEdge(g3Point &on_pnt, g3Point &off_pnt) {
   vector3 w = on_pnt.p3_vec - Clip_plane_point;
   w /= Matrix_scale;
 
-  scalar k, den = -vm_Dot3Product(Clip_plane, ray_direction);
+  scalar k, den = -vector3::dot(Clip_plane, ray_direction);
   if (den == 0.0f)
     k = 1.0f;
   else {
-    scalar num = vm_Dot3Product(Clip_plane, w);
+    scalar num = vector3::dot(Clip_plane, w);
     k = num / den;
   }
 
@@ -351,7 +351,7 @@ uint8_t g3_CodePoint(g3Point &p) {
   if (Clip_custom) {
     vector3 vec = p.p3_vec - Clip_plane_point;
     vec /= Matrix_scale;
-    scalar dp = vm_Dot3Product(vec, Clip_plane);
+    scalar dp = vector3::dot(vec, Clip_plane);
     if (dp < -0.005f)
       cc.off_custom = true;
   }
@@ -486,9 +486,9 @@ void g3_GetModelViewMatrix(const vector3 &viewPos, const matrix &viewMatrix, flo
   mvMat[9] = localOrient.uvec.z();
   mvMat[10] = localOrient.fvec.z();
   mvMat[11] = 0.0f;
-  mvMat[12] = vm_Dot3Product(localPos, localOrient.rvec);
-  mvMat[13] = vm_Dot3Product(localPos, localOrient.uvec);
-  mvMat[14] = vm_Dot3Product(localPos, localOrient.fvec) + Z_bias;
+  mvMat[12] = vector3::dot(localPos, localOrient.rvec);
+  mvMat[13] = vector3::dot(localPos, localOrient.uvec);
+  mvMat[14] = vector3::dot(localPos, localOrient.fvec) + Z_bias;
   mvMat[15] = 1.0f;
 }
 

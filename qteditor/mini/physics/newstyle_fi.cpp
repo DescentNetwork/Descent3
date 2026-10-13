@@ -198,7 +198,7 @@ static void CollideSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
               x = *fvi_query_ptr->p1 - *fvi_query_ptr->p0;
               vm_NormalizeVector(x);
 
-              fvi_hit_param = vm_Dot3Product((newp - *fvi_query_ptr->p0), x);
+              fvi_hit_param = vector3::dot((newp - *fvi_query_ptr->p0), x);
 
               if (!(fvi_hit_param > -10000000.0f && fvi_hit_param < 10000000.0f)) {
                 LOG_WARNING("FVI Warning: fvi_hit_param seems yucky!");
