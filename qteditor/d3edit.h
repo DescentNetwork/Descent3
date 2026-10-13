@@ -162,7 +162,7 @@ struct d3edit_state
       wirescr_h; // dims of floating wireframe model
 
   bool keypad_visible = false;                                                // is keypad visible?
-  std::optional<int> keypad_current;                                                 // which keypad tab are we on?
+  index_t keypad_current;                                                 // which keypad tab are we on?
   bool float_keypad_moved = false;                                            // has floating keypad moved?
   int float_keypad_x,
       float_keypad_y,

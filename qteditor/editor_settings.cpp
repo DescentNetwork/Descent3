@@ -49,19 +49,24 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
     }
   };
 
-  setval("texdlg_texture",    state.texdlg_texture);
-  setval("current_obj_type",  state.obj_page);
-  setval("current_powerup",   state.current_powerup);
-  setval("current_door",      state.current_door);
-  setval("current_robot",      state.current_robot);
-  setval("current_ship",      state.current_ship);
-  setval("current_sound",     state.current_sound);
-  setval("current_weapon",    state.current_weapon);
-  setval("current_path",      state.current_path);
-  setval("current_node",      state.current_node);
-  setval("current_megacell",  state.current_megacell);
-  setval("current_building",  state.current_building);
-  setval("current_clutter",   state.current_clutter);
+  setval("texdlg_texture",      state.texdlg_texture);
+  setval("current_obj_type",    state.obj_page);
+  setval("current_powerup",     state.current_powerup);
+  setval("current_door",        state.current_door);
+  setval("current_robot",       state.current_robot);
+  setval("current_ship",        state.current_ship);
+  setval("current_sound",       state.current_sound);
+  setval("current_weapon",      state.current_weapon);
+  setval("current_path",        state.current_path);
+  setval("current_node",        state.current_node);
+  setval("current_megacell",    state.current_megacell);
+  setval("current_building",    state.current_building);
+  setval("current_clutter",     state.current_clutter);
+  setval("keypad_current",      state.keypad_current);
+  setval("game_render_mode",    state.game_render_mode);
+  setval("box_selection_mode",  state.box_selection_mode);
+  setval("object_move_mode",    state.object_move_mode);
+  setval("object_move_axis",    state.object_move_axis);
 
   settings.setValue(QStringLiteral("texscr_visible"),        state.texscr_visible);
   settings.setValue(QStringLiteral("texscr_x"),              state.texscr_x);
@@ -76,29 +81,18 @@ void saveEditorSettings(QSettings &settings, const d3edit_state &state) {
   settings.setValue(QStringLiteral("wirescr_h"),             state.wirescr_h);
 
   settings.setValue(QStringLiteral("keypad_visible"),        state.keypad_visible);
-  setval("keypad_current",   state.keypad_current);
-
   settings.setValue(QStringLiteral("float_keypad_x"),        state.float_keypad_x);
   settings.setValue(QStringLiteral("float_keypad_y"),        state.float_keypad_y);
   settings.setValue(QStringLiteral("float_keypad_w"),        state.float_keypad_w);
   settings.setValue(QStringLiteral("float_keypad_h"),        state.float_keypad_h);
-
   settings.setValue(QStringLiteral("objmodeless_x"),         state.objmodeless_x);
   settings.setValue(QStringLiteral("objmodeless_y"),         state.objmodeless_y);
   settings.setValue(QStringLiteral("objmodeless_on"),        state.objmodeless_on);
-
   settings.setValue(QStringLiteral("tile_views"),            state.tile_views);
-  if (state.game_render_mode) settings.setValue(QStringLiteral("game_render_mode"), *state.game_render_mode); else settings.setValue(QStringLiteral("game_render_mode"), -1);
-
   settings.setValue(QStringLiteral("terrain_dots"),          state.terrain_dots);
   settings.setValue(QStringLiteral("terrain_flat_shade"),    state.terrain_flat_shade);
-
   settings.setValue(QStringLiteral("randomize_megacell"),    state.randomize_megacell);
-  if (state.box_selection_mode) settings.setValue(QStringLiteral("box_selection_mode"), *state.box_selection_mode); else settings.setValue(QStringLiteral("box_selection_mode"), -1);
-  if (state.object_move_mode) settings.setValue(QStringLiteral("object_move_mode"), *state.object_move_mode); else settings.setValue(QStringLiteral("object_move_mode"), -1);
-  if (state.object_move_axis) settings.setValue(QStringLiteral("object_move_axis"), *state.object_move_axis); else settings.setValue(QStringLiteral("object_move_axis"), -1);
   settings.setValue(QStringLiteral("fullscreen_debug_state"), state.fullscreen_debug_state);
-
   settings.setValue(QStringLiteral("texture_display_flags"), state.texture_display_flags);
 
   // Slew_key_speed lives outside app in d3edit.h but is part of the
@@ -128,19 +122,25 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
     }
   };
 
-  state.texdlg_texture    = getval.operator()<uint32_t>("texdlg_texture");
-  state.obj_page          = getval.operator()<object_type_e>("current_obj_type");
-  state.current_powerup   = getval.operator()<uint16_t>("current_powerup");
-  state.current_door      = getval.operator()<uint32_t>("current_door");
-  state.current_robot     = getval.operator()<uint16_t>("current_robot");
-  state.current_ship       = getval.operator()<uint32_t>("current_ship");
-  state.current_sound      = getval.operator()<uint32_t>("current_sound");
-  state.current_weapon     = getval.operator()<uint32_t>("current_weapon");
-  state.current_path       = getval.operator()<uint32_t>("current_path");
-  state.current_node       = getval.operator()<uint16_t>("current_node");
-  state.current_megacell   = getval.operator()<uint32_t>("current_megacell");
-  state.current_building  = getval.operator()<uint16_t>("current_building");
-  state.current_clutter   = getval.operator()<uint16_t>("current_clutter");
+  state.texdlg_texture      = getval.template operator()<uint32_t>("texdlg_texture");
+  state.obj_page            = getval.template operator()<object_type_e>("current_obj_type");
+  state.current_powerup     = getval.template operator()<uint16_t>("current_powerup");
+  state.current_door        = getval.template operator()<uint32_t>("current_door");
+  state.current_robot       = getval.template operator()<uint16_t>("current_robot");
+  state.current_ship        = getval.template operator()<uint32_t>("current_ship");
+  state.current_sound       = getval.template operator()<uint32_t>("current_sound");
+  state.current_weapon      = getval.template operator()<uint32_t>("current_weapon");
+  state.current_path        = getval.template operator()<uint32_t>("current_path");
+  state.current_node        = getval.template operator()<uint16_t>("current_node");
+  state.current_megacell    = getval.template operator()<uint32_t>("current_megacell");
+  state.current_building    = getval.template operator()<uint16_t>("current_building");
+  state.current_clutter     = getval.template operator()<uint16_t>("current_clutter");
+  state.keypad_current      = getval.template operator()<uint32_t>("keypad_current");
+  state.game_render_mode    = getval.template operator()<uint32_t>("game_render_mode");
+  state.box_selection_mode  = getval.template operator()<uint32_t>("box_selection_mode");
+  state.object_move_mode    = getval.template operator()<uint32_t>("object_move_mode");
+  state.object_move_axis    = getval.template operator()<uint32_t>("object_move_axis");
+
 
   state.texscr_visible    = settings.value(QStringLiteral("texscr_visible"),    false).toBool();
   state.texscr_x          = settings.value(QStringLiteral("texscr_x"),          0).toInt();
@@ -155,31 +155,21 @@ void loadEditorSettings(QSettings &settings, d3edit_state &state)
   state.wirescr_h         = settings.value(QStringLiteral("wirescr_h"),         0).toInt();
 
   state.keypad_visible    = settings.value(QStringLiteral("keypad_visible"),    false).toBool();
-  state.keypad_current     = getval.operator()<int>("keypad_current");
+
 
   state.float_keypad_x    = settings.value(QStringLiteral("float_keypad_x"),    -1).toInt();
   state.float_keypad_y    = settings.value(QStringLiteral("float_keypad_y"),    -1).toInt();
   state.float_keypad_w    = settings.value(QStringLiteral("float_keypad_w"),    -1).toInt();
   state.float_keypad_h    = settings.value(QStringLiteral("float_keypad_h"),    -1).toInt();
-
   state.objmodeless_x     = settings.value(QStringLiteral("objmodeless_x"),     0).toInt();
   state.objmodeless_y     = settings.value(QStringLiteral("objmodeless_y"),     0).toInt();
   state.objmodeless_on    = settings.value(QStringLiteral("objmodeless_on"),    false).toBool();
-
   state.tile_views        = settings.value(QStringLiteral("tile_views"),        false).toBool();
-  { auto v = getval.template operator()<int>("game_render_mode"); if (v) state.game_render_mode = *v; }
-
   state.terrain_dots            = settings.value(QStringLiteral("terrain_dots"),            true).toBool();
   state.terrain_flat_shade      = settings.value(QStringLiteral("terrain_flat_shade"),      false).toBool();
-
   state.randomize_megacell      = settings.value(QStringLiteral("randomize_megacell"),      false).toBool();
-  { auto v = getval.template operator()<int>("box_selection_mode"); if (v) state.box_selection_mode = *v; }
-  { auto v = getval.template operator()<int>("object_move_mode"); if (v) state.object_move_mode = *v; }
-  { auto v = getval.template operator()<int>("object_move_axis"); if (v) state.object_move_axis = *v; }
   state.fullscreen_debug_state  = settings.value(QStringLiteral("fullscreen_debug_state"),  false).toBool();
-
   state.texture_display_flags   = settings.value(QStringLiteral("texture_display_flags"),   0).toInt();
-
   Slew_key_speed                = settings.value(QStringLiteral("slew_key_speed"),          1.0f).toFloat();
   state.joy_slewing             = settings.value(QStringLiteral("joy_slewing"),             false).toBool();
   state.objects_in_wireframe    = settings.value(QStringLiteral("objects_in_wireframe"),    true).toBool();
