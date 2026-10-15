@@ -516,27 +516,25 @@ static void LL_ReadTextureList(byte_istream &ifile, int chunk_size) {
 // those names let the loader map the file's page index to the index of the
 // matching page in the currently loaded game tables.  This is the engine's
 // BuildXlateTable + ReadObject translation: object_type::robot/POWERUP/BUILDING/CLUTTER
-// ids go through generic_xlate, object_type::door through door_xlate[MAX_DOORS].
+// ids go through generic_xlate, object_type::door through door_xlate.
 // An entry holds the loaded page id or, when the page has no match, an empty
 // index_t (no mapping).  Both tables are reset to empty before every LoadLevel
 // so a level without the name chunks keeps the raw page indices it was saved
 // with.
 //
-// generic_xlate has no fixed size: it stores index_t object ids (a future
-// object id is a uint32_t), so the table grows to cover whatever id space the
-// level names (the engine used a compile-time MAX_OBJECT_IDS array of the
-// object id's then-width).
+// Both tables are sized to their loaded game table (Object_info / Doors) and
+// grow if a level names more pages, so neither has a fixed size (the engine
+// used compile-time MAX_OBJECT_IDS / MAX_DOORS arrays).  generic_xlate stores
+// index_t object ids (a future object id is a uint32_t).
 static std::vector<index_t> generic_xlate;
 
-static std::array<index_t, MAX_DOORS> door_xlate;
+static std::vector<index_t> door_xlate;
 
-// Grows a name table to hold at least n entries (new entries are empty); the
-// fixed-size door table cannot grow, so it keeps the engine's MAX_DOORS cap.
+// Grows a name table to hold at least n entries (new entries are empty).
 static void EnsureXlateSize(std::vector<index_t> &xlate, size_t n) {
   if (xlate.size() < n)
     xlate.resize(n);
 }
-static void EnsureXlateSize(std::array<index_t, MAX_DOORS> &, size_t) {}
 
 // Reads a GNNM/DRNM chunk body: an int32 count, then that many null-terminated
 // page names.  Each name is resolved through lookup(); an empty name (an unused
@@ -596,7 +594,7 @@ static uint32_t TranslateObjectId(object_type_e type, uint32_t id) {
   if (type == object_type_e::robot || type == object_type_e::powerup || type == object_type_e::building || type == object_type_e::clutter)
     xid = (id < generic_xlate.size()) ? generic_xlate[id] : index_t{};
   else if (type == object_type_e::door)
-    xid = (id < static_cast<uint32_t>(MAX_DOORS)) ? door_xlate[id] : index_t{};
+    xid = (id < door_xlate.size()) ? door_xlate[id] : index_t{};
   else
     return id;
 
@@ -1759,7 +1757,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
   // DRNM chunks keeps the page indices it was saved with.  The generic table
   // starts at the loaded object table's size and grows if a level names more.
   generic_xlate.assign(Object_info.size(), index_t{});
-  door_xlate.fill(index_t{});
+  door_xlate.assign(Doors.size(), index_t{});
 
   FreeAllRooms();
 
