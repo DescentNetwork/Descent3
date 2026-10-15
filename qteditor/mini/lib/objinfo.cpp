@@ -222,7 +222,7 @@ index_t GetNextObjectID(index_t n) {
   Q_ASSERT(*n < MAX_OBJECT_IDS);
   const object_type_e t = Object_info[*n].type;
   if (Num_object_ids[obj_type_index(t)] == 0)
-    return std::nullopt;;
+    return std::nullopt;
   for (int i = *n + 1; i < MAX_OBJECT_IDS; i++)
     if (Object_info[i].type == t)
       return i;
