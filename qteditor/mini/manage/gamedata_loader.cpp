@@ -48,7 +48,8 @@
 #include "gametexture.h"
 #include "door.h"
 #include "ssl_lib.h" // sound_info
-#include "object_external_struct.h" // physics_info, light_info, MAX_OBJECTS
+#include "soundload.h" // FindSoundName
+#include "object_external_struct.h" // physics_info, light_info
 #include "genericpage.h"
 #include "shippage.h"
 #include "weaponpage.h"
@@ -62,11 +63,6 @@
 #include "vclip.h"
 
 #include "string_helpers.h"
-
-// The mini tree defines `object_info Object_info[MAX_OBJECT_IDS];` in
-// objinfo.cpp but no header declares the count; declare it here so the loader
-// can track it.
-extern uint32_t Num_objects;
 
 //-----------------------------------------------------------------------------
 // Top-level loader
@@ -173,7 +169,6 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
   Weapons.clear();
   Ships.clear();
   Sounds.clear();
-  Num_objects = 0;
   for (int i = 0; i < MAX_OBJECT_IDS; i++) {
     Object_info[i].type = object_type_e::none;
     Object_info[i].name.clear();
@@ -200,10 +195,15 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 
     switch (pagetype) {
     case page_type::texture:
-      // GameTextures is a vector that grows to hold every paged texture;
-      // texture_xlate stays indexed by the on-disk tmap value.
-      {
-        ok = mng_ReadNewTexturePage(infile, &texpage);
+      if (!mng_ReadNewTexturePage(infile, &texpage)) {
+        ok = false;
+        break;
+      }
+      // The engine's per-page loaders ignore a name already in the table
+      // (mng_LoadNet*Page), so duplicate pages are skipped, not re-added.
+      if (!FindTextureName(texpage.tex_struct.name)) {
+        // GameTextures is a vector that grows to hold every paged texture;
+        // texture_xlate stays indexed by the on-disk tmap value.
         const size_t texn = GameTextures.add_slot(texpage.tex_struct);
         GameTextures.acquire(texn);
         // Load the texture's image so textured faces render: the payload is
@@ -223,58 +223,77 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       break;
 
     case page_type::weapon:
-      if (!mng_ReadNewWeaponPage(infile, &weaponpage))
+      if (!mng_ReadNewWeaponPage(infile, &weaponpage)) {
         ok = false;
-      {
+        break;
+      }
+      if (!FindWeaponName(weaponpage.weapon_struct.name)) {
         const size_t w = Weapons.add_slot(weaponpage.weapon_struct);
         Weapons.acquire(w);
       }
       break;
 
     case page_type::door:
-      if (!mng_ReadNewDoorPage(infile, &doorpage))
+      if (!mng_ReadNewDoorPage(infile, &doorpage)) {
         ok = false;
-      {
+        break;
+      }
+      if (!FindDoorName(doorpage.door_struct.name)) {
         const size_t d = Doors.add_slot(doorpage.door_struct);
         Doors.acquire(d);
       }
       break;
 
     case page_type::ship:
-      if (!mng_ReadNewShipPage(infile, &shippage))
+      if (!mng_ReadNewShipPage(infile, &shippage)) {
         ok = false;
-      {
+        break;
+      }
+      if (!FindShipName(shippage.ship_struct.name)) {
         const size_t s = Ships.add_slot(shippage.ship_struct);
         Ships.acquire(s);
       }
       break;
 
     case page_type::sound:
-      if (!mng_ReadNewSoundPage(infile, &soundpage))
+      if (!mng_ReadNewSoundPage(infile, &soundpage)) {
         ok = false;
-      {
+        break;
+      }
+      if (!FindSoundName(soundpage.sound_struct.name)) {
         const size_t s = Sounds.add_slot(soundpage.sound_struct);
         Sounds.acquire(s);
       }
       break;
 
     case page_type::generic:
-      if (Num_objects < MAX_OBJECT_IDS) {
-        if (!mng_ReadNewGenericPage(infile, &genericpage))
-          ok = false;
-        Object_info[Num_objects] = genericpage.objinfo_struct;
-        Object_info[Num_objects].name = genericpage.objinfo_struct.name;
-        Num_objects++;
-      } else {
-        discardBytes(infile, len - 4);
+      if (!mng_ReadNewGenericPage(infile, &genericpage)) {
+        ok = false;
+        break;
+      }
+      // The engine's mng_LoadNetGenericPage skips a name already in the table,
+      // then mng_SetAndLoadGeneric allocates the object_id and copies the page
+      // into it.  The editor forces the anim/weapon/AI buffers on
+      // (Running_editor, generic.cpp:1891), so load them too.
+      if (!FindObjectIDName(genericpage.objinfo_struct.name)) {
+        const index_t n = AllocObjectID(genericpage.objinfo_struct.type, true, true, true);
+        if (n) {
+          object_info &obj = Object_info[*n];
+          obj = genericpage.objinfo_struct;
+          obj.anim.assign(genericpage.anim.begin(), genericpage.anim.end());
+          obj.static_wb.assign(genericpage.static_wb.begin(), genericpage.static_wb.end());
+          obj.ai_info.assign(1, genericpage.ai_info);
+        }
       }
       break;
 
     case page_type::megacell:
-      {
+      if (!mng_ReadNewMegacellPage(infile, &megacellpage)) {
+        ok = false;
+        break;
+      }
+      if (!FindMegacellName(megacellpage.megacell_struct.name)) {
         const size_t slot = Megacells.next_slot();
-        if (!mng_ReadNewMegacellPage(infile, &megacellpage))
-          ok = false;
         if (slot >= Megacells.size()) {
           Megacells.add_slot(megacellpage.megacell_struct);
           Megacells.acquire(slot);
@@ -294,9 +313,6 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       discardBytes(infile, len - 4);
       break;
     }
-
-    if (!ok)
-      break;
   }
 
   // Refresh the per-type page counts from the current table.  The engine
@@ -323,9 +339,8 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 //-----------------------------------------------------------------------------
 
 // Searches all object ids for a specific name.  Returns the found id, or -1.
-// The whole table is scanned by its object_type::none marker (not a loaded-page count)
-// exactly like the engine's objinfo.cpp FindObjectIDName: page lookups must
-// work even while a level is loading when Num_objects is temporarily reset.
+// The whole table is scanned by its object_type::none marker (not a loaded-page
+// count), exactly like the engine's objinfo.cpp FindObjectIDName.
 index_t FindObjectIDName(const std::string &name) {
   if(!name.empty())
     for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++)

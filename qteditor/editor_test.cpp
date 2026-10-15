@@ -3810,12 +3810,14 @@ private slots:
 
     QVERIFY(loadGameDataTable(hog));
 
-    extern uint32_t Num_objects;
-
     // The real game ships thousands of table records; sanity-check that each
     // editor-critical array was populated with more than a trivially empty set.
     QVERIFY(static_cast<int>(GameTextures.size()) > 100);
-    QVERIFY(Num_objects > 50);
+    int loaded_objects = 0;
+    for (int i = 0; i < MAX_OBJECT_IDS; i++)
+      if (Object_info[i].type != object_type_e::none)
+        loaded_objects++;
+    QVERIFY(loaded_objects > 50);
     QVERIFY(static_cast<int>(Ships.size()) > 0);
     QVERIFY(static_cast<int>(Weapons.size()) > 0);
     QVERIFY(static_cast<int>(Sounds.size()) > 0);
@@ -3829,6 +3831,37 @@ private slots:
     QVERIFY(Object_info[0].name[0] != '\0');
     QVERIFY(Ships[0].name[0] != '\0');
     errno = 0;
+  }
+
+  // Verifies the loader copies a generic page's anim / static_wb / ai_info into
+  // object_info (the engine's mng_AssignGenericPageToObjInfo) rather than only
+  // the flat objinfo_struct.  The editor's object dialogs read those buffers,
+  // so an empty one (the old behaviour) breaks weapon/AI editing.
+  void testGamedataGenericBuffersLoaded()
+  {
+    const std::filesystem::path hog = "/mnt/media/games/pc/Descent 3/d3.hog";
+    if (!std::filesystem::exists(hog)) {
+      QSKIP("d3.hog not found; skipping generic buffer load test.");
+      return;
+    }
+
+    QVERIFY(loadGameDataTable(hog));
+
+    int withAnim = 0, withWb = 0, withAi = 0;
+    for (int i = 0; i < MAX_OBJECT_IDS; i++) {
+      const object_info &oi = Object_info[i];
+      if (oi.type == object_type_e::none)
+        continue;
+      if (static_cast<int>(oi.anim.size()) == NUM_MOVEMENT_CLASSES)
+        withAnim++;
+      if (static_cast<int>(oi.static_wb.size()) == MAX_WBS_PER_OBJ)
+        withWb++;
+      if (!oi.ai_info.empty())
+        withAi++;
+    }
+    QVERIFY(withAnim > 50);
+    QVERIFY(withWb > 50);
+    QVERIFY(withAi > 50);
   }
 
   // Verifies the name -> handle resolution mng_GetGuaranteedSoundPage performs
