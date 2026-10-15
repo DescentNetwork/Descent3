@@ -517,45 +517,35 @@ static void LL_ReadTextureList(byte_istream &ifile, int chunk_size) {
 // matching page in the currently loaded game tables.  This is the engine's
 // BuildXlateTable + ReadObject translation: object_type::robot/POWERUP/BUILDING/CLUTTER
 // ids go through generic_xlate, object_type::door through door_xlate[MAX_DOORS].
-// A no-mapping entry is reset before every LoadLevel so a level without the
-// name chunks keeps the raw page indices it was saved with.
+// An entry holds the loaded page id or, when the page has no match, an empty
+// index_t (no mapping).  Both tables are reset to empty before every LoadLevel
+// so a level without the name chunks keeps the raw page indices it was saved
+// with.
 //
-// generic_xlate has no fixed size: it stores object ids, which are a uint32_t
-// value, so the table grows to cover whatever id space the level names (the
-// engine used a compile-time MAX_OBJECT_IDS array of the object id's then-width).
-// kNoObjectId marks an entry with no mapping (a full-width id cannot use -1).
-static constexpr uint32_t kNoObjectId = std::numeric_limits<uint32_t>::max();
+// generic_xlate has no fixed size: it stores index_t object ids (a future
+// object id is a uint32_t), so the table grows to cover whatever id space the
+// level names (the engine used a compile-time MAX_OBJECT_IDS array of the
+// object id's then-width).
+static std::vector<index_t> generic_xlate;
 
-static std::vector<uint32_t> generic_xlate;
+static std::array<index_t, MAX_DOORS> door_xlate;
 
-static std::array<int16_t, MAX_DOORS> door_xlate;
-
-// The no-mapping sentinel for a name table's element type: -1 for the int16_t
-// door table, kNoObjectId (all ones) for the uint32_t generic table.
-template <typename T>
-static constexpr T NoXlate() {
-  return static_cast<T>(-1);
-}
-
-// Grows a name table to hold at least n entries; the fixed-size door table
-// cannot grow, so it keeps the engine's MAX_DOORS cap.
-static void EnsureXlateSize(std::vector<uint32_t> &xlate, size_t n) {
+// Grows a name table to hold at least n entries (new entries are empty); the
+// fixed-size door table cannot grow, so it keeps the engine's MAX_DOORS cap.
+static void EnsureXlateSize(std::vector<index_t> &xlate, size_t n) {
   if (xlate.size() < n)
-    xlate.resize(n, kNoObjectId);
+    xlate.resize(n);
 }
-static void EnsureXlateSize(std::array<int16_t, MAX_DOORS> &, size_t) {}
+static void EnsureXlateSize(std::array<index_t, MAX_DOORS> &, size_t) {}
 
 // Reads a GNNM/DRNM chunk body: an int32 count, then that many null-terminated
-// page names.  Each name is resolved through lookup(); an empty name (an
-// unused slot) is never looked up and maps to nothing, exactly as in the
-// engine's BuildXlateTable.  The trailing entries up to the table size are
-// cleared to no mapping so a partially filled table never leaks indices from a
-// previous level.
+// page names.  Each name is resolved through lookup(); an empty name (an unused
+// slot) is never looked up and maps to no id, exactly as in the engine's
+// BuildXlateTable.  The trailing entries up to the table size are cleared so a
+// partially filled table never leaks ids from a previous level.
 template <typename Xlate>
 static void LL_ReadNameXlateChunk(byte_istream &ifile, int chunk_size,
                                   index_t (*lookup)(const std::string &), Xlate &xlate) {
-  using xlate_value_t = typename Xlate::value_type;
-  constexpr xlate_value_t no_mapping = NoXlate<xlate_value_t>();
   int32_t n32 = 0;
   ifile >> n32;
   int n = n32;
@@ -569,13 +559,12 @@ static void LL_ReadNameXlateChunk(byte_istream &ifile, int chunk_size,
   for (int i = 0; i < n; i++) {
     std::string name;
     ifile >> name;
-    const index_t found = name.empty() ? index_t{} : lookup(name);
-    xlate[i] = found ? static_cast<xlate_value_t>(*found) : no_mapping;
+    xlate[i] = name.empty() ? index_t{} : lookup(name);
     if (ifile.tell() >= end)
       break;
   }
   for (int i = n; i < max_items; i++)
-    xlate[i] = no_mapping;
+    xlate[i] = index_t{};
 }
 
 // First used page of the given type, the engine's FindValidID() fallback for
@@ -603,16 +592,16 @@ static index_t FindValidID(object_type_e type) {
 // first valid page of the object's type; when no game table is loaded the raw
 // file id is kept so the level still renders.
 static uint32_t TranslateObjectId(object_type_e type, uint32_t id) {
-  uint32_t xid = kNoObjectId;
+  index_t xid;
   if (type == object_type_e::robot || type == object_type_e::powerup || type == object_type_e::building || type == object_type_e::clutter)
-    xid = (id < generic_xlate.size()) ? generic_xlate[id] : kNoObjectId;
+    xid = (id < generic_xlate.size()) ? generic_xlate[id] : index_t{};
   else if (type == object_type_e::door)
-    xid = (id < static_cast<uint32_t>(MAX_DOORS)) ? static_cast<uint32_t>(door_xlate[id]) : kNoObjectId;
+    xid = (id < static_cast<uint32_t>(MAX_DOORS)) ? door_xlate[id] : index_t{};
   else
     return id;
 
-  if (xid != kNoObjectId)
-    return xid;
+  if (xid)
+    return *xid;
 
   const index_t valid = FindValidID(type);
   return valid.value_or(id);
@@ -1769,9 +1758,8 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
   // Default object/door mapping is "no translation" so a level without GNNM /
   // DRNM chunks keeps the page indices it was saved with.  The generic table
   // starts at the loaded object table's size and grows if a level names more.
-  generic_xlate.assign(Object_info.size(), kNoObjectId);
-  for (size_t i = 0; i < door_xlate.size(); i++)
-    door_xlate[i] = -1;
+  generic_xlate.assign(Object_info.size(), index_t{});
+  door_xlate.fill(index_t{});
 
   FreeAllRooms();
 
