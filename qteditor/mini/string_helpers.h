@@ -1,10 +1,10 @@
 #pragma once
 #include <string>
 #include <posix_stream.h>
+#include "utils.h"
 
 bool match(const std::string &a, const std::string &b);
 bool less(const std::string &a, const std::string &b);
-
 
 struct p_string_t
 {
@@ -14,9 +14,12 @@ struct p_string_t
   p_string_t(p_string_t&&) = default;
 };
 
-inline p_string_t pascal_string(std::string& target)
+inline p_string_t pascal_string(optref<std::string> target)
 {
-  return p_string_t(target);
+  static std::string s;
+  if(!target)
+    return p_string_t(s);
+  return p_string_t(*target);
 }
 
 inline byte_istream& operator >>(byte_istream& input, p_string_t&& data)

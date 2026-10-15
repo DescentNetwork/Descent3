@@ -1960,7 +1960,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
       case "NODE"_ID: LL_ReadBNodeChunk(ifile, version); break;
       case "MTCN"_ID: LL_ReadMatcenChunk(ifile); break;
       case "LVLG"_ID: Level_goals.LoadLevelGoalInfo(ifile); break;
-      case "LIFE"_ID: a_life.LoadData(ifile); break;
+      case "LIFE"_ID: ifile >> a_life; break;
       case "OSND"_ID: LL_ReadOverrideSoundChunk(ifile); break;
       case "FFTM"_ID: LL_ReadFFTMChunk(ifile, version); break;
       case "INFO"_ID: LL_ReadInfo(ifile, version); break;
@@ -2197,7 +2197,7 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     // LIFE (ambient life data).  Engine order: after matcen/goals, before INFO.
     {
       int start = LL_StartChunk(out, CHUNK_ALIFE_DATA);
-      a_life.SaveData(out);
+      out << a_life;
       LL_EndChunk(out, start);
     }
 

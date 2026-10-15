@@ -56,32 +56,14 @@
 // Sky defines
 #define MAX_STARS 600    // how many stars in our sky
 #define MAX_HORIZON_PIECES 16 // how many segments of the horizon there are around our sphere
-/*
-// Sky flags
-#define TF_STARS 1      // whether or not our terrain is starred
-#define TF_SATELLITES 2 // Draw satellites or no?
-#define TF_FOG 4        // Draw fog?
-#define TF_ROTATE_STARS 8
-#define TF_ROTATE_SKY 16
-*/
-/*
-// Satellite flags
-#define TSF_HALO 1       // Draw halo?
-#define TSF_ATMOSPHERE 2 // Draw atmosphere
-*/
+
+
 // occlusion stuff
 #define OCCLUSION_SIZE 16
 
 // Mine/terrain joining
 #define MAX_LINK_TILES 4 // how many terrain segments can be attached to mines
-/*
-// Terrain segment flags
-#define TF_DYNAMIC 1
-#define TF_SPECIAL_WATER 4 // Water
-#define TF_SPECIAL_MINE 8  // This segment has a mine attached to it
-#define TF_INVISIBLE 16    // This segment is invisible
-#define TFM_REGION_MASK (32 + 64 + 128)
-*/
+
 
 struct [[gnu::packed]] terrain_segment_flags_t
 {
@@ -178,10 +160,10 @@ struct satellite_t
 };
 
 inline byte_istream& operator >>(byte_istream& input, satellite_t& data)
-  { input >> data.texture >> data.vectors >> reinterpret_cast<uint8_t&>(data.flags) >> data.size >> data.color; }
+  { return input >> data.texture >> data.vectors >> reinterpret_cast<uint8_t&>(data.flags) >> data.size >> data.color; }
 
 inline byte_ostream& operator <<(byte_ostream& output, const satellite_t& data)
-  { output << data.texture << data.vectors << reinterpret_cast<const uint8_t&>(data.flags) << data.size << data.color; }
+  { return output << data.texture << data.vectors << reinterpret_cast<const uint8_t&>(data.flags) << data.size << data.color; }
 
 // Data for the sky spherical map
 struct terrain_sky {
@@ -202,8 +184,6 @@ struct terrain_sky {
   ddgr_color fog_color;
 
   std::vector<satellite_t> satellites;
-
-
 
   std::array<vector3, MAX_STARS> star_vectors;
   std::array<int, MAX_STARS> star_color;

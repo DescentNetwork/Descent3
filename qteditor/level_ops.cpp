@@ -182,7 +182,7 @@ void CreateNewMine() {
 
   // Reset matcens and ambient life.
   DestroyAllMatcens();
-  a_life.ALReset();
+  a_life.reset();
   Level_goals.CleanupAfterLevel();
 
   // Reset BNode and physics globals.

@@ -288,8 +288,12 @@ struct alignas(N==N_POW2 && A != align::scalar || A == align::vector ? alignof(T
   template<size_t N_A = 3, size_t N_B = 3, enum align A_A = align::adaptive, enum align A_B = align::adaptive>
   constexpr static inline vec<T,3> cross3(const vec<T,N_A,A_A> &a, const vec<T,N_B,A_B> &b)
   {
-    return vec<T,3,align::vector>{ a.y() * b.z(), a.z() * b.x(), a.x() * b.y() }
-         - vec<T,3,align::vector>{ b.y() * a.z(), b.z() * a.x(), b.x() * a.y() };
+    return vec<T,3,align::vector>{ a.y() * b.z(),
+                                   a.z() * b.x(),
+                                   a.x() * b.y() }
+         - vec<T,3,align::vector>{ b.y() * a.z(),
+                                   b.z() * a.x(),
+                                   b.x() * a.y() };
   }
   constexpr inline scalar mag() const { return scalar(sqrt(dot(*this, *this))); }
 
@@ -317,54 +321,32 @@ static inline void vm_MakeZero(angvec &a) { a = angvec{}; }
 // zero's out a vector
 static inline void vm_MakeZero(vector3 &v) { v = vector3{}; }
 
-struct matrix {
-constexpr static const size_t RIGHT_HAND = 0;
-constexpr static const size_t UP         = 1;
-constexpr static const size_t FORWARD    = 2;
-union {
-struct {
+struct matrix
+{
+  constexpr static const size_t RIGHT_HAND = 0;
+  constexpr static const size_t UP = 1;
+  constexpr static const size_t FORWARD = 2;
   vector3 rvec;
   vector3 uvec;
   vector3 fvec;
-};
-  scalar a2d[3][3];
-  scalar a1d[9];
-};
-constexpr static inline const matrix id()
-{
-  return matrix{ vector3::id(0), vector3::id(1), vector3::id(2) };
-}
-constexpr static inline const matrix ne()
-{
-  return matrix{ vector3{}, vector3{}, vector3{} };
-}
+  constexpr static inline const matrix id() { return matrix{vector3::id(0), vector3::id(1), vector3::id(2)}; }
+  constexpr static inline const matrix ne() { return matrix{vector3{}, vector3{}, vector3{}}; }
 };
 
 constexpr matrix IDENTITY_MATRIX = matrix::id();
 
-struct alignas(alignof(vector4) * 4) matrix4 {
-constexpr static const size_t RIGHT_HAND = 0;
-constexpr static const size_t UP         = 1;
-constexpr static const size_t FORWARD    = 2;
-constexpr static const size_t POSITION   = 3;
-union {
-struct {
+struct alignas(alignof(vector4) * 4) matrix4
+{
+  constexpr static const size_t RIGHT_HAND = 0;
+  constexpr static const size_t UP = 1;
+  constexpr static const size_t FORWARD = 2;
+  constexpr static const size_t POSITION = 3;
   vector4 rvec;
   vector4 uvec;
   vector4 fvec;
   vector4 pos;
-};
-  scalar a2d[4][4];
-  scalar a1d[16];
-};
-constexpr static inline const matrix4 id()
-{
-  return matrix4{ vector4::id(0), vector4::id(1), vector4::id(2), vector4::id(3) };
-}
-constexpr static inline const matrix4 ne()
-{
-  return matrix4{ vector4{}, vector4{}, vector4{}, vector4{} };
-}
+  constexpr static inline const matrix4 id() { return matrix4{vector4::id(0), vector4::id(1), vector4::id(2), vector4::id(3)}; }
+  constexpr static inline const matrix4 ne() { return matrix4{vector4{}, vector4{}, vector4{}, vector4{}}; }
 };
 
 // Adds 2 matrices

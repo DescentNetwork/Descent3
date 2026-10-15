@@ -29,113 +29,118 @@ namespace {
 constexpr int32_t AL_VERSION = 1;
 } // namespace
 
+void ambient_life::setting_t::reset(void)
+{
+  type.reset();
+  name.clear();
+  total = 0;
+  min = 0;
+  max = 0;
+  flags = {};
+  next_size = 0;
+  next_do_time = 0.0f;
+}
+
+// Picks a random resident count in [m_min, m_max] for slot i.
+void ambient_life::setting_t::compute_next_size(void)
+{
+  if (max > min)
+    next_size = min + static_cast<uint8_t>(d3::rand() % (max - min));
+  else
+    next_size = max;
+}
+
 // Resets every ambient-life slot to a clean state (engine aiambient.cpp:115).
-void ambient_life::ALReset() {
-  for (size_t i = 0; i < m_type.size(); i++)
+void ambient_life::reset()
+{
+  for (size_t i = 0; i < m_settings.size(); i++)
   {
-    m_type[i].reset();
+    m_settings[i].reset();
+    m_cur_num[i] = 0;
 
     for (size_t j = 0; j < m_handle[i].size(); j++)
       m_handle[i][j] = 0;
-
-    m_total[i] = 0;
-    m_cur_num[i] = 0;
-    m_flags[i] = 0;
-
-    m_min[i] = 0;
-    m_max[i] = 0;
-
-    m_next_do_time[i] = 0.0f;
-    m_next_size[i] = 0;
   }
 }
 
 void ambient_life::DoFrame(void) {}
 
-// Picks a random resident count in [m_min, m_max] for slot i.
-void ambient_life::ComputeNextSize(uint8_t i) {
-  if (m_max[i] > m_min[i])
-  {
-    m_next_size[i] = m_min[i] + static_cast<uint8_t>(d3::rand() % (m_max[i] - m_min[i]));
-  } else {
-    m_next_size[i] = m_max[i];
-  }
-}
+
 
 // Called at level start.  Nowhere near gameplay (the mini is an editor), but
 // ported for completeness: the engine initializes the per-type next-values.
-void ambient_life::InitForLevel() {
-  for (size_t i = 0; i < m_type.size(); i++)
+void ambient_life::InitForLevel()
+{
+  for (size_t i = 0; i < m_settings.size(); i++)
   {
-    ComputeNextSize(static_cast<uint8_t>(i));
+    m_settings[i].compute_next_size();
+    m_settings[i].next_do_time = d3::chrono::last_update();
     m_cur_num[i] = 0;
-    m_next_do_time[i] = d3::chrono::last_update();
   }
 
   DoFrame();
 }
 
+byte_ostream& operator<<(byte_ostream& output, const ambient_life::setting_t& s)
+{
+  return output
+         << pascal_string(s.type ? optref<std::string>(Object_info[*s.type].name) : std::nullopt)
+         << s.total
+         << reinterpret_cast<const uint8_t&>(s.flags)
+         << s.min
+         << s.max
+         << s.next_size
+         << s.next_do_time;
+}
+
+byte_istream& operator>>(byte_istream& input, ambient_life::setting_t& s)
+{
+  input >> pascal_string(s.name)
+        >> s.total
+        >> reinterpret_cast<uint8_t&>(s.flags)
+        >> s.min
+        >> s.max
+        >> s.next_size
+        >> s.next_do_time;
+  s.type = FindObjectIDName(s.name);
+  return input;
+}
+
 // LIFE chunk writer (engine aiambient.cpp:138).  Per type: the object name
 // (short length + name bytes including the NUL), then five byte fields and a
 // float; afterwards the per-type live-resident counts and their object handles.
-void ambient_life::SaveData(byte_ostream &ofile) const {
-  static std::string empty_string;
-  ofile << AL_VERSION;
+byte_ostream& operator<<(byte_ostream& os, const ambient_life& al) {
+  os << AL_VERSION;
+  os << al.m_settings;
 
-  for (size_t i = 0; i < m_type.size(); i++)
-  {
-    if (m_type[i])
-      ofile << pascal_string(Object_info[*m_type[i]].name);
-    else
-      ofile << pascal_string(empty_string);
-
-    ofile << m_total[i];
-    ofile << m_flags[i];
-    ofile << m_min[i];
-    ofile << m_max[i];
-    ofile << m_next_size[i];
-    ofile << m_next_do_time[i];
+  for (size_t i = 0; i < al.m_settings.size(); i++) {
+    os << al.m_cur_num[i];
+    for (int j = 0; j < al.m_cur_num[i]; j++)
+      os << al.m_handle[i][j];
   }
-
-  for (size_t i = 0; i < m_type.size(); i++)
-  {
-    ofile << m_cur_num[i];
-    for (int j = 0; j < m_cur_num[i]; j++)
-      ofile << m_handle[i][j];
-  }
+  return os;
 }
 
 // LIFE chunk reader (engine aiambient.cpp:175).  The table is rebuilt fresh
 // (like the other chunk readers) so a re-saved level keeps only the entries
 // the file declared; the object name is resolved through the loaded objinfo
 // tables to a global object id.
-void ambient_life::LoadData(byte_istream &ifile) {
-  ALReset();
+byte_istream& operator>>(byte_istream& is, ambient_life& al) {
+  al.reset();
 
   int32_t version = 0;
-  ifile >> version;
+  is >> version;
   if (version < 1)
-    return;
+    return is;
 
-  for (size_t i = 0; i < m_type.size(); i++) {
-    std::string raw;
-    ifile >> pascal_string(raw);
-    // The name field is NUL-terminated; anything after the first NUL is
-    // ignored, exactly like the engine's C-string FindObjectIDName().
-    m_type[i] = FindObjectIDName(raw);
+  is >> al.m_settings;
 
-    ifile >> m_total[i];
-    ifile >> m_flags[i];
-    ifile >> m_min[i];
-    ifile >> m_max[i];
-    ifile >> m_next_size[i];
-    ifile >> m_next_do_time[i];
+  for (size_t i = 0; i < al.m_settings.size(); i++)
+  {
+    is >> al.m_cur_num[i];
+
+    for (int j = 0; j < al.m_cur_num[i]; j++)
+      is >> al.m_handle[i][j];
   }
-
-  for (size_t i = 0; i < m_type.size(); i++) {
-    ifile >> m_cur_num[i];
-
-    for (int j = 0; j < m_cur_num[i]; j++)
-      ifile >> m_handle[i][j];
-  }
+  return is;
 }

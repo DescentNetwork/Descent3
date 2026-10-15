@@ -1,5 +1,5 @@
 /*
-* Descent 3 
+* Descent 3
 * Copyright (C) 2024 Parallax Software
 *
 * This program is free software: you can redistribute it and/or modify
@@ -51,49 +51,46 @@ static_assert(sizeof(ambient_life_flags_t) == sizeof(uint8_t));
 #define CHECK_INTERVAL_MIN 5.0f
 #define CHECK_INTERVAL_MAX 10.0f
 
-struct ambient_life_t
+class ambient_life
 {
-  //std::string name;
-  uint32_t object_id;
-  uint8_t total;
-  uint8_t max;
-  uint8_t min;
-  ambient_life_flags_t flags;
-  uint8_t next_size;
-  float next_do_time;
-};
-
-class ambient_life {
   // Editor settable values
-  std::array<index_t, MAX_AL_TYPES> m_type;
-  std::array<uint8_t, MAX_AL_TYPES> m_total;
-  std::array<uint8_t, MAX_AL_TYPES> m_max;
-  std::array<uint8_t, MAX_AL_TYPES> m_min;
-  std::array<uint8_t, MAX_AL_TYPES> m_flags;
+  struct setting_t
+  {
+    index_t type;
+    std::string name;
+    uint8_t total;
+    uint8_t max;
+    uint8_t min;
+    ambient_life_flags_t flags;
+    uint8_t next_size;
+    float next_do_time;
+
+    void reset(void);
+    void compute_next_size(void);
+  };
+  friend byte_ostream& operator<<(byte_ostream& os, const setting_t& al);
+  friend byte_istream& operator>>(byte_istream& is, setting_t& al);
+
+  // Editor settable values
+  std::array<setting_t, MAX_AL_TYPES> m_settings;
 
   // These are never set or gotten from outside of the class
   std::array<uint8_t, MAX_AL_TYPES> m_cur_num;
   std::array<std::array<int, MAX_ALS_PER_TYPE>, MAX_AL_TYPES> m_handle;
-
-  // Runtime-only state that is saved per type (m_next_size, m_next_do_time):
-  // the engine's SaveData/LoadData serialize them alongside the editor values.
-  std::array<uint8_t, MAX_AL_TYPES> m_next_size;
-  std::array<float, MAX_AL_TYPES> m_next_do_time;
-
-  void ComputeNextSize(uint8_t index);
-
 public:
-  ambient_life() { ALReset(); }
+  ambient_life() { reset(); }
 
-  void GetALValue(int8_t index, char field, void *ptr);
-  void SetALValue(int8_t index, char field, void *ptr);
-  void SaveData(byte_ostream &ofile) const;
-  void LoadData(byte_istream &ifile);
+  void GetALValue(uint8_t index, uint8_t field, void *ptr);
+  void SetALValue(uint8_t index, uint8_t field, void *ptr);
 
-  void DoFrame();
+  void DoFrame(void);
   void InitForLevel(void);
-  void ALReset();
+  void reset(void);
+
+  friend byte_ostream& operator<<(byte_ostream& os, const ambient_life& al);
+  friend byte_istream& operator>>(byte_istream& is, ambient_life& al);
 };
+
 
 extern ambient_life a_life;
 

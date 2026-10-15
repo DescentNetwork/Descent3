@@ -1995,7 +1995,7 @@ private slots:
 
     // a_life is a cross-test global; the save path must write the reset table
     // and every subsequent load must re-save it byte-stably.
-    a_life.ALReset();
+    a_life.reset();
 
     const QString tmp = QDir::tempPath() + "/_test_alife_roundtrip";
     QDir::current().mkpath(tmp);
@@ -2036,7 +2036,7 @@ private slots:
       QFile::remove(g1);
       QFile::remove(g2);
 
-      a_life.ALReset();
+      a_life.reset();
       QVERIFY2(LoadLevel(lvl, nullptr), "LoadLevel(real) failed");
       QVERIFY2(SaveLevel(std::filesystem::path(g1.toStdString()), true), "SaveLevel real passA failed");
 
@@ -2045,7 +2045,7 @@ private slots:
       const QByteArray bytes = raw.readAll();
       QVERIFY2(bytes.indexOf("LIFE") >= 0, "saved level is missing its LIFE chunk");
 
-      a_life.ALReset();
+      a_life.reset();
       QVERIFY2(LoadLevel(std::filesystem::path(g1.toStdString()), nullptr), "LoadLevel real passA failed");
       QVERIFY2(SaveLevel(std::filesystem::path(g2.toStdString()), true), "SaveLevel real passB failed");
       QFile ca(g1), cb(g2);

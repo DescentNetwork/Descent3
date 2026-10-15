@@ -15,6 +15,7 @@
 
 const matrix Identity_matrix = matrix::id();
 void vm_MakeIdentity(matrix &m) { m = Identity_matrix; }
+
 void vm_TransposeMatrix(matrix &m) {
   scalar t;
   t = m.uvec.x();
@@ -27,6 +28,7 @@ void vm_TransposeMatrix(matrix &m) {
   m.fvec.y() = m.uvec.z();
   m.uvec.z() = t;
 }
+
 void vm_Orthogonalize(matrix &m) {
   if (vm_NormalizeVector(m.fvec) == 0)
     return;
@@ -37,29 +39,35 @@ void vm_Orthogonalize(matrix &m) {
   }
   m.uvec = vm_Cross3Product(m.fvec, m.rvec);
 }
+
 scalar vm_GetMagnitude(const vector3 &v) { return v.mag(); }
 scalar vm_GetMagnitudeFast(const vector3 &v) { return v.mag(); }
 void vm_CrossProduct(vector3 &result, const vector3 &a, const vector3 &b) { result = vm_Cross3Product(a, b); }
-scalar vm_DotProduct(const vector3 &a, const vector3 &b) { return vm_Dot3Product(a, b); }
+scalar vm_DotProduct(const vector3 &a, const vector3 &b) { return vector3::dot(a, b); }
 scalar vm_VectorDistance(const vector3 &a, const vector3 &b) { return (a - b).mag(); }
 scalar vm_VectorDistanceQuick(const vector3 &a, const vector3 &b) { return vm_VectorDistance(a, b); }
+
 scalar vm_NormalizeVector(vector3 &v) {
   const scalar m = v.mag();
   if (m > 0.000001f)
     v = v * (1.0f / m);
   return m;
 }
+
 scalar vm_NormalizeVectorFast(vector3 &v) { return vm_NormalizeVector(v); }
 void vm_SubVectors(vector3 &result, const vector3 &a, const vector3 &b) { result = a - b; }
 void vm_AddVectors(vector3 &result, const vector3 &a, const vector3 &b) { result = a + b; }
 void vm_ScaleVector(vector3 &result, const vector3 &src, scalar s) { result = src * s; }
 void vm_ScaleAddVector(vector3 &d, const vector3 &p, const vector3 &v, scalar s) { d = p + v * s; }
+
 void vm_DivVector(vector3 &result, const vector3 &src, scalar s) {
   if (s == 0)
     return;
   result = src * (1.0f / s);
 }
+
 void vm_CenterVector(vector3 &v) { v = vector3{}; }
+
 void vm_AverageVector(vector3 &v, int n) {
   if (n == 0)
     return;
@@ -67,13 +75,16 @@ void vm_AverageVector(vector3 &v, int n) {
   for (int i = 0; i < 3; i++)
     v[i] /= nf;
 }
+
 scalar vm_GetNormal(vector3 &n, const vector3 &v0, const vector3 &v1, const vector3 &v2) {
   vector3 a = v1 - v0;
   vector3 b = v2 - v0;
   n = vm_Cross3Product(a, b);
   return vm_NormalizeVector(n);
 }
+
 void vm_GetPerp(vector3 &n, const vector3 &a, const vector3 &b, const vector3 &c) { n = {}; }
+
 scalar vm_GetCentroid(vector3 &centroid, const vector3 *src, int nv) {
   if (src == nullptr || nv <= 0)
     return 0;
@@ -83,7 +94,9 @@ scalar vm_GetCentroid(vector3 &centroid, const vector3 *src, int nv) {
   centroid = centroid * (1.0f / (float)nv);
   return 0;
 }
+
 scalar vm_GetCentroidFast(vector3 &centroid, const vector3 *src, int nv) { return vm_GetCentroid(centroid, src, nv); }
+
 scalar vm_ComputeBoundingSphere(vector3 &center, const vector3 *vecs, int num_verts) {
   center = vector3{};
   if (vecs == nullptr || num_verts <= 0)
@@ -98,26 +111,30 @@ scalar vm_ComputeBoundingSphere(vector3 &center, const vector3 *vecs, int num_ve
   return max_r;
 }
 void vm_MakeRandomVector(vector3 &vec) { vec = vector3{}; }
+
 scalar vm_GetNormalizedDir(vector3 &dest, const vector3 &end, const vector3 &start) {
   dest = end - start;
   return vm_NormalizeVector(dest);
 }
+
 scalar vm_GetNormalizedDirFast(vector3 &dest, const vector3 &end, const vector3 &start) {
   return vm_GetNormalizedDir(dest, end, start);
 }
+
 scalar vm_DistToPlane(const vector3 &checkp, const vector3 &norm, const vector3 &planep) {
-  return vm_Dot3Product(checkp - planep, norm);
+  return vector3::dot(checkp - planep, norm);
 }
+
 scalar vm_GetSlope(scalar x1, scalar y1, scalar x2, scalar y2) {
   if (y2 - y1 == 0)
     return 0;
   return (x2 - x1) / (y2 - y1);
 }
+
 scalar calc_det_value(const matrix &det) {
-  const scalar *m = det.a1d;
-  return m[0] * (m[4] * m[8] - m[5] * m[7]) - m[1] * (m[3] * m[8] - m[5] * m[6]) +
-         m[2] * (m[3] * m[7] - m[4] * m[6]);
+  return vector3::dot(det.rvec, vector3::cross3(det.uvec, det.fvec));
 }
+
 void vm_MakeInverseMatrix(matrix &dest) { vm_TransposeMatrix(dest); }
 // angle is uint16_t with 65536 == 2*pi (matches the D3 256-entry trig table).
 scalar FixSin(angle a) { return scalar(std::sin((2.0f * std::numbers::pi_v<float> * float(a)) / 65536.0f)); }
@@ -129,6 +146,7 @@ void vm_SinCos(angle a, optref<scalar> s, optref<scalar> c) {
   if (c)
     *c = FixCos(a);
 }
+
 void vm_SinCosToMatrix(matrix &m, scalar sinp, scalar cosp, scalar sinb, scalar cosb, scalar sinh, scalar cosh) {
   m.rvec.x() = (cosb * cosh) + (sinp * sinb * sinh);
   m.uvec.z() = (sinb * sinh) + (sinp * cosb * cosh);
@@ -140,6 +158,7 @@ void vm_SinCosToMatrix(matrix &m, scalar sinp, scalar cosp, scalar sinb, scalar 
   m.fvec.z() = (cosh * cosp);
   m.fvec.y() = -sinp;
 }
+
 angle vm_DeltaAngVec(const vector3 &v0, const vector3 &v1, const vector3 &fvec) {
   vector3 t = v1 - v0;
   const scalar m = vm_GetMagnitude(t);
@@ -147,17 +166,20 @@ angle vm_DeltaAngVec(const vector3 &v0, const vector3 &v1, const vector3 &fvec) 
     t = t * (1.0f / m);
   return vm_DeltaAngVecNorm(t, std::nullopt, fvec);
 }
+
 angle vm_DeltaAngVecNorm(const vector3 &v0, optref<const vector3> v1, const vector3 &fvec) {
-  scalar s = vm_Dot3Product(v0, fvec);
+  scalar s = vector3::dot(v0, fvec);
   if (s > 1.0f)
     s = 1.0f;
   if (s < -1.0f)
     s = -1.0f;
   return (angle)((std::acos(s) / (2.0f * std::numbers::pi_v<float>)) * 65536.0f);
 }
+
 void vm_AnglesToMatrix(matrix &m, angle p, angle h, angle b) {
   vm_SinCosToMatrix(m, FixSin(p), FixCos(p), FixSin(b), FixCos(b), FixSin(h), FixCos(h));
 }
+
 angvec &vm_ExtractAnglesFromMatrix(angvec &a, const matrix &m) {
   scalar p = -m.fvec.y();
   if (p > 1.0f)
@@ -174,6 +196,7 @@ angvec &vm_ExtractAnglesFromMatrix(angvec &a, const matrix &m) {
   }
   return a;
 }
+
 void vm_VectorToMatrix(matrix &m, optref<vector3> fvec, optref<vector3> uvec, optref<vector3> rvec) {
   if (!fvec.has_value()) {
     // No forward vector: use the up and/or right vectors instead.
@@ -230,6 +253,7 @@ void vm_VectorToMatrix(matrix &m, optref<vector3> fvec, optref<vector3> uvec, op
   }
   m = tmp;
 }
+
 void vm_VectorAngleToMatrix(matrix &m, vector3 &v, angle a) {
   scalar sinp = -v.y();
   scalar cosp = std::sqrt(std::max(0.0f, 1.0f - sinp * sinp));
@@ -240,30 +264,41 @@ void vm_VectorAngleToMatrix(matrix &m, vector3 &v, angle a) {
   }
   vm_SinCosToMatrix(m, sinp, cosp, FixSin(a), FixCos(a), sinh, cosh);
 }
-void vm_MatrixMulTMatrix(matrix &dest, const matrix &src0, const matrix &src1) {
-  matrix d;
-  d.rvec.x() = src0.rvec.x() * src1.rvec.x() + src0.uvec.x() * src1.uvec.x() + src0.fvec.x() * src1.fvec.x();
-  d.uvec.x() = src0.rvec.x() * src1.rvec.y() + src0.uvec.x() * src1.uvec.y() + src0.fvec.x() * src1.fvec.y();
-  d.fvec.x() = src0.rvec.x() * src1.rvec.z() + src0.uvec.x() * src1.uvec.z() + src0.fvec.x() * src1.fvec.z();
-  d.rvec.y() = src0.rvec.y() * src1.rvec.x() + src0.uvec.y() * src1.uvec.x() + src0.fvec.y() * src1.fvec.x();
-  d.uvec.y() = src0.rvec.y() * src1.rvec.y() + src0.uvec.y() * src1.uvec.y() + src0.fvec.y() * src1.fvec.y();
-  d.fvec.y() = src0.rvec.y() * src1.rvec.z() + src0.uvec.y() * src1.uvec.z() + src0.fvec.y() * src1.fvec.z();
-  d.rvec.z() = src0.rvec.z() * src1.rvec.x() + src0.uvec.z() * src1.uvec.x() + src0.fvec.z() * src1.fvec.x();
-  d.uvec.z() = src0.rvec.z() * src1.rvec.y() + src0.uvec.z() * src1.uvec.y() + src0.fvec.z() * src1.fvec.y();
-  d.fvec.z() = src0.rvec.z() * src1.rvec.z() + src0.uvec.z() * src1.uvec.z() + src0.fvec.z() * src1.fvec.z();
-  dest = d;
+
+void vm_MatrixMulTMatrix(matrix &dest, const matrix &src0, const matrix &src1)
+{
+  /*
+  for (int c = 0; c < 3; ++c)
+    for (int r = 0; r < 3; ++r)
+      d.a2[c][r] = src0.a2[0][r] * src1.a2[c][0] +
+                    src0.a2[1][r] * src1.a2[c][1] +
+                    src0.a2[2][r] * src1.a2[c][2];
+  */
+  dest.rvec.x() = src0.rvec.x() * src1.rvec.x() + src0.uvec.x() * src1.uvec.x() + src0.fvec.x() * src1.fvec.x();
+  dest.uvec.x() = src0.rvec.x() * src1.rvec.y() + src0.uvec.x() * src1.uvec.y() + src0.fvec.x() * src1.fvec.y();
+  dest.fvec.x() = src0.rvec.x() * src1.rvec.z() + src0.uvec.x() * src1.uvec.z() + src0.fvec.x() * src1.fvec.z();
+  dest.rvec.y() = src0.rvec.y() * src1.rvec.x() + src0.uvec.y() * src1.uvec.x() + src0.fvec.y() * src1.fvec.x();
+  dest.uvec.y() = src0.rvec.y() * src1.rvec.y() + src0.uvec.y() * src1.uvec.y() + src0.fvec.y() * src1.fvec.y();
+  dest.fvec.y() = src0.rvec.y() * src1.rvec.z() + src0.uvec.y() * src1.uvec.z() + src0.fvec.y() * src1.fvec.z();
+  dest.rvec.z() = src0.rvec.z() * src1.rvec.x() + src0.uvec.z() * src1.uvec.x() + src0.fvec.z() * src1.fvec.x();
+  dest.uvec.z() = src0.rvec.z() * src1.rvec.y() + src0.uvec.z() * src1.uvec.y() + src0.fvec.z() * src1.fvec.y();
+  dest.fvec.z() = src0.rvec.z() * src1.rvec.z() + src0.uvec.z() * src1.uvec.z() + src0.fvec.z() * src1.fvec.z();
 }
+
 void vm_MatrixMulVector(vector3 &result, const vector3 &v, const matrix &m) {
-  result.x() = vm_Dot3Product(v, m.rvec);
-  result.y() = vm_Dot3Product(v, m.uvec);
-  result.z() = vm_Dot3Product(v, m.fvec);
+  result.x() = vector3::dot(v, m.rvec);
+  result.y() = vector3::dot(v, m.uvec);
+  result.z() = vector3::dot(v, m.fvec);
 }
+
 void vm_VectorMulTMatrix(vector3 &result, const vector3 &v, const matrix &m) {
   result.x() = vm_Dot3Vector(v.x(), v.y(), v.z(), m.rvec);
   result.y() = vm_Dot3Vector(v.x(), v.y(), v.z(), m.uvec);
   result.z() = vm_Dot3Vector(v.x(), v.y(), v.z(), m.fvec);
 }
+
 void vm_MatrixMul(matrix &dest, const matrix &a, const matrix &b) { dest = a * b; }
+
 matrix operator*(const matrix &a, const matrix &b) {
   matrix d;
   d.rvec = vector3{vm_Dot3Vector(a.rvec.x(), a.uvec.x(), a.fvec.x(), b.rvec),
@@ -277,4 +312,5 @@ matrix operator*(const matrix &a, const matrix &b) {
                   vm_Dot3Vector(a.rvec.z(), a.uvec.z(), a.fvec.z(), b.fvec)};
   return d;
 }
+
 matrix operator*=(matrix &a, const matrix &b) { return (a = a * b); }
