@@ -14,6 +14,7 @@
 #include "lib/weapon.h"
 #include "game/door.h"
 #include "lib/megacell.h"
+#include "lib/objinfo.h" // object_info
 
 namespace d3
 {
@@ -120,6 +121,7 @@ namespace d3
   template class slotvec_base_t<texture>;
   template class slotvec_base_t<weapon>;
   template class slotvec_base_t<door>;
+  template class slotvec_base_t<object_info>;
 
   template class slotvec_t<bms_bitmap>;
   template class slotvec_t<bms_lightmap>;

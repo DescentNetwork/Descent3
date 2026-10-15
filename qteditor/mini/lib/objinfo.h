@@ -314,6 +314,7 @@
 #include <string>
 #include <vector>
 
+#include "slotvec.h"
 #include "utils.h"
 #include "object.h"
 #include "manage.h"
@@ -338,9 +339,6 @@
 // This next numbers define the distance at which LOD popping occurs in models
 #define DEFAULT_MED_LOD_DISTANCE 75.0f
 #define DEFAULT_LO_LOD_DISTANCE 120.0f
-
-// The number of ids of each type in the list
-extern int Num_object_ids[];
 
 extern const std::vector<std::string> Movement_class_names;
 extern const std::vector<std::string> Anim_state_names;
@@ -590,8 +588,43 @@ struct object_info {
 
 };
 
-// The big array of object info
-extern object_info Object_info[];
+// Table of object_info rows addressed by object id, backed by the same slot
+// storage as the other loaded tables.  Row access (operator[]/at/front/back)
+// yields object_info directly.  Allocation hands out the first free slot
+// (next_slot), and the engine's type-scoped traversal (next/prev) cycles over
+// the rows whose type matches the current row's type.
+class object_info_table_t : public d3::slotvec_base_t<object_info> {
+public:
+  using base_type = d3::slotvec_base_t<object_info>;
+  using size_type = typename base_type::size_type;
+
+  object_info_table_t();
+
+  // Resets every row to an unused object (type none), keeping the fixed
+  // MAX_OBJECT_IDS id space (the engine's InitObjectInfo).
+  void reset();
+
+  // Allocs an object row of the given type, applying the same per-object
+  // defaults as AllocObjectID.  Returns std::nullopt when the id space is full.
+  index_t alloc(object_type_e type, bool f_anim, bool f_weapons, bool f_ai);
+
+  // Frees object row n (the engine's FreeObjectID).
+  void free(index_t n);
+
+  // First row with the given type, or std::nullopt (the engine's GetObjectID).
+  index_t find_type(object_type_e type) const;
+
+  // First used row whose name matches (case-insensitive), or std::nullopt (the
+  // engine's FindObjectIDName).
+  index_t find_by_name(const std::string &name) const;
+
+  // Type-scoped cyclic traversal (the engine's GetNext/GetPrevObjectID).
+  std::optional<size_type> next(size_type i) const override;
+  std::optional<size_type> prev(size_type i) const override;
+};
+
+// The big table of object info
+extern object_info_table_t Object_info;
 
 
 // Sets all objects to unused

@@ -169,10 +169,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
   Weapons.clear();
   Ships.clear();
   Sounds.clear();
-  for (int i = 0; i < MAX_OBJECT_IDS; i++) {
-    Object_info[i].type = object_type_e::none;
-    Object_info[i].name.clear();
-  }
+  Object_info.reset();
   // Loop grows so a second load produces the same arrays as the first.
   Doors.clear();
   InitMegacells();
@@ -315,19 +312,6 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
     }
   }
 
-  // Refresh the per-type page counts from the current table.  The engine
-  // maintains Num_object_ids as pages are loaded / freed (objinfo.cpp); the
-  // mini's loader is the only page source, and GetNextObjectID /
-  // GetPrevObjectID / countLockedItems depend on these counts being nonzero
-  // for every type present in the table.
-  for (int i = 0; i < MAX_OBJECT_TYPES; i++)
-    Num_object_ids[i] = 0;
-  for (int i = 0; i < MAX_OBJECT_IDS; i++) {
-    const object_type_e type = Object_info[i].type;
-    if (type != object_type_e::none && obj_type_index(type) < MAX_OBJECT_TYPES)
-      Num_object_ids[obj_type_index(type)]++;
-  }
-
   hogin.close();
 
   return ok;
@@ -341,14 +325,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
 // Searches all object ids for a specific name.  Returns the found id, or -1.
 // The whole table is scanned by its object_type::none marker (not a loaded-page
 // count), exactly like the engine's objinfo.cpp FindObjectIDName.
-index_t FindObjectIDName(const std::string &name) {
-  if(!name.empty())
-    for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++)
-      if ((Object_info[i].type != object_type_e::none) && match(name, Object_info[i].name))
-        return i;
-
-  return std::nullopt;
-}
+index_t FindObjectIDName(const std::string &name) { return Object_info.find_by_name(name); }
 
 // Searches the weapons table for a matching name.  Returns the id, or -1.
 index_t FindWeaponName(const std::string &name) {

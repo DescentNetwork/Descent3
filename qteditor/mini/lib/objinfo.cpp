@@ -23,17 +23,106 @@
 #include "objinfo.h"
 #include "robotfire.h"
 #include "robotfirestruct.h"
+#include "string_helpers.h" // match
 
-object_info Object_info[MAX_OBJECT_IDS];
+//-----------------------------------------------------------------------------
+// Object table (object_info_table_t)
+//-----------------------------------------------------------------------------
+
+object_info_table_t Object_info;
+
+object_info_table_t::object_info_table_t() { reset(); }
+
+void object_info_table_t::reset() {
+  clear();
+  resize(MAX_OBJECT_IDS);
+  for (size_type i = 0; i < size(); ++i) {
+    object_info &oi = (*this)[i];
+    oi = object_info{};
+    oi.type = object_type_e::none;
+  }
+}
+
+index_t object_info_table_t::alloc(object_type_e type, bool f_anim, bool f_weapons, bool f_ai) {
+  if (is_full()) {
+    Q_ASSERT(false); // No slots free!
+    return std::nullopt;
+  }
+  const size_type n = next_slot();
+  if (n >= MAX_OBJECT_IDS)
+    return std::nullopt;
+  (*this)[n] = object_info(type, f_anim, f_weapons, f_ai);
+  acquire(n);
+  return static_cast<uint32_t>(n);
+}
+
+void object_info_table_t::free(index_t n) {
+  if (!n)
+    return;
+  const size_type i = *n;
+  Q_ASSERT(i < size());
+  Q_ASSERT((*this)[i].type != object_type_e::none);
+  release(i);
+  object_info &oi = (*this)[i];
+  oi = object_info{};
+  oi.type = object_type_e::none;
+}
+
+index_t object_info_table_t::find_type(object_type_e type) const {
+  for (size_type i = 0; i < size(); ++i)
+    if ((*this)[i].type == type)
+      return static_cast<uint32_t>(i);
+  return std::nullopt;
+}
+
+index_t object_info_table_t::find_by_name(const std::string &name) const {
+  if (name.empty())
+    return std::nullopt;
+  for (size_type i = 0; i < size(); ++i)
+    if ((*this)[i].type != object_type_e::none && match(name, (*this)[i].name))
+      return static_cast<uint32_t>(i);
+  return std::nullopt;
+}
+
+std::optional<object_info_table_t::size_type> object_info_table_t::next(size_type i) const {
+  if (i >= size())
+    return std::nullopt;
+  const object_type_e t = (*this)[i].type;
+  if (t == object_type_e::none)
+    return std::nullopt;
+  for (size_type j = i + 1; j < size(); ++j)
+    if ((*this)[j].type == t)
+      return j;
+  for (size_type j = 0; j <= i; ++j)
+    if ((*this)[j].type == t)
+      return j;
+  return std::nullopt;
+}
+
+std::optional<object_info_table_t::size_type> object_info_table_t::prev(size_type i) const {
+  if (i >= size())
+    return std::nullopt;
+  const object_type_e t = (*this)[i].type;
+  if (t == object_type_e::none)
+    return std::nullopt;
+  for (size_type j = i; j-- > 0;)
+    if ((*this)[j].type == t)
+      return j;
+  for (size_type j = size(); j-- > i;)
+    if ((*this)[j].type == t)
+      return j;
+  return std::nullopt;
+}
+
+// Sets all objects to unused
+void InitObjectInfo() { Object_info.reset(); }
+
+// Frees up all objects (any memory allocated, and resets them)
+void FreeObjectInfo(void) { Object_info.reset(); }
 
 // First object page slot with the given type (the engine's objinfo.cpp
 // GetObjectID), used by FindValidID during level object-id translation.
-index_t GetObjectID(object_type_e type) {
-  for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++)
-    if (Object_info[i].type == type)
-      return i;
-  return std::nullopt;
-}
+index_t GetObjectID(object_type_e type) { return Object_info.find_type(type); }
 
 //-----------------------------------------------------------------------------
 // Animation glue (generic pages)
@@ -183,67 +272,24 @@ object_info::object_info(object_type_e type, bool f_anim, bool f_weapons, bool f
 
 // Allocs a object for use, returns -1 if error, else index on success
 index_t AllocObjectID(object_type_e type, bool f_anim, bool f_weapons, bool f_ai) {
-  for (uint32_t i = 0; i < MAX_OBJECT_IDS; i++) {
-    if (Object_info[i].type == object_type_e::none) {
-      Object_info[i] = object_info(type, f_anim, f_weapons, f_ai);
-      Num_object_ids[obj_type_index(type)]++;
-      return i;
-    }
-  }
-
-  Q_ASSERT(false); // No slots free!
-  return std::nullopt;
+  return Object_info.alloc(type, f_anim, f_weapons, f_ai);
 }
 
 // Frees object index n
-void FreeObjectID(index_t obj) {
-  if(obj)
-  {
-    uint32_t n = *obj;
-    Q_ASSERT(Object_info[n].type != object_type_e::none);
-
-    Num_object_ids[obj_type_index(Object_info[n].type)]--;
-    Object_info[n].type = object_type_e::none;
-    Object_info[n].name.clear();
-    Object_info[n].icon_name.clear();
-    Object_info[n].script_name_override.clear();
-    Object_info[n].module_name.clear();
-    Object_info[n].description.clear();
-
-    Object_info[n].anim.clear();
-    Object_info[n].ai_info = {};
-    Object_info[n].static_wb = {};
-  }
-}
+void FreeObjectID(index_t obj) { Object_info.free(obj); }
 
 index_t GetNextObjectID(index_t n) {
-  if(!n)
+  if (!n)
     return std::nullopt;
   Q_ASSERT(*n < MAX_OBJECT_IDS);
-  const object_type_e t = Object_info[*n].type;
-  if (Num_object_ids[obj_type_index(t)] == 0)
-    return std::nullopt;
-  for (int i = *n + 1; i < MAX_OBJECT_IDS; i++)
-    if (Object_info[i].type == t)
-      return i;
-  for (int i = 0; i <= n; i++)
-    if (Object_info[i].type == t)
-      return i;
-  return n;
+  const std::optional<object_info_table_t::size_type> next = Object_info.next(*n);
+  return next ? index_t(static_cast<uint32_t>(*next)) : std::nullopt;
 }
 
 index_t GetPrevObjectID(index_t n) {
+  if (!n)
+    return std::nullopt;
   Q_ASSERT(*n < MAX_OBJECT_IDS);
-  if(!n)
-    return std::nullopt;
-  const object_type_e t = Object_info[*n].type;
-  if (Num_object_ids[obj_type_index(t)] == 0)
-    return std::nullopt;
-  for (int i = *n - 1; i >= 0; i--)
-    if (Object_info[i].type == t)
-      return i;
-  for (int i = MAX_OBJECT_IDS - 1; i >= n; i--)
-    if (Object_info[i].type == t)
-      return i;
-  return n;
+  const std::optional<object_info_table_t::size_type> prev = Object_info.prev(*n);
+  return prev ? index_t(static_cast<uint32_t>(*prev)) : std::nullopt;
 }

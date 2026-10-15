@@ -191,9 +191,9 @@ enum class object_type_e : uint8_t {
 // NOTE: if you add a type here, you must add the name to Object_type_names[]
 inline constexpr size_t MAX_OBJECT_TYPES = 26; // Update this when adding new types
 
-// Index into the per-type arrays (Object_type_names, CollisionResult,
-// Num_object_ids, ...).  object_type::none (255) is a sentinel, not a valid
-// index, so callers must exclude it before using this.
+// Index into the per-type arrays (Object_type_names, CollisionResult, ...).
+// object_type::none (255) is a sentinel, not a valid index, so callers must
+// exclude it before using this.
 inline size_t obj_type_index(object_type_e type) { return static_cast<size_t>(type); }
 
 // Condition to check if the specified type in a generic type

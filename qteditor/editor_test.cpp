@@ -8423,11 +8423,8 @@ private slots:
   void testAllocFreeObjectIDAnim()
   {
     std::vector<object_info> savedInfo(MAX_OBJECT_IDS);
-    int savedNumIds[MAX_OBJECT_TYPES];
     for (int i = 0; i < MAX_OBJECT_IDS; i++)
       savedInfo[i] = Object_info[i];
-    for (int i = 0; i < MAX_OBJECT_TYPES; i++)
-      savedNumIds[i] = Num_object_ids[i];
     for (int i = 0; i < MAX_OBJECT_IDS; i++) {
       Object_info[i] = object_info{};
       Object_info[i].type = object_type_e::none;
@@ -8465,8 +8462,58 @@ private slots:
     // the startup gamedata table) see it unchanged.
     for (int i = 0; i < MAX_OBJECT_IDS; i++)
       Object_info[i] = std::move(savedInfo[i]);
-    for (int i = 0; i < MAX_OBJECT_TYPES; i++)
-      Num_object_ids[i] = savedNumIds[i];
+  }
+
+  // The object table hands out the first free row and cycles next/prev over
+  // rows of the same type, exactly like the engine's AllocObjectID /
+  // GetNextObjectID / GetPrevObjectID (objinfo.cpp).
+  void testObjectInfoTableTraversal()
+  {
+    object_info_table_t saved = Object_info;
+    Object_info.reset();
+
+    const index_t a = AllocObjectID(object_type_e::robot, false, false, false);
+    const index_t b = AllocObjectID(object_type_e::powerup, false, false, false);
+    const index_t c = AllocObjectID(object_type_e::robot, false, false, false);
+    QVERIFY(a && b && c);
+    QCOMPARE(*a, 0u);
+    QCOMPARE(*b, 1u);
+    QCOMPARE(*c, 2u);
+    QCOMPARE(int(Object_info[*a].type), int(object_type_e::robot));
+    QCOMPARE(int(Object_info[*b].type), int(object_type_e::powerup));
+
+    // GetObjectID returns the first row of a type.
+    QVERIFY(GetObjectID(object_type_e::robot));
+    QCOMPARE(*GetObjectID(object_type_e::robot), *a);
+    QCOMPARE(*GetObjectID(object_type_e::powerup), *b);
+
+    // next/prev cycle only over rows of the same type.
+    QCOMPARE(*GetNextObjectID(a), *c);
+    QCOMPARE(*GetNextObjectID(c), *a);
+    QCOMPARE(*GetPrevObjectID(a), *c);
+    QCOMPARE(*GetPrevObjectID(c), *a);
+    QCOMPARE(*GetNextObjectID(b), *b); // sole row of its type keeps itself
+    QCOMPARE(*GetPrevObjectID(b), *b);
+
+    // find_by_name is case-insensitive and ignores unused rows.
+    Object_info[*a].name = "TableRobot";
+    QVERIFY(FindObjectIDName("tablerobot"));
+    QCOMPARE(*FindObjectIDName("tablerobot"), *a);
+    QVERIFY(!FindObjectIDName("not present"));
+
+    // Freeing clears the row and makes it the next allocation target.
+    FreeObjectID(c);
+    QCOMPARE(int(Object_info[*c].type), int(object_type_e::none));
+    QCOMPARE(*GetNextObjectID(a), *a);
+    const index_t d = AllocObjectID(object_type_e::robot, false, false, false);
+    QVERIFY(d);
+    QCOMPARE(*d, *c);
+
+    FreeObjectID(a);
+    FreeObjectID(b);
+    FreeObjectID(d);
+
+    Object_info = saved;
   }
 
   // Object_info[] is sized MAX_OBJECT_IDS (the engine's count), not MAX_OBJECTS.
