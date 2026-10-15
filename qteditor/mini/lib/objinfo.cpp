@@ -24,7 +24,7 @@
 #include "robotfire.h"
 #include "robotfirestruct.h"
 
-object_info Object_info[MAX_OBJECTS];
+object_info Object_info[MAX_OBJECT_IDS];
 
 // First object page slot with the given type (the engine's objinfo.cpp
 // GetObjectID), used by FindValidID during level object-id translation.

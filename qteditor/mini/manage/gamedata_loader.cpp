@@ -63,8 +63,9 @@
 
 #include "string_helpers.h"
 
-// The mini tree defines `object_info Object_info[MAX_OBJECTS];` in objinfo.cpp
-// but no header declares the count; declare it here so the loader can track it.
+// The mini tree defines `object_info Object_info[MAX_OBJECT_IDS];` in
+// objinfo.cpp but no header declares the count; declare it here so the loader
+// can track it.
 extern uint32_t Num_objects;
 
 //-----------------------------------------------------------------------------
@@ -258,7 +259,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
       break;
 
     case page_type::generic:
-      if (Num_objects < MAX_OBJECTS) {
+      if (Num_objects < MAX_OBJECT_IDS) {
         if (!mng_ReadNewGenericPage(infile, &genericpage))
           ok = false;
         Object_info[Num_objects] = genericpage.objinfo_struct;
@@ -303,7 +304,7 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
   // mini's loader is the only page source, and GetNextObjectID /
   // GetPrevObjectID / countLockedItems depend on these counts being nonzero
   // for every type present in the table.
-  for (int i = 0; i < MAX_OBJECTS; i++)
+  for (int i = 0; i < MAX_OBJECT_TYPES; i++)
     Num_object_ids[i] = 0;
   for (int i = 0; i < MAX_OBJECT_IDS; i++) {
     const object_type_e type = Object_info[i].type;

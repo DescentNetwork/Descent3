@@ -146,7 +146,7 @@ void BuildSingleBSPTree(int n) { PRINT_STUB(__FUNCTION__); }
 float Frametime = 0.0f;
 
 uint32_t Num_objects = 0;
-int Num_object_ids[1500] = {};
+int Num_object_ids[MAX_OBJECT_TYPES] = {};
 int Network_up = 0;
 float Gravity_strength = 9.8f;
 int Cinematics_enabled = 0;

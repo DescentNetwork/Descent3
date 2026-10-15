@@ -72,6 +72,7 @@
 #include "object_ops.h"
 #include "obj_move_manager.h"
 #include "objinfo.h"
+#include "objinit.h"
 #include "findintersection.h"
 #include "mem.h"
 #include "ScriptCompilerAPI.h"
@@ -3892,7 +3893,7 @@ private slots:
     const std::string ambient_name = Sounds[*ambient].name;
     const std::string explode_name = Sounds[*explode].name;
 
-    const uint32_t slot = MAX_OBJECTS - 1;
+    const uint32_t slot = MAX_OBJECT_IDS - 1;
     const object_info saved = Object_info[slot];
 
     mngs_generic_page page{};
@@ -3934,7 +3935,7 @@ private slots:
   // resolve to "no sound" instead of leaking a stale handle.
   void testGenericPageObjectSoundsUnresolved()
   {
-    const uint32_t slot = MAX_OBJECTS - 1;
+    const uint32_t slot = MAX_OBJECT_IDS - 1;
     const object_info saved = Object_info[slot];
 
     mngs_generic_page page{};
@@ -8389,11 +8390,11 @@ private slots:
   void testAllocFreeObjectIDAnim()
   {
     std::vector<object_info> savedInfo(MAX_OBJECT_IDS);
-    int savedNumIds[MAX_OBJECT_IDS];
-    for (int i = 0; i < MAX_OBJECT_IDS; i++) {
+    int savedNumIds[MAX_OBJECT_TYPES];
+    for (int i = 0; i < MAX_OBJECT_IDS; i++)
       savedInfo[i] = Object_info[i];
+    for (int i = 0; i < MAX_OBJECT_TYPES; i++)
       savedNumIds[i] = Num_object_ids[i];
-    }
     for (int i = 0; i < MAX_OBJECT_IDS; i++) {
       Object_info[i] = object_info{};
       Object_info[i].type = object_type_e::none;
@@ -8429,10 +8430,35 @@ private slots:
 
     // Restore the surrounding game-table state so later tests (which rely on
     // the startup gamedata table) see it unchanged.
-    for (int i = 0; i < MAX_OBJECT_IDS; i++) {
+    for (int i = 0; i < MAX_OBJECT_IDS; i++)
       Object_info[i] = std::move(savedInfo[i]);
+    for (int i = 0; i < MAX_OBJECT_TYPES; i++)
       Num_object_ids[i] = savedNumIds[i];
-    }
+  }
+
+  // Object_info[] is sized MAX_OBJECT_IDS (the engine's count), not MAX_OBJECTS.
+  // ObjInit must reject an id at or beyond that bound (the engine's
+  // ObjInitGeneric does), while a page within bounds still initializes.
+  void testObjectInfoIdBounds()
+  {
+    const int id = MAX_OBJECT_IDS - 1;
+    const object_info saved = Object_info[id];
+
+    Object_info[id] = object_info{};
+    Object_info[id].type = object_type_e::robot;
+    Object_info[id].size = 1.0f;
+    Object_info[id].hit_points = 10.0f;
+
+    vector3 pos = {};
+    object obj;
+    QVERIFY(ObjInit(obj, object_type_e::robot, id, 0, pos, 0.0f, -1));
+    QCOMPARE(int(obj.id), id);
+
+    QVERIFY(!ObjInit(obj, object_type_e::robot, MAX_OBJECT_IDS, 0, pos, 0.0f, -1));
+    QVERIFY(!ObjInit(obj, object_type_e::robot, MAX_OBJECT_IDS + 100, 0, pos, 0.0f, -1));
+    QVERIFY(!ObjInit(obj, object_type_e::robot, -1, 0, pos, 0.0f, -1));
+
+    Object_info[id] = saved;
   }
 };
 // Force the offscreen QPA platform so the test binary never opens a real

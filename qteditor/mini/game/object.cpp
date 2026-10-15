@@ -448,7 +448,7 @@ static void ObjSetRenderPolyobj(object& obj, int handle) {
 static bool ObjInitTypeSpecific(object& obj, bool reinitializing) {
   (void)reinitializing;
 
-  if (obj.id < 0 || obj.id >= MAX_OBJECTS)
+  if (obj.id < 0 || obj.id >= MAX_OBJECT_IDS)
     return false;
 
   object_info& oi = Object_info[obj.id];
