@@ -189,7 +189,7 @@ static void compute_terrain_region_info();
 static void compute_sound_dist_info();
 static void clear_BOA();
 static void compute_costs();
-static void update_path_info(q_item *node_list[MAX_ROOMS], int start, int end);
+static void update_path_info(const std::vector<q_item *> &node_list, int start, int end);
 static void FindPath(int i, int j);
 static void compute_next_segs();
 static void compute_blockage_info();
@@ -907,7 +907,7 @@ void compute_costs() {
   }
 }
 
-void update_path_info(q_item *node_list[MAX_ROOMS], int start, int end) {
+void update_path_info(const std::vector<q_item *> &node_list, int start, int end) {
   int cur_room;
   int par_room;
 
@@ -932,14 +932,13 @@ void FindPath(int i, int j) {
   q_item *start_node = new q_item(BOA_INDEX(i), -1, 0.0f);
   q_item *cur_node;
 
-  q_item *node_list[MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS];
-
   if (i == -1 || j == -1) {
     delete start_node;
     return;
   }
 
-  memset(node_list, 0, sizeof(q_item *) * (MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS));
+  // Indexed by BOA_INDEX(roomnum); an entry is the room's node or nullptr.
+  std::vector<q_item *> node_list(Rooms.size() + MAX_BOA_TERRAIN_REGIONS, nullptr);
 
   PQPath.push(start_node);
   Q_ASSERT(start_node->roomnum < Rooms.size() + BOA_num_terrain_regions);
@@ -1080,9 +1079,9 @@ void FindPath(int i, int j) {
   BOA_Array[i][j].next_room = BOA_NO_PATH();
 
 done:
-  for (counter = 0; counter < Rooms.size() + MAX_BOA_TERRAIN_REGIONS; counter++) {
-    if (node_list[counter])
-      delete node_list[counter];
+  for (q_item *item : node_list) {
+    if (item)
+      delete item;
   }
 
   return;
