@@ -1556,7 +1556,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       }
       break;
 
-    case "NATH"_ID: // Attach nomals (uvecs)
+    case "NATH"_ID: // Attach normals (uvecs)
     {
       bool f_uvec = false;
       int num_normals = 0;
