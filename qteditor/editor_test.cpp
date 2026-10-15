@@ -2075,6 +2075,69 @@ private slots:
     DestroyAllMatcens();
   }
 
+  void testAlifeValueAccessors()
+  {
+    a_life.reset();
+
+    int itype = 123;
+    uint8_t value = 0xFF;
+
+    // Freshly reset slot: no type and every count/flag cleared.
+    a_life.GetALValue(0, ambient_field::type, &itype);
+    QCOMPARE(itype, -1);
+    a_life.GetALValue(0, ambient_field::total, &value);
+    QCOMPARE((int)value, 0);
+    a_life.GetALValue(0, ambient_field::max, &value);
+    QCOMPARE((int)value, 0);
+    a_life.GetALValue(0, ambient_field::min, &value);
+    QCOMPARE((int)value, 0);
+    a_life.GetALValue(0, ambient_field::flags, &value);
+    QCOMPARE((int)value, 0);
+
+    // type round-trips through the legacy int id.
+    int id = 42;
+    a_life.SetALValue(0, ambient_field::type, &id);
+    a_life.GetALValue(0, ambient_field::type, &itype);
+    QCOMPARE(itype, 42);
+
+    // A negative id clears the slot back to "none".
+    int none = -1;
+    a_life.SetALValue(0, ambient_field::type, &none);
+    a_life.GetALValue(0, ambient_field::type, &itype);
+    QCOMPARE(itype, -1);
+
+    // total is clamped to MAX_ALS_PER_TYPE.
+    uint8_t big = 255;
+    a_life.SetALValue(0, ambient_field::total, &big);
+    a_life.GetALValue(0, ambient_field::total, &value);
+    QCOMPARE((int)value, (int)MAX_ALS_PER_TYPE);
+
+    // max is clamped to total, then min is clamped to max.
+    uint8_t three = 3;
+    a_life.SetALValue(0, ambient_field::max, &three);
+    a_life.GetALValue(0, ambient_field::max, &value);
+    QCOMPARE((int)value, 3);
+
+    uint8_t seven = 7;
+    a_life.SetALValue(0, ambient_field::min, &seven);
+    a_life.GetALValue(0, ambient_field::min, &value);
+    QCOMPARE((int)value, 3);
+
+    // flags round-trips as a single byte.
+    uint8_t inside = 1;
+    a_life.SetALValue(0, ambient_field::flags, &inside);
+    a_life.GetALValue(0, ambient_field::flags, &value);
+    QCOMPARE((int)value, 1);
+
+    // Slots are independent.
+    a_life.GetALValue(1, ambient_field::total, &value);
+    QCOMPARE((int)value, 0);
+    a_life.GetALValue(1, ambient_field::flags, &value);
+    QCOMPARE((int)value, 0);
+
+    a_life.reset();
+  }
+
   void testPlayerStartsChunkRoundTrip()
   {
     InitRooms();

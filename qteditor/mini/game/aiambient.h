@@ -42,11 +42,15 @@ struct [[gnu::packed]] ambient_life_flags_t
 };
 static_assert(sizeof(ambient_life_flags_t) == sizeof(uint8_t));
 
-#define ALI_TYPE 0
-#define ALI_TOTAL 1
-#define ALI_MAX 2
-#define ALI_MIN 3
-#define ALI_FLAGS 4
+// Field selectors for GetALValue/SetALValue (engine ALI_*).
+enum class ambient_field : uint8_t
+{
+  type = 0,  // ALI_TYPE
+  total = 1, // ALI_TOTAL
+  max = 2,   // ALI_MAX
+  min = 3,   // ALI_MIN
+  flags = 4, // ALI_FLAGS
+};
 
 #define CHECK_INTERVAL_MIN 5.0f
 #define CHECK_INTERVAL_MAX 10.0f
@@ -80,8 +84,8 @@ class ambient_life
 public:
   ambient_life() { reset(); }
 
-  void GetALValue(uint8_t index, uint8_t field, void *ptr);
-  void SetALValue(uint8_t index, uint8_t field, void *ptr);
+  void GetALValue(uint8_t index, ambient_field field, void *ptr) const;
+  void SetALValue(uint8_t index, ambient_field field, void *ptr);
 
   void DoFrame(void);
   void InitForLevel(void);

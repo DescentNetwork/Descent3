@@ -81,6 +81,71 @@ void ambient_life::InitForLevel()
   DoFrame();
 }
 
+// Reads one editor-settable field of slot `index` into `*ptr` (engine
+// aiambient.cpp:45).  type is an int (legacy object id, -1 for none); every
+// other field is a single byte.
+void ambient_life::GetALValue(uint8_t index, ambient_field field, void *ptr) const
+{
+  const setting_t& s = m_settings[index];
+  switch (field)
+  {
+  case ambient_field::type:
+    *static_cast<int *>(ptr) = index_to_int(s.type);
+    break;
+  case ambient_field::total:
+    *static_cast<uint8_t *>(ptr) = s.total;
+    break;
+  case ambient_field::max:
+    *static_cast<uint8_t *>(ptr) = s.max;
+    break;
+  case ambient_field::min:
+    *static_cast<uint8_t *>(ptr) = s.min;
+    break;
+  case ambient_field::flags:
+    *static_cast<uint8_t *>(ptr) = reinterpret_cast<const uint8_t &>(s.flags);
+    break;
+  }
+}
+
+// Writes one editor-settable field of slot `index` from `*ptr` (engine
+// aiambient.cpp:75), then clamps the group counts and rerolls the next size.
+void ambient_life::SetALValue(uint8_t index, ambient_field field, void *ptr)
+{
+  setting_t& s = m_settings[index];
+  switch (field)
+  {
+  case ambient_field::type: {
+    const int value = *static_cast<int *>(ptr);
+    s.type = value >= 0 ? index_t(static_cast<uint32_t>(value)) : index_t(std::nullopt);
+    break;
+  }
+  case ambient_field::total:
+    s.total = *static_cast<uint8_t *>(ptr);
+    break;
+  case ambient_field::max:
+    s.max = *static_cast<uint8_t *>(ptr);
+    break;
+  case ambient_field::min:
+    s.min = *static_cast<uint8_t *>(ptr);
+    break;
+  case ambient_field::flags:
+    reinterpret_cast<uint8_t &>(s.flags) = *static_cast<uint8_t *>(ptr);
+    break;
+  }
+
+  // total/max/min are unsigned, so only the upper bounds can trip.
+  if (s.total > MAX_ALS_PER_TYPE)
+    s.total = MAX_ALS_PER_TYPE;
+
+  if (s.max > s.total)
+    s.max = s.total;
+
+  if (s.min > s.max)
+    s.min = s.max;
+
+  s.compute_next_size();
+}
+
 byte_ostream& operator<<(byte_ostream& output, const ambient_life::setting_t& s)
 {
   return output
