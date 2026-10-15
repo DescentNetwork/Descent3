@@ -41,7 +41,7 @@ OrphanRemoveDialog::OrphanRemoveDialog(QWidget *parent)
       const object &obj = Objects[i];
       if (obj.type == object_type_e::none)
         continue;
-      if (obj.id < 0 || obj.id >= MAX_OBJECT_IDS || Object_info[obj.id].type == object_type_e::none) {
+      if (obj.id >= Object_info.size() || Object_info[obj.id].type == object_type_e::none) {
         m_list->addItem(QString("Object %1: orphaned id %2").arg(i).arg(obj.id));
         orphans++;
       }

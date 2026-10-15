@@ -236,7 +236,7 @@ void matcen::SaveData(byte_ostream &ofile) const {
 
   for (size_t i = 0; i < m_prod_type.size(); i++) {
     const index_t type = m_prod_type[i];
-    if (type && *type < MAX_OBJECT_IDS) {
+    if (type && *type < Object_info.size()) {
       ofile << static_cast<int16_t>(Object_info[*type].name.size() + 1) << Object_info[*type].name;
     } else {
       ofile << static_cast<int16_t>(1);

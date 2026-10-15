@@ -454,22 +454,22 @@ void WorldObjectsGenericDialog::updateDialog() {
     QSignalBlocker blocker(combo);
     combo->clear();
     combo->addItem("<none>", -1);
-    for (int i = 0; i < MAX_OBJECT_IDS; i++)
+    for (int i = 0; i < static_cast<int>(Object_info.size()); i++)
       if (Object_info[i].type != object_type_e::none)
         combo->addItem(QString::fromStdString(Object_info[i].name), i);
     const int sp1 = oi->dspew[0];
-    combo->setCurrentIndex(combo->findData(sp1 >= 0 && sp1 < MAX_OBJECT_IDS ? sp1 : -1));
+    combo->setCurrentIndex(combo->findData(sp1 >= 0 && sp1 < static_cast<int>(Object_info.size()) ? sp1 : -1));
   }
   {
     QComboBox *combo = ui->IDC_DEATH_POWERUP2_PULLDOWN;
     QSignalBlocker blocker(combo);
     combo->clear();
     combo->addItem("<none>", -1);
-    for (int i = 0; i < MAX_OBJECT_IDS; i++)
+    for (int i = 0; i < static_cast<int>(Object_info.size()); i++)
       if (Object_info[i].type != object_type_e::none)
         combo->addItem(QString::fromStdString(Object_info[i].name), i);
     const int sp2 = oi->dspew[1];
-    combo->setCurrentIndex(combo->findData(sp2 >= 0 && sp2 < MAX_OBJECT_IDS ? sp2 : -1));
+    combo->setCurrentIndex(combo->findData(sp2 >= 0 && sp2 < static_cast<int>(Object_info.size()) ? sp2 : -1));
   }
 
   ui->IDC_GENERIC_WEAPON_INFO_BUTTON->setEnabled(Poly_models[oi->render_handle].num_wbs > 0);

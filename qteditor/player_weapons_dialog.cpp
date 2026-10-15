@@ -84,7 +84,7 @@ PlayerWeaponsDialog::PlayerWeaponsDialog(int current_ship, QWidget *parent)
 
   QComboBox *spew = ui->IDC_SPEW_POWERUP_PULLDOWN;
   spew->addItem("<none>", -1);
-  for (int i = 0; i < MAX_OBJECT_IDS; i++) {
+  for (int i = 0; i < static_cast<int>(Object_info.size()); i++) {
     if (Object_info[i].type == object_type_e::powerup)
       spew->addItem(QString::fromStdString(Object_info[i].name), i);
   }

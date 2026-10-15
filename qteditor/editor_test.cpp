@@ -764,9 +764,7 @@ private slots:
   void testObjectNameXlateRoundTrip()
   {
     extern uint32_t Num_objects;
-    std::vector<object_info> savedInfo(MAX_OBJECT_IDS);
-    for (int i = 0; i < MAX_OBJECT_IDS; i++)
-      savedInfo[i] = Object_info[i];
+    object_info_table_t savedInfo = Object_info;
     const int savedNumObjects = Num_objects;
 
     InitRooms();
@@ -780,8 +778,8 @@ private slots:
     Triggers.clear();
 
     // "Loaded game tables" for the save: page 3 is the powerup page.
-    for (int i = 0; i < MAX_OBJECT_IDS; i++)
-      Object_info[i] = object_info{};
+    Object_info.clear();
+    Object_info.resize(4);
     Object_info[3].type = object_type_e::powerup;
     Object_info[3].name = "XlatePowerup";
 
@@ -824,8 +822,8 @@ private slots:
 
     // Simulated re-ordered gamedata: the same page name now lives at page 0,
     // and page 3 no longer exists.
-    for (int i = 0; i < MAX_OBJECT_IDS; i++)
-      Object_info[i] = object_info{};
+    Object_info.clear();
+    Object_info.resize(1);
     Object_info[0].type = object_type_e::powerup;
     Object_info[0].name = "XlatePowerup";
 
@@ -874,8 +872,7 @@ private slots:
 
     // Restore the surrounding game-table state so later tests (which rely on
     // the startup gamedata table) see it unchanged.
-    for (int i = 0; i < MAX_OBJECT_IDS; i++)
-      Object_info[i] = std::move(savedInfo[i]);
+    Object_info = std::move(savedInfo);
     Num_objects = savedNumObjects;
 
     // Clean teardown.
@@ -3814,7 +3811,7 @@ private slots:
     // editor-critical array was populated with more than a trivially empty set.
     QVERIFY(static_cast<int>(GameTextures.size()) > 100);
     int loaded_objects = 0;
-    for (int i = 0; i < MAX_OBJECT_IDS; i++)
+    for (int i = 0; i < static_cast<int>(Object_info.size()); i++)
       if (Object_info[i].type != object_type_e::none)
         loaded_objects++;
     QVERIFY(loaded_objects > 50);
@@ -3848,7 +3845,7 @@ private slots:
     QVERIFY(loadGameDataTable(hog));
 
     int withAnim = 0, withWb = 0, withAi = 0;
-    for (int i = 0; i < MAX_OBJECT_IDS; i++) {
+    for (int i = 0; i < static_cast<int>(Object_info.size()); i++) {
       const object_info &oi = Object_info[i];
       if (oi.type == object_type_e::none)
         continue;
@@ -3926,7 +3923,7 @@ private slots:
     const std::string ambient_name = Sounds[*ambient].name;
     const std::string explode_name = Sounds[*explode].name;
 
-    const uint32_t slot = MAX_OBJECT_IDS - 1;
+    const uint32_t slot = static_cast<uint32_t>(Object_info.add_slot());
     const object_info saved = Object_info[slot];
 
     mngs_generic_page page{};
@@ -3960,6 +3957,7 @@ private slots:
 
     const int loaded_model = Object_info[slot].render_handle;
     Object_info[slot] = saved;
+    Object_info.pop_back();
     if (loaded_model >= 0)
       Poly_models[loaded_model] = poly_model{};
   }
@@ -3968,7 +3966,7 @@ private slots:
   // resolve to "no sound" instead of leaking a stale handle.
   void testGenericPageObjectSoundsUnresolved()
   {
-    const uint32_t slot = MAX_OBJECT_IDS - 1;
+    const uint32_t slot = static_cast<uint32_t>(Object_info.add_slot());
     const object_info saved = Object_info[slot];
 
     mngs_generic_page page{};
@@ -3994,6 +3992,7 @@ private slots:
 
     const int loaded_model = Object_info[slot].render_handle;
     Object_info[slot] = saved;
+    Object_info.pop_back();
     if (loaded_model >= 0)
       Poly_models[loaded_model] = poly_model{};
   }
@@ -8422,13 +8421,8 @@ private slots:
   // it empty, and copies own their buffer (the old raw pointer could alias).
   void testAllocFreeObjectIDAnim()
   {
-    std::vector<object_info> savedInfo(MAX_OBJECT_IDS);
-    for (int i = 0; i < MAX_OBJECT_IDS; i++)
-      savedInfo[i] = Object_info[i];
-    for (int i = 0; i < MAX_OBJECT_IDS; i++) {
-      Object_info[i] = object_info{};
-      Object_info[i].type = object_type_e::none;
-    }
+    object_info_table_t savedInfo = Object_info;
+    Object_info.reset();
 
     // f_anim: fixed-size anim table with the engine defaults.
     const index_t ai = AllocObjectID(object_type_e::powerup, true, false, false);
@@ -8460,8 +8454,7 @@ private slots:
 
     // Restore the surrounding game-table state so later tests (which rely on
     // the startup gamedata table) see it unchanged.
-    for (int i = 0; i < MAX_OBJECT_IDS; i++)
-      Object_info[i] = std::move(savedInfo[i]);
+    Object_info = std::move(savedInfo);
   }
 
   // The object table hands out the first free row and cycles next/prev over
@@ -8516,15 +8509,14 @@ private slots:
     Object_info = saved;
   }
 
-  // Object_info[] is sized MAX_OBJECT_IDS (the engine's count), not MAX_OBJECTS.
-  // ObjInit must reject an id at or beyond that bound (the engine's
-  // ObjInitGeneric does), while a page within bounds still initializes.
+  // ObjInit must reject an id at or beyond the object table's size (the
+  // engine's ObjInitGeneric did the same against its fixed array), while a page
+  // within bounds still initializes.
   void testObjectInfoIdBounds()
   {
-    const int id = MAX_OBJECT_IDS - 1;
+    const int id = static_cast<int>(Object_info.add_slot());
     const object_info saved = Object_info[id];
 
-    Object_info[id] = object_info{};
     Object_info[id].type = object_type_e::robot;
     Object_info[id].size = 1.0f;
     Object_info[id].hit_points = 10.0f;
@@ -8534,11 +8526,13 @@ private slots:
     QVERIFY(ObjInit(obj, object_type_e::robot, id, 0, pos, 0.0f, -1));
     QCOMPARE(int(obj.id), id);
 
-    QVERIFY(!ObjInit(obj, object_type_e::robot, MAX_OBJECT_IDS, 0, pos, 0.0f, -1));
-    QVERIFY(!ObjInit(obj, object_type_e::robot, MAX_OBJECT_IDS + 100, 0, pos, 0.0f, -1));
+    const int bound = static_cast<int>(Object_info.size());
+    QVERIFY(!ObjInit(obj, object_type_e::robot, bound, 0, pos, 0.0f, -1));
+    QVERIFY(!ObjInit(obj, object_type_e::robot, bound + 100, 0, pos, 0.0f, -1));
     QVERIFY(!ObjInit(obj, object_type_e::robot, -1, 0, pos, 0.0f, -1));
 
     Object_info[id] = saved;
+    Object_info.pop_back();
   }
 };
 // Force the offscreen QPA platform so the test binary never opens a real

@@ -331,9 +331,6 @@
 #define MAX_INVEN_ICON_SIZE 30
 
 
-// How many object ids in the array
-#define MAX_OBJECT_IDS 910
-
 // Object info flags use the object_info_flags_t bitfield struct below.
 
 // This next numbers define the distance at which LOD popping occurs in models
@@ -528,7 +525,7 @@ struct object_info {
 
   std::string name; // the name on the page
 
-  object_type_e type; // what type of object this is
+  object_type_e type = object_type_e::none; // what type of object this is
   float size; // size
   object_info_flags_t flags; // misc flags.  See above.
 
@@ -593,6 +590,10 @@ struct object_info {
 // yields object_info directly.  Allocation hands out the first free slot
 // (next_slot), and the engine's type-scoped traversal (next/prev) cycles over
 // the rows whose type matches the current row's type.
+//
+// There is no fixed id limit: the table grows to hold as many object pages as
+// the loaded game data provides, bounded only by the 16-bit object id stored in
+// a level file (the engine sized its Object_info array to a compile-time count).
 class object_info_table_t : public d3::slotvec_base_t<object_info> {
 public:
   using base_type = d3::slotvec_base_t<object_info>;
@@ -600,12 +601,12 @@ public:
 
   object_info_table_t();
 
-  // Resets every row to an unused object (type none), keeping the fixed
-  // MAX_OBJECT_IDS id space (the engine's InitObjectInfo).
+  // Empties the table (the engine's InitObjectInfo, without the fixed id space).
   void reset();
 
   // Allocs an object row of the given type, applying the same per-object
-  // defaults as AllocObjectID.  Returns std::nullopt when the id space is full.
+  // defaults as AllocObjectID.  Grows the table on demand; returns std::nullopt
+  // only once the 16-bit object id space is exhausted.
   index_t alloc(object_type_e type, bool f_anim, bool f_weapons, bool f_ai);
 
   // Frees object row n (the engine's FreeObjectID).

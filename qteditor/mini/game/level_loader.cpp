@@ -46,8 +46,10 @@
 
 #include <QMessageBox>
 
+#include <algorithm>
 #include <limits>
 #include <utility>
+#include <vector>
 
 #include "level_loader.h"
 #include "doorway.h"
@@ -514,24 +516,41 @@ static void LL_ReadTextureList(byte_istream &ifile, int chunk_size) {
 // those names let the loader map the file's page index to the index of the
 // matching page in the currently loaded game tables.  This is the engine's
 // BuildXlateTable + ReadObject translation: object_type::robot/POWERUP/BUILDING/CLUTTER
-// ids go through generic_xlate[MAX_OBJECT_IDS], object_type::door through
-// door_xlate[MAX_DOORS].  Reset to -1 (no mapping) before every LoadLevel so
-// a level without the name chunks keeps the raw page indices it was saved
-// with.
-static std::array<int16_t, MAX_OBJECT_IDS> generic_xlate;
+// ids go through generic_xlate, object_type::door through door_xlate[MAX_DOORS].
+// Reset to -1 (no mapping) before every LoadLevel so a level without the name
+// chunks keeps the raw page indices it was saved with.
+//
+// generic_xlate has no fixed size: an object id is a 16-bit value, so the table
+// grows to cover whatever id space the level names (the engine used a
+// compile-time MAX_OBJECT_IDS array).
+static std::vector<int16_t> generic_xlate;
 
 static std::array<int16_t, MAX_DOORS> door_xlate;
+
+// Grows a name table to hold at least n entries; the fixed-size door table
+// cannot grow, so it keeps the engine's MAX_DOORS cap.
+static void EnsureXlateSize(std::vector<int16_t> &xlate, size_t n) {
+  if (xlate.size() < n)
+    xlate.resize(n, -1);
+}
+static void EnsureXlateSize(std::array<int16_t, MAX_DOORS> &, size_t) {}
+
 // Reads a GNNM/DRNM chunk body: an int32 count, then that many null-terminated
 // page names.  Each name is resolved through lookup(); an empty name (an
 // unused slot) is never looked up and maps to -1, exactly as in the engine's
-// BuildXlateTable.  The trailing entries up to max_items are cleared to -1 so
-// a partially filled table never leaks indices from a previous level.
+// BuildXlateTable.  The trailing entries up to the table size are cleared to -1
+// so a partially filled table never leaks indices from a previous level.
+template <typename Xlate>
 static void LL_ReadNameXlateChunk(byte_istream &ifile, int chunk_size,
-                                  index_t (*lookup)(const std::string &), int16_t *xlate, int max_items) {
+                                  index_t (*lookup)(const std::string &), Xlate &xlate) {
   int32_t n32 = 0;
   ifile >> n32;
   int n = n32;
-  if (n < 0 || n > max_items)
+  if (n < 0)
+    n = 0;
+  EnsureXlateSize(xlate, static_cast<size_t>(n));
+  const int max_items = static_cast<int>(xlate.size());
+  if (n > max_items)
     n = max_items;
   long end = ifile.tell() + (chunk_size - 4);
   for (int i = 0; i < n; i++) {
@@ -575,7 +594,7 @@ static index_t FindValidID(object_type_e type) {
 static int TranslateObjectId(object_type_e type, int id) {
   int xid = -1;
   if (type == object_type_e::robot || type == object_type_e::powerup || type == object_type_e::building || type == object_type_e::clutter)
-    xid = (id < MAX_OBJECT_IDS) ? static_cast<int>(generic_xlate[id]) : -1;
+    xid = (id < static_cast<int>(generic_xlate.size())) ? static_cast<int>(generic_xlate[id]) : -1;
   else if (type == object_type_e::door)
     xid = (id < MAX_DOORS) ? static_cast<int>(door_xlate[id]) : -1;
   else
@@ -1737,9 +1756,9 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
     texture_xlate[i] = i;
 
   // Default object/door mapping is "no translation" so a level without GNNM /
-  // DRNM chunks keeps the page indices it was saved with.
-  for (size_t i = 0; i < generic_xlate.size(); i++)
-    generic_xlate[i] = -1;
+  // DRNM chunks keeps the page indices it was saved with.  The generic table
+  // starts at the loaded object table's size and grows if a level names more.
+  generic_xlate.assign(Object_info.size(), -1);
   for (size_t i = 0; i < door_xlate.size(); i++)
     door_xlate[i] = -1;
 
@@ -1849,11 +1868,11 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
         break;
       case "GNNM"_ID:
         // Object page names; maps file object ids to the loaded game tables.
-        LL_ReadNameXlateChunk(ifile, chunk_size, FindObjectIDName, generic_xlate.data(), MAX_OBJECT_IDS);
+        LL_ReadNameXlateChunk(ifile, chunk_size, FindObjectIDName, generic_xlate);
         break;
       case "DRNM"_ID:
         // Door page names; maps file door ids to the loaded game tables.
-        LL_ReadNameXlateChunk(ifile, chunk_size, FindDoorName, door_xlate.data(), MAX_DOORS);
+        LL_ReadNameXlateChunk(ifile, chunk_size, FindDoorName, door_xlate);
         break;
       case "RWND"_ID:
       {
@@ -1909,6 +1928,11 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
           // GNNM/DRNM name tables map the file's page index to the page index
           // in the loaded game tables, exactly as the engine's ReadObject does.
           obj.id = static_cast<uint16_t>(TranslateObjectId(obj.type, obj.id));
+          // A file id that maps to no loaded page (and has no valid page of its
+          // type to fall back on) leaves the object referencing a nonexistent
+          // page; drop it rather than index the object table out of range.
+          if (obj.id >= Object_info.size())
+            obj.type = object_type_e::none;
 
           index_t roomnum = obj.roomnum;
           LOG_DEBUG("OBJS[%d]: type=%d id=%d name='%s' flags=%u room=%d pos=(%hf,%hf,%hf)",
@@ -2029,7 +2053,7 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     {
       int start = LL_StartChunk(out, CHUNK_GENERIC_NAMES);
       int highest = -1;
-      for (int i = 0; i < MAX_OBJECT_IDS; i++)
+      for (int i = 0; i < static_cast<int>(Object_info.size()); i++)
         if (Object_info[i].type != object_type_e::none)
           highest = i;
       out << (int32_t)(highest + 1);

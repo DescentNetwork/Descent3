@@ -682,7 +682,7 @@ void mng_AssignObjInfoToGenericPage(index_t n, mngs_generic_page &genericpage) {
   }
 
   for (size_t i = 0; i < MAX_DSPEW_TYPES; i++) {
-    if (obj.dspew[i] >= 0 && static_cast<uint32_t>(obj.dspew[i]) < MAX_OBJECT_IDS &&
+    if (obj.dspew[i] >= 0 && static_cast<size_t>(obj.dspew[i]) < Object_info.size() &&
         Object_info[obj.dspew[i]].type != object_type_e::none)
       genericpage.dspew_name[i] = Object_info[obj.dspew[i]].name;
     else

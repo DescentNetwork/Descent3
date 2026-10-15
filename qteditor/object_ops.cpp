@@ -171,9 +171,9 @@ void setObjectPageCurrentId(object_type_e page, std::optional<uint16_t> id) {
 // stale id the page was holding. Mirrors the self-healing tail of Win32's
 // GetCurrentIndex() (editor/ObjectDialog.cpp:395-403).
 static std::optional<uint16_t> firstObjectIdForPage(object_type_e page) {
-  for (uint16_t i = 0; i < MAX_OBJECT_IDS; i++) {
+  for (size_t i = 0; i < Object_info.size(); i++) {
     if (Object_info[i].type == page)
-      return i;
+      return static_cast<uint16_t>(i);
   }
   return std::nullopt;
 }
@@ -187,7 +187,7 @@ std::optional<uint16_t> currentObjectPageId() {
     return std::nullopt;
 
   std::optional<uint16_t> id = objectPageCurrentId(*app.obj_page);
-  if (id && *id < MAX_OBJECT_IDS && Object_info[*id].type == *app.obj_page)
+  if (id && *id < Object_info.size() && Object_info[*id].type == *app.obj_page)
     return id;
 
   id = firstObjectIdForPage(*app.obj_page);

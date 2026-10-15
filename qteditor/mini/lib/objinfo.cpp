@@ -25,6 +25,8 @@
 #include "robotfirestruct.h"
 #include "string_helpers.h" // match
 
+#include <limits>
+
 //-----------------------------------------------------------------------------
 // Object table (object_info_table_t)
 //-----------------------------------------------------------------------------
@@ -33,23 +35,13 @@ object_info_table_t Object_info;
 
 object_info_table_t::object_info_table_t() { reset(); }
 
-void object_info_table_t::reset() {
-  clear();
-  resize(MAX_OBJECT_IDS);
-  for (size_type i = 0; i < size(); ++i) {
-    object_info &oi = (*this)[i];
-    oi = object_info{};
-    oi.type = object_type_e::none;
-  }
-}
+void object_info_table_t::reset() { clear(); }
 
 index_t object_info_table_t::alloc(object_type_e type, bool f_anim, bool f_weapons, bool f_ai) {
-  if (is_full()) {
-    Q_ASSERT(false); // No slots free!
-    return std::nullopt;
-  }
-  const size_type n = next_slot();
-  if (n >= MAX_OBJECT_IDS)
+  const size_type n = next_slot(); // grows the table when no slot is free
+  // An object id is written to a level file as a 16-bit value, so the table
+  // cannot address more rows than that.
+  if (n > std::numeric_limits<uint16_t>::max())
     return std::nullopt;
   (*this)[n] = object_info(type, f_anim, f_weapons, f_ai);
   acquire(n);
@@ -281,7 +273,7 @@ void FreeObjectID(index_t obj) { Object_info.free(obj); }
 index_t GetNextObjectID(index_t n) {
   if (!n)
     return std::nullopt;
-  Q_ASSERT(*n < MAX_OBJECT_IDS);
+  Q_ASSERT(*n < Object_info.size());
   const std::optional<object_info_table_t::size_type> next = Object_info.next(*n);
   return next ? index_t(static_cast<uint32_t>(*next)) : std::nullopt;
 }
@@ -289,7 +281,7 @@ index_t GetNextObjectID(index_t n) {
 index_t GetPrevObjectID(index_t n) {
   if (!n)
     return std::nullopt;
-  Q_ASSERT(*n < MAX_OBJECT_IDS);
+  Q_ASSERT(*n < Object_info.size());
   const std::optional<object_info_table_t::size_type> prev = Object_info.prev(*n);
   return prev ? index_t(static_cast<uint32_t>(*prev)) : std::nullopt;
 }
