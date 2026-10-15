@@ -275,3 +275,19 @@ if(ENABLE_LOGGER)
     target_sources(qteditor_tests PRIVATE ${LOGGER_SOURCES})
   endif()
 endif()
+
+# ---------------------------------------------------------------------------
+# Standalone .d3l chunk inspector.  Uses only descar's posix streams (no Qt,
+# no engine/editor state); reuses the shared D3LV chunk framing to list, test
+# for, or extract top-level chunks.
+# ---------------------------------------------------------------------------
+add_executable(d3l
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/d3l_main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/d3l_chunks.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../descar/utils/posix_stream.cpp
+)
+target_include_directories(d3l PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools
+    ${CMAKE_CURRENT_SOURCE_DIR}/../descar/utils
+)
