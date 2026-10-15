@@ -94,14 +94,7 @@
 #include <bit>
 #include <vector>
 
-constexpr uint32_t operator "" _ID(const char* const str, std::size_t len) {
-  if (len != 4)
-    throw "ID strings requires exactly 4 characters";
-  return (static_cast<uint32_t>(str[3]) << 24) |
-         (static_cast<uint32_t>(str[2]) << 16) |
-         (static_cast<uint32_t>(str[1]) << 8)  |
-         static_cast<uint32_t>(str[0]);
-}
+#include "utils.h"
 
 #define LL_TAG "D3LV"
 
