@@ -285,9 +285,10 @@ bool SaveVClip(const std::filesystem::path& filename, int num) {
 
 extern int Low_vidmem;
 // Pages in a vclip if it needs to be
-void PageInVClip(int vcnum) {
-  Q_ASSERT(GameVClips[vcnum].used >= 1);
-  if (!GameVClips[vcnum].flags.not_resident)
+void PageInVClip(index_t vcnum) {
+  Q_ASSERT(vcnum);
+  Q_ASSERT(GameVClips[*vcnum].used >= 1);
+  if (!GameVClips[*vcnum].flags.not_resident)
     return;
 
   // The mini editor pages every vclip in eagerly through LoadVClipFromMemory,

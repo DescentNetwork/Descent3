@@ -63,28 +63,28 @@ uint16_t *bm_data(int handle, int miplevel) {
   }
   return b.data16.get() + offset;
 }
-int bm_w(int handle, int miplevel) {
-  if (handle < 0 || handle >= static_cast<int>(GameBitmaps.size()))
+int bm_w(index_t handle, int miplevel) {
+  if (!handle || *handle >= GameBitmaps.size())
     return 0;
-  int w = GameBitmaps[handle].width;
+  int w = GameBitmaps[*handle].width;
   for (int m = 0; m < miplevel; m++) {
     if (w > 1) w >>= 1;
   }
   return w;
 }
-int bm_h(int handle, int miplevel) {
-  if (handle < 0 || handle >= static_cast<int>(GameBitmaps.size()))
+int bm_h(index_t handle, int miplevel) {
+  if (!handle || *handle >= GameBitmaps.size())
     return 0;
-  int h = GameBitmaps[handle].height;
+  int h = GameBitmaps[*handle].height;
   for (int m = 0; m < miplevel; m++) {
     if (h > 1) h >>= 1;
   }
   return h;
 }
-int bm_mipped(int handle) {
-  if (handle < 0 || handle >= static_cast<int>(GameBitmaps.size()))
+int bm_mipped(index_t handle) {
+  if (!handle || *handle >= GameBitmaps.size())
     return 0;
-  return GameBitmaps[handle].mip_levels > 1 ? 1 : 0;
+  return GameBitmaps[*handle].mip_levels > 1 ? 1 : 0;
 }
 
 // Returns the number of mipmap levels for a bitmap.

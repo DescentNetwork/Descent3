@@ -139,11 +139,11 @@ int bm_SaveBitmap(struct CFILE* fp, int handle);
 // Returns -1 if something is wrong.
 int bm_SaveFileBitmap(const std::filesystem::path& filename, int handle);
 // given a handle to a bitmap, returns its width, or -1 if handle is invalid
-int bm_w(int handle, int miplevel);
+int bm_w(index_t handle, int miplevel);
 // given a handle to a bitmap, returns its height, or -1 if handle is invalid
-int bm_h(int handle, int miplevel);
+int bm_h(index_t handle, int miplevel);
 // given a handle to a bitmap, returns mipped status, or -1 if handle is invalid
-int bm_mipped(int handle);
+int bm_mipped(index_t handle);
 //	a function to determine if a pixel in a bitmap is transparent
 bool bm_pixel_transparent(int bm_handle, int x, int y);
 //	a function to determine if a pixel in a bitmap is transparent

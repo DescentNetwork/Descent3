@@ -62,7 +62,7 @@ void rend_SetZBufferWriteMask(int) {}
 void rend_SetCoplanarPolygonOffset(float) {}
 void rend_SetBumpmapReadyState(int, int) {}
 void rend_SetZBias(float) {}
-void rend_SetOverlayMap(int) {}
+void rend_SetOverlayMap(index_t) {}
 void rend_SetFogState(int8_t) {}
 void rend_SetFogBorders(float, float) {}
 void rend_SetFogColor(ddgr_color) {}

@@ -41,7 +41,7 @@ index_t FindTextureBitmapName(const std::string &name) {
         continue;
 
       if (GameTextures[i].flags.animated) {
-        PageInVClip(index_to_int(GameTextures[i].bm_handle));
+        PageInVClip(GameTextures[i].bm_handle);
         const vclip &vc = GameVClips[*GameTextures[i].bm_handle];
         if (vc.used) {
           for (int t = 0; t < vc.num_frames; t++) {
@@ -63,22 +63,24 @@ index_t FindTextureBitmapName(const std::string &name) {
 // If the texture is animated, returns framenum mod num_of_frames in the animation
 // Force is to force the evaluation of a procedural
 // Also figures in gametime
-int GetTextureBitmap(int handle, int framenum, bool force) {
+int GetTextureBitmap(index_t handle, int framenum, bool force) {
   int src_bitmap;
 
-  if (GameTextures.is_unused(handle))
+  if (!handle || *handle >= GameTextures.size())
+    return 0;
+  if (GameTextures.is_unused(*handle))
     return 0;
 
-  if (GameTextures[handle].flags.animated) {
+  if (GameTextures[*handle].flags.animated) {
     float cur_frametime;
     int int_frame;
-    const texture &tex = GameTextures[handle];
-    PageInVClip(index_to_int(GameTextures[handle].bm_handle));
+    const texture &tex = GameTextures[*handle];
+    PageInVClip(GameTextures[*handle].bm_handle);
 
-    const vclip &vc = GameVClips[*GameTextures[handle].bm_handle];
+    const vclip &vc = GameVClips[*GameTextures[*handle].bm_handle];
     Q_ASSERT(vc.used >= 1);
 
-    if (GameTextures[handle].flags.ping_pong) {
+    if (GameTextures[*handle].flags.ping_pong) {
       // Ping pong this texture
 
       float frametime = tex.speed / vc.num_frames;
@@ -100,40 +102,40 @@ int GetTextureBitmap(int handle, int framenum, bool force) {
       src_bitmap = vc.frames[int_frame % vc.num_frames];
     }
   } else {
-    src_bitmap = index_to_int(GameTextures[handle].bm_handle);
+    src_bitmap = index_to_int(GameTextures[*handle].bm_handle);
   }
 
-  if (GameTextures[handle].flags.procedural) // Do a procedural
+  if (GameTextures[*handle].flags.procedural) // Do a procedural
   {
     bool do_eval = true;
 
-    if (GameTextures[handle].procedural == NULL)
-      AllocateProceduralForTexture(handle);
+    if (GameTextures[*handle].procedural == NULL)
+      AllocateProceduralForTexture(*handle);
 
     // The procedural machinery is only partially ported (AllocateProceduralForTexture
     // can fail and leave the pointer null); fall back to the static bitmap in that case.
-    if (GameTextures[handle].procedural != NULL) {
-      if (GameTextures[handle].procedural->last_procedural_frame == FrameCount)
+    if (GameTextures[*handle].procedural != NULL) {
+      if (GameTextures[*handle].procedural->last_procedural_frame == FrameCount)
         do_eval = false;
 
       if (d3::chrono::last_update() <
-          GameTextures[handle].procedural->last_evaluation_time + GameTextures[handle].procedural->evaluation_time)
+          GameTextures[*handle].procedural->last_evaluation_time + GameTextures[*handle].procedural->evaluation_time)
         do_eval = false;
 
       if (!force) // && !Detail_settings.Procedurals_enabled)
       {
-        if (d3::chrono::last_update() < GameTextures[handle].procedural->last_evaluation_time + 10.0f)
+        if (d3::chrono::last_update() < GameTextures[*handle].procedural->last_evaluation_time + 10.0f)
           do_eval = false;
       }
 
       if (do_eval) {
         //EvaluateProcedural(handle);
-        GameTextures[handle].procedural->last_procedural_frame = FrameCount;
-        GameTextures[handle].procedural->last_evaluation_time = d3::chrono::last_update();
-        src_bitmap = GameTextures[handle].procedural->procedural_bitmap;
+        GameTextures[*handle].procedural->last_procedural_frame = FrameCount;
+        GameTextures[*handle].procedural->last_evaluation_time = d3::chrono::last_update();
+        src_bitmap = GameTextures[*handle].procedural->procedural_bitmap;
         GameBitmaps[src_bitmap].flags.changed = true;
       } else
-        src_bitmap = GameTextures[handle].procedural->procedural_bitmap;
+        src_bitmap = GameTextures[*handle].procedural->procedural_bitmap;
     }
   }
 

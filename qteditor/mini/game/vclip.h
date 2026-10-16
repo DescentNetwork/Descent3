@@ -92,7 +92,7 @@ void ChangeVClipName(const std::filesystem::path& src, std::string& dest);
 index_t FindVClipName(const std::string& name);
 
 // Pages in a vclip if it needs to be
-void PageInVClip(int vcnum);
+void PageInVClip(index_t vcnum);
 
 // Allocs and loads a fully-resident vclip from an in-memory OAF payload (a HOG
 // entry): parses the container header and pages every frame into GameVClips[].

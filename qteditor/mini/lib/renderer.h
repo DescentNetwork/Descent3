@@ -299,6 +299,7 @@
 #include <vector>
 
 #include "grdefs.h"
+#include "utils.h"
 
 // Declare this here so we don't need to include 3d.h
 typedef struct g3Point g3Point;
@@ -542,7 +543,7 @@ void rend_SetFiltering(int8_t state);
 void rend_SetZBufferState(int8_t state);
 
 // Sets a bitmap as an overlay to rendered on top of the next texture map
-void rend_SetOverlayMap(int handle);
+void rend_SetOverlayMap(index_t handle);
 
 // Sets the type of overlay operation
 void rend_SetOverlayType(overlay_type type);

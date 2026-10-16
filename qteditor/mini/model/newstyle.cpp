@@ -203,7 +203,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
   // Set radiosity lightmaps if needed
   if (Polymodel_light_type == polymodel_light_type::lightmap) {
     rend_SetOverlayMap(
-        index_to_int(LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle));
+        LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle);
   }
 
   // Do bump mapping

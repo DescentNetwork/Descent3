@@ -392,7 +392,7 @@ index_t FindTextureBitmapName(const std::string& name);
 
 // Given a texture handle, returns that textures bitmap
 // If the texture is animated, returns framenum mod num_of_frames in the animation
-int GetTextureBitmap(int handle, int framenum, bool force = false);
+int GetTextureBitmap(index_t handle, int framenum, bool force = false);
 
 // Given a filename, loads either the bitmap or vclip found in that file.  If type
 // is not NULL, sets it to 1 if file is animation, otherwise sets it to zero

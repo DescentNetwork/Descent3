@@ -416,8 +416,8 @@ void WorldObjectsGenericDialog::updateDialog() {
                 mem_this_tex += m * 2;
               }
             } else {
-              mem_this_tex = bm_w(index_to_int(texp.bm_handle), 0) * bm_h(index_to_int(texp.bm_handle), 0);
-              if (bm_mipped(index_to_int(texp.bm_handle)))
+              mem_this_tex = bm_w(texp.bm_handle, 0) * bm_h(texp.bm_handle, 0);
+              if (bm_mipped(texp.bm_handle))
                 mem_this_tex += mem_this_tex / 3;
               mem_this_tex *= 2;
             }

@@ -3222,8 +3222,8 @@ private slots:
     for (size_t r = 0; r <= Rooms.size() - 1 && r < MAX_ROOMS; r++) {
       if (!Rooms[r].used) continue;
       for (int f = 0; f < Rooms[r].num_faces; f++) {
-        const int bm = index_to_int(GameTextures[Rooms[r].faces[f].tmap].bm_handle);
-        if (bm >= 0 && bm_w(bm, 0) > 0 && bm_h(bm, 0) > 0) ++texturedFaces;
+        const index_t bm = GameTextures[Rooms[r].faces[f].tmap].bm_handle;
+        if (bm && bm_w(bm, 0) > 0 && bm_h(bm, 0) > 0) ++texturedFaces;
       }
     }
     QVERIFY(texturedFaces > 0);
