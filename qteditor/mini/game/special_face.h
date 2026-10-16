@@ -26,7 +26,6 @@
 #include "vecmat.h"
 #include "slotvec.h"
 
-#define BAD_SPECIAL_FACE_INDEX -1
 #define MAX_SPECIAL_FACES 13000 // made large enough for Josh's Mercenary level 3
 
 // What this special face is used for:

@@ -176,7 +176,7 @@ struct face {
   vector3 normal;           // the surface normal of this face
   int16_t tmap;              // texture numbers for this face
   uint16_t lmi_handle;       // the lightmap info number for this face
-  int16_t special_handle;    // the index into the special_faces array
+  index_t special_handle;    // the index into the special_faces array
   uint8_t renderframe;       // what frame this face was last rendered (for lighting)
   uint8_t light_multiple;    // what multiple to times by
   vector3 min_xyz, max_xyz; // min & max extents of this face (for FVI)
@@ -349,8 +349,10 @@ struct room_t {
 // by the version-gated helpers in level_loader.cpp.
 byte_istream& operator>>(byte_istream& input, face& data);
 byte_ostream& operator<<(byte_ostream& output, const face& data);
+
 byte_istream& operator>>(byte_istream& input, portal& data);
 byte_ostream& operator<<(byte_ostream& output, const portal& data);
+
 byte_istream& operator>>(byte_istream& input, room_t& data);
 byte_ostream& operator<<(byte_ostream& output, const room_t& data);
 

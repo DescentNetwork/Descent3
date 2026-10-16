@@ -2978,7 +2978,7 @@ void CreateNormalMapForFace (int roomnum,face *fp)
         room &rp = Rooms[roomnum];
         int w = static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
         int h = static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
-        const special_face &sfp = SpecialFaces[fp->special_handle];
+        const special_face &sfp = SpecialFaces[*fp->special_handle];
         spec_vertex spec_verts[MAX_VERTS_PER_FACE];
         vector3 vertnorms[MAX_VERTS_PER_FACE];
         int vlt,vlb,vrt,vrb,max_y_vertex,top_y,bottom_y,height;
@@ -3122,10 +3122,10 @@ void CleanupSpecularLighting(int external) {
         face *fp = &rp.faces[t];
         if (GameTextures[fp->tmap].flags.metal || GameTextures[fp->tmap].flags.marble ||
             GameTextures[fp->tmap].flags.plastic) {
-          Q_ASSERT(fp->special_handle != BAD_SPECIAL_FACE_INDEX);
+          Q_ASSERT(fp->special_handle.has_value());
           int j, k, l;
 
-          if (SpecialFaces[fp->special_handle].spec_instance[0].bright_color == 0) {
+          if (SpecialFaces[*fp->special_handle].spec_instance[0].bright_color == 0) {
             // This face didn't get enough light, either free it up or
             // find another face that shares a lightmap and just use that
             // faces values
@@ -3144,10 +3144,10 @@ void CleanupSpecularLighting(int external) {
                 if (this_fp->lmi_handle != fp->lmi_handle)
                   continue; // only do faces that have same lightmaps
 
-                if (this_fp->special_handle == BAD_SPECIAL_FACE_INDEX)
+                if (!this_fp->special_handle)
                   continue; // Only do specmaps
 
-                if (SpecialFaces[this_fp->special_handle].spec_instance[0].bright_color == 0)
+                if (SpecialFaces[*this_fp->special_handle].spec_instance[0].bright_color == 0)
                   continue; // Don't do dark ones
 
                 if (GameTextures[fp->tmap].flags.smooth_specular)
@@ -3157,7 +3157,7 @@ void CleanupSpecularLighting(int external) {
                   if (vert_to_check == this_fp->face_verts[k]) {
                     // We have a match, so see if this face is brighter
                     // than all the others
-                    int color = SpecialFaces[this_fp->special_handle].spec_instance[0].bright_color;
+                    int color = SpecialFaces[*this_fp->special_handle].spec_instance[0].bright_color;
                     int r = (color >> 10) & 0x1f;
                     int g = (color >> 5) & 0x1f;
                     int b = (color & 0x1f);
@@ -3177,12 +3177,12 @@ void CleanupSpecularLighting(int external) {
             }
             // If after all that searching we couldn't find a good light, free it!
             if (!found) {
-              FreeSpecialFace(fp->special_handle);
-              fp->special_handle = BAD_SPECIAL_FACE_INDEX;
+              FreeSpecialFace(index_to_int(fp->special_handle));
+              fp->special_handle = std::nullopt;
             } else {
               for (int z = 0; z < 4; z++)
-                SpecialFaces[fp->special_handle].spec_instance[z] =
-                    SpecialFaces[best_face->special_handle].spec_instance[z];
+                SpecialFaces[*fp->special_handle].spec_instance[z] =
+                    SpecialFaces[*best_face->special_handle].spec_instance[z];
             }
           }
         }
@@ -3240,7 +3240,7 @@ void SetupSpecularLighting(int external) {
         face &fp = rp.faces[t];
         if (GameTextures[fp.tmap].flags.metal || GameTextures[fp.tmap].flags.marble ||
             GameTextures[fp.tmap].flags.plastic) {
-          Q_ASSERT(fp.special_handle == BAD_SPECIAL_FACE_INDEX);
+          Q_ASSERT(!fp.special_handle);
 
           int n;
           if (GameTextures[fp.tmap].flags.smooth_specular)

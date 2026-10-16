@@ -5,8 +5,8 @@
  *
  * Qt-neutral special-face table (ported from game/special_face.cpp).  The mini
  * keeps the same free-list + handle scheme; SpecialFaces grows on demand
- * (handles live in face::special_handle, an int16, with
- * BAD_SPECIAL_FACE_INDEX == -1).  Table is per-level: cleared by
+ * (handles live in face::special_handle, an index_t where std::nullopt means
+ * "no special face").  Table is per-level: cleared by
  * InitSpecialFaces() at level load.
  */
 

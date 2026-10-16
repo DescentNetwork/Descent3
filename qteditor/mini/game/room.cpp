@@ -565,7 +565,7 @@ void InitRoomFace(face &fp, int nverts) {
 #endif
 
   fp.lmi_handle = BAD_LMI_INDEX;
-  fp.special_handle = BAD_SPECIAL_FACE_INDEX;
+  fp.special_handle = std::nullopt;
   fp.light_multiple = 4;
 
   fp.face_verts.resize(nverts);
@@ -662,9 +662,9 @@ void FreeRoomFace(face &fp) {
     fp.flags.lightmap = false;
   }
 
-  if (fp.special_handle != BAD_SPECIAL_FACE_INDEX) {
-    FreeSpecialFace(fp.special_handle);
-    fp.special_handle = BAD_SPECIAL_FACE_INDEX;
+  if (fp.special_handle.has_value()) {
+    FreeSpecialFace(index_to_int(fp.special_handle));
+    fp.special_handle = std::nullopt;
   }
 
   fp.face_verts.clear();
@@ -833,10 +833,10 @@ void ClearRoomSpecmaps(int roomnum) {
   Q_ASSERT(Rooms[roomnum].used);
 
   for (t = 0; t < Rooms[roomnum].num_faces; t++) {
-    if (Rooms[roomnum].faces[t].special_handle != BAD_SPECIAL_FACE_INDEX) {
-      if (SpecialFaces[Rooms[roomnum].faces[t].special_handle].type == SFT_SPECULAR) {
-        FreeSpecialFace(Rooms[roomnum].faces[t].special_handle);
-        Rooms[roomnum].faces[t].special_handle = BAD_SPECIAL_FACE_INDEX;
+    if (Rooms[roomnum].faces[t].special_handle.has_value()) {
+      if (SpecialFaces[*Rooms[roomnum].faces[t].special_handle].type == SFT_SPECULAR) {
+        FreeSpecialFace(index_to_int(Rooms[roomnum].faces[t].special_handle));
+        Rooms[roomnum].faces[t].special_handle = std::nullopt;
       }
     }
   }

@@ -865,12 +865,12 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
 void ApplySpecularLightingToWall (room *rp,face *fp,vector3 *pos,float light_dist,float dist_from_plane,float
 red_scale,float green_scale,float blue_scale)
 {
-        const special_face &sf = SpecialFaces[fp->special_handle];
+        const special_face &sf = SpecialFaces[*fp->special_handle];
 
         if (!(sf.flags))
         {
                 // Reset this face
-                Specular_face_list[Num_specular_faces++]=fp->special_handle;
+                Specular_face_list[Num_specular_faces++]=index_to_int(fp->special_handle);
                 sf.flags=1;
                 sf.strength=0;
         }
@@ -1088,7 +1088,7 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
     }
 
     /*// Check for specular lighting changes on this face
-    if (Detail_settings.Specular_lighting && fp.special_handle!=BAD_SPECIAL_FACE_INDEX)
+    if (Detail_settings.Specular_lighting && fp.special_handle.has_value())
     {
             ApplySpecularLightingToWall(rp,fp,pos,light_dist,dist_from_plane,red_scale,green_scale,blue_scale);
     }*/
@@ -1636,7 +1636,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 
         int texel_num=0;
 
-        int num=SpecialFaces[fp->special_handle].num;
+        int num=SpecialFaces[*fp->special_handle].num;
 
         for (int y=0;y<yres;y++,base_vector-=(facematrix.uvec*yspacing),texel_num+=xres)
         {
@@ -1659,7 +1659,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 
                         for (int i=0;i<num;i++)
                         {
-                                if (SpecialFaces[fp->special_handle].spec_instance[i].bright_color==0)
+                                if (SpecialFaces[*fp->special_handle].spec_instance[i].bright_color==0)
                                         continue;
 
                                 lightmap_texel=dest_data[lightmap_texel_num];
@@ -1672,7 +1672,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
                                 vm_NormalizeVectorFast (subvec);
 
                                 vector3
-incident_norm=element_vec-SpecialFaces[fp->special_handle].spec_instance[i].bright_center; vm_NormalizeVectorFast
+incident_norm=element_vec-SpecialFaces[*fp->special_handle].spec_instance[i].bright_center; vm_NormalizeVectorFast
 (incident_norm);
 
                                 float d=incident_norm * fp->normal;
@@ -1691,7 +1691,7 @@ incident_norm=element_vec-SpecialFaces[fp->special_handle].spec_instance[i].brig
                                         int index = (static_cast<float>(MAX_SPECULAR_INCREMENTS - 1) * dotp);
                                         float val=Specular_tables[material_type][index];
 
-                                        uint16_t color=SpecialFaces[fp->special_handle].spec_instance[i].bright_color;
+                                        uint16_t color=SpecialFaces[*fp->special_handle].spec_instance[i].bright_color;
                                         int r=color >> 10 & 0x1f;
                                         int g=color >> 5 & 0x1f;
                                         int b=color & 0x1f;
@@ -1722,7 +1722,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         int xres=static_cast<int>(lmi_w(fp->lmi_handle).value_or(0));
         int yres=static_cast<int>(lmi_h(fp->lmi_handle).value_or(0));
         lightmap_info &lmi_ptr = LightmapInfo[fp->lmi_handle];
-        vector3 center=SpecialFaces[fp->special_handle].center;
+        vector3 center=SpecialFaces[*fp->special_handle].center;
 
         matrix facematrix;
         vector3 fvec=-lmi_ptr.normal;
@@ -1798,9 +1798,9 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 
         for (int i=0;i<4;i++)
         {
-                if (SpecialFaces[fp->special_handle].spec_instance[i].bright_color!=0)
+                if (SpecialFaces[*fp->special_handle].spec_instance[i].bright_color!=0)
                 {
-                        tempvec=SpecialFaces[fp->special_handle].spec_instance[i].bright_center-center;
+                        tempvec=SpecialFaces[*fp->special_handle].spec_instance[i].bright_center-center;
                         vm_MatrixMulVector (light_pos[i], tempvec, facematrix);
                 }
         }
@@ -1829,7 +1829,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         // SLOW!
 
         int texel_num=start_y*xres+start_x;
-        int num=SpecialFaces[fp->special_handle].num;
+        int num=SpecialFaces[*fp->special_handle].num;
 
         for (int y=0;y<height;y++,base_vector.y-=lmi_ptr.yspacing,texel_num+=xres)
         {
@@ -1839,13 +1839,13 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
                 {
                         int lightmap_texel_num=texel_num+x;
 
-                        if (SpecialFaces[fp->special_handle].normal_map[lightmap_texel_num*3+2]==128)
+                        if (SpecialFaces[*fp->special_handle].normal_map[lightmap_texel_num*3+2]==128)
                                 continue;
                         else
                         {
-                                norm.x=Normal_table[SpecialFaces[fp->special_handle].normal_map[lightmap_texel_num*3+0]];
-                                norm.y=Normal_table[SpecialFaces[fp->special_handle].normal_map[lightmap_texel_num*3+1]];
-                                norm.z=Normal_table[SpecialFaces[fp->special_handle].normal_map[lightmap_texel_num*3+2]];
+                                norm.x=Normal_table[SpecialFaces[*fp->special_handle].normal_map[lightmap_texel_num*3+0]];
+                                norm.y=Normal_table[SpecialFaces[*fp->special_handle].normal_map[lightmap_texel_num*3+1]];
+                                norm.z=Normal_table[SpecialFaces[*fp->special_handle].normal_map[lightmap_texel_num*3+2]];
                         }
 
                         uint16_t lightmap_texel=src_data[lightmap_texel_num];
@@ -1860,7 +1860,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 
                         for (int i=0;i<num;i++)
                         {
-                                if (SpecialFaces[fp->special_handle].spec_instance[i].bright_color==0)
+                                if (SpecialFaces[*fp->special_handle].spec_instance[i].bright_color==0)
                                         continue;
 
                                 lightmap_texel=dest_data[lightmap_texel_num];
@@ -1895,7 +1895,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
                                         int index = (static_cast<float>(MAX_SPECULAR_INCREMENTS - 1) * dotp);
                                         float val=Specular_tables[material_type][index];
 
-                                        uint16_t color=SpecialFaces[fp->special_handle].spec_instance[i].bright_color;
+                                        uint16_t color=SpecialFaces[*fp->special_handle].spec_instance[i].bright_color;
                                         int r=color >> 10 & 0x1f;
                                         int g=color >> 5 & 0x1f;
                                         int b=color & 0x1f;

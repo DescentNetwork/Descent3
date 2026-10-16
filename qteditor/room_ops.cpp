@@ -579,12 +579,12 @@ void FixConcaveFaces(int roomnum, int *facelist, int facecount) {
 
       for (int t = 0; t < rp.num_faces; t++) {
         if (t != facelist[i]) {
-          rp.faces[t].special_handle = BAD_SPECIAL_FACE_INDEX;
+          rp.faces[t].special_handle = std::nullopt;
         } else {
           rp.faces[t].face_verts.resize(3);
           rp.faces[t].face_uvls.resize(3);
           rp.faces[t].num_verts = 3;
-          rp.faces[t].special_handle = BAD_SPECIAL_FACE_INDEX;
+          rp.faces[t].special_handle = std::nullopt;
 
           if (!ComputeFaceNormal(roomnum, t))
             Q_ASSERT(false);

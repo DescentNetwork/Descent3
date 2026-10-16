@@ -512,7 +512,7 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra& color, vector3 *
   if (dest_surf->surface_type != rad_surface_type::room)
     return;
 
-  if (Rooms[*dest_surf->roomnum].faces[dest_surf->facenum].special_handle == BAD_SPECIAL_FACE_INDEX)
+  if (!Rooms[*dest_surf->roomnum].faces[dest_surf->facenum].special_handle)
     return;
 
   if (src_center == NULL)
@@ -539,7 +539,7 @@ void CheckToUpdateSpecularFace(rad_surface *dest_surf, spectra& color, vector3 *
       if (scalar > 1)
         scalar = 1.0f;
 
-      int special_index = Rooms[*dest_surf->roomnum].faces[dest_surf->facenum].special_handle;
+      int special_index = index_to_int(Rooms[*dest_surf->roomnum].faces[dest_surf->facenum].special_handle);
 
       // Move the others down
       for (t = 2; t >= i; t--) {

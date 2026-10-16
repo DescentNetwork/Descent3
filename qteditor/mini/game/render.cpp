@@ -1378,7 +1378,7 @@ texel = data[int_v][int_u];
       vector3 subvec = Viewer_eye - rp.verts[fp->face_verts[vn]];
       vm_NormalizeVectorFast(subvec);
       if (!(rp.flags.external)) {
-        int limit = SpecialFaces[fp->special_handle].num;
+        int limit = SpecialFaces[*fp->special_handle].num;
         int spec_index = limit - 1;
         /*if (GameTextures[fp->tmap].flags.smooth_specular)
         {
@@ -1391,20 +1391,20 @@ texel = data[int_v][int_u];
           float spec_scalar;
 
           // Use regular static lighting
-          color = SpecialFaces[fp->special_handle].spec_instance[t].bright_color;
+          color = SpecialFaces[*fp->special_handle].spec_instance[t].bright_color;
           if (color == 0)
             continue;
           incident_norm =
-              rp.verts[fp->face_verts[vn]] - SpecialFaces[fp->special_handle].spec_instance[t].bright_center;
+              rp.verts[fp->face_verts[vn]] - SpecialFaces[*fp->special_handle].spec_instance[t].bright_center;
           spec_scalar = Specular_scalars[spec_index][t];
 
           vm_NormalizeVectorFast(incident_norm);
           float d;
           vector3 upvec;
           if ((GameTextures[fp->tmap].flags.smooth_specular) &&
-              (SpecialFaces[fp->special_handle].flags.spec_smooth)) {
-            d = vector3::dot(incident_norm, SpecialFaces[fp->special_handle].vertnorms[vn]);
-            upvec = d * SpecialFaces[fp->special_handle].vertnorms[vn];
+              (SpecialFaces[*fp->special_handle].flags.spec_smooth)) {
+            d = vector3::dot(incident_norm, SpecialFaces[*fp->special_handle].vertnorms[vn]);
+            upvec = d * SpecialFaces[*fp->special_handle].vertnorms[vn];
           } else {
             d = vector3::dot(incident_norm, fp->normal);
             upvec = d * fp->normal;
@@ -1769,7 +1769,7 @@ void RenderFace(int roomnum, int facenum) {
   if (rp->flags.triangulate)
     do_triangle_test = 1;
   if (!Render_mirror_for_room && Detail_settings.Specular_lighting && (GameTextures[fp->tmap].flags.smooth_specular) &&
-      ((fp->special_handle != BAD_SPECIAL_FACE_INDEX) || (rp->flags.external)))
+      ((fp->special_handle.has_value()) || (rp->flags.external)))
     spec_face = 1;
   // Figure out if there is any texture sliding
   if (GameTextures[fp->tmap].slide_u != 0) {
@@ -2045,14 +2045,14 @@ draw_fog:
       g3_DrawLine(CUREDGE_COLOR, *pointlist[0], *pointlist[2]);
       g3_DrawLine(CUREDGE_COLOR, *pointlist[1], *pointlist[3]);
     }
-    if (fp->special_handle != BAD_SPECIAL_FACE_INDEX) {
+    if (fp->special_handle.has_value()) {
       g3Point p1, p2;
       vector3 verts[MAX_VERTS_PER_FACE];
       vector3 center, end;
       for (int t = 0; t < fp->num_verts; t++)
         verts[t] = rp->verts[fp->face_verts[t]];
       vm_GetCentroid(center, verts, fp->num_verts);
-      vector3 subvec = SpecialFaces[fp->special_handle].spec_instance[0].bright_center - center;
+      vector3 subvec = SpecialFaces[*fp->special_handle].spec_instance[0].bright_center - center;
       vm_NormalizeVectorFast(subvec);
       end = center + subvec;
       g3_RotatePoint(p1, center);
@@ -2060,7 +2060,7 @@ draw_fog:
       g3_DrawLine(GR_RGB(255, 255, 255), p1, p2);
       /*for (t=0;t<fp->num_verts;t++)
       {
-              end=rp->verts[fp->face_verts[t]]+SpecialFaces[fp->special_handle].vertnorms[t];
+              end=rp->verts[fp->face_verts[t]]+SpecialFaces[*fp->special_handle].vertnorms[t];
               g3_RotatePoint (&p1,&rp->verts[fp->face_verts[t]]);
               g3_RotatePoint (&p2,&end);
               g3_DrawLine(GR_RGB(255,255,255), p1, p2);
@@ -2110,14 +2110,14 @@ draw_fog:
             g3_DrawLine(GR_RGB(255, 255, 255), *pointlist[t], *pointlist[(t + 1) % 4]);
         }
         // Draw interpolated normals
-        /*if (fp->special_handle!=BAD_SPECIAL_FACE_INDEX && SpecialFaces[fp->special_handle].normal_map!=NULL)
+        /*if (fp->special_handle.has_value() && SpecialFaces[*fp->special_handle].normal_map!=NULL)
         {
                 vector3 norm,from,to,temp;
                 g3Point p1,p2;
                 vm_MakeZero (from);
-                norm.x=Normal_table[SpecialFaces[fp->special_handle].normal_map[i*3+0]];
-                norm.y=Normal_table[SpecialFaces[fp->special_handle].normal_map[i*3+1]];
-                norm.z=Normal_table[SpecialFaces[fp->special_handle].normal_map[i*3+2]];
+                norm.x=Normal_table[SpecialFaces[*fp->special_handle].normal_map[i*3+0]];
+                norm.y=Normal_table[SpecialFaces[*fp->special_handle].normal_map[i*3+1]];
+                norm.z=Normal_table[SpecialFaces[*fp->special_handle].normal_map[i*3+2]];
                 vm_MatrixMulVector (temp, norm, facematrix);
                 norm=temp;
                 for (t=0;t<4;t++)
@@ -2300,7 +2300,7 @@ void RenderRoomUnsorted(int roomnum) {
       if (GameTextures[fp.tmap].flags.smooth_specular) {
         if (!Render_mirror_for_room && Detail_settings.Specular_lighting &&
             (GameTextures[fp.tmap].flags.smooth_specular) &&
-            ((fp.special_handle != BAD_SPECIAL_FACE_INDEX) || (rp->flags.external))) {
+            ((fp.special_handle.has_value()) || (rp->flags.external))) {
           fp.flags.spec_invisible = true;
           UpdateSpecularFace(roomnum, fp);
         }

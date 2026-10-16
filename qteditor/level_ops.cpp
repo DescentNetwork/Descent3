@@ -500,7 +500,7 @@ std::string RenderLevelStats() {
 
     for (int t = 0; t < rp.num_faces; t++) {
       const face &fp = rp.faces[t];
-      if (fp.special_handle != BAD_SPECIAL_FACE_INDEX &&
+      if (fp.special_handle.has_value() &&
           (GameTextures[fp.tmap].flags.metal || GameTextures[fp.tmap].flags.marble ||
            GameTextures[fp.tmap].flags.plastic) &&
           fp.lmi_handle != BAD_LMI_INDEX)
