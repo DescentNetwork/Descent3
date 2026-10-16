@@ -203,7 +203,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
   // Set radiosity lightmaps if needed
   if (Polymodel_light_type == polymodel_light_type::lightmap) {
     rend_SetOverlayMap(
-        LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle);
+        index_to_int(LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle));
   }
 
   // Do bump mapping
@@ -418,7 +418,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
                     int h=static_cast<int>(lmi_h (lmi_handle).value_or(0));
                     vector3 rvec=lfp.rvec*lmi_ptr.xspacing;
                     vector3 uvec=lfp.uvec*lmi_ptr.yspacing;
-                    uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr.lm_handle);
+                    uint16_t *src_data=(uint16_t *)lm_data(index_to_int(lmi_ptr.lm_handle));
 
                     for (int i=0;i<w*h;i++)
                     {
@@ -486,7 +486,7 @@ inline void RenderSubmodelLightmapFace(poly_model &pm, bsp_info &sm, int facenum
   int modelnum = &sm - pm.submodel.data();
   int t;
 
-  int lm_handle = LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle;
+  int lm_handle = index_to_int(LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle);
   float xscalar = (float)GameLightmaps[lm_handle].width / (float)GameLightmaps[lm_handle].square_res;
   float yscalar = (float)GameLightmaps[lm_handle].height / (float)GameLightmaps[lm_handle].square_res;
 

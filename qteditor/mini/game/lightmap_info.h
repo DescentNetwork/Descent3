@@ -44,6 +44,7 @@
 #include <vector>
 
 #include "slotvec.h"
+#include "utils.h"
 #include "vecmat.h"
 
 #define BAD_LMI_INDEX 65535
@@ -61,7 +62,7 @@ enum class lmi_type : uint8_t {
 
 struct lightmap_info {
   uint8_t xspacing, yspacing;
-  uint16_t lm_handle;
+  index_t lm_handle;
   vector3 upper_left, normal;
   uint8_t width, height, x1, y1;
 

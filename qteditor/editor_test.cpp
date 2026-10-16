@@ -3574,7 +3574,7 @@ private slots:
     for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
       if (LightmapInfo.is_unused(i))
         continue;
-      const int lm_handle = LightmapInfo[i].lm_handle;
+      const int lm_handle = index_to_int(LightmapInfo[i].lm_handle);
       QVERIFY(lm_handle >= 0 && lm_handle < MAX_LIGHTMAPS);
       QVERIFY(GameLightmaps.is_used(lm_handle));
       const int w = static_cast<int>(lm_w(lm_handle).value_or(255));

@@ -1271,8 +1271,8 @@ void RenderSpecularFaces(int roomnum) {
 
     int save_w = static_cast<int>(lm_w(lm_handle).value_or(255));
     int save_h = static_cast<int>(lm_h(lm_handle).value_or(255));
-    GameLightmaps[lm_handle].width = static_cast<uint8_t>(lm_w(LightmapInfo[fp.lmi_handle].lm_handle).value_or(0));
-    GameLightmaps[lm_handle].height = static_cast<uint8_t>(lm_h(LightmapInfo[fp.lmi_handle].lm_handle).value_or(0));
+    GameLightmaps[lm_handle].width = static_cast<uint8_t>(lm_w(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle)).value_or(0));
+    GameLightmaps[lm_handle].height = static_cast<uint8_t>(lm_h(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle)).value_or(0));
     g3_DrawPoly(fp.num_verts, pointlist, lm_handle, map_type::lightmap);
     GameLightmaps[lm_handle].width = save_w;
     GameLightmaps[lm_handle].height = save_h;
@@ -1348,7 +1348,7 @@ void RenderSpecularFacesFlat(int roomnum) {
       continue;
     }
 
-    lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
+    lm_handle = index_to_int(LightmapInfo[fp->lmi_handle].lm_handle);
     const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
     w = static_cast<int>(lm_w(lm_handle).value_or(255));
     h = static_cast<int>(lm_h(lm_handle).value_or(255));
@@ -1681,7 +1681,7 @@ void RenderLightmapFace(int roomnum, int facenum) {
   if (In_editor_mode && !Lighting_on)
     return;
 #endif
-  int lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+  int lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
   // Setup saturation if needed
   if (GameTextures[fp.tmap].flags.saturate_lightmap)
     rend_SetAlphaType(alpha_blend_type::lightmap_blend_saturate);
@@ -1864,7 +1864,7 @@ void RenderFace(int roomnum, int facenum) {
     }
 
     if (fp->flags.lightmap) {
-      int lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
+      int lm_handle = index_to_int(LightmapInfo[fp->lmi_handle].lm_handle);
       const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
       int w = static_cast<int>(lm_w(lm_handle).value_or(255));
       int h = static_cast<int>(lm_h(lm_handle).value_or(255));
@@ -1933,7 +1933,7 @@ void RenderFace(int roomnum, int facenum) {
       rend_SetOverlayType(overlay_type::none);
     else
       rend_SetOverlayType(overlay_type::blend);
-    rend_SetOverlayMap(LightmapInfo[fp->lmi_handle].lm_handle);
+    rend_SetOverlayMap(index_to_int(LightmapInfo[fp->lmi_handle].lm_handle));
   } else
     rend_SetOverlayType(overlay_type::none);
   // Select texture type
@@ -2074,15 +2074,15 @@ draw_fog:
       Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
 
       const lightmap_info &lmi = LightmapInfo[fp->lmi_handle];
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi.lm_handle);
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(index_to_int(lmi.lm_handle));
       matrix facematrix;
       vector3 fvec = -lmi.normal;
       vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
       vector3 rvec = facematrix.rvec * lmi.xspacing;
       vector3 uvec = facematrix.uvec * lmi.yspacing;
       vm_TransposeMatrix(facematrix);
-      int w = static_cast<int>(lm_w(lmi.lm_handle).value_or(255));
-      int h = static_cast<int>(lm_h(lmi.lm_handle).value_or(255));
+      int w = static_cast<int>(lm_w(index_to_int(lmi.lm_handle)).value_or(255));
+      int h = static_cast<int>(lm_h(index_to_int(lmi.lm_handle)).value_or(255));
       for (int i = 0; i < w * h; i++) {
         int t;
         g3Point epoints[20];
@@ -2360,7 +2360,7 @@ void RenderRoomUnsorted(int roomnum) {
         state_limited_element state_element;
         state_element.facenum = fn;
         if (fp.flags.lightmap)
-          state_element.sort_key = (LightmapInfo[fp.lmi_handle].lm_handle * MAX_TEXTURES) + fp.tmap;
+          state_element.sort_key = (index_to_int(LightmapInfo[fp.lmi_handle].lm_handle) * MAX_TEXTURES) + fp.tmap;
         else
           state_element.sort_key = fp.tmap;
         state_elements.push_back(state_element);

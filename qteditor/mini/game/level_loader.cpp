@@ -1353,10 +1353,10 @@ static bool LL_WriteLightmapChunk(byte_ostream &ofile) {
 
   for (uint32_t i = 0; i < static_cast<uint32_t>(LightmapInfo.size()); i++) {
     if (LightmapInfo.is_used(i) && LightmapInfo[i].type != lmi_type::dynamic) {
-      const uint16_t lm_handle = LightmapInfo[i].lm_handle;
-      if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
-        lightmap_spoken_for[lm_handle] = 1;
-        lightmap_remap[lm_handle] = static_cast<uint16_t>(lightmap_count);
+      const index_t lm_handle = LightmapInfo[i].lm_handle;
+      if (lm_handle && *lm_handle < MAXLMS && !lightmap_spoken_for[*lm_handle]) {
+        lightmap_spoken_for[*lm_handle] = 1;
+        lightmap_remap[*lm_handle] = static_cast<uint16_t>(lightmap_count);
         lightmap_count++;
       }
       lightmap_info_count++;
@@ -1386,14 +1386,14 @@ static bool LL_WriteLightmapChunk(byte_ostream &ofile) {
   ofile << lightmap_count;
   for (uint32_t i = 0; i < static_cast<uint32_t>(LightmapInfo.size()); i++) {
     if (LightmapInfo.is_used(i) && LightmapInfo[i].type != lmi_type::dynamic) {
-      const uint16_t lm_handle = LightmapInfo[i].lm_handle;
-      if (lm_handle < MAXLMS && !lightmap_spoken_for[lm_handle]) {
-        lightmap_spoken_for[lm_handle] = 1;
-        const uint32_t map_w = lm_w(lm_handle).value_or(255);
-        const uint32_t map_h = lm_h(lm_handle).value_or(255);
+      const index_t lm_handle = LightmapInfo[i].lm_handle;
+      if (lm_handle && *lm_handle < MAXLMS && !lightmap_spoken_for[*lm_handle]) {
+        lightmap_spoken_for[*lm_handle] = 1;
+        const uint32_t map_w = lm_w(index_to_int(lm_handle)).value_or(255);
+        const uint32_t map_h = lm_h(index_to_int(lm_handle)).value_or(255);
         ofile << static_cast<int16_t>(map_w);
         ofile << static_cast<int16_t>(map_h);
-        const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
+        const std::vector<std::vector<uint16_t>> &data = lm_data(index_to_int(lm_handle));
         std::vector<uint16_t> flat(static_cast<size_t>(map_w) * map_h);
         for (uint32_t y = 0; y < map_h; y++)
           std::copy(data[y].begin(), data[y].end(), flat.begin() + y * map_w);
@@ -1406,7 +1406,7 @@ static bool LL_WriteLightmapChunk(byte_ostream &ofile) {
   for (uint32_t i = 0; i < static_cast<uint32_t>(LightmapInfo.size()); i++) {
     if (LightmapInfo.is_used(i) && LightmapInfo[i].type != lmi_type::dynamic) {
       const lightmap_info &info = LightmapInfo[i];
-      ofile << lightmap_remap[info.lm_handle];
+      ofile << lightmap_remap[*info.lm_handle];
       ofile << static_cast<int16_t>(lmi_w(i).value_or(0));
       ofile << static_cast<int16_t>(lmi_h(i).value_or(0));
       ofile << reinterpret_cast<const uint8_t &>(info.type);

@@ -46,7 +46,7 @@ struct dynamic_lightmap {
 };
 
 struct dynamic_face {
-  uint16_t lmi_handle;
+  index_t lmi_handle;
 };
 
 struct dynamic_cell {

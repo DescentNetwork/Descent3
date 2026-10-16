@@ -105,7 +105,7 @@ void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surf
   Q_ASSERT(lw >= 2);
   Q_ASSERT(lh >= 2);
 
-  std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
+  std::vector<std::vector<uint16_t>> &dest_data = lm_data(index_to_int(LightmapInfo[lmi_handle].lm_handle));
 
   for (i = 0; i < yres; i++) {
     for (t = 0; t < xres; t++) {

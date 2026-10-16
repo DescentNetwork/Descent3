@@ -210,7 +210,7 @@ void BlendLightingEdges(int lmi_handle_in) {
   lightmap_info &lmi = LightmapInfo[lmi_handle_in];
   int h = static_cast<int>(lmi_h(lmi_handle_in).value_or(0));
   int w = static_cast<int>(lmi_w(lmi_handle_in).value_or(0));
-  int lm_handle = lmi.lm_handle;
+  int lm_handle = index_to_int(lmi.lm_handle);
   std::vector<std::vector<uint16_t>> &dest_data = lm_data(lm_handle);
   std::vector<std::vector<uint16_t>> &src_data = dest_data;
   int dest_x = lmi.x1 - 1;
@@ -370,7 +370,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
 
     if (lmi_ptr.dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
-      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+      lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
 
       if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
         GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
@@ -401,7 +401,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
       uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
@@ -410,7 +410,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
         }
       }
 
-      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+      lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
 
       // Mark it as changed
       lmi_ptr.dynamic = static_cast<uint16_t>(*dynamic_handle);
@@ -456,7 +456,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
     for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
@@ -702,7 +702,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
 
     if (lmi_ptr.dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
-      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+      lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
 
       if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
         GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
@@ -735,7 +735,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
       uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
@@ -744,7 +744,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
         }
       }
 
-      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+      lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
 
       // Mark it as changed
       lmi_ptr.dynamic = static_cast<uint16_t>(*dynamic_handle);
@@ -790,7 +790,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
     for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
@@ -1142,7 +1142,7 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
 
     if (lmi_ptr.dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
-      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+      lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
 
       if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
         GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
@@ -1173,7 +1173,7 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
       uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
@@ -1182,7 +1182,7 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
         }
       }
 
-      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+      lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
 
       // Mark it as changed
       lmi_ptr.dynamic = static_cast<uint16_t>(*dynamic_handle);
@@ -1228,7 +1228,7 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
     for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
@@ -1341,12 +1341,12 @@ void ClearDynamicLightmaps() {
 
   // Clear diffuse faces
   for (auto &dyn_face : Dynamic_face_list) {
-    if (LightmapInfo.is_unused(dyn_face.lmi_handle))
+    if (LightmapInfo.is_unused(index_to_int(dyn_face.lmi_handle)))
       continue; // this face was killed last frame.  This can happen with objects
 
-    int dynamic_handle = LightmapInfo[dyn_face.lmi_handle].dynamic;
-    int lmi_handle = dyn_face.lmi_handle;
-    int lm_handle = LightmapInfo[lmi_handle].lm_handle;
+    int dynamic_handle = LightmapInfo[*dyn_face.lmi_handle].dynamic;
+    int lmi_handle = index_to_int(dyn_face.lmi_handle);
+    int lm_handle = index_to_int(LightmapInfo[lmi_handle].lm_handle);
     const lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
 
     uint16_t *src_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
@@ -1591,7 +1591,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         int lm_handle;
 
         uint16_t *dest_data;
-        uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr.lm_handle);
+        uint16_t *src_data=(uint16_t *)lm_data(index_to_int(lmi_ptr.lm_handle));
 
         if (lmi_ptr.spec_map == BAD_LM_INDEX)
         {
@@ -1752,7 +1752,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         int lm_handle;
 
         uint16_t *dest_data;
-        uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr.lm_handle);
+        uint16_t *src_data=(uint16_t *)lm_data(index_to_int(lmi_ptr.lm_handle));
 
         if (lmi_ptr.spec_map == BAD_LM_INDEX)
         {
@@ -2063,7 +2063,7 @@ void DestroyLight(int roomnum, int facenum) {
 
     // Now copy our source data to our dest data so we have a base to work with
 
-    int lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+    int lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
 
     if (!GameLightmaps[lm_handle].flags.limits) {
       GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
@@ -2100,7 +2100,7 @@ void DestroyLight(int roomnum, int facenum) {
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
     for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
