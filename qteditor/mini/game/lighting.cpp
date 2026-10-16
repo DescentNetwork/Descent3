@@ -78,7 +78,7 @@ static std::vector<dynamic_face> Dynamic_face_list;
 static std::vector<uint16_t> Specular_face_list;
 static std::vector<volume_object> Dynamic_volume_object_list;
 static std::vector<dynamic_cell> Dynamic_cell_list;
-static int Specular_maps[NUM_DYNAMIC_CLASSES];
+static index_t Specular_maps[NUM_DYNAMIC_CLASSES];
 
 static std::vector<uint16_t> Edges_to_blend;
 
@@ -125,8 +125,8 @@ void InitDynamicLighting() {
     Light_component_scalar[i] = 1.0f;
 
   for (cl = 0, size = 128; size >= 2; size >>= 1, cl++) {
-    Specular_maps[cl] = static_cast<int>(lm_AllocLightmap(size, size).value_or(BAD_LM_INDEX));
-    Q_ASSERT(Specular_maps[cl] != BAD_LM_INDEX);
+    Specular_maps[cl] = lm_AllocLightmap(size, size);
+    Q_ASSERT(Specular_maps[cl]);
   }
 
   // Init our dynamic memory
@@ -401,7 +401,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
       uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
@@ -456,7 +456,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
     for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
@@ -735,7 +735,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
       uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
@@ -790,7 +790,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
     for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
@@ -1173,7 +1173,7 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
       uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
@@ -1228,7 +1228,7 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
     for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
@@ -1380,16 +1380,16 @@ void ClearDynamicLightmaps() {
     int subx = seg_x % 128;
     int subz = 127 - (seg_z % 128);
 
-    int whichmap = ((seg_z / 128) * 2) + (seg_x / 128);
-    whichmap = TerrainLightmaps[whichmap];
+    const uint32_t tile = ((seg_z / 128) * 2) + (seg_x / 128);
+    const index_t whichmap = TerrainLightmaps[tile];
 
     uint16_t color = OPAQUE_FLAG | GR_RGB16(Terrain_seg[cellnum].r, Terrain_seg[cellnum].g, Terrain_seg[cellnum].b);
     std::vector<std::vector<uint16_t>> &data = lm_data(whichmap);
 
     data[subz][subx] = color;
 
-    GameLightmaps[whichmap].flags.changed = true;
-    GameLightmaps[whichmap].flags.limits = true;
+    GameLightmaps[*whichmap].flags.changed = true;
+    GameLightmaps[*whichmap].flags.limits = true;
   }
 
   Dynamic_cell_list.clear();
@@ -1436,8 +1436,8 @@ void ApplyLightingToTerrain(const vector3 &pos, int cellnum, float light_dist, f
     int subx = seg_x % 128;
     int subz = 127 - (seg_z % 128);
 
-    int whichmap = ((seg_z / 128) * 2) + (seg_x / 128);
-    whichmap = TerrainLightmaps[whichmap];
+    const uint32_t tile = ((seg_z / 128) * 2) + (seg_x / 128);
+    const index_t whichmap = TerrainLightmaps[tile];
 
     // Make sure face was rendered
     // if (tseg->renderframe!=((FrameCount-1)%256))
@@ -1475,24 +1475,24 @@ void ApplyLightingToTerrain(const vector3 &pos, int cellnum, float light_dist, f
       Dynamic_cell_list.push_back(dynamic_cell{static_cast<uint16_t>(cellnum), tseg.r, tseg.g, tseg.b});
       tseg.flags.dynamic = 1;
 
-      if (GameLightmaps[whichmap].flags.limits) {
-        if (subx < GameLightmaps[whichmap].cx1)
-          GameLightmaps[whichmap].cx1 = subx;
-        if (subx > GameLightmaps[whichmap].cx2)
-          GameLightmaps[whichmap].cx2 = subx;
+      if (GameLightmaps[*whichmap].flags.limits) {
+        if (subx < GameLightmaps[*whichmap].cx1)
+          GameLightmaps[*whichmap].cx1 = subx;
+        if (subx > GameLightmaps[*whichmap].cx2)
+          GameLightmaps[*whichmap].cx2 = subx;
 
-        if (subz < GameLightmaps[whichmap].cy1)
-          GameLightmaps[whichmap].cy1 = subz;
-        if (subz > GameLightmaps[whichmap].cy2)
-          GameLightmaps[whichmap].cy2 = subz;
+        if (subz < GameLightmaps[*whichmap].cy1)
+          GameLightmaps[*whichmap].cy1 = subz;
+        if (subz > GameLightmaps[*whichmap].cy2)
+          GameLightmaps[*whichmap].cy2 = subz;
 
       } else {
-        GameLightmaps[whichmap].cx1 = subx;
-        GameLightmaps[whichmap].cx2 = subx + 1;
-        GameLightmaps[whichmap].cy1 = subz;
-        GameLightmaps[whichmap].cy2 = subz + 1;
-        GameLightmaps[whichmap].flags.changed = true;
-        GameLightmaps[whichmap].flags.limits = true;
+        GameLightmaps[*whichmap].cx1 = subx;
+        GameLightmaps[*whichmap].cx2 = subx + 1;
+        GameLightmaps[*whichmap].cy1 = subz;
+        GameLightmaps[*whichmap].cy2 = subz + 1;
+        GameLightmaps[*whichmap].flags.changed = true;
+        GameLightmaps[*whichmap].flags.limits = true;
       }
     }
 
@@ -1591,7 +1591,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         int lm_handle;
 
         uint16_t *dest_data;
-        uint16_t *src_data=(uint16_t *)lm_data(index_to_int(lmi_ptr.lm_handle));
+        uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr.lm_handle);
 
         if (lmi_ptr.spec_map == BAD_LM_INDEX)
         {
@@ -1752,7 +1752,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
         int lm_handle;
 
         uint16_t *dest_data;
-        uint16_t *src_data=(uint16_t *)lm_data(index_to_int(lmi_ptr.lm_handle));
+        uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr.lm_handle);
 
         if (lmi_ptr.spec_map == BAD_LM_INDEX)
         {
@@ -2100,7 +2100,7 @@ void DestroyLight(int roomnum, int facenum) {
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle));
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
     for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 

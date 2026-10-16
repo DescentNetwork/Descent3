@@ -1271,8 +1271,8 @@ void RenderSpecularFaces(int roomnum) {
 
     int save_w = static_cast<int>(lm_w(lm_handle).value_or(255));
     int save_h = static_cast<int>(lm_h(lm_handle).value_or(255));
-    GameLightmaps[lm_handle].width = static_cast<uint8_t>(lm_w(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle)).value_or(0));
-    GameLightmaps[lm_handle].height = static_cast<uint8_t>(lm_h(index_to_int(LightmapInfo[fp.lmi_handle].lm_handle)).value_or(0));
+    GameLightmaps[lm_handle].width = static_cast<uint8_t>(lm_w(LightmapInfo[fp.lmi_handle].lm_handle).value_or(0));
+    GameLightmaps[lm_handle].height = static_cast<uint8_t>(lm_h(LightmapInfo[fp.lmi_handle].lm_handle).value_or(0));
     g3_DrawPoly(fp.num_verts, pointlist, lm_handle, map_type::lightmap);
     GameLightmaps[lm_handle].width = save_w;
     GameLightmaps[lm_handle].height = save_h;
@@ -2074,15 +2074,15 @@ draw_fog:
       Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
 
       const lightmap_info &lmi = LightmapInfo[fp->lmi_handle];
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(index_to_int(lmi.lm_handle));
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi.lm_handle);
       matrix facematrix;
       vector3 fvec = -lmi.normal;
       vm_VectorToMatrix(facematrix, fvec, std::nullopt, std::nullopt);
       vector3 rvec = facematrix.rvec * lmi.xspacing;
       vector3 uvec = facematrix.uvec * lmi.yspacing;
       vm_TransposeMatrix(facematrix);
-      int w = static_cast<int>(lm_w(index_to_int(lmi.lm_handle)).value_or(255));
-      int h = static_cast<int>(lm_h(index_to_int(lmi.lm_handle)).value_or(255));
+      int w = static_cast<int>(lm_w(lmi.lm_handle).value_or(255));
+      int h = static_cast<int>(lm_h(lmi.lm_handle).value_or(255));
       for (int i = 0; i < w * h; i++) {
         int t;
         g3Point epoints[20];

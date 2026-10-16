@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "slotvec.h"
+#include "utils.h"
 
 #define MAX_LIGHTMAPS (65534)
 #define BAD_LM_INDEX 65535
@@ -67,20 +68,20 @@ void lm_InitLightmaps();
 void lm_ShutdownLightmaps(void);
 
 // Allocs a lightmap of w x h size
-// Returns 16-bit lightmap handle (index into GameLightmaps) if
-// successful, nullopt if otherwise
-std::optional<uint16_t> lm_AllocLightmap(int w, int h);
+// Returns a lightmap handle (index into GameLightmaps) if successful, nullopt
+// if otherwise
+index_t lm_AllocLightmap(int w, int h);
 
 // Given a handle, frees the lightmap memory and flags this lightmap as unused
-void lm_FreeLightmap(int handle);
+void lm_FreeLightmap(index_t handle);
 
 // returns a lightmaps width (stored as uint8) else nullopt if something is wrong
-std::optional<uint8_t> lm_w(int handle);
+std::optional<uint8_t> lm_w(index_t handle);
 
 // returns a lightmaps height (stored as uint8), else nullopt if something is wrong
-std::optional<uint8_t> lm_h(int handle);
+std::optional<uint8_t> lm_h(index_t handle);
 
 // returns a lightmaps data as height rows of width texels
-std::vector<std::vector<uint16_t>> &lm_data(int handle);
+std::vector<std::vector<uint16_t>> &lm_data(index_t handle);
 
 #endif

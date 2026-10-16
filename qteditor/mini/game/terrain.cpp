@@ -50,7 +50,7 @@ int16_t Terrain_seg_render_objs[TERRAIN_WIDTH * TERRAIN_DEPTH];
 #endif
 
 // Our lighting maps for the terrain, one for each quadrant (starting at lower left)
-int TerrainLightmaps[4];
+index_t TerrainLightmaps[4];
 
 // Only InitTerrain() allocates the lightmap slots; the Qt editor never runs it,
 // so UpdateTerrainLightmaps() (and friends) must no-op until they exist.
@@ -987,9 +987,9 @@ void InitTerrain(void) {
   GenerateLightSource();
 
   for (i = 0; i < 4; i++) {
-    TerrainLightmaps[i] = static_cast<int>(lm_AllocLightmap(128, 128).value_or(BAD_LM_INDEX));
-    Q_ASSERT(TerrainLightmaps[i] != BAD_LM_INDEX);
-    GameLightmaps[TerrainLightmaps[i]].flags.wrap = true;
+    TerrainLightmaps[i] = lm_AllocLightmap(128, 128);
+    Q_ASSERT(TerrainLightmaps[i]);
+    GameLightmaps[*TerrainLightmaps[i]].flags.wrap = true;
   }
   terrain_lightmaps_created = true;
 
@@ -1021,7 +1021,7 @@ void InitTerrain(void) {
 void UpdateSingleTerrainLightmap(int which) {
   int i, t;
 
-  GameLightmaps[TerrainLightmaps[which]].flags.changed = true;
+  GameLightmaps[*TerrainLightmaps[which]].flags.changed = true;
 
   int sx = (which % 2) * 128;
   int sz = (which / 2) * 128;
@@ -1113,8 +1113,8 @@ void UpdateTerrainLightmaps() {
   }
 
   for (i = 0; i < 4; i++) {
-    GameLightmaps[TerrainLightmaps[i]].flags.changed = true;
-    GameLightmaps[TerrainLightmaps[i]].flags.limits = false;
+    GameLightmaps[*TerrainLightmaps[i]].flags.changed = true;
+    GameLightmaps[*TerrainLightmaps[i]].flags.limits = false;
   }
 }
 

@@ -239,7 +239,7 @@ extern bool Check_terrain_portal;
 extern int Terrain_checksum;
 
 // Our lighting maps for the terrain, one for each quadrant (starting at lower left)
-extern int TerrainLightmaps[4];
+extern index_t TerrainLightmaps[4];
 
 extern int GlobalTransCount, TotalDepth;
 extern int TerrainEdgeTest[MAX_TERRAIN_LOD][16];

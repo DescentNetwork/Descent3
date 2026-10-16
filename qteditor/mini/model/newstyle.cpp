@@ -418,7 +418,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
                     int h=static_cast<int>(lmi_h (lmi_handle).value_or(0));
                     vector3 rvec=lfp.rvec*lmi_ptr.xspacing;
                     vector3 uvec=lfp.uvec*lmi_ptr.yspacing;
-                    uint16_t *src_data=(uint16_t *)lm_data(index_to_int(lmi_ptr.lm_handle));
+                    uint16_t *src_data=(uint16_t *)lm_data(lmi_ptr.lm_handle);
 
                     for (int i=0;i<w*h;i++)
                     {

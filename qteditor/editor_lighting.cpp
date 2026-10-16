@@ -88,14 +88,11 @@ void DoTerrainDynamicTable();
 
 std::vector<uint8_t> Lightmap_mask;
 static std::vector<uint8_t> Lmi_spoken_for;
-int Squeeze_lightmap_handle = -1;
+index_t Squeeze_lightmap_handle;
 
-// Allocates the shared "squeeze" lightmap.  lm_AllocLightmap now returns a
-// 16-bit handle (std::optional<uint16_t>), so the -1 failure sentinel must be
-// derived explicitly rather than via value_or(-1).
-static int AllocSqueezeLightmap() {
-  const std::optional<uint16_t> lm = lm_AllocLightmap(128, 128);
-  return lm.value_or(-1);
+// Allocates the shared "squeeze" lightmap.
+static index_t AllocSqueezeLightmap() {
+  return lm_AllocLightmap(128, 128);
 }
 
 int FindEmptyMaskSpot(int w, int h, int *dest_x, int *dest_y) {
@@ -185,7 +182,7 @@ void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<u
                              int dest_y) {
   const room_t &rp = Rooms[roomnum];
   lightmap_info &lmi_ptr = LightmapInfo[rp.faces[facenum].lmi_handle];
-  const std::vector<std::vector<uint16_t>> &src_data = lm_data(index_to_int(lmi_ptr.lm_handle));
+  const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi_ptr.lm_handle);
 
   int w = lmi_ptr.width;
   int h = lmi_ptr.height;
@@ -240,17 +237,17 @@ void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<u
   // freed; dropping extra references first reproduces that forced release).
   while (GameLightmaps.refs(index_to_int(lmi_ptr.lm_handle)) > 1)
     GameLightmaps.release(index_to_int(lmi_ptr.lm_handle));
-  lm_FreeLightmap(index_to_int(lmi_ptr.lm_handle));
+  lm_FreeLightmap(lmi_ptr.lm_handle);
 
   lmi_ptr.lm_handle = Squeeze_lightmap_handle;
-  GameLightmaps.acquire(Squeeze_lightmap_handle);
+  GameLightmaps.acquire(*Squeeze_lightmap_handle);
 }
 
 void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<std::vector<uint16_t>> &dest_data,
                               int dest_x, int dest_y) {
   const lightmap_object_face &fp = obj->lm_object.lightmap_faces[subnum][facenum];
   lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
-  const std::vector<std::vector<uint16_t>> &src_data = lm_data(index_to_int(lmi_ptr.lm_handle));
+  const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi_ptr.lm_handle);
   int t, k;
 
   int w = lmi_ptr.width;
@@ -310,10 +307,10 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<
   // freed; dropping extra references first reproduces that forced release).
   while (GameLightmaps.refs(index_to_int(lmi_ptr.lm_handle)) > 1)
     GameLightmaps.release(index_to_int(lmi_ptr.lm_handle));
-  lm_FreeLightmap(index_to_int(lmi_ptr.lm_handle));
+  lm_FreeLightmap(lmi_ptr.lm_handle);
 
   lmi_ptr.lm_handle = Squeeze_lightmap_handle;
-  GameLightmaps.acquire(Squeeze_lightmap_handle);
+  GameLightmaps.acquire(*Squeeze_lightmap_handle);
 }
 
 // Simply clears flags for combine portals
@@ -443,7 +440,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
   Lmi_spoken_for.assign(MAX_LIGHTMAP_INFOS, 0);
   Lightmap_mask.assign(128 * 128, 0);
-  Squeeze_lightmap_handle = -1;
+  Squeeze_lightmap_handle = std::nullopt;
 
   // Go through all the rooms and sqeeze them one by one
   for (i = 0; i < Rooms.size(); i++) {
@@ -483,7 +480,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
       int src_w = lmi.width;
       int src_h = lmi.height;
 
-      if (Squeeze_lightmap_handle == -1) {
+      if (!Squeeze_lightmap_handle) {
         std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
         Squeeze_lightmap_handle = AllocSqueezeLightmap();
         
@@ -516,9 +513,9 @@ void SqueezeLightmaps(int external, int target_roomnum) {
         }
 
         // Now, allocate a new lightmap and start over
-        Q_ASSERT(Squeeze_lightmap_handle != -1);
-        Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
-        GameLightmaps.release(Squeeze_lightmap_handle);
+        Q_ASSERT(Squeeze_lightmap_handle);
+        Q_ASSERT(GameLightmaps.refs(*Squeeze_lightmap_handle) != 1);
+        GameLightmaps.release(*Squeeze_lightmap_handle);
 
         std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
         Squeeze_lightmap_handle = AllocSqueezeLightmap();
@@ -560,7 +557,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
           int src_w = lmi.width;
           int src_h = lmi.height;
 
-          if (Squeeze_lightmap_handle == -1) {
+          if (!Squeeze_lightmap_handle) {
             std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
             Squeeze_lightmap_handle = AllocSqueezeLightmap();
             
@@ -603,9 +600,9 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             }
 
             // Now, allocate a new lightmap and start over
-            Q_ASSERT(Squeeze_lightmap_handle != -1);
-            Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
-            GameLightmaps.release(Squeeze_lightmap_handle);
+            Q_ASSERT(Squeeze_lightmap_handle);
+            Q_ASSERT(GameLightmaps.refs(*Squeeze_lightmap_handle) != 1);
+            GameLightmaps.release(*Squeeze_lightmap_handle);
 
             std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
             Squeeze_lightmap_handle = AllocSqueezeLightmap();
@@ -624,15 +621,15 @@ void SqueezeLightmaps(int external, int target_roomnum) {
     }
   }
 
-  if (Squeeze_lightmap_handle != -1) {
-    Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
-    GameLightmaps.release(Squeeze_lightmap_handle);
+  if (Squeeze_lightmap_handle) {
+    Q_ASSERT(GameLightmaps.refs(*Squeeze_lightmap_handle) != 1);
+    GameLightmaps.release(*Squeeze_lightmap_handle);
   }
 
   // Squeeze all terrain object lightmaps now
   if (external) {
 
-    Squeeze_lightmap_handle = -1;
+    Squeeze_lightmap_handle = std::nullopt;
     for (i = 0; i <= Highest_object_index; i++) {
       object &obj = Objects[i];
 
@@ -662,7 +659,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
           int src_w = lmi.width;
           int src_h = lmi.height;
 
-          if (Squeeze_lightmap_handle == -1) {
+          if (!Squeeze_lightmap_handle) {
             std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
             Squeeze_lightmap_handle = AllocSqueezeLightmap();
             
@@ -705,9 +702,9 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             }
 
             // Now, allocate a new lightmap and start over
-            Q_ASSERT(Squeeze_lightmap_handle != -1);
-            Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
-            GameLightmaps.release(Squeeze_lightmap_handle);
+            Q_ASSERT(Squeeze_lightmap_handle);
+            Q_ASSERT(GameLightmaps.refs(*Squeeze_lightmap_handle) != 1);
+            GameLightmaps.release(*Squeeze_lightmap_handle);
 
             std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
             Squeeze_lightmap_handle = AllocSqueezeLightmap();
@@ -725,9 +722,9 @@ void SqueezeLightmaps(int external, int target_roomnum) {
       }
     }
 
-    if (Squeeze_lightmap_handle != -1) {
-      Q_ASSERT(GameLightmaps.refs(Squeeze_lightmap_handle) != 1);
-      GameLightmaps.release(Squeeze_lightmap_handle);
+    if (Squeeze_lightmap_handle) {
+      Q_ASSERT(GameLightmaps.refs(*Squeeze_lightmap_handle) != 1);
+      GameLightmaps.release(*Squeeze_lightmap_handle);
     }
   }
 
@@ -1301,7 +1298,7 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
   Q_ASSERT(lw >= 2);
   Q_ASSERT(lh >= 2);
 
-  std::vector<std::vector<uint16_t>> &dest_data = lm_data(index_to_int(LightmapInfo[lmi_handle].lm_handle));
+  std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
 
   // Set face pointer
   if (GameTextures[fp.tmap].flags.alpha)
@@ -2984,7 +2981,7 @@ void CreateNormalMapForFace (int roomnum,face *fp)
         int vlt,vlb,vrt,vrb,max_y_vertex,top_y,bottom_y,height;
         int no_height=0,no_width=0,no_right=0,no_left=0;
         const lightmap_info &lmi_ptr = LightmapInfo[fp->lmi_handle];
-        uint16_t *src_data=lm_data(index_to_int(lmi_ptr.lm_handle));
+        uint16_t *src_data=lm_data(lmi_ptr.lm_handle);
 
         matrix facematrix;
         vector3 fvec=-lmi_ptr.normal;

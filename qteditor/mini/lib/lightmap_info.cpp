@@ -45,7 +45,7 @@ std::optional<uint16_t> AllocLightmapInfo(int w, int h, lmi_type type, bool allo
   Q_ASSERT(w >= 2 && h >= 2);
 
   if (alloc_lightmap) {
-    const std::optional<uint16_t> lm = lm_AllocLightmap(w, h);
+    const index_t lm = lm_AllocLightmap(w, h);
     Q_ASSERT(lm);
     LightmapInfo[n].lm_handle = lm;
   }
@@ -74,7 +74,7 @@ void FreeLightmapInfo(int handle) {
   LightmapInfo.release(handle);
 
   if (LightmapInfo.is_unused(handle))
-    lm_FreeLightmap(index_to_int(LightmapInfo[handle].lm_handle));
+    lm_FreeLightmap(LightmapInfo[handle].lm_handle);
 }
 
 // Gets the width of this lightmap_info handle (stored as uint8)

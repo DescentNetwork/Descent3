@@ -3574,9 +3574,10 @@ private slots:
     for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
       if (LightmapInfo.is_unused(i))
         continue;
-      const int lm_handle = index_to_int(LightmapInfo[i].lm_handle);
-      QVERIFY(lm_handle >= 0 && lm_handle < MAX_LIGHTMAPS);
-      QVERIFY(GameLightmaps.is_used(lm_handle));
+      const index_t lm_handle = LightmapInfo[i].lm_handle;
+      QVERIFY(lm_handle.has_value());
+      QVERIFY(*lm_handle < MAX_LIGHTMAPS);
+      QVERIFY(GameLightmaps.is_used(*lm_handle));
       const int w = static_cast<int>(lm_w(lm_handle).value_or(255));
       const int h = static_cast<int>(lm_h(lm_handle).value_or(255));
       QVERIFY(w > 1 && h > 1);
@@ -7998,28 +7999,23 @@ private slots:
     QCOMPARE(GamePaths.num_used(), saved_num);
   }
 
-  // Lightmap handles are uint16_t and must cover the full 0..MAX_LIGHTMAPS-1
-  // range.  This matters above 32767: a signed int16_t anywhere in the chain
-  // would sign-extend and turn a valid handle negative, and the allocation
-  // cast would wrap past 65535 into a valid-looking slot.
+  // Lightmap handles are index_t and must cover the full 0..MAX_LIGHTMAPS-1
+  // range; a handle that did not fit a 32-bit index would be corrupted here.
   void testLightmapHandleUsesFullUint16Range() {
-    static_assert(std::is_same_v<decltype(lm_AllocLightmap(2, 2)), std::optional<uint16_t>>,
-                  "lm_AllocLightmap must return a 16-bit handle");
-    static_assert(std::numeric_limits<uint16_t>::max() == 65535, "handle must be 16-bit");
+    static_assert(std::is_same_v<decltype(lm_AllocLightmap(2, 2)), index_t>,
+                  "lm_AllocLightmap must return an index_t handle");
     QCOMPARE(MAX_LIGHTMAPS, 65534);
 
-    // A handle with the high bit set must stay positive as an int, which is
-    // what every int-typed consumer (lm_data, Specular_maps, render) relies on.
-    const uint16_t high_bit_handle = 40000;
-    QVERIFY(static_cast<int>(high_bit_handle) > 0);
-    QVERIFY(static_cast<int>(high_bit_handle) < BAD_LM_INDEX);
-    QCOMPARE(static_cast<int16_t>(high_bit_handle), static_cast<int16_t>(-25536));
+    // A handle round-trips through the index_t representation.
+    const index_t high_bit_handle = 40000;
+    QVERIFY(high_bit_handle.has_value());
+    QCOMPARE(*high_bit_handle, 40000u);
 
-    // lightmap_info stores its indices unsigned, so a high-bit value round-trips.
+    // lightmap_info stores its specular map index unsigned, so a high-bit value
+    // round-trips.
     QCOMPARE(LightmapInfo[0].spec_map, BAD_LM_INDEX);
-    LightmapInfo[0].spec_map = high_bit_handle;
-    QCOMPARE(LightmapInfo[0].spec_map, high_bit_handle);
-    QVERIFY(static_cast<int>(LightmapInfo[0].spec_map) > 0);
+    LightmapInfo[0].spec_map = static_cast<uint16_t>(*high_bit_handle);
+    QCOMPARE(LightmapInfo[0].spec_map, static_cast<uint16_t>(40000));
     LightmapInfo[0].spec_map = BAD_LM_INDEX;
   }
 

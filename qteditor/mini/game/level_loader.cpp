@@ -1288,10 +1288,10 @@ static void LL_ReadNewLightmapChunk(byte_istream &ifile, uint32_t version) {
     ifile >> map_h;
     if (map_w < 2 || map_h < 2)
       map_w = map_h = 2;
-    uint16_t lm_handle = lm_AllocLightmap(map_w, map_h).value_or(BAD_LM_INDEX);
-    if (lm_handle == BAD_LM_INDEX)
+    index_t lm_handle = lm_AllocLightmap(map_w, map_h);
+    if (!lm_handle)
       lm_handle = 0;
-    lightmap_remap[i] = lm_handle;
+    lightmap_remap[i] = static_cast<uint16_t>(*lm_handle);
     std::vector<uint16_t> flat(static_cast<size_t>(map_w) * map_h);
     LL_ReadCompressedShortArray(ifile, flat.data(), static_cast<int>(flat.size()));
     std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
@@ -1389,11 +1389,11 @@ static bool LL_WriteLightmapChunk(byte_ostream &ofile) {
       const index_t lm_handle = LightmapInfo[i].lm_handle;
       if (lm_handle && *lm_handle < MAXLMS && !lightmap_spoken_for[*lm_handle]) {
         lightmap_spoken_for[*lm_handle] = 1;
-        const uint32_t map_w = lm_w(index_to_int(lm_handle)).value_or(255);
-        const uint32_t map_h = lm_h(index_to_int(lm_handle)).value_or(255);
+        const uint32_t map_w = lm_w(lm_handle).value_or(255);
+        const uint32_t map_h = lm_h(lm_handle).value_or(255);
         ofile << static_cast<int16_t>(map_w);
         ofile << static_cast<int16_t>(map_h);
-        const std::vector<std::vector<uint16_t>> &data = lm_data(index_to_int(lm_handle));
+        const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
         std::vector<uint16_t> flat(static_cast<size_t>(map_w) * map_h);
         for (uint32_t y = 0; y < map_h; y++)
           std::copy(data[y].begin(), data[y].end(), flat.begin() + y * map_w);

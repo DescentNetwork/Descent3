@@ -34,8 +34,8 @@ void lm_ShutdownLightmaps(void) {
 }
 
 // Allocs a lightmap of w x h size
-// Returns 16-bit lightmap handle if successful, nullopt if otherwise
-std::optional<uint16_t> lm_AllocLightmap(int w, int h) {
+// Returns a lightmap handle if successful, nullopt if otherwise
+index_t lm_AllocLightmap(int w, int h) {
   if (!f_lm_initialized)
     lm_InitLightmaps();
 
@@ -72,43 +72,43 @@ std::optional<uint16_t> lm_AllocLightmap(int w, int h) {
   Q_ASSERT(lightmap_res >= 2 && lightmap_res <= 128);
   GameLightmaps[n].square_res = lightmap_res;
 
-  return static_cast<uint16_t>(n);
+  return static_cast<uint32_t>(n);
 }
 
 // Given a handle, frees the lightmap memory and flags this lightmap as unused
-void lm_FreeLightmap(int handle) {
-  if (handle < 0 || handle >= static_cast<int>(GameLightmaps.size()))
+void lm_FreeLightmap(index_t handle) {
+  if (!handle || *handle >= GameLightmaps.size())
     return;
-  if (GameLightmaps.is_unused(handle))
+  if (GameLightmaps.is_unused(*handle))
     return;
-  GameLightmaps.release(handle);
-  if (GameLightmaps.is_unused(handle)) {
-    GameLightmaps[handle].data.clear();
-    GameLightmaps[handle].cache_slot = -1;
+  GameLightmaps.release(*handle);
+  if (GameLightmaps.is_unused(*handle)) {
+    GameLightmaps[*handle].data.clear();
+    GameLightmaps[*handle].cache_slot = -1;
   }
 }
 
 // returns a lightmaps width  else nullopt if something is wrong
-std::optional<uint8_t> lm_w(int handle) {
-  if (handle < 0 || handle >= static_cast<int>(GameLightmaps.size()))
+std::optional<uint8_t> lm_w(index_t handle) {
+  if (!handle || *handle >= GameLightmaps.size())
     return std::nullopt;
-  if (GameLightmaps.is_unused(handle))
+  if (GameLightmaps.is_unused(*handle))
     return std::nullopt;
-  return GameLightmaps[handle].width;
+  return GameLightmaps[*handle].width;
 }
 
 // returns a lightmaps height , else nullopt if something is wrong
-std::optional<uint8_t> lm_h(int handle) {
-  if (handle < 0 || handle >= static_cast<int>(GameLightmaps.size()))
+std::optional<uint8_t> lm_h(index_t handle) {
+  if (!handle || *handle >= GameLightmaps.size())
     return std::nullopt;
-  if (GameLightmaps.is_unused(handle))
+  if (GameLightmaps.is_unused(*handle))
     return std::nullopt;
-  return GameLightmaps[handle].height;
+  return GameLightmaps[*handle].height;
 }
 
 // returns a lightmaps data else NULL if something is wrong
-std::vector<std::vector<uint16_t>> &lm_data(int handle) {
-  Q_ASSERT(handle >= 0 && handle < static_cast<int>(GameLightmaps.size()));
-  Q_ASSERT(GameLightmaps.is_used(handle));
-  return GameLightmaps[handle].data;
+std::vector<std::vector<uint16_t>> &lm_data(index_t handle) {
+  Q_ASSERT(handle && *handle < GameLightmaps.size());
+  Q_ASSERT(GameLightmaps.is_used(*handle));
+  return GameLightmaps[*handle].data;
 }
