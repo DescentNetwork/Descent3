@@ -26,7 +26,7 @@
 #include "door.h"
 
 struct mngs_door_page {
-  door door_struct;
+  door_t door_struct;
   std::string image_name;
   std::string open_sound_name;
   std::string close_sound_name;

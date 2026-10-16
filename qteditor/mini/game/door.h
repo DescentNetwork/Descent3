@@ -133,7 +133,7 @@ struct [[gnu::packed]] door_flags_t
 };
 static_assert(sizeof(door_flags_t) == sizeof(uint8_t));
 
-struct door
+struct door_t
 {
   std::string name; // name of the door
   door_flags_t flags;        // flags for this door
@@ -152,7 +152,7 @@ struct door
 
 // The max number of predefined doors
 #define MAX_DOORS 60
-extern d3::slotvec_t<door> Doors;
+extern d3::slotvec_t<door_t> Doors;
 
 // Sets all doors to unused
 void InitDoors();

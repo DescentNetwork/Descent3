@@ -120,7 +120,7 @@ namespace d3
   template class slotvec_base_t<special_face>;
   template class slotvec_base_t<texture>;
   template class slotvec_base_t<weapon>;
-  template class slotvec_base_t<door>;
+  template class slotvec_base_t<door_t>;
   template class slotvec_base_t<object_info>;
 
   template class slotvec_t<bms_bitmap>;
@@ -133,7 +133,7 @@ namespace d3
   template class slotvec_t<texture>;
   template class slotvec_t<weapon>;
   
-  template class slotvec_t<door>;
+  template class slotvec_t<door_t>;
   template class slotvec_base_t<megacell>;
   template class slotvec_t<megacell>;
 }

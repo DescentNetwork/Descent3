@@ -130,7 +130,7 @@
 //	---------------------------------------------------------------------------
 //	Globals
 
-d3::slotvec_t<door> Doors;
+d3::slotvec_t<door_t> Doors;
 
 //	---------------------------------------------------------------------------
 //	Prototypes
@@ -149,7 +149,7 @@ index_t AllocDoor() {
   const size_t n = Doors.next_slot();
   Q_ASSERT(Doors.is_unused(n));
 
-  Doors[n] = door{};
+  Doors[n] = door_t{};
   Doors[n].flags = {};
   Doors[n].hit_points = 0.0f;
 

@@ -2677,7 +2677,7 @@ private slots:
 
   void testDoorSlotvecAccounting()
   {
-    const d3::slotvec_t<door> saved_doors = Doors;
+    const d3::slotvec_t<door_t> saved_doors = Doors;
 
     Doors.clear();
     QVERIFY(Doors.empty());
@@ -7131,10 +7131,10 @@ private slots:
     front.faces[0].vertnums = {0, 1, 2, 3};
 
     if (Doors.empty())
-      Doors.add_slot(door{});
+      Doors.add_slot(door_t{});
     if (Doors.is_unused(0))
       Doors.acquire(0);
-    Doors[0] = door{};
+    Doors[0] = door_t{};
     Doors[0].model_handle = 0;
 
     app.placed.room.reset();
@@ -7160,7 +7160,7 @@ private slots:
     po = poly_model{};
     if (Doors.is_used(0))
       Doors.release(0);
-    Doors[0] = door{};
+    Doors[0] = door_t{};
     RoomsReset();
     app.placed.room.reset();
     app.placed.base.room.reset();
