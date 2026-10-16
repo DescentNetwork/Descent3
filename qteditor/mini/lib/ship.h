@@ -186,11 +186,11 @@ struct ship {
     p.hit_die_dot = -1; // -1 means doesn't apply
     return p;
   }();
-  int model_handle = -1;       //  a polygon model
-  int dying_model_handle = -1; // Dying polygon model
+  index_t model_handle = std::nullopt;       //  a polygon model
+  index_t dying_model_handle = std::nullopt; // Dying polygon model
 
-  int med_render_handle = -1; // handle for med res version of this object
-  int lo_render_handle = -1;  // handle for lo res version of this object
+  index_t med_render_handle = std::nullopt; // handle for med res version of this object
+  index_t lo_render_handle = std::nullopt;  // handle for lo res version of this object
 
   float med_lod_distance = DEFAULT_MED_LOD_DISTANCE;
   float lo_lod_distance = DEFAULT_LO_LOD_DISTANCE;

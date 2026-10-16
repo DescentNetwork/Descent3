@@ -144,18 +144,18 @@ void WorldObjectsPlayerDialog::updateDialog() {
     ui->IDC_PSHIP_NAME_EDIT->setText(QString::fromStdString(s->name));
 
     if (m_lod == 0)
-      ui->IDC_PSHIP_MODEL_NAME_EDIT->setText(QString::fromStdString(Poly_models[s->model_handle].name));
+      ui->IDC_PSHIP_MODEL_NAME_EDIT->setText(QString::fromStdString(Poly_models[*s->model_handle].name));
     else if (m_lod == 1)
     {
-      if(s->med_render_handle == -1)
+      if(!s->med_render_handle)
         ui->IDC_PSHIP_MODEL_NAME_EDIT->setText("No model defined");
       else
-        ui->IDC_PSHIP_MODEL_NAME_EDIT->setText(QString::fromStdString(Poly_models[s->med_render_handle].name));
+        ui->IDC_PSHIP_MODEL_NAME_EDIT->setText(QString::fromStdString(Poly_models[*s->med_render_handle].name));
     } else {
-      if(s->lo_render_handle == -1)
+      if(!s->lo_render_handle)
         ui->IDC_PSHIP_MODEL_NAME_EDIT->setText("No model defined");
       else
-        ui->IDC_PSHIP_MODEL_NAME_EDIT->setText(QString::fromStdString(Poly_models[s->lo_render_handle].name));
+        ui->IDC_PSHIP_MODEL_NAME_EDIT->setText(QString::fromStdString(Poly_models[*s->lo_render_handle].name));
     }
 
     if (m_lod == 0)
@@ -165,10 +165,10 @@ void WorldObjectsPlayerDialog::updateDialog() {
     else
       ui->IDC_LOD_DISTANCE_EDIT->setText(QString::number(s->lo_lod_distance));
 
-    if(s->dying_model_handle == -1)
+    if(!s->dying_model_handle)
       ui->IDC_PSHIP_DYING_MODEL_NAME_EDIT->setText("<none>");
     else
-      ui->IDC_PSHIP_DYING_MODEL_NAME_EDIT->setText(QString::fromStdString(Poly_models[s->dying_model_handle].name));
+      ui->IDC_PSHIP_DYING_MODEL_NAME_EDIT->setText(QString::fromStdString(Poly_models[*s->dying_model_handle].name));
 
     ui->IDC_PSHIP_COCKPIT_EDIT->setText(QString::fromStdString(s->cockpit_name));
     ui->IDC_SHIP_ARMOR_EDIT->setText(QString::number(s->armor_scalar));
@@ -196,9 +196,9 @@ void WorldObjectsPlayerDialog::updateDialog() {
     if (m_lod == 0)
       ui->IDC_NOLOD->setEnabled(false);
     else if (m_lod == 1)
-      ui->IDC_NOLOD->setEnabled(s->med_render_handle != -1);
+      ui->IDC_NOLOD->setEnabled(s->med_render_handle.has_value());
     else
-      ui->IDC_NOLOD->setEnabled(s->lo_render_handle != -1);
+      ui->IDC_NOLOD->setEnabled(s->lo_render_handle.has_value());
 
     ui->IDC_HIRES_RADIO->setChecked(m_lod == 0);
     ui->IDC_MEDRES_RADIO->setChecked(m_lod == 1);
@@ -246,7 +246,7 @@ void WorldObjectsPlayerDialog::onAddPship() {
   Ships[*ship_handle].name = cur_name;
   Ships[*ship_handle].model_handle = img_handle;
 
-  std::filesystem::path destname = LocalModelsDir / Poly_models[Ships[*ship_handle].model_handle].name;
+  std::filesystem::path destname = LocalModelsDir / Poly_models[*Ships[*ship_handle].model_handle].name;
   std::filesystem::copy(pathFs, (destname), std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(cur_name, page_type::ship);
@@ -287,11 +287,11 @@ void WorldObjectsPlayerDialog::onPshipDelete() {
 
     if (const index_t next = GetNextShip(n))
       app.current_ship = static_cast<int>(*next);
-    if (s->model_handle >= 0 && s->model_handle < MAX_POLY_MODELS && Poly_models[s->model_handle].used)
-      FreePolyModel(s->model_handle);
-    if (s->dying_model_handle != -1)
-      if (s->dying_model_handle >= 0 && s->dying_model_handle < MAX_POLY_MODELS && Poly_models[s->dying_model_handle].used)
-        FreePolyModel(s->dying_model_handle);
+    if (s->model_handle >= 0 && s->model_handle < MAX_POLY_MODELS && Poly_models[*s->model_handle].used)
+      FreePolyModel(*s->model_handle);
+    if (s->dying_model_handle.has_value())
+      if (s->dying_model_handle >= 0 && s->dying_model_handle < MAX_POLY_MODELS && Poly_models[*s->dying_model_handle].used)
+        FreePolyModel(*s->dying_model_handle);
     FreeShip(n);
     mng_EraseLocker();
 
@@ -376,22 +376,22 @@ void WorldObjectsPlayerDialog::onPshipCheckin() {
       } else if (!mng_ReplacePage(s->name, s->name, app.current_ship, page_type::ship, 0)) {
         QMessageBox::critical(this, "Error!", ErrorString);
       } else {
-        std::filesystem::path srcname = LocalModelsDir / Poly_models[s->model_handle].name;
-        std::filesystem::path destname = NetModelsDir / Poly_models[s->model_handle].name;
+        std::filesystem::path srcname = LocalModelsDir / Poly_models[*s->model_handle].name;
+        std::filesystem::path destname = NetModelsDir / Poly_models[*s->model_handle].name;
         std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
-        if (s->dying_model_handle != -1) {
-          srcname = LocalModelsDir / Poly_models[s->dying_model_handle].name;
-          destname = NetModelsDir / Poly_models[s->dying_model_handle].name;
+        if (s->dying_model_handle.has_value()) {
+          srcname = LocalModelsDir / Poly_models[*s->dying_model_handle].name;
+          destname = NetModelsDir / Poly_models[*s->dying_model_handle].name;
           std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
         }
-        if (s->med_render_handle != -1) {
-          srcname = LocalModelsDir / Poly_models[s->med_render_handle].name;
-          destname = NetModelsDir / Poly_models[s->med_render_handle].name;
+        if (s->med_render_handle.has_value()) {
+          srcname = LocalModelsDir / Poly_models[*s->med_render_handle].name;
+          destname = NetModelsDir / Poly_models[*s->med_render_handle].name;
           std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
         }
-        if (s->lo_render_handle != -1) {
-          srcname = LocalModelsDir / Poly_models[s->lo_render_handle].name;
-          destname = NetModelsDir / Poly_models[s->lo_render_handle].name;
+        if (s->lo_render_handle.has_value()) {
+          srcname = LocalModelsDir / Poly_models[*s->lo_render_handle].name;
+          destname = NetModelsDir / Poly_models[*s->lo_render_handle].name;
           std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
         }
         if (!s->cockpit_name.empty()) {
@@ -466,17 +466,17 @@ void WorldObjectsPlayerDialog::onPshipLoadModel() {
     }
 
     if (m_lod == 0) {
-      ChangeOldModelsForObjects(s->model_handle, img_handle);
-      if (s->model_handle >= 0 && s->model_handle < MAX_POLY_MODELS && Poly_models[s->model_handle].used)
-        FreePolyModel(s->model_handle);
+      ChangeOldModelsForObjects(index_to_int(s->model_handle), img_handle);
+      if (s->model_handle >= 0 && s->model_handle < MAX_POLY_MODELS && Poly_models[*s->model_handle].used)
+        FreePolyModel(*s->model_handle);
       s->model_handle = img_handle;
     } else if (m_lod == 1) {
-      if (s->med_render_handle >= 0 && s->med_render_handle < MAX_POLY_MODELS && Poly_models[s->med_render_handle].used)
-        FreePolyModel(s->med_render_handle);
+      if (s->med_render_handle >= 0 && s->med_render_handle < MAX_POLY_MODELS && Poly_models[*s->med_render_handle].used)
+        FreePolyModel(*s->med_render_handle);
       s->med_render_handle = img_handle;
     } else {
-      if (s->lo_render_handle >= 0 && s->lo_render_handle < MAX_POLY_MODELS && Poly_models[s->lo_render_handle].used)
-        FreePolyModel(s->lo_render_handle);
+      if (s->lo_render_handle >= 0 && s->lo_render_handle < MAX_POLY_MODELS && Poly_models[*s->lo_render_handle].used)
+        FreePolyModel(*s->lo_render_handle);
       s->lo_render_handle = img_handle;
     }
 
@@ -506,14 +506,14 @@ void WorldObjectsPlayerDialog::onPshipDyingModel() {
     }
 
     s->dying_model_handle = img_handle;
-    std::filesystem::path curname = LocalModelsDir / Poly_models[s->dying_model_handle].name;
+    std::filesystem::path curname = LocalModelsDir / Poly_models[*s->dying_model_handle].name;
     std::filesystem::copy(pathFs, (curname), std::filesystem::copy_options::overwrite_existing);
     updateDialog();
   }
 }
 
 void WorldObjectsPlayerDialog::onNullDying() {
-  if (auto s = data()) s->dying_model_handle = -1;
+  if (auto s = data()) s->dying_model_handle = std::nullopt;
   updateDialog();
 }
 
@@ -627,13 +627,13 @@ void WorldObjectsPlayerDialog::onNolod() {
       return;
     }
     if (m_lod == 1) {
-      if (s->med_render_handle >= 0 && s->med_render_handle < MAX_POLY_MODELS && Poly_models[s->med_render_handle].used)
-        FreePolyModel(s->med_render_handle);
-      s->med_render_handle = -1;
+      if (s->med_render_handle >= 0 && s->med_render_handle < MAX_POLY_MODELS && Poly_models[*s->med_render_handle].used)
+        FreePolyModel(*s->med_render_handle);
+      s->med_render_handle = std::nullopt;
     } else {
-      if (s->lo_render_handle >= 0 && s->lo_render_handle < MAX_POLY_MODELS && Poly_models[s->lo_render_handle].used)
-        FreePolyModel(s->lo_render_handle);
-      s->lo_render_handle = -1;
+      if (s->lo_render_handle >= 0 && s->lo_render_handle < MAX_POLY_MODELS && Poly_models[*s->lo_render_handle].used)
+        FreePolyModel(*s->lo_render_handle);
+      s->lo_render_handle = std::nullopt;
     }
     updateDialog();
   }

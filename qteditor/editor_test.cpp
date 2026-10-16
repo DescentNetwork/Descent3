@@ -3222,7 +3222,7 @@ private slots:
     for (size_t r = 0; r <= Rooms.size() - 1 && r < MAX_ROOMS; r++) {
       if (!Rooms[r].used) continue;
       for (int f = 0; f < Rooms[r].num_faces; f++) {
-        const int bm = GameTextures[Rooms[r].faces[f].tmap].bm_handle;
+        const int bm = index_to_int(GameTextures[Rooms[r].faces[f].tmap].bm_handle);
         if (bm >= 0 && bm_w(bm, 0) > 0 && bm_h(bm, 0) > 0) ++texturedFaces;
       }
     }
@@ -3955,7 +3955,7 @@ private slots:
     QVERIFY(out.fire_sound_name[0][1].empty());
     QCOMPARE(out.image_name, page.image_name);
 
-    const int loaded_model = Object_info[slot].render_handle;
+    const int loaded_model = index_to_int(Object_info[slot].render_handle);
     Object_info[slot] = saved;
     Object_info.pop_back();
     if (loaded_model >= 0)
@@ -3990,7 +3990,7 @@ private slots:
 
     QVERIFY(!mng_AssignGenericPageToObjInfo(page, std::nullopt));
 
-    const int loaded_model = Object_info[slot].render_handle;
+    const int loaded_model = index_to_int(Object_info[slot].render_handle);
     Object_info[slot] = saved;
     Object_info.pop_back();
     if (loaded_model >= 0)
@@ -4032,9 +4032,9 @@ private slots:
 
     // Every animated texture must hold a paged-in vclip with a frame list.
     for (uint32_t i = 0; i < static_cast<int>(GameTextures.size()); i++) {
-      if (!GameTextures[i].flags.animated || GameTextures[i].bm_handle < 0)
+      if (!GameTextures[i].flags.animated || !GameTextures[i].bm_handle)
         continue;
-      const vclip &vc = GameVClips[GameTextures[i].bm_handle];
+      const vclip &vc = GameVClips[*GameTextures[i].bm_handle];
       QVERIFY(vc.used >= 1);
       QVERIFY(!vc.flags.not_resident);
       QVERIFY(vc.num_frames >= 2);

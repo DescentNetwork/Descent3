@@ -142,7 +142,7 @@ struct door_t
   float total_open_time;   // time of animation to open door
   float total_close_time;  // time of animation to close door
   float total_time_open;   // how much time to stay open
-  int model_handle;        // an index into the polymodels array
+  index_t model_handle;    // an index into the polymodels array
   int open_sound;          // sound to play when closing
   int close_sound;         // sound to play when closing
 
@@ -150,8 +150,6 @@ struct door_t
   std::string module_name;
 };
 
-// The max number of predefined doors
-#define MAX_DOORS 60
 extern d3::slotvec_t<door_t> Doors;
 
 // Sets all doors to unused

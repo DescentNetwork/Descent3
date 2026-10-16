@@ -530,9 +530,9 @@ struct object_info {
   object_info_flags_t flags; // misc flags.  See above.
 
   //	int	render_type;			//set RT_ defines in object.h
-  int render_handle;     // handle for bitmap/polygon model(hi-res)
-  int med_render_handle; // handle for med res version of this object
-  int lo_render_handle;  // handle for lo res version of this object
+  index_t render_handle;     // handle for bitmap/polygon model(hi-res)
+  index_t med_render_handle; // handle for med res version of this object
+  index_t lo_render_handle;  // handle for lo res version of this object
 
   float med_lod_distance; // The distance at which the med-res model takes over
   float lo_lod_distance;  // The distance at which the lo-res model takes over

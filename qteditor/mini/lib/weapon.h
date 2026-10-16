@@ -316,16 +316,16 @@ struct weapon {
   float generic_damage;            // how much damage a full impact causes a robot
   float alpha = 1.0f;              // What alpha to draw this weapon with
   int16_t sounds[MAX_WEAPON_SOUNDS] = {-1, -1, -1, -1, -1, -1, -1}; // sounds for various things
-  int16_t hud_image_handle = -1;   //  a handle to a bitmap or vclip for the hud display
-  int16_t fire_image_handle = -1;  //  model or bitmap.  Shown when you fire this weapon
-  int16_t explode_image_handle = -1; //  exploding vclip
-  int16_t smoke_handle = -1;       //  smoke trail handle to texture
+  index_t hud_image_handle = std::nullopt;   //  a handle to a bitmap or vclip for the hud display
+  index_t fire_image_handle = std::nullopt;  //  model or bitmap.  Shown when you fire this weapon
+  index_t explode_image_handle = std::nullopt; //  exploding vclip
+  index_t smoke_handle = std::nullopt;       //  smoke trail handle to texture
   int16_t spawn_handle = -1;       // weapon handle that gets spawned
   int16_t alternate_spawn_handle = -1; // weapon handle that gets spawned (sometimes)
   int16_t robot_spawn_handle = -1; // robot that gets spawned as a countermeasure
-  int16_t particle_handle = -1;    // particle handle to texture
-  int16_t icon_handle = -1;
-  int16_t scorch_handle = -1;      // handle for scorch bitmap, or -1 for none
+  index_t particle_handle = std::nullopt;    // particle handle to texture
+  index_t icon_handle = std::nullopt;
+  index_t scorch_handle = std::nullopt;      // handle for scorch bitmap, or -1 for none
   uint8_t spawn_count = 0;         // how many of spawn handle gets created
   uint8_t alternate_chance = 0;    // how often the alternate spawn weapon gets chosen (0 to 100)
 

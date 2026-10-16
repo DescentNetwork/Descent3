@@ -511,33 +511,33 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page &genericpage, index_t n) {
   const index_t img_handle = LoadPolyModel(genericpage.image_name, 1);
   if (!img_handle) {
     LOG_ERROR("Couldn't load file '%s' in AssignGenericPage...", genericpage.image_name.c_str());
-    obj.render_handle = -1;
+    obj.render_handle = std::nullopt;
     return 0;
   }
-  obj.render_handle = static_cast<int>(*img_handle);
+  obj.render_handle = img_handle;
 
   if (mng_PageNameUsable(genericpage.med_image_name)) {
     const index_t med_handle = LoadPolyModel(genericpage.med_image_name, 1);
     if (!med_handle) {
       LOG_ERROR("Couldn't load file '%s' in AssignGenericPage...", genericpage.med_image_name.c_str());
-      obj.med_render_handle = -1;
+      obj.med_render_handle = std::nullopt;
       return 0;
     }
-    obj.med_render_handle = static_cast<int>(*med_handle);
+    obj.med_render_handle = med_handle;
   } else {
-    obj.med_render_handle = -1;
+    obj.med_render_handle = std::nullopt;
   }
 
   if (mng_PageNameUsable(genericpage.lo_image_name)) {
     const index_t lo_handle = LoadPolyModel(genericpage.lo_image_name, 1);
     if (!lo_handle) {
       LOG_ERROR("Couldn't load file '%s' in AssignGenericPage...", genericpage.lo_image_name.c_str());
-      obj.lo_render_handle = -1;
+      obj.lo_render_handle = std::nullopt;
       return 0;
     }
-    obj.lo_render_handle = static_cast<int>(*lo_handle);
+    obj.lo_render_handle = lo_handle;
   } else {
-    obj.lo_render_handle = -1;
+    obj.lo_render_handle = std::nullopt;
   }
 
   // Try and load the various sounds
@@ -670,9 +670,9 @@ void mng_AssignObjInfoToGenericPage(index_t n, mngs_generic_page &genericpage) {
   if (!obj.ai_info.empty())
     genericpage.ai_info = obj.ai_info[0];
 
-  genericpage.image_name = mng_ModelNameOf(obj.render_handle);
-  genericpage.med_image_name = mng_ModelNameOf(obj.med_render_handle);
-  genericpage.lo_image_name = mng_ModelNameOf(obj.lo_render_handle);
+  genericpage.image_name = mng_ModelNameOf(index_to_int(obj.render_handle));
+  genericpage.med_image_name = mng_ModelNameOf(index_to_int(obj.med_render_handle));
+  genericpage.lo_image_name = mng_ModelNameOf(index_to_int(obj.lo_render_handle));
 
   for (size_t i = 0; i < generic_sound::count; i++) {
     if (obj.sounds[i] && *obj.sounds[i] < Sounds.size())

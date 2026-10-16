@@ -2861,12 +2861,12 @@ void osipf_ObjGhost(int handle, bool f_ghost) {
       if (obj->handle == Buddy_handle[0]) {
         if (strcasecmp(Ships[Players[Player_object->id].ship_index].name, "Black Pyro") == 0) {
           obj->id = ROBOT_GUIDEBOTRED;
-          PageInPolymodel(Object_info[ROBOT_GUIDEBOTRED].render_handle, Object_info[ROBOT_GUIDEBOTRED].type,
+          PageInPolymodel(index_to_int(Object_info[ROBOT_GUIDEBOTRED].render_handle), Object_info[ROBOT_GUIDEBOTRED].type,
                           &Object_info[ROBOT_GUIDEBOTRED].size);
-          obj->rtype.pobj_info().model_num = Object_info[ROBOT_GUIDEBOTRED].render_handle;
+          obj->rtype.pobj_info().model_num = static_cast<int>(Object_info[ROBOT_GUIDEBOTRED].render_handle.value_or(0));
         } else {
           obj->id = ROBOT_GUIDEBOT;
-          obj->rtype.pobj_info().model_num = Object_info[ROBOT_GUIDEBOT].render_handle;
+          obj->rtype.pobj_info().model_num = static_cast<int>(Object_info[ROBOT_GUIDEBOT].render_handle.value_or(0));
         }
     }
 

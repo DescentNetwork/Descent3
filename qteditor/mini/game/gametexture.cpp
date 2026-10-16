@@ -41,8 +41,8 @@ index_t FindTextureBitmapName(const std::string &name) {
         continue;
 
       if (GameTextures[i].flags.animated) {
-        PageInVClip(GameTextures[i].bm_handle);
-        const vclip &vc = GameVClips[GameTextures[i].bm_handle];
+        PageInVClip(index_to_int(GameTextures[i].bm_handle));
+        const vclip &vc = GameVClips[*GameTextures[i].bm_handle];
         if (vc.used) {
           for (int t = 0; t < vc.num_frames; t++) {
             if (match(GameBitmaps[vc.frames[t]].name, name))
@@ -50,7 +50,7 @@ index_t FindTextureBitmapName(const std::string &name) {
           }
         }
       } else {
-        if (match(GameBitmaps[GameTextures[i].bm_handle].name, name))
+        if (match(GameBitmaps[*GameTextures[i].bm_handle].name, name))
           return i;
       }
     }
@@ -73,9 +73,9 @@ int GetTextureBitmap(int handle, int framenum, bool force) {
     float cur_frametime;
     int int_frame;
     const texture &tex = GameTextures[handle];
-    PageInVClip(GameTextures[handle].bm_handle);
+    PageInVClip(index_to_int(GameTextures[handle].bm_handle));
 
-    const vclip &vc = GameVClips[GameTextures[handle].bm_handle];
+    const vclip &vc = GameVClips[*GameTextures[handle].bm_handle];
     Q_ASSERT(vc.used >= 1);
 
     if (GameTextures[handle].flags.ping_pong) {
@@ -100,7 +100,7 @@ int GetTextureBitmap(int handle, int framenum, bool force) {
       src_bitmap = vc.frames[int_frame % vc.num_frames];
     }
   } else {
-    src_bitmap = GameTextures[handle].bm_handle;
+    src_bitmap = index_to_int(GameTextures[handle].bm_handle);
   }
 
   if (GameTextures[handle].flags.procedural) // Do a procedural

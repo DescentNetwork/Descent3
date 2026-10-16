@@ -238,8 +238,8 @@ object_info::object_info(object_type_e type, bool f_anim, bool f_weapons, bool f
   phys_info.coeff_restitution = 1.0f;
   phys_info.hit_die_dot = -1; // -1 means doesn't apply
 
-  med_render_handle = -1;
-  lo_render_handle = -1;
+  med_render_handle = std::nullopt;
+  lo_render_handle = std::nullopt;
   med_lod_distance = DEFAULT_MED_LOD_DISTANCE;
   lo_lod_distance = DEFAULT_LO_LOD_DISTANCE;
   respawn_scalar = 1.0f;

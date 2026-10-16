@@ -736,7 +736,7 @@ void EditorView::renderRooms() {
         // Texture the face if possible.
         int bm = -1;
         if (fp.tmap >= 0 && fp.tmap < static_cast<int>(GameTextures.size()) && GameTextures.is_used(fp.tmap))
-          bm = GameTextures[fp.tmap].bm_handle;
+          bm = index_to_int(GameTextures[fp.tmap].bm_handle);
         if (bm >= 0) {
           ensureTexture(bm);
           auto it = m_textures.constFind(bm);
@@ -1064,7 +1064,7 @@ void EditorView::renderTerrain() {
       if (texsegIdx >= 0 && texsegIdx < TERRAIN_TEX_WIDTH * TERRAIN_TEX_DEPTH) {
         const int texIdx = Terrain_tex_seg[texsegIdx].tex_index;
         if (texIdx >= 0 && texIdx < static_cast<int>(GameTextures.size()) && GameTextures.is_used(texIdx))
-          bm = GameTextures[texIdx].bm_handle;
+          bm = index_to_int(GameTextures[texIdx].bm_handle);
       }
 
       // Cell lighting.

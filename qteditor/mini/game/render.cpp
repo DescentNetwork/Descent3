@@ -1336,7 +1336,7 @@ void RenderSpecularFacesFlat(int roomnum) {
       material_type = 2;
     int bm_handle = GetTextureBitmap(fp->tmap, 0);
     if ((fp->flags.destroyed) && GameTextures[fp->tmap].flags.destroyable)
-      bm_handle = GetTextureBitmap(GameTextures[fp->tmap].destroy_handle, 0);
+      bm_handle = GetTextureBitmap(index_to_int(GameTextures[fp->tmap].destroy_handle), 0);
     if (bm_format(bm_handle) != bitmap_format::_4444)
       continue;
 
@@ -1500,7 +1500,7 @@ texel = data[int_v][int_u];
     }
     int bm_handle = GetTextureBitmap(fp.tmap, 0);
     if ((fp.flags.destroyed) && (GameTextures[fp.tmap].flags.destroyable))
-      bm_handle = GetTextureBitmap(GameTextures[fp.tmap].destroy_handle, 0);
+      bm_handle = GetTextureBitmap(index_to_int(GameTextures[fp.tmap].destroy_handle), 0);
     if (bm_format(bm_handle) != bitmap_format::_4444)
       continue;
     float reflect = GameTextures[fp.tmap].reflectivity * 1.5f;
@@ -1896,7 +1896,7 @@ void RenderFace(int roomnum, int facenum) {
   }
   // Get bitmap handle
   if ((fp->flags.destroyed) && (GameTextures[fp->tmap].flags.destroyable)) {
-    bm_handle = GetTextureBitmap(GameTextures[fp->tmap].destroy_handle, 0);
+    bm_handle = GetTextureBitmap(index_to_int(GameTextures[fp->tmap].destroy_handle), 0);
     Q_ASSERT(bm_handle != -1);
   } else
     bm_handle = GetTextureBitmap(fp->tmap, 0);
@@ -2418,7 +2418,7 @@ void RenderSingleLightGlow(int index) {
   const room_t &rp = Rooms[LightGlows[index].roomnum];
   const face &fp = rp.faces[LightGlows[index].facenum];
   const texture &texp = GameTextures[fp.tmap];
-  bm_handle = Fireballs[std::to_underlying(fireball_texture::default_corona_index) + texp.corona_type].bm_handle;
+  bm_handle = index_to_int(Fireballs[std::to_underlying(fireball_texture::default_corona_index) + texp.corona_type].bm_handle);
 
   // Get size of light
   scalar size = LightGlows[index].size;

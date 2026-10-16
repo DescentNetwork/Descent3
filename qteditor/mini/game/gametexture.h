@@ -334,8 +334,8 @@ struct texture
 {
   std::string name; // this textures name
   texture_flags_t flags = {};   // values defined above
-  int bm_handle = -1;           // handle which shows what this texture looks like
-  int destroy_handle = -1;      // handle which denotes the destroyed image
+  index_t bm_handle = std::nullopt;           // handle which shows what this texture looks like
+  index_t destroy_handle = std::nullopt;      // handle which denotes the destroyed image
 
   index_t damage;
   float reflectivity = 0.6f;

@@ -205,11 +205,11 @@ bool loadGameDataTable(const std::filesystem::path& d3HogPath) {
         GameTextures.acquire(texn);
         // Load the texture's image so textured faces render: the payload is
         // read straight out of the open d3.hog archive and decoded from memory.
-        GameTextures[texn].bm_handle = -1;
+        GameTextures[texn].bm_handle = std::nullopt;
         if (!texpage.bitmap_name.empty()) {
           const index_t bm = loadTextureFromArchive(archive, hogin, texpage.bitmap_name, bitmap_format::_1555);
           if (bm) {
-            GameTextures[texn].bm_handle = static_cast<int>(*bm);
+            GameTextures[texn].bm_handle = bm;
             // .oaf textures are vclips: bm_handle holds the vclip index and the
             // animated flag makes GetTextureBitmap cycle through its frames.
             if (lowercase(texpage.bitmap_name).ends_with(".oaf"))

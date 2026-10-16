@@ -65,7 +65,7 @@ void RobotPreviewWidget::paintGL() {
   // model renderer (which asserts on pm->used).
   if (!app.current_robot || *app.current_robot >= MAX_OBJECT_TYPES)
     return;
-  const int pmHandle = Object_info[*app.current_robot].render_handle;
+  const int pmHandle = index_to_int(Object_info[*app.current_robot].render_handle);
   if (pmHandle < 0 || pmHandle >= MAX_POLY_MODELS)
     return;
   if (!Poly_models[pmHandle].used)

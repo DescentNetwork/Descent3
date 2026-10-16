@@ -346,24 +346,24 @@ void WorldObjectsGenericDialog::updateDialog() {
   enableDisableAll(true);
   auto oi = data();
 
-  PageInPolymodel(oi->render_handle);
+  PageInPolymodel(index_to_int(oi->render_handle));
   {
     QLineEdit *edit = ui->IDC_GENERIC_MODEL_NAME_EDIT;
     if (m_lod == 0)
-      edit->setText(QString::fromStdString(Poly_models[oi->render_handle].name));
+      edit->setText(QString::fromStdString(Poly_models[*oi->render_handle].name));
     else if (m_lod == 1)
     {
-      if(oi->med_render_handle == -1)
+      if(!oi->med_render_handle)
         edit->setText("No model defined");
       else
-        edit->setText(QString::fromStdString(Poly_models[oi->med_render_handle].name));
+        edit->setText(QString::fromStdString(Poly_models[*oi->med_render_handle].name));
     }
     else
     {
-      if(oi->lo_render_handle == -1)
+      if(!oi->lo_render_handle)
         edit->setText("No model defined");
       else
-        edit->setText(QString::fromStdString(Poly_models[oi->lo_render_handle].name));
+        edit->setText(QString::fromStdString(Poly_models[*oi->lo_render_handle].name));
     }
   }
 
@@ -377,20 +377,20 @@ void WorldObjectsGenericDialog::updateDialog() {
       edit->setText(QString::number(oi->lo_lod_distance));
   }
 
-  const int poly_handle =
+  const index_t poly_handle =
       m_lod == 0 ? oi->render_handle : (m_lod == 1 ? oi->med_render_handle : oi->lo_render_handle);
-  if (poly_handle < 0 || poly_handle >= MAX_POLY_MODELS || !Poly_models[poly_handle].used)
+  if (!poly_handle || *poly_handle >= MAX_POLY_MODELS || !Poly_models[*poly_handle].used)
     ui->IDC_NUM_POLYS->setText("Num polys: NA");
   else {
-    PageInPolymodel(poly_handle);
-    ui->IDC_NUM_POLYS->setText(QString("Num polys: %1").arg(CountFacesInPolymodel(Poly_models[poly_handle])));
+    PageInPolymodel(index_to_int(poly_handle));
+    ui->IDC_NUM_POLYS->setText(QString("Num polys: %1").arg(CountFacesInPolymodel(Poly_models[*poly_handle])));
   }
 
-  if (poly_handle == -1)
+  if (!poly_handle)
     ui->IDC_TEXTURE_RAM_TEXT->setText("Texture RAM: NA");
   else {
     int tram = 0;
-    const poly_model &pm = Poly_models[poly_handle];
+    const poly_model &pm = Poly_models[*poly_handle];
     uint8_t already_used[100];
     memset(already_used, 0, sizeof(already_used));
     for (int i = 0; i < pm.n_models; i++) {
@@ -406,7 +406,7 @@ void WorldObjectsGenericDialog::updateDialog() {
           if (GameTextures.is_unused(texnum)) {
             int mem_this_tex;
             if (texp.flags.animated) {
-              const vclip &vc = GameVClips[texp.bm_handle];
+              const vclip &vc = GameVClips[*texp.bm_handle];
               mem_this_tex = 0;
               for (int j = 0; j < vc.num_frames; j++) {
                 const int bm_handle = vc.frames[j];
@@ -416,8 +416,8 @@ void WorldObjectsGenericDialog::updateDialog() {
                 mem_this_tex += m * 2;
               }
             } else {
-              mem_this_tex = bm_w(texp.bm_handle, 0) * bm_h(texp.bm_handle, 0);
-              if (bm_mipped(texp.bm_handle))
+              mem_this_tex = bm_w(index_to_int(texp.bm_handle), 0) * bm_h(index_to_int(texp.bm_handle), 0);
+              if (bm_mipped(index_to_int(texp.bm_handle)))
                 mem_this_tex += mem_this_tex / 3;
               mem_this_tex *= 2;
             }
@@ -472,7 +472,7 @@ void WorldObjectsGenericDialog::updateDialog() {
     combo->setCurrentIndex(combo->findData(sp2 >= 0 && sp2 < static_cast<int>(Object_info.size()) ? sp2 : -1));
   }
 
-  ui->IDC_GENERIC_WEAPON_INFO_BUTTON->setEnabled(Poly_models[oi->render_handle].num_wbs > 0);
+  ui->IDC_GENERIC_WEAPON_INFO_BUTTON->setEnabled(Poly_models[*oi->render_handle].num_wbs > 0);
 
   ui->IDC_GENERIC_SIZE_EDIT->setText(QString::number(oi->size, 'f', 2));
 
@@ -551,9 +551,9 @@ void WorldObjectsGenericDialog::updateDialog() {
   if (m_lod == 0)
     ui->IDC_NOLOD->setEnabled(false);
   else if (m_lod == 1)
-    ui->IDC_NOLOD->setEnabled(oi->med_render_handle != -1);
+    ui->IDC_NOLOD->setEnabled(oi->med_render_handle.has_value());
   else
-    ui->IDC_NOLOD->setEnabled(oi->lo_render_handle != -1);
+    ui->IDC_NOLOD->setEnabled(oi->lo_render_handle.has_value());
 
   ui->IDC_HIRES_RADIO->setChecked(m_lod == 0);
   ui->IDC_MEDRES_RADIO->setChecked(m_lod == 1);
@@ -578,8 +578,8 @@ void WorldObjectsGenericDialog::onAddNew() {
     return;
   }
 
-  const int img_handle = static_cast<int>(LoadPolyModel(pathname, 0).value_or(-1));
-  if (img_handle < 0) {
+  const index_t img_handle = LoadPolyModel(pathname, 0);
+  if (!img_handle) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't open that model file.");
     return;
   }
@@ -607,7 +607,7 @@ void WorldObjectsGenericDialog::onAddNew() {
   auto& obj = Object_info[*object_handle];
   obj.name = current_name;
   obj.render_handle = img_handle;
-  ComputeDefaultSize(obj.type, img_handle, obj.size);
+  ComputeDefaultSize(obj.type, *img_handle, obj.size);
   obj.flags = object_info_flags_t{};
   obj.flags.destroyable = true;
   obj.hit_points = 100;
@@ -616,7 +616,7 @@ void WorldObjectsGenericDialog::onAddNew() {
   obj.lighting_info.lighting_render_type =
       (m_type == object_type_e::building) ? lighting_render_type_e::lightmaps : lighting_render_type_e::gouraud;
 
-  std::filesystem::path destname = LocalModelsDir / Poly_models[obj.render_handle].name;
+  std::filesystem::path destname = LocalModelsDir / Poly_models[*obj.render_handle].name;
   std::filesystem::copy(pathname, destname, std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(current_name, page_type::generic);
@@ -668,17 +668,17 @@ void WorldObjectsGenericDialog::onCheckIn() {
       if (!mng_ReplacePage(d->name, d->name, m_object_id, page_type::generic, 0)) {
         QMessageBox::critical(this, "Error!", ErrorString);
       } else {
-        std::filesystem::path srcname = LocalModelsDir / Poly_models[d->render_handle].name;
-        std::filesystem::path destname = NetModelsDir / Poly_models[d->render_handle].name;
+        std::filesystem::path srcname = LocalModelsDir / Poly_models[*d->render_handle].name;
+        std::filesystem::path destname = NetModelsDir / Poly_models[*d->render_handle].name;
         std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
-        if (d->med_render_handle != -1) {
-          srcname = LocalModelsDir / Poly_models[d->med_render_handle].name;
-          destname = NetModelsDir / Poly_models[d->med_render_handle].name;
+        if (d->med_render_handle.has_value()) {
+          srcname = LocalModelsDir / Poly_models[*d->med_render_handle].name;
+          destname = NetModelsDir / Poly_models[*d->med_render_handle].name;
           std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
         }
-        if (d->lo_render_handle != -1) {
-          srcname = LocalModelsDir / Poly_models[d->lo_render_handle].name;
-          destname = NetModelsDir / Poly_models[d->lo_render_handle].name;
+        if (d->lo_render_handle.has_value()) {
+          srcname = LocalModelsDir / Poly_models[*d->lo_render_handle].name;
+          destname = NetModelsDir / Poly_models[*d->lo_render_handle].name;
           std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
         }
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object checked in.");
@@ -729,11 +729,11 @@ void WorldObjectsGenericDialog::onDelete()
     m_object_id = GetNextObjectID(m_object_id);
     if (m_object_id == old_current)
       m_object_id = std::nullopt;
-    FreePolyModel(old_obj.render_handle);
-    if (old_obj.med_render_handle != -1)
-      FreePolyModel(old_obj.med_render_handle);
-    if (old_obj.lo_render_handle != -1)
-      FreePolyModel(old_obj.lo_render_handle);
+    FreePolyModel(*old_obj.render_handle);
+    if (old_obj.med_render_handle.has_value())
+      FreePolyModel(*old_obj.med_render_handle);
+    if (old_obj.lo_render_handle.has_value())
+      FreePolyModel(*old_obj.lo_render_handle);
     FreeObjectID(*old_current);
     mng_EraseLocker();
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Object deleted.");
@@ -879,11 +879,11 @@ void WorldObjectsGenericDialog::onPaste()
   obj = Copy_object;
   obj.type = m_type;
   obj.name = temp_name;
-  Poly_models[data()->render_handle].used++;
-  if (data()->med_render_handle != -1)
-    Poly_models[data()->med_render_handle].used++;
-  if (data()->lo_render_handle != -1)
-    Poly_models[data()->lo_render_handle].used++;
+  Poly_models[*data()->render_handle].used++;
+  if (data()->med_render_handle.has_value())
+    Poly_models[*data()->med_render_handle].used++;
+  if (data()->lo_render_handle.has_value())
+    Poly_models[*data()->lo_render_handle].used++;
   m_object_id = n;
   mng_AllocTrackLock(obj.name, page_type::generic);
   RemapStaticIDs();
@@ -896,7 +896,7 @@ void WorldObjectsGenericDialog::onWeaponInfo() {
   {
     extern void editRobotWeapons(otype_wb_info *wb, poly_model *pm, QWidget *parent);
     editRobotWeapons(d->static_wb.data(),
-                     GetPolymodelPointer(d->render_handle), this);
+                     GetPolymodelPointer(*d->render_handle), this);
   }
 }
 
@@ -907,7 +907,7 @@ void WorldObjectsGenericDialog::onLight() {
 
 void WorldObjectsGenericDialog::onDefaultRadius() {
   if (data())
-    ComputeDefaultSize(data()->type, data()->render_handle, data()->size), updateDialog();
+    ComputeDefaultSize(data()->type, index_to_int(data()->render_handle), data()->size), updateDialog();
 }
 
 void WorldObjectsGenericDialog::onSelScript() {
@@ -934,14 +934,14 @@ void WorldObjectsGenericDialog::onNolod() {
     }
     if (m_lod == 1) {
       if (d->med_render_handle >= 0 && d->med_render_handle < MAX_POLY_MODELS &&
-          Poly_models[d->med_render_handle].used)
-        FreePolyModel(d->med_render_handle);
-      d->med_render_handle = -1;
+          Poly_models[*d->med_render_handle].used)
+        FreePolyModel(*d->med_render_handle);
+      d->med_render_handle = std::nullopt;
     } else {
       if (d->lo_render_handle >= 0 && d->lo_render_handle < MAX_POLY_MODELS &&
-          Poly_models[d->lo_render_handle].used)
-        FreePolyModel(d->lo_render_handle);
-      d->lo_render_handle = -1;
+          Poly_models[*d->lo_render_handle].used)
+        FreePolyModel(*d->lo_render_handle);
+      d->lo_render_handle = std::nullopt;
     }
     updateDialog();
   }

@@ -216,7 +216,7 @@ void WorldTexturesDialog::updateDialog() {
     ui->IDC_RUBBLE_CHECKBOX->setChecked(tf.rubble);
     ui->IDC_SMOOTH_SPEC_CHECK->setChecked(tf.smooth_specular);
 
-    if (const int bm = t->bm_handle; bm >= 0)
+    if (const int bm = index_to_int(t->bm_handle); bm >= 0)
       ui->IDC_BITMAP_NAME->setText(QString::fromStdString(GameBitmaps[bm].name));
 
     if (!mng_FindTrackLock(t->name, page_type::texture)) {

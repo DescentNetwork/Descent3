@@ -141,7 +141,7 @@ d3::slotvec_t<door_t> Doors;
 // Sets all doors to unused
 void InitDoors() {
   for (size_t i = 0; i < Doors.size(); i++)
-    Doors[i].model_handle = -1;
+    Doors[i].model_handle = std::nullopt;
 }
 
 // Allocs a door for use, returns std::nullopt if error, else index on success
@@ -202,17 +202,14 @@ int GetDoorImage(uint32_t handle) {
   Q_ASSERT(handle < static_cast<uint32_t>(Doors.size()));
   Q_ASSERT(Doors.is_used(handle));
 
-  return (Doors[handle].model_handle);
+  return index_to_int(Doors[handle].model_handle);
 }
 
 void RemapDoors() {
   // Now, if any doors are polygon models and those models don't have correct
   // textures, attempt to reload the model texture list
 
-  for (int i = 0; i < static_cast<int>(Doors.size()); i++) {
-    if (Doors.is_used(i)) {
-      Q_ASSERT(Doors[i].model_handle != -1);
-      // LoadPolyModel (Poly_models[Doors[i].model_handle].name);
-    }
-  }
+  for (size_t i = 0; i < Doors.size(); i++)
+    if (Doors.is_used(i) && !Doors[i].model_handle)
+      Doors[i].model_handle = LoadPolyModel(Poly_models[*Doors[i].model_handle].name, 0);
 }

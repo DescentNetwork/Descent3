@@ -1636,18 +1636,18 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
       if (pnt.p3_z < (oi.med_lod_distance * detail_scalar))
         model_num = obj.rtype.pobj_info().model_num;
       else if (pnt.p3_z < (oi.lo_lod_distance * detail_scalar)) {
-        if (oi.med_render_handle != -1)
-          model_num = oi.med_render_handle;
+        if (oi.med_render_handle.has_value())
+          model_num = index_to_int(oi.med_render_handle);
         else {
           model_num = obj.rtype.pobj_info().model_num;
         }
       } else {
-        if (oi.lo_render_handle != -1)
-          model_num = oi.lo_render_handle;
+        if (oi.lo_render_handle.has_value())
+          model_num = index_to_int(oi.lo_render_handle);
         else {
           model_num = obj.rtype.pobj_info().model_num;
-          if (oi.med_render_handle != -1)
-            model_num = oi.med_render_handle;
+          if (oi.med_render_handle.has_value())
+            model_num = index_to_int(oi.med_render_handle);
           else
             model_num = obj.rtype.pobj_info().model_num;
         }
@@ -1667,18 +1667,18 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
       if (pnt.p3_z < (Ships[ship_num].med_lod_distance * detail_scalar))
         model_num = obj.rtype.pobj_info().model_num;
       else if (pnt.p3_z < (Ships[ship_num].lo_lod_distance * detail_scalar)) {
-        if (Ships[ship_num].med_render_handle != -1)
-          model_num = Ships[ship_num].med_render_handle;
+        if (Ships[ship_num].med_render_handle.has_value())
+          model_num = index_to_int(Ships[ship_num].med_render_handle);
         else {
           model_num = obj.rtype.pobj_info().model_num;
         }
       } else {
-        if (Ships[ship_num].lo_render_handle != -1)
-          model_num = Ships[ship_num].lo_render_handle;
+        if (Ships[ship_num].lo_render_handle.has_value())
+          model_num = index_to_int(Ships[ship_num].lo_render_handle);
         else {
           model_num = obj.rtype.pobj_info().model_num;
-          if (Ships[ship_num].med_render_handle != -1)
-            model_num = Ships[ship_num].med_render_handle;
+          if (Ships[ship_num].med_render_handle.has_value())
+            model_num = index_to_int(Ships[ship_num].med_render_handle);
           else
             model_num = obj.rtype.pobj_info().model_num;
         }
@@ -1688,8 +1688,8 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
   } else
     model_num = obj.rtype.pobj_info().model_num;
   if (obj.type == object_type_e::building && obj.flags.use_destroyed_polymodel) {
-    if (Object_info[obj.id].lo_render_handle != -1)
-      model_num = Object_info[obj.id].lo_render_handle;
+    if (Object_info[obj.id].lo_render_handle.has_value())
+      model_num = index_to_int(Object_info[obj.id].lo_render_handle);
   }
   // Set effects
   if (use_effect)

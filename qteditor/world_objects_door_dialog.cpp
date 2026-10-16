@@ -195,7 +195,7 @@ void WorldObjectsDoorDialog::updateDialog() {
 
   const bool blastable = Doors[n].flags.blastable;
 
-  ui->IDC_DOOR_MODEL_NAME_EDIT->setText(QString::fromStdString(Poly_models[Doors[n].model_handle].name));
+  ui->IDC_DOOR_MODEL_NAME_EDIT->setText(QString::fromStdString(Poly_models[*Doors[n].model_handle].name));
   ui->IDC_DOOR_OPEN_TIME->setText(QString::number(Doors[n].total_open_time));
   ui->IDC_DOOR_STAYS_OPEN->setText(QString::number(Doors[n].total_time_open));
   ui->IDC_CLOSE_TIME->setText(QString::number(Doors[n].total_close_time));
@@ -289,7 +289,7 @@ void WorldObjectsDoorDialog::onAddDoor() {
   Doors[door_handle].name = cur_name;
   Doors[door_handle].model_handle = img_handle;
 
-  std::filesystem::path destname = LocalModelsDir / Poly_models[Doors[door_handle].model_handle].name;
+  std::filesystem::path destname = LocalModelsDir / Poly_models[*Doors[door_handle].model_handle].name;
   std::filesystem::copy((pathFs), (destname), std::filesystem::copy_options::overwrite_existing);
 
   mng_AllocTrackLock(cur_name, page_type::door);
@@ -333,8 +333,8 @@ void WorldObjectsDoorDialog::onDeleteDoor() {
 
   app.current_door = GetNextDoor(n);
 
-  if (Doors[n].model_handle >= 0 && Doors[n].model_handle < MAX_POLY_MODELS && Poly_models[Doors[n].model_handle].used)
-    FreePolyModel(Doors[n].model_handle);
+  if (Doors[n].model_handle >= 0 && Doors[n].model_handle < MAX_POLY_MODELS && Poly_models[*Doors[n].model_handle].used)
+    FreePolyModel(*Doors[n].model_handle);
   FreeDoor(n);
   mng_EraseLocker();
 
@@ -423,8 +423,8 @@ void WorldObjectsDoorDialog::onCheckinDoor() {
       if (!mng_ReplacePage(Doors[n].name, Doors[n].name, n, page_type::door, 0))
         QMessageBox::critical(this, "Error!", ErrorString);
       else {
-        std::filesystem::path srcname = LocalModelsDir / Poly_models[Doors[n].model_handle].name;
-        std::filesystem::path destname = NetModelsDir / Poly_models[Doors[n].model_handle].name;
+        std::filesystem::path srcname = LocalModelsDir / Poly_models[*Doors[n].model_handle].name;
+        std::filesystem::path destname = NetModelsDir / Poly_models[*Doors[n].model_handle].name;
         std::filesystem::copy((srcname), (destname), std::filesystem::copy_options::overwrite_existing);
 
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Door checked in.");

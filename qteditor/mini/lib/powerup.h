@@ -104,7 +104,7 @@ struct powerup {
   std::string name;
   float size;
   int score;
-  int image_handle;              // Either a vclip or a polygon model
+  index_t image_handle;              // Either a vclip or a polygon model
   std::string model_name; // used for remapping powerups which contain models
   powerup_flags_t flags = {};
   uint16_t used;
