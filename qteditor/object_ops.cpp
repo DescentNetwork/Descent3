@@ -110,8 +110,10 @@ bool MoveObject(object& obj, vector3& newpos) {
 // RotateObject (internal) — editor/HObject.cpp:612
 // Applies a rotation to the specified object.
 // ============================================================================
-bool RotateObject(int objnum, angle p, angle h, angle b) {
-  object& obj = Objects[objnum];
+bool RotateObject(index_t objnum, angle p, angle h, angle b) {
+  if (!objnum)
+    return false;
+  object& obj = Objects[*objnum];
   matrix rotmat;
 
   vm_AnglesToMatrix(rotmat, p, h, b);
@@ -363,13 +365,13 @@ void ResetGroundObject(object& obj) {
 // HObjectMove — editor/HObject.cpp:477
 // Moves the specified object by a delta in viewer/object frame.
 // ============================================================================
-void HObjectMove(int objnum, float dx, float dy, float dz) {
-  if (objnum == -1) {
+void HObjectMove(index_t objnum, float dx, float dy, float dz) {
+  if (!objnum) {
     LOG_INFO("HObjectMove:No current object.\n");
     return;
   }
 
-  object& obj = Objects[objnum];
+  object& obj = Objects[*objnum];
   matrix& mat = (app.object_move_mode == REL_VIEWER) ? Viewer_object->orient : obj.orient;
 
   vector3 newpos = obj.pos + (mat.rvec * dx) + (mat.uvec * dy) + (mat.fvec * -dz);
@@ -381,12 +383,12 @@ void HObjectMove(int objnum, float dx, float dy, float dz) {
 // ============================================================================
 // Rotation functions — editor/HObject.cpp:503-513
 // ============================================================================
-void HObjectIncreaseBank() { RotateObject(index_to_int(app.Cur_object_index), 0, 0, Object_move_rotation); }
-void HObjectDecreaseBank() { RotateObject(index_to_int(app.Cur_object_index), 0, 0, -Object_move_rotation); }
-void HObjectIncreasePitch() { RotateObject(index_to_int(app.Cur_object_index), Object_move_rotation, 0, 0); }
-void HObjectDecreasePitch() { RotateObject(index_to_int(app.Cur_object_index), -Object_move_rotation, 0, 0); }
-void HObjectIncreaseHeading() { RotateObject(index_to_int(app.Cur_object_index), 0, Object_move_rotation, 0); }
-void HObjectDecreaseHeading() { RotateObject(index_to_int(app.Cur_object_index), 0, -Object_move_rotation, 0); }
+void HObjectIncreaseBank() { RotateObject(app.Cur_object_index, 0, 0, Object_move_rotation); }
+void HObjectDecreaseBank() { RotateObject(app.Cur_object_index, 0, 0, -Object_move_rotation); }
+void HObjectIncreasePitch() { RotateObject(app.Cur_object_index, Object_move_rotation, 0, 0); }
+void HObjectDecreasePitch() { RotateObject(app.Cur_object_index, -Object_move_rotation, 0, 0); }
+void HObjectIncreaseHeading() { RotateObject(app.Cur_object_index, 0, Object_move_rotation, 0); }
+void HObjectDecreaseHeading() { RotateObject(app.Cur_object_index, 0, -Object_move_rotation, 0); }
 
 // ============================================================================
 // HObjectDelete — editor/HObject.cpp:517
@@ -396,20 +398,20 @@ void HObjectDelete() {
   if (!app.Cur_object_index)
     return;
 
-  int objnum = *app.Cur_object_index;
+  index_t objnum = app.Cur_object_index;
 
-  if (&Objects[objnum] == Player_object) {
+  if (&Objects[*objnum] == Player_object) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Can't delete Player object");
     return;
   }
 
-  if (Objects[objnum].type == object_type_e::door) {
+  if (Objects[*objnum].type == object_type_e::door) {
     if (QMessageBox::question(nullptr, "Are you sure?", "It's very, very bad to delete a door object.  Are you sure you want to do this?") == QMessageBox::No)
       return;
   }
 
   ObjDelete(objnum);
-  if (objnum == index_to_int(app.Cur_object_index))
+  if (objnum == app.Cur_object_index)
     app.Cur_object_index.reset();
 
   app.World_changed = true;

@@ -57,7 +57,7 @@ void setObjectPageCurrentId(object_type_e page, std::optional<uint16_t> id);
 std::optional<uint16_t> currentObjectPageId();
 
 // Movement.
-void HObjectMove(int objnum, float dx, float dy, float dz);
+void HObjectMove(index_t objnum, float dx, float dy, float dz);
 void HObjectMoveToViewer(object& objp);
 
 // Rotation.
@@ -80,4 +80,4 @@ void ResetGroundObject(object& objp);
 
 // Internal helpers (exposed for testing).
 bool MoveObject(object& obj, vector3& newpos);
-bool RotateObject(int objnum, angle p, angle h, angle b);
+bool RotateObject(index_t objnum, angle p, angle h, angle b);

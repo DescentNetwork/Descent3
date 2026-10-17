@@ -1196,14 +1196,14 @@ void MainWindow::onSetCameraFromViewer() {
                cam.pos.x(), cam.pos.y(), cam.pos.z(), cam.roomnum);
 }
 
-// Delete the currently-selected object (index_to_int(app.Cur_object_index)). After the
-// call, index_to_int(app.Cur_object_index) is -1 and app.Mine_changed/app.New_mine are set.
+// Delete the currently-selected object (app.Cur_object_index). After the
+// call, app.Cur_object_index is reset and app.Mine_changed/app.New_mine are set.
 void MainWindow::onDeleteCurrentObject() {
   if (!app.Cur_object_index || static_cast<int32_t>(*app.Cur_object_index) > Highest_object_index)
     return;
   if (Objects[*app.Cur_object_index].type == object_type_e::none)
     return;
-  ObjDelete(index_to_int(app.Cur_object_index));
+  ObjDelete(app.Cur_object_index);
   const int was = index_to_int(app.Cur_object_index);
   app.Cur_object_index.reset();
   // After delete, walk forward to find the next used slot so the

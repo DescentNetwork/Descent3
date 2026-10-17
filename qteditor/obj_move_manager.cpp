@@ -37,7 +37,7 @@ ObjectMoveManager::ObjectMoveManager() {
 }
 
 void ObjectMoveManager::Start(int view_width, int view_height, vector3 *view_pos, matrix *view_mat, int x, int y) {
-  if (!app.Cur_object_index || index_to_int(app.Cur_object_index) >= Highest_object_index + 1)
+  if (!app.Cur_object_index || static_cast<int32_t>(*app.Cur_object_index) >= Highest_object_index + 1)
     return;
   if (Objects[*app.Cur_object_index].type == object_type_e::door)
     return;
@@ -76,16 +76,16 @@ void ObjectMoveManager::Defer(int dsx, int dsy, bool leftDown) {
 
     switch (m_MoveAxis) {
     case OBJMOVEAXIS_X:
-      HObjectMove(index_to_int(app.Cur_object_index), dx, 0, 0);
+      HObjectMove(app.Cur_object_index, dx, 0, 0);
       break;
     case OBJMOVEAXIS_Y:
-      HObjectMove(index_to_int(app.Cur_object_index), 0, -dy, 0);
+      HObjectMove(app.Cur_object_index, 0, -dy, 0);
       break;
     case OBJMOVEAXIS_Z:
-      HObjectMove(index_to_int(app.Cur_object_index), 0, 0, dy);
+      HObjectMove(app.Cur_object_index, 0, 0, dy);
       break;
     case OBJMOVEAXIS_XY:
-      HObjectMove(index_to_int(app.Cur_object_index), dx, -dy, 0);
+      HObjectMove(app.Cur_object_index, dx, -dy, 0);
       break;
     case OBJMOVEAXIS_P:
       Object_move_rotation = fabs(-dy) * ROTATE_SCALE;

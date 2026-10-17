@@ -617,10 +617,11 @@ index_t ObjCreate(object_type_e type, uint16_t id, index_t roomnum, vector3& pos
 }
 
 // Removes an object from the world.
-void ObjDelete(int objnum) {
-  object *obj = &Objects[objnum];
-  if (objnum < 0 || objnum >= MAX_OBJECTS)
+void ObjDelete(index_t objnum) {
+  if (!objnum || *objnum >= MAX_OBJECTS)
     return;
+
+  object *obj = &Objects[*objnum];
 
   if (obj->type == object_type_e::none)
     return;
@@ -637,7 +638,7 @@ void ObjDelete(int objnum) {
   // (The original also tears down OSIRIS scripts and un-ghosts object_type::dummy
   // objects here; the mini omits the script runtime.)
 
-  ObjUnlink(objnum);
+  ObjUnlink(*objnum);
 
   obj->custom_default_script_name.clear();
   obj->custom_default_module_name.clear();
@@ -657,7 +658,7 @@ void ObjDelete(int objnum) {
   // std::unique_ptr members; the implied destructor of the Objects array
   // releases any memory they still own.)
 
-  ObjFree(objnum);
+  ObjFree(*objnum);
 }
 
 // Frees all the objects that are currently in use.

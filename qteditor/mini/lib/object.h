@@ -722,7 +722,7 @@ void ObjSetAABB(object& obj);
 index_t ObjCreate(object_type_e type, uint16_t id, index_t roomnum, vector3& pos, optref<const matrix> orient, int parent_handle = OBJECT_HANDLE_NONE);
 
 // remove object from the world
-void ObjDelete(int objnum);
+void ObjDelete(index_t objnum);
 
 // Resets the handles for all the objects.  Called by the editor to init a new level.
 void ResetObjectList();
