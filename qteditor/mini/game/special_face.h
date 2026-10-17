@@ -67,9 +67,9 @@ extern d3::slotvec_t<special_face> SpecialFaces;
 void InitSpecialFaces();
 
 // Returns an index into the special faces array
-int AllocSpecialFace(int type, int num, bool vertnorms = false, int num_vertnorms = 0);
+index_t AllocSpecialFace(int type, int num, bool vertnorms = false, int num_vertnorms = 0);
 
 // Given a handle, frees the special face
-void FreeSpecialFace(int handle);
+void FreeSpecialFace(index_t handle);
 
 #endif

@@ -8021,16 +8021,16 @@ private slots:
 
   void testAllocFreeSpecialFace() {
     InitSpecialFaces();
-    int idx = AllocSpecialFace(SFT_SPECULAR, 4);
-    QVERIFY(idx >= 0);
-    QVERIFY(SpecialFaces.is_used(idx));
-    QVERIFY(SpecialFaces[idx].num == 4);
-    QVERIFY(SpecialFaces[idx].spec_instance.size() == 4);
+    const index_t idx = AllocSpecialFace(SFT_SPECULAR, 4);
+    QVERIFY(idx.has_value());
+    QVERIFY(SpecialFaces.is_used(*idx));
+    QVERIFY(SpecialFaces[*idx].num == 4);
+    QVERIFY(SpecialFaces[*idx].spec_instance.size() == 4);
     QCOMPARE(SpecialFaces.num_empty(), static_cast<decltype(SpecialFaces.num_empty())>(0));
 
     FreeSpecialFace(idx);
-    QVERIFY(SpecialFaces.is_unused(idx));
-    QVERIFY(SpecialFaces[idx].spec_instance.empty());
+    QVERIFY(SpecialFaces.is_unused(*idx));
+    QVERIFY(SpecialFaces[*idx].spec_instance.empty());
     QCOMPARE(SpecialFaces.num_empty(), static_cast<decltype(SpecialFaces.num_empty())>(1));
   }
 

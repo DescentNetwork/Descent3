@@ -24,7 +24,7 @@ void InitSpecialFaces() {
 }
 
 // Returns an index into the special faces array
-int AllocSpecialFace(int type, int num, bool vertnorms, int num_vertnorms) {
+index_t AllocSpecialFace(int type, int num, bool vertnorms, int num_vertnorms) {
   const size_t n = SpecialFaces.next_slot();
   Q_ASSERT(!SpecialFaces.is_used(n));
 
@@ -42,22 +42,22 @@ int AllocSpecialFace(int type, int num, bool vertnorms, int num_vertnorms) {
     sf.flags.spec_smooth = true;
   }
 
-  return static_cast<int>(n);
+  return static_cast<uint32_t>(n);
 }
 
 // Given a handle, frees the special face
-void FreeSpecialFace(int handle) {
-  if (handle < 0 || handle >= static_cast<int>(SpecialFaces.size()))
+void FreeSpecialFace(index_t handle) {
+  if (!handle || *handle >= SpecialFaces.size())
     return;
 
-  if (SpecialFaces.is_unused(handle))
+  if (SpecialFaces.is_unused(*handle))
     return;
 
-  SpecialFaces.release(handle);
+  SpecialFaces.release(*handle);
 
-  if (SpecialFaces.is_unused(handle)) {
-    SpecialFaces[handle].spec_instance.clear();
-    SpecialFaces[handle].vertnorms.clear();
-    SpecialFaces[handle].num = 0;
+  if (SpecialFaces.is_unused(*handle)) {
+    SpecialFaces[*handle].spec_instance.clear();
+    SpecialFaces[*handle].vertnorms.clear();
+    SpecialFaces[*handle].num = 0;
   }
 }

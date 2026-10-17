@@ -663,7 +663,7 @@ void FreeRoomFace(face &fp) {
   }
 
   if (fp.special_handle.has_value()) {
-    FreeSpecialFace(index_to_int(fp.special_handle));
+    FreeSpecialFace(fp.special_handle);
     fp.special_handle = std::nullopt;
   }
 
@@ -835,7 +835,7 @@ void ClearRoomSpecmaps(int roomnum) {
   for (t = 0; t < Rooms[roomnum].num_faces; t++) {
     if (Rooms[roomnum].faces[t].special_handle.has_value()) {
       if (SpecialFaces[*Rooms[roomnum].faces[t].special_handle].type == SFT_SPECULAR) {
-        FreeSpecialFace(index_to_int(Rooms[roomnum].faces[t].special_handle));
+        FreeSpecialFace(Rooms[roomnum].faces[t].special_handle);
         Rooms[roomnum].faces[t].special_handle = std::nullopt;
       }
     }

@@ -3174,7 +3174,7 @@ void CleanupSpecularLighting(int external) {
             }
             // If after all that searching we couldn't find a good light, free it!
             if (!found) {
-              FreeSpecialFace(index_to_int(fp->special_handle));
+              FreeSpecialFace(fp->special_handle);
               fp->special_handle = std::nullopt;
             } else {
               for (int z = 0; z < 4; z++)
@@ -3239,7 +3239,7 @@ void SetupSpecularLighting(int external) {
             GameTextures[fp.tmap].flags.plastic) {
           Q_ASSERT(!fp.special_handle);
 
-          int n;
+          index_t n;
           if (GameTextures[fp.tmap].flags.smooth_specular)
             n = AllocSpecialFace(SFT_SPECULAR, 4, true, fp.num_verts);
           else
@@ -3248,14 +3248,14 @@ void SetupSpecularLighting(int external) {
           fp.special_handle = n;
 
           for (int k = 0; k < 4; k++) {
-            SpecialFaces[n].spec_instance[k].bright_color = 0;
-            vm_MakeZero(SpecialFaces[n].spec_instance[k].bright_center);
+            SpecialFaces[*n].spec_instance[k].bright_color = 0;
+            vm_MakeZero(SpecialFaces[*n].spec_instance[k].bright_center);
           }
 
           // Get vertex normals for this punk
           if (GameTextures[fp.tmap].flags.smooth_specular) {
             for (int k = 0; k < fp.num_verts; k++) {
-              SpecialFaces[n].vertnorms[k] = vertnorms[fp.face_verts[k]];
+              SpecialFaces[*n].vertnorms[k] = vertnorms[fp.face_verts[k]];
             }
           }
         }
