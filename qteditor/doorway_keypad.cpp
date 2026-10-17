@@ -206,7 +206,7 @@ void DoorwayKeypad::onPlaceDoor() {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No current room.");
     return;
   }
-  if (!app.current.face || index_to_int(app.current.face) >= Rooms[*app.current.room].num_faces) {
+  if (!app.current.face || static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].num_faces) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "No current face.");
     return;
   }

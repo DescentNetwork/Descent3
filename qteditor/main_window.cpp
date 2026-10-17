@@ -848,8 +848,8 @@ static void moveViewer(vector3& pos, index_t roomnum, optref<matrix> orient) {
 // false, put the viewer directly in front of the selected face.  If the room
 // is external, put the viewer a distance away from the room, facing either the
 // center (if room_center is true) or the specified face.
-static void setViewerFromRoomFace(int roomnum, int facenum, bool room_center) {
-  if (Viewer_object == nullptr || roomnum < 0)
+static void setViewerFromRoomFace(index_t roomnum, index_t facenum, bool room_center) {
+  if (Viewer_object == nullptr || !roomnum || !facenum)
     return;
   // FACE_VIEW_DIST is defined in editor/HView.cpp:127.
   constexpr float kFaceViewDist = 5.0f;
@@ -859,17 +859,17 @@ static void setViewerFromRoomFace(int roomnum, int facenum, bool room_center) {
   matrix orient;
   bool outside_mine = false;
 
-  const room_t &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[*roomnum];
 
-  ComputeCenterPointOnFace(vp, roomnum, facenum);
+  ComputeCenterPointOnFace(vp, *roomnum, *facenum);
 
   if (room_center) {
     // Get position
-    ComputeRoomCenter(newpos, roomnum);
+    ComputeRoomCenter(newpos, *roomnum);
 
     if (rp.flags.external) {
       vector3 t;
-      float rad = ComputeRoomBoundingSphere(t, roomnum);
+      float rad = ComputeRoomBoundingSphere(t, *roomnum);
 
       newpos.z() -= rad * 1.5f;
 
@@ -884,14 +884,14 @@ static void setViewerFromRoomFace(int roomnum, int facenum, bool room_center) {
 
       orient = Identity_matrix;
 
-      roomnum = GetTerrainRoomFromPos(newpos).value_or(-1);
+      roomnum = GetTerrainRoomFromPos(newpos);
     } else {
       // Get orientation: vector from center of room to face
       vp -= newpos;
       vm_VectorToMatrix(orient, vp, std::nullopt, std::nullopt);
     }
   } else {
-    const face &fp = rp.faces[facenum];
+    const face &fp = rp.faces[*facenum];
 
     newpos = vp + fp.normal * kFaceViewDist;
 
@@ -907,10 +907,10 @@ static void setViewerFromRoomFace(int roomnum, int facenum, bool room_center) {
         newpos.z() = 1.0f;
       if (newpos.z() > TERRAIN_DEPTH * TERRAIN_SIZE - 1.0f)
         newpos.z() = TERRAIN_WIDTH * TERRAIN_SIZE - 1.0f;
-      roomnum = GetTerrainRoomFromPos(newpos).value_or(-1);
+      roomnum = GetTerrainRoomFromPos(newpos);
     } else {
-      int new_roomnum = FindPointRoom(newpos).value_or(-1);
-      if (new_roomnum == -1)
+      index_t new_roomnum = FindPointRoom(newpos);
+      if (!new_roomnum)
         outside_mine = true;
       else
         roomnum = new_roomnum;
@@ -922,7 +922,7 @@ static void setViewerFromRoomFace(int roomnum, int facenum, bool room_center) {
     Viewer_object->pos = newpos;
     Viewer_object->orient = orient;
   } else
-    moveViewer(newpos, to_roomnum(roomnum), orient);
+    moveViewer(newpos, roomnum, orient);
 
   if (outside_mine)
     Viewer_object->flags.outside_mine = true;
@@ -990,7 +990,7 @@ void MainWindow::onResetViewRadius() {
 void MainWindow::onMoveViewToSelectedRoom() {
   // Win32 ID_VIEW_MOVECAMERATOSELECTEDROOM -> CMainFrame::OnViewMoveCameraToSelectedRoom
   // (editor/MainFrm.cpp:2216) -> SetViewerFromRoomFace(app.current.room, index_to_int(app.current.face), 1).
-  setViewerFromRoomFace(index_to_int(app.current.room), index_to_int(app.current.face), true);
+  setViewerFromRoomFace(app.current.room, app.current.face, true);
   app.State_changed = true;
 
   m_editorView->update();
@@ -999,7 +999,7 @@ void MainWindow::onMoveViewToSelectedRoom() {
 // Win32 ID_VIEW_MOVECAMERATOSELECTEDFACE -> CMainFrame::OnViewMoveCameraToSelectedFace
 // (editor/MainFrm.cpp:3670) -> SetViewerFromRoomFace(app.current.room, index_to_int(app.current.face), 0).
 void MainWindow::onMoveCameraToSelectedFace() {
-  setViewerFromRoomFace(index_to_int(app.current.room), index_to_int(app.current.face), false);
+  setViewerFromRoomFace(app.current.room, app.current.face, false);
   app.State_changed = true;
 
   m_editorView->update();
@@ -1830,7 +1830,7 @@ void MainWindow::onRoomDeleteFace() {
     onRoomDeletePortal();
     return;
   }
-  DeleteRoomFace(index_to_int(app.current.room), index_to_int(app.current.face));
+  DeleteRoomFace(app.current.room, app.current.face);
   if (static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].num_faces)
     app.current.face = index_t{static_cast<uint32_t>(Rooms[*app.current.room].num_faces - 1)};
   app.Mine_changed = true;
@@ -1844,7 +1844,7 @@ void MainWindow::onRoomDeletePortal() {
     EditorStatus("Current face is not a portal.");
     return;
   }
-  DeletePortalPair(index_to_int(app.current.room), pn);
+  DeletePortalPair(app.current.room, index_t{static_cast<uint32_t>(pn)});
   app.Mine_changed = true;
 }
 
@@ -1859,7 +1859,7 @@ void MainWindow::onRoomCombine() {
     EditorStatus("Marked and current face must be different.");
     return;
   }
-  if (CombineFaces(index_to_int(app.current.room), index_to_int(app.marked.face), index_to_int(app.current.face))) {
+  if (CombineFaces(app.current.room, app.marked.face, app.current.face)) {
     app.Mine_changed = true;
     EditorStatus("Faces combined.");
   }

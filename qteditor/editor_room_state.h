@@ -72,18 +72,18 @@ bool ResetRoomFaceNormals(int roomnum);
 bool FaceIsPlanar(int nv, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts);
 int CheckFaceConcavity(int num_verts, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts);
 bool FindSharedEdge(face *fp0, face *fp1, int *vn0, int *vn1);
-void DeleteRoomFace(int roomnum, int facenum);
-void DeleteRoomPortal(int roomnum, int portalnum);
+void DeleteRoomFace(index_t roomnum, index_t facenum);
+void DeleteRoomPortal(index_t roomnum, index_t portalnum);
 int AddPortal(int roomnum);
 void LinkRooms(int room0, int face0, int room1, int face1);
 void AssignUVsToFace(index_t roomnum, index_t facenum, roomUVL *uva, roomUVL *uvb, int va, int vb);
 void AssignDefaultUVsToRoom(int roomnum);
-void FixConcaveFaces(int roomnum, int *facelist, int facecount);
+void FixConcaveFaces(index_t roomnum, int *facelist, int facecount);
 void FlipFace(index_t roomnum, index_t facenum);
 
 // Port of editor/HRoom.cpp — room operations.
-bool CombineFaces(int roomnum, int face0, int face1);
-void DeletePortalPair(int roomnum, int portalnum);
+bool CombineFaces(index_t roomnum, index_t face0, index_t face1);
+void DeletePortalPair(index_t roomnum, index_t portalnum);
 void RotateRooms(angle p, angle h, angle b);
 void ConnectPortal(int roomnum, int portal_num, int dest_room);
 void DetachPortal(int roomnum, int portal_num);

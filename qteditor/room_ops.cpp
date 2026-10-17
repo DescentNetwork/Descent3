@@ -65,9 +65,11 @@ static void EditorDeleteTrigger(int trig_num) {
   Triggers.erase(Triggers.begin() + trig_num);
 }
 
-static void EditorDeleteTriggerByRoomFace(int roomnum, int facenum) {
+static void EditorDeleteTriggerByRoomFace(index_t roomnum, index_t facenum) {
+  if (!roomnum || !facenum)
+    return;
   for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
-    if (Triggers[i].roomnum == roomnum && Triggers[i].facenum == facenum) {
+    if (Triggers[i].roomnum == static_cast<int32_t>(*roomnum) && Triggers[i].facenum == static_cast<int32_t>(*facenum)) {
       EditorDeleteTrigger(i);
       return;
     }
@@ -300,35 +302,37 @@ bool FindSharedEdge(face *fp0, face *fp1, int *vn0, int *vn1) {
 // Simplified version: deletes a face from a room, adjusts portal/trigger
 // face indices.  Skips texture accounting (LevelTexDecrementTexture).
 // ============================================================================
-void DeleteRoomFace(int roomnum, int facenum) {
+void DeleteRoomFace(index_t roomnum, index_t facenum) {
   int f, i, t;
 
-  room_t &rp = Rooms[roomnum];
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
 
-  if (rp.faces[facenum].flags.has_trigger)
+  if (rp.faces[*facenum].flags.has_trigger)
     EditorDeleteTriggerByRoomFace(roomnum, facenum);
 
   for (int p = 0; p < rp.num_portals; p++) {
     portal &pp = rp.portals[p];
-    Q_ASSERT(pp.portal_face != facenum);
-    if (pp.portal_face > facenum)
+    Q_ASSERT(pp.portal_face != static_cast<int32_t>(*facenum));
+    if (pp.portal_face > static_cast<int32_t>(*facenum))
       pp.portal_face--;
   }
 
   for (t = 0; t < static_cast<int>(Triggers.size()); t++) {
     trigger &tp = Triggers[t];
-    if (tp.roomnum == roomnum) {
-      Q_ASSERT(tp.facenum != facenum);
-      if (tp.facenum > facenum)
+    if (tp.roomnum == static_cast<int32_t>(*roomnum)) {
+      Q_ASSERT(tp.facenum != static_cast<int32_t>(*facenum));
+      if (tp.facenum > static_cast<int32_t>(*facenum))
         tp.facenum--;
     }
   }
 
-  FreeRoomFace(rp.faces[facenum]);
-  rp.faces.erase(rp.faces.begin() + facenum);
+  FreeRoomFace(rp.faces[*facenum]);
+  rp.faces.erase(rp.faces.begin() + *facenum);
   rp.num_faces--;
 
-  if (roomnum == index_to_int(app.current.room)) {
+  if (roomnum == app.current.room) {
     if (app.current.face == rp.num_faces)
       app.current.face = index_t{static_cast<uint32_t>(rp.num_faces - 1)};
     if (app.marked.face == rp.num_faces)
@@ -349,15 +353,17 @@ void DeleteRoomFace(int roomnum, int facenum) {
 // DeleteRoomPortal — editor/Erooms.cpp:1787
 // Deletes a portal from a room (does not delete the connecting side).
 // ============================================================================
-void DeleteRoomPortal(int roomnum, int portalnum) {
-  room_t &rp = Rooms[roomnum];
-  const portal &pp = rp.portals[portalnum];
+void DeleteRoomPortal(index_t roomnum, index_t portalnum) {
+  if (!roomnum || !portalnum)
+    return;
+  room_t &rp = Rooms[*roomnum];
+  const portal &pp = rp.portals[*portalnum];
   face &fp = rp.faces[pp.portal_face];
 
-  Q_ASSERT(fp.portal_num == portalnum);
+  Q_ASSERT(fp.portal_num == static_cast<int32_t>(*portalnum));
   fp.portal_num = -1;
 
-  for (int p = portalnum + 1; p < rp.num_portals; p++) {
+  for (int p = static_cast<int32_t>(*portalnum) + 1; p < rp.num_portals; p++) {
     const portal &tp = rp.portals[p];
     Q_ASSERT(rp.faces[tp.portal_face].portal_num == p);
     rp.faces[tp.portal_face].portal_num--;
@@ -368,7 +374,7 @@ void DeleteRoomPortal(int roomnum, int portalnum) {
     }
   }
 
-  rp.portals.erase(rp.portals.begin() + portalnum);
+  rp.portals.erase(rp.portals.begin() + *portalnum);
   rp.num_portals--;
 }
 
@@ -415,19 +421,21 @@ void LinkRooms(int room0, int face0, int room1, int face1) {
 // DeletePortalPair — editor/HRoom.cpp:2186
 // Deletes a portal pair (both sides of a connection).
 // ============================================================================
-void DeletePortalPair(int roomnum, int portalnum) {
-  room_t &rp = Rooms[roomnum];
-  const portal &pp = rp.portals[portalnum];
+void DeletePortalPair(index_t roomnum, index_t portalnum) {
+  if (!roomnum || !portalnum)
+    return;
+  room_t &rp = Rooms[*roomnum];
+  const portal &pp = rp.portals[*portalnum];
   const index_t croom = pp.connected_room;
   const index_t cportal = pp.connected_portal;
 
-  if (!croom || !cportal || (Rooms[*croom].portals[*cportal].connected_room != to_roomnum(roomnum)) ||
-      (Rooms[*croom].portals[*cportal].connected_portal != to_roomnum(portalnum))) {
+  if (!croom || !cportal || (Rooms[*croom].portals[*cportal].connected_room != roomnum) ||
+      (Rooms[*croom].portals[*cportal].connected_portal != portalnum)) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot delete this portal: the connecting portal does not point back at it.");
     return;
   }
 
-  if (rp.faces[pp.portal_face].portal_num != portalnum) {
+  if (rp.faces[pp.portal_face].portal_num != static_cast<int32_t>(*portalnum)) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot delete this portal: its face does not point back at it.");
     return;
   }
@@ -435,7 +443,7 @@ void DeletePortalPair(int roomnum, int portalnum) {
   DeleteRoomPortal(roomnum, portalnum);
   DeleteRoomPortal(*croom, *cportal);
 
-  EditorStatus("Deleted room %d portal %d and room %d portal %d", roomnum, portalnum, *croom, *cportal);
+  EditorStatus("Deleted room %d portal %d and room %d portal %d", *roomnum, *portalnum, *croom, *cportal);
 
   app.World_changed = true;
 }
@@ -561,8 +569,10 @@ void AssignDefaultUVsToRoom(int roomnum) {
 // FixConcaveFaces — editor/Erooms.cpp:1218
 // Triangulates concave/nonplanar faces in a room.
 // ============================================================================
-void FixConcaveFaces(int roomnum, int *facelist, int facecount) {
-  room_t &rp = Rooms[roomnum];
+void FixConcaveFaces(index_t roomnum, int *facelist, int facecount) {
+  if (!roomnum)
+    return;
+  room_t &rp = Rooms[*roomnum];
 
   for (int i = 0; i < facecount; i++) {
     face &fp = rp.faces[facelist[i]];
@@ -590,7 +600,7 @@ void FixConcaveFaces(int roomnum, int *facelist, int facecount) {
           rp.faces[t].num_verts = 3;
           rp.faces[t].special_handle = std::nullopt;
 
-          if (!ComputeFaceNormal(roomnum, t))
+          if (!ComputeFaceNormal(*roomnum, t))
             Q_ASSERT(false);
         }
       }
@@ -615,7 +625,7 @@ void FixConcaveFaces(int roomnum, int *facelist, int facecount) {
         rp.faces[old_num_faces + t].face_verts[2] = concave_verts[3 + t];
         rp.faces[old_num_faces + t].tmap = old_tmap;
 
-        if (!ComputeFaceNormal(roomnum, old_num_faces + t))
+        if (!ComputeFaceNormal(*roomnum, old_num_faces + t))
           Q_ASSERT(false);
 
         AssignDefaultUVsToRoomFace(roomnum, old_num_faces + t);
@@ -623,7 +633,7 @@ void FixConcaveFaces(int roomnum, int *facelist, int facecount) {
     }
   }
 
-  if (!ResetRoomFaceNormals(roomnum))
+  if (!ResetRoomFaceNormals(*roomnum))
     Q_ASSERT(false);
 }
 
@@ -631,9 +641,11 @@ void FixConcaveFaces(int roomnum, int *facelist, int facecount) {
 // CombineFaces — editor/HRoom.cpp:1552
 // Merges two coplanar, convex faces that share an edge.
 // ============================================================================
-bool CombineFaces(int roomnum, int face0, int face1) {
-  room_t &rp = Rooms[roomnum];
-  face *fp0 = &rp.faces[face0], *fp1 = &rp.faces[face1];
+bool CombineFaces(index_t roomnum, index_t face0, index_t face1) {
+  if (!roomnum || !face0 || !face1)
+    return false;
+  room_t &rp = Rooms[*roomnum];
+  face *fp0 = &rp.faces[*face0], *fp1 = &rp.faces[*face1];
   int nv0 = fp0->num_verts, nv1 = fp1->num_verts;
   int v0, v1;
   std::vector<int16_t> vertlist(MAX_VERTS_PER_FACE);
@@ -826,7 +838,7 @@ void RotateRooms(angle p, angle h, angle b) {
   }
 
   if (checkcount > 0)
-    FixConcaveFaces(index_to_int(app.current.room), checkfaces, checkcount);
+    FixConcaveFaces(app.current.room, checkfaces, checkcount);
 
   app.World_changed = true;
 }
@@ -879,7 +891,7 @@ void DetachPortal(int roomnum, int portal_num) {
     return;
   }
 
-  DeletePortalPair(roomnum, portal_num);
+  DeletePortalPair(index_t{static_cast<uint32_t>(roomnum)}, index_t{static_cast<uint32_t>(portal_num)});
 }
 
 // ============================================================================
@@ -1335,7 +1347,7 @@ void AttachRoom() {
   if (baseroomp < 0) {
     // Terrain room — flag as external and delete the attach face
     newroomp.flags.external = 1;
-    DeleteRoomFace(slot, attface);
+    DeleteRoomFace(index_t{static_cast<uint32_t>(slot)}, index_t{static_cast<uint32_t>(attface)});
   } else {
     // Mine room — clip the connecting faces against each other
     if (!ClipFacePair(slot, attface, baseroomp, baseface)) {
