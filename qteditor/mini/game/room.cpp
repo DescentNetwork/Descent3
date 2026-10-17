@@ -470,7 +470,7 @@ int CountRoomFaceVerts(int roomnum) {
   int n = 0;
 
   room_t &rp = Rooms[roomnum];
-  for (int f = 0; f < rp.num_faces; f++)
+  for (int f = 0; f < rp.faces.size(); f++)
     n += rp.faces[f].num_verts;
 
   return n;
@@ -492,7 +492,6 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
   rp.vis_effects = -1;
   rp.volume_lights.clear();
   rp.mirror_face = -1;
-  rp.num_mirror_faces = 0;
   rp.mirror_faces_list.clear();
   rp.room_change_flags = 0;
 
@@ -503,9 +502,6 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
 
   rp.wind = vector3{};
 
-  rp.num_faces = nfaces;
-  rp.num_verts = nverts;
-  rp.num_portals = nportals;
   rp.last_render_time = 0;
   rp.fog_depth = 100.0f;
   rp.fog_r = 1.0f;
@@ -603,7 +599,7 @@ void FreeRoom(int roomnum) {
   Q_ASSERT(rp.used != 0); // make sure room is un use
 
   // Free the faces
-  for (i = 0; i < rp.num_faces; i++)
+  for (i = 0; i < static_cast<int32_t>(rp.faces.size()); i++)
     FreeRoomFace(rp.faces[i]);
 
   // Free up mem alloced for this room
@@ -681,13 +677,13 @@ void ComputeRoomCenter(vector3 &vp, int roomnum) {
 
   vp = vector3{};
 
-  for (i = 0; i < rp.num_verts; i++)
+  for (i = 0; i < rp.verts.size(); i++)
     vp += rp.verts[i];
 
 #ifdef NEWEDITOR
   if (rp.num_verts)
 #endif
-    vp /= rp.num_verts;
+    vp /= rp.verts.size();
 }
 
 // Computes the center point on a face by averaging the points in the face
@@ -800,7 +796,7 @@ void ClearRoomLightmaps(int roomnum) {
 
   Q_ASSERT(Rooms[roomnum].used);
 
-  for (t = 0; t < Rooms[roomnum].num_faces; t++) {
+  for (t = 0; t < Rooms[roomnum].faces.size(); t++) {
     if (Rooms[roomnum].faces[t].lmi_handle != BAD_LMI_INDEX) {
       FreeLightmapInfo(Rooms[roomnum].faces[t].lmi_handle);
       Rooms[roomnum].faces[t].lmi_handle = BAD_LMI_INDEX;
@@ -832,7 +828,7 @@ void ClearRoomSpecmaps(int roomnum) {
 
   Q_ASSERT(Rooms[roomnum].used);
 
-  for (t = 0; t < Rooms[roomnum].num_faces; t++) {
+  for (t = 0; t < Rooms[roomnum].faces.size(); t++) {
     if (Rooms[roomnum].faces[t].special_handle.has_value()) {
       if (SpecialFaces[*Rooms[roomnum].faces[t].special_handle].type == SFT_SPECULAR) {
         FreeSpecialFace(Rooms[roomnum].faces[t].special_handle);
@@ -887,7 +883,7 @@ float GetAreaForFace(int roomnum, int facenum) {
   room_t &rp = Rooms[roomnum];
 
   Q_ASSERT(rp.used > 0);
-  Q_ASSERT(facenum >= 0 && facenum < rp.num_faces);
+  Q_ASSERT(facenum >= 0 && facenum < rp.faces.size());
 
   const face &fp = rp.faces[facenum];
   int i;
@@ -1050,7 +1046,7 @@ float ComputeRoomBoundingSphere(vector3 &center, int roomnum) {
   min_x = max_x = min_y = max_y = min_z = max_z = rp.verts.data();
 
   // First, find the points with the min & max x,y, & z coordinates
-  for (i = 0, vp = rp.verts.data(); i < rp.num_verts; i++, vp++) {
+  for (i = 0, vp = rp.verts.data(); i < rp.verts.size(); i++, vp++) {
 
     if (vp->x() < min_x->x())
       min_x = vp;
@@ -1095,7 +1091,7 @@ float ComputeRoomBoundingSphere(vector3 &center, int roomnum) {
 
   // Go through all points and look for ones that don't fit
   rad2 = rad * rad;
-  for (i = 0, vp = rp.verts.data(); i < rp.num_verts; i++, vp++) {
+  for (i = 0, vp = rp.verts.data(); i < rp.verts.size(); i++, vp++) {
     vector3 delta;
     float t2;
 
@@ -1179,10 +1175,10 @@ bool ChangeRoomFaceTexture(int room_num, int face_num, int texture) {
 
   room_t &rp = Rooms[room_num];
 
-  if (face_num < 0 || face_num >= rp.num_faces) {
+  if (face_num < 0 || face_num >= rp.faces.size()) {
     LOG_FATAL("Invalid face number passed to ChangeRoomFaceTexture."
                "  Room=%d, you gave face #%d, there are only %d in the room",
-             room_num, face_num, rp.num_faces);
+             room_num, face_num, rp.faces.size());
     Q_ASSERT(false);
     return false;
   }
@@ -1503,11 +1499,11 @@ byte_istream& operator>>(byte_istream& input, room_t& data) {
 
   input >> data.name >> data.path_pnt;
 
-  for (int i = 0; i < data.num_verts; i++)
+  for (size_t i = 0; i < data.verts.size(); i++)
     input >> data.verts[i];
-  for (int i = 0; i < data.num_faces; i++)
+  for (size_t i = 0; i < data.faces.size(); i++)
     input >> data.faces[i];
-  for (int i = 0; i < data.num_portals; i++)
+  for (size_t i = 0; i < data.portals.size(); i++)
     input >> data.portals[i];
 
   input >> reinterpret_cast<uint32_t&>(data.flags);
@@ -1553,15 +1549,15 @@ byte_istream& operator>>(byte_istream& input, room_t& data) {
 }
 
 byte_ostream& operator<<(byte_ostream& output, const room_t& data) {
-  output << static_cast<int32_t>(data.num_verts) << static_cast<int32_t>(data.num_faces)
-         << static_cast<int32_t>(data.num_portals);
+  output << static_cast<int32_t>(data.verts.size()) << static_cast<int32_t>(data.faces.size())
+         << static_cast<int32_t>(data.portals.size());
   output << data.name << data.path_pnt;
 
-  for (int i = 0; i < data.num_verts; i++)
+  for (size_t i = 0; i < data.verts.size(); i++)
     output << data.verts[i];
-  for (int i = 0; i < data.num_faces; i++)
+  for (size_t i = 0; i < data.faces.size(); i++)
     output << data.faces[i];
-  for (int i = 0; i < data.num_portals; i++)
+  for (size_t i = 0; i < data.portals.size(); i++)
     output << data.portals[i];
 
   output << reinterpret_cast<const uint32_t&>(data.flags);

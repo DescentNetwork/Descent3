@@ -114,10 +114,10 @@ int RoomAddVertices(int roomnum, int num_new_verts) {
     return 0;
 
   room_t &rp = Rooms[roomnum];
-  rp.verts.resize(rp.num_verts + num_new_verts);
-  rp.num_verts += num_new_verts;
+  const int old_num_verts = static_cast<int>(rp.verts.size());
+  rp.verts.resize(old_num_verts + num_new_verts);
 
-  return (rp.num_verts - num_new_verts);
+  return old_num_verts;
 }
 
 // ============================================================================
@@ -129,8 +129,8 @@ int RoomAddFaces(int roomnum, int num_new_faces) {
     return 0;
 
   room_t &rp = Rooms[roomnum];
-  rp.faces.resize(rp.num_faces + num_new_faces);
-  rp.num_faces += num_new_faces;
+  const int old_num_faces = static_cast<int>(rp.faces.size());
+  rp.faces.resize(old_num_faces + num_new_faces);
 
   if (rp.num_bbf_regions) {
     rp.bbf_list.clear();
@@ -141,7 +141,7 @@ int RoomAddFaces(int roomnum, int num_new_faces) {
     rp.num_bbf_regions = 0;
   }
 
-  return (rp.num_faces - num_new_faces);
+  return old_num_faces;
 }
 
 // ============================================================================
@@ -151,7 +151,7 @@ bool ResetRoomFaceNormals(int roomnum) {
   int bad_normals = 0;
 
   room_t &rp = Rooms[roomnum];
-  for (int i = 0; i < rp.num_faces; i++)
+  for (int i = 0; i < rp.faces.size(); i++)
     if (!ComputeFaceNormal(roomnum, i))
       bad_normals++;
 
@@ -202,12 +202,12 @@ void CopyRoom(int destroom, int srcroom) {
   room_t &destp = Rooms[destroom];
   room_t &srcp = Rooms[srcroom];
 
-  InitRoom(destp, srcp.num_verts, srcp.num_faces, 0);
+  InitRoom(destp, srcp.verts.size(), srcp.faces.size(), 0);
 
-  for (int i = 0; i < destp.num_faces; i++)
+  for (int i = 0; i < destp.faces.size(); i++)
     CopyFace(&destp.faces[i], &srcp.faces[i]);
 
-  for (int i = 0; i < destp.num_verts; i++)
+  for (int i = 0; i < destp.verts.size(); i++)
     destp.verts[i] = srcp.verts[i];
 
   if (srcp.doorway_data) {
@@ -312,7 +312,7 @@ void DeleteRoomFace(index_t roomnum, index_t facenum) {
   if (rp.faces[*facenum].flags.has_trigger)
     EditorDeleteTriggerByRoomFace(roomnum, facenum);
 
-  for (int p = 0; p < rp.num_portals; p++) {
+  for (int p = 0; p < rp.portals.size(); p++) {
     portal &pp = rp.portals[p];
     Q_ASSERT(pp.portal_face != static_cast<int32_t>(*facenum));
     if (pp.portal_face > static_cast<int32_t>(*facenum))
@@ -330,13 +330,13 @@ void DeleteRoomFace(index_t roomnum, index_t facenum) {
 
   FreeRoomFace(rp.faces[*facenum]);
   rp.faces.erase(rp.faces.begin() + *facenum);
-  rp.num_faces--;
 
   if (roomnum == app.current.room) {
-    if (app.current.face == rp.num_faces)
-      app.current.face = index_t{static_cast<uint32_t>(rp.num_faces - 1)};
-    if (app.marked.face == rp.num_faces)
-      app.marked.face = index_t{static_cast<uint32_t>(rp.num_faces - 1)};
+    const uint32_t num_faces = static_cast<uint32_t>(rp.faces.size());
+    if (app.current.face == num_faces)
+      app.current.face = index_t{num_faces - 1};
+    if (app.marked.face == num_faces)
+      app.marked.face = index_t{num_faces - 1};
   }
 
   if (rp.num_bbf_regions) {
@@ -363,7 +363,7 @@ void DeleteRoomPortal(index_t roomnum, index_t portalnum) {
   Q_ASSERT(fp.portal_num == static_cast<int32_t>(*portalnum));
   fp.portal_num = -1;
 
-  for (int p = static_cast<int32_t>(*portalnum) + 1; p < rp.num_portals; p++) {
+  for (int p = static_cast<int32_t>(*portalnum) + 1; p < static_cast<int32_t>(rp.portals.size()); p++) {
     const portal &tp = rp.portals[p];
     Q_ASSERT(rp.faces[tp.portal_face].portal_num == p);
     rp.faces[tp.portal_face].portal_num--;
@@ -375,7 +375,6 @@ void DeleteRoomPortal(index_t roomnum, index_t portalnum) {
   }
 
   rp.portals.erase(rp.portals.begin() + *portalnum);
-  rp.num_portals--;
 }
 
 // ============================================================================
@@ -384,11 +383,11 @@ void DeleteRoomPortal(index_t roomnum, index_t portalnum) {
 // ============================================================================
 int AddPortal(int roomnum) {
   room_t &rp = Rooms[roomnum];
-  rp.portals.resize(rp.num_portals + 1);
-  rp.portals[rp.num_portals].flags = {};
-  rp.portals[rp.num_portals].bnode_index = -1;
+  rp.portals.resize(rp.portals.size() + 1);
+  rp.portals.back().flags = {};
+  rp.portals.back().bnode_index = -1;
 
-  return rp.num_portals++;
+  return static_cast<int>(rp.portals.size()) - 1;
 }
 
 // ============================================================================
@@ -561,7 +560,7 @@ void AssignUVsToFace(index_t roomnum, index_t facenum, roomUVL *uva, roomUVL *uv
 // ============================================================================
 void AssignDefaultUVsToRoom(int roomnum) {
   room_t &rp = Rooms[roomnum];
-  for (int i = 0; i < rp.num_faces; i++)
+  for (int i = 0; i < rp.faces.size(); i++)
     AssignDefaultUVsToRoomFace(roomnum, i);
 }
 
@@ -586,12 +585,10 @@ void FixConcaveFaces(index_t roomnum, int *facelist, int facecount) {
       for (int t = 0; t < concave_count; t++)
         concave_verts[t] = rp.faces[facelist[i]].face_verts[t];
 
-      int old_num_faces = rp.num_faces;
-      int nfaces = rp.num_faces + num_new_faces;
+      int old_num_faces = static_cast<int>(rp.faces.size());
+      int nfaces = old_num_faces + num_new_faces;
 
-      rp.faces.resize(nfaces);
-
-      for (int t = 0; t < rp.num_faces; t++) {
+      for (int t = 0; t < old_num_faces; t++) {
         if (t != facelist[i]) {
           rp.faces[t].special_handle = std::nullopt;
         } else {
@@ -605,7 +602,7 @@ void FixConcaveFaces(index_t roomnum, int *facelist, int facecount) {
         }
       }
 
-      rp.num_faces = nfaces;
+      rp.faces.resize(nfaces);
 
       if (rp.num_bbf_regions) {
         rp.bbf_list.clear();
@@ -746,7 +743,7 @@ void RotateRooms(angle p, angle h, angle b) {
   room_t &markedroomp = Rooms[*app.marked.room];
   room_t &curroomp = Rooms[*app.current.room];
 
-  for (int i = 0; i < markedroomp.num_portals; i++) {
+  for (int i = 0; i < markedroomp.portals.size(); i++) {
     if (markedroomp.portals[i].connected_room == app.current.room) {
       marked_portalnum = i;
       break;
@@ -758,7 +755,7 @@ void RotateRooms(angle p, angle h, angle b) {
     return;
   }
 
-  for (int i = 0; i < curroomp.num_portals; i++) {
+  for (int i = 0; i < curroomp.portals.size(); i++) {
     if (curroomp.portals[i].connected_room == app.marked.room) {
       cur_portalnum = i;
       break;
@@ -796,7 +793,7 @@ void RotateRooms(angle p, angle h, angle b) {
 
     if (Selected_rooms[i] == index_to_int(app.current.room)) {
       const face &cfp = curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
-      for (int v = 0; v < rp.num_verts; v++) {
+      for (int v = 0; v < rp.verts.size(); v++) {
         for (int t = 0; t < cfp.num_verts; t++)
           if (v == cfp.face_verts[t])
             goto skip_vert;
@@ -804,11 +801,11 @@ void RotateRooms(angle p, angle h, angle b) {
       skip_vert:;
       }
     } else {
-      for (int v = 0; v < rp.num_verts; v++)
+      for (int v = 0; v < rp.verts.size(); v++)
         rp.verts[v] = ((rp.verts[v] - rotpoint) * rotmat) + rotpoint;
     }
 
-    for (int t = 0; t < rp.num_faces; t++)
+    for (int t = 0; t < rp.faces.size(); t++)
       rp.faces[t].normal = rp.faces[t].normal * rotmat;
   }
 
@@ -818,8 +815,8 @@ void RotateRooms(angle p, angle h, angle b) {
   for (int i = 0; i < fp->num_verts; i++) {
     int checkvert = fp->face_verts[i];
 
-    for (int t = 0; t < curroomp.num_faces; t++) {
-      for (int l = 0; l < curroomp.num_portals; l++)
+    for (int t = 0; t < curroomp.faces.size(); t++) {
+      for (int l = 0; l < curroomp.portals.size(); l++)
         if (curroomp.portals[l].portal_face == t)
           goto skip_face;
 
@@ -849,7 +846,7 @@ void RotateRooms(angle p, angle h, angle b) {
 void ConnectPortal(int roomnum, int portal_num, int dest_room) {
   room_t &rp = Rooms[roomnum];
 
-  if (portal_num < 0 || portal_num >= rp.num_portals) {
+  if (portal_num < 0 || portal_num >= rp.portals.size()) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid portal number.");
     return;
   }
@@ -880,7 +877,7 @@ void ConnectPortal(int roomnum, int portal_num, int dest_room) {
 void DetachPortal(int roomnum, int portal_num) {
   room_t &rp = Rooms[roomnum];
 
-  if (portal_num < 0 || portal_num >= rp.num_portals) {
+  if (portal_num < 0 || portal_num >= rp.portals.size()) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid portal number.");
     return;
   }
@@ -1010,7 +1007,7 @@ static void AddVertToFace(int roomnum, int facenum, int new_v, int after_v) {
 // ============================================================================
 static void AddVertToAllEdges(int roomnum, int v0, int v1, int new_v) {
   room_t &rp = Rooms[roomnum];
-  for (int f = 0; f < rp.num_faces; f++) {
+  for (int f = 0; f < rp.faces.size(); f++) {
     const face &fp = rp.faces[f];
     for (int v = 0; v < fp.num_verts; v++) {
       int cur = fp.face_verts[v];
@@ -1325,14 +1322,14 @@ void AttachRoom() {
   // memset is done here (memset would corrupt the std::string members).
   room_t &newroomp = Rooms[slot];
   room_t &attroom = Rooms[attroomp];
-  InitRoom(newroomp, attroom.num_verts, attroom.num_faces, 0);
+  InitRoom(newroomp, attroom.verts.size(), attroom.faces.size(), 0);
 
   // Rotate verts, copying into new room
-  for (int i = 0; i < attroom.num_verts; i++)
+  for (int i = 0; i < attroom.verts.size(); i++)
     newroomp.verts[i] = ((attroom.verts[i] - attcenter) * app.placed.rotmat) + basecenter;
 
   // Copy faces to new room
-  for (int i = 0; i < attroom.num_faces; i++) {
+  for (int i = 0; i < attroom.faces.size(); i++) {
     CopyFace(&newroomp.faces[i], &attroom.faces[i]);
   }
 
@@ -1342,7 +1339,6 @@ void AttachRoom() {
 
   // Copy other room values
   newroomp.flags = attroom.flags;
-  newroomp.num_portals = 0;
 
   if (baseroomp < 0) {
     // Terrain room — flag as external and delete the attach face

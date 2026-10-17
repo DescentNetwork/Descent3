@@ -75,9 +75,9 @@ void RoomKeypad::updateDialog() {
   {
     room_t &rp = Rooms[*app.current.room];
     ui->IDC_ROOM_NAME->setText(rp.name.empty() ? QString("<room %1>").arg(index_to_int(app.current.room)) : QString::fromStdString(rp.name));
-    ui->IDC_VERTEX_COUNT->setText(QString("Verts: %1").arg(rp.num_verts));
-    ui->IDC_FACE_COUNT->setText(QString("Faces: %1").arg(rp.num_faces));
-    ui->IDC_PORTAL_COUNT->setText(QString("Portals: %1").arg(rp.num_portals));
+    ui->IDC_VERTEX_COUNT->setText(QString("Verts: %1").arg(rp.verts.size()));
+    ui->IDC_FACE_COUNT->setText(QString("Faces: %1").arg(rp.faces.size()));
+    ui->IDC_PORTAL_COUNT->setText(QString("Portals: %1").arg(rp.portals.size()));
 
     ui->IDC_TOUCHES_OUTSIDE->setChecked(rp.flags.touches_terrain);
     ui->IDC_SECRET_CHECK->setChecked(rp.flags.secret);
@@ -108,7 +108,7 @@ void RoomKeypad::expandGeometry(float scale) {
   if (!app.current.room)
     return;
   room_t &rp = Rooms[*app.current.room];
-  for (int v = 0; v < rp.num_verts; v++)
+  for (int v = 0; v < rp.verts.size(); v++)
     rp.verts[v] *= scale;
   app.World_changed = true;
 }

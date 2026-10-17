@@ -379,7 +379,7 @@ struct PickFixture {
   // a sector mask of 0 passes every msector gate, so all faces are tested.
   static void buildBbfForRoom(room_t *rp) {
     rp->min_xyz = rp->max_xyz = rp->verts[0];
-    for (int v = 1; v < rp->num_verts; ++v) {
+    for (int v = 1; v < rp->verts.size(); ++v) {
       const vector3 &p = rp->verts[v];
       rp->min_xyz.x() = p.x() < rp->min_xyz.x() ? p.x() : rp->min_xyz.x();
       rp->min_xyz.y() = p.y() < rp->min_xyz.y() ? p.y() : rp->min_xyz.y();
@@ -389,7 +389,7 @@ struct PickFixture {
       rp->max_xyz.z() = p.z() > rp->max_xyz.z() ? p.z() : rp->max_xyz.z();
     }
 
-    for (int f = 0; f < rp->num_faces; ++f) {
+    for (int f = 0; f < rp->faces.size(); ++f) {
       face &fp = rp->faces[f];
       fp.min_xyz = fp.max_xyz = rp->verts[fp.face_verts[0]];
       for (int cv = 1; cv < fp.num_verts; ++cv) {
@@ -407,12 +407,12 @@ struct PickFixture {
     rp->bbf_max_xyz = rp->max_xyz;
 
     rp->num_bbf_regions = 1;
-    rp->bbf_list.assign(1, std::vector<int16_t>(rp->num_faces));
-    rp->num_bbf.assign(1, (int16_t)rp->num_faces);
+    rp->bbf_list.assign(1, std::vector<int16_t>(rp->faces.size()));
+    rp->num_bbf.assign(1, (int16_t)rp->faces.size());
     rp->bbf_list_sector.assign(1, uint8_t{0});
     rp->bbf_list_min_xyz.assign(1, rp->min_xyz);
     rp->bbf_list_max_xyz.assign(1, rp->max_xyz);
-    for (int f = 0; f < rp->num_faces; ++f)
+    for (int f = 0; f < rp->faces.size(); ++f)
       rp->bbf_list[0][f] = (int16_t)f;
   }
 };
@@ -523,10 +523,10 @@ private slots:
     QVERIFY(Rooms.size() - 1 >= 1);
     QVERIFY(Rooms[0].used);
     QVERIFY(Rooms[1].used);
-    QCOMPARE(Rooms[0].num_verts, 4);
-    QCOMPARE(Rooms[0].num_faces, 1);
-    QCOMPARE(Rooms[1].num_verts, 3);
-    QCOMPARE(Rooms[1].num_faces, 1);
+    QCOMPARE(Rooms[0].verts.size(), 4);
+    QCOMPARE(Rooms[0].faces.size(), 1);
+    QCOMPARE(Rooms[1].verts.size(), 3);
+    QCOMPARE(Rooms[1].faces.size(), 1);
     QCOMPARE(Rooms[0].verts[0].x(), 10.0f);
     QCOMPARE(Rooms[0].verts[3].z(), 10.0f);
     QCOMPARE(Rooms[0].faces[0].face_verts[0], 0);
@@ -3209,7 +3209,7 @@ private slots:
     for (size_t i = 0; i <= Rooms.size() - 1 && i < MAX_ROOMS; i++) {
       if (Rooms[i].used) {
         usedRooms++;
-        totalFaces += Rooms[i].num_faces;
+        totalFaces += Rooms[i].faces.size();
       }
     }
     QVERIFY(usedRooms > 0);
@@ -3221,7 +3221,7 @@ private slots:
     int texturedFaces = 0;
     for (size_t r = 0; r <= Rooms.size() - 1 && r < MAX_ROOMS; r++) {
       if (!Rooms[r].used) continue;
-      for (int f = 0; f < Rooms[r].num_faces; f++) {
+      for (int f = 0; f < Rooms[r].faces.size(); f++) {
         const index_t bm = GameTextures[Rooms[r].faces[f].tmap].bm_handle;
         if (bm && bm_w(bm, 0) > 0 && bm_h(bm, 0) > 0) ++texturedFaces;
       }
@@ -3230,7 +3230,7 @@ private slots:
 
     // Spot-check a few loaded rooms have non-degenerate verts so they'd project.
     for (size_t i = 0; i <= Rooms.size() - 1 && i < MAX_ROOMS; i++) {
-      if (Rooms[i].used && Rooms[i].num_verts > 0) {
+      if (Rooms[i].used && Rooms[i].verts.size() > 0) {
         QVERIFY(std::isfinite(Rooms[i].verts[0].x()) && std::isfinite(Rooms[i].verts[0].z()));
         break;
       }
@@ -5459,9 +5459,6 @@ private slots:
     room_t &src = Rooms[srcroom];
     src = room_t{};
     src.used = 1;
-    src.num_verts = 4;
-    src.num_faces = 2;
-    src.num_portals = 0;
     InitRoom(src, 4, 2, 0);
     src.verts[0] = vector3{(float)10, (float)20, (float)30};
     src.verts[1] = vector3{(float)40, (float)50, (float)60};
@@ -5487,9 +5484,9 @@ private slots:
     dst = room_t{};
     CopyRoom(dstroom, srcroom);
 
-    QCOMPARE(dst.num_verts, 4);
-    QCOMPARE(dst.num_faces, 2);
-    QCOMPARE(dst.num_portals, 0);
+    QCOMPARE(static_cast<int>(dst.verts.size()), 4);
+    QCOMPARE(static_cast<int>(dst.faces.size()), 2);
+    QCOMPARE(static_cast<int>(dst.portals.size()), 0);
     QCOMPARE(dst.flags.external, 1);
     QCOMPARE(dst.verts[2].x(), 70.0f);
     QCOMPARE(dst.faces[0].tmap, 5);
@@ -5526,8 +5523,8 @@ private slots:
 
     // Link rooms
     LinkRooms(0, 0, 1, 0);
-    QCOMPARE(r0.num_portals, 1);
-    QCOMPARE(r1.num_portals, 1);
+    QCOMPARE(r0.portals.size(), 1);
+    QCOMPARE(r1.portals.size(), 1);
     QCOMPARE(r0.portals[0].connected_room, to_roomnum(1));
     QCOMPARE(r1.portals[0].connected_room, to_roomnum(0));
     QCOMPARE(r0.faces[0].portal_num, 0);
@@ -5535,8 +5532,8 @@ private slots:
 
     // Delete the portal pair
     DeletePortalPair(0, 0);
-    QCOMPARE(r0.num_portals, 0);
-    QCOMPARE(r1.num_portals, 0);
+    QCOMPARE(r0.portals.size(), 0);
+    QCOMPARE(r1.portals.size(), 0);
     QCOMPARE(r0.faces[0].portal_num, -1);
     QCOMPARE(r1.faces[0].portal_num, -1);
 
@@ -5599,7 +5596,7 @@ private slots:
 
     bool ok = CombineFaces(0, 0, 1);
     QVERIFY(ok);
-    QCOMPARE(rp.num_faces, 1);
+    QCOMPARE(rp.faces.size(), 1);
     QCOMPARE(rp.faces[0].num_verts, 4);
 
     FreeRoom(0);
@@ -5709,7 +5706,7 @@ private slots:
       }
     }
     QVERIFY(newroom != -1);
-    QVERIFY(Rooms[newroom].num_verts > 0);
+    QVERIFY(Rooms[newroom].verts.size() > 0);
     QVERIFY(Rooms[newroom].flags.external);
 
     FreeRoom(newroom);
@@ -5775,7 +5772,7 @@ private slots:
       }
     }
     QVERIFY(newroom != -1);
-    QVERIFY(Rooms[newroom].num_portals > 0);
+    QVERIFY(Rooms[newroom].portals.size() > 0);
 
     // Clean up portals before freeing
     DeletePortalPair(newroom, 0);
@@ -6079,7 +6076,7 @@ private slots:
       if (!Rooms[r].used)
         continue;
       nRooms++;
-      nFaces += Rooms[r].num_faces;
+      nFaces += Rooms[r].faces.size();
     }
     QVERIFY2(nRooms > 0, "level has no rooms");
     qInfo() << "rooms=" << nRooms << "faces=" << nFaces;
@@ -6257,7 +6254,7 @@ private slots:
       const room_t &rp = Rooms[r];
       if (!rp.used)
         continue;
-      for (int f = 0; f < rp.num_faces && !pickedSomething; f++) {
+      for (int f = 0; f < rp.faces.size() && !pickedSomething; f++) {
         const face &fp = rp.faces[f];
         if (fp.portal_num != -1)
           continue;
@@ -6307,7 +6304,7 @@ private slots:
       const room_t &rp = Rooms[r];
       if (!rp.used)
         continue;
-      for (int f = 0; f < rp.num_faces; f++) {
+      for (int f = 0; f < rp.faces.size(); f++) {
         const face &fp = rp.faces[f];
         const int nv = fp.num_verts;
         if (nv < 3)
@@ -6859,12 +6856,12 @@ private slots:
       const room_t &rp = Rooms[r];
       if (!rp.used)
         continue;
-      if (rp.num_verts > 0) {
+      if (rp.verts.size() > 0) {
         const vector3 dv = rp.verts[0] - target;
         if ((dv.x() * dv.x() + dv.y() * dv.y() + dv.z() * dv.z()) > rad2)
           continue;
       }
-      for (int f = 0; f < rp.num_faces; f++) {
+      for (int f = 0; f < rp.faces.size(); f++) {
         const face &fp = rp.faces[f];
         const int nv = fp.num_verts;
         if (nv < 3 || nv > 64)
@@ -7148,8 +7145,8 @@ private slots:
     QCOMPARE(app.placed.room, to_roomnum(0));
     QCOMPARE(static_cast<int>(Rooms.size()), 2);
     QVERIFY(Rooms[*app.placed.room].used);
-    QCOMPARE(Rooms[*app.placed.room].num_verts, 8);
-    QCOMPARE(Rooms[*app.placed.room].num_faces, 2);
+    QCOMPARE(Rooms[*app.placed.room].verts.size(), 8);
+    QCOMPARE(Rooms[*app.placed.room].faces.size(), 2);
     QCOMPARE(app.placed.base.room, std::optional<int>(1));
     QCOMPARE(app.placed.door, std::optional<uint32_t>(0));
     // Front face verts remap onto the shell (same positions).
@@ -7417,8 +7414,6 @@ private slots:
     QVERIFY(roomnum >= 0);
     {
       Rooms[roomnum].used = 1;
-      Rooms[roomnum].num_verts = 8;
-      Rooms[roomnum].num_faces = 1;
       for (int v = 0; v < 8; ++v)
         Rooms[roomnum].verts[v] = vector3{};
       ComputeFaceNormal(roomnum, 0);
@@ -7464,8 +7459,6 @@ private slots:
     QVERIFY(roomnum >= 0);
     {
       Rooms[roomnum].used = 1;
-      Rooms[roomnum].num_verts = 8;
-      Rooms[roomnum].num_faces = 1;
       for (int v = 0; v < 8; ++v)
         Rooms[roomnum].verts[v] = vector3{};
       ComputeFaceNormal(roomnum, 0);
@@ -7515,8 +7508,6 @@ private slots:
     QVERIFY(roomnum >= 0);
     {
       Rooms[roomnum].used = 1;
-      Rooms[roomnum].num_verts = 8;
-      Rooms[roomnum].num_faces = 1;
       for (int v = 0; v < 8; ++v)
         Rooms[roomnum].verts[v] = vector3{};
       ComputeFaceNormal(roomnum, 0);
@@ -7572,8 +7563,6 @@ private slots:
     QVERIFY(roomnum >= 0);
     {
       Rooms[roomnum].used = 1;
-      Rooms[roomnum].num_verts = 8;
-      Rooms[roomnum].num_faces = 1;
       for (int v = 0; v < 8; ++v)
         Rooms[roomnum].verts[v] = vector3{};
       ComputeFaceNormal(roomnum, 0);
@@ -7631,8 +7620,6 @@ private slots:
     QVERIFY(roomnum >= 0);
     {
       Rooms[roomnum].used = 1;
-      Rooms[roomnum].num_verts = 8;
-      Rooms[roomnum].num_faces = 1;
       for (int v = 0; v < 8; ++v)
         Rooms[roomnum].verts[v] = vector3{};
       ComputeFaceNormal(roomnum, 0);
@@ -7694,8 +7681,6 @@ private slots:
     QVERIFY(roomnum >= 0);
     {
       Rooms[roomnum].used = 1;
-      Rooms[roomnum].num_verts = 8;
-      Rooms[roomnum].num_faces = 1;
       for (int v = 0; v < 8; ++v)
         Rooms[roomnum].verts[v] = vector3{};
       ComputeFaceNormal(roomnum, 0);
@@ -7763,8 +7748,6 @@ private slots:
     QVERIFY(roomnum >= 0);
     {
       Rooms[roomnum].used = 1;
-      Rooms[roomnum].num_verts = 8;
-      Rooms[roomnum].num_faces = 1;
       for (int v = 0; v < 4; ++v)
         Rooms[roomnum].verts[v] = vector3{(float)(v & 1) * 10, 0, (float)(v > 1) * 10};
       InitRoomFace(Rooms[roomnum].faces[0], 4);

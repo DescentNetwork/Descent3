@@ -490,15 +490,15 @@ std::string RenderLevelStats() {
     if (!rp.used)
       continue;
     n_rooms++;
-    n_verts += rp.num_verts;
-    n_faces += rp.num_faces;
-    n_portals += rp.num_portals;
+    n_verts += rp.verts.size();
+    n_faces += rp.faces.size();
+    n_portals += rp.portals.size();
     if (rp.flags.external)
       n_rooms_external++;
     else
       total_volume_bytes += GetVolumeSizeOfRoom(i);
 
-    for (int t = 0; t < rp.num_faces; t++) {
+    for (int t = 0; t < rp.faces.size(); t++) {
       const face &fp = rp.faces[t];
       if (fp.special_handle.has_value() &&
           (GameTextures[fp.tmap].flags.metal || GameTextures[fp.tmap].flags.marble ||

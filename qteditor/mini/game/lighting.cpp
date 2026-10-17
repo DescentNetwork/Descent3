@@ -270,7 +270,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
   Light_max_xyz = pos + rad;
 
   // Now the Light_position is in the submodels frame of reference
-  for (i = 0; i < rp.num_faces; i++) {
+  for (i = 0; i < rp.faces.size(); i++) {
     const face &fp = rp.faces[i];
 
     // check to see if this face is within reach
@@ -1043,7 +1043,7 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
     const face &fp = rp.faces[facelist[i].face_index];
 
     Q_ASSERT(Rooms[facelist[i].room_index].used);
-    Q_ASSERT(facelist[i].face_index < Rooms[facelist[i].room_index].num_faces);
+    Q_ASSERT(facelist[i].face_index < Rooms[facelist[i].room_index].faces.size());
 
     // Make sure face was rendered
     if (fp.renderframe != ((FrameCount - 1) % 256))
@@ -1979,7 +1979,7 @@ void DestroyLight(int roomnum, int facenum) {
     const face &fp = rp.faces[facelist[i].face_index];
 
     Q_ASSERT(Rooms[facelist[i].room_index].used);
-    Q_ASSERT(facelist[i].face_index < Rooms[facelist[i].room_index].num_faces);
+    Q_ASSERT(facelist[i].face_index < Rooms[facelist[i].room_index].faces.size());
 
     // Make sure there already is a lightmap for this face
     if (!fp.flags.lightmap)

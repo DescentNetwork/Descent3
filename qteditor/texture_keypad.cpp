@@ -67,7 +67,7 @@ TextureKeypad::~TextureKeypad() { delete ui; }
 void TextureKeypad::updateDialog() {
   // Editing a face's texture requires a current room + face.
   const bool active = (app.current.room && Rooms[*app.current.room].used && app.current.face &&
-                       *app.current.face < Rooms[*app.current.room].num_faces);
+                       *app.current.face < Rooms[*app.current.room].faces.size());
   for (QWidget *w : findChildren<QWidget *>())
     if (w->objectName().startsWith("IDC_TEXPAD") || w->objectName().startsWith("IDC_FACE_MAP"))
       w->setEnabled(active);

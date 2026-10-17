@@ -364,7 +364,7 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
     const room_t &rp = Rooms[r];
     if (!rp.used)
       continue;
-    for (int f = 0; f < rp.num_faces; f++) {
+    for (int f = 0; f < rp.faces.size(); f++) {
       const face &fp = rp.faces[f];
       QVector<ProjectedVertex> face;
       bool ok = true;
@@ -493,7 +493,7 @@ void EditorView::renderRooms() {
       const room_t &rpc = Rooms[rr];
       if (!rpc.used)
         continue;
-      for (int i = 0; i < rpc.num_faces; i++) {
+      for (int i = 0; i < rpc.faces.size(); i++) {
         const face &fp = rpc.faces[i];
         int fnv = fp.num_verts;
         if (fnv > 16)
@@ -532,7 +532,7 @@ void EditorView::renderRooms() {
     if (m_wireframe) {
       // The Win32 wireframe view only draws rooms within the view radius of
       // the target (DrawAllRooms, editor/drawworld.cpp:745-759).
-      if (app.view_mode != state::viewer::room && rp.num_verts > 0 &&
+      if (app.view_mode != state::viewer::room && rp.verts.size() > 0 &&
           vm_VectorDistance(rp.verts[0], m_target) >= m_rad)
         continue;
 
@@ -541,7 +541,7 @@ void EditorView::renderRooms() {
       resetEdgeTable();
 
       // Build screen-space coords for every vertex in this room.
-      const int nv = rp.num_verts;
+      const int nv = rp.verts.size();
       QVector<float> sxv(nv), syv(nv);
       for (int v = 0; v < nv; v++) {
         if (!projectVertex(rp.verts[v], &sxv[v], &syv[v])) {
@@ -553,7 +553,7 @@ void EditorView::renderRooms() {
       const bool selected = IsRoomSelected(r);
       const bool isCurRoom = (r == index_to_int(app.current.room));
 
-      for (int i = 0; i < rp.num_faces; i++) {
+      for (int i = 0; i < rp.faces.size(); i++) {
         const face &fp = rp.faces[i];
         int fnv = fp.num_verts;
         if (fnv > 16)
@@ -628,7 +628,7 @@ void EditorView::renderRooms() {
       // their red, terrain portals stay blue below.)
       if (selected && !isCurRoom) {
         resetEdgeTable();
-        for (int i = 0; i < rp.num_faces; i++) {
+        for (int i = 0; i < rp.faces.size(); i++) {
           const face &fp = rp.faces[i];
           if ((fp.flags.floating_trig) || fp.portal_num != -1)
             continue;
@@ -646,7 +646,7 @@ void EditorView::renderRooms() {
       }
 
       // Now draw the terrain portals in blue (DrawRoom, drawworld.cpp:638-646).
-      for (int p = 0; p < rp.num_portals; p++) {
+      for (int p = 0; p < rp.portals.size(); p++) {
         const portal &pp = rp.portals[p];
         if (pp.connected_room != -1)
           continue;
@@ -674,7 +674,7 @@ void EditorView::renderRooms() {
       }
     } else {
       // Textured / solid mode.
-      for (int i = 0; i < rp.num_faces; i++) {
+      for (int i = 0; i < rp.faces.size(); i++) {
         const face &fp = rp.faces[i];
 
         float sx[16], sy[16], d[16];
@@ -789,7 +789,7 @@ void EditorView::renderOverlays() {
         liveRoom(app.current.room) &&
         Rooms[*app.current.room].used &&
         app.current.room == app.current_room &&
-        *app.current.face < Rooms[*app.current.room].num_faces) {
+        *app.current.face < Rooms[*app.current.room].faces.size()) {
       const face &fp = Rooms[*app.current.room].faces[*app.current.face];
       float sx[16], sy[16];
       int nv = fp.num_verts;
@@ -819,7 +819,7 @@ void EditorView::renderOverlays() {
   // drawn BEFORE the current room so the white current-room wireframe draws
   // over them where they overlap (DrawWorld, editor/drawworld.cpp:851-863).
   if (liveRoom(app.marked.room) && Rooms[*app.marked.room].used) {
-    if (app.marked.face && *app.marked.face < Rooms[*app.marked.room].num_faces) {
+    if (app.marked.face && *app.marked.face < Rooms[*app.marked.room].faces.size()) {
       const face &fp = Rooms[*app.marked.room].faces[*app.marked.face];
       float sx[16], sy[16];
       int nv = fp.num_verts;
@@ -871,7 +871,7 @@ void EditorView::renderOverlays() {
     // the white override does not cover them.
     glColor3fv(kWfCurRoomColor);
     glLineWidth(1.0f);
-    for (int i = 0; i < Rooms[*app.current.room].num_faces; i++) {
+    for (int i = 0; i < Rooms[*app.current.room].faces.size(); i++) {
       const face &fp = Rooms[*app.current.room].faces[i];
       if ((fp.flags.floating_trig) || fp.portal_num != -1)
         continue;
@@ -895,9 +895,9 @@ void EditorView::renderOverlays() {
     }
 
     // Current portal face in purple (DrawRoomFace, CURPORTAL_COLOR).
-    if (app.current.portal && *app.current.portal < Rooms[*app.current.room].num_portals) {
+    if (app.current.portal && *app.current.portal < Rooms[*app.current.room].portals.size()) {
       int faceIdx = Rooms[*app.current.room].portals[*app.current.portal].portal_face;
-      if (faceIdx >= 0 && faceIdx < Rooms[*app.current.room].num_faces) {
+      if (faceIdx >= 0 && faceIdx < Rooms[*app.current.room].faces.size()) {
         const face &fp = Rooms[*app.current.room].faces[faceIdx];
         float sx[16], sy[16];
         int nv = fp.num_verts;
@@ -923,7 +923,7 @@ void EditorView::renderOverlays() {
     }
 
     // Current face in yellow.
-    if (app.current.face && *app.current.face < Rooms[*app.current.room].num_faces) {
+    if (app.current.face && *app.current.face < Rooms[*app.current.room].faces.size()) {
       const face &fp = Rooms[*app.current.room].faces[*app.current.face];
       float sx[16], sy[16];
       int nv = fp.num_verts;
@@ -1161,7 +1161,7 @@ void EditorView::renderObjects() {
     if (!obj.roomnum || *obj.roomnum >= Rooms.size())
       continue;
     const room_t &rp = Rooms[*obj.roomnum];
-    if (!rp.used || rp.num_verts == 0)
+    if (!rp.used || rp.verts.size() == 0)
       continue;
     if (vm_VectorDistance(rp.verts[0], m_target) >= m_rad)
       continue;
@@ -1549,7 +1549,7 @@ void EditorView::fitToMine() {
     const room_t &rp = Rooms[r];
     if (!rp.used)
       continue;
-    for (int v = 0; v < rp.num_verts; v++) {
+    for (int v = 0; v < rp.verts.size(); v++) {
       const vector3 &p = rp.verts[v];
       mn.x() = std::min(mn.x(), p.x());
       mn.y() = std::min(mn.y(), p.y());
@@ -1856,11 +1856,11 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
     // current room, which is always a candidate (state::viewer::room already restricts to
     // a single room, so this only matters in state::viewer::mine).
     const bool isCurrent = (app.current_room == r);
-    if (!isCurrent && rp.num_verts > 0 &&
+    if (!isCurrent && rp.verts.size() > 0 &&
         (vm_VectorDistance(rp.verts[0], m_target) * vm_VectorDistance(rp.verts[0], m_target)) > rad2)
       continue;
 
-    for (int f = 0; f < rp.num_faces; f++) {
+    for (int f = 0; f < rp.faces.size(); f++) {
       const face &fp = rp.faces[f];
       int nv = fp.num_verts;
       if (nv < 3 || nv > MAX_VERTS_PER_FACE)

@@ -67,7 +67,7 @@ bool EBNode_VerifyGraph() {
             int r = nlist->nodes[j].edges[k].end_room;
             int p = nlist->nodes[j].edges[k].end_index;
 
-            for (int x = 0; x < Rooms[r].num_portals; x++) {
+            for (int x = 0; x < Rooms[r].portals.size(); x++) {
               if (Rooms[r].portals[x].bnode_index == p) {
                 const index_t cr = Rooms[r].portals[x].connected_room;
                 const index_t cp = Rooms[r].portals[x].connected_portal;
@@ -109,7 +109,7 @@ bool EBNode_VerifyGraph() {
       if (Rooms[i].flags.external)
         continue;
 
-      for (int j = 0; j < Rooms[i].num_portals; j++) {
+      for (int j = 0; j < Rooms[i].portals.size(); j++) {
         if (Rooms[i].portals[j].bnode_index >= 0 && Rooms[i].portals[j].bnode_index >= Rooms[i].bn_info.nodes.size()) {
           LOG_INFO("EBNode: Bashed an invalid node\n");
           Rooms[i].portals[j].bnode_index = -1;
@@ -172,7 +172,7 @@ bool EBNode_VerifyGraph() {
       if (Rooms[i].flags.external)
         continue;
 
-      for (int j = 0; j < Rooms[i].num_portals; j++) {
+      for (int j = 0; j < Rooms[i].portals.size(); j++) {
         if ((Rooms[i].portals[j].flags.block) && !(Rooms[i].portals[j].flags.block_removable)) {
           if (Rooms[i].portals[j].bnode_index >= 0) {
             LOG_INFO("EBNode Verify: Removed a node.\n");
@@ -356,7 +356,7 @@ void EBNode_ClearLevel() {
       if (!Rooms[i].used) {
         continue;
       } else {
-        for (int j = 0; j < Rooms[i].num_portals; j++)
+        for (int j = 0; j < Rooms[i].portals.size(); j++)
           Rooms[i].portals[j].bnode_index = -1;
       }
     }
@@ -390,7 +390,7 @@ static void RemapPortalNodeIndices(int roomnum, int pnt) {
   if (roomnum >= 0 && roomnum < Rooms.size()) {
     Q_ASSERT(Rooms[roomnum].used);
 
-    for (int i = 0; i < Rooms[roomnum].num_portals; i++) {
+    for (int i = 0; i < Rooms[roomnum].portals.size(); i++) {
       if (Rooms[roomnum].portals[i].bnode_index == pnt) {
         Rooms[roomnum].portals[i].bnode_index = -1;
       } else if (Rooms[roomnum].portals[i].bnode_index > pnt) {
@@ -628,7 +628,7 @@ void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_add_reverse
 void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
   room_t &rp = Rooms[roomnum];
 
-  for (int i = 0; i < rp.num_portals; i++) {
+  for (int i = 0; i < rp.portals.size(); i++) {
     vector3 pos;
     pos = rp.portals[i].path_pnt + rp.faces[rp.portals[i].portal_face].normal * 0.75f;
     rp.portals[i].bnode_index = i;
@@ -680,7 +680,7 @@ void EBNode_MakeDefaultIntraRoomNodes(int roomnum) {
 }
 
 void EBNode_MakeDefaultInterRoomEdges(int roomnum) {
-  for (int i = 0; i < Rooms[roomnum].num_portals; i++) {
+  for (int i = 0; i < Rooms[roomnum].portals.size(); i++) {
     const index_t cportal = Rooms[roomnum].portals[i].connected_portal;
     const index_t croom = Rooms[roomnum].portals[i].connected_room;
     if (cportal && croom && *croom > static_cast<uint32_t>(roomnum) && !(Rooms[*croom].flags.external)) {
@@ -697,9 +697,9 @@ void EBNode_MakeDefaultInterRoomEdges(int roomnum) {
 }
 
 static void EBNode_RemoveNodesAtUnopenablePortals(int roomnum) {
-  Q_ASSERT(Rooms[roomnum].num_portals + 1 == Rooms[roomnum].bn_info.nodes.size());
+  Q_ASSERT(Rooms[roomnum].portals.size() + 1 == Rooms[roomnum].bn_info.nodes.size());
 
-  for (int i = Rooms[roomnum].num_portals - 1; i >= 0; i--) {
+  for (int i = Rooms[roomnum].portals.size() - 1; i >= 0; i--) {
     if ((Rooms[roomnum].portals[i].flags.block) && !(Rooms[roomnum].portals[i].flags.block_removable)) {
       EBNode_RemoveNode(roomnum, i);
       continue;

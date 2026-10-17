@@ -1618,7 +1618,7 @@ bool MainWindow::onAddRoom()
     std::fprintf(stderr, "[room_ops] AddRoom: no current room\n");
     return false;
   }
-  if (!app.current.face || static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].num_faces) {
+  if (!app.current.face || static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].faces.size()) {
     std::fprintf(stderr, "[room_ops] AddRoom: invalid current face (%d)\n",
                  index_to_int(app.current.face));
     return false;
@@ -1824,20 +1824,20 @@ bool MainWindow::onSaveCurrentRoom() {
 }
 
 void MainWindow::onRoomDeleteFace() {
-  if (!app.current.room || !app.current.face || static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].num_faces)
+  if (!app.current.room || !app.current.face || static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].faces.size())
     return;
   if (Rooms[*app.current.room].faces[*app.current.face].portal_num != -1) {
     onRoomDeletePortal();
     return;
   }
   DeleteRoomFace(app.current.room, app.current.face);
-  if (static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].num_faces)
-    app.current.face = index_t{static_cast<uint32_t>(Rooms[*app.current.room].num_faces - 1)};
+  if (static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].faces.size())
+    app.current.face = index_t{static_cast<uint32_t>(Rooms[*app.current.room].faces.size() - 1)};
   app.Mine_changed = true;
 }
 
 void MainWindow::onRoomDeletePortal() {
-  if (!app.current.room || !app.current.face || static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].num_faces)
+  if (!app.current.room || !app.current.face || static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].faces.size())
     return;
   int pn = Rooms[*app.current.room].faces[*app.current.face].portal_num;
   if (pn == -1) {

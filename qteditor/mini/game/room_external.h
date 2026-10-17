@@ -289,13 +289,10 @@ static_assert(sizeof(room_flags_t) == sizeof(uint32_t));
 struct room_t {
   room_flags_t flags;
 
-  int32_t num_faces;   // how many poygons in this room
-  int32_t num_portals; // how many connections in this room
-  int32_t num_verts;   // how many verts in the room
-  std::vector<face> faces;     // list of faces (num_faces)
-  std::vector<portal> portals; // list of portals (num_portals)
-  std::vector<vector3> verts;  // array of vertices for this room (num_verts)
-  std::vector<vector4> verts4; // array of 16byte vertices for this room (num_verts, Katmai)
+  std::vector<face> faces;     // list of faces
+  std::vector<portal> portals; // list of portals
+  std::vector<vector3> verts;  // array of vertices for this room
+  std::vector<vector4> verts4; // array of 16byte vertices for this room (Katmai)
 
   std::unique_ptr<doorway> doorway_data;   // this room's doorway data, or null if not a doorway
   std::string name;              // name of this room, or NULL
@@ -324,7 +321,6 @@ struct room_t {
   int32_t ambient_sound;         // Index of ambient sound pattern for this room, or -1 if none
   int16_t vis_effects;         // index of first visual effect in this room
   int16_t mirror_face;         // Index of face that this room is to be mirrored by
-  uint8_t num_mirror_faces;    // Number of faces in this room that have the same texture as the mirror
   std::vector<uint16_t> mirror_faces_list; // the list of faces in this room that have the same texture as the mirror
   float damage;              // The damage per second applied to players (& maybe others) in room
 

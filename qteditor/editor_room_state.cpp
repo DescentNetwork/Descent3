@@ -25,8 +25,6 @@ int CreateNewRoom(int nverts, int nfaces, bool palette_room) {
   rp.used = 1;
   rp.verts.resize(nverts);
   rp.faces.resize(nfaces);
-  rp.num_verts = nverts;
-  rp.num_faces = nfaces;
   return slot;
 }
 
@@ -70,9 +68,6 @@ void DestroyRoom(int roomnum) {
   rp.bbf_list_max_xyz.clear();
   rp.bbf_list_sector.clear();
   rp.used = 0;
-  rp.num_verts = 0;
-  rp.num_faces = 0;
-  rp.num_portals = 0;
 
   // Rooms.size() == high-water mark + 1, so pop the unused tail (matching
   // the Win32 room free path's trim loop).
@@ -92,7 +87,7 @@ int IsRoomSelected(int roomnum) {
 void AssignDefaultUVsToRoomFace(index_t roomnum, index_t facenum) {
   if (!roomnum || *roomnum >= Rooms.size() || !Rooms[*roomnum].used)
     return;
-  if (!facenum || *facenum >= Rooms[*roomnum].num_faces)
+  if (!facenum || *facenum >= Rooms[*roomnum].faces.size())
     return;
   face &fp = Rooms[*roomnum].faces[*facenum];
   if (fp.num_verts < 3)
@@ -151,7 +146,7 @@ int SelectConnectedRooms(int roomnum) {
   int count = 1;
   app.State_changed = true;
 
-  for (int s = 0; s < Rooms[roomnum].num_portals; s++) {
+  for (int s = 0; s < Rooms[roomnum].portals.size(); s++) {
     const index_t connected_room = Rooms[roomnum].portals[s].connected_room;
     if (connected_room)
       count += SelectConnectedRooms(*connected_room);

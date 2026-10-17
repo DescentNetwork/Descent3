@@ -637,7 +637,7 @@ static int LL_ReadRoom(byte_istream &ifile, int roomnum, uint32_t /*version*/) {
   ifile >> rp;
 
   // Map raw level-local texture indices into global GameTextures[] slots.
-  for (int f = 0; f < rp.num_faces; f++) {
+  for (int f = 0; f < rp.faces.size(); f++) {
     const int raw = rp.faces[f].tmap;
     rp.faces[f].tmap = (raw >= 0 && raw < MAX_TEXTURES) ? texture_xlate[raw] : 0;
   }
@@ -670,8 +670,8 @@ static void LL_ReadRoomAABBChunk(byte_istream &ifile) {
 
     int32_t n_faces = 0;
     ifile >> n_faces;
-    Q_ASSERT(Rooms[i].num_faces == n_faces);
-    for (int j = 0; j < Rooms[i].num_faces; j++) {
+    Q_ASSERT(Rooms[i].faces.size() == n_faces);
+    for (int j = 0; j < Rooms[i].faces.size(); j++) {
       ifile >> Rooms[i].faces[j].min_xyz;
       ifile >> Rooms[i].faces[j].max_xyz;
     }
@@ -697,7 +697,7 @@ static void LL_ReadRoomAABBChunk(byte_istream &ifile) {
 
     for (int j = 0; j < nregions; j++) {
       const int nfaces = Rooms[i].num_bbf[j];
-      if (nfaces < 0 || nfaces > Rooms[i].num_faces)
+      if (nfaces < 0 || nfaces > Rooms[i].faces.size())
         continue;
       Rooms[i].bbf_list[j].resize(nfaces);
       for (int k = 0; k < nfaces; k++)
@@ -723,8 +723,8 @@ static void LL_WriteRoomAABBChunk(byte_ostream &ofile) {
     }
 
     ofile << (int32_t)1; // used
-    ofile << (int32_t)Rooms[i].num_faces;
-    for (int j = 0; j < Rooms[i].num_faces; j++) {
+    ofile << (int32_t)Rooms[i].faces.size();
+    for (int j = 0; j < Rooms[i].faces.size(); j++) {
       ofile << Rooms[i].faces[j].min_xyz;
       ofile << Rooms[i].faces[j].max_xyz;
     }
@@ -2004,7 +2004,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
   for (size_t i = 0; i < Rooms.size(); i++) {
     if (!Rooms[i].used)
       continue;
-    for (int f = 0; f < Rooms[i].num_faces; f++)
+    for (int f = 0; f < Rooms[i].faces.size(); f++)
       ComputeFaceNormal(i, f);
   }
 
@@ -2080,10 +2080,10 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
         if (!Rooms[i].used)
           continue;
         nrooms++;
-        nverts += Rooms[i].num_verts;
-        nfaces += Rooms[i].num_faces;
-        nportals += Rooms[i].num_portals;
-        for (int f = 0; f < Rooms[i].num_faces; f++)
+        nverts += Rooms[i].verts.size();
+        nfaces += Rooms[i].faces.size();
+        nportals += Rooms[i].portals.size();
+        for (int f = 0; f < Rooms[i].faces.size(); f++)
           nfaceverts += Rooms[i].faces[f].num_verts;
       }
       out << nrooms;

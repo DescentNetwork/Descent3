@@ -498,7 +498,7 @@ void TerrainKeypad::onDropTerrain() {
 
   for (size_t r = 0; r < Rooms.size(); r++) {
     if (!Rooms[r].used) continue;
-    for (int v = 0; v < Rooms[r].num_verts; v++)
+    for (int v = 0; v < Rooms[r].verts.size(); v++)
       Rooms[r].verts[v].y() += delta_y;
   }
 

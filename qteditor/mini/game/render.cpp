@@ -496,7 +496,7 @@ void RotateRoomPoints(int roomnum, const vector3 *world_vecs) {
   int i;
   // Jig the vertices a bit if being deformed
   if (Viewer_object->effect_info && (Viewer_object->effect_info->type_flags.deform)) {
-    for (i = 0; i < rp.num_verts; i++) {
+    for (i = 0; i < rp.verts.size(); i++) {
       vector3 vec = world_vecs[i];
       float val = ((d3::rand() % 1000) - 500.0f) / 500.0f;
       val *= Viewer_object->effect_info->deform_time;
@@ -506,7 +506,7 @@ void RotateRoomPoints(int roomnum, const vector3 *world_vecs) {
       g3_ProjectPoint(World_point_buffer[rp.wpb_index + i]);
     }
   } else {
-    for (i = 0; i < rp.num_verts; i++) {
+    for (i = 0; i < rp.verts.size(); i++) {
       vector3 vec = world_vecs[i];
       g3_RotatePoint(World_point_buffer[rp.wpb_index + i], vec);
       g3_ProjectPoint(World_point_buffer[rp.wpb_index + i]);
@@ -541,7 +541,7 @@ void MarkFacingFaces(int roomnum, const vector3 *world_verts) {
   if (Render_mirror_for_room) {
     const room_t &mirror_rp = Rooms[Mirror_room];
     const face &mirror_fp = mirror_rp.faces[mirror_rp.mirror_face];
-    for (int t = 0; t < rp.num_faces; t++, fp++) {
+    for (int t = 0; t < rp.faces.size(); t++, fp++) {
       vector3 incident_norm;
       ReflectRay(incident_norm, fp->normal, mirror_fp.normal);
 
@@ -550,7 +550,7 @@ void MarkFacingFaces(int roomnum, const vector3 *world_verts) {
         fp->flags.not_facing = true;
     }
   } else {
-    for (int i = 0; i < rp.num_faces; i++, fp++) {
+    for (int i = 0; i < rp.faces.size(); i++, fp++) {
       tvec = Viewer_eye - world_verts[fp->face_verts[0]];
       if (vector3::dot(tvec, fp->normal) <= 0)
         fp->flags.not_facing = true;
@@ -596,10 +596,10 @@ void MarkFacesForRendering(int roomnum, clip_wnd &wnd) {
 #endif
       RotateRoomPoints(roomnum, rp.verts.data());
 
-    Global_buffer_index += rp.num_verts;
+    Global_buffer_index += rp.verts.size();
   }
   if (rp.flags.door) {
-    for (i = 0; i < rp.num_faces; i++)
+    for (i = 0; i < rp.faces.size(); i++)
       rp.faces[i].flags.visible = true;
   } else {
     // If this room contains a mirror, just mark all faces as visible
@@ -607,11 +607,11 @@ void MarkFacesForRendering(int roomnum, clip_wnd &wnd) {
     if (rp.mirror_face == -1 || !Detail_settings.Mirrored_surfaces) {
       // Do pointer dereferencing instead of array lookup for speed reasons
       g3Point *pnt = &World_point_buffer[rp.wpb_index];
-      for (i = 0; i < rp.num_verts; i++, pnt++) {
+      for (i = 0; i < rp.verts.size(); i++, pnt++) {
         Room_clips[i] = clip2d(*pnt, wnd);
       }
       face *fp = &rp.faces[0];
-      for (i = 0; i < rp.num_faces; i++, fp++) {
+      for (i = 0; i < rp.faces.size(); i++, fp++) {
         if (fp->flags.not_facing || fp->flags.visible)
           continue; // this face is a backface
 
@@ -622,12 +622,12 @@ void MarkFacesForRendering(int roomnum, clip_wnd &wnd) {
       if (rp.flags.mirror_visible) // If this room is already mirror, just return
         return;
       g3Point *pnt = &World_point_buffer[rp.wpb_index];
-      for (i = 0; i < rp.num_verts; i++, pnt++) {
+      for (i = 0; i < rp.verts.size(); i++, pnt++) {
         Room_clips[i] = clip2d(*pnt, wnd);
       }
       int done = 0;
       face *fp;
-      for (i = 0; i < rp.num_mirror_faces && !done; i++) {
+      for (i = 0; i < rp.mirror_faces_list.size() && !done; i++) {
         fp = &rp.faces[rp.mirror_faces_list[i]];
         if (FaceIntersectsPortal(roomnum, *fp, wnd)) {
           rp.flags.mirror_visible = 1;
@@ -639,12 +639,12 @@ void MarkFacesForRendering(int roomnum, clip_wnd &wnd) {
       if (rp.flags.mirror_visible) // Mirror is visible, just mark all faces as visible
       {
         fp = &rp.faces[0];
-        for (i = 0; i < rp.num_faces; i++, fp++) {
+        for (i = 0; i < rp.faces.size(); i++, fp++) {
           fp->flags.visible = true;
         }
       } else {
         fp = &rp.faces[0];
-        for (i = 0; i < rp.num_faces; i++, fp++) {
+        for (i = 0; i < rp.faces.size(); i++, fp++) {
           if (fp->flags.not_facing || fp->flags.visible)
             continue; // this face is a backface
 
@@ -815,7 +815,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd &wnd, int depth) {
       return;
 
   // Check all the portals for this room
-  for (t = 0; t < rp.num_portals; t++) {
+  for (t = 0; t < rp.portals.size(); t++) {
     const portal &pp = rp.portals[t];
     Q_ASSERT(pp.connected_room);
     int croom = index_to_int(pp.connected_room);
@@ -862,7 +862,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd &wnd, int depth) {
       if (pp.combine_master != t)
         continue;
       int num_points = 0;
-      for (i = 0; i < rp.num_portals; i++) {
+      for (i = 0; i < rp.portals.size(); i++) {
         if ((!rp.portals[i].flags.combined) || rp.portals[i].combine_master != t)
           continue;
 
@@ -1099,7 +1099,7 @@ void BuildRoomList(int start_room_num) {
   N_render_rooms = 0;
   Global_buffer_index = 0;
   // Mark all the faces in our start room as renderable
-  for (i = 0; i < rp.num_faces; i++)
+  for (i = 0; i < rp.faces.size(); i++)
     rp.faces[i].flags.visible = true;
 
   MarkFacingFaces(start_room_num, rp.verts.data());
@@ -1123,7 +1123,7 @@ void BuildRoomList(int start_room_num) {
 #endif
     RotateRoomPoints(start_room_num, rp.verts.data());
 
-  Global_buffer_index += rp.num_verts;
+  Global_buffer_index += rp.verts.size();
 
   // Mark all objects in this room as visible
   for (int objnum = rp.objects; (objnum != -1); objnum = Objects[objnum].next)
@@ -1143,7 +1143,7 @@ void BuildRoomList(int start_room_num) {
       for (i = 0; i < Rooms.size(); i++) {
         room_t &rp = Rooms[i];
         if (rp.used && (rp.flags.external)) {
-          for (int t = 0; t < rp.num_faces; t++)
+          for (int t = 0; t < rp.faces.size(); t++)
             rp.faces[t].flags.visible = true;
           MarkFacingFaces(i, rp.verts.data());
 
@@ -2164,7 +2164,7 @@ void RenderRoomSorted(int roomnum) {
   room_t &rp = Rooms[roomnum];
   int vn, fn, i, rcount;
   int render_order[MAX_FACES_PER_ROOM];
-  Q_ASSERT(rp.num_faces <= MAX_FACES_PER_ROOM);
+  Q_ASSERT(rp.faces.size() <= MAX_FACES_PER_ROOM);
   // Rotate all the points
   if (rp.wpb_index == -1) {
     rp.wpb_index = Global_buffer_index;
@@ -2177,10 +2177,10 @@ void RenderRoomSorted(int roomnum) {
 #endif
       RotateRoomPoints(roomnum, rp.verts.data());
 
-    Global_buffer_index += rp.num_verts;
+    Global_buffer_index += rp.verts.size();
   }
   // Build list of visible (non-backfacing) faces, & compute average face depths
-  for (fn = rcount = 0; fn < rp.num_faces; fn++) {
+  for (fn = rcount = 0; fn < rp.faces.size(); fn++) {
     face &fp = rp.faces[fn];
 
     if ((!(fp.flags.visible)) || ((fp.flags.not_facing))) {
@@ -2266,7 +2266,7 @@ void RenderRoomUnsorted(int roomnum) {
   room_t *rp = &Rooms[roomnum];
   int fn;
   std::vector<state_limited_element> state_elements;
-  Q_ASSERT(rp->num_faces <= MAX_FACES_PER_ROOM);
+  Q_ASSERT(rp->faces.size() <= MAX_FACES_PER_ROOM);
 
   // Rotate points in this room if need be
   if (rp->wpb_index == -1) {
@@ -2283,7 +2283,7 @@ void RenderRoomUnsorted(int roomnum) {
       RotateRoomPoints(roomnum, rp->verts.data());
     }
 
-    Global_buffer_index += rp->num_verts;
+    Global_buffer_index += rp->verts.size();
   }
 
   // Sort portal faces if this is a fogged room
@@ -2292,7 +2292,7 @@ void RenderRoomUnsorted(int roomnum) {
   }
 
   // Check for visible (non-backfacing) faces, & render
-  for (fn = 0; fn < rp->num_faces; fn++) {
+  for (fn = 0; fn < rp->faces.size(); fn++) {
     face &fp = rp->faces[fn];
     int fogged_portal = 0;
 
@@ -2667,7 +2667,7 @@ void BuildMirroredRoomListSub(int start_room_num, const clip_wnd &wnd) {
   float mirror_dist =
       -(mirror_vec.x() * mirror_norm.x() + mirror_vec.y() * mirror_norm.y() + mirror_vec.z() * mirror_norm.z());
   // Check all the portals for this room
-  for (t = 0; t < rp.num_portals; t++) {
+  for (t = 0; t < rp.portals.size(); t++) {
     const portal &pp = rp.portals[t];
     Q_ASSERT(pp.connected_room);
     int croom = index_to_int(pp.connected_room);
@@ -2795,7 +2795,7 @@ void BuildMirroredRoomList() {
   float mirror_dist =
       -(mirror_vec.x() * mirror_norm.x() + mirror_vec.y() * mirror_norm.y() + mirror_vec.z() * mirror_norm.z());
   int total_points = 0;
-  for (int t = 0; t < rp.num_mirror_faces; t++) {
+  for (int t = 0; t < rp.mirror_faces_list.size(); t++) {
     const face &fp = rp.faces[rp.mirror_faces_list[t]];
     int i;
     Q_ASSERT(total_points + fp.num_verts <= MAX_VERTS_PER_FACE * 2);
@@ -2895,13 +2895,13 @@ void RenderMirroredRoom(int roomnum) {
     restore_index = false;
     rp.wpb_index = Global_buffer_index;
   } else {
-    for (i = 0; i < rp.num_verts; i++)
+    for (i = 0; i < rp.verts.size(); i++)
       mirror_save_points[i] = World_point_buffer[rp.wpb_index + i];
   }
 
   // Find facing faces for this mirror
   face *fp = &rp.faces[0];
-  for (i = 0; i < rp.num_faces; i++, fp++) {
+  for (i = 0; i < rp.faces.size(); i++, fp++) {
     save_flags[i] = fp->flags;
     fp->flags.not_facing = false;
     fp->flags.visible = true;
@@ -2913,7 +2913,7 @@ void RenderMirroredRoom(int roomnum) {
   // This is how far the mirror face is from the normalized plane
   float mirror_dist = -(mirror_vec.x() * norm.x() + mirror_vec.y() * norm.y() + mirror_vec.z() * norm.z());
 
-  for (i = 0; i < rp.num_verts; i++) {
+  for (i = 0; i < rp.verts.size(); i++) {
     const vector3 &vec = rp.verts[i];
     float dist_from_mirror = vec.x() * norm.x() + vec.y() * norm.y() + vec.z() * norm.z() + mirror_dist;
     // dest_vecs contains the point on the other side of the mirror (ie the reflected point)
@@ -2953,11 +2953,11 @@ void RenderMirroredRoom(int roomnum) {
   if (restore_index == false) {
     rp.wpb_index = -1;
   } else {
-    for (i = 0; i < rp.num_verts; i++)
+    for (i = 0; i < rp.verts.size(); i++)
       World_point_buffer[rp.wpb_index + i] = mirror_save_points[i];
   }
   fp = &rp.faces[0];
-  for (i = 0; i < rp.num_faces; i++, fp++)
+  for (i = 0; i < rp.faces.size(); i++, fp++)
     fp->flags = save_flags[i];
 
   RenderRoomObjects(roomnum);
@@ -3333,7 +3333,7 @@ void RenderMirrorRooms() {
     // Make sure it is really ok to render this mirrored room
     if (rp.mirror_face != -1)
       do_mirror_face = true;
-    if (rp.mirror_face >= rp.num_faces)
+    if (rp.mirror_face >= rp.faces.size())
       do_mirror_face = false;
     if (do_mirror_face) {
       if (!(GameTextures[rp.faces[rp.mirror_face].tmap].flags.alpha))
@@ -3342,7 +3342,7 @@ void RenderMirrorRooms() {
     if (do_mirror_face) {
       int on_screen = 0;
       // See if any of the faces that share the mirror texture are on the screen
-      for (int k = 0; k < rp.num_mirror_faces && on_screen == 0; k++) {
+      for (int k = 0; k < rp.mirror_faces_list.size() && on_screen == 0; k++) {
         const face &fp = rp.faces[rp.mirror_faces_list[k]];
 
         // See if this face is on screen
@@ -3379,7 +3379,7 @@ void RenderMirrorRooms() {
     int save_index;
 
     // Now do the same for all faces in this room that share that texture of the mirror
-    for (int k = 0; k < rp.num_faces; k++) {
+    for (int k = 0; k < rp.faces.size(); k++) {
       const face &this_fp = rp.faces[k];
       if (this_fp.tmap == fp.tmap) {
         int t;
@@ -3403,7 +3403,7 @@ void RenderRoomOutline(int roomnum) {
   ddgr_color back_line_color, face_line_color;
   back_line_color = GR_RGB(100, 100, 100);
   face_line_color = GR_RGB(255, 255, 255);
-  for (fn = 0; fn < rp.num_faces; fn++) {
+  for (fn = 0; fn < rp.faces.size(); fn++) {
     const face &fp = rp.faces[fn];
     g3Point p0, p1;
     uint8_t c0, c1;
@@ -3674,12 +3674,11 @@ void ConsolidateMineMirrors() {
     if (!rp.used)
       continue;
     rp.mirror_faces_list.clear();
-    rp.num_mirror_faces = 0;
     if (rp.mirror_face == -1)
       continue;
     // Count the number of faces that have the same texture as the mirror face
     int num_mirror_faces = 0;
-    for (t = 0; t < rp.num_faces; t++) {
+    for (t = 0; t < rp.faces.size(); t++) {
       const face &fp = rp.faces[t];
       if (fp.tmap == rp.faces[rp.mirror_face].tmap)
         num_mirror_faces++;
@@ -3690,10 +3689,9 @@ void ConsolidateMineMirrors() {
       continue;
     }
     rp.mirror_faces_list.resize(num_mirror_faces);
-    rp.num_mirror_faces = num_mirror_faces;
     // Now go through and fill in our list
     int count = 0;
-    for (t = 0; t < rp.num_faces; t++) {
+    for (t = 0; t < rp.faces.size(); t++) {
       const face &fp = rp.faces[t];
       if (fp.tmap == rp.faces[rp.mirror_face].tmap)
         rp.mirror_faces_list[count++] = t;

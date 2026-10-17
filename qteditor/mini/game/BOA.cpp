@@ -338,7 +338,7 @@ index_t BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, 
   end_room = BOA_INDEX(end_room);
 
   if (start_room < Rooms.size()) {
-    for (i = 0; i < Rooms[start_room].num_portals; i++) {
+    for (i = 0; i < Rooms[start_room].portals.size(); i++) {
       if (!BOA_PassablePortal(start_room, i, f_for_sound, f_making_robot_path_invalid_list))
         continue;
 
@@ -357,7 +357,7 @@ index_t BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, 
       }
     }
 
-    if (i >= Rooms[start_room].num_portals)
+    if (i >= Rooms[start_room].portals.size())
       i = -1;
   } else {
     for (i = 0; i < BOA_num_connect[start_room - ((int)Rooms.size() - 1) - 1]; i++) {
@@ -605,7 +605,7 @@ void add_mine_room(int room, int mine, char *checked) {
   Rooms[room].flags.mine = mine;
   checked[room] = 1;
 
-  for (i = 0; i < Rooms[room].num_portals; i++) {
+  for (i = 0; i < Rooms[room].portals.size(); i++) {
     const index_t connected_room = Rooms[room].portals[i].connected_room;
     if (connected_room && !checked[*connected_room]) {
       add_mine_room(*connected_room, mine, checked);
@@ -765,7 +765,7 @@ void compute_terrain_region_info() {
     if ((Rooms[i].used) && Rooms[i].flags.external) {
       int j;
 
-      for (j = 0; j < Rooms[i].num_portals; j++) {
+      for (j = 0; j < Rooms[i].portals.size(); j++) {
         int cell = GetTerrainCellFromPos(Rooms[i].portals[j].path_pnt).value_or(-1);
         Q_ASSERT(cell != -1); // DAJ -1FIX
 
@@ -878,9 +878,9 @@ void compute_costs() {
   for (i = 0; i < Rooms.size(); i++) {
 
     if (Rooms[i].used) {
-      Q_ASSERT(Rooms[i].num_portals <= MAX_PATH_PORTALS);
+      Q_ASSERT(Rooms[i].portals.size() <= MAX_PATH_PORTALS);
 
-      for (j = 0; j < Rooms[i].num_portals; j++) {
+      for (j = 0; j < Rooms[i].portals.size(); j++) {
         if (BOA_PassablePortal(i, j)) {
           ComputeRoomCenter(from_pnt, i);
           // ComputeRoomCenter(&to_pnt, Rooms[i].portals[j].croom);
@@ -893,7 +893,7 @@ void compute_costs() {
         }
       }
     } else {
-      for (j = 0; j < Rooms[i].num_portals; j++) {
+      for (j = 0; j < Rooms[i].portals.size(); j++) {
         BOA_cost_array[i][j] = -1.0f;
       }
     }
@@ -959,7 +959,7 @@ void FindPath(int i, int j) {
       int t_index;
 
       if (cur_node->roomnum < Rooms.size()) {
-        num_portals = Rooms[cur_node->roomnum].num_portals;
+        num_portals = Rooms[cur_node->roomnum].portals.size();
       } else {
         t_index = cur_node->roomnum - ((int)Rooms.size() - 1) - 1;
         num_portals = BOA_num_connect[t_index];
@@ -1020,7 +1020,7 @@ void FindPath(int i, int j) {
       int t_index;
 
       if (cur_node->roomnum < Rooms.size()) {
-        num_portals = Rooms[cur_node->roomnum].num_portals;
+        num_portals = Rooms[cur_node->roomnum].portals.size();
       } else {
         t_index = cur_node->roomnum - ((int)Rooms.size() - 1) - 1;
         num_portals = BOA_num_connect[t_index];
@@ -1204,7 +1204,7 @@ int BOAGetMineChecksum() {
     if (!Rooms[i].used)
       continue;
 
-    for (t = 0; t < rp.num_faces; t++) {
+    for (t = 0; t < rp.faces.size(); t++) {
       const face &fp = rp.faces[t];
 
       for (k = 0; k < fp.num_verts; k++) {
@@ -1227,9 +1227,9 @@ int BOAGetMineChecksum() {
                   (pp.flags.rendered_flythrough ? 2 : 0));
       }
     }
-    total += rp.num_faces << 8;
+    total += rp.faces.size() << 8;
 
-    total += (rp.num_portals) << (i % 16);
+    total += (rp.portals.size()) << (i % 16);
 
     total += i;
   }
@@ -1254,7 +1254,7 @@ int BOAGetRoomChecksum(int i) {
     if (!Rooms[i].used)
       return 0;
 
-    for (t = 0; t < rp.num_faces; t++) {
+    for (t = 0; t < rp.faces.size(); t++) {
       const face &fp = rp.faces[t];
 
       for (k = 0; k < fp.num_verts; k++) {
@@ -1265,9 +1265,9 @@ int BOAGetRoomChecksum(int i) {
 
       total += fp.num_verts << 4;
     }
-    total += rp.num_faces << 8;
+    total += rp.faces.size() << 8;
 
-    total += (rp.num_portals) << (i % 16);
+    total += (rp.portals.size()) << (i % 16);
 
     total += i;
   }
@@ -1286,7 +1286,7 @@ bool IsPathPointValid(int room, const vector3 &pos) {
   if (Rooms[room].flags.external)
     return true;
 
-  for (i = 0; i < Rooms[room].num_portals; i++) {
+  for (i = 0; i < Rooms[room].portals.size(); i++) {
     fvi_info hit_info;
     fvi_query fq;
     fvi_hit_type fate;
@@ -1368,7 +1368,7 @@ void BOA_ComputePathPoints(char *message, int len) {
 
   for (i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used) {
-      for (j = 0; j < Rooms[i].num_portals; j++) {
+      for (j = 0; j < Rooms[i].portals.size(); j++) {
         ComputePortalCenter(Rooms[i].portals[j].path_pnt, i, j);
       }
 
@@ -1607,7 +1607,7 @@ void MakeBOAVisTable(bool from_lighting) {
 
     // Make all the rooms connecting to this room automatically visible
     // Make all the rooms connecting to this room automatically visible
-    for (t = 0; t < rp.num_portals; t++) {
+    for (t = 0; t < rp.portals.size(); t++) {
       const index_t croom = rp.portals[t].connected_room;
 
       if (croom) {
@@ -1621,7 +1621,7 @@ void MakeBOAVisTable(bool from_lighting) {
 
           BOA_Array[i][((int)Rooms.size() - 1) + 1] .vis = true;
 
-          for (xxx = 0; xxx < Rooms[*croom].num_portals; xxx++) {
+          for (xxx = 0; xxx < Rooms[*croom].portals.size(); xxx++) {
             int cell = GetTerrainCellFromPos(Rooms[*croom].portals[xxx].path_pnt).value_or(-1);
             Q_ASSERT(cell != -1); // DAJ -1FIX
             int region = Terrain_seg[cell].flags.region;
@@ -1641,11 +1641,11 @@ void MakeBOAVisTable(bool from_lighting) {
     }
 
     // Now push all of the connecting rooms portals onto the stack
-    for (t = 0; t < rp.num_portals; t++) {
+    for (t = 0; t < rp.portals.size(); t++) {
       const index_t roomnum = rp.portals[t].connected_room;
       if (!roomnum)
         continue;
-      for (j = 0; j < Rooms[*roomnum].num_portals; j++) {
+      for (j = 0; j < Rooms[*roomnum].portals.size(); j++) {
         const index_t croom = Rooms[*roomnum].portals[j].connected_room;
 
         if (croom && !already_checked[*croom]) {
@@ -1671,7 +1671,7 @@ void MakeBOAVisTable(bool from_lighting) {
 
           // if this portal can be seen, add all its portals to the stack
           // and then set this room to be visible
-          for (int tk = 0; tk < Rooms[check_room].num_portals; tk++) {
+          for (int tk = 0; tk < Rooms[check_room].portals.size(); tk++) {
             const index_t croom = Rooms[check_room].portals[tk].connected_room;
             if (croom) {
               vis_stack[stack_count] = *croom;
@@ -1686,7 +1686,7 @@ void MakeBOAVisTable(bool from_lighting) {
 
       int done = 0;
 
-      for (t = 0; t < rp.num_portals && !done; t++) {
+      for (t = 0; t < rp.portals.size() && !done; t++) {
         const face &src_fp = rp.faces[rp.portals[t].portal_face];
         float src_width, src_height;
         vector3 src_upper_left, src_center;
@@ -1719,7 +1719,7 @@ void MakeBOAVisTable(bool from_lighting) {
           src_matrix.uvec *= num;
         }
 
-        for (j = 0; j < Rooms[check_room].num_portals && !done; j++) {
+        for (j = 0; j < Rooms[check_room].portals.size() && !done; j++) {
           const face &dest_fp = Rooms[check_room].faces[Rooms[check_room].portals[j].portal_face];
           float dest_width, dest_height;
           vector3 dest_upper_left, dest_center;
@@ -1817,7 +1817,7 @@ void MakeBOAVisTable(bool from_lighting) {
                   if (fate == fvi_hit_type::none) {
                     // if this portal can be seen, add all its portals to the stack
                     // and then set this room to be visible
-                    for (int k = 0; k < Rooms[check_room].num_portals; k++) {
+                    for (int k = 0; k < Rooms[check_room].portals.size(); k++) {
                       const index_t croom = Rooms[check_room].portals[k].connected_room;
                       if (croom) {
                         vis_stack[stack_count] = *croom;
@@ -1835,7 +1835,7 @@ void MakeBOAVisTable(bool from_lighting) {
 
                       BOA_Array[i][((int)Rooms.size() - 1) + 1] .vis = true;
 
-                      for (xxx = 0; xxx < Rooms[check_room].num_portals; xxx++) {
+                      for (xxx = 0; xxx < Rooms[check_room].portals.size(); xxx++) {
                         int cell = GetTerrainCellFromPos(Rooms[check_room].portals[xxx].path_pnt).value_or(-1);
                         Q_ASSERT(cell != -1); // DAJ -1FIX
                         int region = Terrain_seg[cell].flags.region;
@@ -1938,7 +1938,7 @@ void find_small_portals() {
 
   for (i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used) {
-      for (j = 0; j < Rooms[i].num_portals; j++) {
+      for (j = 0; j < Rooms[i].portals.size(); j++) {
         const face &fp = Rooms[i].faces[Rooms[i].portals[j].portal_face];
 
         vector3 upper_left;
@@ -2140,7 +2140,7 @@ void ComputeAABB(bool f_full) {
         if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
           continue;
 
-        r_struct_list[i].resize(Rooms[i].num_faces);
+        r_struct_list[i].resize(Rooms[i].faces.size());
       }
     }
 
@@ -2158,7 +2158,7 @@ void ComputeAABB(bool f_full) {
         if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
           continue;
 
-        for (j = 0; j < Rooms[i].num_faces; j++) {
+        for (j = 0; j < Rooms[i].faces.size(); j++) {
           vector3 face_min;
           vector3 face_max;
 
@@ -2188,7 +2188,7 @@ void ComputeAABB(bool f_full) {
           average_y += ((face_min.y() + face_max.y()) / 2);
         }
 
-        average_y /= Rooms[i].num_faces;
+        average_y /= Rooms[i].faces.size();
 
         // Do the rooms now
 
@@ -2197,7 +2197,7 @@ void ComputeAABB(bool f_full) {
         rp.max_xyz.x() = rp.max_xyz.y() = rp.max_xyz.z() = -9999999.0f;
         rp.min_xyz.x() = rp.min_xyz.y() = rp.min_xyz.z() = 9999999.0f;
 
-        for (int t = 0; t < rp.num_faces; t++) {
+        for (int t = 0; t < rp.faces.size(); t++) {
           face &fp = rp.faces[t];
 
           if (fp.max_xyz.x() > rp.max_xyz.x())
@@ -2231,19 +2231,19 @@ void ComputeAABB(bool f_full) {
         if (BOA_AABB_ROOM_checksum[i] != 0 && BOA_AABB_ROOM_checksum[i] == computed_room_check[i])
           continue;
 
-        std::vector<int16_t> nfaces(rp.num_faces, 0);
-        std::vector<bool> used(rp.num_faces, false);
+        std::vector<int16_t> nfaces(rp.faces.size(), 0);
+        std::vector<bool> used(rp.faces.size(), false);
         int n_new;
 
 
       next_struct:
 
-        for (count1 = 0; count1 < rp.num_faces; count1++) {
+        for (count1 = 0; count1 < rp.faces.size(); count1++) {
           if (!used[count1])
             break;
         }
 
-        if (count1 >= rp.num_faces)
+        if (count1 >= rp.faces.size())
           goto done;
 
         num_struct++;
@@ -2261,7 +2261,7 @@ void ComputeAABB(bool f_full) {
           for (count1 = 0; count1 < rp.faces[seed].num_verts; count1++) {
             int c_vert = rp.faces[seed].face_verts[count1];
 
-            for (count2 = 0; count2 < rp.num_faces; count2++) {
+            for (count2 = 0; count2 < rp.faces.size(); count2++) {
               if (used[count2] == false) {
                 for (count3 = 0; count3 < rp.faces[count2].num_verts; count3++) {
                   if (c_vert == rp.faces[count2].face_verts[count3]) {
@@ -2310,7 +2310,7 @@ void ComputeAABB(bool f_full) {
           s_max_xyz[count].x() = s_max_xyz[count].y() = s_max_xyz[count].z() = -9999999.0f;
           s_min_xyz[count].x() = s_min_xyz[count].y() = s_min_xyz[count].z() = 9999999.0f;
 
-          for (int t = 0; t < rp.num_faces; t++) {
+          for (int t = 0; t < rp.faces.size(); t++) {
             if (r_struct_list[i][t] != count)
               continue;
 
@@ -2351,7 +2351,7 @@ void ComputeAABB(bool f_full) {
         }
 
         if (best != 0) {
-          for (count = 0; count < rp.num_faces; count++) {
+          for (count = 0; count < rp.faces.size(); count++) {
             if (r_struct_list[i][count] == 0) {
               r_struct_list[i][count] = best;
             } else if (r_struct_list[i][count] == best) {
@@ -2389,7 +2389,7 @@ void ComputeAABB(bool f_full) {
         // Temporary allocation sized to the fixed MAX_REGIONS_PER_ROOM cap,
         // mirroring the original engine's malloc(MAX_REGIONS_PER_ROOM).
         rp.num_bbf_regions = 27 + num_structs_per_room[i] - 1;
-        rp.bbf_list.assign(MAX_REGIONS_PER_ROOM, std::vector<int16_t>(rp.num_faces));
+        rp.bbf_list.assign(MAX_REGIONS_PER_ROOM, std::vector<int16_t>(rp.faces.size()));
         rp.num_bbf.assign(MAX_REGIONS_PER_ROOM, 0);
         rp.bbf_list_min_xyz.assign(MAX_REGIONS_PER_ROOM, vector3{});
         rp.bbf_list_max_xyz.assign(MAX_REGIONS_PER_ROOM, vector3{});
@@ -2444,7 +2444,7 @@ void ComputeAABB(bool f_full) {
           rp.num_bbf[count] = 0;
         }
 
-        for (count = 0; count < rp.num_faces; count++) {
+        for (count = 0; count < rp.faces.size(); count++) {
           const face &fp = rp.faces[count];
           bool f_part = false;
           bool list[6];
@@ -2932,7 +2932,7 @@ void ComputeAABB(bool f_full) {
       rp.max_xyz.x() = rp.max_xyz.y() = rp.max_xyz.z() = -9999999.0f;
       rp.min_xyz.x() = rp.min_xyz.y() = rp.min_xyz.z() = 9999999.0f;
 
-      for (int t = 0; t < rp.num_faces; t++) {
+      for (int t = 0; t < rp.faces.size(); t++) {
         face &fp = rp.faces[t];
 
         if (fp.max_xyz.x() > rp.max_xyz.x())

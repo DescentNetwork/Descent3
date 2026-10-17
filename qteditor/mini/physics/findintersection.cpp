@@ -2247,7 +2247,7 @@ int fvi_QuickDistObjectList(const vector3 &pos, int init_room_index, float rad, 
           goto skip_room_prop;
       }
 
-      for (x = 0; x < cur_room->num_portals; x++) {
+      for (x = 0; x < cur_room->portals.size(); x++) {
         int portal_num;
         int connect_room;
 
@@ -2556,7 +2556,7 @@ void make_trigger_face_list(int last_sim_faces) {
   if (!ROOMNUM_OUTSIDE(fvi_query_ptr->startroom) && !ROOMNUM_OUTSIDE(fvi_hit_data_ptr->hit_room)) {
     int i;
 
-    for (i = 0; i < Rooms[fvi_query_ptr->startroom].num_portals; i++) {
+    for (i = 0; i < Rooms[fvi_query_ptr->startroom].portals.size(); i++) {
       if (Rooms[fvi_query_ptr->startroom].portals[i].connected_room == fvi_hit_data_ptr->hit_room) {
         int j;
         bool f_found = false;
@@ -4487,7 +4487,7 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
     int face_info;
     int j; //, k;
 
-    for (j = 0; j < cur_room.num_portals; j++) {
+    for (j = 0; j < cur_room.portals.size(); j++) {
       i = cur_room.portals[j].portal_face;
 
       portal_num = cur_room.faces[i].portal_num;
@@ -4758,7 +4758,7 @@ fvi_hit_type fvi_room(int room_index, int from_portal, int room_obj) {
 
   if (!(fvi_query_ptr->flags.solid_portals)) {
     // Accounts for doors that leave a
-    for (i = 0; i < cur_room.num_portals; i++) {
+    for (i = 0; i < cur_room.portals.size(); i++) {
       const index_t c_room = cur_room.portals[i].connected_room;
 
       if (c_room && (*c_room > 0) && Rooms[*c_room].flags.door) {

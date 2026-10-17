@@ -35,7 +35,7 @@ float levelCeiling() {
     const room_t &rp = Rooms[r];
     if (!rp.used)
       continue;
-    for (int v = 0; v < rp.num_verts; v++) {
+    for (int v = 0; v < rp.verts.size(); v++) {
       if (rp.verts[v].y() > maxy) {
         maxy = rp.verts[v].y();
         any = true;
@@ -80,7 +80,7 @@ void LevelKeypad::onCeilingEdited() {
       room_t &rp = Rooms[r];
       if (!rp.used)
         continue;
-      for (int v = 0; v < rp.num_verts; v++)
+      for (int v = 0; v < rp.verts.size(); v++)
         rp.verts[v].y() += delta;
     }
     app.World_changed = true;
