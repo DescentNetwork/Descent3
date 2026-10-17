@@ -965,7 +965,7 @@ void MainWindow::onCenterViewOnCube() {
 void MainWindow::onCenterViewOnObject() {
   // Win32 ID_VIEW_CENTERONOBJECT -> CMainFrame::OnViewCenterOnObject
   // (editor/MainFrm.cpp:2229) -> SetWireframeView(&Objects[cur].pos).
-  if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
+  if (!app.Cur_object_index || static_cast<int32_t>(*app.Cur_object_index) > Highest_object_index)
     return;
   if (Objects[*app.Cur_object_index].type == object_type_e::none)
     return;
@@ -1013,7 +1013,7 @@ void MainWindow::onMoveCameraToSelectedFace() {
 void MainWindow::onMoveCameraToCurrentObject() {
   if (Viewer_object == nullptr)
     return;
-  if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
+  if (!app.Cur_object_index || static_cast<int32_t>(*app.Cur_object_index) > Highest_object_index)
     return;
   object &objp = Objects[*app.Cur_object_index];
   if (objp.type == object_type_e::none)
@@ -1157,7 +1157,7 @@ int MainWindow::onPlaceCameraAtViewer() {
 // "sees through" the camera. Sets Viewer_object->pos/orient/roomnum to
 // the camera's and bumps app.Mine_changed.
 void MainWindow::onSetViewerFromCamera() {
-  if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
+  if (!app.Cur_object_index || static_cast<int32_t>(*app.Cur_object_index) > Highest_object_index)
     return;
   object &cam = Objects[*app.Cur_object_index];
   if (cam.type != object_type_e::camera)
@@ -1181,7 +1181,7 @@ void MainWindow::onSetViewerFromCamera() {
 // Move the camera's pose onto the viewer's pose so the camera becomes
 // a portable copy of where the user is currently looking.
 void MainWindow::onSetCameraFromViewer() {
-  if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
+  if (!app.Cur_object_index || static_cast<int32_t>(*app.Cur_object_index) > Highest_object_index)
     return;
   object& cam = Objects[*app.Cur_object_index];
   if (cam.type != object_type_e::camera)
@@ -1199,7 +1199,7 @@ void MainWindow::onSetCameraFromViewer() {
 // Delete the currently-selected object (index_to_int(app.Cur_object_index)). After the
 // call, index_to_int(app.Cur_object_index) is -1 and app.Mine_changed/app.New_mine are set.
 void MainWindow::onDeleteCurrentObject() {
-  if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
+  if (!app.Cur_object_index || static_cast<int32_t>(*app.Cur_object_index) > Highest_object_index)
     return;
   if (Objects[*app.Cur_object_index].type == object_type_e::none)
     return;
@@ -1219,7 +1219,7 @@ void MainWindow::onDeleteCurrentObject() {
 }
 
 void MainWindow::onObjectRename() {
-  if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
+  if (!app.Cur_object_index || static_cast<int32_t>(*app.Cur_object_index) > Highest_object_index)
     return;
   object &obj = Objects[*app.Cur_object_index];
   if (obj.type == object_type_e::none)
@@ -1526,7 +1526,7 @@ static object deserializeObject(const QByteArray &data) {
 }
 
 void MainWindow::onCopyObjectToClipboard() {
-  if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
+  if (!app.Cur_object_index || static_cast<int32_t>(*app.Cur_object_index) > Highest_object_index)
     return;
   if (Objects[*app.Cur_object_index].type == object_type_e::none)
     return;
@@ -1536,7 +1536,7 @@ void MainWindow::onCopyObjectToClipboard() {
 }
 
 void MainWindow::onCutObjectToClipboard() {
-  if (!app.Cur_object_index || index_to_int(app.Cur_object_index) > Highest_object_index)
+  if (!app.Cur_object_index || static_cast<int32_t>(*app.Cur_object_index) > Highest_object_index)
     return;
   if (Objects[*app.Cur_object_index].type == object_type_e::none)
     return;
@@ -1618,7 +1618,7 @@ bool MainWindow::onAddRoom()
     std::fprintf(stderr, "[room_ops] AddRoom: no current room\n");
     return false;
   }
-  if (!app.current.face || index_to_int(app.current.face) >= Rooms[*app.current.room].num_faces) {
+  if (!app.current.face || static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].num_faces) {
     std::fprintf(stderr, "[room_ops] AddRoom: invalid current face (%d)\n",
                  index_to_int(app.current.face));
     return false;
@@ -1724,7 +1724,7 @@ bool MainWindow::onDeleteRoom() {
   const int slot = index_to_int(app.current.room);
 
   // Clear any marked-room alias before we tear down the slot.
-  if (app.marked.room == index_to_int(app.current.room))
+  if (app.marked.room == app.current.room)
     app.marked.room.reset();
 
   DestroyRoom(slot);
@@ -1824,20 +1824,20 @@ bool MainWindow::onSaveCurrentRoom() {
 }
 
 void MainWindow::onRoomDeleteFace() {
-  if (!app.current.room || !app.current.face || index_to_int(app.current.face) >= Rooms[*app.current.room].num_faces)
+  if (!app.current.room || !app.current.face || static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].num_faces)
     return;
   if (Rooms[*app.current.room].faces[*app.current.face].portal_num != -1) {
     onRoomDeletePortal();
     return;
   }
   DeleteRoomFace(index_to_int(app.current.room), index_to_int(app.current.face));
-  if (index_to_int(app.current.face) >= Rooms[*app.current.room].num_faces)
+  if (static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].num_faces)
     app.current.face = index_t{static_cast<uint32_t>(Rooms[*app.current.room].num_faces - 1)};
   app.Mine_changed = true;
 }
 
 void MainWindow::onRoomDeletePortal() {
-  if (!app.current.room || !app.current.face || index_to_int(app.current.face) >= Rooms[*app.current.room].num_faces)
+  if (!app.current.room || !app.current.face || static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].num_faces)
     return;
   int pn = Rooms[*app.current.room].faces[*app.current.face].portal_num;
   if (pn == -1) {
@@ -1851,11 +1851,11 @@ void MainWindow::onRoomDeletePortal() {
 void MainWindow::onRoomCombine() {
   if (!app.current.room)
     return;
-  if (index_to_int(app.marked.room) != index_to_int(app.current.room)) {
+  if (app.marked.room != app.current.room) {
     EditorStatus("Mark and current must be the same room to combine.");
     return;
   }
-  if (app.current.face == index_to_int(app.marked.face)) {
+  if (app.current.face == app.marked.face) {
     EditorStatus("Marked and current face must be different.");
     return;
   }
