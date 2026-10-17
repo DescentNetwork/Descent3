@@ -3956,11 +3956,11 @@ private slots:
     QVERIFY(out.fire_sound_name[0][1].empty());
     QCOMPARE(out.image_name, page.image_name);
 
-    const int loaded_model = index_to_int(Object_info[slot].render_handle);
+    const index_t loaded_model = Object_info[slot].render_handle;
     Object_info[slot] = saved;
     Object_info.pop_back();
-    if (loaded_model >= 0)
-      Poly_models[loaded_model] = poly_model{};
+    if (loaded_model)
+      Poly_models[*loaded_model] = poly_model{};
   }
 
   // Verifies an unresolved sound name and an "INVALID NAME" placeholder both
@@ -3991,11 +3991,11 @@ private slots:
 
     QVERIFY(!mng_AssignGenericPageToObjInfo(page, std::nullopt));
 
-    const int loaded_model = index_to_int(Object_info[slot].render_handle);
+    const index_t loaded_model = Object_info[slot].render_handle;
     Object_info[slot] = saved;
     Object_info.pop_back();
-    if (loaded_model >= 0)
-      Poly_models[loaded_model] = poly_model{};
+    if (loaded_model)
+      Poly_models[*loaded_model] = poly_model{};
   }
 
   // Verifies the OGF/IFF + TGA bitmap decoder populates GameBitmaps[] from the

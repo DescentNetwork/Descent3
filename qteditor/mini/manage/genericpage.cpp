@@ -465,9 +465,9 @@ static bool mng_PageNameUsable(const std::string &name) {
   return !name.empty() && !match(name, "INVALID NAME");
 }
 
-static std::string mng_ModelNameOf(int handle) {
-  if (handle >= 0 && handle < MAX_POLY_MODELS)
-    return Poly_models[handle].name;
+static std::string mng_ModelNameOf(index_t handle) {
+  if (handle && *handle < MAX_POLY_MODELS)
+    return Poly_models[*handle].name;
   return {};
 }
 
@@ -670,9 +670,9 @@ void mng_AssignObjInfoToGenericPage(index_t n, mngs_generic_page &genericpage) {
   if (!obj.ai_info.empty())
     genericpage.ai_info = obj.ai_info[0];
 
-  genericpage.image_name = mng_ModelNameOf(index_to_int(obj.render_handle));
-  genericpage.med_image_name = mng_ModelNameOf(index_to_int(obj.med_render_handle));
-  genericpage.lo_image_name = mng_ModelNameOf(index_to_int(obj.lo_render_handle));
+  genericpage.image_name = mng_ModelNameOf(obj.render_handle);
+  genericpage.med_image_name = mng_ModelNameOf(obj.med_render_handle);
+  genericpage.lo_image_name = mng_ModelNameOf(obj.lo_render_handle);
 
   for (size_t i = 0; i < generic_sound::count; i++) {
     if (obj.sounds[i] && *obj.sounds[i] < Sounds.size())

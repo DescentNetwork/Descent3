@@ -359,7 +359,7 @@ void DrawPolygonModel(vector3 &pos, const matrix &orient, int model_num, float *
 int InitModels();
 
 // Frees polymodel located in index of Poly_models array
-void FreePolyModel(int index);
+void FreePolyModel(index_t index);
 
 // Given an actual keyframe number, returns the normalized (0 to 1) position of that
 // keyframe.  Handle is an index into the Poly_models array
@@ -383,7 +383,7 @@ void SetNormalizedTimeAnim(float norm_anim_frame, float *normalized_time, const 
 void WBClearInfo(poly_model &pm);
 
 // Computes the size of a polymodel.
-float ComputeDefaultSize(object_type_e type, int handle, optref<float> size_out);
+float ComputeDefaultSize(object_type_e type, index_t handle, optref<float> size_out);
 
 // Returns the total number of faces in a model
 int CountFacesInPolymodel(const poly_model &pm);
@@ -405,10 +405,10 @@ int IsNonRenderableSubmodel(const poly_model &pm, int submodelnum);
 void SetPolymodelEffect(const polymodel_effect &);
 
 // Pages in a polymodel if it is not already in memory
-void PageInPolymodel(int polynum, std::optional<object_type_e> type = std::nullopt, optref<float> size_out = std::nullopt);
+void PageInPolymodel(index_t polynum, std::optional<object_type_e> type = std::nullopt, optref<float> size_out = std::nullopt);
 
 // Gets a pointer to a polymodel.  Pages it in if neccessary
-poly_model *GetPolymodelPointer(int polynum);
+poly_model *GetPolymodelPointer(index_t polynum);
 
 // Frees all the polymodel data, but doesn't free the actual polymodel itself
 void FreePolymodelData(int i);

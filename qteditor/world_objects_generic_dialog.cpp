@@ -346,7 +346,7 @@ void WorldObjectsGenericDialog::updateDialog() {
   enableDisableAll(true);
   auto oi = data();
 
-  PageInPolymodel(index_to_int(oi->render_handle));
+  PageInPolymodel(oi->render_handle);
   {
     QLineEdit *edit = ui->IDC_GENERIC_MODEL_NAME_EDIT;
     if (m_lod == 0)
@@ -382,7 +382,7 @@ void WorldObjectsGenericDialog::updateDialog() {
   if (!poly_handle || *poly_handle >= MAX_POLY_MODELS || !Poly_models[*poly_handle].used)
     ui->IDC_NUM_POLYS->setText("Num polys: NA");
   else {
-    PageInPolymodel(index_to_int(poly_handle));
+    PageInPolymodel(poly_handle);
     ui->IDC_NUM_POLYS->setText(QString("Num polys: %1").arg(CountFacesInPolymodel(Poly_models[*poly_handle])));
   }
 
@@ -896,7 +896,7 @@ void WorldObjectsGenericDialog::onWeaponInfo() {
   {
     extern void editRobotWeapons(otype_wb_info *wb, poly_model *pm, QWidget *parent);
     editRobotWeapons(d->static_wb.data(),
-                     GetPolymodelPointer(*d->render_handle), this);
+                     GetPolymodelPointer(d->render_handle), this);
   }
 }
 
@@ -907,7 +907,7 @@ void WorldObjectsGenericDialog::onLight() {
 
 void WorldObjectsGenericDialog::onDefaultRadius() {
   if (data())
-    ComputeDefaultSize(data()->type, index_to_int(data()->render_handle), data()->size), updateDialog();
+    ComputeDefaultSize(data()->type, data()->render_handle, data()->size), updateDialog();
 }
 
 void WorldObjectsGenericDialog::onSelScript() {

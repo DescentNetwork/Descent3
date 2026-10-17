@@ -343,7 +343,7 @@ int LoadSoundFile(const char *name, float vol, bool b) { PRINT_STUB(__FUNCTION__
 //float ComputeDefaultSize(int type, int handle, float *size) { PRINT_STUB(__FUNCTION__); return 0; }
 //void SetModelAnglesAndPos(poly_model *pm, float *anim, unsigned int flags) { PRINT_STUB(__FUNCTION__); }
 //int IsNonRenderableSubmodel(poly_model *pm, int index) { PRINT_STUB(__FUNCTION__); return 0; }
-void ChangeOldModelsForObjects(int a, int b) { PRINT_STUB(__FUNCTION__); }
+void ChangeOldModelsForObjects(index_t a, index_t b) { PRINT_STUB(__FUNCTION__); }
 //std::filesystem::path ChangePolyModelName(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return name; }
 //int FindPolyModelName(const std::filesystem::path& name) { PRINT_STUB(__FUNCTION__); return -1; }
 //void FreePolyModel(int n) { PRINT_STUB(__FUNCTION__); }

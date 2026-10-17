@@ -1088,7 +1088,7 @@ int RenderPolygonModel(poly_model &pm, uint32_t f_render_sub) {
   return 1;
 }
 
-float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3> offset_ptr, bool f_use_all_frames) {
+float ComputeDefaultSizeFunc(index_t handle, optref<float> size_ptr, optref<vector3> offset_ptr, bool f_use_all_frames) {
   matrix m;
   float normalized_time[MAX_SUBOBJECTS];
   int model_index, sm_vert_index, frame_index;
@@ -1242,16 +1242,18 @@ float ComputeDefaultSizeFunc(int handle, optref<float> size_ptr, optref<vector3>
   return size;
 }
 
-float ComputeDefaultSize(object_type_e type, int handle, optref<float> size_ptr) {
+float ComputeDefaultSize(object_type_e type, index_t handle, optref<float> size_ptr) {
+  if (!handle || *handle >= MAX_POLY_MODELS)
+    return 0.0f;
   float size = ComputeDefaultSizeFunc(handle, size_ptr, std::nullopt, true);
 
   if (type != object_type_e::weapon && type != object_type_e::debris && type != object_type_e::powerup) {
-    ComputeDefaultSizeFunc(handle, Poly_models[handle].wall_size, Poly_models[handle].wall_size_offset, false);
-    ComputeDefaultSizeFunc(handle, Poly_models[handle].anim_size, Poly_models[handle].anim_size_offset, true);
+    ComputeDefaultSizeFunc(handle, Poly_models[*handle].wall_size, Poly_models[*handle].wall_size_offset, false);
+    ComputeDefaultSizeFunc(handle, Poly_models[*handle].anim_size, Poly_models[*handle].anim_size_offset, true);
 
     if (type == object_type_e::player) {
-      Poly_models[handle].anim_size *= PLAYER_SIZE_SCALAR;
-      Poly_models[handle].anim_size_offset = vector3{};
+      Poly_models[*handle].anim_size *= PLAYER_SIZE_SCALAR;
+      Poly_models[*handle].anim_size_offset = vector3{};
     }
   } else {
     if (type == object_type_e::powerup) {
@@ -1259,14 +1261,14 @@ float ComputeDefaultSize(object_type_e type, int handle, optref<float> size_ptr)
       *size_ptr *= 2.0f;
     }
 
-    Poly_models[handle].wall_size = size;
-    Poly_models[handle].wall_size_offset = vector3{};
+    Poly_models[*handle].wall_size = size;
+    Poly_models[*handle].wall_size_offset = vector3{};
 
-    Poly_models[handle].anim_size = size;
-    Poly_models[handle].anim_size_offset = vector3{};
+    Poly_models[*handle].anim_size = size;
+    Poly_models[*handle].anim_size_offset = vector3{};
   }
 
-  Poly_models[handle].flags.size_computed = true;
+  Poly_models[*handle].flags.size_computed = true;
 
   return size;
 }

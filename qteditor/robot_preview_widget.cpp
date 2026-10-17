@@ -65,16 +65,16 @@ void RobotPreviewWidget::paintGL() {
   // model renderer (which asserts on pm->used).
   if (!app.current_robot || *app.current_robot >= MAX_OBJECT_TYPES)
     return;
-  const int pmHandle = index_to_int(Object_info[*app.current_robot].render_handle);
-  if (pmHandle < 0 || pmHandle >= MAX_POLY_MODELS)
+  const index_t pmHandle = Object_info[*app.current_robot].render_handle;
+  if (!pmHandle || *pmHandle >= MAX_POLY_MODELS)
     return;
-  if (!Poly_models[pmHandle].used)
+  if (!Poly_models[*pmHandle].used)
     return;
 
   poly_model *pm = GetPolymodelPointer(pmHandle);
   if (pm == nullptr || !pm->used)
     return;
-  m_lastModel = pmHandle;
+  m_lastModel = *pmHandle;
 
   // Set an orthogonal projection so the model is drawn in a 2D-style viewport,
   // matching how the model renderer projects into Window_*.
@@ -104,6 +104,6 @@ void RobotPreviewWidget::paintGL() {
 
   vector3 zeroVector{};
   g3_StartFrame(viewVector, idMatrix, D3_DEFAULT_ZOOM);
-  DrawPolygonModel(zeroVector, rotMatrix, pmHandle, normTime, 0, 0.9f, 0.9f, 0.9f);
+  DrawPolygonModel(zeroVector, rotMatrix, *pmHandle, normTime, 0, 0.9f, 0.9f, 0.9f);
   g3_EndFrame();
 }

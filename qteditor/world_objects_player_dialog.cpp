@@ -459,14 +459,14 @@ void WorldObjectsPlayerDialog::onPshipLoadModel() {
       return;
 
     const std::filesystem::path pathFs(pathname.toStdString());
-    const int img_handle = static_cast<int>(LoadPolyModel(pathFs, 0).value_or(-1));
-    if (img_handle < 0) {
+    const index_t img_handle = LoadPolyModel(pathFs, 0);
+    if (!img_handle) {
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't open that animation/model file.");
       return;
     }
 
     if (m_lod == 0) {
-      ChangeOldModelsForObjects(index_to_int(s->model_handle), img_handle);
+      ChangeOldModelsForObjects(s->model_handle, img_handle);
       if (s->model_handle >= 0 && s->model_handle < MAX_POLY_MODELS && Poly_models[*s->model_handle].used)
         FreePolyModel(*s->model_handle);
       s->model_handle = img_handle;
@@ -484,7 +484,7 @@ void WorldObjectsPlayerDialog::onPshipLoadModel() {
       WBClearInfo(s->static_wb.data());
     }
 
-    std::filesystem::path curname = LocalModelsDir / Poly_models[img_handle].name;
+    std::filesystem::path curname = LocalModelsDir / Poly_models[*img_handle].name;
     std::filesystem::copy(pathFs, (curname), std::filesystem::copy_options::overwrite_existing);
     updateDialog();
   }

@@ -662,6 +662,6 @@ void DrawObject(object *obj);
 // Remap all the static object ids (objects that must have a specific index) into their assigned slots.
 void RemapStaticIDs();
 
-void ChangeOldModelsForObjects(int old_handle, int new_handle);
+void ChangeOldModelsForObjects(index_t old_handle, index_t new_handle);
 
 #endif

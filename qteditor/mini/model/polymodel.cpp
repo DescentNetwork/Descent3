@@ -792,18 +792,20 @@ void FreePolymodelData(int i) {
 }
 
 // Frees polymodel located in index of Poly_models array
-void FreePolyModel(int i) {
-  Q_ASSERT(Poly_models[i].used > 0);
+void FreePolyModel(index_t i) {
+  if (!i || *i >= MAX_POLY_MODELS)
+    return;
+  Q_ASSERT(Poly_models[*i].used > 0);
 
-  Poly_models[i].used--;
+  Poly_models[*i].used--;
 
-  if (Poly_models[i].used)
+  if (Poly_models[*i].used)
     return;
 
-  FreePolymodelData(i);
+  FreePolymodelData(*i);
 
-  Poly_models[i].used = 0;
-  Poly_models[i].flags.not_resident = true;
+  Poly_models[*i].used = 0;
+  Poly_models[*i].flags.not_resident = true;
 }
 
 // ---- Byte-stream reader helpers (replace the CFILE cf_Read* family) ----
@@ -2043,70 +2045,74 @@ if (!(Poly_models[polynum].flags.not_resident)) {
 }
 
 // Pages in a polymodel if it is not already in memory
-void PageInPolymodel(int polynum, std::optional<object_type_e> type, optref<float> size_out) {
-  if (!(Poly_models[polynum].flags.not_resident)) {
-    if (!(Poly_models[polynum].flags.size_computed))
+void PageInPolymodel(index_t polynum, std::optional<object_type_e> type, optref<float> size_out) {
+  if (!polynum || *polynum >= MAX_POLY_MODELS)
+    return;
+  if (!(Poly_models[*polynum].flags.not_resident)) {
+    if (!(Poly_models[*polynum].flags.size_computed))
       if (type) {
-        ComputeDefaultSize(*type, polynum, size_out);
+        ComputeDefaultSize(*type, *polynum, size_out);
       }
     return;
   }
 
-  LOG_DEBUG("Paging in polymodel %s.", Poly_models[polynum].name);
+  LOG_DEBUG("Paging in polymodel %s.", Poly_models[*polynum].name);
 
   posix_istream infile;
-  if (!infile.open(Poly_models[polynum].name, std::ios_base::in | std::ios_base::binary))
+  if (!infile.open(Poly_models[*polynum].name, std::ios_base::in | std::ios_base::binary))
   {
     // due to a bug in some 3rd party tablefile editors, full paths might
     // have been used when they shouldn't have been
     bool ok = false;
-    if(Poly_models[polynum].name.contains('\\') ||
-       Poly_models[polynum].name.contains('/'))
+    if(Poly_models[*polynum].name.contains('\\') ||
+       Poly_models[*polynum].name.contains('/'))
     {
-      Poly_models[polynum].name = std::filesystem::path(Poly_models[polynum].name).filename();
-      ok = infile.open(Poly_models[polynum].name, std::ios_base::in | std::ios_base::binary);
+      Poly_models[*polynum].name = std::filesystem::path(Poly_models[*polynum].name).filename();
+      ok = infile.open(Poly_models[*polynum].name, std::ios_base::in | std::ios_base::binary);
     }
 
     if(!ok)
     {
-      LOG_ERROR("Failed to page in %s.", Poly_models[polynum].name);
+      LOG_ERROR("Failed to page in %s.", Poly_models[*polynum].name);
       return;
     }
   }
 
   //	Q_ASSERT(infile);
 
-  bool ret = ReadNewModelFile(polynum, infile);
+  bool ret = ReadNewModelFile(*polynum, infile);
 
   infile.close();
   Q_ASSERT(ret);
 
   // See if textures need to be remapped
   int remap = 0;
-  for (int t = 0; t < Poly_models[polynum].n_textures; t++)
-    if (Poly_models[polynum].textures[t] == 0) // is there a bad texture?
+  for (int t = 0; t < Poly_models[*polynum].n_textures; t++)
+    if (Poly_models[*polynum].textures[t] == 0) // is there a bad texture?
       remap = 1;
 
   if (remap == 1) {
     // remap the damn textures
-    LOG_DEBUG("Remapping model textures for model %s.", Poly_models[polynum].name);
+    LOG_DEBUG("Remapping model textures for model %s.", Poly_models[*polynum].name);
     posix_istream tfile;
-    if (tfile.open(Poly_models[polynum].name, std::ios_base::in | std::ios_base::binary))
-      ReloadModelTextures(polynum, tfile);
+    if (tfile.open(Poly_models[*polynum].name, std::ios_base::in | std::ios_base::binary))
+      ReloadModelTextures(*polynum, tfile);
     tfile.close();
   }
 
   if (type) {
-    ComputeDefaultSize(*type, polynum, size_out);
+    ComputeDefaultSize(*type, *polynum, size_out);
   }
 }
 
 // Gets a pointer to a polymodel.  Pages it in if neccessary
-poly_model *GetPolymodelPointer(int polynum) {
-  if (Poly_models[polynum].flags.not_resident)
+poly_model *GetPolymodelPointer(index_t polynum) {
+  if (!polynum || *polynum >= MAX_POLY_MODELS)
+    return nullptr;
+  if (Poly_models[*polynum].flags.not_resident)
     PageInPolymodel(polynum);
 
-  return (&Poly_models[polynum]);
+  return (&Poly_models[*polynum]);
 }
 
 // gets the filename from a path
