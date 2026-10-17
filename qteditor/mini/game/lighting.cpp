@@ -210,7 +210,7 @@ void BlendLightingEdges(int lmi_handle_in) {
   lightmap_info &lmi = LightmapInfo[lmi_handle_in];
   int h = static_cast<int>(lmi_h(lmi_handle_in).value_or(0));
   int w = static_cast<int>(lmi_w(lmi_handle_in).value_or(0));
-  int lm_handle = index_to_int(lmi.lm_handle);
+  index_t lm_handle = lmi.lm_handle;
   std::vector<std::vector<uint16_t>> &dest_data = lm_data(lm_handle);
   std::vector<std::vector<uint16_t>> &src_data = dest_data;
   int dest_x = lmi.x1 - 1;
@@ -249,7 +249,8 @@ void BlendLightingEdges(int lmi_handle_in) {
 // Does lighting for the passed in external room
 void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_dist, float red_scale, float green_scale,
                                  float blue_scale, optref<const vector3> light_direction, float dot_range) {
-  int i, lm_handle, t;
+  int i, t;
+  index_t lm_handle;
   vector3 rad;
   const room_t &rp = Rooms[roomnum];
   vector3 Light_min_xyz;
@@ -370,20 +371,20 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
 
     if (lmi_ptr.dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
-      lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
+      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
-      if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
-      if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+      if (start_x + lmi_ptr.x1 < GameLightmaps[*lm_handle].cx1)
+        GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
+      if (start_x + lmi_ptr.x1 + width > GameLightmaps[*lm_handle].cx2)
+        GameLightmaps[*lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-      if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
-      if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
+      if (start_y + lmi_ptr.y1 < GameLightmaps[*lm_handle].cy1)
+        GameLightmaps[*lm_handle].cy1 = start_y + lmi_ptr.y1;
+      if (lmi_ptr.y1 + start_y + height > GameLightmaps[*lm_handle].cy2)
+        GameLightmaps[*lm_handle].cy2 = start_y + height + lmi_ptr.y1;
 
-      GameLightmaps[lm_handle].flags.changed = true;
-      GameLightmaps[lm_handle].flags.limits = true;
+      GameLightmaps[*lm_handle].flags.changed = true;
+      GameLightmaps[*lm_handle].flags.limits = true;
 
       if (!(Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))) {
         lmilist[num_spoken_for] = fp.lmi_handle;
@@ -410,30 +411,30 @@ void ApplyLightingToExternalRoom(const vector3 &pos, int roomnum, float light_di
         }
       }
 
-      lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
+      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
       // Mark it as changed
       lmi_ptr.dynamic = static_cast<uint16_t>(*dynamic_handle);
 
-      if (!GameLightmaps[lm_handle].flags.limits) {
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
+      if (!GameLightmaps[*lm_handle].flags.limits) {
+        GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
+        GameLightmaps[*lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+        GameLightmaps[*lm_handle].cy1 = start_y + lmi_ptr.y1;
+        GameLightmaps[*lm_handle].cy2 = start_y + height + lmi_ptr.y1;
       } else {
-        if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
-          GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
-        if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
-          GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+        if (start_x + lmi_ptr.x1 < GameLightmaps[*lm_handle].cx1)
+          GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
+        if (start_x + lmi_ptr.x1 + width > GameLightmaps[*lm_handle].cx2)
+          GameLightmaps[*lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-        if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
-          GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
-        if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-          GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
+        if (start_y + lmi_ptr.y1 < GameLightmaps[*lm_handle].cy1)
+          GameLightmaps[*lm_handle].cy1 = start_y + lmi_ptr.y1;
+        if (lmi_ptr.y1 + start_y + height > GameLightmaps[*lm_handle].cy2)
+          GameLightmaps[*lm_handle].cy2 = start_y + height + lmi_ptr.y1;
       }
 
-      GameLightmaps[lm_handle].flags.changed = true;
-      GameLightmaps[lm_handle].flags.limits = true;
+      GameLightmaps[*lm_handle].flags.changed = true;
+      GameLightmaps[*lm_handle].flags.limits = true;
 
       Dynamic_face_list.push_back(dynamic_face{fp.lmi_handle});
 
@@ -579,7 +580,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
   vector3 rad;
   int i, t;
   int subnum = &sm - pm.submodel.data();
-  int lm_handle;
+  index_t lm_handle;
   uint16_t lmilist[MAX_DYNAMIC_FACES];
   int num_spoken_for = 0;
 
@@ -702,20 +703,20 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
 
     if (lmi_ptr.dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
-      lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
+      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
-      if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
-      if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+      if (start_x + lmi_ptr.x1 < GameLightmaps[*lm_handle].cx1)
+        GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
+      if (start_x + lmi_ptr.x1 + width > GameLightmaps[*lm_handle].cx2)
+        GameLightmaps[*lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-      if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
-      if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
+      if (start_y + lmi_ptr.y1 < GameLightmaps[*lm_handle].cy1)
+        GameLightmaps[*lm_handle].cy1 = start_y + lmi_ptr.y1;
+      if (lmi_ptr.y1 + start_y + height > GameLightmaps[*lm_handle].cy2)
+        GameLightmaps[*lm_handle].cy2 = start_y + height + lmi_ptr.y1;
 
-      GameLightmaps[lm_handle].flags.changed = true;
-      GameLightmaps[lm_handle].flags.limits = true;
+      GameLightmaps[*lm_handle].flags.changed = true;
+      GameLightmaps[*lm_handle].flags.limits = true;
 
       if (!(Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))) {
         lmilist[num_spoken_for] = fp.lmi_handle;
@@ -744,30 +745,30 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
         }
       }
 
-      lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
+      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
       // Mark it as changed
       lmi_ptr.dynamic = static_cast<uint16_t>(*dynamic_handle);
 
-      if (!GameLightmaps[lm_handle].flags.limits) {
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
+      if (!GameLightmaps[*lm_handle].flags.limits) {
+        GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
+        GameLightmaps[*lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+        GameLightmaps[*lm_handle].cy1 = start_y + lmi_ptr.y1;
+        GameLightmaps[*lm_handle].cy2 = start_y + height + lmi_ptr.y1;
       } else {
-        if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
-          GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
-        if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
-          GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+        if (start_x + lmi_ptr.x1 < GameLightmaps[*lm_handle].cx1)
+          GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
+        if (start_x + lmi_ptr.x1 + width > GameLightmaps[*lm_handle].cx2)
+          GameLightmaps[*lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-        if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
-          GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
-        if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-          GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
+        if (start_y + lmi_ptr.y1 < GameLightmaps[*lm_handle].cy1)
+          GameLightmaps[*lm_handle].cy1 = start_y + lmi_ptr.y1;
+        if (lmi_ptr.y1 + start_y + height > GameLightmaps[*lm_handle].cy2)
+          GameLightmaps[*lm_handle].cy2 = start_y + height + lmi_ptr.y1;
       }
 
-      GameLightmaps[lm_handle].flags.changed = true;
-      GameLightmaps[lm_handle].flags.limits = true;
+      GameLightmaps[*lm_handle].flags.changed = true;
+      GameLightmaps[*lm_handle].flags.limits = true;
 
       Dynamic_face_list.push_back(dynamic_face{fp.lmi_handle});
 
@@ -1016,7 +1017,8 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
   uint16_t lmilist[MAX_DYNAMIC_FACES];
   int num_spoken_for = 0;
 
-  int num_faces, i, t, lm_handle;
+  int num_faces, i, t;
+  index_t lm_handle;
 
   if (Dedicated_server)
     return;
@@ -1142,20 +1144,20 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
 
     if (lmi_ptr.dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
-      lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
+      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
-      if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
-      if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+      if (start_x + lmi_ptr.x1 < GameLightmaps[*lm_handle].cx1)
+        GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
+      if (start_x + lmi_ptr.x1 + width > GameLightmaps[*lm_handle].cx2)
+        GameLightmaps[*lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-      if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
-      if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
+      if (start_y + lmi_ptr.y1 < GameLightmaps[*lm_handle].cy1)
+        GameLightmaps[*lm_handle].cy1 = start_y + lmi_ptr.y1;
+      if (lmi_ptr.y1 + start_y + height > GameLightmaps[*lm_handle].cy2)
+        GameLightmaps[*lm_handle].cy2 = start_y + height + lmi_ptr.y1;
 
-      GameLightmaps[lm_handle].flags.changed = true;
-      GameLightmaps[lm_handle].flags.limits = true;
+      GameLightmaps[*lm_handle].flags.changed = true;
+      GameLightmaps[*lm_handle].flags.limits = true;
 
       if (!(Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))) {
         lmilist[num_spoken_for] = fp.lmi_handle;
@@ -1182,30 +1184,30 @@ void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red
         }
       }
 
-      lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
+      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
       // Mark it as changed
       lmi_ptr.dynamic = static_cast<uint16_t>(*dynamic_handle);
 
-      if (!GameLightmaps[lm_handle].flags.limits) {
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
+      if (!GameLightmaps[*lm_handle].flags.limits) {
+        GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
+        GameLightmaps[*lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+        GameLightmaps[*lm_handle].cy1 = start_y + lmi_ptr.y1;
+        GameLightmaps[*lm_handle].cy2 = start_y + height + lmi_ptr.y1;
       } else {
-        if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
-          GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
-        if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
-          GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+        if (start_x + lmi_ptr.x1 < GameLightmaps[*lm_handle].cx1)
+          GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
+        if (start_x + lmi_ptr.x1 + width > GameLightmaps[*lm_handle].cx2)
+          GameLightmaps[*lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-        if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
-          GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
-        if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-          GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
+        if (start_y + lmi_ptr.y1 < GameLightmaps[*lm_handle].cy1)
+          GameLightmaps[*lm_handle].cy1 = start_y + lmi_ptr.y1;
+        if (lmi_ptr.y1 + start_y + height > GameLightmaps[*lm_handle].cy2)
+          GameLightmaps[*lm_handle].cy2 = start_y + height + lmi_ptr.y1;
       }
 
-      GameLightmaps[lm_handle].flags.changed = true;
-      GameLightmaps[lm_handle].flags.limits = true;
+      GameLightmaps[*lm_handle].flags.changed = true;
+      GameLightmaps[*lm_handle].flags.limits = true;
 
       Dynamic_face_list.push_back(dynamic_face{fp.lmi_handle});
 
@@ -1341,13 +1343,13 @@ void ClearDynamicLightmaps() {
 
   // Clear diffuse faces
   for (auto &dyn_face : Dynamic_face_list) {
-    if (LightmapInfo.is_unused(index_to_int(dyn_face.lmi_handle)))
+    if (!dyn_face.lmi_handle || LightmapInfo.is_unused(*dyn_face.lmi_handle))
       continue; // this face was killed last frame.  This can happen with objects
 
     int dynamic_handle = LightmapInfo[*dyn_face.lmi_handle].dynamic;
-    int lmi_handle = index_to_int(dyn_face.lmi_handle);
-    int lm_handle = index_to_int(LightmapInfo[lmi_handle].lm_handle);
-    const lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
+    index_t lmi_handle = dyn_face.lmi_handle;
+    index_t lm_handle = LightmapInfo[*lmi_handle].lm_handle;
+    const lightmap_info &lmi_ptr = LightmapInfo[*lmi_handle];
 
     uint16_t *src_data = Dynamic_lightmaps[dynamic_handle].mem_ptr;
     std::vector<std::vector<uint16_t>> &dest_data = lm_data(lm_handle);
@@ -1358,9 +1360,9 @@ void ClearDynamicLightmaps() {
       }
     }
 
-    GameLightmaps[lm_handle].flags.changed = true;
-    GameLightmaps[lm_handle].flags.limits = true;
-    LightmapInfo[lmi_handle].dynamic = BAD_LMI_INDEX;
+    GameLightmaps[*lm_handle].flags.changed = true;
+    GameLightmaps[*lm_handle].flags.limits = true;
+    LightmapInfo[*lmi_handle].dynamic = BAD_LMI_INDEX;
   }
 
   Dynamic_face_list.clear();
@@ -2063,27 +2065,27 @@ void DestroyLight(int roomnum, int facenum) {
 
     // Now copy our source data to our dest data so we have a base to work with
 
-    int lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
+    index_t lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
 
-    if (!GameLightmaps[lm_handle].flags.limits) {
-      GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
-      GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
-      GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
-      GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
+    if (!GameLightmaps[*lm_handle].flags.limits) {
+      GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
+      GameLightmaps[*lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+      GameLightmaps[*lm_handle].cy1 = start_y + lmi_ptr.y1;
+      GameLightmaps[*lm_handle].cy2 = start_y + height + lmi_ptr.y1;
     } else {
-      if (start_x + lmi_ptr.x1 < GameLightmaps[lm_handle].cx1)
-        GameLightmaps[lm_handle].cx1 = start_x + lmi_ptr.x1;
-      if (start_x + lmi_ptr.x1 + width > GameLightmaps[lm_handle].cx2)
-        GameLightmaps[lm_handle].cx2 = start_x + width + lmi_ptr.x1;
+      if (start_x + lmi_ptr.x1 < GameLightmaps[*lm_handle].cx1)
+        GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
+      if (start_x + lmi_ptr.x1 + width > GameLightmaps[*lm_handle].cx2)
+        GameLightmaps[*lm_handle].cx2 = start_x + width + lmi_ptr.x1;
 
-      if (start_y + lmi_ptr.y1 < GameLightmaps[lm_handle].cy1)
-        GameLightmaps[lm_handle].cy1 = start_y + lmi_ptr.y1;
-      if (lmi_ptr.y1 + start_y + height > GameLightmaps[lm_handle].cy2)
-        GameLightmaps[lm_handle].cy2 = start_y + height + lmi_ptr.y1;
+      if (start_y + lmi_ptr.y1 < GameLightmaps[*lm_handle].cy1)
+        GameLightmaps[*lm_handle].cy1 = start_y + lmi_ptr.y1;
+      if (lmi_ptr.y1 + start_y + height > GameLightmaps[*lm_handle].cy2)
+        GameLightmaps[*lm_handle].cy2 = start_y + height + lmi_ptr.y1;
     }
 
-    GameLightmaps[lm_handle].flags.changed = true;
-    GameLightmaps[lm_handle].flags.limits = true;
+    GameLightmaps[*lm_handle].flags.changed = true;
+    GameLightmaps[*lm_handle].flags.limits = true;
 
     lmilist[num_spoken_for] = fp.lmi_handle;
     Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));

@@ -1340,7 +1340,7 @@ void RenderSpecularFacesFlat(int roomnum) {
     if (bm_format(bm_handle) != bitmap_format::_4444)
       continue;
 
-    int lm_handle;
+    index_t lm_handle;
     int w, h;
 
     if (fp->lmi_handle == 65535) {
@@ -1348,7 +1348,7 @@ void RenderSpecularFacesFlat(int roomnum) {
       continue;
     }
 
-    lm_handle = index_to_int(LightmapInfo[fp->lmi_handle].lm_handle);
+    lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
     const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
     w = static_cast<int>(lm_w(lm_handle).value_or(255));
     h = static_cast<int>(lm_h(lm_handle).value_or(255));
@@ -1681,14 +1681,14 @@ void RenderLightmapFace(int roomnum, int facenum) {
   if (In_editor_mode && !Lighting_on)
     return;
 #endif
-  int lm_handle = index_to_int(LightmapInfo[fp.lmi_handle].lm_handle);
+  index_t lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
   // Setup saturation if needed
   if (GameTextures[fp.tmap].flags.saturate_lightmap)
     rend_SetAlphaType(alpha_blend_type::lightmap_blend_saturate);
   // Our lightmaps aren't square, but our destination texture surfaces are
   // Use these scalars to get them into the correct coordinates
-  float xscalar = static_cast<float>(GameLightmaps[lm_handle].width) / static_cast<float>(GameLightmaps[lm_handle].square_res);
-  float yscalar = static_cast<float>(GameLightmaps[lm_handle].height) / static_cast<float>(GameLightmaps[lm_handle].square_res);
+  float xscalar = static_cast<float>(GameLightmaps[*lm_handle].width) / static_cast<float>(GameLightmaps[*lm_handle].square_res);
+  float yscalar = static_cast<float>(GameLightmaps[*lm_handle].height) / static_cast<float>(GameLightmaps[*lm_handle].square_res);
   if (!Render_mirror_for_room) {
     for (vn = 0; vn < fp.num_verts; vn++) {
       pointbuffer[vn] = World_point_buffer[rp.wpb_index + fp.face_verts[vn]];
@@ -1727,7 +1727,7 @@ void RenderLightmapFace(int roomnum, int facenum) {
   if (fp.flags.triangulated)
     g3_SetTriangulationTest(1);
   // Draw the damn thing
-  drawn = g3_DrawPoly(fp.num_verts, pointlist, lm_handle, map_type::lightmap);
+  drawn = g3_DrawPoly(fp.num_verts, pointlist, *lm_handle, map_type::lightmap);
   if (fp.flags.triangulated)
     g3_SetTriangulationTest(0);
   // Restore if using saturated blending
@@ -1864,7 +1864,7 @@ void RenderFace(int roomnum, int facenum) {
     }
 
     if (fp->flags.lightmap) {
-      int lm_handle = index_to_int(LightmapInfo[fp->lmi_handle].lm_handle);
+      index_t lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
       const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
       int w = static_cast<int>(lm_w(lm_handle).value_or(255));
       int h = static_cast<int>(lm_h(lm_handle).value_or(255));
