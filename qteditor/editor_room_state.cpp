@@ -89,12 +89,12 @@ int IsRoomSelected(int roomnum) {
 }
 
 
-void AssignDefaultUVsToRoomFace(int roomnum, int facenum) {
-  if (roomnum < 0 || static_cast<size_t>(roomnum) >= Rooms.size() || !Rooms[roomnum].used)
+void AssignDefaultUVsToRoomFace(index_t roomnum, index_t facenum) {
+  if (!roomnum || *roomnum >= Rooms.size() || !Rooms[*roomnum].used)
     return;
-  if (facenum < 0 || facenum >= Rooms[roomnum].num_faces)
+  if (!facenum || *facenum >= Rooms[*roomnum].num_faces)
     return;
-  face &fp = Rooms[roomnum].faces[facenum];
+  face &fp = Rooms[*roomnum].faces[*facenum];
   if (fp.num_verts < 3)
     return;
 

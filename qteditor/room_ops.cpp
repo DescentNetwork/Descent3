@@ -444,9 +444,11 @@ void DeletePortalPair(int roomnum, int portalnum) {
 // FlipFace — editor/HRoom.cpp:2211
 // Flips the winding order of a face and recomputes its normal.
 // ============================================================================
-void FlipFace(int roomnum, int facenum) {
-  room_t &rp = Rooms[roomnum];
-  face &fp = rp.faces[facenum];
+void FlipFace(index_t roomnum, index_t facenum) {
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
+  face &fp = rp.faces[*facenum];
 
   Q_ASSERT(fp.portal_num == -1);
 
@@ -460,20 +462,22 @@ void FlipFace(int roomnum, int facenum) {
     fp.face_uvls[fp.num_verts - 1 - i] = uvl;
   }
 
-  if (!ComputeFaceNormal(roomnum, facenum))
+  if (!ComputeFaceNormal(*roomnum, *facenum))
     Q_ASSERT(false);
 
   app.World_changed = true;
-  EditorStatus("Room %d face %d flipped.", roomnum, facenum);
+  EditorStatus("Room %d face %d flipped.", *roomnum, *facenum);
 }
 
 // ============================================================================
 // AssignUVsToFace — editor/RoomUVs.cpp:75
 // Given u,v coordinates at two vertices, assign u,v to all other vertices.
 // ============================================================================
-void AssignUVsToFace(int roomnum, int facenum, roomUVL *uva, roomUVL *uvb, int va, int vb) {
-  room_t &rp = Rooms[roomnum];
-  face &fp = rp.faces[facenum];
+void AssignUVsToFace(index_t roomnum, index_t facenum, roomUVL *uva, roomUVL *uvb, int va, int vb) {
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
+  face &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
   int vlo, vhi;
   vector3 fvec, rvec, tvec;
@@ -519,7 +523,7 @@ void AssignUVsToFace(int roomnum, int facenum, roomUVL *uva, roomUVL *uvb, int v
   mag01 = vm_NormalizeVector(fvec);
 
   if (mag01 < 0.001f) {
-    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("U, V bogosity in room #%1, probably on face #%2.").arg(roomnum).arg(facenum));
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("U, V bogosity in room #%1, probably on face #%2.").arg(*roomnum).arg(*facenum));
     return;
   }
 
@@ -1373,9 +1377,11 @@ void AttachRoom() {
 
 // GetUVLForRoomPoint — editor/Erooms.cpp:640
 // Given a room, face, and vertex index, compute the default UV coordinates.
-void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
-  room_t &rp = Rooms[roomnum];
-  const face &fp = rp.faces[facenum];
+void GetUVLForRoomPoint(index_t roomnum, index_t facenum, int vertnum, roomUVL *uvl) {
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
+  const face &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
 
   matrix face_matrix, trans_matrix;
@@ -1439,9 +1445,11 @@ void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl) {
 // StretchRoomUVs — editor/RoomUVs.cpp:168
 // Stretches the UVs of a face along the selected edge.
 // Edge is the vertex index — the edge is (edge, edge+1).
-void StretchRoomUVs(int roomnum, int facenum, int edge) {
-  room_t &rp = Rooms[roomnum];
-  const face &fp = rp.faces[facenum];
+void StretchRoomUVs(index_t roomnum, index_t facenum, int edge) {
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
+  const face &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
   int v0 = edge;
   int v1 = (v0 + 1) % nv;
@@ -1454,9 +1462,11 @@ void StretchRoomUVs(int roomnum, int facenum, int edge) {
 
 // ScaleFaceUVs — editor/RoomUVs.cpp:195
 // Scale all UV values in a face from the center point (average of u,v).
-void ScaleFaceUVs(int roomnum, int facenum, float scale) {
-  room_t &rp = Rooms[roomnum];
-  face &fp = rp.faces[facenum];
+void ScaleFaceUVs(index_t roomnum, index_t facenum, float scale) {
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
+  face &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
 
   float midu = 0, midv = 0;
@@ -1475,23 +1485,27 @@ void ScaleFaceUVs(int roomnum, int facenum, float scale) {
 
 // HTextureSlide — editor/HTexture.cpp:334
 // Slide all UVs on a face by (right, up) in 1/128th texture units.
-void HTextureSlide(int roomnum, int facenum, float right, float up) {
-  room_t &rp = Rooms[roomnum];
+void HTextureSlide(index_t roomnum, index_t facenum, float right, float up) {
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
   if (!rp.used)
     return;
-  for (int i = 0; i < rp.faces[facenum].num_verts; i++) {
-    rp.faces[facenum].face_uvls[i].u -= right / 128.0f;
-    rp.faces[facenum].face_uvls[i].v += up / 128.0f;
+  for (int i = 0; i < rp.faces[*facenum].num_verts; i++) {
+    rp.faces[*facenum].face_uvls[i].u -= right / 128.0f;
+    rp.faces[*facenum].face_uvls[i].v += up / 128.0f;
   }
 }
 
 // HTextureRotate — editor/HTexture.cpp:371
 // Rotate all UVs on a face by the given angle (in radians).
-void HTextureRotate(int roomnum, int facenum, float angle_rad) {
-  room_t &rp = Rooms[roomnum];
+void HTextureRotate(index_t roomnum, index_t facenum, float angle_rad) {
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
   if (!rp.used)
     return;
-  face &fp = rp.faces[facenum];
+  face &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
   if (nv <= 0)
     return;
@@ -1517,29 +1531,35 @@ void HTextureRotate(int roomnum, int facenum, float angle_rad) {
 
 // HTextureFlipX — editor/HTexture.cpp:274
 // Flip the U coordinate: u = 1 - u.
-void HTextureFlipX(int roomnum, int facenum) {
-  room_t &rp = Rooms[roomnum];
+void HTextureFlipX(index_t roomnum, index_t facenum) {
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
   if (!rp.used)
     return;
-  for (int i = 0; i < rp.faces[facenum].num_verts; i++)
-    rp.faces[facenum].face_uvls[i].u = 1 - rp.faces[facenum].face_uvls[i].u;
+  for (int i = 0; i < rp.faces[*facenum].num_verts; i++)
+    rp.faces[*facenum].face_uvls[i].u = 1 - rp.faces[*facenum].face_uvls[i].u;
 }
 
 // HTextureFlipY — editor/HTexture.cpp:304
 // Flip the V coordinate: v = 1 - v.
-void HTextureFlipY(int roomnum, int facenum) {
-  room_t &rp = Rooms[roomnum];
+void HTextureFlipY(index_t roomnum, index_t facenum) {
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
   if (!rp.used)
     return;
-  for (int i = 0; i < rp.faces[facenum].num_verts; i++)
-    rp.faces[facenum].face_uvls[i].v = 1 - rp.faces[facenum].face_uvls[i].v;
+  for (int i = 0; i < rp.faces[*facenum].num_verts; i++)
+    rp.faces[*facenum].face_uvls[i].v = 1 - rp.faces[*facenum].face_uvls[i].v;
 }
 
 // HTextureRoomStretch — editor/HTexture.cpp:480
 // Stretch UVs perpendicular to the selected edge. direction = +1 or -1.
-void HTextureRoomStretch(int roomnum, int facenum, int edge, int direction) {
-  room_t &rp = Rooms[roomnum];
-  face &fp = rp.faces[facenum];
+void HTextureRoomStretch(index_t roomnum, index_t facenum, int edge, int direction) {
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
+  face &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
   int next_edge = (edge + 1) % nv;
 
@@ -1565,38 +1585,42 @@ void HTextureRoomStretch(int roomnum, int facenum, int edge, int direction) {
 }
 
 // HTextureStretchMore — editor/HTexture.cpp:400
-void HTextureStretchMore(int roomnum, int facenum, int edge, float texscale) {
+void HTextureStretchMore(index_t roomnum, index_t facenum, int edge, float texscale) {
   HTextureRoomStretch(roomnum, facenum, edge, (int)(1 * texscale));
 }
 
 // HTextureStretchLess — editor/HTexture.cpp:408
-void HTextureStretchLess(int roomnum, int facenum, int edge, float texscale) {
+void HTextureStretchLess(index_t roomnum, index_t facenum, int edge, float texscale) {
   HTextureRoomStretch(roomnum, facenum, edge, int(-1 * texscale));
 }
 
 // HTextureSetDefault — editor/HTexture.cpp:416
 // Reset UVs to defaults using GetUVLForRoomPoint.
-void HTextureSetDefault(int roomnum, int facenum) {
-  room_t &rp = Rooms[roomnum];
+void HTextureSetDefault(index_t roomnum, index_t facenum) {
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
   if (!rp.used)
     return;
-  for (int i = 0; i < rp.faces[facenum].num_verts; i++) {
-    float saveu2 = rp.faces[facenum].face_uvls[i].u2;
-    float savev2 = rp.faces[facenum].face_uvls[i].v2;
-    GetUVLForRoomPoint(roomnum, facenum, i, &rp.faces[facenum].face_uvls[i]);
-    rp.faces[facenum].face_uvls[i].u2 = saveu2;
-    rp.faces[facenum].face_uvls[i].v2 = savev2;
+  for (int i = 0; i < rp.faces[*facenum].num_verts; i++) {
+    float saveu2 = rp.faces[*facenum].face_uvls[i].u2;
+    float savev2 = rp.faces[*facenum].face_uvls[i].v2;
+    GetUVLForRoomPoint(roomnum, facenum, i, &rp.faces[*facenum].face_uvls[i]);
+    rp.faces[*facenum].face_uvls[i].u2 = saveu2;
+    rp.faces[*facenum].face_uvls[i].v2 = savev2;
   }
 }
 
 // HTexturePropagateToFace — editor/HTexture.cpp:215
 // Copy texture from current face to adjacent face, tiling UVs.
 // tex = true also copies the texture assignment.
-int HTexturePropagateToFace(int destroom, int destface, int srcroom, int srcface, bool tex) {
-  room_t &destrp = Rooms[destroom];
-  room_t &srcrp = Rooms[srcroom];
-  face &dfp = destrp.faces[destface];
-  face &sfp = srcrp.faces[srcface];
+int HTexturePropagateToFace(index_t destroom, index_t destface, index_t srcroom, index_t srcface, bool tex) {
+  if (!destroom || !destface || !srcroom || !srcface)
+    return 0;
+  room_t &destrp = Rooms[*destroom];
+  room_t &srcrp = Rooms[*srcroom];
+  face &dfp = destrp.faces[*destface];
+  face &sfp = srcrp.faces[*srcface];
   int v0, v1;
 
   if (!FindSharedEdge(&dfp, &sfp, &v0, &v1))
@@ -1613,11 +1637,13 @@ int HTexturePropagateToFace(int destroom, int destface, int srcroom, int srcface
 
 // HTextureCopyUVsToFace — editor/HTexture.cpp:251
 // Copy texture UVs from one face to another with offset.
-int HTextureCopyUVsToFace(int destroom, int destface, int srcroom, int srcface, int offset) {
-  room_t &destrp = Rooms[destroom];
-  room_t &srcrp = Rooms[srcroom];
-  face &dfp = destrp.faces[destface];
-  face &sfp = srcrp.faces[srcface];
+int HTextureCopyUVsToFace(index_t destroom, index_t destface, index_t srcroom, index_t srcface, int offset) {
+  if (!destroom || !destface || !srcroom || !srcface)
+    return 0;
+  room_t &destrp = Rooms[*destroom];
+  room_t &srcrp = Rooms[*srcroom];
+  face &dfp = destrp.faces[*destface];
+  face &sfp = srcrp.faces[*srcface];
 
   if (dfp.num_verts != sfp.num_verts)
     return 0;
@@ -1631,11 +1657,13 @@ int HTextureCopyUVsToFace(int destroom, int destface, int srcroom, int srcface, 
 }
 
 // HTextureApplyToRoomFace — editor/HTexture.cpp:198
-void HTextureApplyToRoomFace(int roomnum, int facenum, int tnum) {
-  room_t &rp = Rooms[roomnum];
+void HTextureApplyToRoomFace(index_t roomnum, index_t facenum, int tnum) {
+  if (!roomnum || !facenum)
+    return;
+  room_t &rp = Rooms[*roomnum];
   if (!rp.used)
     return;
-  rp.faces[facenum].tmap = tnum;
+  rp.faces[*facenum].tmap = tnum;
 }
 
 // ============================================================================

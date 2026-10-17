@@ -66,8 +66,8 @@ TextureKeypad::~TextureKeypad() { delete ui; }
 
 void TextureKeypad::updateDialog() {
   // Editing a face's texture requires a current room + face.
-  const bool active = (app.current.room.has_value() && Rooms[*app.current.room].used && app.current.face.has_value() &&
-                       index_to_int(app.current.face) < Rooms[*app.current.room].num_faces);
+  const bool active = (app.current.room && Rooms[*app.current.room].used && app.current.face &&
+                       *app.current.face < Rooms[*app.current.room].num_faces);
   for (QWidget *w : findChildren<QWidget *>())
     if (w->objectName().startsWith("IDC_TEXPAD") || w->objectName().startsWith("IDC_FACE_MAP"))
       w->setEnabled(active);
@@ -78,23 +78,23 @@ void TextureKeypad::updateDialog() {
     ui->IDC_CURRENT_TEXTURE_NAME->setText("No face selected");
 }
 
-void TextureKeypad::onSlideLeft() { HTextureSlide(index_to_int(app.current.room), index_to_int(app.current.face), -1.0f * app.texscale, 0); }
-void TextureKeypad::onSlideRight() { HTextureSlide(index_to_int(app.current.room), index_to_int(app.current.face), 1.0f * app.texscale, 0); }
-void TextureKeypad::onSlideUp() { HTextureSlide(index_to_int(app.current.room), index_to_int(app.current.face), 0, 1.0f * app.texscale); }
-void TextureKeypad::onSlideDown() { HTextureSlide(index_to_int(app.current.room), index_to_int(app.current.face), 0, -1.0f * app.texscale); }
-void TextureKeypad::onRotLeft() { HTextureRotate(index_to_int(app.current.room), index_to_int(app.current.face), -0.1f * app.texscale); }
-void TextureKeypad::onRotRight() { HTextureRotate(index_to_int(app.current.room), index_to_int(app.current.face), 0.1f * app.texscale); }
-void TextureKeypad::onRotate90() { HTextureRotate(index_to_int(app.current.room), index_to_int(app.current.face), std::numbers::pi_v<float> / 2.0f); }
-void TextureKeypad::onFlipX() { HTextureFlipX(index_to_int(app.current.room), index_to_int(app.current.face)); }
-void TextureKeypad::onFlipY() { HTextureFlipY(index_to_int(app.current.room), index_to_int(app.current.face)); }
-void TextureKeypad::onExpandU() { ScaleFaceUVs(index_to_int(app.current.room), index_to_int(app.current.face), 1.1f); }
-void TextureKeypad::onContractU() { ScaleFaceUVs(index_to_int(app.current.room), index_to_int(app.current.face), 1.0f / 1.1f); }
-void TextureKeypad::onExpandV() { ScaleFaceUVs(index_to_int(app.current.room), index_to_int(app.current.face), 1.1f); }
-void TextureKeypad::onContractV() { ScaleFaceUVs(index_to_int(app.current.room), index_to_int(app.current.face), 1.0f / 1.1f); }
-void TextureKeypad::onStretchLess() { HTextureStretchLess(index_to_int(app.current.room), index_to_int(app.current.face), index_to_int(app.current.edge), app.texscale); }
-void TextureKeypad::onStretchMore() { HTextureStretchMore(index_to_int(app.current.room), index_to_int(app.current.face), index_to_int(app.current.edge), app.texscale); }
+void TextureKeypad::onSlideLeft() { HTextureSlide(app.current.room, app.current.face, -1.0f * app.texscale, 0); }
+void TextureKeypad::onSlideRight() { HTextureSlide(app.current.room, app.current.face, 1.0f * app.texscale, 0); }
+void TextureKeypad::onSlideUp() { HTextureSlide(app.current.room, app.current.face, 0, 1.0f * app.texscale); }
+void TextureKeypad::onSlideDown() { HTextureSlide(app.current.room, app.current.face, 0, -1.0f * app.texscale); }
+void TextureKeypad::onRotLeft() { HTextureRotate(app.current.room, app.current.face, -0.1f * app.texscale); }
+void TextureKeypad::onRotRight() { HTextureRotate(app.current.room, app.current.face, 0.1f * app.texscale); }
+void TextureKeypad::onRotate90() { HTextureRotate(app.current.room, app.current.face, std::numbers::pi_v<float> / 2.0f); }
+void TextureKeypad::onFlipX() { HTextureFlipX(app.current.room, app.current.face); }
+void TextureKeypad::onFlipY() { HTextureFlipY(app.current.room, app.current.face); }
+void TextureKeypad::onExpandU() { ScaleFaceUVs(app.current.room, app.current.face, 1.1f); }
+void TextureKeypad::onContractU() { ScaleFaceUVs(app.current.room, app.current.face, 1.0f / 1.1f); }
+void TextureKeypad::onExpandV() { ScaleFaceUVs(app.current.room, app.current.face, 1.1f); }
+void TextureKeypad::onContractV() { ScaleFaceUVs(app.current.room, app.current.face, 1.0f / 1.1f); }
+void TextureKeypad::onStretchLess() { HTextureStretchLess(app.current.room, app.current.face, index_to_int(app.current.edge), app.texscale); }
+void TextureKeypad::onStretchMore() { HTextureStretchMore(app.current.room, app.current.face, index_to_int(app.current.edge), app.texscale); }
 
-void TextureKeypad::onSetDefault() { HTextureSetDefault(index_to_int(app.current.room), index_to_int(app.current.face)); }
+void TextureKeypad::onSetDefault() { HTextureSetDefault(app.current.room, app.current.face); }
 
 void TextureKeypad::onGrab() {
   if (app.current.room.has_value() && app.current.face.has_value())

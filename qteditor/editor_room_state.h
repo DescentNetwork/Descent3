@@ -59,7 +59,7 @@ int FindFreeRoomSlot();
 
 // Port of editor/Erooms.cpp:AssignDefaultUVsToRoomFace — projects each
 // vertex onto the face's normal plane and assigns UVs with a 1/20.0 scale.
-void AssignDefaultUVsToRoomFace(int roomnum, int facenum);
+void AssignDefaultUVsToRoomFace(index_t roomnum, index_t facenum);
 
 // Port of editor/Erooms.cpp — room operations.
 void CopyFace(face *dfp, face *sfp);
@@ -76,10 +76,10 @@ void DeleteRoomFace(int roomnum, int facenum);
 void DeleteRoomPortal(int roomnum, int portalnum);
 int AddPortal(int roomnum);
 void LinkRooms(int room0, int face0, int room1, int face1);
-void AssignUVsToFace(int roomnum, int facenum, roomUVL *uva, roomUVL *uvb, int va, int vb);
+void AssignUVsToFace(index_t roomnum, index_t facenum, roomUVL *uva, roomUVL *uvb, int va, int vb);
 void AssignDefaultUVsToRoom(int roomnum);
 void FixConcaveFaces(int roomnum, int *facelist, int facecount);
-void FlipFace(int roomnum, int facenum);
+void FlipFace(index_t roomnum, index_t facenum);
 
 // Port of editor/HRoom.cpp — room operations.
 bool CombineFaces(int roomnum, int face0, int face1);
@@ -93,18 +93,18 @@ void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face
 void PlaceDoor(int baseroom, int baseface, uint32_t placed_door);
 
 // Port of editor/RoomUVs.cpp and editor/HTexture.cpp — UV manipulation.
-void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl);
-void StretchRoomUVs(int roomnum, int facenum, int edge);
-void ScaleFaceUVs(int roomnum, int facenum, float scale);
-void HTextureSlide(int roomnum, int facenum, float right, float up);
-void HTextureRotate(int roomnum, int facenum, float angle_rad);
-void HTextureFlipX(int roomnum, int facenum);
-void HTextureFlipY(int roomnum, int facenum);
-void HTextureRoomStretch(int roomnum, int facenum, int edge, int direction);
-void HTextureStretchMore(int roomnum, int facenum, int edge, float texscale);
-void HTextureStretchLess(int roomnum, int facenum, int edge, float texscale);
-void HTextureSetDefault(int roomnum, int facenum);
-int HTexturePropagateToFace(int destroom, int destface, int srcroom, int srcface, bool tex = true);
-int HTextureCopyUVsToFace(int destroom, int destface, int srcroom, int srcface, int offset);
-void HTextureApplyToRoomFace(int roomnum, int facenum, int tnum);
+void GetUVLForRoomPoint(index_t roomnum, index_t facenum, int vertnum, roomUVL *uvl);
+void StretchRoomUVs(index_t roomnum, index_t facenum, int edge);
+void ScaleFaceUVs(index_t roomnum, index_t facenum, float scale);
+void HTextureSlide(index_t roomnum, index_t facenum, float right, float up);
+void HTextureRotate(index_t roomnum, index_t facenum, float angle_rad);
+void HTextureFlipX(index_t roomnum, index_t facenum);
+void HTextureFlipY(index_t roomnum, index_t facenum);
+void HTextureRoomStretch(index_t roomnum, index_t facenum, int edge, int direction);
+void HTextureStretchMore(index_t roomnum, index_t facenum, int edge, float texscale);
+void HTextureStretchLess(index_t roomnum, index_t facenum, int edge, float texscale);
+void HTextureSetDefault(index_t roomnum, index_t facenum);
+int HTexturePropagateToFace(index_t destroom, index_t destface, index_t srcroom, index_t srcface, bool tex = true);
+int HTextureCopyUVsToFace(index_t destroom, index_t destface, index_t srcroom, index_t srcface, int offset);
+void HTextureApplyToRoomFace(index_t roomnum, index_t facenum, int tnum);
 
