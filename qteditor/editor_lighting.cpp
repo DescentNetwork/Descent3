@@ -235,8 +235,9 @@ void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<u
 
   // Free our old lightmap (the original overwrote the refcount with 1 and
   // freed; dropping extra references first reproduces that forced release).
-  while (GameLightmaps.refs(index_to_int(lmi_ptr.lm_handle)) > 1)
-    GameLightmaps.release(index_to_int(lmi_ptr.lm_handle));
+  if (lmi_ptr.lm_handle)
+    while (GameLightmaps.refs(*lmi_ptr.lm_handle) > 1)
+      GameLightmaps.release(*lmi_ptr.lm_handle);
   lm_FreeLightmap(lmi_ptr.lm_handle);
 
   lmi_ptr.lm_handle = Squeeze_lightmap_handle;
@@ -305,8 +306,9 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<
 
   // Free our old lightmap (the original overwrote the refcount with 1 and
   // freed; dropping extra references first reproduces that forced release).
-  while (GameLightmaps.refs(index_to_int(lmi_ptr.lm_handle)) > 1)
-    GameLightmaps.release(index_to_int(lmi_ptr.lm_handle));
+  if (lmi_ptr.lm_handle)
+    while (GameLightmaps.refs(*lmi_ptr.lm_handle) > 1)
+      GameLightmaps.release(*lmi_ptr.lm_handle);
   lm_FreeLightmap(lmi_ptr.lm_handle);
 
   lmi_ptr.lm_handle = Squeeze_lightmap_handle;
