@@ -47,8 +47,10 @@ namespace {
 
 // Verifies a door model (front face + shell). Port of the original
 // VerifyDoorModel().
-bool verifyDoorModel(int handle) {
+bool verifyDoorModel(index_t handle) {
   poly_model *pm = GetPolymodelPointer(handle);
+  if (pm == nullptr)
+    return false;
   bool found_frontface = false, found_shell = false;
 
   for (int s = 0; s < pm->n_models; s++) {
@@ -253,14 +255,14 @@ void WorldObjectsDoorDialog::onAddDoor() {
     return;
 
   const std::filesystem::path pathFs(pathname.toStdString());
-  int img_handle = LoadDoorImage(pathFs, 0);
+  index_t img_handle = LoadDoorImage(pathFs, 0);
 
-  if (img_handle < 0) {
+  if (!img_handle) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Couldn't open that model file.");
     return;
   }
   if (!verifyDoorModel(img_handle)) {
-    if (img_handle >= 0 && img_handle < MAX_POLY_MODELS && Poly_models[img_handle].used)
+    if (*img_handle < MAX_POLY_MODELS && Poly_models[*img_handle].used)
       FreePolyModel(img_handle);
     return;
   }
@@ -280,7 +282,7 @@ void WorldObjectsDoorDialog::onAddDoor() {
       cur_name = base;
     else
       cur_name = base + std::to_string(c);
-    if (FindDoorName(cur_name) != -1)
+    if (FindDoorName(cur_name).has_value())
       c++;
     else
       finding_name = false;

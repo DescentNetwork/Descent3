@@ -411,7 +411,7 @@ void DoorwayUpdateAnimation(int roomnum) {
     return;
 
   doornum = objp->id;
-  pm = &Poly_models[GetDoorImage(doornum)];
+  pm = &Poly_models[*GetDoorImage(doornum)];
 
   norm = DoorwayPositionForRoom(roomnum);
 

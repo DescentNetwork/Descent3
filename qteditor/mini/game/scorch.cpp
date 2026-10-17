@@ -128,7 +128,7 @@ scorch Scorches[MAX_SCORCHES];
 int Scorch_start, Scorch_end;
 
 // Bitmap handles for scorches
-std::vector<int> Scorch_texture_handles;
+std::vector<index_t> Scorch_texture_handles;
 
 // Pack & unpack roomnum & facenum into an int
 #define ROOMFACE(r, f) ((r << 16) + f)
@@ -173,7 +173,7 @@ void DeleteScorch(int index) {
 //					pos - where the scorch goes
 //					texture_handle - the texture for the scorch mark
 //					size - how big the scorch is
-void AddScorch(int roomnum, int facenum, vector3 *pos, int texture_handle, float size) {
+void AddScorch(int roomnum, int facenum, vector3 *pos, index_t texture_handle, float size) {
   // Bail if on terrain.  We should probably add support for this later.
   if (ROOMNUM_OUTSIDE(roomnum))
     return;

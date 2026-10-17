@@ -170,9 +170,9 @@ index_t GetPrevDoor(uint32_t n);
 index_t FindDoorName(const std::string &name);
 
 // Given a filename, loads the model found in that file
-int LoadDoorImage(const std::filesystem::path &filename, int pageable = 1);
+index_t LoadDoorImage(const std::filesystem::path &filename, int pageable = 1);
 // Given a door handle, returns an index to that doors model
-int GetDoorImage(uint32_t handle);
+index_t GetDoorImage(uint32_t handle);
 
 //	Remaps the doors
 void RemapDoors();

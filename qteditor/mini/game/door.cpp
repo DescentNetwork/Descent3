@@ -189,20 +189,16 @@ index_t FindDoorName(const std::string &name)
 
 // Given a filename, loads the model found in that file
 
-int LoadDoorImage(const std::filesystem::path& filename, int pageable) {
-  int img_handle;
-
-  img_handle = static_cast<int>(LoadPolyModel(filename, pageable).value_or(-1));
-
-  return img_handle;
+index_t LoadDoorImage(const std::filesystem::path& filename, int pageable) {
+  return LoadPolyModel(filename, pageable);
 }
 
 // Given a door handle, returns an index to that doors model
-int GetDoorImage(uint32_t handle) {
+index_t GetDoorImage(uint32_t handle) {
   Q_ASSERT(handle < static_cast<uint32_t>(Doors.size()));
   Q_ASSERT(Doors.is_used(handle));
 
-  return index_to_int(Doors[handle].model_handle);
+  return Doors[handle].model_handle;
 }
 
 void RemapDoors() {

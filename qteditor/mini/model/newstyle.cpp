@@ -486,9 +486,9 @@ inline void RenderSubmodelLightmapFace(poly_model &pm, bsp_info &sm, int facenum
   int modelnum = &sm - pm.submodel.data();
   int t;
 
-  int lm_handle = index_to_int(LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle);
-  float xscalar = (float)GameLightmaps[lm_handle].width / (float)GameLightmaps[lm_handle].square_res;
-  float yscalar = (float)GameLightmaps[lm_handle].height / (float)GameLightmaps[lm_handle].square_res;
+  index_t lm_handle = LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle;
+  float xscalar = (float)GameLightmaps[*lm_handle].width / (float)GameLightmaps[*lm_handle].square_res;
+  float yscalar = (float)GameLightmaps[*lm_handle].height / (float)GameLightmaps[*lm_handle].square_res;
 
   Q_ASSERT(fp.nverts < 100);
 
@@ -509,7 +509,7 @@ inline void RenderSubmodelLightmapFace(poly_model &pm, bsp_info &sm, int facenum
   if (triangulated_faces[facenum])
     g3_SetTriangulationTest(1);
 
-  g3_DrawPoly(fp.nverts, pointlist, lm_handle, map_type::lightmap);
+  g3_DrawPoly(fp.nverts, pointlist, *lm_handle, map_type::lightmap);
 
   if (triangulated_faces[facenum])
     g3_SetTriangulationTest(0);

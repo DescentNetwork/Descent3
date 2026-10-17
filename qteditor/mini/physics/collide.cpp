@@ -1191,7 +1191,7 @@ bool collide_weapon_and_wall(object *weapon, fix hitspeed, int hitseg, int hitwa
 
   // Add a scorch
   if ((Weapons[weapon->id].scorch_handle.has_value()) && !flags.water && !flags.explosive && !flags.lava)
-    AddScorch(hitseg, hitwall, hitpnt, index_to_int(Weapons[weapon->id].scorch_handle), Weapons[weapon->id].scorch_size);
+    AddScorch(hitseg, hitwall, hitpnt, Weapons[weapon->id].scorch_handle, Weapons[weapon->id].scorch_size);
 
   if (ROOMNUM_OUTSIDE(hitseg)) {
     if (Weapons[weapon->id].terrain_damage_size > 0 && Weapons[weapon->id].terrain_damage_depth > 0) {
