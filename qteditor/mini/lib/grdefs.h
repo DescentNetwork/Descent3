@@ -95,19 +95,16 @@ static inline uint16_t GR_COLOR_TO_16(ddgr_color c) {
   return (uint16_t)(((r >> 3) << 10) + ((g >> 3) << 5) + (b >> 3));
 }
 
-static inline int GR_COLOR_RED(ddgr_color c) {
-  int r = ((c & 0x00ff0000) >> 16);
-  return (int)r;
+static inline uint8_t GR_COLOR_RED(ddgr_color c) {
+  return static_cast<uint8_t>((c & 0x00ff0000) >> 16);
 }
 
-static inline int GR_COLOR_GREEN(ddgr_color c) {
-  int g = ((c & 0x0000ff00) >> 8);
-  return (int)g;
+static inline uint8_t GR_COLOR_GREEN(ddgr_color c) {
+  return static_cast<uint8_t>((c & 0x0000ff00) >> 8);
 }
 
-static inline int GR_COLOR_BLUE(ddgr_color c) {
-  int b = (c & 0x000000ff);
-  return (int)b;
+static inline uint8_t GR_COLOR_BLUE(ddgr_color c) {
+  return static_cast<uint8_t>(c & 0x000000ff);
 }
 
 static inline ddgr_color GR_16_TO_COLOR(uint16_t col) {
