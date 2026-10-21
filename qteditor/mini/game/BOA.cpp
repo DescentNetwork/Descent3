@@ -190,7 +190,6 @@ static void compute_sound_dist_info();
 static void clear_BOA();
 static void compute_costs();
 static void update_path_info(const std::vector<q_item *> &node_list, int start, int end);
-static void FindPath(int i, int j);
 static void compute_next_segs();
 static void compute_blockage_info();
 static void ComputeBOAVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff,
@@ -908,60 +907,67 @@ void compute_costs() {
 }
 
 void update_path_info(const std::vector<q_item *> &node_list, int start, int end) {
-  int cur_room;
-  int par_room;
+  index_t cur_room;
+  index_t par_room;
 
   while (end != start) {
-    cur_room = end;
+    cur_room = index_t{static_cast<uint32_t>(end)};
     par_room = node_list[end]->parent;
 
-    while (par_room != -1) {
-      BOA_Array[par_room][end].next_room = cur_room;
+    while (par_room) {
+      BOA_Array[*par_room][end].next_room = index_to_int(cur_room);
 
-      cur_room = node_list[cur_room]->parent;
-      par_room = node_list[cur_room]->parent;
+      cur_room = node_list[index_to_int(cur_room)]->parent;
+      Q_ASSERT(cur_room);
+      par_room = node_list[index_to_int(cur_room)]->parent;
     }
 
-    end = node_list[end]->parent;
+    end = index_to_int(node_list[end]->parent);
   }
 }
 
-void FindPath(int i, int j) {
+void BOA_FindPath(int start_room, int end_room) {
   pq PQPath;
   int counter;
-  q_item *start_node = new q_item(BOA_INDEX(i), -1, 0.0f);
   q_item *cur_node;
 
-  if (i == -1 || j == -1) {
-    delete start_node;
+  if (start_room == -1 || end_room == -1) {
     return;
   }
+
+  q_item *start_node = new q_item(index_t{static_cast<uint32_t>(BOA_INDEX(start_room))}, index_t{}, 0.0f);
 
   // Indexed by BOA_INDEX(roomnum); an entry is the room's node or nullptr.
   std::vector<q_item *> node_list(Rooms.size() + MAX_BOA_TERRAIN_REGIONS, nullptr);
 
   PQPath.push(start_node);
-  Q_ASSERT(start_node->roomnum < Rooms.size() + BOA_num_terrain_regions);
+  Q_ASSERT(start_node->roomnum && *start_node->roomnum < Rooms.size() + BOA_num_terrain_regions);
 
   while ((cur_node = PQPath.pop())) {
-    node_list[BOA_INDEX(cur_node->roomnum)] = cur_node;
-    Q_ASSERT(BOA_INDEX(cur_node->roomnum) >= 0 &&
-           BOA_INDEX(cur_node->roomnum) < Rooms.size() + MAX_BOA_TERRAIN_REGIONS);
+    if (!cur_node->roomnum) {
+      delete cur_node;
+      continue;
+    }
 
-    if (cur_node->roomnum == j) {
-      update_path_info(node_list, i, j);
+    const int cur_room = static_cast<int>(*cur_node->roomnum);
+
+    node_list[BOA_INDEX(cur_room)] = cur_node;
+    Q_ASSERT(BOA_INDEX(cur_room) >= 0 && BOA_INDEX(cur_room) < Rooms.size() + MAX_BOA_TERRAIN_REGIONS);
+
+    if (cur_room == end_room) {
+      update_path_info(node_list, start_room, end_room);
       goto done;
     }
 
-    if (i > j) {
+    if (start_room > end_room) {
       int num_portals;
       bool f_room = true;
       int t_index;
 
-      if (cur_node->roomnum < Rooms.size()) {
-        num_portals = Rooms[cur_node->roomnum].portals.size();
+      if (cur_room < Rooms.size()) {
+        num_portals = Rooms[cur_room].portals.size();
       } else {
-        t_index = cur_node->roomnum - ((int)Rooms.size() - 1) - 1;
+        t_index = cur_room - ((int)Rooms.size() - 1) - 1;
         num_portals = BOA_num_connect[t_index];
         f_room = false;
       }
@@ -971,11 +977,11 @@ void FindPath(int i, int j) {
         q_item *list_item;
         float new_cost;
 
-        if (!BOA_PassablePortal(cur_node->roomnum, counter))
+        if (!BOA_PassablePortal(cur_room, counter))
           continue;
 
         if (f_room)
-          next_room = index_to_int(Rooms[cur_node->roomnum].portals[counter].connected_room);
+          next_room = index_to_int(Rooms[cur_room].portals[counter].connected_room);
         else
           next_room = index_to_int(BOA_connect[t_index][counter].roomnum);
 
@@ -983,9 +989,9 @@ void FindPath(int i, int j) {
           continue;
 
         if ((next_room < Rooms.size()) && Rooms[next_room].flags.external) {
-          Q_ASSERT(cur_node->roomnum < Rooms.size());
+          Q_ASSERT(cur_room < Rooms.size());
 
-          int cell = GetTerrainCellFromPos(Rooms[cur_node->roomnum].portals[counter].path_pnt).value_or(-1);
+          int cell = GetTerrainCellFromPos(Rooms[cur_room].portals[counter].path_pnt).value_or(-1);
           Q_ASSERT(cell >= 0 && cell < TERRAIN_WIDTH * TERRAIN_DEPTH);
 
           next_room = ((int)Rooms.size() - 1) + Terrain_seg[cell].flags.region + 1;
@@ -993,11 +999,11 @@ void FindPath(int i, int j) {
         }
 
         int next_portal;
-        if (BOA_INDEX(next_room) != BOA_INDEX(cur_node->roomnum)) {
-          next_portal = BOA_DetermineStartRoomPortal(next_room, std::nullopt, cur_node->roomnum, std::nullopt).value_or(-1);
+        if (BOA_INDEX(next_room) != BOA_INDEX(cur_room)) {
+          next_portal = BOA_DetermineStartRoomPortal(next_room, std::nullopt, cur_room, std::nullopt).value_or(-1);
         }
 
-        new_cost = cur_node->cost + BOA_cost_array[BOA_INDEX(cur_node->roomnum)][counter] +
+        new_cost = cur_node->cost + BOA_cost_array[BOA_INDEX(cur_room)][counter] +
                    BOA_cost_array[BOA_INDEX(next_room)][next_portal];
 
         list_item = node_list[BOA_INDEX(next_room)];
@@ -1005,10 +1011,10 @@ void FindPath(int i, int j) {
           continue;
 
         if (list_item == NULL) {
-          list_item = new q_item(BOA_INDEX(next_room), cur_node->roomnum, new_cost);
+          list_item = new q_item(index_t{static_cast<uint32_t>(BOA_INDEX(next_room))}, cur_node->roomnum, new_cost);
           node_list[BOA_INDEX(next_room)] = list_item;
           PQPath.push(list_item);
-          Q_ASSERT(list_item->roomnum < Rooms.size() + BOA_num_terrain_regions);
+          Q_ASSERT(list_item->roomnum && *list_item->roomnum < Rooms.size() + BOA_num_terrain_regions);
         } else {
           list_item->cost = new_cost;
           list_item->parent = cur_node->roomnum;
@@ -1019,10 +1025,10 @@ void FindPath(int i, int j) {
       bool f_room = true;
       int t_index;
 
-      if (cur_node->roomnum < Rooms.size()) {
-        num_portals = Rooms[cur_node->roomnum].portals.size();
+      if (cur_room < Rooms.size()) {
+        num_portals = Rooms[cur_room].portals.size();
       } else {
-        t_index = cur_node->roomnum - ((int)Rooms.size() - 1) - 1;
+        t_index = cur_room - ((int)Rooms.size() - 1) - 1;
         num_portals = BOA_num_connect[t_index];
         f_room = false;
       }
@@ -1032,11 +1038,11 @@ void FindPath(int i, int j) {
         q_item *list_item;
         float new_cost;
 
-        if (!BOA_PassablePortal(cur_node->roomnum, counter))
+        if (!BOA_PassablePortal(cur_room, counter))
           continue;
 
         if (f_room)
-          next_room = index_to_int(Rooms[cur_node->roomnum].portals[counter].connected_room);
+          next_room = index_to_int(Rooms[cur_room].portals[counter].connected_room);
         else
           next_room = index_to_int(BOA_connect[t_index][counter].roomnum);
 
@@ -1044,18 +1050,18 @@ void FindPath(int i, int j) {
           continue;
 
         if ((next_room < Rooms.size()) && Rooms[next_room].flags.external) {
-          Q_ASSERT(cur_node->roomnum < Rooms.size());
-          int cell = GetTerrainCellFromPos(Rooms[cur_node->roomnum].portals[counter].path_pnt).value_or(-1);
+          Q_ASSERT(cur_room < Rooms.size());
+          int cell = GetTerrainCellFromPos(Rooms[cur_room].portals[counter].path_pnt).value_or(-1);
           Q_ASSERT(cell != -1); // DAJ -1FIX
           next_room = ((int)Rooms.size() - 1) + Terrain_seg[cell].flags.region + 1;
         }
 
         int next_portal;
-        if (BOA_INDEX(next_room) != BOA_INDEX(cur_node->roomnum)) {
-          next_portal = BOA_DetermineStartRoomPortal(next_room, std::nullopt, cur_node->roomnum, std::nullopt).value_or(-1);
+        if (BOA_INDEX(next_room) != BOA_INDEX(cur_room)) {
+          next_portal = BOA_DetermineStartRoomPortal(next_room, std::nullopt, cur_room, std::nullopt).value_or(-1);
         }
 
-        new_cost = cur_node->cost + BOA_cost_array[BOA_INDEX(cur_node->roomnum)][counter] +
+        new_cost = cur_node->cost + BOA_cost_array[BOA_INDEX(cur_room)][counter] +
                    BOA_cost_array[BOA_INDEX(next_room)][next_portal];
 
         list_item = node_list[BOA_INDEX(next_room)];
@@ -1063,10 +1069,10 @@ void FindPath(int i, int j) {
           continue;
 
         if (list_item == NULL) {
-          list_item = new q_item(BOA_INDEX(next_room), cur_node->roomnum, new_cost);
+          list_item = new q_item(index_t{static_cast<uint32_t>(BOA_INDEX(next_room))}, cur_node->roomnum, new_cost);
           node_list[BOA_INDEX(next_room)] = list_item;
           PQPath.push(list_item);
-          Q_ASSERT(list_item->roomnum < Rooms.size() + BOA_num_terrain_regions);
+          Q_ASSERT(list_item->roomnum && *list_item->roomnum < Rooms.size() + BOA_num_terrain_regions);
         } else {
           list_item->cost = new_cost;
           list_item->parent = cur_node->roomnum;
@@ -1076,7 +1082,7 @@ void FindPath(int i, int j) {
   }
 
   // Mark as an impossible path.
-  BOA_Array[i][j].next_room = BOA_NO_PATH();
+  BOA_Array[start_room][end_room].next_room = BOA_NO_PATH();
 
 done:
   for (q_item *item : node_list) {
@@ -1123,9 +1129,9 @@ void compute_next_segs() {
       }
 
       if (i != j && BOA_Array[i][j].next_room == i)
-        FindPath(i, j);
+        BOA_FindPath(i, j);
       if (i != j && BOA_Array[j][i].next_room == j)
-        FindPath(j, i);
+        BOA_FindPath(j, i);
     }
   }
 }

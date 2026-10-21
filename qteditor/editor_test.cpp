@@ -8095,6 +8095,64 @@ private slots:
     QVERIFY(!BNode_verified);
   }
 
+  // The BOA pathfinder walks the room graph through q_item nodes that carry
+  // a room handle plus a nullable parent handle.  Two rooms joined by a
+  // single portal must produce a next_room entry in both directions, and a
+  // room with no path must be marked as such.
+  void testBOAFindPathBetweenConnectedRooms()
+  {
+    // room_t owns a doorway unique_ptr, so the world is saved by move.
+    std::vector<room_t> savedRooms;
+    savedRooms.reserve(Rooms.size());
+    for (room_t &r : Rooms)
+      savedRooms.push_back(std::move(r));
+    Rooms.clear();
+
+    const auto savedBOAArray = BOA_Array;
+    const auto savedCostArray = BOA_cost_array;
+
+    // Two single-quad rooms joined by one portal each.
+    for (int r = 0; r < 2; r++) {
+      RoomsEnsureIndex(r);
+      room_t &rp = Rooms[r];
+      rp = room_t{};
+      InitRoom(rp, 4, 1, 1);
+      InitRoomFace(rp.faces[0], 4);
+      for (int i = 0; i < 4; i++) {
+        rp.verts[i] = vector3{(float)(r * 20 + i), (float)0, (float)0};
+        rp.faces[0].face_verts[i] = (int16_t)i;
+      }
+      rp.faces[0].tmap = 0;
+      rp.portals[0].portal_face = 0;
+      rp.portals[0].connected_room = to_roomnum(r == 0 ? 1 : 0);
+      rp.portals[0].connected_portal = index_t{0};
+      rp.used = 1;
+    }
+    RoomsEnsureIndex(1);
+    QCOMPARE(int(Rooms.size()), 2);
+
+    // A negative portal cost makes the portal impassable.
+    for (auto &row : BOA_cost_array)
+      row.fill(0.0f);
+    BOA_cost_array[0][0] = 1.0f;
+    BOA_cost_array[1][0] = 1.0f;
+
+    BOA_FindPath(0, 1);
+    QCOMPARE(int(BOA_Array[0][1].next_room), 1);
+
+    BOA_FindPath(1, 0);
+    QCOMPARE(int(BOA_Array[1][0].next_room), 0);
+
+    // A room that cannot be reached is marked as having no path.
+    BOA_cost_array[0][0] = -1.0f;
+    BOA_FindPath(0, 1);
+    QCOMPARE(int(BOA_Array[0][1].next_room), int(BOA_NO_PATH()));
+
+    Rooms = std::move(savedRooms);
+    BOA_Array = savedBOAArray;
+    BOA_cost_array = savedCostArray;
+  }
+
   // Round-trips a generic page through mng_WriteNewGenericPage back into
   // mng_ReadNewGenericPage and compares key fields.  The writer must be the
   // exact mirror of the reader (same field order and encodings), and must emit

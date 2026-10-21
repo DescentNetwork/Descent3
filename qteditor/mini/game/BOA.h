@@ -168,15 +168,15 @@ extern std::array<int, MAX_ROOMS + MAX_BOA_TERRAIN_REGIONS> BOA_AABB_ROOM_checks
 //--  Priority Queue
 class q_item {
 public:
-  q_item(int room_index, int par, float n_cost) {
+  q_item(index_t room_index, index_t par, float n_cost) {
     roomnum = room_index;
     parent = par;
     cost = n_cost;
     next = NULL;
   }
 
-  int roomnum;
-  int parent;
+  index_t roomnum;
+  index_t parent;
   float cost;
 
   q_item *next;
@@ -262,6 +262,10 @@ extern int BOA_num_connect[MAX_BOA_TERRAIN_REGIONS];
 extern std::array<std::array<connect_data, MAX_PATH_PORTALS>, MAX_BOA_TERRAIN_REGIONS> BOA_connect;
 
 void MakeBOA(void);
+
+// Searches for a path between two rooms and records the result in BOA_Array.
+// When no path exists the entry is marked with BOA_NO_PATH().
+void BOA_FindPath(int start_room, int end_room);
 
 // Goes through all the rooms and determines their visibility in relation to one another
 void MakeBOAVisTable(bool from_lighting = 0);

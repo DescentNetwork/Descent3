@@ -108,6 +108,7 @@
 #include "findintersection.h"
 #include "BOA.h"
 #include "rand.h"
+#include "utils.h"
 
 std::array<bn_list, 8> BNode_terrain_list;
 bool BNode_allocated = false;
@@ -116,15 +117,15 @@ bool BNode_verified = false;
 //--  Priority Queue
 class pq_item {
 public:
-  pq_item(int node_index, int parent_node, float n_cost) {
+  pq_item(index_t node_index, index_t parent_node, float n_cost) {
     node = node_index;
     p_node = parent_node;
     cost = n_cost;
     next = NULL;
   }
 
-  int node;
-  int p_node;
+  index_t node;
+  index_t p_node;
   float cost;
 
   pq_item *next;
@@ -180,15 +181,15 @@ int BNode_Path[MAX_BNODES_PER_ROOM];
 int BNode_PathNumNodes;
 
 static void BNode_UpdatePathInfo(pq_item **node_list, int start, int end) {
-  int cur_node = end;
+  index_t cur_node = index_t{static_cast<uint32_t>(end)};
   int i;
 
   BNode_PathNumNodes = 0;
 
   //	mprintf(0, "start crash loop\n");
-  while (cur_node != -1) {
-    BNode_Path[BNode_PathNumNodes++] = cur_node;
-    cur_node = node_list[cur_node]->p_node;
+  while (cur_node) {
+    BNode_Path[BNode_PathNumNodes++] = index_to_int(cur_node);
+    cur_node = node_list[index_to_int(cur_node)]->p_node;
   }
   //	mprintf(0, "end crash loop\n");
 
@@ -214,7 +215,7 @@ bool BNode_FindPath(int start_room, int i, int j, float rad) {
     return false;
   bpq PQPath;
   size_t counter;
-  pq_item *start_node = new pq_item(i, -1, 0.0f);
+  pq_item *start_node = new pq_item(index_t{static_cast<uint32_t>(i)}, index_t{}, 0.0f);
   pq_item *cur_node;
   bool f_found = false;
 
@@ -233,15 +234,22 @@ bool BNode_FindPath(int start_room, int i, int j, float rad) {
   PQPath.push(start_node);
 
   while ((cur_node = PQPath.pop())) {
-    node_list[cur_node->node] = cur_node;
+    if (!cur_node->node) {
+      delete cur_node;
+      continue;
+    }
 
-    if (cur_node->node == j) {
+    const int cur_node_index = index_to_int(cur_node->node);
+
+    node_list[cur_node_index] = cur_node;
+
+    if (cur_node_index == j) {
       BNode_UpdatePathInfo(node_list.data(), i, j);
       f_found = true;
       goto done;
     }
 
-    size_t num_edges = bnlist->nodes[cur_node->node].edges.size();
+    size_t num_edges = bnlist->nodes[cur_node_index].edges.size();
 
     for (counter = 0; counter < num_edges; counter++) {
       int next_node;
@@ -251,13 +259,13 @@ bool BNode_FindPath(int start_room, int i, int j, float rad) {
       //			if(!BOA_PassablePortal(cur_node->roomnum, counter, false, false))
       //				continue;
 
-      if ((next_node = bnlist->nodes[cur_node->node].edges[counter].end_room != start_room))
+      if ((next_node = bnlist->nodes[cur_node_index].edges[counter].end_room != start_room))
         continue;
 
-      next_node = bnlist->nodes[cur_node->node].edges[counter].end_index;
+      next_node = bnlist->nodes[cur_node_index].edges[counter].end_index;
 
-      Q_ASSERT(bnlist->nodes[cur_node->node].edges[counter].cost > 0);
-      new_cost = cur_node->cost + bnlist->nodes[cur_node->node].edges[counter].cost;
+      Q_ASSERT(bnlist->nodes[cur_node_index].edges[counter].cost > 0);
+      new_cost = cur_node->cost + bnlist->nodes[cur_node_index].edges[counter].cost;
 
       list_item = node_list[next_node];
 
@@ -265,7 +273,7 @@ bool BNode_FindPath(int start_room, int i, int j, float rad) {
         continue;
 
       if (list_item == nullptr) {
-        list_item = new pq_item(next_node, cur_node->node, new_cost);
+        list_item = new pq_item(index_t{static_cast<uint32_t>(next_node)}, cur_node->node, new_cost);
 
         node_list[next_node] = list_item;
         PQPath.push(list_item);
