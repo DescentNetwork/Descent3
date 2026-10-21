@@ -29,10 +29,10 @@ byte_istream& operator>>(byte_istream& input, trigger& data) {
   input >> data.name;
   int16_t room = 0;
   input >> room;
-  data.roomnum = room;
+  data.roomnum = (room < 0) ? index_t{} : index_t{static_cast<uint32_t>(room)};
   int16_t face = 0;
   input >> face;
-  data.facenum = face;
+  data.facenum = (face < 0) ? index_t{} : index_t{static_cast<uint32_t>(face)};
   input >> reinterpret_cast<uint16_t&>(data.flags);
   input >> reinterpret_cast<uint16_t&>(data.activator);
   return input;
@@ -40,7 +40,7 @@ byte_istream& operator>>(byte_istream& input, trigger& data) {
 
 byte_ostream& operator<<(byte_ostream& output, const trigger& data) {
   output << data.name;
-  output << static_cast<int16_t>(data.roomnum) << static_cast<int16_t>(data.facenum);
+  output << static_cast<int16_t>(index_to_int(data.roomnum)) << static_cast<int16_t>(index_to_int(data.facenum));
   return output
          << reinterpret_cast<const uint16_t&>(data.flags)
          << reinterpret_cast<const uint16_t&>(data.activator);

@@ -3401,14 +3401,14 @@ index_t osipf_GetTriggerRoom(int trigger_id) {
   if (trigger_id < 0 || trigger_id >= static_cast<int>(Triggers.size()))
     return std::nullopt;
 
-  return static_cast<uint32_t>(Triggers[trigger_id].roomnum);
+  return Triggers[trigger_id].roomnum;
 }
 
 index_t osipf_GetTriggerFace(int trigger_id) {
   if (trigger_id < 0 || trigger_id >= static_cast<int>(Triggers.size()))
     return std::nullopt;
 
-  return static_cast<uint32_t>(Triggers[trigger_id].facenum);
+  return Triggers[trigger_id].facenum;
 }
 
 index_t osipf_FindDoorName(const std::string &name) {

@@ -91,8 +91,8 @@ void TextureKeypad::onExpandU() { ScaleFaceUVs(app.current.room, app.current.fac
 void TextureKeypad::onContractU() { ScaleFaceUVs(app.current.room, app.current.face, 1.0f / 1.1f); }
 void TextureKeypad::onExpandV() { ScaleFaceUVs(app.current.room, app.current.face, 1.1f); }
 void TextureKeypad::onContractV() { ScaleFaceUVs(app.current.room, app.current.face, 1.0f / 1.1f); }
-void TextureKeypad::onStretchLess() { HTextureStretchLess(app.current.room, app.current.face, index_to_int(app.current.edge), app.texscale); }
-void TextureKeypad::onStretchMore() { HTextureStretchMore(app.current.room, app.current.face, index_to_int(app.current.edge), app.texscale); }
+void TextureKeypad::onStretchLess() { HTextureStretchLess(app.current.room, app.current.face, app.current.edge, app.texscale); }
+void TextureKeypad::onStretchMore() { HTextureStretchMore(app.current.room, app.current.face, app.current.edge, app.texscale); }
 
 void TextureKeypad::onSetDefault() { HTextureSetDefault(app.current.room, app.current.face); }
 

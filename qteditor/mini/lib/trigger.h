@@ -159,8 +159,8 @@ static_assert(sizeof(activator_flags_t) == sizeof(uint16_t));
 // The trigger structure
 struct trigger {
   std::string name; // the name of this trigger
-  int roomnum;                  // the room this trigger is in
-  int facenum;                  // the face to which this trigger is attched
+  index_t roomnum;              // the room this trigger is in
+  index_t facenum;              // the face to which this trigger is attched
   trigger_flags_t flags;              // flags for this trigger
   activator_flags_t activator;        // flags for what can activate this trigger
   // This is allocated when the level is started

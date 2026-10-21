@@ -486,8 +486,8 @@ private slots:
     // Trigger.
     Triggers.resize(1);
     Triggers[0].name = "trig0";
-    Triggers[0].roomnum = 0;
-    Triggers[0].facenum = 0;
+    Triggers[0].roomnum = index_t{0};
+    Triggers[0].facenum = index_t{0};
     Triggers[0].flags = trigger_flags_t{};
     Triggers[0].flags.oneshot = true;
     Triggers[0].activator = activator_flags_t{};
@@ -634,8 +634,8 @@ private slots:
     // Trigger + level info so every chunk carries non-trivial data.
     Triggers.resize(1);
     Triggers[0].name = "trig0";
-    Triggers[0].roomnum = 0;
-    Triggers[0].facenum = 0;
+    Triggers[0].roomnum = index_t{0};
+    Triggers[0].facenum = index_t{0};
     Triggers[0].flags = trigger_flags_t{};
     Triggers[0].flags.oneshot = true;
     Triggers[0].activator = activator_flags_t{};

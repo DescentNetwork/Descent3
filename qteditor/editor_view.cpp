@@ -551,7 +551,7 @@ void EditorView::renderRooms() {
 
       // Determine the room's overlay color (selected = orange, else default).
       const bool selected = IsRoomSelected(r);
-      const bool isCurRoom = (r == index_to_int(app.current.room));
+      const bool isCurRoom = (app.current.room && *app.current.room == r);
 
       for (int i = 0; i < rp.faces.size(); i++) {
         const face &fp = rp.faces[i];

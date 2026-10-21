@@ -59,9 +59,10 @@
 // ============================================================================
 static void EditorDeleteTrigger(int trig_num) {
   trigger &tp = Triggers[trig_num];
-  room_t &rp = Rooms[tp.roomnum];
-  face &fp = rp.faces[tp.facenum];
-  fp.flags.has_trigger = false;
+  if (tp.roomnum && *tp.roomnum < Rooms.size() && tp.facenum &&
+      *tp.facenum < Rooms[*tp.roomnum].faces.size()) {
+    Rooms[*tp.roomnum].faces[*tp.facenum].flags.has_trigger = false;
+  }
   Triggers.erase(Triggers.begin() + trig_num);
 }
 
@@ -69,7 +70,7 @@ static void EditorDeleteTriggerByRoomFace(index_t roomnum, index_t facenum) {
   if (!roomnum || !facenum)
     return;
   for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
-    if (Triggers[i].roomnum == static_cast<int32_t>(*roomnum) && Triggers[i].facenum == static_cast<int32_t>(*facenum)) {
+    if (Triggers[i].roomnum == *roomnum && Triggers[i].facenum == *facenum) {
       EditorDeleteTrigger(i);
       return;
     }
@@ -321,10 +322,10 @@ void DeleteRoomFace(index_t roomnum, index_t facenum) {
 
   for (t = 0; t < static_cast<int>(Triggers.size()); t++) {
     trigger &tp = Triggers[t];
-    if (tp.roomnum == static_cast<int32_t>(*roomnum)) {
-      Q_ASSERT(tp.facenum != static_cast<int32_t>(*facenum));
-      if (tp.facenum > static_cast<int32_t>(*facenum))
-        tp.facenum--;
+    if (tp.roomnum == *roomnum) {
+      Q_ASSERT(tp.facenum != *facenum);
+      if (tp.facenum && *tp.facenum > *facenum)
+        tp.facenum = index_t{*tp.facenum - 1};
     }
   }
 
@@ -735,7 +736,7 @@ void RotateRooms(angle p, angle h, angle b) {
   int marked_portalnum = -1;
   int cur_portalnum = -1;
 
-  if (app.current.room == index_to_int(app.marked.room) || !app.marked.room) {
+  if (app.current.room == app.marked.room || !app.marked.room) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You do not have a valid room marked.");
     return;
   }
@@ -1563,16 +1564,18 @@ void HTextureFlipY(index_t roomnum, index_t facenum) {
 
 // HTextureRoomStretch — editor/HTexture.cpp:480
 // Stretch UVs perpendicular to the selected edge. direction = +1 or -1.
-void HTextureRoomStretch(index_t roomnum, index_t facenum, int edge, int direction) {
-  if (!roomnum || !facenum)
+void HTextureRoomStretch(index_t roomnum, index_t facenum, index_t edge, int direction) {
+  if (!roomnum || !facenum || !edge)
     return;
   room_t &rp = Rooms[*roomnum];
   face &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
-  int next_edge = (edge + 1) % nv;
+  if (*edge >= static_cast<uint32_t>(nv))
+    return;
+  int next_edge = (static_cast<int>(*edge) + 1) % nv;
 
-  float du = fp.face_uvls[next_edge].u - fp.face_uvls[edge].u;
-  float dv = fp.face_uvls[next_edge].v - fp.face_uvls[edge].v;
+  float du = fp.face_uvls[next_edge].u - fp.face_uvls[*edge].u;
+  float dv = fp.face_uvls[next_edge].v - fp.face_uvls[*edge].v;
 
   float nu = -dv;
   float nv_uv = du;
@@ -1585,7 +1588,7 @@ void HTextureRoomStretch(index_t roomnum, index_t facenum, int edge, int directi
   nu /= 64.0f;
 
   for (int i = 0; i < nv; i++) {
-    if (i == edge || i == next_edge)
+    if (i == static_cast<int>(*edge) || i == next_edge)
       continue;
     fp.face_uvls[i].u -= nu * direction;
     fp.face_uvls[i].v -= nv_uv * direction;
@@ -1593,12 +1596,12 @@ void HTextureRoomStretch(index_t roomnum, index_t facenum, int edge, int directi
 }
 
 // HTextureStretchMore — editor/HTexture.cpp:400
-void HTextureStretchMore(index_t roomnum, index_t facenum, int edge, float texscale) {
+void HTextureStretchMore(index_t roomnum, index_t facenum, index_t edge, float texscale) {
   HTextureRoomStretch(roomnum, facenum, edge, (int)(1 * texscale));
 }
 
 // HTextureStretchLess — editor/HTexture.cpp:408
-void HTextureStretchLess(index_t roomnum, index_t facenum, int edge, float texscale) {
+void HTextureStretchLess(index_t roomnum, index_t facenum, index_t edge, float texscale) {
   HTextureRoomStretch(roomnum, facenum, edge, int(-1 * texscale));
 }
 

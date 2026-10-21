@@ -80,8 +80,8 @@ void TriggerKeypad::updateDialog() {
 
   ui->IDC_TRIG_CURRENT_NAME->setText(QString::fromStdString(tp.name));
   ui->IDC_TRIG_CURRENT_NUM->setText(QString::number(*app.Current_trigger));
-  ui->IDC_TRIG_CURRENT_ROOM->setText(QString::number(tp.roomnum));
-  ui->IDC_TRIG_CURRENT_FACE->setText(QString::number(tp.facenum));
+  ui->IDC_TRIG_CURRENT_ROOM->setText(QString::number(index_to_int(tp.roomnum)));
+  ui->IDC_TRIG_CURRENT_FACE->setText(QString::number(index_to_int(tp.facenum)));
 
   ui->IDC_TRIG_ONESHOT->setChecked(tp.flags.oneshot);
 
@@ -130,9 +130,9 @@ void TriggerKeypad::onNextInMine() {
 void TriggerKeypad::onPrevInRoom() {
   if (static_cast<int>(Triggers.size()) <= 0)
     return;
-  const int room_target = app.current.room
-                              ? static_cast<int32_t>(*app.current.room)
-                              : (app.Current_trigger ? Triggers[*app.Current_trigger].roomnum : -1);
+  const index_t room_target = app.current.room
+                                  ? app.current.room
+                                  : (app.Current_trigger ? Triggers[*app.Current_trigger].roomnum : index_t{});
   int n = app.Current_trigger ? static_cast<int32_t>(*app.Current_trigger) : -1;
   for (int i = static_cast<int>(Triggers.size()); i > 0; i--) {
     n = (n <= 0) ? (static_cast<int>(Triggers.size()) - 1) : (n - 1);
@@ -147,9 +147,9 @@ void TriggerKeypad::onPrevInRoom() {
 void TriggerKeypad::onNextInRoom() {
   if (static_cast<int>(Triggers.size()) <= 0)
     return;
-  const int room_target = app.current.room
-                              ? static_cast<int32_t>(*app.current.room)
-                              : (app.Current_trigger ? Triggers[*app.Current_trigger].roomnum : -1);
+  const index_t room_target = app.current.room
+                                  ? app.current.room
+                                  : (app.Current_trigger ? Triggers[*app.Current_trigger].roomnum : index_t{});
   int n = app.Current_trigger ? static_cast<int32_t>(*app.Current_trigger) : -1;
   for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
     n = (n + 1) % static_cast<int>(Triggers.size());
@@ -167,8 +167,8 @@ void TriggerKeypad::onNextPortal() {
   // Advance to the next trigger attached to a portal (face with a portal).
   for (int i = 1; i < static_cast<int>(Triggers.size()); i++) {
     const int n = (static_cast<int32_t>(*app.Current_trigger) + i) % static_cast<int>(Triggers.size());
-    if (Triggers[n].roomnum >= 0 && Triggers[n].roomnum < MAX_ROOMS &&
-        Rooms[Triggers[n].roomnum].faces[Triggers[n].facenum].portal_num != -1) {
+    if (Triggers[n].roomnum && *Triggers[n].roomnum < MAX_ROOMS && Triggers[n].facenum &&
+        Rooms[*Triggers[n].roomnum].faces[*Triggers[n].facenum].portal_num != -1) {
       app.Current_trigger = n;
       break;
     }
