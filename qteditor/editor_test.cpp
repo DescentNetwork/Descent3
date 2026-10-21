@@ -5538,6 +5538,27 @@ private slots:
     FreeRoom(1);
   }
 
+  void testLegacyRoomnumEncodingRoundTrip() {
+    // A plain room index round-trips unchanged.
+    QCOMPARE(from_roomnum(to_roomnum(77)), 77);
+    QVERIFY(!roomnum_outside(to_roomnum(77)));
+
+    // -1 means "no room" and maps to an unset handle.
+    QVERIFY(!to_roomnum(-1).has_value());
+    QCOMPARE(from_roomnum(to_roomnum(-1)), -1);
+    QVERIFY(roomnum_outside(index_t{}));
+
+    // A terrain cell number keeps its high bit: that bit is what marks a
+    // cell rather than a room index, and dropping it would silently turn a
+    // cell into a bogus room number.
+    const int32_t cell = static_cast<int32_t>(0x80120002u);
+    const index_t cell_handle = to_roomnum(cell);
+    QVERIFY(cell_handle.has_value());
+    QVERIFY(roomnum_outside(cell_handle));
+    QCOMPARE(from_roomnum(cell_handle), cell);
+    QCOMPARE(roomnum_cell(cell_handle), 0x00120002u);
+  }
+
   void testFlipFace() {
     RoomsEnsureIndex(0);
     room_t &rp = Rooms[0];

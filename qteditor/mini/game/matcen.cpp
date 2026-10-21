@@ -30,6 +30,7 @@
 #include <utility>
 
 #include "gametexture.h"
+#include "object_external_struct.h"
 #include "objinfo.h"
 #include "soundload.h"
 #include "ssl_lib.h"
@@ -126,7 +127,7 @@ matcen::matcen() {
   m_status = matcen_status_flags_t{};
 
   m_create_pnt = vector3{};
-  m_create_room = MATCEN_ERROR;
+  m_create_room = index_t{};
 
   m_cached_prod_index = -1;
   m_cached_prod_time = 0.0f;
@@ -220,7 +221,7 @@ void matcen::SaveData(byte_ostream &ofile) const {
   ofile << static_cast<int32_t>(m_roomnum);
 
   ofile << m_create_pnt;
-  ofile << static_cast<int32_t>(m_create_room);
+  ofile << static_cast<int32_t>(from_roomnum(m_create_room));
 
   // The original engine writer duplicates x() for the z component of both
   // spawn vectors and normals (a long-standing bug); the corrected z() is
@@ -329,7 +330,9 @@ void matcen::LoadData(byte_istream &ifile, const int *texture_xlate) {
 
   ifile >> m_create_pnt.x() >> m_create_pnt.y() >> m_create_pnt.z();
 
-  ifile >> m_create_room;
+  int32_t create_room = MATCEN_ERROR;
+  ifile >> create_room;
+  m_create_room = to_roomnum(create_room);
 
   m_spawn_pnt.clear();
   m_spawn_vec.clear();
@@ -337,7 +340,7 @@ void matcen::LoadData(byte_istream &ifile, const int *texture_xlate) {
   for (int i = 0; i < max_spawn_pnts; i++) {
     int32_t roomnum = MATCEN_ERROR;
     ifile >> roomnum;
-    m_spawn_pnt.push_back(roomnum < 0 ? index_t{} : index_t{static_cast<uint32_t>(roomnum)});
+    m_spawn_pnt.push_back(to_roomnum(roomnum));
 
     vector3 spawn_vec{};
     ifile >> spawn_vec.x() >> spawn_vec.y() >> spawn_vec.z();

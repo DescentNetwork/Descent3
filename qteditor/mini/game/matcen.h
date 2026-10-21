@@ -76,7 +76,7 @@ private:
   };
 
   vector3 m_create_pnt;
-  int m_create_room;
+  index_t m_create_room;
 
   std::vector<index_t> m_spawn_pnt;
   std::vector<vector3> m_spawn_vec;
