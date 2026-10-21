@@ -1240,12 +1240,12 @@ void EditorView::renderPaths() {
       break;
 
     const game_path &gp = GamePaths[current_path_index];
-    if (!GamePaths.is_used(current_path_index) || gp.num_nodes == 0)
+    if (!GamePaths.is_used(current_path_index) || gp.pathnodes.empty())
       continue;
 
     bool isCurrent = (current_path_index == app.current_path);
 
-    for (int t = 0; t < gp.num_nodes - 1; t++) {
+    for (size_t t = 0; t + 1 < gp.pathnodes.size(); t++) {
       float ax, ay, az, bx, by, bz;
       if (!projectVertexDepth(gp.pathnodes[t].pos, &ax, &ay, &az))
         continue;
@@ -1261,7 +1261,7 @@ void EditorView::renderPaths() {
       glEnd();
     }
 
-    for (int t = 0; t < gp.num_nodes; t++) {
+    for (size_t t = 0; t < gp.pathnodes.size(); t++) {
       float nx, ny, nz;
       if (!projectVertexDepth(gp.pathnodes[t].pos, &nx, &ny, &nz))
         continue;

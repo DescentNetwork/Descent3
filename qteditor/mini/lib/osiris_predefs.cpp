@@ -443,6 +443,7 @@
 
 #include "hlsoundlib.h"
 #include "gamepath.h"
+#include "object_external_struct.h"
 //#include "AIGoal.h"
 #include "AIMain.h"
 #include "soundload.h"
@@ -582,12 +583,12 @@ int osipf_AIGoalFollowPathSimple(int objhandle, int path_id, int guid, int flags
   path_info.path_id = path_id;
 
   if (flags & GF_PATH_MOVE_REVERSE_DIR)
-    path_info.next_node = GamePaths[path_id].num_nodes - 1;
+    path_info.next_node = static_cast<int>(GamePaths[path_id].pathnodes.size()) - 1;
   else
     path_info.next_node = 0;
 
   path_info.start_node = 0;
-  path_info.end_node = GamePaths[path_id].num_nodes - 1;
+  path_info.end_node = static_cast<int>(GamePaths[path_id].pathnodes.size()) - 1;
 
   return GoalAddGoal(obj, AIG_FOLLOW_PATH, (void *)&path_info, slot, 1.0f, flags, guid);
 }
@@ -1780,7 +1781,7 @@ int osipf_AIGoalAdd(int objhandle, int goal_type, int level, float influence, in
     va_end(marker);
 
     if (path_info.path_id >= 0 && path_info.end_node < 0) {
-      path_info.end_node = GamePaths[path_info.path_id].num_nodes - 1;
+      path_info.end_node = static_cast<int>(GamePaths[path_info.path_id].pathnodes.size()) - 1;
     }
 
     return GoalAddGoal(obj, AIG_FOLLOW_PATH, (void *)&path_info, level, influence, flags, guid);
@@ -3474,14 +3475,14 @@ bool osipf_PathGetInformation(int pathid, int point, vector3 *pos, int *room, ma
   if (!GamePaths.is_used(pathid))
     return false;
 
-  if (point < 0 || point >= GamePaths[pathid].num_nodes)
+  if (point < 0 || point >= static_cast<int>(GamePaths[pathid].pathnodes.size()))
     return false;
 
   if (pos)
     *pos = GamePaths[pathid].pathnodes[point].pos;
 
   if (room)
-    *room = GamePaths[pathid].pathnodes[point].roomnum;
+    *room = from_roomnum(GamePaths[pathid].pathnodes[point].roomnum);
 
   if (orient)
     vm_VectorToMatrix(*orient, GamePaths[pathid].pathnodes[point].fvec, GamePaths[pathid].pathnodes[point].uvec,
@@ -3714,7 +3715,7 @@ void osipf_PathValue(int path_id, int node_id, char op, int changes, void *ptr) 
 
   if (op == VF_GET) {
     if (changes & PV_ALL) {
-      if (node_id < 0 || node_id >= cpath.num_nodes) {
+      if (node_id < 0 || node_id >= static_cast<int>(cpath.pathnodes.size())) {
         LOG_FATAL("Invalid node on path");
         Q_ASSERT(false);
         return;
@@ -3745,7 +3746,7 @@ void osipf_PathValue(int path_id, int node_id, char op, int changes, void *ptr) 
     }
 
     if (changes == PV_I_NUMNODES) {
-      *((int *)ptr) = cpath.num_nodes;
+      *((int *)ptr) = static_cast<int>(cpath.pathnodes.size());
       return;
     }
 
@@ -3756,7 +3757,7 @@ void osipf_PathValue(int path_id, int node_id, char op, int changes, void *ptr) 
 
   } else if (op == VF_SET) {
     if (changes & PV_ALL) {
-      if (node_id < 0 || node_id >= cpath.num_nodes) {
+      if (node_id < 0 || node_id >= static_cast<int>(cpath.pathnodes.size())) {
         LOG_FATAL("Invalid node on path");
         Q_ASSERT(false);
         return;

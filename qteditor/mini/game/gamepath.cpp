@@ -3,6 +3,8 @@
 
 #include "gamepath.h"
 
+#include "object_external_struct.h"
+
 #include <QMessageBox>
 
 //#include "mem/mem.h"
@@ -24,8 +26,6 @@ void FreeGamePath(uint32_t n) {
     return;
 
   GamePaths[n].pathnodes.clear();
-
-  GamePaths[n].num_nodes = 0;
   GamePaths.release(n);
 }
 
@@ -45,7 +45,7 @@ void InitGamePaths() {
   f_game_paths_init = true;
 
   for (size_t i = 0; i < GamePaths.size(); i++) {
-    GamePaths[i].num_nodes = 0;
+    GamePaths[i].pathnodes.clear();
   }
 }
 
@@ -53,7 +53,7 @@ void InitGamePaths() {
 // Path editing helpers (editor/EPath.cpp in the MFC editor).
 bool Show_paths = true;
 
-int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient) {
+int InsertNodeIntoPath(int pathnum, int nodenum, int flags, index_t roomnum, vector3 pos, matrix orient) {
   if (GamePaths[pathnum].pathnodes.size() >= MAX_NODES_PER_PATH) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Path already has its maximum amount of nodes.");
     return -1;
@@ -65,13 +65,11 @@ int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3
   reinterpret_cast<uint32_t &>(newnode_ref.flags) = static_cast<uint32_t>(flags);
   newnode_ref.fvec = orient.fvec;
   newnode_ref.uvec = orient.uvec;
-  GamePaths[pathnum].num_nodes++;
   return nodenum + 1;
 }
 
 void DeleteNodeFromPath(int pathnum, int nodenum) {
   GamePaths[pathnum].pathnodes.erase(GamePaths[pathnum].pathnodes.begin() + nodenum);
-  GamePaths[pathnum].num_nodes--;
 }
 
 index_t AllocGamePath() {
@@ -79,7 +77,6 @@ index_t AllocGamePath() {
     if (GamePaths.is_unused(i)) {
       GamePaths.acquire(i);
       GamePaths[i].name.clear();
-      GamePaths[i].num_nodes = 0;
       GamePaths[i].flags = {};
       GamePaths[i].pathnodes.clear();
       return static_cast<uint32_t>(i);
@@ -96,7 +93,7 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
   fvi_info hit_info;
 
   fq.p0 = &GamePaths[pathnum].pathnodes[nodenum].pos;
-  fq.startroom = GamePaths[pathnum].pathnodes[nodenum].roomnum;
+  fq.startroom = from_roomnum(GamePaths[pathnum].pathnodes[nodenum].roomnum);
   fq.p1 = attempted_pos;
   fq.rad = 0.0f;
   fq.thisobjnum = -1;
@@ -110,7 +107,7 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
     fvi_query fq1;
     fvi_info hit_info1;
     fq1.p0 = &GamePaths[pathnum].pathnodes[nodenum - 1].pos;
-    fq1.startroom = GamePaths[pathnum].pathnodes[nodenum - 1].roomnum;
+    fq1.startroom = from_roomnum(GamePaths[pathnum].pathnodes[nodenum - 1].roomnum);
     fq1.p1 = &hit_info.hit_pnt;
     fq1.rad = 0.0f;
     fq1.thisobjnum = -1;
@@ -125,11 +122,11 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
     }
   }
 
-  if (nodenum < GamePaths[pathnum].num_nodes - 1) {
+  if (nodenum < static_cast<int>(GamePaths[pathnum].pathnodes.size()) - 1) {
     fvi_query fq1;
     fvi_info hit_info1;
     fq1.p0 = &GamePaths[pathnum].pathnodes[nodenum + 1].pos;
-    fq1.startroom = GamePaths[pathnum].pathnodes[nodenum + 1].roomnum;
+    fq1.startroom = from_roomnum(GamePaths[pathnum].pathnodes[nodenum + 1].roomnum);
     fq1.p1 = &hit_info.hit_pnt;
     fq1.rad = 0.0f;
     fq1.thisobjnum = -1;
@@ -145,7 +142,7 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
   }
 
   GamePaths[pathnum].pathnodes[nodenum].pos = hit_info.hit_pnt;
-  GamePaths[pathnum].pathnodes[nodenum].roomnum = hit_info.hit_room;
+  GamePaths[pathnum].pathnodes[nodenum].roomnum = to_roomnum(hit_info.hit_room);
   return 0;
 }
 

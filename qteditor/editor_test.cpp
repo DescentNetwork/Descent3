@@ -80,7 +80,6 @@
 
 index_t AllocGamePath();
 void FreeGamePath(uint32_t n);
-int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient);
 void DeleteNodeFromPath(int pathnum, int nodenum);
 void EBNode_ClearLevel();
 bool EBNode_VerifyGraph();
@@ -3359,8 +3358,7 @@ private slots:
     const game_path &first = GamePaths[0];
     QVERIFY(GamePaths.is_used(0));
     QCOMPARE(first.name, std::string("PlayerEndPath"));
-    QVERIFY(first.num_nodes > 0 && first.num_nodes <= MAX_NODES_PER_PATH);
-    QCOMPARE(int(first.pathnodes.size()), first.num_nodes);
+    QVERIFY(!first.pathnodes.empty() && first.pathnodes.size() <= MAX_NODES_PER_PATH);
     QCOMPARE(reinterpret_cast<const uint8_t &>(first.flags), uint8_t(0));
 
     for (size_t i = 0; i < GamePaths.size(); i++) {
@@ -3368,13 +3366,12 @@ private slots:
         continue;
       const game_path &p = GamePaths[i];
       QVERIFY(GamePaths.is_used(i));
-      QVERIFY(p.num_nodes >= 0 && p.num_nodes <= MAX_NODES_PER_PATH);
-      QCOMPARE(int(p.pathnodes.size()), p.num_nodes);
-      if (p.num_nodes > 0)
+      QVERIFY(p.pathnodes.size() <= MAX_NODES_PER_PATH);
+      if (!p.pathnodes.empty())
         QVERIFY(std::isfinite(p.pathnodes[0].pos.x()) && std::isfinite(p.pathnodes[0].pos.y()) &&
                 std::isfinite(p.pathnodes[0].pos.z()));
     }
-    QVERIFY(first.pathnodes[0].roomnum != 0);
+    QVERIFY(first.pathnodes[0].roomnum && *first.pathnodes[0].roomnum != 0);
 
     // Save -> reload -> save is byte-stable with the path table included
     // (the full second save also exercises TXNM/ROOM/TERR/OBJS/TRIG/INFO).
@@ -3401,7 +3398,7 @@ private slots:
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QVERIFY2(GamePaths.num_used() > 0, "reloaded game-path table is empty");
     QCOMPARE(GamePaths[0].name, std::string("PlayerEndPath"));
-    QCOMPARE(GamePaths[0].num_nodes, first.num_nodes);
+    QCOMPARE(GamePaths[0].pathnodes.size(), first.pathnodes.size());
 
     QVERIFY2(SaveLevel(std::filesystem::path(f2.toStdString()), true), "SaveLevel pass2 failed");
 
@@ -7974,7 +7971,7 @@ private slots:
     const size_t saved_num = GamePaths.num_used();
     const uint32_t idx = *AllocGamePath();
     QVERIFY(GamePaths.is_used(idx));
-    QVERIFY(GamePaths[idx].num_nodes == 0);
+    QVERIFY(GamePaths[idx].pathnodes.empty());
     QCOMPARE(GamePaths.num_used(), saved_num + 1);
 
     FreeGamePath(idx);
@@ -8025,20 +8022,48 @@ private slots:
 
     matrix orient = IDENTITY_MATRIX;
     vector3 pos{10.0f, 20.0f, 30.0f};
-    int n0 = InsertNodeIntoPath(idx, -1, 0, 0, pos, orient);
+    int n0 = InsertNodeIntoPath(idx, -1, 0, index_t{0}, pos, orient);
     QVERIFY(n0 >= 0);
-    QCOMPARE(GamePaths[idx].num_nodes, 1);
+    QCOMPARE(GamePaths[idx].pathnodes.size(), size_t(1));
 
     vector3 pos2{40.0f, 50.0f, 60.0f};
-    int n1 = InsertNodeIntoPath(idx, 0, 0, 0, pos2, orient);
+    int n1 = InsertNodeIntoPath(idx, 0, 0, index_t{0}, pos2, orient);
     QVERIFY(n1 == 1);
-    QCOMPARE(GamePaths[idx].num_nodes, 2);
+    QCOMPARE(GamePaths[idx].pathnodes.size(), size_t(2));
 
     DeleteNodeFromPath(idx, 0);
-    QCOMPARE(GamePaths[idx].num_nodes, 1);
+    QCOMPARE(GamePaths[idx].pathnodes.size(), size_t(1));
 
     app.current_path = s0;
     FreeGamePath(idx);
+  }
+
+  void testPathKeypadEmptyPathHasNoCurrentNode() {
+    const index_t saved_path = app.current_path;
+    const index_t saved_node = app.current_node;
+
+    // A path with no nodes has no current node, even when the editor still
+    // holds a selection left over from a previous path.  The stale selection
+    // must not be clamped to "size() - 1" (which wraps to 65535 for an empty
+    // path) and then used as an insert index.
+    const uint32_t idx = *AllocGamePath();
+    QVERIFY(GamePaths.is_used(idx));
+    QVERIFY(GamePaths[idx].pathnodes.empty());
+
+    app.current_path = idx;
+    app.current_node = 2u;
+
+    {
+      PathKeypad keypad;
+      QVERIFY(GamePaths[idx].pathnodes.empty());
+      QVERIFY(QMetaObject::invokeMethod(&keypad, "onInsertNode"));
+      QVERIFY(GamePaths[idx].pathnodes.empty());
+      QCOMPARE(GamePaths[idx].pathnodes.size(), size_t(0));
+    }
+
+    FreeGamePath(idx);
+    app.current_path = saved_path;
+    app.current_node = saved_node;
   }
 
   void testEBNodeClearLevel() {

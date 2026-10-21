@@ -31,12 +31,12 @@
 
 #include "d3edit.h"
 #include "gamepath.h"
+#include "object_external_struct.h"
 #include "vecmat.h"
 
 // Editor-side path helpers provided in d3_editor_state.cpp.
 index_t AllocGamePath();
 void FreeGamePath(uint32_t n);
-int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector3 pos, matrix orient);
 void DeleteNodeFromPath(int pathnum, int nodenum);
 index_t GetNextPath(uint32_t n);
 index_t GetPrevPath(uint32_t n);
@@ -76,7 +76,10 @@ int PathKeypad::currentNode() {
   const int p = currentPath();
   if (p < 0 || p >= (int)GamePaths.size() || GamePaths.is_unused(p))
     return -1;
-  if (app.current_node && *app.current_node >= GamePaths[p].num_nodes) app.current_node = GamePaths[p].num_nodes - 1;
+  if (GamePaths[p].pathnodes.empty())
+    return -1;
+  if (app.current_node && *app.current_node >= GamePaths[p].pathnodes.size())
+    app.current_node = static_cast<uint16_t>(GamePaths[p].pathnodes.size() - 1);
   return app.current_node ? static_cast<int>(*app.current_node) : -1;
 }
 
@@ -106,12 +109,12 @@ void PathKeypad::updateDialog() {
     combo->setCurrentText(QString::fromStdString(GamePaths[p].name));
   }
 
-  ui->IDC_PATHPAD_NUM_NODES->setText(QString::number(GamePaths[p].num_nodes));
+  ui->IDC_PATHPAD_NUM_NODES->setText(QString::number(GamePaths[p].pathnodes.size()));
 
   const int n = currentNode();
   ui->IDC_CURRENT_NODE_EDIT->setText(QString::number(n));
-  if (n >= 0 && n < GamePaths[p].num_nodes)
-      ui->IDC_PATHPAD_CUR_NODE_ROOM->setText(QString::number(GamePaths[p].pathnodes[n].roomnum));
+  if (n >= 0 && n < static_cast<int>(GamePaths[p].pathnodes.size()))
+      ui->IDC_PATHPAD_CUR_NODE_ROOM->setText(QString::number(from_roomnum(GamePaths[p].pathnodes[n].roomnum)));
 }
 
 void PathKeypad::onAddPath() {
@@ -154,10 +157,10 @@ void PathKeypad::onNextNode() {
   const int p = currentPath();
   if (p < 0)
     return;
-  if (GamePaths[p].num_nodes == 0)
+  if (GamePaths[p].pathnodes.empty())
     return;
   if (!app.current_node) app.current_node = 0u;
-  app.current_node = static_cast<uint16_t>((*app.current_node + 1) % GamePaths[p].num_nodes);
+  app.current_node = static_cast<uint16_t>((*app.current_node + 1) % GamePaths[p].pathnodes.size());
   updateDialog();
 }
 
@@ -165,9 +168,10 @@ void PathKeypad::onPrevNode() {
   const int p = currentPath();
   if (p < 0)
     return;
-  if (GamePaths[p].num_nodes == 0)
+  if (GamePaths[p].pathnodes.empty())
     return;
-  if (!app.current_node || *app.current_node == 0) app.current_node = static_cast<uint16_t>(GamePaths[p].num_nodes - 1);
+  if (!app.current_node || *app.current_node == 0)
+    app.current_node = static_cast<uint16_t>(GamePaths[p].pathnodes.size() - 1);
   else app.current_node = static_cast<uint16_t>(*app.current_node - 1);
   updateDialog();
 }
@@ -176,11 +180,13 @@ void PathKeypad::onCurrentNodeEdited() {
   const int p = currentPath();
   if (p < 0)
     return;
+  if (GamePaths[p].pathnodes.empty())
+    return;
   int n = ui->IDC_CURRENT_NODE_EDIT->text().toInt();
   if (n < 0)
     n = 0;
-  if (n >= GamePaths[p].num_nodes)
-    n = GamePaths[p].num_nodes - 1;
+  if (n >= static_cast<int>(GamePaths[p].pathnodes.size()))
+    n = static_cast<int>(GamePaths[p].pathnodes.size()) - 1;
   app.current_node = static_cast<uint16_t>(n);
   updateDialog();
 }
@@ -194,7 +200,7 @@ void PathKeypad::onInsertNode() {
   vm_MakeIdentity(orient);
   vector3 zero_pos;
   vm_MakeZero(zero_pos);
-  const int newnode = InsertNodeIntoPath(p, n, 0, 0, zero_pos, orient);
+  const int newnode = InsertNodeIntoPath(p, n, 0, index_t{0}, zero_pos, orient);
   if (newnode != -1)
     app.current_node = newnode;
   updateDialog();
@@ -205,13 +211,13 @@ void PathKeypad::onDeleteNode() {
   const int n = currentNode();
   if (p < 0 || n < 0)
     return;
-  if (GamePaths[p].num_nodes == 1) {
+  if (GamePaths[p].pathnodes.size() <= 1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot delete the only node in a path.");
     return;
   }
   DeleteNodeFromPath(p, n);
-  if (app.current_node >= GamePaths[p].num_nodes)
-    app.current_node = GamePaths[p].num_nodes - 1;
+  if (app.current_node >= GamePaths[p].pathnodes.size())
+    app.current_node = static_cast<uint16_t>(GamePaths[p].pathnodes.size() - 1);
   updateDialog();
 }
 

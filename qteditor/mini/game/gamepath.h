@@ -70,7 +70,7 @@ static_assert(sizeof(node_flags_t) == sizeof(uint32_t));
 
 struct node {
   vector3 pos;  // where this node is in the world
-  int roomnum; // what room?
+  index_t roomnum; // what room?
   node_flags_t flags;   // if this point lives over the terrain, etc
   vector3 fvec;
   vector3 uvec;
@@ -90,10 +90,7 @@ static_assert(sizeof(game_path_flags_t) == sizeof(uint8_t));
 
 class game_path {
 public:
-  game_path() { num_nodes = 0; }
-
-  std::vector<node> pathnodes; // how many nodes in this path? (count kept in num_nodes)
-  int num_nodes;           // how many nodes in this path?
+  std::vector<node> pathnodes; // the nodes of this path
   std::string name; // the name of this path
   game_path_flags_t flags;  // special properties of this path
 };
@@ -118,7 +115,7 @@ index_t AllocGamePath(void);
 // Returns the index number of the new node
 // If nodenum is -1, this node couldn't be added
 // Flags are passed via the flags field
-int InsertNodeIntoPath(int pathnum, int nodenum, int flags);
+int InsertNodeIntoPath(int pathnum, int nodenum, int flags, index_t roomnum, vector3 pos, matrix orient);
 
 void FreeGamePath(uint32_t n);
 

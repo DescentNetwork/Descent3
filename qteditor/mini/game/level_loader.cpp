@@ -1131,14 +1131,16 @@ static void LL_ReadGamePathsChunk(byte_istream &ifile, uint32_t version) {
     ifile >> p.name;
     int32_t nnodes = 0;
     ifile >> nnodes;
-    p.num_nodes = std::max(0, std::min<int>((int)nnodes, MAX_NODES_PER_PATH));
+    const int32_t node_count = std::max(0, std::min<int>((int)nnodes, MAX_NODES_PER_PATH));
     ifile >> reinterpret_cast<uint8_t &>(p.flags);
 
-    p.pathnodes.resize(p.num_nodes);
-    for (int j = 0; j < p.num_nodes; j++) {
+    p.pathnodes.resize(node_count);
+    for (int j = 0; j < node_count; j++) {
       node &nd = p.pathnodes[j];
       ifile >> nd.pos;
-      ifile >> nd.roomnum;
+      int32_t node_room = 0;
+      ifile >> node_room;
+      nd.roomnum = to_roomnum(node_room);
       ifile >> reinterpret_cast<uint32_t &>(nd.flags);
       if (version >= 51) {
         ifile >> nd.fvec;
@@ -1162,13 +1164,13 @@ static void LL_WriteGamePathsChunk(byte_ostream &ofile) {
       continue;
 
     ofile << p.name;
-    ofile << (int32_t)p.num_nodes;
+    ofile << (int32_t)p.pathnodes.size();
     ofile << reinterpret_cast<const uint8_t &>(p.flags);
 
-    for (int j = 0; j < p.num_nodes; j++) {
+    for (size_t j = 0; j < p.pathnodes.size(); j++) {
       const node &nd = p.pathnodes[j];
       ofile << nd.pos;
-      ofile << nd.roomnum;
+      ofile << static_cast<int32_t>(from_roomnum(nd.roomnum));
       ofile << reinterpret_cast<const uint32_t &>(nd.flags);
       ofile << nd.fvec;
       ofile << nd.uvec;

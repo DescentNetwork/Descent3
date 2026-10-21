@@ -513,7 +513,7 @@ void TerrainKeypad::onDropTerrain() {
   for (size_t p = 0; p < GamePaths.size(); p++) {
     if (!GamePaths.is_used(p))
       continue;
-    for (int n = 0; n < GamePaths[p].num_nodes; n++)
+    for (size_t n = 0; n < GamePaths[p].pathnodes.size(); n++)
       GamePaths[p].pathnodes[n].pos.y() += delta_y;
   }
 
