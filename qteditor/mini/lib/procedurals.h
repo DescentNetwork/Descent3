@@ -30,7 +30,6 @@ struct procedurals_t
   uint8_t osc_value = 8;
   float osc_time = 0.0f;
 
-  uint16_t num_proc_elements;
   std::vector<procedural_t> data;
 };
 
