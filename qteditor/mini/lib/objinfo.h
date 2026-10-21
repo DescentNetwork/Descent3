@@ -358,7 +358,7 @@ struct anim_entry {
   int16_t from = 0;
   int16_t to = 0;
   float spc = 1.0f;
-  int anim_sound_index = -1; // SOUND_NONE_INDEX (not 0; the editor's sound handles are 1-based)
+  index_t anim_sound_index; // sound-table index; empty means SOUND_NONE_INDEX
   uint8_t used = 0;
 };
 
@@ -429,7 +429,7 @@ struct ai_info_t {
   std::array<float, 2> melee_damage;
   std::array<float, 2> melee_latency;
 
-  int sound[MAX_AI_SOUNDS];
+  std::array<index_t, MAX_AI_SOUNDS> sound;
 
   uint8_t movement_type;
   uint8_t movement_subtype;

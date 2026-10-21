@@ -730,7 +730,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
 
     if (StateLimited) {
       state_limited_element state_element;
-      state_element.facenum = i;
+      state_element.facenum = index_t{static_cast<uint32_t>(i)};
       state_element.sort_key = pm.textures[fp.texnum];
       state_elements.push_back(state_element);
     } else
@@ -740,7 +740,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
   if (StateLimited) {
     SortStates(state_elements.data(), static_cast<int>(state_elements.size()));
     for (i = static_cast<int>(state_elements.size()) - 1; i >= 0; i--) {
-      int facenum = state_elements[i].facenum;
+      int facenum = index_to_int(state_elements[i].facenum);
       RenderSubmodelFace(pm, sm, facenum);
     }
   }

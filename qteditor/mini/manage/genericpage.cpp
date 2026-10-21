@@ -580,12 +580,12 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page &genericpage, index_t n) {
         if (!sound_handle) {
           LOG_ERROR("Couldn't load ai sound file '%s' in AssignGenericPage %s...",
                     genericpage.ai_sound_name[i].c_str(), genericpage.objinfo_struct.name.c_str());
-          obj.ai_info[0].sound[i] = -1;
+          obj.ai_info[0].sound[i] = std::nullopt;
         } else {
-          obj.ai_info[0].sound[i] = static_cast<int>(*sound_handle);
+          obj.ai_info[0].sound[i] = sound_handle;
         }
       } else {
-        obj.ai_info[0].sound[i] = -1;
+        obj.ai_info[0].sound[i] = std::nullopt;
       }
     }
   }
@@ -637,12 +637,12 @@ int mng_AssignGenericPageToObjInfo(mngs_generic_page &genericpage, index_t n) {
           if (!anim_sound_handle) {
             LOG_ERROR("Couldn't load anim sound file '%s' in AssignGenericPage %s...",
                       genericpage.anim_sound_name[i][j].c_str(), genericpage.objinfo_struct.name.c_str());
-            obj.anim[i].elem[j].anim_sound_index = -1;
+            obj.anim[i].elem[j].anim_sound_index = std::nullopt;
           } else {
-            obj.anim[i].elem[j].anim_sound_index = static_cast<int>(*anim_sound_handle);
+            obj.anim[i].elem[j].anim_sound_index = anim_sound_handle;
           }
         } else {
-          obj.anim[i].elem[j].anim_sound_index = -1;
+          obj.anim[i].elem[j].anim_sound_index = std::nullopt;
         }
       }
     }
@@ -690,9 +690,9 @@ void mng_AssignObjInfoToGenericPage(index_t n, mngs_generic_page &genericpage) {
   }
 
   for (size_t i = 0; i < MAX_AI_SOUNDS; i++) {
-    const int sound = obj.ai_info.empty() ? -1 : obj.ai_info[0].sound[i];
-    if (sound >= 0 && static_cast<size_t>(sound) < Sounds.size())
-      genericpage.ai_sound_name[i] = Sounds[sound].name;
+    const index_t sound = obj.ai_info.empty() ? index_t{} : obj.ai_info[0].sound[i];
+    if (sound && *sound < Sounds.size())
+      genericpage.ai_sound_name[i] = Sounds[*sound].name;
     else
       genericpage.ai_sound_name[i].clear();
   }
@@ -709,9 +709,9 @@ void mng_AssignObjInfoToGenericPage(index_t n, mngs_generic_page &genericpage) {
 
   for (size_t i = 0; i < NUM_MOVEMENT_CLASSES; i++) {
     for (size_t j = 0; j < NUM_ANIMS_PER_CLASS; j++) {
-      const int sound = i < obj.anim.size() ? obj.anim[i].elem[j].anim_sound_index : -1;
-      if (sound >= 0 && static_cast<size_t>(sound) < Sounds.size())
-        genericpage.anim_sound_name[i][j] = Sounds[sound].name;
+      const index_t sound = i < obj.anim.size() ? obj.anim[i].elem[j].anim_sound_index : index_t{};
+      if (sound && *sound < Sounds.size())
+        genericpage.anim_sound_name[i][j] = Sounds[*sound].name;
       else
         genericpage.anim_sound_name[i][j].clear();
     }

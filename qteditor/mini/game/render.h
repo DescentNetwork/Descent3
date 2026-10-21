@@ -169,6 +169,8 @@
 
 #include <vector>
 
+#include "utils.h"
+
 // Variables for debug/test
 #if (defined(_DEBUG) || defined(NEWEDITOR) || defined(EDITOR))
 
@@ -235,7 +237,7 @@ struct room_t;
 
 // For sorting our textures in state limited environments
 struct state_limited_element {
-  int facenum;
+  index_t facenum;
   int sort_key;
 };
 

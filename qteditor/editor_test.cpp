@@ -8238,7 +8238,7 @@ private slots:
     QCOMPARE(int(e.from), 0);
     QCOMPARE(int(e.to), 0);
     QCOMPARE(e.spc, 1.0f);
-    QCOMPARE(e.anim_sound_index, -1); // SOUND_NONE_INDEX
+    QVERIFY(!e.anim_sound_index); // SOUND_NONE_INDEX
     QCOMPARE(int(e.used), 0);
 
     // Only from/to/spc round-trip through the table file; the runtime-only
@@ -8247,7 +8247,7 @@ private slots:
     set.from = 3;
     set.to = 11;
     set.spc = 0.5f;
-    set.anim_sound_index = 7;
+    set.anim_sound_index = index_t{7};
     set.used = 1;
 
     std::vector<uint8_t> buffer(256);
@@ -8456,7 +8456,7 @@ private slots:
     for (size_t j = 0; j < Object_info[*ai].anim.size(); j++)
       for (int k = 0; k < NUM_ANIMS_PER_CLASS; k++) {
         QCOMPARE(Object_info[*ai].anim[j].elem[k].spc, 1.0f);
-        QCOMPARE(Object_info[*ai].anim[j].elem[k].anim_sound_index, -1);
+        QVERIFY(!Object_info[*ai].anim[j].elem[k].anim_sound_index);
       }
 
     // No anim requested: the table stays empty.
@@ -8467,7 +8467,7 @@ private slots:
     // Copies get their own buffer (vector semantics, not a shared pointer).
     const object_info copy = Object_info[*ai];
     QCOMPARE(int(copy.anim.size()), int(NUM_MOVEMENT_CLASSES));
-    QCOMPARE(copy.anim[0].elem[3].anim_sound_index, -1);
+    QCOMPARE(copy.anim[0].elem[3].anim_sound_index, index_t{});
     QCOMPARE(copy.anim[0].elem[3].spc, 1.0f);
     QVERIFY(copy.anim.data() != Object_info[*ai].anim.data());
 

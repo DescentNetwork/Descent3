@@ -19,6 +19,7 @@
 #ifndef OBJ_MOVE_MANAGER_H
 #define OBJ_MOVE_MANAGER_H
 
+#include "utils.h"
 #include "vecmat.h"
 
 struct object;
@@ -29,7 +30,7 @@ const int OBJMOVEAXIS_X = 1, OBJMOVEAXIS_Y = 2, OBJMOVEAXIS_Z = 3, OBJMOVEAXIS_X
 class ObjectMoveManager {
   int m_DragState;              // 0 = idle, 1 = dragging
   int m_MoveAxis;               // OBJMOVEAXIS_*
-  int m_ObjNum;                 // object index being moved
+  index_t m_ObjNum;             // object index being moved
   float m_WindowW2, m_WindowH2; // half-window dimensions for projection
 
   matrix m_ViewMat;

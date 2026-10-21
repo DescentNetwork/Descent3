@@ -224,7 +224,7 @@ object_info::object_info(object_type_e type, bool f_anim, bool f_weapons, bool f
 
   if (f_anim) {
     // anim_entry carries the object's per-class defaults (spc = 1.0f,
-    // anim_sound_index = SOUND_NONE_INDEX), so a value-initialized
+    // anim_sound_index empty), so a value-initialized
     // anim_elem is already the correct "fresh object" state.
     anim.assign(NUM_MOVEMENT_CLASSES, anim_elem{});
   }

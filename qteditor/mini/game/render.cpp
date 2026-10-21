@@ -2358,7 +2358,7 @@ void RenderRoomUnsorted(int roomnum) {
       } else {
         // setup order list
         state_limited_element state_element;
-        state_element.facenum = fn;
+        state_element.facenum = index_t{static_cast<uint32_t>(fn)};
         if (fp.flags.lightmap)
           state_element.sort_key = (index_to_int(LightmapInfo[fp.lmi_handle].lm_handle) * MAX_TEXTURES) + fp.tmap;
         else
@@ -2375,7 +2375,7 @@ void RenderRoomUnsorted(int roomnum) {
     // Render the faces
     int i;
     for (i = static_cast<int>(state_elements.size()) - 1; i >= 0; i--) {
-      RenderFace(roomnum, state_elements[i].facenum);
+      RenderFace(roomnum, index_to_int(state_elements[i].facenum));
     }
   }
 }

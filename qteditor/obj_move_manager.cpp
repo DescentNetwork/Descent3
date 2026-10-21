@@ -45,7 +45,7 @@ void ObjectMoveManager::Start(int view_width, int view_height, vector3 *view_pos
   m_DragState = 1;
   m_WindowW2 = view_width / 2.0f;
   m_WindowH2 = view_height / 2.0f;
-  m_ObjNum = index_to_int(app.Cur_object_index);
+  m_ObjNum = app.Cur_object_index;
 
   m_ViewPos = *view_pos;
   m_ViewMat = *view_mat;
@@ -66,7 +66,10 @@ void ObjectMoveManager::Defer(int dsx, int dsy, bool leftDown) {
   app.Object_moved = false;
 
   if (leftDown) {
-    object &obj = Objects[m_ObjNum];
+    if (!m_ObjNum || static_cast<int32_t>(*m_ObjNum) >= Highest_object_index + 1)
+      return;
+
+    object &obj = Objects[*m_ObjNum];
 
     if (!dsx && !dsy)
       return;
