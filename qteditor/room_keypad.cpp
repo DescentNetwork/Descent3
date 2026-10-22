@@ -42,23 +42,23 @@ RoomKeypad::RoomKeypad(QWidget *parent)
   connect(ui->IDC_ROOMPAD_EXPAND_ROOM, &QPushButton::clicked, this, &RoomKeypad::onExpandRoom);
   connect(ui->IDC_ROOMPAD_CONTRACT_ROOM, &QPushButton::clicked, this, &RoomKeypad::onContractRoom);
 
-  const int roomnum = index_to_int(app.current.room);
-  connect(ui->IDC_TOUCHES_OUTSIDE, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.touches_terrain = checked; app.World_changed = true; });
-  connect(ui->IDC_SECRET_CHECK, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.secret = checked; app.World_changed = true; });
-  connect(ui->IDC_EXTERNAL_ROOM, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.external = checked; app.World_changed = true; });
-  connect(ui->IDC_SPECIAL_1, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.special1 = checked; app.World_changed = true; });
-  connect(ui->IDC_SPECIAL_2, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.special2 = checked; app.World_changed = true; });
-  connect(ui->IDC_SPECIAL_3, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.special3 = checked; app.World_changed = true; });
-  connect(ui->IDC_SPECIAL_4, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.special4 = checked; app.World_changed = true; });
-  connect(ui->IDC_SPECIAL_5, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.special5 = checked; app.World_changed = true; });
-  connect(ui->IDC_SPECIAL_6, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.special6 = checked; app.World_changed = true; });
-  connect(ui->IDC_ROOM_SKIP_LIGHTING, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.no_light = checked; app.World_changed = true; });
-  connect(ui->IDC_ROOMPAD_REFUELING_CENTER, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.fuelcen = checked; app.World_changed = true; });
-  connect(ui->IDC_ROOMPAD_GOAL1, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.goal1 = checked; app.World_changed = true; });
-  connect(ui->IDC_ROOMPAD_GOAL2, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.goal2 = checked; app.World_changed = true; });
-  connect(ui->IDC_ROOMPAD_GOAL3, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.goal3 = checked; app.World_changed = true; });
-  connect(ui->IDC_ROOMPAD_GOAL4, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.goal4 = checked; app.World_changed = true; });
-  connect(ui->IDC_TRIANGULATE, &QCheckBox::toggled, this, [roomnum](bool checked){ Rooms[roomnum].flags.triangulate = checked; app.World_changed = true; });
+  const index_t roomnum = app.current.room;
+  connect(ui->IDC_TOUCHES_OUTSIDE, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.touches_terrain = checked; app.World_changed = true; });
+  connect(ui->IDC_SECRET_CHECK, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.secret = checked; app.World_changed = true; });
+  connect(ui->IDC_EXTERNAL_ROOM, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.external = checked; app.World_changed = true; });
+  connect(ui->IDC_SPECIAL_1, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.special1 = checked; app.World_changed = true; });
+  connect(ui->IDC_SPECIAL_2, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.special2 = checked; app.World_changed = true; });
+  connect(ui->IDC_SPECIAL_3, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.special3 = checked; app.World_changed = true; });
+  connect(ui->IDC_SPECIAL_4, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.special4 = checked; app.World_changed = true; });
+  connect(ui->IDC_SPECIAL_5, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.special5 = checked; app.World_changed = true; });
+  connect(ui->IDC_SPECIAL_6, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.special6 = checked; app.World_changed = true; });
+  connect(ui->IDC_ROOM_SKIP_LIGHTING, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.no_light = checked; app.World_changed = true; });
+  connect(ui->IDC_ROOMPAD_REFUELING_CENTER, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.fuelcen = checked; app.World_changed = true; });
+  connect(ui->IDC_ROOMPAD_GOAL1, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.goal1 = checked; app.World_changed = true; });
+  connect(ui->IDC_ROOMPAD_GOAL2, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.goal2 = checked; app.World_changed = true; });
+  connect(ui->IDC_ROOMPAD_GOAL3, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.goal3 = checked; app.World_changed = true; });
+  connect(ui->IDC_ROOMPAD_GOAL4, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.goal4 = checked; app.World_changed = true; });
+  connect(ui->IDC_TRIANGULATE, &QCheckBox::toggled, this, [roomnum](bool checked){ if(!roomnum) return; Rooms[*roomnum].flags.triangulate = checked; app.World_changed = true; });
 
   updateDialog();
 }
@@ -67,14 +67,15 @@ RoomKeypad::~RoomKeypad() { delete ui; }
 
 void RoomKeypad::updateDialog() {
   // Win32 disables the room editing controls when no room is current.
-  const bool active = (app.current.room.has_value() && Rooms[*app.current.room].used);
+  const index_t roomnum = app.current.room;
+  const bool active = (roomnum.has_value() && *roomnum < Rooms.size() && Rooms[*roomnum].used);
   for (QWidget *w : findChildren<QWidget *>())
     if (w->objectName().startsWith("IDC_"))
       w->setEnabled(active);
   if (active)
   {
-    room_t &rp = Rooms[*app.current.room];
-    ui->IDC_ROOM_NAME->setText(rp.name.empty() ? QString("<room %1>").arg(index_to_int(app.current.room)) : QString::fromStdString(rp.name));
+    room_t &rp = Rooms[*roomnum];
+    ui->IDC_ROOM_NAME->setText(rp.name.empty() ? QString("<room %1>").arg(*roomnum) : QString::fromStdString(rp.name));
     ui->IDC_VERTEX_COUNT->setText(QString("Verts: %1").arg(rp.verts.size()));
     ui->IDC_FACE_COUNT->setText(QString("Faces: %1").arg(rp.faces.size()));
     ui->IDC_PORTAL_COUNT->setText(QString("Portals: %1").arg(rp.portals.size()));

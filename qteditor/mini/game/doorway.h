@@ -91,6 +91,7 @@
 
 #include <cstdint>
 #include <vector>
+#include "utils.h"
 
 // IMPORTANT!!!!!!!!!!!
 // "Doors" refers to a predefined door that is in memory
@@ -170,10 +171,10 @@ struct object;
 
 // Adds a doorway to the specified room
 // Returns a pointer to the doorway struct
-doorway *DoorwayAdd(int roomnum, int doornum);
+doorway *DoorwayAdd(index_t roomnum, int doornum);
 
 // Updates the animation when the door position is changed
-void DoorwayUpdateAnimation(int roomnum);
+void DoorwayUpdateAnimation(index_t roomnum);
 
 //
 // General Functions
@@ -213,7 +214,7 @@ void DoorwayDestroy(object *objp);
 bool DoorwayLocked(int door_obj_handle);
 
 // Returns true if the doorway in the given room is locked, else false
-bool DoorwayLockedForRoom(int roomnum);
+bool DoorwayLockedForRoom(index_t roomnum);
 
 // Returns true if the doorway is openable by the specified player, else false
 bool DoorwayOpenable(int door_obj_handle, int opener_handle);
@@ -226,6 +227,6 @@ float DoorwayPosition(int door_obj_handle);
 
 // Returns the current position of the doorway in the given room.
 // 0.0 = totally closed, 1.0 = totally open
-float DoorwayPositionForRoom(int roomnum);
+float DoorwayPositionForRoom(index_t roomnum);
 
 #endif

@@ -304,7 +304,7 @@ static int8_t BNode_vis[MAX_BNODES_PER_ROOM];
 #define VIS_OK 1
 #define VIS_NO 2
 
-int BNode_FindDirLocalVisibleBNode(int roomnum, vector3& pos, vector3& fvec, float rad) {
+int BNode_FindDirLocalVisibleBNode(index_t roomnum, vector3& pos, vector3& fvec, float rad) {
   size_t i;
   float best_dot = -1.01f;
   float closest_dist = 800.0f;
@@ -316,7 +316,7 @@ int BNode_FindDirLocalVisibleBNode(int roomnum, vector3& pos, vector3& fvec, flo
     min_bn_rad = MAX_BNODE_SIZE;
   }
 
-  bn_list *bnlist = BNode_GetBNListPtr(roomnum);
+  bn_list *bnlist = BNode_GetBNListPtr(*roomnum);
   if (bnlist == nullptr)
     return -1;
 
@@ -348,9 +348,9 @@ retry:
           fvi_info hit_info;
 
           fq.p0 = &pos;
-          fq.startroom = (roomnum >= Rooms.size() && roomnum < Rooms.size() + 8)
+          fq.startroom = (*roomnum >= Rooms.size() && *roomnum < Rooms.size() + 8)
                              ? GetTerrainRoomFromPos(pos).value_or(-1)
-                             : roomnum;
+                             : *roomnum;
           fq.p1 = &bnlist->nodes[i].pos;
           fq.rad = min_bn_rad;
           fq.thisobjnum = -1;
@@ -401,7 +401,7 @@ retry:
   return closest_node;
 }
 
-int BNode_FindClosestLocalVisibleBNode(int roomnum, vector3& pos, float rad) {
+int BNode_FindClosestLocalVisibleBNode(index_t roomnum, vector3& pos, float rad) {
   size_t i, j;
   float closest_dist = 800.0f;
   int closest_node = -1;
@@ -412,7 +412,7 @@ int BNode_FindClosestLocalVisibleBNode(int roomnum, vector3& pos, float rad) {
     min_bn_rad = MAX_BNODE_SIZE;
   }
 
-  bn_list *bnlist = BNode_GetBNListPtr(roomnum);
+  bn_list *bnlist = BNode_GetBNListPtr(*roomnum);
   Q_ASSERT(bnlist);
 
 retry:
@@ -436,9 +436,9 @@ retry:
 
         if (!f_retry) {
           fq.p0 = &pos;
-          fq.startroom = (roomnum >= Rooms.size() && roomnum < Rooms.size() + 8)
+          fq.startroom = (*roomnum >= Rooms.size() && *roomnum < Rooms.size() + 8)
                              ? GetTerrainRoomFromPos(pos).value_or(-1)
-                             : roomnum;
+                             : *roomnum;
           fq.p1 = &bnlist->nodes[i].pos;
           fq.rad = min_bn_rad;
           fq.thisobjnum = -1;
@@ -468,25 +468,25 @@ retry:
   return closest_node;
 }
 
-bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level) {
-  if (roomnum == -1) {
+bn_list *BNode_GetBNListPtr(index_t roomnum, bool f_in_load_level) {
+  if (!roomnum) {
     return nullptr;
-  } else if (roomnum >= 0 && roomnum < Rooms.size()) {
+  } else if (roomnum.has_value() && *roomnum < Rooms.size()) {
     //		if(!f_in_load_level)
     //		{
     //			Q_ASSERT(!(Rooms[roomnum].flags2.external));
     //		}
 
-    if (!Rooms[roomnum].used) {
+    if (!Rooms[*roomnum].used) {
       return NULL;
     }
 
-    room_t &rp = Rooms[roomnum];
+    room_t &rp = Rooms[*roomnum];
     return &rp.bn_info;
-  } else if (ROOMNUM_OUTSIDE(roomnum)) {
-    return &BNode_terrain_list[Terrain_seg[roomnum].flags.region];
-  } else if (roomnum < Rooms.size() + 8) {
-    return &BNode_terrain_list[roomnum - ((int)Rooms.size() - 1) - 1];
+  } else if (roomnum_outside(roomnum)) {
+    return &BNode_terrain_list[Terrain_seg[*roomnum].flags.region];
+  } else if (*roomnum < Rooms.size() + 8) {
+    return &BNode_terrain_list[*roomnum - ((int)Rooms.size() - 1) - 1];
   }
 
   return nullptr;
@@ -507,8 +507,8 @@ bool BNode_MakeSubPath(int16_t sroom, int16_t spnt, int16_t eroom, int16_t epnt,
   return false;
 }
 
-void BNode_FreeRoom(int roomnum) {
-  room_t &rp = Rooms[roomnum];
+void BNode_FreeRoom(index_t roomnum) {
+  room_t &rp = Rooms[*roomnum];
   rp.bn_info.nodes.clear();
 }
 

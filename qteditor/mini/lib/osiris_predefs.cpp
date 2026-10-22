@@ -622,8 +622,8 @@ void osipf_SoundTouch(const std::string &str) {
 }
 #if 0
 // Gets room values
-void osipf_RoomValue(int roomnum, char op, char vtype, void *ptr, int index) {
-  if (roomnum < 0 || roomnum >= Rooms.size() || !Rooms[roomnum].used) {
+void osipf_RoomValue(index_t roomnum, char op, char vtype, void *ptr, int index) {
+  if (!roomnum || *roomnum >= Rooms.size() || !Rooms[*roomnum].used) {
     if (vtype == RMV_C_USED)
       *(char *)ptr = 0;
     else
@@ -632,7 +632,7 @@ void osipf_RoomValue(int roomnum, char op, char vtype, void *ptr, int index) {
     return;
   }
 
-  const room &rp = Rooms[roomnum];
+  const room &rp = Rooms[*roomnum];
 
   switch (vtype) {
   case RMV_I_FLAGS:
@@ -1860,11 +1860,11 @@ int osipf_AIGoalAdd(int objhandle, int goal_type, int level, float influence, in
     // Pop Goal Local Variables
     va_start(marker, flags);
     vector3 *pos = va_arg(marker, vector3 *);
-    int roomnum = va_arg(marker, int);
+    index_t roomnum = va_arg(marker, int);
     va_end(marker);
 
     g_info.pos = (*pos);
-    g_info.roomnum = roomnum;
+    g_info.roomnum = *roomnum;
 
     // Do the actual goal and return;
     return GoalAddGoal(obj, goal_type, (void *)&g_info, level, influence, flags, guid);
@@ -1993,9 +1993,9 @@ int osipf_ObjMakeListOfType(int objhandle, int type, int id, bool f_ignore_init_
 }
 #endif
 #if 0
-vector3 osipf_AIGetRoomPathPoint(int roomnum) {
-  if (ROOMNUM_OUTSIDE(roomnum)) {
-    int cell = CELLNUM(roomnum);
+vector3 osipf_AIGetRoomPathPoint(index_t roomnum) {
+  if (roomnum_outside(roomnum)) {
+    int cell = roomnum_cell(roomnum);
 
     if (cell >= TERRAIN_DEPTH * TERRAIN_WIDTH) {
       return vector3{};
@@ -2007,8 +2007,8 @@ vector3 osipf_AIGetRoomPathPoint(int roomnum) {
 
       return pos;
     }
-  } else if (roomnum < Rooms.size() && Rooms[roomnum].used) {
-    return Rooms[roomnum].path_pnt;
+  } else if (*roomnum < Rooms.size() && Rooms[*roomnum].used) {
+    return Rooms[*roomnum].path_pnt;
   }
 
   return vector3{};
@@ -2120,11 +2120,11 @@ void osipf_GetGroundPos(int objhandle, int ground_number, vector3 *ground_pnt, v
 }
 #endif
 
-uint8_t osipf_IsRoomValid(int roomnum) {
-  if (roomnum == -1.0f) {
+uint8_t osipf_IsRoomValid(index_t roomnum) {
+  if (!roomnum) {
     return 0;
-  } else if (ROOMNUM_OUTSIDE(roomnum)) {
-    int cell = CELLNUM(roomnum);
+  } else if (roomnum_outside(roomnum)) {
+    int cell = roomnum_cell(roomnum);
 
     if ((CELLNUM(cell) < 0) || (cell >= TERRAIN_WIDTH * TERRAIN_DEPTH)) {
       return 0;
@@ -2132,7 +2132,7 @@ uint8_t osipf_IsRoomValid(int roomnum) {
       return 1;
     }
   } else {
-    if (roomnum < 0 || roomnum >= Rooms.size() || Rooms[roomnum].used == 0) {
+    if (!roomnum || *roomnum >= Rooms.size() || Rooms[*roomnum].used == 0) {
       return 0;
     } else {
       return 2;
@@ -2586,7 +2586,7 @@ void osipf_OpenMessageWindow(const char *title, ...) {
   Q_ASSERT(false); // ummm, this is a blank function, should we ever be calling it?
 }
 
-int osipf_ObjCreate(uint8_t raw_type, uint16_t id, int roomnum, vector3 *pos, const matrix *orient, int parent_handle,
+int osipf_ObjCreate(uint8_t raw_type, uint16_t id, index_t roomnum, vector3 *pos, const matrix *orient, int parent_handle,
                     vector3 *initial_velocity) {
   object *obj;
   int objnum;
@@ -2596,13 +2596,13 @@ int osipf_ObjCreate(uint8_t raw_type, uint16_t id, int roomnum, vector3 *pos, co
   if (id == 65535) // since it is a uint16_t, this is == -1
     return OBJECT_HANDLE_NONE;
 
-  if (((roomnum >= 0) && (roomnum < Rooms.size()) && (Rooms[roomnum].used)) || (ROOMNUM_OUTSIDE(roomnum))) {
+  if (((roomnum.has_value()) && (*roomnum < Rooms.size()) && (Rooms[*roomnum].used)) || (roomnum_outside(roomnum))) {
     if (IS_GENERIC(type)) {
       // Make sure the scripts aren't creating objects that have lightmaps!
       Q_ASSERT(Object_info[id].lighting_info.lighting_render_type != lighting_render_type::lightmaps);
     }
 
-    objnum = ObjCreate(type, id, roomnum, pos, orient, parent_handle).value_or(-1);
+    objnum = ObjCreate(type, id, *roomnum, pos, orient, parent_handle).value_or(-1);
 
     if (objnum == -1) {
       return OBJECT_HANDLE_NONE;
@@ -3427,8 +3427,8 @@ index_t osipf_FindPathName(const std::string &name) { return FindGamePathName(na
 
 index_t osipf_FindLevelGoalName(const std::string &name) { return Level_goals.GoalFindId(name); }
 #if 0
-void osipf_CreateRandomSparks(int num_sparks, vector3 *pos, int roomnum, int which_index, float force_scalar) {
-  CreateRandomSparks(num_sparks, pos, roomnum, which_index, force_scalar);
+void osipf_CreateRandomSparks(int num_sparks, vector3 *pos, index_t roomnum, int which_index, float force_scalar) {
+  CreateRandomSparks(num_sparks, pos, *roomnum, which_index, force_scalar);
 }
 
 // disable/enable ship

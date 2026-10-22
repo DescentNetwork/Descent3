@@ -153,6 +153,7 @@
 
 #include "object.h"
 #include "player.h"
+#include "utils.h"
 
 #define AI_SOUND_SHORT_DIST 60.0f
 
@@ -190,6 +191,6 @@ void AIUpdateAnim(object *obj);
 bool AITurnTowardsMatrix(object *obj, float turn_rate, matrix *g_orient);
 int AIFindRandomRoom(object *obj, ai_frame *ai_info, goal *goal_ptr, int avoid_room, int min_depth, int max_depth,
                      bool f_check_path, bool f_cur_room_ok, int *depth);
-int AIMakeNextRoomList(int roomnum, int *next_rooms, int max_rooms);
+int AIMakeNextRoomList(index_t roomnum, int *next_rooms, int max_rooms);
 
 #endif

@@ -762,7 +762,7 @@ void BigObjAdd(int objnum);
 void InitBigObjects(void);
 
 // Creates the player object in the center of the given room
-void CreatePlayerObject(int roomnum);
+void CreatePlayerObject(index_t roomnum);
 
 // Retruns a pointer to an object given its handle.  Returns NULL if object no longer exists.
 object *ObjGet(int handle);

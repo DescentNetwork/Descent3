@@ -156,6 +156,7 @@
 #include "manage.h"
 #include "grdefs.h"
 #include "DeathInfo.h"
+#include "utils.h"
 
 #define PARTICLE_LIFE 0.5f
 #define DEBRIS_LIFE 2.0
@@ -198,7 +199,7 @@ void DrawFireballObject(object *obj);
 // Creates a fireball
 // Returns object number on success, else -1 on error
 // If vis_effect is non-zero, then this is a visual effect only
-int CreateFireball(vector3 *pos, int fireball_num, int roomnum, int realtype = VISUAL_FIREBALL);
+int CreateFireball(vector3 *pos, int fireball_num, index_t roomnum, int realtype = VISUAL_FIREBALL);
 
 // Creates a fireball vis effect for the specified object
 // The explosion size is twice the object size times size_scale
@@ -218,7 +219,7 @@ void MakeShockwave(object *explode_obj_ptr, int parent_handle);
 void DoConcussiveForce(object *explode_obj_ptr, int parent_handle, float player_scalar = 1);
 
 // Creates a gravity field that sucks objects into it
-extern int CreateGravityField(vector3 *pos, int roomnum, float size, float time, int parent_handle);
+extern int CreateGravityField(vector3 *pos, index_t roomnum, float size, float time, int parent_handle);
 
 // Control code for explosions
 void DoExplosionFrame(object *obj);
@@ -234,13 +235,13 @@ object *CreateSubobjectDebrisDirected(object *parent, int subobj_num, vector3 *d
 void CreateSplintersFromBody(object *obj, float explosion_mag, float lifetime);
 
 // Creates a blast ring to be drawn
-int CreateBlastRing(vector3 *pos, int index, float lifetime, float max_size, int roomnum, int force_blue = 0);
+int CreateBlastRing(vector3 *pos, int index, float lifetime, float max_size, index_t roomnum, int force_blue = 0);
 
 // Creates a standard blast ring for an object
 int CreateObjectBlastRing(object *objp);
 
 // Creates a smolding smoke to be drawn
-int CreateSmolderingObject(vector3 *pos, int index, float lifetime, float max_size, int roomnum);
+int CreateSmolderingObject(vector3 *pos, int index, float lifetime, float max_size, index_t roomnum);
 
 // Draws a blast ring
 void DrawBlastRingObject(object *obj);
@@ -257,7 +258,7 @@ void DrawColoredRing(vector3 *pos, float r, float g, float b, float inner_alpha,
 void DoBlastRingEvent(int eventnum, void *data);
 
 // Makes a fireball have a custom vclip
-int CreateCustomFireballObject(vector3 *pos, int fireball_num, int tex_handle, int roomnum);
+int CreateCustomFireballObject(vector3 *pos, int fireball_num, int tex_handle, index_t roomnum);
 
 // Creates an explosion
 void DoExplosionEvent(int eventnum, void *data);

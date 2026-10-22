@@ -882,6 +882,7 @@ struct ai_frame {
 
 #include "object_external.h"
 #include "room.h"
+#include "utils.h"
 
 #define MAX_DYNAMIC_PATHS 50
 #define MAX_NODES 50
@@ -895,7 +896,7 @@ public:
   };
 
   vector3 pos[MAX_NODES];
-  int roomnum[MAX_NODES];
+  index_t roomnum[MAX_NODES];
 
   int16_t num_nodes;
   int16_t use_count;

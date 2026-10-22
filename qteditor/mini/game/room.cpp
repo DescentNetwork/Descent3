@@ -440,15 +440,15 @@ void RoomsReset() {
 // Grows Rooms so index `roomnum` is valid.  Mirrors the Win32 fixed array
 // (whose slots were pre-zeroed with objects == -1) by initialising the newly
 // appended slots' object/vis-effect chains to the empty state.
-bool RoomsEnsureIndex(int roomnum) {
+bool RoomsEnsureIndex(index_t roomnum) {
   const int cap = MAX_ROOMS + MAX_PALETTE_ROOMS;
-  if (roomnum < 0 || roomnum >= cap)
+  if (!roomnum || *roomnum >= cap)
     return false;
-  if (Rooms.size() > static_cast<size_t>(roomnum))
+  if (Rooms.size() > static_cast<size_t>(*roomnum))
     return true;
 
   const size_t old_size = Rooms.size();
-  Rooms.resize(roomnum + 1);
+  Rooms.resize(*roomnum + 1);
   for (size_t i = old_size; i < Rooms.size(); ++i) {
     Rooms[i].objects = -1;
     Rooms[i].vis_effects = -1;
@@ -466,10 +466,10 @@ void InitRooms() {
 
 #if (defined(EDITOR) || defined(NEWEDITOR))
 // Figures out how many verts there are in all the faces in a room
-int CountRoomFaceVerts(int roomnum) {
+int CountRoomFaceVerts(index_t roomnum) {
   int n = 0;
 
-  room_t &rp = Rooms[roomnum];
+  room_t &rp = Rooms[*roomnum];
   for (int f = 0; f < rp.faces.size(); f++)
     n += rp.faces[f].num_verts;
 
@@ -588,11 +588,11 @@ index_t FindPointRoom(const vector3 &pnt) {
 }
 
 // Frees a room in the Rooms table, deallocating its memory and marking it as unused
-void FreeRoom(int roomnum) {
+void FreeRoom(index_t roomnum) {
   int i;
   const int old_hri = static_cast<int>(Rooms.size()) - 1;
 
-  room_t &rp = Rooms[roomnum];
+  room_t &rp = Rooms[*roomnum];
 
   Q_ASSERT(rp.used != 0); // make sure room is un use
 
@@ -616,7 +616,7 @@ void FreeRoom(int roomnum) {
     rp.num_bbf_regions = 0;
   }
 
-  BNode_FreeRoom(roomnum);
+  BNode_FreeRoom(*roomnum);
 
   rp.volume_lights.clear();
 
@@ -626,7 +626,7 @@ void FreeRoom(int roomnum) {
 
   // Update the high-water mark: Rooms.size() is the watermark + 1, so drop any
   // unused tail slots just like the Win32 room-free path trimmed the watermark.
-  if (roomnum == static_cast<int>(Rooms.size()) - 1)
+  if (*roomnum == static_cast<int>(Rooms.size()) - 1)
     while (!Rooms.empty() && !Rooms.back().used)
       Rooms.pop_back();
 
@@ -668,10 +668,10 @@ void FreeRoomFace(face &fp) {
 // Finds the center point of a room
 // Parameters:	vp - filled in with the center point
 //					rp - the room whose center to find
-void ComputeRoomCenter(vector3 &vp, int roomnum) {
+void ComputeRoomCenter(vector3 &vp, index_t roomnum) {
   int i;
 
-  room_t &rp = Rooms[roomnum];
+  room_t &rp = Rooms[*roomnum];
 
   vp = vector3{};
 
@@ -685,8 +685,8 @@ void ComputeRoomCenter(vector3 &vp, int roomnum) {
 }
 
 // Computes the center point on a face by averaging the points in the face
-void ComputeCenterPointOnFace(vector3 &vp, int roomnum, int facenum) {
-  room_t &rp = Rooms[roomnum];
+void ComputeCenterPointOnFace(vector3 &vp, index_t roomnum, int facenum) {
+  room_t &rp = Rooms[*roomnum];
   const face &fp = rp.faces[facenum];
   int i;
 
@@ -720,14 +720,14 @@ bool ComputeFaceNormal(room_t &rp, int facenum) {
   return ok;
 }
 
-bool ComputeFaceNormal(int roomnum, int facenum) {
-  room_t &rp = Rooms[roomnum];
+bool ComputeFaceNormal(index_t roomnum, int facenum) {
+  room_t &rp = Rooms[*roomnum];
   bool ok;
 
   ok = ComputeFaceNormal(rp, facenum);
 
   if (!ok) {
-    LOG_WARNING("Warning: Low precision normal for room:face = %d:%d", roomnum, facenum);
+    LOG_WARNING("Warning: Low precision normal for room:face = %d:%d", *roomnum, facenum);
   }
 
   return ok;
@@ -774,8 +774,8 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
 }
 
 // Computes the center point on a face by averaging the points in the portal
-void ComputePortalCenter(vector3 &vp, int roomnum, int portal_index) {
-  room_t &rp = Rooms[roomnum];
+void ComputePortalCenter(vector3 &vp, index_t roomnum, int portal_index) {
+  room_t &rp = Rooms[*roomnum];
   const portal &pp = rp.portals[portal_index];
   const face &fp = rp.faces[pp.portal_face];
   int i;
@@ -789,16 +789,16 @@ void ComputePortalCenter(vector3 &vp, int roomnum, int portal_index) {
 }
 
 // Clears lightmaps for a single room
-void ClearRoomLightmaps(int roomnum) {
+void ClearRoomLightmaps(index_t roomnum) {
   int t;
 
-  Q_ASSERT(Rooms[roomnum].used);
+  Q_ASSERT(Rooms[*roomnum].used);
 
-  for (t = 0; t < Rooms[roomnum].faces.size(); t++) {
-    if (Rooms[roomnum].faces[t].lmi_handle != BAD_LMI_INDEX) {
-      FreeLightmapInfo(Rooms[roomnum].faces[t].lmi_handle);
-      Rooms[roomnum].faces[t].lmi_handle = BAD_LMI_INDEX;
-      Rooms[roomnum].faces[t].flags.lightmap = false;
+  for (t = 0; t < Rooms[*roomnum].faces.size(); t++) {
+    if (Rooms[*roomnum].faces[t].lmi_handle != BAD_LMI_INDEX) {
+      FreeLightmapInfo(Rooms[*roomnum].faces[t].lmi_handle);
+      Rooms[*roomnum].faces[t].lmi_handle = BAD_LMI_INDEX;
+      Rooms[*roomnum].faces[t].flags.lightmap = false;
     }
   }
 }
@@ -821,16 +821,16 @@ void ClearAllRoomLightmaps(int external) {
 }
 
 // Clears specmaps for a single room
-void ClearRoomSpecmaps(int roomnum) {
+void ClearRoomSpecmaps(index_t roomnum) {
   int t;
 
-  Q_ASSERT(Rooms[roomnum].used);
+  Q_ASSERT(Rooms[*roomnum].used);
 
-  for (t = 0; t < Rooms[roomnum].faces.size(); t++) {
-    if (Rooms[roomnum].faces[t].special_handle.has_value()) {
-      if (SpecialFaces[*Rooms[roomnum].faces[t].special_handle].type == SFT_SPECULAR) {
-        FreeSpecialFace(Rooms[roomnum].faces[t].special_handle);
-        Rooms[roomnum].faces[t].special_handle = std::nullopt;
+  for (t = 0; t < Rooms[*roomnum].faces.size(); t++) {
+    if (Rooms[*roomnum].faces[t].special_handle.has_value()) {
+      if (SpecialFaces[*Rooms[*roomnum].faces[t].special_handle].type == SFT_SPECULAR) {
+        FreeSpecialFace(Rooms[*roomnum].faces[t].special_handle);
+        Rooms[*roomnum].faces[t].special_handle = std::nullopt;
       }
     }
   }
@@ -854,12 +854,12 @@ void ClearAllRoomSpecmaps(int external) {
 }
 
 // Removes all room volume lights from memory
-void ClearVolumeLights(int roomnum) {
-  Q_ASSERT(Rooms[roomnum].used);
+void ClearVolumeLights(index_t roomnum) {
+  Q_ASSERT(Rooms[*roomnum].used);
 
-  Q_ASSERT(!Rooms[roomnum].flags.external);
+  Q_ASSERT(!Rooms[*roomnum].flags.external);
 
-  Rooms[roomnum].volume_lights.clear();
+  Rooms[*roomnum].volume_lights.clear();
 }
 
 // Removes all room volume lights from memory
@@ -877,8 +877,8 @@ void ClearAllVolumeLights() {
 }
 
 // Returns the area taken up by a face
-float GetAreaForFace(int roomnum, int facenum) {
-  room_t &rp = Rooms[roomnum];
+float GetAreaForFace(index_t roomnum, int facenum) {
+  room_t &rp = Rooms[*roomnum];
 
   Q_ASSERT(rp.used > 0);
   Q_ASSERT(facenum >= 0 && facenum < rp.faces.size());
@@ -951,8 +951,8 @@ void GetIJ(const vector3& normal, int& ii, int& jj) {
 //					pnt - the point we're checking
 //					roomnum - the Rooms slot that pnt is in
 //					fp - pointer to the face that pnt is on
-void FindPointUV(float &u, float &v, const vector3 &pnt, int roomnum, const face &fp) {
-  const room_t &rp = Rooms[roomnum];
+void FindPointUV(float &u, float &v, const vector3 &pnt, index_t roomnum, const face &fp) {
+  const room_t &rp = Rooms[*roomnum];
   int ii, jj;
   vector3 vec0, vec1;
   float *p1, *checkp, *v0, *v1;
@@ -960,7 +960,7 @@ void FindPointUV(float &u, float &v, const vector3 &pnt, int roomnum, const face
   int t;
 
   // Make sure we have a valid room
-  Q_ASSERT((roomnum >= 0) && (roomnum < static_cast<int>(Rooms.size())));
+  Q_ASSERT((roomnum.has_value()) && (*roomnum < static_cast<int>(Rooms.size())));
 
   // Find what plane to project this wall onto to make it a 2d case
   GetIJ(fp.normal, ii, jj);
@@ -992,9 +992,9 @@ void FindPointUV(float &u, float &v, const vector3 &pnt, int roomnum, const face
 //					roomnum - the Rooms slot that pnt is in
 //					facenum - the face that pnt is on
 // Returns:	true if can pass through the given point, else 0
-int CheckTransparentPoint(const vector3 &pnt, int roomnum, const int facenum) {
+int CheckTransparentPoint(const vector3 &pnt, index_t roomnum, const int facenum) {
   int bm_handle;
-  const room_t &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[*roomnum];
   const face &fp = rp.faces[facenum];
   float u, v;
   int w, h, x, y;
@@ -1002,7 +1002,7 @@ int CheckTransparentPoint(const vector3 &pnt, int roomnum, const int facenum) {
   return false;
 
   // Get the UV coordindates of the point we hit
-  FindPointUV(u, v, pnt, roomnum, fp);
+  FindPointUV(u, v, pnt, *roomnum, fp);
 
   // Get pointer to the bitmap data
   bm_handle = GetTextureBitmap(fp.tmap, 0);
@@ -1021,11 +1021,11 @@ int CheckTransparentPoint(const vector3 &pnt, int roomnum, const int facenum) {
 // Parameters: center - filled in with the center point of the sphere
 //		roomnum - the Rooms slot we're bounding
 // Returns: the radius of the bounding sphere
-float ComputeRoomBoundingSphere(vector3 &center, int roomnum) {
+float ComputeRoomBoundingSphere(vector3 &center, index_t roomnum) {
   // This algorithm is from Graphics Gems I.  There's a better algorithm in Graphics Gems III that
   // we should probably implement sometime.
 
-  room_t &rp = Rooms[roomnum];
+  room_t &rp = Rooms[*roomnum];
   vector3 *min_x, *max_x, *min_y, *max_y, *min_z, *max_z, *vp;
   float dx, dy, dz;
   float rad, rad2;
@@ -1126,12 +1126,13 @@ void CreateRoomObjects() {
     if (rp.used && rp.flags.external) {
       vector3 pos;
       float rad;
-      int roomnum, objnum;
+      index_t roomnum;
+      int objnum;
 
-      rad = ComputeRoomBoundingSphere(pos, r);
-      roomnum = GetTerrainRoomFromPos(pos).value_or(-1);
+      rad = ComputeRoomBoundingSphere(pos, to_roomnum(r));
+      roomnum = GetTerrainRoomFromPos(pos);
 
-      Q_ASSERT(roomnum != -1);
+      Q_ASSERT(roomnum.has_value());
 
       objnum = ObjCreate(object_type_e::room, r, roomnum, pos, std::nullopt).value_or(-1);
       Q_ASSERT(objnum != -1); // DAJ -1FIX moved up
@@ -1164,19 +1165,19 @@ index_t FindFirstUsedRoom() {
 
 // Changes a face's texture within a room
 //	returns true on successs
-bool ChangeRoomFaceTexture(int room_num, int face_num, int texture) {
-  if ((room_num < 0) || (room_num >= static_cast<int>(Rooms.size())) || ROOMNUM_OUTSIDE(room_num) || (!Rooms[room_num].used)) {
+bool ChangeRoomFaceTexture(index_t room_num, int face_num, int texture) {
+  if (!room_num || (*room_num >= static_cast<int>(Rooms.size())) || roomnum_outside(room_num) || (!Rooms[*room_num].used)) {
     LOG_FATAL("Invalid room passed to ChangeRoomFaceTexture");
     Q_ASSERT(false);
     return false;
   }
 
-  room_t &rp = Rooms[room_num];
+  room_t &rp = Rooms[*room_num];
 
   if (face_num < 0 || face_num >= rp.faces.size()) {
     LOG_FATAL("Invalid face number passed to ChangeRoomFaceTexture."
-               "  Room=%d, you gave face #%d, there are only %d in the room",
-             room_num, face_num, rp.faces.size());
+               "  Room=%u, you gave face #%d, there are only %d in the room",
+             *room_num, face_num, rp.faces.size());
     Q_ASSERT(false);
     return false;
   }
@@ -1206,7 +1207,7 @@ void ClearRoomChanges() {
 index_t AllocRoomChange() {
   for (int i = 0; i < MAX_ROOM_CHANGES; i++) {
     if (Room_changes[i].used == 0) {
-      memset(&Room_changes[i], 0, sizeof(room_changes));
+      Room_changes[i] = room_changes{};
       Room_changes[i].used = 1;
       return i;
     }
@@ -1223,7 +1224,7 @@ void DoRoomChangeFrame() {
     if (!Room_changes[i].used)
       continue;
 
-    room_t &rp = Rooms[Room_changes[i].roomnum];
+    room_t &rp = Rooms[*Room_changes[i].roomnum];
 
     float norm = (d3::chrono::last_update() - Room_changes[i].start_time) / Room_changes[i].total_time;
 
@@ -1266,15 +1267,15 @@ void DoRoomChangeFrame() {
 }
 
 // Sets up a room to change its fog or wind over time
-index_t SetRoomChangeOverTime(int roomnum, bool fog, const vector3 &end, float depth_end, float time) {
-  room_t &rp = Rooms[roomnum];
+index_t SetRoomChangeOverTime(index_t roomnum, bool fog, const vector3 &end, float depth_end, float time) {
+  room_t &rp = Rooms[*roomnum];
   int index, i;
 
   // First search to see if there is another with this same roomnum
 
   int found = 0;
   for (i = 0; i < MAX_ROOM_CHANGES && !found; i++) {
-    if (Room_changes[i].used && Room_changes[i].roomnum == roomnum && Room_changes[i].fog == fog) {
+    if (Room_changes[i].used && Room_changes[i].roomnum == *roomnum && Room_changes[i].fog == fog) {
       found = 1;
       index = i;
     }
@@ -1287,7 +1288,7 @@ index_t SetRoomChangeOverTime(int roomnum, bool fog, const vector3 &end, float d
     index = static_cast<int>(*alloc);
   }
 
-  Room_changes[index].roomnum = roomnum;
+  Room_changes[index].roomnum = *roomnum;
   Room_changes[index].fog = fog;
   Room_changes[index].end_vector = end;
   Room_changes[index].start_time = d3::chrono::last_update();
@@ -1584,7 +1585,7 @@ byte_ostream& operator<<(byte_ostream& output, const room_t& data) {
 }
 
 
-face_physics_flags_t GetFacePhysicsFlags(int roomnum, const face &fp) {
+face_physics_flags_t GetFacePhysicsFlags(index_t roomnum, const face &fp) {
   face_physics_flags_t ret{};
   ret.solid = 0;
   ret.transparent = 0;
@@ -1604,7 +1605,7 @@ face_physics_flags_t GetFacePhysicsFlags(int roomnum, const face &fp) {
   }
 
   if (fp.portal_num != -1) {
-    const portal &pp = Rooms[roomnum].portals[fp.portal_num];
+    const portal &pp = Rooms[*roomnum].portals[fp.portal_num];
     ret.portal = 1;
     if (!(pp.flags.render_faces) || (pp.flags.rendered_flythrough)) {
       return ret;

@@ -24,6 +24,7 @@
 #include "room.h"
 #include "object.h"
 #include "lightmap_info.h"
+#include "utils.h"
 
 extern vector3 ScratchCenters[MAX_LIGHTMAP_INFOS];
 extern vector3 ScratchRVecs[MAX_LIGHTMAP_INFOS];
@@ -39,12 +40,12 @@ void DoRadiosityForTerrain();
 
 bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB = true);
 
-void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf);
+void BuildElementListForRoomFace(index_t roomnum, int facenum, rad_surface *surf);
 void BuildElementListForObjectFace(object& obj, int subobj_num, int facenum, rad_surface *surf);
 
-void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp);
+void AssignRoomSurfaceToLightmap(index_t roomnum, int facenum, rad_surface *sp);
 void AssignObjectSurfaceToLightmap(int objnum, int sobj_num, int facenum, rad_surface *sp);
-void AssignLightmapsToObjectSurfacesForSingleRoom(int surface_index, int roomnum);
+void AssignLightmapsToObjectSurfacesForSingleRoom(int surface_index, index_t roomnum);
 
 int ClipRadPointList(rad_point **src, rad_point **dest, int *nv, g3_clip_codes_t code);
 int ClipRadToPlane(uint8_t plane, rad_point *src, rad_point *dest, int nv);
@@ -56,29 +57,29 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
 void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count, vector3 *lightmap_poly, int nv, lmi_type lm_type);
 
 int CombineLightFaces(vector3 *dest_verts, vector3 *averts, int nva, vector3 *norma, vector3 *bverts, int nvb, vector3 *normb, int aroom = -1, int broom = -1);
-int TestLightAdjacency(int roomnum, int facenum, int external);
+int TestLightAdjacency(index_t roomnum, int facenum, int external);
 
-int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum);
+int ComputeSurfacesForObjectsForSingleRoom(int surface_index, index_t roomnum);
 void ComputeAllRoomLightmapUVs(int external);
-void ComputeRoomLightmapUVs(int roomnum);
+void ComputeRoomLightmapUVs(index_t roomnum);
 int ComputeSurfacesForObjects(int surface_index, int terrain);
 
 int GetTotalObjectFaces(int terrain);
-int GetTotalObjectFacesForSingleRoom(int roomnum);
+int GetTotalObjectFacesForSingleRoom(index_t roomnum);
 
 void AssignLightmapsToObjectSurfaces(int surface_index, int terrain);
 void CombineObjectLightmapUVs(object& obj, lmi_type type);
 
 void CleanupSpecularLighting(int external);
 void SetupSpecularLighting(int external);
-void DoRadiosityForCurrentRoom(int roomnum);
+void DoRadiosityForCurrentRoom(index_t roomnum);
 
 void SqueezeLightmaps(int external, int target_roomnum);
 void CheckCombinePortals(int terrain);
-void AssignVolumeSpectraToRoom(int roomnum);
-void ComputeSurfaceRes(rad_surface *surf, int roomnum, int facenum);
+void AssignVolumeSpectraToRoom(index_t roomnum);
+void ComputeSurfaceRes(rad_surface *surf, index_t roomnum, int facenum);
 void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int facenum);
-int CheckForBadFaces(int roomnum);
+int CheckForBadFaces(index_t roomnum);
 void AddSpectra(spectra *dest, spectra *a, spectra *b);
 int SpecularPrevIndex(int val, int modulus);
 int SpecularNextIndex(int val, int modulus);

@@ -154,7 +154,7 @@ int Global_keys;
 // void DoorwayOpen(int roomnum);
 // void DoorwayClose(int roomnum);
 // void DoorwayWait(int roomnum);
-object *GetDoorObject(int roomnum);
+object *GetDoorObject(index_t roomnum);
 
 //	---------------------------------------------------------------------------
 //	Functions
@@ -177,8 +177,8 @@ void RemoveActiveDoorway(int adway) {
   LOG_DEBUG("ActiveDoorways = %d", Num_active_doorways);
 }
 
-void AddActiveDoorway(int roomnum) {
-  const room &rp = Rooms[roomnum];
+void AddActiveDoorway(index_t roomnum) {
+  const room &rp = Rooms[*roomnum];
   Q_ASSERT(rp.flags.door);
 
   doorway *dp = rp.doorway_data;
@@ -186,10 +186,10 @@ void AddActiveDoorway(int roomnum) {
 
   if (dp->activenum != -1) { // already active
     Q_ASSERT(dp->activenum < Num_active_doorways);
-    Q_ASSERT(Active_doorways[dp->activenum] == roomnum);
+    Q_ASSERT(Active_doorways[dp->activenum] == *roomnum);
   } else { // make new active
     Q_ASSERT(Num_active_doorways < MAX_ACTIVE_DOORWAYS);
-    Active_doorways[Num_active_doorways] = roomnum;
+    Active_doorways[Num_active_doorways] = *roomnum;
     dp->activenum = Num_active_doorways++;
   }
 
@@ -397,8 +397,8 @@ void DoorwayDeactivateAll() {
 }
 
 // Sets the corresponding door objects animation frame
-void DoorwayUpdateAnimation(int roomnum) {
-  const room &rp = Rooms[roomnum];
+void DoorwayUpdateAnimation(index_t roomnum) {
+  const room &rp = Rooms[*roomnum];
   doorway *dway;
   poly_model *pm;
   int doornum;
@@ -406,14 +406,14 @@ void DoorwayUpdateAnimation(int roomnum) {
 
   dway = rp.doorway_data;
 
-  object *objp = GetDoorObject(roomnum);
+  object *objp = GetDoorObject(*roomnum);
   if (!objp)
     return;
 
   doornum = objp->id;
   pm = &Poly_models[*GetDoorImage(doornum)];
 
-  norm = DoorwayPositionForRoom(roomnum);
+  norm = DoorwayPositionForRoom(*roomnum);
 
   if (pm->flags.timed)
     objp->rtype.pobj_info().anim_frame = pm->frame_max * norm;
@@ -423,8 +423,8 @@ void DoorwayUpdateAnimation(int roomnum) {
 
 //	Update all doorways currently active in the mine
 void DoorwayDoFrame() {
-  for (int roomnum : Active_doorways) {
-    const room &rp = Rooms[roomnum];
+  for (index_t roomnum : Active_doorways) {
+    const room &rp = Rooms[*roomnum];
     Q_ASSERT(rp.flags.door);
     doorway *dway = rp.doorway_data;
     Q_ASSERT(dway != NULL);
@@ -463,7 +463,7 @@ void DoorwayDoFrame() {
         RemoveActiveDoorway(i_doorway);
 
         // Send notification event
-        object *objp = GetDoorObject(roomnum);
+        object *objp = GetDoorObject(*roomnum);
         Q_ASSERT(objp != NULL);
         tOSIRISEventInfo ei;
         Osiris_CallEvent(objp, EVT_DOOR_CLOSE, &ei);
@@ -476,7 +476,7 @@ void DoorwayDoFrame() {
 
       if (dway->dest_pos <= 0.0f) {
 
-        object *door_objp = GetDoorObject(roomnum);
+        object *door_objp = GetDoorObject(*roomnum);
         Q_ASSERT(door_objp != NULL);
 
         // Time to start closing.  See if there's anything in the way
@@ -496,13 +496,13 @@ void DoorwayDoFrame() {
     }
 
     // Update the animation state
-    DoorwayUpdateAnimation(roomnum);
+    DoorwayUpdateAnimation(*roomnum);
   }
 }
 #endif
 // returns a pointer to the door object for the specified doorway
-object *GetDoorObject(int roomnum) {
-  const room_t &rp = Rooms[roomnum];
+object *GetDoorObject(index_t roomnum) {
+  const room_t &rp = Rooms[*roomnum];
   Q_ASSERT(rp.flags.door);
 
   for (int objnum = rp.objects; (objnum != -1); objnum = Objects[objnum].next)
@@ -523,8 +523,8 @@ bool DoorwayLocked(int door_obj_handle) {
 }
 
 // Returns true if the doorway in the given room is locked, else false
-bool DoorwayLockedForRoom(int roomnum) {
-  const room_t &rp = Rooms[roomnum];
+bool DoorwayLockedForRoom(index_t roomnum) {
+  const room_t &rp = Rooms[*roomnum];
   Q_ASSERT(rp.flags.door);
 
   doorway *dp = rp.doorway_data.get();
@@ -610,8 +610,8 @@ float DoorwayPosition(int door_obj_handle) {
   return dp->position;
 }
 // Returns the current position of the door.  0.0 = totally closed, 1.0 = totally open
-float DoorwayPositionForRoom(int roomnum) {
-  const room_t &rp = Rooms[roomnum];
+float DoorwayPositionForRoom(index_t roomnum) {
+  const room_t &rp = Rooms[*roomnum];
   Q_ASSERT(rp.flags.door);
   Q_ASSERT(rp.doorway_data);
 
@@ -638,8 +638,8 @@ void DoorwayRebuildActiveList() {
 
 // Adds a doorway to the specified room
 // Returns a pointer to the doorway struct
-doorway *DoorwayAdd(int roomnum, int doornum) {
-  room_t &rp = Rooms[roomnum];
+doorway *DoorwayAdd(index_t roomnum, int doornum) {
+  room_t &rp = Rooms[*roomnum];
   Q_ASSERT(!rp.doorway_data);
 
   rp.flags.door = 1;

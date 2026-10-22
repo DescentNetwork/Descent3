@@ -981,7 +981,7 @@ static bool check_sphere_to_face(vector3 &colp, vector3 &intp, float &col_dist, 
 static void fvi_rooms_objs(void);
 static int obj_in_list(int objnum, int *obj_list);
 static void make_trigger_face_list(int last_sim_faces);
-static bool PhysPastPortal(int roomnum, const portal &pp);
+static bool PhysPastPortal(index_t roomnum, const portal &pp);
 
 //------------------------------------------------------------------------------------------
 // FVI FUNCTIONS
@@ -2295,8 +2295,8 @@ int fvi_QuickDistObjectList(const vector3 &pos, int init_room_index, float rad, 
   return num_objects;
 }
 
-bool fvi_QuickRoomCheck(const vector3 &pos, int roomnum, bool try_again) {
-  room_t &cur_room = Rooms[roomnum];
+bool fvi_QuickRoomCheck(const vector3 &pos, index_t roomnum, bool try_again) {
+  room_t &cur_room = Rooms[*roomnum];
   vector3 hit_point; // where we hit
   vector3 colp;
   float cur_dist; // distance to hit point
@@ -4365,10 +4365,10 @@ void fvi_rooms_objs(void) {
     return;
 
   for (i = 0; i < fvi_num_rooms_visited; i++) {
-    int roomnum = fvi_rooms_visited[i];
-    const room_t &cur_room = Rooms[roomnum];
-    Q_ASSERT((fvi_visit_list[roomnum >> 3] & (0x01 << (roomnum % 8))) != 0);
-    Q_ASSERT(roomnum >= 0 && roomnum < Rooms.size() && cur_room.used);
+    index_t roomnum = fvi_rooms_visited[i];
+    const room_t &cur_room = Rooms[*roomnum];
+    Q_ASSERT((fvi_visit_list[*roomnum >> 3] & (0x01 << (*roomnum % 8))) != 0);
+    Q_ASSERT(roomnum.has_value() && *roomnum < Rooms.size() && cur_room.used);
 
     for (objnum = cur_room.objects; objnum != -1; objnum = Objects[objnum].next) {
       Q_ASSERT(objnum != -1);
@@ -4413,8 +4413,8 @@ inline alpha_blend_type GetFaceAlpha(const face &fp, int bm_handle) {
   return alpha_blend_type_of(flags);
 }
 
-bool PhysPastPortal(int roomnum, const portal &pp) {
-  const room_t &rp = Rooms[roomnum];
+bool PhysPastPortal(index_t roomnum, const portal &pp) {
+  const room_t &rp = Rooms[*roomnum];
   // If we don't render the portal's faces, then we see through it
   if (!pp.flags.render_faces)
     return true;

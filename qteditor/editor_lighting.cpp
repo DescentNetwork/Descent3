@@ -178,9 +178,9 @@ void CopySqueezeBodyAndEdges(std::vector<std::vector<uint16_t>> &dest_data, cons
   Lightmap_mask[((dest_y + h + 1) * 128) + (dest_x + w + 1)] = 1;
 }
 
-void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<uint16_t>> &dest_data, int dest_x,
+void CopySqueezeDataForRooms(index_t roomnum, int facenum, std::vector<std::vector<uint16_t>> &dest_data, int dest_x,
                              int dest_y) {
-  const room_t &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[*roomnum];
   lightmap_info &lmi_ptr = LightmapInfo[rp.faces[facenum].lmi_handle];
   const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi_ptr.lm_handle);
 
@@ -197,7 +197,7 @@ void CopySqueezeDataForRooms(int roomnum, int facenum, std::vector<std::vector<u
   float u_scalar = (float)w / 128.0f;
   float v_scalar = (float)h / 128.0f;
 
-  for (size_t t = roomnum; t < Rooms.size(); t++) {
+  for (size_t t = *roomnum; t < Rooms.size(); t++) {
     room_t &this_rp = Rooms[t];
     if (!this_rp.used)
       continue;
@@ -733,8 +733,8 @@ void SqueezeLightmaps(int external, int target_roomnum) {
   LOG_INFO("Done squeezing lightmaps.\n");
 }
 
-void ComputeSurfaceRes(rad_surface *surf, int roomnum, int facenum) {
-  const room_t &rp = Rooms[roomnum];
+void ComputeSurfaceRes(rad_surface *surf, index_t roomnum, int facenum) {
+  const room_t &rp = Rooms[*roomnum];
   int i;
   float left = 1.1f, right = -1, top = 1.1f, bottom = -1;
   const face &fp = rp.faces[facenum];
@@ -784,12 +784,12 @@ void ComputeSurfaceRes(rad_surface *surf, int roomnum, int facenum) {
 }
 
 // Take the computed volume spectra of a room and save it in the room struct
-void AssignVolumeSpectraToRoom(int roomnum) {
-  Q_ASSERT(Rooms[roomnum].used);
-  Q_ASSERT(!Rooms[roomnum].flags.external);
-  Q_ASSERT(!Rooms[roomnum].flags.no_light);
+void AssignVolumeSpectraToRoom(index_t roomnum) {
+  Q_ASSERT(Rooms[*roomnum].used);
+  Q_ASSERT(!Rooms[*roomnum].flags.external);
+  Q_ASSERT(!Rooms[*roomnum].flags.no_light);
 
-  room_t &rp = Rooms[roomnum];
+  room_t &rp = Rooms[*roomnum];
 
   int i, t, j;
   int w = rp.volume_width;
@@ -799,7 +799,7 @@ void AssignVolumeSpectraToRoom(int roomnum) {
   for (i = 0; i < d; i++) {
     for (t = 0; t < h; t++) {
       for (j = 0; j < w; j++) {
-        spectra &this_spectra = Volume_elements[roomnum][(i * w * h) + (t * w) + j].color;
+        spectra &this_spectra = Volume_elements[*roomnum][(i * w * h) + (t * w) + j].color;
 
         if (this_spectra.r < 0) {
           Q_ASSERT(false); // Shouldn't hit this
@@ -832,12 +832,12 @@ void AssignVolumeSpectraToRoom(int roomnum) {
 }
 
 // Returns 0 if there are bad faces in this level
-int CheckForBadFaces(int roomnum) {
+int CheckForBadFaces(index_t roomnum) {
   size_t i;
   int t;
 
   for (i = 0; i < Rooms.size(); i++) {
-    if (roomnum != -1 && i != roomnum)
+    if (roomnum.has_value() && i != *roomnum)
       continue;
 
     const room_t &rp = Rooms[i];
@@ -900,7 +900,7 @@ void DoRadiosityForRooms() {
     Volume_elements[roomnum].clear();
 
     if (Rooms[roomnum].used && !Rooms[roomnum].flags.external && !Rooms[roomnum].flags.no_light) {
-      int num_bytes = GetVolumeSizeOfRoom(roomnum, vw, vh, vd);
+      int num_bytes = GetVolumeSizeOfRoom(to_roomnum(roomnum), vw, vh, vd);
 
       Rooms[roomnum].volume_width = vw;
       Rooms[roomnum].volume_height = vh;
@@ -1129,21 +1129,21 @@ void DoRadiosityForRooms() {
 }
 
 // Calculates radiosity and sets lightmaps for indoor faces only
-void DoRadiosityForCurrentRoom(int roomnum) {
-  const room_t &rp = Rooms[roomnum];
+void DoRadiosityForCurrentRoom(index_t roomnum) {
+  const room_t &rp = Rooms[*roomnum];
   int t;
   int facecount = 0;
   int surface_index = 0;
   int max_index;
 
-  if (!CheckForBadFaces(roomnum)) {
+  if (!CheckForBadFaces(*roomnum)) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You have bad faces in your level.  Please execute 'Verify Level'.");
     return;
   }
 
   LOG_INFO("Setting up...\n");
 
-  Q_ASSERT(roomnum >= 0);
+  Q_ASSERT(roomnum.has_value());
   Q_ASSERT(rp.used);
 
   if (rp.flags.external) {
@@ -1159,9 +1159,9 @@ void DoRadiosityForCurrentRoom(int roomnum) {
   // Build bsp tree
   BuildSingleBSPTree(roomnum);
 
-  ClearRoomLightmaps(roomnum);
+  ClearRoomLightmaps(*roomnum);
   for (t = 0; t <= Highest_object_index; t++) {
-    if (Objects[t].type != object_type_e::none && (Objects[t].roomnum == roomnum))
+    if (Objects[t].type != object_type_e::none && (Objects[t].roomnum == *roomnum))
       ClearObjectLightmaps(&Objects[t]);
   }
 
@@ -1172,7 +1172,7 @@ void DoRadiosityForCurrentRoom(int roomnum) {
     for (int k = 0; k < rp.faces[t].num_verts; k++)
       verts[k] = rp.verts[rp.faces[t].face_verts[k]];
 
-    room_list[0] = roomnum;
+    room_list[0] = *roomnum;
     face_list[0] = t;
 
     BuildLightmapUVs(room_list, face_list, 1, verts, rp.faces[t].num_verts, 0);
@@ -1182,7 +1182,7 @@ void DoRadiosityForCurrentRoom(int roomnum) {
   facecount += rp.faces.size();
 
   // Do objects
-  facecount += GetTotalObjectFacesForSingleRoom(roomnum);
+  facecount += GetTotalObjectFacesForSingleRoom(*roomnum);
 
   // Allocate enough memory to hold all surfaces
 
@@ -1192,13 +1192,13 @@ void DoRadiosityForCurrentRoom(int roomnum) {
   max_index = surface_index = 0;
 
   for (t = 0; t < rp.faces.size(); t++, surface_index++, max_index++) {
-    ComputeSurfaceRes(&Light_surfaces[surface_index], roomnum, t);
+    ComputeSurfaceRes(&Light_surfaces[surface_index], *roomnum, t);
 
     if (rp.faces[t].num_verts) {
       Light_surfaces[surface_index].verts.resize(rp.faces[t].num_verts);
     } else {
       Light_surfaces[surface_index].verts.clear();
-      LOG_INFO("Room=%d Face %d has no verts!\n", roomnum, t);
+      LOG_INFO("Room=%d Face %d has no verts!\n", *roomnum, t);
     }
 
     if (Light_surfaces[surface_index].xresolution * Light_surfaces[surface_index].yresolution) {
@@ -1206,7 +1206,7 @@ void DoRadiosityForCurrentRoom(int roomnum) {
                                                     Light_surfaces[surface_index].yresolution);
     } else {
       Light_surfaces[surface_index].elements.clear();
-      LOG_INFO("Room=%d Face %d is slivered!\n", roomnum, t);
+      LOG_INFO("Room=%d Face %d is slivered!\n", *roomnum, t);
     }
 
     if (rp.faces[t].portal_num != -1 && (((rp.portals[rp.faces[t].portal_num].flags.render_faces == 0)) ||
@@ -1218,7 +1218,7 @@ void DoRadiosityForCurrentRoom(int roomnum) {
       Light_surfaces[surface_index].emittance.b = 0;
     } else {
       float mul = ((float)rp.faces[t].light_multiple) / 4.0f;
-      mul *= global_light.multiplier * room_light[roomnum].multiplier;
+      mul *= global_light.multiplier * room_light[*roomnum].multiplier;
       Light_surfaces[surface_index].emittance.r = (float)GameTextures[rp.faces[t].tmap].r * mul;
       Light_surfaces[surface_index].emittance.g = (float)GameTextures[rp.faces[t].tmap].g * mul;
       Light_surfaces[surface_index].emittance.b = (float)GameTextures[rp.faces[t].tmap].b * mul;
@@ -1226,20 +1226,20 @@ void DoRadiosityForCurrentRoom(int roomnum) {
     }
 
     Light_surfaces[surface_index].normal = rp.faces[t].normal;
-    Light_surfaces[surface_index].roomnum = to_roomnum(roomnum);
+    Light_surfaces[surface_index].roomnum = roomnum;
     Light_surfaces[surface_index].facenum = t;
 
     Light_surfaces[surface_index].reflectivity = GameTextures[rp.faces[t].tmap].reflectivity;
 
     // Set the vertices for each element
-    BuildElementListForRoomFace(roomnum, t, &Light_surfaces[surface_index]);
+    BuildElementListForRoomFace(*roomnum, t, &Light_surfaces[surface_index]);
 
     int xres = Light_surfaces[surface_index].xresolution;
     int yres = Light_surfaces[surface_index].yresolution;
   }
 
   // Setup Objects
-  ComputeSurfacesForObjectsForSingleRoom(surface_index, roomnum);
+  ComputeSurfacesForObjectsForSingleRoom(surface_index, *roomnum);
 
   LOG_INFO("Solving radiosity equation (press tilde key to stop)...\n");
   if (app.hemicube_radiosity)
@@ -1252,10 +1252,10 @@ void DoRadiosityForCurrentRoom(int roomnum) {
 
   // Assign lightap properties
   for (t = 0; t < rp.faces.size(); t++, surface_index++) {
-    AssignRoomSurfaceToLightmap(roomnum, t, &Light_surfaces[surface_index]);
+    AssignRoomSurfaceToLightmap(*roomnum, t, &Light_surfaces[surface_index]);
   }
 
-  AssignLightmapsToObjectSurfacesForSingleRoom(surface_index, roomnum);
+  AssignLightmapsToObjectSurfacesForSingleRoom(surface_index, *roomnum);
 
   // BlurLightmapInfos (lmi_type::room);
   // BlurLightmapInfos (lmi_type::room_object);
@@ -1268,15 +1268,15 @@ void DoRadiosityForCurrentRoom(int roomnum) {
   Light_surfaces.clear();
 
   // Finally, squeeze the lightmaps
-  SqueezeLightmaps(0, roomnum);
+  SqueezeLightmaps(0, *roomnum);
 
   QMessageBox::information(nullptr, "Success", "Room radiosity complete!");
 }
 
 // Allocates and sets a lightmap based on the surface elements given
-void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
-  face &fp = Rooms[roomnum].faces[facenum];
-  const room_t &rp = Rooms[roomnum];
+void AssignRoomSurfaceToLightmap(index_t roomnum, int facenum, rad_surface *sp) {
+  face &fp = Rooms[*roomnum].faces[facenum];
+  const room_t &rp = Rooms[*roomnum];
 
   int i, t, lmi_handle;
   int xres, yres;
@@ -1325,9 +1325,9 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
           red = green = blue = 0;
         }
 
-        fr = std::min(1.0f, sp->elements[i * xres + t].exitance.r + global_light.ambient_red + room_light[roomnum].ambient_red);
-        fg = std::min(1.0f, sp->elements[i * xres + t].exitance.g + global_light.ambient_green + room_light[roomnum].ambient_green);
-        fb = std::min(1.0f, sp->elements[i * xres + t].exitance.b + global_light.ambient_blue + room_light[roomnum].ambient_blue);
+        fr = std::min(1.0f, sp->elements[i * xres + t].exitance.r + global_light.ambient_red + room_light[*roomnum].ambient_red);
+        fg = std::min(1.0f, sp->elements[i * xres + t].exitance.g + global_light.ambient_green + room_light[*roomnum].ambient_green);
+        fb = std::min(1.0f, sp->elements[i * xres + t].exitance.b + global_light.ambient_blue + room_light[*roomnum].ambient_blue);
 
         fr = (fr * 255) + 0.5f;
         fg = (fg * 255) + 0.5f;
@@ -1358,7 +1358,7 @@ void AssignRoomSurfaceToLightmap(int roomnum, int facenum, rad_surface *sp) {
 
 // Important - vertnum is the index into the face_verts[] array in the face structure,
 // not an index into the verts[] array of the room structure
-void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf) {
+void BuildElementListForRoomFace(index_t roomnum, int facenum, rad_surface *surf) {
   matrix face_matrix, trans_matrix;
   vector3 fvec;
   vector3 avg_vert;
@@ -1374,11 +1374,11 @@ void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf) {
   xres = surf->xresolution;
   yres = surf->yresolution;
 
-  Q_ASSERT(Rooms[roomnum].used);
-  Q_ASSERT(Rooms[roomnum].faces[facenum].num_verts >= 3);
-  Q_ASSERT(Rooms[roomnum].faces[facenum].lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(Rooms[*roomnum].used);
+  Q_ASSERT(Rooms[*roomnum].faces[facenum].num_verts >= 3);
+  Q_ASSERT(Rooms[*roomnum].faces[facenum].lmi_handle != BAD_LMI_INDEX);
 
-  lmi_handle = Rooms[roomnum].faces[facenum].lmi_handle;
+  lmi_handle = Rooms[*roomnum].faces[facenum].lmi_handle;
   avg_vert = ScratchCenters[lmi_handle];
 
   // Make the orientation matrix
@@ -1393,8 +1393,8 @@ void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf) {
   vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b());
 
   // Rotate all the points
-  for (i = 0; i < Rooms[roomnum].faces[facenum].num_verts; i++) {
-    vert = Rooms[roomnum].verts[Rooms[roomnum].faces[facenum].face_verts[i]];
+  for (i = 0; i < Rooms[*roomnum].faces[facenum].num_verts; i++) {
+    vert = Rooms[*roomnum].verts[Rooms[*roomnum].faces[facenum].face_verts[i]];
 
     vert -= avg_vert;
     vm_MatrixMulVector(rot_vert, vert, trans_matrix);
@@ -1430,7 +1430,7 @@ void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf) {
       clip_verts[1] = base_vector + (xdiff * (t + x1 + 1)) - (ydiff * (i + y1));
       clip_verts[2] = base_vector + (xdiff * (t + x1 + 1)) - (ydiff * (i + y1 + 1));
       clip_verts[3] = base_vector + (xdiff * (t + x1)) - (ydiff * (i + y1 + 1));
-      ClipSurfaceElement(verts, &ep, clip_verts, Rooms[roomnum].faces[facenum].num_verts);
+      ClipSurfaceElement(verts, &ep, clip_verts, Rooms[*roomnum].faces[facenum].num_verts);
 
       for (int k = 0; k < ep.num_verts; k++) {
         vm_MatrixMulVector(rot_vert, ep.verts[k], trans_matrix);
@@ -1452,9 +1452,9 @@ void BuildElementListForRoomFace(int roomnum, int facenum, rad_surface *surf) {
     surf->num_verts = 4;
   } else {
 
-    surf->num_verts = Rooms[roomnum].faces[facenum].num_verts;
+    surf->num_verts = Rooms[*roomnum].faces[facenum].num_verts;
     for (int k = 0; k < surf->num_verts; k++) {
-      surf->verts[k] = Rooms[roomnum].verts[Rooms[roomnum].faces[facenum].face_verts[k]];
+      surf->verts[k] = Rooms[*roomnum].verts[Rooms[*roomnum].faces[facenum].face_verts[k]];
     }
   }
 }
@@ -2696,10 +2696,10 @@ int CombineLightFaces(vector3 *dest_verts, vector3 *averts, int nva, vector3 *no
 
 // Given a roomnumber and a face, goes through the entire mine and checks to see
 // if this face can share a lightmap with any other face
-int TestLightAdjacency(int roomnum, int facenum, int external) {
+int TestLightAdjacency(index_t roomnum, int facenum, int external) {
 
   int i, t, k;
-  room_t *arp = &Rooms[roomnum];
+  room_t *arp = &Rooms[*roomnum];
   face &afp = arp->faces[facenum];
 
   vector3 averts[MAX_VERTS_PER_FACE * 5];
@@ -2709,7 +2709,7 @@ int TestLightAdjacency(int roomnum, int facenum, int external) {
   int face_combine_list[MAX_COMBINES];
   int room_combine_list[MAX_COMBINES];
 
-  Q_ASSERT(roomnum >= 0 && roomnum < MAX_ROOMS);
+  Q_ASSERT(roomnum.has_value() && *roomnum < MAX_ROOMS);
 
   if (!AllowCombining)
     return 0;
@@ -2726,7 +2726,7 @@ int TestLightAdjacency(int roomnum, int facenum, int external) {
   int anv = afp.num_verts;
   int total_faces = 1;
 
-  room_combine_list[0] = roomnum;
+  room_combine_list[0] = *roomnum;
   face_combine_list[0] = facenum;
 
   for (i = 0; i < afp.num_verts; i++)
@@ -2735,7 +2735,7 @@ int TestLightAdjacency(int roomnum, int facenum, int external) {
 StartOver:
 
   // Go through each room and find an adjacent face
-  for (i = roomnum; i < MAX_ROOMS; i++) {
+  for (i = *roomnum; i < MAX_ROOMS; i++) {
     if (!Rooms[i].used)
       continue;
 
@@ -2776,7 +2776,7 @@ StartOver:
         bverts[k] = brp.verts[bfp.face_verts[k]];
 
       int nv =
-          CombineLightFaces(dest_verts, averts, anv, &afp.normal, bverts, bfp.num_verts, &bfp.normal, roomnum, i);
+          CombineLightFaces(dest_verts, averts, anv, &afp.normal, bverts, bfp.num_verts, &bfp.normal, *roomnum, i);
 
       // We have a combine!  Mark this face in the appropriate list
       // And update our new polygon
@@ -2785,7 +2785,7 @@ StartOver:
         face_combine_list[total_faces] = t;
         total_faces++;
 
-        RoomsAlreadyCombined[roomnum][facenum] = 1;
+        RoomsAlreadyCombined[*roomnum][facenum] = 1;
         RoomsAlreadyCombined[i][t] = 1;
         for (k = 0; k < nv; k++)
           averts[k] = dest_verts[k];

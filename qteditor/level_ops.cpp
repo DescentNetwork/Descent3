@@ -301,7 +301,7 @@ static int findNextViewerObject(int id, state::viewer view_mode) {
 // (port of editor/HView.cpp:274 CreateViewerObject; ObjCreate is MFC gated
 // so the slot is carved out of Objects[] directly, like
 // MainWindow::onSpawnNewViewer)
-static int createViewerObject(state::viewer view_mode, vector3& pos, int roomnum) {
+static int createViewerObject(state::viewer view_mode, vector3& pos, index_t roomnum) {
   int id;
   int objnum = -1;
 
@@ -348,7 +348,7 @@ static int createViewerObject(state::viewer view_mode, vector3& pos, int roomnum
   // Highest_object_index (used by ObjRelink's assert below).
   ResetFreeObjects();
 
-  ObjSetPos(Objects[objnum], pos, to_roomnum(roomnum), std::nullopt, false);
+  ObjSetPos(Objects[objnum], pos, roomnum, std::nullopt, false);
 
   return objnum;
 }
@@ -384,24 +384,25 @@ void SetEditorViewer() {
   // If no viewer object, create one
   if (objnum == -1) {
     vector3 pos;
-    int roomnum;
+    index_t roomnum;
 
     // get position for viewer
     if (app.view_mode == state::viewer::terrain) { // if terrain, put viewer at center of world
       pos.x() = TERRAIN_SIZE * TERRAIN_WIDTH / 2;
       pos.y() = Terrain_seg[0].y + 30;
       pos.z() = TERRAIN_SIZE * TERRAIN_DEPTH / 2;
-      roomnum = MAKE_ROOMNUM(0); // any value ok, so long as it has terrain flag
+      roomnum = to_roomnum(MAKE_ROOMNUM(0)); // any value ok, so long as it has terrain flag
     } else if (app.view_mode == state::viewer::mine) { // if mine, put in center of any room
-      for (roomnum = 0; roomnum < Rooms.size(); roomnum++)
-        if (Rooms[roomnum].used && !Rooms[roomnum].flags.external) {
-          ComputeRoomCenter(pos, roomnum);
+      for (int r = 0; r < Rooms.size(); r++)
+        if (Rooms[r].used && !Rooms[r].flags.external) {
+          ComputeRoomCenter(pos, to_roomnum(r));
+          roomnum = to_roomnum(r);
           break;
         }
-      Q_ASSERT(roomnum < Rooms.size());
+      Q_ASSERT(roomnum && *roomnum < Rooms.size());
     } else if (app.view_mode == state::viewer::room) { // if room, put at 0,0,0
       pos = vector3{};
-      roomnum = MAKE_ROOMNUM(0);
+      roomnum = to_roomnum(MAKE_ROOMNUM(0));
     } else {
       Q_ASSERT(false); // unknown view mode
       return;
@@ -418,7 +419,7 @@ void SetEditorViewer() {
         objnum = findNextViewerObject(app.Editor_viewer_id.value_or(-1), state::viewer::invalid);
         Q_ASSERT(objnum != -1);
       }
-      ObjSetPos(Objects[objnum], pos, to_roomnum(roomnum), std::nullopt, true);
+      ObjSetPos(Objects[objnum], pos, roomnum, std::nullopt, true);
     }
   }
 

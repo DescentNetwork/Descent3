@@ -1301,13 +1301,13 @@ private slots:
     QCOMPARE(int(MineBSP.root->type), int(bsp_node_type::node));
     QCOMPARE(MineBSP.root->plane.a, 1.0f);
     QCOMPARE(MineBSP.root->plane.d, -100.0f);
-    QCOMPARE(int(MineBSP.root->node_roomnum), 3);
+    QCOMPARE(MineBSP.root->node_roomnum, to_roomnum(3));
     QCOMPARE(int(MineBSP.root->node_facenum), 4);
     QCOMPARE(int(MineBSP.root->node_subnum), -2);
     QVERIFY(MineBSP.root->front != nullptr);
     QCOMPARE(int(MineBSP.root->front->type), int(bsp_node_type::node));
     QCOMPARE(MineBSP.root->front->plane.b, 1.0f);
-    QCOMPARE(int(MineBSP.root->front->node_roomnum), 5);
+    QCOMPARE(MineBSP.root->front->node_roomnum, to_roomnum(5));
     QCOMPARE(int(MineBSP.root->front->node_subnum), 1);
     QVERIFY(MineBSP.root->front->front != nullptr);
     QCOMPARE(int(MineBSP.root->front->front->type), int(bsp_node_type::empty_leaf));
@@ -6839,15 +6839,15 @@ private slots:
     Viewer_object->orient.fvec = vector3{1, 0, 0};
     app.view_mode = state::viewer::mine;
 
-    auto setFlatQuad = [](int roomnum, const std::vector<vector3>& verts) {
-      room_t &rp = Rooms[roomnum];
+    auto setFlatQuad = [](index_t roomnum, const std::vector<vector3>& verts) {
+      room_t &rp = Rooms[*roomnum];
       InitRoomFace(rp.faces[0], 4);
       rp.faces[0].tmap = -1; // force flat shading, independent of textures
       for (int i = 0; i < 4; i++) {
         rp.verts[i] = verts[i];
         rp.faces[0].face_verts[i] = (int16_t)i;
       }
-      ComputeFaceNormal(roomnum, 0);
+      ComputeFaceNormal(*roomnum, 0);
     };
 
     // Room 0 (foreground): angled quad crossing the view axis at depth x=8.
@@ -7783,13 +7783,13 @@ private slots:
     Highest_object_index = -1;
 
     
-    const int roomnum = CreateNewRoom(8, 1, false);
-    QVERIFY(roomnum >= 0);
+    const index_t roomnum = CreateNewRoom(8, 1, false);
+    QVERIFY(roomnum.has_value());
     {
-      Rooms[roomnum].used = 1;
+      Rooms[*roomnum].used = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[roomnum].verts[v] = vector3{};
-      ComputeFaceNormal(roomnum, 0);
+        Rooms[*roomnum].verts[v] = vector3{};
+      ComputeFaceNormal(*roomnum, 0);
     }
     RoomsEnsureIndex(0);
 
@@ -7818,7 +7818,7 @@ private slots:
     app.Cur_object_index.reset();
     ResetObjectList();
     Highest_object_index = -1;
-    FreeRoom(roomnum);
+    FreeRoom(*roomnum);
   }
 
   void testHObjectMove() {
@@ -7828,13 +7828,13 @@ private slots:
     Highest_object_index = -1;
 
     
-    const int roomnum = CreateNewRoom(8, 1, false);
-    QVERIFY(roomnum >= 0);
+    const index_t roomnum = CreateNewRoom(8, 1, false);
+    QVERIFY(roomnum.has_value());
     {
-      Rooms[roomnum].used = 1;
+      Rooms[*roomnum].used = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[roomnum].verts[v] = vector3{};
-      ComputeFaceNormal(roomnum, 0);
+        Rooms[*roomnum].verts[v] = vector3{};
+      ComputeFaceNormal(*roomnum, 0);
     }
     RoomsEnsureIndex(0);
 
@@ -7867,7 +7867,7 @@ private slots:
     Viewer_object = nullptr;
     ResetObjectList();
     Highest_object_index = -1;
-    FreeRoom(roomnum);
+    FreeRoom(*roomnum);
   }
 
   void testObjMoveManagerStartEnd() {
@@ -7877,13 +7877,13 @@ private slots:
     Highest_object_index = -1;
 
     
-    const int roomnum = CreateNewRoom(8, 1, false);
-    QVERIFY(roomnum >= 0);
+    const index_t roomnum = CreateNewRoom(8, 1, false);
+    QVERIFY(roomnum.has_value());
     {
-      Rooms[roomnum].used = 1;
+      Rooms[*roomnum].used = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[roomnum].verts[v] = vector3{};
-      ComputeFaceNormal(roomnum, 0);
+        Rooms[*roomnum].verts[v] = vector3{};
+      ComputeFaceNormal(*roomnum, 0);
     }
     RoomsEnsureIndex(0);
 
@@ -7922,7 +7922,7 @@ private slots:
     Viewer_object = nullptr;
     ResetObjectList();
     Highest_object_index = -1;
-    FreeRoom(roomnum);
+    FreeRoom(*roomnum);
   }
 
   void testObjMoveManagerSkipsDoor() {
@@ -7932,13 +7932,13 @@ private slots:
     Highest_object_index = -1;
 
     
-    const int roomnum = CreateNewRoom(8, 1, false);
-    QVERIFY(roomnum >= 0);
+    const index_t roomnum = CreateNewRoom(8, 1, false);
+    QVERIFY(roomnum.has_value());
     {
-      Rooms[roomnum].used = 1;
+      Rooms[*roomnum].used = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[roomnum].verts[v] = vector3{};
-      ComputeFaceNormal(roomnum, 0);
+        Rooms[*roomnum].verts[v] = vector3{};
+      ComputeFaceNormal(*roomnum, 0);
     }
     RoomsEnsureIndex(0);
 
@@ -7971,7 +7971,7 @@ private slots:
     Viewer_object = nullptr;
     ResetObjectList();
     Highest_object_index = -1;
-    FreeRoom(roomnum);
+    FreeRoom(*roomnum);
   }
 
   void testObjMoveManagerSetAxis() {
@@ -7989,13 +7989,13 @@ private slots:
     Highest_object_index = -1;
 
     
-    const int roomnum = CreateNewRoom(8, 1, false);
-    QVERIFY(roomnum >= 0);
+    const index_t roomnum = CreateNewRoom(8, 1, false);
+    QVERIFY(roomnum.has_value());
     {
-      Rooms[roomnum].used = 1;
+      Rooms[*roomnum].used = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[roomnum].verts[v] = vector3{};
-      ComputeFaceNormal(roomnum, 0);
+        Rooms[*roomnum].verts[v] = vector3{};
+      ComputeFaceNormal(*roomnum, 0);
     }
     RoomsEnsureIndex(0);
 
@@ -8039,7 +8039,7 @@ private slots:
     Viewer_object = nullptr;
     ResetObjectList();
     Highest_object_index = -1;
-    FreeRoom(roomnum);
+    FreeRoom(*roomnum);
   }
 
   // Verifies that dragging with OBJMOVEAXIS_H rotates the object.
@@ -8050,13 +8050,13 @@ private slots:
     Highest_object_index = -1;
 
     
-    const int roomnum = CreateNewRoom(8, 1, false);
-    QVERIFY(roomnum >= 0);
+    const index_t roomnum = CreateNewRoom(8, 1, false);
+    QVERIFY(roomnum.has_value());
     {
-      Rooms[roomnum].used = 1;
+      Rooms[*roomnum].used = 1;
       for (int v = 0; v < 8; ++v)
-        Rooms[roomnum].verts[v] = vector3{};
-      ComputeFaceNormal(roomnum, 0);
+        Rooms[*roomnum].verts[v] = vector3{};
+      ComputeFaceNormal(*roomnum, 0);
     }
     RoomsEnsureIndex(0);
 
@@ -8105,7 +8105,7 @@ private slots:
     Viewer_object = nullptr;
     ResetObjectList();
     Highest_object_index = -1;
-    FreeRoom(roomnum);
+    FreeRoom(*roomnum);
   }
 
   // End-to-end widget-state::viewer::minerag: press on a projected object, drag, release,
@@ -8117,16 +8117,16 @@ private slots:
     Highest_object_index = -1;
 
     
-    const int roomnum = CreateNewRoom(8, 1, false);
-    QVERIFY(roomnum >= 0);
+    const index_t roomnum = CreateNewRoom(8, 1, false);
+    QVERIFY(roomnum.has_value());
     {
-      Rooms[roomnum].used = 1;
+      Rooms[*roomnum].used = 1;
       for (int v = 0; v < 4; ++v)
-        Rooms[roomnum].verts[v] = vector3{(float)(v & 1) * 10, 0, (float)(v > 1) * 10};
-      InitRoomFace(Rooms[roomnum].faces[0], 4);
+        Rooms[*roomnum].verts[v] = vector3{(float)(v & 1) * 10, 0, (float)(v > 1) * 10};
+      InitRoomFace(Rooms[*roomnum].faces[0], 4);
       for (int i = 0; i < 4; ++i)
-        Rooms[roomnum].faces[0].face_verts[i] = (int16_t)i;
-      ComputeFaceNormal(roomnum, 0);
+        Rooms[*roomnum].faces[0].face_verts[i] = (int16_t)i;
+      ComputeFaceNormal(*roomnum, 0);
     }
     RoomsEnsureIndex(0);
 
@@ -8192,7 +8192,7 @@ private slots:
     app.view_mode = state::viewer::mine;
     ResetObjectList();
     Highest_object_index = -1;
-    FreeRoom(roomnum);
+    FreeRoom(*roomnum);
   }
 
   // Builds an axis-aligned box room on Rooms[roomIdx] spanning [x0,y0,z0] to

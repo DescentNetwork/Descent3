@@ -209,8 +209,8 @@ float osipf_ObjectGetTimeLived(int objhandle);
 void osipf_GetGunPos(int objhandle, int gun_number, vector3 *gun_pnt, vector3 *gun_normal = NULL);
 
 // Returns room values (Index is optional and not always used)
-void osipf_RoomValue(int roomnum, char op, char vhandle, void *ptr, int index = 0);
-uint8_t osipf_IsRoomValid(int roomnum);
+void osipf_RoomValue(index_t roomnum, char op, char vhandle, void *ptr, int index = 0);
+uint8_t osipf_IsRoomValid(index_t roomnum);
 
 // Returns player only values (Index is optional and not always used)
 void osipf_PlayerValue(int obj_handle, char op, char vhandle, void *ptr, int index = 0);
@@ -234,7 +234,7 @@ index_t osipf_AIGetPathID(const std::string &string);
 vector3 osipf_AIFindHidePos(int hideobjhandle, int viewobjhandle, float time, int *hide_room);
 int osipf_AIFindObjOfType(int objhandle, int type, int id, bool f_ignore_init_room,
                           int parent_handle = OBJECT_HANDLE_NONE);
-vector3 osipf_AIGetRoomPathPoint(int roomnum);
+vector3 osipf_AIGetRoomPathPoint(index_t roomnum);
 int osipf_AIFindEnergyCenter(int objhandle);
 float osipf_AIGetDistToObj(int objhandle, int otherobjhandle);
 
@@ -346,7 +346,7 @@ void osipf_SetAllControls(bool enabled);
 void osipf_SetControls(int fn, bool enabled);
 
 // Creates an object
-int osipf_ObjCreate(uint8_t raw_type, uint16_t id, int roomnum, vector3 *pos, const matrix *orient = NULL,
+int osipf_ObjCreate(uint8_t raw_type, uint16_t id, index_t roomnum, vector3 *pos, const matrix *orient = NULL,
                     int parent_handle = OBJECT_HANDLE_NONE, vector3 *velocity = NULL);
 
 // OBJECT Properties.
@@ -409,7 +409,7 @@ index_t osipf_FindTextureName(const std::string& name);
 index_t osipf_FindPathName(const std::string& name);
 index_t osipf_FindLevelGoalName(const std::string& name);
 
-void osipf_CreateRandomSparks(int num_sparks, vector3 *pos, int roomnum, int which_index, float force_scalar);
+void osipf_CreateRandomSparks(int num_sparks, vector3 *pos, index_t roomnum, int which_index, float force_scalar);
 
 void osipf_GetGroundPos(int objhandle, int ground_number, vector3 *ground_pnt, vector3 *ground_normal);
 

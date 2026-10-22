@@ -222,7 +222,7 @@ extern vector3 Room_fog_plane, Room_fog_portal_vert;
 struct face;
 
 struct fog_portal_data {
-  int16_t roomnum;
+  index_t roomnum;
   float close_dist;
   face *close_face;
 };
@@ -297,18 +297,18 @@ void PostUpdateAllLightGlows();
 void ResetLightGlows();
 
 // Gets the dynamic light value for this position
-void GetRoomDynamicScalar(const vector3 &pos, int roomnum, float &r, float &g, float &b);
+void GetRoomDynamicScalar(const vector3 &pos, index_t roomnum, float &r, float &g, float &b);
 
 // Sorts our texture states using the quicksort algorithm
 void SortStates(state_limited_element *state_array, int cellcount);
 
 // Sets up fog if this room is fogged
-void SetupRoomFog(int roomnum, const vector3 &eye, const matrix &orient, int viewer_room);
+void SetupRoomFog(index_t roomnum, const vector3 &eye, const matrix &orient, int viewer_room);
 
 // Draw the specified face
 // Parameters:	roomnum - index of the room the face is un
 //				facenum - which face in the specified room
-void RenderFace(int roomnum, int facenum);
+void RenderFace(index_t roomnum, int facenum);
 
 /**
  * Renders a black screen, to be used for UI callbacks to prevent Hall of mirrors with mouse cursor
@@ -316,10 +316,10 @@ void RenderFace(int roomnum, int facenum);
 void RenderBlankScreen();
 
 // Renders a specular face
-void RenderSpecularFacesFlat(int roomnum);
+void RenderSpecularFacesFlat(index_t roomnum);
 
 // Renders fog faces for a room
-void RenderFogFaces(int roomnum);
+void RenderFogFaces(index_t roomnum);
 
 // Builds a list of mirror faces for each room and allocs memory accordingly
 void ConsolidateMineMirrors();

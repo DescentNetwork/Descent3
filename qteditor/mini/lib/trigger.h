@@ -91,6 +91,7 @@
 #include "ObjScript.h"
 #include "object_external_struct.h"
 #include "vecmat.h"
+#include "utils.h"
 /*
 // Trigger flags
 #define TF_UNUSED 1                 //
@@ -191,7 +192,7 @@ void FreeTriggers();
 #define TT_COLLIDE 1
 
 // Called to see if a trigger was tripped
-void CheckTrigger(int roomnum, int facenum, object *objp, int type);
+void CheckTrigger(index_t roomnum, int facenum, object *objp, int type);
 
 // Enable or disable a trigger
 void TriggerSetState(int trigger_num, bool enabled);
@@ -205,7 +206,7 @@ bool TriggerGetState(int trigger_num);
 //					activator - activator mask
 //					script - handle for the script for this trigger
 // Returns:	trigger number of new trigger, or -1 if error
-int AddTrigger(char *name, int roomnum, int facenum, int activator, const char *script);
+int AddTrigger(char *name, index_t roomnum, int facenum, int activator, const char *script);
 
 // Remove a trigger
 // Paramters:	trig_num - the trigger to delete
@@ -213,6 +214,6 @@ void DeleteTrigger(int trig_num);
 
 // Remove a trigger
 // Paramters:	roomnum,facenum - where the trigger is
-void DeleteTrigger(int roomnum, int facenum);
+void DeleteTrigger(index_t roomnum, int facenum);
 
 #endif

@@ -30,27 +30,27 @@ struct roomUVL;
 
 // Vars for the list of selected rooms
 extern int N_selected_rooms;
-extern std::array<int, MAX_ROOMS> Selected_rooms;
+extern std::array<index_t, MAX_ROOMS> Selected_rooms;
 
 
 // Room selection list (editor/selectedroom.cpp in Win32).
-int IsRoomSelected(int roomnum);
-void AddRoomToSelectedList(int roomnum);
-void RemoveRoomFromSelectedList(int roomnum);
+int IsRoomSelected(index_t roomnum);
+void AddRoomToSelectedList(index_t roomnum);
+void RemoveRoomFromSelectedList(index_t roomnum);
 void ClearRoomSelectedList();
-int ToggleRoomSelectedState(int roomnum);
-int SelectConnectedRooms(int roomnum);
+int ToggleRoomSelectedState(index_t roomnum);
+int SelectConnectedRooms(index_t roomnum);
 void SaveRoomSelectedList();
 void RestoreRoomSelectedList();
 
 
 // Allocate / free an editor room slot.  CreateNewRoom provisions a slot in the
 // Rooms table (first unused slot, else appended at the high-water mark) and
-// returns its index, or -1 when the room capacity limit is reached.  It mirrors
+// returns its index, or nullopt when the room capacity limit is reached.  It mirrors
 // CreateNewRoom() in the Win32 editor/Erooms.cpp, whose free-list allocator we
 // don't replicate.
-int CreateNewRoom(int nverts, int nfaces, bool palette_room = false);
-void DestroyRoom(int roomnum);
+index_t CreateNewRoom(int nverts, int nfaces, bool palette_room = false);
+void DestroyRoom(index_t roomnum);
 
 // Mirrors GetFreeRoom(): linear scan for the first unused slot, else append a
 // fresh slot at the end of Rooms (which is the high-water mark + 1).  Returns
@@ -66,18 +66,18 @@ void CopyFace(face *dfp, face *sfp);
 void CopyFaceFlags(face *dfp, face *sfp);
 void CopyRoom(int destroom, int srcroom);
 void ReInitRoomFace(face *fp, int nverts);
-int RoomAddVertices(int roomnum, int num_new_verts);
-int RoomAddFaces(int roomnum, int num_new_faces);
-bool ResetRoomFaceNormals(int roomnum);
+int RoomAddVertices(index_t roomnum, int num_new_verts);
+int RoomAddFaces(index_t roomnum, int num_new_faces);
+bool ResetRoomFaceNormals(index_t roomnum);
 bool FaceIsPlanar(int nv, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts);
 int CheckFaceConcavity(int num_verts, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts);
 bool FindSharedEdge(face *fp0, face *fp1, int *vn0, int *vn1);
 void DeleteRoomFace(index_t roomnum, index_t facenum);
 void DeleteRoomPortal(index_t roomnum, index_t portalnum);
-int AddPortal(int roomnum);
+int AddPortal(index_t roomnum);
 void LinkRooms(int room0, int face0, int room1, int face1);
 void AssignUVsToFace(index_t roomnum, index_t facenum, roomUVL *uva, roomUVL *uvb, int va, int vb);
-void AssignDefaultUVsToRoom(int roomnum);
+void AssignDefaultUVsToRoom(index_t roomnum);
 void FixConcaveFaces(index_t roomnum, int *facelist, int facecount);
 void FlipFace(index_t roomnum, index_t facenum);
 
@@ -85,8 +85,8 @@ void FlipFace(index_t roomnum, index_t facenum);
 bool CombineFaces(index_t roomnum, index_t face0, index_t face1);
 void DeletePortalPair(index_t roomnum, index_t portalnum);
 void RotateRooms(angle p, angle h, angle b);
-void ConnectPortal(int roomnum, int portal_num, int dest_room);
-void DetachPortal(int roomnum, int portal_num);
+void ConnectPortal(index_t roomnum, int portal_num, int dest_room);
+void DetachPortal(index_t roomnum, int portal_num);
 void AttachRoom();
 void ComputePlacedRoomMatrix();
 void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face, index_t placed_room_door);

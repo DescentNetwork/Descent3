@@ -395,7 +395,7 @@ struct room_light_t
 // Room change stuff
 #define MAX_ROOM_CHANGES 100
 struct room_changes {
-  int roomnum;
+  index_t roomnum;
   bool fog;
   vector3 start_vector, end_vector;
   float start_depth, end_depth;
@@ -423,7 +423,7 @@ void RoomsReset();
 // object/vis-effect chains are empty (objects == vis_effects == -1).  Returns
 // false when roomnum lies outside [0, MAX_ROOMS + MAX_PALETTE_ROOMS); in that
 // case Rooms is left unchanged.
-bool RoomsEnsureIndex(int roomnum);
+bool RoomsEnsureIndex(index_t roomnum);
 
 //
 // Macros
@@ -461,7 +461,7 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals);
 void InitRoomFace(face &fp, int nverts);
 
 // Frees a room in the Rooms table, deallocating its memory and marking it as unused
-void FreeRoom(int roomnum);
+void FreeRoom(index_t roomnum);
 
 // Frees all the rooms currently in use, deallocating their memory and marking them as unused
 void FreeAllRooms();
@@ -469,7 +469,7 @@ void FreeAllRooms();
 // Finds the center point of a room
 // Parameters:	vp - filled in with the center point
 //					roomnum - the Rooms slot whose center to find
-void ComputeRoomCenter(vector3 &vp, int roomnum);
+void ComputeRoomCenter(vector3 &vp, index_t roomnum);
 
 // Computes (fills in) the surface normal of a face.
 // Finds the best normal on this face by checking all sets of three vertices
@@ -477,7 +477,7 @@ void ComputeRoomCenter(vector3 &vp, int roomnum);
 // Parameters:	roomnum, facenum - the Rooms slot and face to calculate the normal for
 // Returns:		true if the normal is ok
 //					false if the normal has a very small (pre-normalization) magnitude
-bool ComputeFaceNormal(int roomnum, int facenum);
+bool ComputeFaceNormal(index_t roomnum, int facenum);
 bool ComputeFaceNormal(room_t &rp, int facenum);
 
 // Compute the surface normal from a list of vertices that determine a face
@@ -495,10 +495,10 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
 // Parameters:	vp           - filled in with the center point
 //					roomnum      - the Rooms slot
 //					portal_index - the index of the portal whose center to find
-void ComputePortalCenter(vector3 &vp, int roomnum, int portal_index);
+void ComputePortalCenter(vector3 &vp, index_t roomnum, int portal_index);
 
 // Computes the center point on a face by averaging the points in the face
-void ComputeCenterPointOnFace(vector3 &vp, int roomnum, int facenum);
+void ComputeCenterPointOnFace(vector3 &vp, index_t roomnum, int facenum);
 
 // Free the memory used by a room face structure
 void FreeRoomFace(face &fp);
@@ -510,14 +510,14 @@ void ClearAllRoomLightmaps(int external);
 void ClearAllVolumeLights();
 
 // Returns the area taken up by a face
-float GetAreaForFace(int roomnum, int facenum);
+float GetAreaForFace(index_t roomnum, int facenum);
 
 // Check if a particular point on a wall is a transparent pixel
 // Parameters:	pnt - the point we're checking
 //					roomnum - the Rooms slot that pnt is in
 //					facenum - the face that pnt is on
 // Returns:	true if can pass through the given point, else 0
-int CheckTransparentPoint(const vector3 &pnt, int roomnum, const int facenum);
+int CheckTransparentPoint(const vector3 &pnt, index_t roomnum, const int facenum);
 
 // Face physics flags returned by GetFacePhysicsFlags()
 struct face_physics_flags_t {
@@ -534,25 +534,25 @@ struct face_physics_flags_t {
 // Parameters:	roomnum - the Rooms slot the face's room occupies
 //					fp - the face we're interested in
 // Returns:	bitmask of flags (see above).
-face_physics_flags_t GetFacePhysicsFlags(int roomnum, const face &fp);
+face_physics_flags_t GetFacePhysicsFlags(index_t roomnum, const face &fp);
 
 // Computes a bounding sphere for the current room
 // Parameters: center - filled in with the center point of the sphere
 //		roomnum - the Rooms slot we're bounding
 // Returns: the radius of the bounding sphere
-float ComputeRoomBoundingSphere(vector3 &center, int roomnum);
+float ComputeRoomBoundingSphere(vector3 &center, index_t roomnum);
 
 // Create objects for the external rooms
 void CreateRoomObjects();
 
 // Clears lightmaps for a single room
-void ClearRoomLightmaps(int roomnum);
+void ClearRoomLightmaps(index_t roomnum);
 
 // returns the index of the first room that is being used.  Returns std::nullopt if there are none
 index_t FindFirstUsedRoom();
 
 // Clears specmaps for a single room
-void ClearRoomSpecmaps(int roomnum);
+void ClearRoomSpecmaps(index_t roomnum);
 
 // Removes all room specularity maps from memory and sets indoor faces accordingly
 // External=1 means to perform the operation on external rooms only, 0 means indoor rooms only
@@ -562,7 +562,7 @@ extern void GetIJ(const vector3& normal, int& ii, int& jj);
 
 // Changes a face's texture within a room
 //	returns true on successs
-bool ChangeRoomFaceTexture(int room_num, int face_num, int texture);
+bool ChangeRoomFaceTexture(index_t room_num, int face_num, int texture);
 
 // Clears the data for room changes
 void ClearRoomChanges();
@@ -574,6 +574,6 @@ index_t AllocRoomChange();
 void DoRoomChangeFrame();
 
 // Sets up a room to change its fog or wind over time
-index_t SetRoomChangeOverTime(int roomnum, bool fog, const vector3 &end, float depth_end, float time);
+index_t SetRoomChangeOverTime(index_t roomnum, bool fog, const vector3 &end, float depth_end, float time);
 
 #endif

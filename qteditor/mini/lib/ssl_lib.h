@@ -273,7 +273,7 @@ struct pos_state {
   vector3 *position; // Where in the world is this object
   matrix *orient;
   vector3 *velocity;
-  int roomnum;
+  index_t roomnum;
 };
 
 // #define MAX_EFFECT_OFFSETS 5
@@ -621,6 +621,7 @@ public:
 extern d3::slotvec_t<sound_info> Sounds;
 #else
 #include "..\neweditor\ned_Sound.h"
+#include "utils.h"
 #endif
 
 extern sound_file_info SoundFiles[MAX_SOUND_FILES];

@@ -76,6 +76,7 @@
 #include <vector>
 
 #include "vecmat_external.h"
+#include "utils.h"
 
 #define MAX_BNODE_SIZE 20.0f
 // Not bigger than 127 - char bnode - in portal struct
@@ -115,10 +116,10 @@ struct bn_list {
 
 struct room_t;
 
-extern void BNode_FreeRoom(int roomnum);
+extern void BNode_FreeRoom(index_t roomnum);
 extern void BNode_ClearBNodeInfo(void);
 
-bn_list *BNode_GetBNListPtr(int roomnum, bool f_in_load_level = false);
+bn_list *BNode_GetBNListPtr(index_t roomnum, bool f_in_load_level = false);
 
 extern std::array<bn_list, 8> BNode_terrain_list;
 extern bool BNode_allocated;
@@ -128,7 +129,7 @@ void BNode_RemapTerrainRooms(int old_hri, int new_hri);
 extern int BNode_Path[MAX_BNODES_PER_ROOM];
 extern int BNode_PathNumNodes;
 extern bool BNode_FindPath(int start_room, int i, int j, float rad);
-extern int BNode_FindDirLocalVisibleBNode(int roomnum, vector3& pos, vector3& fvec, float rad);
-extern int BNode_FindClosestLocalVisibleBNode(int roomnum, vector3& pos, float rad);
+extern int BNode_FindDirLocalVisibleBNode(index_t roomnum, vector3& pos, vector3& fvec, float rad);
+extern int BNode_FindClosestLocalVisibleBNode(index_t roomnum, vector3& pos, float rad);
 
 #endif

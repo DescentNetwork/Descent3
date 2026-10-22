@@ -142,7 +142,7 @@ bool BSPRayOccluded(vector3& a, vector3& b, bspnode *n) { PRINT_STUB(__FUNCTION_
 bsptree MineBSP = {};
 bool UseBSP = false;
 void BuildBSPTree() { PRINT_STUB(__FUNCTION__); }
-void BuildSingleBSPTree(int n) { PRINT_STUB(__FUNCTION__); }
+void BuildSingleBSPTree(index_t) { PRINT_STUB(__FUNCTION__); }
 
 // ==================== Game globals ====================
 float Frametime = 0.0f;
@@ -355,7 +355,7 @@ void ChangeOldModelsForObjects(index_t a, index_t b) { PRINT_STUB(__FUNCTION__);
 void FreeAllGamePaths() { PRINT_STUB(__FUNCTION__); }
 //int FindPointRoom(vector3 *pnt) { PRINT_STUB(__FUNCTION__); return -1; }
 int GetTerrainRoomFromPos_ret(vector3& pos) { PRINT_STUB(__FUNCTION__); return -1; }
-int AIMakeNextRoomList(int roomnum, int *next_rooms, int max_rooms) { PRINT_STUB(__FUNCTION__); return 0; }
+int AIMakeNextRoomList(index_t roomnum, int *next_rooms, int max_rooms) { PRINT_STUB(__FUNCTION__); return 0; }
 bool PhysCalcGround(vector3& ground_point, vector3& ground_normal, object& obj, int ground_num) { PRINT_STUB(__FUNCTION__); return false; }
 void ClearAllEvents() { PRINT_STUB(__FUNCTION__); }
 
@@ -370,13 +370,13 @@ bool WeaponCalcGun(vector3* gun_point, vector3* gun_normal, object* obj, int gun
 
 // ==================== Visual effects ====================
 // The mini has no visual effect system.
-int VisEffectCreate(uint8_t type, uint8_t id, int roomnum, vector3* pos) { PRINT_STUB(__FUNCTION__); return -1; }
+int VisEffectCreate(uint8_t type, uint8_t id, index_t roomnum, vector3* pos) { PRINT_STUB(__FUNCTION__); return -1; }
 
 // ==================== FVI ====================
 bool Tracking_FVI = false; // FVI debug flag (GameLoop in the full engine toggles it)
 /*
 int fvi_QuickDistFaceList(int init_room_index, vector3 *pos, float rad, fvi_face_room_list *quick_fr_list, int max_elements) { PRINT_STUB(__FUNCTION__); return 0; }
-bool fvi_QuickRoomCheck(vector3 *pos, int roomnum, bool try_again) { PRINT_STUB(__FUNCTION__); return false; }
+bool fvi_QuickRoomCheck(vector3 *pos, index_t roomnum, bool try_again) { PRINT_STUB(__FUNCTION__); return false; }
 int fvi_QuickDistObjectList(vector3 *pos, int init_roomnum, float rad, int16_t *object_index_list, int max_elements,
                             bool f_lightmap_only, bool f_only_players_and_ais,
                             bool f_include_non_collide_objects, bool f_stop_at_closed_doors) { PRINT_STUB(__FUNCTION__); return 0; }

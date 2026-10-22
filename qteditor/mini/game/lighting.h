@@ -65,7 +65,7 @@ int FindFreeDynamicLightmap(int cl);
 
 // Applies dynamic lighting to the room faces based on the light coming from
 // an object
-void ApplyLightingToRooms(vector3 &pos, int roomnum, float light_dist, float red_scale, float green_scale,
+void ApplyLightingToRooms(vector3 &pos, index_t roomnum, float light_dist, float red_scale, float green_scale,
                           float blue_scale, optref<const vector3> light_direction = std::nullopt, float dot_range = 0);
 
 // Clears the used flag for the dynamic lightmaps
@@ -82,20 +82,20 @@ uint8_t Float_to_ubyte(float fnum);
 extern float Ubyte_to_float[];
 
 // Sets pulse parameters for an entire room
-void SetRoomPulse(int roomnum, uint8_t pulse_time, uint8_t pulse_offset);
+void SetRoomPulse(index_t roomnum, uint8_t pulse_time, uint8_t pulse_offset);
 
 // Returns the total number of bytes needed for volume lighting in this room
-int GetVolumeSizeOfRoom(int roomnum, optref<int> w = std::nullopt, optref<int> h = std::nullopt,
+int GetVolumeSizeOfRoom(index_t roomnum, optref<int> w = std::nullopt, optref<int> h = std::nullopt,
                         optref<int> d = std::nullopt);
 
 // Returns a lightmap that can be applied for specular lighting
-int GetSpecularLightmapForFace(const vector3 &pos, int roomnum, const face &fp);
+int GetSpecularLightmapForFace(const vector3 &pos, index_t roomnum, const face &fp);
 
 // Kills the lighting that a face casts and dampens all the faces that light influences
-void DestroyLight(int roomnum, int facenum);
+void DestroyLight(index_t roomnum, int facenum);
 
 // Adds to our list of destroyable lights that got destroyed this frame
-void AddToDestroyableLightList(int roomnum, int facenum);
+void AddToDestroyableLightList(index_t roomnum, int facenum);
 
 // Goes through our destroyable light list and actually kills all the lights
 void DoDestroyedLightsForFrame();

@@ -930,8 +930,8 @@ struct vec2d {
 
 // finds the uv coords of the given point on the given seg & side
 // fills in u & v. if l is non-NULL fills it in also
-void FindHitpointUV(float &u, float &v, const vector3 &point, int roomnum, int facenum) {
-  const room_t &rp = Rooms[roomnum];
+void FindHitpointUV(float &u, float &v, const vector3 &point, index_t roomnum, int facenum) {
+  const room_t &rp = Rooms[*roomnum];
   const face &fp = rp.faces[facenum];
   int ii, jj;
   vec2d pnt[3], checkp, vec0, vec1;

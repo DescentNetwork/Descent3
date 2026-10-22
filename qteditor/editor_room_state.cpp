@@ -5,18 +5,18 @@
 
 // Room selection list (defined in the MFC editor's EDVARS.cpp).
 int N_selected_rooms = 0;
-std::array<int, MAX_ROOMS> Selected_rooms;
+std::array<index_t, MAX_ROOMS> Selected_rooms;
 
 // Editor-only room/face helpers (defined in editor/Erooms.cpp /
 // editor/selectedroom.cpp). The Qt port's level_io.cpp + room_ops.cpp use
 // these to construct / tear down rooms with full geometry; they preserve
 // the public signatures so qteditor links cleanly.
 
-int CreateNewRoom(int nverts, int nfaces, bool palette_room) {
+index_t CreateNewRoom(int nverts, int nfaces, bool palette_room) {
   (void)palette_room;
   const int slot = FindFreeRoomSlot();
   if (slot < 0)
-    return -1;
+    return std::nullopt;
 
   // `room{}` value-initialises (zeroing PODs, default-constructing the
   // std::string name).  No memset — memset would corrupt the std::string.
@@ -25,7 +25,7 @@ int CreateNewRoom(int nverts, int nfaces, bool palette_room) {
   rp.used = 1;
   rp.verts.resize(nverts);
   rp.faces.resize(nfaces);
-  return slot;
+  return to_roomnum(slot);
 }
 
 // Mirrors GetFreeRoom() in editor/Erooms.cpp:579: a linear scan for the first
@@ -50,12 +50,12 @@ int FindFreeRoomSlot() {
 // portal list, recycles to the free list, and detaches from the marked
 // room; the Qt port stops at "free the slot" because app.current.room tracking
 // lives at the qteditor level, not in Descent3Core.
-void DestroyRoom(int roomnum) {
-  if (roomnum < 0)
+void DestroyRoom(index_t roomnum) {
+  if (!roomnum)
     return;
-  if (static_cast<size_t>(roomnum) >= Rooms.size())
+  if (static_cast<size_t>(*roomnum) >= Rooms.size())
     return;
-  room_t &rp = Rooms[roomnum];
+  room_t &rp = Rooms[*roomnum];
   if (!rp.used)
     return;
   rp.verts.clear();
@@ -76,9 +76,9 @@ void DestroyRoom(int roomnum) {
 }
 
 // Editor-only room selection helper (defined in editor/selectedroom.cpp).
-int IsRoomSelected(int roomnum) {
+int IsRoomSelected(index_t roomnum) {
   for (int i = 0; i < N_selected_rooms; i++)
-    if (Selected_rooms[i] == roomnum)
+    if (Selected_rooms[i] == *roomnum)
       return 1;
   return 0;
 }
@@ -105,16 +105,16 @@ void ClearRoomSelectedList() {
   app.State_changed = true;
 }
 
-void AddRoomToSelectedList(int roomnum) {
-  if (!IsRoomSelected(roomnum)) {
-    Selected_rooms[N_selected_rooms++] = roomnum;
+void AddRoomToSelectedList(index_t roomnum) {
+  if (!IsRoomSelected(*roomnum)) {
+    Selected_rooms[N_selected_rooms++] = *roomnum;
     app.State_changed = true;
   }
 }
 
-void RemoveRoomFromSelectedList(int roomnum) {
+void RemoveRoomFromSelectedList(index_t roomnum) {
   for (int i = 0; i < N_selected_rooms; i++) {
-    if (Selected_rooms[i] == roomnum) {
+    if (Selected_rooms[i] == *roomnum) {
       for (int j = i; j < N_selected_rooms - 1; j++)
         Selected_rooms[j] = Selected_rooms[j + 1];
       N_selected_rooms--;
@@ -124,37 +124,37 @@ void RemoveRoomFromSelectedList(int roomnum) {
   }
 }
 
-int ToggleRoomSelectedState(int roomnum) {
+int ToggleRoomSelectedState(index_t roomnum) {
   app.State_changed = true;
   for (int i = 0; i < N_selected_rooms; i++) {
-    if (Selected_rooms[i] == roomnum) {
+    if (Selected_rooms[i] == *roomnum) {
       for (int j = i; j < N_selected_rooms - 1; j++)
         Selected_rooms[j] = Selected_rooms[j + 1];
       N_selected_rooms--;
       return 0;
     }
   }
-  Selected_rooms[N_selected_rooms++] = roomnum;
+  Selected_rooms[N_selected_rooms++] = *roomnum;
   return 1;
 }
 
-int SelectConnectedRooms(int roomnum) {
-  if (IsRoomSelected(roomnum))
+int SelectConnectedRooms(index_t roomnum) {
+  if (IsRoomSelected(*roomnum))
     return 0;
 
-  Selected_rooms[N_selected_rooms++] = roomnum;
+  Selected_rooms[N_selected_rooms++] = *roomnum;
   int count = 1;
   app.State_changed = true;
 
-  for (int s = 0; s < Rooms[roomnum].portals.size(); s++) {
-    const index_t connected_room = Rooms[roomnum].portals[s].connected_room;
+  for (int s = 0; s < Rooms[*roomnum].portals.size(); s++) {
+    const index_t connected_room = Rooms[*roomnum].portals[s].connected_room;
     if (connected_room)
       count += SelectConnectedRooms(*connected_room);
   }
   return count;
 }
 
-static std::vector<int> Save_selected_rooms;
+static std::vector<index_t> Save_selected_rooms;
 static bool Save_selected_rooms_active = false;
 
 void SaveRoomSelectedList() {

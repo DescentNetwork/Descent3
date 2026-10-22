@@ -43,6 +43,7 @@
 
 #include "list.h"
 #include "vecmat.h"
+#include "utils.h"
 
 // Results of classifying a polygon against a plane
 enum class bsp_side : uint8_t {
@@ -72,7 +73,7 @@ struct bsppolygon {
   int nv;
   bspplane plane;
 
-  int16_t roomnum;
+  index_t roomnum;
   int16_t facenum;
   int8_t subnum;
 
@@ -84,7 +85,7 @@ struct bspnode {
   bsp_node_type type;
   bspplane plane;
   uint16_t node_facenum;
-  uint16_t node_roomnum;
+  index_t node_roomnum;
   int8_t node_subnum;
 
   bspnode *front;
@@ -123,7 +124,7 @@ void InitDefaultBSP();
 void DestroyDefaultBSPTree();
 
 // Builds a bsp tree for a single room
-void BuildSingleBSPTree(int roomnum);
+void BuildSingleBSPTree(index_t roomnum);
 
 // Reports the current mine's checksum
 int BSPGetMineChecksum();

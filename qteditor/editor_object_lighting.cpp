@@ -260,13 +260,13 @@ void AssignLightmapsToObjectSurfaces(int surface_index, int terrain) {
 }
 
 // Goes through all objects int a room and fills in the lightmap data for them
-void AssignLightmapsToObjectSurfacesForSingleRoom(int surface_index, int roomnum) {
+void AssignLightmapsToObjectSurfacesForSingleRoom(int surface_index, index_t roomnum) {
   int i, t, j;
 
   for (i = 0; i <= Highest_object_index; i++) {
 
     if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps &&
-        Objects[i].roomnum == roomnum) {
+        Objects[i].roomnum == *roomnum) {
       const poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
       if (!po.new_style)
@@ -354,12 +354,12 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
           Light_surfaces[surface_index].roomnum = Objects[i].roomnum;
 
           if (Light_surfaces[surface_index].surface_type == rad_surface_type::room_object) {
-            const int roomnum = from_roomnum(Objects[i].roomnum);
-            if (Rooms[roomnum].flags.touches_terrain)
+            const index_t roomnum = from_roomnum(Objects[i].roomnum);
+            if (Rooms[*roomnum].flags.touches_terrain)
               Light_surfaces[surface_index].flags.touches_terrain = 1;
 
-            for (int k = 0; k < Rooms[roomnum].portals.size(); k++) {
-              const index_t connected_room = Rooms[roomnum].portals[k].connected_room;
+            for (int k = 0; k < Rooms[*roomnum].portals.size(); k++) {
+              const index_t connected_room = Rooms[*roomnum].portals[k].connected_room;
               if (!connected_room || Rooms[*connected_room].flags.external)
                 Light_surfaces[surface_index].flags.touches_terrain = 1;
             }
@@ -377,13 +377,13 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
 
 // Sets up radiosity surfaces for objects in a room
 // Returns the number of new surfaces
-int ComputeSurfacesForObjectsForSingleRoom(int surface_index, int roomnum) {
+int ComputeSurfacesForObjectsForSingleRoom(int surface_index, index_t roomnum) {
   int i, t, j;
 
   for (i = 0; i <= Highest_object_index; i++) {
 
     if (Objects[i].type != object_type_e::none && Objects[i].lighting_render_type == lighting_render_type_e::lightmaps &&
-        Objects[i].roomnum == roomnum) {
+        Objects[i].roomnum == *roomnum) {
       const poly_model &po = Poly_models[Objects[i].rtype.pobj_info().model_num];
 
       if (!po.new_style)
@@ -465,13 +465,13 @@ int GetTotalObjectFaces(int terrain) {
 }
 
 // Gets the total number of object faces that exist in a room
-int GetTotalObjectFacesForSingleRoom(int roomnum) {
+int GetTotalObjectFacesForSingleRoom(index_t roomnum) {
   int i;
   int facecount = 0;
 
   for (i = 0; i <= Highest_object_index; i++) {
     if (Objects[i].type != object_type_e::none) {
-      if (Objects[i].roomnum != roomnum)
+      if (Objects[i].roomnum != *roomnum)
         continue;
 
       if (Objects[i].lighting_render_type == lighting_render_type_e::lightmaps) {

@@ -661,13 +661,13 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB = tr
 //					roomnum - index of the room to read
 //					version - version number of file
 // Returns:		1 if read ok, else 0
-int ReadRoom(struct CFILE* ifile, int roomnum, int version);
+int ReadRoom(struct CFILE* ifile, index_t roomnum, int version);
 
 // Writes a room to a disk file
 // Parameters:	ofile - file to write to
 //					roomnum - index of the room to write
 // Returns:		1 if written ok, else 0
-int WriteRoom(struct CFILE* ofile, int roomnum);
+int WriteRoom(struct CFILE* ofile, index_t roomnum);
 
 // Write the texture names for remapping when level is loaded
 void WriteTextureList(struct CFILE* ofile);
@@ -678,6 +678,7 @@ void ReadTextureList(struct CFILE* ifile);
 // Primarily for multiplayer, makes sure the client and server levels are the same
 
 #include "../md5/md5.h"
+#include "utils.h"
 extern MD5 *Level_md5;
 inline void RestartLevelMD5() {
   if (Level_md5)

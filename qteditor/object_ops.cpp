@@ -238,7 +238,7 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
       pm->n_ground) {
     vector3 *surface_norm;
     vector3 pos;
-    int roomnum;
+    index_t roomnum;
 
     if (app.view_mode == state::viewer::terrain) {
       int cellnum = GetSelectedTerrainCell();
@@ -264,10 +264,10 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
       }
       ComputeCenterPointOnFace(pos, static_cast<int>(*app.current.room), index_to_int(app.current.face));
       surface_norm = &Rooms[*app.current.room].faces[*app.current.face].normal;
-      roomnum = index_to_int(app.current.room);
+      roomnum = app.current.room;
 
-      if (Rooms[roomnum].flags.external)
-        roomnum = GetTerrainRoomFromPos(pos).value_or(-1);
+      if (Rooms[*roomnum].flags.external)
+        roomnum = GetTerrainRoomFromPos(pos);
     }
 
     matrix groundplane_orient, surface_orient, object_orient;
@@ -285,7 +285,7 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
     vm_VectorToMatrix(surface_orient, *surface_norm);
     vm_MatrixMulTMatrix(object_orient, surface_orient, groundplane_orient);
 
-    ObjSetPos(obj, pos, to_roomnum(roomnum), object_orient, false);
+    ObjSetPos(obj, pos, roomnum, object_orient, false);
   } else {
     // No ground plane — move in front of viewer, facing viewer
     vector3 pos;

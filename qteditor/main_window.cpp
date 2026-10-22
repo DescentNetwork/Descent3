@@ -945,19 +945,19 @@ void MainWindow::onCenterViewOnCube() {
   // Win32 ID_VIEW_CENTERONCUBE -> CMainFrame::OnViewCenterOnCube
   // (editor/MainFrm.cpp:2218): re-aim the wireframe view at the current
   // room's center without changing distance or orientation.
-  int roomnum;
+  index_t roomnum;
   if (app.view_mode == state::viewer::room) {
     if (!app.current_room || *app.current_room >= Rooms.size())
       return;
-    roomnum = *app.current_room;
+    roomnum = to_roomnum(*app.current_room);
   } else {
-    roomnum = index_to_int(app.current.room);
+    roomnum = app.current.room;
   }
-  if (roomnum < 0 || !Rooms[roomnum].used)
+  if (!roomnum || !Rooms[*roomnum].used)
     return;
 
   vector3 pos;
-  ComputeRoomCenter(pos, roomnum);
+  ComputeRoomCenter(pos, *roomnum);
   m_editorView->setWireframeView(pos);
   m_editorView->update();
 }
@@ -1640,14 +1640,14 @@ bool MainWindow::onAddRoom()
   const int nfaces = cnv + 2;
 
   // CreateNewRoom carves the slot out of Rooms[] itself (via
-  // FindFreeRoomSlot) and returns it, or -1 when the room table is full.
-  const int slot = CreateNewRoom(cnv * 2, nfaces, /*palette_room=*/false);
-  if (slot < 0) {
+  // FindFreeRoomSlot) and returns it, or nullopt when the room table is full.
+  const index_t slot = CreateNewRoom(cnv * 2, nfaces, /*palette_room=*/false);
+  if (!slot) {
     std::fprintf(stderr, "[room_ops] AddRoom: no free slot\n");
     return false;
   }
 
-  room_t &rp = Rooms[slot];
+  room_t &rp = Rooms[*slot];
 
   // Geometry: extrude the current face's verts outward by `kDefaultRoomLength`
   // along the face normal so the new room extends from the existing face.
@@ -1676,24 +1676,24 @@ bool MainWindow::onAddRoom()
   }
 
   for (int i = 0; i < nfaces; ++i) {
-    if (!ComputeFaceNormal(slot, i)) {
+    if (!ComputeFaceNormal(*slot, i)) {
       std::fprintf(stderr,
                    "[room_ops] AddRoom: ComputeFaceNormal failed for face %d\n",
                    i);
     }
     rp.faces[i].tmap = (i + 1) % MAX_TEXTURES;
-    AssignDefaultUVsToRoomFace(slot, i);
+    AssignDefaultUVsToRoomFace(*slot, i);
   }
 
   // Wire the new room into the editor view: it's the current selection
   // and the marked room for follow-on edits.
-  app.current.room = to_roomnum(slot);
+  app.current.room = slot;
   app.current.face = 0;
   app.current.edge = 0;
   app.current.vert = 0;
   app.current.portal = 0;
   onMarkRoom();
-  app.current_room = slot;
+  app.current_room = static_cast<int>(*slot);
 
   app.Mine_changed = true;
   app.New_mine = true;

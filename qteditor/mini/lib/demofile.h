@@ -110,6 +110,7 @@
 #include <filesystem>
 
 #include "object_external_struct.h"
+#include "utils.h"
 
 extern std::filesystem::path Demo_fname;
 
@@ -178,7 +179,7 @@ void DemoWriteChangedObjects();
 void DemoWriteWeaponFire(uint16_t objectnum, vector3 *pos, vector3 *dir, uint16_t weaponnum,
                          uint16_t weapobjnum, int16_t gunnum);
 
-void DemoWriteObjCreate(uint8_t type, uint16_t id, int roomnum, vector3 *pos, const matrix *orient, int parent_handle,
+void DemoWriteObjCreate(uint8_t type, uint16_t id, index_t roomnum, vector3 *pos, const matrix *orient, int parent_handle,
                         object *obj);
 
 void DemoWriteTurretChanged(uint16_t objnum);

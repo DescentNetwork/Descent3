@@ -228,8 +228,8 @@ public:
 
 inline int BOA_TERRAIN_INDEX() { return static_cast<int>(Rooms.size()); }
 inline int BOA_NO_PATH() { return static_cast<int>(Rooms.size()) - 1 + 9; }
-inline int BOA_INDEX(int roomnum) {
-  return ROOMNUM_OUTSIDE(roomnum) ? static_cast<int>(Terrain_seg[roomnum].flags.region + Rooms.size()) : roomnum;
+inline int BOA_INDEX(index_t roomnum) {
+  return roomnum_outside(roomnum) ? static_cast<int>(Terrain_seg[*roomnum].flags.region + Rooms.size()) : *roomnum;
 }
 
 // Visibility Info
@@ -284,7 +284,7 @@ index_t BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, 
                                                      optref<int> blocked_portal = std::nullopt);
 bool BOA_PassablePortal(int room, int portal_index, bool f_for_sound = false,
                         bool f_making_robot_path_invalid_list = false);
-bool BOA_LockedDoor(object *obj, int roomnum);
+bool BOA_LockedDoor(object *obj, index_t roomnum);
 void BOA_ComputePathPoints(char *message = NULL, int len = 0);
 int BOAGetMineChecksum();
 

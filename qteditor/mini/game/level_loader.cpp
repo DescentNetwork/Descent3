@@ -447,7 +447,9 @@ static void LL_ReadBSPNode(byte_istream &ifile, bspnode *&node_out) {
   ifile >> node->plane.c;
   ifile >> node->plane.d;
 
-  ifile >> node->node_roomnum;
+  uint16_t node_roomnum = 0;
+  ifile >> node_roomnum;
+  node->node_roomnum = u16_to_index(node_roomnum);
   ifile >> node->node_facenum;
   ifile >> node->node_subnum;
 
@@ -465,7 +467,7 @@ static void LL_WriteBSPNode(byte_ostream &ofile, const bspnode *node) {
   ofile << node->plane.b;
   ofile << node->plane.c;
   ofile << node->plane.d;
-  ofile << node->node_roomnum;
+  ofile << index_to_u16(node->node_roomnum);
   ofile << node->node_facenum;
   ofile << node->node_subnum;
 
@@ -630,8 +632,8 @@ static void LL_EndChunk(byte_ostream &ofile, int chunk_start_pos) {
 
 // RLE byte compression used by the engine inside ROOM for volume lights.
 
-static int LL_ReadRoom(byte_istream &ifile, int roomnum, uint32_t /*version*/) {
-  room_t &rp = Rooms[roomnum];
+static int LL_ReadRoom(byte_istream &ifile, index_t roomnum, uint32_t /*version*/) {
+  room_t &rp = Rooms[*roomnum];
   // Current canonical layout: the room stream operator reads every field
   // (verts, faces, portals, lights, ...) exactly as the engine writes it.
   ifile >> rp;
@@ -994,7 +996,7 @@ static void LL_ReadEditorInfoChunk(byte_istream &ifile, uint32_t version) {
   N_selected_rooms = std::min<int32_t>(nsr, MAX_ROOMS);
   for (int i = 0; i < N_selected_rooms; i++) {
     ifile >> sel;
-    Selected_rooms[i] = sel;
+    Selected_rooms[i] = u16_to_index(sel);
   }
 
   if (version >= 14) {
@@ -1059,7 +1061,7 @@ static void LL_WriteEditorInfoChunk(byte_ostream &ofile) {
 
   ofile << static_cast<int32_t>(N_selected_rooms);
   for (int i = 0; i < N_selected_rooms; i++)
-    ofile << static_cast<int16_t>(Selected_rooms[i]);
+    ofile << index_to_u16(Selected_rooms[i]);
 
   ofile << static_cast<int32_t>(index_to_int(app.Cur_object_index));
   ofile << static_cast<int32_t>(index_to_int(app.Current_trigger));
@@ -1839,11 +1841,11 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
           uint16_t roomnum = 0;
           for (int i = 0; i < num_rooms; i++) {
             ifile >> roomnum;
-            if (!RoomsEnsureIndex(roomnum)) {
+            if (!RoomsEnsureIndex(to_roomnum(roomnum))) {
               ifile.close();
               throw std::runtime_error("Level room index exceeds the room capacity");
             }
-            LL_ReadRoom(ifile, roomnum, version);
+            LL_ReadRoom(ifile, to_roomnum(roomnum), version);
           }
           // Smallest index after the rooms read is the high-water mark + 1.
           // Win32 clamped the watermark to MAX_ROOMS - 1; rooms above that

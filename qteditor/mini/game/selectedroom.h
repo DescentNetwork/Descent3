@@ -15,6 +15,8 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "utils.h"
+
 --- HISTORICAL COMMENTS FOLLOW ---
 
  * $Logfile: /DescentIII/Main/editor/selectedroom.h $
@@ -35,25 +37,25 @@
  */
 
 // Returns true if a room is in the selected list
-int IsRoomSelected(int roomnum);
+int IsRoomSelected(index_t roomnum);
 
 // Adds a room to the selected list, if it's not already there
-void AddRoomToSelectedList(int roomnum);
+void AddRoomToSelectedList(index_t roomnum);
 
 // Removes a room from the selected list, if it's there
-void RemoveRoomFromSelectedList(int roomnum);
+void RemoveRoomFromSelectedList(index_t roomnum);
 
 // Empties the selected list
 void ClearRoomSelectedList();
 
 // Adds to selected list if not already in there, else removes from list
 // Returns:	1 if room was selected, 0 if un-selected
-int ToggleRoomSelectedState(int roomnum);
+int ToggleRoomSelectedState(index_t roomnum);
 
 // Add all the connected room to the selected list
 // Parameters:	roomnum - the starting room
 // Returns:		the number of rooms added to the list
-int SelectConnectedRooms(int roomnum);
+int SelectConnectedRooms(index_t roomnum);
 
 // Save the (user's) selected list so that an internal function can use it
 // You must call RestoreSelectedList() when you're done with the selected list

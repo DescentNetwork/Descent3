@@ -52,6 +52,7 @@
 
 #include <cstdint>
 #include "vecmat.h"
+#include "utils.h"
 
 #define MAX_VIS_EFFECTS 5000
 
@@ -119,7 +120,7 @@ struct vis_effect {
   float lifetime;
   float creation_time;
 
-  int roomnum;
+  index_t roomnum;
 
   int phys_flags;
 

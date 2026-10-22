@@ -173,19 +173,19 @@ void DeleteScorch(int index) {
 //					pos - where the scorch goes
 //					texture_handle - the texture for the scorch mark
 //					size - how big the scorch is
-void AddScorch(int roomnum, int facenum, vector3 *pos, index_t texture_handle, float size) {
+void AddScorch(index_t roomnum, int facenum, vector3 *pos, index_t texture_handle, float size) {
   // Bail if on terrain.  We should probably add support for this later.
-  if (ROOMNUM_OUTSIDE(roomnum))
+  if (roomnum_outside(roomnum))
     return;
 
-  room_t &rp = Rooms[roomnum];
+  room_t &rp = Rooms[*roomnum];
   face &fp = rp.faces[facenum];
 
   // Check if face is a light, and if so don't add the scorch
   if (GameTextures[fp.tmap].flags.light || GameTextures[fp.tmap].flags.procedural)
     return;
 
-  int roomface = ROOMFACE(roomnum, facenum);
+  int roomface = ROOMFACE(*roomnum, facenum);
 
   // Count the number of scorches on this face, and bail if already at max
   int count = 0;
@@ -291,11 +291,11 @@ struct {
 #define FADE_START_DISTANCE 170 // when mark is this far away, start fading
 
 // Draw the scorch(es) for a given face
-void DrawScorches(int roomnum, int facenum) {
+void DrawScorches(index_t roomnum, int facenum) {
   if (!Detail_settings.Scorches_enabled)
     return;
 
-  int roomface = ROOMFACE(roomnum, facenum);
+  int roomface = ROOMFACE(*roomnum, facenum);
 
   // Set alpha, transparency, & lighting for this face
   if (!StateLimited) {

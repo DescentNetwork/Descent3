@@ -192,7 +192,7 @@ static void compute_costs();
 static void update_path_info(const std::vector<q_item *> &node_list, int start, int end);
 static void compute_next_segs();
 static void compute_blockage_info();
-static void ComputeBOAVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff,
+static void ComputeBOAVisFaceUpperLeft(index_t roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff,
                                        vector3 &center);
 static int BOAGetRoomChecksum(int i);
 static bool IsPathPointValid(int room, const vector3 &pos);
@@ -265,7 +265,7 @@ bool BOA_PassablePortal(int room, int portal_index, bool f_for_sound, bool f_mak
   return true;
 }
 
-extern object *GetDoorObject(int roomnum);
+extern object *GetDoorObject(index_t roomnum);
 
 //bool BOA_LockedDoor(object *obj, int roomnum) {
 //  if (roomnum >= 0 && roomnum < Rooms.size() && Rooms[roomnum].used && Rooms[roomnum].flags.door) {
@@ -1387,9 +1387,9 @@ void BOA_ComputePathPoints(char *message, int len) {
 }
 
 // Given a face, computes the upper left corner of the face
-void ComputeBOAVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff,
+void ComputeBOAVisFaceUpperLeft(index_t roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff,
                                 vector3 &center) {
-  const room_t &rp = Rooms[roomnum];
+  const room_t &rp = Rooms[*roomnum];
   matrix face_matrix, trans_matrix;
   vector3 fvec;
   vector3 avg_vert;

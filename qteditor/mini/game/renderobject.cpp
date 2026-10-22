@@ -770,8 +770,8 @@ static inline bool object_object_AABB(const object &obj1, const object &obj2) {
   return overlap;
 }
 // Given a face, computes the upper left corner of the face
-void ComputeDebugVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff, vector3 &center) {
-  const room &rp = Rooms[roomnum];
+void ComputeDebugVisFaceUpperLeft(index_t roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff, vector3 &center) {
+  const room &rp = Rooms[*roomnum];
   matrix face_matrix, trans_matrix;
   vector3 fvec;
   vector3 avg_vert;
@@ -861,9 +861,9 @@ void ComputeDebugVisFaceUpperLeft(int roomnum, const face &fp, vector3 &upper_le
 
 #define VIS_TABLE_RESOLUTION 6
 void DrawRoomVisPnts(const object &obj) {
-  int roomnum = obj.roomnum;
-  if ((!ROOMNUM_OUTSIDE(roomnum)) && (roomnum != -1) && (Rooms[roomnum].used)) {
-    const room &rp = Rooms[roomnum];
+  index_t roomnum = obj.roomnum;
+  if ((!roomnum_outside(roomnum)) && (roomnum.has_value()) && (Rooms[*roomnum].used)) {
+    const room &rp = Rooms[*roomnum];
     int t;
     int j;
     for (t = 0; t < rp.num_portals; t++) {
@@ -878,7 +878,7 @@ void DrawRoomVisPnts(const object &obj) {
       }
       vector3 fvec = -src_fp.normal;
       vm_VectorToMatrix(src_matrix, fvec, std::nullopt, std::nullopt);
-      ComputeDebugVisFaceUpperLeft(roomnum, src_fp, src_upper_left, src_width, src_height, src_center);
+      ComputeDebugVisFaceUpperLeft(*roomnum, src_fp, src_upper_left, src_width, src_height, src_center);
 
       if (src_width > VIS_TABLE_RESOLUTION) {
         float num = src_width / VIS_TABLE_RESOLUTION;
@@ -908,7 +908,7 @@ void DrawRoomVisPnts(const object &obj) {
           }
 
           src2 += 0.1f * rp.faces[rp.portals[t].portal_face].normal;
-          if (!fvi_QuickRoomCheck(src2, roomnum, false) && !fvi_QuickRoomCheck(src2, roomnum, true)) {
+          if (!fvi_QuickRoomCheck(src2, *roomnum, false) && !fvi_QuickRoomCheck(src2, *roomnum, true)) {
             DrawColoredDisk(&src2, 0.0f, 1.0f, 0.0f, 0.1f, 0.7f, 0.25f, 1);
             continue;
           }
